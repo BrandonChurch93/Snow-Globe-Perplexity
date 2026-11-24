@@ -225,7 +225,9 @@ export class GlobeStage implements Stage {
     const period = moment.period ?? config.scene.ambientPeriodSeconds
     const swap = config.shake.swapWindow
     const settle = config.shake.settleCheckSeconds
-    const arrived = moment.beat !== null && moment.beat >= swap.fromBeat ? 0 : Math.min(1, Math.max(0, moment.sinceLanding / settle))
+    const settled = Math.min(1, Math.max(0, moment.sinceLanding / settle))
+    const swapping = moment.beat !== null && moment.beat >= swap.fromBeat
+    const arrived = !swapping ? settled : single ? settled * (1 - partChange('base', (moment.beat! - swap.fromBeat) / (swap.toBeat - swap.fromBeat))) : 0
 
     const f = this.frame
     f.width = w

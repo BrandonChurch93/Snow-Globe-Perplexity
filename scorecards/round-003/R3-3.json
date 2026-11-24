@@ -1,0 +1,91 @@
+{
+  "critic": "R3",
+  "score": 4,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "severe",
+      "file": "set-G-01.jpg",
+      "where": "the pond in the foreground",
+      "what": "the pond is a flat, blurry blue-grey plane with no reflection, no depth, no ripple, and no ice edge; it reads as a painted backdrop",
+      "fix": "add a subtle reflection of the cottage and tree, break the surface with faint ripples or ice cracks, and grade the edge where it meets the snow"
+    },
+    {
+      "severity": "severe",
+      "file": "set-G-01.jpg",
+      "where": "the stone cottage wall",
+      "what": "the stones are one repeated rounded shape with flat yellow-beige colour, no mortar depth, and no variation in size or lighting; the string lights sit on top like stickers",
+      "fix": "give each stone individual geometry and relief, deepen the mortar lines, and vary the stone tones so the wall reads as built"
+    },
+    {
+      "severity": "severe",
+      "file": "set-G-02.jpg",
+      "where": "crop 5, the roof snow",
+      "what": "the snow on the roof is a smooth white sheet with a hard edge, no texture, no weight, and no sag; it looks like a sheet of paper laid on top",
+      "fix": "add granular snow texture, let it sag and overhang naturally, and soften the roofline edge"
+    },
+    {
+      "severity": "major",
+      "file": "set-G-02.jpg",
+      "where": "crop 1, the chimney",
+      "what": "the chimney bricks are blurred flat rectangles, the smoke is a single vertical white column with no turbulence, and the cap has no definition",
+      "fix": "sharpen the brick courses, give the smoke volume and drift, and model a proper cap or pot"
+    },
+    {
+      "severity": "major",
+      "file": "set-G-02.jpg",
+      "where": "crop 3, the tree trunk",
+      "what": "the trunk is a twisted rope of brown with painted ridges, no bark fissure depth, and the fairy lights float beside it with no wire or contact shadow",
+      "fix": "add bark geometry and shadowing, wrap the lights with visible wire and contact points"
+    },
+    {
+      "severity": "major",
+      "file": "set-G-03.jpg",
+      "where": "crop 10, the front door and wreath",
+      "what": "the door is flat brown planks with a painted arch top, the wreath is a flat green ring with no needle depth, and the bow is a solid red shape",
+      "fix": "model the door planks with gaps and grain, build the wreath from individual sprigs, and give the bow folds and shadow"
+    },
+    {
+      "severity": "major",
+      "file": "set-G-03.jpg",
+      "where": "crop 9, the snow-covered bushes",
+      "what": "the bushes are smooth white blobs with no leaf structure underneath, no twig penetration, and a uniform plastic look",
+      "fix": "reveal branch structure under the snow, vary the snow thickness, and let some green show through"
+    },
+    {
+      "severity": "major",
+      "file": "set-G-01.jpg",
+      "where": "the particles across the whole frame",
+      "what": "the snow and bokeh are uniform soft circles all at the same focal plane, none rest on surfaces, none are out of focus near the camera, and none interact with the tree or roof",
+      "fix": "add varied size, depth, and motion blur, let some flakes land on the roof and branches, and occlude particles behind solid objects"
+    },
+    {
+      "severity": "major",
+      "file": "set-G-02.jpg",
+      "where": "crop 2, the snow on the tree crown",
+      "what": "the snow on the branches is a solid white mass with a hard silhouette, no individual flake or clump detail, and no shadow from the branch above",
+      "fix": "break the snow into clumps, let it catch light unevenly, and cast soft shadows from the branch structure"
+    },
+    {
+      "severity": "major",
+      "file": "set-G-03.jpg",
+      "where": "crop 7, the lamp post",
+      "what": "the lamp head is a glowing white box with no glass panes, no internal bulb, and no housing detail; the post is a black cylinder with no metal sheen",
+      "fix": "model the lamp housing and glass, show the bulb or filament, and add a brushed-metal highlight to the post"
+    },
+    {
+      "severity": "minor",
+      "file": "set-G-03.jpg",
+      "where": "crop 11, the steps",
+      "what": "the steps are smooth grey slabs with a slight blue tint, no stone texture, no snow accumulation on the treads, and no wear",
+      "fix": "add stone grain, dust snow on the horizontal surfaces, and chip or weather the edges"
+    },
+    {
+      "severity": "minor",
+      "file": "set-G-01.jpg",
+      "where": "the distant blue background",
+      "what": "the far background is a uniform blue gradient with faint vertical banding and no atmospheric depth",
+      "fix": "break the gradient with faint cloud or hill shapes and remove the banding"
+    }
+  ]
+}

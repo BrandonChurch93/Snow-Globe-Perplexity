@@ -70,7 +70,7 @@ function column() {
       const near = tubeSolid(x, h, z)
       const crotch = h > 4 ? smooth(-0.1, 1.3, near) : 1
       const low = 0.8 + 0.2 * smooth(-1, 5, h)
-      const shade = (0.06 + 0.94 * Math.pow(smooth(0.15, 0.95, ridge), 1.6)) * (0.35 + 0.65 * crotch) * low
+      const shade = (0.3 + 0.7 * Math.pow(smooth(0.1, 0.95, ridge), 1.25)) * (0.4 + 0.6 * crotch) * low
       const warm = 0.94 + 0.12 * hash(Math.round(((phi + T.trunkTwist(h)) / TAU) * 11) + 7)
       col.push(shade * warm, shade * (0.98 + 0.04 * hash(k * 0.37)), shade * (2 - warm) * 0.98)
     }
@@ -120,7 +120,7 @@ function tube(limb, n) {
       pos.push(p.x, p.y, p.z)
       uv.push(j / sides + n * 0.37, along / S.barkMm)
       const stem = limb.kind === 'twig' ? 1 : smooth(-0.3, 1.1, stemSolid(p.x, p.y, p.z))
-      const shade = (0.2 + 0.8 * Math.pow(smooth(0.1, 0.8, ridge), 1.4)) * (0.3 + 0.7 * stem) * tint * (limb.kind === 'twig' ? 0.8 : 1)
+      const shade = (0.42 + 0.58 * Math.pow(smooth(0.1, 0.8, ridge), 1.3)) * (0.4 + 0.6 * stem) * tint * (limb.kind === 'twig' ? 0.8 : 1)
       col.push(shade, shade * 0.99, shade * 0.97)
     }
   }
@@ -144,7 +144,7 @@ async function barkMaps() {
   const height = new Float32Array(w * h)
   for (let i = 0; i < w * h; i++) {
     const flat = 0.3 / Math.max(wide[i], 0.05)
-    const k = 0.55 + 0.45 * flat
+    const k = (0.55 + 0.45 * flat) * Math.pow(Math.max(l[i], 0.02) / Math.max(wide[i], 0.05), -0.6)
     colour[i * 3] = Math.pow(img.px[i * 3] * k, 0.92) * 1.16
     colour[i * 3 + 1] = Math.pow(img.px[i * 3 + 1] * k, 0.92) * 1.02
     colour[i * 3 + 2] = Math.pow(img.px[i * 3 + 2] * k, 0.92) * 0.9

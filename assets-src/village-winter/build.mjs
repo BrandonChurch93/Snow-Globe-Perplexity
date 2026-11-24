@@ -236,13 +236,11 @@ function wallGap(x, z) {
   const ql = Math.abs(p.z) - C.halfLength
   return Math.hypot(Math.max(qa, 0), Math.max(ql, 0)) + Math.min(Math.max(qa, ql), 0)
 }
-const BANK_PUFF = 0.8
 function snowAt(x, z) {
   const pf = L.pondField(x, z)
-  const m = L.moundAt(z) + L.bankAt(x, z)
-  const lip = smooth(0.953, 1.008, pf)
-  let extra = 0.26 * fbm(x * 0.17, z * 0.17, 3.3, 3) + 0.08 * fbm(x * 0.62, z * 0.62, 9.1, 2)
-  extra += 0.34 * smooth(0.985, 1.03, pf) * (1 - smooth(1.06, 1.3, pf)) * (0.7 + 0.5 * noise(x * 0.35, z * 0.35, 4.4))
+  const m = L.moundAt(z) + L.bankAt(x, z) + L.rimAt(x, z)
+  const lip = smooth(0.94, 1.03, pf)
+  let extra = 0.34 * fbm(x * 0.17, z * 0.17, 3.3, 3) + 0.1 * fbm(x * 0.62, z * 0.62, 9.1, 2)
   const gap = wallGap(x, z)
   extra += 0.42 * Math.exp(-Math.max(gap, 0) / 1.5) * (0.75 + 0.4 * noise(x * 0.5, z * 0.5, 6.1))
   extra += 0.28 * Math.exp(-Math.hypot(x - lampAt[0], z - lampAt[1]) / 1.1)
@@ -257,6 +255,9 @@ function snowAt(x, z) {
   extra = clamp(extra, -0.42, 0.48)
   return m - (L.pond.level + 0.3) * (1 - lip) + extra * lip
 }
+const BANK_TOP = 0.3
+const BANK_BLEND_MM = 5
+const BILLOW = { cycles: 6.5, deepMm: 2.2 }
 function contact(x, z) {
   let k = 1
   k *= 1 - 0.34 * Math.exp(-Math.max(wallGap(x, z), 0) / 1.3)
@@ -272,14 +273,17 @@ function contact(x, z) {
   const around = 204
   const shore = [0.9, 0.93, 0.95, 0.962, 0.972, 0.981, 0.99, 1.0, 1.012, 1.028, 1.05, 1.08]
   const outer = 38
-  const skirt = 14
+  const skirt = 18
   const r = L.innerRadiusMm - 0.6
+  const footY = L.collarY - 1.5
   const pc = Math.cos(L.pond.yaw)
   const ps = Math.sin(L.pond.yaw)
   const pos = []
   const idx = []
+  const bankOf = []
   const row = around + 1
   const rows = shore.length + outer + skirt
+  const topAt = (x, z) => L.moundAt(z) + L.bankAt(x, z) + L.rimAt(x, z)
   for (let j = 0; j <= around; j++) {
     const a = (j / around) * Math.PI * 2
     const dx = Math.cos(a) * pc + Math.sin(a) * ps
@@ -288,7 +292,7 @@ function contact(x, z) {
     const inside = (t) => {
       const x = L.pond.x + dx * t
       const z = L.pond.z + dz * t
-      const y = L.moundAt(z) + L.bankAt(x, z)
+      const y = topAt(x, z)
       return x * x + y * y + z * z < r * r
     }
     let lo = 0
@@ -304,33 +308,42 @@ function contact(x, z) {
       let x
       let y
       let z
+      let bank = 0
       if (k < shore.length) {
         const t = Math.min(shore[k] / unit, t1 * (0.9 + 0.1 * (k / (shore.length - 1))))
         x = L.pond.x + dx * t
         z = L.pond.z + dz * t
         y = snowAt(x, z)
+        bank = BANK_TOP * (1 - smooth(0, BANK_BLEND_MM, edge - t))
       } else if (k < shore.length + outer) {
         const q = (k - shore.length + 1) / outer
         const t = t1 + (edge - t1) * Math.pow(q, 1.25)
         x = L.pond.x + dx * t
         z = L.pond.z + dz * t
         y = snowAt(x, z)
-        if (q === 1) y = L.moundAt(z) + L.bankAt(x, z)
+        if (q === 1) y = topAt(x, z)
+        bank = BANK_TOP * (1 - smooth(0, BANK_BLEND_MM, edge - t))
       } else {
         const ex = L.pond.x + dx * edge
         const ez = L.pond.z + dz * edge
-        const ey = L.moundAt(ez) + L.bankAt(ex, ez)
+        const ey = topAt(ex, ez)
         const th = Math.atan2(ez, ex)
         const phi0 = Math.atan2(Math.hypot(ex, ez), -ey)
+        const phi1 = Math.acos(clamp(-footY / r, -1, 1))
         const q = (k - shore.length - outer + 1) / skirt
-        const phi = phi0 * (1 - 0.56 * q)
-        const lump = clamp(0.5 + 0.7 * fbm(Math.cos(th) * Math.sin(phi) * 11 + 3.1, -Math.cos(phi) * 11, Math.sin(th) * Math.sin(phi) * 11 + 7.7, 3))
-        const rr = r - 0.2 - 0.6 * Math.pow(lump, 1.5) * smooth(0, 0.2, q)
-        x = Math.cos(th) * rr * Math.sin(phi)
-        z = Math.sin(th) * rr * Math.sin(phi)
-        y = -rr * Math.cos(phi)
+        const phi = phi0 + (Math.min(phi1, phi0 - 0.12) - phi0) * q
+        const ux = Math.cos(th) * Math.sin(phi)
+        const uy = -Math.cos(phi)
+        const uz = Math.sin(th) * Math.sin(phi)
+        const lump = clamp(0.5 + 0.75 * fbm(ux * BILLOW.cycles + 3.1, uy * BILLOW.cycles, uz * BILLOW.cycles + 7.7, 3))
+        const rr = r - 0.15 - BILLOW.deepMm * Math.pow(lump, 1.5) * smooth(0.08, 0.5, q)
+        x = ux * rr
+        y = uy * rr
+        z = uz * rr
+        bank = BANK_TOP + (1 - BANK_TOP) * q
       }
       pos.push(x, y, z)
+      bankOf.push(bank)
     }
   }
   for (let j = 0; j < around; j++)
@@ -369,12 +382,7 @@ function contact(x, z) {
     NN.setXYZ(b, nx / l, ny / l, nz / l)
     P.setXYZ(b, P.getX(a), P.getY(a), P.getZ(a))
   }
-  let at = 0
-  const puff = () => {
-    const k = at++ % rows
-    const q = (k - shore.length - outer + 1) / skirt
-    return [1, k < shore.length + outer ? 0 : BANK_PUFF * smooth(0, 0.15, q) * (1 - smooth(0.2, 0.45, q))]
-  }
+  const puff = (_p, _n, i) => [1, bankOf[i]]
   snow.add(g, { color: (p) => mul3(SNOW, (0.9 + 0.08 * noise(p[0] * 0.5, p[2] * 0.5, 3)) * contact(p[0], p[2])), surf: puff })
 }
 
