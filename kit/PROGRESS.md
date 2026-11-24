@@ -453,6 +453,9 @@ Numbered. What, why, and the date.
 
 33. 2026-11-24. In the live app the camera stays locked through a shake, as in the film, and the framing at rest leaves the room the shake needs upward at every size: the top of the lifted glass stays inside the top edge and the foot stays clear of the controls. Measured by `film_app_builder` at 06:35 before the change: at hd the lifted glass passed the top edge by 55 px, at tablet by 71 px. Sideways the strokes stay inside the frame in landscape. In portrait the globe fills the width at rest, as `kit/02-SUBJECT.md` section 7 says for a phone, so the strokes carry the glass past the sides, about 97 px a side on a phone: the kit's two sentences (the globe fills the width, the camera never moves with the globe) leave no other reading. The other cures were a camera that stands back for the shake, which moves the camera in the shake, and a smaller globe on phones, which the kit rules out. The kit did not foresee this; it is settled by the reading closest to the approved images (the whole globe in frame, large, from a camera that does not move) and listed for the REVIEW block.
 
+
+34. 07:04. The spring move goes toward `base` and stops short of it. `kit/01-FILM.md` has the camera sink "toward the `base` camera, past the trickle of water and the mushrooms on the mossy stone", and the first blockout critic called it severe that the miniature leaves the frame for about 2.5 s. Both hold if the move stops where the whole base and the miniature's ground, the cottage to its ridge and the trunk are all in the frame; the canopy may leave the top. The `base` camera itself, its judged stills and its framing test do not change. The share of the way is computed, not picked (`film_app_engineer_2`). The critic's own fix, to centre the move on the miniature and keep the whole tree, is declined as far as it would turn the move away from the base, which the kit names as its subject. For the REVIEW block.
+
 ## Notes from Brandon
 
 Numbered, in his words, with the date and how each was applied. Review round items carry their round's number.
@@ -488,6 +491,12 @@ Severe and major issues still open when a limit was reached: the unit, the still
 
 
 9. Sound, `land-winter`: no take fits after the three the cue is allowed. Its line is "A heavy glass globe set down on stone, heavy and short, then ice crackling outward". Take 1: a faint thud and no ice (rejected by the numbers). Take 2: one light bright clink, no crackle. Take 3 (asked as two sounds in a row, 3 s): two hollow knocks like a small thing dropped on wood, nothing above 2 kHz, no ice. The tool gives one familiar event for a short prompt and does not put two events in a row. The winter landing plays without this cue in the film and in the app. What to try if a review round names it: one real event that holds both, such as a heavy glass jar set down hard onto crushed ice, asked at 3 s and cut by the chain.
+
+
+   - 07:02 update to item 5: closed. `agent/particles2` at `a415b4e` is merged (`87fe501`). Checked here in headless Chrome on the built page at 960 by 540: the live page runs one module worker with its client, 0 fallbacks, and `?sim=main` runs none (`out/work/workercheck.mjs`). The speed of the engine itself stays open under item 2.
+   - 07:02 update to item 7: closed. The governor steps down by time (`agent/film-app` `3076002`, merged through `agent/film-app2` in `87fe501`, covered by its unit tests; 284 tests on main).
+
+10. Blockout round 1, part 1 (score 8, severe, `set-A-04.jpg`, the spring hold): "The push-in drops the spring scene almost entirely out of frame and holds on the pedestal instead. The viewer loses the subject of the shot for several seconds." Cause: the move ran the whole way to `base`, where the frame is 74 mm tall and ends below the island. The critic was told only "a hold on spring", not what the move is for. Being fixed in the fix pass by decision 34; the pack's lines get the move and each camera's purpose for round 2.
 
 ## Review items not done
 
@@ -667,3 +676,6 @@ One entry per task: when it started, what it did, where it stopped.
 - 06:38 `film_app_builder` final report: the governor steps down by time (2 frames a second reaches `low` in 5 s; 277 tests on its branch). It measured that in the live app the lifted globe leaves the frame: decision 33. 06:39 `engine_builder` final report; its gate subset G3, G4, G10, G11, G12, G14 is green on `7a34724` with the particle engine, M1 and M6 green on 7 winter stills.
 
 - 06:44 sound: `land-winter` take 3, its last: two hollow knocks, no ice. Does not fit. Open item 9: the winter landing plays without the cue. Takes left: `lift` 1, `shake-winter` 1, `ui-tick` 2, `ui-sound-on` 2, `glass-clink` 1. Lesson for the prompts still to write: ask for one real event that holds everything in the cue's line, never two events in a row.
+
+- 06:55 round 1: the pack is built (19 files in two parts). Critics asked at 06:56: part 1 (ten film sheets) on `gpt_6_2_sol` at reasoning max; part 2 (six camera pairs, three screens) on `gemini_4_carbon`, which the spawn reports at reasoning medium although max was asked. 06:57 part 1 answered: 8, one severe issue (open item 10).
+- 06:59 merged `agent/film-app2` `a8cb453` (live framing of decision 33, governor) and `agent/particles2` `a415b4e` (worker path) into main at `87fe501`: types clean, 284 tests, build, cut and parts clean. The pack of round 1 was built before the merge, so round 1 still judges `48afed3`. 07:02 worker path checked in headless Chrome (items 5 and 7 closed). 07:04 decision 34 sent to `film_app_engineer_2` as the first job of the fix pass.
