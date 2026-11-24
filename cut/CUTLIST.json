@@ -423,15 +423,15 @@
       "shot": "spring",
       "what": "the base camera reached",
       "camera": [
-        42.363,
-        45.962,
-        245.404,
+        44.396,
+        39.016,
+        257.183,
         0,
-        24,
+        16,
         0,
         16
       ],
-      "focusMm": 200,
+      "focusMm": 212,
       "apertureMm": 7
     },
     {
@@ -439,15 +439,15 @@
       "shot": "spring",
       "what": "leaving base",
       "camera": [
-        43.341,
-        45.7,
-        245.256,
+        45.421,
+        38.741,
+        257.029,
         0,
-        24,
+        16,
         0,
         16
       ],
-      "focusMm": 200,
+      "focusMm": 212,
       "apertureMm": 7
     },
     {
@@ -551,15 +551,15 @@
       "shot": "summer",
       "what": "the interior camera reached",
       "camera": [
-        0.018,
-        112.862,
-        258.609,
+        0.031,
+        138.525,
+        457.538,
         0,
-        86,
+        91,
         0,
         16
       ],
-      "focusMm": 250,
+      "focusMm": 450,
       "apertureMm": 7
     },
     {
@@ -567,15 +567,15 @@
       "shot": "summer",
       "what": "leaving interior",
       "camera": [
-        1.519,
-        112.992,
-        258.591,
+        2.688,
+        138.755,
+        457.507,
         0,
-        86,
+        91,
         0,
         16
       ],
-      "focusMm": 250,
+      "focusMm": 450,
       "apertureMm": 7
     },
     {
