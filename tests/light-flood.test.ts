@@ -25,7 +25,7 @@ function lit(change: number, to = winter) {
   f.mix.light = two ? partChange('light', change) : 0
   light.update(f)
   const u = lightUniforms
-  return { flood: lum(u.uLightFlood.value), gainA: u.uGrid.value.y, gainB: u.uGrid.value.z, pool: lum(f.pool), tint: lum(f.bloomTint) }
+  return { flood: lum(u.uLightFlood.value), outside: lum(u.uLightFlood.value) * u.uLightFloodFloor.value.w, gainA: u.uGrid.value.y, gainB: u.uGrid.value.z, pool: lum(f.pool), tint: lum(f.bloomTint) }
 }
 
 describe('the flood of a change', () => {
@@ -37,6 +37,7 @@ describe('the flood of a change', () => {
     for (const c of [0, 1, -1, 0.02, 0.98]) {
       const at = lit(c)
       expect(at.flood).toBe(0)
+      expect(at.outside).toBe(0)
       expect(at.tint).toBe(0)
       expect(at.gainA).toBeCloseTo(rest.gainA, 12)
       expect(at.pool).toBeCloseTo(rest.pool, 12)
@@ -48,7 +49,8 @@ describe('the flood of a change', () => {
     expect(top.gainA / rest.gainA).toBeCloseTo(1 + ROOM_RIG.bloomGain, 9)
     expect(top.gainA / rest.gainA).toBeGreaterThan(5)
     expect(top.flood).toBeCloseTo(lum({ r: glowOf(winter.innerLights)[0], g: glowOf(winter.innerLights)[1], b: glowOf(winter.innerLights)[2] }) * (top.gainB / (rest.gainB * (1 + ROOM_RIG.bloomGain))), 6)
-    expect(top.flood * ROOM_RIG.flood.outside).toBeGreaterThan(20)
+    expect(top.outside).toBeCloseTo(top.flood * ROOM_RIG.flood.outside, 9)
+    expect(top.outside).toBeGreaterThan(20)
     expect(top.pool / rest.pool).toBeGreaterThan(1 + ROOM_RIG.bloomGain)
     expect(top.tint).toBeGreaterThan(0)
   })
@@ -80,6 +82,19 @@ describe('the flood of a change', () => {
     }
   })
 
+  it('eases onto the base, so its first frame is a small share of its last', () => {
+    const top = lit(mid).outside
+    let before = 0
+    for (let c = span.from - 0.2; c <= mid; c += FRAME) {
+      const v = lit(c).outside / top
+      expect(v).toBeGreaterThanOrEqual(before)
+      expect(v - before, `step at ${c}`).toBeLessThan(0.6)
+      if (changeBloom(c) > 0 && changeBloom(c) < 0.2) expect(v).toBeLessThan(0.02)
+      before = v
+    }
+    expect(before).toBeCloseTo(1, 9)
+  })
+
   it('lifts only the new season where two seasons meet', () => {
     const other = kitOf('spring')
     const top = lit(mid, other)
@@ -96,7 +111,6 @@ describe('the flood of a change', () => {
     expect(outside).toContain('uLightFlood')
     expect(outside).toContain('reflectedLight.indirectDiffuse += lgFlood')
     for (const n of ['uLightFlood', 'uLightFloodAt', 'uLightFloodFloor', 'uLightFloodNear']) expect(Object.keys(lightUniforms)).toContain(n)
-    expect(lightUniforms.uLightFloodFloor.value.w).toBe(ROOM_RIG.flood.outside)
   })
 })
 
