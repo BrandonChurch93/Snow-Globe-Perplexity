@@ -325,6 +325,7 @@ uniform float uIceGrow[ICE_COUNT];
 varying vec3 vIcePos;
 varying vec3 vIceNormal;
 varying vec4 vIceUv;
+varying float vIceDrop;
 `
 
 const ICE_VERT_MAIN = `
@@ -342,6 +343,7 @@ vStagePlaced = iceWorld.xyz;
 vIcePos = iceAt;
 vIceNormal = normalize(normal / iceScale);
 vIceUv = vec4(uv, uv1);
+vIceDrop = iceRoot.y - iceAt.y;
 `
 
 const ICE_FRAG = `
@@ -361,6 +363,7 @@ uniform sampler2D uIceWood;
 varying vec3 vIcePos;
 varying vec3 vIceNormal;
 varying vec4 vIceUv;
+varying float vIceDrop;
 ${ROOM_GLSL}
 ${NOISE}
 float iceBody(float h) {
@@ -376,14 +379,14 @@ void main() {
   if (stageGone(c)) discard;
   mat3 turn = mat3(modelMatrix);
   vec3 no = normalize(vIceNormal);
-  vec3 q = vIcePos * vec3(2.6, 1.1, 2.6);
+  vec3 q = vIcePos * vec3(3.1, 0.42, 3.1);
   float e = 0.11;
   float n0 = baseNoise(q);
   vec3 g = vec3(baseNoise(q + vec3(e, 0.0, 0.0)) - n0, baseNoise(q + vec3(0.0, e, 0.0)) - n0, baseNoise(q + vec3(0.0, 0.0, e)) - n0) / e;
-  vec3 q2 = vIcePos * 9.0;
+  vec3 q2 = vIcePos * vec3(9.0, 1.6, 9.0);
   float n1 = baseNoise(q2);
   vec3 g2 = vec3(baseNoise(q2 + vec3(e, 0.0, 0.0)) - n1, baseNoise(q2 + vec3(0.0, e, 0.0)) - n1, baseNoise(q2 + vec3(0.0, 0.0, e)) - n1) / e;
-  g = g * 0.34 + g2 * 0.06;
+  g = g * 0.24 + g2 * 0.05;
   float ring = sin(vIcePos.y * 4.4 + vIceUv.y * 9.7 + 2.4 * n0) + 0.5 * sin(vIcePos.y * 9.6 + vIceUv.y * 4.1);
   g.y += 0.07 * ring * smoothstep(0.03, 0.2, vIceUv.x) * (1.0 - smoothstep(0.8, 1.0, vIceUv.x));
   no = normalize(no - (g - no * dot(g, no)));
@@ -431,15 +434,16 @@ void main() {
   float grit = baseNoise(vIcePos * 11.0);
   float band = smoothstep(0.3, 0.8, 1.0 - nv);
   float vein = smoothstep(0.3, 0.72, streak);
-  float cloud = 0.03 + band * (0.06 + 0.22 * vein) + 0.1 * core * vein * vein + 0.04 * smoothstep(0.66, 0.9, grit) + 0.12 * (1.0 - smoothstep(0.0, 0.12, t));
+  float cloud = 0.03 + band * (0.06 + 0.22 * vein) + 0.1 * core * vein * vein + 0.04 * smoothstep(0.66, 0.9, grit);
   float wrap = clamp(dot(n, uIceKeyDir) * 0.5 + 0.5, 0.0, 1.0);
-  cloud = clamp(0.75 * cloud + 0.04 * wrap * wrap, 0.0, 0.85);
+  cloud = clamp(0.3 * cloud, 0.0, 0.85);
   float back = clamp(dot(n, uIceRimDir) * 0.5 + 0.5, 0.0, 1.0);
   float warm = clamp(dot(n, uRigCardDir) * 0.5 + 0.5, 0.0, 1.0);
   vec3 lit = keyC * (0.1 + 1.2 * wrap * wrap) + cardC * (0.2 + 1.8 * warm * warm) + uIceRimCol * 0.5 * back * back + (0.7 - 0.35 * lee) * iceDome(n);
   vec3 milk = vec3(0.84, 0.86, 0.92) * lit * RECIPROCAL_PI;
-  vec3 col = mix(behind * vec3(0.92, 0.96, 1.0) * (0.75 + 0.25 * core), milk, cloud);
-  col = col * (1.0 - fres) + mirror * fres + milk * (1.0 * pow(1.0 - nv, 3.0));
+  vec3 col = mix(behind * vec3(0.92, 0.96, 1.0) * (0.5 + 0.2 * core), milk, cloud);
+  col *= 1.0 - 0.2 * smoothstep(0.5, 0.12, nv) * (1.0 - cloud);
+  col = col * (1.0 - fres) + mirror * fres + milk * (0.55 * pow(1.0 - nv, 1.6));
   float hk = max(dot(n, normalize(v + uIceKeyDir)), 0.0);
   float hr = max(dot(n, normalize(v + uIceRimDir)), 0.0);
   col += keyC * (pow(hk, 420.0) * 7.0 + pow(hk, 36.0) * 0.06);
@@ -448,7 +452,7 @@ void main() {
   float lane = 0.55 + 0.45 * ring;
   float keyLane = exp(-pow((dot(around, -normalize(vec3(uIceKeyDir.x, 0.0, uIceKeyDir.z))) - 0.42) / 0.09, 2.0));
   float cardLane = exp(-pow((dot(around, -normalize(vec3(uRigCardDir.x, 0.0, uRigCardDir.z))) - 0.42) / 0.09, 2.0));
-  col += (keyC * 0.07 * keyLane + cardC * 0.03 * cardLane) * lane * smoothstep(0.02, 0.12, t) * (1.0 - 0.6 * smoothstep(0.75, 1.0, t));
+  col += (keyC * 0.3 * keyLane + cardC * 0.1 * cardLane) * lane * (0.2 + 1.6 * smoothstep(0.45, 0.8, grit)) * (0.35 + 0.65 * vein) * smoothstep(0.02, 0.12, t) * (1.0 - 0.4 * smoothstep(0.75, 1.0, t));
   float hc = max(dot(n, normalize(v + uRigCardDir)), 0.0);
   col += cardC * (pow(hc, 48.0) * 0.2 + pow(hc, 300.0) * 2.2);
   vec3 cell = floor(vIcePos * 4.5);
@@ -456,7 +460,7 @@ void main() {
   vec3 fn = normalize(n + turn * jit * 1.3);
   float inCell = smoothstep(0.5, 0.12, length(fract(vIcePos * 4.5) - 0.5)) * step(0.35, baseHash(cell + 29.0));
   col += (stageRoomLights(reflect(-v, fn), 0.03) * 1.4 + keyC * pow(max(dot(fn, normalize(v + uIceKeyDir)), 0.0), 320.0) * 2.0) * inCell;
-  gl_FragColor = vec4(col, 1.0);
+  gl_FragColor = vec4(col, smoothstep(0.0, 1.9, vIceDrop));
   if (uDiag != 0) gl_FragColor = stageDiag(vec3(0.8, 0.88, 1.0), n, 0.0, c, 0.0);
 }
 `
@@ -538,6 +542,7 @@ export function base(): THREE.Object3D {
     vertexPars: ICE_VERT_PARS,
     vertexMain: ICE_VERT_MAIN,
     fragment: ICE_FRAG,
+    params: { transparent: true },
     uniforms: { ...roomUniforms, ...iceUniforms },
   })
   Object.assign(ice.defines, { ICE_COUNT: extras.count, ICE_BODY: extras.body.length })
