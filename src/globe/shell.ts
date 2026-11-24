@@ -21,7 +21,7 @@ export const glassLook = {
     tint: [0.56, 0.73, 1] as V3,
     level: 3.2,
     gain: 11,
-    edgeDeg: { outer: 0.45, inner: 1.8, innerMain: 0.5, tipInner: 0.8, end: 1.1, tail: 4, cut: 0.5 },
+    edgeDeg: { outer: 0.45, inner: 1.8, innerMain: 1.3, tipInner: 0.8, end: 1.1, tail: 4, cut: 2, wobble: 0.9, wobbleRate: 12 },
     gap: { wideDeg: [6, 13] as const, tint: [0.9, 0.89, 0.8] as V3, gain: 0.9, mid: [0.22, 0.36, 0.55] as const, top: [0.46, 0.6] as const, low: [-0.24, -0.06] as const },
     halo: { wideDeg: [2.5, 5] as const, tint: [0.4, 0.75, 1] as V3, gain: 0.24 },
     tip: { flatDeg: [6, 10.5] as const, fadeDeg: [8.5, 14] as const, tint: [0.4, 0.55, 0.75] as V3, slant: 0.35, slantFromDeg: -3.5, tailDeg: [-16, -13.5] as const, tailSlope: 0, tailFromDeg: -18, tailCurve: 0.037, tailLevel: 0.08 },
@@ -38,7 +38,7 @@ export const glassLook = {
   room: { gain: 0.3, side: 0.22, blotch: 0.5, level: 4.31, tint: [1.62, 1.04, 1.04] as V3, innerRough: 0.1, throughRough: 0.3 },
   ceiling: { dir: [0.1, 0.5, -0.866] as V3, edge: [0.5, 0.61] as const, low: [0.25, 1] as const, gain: 1.5, tint: [0.74, 1.04, 1] as V3, rings: 40, depth: 0.45 },
   second: { face: 0.72, gain: 3.3, tint: [1.25, 1.1, 1] as V3, softDeg: 0.5, own: 0.15 },
-  third: { face: 0.6, gain: 0.07, tint: [0.75, 0.85, 1] as V3, softDeg: 0.9, own: 0.15, fade: [0.78, 0.97] as const },
+  third: { face: 0.6, gain: 0.07, tint: [0.75, 0.85, 1] as V3, softDeg: 1.6, own: 0.15, fade: [0.78, 0.97] as const },
   shoulder: { from: 1.4, to: 3.6 },
   floor: 0.4,
   band: { from: 0.976, to: 0.99, wander: 0.004, dim: 0.5, shade: 0.3, side: [-0.2, 0.5] as const, low: [-0.5, -0.1] as const },
@@ -46,13 +46,13 @@ export const glassLook = {
   body: { from: 0.962, to: 0.978, sky: 0.04, tint: [1.8, 1.2, 0.4] as V3 },
   rim: { from: 0.96, to: 0.967, clear: 0.65, tint: [0.9, 1, 1.08] as V3, high: 0.085, low: 0.28, line: 0.9655, lineWide: 0.0022, lineGain: 0.25, highTint: [0.9, 1.05, 1] as V3, streak: 0.6, outer: 0.9905, outerWide: 0.004, outerGain: 0.16 },
   wall: { from: [0.896, 0.926] as const, to: [0.966, 0.976] as const, crest: 0.9635, crestWide: 0.013, plate: 0.14, peak: 0.3, inTint: [1.15, 0.97, 0.8] as V3, tint: [1, 1, 0.83] as V3, lowY: [0.02, -0.22] as const, leftDrop: 0.1, lowTo: 0.012, grain: 0.5, speck: 0.5, spark: 1.2, wander: 0.006, mirror: 0.5, mirrorTo: 0.93, leftTo: 0.016 },
-  ring: { from: 0.9625, to: 0.9675, soft: 0.008, spanDeg: 21, around: 96, rows: 3, side: [0.5, 0.2] as const, low: [-0.22, -0.08] as const, wallSide: [0.1, -0.5] as const, keep: 0.3, cover: 0.75, wall: [0.17, 0.19, 0.165] as V3, grain: 0.5, speck: 0.4, edge: [0.985, 0.991] as const, line: [0.26, 0.3, 0.25] as V3, lineTop: [0.11, 0.2, 0.25] as V3, lineMix: 0.9, lowMix: 1, lowLine: [0.67, 0.69, 0.55] as V3, lowAt: [0.986, 0.993] as const, lowEnd: [-0.8, -0.72] as const, night: [0.014, 0.0255, 0.026] as V3, reach: 1.002, lowFrom: 0.984, lowTo: 0.992, mirror: { from: 0.955, lowFrom: 0.972, wide: 0.022, side: [-0.34, -0.2, -0.06] as const, coverHigh: 0.2, gain: 1.6, cover: 0.55, steps: 10, solid: [0.35, 0.62] as const, snow: [0.2, 0.22] as const, warm: 0.5, air: 0.6, streak: 0.7, streakRings: 420 } },
+  ring: { from: 0.9625, to: 0.9675, soft: 0.008, spanDeg: 21, around: 96, rows: 3, side: [0.5, 0.2] as const, low: [-0.22, -0.08] as const, wallSide: [0.1, -0.5] as const, keep: 0.3, cover: 0.75, wall: [0.17, 0.19, 0.165] as V3, grain: 0.5, speck: 0.4, edge: [0.985, 0.991] as const, line: [0.26, 0.3, 0.25] as V3, lineTop: [0.11, 0.2, 0.25] as V3, lineMix: 0.9, lowMix: 1, lowLine: [0.67, 0.69, 0.55] as V3, lowAt: [0.992, 0.997] as const, lowEnd: [-0.8, -0.72] as const, night: [0.014, 0.0255, 0.026] as V3, reach: 1.002, lowFrom: 0.99, lowTo: 0.996, mirror: { from: 0.955, lowFrom: 0.972, wide: 0.022, side: [-0.34, -0.2, -0.06] as const, coverHigh: 0.2, gain: 1.6, cover: 0.55, steps: 10, solid: [0.35, 0.62] as const, snow: [0.2, 0.22] as const, warm: 0.5, air: 0.6, streak: 0.7, streakRings: 420 } },
   wave: { rings: 46, ringDeg: 0.3, driftDeg: 0.35, inner: 1.9 },
   dust: { cells: 240, share: 0.085, depth: 0.42 },
   hair: { count: 7, widthMm: 0.035, depth: 0.32, bend: 0.012 },
   seat: { lineMm: 1.3, shadeMm: 8, gain: 1.5 },
   through: { disc: 0.0009, point: 3, pointGain: 2.5, wall: [0.94, 0.975, 0.985] as V3, mirror: 0.06, steps: 5, own: 0.12, window: 0.018, softDeg: 3, lift: [0.056, 0.012, 2.5] as const, liftTint: [0.9, 1.25, 1] as V3, arcs: 0.4, arcRings: 13 },
-  bubble: { widthMm: 20.5, depthMm: 5.6, gapMm: 0.12, patch: 0.46, waist: 0.5, flat: 2.7, leanDeg: 16, slide: 0.0025, wobble: 0.09, line: 0.022, sky: 0.11, inner: 0.08, glint: 0.5, milk: 0.12, fill: [1.6, 1.25, 0.85] as V3, shade: 0.12, edge: 0.5, warm: 0.5, reach: 0.35, patchGain: 0.1, swirl: 0.3, streakDir: [-0.9, 0, 0.35] as V3, streakPower: 2.5, lip: 0.6, spark: 2.5, sparkTint: [1, 0.92, 0.75] as V3 },
+  bubble: { widthMm: 20.5, depthMm: 5.6, gapMm: 0.12, patch: 0.46, waist: 0.5, flat: 2.7, leanDeg: 16, slide: 0.0025, wobble: 0.09, line: 0.015, sky: 0.2, inner: 0.08, glint: 0.5, milk: 0.05, patchFill: 0.15, fill: [1.6, 1.25, 0.85] as V3, shade: 0.12, edge: 0.5, warm: 1, reach: 0.35, patchGain: 0.1, swirl: 0.12, streakDir: [-0.9, 0, 0.35] as V3, streakPower: 2.5, lip: 0.6, spark: 2.5, sparkTint: [1, 0.92, 0.75] as V3 },
 }
 
 const G = config.globe
@@ -180,6 +180,7 @@ vec3 glassWindow(vec3 d, float soft, int k) {
   float z = dot(d, WIN_C);
   if (z < 0.25) return vec3(0.0);
   vec2 q = vec2(atan(dot(d, WIN_A), z), atan(dot(d, WIN_B), z));
+  if (k != 0) q += vec2(-1.3, 1.0) * ((glassNoise(vec3(q * ${num(W.edgeDeg.wobbleRate)}, 11.0)) - 0.5) * ${num(W.edgeDeg.wobble * RAD)});
   vec4 span = WIN_SPAN[k];
   vec4 cut = WIN_CUT[k];
   vec3 level = WIN_LEVEL[k];
@@ -536,8 +537,8 @@ void main() {
   mirror *= 1.0 + ${num(glassLook.ring.mirror.streak)} * (glassNoise(rimAround * 4.0 + rimAxis * (s * ${num(glassLook.ring.mirror.streakRings)}) + 57.0) - 0.5);
   float mirFrom = mix(${num(glassLook.ring.mirror.lowFrom)}, ${num(glassLook.ring.mirror.from)}, smoothstep(${num(glassLook.ring.mirror.side[0])}, ${num(glassLook.ring.mirror.side[1])}, nWorld.y) * (1.0 - smoothstep(${num(glassLook.ring.mirror.side[1])}, ${num(glassLook.ring.mirror.side[2])}, nWorld.y)) * smoothstep(0.3, -0.3, nWorld.x));
   float mirBand = smoothstep(mirFrom, mirFrom + ${num(glassLook.ring.mirror.wide)}, s) * (1.0 - f1) * limb;
-  vec3 ringOut = (ringCol * limb + uSky * ${vec(glassLook.ring.night)} * ((1.0 - limb) * ringLow)) * ringCover;
-  float ringKeep = 1.0 - ringCover * mix(limb, 1.0, ringLow);
+  vec3 ringOut = ringCol * (limb * ringCover);
+  float ringKeep = 1.0 - ringCover * limb;
   float mirCover = mix(${num(glassLook.ring.mirror.cover)}, ${num(glassLook.ring.mirror.coverHigh)}, smoothstep(${num(glassLook.ring.mirror.side[1])}, ${num(glassLook.ring.mirror.side[2])}, nWorld.y)) * mirBand;
   gl_FragColor = vec4(ringOut * (1.0 - mirCover) + mirror * (${num(glassLook.ring.mirror.gain)} * mirBand), ringKeep * (1.0 - mirCover));
 #else
@@ -592,7 +593,7 @@ void main() {
   float glints = smoothstep(0.5, 0.7, glassNoise(radial * 9.0 + 1.0));
   vec3 col = outerRing * (pale * (0.25 + 0.45 * front) * (0.6 + 0.8 * fine) + warm * front * front + streak * ${num(glassLook.bubble.glint)} * smoothstep(0.3, 0.75, swirl));
   col += innerRing * (pale * (0.5 + 0.3 * front) + streak * ${num(glassLook.bubble.glint * 0.8)} + warm * 2.0 * front * front * glints);
-  col += inPatch * (uSky * ${vec(glassLook.bubble.fill)} * ${num(glassLook.bubble.milk)} * (0.8 + 0.4 * fine) + streak * ${num(glassLook.bubble.patchGain)} * (0.6 + 0.4 * swirl));
+  col += inPatch * (uSky * ${vec(glassLook.bubble.fill)} * ${num(glassLook.bubble.patchFill)} * (0.8 + 0.4 * fine) + streak * ${num(glassLook.bubble.patchGain)} * (0.6 + 0.4 * swirl));
   col += between * (uSky * ${num(glassLook.bubble.milk * 0.2)} + streak * ${num(glassLook.bubble.swirl)} * smoothstep(0.42, 0.8, swirl) * smoothstep(${num(glassLook.bubble.patch)}, 0.9, x));
   col += lip * spark * uKeyCol * ${vec(glassLook.bubble.sparkTint)} * ${num(glassLook.bubble.spark)};
   float alpha = (1.0 - ${num(glassLook.bubble.lip)} * lip) * (1.0 - ${num(glassLook.bubble.shade)} * inPatch) * (1.0 - ${num(glassLook.bubble.edge)} * outerRing * (1.0 - 0.5 * front)) * (1.0 - ${num(glassLook.bubble.edge)} * innerRing * front);
