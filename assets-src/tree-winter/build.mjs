@@ -10,9 +10,9 @@ const NEEDLE_CELL = 0.62
 const SNOW_CELL = 0.45
 const NEEDLE_TILE_MM = 9
 const SNOW_TILE_MM = 7
-const STAR_AT = [0.25, 45.2, 0.1]
-const STAR_R = 2.2
-const STAR = { deep: 0.62, edge: 0.17, inset: 0.9, valley: 0.72, crest: 1.12, glow: [0.07, 0.035, 0.02], stem: [0.2, 0.11], collar: 0.27 }
+const STAR_AT = [0.1, 45.75, 0.1]
+const STAR_R = 2.6
+const STAR = { deep: 0.62, edge: 0.17, inset: 0.9, valley: 0.72, crest: 1.12, side: 0.62, glow: [0.04, 0.018, 0.01], stem: [0.12, 0.085], collar: 0.17 }
 const CORE_R = 0.155
 const WIRE_R = 0.075
 const SNOW_KEY = [-0.42, 0.819, 0.39]
@@ -439,7 +439,7 @@ function star() {
   const far = ring(STAR.inset, -STAR.edge)
   for (let k = 0; k < 10; k++) {
     const j = (k + 1) % 10
-    face([front, near[k], near[j]], [STAR.crest, tone(k), tone(j)], k % 2 === 0 ? STAR.glow[0] : STAR.glow[1])
+    face([front, near[k], near[j]], k % 2 === 0 ? [STAR.crest, tone(k), tone(j)] : [STAR.crest * STAR.side, tone(k) * STAR.side, tone(j) * STAR.side], k % 2 === 0 ? STAR.glow[0] : STAR.glow[1])
     face([near[k], mid[k], mid[j]], [tone(k), tone(k), tone(j)], STAR.glow[2])
     face([near[k], mid[j], near[j]], [tone(k), tone(j), tone(j)], STAR.glow[2])
     face([far[k], mid[j], mid[k]], [tone(k), tone(j), tone(k)], STAR.glow[2])
@@ -455,7 +455,7 @@ function star() {
   const [ax, az] = T.trunkAxis(T.trunkShape.top)
   const seat = STAR_AT[1] - STAR_R * 0.42
   const stem = rod([new THREE.Vector3(ax, T.trunkShape.top + 2.2, az), new THREE.Vector3(lerp(ax, STAR_AT[0], 0.6), T.trunkShape.top + 4.4, lerp(az, STAR_AT[2], 0.6)), new THREE.Vector3(STAR_AT[0], seat + 0.1, STAR_AT[2])], [STAR.stem[0], lerp(STAR.stem[0], STAR.stem[1], 0.5), STAR.stem[1]])
-  colourOf(stem, 0.5, 0.37, 0.14, 0)
+  colourOf(stem, 0.8, 0.66, 0.38, 0.006)
   const collar = rod([new THREE.Vector3(STAR_AT[0], seat - 0.62, STAR_AT[2]), new THREE.Vector3(STAR_AT[0], seat - 0.5, STAR_AT[2]), new THREE.Vector3(STAR_AT[0], seat - 0.12, STAR_AT[2]), new THREE.Vector3(STAR_AT[0], seat + 0.16, STAR_AT[2])], [STAR.stem[1], STAR.collar, STAR.collar, STAR.stem[1]])
   colourOf(collar, 0.72, 0.53, 0.2, 0.012)
   const all = mergeGeometries([phaseOf(g, 0.31, 2), phaseOf(stem, 0.31, 0).toNonIndexed(), phaseOf(collar, 0.31, 0).toNonIndexed()])
