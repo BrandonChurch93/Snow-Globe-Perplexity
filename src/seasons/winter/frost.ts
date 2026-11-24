@@ -27,7 +27,7 @@ export const surfaceDressing: Dressing & { reachMm: number } = { tint: [0.86, 0.
 
 const look = {
   glass: { cover: 1.72, haze: 1.38, slope: 0.55, micro: 1.1, glint: 2.6, light: 0.96, through: 2.4, thin: 0.3, thick: 1.1, blur: 0.012, bend: 0.012, scatter: 0.06, room: 0.5, soften: 0.12, rimMu: 0.3, faceOn: 0.65, front: 1.9, sugarMm: 0.3, gritty: 0.45, clear: [0.255, 0.28, 0.8] },
-  slab: { cover: 2.2, film: 1.7, slope: 1.6, micro: 1.2, glint: 1.1, pool: 0.5, poolBack: 0.12, poolThick: 0.9, skyCut: 0.55, gainFar: 0.9, gainKey: 1.38, gainFront: 0.5, grey: 0.85, light: 2.95, wrap: 0.3, broad: 1.4, shade: 0.35, edge: 0.6, ball: 0.3, rim: 0.55, sky: 1.3, sugarMm: 0.34, clotMm: 1.15, room: 0.1, lace: 0.3, gritty: 0.5, leftBack: 2.0, leftMid: 0.42, leftSkyCut: 0.5, leftWarm: 0.22, leftFrontCut: 0.5, leftHeap: 0.62, leftHeapCut: 0.12, leftHeapSky: 0.6, heapGlint: 0.4, wet: 0.6, focusMm: 35, far: [40, 110], near: [28, 75], farMips: 3.6, nearMips: 3.2, shadeGlint: 0.85 },
+  slab: { cover: 2.2, film: 1.7, slope: 1.6, micro: 1.2, glint: 1.1, pool: 0.5, poolBack: 0.12, poolThick: 0.9, skyCut: 0.55, gainFar: 0.9, gainKey: 1.38, gainFront: 0.5, grey: 0.85, light: 2.95, wrap: 0.3, broad: 1.4, shade: 0.35, edge: 0.6, ball: 0.3, rim: 0.55, sky: 1.3, sugarMm: 0.34, clotMm: 1.15, room: 0.1, lace: 0.3, gritty: 0.5, leftBack: 2.0, leftMid: 0.42, leftSkyCut: 0.5, leftWarm: 0.22, leftFrontCut: 0.5, leftHeap: 0.62, leftHeapCut: 0.12, leftHeapSky: 0.6, heapGlint: 0.4, wet: 0.6, focusMm: 35, far: [40, 110], near: [28, 75], farMips: 3.0, nearMips: 3.2, shadeGlint: 0.85, lumpMm: 3.2, lump: 0.5, lumpSheet: 0.16, frontLag: 0.5, frontMm: 80, frontEnd: [0.3, 0.8] },
 }
 const SNOW = { thin: [0.6, 0.68, 0.8], thick: [0.92, 0.955, 0.99], body: [0.9, 0.93, 0.98] }
 const vec = (v: number[]): string => `vec3(${v.map((x) => x.toFixed(3)).join(', ')})`
@@ -248,14 +248,24 @@ void main() {
 // touched first and runs round the foot to the far edge: uTouch.y is how far the foot has rolled flat, uTouch.z how far the
 // touching side leads. The side is read from the foot's own tilt (uLean), and when the foot is flat every side has the same
 // growth, so nothing depends on the side from then on.
+// The front of the arrival: the frost does not come back everywhere at once. A place `frontMm` out from the foot's rim is
+// `frontLag` of growth behind the rim while the growth is young, so a ring starts at the contact line on the landing frame and
+// runs outward, its leading edge the first of the map's time (the spines and the fine grain), and every fern grows from its root
+// to its tip with its branches behind the front, the nearest to the foot first. The lag is gone by the upper end of
+// `frontEnd`, a little past the growth at `states.landedSeconds`, so the landed still is nearly what it was and the rest is
+// untouched; the growth at a place never falls while the level rises (the lag only ever shrinks).
 const SLAB_GROW_GLSL = `
 uniform vec4 uTouch;
 float frostSlabGrow(vec2 xz) {
-  if (uTouch.x <= 0.0) return uGrow.y;
   vec2 d = xz - uFoot.xy - uLean.xy;
-  float tilt = length(uLean.zw);
-  float far = tilt > 1e-6 ? 0.5 - 0.5 * dot(d / max(length(d), 1.0), uLean.zw / tilt) : 0.0;
-  return uGrow.y * clamp(uTouch.y * (1.0 + uTouch.z) - uTouch.z * far, 0.0, 1.0);
+  float g = uGrow.y;
+  if (uTouch.x > 0.0) {
+    float tilt = length(uLean.zw);
+    float far = tilt > 1e-6 ? 0.5 - 0.5 * dot(d / max(length(d), 1.0), uLean.zw / tilt) : 0.0;
+    g *= clamp(uTouch.y * (1.0 + uTouch.z) - uTouch.z * far, 0.0, 1.0);
+  }
+  float out1 = clamp((length(d) - uFoot.z) / ${look.slab.frontMm.toFixed(1)}, 0.0, 1.0);
+  return g - ${look.slab.frontLag.toFixed(3)} * out1 * (1.0 - smoothstep(${look.slab.frontEnd[0].toFixed(3)}, ${look.slab.frontEnd[1].toFixed(3)}, g));
 }
 `
 
@@ -361,7 +371,10 @@ void main() {
   float thick = smoothstep(0.1, 0.62, max(h0, mix(s0, h0, 0.6)));
   vec3 albedo = mix(${vec(SNOW.thin)}, ${vec(SNOW.thick)}, thick);
   float open = 0.55 + 0.45 * smoothstep(-0.12, 0.2, h0 - s0 + 0.35 * thick);
-  vec3 col = frostSlabLight(n, vStageWorld, albedo, open, 0.0) * (0.7 + 0.6 * sugar);
+  // Snow lies in lumps a few millimetres across, some of them in the shade of their neighbours: without that the frost is one
+  // flat white (round 5: "flatter, sharper-edged white patches" where the approved image has "softer snowy thickness").
+  float lump = smoothstep(0.3, 0.75, frostSugar(vStageWorld, pxMm, ${look.slab.lumpMm.toFixed(3)}, 0.83));
+  vec3 col = frostSlabLight(n, vStageWorld, albedo, open, 0.0) * (0.7 + 0.6 * sugar) * (1.0 - ${look.slab.lumpSheet.toFixed(3)} * (1.0 - lump));
   vec3 spark = frostGlints(xz, pxMm, vec3(0.0, 1.0, 0.0), v, ${look.slab.room.toFixed(3)}) * uGlint.y * (0.05 + 1.5 * m0.b * on) * smoothstep(0.02, 0.25, alpha) * thick * (1.0 - 0.9 * soft) * (1.0 - frostShade(xz));
   // Melt water round the frost: a few millimetres past its edge the slab is wet and darker, so the frost does not end on dry wood.
   vec3 w0 = texture(uSlabMap, uv, 4.6).rgb;
@@ -408,7 +421,8 @@ void main() {
   float open = vFrostOn.w * (0.86 + 0.14 * alpha);
   float deep = (0.22 + 0.78 * vFrostOn.y) * smoothstep(0.1, 0.75, alpha);
   vec3 albedo = mix(${vec(SNOW.thin)}, ${vec(SNOW.body)}, deep) * (0.9 + 0.16 * leaf);
-  vec3 col = frostSlabLight(n, vStageWorld, albedo, open, deep) * (0.58 + 0.62 * sugar + 0.22 * clot);
+  float lump = smoothstep(0.3, 0.75, frostSugar(vStageWorld, pxMm, ${look.slab.lumpMm.toFixed(3)}, 0.83));
+  vec3 col = frostSlabLight(n, vStageWorld, albedo, open, deep) * (0.58 + 0.62 * sugar + 0.22 * clot) * (1.0 - ${look.slab.lump.toFixed(3)} * (1.0 - lump));
   vec3 spark = frostGlints(xz + vStageWorld.y * 3.1, pxMm, normalize(vFrostN), v, ${look.slab.room.toFixed(3)}) * uGlint.y * ${(1.3 * look.slab.heapGlint).toFixed(3)} * alpha * open * (1.0 - 0.9 * soft) * (1.0 - frostShade(xz));
   gl_FragColor = vec4(col * alpha + spark, alpha);
   if (uDiag != 0) {
