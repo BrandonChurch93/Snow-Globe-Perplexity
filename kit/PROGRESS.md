@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 13 · 2026-11-24 05:44 UTC
+Status 14 · 2026-11-24 06:06 UTC
 
-- `out/stills/status/status-13-1.jpg`: The controls at twice their size, on a mock: idle, dimmed, busy, hover, pressed, then keyboard focus on Shake, on a season mark and on sound, sound on, and the hint pulse at its middle. (by interface_builder)
-- `out/stills/status/status-13-2.jpg`: Spring, summer and fall from the particle engine, same debug plot: the last stroke, landed, and settling to rest. Petals lie on the ground and the roof, summer's motes and fireflies float, fall's leaves settle with two ember columns and the bats. (by particles_builder)
-- `out/stills/status/status-13-3.jpg`: The particle engine, winter, the full pool of 102000: a debug plot of positions with streaks along each velocity, from the start of a shake to the landed state (0.02 s, 0.6 s lift, 1.2 s and 1.8 s strokes, 2.4 s landing, 2.9 s). Not the app's drawing. (by particles_builder)
-- `out/stills/status/status-13-4.jpg`: The first shake from the hero camera after the fit, on the measuring scene, twelve frames from the lift to the landing. The camera is locked. It now stands a little further back with its aim raised, so the lifted globe stays inside the frame: before, the top of the glass left the picture.
+- `out/stills/status/status-14-1.jpg`: The whole film on the new stage, twelve frames from start to end: the pull back from inside the glass, four shakes with the season changing in each, a different camera between them, and the push back in that closes the loop. Every shape is a stand-in. (by Builder)
+- `out/stills/status/status-14-2.jpg`: The first shake on the new stage from the locked hero camera, twelve frames across the bar: the lift, six strokes, the set down. The storm hides the miniature, the base and the lights turn from winter to spring behind it, and the globe lands on the bar line. Everything is a stand-in. (by Builder)
+- `out/stills/status/status-14-3.jpg`: Sheet: 12 frames across the shot shake-1, frames 576 to 719, preview, draft
+- `out/stills/status/status-14-4.jpg`: The new stage on main, winter at rest from the hero camera, draft samples. Everything in it is a stand-in: a clear ball with simple refraction, the miniature as blocks, a turned base in one colour, sprite lights behind. The snow in this picture still comes from the old test simulation. (by Builder)
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 05:47 UTC
-clock: phase 2, tick of 2.7 minutes
-phase 2: 2.75 h used of its 6.00 h box
-allowance (before the review): 3.94 h used of 36.00 h allowed
-all time before the review: 3.94 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 06:06 UTC
+clock: phase 2, tick of 19.5 minutes
+phase 2: 3.08 h used of its 6.00 h box
+allowance (before the review): 4.27 h used of 36.00 h allowed
+all time before the review: 4.27 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
-half point: not reached
+half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 2
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -622,3 +622,10 @@ One entry per task: when it started, what it did, where it stopped.
 - 05:48 `agent/engine` at `0745117` merged (`3037bd0`). Its config edits are two cameras: `interior` to distance 460 and aim 91, `base` to distance 262 and aim 16. `hero` untouched.
 - 05:50 `particles_builder` reported: engine, loop paths and worker client done, 133 tests of its own; the whole film's simulation (74.4 s, five shakes) in 53.2 s of work with no particle outside the glass. Three weak spots are now open items 2 to 4. `agent/particles` at `c1b6c7a` merged (`e095298`). On main: types clean, 256 tests in 16 files, the build runs. Pushed.
 - 05:54 Work handed out. `particles_builder`: its engine behind the page and the capture path in place of the spike simulation, the worker for the live app, until 06:25. `engine_builder`: its report, the emitters for the particle engine, then the camera fit on the real stage. `film_app_builder`: its report, `npm run cut` and two draft sheets on the real stage with every rule of `kit/01-FILM.md` checked, then the two dev calls for the packs.
+
+- 05:57 `agent/film-app` at `c7218f5` (the camera locked on hero through each shake with no ease in, the aim lowered by up to 6 mm in the holds) and `agent/engine` at `5b474ae` (the stage hands out emitters per season) merged: types clean, 262 tests, the build runs. Pushed as `eb55a5c`.
+- 05:58 First pictures of the new stage here: winter at rest from hero and a draft sheet across the first shake (43 s for 12 frames). The lifted glass stays inside the frame.
+- 05:59 to 06:05 A dry run of the blockout pack on the new stage, to test the tool before the round is counted: 19 files in two parts, nothing missing, 301 s. No critic saw it.
+- 06:00 `film_app_builder` report 1: cut of 9 shots, 4 shakes, 3600 frames, 18 cues, 37 camera keys, opening 870 frames, loop 480 frames; its gate subset green; the app proven in its browser at three sizes with reduced motion. Not proven by it: real time (one shake took 13 s of wall time at hd in software graphics with the simulation on the main thread), device motion, the film's sound. Its two `performance.now` calls feed only the live clock's time budget and the dev timings.
+- 06:06 `film_tools_builder` answered: a draft preview frame of film B costs 0.65 to 0.80 s in a sandbox with 4 cores (about 25 minutes for the whole film), chunks from several machines join when the engine hash matches, D2 does not read the machine, the proof runs in 49 s there. It found the opening's prompt card drawn in the top left third of the preview frame; passed to `film_app_builder`. It started a whole draft film in its own sandbox at 06:05 for a first watch.
+- 06:06 Status 14 posted: the whole film on the new stage, the first shake, the hero still.
