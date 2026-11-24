@@ -1,43 +1,44 @@
 {
-  "number": 22,
-  "time": "2026-11-24 08:41 UTC",
+  "number": 23,
+  "time": "2026-11-24 08:57 UTC",
   "phase": "3",
   "unit": "",
   "lines": [
-    "Status 22 · 2026-11-24 08:41 UTC · Phase 3",
-    "Phase 2 is closed at its limit, not as a pass: the second and last blockout review scored 6 and 8, merged 6 against a bar of 7, with no severe issue open",
-    "All 15 machine and deliverable checks are green on the final blockout build, and the preview film is committed",
-    "Five open issues are carried: the opening's easing and the spring move (fixed next, judged with the film), headroom in the shake and the macro framing (look lock), the phone's sound control (interface)",
-    "Phase 3, the look lock, has started: the real photographs and two clips of a globe being shaken are studied, and the build of the real winter globe is being split across supporting agents",
-    "phase 3: 0.23 h used of its 11.00 h box",
-    "allowance (before the review): 6.84 h used of 36.00 h allowed",
+    "Status 23 · 2026-11-24 08:57 UTC · Phase 3",
+    "Phase 2 is closed at its limit, not as a pass: the second blockout review scored 6 and 8, merged 6, against a bar of 7. All 15 machine checks are green and five issues are carried forward.",
+    "Phase 3, the look lock, has begun. Its box is 11 hours and ends near 19:40 UTC.",
+    "Studied eight sources before building: six photographs and two clips of real globes being shaken. Ten lines of findings go into the log. One of them: a real storm takes more than 15 seconds to clear, so the film clears faster by design.",
+    "The opening pull back now starts fast and eases out, as the critic asked.",
+    "The code is reshaped so each part of winter has its own file and its own owner. Next: ten supporting agents start in parallel on the glass, the liquid, the particles, the scene, the base, the miniature, the frost, the light and the shake.",
+    "phase 3: 0.51 h used of its 11.00 h box",
+    "allowance (before the review): 7.12 h used of 36.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-22-1.jpg",
-      "caption": "Round 2, the opening: the critic measured a pull back that starts nearly still. Fixed next, as an ease out from frame 0",
-      "w": 1149,
-      "h": 986
+      "file": "out/stills/status/status-23-1.jpg",
+      "caption": "The target: the approved winter image at rest. Every shared technique is proven against this one picture first",
+      "w": 1200,
+      "h": 675
     },
     {
-      "file": "out/stills/status/status-22-2.jpg",
-      "caption": "Round 2, the spring hold: at its deepest the move toward the base loses the tree's crown for about 3.5 s. Fixed next",
-      "w": 1149,
-      "h": 986
+      "file": "out/stills/status/status-23-2.jpg",
+      "caption": "Where the build stands as Phase 3 begins: the same camera, the same layout, every part still a placeholder",
+      "w": 1200,
+      "h": 675
     },
     {
-      "file": "out/stills/status/status-22-3.jpg",
-      "caption": "Round 2, camera macro beside the approved winter image: the lamp sits on the frame edge. Framed again on the real miniature in the look lock",
-      "w": 986,
-      "h": 1156
+      "file": "out/stills/status/status-23-3.jpg",
+      "caption": "The second target: winter half a second after a landing. The storm, the streaks and the lights showing through are matched to this",
+      "w": 927,
+      "h": 1100
     },
     {
-      "file": "out/stills/status/status-22-4.jpg",
-      "caption": "Film B, frame 749 at 60 frames a second, preview, draft",
-      "w": 960,
-      "h": 540
+      "file": "out/stills/status/status-23-4.jpg",
+      "caption": "Still: winter rest hero, hd, draft",
+      "w": 1200,
+      "h": 675
     }
   ]
 }

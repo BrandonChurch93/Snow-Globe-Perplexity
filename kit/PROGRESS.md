@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 22 · 2026-11-24 08:41 UTC
+Status 23 · 2026-11-24 08:57 UTC
 
-- `out/stills/status/status-22-1.jpg`: Round 2, the opening: the critic measured a pull back that starts nearly still. Fixed next, as an ease out from frame 0
-- `out/stills/status/status-22-2.jpg`: Round 2, the spring hold: at its deepest the move toward the base loses the tree's crown for about 3.5 s. Fixed next
-- `out/stills/status/status-22-3.jpg`: Round 2, camera macro beside the approved winter image: the lamp sits on the frame edge. Framed again on the real miniature in the look lock
-- `out/stills/status/status-22-4.jpg`: Film B, frame 749 at 60 frames a second, preview, draft
+- `out/stills/status/status-23-1.jpg`: The target: the approved winter image at rest. Every shared technique is proven against this one picture first
+- `out/stills/status/status-23-2.jpg`: Where the build stands as Phase 3 begins: the same camera, the same layout, every part still a placeholder
+- `out/stills/status/status-23-3.jpg`: The second target: winter half a second after a landing. The storm, the streaks and the lights showing through are matched to this
+- `out/stills/status/status-23-4.jpg`: Still: winter rest hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 08:41 UTC
-clock: phase 3, tick of 0.3 minutes
-phase 3: 0.23 h used of its 11.00 h box
-allowance (before the review): 6.84 h used of 36.00 h allowed
-all time before the review: 6.84 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 08:57 UTC
+clock: phase 3, tick of 16.7 minutes
+phase 3: 0.51 h used of its 11.00 h box
+allowance (before the review): 7.12 h used of 36.00 h allowed
+all time before the review: 7.12 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
@@ -382,7 +382,33 @@ Written 2026-11-24 05:27 UTC from `cut/JUDGED.md`, which `npm run cut` writes fr
 
 Written at the end of Phase 3: what was learned from the real photographs and footage, every locked setting, what worked, what did not, and the five recipes.
 
-none
+### What the study showed (Phase 3, step 1)
+
+Eight sources of at most `assets.maxStudySources` (12), all kept in `references/cache/` and never committed. No reference video was generated.
+
+| Name | What | Source |
+| --- | --- | --- |
+| G1 | A Viennese globe, flakes at many depths, thick dome glass | https://www.austria.info/en-gb/inspiration/snowglobes/ |
+| G2 | Clear heavy glass, curved reflections, the lens | https://images.pexels.com/photos/3403893/pexels-photo-3403893.jpeg |
+| S | A globe on a black polished surface, a soft mirror image, lights behind | https://www.pexels.com/photo/14919312/ |
+| V | Particles streaked by motion, a lit house glowing through | https://commons.wikimedia.org/wiki/File:Christmas_snowglobe_(Unsplash).jpg |
+| D | How thick a storm of flakes gets | https://images.unsplash.com/photo-1510995574575-fd5cd3ad4968 |
+| T | Forged iron thorns | https://commons.wikimedia.org/wiki/File:Bombenopfer_Einzelgrabanlage_Dornenkrone3.jpg |
+| F1 | Footage: a Viennese globe shaken and set down | https://commons.wikimedia.org/wiki/File:Schneekugel_Wien.webm |
+| F2 | Footage: hands shaking a globe, close | https://www.pexels.com/video/close-up-video-of-hands-shaking-a-snow-globe-6032688/ |
+
+Ten lines:
+
+1. The lens. The miniature fills most of the glass at the equator and is enlarged about 1.3 times. Edges bend along the rim. The bed of snow curves up like a bowl.
+2. Reflections. Soft curved window shapes at the upper shoulder, a thin bright arc on the opposite lower side. No hard round highlight anywhere.
+3. The rim. A darker thin ring where the glass turns edge on, with the room compressed in it. Through the liquid the room is seen small and upside down.
+4. Depth. Flakes at many depths. Near ones are soft discs 3 to 5 times larger. Clumps are irregular. The heap at the bottom is uneven.
+5. The storm. Streaks run along arcs that follow the wall, in uneven clouds and folds, brightest where the inside light catches them. Glitter flashes on and off.
+6. The mirror image. Sharp at the contact line, about half as bright as the object, softening with distance, and it takes the colour of the discs behind.
+7. The base. Relief catches thin highlights on its ridges. A metal band has one broad soft highlight. The collar overlaps the glass by a few millimetres with a dark seat line.
+8. The discs behind. Different sizes and brightness, soft edges, some overlapping, about a tenth of the globe's width, never a grid.
+9. Motion. The hand turns the globe more than it moves it. Reversals are abrupt, 2 to 3 a second. The storm fills the volume within half a second, then one slow whirl. In F1 the difference between frames fell only from 7.5 to 5.3 over 14 s after the set down, so real snow takes more than 15 s to clear. The film clears faster by design (`shake.settleCheckSeconds`).
+10. The inside light. The lit window is the brightest thing, blooms slightly and warms the snow beside it. Snow in shade is blue grey. Highlights on snow are small.
 
 ## Sound
 
@@ -797,3 +823,5 @@ One entry per task: when it started, what it did, where it stopped.
 
 - 08:41 Status 22 posted with pictures from round 2's pack (the opening, the spring hold, camera `macro` beside the approved image): Phase 2 closed at its limit, the five carried issues, Phase 3 started.
 - 08:40 the workspace's own push works again: `701ffa0` went to `main` directly. `repo_courier` stays available.
+
+- 08:58 Status 23 posted (Phase 3 begins): the two approved winter images and the stand-in still at `hero`, with Status 22's lines folded in, since those were logged at 08:41 but not shown as text. The ten study lines and the eight sources are written under "Look lock" (step 1 of Phase 3 is done). Required reading after the compaction: `kit/02`, `03`, `04`, `06`, `07`, the two sections of the round 2 notes, the addenda folder (still only its README).
