@@ -14,7 +14,23 @@
           "sha": "f38e45934eb49960"
         }
       ],
-      "winter": [],
+      "winter": [
+        {
+          "path": "winter/village-ice.lin.tile.png",
+          "bytes": 645078,
+          "sha": "2aa7ad7b3ac3ce2d"
+        },
+        {
+          "path": "winter/village-snow.lin.tile.png",
+          "bytes": 1267842,
+          "sha": "a4e6f11b0e892b8d"
+        },
+        {
+          "path": "winter/village-winter.glb",
+          "bytes": 2143672,
+          "sha": "4b191d5823fdc65e"
+        }
+      ],
       "spring": [],
       "summer": [],
       "fall": []
@@ -32,14 +48,30 @@
           "sha": "f38e45934eb49960"
         }
       ],
-      "winter": [],
+      "winter": [
+        {
+          "path": "winter/village-ice.lin.tile.png",
+          "bytes": 645078,
+          "sha": "2aa7ad7b3ac3ce2d"
+        },
+        {
+          "path": "winter/village-snow.lin.tile.png",
+          "bytes": 1267842,
+          "sha": "a4e6f11b0e892b8d"
+        },
+        {
+          "path": "winter/village-winter.glb",
+          "bytes": 2143672,
+          "sha": "4b191d5823fdc65e"
+        }
+      ],
       "spring": [],
       "summer": [],
       "fall": []
     }
   },
   "seasonHashes": {
-    "winter": "05ecd2e0e5cd2da8",
+    "winter": "3f83c49b376a5a73",
     "spring": "05ecd2e0e5cd2da8",
     "summer": "05ecd2e0e5cd2da8",
     "fall": "05ecd2e0e5cd2da8"

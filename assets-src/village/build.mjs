@@ -1,10 +1,11 @@
 import * as THREE from 'three'
 import { fromThree, writeGlb } from '../../tools/lib/glb.mjs'
 import { rel, writeJson } from '../../tools/lib/paths.mjs'
-import { loadLayout } from './layout.mjs'
+import { loadLayout, loadRoof } from './layout.mjs'
 import { Bag, KIND, TILE_MM, Tris, add3, basis, boxMatrix, clamp, fbm, frame, grainUv, lin, mix3, mul3, noise, norm3, pillow, planar, rng, shade, slab, smooth, sub3, surf, writePng } from './kit.mjs'
 
 const L = await loadLayout()
+const RF = await loadRoof()
 const C = L.cottage
 const F = L.cottageFrame()
 const U3 = [F.u[0], 0, F.u[1]]
@@ -273,13 +274,13 @@ mortar(right, -C.halfLength, C.halfLength, BASE, C.wall + 0.1, false)
 wall(rear, { x0: -C.halfWidth - 0.3, x1: C.halfWidth + 0.3, y0: BASE, y1: C.wall + C.rise - 0.2, top: gableTop, rake }, far)
 mortar(rear, -C.halfWidth, C.halfWidth, BASE, C.wall, true)
 
-const pitch = Math.atan2(C.rise, C.halfWidth)
+const pitch = RF.pitch
 const cp = Math.cos(pitch)
 const sp = Math.sin(pitch)
-const ridgeY = C.wall + C.rise + C.roofThick * cp
-const SLOPE = (C.halfWidth + C.overhang) / cp
-const roofLen = C.halfLength + C.gableOverhang
-const roofAt = (sd, s, t, lift) => P3(sd * (s * cp + lift * sp), ridgeY - s * sp + lift * cp, t)
+const ridgeY = RF.ridgeY
+const SLOPE = RF.slopeLength
+const roofLen = RF.roofLength
+const roofAt = RF.roofAt
 const roofDown = (sd) => add3(sc(V3, sd * cp), [0, -sp, 0])
 const roofUp = (sd) => add3(sc(V3, sd * sp), [0, cp, 0])
 const DECK = 0.42
@@ -362,9 +363,7 @@ const pot = new THREE.LatheGeometry([[0.36, 0], [0.5, 0.05], [0.52, 0.3], [0.44,
 shade(pot, (x, y, z) => 0.75 + 0.35 * noise(x * 3, y * 2, z * 3))
 solid.add(pot, { matrix: T(...P3(ch.across - 0.2, stackTop + 0.82, ch.along + 0.1)), color: lin('#3b2b25'), surf: [surf(KIND.stone, 0.7), 0], uvOffset: off(), renormal: true })
 
-const lamp = L.lamppost
-const lampGround = L.groundAt(lamp.x, lamp.z)
-const lampM = new THREE.Matrix4().makeRotationY(0.5).setPosition(lamp.x, lampGround - 0.3, lamp.z)
+const lampM = new THREE.Matrix4().makeRotationY(RF.LAMP.yaw).setPosition(...RF.lampFoot())
 const post = new THREE.LatheGeometry(
   [[0, 0], [1.12, 0], [1.14, 0.42], [0.98, 0.52], [0.9, 0.78], [1.0, 0.9], [0.86, 1.06], [0.62, 1.3], [0.52, 2.1], [0.6, 2.22], [0.6, 2.36], [0.46, 2.5], [0.4, 5.2], [0.5, 5.3], [0.5, 5.46], [0.37, 5.56], [0.33, 7.9], [0.46, 8.02], [0.42, 8.2], [0.72, 8.42], [0.8, 8.5], [0.8, 8.6], [0, 8.6]].map(([x, y]) => new THREE.Vector2(x, y)),
   20,
@@ -385,10 +384,7 @@ const ironPart = (g, m) => {
   solid.add(g, { matrix: m ? lampM.clone().multiply(m) : lampM, color: IRON, surf: ironSurf, uvOffset: off(), renormal: true })
 }
 ironPart(post)
-const cageLo = 8.6
-const cageHi = 11.2
-const loHalf = 0.62
-const hiHalf = 1.0
+const { cageLo, cageHi, loHalf, hiHalf } = RF.LAMP
 const Q = Math.PI / 4
 for (let k = 0; k < 4; k++) {
   const a = Q + (k * Math.PI) / 2
@@ -406,7 +402,7 @@ ironPart(new THREE.ConeGeometry(0.08, 0.34, 8).applyMatrix4(T(0, cageHi + 1.56, 
 {
   const g = new THREE.CylinderGeometry(hiHalf * Math.SQRT2 - 0.06, loHalf * Math.SQRT2 - 0.05, cageHi - cageLo - 0.04, 4, 1, true).applyMatrix4(new THREE.Matrix4().makeRotationY(Q).setPosition(0, (cageLo + cageHi) / 2, 0))
   lampGlass.add(g.toNonIndexed(), { matrix: lampM, keepUv: true, surf: [0, 0], renormal: true })
-  const flame = new THREE.SphereGeometry(0.3, 10, 8).applyMatrix4(new THREE.Matrix4().makeScale(1, 1.7, 1).setPosition(0, cageLo + 1.05, 0))
+  const flame = new THREE.SphereGeometry(0.3, 10, 8).applyMatrix4(new THREE.Matrix4().makeScale(1, 1.7, 1).setPosition(0, cageLo + RF.LAMP.flame, 0))
   flame.getAttribute('uv').array.fill(0.5)
   lampGlass.add(flame, { matrix: lampM, keepUv: true, surf: [1, 0] })
 }
@@ -487,18 +483,10 @@ for (const [i, s] of pathShapes.entries()) {
   solid.add(g, { matrix: boxMatrix(s), color: mul3(step ? pick(ARCH) : SLATE, 0.8 + 0.25 * R()), surf: stoneSurf(), uvOffset: off(), renormal: true })
 }
 
-const shrubs = [
-  { at: [C.halfWidth + 0.9, C.halfLength + 0.9], r: [1.9, 2.5, 1.8] },
-  { at: [-C.halfWidth + 1.3, C.halfLength + 1.7], r: [2.3, 1.7, 1.9] },
-  { at: [-C.halfWidth - 1.5, 6.3], r: [1.8, 2.0, 2.3] },
-  { at: [-C.halfWidth - 1.6, -2.6], r: [1.7, 1.8, 2.4] },
-  { at: [-C.halfWidth - 1.5, -7.4], r: [1.8, 2.3, 2.2] },
-]
+const shrubs = RF.shrubs()
 const shrubList = []
 for (const sh of shrubs) {
-  const c0 = P3(sh.at[0], 0, sh.at[1])
-  const gy = L.groundAt(c0[0], c0[2])
-  const centre = [c0[0], gy + sh.r[1] * 0.55, c0[2]]
+  const centre = sh.centre
   shrubList.push({ centre, r: sh.r })
   const core = new THREE.IcosahedronGeometry(1, 2)
   const P = core.getAttribute('position')
