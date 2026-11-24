@@ -135,7 +135,7 @@
     "islandLevelMm": 60
   },
   "cameras": {
-    "hero": { "fovDeg": 16, "distanceMm": 620, "yawDeg": 0, "pitchDeg": 9, "aimHeightMm": 71 },
+    "hero": { "fovDeg": 16, "distanceMm": 658, "yawDeg": 0, "pitchDeg": 9, "aimHeightMm": 74 },
     "macro": { "fovDeg": 16, "distanceMm": 150, "yawDeg": -5, "pitchDeg": 4, "aimHeightMm": 82 },
     "interior": { "fovDeg": 16, "distanceMm": 460, "yawDeg": 0, "pitchDeg": 6, "aimHeightMm": 91 },
     "base": { "fovDeg": 16, "distanceMm": 262, "yawDeg": 10, "pitchDeg": 5, "aimHeightMm": 16 },
