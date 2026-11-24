@@ -6,8 +6,8 @@ The parts `glass` and `liquid` ship no file. Everything is computed in `src/glob
 Made by: hand, fitted with `assets-src/glass/measure.mjs` and `assets-src/glass/profile.mjs` (Node 20.20.2, sharp)
 From: `references/approved/winter-rest.png`, `tools/lib/refcam.mjs` (the camera of the approved image), `config/showcase.json`
 Prompt or command: `node assets-src/glass/measure.mjs`, then the loop in "Making it again" below
-Takes: 0 generated assets. 19 tuning looks up to this file's date
-Why this one: three reflections of one window, the wall zone, the through view and the bubble land within about 15 of the approved image along the rays measured below
+Takes: 0 generated assets. 28 tuning looks up to this file's date (limit 40)
+Why this one: three reflections of one window, the wall zone, the through view and the bubble land within about 15 of the approved image in the open liquid, the top cap and the panes; the rim, the gap between the panes and the bubble's rings are further off (see "Still off")
 Date: 2026-11-24
 
 ## What the approved image holds
@@ -30,10 +30,32 @@ Glass outline in `winter-rest.png`: centre (1409, 646), radius 549 px. "Share" i
 | Left soft arc | share 0.74 to 0.78, angles 170 to 200 | (33 to 64, 67 to 105, 86 to 139) on (28 to 32, 48 to 51, 62 to 65) |
 | Bubble | about 190 by 60 px (20.8 mm wide), share 0.876 to 0.985 at the crown | ring (80 to 111, 84 to 119, 95 to 130) below, white swirls on the left up to (164, 203, 234); flat patch (84 to 94, 111 to 117, 126 to 134), its left part (158, 188, 213), warm glints (82, 81, 74) under it; around it (58, 88, 114) |
 | Collar | lowest band | thin dark shadow line, the snow bank seen through the band, no bright wedge at the corners |
+| Limb band, key side | share 0.995, angles 45, 55, 62, 66, 70, 74, 78, 84 | (155, 181, 200), (123, 166, 197), (155, 202, 234), (171, 210, 239), (141, 186, 223), (95, 132, 161), (58, 95, 118), (40, 68, 87) |
+| Limb band, inside the rim line | share 0.987, angles 45, 62, 66, 70 | (105, 145, 165), (104, 159, 198), (81, 137, 180), (59, 110, 153) |
+| First pane across | angle 45, share 0.943 to 0.972 | (208 to 232, 223 to 243, 237 to 252) |
+| First pane, tip | angle 66 then 70, share 0.957, 0.965, 0.972 | (143, 187, 225), (174, 199, 223), (201, 218, 235) then (51, 117, 168), (110, 164, 211), (186, 213, 242) |
+| Beyond the first pane's tip | angles 74 to 84, share 0.943 to 0.98 | (18 to 47, 47 to 78, 65 to 111), deep blue |
+| First pane, low tail | angle 10, share 0.943 to 0.972 | (118, 134, 154), (142, 155, 173), (134, 142, 157), (98, 113, 129) |
+| Second pane, lower end | share 0.82 to 0.85 ends between angles 17 and 20; share 0.805 runs on to about 15.5 | bright (167 to 237, 194 to 250, 219 to 254) above the end, (52 to 94, 72 to 123, 91 to 152) below it |
+| Gap between the panes | share 0.885 to 0.90, angles 20 to 30 | (63 to 112, 90 to 138, 114 to 159) |
+| Third band | share 0.72 to 0.75, angles 20 to 40 | (38 to 80, 72 to 123, 98 to 158), brightest at its inner edge |
+| Right of the tree, no reflection | share 0.66 to 0.705, angles 20 to 40 | (34 to 48, 53 to 67, 68 to 91) |
+| Left wall zone | angle 160 then 110, share 0.972 to 0.995 | (113, 125, 138), (79, 99, 113), (78, 100, 114), (81, 99, 110) then (80, 104, 122), (81, 106, 122), (72, 95, 111), (49, 69, 83) |
+| Upper left under the frost | angles 120 and 150, share 0.82 to 0.94 | (95 to 130, 105 to 149, 124 to 167) |
+| Bubble, closer | flat patch, its left, its right, above it | (94, 119, 137), (123, 143, 161) up to (198, 224, 249), (78, 102, 120), (51, 81, 101) |
+| Bubble, rings | low edge of the patch, between the rings, outer ring bottom, left, right | (78, 78, 74) with glints to (255, 253, 246); (93, 113, 128); (111, 113, 122), (81, 126, 154), (58, 82, 97) |
 
 The bubble's span, share 0.876 to 0.985, equals a lean of 16 degrees toward the viewer; strict true up would put it at share 0.964 to 1.0. `glassLook.bubble.leanDeg` holds that choice.
 
-Display value against linear light before the tone curve of `src/post/post.ts`: 34 is 0.026, 62 is 0.053, 100 is 0.10, 143 is 0.18, 193 is 0.39, 211 is 0.56, 230 is 0.94, 234 is 1.10, 241 is 1.53, 249 is 2.77. The glow starts at 1.0, so the panes are capped per channel at `glassLook.shoulder.to` (1.06): the inner edge keeps its blue, the outer edge goes white, and nothing spills outside the rim.
+The three reflections, so that nobody mixes them up again: the first (outer face) is the bright band along the limb, share 0.93 to 0.975; the second (inner face) is the main window pane on the shoulder, share 0.80 to 0.865; the third is the thin arc at share 0.72 to 0.75. `glassLook.window.orders` holds them in that order, then the through view.
+
+The tone curve is the one in `src/post/grade.ts`: x(2.51x + 0.03) / (x(2.43x + 0.59) + 0.14), glow from 0.9. Linear light before it against display value: 0.016 is 34, 0.045 is 57, 0.06 is 71, 0.10 is about 100, 0.14 is 122. The white of the panes needs about 1.25 to 4.0 in blue and 0.5 to 1.0 in red, so the panes are capped per channel between `glassLook.shoulder.from` and `.to` (1.4 and 3.6). Read the curve again if the grade changes; the levels below were fitted on it.
+
+What the room gives and what the glass takes from it (main `b6ab917`): every reflection and the through view read `stageRoomSeen` (wall, wash, the discs through `stageRoomLights`, and the room's two sources at the 1.2 percent the backdrop draws). `stageRoom` at full strength puts the room's window (16.7 by 31.8 degrees at the key's direction) on the outer face at share 0.5 to 0.8, a grey block where the approved image is clear; that is why the highlight is the glass's own limb window, fitted to the approved panes, lit by `f.keyCol`. The sky colour the glass sees is the hue of `kit.backdrop.room` at the luminance of `f.ambient` times `room.level`, so a change of the rig's sky hue does not tint the liquid.
+
+## Still off
+
+Against the approved image on the last look (m14): limb band on the key side 20 to 40 dimmer at share 0.995 and greyer at 0.987; the gap between the first two panes 30 to 60 too dark at angles 20 to 30; the second pane evenly white with a crisp inner edge; the third band wider than the approved arc; the left soft arc greyer, (46, 69, 87) against (39, 73, 99); the bubble's rings smoother and fewer; the render's sphere sits about 5 approved pixels left of the approved outline (layout). The dark band under the snow line is the ground's missing body, not the glass.
 
 ## Making it again for another season
 
@@ -45,10 +67,11 @@ Display value against linear light before the tone curve of `src/post/post.ts`: 
    The patch boxes in `profile.mjs` are winter's open liquid; move them to where no miniature stands in the new image.
 3. Find the window. In `assets-src/glass/measure.mjs` set the outline of each pane as (share, angle) pairs, then run `node assets-src/glass/measure.mjs`. It traces each outline off the sphere into the room and prints the window's centre, its two axes and the span in degrees along and across. Put the first pane's centre and axes in `glassLook.window` and each pane's span in `glassLook.window.orders` (first reflection, second, third, and the through view, which reuses the first).
 4. Set the inner faces. `second.face` and `third.face` are the radii, as a share of the glass, of the faces that make the second and third images; move them until the panes sit at the measured shares (0.72 and 0.6 for winter).
-5. Set the levels with the table above. `window.gain` and the first order's `inner` and `power` give the first pane's ramp; `second.gain` and `third.gain` scale the other two; `window.halo` is the blue around the panes and in the gap; `room.level` and `room.tint` turn `f.ambient` into the room the glass sees; `through.lift` is the deep blue behind the miniature; `ceiling` is the lighter cap above share 0.75; `body` and `edge` are the wall zone and the rim line (the bright side follows `f.keyDir`, the far side `f.rimDir`); `strip` is the soft arc on the far side.
+5. Set the levels with the table above. Start with the open liquid: `room.level` and `room.tint` until the centre patch reads the approved value, then `through.lift`. `window.level` and `window.gain` and the first order's `inner` and `power` give the limb band's ramp; `second.gain`, `second.tint` and `third.gain` scale the other two; each order's `cutDeg`, `cutSlant` and `tail` cut its lower end on a slanted line and leave a dim tail (winter's second pane: -12, 0.39, 0.035; -90, 0, 1 means no cut); `edgeDeg` holds the edge softness (`tipInner` near the tip, `cut` at the cut); `window.halo` is the blue around the panes and in the gap; `window.dark` is the dark sector beside the tip; `ceiling` is the lighter cap above share 0.75; `body` and `edge` are the wall zone and the rim line (the bright side follows `f.keyDir`, the far side `f.rimDir`); `strip.gain` is the soft arc on the far side per reflection, and its fourth value, the through view, stays 0 or a pale block shows at mid height on the right.
 6. Loop until the rays agree. `npm run fit` hides shader errors, so check for them each time:
    `npx tsc --noEmit && npm run build && npm run fit -- --season <season> --tier draft --box 820,60,2000,1260 --name glass --force`
    `npm run still -- --season <season> --state rest --camera hero --tier draft --format preview --diag normals 2>&1 | grep -i error`
    `node assets-src/glass/profile.mjs --season <season> --patches --looks <tag>` writes `out/work/fit/<tag>-glass.jpg`, `-shoulder.jpg`, `-crown.jpg` and `-collar.jpg`, approved beside render.
 7. The bubble: `glassLook.bubble` holds its width, depth, the flat patch against the wall (`patch`), the widest ring (`waist`), the lean and how far it slides and wobbles with `f.liquid`. Check it at `landed` as well as `rest`.
 8. Test: `npx vitest run`, `npm run determinism`, the fit of step 1, stills at `rest` and `landed` from `hero`, `macro`, `low` and `interior`, `--diag standins`, and once at `--format hd`.
+9. After every merge of `origin/main` run the loop of step 6 once and read the patches: the rig, the room and the grade all move the glass. If the open liquid drifts, only `room.level` should need to change.
