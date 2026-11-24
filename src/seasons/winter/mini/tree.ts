@@ -17,7 +17,7 @@ const SNOW = 'winter/tree-snow.srgb.tile.w1024.png'
 const CYCLES = 5
 const FLICKER = 0.14
 const COVER_RISE = 0.12
-const WARM: [number, number, number] = [1, 0.7, 0.36]
+const WARM: [number, number, number] = [1, 0.6, 0.25]
 const GOLD: [number, number, number] = [1, 0.84, 0.52]
 const BULB = { power: 2.6, reachMm: 1.3, gain: 12 }
 const HALO = { cover: 0.55, edge: 2.5, glow: 0.85, core: 10 }
@@ -29,9 +29,9 @@ const arrive = { value: 1 }
 const bulbGain = { value: BULB.gain }
 
 export const innerLights: InnerLight[] = [
-  ...pads.map((p, i): InnerLight => ({ at: [p.at[0], p.at[1] - 0.7 * p.size[1], p.at[2]], color: WARM, power: 0.02 * Math.sqrt(p.size[0] * p.size[2]), reachMm: 7, flicker: FLICKER, cycles: CYCLES, phase: (0.13 + i * 0.381) % 1 })),
-  ...[7, 13, 19.5].map((h, i): InnerLight => ({ at: placePoint([0.4, h, 2.6]), color: WARM, power: 0.1, reachMm: 6, flicker: FLICKER, cycles: CYCLES, phase: (0.52 + i * 0.29) % 1 })),
-  { at: star, color: GOLD, power: 0.16, reachMm: 9, flicker: 0.08, cycles: 3, phase: 0.31 },
+  ...pads.map((p, i): InnerLight => ({ at: [p.at[0], p.at[1] - 0.7 * p.size[1], p.at[2]], color: WARM, power: 0.16 + 0.04 * ((i * 0.381) % 1), reachMm: 4.5, flicker: FLICKER, cycles: CYCLES, phase: (0.13 + i * 0.381) % 1 })),
+  ...[7, 13, 19.5].map((h, i): InnerLight => ({ at: placePoint([0.4, h, 2.6]), color: WARM, power: 0.18, reachMm: 4.5, flicker: FLICKER, cycles: CYCLES, phase: (0.52 + i * 0.29) % 1 })),
+  { at: star, color: GOLD, power: 0.7, reachMm: 8, flicker: 0.08, cycles: 3, phase: 0.31 },
 ]
 
 const TREE_GLSL = `
@@ -78,7 +78,7 @@ function needleHook(shader: Shader): void {
       float treeH = dot(treeC.rgb, vec3(0.3, 0.6, 0.1));
       ${TREE_SLOPES}
       if (treeCard && treeC.a < 0.04 + 0.96 * stageHash(vec3(gl_FragCoord.xy, uSeed + floor(vCard.y + 0.5) / 64.0))) discard;
-      diffuseColor.rgb *= treeC.rgb * 0.8;`,
+      diffuseColor.rgb *= treeC.rgb * 1.15;`,
     )
     .replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\nif (vCard.x > 0.5) normal *= faceDirection;')
     .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>\n${TREE_BUMP}`)

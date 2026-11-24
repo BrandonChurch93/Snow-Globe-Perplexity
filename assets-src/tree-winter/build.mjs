@@ -494,7 +494,7 @@ function arrival() {
       const flat = u.length()
       u.normalize()
       const side = new THREE.Vector3().crossVectors(tan, u)
-      const ends = smooth(0, 0.12, f[i].along / total) * smooth(0, 0.1, 1 - f[i].along / total)
+      const ends = smooth(limb.kind === 'root' ? 0.52 : 0, limb.kind === 'root' ? 0.74 : 0.12, f[i].along / total) * smooth(0, 0.1, 1 - f[i].along / total)
       const lump = 0.55 + 0.45 * Math.sin(f[i].along * 2.3 + n * 1.7) * Math.sin(f[i].along * 0.9 + n)
       const thick = most * smooth(0.55, 0.95, flat) * ends * smooth(0.5, 0.9, lump)
       const seed = clamp01(0.5 + 0.5 * Math.sin(f[i].along * 1.4 + n * 2.1))

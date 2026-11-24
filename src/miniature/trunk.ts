@@ -39,7 +39,7 @@ const FORK_H = 13.6
 const TOP_H = 37.6
 const DEEP_H = -4.5
 const MIN_SHAFT = 5
-const ROOT_RISE = 7.5
+const ROOT_RISE = 7
 const TWIST_LOW = 0.16
 const TWIST_HIGH = 0.055
 const BARK_MM = 6.5
@@ -48,7 +48,7 @@ const MODEL = 'shared/trunk-wood.glb'
 const BARK = 'shared/trunk-bark.srgb.tile.w1024.png'
 const BARK_NORMAL = 'shared/trunk-bark-n.lin.tile.w1024.png'
 
-const RADIUS: Table = [[-4.5, 4.2], [0, 3.6], [1.2, 3.25], [3.2, 2.78], [5.2, 2.5], [9, 2.42], [11.6, 2.62], [13.6, 2.9], [18, 2.3], [26.2, 1.8], [33, 1.15], [37.6, 0.5]]
+const RADIUS: Table = [[-4.5, 4.2], [0, 3.6], [1.2, 3.3], [3.2, 2.9], [5.2, 2.72], [8, 2.85], [10, 2.5], [11.6, 2.75], [13.6, 2.95], [16.5, 2.2], [20, 1.8], [26.2, 1.55], [33, 1.1], [37.6, 0.5]]
 const AXIS_X: Table = [[-4.5, -0.3], [0, -0.2], [8.4, 0.4], [11.6, 0.8], [13.6, 0.7], [26.2, 0.35], [37.6, 0.2]]
 const AXIS_Z: Table = [[-4.5, 0], [0, 0], [8, 0.35], [14, -0.1], [26, -0.4], [37.6, 0]]
 
@@ -110,7 +110,7 @@ export function trunkRidge(phi: number, h: number): number {
 
 export function trunkRadius(phi: number, h: number): number {
   const R = trunkGirth(h)
-  let r = R * (1 + 0.32 * (trunkRidge(phi, h) - 0.6))
+  let r = R * (1 + 0.4 * (trunkRidge(phi, h) - 0.6))
   if (h < ROOT_RISE) {
     const a = phi + trunkTwist(h)
     const g = h <= 0 ? 1 - 0.1 * h : Math.pow(1 - h / ROOT_RISE, 2.2)
@@ -180,15 +180,15 @@ function grow(): Limb[] {
     const pts: Vec3[] = []
     const rad: number[] = []
     const drift = rng.range(-0.22, 0.22)
-    const extra = rng.range(1.4, 2.6)
+    const extra = rng.range(0.2, 1.2)
     for (let i = 0; i <= 10; i++) {
       const t = i / 10
-      const h = lerp(2.6, -1.3, Math.pow(t, 0.75))
+      const h = 4 - 5 * Math.pow(t, 2.2)
       const phi = root.angle - trunkTwist(h) + drift * t * t
       const [ax, az] = trunkAxis(h)
-      const d = lerp(trunkGirth(2.6) * 0.72, root.reach + extra, Math.pow(t, 1.25))
+      const d = lerp(trunkGirth(4) * 0.7, root.reach + extra, Math.pow(t, 1.1))
       pts.push([ax + Math.cos(phi) * d, h, az + Math.sin(phi) * d])
-      rad.push(lerp(1.45, 0.3, Math.pow(t, 0.8)))
+      rad.push(lerp(1.3, 0.3, Math.pow(t, 0.8)))
     }
     chain('root', 0, pts, rad)
   }

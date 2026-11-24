@@ -70,7 +70,7 @@ function column() {
       const near = tubeSolid(x, h, z)
       const crotch = h > 4 ? smooth(-0.1, 1.3, near) : 1
       const low = 0.8 + 0.2 * smooth(-1, 5, h)
-      const shade = (0.1 + 0.9 * smooth(0.02, 0.72, ridge)) * (0.35 + 0.65 * crotch) * low
+      const shade = (0.1 + 0.9 * smooth(0.1, 0.9, ridge)) * (0.35 + 0.65 * crotch) * low
       const warm = 0.94 + 0.12 * hash(Math.round(((phi + T.trunkTwist(h)) / TAU) * 11) + 7)
       col.push(shade * warm, shade * (0.98 + 0.04 * hash(k * 0.37)), shade * (2 - warm) * 0.98)
     }
