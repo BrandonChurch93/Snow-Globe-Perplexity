@@ -152,16 +152,21 @@ describe('the flood of a change', () => {
 })
 
 describe('the source of the flood inside the glass', () => {
-  it('is measured from the line of sight, so it has a core and the rim keeps its own light', () => {
+  it('is measured from the line of sight through the lights, wide and low, so no ball stands in the storm and the rim keeps its own light', () => {
     const flood = LIGHT_FRAG_PARS.slice(LIGHT_FRAG_PARS.indexOf('vec3 stageFlood(vec3 local)'), LIGHT_FRAG_PARS.indexOf('vec3 stageGridAir'))
     expect(flood).toContain('float along = dot(d, normalize(local - uLightEye));')
     expect(flood).toContain('float q = 1.0 + max(dot(d, d) - along * along, 0.0) / (uLightFloodAt.w * uLightFloodAt.w);')
     expect(flood).toContain('return uLightFlood * (uLightFloodAt.z / (q * sqrt(q)));')
     const reach = ROOM_RIG.flood.insideMm
+    const level = (mm: number) => ROOM_RIG.flood.inside * floodCore(mm, reach)
     expect(floodCore(0, reach)).toBe(1)
     expect(floodCore(reach, reach)).toBeCloseTo(2 ** -1.5, 12)
-    expect(floodCore(innerRadiusMm * 0.45, reach)).toBeLessThan(0.04)
-    expect(floodCore(innerRadiusMm * 0.95, reach)).toBeLessThan(0.004)
+    // The halo is held to the light it had under the core of 1.5 (0.04 and 0.004 of it); the middle is held to the halo.
+    expect(level(innerRadiusMm * 0.45)).toBeLessThan(0.04 * 1.5)
+    expect(level(innerRadiusMm * 0.95)).toBeLessThan(0.004 * 1.5)
+    expect(level(innerRadiusMm * 0.45), 'the halo still reaches the storm').toBeGreaterThan(0.02)
+    expect(level(0), 'the middle is no ball of white').toBeLessThan(0.2)
+    expect(level(0) / level(innerRadiusMm * 0.45), 'the middle against the halo').toBeLessThan(6)
     let before = 1
     for (let mm = 1; mm <= innerRadiusMm; mm++) {
       const v = floodCore(mm, reach)
