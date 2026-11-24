@@ -21,7 +21,7 @@ export const glassLook = {
     tint: [0.56, 0.73, 1] as V3,
     level: 3.2,
     gain: 11,
-    edgeDeg: { outer: 0.45, inner: 1.8, innerMain: 1.3, tipInner: 0.8, end: 1.1, tail: 4, cut: 2, wobble: 0.9, wobbleRate: 12 },
+    edgeDeg: { outer: 2, outerMain: 1, inner: 1.8, innerMain: 1.3, tipInner: 0.8, end: 1.1, tail: 4, cut: 2, wobble: 0.9, wobbleRate: 12 },
     gap: { wideDeg: [6, 13] as const, tint: [0.9, 0.89, 0.8] as V3, gain: 0.9, mid: [0.22, 0.36, 0.55] as const, top: [0.46, 0.6] as const, low: [-0.24, -0.06] as const },
     halo: { wideDeg: [2.5, 5] as const, tint: [0.4, 0.75, 1] as V3, gain: 0.24 },
     tip: { flatDeg: [6, 10.5] as const, fadeDeg: [8.5, 14] as const, tint: [0.4, 0.55, 0.75] as V3, slant: 0.35, slantFromDeg: -3.5, tailDeg: [-16, -13.5] as const, tailSlope: 0, tailFromDeg: -18, tailCurve: 0.037, tailLevel: 0.08 },
@@ -187,7 +187,7 @@ vec3 glassWindow(vec3 d, float soft, int k) {
   float first = k == 0 ? 1.0 : 0.0;
   float outer = span.z + cut.y * max(q.x - cut.x, 0.0) + first * glassTail(q.x);
   float inner = span.w - cut.w * max(q.x - cut.z, 0.0);
-  float eo = ${num(W.edgeDeg.outer * RAD)} + soft;
+  float eo = (k == 1 ? ${num(W.edgeDeg.outerMain * RAD)} : ${num(W.edgeDeg.outer * RAD)}) + soft;
   float ei = (k == 1 ? ${num(W.edgeDeg.innerMain * RAD)} : mix(${num(W.edgeDeg.inner * RAD)}, ${num(W.edgeDeg.tipInner * RAD)}, first * smoothstep(${num(W.tip.flatDeg[0] * RAD)}, ${num(W.tip.flatDeg[1] * RAD)}, q.x))) + soft;
   float ee = ${num(W.edgeDeg.end * RAD)} + soft;
   float et = mix(ee, ${num(W.edgeDeg.tail * RAD)} + soft, first);
