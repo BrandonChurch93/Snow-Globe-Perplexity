@@ -70,7 +70,7 @@ function column() {
       const near = tubeSolid(x, h, z)
       const crotch = h > 4 ? smooth(-0.1, 1.3, near) : 1
       const low = 0.8 + 0.2 * smooth(-1, 5, h)
-      const shade = (0.2 + 0.8 * smooth(0.05, 0.8, ridge)) * (0.35 + 0.65 * crotch) * low
+      const shade = (0.1 + 0.9 * smooth(0.02, 0.72, ridge)) * (0.35 + 0.65 * crotch) * low
       const warm = 0.94 + 0.12 * hash(Math.round(((phi + T.trunkTwist(h)) / TAU) * 11) + 7)
       col.push(shade * warm, shade * (0.98 + 0.04 * hash(k * 0.37)), shade * (2 - warm) * 0.98)
     }
@@ -153,8 +153,8 @@ async function barkMaps() {
   const soft = blurWrap(height, w, h, 2)
   const fine = blurWrap(height, w, h, 1)
   for (let i = 0; i < w * h; i++) height[i] = 0.7 * soft[i] + 0.3 * fine[i]
-  await writePng(rel('assets-full', 'shared', 'trunk-bark.srgb.tile.png'), toBytes(colour), w, h, 3, MAP_PX)
-  await writePng(rel('assets-full', 'shared', 'trunk-bark-n.lin.tile.png'), normalsOf(height, w, h, 5.5), w, h, 3, MAP_PX)
+  await writePng(rel('assets-full', 'shared', 'trunk-bark.srgb.tile.w1024.png'), toBytes(colour), w, h, 3, MAP_PX)
+  await writePng(rel('assets-full', 'shared', 'trunk-bark-n.lin.tile.w1024.png'), normalsOf(height, w, h, 5.5), w, h, 3, MAP_PX)
 }
 
 const parts = [column(), ...tubes.map((l, i) => tube(l, i + 1))]
