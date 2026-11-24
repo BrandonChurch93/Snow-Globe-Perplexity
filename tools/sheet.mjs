@@ -4,7 +4,7 @@ import sharp from 'sharp'
 import { parseArgs, rel, readJson, writeJson } from './lib/paths.mjs'
 import { Session, cfg, formatById, stillSpec, stillName, renderStill } from './lib/page.mjs'
 import { addLook } from './lib/looks.mjs'
-import { SHEETS, across, around, composeSheet, gridLayout, labelUnits, matches, nameParts, overview, pageInfo, pages, readPlan, renderFrames, run, secondsText, shown, snapUp, sourceOf } from './lib/sheetlayout.mjs'
+import { SHEETS, across, around, composeSheet, gridLayout, labelUnits, layoutHashFor, matches, nameParts, overview, pageInfo, pages, readPlan, renderFrames, run, secondsText, shown, snapUp, sourceOf } from './lib/sheetlayout.mjs'
 
 const USAGE = `npm run sheet -- <what> [--tier T] [--format F] [--assets A] [--diag V] [--cols N] [--force] [--look no] [--by NAME]
   --shot ID                 ${cfg.critics.contactSheetFrames} frames across a shot. ID may be test, for the test shake and the clearing after it
@@ -17,6 +17,7 @@ const USAGE = `npm run sheet -- <what> [--tier T] [--format F] [--assets A] [--d
                             with --at S and --seconds S to choose a part, --stride K to show every Kth frame, --fit to choose the stride that fills one sheet
 exit 0 when every sheet is written, 3 when the chunk budget ran out: run the same command again to carry on`
 
+const layoutHash = layoutHashFor(import.meta.url)
 const args = parseArgs(process.argv.slice(2))
 const str = (k) => (args[k] !== undefined && args[k] !== true ? String(args[k]) : '')
 const fail = (msg, code = 1) => {
@@ -51,7 +52,7 @@ const started = Date.now()
 o.deadline = started + cfg.sandbox.chunkBudgetMinutes * 60000
 const tag = nameParts(o).join('-')
 const tail = `${o.format}, ${o.tier}${o.assets === 'full' ? '' : `, ${o.assets} assets`}${o.diag ? `, ${o.diag} view` : ''}`
-const sheetFile = (...parts) => path.join(SHEETS, `${parts.filter(Boolean).join('-')}.jpg`)
+const sheetFile = (...parts) => path.join(SHEETS, `${parts.map(String).filter(Boolean).join('-')}.jpg`)
 
 function cutShake(id, first, landing) {
   const file = rel('cut', 'CUTLIST.json')
@@ -115,7 +116,7 @@ async function moveRange(page, shot, step) {
   return { first: first + a * step, end: first + (b + 1) * step + 1 }
 }
 
-const frameLabel = (src, i, step) => [String(i), secondsText(i, src.fps, step)]
+const frameLabel = (src, i, step, name) => [String(i), secondsText(i, src.fps, step), ...(name ? [name(i)] : [])]
 
 const session = await Session.open({ what: `sheet ${process.argv.slice(2).join(' ')}` })
 const done = []
@@ -168,7 +169,7 @@ try {
       }
       if (mode === 'film') {
         const frames = overview(plan.film.shots, src.count, per, src.step)
-        jobs.push({ file: sheetFile('film', tag, 'overview'), frames, perSheet: per, spec: { kind: 'film-overview', source: 'film', frames }, caption: `Sheet: the whole film in ${frames.length} frames, every shot at least once, ${tail}` })
+        jobs.push({ file: sheetFile('film', tag, 'overview'), frames, perSheet: per, name: (i) => plan.film.shots.find((s) => i >= s.first && i <= s.last)?.id ?? '', spec: { kind: 'film-overview', source: 'film', frames }, caption: `Sheet: the whole film in ${frames.length} frames, every shot at least once, ${tail}` })
       }
     } else if (mode === 'loop') {
       src = sourceOf(plan, 'loop')
@@ -250,14 +251,15 @@ try {
         if (job.done || !job.frames.every((i) => have.has(i))) continue
         job.done = true
         const step = job.step ?? src.step
-        const layout = gridLayout({ count: job.frames.length, perSheet: job.perSheet, frameWidth: format.width, frameHeight: format.height, labelUnits: Math.max(...job.frames.map((i) => labelUnits(frameLabel(src, i, step)))), cols })
+        const layout = gridLayout({ count: job.frames.length, perSheet: job.perSheet, frameWidth: format.width, frameHeight: format.height, labelUnits: Math.max(...job.frames.map((i) => labelUnits(frameLabel(src, i, step, job.name)))), cols })
         await write({
+          order: jobs.indexOf(job),
           file: job.file,
           spec: job.spec,
           caption: job.caption,
           layout,
           fresh: job.frames.some((i) => freshFrames.has(i)),
-          tiles: job.frames.map((i) => ({ file: have.get(i), label: frameLabel(src, i, step) })),
+          tiles: job.frames.map((i) => ({ file: have.get(i), label: frameLabel(src, i, step, job.name) })),
           frames: job.frames.map((i, k) => ({ index: i, seconds: i / src.fps, file: shown(have.get(i)), at: layout.cells[k] })),
           info: await pageInfo(page),
           tiered: src.tiered,
@@ -285,12 +287,12 @@ function reusable(spec) {
   return matches(rel('out', 'work', 'stills', stillName(spec)), { format: spec.format, tier: spec.tier, assets: spec.assets, diagnostic: spec.diag })
 }
 
-async function write({ file, spec, caption, layout, fresh, tiles, frames, info, tiered = true }) {
-  const want = { format: o.format, tier: tiered ? o.tier : undefined, assets: o.assets, diagnostic: o.diag, spec }
+async function write({ file, spec, caption, layout, fresh, tiles, frames, info, tiered = true, order = 0 }) {
+  const want = { format: o.format, tier: tiered ? o.tier : undefined, assets: o.assets, diagnostic: o.diag, layoutHash, spec }
   if (!fresh && !o.force && matches(file, want)) {
     const meta = await sharp(file).metadata()
     if (meta.width === layout.width && meta.height === layout.height) {
-      done.push({ file, reused: true, width: meta.width, height: meta.height, count: tiles.length })
+      done.push({ order, file, reused: true, width: meta.width, height: meta.height, count: tiles.length })
       return
     }
   }
@@ -300,6 +302,7 @@ async function write({ file, spec, caption, layout, fresh, tiles, frames, info, 
     format: o.format,
     tier: tiered ? o.tier : '',
     assets: o.assets,
+    layoutHash,
     spec,
     caption,
     width: layout.width,
@@ -310,11 +313,11 @@ async function write({ file, spec, caption, layout, fresh, tiles, frames, info, 
   }
   writeJson(`${file}.json`, record)
   if (args.look !== 'no') addLook(file, caption, by)
-  done.push({ file, reused: false, width: layout.width, height: layout.height, count: tiles.length })
+  done.push({ order, file, reused: false, width: layout.width, height: layout.height, count: tiles.length })
 }
 
 if (stopped) fail(stopped)
-for (const d of done) console.log(`${d.reused ? 'reused' : 'wrote'} ${shown(d.file)} · ${d.width} x ${d.height} · ${d.count} frames`)
+for (const d of done.sort((a, b) => a.order - b.order)) console.log(`${d.reused ? 'reused' : 'wrote'} ${shown(d.file)} · ${d.width} x ${d.height} · ${d.count} frames`)
 if (messages.length) console.log(`page messages:\n${messages.join('\n')}`)
 const secs = ((Date.now() - started) / 1000).toFixed(0)
 const counts = `${frameCounts.rendered} rendered, ${frameCounts.reused} reused`

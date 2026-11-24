@@ -2,13 +2,14 @@ import path from 'node:path'
 import { parseArgs, writeJson } from './lib/paths.mjs'
 import { Session, cfg, formatById } from './lib/page.mjs'
 import { addLook } from './lib/looks.mjs'
-import { SHEETS, composeSheet, frameDir, frameFile, gridLayout, labelUnits, matches, nameParts, pageInfo, pick, readPlan, renderFrames, run, secondsText, shown, sourceOf } from './lib/sheetlayout.mjs'
+import { SHEETS, composeSheet, frameDir, frameFile, gridLayout, labelUnits, layoutHashFor, matches, nameParts, pageInfo, pick, readPlan, renderFrames, run, secondsText, shown, sourceOf } from './lib/sheetlayout.mjs'
 
 const USAGE = `npm run seq -- --first N --last M --tier T [--format F] [--step K] [--assets A] [--diag V] [--force] [--look no] [--by NAME]
   every film frame from N to M as its own picture under out/work/seq/, each with a record, and one sheet across the range as the look
   at most sandbox.maxFramesOnDisk (${cfg.sandbox.maxFramesOnDisk}) frames in one range. --step K keeps every Kth frame
 exit 0 when every frame is written, 3 when the chunk budget ran out: run the same command again to carry on`
 
+const layoutHash = layoutHashFor(import.meta.url)
 const args = parseArgs(process.argv.slice(2))
 const str = (k) => (args[k] !== undefined && args[k] !== true ? String(args[k]) : '')
 const fail = (msg, code = 1) => {
@@ -75,7 +76,7 @@ try {
       const label = (i) => [String(i), secondsText(i, src.fps, step)]
       const layout = gridLayout({ count: frames.length, perSheet: per, frameWidth: format.width, frameHeight: format.height, labelUnits: Math.max(...frames.map((i) => labelUnits(label(i)))) })
       const caption = `Sequence: film frames ${first} to ${last}${step > 1 ? `, every ${step}` : ''}, ${list.length} pictures in ${shown(dir)}, ${frames.length} of them on this sheet, ${tail}`
-      const fresh = r.rendered > 0 || o.force || !matches(file, { format: o.format, tier: o.tier, assets: o.assets, diagnostic: o.diag, spec })
+      const fresh = r.rendered > 0 || o.force || !matches(file, { format: o.format, tier: o.tier, assets: o.assets, diagnostic: o.diag, layoutHash, spec })
       if (fresh) {
         await composeSheet({ tiles: frames.map((i) => ({ file: r.files.get(i), label: label(i) })), out: file, layout })
         writeJson(`${file}.json`, {
@@ -83,6 +84,7 @@ try {
           format: o.format,
           tier: o.tier,
           assets: o.assets,
+          layoutHash,
           spec,
           caption,
           width: layout.width,

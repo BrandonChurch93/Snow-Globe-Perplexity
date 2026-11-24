@@ -3,18 +3,20 @@ import path from 'node:path'
 import sharp from 'sharp'
 import { rel, readJson } from './paths.mjs'
 import { limits, fitForModel } from './compose.mjs'
-import { engineHash } from './hashes.mjs'
+import { fileURLToPath } from 'node:url'
+import { engineHash, fileSha, sha256 } from './hashes.mjs'
 import { cfg, currentSeasonHashes, writeWithRecord } from './page.mjs'
 
+export const layoutHashFor = (toolUrl) => sha256(fileSha(fileURLToPath(import.meta.url)) + fileSha(fileURLToPath(toolUrl))).slice(0, 16)
 const GROUND = [30, 30, 30]
 const INK = [176, 176, 176]
 const DIM = [124, 124, 124]
 const MARGIN = 12
 const GAP = 12
-const ROW_GAP = 18
+const ROW_GAP = 14
 const WORD_GAP = 5
 const LABEL_TOP = 6
-const GLYPH_ROWS = 7
+const GLYPH_ROWS = 9
 const SPACE = 3
 const GLYPHS = {
   0: ['.###.', '#...#', '#...#', '#...#', '#...#', '#...#', '.###.'],
@@ -33,17 +35,17 @@ const GLYPHS = {
   d: ['....#', '....#', '.####', '#...#', '#...#', '#...#', '.####'],
   e: ['.....', '.....', '.###.', '#...#', '#####', '#....', '.###.'],
   f: ['..##.', '.#..#', '.#...', '###..', '.#...', '.#...', '.#...'],
-  g: ['.....', '.####', '#...#', '#...#', '.####', '....#', '.###.'],
+  g: ['.....', '.....', '.####', '#...#', '#...#', '#...#', '.####', '....#', '.###.'],
   h: ['#....', '#....', '#.##.', '##..#', '#...#', '#...#', '#...#'],
   i: ['.#.', '...', '##.', '.#.', '.#.', '.#.', '###'],
-  j: ['..#', '...', '.##', '..#', '..#', '#.#', '.#.'],
+  j: ['..#', '...', '.##', '..#', '..#', '..#', '..#', '#.#', '.#.'],
   k: ['#...', '#...', '#..#', '#.#.', '##..', '#.#.', '#..#'],
   l: ['##.', '.#.', '.#.', '.#.', '.#.', '.#.', '###'],
   m: ['.....', '.....', '##.#.', '#.#.#', '#.#.#', '#...#', '#...#'],
   n: ['.....', '.....', '#.##.', '##..#', '#...#', '#...#', '#...#'],
   o: ['.....', '.....', '.###.', '#...#', '#...#', '#...#', '.###.'],
-  p: ['.....', '####.', '#...#', '#...#', '####.', '#....', '#....'],
-  q: ['.....', '.####', '#...#', '#...#', '.####', '....#', '....#'],
+  p: ['.....', '.....', '####.', '#...#', '#...#', '#...#', '####.', '#....', '#....'],
+  q: ['.....', '.....', '.####', '#...#', '#...#', '#...#', '.####', '....#', '....#'],
   r: ['.....', '.....', '#.##.', '##..#', '#....', '#....', '#....'],
   s: ['.....', '.....', '.####', '#....', '.###.', '....#', '####.'],
   t: ['.#...', '.#...', '###..', '.#...', '.#...', '.#..#', '..##.'],
@@ -51,7 +53,7 @@ const GLYPHS = {
   v: ['.....', '.....', '#...#', '#...#', '#...#', '.#.#.', '..#..'],
   w: ['.....', '.....', '#...#', '#...#', '#.#.#', '#.#.#', '.#.#.'],
   x: ['.....', '.....', '#...#', '.#.#.', '..#..', '.#.#.', '#...#'],
-  y: ['.....', '#...#', '#...#', '.####', '....#', '....#', '.###.'],
+  y: ['.....', '.....', '#...#', '#...#', '#...#', '#...#', '.####', '....#', '.###.'],
   z: ['.....', '.....', '#####', '...#.', '..#..', '.#...', '#####'],
   '.': ['.', '.', '.', '.', '.', '.', '#'],
   '-': ['...', '...', '...', '...', '###', '...', '...'],
@@ -296,7 +298,7 @@ export function matches(file, want) {
   const c = current()
   if (r.engineHash !== c.engine) return false
   for (const s of cfg.seasons) if (r.seasonHashes?.[s] !== c.seasons[s]) return false
-  for (const k of ['format', 'tier', 'assets', 'diagnostic']) if (want[k] !== undefined && r[k] !== want[k]) return false
+  for (const k of ['format', 'tier', 'assets', 'diagnostic', 'layoutHash']) if (want[k] !== undefined && r[k] !== want[k]) return false
   if (want.spec && JSON.stringify(r.spec) !== JSON.stringify(want.spec)) return false
   return true
 }
@@ -393,7 +395,8 @@ export async function renderFrames(session, page, src, indices, o, onFrame = asy
     await onFrame(i, file, false)
     if (rendered % 12 === 0 && rendered < todo.length) {
       const per = (Date.now() - started) / 1000 / rendered
-      console.log(`frames: ${reused + rendered} of ${list.length} · ${per.toFixed(1)} s a frame · about ${Math.ceil(((todo.length - rendered) * per) / 60)} min left`)
+      const left = (todo.length - rendered) * per
+      console.log(`frames: ${reused + rendered} of ${list.length} · ${per.toFixed(1)} s a frame · about ${left < 90 ? `${Math.ceil(left)} s` : `${Math.ceil(left / 60)} min`} left`)
     }
   }
   return { files, total: list.length, rendered, reused, complete: files.size === list.length, seconds: (Date.now() - started) / 1000 }
