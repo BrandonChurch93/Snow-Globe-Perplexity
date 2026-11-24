@@ -43,7 +43,7 @@ function finish(pos, uv, col, index, rows, row) {
 
 function column() {
   const hs = []
-  for (let h = S.deep; h < S.fork + 1.4; h += 0.38) hs.push(h)
+  for (let h = S.deep; h < S.fork + 1.4; h += 0.19) hs.push(h)
   for (let h = hs[hs.length - 1] + 0.8; h < S.top - 0.4; h += 0.85) hs.push(h)
   hs.push(S.top)
   const row = AROUND + 1
@@ -114,7 +114,8 @@ function tube(limb, n) {
     if (i === count) c.add(t.clone().multiplyScalar(0.15))
     for (let j = 0; j <= sides; j++) {
       const a = (j / sides) * TAU
-      const ridge = flutes ? Math.pow(Math.abs(Math.sin(flutes * 0.5 * a + along * 0.12 + n)), 0.6) : 0.7
+      const plate = Math.sin(along * 1.15 + 2.2 * Math.sin(2 * a + n) + 1.1 * Math.sin(5 * a + 0.7 * along))
+      const ridge = flutes ? Math.pow(Math.abs(Math.sin(flutes * 0.5 * a + along * 0.12 + n)), 0.6) * (0.5 + 0.5 * (1 - Math.exp(-(plate * plate) / 0.12))) : 0.7
       const rr = r * (1 + 0.12 * (ridge - 0.66))
       const p = c.clone().add(nrm.clone().multiplyScalar(Math.cos(a) * rr)).add(bin.clone().multiplyScalar(Math.sin(a) * rr))
       pos.push(p.x, p.y, p.z)

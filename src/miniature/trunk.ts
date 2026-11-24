@@ -45,8 +45,16 @@ const ROOT_FALL = 1.6
 const ROOT_SKIRT = 1.8
 const TWIST_LOW = 0.06
 const TWIST_HIGH = 0.03
-const RIDGE_DEEP = 0.085
+const RIDGE_DEEP = 0.11
 const GNARL = 0.06
+const PLATE = { perMm: 0.85, width: 0.03, deep: 0.6 }
+const KNOTS: readonly { phi: number; h: number; r: number }[] = [
+  { phi: 1.95, h: 8.4, r: 1.15 },
+  { phi: 1.05, h: 5.3, r: 0.85 },
+  { phi: 2.6, h: 11.4, r: 0.8 },
+  { phi: 0.55, h: 10.6, r: 0.7 },
+  { phi: 4.4, h: 7, r: 1 },
+]
 const BARK_MM = 6.5
 const BARK_AROUND = 3
 const MODEL = 'shared/trunk-wood.glb'
@@ -76,7 +84,7 @@ const PADS: readonly { at: Vec3; size: Vec3; lean: number; tip: number }[] = [
   { at: [7.6, 34.2, 3.6], size: [5.2, 2.5, 4.4], lean: 0.32, tip: 0.25 },
   { at: [11.4, 30.4, 1.2], size: [3.9, 3, 3.8], lean: 0.42, tip: 0.15 },
   { at: [2.6, 31.4, 0], size: [6.2, 2, 4.4], lean: 0.12, tip: 0 },
-  { at: [-10, 27.2, 3.2], size: [7.6, 3.1, 5.2], lean: -0.14, tip: 0.18 },
+  { at: [-9.3, 27.2, 3.2], size: [8.3, 3.1, 5.2], lean: -0.14, tip: 0.18 },
   { at: [-13.6, 19.8, -0.6], size: [3.9, 2.8, 3.8], lean: -0.21, tip: 0.12 },
   { at: [9, 20.8, 3.6], size: [8, 3.9, 5.4], lean: 0.3, tip: 0.2 },
 ]
@@ -105,7 +113,7 @@ const BOUGHS: readonly Bough[] = [
   { kind: 'twig', pad: 5, r: [0.36, 0.12], via: [[4.2, 23.7, 1.2], [5.2, 24.9, 2.2], [6.6, 25.4, 3]], forks: [] },
 ]
 const LIMB_TAPER = 0.9
-const LIMB_STEP = 0.55
+const LIMB_STEP = 0.42
 
 const lerp = (a: number, b: number, t: number): number => a + (b - a) * t
 const clamp01 = (v: number): number => Math.min(1, Math.max(0, v))
@@ -139,7 +147,16 @@ export function trunkRidge(phi: number, h: number): number {
   const wander = 0.5 * Math.sin(2 * a + 0.31 * h + 1.7) + 0.35 * Math.sin(3 * a - 0.23 * h + 0.4)
   const r1 = 0.6 * Math.pow(Math.abs(Math.sin(5.5 * a + wander)), 0.8) + 0.4 * (0.5 - 0.5 * Math.cos(11 * a + 2 * wander))
   const r2 = Math.pow(Math.abs(Math.sin(13.5 * a + 1.6 * wander + 0.9 + 0.5 * Math.sin(0.7 * h))), 0.6)
-  return 0.7 * r1 + 0.3 * r2
+  const band = PLATE.perMm * h + 1.9 * Math.sin(3 * a + 0.4 * h) + 1.1 * Math.sin(7 * a + 1.3) + 0.8 * Math.sin(17 * a + 0.9 * h)
+  const sound = 1 - Math.exp(-(Math.sin(band) * Math.sin(band)) / PLATE.width)
+  let ridge = (0.84 * r1 + 0.16 * r2) * (1 - PLATE.deep * (1 - sound))
+  for (const k of KNOTS) {
+    const rho = Math.hypot(wrap(phi - k.phi) * 3.3, (h - k.h) * 0.8) / k.r
+    if (rho > 1.4) continue
+    const rings = rho < 0.22 ? 0.05 : 0.5 + 0.5 * Math.cos(8.5 * rho + 0.6 * Math.sin(3 * phi + h))
+    ridge = lerp(ridge, rings, 1 - clamp01((rho - 0.85) / 0.55))
+  }
+  return ridge
 }
 
 export function trunkRadius(phi: number, h: number): number {
@@ -321,7 +338,8 @@ export interface Cluster {
 const DOME = 0.3
 const BODY = { blend: 0.5, bias: 0.4 }
 const TOP_DROP = 1.56
-const CAP = { lift: 1.2, thick: 0.25, cover: 0.66, fore: 0.12, rim: 0.85, sink: 0.1, slope: 0.75, depth: 0.25, lip: 0.4, droop: 1.6 }
+const CAP = { lift: 1.2, thick: 0.25, cover: 0.66, fore: 0.12, lee: 0.12, skew: 0.45, rim: 0.85, swell: 0.95, sink: 0.1, slope: 0.75, depth: 0.25, lip: 0.4, droop: 1.6 }
+const LOADS: readonly (readonly [number, number])[] = [[1.05, 1.05], [0.9, 1.04], [0.95, 1.06], [0.6, 0.9], [0.85, 1], [1, 1.05], [0.35, 0.6], [1.2, 1.1], [0.75, 0.95], [1.3, 1.08]]
 const wobble = (x: number, h: number, z: number): number => 0.16 * Math.sin(1.9 * x + 0.3 * h) * Math.sin(2.3 * h + 1.1 * z) * Math.sin(1.7 * z + 0.5 * x) + 0.07 * Math.sin(4.3 * x + 1) * Math.sin(3.9 * h + 2) * Math.sin(4.7 * z)
 const dome = (rim: number): number => 1 - DOME * Math.pow(rim, 1.5)
 
@@ -366,6 +384,7 @@ interface PadField {
   n: number
   drop: number
   lift: number
+  cover: number
 }
 
 const padFields: PadField[] = PADS.map((P, pad) => {
@@ -376,7 +395,7 @@ const padFields: PadField[] = PADS.map((P, pad) => {
     balls.set([c.local[0], c.local[1], c.local[2], c.radius], i * 4)
     reach = Math.max(reach, Math.hypot(c.local[0] - P.at[0], c.local[1] - P.at[1], c.local[2] - P.at[2]) + c.radius)
   })
-  return { centre: P.at, reach, balls, frame: padFrame(P.lean, P.tip), size: P.size, n: pad, drop: TOP_DROP * Math.min(1, Math.max(0.62, P.size[1] / 3.3)), lift: CAP.lift + CAP.thick * P.size[1] }
+  return { centre: P.at, reach, balls, frame: padFrame(P.lean, P.tip), size: P.size, n: pad, drop: TOP_DROP * Math.min(1, Math.max(0.62, P.size[1] / 3.3)), lift: (CAP.lift + CAP.thick * P.size[1]) * LOADS[pad]![0], cover: CAP.cover * LOADS[pad]![1] }
 })
 
 function ballField(f: PadField, x: number, h: number, z: number, blend: number): number {
@@ -427,11 +446,12 @@ export function crownCap(x: number, h: number, z: number): number {
     const d = px * f.frame.depth[0] + ph * f.frame.depth[1] + pz * f.frame.depth[2]
     const rim = (s * s) / (f.size[0] * f.size[0]) + (d * d) / (f.size[2] * f.size[2])
     const fore = d / f.size[2] - CAP.fore
-    const turn = Math.atan2(fore, s / f.size[0])
-    const edge = ((s * s) / (f.size[0] * f.size[0]) + fore * fore) / (CAP.cover * (1 + 0.2 * Math.sin(3 * turn + 1.7 * f.n) + 0.1 * Math.sin(5 * turn + 2.9 * f.n)))
+    const lee = s / f.size[0] + CAP.lee
+    const turn = Math.atan2(fore, lee)
+    const edge = (lee * lee + fore * fore) / (f.cover * (1 + 0.24 * Math.sin(2 * turn + 2.3 * f.n) + 0.2 * Math.sin(3 * turn + 1.7 * f.n) + 0.12 * Math.sin(5 * turn + 2.9 * f.n)))
     const load = Math.sqrt(Math.max(0, 1 - edge))
-    const swell = 0.45 * Math.sin(0.75 * s + 1.9 * f.n) * Math.sin(0.8 * d + 2.6 * f.n) + 0.2 * Math.sin(1.5 * s - 1.2 * d + f.n)
-    const top = f.size[1] * dome(rim) - f.drop + (f.lift + swell) * load - CAP.sink - 0.8 * Math.max(0, edge - 1)
+    const swell = CAP.swell * (Math.sin(0.75 * s + 1.9 * f.n) * Math.sin(0.8 * d + 2.6 * f.n) + 0.35 * Math.sin(1.5 * s - 1.2 * d + f.n))
+    const top = f.size[1] * dome(rim) - f.drop + (f.lift * (1 - CAP.skew * lee) + swell) * load - CAP.sink - 0.8 * Math.max(0, edge - 1)
     const body = Math.max(CAP.slope * (v - top), 2 * (Math.sqrt(Math.max(edge, rim / CAP.rim)) - 1.02))
     const hem = 0.6 * Math.sin(0.93 * s + 1.7 * f.n) * Math.sin(0.81 * d + 2.3 * f.n) + 0.4 * Math.sin(1.73 * s - 1.12 * d + f.n) + 0.25 * Math.sin(3.1 * s + 2.7 * d + 0.6 * f.n)
     const line = f.size[1] * dome(rim) - f.drop - CAP.depth + hem - CAP.droop * rim * rim
@@ -642,7 +662,7 @@ export function buildTrunk(part: string, lights: readonly GlowLight[] = [], tint
     color: new THREE.Color(tint[0], tint[1], tint[2]),
     vertexColors: true,
     roughness: 0.86,
-    extra: { normalMap: normal, normalScale: new THREE.Vector2(1.8, 1.8) },
+    extra: { normalMap: normal, normalScale: new THREE.Vector2(1.2, 1.2) },
     hook: glowHook,
     key: 'trunk',
   })
