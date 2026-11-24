@@ -1,0 +1,63 @@
+{
+  "critic": "R1",
+  "score": 5,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "severe",
+      "file": "set-B-01-b.jpg",
+      "where": "swirling snow streaks in the liquid (crops 1, 2, 3)",
+      "what": "the discrete snow streaks are sparse, rigid, straight white dashes tilted at steep diagonal and vertical angles across the flow over a blotchy dark-grey cloud ring near the rim, with no warm light glints, whereas in -a dense curved streaks follow a smooth circular vortex around the sphere and catch warm golden highlights from the interior lights",
+      "fix": "curve and align the motion-blurred snow streaks along a coherent circumferential vortex, replace the blotchy grey rim cloud with layered fibrous snow streaks of varied thickness, and add warm golden glints where streaks pass the cottage and tree lights"
+    },
+    {
+      "severity": "major",
+      "file": "set-B-01-b.jpg",
+      "where": "lower storm snow bank over the cottage and pond (crops 2, 5)",
+      "what": "the lower storm settles into a smooth, featureless airbrushed white fog bank that washes the lower cottage into flat milky haze, whereas in -a the dense lower drift keeps fibrous directional sweep streaks and rich warm golden glow from the lamp and windows",
+      "fix": "add directional curved snow-streak texture into the dense lower drift and infuse warmer golden light diffusion from the lamp and cottage windows while keeping the intended storm coverage"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "upper brass collar snow and inner glass seat (crops 4, 5, 6; also in set-B-01-b.jpg)",
+      "what": "snow is missing across the front-center of the upper brass rim, stopping in an abrupt vertical step on the right, exposing a bare brown-brass channel under the glass sphere, and leaving the central icicles hanging off bare metal instead of -a's continuous fluffy snow ring",
+      "fix": "extend loose, sparkly white snow continuously across the front-center collar rim so it hugs the base of the glass sphere all the way around and naturally feeds the central icicles"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "tree star, fairy lights, trunk, and bough snow (crop 3; also in set-B-01-b.jpg)",
+      "what": "the top star is an unlit flat matte yellow ornament with no glow, the fairy lights are pale greenish-yellow dots that fail to illuminate the dark trunk or inner branches, and the bulkier foliage carries heavy rounded snow pillows shaded dark charcoal-grey instead of -a's glowing star, warm golden-orange lit bark and bough undersides, and crisp winter-white snow caps",
+      "fix": "make the star self-luminous with a soft warm golden bloom, shift the tree lights to warm golden-amber casting light onto the wrapped trunk and bough undersides, and slim and brighten the bough snow caps to clean winter white without muddy grey shading"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "glass specular highlight and frost ferns (crops 1, 3, 5; frost also in set-B-01-b.jpg)",
+      "what": "a wide bright white curved reflection band cuts down the upper-right glass right beside the tree crown where set-A-01-a.jpg has clear dark glass and only a narrow highlight at the outer rim, and across both sets the frost crystals—especially the sharp radial ice needles at lower-right in crop 5 and branching rim ferns in crop 1—are fainter and softer with a duller outer glass edge",
+      "fix": "narrow and push the upper-right specular highlight tight to the outer glass rim in Set A, sharpen and brighten the crystalline frost ferns and lower-right ice needles, and crisp up the bright refractive highlight along the outer glass edge"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "tabletop mirror reflection and surface frost around the base (crops 4, 6; also in set-B-01-b.jpg)",
+      "what": "the glossy dark surface beneath the base reflects cold dark grey-silver instead of -a's rich warm golden-amber reflection from the brass foot, frost creeps right up to the front rope trim where -a shows dark reflective table, and the side frost fronds are flatter, sharper-edged white patches",
+      "fix": "add the warm golden-amber brass reflection in the glossy surface beneath the base, clear the frost strip immediately in front of the brass foot behind the front snow mound, and give the surrounding frost fronds softer snowy thickness and shallow depth-of-field falloff"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "cottage chimney, roof snow, left bushes, lamp, and pond path (crop 2)",
+      "what": "the chimney is squatter and darker grey with a snow cap on its rim and weak broken smoke, the left roof snow is darker grey and blotchy, three extra round snow-capped bushes sit behind the fence along the left wall, the lantern head is larger and blockier with less warm bloom, and flat dark grey stepping stones sit sharply atop the snow",
+      "fix": "make the chimney taller and warmer stone with a bare rim and cohesive rising smoke plume, brighten and smooth the roof snow, replace the three round bushes with wall ivy and one small shrub by the steps, shrink the lantern head and increase its warm halo, and nestle the path steps under soft snow drifts"
+    },
+    {
+      "severity": "minor",
+      "file": "set-A-01-b.jpg",
+      "where": "background bokeh lights and mid-ground surface glow (also in set-B-01-b.jpg)",
+      "what": "the background bokeh circles are dimmer, flatter matte discs that omit the secondary upper-right circle near the frame edge, and the cyan-blue horizon glow behind the left and right sides of the base is brighter than in -a",
+      "fix": "give the bokeh circles brighter, softer-edged luminous cores, restore the secondary upper-right bokeh disc, and darken the cyan horizon band behind the globe"
+    }
+  ]
+}
