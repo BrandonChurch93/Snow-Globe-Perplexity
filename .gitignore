@@ -10,3 +10,9 @@ references/cache/
 .DS_Store
 *.log
 __pycache__/
+audio/**/*.wav
+audio/**/*.mp3
+audio/**/*.m4a
+audio/**/*.flac
+audio/**/*.pcm
+public/audio/

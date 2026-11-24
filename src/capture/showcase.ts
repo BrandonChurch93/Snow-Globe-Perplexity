@@ -67,7 +67,11 @@ export interface Dev {
   sanity(): { invalid: number; pixels: number }
   inside(): { inside: number; outside: number; total: number }
   simcache(what: 'film' | 'stills' | 'loop'): Promise<{ checkpoints: number; simulatedSeconds: number; ms: number }>
+  renderTestShakeFrame(frameIndex: number, tier: string): Promise<void>
+  renderShakeMoment(shot: string, at: ShakeMoment, tier: string): Promise<void>
 }
+
+export type ShakeMoment = 'swap' | 'landing' | 'landed' | 'settle'
 
 export interface FilmState {
   camera: number[]
@@ -303,6 +307,34 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
           checkpoints++
         }
         return { checkpoints, simulatedSeconds: seconds, ms: now() - t0 }
+      },
+      async renderTestShakeFrame(i, t) {
+        await ready
+        tier = t
+        const hero = poseById('hero')
+        await picture(stillTl(config.lookLockUnit), i / fpsFilm, shutter, () => hero, tierSamples(t), 200000 + i, false)
+      },
+      async renderShakeMoment(shot, at, t) {
+        await ready
+        tier = t
+        const hero = poseById('hero')
+        const w = config.shake.swapWindow
+        const offset =
+          at === 'swap'
+            ? ((w.fromBeat + w.toBeat) / 2) * beatSeconds
+            : at === 'landing'
+              ? barSeconds
+              : at === 'landed'
+                ? barSeconds + config.states.landedSeconds
+                : barSeconds + config.shake.settleCheckSeconds
+        if (shot === 'test') {
+          await picture(stillTl(config.lookLockUnit), offset, shutter, () => hero, tierSamples(t), 300000 + Math.round(offset * fpsFilm), false)
+          return
+        }
+        const span = getGrid().spans.find((s) => s.shot.id === shot)
+        if (!span || span.shot.kind !== 'shake') throw new Error(`no such shake: ${shot}`)
+        const i = span.first + Math.round(offset * fpsFilm)
+        await picture(getFilm(), frameTime(i), shutter, () => hero, tierSamples(t), i + 1, false)
       },
       async simulate(fromSeconds, seconds) {
         const tl = stillTl(config.defaultSeason)
