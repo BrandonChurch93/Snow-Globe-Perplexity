@@ -1,4 +1,5 @@
 import { COVER_GLSL } from '../../core/chunks/cover'
+import { VEIL_GLSL } from '../../core/chunks/veil'
 import { viewCode } from '../../diagnostics/views'
 import { EDGE_HIGH, EDGE_LOW, GLINT_HIGH, GLINT_LOW, LAMPS, LOBE_CORE, MAX_KINDS, PIXEL_SIGMA2 } from './looks'
 
@@ -16,6 +17,7 @@ varying vec4 vStreak;
 varying vec4 vKind;
 varying vec4 vGrid;
 varying vec4 vDom;
+varying vec4 vFog;
 `
 
 export const VERT_PARS = `
@@ -47,6 +49,7 @@ uniform float uLobeRows;
 uniform highp sampler3D uGridA;
 uniform highp sampler3D uGridB;
 uniform vec4 uGrid;
+${VEIL_GLSL}
 ${COVER_GLSL}
 ${VARYINGS}
 vec4 pointHash(uint id) {
@@ -193,6 +196,7 @@ export const VERT_MAIN = `
   vKind = vec4(aData.y, lying, float(pid & 4095u), flash.r);
   vGrid = vec4(grid, flash.g);
   vDom = vec4(domV, flash.b);
+  vFog = veilPath(eye, placed.xyz, nowW, placed.w);
   gl_Position = aState > 2.5 || alpha <= 0.0 ? vec4(2.0, 2.0, 2.0, 1.0) : clip;
 `
 
@@ -262,7 +266,7 @@ void main() {
     vec4 part = uKindPart[kind];
     if (uDiag == ${viewCode('ids')}) gl_FragColor = vec4(part.rgb, 1.0);
     else if (uDiag == ${viewCode('standins')}) gl_FragColor = vec4(part.rgb * part.a, 1.0);
-    else gl_FragColor = stageDiag(k.rgb, inverseTransformDirection(normalize(nrm), viewMatrix), stageVeil(vStageAux.x), uPointChange, 0.0);
+    else gl_FragColor = stageDiag(k.rgb, inverseTransformDirection(normalize(nrm), viewMatrix), vFog.a, uPointChange, 0.0);
     return;
   }
   mat3 toView = mat3(modelViewMatrix);
@@ -274,8 +278,7 @@ void main() {
   vec3 light = mix(uGroundCol, uSkyCol, 0.5 + 0.5 * dot(nv, upV)) + uKeyCol * (kd * kd) + uRimCol * (rd * rd);
   light = light * 0.31831 + vGrid.rgb * ((0.35 + 0.65 * gd) * uTone.y);
   vec3 col = k.rgb * light;
-  float fog = stageVeil(vStageAux.x) * uTone.z;
-  col = stageFogged(col, vGrid.rgb, fog);
+  col = mix(col, uVeil.rgb * vFog.rgb, vFog.a * uTone.z);
   col += flash * k.rgb * k.a;
   gl_FragColor = vec4(col * cover, cover);
 }`
