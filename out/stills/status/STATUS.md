@@ -1,16 +1,17 @@
-# Status 33
+# Status 34
 
-2026-11-24 12:44 UTC
+2026-11-24 13:08 UTC
 
-- Merged since Status 32: the tree and the base and the bolder frost on the glass and the slab and the glass with a clear dark liquid. The app was published again at 12:33 UTC and opens with no page error.
-- Still wrong against the approved image: the snow inside is a grey disc with a dark band where the approved has a white bank curving up the glass. The tree crown turned yellow green after its last merge. The snow afloat is thin. The base reads at about half the approved brightness. The discs behind are too bright.
-- The host check passes the clean build and fails one line: 59.5 MB fetched before the first picture against a limit of 16 MB. That is second wave work. Final reports from the ten builders are due by 13:00 UTC.
-- phase 3: 4.29 h used of its 11.00 h box
-- allowance (before the review): 10.90 h used of 36.00 h allowed
+- All ten build agents reported at their three hour limit and every part of winter is now marked built: no stand-in is left in the frame
+- New since the last picture: a white snow bank inside the glass; a dark crown with small warm lights; dimmer softer discs behind; a brighter base; a stronger lamp
+- Still wrong and known: the storm is too dense and streaky and hides the tree; icicles are stubs right after the landing; the snow bank is low and grey at the foot of the glass; the tree is one stem with stacked pads where the approved tree forks into thick limbs; frost on the slab is flat and stark; the liquid reads hazier than the approved
+- Next: winter goes to its first critic round as it stands while a second set of agents works the known faults
+- phase 3: 4.69 h used of its 11.00 h box
+- allowance (before the review): 11.30 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-33-1.jpg`: Approved winter at rest (left) beside main at 12:44 UTC (right) at the draft tier
-- `out/stills/status/status-33-2.jpg`: Main at rest from the hero camera at 12:44 UTC with the bolder frost and the darker liquid merged (draft tier)
-- `out/stills/status/status-33-3.jpg`: Still: winter rest hero, hd, draft
-- `out/stills/status/status-33-4.jpg`: Still: winter rest hero, hd, draft, standins view
+- `out/stills/status/status-34-1.jpg`: Approved winter at rest (left) beside the build at 13:07 UTC (right) with all ten builders' final work merged; draft tier
+- `out/stills/status/status-34-2.jpg`: Approved mid-shake (left) beside the build half a second after the landing (right); draft tier
+- `out/stills/status/status-34-3.jpg`: Still: winter landed hero, hd, draft
+- `out/stills/status/status-34-4.jpg`: Still: winter rest hero, hd, draft
