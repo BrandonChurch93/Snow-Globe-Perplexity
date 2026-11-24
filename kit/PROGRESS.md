@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 25 · 2026-11-24 09:45 UTC
+Status 26 · 2026-11-24 10:01 UTC
 
-- `out/stills/status/status-25-1.jpg`: The approved winter image's edges in yellow, laid over the stand-in globe drawn with the reference camera: glass, collar and foot line up, everything inside is still a stand-in.
-- `out/stills/status/status-25-2.jpg`: Approved image above, the build below, same camera. This pair is what each part is now built against.
-- `out/stills/status/status-25-3.jpg`: Fall hold after the thinning, at 36.5, 38.4, 41 and 45 s (landing at 36 s), with the move down to the low camera (by particles_engineer_2)
-- `out/stills/status/status-25-4.jpg`: Spring hold after the thinning, at 12.5, 14.4, 17 and 21 s (landing at 12 s): the miniature is out of the storm one bar after the landing (by particles_engineer_2)
+- `out/stills/status/status-26-1.jpg`: The approved winter image with the regions each builder works against. Ten builders started at 10:00 UTC, one owner per file, each building its part of winter for real: no stand-in may remain in what a still shows.
+- `out/stills/status/status-26-2.jpg`: The opening camera, four candidates on stand-ins. Bottom right is the chosen frame: chimney, window, door, floor, lamppost and the foot of the tree, no edge of the glass (by engine_engineer_2)
+- `out/stills/status/status-26-3.jpg`: The hero camera after decision 35, winter at rest, draft: 7.8 percent above the glass, 4.2 percent under the foot of the base (it was 10.3 and 1.7) (by root)
+- `out/stills/status/status-26-4.jpg`: The app's screen after the new rule, at rest, at the top of the lift and at the widest stroke: 1920 by 1080 above, 390 by 844 and 1024 by 1366 below. The foot of the base now stands 7 percent of the height above the controls on the two wide screens (by film_app_engineer_2)
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 09:45 UTC
-clock: phase 3, tick of 0.2 minutes
-phase 3: 1.30 h used of its 11.00 h box
-allowance (before the review): 7.91 h used of 36.00 h allowed
-all time before the review: 7.91 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 10:01 UTC
+clock: phase 3, tick of 0.3 minutes
+phase 3: 1.58 h used of its 11.00 h box
+allowance (before the review): 8.19 h used of 36.00 h allowed
+all time before the review: 8.19 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
@@ -847,3 +847,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 2026-11-24 09:22 UTC. Status 24 posted: the approved winter image measured (decisions 40 and 41), pictures `out/work/calib/fit-check.jpg`, `el-fit.jpg`, `ends.jpg`. 304 tests green at `a1d141f`.
 
 - 2026-11-24 09:45 UTC. Status 25 posted: the Phase 3 scaffold and the fit tool (pictures `out/work/fit/winter-lines.jpg`, `winter-pair.jpg`). The winter miniature split in two owners (`src/seasons/winter/mini/village.ts`, `tree.ts`, `0ad117f`), the parts register's file lists follow the new layout and the `lens` flag moved to `src/post/post.ts`. 305 tests green. Next: the Phase 3 briefs and ten build agents.
+
+- 2026-11-24 10:01 UTC. Status 26 posted: ten build agents running (picture `out/work/status/plan-p3.jpg`, the approved image with each builder's region). Briefs committed in `578bc78`, agents logged in `5d84277`.
