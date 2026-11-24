@@ -1,0 +1,63 @@
+{
+  "critic": "R3",
+  "score": 5,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "major",
+      "file": "set-F-01.jpg",
+      "where": "the glass sphere and the scene seen through it",
+      "what": "the globe has an air-bubble ring at its crown as if filled with water, yet the cottage, tree, and background inside are not bent or enlarged by liquid at all, and the background bokeh lights vanish behind a flat dark backdrop inside the rim",
+      "fix": "fill the inner cavity of the sphere with a refractive liquid volume bridged to the inner glass wall so the miniature magnifies and bends toward the rim and background bokeh refracts through the globe"
+    },
+    {
+      "severity": "major",
+      "file": "set-F-02.jpg",
+      "where": "crops 2, 4, and 6, the tree's crown and upper branches",
+      "what": "the snow resting on the foliage pads looks like grey sculpted clay blobs with sunken donut holes in the middle and a straight brown stick poking through the lower-right pad, while the upper branches are smooth barkless striped tubes with light wires cutting across open air",
+      "fix": "replace the grey donut-shaped snow blobs with bright granular snow mounds draped naturally into the foliage, add bark relief to the upper branches, and wrap the light cord cleanly along the wood"
+    },
+    {
+      "severity": "major",
+      "file": "set-F-02.jpg",
+      "where": "crops 3, 5, and 6, the cottage fence, windows, roof snow, and chimney",
+      "what": "the wooden fence is a boxy flat-brown low-detail model with grey striped panels and no snow on its posts or rails, the windows are flat yellow grids with no glass reflection or depth, and the smooth grey roof snow meets an un-snowed chimney on a hard cut line",
+      "fix": "add weathered wood grain, open pickets, and settled snow caps to the fence, give the windows recessed panes with glass sheen, and add granular relief to the roof snow with a soft drift around the chimney base and snow on the chimney cap"
+    },
+    {
+      "severity": "major",
+      "file": "set-D-02.jpg",
+      "where": "crops 1 to 4, the collar where the glass meets the base and the snow along the rim",
+      "what": "the glass sphere ends on a straight horizontal line perched atop the upper brass ring instead of seating inside it, the collar snow stretches into faceted brownish-grey peaks on the left and repetitive doughy lobes on the right, and several icicles hang from dry brass where no snow overhangs",
+      "fix": "seat the curved glass wall down into a recessed groove inside the brass collar, replace the stretched collar snow with fine granular snow and clear wet ice overhanging the lip, and root every icicle in overhanging ice"
+    },
+    {
+      "severity": "major",
+      "file": "set-D-03.jpg",
+      "where": "crop 7, the pinecone on the frosted right side of the wooden base",
+      "what": "the pinecone is made of smooth rounded berry-like beads rather than thin woody scales, and it stays dark and completely unfrosted inside a zone where the surrounding wood and carved oak leaves are coated in white rime",
+      "fix": "remodel the pinecone with crisp overlapping woody bracts integrated into the wood carving and carry the white rime frost across its exposed scales and crevices"
+    },
+    {
+      "severity": "major",
+      "file": "set-F-02.jpg",
+      "where": "crops 5 and 6, the snow particles near the front and back glass",
+      "what": "despite very shallow macro depth of field on the table and background bokeh, none of the snow particles blur out of focus near the glass; sharp small flecks sit directly over the blurred foreground snow bank",
+      "fix": "distribute the snow particles through the full 3D depth of the globe and render them through the camera's shallow depth of field so flakes near the front and back glass soften into out-of-focus bokeh"
+    },
+    {
+      "severity": "major",
+      "file": "set-F-03.jpg",
+      "where": "crops 9, 11, and 12, the frost tufts on the interior snow bank and the fern frost on the table surface",
+      "what": "spiky white frost cards stick straight up out of the interior snow bank with hard cutout edges, and the large fern-frost fronds on the dark surface have thick opaque slab edges with an abrupt jump between bright blue-white and dark brown fronds on the left",
+      "fix": "replace the upright interior frost cards with fine crystalline rime blended into the snow and glass, and make the surface fern frost thin, feathery, and semi-translucent so it grows smoothly out of the icy table"
+    },
+    {
+      "severity": "minor",
+      "file": "set-D-02.jpg",
+      "where": "crop 6, the dark carved oak leaves and acorns",
+      "what": "isolated single-pixel bright shader fireflies and tiny harsh highlights on the acorn caps appear on the dark wood when zoomed past native size",
+      "fix": "clamp or filter sub-pixel glossy fireflies and soften the specular roughness on the acorn caps"
+    }
+  ]
+}
