@@ -62,7 +62,7 @@ const streamOf = (semantic) => STREAMS[semantic] ?? STREAMS[semantic.replace(/_\
 
 /** What each buffer view holds, from the accessors and primitives that use it. A view is packed only when one accessor fills it exactly. */
 function describe(json) {
-  const views = (json.bufferViews ?? []).map(() => ({ accessors: [], semantic: null, index: false }))
+  const views = (json.bufferViews ?? []).map(() => ({ accessors: [], semantic: null, index: false, free: false }))
   ;(json.accessors ?? []).forEach((a, i) => {
     if (a.bufferView !== undefined) views[a.bufferView].accessors.push(i)
   })
@@ -78,6 +78,12 @@ function describe(json) {
       for (const [semantic, accessor] of Object.entries(p.attributes ?? {})) mark(accessor, semantic, false)
       for (const t of p.targets ?? []) for (const [semantic, accessor] of Object.entries(t)) mark(accessor, semantic, false)
       if (p.indices !== undefined) mark(p.indices, null, true)
+      // The lighter lists of a mesh (tools/lib/glblevels.mjs) are lists of triangles nobody reads by position, so the triangle codec may turn each one.
+      for (const accessor of Object.values(p.extras?.levels ?? {})) {
+        mark(accessor, null, true)
+        const v = json.accessors[accessor]?.bufferView
+        if (v !== undefined) views[v].free = true
+      }
     }
   return views
 }
@@ -118,7 +124,7 @@ export async function packGlb(buf, { streams = STREAMS, exactIndices = true } = 
     let ext = null
     if (whole && d.index && !d.semantic && (a.componentType === 5123 || a.componentType === 5125) && a.type === 'SCALAR') {
       const source = new Uint8Array(raw.buffer, raw.byteOffset, raw.byteLength).slice()
-      const triangles = !exactIndices && a.count % 3 === 0
+      const triangles = (!exactIndices || d.free) && a.count % 3 === 0
       coded = triangles ? MeshoptEncoder.encodeIndexBuffer(source, a.count, size) : MeshoptEncoder.encodeIndexSequence(source, a.count, size)
       ext = { byteStride: size, count: a.count, mode: triangles ? 'TRIANGLES' : 'INDICES' }
       const back = new Uint8Array(view.byteLength)

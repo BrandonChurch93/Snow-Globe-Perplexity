@@ -4,6 +4,7 @@ import { config } from './config'
 import { createShowcase, type Showcase } from './capture/showcase'
 import { Assets } from './core/assets'
 import { createGfx } from './core/gl'
+import { meshLevelOf, setMeshLevel } from './core/models'
 import { readParams } from './core/params'
 import { isLevel, levelById, topLevel } from './core/quality'
 import type { SdfGrid, Stage } from './core/stage'
@@ -34,6 +35,21 @@ assets.firstOnly = params.mode === 'live' || new URLSearchParams(location.search
 const ready = assets.init(params.assets).then(() => assets.loadGroup('shared'))
 const named = isLevel(params.quality) ? levelById(params.quality) : null
 
+/**
+ * A stage that is told a quality level tells the models: the meshes of the web set have lighter lists of triangles for the
+ * lower levels (src/core/models.ts). This holds on every page, so a picture the harness draws through the app's path at a
+ * level draws what a visitor at that level gets. A page that is never told a level draws the full meshes.
+ */
+function levelled(stage: Stage): Stage {
+  const set = stage.setQuality?.bind(stage)
+  if (set)
+    stage.setQuality = (q) => {
+      set(q)
+      setMeshLevel(meshLevelOf(q))
+    }
+  return stage
+}
+
 const colliderOf = (stage: Stage) => (season: string): SdfGrid => stage.collider?.(season) ?? blockoutSdf()
 const emittersOf = (stage: Stage): Record<string, Emitter[]> => Object.assign({}, ...config.seasons.map((s) => stage.emitters?.(s) ?? {}))
 
@@ -56,7 +72,7 @@ if (capture) {
   const fraction = named ? named.particleFraction : 1
   const sim = new ParticleEngine({ season: config.defaultSeason, fraction })
   const particles = new SourceSwitch(sim)
-  const stage = createStage(gfx, particles, assets)
+  const stage = levelled(createStage(gfx, particles, assets))
   const collider = colliderOf(stage)
   const emitters = emittersOf(stage)
   sim.setCollider(collider, emitters)
@@ -75,7 +91,7 @@ if (capture) {
   const onWorker = params.mode === 'live' && new URLSearchParams(location.search).get('sim') !== 'main'
   const sim = new LiveRunner({ season: params.season, fraction: level.particleFraction, spawn: onWorker ? spawnEngineWorker : null })
   const particles = new SourceSwitch(sim.source)
-  const stage = createStage(gfx, particles, assets)
+  const stage = levelled(createStage(gfx, particles, assets))
   const collider = colliderOf(stage)
   const emitters = emittersOf(stage)
   sim.setCollider(collider, emitters)

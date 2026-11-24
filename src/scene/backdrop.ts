@@ -79,14 +79,13 @@ export const PLACED = {
 
 export const DISCS = {
   zones: [
-    { share: 0.03, azFrom: 5.6, azTo: 14.6, elFrom: -2.3, elTo: 4.8, sidePower: 0.8, rightShare: 1, levelFrom: 0, depthFrom: 0 },
-    { share: 0.03, azFrom: 5.8, azTo: 15, elFrom: -3.8, elTo: 4.6, sidePower: 0.8, rightShare: 0, levelFrom: 0, depthFrom: 0 },
-    { share: 0.04, azFrom: 5, azTo: 22, elFrom: 4.4, elTo: 11, sidePower: 1, rightShare: 0.75, levelFrom: 0.3, depthFrom: 0.45 },
-    { share: 0.9, azFrom: 15, azTo: 48, elFrom: -6.2, elTo: 12, sidePower: 1, rightShare: 0.5, levelFrom: 0, depthFrom: 0 },
+    { share: 1, azFrom: 15, azTo: 40, elFrom: -6.2, elTo: 16, sidePower: 1, rightShare: 0.5, levelFrom: 0, depthFrom: 0 },
   ],
   spread: [0.6180339887, 0.8191725134, 0.6710436067, 0.5497004779] as [number, number, number, number],
   rightLevel: 0.65,
-  stringMost: 2,
+  wedgeDeg: 46,
+  floorMm: 12,
+  stringMost: 3,
   stringAcrossDeg: 1.3,
   stringDownDeg: 2.2,
   stringLevel: 0.18,
@@ -99,17 +98,23 @@ export const DISCS = {
   largeMm: [5, 11] as [number, number],
   dimmest: 0.03,
   decades: 1.05,
-  dimPower: 2,
+  dimPower: 1.4,
   colourByLevel: 0.55,
   soft: [0.45, 1] as [number, number],
   edgeShare: 0.32,
   edge: [0.1, 0.36] as [number, number],
   lean: [0.06, 0.3] as [number, number],
-  quad: 2,
+  quad: [2.8, 4.6] as [number, number],
   catEye: 0.15,
   specks: 0.03,
-  mottle: 0.12,
+  mottle: 0.2,
   roomLightGain: 0.8,
+  haze: 0.028,
+  hazeWide: 1.15,
+  hazeTall: 1.9,
+  hazeFolds: 1.4,
+  hazeFoldLong: 0.28,
+  hazeOwn: 0.3,
 }
 
 export const WALL = {
@@ -125,7 +130,7 @@ export const WALL = {
   column: 2.8,
   columnDeg: 5.5,
   rightLift: 0.5,
-  tints: { winter: { base: [0.9, 1, 1.05], column: [0.67, 0.85, 0.83] } } as Record<string, { base: [number, number, number]; column: [number, number, number] }>,
+  tints: { winter: { base: [0.9, 1, 1.05], column: [0.67, 0.85, 0.83], haze: [0.22, 0.72, 1] } } as Record<string, { base: [number, number, number]; column: [number, number, number]; haze: [number, number, number] }>,
 }
 
 export const APRON = {
@@ -144,7 +149,7 @@ const wallUniforms = {
   uWallBase: { value: new THREE.Vector3(1, 1, 1) },
   uWallColumn: { value: new THREE.Vector3(1, 1, 1) },
 }
-const PLAIN = { base: [1, 1, 1], column: [1, 1, 1] } as const
+const PLAIN = { base: [1, 1, 1], column: [1, 1, 1], haze: [1, 1, 1] } as const
 const tintOf = (season: string) => WALL.tints[season] ?? PLAIN
 
 interface Emitter {
@@ -231,7 +236,7 @@ const DISC_VERT = `
   float radius = size + lensBlurMm(depth);
   placed.xy -= uShift * pull;
   vec4 centre = projectionMatrix * placed;
-  vec2 corner = position.xy * ${f4(DISCS.quad)};
+  vec2 corner = position.xy * vec2(${f4(DISCS.quad[0])}, ${f4(DISCS.quad[1])});
   placed.xy += corner * radius;
   gl_Position = projectionMatrix * placed;
   if (mirrored > 0.5 && mid.y > 0.0) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
@@ -251,6 +256,7 @@ const DISC_VERT = `
   vColor *= 1.0 + dot(corner, aLean);`
 
 const DISC = `${SLAB_SHAPE_GLSL}
+uniform vec3 uHazeTint;
 varying vec3 vColor;
 varying vec2 vDisc;
 varying vec4 vLook;
@@ -277,7 +283,6 @@ void main() {
   q = vec2(ca * q.x + sa * q.y, -sa * q.x + ca * q.y);
   vec2 cut = vCat.xy * vCat.z;
   float r = max(length(q - cut), length(q + cut));
-  if (r >= ${f4(DISCS.quad)}) discard;
   float body = 1.0 - smoothstep(1.0 - vLook.x, 1.0 + vLook.x, r);
   float edge = 1.0 + vLook.y * smoothstep(0.45, 0.93, r);
   float dust = 1.0 - ${f4(DISCS.specks)} * smoothstep(0.62, 0.85, discNoise(vDisc * 5.3 + 17.0 * vLook.w)) - ${f4(DISCS.mottle)} * (discNoise(vDisc * 2.1 + 3.0 * vLook.w) - 0.5);
@@ -288,7 +293,13 @@ void main() {
     float w = max(vEmitter.w * s, 0.6);
     seen = 1.0 - smoothstep(-w, w, slabInside(hit));
   }
-  vec3 col = vColor * (body * edge * dust * seen);
+  float haze = 0.0;
+  if (vCat.w < 0.5) {
+    float fold = 0.35 + 1.3 * discNoise(vec2(vDisc.x * ${f4(DISCS.hazeFolds)} + 31.0 * vLook.w, vDisc.y * ${f4(DISCS.hazeFoldLong)} + 7.0 * vLook.w));
+    vec2 h = vDisc / vec2(${f4(DISCS.hazeWide)}, ${f4(DISCS.hazeTall)});
+    haze = ${f4(DISCS.haze)} * fold * max(exp(-0.5 * dot(h, h)) - 0.054, 0.0);
+  }
+  vec3 col = vColor * (body * edge * dust * seen) + mix(uHazeTint * dot(vColor, vec3(0.2126, 0.7152, 0.0722)), vColor, ${f4(DISCS.hazeOwn)}) * (haze * seen);
   gl_FragColor = vec4(col, 1.0);
   if (uDiag != 0) {
     if (r >= 1.0) discard;
@@ -332,6 +343,8 @@ export class Backdrop {
       this.emitters.push({ at, size, shown, level: tone, pick: tone, energy: (shown * heroRadius * heroRadius) / (size * size), heroRadius, look: [soft, edge] })
     })
     const spare = n - this.emitters.length
+    const wedge = D.wedgeDeg * RAD
+    const axisMm = Math.hypot(hero.position.x, hero.position.z)
     const counts = D.zones.map((z) => Math.round(z.share * spare))
     counts[0] = Math.max(0, spare - counts.slice(1).reduce((a, b) => a + b, 0))
     D.zones.forEach((zone, z) => {
@@ -348,11 +361,13 @@ export class Backdrop {
         const j = turns[right ? 1 : 0]!
         turns[right ? 1 : 0] = j + 1
         const offset = right ? 0.5 : 0
-        const azMid = zone.azFrom + (zone.azTo - zone.azFrom) * Math.pow((start[1]! + offset + j * D.spread[1]) % 1, zone.sidePower)
-        const elMid = zone.elFrom + (zone.elTo - zone.elFrom) * ((start[2]! + offset + j * D.spread[2]) % 1)
         const levelMid = Math.pow((start[3]! + offset + j * D.spread[3]) % 1, right ? D.rightLevel : 1 / D.rightLevel)
         const pickMid = rng.next()
         const reachMid = D.nearMm + D.spanMm * (zone.depthFrom + (1 - zone.depthFrom) * Math.pow(rng.next(), D.depthPower))
+        const azTop = Math.min(zone.azTo, (wedge - Math.asin(Math.min(1, (Math.sin(wedge) * axisMm) / reachMid))) / RAD)
+        const azMid = zone.azFrom + Math.max(0, azTop - zone.azFrom) * Math.pow((start[1]! + offset + j * D.spread[1]) % 1, zone.sidePower)
+        const elLow = Math.max(zone.elFrom, Math.asin(Math.max(-1, (D.floorMm - hero.position.y) / reachMid)) / RAD)
+        const elMid = elLow + (zone.elTo - elLow) * ((start[2]! + offset + j * D.spread[2]) % 1)
         for (let k = 0; k < members; k++) {
           const lone = members === 1
           const az = side * Math.max(zone.azFrom, azMid + (lone ? 0 : rng.range(-D.stringAcrossDeg, D.stringAcrossDeg))) * RAD
@@ -396,7 +411,7 @@ export class Backdrop {
       part: 'backdrop',
       standIn: false,
       change: 'backdrop',
-      uniforms: { ...lensUniforms, uBackMix: { value: 0 } },
+      uniforms: { ...lensUniforms, uBackMix: { value: 0 }, uHazeTint: { value: new THREE.Vector3(1, 1, 1) } },
       vertexPars: DISC_VERT_PARS,
       vertexMain: DISC_VERT,
       fragment: DISC,
@@ -488,6 +503,7 @@ export class Backdrop {
     const ta = tintOf(from.season)
     const tb = tintOf(to.season)
     wallUniforms.uWallBase.value.set(ta.base[0] + (tb.base[0] - ta.base[0]) * mix, ta.base[1] + (tb.base[1] - ta.base[1]) * mix, ta.base[2] + (tb.base[2] - ta.base[2]) * mix).multiplyScalar(WALL.base)
+    ;(this.material.uniforms.uHazeTint!.value as THREE.Vector3).set(ta.haze[0] + (tb.haze[0] - ta.haze[0]) * mix, ta.haze[1] + (tb.haze[1] - ta.haze[1]) * mix, ta.haze[2] + (tb.haze[2] - ta.haze[2]) * mix)
     wallUniforms.uWallColumn.value.set(ta.column[0] + (tb.column[0] - ta.column[0]) * mix, ta.column[1] + (tb.column[1] - ta.column[1]) * mix, ta.column[2] + (tb.column[2] - ta.column[2]) * mix).multiplyScalar(WALL.column)
     floor.setRGB(fa[0] + (fb[0] - fa[0]) * mix, fa[1] + (fb[1] - fa[1]) * mix, fa[2] + (fb[2] - fa[2]) * mix)
     const A = this.colorA.array as Float32Array

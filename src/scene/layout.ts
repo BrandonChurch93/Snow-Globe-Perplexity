@@ -53,7 +53,7 @@ const smooth = (a: number, b: number, v: number): number => {
 
 export const groundAt = (x: number, z: number): number => moundAt(z) - pond.dip * (1 - smooth(0.86, 1.04, pondField(x, z)))
 
-const BANK = { front: 0.85, side: 5, back: 3, wave: 0.3, ripple: 0.2, reachFront: 3.2, reachSide: 9.2 }
+const BANK = { front: 0.85, side: 5, back: 3, wave: 0.3, ripple: 0.2, lumps: 0.55, reachFront: 3.2, reachSide: 9.2 }
 
 const wallGap = (x: number, z: number): number => {
   const y = moundAt(z)
@@ -69,7 +69,8 @@ export function bankAt(x: number, z: number): number {
   const back = smooth(100, 140, Math.abs(turn))
   const wave = 0.5 * Math.sin(3 * a + 0.7) + 0.32 * Math.sin(7 * a + 2.1) + 0.18 * Math.sin(13 * a + 4.4)
   const ripple = 0.5 * Math.sin(23 * a + 1.1) + 0.5 * Math.sin(37 * a + 5.2)
-  const rise = BANK.front + (BANK.side - BANK.front) * side * (1 + 0.1 * wave) - (BANK.side - BANK.back) * back + BANK.wave * wave + BANK.ripple * ripple
+  const lumps = 0.6 * Math.sin(17 * a + 0.3) * Math.sin(9 * a + 1.7) + 0.4 * Math.sin(29 * a + 2.6)
+  const rise = BANK.front + (BANK.side - BANK.front) * side * (1 + 0.1 * wave) - (BANK.side - BANK.back) * back + BANK.wave * wave + BANK.ripple * ripple + BANK.lumps * lumps * Math.max(side, back, 0.5)
   const reach = BANK.reachFront + (BANK.reachSide - BANK.reachFront) * Math.max(side, back) * (0.86 + 0.14 * Math.sin(5 * a + 1.9))
   return rise * (1 - smooth(0, reach, gap))
 }
@@ -161,27 +162,27 @@ export type Shape = Box | Cone | Ball | Disc
 const SINK = 0.4
 
 export const cottage = {
-  x: -14.6,
-  z: -10.3,
+  x: -14.13,
+  z: -9.42,
   yawDeg: 28,
-  halfWidth: 8.5,
-  halfLength: 10,
+  halfWidth: 8.9,
+  halfLength: 9,
   sill: -4.2,
-  wall: 8.7,
+  wall: 9.4,
   footing: 2.6,
-  rise: 9.2,
+  rise: 7.9,
   overhang: 1.3,
   gableOverhang: 1.1,
   roofThick: 0.65,
-  chimney: { along: -5.7, across: -2.25, half: 1.5, halfAlong: 2, top: 21.4 },
+  chimney: { along: -5.4, across: -3.5, half: 1.75, halfAlong: 2.1, top: 21.8 },
   door: { across: 2.5, width: 5, height: 7.4 },
-  window: { across: -5.2, width: 2.6, height: 3.5, sill: 3.3 },
-  sideWindow: { along: 1.7, width: 2.9, height: 3.2, sill: 3.6 },
+  window: { across: -5.2, width: 3, height: 4.1, sill: 3.1 },
+  sideWindow: { along: 0.7, width: 2.9, height: 3.2, sill: 3.6 },
 }
 
 export const lamppost = { x: 1.3, z: 3.9, height: 11.9, lantern: 9.8, radius: 1.5, post: 0.45 }
 export const tree = { x: 12.5, z: -5, trunk: 3.5, top: 1.9, height: 17, crownY: 9, crown: 15 }
-export const fence = { from: [-33, -4.2] as [number, number], to: [-19.9, 20.8] as [number, number], posts: 5, height: 5.6, post: 0.55, rails: [4.1, 1.7] as [number, number] }
+export const fence = { from: [-31.6, 13.4] as [number, number], to: [-20, 23.9] as [number, number], posts: 4, height: 5.8, post: 0.55, rails: [4.3, 1.5] as [number, number] }
 export const steps: readonly [number, number][] = [[-6.7, -2.2], [-5.9, 0.6], [-5.2, 3.4]]
 export const stones: readonly [number, number][] = [[-6.4, 7], [-8.6, 10.4], [-10.7, 13.6], [-12.4, 16.9], [-12.9, 20.3]]
 
