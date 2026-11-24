@@ -100,6 +100,28 @@ const started = Date.now()
 const shown = (f) => path.relative(rel(), f).split(path.sep).join('/')
 const hd = cfg.formats.hd.id
 const shots = cfg.film.shots
+// What each camera is for, in the kit's words: kit/07 M1, kit/02 section 9 and the shot table of kit/01. A critic asked whether a camera frames what it is for has to be told what that is.
+const CAMERA_FOR = {
+  hero: 'the whole globe and its base, large in the frame; every shake is seen from it',
+  macro: 'the miniature from close, inside the glass, with no edge of the glass in the frame; the film opens and ends on it',
+  interior: 'the miniature inside the glass',
+  base: 'the base alone, filling the width of the frame; each season has its own sculpted base and this camera is how it is judged',
+  surface: 'the surface the globe stands on, with the foot of the base and its reflection',
+  low: 'the whole globe from low down, so the face of the base is seen nearly straight on with the dome above it',
+}
+const shotMoves = (() => {
+  const file = rel('cut', 'SHOTS.md')
+  const out = {}
+  if (!fs.existsSync(file)) return out
+  let id = ''
+  for (const line of fs.readFileSync(file, 'utf8').split('\n')) {
+    const head = /^## `([^`]+)`/.exec(line)
+    if (head) id = head[1]
+    const move = /^- Move: (.*)$/.exec(line)
+    if (move && id) out[id] = move[1].trim()
+  }
+  return out
+})()
 const shakes = shots.filter((s) => s.from && s.to)
 const holds = shots.filter((s) => !(s.from && s.to))
 const lockKey = cfg.keys.find((k) => k.unit === cfg.lookLockUnit)
@@ -294,7 +316,8 @@ function sheetLegend(file, fallback) {
   const shot = shots.find((x) => x.id === spec.shot)
   if (spec.kind === 'film-overview') return `the whole film in ${spec.frames?.length ?? 'a few'} frames, every shot at least once`
   if (spec.kind === 'shot' && shot) {
-    const plain = shot.from && shot.to ? `the shot ${shot.id}: one sheet across the shake from ${shot.from} to ${shot.to}` : `the shot ${shot.id}: a hold on ${shot.season}`
+    const moved = shotMoves[shot.id] ? `. The camera: ${shotMoves[shot.id].replace(/\.$/, '')}` : ''
+    const plain = (shot.from && shot.to ? `the shot ${shot.id}: one sheet across the shake from ${shot.from} to ${shot.to}` : `the shot ${shot.id}: a hold on ${shot.season}`) + moved
     const said = Object.entries(spec.marks ?? {}).map(([i, word]) => `the frame marked as the ${word} is the one labelled ${i} ${(i / cfg.film.fps).toFixed(2)} s ${word}`)
     if (!said.length) return plain
     return `${plain}. ${spec.frames?.[0] === 0 ? 'The first frame of the film is the one labelled 0 0.00 s, and ' : ''}${said.join(', and ')}`
@@ -390,7 +413,7 @@ async function buildBlockout(role) {
     if (!still) continue
     const b = await sized(await load(still.file), tile.w, tile.h)
     const file = await sheetOf([{ img: a, label: 'a' }, { img: b, label: 'b' }], 1, tmp(role, `camera-${camera}.jpg`))
-    cams.files.push(one(file, `a: ${target.what}. b: ${still.what}, the camera ${camera}`, `the camera ${camera}: the picture marked a is the target, the picture marked b is this camera on the placeholder globe`, camera === lockKey.camera ? { settled: settledLines(lockKey) } : {}))
+    cams.files.push(one(file, `a: ${target.what}. b: ${still.what}, the camera ${camera}`, `the camera ${camera}${CAMERA_FOR[camera] ? `, which is for ${CAMERA_FOR[camera]}` : ''}: the picture marked a is the target, the picture marked b is this camera on the placeholder globe`, camera === lockKey.camera ? { settled: settledLines(lockKey) } : {}))
   }
   if (cams.files.length) groups.push(cams)
   const scr = { title: "the app's screen with its controls", files: [] }
