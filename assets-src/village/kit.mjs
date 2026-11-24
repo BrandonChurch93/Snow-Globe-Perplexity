@@ -225,7 +225,7 @@ export function shade(g, f) {
 export const STOUT = { post: 1.3, rail: 1.35 }
 
 export function pillow(w, h, d, su, sv, R, o = {}) {
-  const k = o.square ?? 2.5 + 2.4 * R()
+  const k = o.square ?? 3.2 + 3 * R()
   const g = new THREE.PlaneGeometry(2, 2, su, sv)
   const P = g.getAttribute('position')
   const sh = (R() - 0.5) * (o.shear ?? 0.26)
@@ -234,7 +234,7 @@ export function pillow(w, h, d, su, sv, R, o = {}) {
   const lump = o.lump ?? 0.3
   const tx = (R() - 0.5) * (o.tilt ?? 0.5)
   const ty = (R() - 0.5) * (o.tilt ?? 0.5)
-  const edge = o.edge ?? 3.4
+  const edge = o.edge ?? 4.4
   const lobes = [0, 1, 2].map((i) => ({ n: 3 + i, a: (o.wobble ?? 0.1) * (0.5 + R()) * (i === 0 ? 1 : 0.7), p: R() * 6.2832 }))
   const col = new Float32Array(P.count * 3)
   for (let i = 0; i < P.count; i++) {

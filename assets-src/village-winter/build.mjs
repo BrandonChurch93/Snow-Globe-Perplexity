@@ -26,6 +26,8 @@ const cottageInv = cottageM.clone().invert()
 const local = (x, y, z) => new THREE.Vector3(x, y, z).applyMatrix4(cottageInv)
 
 const SNOW = lin('#edf1f8')
+const ROOF_TONE = [0.56, 0.48, 0.43]
+const ICE_SHADE = { dark: 0.85, from: 0.45, to: 0.95 }
 const snow = new Bag('snow')
 const ice = new Bag('ice')
 const decor = new Bag('decor')
@@ -34,9 +36,10 @@ const fresh = new Bag('fresh')
 
 const snowTone = (k = 1) => (p, n) => mul3(SNOW, k * (0.9 + 0.08 * noise(p[0] * 0.8, p[1] * 0.8, p[2] * 0.8)) * (0.72 + 0.28 * smooth(-0.7, 0.35, n[1])))
 const tally = {}
-const addSnow = (g, matrix, cover = 0.5, bag = snow, label = 'caps') => {
+const addSnow = (g, matrix, cover = 0.5, bag = snow, label = 'caps', tone = 1) => {
   const before = bag.triangles
-  bag.add(g, { matrix, color: snowTone(), surf: [cover, 0] })
+  const base = snowTone(Array.isArray(tone) ? 1 : tone)
+  bag.add(g, { matrix, color: Array.isArray(tone) ? (p, n) => base(p, n).map((v, i) => v * tone[i]) : base, surf: [cover, 0] })
   tally[label] = (tally[label] ?? 0) + bag.triangles - before
 }
 
@@ -105,7 +108,7 @@ const underDeck = (a, h, l) => {
 const keepRoof = (a, h, l) => !(prism(a, l) < -0.08 && h < stackTop + 0.2) && !underDeck(a, h, l)
 const roofMin = [-(C.halfWidth + C.overhang + 1.2), ridgeY - (SLOPE + 1.1) * sp - 0.7, -(roofLen + 1.1)]
 const roofMax = [C.halfWidth + C.overhang + 1.2, ridgeY + T0 / cp + 0.7, roofLen + 1.1]
-addSnow(netGeometry(roofSnow(0, 0.04), roofMin, roofMax, 0.4, keepRoof), cottageM, 1, snow, 'roof')
+addSnow(netGeometry(roofSnow(0, 0.04), roofMin, roofMax, 0.45, keepRoof), cottageM, 1, snow, 'roof', ROOF_TONE)
 
 {
   const sdf = (a, h, l) => {
@@ -167,7 +170,10 @@ for (const s of fenceShapes) {
   if (s.half[2] < 2) {
     const seed = R() * 40
     const top = s.half[1] + 0.12
-    const sdf = (x, y, z) => rbox(x + 0.05 * noise(seed, y, 1), y - top - 0.26, z, 0.66 * STOUT.post, 0.34, 0.66 * STOUT.post, 0.33) + 0.05 * fbm(x * 2.2 + seed, y * 2.2, z * 2.2, 2)
+    const fat = 0.56 + 0.22 * R()
+    const tall = 0.26 + 0.2 * R()
+    const lean = 0.24 * (R() - 0.5)
+    const sdf = (x, y, z) => rbox(x - lean + 0.05 * noise(seed, y, 1), y - top - tall + 0.08, z + 0.5 * lean, fat * STOUT.post, tall, fat * STOUT.post, Math.min(tall, 0.33)) + 0.05 * fbm(x * 2.2 + seed, y * 2.2, z * 2.2, 2)
     addSnow(netGeometry(sdf, [-1.3, top - 0.4, -1.3], [1.3, top + 1.05, 1.3], 0.22), M, 0.6, snow, 'posts')
   } else {
     const seed = R() * 40
@@ -261,7 +267,7 @@ function snowAt(x, z) {
 }
 const BANK_TOP = 0.3
 const BANK_BLEND_MM = 5
-const BILLOW = { cycles: 6.5, deepMm: 2.2 }
+const BILLOW = { cycles: 6.5, deepMm: 2.8 }
 const UNDERCUT = { dark: 0.88, from: 0.985, to: 1.022, arc: [-135, -115, -5, 25] }
 function contact(x, z) {
   let k = 1
@@ -275,10 +281,10 @@ function contact(x, z) {
 }
 
 {
-  const around = 204
+  const around = 180
   const shore = [0.9, 0.93, 0.95, 0.962, 0.972, 0.981, 0.99, 1.0, 1.012, 1.028, 1.05, 1.08]
   const outer = 38
-  const skirt = 18
+  const skirt = 14
   const r = L.innerRadiusMm - 0.6
   const footY = L.collarY - 1.5
   const pc = Math.cos(L.pond.yaw)
@@ -442,7 +448,11 @@ function contact(x, z) {
     g.computeVertexNormals()
   }
   let vi = 0
-  ice.add(g, { keepUv: true, color: [1, 1, 1], surf: () => [st[2 * vi++], 0] })
+  const shadeAt = (p) => {
+    const k = 1 - ICE_SHADE.dark * smooth(ICE_SHADE.from, ICE_SHADE.to, L.pondField(p[0], p[2])) * smooth(0.2, 0.8, (L.pond.z - p[2]) / L.pond.rz)
+    return [k, k, k]
+  }
+  ice.add(g, { keepUv: true, color: shadeAt, surf: () => [st[2 * vi++], 0] })
 }
 
 const GREENS = ['#17361a', '#20441d', '#122b15', '#274d21', '#1b3a19'].map(lin)
@@ -515,7 +525,7 @@ const off = () => [R() * 7, R() * 7]
 }
 
 const hangs = { eave: RF.eaveHangs(), rake: RF.rakeHangs() }
-const bulbTones = ['#ffc176', '#ffb561', '#ffcb86', '#ffaa52', '#ffc47c'].map(lin)
+const bulbTones = ['#ffb14e', '#ffa53c', '#ffbb5e', '#ff9a30', '#ffb354'].map(lin)
 let bulbIndex = 0
 for (const run of [hangs.eave, hangs.rake]) {
   const tops = run.map((p) => [p[0], p[1] + 0.56, p[2]])
@@ -557,7 +567,7 @@ for (const run of [hangs.eave, hangs.rake]) {
   for (const p of run) {
     const socket = new THREE.CylinderGeometry(0.13, 0.17, 0.3, 6, 1).applyMatrix4(T(p[0], p[1] + 0.42, p[2]))
     decor.add(socket, { color: lin('#1c2a1d'), surf: [surf(KIND.iron, 0.55), 0], uvOffset: off(), renormal: true })
-    const bulb = new THREE.SphereGeometry(0.4, 8, 6).applyMatrix4(new THREE.Matrix4().makeScale(0.92, 1.22, 0.92).setPosition(p[0], p[1], p[2]))
+    const bulb = new THREE.SphereGeometry(0.26, 6, 4).applyMatrix4(new THREE.Matrix4().makeScale(0.92, 1.22, 0.92).setPosition(p[0], p[1], p[2]))
     const tone = bulbTones[bulbIndex % bulbTones.length]
     const phase = R()
     bulbs.add(bulb, { color: tone, keepUv: true, surf: [bulbIndex, phase] })
@@ -565,7 +575,7 @@ for (const run of [hangs.eave, hangs.rake]) {
   }
 }
 
-addSnow(netGeometry(roofSnow(0.2, 0.1), roofMin.map((v) => v - 0.4), roofMax.map((v) => v + 0.4), 0.85, (a, h, l) => keepRoof(a, h, l) && Math.max(slopeOf(-1, a, h)[1], slopeOf(1, a, h)[1]) > 0.45), cottageM, 1, fresh, 'fresh')
+addSnow(netGeometry(roofSnow(0.2, 0.1), roofMin.map((v) => v - 0.4), roofMax.map((v) => v + 0.4), 0.85, (a, h, l) => keepRoof(a, h, l) && Math.max(slopeOf(-1, a, h)[1], slopeOf(1, a, h)[1]) > 0.45), cottageM, 1, fresh, 'fresh', ROOF_TONE)
 for (const s of fenceShapes.filter((q) => q.half[2] < 2)) {
   const top = s.half[1] + 0.12
   const sdf = (x, y, z) => rbox(x, y - top - 0.36, z, 0.74 * STOUT.post, 0.4, 0.74 * STOUT.post, 0.36) + 0.06 * fbm(x * 2 + 9, y * 2, z * 2, 2)
