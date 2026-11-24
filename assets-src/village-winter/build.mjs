@@ -1,8 +1,10 @@
+import fs from 'node:fs'
+import { PNG } from 'pngjs'
 import * as THREE from 'three'
 import { fromThree, writeGlb } from '../../tools/lib/glb.mjs'
 import { rel, writeJson } from '../../tools/lib/paths.mjs'
 import { loadLayout, loadRoof } from '../village/layout.mjs'
-import { Bag, KIND, STOUT, TILE_MM, add3, basis, boxMatrix, clamp, fbm, frame, lin, mul3, netGeometry, noise, norm3, rng, shade, smin, smooth, sub3, surf, writePng } from '../village/kit.mjs'
+import { Bag, KIND, STACK_LIFT, STOUT, TILE_MM, add3, basis, boxMatrix, clamp, fbm, frame, lin, mul3, netGeometry, noise, norm3, rng, shade, smin, smooth, sub3, surf, writePng } from '../village/kit.mjs'
 
 const L = await loadLayout()
 const RF = await loadRoof()
@@ -55,7 +57,7 @@ const T0 = 1.6
 const RR = 0.74
 const ROLL = { out: 0.85, dropMm: 0.55, round: 0.34, clear: 0.14 }
 const ch = C.chimney
-const stackTop = ch.top - 0.95
+const stackTop = ch.top + STACK_LIFT
 const prism = (a, l) => {
   const qa = Math.abs(a - ch.across) - ch.half
   const ql = Math.abs(l - ch.along) - ch.halfAlong
@@ -110,16 +112,6 @@ const keepRoof = (a, h, l) => !(prism(a, l) < -0.08 && h < stackTop + 0.2) && !u
 const roofMin = [-(C.halfWidth + C.overhang + 1.2), ridgeY - (SLOPE + 1.1) * sp - 0.7, -(roofLen + 1.1)]
 const roofMax = [C.halfWidth + C.overhang + 1.2, ridgeY + T0 / cp + 0.7, roofLen + 1.1]
 addSnow(netGeometry(roofSnow(0, 0.07), roofMin, roofMax, 0.45, keepRoof), cottageM, 1, snow, 'roof', ROOF_TONE)
-
-{
-  const sdf = (a, h, l) => {
-    const y = h - (stackTop + 0.85)
-    let d = Math.max(ell(a - ch.across, y + 0.1, l - ch.along, ch.half + 0.12, 0.66, ch.halfAlong + 0.12), rbox(a - ch.across, y - 0.3, l - ch.along, ch.half + 0.1, 0.5, ch.halfAlong + 0.1, 0.3))
-    d = Math.max(d, 0.66 - Math.hypot(a - (ch.across - 0.2), l - (ch.along + 0.1)))
-    return d + 0.05 * fbm(a * 2, h * 2, l * 2, 2)
-  }
-  addSnow(netGeometry(sdf, [ch.across - ch.half - 0.7, stackTop + 0.5, ch.along - ch.halfAlong - 0.7], [ch.across + ch.half + 0.7, stackTop + 1.8, ch.along + ch.halfAlong + 0.7], 0.2, (a, h) => h > stackTop + 0.9), cottageM, 0.6)
-}
 
 function strip(n, at, across, up, w, h, seg = 6) {
   const pos = []
@@ -225,8 +217,8 @@ for (const [i, s] of pathShapes.entries()) {
       addSnow(netGeometry(sdf, [cx - 1.3, s.half[1] - 0.35, -s.half[2] - 0.6], [cx + 1.3, s.half[1] + 0.6, s.half[2] + 0.6], 0.3, (x, y) => y > s.half[1] - 0.3), M, 0.6, snow, 'steps')
     }
   } else {
-    const sdf = (x, y, z) => ell(x, y - s.half[1] - 0.02, z, s.half[0] * 0.8, 0.27, s.half[2] * 0.78) + 0.06 * fbm(x * 1.6 + seed, y * 1.6, z * 1.6, 2)
-    addSnow(netGeometry(sdf, [-s.half[0], s.half[1] - 0.35, -s.half[2]], [s.half[0], s.half[1] + 0.5, s.half[2]], 0.24, (x, y) => y > s.half[1] - 0.02), M, 0.6, snow, 'stones')
+    const sdf = (x, y, z) => ell(x, y - s.half[1] + 0.1, z, s.half[0] * 1.12, 0.46, s.half[2] * 1.14) + 0.06 * fbm(x * 1.6 + seed, y * 1.6, z * 1.6, 2)
+    addSnow(netGeometry(sdf, [-s.half[0] - 0.5, s.half[1] - 0.5, -s.half[2] - 0.5], [s.half[0] + 0.5, s.half[1] + 0.6, s.half[2] + 0.5], 0.24, (x, y) => y > s.half[1] - 0.3), M, 0.6, snow, 'stones')
   }
 }
 
@@ -664,6 +656,35 @@ const iceBytes = writePng(rel('assets-full', 'winter', 'village-ice.lin.tile.png
   return [scratch, frost, bubble]
 })
 
+/**
+ * The chimney's plume: the kept generated take (see RECIPE.md), its brightness on black taken as the smoke's density and
+ * brought down to PLUME px by a box filter. The stem's foot is at the bottom edge; village.ts places it on the flue pipe.
+ */
+const PLUME = 256
+const plumeTake = PNG.sync.read(fs.readFileSync(rel('assets-src', 'village-winter', 'gen', 'plume-take4.png')))
+const plumeAt = (px, py) => {
+  const o = (py * plumeTake.width + px) * 4
+  return (plumeTake.data[o] + plumeTake.data[o + 1] + plumeTake.data[o + 2]) / 765
+}
+const plumeBytes = writePng(rel('assets-full', 'winter', 'village-plume.lin.png'), PLUME, (x, y) => {
+  const x0 = (x * plumeTake.width) / PLUME
+  const x1 = ((x + 1) * plumeTake.width) / PLUME
+  const y0 = (y * plumeTake.height) / PLUME
+  const y1 = ((y + 1) * plumeTake.height) / PLUME
+  let sum = 0
+  let area = 0
+  for (let py = Math.floor(y0); py < Math.min(plumeTake.height, Math.ceil(y1)); py++) {
+    const wy = Math.min(py + 1, y1) - Math.max(py, y0)
+    for (let px = Math.floor(x0); px < Math.min(plumeTake.width, Math.ceil(x1)); px++) {
+      const w = wy * (Math.min(px + 1, x1) - Math.max(px, x0))
+      sum += w * plumeAt(px, py)
+      area += w
+    }
+  }
+  const d = sum / area
+  return [d, d, d]
+})
+
 tally.field = snow.triangles - Object.values(tally).reduce((a, b) => a + b, 0) + (tally.fresh ?? 0)
 const record = {
   tally,
@@ -673,6 +694,7 @@ const record = {
   maps: {
     'assets-full/winter/village-snow.lin.tile.png': { px: SIZE, bytes: snowBytes, tileMm: TILE_MM },
     'assets-full/winter/village-ice.lin.tile.png': { px: SIZE, bytes: iceBytes, tileMm: TILE_MM },
+    'assets-full/winter/village-plume.lin.png': { px: PLUME, bytes: plumeBytes, from: 'assets-src/village-winter/gen/plume-take4.png' },
   },
 }
 writeJson(rel('out', 'work', 'village', 'build-winter.json'), record)

@@ -317,11 +317,11 @@ const HEAPS = [
   { a0: -138, a1: -78, ea: 20, eb: 15, p: 0.75, t: 0.5, bank: 2.7, r1: 55.4, over: [[-132, -96, 0.8]] },
   { a0: -100, a1: -60, ea: 10, eb: 12, t: 3.0, r0: 47.9, r1: 54.1 },
   { a0: -85, a1: -39, ea: 8, eb: 12, t: 3.0, r0: 47.7, r1: 53.9 },
-  { a0: -47, a1: -7, ea: 8, eb: 9, t: 2.4, r0: 47.5, r1: 54.0, over: [[-36, -11, 0.8]] },
+  { a0: -40, a1: -8, ea: 9, eb: 9, t: 3.3, r0: 46.6, r1: 54.3, skew: -0.5, over: [[-30.5, -24, 0.75], [-20.5, -13.5, 0.7]] },
   { a0: -6, a1: 4, ea: 4, eb: 4, t: 1.0, r0: 49.6, r1: 54.4 },
-  { a0: 2, a1: 36, ea: 9, eb: 16, t: 1.8, r0: 47.4, r1: 54.9, over: [[5, 32, 0.8]] },
-  { a0: 7, a1: 72, ea: 13, eb: 14, t: 1.8, bank: 1.0, r1: 55, over: [[13, 72, 1]] },
-  { a0: 52, a1: 98, ea: 12, eb: 10, t: 1.9, bank: 0.9, r1: 55, over: [[52, 97, 1]] },
+  { a0: 3, a1: 36, ea: 12, eb: 16, t: 1.8, r0: 47.4, r1: 54.6, skew: 0.9 },
+  { a0: 4, a1: 72, ea: 15, eb: 14, t: 1.8, bank: 1.0, r1: 55, skew: 1.0, over: [[27, 35.5, 0.9], [51, 72, 0.9]] },
+  { a0: 52, a1: 98, ea: 12, eb: 10, t: 1.9, bank: 0.9, r1: 55, over: [[52, 97, 0.9]] },
   { a0: 84, a1: 138, ea: 15, eb: 20, p: 0.75, t: 0.5, bank: 2.5, r1: 55.4, over: [[80, 132, 1]] },
   { a0: 136, a1: 184, ea: 12, eb: 12, t: 1.6, bank: 0.6, r1: 54.8, over: [[144, 172, 0.9]] },
   { a0: 180, a1: 228, ea: 12, eb: 12, t: 1.5, bank: 0.4, r1: 54.3, over: [[196, 216, 0.6]] },
@@ -370,7 +370,7 @@ function scallop(azIn) {
 }
 
 function hangNear(azIn) {
-  hangAz ??= MEASURED.map(([x, , y1]) => onCylinder(x, y1, P.ICE.r).az)
+  hangAz ??= MEASURED.map((m) => onCylinder(m.x, m.y1, P.ICE.r).az)
   let near = 0
   for (const az of hangAz) near = Math.max(near, 1 - smooth(0.9, 2.5, Math.abs(turnTo(azIn, az) - az)))
   return near
@@ -400,7 +400,8 @@ function snowThickness(azIn, r) {
   for (const m of HEAPS) {
     const az = turnTo(azIn, (m.a0 + m.a1) / 2)
     const ragged = az + wobble
-    const a = smooth(m.a0, m.a0 + m.ea, ragged) * (1 - smooth(m.a1 - m.eb, m.a1, ragged))
+    const lead = (m.skew ?? 0) * (r - 49)
+    const a = smooth(m.a0 + lead, m.a0 + lead + m.ea, ragged) * (1 - smooth(m.a1 - m.eb, m.a1, ragged))
     if (a <= 0) continue
     const over = overOf(m, az) * lobes
     const end = mix(m.r1, snowEdge - 0.4, over)
@@ -519,25 +520,26 @@ export function buildSnow() {
   return { soup }
 }
 
+const ICE_RISE = 0.9
 const MEASURED = [
-  [922, 1070, 1188, 26],
-  [948, 1085, 1188, 22],
-  [985, 1090, 1188, 24],
-  [1045, 1105, 1198, 24],
-  [1090, 1110, 1205, 26],
-  [1167, 1125, 1275, 34],
-  [1242, 1125, 1222, 20],
-  [1262, 1125, 1222, 20],
-  [1452, 1135, 1210, 26],
-  [1512, 1135, 1228, 30],
-  [1578, 1132, 1212, 24],
-  [1684, 1110, 1300, 44],
-  [1745, 1105, 1220, 30],
-  [1765, 1100, 1215, 22],
-  [1835, 1090, 1215, 30],
-  [1868, 1080, 1210, 22],
-  [1888, 1075, 1215, 20],
-  [1900, 1070, 1200, 14],
+  { x: 922, y0: 1070, y1: 1188, w: [22, 24, 23, 19, 12], spread: 17, lean: -0.45, bow: 0.25 },
+  { x: 948, y0: 1085, y1: 1188, w: [17, 19, 21, 17, 11], spread: 15, lean: 0.3, drop: 0.5 },
+  { x: 985, y0: 1090, y1: 1188, w: [13, 21, 24, 18, 8], lean: 0.2, bow: -0.3 },
+  { x: 1045, y0: 1105, y1: 1198, w: [34, 29, 24, 19, 16], lean: 0.15 },
+  { x: 1090, y0: 1110, y1: 1205, w: [29, 26, 22, 18, 15], lean: -0.3, drop: 0.5 },
+  { x: 1167, y0: 1125, y1: 1275, w: [44, 35, 29, 23, 14], spread: 27, lean: -0.6, bow: 0.5, bulb: [0.62, 0.12] },
+  { x: 1242, y0: 1125, y1: 1222, w: [20, 18, 15, 12, 9], spread: 13, lean: -0.35 },
+  { x: 1262, y0: 1125, y1: 1222, w: [30, 26, 21, 16, 12], spread: 18, lean: 0.35, bulb: [0.45, 0.1] },
+  { x: 1452, y0: 1135, y1: 1210, w: [33, 28, 23, 19, 15], spread: 22, lean: 0.1 },
+  { x: 1512, y0: 1135, y1: 1228, w: [40, 27, 19, 13, 7], spread: 25, lean: 0.25, bow: -0.2 },
+  { x: 1578, y0: 1132, y1: 1212, w: [22, 27, 24, 17, 11], lean: -0.2, drop: 0.6 },
+  { x: 1684, y0: 1110, y1: 1300, w: [47, 37, 26, 18, 11], spread: 30, lean: -0.7, bow: 0.6, bulb: [0.3, 0.1] },
+  { x: 1745, y0: 1105, y1: 1220, w: [21, 20, 17, 12, 8], spread: 14, lean: 0.2 },
+  { x: 1765, y0: 1100, y1: 1215, w: [28, 26, 22, 15, 10], spread: 17, lean: 0.35 },
+  { x: 1835, y0: 1090, y1: 1215, w: [33, 31, 27, 21, 15], lean: -0.2, bulb: [0.2, 0.12] },
+  { x: 1868, y0: 1080, y1: 1210, w: [19, 18, 16, 12, 8], spread: 13 },
+  { x: 1888, y0: 1075, y1: 1215, w: [21, 20, 18, 14, 10], spread: 13, lean: 0.2, drop: 0.4 },
+  { x: 1900, y0: 1070, y1: 1200, w: [14, 13, 11, 9, 6], lean: 0.3 },
 ]
 
 function onCylinder(px, py, radius) {
@@ -551,23 +553,79 @@ function onCylinder(px, py, radius) {
   return { az: azOf(p), h: p[1], z: p[2], hit: disc >= 0 }
 }
 
+function through(xs, ys, x) {
+  let i = 0
+  while (i + 2 < xs.length && x > xs[i + 1]) i++
+  const slope = (k) => {
+    const a = Math.max(k - 1, 0)
+    const b = Math.min(k + 1, xs.length - 1)
+    return (ys[b] - ys[a]) / (xs[b] - xs[a])
+  }
+  const h = xs[i + 1] - xs[i]
+  const u = clamp((x - xs[i]) / h)
+  const u2 = u * u
+  const u3 = u2 * u
+  return (2 * u3 - 3 * u2 + 1) * ys[i] + (u3 - 2 * u2 + u) * h * slope(i) + (-2 * u3 + 3 * u2) * ys[i + 1] + (u3 - u2) * h * slope(i + 1)
+}
+
+function icicleShape(it) {
+  const rng = mulberry(977 + 131 * Math.round((it.az + 360) * 10))
+  const total = it.length + 0.5 + P.ICE.up + ICE_RISE
+  const cap = clamp(1.15 * it.r[4], 0.3, 1.4) / total
+  const dome = 0.3 / total
+  const knots = [0, 0.25, 0.5, 0.75, 1 - cap]
+  const a1 = 0.03 + 0.06 * rng()
+  const p1 = 3.2 + 3.3 * rng()
+  const k1 = rng()
+  const a2 = 0.012 + 0.022 * rng()
+  const p2 = 1.5 + 0.9 * rng()
+  const k2 = rng()
+  const oval = 0.9 + 0.22 * rng()
+  const a0 = rng() * 6.28
+  const a3 = rng() * 6.28
+  const twist = (rng() - 0.5) * 3
+  const flute = 0.03 + 0.05 * rng()
+  const off = 0.15 + (rng() - 0.5) * 0.3
+  const body = (t) => {
+    const u = (t - 1 + cap) / cap
+    const core = u < 0 ? Math.max(through(knots, it.r, t), 0.05) : it.r[4] * Math.sqrt(Math.max(1 - u * u, 0))
+    const lumps = 1 + (a1 * Math.sin(2 * Math.PI * ((t * total) / p1 + k1)) + a2 * Math.sin(2 * Math.PI * ((t * total) / p2 + k2))) * smooth(0, 0.1, t) * (1 - smooth(-0.6, 0.2, u))
+    const bulb = it.bulb ? 1 + it.bulb[1] * Math.exp(-(((t - it.bulb[0]) / 0.08) ** 2)) : 1
+    const drop = 1 + 0.42 * it.drop * Math.exp(-(((u - 0.4) / 0.42) ** 2))
+    const top = t < dome ? Math.sqrt(Math.max(1 - (1 - t / dome) ** 2, 0)) : 1
+    return core * lumps * bulb * drop * top
+  }
+  const along = (t) => 1 + (it.spread > it.r[0] ? (it.spread / it.r[0] - 1) * Math.exp(-Math.pow(Math.max(t * total - 0.9, 0) / 1.5, 2)) : 0.12 * Math.exp(-(t * total) / 0.8))
+  const section = (al, t) => {
+    const r = body(t) * (1 + flute * Math.cos(2 * al + a0 + twist * t) + 0.025 * Math.cos(3 * al + a3 - twist * t))
+    return [Math.cos(al) * r * (2 - oval), Math.sin(al) * r * oval * along(t)]
+  }
+  return { total, cap, dome, body, section, off }
+}
+
 export function icicleList(f) {
   const list = []
-  for (const [x, y0, y1, w] of MEASURED) {
-    const foot = onCylinder(x, y1, P.ICE.r)
+  for (const m of MEASURED) {
+    const foot = onCylinder(m.x, m.y1, P.ICE.r)
     const scale = 9.0 + 0.9 * clamp(foot.z / P.ICE.r, 0, 1)
-    list.push({ az: foot.az, length: clamp((y1 - y0) / scale + 0.6, 3, 19), radius: clamp((w / scale / 2) * 1.05, 0.7, 2.4), measured: true })
+    const r = m.w.map((w) => clamp((w / scale / 2) * 1.05, 0.2, 2.6))
+    list.push({ az: foot.az, length: clamp((m.y1 - m.y0) / scale + 0.6, 3, 19), radius: r[0], r, spread: (m.spread ?? 0) / scale, swing: m.lean ?? 0, bow: m.bow ?? 0, bulb: m.bulb ?? null, drop: m.drop ?? 0, measured: true })
   }
   const rng = mulberry(20261123)
   let az = 97
   while (az < 262) {
     const big = rng() < 0.3
-    list.push({ az: az > 180 ? az - 360 : az, length: big ? 12 + 5 * rng() : 6 + 5 * rng(), radius: big ? 1.4 + 0.6 * rng() : 0.8 + 0.5 * rng(), measured: false })
-    az += 6 + 9 * rng()
+    const r0 = big ? 1.4 + 0.9 * rng() : 0.75 + 0.6 * rng()
+    const kind = rng()
+    const form = kind < 0.3 ? [1, 0.84, 0.68, 0.52, 0.38] : kind < 0.55 ? [0.6, 0.95, 1, 0.72, 0.34] : kind < 0.8 ? [1, 0.66, 0.44, 0.3, 0.16] : [1, 0.9, 0.7, 0.48, 0.24]
+    const r = form.map((v) => Math.max(r0 * v * (0.92 + 0.16 * rng()), 0.2))
+    list.push({ az: az > 180 ? az - 360 : az, length: big ? 11 + 7 * rng() : 4.5 + 6.5 * rng(), radius: r[0], r, spread: rng() < 0.35 ? r[0] * (1.3 + 0.5 * rng()) : 0, swing: (rng() - 0.5) * 1.2, bow: (rng() - 0.5) * 0.8, bulb: rng() < 0.3 ? [0.2 + 0.5 * rng(), 0.08 + 0.08 * rng()] : null, drop: rng() < 0.4 ? 0.3 + 0.5 * rng() : 0, measured: false })
+    az += rng() < 0.3 ? 2.2 + 1.5 * rng() : 6 + 12 * rng()
   }
   list.sort((a, b) => a.az - b.az)
   const mer = f.mer
   return list.map((it, id) => {
+    const shape = icicleShape(it)
     let need = 0
     for (let k = 3; k <= 10; k++) {
       const t = k / 10
@@ -575,65 +633,47 @@ export function icicleList(f) {
       let relief = 0
       for (const da of [-1.6, -0.8, 0, 0.8, 1.6]) for (const ds of [-0.8, 0, 0.8]) relief = Math.max(relief, f.atSoft(it.az + da, s + ds))
       const wood = P.atS(mer, s).r + relief * P.CARVING.relief
-      need = Math.max(need, (wood + 0.4 + it.radius * Math.pow(1 - t, 0.7) - P.ICE.r) / Math.pow(t, 1.3))
+      need = Math.max(need, (wood + 0.4 + shape.body(Math.min(t, 0.999)) * 1.1 - P.ICE.r - shape.off) / Math.pow(t, 1.3))
     }
-    return { ...it, id, lean: need }
+    return { ...it, id, lean: need, shape }
   })
 }
 
 export function buildIce(list) {
   const soup = new Soup('ice')
-  const rng = mulberry(977)
-  const near = [0, 0.04, 0.1, 0.19, 0.29, 0.4, 0.51, 0.62, 0.73, 0.83, 0.91, 0.96, 0.99, 1]
-  const far = [0, 0.05, 0.2, 0.4, 0.6, 0.8, 0.95, 1]
   for (const it of list) {
     const back = front(it.az) > 135
-    const around = back ? 5 : 12
-    const ts = back ? far : near
-    const root = place(P.ICE.r + 0.25 * (rng() - 0.5), P.ICE.h + 0.5 + P.ICE.up, it.az)
+    const around = back ? 6 : 20
+    const { total, cap, dome, body, section, off } = it.shape
+    const ts = []
+    const domeRows = back ? 2 : 5
+    for (let j = 0; j < domeRows; j++) ts.push(dome * (1 - Math.cos((Math.PI / 2) * (j / domeRows))))
+    const bodyRows = back ? 6 : clamp(Math.round(total / 0.42), 18, 44)
+    for (let j = 0; j < bodyRows; j++) ts.push(dome + (1 - cap - dome) * (j / bodyRows))
+    const capRows = back ? 2 : 6
+    for (let j = 0; j <= capRows; j++) ts.push(1 - cap + cap * Math.sin((Math.PI / 2) * (j / capRows)))
+    const root = place(P.ICE.r + off, P.ICE.h + 0.5 + P.ICE.up + ICE_RISE, it.az)
     const out = dir(1, 0, it.az)
     const side = [Math.cos(it.az * RAD), 0, -Math.sin(it.az * RAD)]
-    const swing = (rng() - 0.5) * 1.5
-    const k1 = rng()
-    const k2 = rng()
-    const a0 = rng() * 6.28
-    const a1 = rng() * 6.28
-    const taper = 0.58 + 0.34 * rng()
-    const wave = 0.05 + 0.1 * rng()
-    const pitch = 2.6 + 2.2 * rng()
-    const bend = (rng() - 0.5) * 0.9
-    const belly = 0.12 + 0.3 * rng()
-    const swell = rng() < 0.6 ? 0.04 + 0.1 * rng() : 0
-    const bead = rng() < 0.45 ? 0.5 + 0.5 * rng() : 0
-    const total = it.length + 0.5 + P.ICE.up
-    const neck = Math.min(0.16, 1.8 / total)
-    const axis = (t) => add3(add3(add3(root, [0, -1, 0], total * t), out, it.lean * Math.pow(t, 1.3)), side, swing * t * t + bend * Math.sin(Math.PI * t) * (1 - t))
-    const radius = (t) => {
-      const body = it.radius * (0.985 * Math.pow(1 - t, taper) + 0.015) * (1 + swell * Math.exp(-(((t - belly) / 0.12) ** 2)))
-      const ripple = 1 + wave * Math.sin(2 * Math.PI * ((t * total) / pitch + k1)) * smooth(0.02, 0.15, t) + 0.045 * Math.sin(2 * Math.PI * ((t * total) / 2.1 + k2)) + 0.02 * Math.sin(2 * Math.PI * ((t * total) / 1.1 + 3 * k1))
-      const drop = bead * 0.1 * it.radius * Math.exp(-(((t - 0.955) / 0.03) ** 2))
-      const cap = t > 0.985 ? Math.sqrt(Math.max(1 - ((t - 0.985) / 0.015) ** 2, 0)) : 1
-      const shoulder = t < neck ? 1 + 0.16 * (1 - Math.sin((Math.PI / 2) * (t / neck))) : 1
-      return (Math.max(body * ripple, 0) + drop) * cap * shoulder
-    }
+    const axis = (t) => add3(add3(add3(root, [0, -1, 0], total * t), out, it.lean * Math.pow(t, 1.3)), side, it.swing * t * t + it.bow * Math.sin(Math.PI * t) * (1 - 0.5 * t))
     const surface = (al, t) => {
-      const c = axis(t)
-      const wobble = 1 + 0.07 * Math.cos(2 * al + a0) + 0.03 * Math.cos(3 * al + a1)
-      const r = radius(t) * wobble
-      return add3(add3(c, out, Math.cos(al) * r), side, Math.sin(al) * r)
+      const [o, s] = section(al, t)
+      return add3(add3(axis(t), out, o), side, s)
     }
     soup.grid(around + 1, ts.length, (i, j) => {
       const al = (i / around) * 2 * Math.PI
       const t = ts[j]
       const p = surface(al, t)
       const e = 0.012
-      const da = add3(surface(al + e, Math.min(t, 0.985)), surface(al - e, Math.min(t, 0.985)), -1)
-      const dt = add3(surface(al, Math.min(t + e, 0.99)), surface(al, Math.max(t - e, 0)), -1)
+      const tn = clamp(t, 0.1 * dome, 1 - 0.08 * cap)
+      const da = add3(surface(al + e, tn), surface(al - e, tn), -1)
+      const dt = add3(surface(al, Math.min(tn + e * 0.5, 1 - 0.02 * cap)), surface(al, Math.max(tn - e * 0.5, 0)), -1)
       let n = norm3(cross3(da, dt))
       const radial = add3(scale3(out, Math.cos(al)), side, Math.sin(al))
-      if (dot3(n, radial) < 0) n = scale3(n, -1)
-      if (t >= 1) n = norm3(add3(scale3(radial, 0.4), [0, -1, 0]))
-      return { p, n, uv: [t, it.id], uv2: [i / around, radius(t) / it.radius], c: [root[0] / 128 + 0.5, root[1] / 128 + 0.5, root[2] / 128 + 0.5] }
+      if (dot3(n, add3(radial, [0, t < dome ? 1 : t > 1 - cap ? -1 : 0, 0])) < 0) n = scale3(n, -1)
+      if (t >= 1) n = [0, -1, 0]
+      if (t <= 0) n = norm3(add3(scale3(radial, 0.2), [0, 1, 0]))
+      return { p, n, uv: [t, it.id], uv2: [i / around, clamp(body(t) / it.radius, 0, 2)], c: [root[0] / 128 + 0.5, root[1] / 128 + 0.5, root[2] / 128 + 0.5] }
     })
   }
   return { soup }

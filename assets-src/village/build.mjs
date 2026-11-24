@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { fromThree, writeGlb } from '../../tools/lib/glb.mjs'
 import { rel, writeJson } from '../../tools/lib/paths.mjs'
 import { loadLayout, loadRoof } from './layout.mjs'
-import { Bag, KIND, STOUT, TILE_MM, Tris, add3, basis, boxMatrix, clamp, fbm, frame, grainUv, lin, mix3, mul3, noise, norm3, pillow, planar, rng, shade, slab, smooth, sub3, surf, writePng } from './kit.mjs'
+import { Bag, KIND, STACK_LIFT, STOUT, TILE_MM, Tris, add3, basis, boxMatrix, clamp, fbm, frame, grainUv, lin, mix3, mul3, noise, norm3, pillow, planar, rng, shade, slab, smooth, sub3, surf, writePng } from './kit.mjs'
 
 const L = await loadLayout()
 const RF = await loadRoof()
@@ -21,7 +21,7 @@ const T = (x, y, z) => new THREE.Matrix4().makeTranslation(x, y, z)
 
 const STONES = ['#8c867d', '#7c766f', '#979289', '#726d66', '#837e75', '#9e988e', '#79736a', '#908a7f', '#6b6660', '#87837d'].map(lin)
 const ARCH = ['#b9b2a6', '#aba498', '#c5beb2', '#a09a8e'].map(lin)
-const BRICKS = ['#c69f88', '#b48c77', '#d3ab94', '#a5806d', '#be9681', '#cca48d', '#ae8873'].map(lin)
+const BRICKS = ['#f3bf9a', '#e6b08c', '#fac9a6', '#dba585', '#eeb893', '#f6c4a0', '#e2ab8a'].map(lin)
 const SHINGLES = ['#5c4838', '#4e3d31', '#68523f', '#43352b', '#57483c'].map(lin)
 const LEAVES = ['#22401f', '#2d5226', '#1b3319', '#3a5f2c', '#27481f'].map(lin)
 const MORTAR_C = lin('#85766a')
@@ -353,10 +353,10 @@ const chimneyFaces = [
   { M: frame(P3(ch.across, 0, ch.along - ch.halfAlong), neg(V3), UP, neg(U3)), U: neg(V3), V: UP, half: ch.half },
 ]
 const stackBase = C.wall + 2.5
-const stackTop = ch.top - 0.95
+const stackTop = ch.top + STACK_LIFT
 for (const [k, f] of chimneyFaces.entries()) {
   const W = { M: f.M.clone().multiply(T(0, 0, 0.36)), U: f.U, V: f.V }
-  wall(W, { x0: -f.half - 0.12, x1: f.half + 0.12, y0: stackBase, y1: stackTop }, { rowH: 0.66, rowJ: 0.1, wide: 1.05, wideJ: 0.3, gap: 0.1, stack: 0, drift: 0.03, stone: { depth: 0.24, su: 3, sv: 3, tones: BRICKS, dirt: false, pillow: { square: 6, shear: 0.07, wobble: 0.035, lump: 0.34, tilt: 0.3 } } })
+  wall(W, { x0: -f.half - 0.12, x1: f.half + 0.12, y0: stackBase, y1: stackTop }, { rowH: 0.54, rowJ: 0.08, wide: 0.95, wideJ: 0.3, gap: 0.09, stack: 0, drift: 0.03, stone: { depth: 0.24, su: 3, sv: 3, tones: BRICKS, dirt: false, pillow: { square: 6, shear: 0.07, wobble: 0.035, lump: 0.34, tilt: 0.3 } } })
   const back = new THREE.PlaneGeometry(2 * f.half, stackTop - stackBase, 4, 8).applyMatrix4(T(0, (stackTop + stackBase) / 2, MORTAR + 0.04))
   shade(back, (x, y) => 0.8 + 0.3 * noise(x * 2, y * 2, k))
   solid.add(back, { matrix: W.M, color: lin('#7c695d'), surf: [surf(KIND.stone, 0.95), 0], uv: planar(f.U, f.V), uvOffset: off(), renormal: true })
@@ -366,11 +366,11 @@ const crown = (w, l, h, y, tone, round) => {
   shade(g, (x, yy, z) => 0.82 + 0.3 * noise(x * 2.4, yy * 2.4, z * 2.4))
   solid.add(g, { matrix: basis(P3(ch.across, y, ch.along), V3, UP), color: tone, surf: stoneSurf(), uvOffset: off(), renormal: true })
 }
-crown(2 * ch.half + 0.42, 2 * ch.halfAlong + 0.42, 0.44, stackTop + 0.22, lin('#77594a'), 0.14)
-crown(2 * ch.half + 0.16, 2 * ch.halfAlong + 0.16, 0.42, stackTop + 0.64, lin('#6d4c3e'), 0.12)
-const pot = new THREE.LatheGeometry([[0.36, 0], [0.5, 0.05], [0.52, 0.3], [0.44, 0.45], [0.42, 1.25], [0.52, 1.35], [0.53, 1.55], [0.4, 1.6], [0.34, 1.45], [0.3, 0.2]].map(([x, y]) => new THREE.Vector2(x, y)), 14)
-shade(pot, (x, y, z) => 0.75 + 0.35 * noise(x * 3, y * 2, z * 3))
-solid.add(pot, { matrix: T(...P3(ch.across - 0.2, stackTop + 0.82, ch.along + 0.1)), color: lin('#1f2023'), surf: [surf(KIND.iron, 0.5), 0], uvOffset: off(), renormal: true })
+crown(2 * ch.half + 0.36, 2 * ch.halfAlong + 0.36, 0.86, stackTop + 0.4, lin('#eeb893'), 0.34)
+crown(2 * ch.half - 0.4, 2 * ch.halfAlong - 0.4, 0.3, stackTop + 0.8, lin('#c78c73'), 0.14)
+const pot = new THREE.LatheGeometry([[0.5, 0], [0.68, 0], [0.68, 1.24], [0.62, 1.3], [0.52, 1.3], [0.5, 0.3]].map(([x, y]) => new THREE.Vector2(x, y)), 16)
+shade(pot, (x, y, z) => 0.85 + 0.2 * noise(x * 3, y * 2, z * 3))
+solid.add(pot, { matrix: T(...P3(ch.across - 0.2, stackTop + 0.94, ch.along + 0.1)), color: lin('#17181a'), surf: [surf(KIND.iron, 0.5), 0], uvOffset: off(), renormal: true })
 
 const lampM = new THREE.Matrix4().makeRotationY(RF.LAMP.yaw).setPosition(...RF.lampFoot())
 const post = new THREE.LatheGeometry(
