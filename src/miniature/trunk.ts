@@ -41,6 +41,8 @@ const TOP_H = 37.6
 const DEEP_H = -4.5
 const MIN_SHAFT = 5
 const ROOT_RISE = 7
+const ROOT_FALL = 1.6
+const ROOT_SKIRT = 1.8
 const TWIST_LOW = 0.16
 const TWIST_HIGH = 0.055
 const BARK_MM = 6.5
@@ -54,14 +56,14 @@ const AXIS_X: Table = [[-4.5, -0.5], [0, -0.4], [5, 0.05], [10, 0.75], [13.6, 0.
 const AXIS_Z: Table = [[-4.5, 0], [0, 0], [8, 0.35], [14, -0.1], [26, -0.4], [37.6, 0]]
 
 const ROOTS: readonly { angle: number; reach: number; width: number }[] = [
-  { angle: 3.02, reach: 7.8, width: 0.32 },
-  { angle: 2.2, reach: 6.6, width: 0.28 },
-  { angle: 1.43, reach: 6.5, width: 0.29 },
-  { angle: 0.52, reach: 6.8, width: 0.26 },
-  { angle: 6.2, reach: 7.3, width: 0.28 },
-  { angle: 5.5, reach: 6.4, width: 0.26 },
-  { angle: 4.75, reach: 6.0, width: 0.25 },
-  { angle: 3.9, reach: 6.5, width: 0.29 },
+  { angle: 3.02, reach: 7.4, width: 0.4 },
+  { angle: 2.2, reach: 6.4, width: 0.35 },
+  { angle: 1.43, reach: 6.3, width: 0.36 },
+  { angle: 0.52, reach: 6.6, width: 0.33 },
+  { angle: 6.2, reach: 7.0, width: 0.35 },
+  { angle: 5.5, reach: 6.2, width: 0.33 },
+  { angle: 4.75, reach: 5.8, width: 0.31 },
+  { angle: 3.9, reach: 6.3, width: 0.36 },
 ]
 
 const PADS: readonly { at: Vec3; size: Vec3; lean: number; tip: number }[] = [
@@ -139,7 +141,7 @@ export function trunkRadius(phi: number, h: number): number {
   let r = R * (1 + 0.1 * (trunkRidge(phi, h) - 0.6))
   if (h < ROOT_RISE) {
     const a = phi + trunkTwist(h)
-    const g = h <= 0 ? 1 - 0.1 * h : Math.pow(1 - h / ROOT_RISE, 2.2)
+    const g = h <= 0 ? 1 - 0.1 * h : Math.pow(1 - h / ROOT_RISE, ROOT_SKIRT)
     let sum = 0
     for (const root of ROOTS) {
       const d = wrap(a - root.angle)
@@ -216,12 +218,12 @@ function grow(): Limb[] {
     const extra = rng.range(0.2, 1.2)
     for (let i = 0; i <= 10; i++) {
       const t = i / 10
-      const h = 4 - 5 * Math.pow(t, 2.2)
+      const h = 4 - 5 * Math.pow(t, ROOT_FALL)
       const phi = root.angle - trunkTwist(h) + drift * t * t
       const [ax, az] = trunkAxis(h)
-      const d = lerp(trunkGirth(4) * 0.7, root.reach + extra, Math.pow(t, 1.1))
+      const d = lerp(trunkGirth(4) * 0.7, root.reach + extra, Math.pow(t, ROOT_FALL))
       pts.push([ax + Math.cos(phi) * d, h, az + Math.sin(phi) * d])
-      rad.push(lerp(1.5, 0.42, Math.pow(t, 0.8)))
+      rad.push(lerp(1.9, 0.4, Math.pow(t, 0.75)))
     }
     chain('root', 0, pts, rad)
   }
