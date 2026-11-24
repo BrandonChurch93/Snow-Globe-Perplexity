@@ -63,6 +63,7 @@ const ARM_WIND = 4
 const ROLL_SOFT = 1
 const ARM_HUB2 = 12 * 12
 const BANK_GAIN = 4
+const BALL_ROOM_MM = 0.1
 const BANK_FROM = 16 / ROLL_RISE_MM
 const BANK_OVER = ROLL_RISE_MM / 24
 const LEAP2 = 3 * 3
@@ -745,7 +746,9 @@ export class ParticleEngine {
       this.sizes[i] = b.sizeMm[0] + (b.sizeMm[1] - b.sizeMm[0]) * big
       this.sink[i] = fall[0] + (fall[1] - fall[0]) * (0.45 * big + 0.55 * u2)
     }
-    this.layer[i] = b.mode === 'steer' ? b.clearanceMm * 0.3 : b.layerMm[0] + (b.layerMm[1] - b.layerMm[0]) * Math.pow(u3, 2.4)
+    const lies = b.layerMm[0] + (b.layerMm[1] - b.layerMm[0]) * Math.pow(u3, 2.4)
+    const clear = b.ball > 0 ? b.ball * this.sizes[i]! + BALL_ROOM_MM : 0
+    this.layer[i] = b.mode === 'steer' ? b.clearanceMm * 0.3 : lies > clear ? lies : clear
     this.lift[i] = b.liftMmS[1] - (b.liftMmS[1] - b.liftMmS[0]) * Math.pow(u3, 0.45)
     this.turnRate[i] = b.turnRadS[0] + (b.turnRadS[1] - b.turnRadS[0]) * u4
     this.life[i] = b.lifeSeconds[0] + (b.lifeSeconds[1] - b.lifeSeconds[0]) * u5
