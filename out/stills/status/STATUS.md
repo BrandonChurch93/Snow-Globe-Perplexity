@@ -1,16 +1,13 @@
-# Status 4
+# Status 5
 
-2026-11-24 02:54 UTC
+2026-11-24 03:01 UTC
 
-- Phase 0, step 18 of 18. All seven machine checks of Phase 0 are green: build, 93 tests, determinism, sizes, shipped files, repo, portability
-- The same still rendered on this VM and on two sandbox VMs is identical to the pixel, so film chunks from different VMs can be joined
-- The app and the review page are published. What they show is the measuring spike: every part is a stand-in until Phase 2
-- Next: close the Phase 0 gate, then the rough cut of Phase 1
-- phase 0: 1.06 h used of its 4.00 h box
-- allowance (before the review): 1.06 h used of 36.00 h allowed
+- The rough cut is made: 60 s, nine shots, four shakes of one bar each. It is cut from the approved images on a placeholder beat, with no sound. It exists so you can judge the order and the pace of the film.
+- Phase 0 closed with all seven machine checks green. Next: Phase 2, the engine and the blockout of the whole globe. The build is continuing.
+- phase 1: 0.13 h used of its 1.00 h box
+- allowance (before the review): 1.19 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-4-1.jpg`: Left: the approved image for winter-rest. Right: the build's still of it. The right side is the measuring spike of Phase 0: plain shapes, plain points and a simple lens, every part still a stand-in
-- `out/stills/status/status-4-2.jpg`: The published app in live mode at 1280 x 720, four moments: the arrival, after a drag to orbit, during a shake, after it
-- `out/stills/status/status-4-3.jpg`: The same four moments at phone size, 390 x 844
+- `out/stills/status/status-5-1.jpg`: Rough cut at 2 s: the camera pulling back from the miniature, the glass coming into frame
+- `out/stills/status/status-5-2.jpg`: Rough cut, the first shake: winter streaked sideways, crossing into spring

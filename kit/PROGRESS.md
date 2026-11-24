@@ -5,7 +5,7 @@ The Builder's memory. Read it at the start of every task and after every compact
 ## Status
 
 - Build: in progress
-- Phase: 1
+- Phase: 2
 - Review: not reached
 - Review round: none
 - Review round step: none
@@ -25,22 +25,21 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 4 · 2026-11-24 02:54 UTC
+Status 5 · 2026-11-24 03:01 UTC
 
-- `out/stills/status/status-4-1.jpg`: Left: the approved image for winter-rest. Right: the build's still of it. The right side is the measuring spike of Phase 0: plain shapes, plain points and a simple lens, every part still a stand-in
-- `out/stills/status/status-4-2.jpg`: The published app in live mode at 1280 x 720, four moments: the arrival, after a drag to orbit, during a shake, after it
-- `out/stills/status/status-4-3.jpg`: The same four moments at phone size, 390 x 844
+- `out/stills/status/status-5-1.jpg`: Rough cut at 2 s: the camera pulling back from the miniature, the glass coming into frame
+- `out/stills/status/status-5-2.jpg`: Rough cut, the first shake: winter streaked sideways, crossing into spring
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 02:53 UTC
-clock: phase 0, tick of 20.0 minutes
-phase 0: 1.06 h used of its 4.00 h box
-allowance (before the review): 1.06 h used of 36.00 h allowed
-all time before the review: 1.06 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 03:02 UTC
+clock: phase 2, tick of 0.7 minutes
+phase 2: 0.01 h used of its 6.00 h box
+allowance (before the review): 1.20 h used of 36.00 h allowed
+all time before the review: 1.20 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
@@ -53,8 +52,8 @@ minutes since the last status: 0
 | Phase | State | Started | Ended | Gate evidence |
 | --- | --- | --- | --- | --- |
 | 0 · Ground truth | done | 2026-11-24 01:45 UTC | 2026-11-24 02:56 UTC | All eight gate lines met. G1, G2, G3, G4, G8, G9, G10 green at build `649783eb70c1c499`. Line by line in the session log at 02:56 |
-| 1 · The rough cut | in progress | 2026-11-24 02:56 UTC | | |
-| 2 · Engine and blockout | not started | | | |
+| 1 · The rough cut | done | 2026-11-24 02:56 UTC | 2026-11-24 03:04 UTC | D1 pass: `out/roughcut.mp4`, 960 x 540, 30 frames a second, 1800 frames. Pushed as `681b78b`, on the review page, Status 5 posted at 03:03 |
+| 2 · Engine and blockout | in progress | 2026-11-24 03:04 UTC | | |
 | 3 · The look lock | not started | | | |
 | 4 · The other seasons and the changes | not started | | | |
 | 5 · The whole globe, the soundtrack and the review | not started | | | |
@@ -431,6 +430,8 @@ none
 
 - 2026-11-24 02:35 UTC: `5ef13ec` pushed. 02:48 UTC: `2f3666f` pushed.
 
+- 2026-11-24 02:57 UTC: `dbe01e8` pushed. 03:01 UTC: `681b78b` pushed.
+
 ## Session log
 
 One entry per task: when it started, what it did, where it stopped.
@@ -457,3 +458,5 @@ One entry per task: when it started, what it did, where it stopped.
   - The clock has ticks since 01:50 and four statuses were posted: 01:52, 02:12, 02:33 and 02:54.
   - The app is published: https://snow-globe-seasons.pplx.app
 - 02:56: Phase 0 done. Phase 1 started.
+- 02:57 to 03:04: Phase 1. `tools/animatic.mjs` merged from `agent/animatic` (`f34f7d9`), `npm run animatic` added and run here in 1 min 45 s. One frame from every shot looked at, and twelve more at the edges: frame 0 is the tight crop of the winter miniature with no glass in frame, the pull back is plain by 2 s, the glass is in frame by 3 s, each shake streaks the outgoing season's at-rest image and crosses to the incoming mid-shake image, which holds two beats after the landing, and `close` ends on the framing of frame 0 and holds its last bar. Order and lengths against `film.shots`: open 0 to 287, shake-1 288 to 359, spring 360 to 647, shake-2 648 to 719, summer 720 to 1007, shake-3 1008 to 1079, fall 1080 to 1367, shake-4 1368 to 1439, close 1440 to 1799. All nine agree with the default grid at 72 frames a bar.
+- 03:04: the Phase 1 gate. D1 pass: `out/roughcut.mp4` is 960 x 540 at 30 frames a second with 1800 frames, 17.4 MB, no sound stream. G1, G2, G3, G4, G8, G9, G10 pass again on the same engine build (`out/work/gate/phase-1.md`). The rough cut is pushed (`681b78b`), it plays on the review page (published 03:02), and Status 5 was posted at 03:03 with two frames. Phase 1 done. Phase 2 started.

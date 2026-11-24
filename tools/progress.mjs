@@ -44,10 +44,11 @@ if (args.set) {
   const re = new RegExp(`^\\| ${n} · ([^|]*)\\| ([^|]*)\\| ([^|]*)\\| ([^|]*)\\| ([^|]*)\\|$`, 'm')
   const m = md.match(re)
   if (!m) throw new Error(`phase row not found: ${n}`)
-  const started = args.started ? ` ${args.started} ` : m[3]
-  const ended = args.ended ? ` ${args.ended} ` : m[4]
-  const evidence = args.evidence ? ` ${args.evidence} ` : m[5]
-  md = md.replace(re, `| ${n} · ${m[1]}| ${state ?? m[2].trim()} |${started}|${ended}|${evidence}|`)
+  const cell = (given, was) => {
+    const v = given && given !== true ? String(given).trim() : was.trim()
+    return v ? ` ${v} ` : ' '
+  }
+  md = md.replace(re, () => `| ${n} · ${m[1]}| ${state ?? m[2].trim()} |${cell(args.started, m[3])}|${cell(args.ended, m[4])}|${cell(args.evidence, m[5])}|`)
   if (state === 'in progress') md = md.replace(/^- Phase: .*$/m, `- Phase: ${n}`)
 } else if (args.read) {
   console.log(readSection(md, String(args.read)))
