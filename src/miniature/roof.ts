@@ -12,7 +12,7 @@ export const roofLength = c.halfLength + c.gableOverhang
 
 export const roofAt = (side: number, down: number, along: number, lift: number): Point => cottagePoint(side * (down * cp + lift * sp), ridgeY - down * sp + lift * cp, along)
 
-export const HANG = { eaveStep: 2.4, rakeStep: 1.95, drop: 0.34, eaveOut: 0.3, eaveUnder: 0.75, gableOut: 0.36, rakeUnder: 0.9 }
+export const HANG = { eaveStep: 2.4, rakeStep: 1.95, drop: 0.34, eaveOut: 0.5, eaveUnder: -0.24, gableOut: 0.36, rakeUnder: 0.9 }
 
 export function eaveHangs(): Point[] {
   const out: Point[] = []

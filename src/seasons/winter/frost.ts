@@ -26,9 +26,11 @@ export const glassDressing: Dressing = { tint: [0.86, 0.92, 1], amount: 0 }
 export const surfaceDressing: Dressing & { reachMm: number } = { tint: [0.86, 0.92, 1], amount: 0, reachMm: 132 }
 
 const look = {
-  glass: { cover: 1.7, haze: 0.3, slope: 0.55, micro: 1.1, glint: 1.6, light: 0.96, through: 2.4, thin: 0.6, thick: 0.8, blur: 0.006, bend: 0.012 },
-  slab: { cover: 0.75, slope: 1.6, micro: 1.2, glint: 1.6, pool: 0.35, light: 2.2 },
+  glass: { cover: 1.7, haze: 0.5, slope: 0.55, micro: 1.1, glint: 1.6, light: 0.96, through: 2.4, thin: 0.6, thick: 0.8, blur: 0.006, bend: 0.012, room: 0.5, soften: 0.3, rimMu: 0.3, front: 1.9, clear: [0.255, 0.28, 0.8] },
+  slab: { cover: 2.2, film: 1.7, slope: 1.6, micro: 1.2, glint: 1.6, pool: 0.35, poolBack: 0.2, light: 2.65, wrap: 0.3, broad: 1.4, shade: 0.35, edge: 0.6, ball: 0.3, rim: 0.55, sky: 1.5, sugarMm: 0.34, clotMm: 1.15, room: 0.1, lace: 0.3, gritty: 0.75 },
 }
+const SNOW = { thin: [0.3, 0.43, 0.66], thick: [0.92, 0.945, 0.985], body: [0.9, 0.93, 0.98] }
+const vec = (v: number[]): string => `vec3(${v.map((x) => x.toFixed(3)).join(', ')})`
 
 const frostUniforms = {
   uGlassMap: { value: null as THREE.Texture | null },
@@ -73,7 +75,26 @@ float frostRnd(vec2 cell, float k) {
 bool frostHidden(float keep) {
   return keep < 1.0 && stageHash(vec3(gl_FragCoord.xy + 17.0, uSeed + 0.37)) >= keep;
 }
-vec3 frostGlintLayer(vec2 q, float size, float k, vec3 n, vec3 v) {
+float frostLattice(vec3 i, float k) {
+  return stageHash(vec3(i.xz + 8192.0, (i.y + 64.0) * 0.015625 + k));
+}
+float frostValue(vec3 p, float k) {
+  vec3 i = floor(p);
+  vec3 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  float a = mix(frostLattice(i, k), frostLattice(i + vec3(1.0, 0.0, 0.0), k), f.x);
+  float b = mix(frostLattice(i + vec3(0.0, 0.0, 1.0), k), frostLattice(i + vec3(1.0, 0.0, 1.0), k), f.x);
+  float c = mix(frostLattice(i + vec3(0.0, 1.0, 0.0), k), frostLattice(i + vec3(1.0, 1.0, 0.0), k), f.x);
+  float d = mix(frostLattice(i + vec3(0.0, 1.0, 1.0), k), frostLattice(i + vec3(1.0, 1.0, 1.0), k), f.x);
+  return mix(mix(a, b, f.z), mix(c, d, f.z), f.y);
+}
+float frostSugar(vec3 p, float pxMm, float base, float k) {
+  float lod = log2(max(pxMm * 1.6 / base, 1.0));
+  float l0 = floor(lod);
+  float size = base * exp2(l0);
+  return mix(frostValue(p / size, k + 0.03 * l0), frostValue(p / (2.0 * size), k + 0.03 * (l0 + 1.0)), lod - l0);
+}
+vec3 frostGlintLayer(vec2 q, float size, float k, vec3 n, vec3 v, float room) {
   vec2 g = q / size;
   vec2 cell = floor(g);
   vec2 at = 0.3 + 0.4 * vec2(frostRnd(cell, k), frostRnd(cell, k + 0.013));
@@ -89,15 +110,15 @@ vec3 frostGlintLayer(vec2 q, float size, float k, vec3 n, vec3 v) {
   bright = 0.2 + 3.2 * bright * bright * bright;
   vec3 light = uKeyCol * (2.4 * smoothstep(0.95, 0.992, dot(r, uKeyDir)));
   light += uRimCol * (3.2 * smoothstep(0.955, 0.994, dot(r, uRimDir)));
-  light += stageRoomLights(r, 0.012) * 0.5;
+  light += stageRoomLights(r, 0.012) * room;
   return light * (spot * bright);
 }
-vec3 frostGlints(vec2 q, float pxMm, vec3 n, vec3 v) {
+vec3 frostGlints(vec2 q, float pxMm, vec3 n, vec3 v, float room) {
   float lod = log2(max(pxMm * 1.7 / uGlint.z, 1.0));
   float l0 = floor(lod);
   float f = lod - l0;
   float size = uGlint.z * exp2(l0);
-  return frostGlintLayer(q, size, 0.11 + 0.07 * l0, n, v) * (1.0 - f) + frostGlintLayer(q, size * 2.0, 0.18 + 0.07 * l0, n, v) * f;
+  return frostGlintLayer(q, size, 0.11 + 0.07 * l0, n, v, room) * (1.0 - f) + frostGlintLayer(q, size * 2.0, 0.18 + 0.07 * l0, n, v, room) * f;
 }
 `
 
@@ -153,13 +174,15 @@ void main() {
   vec3 m0 = texture(uGlassMap, uv, -0.6).rgb;
   vec3 m1 = texture(uGlassMap, uv + e2 * e, -0.6).rgb;
   vec3 m2 = texture(uGlassMap, uv + t2 * e, -0.6).rgb;
+  vec3 ms = texture(uGlassMap, uv, 1.4).rgb;
   vec3 mb = texture(uGlassMap, uv, 3.0).rgb;
   float on = smoothstep(0.0, FROST_SOFT, lvl - m0.g);
   float h0 = m0.r * on;
+  float hs = ms.r * smoothstep(0.0, 1.5 * FROST_SOFT, lvl - ms.g + 0.02);
   float h1 = m1.r * smoothstep(0.0, FROST_SOFT, lvl - m1.g);
   float h2 = m2.r * smoothstep(0.0, FROST_SOFT, lvl - m2.g);
   float haze = mb.r * smoothstep(0.0, 2.0 * FROST_SOFT, lvl - mb.g + 0.04);
-  float body = h0 * (0.45 + 1.5 * grain.r);
+  float body = mix(h0, 1.3 * hs, ${look.glass.soften.toFixed(3)}) * (0.45 + 1.5 * grain.r);
   float mmR = e * 2.0 * uShape.x * ${RS.toFixed(2)};
   float mmT = mmR * st / max(th, 0.05);
   vec2 slope = uShape.z * uGlassLook.z * vec2((h1 - h0) / mmR, (h2 - h0) / mmT);
@@ -171,18 +194,19 @@ void main() {
   vec3 ng = normalize(vStageWorld - uLensCentre);
   vec3 v = normalize(vStageWorld - cameraPosition);
   float mu = max(dot(ng, -v), 0.0);
-  float tau = uGlassLook.x * body / max(mu, 0.42) + uGlassLook.y * haze / max(mu, 0.3);
+  float tau = uGlassLook.x * body / max(mu, ${look.glass.rimMu.toFixed(3)}) + uGlassLook.y * haze / max(mu, 0.3);
   float alpha = 1.0 - exp(-tau);
+  alpha *= 1.0 - ${look.glass.clear[2]!.toFixed(3)} * (1.0 - smoothstep(${look.glass.clear[0]!.toFixed(3)}, ${look.glass.clear[1]!.toFixed(3)}, mu));
   float kd = dot(n, uKeyDir);
   float rd = dot(n, uRimDir);
-  float keyLit = max(kd, 0.0) * 0.8 + smoothstep(-1.0, 0.6, kd) * 0.3 + max(-kd, 0.0) * uGlassThru.x;
+  float keyLit = max(kd, 0.0) * ${look.glass.front.toFixed(3)} + smoothstep(-1.0, 0.6, kd) * 0.3 + max(-kd, 0.0) * uGlassThru.x;
   float rimLit = max(rd, 0.0) * 0.8 + smoothstep(-1.0, 0.6, rd) * 0.3 + max(-rd, 0.0) * uGlassThru.x;
   float thru = pow(clamp(dot(v, uRimDir), 0.0, 1.0), 2.0) * clamp(0.6 + 0.6 * dot(ng, uRimDir), 0.0, 1.0);
   vec3 lit = uKeyCol * keyLit + uRimCol * (rimLit + 1.5 * thru) + uSky * (0.55 + 0.45 * n.y);
-  vec3 albedo = mix(vec3(0.7, 0.8, 0.93), vec3(0.93, 0.95, 0.98), smoothstep(0.08, 0.7, h0));
+  vec3 albedo = mix(vec3(0.76, 0.84, 0.92), vec3(0.93, 0.95, 0.98), smoothstep(0.08, 0.7, h0));
   vec3 col = albedo * (lit * 0.3183 + stageGrid(vStageLocal * 0.9) * 0.6) * uGlint.w * (uGlassThru.y + uGlassThru.z * smoothstep(0.04, 0.6, h0));
   float pxMm = sqrt(length(dFdx(vStageWorld)) * length(dFdy(vStageWorld)));
-  vec3 spark = frostGlints(ga * ${RS.toFixed(2)}, pxMm, ng, v) * uGlint.x * (0.06 + 1.5 * m0.b * on) * smoothstep(0.02, 0.25, alpha);
+  vec3 spark = frostGlints(ga * ${RS.toFixed(2)}, pxMm, ng, v, ${look.glass.room.toFixed(3)}) * uGlint.x * (0.06 + 1.5 * m0.b * on) * smoothstep(0.02, 0.25, alpha);
   if (uBehindSize.x > 0.0) {
     float thickness = clamp(h0 + 0.6 * haze, 0.0, 1.0);
     float soft = smoothstep(0.02, 0.35, thickness);
@@ -201,7 +225,7 @@ uniform sampler2D uSlabMap;
 uniform vec4 uField;
 uniform vec4 uSlabLook;
 ${SLAB_LIGHT_GLSL}
-vec3 frostSlabLight(vec3 n, vec3 P, vec3 albedo) {
+vec3 frostSlabLight(vec3 n, vec3 P, vec3 albedo, float open) {
   vec3 keyDir;
   vec3 rimDir;
   vec3 warm;
@@ -209,8 +233,17 @@ vec3 frostSlabLight(vec3 n, vec3 P, vec3 albedo) {
   float rimGain;
   float occl;
   slabLight(P, keyDir, keyGain, rimDir, rimGain, occl, warm);
-  vec3 lit = uKeyCol * (clamp(dot(n, keyDir) * 0.7 + 0.3, 0.0, 1.0) * keyGain) + uRimCol * (clamp(dot(n, rimDir) * 0.6 + 0.4, 0.0, 1.0) * rimGain);
-  return albedo * (0.3183 * ${look.slab.light.toFixed(3)}) * (lit + (uSky * (0.55 + 0.45 * n.y) + warm * uSlabLook.y) * occl);
+  vec2 foot = uFoot.xy + uLean.xy;
+  float ball = mix(${look.slab.ball.toFixed(3)}, 1.0, smoothstep(0.9, 1.5, slabCast(P.xz, foot, uFoot.w, keyDir.xz / max(keyDir.y, 0.25)).y));
+  float key = clamp((dot(n, keyDir) + ${look.slab.wrap.toFixed(3)}) / ${(1 + look.slab.wrap).toFixed(3)}, 0.0, 1.0);
+  float rim = clamp(dot(n, rimDir) * 0.6 + 0.4, 0.0, 1.0);
+  vec3 lit = (uKeyCol * (key * keyGain * ball) + uRimCol * (rim * rimGain * ${look.slab.rim.toFixed(3)})) * mix(${look.slab.shade.toFixed(3)}, 1.0, open);
+  vec2 out2 = P.xz - foot;
+  float front = smoothstep(-0.2, 0.8, out2.y / max(length(out2), 1.0));
+  return albedo * (0.3183 * ${look.slab.light.toFixed(3)}) * (lit + (uSky * ((0.55 + 0.45 * n.y) * ${look.slab.sky.toFixed(3)}) + warm * mix(${look.slab.poolBack.toFixed(3)}, 1.0, front) * uSlabLook.y) * (occl * open));
+}
+vec2 frostSlabUv(vec2 xz) {
+  return vec2(xz.x + uField.x, uField.x - xz.y) / (2.0 * uField.x);
 }
 `
 
@@ -221,31 +254,43 @@ void main() {
   if (stageGone(c)) discard;
   if (frostHidden(uGrow.w)) discard;
   vec2 xz = vStageWorld.xz;
-  vec2 uv = vec2(xz.x + uField.x, uField.x - xz.y) / (2.0 * uField.x);
+  vec2 uv = frostSlabUv(xz);
   vec2 guv = xz * uField.w;
   vec3 grain = texture(uGrain, guv).rgb;
   vec3 fine = texture(uGrain, guv * 3.0 + 0.37).rgb;
   float fw = max(length(dFdx(uv)), length(dFdy(uv)));
   float e = max(min(length(dFdx(uv)), length(dFdy(uv))), uField.y) * 1.2;
+  float eb = max(4.0 * e, 0.45 / uField.x);
   float lvl = uGrow.y + (grain.r - 0.33) * 0.07 + (fine.r - 0.33) * 0.03;
   vec3 m0 = texture(uSlabMap, uv).rgb;
   vec3 m1 = texture(uSlabMap, uv + vec2(e, 0.0)).rgb;
   vec3 m2 = texture(uSlabMap, uv - vec2(0.0, e)).rgb;
+  vec3 b0 = texture(uSlabMap, uv, 2.5).rgb;
+  vec3 b1 = texture(uSlabMap, uv + vec2(eb, 0.0), 2.5).rgb;
+  vec3 b2 = texture(uSlabMap, uv - vec2(0.0, eb), 2.5).rgb;
   float on = smoothstep(0.0, FROST_SOFT, lvl - m0.g);
   float h0 = m0.r * on;
   float h1 = m1.r * smoothstep(0.0, FROST_SOFT, lvl - m1.g);
   float h2 = m2.r * smoothstep(0.0, FROST_SOFT, lvl - m2.g);
-  float body = h0 * (0.4 + 1.8 * grain.r);
+  float s0 = b0.r * smoothstep(0.0, 2.0 * FROST_SOFT, lvl - b0.g + 0.03);
+  float s1 = b1.r * smoothstep(0.0, 2.0 * FROST_SOFT, lvl - b1.g + 0.03);
+  float s2 = b2.r * smoothstep(0.0, 2.0 * FROST_SOFT, lvl - b2.g + 0.03);
+  float pxMm = sqrt(length(dFdx(vStageWorld)) * length(dFdy(vStageWorld)));
+  float sugar = smoothstep(0.26, 0.74, frostSugar(vStageWorld, pxMm, ${look.slab.sugarMm.toFixed(3)}, 0.31));
+  float clot = smoothstep(0.3, 0.7, frostSugar(vStageWorld, pxMm, ${look.slab.clotMm.toFixed(3)}, 0.47));
+  float body = mix(s0, h0, 0.72) * (0.4 + 0.75 * sugar + 0.45 * clot);
   vec2 slope = uField.z * uSlabLook.z * vec2(h1 - h0, h2 - h0) / (e * 2.0 * uField.x);
+  slope += uField.z * ${look.slab.broad.toFixed(3)} * vec2(s1 - s0, s2 - s0) / (eb * 2.0 * uField.x);
   vec2 micro = ((grain.gb - 0.5) * 1.2 + (fine.gb - 0.5) * 0.8) * uSlabLook.w * (0.2 + 0.8 * smoothstep(0.0, 0.25, h0));
   vec3 n = normalize(vec3(-slope.x - micro.x, 1.0, -slope.y + micro.y));
   vec3 v = normalize(vStageWorld - cameraPosition);
   float mu = max(-v.y, 0.0);
-  float alpha = max(1.0 - exp(-uSlabLook.x * body / max(mu, 0.2)), smoothstep(0.15, 0.7, body));
-  vec3 albedo = mix(vec3(0.6, 0.72, 0.88), vec3(0.96, 0.97, 0.98), smoothstep(0.2, 0.9, h0));
-  vec3 col = frostSlabLight(n, vStageWorld, albedo) * (0.62 + 0.7 * grain.r + 0.45 * fine.r);
-  float pxMm = sqrt(length(dFdx(vStageWorld)) * length(dFdy(vStageWorld)));
-  vec3 spark = frostGlints(xz, pxMm, vec3(0.0, 1.0, 0.0), v) * uGlint.y * (0.05 + 1.5 * m0.b * on) * smoothstep(0.02, 0.25, alpha);
+  float alpha = 1.0 - exp(-uSlabLook.x * body * body / max(mu, 0.3) - ${look.slab.film.toFixed(3)} * body);
+  float thick = smoothstep(0.16, 0.86, mix(s0, h0, 0.6));
+  vec3 albedo = mix(${vec(SNOW.thin)}, ${vec(SNOW.thick)}, thick);
+  float open = 0.55 + 0.45 * smoothstep(-0.12, 0.2, h0 - s0 + 0.35 * thick);
+  vec3 col = frostSlabLight(n, vStageWorld, albedo, open) * (0.7 + 0.6 * sugar);
+  vec3 spark = frostGlints(xz, pxMm, vec3(0.0, 1.0, 0.0), v, ${look.slab.room.toFixed(3)}) * uGlint.y * (0.05 + 1.5 * m0.b * on) * smoothstep(0.02, 0.25, alpha) * thick;
   gl_FragColor = vec4(col * alpha + spark, alpha);
   if (uDiag != 0) {
     if (alpha < 0.3) discard;
@@ -256,7 +301,7 @@ void main() {
 const SHAPES = `
 ${SLAB_GLSL}
 varying vec3 vFrostN;
-varying vec2 vFrostOn;
+varying vec4 vFrostOn;
 void main() {
   float c = stageChange();
   if (stageGone(c)) discard;
@@ -265,16 +310,32 @@ void main() {
   vec2 xz = vStageWorld.xz;
   vec2 guv = xz * uField.w;
   vec3 grain = texture(uGrain, guv).rgb;
-  vec3 fine = texture(uGrain, guv * 3.0 + 0.37).rgb;
-  vec2 micro = ((grain.gb - 0.5) * 1.2 + (fine.gb - 0.5) * 0.8) * uSlabLook.w;
-  vec3 n = normalize(normalize(vFrostN) + vec3(-micro.x, 0.0, micro.y) * 0.7);
-  vec3 v = normalize(vStageWorld - cameraPosition);
-  vec3 albedo = vec3(0.95, 0.965, 0.98) * (0.86 + 0.14 * vFrostOn.y);
-  vec3 col = frostSlabLight(n, vStageWorld, albedo) * (0.7 + 0.5 * grain.r + 0.4 * fine.r);
+  vec3 coarse = texture(uGrain, guv * 0.31 + 0.61).rgb;
+  vec3 fern = texture(uSlabMap, frostSlabUv(xz), 1.0).rgb;
+  float lvl = uGrow.y + (grain.r - 0.33) * 0.07;
+  float leaf = fern.r * smoothstep(0.0, FROST_SOFT, lvl - fern.g);
   float pxMm = sqrt(length(dFdx(vStageWorld)) * length(dFdy(vStageWorld)));
-  vec3 spark = frostGlints(xz + vStageWorld.y * 3.1, pxMm, normalize(vFrostN), v) * uGlint.y * 1.3;
-  gl_FragColor = vec4(col + spark, 1.0);
-  if (uDiag != 0) gl_FragColor = stageDiag(albedo, n, 0.0, c, 0.0);
+  float sugar = smoothstep(0.26, 0.74, frostSugar(vStageWorld, pxMm, ${look.slab.sugarMm.toFixed(3)}, 0.31));
+  float sugar2 = smoothstep(0.26, 0.74, frostSugar(vStageWorld, pxMm, ${look.slab.sugarMm.toFixed(3)}, 0.63));
+  float clot = smoothstep(0.3, 0.7, frostSugar(vStageWorld, pxMm, ${look.slab.clotMm.toFixed(3)}, 0.47));
+  float edge = vFrostOn.z * vFrostOn.x;
+  float from = ${look.slab.edge.toFixed(3)} * (0.55 * sugar + 0.45 * clot) * (1.0 - 0.5 * leaf);
+  float alpha = smoothstep(from, from + 0.42, edge);
+  alpha *= mix(${look.slab.lace.toFixed(3)} + ${(1 - look.slab.lace).toFixed(3)} * (0.6 * sugar2 + 0.4 * clot), 1.0, smoothstep(0.35, 0.95, vFrostOn.y));
+  if (alpha < 0.012) discard;
+  vec2 micro = (vec2(sugar, sugar2) - 0.5) * 2.0 + (coarse.gb - 0.5) * 0.8;
+  vec3 n = normalize(normalize(vFrostN) + vec3(-micro.x, 0.0, micro.y) * (${look.slab.gritty.toFixed(3)} * uSlabLook.w));
+  vec3 v = normalize(vStageWorld - cameraPosition);
+  float open = vFrostOn.w * (0.86 + 0.14 * alpha);
+  float deep = (0.22 + 0.78 * vFrostOn.y) * smoothstep(0.1, 0.75, alpha);
+  vec3 albedo = mix(${vec(SNOW.thin)}, ${vec(SNOW.body)}, deep) * (0.9 + 0.16 * leaf);
+  vec3 col = frostSlabLight(n, vStageWorld, albedo, open) * (0.58 + 0.62 * sugar + 0.22 * clot);
+  vec3 spark = frostGlints(xz + vStageWorld.y * 3.1, pxMm, normalize(vFrostN), v, ${look.slab.room.toFixed(3)}) * uGlint.y * 1.3 * alpha * open;
+  gl_FragColor = vec4(col * alpha + spark, alpha);
+  if (uDiag != 0) {
+    if (alpha < 0.3) discard;
+    gl_FragColor = stageDiag(albedo, n, 0.0, c, 0.0);
+  }
 }`
 
 let glass: THREE.Mesh | null = null
@@ -340,7 +401,7 @@ function makeSurface(): THREE.Group {
       standIn: false,
       change: 'surface-dressing',
       uniforms: shared,
-      vertexPars: 'uniform vec4 uGrow;\nvarying vec3 vFrostN;\nvarying vec2 vFrostOn;',
+      vertexPars: 'attribute vec2 uv1;\nuniform vec4 uGrow;\nvarying vec3 vFrostN;\nvarying vec4 vFrostOn;',
       vertexMain: `
 float frostOn = smoothstep(0.0, 0.07, uGrow.y - uv.x);
 vec4 frostW = modelMatrix * vec4(position.x, position.y * frostOn, position.z, 1.0);
@@ -351,11 +412,12 @@ vStageLocal = (uGlobeInv * frostW).xyz;
 vStageAux = vec3(0.0, -frostV.z, length(frostV.xyz));
 vStagePlaced = frostW.xyz;
 vFrostN = normalize(mat3(modelMatrix) * normal);
-vFrostOn = vec2(frostOn, uv.y);`,
+vFrostOn = vec4(frostOn, uv.y, uv1.x, uv1.y);`,
       fragment: SHAPES,
+      params: { ...veil, depthWrite: true },
     }),
   )
-  shapes.renderOrder = 2
+  shapes.renderOrder = 3
   shapes.frustumCulled = false
   return new THREE.Group().add(shapes, sheet)
 }

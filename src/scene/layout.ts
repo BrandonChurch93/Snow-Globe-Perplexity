@@ -86,7 +86,29 @@ export function rimAt(x: number, z: number): number {
   return RIM.riseMm * lumps * clear * smooth(RIM.from, RIM.crest, f) * (1 - smooth(RIM.crest, RIM.to, f))
 }
 
-export const snowTop = (x: number, z: number): number => groundAt(x, z) + bankAt(x, z) + rimAt(x, z)
+const DRIFT = { riseMm: 1.1, pondFrom: 1.08, pondTo: 1.4, glassFrom: 2.5, glassTo: 9, clearMm: 3.2, treeFrom: 9, treeTo: 13 }
+const HEAP = { riseMm: 2.4, dx: -0.3, dz: 4.8, wide: 3.5, deep: 2.5, cut: 0.02 }
+
+export function heapAt(x: number, z: number): number {
+  const hx = x - (tree.x + HEAP.dx)
+  const hz = z - (tree.z + HEAP.dz)
+  return (HEAP.riseMm * Math.max(0, Math.exp(-((hx * hx) / HEAP.wide + (hz * hz) / HEAP.deep)) - HEAP.cut)) / (1 - HEAP.cut)
+}
+
+export function driftAt(x: number, z: number): number {
+  const f = pondField(x, z)
+  if (f <= DRIFT.pondFrom) return 0
+  const gap = wallGap(x, z)
+  if (gap <= DRIFT.glassFrom) return 0
+  const lumps = Math.sin(0.42 * x + 0.21 * z + 0.9) * Math.sin(-0.19 * x + 0.47 * z + 2.3) + 0.55 * Math.sin(0.51 * x - 0.63 * z + 4.1) * Math.sin(0.68 * x + 0.44 * z + 0.5)
+  if (lumps <= 0) return 0
+  let clear = smooth(DRIFT.pondFrom, DRIFT.pondTo, f) * smooth(DRIFT.glassFrom, DRIFT.glassTo, gap)
+  for (const [sx, sz] of [...steps, ...stones, [lamppost.x, lamppost.z] as const]) clear *= 1 - Math.exp(-((x - sx) * (x - sx) + (z - sz) * (z - sz)) / (DRIFT.clearMm * DRIFT.clearMm))
+  clear *= smooth(DRIFT.treeFrom, DRIFT.treeTo, Math.hypot(x - tree.x, z - tree.z))
+  return DRIFT.riseMm * clear * smooth(0, 1, lumps)
+}
+
+export const snowTop = (x: number, z: number): number => groundAt(x, z) + bankAt(x, z) + rimAt(x, z) + driftAt(x, z) + heapAt(x, z)
 
 export function islandEdge(angle: number): number {
   const s = Math.sin(angle)

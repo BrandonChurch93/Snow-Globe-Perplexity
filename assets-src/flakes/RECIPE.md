@@ -7,7 +7,7 @@ Made by: `assets-src/flakes/build.mjs` (Node, with `pngjs` 7.0.0 from the repo r
 From: nothing but the script; its seed is the constant `SEED` at its top
 Prompt or command: `npm run make -- flakes` (add `--sheet` to also write a contact sheet of the 64 variants under `out/work/`)
 Takes: 1 made, 1 kept
-Why this one: 64 variants of 5 lobes in four families (clump, rod, branched, pair), each centred on its weight and scaled to reach 1, so a flake reads as an irregular cluster from every side and never as a disc
+Why this one: 64 variants of 5 lobes in four families (clump, rod, bent, pair; none has arms, so no flake reads as a cross), each centred on its weight and scaled to reach 1, so a flake reads as an irregular cluster from every side and never as a disc
 Date: 2026-11-24
 
 Layout: 8 columns by 64 rows, RGBA, linear. One row is one variant. Columns 0 to 4 are its lobes: R, G, B hold the lobe's centre from -1 to 1 as 0 to 255, A holds its radius from 0 to 1. Columns 5 to 7 are unused. `src/particles/draw/shader.ts` reads it with `texelFetch`, so it is never filtered and never packed lossy.
