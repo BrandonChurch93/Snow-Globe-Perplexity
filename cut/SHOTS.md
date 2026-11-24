@@ -35,16 +35,16 @@ Written by `npm run cut` from the page. Do not edit by hand. Lengths are in mill
 ## `spring`
 
 - When: 0:12.00 to 0:21.60, frames 720 to 1295, 4 bars. A hold on spring.
-- Lens: field of view 16 degrees, aperture 9 mm at hero; field of view 16 degrees, aperture 7 mm at base.
-- Move: Starts on hero and lowers its aim by up to 7.5 mm as the globe settles, then one slow move to the base camera and back, with a sweep of 1.6 degrees across it so the camera never rests there.
+- Lens: field of view 16 degrees, aperture 9 mm at hero; field of view 16 degrees, aperture 7.9 mm at the nearest point to base.
+- Move: Starts on hero and lowers its aim by up to 7.5 mm as the globe settles, then one slow move toward the base camera and back, 55 percent of the way, so the miniature stays in the frame, with a sweep of 1.6 degrees across it so the camera never rests there.
 - Starts: 658 mm from a point 75 mm up the axis, yaw 0, pitch 9, the frame 185 mm tall there, the globe and base 80 percent of that height.
 - Ends: 658 mm from a point 75 mm up the axis, yaw 0, pitch 9, the frame 185 mm tall there, the globe and base 80 percent of that height.
-- Focus: 618 mm from the lens, 40 mm in front of the aim point; at base 212 mm from the lens, 50 mm in front of the aim point.
+- Focus: 618 mm from the lens, 40 mm in front of the aim point; at the nearest point to base 351 mm from the lens, 45.5 mm in front of the aim point.
 - Keys:
   - frame 720, 0:12.00: first frame
   - frame 828, 0:13.80: the move toward base begins
-  - frame 1022, 0:17.03: the base camera reached
-  - frame 1066, 0:17.77: leaving base
+  - frame 1022, 0:17.03: the nearest point to the base camera
+  - frame 1066, 0:17.77: leaving the nearest point to base
   - frame 1260, 0:21.00: back at hero, 1 beat before the shake
   - frame 1295, 0:21.58: last frame
 
