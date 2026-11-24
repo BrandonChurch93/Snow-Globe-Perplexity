@@ -56,7 +56,7 @@ export interface ProbeBridge {
 }
 
 export interface SoundEngine {
-  available(): Promise<boolean>
+  available(): boolean
   unlock(): Promise<void>
   setMuted(muted: boolean): void
   setSeason(season: string, immediate?: boolean): void
@@ -66,4 +66,26 @@ export interface SoundEngine {
   chime(): void
   bytesFetched(): number
   dispose(): void
+}
+
+export interface AudioIndexEntry {
+  file: string
+  start: number
+  seconds: number
+  gain: number
+}
+
+export interface AudioIndex {
+  version: number
+  bytes: number
+  files: { file: string; bytes: number }[]
+  sprites: Record<string, AudioIndexEntry>
+  loops: Record<string, { file: string; loopStart: number; loopSeconds: number; gain: number }>
+}
+
+export interface SoundEngineOptions {
+  index: AudioIndex | null
+  baseUrl: string
+  afterFirstPicture: Promise<void>
+  seasons: string[]
 }

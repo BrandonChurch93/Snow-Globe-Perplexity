@@ -1,0 +1,381 @@
+{
+  "version": 1,
+  "source": "default-grid",
+  "fps": 60,
+  "previewFps": 30,
+  "bpm": 100,
+  "beatsPerBar": 4,
+  "frameCount": 3600,
+  "seconds": 60,
+  "barLines": [
+    0,
+    144,
+    288,
+    432,
+    576,
+    720,
+    864,
+    1008,
+    1152,
+    1296,
+    1440,
+    1584,
+    1728,
+    1872,
+    2016,
+    2160,
+    2304,
+    2448,
+    2592,
+    2736,
+    2880,
+    3024,
+    3168,
+    3312,
+    3456
+  ],
+  "shots": [
+    {
+      "id": "open",
+      "kind": "hold",
+      "season": "winter",
+      "bars": 4,
+      "first": 0,
+      "last": 575,
+      "firstBar": 0,
+      "startSeconds": 0,
+      "seconds": 9.6
+    },
+    {
+      "id": "shake-1",
+      "kind": "shake",
+      "from": "winter",
+      "to": "spring",
+      "bars": 1,
+      "first": 576,
+      "last": 719,
+      "firstBar": 4,
+      "startSeconds": 9.6,
+      "seconds": 2.4
+    },
+    {
+      "id": "spring",
+      "kind": "hold",
+      "season": "spring",
+      "bars": 4,
+      "first": 720,
+      "last": 1295,
+      "firstBar": 5,
+      "startSeconds": 12,
+      "seconds": 9.6
+    },
+    {
+      "id": "shake-2",
+      "kind": "shake",
+      "from": "spring",
+      "to": "summer",
+      "bars": 1,
+      "first": 1296,
+      "last": 1439,
+      "firstBar": 9,
+      "startSeconds": 21.6,
+      "seconds": 2.4
+    },
+    {
+      "id": "summer",
+      "kind": "hold",
+      "season": "summer",
+      "bars": 4,
+      "first": 1440,
+      "last": 2015,
+      "firstBar": 10,
+      "startSeconds": 24,
+      "seconds": 9.6
+    },
+    {
+      "id": "shake-3",
+      "kind": "shake",
+      "from": "summer",
+      "to": "fall",
+      "bars": 1,
+      "first": 2016,
+      "last": 2159,
+      "firstBar": 14,
+      "startSeconds": 33.6,
+      "seconds": 2.4
+    },
+    {
+      "id": "fall",
+      "kind": "hold",
+      "season": "fall",
+      "bars": 4,
+      "first": 2160,
+      "last": 2735,
+      "firstBar": 15,
+      "startSeconds": 36,
+      "seconds": 9.6
+    },
+    {
+      "id": "shake-4",
+      "kind": "shake",
+      "from": "fall",
+      "to": "winter",
+      "bars": 1,
+      "first": 2736,
+      "last": 2879,
+      "firstBar": 19,
+      "startSeconds": 45.6,
+      "seconds": 2.4
+    },
+    {
+      "id": "close",
+      "kind": "hold",
+      "season": "winter",
+      "bars": 5,
+      "first": 2880,
+      "last": 3599,
+      "firstBar": 20,
+      "startSeconds": 48,
+      "seconds": 12
+    }
+  ],
+  "shakes": [
+    {
+      "shot": "shake-1",
+      "from": "winter",
+      "to": "spring",
+      "first": 576,
+      "liftEnd": 612,
+      "strokesEnd": 684,
+      "landing": 720,
+      "swap": {
+        "first": 648,
+        "last": 683
+      }
+    },
+    {
+      "shot": "shake-2",
+      "from": "spring",
+      "to": "summer",
+      "first": 1296,
+      "liftEnd": 1332,
+      "strokesEnd": 1404,
+      "landing": 1440,
+      "swap": {
+        "first": 1368,
+        "last": 1403
+      }
+    },
+    {
+      "shot": "shake-3",
+      "from": "summer",
+      "to": "fall",
+      "first": 2016,
+      "liftEnd": 2052,
+      "strokesEnd": 2124,
+      "landing": 2160,
+      "swap": {
+        "first": 2088,
+        "last": 2123
+      }
+    },
+    {
+      "shot": "shake-4",
+      "from": "fall",
+      "to": "winter",
+      "first": 2736,
+      "liftEnd": 2772,
+      "strokesEnd": 2844,
+      "landing": 2880,
+      "swap": {
+        "first": 2808,
+        "last": 2843
+      }
+    }
+  ],
+  "landings": [
+    720,
+    1440,
+    2160,
+    2880
+  ],
+  "sections": [
+    {
+      "season": "winter",
+      "first": 0,
+      "last": 719,
+      "from": 0,
+      "to": 12,
+      "bars": 5
+    },
+    {
+      "season": "spring",
+      "first": 720,
+      "last": 1439,
+      "from": 12,
+      "to": 24,
+      "bars": 5
+    },
+    {
+      "season": "summer",
+      "first": 1440,
+      "last": 2159,
+      "from": 24,
+      "to": 36,
+      "bars": 5
+    },
+    {
+      "season": "fall",
+      "first": 2160,
+      "last": 2879,
+      "from": 36,
+      "to": 48,
+      "bars": 5
+    },
+    {
+      "season": "winter",
+      "first": 2880,
+      "last": 3599,
+      "from": 48,
+      "to": 60,
+      "bars": 5
+    }
+  ],
+  "cameraKeys": [],
+  "cues": [
+    {
+      "cue": "music-box",
+      "frame": 0,
+      "at": 0,
+      "optional": true
+    },
+    {
+      "cue": "lift",
+      "frame": 576,
+      "at": 9.6
+    },
+    {
+      "cue": "shake-spring",
+      "frame": 576,
+      "at": 9.6
+    },
+    {
+      "cue": "land-spring",
+      "frame": 720,
+      "at": 12
+    },
+    {
+      "cue": "glass-clink",
+      "frame": 720,
+      "at": 12
+    },
+    {
+      "cue": "lift",
+      "frame": 1296,
+      "at": 21.6
+    },
+    {
+      "cue": "shake-summer",
+      "frame": 1296,
+      "at": 21.6
+    },
+    {
+      "cue": "land-summer",
+      "frame": 1440,
+      "at": 24
+    },
+    {
+      "cue": "glass-clink",
+      "frame": 1440,
+      "at": 24
+    },
+    {
+      "cue": "lift",
+      "frame": 2016,
+      "at": 33.6
+    },
+    {
+      "cue": "shake-fall",
+      "frame": 2016,
+      "at": 33.6
+    },
+    {
+      "cue": "land-fall",
+      "frame": 2160,
+      "at": 36
+    },
+    {
+      "cue": "glass-clink",
+      "frame": 2160,
+      "at": 36
+    },
+    {
+      "cue": "lift",
+      "frame": 2736,
+      "at": 45.6
+    },
+    {
+      "cue": "shake-winter",
+      "frame": 2736,
+      "at": 45.6
+    },
+    {
+      "cue": "land-winter",
+      "frame": 2880,
+      "at": 48
+    },
+    {
+      "cue": "glass-clink",
+      "frame": 2880,
+      "at": 48
+    },
+    {
+      "cue": "music-box",
+      "frame": 3456,
+      "at": 57.6,
+      "optional": true
+    }
+  ],
+  "ambience": [
+    {
+      "cue": "amb-winter",
+      "from": 0,
+      "to": 12,
+      "fadeIn": 0,
+      "fadeOut": 2.4
+    },
+    {
+      "cue": "amb-spring",
+      "from": 9.6,
+      "to": 24,
+      "fadeIn": 2.4,
+      "fadeOut": 2.4
+    },
+    {
+      "cue": "amb-summer",
+      "from": 21.6,
+      "to": 36,
+      "fadeIn": 2.4,
+      "fadeOut": 2.4
+    },
+    {
+      "cue": "amb-fall",
+      "from": 33.6,
+      "to": 48,
+      "fadeIn": 2.4,
+      "fadeOut": 2.4
+    },
+    {
+      "cue": "amb-winter",
+      "from": 45.6,
+      "to": 60,
+      "fadeIn": 2.4,
+      "fadeOut": 0
+    }
+  ],
+  "opening": {
+    "frameCount": 0,
+    "seconds": 0,
+    "cues": []
+  }
+}
