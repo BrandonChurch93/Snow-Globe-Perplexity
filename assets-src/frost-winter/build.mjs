@@ -292,7 +292,7 @@ function grow(ctx, p, h, o, depth = 0) {
             hk = w.dir
             ll = l * w.scale
           }
-          const child = kids.make(ll, u, rng, depth + 1)
+          const child = kids.make(ctx.designed ? l : ll, u, rng, depth + 1)
           child.len = ll * (child.stretch ?? 1)
           child.t0 = t + (f * ds) / o.speed + (kids.delay ?? 0) * rng.next()
           child.curl = (child.curl ?? 0) * -sgn
@@ -578,39 +578,48 @@ function buildGlass() {
 // ---------- the slab ----------
 function slabArm(length, rng, t0) {
   const twig = (l, u, r) => ({ step: 0.3, w0: r.range(0.16, 0.24), w1: 0.07, h0: r.range(0.35, 0.5), h1: 0.16, speed: 0.4, wobble: 0.02, spark: r.range(0.5, 1), kappa: 3, reach: 0.12, taper: 0.8, power: 1.5 })
-  const barb = (l, u, r) => ({
+  const leaf = (l, u, r) => ({
     step: 0.32,
-    w0: r.range(0.45, 0.65) * (0.6 + 0.4 * Math.min(1, l / 2)),
-    w1: 0.1,
-    h0: r.range(0.55, 0.75),
+    w0: r.range(0.3, 0.44) * (0.65 + 0.35 * Math.min(1, l / 1.2)),
+    w1: 0.08,
+    h0: r.range(0.55, 0.8),
     h1: 0.2,
     speed: 0.45,
-    wobble: 0.025,
-    curl: r.range(0, 0.05),
+    wobble: 0.03,
+    curl: r.range(0, 0.06),
     spark: r.range(0.5, 1),
     kappa: 3,
     reach: 0.15,
-    taper: 0.8,
+    taper: 0.85,
     power: 1.5,
-    kids: l > 1.8 ? { gap: r.range(0.6, 0.8), len: l * 0.32, min: 0.25, angle: 52 * RAD, angleTip: 40 * RAD, profile: feather(0.2, 0.9), make: twig } : undefined,
+    kids: l > 1.5 ? { gap: r.range(0.6, 0.8), len: l * 0.3, min: 0.25, angle: 46 * RAD, angleTip: 38 * RAD, profile: feather(0.2, 0.9), make: twig } : undefined,
   })
-  const branch = (l, u, r) => ({
-    step: 0.4,
-    w0: r.range(1.0, 1.4) * (0.55 + 0.45 * Math.min(1, l / 8)),
-    w1: 0.16,
-    h0: r.range(0.65, 0.85),
-    h1: 0.3,
-    speed: 0.62,
-    wobble: 0.022,
-    curl: r.range(0.0, 0.035),
-    spark: 0.7,
-    kappa: 2.5,
-    reach: 0.2,
-    taper: 0.75,
-    power: 1.6,
-    film: { w0: 3.0 * (1 - 0.6 * u), w1: 0.25, h0: 0.6 * (1 - 0.5 * u), h1: 0.1, kappa: 3, spark: 0.3 },
-    kids: { gap: r.range(0.95, 1.3), len: clamp(l * 0.34, 0.9, 4.2), min: 0.5, angle: r.range(46, 58) * RAD, angleTip: 36 * RAD, profile: feather(0.16, 0.95), make: barb },
-  })
+  const branch = (l, u, r) => {
+    const strong = r.next() < S.strong
+    const o = {
+      step: 0.4,
+      w0: r.range(0.42, 0.6) * (0.7 + 0.3 * Math.min(1, l / 3)) * (strong ? 1.25 : 1),
+      w1: 0.12,
+      h0: r.range(0.6, 0.85),
+      h1: 0.26,
+      speed: 0.62,
+      wobble: 0.024,
+      curl: r.range(0.0, 0.04),
+      spark: 0.7,
+      kappa: 2.5,
+      reach: 0.2,
+      taper: 0.8,
+      power: 1.6,
+    }
+    if (strong) {
+      o.stretch = r.range(S.strongStretch[0], S.strongStretch[1])
+      const full = l * o.stretch
+      o.film = { w0: 1.2, w1: 0.2, h0: 0.42, h1: 0.1, kappa: 3, spark: 0.3 }
+      o.kids = { gap: r.range(0.8, 1.15), start: r.range(0.6, 1.2), len: clamp(full * 0.34, 0.7, 2.2), min: 0.4, angle: r.range(40, 50) * RAD, angleTip: 34 * RAD, spread: 0.08, profile: feather(0.14, 0.9), make: leaf }
+    }
+    return o
+  }
+  const S = L.slab.frond
   return {
     len: length,
     step: 0.5,
@@ -627,17 +636,17 @@ function slabArm(length, rng, t0) {
     reach: 0.3,
     taper: 0.8,
     power: 1.8,
-    film: { w0: rng.range(4.5, 6.5), w1: 0.6, h0: rng.range(0.62, 0.82), h1: 0.1, kappa: 2.5, spark: 0.35, power: 1.15 },
+    film: { w0: rng.range(S.bodyMm[0], S.bodyMm[1]), w1: 0.5, h0: rng.range(0.62, 0.82), h1: 0.1, kappa: 2.5, spark: 0.35, power: 1.15 },
     kids: {
-      gap: rng.range(2.8, 3.8),
-      start: rng.range(2.5, 5),
-      len: clamp(length * rng.range(0.3, 0.4), 6, 21),
-      min: 0.8,
+      gap: rng.range(S.gapMm[0], S.gapMm[1]),
+      start: rng.range(1.5, 3),
+      len: clamp(length * rng.range(S.lenShare[0], S.lenShare[1]), S.lenMm[0], S.lenMm[1]),
+      min: 0.5,
       delay: 1.5,
-      angle: rng.range(50, 62) * RAD,
-      angleTip: rng.range(38, 46) * RAD,
-      spread: 0.07,
-      profile: feather(rng.range(0.1, 0.22), rng.range(0.8, 1.1)),
+      angle: rng.range(S.angleDeg[0], S.angleDeg[1]) * RAD,
+      angleTip: rng.range(S.angleTipDeg[0], S.angleTipDeg[1]) * RAD,
+      spread: 0.08,
+      profile: feather(rng.range(0.08, 0.18), rng.range(0.75, 1.05)),
       make: branch,
     },
   }
@@ -650,7 +659,20 @@ function buildSlab() {
   const field = new Field(n)
   const rng = stream('frost-slab')
   const lines = []
-  const ctx = { space, rng, field, keep: lines, keepDepth: 1 }
+  const ctx = { space, rng, field, keep: lines, keepDepth: 1, designed: true }
+  // The slab is seen at a grazing angle by the hero camera. A branch is laid out as that camera sees it and then
+  // stretched away from the camera, so that the frond reads as a frond from there; the stretch is capped by minSquash.
+  const squash = L.slab.minSquash
+  ctx.warp = (p, h, hk) => {
+    const sa = h[2] * squash
+    const sb = h[0]
+    const sl = Math.hypot(sa, sb) || 1
+    const ang = Math.atan2(dot(cross(h, hk), [0, 1, 0]), dot(h, hk))
+    const ra = (sa * Math.cos(ang) - sb * Math.sin(ang)) / sl
+    const rb = (sa * Math.sin(ang) + sb * Math.cos(ang)) / sl
+    const va = ra / squash
+    return { dir: norm([rb, 0, va]), scale: Math.hypot(va, rb) }
+  }
   const at = (deg, r) => [r * Math.cos(deg * RAD), 0, r * Math.sin(deg * RAD)]
   const arms = L.slab.arms.map((a) => ({ ...a }))
   const taken = arms.map((a) => a.rootDeg)
