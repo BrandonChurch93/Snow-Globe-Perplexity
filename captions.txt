@@ -1,1 +1,13 @@
-look-rest-0.jpg: winter at rest from hero, draft tier, preview size, before any change of mine (the engine as Phase 2 left it). It shows the stand-in miniature with a thin fall of flakes. Still wrong: every flake is large and about one size (0.45 to 1.5 mm), nearly all of them have already fallen by 12 s, so the dome is far thinner than the settled line asks, and no cover map reaches the roof yet.
+Looks of agent/p3-liquid at 8bfb5da, made at 11:33 to 11:35 UTC on the new layout, cameras and light (origin/main dc24715 merged), real shake path, draft tier, main's stand-in draw and veil.
+
+look-1-sheet-test-shake.jpg
+Twelve frames across the test shake and the clearing after it, 0 to 14.4 s. The storm fills the whole dome by 1.3 s and still at 2.6 s, clears from 3.9 s, the miniature is back at 5.2 s, and flakes drift through the whole dome to the rest state. Still wrong: at 1.3 s and 2.6 s the drawn flakes make a flat white sphere with no whirl to be seen in it, and from 9 s on the top third is thinner than the middle (about a third of even above 48 mm).
+
+look-2-landed-beside-winter-shake.jpg
+Left: winter, landed, hero, this branch. Right: references/approved/winter-shake.png. The storm reaches every part of the dome, the top included, as the approved image shows. Still wrong: the left is a white-out that hides the miniature entirely, where the approved image shows it veiled but readable under streaks; 99.5 percent of the 102000 particles float at this moment and the stand-in draw gives each one a large opaque sprite. The engine's part of this is the count afloat and the turbulence it hands the veil (0.58 of its cap here).
+
+look-3-rest-beside-winter-rest.jpg
+Left: winter, rest, hero, this branch. Right: references/approved/winter-rest.png. Flakes hang at many depths through the whole dome, a little denser low down, the roof and the crown carry snow. Still wrong: 7.3 percent float here against about 4.3 percent counted in the approved image, the drawn flakes are much larger than their real sizes in millimetres, and the top is thinner than in the approved image.
+
+look-4-cover-view-at-swap.jpg
+The cover view (how much of the miniature the veil hides) in the middle of the swap window of the test shake, hero. Cottage, tree and fence are fully hidden (magenta). Still wrong: the near part of the ground is hidden less (blue), which is why M4 reads 0.6325 against the 0.85 asked; the turbulence the veil reads is already at its cap there.
