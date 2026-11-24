@@ -836,7 +836,7 @@ function slabShapes(lines, grains, tTop) {
         vert(p[0] + lat[0] * (off + 0.4 * w), h * rng.range(0.84, 0.95), p[2] + lat[2] * (off + 0.4 * w), t, id),
         vert(p[0] + lat[0] * w, 0, p[2] + lat[2] * w, t + 2 * w, id),
       ]
-      if (prev) for (let k = 0; k < 3; k++) idx.push(prev[k], row[k], prev[k + 1], prev[k + 1], row[k], row[k + 1])
+      if (prev) for (let k = 0; k < 3; k++) idx.push(prev[k], prev[k + 1], row[k], prev[k + 1], row[k + 1], row[k])
       if (prev) count.ridges += 6
       prev = row
     }

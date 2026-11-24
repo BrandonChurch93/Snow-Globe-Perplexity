@@ -28,8 +28,8 @@ export const glassDressing: Dressing = { tint: [0.86, 0.92, 1], amount: 0 }
 export const surfaceDressing: Dressing & { reachMm: number } = { tint: [0.86, 0.92, 1], amount: 0, reachMm: 132 }
 
 const look = {
-  glass: { cover: 1.15, haze: 0.09, slope: 0.55, micro: 1.1, glint: 1.6, light: 0.6, through: 0.55, thin: 0.6, thick: 0.8, blur: 0.006, bend: 0.012 },
-  slab: { cover: 1.5, slope: 0.8, micro: 0.9, glint: 1.6, pool: 0.35, light: 1.25 },
+  glass: { cover: 1.7, haze: 0.3, slope: 0.55, micro: 1.1, glint: 1.6, light: 0.85, through: 2.4, thin: 0.6, thick: 0.8, blur: 0.006, bend: 0.012 },
+  slab: { cover: 0.75, slope: 1.6, micro: 1.2, glint: 1.6, pool: 0.35, light: 1.75 },
 }
 
 const frostUniforms = {
@@ -280,15 +280,15 @@ void main() {
   float h0 = m0.r * on;
   float h1 = m1.r * smoothstep(0.0, FROST_SOFT, lvl - m1.g);
   float h2 = m2.r * smoothstep(0.0, FROST_SOFT, lvl - m2.g);
-  float body = h0 * (0.65 + 0.7 * grain.r);
+  float body = h0 * (0.4 + 1.8 * grain.r);
   vec2 slope = uField.z * uSlabLook.z * vec2(h1 - h0, h2 - h0) / (e * 2.0 * uField.x);
   vec2 micro = ((grain.gb - 0.5) * 1.2 + (fine.gb - 0.5) * 0.8) * uSlabLook.w * (0.2 + 0.8 * smoothstep(0.0, 0.25, h0));
   vec3 n = normalize(vec3(-slope.x - micro.x, 1.0, -slope.y + micro.y));
   vec3 v = normalize(vStageWorld - cameraPosition);
   float mu = max(-v.y, 0.0);
-  float alpha = max(1.0 - exp(-uSlabLook.x * body / max(mu, 0.2)), smoothstep(0.1, 0.38, body));
-  vec3 albedo = mix(vec3(0.8, 0.87, 0.96), vec3(0.96, 0.97, 0.98), smoothstep(0.05, 0.4, h0));
-  vec3 col = frostSlabLight(n, vStageWorld, albedo);
+  float alpha = max(1.0 - exp(-uSlabLook.x * body / max(mu, 0.2)), smoothstep(0.15, 0.7, body));
+  vec3 albedo = mix(vec3(0.6, 0.72, 0.88), vec3(0.96, 0.97, 0.98), smoothstep(0.2, 0.9, h0));
+  vec3 col = frostSlabLight(n, vStageWorld, albedo) * (0.62 + 0.7 * grain.r + 0.45 * fine.r);
   float pxMm = sqrt(length(dFdx(vStageWorld)) * length(dFdy(vStageWorld)));
   vec3 spark = frostGlints(xz, pxMm, vec3(0.0, 1.0, 0.0), v) * uGlint.y * (0.05 + 1.5 * m0.b * on) * smoothstep(0.02, 0.25, alpha);
   gl_FragColor = vec4(col * alpha + spark, alpha);
@@ -315,7 +315,7 @@ void main() {
   vec3 n = normalize(normalize(vFrostN) + vec3(-micro.x, 0.0, micro.y) * 0.7);
   vec3 v = normalize(vStageWorld - cameraPosition);
   vec3 albedo = vec3(0.95, 0.965, 0.98) * (0.86 + 0.14 * vFrostOn.y);
-  vec3 col = frostSlabLight(n, vStageWorld, albedo);
+  vec3 col = frostSlabLight(n, vStageWorld, albedo) * (0.7 + 0.5 * grain.r + 0.4 * fine.r);
   float pxMm = sqrt(length(dFdx(vStageWorld)) * length(dFdy(vStageWorld)));
   vec3 spark = frostGlints(xz + vStageWorld.y * 3.1, pxMm, normalize(vFrostN), v) * uGlint.y * 1.3;
   gl_FragColor = vec4(col + spark, 1.0);

@@ -25,8 +25,8 @@
     "backShare": 0.62,
     "minSquash": 0.5,
     "maxStretch": 2,
-    "measuredBold": 1.6,
-    "bodyFilm": 0.22,
+    "measuredBold": 2,
+    "bodyFilm": 0.3,
     "bodyByDensity": [0.3, 1.2],
     "feathers": {
       "large": { "front": 520, "back": 240, "inFrom": -1, "inShare": 0.62, "inPow": 1.15, "screenMm": [4.5, 16], "lenPow": 1.25, "fill": 0.98, "lean": 0.8, "spread": 0.4, "k": [0.75, 1], "barb": [0.4, 0.6], "barbMax": 7 },
@@ -48,10 +48,10 @@
       { "root": [1120, 235], "tip": [1192, 190], "barbMm": 3.5 },
       { "root": [1215, 204], "tip": [1322, 216], "barbMm": 3.5 },
       { "root": [1535, 183], "tip": [1468, 216], "barbMm": 2.6 },
-      { "root": [1610, 196], "via": [[1660, 214], [1712, 250], [1765, 305], [1822, 372], [1852, 425]], "tip": [1874, 492], "barbMm": 4, "bold": 1.3, "spine": 0.45 }
+      { "root": [1610, 196], "via": [[1660, 214], [1712, 250], [1765, 305], [1822, 372], [1852, 425]], "tip": [1874, 492], "barbMm": 5.5, "bold": 1.8, "spine": 0.45 }
     ],
     "stars": [
-      { "at": [1930, 606], "tips": [[1900, 548], [1870, 566], [1862, 624], [1880, 694]], "barbMm": 3.8, "bold": 1.2 },
+      { "at": [1930, 606], "tips": [[1900, 548], [1870, 566], [1862, 624], [1880, 694]], "barbMm": 3.8, "bold": 1.5 },
       { "at": [1850, 862], "tips": [[1835, 770], [1852, 775], [1820, 782], [1805, 800], [1790, 822], [1780, 842], [1776, 870], [1780, 896], [1812, 790], [1797, 810]], "barbMm": 2.4, "bold": 1.8 },
       { "at": [1756, 942], "tips": [[1745, 872], [1766, 870], [1730, 885], [1722, 905], [1715, 930], [1755, 868], [1737, 878]], "barbMm": 2.2, "bold": 1.7 },
       { "at": [930, 900], "tips": [[985, 845], [1000, 880], [960, 835]], "barbMm": 3.4 }
@@ -62,9 +62,9 @@
     "halfMm": 132,
     "heightMm": 1.3,
     "minSquash": 0.26,
-    "heapMm": [4, 12], "heapSide": [0.8, 0.9],
+    "heapMm": [5, 15], "heapSide": [0.8, 0.9],
     "under": { "inMm": [6, 18], "film": 0.24, "speck": 0.4, "wallMm": 4.5 },
-    "frond": { "strong": 0.18, "strongStretch": [1.6, 2.3], "bodyMm": [4, 5.6], "leafMm": [0.9, 1.25], "bladeMm": [1.5, 2.1], "blade": [0.42, 0.6], "gapMm": [1.7, 2.3], "lenShare": [0.07, 0.095], "lenMm": [3.6, 5.8], "angleDeg": [46, 56], "angleTipDeg": [36, 44] },
+    "frond": { "strong": 0.18, "strongStretch": [1.6, 2.3], "bodyMm": [4, 5.6], "leafMm": [0.9, 1.25], "bladeMm": [2, 2.8], "blade": [0.5, 0.7], "gapMm": [1.7, 2.3], "lenShare": [0.07, 0.095], "lenMm": [3.6, 5.8], "angleDeg": [46, 56], "angleTipDeg": [36, 44] },
     "shapes": { "branchMinMm": 0.5, "branchEvery": 3, "spineEvery": 2, "ridgeTall": 0.7, "grainMinMm": 0.34, "lumpFullMm": 0.58, "farPerMm": 3 },
     "arms": [
       { "rootDeg": -136, "tipDeg": -145, "tipMm": 122 },
