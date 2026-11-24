@@ -27,7 +27,7 @@ const local = (x, y, z) => new THREE.Vector3(x, y, z).applyMatrix4(cottageInv)
 
 const SNOW = lin('#edf1f8')
 const ROOF_TONE = [0.6, 0.53, 0.48]
-const ICE_SHADE = { dark: 0.85, from: 0.45, to: 0.95 }
+const ICE_SHADE = { dark: 0.68, from: 0.15, to: 0.85, back: [0.3, 1] }
 const snow = new Bag('snow')
 const ice = new Bag('ice')
 const decor = new Bag('decor')
@@ -51,7 +51,7 @@ const rbox = (x, y, z, hx, hy, hz, r) => {
 }
 const ell = (x, y, z, rx, ry, rz) => (Math.hypot(x / rx, y / ry, z / rz) - 1) * Math.min(rx, ry, rz)
 
-const T0 = 1.2
+const T0 = 1.6
 const RR = 0.56
 const ROLL = { out: 0.85, dropMm: 0.55, round: 0.34, clear: 0.14 }
 const ch = C.chimney
@@ -108,12 +108,12 @@ const underDeck = (a, h, l) => {
 const keepRoof = (a, h, l) => !(prism(a, l) < -0.08 && h < stackTop + 0.2) && !underDeck(a, h, l)
 const roofMin = [-(C.halfWidth + C.overhang + 1.2), ridgeY - (SLOPE + 1.1) * sp - 0.7, -(roofLen + 1.1)]
 const roofMax = [C.halfWidth + C.overhang + 1.2, ridgeY + T0 / cp + 0.7, roofLen + 1.1]
-addSnow(netGeometry(roofSnow(0, 0.04), roofMin, roofMax, 0.45, keepRoof), cottageM, 1, snow, 'roof', ROOF_TONE)
+addSnow(netGeometry(roofSnow(0, 0.07), roofMin, roofMax, 0.45, keepRoof), cottageM, 1, snow, 'roof', ROOF_TONE)
 
 {
   const sdf = (a, h, l) => {
     const y = h - (stackTop + 0.85)
-    let d = rbox(a - ch.across, y - 0.27, l - ch.along, ch.half + 0.2, 0.3, ch.halfAlong + 0.2, 0.27)
+    let d = rbox(a - ch.across, y - 0.27, l - ch.along, ch.half + 0.1, 0.3, ch.halfAlong + 0.1, 0.27)
     d = Math.max(d, 0.66 - Math.hypot(a - (ch.across - 0.2), l - (ch.along + 0.1)))
     return d + 0.05 * fbm(a * 2, h * 2, l * 2, 2)
   }
@@ -173,8 +173,13 @@ for (const s of fenceShapes) {
     const fat = 0.56 + 0.22 * R()
     const tall = 0.26 + 0.2 * R()
     const lean = 0.24 * (R() - 0.5)
-    const sdf = (x, y, z) => rbox(x - lean + 0.05 * noise(seed, y, 1), y - top - tall + 0.08, z + 0.5 * lean, fat * STOUT.post, tall, fat * STOUT.post, Math.min(tall, 0.33)) + 0.05 * fbm(x * 2.2 + seed, y * 2.2, z * 2.2, 2)
-    addSnow(netGeometry(sdf, [-1.3, top - 0.4, -1.3], [1.3, top + 1.05, 1.3], 0.22), M, 0.6, snow, 'posts')
+    const wide = s.half[0] * STOUT.post + 0.06 + 0.1 * (fat - 0.56)
+    const sdf = (x, y, z) => {
+      const dome = ell(x - 0.5 * lean, y - top + 0.1, z + 0.25 * lean, wide, tall + 0.34, wide)
+      const hem = top - 0.06 - 0.16 * noise(x * 2.4 + seed, z * 2.4, 3) - y
+      return Math.max(dome, hem) + 0.045 * fbm(x * 2.2 + seed, y * 2.2, z * 2.2, 2)
+    }
+    addSnow(netGeometry(sdf, [-1.4, top - 0.7, -1.4], [1.4, top + 1.05, 1.4], 0.18), M, 0.6, snow, 'posts')
   } else {
     const seed = R() * 40
     const len = s.half[2]
@@ -228,14 +233,21 @@ const shrubList = RF.shrubs()
 for (const [i, sh] of shrubList.entries()) {
   const [cx, cy, cz] = sh.centre
   const seed = 11 * i + 3
-  const full = i < 2 ? 0.42 : 0.58
+  const SR = rng(977 + 31 * i)
+  const clumps = Array.from({ length: i < 2 ? 22 : 16 }, () => {
+    const a = SR() * Math.PI * 2
+    const up = 0.36 + 0.64 * Math.sqrt(SR())
+    const rr = Math.sqrt(Math.max(0, 1 - up * up))
+    const wide = 0.42 + 0.5 * SR()
+    return { at: [cx + Math.cos(a) * rr * sh.r[0] * 0.95, cy + up * sh.r[1] * 0.95, cz + Math.sin(a) * rr * sh.r[2] * 0.95], wide, tall: wide * (0.42 + 0.3 * SR()) }
+  })
   const sdf = (x, y, z) => {
-    const body = ell(x - cx, y - cy, z - cz, sh.r[0] + 0.2, sh.r[1] + 0.3, sh.r[2] + 0.2)
-    const edge = cy + sh.r[1] * full + 0.55 * noise(x * 0.9 + seed, z * 0.9, 2) + 0.25 * noise(x * 2.3, z * 2.3, seed)
-    return Math.max(body, edge - y) + 0.09 * fbm(x * 1.5 + seed, y * 1.5, z * 1.5, 2)
+    let d = 1e9
+    for (const c of clumps) d = smin(d, ell(x - c.at[0], y - c.at[1], z - c.at[2], c.wide, c.tall, c.wide), 0.16)
+    return d + 0.06 * fbm(x * 2.4 + seed, y * 2.4, z * 2.4, 2)
   }
   const inside = (x, y, z) => ell(x - cx, y - cy, z - cz, sh.r[0] * 0.78, sh.r[1] * 0.78, sh.r[2] * 0.78) < 0
-  addSnow(netGeometry(sdf, [cx - sh.r[0] - 0.9, cy - sh.r[1], cz - sh.r[2] - 0.9], [cx + sh.r[0] + 0.9, cy + sh.r[1] + 1, cz + sh.r[2] + 0.9], 0.38, (x, y, z) => !inside(x, y, z)), undefined, 0.6, snow, 'shrubs')
+  addSnow(netGeometry(sdf, [cx - sh.r[0] - 0.9, cy - sh.r[1], cz - sh.r[2] - 0.9], [cx + sh.r[0] + 0.9, cy + sh.r[1] + 1, cz + sh.r[2] + 0.9], 0.2, (x, y, z) => !inside(x, y, z)), undefined, 0.6, snow, 'shrubs')
 }
 
 const fposts = fenceShapes.filter((s) => s.half[2] < 2).map((s) => [s.centre[0], s.centre[2]])
@@ -267,7 +279,7 @@ function snowAt(x, z) {
 }
 const BANK_TOP = 0.3
 const BANK_BLEND_MM = 5
-const BILLOW = { cycles: 6.5, deepMm: 2.8 }
+const BILLOW = { cycles: 6.5, deepMm: 2.2, clumps: 21, clumpMm: 0.7, grains: 40, grainMm: 0.32, crestMm: 0.45, crestFine: 0.2 }
 const UNDERCUT = { dark: 0.88, from: 0.985, to: 1.022, arc: [-135, -115, -5, 25] }
 function contact(x, z) {
   let k = 1
@@ -281,10 +293,10 @@ function contact(x, z) {
 }
 
 {
-  const around = 180
+  const around = 480
   const shore = [0.9, 0.93, 0.95, 0.962, 0.972, 0.981, 0.99, 1.0, 1.012, 1.028, 1.05, 1.08]
   const outer = 38
-  const skirt = 14
+  const skirt = 34
   const r = L.innerRadiusMm - 0.6
   const footY = L.collarY - 1.5
   const pc = Math.cos(L.pond.yaw)
@@ -295,6 +307,12 @@ function contact(x, z) {
   const row = around + 1
   const rows = shore.length + outer + skirt
   const topAt = (x, z) => L.moundAt(z) + L.bankAt(x, z) + L.rimAt(x, z)
+  const crestAt = (x, z) => {
+    const l = Math.hypot(x, z) || 1
+    const u = (x / l) * 9
+    const v = (z / l) * 9
+    return BILLOW.crestMm * (fbm(u * 2.1 + 4.2, 0.3, v * 2.1 + 1.1, 2) - 0.1) + BILLOW.crestFine * fbm(u * 7 + 0.6, 2.9, v * 7 + 3.3, 2)
+  }
   for (let j = 0; j <= around; j++) {
     const a = (j / around) * Math.PI * 2
     const dx = Math.cos(a) * pc + Math.sin(a) * ps
@@ -332,12 +350,14 @@ function contact(x, z) {
         x = L.pond.x + dx * t
         z = L.pond.z + dz * t
         y = snowAt(x, z)
-        if (q === 1) y = topAt(x, z)
+        const near = 1 - smooth(0, 2.6, edge - t)
+        y += near * crestAt(x, z)
+        if (q === 1) y = topAt(x, z) + crestAt(x, z)
         bank = BANK_TOP * (1 - smooth(0, BANK_BLEND_MM, edge - t))
       } else {
         const ex = L.pond.x + dx * edge
         const ez = L.pond.z + dz * edge
-        const ey = topAt(ex, ez)
+        const ey = topAt(ex, ez) + crestAt(ex, ez)
         const th = Math.atan2(ez, ex)
         const phi0 = Math.atan2(Math.hypot(ex, ez), -ey)
         const phi1 = Math.acos(clamp(-footY / r, -1, 1))
@@ -347,7 +367,9 @@ function contact(x, z) {
         const uy = -Math.cos(phi)
         const uz = Math.sin(th) * Math.sin(phi)
         const lump = clamp(0.5 + 0.75 * fbm(ux * BILLOW.cycles + 3.1, uy * BILLOW.cycles, uz * BILLOW.cycles + 7.7, 3))
-        const rr = r - 0.15 - BILLOW.deepMm * Math.pow(lump, 1.5) * smooth(0.08, 0.5, q)
+        const clump = clamp(0.5 + 0.8 * fbm(ux * BILLOW.clumps + 1.3, uy * BILLOW.clumps + 5.9, uz * BILLOW.clumps + 2.2, 2))
+        const grain = clamp(0.5 + 0.9 * fbm(ux * BILLOW.grains + 8.1, uy * BILLOW.grains + 0.7, uz * BILLOW.grains + 4.4, 2))
+        const rr = r - 0.15 - BILLOW.deepMm * Math.pow(lump, 1.5) * smooth(0.08, 0.5, q) - (BILLOW.clumpMm * clump * clump + BILLOW.grainMm * grain) * smooth(0.0, 0.16, q)
         x = ux * rr
         y = uy * rr
         z = uz * rr
@@ -449,7 +471,7 @@ function contact(x, z) {
   }
   let vi = 0
   const shadeAt = (p) => {
-    const k = 1 - ICE_SHADE.dark * smooth(ICE_SHADE.from, ICE_SHADE.to, L.pondField(p[0], p[2])) * smooth(0.2, 0.8, (L.pond.z - p[2]) / L.pond.rz)
+    const k = 1 - ICE_SHADE.dark * smooth(ICE_SHADE.from, ICE_SHADE.to, L.pondField(p[0], p[2])) * smooth(ICE_SHADE.back[0], ICE_SHADE.back[1], (L.pond.z - p[2]) / L.pond.rz)
     return [k, k, k]
   }
   ice.add(g, { keepUv: true, color: shadeAt, surf: () => [st[2 * vi++], 0] })
@@ -578,8 +600,10 @@ for (const run of [hangs.eave, hangs.rake]) {
 addSnow(netGeometry(roofSnow(0.2, 0.1), roofMin.map((v) => v - 0.4), roofMax.map((v) => v + 0.4), 0.85, (a, h, l) => keepRoof(a, h, l) && Math.max(slopeOf(-1, a, h)[1], slopeOf(1, a, h)[1]) > 0.45), cottageM, 1, fresh, 'fresh', ROOF_TONE)
 for (const s of fenceShapes.filter((q) => q.half[2] < 2)) {
   const top = s.half[1] + 0.12
-  const sdf = (x, y, z) => rbox(x, y - top - 0.36, z, 0.74 * STOUT.post, 0.4, 0.74 * STOUT.post, 0.36) + 0.06 * fbm(x * 2 + 9, y * 2, z * 2, 2)
-  addSnow(netGeometry(sdf, [-1.5, top - 0.3, -1.5], [1.5, top + 1.3, 1.5], 0.3), boxMatrix(s), 1, fresh, 'fresh')
+  const wide = s.half[0] * STOUT.post + 0.13
+  const seed = s.centre[0] * 3.1 + s.centre[2] * 1.7
+  const sdf = (x, y, z) => Math.max(ell(x, y - top + 0.12, z, wide, 0.62, wide), top - 0.1 - 0.22 * noise(x * 2.4 + seed, z * 2.4, 5) - y) + 0.05 * fbm(x * 2 + seed, y * 2, z * 2, 2)
+  addSnow(netGeometry(sdf, [-1.5, top - 0.7, -1.5], [1.5, top + 1.3, 1.5], 0.2), boxMatrix(s), 1, fresh, 'fresh')
 }
 
 const names = [snow, ice, decor, bulbs, fresh]
