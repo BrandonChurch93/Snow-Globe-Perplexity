@@ -241,7 +241,7 @@ def main():
         thumbs.append(cv2.resize(o, (347, 195), interpolation=cv2.INTER_AREA))
     cv2.imwrite(os.path.join(WORK, 'contact.jpg'), sheet(thumbs, 4), [cv2.IMWRITE_JPEG_QUALITY, 92])
     for part, names in (('contact-1', NAMES[:4]), ('contact-2', NAMES[4:])):
-        halves = [cv2.resize(cv2.imread(os.path.join(WORK, n + '-overlay.jpg')), (697, 392), interpolation=cv2.INTER_AREA) for n in names]
+        halves = [cv2.resize(cv2.imread(os.path.join(WORK, n + '-overlay.jpg')), (697, 391), interpolation=cv2.INTER_AREA) for n in names]
         cv2.imwrite(os.path.join(WORK, part + '.jpg'), sheet(halves, 2), [cv2.IMWRITE_JPEG_QUALITY, 92])
 
     with open(OUT_JSON, 'w') as fh:
