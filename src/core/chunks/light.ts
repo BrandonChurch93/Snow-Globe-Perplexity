@@ -39,6 +39,7 @@ export const lightUniforms = {
   uRigCardDir: { value: new THREE.Vector3(0, 1, 0) },
   uRigCardCol: { value: new THREE.Color(0, 0, 0) },
   uRigCard: { value: new THREE.Vector4(0.5, 0.3, 0, 1) },
+  uRigBounce: { value: new THREE.Vector4(0, 0, 0, 1) },
   uRigSky: { value: new THREE.Color(0, 0, 0) },
   uRigGround: { value: new THREE.Color(0, 0, 0) },
   uRigShadow: { value: new THREE.Vector4(0.15, 0.3, 0.001, 0.4) },
@@ -70,6 +71,7 @@ uniform vec3 uRigRimCol;
 uniform vec3 uRigCardDir;
 uniform vec3 uRigCardCol;
 uniform vec4 uRigCard;
+uniform vec4 uRigBounce;
 uniform vec3 uRigSky;
 uniform vec3 uRigGround;
 uniform vec4 uRigShadow;
@@ -246,6 +248,7 @@ vec3 stageLit = vec3(0.0);
   float lgOpen = 1.0;
   float lgShade = 1.0;
   float lgCardIn = 1.0;
+  vec4 lgBounce = vec4(0.0, 0.0, 0.0, 1.0);
   #ifdef STAGE_INSIDE
   {
     vec3 lgCol;
@@ -271,6 +274,7 @@ vec3 stageLit = vec3(0.0);
     lgWrap = uRigInside.z;
     lgSpread *= uRigInside.w;
     lgCardIn = uRigCard.w;
+    lgBounce = uRigBounce;
   }
   #else
   {
@@ -335,7 +339,7 @@ vec3 stageLit = vec3(0.0);
     clearcoatSpecularDirect += lgCardC * (uRigCard.z * saturate(dot(geometryClearcoatNormal, lgCardV))) * BRDF_GGX_Clearcoat(lgCardV, geometryViewDir, geometryClearcoatNormal, lgBroad);
     #endif
   }
-  reflectedLight.indirectDiffuse += mix(uRigGround, uRigSky, 0.5 + 0.5 * lgN.y) * (lgOpen * RECIPROCAL_PI) * lgAlbedo;
+  reflectedLight.indirectDiffuse += (mix(uRigGround, uRigSky, 0.5 + 0.5 * lgN.y) * lgBounce.w + lgBounce.rgb) * (lgOpen * RECIPROCAL_PI) * lgAlbedo;
   float lgRough = material.roughness;
   vec3 lgR = normalize(mix(reflect(-lgV, lgN), lgN, lgRough * lgRough));
   vec3 lgRoom = stageRoomSoftLit(lgR, lgRough) * uRigRoom.x;
