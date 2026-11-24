@@ -133,6 +133,32 @@ describe('the change number', () => {
   })
 })
 
+describe('the change at the first frame of the window', () => {
+  it('steps nothing: every number a part reads starts from 0 and moves no faster in its first frame than its own ramp does anywhere', () => {
+    const frame = FRAME_BEATS / WINDOW
+    for (const part of PARTS) {
+      const ramp = changeRamp(part)
+      for (const side of [0, 0.25, 0.5, 0.75, 1]) {
+        expect(partChange(part, 0, side), part).toBe(0)
+        expect(partChange(part, 1e-9, side), part).toBeLessThan(1e-8)
+        for (let k = 1; k <= 32; k++) {
+          const c = (frame * k) / 16
+          expect(partChange(part, c, side), `${part} ${k / 16} frames in`).toBeLessThanOrEqual(c / ramp.length + 1e-12)
+          expect(partChange(part, c, side) - partChange(part, c - frame / 16, side), `${part} ${k / 16} frames in`).toBeLessThanOrEqual(frame / 16 / ramp.length + 1e-12)
+        }
+      }
+    }
+    // What is outside the glass, and the bloom that covers it, do not move at all until their own span: the first frames of the window show the season that was.
+    const span = changeSpan('base')
+    expect((span.from * WINDOW) / FRAME_BEATS).toBeGreaterThan(12)
+    for (const part of OUTSIDE) for (let c = 0; c < span.from; c += frame / 4) expect(partChange(part, c), `${part} at ${c}`).toBe(0)
+    for (let c = 0; c <= 4 * frame; c += frame / 16) expect(changeBloom(c)).toBe(0)
+    let steepest = 0
+    for (let c = 0; c <= 1; c += frame / 16) steepest = Math.max(steepest, Math.abs(changeBloom(c + frame) - changeBloom(c)))
+    expect(steepest, 'the bloom rises over frames, not in one').toBeLessThan(0.4)
+  })
+})
+
 describe('the change against the motion', () => {
   it('puts the fastest stroke of every shake on the outside parts, so no clean frame shows them half changed', () => {
     const span = changeSpan('base')
