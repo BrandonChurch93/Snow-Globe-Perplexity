@@ -19,6 +19,11 @@ const CHAIN = {
 const APP_TRIM_DB = { ambience: 0, interface: 0, touch: 0, impact: 0, music: -8 }
 const VARIED = { 'key-tap': [0, -45, 30, -20, 55, -65, 15, 40, -30] }
 export const PEAK_MARGIN_DB = 0.15
+export const LOUDNESS_BLOCK = 0.4
+export const SHORT_CREST_DB = 16
+const OFFSET_DB = -80
+const HEAD_SHARE = 0.25
+const ONSET_DB = -30
 const SPRITE_PEAK_DB = -3
 const SPRITE_GAP = 0.3
 const SPRITE_LEAD = 0.1
@@ -225,31 +230,39 @@ function kWeight(x, rate) {
   return biquad(shelf, 1, -2, 1, (2 * (k * k - 1)) / a0, (1 - k / q + k * k) / a0)
 }
 
-export function loudness(a) {
+export const MEASURES = {
+  gated: 'gated loudness over 400 ms blocks',
+  'own-length': "K weighted mean square over the sound's own length (it is shorter than one 400 ms block)",
+}
+
+export function loudnessOf(a) {
   const n = a.L.length
-  if (n === 0) return -Infinity
+  const secs = round(n / a.rate, 4)
+  const block = Math.round(LOUDNESS_BLOCK * a.rate)
+  const measure = n < block ? 'own-length' : 'gated'
+  if (n === 0) return { lufs: -Infinity, measure, seconds: 0 }
   const l = kWeight(a.L, a.rate)
   const r = kWeight(a.R, a.rate)
-  const block = Math.round(0.4 * a.rate)
-  const step = Math.round(0.1 * a.rate)
-  const z = []
+  const lk = (p) => -0.691 + 10 * Math.log10(p)
   if (n < block) {
     let s = 0
     for (let i = 0; i < n; i++) s += l[i] * l[i] + r[i] * r[i]
-    z.push(s / n)
-  } else {
-    const cum = new Float64Array(n + 1)
-    for (let i = 0; i < n; i++) cum[i + 1] = cum[i] + l[i] * l[i] + r[i] * r[i]
-    for (let s = 0; s + block <= n; s += step) z.push((cum[s + block] - cum[s]) / block)
+    return { lufs: s > 0 ? lk(s / n) : -Infinity, measure, seconds: secs }
   }
-  const lk = (p) => -0.691 + 10 * Math.log10(p)
+  const step = Math.round(0.1 * a.rate)
+  const z = []
+  const cum = new Float64Array(n + 1)
+  for (let i = 0; i < n; i++) cum[i + 1] = cum[i] + l[i] * l[i] + r[i] * r[i]
+  for (let s = 0; s + block <= n; s += step) z.push((cum[s + block] - cum[s]) / block)
   const mean = (list) => list.reduce((s, v) => s + v, 0) / list.length
   const loud = z.filter((p) => p > 0 && lk(p) > -70)
-  if (!loud.length) return -Infinity
+  if (!loud.length) return { lufs: -Infinity, measure, seconds: secs }
   const gate = lk(mean(loud)) - 10
   const kept = loud.filter((p) => lk(p) > gate)
-  return kept.length ? lk(mean(kept)) : -Infinity
+  return { lufs: kept.length ? lk(mean(kept)) : -Infinity, measure, seconds: secs }
 }
+
+export const loudness = (a) => loudnessOf(a).lufs
 
 function windowRms(a, win) {
   const n = a.L.length
@@ -352,7 +365,8 @@ export function spectrum(a) {
 }
 
 export function measure(a) {
-  const span = soundSpan(a, -50)
+  const flat = withoutOffset(a)
+  const span = soundSpan(highpass(flat.audio, 20), -50)
   const n = a.L.length
   const tailN = Math.min(n, Math.round(0.1 * a.rate))
   let tail = 0
@@ -377,11 +391,17 @@ export function measure(a) {
       } else if (v < top * lin(-30) && ++quiet >= 6) on = false
     }
   }
+  const whole = loudnessOf(a)
+  const short = !span.silent && span.last - span.first < Math.round(LOUDNESS_BLOCK * a.rate) && span.last - span.first < n
+  const alone = short ? loudnessOf(slice(a, span.first, span.last)) : null
   return {
     seconds: round(n / a.rate, 3),
     peakDb: round(db(peak(a))),
     truePeakDb: round(db(truePeak(a))),
-    lufs: round(loudness(a)),
+    lufs: round(whole.lufs),
+    lufsMeasure: whole.measure,
+    soundLufs: alone ? round(alone.lufs) : null,
+    offsetDb: flat.offset > 0 ? round(db(flat.offset)) : null,
     rmsDb: round(n ? db(Math.sqrt(all / (2 * n))) : -Infinity),
     silenceFrontSeconds: round(span.first / a.rate, 3),
     silenceEndSeconds: round((n - span.last) / a.rate, 3),
@@ -452,21 +472,91 @@ export function seam(a) {
   return { jump: round(jump, 6), typicalStep: round(typical, 6), ratio: round(typical > 0 ? jump / typical : 0, 2), levelStepDb: round(Number.isFinite(before) && Number.isFinite(after) ? after - before : 0) }
 }
 
+function withoutOffset(a) {
+  const win = Math.max(1, Math.round(0.01 * a.rate))
+  const count = Math.floor(a.L.length / win)
+  if (!count) return { audio: a, offset: 0 }
+  const middle = (x) => {
+    const means = new Float64Array(count)
+    for (let w = 0; w < count; w++) {
+      let sum = 0
+      for (let i = w * win; i < (w + 1) * win; i++) sum += x[i]
+      means[w] = sum / win
+    }
+    means.sort()
+    return count % 2 ? means[(count - 1) / 2] : (means[count / 2 - 1] + means[count / 2]) / 2
+  }
+  const l = middle(a.L)
+  const r = middle(a.R)
+  const offset = Math.max(Math.abs(l), Math.abs(r))
+  if (offset <= lin(OFFSET_DB)) return { audio: a, offset: 0 }
+  const o = make(a.L.length, a.rate)
+  for (let i = 0; i < a.L.length; i++) {
+    o.L[i] = a.L[i] - l
+    o.R[i] = a.R[i] - r
+  }
+  return { audio: o, offset }
+}
+
+function mainSound(a, from, to, capN) {
+  const energy = (x, y) => {
+    let s = 0
+    for (let i = x; i < y; i++) s += a.L[i] * a.L[i] + a.R[i] * a.R[i]
+    return s
+  }
+  const head = energy(from, from + capN)
+  const hop = Math.max(1, Math.round(0.001 * a.rate))
+  let run = head
+  let best = head
+  for (let b = from + hop; b + capN <= to; b += hop) {
+    run += energy(b + capN - hop, b + capN) - energy(b - hop, b)
+    if (run > best) best = run
+  }
+  if (head >= best * HEAD_SHARE) return null
+  const win = Math.max(1, Math.round(0.005 * a.rate))
+  const rms = windowRms(a, win)
+  const w0 = Math.floor(from / win)
+  const w1 = Math.min(rms.length - 1, Math.floor((to - 1) / win))
+  let top = w0
+  for (let w = w0; w <= w1; w++) if (rms[w] > rms[top]) top = w
+  const floor = rms[top] * lin(ONSET_DB)
+  let onset = top
+  let quiet = 0
+  for (let w = top; w >= w0; w--) {
+    if (rms[w] > floor) {
+      onset = w
+      quiet = 0
+    } else if (++quiet >= 4) break
+  }
+  return onset * win
+}
+
 export function keepChain(input, cls, options = {}) {
   const s = { ...chainOf(cls), ...options }
   const steps = []
-  let a = input
-  const span = soundSpan(a, s.trimDb)
+  const flat = withoutOffset(input)
+  let a = flat.audio
+  if (flat.offset > 0) steps.push(`took a constant offset of ${round(db(flat.offset))} dB out`)
+  if (s.lowCutHz > 0) a = highpass(a, s.lowCutHz)
+  const probe = s.lowCutHz >= 20 ? a : highpass(a, 20)
+  const span = soundSpan(probe, s.trimDb)
   if (span.silent) throw new Error('the take is silent')
   const pad = Math.round((s.padMs / 1000) * a.rate)
-  const from = Math.max(0, span.first - pad)
+  let from = Math.max(0, span.first - pad)
   const to = Math.min(a.L.length, span.last + pad * 4)
-  a = slice(a, from, to)
-  steps.push(`trimmed ${round(from / a.rate, 3)} s in front and ${round((input.L.length - to) / a.rate, 3)} s at the end`)
-  if (s.lowCutHz > 0) {
-    a = highpass(a, s.lowCutHz)
-    steps.push(`low cut at ${s.lowCutHz} Hz`)
+  let moved = null
+  const capN = s.capSeconds ? Math.round(s.capSeconds * a.rate) : 0
+  if (!s.loop && capN > 0 && to - from > capN) {
+    const start = mainSound(probe, from, to, capN)
+    if (start !== null && start - pad > from) {
+      moved = from
+      from = Math.max(0, start - pad)
+    }
   }
+  a = slice(a, from, to)
+  if (s.lowCutHz > 0) steps.push(`low cut at ${s.lowCutHz} Hz, before the trim`)
+  steps.push(`trimmed ${round(from / a.rate, 3)} s in front and ${round((input.L.length - to) / a.rate, 3)} s at the end`)
+  if (moved !== null) steps.push(`the first ${s.capSeconds} s after the trim at ${round(moved / a.rate, 3)} s held under a quarter of the energy of the loudest ${s.capSeconds} s, so the cut starts where the main sound starts`)
   let loop = null
   if (s.loop) {
     const want = s.capSeconds ?? seconds(a)
@@ -483,17 +573,26 @@ export function keepChain(input, cls, options = {}) {
     a = fade(a, s.fadeInMs / 1000, out)
     steps.push(`fade in ${s.fadeInMs} ms, fade out ${Math.round(out * 1000)} ms`)
   }
-  const before = loudness(a)
-  if (!Number.isFinite(before)) throw new Error('the take is too quiet to measure')
+  const found = loudnessOf(a)
+  const before = found.lufs
+  if (!Number.isFinite(before)) throw new Error('nothing is left of the take after the low cut and the trim')
   let gainDb = s.targetLufs - before
-  const over = db(truePeak(a)) + gainDb - (cfg.audio.truePeakDb - PEAK_MARGIN_DB)
+  const top = db(truePeak(a))
+  const over = top + gainDb - (cfg.audio.truePeakDb - PEAK_MARGIN_DB)
   if (over > 0) {
     gainDb -= over
     steps.push(`held ${round(over)} dB under ${s.targetLufs} LUFS so the peak stays under ${cfg.audio.truePeakDb} dB`)
   }
+  const spike = found.measure === 'own-length' ? top + gainDb - (s.targetLufs + SHORT_CREST_DB) : 0
+  if (spike > 0) {
+    gainDb -= spike
+    steps.push(`held ${round(spike)} dB under ${s.targetLufs} LUFS so the peak of this short sound stays within ${SHORT_CREST_DB} dB of its class level`)
+  }
   a = scale(a, lin(gainDb))
-  steps.push(`level: ${round(gainDb)} dB to ${round(before + gainDb)} LUFS`)
-  return { audio: a, settings: s, steps, gainDb: round(gainDb), loop }
+  const words = found.measure === 'own-length' ? `${MEASURES[found.measure]}, ${found.seconds} s` : MEASURES[found.measure]
+  steps.push(`level: ${round(gainDb)} dB to ${round(before + gainDb)} LUFS, measured as ${words}`)
+  const level = { measure: found.measure, measuredAs: words, seconds: found.seconds, beforeLufs: round(before), afterLufs: round(before + gainDb), targetLufs: s.targetLufs, truePeakDb: round(top + gainDb) }
+  return { audio: a, settings: s, steps, gainDb: round(gainDb), loop, level }
 }
 
 export function resample(a, ratio) {
