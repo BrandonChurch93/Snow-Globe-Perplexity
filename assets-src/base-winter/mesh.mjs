@@ -48,7 +48,7 @@ export function buildWood(f) {
     const sv = clamp((s - f.sLow) / (f.sHigh - f.sLow))
     const t = (az - strip.from) / (strip.to - strip.from)
     const weight = smooth(f.sLow, f.sLow + 0.6, s) * (1 - smooth(f.sHigh - 0.6, f.sHigh, s))
-    const ao = clamp(0.3 + 0.7 * smooth(0.5, 2.6, s)) * clamp(0.08 + 0.92 * smooth(0, 15, mer.total - s))
+    const ao = clamp(0.3 + 0.7 * smooth(0.5, 2.6, s)) * clamp(0.16 + 0.84 * Math.pow(smooth(0, 10.5, mer.total - s), 0.85))
     const wear = 0.65 * Math.exp(-(((m.h - 9.3) / 0.8) ** 2)) + 0.3 * Math.exp(-(((m.h - 31.2) / 0.5) ** 2))
     return {
       p: place(m.r + m.nr * d, m.h + m.nh * d, az),

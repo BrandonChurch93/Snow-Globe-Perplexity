@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { config } from '../../config'
+import { lightUniforms } from '../../core/chunks/light'
 import { stageMaterial, stageShader, type Rgb } from '../../core/materials'
 import { geometry, prepareModel } from '../../core/models'
 import { stream } from '../../core/rng'
@@ -8,7 +9,7 @@ import { ROOM_GLSL, roomUniforms } from '../../scene/room'
 import type { KitMoment } from '../kit'
 
 export const season = 'winter'
-export const main: Rgb = [0.034, 0.016, 0.009]
+export const main: Rgb = [0.1, 0.062, 0.034]
 
 const PART = 'base-winter'
 const MODEL = 'winter/base-winter.glb'
@@ -106,8 +107,8 @@ const SHADE = `
   #endif
   reflectedLight.indirectDiffuse *= baseAo;
   reflectedLight.indirectSpecular *= baseAo;
-  reflectedLight.directDiffuse *= mix(1.0, baseAo, 0.85);
-  reflectedLight.directSpecular *= mix(1.0, baseAo, 0.9);
+  reflectedLight.directDiffuse *= mix(1.0, baseAo, 0.6);
+  reflectedLight.directSpecular *= mix(1.0, baseAo, 0.8);
 }
 `
 
@@ -165,9 +166,9 @@ float baseHigh = clamp(2.0 * baseCarve.b - 1.0, 0.0, 1.0) * baseCarved;
 float baseWear = clamp(vBasePaint.y + 0.6 * baseHigh, 0.0, 1.0);
 float baseAo = vBasePaint.x * (1.0 - 0.85 * baseCavity);
 float baseBlotch = baseNoise(vBasePos * 0.21) * 0.6 + baseNoise(vBasePos * 0.9) * 0.4;
-diffuseColor.rgb *= vec3(0.34, 0.36, 0.41) * mix(0.7, 1.2, baseBlotch);
+diffuseColor.rgb *= vec3(0.95, 1.45, 1.65) * mix(0.7, 1.2, baseBlotch);
 diffuseColor.rgb *= mix(1.0, 0.3, baseCavity);
-diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(2.6, 2.0, 1.25) + vec3(0.02, 0.011, 0.003), 0.75 * baseWear);
+diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(1.9, 1.45, 1.05) + vec3(0.012, 0.006, 0.002), 0.75 * baseWear);
 `
 
 const WOOD_ROUGH = `
@@ -179,12 +180,12 @@ vec2 baseTilt = baseSlope(baseDetail.rg) * 0.42 + baseSlope(baseCarve.rg) * (1.3
 `
 
 const WOOD_BENT = `
-float baseSide = smoothstep(-0.2, 0.75, vBasePos.x / max(length(vBasePos.xz), 1.0));
-float baseUp = smoothstep(0.06, 0.5, baseObjectNormal.y);
-float baseFrost = baseUp * baseSide * sqrt(baseSide) * (1.0 - 0.8 * smoothstep(12.0, 22.0, vBasePos.y)) * smoothstep(0.3, 0.8, baseNoise(vBasePos * 1.3) * 0.7 + baseNoise(vBasePos * 4.3) * 0.3 + 0.25 * baseSide);
+float baseSide = smoothstep(0.0, 0.75, vBasePos.x / max(length(vBasePos.xz), 1.0));
+float baseUp = max(smoothstep(0.06, 0.5, baseObjectNormal.y), 0.5 * smoothstep(17.0, 11.0, vBasePos.y));
+float baseFrost = baseUp * baseSide * sqrt(baseSide) * (1.0 - 0.5 * smoothstep(14.0, 26.0, vBasePos.y)) * smoothstep(0.3, 0.8, baseNoise(vBasePos * 1.3) * 0.7 + baseNoise(vBasePos * 4.3) * 0.3 + 0.25 * baseSide);
 float baseDust = (0.1 + 0.9 * baseUp) * (0.35 + 0.65 * baseNoise(vBasePos * 3.1)) * 0.08 + 0.12 * baseCavity;
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.07, 0.07, 0.075), clamp(baseDust, 0.0, 0.5));
-diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.34, 0.39, 0.47), clamp(baseFrost * 0.7, 0.0, 0.7));
+diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.88, 0.8, 0.83), clamp(baseFrost * 2.2 * mix(0.42, 1.7, baseHigh), 0.0, 0.92));
 roughnessFactor = mix(roughnessFactor, 0.92, clamp(baseDust * 1.6 + baseFrost, 0.0, 0.85));
 float baseWall = smoothstep(0.7, 2.0, length(baseTilt)) * baseCarved;
 roughnessFactor = mix(roughnessFactor, 0.86, 0.75 * baseWall);
@@ -196,7 +197,7 @@ vec4 baseDetail = texture2D(uBaseDetail, vMapUv);
 float baseWear = vBasePaint.y;
 float baseTarnish = clamp(vBasePaint.z * 1.25 + 0.24 + (baseDetail.b - 0.42) * 0.5 - 0.5 * baseWear, 0.0, 1.0);
 float baseAo = vBasePaint.x;
-vec3 baseClean = mix(diffuseColor.rgb * vec3(1.0, 0.8, 0.62), vec3(0.72, 0.51, 0.24), 0.5 + 0.4 * baseWear) * (0.62 + 0.3 * baseWear);
+vec3 baseClean = mix(diffuseColor.rgb * vec3(1.0, 0.8, 0.62), vec3(0.95, 0.7, 0.34), 0.5 + 0.4 * baseWear) * (0.72 + 0.28 * baseWear);
 diffuseColor.rgb = mix(baseClean, vec3(0.04, 0.028, 0.016) + 0.15 * baseClean, smoothstep(0.12, 0.85, baseTarnish));
 `
 
@@ -211,9 +212,9 @@ vec2 baseTilt = baseSlope(baseDetail.rg) * 0.55;
 
 const BRASS_BENT = `
 float baseSide = smoothstep(-0.2, 0.75, vBasePos.x / max(length(vBasePos.xz), 1.0));
-float baseUp = smoothstep(0.06, 0.5, baseObjectNormal.y);
+float baseUp = max(smoothstep(0.06, 0.5, baseObjectNormal.y), 0.45);
 float baseFrost = baseUp * baseSide * sqrt(baseSide) * smoothstep(0.3, 0.8, baseNoise(vBasePos * 1.3) * 0.7 + baseNoise(vBasePos * 4.3) * 0.3 + 0.25 * baseSide);
-diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.34, 0.39, 0.47), clamp(baseFrost * 0.5, 0.0, 0.5));
+diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.92, 0.84, 0.72), clamp(baseFrost * 1.3, 0.0, 0.8));
 metalnessFactor = mix(metalnessFactor, 0.0, clamp(baseFrost * 0.6, 0.0, 0.6));
 roughnessFactor = mix(roughnessFactor, 0.92, clamp(baseFrost * 0.9, 0.0, 0.8));
 `
@@ -223,7 +224,7 @@ vec4 baseDetail = texture2D(uBaseDetail, vMapUv);
 float baseThick = vBasePaint.x;
 float baseAo = 0.55 + 0.45 * smoothstep(0.0, 0.5, baseThick);
 if (baseThick - 0.05 * baseNoise(vBasePos * 2.3) * baseNoise(vBasePos * 0.7 + 9.0) < 0.012) discard;
-diffuseColor.rgb *= 0.72 * mix(vec3(0.56, 0.66, 0.82), vec3(1.0), smoothstep(0.02, 0.6, baseThick));
+diffuseColor.rgb *= 0.93 * mix(vec3(0.56, 0.66, 0.82), vec3(1.0), smoothstep(0.02, 0.6, baseThick));
 `
 
 const SNOW_ROUGH = `
@@ -293,6 +294,7 @@ uniform vec3 uIceRimDir;
 uniform vec3 uIceRimCol;
 uniform vec3 uIceSky;
 uniform vec3 uIceGround;
+uniform vec3 uIceFloor;
 uniform vec3 uIceBrass;
 uniform float uIceBody[ICE_BODY];
 uniform vec4 uIceSpan;
@@ -330,7 +332,7 @@ void main() {
   float nv = clamp(dot(n, v), 0.0, 1.0);
   float fres = 0.018 + 0.982 * pow(1.0 - nv, 5.0);
   vec3 away = reflect(-v, n);
-  vec3 mirror = stageRoom(away) + stageRoomLights(away, 0.06) + iceDome(away) * RECIPROCAL_PI;
+  vec3 mirror = stageRoom(away) + stageRoomLights(away, 0.06) + iceDome(away) * RECIPROCAL_PI + uIceFloor * smoothstep(0.0, -0.3, away.y);
 
   vec3 into = refract(-v, n, 1.0 / 1.31);
   vec3 outW = normalize(2.0 * dot(-v, into) * into + v);
@@ -347,11 +349,11 @@ void main() {
     }
     if (at.y < 0.0) break;
   }
-  vec3 behind = stageRoom(outW);
+  vec3 behind = mix(stageRoom(outW), uIceFloor, smoothstep(0.0, -0.3, outW.y));
   if (hit > 0.5) {
     vec3 rb = turn * normalize(vec3(at.x, 0.0, at.z));
     float under = smoothstep(0.5, 10.0, uIceSpan.z - at.y);
-    vec3 fall = uIceKeyCol * max(dot(rb, uIceKeyDir), 0.0) * under + iceDome(rb) * (0.25 + 0.75 * under);
+    vec3 fall = (uIceKeyCol * max(dot(rb, uIceKeyDir), 0.0) + uRigCardCol * max(dot(rb, uRigCardDir), 0.0)) * under + iceDome(rb) * (0.25 + 0.75 * under);
     vec2 wuv = vec2(atan(at.x, at.z) / 6.2831853 * uIceTile.x, at.y / uIceTile.y);
     vec3 wood = textureLod(uIceWood, wuv, 2.5).rgb;
     float metal = max(1.0 - smoothstep(uIceSpan.x + 2.2, uIceSpan.x + 2.7, at.y), smoothstep(uIceSpan.z - 1.6, uIceSpan.z - 1.1, at.y));
@@ -363,19 +365,21 @@ void main() {
   float core = smoothstep(0.2, 0.95, nv);
   float streak = baseNoise(vec3(vIceUv.z * 11.0 + seed * 5.0, t * 2.2 + seed * 3.0, seed * 1.7));
   float grit = baseNoise(vIcePos * 11.0);
-  float cloud = 0.04 + (0.03 + 0.12 * core * core) * smoothstep(0.25, 0.75, streak) * mix(1.0, 0.3, smoothstep(0.45, 1.0, t));
-  cloud += 0.08 * smoothstep(0.6, 0.85, grit) * (0.4 + 0.6 * core) + 0.6 * (1.0 - smoothstep(0.0, 0.17, t));
+  float cloud = 0.1 + (0.05 + 0.2 * core * core) * smoothstep(0.25, 0.75, streak) * mix(1.0, 0.3, smoothstep(0.45, 1.0, t));
+  cloud += 0.13 * smoothstep(0.6, 0.85, grit) * (0.4 + 0.6 * core) + 0.6 * (1.0 - smoothstep(0.0, 0.17, t));
   cloud = clamp(cloud, 0.0, 0.8);
   float wrap = clamp(dot(n, uIceKeyDir) * 0.5 + 0.5, 0.0, 1.0);
   float back = clamp(dot(n, uIceRimDir) * 0.5 + 0.5, 0.0, 1.0);
-  vec3 lit = uIceKeyCol * (0.2 + 0.8 * wrap * wrap) + uIceRimCol * 0.5 * back * back + iceDome(n);
-  vec3 milk = vec3(0.52, 0.58, 0.66) * lit * RECIPROCAL_PI;
+  float warm = clamp(dot(n, uRigCardDir) * 0.5 + 0.5, 0.0, 1.0);
+  vec3 lit = uIceKeyCol * (0.2 + 0.8 * wrap * wrap) + uRigCardCol * warm * warm + uIceRimCol * 0.5 * back * back + iceDome(n);
+  vec3 milk = vec3(0.78, 0.84, 0.93) * lit * RECIPROCAL_PI;
   vec3 col = mix(behind * vec3(0.86, 0.94, 1.0), milk, cloud);
   col = col * (1.0 - fres) + mirror * fres + milk * (0.4 * pow(1.0 - nv, 3.0));
   float hk = max(dot(n, normalize(v + uIceKeyDir)), 0.0);
   float hr = max(dot(n, normalize(v + uIceRimDir)), 0.0);
   col += uIceKeyCol * (pow(hk, 420.0) * 4.5 + pow(hk, 36.0) * 0.12);
   col += uIceRimCol * (pow(hr, 240.0) * 2.4 + pow(hr, 30.0) * 0.1);
+  col += uRigCardCol * (pow(max(dot(n, normalize(v + uRigCardDir)), 0.0), 48.0) * 0.5);
   vec3 cell = floor(vIcePos * 4.5);
   vec3 jit = vec3(baseHash(cell + 1.3), baseHash(cell + 7.1), baseHash(cell + 13.7)) - 0.5;
   vec3 fn = normalize(n + turn * jit * 1.3);
@@ -393,6 +397,7 @@ const iceUniforms = {
   uIceRimDir: { value: new THREE.Vector3(0, 1, 0) },
   uIceRimCol: { value: new THREE.Color() },
   uIceSky: { value: new THREE.Color() },
+  uIceFloor: { value: new THREE.Color() },
   uIceGround: { value: new THREE.Color() },
   uIceBrass: { value: new THREE.Color(0.3, 0.2, 0.09) },
   uIceBody: { value: [] as number[] },
@@ -403,6 +408,7 @@ const iceUniforms = {
 
 const growth: { delay: number; length: number }[] = []
 const STUB = 0.3
+const FLOOR_SHARE = 0.3
 
 export async function prepare(): Promise<void> {
   await prepareModel(MODEL)
@@ -475,6 +481,10 @@ export function update(moment: KitMoment): void {
   iceUniforms.uIceRimCol.value.copy(f.rimCol)
   iceUniforms.uIceSky.value.copy(f.sky).multiplyScalar(f.fill)
   iceUniforms.uIceGround.value.copy(f.ground).multiplyScalar(f.fill)
+  const card = lightUniforms.uRigCardCol.value
+  const lift = (FLOOR_SHARE / Math.PI) * Math.max(lightUniforms.uRigCardDir.value.y, 0)
+  const down = (FLOOR_SHARE / Math.PI) * Math.max(f.keyDir.y, 0)
+  iceUniforms.uIceFloor.value.setRGB(f.keyCol.r * down + card.r * lift, f.keyCol.g * down + card.g * lift, f.keyCol.b * down + card.b * lift)
   const swapping = moment.beat !== null && moment.beat >= config.shake.swapWindow.fromBeat
   const since = swapping ? 0 : Math.max(0, moment.sinceLanding)
   const grow = iceUniforms.uIceGrow.value
