@@ -1,17 +1,17 @@
-# Status 17
+# Status 18
 
-2026-11-24 07:04 UTC
+2026-11-24 07:26 UTC
 
-- Blockout round 1 is half read. The film sheets scored 8 with one severe issue: the spring hold sinks to the base and loses the miniature. The second critic, on the cameras and the screens, has not answered yet
-- The fix is under way: the spring move still goes toward the base, as the kit asks, but stops where the cottage and the trunk stay in frame (decision 34). The next critics are also told what each camera and each move is for, which this one was not
-- Merged and checked: the live framing that leaves room for a shake at every size, the governor that steps down on a slow machine, and the simulation running in a worker. 284 tests are green
-- Next: the second critic's answer, the fix pass, then round 2, the blockout preview film and a fresh publish
-- phase 2: 4.04 h used of its 6.00 h box
-- allowance (before the review): 5.23 h used of 36.00 h allowed
+- Blockout round 1 is answered and failed: the film sheets scored 8, the cameras and screens 5, against a bar of 7 with nothing severe open. Eight issues, three of them severe
+- Fixed already: the spring move stops short of the base so the miniature stays in the frame (decision 34), and the globe now lifts 13.5 mm with the hero camera aimed lower, so the foot of the base stands 4.2 percent above the bottom edge instead of 1.7 (decision 35)
+- Under way with three engineers until about 08:25 UTC: the cameras surface, interior, low and macro framed again from rendered candidates; 7 percent of room between the globe and the controls on the two wide screens; every storm thinned within its first bar
+- Then round 2, the last blockout round the config allows. The published app is still the 04:43 build; it is published again after the fixes are merged
+- phase 2: 4.42 h used of its 6.00 h box
+- allowance (before the review): 5.61 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-17-1.jpg`: The live app through a shake at three sizes: rest, lifted, mid stroke. The camera stays locked and the lifted glass stays under the top edge
-- `out/stills/status/status-17-2.jpg`: What the first critic called severe: in the spring hold the camera sinks all the way to the base and the miniature leaves the frame for about 2.5 s
-- `out/stills/status/status-17-3.jpg`: Frame 0 of the film, the macro camera after the fit and the focus change: the lit cottage, the lamppost and the foot of the tree in falling snow, no edge of the glass. Stand-in shapes, review tier. (by engine_builder)
-- `out/stills/status/status-17-4.jpg`: Sheet: 12 frames across the shot shake-1, frames 576 to 719, preview, draft
+- `out/stills/status/status-18-1.jpg`: Round 1: the six cameras on the stand-in globe, each beside its target (hero, macro, interior; base, surface, low). Four are being framed again
+- `out/stills/status/status-18-2.jpg`: Round 1: the three screens. On the two wide ones the foot of the base stands 28 and 23 pixels above the Shake control
+- `out/stills/status/status-18-3.jpg`: The spring hold after decision 34: the move stops 55 percent of the way to the base (frame 1044). The petals still hide the miniature for nine seconds; being fixed
+- `out/stills/status/status-18-4.jpg`: What the first critic called severe: in the spring hold the camera sinks all the way to the base and the miniature leaves the frame for about 2.5 s. Being fixed: the move stops where the cottage and the trunk stay in (by root)

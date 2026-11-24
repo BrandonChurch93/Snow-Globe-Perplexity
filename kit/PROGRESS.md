@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 17 · 2026-11-24 07:04 UTC
+Status 18 · 2026-11-24 07:26 UTC
 
-- `out/stills/status/status-17-1.jpg`: The live app through a shake at three sizes: rest, lifted, mid stroke. The camera stays locked and the lifted glass stays under the top edge
-- `out/stills/status/status-17-2.jpg`: What the first critic called severe: in the spring hold the camera sinks all the way to the base and the miniature leaves the frame for about 2.5 s
-- `out/stills/status/status-17-3.jpg`: Frame 0 of the film, the macro camera after the fit and the focus change: the lit cottage, the lamppost and the foot of the tree in falling snow, no edge of the glass. Stand-in shapes, review tier. (by engine_builder)
-- `out/stills/status/status-17-4.jpg`: Sheet: 12 frames across the shot shake-1, frames 576 to 719, preview, draft
+- `out/stills/status/status-18-1.jpg`: Round 1: the six cameras on the stand-in globe, each beside its target (hero, macro, interior; base, surface, low). Four are being framed again
+- `out/stills/status/status-18-2.jpg`: Round 1: the three screens. On the two wide ones the foot of the base stands 28 and 23 pixels above the Shake control
+- `out/stills/status/status-18-3.jpg`: The spring hold after decision 34: the move stops 55 percent of the way to the base (frame 1044). The petals still hide the miniature for nine seconds; being fixed
+- `out/stills/status/status-18-4.jpg`: What the first critic called severe: in the spring hold the camera sinks all the way to the base and the miniature leaves the frame for about 2.5 s. Being fixed: the move stops where the cottage and the trunk stay in (by root)
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 07:20 UTC
-clock: phase 2, tick of 16.0 minutes
-phase 2: 4.31 h used of its 6.00 h box
-allowance (before the review): 5.50 h used of 36.00 h allowed
-all time before the review: 5.50 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 07:26 UTC
+clock: phase 2, tick of 6.4 minutes
+phase 2: 4.42 h used of its 6.00 h box
+allowance (before the review): 5.61 h used of 36.00 h allowed
+all time before the review: 5.61 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 15
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -706,3 +706,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 07:08 round 1, part 2 answered: 5, two severe and five major issues (open items 11 to 16). Merged score 5 against a bar of 7: round 1 fails. The fix pass began 07:08 and may last `budget.floorFixMinutes` (90), so until 08:38; round 2 is the last the config allows.
 - 07:15 merged `agent/film-app2` `98d9ca1` (decision 34) as `e2afc16`. 07:20 decision 35 (lift 13.5, hero aim 70.5) pushed as `c288bcd`: types clean, 297 of 298 tests (the one red test pins the app's old framing numbers and is with `film_app_engineer_2`).
 - 07:20 to 07:26 the fix pass handed out: `film_app_engineer_2` (the 7 percent rule for the two wide screens, the hold's aim drop 4.5, its tests, the hash of `parts`; limit 08:25), `engine_engineer_2` started as the engine job's one replacement (cameras `surface`, `interior`, `low`, `macro` from rendered candidates; limit 08:20), `particles_engineer_2` (every storm thins within the first bar; limit 08:15). Round 1's folder is complete: both answers, `KEY.json`, `MANIFEST.md`, the measures, the two message files and `SUMMARY.md`.
+
+- 07:26 Status 18 posted with three pictures: the six cameras of round 1, the three screens of round 1, the spring hold after decision 34 (where the petals still hide the miniature, open item 17).
