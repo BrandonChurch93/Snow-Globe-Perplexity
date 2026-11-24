@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { config } from '../src/config'
 import { sampleSdf } from '../src/core/sdf'
-import { anchors, buildCollider, centreHeightMm, colliderCells, cottage, domeHeightMm, emitters, groundAt, groundY, heights, innerRadiusMm, islandEdge, lamppost, moundAt, moundSlope, pond, pondField, shapePoints, shapes, solidDistance, tree, type Role } from '../src/scene/layout'
+import { anchors, bankAt, buildCollider, centreHeightMm, colliderCells, cottage, domeHeightMm, emitters, groundAt, groundY, heights, innerRadiusMm, islandEdge, lamppost, moundAt, moundSlope, pond, pondField, shapePoints, shapes, solidDistance, tree, type Role } from '../src/scene/layout'
 
 const by = (role: Role) => shapes.filter((s) => s.role === role)
 const middle = (role: Role): [number, number] => {
@@ -39,6 +39,18 @@ describe('the layout', () => {
     expect(h.tree).toBeGreaterThan(h.lamp)
     expect(h.lamp).toBeGreaterThan(10.5)
     expect(h.lamp).toBeLessThan(13.5)
+  })
+
+  it('banks the snow against the wall and nowhere else', () => {
+    for (const [x, z] of [[0, 0], [tree.x, tree.z], [lamppost.x, lamppost.z], [pond.x, pond.z]]) expect(bankAt(x, z), `${x}, ${z}`).toBe(0)
+    for (let i = 0; i < 48; i++) {
+      const a = (i / 48) * Math.PI * 2
+      const r = islandEdge(a)
+      const rise = bankAt(Math.cos(a) * r, Math.sin(a) * r)
+      expect(rise, `at ${i}`).toBeGreaterThan(0.2)
+      expect(rise, `at ${i}`).toBeLessThan(4.2)
+      expect(bankAt(Math.cos(a) * (r - 10), Math.sin(a) * (r - 10)), `inside ${i}`).toBe(0)
+    }
   })
 
   it('makes the island a mound raked toward the viewer, higher at the back, the island level through the pond', () => {
