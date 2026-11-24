@@ -19,19 +19,19 @@
           "sha": "019946313786b537"
         },
         {
-          "path": "shared/trunk-bark-n.lin.tile.png",
-          "bytes": 10492024,
-          "sha": "74f6a1df6d71fc66"
+          "path": "shared/trunk-bark-n.lin.tile.w1024.png",
+          "bytes": 2708463,
+          "sha": "914dfe43f4316b3a"
         },
         {
-          "path": "shared/trunk-bark.srgb.tile.png",
-          "bytes": 10512267,
-          "sha": "38969949ad22b466"
+          "path": "shared/trunk-bark.srgb.tile.w1024.png",
+          "bytes": 2543134,
+          "sha": "36fcc6c4546be4bc"
         },
         {
           "path": "shared/trunk-wood.glb",
-          "bytes": 533860,
-          "sha": "1c1d348b807adc12"
+          "bytes": 554920,
+          "sha": "e5b4d180e04d7f3d"
         },
         {
           "path": "shared/village-grain.lin.tile.png",
@@ -72,8 +72,8 @@
         },
         {
           "path": "winter/base-winter.glb",
-          "bytes": 2222448,
-          "sha": "a7c02e95eb0477a0"
+          "bytes": 2225140,
+          "sha": "01abebc41fc339b0"
         },
         {
           "path": "winter/base-wood-detail.lin.tile.w1024.png",
@@ -107,23 +107,23 @@
         },
         {
           "path": "winter/tree-crown.glb",
-          "bytes": 5032840,
-          "sha": "a52191392707a09a"
+          "bytes": 4589576,
+          "sha": "f0658e35c44e1a7b"
         },
         {
           "path": "winter/tree-needles.srgb.tile.w1024.png",
-          "bytes": 2636268,
-          "sha": "89ac6057b0fb35c0"
+          "bytes": 2753776,
+          "sha": "2e4347d874a6199f"
         },
         {
           "path": "winter/tree-snow.srgb.tile.w1024.png",
-          "bytes": 1440461,
-          "sha": "4fa9ca2ff5a61965"
+          "bytes": 1440327,
+          "sha": "b0872d5fb45d1989"
         },
         {
           "path": "winter/tree-sprigs.srgb.w512.png",
-          "bytes": 744349,
-          "sha": "df4d16f3ee65e1ad"
+          "bytes": 781336,
+          "sha": "8059a691525c7360"
         },
         {
           "path": "winter/village-ice.lin.tile.png",
@@ -163,19 +163,19 @@
           "sha": "019946313786b537"
         },
         {
-          "path": "shared/trunk-bark-n.lin.tile.png",
+          "path": "shared/trunk-bark-n.lin.tile.w1024.png",
           "bytes": 10492024,
           "sha": "74f6a1df6d71fc66"
         },
         {
-          "path": "shared/trunk-bark.srgb.tile.png",
+          "path": "shared/trunk-bark.srgb.tile.w1024.png",
           "bytes": 10512267,
           "sha": "38969949ad22b466"
         },
         {
           "path": "shared/trunk-wood.glb",
-          "bytes": 533860,
-          "sha": "1c1d348b807adc12"
+          "bytes": 554920,
+          "sha": "e5b4d180e04d7f3d"
         },
         {
           "path": "shared/village-grain.lin.tile.png",
@@ -216,8 +216,8 @@
         },
         {
           "path": "winter/base-winter.glb",
-          "bytes": 2222448,
-          "sha": "a7c02e95eb0477a0"
+          "bytes": 2225140,
+          "sha": "01abebc41fc339b0"
         },
         {
           "path": "winter/base-wood-detail.lin.tile.w1024.png",
@@ -251,23 +251,23 @@
         },
         {
           "path": "winter/tree-crown.glb",
-          "bytes": 5032840,
-          "sha": "a52191392707a09a"
+          "bytes": 4589576,
+          "sha": "f0658e35c44e1a7b"
         },
         {
           "path": "winter/tree-needles.srgb.tile.w1024.png",
-          "bytes": 10748196,
-          "sha": "5e3440d954ba1152"
+          "bytes": 11131423,
+          "sha": "2c26fd3b77b6eef5"
         },
         {
           "path": "winter/tree-snow.srgb.tile.w1024.png",
-          "bytes": 1440461,
-          "sha": "4fa9ca2ff5a61965"
+          "bytes": 1440327,
+          "sha": "b0872d5fb45d1989"
         },
         {
           "path": "winter/tree-sprigs.srgb.w512.png",
-          "bytes": 3348898,
-          "sha": "467c638d3c1d148d"
+          "bytes": 3383607,
+          "sha": "2cd58a924ccc4c30"
         },
         {
           "path": "winter/village-ice.lin.tile.png",
@@ -291,9 +291,9 @@
     }
   },
   "seasonHashes": {
-    "winter": "6acfdde132232007",
-    "spring": "74c42986651a1874",
-    "summer": "74c42986651a1874",
-    "fall": "74c42986651a1874"
+    "winter": "ef2ed8837e474e90",
+    "spring": "ef0db9baa34091f5",
+    "summer": "ef0db9baa34091f5",
+    "fall": "ef0db9baa34091f5"
   }
 }
