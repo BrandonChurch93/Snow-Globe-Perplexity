@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 9 · 2026-11-24 04:20 UTC
+Status 10 · 2026-11-24 04:38 UTC
 
-- `out/stills/status/status-9-1.jpg`: The host check: the site built from a clean copy of the tracked files and opened live at 1920 x 1080. It draws and logs nothing, and it does not yet signal its first picture, so the load time check is red. (by gate_checks_builder)
-- `out/stills/status/status-9-2.jpg`: The compression test: frame 666, in the middle of the first shake, taken back out of a 5 Mbps encode (42.7 dB against the frame before encoding). Measuring scene. (by film_tools_builder)
-- `out/stills/status/status-9-3.jpg`: The first page of the blockout critic's pack: the approved winter image (a) above the hero camera (b). The build side is still the measuring scene with blocks for the cottage and the tree, so this shows how far there is to go. (by measure_pack_builder)
-- `out/stills/status/status-9-4.jpg`: The 2 kept sounds as waveforms, each with its name, length and loudness
+- `out/stills/status/status-10-1.jpg`: The kept sounds as waveforms
+- `out/stills/status/status-10-2.jpg`: The interface at 1920 x 1080, laid over the approved winter image on a mock (not the engine yet): four season marks at the left, the Shake control in the middle, sound at the right. (by interface_builder)
+- `out/stills/status/status-10-3.jpg`: The controls at twice their size in each state: idle, dimmed, busy, hover, focus on Shake, focus on a season mark, focus on sound, sound on. (by interface_builder)
+- `out/stills/status/status-10-4.jpg`: The card loop's seam on the measuring scene: its last six frames, then its first six. The sheet a critic will get to say where the loop ends and begins. (by measure_pack_builder)
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 04:20 UTC
-clock: phase 2, tick of 19.2 minutes
-phase 2: 1.31 h used of its 6.00 h box
-allowance (before the review): 2.50 h used of 36.00 h allowed
-all time before the review: 2.50 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 04:38 UTC
+clock: phase 2, tick of 6.0 minutes
+phase 2: 1.60 h used of its 6.00 h box
+allowance (before the review): 2.79 h used of 36.00 h allowed
+all time before the review: 2.79 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
