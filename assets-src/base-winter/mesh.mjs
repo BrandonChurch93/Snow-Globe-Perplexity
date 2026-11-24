@@ -441,11 +441,14 @@ export function buildSnow() {
   })
   for (let i = 0; i < cols.length; i++) {
     const az = cols[i]
-    let rin = P.COLLAR.crown[0] - 0.3
-    for (let it = 0; it < 5; it++) {
-      const top = snowSupport(rin) + Math.max(snowThickness(az, rin), 0)
-      rin = P.sphereRadiusAt(top) - 0.2
+    let lo = P.COLLAR.crown[0] - 0.3
+    let hi = 50.4
+    for (let it = 0; it < 18; it++) {
+      const at = (lo + hi) / 2
+      if (P.sphereRadiusAt(snowSupport(at) + Math.max(snowThickness(az, at), 0)) > at) lo = at
+      else hi = at
     }
+    const rin = lo - 0.25
     const column = []
     const u = (az + 180) / 360
     const w = eased[i]
