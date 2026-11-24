@@ -33,6 +33,7 @@ export const lightUniforms = {
   uLightGlow: { value: new THREE.Vector4(0, 0, 0, 0) },
   uLightGlowAt: { value: new THREE.Vector4(0, 0, 0, 1) },
   uRigKeyDir: { value: new THREE.Vector3(0, 1, 0) },
+  uRigKeyIn: { value: new THREE.Vector3(0, 1, 0) },
   uRigKeyCol: { value: new THREE.Color(0, 0, 0) },
   uRigRimDir: { value: new THREE.Vector3(0, 1, 0) },
   uRigRimCol: { value: new THREE.Color(0, 0, 0) },
@@ -65,6 +66,7 @@ uniform mat3 uLightFrame;
 uniform vec4 uLightGlow;
 uniform vec4 uLightGlowAt;
 uniform vec3 uRigKeyDir;
+uniform vec3 uRigKeyIn;
 uniform vec3 uRigKeyCol;
 uniform vec3 uRigRimDir;
 uniform vec3 uRigRimCol;
@@ -144,7 +146,7 @@ float stageGridOpen(vec3 local) {
   return mix(uGridShade.w, 1.0, mix(a, b, uGrid.x));
 }
 vec3 stageKeyBent(vec3 local) {
-  vec3 kl = uLightFrame * uRigKeyDir;
+  vec3 kl = uLightFrame * uRigKeyIn;
   vec3 off = (local - kl * dot(local, kl)) / uGrid.w;
   float s2 = dot(off, off);
   return normalize(kl + off * (uRigInside.y * (1.0 + s2 * sqrt(s2)))) * uLightFrame;

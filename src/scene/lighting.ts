@@ -23,7 +23,7 @@ export const ROOM_RIG = {
   rimWrap: 0.12,
   rimSpecular: 1,
   card: { share: 0.1, side: -0.9, lift: 0.3, front: 1.1, wrap: 0.5, specular: 0, inside: 1, lobe: 0.25 },
-  inside: { through: 0.7, wrap: 0.6, spread: 1.6, bounce: 0.27, sky: 0.5 },
+  inside: { through: 0.7, wrap: 0.6, spread: 1.6, bounce: 0.27, sky: 0.5, axis: [0, 0.45, 1] as Rgb, pull: 0.3 },
   point: { key: 0.4, rim: 0.1, sky: 0.32 },
   room: { gain: 1, lights: 1, softPerRough: 0.5, lightsBelowRough: 0.62 },
   grid: { flat: 0.25, wrap: 0.3, specular: 1, openFloor: 0.35 },
@@ -32,6 +32,22 @@ export const ROOM_RIG = {
 } as const
 
 const SHADOW_OFF = 10
+
+export function keyInside(from: Rgb): [number, number, number] {
+  const t = ROOM_RIG.targetMm
+  const a = ROOM_RIG.inside.axis
+  const k = ROOM_RIG.inside.pull
+  const x = from[0] - t[0]
+  const y = from[1] - t[1]
+  const z = from[2] - t[2]
+  const len = Math.hypot(x, y, z) || 1
+  const al = Math.hypot(a[0], a[1], a[2]) || 1
+  const px = (x / len) * (1 - k) + (a[0] / al) * k
+  const py = (y / len) * (1 - k) + (a[1] / al) * k
+  const pz = (z / len) * (1 - k) + (a[2] / al) * k
+  const pl = Math.hypot(px, py, pz) || 1
+  return [px / pl, py / pl, pz / pl]
+}
 
 export function cardOf(rig: SeasonKit['rig']): RigCard {
   if (rig.card) return rig.card
@@ -92,12 +108,7 @@ export class Lighting {
   }
 
   private shade(grid: THREE.Texture | null, from: Rgb): void {
-    const t = ROOM_RIG.targetMm
-    const x = from[0] - t[0]
-    const y = from[1] - t[1]
-    const z = from[2] - t[2]
-    const len = Math.hypot(x, y, z)
-    if (len > 0) shadeGrid(grid, [x / len, y / len, z / len], 1 - 1 / lensIor, ROOM_RIG.keySpread * ROOM_RIG.inside.spread)
+    shadeGrid(grid, keyInside(from), 1 - 1 / lensIor, ROOM_RIG.keySpread * ROOM_RIG.inside.spread)
   }
 
   setShadowMap(px: number): void {
@@ -145,6 +156,8 @@ export class Lighting {
     f.ambient.setRGB(sky[0] * fill, sky[1] * fill, sky[2] * fill)
 
     u.uRigKeyDir.value.copy(f.keyDir)
+    const keyIn = keyInside(keyFrom)
+    u.uRigKeyIn.value.set(keyIn[0], keyIn[1], keyIn[2])
     u.uRigKeyCol.value.copy(f.keyCol)
     u.uRigRimDir.value.copy(f.rimDir)
     u.uRigRimCol.value.copy(f.rimCol)
