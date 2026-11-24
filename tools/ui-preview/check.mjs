@@ -336,6 +336,37 @@ try {
     return zero === 0 && moved > zero && pressed > moved && keyed > pressed ? '' : `activity counts ${JSON.stringify([zero, moved, pressed, keyed])}`
   })
 
+  await check('at every size the controls stay in the frame and clear of each other, with Shake centred; only an upright phone stacks them', async () => {
+    const sizes = [...['hd', 'phone', 'tablet'].map((id) => ({ id, ...config.formats[id] })), { id: 'phone on its side', width: 667, height: 375 }, { id: 'small phone on its side', width: 568, height: 320 }]
+    const problems = []
+    notes.layout = {}
+    for (const size of sizes) {
+      const t = await open({}, { width: size.width, height: size.height })
+      const boxes = await t.page.evaluate(() =>
+        [...document.querySelectorAll('#ui [data-control]')].map((e) => {
+          const b = e.getBoundingClientRect()
+          return { id: e.dataset.season ?? e.dataset.control, left: b.left, top: b.top, right: b.right, bottom: b.bottom }
+        }),
+      )
+      await t.close()
+      const shake = boxes.find((b) => b.id === 'shake')
+      const mark = boxes.find((b) => b.id === seasons[0])
+      const outside = boxes.filter((b) => b.left < 0 || b.top < 0 || b.right > size.width || b.bottom > size.height).map((b) => b.id)
+      const touching = boxes.flatMap((a, i) => boxes.slice(i + 1).filter((b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom).map((b) => `${a.id} and ${b.id}`))
+      const offCentre = Math.round(Math.abs((shake.left + shake.right) / 2 - size.width / 2) * 10) / 10
+      const oneRow = Math.abs((mark.top + mark.bottom) / 2 - (shake.top + shake.bottom) / 2) < 2
+      notes.layout[size.id] = { controls: boxes.length, oneRow, offCentre }
+      problems.push(
+        want(boxes.length, seasons.length + 2, `${size.id}: controls`),
+        want(outside, [], `${size.id}: controls outside the frame`),
+        want(touching, [], `${size.id}: controls that touch`),
+        offCentre > 1 ? `${size.id}: Shake is ${offCentre} px off centre` : '',
+        want(oneRow, size.id !== 'phone', `${size.id}: marks on the row of Shake`),
+      )
+    }
+    return first(...problems)
+  })
+
   const slow = await Promise.all([
     (async () => {
       const t = await open()
