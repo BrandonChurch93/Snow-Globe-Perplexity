@@ -24,7 +24,7 @@ const PART = `miniature-${season}`
 const LIGHT = `light-${season}`
 const ARRIVAL = `arrival-${season}`
 
-const LAMP = { power: 1.2, reachMm: 12, flicker: 0.05, cycles: 3, phase: 0.1 }
+const LAMP = { power: 3, reachMm: 12, flicker: 0.05, cycles: 3, phase: 0.1 }
 const WINDOW = { power: 0.8, reachMm: 8, flicker: 0.1, cycles: 5, phase: 0.4 }
 const SIDE = { power: 0.8, reachMm: 7, flicker: 0.1, cycles: 4, phase: 0.75 }
 const BULB = { power: 0.6, reachMm: 4.5, flicker: 0.07, cycles: 2 }
