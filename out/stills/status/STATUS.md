@@ -1,18 +1,18 @@
-# Status 43
+# Status 44
 
-2026-11-24 16:40 UTC
+2026-11-24 17:01 UTC
 
-- Round 3 is closed and does not pass: likeness 4 and craft 3 and motion 3 and the jury fails with 4 of 15
-- Its last motion answer came at 16:29 and found five severe faults: the lift levitates and the strokes are flat and equal and the globe hangs in mid air before a glide down and the dressing steps in one frame and the storm is a fixed shell of streaks
-- A tenth builder now owns the shake path alone and five others got the motion findings with the kit lines they answer to
-- Decision 57: the reference camera was 0.7 percent far and 1.2 mm low and is corrected. The base stays 33 mm because the fill threshold may not be lowered
-- Round 4 is still being drawn: the set down and landing sheets are in and the stills and the gate are expected by about 17:00
-- phase 3: 8.22 h used of its 11.00 h box
-- allowance (before the review): 14.84 h used of 36.00 h allowed
+- Round 4 judged the 16:06 build. The gate is all 15 green on a clean clone and the measures are 24 of 24 green: the four red checks and the red sharpness measure of Round 3 are cured
+- Critics so far: craft 4 (its three parts gave 4 and 6 and 7) and motion part 1 gave 6 where Round 3 had 3. The jury fails again with 4 of 15 against 7 of 10 on the approved images. Likeness and motion part 2 are still out
+- Worst findings: at the landing the storm reads as one milky spin blur that hides the cottage and the pond. The cover arrives as an opacity switch at frame 72. The globe still hangs before it sets down. The crown snow and the bark and the chimney smoke give the render away
+- Every finding went to the builder who owns it within minutes in the critic's own words. Ten builders push by 17:55 for the Round 5 freeze at 18:00
+- Mine: the lens sample pattern is replaced because a far ridge drew as five stacked copies of itself. A macro still is drawing now to check it
+- phase 3: 8.56 h used of its 11.00 h box
+- allowance (before the review): 15.18 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-43-1.jpg`: Round 4 build: the first 0.4 s after the landing of the test shake at review tier. The frost ring bursts outward from the foot from frame 150
-- `out/stills/status/status-43-2.jpg`: Still: winter rest hero, hd, draft
-- `out/stills/status/status-43-3.jpg`: The spring hold after decision 34, twelve frames at draft: the move toward the base now stops 55 percent of the way (frame 1044). Still wrong and being fixed: the petals fill the glass for nine seconds, so the miniature only comes out at the end (by film_app_engineer_2)
-- `out/stills/status/status-43-4.jpg`: Round 1: the three screens at 1920 by 1080, 390 by 844 and 1024 by 1366. On the two wide ones the foot of the base stands 28 and 23 pixels above the Shake control; the framing now gets a rule of 7 percent of the height (by root)
+- `out/stills/status/status-44-1.jpg`: Round 4 build at final tier: the hero still at rest as the jury saw it
+- `out/stills/status/status-44-2.jpg`: Round 4 build: strokes of the test shake at frames 84 to 106. The bloom of the swap window turns the base one flat orange for five frames (with the lights builder now)
+- `out/stills/status/status-44-3.jpg`: Still: winter rest hero, hd, draft
+- `out/stills/status/status-44-4.jpg`: Round 1, what the second critic judged: the stand-in globe from the six cameras, each beside its target. Top row hero, macro, interior; bottom row base, surface, low. Four are being framed again: surface shows the wall of the base, interior stands too far back, low nearly repeats hero, macro cuts the cottage (by root)
