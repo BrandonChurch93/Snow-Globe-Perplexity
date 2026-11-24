@@ -140,20 +140,20 @@ function addCone(soup, f, cone) {
       const Ns = normalAt(x, om)
       const e1 = norm3(add3(D, Ns, -dot3(D, Ns)))
       const e2 = cross3(Ns, e1)
-      const rho = 0.6 * Math.max(along, across) * (0.94 + 0.14 * rng())
-      const hgt = rho * (0.56 + 0.12 * rng())
-      const tilt = norm3(add3(Ns, e1, 0.55))
+      const rho = 0.7 * Math.max(along, across) * (0.94 + 0.14 * rng())
+      const hgt = rho * (0.36 + 0.1 * rng())
+      const tilt = norm3(add3(Ns, e1, 0.8))
       const first = soup.count
-      const top = add3(add3(Pc, tilt, hgt), e1, 0.22 * rho)
+      const top = add3(add3(Pc, tilt, hgt), e1, 0.34 * rho)
       soup.vert(top, tilt, uvOf(top), [0.5, 0.5], [1, 0.85, 0])
       for (let ring = 0; ring < 2; ring++) {
         for (let q = 0; q < seg; q++) {
           const al = (q / seg) * 2 * Math.PI + (ring ? Math.PI / seg : 0)
-          const rhomb = ring ? 1.1 / Math.pow(Math.abs(Math.cos(al)) + Math.abs(Math.sin(al)), 0.55) : 1
+          const rhomb = (ring ? 1.16 : 1.04) / Math.pow(Math.abs(Math.cos(al)) + Math.abs(Math.sin(al)), 0.8)
           const rad = add3(scale3(e1, Math.cos(al)), e2, Math.sin(al))
           const lead = Math.cos(al)
-          const reachOut = ring ? rhomb * (lead > 0 ? 1 + 0.18 * lead : 1) : 0.6 + 0.16 * lead
-          const p = add3(add3(Pc, rad, rho * reachOut), tilt, hgt * (ring ? -0.35 - 0.3 * Math.max(lead, 0) : 0.68 + 0.14 * lead))
+          const reachOut = ring ? rhomb * (lead > 0 ? 1 + 0.18 * lead : 1) : rhomb * (0.66 + 0.2 * lead)
+          const p = add3(add3(Pc, rad, rho * reachOut), tilt, hgt * (ring ? -0.35 - 0.3 * Math.max(lead, 0) : 0.8 + 0.12 * lead))
           const n = norm3(add3(scale3(tilt, ring ? 0.3 : 1), rad, ring ? 1 : 0.62))
           soup.vert(p, n, uvOf(p), [0.5, 0.5], ring ? [0.2, 0, 0] : [0.82, 0.4, 0])
         }
@@ -461,7 +461,7 @@ export function icicleList(f) {
   for (const [x, , y1, w] of MEASURED) {
     const foot = onCylinder(x, y1, P.ICE.r)
     const scale = 9.0 + 0.9 * clamp(foot.z / P.ICE.r, 0, 1)
-    list.push({ az: foot.az, length: clamp(P.ICE.h - foot.h, 3, 19), radius: clamp((w / scale / 2) * 1.08, 0.7, 2.5), measured: true })
+    list.push({ az: foot.az, length: clamp(P.ICE.h - foot.h, 3, 19), radius: clamp((w / scale / 2) * 1.26, 0.8, 2.8), measured: true })
   }
   const rng = mulberry(20261123)
   let az = 97
@@ -485,7 +485,7 @@ export function buildIce(list) {
   const soup = new Soup('ice')
   const rng = mulberry(977)
   const around = 8
-  const ts = [0, 0.035, 0.09, 0.17, 0.27, 0.39, 0.51, 0.63, 0.74, 0.84, 0.92, 0.975, 1]
+  const ts = [0, 0.04, 0.1, 0.19, 0.29, 0.39, 0.49, 0.59, 0.69, 0.79, 0.88, 0.955, 1]
   for (const it of list) {
     const root = place(P.ICE.r + 0.25 * (rng() - 0.5), P.ICE.h + 0.5, it.az)
     const out = dir(1, 0, it.az)
@@ -498,10 +498,11 @@ export function buildIce(list) {
     const total = it.length + 0.5
     const axis = (t) => add3(add3(add3(root, [0, -1, 0], total * t), out, it.lean * Math.pow(t, 1.3)), side, swing * t * t)
     const radius = (t) => {
-      const body = it.radius * (0.9 * Math.pow(1 - t, 0.62) + 0.1 * (1 - t))
-      const ripple = 1 + 0.16 * Math.sin(2 * Math.PI * ((t * total) / 2.7 + k1)) * smooth(0.02, 0.15, t) + 0.06 * Math.sin(2 * Math.PI * ((t * total) / 1.15 + k2))
-      const flare = it.radius * 0.55 * Math.exp(-t / 0.045)
-      return Math.max(body * ripple * (1 - 0.75 * smooth(0.93, 1, t)), 0) + flare
+      const body = it.radius * (0.8 * Math.pow(1 - t, 0.55) + 0.2)
+      const ripple = 1 + 0.15 * Math.sin(2 * Math.PI * ((t * total) / 3.6 + k1)) * smooth(0.02, 0.15, t) + 0.08 * Math.sin(2 * Math.PI * ((t * total) / 2.1 + k2)) + 0.04 * Math.sin(2 * Math.PI * ((t * total) / 1.1 + 3 * k1))
+      const flare = it.radius * 0.34 * Math.exp(-t / 0.05)
+      const cap = t > 0.88 ? Math.sqrt(Math.max(1 - ((t - 0.88) / 0.12) ** 2, 0)) : 1
+      return Math.max(body * ripple, 0) * cap + flare * cap
     }
     const surface = (al, t) => {
       const c = axis(t)
