@@ -15,7 +15,7 @@ export const LIP = { ringR: 53.45, h: TOP - 0.3, tube: 1.45 }
 export const LEDGE = { outer: [52.75, TOP], inner: [42.5, TOP + 2.75] }
 export const COLLAR = { foot: [43.05, TOP + 2.95], crown: [43.66, TOP + 4.3], bead: 0.62, gap: 0.12 }
 export const CUP = { offset: 0.15 }
-export const ICE = { r: 54.75, h: TOP - 0.55, up: 0.6 }
+export const ICE = { r: 54.05, h: TOP - 0.55, up: -0.4 }
 
 export const BODY = [
   [56.95, 8.4],
