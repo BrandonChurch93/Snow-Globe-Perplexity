@@ -17,7 +17,7 @@ const NEAR = 3
 const INV_NEAR = 1 / NEAR
 const SLIP = 0.35
 const SKIN = 0.02
-const CALM = 6
+const CALM = 3
 const INV_FADE_IN = 1 / 1.4
 const INV_FADE_OUT = 1 / 0.7
 export const SWAP_HALF = 0.22
@@ -209,10 +209,27 @@ interface Grid {
   inv: number
   data: Float32Array
   source: SdfGrid
+  park: [number, number, number]
 }
 
 function gridOf(source: SdfGrid): Grid {
-  return { n: source.n, nn: source.n * source.n, scale: (source.n - 1) / source.sizeMm, half: source.sizeMm / 2, top: source.n - 1.001, inv: 1 / sdfSlope(source), data: source.data, source }
+  const park: [number, number, number] = [0, 0, 0]
+  const g = new Float64Array(3)
+  const cells = 14
+  let best = -Infinity
+  for (let c = 0; c < cells * cells * cells; c++) {
+    const x = (((c % cells) + 0.5) / cells) * 2 * WALL - WALL
+    const y = (((Math.floor(c / cells) % cells) + 0.5) / cells) * 2 * WALL - WALL
+    const z = ((Math.floor(c / (cells * cells)) + 0.5) / cells) * 2 * WALL - WALL
+    const room = Math.min(sdfSample(source, x, y, z, g), WALL - Math.sqrt(x * x + y * y + z * z))
+    if (room > best) {
+      best = room
+      park[0] = x
+      park[1] = y
+      park[2] = z
+    }
+  }
+  return { n: source.n, nn: source.n * source.n, scale: (source.n - 1) / source.sizeMm, half: source.sizeMm / 2, top: source.n - 1.001, inv: 1 / sdfSlope(source), data: source.data, source, park }
 }
 
 export class ParticleEngine {
@@ -446,16 +463,14 @@ export class ParticleEngine {
     this.renews[i] = u5 < b.renew ? 1 : 0
   }
 
-  private hide(i: number): void {
+  private hide(i: number, ix: number): void {
+    const park = this.grid(ix).park
+    this.put(i, park[0], park[1], park[2])
     this.state[i] = STATE_HIDDEN
     this.fade[i] = 0
     this.opacity[i] = 0
     this.sizes[i] = 0
     this.mark[i] = 0
-    const o = i * 3
-    this.vel[o] = 0
-    this.vel[o + 1] = 0
-    this.vel[o + 2] = 0
   }
 
   private put(i: number, x: number, y: number, z: number): void {
@@ -654,7 +669,7 @@ export class ParticleEngine {
       this.phase[i] = unit(hash2(i, 7)) * TAU
       this.put(i, 0, 0, 0)
       if (k === NONE) {
-        this.hide(i)
+        this.hide(i, ix)
         continue
       }
       this.kindOf[i] = k
@@ -691,7 +706,7 @@ export class ParticleEngine {
     this.era[i] = ix
     this.clear[i] = 0
     if (k === NONE) {
-      this.hide(i)
+      this.hide(i, ix)
       return
     }
     this.kindOf[i] = k
@@ -758,7 +773,7 @@ export class ParticleEngine {
     this.follow(tl, (n + 1) * DT, n)
     this.model.step(globePoseAt(tl, t - DT), globePoseAt(tl, t), globePoseAt(tl, t + DT), t)
     if (this.stale) {
-      this.prev.set(this.pos)
+      this.carry()
       this.stale = false
     }
     this.wake(n)
@@ -767,12 +782,29 @@ export class ParticleEngine {
     this.step = n + 1
   }
 
+  private carry(): void {
+    const pos = this.pos
+    const prev = this.prev
+    const total = this.awakeN
+    if (total * 6 > this.count) {
+      prev.set(pos)
+      return
+    }
+    const list = this.list
+    for (let a = 0; a < total; a++) {
+      const o = list[a]! * 3
+      prev[o] = pos[o]!
+      prev[o + 1] = pos[o + 1]!
+      prev[o + 2] = pos[o + 2]!
+    }
+  }
+
   private wake(n: number): void {
     const L = this.model
     const m = L.motion
-    const mask = m.ax !== 0 || m.ay !== 0 || m.az !== 0 ? 3 : 15
     const bound = L.maxSpeed
     const lively = bound > MIN_LIFT
+    const mask = m.ax !== 0 || m.ay !== 0 || m.az !== 0 ? 3 : lively ? 15 : 63
     const count = this.count
     const state = this.state
     const listed = this.listed
@@ -912,6 +944,7 @@ export class ParticleEngine {
     const blend = calm ? K_BLEND_CALM : K_BLEND
     const grip = calm ? K_GRIP_CALM : K_GRIP
     const pos = this.pos
+    const prev = this.prev
     const vel = this.vel
     const phase = this.phase
     const fade = this.fade
@@ -951,6 +984,14 @@ export class ParticleEngine {
         list[w++] = i
         continue
       }
+      const every = calm ? K_CALM[k]! : STORM_MASK
+      const due = ((i + n) & every) === 0
+      const lazy = every > STORM_MASK
+      if (lazy && !due) {
+        list[w++] = i
+        continue
+      }
+      const span = lazy ? K_CALM_H[k]! : DT
       const o = i * 3
       let x = pos[o]!
       let y = pos[o + 1]!
@@ -1023,7 +1064,7 @@ export class ParticleEngine {
           }
         } else clear[i] = (d - NEAR) * G.inv
       }
-      if (((i + n) & (calm ? K_CALM[k]! : STORM_MASK)) === 0) {
+      if (due) {
         const h = calm ? K_CALM_H[k]! : STORM_H
         const half = h * 0.5
         const mx = x + vx * half
@@ -1135,6 +1176,9 @@ export class ParticleEngine {
                 pos[o] = x
                 pos[o + 1] = y
                 pos[o + 2] = z
+                prev[o] = x
+                prev[o + 1] = y
+                prev[o + 2] = z
                 vel[o] = 0
                 vel[o + 1] = 0
                 vel[o + 2] = 0
@@ -1198,11 +1242,11 @@ export class ParticleEngine {
           dirty = true
         }
       }
-      x += vx * DT
-      y += vy * DT
-      z += vz * DT
+      x += vx * span
+      y += vy * span
+      z += vz * span
       if (near) {
-        const dn = d + (nx * vx + ny * vy + nz * vz) * DT
+        const dn = d + (nx * vx + ny * vy + nz * vz) * span
         const lay = layer[i]!
         if (dn < lay) {
           const push = lay - dn
@@ -1210,7 +1254,7 @@ export class ParticleEngine {
           y += ny * push
           z += nz * push
         }
-      } else clear[i] = clear[i]! - ((vx < 0 ? -vx : vx) + (vy < 0 ? -vy : vy) + (vz < 0 ? -vz : vz)) * DT
+      } else clear[i] = clear[i]! - ((vx < 0 ? -vx : vx) + (vy < 0 ? -vy : vy) + (vz < 0 ? -vz : vz)) * span
       const r2 = x * x + y * y + z * z
       if (r2 > WALL2) {
         const vr = (vx * x + vy * y + vz * z) / r2

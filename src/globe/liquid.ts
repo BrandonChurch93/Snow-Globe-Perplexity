@@ -44,7 +44,7 @@ const PHASE_RATE_B = 0.0074
 const BUBBLE_SECONDS = 0.12
 const AMBIENT_FLOW = 0.45
 const AMBIENT_TURN = 0.008
-const TURB_EPS = 1e-3
+const TURB_EPS = 0.2
 
 export const AMBIENT_MAX = 1.5 * AMBIENT_FLOW * 1.2 + AMBIENT_TURN * 1.2 * LIQUID_R
 
@@ -278,7 +278,7 @@ export class Liquid {
     if (still) {
       if (wx * wx + wy * wy + wz * wz < 1e-10) wx = wy = wz = 0
       if (sx * sx + sy * sy + sz * sz < 1e-8) sx = sy = sz = 0
-      if (turb < 1e-4) turb = 0
+      if (turb < TURB_EPS) turb = 0
       if (Math.abs(hand) < 1e-5) hand = 0
     }
 
