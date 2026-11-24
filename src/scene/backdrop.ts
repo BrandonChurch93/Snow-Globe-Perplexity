@@ -7,6 +7,8 @@ import { centreHeightMm } from './layout'
 
 export const ROOM_LIGHTS = 12
 export const DISC_EDGE = 0.8
+const CLEAR_SIDE = (16 * Math.PI) / 180
+const CLEAR_UP = (9 * Math.PI) / 180
 
 export const ROOM_GLSL = `
 uniform vec3 uRoomWall;
@@ -66,7 +68,8 @@ export class Backdrop {
     }
     const centre = new THREE.Vector3(0, centreHeightMm, 0)
     this.brightest = this.emitters
-      .map((e, i) => ({ i, w: (e.power * e.radius * e.radius) / e.at.distanceToSquared(centre) }))
+      .map((e, i) => ({ i, w: (e.power * e.radius * e.radius) / e.at.distanceToSquared(centre), d: e.at.clone().sub(centre).normalize() }))
+      .filter((p) => Math.abs(Math.atan2(p.d.x, -p.d.z)) >= CLEAR_SIDE || Math.asin(p.d.y) >= CLEAR_UP)
       .sort((p, q) => q.w - p.w)
       .slice(0, ROOM_LIGHTS)
       .map((p) => p.i)

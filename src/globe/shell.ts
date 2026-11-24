@@ -24,7 +24,7 @@ void main() {
   vec3 n2 = normalize(vStageWorld + t * chord - uLensCentre);
   vec3 o = uLens.z > 0.5 ? refract(t, -n2, uLens.y) : v;
   if (dot(o, o) < 0.5) o = reflect(t, -n2);
-  vec3 col = stageRoom(o) + stageRoomLights(o, 0.012);
+  vec3 col = stageRoom(o) + stageRoomLights(o, 0.002);
   float fog = stageVeil(chord);
   vec3 lit = stageGrid(vStageLocal * 0.5);
   col = stageFogged(col, lit, fog);
