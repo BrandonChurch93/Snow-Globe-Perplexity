@@ -1,0 +1,4 @@
+1-shot-shake-1-preview-draft.jpg: Sheet: 12 frames across the shot shake-1, frames 576 to 719, preview, draft. 1149 x 986.
+2-motion-strokes-test-preview-draft-1.jpg: Motion sheet 1 of 3: the strokes of the test shake, frames 36 to 58, 2 frames apart at 60 frames a second, preview, draft. 1152 x 986.
+3-seasons-preview-draft.jpg: Sheet: the 4 at-rest keys, winter-rest, spring-rest, summer-rest, fall-rest, preview, draft. 1200 x 733.
+4-film-preview-draft-overview.jpg: Sheet: the whole film in 12 frames, every shot at least once, preview, draft. 1149 x 986.
