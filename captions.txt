@@ -1,4 +1,4 @@
-Village, winter. State: agent/p3-village at 06b9bd1 (merged with main babb71d, which holds the new shake path and the rig with key through 0.5). Hero, hd, draft tier. Boxes in approved pixels (2816 by 1584). In every row the approved crop is on the left and the build on the right. The hero camera looks from 3.4 mm above the reference, so the build sits about 48 px lower in these boxes; compare shapes.
+Village, winter. State: agent/p3-village at c2ee419 for 01 to 03 (the taller chimney) and at 06b9bd1 for 04 (merged with main, which holds the new shake path and the rig with key through 0.5). Hero, hd, draft tier. Boxes in approved pixels (2816 by 1584). In every row the approved crop is on the left and the build on the right. The hero camera looks from 3.4 mm above the reference, so the build sits about 48 px lower in these boxes; compare shapes.
 
 01-rest-miniature.jpg
   Rest. Row 1: box 780,520,2040,1220 (the whole miniature). Row 2: box 1000,540,1560,935 (cottage, lamp, bulbs).
