@@ -1,10 +1,13 @@
-Looks of agent/p3-liquid at 5f87516 (tree 7c12d087: the flow of 097c7a5, the shake path 4ee1aec and main e9d94fd), made between 18:12 and 18:32 on the build machine's clock, draft tier, hero camera. In the two pairs the approved image is on the LEFT and this branch is on the RIGHT.
+Looks of agent/p3-liquid at d38e0c2 (the engine of 819a08b with main 9ba0636 merged in), made between 19:54 and 19:58 UTC on the build machine's clock, draft tier, hero camera, shake.strokeMm 22. In the three pairs the approved image is on the LEFT and this branch is on the RIGHT.
 
 look-1-landed-beside-winter-shake.jpg
-Left: references/approved/winter-shake.png. Right: winter, landed, hd, on 097c7a5 before the merge of main. The storm turns as one swirl; its eye above the chimney can still be read off the streaks (Round 4 R3-1, not cured). The low bank lies along the ground and climbs the right wall. Still wrong: thinner and less white than approved around the cottage, streaks of one family rather than the approved crossing gusts.
+Left: references/approved/winter-shake.png. Right: winter, landed, hd. The kick that threw each flake off the current is gone, so the dashes lie along the flow (flake velocity against the flow 0.68 before, 0.85 now; neighbours parallel 0.74 before, 0.94 now). Still wrong: the cream bank (the veil, drawn by the flakes' part) stands on both walls and hides the pond and the foot of the cottage; the dashes are fewer, thinner and harder than the approved soft smears; the whirl reads as one diagonal family and not as rings about an eye (my reading: the roll's axis stands about 49 degrees off the view).
 
 look-2-rest-beside-winter-rest.jpg
-Left: references/approved/winter-rest.png. Right: winter, rest, hd, on the merged tree. Flakes hang through the whole dome; snow lies on both roof slopes. Still wrong: the top third is sparser than approved (0.36 to 0.40 of an even share above 48 mm), the roof's snow is thinner than the approved roof, near flakes read larger and softer than approved.
+Left: references/approved/winter-rest.png. Right: winter, rest, hd. Flakes hang through the whole dome, the top third included (0.42 of an even share above 48 mm; 0.36 on a 24 mm stroke). The large floaters sink faster (median 1.5 mm/s before, 2.1 mm/s now). Still wrong: the near flakes read as large soft discs where approved has many small crisp specks, and the air holds fewer flakes than approved.
 
 look-3-landing-sheet.jpg
-Landing sheet of the test shake, frames 144 to 198, preview size, on the merged tree. The veil thins from 2.4 s to 3.3 s without a step in any frame; the cottage shows from 2.6 s. Too small to judge streaks; no sheet at review tier was made for this change.
+Landing sheet of the test shake, frames 144 to 198 (2.4 s to 3.3 s), preview size, shrunk to 1200 px high. The tree and the gable show from 2.5 s; the bank thins and sinks from 2.4 s to 3.3 s without a step. Still wrong: at 3.3 s the bank still stands on both walls, and the clearing reads as a bank sinking in place, not as a whirl losing speed. Too small to judge the dashes.
+
+look-4-landed-streaks-zoom.jpg
+The upper left of look 1 (approved pixels 960,180 to 1560,780), the same still, no new render. In the upper air the dashes and the veil's streaks now run the same way. Still wrong: just above the roof ridge, at the eye of the roll, long dashes still cross each other where approved has short specks; the approved streaks are broad, soft and many, the build's dashes thin, hard and few.
