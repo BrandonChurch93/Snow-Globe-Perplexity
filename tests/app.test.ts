@@ -6,7 +6,7 @@ import { Autopilot, LoopPlayer } from '../src/app/players'
 import { createProbe, pickLevel, slowest, type ProbeHost } from '../src/app/probe'
 import { Replay, SCRIPT, SCRIPTS, scriptPlan } from '../src/app/replay'
 import { LIVE, LiveSession, SeasonLoader, type LiveSim } from '../src/app/session'
-import { Governor, levelById, levels, median, stageQuality, topLevel } from '../src/core/quality'
+import { GOVERN, Governor, levelById, levels, median, stageQuality, topLevel } from '../src/core/quality'
 import type { ParticleSource } from '../src/core/stage'
 import { filmCut } from '../src/film/cut'
 import { SourceSwitch, loopSeconds, standInLoop } from '../src/film/loop'
@@ -561,36 +561,130 @@ describe('the quality levels', () => {
     expect(median([])).toBe(0)
   })
 
+  /** A fake clock: frames arrive at `fps` for `seconds`, and a changed level is applied as the app applies it. Returns when the level changed, and to what. */
+  const run = (g: Governor, fps: number, seconds: number, clock: { t: number } = { t: 0 }, hitchEvery = 0): { at: number; to: string }[] => {
+    const out: { at: number; to: string }[] = []
+    const end = clock.t + seconds
+    let sinceHitch = 0
+    while (clock.t < end - 1e-9) {
+      let dt = 1 / fps
+      sinceHitch += dt
+      if (hitchEvery > 0 && sinceHitch >= hitchEvery) {
+        dt = 1.4
+        sinceHitch = 0
+      }
+      clock.t += dt
+      if (g.frame(dt)) {
+        out.push({ at: clock.t, to: g.level.id })
+        g.rest()
+      }
+    }
+    return out
+  }
+  const last = levels.at(-1)!
+
   it('steps down one level at a time when the frames are too slow, and only on automatic', () => {
     const g = new Governor('auto')
     expect(g.auto).toBe(true)
     expect(g.level).toBe(topLevel)
-    const slow = 1 / (topLevel.minFps - 8)
-    let stepped = 0
-    for (let i = 0; i < config.live.probeFrames - 1; i++) expect(g.frame(slow)).toBe(false)
-    if (g.frame(slow)) stepped++
-    expect(stepped).toBe(1)
-    expect(g.level).toBe(levels[1])
-    expect(g.measuredFps).toBeCloseTo(topLevel.minFps - 8, 6)
-    for (let i = 0; i < config.live.probeFrames * 10; i++) g.frame(1 / 5)
-    expect(g.level).toBe(levels.at(-1))
+    const rate = topLevel.minFps - 8
+    const wait = Math.min(config.live.probeFrames / rate, GOVERN.spanSeconds)
+    const steps = run(g, rate, wait + 2 / rate)
+    expect(steps.length).toBe(1)
+    expect(steps[0]!.to).toBe(levels[1]!.id)
+    expect(Math.abs(steps[0]!.at - wait)).toBeLessThanOrEqual(1.5 / rate)
+    expect(g.measuredFps).toBeCloseTo(rate, 6)
+    run(g, 5, 60)
+    expect(g.level).toBe(last)
     const fixed = new Governor(topLevel.id)
     expect(fixed.auto).toBe(false)
-    for (let i = 0; i < config.live.probeFrames * 3; i++) expect(fixed.frame(1 / 5)).toBe(false)
+    expect(run(fixed, 5, 60)).toEqual([])
     expect(fixed.level).toBe(topLevel)
   })
 
-  it('holds its level when the frames are fast enough, forgets a pause, and takes a fixed level when one is chosen', () => {
+  it('judges by the clock as well as by the count: a page at 2 frames a second is on the lowest level within seconds', () => {
     const g = new Governor('auto')
-    for (let i = 0; i < config.live.probeFrames * 3; i++) expect(g.frame(1 / (topLevel.minFps + 5))).toBe(false)
+    const steps = run(g, 2, 30)
+    expect(steps.map((s) => s.to)).toEqual(levels.slice(1).map((l) => l.id))
+    const each = Math.max(GOVERN.spanSeconds, GOVERN.minFrames / 2)
+    steps.forEach((s, i) => expect(s.at).toBeCloseTo((i + 1) * each, 6))
+    expect(steps.at(-1)!.at).toBeLessThan(config.live.probeFrames / 2)
+    expect(g.level).toBe(last)
+    expect(g.measuredFps).toBeCloseTo(2, 6)
+
+    const shaken = new Governor('auto')
+    const clock = { t: 0 }
+    const every = GOVERN.spanSeconds + 2
+    expect(every * 2).toBeLessThan(config.live.probeFrames)
+    for (let i = 0; i < 6 && shaken.level !== last; i++) {
+      run(shaken, 2, every, clock)
+      shaken.rest()
+    }
+    expect(shaken.level).toBe(last)
+    expect(clock.t).toBeLessThanOrEqual(every * (levels.length - 1))
+
+    const crawl = new Governor('auto')
+    const slow = run(crawl, 0.25, 4 * GOVERN.minFrames * (levels.length - 1))
+    expect(slow.map((s) => s.to)).toEqual(levels.slice(1).map((l) => l.id))
+    expect(crawl.measuredFps).toBeCloseTo(1, 6)
+  })
+
+  it('holds its level when the frames are fast enough, through a long frame now and then, and for a level of one frame too few', () => {
+    const g = new Governor('auto')
+    expect(run(g, topLevel.minFps + 5, 120)).toEqual([])
+    expect(run(g, topLevel.minFps + 5, 120, { t: 0 }, 3)).toEqual([])
     expect(g.level).toBe(topLevel)
-    for (let i = 0; i < config.live.probeFrames - 1; i++) g.frame(1 / 5)
+    const brief = new Governor('auto')
+    for (let i = 0; i < GOVERN.minFrames - 1; i++) expect(brief.frame(5)).toBe(false)
+    expect(brief.level).toBe(topLevel)
+    expect(brief.frame(5)).toBe(true)
+    expect(brief.level).toBe(levels[1])
+  })
+
+  it('never comes back up at a rate that is only fast enough, and comes back once when the page is clearly fast', () => {
+    const above = topLevel
+    const clearly = GOVERN.upFactor * above.minFps + 5
+    const enough = GOVERN.upFactor * above.minFps - 5
+    expect(enough).toBeGreaterThan(levels[1]!.minFps)
+
+    const g = new Governor('auto')
+    const clock = { t: 0 }
+    expect(run(g, above.minFps - 10, 4, clock).length).toBe(1)
+    expect(g.level).toBe(levels[1])
+    expect(run(g, enough, 300, clock)).toEqual([])
+    expect(g.level).toBe(levels[1])
+
+    const started = clock.t
+    const up = run(g, clearly, GOVERN.upSeconds + 3, clock)
+    expect(up.map((s) => s.to)).toEqual([above.id])
+    expect(up[0]!.at - started).toBeGreaterThanOrEqual(GOVERN.upSeconds - 1e-6)
+    expect(up[0]!.at - started).toBeLessThanOrEqual(GOVERN.upSeconds + 2)
+    expect(run(g, clearly, 120, clock)).toEqual([])
+    expect(g.level).toBe(above)
+
+    expect(run(g, above.minFps - 10, 4, clock).map((s) => s.to)).toEqual([levels[1]!.id])
+    expect(run(g, clearly, 600, clock)).toEqual([])
+    expect(g.level).toBe(levels[1])
+
+    const broken = new Governor('auto')
+    const t = { t: 0 }
+    run(broken, above.minFps - 10, 4, t)
+    run(broken, clearly, GOVERN.upSeconds - 3, t)
+    run(broken, enough, 3, t)
+    expect(run(broken, clearly, GOVERN.upSeconds - 3, t)).toEqual([])
+    expect(broken.level).toBe(levels[1])
+  })
+
+  it('forgets a pause, and takes a fixed level when one is chosen', () => {
+    const g = new Governor('auto')
+    for (let i = 0; i < GOVERN.minFrames - 1; i++) g.frame(1 / 2)
     g.rest()
-    for (let i = 0; i < config.live.probeFrames - 1; i++) expect(g.frame(1 / 5)).toBe(false)
+    for (let i = 0; i < GOVERN.minFrames - 1; i++) expect(g.frame(1 / 2)).toBe(false)
     expect(g.level).toBe(topLevel)
-    g.fix(levels.at(-1)!.id)
+    g.fix(last.id)
     expect(g.auto).toBe(false)
-    expect(g.level).toBe(levels.at(-1))
+    expect(g.level).toBe(last)
+    expect(run(g, 200, 60)).toEqual([])
     g.fix('auto')
     expect(g.auto).toBe(true)
     expect(g.level).toBe(topLevel)
