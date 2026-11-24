@@ -65,7 +65,7 @@ export const VEIL_LOOK = {
   slowTo: 0.9,
   slowHaze: 0.2,
   bankRing: 0.72,
-  bankSoft: 0.08,
+  bankSoft: 0.24,
   bankWhite: 2.2,
   bankWave: 0.3,
   bankEven: 0.45,
@@ -76,9 +76,9 @@ export const VEIL_LOOK = {
   axis: [0, 0.08, 1] as const,
   keyShare: 3.2,
   keyFloor: 0.5,
-  keyFloorFlood: 0.18,
+  keyFloorFlood: 0.35,
   shadow: 0.5,
-  bankShadow: 0.09,
+  bankShadow: 0.06,
   ambientShare: 1,
   gridShare: 4,
   bankGridShare: 6,
@@ -92,10 +92,12 @@ export const VEIL_LOOK = {
   sheetSoftMm: 4,
   fibreTileLowMm: 9,
   fibreTileHighMm: 17,
-  fibreFine: 6,
-  fibreFineLong: 2,
-  fibreWarp: 1.5,
+  fibreFine: 4,
+  fibreFineLong: 4,
+  fibreWarp: 3,
   fibreFineShare: 0.4,
+  fibreShareLow: 0.15,
+  fibreShareHigh: 0.6,
   fibreSpiral: 3,
   fibreTurns: 3,
   fibreTurnsMore: 3,
@@ -135,8 +137,8 @@ export const VEIL_LOOK = {
   lieTileMm: 12,
   lieDeepMm: 12,
   lieTurns: 4,
-  lieFine: 6,
-  lieFineLong: 2,
+  lieFine: 4,
+  lieFineLong: 4,
   driftCutDeep: 0.38,
   driftCutCrest: 0.58,
   driftEdgeDeep: 0.4,
@@ -145,11 +147,11 @@ export const VEIL_LOOK = {
   driftShadow: 0.05,
   driftKeyFloor: 0.42,
   driftShadeWhite: 0.5,
-  strand: 5,
+  strand: 3,
   tuftFrom: 0.3,
   tuftTo: 0.7,
-  tuftLow: 0.35,
-  tuftHigh: 1.5,
+  tuftLow: 0.2,
+  tuftHigh: 1.7,
   arcLow: 0.45,
   arcHigh: 0.7,
   arcGain: 1.2,
@@ -159,6 +161,26 @@ export const VEIL_LOOK = {
   foldGain: 1.8,
   floodEvenFrom: 0.25,
   floodEvenTo: 0.8,
+  milkTileMm: 14,
+  milkDeepMm: 14,
+  milkSpiral: 1,
+  milkTurns: 5,
+  milkFine: 4,
+  milkFineLong: 2,
+  milkFineShare: 0.55,
+  milkFrom: 0.36,
+  milkTo: 0.66,
+  milkGap: 0.68,
+  milkCrest: 0.95,
+  milkNearMm: 2,
+  shearDeep: 0.618034,
+  shearLong: 0.381966,
+  calmFrom: 0.4,
+  calmTo: 0.72,
+  driftCalm: 0.25,
+  openFromBeats: 0.05,
+  openToBeats: 0.55,
+  openHoldSeconds: 1,
 }
 
 function hash(x: number, y: number, z: number, s: number): number {
@@ -325,17 +347,27 @@ vec3 veilFibre(vec3 at, float k) {
   vec4 j = fract(vec4(0.618034, 0.7548777, 0.5698403, 0.4142136) * (k + 23.0));
   float turns = ${n(L.fibreTurns)} + floor(j.x * ${n(L.fibreTurnsMore - 0.001)});
   float pace = turns - floor(j.y * 1.999);
-  vec3 q = vec3(fl.x / mix(${n(L.fibreTileLowMm)}, ${n(L.fibreTileHighMm)}, j.z) + fl.z * (floor(j.w * ${n(2 * L.fibreSpiral + 0.999)}) - ${n(L.fibreSpiral)}), 0.37 * k + j.w, fl.z * turns - uVeilDrift.y * pace);
+  float wide = fl.x / mix(${n(L.fibreTileLowMm)}, ${n(L.fibreTileHighMm)}, j.z);
+  vec3 q = vec3(wide + fl.z * (floor(j.w * ${n(2 * L.fibreSpiral + 0.999)}) - ${n(L.fibreSpiral)}), 0.37 * k + j.w + ${n(L.shearDeep)} * wide, fl.z * turns - uVeilDrift.y * pace);
   float coarse = texture(uVeilNoise, q).a;
-  float fine = texture(uVeilNoise, vec3(q.x * ${n(L.fibreFine)} + ${n(L.fibreWarp)} * coarse, q.y + 0.43, q.z * ${n(L.fibreFineLong)})).a;
-  return vec3(coarse, mix(coarse, fine, ${n(L.fibreFineShare)}), veilStrand(coarse, fine));
+  float fine = texture(uVeilNoise, vec3(q.x * ${n(L.fibreFine)} + ${n(L.fibreWarp)} * coarse, q.y + 0.43 + ${n(L.shearDeep * (L.fibreFine - 1))} * wide, q.z * ${n(L.fibreFineLong)} + ${n(L.shearLong * L.fibreFine)} * wide)).a;
+  return vec3(coarse, mix(coarse, fine, mix(${n(L.fibreShareLow)}, ${n(L.fibreShareHigh)}, fract((k + 23.0) * 0.3247))), veilStrand(coarse, fine));
 }
 vec3 veilLie(vec3 at) {
   vec3 fl = veilFlow(at);
-  vec3 q = vec3(fl.x / ${n(L.lieTileMm)} + fl.z, fl.y / ${n(L.lieDeepMm)}, (fl.z - uVeilDrift.y) * ${n(L.lieTurns)});
+  float wide = fl.x / ${n(L.lieTileMm)};
+  vec3 q = vec3(wide + fl.z, fl.y / ${n(L.lieDeepMm)} + ${n(L.shearDeep)} * wide, (fl.z - uVeilDrift.y) * ${n(L.lieTurns)});
   float coarse = texture(uVeilNoise, q).a;
-  float fine = texture(uVeilNoise, vec3(q.x * ${n(L.lieFine)} + ${n(L.fibreWarp)} * coarse, q.y * ${n(L.lieFine)} + 0.43, q.z * ${n(L.lieFineLong)})).a;
+  float fine = texture(uVeilNoise, vec3(q.x * ${n(L.lieFine)} + ${n(L.fibreWarp)} * coarse, q.y * ${n(L.lieFine)} + 0.43, q.z * ${n(L.lieFineLong)} + ${n(L.shearLong * L.lieFine)} * wide)).a;
   return vec3(coarse, mix(coarse, fine, ${n(L.fibreFineShare)}), veilStrand(coarse, fine));
+}
+float veilMilk(vec3 p) {
+  vec3 fl = veilFlow(p);
+  float wide = fl.x / ${n(L.milkTileMm)};
+  vec3 q = vec3(wide + fl.z * ${n(L.milkSpiral)}, fl.y / ${n(L.milkDeepMm)} + ${n(L.shearDeep)} * wide, (fl.z - uVeilDrift.y) * ${n(L.milkTurns)});
+  float coarse = texture(uVeilNoise, q).a;
+  float fine = texture(uVeilNoise, vec3(q.x * ${n(L.milkFine)} + ${n(L.fibreWarp)} * coarse, q.y * ${n(L.milkFine)} + 0.43, q.z * ${n(L.milkFineLong)} + ${n(L.shearLong * L.milkFine)} * wide)).a;
+  return mix(${n(L.milkGap)}, ${n(L.milkCrest)}, smoothstep(${n(L.milkFrom)}, ${n(L.milkTo)}, mix(coarse, fine, ${n(L.milkFineShare)})));
 }
 float veilStreak(vec3 p, vec3 f, float aloft, out float deep) {
   float side = p.x / uLens.w;
@@ -359,7 +391,7 @@ vec4 veilField(vec3 p, vec3 f, float sheet) {
   float ring = mix(${n(L.arcCore)}, 1.0, smoothstep(${n(L.hazeFrom)}, ${n(L.hazeTo)}, (length(flat2) - ${n(L.hazeLift)} * dot(p, uVeilUp.xyz) - ${n(L.hazeSide)} * p.x) / uLens.w));
   float even = smoothstep(uVeilBank.x + uVeilBank.y, uVeilBank.x - uVeilBank.y, level + ${n(L.bankWave)} * (f.x - 0.5));
   float thin = uVeil.a * mix(1.0, ring * arc * sheet, uVeilUp.w) + uVeilRoll.z * mix(1.0, fold, uVeilRoll.w) * max(1.0 + ${n(L.leanFlood)} * lean, ${n(L.leanFloor)});
-  float bank = uVeilBank.z * even * mix(fold, 1.0, uVeilBank.w) + uVeilDrift.x * streak * sheet;
+  float bank = uVeilBank.z * even * even * even * mix(fold, 1.0, uVeilBank.w) + uVeilDrift.x * streak * sheet;
   return vec4(thin, bank, max(mix(deep, uVeilBank.x - level, uVeilRoll.y), 0.0) * uLens.w, f.z);
 }
 vec3 veilLit(vec3 p, vec4 field) {
@@ -424,6 +456,7 @@ vec4 veilPath(vec3 eye, vec3 placed, vec3 world, float path) {
     seen *= 1.0 - a;
   }
   float fog = 1.0 - seen;
+  if (uVeilRoll.y > 0.0) glow *= mix(1.0, veilMilk(from + along * ${n(L.milkNearMm)}), uVeilRoll.y);
   return vec4(fog > 1e-4 ? glow / fog : vec3(0.0), fog);
 }
 `
@@ -457,31 +490,33 @@ const tilt = new THREE.Euler()
 const local = new THREE.Vector3()
 const spin = new THREE.Matrix4()
 
-const now = { most: 0, rest: 0, turb: 0, slow: 0, held: 0, aloft: 0, roll: 0 }
+const now = { most: 0, rest: 0, turb: 0, slow: 0, held: 0, aloft: 0, roll: 0, open: 0 }
 const ramp = (v: number, from: number, to: number) => {
   const t = Math.min(1, Math.max(0, (v - from) / (to - from)))
   return t * t * (3 - 2 * t)
 }
 
 function densities(): void {
-  const { most, rest, turb, slow, held, aloft, roll } = now
+  const { most, rest, turb, slow, held, aloft, roll, open } = now
   const w = Math.min(1, Math.max(0, (turb - L.whiteFrom) / (L.whiteTo - L.whiteFrom)))
   const up = Math.min(1, Math.max(0, (turb - L.shakenFrom) / (L.shakenTo - L.shakenFrom)))
-  const flood = Math.max(Math.pow(w, L.whitePower), held * lerp(aloft * aloft, Math.pow(up, L.shakenPower), L.shakenShare))
+  const flood = Math.max(Math.pow(w, L.whitePower), held * lerp(aloft * aloft, Math.pow(up, L.shakenPower), L.shakenShare)) * (1 - open)
   const white = most * L.white * flood
-  const haze = most * L.haze * Math.max(Math.pow(turb, L.hazePower), L.slowHaze * slow)
+  const calm = ramp(turb, L.calmFrom, L.calmTo)
+  const storm = most * L.haze * Math.pow(turb, L.hazePower) * calm
+  const haze = Math.max(storm, most * L.haze * L.slowHaze * slow)
   const density = rest + haze
   const u = veilUniforms
   u.uVeil.value.w = density
-  u.uVeilUp.value.w = density > 0 ? Math.min(L.uneven, haze / density) : L.uneven
+  u.uVeilUp.value.w = density > 0 ? Math.min(L.uneven, storm / density) : L.uneven
   u.uVeilRoll.value.y = flood
   u.uVeilKey.value.w = lerp(L.keyFloor, L.keyFloorFlood, flood)
   u.uVeilRoll.value.z = white
   u.uVeilRoll.value.w = lerp(L.foldEarly, L.foldPeak, flood)
   const rise = Math.pow(turb, L.bankRisePower)
-  u.uVeilBank.value.set(L.bankRest + L.bankRise * rise + L.bankFlood * flood, L.bankSoft, most * L.bank * L.bankFloodGain * flood, ramp(flood, L.floodEvenFrom, L.floodEvenTo))
+  u.uVeilBank.value.set(L.bankRest + L.bankRise * rise + L.bankFlood * flood, L.bankSoft, most * L.bank * L.bankFloodGain * flood * flood, ramp(flood, L.floodEvenFrom, L.floodEvenTo))
   const rolling = Math.min(1, Math.max(0, roll / ROLL_MAX))
-  u.uVeilDrift.value.x = most * L.drift * Math.pow(rolling, L.driftPower)
+  u.uVeilDrift.value.x = most * L.drift * Math.pow(rolling, L.driftPower) * lerp(L.driftCalm, 1, calm)
   u.uVeilDrift.value.z = L.driftRest + L.driftRise * Math.pow(rolling, L.driftRisePower)
 }
 
@@ -502,6 +537,10 @@ export function updateVeil(f: StageFrame): void {
   now.turb = Math.min(1, Math.max(0, f.turbulence))
   const h = Math.min(1, Math.max(0, (f.globe.y / config.shake.liftMm - L.heldFrom) / (L.heldTo - L.heldFrom)))
   now.held = h * h * (3 - 2 * h)
+  const beat = f.moment.beat
+  const since = f.moment.sinceLanding
+  const shut = config.shake.swapWindow.toBeat
+  now.open = beat !== null ? ramp(beat, shut + L.openFromBeats, shut + L.openToBeats) : since >= 0 && since < L.openHoldSeconds ? 1 : 0
   const u = veilUniforms
   u.uVeil.value.set(lerp(a.tint[0], b.tint[0], t), lerp(a.tint[1], b.tint[1], t), lerp(a.tint[2], b.tint[2], t), 0)
   const amb = (L.ambientShare * 0.5) / Math.PI
