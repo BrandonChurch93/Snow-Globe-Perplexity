@@ -10,9 +10,12 @@ const NEEDLE_CELL = 0.62
 const SNOW_CELL = 0.52
 const NEEDLE_TILE_MM = 9
 const SNOW_TILE_MM = 7
-const STAR_H = 45.7
-const STAR_R = 2.25
-const HALO_R = 0.62
+const STAR_AT = [0.25, 45.2, 0.1]
+const STAR_R = 2.2
+const STAR_GLOW_R = 2.9
+const CORE_R = 0.155
+const HALO_R = 0.5
+const BULBS = { stem: [2.3, 3.4], limb: [2.2, 3.3], lead: 0.16, pad: 0.19, clear: 0.34 }
 
 const [T, R] = await loadSource(['/src/miniature/trunk.ts', '/src/core/rng.ts'])
 const rng = R.stream('tree-winter')
@@ -23,9 +26,8 @@ const smooth = (a, b, v) => {
   return t * t * (3 - 2 * t)
 }
 
-const wobble = (x, h, z) => 0.16 * Math.sin(1.9 * x + 0.3 * h) * Math.sin(2.3 * h + 1.1 * z) * Math.sin(1.7 * z + 0.5 * x) + 0.07 * Math.sin(4.3 * x + 1) * Math.sin(3.9 * h + 2) * Math.sin(4.7 * z)
-const needleField = (x, h, z) => T.crownField(x, h, z) + wobble(x, h, z)
-const snowField = (x, h, z) => T.crownCap(x, h, z) + 0.9 * wobble(0.7 * x + 3, 0.7 * h, 0.7 * z)
+const needleField = T.crownField
+const snowField = T.crownCap
 
 const gradient = (f, x, h, z, e = 0.08) => {
   const g = new THREE.Vector3(f(x + e, h, z) - f(x - e, h, z), f(x, h + e, z) - f(x, h - e, z), f(x, h, z + e) - f(x, h, z - e))
@@ -213,11 +215,11 @@ function snow() {
     const z = s.pos[v * 3 + 2]
     const n = [s.nor[v * 3], s.nor[v * 3 + 1], s.nor[v * 3 + 2]]
     const both = (a, bb, c) => Math.min(snowField(a, bb, c), needleField(a, bb, c))
-    const open = 0.5 * openness(both, x, h, z, n, 0.8) + 0.5 * openness(both, x, h, z, n, 2.2)
+    const open = 0.25 * openness(both, x, h, z, n, 0.8) + 0.75 * openness(both, x, h, z, n, 2.4)
     const sky = 0.5 + 0.5 * n[1]
-    const shade = (0.45 + 0.55 * open) * (0.62 + 0.38 * sky)
+    const shade = (0.6 + 0.4 * open) * (0.5 + 0.5 * Math.pow(sky, 1.3))
     uv.push(x / SNOW_TILE_MM, h / SNOW_TILE_MM)
-    col.push(shade * (0.9 + 0.1 * sky), shade * (0.94 + 0.06 * sky), shade)
+    col.push(shade * (0.82 + 0.18 * sky), shade * (0.9 + 0.1 * sky), shade)
   }
   const g = new THREE.BufferGeometry()
   g.setAttribute('position', new THREE.Float32BufferAttribute(s.pos, 3))
@@ -247,17 +249,20 @@ function frames(points) {
 function strings() {
   const bulbs = []
   const wires = []
-  const drop = (at, out, group) => bulbs.push({ at: at.clone(), out: out.clone().normalize(), phase: rng.int(64) / 64, warm: rng.next(), size: rng.range(0.7, 1.12), group })
+  const tubes = T.chainSolid(T.limbs.filter((l) => l.kind !== 'stem').map((l) => ({ points: l.local, radii: l.radii })))
+  const wood = T.chainSolid(T.limbs.map((l) => ({ points: l.local, radii: l.radii })))
+  const drop = (at, out, group) => bulbs.push({ at: at.clone(), out: out.clone().normalize(), phase: rng.int(64) / 64, warm: rng.next(), size: rng.range(0.86, 1.16), group })
+  const free = (p) => needleField(p.x, p.y, p.z) > BULBS.clear && snowField(p.x, p.y, p.z) > BULBS.clear
 
   const helix = []
-  const h0 = 4.6
-  const h1 = 31
-  const turns = 3.3
+  const h0 = 12.3
+  const h1 = 30.4
+  const turns = 2.35
   let last = null
   let run = 0
-  let next = 0.6
+  let next = 0.5
   for (let h = h0; h <= h1; h += 0.04) {
-    const phi = 0.9 + (TAU * turns * (h - h0)) / (h1 - h0) + 0.25 * Math.sin(1.3 * h)
+    const phi = 1.75 + (TAU * turns * (h - h0)) / (h1 - h0) + 0.25 * Math.sin(1.3 * h)
     const [ax, az] = T.trunkAxis(h)
     const r = T.trunkRadius(phi, h)
     const out = new THREE.Vector3(Math.cos(phi), 0, Math.sin(phi))
@@ -265,9 +270,10 @@ function strings() {
     if (last) run += p.distanceTo(last)
     if (!last || p.distanceTo(helix[helix.length - 1]) > 0.6) helix.push(p)
     last = p
-    if (run >= next) {
-      drop(p.clone().addScaledVector(out, 0.2), out, 'trunk')
-      next = run + rng.range(3.1, 4.7)
+    const at = p.clone().addScaledVector(out, 0.17)
+    if (run >= next && tubes(at.x, at.y, at.z) > 0.3 && free(at)) {
+      drop(at, out, 'stem')
+      next = run + rng.range(BULBS.stem[0], BULBS.stem[1])
     }
   }
   wires.push(helix)
@@ -278,27 +284,29 @@ function strings() {
     const total = f[f.length - 1].along
     const spin = rng.range(0, TAU)
     const wire = []
-    let mark = total * 0.14 + rng.range(0, 1)
+    let mark = total * BULBS.lead + rng.range(0, 1.2)
     for (let i = 1; i < f.length; i++) {
       const a = f[i - 1]
       const b = f[i]
       for (let s = 0; s < 2; s++) {
         const t = s / 2
         const along = lerp(a.along, b.along, t)
-        if (along < total * 0.1) continue
-        const ang = spin + along * 0.95
+        if (along < total * 0.08) continue
+        const ang = spin + along * 0.8
         const r = lerp(limb.radii[i - 1], limb.radii[i], t)
         const centre = a.p.clone().lerp(b.p, t)
         const out = a.nrm.clone().lerp(b.nrm, t).multiplyScalar(Math.cos(ang)).add(a.bin.clone().lerp(b.bin, t).multiplyScalar(Math.sin(ang))).normalize()
         const p = centre.clone().addScaledVector(out, r * 1.06 + 0.07)
+        if (needleField(p.x, p.y, p.z) < -0.4) continue
         wire.push(p)
-        if (along >= mark) {
-          drop(p.clone().addScaledVector(out, 0.2), out, limb.pad)
-          mark = along + rng.range(2.1, 3.3)
+        const at = p.clone().addScaledVector(out, 0.17)
+        if (along >= mark && free(at) && wood(at.x, at.y, at.z) > 0.12) {
+          drop(at, out, limb.pad)
+          mark = along + rng.range(BULBS.limb[0], BULBS.limb[1])
         }
       }
     }
-    wires.push(wire)
+    if (wire.length > 2) wires.push(wire)
   }
 
   T.localPads.forEach((pad, i) => {
@@ -307,18 +315,18 @@ function strings() {
     const side = new THREE.Vector3(...ax.side)
     const depth = new THREE.Vector3(...ax.depth)
     const centre = new THREE.Vector3(...pad.at)
-    const n = Math.max(6, Math.round(pad.size[0] * pad.size[2] * 0.28))
+    const n = Math.max(5, Math.round(pad.size[0] * pad.size[2] * BULBS.pad))
     const ring = []
     for (let k = 0; k < n; k++) {
       const even = (k / n) * TAU + rng.range(-0.25, 0.25)
       const th = even + 0.55 * Math.cos(even)
-      const rim = rng.next() < 0.45
+      const rim = rng.next() < 0.4
       const rho = rim ? 1.25 : rng.range(0.35, 0.8)
       const start = centre.clone().addScaledVector(side, Math.cos(th) * rho * pad.size[0]).addScaledVector(depth, Math.sin(th) * rho * pad.size[2])
       const dir = new THREE.Vector3()
       if (rim) {
-        start.addScaledVector(up, rng.range(-0.5, -0.1) * pad.size[1])
-        dir.copy(centre).addScaledVector(up, -0.35 * pad.size[1]).sub(start).normalize()
+        start.addScaledVector(up, rng.range(-0.6, -0.25) * pad.size[1])
+        dir.copy(centre).addScaledVector(up, -0.45 * pad.size[1]).sub(start).normalize()
       } else {
         start.addScaledVector(up, -pad.size[1] - 2.5)
         dir.copy(up)
@@ -326,12 +334,12 @@ function strings() {
       let hit = null
       for (let s = 0; s < 14; s += 0.12) {
         const q = start.clone().addScaledVector(dir, s)
-        if (needleField(q.x, q.y, q.z) < 0.24) {
+        if (needleField(q.x, q.y, q.z) < 0.22) {
           hit = q
           break
         }
       }
-      if (!hit || snowField(hit.x, hit.y, hit.z) < 0.2) continue
+      if (!hit || snowField(hit.x, hit.y, hit.z) < 0.3 || wood(hit.x, hit.y, hit.z) < 0.2) continue
       const out = gradient(needleField, hit.x, hit.y, hit.z)
       drop(hit, out, i)
       ring.push({ th, p: hit })
@@ -405,33 +413,49 @@ function star() {
   const pts = []
   for (let k = 0; k < 10; k++) {
     const a = Math.PI / 2 + (k * TAU) / 10
-    const r = k % 2 === 0 ? STAR_R * (0.96 + 0.08 * rng.next()) : STAR_R * 0.4
+    const r = k % 2 === 0 ? STAR_R * (0.97 + 0.06 * rng.next()) : STAR_R * 0.42
     pts.push(new THREE.Vector3(Math.cos(a) * r, Math.sin(a) * r, 0))
   }
   const pos = []
   const col = []
   const face = (a, b, c, glowShare) => {
     pos.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z)
-    for (let i = 0; i < 3; i++) col.push(1, 0.6, 0.17, glowShare)
+    for (let i = 0; i < 3; i++) col.push(1, 0.74, 0.3, glowShare)
   }
-  const front = new THREE.Vector3(0, 0, 0.55)
-  const back = new THREE.Vector3(0, 0, -0.55)
+  const front = new THREE.Vector3(0, 0, 0.6)
+  const back = new THREE.Vector3(0, 0, -0.6)
   for (let k = 0; k < 10; k++) {
     const a = pts[k]
     const b = pts[(k + 1) % 10]
-    face(front, a, b, k % 2 === 0 ? 0.04 : 0.014)
-    face(back, b, a, 0.014)
+    face(front, a, b, k % 2 === 0 ? 0.105 : 0.045)
+    face(back, b, a, 0.04)
   }
   const g = new THREE.BufferGeometry()
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
   g.setAttribute('color', new THREE.Float32BufferAttribute(col, 4))
   g.computeVertexNormals()
   g.applyMatrix4(new THREE.Matrix4().makeRotationY(0.22).multiply(new THREE.Matrix4().makeRotationZ(-0.06)))
-  g.applyMatrix4(new THREE.Matrix4().makeTranslation(0.05, STAR_H, 0.1))
+  g.applyMatrix4(new THREE.Matrix4().makeTranslation(STAR_AT[0], STAR_AT[1], STAR_AT[2]))
   const [ax, az] = T.trunkAxis(T.trunkShape.top)
-  const stem = wireTube([new THREE.Vector3(ax, T.trunkShape.top + 2.2, az), new THREE.Vector3(ax * 0.5, T.trunkShape.top + 4.6, az * 0.5), new THREE.Vector3(0.05, STAR_H - STAR_R * 0.36, 0.1)], 0.085)
-  colourOf(stem, 0.5, 0.36, 0.14, 0)
-  const all = mergeGeometries([phaseOf(g, 0.31, 2), phaseOf(stem, 0.31, 0).toNonIndexed()])
+  const stem = wireTube([new THREE.Vector3(ax, T.trunkShape.top + 2.2, az), new THREE.Vector3(lerp(ax, STAR_AT[0], 0.6), T.trunkShape.top + 4.4, lerp(az, STAR_AT[2], 0.6)), new THREE.Vector3(STAR_AT[0], STAR_AT[1] - STAR_R * 0.4, STAR_AT[2])], 0.085)
+  colourOf(stem, 0.55, 0.4, 0.15, 0)
+  const aura = new THREE.IcosahedronGeometry(STAR_GLOW_R, 2)
+  aura.deleteAttribute('uv')
+  const hp = aura.getAttribute('position')
+  const hn = aura.getAttribute('normal')
+  for (let i = 0; i < hp.count; i += 3) {
+    const a = new THREE.Vector3().fromBufferAttribute(hp, i + 1)
+    const b = new THREE.Vector3().fromBufferAttribute(hp, i + 2)
+    hp.setXYZ(i + 1, b.x, b.y, b.z)
+    hp.setXYZ(i + 2, a.x, a.y, a.z)
+  }
+  for (let i = 0; i < hp.count; i++) {
+    const v = new THREE.Vector3(hp.getX(i), hp.getY(i), hp.getZ(i)).normalize()
+    hn.setXYZ(i, -v.x, -v.y, -v.z)
+  }
+  aura.applyMatrix4(new THREE.Matrix4().makeTranslation(STAR_AT[0], STAR_AT[1], STAR_AT[2]))
+  colourOf(aura, 1, 0.7, 0.3, 1)
+  const all = mergeGeometries([phaseOf(g, 0.31, 2), phaseOf(stem, 0.31, 0).toNonIndexed(), phaseOf(aura, 0.31, 4)])
   return all
 }
 
@@ -439,14 +463,14 @@ function lights() {
   const { bulbs, wires } = strings()
   const parts = []
   for (const b of bulbs) {
-    const g = new THREE.IcosahedronGeometry(0.2 * b.size, 1)
+    const g = new THREE.IcosahedronGeometry(CORE_R * b.size, 1)
     g.deleteAttribute('uv')
     g.applyMatrix4(new THREE.Matrix4().makeScale(1, 1.32, 1))
     g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.out))
     g.applyMatrix4(new THREE.Matrix4().makeTranslation(b.at.x, b.at.y, b.at.z))
-    colourOf(g, 1, 0.5 + 0.1 * b.warm, 0.13 + 0.08 * b.warm, 1)
+    colourOf(g, 1, 0.7 + 0.1 * b.warm, 0.34 + 0.1 * b.warm, 1)
     parts.push(phaseOf(g, b.phase, 1))
-    const halo = new THREE.IcosahedronGeometry(HALO_R * b.size, 0)
+    const halo = new THREE.IcosahedronGeometry(HALO_R * b.size, 1)
     halo.deleteAttribute('uv')
     const hp = halo.getAttribute('position')
     const hn = halo.getAttribute('normal')
@@ -455,7 +479,7 @@ function lights() {
       hn.setXYZ(i, v.x, v.y, v.z)
     }
     halo.applyMatrix4(new THREE.Matrix4().makeTranslation(b.at.x, b.at.y, b.at.z))
-    colourOf(halo, 1, 0.4 + 0.08 * b.warm, 0.08 + 0.04 * b.warm, 1)
+    colourOf(halo, 1, 0.52 + 0.08 * b.warm, 0.17 + 0.05 * b.warm, 1)
     parts.push(phaseOf(halo, b.phase, 3))
   }
   let wireTriangles = 0
@@ -469,7 +493,9 @@ function lights() {
   const g = mergeGeometries(parts.map((p) => (p.index ? p.toNonIndexed() : p)))
   const list = []
   for (const b of bulbs) list.push(+b.at.x.toFixed(3), +b.at.y.toFixed(3), +b.at.z.toFixed(3), +b.phase.toFixed(3))
-  return { g, bulbs: list, count: bulbs.length, wireTriangles }
+  const groups = {}
+  for (const b of bulbs) groups[b.group] = (groups[b.group] ?? 0) + 1
+  return { g, bulbs: list, count: bulbs.length, wireTriangles, groups }
 }
 
 function arrival() {
@@ -486,24 +512,24 @@ function arrival() {
     const uv = []
     const col = []
     const index = []
-    const across = 5
-    const most = limb.kind === 'root' ? 0.32 : 0.2
+    const across = 7
+    const most = limb.kind === 'root' ? 0.46 : 0.44
     for (let i = 0; i < f.length; i++) {
       const tan = f[i].tan
       const u = up.clone().sub(tan.clone().multiplyScalar(up.dot(tan)))
       const flat = u.length()
       u.normalize()
       const side = new THREE.Vector3().crossVectors(tan, u)
-      const ends = smooth(limb.kind === 'root' ? 0.52 : 0, limb.kind === 'root' ? 0.74 : 0.12, f[i].along / total) * smooth(0, 0.1, 1 - f[i].along / total)
-      const lump = 0.55 + 0.45 * Math.sin(f[i].along * 2.3 + n * 1.7) * Math.sin(f[i].along * 0.9 + n)
-      const thick = most * smooth(0.55, 0.95, flat) * ends * smooth(0.5, 0.9, lump)
+      const ends = smooth(limb.kind === 'root' ? 0.52 : 0.42, limb.kind === 'root' ? 0.74 : 0.6, f[i].along / total) * smooth(0, 0.1, 1 - f[i].along / total)
+      const lump = 0.55 + 0.45 * Math.sin(f[i].along * 1.5 + n * 1.7) * Math.sin(f[i].along * 0.6 + n)
+      const thick = most * smooth(0.45, 0.9, flat) * ends * smooth(0.36, 0.7, lump) * (0.8 + 0.2 * Math.sin(f[i].along * 3.7 + n * 0.9))
       const seed = clamp01(0.5 + 0.5 * Math.sin(f[i].along * 1.4 + n * 2.1))
       for (let j = 0; j < across; j++) {
-        const a = lerp(-0.95, 0.95, j / (across - 1))
+        const a = lerp(-1.1, 1.1, j / (across - 1))
         const dir = u.clone().multiplyScalar(Math.cos(a)).addScaledVector(side, Math.sin(a))
         const r = limb.radii[i]
-        const edge = Math.cos((a / 0.95) * (Math.PI / 2))
-        const rise = thick * Math.pow(Math.max(edge, 0), 0.7)
+        const edge = Math.cos((a / 1.1) * (Math.PI / 2))
+        const rise = thick * Math.pow(Math.max(edge, 0), 0.55)
         const p0 = f[i].p.clone().addScaledVector(dir, r * 0.86)
         const p1 = f[i].p.clone().addScaledVector(dir, r * 0.86 + (r * 0.24 + 0.02) * smooth(0, 0.06, rise) + rise)
         pos.push(p1.x, p1.y, p1.z)
@@ -613,9 +639,9 @@ const counts = { needles: tri(N.g), snow: tri(S), lights: tri(L.g), arrival: tri
 writeGlb(rel('assets-full', 'winter', 'tree-crown.glb'), [
   fromThree('needles', N.g, { triangles: counts.needles, tufts: N.tufts, tileMm: NEEDLE_TILE_MM }),
   fromThree('snow', S, { triangles: counts.snow, tileMm: SNOW_TILE_MM }),
-  fromThree('lights', L.g, { triangles: counts.lights, bulbs: L.bulbs, star: [0.05, STAR_H, 0.1] }),
+  fromThree('lights', L.g, { triangles: counts.lights, bulbs: L.bulbs, star: STAR_AT }),
   fromThree('arrival', A, { triangles: counts.arrival, tileMm: SNOW_TILE_MM }),
 ])
 await needleMaps()
 await snowMap()
-console.log(`tree-winter: needles ${counts.needles} triangles (${N.tufts} tufts), snow ${counts.snow}, lights ${counts.lights} (${L.count} bulbs, wire ${L.wireTriangles}), arrival ${counts.arrival}; ${T.clusters.length} clusters on ${T.localPads.length} pads`)
+console.log(`tree-winter: needles ${counts.needles} triangles (${N.tufts} tufts), snow ${counts.snow}, lights ${counts.lights} (${L.count} bulbs ${JSON.stringify(L.groups)}, wire ${L.wireTriangles}), arrival ${counts.arrival}; ${T.clusters.length} clusters on ${T.localPads.length} pads`)

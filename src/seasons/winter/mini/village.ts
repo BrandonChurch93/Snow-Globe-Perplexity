@@ -12,7 +12,7 @@ import { prepareVillage, tileMm, villageGeometry, villageGrain } from '../../../
 import { hangPoints, lampFlame, shrubDistance } from '../../../miniature/roof'
 import { BUMP_GLSL, NEAR_LIGHT, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, withSurface, type Cover, type GlowSource } from '../../../miniature/surface'
 import { wispGeometry, wispMaterial } from '../../../miniature/wisp'
-import { anchors, bankAt, cottage, cottagePoint, groundAt, moundSlope, pond, pondField, solidDistance } from '../../../scene/layout'
+import { anchors, bankAt, cottage, cottagePoint, groundAt, moundSlope, pond, pondField, rimAt, solidDistance } from '../../../scene/layout'
 import { gainOf } from '../../../scene/lightgrid'
 import type { InnerLight, KitMoment } from '../../kit'
 import { isTree, season, tones } from './palette'
@@ -38,6 +38,13 @@ const SNOW_DRIFT_MM = 1.1
 const SPARK = 2.6
 const SNOW_WRAP = 0.7
 const BANK_RELIEF = 2
+const BANK_TIP = 0.8
+const BANK_WRAP = 3
+const BANK_BODY = 4.6
+const BANK_HOLLOW = 0.25
+const BANK_FOOT = 0.33
+const BANK_CREST = 0.35
+const BANK_AIR = 0.6
 const ICE_NEAR = 0.3
 
 const bulbs = hangPoints()
@@ -111,33 +118,41 @@ function snowMaterial(part: string, change: string, key: string, lift: string): 
 ${BUMP_GLSL}
 varying vec3 vPuff;
 vec3 snowWeights;
+float bankMask = 0.0;
+float bankDeep = 0.0;
+float bankSpan = 0.0;
+vec3 bankN = vec3(0.0, 0.0, 1.0);
 vec3 snowAt(vec3 p) {
   return texture2D(map, p.zy).rgb * snowWeights.x + texture2D(map, p.xz).rgb * snowWeights.y + texture2D(map, p.xy).rgb * snowWeights.z;
 }
 float snowHeight(vec3 p) {
   vec3 t = snowAt(p);
-  return t.r * ${SNOW_GRAIN_MM.toFixed(3)} + t.b * ${SNOW_LUMP_MM.toFixed(3)} + snowAt(p * 0.23 + 0.41).b * ${SNOW_DRIFT_MM.toFixed(3)} * (1.0 + ${BANK_RELIEF.toFixed(2)} * vSurf.y);
+  return t.r * ${SNOW_GRAIN_MM.toFixed(3)} + t.b * ${SNOW_LUMP_MM.toFixed(3)} + snowAt(p * 0.23 + 0.41).b * ${SNOW_DRIFT_MM.toFixed(3)} * (1.0 + ${BANK_RELIEF.toFixed(2)} * bankMask);
 }`,
         )
         .replace(
           '#include <map_fragment>',
           `
+bankSpan = length(vPuff);
+bankMask = smoothstep(0.0, 0.3, bankSpan);
+bankDeep = clamp((bankSpan - 0.3) / 0.7, 0.0, 1.0);
 snowWeights = pow(abs(normalize(vObjN)), vec3(4.0));
 snowWeights /= snowWeights.x + snowWeights.y + snowWeights.z;
 vec3 snowP = vStageLocal * ${tile};
 vec3 snowT = snowAt(snowP);
 float snowWide = snowAt(snowP * 0.23 + 0.41).b;
-diffuseColor.rgb *= ${glsl(tones.snow)} * (0.88 + 0.16 * snowT.r + 0.12 * (snowWide - 0.5));
+diffuseColor.rgb *= ${glsl(tones.snow)} * (0.92 + 0.16 * snowT.r + 0.12 * (snowWide - 0.5));
 `,
         )
         .replace(
           '#include <normal_fragment_maps>',
           `
 {
-  normal = normalize(normal + vPuff);
   float snowH = snowHeight(snowP);
   vec2 snowDh = vec2(snowHeight(snowP + dFdx(snowP)) - snowH, snowHeight(snowP + dFdy(snowP)) - snowH);
   normal = villageBump(-vViewPosition, normal, snowDh, faceDirection);
+  bankN = normal;
+  normal = normalize(normal + vPuff * (${BANK_TIP.toFixed(2)} * bankMask / max(bankSpan, 1e-4)));
 }
 `,
         )
@@ -146,6 +161,15 @@ diffuseColor.rgb *= ${glsl(tones.snow)} * (0.88 + 0.16 * snowT.r + 0.12 * (snowW
         `${NEAR_LIGHT}
 {
   reflectedLight.directDiffuse += stageWrapped(geometryNormal, ${SNOW_WRAP.toFixed(2)}) * material.diffuseContribution;
+  if (bankMask > 0.0) {
+    float bankTop = smoothstep(-0.95, -0.15, dot(bankN, vPuff) / max(bankSpan, 1e-4));
+    bankTop = mix(bankTop, 1.0, 0.85 * (1.0 - smoothstep(0.0, ${BANK_CREST.toFixed(2)}, bankDeep)));
+    float bankSide = stageWrap(dot(geometryNormal, stageKeyL), ${BANK_WRAP.toFixed(2)});
+    float bankFall = mix(1.0, ${BANK_FOOT.toFixed(2)}, smoothstep(0.0, 1.0, bankDeep));
+    vec3 bankBody = stageKeyC * (RECIPROCAL_PI * ${BANK_BODY.toFixed(2)} * bankSide * mix(${BANK_HOLLOW.toFixed(2)}, 1.0, bankTop) * bankFall) * material.diffuseContribution;
+    reflectedLight.directDiffuse = mix(reflectedLight.directDiffuse, bankBody, bankMask);
+    reflectedLight.indirectDiffuse *= mix(1.0, ${BANK_AIR.toFixed(2)} * bankFall, bankMask);
+  }
   float snowTwinkle = fract(snowT.g * 61.7 + dot(normalize(vViewPosition), vec3(17.3, 31.7, 23.1)) + dot(normal, vec3(5.1, 3.3, 7.7)));
   float snowSpark = smoothstep(0.3, 0.9, snowT.g) * smoothstep(0.62, 1.0, snowTwinkle);
   reflectedLight.directSpecular += (reflectedLight.directDiffuse + reflectedLight.indirectDiffuse) * snowSpark * ${SPARK.toFixed(2)};
@@ -256,15 +280,17 @@ export function arrival(): THREE.Object3D {
 const keep = (role: string): boolean => !isTree(role) && role !== 'ground' && role !== 'pond'
 const SINK = { depthMm: 3.2, from: 0.74, to: 0.97 }
 const BANK_SHUTS = { from: 0.2, to: 0.8 }
-const BANK_SLOPE = 0.4
+const BANK_SLOPE = 0.9
+const RIM_SLOPE = 1.2
 
 function groundDistance(x: number, y: number, z: number): number {
   const t = Math.min(1, Math.max(0, (pondField(x, z) - SINK.from) / (SINK.to - SINK.from)))
   const bank = bankAt(x, z)
+  const rim = rimAt(x, z)
   const b = Math.min(1, Math.max(0, (bank - BANK_SHUTS.from) / (BANK_SHUTS.to - BANK_SHUTS.from)))
   const under = (SINK.depthMm - pond.dip) * (1 - t * t * (3 - 2 * t)) * (1 - b * b * (3 - 2 * b))
-  const slope = moundSlope(z) + BANK_SLOPE * Math.min(1, bank)
-  return (y - (groundAt(x, z) + bank - under)) / Math.sqrt(1 + slope * slope)
+  const slope = moundSlope(z) + BANK_SLOPE * Math.min(1, bank * 0.5) + RIM_SLOPE * Math.min(1, rim)
+  return (y - (groundAt(x, z) + bank + rim - under)) / Math.sqrt(1 + slope * slope)
 }
 
 export function solid(x: number, y: number, z: number): number {

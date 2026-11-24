@@ -8,18 +8,80 @@ import { FAR_GLSL, ROOM_RADIUS_MM, farApertureMm, farFromMm, lensUniforms, poseB
 import type { StageFrame } from './frame'
 import { centreHeightMm } from './layout'
 import { ROOM_GLSL, ROOM_LIGHTS, ROOM_SEEN, roomUniforms } from './room'
-import { SLAB_SHAPE_GLSL } from './surface'
+import { SLAB_SHAPE, SLAB_SHAPE_GLSL } from './surface'
 
 const RAD = Math.PI / 180
 const CLEAR_SIDE = 16 * RAD
 const CLEAR_UP = 9 * RAD
 
+const COOL = 0.05
+const BLUE = 0.35
+const PALE = 0.65
+const WARM = 0.75
+const WHITE = 0.85
+const AMBER = 0.95
+
+export const PLACED = {
+  view: { widthPx: 2816, heightPx: 1584, fovDeg: 16, distanceMm: 619.9, pitchDeg: 4.5, aimHeightMm: 62.8 },
+  sizeMm: 2.5,
+  reachMm: [1100, 3200] as [number, number],
+  discs: [
+    [2525, 368, 48, AMBER, 0.85, 0.14, 0.45, 1950],
+    [2640, 650, 45, WHITE, 1.5, 0.3, 0.1, 1600],
+    [2295, 510, 55, PALE, 0.47, 0.32, 0.1, 1557],
+    [2275, 212, 48, PALE, 0.24, 0.34, 0.15],
+    [2605, 333, 48, PALE, 0.2, 0.37, 0.1],
+    [2045, 108, 50, PALE, 0.19, 0.5, 0.1],
+    [2285, 585, 50, BLUE, 0.14, 0.55, 0],
+    [2620, 190, 47, BLUE, 0.11, 0.55, 0.05],
+    [2330, 455, 45, BLUE, 0.1, 0.6, 0],
+    [2560, 665, 45, BLUE, 0.07, 0.65, 0],
+    [2238, 275, 50, BLUE, 0.06, 0.65, 0],
+    [2200, 515, 40, BLUE, 0.05, 0.65, 0],
+    [2352, 632, 45, AMBER, 0.05, 0.6, 0.05],
+    [2098, 180, 45, AMBER, 0.045, 0.65, 0],
+    [2170, 410, 55, AMBER, 0.035, 0.7, 0],
+    [2655, 555, 42, COOL, 0.06, 0.65, 0],
+    [2780, 420, 42, COOL, 0.05, 0.6, 0],
+    [2270, 70, 58, COOL, 0.055, 0.65, 0],
+    [2020, 365, 55, COOL, 0.035, 0.7, 0],
+    [2330, 380, 50, COOL, 0.035, 0.7, 0],
+    [2000, 30, 45, COOL, 0.03, 0.7, 0],
+    [2604, 108, 50, COOL, 0.03, 0.7, 0],
+    [2788, 148, 42, COOL, 0.03, 0.7, 0],
+    [2330, 830, 60, COOL, 0.025, 0.7, 0],
+    [2788, 610, 40, WARM, 0.02, 0.7, 0],
+    [252, 478, 48, PALE, 0.42, 0.34, 0.1],
+    [300, 470, 48, PALE, 0.16, 0.5, 0.05],
+    [285, 740, 45, PALE, 0.14, 0.5, 0.05],
+    [455, 935, 45, BLUE, 0.06, 0.75, 0],
+    [250, 545, 48, BLUE, 0.12, 0.55, 0],
+    [650, 80, 55, BLUE, 0.12, 0.5, 0.05],
+    [400, 668, 55, BLUE, 0.08, 0.55, 0],
+    [285, 605, 50, BLUE, 0.07, 0.6, 0],
+    [640, 560, 60, BLUE, 0.05, 0.7, 0],
+    [215, 420, 45, BLUE, 0.05, 0.65, 0],
+    [700, 610, 55, BLUE, 0.045, 0.7, 0],
+    [472, 172, 50, WARM, 0.12, 0.37, 0.1],
+    [890, 320, 50, WARM, 0.125, 0.5, 0.05],
+    [465, 215, 48, AMBER, 0.05, 0.6, 0],
+    [285, 790, 45, AMBER, 0.05, 0.6, 0],
+    [75, 150, 45, AMBER, 0.02, 0.7, 0],
+    [690, 815, 58, COOL, 0.075, 0.6, 0],
+    [815, 250, 50, COOL, 0.04, 0.7, 0],
+    [650, 225, 50, COOL, 0.035, 0.7, 0],
+    [492, 345, 50, COOL, 0.035, 0.7, 0],
+    [295, 270, 50, COOL, 0.035, 0.7, 0],
+    [140, 820, 50, COOL, 0.025, 0.7, 0],
+  ] as [number, number, number, number, number, number, number, number?][],
+}
+
 export const DISCS = {
   zones: [
-    { share: 0.42, azFrom: 5.6, azTo: 14.6, elFrom: -2.3, elTo: 4.8, sidePower: 0.8, rightShare: 1, levelFrom: 0, depthFrom: 0 },
-    { share: 0.33, azFrom: 5.8, azTo: 15, elFrom: -3.8, elTo: 4.6, sidePower: 0.8, rightShare: 0, levelFrom: 0, depthFrom: 0 },
-    { share: 0.1, azFrom: 5, azTo: 22, elFrom: 4.4, elTo: 11, sidePower: 1, rightShare: 0.75, levelFrom: 0.3, depthFrom: 0.45 },
-    { share: 0.15, azFrom: 15, azTo: 48, elFrom: -6.2, elTo: 12, sidePower: 1, rightShare: 0.5, levelFrom: 0, depthFrom: 0 },
+    { share: 0.12, azFrom: 5.6, azTo: 14.6, elFrom: -2.3, elTo: 4.8, sidePower: 0.8, rightShare: 1, levelFrom: 0, depthFrom: 0 },
+    { share: 0.12, azFrom: 5.8, azTo: 15, elFrom: -3.8, elTo: 4.6, sidePower: 0.8, rightShare: 0, levelFrom: 0, depthFrom: 0 },
+    { share: 0.08, azFrom: 5, azTo: 22, elFrom: 4.4, elTo: 11, sidePower: 1, rightShare: 0.75, levelFrom: 0.3, depthFrom: 0.45 },
+    { share: 0.68, azFrom: 15, azTo: 48, elFrom: -6.2, elTo: 12, sidePower: 1, rightShare: 0.5, levelFrom: 0, depthFrom: 0 },
   ],
   spread: [0.6180339887, 0.8191725134, 0.6710436067, 0.5497004779] as [number, number, number, number],
   rightLevel: 0.65,
@@ -34,8 +96,8 @@ export const DISCS = {
   sizeMm: [1.5, 5] as [number, number],
   largeShare: 0.02,
   largeMm: [5, 11] as [number, number],
-  dimmest: 0.045,
-  decades: 1.25,
+  dimmest: 0.03,
+  decades: 1.05,
   dimPower: 2,
   colourByLevel: 0.55,
   soft: [0.45, 1] as [number, number],
@@ -47,7 +109,37 @@ export const DISCS = {
   roomLightGain: 0.8,
 }
 
-export const WALL = { seen: ROOM_SEEN, streaks: 0.16, fine: 0.1, folds: 0.2, mottle: 0.22 }
+export const WALL = {
+  seen: ROOM_SEEN,
+  streaks: 0.16,
+  fine: 0.1,
+  folds: 0.2,
+  mottle: 0.22,
+  base: 1,
+  column: 2.8,
+  columnDeg: 5.5,
+  rightLift: 0.5,
+  tints: { winter: { base: [0.9, 1, 1.2], column: [0.67, 0.85, 0.83] } } as Record<string, { base: [number, number, number]; column: [number, number, number] }>,
+}
+
+export const APRON = {
+  tone: [1.56, 2.6, 2.4] as [number, number, number],
+  reachMm: 150,
+  leftShare: 0.33,
+  sideMm: 150,
+  ledgeAtMm: [-230.6, -302.5] as [number, number],
+  ledgeDir: [0.3745, -0.9273] as [number, number],
+  band: [3.4, 3, 2.3] as [number, number, number],
+  bandMm: 16,
+  bandFadeMm: [400, 1100] as [number, number],
+}
+
+const wallUniforms = {
+  uWallBase: { value: new THREE.Vector3(1, 1, 1) },
+  uWallColumn: { value: new THREE.Vector3(1, 1, 1) },
+}
+const PLAIN = { base: [1, 1, 1], column: [1, 1, 1] } as const
+const tintOf = (season: string) => WALL.tints[season] ?? PLAIN
 
 interface Emitter {
   at: THREE.Vector3
@@ -57,12 +149,15 @@ interface Emitter {
   pick: number
   energy: number
   heroRadius: number
+  look?: [number, number]
 }
 
 const f4 = (v: number) => v.toFixed(4)
 
 const DOME = `${ROOM_GLSL}
 ${FAR_GLSL}
+uniform vec3 uWallBase;
+uniform vec3 uWallColumn;
 float wallHash(vec2 p) {
   uvec2 q = uvec2(ivec2(floor(p)) + 32768);
   q = q * uvec2(1597334673u, 3812015801u);
@@ -86,7 +181,23 @@ void main() {
   float mottle = wallNoise(vec2(az * 3.3 + 7.0, el * 4.1 + 2.0)) + 0.5 * wallNoise(vec2(az * 7.9 + 1.0, el * 9.3 + 8.0)) - 0.75;
   float fine = wallNoise(vec2(az * 260.0, el * 5.0 + 3.0)) + 0.6 * wallNoise(vec2(az * 610.0 + 9.0, el * 8.0 + 1.0)) - 0.8;
   float marks = 1.0 + ${f4(WALL.streaks)} * keep * bands + ${f4(WALL.fine)} * keep * fine + ${f4(WALL.folds)} * folds + ${f4(WALL.mottle)} * mottle;
-  vec3 col = roomWall(d, blur) * max(marks, 0.2) + roomSources(d, blur) * ${f4(WALL.seen)};
+  float wide = ${f4(WALL.columnDeg * RAD)};
+  float column = exp(-az * az / (2.0 * (wide * wide + blur * blur)));
+  vec3 col = uRoomWall * (uWallBase * (1.0 + ${f4(WALL.rightLift)} * smoothstep(0.0, 0.25, az)) + uWallColumn * column) * max(marks, 0.2) + roomSources(d, blur) * ${f4(WALL.seen)};
+  vec3 ray = normalize(vStageWorld - cameraPosition);
+  if (ray.y < -0.002 && cameraPosition.y > 0.0) {
+    float reach = -cameraPosition.y / ray.y;
+    vec2 g = cameraPosition.xz + ray.xz * reach;
+    float soft = 1.2 * lensBlurMm(reach);
+    float beyond = max(-(g.x * ${f4(Math.sin(SLAB_SHAPE.turnDeg * RAD))} + g.y * ${f4(Math.cos(SLAB_SHAPE.turnDeg * RAD))} + ${f4(SLAB_SHAPE.farMm)}), 0.0);
+    vec2 from = g - vec2(${f4(APRON.ledgeAtMm[0])}, ${f4(APRON.ledgeAtMm[1])});
+    float across = dot(from, vec2(${f4(-APRON.ledgeDir[1])}, ${f4(APRON.ledgeDir[0])}));
+    float along = dot(from, vec2(${f4(APRON.ledgeDir[0])}, ${f4(APRON.ledgeDir[1])}));
+    float wideMm = length(vec2(${f4(APRON.bandMm)}, soft));
+    float ledge = smoothstep(-wideMm, wideMm, across);
+    float band = exp(-across * across / (2.0 * wideMm * wideMm)) * (${f4(APRON.bandMm)} / wideMm) * (1.0 - smoothstep(${f4(APRON.bandFadeMm[0])}, ${f4(APRON.bandFadeMm[1])}, along));
+    col += uRoomWall * (vec3(${APRON.tone.map(f4).join(', ')}) * (exp(-beyond / ${f4(APRON.reachMm)}) * ledge * mix(${f4(APRON.leftShare)}, 1.0, smoothstep(${f4(-APRON.sideMm)}, ${f4(APRON.sideMm)}, g.x))) + vec3(${APRON.band.map(f4).join(', ')}) * band) * max(marks, 0.2);
+  }
   gl_FragColor = vec4(col, 1.0);
   if (uDiag != 0) gl_FragColor = stageDiag(col, -d, 0.0, stageChange(), 0.0);
 }`
@@ -199,8 +310,24 @@ export class Backdrop {
     const farMm = farApertureMm(hero)
     const fromMm = farFromMm(hero)
     const D = DISCS
-    const counts = D.zones.map((z) => Math.round(z.share * n))
-    counts[0] = n - counts.slice(1).reduce((a, b) => a + b, 0)
+    const V = PLACED.view
+    const tilt = V.pitchDeg * RAD
+    const eye = new THREE.Vector3(0, V.aimHeightMm + Math.sin(tilt) * V.distanceMm, Math.cos(tilt) * V.distanceMm)
+    const focal = V.heightPx / 2 / Math.tan((V.fovDeg * RAD) / 2)
+    const perMm = hero.apertureMm / hero.focusMm + farMm / fromMm
+    PLACED.discs.slice(0, n).forEach(([x, y, r, tone, shown, soft, edge, set]) => {
+      const narrow = perMm - r / focal
+      const depth = set ?? Math.min(PLACED.reachMm[1], Math.max(PLACED.reachMm[0], narrow > 1e-6 ? (hero.apertureMm + farMm - PLACED.sizeMm) / narrow : PLACED.reachMm[1]))
+      const size = Math.max(1, (r * depth) / focal - hero.apertureMm * (depth / hero.focusMm - 1) - farMm * (depth / fromMm - 1))
+      const ray = new THREE.Vector3(x - V.widthPx / 2, (V.heightPx / 2 - y) * Math.cos(tilt) - focal * Math.sin(tilt), -(V.heightPx / 2 - y) * Math.sin(tilt) - focal * Math.cos(tilt))
+      const at = eye.clone().addScaledVector(ray, depth / focal)
+      const seenAt = at.clone().sub(hero.position).dot(forward)
+      const heroRadius = size + hero.apertureMm * Math.abs(seenAt / hero.focusMm - 1) + farMm * Math.max(0, seenAt / fromMm - 1)
+      this.emitters.push({ at, size, shown, level: tone, pick: tone, energy: (shown * heroRadius * heroRadius) / (size * size), heroRadius, look: [soft, edge] })
+    })
+    const spare = n - this.emitters.length
+    const counts = D.zones.map((z) => Math.round(z.share * spare))
+    counts[0] = Math.max(0, spare - counts.slice(1).reduce((a, b) => a + b, 0))
     D.zones.forEach((zone, z) => {
       let left = counts[z]!
       const start = [rng.next(), rng.next(), rng.next(), rng.next()]
@@ -253,7 +380,7 @@ export class Backdrop {
 
     const dome = (this.dome = new THREE.Mesh(
       new THREE.SphereGeometry(ROOM_RADIUS_MM, 48, 24),
-      stageShader({ part: 'backdrop', standIn: false, uniforms: { ...roomUniforms, ...lensUniforms }, fragment: DOME, params: { side: THREE.BackSide, depthWrite: false } }),
+      stageShader({ part: 'backdrop', standIn: false, uniforms: { ...roomUniforms, ...lensUniforms, ...wallUniforms }, fragment: DOME, params: { side: THREE.BackSide, depthWrite: false } }),
     ))
     dome.frustumCulled = false
     dome.renderOrder = -2
@@ -280,6 +407,10 @@ export class Backdrop {
       this.lights.setMatrixAt(i, m)
       look[i * 4] = looks.range(DISCS.soft[0], DISCS.soft[1])
       look[i * 4 + 1] = looks.next() < DISCS.edgeShare ? looks.range(DISCS.edge[0], DISCS.edge[1]) : looks.range(-0.12, 0.05)
+      if (e.look) {
+        look[i * 4] = e.look[0]
+        look[i * 4 + 1] = e.look[1]
+      }
       look[i * 4 + 2] = looks.range(0.93, 1.07)
       look[i * 4 + 3] = looks.range(0, Math.PI)
       const turn = looks.range(0, 2 * Math.PI)
@@ -338,6 +469,10 @@ export class Backdrop {
     const fa = from.backdrop.floor
     const fb = to.backdrop.floor
     wall.setRGB(ra[0] + (rb[0] - ra[0]) * mix, ra[1] + (rb[1] - ra[1]) * mix, ra[2] + (rb[2] - ra[2]) * mix)
+    const ta = tintOf(from.season)
+    const tb = tintOf(to.season)
+    wallUniforms.uWallBase.value.set(ta.base[0] + (tb.base[0] - ta.base[0]) * mix, ta.base[1] + (tb.base[1] - ta.base[1]) * mix, ta.base[2] + (tb.base[2] - ta.base[2]) * mix).multiplyScalar(WALL.base)
+    wallUniforms.uWallColumn.value.set(ta.column[0] + (tb.column[0] - ta.column[0]) * mix, ta.column[1] + (tb.column[1] - ta.column[1]) * mix, ta.column[2] + (tb.column[2] - ta.column[2]) * mix).multiplyScalar(WALL.column)
     floor.setRGB(fa[0] + (fb[0] - fa[0]) * mix, fa[1] + (fb[1] - fa[1]) * mix, fa[2] + (fb[2] - fa[2]) * mix)
     const A = this.colorA.array as Float32Array
     const B = this.colorB.array as Float32Array

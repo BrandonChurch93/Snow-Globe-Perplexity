@@ -6,7 +6,7 @@ export const palette: Palette = { ground: [0.82, 0.86, 0.92], cottage: [0.42, 0.
 export const isTree = (role: string): boolean => role === 'trunk' || role === 'crown'
 
 export const tones: Record<'snow' | 'bulb' | 'lamp' | 'flame' | 'room' | 'curtain' | 'rime' | 'dust' | 'iceDeep' | 'icePale' | 'smoke' | 'sheen' | 'bulbLight' | 'lampLight' | 'roomLight', Rgb> = {
-  snow: [0.9, 0.92, 0.96],
+  snow: [0.97, 0.975, 0.985],
   bulb: [1, 0.7, 0.4],
   lamp: [1, 0.7, 0.36],
   flame: [1, 0.9, 0.68],
