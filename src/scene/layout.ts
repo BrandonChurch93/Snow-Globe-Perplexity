@@ -53,6 +53,17 @@ const smooth = (a: number, b: number, v: number): number => {
 
 export const groundAt = (x: number, z: number): number => moundAt(z) - pond.dip * (1 - smooth(0.86, 1.04, pondField(x, z)))
 
+const BANK = { riseMm: 3.2, reachMm: 8 }
+
+export function bankAt(x: number, z: number): number {
+  const y = moundAt(z)
+  const gap = Math.sqrt(Math.max(0, innerRadiusMm * innerRadiusMm - y * y)) - Math.hypot(x, z)
+  const a = Math.atan2(z, x)
+  const lumps = 0.6 + 0.2 * Math.sin(3 * a + 0.7) + 0.13 * Math.sin(7 * a + 2.1) + 0.07 * Math.sin(13 * a + 4.4)
+  const reach = BANK.reachMm * (0.72 + 0.28 * Math.sin(5 * a + 1.9))
+  return BANK.riseMm * lumps * (1 - smooth(0, reach, gap))
+}
+
 export function islandEdge(angle: number): number {
   const s = Math.sin(angle)
   const r = innerRadiusMm - WALL_GAP

@@ -236,9 +236,10 @@ function wallGap(x, z) {
   const ql = Math.abs(p.z) - C.halfLength
   return Math.hypot(Math.max(qa, 0), Math.max(ql, 0)) + Math.min(Math.max(qa, ql), 0)
 }
+const BANK_PUFF = 0.8
 function snowAt(x, z) {
   const pf = L.pondField(x, z)
-  const m = L.moundAt(z)
+  const m = L.moundAt(z) + L.bankAt(x, z)
   const lip = smooth(0.953, 1.008, pf)
   let extra = 0.26 * fbm(x * 0.17, z * 0.17, 3.3, 3) + 0.08 * fbm(x * 0.62, z * 0.62, 9.1, 2)
   extra += 0.34 * smooth(0.985, 1.03, pf) * (1 - smooth(1.06, 1.3, pf)) * (0.7 + 0.5 * noise(x * 0.35, z * 0.35, 4.4))
@@ -271,7 +272,7 @@ function contact(x, z) {
   const around = 204
   const shore = [0.9, 0.93, 0.95, 0.962, 0.972, 0.981, 0.99, 1.0, 1.012, 1.028, 1.05, 1.08]
   const outer = 38
-  const skirt = 5
+  const skirt = 14
   const r = L.innerRadiusMm - 0.6
   const pc = Math.cos(L.pond.yaw)
   const ps = Math.sin(L.pond.yaw)
@@ -287,7 +288,7 @@ function contact(x, z) {
     const inside = (t) => {
       const x = L.pond.x + dx * t
       const z = L.pond.z + dz * t
-      const y = L.moundAt(z)
+      const y = L.moundAt(z) + L.bankAt(x, z)
       return x * x + y * y + z * z < r * r
     }
     let lo = 0
@@ -314,17 +315,17 @@ function contact(x, z) {
         x = L.pond.x + dx * t
         z = L.pond.z + dz * t
         y = snowAt(x, z)
-        if (q === 1) y = L.moundAt(z)
-        else y = Math.min(y, Math.sqrt(Math.max(0, r * r - x * x - z * z)) * -1 > y ? y : y)
+        if (q === 1) y = L.moundAt(z) + L.bankAt(x, z)
       } else {
         const ex = L.pond.x + dx * edge
         const ez = L.pond.z + dz * edge
-        const ey = L.moundAt(ez)
+        const ey = L.moundAt(ez) + L.bankAt(ex, ez)
         const th = Math.atan2(ez, ex)
         const phi0 = Math.atan2(Math.hypot(ex, ez), -ey)
         const q = (k - shore.length - outer + 1) / skirt
         const phi = phi0 * (1 - 0.56 * q)
-        const rr = r - 0.25 - 0.35 * (0.5 + 0.5 * noise(Math.cos(th) * 9, Math.sin(th) * 9, phi * 14)) * Math.sin(Math.PI * Math.min(1, q * 1.2))
+        const lump = clamp(0.5 + 0.7 * fbm(Math.cos(th) * Math.sin(phi) * 11 + 3.1, -Math.cos(phi) * 11, Math.sin(th) * Math.sin(phi) * 11 + 7.7, 3))
+        const rr = r - 0.2 - 0.6 * Math.pow(lump, 1.5) * smooth(0, 0.2, q)
         x = Math.cos(th) * rr * Math.sin(phi)
         z = Math.sin(th) * rr * Math.sin(phi)
         y = -rr * Math.cos(phi)
@@ -368,7 +369,13 @@ function contact(x, z) {
     NN.setXYZ(b, nx / l, ny / l, nz / l)
     P.setXYZ(b, P.getX(a), P.getY(a), P.getZ(a))
   }
-  snow.add(g, { color: (p) => mul3(SNOW, (0.9 + 0.08 * noise(p[0] * 0.5, p[2] * 0.5, 3)) * contact(p[0], p[2])), surf: [1, 0] })
+  let at = 0
+  const puff = () => {
+    const k = at++ % rows
+    const q = (k - shore.length - outer + 1) / skirt
+    return [1, k < shore.length + outer ? 0 : BANK_PUFF * smooth(0, 0.15, q) * (1 - smooth(0.2, 0.45, q))]
+  }
+  snow.add(g, { color: (p) => mul3(SNOW, (0.9 + 0.08 * noise(p[0] * 0.5, p[2] * 0.5, 3)) * contact(p[0], p[2])), surf: puff })
 }
 
 {

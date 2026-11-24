@@ -12,7 +12,7 @@ import { prepareVillage, tileMm, villageGeometry, villageGrain } from '../../../
 import { hangPoints, lampFlame, shrubDistance } from '../../../miniature/roof'
 import { BUMP_GLSL, NEAR_LIGHT, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, withSurface, type Cover, type GlowSource } from '../../../miniature/surface'
 import { wispGeometry, wispMaterial } from '../../../miniature/wisp'
-import { anchors, cottage, cottagePoint, groundAt, moundSlope, pond, pondField, solidDistance } from '../../../scene/layout'
+import { anchors, bankAt, cottage, cottagePoint, groundAt, moundSlope, pond, pondField, solidDistance } from '../../../scene/layout'
 import { gainOf } from '../../../scene/lightgrid'
 import type { InnerLight, KitMoment } from '../../kit'
 import { isTree, season, tones } from './palette'
@@ -37,6 +37,7 @@ const SNOW_LUMP_MM = 0.3
 const SNOW_DRIFT_MM = 1.1
 const SPARK = 2.6
 const SNOW_WRAP = 0.7
+const BANK_RELIEF = 2
 const ICE_NEAR = 0.3
 
 const bulbs = hangPoints()
@@ -100,21 +101,22 @@ function snowMaterial(part: string, change: string, key: string, lift: string): 
     hook: (shader) => {
       Object.assign(shader.uniforms, { uGlowGain: gain, uRise: rise }, coverUniforms)
       shader.vertexShader = shader.vertexShader
-        .replace('#include <uv_pars_vertex>', `#include <uv_pars_vertex>\n${SURFACE_VERT_PARS}\n${COVER_GLSL}\nuniform float uRise;`)
-        .replace('#include <uv_vertex>', `#include <uv_vertex>\n${SURFACE_VERT_MAIN}`)
+        .replace('#include <uv_pars_vertex>', `#include <uv_pars_vertex>\n${SURFACE_VERT_PARS}\n${COVER_GLSL}\nuniform float uRise;\nvarying vec3 vPuff;`)
+        .replace('#include <uv_vertex>', `#include <uv_vertex>\n${SURFACE_VERT_MAIN}\nvPuff = normalize(normalMatrix * vec3(0.0, 1.0, 0.0)) * aSurf.y;`)
         .replace('#include <begin_vertex>', `#include <begin_vertex>\ntransformed += normal * (stageCover(position.xz) * aSurf.x * ${COVER_GAIN.toFixed(3)} * max(normal.y, 0.0)${lift});`)
       shader.fragmentShader = shader.fragmentShader
         .replace(
           '#include <map_pars_fragment>',
           `#include <map_pars_fragment>
 ${BUMP_GLSL}
+varying vec3 vPuff;
 vec3 snowWeights;
 vec3 snowAt(vec3 p) {
   return texture2D(map, p.zy).rgb * snowWeights.x + texture2D(map, p.xz).rgb * snowWeights.y + texture2D(map, p.xy).rgb * snowWeights.z;
 }
 float snowHeight(vec3 p) {
   vec3 t = snowAt(p);
-  return t.r * ${SNOW_GRAIN_MM.toFixed(3)} + t.b * ${SNOW_LUMP_MM.toFixed(3)} + snowAt(p * 0.23 + 0.41).b * ${SNOW_DRIFT_MM.toFixed(3)};
+  return t.r * ${SNOW_GRAIN_MM.toFixed(3)} + t.b * ${SNOW_LUMP_MM.toFixed(3)} + snowAt(p * 0.23 + 0.41).b * ${SNOW_DRIFT_MM.toFixed(3)} * (1.0 + ${BANK_RELIEF.toFixed(2)} * vSurf.y);
 }`,
         )
         .replace(
@@ -132,6 +134,7 @@ diffuseColor.rgb *= ${glsl(tones.snow)} * (0.88 + 0.16 * snowT.r + 0.12 * (snowW
           '#include <normal_fragment_maps>',
           `
 {
+  normal = normalize(normal + vPuff);
   float snowH = snowHeight(snowP);
   vec2 snowDh = vec2(snowHeight(snowP + dFdx(snowP)) - snowH, snowHeight(snowP + dFdy(snowP)) - snowH);
   normal = villageBump(-vViewPosition, normal, snowDh, faceDirection);
@@ -252,12 +255,16 @@ export function arrival(): THREE.Object3D {
 
 const keep = (role: string): boolean => !isTree(role) && role !== 'ground' && role !== 'pond'
 const SINK = { depthMm: 3.2, from: 0.74, to: 0.97 }
+const BANK_SHUTS = { from: 0.2, to: 0.8 }
+const BANK_SLOPE = 0.4
 
 function groundDistance(x: number, y: number, z: number): number {
   const t = Math.min(1, Math.max(0, (pondField(x, z) - SINK.from) / (SINK.to - SINK.from)))
-  const under = (SINK.depthMm - pond.dip) * (1 - t * t * (3 - 2 * t))
-  const slope = moundSlope(z)
-  return (y - (groundAt(x, z) - under)) / Math.sqrt(1 + slope * slope)
+  const bank = bankAt(x, z)
+  const b = Math.min(1, Math.max(0, (bank - BANK_SHUTS.from) / (BANK_SHUTS.to - BANK_SHUTS.from)))
+  const under = (SINK.depthMm - pond.dip) * (1 - t * t * (3 - 2 * t)) * (1 - b * b * (3 - 2 * b))
+  const slope = moundSlope(z) + BANK_SLOPE * Math.min(1, bank)
+  return (y - (groundAt(x, z) + bank - under)) / Math.sqrt(1 + slope * slope)
 }
 
 export function solid(x: number, y: number, z: number): number {
