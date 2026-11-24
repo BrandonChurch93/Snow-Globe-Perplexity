@@ -92,6 +92,8 @@ function describe(m) {
 
 function fileTake() {
   const cue = text('cue') ?? fail('give --cue ID')
+  const music = ['music-one-piece', ...cfg.seasons.map((s) => `music-${s}`)]
+  if (!cfg.audio.sfx.some((s) => s.id === cue) && !music.includes(cue)) fail(`no such cue: ${cue}. Known: ${[...cfg.audio.sfx.map((s) => s.id), ...music].join(', ')}`)
   const src = path.resolve(text('file'))
   if (!fs.existsSync(src)) fail(`no such file: ${src}`)
   checkDisk()
@@ -133,7 +135,6 @@ function fileTake() {
   console.log(`filed ${show(out)} · take ${inRound + 1} of ${cfg.audio.maxTakesPerCue} for ${cue} in ${roundName}`)
   for (const l of describe(m)) console.log(l)
   console.log(entry.fits.note)
-  if (!cfg.audio.sfx.some((s) => s.id === cue) && classOf(cue) !== 'music') console.log(`note: ${cue} is not in audio.sfx`)
 }
 
 function annotate() {
