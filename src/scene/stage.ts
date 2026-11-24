@@ -60,6 +60,8 @@ export class GlobeStage implements Stage {
   private readonly slab = makeSlab()
   private readonly backdrop = new Backdrop()
   private readonly shell = new Shell()
+  /** The glass as the lens fill's map takes it when the globe itself is in focus: one closed surface with no blur. */
+  private readonly keep = new THREE.Mesh(this.shell.shell.geometry, new THREE.MeshBasicMaterial({ color: 0x000000 }))
   private readonly draw = new ParticleDraw(outerRadiusMm)
   private readonly lighting: Lighting
   private readonly slice: THREE.Mesh
@@ -371,6 +373,19 @@ export class GlobeStage implements Stage {
     this.floor.visible = true
     renderer.render(this.scene, this.camera)
     this.globe.visible = true
+    // A globe that is itself in focus is the front surface of the picture: what is seen in the glass
+    // is seen at the glass, so nothing inside its outline is filled and its rim stays as it is. Seen
+    // from close by through the near wall (the macro) the glass is far out of focus and no surface
+    // of the picture, and the map keeps what stands behind it.
+    const radius = (this.shell.shell.geometry as THREE.SphereGeometry).parameters.radius
+    const near = Math.max(this.camera.position.distanceTo(u.uLensCentre.value) - radius, 1)
+    if (pose.apertureMm * f.focalPx * Math.abs(1 / near - 1 / pose.focusMm) < fill.startPx) {
+      this.keep.matrixAutoUpdate = false
+      this.keep.matrixWorldAutoUpdate = false
+      this.keep.matrix.copy(this.shell.shell.matrixWorld)
+      this.keep.matrixWorld.copy(this.keep.matrix)
+      renderer.render(this.keep, this.camera)
+    }
     for (const o of hidden) o.visible = true
     u.uCoc.value.x = coc
     // The guide: the discs as the picture has them and the cover of the flakes afloat, whatever

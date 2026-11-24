@@ -143,6 +143,8 @@ export class LensFill {
   drawn = false
   /** The blur radius that the map's green channel reads as 1, in px. */
   readonly rangePx: number
+  /** The blur radius under which nothing is filled, in px. */
+  readonly startPx: number
   private targets: { map: THREE.WebGLRenderTarget; guide: THREE.WebGLRenderTarget; tiles: THREE.WebGLRenderTarget; reach: THREE.WebGLRenderTarget; radius: THREE.WebGLRenderTarget } | null = null
   private passes: { tiles: Pass; reach: Pass; radius: Pass; fill: Pass } | null = null
   private readonly scale: number
@@ -150,6 +152,7 @@ export class LensFill {
   constructor(private readonly gfx: Gfx, private readonly width: number, private readonly height: number) {
     this.scale = height / LENS_FILL.referenceHeightPx
     this.rangePx = LENS_FILL.rangePx * this.scale
+    this.startPx = LENS_FILL.startPx[0]! * this.scale
   }
 
   /** True for the one sample of a picture after which the stage draws the map: the lens point nearest the centre. */
