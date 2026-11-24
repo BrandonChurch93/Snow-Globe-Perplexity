@@ -54,13 +54,13 @@ export function lampFlame(): Point {
 }
 
 const SHRUBS: { at: [number, number]; r: Point }[] = [
-  { at: [c.halfWidth + 0.9, c.halfLength + 0.9], r: [1.9, 2.5, 1.8] },
-  { at: [-c.halfWidth + 1.3, c.halfLength + 1.7], r: [2.3, 2.3, 1.9] },
-  { at: [-c.halfWidth + 0.2, -8.7], r: [1.25, 6.1, 1.25] },
-  { at: [-c.halfWidth + 0.2, -7.3], r: [1.2, 5.9, 1.2] },
-  { at: [-c.halfWidth + 0.2, -5.9], r: [1.2, 6, 1.2] },
-  { at: [-c.halfWidth + 0.2, -4.5], r: [1.15, 5.3, 1.15] },
-  { at: [-c.halfWidth + 0.2, -3.1], r: [1.1, 3.8, 1.1] },
+  { at: [c.halfWidth + 0.9, c.halfLength + 0.9], r: [2, 3.2, 1.9] },
+  { at: [-c.halfWidth + 1.3, c.halfLength + 1.7], r: [2.6, 2.8, 2.2] },
+  { at: [-c.halfWidth + 0.2, -8.7], r: [1.25, 4.9, 1.25] },
+  { at: [-c.halfWidth + 0.2, -7.3], r: [1.2, 4.7, 1.2] },
+  { at: [-c.halfWidth + 0.2, -5.9], r: [1.2, 4.8, 1.2] },
+  { at: [-c.halfWidth + 0.2, -4.5], r: [1.15, 4.4, 1.15] },
+  { at: [-c.halfWidth + 0.2, -3.1], r: [1.1, 3.4, 1.1] },
 ]
 
 export const isIvy = (r: Point): boolean => r[1] > 2 * r[0]
