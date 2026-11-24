@@ -1,0 +1,178 @@
+{
+  "critic": "R2",
+  "round": 3,
+  "unit": "winter",
+  "judgedCommit": "2faac9e",
+  "tier": "final",
+  "jurorsPerImage": 5,
+  "panel": [
+    "claude_sonnet_5_5",
+    "gemini_neon",
+    "gpt_6_2_astra",
+    "kimi_k3",
+    "pplx_computer_glm_5_3_1009"
+  ],
+  "controlShare": 0.7,
+  "controlVotes": "7 of 10",
+  "judgedShare": 0.2667,
+  "judgedVotes": "4 of 15",
+  "maxShareGap": 0.2,
+  "bar": 0.5,
+  "pass": false,
+  "missing": false,
+  "countsAs": "one major issue (kit/07-QUALITY-BAR.md, R2: \"A failed R2 counts as one major issue\")",
+  "images": [
+    {
+      "file": "set-A-01.jpg",
+      "kind": "judged",
+      "id": "winter-settled",
+      "sha256": "724703057b6bbdf86f324ad7fb874492e47fcc8b03c0935df13f9ac01c25aae9",
+      "votes": [
+        "b",
+        "c",
+        "c",
+        "c",
+        "c"
+      ],
+      "jurors": [
+        "viewer_r3_01",
+        "viewer_r3_06",
+        "viewer_r3_11",
+        "viewer_r3_16",
+        "viewer_r3_21"
+      ],
+      "models": [
+        "claude_sonnet_5_5",
+        "gpt_6_2_astra",
+        "gemini_neon",
+        "pplx_computer_glm_5_3_1009",
+        "kimi_k3"
+      ],
+      "aOrB": 1,
+      "answers": 5
+    },
+    {
+      "file": "set-A-02.jpg",
+      "kind": "judged",
+      "id": "winter-shake",
+      "sha256": "285395a4f71b0bfbaec10d649ddd97733a68130d08c82ae0013f73d7f4c0e68c",
+      "votes": [
+        "b",
+        "c",
+        "c",
+        "c",
+        "b"
+      ],
+      "jurors": [
+        "viewer_r3_02",
+        "viewer_r3_07",
+        "viewer_r3_12",
+        "viewer_r3_17",
+        "viewer_r3_22"
+      ],
+      "models": [
+        "claude_sonnet_5_5",
+        "gpt_6_2_astra",
+        "gemini_neon",
+        "pplx_computer_glm_5_3_1009",
+        "kimi_k3"
+      ],
+      "aOrB": 2,
+      "answers": 5
+    },
+    {
+      "file": "set-A-03.jpg",
+      "kind": "judged",
+      "id": "winter-rest",
+      "sha256": "0055130f3a37dcd2ed4da0b572eb412c34361f93adefd4fc6c9620c981cc4127",
+      "votes": [
+        "b",
+        "c",
+        "c",
+        "c",
+        "c"
+      ],
+      "jurors": [
+        "viewer_r3_03",
+        "viewer_r3_08",
+        "viewer_r3_13",
+        "viewer_r3_18",
+        "viewer_r3_23"
+      ],
+      "models": [
+        "claude_sonnet_5_5",
+        "gpt_6_2_astra",
+        "gemini_neon",
+        "pplx_computer_glm_5_3_1009",
+        "kimi_k3"
+      ],
+      "aOrB": 1,
+      "answers": 5
+    },
+    {
+      "file": "set-A-04.jpg",
+      "kind": "control",
+      "id": "approved winter-shake",
+      "sha256": "c0019087faab4764c08caf3f7513e673a0be70b5cdd8c06bd141e99c01796400",
+      "votes": [
+        "a",
+        "a",
+        "b",
+        "b",
+        "b"
+      ],
+      "jurors": [
+        "viewer_r3_04",
+        "viewer_r3_09",
+        "viewer_r3_14",
+        "viewer_r3_19",
+        "viewer_r3_24"
+      ],
+      "models": [
+        "claude_sonnet_5_5",
+        "gpt_6_2_astra",
+        "gemini_neon",
+        "pplx_computer_glm_5_3_1009",
+        "kimi_k3"
+      ],
+      "aOrB": 5,
+      "answers": 5
+    },
+    {
+      "file": "set-A-05.jpg",
+      "kind": "control",
+      "id": "approved winter-rest",
+      "sha256": "873a922a26d8b8870b7a1e6c8ec75c76ea3c11f18c1178c265b73ed310d462a0",
+      "votes": [
+        "b",
+        "a",
+        "c",
+        "c",
+        "c"
+      ],
+      "jurors": [
+        "viewer_r3_05",
+        "viewer_r3_10",
+        "viewer_r3_15",
+        "viewer_r3_20",
+        "viewer_r3_25"
+      ],
+      "models": [
+        "claude_sonnet_5_5",
+        "gpt_6_2_astra",
+        "gemini_neon",
+        "pplx_computer_glm_5_3_1009",
+        "kimi_k3"
+      ],
+      "aOrB": 2,
+      "answers": 5
+    }
+  ],
+  "leftOut": [
+    "left out of the jury: winter-interior. Its framing does not show the globe and its base whole, so it cannot be cropped to what a control shows",
+    "left out of the jury: winter-base. Its framing does not show the globe and its base whole, so it cannot be cropped to what a control shows",
+    "left out of the jury: winter-surface. Its framing does not show the globe and its base whole, so it cannot be cropped to what a control shows",
+    "left out of the jury: winter-macro. Its framing does not show the globe and its base whole, so it cannot be cropped to what a control shows"
+  ],
+  "note": "Written by the Builder from scorecards/round-003/R2-jurors.jsonl, as kit/07 says. Each juror was a fresh agent with one image and the kit's question plus one delivery sentence (decision 52). The controls' votes are kept in scorecards/controls.jsonl and reused in later rounds while the control images keep their hashes."
+}
