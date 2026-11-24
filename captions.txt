@@ -1,13 +1,13 @@
-Village, winter. State: agent/p3-village at b939db8 (fbe144a merged with main at 9ba0636). hd, draft tier. Boxes in approved pixels (2816 by 1584). 01 and 02 are from the fit still, which is taken from the reference camera; 04 is the hero camera, which looks from 3.4 mm above the reference. In the build the cottage sits about 26 px higher than in the approved image at the reference camera; compare shapes.
+Village, winter. State: agent/p3-village at 5dc54ee (0015c7e merged with main at 5a17ada). hd, draft tier. Boxes in approved pixels (2816 by 1584). 01 to 03 are from the fit still, which is taken from the reference camera; 04 is the interior camera, which has no approved twin, so the approved crop of the same thing stands beside it. The large soft discs in front of the cottage are the flakes at rest, not the village.
 
 01-rest-miniature.jpg
   Rest. Box 780,520,2040,1220 (the whole miniature). Approved above, build below.
 
-02-rest-chimney-plume-path.jpg
-  Rest. Approved on the left, build on the right. Row 1: box 1040,460,1280,720 (the chimney and its plume). The plume is now read from a picture: a dense stem from a black flue pipe, a lobe pushed out to the left and a fainter lobe above. The chimney is taller, warm brick, with a bare top and no snow cap. Row 2: box 960,840,1500,1040 (fence, shrubs, steps, the stepping stones under snow, the pond).
+02-rest-cottage.jpg
+  Rest. Box 1000,620,1400,900. Approved on the left, build on the right. The roof snow is a rounded sheet with a full lip over the eave (its mesh bounds had clipped the lip: that was the straight cut above the shingles) and a collar where it meets the chimney. The eave bulbs are small hot dots in place of large soft discs. Brown ivy climbs the left wall under the eave in place of the three round bushes.
 
-03-plume-picture.jpg
-  Left: the approved crop that was passed to the image model as the reference (x 1075, y 465, 150 by 180 px, enlarged). Right: the generated picture the build reads its plume from (assets-src/village-winter/gen/plume-take4.png, take 4 of 4 made, 6 allowed). No pixel of the approved image is drawn.
+03-rest-fence-lamp-pond.jpg
+  Rest. Box 960,740,1700,1040. Approved above, build below. The lamp is slimmer with a bare pointed cap and a wide warm halo. The pond has an uneven wet margin inside its frosted rim and carries a faint mirror image of the lamp's post. Still off: the fence is too orange and its posts wear snow caps, the lamp's foot hides behind the snow, the pond is smaller than the approved one.
 
-04-landed-miniature.jpg
-  Landed, hero camera. Approved on the left, build on the right. Box 900,400,1700,1100. The plume thins away in the storm, as in the approved image. The storm still lies as a cream bank over the lower half of the cottage, the lamp and the pond (the flakes and the liquid).
+04-interior-roof-pond.jpg
+  Rest, interior camera (build on the right; the approved crop of the same thing on the left). Row 1: the roof, eave and wall. Row 2: the pond and its shore.
