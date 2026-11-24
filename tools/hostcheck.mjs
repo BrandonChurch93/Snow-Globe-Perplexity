@@ -4,6 +4,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { parseArgs, rel, loadConfig, readJson, writeJson } from './lib/paths.mjs'
 import { engineHash, listFiles } from './lib/hashes.mjs'
+import { shippedHash } from './lib/checks.mjs'
 import { launch, machineId, pinnedBrowser, watchPage } from './lib/browser.mjs'
 import { serve } from './lib/server.mjs'
 import { checkDisk, renderBusy } from './lib/page.mjs'
@@ -26,6 +27,7 @@ const tracked = sh('git', ['ls-files', '-z'], rel()).stdout.split('\0').filter(B
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), `${cfg.slug}-hostcheck-`))
 const result = {
   engineHash: engineHash(),
+  shippedHash: shippedHash(),
   commit: sh('git', ['rev-parse', '--short', 'HEAD'], rel()).stdout.trim(),
   time: new Date().toISOString(),
   machine: machineId(),

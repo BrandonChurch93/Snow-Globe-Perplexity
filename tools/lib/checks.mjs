@@ -1,7 +1,8 @@
+import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { rel, readJson, readSection } from './paths.mjs'
-import { engineHash, listFiles } from './hashes.mjs'
+import { engineHash, hashList, listFiles } from './hashes.mjs'
 import { compareFiles, diff, pixels } from './pixels.mjs'
 
 const SOUND = /\.(wav|mp3|flac|ogg|m4a|aac)$/i
@@ -11,6 +12,15 @@ const STILL_MIN_PSNR = 30
 const short = (f) => path.relative(rel(), f).split(path.sep).join('/')
 const list = (items, n = 6) => (items.length > n ? `${items.slice(0, n).join('; ')}; and ${items.length - n} more` : items.join('; '))
 const mb = (bytes) => bytes / 1048576
+
+export const shippedHash = () =>
+  hashList(
+    spawnSync('git', ['ls-files', '-z', 'public', 'index.html'], { cwd: rel(), encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
+      .stdout.split('\0')
+      .filter(Boolean)
+      .map((f) => rel(f))
+      .filter((f) => fs.existsSync(f)),
+  )
 
 const uiState = () => {
   const ui = document.getElementById('ui')
@@ -616,6 +626,7 @@ export function addChecks(checks, { cfg, phase, args, dir, run, tail, probe, gri
       const h = cfg.host
       const problems = []
       if (r.engineHash !== engineHash()) problems.push(`the result is from build ${r.engineHash}, the current build is ${engineHash()}. Run npm run hostcheck again`)
+      else if (r.shippedHash !== shippedHash()) problems.push('the tracked files under public/ or index.html have changed since the result was written. Run npm run hostcheck again')
       if (!r.build?.ok) problems.push(`the clean build failed: ${r.build?.error ?? 'no build result'}`)
       else {
         if (!(r.dist.mb <= h.maxShippedMb)) problems.push(`dist/ is ${r.dist.mb.toFixed(2)} MB, over host.maxShippedMb ${h.maxShippedMb}`)
