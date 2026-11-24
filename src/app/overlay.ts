@@ -7,6 +7,7 @@ import { audioShips, loadInterface } from './mounts'
 
 const WAIT_MS = 8000
 const FRAME_MS = 150
+export const INTERFACE_STATES = ['rest', 'focus', 'pressed', 'hint']
 
 const frames = (count: number): Promise<void> =>
   new Promise((resolve) => {
@@ -83,24 +84,81 @@ export function createOverlay(root: HTMLElement | null): Overlay {
       seen.observe(el, { attributes: true })
     })
 
+  const show = async (season: string, name: string): Promise<void> => {
+    await mount()
+    if (!handle || !root) return
+    handle.setVisible(true)
+    set({ season, state: name, target: null })
+    await shown(root)
+    set({ busy: true })
+    set({ busy: false })
+    for (const a of document.getAnimations()) {
+      try {
+        a.finish()
+      } catch {
+        a.cancel()
+      }
+    }
+    await frames(2)
+    bar = controlsPx(root, document.getElementById('app') ?? root) ?? bar
+  }
+  const hold = (within: Element, phase: number, together: boolean): number => {
+    const all = within.getAnimations({ subtree: true })
+    const moving = all.filter((a) => !(a instanceof CSSTransition))
+    for (const a of all) if (a instanceof CSSTransition) a.finish()
+    const length = (a: Animation): number => Number(a.effect?.getComputedTiming().duration) || 0
+    const longest = Math.max(0, ...moving.map(length))
+    for (const a of moving) {
+      a.pause()
+      a.currentTime = phase * (together ? longest : length(a))
+    }
+    return moving.length
+  }
+
   return {
-    async show(season, name) {
-      await mount()
-      if (!handle || !root) return
-      handle.setVisible(true)
-      set({ season, state: name })
-      await shown(root)
-      set({ busy: true })
-      set({ busy: false })
-      for (const a of document.getAnimations()) {
-        try {
-          a.finish()
-        } catch {
-          a.cancel()
-        }
+    show,
+    async put(name, ask) {
+      if (!INTERFACE_STATES.includes(name)) throw new Error(`no such interface state: ${name}. The states are ${INTERFACE_STATES.join(', ')}`)
+      const all = config.seasons
+      const season = ask.season ?? config.defaultSeason
+      if (!all.includes(season)) throw new Error(`no such season: ${season}`)
+      await show(season, 'rest')
+      if (!handle || !root) throw new Error('this build has no interface')
+      const control = ask.control ?? 'shake'
+      const el = root.querySelector<HTMLElement>(all.includes(control) ? `[data-season="${control}"]` : `[data-control="${control}"]`)
+      if (!el) throw new Error(`no such control: ${control}`)
+      const had = document.activeElement
+      if (had instanceof HTMLElement) had.blur()
+      const phase = Math.min(1, Math.max(0, ask.phase ?? 0.5))
+      let target: string | null = null
+      let paused = 0
+      if (name === 'focus') el.focus({ focusVisible: true } as FocusOptions)
+      else if (name === 'pressed') {
+        target = all.includes(control) ? control : all[(all.indexOf(season) + 1) % all.length]!
+        if (target === season) throw new Error(`the mark of ${season} is the season shown: press another`)
+        set({ busy: true, target })
+        await frames(2)
+        paused = hold(root, phase, false)
+      } else if (name === 'hint') {
+        root.dispatchEvent(new Event('hint'))
+        await frames(2)
+        paused = hold(root, phase, true)
       }
       await frames(2)
-      bar = controlsPx(root, document.getElementById('app') ?? root) ?? bar
+      const r = el.getBoundingClientRect()
+      const hidden = r.width === 0 || r.height === 0
+      return {
+        state: name,
+        control,
+        season,
+        target,
+        phase: name === 'pressed' || name === 'hint' ? phase : null,
+        rect: hidden ? null : [r.left, r.top, r.width, r.height],
+        at: hidden ? null : [r.left + r.width / 2, r.top + r.height / 2],
+        focusVisible: el.matches(':focus-visible'),
+        paused,
+        shown: root.dataset.interface === 'shown',
+      }
     },
     hide() {
       handle?.setVisible(false)

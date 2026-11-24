@@ -4,6 +4,7 @@ import { FRAME, edges, livePose, liveRig, margins, roomUnder } from '../src/app/
 import { Drag, Look, MotionShake, TOUCH, stirAxis } from '../src/app/gestures'
 import { Autopilot, LoopPlayer } from '../src/app/players'
 import { createProbe, pickLevel, slowest, type ProbeHost } from '../src/app/probe'
+import { Replay, SCRIPT, SCRIPTS, scriptPlan } from '../src/app/replay'
 import { LIVE, LiveSession, SeasonLoader, type LiveSim } from '../src/app/session'
 import { Governor, levelById, levels, median, stageQuality, topLevel } from '../src/core/quality'
 import type { ParticleSource } from '../src/core/stage'
@@ -742,5 +743,112 @@ describe('the players', () => {
     particles.use(null)
     expect(particles.pos).toBe(base.pos)
     expect(particles.step).toBe(base.step)
+  })
+})
+
+describe('the scripted replays of the app', () => {
+  const fps = config.film.fps
+  const lead = Math.round(SCRIPT.leadSeconds * fps)
+  const bar = Math.round(barSeconds * fps)
+  class StirSim extends FakeSim {
+    stirred: number[][] = []
+    stir(x: number, y: number, z: number): void {
+      this.stirred.push([x, y, z])
+    }
+  }
+  const play = (name: string, to?: string) => {
+    const sim = new StirSim()
+    const plan = scriptPlan(name, first, to)
+    const run = new Replay(sim, plan, 16 / 9)
+    return { sim, plan, run }
+  }
+
+  it('gives every script its length and its events on the clock of the film, and refuses what it does not know', () => {
+    for (const name of SCRIPTS) {
+      const plan = scriptPlan(name)
+      expect(plan.fps).toBe(fps)
+      expect(plan.from).toBe(first)
+      expect(plan.events[0]!.frame).toBe(lead)
+      for (const e of plan.events) expect(e.frame).toBeLessThan(plan.frameCount)
+    }
+    expect(scriptPlan('shake').to).toBe(next(first))
+    expect(scriptPlan('shake').frameCount).toBe(lead + bar + Math.round(SCRIPT.tailSeconds * fps))
+    expect(scriptPlan('jump', first, seasons[3]).to).toBe(seasons[3])
+    expect(scriptPlan('stir').to).toBe(first)
+    expect(() => scriptPlan('dance')).toThrow()
+    expect(() => scriptPlan('shake', 'monsoon')).toThrow()
+    expect(() => scriptPlan('jump', first, first)).toThrow()
+  })
+
+  it('plays the same frames whether it is asked for one frame or walked through all of them', () => {
+    for (const name of SCRIPTS) {
+      const a = play(name)
+      const b = play(name)
+      const at = Math.round(a.plan.frameCount * 0.6)
+      a.run.advanceTo(at)
+      for (let i = 0; i <= at; i += 7) b.run.advanceTo(i)
+      b.run.advanceTo(at)
+      expect(b.run.record()).toEqual(a.run.record())
+      expect(b.run.moment()).toEqual(a.run.moment())
+      expect(cameraNumbers(b.run.pose(0))).toEqual(cameraNumbers(a.run.pose(0)))
+      expect(b.sim.step).toBe(a.sim.step)
+      expect(a.sim.step).toBe(Math.ceil((at / fps) * HZ - 1e-7))
+    }
+  })
+
+  it('shakes into the next season on the landing, and jumps straight into the named one', () => {
+    const s = play('shake')
+    s.run.advanceTo(lead - 1)
+    expect(s.run.record().busy).toBe(false)
+    s.run.advanceTo(lead + 1)
+    expect(s.run.record()).toMatchObject({ busy: true, season: first, target: next(first) })
+    s.run.advanceTo(lead + bar - 2)
+    expect(s.run.record().season).toBe(first)
+    s.run.advanceTo(lead + bar + 2)
+    expect(s.run.record()).toMatchObject({ busy: false, season: next(first), target: null })
+    expect(s.run.session.shakes).toBe(1)
+    const j = play('jump', seasons[3])
+    j.run.advanceTo(j.plan.frameCount - 1)
+    expect(j.run.record()).toMatchObject({ busy: false, season: seasons[3], frame: j.plan.frameCount - 1 })
+    expect(j.run.session.shakes).toBe(1)
+  })
+
+  it('sets a season with no shake', () => {
+    const s = play('set', seasons[2])
+    s.run.advanceTo(lead - 1)
+    expect(s.run.record().season).toBe(first)
+    s.run.advanceTo(lead)
+    expect(s.run.record()).toMatchObject({ season: seasons[2], busy: false })
+    expect(s.run.moment().globe).toEqual(REST_POSE)
+    expect(s.run.session.shakes).toBe(0)
+  })
+
+  it('stirs once with a quick drag and leaves the season and the camera where they were', () => {
+    const s = play('stir')
+    s.run.advanceTo(s.plan.frameCount - 1)
+    const r = s.run.record()
+    expect(r.stirs).toBe(1)
+    expect(s.sim.stirred).toHaveLength(1)
+    expect(Math.hypot(...s.sim.stirred[0]!)).toBeGreaterThan(0)
+    expect(r.stirStrength).toBeGreaterThanOrEqual(TOUCH.leastStrength)
+    expect(r).toMatchObject({ season: first, busy: false })
+    expect(s.run.session.shakes).toBe(0)
+    expect(Math.abs(r.yawDeg)).toBeLessThan(0.5)
+  })
+
+  it('turns the camera with a slow drag, holds it while the pointer is down and eases back when it is let go', () => {
+    const s = play('drag')
+    const held = lead + Math.round(SCRIPT.dragSeconds * fps)
+    const up = held + Math.round(SCRIPT.holdSeconds * fps)
+    s.run.advanceTo(held)
+    const a = s.run.record()
+    expect(Math.abs(a.yawDeg)).toBeGreaterThan(config.live.orbitYawDeg * 0.5)
+    expect(Math.abs(a.yawDeg)).toBeLessThanOrEqual(config.live.orbitYawDeg + 1e-9)
+    s.run.advanceTo(up - 1)
+    expect(s.run.record().yawDeg).toBeCloseTo(a.yawDeg, 6)
+    s.run.advanceTo(s.plan.frameCount - 1)
+    const b = s.run.record()
+    expect(Math.abs(b.yawDeg)).toBeLessThan(Math.abs(a.yawDeg) * 0.05)
+    expect(b).toMatchObject({ stirs: 0, season: first, busy: false })
   })
 })
