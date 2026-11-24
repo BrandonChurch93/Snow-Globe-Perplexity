@@ -45,9 +45,9 @@ const ROOT_FALL = 1.6
 const ROOT_SKIRT = 1.8
 const TWIST_LOW = 0.06
 const TWIST_HIGH = 0.03
-const RIDGE_DEEP = 0.11
+const RIDGE_DEEP = 0.16
 const GNARL = 0.06
-const PLATE = { perMm: 0.85, width: 0.03, deep: 0.6 }
+const PLATE = { perMm: 0.85, width: 0.03, deep: 0.42 }
 const KNOTS: readonly { phi: number; h: number; r: number }[] = [
   { phi: 1.95, h: 8.4, r: 1.15 },
   { phi: 1.05, h: 5.3, r: 0.85 },
@@ -61,7 +61,7 @@ const MODEL = 'shared/trunk-wood.glb'
 const BARK = 'shared/trunk-bark.srgb.tile.w1024.png'
 const BARK_NORMAL = 'shared/trunk-bark-n.lin.tile.w1024.png'
 
-const RADIUS: Table = [[-4.5, 4.9], [0, 4.3], [1.2, 3.9], [3.2, 3.5], [5.2, 3.3], [8, 3.4], [10, 3.1], [11.6, 3.0], [13.6, 2.7], [15.5, 2.25], [18, 2.05], [19.6, 1.5], [21, 1.12], [24, 1.0], [27.5, 0.95], [30, 0.82], [33, 0.62], [37.6, 0.4]]
+const RADIUS: Table = [[-4.5, 4.9], [0, 4.3], [1.2, 3.9], [3.2, 3.5], [5.2, 3.3], [8, 3.1], [10, 2.78], [11.6, 2.68], [13.6, 2.58], [15.5, 2.25], [18, 2.05], [19.6, 1.5], [21, 1.12], [24, 1.0], [27.5, 0.95], [30, 0.82], [33, 0.62], [37.6, 0.4]]
 const AXIS_X: Table = [[-4.5, -0.5], [0, -0.4], [5, 0.05], [10, 0.75], [13.6, 0.7], [16.5, 0.45], [19, 0.1], [22, -0.75], [25, -1.3], [27.5, -1.7], [30, -1.6], [33, -0.8], [35.5, 0.2], [37.6, 0.7]]
 const AXIS_Z: Table = [[-4.5, 0], [0, 0], [8, 0.35], [14, -0.1], [26, -0.4], [37.6, 0]]
 
@@ -78,12 +78,12 @@ const ROOTS: readonly { angle: number; reach: number; width: number }[] = [
 
 const PADS: readonly { at: Vec3; size: Vec3; lean: number; tip: number }[] = [
   { at: [0.5, 38.9, 0], size: [6.6, 2.1, 4.6], lean: 0.03, tip: 0.12 },
-  { at: [-4.2, 36.2, 2.4], size: [7.4, 2.3, 4.8], lean: -0.1, tip: 0.15 },
-  { at: [3.8, 36.2, 3.2], size: [5.4, 2.1, 4.4], lean: 0.12, tip: 0.2 },
-  { at: [-8, 33.5, 1], size: [6.2, 2, 4.6], lean: -0.12, tip: 0.12 },
-  { at: [7.6, 34.2, 3.6], size: [5.2, 2.5, 4.4], lean: 0.32, tip: 0.15 },
+  { at: [-4.2, 36.7, 2.4], size: [7.4, 2.1, 4.8], lean: -0.1, tip: 0.15 },
+  { at: [3.8, 36.7, 3.2], size: [5.4, 1.9, 4.4], lean: 0.12, tip: 0.2 },
+  { at: [-8, 35.1, 1], size: [6.2, 1.8, 4.6], lean: -0.12, tip: 0.12 },
+  { at: [7.6, 34.9, 3.6], size: [5.2, 2.3, 4.4], lean: 0.32, tip: 0.15 },
   { at: [11.4, 31.2, 1.2], size: [3.9, 2.3, 3.8], lean: 0.42, tip: 0.15 },
-  { at: [2.6, 32.6, 0], size: [6.2, 1.7, 4.4], lean: 0.12, tip: 0 },
+  { at: [2.6, 34.2, 0], size: [6.2, 1.6, 4.4], lean: 0.12, tip: 0 },
   { at: [-9.3, 27.2, 3.2], size: [8.3, 3.1, 5.2], lean: -0.14, tip: 0.18 },
   { at: [-13.6, 19.8, -0.6], size: [3.9, 2.8, 3.8], lean: -0.21, tip: 0.12 },
   { at: [9, 20.8, 3.6], size: [8, 3.9, 5.4], lean: 0.3, tip: 0.2 },
@@ -338,8 +338,8 @@ export interface Cluster {
 const DOME = 0.3
 const BODY = { blend: 0.5, bias: 0.4 }
 const TOP_DROP = 1.56
-const CAP = { lift: 1.2, thick: 0.25, cover: 0.66, fore: 0.12, lee: 0.12, skew: 0.45, rim: 0.95, swell: 0.42, ripple: 0.2, flat: 3, gap: 2.2, gapFrom: 0.5, gapTo: 0.85, sink: 0.1, slope: 0.75, depth: 0.25, lip: 0.4, droop: 1.6 }
-const LOADS: readonly (readonly [number, number])[] = [[1.05, 1], [0.9, 0.88], [0.95, 0.9], [0.9, 1], [0.85, 0.86], [1, 1.05], [0.35, 0.6], [0.85, 1.02], [0.7, 0.95], [0.9, 1.02]]
+const CAP = { lift: 1.2, thick: 0.25, cover: 0.66, fore: 0.12, lee: 0.12, skew: 0.45, rim: 0.95, swell: 0.42, ripple: 0.2, flat: 3, gap: 2.2, gapFrom: 0.34, gapTo: 0.8, sink: 0.1, slope: 0.75, depth: 0.25, lip: 0.4, droop: 1.6 }
+const LOADS: readonly (readonly [number, number])[] = [[1.05, 1], [0.9, 0.88], [0.95, 0.9], [0.9, 1], [0.85, 0.86], [1, 1.05], [0.35, 0.6], [0.85, 1.02], [0.85, 1.12], [0.9, 1.02]]
 const wobble = (x: number, h: number, z: number): number => 0.16 * Math.sin(1.9 * x + 0.3 * h) * Math.sin(2.3 * h + 1.1 * z) * Math.sin(1.7 * z + 0.5 * x) + 0.07 * Math.sin(4.3 * x + 1) * Math.sin(3.9 * h + 2) * Math.sin(4.7 * z)
 const dome = (rim: number): number => 1 - DOME * Math.pow(rim, 1.5)
 

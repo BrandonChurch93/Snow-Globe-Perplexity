@@ -22,11 +22,11 @@ const COVER_RISE = 0.12
 const WARM: [number, number, number] = [1, 0.56, 0.33]
 const GOLD: [number, number, number] = [1, 0.84, 0.52]
 const BULB_GAIN = 16
-const GLOW = { needles: { power: 30, reachMm: 0.9, star: 0.6 }, snow: { power: 1, reachMm: 1.4, star: 0.36 }, wood: { power: 10, reachMm: 1.5, star: 0.6 } }
-const LAMP_ON_WOOD = { power: 100, reachMm: 12, wrap: -0.45 }
+const GLOW = { needles: { power: 30, reachMm: 0.9, star: 0.6 }, snow: { power: 1, reachMm: 1.4, star: 0.36 }, wood: { power: 14, reachMm: 1.7, star: 0.6 } }
+const LAMP_ON_WOOD = { power: 125, reachMm: 12, wrap: -0.45 }
 const LAMP_ON_SNOW = { power: 1.5, reachMm: 14, wrap: 0.6 }
 const LAMP_SHIFT: Vec3 = [-3, 0, -5]
-const FILL_ON_WOOD = { power: 5.5, reachMm: 1000, wrap: 0.4 }
+const FILL_ON_WOOD = { power: 2.6, reachMm: 1000, wrap: 0.4 }
 const SKY_ON_SNOW = { power: 1.25, reachMm: 14, wrap: 0.15 }
 const SKY_FROM: Vec3 = [20, 42, 7]
 const FILL_FROM: Vec3 = [40, 20, 60]
@@ -35,6 +35,8 @@ const SNOW_TINT: [number, number, number] = [1.33, 1.36, 1.47]
 const NEEDLE_TINT: [number, number, number] = [1.3, 1.82, 3.84]
 const NEEDLE_LIT = 'vec3(1.6, 0.94, 0.64)'
 const LAMP_ON_NEEDLES = { power: 9, reachMm: 12, wrap: 0.1 }
+const FILL_ON_NEEDLES = { power: 2.6, reachMm: 1000, wrap: 0.25, color: GOLD }
+const FILL_ON_NEEDLES_FROM: Vec3 = [30, 80, 60]
 const HALO = { radiusMm: 0.6, strength: 0.75, hot: 9, pullMm: 0.6, flicker: FLICKER, cycles: CYCLES }
 const HALO_EDGE: [number, number, number] = [0.75, 0.36, 0.08]
 const HALO_CORE: [number, number, number] = [1, 0.74, 0.4]
@@ -248,7 +250,7 @@ export function build(): THREE.Object3D {
   const needles = stageMaterial({ part, standIn: false, inside: true, miniature: true, change: 'miniature', map: texture(NEEDLES), color: new THREE.Color(NEEDLE_TINT[0], NEEDLE_TINT[1], NEEDLE_TINT[2]), vertexColors: true, roughness: 0.88, side: THREE.DoubleSide, hook: needleHook, key: 'tree-needles' })
   const snow = stageMaterial({ part, standIn: false, inside: true, miniature: true, change: 'miniature', map: texture(SNOW), color: new THREE.Color(SNOW_TINT[0], SNOW_TINT[1], SNOW_TINT[2]), vertexColors: true, roughness: 0.8, hook: snowHook, key: 'tree-snow' })
   const fill: GlowLight = { at: placePoint(FILL_FROM), color: tones.sheen, ...FILL_ON_WOOD, phase: 0.6 }
-  return new THREE.Group().add(buildTrunk(part, [...bulbs(GLOW.wood), lampOn(LAMP_ON_WOOD), fill], BARK), solidMesh(placed('needles', [...bulbs(GLOW.needles), lampOn(LAMP_ON_NEEDLES)]), needles), solidMesh(placed('snow', onSnow()), snow))
+  return new THREE.Group().add(buildTrunk(part, [...bulbs(GLOW.wood), lampOn(LAMP_ON_WOOD), fill], BARK), solidMesh(placed('needles', [...bulbs(GLOW.needles), lampOn(LAMP_ON_NEEDLES), { ...fill, ...FILL_ON_NEEDLES, at: placePoint(FILL_ON_NEEDLES_FROM) }]), needles), solidMesh(placed('snow', onSnow()), snow))
 }
 
 export function lights(): THREE.Object3D {

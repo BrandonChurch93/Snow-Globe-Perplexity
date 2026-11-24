@@ -13,7 +13,7 @@ Date: 2026-11-24
 ## assets-full/shared/trunk-bark.srgb.tile.w1024.png, assets-full/shared/trunk-bark-n.lin.tile.w1024.png
 Made by: `assets-src/trunk/build.mjs` with `assets-src/trunk/source.mjs` (sharp, in Node)
 From: `assets-src/trunk/bark-take1.png`
-Prompt or command: `npm run make -- trunk`. The sheet is not truly seamless as it comes, so the script cross-fades a tenth of it over each edge, flattens the wide brightness so no patch repeats as a blotch, and takes the luminance over its own wide blur as height for the normal map.
+Prompt or command: `npm run make -- trunk`. The sheet is not truly seamless as it comes, so the script cross-fades a tenth of it over each edge, flattens the wide brightness so no patch repeats as a blotch, and takes the luminance over its own wide blur as height for the normal map. On top of the sheet the script lays bark plates from a seeded cell pattern (`PLATES`: 10 cells across and 6 down a tile, each cell a plate with its own tone, the cracks between cells darkened), so the long fibres of the sheet are cut into plates and no groove runs the height of the trunk; the same plates go into the height for the normal map.
 Takes: 1 picture in, rebuilt each time the script changed, the last build kept
 Why this one: it tiles without a seam at 6.5 mm a tile and gives the grooves a normal as well as a colour; the full copies are 2048 px and the web copies are capped at 1024 px, which is still about four texels a pixel from the macro camera
 Date: 2026-11-24
@@ -21,7 +21,7 @@ Date: 2026-11-24
 ## assets-full/shared/trunk-wood.glb
 Made by: `assets-src/trunk/build.mjs` (three 0.187 in Node, `tools/lib/glb.mjs`)
 From: `src/miniature/trunk.ts` (the radius and axis tables, the ridges, the roots, the limbs and twigs that reach each pad), loaded through `assets-src/trunk/source.mjs`
-Prompt or command: `npm run make -- trunk`. One fluted column of 64 sides for the stem and the root skirt, which flares into the root toes, a tube for every root, limb and twig (55 chains), vertex colours that darken the grooves and the crotches, uv in bark tiles. The script prints how far the farthest vertex lies outside `trunkSolid`, which must stay under half a millimetre. The mesh is in tree coordinates (x, height above the foot, z) and the page stands it on the ground with `placeGeometry`.
+Prompt or command: `npm run make -- trunk`. One fluted column of 144 sides for the stem and the root skirt, which flares into the root toes, a tube for every root, limb and twig (60 chains, 51490 triangles). The column follows `trunkRidge`: about eleven ribs round the stem, cut across by short fissures (`PLATE`) and turned into rings at five knots (`KNOTS`), vertex colours that darken the grooves and the crotches, uv in bark tiles. The script prints how far the farthest vertex lies outside `trunkSolid`, which must stay under half a millimetre. The mesh is in tree coordinates (x, height above the foot, z) and the page stands it on the ground with `placeGeometry`.
 Takes: rebuilt at every change of the shape, the last build kept
 Why this one: the waist, the root skirt and the fork heights are the ones measured on the approved image
 Date: 2026-11-24

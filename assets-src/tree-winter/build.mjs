@@ -326,12 +326,12 @@ function strings() {
     for (let k = 0; k < n; k++) {
       const even = (k / n) * TAU + rng.range(-0.25, 0.25)
       const th = even + 0.55 * Math.cos(even)
-      const rim = rng.next() < 0.4
+      const rim = rng.next() < 0.55
       const rho = rim ? 1.25 : rng.range(0.35, 0.8)
       const start = centre.clone().addScaledVector(side, Math.cos(th) * rho * pad.size[0]).addScaledVector(depth, Math.sin(th) * rho * pad.size[2])
       const dir = new THREE.Vector3()
       if (rim) {
-        start.addScaledVector(up, rng.range(-0.6, -0.25) * pad.size[1])
+        start.addScaledVector(up, rng.range(-0.95, 0.3) * pad.size[1])
         dir.copy(centre).addScaledVector(up, -0.45 * pad.size[1]).sub(start).normalize()
       } else {
         start.addScaledVector(up, -pad.size[1] - 2.5)
@@ -536,7 +536,7 @@ function arrival() {
     const col = []
     const index = []
     const across = 7
-    const most = limb.kind === 'root' ? 0.46 : 0.24
+    const most = limb.kind === 'root' ? 0.46 : 0.2
     for (let i = 0; i < f.length; i++) {
       const tan = f[i].tan
       const u = up.clone().sub(tan.clone().multiplyScalar(up.dot(tan)))
@@ -545,7 +545,7 @@ function arrival() {
       const side = new THREE.Vector3().crossVectors(tan, u)
       const ends = smooth(limb.kind === 'root' ? 0.52 : 0.42, limb.kind === 'root' ? 0.74 : 0.6, f[i].along / total) * smooth(0, 0.1, 1 - f[i].along / total)
       const lump = 0.55 + 0.45 * Math.sin(f[i].along * 1.5 + n * 1.7) * Math.sin(f[i].along * 0.6 + n)
-      const thick = most * smooth(0.45, 0.9, flat) * ends * smooth(0.3, 1, lump) * (0.8 + 0.2 * Math.sin(f[i].along * 3.7 + n * 0.9))
+      const thick = most * smooth(0.45, 0.9, flat) * ends * smooth(0.05, 0.8, lump) * (0.8 + 0.2 * Math.sin(f[i].along * 3.7 + n * 0.9))
       const seed = clamp01(0.5 + 0.5 * Math.sin(f[i].along * 1.4 + n * 2.1))
       for (let j = 0; j < across; j++) {
         const a = lerp(-1.1, 1.1, j / (across - 1))
