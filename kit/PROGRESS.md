@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 31 · 2026-11-24 11:58 UTC
+Status 33 · 2026-11-24 12:44 UTC
 
-- `out/stills/status/status-31-1.jpg`: Main at rest from the hero camera (draft tier with 2 samples): the real glass with its window highlight and crown bubble and the real frost on the glass and slab and the real flakes and tree and base. Still wrong: the cottage and fence and lamp are stand-ins until the village is merged and the backdrop discs are flat and the slab frost reads as white line drawing and the lens still blurs the miniature
-- `out/stills/status/status-31-2.jpg`: Main half a second after the landing of the real shake (draft tier): the storm sweeps round the miniature with the tree lights showing through and the icicles have begun to grow again. Still wrong: the storm reads as grey fur of equal streaks where the approved image has soft white smears and the frost on the glass has only begun to grow at this moment
-- `out/stills/status/status-31-3.jpg`: Still: winter landed hero, hd, draft
-- `out/stills/status/status-31-4.jpg`: Still: winter rest hero, hd, draft
+- `out/stills/status/status-33-1.jpg`: Approved winter at rest (left) beside main at 12:44 UTC (right) at the draft tier
+- `out/stills/status/status-33-2.jpg`: Main at rest from the hero camera at 12:44 UTC with the bolder frost and the darker liquid merged (draft tier)
+- `out/stills/status/status-33-3.jpg`: Still: winter rest hero, hd, draft
+- `out/stills/status/status-33-4.jpg`: Still: winter rest hero, hd, draft, standins view
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 12:15 UTC
-clock: phase 3, tick of 16.2 minutes
-phase 3: 3.81 h used of its 11.00 h box
-allowance (before the review): 10.42 h used of 36.00 h allowed
-all time before the review: 10.42 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 12:44 UTC
+clock: phase 3, tick of 5.8 minutes
+phase 3: 4.29 h used of its 11.00 h box
+allowance (before the review): 10.90 h used of 36.00 h allowed
+all time before the review: 10.90 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 17
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -509,6 +509,8 @@ Numbered. What, why, and the date.
 
 47. The frost is largely out half a second after the landing (11:55 UTC, Phase 3). `kit/02-SUBJECT.md` says the arrival grows over the next seconds ("Frost ferns grow in from the edge of the glass") and also that `states.landedSeconds` after the landing the globe looks like the season's approved mid-shake image; `winter-shake` shows frost on the glass and is the image the `landed` still is judged against. frost_builder had built a growth over seconds, so the `landed` still had little frost. The image wins: the growth is front-loaded, so that at 0.5 s the glass and the slab carry the frost `winter-shake` shows, and it goes on growing more slowly, branch by branch with an irregular front, to what `winter-rest` shows, finishing under the settling storm (`kit/04-LOOK.md`, "An arrival looks like a wipe"). Listed in the `REVIEW` block.
 
+48. Built assets were committed more than once per round by build agents; the rule is restored and the cost is logged (12:22 UTC, Phase 3). `AGENTS.md` says built assets are committed once per round, after the best take is chosen, never per take and never per tuning look, because history cannot be rewritten. My own clone kept `assets-full/` and `public/assets/` out of commits with two local exclude lines; the build agents' clones did not have those lines, so their tuning looks went into history: 6 versions of the slab's frost tile (about 54 MB), 3 of the glass's frost tile (about 41 MB), 5 of the tree's crown model, 6 of winter's base model, 4 of the tree's sprigs. The pack stood at 258 MiB when found, against `repo.maxTreeGb` 2 and `repo.maxPushGb` 1; no file passes `repo.maxFileMb` 45. Nothing can be taken back. What was done: the two exclude lines were removed so `main` is consistent (everything under `public/assets/` that the code asks for is tracked, which also lets a clean clone open the app; see open item 30); every builder was told at 12:23 to commit no built file again until its one final commit of the best take; from the second wave on, a builder's brief carries the rule in its first lines and the exclude lines are written into its clone at the start. Listed in the REVIEW block.
+
 ## Notes from Brandon
 
 Numbered, in his words, with the date and how each was applied. Review round items carry their round's number.
@@ -589,6 +591,8 @@ Severe and major issues still open when a limit was reached: the unit, the still
 - Item 29, update 2026-11-24 10:42 UTC: decision 45 applies its fix (lift and tilt below the kit's quarter, 4.5 percent kept above the glass on every frame at `hero`, the rim kept 1 mm above the surface). Open until the real shake is merged and measured on every frame.
 
 30. Until Phase 3 step 9 a clean clone of `main` builds an app that does not open (11:40 UTC, Phase 3). The code on `main` asks for winter's built textures and models, and those files are committed once per round (`AGENTS.md`, "Commit built assets once per round"), so between the first merge of a real part and the round's commit the repo holds the index that names them and not the files. `npm run hostcheck` shows it as a fail. The published app is built from the working folder and opens (checked at each publish with `out/work/bin/distcheck.mjs`). Closes when step 9 commits the built assets and `npm run hostcheck` passes.
+
+- Open item 30, update at 12:28 UTC: since decision 48 every built file the code asks for is tracked on `main`, so a clean clone can open the app. `npm run hostcheck` was run again at 12:28 on `be9c7d8`; its result is in the session log line that follows this one. The item stays open until the check passes, the web set's size included.
 
 ## Review items not done
 
@@ -900,3 +904,20 @@ One entry per task: when it started, what it did, where it stopped.
 - 11:52 UTC. flake_builder's merge commits up to `70a5d7b` carry git's default message without the trailer line. They were pushed before it was seen and history is not rewritten; its later merges carry the trailer.
 - 11:55 UTC. The frost's softening of what lies behind is opacity and a film, not a blur; `kit/03-METHOD.md` asks for a blur. A true blur needs a copy of the frame taken before the dressing draws, which is the stage's to give. frost_builder writes the blur as one function with a seam; the frame copy is work for after the builders' reports. Decision 47 (the frost at half a second) sent to frost_builder.
 - 11:59 UTC. Status 31 posted with two pictures of `main` at `567c9ed`: at rest and half a second after the landing, from `hero` at hd, draft tier.
+
+- 12:00 UTC. Published again: https://snow-globe-seasons.pplx.app from `567c9ed` (adds the real glass, frost, flakes and veil to the real shake, base and tree). Visibility: Organization. The build as published opens: see the line that follows for the measured first picture.
+
+- 12:02 to 12:08 UTC. Merged the village (`6704bcc`), the scene (`f0ee216`) and the light (`3bbcebe`) into `main`, pushed as `6329c4c`. `src/seasons/kit.ts`: a season's rig may now carry a `card` (a soft warm card from one side), since `kit/04-LOOK.md` says each season's rig is matched to its approved image; winter's card is warm from the front left, its key cold from the upper right. Part `miniature-winter` set to built. Every builder was told what `main` shows against `winter-rest`.
+- 12:09 to 12:18 UTC. The `standins` view at `hero` counts 0 stand-in pixels: every part of winter on `main` is real work. `node tools/measure.mjs --unit winter --tier draft` on `6329c4c`: 24 of 24 lines green (M1, M2, M3 0.987, M4 1.0, M5 0.999, M6). These are draft-tier numbers, not a gate; the gate runs at the `final` tier at step 8.
+- 12:18 to 12:25 UTC. Merged the light's fit inside the liquid (`206ab49`) and the scene's second push (`44b9ce7`) as `be9c7d8`, pushed. The texture pack is now 21 pictures and 6 other files, 61.4 MB; four seasons at this weight would pass the host's 95 MB, so the web set must shrink before Phase 4 (decision 39 covers how).
+- 12:22 UTC. Found that build agents had committed built files with tuning looks; see decision 48.
+- 12:26 UTC. Status 32: `main` at rest and half a second after the landing, both at the draft tier, with what still reads wrong. All ten builders hold those findings; the snow bank against the front glass went to the village builder as a clear fault. Reports are due by 13:00 UTC.
+
+- 12:01 UTC. The 12:00 publish, opened as built: first picture after 7.5 s, 31 requests, 20 built assets, no page error.
+- 12:28 to 12:32 UTC. Merged the tree (`18c0ff0`: inner lights at the light builder's numbers, the bark's baked glow cut) and the base (`0caed8f`: darker, browner wood and brass), 370 tests green, texture pack 45.4 MB, pushed as `713a3e8`.
+- 12:32 UTC. `npm run hostcheck` on a clean copy of `be9c7d8`: FAIL on one line only. The clean install and build pass (0.13 minutes against `host.maxBuildMinutes` 20), `dist/` holds none of the kept-out folders, and the built site opens in live mode with nothing logged, so the clean clone opens the app now. The failing line: 59.52 MB in 31 requests were fetched before the first complete picture, 11.1 s after the page was opened, against `host.firstLoadMaxMb` 16. The first load must come down to 16 MB or less; this is second-wave work (compressed textures and meshes, and an order of loading that asks first only for what the first picture needs). Open item 30 stays open on that line.
+- 12:33 UTC. Published: https://snow-globe-seasons.pplx.app from `713a3e8` (every part of winter is real work). Visibility: Organization. Opened as built: first picture after 10.8 s, 38 requests, 27 built assets, no page error. Review page: https://snow-globe-seasons.pplx.app/review.html
+
+- 12:37 to 12:44 UTC. Reread after a compaction: this file, `kit/addenda/` (a README only), Phase 3's read-first files and the Phase 3 steps of `kit/08-BUILD-ORDER.md`. light_builder's finding went to base_builder: the base was fitted under the old key and reads at about half the approved brightness under the rig on `main` (wood mid 12, 8, 10 against 26, 20, 19); the rig stays, the base's colours move.
+- 12:41 to 12:44 UTC. Merged the frost (`4adfcc3`: bold plumes on the left rim, slab fronds with body, slab frost under the slab's light) and the glass (`424b399`: a clear dark liquid), 370 tests green, texture pack 45.0 MB, pushed as `2fecdf8`.
+- 12:45 UTC. Status 33 posted with two pictures: the approved winter at rest beside `main`, and `main` from `hero`, both draft tier. Said what still reads wrong: the snow inside is a grey disc with a dark band, the crown turned yellow green after the tree's last merge, the snow afloat is thin, the base is at about half brightness, the discs behind are too bright; and the host check's one failing line.

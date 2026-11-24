@@ -350,14 +350,14 @@ function fibre(rng, k) {
   return { step: 0.7, w0: rng.range(0.085, 0.125), w1: 0.035, h0: k * rng.range(0.55, 0.9), h1: k * 0.3, speed: 0.6, curl: rng.range(0.003, 0.03), wobble: 0.008, spark: rng.range(0.45, 1), kappa: 3, reach: 0.1, taper: 0.62, power: 1.5 }
 }
 // A feather: a spine, a low soft body in the feather's outline, and fine barbs set close enough to read as fibres.
-function plumeSpec(length, barbMm, rng, t0, k = 1) {
+function plumeSpec(length, barbMm, rng, t0, k = 1, bold = 1, body = bold) {
   const lean = rng.range(0.6, 1)
   const angle = rng.range(32, 46) * RAD
   const profile = feather(rng.range(0.16, 0.36), rng.range(0.6, 0.95))
   return {
     len: length,
     step: 0.35,
-    w0: rng.range(0.13, 0.18),
+    w0: rng.range(0.13, 0.18) * bold,
     w1: 0.05,
     h0: k,
     h1: 0.6 * k,
@@ -369,7 +369,7 @@ function plumeSpec(length, barbMm, rng, t0, k = 1) {
     kappa: 2.5,
     reach: 0.15,
     taper: 0.75,
-    film: { w0: barbMm * Math.sin(angle) * 0.8, w1: 0.12, h0: 0.12 * k, h1: 0.05 * k, profile, kappa: 3, spark: 0.2 },
+    film: { w0: barbMm * Math.sin(angle) * 0.8, w1: 0.12, h0: L.glass.bodyFilm * k * body, h1: 0.05 * k, profile, kappa: 3, spark: 0.2 },
     kids: {
       gap: rng.range(0.6, 0.82),
       len: barbMm,
@@ -381,6 +381,7 @@ function plumeSpec(length, barbMm, rng, t0, k = 1) {
       profile,
       make: (l, u, r) => {
         const o = fibre(r, k)
+        o.w0 *= bold
         if (r.next() < 0.18) {
           o.w0 *= 1.35
           o.h0 = Math.min(1, o.h0 * 1.3)
@@ -466,10 +467,19 @@ function buildGlass() {
     const root = pixelOnGlass(pl.root[0], pl.root[1])
     const tip = pixelOnGlass(pl.tip[0], pl.tip[1])
     const fromRim = Rs * Math.asin(clamp(Math.abs(root[2]) / Rs, 0, 1))
-    const o = plumeSpec(arc(root, tip) * 1.25, pl.barbMm, rng, rng.range(0, 3) + fromRim * 0.8)
-    o.to = [tip]
+    const path = [root, ...(pl.via ?? []).map((v) => pixelOnGlass(v[0], v[1])), tip]
+    let along = 0
+    for (let i = 1; i < path.length; i++) along += arc(path[i - 1], path[i])
+    const o = plumeSpec(along * (pl.via ? 1.08 : 1.25), pl.barbMm, rng, rng.range(0, 3) + fromRim * 0.8, 1, pl.bold ?? L.glass.measuredBold)
+    o.curl = rng.gauss() * 0.012
+    if (pl.spine) {
+      o.h0 *= pl.spine
+      o.h1 *= pl.spine
+      o.w0 *= Math.sqrt(pl.spine)
+    }
+    o.to = path.slice(1)
     o.steer = 0.5
-    grow(ctx, root, toward(root, tip), o)
+    grow(ctx, root, toward(root, path[1]), o)
   }
   // Stars: seeded points on the glass, arms thrown out from each.
   for (const st of L.glass.stars) {
@@ -477,7 +487,7 @@ function buildGlass() {
     const t0 = Math.max(0, Rs * Math.asin(clamp(at[2] / Rs, -1, 1))) * 0.9
     for (const tp of st.tips) {
       const tip = pixelOnGlass(tp[0], tp[1])
-      const o = plumeSpec(arc(at, tip) * 1.2, st.barbMm, rng, t0 + rng.range(0, 2))
+      const o = plumeSpec(arc(at, tip) * 1.2, st.barbMm, rng, t0 + rng.range(0, 2), 1, st.bold ?? L.glass.measuredBold)
       o.to = [tip]
       grow(ctx, at, toward(at, tip), o)
     }
@@ -488,7 +498,7 @@ function buildGlass() {
     for (let i = 0; i < count; i++) {
       const deg = rng.range(-90, 270)
       const pr = profileAt(deg)
-      if (rng.next() > pr.density) continue
+      if (rng.next() > pr.density * (kind === L.glass.feathers.large ? pr.large : 1)) continue
       const reach = pr.reachMm * (front ? 1 : L.glass.backShare)
       const inMm = kind.inFrom + (reach * kind.inShare - kind.inFrom) * Math.pow(rng.next(), kind.inPow)
       const start = rimAt(deg, front ? inMm : -inMm)
@@ -497,7 +507,7 @@ function buildGlass() {
       const hd = heading(start, phi, screenMm)
       const length = Math.min(screenMm * hd.scale, Math.max(2, (reach - inMm) * kind.fill))
       const k = rng.range(kind.k[0], kind.k[1])
-      const o = plumeSpec(length, clamp((length / hd.scale) * rng.range(kind.barb[0], kind.barb[1]), 0.8, kind.barbMax), rng, rng.range(0, 4) + Math.abs(inMm) * 0.8, k)
+      const o = plumeSpec(length, clamp((length / hd.scale) * rng.range(kind.barb[0], kind.barb[1]), 0.8, kind.barbMax), rng, rng.range(0, 4) + Math.abs(inMm) * 0.8, k, 1, L.glass.bodyByDensity[0] + L.glass.bodyByDensity[1] * pr.density * pr.density)
       o.curl = rng.gauss() * 0.008
       grow(ctx, start, hd.h, o)
     }
@@ -511,7 +521,7 @@ function buildGlass() {
   for (let i = 0; i < F.fans.count; i++) {
     const deg = rng.range(-90, 270)
     const pr = profileAt(deg)
-    if (rng.next() > pr.density * pr.density) continue
+    if (rng.next() > pr.density * pr.density * pr.fan) continue
     const front = rng.next() < 0.7
     const reach = pr.reachMm * (front ? 1 : L.glass.backShare)
     const inMm = reach * rng.range(0.08, 0.5)
@@ -611,10 +621,11 @@ function slabArm(length, rng, t0) {
       taper: 0.8,
       power: 1.6,
     }
+    o.film = { w0: r.range(S.bladeMm[0], S.bladeMm[1]) * (0.6 + 0.4 * Math.min(1, l / 3)), w1: 0.15, h0: r.range(S.blade[0], S.blade[1]), h1: 0.16, profile: feather(r.range(0.22, 0.4), r.range(0.55, 0.85)), kappa: 2.5, spark: 0.4 }
     if (strong) {
       o.stretch = r.range(S.strongStretch[0], S.strongStretch[1])
       const full = l * o.stretch
-      o.film = { w0: 1.2, w1: 0.2, h0: 0.42, h1: 0.1, kappa: 3, spark: 0.3 }
+      o.film.w0 *= 1.25
       o.kids = { gap: r.range(0.8, 1.15), start: r.range(0.6, 1.2), len: clamp(full * 0.34, 0.7, 2.2), min: 0.4, angle: r.range(40, 50) * RAD, angleTip: 34 * RAD, spread: 0.08, profile: feather(0.14, 0.9), make: leaf }
     }
     return o
@@ -726,12 +737,12 @@ function buildSlab() {
       if (r < footR - 8) continue
       const big = fbm(wx * 0.09, 3.1, wz * 0.09, 3)
       const mid = fbm(wx * 0.5, 9.4, wz * 0.5, 3)
-      const reach = 3.5 + 11 * smooth(0.3, 0.75, big)
+      const reach = (L.slab.heapMm[0] + L.slab.heapMm[1] * smooth(0.3, 0.75, big)) * (L.slab.heapSide[0] + L.slab.heapSide[1] * (wx / (r || 1)) ** 2)
       const q = (r - footR + 1.5) / reach
       if (q < 1.2) {
         const wall = U.wallMm * smooth(0.35, 0.7, fbm(wx * 0.3 + 3, 1.1, wz * 0.3, 3))
-        const body = (1 - smooth(0.35, 1.1, q + (mid - 0.5) * 0.5)) * smooth(-2.5 - wall, -0.5 - 0.6 * wall, r - footR)
-        const h = body * (0.5 + 0.35 * mid + 0.25 * (1 - clamp(q)))
+        const body = (1 - smooth(0.35, 1.1, q + (mid - 0.5) * 0.9)) * smooth(-2.5 - wall, -0.5 - 0.6 * wall, r - footR)
+        const h = body * (0.36 + 0.55 * mid + 0.25 * (1 - clamp(q)))
         if (h > H[i]) H[i] = h
         const s = body * (0.3 + 0.4 * mid)
         if (s > S[i]) S[i] = s
@@ -825,7 +836,7 @@ function slabShapes(lines, grains, tTop) {
         vert(p[0] + lat[0] * (off + 0.4 * w), h * rng.range(0.84, 0.95), p[2] + lat[2] * (off + 0.4 * w), t, id),
         vert(p[0] + lat[0] * w, 0, p[2] + lat[2] * w, t + 2 * w, id),
       ]
-      if (prev) for (let k = 0; k < 3; k++) idx.push(prev[k], row[k], prev[k + 1], prev[k + 1], row[k], row[k + 1])
+      if (prev) for (let k = 0; k < 3; k++) idx.push(prev[k], prev[k + 1], row[k], prev[k + 1], row[k + 1], row[k])
       if (prev) count.ridges += 6
       prev = row
     }
