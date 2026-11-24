@@ -62,7 +62,7 @@ const MODEL = 'shared/trunk-wood.glb'
 const BARK = 'shared/trunk-bark.srgb.tile.w1024.png'
 const BARK_NORMAL = 'shared/trunk-bark-n.lin.tile.w1024.png'
 
-const RADIUS: Table = [[-4.5, 5.1], [0, 4.6], [1.2, 4.2], [3.2, 3.9], [5.2, 3.7], [8, 3.4], [10, 3.0], [11.6, 2.65], [13.6, 2.2], [15.5, 1.75], [18, 1.45], [19.6, 1.25], [21, 1.05], [24, 0.95], [27.5, 0.88], [30, 0.78], [33, 0.6], [37.6, 0.4]]
+const RADIUS: Table = [[-4.5, 5.1], [0, 4.6], [1.2, 4.2], [3.2, 3.9], [5.2, 3.7], [8, 3.4], [10, 3.1], [11.6, 2.85], [13.6, 2.5], [15.5, 2.0], [18, 1.6], [19.6, 1.38], [21, 1.15], [24, 0.95], [27.5, 0.88], [30, 0.78], [33, 0.6], [37.6, 0.4]]
 const AXIS_X: Table = [[-4.5, -0.5], [0, -0.4], [5, 0.05], [10, 0.75], [13.6, 0.7], [16.5, 0.45], [19, 0.1], [22, -0.75], [25, -1.3], [27.5, -1.7], [30, -1.6], [33, -0.8], [35.5, 0.2], [37.6, 0.7]]
 const AXIS_Z: Table = [[-4.5, 0], [0, 0], [8, 0.35], [14, -0.1], [26, -0.4], [37.6, 0]]
 
@@ -85,8 +85,8 @@ const PADS: readonly { at: Vec3; size: Vec3; lean: number; tip: number }[] = [
   { at: [7.8, 33.8, 3.6], size: [5.2, 2.8, 4.4], lean: 0.32, tip: 0.15 },
   { at: [11.6, 30.8, 1.2], size: [3.9, 2.9, 3.8], lean: 0.42, tip: 0.15 },
   { at: [2.6, 34.4, -0.4], size: [6, 1.6, 4.2], lean: 0.12, tip: 0 },
-  { at: [-9.3, 27.2, 3.2], size: [8.3, 3.1, 5.2], lean: -0.14, tip: 0.18 },
-  { at: [-13.6, 19.8, -0.6], size: [3.9, 2.8, 3.8], lean: -0.21, tip: 0.12 },
+  { at: [-9.3, 27.6, 3.2], size: [8.3, 2.7, 5.2], lean: -0.14, tip: 0.18 },
+  { at: [-13.6, 20.2, -0.6], size: [3.9, 2.4, 3.8], lean: -0.21, tip: 0.12 },
   { at: [9, 20.8, 3.6], size: [8, 3.9, 5.4], lean: 0.3, tip: 0.2 },
 ]
 
@@ -113,8 +113,8 @@ const BOUGHS: readonly Bough[] = [
   { kind: 'twig', pad: 9, r: [0.17, 0.06], via: [[10.4, 22.4, 3.5], [11.9, 24.2, 3.6], [13.3, 25.9, 3.6]], forks: [] },
   { kind: 'twig', pad: 5, r: [0.36, 0.12], via: [[4.2, 23.7, 1.2], [5.2, 24.9, 2.2], [6.6, 25.4, 3]], forks: [] },
 ]
-const LIMB_TAPER = 0.75
-const LIMB_SLIM: readonly [number, number] = [0.68, 0.82]
+const LIMB_TAPER = 0.6
+const LIMB_SLIM: readonly [number, number] = [0.8, 0.82]
 const LIMB_STEP = 0.42
 
 const lerp = (a: number, b: number, t: number): number => a + (b - a) * t
@@ -341,8 +341,8 @@ export interface Cluster {
 const DOME = 0.3
 const BODY = { blend: 0.5, bias: 0.4 }
 const TOP_DROP = 1.56
-const CAP = { lift: 1.05, thick: 0.25, cover: 1.08, fore: 0.12, lee: 0.12, skew: 0.45, rim: 0.98, brow: 0.5, swell: 0.42, ripple: 0.24, lump: 0.16, flat: 2.4, gap: 2.2, gapFrom: 0.24, gapTo: 0.8, sink: 0.1, slope: 0.75, depth: 0.25, lip: 0.4, droop: 0.7, hem: 1.3 }
-const LOADS: readonly (readonly [number, number])[] = [[1, 1], [1.25, 1.02], [1.2, 1.02], [0.9, 1], [1.1, 0.95], [0.95, 1.05], [0.35, 0.5], [0.95, 1.02], [0.8, 1], [0.95, 1.02]]
+const CAP = { lift: 1.05, thick: 0.25, cover: 1.08, fore: 0.12, lee: 0.12, skew: 0.45, rim: 0.98, brow: 0.5, swell: 0.42, ripple: 0.16, lump: 0.08, flat: 2.4, gap: 2.2, gapFrom: 0.24, gapTo: 0.8, sink: 0.1, slope: 0.75, depth: -0.75, lip: 0.4, droop: 0.7, hem: 0.9 }
+const LOADS: readonly (readonly [number, number, number, number, number])[] = [[1.3, 1, 0.2, 0, 0.3], [1.4, 1.02, 0, 0.8, 1], [1.5, 1.02, -0.2, -0.5, -1], [0.9, 1, 0, 0.8, 1], [1.3, 0.95, -0.8, -1, -1], [1.2, 1.05, -1.2, -1.2, -1], [0.35, 0.5, 0, 0, 1], [0.95, 1.02, 0.3, 2, 1], [1.2, 1, 0.3, 1.2, 1], [1, 1.02, -0.6, -1.2, -1]]
 const wobble = (x: number, h: number, z: number): number => 0.16 * Math.sin(1.9 * x + 0.3 * h) * Math.sin(2.3 * h + 1.1 * z) * Math.sin(1.7 * z + 0.5 * x) + 0.07 * Math.sin(4.3 * x + 1) * Math.sin(3.9 * h + 2) * Math.sin(4.7 * z)
 const dome = (rim: number): number => 1 - DOME * Math.pow(rim, 1.5)
 
@@ -388,6 +388,9 @@ interface PadField {
   drop: number
   lift: number
   cover: number
+  raise: number
+  slant: number
+  skew: number
 }
 
 const padFields: PadField[] = PADS.map((P, pad) => {
@@ -398,7 +401,7 @@ const padFields: PadField[] = PADS.map((P, pad) => {
     balls.set([c.local[0], c.local[1], c.local[2], c.radius], i * 4)
     reach = Math.max(reach, Math.hypot(c.local[0] - P.at[0], c.local[1] - P.at[1], c.local[2] - P.at[2]) + c.radius)
   })
-  return { centre: P.at, reach, balls, frame: padFrame(P.lean, P.tip), size: P.size, n: pad, drop: TOP_DROP * Math.min(1, Math.max(0.62, P.size[1] / 3.3)), lift: (CAP.lift + CAP.thick * P.size[1]) * LOADS[pad]![0], cover: CAP.cover * LOADS[pad]![1] }
+  return { centre: P.at, reach, balls, frame: padFrame(P.lean, P.tip), size: P.size, n: pad, drop: TOP_DROP * Math.min(1, Math.max(0.62, P.size[1] / 3.3)), lift: (CAP.lift + CAP.thick * P.size[1]) * LOADS[pad]![0], cover: CAP.cover * LOADS[pad]![1], raise: LOADS[pad]![2], slant: LOADS[pad]![3], skew: LOADS[pad]![4] }
 })
 
 function ballField(f: PadField, x: number, h: number, z: number, blend: number): number {
@@ -449,19 +452,19 @@ export function crownCap(x: number, h: number, z: number): number {
     const d = px * f.frame.depth[0] + ph * f.frame.depth[1] + pz * f.frame.depth[2]
     const rim = (s * s) / (f.size[0] * f.size[0]) + (d * d) / (f.size[2] * f.size[2])
     const fore = d / f.size[2] - CAP.fore
-    const lee = s / f.size[0] + CAP.lee
+    const lee = s / f.size[0] + CAP.lee * f.skew
     const turn = Math.atan2(fore, lee)
     const edge = (lee * lee + fore * fore) / (f.cover * (1 + 0.2 * Math.sin(2 * turn + 2.3 * f.n) + 0.16 * Math.sin(3 * turn + 1.7 * f.n) + 0.1 * Math.sin(5 * turn + 2.9 * f.n)))
     const load = Math.sqrt(Math.max(0, 1 - Math.pow(Math.max(edge, 0), CAP.flat)))
     const swell = CAP.swell * (Math.sin(0.75 * s + 1.9 * f.n) * Math.sin(0.8 * d + 2.6 * f.n) + 0.35 * Math.sin(1.5 * s - 1.2 * d + f.n)) + CAP.ripple * Math.sin(2.1 * s + 0.9 * d + 2.2 * f.n) * Math.sin(1.9 * d - 0.7 * s + 1.1 * f.n) + CAP.lump * Math.sin(3.7 * s + 1.3 * f.n) * Math.sin(4.1 * d + 0.7 * f.n)
     const bare = clamp01((Math.sin(0.8 * s + 3.1 * f.n) * Math.sin(0.85 * d + 1.3 * f.n) - CAP.gapFrom) / (CAP.gapTo - CAP.gapFrom))
-    const top = f.size[1] * dome(rim) - f.drop + (f.lift * (1 - CAP.skew * lee) + swell) * load - CAP.gap * bare * bare * (3 - 2 * bare) - CAP.sink - 0.8 * Math.max(0, edge - 1)
+    const top = f.size[1] * dome(rim) - f.drop + (f.lift * (1 - CAP.skew * f.skew * lee) + swell) * load - CAP.gap * bare * bare * (3 - 2 * bare) - CAP.sink - 0.8 * Math.max(0, edge - 1)
     const over = CAP.slope * (v - top)
     const wall = 1.2 * (Math.sqrt(Math.max(edge, rim / (CAP.rim * (1 + 0.1 * Math.sin(3 * turn + 1.3 * f.n) + 0.07 * Math.sin(7 * turn + 2.1 * f.n))))) - 1.02)
     const brow = clamp01(0.5 + (0.5 * (wall - over)) / CAP.brow)
     const body = lerp(over, wall, brow) + CAP.brow * brow * (1 - brow)
-    const hem = CAP.hem * (0.6 * Math.sin(0.93 * s + 1.7 * f.n) * Math.sin(0.81 * d + 2.3 * f.n) + 0.4 * Math.sin(1.73 * s - 1.12 * d + f.n) + 0.25 * Math.sin(3.1 * s + 2.7 * d + 0.6 * f.n))
-    const line = f.size[1] * dome(rim) - f.drop - CAP.depth + hem - CAP.droop * rim * rim
+    const hem = CAP.hem * (0.6 * Math.sin(0.93 * s + 1.7 * f.n) * Math.sin(0.81 * d + 2.3 * f.n) + 0.4 * Math.sin(1.73 * s - 1.12 * d + f.n) + 0.12 * Math.sin(3.1 * s + 2.7 * d + 0.6 * f.n))
+    const line = f.size[1] * dome(rim) - f.drop - CAP.depth + f.raise + hem - CAP.droop * rim * rim + (f.slant * s) / f.size[0]
     const cut = line - v
     const k = CAP.lip
     const t = clamp01(0.5 + (0.5 * (body - cut)) / k)

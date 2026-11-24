@@ -15,7 +15,7 @@ const STAR_R = 2.6
 const STAR = { deep: 0.62, edge: 0.17, inset: 0.9, valley: 0.72, crest: 1.12, side: 0.62, glow: [0.1, 0.055, 0.03], stem: [0.12, 0.085], collar: 0.17 }
 const CORE_R = 0.13
 const WIRE_R = 0.075
-const SNOW_KEY = [-0.35, 0.72, 0.6]
+const SNOW_KEY = [0.27, 0.92, 0.27]
 const BULBS = { stem: [2.3, 3.4], limb: [2.2, 3.3], lead: 0.16, pad: 0.36, clear: 0.3, rim: 0.25, face: 0.5 }
 const ARRIVAL = { root: 0, limb: 0.045, shade: [0.42, 0.14] }
 const SPRIGS = { band: 0.25, share: 0.5, size: [1.3, 2.2], rise: 0.8 }
@@ -231,7 +231,7 @@ function snow() {
     const cool = 1 - lit * lit
     uv.push(x / SNOW_TILE_MM, h / SNOW_TILE_MM)
     thin.push(deep, 0)
-    col.push(shade * (1 - 0.5 * cool), shade * (1 - 0.26 * cool), shade)
+    col.push(shade * (1 - 0.24 * cool), shade * (1 - 0.12 * cool), shade)
   }
   const g = new THREE.BufferGeometry()
   g.setAttribute('position', new THREE.Float32BufferAttribute(s.pos, 3))
