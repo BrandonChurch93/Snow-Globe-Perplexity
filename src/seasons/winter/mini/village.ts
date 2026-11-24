@@ -32,7 +32,7 @@ const NEAR = { bulb: { power: 0.6, reachMm: 1.2, ends: 3 }, lamp: { power: 4, re
 const NEAR_WALL = { bulb: { power: 9, reachMm: 1.7, ends: 3 }, lamp: { power: 3.4, reachMm: 8, ends: 3 }, pane: { power: 1.4, reachMm: 3.6, ends: 3 } }
 const MIRROR = { lamp: 9, pane: 1.2, bulb: 0.5, tight: 0.0011, wide: 0.03, wideShare: 0.004, bump: 0.8, lowMm: 3.4, sparkle: 1.7 }
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
-const HALO_KIND = { bulb: { size: 1, rest: 1, hot: 1, bloom: 0.2 }, lamp: { size: 3, rest: 0.3, hot: 0, bloom: 0.7 }, pane: { size: 2.4, rest: 0, hot: 0, bloom: 0.3 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.26 } }
+const HALO_KIND = { bulb: { size: 1.2, rest: 1.5, hot: 1, bloom: 0.2 }, lamp: { size: 2, rest: 0.3, hot: 0, bloom: 0.45 }, pane: { size: 2.4, rest: 0, hot: 0, bloom: 0.3 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
 const THROUGH = 6
 const LAMP_GLASS: Rgb = [5, 3.8, 2.3]
 const COVER_GAIN = 0.12
@@ -281,8 +281,8 @@ const shadowed = <T extends THREE.Mesh>(m: T, cast = true): T => {
 }
 
 const SWEPT = Math.hypot(potTop[0], potTop[2])
-const WISP: Wisp = { from: potTop, height: 7.5, lean: [-2.4, 0.4], sway: 1.2, curl: 1.4, thin: 0.75, wide: 1.5, rings: 40, sides: 10, swept: [-potTop[2] / SWEPT, potTop[0] / SWEPT], sweepMm: 12 }
-const WISP_STRENGTH = 1.3
+const WISP: Wisp = { from: potTop, height: 10.5, lean: [-4.4, 0.6], sway: 0.9, curl: 1.5, thin: 0.5, wide: 2.3, rings: 64, sides: 14, swept: [-potTop[2] / SWEPT, potTop[0] / SWEPT], sweepMm: 12 }
+const WISP_STRENGTH = 0.7
 const plume = wispGeometry(WISP)
 const storm = { value: 0 }
 

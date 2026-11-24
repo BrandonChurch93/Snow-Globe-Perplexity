@@ -222,9 +222,15 @@ void main() {
     float fold = 0.5 + 0.5 * sin(vUv.x * vKind.y * 7.4 + 1.3 * sin(vUv.y * 4.0 + vKind.w * 3.0));
     float side = smoothstep(0.2, 0.46, abs(vUv.x - 0.5)) * smoothstep(0.02, 0.3, vUv.y + 0.25 * abs(vUv.x - 0.5));
     float sway = glowFbm(mm * 1.7 + vKind.w * 11.0);
-    vec3 room = ${v3(look.room)} * (0.5 + 0.8 * lampIn) * (0.86 + 0.28 * sway) + ${v3(look.glass)} * (${(look.paneHot ?? 0).toFixed(3)} * lampIn * lampIn);
+    vec3 room = ${v3(look.room)} * (0.78 + 0.52 * lampIn) * (0.86 + 0.28 * sway) + ${v3(look.glass)} * (${(look.paneHot ?? 0).toFixed(3)} * lampIn * lampIn);
     vec3 drape = ${v3(look.curtain)} * (0.55 + 0.45 * fold) * (0.7 + 0.5 * lampIn);
-    col = mix(room, drape, side * 0.85);
+    col = mix(room, drape, side * 0.3);
+    vec2 bars = (0.5 - abs(fract(vUv * vec2(2.0, 3.0)) - 0.5)) * vKind.yz / vec2(2.0, 3.0);
+    float bar = min(bars.x, bars.y);
+    col *= 0.78 + 0.22 * smoothstep(0.08, 0.5, bar);
+    col = mix(col, ${v3(look.room)} * 0.16, smoothstep(0.15, 0.09, bar));
+    float sheen = smoothstep(0.16, 0.0, abs(vUv.x + 0.55 * vUv.y - 0.62)) + 0.5 * smoothstep(0.05, 0.0, abs(vUv.x + 0.55 * vUv.y - 0.95));
+    col += stageCold(vStageLocal) * 0.5 * sheen * (1.0 - facing * 0.6);
     vec2 corner = min(vUv, 1.0 - vUv) * vKind.yz;
     float rime = glowFbm(mm * 3.1 + vKind.w * 5.0);
     float frost = smoothstep(0.75, 0.05, min(corner.x, corner.y) + 0.22 * corner.x * corner.y - 0.55 * rime + 0.2) * ${look.frostAmount.toFixed(3)};

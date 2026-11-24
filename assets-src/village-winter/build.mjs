@@ -51,7 +51,7 @@ const rbox = (x, y, z, hx, hy, hz, r) => {
 }
 const ell = (x, y, z, rx, ry, rz) => (Math.hypot(x / rx, y / ry, z / rz) - 1) * Math.min(rx, ry, rz)
 
-const T0 = 1.2
+const T0 = 1.6
 const RR = 0.56
 const ROLL = { out: 0.85, dropMm: 0.55, round: 0.34, clear: 0.14 }
 const ch = C.chimney
@@ -108,12 +108,12 @@ const underDeck = (a, h, l) => {
 const keepRoof = (a, h, l) => !(prism(a, l) < -0.08 && h < stackTop + 0.2) && !underDeck(a, h, l)
 const roofMin = [-(C.halfWidth + C.overhang + 1.2), ridgeY - (SLOPE + 1.1) * sp - 0.7, -(roofLen + 1.1)]
 const roofMax = [C.halfWidth + C.overhang + 1.2, ridgeY + T0 / cp + 0.7, roofLen + 1.1]
-addSnow(netGeometry(roofSnow(0, 0.04), roofMin, roofMax, 0.45, keepRoof), cottageM, 1, snow, 'roof', ROOF_TONE)
+addSnow(netGeometry(roofSnow(0, 0.07), roofMin, roofMax, 0.45, keepRoof), cottageM, 1, snow, 'roof', ROOF_TONE)
 
 {
   const sdf = (a, h, l) => {
     const y = h - (stackTop + 0.85)
-    let d = rbox(a - ch.across, y - 0.27, l - ch.along, ch.half + 0.2, 0.3, ch.halfAlong + 0.2, 0.27)
+    let d = rbox(a - ch.across, y - 0.27, l - ch.along, ch.half + 0.1, 0.3, ch.halfAlong + 0.1, 0.27)
     d = Math.max(d, 0.66 - Math.hypot(a - (ch.across - 0.2), l - (ch.along + 0.1)))
     return d + 0.05 * fbm(a * 2, h * 2, l * 2, 2)
   }
@@ -173,8 +173,13 @@ for (const s of fenceShapes) {
     const fat = 0.56 + 0.22 * R()
     const tall = 0.26 + 0.2 * R()
     const lean = 0.24 * (R() - 0.5)
-    const sdf = (x, y, z) => rbox(x - lean + 0.05 * noise(seed, y, 1), y - top - tall + 0.08, z + 0.5 * lean, fat * STOUT.post, tall, fat * STOUT.post, Math.min(tall, 0.33)) + 0.05 * fbm(x * 2.2 + seed, y * 2.2, z * 2.2, 2)
-    addSnow(netGeometry(sdf, [-1.3, top - 0.4, -1.3], [1.3, top + 1.05, 1.3], 0.22), M, 0.6, snow, 'posts')
+    const wide = s.half[0] * STOUT.post + 0.06 + 0.1 * (fat - 0.56)
+    const sdf = (x, y, z) => {
+      const dome = ell(x - 0.5 * lean, y - top + 0.1, z + 0.25 * lean, wide, tall + 0.34, wide)
+      const hem = top - 0.06 - 0.16 * noise(x * 2.4 + seed, z * 2.4, 3) - y
+      return Math.max(dome, hem) + 0.045 * fbm(x * 2.2 + seed, y * 2.2, z * 2.2, 2)
+    }
+    addSnow(netGeometry(sdf, [-1.4, top - 0.7, -1.4], [1.4, top + 1.05, 1.4], 0.18), M, 0.6, snow, 'posts')
   } else {
     const seed = R() * 40
     const len = s.half[2]
@@ -228,14 +233,21 @@ const shrubList = RF.shrubs()
 for (const [i, sh] of shrubList.entries()) {
   const [cx, cy, cz] = sh.centre
   const seed = 11 * i + 3
-  const full = i < 2 ? 0.42 : 0.58
+  const SR = rng(977 + 31 * i)
+  const clumps = Array.from({ length: i < 2 ? 22 : 16 }, () => {
+    const a = SR() * Math.PI * 2
+    const up = 0.36 + 0.64 * Math.sqrt(SR())
+    const rr = Math.sqrt(Math.max(0, 1 - up * up))
+    const wide = 0.42 + 0.5 * SR()
+    return { at: [cx + Math.cos(a) * rr * sh.r[0] * 0.95, cy + up * sh.r[1] * 0.95, cz + Math.sin(a) * rr * sh.r[2] * 0.95], wide, tall: wide * (0.42 + 0.3 * SR()) }
+  })
   const sdf = (x, y, z) => {
-    const body = ell(x - cx, y - cy, z - cz, sh.r[0] + 0.2, sh.r[1] + 0.3, sh.r[2] + 0.2)
-    const edge = cy + sh.r[1] * full + 0.55 * noise(x * 0.9 + seed, z * 0.9, 2) + 0.25 * noise(x * 2.3, z * 2.3, seed)
-    return Math.max(body, edge - y) + 0.09 * fbm(x * 1.5 + seed, y * 1.5, z * 1.5, 2)
+    let d = 1e9
+    for (const c of clumps) d = smin(d, ell(x - c.at[0], y - c.at[1], z - c.at[2], c.wide, c.tall, c.wide), 0.16)
+    return d + 0.06 * fbm(x * 2.4 + seed, y * 2.4, z * 2.4, 2)
   }
   const inside = (x, y, z) => ell(x - cx, y - cy, z - cz, sh.r[0] * 0.78, sh.r[1] * 0.78, sh.r[2] * 0.78) < 0
-  addSnow(netGeometry(sdf, [cx - sh.r[0] - 0.9, cy - sh.r[1], cz - sh.r[2] - 0.9], [cx + sh.r[0] + 0.9, cy + sh.r[1] + 1, cz + sh.r[2] + 0.9], 0.38, (x, y, z) => !inside(x, y, z)), undefined, 0.6, snow, 'shrubs')
+  addSnow(netGeometry(sdf, [cx - sh.r[0] - 0.9, cy - sh.r[1], cz - sh.r[2] - 0.9], [cx + sh.r[0] + 0.9, cy + sh.r[1] + 1, cz + sh.r[2] + 0.9], 0.2, (x, y, z) => !inside(x, y, z)), undefined, 0.6, snow, 'shrubs')
 }
 
 const fposts = fenceShapes.filter((s) => s.half[2] < 2).map((s) => [s.centre[0], s.centre[2]])
@@ -588,8 +600,10 @@ for (const run of [hangs.eave, hangs.rake]) {
 addSnow(netGeometry(roofSnow(0.2, 0.1), roofMin.map((v) => v - 0.4), roofMax.map((v) => v + 0.4), 0.85, (a, h, l) => keepRoof(a, h, l) && Math.max(slopeOf(-1, a, h)[1], slopeOf(1, a, h)[1]) > 0.45), cottageM, 1, fresh, 'fresh', ROOF_TONE)
 for (const s of fenceShapes.filter((q) => q.half[2] < 2)) {
   const top = s.half[1] + 0.12
-  const sdf = (x, y, z) => rbox(x, y - top - 0.36, z, 0.74 * STOUT.post, 0.4, 0.74 * STOUT.post, 0.36) + 0.06 * fbm(x * 2 + 9, y * 2, z * 2, 2)
-  addSnow(netGeometry(sdf, [-1.5, top - 0.3, -1.5], [1.5, top + 1.3, 1.5], 0.3), boxMatrix(s), 1, fresh, 'fresh')
+  const wide = s.half[0] * STOUT.post + 0.13
+  const seed = s.centre[0] * 3.1 + s.centre[2] * 1.7
+  const sdf = (x, y, z) => Math.max(ell(x, y - top + 0.12, z, wide, 0.62, wide), top - 0.1 - 0.22 * noise(x * 2.4 + seed, z * 2.4, 5) - y) + 0.05 * fbm(x * 2 + seed, y * 2, z * 2, 2)
+  addSnow(netGeometry(sdf, [-1.5, top - 0.7, -1.5], [1.5, top + 1.3, 1.5], 0.2), boxMatrix(s), 1, fresh, 'fresh')
 }
 
 const names = [snow, ice, decor, bulbs, fresh]
