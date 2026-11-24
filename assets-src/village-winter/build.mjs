@@ -26,7 +26,7 @@ const cottageInv = cottageM.clone().invert()
 const local = (x, y, z) => new THREE.Vector3(x, y, z).applyMatrix4(cottageInv)
 
 const SNOW = lin('#edf1f8')
-const ROOF_TONE = [0.6, 0.53, 0.48]
+const ROOF_TONE = [0.84, 0.73, 0.65]
 const ICE_SHADE = { dark: 0.68, from: 0.15, to: 0.85, back: [0.3, 1] }
 const snow = new Bag('snow')
 const ice = new Bag('ice')
@@ -52,7 +52,7 @@ const rbox = (x, y, z, hx, hy, hz, r) => {
 const ell = (x, y, z, rx, ry, rz) => (Math.hypot(x / rx, y / ry, z / rz) - 1) * Math.min(rx, ry, rz)
 
 const T0 = 1.6
-const RR = 0.56
+const RR = 0.74
 const ROLL = { out: 0.85, dropMm: 0.55, round: 0.34, clear: 0.14 }
 const ch = C.chimney
 const stackTop = ch.top - 0.95
@@ -62,11 +62,12 @@ const prism = (a, l) => {
   return Math.hypot(Math.max(qa, 0), Math.max(ql, 0)) + Math.min(Math.max(qa, ql), 0)
 }
 const dents = [
-  [-1, 6.2, -2.4, 1.5, 0.24],
-  [-1, 10.4, 4.6, 1.9, 0.18],
-  [-1, 3.6, 6.8, 1.3, 0.15],
-  [1, 7.5, 2, 1.7, 0.18],
-  [1, 11.2, -5, 1.4, 0.15],
+  [-1, 6.2, -2.4, 1.5, 0.38],
+  [-1, 10.4, 4.6, 1.9, 0.3],
+  [-1, 3.6, 6.8, 1.3, 0.24],
+  [-1, 8.4, -7.2, 1.2, 0.22],
+  [1, 7.5, 2, 1.7, 0.28],
+  [1, 11.2, -5, 1.4, 0.24],
 ]
 const dent = (sd, s, l) => {
   let v = 0
@@ -80,9 +81,9 @@ function roofSnow(extra, lumps) {
     let d = 1e9
     for (const sd of [-1, 1]) {
       const [s, lift] = slopeOf(sd, a, h)
-      const eave = SLOPE + ROLL.out + 0.15 * noise(l * 0.42, sd * 3.1, 1.7) + 0.06 * noise(l * 1.7, sd * 1.3, 5.2)
+      const eave = SLOPE + ROLL.out + 0.42 * (noise(l * 0.34, sd * 3.1, 1.7) - 0.5) + 0.14 * noise(l * 1.5, sd * 1.3, 5.2)
       const gable = roofLen + ROLL.out + 0.1 * noise(s * 0.5, sd * 5.3, l > 0 ? 2.2 : 8.4) + 0.05 * noise(s * 1.9, sd * 2.3, l > 0 ? 4.2 : 6.4)
-      const th = T0 * (0.94 + 0.1 * noise(s * 0.2, l * 0.2, 7 + sd)) - dent(sd, s, l) + extra
+      const th = T0 * (0.86 + 0.3 * noise(s * 0.33, l * 0.33, 7 + sd)) - dent(sd, s, l) + extra
       const s0 = -T0 * (sp / cp) + 0.12
       const box = rbox(s - (s0 + eave) / 2, lift - th / 2, l, (eave - s0) / 2, th / 2, gable, Math.min(RR, th / 2 - 0.02))
       const drop = ROLL.dropMm * (0.8 + 0.5 * noise(l * 0.9, s * 0.9, 3 + sd))
@@ -113,7 +114,7 @@ addSnow(netGeometry(roofSnow(0, 0.07), roofMin, roofMax, 0.45, keepRoof), cottag
 {
   const sdf = (a, h, l) => {
     const y = h - (stackTop + 0.85)
-    let d = rbox(a - ch.across, y - 0.27, l - ch.along, ch.half + 0.1, 0.3, ch.halfAlong + 0.1, 0.27)
+    let d = Math.max(ell(a - ch.across, y + 0.1, l - ch.along, ch.half + 0.12, 0.66, ch.halfAlong + 0.12), rbox(a - ch.across, y - 0.3, l - ch.along, ch.half + 0.1, 0.5, ch.halfAlong + 0.1, 0.3))
     d = Math.max(d, 0.66 - Math.hypot(a - (ch.across - 0.2), l - (ch.along + 0.1)))
     return d + 0.05 * fbm(a * 2, h * 2, l * 2, 2)
   }
@@ -199,9 +200,9 @@ for (const s of fenceShapes) {
 
 {
   const lampM = new THREE.Matrix4().makeRotationY(RF.LAMP.yaw).setPosition(...RF.lampFoot())
-  const y0 = RF.LAMP.cageHi + 1.2
-  const sdf = (x, y, z) => ell(x, y - y0, z, 0.62, 0.24, 0.62) + 0.03 * fbm(x * 2 + 3, y * 2, z * 2, 2)
-  addSnow(netGeometry(sdf, [-1, y0 - 0.5, -1], [1, y0 + 0.5, 1], 0.14), lampM, 0.6)
+  const y0 = RF.LAMP.cageHi + 0.62
+  const sdf = (x, y, z) => ell(x + 0.42, y - y0, z - 0.2, 0.46, 0.2, 0.5) + 0.03 * fbm(x * 2 + 3, y * 2, z * 2, 2)
+  addSnow(netGeometry(sdf, [-1.2, y0 - 0.5, -1], [1, y0 + 0.5, 1.2], 0.12), lampM, 0.6)
 }
 
 const front = frame(P3(0, 0, C.halfLength), V3, UP, U3)
@@ -234,9 +235,9 @@ for (const [i, sh] of shrubList.entries()) {
   const [cx, cy, cz] = sh.centre
   const seed = 11 * i + 3
   const SR = rng(977 + 31 * i)
-  const clumps = Array.from({ length: i < 2 ? 22 : 16 }, () => {
+  const clumps = Array.from({ length: i < 2 ? 16 : 12 }, () => {
     const a = SR() * Math.PI * 2
-    const up = 0.36 + 0.64 * Math.sqrt(SR())
+    const up = 0.45 + 0.55 * Math.sqrt(SR())
     const rr = Math.sqrt(Math.max(0, 1 - up * up))
     const wide = 0.42 + 0.5 * SR()
     return { at: [cx + Math.cos(a) * rr * sh.r[0] * 0.95, cy + up * sh.r[1] * 0.95, cz + Math.sin(a) * rr * sh.r[2] * 0.95], wide, tall: wide * (0.42 + 0.3 * SR()) }

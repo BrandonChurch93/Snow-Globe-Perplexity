@@ -42,7 +42,7 @@ export function rakeHangs(): Point[] {
 
 export const hangPoints = (): Point[] => [...eaveHangs(), ...rakeHangs()]
 
-export const LAMP = { yaw: 0.5, sink: 0.3, cageLo: 8.6, cageHi: 11.2, loHalf: 0.62, hiHalf: 1, flame: 1.05 }
+export const LAMP = { yaw: 0.5, sink: 0.3, cageLo: 8.6, cageHi: 10.9, loHalf: 0.48, hiHalf: 0.76, flame: 1 }
 
 export function lampFoot(): Point {
   return [lamppost.x, groundAt(lamppost.x, lamppost.z) - LAMP.sink, lamppost.z]

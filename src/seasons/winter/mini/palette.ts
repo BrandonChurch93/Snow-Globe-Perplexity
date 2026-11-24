@@ -14,7 +14,7 @@ export const tones: Record<'snow' | 'bulb' | 'lamp' | 'flame' | 'room' | 'curtai
   curtain: [0.86, 0.38, 0.13],
   rime: [0.72, 0.82, 0.95],
   dust: [0.83, 0.88, 0.96],
-  iceDeep: [0.4, 0.6, 0.72],
+  iceDeep: [0.38, 0.6, 0.8],
   icePale: [0.55, 0.65, 0.76],
   smoke: [0.7, 0.63, 0.63],
   sheen: [0.78, 0.87, 1],

@@ -24,10 +24,10 @@ const ARCH = ['#b9b2a6', '#aba498', '#c5beb2', '#a09a8e'].map(lin)
 const BRICKS = ['#c69f88', '#b48c77', '#d3ab94', '#a5806d', '#be9681', '#cca48d', '#ae8873'].map(lin)
 const SHINGLES = ['#5c4838', '#4e3d31', '#68523f', '#43352b', '#57483c'].map(lin)
 const LEAVES = ['#22401f', '#2d5226', '#1b3319', '#3a5f2c', '#27481f'].map(lin)
-const MORTAR_C = lin('#6b5d50')
+const MORTAR_C = lin('#85766a')
 const DIRT = lin('#4b4538')
 const IRON = lin('#15161a')
-const DOOR = lin('#5a3620')
+const DOOR = lin('#643921')
 const FRAME = lin('#5a3d26')
 const FENCE = lin('#a87a55')
 const PICKET_C = lin('#d8d2ca')
@@ -366,8 +366,8 @@ const crown = (w, l, h, y, tone, round) => {
   shade(g, (x, yy, z) => 0.82 + 0.3 * noise(x * 2.4, yy * 2.4, z * 2.4))
   solid.add(g, { matrix: basis(P3(ch.across, y, ch.along), V3, UP), color: tone, surf: stoneSurf(), uvOffset: off(), renormal: true })
 }
-crown(2 * ch.half + 0.42, 2 * ch.halfAlong + 0.42, 0.44, stackTop + 0.22, lin('#8c7f73'), 0.14)
-crown(2 * ch.half + 0.16, 2 * ch.halfAlong + 0.16, 0.42, stackTop + 0.64, lin('#7b4233'), 0.12)
+crown(2 * ch.half + 0.42, 2 * ch.halfAlong + 0.42, 0.44, stackTop + 0.22, lin('#77594a'), 0.14)
+crown(2 * ch.half + 0.16, 2 * ch.halfAlong + 0.16, 0.42, stackTop + 0.64, lin('#6d4c3e'), 0.12)
 const pot = new THREE.LatheGeometry([[0.36, 0], [0.5, 0.05], [0.52, 0.3], [0.44, 0.45], [0.42, 1.25], [0.52, 1.35], [0.53, 1.55], [0.4, 1.6], [0.34, 1.45], [0.3, 0.2]].map(([x, y]) => new THREE.Vector2(x, y)), 14)
 shade(pot, (x, y, z) => 0.75 + 0.35 * noise(x * 3, y * 2, z * 3))
 solid.add(pot, { matrix: T(...P3(ch.across - 0.2, stackTop + 0.82, ch.along + 0.1)), color: lin('#1f2023'), surf: [surf(KIND.iron, 0.5), 0], uvOffset: off(), renormal: true })
@@ -394,7 +394,7 @@ const ironPart = (g, m) => {
 }
 ironPart(post)
 const { cageLo, cageHi, loHalf, hiHalf } = RF.LAMP
-const CAP_MM = 1
+const CAP_MM = 1.15
 const Q = Math.PI / 4
 for (let k = 0; k < 4; k++) {
   const a = Q + (k * Math.PI) / 2

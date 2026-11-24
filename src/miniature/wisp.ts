@@ -143,11 +143,11 @@ void main() {
   float ragged = mix(0.12, 0.78, clamp(0.55 * n1 + 0.45 * n3 + 0.45 * t - 0.2, 0.0, 1.0));
   float body = smoothstep(ragged, 1.0, facing);
   body *= body * (0.55 + 0.45 * facing);
-  float along = smoothstep(0.0, 0.07, t) * pow(1.0 - t, 1.0);
+  float along = smoothstep(0.0, 0.07, t) * pow(1.0 - t, 0.8);
   float gaps = smoothstep(0.24 + 0.3 * t, 0.56 + 0.3 * t, n + 0.3 * (1.0 - t));
   float torn = mix(1.0, gaps * (0.5 + n2), clamp(t * 2.4 + uStorm, 0.0, 1.0));
   float a = clamp(body * along * torn * ${strength.toFixed(3)} * (1.0 - 0.6 * uStorm), 0.0, 1.0);
-  vec3 lit = stageCold(vStageLocal) * 2.6 + stageGrid(vStageLocal) * 1.0;
+  vec3 lit = stageCold(vStageLocal) * 3.0 + stageGrid(vStageLocal) * 1.0;
   vec3 col = ${`vec3(${tint[0].toFixed(4)}, ${tint[1].toFixed(4)}, ${tint[2].toFixed(4)})`} * lit;
   float fog = stageVeil(vStageAux.x);
   gl_FragColor = vec4(stageFogged(col, stageGrid(vStageLocal), fog), a);
