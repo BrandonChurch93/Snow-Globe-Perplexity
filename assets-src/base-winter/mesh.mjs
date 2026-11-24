@@ -142,16 +142,18 @@ function addCone(soup, f, cone) {
       const e2 = cross3(Ns, e1)
       const rho = 0.6 * Math.max(along, across) * (0.94 + 0.14 * rng())
       const hgt = rho * (0.56 + 0.12 * rng())
-      const tilt = norm3(add3(Ns, e1, 0.2))
+      const tilt = norm3(add3(Ns, e1, 0.55))
       const first = soup.count
-      const top = add3(Pc, tilt, hgt)
+      const top = add3(add3(Pc, tilt, hgt), e1, 0.22 * rho)
       soup.vert(top, tilt, uvOf(top), [0.5, 0.5], [1, 0.85, 0])
       for (let ring = 0; ring < 2; ring++) {
         for (let q = 0; q < seg; q++) {
           const al = (q / seg) * 2 * Math.PI + (ring ? Math.PI / seg : 0)
           const rhomb = ring ? 1.1 / Math.pow(Math.abs(Math.cos(al)) + Math.abs(Math.sin(al)), 0.55) : 1
           const rad = add3(scale3(e1, Math.cos(al)), e2, Math.sin(al))
-          const p = add3(add3(Pc, rad, rho * (ring ? rhomb : 0.6)), tilt, hgt * (ring ? -0.35 : 0.68))
+          const lead = Math.cos(al)
+          const reachOut = ring ? rhomb * (lead > 0 ? 1 + 0.18 * lead : 1) : 0.6 + 0.16 * lead
+          const p = add3(add3(Pc, rad, rho * reachOut), tilt, hgt * (ring ? -0.35 - 0.3 * Math.max(lead, 0) : 0.68 + 0.14 * lead))
           const n = norm3(add3(scale3(tilt, ring ? 0.3 : 1), rad, ring ? 1 : 0.62))
           soup.vert(p, n, uvOf(p), [0.5, 0.5], ring ? [0.2, 0, 0] : [0.82, 0.4, 0])
         }
@@ -200,12 +202,13 @@ export function buildBrass() {
   lathe(
     soup,
     [
-      [57.6, 0.02, 0.12, 0, 0.85],
-      [58.42, 0.1, 0.3, 0.25, 0.5],
-      [58.74, 0.45, 0.8, 0.75, 0.15],
-      [P.RIM.r, 1.2, 1, 0.25, 0.2],
-      [P.RIM.r, 2.5, 1, 0.25, 0.2],
-      [58.72, 3.15, 1, 0.75, 0.12],
+      [57.55, 0.02, 0.05, 0, 1],
+      [57.7, 0.95, 0.06, 0, 1],
+      [58.55, 1.08, 0.12, 0.1, 0.9],
+      [59.02, 1.22, 0.55, 0.8, 0.2],
+      [59.1, 1.6, 0.95, 0.5, 0.15],
+      [58.95, 2.5, 1, 0.2, 0.2],
+      [58.78, 3.15, 1, 0.75, 0.12],
       [58.45, 3.5, 0.8, 0.5, 0.22],
       [57.9, P.RIM.top + 0.04, 0.42, 0.1, 0.62],
       [56.5, P.RIM.top + 0.1, 0.1, 0, 0.92],
@@ -214,10 +217,20 @@ export function buildBrass() {
     0,
     3,
   )
+  lathe(
+    soup,
+    [
+      [55.7, 4.3, 0.03, 0, 1],
+      [55.75, 7.7, 0.03, 0, 1],
+    ],
+    even(64),
+    0.9,
+    0,
+  )
   const rimTriangles = soup.triangles
 
   const R = P.ROPE
-  const rows = 10
+  const rows = 9
   const ropePoint = (k, frac, psi, wobble) => {
     const theta = (2 * Math.PI * (k + frac + (R.strands * psi) / (2 * Math.PI))) / R.lobes - Math.PI
     const lobe = Math.sqrt(Math.max(1 - (2 * frac - 1) ** 2, 0))
@@ -297,23 +310,22 @@ export function buildBrass() {
 }
 
 const MOUNDS = [
-  { a0: -84, a1: -39, ea: 8, eb: 12, peak: 2.3, glass: 1, over: [-84, -60], r1: 53.2 },
-  { a0: -38, a1: -16, ea: 7, eb: 7, peak: 1.25, glass: 0.35, r0: 45.5, r1: 51.5 },
-  { a0: -5, a1: 15, ea: 6, eb: 7, peak: 1.0, glass: 0.3, r0: 46, r1: 52.4, over: [2.2, 6.4] },
-  { a0: 8, a1: 92, ea: 12, eb: 9, peak: 1.9, glass: 0.9, r1: 52.6, over: [21, 44] },
-  { a0: 56, a1: 96, ea: 14, eb: 8, peak: 2.6, glass: 1, r1: 53, over: [60, 95] },
+  { a0: -86, a1: -44, ea: 9, eb: 12, peak: 2.2, glass: 1, r1: 52.3 },
+  { a0: -41, a1: -7, ea: 9, eb: 9, peak: 1.5, glass: 0.4, r0: 45.5, r1: 52.7 },
+  { a0: -6, a1: 30, ea: 8, eb: 10, peak: 1.1, glass: 0.45, r0: 45, r1: 52.5 },
+  { a0: 14, a1: 97, ea: 14, eb: 9, peak: 2.5, glass: 1, r1: 52.8, over: [27, 76] },
   { a0: 99, a1: 141, ea: 10, eb: 12, peak: 1.6, glass: 0.8, r1: 52.5, over: [112, 128] },
   { a0: -131, a1: -92, ea: 12, eb: 9, peak: 1.5, glass: 0.7, r1: 52.2, over: [-118, -104] },
   { a0: 150, a1: 216, ea: 14, eb: 14, peak: 1.8, glass: 1, r1: 53, over: [170, 196] },
 ]
 
 const lipOuter = P.LIP.ringR + P.LIP.tube
-const snowEdge = lipOuter + 1.15
+const snowEdge = lipOuter + 1.25
 
 function snowSupport(r) {
   const [fo, fi] = [P.LEDGE.outer, P.LEDGE.inner]
   const floorLine = fi[1] + ((r - fi[0]) * (fo[1] - fi[1])) / (fo[0] - fi[0])
-  if (r >= lipOuter) return P.LIP.h - (r - lipOuter) * 1.4
+  if (r >= lipOuter) return P.LIP.h - 0.25 - (r - lipOuter) * 2.1
   if (r >= P.LIP.ringR - P.LIP.tube) return Math.max(P.LIP.h + Math.sqrt(Math.max(P.LIP.tube ** 2 - (r - P.LIP.ringR) ** 2, 0)), floorLine)
   if (r >= fi[0]) return floorLine
   const crown = P.COLLAR.crown
@@ -322,6 +334,9 @@ function snowSupport(r) {
 }
 
 function snowThickness(azIn, r) {
+  const u = (azIn + 180) / 360
+  const reach = fbm(u * 31, 0.37, 31, 4, 113, 3)
+  const heap = 0.5 + 1.0 * fbm(u * 19, r / 12, 19, 64, 119, 2)
   let t = 0
   for (const m of MOUNDS) {
     let az = azIn
@@ -330,24 +345,25 @@ function snowThickness(azIn, r) {
     while (az - mid < -180) az += 360
     const a = smooth(m.a0, m.a0 + m.ea, az) * (1 - smooth(m.a1 - m.eb, m.a1, az))
     if (a <= 0) continue
-    const over = m.over ? smooth(m.over[0] - 3, m.over[0] + 3, az) * (1 - smooth(m.over[1] - 3, m.over[1] + 3, az)) : 0
-    const end = mix(m.r1, snowEdge, over)
-    const outer = 1 - smooth(end - mix(4.2, 1.5, over), end, r)
+    const window = m.over ? smooth(m.over[0] - 3, m.over[0] + 3, az) * (1 - smooth(m.over[1] - 3, m.over[1] + 3, az)) : 0
+    const over = window * smooth(0.3, 0.52, reach)
+    const end = mix(m.r1 + 0.9 * (reach - 0.5), snowEdge - 0.75 + 1.5 * (reach - 0.3), over)
+    const outer = Math.sqrt(1 - smooth(end - mix(4.2, 2.4, over), end, r))
     const inner = m.r0 ? mix(m.glass, 1, smooth(m.r0 - 2.2, m.r0 + 0.6, r)) : mix(m.glass, 1, smooth(43, 46, r))
     const lean = 1 + 0.4 * m.glass * (1 - smooth(43.5, 47.5, r))
     t += m.peak * a * outer * inner * lean
   }
-  const u = (azIn + 180) / 360
   const lump = 0.62 + 0.76 * fbm(u * 46, r / 5.2, 46, 64, 91, 3)
   const crumb = smooth(0.7, 0.84, fbm(u * 150, r / 2.1, 150, 64, 97, 2)) * 0.55 * smooth(0.04, 0.5, t + 0.25 * fbm(u * 20, r / 9, 20, 64, 103, 2))
   const dust = 0.34 * smooth(0.52, 0.74, fbm(u * 30, r / 6, 30, 64, 109, 3)) * (1 - smooth(45.5, 49.5, r))
-  return Math.max(t * lump, crumb, dust) - 0.1
+  const knob = 0.72 + 0.56 * fbm(u * 128, r / 2.4, 128, 64, 127, 2)
+  return Math.max(t * lump * heap * knob, crumb, dust) - 0.1
 }
 
 export function buildSnow() {
   const soup = new Soup('snow')
-  const cols = azList(-180, 180, (az) => (front(az) <= 132 ? 0.88 : 2.6), 48)
-  const rowsN = 16
+  const cols = azList(-180, 180, (az) => (front(az) <= 132 ? 0.9 : 2.6), 48)
+  const rowsN = 18
   const repeats = Math.round((2 * Math.PI * 48) / SNOW.tileMm)
   const grid = []
   for (let i = 0; i < cols.length; i++) {
@@ -360,7 +376,7 @@ export function buildSnow() {
     const column = []
     for (let j = 0; j < rowsN; j++) {
       const q = j / (rowsN - 1)
-      const r = mix(rin, snowEdge + 0.25, Math.pow(q, 0.92))
+      const r = q < 0.4 ? mix(rin, 50.4, q / 0.4) : mix(50.4, snowEdge + 0.25, (q - 0.4) / 0.6)
       const t = snowThickness(az, r)
       column.push({ r, t, h: snowSupport(r) + (t > 0 ? t : Math.max(t * 3, -0.45)) })
     }
@@ -445,7 +461,7 @@ export function icicleList(f) {
   for (const [x, , y1, w] of MEASURED) {
     const foot = onCylinder(x, y1, P.ICE.r)
     const scale = 9.0 + 0.9 * clamp(foot.z / P.ICE.r, 0, 1)
-    list.push({ az: foot.az, length: clamp(P.ICE.h - foot.h, 3, 19), radius: clamp(w / scale / 2, 0.6, 2.3), measured: true })
+    list.push({ az: foot.az, length: clamp(P.ICE.h - foot.h, 3, 19), radius: clamp((w / scale / 2) * 1.08, 0.7, 2.5), measured: true })
   }
   const rng = mulberry(20261123)
   let az = 97
@@ -482,8 +498,8 @@ export function buildIce(list) {
     const total = it.length + 0.5
     const axis = (t) => add3(add3(add3(root, [0, -1, 0], total * t), out, it.lean * Math.pow(t, 1.3)), side, swing * t * t)
     const radius = (t) => {
-      const body = it.radius * (0.9 * Math.pow(1 - t, 0.82) + 0.1 * (1 - t))
-      const ripple = 1 + 0.12 * Math.sin(2 * Math.PI * ((t * total) / 2.7 + k1)) * smooth(0.02, 0.15, t) + 0.06 * Math.sin(2 * Math.PI * ((t * total) / 1.15 + k2))
+      const body = it.radius * (0.9 * Math.pow(1 - t, 0.62) + 0.1 * (1 - t))
+      const ripple = 1 + 0.16 * Math.sin(2 * Math.PI * ((t * total) / 2.7 + k1)) * smooth(0.02, 0.15, t) + 0.06 * Math.sin(2 * Math.PI * ((t * total) / 1.15 + k2))
       const flare = it.radius * 0.55 * Math.exp(-t / 0.045)
       return Math.max(body * ripple * (1 - 0.75 * smooth(0.93, 1, t)), 0) + flare
     }

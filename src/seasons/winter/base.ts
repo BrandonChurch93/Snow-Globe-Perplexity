@@ -8,7 +8,7 @@ import { ROOM_GLSL, roomUniforms } from '../../scene/room'
 import type { KitMoment } from '../kit'
 
 export const season = 'winter'
-export const main: Rgb = [0.109, 0.048, 0.025]
+export const main: Rgb = [0.075, 0.026, 0.011]
 
 const PART = 'base-winter'
 const MODEL = 'winter/base-winter.glb'
@@ -144,13 +144,13 @@ float baseHigh = clamp(2.0 * baseCarve.b - 1.0, 0.0, 1.0) * baseCarved;
 float baseWear = clamp(vBasePaint.y + 0.6 * baseHigh, 0.0, 1.0);
 float baseAo = vBasePaint.x * (1.0 - 0.85 * baseCavity);
 float baseBlotch = baseNoise(vBasePos * 0.21) * 0.6 + baseNoise(vBasePos * 0.9) * 0.4;
-diffuseColor.rgb *= mix(0.7, 1.2, baseBlotch);
+diffuseColor.rgb *= vec3(0.72, 0.56, 0.46) * mix(0.7, 1.2, baseBlotch);
 diffuseColor.rgb *= mix(1.0, 0.3, baseCavity);
 diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(1.5, 1.42, 1.3) + vec3(0.006, 0.003, 0.001), 0.5 * baseWear);
 `
 
 const WOOD_ROUGH = `
-roughnessFactor = clamp(mix(0.26, 0.7, baseDetail.b) + 0.26 * baseCavity - 0.1 * baseWear, 0.12, 1.0);
+roughnessFactor = clamp(mix(0.2, 0.58, baseDetail.b) + 0.3 * baseCavity - 0.08 * baseWear, 0.12, 1.0);
 `
 
 const WOOD_TILT = `
@@ -158,18 +158,22 @@ vec2 baseTilt = baseSlope(baseDetail.rg) * 0.9 + baseSlope(baseCarve.rg) * (1.35
 `
 
 const WOOD_BENT = `
-float baseDust = (0.1 + 0.9 * smoothstep(0.35, 0.95, baseObjectNormal.y)) * (0.35 + 0.65 * baseNoise(vBasePos * 3.1)) * 0.22 + 0.16 * baseCavity;
-diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.16, 0.16, 0.17), clamp(baseDust, 0.0, 0.5));
-roughnessFactor = mix(roughnessFactor, 0.92, clamp(baseDust * 1.6, 0.0, 0.8));
+float baseSide = smoothstep(-0.2, 0.75, vBasePos.x / max(length(vBasePos.xz), 1.0));
+float baseUp = smoothstep(0.06, 0.5, baseObjectNormal.y);
+float baseFrost = baseUp * (0.25 + 0.75 * baseSide) * smoothstep(0.3, 0.75, baseNoise(vBasePos * 1.7) * 0.6 + baseNoise(vBasePos * 9.0) * 0.4 + 0.25 * baseSide);
+float baseDust = (0.1 + 0.9 * baseUp) * (0.35 + 0.65 * baseNoise(vBasePos * 3.1)) * 0.2 + 0.14 * baseCavity;
+diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.07, 0.07, 0.075), clamp(baseDust, 0.0, 0.5));
+diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.5, 0.56, 0.64), clamp(baseFrost * 0.7, 0.0, 0.7));
+roughnessFactor = mix(roughnessFactor, 0.92, clamp(baseDust * 1.6 + baseFrost, 0.0, 0.85));
 `
 
 const BRASS_PAINT = `
 vec4 baseDetail = texture2D(uBaseDetail, vMapUv);
 float baseWear = vBasePaint.y;
-float baseTarnish = clamp(vBasePaint.z * 1.2 + (baseDetail.b - 0.42) * 0.9 - 0.5 * baseWear, 0.0, 1.0);
+float baseTarnish = clamp(vBasePaint.z * 1.25 + 0.16 + (baseDetail.b - 0.42) * 0.5 - 0.5 * baseWear, 0.0, 1.0);
 float baseAo = vBasePaint.x;
-vec3 baseClean = mix(diffuseColor.rgb, vec3(0.93, 0.66, 0.3), 0.3 + 0.5 * baseWear);
-diffuseColor.rgb = mix(baseClean, vec3(0.06, 0.036, 0.017) + 0.2 * diffuseColor.rgb, smoothstep(0.2, 0.9, baseTarnish));
+vec3 baseClean = mix(diffuseColor.rgb * vec3(1.0, 0.8, 0.62), vec3(0.9, 0.56, 0.21), 0.5 + 0.4 * baseWear) * (0.8 + 0.2 * baseWear);
+diffuseColor.rgb = mix(baseClean, vec3(0.05, 0.03, 0.014) + 0.16 * baseClean, smoothstep(0.12, 0.85, baseTarnish));
 `
 
 const BRASS_ROUGH = `
@@ -185,7 +189,8 @@ const SNOW_PAINT = `
 vec4 baseDetail = texture2D(uBaseDetail, vMapUv);
 float baseThick = vBasePaint.x;
 float baseAo = 0.55 + 0.45 * smoothstep(0.0, 0.5, baseThick);
-diffuseColor.rgb *= mix(vec3(0.62, 0.7, 0.82), vec3(1.0), smoothstep(0.02, 0.6, baseThick));
+if (baseThick - 0.05 * baseNoise(vBasePos * 2.3) * baseNoise(vBasePos * 0.7 + 9.0) < 0.012) discard;
+diffuseColor.rgb *= 0.84 * mix(vec3(0.56, 0.66, 0.82), vec3(1.0), smoothstep(0.02, 0.6, baseThick));
 `
 
 const SNOW_ROUGH = `
@@ -324,8 +329,8 @@ void main() {
   float seed = vIceUv.y;
   float core = smoothstep(0.2, 0.95, nv);
   float streak = baseNoise(vec3(vIceUv.z * 11.0 + seed * 5.0, t * 2.2 + seed * 3.0, seed * 1.7));
-  float grit = baseNoise(vIcePos * 7.0);
-  float cloud = (0.06 + 0.42 * core * core) * smoothstep(0.25, 0.75, streak) * mix(1.0, 0.3, smoothstep(0.45, 1.0, t));
+  float grit = baseNoise(vIcePos * 11.0);
+  float cloud = 0.13 + (0.1 + 0.4 * core * core) * smoothstep(0.25, 0.75, streak) * mix(1.0, 0.3, smoothstep(0.45, 1.0, t));
   cloud += 0.22 * smoothstep(0.6, 0.85, grit) * (0.4 + 0.6 * core) + 0.3 * (1.0 - smoothstep(0.0, 0.1, t));
   cloud = clamp(cloud, 0.0, 0.85);
   float wrap = clamp(dot(n, uIceKeyDir) * 0.5 + 0.5, 0.0, 1.0);
@@ -338,6 +343,11 @@ void main() {
   float hr = max(dot(n, normalize(v + uIceRimDir)), 0.0);
   col += uIceKeyCol * (pow(hk, 420.0) * 7.0 + pow(hk, 36.0) * 0.16);
   col += uIceRimCol * (pow(hr, 240.0) * 4.0 + pow(hr, 30.0) * 0.12);
+  vec3 cell = floor(vIcePos * 4.5);
+  vec3 jit = vec3(baseHash(cell + 1.3), baseHash(cell + 7.1), baseHash(cell + 13.7)) - 0.5;
+  vec3 fn = normalize(n + turn * jit * 1.3);
+  float inCell = smoothstep(0.5, 0.12, length(fract(vIcePos * 4.5) - 0.5)) * step(0.35, baseHash(cell + 29.0));
+  col += (stageRoomLights(reflect(-v, fn), 0.004) * 1.6 + uIceKeyCol * pow(max(dot(fn, normalize(v + uIceKeyDir)), 0.0), 500.0) * 5.0) * inCell;
   gl_FragColor = vec4(col, 1.0);
   if (uDiag != 0) gl_FragColor = stageDiag(vec3(0.8, 0.88, 1.0), n, 0.0, c, 0.0);
 }

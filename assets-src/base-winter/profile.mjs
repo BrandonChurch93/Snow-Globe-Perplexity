@@ -9,7 +9,7 @@ export const FOOT_R = 58.8
 export const sphereRadiusAt = (h) => Math.sqrt(Math.max(SPHERE_R * SPHERE_R - (CENTRE_H - h) * (CENTRE_H - h), 0))
 
 export const RIM = { r: FOOT_R, top: 3.6 }
-export const ROPE = { ringR: 57.25, h: 4.95, tube: 1.5, lobes: 124, strands: 3, depth: 0.24 }
+export const ROPE = { ringR: 57.25, h: 4.95, tube: 1.5, lobes: 124, strands: 3, depth: 0.32 }
 export const BEAD = { ringR: 56.3, h: 7.5, tube: 0.92 }
 export const LIP = { ringR: 53.7, h: TOP + 0.1, tube: 1.05 }
 export const LEDGE = { outer: [52.75, TOP], inner: [43.6, TOP + 1.9] }
@@ -35,7 +35,7 @@ export const BODY = [
   [52.3, 31.7],
 ]
 
-export const CARVING = { low: 8.0, high: 25.0, relief: 1.55, rRef: 54.5 }
+export const CARVING = { low: 8.0, high: 25.0, relief: 2.1, rRef: 54.5 }
 
 function catmull(points, per) {
   const out = []
@@ -104,7 +104,7 @@ export function bodyRadiusAt(m, h) {
 }
 
 export const PROFILE_NOTES = [
-  `rim: radius ${RIM.r}, from the slab to ${RIM.top}`,
+  `rim: a flange of radius ${RIM.r} to 59.1 from 1.2 to ${RIM.top} over a recessed foot of radius 57.7`,
   `rope ring: centre radius ${ROPE.ringR}, height ${ROPE.h}, tube ${ROPE.tube}, ${ROPE.lobes} lobes of ${ROPE.strands} strands`,
   `bead: centre radius ${BEAD.ringR}, height ${BEAD.h}, tube ${BEAD.tube}`,
   `body, radius at height: ${BODY.map(([r, h]) => `${r}@${h}`).join(' ')}`,

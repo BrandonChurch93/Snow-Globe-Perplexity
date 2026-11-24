@@ -33,25 +33,23 @@ const MOTIFS = {
 }
 
 export const STAMPS = [
-  { motif: 'halfLeft', az: 0.4, h: 11.7, rot: -3, mmPerPx: 0.0325 },
-  { motif: 'halfRight', az: 0.9, h: 11.7, rot: 4, mmPerPx: 0.0362 },
-  { motif: 'berries', az: 0.6, h: 11.5, rot: 6, mmPerPx: 0.021, gain: 1.12 },
-  { motif: 'twigA', az: -33, h: 15.6, rot: -12, width: 22, flip: true },
-  { motif: 'twigG', az: -62, h: 15.5, rot: -9, width: 25, flip: true },
-  { motif: 'fan', az: -88, h: 11.4, rot: 3, width: 17 },
-  { motif: 'twigD', az: -131, h: 15.7, rot: 10, width: 24 },
-  { motif: 'sprayR2', az: -168, h: 11.9, rot: 0, mmPerPx: 0.0335 },
-  { motif: 'berries', az: -168.2, h: 11.6, rot: -8, mmPerPx: 0.02, gain: 1.1 },
-  { motif: 'twigC', az: 59.5, h: 15.9, rot: 12, width: 25 },
-  { motif: 'twigE', az: 86, h: 15.5, rot: -8, width: 23, flip: true },
-  { motif: 'twigH', az: 108, h: 15.8, rot: 9, width: 23 },
-  { motif: 'fan', az: 131, h: 11.5, rot: -4, width: 17, flip: true },
-  { motif: 'twigB', az: 153, h: 15.6, rot: -6, width: 24 },
+  { motif: 'halfLeft', az: 0.4, h: 11.2, rot: -3, mmPerPx: 0.037 },
+  { motif: 'halfRight', az: 0.9, h: 11.2, rot: 4, mmPerPx: 0.0405 },
+  { motif: 'berries', az: 0.6, h: 11.0, rot: 6, mmPerPx: 0.024, gain: 1.12 },
+  { motif: 'sprayL2', az: -47, h: 12.7, rot: -5, mmPerPx: 0.032 },
+  { motif: 'fan', az: -80.5, h: 11.8, rot: 3, width: 20 },
+  { motif: 'twigD', az: -104, h: 16.2, rot: 10, width: 23 },
+  { motif: 'twigA', az: -143, h: 16.0, rot: -8, width: 26.6, flip: true },
+  { motif: 'sprayR2', az: 179.2, h: 11.9, rot: 0, mmPerPx: 0.0335 },
+  { motif: 'berries', az: 179.0, h: 11.6, rot: -8, mmPerPx: 0.02, gain: 1.1 },
+  { motif: 'fan', az: 145, h: 11.6, rot: -4, width: 19, flip: true },
+  { motif: 'sprayL3', az: 111.8, h: 12.2, rot: 3, mmPerPx: 0.032, flip: true },
+  { motif: 'sprayR1', az: 66, h: 12.5, rot: 6, mmPerPx: 0.032 },
 ]
 
 export const CONES = [
-  { az: 37.8, h: 15.5, long: 11.4, wide: 9.2, lean: 28, fine: true },
-  { az: -112, h: 15.4, long: 10.6, wide: 8.8, lean: -22, fine: false },
+  { az: 37.8, h: 15.5, long: 12.2, wide: 10, lean: 28, fine: true },
+  { az: -122.5, h: 15.4, long: 10.6, wide: 8.8, lean: -22, fine: false },
 ]
 
 async function loadMotifs() {
@@ -125,7 +123,7 @@ export async function buildField() {
   for (let j = 0; j < H; j++) {
     const edge = smooth(0, fadeRows, Math.min(j, H - 1 - j))
     for (let i = 0; i < W; i++) {
-      const tool = (fbm((i / W) * 900, (j / H) * 46, 900, 46, 71, 3) - 0.5) * 0.035 + (fbm((i / W) * 5200, (j / H) * 260, 5200, 260, 13, 2) - 0.5) * 0.012
+      const tool = (fbm((i / W) * 900, (j / H) * 46, 900, 46, 71, 3) - 0.5) * 0.016 + (fbm((i / W) * 5200, (j / H) * 260, 5200, 260, 13, 2) - 0.5) * 0.005
       const v = field[j * W + i]
       field[j * W + i] = clamp(v * edge + tool * (1 - smooth(0.05, 0.4, v)), -0.05, 1.2)
     }
