@@ -1,6 +1,6 @@
 # Audio notes · planning
 
-Status: planning input. Not a build instruction. The build kit will fold this in when it is written.
+Status: superseded on 2026-11-23 by the build kit in `kit/`. Kept as a record of the planning. Where this note and the kit differ, the kit wins. The music is now made by the build and approved by Brandon at the review stop, as `kit/01-FILM.md` says.
 
 ## ElevenLabs
 

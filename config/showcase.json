@@ -1,0 +1,415 @@
+{
+  "name": "Snow Globe",
+  "slug": "snow-globe-seasons",
+  "seed": 20261123,
+  "repo": {
+    "url": "https://github.com/BrandonChurch93/Snow-Globe-Perplexity",
+    "branch": "main",
+    "expectPrivate": true,
+    "maxFileMb": 45,
+    "maxTreeGb": 2,
+    "maxPushGb": 1
+  },
+  "host": {
+    "name": "Vercel",
+    "maxShippedMb": 95,
+    "maxFileMb": 20,
+    "firstLoadMaxMb": 16,
+    "maxBuildMinutes": 20
+  },
+  "seasons": ["winter", "spring", "summer", "fall"],
+  "defaultSeason": "winter",
+  "film": {
+    "fps": 60,
+    "previewFps": 30,
+    "defaultBpm": 100,
+    "beatsPerBar": 4,
+    "minSeconds": 45,
+    "maxSeconds": 80,
+    "shutterDegrees": 180,
+    "hookSeconds": 2,
+    "revealBySeconds": 3,
+    "shots": [
+      { "id": "open", "kind": "hold", "season": "winter", "bars": 4 },
+      { "id": "shake-1", "kind": "shake", "from": "winter", "to": "spring", "bars": 1 },
+      { "id": "spring", "kind": "hold", "season": "spring", "bars": 4 },
+      { "id": "shake-2", "kind": "shake", "from": "spring", "to": "summer", "bars": 1 },
+      { "id": "summer", "kind": "hold", "season": "summer", "bars": 4 },
+      { "id": "shake-3", "kind": "shake", "from": "summer", "to": "fall", "bars": 1 },
+      { "id": "fall", "kind": "hold", "season": "fall", "bars": 4 },
+      { "id": "shake-4", "kind": "shake", "from": "fall", "to": "winter", "bars": 1 },
+      { "id": "close", "kind": "hold", "season": "winter", "bars": 5 }
+    ]
+  },
+  "intro": {
+    "prompt": "Build a hyper-realistic snow globe in three.js. When I shake it, the season changes.",
+    "reasoning": "High",
+    "charsPerSecond": 14,
+    "pauseBeforeSendSeconds": 0.8,
+    "buildTitle": "Building a four season snow globe",
+    "steps": [
+      "Sculpting the globe and four bases",
+      "Simulating snow, petals, fireflies and leaves",
+      "Bending light through glass and water",
+      "Choreographing the shake",
+      "Scoring four seasons"
+    ],
+    "stepSeconds": 0.9,
+    "holdSeconds": 1.2,
+    "maxSeconds": 16
+  },
+  "formats": {
+    "master": { "id": "uhd", "width": 3840, "height": 2160 },
+    "hd": { "id": "hd", "width": 1920, "height": 1080 },
+    "preview": { "id": "preview", "width": 960, "height": 540 },
+    "phone": { "id": "phone", "width": 390, "height": 844 },
+    "tablet": { "id": "tablet", "width": 1024, "height": 1366 }
+  },
+  "platform": {
+    "name": "X",
+    "standardAccountMaxSeconds": 140,
+    "maxFileMb": 512
+  },
+  "export": {
+    "container": "mp4",
+    "videoCodec": "h264",
+    "bitrateMbps": 20,
+    "audioCodec": "aac",
+    "audioKbps": 256,
+    "proofSeconds": 1,
+    "local": {
+      "container": "mov",
+      "videoCodec": "prores_422_hq",
+      "testSeconds": 10
+    },
+    "files": {
+      "filmA": "snow-globe-with-prompt",
+      "filmB": "snow-globe",
+      "previewA": "preview-a.mp4",
+      "previewB": "preview-b.mp4",
+      "reviewCut": "review-cut.mp4",
+      "cardLoop": "card-loop.mp4",
+      "cardLoopWeb": "card-loop-web.mp4",
+      "cardStill": "card-still.jpg"
+    }
+  },
+  "previewFilm": {
+    "bitrateMbps": 2.5
+  },
+  "tiers": {
+    "draft": { "samplesPerFrame": 2 },
+    "review": { "samplesPerFrame": 8 },
+    "final": { "samplesPerFrame": 24 }
+  },
+  "live": {
+    "defaultQuality": "auto",
+    "probeFrames": 90,
+    "quality": {
+      "high": { "particleFraction": 1.0, "pixelRatioCap": 2, "shadowMapPx": 2048, "surfaceReflection": "planar", "minFps": 50 },
+      "medium": { "particleFraction": 0.6, "pixelRatioCap": 1.5, "shadowMapPx": 1024, "surfaceReflection": "planar", "minFps": 40 },
+      "low": { "particleFraction": 0.3, "pixelRatioCap": 1, "shadowMapPx": 1024, "surfaceReflection": "baked", "minFps": 30 }
+    },
+    "orbitYawDeg": 35,
+    "orbitPitchMinDeg": 2,
+    "orbitPitchMaxDeg": 24,
+    "hintAfterSeconds": 5,
+    "loadWaitSeconds": 4
+  },
+  "perf": {
+    "maxTriangles": { "high": 1800000, "medium": 1100000, "low": 600000 },
+    "maxDrawCalls": 140,
+    "probeSeconds": 15
+  },
+  "assetSets": {
+    "web": { "baseMapPx": 2048, "interiorMapPx": 2048, "maxTextureMb": 500 },
+    "full": { "baseMapPx": 4096, "interiorMapPx": 4096, "maxTextureMb": 2000 }
+  },
+  "globe": {
+    "sphereDiameterMm": 120,
+    "glassThicknessMm": 3,
+    "liquidIor": 1.333,
+    "glassIor": 1.5,
+    "baseHeightMm": 42,
+    "baseDiameterMm": 116,
+    "collarDepthMm": 14,
+    "islandLevelMm": 60
+  },
+  "cameras": {
+    "hero": { "fovDeg": 16, "distanceMm": 620, "yawDeg": 0, "pitchDeg": 9, "aimHeightMm": 71 },
+    "macro": { "fovDeg": 16, "distanceMm": 150, "yawDeg": -5, "pitchDeg": 4, "aimHeightMm": 82 },
+    "interior": { "fovDeg": 16, "distanceMm": 260, "yawDeg": 0, "pitchDeg": 6, "aimHeightMm": 86 },
+    "base": { "fovDeg": 16, "distanceMm": 250, "yawDeg": 10, "pitchDeg": 5, "aimHeightMm": 24 },
+    "surface": { "fovDeg": 16, "distanceMm": 330, "yawDeg": 24, "pitchDeg": 14, "aimHeightMm": 6 },
+    "low": { "fovDeg": 20, "distanceMm": 520, "yawDeg": -18, "pitchDeg": 2, "aimHeightMm": 60 }
+  },
+  "framing": {
+    "heroFillMin": 0.8,
+    "heroFillMax": 0.88,
+    "macroMaxRadiusFraction": 0.85
+  },
+  "shake": {
+    "liftBeats": 1,
+    "strokeBeats": 2,
+    "setDownBeats": 1,
+    "strokes": 6,
+    "liftMm": 18,
+    "strokeMm": 22,
+    "tiltDeg": 14,
+    "landSettleSeconds": 0.4,
+    "swapWindow": { "fromBeat": 2.0, "toBeat": 3.0 },
+    "coverOpacity": 0.9,
+    "minCoverAtSwap": 0.85,
+    "settleCheckSeconds": 3,
+    "minVisibleAfterSettle": 0.6,
+    "spinDownSeconds": 3.5
+  },
+  "states": {
+    "landedSeconds": 0.5,
+    "restSeconds": 12,
+    "settledSeconds": 40
+  },
+  "sim": {
+    "stepHz": 240,
+    "checkpointSeconds": 2,
+    "maxInsideFraction": 0.002
+  },
+  "particles": {
+    "tuneMin": 0.5,
+    "tuneMax": 2,
+    "winter": [
+      { "kind": "flake", "count": 90000 },
+      { "kind": "glitter", "count": 12000 }
+    ],
+    "spring": [
+      { "kind": "petal", "count": 24000 },
+      { "kind": "mote", "count": 20000 }
+    ],
+    "summer": [
+      { "kind": "firefly", "count": 700 },
+      { "kind": "seed", "count": 9000 },
+      { "kind": "mote", "count": 40000 }
+    ],
+    "fall": [
+      { "kind": "leaf", "count": 16000 },
+      { "kind": "ember", "count": 6000 },
+      { "kind": "mote", "count": 20000 },
+      { "kind": "bat", "count": 7 }
+    ]
+  },
+  "scene": {
+    "bokehLights": 60,
+    "ambientPeriodSeconds": 8
+  },
+  "units": [
+    { "id": "winter", "phase": 3, "name": "Winter and the shake" },
+    { "id": "spring", "phase": 4, "name": "Spring" },
+    { "id": "summer", "phase": 4, "name": "Summer" },
+    { "id": "fall", "phase": 4, "name": "Fall" },
+    { "id": "change", "phase": 4, "name": "The four season changes" },
+    { "id": "globe", "phase": 5, "name": "The whole globe as a visitor uses it" },
+    { "id": "film", "phase": 6, "name": "The two films and the card loop" }
+  ],
+  "lookLockUnit": "winter",
+  "buildOrderAfterLookLock": ["spring", "summer", "fall", "change"],
+  "settledAll": [
+    "In -a the globe may sit a little left or right of centre. In -b it is centred. Compare the globe, the base and the surface around them, not where they sit in the frame.",
+    "In -a the dark background carries a faint grid of 8 pixel blocks left by image compression. In -b the background is smooth."
+  ],
+  "keys": [
+    { "id": "winter-rest", "unit": "winter", "image": "references/approved/winter-rest.png", "season": "winter", "state": "rest", "camera": "hero", "format": "hd",
+      "settled": [
+        "In -a the snowfall is thin and most flakes are one size. In -b the snow is far denser, with fine and large flakes at many depths, some close to the glass.",
+        "In -a a faint pale band runs down the far left of the frame. In -b it is absent."
+      ] },
+    { "id": "winter-shake", "unit": "winter", "image": "references/approved/winter-shake.png", "season": "winter", "state": "landed", "camera": "hero", "format": "hd",
+      "settled": [
+        "In -a the tree crown is fairly clear of the storm. In -b more than half of the miniature is hidden by it."
+      ] },
+    { "id": "spring-rest", "unit": "spring", "image": "references/approved/spring-rest.png", "season": "spring", "state": "rest", "camera": "hero", "format": "hd",
+      "settled": [
+        "In -a the mushrooms and the trickle of water on the base are hard to see. In -b both are clearly visible."
+      ] },
+    { "id": "spring-shake", "unit": "spring", "image": "references/approved/spring-shake.png", "season": "spring", "state": "landed", "camera": "hero", "format": "hd",
+      "settled": [
+        "In -a the glass carries fewer rain trails and beads than the same globe at rest. In -b it carries the same trails and beads as at rest.",
+        "In -a the mushrooms and the trickle of water on the base are hard to see. In -b both are clearly visible."
+      ] },
+    { "id": "summer-rest", "unit": "summer", "image": "references/approved/summer-rest.png", "season": "summer", "state": "rest", "camera": "hero", "format": "hd",
+      "settled": [
+        "In -a the particles in the liquid are pale and read close to snow. In -b they are yellow-green fireflies that hover and blink, drifting dandelion seeds and fine golden motes.",
+        "In -a the light on the surface left of the base is thin gold veins running out from one point. In -b it is a soft pool of refracted light with a few broad curved bands.",
+        "In -a the base carries few shells and the stone is only lightly carved. In -b it carries more shells and sea glass and the stone is more deeply carved."
+      ] },
+    { "id": "summer-shake", "unit": "summer", "image": "references/approved/summer-shake.png", "season": "summer", "state": "landed", "camera": "hero", "format": "hd",
+      "settled": [
+        "In -a dark green leaf fragments fly in the storm and the tree crown looks shredded. In -b the crown is whole and no leaves fly.",
+        "In -a the fireflies are pale. In -b they are yellow-green.",
+        "In -a the light on the surface left of the base is thin gold veins running out from one point. In -b it is a soft pool of refracted light with a few broad curved bands.",
+        "In -a the base carries few shells and the stone is only lightly carved. In -b it carries more shells and sea glass and the stone is more deeply carved."
+      ] },
+    { "id": "fall-rest", "unit": "fall", "image": "references/approved/fall-rest.png", "season": "fall", "state": "rest", "camera": "hero", "format": "hd",
+      "settled": [
+        "In -a thorn stems cross parts of the lit faces on the base. In -b every lit face is unobstructed.",
+        "In -a the black iron base is hard to tell from the dark surface. In -b a thin rim of light separates it.",
+        "In -a the glass is drawn slightly larger than in the other seasons. In -b it is the same size in all four."
+      ] },
+    { "id": "fall-shake", "unit": "fall", "image": "references/approved/fall-shake.png", "season": "fall", "state": "landed", "camera": "hero", "format": "hd",
+      "settled": [
+        "In -a the pumpkins and the tree differ from the same globe at rest. In -b the miniature is exactly the at-rest miniature, seen through the storm, with its ember lights.",
+        "In -a thorn stems cross parts of the lit faces on the base. In -b every lit face is unobstructed.",
+        "In -a the black iron base is hard to tell from the dark surface. In -b a thin rim of light separates it.",
+        "In -a the glass is drawn slightly larger than in the other seasons. In -b it is the same size in all four."
+      ] }
+  ],
+  "stills": [
+    { "id": "winter-interior", "unit": "winter", "season": "winter", "state": "rest", "camera": "interior", "format": "hd" },
+    { "id": "winter-base", "unit": "winter", "season": "winter", "state": "rest", "camera": "base", "format": "hd" },
+    { "id": "winter-surface", "unit": "winter", "season": "winter", "state": "rest", "camera": "surface", "format": "hd" },
+    { "id": "winter-settled", "unit": "winter", "season": "winter", "state": "settled", "camera": "hero", "format": "hd" },
+    { "id": "winter-macro", "unit": "winter", "season": "winter", "state": "rest", "camera": "macro", "format": "hd" },
+    { "id": "spring-interior", "unit": "spring", "season": "spring", "state": "rest", "camera": "interior", "format": "hd" },
+    { "id": "spring-base", "unit": "spring", "season": "spring", "state": "rest", "camera": "base", "format": "hd" },
+    { "id": "spring-surface", "unit": "spring", "season": "spring", "state": "rest", "camera": "surface", "format": "hd" },
+    { "id": "spring-settled", "unit": "spring", "season": "spring", "state": "settled", "camera": "hero", "format": "hd" },
+    { "id": "summer-interior", "unit": "summer", "season": "summer", "state": "rest", "camera": "interior", "format": "hd" },
+    { "id": "summer-base", "unit": "summer", "season": "summer", "state": "rest", "camera": "base", "format": "hd" },
+    { "id": "summer-surface", "unit": "summer", "season": "summer", "state": "rest", "camera": "surface", "format": "hd" },
+    { "id": "summer-settled", "unit": "summer", "season": "summer", "state": "settled", "camera": "hero", "format": "hd" },
+    { "id": "fall-interior", "unit": "fall", "season": "fall", "state": "rest", "camera": "interior", "format": "hd" },
+    { "id": "fall-base", "unit": "fall", "season": "fall", "state": "rest", "camera": "low", "format": "hd" },
+    { "id": "fall-surface", "unit": "fall", "season": "fall", "state": "rest", "camera": "surface", "format": "hd" },
+    { "id": "fall-settled", "unit": "fall", "season": "fall", "state": "settled", "camera": "hero", "format": "hd" },
+    { "id": "screen-wide", "unit": "globe", "season": "winter", "state": "rest", "camera": "hero", "format": "hd", "interface": true },
+    { "id": "screen-wide-fall", "unit": "globe", "season": "fall", "state": "rest", "camera": "hero", "format": "hd", "interface": true },
+    { "id": "screen-phone", "unit": "globe", "season": "spring", "state": "rest", "camera": "hero", "format": "phone", "interface": true },
+    { "id": "screen-tablet", "unit": "globe", "season": "summer", "state": "rest", "camera": "hero", "format": "tablet", "interface": true }
+  ],
+  "detail": {
+    "focusCocPx": 1.5,
+    "minTexelsPerPixel": 1.0,
+    "maxSoftPixelFraction": 0.03,
+    "minSharpnessRatio": 0.75
+  },
+  "assets": {
+    "maxTakesPerAsset": 6,
+    "maxTuningLooksPerPart": 40,
+    "maxStudySources": 12
+  },
+  "audio": {
+    "sampleRate": 48000,
+    "maxTakesPerCue": 3,
+    "candidates": ["one-piece", "four-tracks"],
+    "appLoopBars": 8,
+    "filmLoudnessLufs": -14,
+    "truePeakDb": -1,
+    "appMaxMb": 8,
+    "sfx": [
+      { "id": "lift", "seconds": 0.5 },
+      { "id": "shake-winter", "seconds": 2.6 },
+      { "id": "shake-spring", "seconds": 2.6 },
+      { "id": "shake-summer", "seconds": 2.6 },
+      { "id": "shake-fall", "seconds": 2.6 },
+      { "id": "land-winter", "seconds": 1.5 },
+      { "id": "land-spring", "seconds": 1.5 },
+      { "id": "land-summer", "seconds": 1.5 },
+      { "id": "land-fall", "seconds": 1.5 },
+      { "id": "amb-winter", "seconds": 20 },
+      { "id": "amb-spring", "seconds": 20 },
+      { "id": "amb-summer", "seconds": 20 },
+      { "id": "amb-fall", "seconds": 20 },
+      { "id": "glass-clink", "seconds": 0.3 },
+      { "id": "music-box", "seconds": 2 },
+      { "id": "ui-tick", "seconds": 0.08 },
+      { "id": "ui-sound-on", "seconds": 0.4 },
+      { "id": "key-tap", "seconds": 0.1 },
+      { "id": "ui-send", "seconds": 0.3 },
+      { "id": "riser", "seconds": 1.2 }
+    ]
+  },
+  "quality": {
+    "passScore": 9,
+    "blockoutPass": 7,
+    "blockoutMaxRounds": 2,
+    "lookLockMaxRounds": 5,
+    "maxRoundsPerUnit": 3,
+    "globeMaxRounds": 2,
+    "polishMaxRounds": 2,
+    "filmMaxRounds": 2,
+    "plateauRounds": 2,
+    "recordRoundMaxRuns": 2,
+    "gauntletMaxPasses": 2,
+    "gateFixMaxAttempts": 5,
+    "compressionStressMbps": 5,
+    "jury": {
+      "jurors": 5,
+      "maxShareGap": 0.2,
+      "stillsPerUnit": 4
+    },
+    "crossMachineMinPsnr": 45
+  },
+  "critics": {
+    "maxImageLongEdgePx": 1400,
+    "contactSheetFrames": 12,
+    "phonePreviewWidthPx": 400,
+    "maxFilesPerMessage": 10
+  },
+  "status": {
+    "minGapMinutes": 10,
+    "maxPictures": 4,
+    "pictureLongEdgePx": 1200
+  },
+  "budget": {
+    "runHours": 36,
+    "phaseHours": {
+      "0": 4,
+      "1": 1,
+      "2": 6,
+      "3": 11,
+      "4": 9.5,
+      "5": 4.5
+    },
+    "afterReviewHours": 12,
+    "reserveHours": {
+      "5": 2.5,
+      "6": 7
+    },
+    "reviewRoundHours": 3,
+    "continueHours": 12,
+    "extendHours": 8,
+    "wrapUpMinutes": 20,
+    "floorFixMinutes": 90,
+    "statusMaxGapMinutes": 30,
+    "jobOverrunFactor": 2,
+    "agentWaitMinutes": 45,
+    "buildAgentMaxHours": 3,
+    "defaultJobMinutes": 30,
+    "toolRetryMax": 3
+  },
+  "sandbox": {
+    "stepTimeoutMinutes": 10,
+    "chunkBudgetMinutes": 7,
+    "previewFilmMaxHours": 2,
+    "reviewCutMaxHours": 1,
+    "cardLoopMaxHours": 1,
+    "maxRenderProcesses": 1,
+    "maxFramesOnDisk": 450,
+    "minFreeDiskGb": 3,
+    "maxDownloadGb": 2,
+    "maxAgents": 16,
+    "criticSlots": 6
+  },
+  "deliver": {
+    "sandboxMaster": false,
+    "cardLoop": {
+      "seconds": 8,
+      "fps": 30,
+      "season": "auto",
+      "camera": "hero",
+      "format": "hd",
+      "shakeStartSeconds": 0.8,
+      "pickJurors": 5,
+      "webWidth": 1280,
+      "webBitrateMbps": 3
+    }
+  }
+}
