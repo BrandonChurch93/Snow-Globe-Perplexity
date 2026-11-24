@@ -24,7 +24,7 @@ const AXIS = new THREE.Vector3(1, 0, 0)
 function centre(w: Wisp, t: number, phase: number, storm: number, out: [number, number, number]): void {
   const a = TURN * phase
   const k = Math.pow(t, 1.5)
-  const bend = t * t
+  const bend = t * t * (0.35 + 0.65 * t)
   const gust = storm * Math.pow(t, 1.2) * w.sweepMm
   const sx = w.sway * k * Math.sin(t * 6.3 - a + 0.6) + w.curl * k * t * Math.sin(t * 11 - 2 * a + 2.1)
   const sz = 0.7 * w.sway * k * Math.sin(t * 4.9 - a + 2.1) + w.curl * k * t * Math.cos(t * 9 - 2 * a)
@@ -49,7 +49,7 @@ export function wispPose(g: THREE.BufferGeometry, w: Wisp, phase: number, storm:
     dir.set(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]).normalize()
     side.copy(AXIS).cross(dir).normalize()
     other.copy(dir).cross(side).normalize()
-    const r = (w.thin + (w.wide - w.thin) * Math.pow(t, 0.8)) * (1 + 0.5 * storm * t) * (1 + 0.22 * t * Math.sin(t * 9.5 - 2 * TURN * phase))
+    const r = (w.thin + (w.wide - w.thin) * Math.pow(t, 0.8)) * (1 + 0.5 * storm * t) * (1 + 0.3 * t * Math.sin(t * 9.5 - 2 * TURN * phase) + 0.16 * Math.sqrt(t) * Math.sin(t * 23 - 4 * TURN * phase + 1.3))
     for (let k = 0; k <= w.sides; k++) {
       const ang = (k / w.sides) * TURN
       const nx = Math.cos(ang) * side.x + Math.sin(ang) * other.x
@@ -135,12 +135,19 @@ void main() {
   float t = vUv.y;
   float rise = uClock * ${laps.toFixed(1)} * WISP_ROWS;
   vec2 p = vec2(vUv.x * 4.0 + t * 1.3, t * WISP_ROWS - rise);
-  float n = 0.6 * wispNoise(p, WISP_ROWS) + 0.4 * wispNoise(p * 2.0 + vec2(1.7, 0.0), WISP_ROWS * 2.0);
-  float body = pow(abs(dot(normalize(vN), normalize(vV))), 2.2);
-  float along = smoothstep(0.0, 0.04, t) * pow(1.0 - t, 1.5);
-  float torn = mix(1.0, 0.25 + 1.5 * n * n, clamp(t * 1.6 + uStorm, 0.0, 1.0));
+  float n1 = wispNoise(p, WISP_ROWS);
+  float n2 = wispNoise(p * 2.0 + vec2(1.7 + 0.9 * n1, 0.0), WISP_ROWS * 2.0);
+  float n3 = wispNoise(p * 4.0 + vec2(0.3 + 1.3 * n2, 0.0), WISP_ROWS * 4.0);
+  float n = 0.5 * n1 + 0.3 * n2 + 0.2 * n3;
+  float facing = abs(dot(normalize(vN), normalize(vV)));
+  float ragged = mix(0.12, 0.78, clamp(0.55 * n1 + 0.45 * n3 + 0.45 * t - 0.2, 0.0, 1.0));
+  float body = smoothstep(ragged, 1.0, facing);
+  body *= body * (0.55 + 0.45 * facing);
+  float along = smoothstep(0.0, 0.07, t) * pow(1.0 - t, 1.0);
+  float gaps = smoothstep(0.24 + 0.3 * t, 0.56 + 0.3 * t, n + 0.3 * (1.0 - t));
+  float torn = mix(1.0, gaps * (0.5 + n2), clamp(t * 2.4 + uStorm, 0.0, 1.0));
   float a = clamp(body * along * torn * ${strength.toFixed(3)} * (1.0 - 0.6 * uStorm), 0.0, 1.0);
-  vec3 lit = stageCold(vStageLocal) * 4.6 + stageGrid(vStageLocal) * 1.4;
+  vec3 lit = stageCold(vStageLocal) * 2.6 + stageGrid(vStageLocal) * 1.0;
   vec3 col = ${`vec3(${tint[0].toFixed(4)}, ${tint[1].toFixed(4)}, ${tint[2].toFixed(4)})`} * lit;
   float fog = stageVeil(vStageAux.x);
   gl_FragColor = vec4(stageFogged(col, stageGrid(vStageLocal), fog), a);

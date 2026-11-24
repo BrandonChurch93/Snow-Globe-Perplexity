@@ -28,7 +28,7 @@ const MORTAR_C = lin('#6b5d50')
 const DIRT = lin('#4b4538')
 const IRON = lin('#15161a')
 const DOOR = lin('#5a3620')
-const FRAME = lin('#3e2716')
+const FRAME = lin('#5a3d26')
 const FENCE = lin('#a87a55')
 const PICKET_C = lin('#d8d2ca')
 const PICKET = { each: 7, clear: 0.95, thick: 0.15, wide: 0.24, over: 0.5 }
@@ -56,7 +56,8 @@ function stone(W, x, y, w, h, o = {}) {
     if (o.rake) py = Math.min(py, o.rake(px))
     P.setXYZ(i, px, py, P.getZ(i) + MORTAR + (o.lift ?? 0))
   }
-  const tone = mul3(pick(o.tones ?? STONES), 0.62 + 0.7 * R())
+  const vary = o.vary ?? 0.7
+  const tone = mul3(pick(o.tones ?? STONES), (0.97 - vary / 2 + vary * R()) * (o.dim ?? 1))
   const c = mix3(tone, DIRT, o.dirt === false ? 0 : smooth(1.4, -1.4, y) * 0.5)
   solid.add(g, { matrix: W.M, color: c, surf: stoneSurf(), uv: planar(W.U, W.V), uvOffset: off() })
 }
@@ -154,8 +155,6 @@ function windowAt(W, w, pane) {
   bar(W, w.width + 2 * fr, fr, dep, w.x, w.sill - fr / 2, z, mul3(FRAME, 0.9 + 0.2 * R()), { along: 'x' })
   bar(W, fr, w.height, dep, w.x - w.width / 2 - fr / 2, cy, z, mul3(FRAME, 0.9 + 0.2 * R()))
   bar(W, fr, w.height, dep, w.x + w.width / 2 + fr / 2, cy, z, mul3(FRAME, 0.9 + 0.2 * R()))
-  bar(W, 0.18, w.height, 0.2, w.x + 0.03, cy, MORTAR + 0.42, mul3(FRAME, 0.8))
-  bar(W, w.width, 0.18, 0.2, w.x, w.sill + w.height * 0.53, MORTAR + 0.43, mul3(FRAME, 0.8), { along: 'x' })
   const sill = slab(w.width + 1.5, 0.52, 1.25, { round: 0.17, sx: 7, sy: 2, sz: 3, warp: 0.05, seed: R() * 40 }).applyMatrix4(T(w.x, w.sill - fr - 0.24, MORTAR + 0.6))
   shade(sill, (px, py) => 0.85 + 0.25 * noise(px * 2.2, py * 2.2, 8))
   solid.add(sill, { matrix: W.M, color: mul3(pick(ARCH), 0.95), surf: stoneSurf(), uv: planar(W.U, W.V), uvOffset: off(), renormal: true })
@@ -249,6 +248,8 @@ const right = { M: frame(P3(C.halfWidth, 0, 0), neg(U3), UP, V3), U: neg(U3), V:
 const rear = { M: frame(P3(0, 0, -C.halfLength), neg(V3), UP, neg(U3)), U: neg(V3), V: UP }
 const BASE = -1.8
 const rake = (x) => C.wall + C.rise * (1 - Math.abs(x) / C.halfWidth) - 0.1
+const SIDE_DIM = 0.6
+const BLOCK = { rowH: 1.06, rowJ: 0.36, wide: 1.7, wideJ: 0.9, gap: 0.075, stack: 0.1, drift: 0.05, stone: { depth: 0.3, vary: 0.42, pillow: { square: 6.5, shear: 0.11, wobble: 0.05, lump: 0.3, tilt: 0.36, edge: 6.5 } } }
 const gableTop = (y) => (y <= C.wall ? C.halfWidth + 0.3 : C.halfWidth * (1 - (y - C.wall) / C.rise))
 const doorR = C.door.width / 2 + 1.47
 const doorSpring = C.door.height - C.door.width / 2
@@ -264,15 +265,15 @@ wall(front, {
   rake,
   holes: [
     { x0: C.door.across - doorR, x1: C.door.across + doorR, y0: -9, y1: doorSpring, arch: { cx: C.door.across, cy: doorSpring, r: doorR } },
-    { x0: win.across - win.width / 2 - 0.55, x1: win.across + win.width / 2 + 0.55, y0: win.sill - 0.95, y1: win.sill + win.height + 1.25 },
+    { x0: win.across - win.width / 2 - 0.42, x1: win.across + win.width / 2 + 0.42, y0: win.sill - 0.95, y1: win.sill + win.height + 1.25 },
   ],
-})
+}, BLOCK)
 mortar(front, -C.halfWidth, C.halfWidth, BASE, C.wall, true)
 archAt(front)
 doorAt(front)
 windowAt(front, { x: win.across, sill: win.sill, width: win.width, height: win.height }, paneGable)
 
-wall(left, { x0: -C.halfLength - 0.3, x1: C.halfLength + 0.3, y0: BASE, y1: C.wall + 0.1, holes: [{ x0: side.along - side.width / 2 - 0.55, x1: side.along + side.width / 2 + 0.55, y0: side.sill - 0.95, y1: side.sill + side.height + 1.25 }] })
+wall(left, { x0: -C.halfLength - 0.3, x1: C.halfLength + 0.3, y0: BASE, y1: C.wall + 0.1, holes: [{ x0: side.along - side.width / 2 - 0.42, x1: side.along + side.width / 2 + 0.42, y0: side.sill - 0.95, y1: side.sill + side.height + 1.25 }] }, { ...BLOCK, stone: { ...BLOCK.stone, dim: SIDE_DIM } })
 mortar(left, -C.halfLength, C.halfLength, BASE, C.wall + 0.1, false)
 windowAt(left, { x: side.along, sill: side.sill, width: side.width, height: side.height }, paneSide)
 
@@ -358,15 +359,15 @@ for (const [k, f] of chimneyFaces.entries()) {
   wall(W, { x0: -f.half - 0.12, x1: f.half + 0.12, y0: stackBase, y1: stackTop }, { rowH: 0.66, rowJ: 0.1, wide: 1.05, wideJ: 0.3, gap: 0.1, stack: 0, drift: 0.03, stone: { depth: 0.24, su: 3, sv: 3, tones: BRICKS, dirt: false, pillow: { square: 6, shear: 0.07, wobble: 0.035, lump: 0.34, tilt: 0.3 } } })
   const back = new THREE.PlaneGeometry(2 * f.half, stackTop - stackBase, 4, 8).applyMatrix4(T(0, (stackTop + stackBase) / 2, MORTAR + 0.04))
   shade(back, (x, y) => 0.8 + 0.3 * noise(x * 2, y * 2, k))
-  solid.add(back, { matrix: W.M, color: lin('#5e5048'), surf: [surf(KIND.stone, 0.95), 0], uv: planar(f.U, f.V), uvOffset: off(), renormal: true })
+  solid.add(back, { matrix: W.M, color: lin('#7c695d'), surf: [surf(KIND.stone, 0.95), 0], uv: planar(f.U, f.V), uvOffset: off(), renormal: true })
 }
 const crown = (w, l, h, y, tone, round) => {
   const g = slab(w, h, l, { round, sx: 6, sy: 2, sz: 6, warp: 0.035, seed: R() * 20 })
   shade(g, (x, yy, z) => 0.82 + 0.3 * noise(x * 2.4, yy * 2.4, z * 2.4))
   solid.add(g, { matrix: basis(P3(ch.across, y, ch.along), V3, UP), color: tone, surf: stoneSurf(), uvOffset: off(), renormal: true })
 }
-crown(2 * ch.half + 0.75, 2 * ch.halfAlong + 0.75, 0.5, stackTop + 0.22, lin('#8c7f73'), 0.14)
-crown(2 * ch.half + 0.3, 2 * ch.halfAlong + 0.3, 0.42, stackTop + 0.64, lin('#7b4233'), 0.12)
+crown(2 * ch.half + 0.42, 2 * ch.halfAlong + 0.42, 0.44, stackTop + 0.22, lin('#8c7f73'), 0.14)
+crown(2 * ch.half + 0.16, 2 * ch.halfAlong + 0.16, 0.42, stackTop + 0.64, lin('#7b4233'), 0.12)
 const pot = new THREE.LatheGeometry([[0.36, 0], [0.5, 0.05], [0.52, 0.3], [0.44, 0.45], [0.42, 1.25], [0.52, 1.35], [0.53, 1.55], [0.4, 1.6], [0.34, 1.45], [0.3, 0.2]].map(([x, y]) => new THREE.Vector2(x, y)), 14)
 shade(pot, (x, y, z) => 0.75 + 0.35 * noise(x * 3, y * 2, z * 3))
 solid.add(pot, { matrix: T(...P3(ch.across - 0.2, stackTop + 0.82, ch.along + 0.1)), color: lin('#1f2023'), surf: [surf(KIND.iron, 0.5), 0], uvOffset: off(), renormal: true })
@@ -492,7 +493,7 @@ for (const sh of shrubs) {
   const pos = []
   const nor = []
   const col = []
-  const leaves = 300
+  const leaves = 1100
   for (let i = 0; i < leaves; i++) {
     const u = R() * 2 - 0.25
     const yy = clamp(u, -0.25, 1)
@@ -502,9 +503,9 @@ for (const sh of shrubs) {
     const k = 0.84 + 0.2 * R()
     const p = [centre[0] + d[0] * sh.r[0] * k, centre[1] + d[1] * sh.r[1] * k, centre[2] + d[2] * sh.r[2] * k]
     const tip = norm3([d[0] + (R() - 0.5) * 0.9, d[1] * 0.6 + 0.45 + (R() - 0.5) * 0.6, d[2] + (R() - 0.5) * 0.9])
-    const len = 0.6 + 0.45 * R()
+    const len = 0.3 + 0.24 * R()
     const sideV = norm3([tip[1] * d[2] - tip[2] * d[1] + (R() - 0.5) * 0.4, tip[2] * d[0] - tip[0] * d[2], tip[0] * d[1] - tip[1] * d[0] + (R() - 0.5) * 0.4])
-    const w = 0.2 + 0.12 * R()
+    const w = 0.09 + 0.06 * R()
     const mid = add3(p, sc(tip, len * 0.45))
     const A = p
     const B = add3(mid, sc(sideV, w))
