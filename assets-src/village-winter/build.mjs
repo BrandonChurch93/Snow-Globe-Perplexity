@@ -267,7 +267,7 @@ function snowAt(x, z) {
 }
 const BANK_TOP = 0.3
 const BANK_BLEND_MM = 5
-const BILLOW = { cycles: 6.5, deepMm: 2.8, clumps: 21, clumpMm: 0.7, grains: 40, grainMm: 0.32, crestMm: 0.45, crestFine: 0.2 }
+const BILLOW = { cycles: 6.5, deepMm: 2.2, clumps: 21, clumpMm: 0.7, grains: 40, grainMm: 0.32, crestMm: 0.45, crestFine: 0.2 }
 const UNDERCUT = { dark: 0.88, from: 0.985, to: 1.022, arc: [-135, -115, -5, 25] }
 function contact(x, z) {
   let k = 1

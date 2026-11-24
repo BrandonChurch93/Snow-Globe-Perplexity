@@ -134,7 +134,7 @@ void main() {
   float body = (g * g * g * ${look.strength.toFixed(3)} * vHaloSize.y + hot) * beat * seen;
   vec3 warm = mix(${v3(edge)}, ${v3(core)}, glow) * (1.0 + ${look.hot.toFixed(2)} * hot);
   float a = clamp(body + spread, 0.0, 1.0);
-  gl_FragColor = vec4((warm * body + ${v3(look.glare ?? core)} * (1.0 + 1.5 * far * far * far * far) * spread) / max(body + spread, 1e-4), a);
+  gl_FragColor = vec4((warm * body + ${v3(look.glare ?? core)} * (1.0 + 3.0 * pow(far, 8.0)) * spread) / max(body + spread, 1e-4), a);
 }
 `,
   })
