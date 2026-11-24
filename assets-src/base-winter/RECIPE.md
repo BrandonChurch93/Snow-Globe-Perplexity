@@ -55,5 +55,5 @@ Made by: assets-src/base-winter/mesh.mjs, carve.mjs, profile.mjs and lib.mjs thr
 From: assets-src/base-winter/profile.mjs (the profile measured from references/approved/winter-rest.png with assets-src/base-winter/measure.mjs and tools/lib/refcam.mjs), the two carving pictures above, config/showcase.json
 Prompt or command: npm run make -- base-winter (or: node assets-src/base-winter/build.mjs mesh)
 Takes: built, not generated
-Why this one: four meshes named wood, brass, snow and ice: the lathe with the carving as displacement and two cones of scales; rim, rope twist, ledge, collar and cup; the ledge's snow; 35 icicles, 18 of them placed from the approved image
+Why this one: four meshes named wood, brass, snow and ice, 58314 triangles: the lathe with a convex body, the carving as displacement and two cones of scales; a flared foot, a fine rope twist, ledge lip, a low collar ring and cup; the ledge's snow as heaps (HEAPS in mesh.mjs) that bank against the glass and hang over the lip; 35 icicles, 18 of them placed from the approved image and all hung from the snow's edge
 Date: 2026-11-24
