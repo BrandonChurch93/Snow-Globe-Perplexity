@@ -37,16 +37,16 @@ Status 28 · 2026-11-24 10:43 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 10:43 UTC
-clock: phase 3, tick of 0.0 minutes
-phase 3: 2.28 h used of its 11.00 h box
-allowance (before the review): 8.89 h used of 36.00 h allowed
-all time before the review: 8.89 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 10:50 UTC
+clock: phase 3, tick of 6.1 minutes
+phase 3: 2.38 h used of its 11.00 h box
+allowance (before the review): 8.99 h used of 36.00 h allowed
+all time before the review: 8.99 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 6
 ```
 
 ## Phases
@@ -867,3 +867,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 2026-11-24 10:24 to 10:42 UTC. After a compaction: this file, the addenda folder and Phase 3's read first files read again. `agent/p3-village` (`487b866`, the picture's layout) merged into `main`; the four tests it turned red were mine and are green again (decision 43: new `macro` and `interior` cameras, the macro focus, two bounds). Decisions 44 (key light from the upper right, as the image shows) and 45 (lift and tilt of the shake) logged. Two changes in frozen files asked for by builders: `globePoseAt` in `src/film/timeline.ts` and `loopGlobe` in `src/film/loop.ts` now ask a shake's path past its bar too, so the tilt can settle after the landing (`shake_builder`; the stand-in path answers rest there, so nothing moves yet); `standIn: false` on the light slice in `src/scene/stage.ts` is held until `agent/p3-light` is merged (`light_builder`). Earlier and not yet written here: `SourceSwitch` forwards `cover` (`26f5141`, asked by `liquid_builder`); `repo_courier` also watches the builders' looks branches and wakes me when one moves. New looks seen: the tree's real trunk at `macro` and `hero` (bare, no crown yet), the liquid's and the shake's baselines. Clock ticked 10:34.
 
 - 2026-11-24 10:44 UTC. Status 28 posted: three pictures from the builders' looks (the rebuilt glass shell against the approved image, the first pass of the light engine against it, the real trunk at the close camera), all starting points on stand-ins, none finished work. `main` pushed as `034f0bb`; all ten builders told to merge it. Next: wait on the builders, tick the clock, the next status by 11:14 UTC; first reports at about 11:30 UTC.
+
+- 2026-11-24 10:50 UTC. Decision 45's numbers, measured by `shake_builder` through `reachOf` at `hero`: `shake.liftMm` 7.25 (the top of the lift leans back 4.1 to 4.5 degrees and stands 7.5 to 9 mm further from the lens, and keeps 4.59 percent of the frame above the glass in the worst case; 7.5 mm does not hold with a lean of "a few degrees") and `shake.tiltDeg` 6, read as the cap on the whole angle between the globe's axis and the vertical (the rim rule allows 6.19 degrees at 7.25 mm). Tried on `main` with the stand-in path: two tests go red (the film test's stroke height against 0.7 of the lift, by 0.04 mm; `tests/sim.test.ts`, 91 percent of the particles floating at 0.7 of the bar against the 97 it asks), so the two numbers reach `main` together with the real path and the liquid's answer to it, and `main` stays at 13.5 and 14 until then. `liquid_builder` was told to build against the smaller shake and that no number in a test moves. `village_builder` pushed `0d0f0c8` (chimney on the left slope of the roof, roof slab 0.65 mm, as the picture has them; the shared model script). Clock ticked 10:50.
