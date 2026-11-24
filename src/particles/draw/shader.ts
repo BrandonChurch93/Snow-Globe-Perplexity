@@ -1,7 +1,7 @@
 import { COVER_GLSL } from '../../core/chunks/cover'
 import { VEIL_GLSL } from '../../core/chunks/veil'
 import { viewCode } from '../../diagnostics/views'
-import { EDGE_HIGH, EDGE_LOW, GLINT_HIGH, GLINT_LOW, LAMPS, LOBE_CORE, MAX_KINDS, PIXEL_SIGMA2 } from './looks'
+import { EDGE_HIGH, EDGE_LOW, GLITTER_STREAK, GLINT_HIGH, GLINT_LOW, LAMPS, LOBE_CORE, MAX_KINDS, PIXEL_SIGMA2, STREAK_HOLD } from './looks'
 
 const MEAN_LOBE = 0.42
 const n = (v: number) => (Number.isInteger(v) ? v.toFixed(1) : String(v))
@@ -18,6 +18,9 @@ varying vec4 vKind;
 varying vec4 vGrid;
 varying vec4 vDom;
 varying vec4 vFog;
+float pointSpread(float halfLong, float s2) {
+  return pow(1.0 + 2.0 * halfLong / sqrt(6.2831853 * s2), ${n(STREAK_HOLD)});
+}
 `
 
 export const VERT_PARS = `
@@ -126,9 +129,9 @@ export const VERT_MAIN = `
   mat3 toView = mat3(modelViewMatrix);
   if (afloat > 0.5 && uPoint.z > 0.0 && dot(moved, moved) > 1e-8) {
     #ifdef POINT_SPRITES
-    streak = (toView * moved).xy * (uPoint.z * uPoint.y * mag / zImg);
+    streak = (toView * moved).xy * (uPoint.z * (shape > 1.5 ? ${n(GLITTER_STREAK)} : 1.0) * uPoint.y * mag / zImg);
     #else
-    vec3 aheadW = (modelMatrix * vec4(nowL + moved * (0.5 * uPoint.z), 1.0)).xyz;
+    vec3 aheadW = (modelMatrix * vec4(nowL + moved * (0.5 * uPoint.z * (shape > 1.5 ? ${n(GLITTER_STREAK)} : 1.0)), 1.0)).xyz;
     vec4 aheadV = viewMatrix * vec4(lensPlace(aheadW, eye).xyz, 1.0);
     aheadV.xy += uAperture.xy;
     streak = 2.0 * uPoint.y * (aheadV.xy / -aheadV.z - view.xy / -view.z);
@@ -147,7 +150,7 @@ export const VERT_MAIN = `
   }
   float core = ${n(LOBE_CORE)} * rPx * (shape > 0.5 && shape < 1.5 ? ${n(MEAN_LOBE)} : 1.0);
   float c2 = core * core;
-  float amp = c2 / (c2 + s2x) / (1.0 + 2.0 * halfLong / sqrt(6.2831853 * (c2 + s2x)));
+  float amp = c2 / (c2 + s2x) / pointSpread(halfLong, c2 + s2x);
 
   vec3 axis = normalize(h.xyz * 2.0 - 1.0 + 1e-3);
   float angle = aData.w + 6.2831853 * h.w;
@@ -186,7 +189,7 @@ export const VERT_MAIN = `
   #ifdef POINT_SPRITES
   float side = 2.0 * max(ext.x, ext.y);
   gl_PointSize = side;
-  vCore = vec4(side, -side, amp, alpha);
+  vCore = vec4(side, reach, amp, alpha);
   #else
   vec2 off = position.xy * ext;
   vCore = vec4(off, amp, alpha);
@@ -223,7 +226,7 @@ void pointAdd(vec4 lobe, vec2 p, inout float f, inout vec3 nrm) {
   vec2 q = p - lobe.xy;
   q -= vStreak.xy * clamp(dot(q, vStreak.xy), -vStreak.z, vStreak.z);
   float sharp = r2 / s2;
-  float g = sharp / (1.0 + 2.0 * vStreak.z / sqrt(6.2831853 * s2)) * exp(-0.5 * dot(q, q) / s2);
+  float g = sharp / pointSpread(vStreak.z, s2) * exp(-0.5 * dot(q, q) / s2);
   f += g;
   nrm += g * (1.0 + 0.6 * lobe.w) * vec3(q / lobe.z * sharp, sqrt(max(1.0 - dot(q, q) / (lobe.z * lobe.z), 0.05)));
 }
@@ -236,7 +239,9 @@ void main() {
   vec4 k = uKindColor[kind];
   vec4 look = uKindLook[kind];
   #ifdef POINT_SPRITES
-  vec2 p = (gl_PointCoord - 0.5) * vCore.xy;
+  vec2 p = (gl_PointCoord - 0.5) * vec2(vCore.x, -vCore.x);
+  vec2 off = p - vStreak.xy * clamp(dot(p, vStreak.xy), -vStreak.z, vStreak.z);
+  if (dot(off, off) > vCore.y * vCore.y) discard;
   #else
   vec2 p = vCore.xy;
   #endif
@@ -278,7 +283,7 @@ void main() {
   vec3 light = mix(uGroundCol, uSkyCol, 0.5 + 0.5 * dot(nv, upV)) + uKeyCol * (kd * kd) + uRimCol * (rd * rd);
   light = light * 0.31831 + vGrid.rgb * ((0.35 + 0.65 * gd) * uTone.y);
   vec3 col = k.rgb * light;
-  col = mix(col, uVeil.rgb * vFog.rgb, vFog.a * uTone.z);
+  col = mix(col, uVeil.rgb * vFog.rgb, vFog.a * mix(uTone.z, 1.0, lying));
   col += flash * k.rgb * k.a;
   gl_FragColor = vec4(col * cover, cover);
 }`

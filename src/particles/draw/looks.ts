@@ -30,6 +30,9 @@ export const LENS_LOOK = {
   farShrink: 0.36,
   maxStreakPx: 110,
   sampleSpanSteps: 0.25,
+  stormSpanSteps: 9,
+  stormFrom: 0.3,
+  stormTo: 0.62,
   referenceHeightPx: 1080,
 }
 
@@ -53,5 +56,7 @@ export const LOBE_CORE = 0.5
 export const EDGE_LOW = 0.2
 export const EDGE_HIGH = 0.55
 export const PIXEL_SIGMA2 = 0.25
+export const STREAK_HOLD = 0.5
+export const GLITTER_STREAK = 0.22
 export const GLINT_LOW = 0.9925
 export const GLINT_HIGH = 0.9994

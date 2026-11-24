@@ -193,7 +193,9 @@ export class ParticleDraw {
   private lens(f: StageFrame): void {
     const u = this.uniforms
     const scale = f.height / LENS_LOOK.referenceHeightPx
-    const span = f.live ? SHUTTER : f.sample && f.view === '' ? LENS_LOOK.sampleSpanSteps : 0
+    const gate = Math.min(1, Math.max(0, (f.turbulence - LENS_LOOK.stormFrom) / (LENS_LOOK.stormTo - LENS_LOOK.stormFrom)))
+    const storm = LENS_LOOK.stormSpanSteps * gate * gate * (3 - 2 * gate)
+    const span = f.live ? SHUTTER + storm : f.sample && f.view === '' ? LENS_LOOK.sampleSpanSteps + storm : 0
     ;(u.uPoint!.value as THREE.Vector4).set(f.moment.mix, f.focalPx, span, scale)
     const pose = f.pose
     const dx = f.sample && pose.apertureMm > 0 ? f.sample.lu * pose.apertureMm : 0
