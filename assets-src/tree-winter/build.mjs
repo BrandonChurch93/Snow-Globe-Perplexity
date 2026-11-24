@@ -12,6 +12,7 @@ const NEEDLE_TILE_MM = 9
 const SNOW_TILE_MM = 7
 const STAR_H = 45.2
 const STAR_R = 2.45
+const HALO_R = 0.85
 
 const [T, R] = await loadSource(['/src/miniature/trunk.ts', '/src/core/rng.ts'])
 const rng = R.stream('tree-winter')
@@ -24,7 +25,7 @@ const smooth = (a, b, v) => {
 
 const wobble = (x, h, z) => 0.16 * Math.sin(1.9 * x + 0.3 * h) * Math.sin(2.3 * h + 1.1 * z) * Math.sin(1.7 * z + 0.5 * x) + 0.07 * Math.sin(4.3 * x + 1) * Math.sin(3.9 * h + 2) * Math.sin(4.7 * z)
 const needleField = (x, h, z) => T.crownField(x, h, z) + wobble(x, h, z)
-const snowField = (x, h, z) => T.crownCap(x, h, z) + 0.5 * wobble(0.8 * x + 3, 0.8 * h, 0.8 * z)
+const snowField = (x, h, z) => T.crownCap(x, h, z) + 0.9 * wobble(0.7 * x + 3, 0.7 * h, 0.7 * z)
 
 const gradient = (f, x, h, z, e = 0.08) => {
   const g = new THREE.Vector3(f(x + e, h, z) - f(x - e, h, z), f(x, h + e, z) - f(x, h - e, z), f(x, h, z + e) - f(x, h, z - e))
@@ -139,7 +140,7 @@ function needles() {
     const open = 0.6 * openness(needleField, x, h, z, n, 0.7) + 0.4 * openness(needleField, x, h, z, n, 1.8)
     const roof = smooth(0.1, 1.4, snowField(x, h + 0.9, z))
     const sky = 0.5 + 0.5 * n[1]
-    const shade = (0.3 + 0.7 * open) * (0.5 + 0.5 * sky) * (0.6 + 0.4 * roof)
+    const shade = (0.25 + 0.75 * open) * (0.3 + 0.7 * Math.pow(sky, 1.3)) * (0.55 + 0.45 * roof)
     const hue = 0.5 + 0.5 * Math.sin(0.7 * x + 1.3 * h + 0.9 * z) * Math.sin(1.1 * x - 0.6 * z + 2)
     return [shade * (0.86 + 0.3 * hue), shade * (0.98 + 0.06 * hue), shade * (0.9 - 0.16 * hue)]
   }
@@ -157,11 +158,11 @@ function needles() {
   const t = new THREE.Vector3()
   const b = new THREE.Vector3()
   for (let v = 0; v < count; v++) {
-    if (rng.next() > 0.105) continue
+    if (rng.next() > 0.2) continue
     p.fromArray(s.pos, v * 3)
     n.fromArray(s.nor, v * 3)
     if (snowField(p.x, p.y, p.z) < 0.25) continue
-    const size = rng.range(1.15, 1.9)
+    const size = rng.range(1.2, 2.1)
     t.set(rng.range(-1, 1), rng.range(-1, 1), rng.range(-1, 1))
     t.sub(n.clone().multiplyScalar(t.dot(n)))
     if (t.lengthSq() < 1e-4) continue
@@ -173,7 +174,7 @@ function needles() {
     const u0 = (cell % 2) * 0.5
     const v0 = Math.floor(cell / 2) * 0.5
     const c = shadeAt(v).map((k) => Math.min(1, k * 1.12 + 0.03))
-    const id = rng.next()
+    const id = rng.int(64)
     for (const across of [t, b]) {
       const base = pos.length / 3
       const flip = rng.sign()
@@ -246,7 +247,7 @@ function frames(points) {
 function strings() {
   const bulbs = []
   const wires = []
-  const drop = (at, out, group) => bulbs.push({ at: at.clone(), out: out.clone().normalize(), phase: rng.next(), warm: rng.next(), group })
+  const drop = (at, out, group) => bulbs.push({ at: at.clone(), out: out.clone().normalize(), phase: rng.int(64) / 64, warm: rng.next(), group })
 
   const helix = []
   const h0 = 4.6
@@ -262,7 +263,7 @@ function strings() {
     const out = new THREE.Vector3(Math.cos(phi), 0, Math.sin(phi))
     const p = new THREE.Vector3(ax + out.x * (r + 0.07), h, az + out.z * (r + 0.07))
     if (last) run += p.distanceTo(last)
-    if (!last || p.distanceTo(helix[helix.length - 1]) > 0.42) helix.push(p)
+    if (!last || p.distanceTo(helix[helix.length - 1]) > 0.6) helix.push(p)
     last = p
     if (run >= next) {
       drop(p.clone().addScaledVector(out, 0.2), out, 'trunk')
@@ -281,8 +282,8 @@ function strings() {
     for (let i = 1; i < f.length; i++) {
       const a = f[i - 1]
       const b = f[i]
-      for (let s = 0; s < 3; s++) {
-        const t = s / 3
+      for (let s = 0; s < 2; s++) {
+        const t = s / 2
         const along = lerp(a.along, b.along, t)
         if (along < total * 0.1) continue
         const ang = spin + along * 0.95
@@ -293,7 +294,7 @@ function strings() {
         wire.push(p)
         if (along >= mark) {
           drop(p.clone().addScaledVector(out, 0.2), out, limb.pad)
-          mark = along + rng.range(2.0, 2.9)
+          mark = along + rng.range(1.5, 2.3)
         }
       }
     }
@@ -306,10 +307,11 @@ function strings() {
     const side = new THREE.Vector3(...ax.side)
     const depth = new THREE.Vector3(...ax.depth)
     const centre = new THREE.Vector3(...pad.at)
-    const n = Math.max(4, Math.round(pad.size[0] * pad.size[2] * 0.17))
+    const n = Math.max(6, Math.round(pad.size[0] * pad.size[2] * 0.36))
     const ring = []
     for (let k = 0; k < n; k++) {
-      const th = (k / n) * TAU + rng.range(-0.25, 0.25)
+      const even = (k / n) * TAU + rng.range(-0.25, 0.25)
+      const th = even + 0.55 * Math.cos(even)
       const rim = rng.next() < 0.45
       const rho = rim ? 1.25 : rng.range(0.35, 0.8)
       const start = centre.clone().addScaledVector(side, Math.cos(th) * rho * pad.size[0]).addScaledVector(depth, Math.sin(th) * rho * pad.size[2])
@@ -410,15 +412,15 @@ function star() {
   const col = []
   const face = (a, b, c, glowShare) => {
     pos.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z)
-    for (let i = 0; i < 3; i++) col.push(1, 0.76, 0.34, glowShare)
+    for (let i = 0; i < 3; i++) col.push(1, 0.66, 0.2, glowShare)
   }
   const front = new THREE.Vector3(0, 0, 0.55)
   const back = new THREE.Vector3(0, 0, -0.55)
   for (let k = 0; k < 10; k++) {
     const a = pts[k]
     const b = pts[(k + 1) % 10]
-    face(front, a, b, k % 2 === 0 ? 0.2 : 0.12)
-    face(back, b, a, 0.1)
+    face(front, a, b, k % 2 === 0 ? 0.075 : 0.04)
+    face(back, b, a, 0.035)
   }
   const g = new THREE.BufferGeometry()
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
@@ -444,6 +446,17 @@ function lights() {
     g.applyMatrix4(new THREE.Matrix4().makeTranslation(b.at.x, b.at.y, b.at.z))
     colourOf(g, 1, 0.5 + 0.1 * b.warm, 0.13 + 0.08 * b.warm, 1)
     parts.push(phaseOf(g, b.phase, 1))
+    const halo = new THREE.IcosahedronGeometry(HALO_R, 0)
+    halo.deleteAttribute('uv')
+    const hp = halo.getAttribute('position')
+    const hn = halo.getAttribute('normal')
+    for (let i = 0; i < hp.count; i++) {
+      const v = new THREE.Vector3(hp.getX(i), hp.getY(i), hp.getZ(i)).normalize()
+      hn.setXYZ(i, v.x, v.y, v.z)
+    }
+    halo.applyMatrix4(new THREE.Matrix4().makeTranslation(b.at.x, b.at.y, b.at.z))
+    colourOf(halo, 1, 0.4 + 0.08 * b.warm, 0.08 + 0.04 * b.warm, 1)
+    parts.push(phaseOf(halo, b.phase, 3))
   }
   let wireTriangles = 0
   for (const w of wires) {
@@ -474,7 +487,7 @@ function arrival() {
     const col = []
     const index = []
     const across = 5
-    const most = limb.kind === 'root' ? 0.34 : 0.24
+    const most = limb.kind === 'root' ? 0.32 : 0.2
     for (let i = 0; i < f.length; i++) {
       const tan = f[i].tan
       const u = up.clone().sub(tan.clone().multiplyScalar(up.dot(tan)))
@@ -483,15 +496,16 @@ function arrival() {
       const side = new THREE.Vector3().crossVectors(tan, u)
       const ends = smooth(0, 0.12, f[i].along / total) * smooth(0, 0.1, 1 - f[i].along / total)
       const lump = 0.55 + 0.45 * Math.sin(f[i].along * 2.3 + n * 1.7) * Math.sin(f[i].along * 0.9 + n)
-      const thick = most * flat * flat * ends * smooth(0.3, 0.8, lump)
+      const thick = most * smooth(0.55, 0.95, flat) * ends * smooth(0.5, 0.9, lump)
       const seed = clamp01(0.5 + 0.5 * Math.sin(f[i].along * 1.4 + n * 2.1))
       for (let j = 0; j < across; j++) {
-        const a = lerp(-1.15, 1.15, j / (across - 1))
+        const a = lerp(-0.95, 0.95, j / (across - 1))
         const dir = u.clone().multiplyScalar(Math.cos(a)).addScaledVector(side, Math.sin(a))
         const r = limb.radii[i]
-        const edge = Math.cos((a / 1.15) * (Math.PI / 2))
-        const p0 = f[i].p.clone().addScaledVector(dir, r * 1.04 + 0.02)
-        const p1 = f[i].p.clone().addScaledVector(dir, r * 1.04 + 0.02 + thick * Math.pow(Math.max(edge, 0), 0.7))
+        const edge = Math.cos((a / 0.95) * (Math.PI / 2))
+        const rise = thick * Math.pow(Math.max(edge, 0), 0.7)
+        const p0 = f[i].p.clone().addScaledVector(dir, r * 0.86)
+        const p1 = f[i].p.clone().addScaledVector(dir, r * 0.86 + (r * 0.24 + 0.02) * smooth(0, 0.06, rise) + rise)
         pos.push(p1.x, p1.y, p1.z)
         base.push(p0.x, p0.y, p0.z, seed)
         uv.push(p1.x / SNOW_TILE_MM, p1.z / SNOW_TILE_MM)

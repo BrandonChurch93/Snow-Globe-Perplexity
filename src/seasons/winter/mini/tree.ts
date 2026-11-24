@@ -19,7 +19,8 @@ const FLICKER = 0.14
 const COVER_RISE = 0.12
 const WARM: [number, number, number] = [1, 0.7, 0.36]
 const GOLD: [number, number, number] = [1, 0.84, 0.52]
-const BULB = { power: 2.2, reachMm: 1.6, gain: 12 }
+const BULB = { power: 1.4, reachMm: 1.3, gain: 9 }
+const HALO = { cover: 0.55, edge: 2.5, glow: 0.85, core: 10 }
 const STAR_LOCAL: Vec3 = [0.05, 45.2, 0.1]
 
 const offset = crownOffset()
@@ -43,12 +44,11 @@ vec4 treeTri(sampler2D t, vec3 p, vec3 n) {
   w /= w.x + w.y + w.z;
   return texture2D(t, p.zy) * w.x + texture2D(t, p.xz) * w.y + texture2D(t, p.xy) * w.z;
 }
-vec3 treeBump(vec3 at, vec3 n, float h, float face) {
-  vec3 sx = dFdx(at);
-  vec3 sy = dFdy(at);
-  vec2 d = vec2(dFdx(h), dFdy(h)) * uBump / max(vec2(length(sx), length(sy)), vec2(1e-5));
-  sx = normalize(sx);
-  sy = normalize(sy);
+vec3 treeBump(vec3 sx, vec3 sy, vec2 dh, vec3 n, float face) {
+  vec2 len = max(vec2(length(sx), length(sy)), vec2(1e-5));
+  vec2 d = clamp(dh * uBump / len, vec2(-2.0), vec2(2.0));
+  sx /= len.x;
+  sy /= len.y;
   vec3 r1 = cross(sy, n);
   vec3 r2 = cross(n, sx);
   float det = dot(sx, r1) * face;
@@ -58,7 +58,8 @@ vec3 treeBump(vec3 at, vec3 n, float h, float face) {
 
 const TREE_VERT_PARS = 'varying vec3 vTreeP;\nvarying vec3 vTreeN;'
 const TREE_VERT = 'vTreeP = position;\nvTreeN = normal;'
-const TREE_BUMP = 'normal = treeBump(-vViewPosition, normal, treeH, faceDirection);'
+const TREE_SLOPES = 'vec3 treeSx = dFdx(-vViewPosition);\nvec3 treeSy = dFdy(-vViewPosition);\nvec2 treeDh = vec2(dFdx(treeH), dFdy(treeH));'
+const TREE_BUMP = 'normal = treeBump(treeSx, treeSy, treeDh, normal, faceDirection);'
 
 function needleHook(shader: Shader): void {
   glowHook(shader)
@@ -70,12 +71,13 @@ function needleHook(shader: Shader): void {
     .replace('#include <common>', `#include <common>\n${TREE_GLSL}\nuniform sampler2D uSprigs;\nvarying vec2 vCard;`)
     .replace(
       '#include <map_fragment>',
-      `vec4 treeC = treeTri(map, vTreeP * uTile, normalize(vTreeN));
-      if (vCard.x > 0.5) {
-        treeC = texture2D(uSprigs, vMapUv);
-        if (treeC.a < 0.04 + 0.96 * stageHash(vec3(gl_FragCoord.xy, uSeed + vCard.y))) discard;
-      }
+      `vec4 treeBody = treeTri(map, vTreeP * uTile, normalize(vTreeN));
+      vec4 treeSprig = texture2D(uSprigs, vMapUv);
+      bool treeCard = vCard.x > 0.5;
+      vec4 treeC = treeCard ? treeSprig : treeBody;
       float treeH = dot(treeC.rgb, vec3(0.3, 0.6, 0.1));
+      ${TREE_SLOPES}
+      if (treeCard && treeC.a < 0.04 + 0.96 * stageHash(vec3(gl_FragCoord.xy, uSeed + floor(vCard.y + 0.5) / 64.0))) discard;
       diffuseColor.rgb *= treeC.rgb * 1.5;`,
     )
     .replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\nif (vCard.x > 0.5) normal *= faceDirection;')
@@ -85,6 +87,7 @@ function needleHook(shader: Shader): void {
 const SNOW_MAP = `vec3 treeN = normalize(vTreeN);
 vec4 treeC = treeTri(map, vTreeP * uTile, treeN);
 float treeH = treeC.g + 0.6 * treeTri(map, vTreeP * uTile * 3.3 + 0.37, treeN).g;
+${TREE_SLOPES}
 diffuseColor.rgb *= mix(vec3(1.0), treeC.rgb, 0.55);`
 
 function snowFragment(shader: Shader): void {
@@ -125,10 +128,25 @@ function lightHook(shader: Shader): void {
     .replace('#include <begin_vertex>', '#include <begin_vertex>\nvBulb = uv;')
   shader.fragmentShader = shader.fragmentShader
     .replace('#include <common>', '#include <common>\nuniform vec4 uTwinkle;\nuniform float uBulb;\nvarying vec2 vBulb;')
-    .replace('#include <color_fragment>', '#include <color_fragment>\nfloat treeLit = vColor.a;\nvec3 treeTint = diffuseColor.rgb;\ndiffuseColor.rgb *= 1.0 - 0.8 * treeLit;')
+    .replace(
+      '#include <color_fragment>',
+      '#include <color_fragment>\nfloat treeLit = vColor.a;\nvec3 treeTint = diffuseColor.rgb;\nbool treeHalo = vBulb.y > 2.5;\nfloat treeFace = 0.0;\ndiffuseColor.rgb *= treeHalo ? 0.0 : 1.0 - 0.8 * treeLit;',
+    )
+    .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nif (treeHalo) roughnessFactor = 1.0;')
+    .replace('#include <metalnessmap_fragment>', '#include <metalnessmap_fragment>\nif (treeHalo) metalnessFactor = 0.0;')
+    .replace(
+      '#include <normal_fragment_maps>',
+      `#include <normal_fragment_maps>
+      if (treeHalo) {
+        treeFace = max(dot(normal, normalize(vViewPosition)), 0.0);
+        if (${HALO.cover.toFixed(2)} * pow(treeFace, ${HALO.edge.toFixed(1)}) < stageHash(vec3(gl_FragCoord.xy, uSeed + floor(vBulb.x * 64.0 + 0.5) / 64.0))) discard;
+      }`,
+    )
     .replace(
       '#include <emissivemap_fragment>',
-      '#include <emissivemap_fragment>\ntotalEmissiveRadiance = treeTint * treeLit * uBulb * uTwinkle.z * (1.0 + uTwinkle.y * sin(6.2831853 * (uTwinkle.x + vBulb.x)));',
+      `#include <emissivemap_fragment>
+      float treeBlink = uTwinkle.z * (1.0 + uTwinkle.y * sin(6.2831853 * (uTwinkle.x + vBulb.x)));
+      totalEmissiveRadiance = treeHalo ? treeTint * treeBlink * (${HALO.glow.toFixed(2)} + uBulb * pow(treeFace, ${HALO.core.toFixed(1)})) : treeTint * treeLit * uBulb * treeBlink;`,
     )
 }
 
@@ -138,7 +156,7 @@ function bulbs(): GlowLight[] {
   const list = (geometry(MODEL, 'lights').userData.extras as { bulbs: number[] }).bulbs
   const out: GlowLight[] = []
   for (let i = 0; i < list.length; i += 4) out.push({ at: placePoint([list[i]!, list[i + 1]!, list[i + 2]!]), color: WARM, power: BULB.power, reachMm: BULB.reachMm, phase: list[i + 3]! })
-  out.push({ at: star, color: GOLD, power: 1.6, reachMm: 3, phase: 0.31 })
+  out.push({ at: star, color: GOLD, power: 0.6, reachMm: 3, phase: 0.31 })
   return out
 }
 

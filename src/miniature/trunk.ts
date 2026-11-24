@@ -39,7 +39,7 @@ const FORK_H = 13.6
 const TOP_H = 37.6
 const DEEP_H = -4.5
 const MIN_SHAFT = 5
-const TWIST_LOW = 0.1
+const TWIST_LOW = 0.13
 const TWIST_HIGH = 0.055
 const BARK_MM = 6.5
 const BARK_AROUND = 3
@@ -47,18 +47,18 @@ const MODEL = 'shared/trunk-wood.glb'
 const BARK = 'shared/trunk-bark.srgb.tile.png'
 const BARK_NORMAL = 'shared/trunk-bark-n.lin.tile.png'
 
-const RADIUS: Table = [[-4.5, 4.9], [0, 4.55], [1.5, 4.2], [4, 3.72], [8.4, 3.38], [11.6, 2.86], [13.6, 2.82], [18, 2.25], [26.2, 1.8], [33, 1.15], [37.6, 0.5]]
+const RADIUS: Table = [[-4.5, 5.3], [0, 4.6], [1.5, 3.9], [4, 3.05], [8.4, 2.5], [11.6, 2.62], [13.6, 2.9], [18, 2.3], [26.2, 1.8], [33, 1.15], [37.6, 0.5]]
 const AXIS_X: Table = [[-4.5, -0.3], [0, -0.2], [8.4, 0.4], [11.6, 0.8], [13.6, 0.7], [26.2, 0.35], [37.6, 0.2]]
 const AXIS_Z: Table = [[-4.5, 0], [0, 0], [8, 0.35], [14, -0.1], [26, -0.4], [37.6, 0]]
 
 const ROOTS: readonly { angle: number; reach: number; width: number }[] = [
-  { angle: 3.07, reach: 6.9, width: 0.3 },
-  { angle: 2.23, reach: 6.3, width: 0.26 },
-  { angle: 1.43, reach: 5.7, width: 0.24 },
-  { angle: 0.24, reach: 6.4, width: 0.3 },
-  { angle: 5.67, reach: 6.0, width: 0.28 },
-  { angle: 4.85, reach: 5.6, width: 0.25 },
-  { angle: 3.98, reach: 6.1, width: 0.28 },
+  { angle: 3.07, reach: 7.5, width: 0.3 },
+  { angle: 2.23, reach: 6.8, width: 0.26 },
+  { angle: 1.43, reach: 6.3, width: 0.24 },
+  { angle: 0.24, reach: 7.1, width: 0.3 },
+  { angle: 5.67, reach: 6.5, width: 0.28 },
+  { angle: 4.85, reach: 6.0, width: 0.25 },
+  { angle: 3.98, reach: 6.6, width: 0.28 },
 ]
 
 const PADS: readonly { at: Vec3; size: Vec3; lean: number; tip: number; from: number }[] = [
@@ -109,7 +109,7 @@ export function trunkRidge(phi: number, h: number): number {
 
 export function trunkRadius(phi: number, h: number): number {
   const R = trunkGirth(h)
-  let r = R * (1 + 0.125 * (trunkRidge(phi, h) - 0.66))
+  let r = R * (1 + 0.19 * (trunkRidge(phi, h) - 0.66))
   if (h < 6) {
     const a = phi + trunkTwist(h)
     const g = h <= 0 ? 1 - 0.1 * h : Math.pow(1 - h / 6, 2.4)
@@ -187,7 +187,7 @@ function grow(): Limb[] {
       const [ax, az] = trunkAxis(h)
       const d = lerp(trunkGirth(2.6) * 0.72, root.reach + extra, Math.pow(t, 1.25))
       pts.push([ax + Math.cos(phi) * d, h, az + Math.sin(phi) * d])
-      rad.push(lerp(1.15, 0.24, Math.pow(t, 0.8)))
+      rad.push(lerp(1.45, 0.3, Math.pow(t, 0.8)))
     }
     chain('root', 0, pts, rad)
   }
@@ -235,13 +235,13 @@ function grow(): Limb[] {
     const w1 = rng.range(0, TAU)
     const w2 = rng.range(0, TAU)
     const amp = rng.range(0.25, 0.5)
-    const r0 = trunkGirth(P.from) * 0.37
+    const r0 = trunkGirth(P.from) * (P.from < 20 ? 0.6 : 0.5)
     const at = (t: number): Vec3 => {
       const b = bezier(p0, p1, p2, end, t)
       const e = Math.sin(Math.PI * t) * amp
       return [b[0] - flat[2] * e * Math.sin(5.1 * t + w1), b[1] + e * 0.8 * Math.sin(6.3 * t + w2), b[2] + flat[0] * e * Math.sin(5.1 * t + w1)]
     }
-    const radius = (t: number): number => lerp(r0, 0.34, Math.pow(t, 0.75))
+    const radius = (t: number): number => lerp(r0, 0.42, Math.pow(t, 0.75))
     const steps = Math.max(12, Math.round(L / 0.6))
     const pts: Vec3[] = []
     const rad: number[] = []
@@ -278,9 +278,10 @@ export interface Cluster {
   radius: number
 }
 
-const DOME = 0.72
+const DOME = 0.5
 const BODY = { blend: 0.5, bias: 0.4 }
-const CAP = { lift: 1.1, puff: 0.3, blend: 0.9, bias: 1.3, depth: 0.55, lip: 0.35 }
+const CAP = { lift: 1.15, puff: 0.3, blend: 0.62, bias: 0.62, depth: 0.5, lip: 0.35 }
+const dome = (rim: number): number => 1 - DOME * Math.pow(rim, 1.5)
 
 function gather(): Cluster[] {
   const rng = stream('crown')
@@ -296,15 +297,15 @@ function gather(): Cluster[] {
       const rr = Math.sqrt((k + 0.5) / n)
       const th = k * 2.39996 + rng.range(-0.3, 0.3)
       const r = lerp(1.95, 1.2, rr) * rng.range(0.84, 1.18)
-      const top = b * (1 - DOME * rr * rr) - CAP.lift - CAP.puff
+      const top = b * dome(rr * rr) - CAP.lift - CAP.puff
       put(Math.cos(th) * rr * (a - r), top - r + rng.range(-0.45, 0.2), Math.sin(th) * rr * (c - r), r)
     }
-    const under = Math.round(n * 0.3)
+    const under = Math.round(n * 0.62)
     for (let k = 0; k < under; k++) {
-      const rr = 0.66 * Math.sqrt((k + 0.5) / under)
+      const rr = 0.86 * Math.sqrt((k + 0.5) / under)
       const th = k * 2.39996 + 1.3 + rng.range(-0.4, 0.4)
-      const r = rng.range(1.0, 1.45)
-      put(Math.cos(th) * rr * a, -b + r + rng.range(0, 0.7), Math.sin(th) * rr * c, r)
+      const r = rng.range(1.05, 1.6)
+      put(Math.cos(th) * rr * (a - r), -b + r + 0.75 * b * rr * rr * rr + rng.range(0, 0.6), Math.sin(th) * rr * (c - r), r)
     }
   })
   return out
@@ -380,8 +381,9 @@ export function crownCap(x: number, h: number, z: number): number {
     const d = px * f.frame.depth[0] + ph * f.frame.depth[1] + pz * f.frame.depth[2]
     const body = ballField(f, x - u[0] * CAP.lift, h - u[1] * CAP.lift, z - u[2] * CAP.lift, CAP.blend) + CAP.bias - CAP.puff
     const rim = (s * s) / (f.size[0] * f.size[0]) + (d * d) / (f.size[2] * f.size[2])
-    const lobes = 0.6 * Math.sin(0.93 * s + 1.7 * f.n) * Math.sin(0.81 * d + 2.3 * f.n) + 0.38 * Math.sin(1.73 * s - 1.12 * d + f.n) + 0.2 * Math.sin(3.1 * s + 2.7 * d + 0.6 * f.n)
-    const line = f.size[1] * (1 - DOME * rim) - CAP.lift - CAP.puff - CAP.depth + lobes
+    const gully = Math.sin(0.62 * s + 2.1 * f.n + 0.5 * Math.sin(0.9 * d)) * Math.sin(0.7 * d + 1.3 * f.n)
+    const lobes = 0.6 * Math.sin(0.93 * s + 1.7 * f.n) * Math.sin(0.81 * d + 2.3 * f.n) + 0.38 * Math.sin(1.73 * s - 1.12 * d + f.n) + 0.2 * Math.sin(3.1 * s + 2.7 * d + 0.6 * f.n) + 2.4 * clamp01((gully - 0.62) / 0.3)
+    const line = f.size[1] * dome(rim) - CAP.lift - CAP.puff - CAP.depth + lobes
     const cut = line - v
     const k = CAP.lip
     const t = clamp01(0.5 + (0.5 * (body - cut)) / k)
@@ -460,9 +462,37 @@ export function chainSolid(chains: readonly { points: readonly Vec3[]; radii: re
   }
 }
 
-const placedSolid = chainSolid(limbs.map((l) => ({ points: l.points, radii: l.radii })), 2)
+const tubeSolid = chainSolid(limbs.filter((l) => l.kind !== 'stem').map((l) => ({ points: l.points, radii: l.radii })), 2)
+const COLUMN_REACH = 10
+const COLUMN_SLOPE = 0.8
 
-export const trunkSolid = (x: number, y: number, z: number): number => placedSolid(x, y, z)
+function heightAt(x: number, y: number, z: number): number {
+  const g0 = footGround()
+  const raise = Math.max(0, g0 + FLARE_H + MIN_SHAFT - (FOOT_Y + FORK_H))
+  const forkY = FOOT_Y + FORK_H + raise
+  if (y >= forkY) return y - FOOT_Y - raise
+  if (y >= g0 + FLARE_H) return FLARE_H + ((y - g0 - FLARE_H) / (forkY - g0 - FLARE_H)) * (FORK_H - FLARE_H)
+  const delta = groundAt(x, z) - g0
+  const low = y - g0 - delta
+  if (low <= 1) return low
+  const k = delta / (FLARE_H - 1)
+  return Math.min(FLARE_H, (y - g0 - delta - k) / (1 - k))
+}
+
+function columnSolid(x: number, y: number, z: number): number {
+  const h = heightAt(x, y, z)
+  const hc = Math.min(TOP_H, Math.max(DEEP_H, h))
+  const [ax, az] = trunkAxis(hc)
+  const dx = x - FOOT_X - ax
+  const dz = z - FOOT_Z - az
+  const rho = Math.hypot(dx, dz)
+  const past = Math.max(h - TOP_H, DEEP_H - h, 0)
+  if (rho > COLUMN_REACH) return Math.hypot(rho - COLUMN_REACH + 1, past)
+  const side = (rho - trunkRadius(Math.atan2(dz, dx), hc)) * COLUMN_SLOPE
+  return past > 0 ? Math.hypot(Math.max(side, 0), past) : side
+}
+
+export const trunkSolid = (x: number, y: number, z: number): number => Math.min(columnSolid(x, y, z), tubeSolid(x, y, z))
 
 export const glow = { uTwinkle: { value: new THREE.Vector4(0, 0, 1, 0) } }
 
@@ -557,9 +587,10 @@ export function buildTrunk(part: string, lights: readonly GlowLight[] = []): THR
     miniature: true,
     change: 'miniature',
     map: texture(BARK),
+    color: new THREE.Color(0.56, 0.46, 0.4),
     vertexColors: true,
     roughness: 0.86,
-    extra: { normalMap: normal, normalScale: new THREE.Vector2(1.6, 1.6) },
+    extra: { normalMap: normal, normalScale: new THREE.Vector2(2.3, 2.3) },
     hook: glowHook,
     key: 'trunk',
   })
