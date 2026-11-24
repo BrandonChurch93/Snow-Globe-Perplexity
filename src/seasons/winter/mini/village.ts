@@ -6,13 +6,13 @@ import { afterLight } from '../../../core/chunks/light'
 import { stageMaterial, type Rgb } from '../../../core/materials'
 import { geometry, prepareModel } from '../../../core/models'
 import { texture } from '../../../core/textures'
-import { GLOW, glowGeometry, glowMaterial, glowPiece } from '../../../miniature/glow'
+import { GLOW, glowGeometry, glowMaterial, glowPiece, haloGeometry, haloMaterial } from '../../../miniature/glow'
 import { MIRROR_GLSL, mirrorUniforms } from '../../../miniature/mirror'
 import { prepareVillage, tileMm, villageGeometry, villageGrain } from '../../../miniature/model'
-import { hangPoints, lampFlame, shrubDistance } from '../../../miniature/roof'
+import { hangPoints, lampFlame, pitch, ridgeY, roofLength, shrubDistance, slopeLength } from '../../../miniature/roof'
 import { BUMP_GLSL, NEAR_LIGHT, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, withSurface, type Cover, type GlowSource } from '../../../miniature/surface'
-import { wispGeometry, wispMaterial } from '../../../miniature/wisp'
-import { anchors, bankAt, cottage, cottagePoint, groundAt, moundSlope, pond, pondField, rimAt, solidDistance } from '../../../scene/layout'
+import { wispGeometry, wispMaterial, wispPose, type Wisp } from '../../../miniature/wisp'
+import { anchors, bankAt, cottage, cottageFrame, cottagePoint, driftAt, groundAt, heapAt, moundSlope, pond, pondField, rimAt, solidDistance } from '../../../scene/layout'
 import { gainOf } from '../../../scene/lightgrid'
 import type { InnerLight, KitMoment } from '../../kit'
 import { isTree, season, tones } from './palette'
@@ -29,7 +29,8 @@ const WINDOW = { power: 0.8, reachMm: 8, flicker: 0.1, cycles: 5, phase: 0.4 }
 const SIDE = { power: 0.8, reachMm: 7, flicker: 0.1, cycles: 4, phase: 0.75 }
 const BULB = { power: 0.6, reachMm: 4.5, flicker: 0.07, cycles: 2 }
 const NEAR = { bulb: { power: 1, reachMm: 2 }, lamp: { power: 2.2, reachMm: 7 }, pane: { power: 0.7, reachMm: 2.4 } }
-const MIRROR = { lamp: 7, pane: 1.2, bulb: 0.5, tight: 0.0016, wide: 0.028, wideShare: 0.04 }
+const MIRROR = { lamp: 9, pane: 1.2, bulb: 0.5, tight: 0.0007, wide: 0.02, wideShare: 0.012, bump: 0.8, lowMm: 3.4, sparkle: 1.1 }
+const HALO = { radiusMm: 1.25, strength: 0.7, hot: 4, pullMm: 1.6, flicker: 0.07, cycles: 2 }
 const COVER_GAIN = 0.12
 const FRESH_RISE_MM = 0.3
 const SNOW_GRAIN_MM = 0.05
@@ -45,10 +46,11 @@ const BANK_HOLLOW = 0.25
 const BANK_FOOT = 0.33
 const BANK_CREST = 0.35
 const BANK_AIR = 0.6
-const ICE_NEAR = 0.3
+const ICE_NEAR = 0.15
 
 const bulbs = hangPoints()
 const flame = lampFlame()
+const mirrored: [number, number, number] = [flame[0], flame[1] - MIRROR.lowMm, flame[2]]
 const potTop = cottagePoint(cottage.chimney.across - 0.2, cottage.chimney.top + 1.45, cottage.chimney.along + 0.1)
 
 export const innerLights: InnerLight[] = [
@@ -180,7 +182,7 @@ diffuseColor.rgb *= ${glsl(tones.snow)} * (0.92 + 0.16 * snowT.r + 0.12 * (snowW
 }
 
 function iceMaterial(): THREE.MeshStandardMaterial {
-  const sources = [{ at: flame, strength: MIRROR.lamp }, { at: anchors.window, strength: MIRROR.pane }, { at: anchors.sideWindow, strength: MIRROR.pane }, ...bulbs.map((at) => ({ at, strength: MIRROR.bulb }))]
+  const sources = [{ at: mirrored, strength: MIRROR.lamp }, { at: anchors.window, strength: MIRROR.pane }, { at: anchors.sideWindow, strength: MIRROR.pane }, ...bulbs.map((at) => ({ at, strength: MIRROR.bulb }))]
   return stageMaterial({
     part: PART,
     standIn: false,
@@ -201,6 +203,7 @@ function iceMaterial(): THREE.MeshStandardMaterial {
           `#include <map_pars_fragment>
 ${BUMP_GLSL}
 ${MIRROR_GLSL}
+vec3 iceFlat = vec3(0.0, 0.0, 1.0);
 float iceHeight(vec2 uv) {
   vec3 t = texture2D(map, uv).rgb;
   return t.g * 0.05 + t.b * 0.035 - t.r * 0.05 + texture2D(map, uv * 3.1 + 0.17).g * 0.012;
@@ -225,6 +228,7 @@ float iceRough = mix(0.09, 0.72, iceFrost);
 {
   float iceH = iceHeight(vMapUv);
   vec2 iceDh = vec2(iceHeight(vMapUv + dFdx(vMapUv)) - iceH, iceHeight(vMapUv + dFdy(vMapUv)) - iceH);
+  iceFlat = normal;
   normal = villageBump(-vViewPosition, normal, iceDh, faceDirection);
 }
 `,
@@ -236,8 +240,8 @@ float iceRough = mix(0.09, 0.72, iceFrost);
   vec3 iceN = villageInside(normal);
   vec3 iceSight = villageSight();
   float iceFresnel = 0.03 + 0.97 * pow(1.0 - clamp(dot(iceN, iceSight), 0.0, 1.0), 5.0);
-  float iceGlint = villageMirror(iceN, iceSight, ${MIRROR.tight.toFixed(5)}, ${MIRROR.wide.toFixed(5)}, ${MIRROR.wideShare.toFixed(3)});
-  totalEmissiveRadiance += ${glsl(tones.lamp)} * iceGlint * iceFresnel * (1.0 - 0.55 * iceFrost) * uGlowGain;
+  float iceGlint = villageMirror(villageInside(normalize(mix(iceFlat, normal, ${MIRROR.bump.toFixed(2)}))), iceSight, ${MIRROR.tight.toFixed(5)}, ${MIRROR.wide.toFixed(5)}, ${MIRROR.wideShare.toFixed(3)});
+  totalEmissiveRadiance += ${glsl(tones.lamp)} * iceGlint * iceFresnel * (1.0 - 0.55 * iceFrost) * (1.0 + ${MIRROR.sparkle.toFixed(2)} * (iceT.g - 0.5 + iceT.r)) * uGlowGain;
 }
 `,
         )
@@ -252,13 +256,20 @@ const shadowed = <T extends THREE.Mesh>(m: T, cast = true): T => {
   return m
 }
 
+const SWEPT = Math.hypot(potTop[0], potTop[2])
+const WISP: Wisp = { from: potTop, height: 12, lean: [-2.4, 0.4], sway: 0.8, curl: 0.7, thin: 0.5, wide: 1.9, rings: 40, sides: 10, swept: [-potTop[2] / SWEPT, potTop[0] / SWEPT], sweepMm: 12 }
+const WISP_STRENGTH = 0.8
+const plume = wispGeometry(WISP)
+const storm = { value: 0 }
+
 export function build(): THREE.Object3D {
   const solids = withSurface(mergeGeometries([villageGeometry('solid'), geometry(MODEL, 'decor')]), near)
   const walls = shadowed(new THREE.Mesh(solids, surfaceMaterial({ part: PART, map: villageGrain(), gain, cover: dusting, key: 'village-solid-winter' })))
   const snow = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'snow'), near), snowMaterial(PART, 'miniature', 'village-snow', '')))
   const ice = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'ice'), near), iceMaterial()), false)
-  const smoke = new THREE.Mesh(wispGeometry({ from: potTop, height: 15, lean: [1.6, 0.5], sway: 0.5, thin: 0.42, wide: 1.5, rings: 40, sides: 10 }), wispMaterial(PART, tones.smoke, 1.15, 2, clock))
-  smoke.renderOrder = 2
+  const smoke = new THREE.Mesh(plume, wispMaterial(PART, tones.smoke, WISP_STRENGTH, 2, clock, storm))
+  smoke.renderOrder = 3
+  smoke.frustumCulled = false
   return new THREE.Group().add(walls, snow, ice, smoke)
 }
 
@@ -269,8 +280,10 @@ export function lights(): THREE.Object3D {
     glowPiece(villageGeometry('pane-gable'), (_i, w, h) => [GLOW.pane, w, h, 1]),
     glowPiece(villageGeometry('pane-side'), (_i, w, h) => [GLOW.pane, w, h, 2]),
   ]
-  const look = { bulb: 1.5, bulbCore: 4.5, glass: tones.lamp.map((v) => v * 2.4) as unknown as Rgb, flame: tones.flame.map((v) => v * 6) as unknown as Rgb, room: tones.room.map((v) => v * 2.3) as unknown as Rgb, curtain: tones.curtain.map((v) => v * 1.5) as unknown as Rgb, frost: tones.rime.map((v) => v * 0.55) as unknown as Rgb, frostAmount: 0.8, flicker: 0.08, cycles: 3 }
-  return new THREE.Mesh(glowGeometry(pieces), glowMaterial(LIGHT, look, clock))
+  const look = { bulb: 1.5, bulbCore: 4.5, glass: tones.lamp.map((v) => v * 1.3) as unknown as Rgb, flame: tones.flame.map((v) => v * 6) as unknown as Rgb, room: tones.room.map((v) => v * 1.25) as unknown as Rgb, curtain: tones.curtain.map((v) => v * 1.5) as unknown as Rgb, frost: tones.rime.map((v) => v * 0.55) as unknown as Rgb, frostAmount: 0.8, flicker: 0.08, cycles: 3 }
+  const halos = new THREE.Mesh(haloGeometry(bulbs, HALO.radiusMm), haloMaterial(LIGHT, tones.haloEdge, tones.haloCore, HALO, clock))
+  halos.renderOrder = 3
+  return new THREE.Group().add(new THREE.Mesh(glowGeometry(pieces), glowMaterial(LIGHT, look, clock)), halos)
 }
 
 export function arrival(): THREE.Object3D {
@@ -282,19 +295,46 @@ const SINK = { depthMm: 3.2, from: 0.74, to: 0.97 }
 const BANK_SHUTS = { from: 0.2, to: 0.8 }
 const BANK_SLOPE = 0.9
 const RIM_SLOPE = 1.2
+const DRIFT_SLOPE = 0.5
+const HEAP_SLOPE = 1.3
 
 function groundDistance(x: number, y: number, z: number): number {
   const t = Math.min(1, Math.max(0, (pondField(x, z) - SINK.from) / (SINK.to - SINK.from)))
   const bank = bankAt(x, z)
   const rim = rimAt(x, z)
+  const drift = driftAt(x, z)
+  const heap = heapAt(x, z)
   const b = Math.min(1, Math.max(0, (bank - BANK_SHUTS.from) / (BANK_SHUTS.to - BANK_SHUTS.from)))
   const under = (SINK.depthMm - pond.dip) * (1 - t * t * (3 - 2 * t)) * (1 - b * b * (3 - 2 * b))
-  const slope = moundSlope(z) + BANK_SLOPE * Math.min(1, bank * 0.5) + RIM_SLOPE * Math.min(1, rim)
-  return (y - (groundAt(x, z) + bank + rim - under)) / Math.sqrt(1 + slope * slope)
+  const slope = moundSlope(z) + BANK_SLOPE * Math.min(1, bank * 0.5) + RIM_SLOPE * Math.min(1, rim) + DRIFT_SLOPE * Math.min(1, drift * 2) + HEAP_SLOPE * Math.min(1, heap * 2)
+  return (y - (groundAt(x, z) + bank + rim + drift + heap - under)) / Math.sqrt(1 + slope * slope)
+}
+
+const LOAD = { topMm: 1.1, outMm: 0.6 }
+const frame = cottageFrame()
+const loadCos = Math.cos(pitch)
+const loadSin = Math.sin(pitch)
+
+function loadDistance(x: number, y: number, z: number): number {
+  const dx = x - cottage.x
+  const dz = z - cottage.z
+  const across = dx * frame.v[0] + dz * frame.v[1]
+  const along = dx * frame.u[0] + dz * frame.u[1]
+  const up = y - frame.floor - ridgeY
+  const from = -LOAD.topMm * (loadSin / loadCos)
+  const to = slopeLength + LOAD.outMm
+  let d = Infinity
+  for (const side of [-1, 1]) {
+    const qs = Math.abs(side * across * loadCos - up * loadSin - (from + to) / 2) - (to - from) / 2
+    const ql = Math.abs(side * across * loadSin + up * loadCos - LOAD.topMm / 2) - LOAD.topMm / 2
+    const qa = Math.abs(along) - (roofLength + LOAD.outMm)
+    d = Math.min(d, Math.hypot(Math.max(qs, 0), Math.max(ql, 0), Math.max(qa, 0)) + Math.min(Math.max(qs, ql, qa), 0))
+  }
+  return d
 }
 
 export function solid(x: number, y: number, z: number): number {
-  return Math.min(solidDistance(x, y, z, keep), shrubDistance(x, y, z), groundDistance(x, y, z))
+  return Math.min(solidDistance(x, y, z, keep), shrubDistance(x, y, z), groundDistance(x, y, z), loadDistance(x, y, z))
 }
 
 export function update(moment: KitMoment): void {
@@ -302,4 +342,6 @@ export function update(moment: KitMoment): void {
   gain.value = gainOf(innerLights, moment.time, moment.period)
   const t = Math.min(1, Math.max(0, moment.sinceLanding / config.shake.settleCheckSeconds))
   rise.value = t * t * (3 - 2 * t)
+  storm.value = 1 - rise.value
+  wispPose(plume, WISP, clock.value, storm.value)
 }

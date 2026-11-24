@@ -48,14 +48,21 @@ function rod() {
   return out
 }
 
-function branched() {
-  const out = [{ p: [0, 0, 0], r: range(0.36, 0.46) }]
-  const turn = range(0, 2 * Math.PI)
-  const arms = 3 + Math.floor(rnd() * 2)
-  for (let i = 0; i < LOBES - 1; i++) {
-    const a = turn + ((i % arms) / arms) * 2 * Math.PI + range(-0.3, 0.3)
-    const far = i < arms ? range(0.42, 0.6) : range(0.72, 0.9)
-    out.push({ p: [Math.cos(a) * far, Math.sin(a) * far, range(-0.16, 0.16)], r: i < arms ? range(0.26, 0.36) : range(0.16, 0.24) })
+function bent() {
+  const out = []
+  let d = dir()
+  let p = [0, 0, 0]
+  let r = range(0.4, 0.56)
+  for (let i = 0; i < LOBES; i++) {
+    out.push({ p: [p[0], p[1], p[2]], r })
+    const j = dir()
+    const k = range(0.35, 0.9)
+    const n = [d[0] + j[0] * k, d[1] + j[1] * k, d[2] + j[2] * k]
+    const len = Math.hypot(n[0], n[1], n[2]) || 1
+    d = [n[0] / len, n[1] / len, n[2] / len]
+    const far = range(0.3, 0.55)
+    p = [p[0] + d[0] * far, p[1] + d[1] * far, p[2] + d[2] * far]
+    r *= range(0.62, 0.95)
   }
   return out
 }
@@ -104,7 +111,7 @@ function settle(lobes, flat) {
   return lobes
 }
 
-const makers = [clump, clump, rod, branched, pair, clump, branched, pair]
+const makers = [clump, clump, rod, bent, pair, clump, bent, pair]
 const png = new PNG({ width: COLUMNS, height: VARIANTS, colorType: 6 })
 png.data.fill(0)
 const byte = (v) => Math.max(0, Math.min(255, Math.round(v)))

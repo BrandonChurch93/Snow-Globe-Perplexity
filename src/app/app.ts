@@ -3,6 +3,7 @@ import type { Assets } from '../core/assets'
 import type { AppBridge, AppState, SoundEngine } from '../core/bridge'
 import type { Gfx } from '../core/gl'
 import type { Params } from '../core/params'
+import { loadDetail } from '../core/textures'
 import { Governor, levels, stageQuality } from '../core/quality'
 import type { Moment, Stage } from '../core/stage'
 import type { LoopParticles, SourceSwitch } from '../film/loop'
@@ -52,7 +53,6 @@ export function startApp(d: AppDeps): AppBridge {
   const drag = new Drag(look)
   const motion = new MotionShake()
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)')
-  const loader = new SeasonLoader(params.season, (season) => d.ready.then(() => d.stage.prepare?.(season) ?? d.assets.loadGroup(season)))
   const screen = formatById(params.format)
   const probing = params.mode === 'probe'
   const fns = new Set<(s: AppState) => void>()
@@ -61,6 +61,23 @@ export function startApp(d: AppDeps): AppBridge {
   const afterFirstPicture = new Promise<void>((resolve) => (markFirst = resolve))
 
   let playing: Playing = params.mode === 'autopilot' ? (params.which === 'a' ? 'film-a' : 'film-b') : params.mode === 'loop' ? 'loop' : 'live'
+
+  // Loading. With `assets.firstOnly` (the live page) the first picture is drawn from what it needs: the models, the small pictures
+  // and the `.first.` file of every large one. The whole pictures follow as soon as it is drawn, then the other seasons, one at a
+  // time, with their whole pictures at once. A season the visitor asks for before its turn starts at once, from its first files.
+  const progressive = d.assets.firstOnly
+  const detail = (): Promise<void> => loadDetail(d.assets).catch(() => undefined)
+  const loader = new SeasonLoader(
+    params.season,
+    (season, asked) =>
+      d.ready.then(() => {
+        d.assets.firstOnly = progressive && asked
+        return d.stage.prepare?.(season) ?? d.assets.loadGroup(season)
+      }),
+    () => void (ready && detail()),
+    progressive ? afterFirstPicture.then(detail) : Promise.resolve(),
+  )
+  if (progressive) void afterFirstPicture.then(() => (doc.dataset.detail = 'loading')).then(() => loader.all).then(detail).then(() => (doc.dataset.detail = 'ready'))
   let session = new LiveSession(sim, params.season, loader.ready)
   let autopilot: Autopilot | null = null
   let looping: LoopPlayer | null = null
@@ -218,6 +235,7 @@ export function startApp(d: AppDeps): AppBridge {
     if (playing !== 'live' || !ready) return false
     const season = to === null ? session.shake() : session.goTo(to)
     if (!season) return false
+    if (!loader.ready(season)) void loader.want(season).catch(() => undefined)
     told = season
     if (session.reduced) engine?.setSeason(season)
     else engine?.shake(season, barSeconds)

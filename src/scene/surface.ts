@@ -14,7 +14,6 @@ const centreHeight = G.baseHeightMm - G.collarDepthMm + globeRadius
 export const SLAB_MM = 6000
 export const FADE_FROM_MM = 1400
 export const FADE_TO_MM = 2900
-export const KEY_POOL_MM = 650
 export const KEY_CONE = 0.07
 export const RIM_NEAR_GAIN = 3
 export const SLAB_DETAIL = 'shared/scene-slab-detail.lin.tile.png'
@@ -40,21 +39,22 @@ export const SLAB = {
   dustAlbedo: 0.3,
   vein: 1.1,
   cloud: 0.7,
-  markFloor: 0.3,
-  markCloud: 8.3,
+  markFloor: 0.5,
+  markCloud: 5.5,
   markPower: 2.6,
-  markWipe: 0.95,
+  markWipe: 0.7,
   markMost: 2.6,
   filmAlbedo: 0.002,
   filmTint: [0.7, 1, 1.05],
-  hazeAlbedo: 0.012,
+  hazeAlbedo: 0.006,
   hazeMm: 50,
-  gloss: 0.65,
+  gloss: 0.76,
   f0: 0.05,
   fresnelPower: 4.2,
   mirrorShare: 0.5,
   mirrorMark: 0.35,
-  farGain: 1.6,
+  mirrorTint: [0.86, 1, 1.14],
+  farGain: 1.8,
   farFrom: 0.165,
   farTo: 0.125,
   roughSpread: 0.03,
@@ -74,6 +74,11 @@ export const SLAB = {
   contactMm: 7,
   shadowReach: 0.6,
   bakedGain: 0.5,
+  underSky: 0.6,
+  underBounce: 0.8,
+  underReach: 4,
+  underSoftMm: 2,
+  underSpread: 0.1,
 }
 
 const f = (v: number) => v.toFixed(4)
@@ -279,9 +284,14 @@ void main() {
   float height = tGlobe * r0.y;
   float fade = mix(1.0, mix(1.0, ${f(SLAB.fadeFloor)}, smoothstep(0.0, ${f(SLAB.fadeHeightMm)}, height)), sil);
 
-  float tUnder = lift / max(r0.y, 1e-3);
-  float underSoft = 1.0 + ${f(SLAB.roughSpread)} * tUnder;
-  float underHit = (1.0 - smoothstep(uFoot.z - underSoft, uFoot.z + underSoft, length(P.xz + r0.xz * tUnder - uFoot.xy))) * smoothstep(0.0, 0.5, lift);
+  vec3 footUp = vec3(uLean.z, sqrt(max(1.0 - dot(uLean.zw, uLean.zw), 0.0)), uLean.w);
+  vec3 footAt = vec3(uFoot.x, lift, uFoot.y);
+  float tUnder = max(dot(footAt - P, footUp) / max(dot(r0, footUp), 1e-3), 0.0);
+  float underSoft = ${f(SLAB.underSoftMm)} + ${f(SLAB.underSpread)} * tUnder;
+  float underFar = length(P + r0 * tUnder - footAt);
+  float underGap = r0.y * tUnder;
+  float underHit = (1.0 - smoothstep(uFoot.z - underSoft, uFoot.z + underSoft, underFar)) * smoothstep(0.0, 0.5, lift);
+  vec3 underSeen = uBaked * (uSky * ${f(SLAB.underSky)} + uKeyCol * (${f(SLAB.underBounce)} * smoothstep(uFoot.z - ${f(SLAB.underReach)} * underGap - 4.0, uFoot.z, underFar)));
 
   vec3 seen = vec3(0.0);
   float held = 0.0;
@@ -316,12 +326,12 @@ void main() {
     seen += lit * body + (uPool * 0.35 + uSky * 0.05) * glass;
     held = clamp(body + glass, 0.0, 1.0);
   }
-  seen *= 1.0 - underHit;
+  seen = mix(seen, underSeen, underHit);
   held = max(held, underHit);
   vec3 room = stageRoomSeen(r, ${f(SLAB.roomRough)});
   float farGloss = fres * mark * ${f(SLAB.gloss)} * mix(1.0, ${f(SLAB.farGain)}, smoothstep(${f(SLAB.farFrom)}, ${f(SLAB.farTo)}, grazing));
   float nearGloss = max(fres, ${f(SLAB.mirrorShare)}) * fade * mix(1.0, mark, ${f(SLAB.mirrorMark)});
-  col += (seen * mix(farGloss, nearGloss, sil) + room * (1.0 - held) * farGloss) * (1.0 - 0.6 * dust);
+  col += (seen * mix(vec3(farGloss), vec3(${SLAB.mirrorTint.map(f).join(', ')}) * nearGloss, sil) + room * (1.0 - held) * farGloss) * (1.0 - 0.6 * dust);
 
   gl_FragColor = vec4(col * cover, 1.0 - cover);
   if (uDiag != 0) {
@@ -417,7 +427,7 @@ export function updateSurface(f: StageFrame): void {
   su.uSky.value.copy(f.ambient)
   su.uFoot.value.set(g.x, g.z, footRadius, g.y)
   const lean = 0.5 * G.baseHeightMm + g.y
-  su.uLean.value.set(-Math.sin(g.tiltZ) * lean, Math.sin(g.tiltX) * lean, 0, 0)
+  su.uLean.value.set(-Math.sin(g.tiltZ) * lean, Math.sin(g.tiltX) * lean, -Math.sin(g.tiltZ), Math.sin(g.tiltX) * Math.cos(g.tiltZ))
   su.uPool.value.copy(f.pool)
   const mirror = f.view === '' && f.planar
   su.uReflect.value.set(mirror ? 1 : 0, mirror ? 0 : 1, 0, 0)

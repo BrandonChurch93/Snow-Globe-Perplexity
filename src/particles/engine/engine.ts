@@ -2,7 +2,7 @@ import { config } from '../../config'
 import { hash2, unit } from '../../core/rng'
 import type { SdfGrid } from '../../core/stage'
 import { globePoseAt, seasonAt, type Timeline } from '../../film/timeline'
-import { Liquid, LIQUID_LENGTH, LIQUID_R, NOISE_N, SOLID_REACH_MM } from '../../globe/liquid'
+import { Liquid, LIQUID_LENGTH, LIQUID_R, LIQUID_SWIRL, NOISE_N, ROLL_AXIS, ROLL_CENTRE, ROLL_EDGE, ROLL_FLOOR_MM, ROLL_FLOOR_SLOPE, ROLL_FREE, ROLL_RISE_MM, SOLID_REACH_MM, TURBULENCE_MAX } from '../../globe/liquid'
 import { BEHAVIOUR, KINDS, KIND_IN, NONE, POOL, SEASONS, type Behaviour } from './kinds'
 import { blockoutEmitters, blockoutSdf, GROUND_Y, sdfSample, sdfSlope, type Emitter } from './sdf'
 
@@ -35,13 +35,37 @@ export const SWAP_HALF = 0.22
 const HOLD = 0.6
 const GRAVITY_MM = 9810
 const STEER_GAIN = 1.5
-const DISPERSE = 0.45
+const DISPERSE = 1
 const CURL = 2.5 / (R * R)
 const NOISE_INV_CELL = (NOISE_N - 1) / (2 * R)
 const NOISE_TOP = NOISE_N - 1.0001
 const NOISE_DY = NOISE_N * 3
 const NOISE_DZ = NOISE_N * NOISE_N * 3
 const NN = NOISE_N
+const AX = ROLL_AXIS[0]
+const AY = ROLL_AXIS[1]
+const AZ = ROLL_AXIS[2]
+const CX = ROLL_CENTRE[0]
+const CY = ROLL_CENTRE[1]
+const CZ = ROLL_CENTRE[2]
+const INV_FREE = 1 / ROLL_FREE
+const INV_RISE = 1 / ROLL_RISE_MM
+const SKIM_X = AZ + ROLL_FLOOR_SLOPE * AY
+const SKIM_Y = -ROLL_FLOOR_SLOPE * AX
+const SKIM_Z = -AX
+const SIDE = Math.hypot(AY, AZ)
+const E2Y = AZ / SIDE
+const E2Z = -AY / SIDE
+const ARMS = 3
+const ARM_MM_S = 120
+const ARM_CORE = 0.15
+const ARM_WIND = 4
+const ROLL_SOFT = 1
+const ARM_HUB2 = 12 * 12
+const BANK_GAIN = 4
+const BANK_FROM = 16 / ROLL_RISE_MM
+const BANK_OVER = ROLL_RISE_MM / 24
+const LEAP2 = 3 * 3
 
 const TABLE = 4096
 const MASK = TABLE - 1
@@ -72,10 +96,12 @@ const K_REACH = new Float64Array(NK)
 const K_CLEAR = new Float64Array(NK)
 const EVERY = 4
 const H = DT * EVERY
+const LEAD = 0.5 * H
 const ahead = (x: number, s: number): number => Math.fround(Math.fround(Math.fround(Math.fround(x + s) + s) + s) + s)
 const K_BLEND = new Float64Array(NK)
 const K_GRIP = new Float64Array(NK)
 const K_LOFT = new Float64Array(NK)
+const K_GATHER = new Float64Array(NK)
 let lowest = Infinity
 TABLE_OF.forEach((b, k) => {
   K_MODE[k] = b.mode === 'steer' ? 1 : b.mode === 'cycle' ? 2 : 0
@@ -93,6 +119,7 @@ TABLE_OF.forEach((b, k) => {
   K_BLEND[k] = 1 - Math.exp(-H / b.followSeconds)
   K_GRIP[k] = 1 / (1 + b.gripPerSecond * H)
   K_LOFT[k] = b.rest === 'lies' ? b.loft : 0
+  K_GATHER[k] = b.mode === 'drift' ? b.gather : 0
   if (b.rest !== 'never') lowest = Math.min(lowest, b.liftMmS[0])
 })
 const MIN_LIFT = lowest
@@ -1134,6 +1161,16 @@ export class ParticleEngine {
     const ng = L.grid
     const np = L.pot
     const kick = (c[6]! * DISPERSE) / 512
+    const roll = c[7]!
+    const rolling = roll !== 0
+    const swirl = L.state[LIQUID_SWIRL]!
+    const rollK = roll * R2
+    const armK = (ARM_MM_S * c[6]!) / TURBULENCE_MAX
+    const bankK = (BANK_GAIN * c[6]!) / TURBULENCE_MAX
+    const phaseK = ARMS * swirl * TABLE_K
+    const windK = ARM_WIND * TABLE_K
+    const stiff = roll / (roll + ROLL_SOFT)
+    const loose = 1 - stiff
     const m = L.motion
     const gux = m.gx
     const guy = m.gy
@@ -1290,11 +1327,91 @@ export class ParticleEngine {
           az = np[o0 + 2]! * a00 + np[o1 + 2]! * b00 + np[o2 + 2]! * a10 + np[o3 + 2]! * b10 + np[o4 + 2]! * a01 + np[o5 + 2]! * b01 + np[o6 + 2]! * a11 + np[o7 + 2]! * b11
         }
       }
-      const us2 = ux * ux + uy * uy + uz * uz
+      let fx = 0
+      let fy = 0
+      let fz = 0
+      let rx = 0
+      let ry = 0
+      let rz = 0
+      let spin = 0
+      if (rolling) {
+        const ex = x - CX
+        const ey = y - CY
+        const ez = z - CZ
+        const ec = ex * CX + ey * CY + ez * CZ
+        const es = Math.sqrt(ec * ec + ROLL_FREE * (ex * ex + ey * ey + ez * ez))
+        if (es > 1e-6) {
+          let lam = (ec + es) * INV_FREE
+          if (lam > 1) lam = 1
+          const l2 = lam * lam
+          const edge = 1 - ROLL_EDGE * l2 * l2
+          const ht = (y - ROLL_FLOOR_MM - ROLL_FLOOR_SLOPE * z) * INV_RISE
+          const rise = ht <= 0 ? 0 : ht >= 1 ? 1 : ht * ht * (3 - 2 * ht)
+          const rate = (rollK * rise * lam * edge) / es
+          const skim = ht <= 0 || ht >= 1 ? 0 : rollK * 6 * ht * (1 - ht) * INV_RISE * ((1 - l2) / 2 - (ROLL_EDGE * (1 - l2 * l2 * l2)) / 6)
+          const nx = ex + lam * CX
+          const ny = ey + lam * CY
+          const nz = ez + lam * CZ
+          const tx = AY * nz - AZ * ny
+          const ty = AZ * nx - AX * nz
+          const tz = AX * ny - AY * nx
+          spin = rate
+          rx = rate * tx + skim * SKIM_X
+          ry = rate * ty + skim * SKIM_Y
+          rz = rate * tz + skim * SKIM_Z
+          const gk = K_GATHER[k]!
+          const rho2 = tx * tx + ty * ty + tz * tz
+          if (gk !== 0 && rho2 > 1e-4) {
+            const rho = Math.sqrt(rho2)
+            const along = nx * AX + ny * AY + nz * AZ
+            const px = nx - along * AX
+            const py = ny - along * AY
+            const pz = nz - along * AZ
+            const ca = px / rho
+            const sa = (py * E2Y + pz * E2Z) / rho
+            const c3 = ca * (4 * ca * ca - 3)
+            const s3 = sa * (3 - 4 * sa * sa)
+            const ia = (phaseK - windK * l2) | 0
+            const wave = s3 * SIN[(ia + QUARTER) & MASK]! - c3 * SIN[ia & MASK]!
+            const arm = (-armK * gk * wave * l2 * rho) / ((l2 + ARM_CORE) * (rho2 + ARM_HUB2))
+            fx = arm * tx
+            const hb = (ht - BANK_FROM) * BANK_OVER
+            const fall = hb <= 0 ? 0 : hb >= 1 ? 1 : hb * hb * (3 - 2 * hb)
+            fy = arm * ty - bankK * gk * fall * sink[i]!
+            fz = arm * tz
+          }
+        }
+      }
+      const us2 = (ux + rx) * (ux + rx) + (uy + ry) * (uy + ry) + (uz + rz) * (uz + rz)
       if (walled) {
         const gx = feel[f + 1]!
         const gy = feel[f + 2]!
         const gz = feel[f + 3]!
+        if (rolling) {
+          const near = d <= 0 ? 1 : 1 - d * INV_RAMP
+          const gg = gx * gx + gy * gy + gz * gz
+          const into = rx * gx + ry * gy + rz * gz
+          if (into < 0) {
+            const press = near * near
+            const off = (press * into) / gg
+            const was = rx * rx + ry * ry + rz * rz
+            rx -= gx * off
+            ry -= gy * off
+            rz -= gz * off
+            const left = rx * rx + ry * ry + rz * rz
+            const lean = (gux * gx + guy * gy + guz * gz) / gg
+            const ex = gx * lean - gux
+            const ey = gy * lean - guy
+            const ez = gz * lean - guz
+            const el = Math.sqrt(ex * ex + ey * ey + ez * ez)
+            if (el > 0.05) {
+              const lack = ((Math.sqrt(was) - Math.sqrt(left)) * press) / el
+              rx += ex * lack
+              ry += ey * lack
+              rz += ez * lack
+            }
+          }
+        }
         let jy = (y + G.half) * G.scale
         jy = jy < 0 ? 0 : jy > G.top ? G.top : jy
         const iy = jy | 0
@@ -1321,15 +1438,27 @@ export class ParticleEngine {
         uy = cy
         uz = cz
       }
+      ux += rx
+      uy += ry
+      uz += rz
       if (noise) {
         const bits = hash2(i, n)
         ux += ((bits & 1023) - 511.5) * kick
         uy += (((bits >>> 10) & 1023) - 511.5) * kick
         uz += ((bits >>> 20) - 2047.5) * kick * 0.25
       }
-      const ox = wx + (hy * z - hz * y) * CURL
-      const oy = wy + (hz * x - hx * z) * CURL
-      const oz = wz + (hx * y - hy * x) * CURL
+      const ox = wx + (hy * z - hz * y) * CURL + spin * AX
+      const oy = wy + (hz * x - hx * z) * CURL + spin * AY
+      const oz = wz + (hx * y - hy * x) * CURL + spin * AZ
+      const arc = (ox * ox + oy * oy + oz * oz) * H * H
+      const chord = LEAD * (1 - arc / 12)
+      const sag = LEAD * H * (1 - arc / 20) / 3
+      const lx = oy * uz - oz * uy
+      const ly = oz * ux - ox * uz
+      const lz = ox * uy - oy * ux
+      ux += lx * chord + (oy * lz - oz * ly) * sag + fx
+      uy += ly * chord + (oz * lx - ox * lz) * sag + fy
+      uz += lz * chord + (ox * ly - oy * lx) * sag + fz
       const pvx = vx
       const pvy = vy
       const pvz = vz
@@ -1360,7 +1489,7 @@ export class ParticleEngine {
         const sway = K_SWAY[k]! * s1
         const cross = K_CROSS[k]! * s2
         const snk = sink[i]! * (1 + K_DIP[k]! * c2)
-        const b = K_BLEND[k]!
+        const b = K_BLEND[k]! * loose + stiff
         vx += (ux + snk * gex + sway * hc - cross * hs - vx) * b
         vy += (uy + snk * gey - vy) * b
         vz += (uz + snk * gez + sway * hs + cross * hc - vz) * b
@@ -1404,6 +1533,34 @@ export class ParticleEngine {
       vx = Math.fround(vx)
       vy = Math.fround(vy)
       vz = Math.fround(vz)
+      if (rolling) {
+        const leap = (vx * vx + vy * vy + vz * vz) * H * H
+        if (leap > LEAP2 && d * d < leap) {
+          const sx = vx * DT
+          const sy = vy * DT
+          const sz = vz * DT
+          const lay = layer[i]!
+          let px = x
+          let py = y
+          let pz = z
+          for (let j = 1; j < EVERY; j++) {
+            px = Math.fround(px + sx)
+            py = Math.fround(py + sy)
+            pz = Math.fround(pz + sz)
+            const dj = probe(G, px, py, pz, g)
+            if (dj >= RAMP) continue
+            const gl = Math.sqrt(g[0]! * g[0]! + g[1]! * g[1]! + g[2]! * g[2]!)
+            if (dj / (gl > 0.5 ? gl : 0.5) - lay >= SKIN || gl < 1e-9) continue
+            const into = (vx * g[0]! + vy * g[1]! + vz * g[2]!) / (gl * gl)
+            if (into < 0) {
+              vx = Math.fround(vx - g[0]! * into)
+              vy = Math.fround(vy - g[1]! * into)
+              vz = Math.fround(vz - g[2]! * into)
+            }
+            break
+          }
+        }
+      }
       let tx = ahead(x, vx * DT)
       let ty = ahead(y, vy * DT)
       let tz = ahead(z, vz * DT)
