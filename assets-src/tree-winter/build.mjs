@@ -220,7 +220,7 @@ function snow() {
     const open = 0.45 * openness(both, x, h, z, n, 0.6) + 0.55 * openness(both, x, h, z, n, 1.8)
     const lit = 0.5 + 0.5 * (n[0] * SNOW_KEY[0] + n[1] * SNOW_KEY[1] + n[2] * SNOW_KEY[2])
     const deep = needleField(x, h, z)
-    const shade = (0.4 + 0.6 * Math.pow(open, 1.3)) * (0.36 + 0.78 * Math.pow(lit, 4)) * (0.6 + 0.4 * smooth(0.1, 1.7, deep))
+    const shade = (0.4 + 0.6 * Math.pow(open, 1.3)) * (0.48 + 0.66 * Math.pow(lit, 4)) * (0.6 + 0.4 * smooth(0.1, 1.7, deep))
     const cool = 1 - lit * lit
     uv.push(x / SNOW_TILE_MM, h / SNOW_TILE_MM)
     thin.push(deep, 0)
