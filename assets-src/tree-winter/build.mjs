@@ -12,11 +12,13 @@ const NEEDLE_TILE_MM = 9
 const SNOW_TILE_MM = 7
 const STAR_AT = [0.1, 45.75, 0.1]
 const STAR_R = 2.6
-const STAR = { deep: 0.62, edge: 0.17, inset: 0.9, valley: 0.72, crest: 1.12, side: 0.62, glow: [0.04, 0.018, 0.01], stem: [0.12, 0.085], collar: 0.17 }
+const STAR = { deep: 0.62, edge: 0.17, inset: 0.9, valley: 0.72, crest: 1.12, side: 0.62, glow: [0.1, 0.055, 0.03], stem: [0.12, 0.085], collar: 0.17 }
 const CORE_R = 0.155
 const WIRE_R = 0.075
 const SNOW_KEY = [-0.42, 0.819, 0.39]
-const BULBS = { stem: [2.3, 3.4], limb: [2.2, 3.3], lead: 0.16, pad: 0.32, clear: 0.3 }
+const BULBS = { stem: [2.3, 3.4], limb: [2.2, 3.3], lead: 0.16, pad: 0.36, clear: 0.3 }
+const ARRIVAL = { root: 0.16, limb: 0.08, shade: [0.42, 0.14] }
+const SPRIGS = { band: 0.25, share: 0.5, size: [1.3, 2.2], rise: 0.8 }
 
 const [T, R] = await loadSource(['/src/miniature/trunk.ts', '/src/core/rng.ts'])
 const rng = R.stream('tree-winter')
@@ -160,18 +162,17 @@ function needles() {
   const n = new THREE.Vector3()
   const t = new THREE.Vector3()
   const b = new THREE.Vector3()
-  for (let v = 0; v < count; v++) {
-    if (rng.next() > 0.25) continue
+  const plant = (v, size, rise) => {
     p.fromArray(s.pos, v * 3)
     n.fromArray(s.nor, v * 3)
-    if (snowField(p.x, p.y, p.z) < 0.25) continue
-    const size = rng.range(0.9, 1.7)
     t.set(rng.range(-1, 1), rng.range(-1, 1), rng.range(-1, 1))
     t.sub(n.clone().multiplyScalar(t.dot(n)))
-    if (t.lengthSq() < 1e-4) continue
+    if (t.lengthSq() < 1e-4) return
     t.normalize()
     b.crossVectors(n, t)
-    const lean = n.clone().addScaledVector(t, rng.range(-0.35, 0.35)).addScaledVector(b, rng.range(-0.35, 0.35)).normalize()
+    const lean = n.clone().addScaledVector(t, rng.range(-0.35, 0.35)).addScaledVector(b, rng.range(-0.35, 0.35))
+    lean.y += rise
+    lean.normalize()
     const centre = p.clone().addScaledVector(lean, size * 0.3)
     const cell = rng.int(4)
     const u0 = (cell % 2) * 0.5
@@ -194,6 +195,12 @@ function needles() {
       index.push(base, base + 1, base + 2, base, base + 2, base + 3)
     }
     tufts++
+  }
+  for (let v = 0; v < count; v++) {
+    const cover = snowField(s.pos[v * 3], s.pos[v * 3 + 1], s.pos[v * 3 + 2])
+    if (cover >= SPRIGS.band) {
+      if (rng.next() <= 0.25) plant(v, rng.range(0.9, 1.7), 0)
+    } else if (rng.next() <= SPRIGS.share) plant(v, rng.range(SPRIGS.size[0], SPRIGS.size[1]), SPRIGS.rise)
   }
   const g = new THREE.BufferGeometry()
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
@@ -220,11 +227,11 @@ function snow() {
     const open = 0.45 * openness(both, x, h, z, n, 0.6) + 0.55 * openness(both, x, h, z, n, 1.8)
     const lit = 0.5 + 0.5 * (n[0] * SNOW_KEY[0] + n[1] * SNOW_KEY[1] + n[2] * SNOW_KEY[2])
     const deep = needleField(x, h, z)
-    const shade = (0.4 + 0.6 * Math.pow(open, 1.3)) * (0.48 + 0.66 * Math.pow(lit, 4)) * (0.6 + 0.4 * smooth(0.1, 1.7, deep))
+    const shade = (0.4 + 0.6 * Math.pow(open, 1.3)) * (0.42 + 0.72 * Math.pow(lit, 4)) * (0.6 + 0.4 * smooth(0.1, 1.7, deep))
     const cool = 1 - lit * lit
     uv.push(x / SNOW_TILE_MM, h / SNOW_TILE_MM)
     thin.push(deep, 0)
-    col.push(shade * (1 - 0.34 * cool), shade * (1 - 0.2 * cool), shade)
+    col.push(shade * (1 - 0.42 * cool), shade * (1 - 0.22 * cool), shade)
   }
   const g = new THREE.BufferGeometry()
   g.setAttribute('position', new THREE.Float32BufferAttribute(s.pos, 3))
@@ -331,7 +338,7 @@ function strings() {
       const start = centre.clone().addScaledVector(side, Math.cos(th) * rho * pad.size[0]).addScaledVector(depth, Math.sin(th) * rho * pad.size[2])
       const dir = new THREE.Vector3()
       if (rim) {
-        start.addScaledVector(up, rng.range(-0.95, 0.3) * pad.size[1])
+        start.addScaledVector(up, rng.range(-1.1, -0.15) * pad.size[1])
         dir.copy(centre).addScaledVector(up, -0.45 * pad.size[1]).sub(start).normalize()
       } else {
         start.addScaledVector(up, -pad.size[1] - 2.5)
@@ -536,7 +543,7 @@ function arrival() {
     const col = []
     const index = []
     const across = 7
-    const most = limb.kind === 'root' ? 0.46 : 0.2
+    const most = limb.kind === 'root' ? ARRIVAL.root : ARRIVAL.limb
     for (let i = 0; i < f.length; i++) {
       const tan = f[i].tan
       const u = up.clone().sub(tan.clone().multiplyScalar(up.dot(tan)))
@@ -558,7 +565,7 @@ function arrival() {
         pos.push(p1.x, p1.y, p1.z)
         base.push(p0.x, p0.y, p0.z, seed)
         uv.push(p1.x / SNOW_TILE_MM, p1.z / SNOW_TILE_MM)
-        const shade = 0.56 + 0.2 * edge
+        const shade = ARRIVAL.shade[0] + ARRIVAL.shade[1] * edge
         col.push(shade * 0.93, shade * 0.96, shade)
       }
     }
