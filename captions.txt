@@ -1,5 +1,5 @@
-Tree, Round 5 state at bc09ef2 (18:33 UTC). Approved is on the left of every pair.
-01-rest-pair.jpg: hero rest through the reference camera, approved | build, box 1300,240,1960,960. Still wrong: the needle band is darker and taller than approved, the upper crown is a flat disc where approved steps in three tiers, caps cover more (white share 0.186 against 0.140).
-02-crown-pair.jpg: crown, approved | build, box 1340,250,1800,720. Blanket caps with bare gaps and a wavy hem; bulbs scattered over the pad faces; star faceted on a thin stem.
+Tree, final state of tree_fixer at 5289b91 (19:01 UTC; tree code as in dc7dc77). Approved is on the left of every pair.
+01-rest-pair.jpg: hero rest through the reference camera, approved | build, box 1300,240,1960,960. New since bc09ef2: a warm fill from above on the needles, so the foliage reads green between the bulbs. Still wrong: the upper crown is a flat disc where approved steps in three tiers, caps cover more (white share 0.186 against 0.140) and are smoother, the trunk is thinner at the waist and less gold, the star has almost no glow.
+02-crown-pair.jpg: crown, approved | build, box 1340,250,1800,720 (same still as 01).
 03-macro.jpg: macro camera, rest. Ribbed and plated bark, gold on the lamp side; the left-low cap still reads as a hat.
 04-interior.jpg: interior camera, rest. The star's top point is cut by this camera's frame.
