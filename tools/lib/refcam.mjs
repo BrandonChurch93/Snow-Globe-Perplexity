@@ -1,6 +1,6 @@
 import { lensPlace, refractInto, sphereCentreMm } from './lens.mjs'
 
-export const REF_RIG = { fovDeg: 16, distanceMm: 619.9, yawDeg: 0, pitchDeg: 4.5, aimHeightMm: 62.8 }
+export const REF_RIG = { fovDeg: 16, distanceMm: 615.3, yawDeg: 0, pitchDeg: 4.5, aimHeightMm: 64 }
 export const REF_SIZE = [2816, 1584]
 export const REF_GLASS = { x: 1409, y: 646, r: 549 }
 export const REF_FOOT = { left: 872, right: 1941, sideY: 1340, frontY: 1445 }
