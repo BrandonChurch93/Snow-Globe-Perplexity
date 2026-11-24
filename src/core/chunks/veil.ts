@@ -29,8 +29,9 @@ export const VEIL_LOOK = {
   hazeLift: 0.25,
   hazeSide: 0.2,
   uneven: 0.97,
-  whiteFrom: 0.76,
+  whiteFrom: 0.5,
   whiteTo: 0.97,
+  whitePower: 3.5,
   whiteEven: 0.5,
   haze: 0.14,
   hazePower: 1.3,
@@ -54,10 +55,10 @@ export const VEIL_LOOK = {
   bankDim: 0.9,
   rollFrom: 0.2,
   rollTo: 3,
-  slowFrom: 0.1,
+  slowFrom: 0.22,
   slowTo: 0.9,
   slowHaze: 0.2,
-  slowBank: 0.3,
+  slowBank: 0.12,
   slowRise: 0.6,
   bankRing: 0.6,
   bankSoft: 0.13,
@@ -72,6 +73,7 @@ export const VEIL_LOOK = {
   bankPuffGain: 1.3,
   bankGrainLow: 0.62,
   bankGrainHigh: 1.28,
+  bankGrainFlood: 0.85,
   axis: [0, 0.08, 1] as const,
   keyShare: 3.2,
   keyFloor: 0.5,
@@ -236,7 +238,7 @@ vec3 veilLit(vec3 p, vec4 field) {
   vec3 toward;
   vec3 card = uRigCardCol * (uRigInside.x * uRigCard.w * stageGridOpen(p));
   vec3 lit = stageSoftIn(p) * ${n(L.ambientShare)} + (stageKeyIn(p, toward) + card) * (uRigPoint.x * ${n(L.keyShare)} * packed * (uVeilKey.w + (1.0 - uVeilKey.w) * dim)) + stageGrid(p) * mix(${n(L.gridShare)}, ${n(L.bankGridShare)}, low);
-  return lit * mix(vec3(1.0), vec3(1.0) / max(uVeil.rgb, vec3(0.05)), ${n(L.bankWhite)} * low) * mix(1.0, ${n(L.bankDim)} * mix(${n(L.bankGrainLow)}, ${n(L.bankGrainHigh)}, smoothstep(0.25, 0.75, field.w)), low);
+  return lit * mix(vec3(1.0), vec3(1.0) / max(uVeil.rgb, vec3(0.05)), ${n(L.bankWhite)} * low) * mix(1.0, ${n(L.bankDim)} * mix(${n(L.bankGrainLow)}, ${n(L.bankGrainHigh)}, smoothstep(0.25, 0.75, field.w)), low * (1.0 - ${n(L.bankGrainFlood)} * uVeilRoll.y));
 }
 vec4 veilPath(vec3 eye, vec3 placed, vec3 world, float path) {
   float thin = (uVeil.a + uVeilBank.z) * path;
@@ -305,7 +307,8 @@ const now = { most: 0, rest: 0, turb: 0, slow: 0 }
 function densities(): void {
   const { most, rest, turb, slow } = now
   const w = Math.min(1, Math.max(0, (turb - L.whiteFrom) / (L.whiteTo - L.whiteFrom)))
-  const flood = w * w * (3 - 2 * w)
+  const flood = Math.pow(w, L.whitePower)
+  veilUniforms.uVeilRoll.value.y = flood
   const white = most * flood
   const haze = most * L.haze * Math.max(Math.pow(turb, L.hazePower), L.slowHaze * slow)
   const density = rest + white + haze
@@ -344,7 +347,7 @@ export function updateVeil(f: StageFrame): void {
   u.uVeilUp.value.set(f.globeUp.x, f.globeUp.y, f.globeUp.z, L.uneven)
   densities()
   const r = Math.min(1, Math.max(0, ((f.liquid[LIQUID_ROLL] ?? 0) - L.rollFrom) / (L.rollTo - L.rollFrom)))
-  u.uVeilRoll.value.set(r * r * (3 - 2 * r), 0, 0, 0)
+  u.uVeilRoll.value.x = r * r * (3 - 2 * r)
   const pa = f.liquid[LIQUID_SWIRL] ?? 0
   const pb = f.liquid[LIQUID_PHASE_B] ?? 0
   u.uVeilFlow.value.set((pa / TAU) * L.arcTurns, Math.sin(pb) * 0.5 * L.blobDrift, Math.sin(pb) * L.blobDrift, Math.cos(pb) * L.blobDrift)
