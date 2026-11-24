@@ -11,7 +11,8 @@ export const LIMITS = {
   maxBpm: 240,
   priorOctaves: 0.7,
   tempoToleranceBpm: 1,
-  steadyTolerance: 0.04,
+  minPulse: 0.05,
+  steadyTolerance: 0.05,
   steadyShare: 0.9,
   slipTolerance: 0.15,
   peakReachSeconds: 0.025,
@@ -31,6 +32,7 @@ export const LIMITS = {
   sectionPenalty: 8,
   soundFloorDb: 60,
   blockSeconds: 0.05,
+  edgeGuardSeconds: 0.05,
   combWindowSeconds: 12,
   combStepBpm: 0.25,
 }
@@ -452,8 +454,11 @@ export function smoothBeats(measured, beatsPerBar, limits = LIMITS) {
     let sy = 0
     let sxx = 0
     let sxy = 0
-    for (let j = Math.max(0, i - reach); j <= Math.min(n - 1, i + reach); j++) {
-      const u = Math.abs(j - i) / (reach + 1)
+    const lo = Math.max(0, Math.min(i - reach, n - 1 - 2 * reach))
+    const hi = Math.min(n - 1, lo + 2 * reach)
+    const span = Math.max(i - lo, hi - i) + 1
+    for (let j = lo; j <= hi; j++) {
+      const u = Math.abs(j - i) / span
       const w = (1 - u * u * u) ** 3 * Math.min(measured[j].weight, 4)
       const x = j - i
       sw += w
@@ -741,7 +746,8 @@ export function findSections(features, times, phase, beatsPerBar, seconds, sums,
   const edges = [0, ...boundaries.map((c) => times[c.beat]), seconds]
   const sections = []
   for (let i = 0; i + 1 < edges.length; i++) {
-    sections.push({ start: round(edges[i]), end: round(edges[i + 1]), loudness: round(loudnessBetween(sums, sampleRate, edges[i], edges[i + 1]), 2) })
+    const guard = i + 2 < edges.length ? Math.min(limits.edgeGuardSeconds, (edges[i + 1] - edges[i]) / 2) : 0
+    sections.push({ start: round(edges[i]), end: round(edges[i + 1]), loudness: round(loudnessBetween(sums, sampleRate, edges[i], edges[i + 1] - guard), 2) })
   }
   return { sections, boundaries }
 }
@@ -793,7 +799,7 @@ function countBars(barLines, beats, beatsPerBar, seconds) {
 function attempt(samples, sampleRate, setting, opts, limits) {
   const spec = spectra(samples, sampleRate, setting)
   const onset = onsetEnvelope(spec, setting)
-  const row = { settings: setting.name, autocorrelation: 0, comb: 0, difference: null, agree: false, steady: false }
+  const row = { settings: setting.name, autocorrelation: 0, comb: 0, difference: null, agree: false, pulse: 0, clear: false, steady: false }
   if (onset.silent) return { spec, onset, row }
   const a = tempoByAutocorrelation(onset.env, onset.frameRate, opts.defaultBpm, limits)
   const c = tempoByComb(onset.env, onset.frameRate, opts.defaultBpm, limits)
@@ -802,7 +808,9 @@ function attempt(samples, sampleRate, setting, opts, limits) {
   if (!a.bpm || !c.bpm) return { spec, onset, row }
   row.difference = round(Math.abs(a.bpm - c.bpm), 3)
   row.agree = Math.abs(a.bpm - c.bpm) <= limits.tempoToleranceBpm
-  if (!row.agree) return { spec, onset, row }
+  row.pulse = round(a.strength, 3)
+  row.clear = a.strength >= limits.minPulse
+  if (!row.agree || !row.clear) return { spec, onset, row }
   const frames = trackBeats(onset.env, onset.frameRate, (a.bpm + c.bpm) / 2, setting.tightness)
   if (frames.length < 2 * opts.beatsPerBar) return { spec, onset, row }
   const measured = measureBeats(frames, onset, limits)
@@ -824,7 +832,8 @@ export function analyse(samples, sampleRate, opts, limits = LIMITS, settings = S
       base ??= t
       if (t.measured) {
         const smooth = smoothBeats(t.measured, beatsPerBar, limits)
-        const times = extendBeats(smooth, bounds.start, Math.min(seconds, bounds.end)).filter((v) => v >= 0 && v < seconds)
+        const end = Math.min(seconds, bounds.end)
+        const times = extendBeats(smooth, bounds.start, end).filter((v) => v >= 0 && v < end - limits.peakReachSeconds)
         const firstSounding = times.findIndex((v) => v >= smooth[0] - 1e-6)
         const features = beatFeatures(t.spec, t.onset, sums, times, seconds, limits, tones)
         const bar = barPhase(features, beatsPerBar, Math.max(0, firstSounding), limits)
@@ -857,7 +866,7 @@ export function analyse(samples, sampleRate, opts, limits = LIMITS, settings = S
       sections: found.sections,
       loudestSectionStart: loudest(found.sections),
       checks: {
-        tempo: { autocorrelation: t.row.autocorrelation, comb: t.row.comb, difference: t.row.difference, tolerance: limits.tempoToleranceBpm, agree: true },
+        tempo: { autocorrelation: t.row.autocorrelation, comb: t.row.comb, difference: t.row.difference, tolerance: limits.tempoToleranceBpm, agree: true, pulse: t.row.pulse, minPulse: limits.minPulse },
         steady,
         tries,
         settings: t.row.settings,
@@ -893,7 +902,7 @@ export function analyse(samples, sampleRate, opts, limits = LIMITS, settings = S
     sections,
     loudestSectionStart: loudest(sections),
     checks: {
-      tempo: { autocorrelation: last?.autocorrelation ?? 0, comb: last?.comb ?? 0, difference: last?.difference ?? null, tolerance: limits.tempoToleranceBpm, agree: false },
+      tempo: { autocorrelation: last?.autocorrelation ?? 0, comb: last?.comb ?? 0, difference: last?.difference ?? null, tolerance: limits.tempoToleranceBpm, agree: false, pulse: last?.pulse ?? 0, minPulse: limits.minPulse },
       steady: { tolerance: limits.steadyTolerance, share: limits.steadyShare, slip: limits.slipTolerance, sections: [], pass: false },
       tries,
       settings: 'grid',
@@ -904,7 +913,7 @@ export function analyse(samples, sampleRate, opts, limits = LIMITS, settings = S
       soundStart: round(bounds.start),
       soundEnd: round(bounds.end),
       loudness: 'LUFS of the mono mix, K-weighted, not gated',
-      reason: bounds.silent ? 'the file is silent' : tries.some((r) => r.agree) ? 'the beat spacing was not steady in any try' : 'the two tempo methods did not agree in any try',
+      reason: bounds.silent ? 'the file is silent' : tries.some((r) => r.agree && r.clear) ? 'the beat spacing was not steady in any try' : tries.some((r) => r.agree) ? 'no try found a clear pulse' : 'the two tempo methods did not agree in any try',
     },
   }
 }

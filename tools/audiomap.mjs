@@ -69,7 +69,7 @@ if (args.approved === true) {
 const c = map.checks
 const where = [path.relative(ROOT, out), ...(args.approved === true ? [path.relative(ROOT, approved)] : [])].join(' and ')
 console.log(`${reused ? 'reused' : 'mapped'} ${shown}: ${map.seconds.toFixed(2)} s, ${map.method}, ${map.bpm} beats a minute, ${map.beats.length} beats, ${map.bars} bars of ${map.beatsPerBar}`)
-for (const t of c.tries) console.log(`try, ${t.settings}: autocorrelation ${t.autocorrelation}, comb ${t.comb}, ${t.agree ? 'agree' : 'do not agree'}, spacing ${t.steady ? 'steady' : 'not steady'}`)
+for (const t of c.tries) console.log(`try, ${t.settings}: autocorrelation ${t.autocorrelation}, comb ${t.comb}, ${!t.agree ? 'do not agree' : !t.clear ? `agree, pulse too weak at ${t.pulse}` : `agree, pulse ${t.pulse}, spacing ${t.steady ? 'steady' : 'not steady'}`}`)
 if (map.method === 'grid') console.log(`grid: ${c.reason}. The tempo fits the length in ${map.bars} whole bars`)
 else console.log(`bar lines by ${c.barPhase.method}, confidence ${c.barPhase.confidence}. First at ${map.barLines[0]} s`)
 console.log(`sections: ${map.sections.map((s) => `${s.start.toFixed(2)} to ${s.end.toFixed(2)} s at ${s.loudness} LUFS`).join(', ')}`)
