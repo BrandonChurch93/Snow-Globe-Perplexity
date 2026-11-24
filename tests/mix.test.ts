@@ -6,8 +6,10 @@ import * as lib from '../tools/lib/audio.mjs'
 import { loadConfig } from '../tools/lib/paths.mjs'
 
 type Sound = { rate: number; L: Float64Array; R: Float64Array }
-type Measured = { seconds: number; lufs: number; truePeakDb: number; silenceFrontSeconds: number; events: number; spectrum: { centroidHz: number } }
-type Kept = { audio: Sound; steps: string[]; gainDb: number; loop: { seconds: number; seam: { ratio: number; levelStepDb: number } } | null }
+type Measured = { seconds: number; lufs: number; lufsMeasure: string; soundLufs: number | null; offsetDb: number | null; soundSeconds: number; truePeakDb: number; silenceFrontSeconds: number; events: number; spectrum: { centroidHz: number } }
+type Level = { measure: string; measuredAs: string; seconds: number; beforeLufs: number; afterLufs: number; targetLufs: number; truePeakDb: number }
+type Kept = { audio: Sound; steps: string[]; gainDb: number; level: Level; loop: { seconds: number; seam: { ratio: number; levelStepDb: number } } | null }
+type Plan = { sprite: { audio: Sound | null; entries: Record<string, { start: number; seconds: number; gain: number }> }; loops: unknown[]; notes: string[] }
 type Mixed = {
   audio: Sound
   music: Sound
@@ -17,6 +19,12 @@ type Cut = Record<string, unknown>
 type Lib = {
   RATE: number
   PEAK_MARGIN_DB: number
+  LOUDNESS_BLOCK: number
+  SHORT_CREST_DB: number
+  MEASURES: Record<string, string>
+  loudnessOf(a: Sound): { lufs: number; measure: string; seconds: number }
+  cueSeconds(id: string): number | null
+  planPack(o: { keptDir: string; mapsDir: string }): Plan
   make(n: number, rate?: number): Sound
   seconds(a: Sound): number
   db(x: number): number
@@ -71,6 +79,50 @@ const noise = (seconds: number, amp: number, seed: number): Sound => {
     a.R[i] = amp * r * 4
   }
   return a
+}
+
+const burst = (total: number, lead: number, length: number, peakDb: number, seed: number): Sound => {
+  const a = A.make(Math.round(total * rate), rate)
+  const from = Math.round(lead * rate)
+  const n = Math.round(length * rate)
+  let s = seed >>> 0
+  const x = new Float64Array(a.L.length)
+  for (let i = 0; i < n; i++) {
+    s = (Math.imul(s, 1664525) + 1013904223) >>> 0
+    x[from + i] = (s / 2147483648 - 1) * Math.exp((-5 * i) / n)
+  }
+  const k = 1 / (1 + (2 * Math.PI * 6000) / rate)
+  let y = x
+  for (let pass = 0; pass < 2; pass++) {
+    const o = new Float64Array(y.length)
+    for (let i = 1; i < y.length; i++) o[i] = k * (o[i - 1]! + y[i]! - y[i - 1]!)
+    y = o
+  }
+  let top = 0
+  for (const v of y) top = Math.max(top, Math.abs(v))
+  const g = A.lin(peakDb) / top
+  for (let i = 0; i < y.length; i++) {
+    a.L[i] = y[i]! * g
+    a.R[i] = y[i]! * g
+  }
+  return a
+}
+
+const plus = (a: Sound, f: (i: number) => number): Sound => {
+  const o = A.make(a.L.length, rate)
+  for (let i = 0; i < a.L.length; i++) {
+    const v = f(i)
+    o.L[i] = a.L[i]! + v
+    o.R[i] = a.R[i]! + v
+  }
+  return o
+}
+
+const padTo = (a: Sound, seconds: number): Sound => {
+  const o = A.make(Math.round(seconds * rate), rate)
+  o.L.set(a.L)
+  o.R.set(a.R)
+  return o
 }
 
 const keep = (id: string, source: Sound): Kept => {
@@ -193,6 +245,133 @@ describe('audio library', () => {
     expect(Math.abs(A.loudness(m.audio) - config.audio.filmLoudnessLufs)).toBeLessThan(0.5)
     expect(A.db(A.truePeak(m.audio))).toBeLessThanOrEqual(config.audio.truePeakDb)
     expect(m.reductionDb).toBeGreaterThan(0)
+  })
+})
+
+describe('sounds shorter than the loudness block', () => {
+  const tickTake = (): Sound => burst(0.48, 0.15, 0.11, -8, 41)
+  const landing = (): Kept => {
+    const body = tone(70, 1.1, 0.8, 0.05, 0.25)
+    const air = noise(1.15, 0.05, 13)
+    return A.keepChain(plus(body, (i) => air.L[i] ?? 0), 'impact', { capSeconds: A.cueSeconds('land-winter') })
+  }
+
+  it('measures a 60 ms and a 100 ms burst over their own length and says so', () => {
+    for (const length of [0.06, 0.1]) {
+      const alone = burst(length, 0, length, -8, 17)
+      const found = A.loudnessOf(alone)
+      expect(found.measure).toBe('own-length')
+      expect(Number.isFinite(found.lufs)).toBe(true)
+      expect(found.seconds).toBeCloseTo(length, 3)
+      const twice = A.make(alone.L.length * 2, rate)
+      twice.L.set(alone.L)
+      twice.L.set(alone.L, alone.L.length)
+      twice.R.set(alone.R)
+      twice.R.set(alone.R, alone.R.length)
+      expect(Math.abs(A.loudnessOf(twice).lufs - found.lufs)).toBeLessThan(0.3)
+      const m = A.measure(burst(0.48, 0.15, length, -8, 17))
+      expect(m.lufsMeasure).toBe('gated')
+      expect(Number.isFinite(m.lufs)).toBe(true)
+      expect(Number.isFinite(m.soundLufs)).toBe(true)
+      expect(m.soundLufs!).toBeGreaterThan(m.lufs)
+    }
+    expect(A.loudnessOf(tone(1000, A.LOUDNESS_BLOCK + 0.1, 0.1)).measure).toBe('gated')
+    expect(A.loudnessOf(A.make(2400, rate)).lufs).toBe(-Infinity)
+  })
+
+  it('keeps a 60 ms and a 100 ms burst at the level of their class', () => {
+    for (const [id, length] of [['ui-tick', 0.06], ['key-tap', 0.1]] as const) {
+      const cls = A.classOf(id)
+      const k = A.keepChain(burst(0.48, 0.15, length, -8, 29), cls, { capSeconds: A.cueSeconds(id) })
+      const found = A.loudnessOf(k.audio)
+      expect(found.measure).toBe('own-length')
+      expect(Math.abs(found.lufs - A.levelOf(cls))).toBeLessThan(0.15)
+      expect(k.level.measure).toBe('own-length')
+      expect(k.level.afterLufs).toBeCloseTo(A.levelOf(cls), 1)
+      expect(k.steps.join(' ')).toContain(A.MEASURES['own-length']!)
+      expect(A.seconds(k.audio)).toBeLessThanOrEqual(A.cueSeconds(id)! + 0.001)
+      expect(A.seconds(k.audio)).toBeGreaterThan(length * 0.6)
+      expect(A.measure(k.audio).lufsMeasure).toBe('own-length')
+    }
+    const long = A.keepChain(noise(1.4, 0.3, 5), 'impact')
+    expect(long.level.measure).toBe('gated')
+    expect(long.steps.join(' ')).toContain(A.MEASURES.gated!)
+  })
+
+  it('keeps the tick of a take like the real one: 0.15 s of silence, a 0.11 s burst, silence to 0.48 s', () => {
+    const cap = A.cueSeconds('ui-tick')
+    const clean = A.keepChain(tickTake(), 'interface', { capSeconds: cap })
+    expect(Math.abs(A.loudnessOf(clean.audio).lufs - A.levelOf('interface'))).toBeLessThan(0.15)
+    expect(A.seconds(clean.audio)).toBeCloseTo(cap!, 3)
+    const cases: [string, Sound][] = [
+      ['a constant offset', plus(tickTake(), () => A.lin(-55))],
+      ['a 30 Hz rumble', plus(tickTake(), (i) => A.lin(-50) * Math.sin((2 * Math.PI * 30 * i) / rate))],
+      ['a hiss in front', plus(tickTake(), (i) => A.lin(-58) * Math.sin(i * 1.7) * Math.sin(i * 0.37))],
+      ['a small click at the very start', plus(tickTake(), (i) => (i < 48 ? A.lin(-40) * (i % 2 ? 1 : -1) : 0))],
+    ]
+    for (const [name, take] of cases) {
+      const k = A.keepChain(take, 'interface', { capSeconds: cap })
+      expect(Math.abs(k.gainDb - clean.gainDb), name).toBeLessThan(0.6)
+      expect(Math.abs(A.loudnessOf(k.audio).lufs - A.levelOf('interface')), name).toBeLessThan(0.15)
+      expect(A.db(A.peak(k.audio)), name).toBeGreaterThan(A.db(A.peak(clean.audio)) - 1)
+    }
+    const m = A.measure(cases[0]![1])
+    expect(m.offsetDb).toBeCloseTo(-55, 0)
+    expect(Math.abs(m.silenceFrontSeconds - 0.15)).toBeLessThan(0.011)
+    expect(m.soundSeconds).toBeLessThan(0.13)
+    expect(A.measure(tickTake()).offsetDb).toBeNull()
+    expect(() => A.keepChain(A.make(4800, rate), 'interface')).toThrow()
+  })
+
+  it('never brings an interface tick out louder than a landing', () => {
+    const land = landing()
+    const landLufs = A.loudness(land.audio)
+    expect(Math.abs(landLufs - A.levelOf('impact'))).toBeLessThan(0.15)
+    for (const [id, length] of [['ui-tick', 0.06], ['key-tap', 0.1], ['ui-tick', 0.11]] as const) {
+      const k = A.keepChain(burst(0.48, 0.15, length, -8, 31), 'interface', { capSeconds: A.cueSeconds(id) })
+      expect(A.loudnessOf(k.audio).lufs).toBeLessThan(landLufs)
+      expect(A.loudness(padTo(k.audio, A.LOUDNESS_BLOCK))).toBeLessThan(landLufs)
+      expect(A.loudness(padTo(k.audio, 1.2))).toBeLessThan(landLufs)
+      expect(A.db(A.truePeak(k.audio))).toBeLessThan(A.db(A.truePeak(land.audio)))
+      expect(A.db(A.truePeak(k.audio))).toBeLessThanOrEqual(A.levelOf('interface') + A.SHORT_CREST_DB + 0.01)
+    }
+    const click = A.make(Math.round(0.06 * rate), rate)
+    for (let i = 0; i < click.L.length; i++) {
+      const v = i >= 480 && i < 483 ? (i % 2 ? 0.7 : -0.7) : 0.007 * Math.sin(i * 0.9)
+      click.L[i] = v
+      click.R[i] = v
+    }
+    const sharp = A.keepChain(click, 'interface', { capSeconds: A.cueSeconds('ui-tick') })
+    expect(A.db(A.truePeak(sharp.audio))).toBeLessThanOrEqual(A.levelOf('interface') + A.SHORT_CREST_DB + 0.01)
+    expect(A.loudnessOf(sharp.audio).lufs).toBeLessThanOrEqual(A.levelOf('interface') + 0.01)
+    expect(sharp.steps.join(' ')).toContain('short sound')
+  })
+
+  it('packs and mixes a 0.08 s cue without a loudness call failing', () => {
+    const short = path.join(dir, 'short')
+    fs.mkdirSync(short, { recursive: true })
+    for (const [id, length] of [['ui-tick', 0.06], ['key-tap', 0.1]] as const) {
+      const k = A.keepChain(burst(0.48, 0.15, length, -8, 37), A.classOf(id), { capSeconds: A.cueSeconds(id) })
+      fs.writeFileSync(path.join(short, `${id}.wav`), A.encodeWav(k.audio))
+      fs.writeFileSync(path.join(short, `${id}.json`), JSON.stringify({ id, class: A.classOf(id) }))
+    }
+    const plan = A.planPack({ keptDir: short, mapsDir: maps })
+    expect(Object.keys(plan.sprite.entries).sort()).toEqual(['key-tap', 'ui-tick'])
+    expect(plan.notes).toEqual([])
+    expect(plan.sprite.entries['ui-tick']!.seconds).toBeLessThanOrEqual(0.081)
+    expect(plan.sprite.entries['ui-tick']!.gain).toBeGreaterThan(0)
+    expect(plan.sprite.entries['ui-tick']!.gain).toBeLessThan(1)
+    expect(A.peak(plan.sprite.audio!)).toBeGreaterThan(0)
+    const cut = { ...cutOf(), cues: [{ cue: 'ui-tick', frame: 0, at: bar }], ambience: [], opening: { frameCount: 90, seconds: 1.5, cues: [{ cue: 'key-tap', frame: 12, at: 0.2 }, { cue: 'key-tap', frame: 30, at: 0.5 }] } }
+    for (const which of ['b', 'a']) {
+      const one = A.mixFilm({ cut, which, candidate: 'blockout', keptDir: short, mapsDir: maps })
+      const two = A.mixFilm({ cut, which, candidate: 'blockout', keptDir: short, mapsDir: maps })
+      expect(one.report.skipped).toEqual([])
+      expect(one.report.master.silent).toBe(false)
+      expect(Number.isFinite(one.report.master.lufs)).toBe(true)
+      expect(A.db(A.truePeak(one.audio))).toBeLessThanOrEqual(config.audio.truePeakDb)
+      expect(A.encodeWav(one.audio).equals(A.encodeWav(two.audio))).toBe(true)
+    }
   })
 })
 
