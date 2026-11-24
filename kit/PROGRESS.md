@@ -448,6 +448,8 @@ Merged into `main`, each verified here with types clean and the tests green (126
 
 - 04:19 `agent/tools-measure` again (`2830daf`): the pack calls the real sheet tool with `--look no`, runs a sheet command again when it stops at its chunk (exit 3), and holds the whole run to `sandbox.chunkBudgetMinutes`. Its blockout pack on the measuring scene: 19 files in two parts (ten film sheets; six camera pairs and three screens), 0 missing. Not proven by a run: the exit 3 path, `--loop`, `--loop --seam`, `--motion move`. Still without a tool: the app path sheets (shake, stir, drag, jump), the R8 control crops, the hint sheet, and R7 (the stress output's shape was unknown to it). The sheet, audio map and gate agents are done and idle.
 
+- 04:26 `agent/tools-film` at `9156a8e` (film, loop, stress, render-local, encode, frames), merged before its report arrived so that the R7 pack can be built on the stress tool: types clean, 126 tests green. Not run here yet, because every one of them needs a build that matches the source and the app is not in. Follow-up 2 to the pack agent at 04:27: the R7 pack from `out/work/stress/stress.json`, one run each of `--loop`, `--loop --seam` and `--motion move`, a real file name in the answer example. R8 and the globe unit's motion pack wait for the interface and the app.
+
 ## Rounds
 
 One line per round: its number, the unit, the commit it judged, each part ticked off as it finished, the scores, and what changed next.
