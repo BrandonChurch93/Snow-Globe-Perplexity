@@ -51,6 +51,16 @@ describe('the grid light a flake takes', () => {
     expect(read).toContain('air += flood;')
   })
 
+  it('is also given without the knee and without the flood, for the glints of what flies', () => {
+    const warm = LIGHT_FRAG_PARS.slice(LIGHT_FRAG_PARS.indexOf('vec3 stageGridWarm(vec3 local)'), LIGHT_FRAG_PARS.indexOf('vec3 stageKeyBent('))
+    expect(warm).toContain('a = texture(uGridA, stageGridAt(local, 0.0)).rgb * stageGridGain(texture(uGridA, stageGridAt(local, 2.0)), uGridGainA);')
+    expect(warm).toContain('b = texture(uGridB, stageGridAt(local, 0.0)).rgb * stageGridGain(texture(uGridB, stageGridAt(local, 2.0)), uGridGainB);')
+    expect(warm).toContain('return mix(a, b, uGrid.x);')
+    expect(warm).not.toContain('stageGridAir')
+    expect(warm).not.toContain('stageFlood')
+    expect(LIGHT_FRAG_PARS.match(/vec3 stageGridWarm\(/g)?.length).toBe(1)
+  })
+
   it('goes to what flies, while a surface keeps the whole grid', () => {
     const lit = LIGHT_FRAG_PARS.slice(LIGHT_FRAG_PARS.indexOf('void stageGridLit('), LIGHT_FRAG_PARS.indexOf('vec3 stageGridToward('))
     expect(lit).toContain('stageGridRead(local, soft, colour, toward, open, shade);')
