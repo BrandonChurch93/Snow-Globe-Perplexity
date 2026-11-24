@@ -35,7 +35,7 @@ export const glassLook = {
   rimCard: { wide: 0.05, widePower: 3, core: 0.75, corePower: 26, tint: [2.63, 2.29, 1.6] as V3 },
   strip: { centre: [-0.449, -0.031, -0.893] as V3, tint: [0.3, 0.8, 1] as V3, wideDeg: 3.4, tallDeg: [-9, 7] as const, endDeg: 3, gain: [0.32, 0.96, 4.48, 0] as const },
   room: { gain: 0.3, side: 0.22, blotch: 0.5, level: 4.31, tint: [1.62, 1.04, 1.04] as V3, innerRough: 0.1, throughRough: 0.3 },
-  ceiling: { dir: [0, 0.5, -0.866] as V3, edge: [0.55, 0.66] as const, low: [0.25, 1] as const, gain: 2.1, tint: [0.95, 1.05, 1] as V3 },
+  ceiling: { dir: [0.1, 0.5, -0.866] as V3, edge: [0.5, 0.61] as const, low: [0.25, 1] as const, gain: 1.5, tint: [0.74, 1.04, 1] as V3 },
   second: { face: 0.72, gain: 2.8, tint: [1.25, 1.1, 1] as V3, softDeg: 0.5, own: 0.15 },
   third: { face: 0.6, gain: 0.085, tint: [0.55, 0.79, 1] as V3, softDeg: 0.9, own: 0.15, fade: [0.78, 0.97] as const },
   shoulder: { from: 1.4, to: 3.6 },
@@ -47,7 +47,7 @@ export const glassLook = {
   dust: { cells: 240, share: 0.085, depth: 0.42 },
   hair: { count: 7, widthMm: 0.035, depth: 0.32, bend: 0.012 },
   seat: { lineMm: 1.3, shadeMm: 8, gain: 1.5 },
-  through: { disc: 0.0009, point: 3, pointGain: 2.5, wall: [0.94, 0.975, 0.985] as V3, mirror: 0.06, steps: 5, own: 0.12, window: 0.018, softDeg: 3, lift: [0.058, 0.045, 2.5] as const, liftTint: [0.9, 1.25, 1] as V3 },
+  through: { disc: 0.0009, point: 3, pointGain: 2.5, wall: [0.94, 0.975, 0.985] as V3, mirror: 0.06, steps: 5, own: 0.12, window: 0.018, softDeg: 3, lift: [0.056, 0.012, 2.5] as const, liftTint: [0.9, 1.25, 1] as V3 },
   bubble: { widthMm: 20.5, depthMm: 5.6, gapMm: 0.12, patch: 0.46, waist: 0.5, flat: 2.7, leanDeg: 16, slide: 0.0025, wobble: 0.09, line: 0.022, sky: 0.11, inner: 0.08, glint: 0.5, milk: 0.12, fill: [1.6, 1.25, 0.85] as V3, shade: 0.12, edge: 0.5, warm: 0.5, reach: 0.35, patchGain: 0.1, swirl: 0.3, streakDir: [-0.9, 0, 0.35] as V3, streakPower: 2.5, lip: 0.6, spark: 2.5, sparkTint: [1, 0.92, 0.75] as V3 },
 }
 
