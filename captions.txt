@@ -1,4 +1,4 @@
-01-app-shake-hd.jpg: The app in live mode at hd on the measuring scene with the real interface: at rest, then three moments of one shake (lift and tilt, storm, landing). Season marks bottom left, the Shake control bottom centre.
-02-film-b-frames.jpg: Film B frames 0, 666, 720 and 3598: the close opening before the pull back, the locked hero camera inside the first shake, the landing on the bar line, and the close that ends on the camera of frame 0.
-03-loop-frames.jpg: The card loop at frames 0, 150 and 240: rest, the shake, the fall back. Frame 480 hashes the same as frame 0.
-04-screen-phone.jpg: The phone screen still: the globe fills 86 percent of the width and leaves room under it for the bar.
+01-app-hd-rest.jpg: The app at 1920 x 1080 on the measuring scene with the real interface. The camera now leaves room under the base for the controls: the Shake control and the season marks sit clear of the globe.
+02-app-phone-tablet.jpg: The app on the phone (390 x 844) at rest and in a shake, and on the tablet (1024 x 1366) at rest and with a slow drag held. The controls stay under the base at both sizes.
+03-app-hd-gestures.jpg: The app at hd: the storm after Space, the landing, a slow drag held to the side (it eases back when let go), and after a quick drag, which stirs and does not change the season.
+04-app-hd-reduced-motion.jpg: Reduced motion at hd: before a press, during the dissolve, after it, and after a press on a season mark. The globe stays still and only the season changes.
