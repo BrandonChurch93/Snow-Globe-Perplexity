@@ -524,6 +524,12 @@ Severe and major issues still open when a limit was reached: the unit, the still
 
 21. Update to item 6 (engine speed), 2026-11-24 07:58 UTC, carried. The storm's worst second costs 2.3 s of work per simulated second on the engine engineer's VM; the goal of 0.6 was not reached. It needs the per-particle data repacked or a lower step rate, and is taken up again with the real particles in Phase 3.
 
+22. From the film and app engineer's final report, 2026-11-24 08:03 UTC, carried to Phase 5 (the whole globe). The pause seen twice at 07:02 (the main thread blocked 6.5 s at 2.3 s after the first picture) has no known cause and no fix; it was not seen in 39 runs since, 6 of them on the final commits. An untested guess is a stall or a lost context in the graphics process; the app does not handle a lost WebGL context. To do: handle a lost context (restore, or the poster with a clear line), and watch for the pause on the published app.
+
+23. Same report, carried to Phase 5. On a 60 Hz screen the governor takes a level back only at twice the `minFps` of the level above (80 or 100 frames a second), which a 60 Hz clock cannot show, so a level dropped once never comes back in that visit. A possible fix: count a window as fast when nearly every frame holds the median and the median is at least the `minFps` of the level above, still once per level.
+
+24. Same report, carried to Phase 5. The phone's landscape framing assumes a 60 px bar until the controls are measured, and was not rendered. The ridge's room in the spring move was proven by geometry and test; round 2's sheets show it in pictures since the thinning.
+
 ## Review items not done
 
 none
@@ -594,6 +600,8 @@ Merged into `main`, each verified here with types clean and the tests green (126
 
 
 - 07:25 started `engine_engineer_2`, the one replacement for the engine job: branch `agent/engine2`, looks `agent/engine2-looks`, sandbox VM, brief in `out/work/briefs/engine2.md` (COMMON.md plus the four cameras the second critic marked, with its words; it may change only the numbers of `macro`, `interior`, `surface` and `low` under `cameras`, the lens table for them and its three test files). First push due 07:55, hard limit 08:20. Every build job has now used its one replacement except the harness, interface and tools jobs, which needed none.
+
+- 08:05 no build agent is running. `engine_engineer_2` (done 07:53), `particles_engineer_2` (done 07:54) and `film_app_engineer_2` (done 08:03) have sent their final reports and all of their work is merged. Every build job has used its one replacement. Next to start: two fresh critics for round 2, then five render agents for the blockout film.
 
 ## Rounds
 
@@ -734,3 +742,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 07:57 merged `agent/film-app2` `dec56e1` (with `agent/engine2` `3d47198`) and `agent/particles2` `203204a` as `a9b5613`: types clean, 304 tests, build, cut and parts clean. The pack tool's line for `macro` now carries the kit's words for frame 0 and its corner check (`9ade96d`). The fix pass took 50 of its 90 minutes. Round 2 of the blockout review started 07:57 on `9ade96d`: build, the Phase 2 gate, the measures and the pack run first, then two fresh critics.
 
 - 08:01 Status 20 posted with three pictures: the opening camera's six candidates with the chosen frame (the caption in the picture says four), the spring hold and the fall hold after the thinning. It says the published app still shows the 07:36 build and that this commit is published when the gate has run.
+
+- 08:03 `film_app_engineer_2` sent its final report and is done (`agent/film-app2` `dec56e1`, already merged; looks on `agent/film-app2-looks` `67e7ccb`). Its checks at `dec56e1`: types clean, 304 tests, build, cut unchanged, determinism pass, G4, G6, G7, G11, G12 and G14 pass; G5 red in its VM only because no sound file exists there. What it left open is in open items 22 to 24.
