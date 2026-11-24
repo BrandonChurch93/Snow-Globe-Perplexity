@@ -549,7 +549,7 @@ Merged into `main`, each verified here with types clean and the tests green (126
 
 One line per round: its number, the unit, the commit it judged, each part ticked off as it finished, the scores, and what changed next.
 
-none
+- Round 1 · blockout (Phase 2, the floor round) · judges commit `48afed3` · started 2026-11-24 06:36 UTC. Parts: [ ] build · [ ] machine checks · [ ] measures · [ ] pack · [ ] critic part 1 · [ ] critic part 2 · [ ] issues read · [ ] fixes · [ ] logged
 
 ## Final scores
 
