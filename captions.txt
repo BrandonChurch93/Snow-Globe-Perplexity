@@ -1,13 +1,13 @@
-Looks of agent/p3-liquid at cb51a3e (the engine of e9d6869 with main 5a17ada merged in), made between 20:52 and 21:03 UTC on the build machine's clock, draft tier, shake.strokeMm 22. In the two pairs the approved image is on the LEFT and this branch is on the RIGHT.
+Looks of the liquid and the particle engine at 78e60ec (agent/p3-liquid on main 83d5055, shake.strokeMm 25), draft tier.
 
-look-1-first-stroke-frames-36-to-54.jpg
-Frames 36, 42, 48 and 54 of the test shake (0.60, 0.70, 0.80, 0.90 s), the glass cut from four frames of the strokes sheet at preview size, no new render. At 0.70 s the glass has gone left on its first stroke and the low snow is thrown against the right wall: the liquid now turns over across the stroke (by numbers the low snow's centre goes from -1.8 mm at 0.57 s to +21 mm at 0.70 s, 0.56 of it right of +20 mm and 0.06 left of -20 mm; at d38e0c2 it led the glass, 0.12 to 0.16 right and 0.32 to 0.34 left). Still wrong: from 0.80 s the veil (drawn by the flakes' part) fills the glass, so the lag at the later reversals cannot be read; by numbers it is only 6 to 8 mm of the cloud's centre once the roll is up.
+look-1-frame-0-of-the-test-shake.jpg
+  Frame 0 of the test shake (the first frame of the lift sheet, preview format, the globe cut out and doubled). The engine now starts with the calm snowfall under way: 4.0 % of the flakes are in the air at step 0, through the whole depth. Before this push the liquid was empty at frame 0.
 
 look-2-rest-beside-winter-rest.jpg
-Left: references/approved/winter-rest.png. Right: winter, rest, hero, hd. Flakes hang through the whole dome, the top third included: 0.50 of an even share above 48 mm on a 22 mm stroke and 0.47 on 24 mm (0.35 and 0.28 at d38e0c2). The flakes that rise again now come down as a snowfall of 2.5 to 4 mm/s. Still wrong: of the flakes afloat, about four in ten still fall slower than 1 mm/s and a quarter fall less than 4 mm in seven seconds, so the slow ones still hover; the near flakes read as large soft discs where approved has many small crisp specks.
+  Left: references/approved/winter-rest.png. Right: the build, winter, rest, hero, hd. The flakes that keep falling are the fine ones (engine size at most the median), nothing hovers (3.6 % of the flakes afloat through the 7 s before this state move less than 4 mm, was 12.5 %), and the field reaches the top of the dome as in the approved picture.
 
 look-3-landed-beside-winter-shake.jpg
-Left: references/approved/winter-shake.png. Right: winter, landed, hero, hd. The three arms of the flakes now start from a set angle when the roll wakes, so the landing falls on the same phase of the arms for strokes 22 to 26 (the flow in the roll's slab runs flat, 1.80 at 22 mm and 1.83 at 24 mm against a pin of 1.25 to 2.2; it was 1.38 at 24 mm). Still wrong: the build reads as banded arcs low on the left wall where approved has rings of fine soft streaks about an eye right of the middle; the bank still stands on the left wall and hides the foot of the cottage.
+  Left: references/approved/winter-shake.png. Right: the build, winter, landed, hero, hd, at stroke 25. One whirl; the tree and the cottage stand inside the storm. The veil and the streaks are flake_closer's; the engine gives the flakes and their velocity.
 
-look-4-lift-sheet.jpg
-Lift sheet of the test shake, frames 0 to 32 (0 to 0.53 s), preview size, shrunk to 1200 px wide. From 0.33 s a puff of snow leaves the ground on the left and leans behind the carry (by numbers the snow afloat stands 12 to 14 mm left of centre at 0.47 to 0.50 s; it stood 2 mm right of centre at d38e0c2). Too small here to judge more than that it rises on one side.
+look-4-lift-sheet-frames-0-to-32.jpg
+  The lift of the test shake, frames 0 to 32, 4 frames apart at 60 frames a second, preview. The snow comes off the ground from frame 16 and stands to the left of the tree through frames 20 to 28: the lag of the liquid in the lift. The start drift is too fine to read at this size; it is in look 1.
