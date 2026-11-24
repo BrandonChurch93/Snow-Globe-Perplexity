@@ -304,7 +304,7 @@ export function lights(): THREE.Object3D {
     glowPiece(villageGeometry('pane-gable'), (_i, w, h) => [GLOW.pane, w, h, 1]),
     glowPiece(villageGeometry('pane-side'), (_i, w, h) => [GLOW.pane, w, h, 2]),
   ]
-  const look = { bulb: 1.7, bulbCore: 3.4, glass: LAMP_GLASS, flame: tones.flame.map((v) => v * 6) as unknown as Rgb, room: tones.room.map((v) => v * 0.8) as unknown as Rgb, curtain: tones.curtain.map((v) => v * 1.5) as unknown as Rgb, frost: tones.rime.map((v) => v * 0.55) as unknown as Rgb, frostAmount: 0.3, flicker: 0.08, cycles: 3, through: THROUGH, paneHot: 0.2 }
+  const look = { bulb: 1.7, bulbCore: 3.4, glass: LAMP_GLASS, flame: tones.flame.map((v) => v * 6) as unknown as Rgb, room: tones.room.map((v) => v * 0.8) as unknown as Rgb, curtain: tones.curtain.map((v) => v * 1.5) as unknown as Rgb, frost: tones.rime.map((v) => v * 0.55) as unknown as Rgb, frostAmount: 0.3, flicker: 0.08, cycles: 3, through: THROUGH, paneHot: 0.12 }
   const lit = (x: number, z: number): [number, number, number] => [x, groundAt(x, z) + 1.5, z]
   const pools = [lit(flame[0] + 0.4, flame[2] + 1.6), lit(anchors.door[0] * 0.75 + flame[0] * 0.25, anchors.door[2] * 0.75 + flame[2] * 0.25)]
   const halos = new THREE.Mesh(
