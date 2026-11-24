@@ -3,7 +3,7 @@ import { lightUniforms } from '../core/chunks/light'
 import type { Rgb } from '../core/materials'
 import type { StageFrame } from './frame'
 import { centreHeightMm, groundY, innerRadiusMm } from './layout'
-import { GRID, breathOf, gainOf, glowAt, glowOf, gridInfo, groupGains } from './lightgrid'
+import { GRID, breathOf, gainOf, glowAt, glowOf, gridInfo, groupGains, shadeGrid } from './lightgrid'
 import { lensIor } from '../globe/lens'
 
 const mixRgb = (a: Rgb, b: Rgb, t: number): [number, number, number] => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
@@ -21,6 +21,7 @@ export const ROOM_RIG = {
   rimSpecular: 1,
   card: { share: 0.1, side: -0.9, lift: 0.3, front: 1.1 },
   inside: { through: 0.92, wrap: 0.15, spread: 1.6 },
+  point: { key: 0.14, rim: 0.05, sky: 0.32 },
   room: { gain: 1, lights: 1, softPerRough: 0.5, lightsBelowRough: 0.62 },
   grid: { flat: 0.25, wrap: 0.3, specular: 1, openFloor: 0.35 },
   bloomGain: 2.5,
@@ -70,6 +71,16 @@ export class Lighting {
     u.uRigRoom.value.set(ROOM_RIG.room.gain, ROOM_RIG.room.lights, ROOM_RIG.room.softPerRough, ROOM_RIG.room.lightsBelowRough)
     u.uGridShade.value.set(ROOM_RIG.grid.flat, ROOM_RIG.grid.wrap, ROOM_RIG.grid.specular, ROOM_RIG.grid.openFloor)
     u.uRigGlow.value.set(ROOM_RIG.glow.lobe, ROOM_RIG.glow.specular, 0, 0)
+    u.uRigPoint.value.set(ROOM_RIG.point.key, ROOM_RIG.point.rim, ROOM_RIG.point.sky, 0)
+  }
+
+  private shade(grid: THREE.Texture | null, from: Rgb): void {
+    const t = ROOM_RIG.targetMm
+    const x = from[0] - t[0]
+    const y = from[1] - t[1]
+    const z = from[2] - t[2]
+    const len = Math.hypot(x, y, z)
+    if (len > 0) shadeGrid(grid, [x / len, y / len, z / len], 1 - 1 / lensIor, ROOM_RIG.keySpread * ROOM_RIG.inside.spread)
   }
 
   setShadowMap(px: number): void {
@@ -130,6 +141,8 @@ export class Lighting {
     const bloom = 1 + ROOM_RIG.bloomGain * f.mix.bloom
     const gainA = gainOf(a.innerLights, f.time, f.period) * breath
     const gainB = gainOf(b.innerLights, f.time, f.period) * breath * bloom
+    this.shade(f.grids[0], a.rig.key.from)
+    this.shade(f.grids[1], b.rig.key.from)
     u.uGridA.value = f.grids[0]
     u.uGridB.value = f.grids[1]
     u.uGrid.value.set(t, gainA, gainB, innerRadiusMm)

@@ -46,6 +46,7 @@ export const lightUniforms = {
   uRigLobe: { value: new THREE.Vector4(0.2, 1, 0.1, 1) },
   uRigRoom: { value: new THREE.Vector4(1, 1, 0.5, 0.6) },
   uRigGlow: { value: new THREE.Vector4(0.3, 1, 0, 0) },
+  uRigPoint: { value: new THREE.Vector4(0.14, 0.05, 0.32, 0) },
   ...roomLit,
 }
 
@@ -75,6 +76,7 @@ uniform vec4 uRigInside;
 uniform vec4 uRigLobe;
 uniform vec4 uRigRoom;
 uniform vec4 uRigGlow;
+uniform vec4 uRigPoint;
 vec3 stageGridAt(vec3 local, float page) {
   vec3 at = clamp(local / (2.0 * uGrid.w) + 0.5, 0.0, 1.0);
   at.z = (clamp(at.z * ${f1(GRID_CELLS)}, 0.5, ${f1(GRID_CELLS - 0.5)}) + page * ${f1(GRID_CELLS)}) / ${f1(GRID_CELLS * GRID_PAGES)};
@@ -116,6 +118,37 @@ vec3 stageGridToward(vec3 local) {
   float open;
   stageGridLit(local, colour, toward, open);
   return toward;
+}
+float stageGridShade(vec3 local) {
+  float a = 1.0;
+  float b = 1.0;
+  if (uGrid.x < 1.0) a = texture(uGridA, stageGridAt(local, 1.0)).a;
+  if (uGrid.x > 0.0) b = texture(uGridB, stageGridAt(local, 1.0)).a;
+  return mix(a, b, uGrid.x);
+}
+float stageGridOpen(vec3 local) {
+  float a = 1.0;
+  float b = 1.0;
+  if (uGrid.x < 1.0) a = texture(uGridA, stageGridAt(local, 0.0)).a;
+  if (uGrid.x > 0.0) b = texture(uGridB, stageGridAt(local, 0.0)).a;
+  return mix(uGridShade.w, 1.0, mix(a, b, uGrid.x));
+}
+vec3 stageKeyBent(vec3 local) {
+  vec3 kl = uLightFrame * uRigKeyDir;
+  vec3 off = (local - kl * dot(local, kl)) / uGrid.w;
+  float s2 = dot(off, off);
+  return normalize(kl + off * (uRigInside.y * (1.0 + s2 * sqrt(s2)))) * uLightFrame;
+}
+vec3 stageKeyIn(vec3 local, out vec3 toward) {
+  toward = stageKeyBent(local);
+  return uRigKeyCol * (uRigInside.x * stageGridShade(local));
+}
+vec3 stageSoftIn(vec3 local) {
+  return ((uRigSky + uRigGround) * (0.5 * uRigPoint.z) + uRigRimCol * (uRigInside.x * uRigPoint.y)) * stageGridOpen(local);
+}
+vec3 stageCold(vec3 local) {
+  vec3 toward;
+  return stageKeyIn(local, toward) * uRigPoint.x + stageSoftIn(local);
 }
 float stageWrap(float ndl, float wrap) {
   return clamp((ndl + wrap) / (1.0 + wrap), 0.0, 1.0);
@@ -226,10 +259,7 @@ vec3 stageLit = vec3(0.0);
     #endif
     stageGridL = lgLen > 1e-3 ? lgDirV : geometryNormal;
     stageGridC = lgCol * lgSided;
-    vec3 lgKl = uLightFrame * lgKey;
-    vec3 lgOff = (vStageLocal - lgKl * dot(vStageLocal, lgKl)) / uGrid.w;
-    float lgS2 = dot(lgOff, lgOff);
-    lgKey = normalize(lgKl + lgOff * (uRigInside.y * (1.0 + lgS2 * sqrt(lgS2)))) * uLightFrame;
+    lgKey = stageKeyBent(vStageLocal);
     lgThrough = uRigInside.x;
     lgWrap = uRigInside.z;
     lgSpread *= uRigInside.w;

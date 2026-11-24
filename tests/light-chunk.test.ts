@@ -7,6 +7,8 @@ const declared = (glsl: string) => [...glsl.matchAll(/uniform\s+(?:highp\s+|medi
 describe('the light chunk', () => {
   it('keeps what the veil, the particles and the hooks call', () => {
     for (const name of ['vec3 stageGrid(vec3 local)', 'void stageGridLit(', 'vec3 stageGridToward(vec3 local)', 'float stageWrap(float ndl, float wrap)', 'vec3 stageWrapped(vec3 n, float wrap)', 'vec3 stageThrough(vec3 n, vec3 v, float thin, float tight)', 'float stageKeyShade(']) expect(LIGHT_FRAG_PARS).toContain(name)
+    const open = LIGHT_FRAG_PARS.slice(0, LIGHT_FRAG_PARS.indexOf('#ifdef STANDARD'))
+    for (const name of ['vec3 stageGrid(vec3 local)', 'float stageGridShade(vec3 local)', 'float stageGridOpen(vec3 local)', 'vec3 stageKeyBent(vec3 local)', 'vec3 stageKeyIn(vec3 local, out vec3 toward)', 'vec3 stageSoftIn(vec3 local)', 'vec3 stageCold(vec3 local)']) expect(open).toContain(name)
     expect(LIGHT_FRAG).toContain('vec3 stageLit = vec3(0.0);')
     expect(LIGHT_FRAG.trimEnd().endsWith(LIGHT_DONE)).toBe(true)
   })

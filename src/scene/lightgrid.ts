@@ -26,6 +26,10 @@ export const GRID = {
   glowReachMm: 22,
   flickerSecond: 0.35,
   breath: 0.035,
+  shadeEdgeMm: 2,
+  shadeStepMm: 1.5,
+  shadeStride: 0.5,
+  fillPasses: 6,
 } as const
 
 export const gridCells = GRID.cells
@@ -98,6 +102,48 @@ function seen(solid: SdfGrid, ax: number, ay: number, az: number, bx: number, by
   return v
 }
 
+const SIDES: readonly Rgb[] = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]]
+
+function fillDeep(n: number, live: Uint8Array, fields: readonly { data: Float32Array; width: number }[]): void {
+  let have = live.slice()
+  const sum = new Float64Array(8)
+  for (let pass = 0; pass < GRID.fillPasses; pass++) {
+    const next = have.slice()
+    for (let k = 0; k < n; k++) {
+      for (let j = 0; j < n; j++) {
+        for (let i = 0; i < n; i++) {
+          const c = i + n * (j + n * k)
+          if (have[c]) continue
+          let count = 0
+          for (const s of SIDES) {
+            const a = i + s[0]
+            const b = j + s[1]
+            const d = k + s[2]
+            if (a < 0 || b < 0 || d < 0 || a >= n || b >= n || d >= n) continue
+            if (have[a + n * (b + n * d)]) count++
+          }
+          if (count === 0) continue
+          for (const f of fields) {
+            sum.fill(0)
+            for (const s of SIDES) {
+              const a = i + s[0]
+              const b = j + s[1]
+              const d = k + s[2]
+              if (a < 0 || b < 0 || d < 0 || a >= n || b >= n || d >= n) continue
+              const o = a + n * (b + n * d)
+              if (!have[o]) continue
+              for (let w = 0; w < f.width; w++) sum[w]! += f.data[o * f.width + w]!
+            }
+            for (let w = 0; w < f.width; w++) f.data[c * f.width + w] = sum[w]! / count
+          }
+          next[c] = 1
+        }
+      }
+    }
+    have = next
+  }
+}
+
 const fixtureOf = (l: InnerLight, solid: SdfGrid) => GRID.skinMm + Math.min(GRID.fixtureMm, Math.max(0, -sampleSdf(solid, l.at[0], l.at[1], l.at[2])))
 
 export function lightAt(lights: readonly InnerLight[], solid: SdfGrid, x: number, y: number, z: number): [number, number, number] {
@@ -162,6 +208,8 @@ export function groupsOf(lights: readonly InnerLight[]): number[] {
 export interface GridInfo {
   lights: readonly InnerLight[]
   group: readonly number[]
+  solid: SdfGrid
+  shade: number[] | null
 }
 
 const infos = new WeakMap<THREE.Texture, GridInfo>()
@@ -314,6 +362,12 @@ export function bakeField(lights: readonly InnerLight[], solid: SdfGrid, bounce:
       for (let gi = 0; gi < GRID.groups; gi++) share[c * GRID.groups + gi]! += lum * s.share[gi]!
     }
   }
+  fillDeep(n, live, [
+    { data: colour, width: 3 },
+    { data: open, width: 1 },
+    { data: moment, width: 3 },
+    { data: share, width: GRID.groups },
+  ])
   return { n, colour, open, moment, share, group }
 }
 
@@ -347,8 +401,80 @@ export function bakeGrid(lights: readonly InnerLight[], solid: SdfGrid, bounce: 
   t.wrapR = THREE.ClampToEdgeWrapping
   t.unpackAlignment = 1
   t.needsUpdate = true
-  infos.set(t, { lights: lights.map((l) => ({ ...l })), group: f.group })
+  infos.set(t, { lights: lights.map((l) => ({ ...l })), group: f.group, solid, shade: null })
   return t
+}
+
+export function keyBend(x: number, y: number, z: number, key: readonly number[], bend: number, out: number[]): void {
+  const along = x * key[0]! + y * key[1]! + z * key[2]!
+  const ox = (x - key[0]! * along) / innerRadiusMm
+  const oy = (y - key[1]! * along) / innerRadiusMm
+  const oz = (z - key[2]! * along) / innerRadiusMm
+  const s2 = ox * ox + oy * oy + oz * oz
+  const k = bend * (1 + s2 * Math.sqrt(s2))
+  const dx = key[0]! + ox * k
+  const dy = key[1]! + oy * k
+  const dz = key[2]! + oz * k
+  const len = Math.hypot(dx, dy, dz)
+  out[0] = dx / len
+  out[1] = dy / len
+  out[2] = dz / len
+}
+
+export function keySeen(solid: SdfGrid, x: number, y: number, z: number, dir: readonly number[], spread: number): number {
+  const b = x * dir[0]! + y * dir[1]! + z * dir[2]!
+  const c = x * x + y * y + z * z - innerRadiusMm * innerRadiusMm
+  const far = -b + Math.sqrt(Math.max(0, b * b - c))
+  let v = 1
+  let t = GRID.skinMm
+  while (t < far) {
+    const d = sampleSdf(solid, x + dir[0]! * t, y + dir[1]! * t, z + dir[2]! * t)
+    const e = d / (GRID.shadeEdgeMm + spread * t)
+    if (e < v) {
+      if (e <= 0) return 0
+      v = e
+    }
+    t += Math.max(GRID.shadeStepMm, d * GRID.shadeStride)
+  }
+  return v
+}
+
+export function shadeGrid(t: THREE.Texture | null, key: readonly number[], bend: number, spread: number): boolean {
+  const info = t ? infos.get(t) : undefined
+  if (!t || !info) return false
+  const want = [key[0]!, key[1]!, key[2]!, bend, spread]
+  if (info.shade && info.shade.every((v, i) => Math.abs(v - want[i]!) < 1e-6)) return false
+  const n = GRID.cells
+  const size = 2 * innerRadiusMm
+  const cells = n * n * n
+  const data = (t.image as { data: Uint16Array }).data
+  const half = THREE.DataUtils.toHalfFloat
+  const shade = new Float32Array(cells)
+  const live = new Uint8Array(cells)
+  const p = [0, 0, 0]
+  const g = [0, 0, 0]
+  const dir = [0, 1, 0]
+  for (let k = 0; k < n; k++) {
+    for (let j = 0; j < n; j++) {
+      for (let i = 0; i < n; i++) {
+        const c = i + n * (j + n * k)
+        p[0] = ((i + 0.5) / n - 0.5) * size
+        p[1] = ((j + 0.5) / n - 0.5) * size
+        p[2] = ((k + 0.5) / n - 0.5) * size
+        const d0 = sampleSdf(info.solid, p[0], p[1], p[2])
+        if (d0 < -GRID.deepMm) continue
+        if (d0 < GRID.skinMm) lift(info.solid, p, g)
+        keyBend(p[0], p[1]!, p[2]!, key, bend, dir)
+        shade[c] = keySeen(info.solid, p[0], p[1]!, p[2]!, dir, spread)
+        live[c] = 1
+      }
+    }
+  }
+  fillDeep(n, live, [{ data: shade, width: 1 }])
+  for (let c = 0; c < cells; c++) data[(cells + c) * 4 + 3] = half(shade[c]!)
+  info.shade = want
+  t.needsUpdate = true
+  return true
 }
 
 const TAU = 2 * Math.PI
@@ -373,7 +499,7 @@ export function gainOf(lights: readonly InnerLight[], time: number, period: numb
   return weight > 0 ? sum / weight : 1
 }
 
-export function groupGains(info: GridInfo | undefined, lights: readonly InnerLight[], time: number, period: number, out: THREE.Vector4): THREE.Vector4 {
+export function groupGains(info: Pick<GridInfo, 'lights' | 'group'> | undefined, lights: readonly InnerLight[], time: number, period: number, out: THREE.Vector4): THREE.Vector4 {
   const all = gainOf(lights, time, period)
   const sum = [0, 0, 0, 0]
   const weight = [0, 0, 0, 0]

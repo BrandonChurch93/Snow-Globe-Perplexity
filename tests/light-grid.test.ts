@@ -4,7 +4,7 @@ import { config } from '../src/config'
 import { lightGridShape } from '../src/core/chunks/light'
 import type { SdfGrid } from '../src/core/stage'
 import { buildCollider, innerRadiusMm } from '../src/scene/layout'
-import { GRID, bakeField, bakeGrid, breathOf, falloff, flickerOf, gainOf, glowAt, glowOf, gridBytes, gridCells, gridInfo, gridPages, groupGains, groupsOf, lightAt } from '../src/scene/lightgrid'
+import { GRID, bakeField, bakeGrid, breathOf, falloff, flickerOf, gainOf, glowAt, glowOf, gridBytes, gridCells, gridInfo, gridPages, groupGains, groupsOf, keyBend, keySeen, lightAt, shadeGrid } from '../src/scene/lightgrid'
 import type { InnerLight } from '../src/seasons/kit'
 import { kit as winter } from '../src/seasons/winter'
 
@@ -127,6 +127,15 @@ describe('the baked grid', () => {
     expect(gridInfo(t)?.lights.length).toBe(1)
   })
 
+  it('carries its light a little way into the solid, so no surface steps to black', () => {
+    const under = indexOf(0, floorY - 16, 0)
+    const above = indexOf(0, floorY + 2, 0)
+    expect(lum(field, above)).toBeGreaterThan(0.1)
+    expect(lum(field, under)).toBeGreaterThan(lum(field, above) * 0.3)
+    expect(field.open[under]).toBeGreaterThan(0)
+    expect(lum(field, indexOf(0, floorY - 34, 0))).toBe(0)
+  })
+
   it('is bright by the light, dark behind the wall and carries the way to the light', () => {
     const open = indexOf(-18, 0, 0)
     const hidden = indexOf(18, 0, 0)
@@ -213,5 +222,63 @@ describe('winter under this grid', () => {
     expect(lit).toBeGreaterThan(200)
     expect(sided / lit).toBeGreaterThan(0.6)
     for (const l of lights) expect(flickerOf(l, period, period)).toBeCloseTo(flickerOf(l, 0, period), 9)
+  })
+})
+
+describe('the key\'s shade in the grid', () => {
+  const solid = room()
+  const lamp = [light([0, 0, 0])]
+  const len = Math.hypot(1, 0.6)
+  const key = [1 / len, 0.6 / len, 0]
+  const shadeAt = (t: THREE.Data3DTexture, x: number, y: number, z: number) => THREE.DataUtils.fromHalfFloat((t.image.data as Uint16Array)[(gridCells ** 3 + indexOf(x, y, z)) * 4 + 3]!)
+
+  it('is whole in the open and gone behind the wall, softer far from it', () => {
+    expect(keySeen(solid, 30, -15, 0, key, 0.2)).toBe(1)
+    expect(keySeen(solid, 0, 30, 0, key, 0.2)).toBe(1)
+    expect(keySeen(solid, 2, -15, 0, key, 0.2)).toBe(0)
+    const near = [keySeen(solid, 0, 5.5, 0, key, 0.2), keySeen(solid, 0, 8.5, 0, key, 0.2)]
+    const far = [keySeen(solid, -30, -12.5, 0, key, 0.2), keySeen(solid, -30, -9.5, 0, key, 0.2)]
+    expect(near[1]! - near[0]!).toBeGreaterThan(far[1]! - far[0]!)
+    expect(far[1]!).toBeGreaterThanOrEqual(far[0]!)
+  })
+
+  it('bends toward the rim as the glass bends it', () => {
+    const out = [0, 0, 0]
+    keyBend(key[0]! * 20, key[1]! * 20, 0, key, 0.25, out)
+    expect(out[0]).toBeCloseTo(key[0]!, 12)
+    expect(out[1]).toBeCloseTo(key[1]!, 12)
+    keyBend(0, 0, 30, key, 0.25, out)
+    expect(out[2]).toBeGreaterThan(0.1)
+    expect(Math.hypot(out[0]!, out[1]!, out[2]!)).toBeCloseTo(1, 12)
+    keyBend(0, 0, 30, key, 0, out)
+    expect(out[2]).toBe(0)
+  })
+
+  it('is packed into the grid once for a key and again when the key moves', () => {
+    const t = bakeGrid(lamp, solid)
+    const before = (t.image.data as Uint16Array).slice()
+    const version = t.version
+    expect(shadeGrid(t, key, 0, 0.2)).toBe(true)
+    expect(t.version).toBeGreaterThan(version)
+    expect(shadeGrid(t, key, 0, 0.2)).toBe(false)
+    expect(shadeAt(t, 30, -15, 0)).toBe(1)
+    expect(shadeAt(t, 2, -15, 0)).toBe(0)
+    const after = t.image.data as Uint16Array
+    let moved = 0
+    for (let i = 0; i < before.length; i++) if (!(i >= gridCells ** 3 * 4 && i < 2 * gridCells ** 3 * 4 && i % 4 === 3) && after[i] !== before[i]) moved++
+    expect(moved).toBe(0)
+    expect(shadeGrid(t, [-key[0]!, key[1]!, 0], 0, 0.2)).toBe(true)
+    expect(shadeAt(t, 30, -15, 0)).toBe(0)
+    expect(shadeAt(t, -30, -15, 0)).toBe(1)
+    expect(shadeGrid(null, key, 0, 0.2)).toBe(false)
+  })
+
+  it('bakes within the time a season can spare', () => {
+    const t = bakeGrid(winter.innerLights, buildCollider())
+    const start = process.hrtime.bigint()
+    shadeGrid(t, key, 0.25, 0.256)
+    const ms = Number(process.hrtime.bigint() - start) / 1e6
+    console.log(`shade bake: ${ms.toFixed(0)} ms`)
+    expect(ms).toBeLessThan(1500)
   })
 })
