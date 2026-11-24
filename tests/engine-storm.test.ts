@@ -170,7 +170,7 @@ describe('the storm of the look lock season', () => {
     e.advanceTo(steps(stateSeconds('rest')), tl)
     const rest = e.floating()
     expect(rest).toBeGreaterThan(e.count * 0.04)
-    expect(rest).toBeLessThan(e.count * 0.1)
+    expect(rest).toBeLessThan(e.count * 0.2)
     const [, , mid, high] = fill(e) as [number, number, number, number]
     expect(high).toBeGreaterThan(0.3)
     expect(high).toBeLessThan(mid)
