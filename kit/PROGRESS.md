@@ -25,25 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 57 · 2026-11-24 22:04 UTC
+Status 58 · 2026-11-24 22:24 UTC
 
-- `out/stills/status/status-57-1.jpg`: The build for Round 7 at rest at the final tier (22:04 UTC): small sharp flakes over the miniature and clear icicles and the new stone and bark. Fine detail measures 0.88 against 0.75 (Round 6: 0.72)
+- `out/stills/status/status-58-1.jpg`: The Round 7 build one second after the landing (draft tier): the ring bands are gone and the cottage glows through a storm of flecks at several depths
+- `out/stills/status/status-58-2.jpg`: The new rest sheet for the motion critic (draft tier): ten seconds of the film after the opening's pull back with the camera at the hero view
+- `out/stills/status/status-58-3.jpg`: Still: winter landed hero, hd, draft
+- `out/stills/status/status-58-4.jpg`: Still: winter rest hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 22:22 UTC
-clock: phase 3, tick of 12.6 minutes
-phase 3: 13.93 h used of its 11.00 h box
-allowance (before the review): 20.54 h used of 36.00 h allowed
-all time before the review: 20.54 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 22:24 UTC
+clock: phase 3, tick of 1.2 minutes
+phase 3: 13.95 h used of its 11.00 h box
+allowance (before the review): 20.56 h used of 36.00 h allowed
+all time before the review: 20.56 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: reached
 budget report: not due
-minutes since the last status: 18
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -1194,3 +1197,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 22:05 UTC · Status 57 sent with the final-tier still of the merged build at rest. M3 at the final tier, locally: 0.9223 on `83d5055` (21:46; tree `7db157f`, village `568648c`, base `6007fc8`), 0.8806 on `482c94d` (22:04; tree `ef99abc`, village `c592dab`, flakes `eae5220`, scene `df43cf5`, glass `41d0707`, light `4a0a414`, frost `988374e`, liquid `78e60ec`; miniature 0.881, base 0.920); the closers' own VMs read 0.847 and 0.943 on their branches. Whole suite on the 21:52 merge: 419 of 423 green, 4 skipped. The pack's new rest sheet (decision 67) was made at draft from frames 288 to 575 and shows the globe at rest from the hero camera. Final reports of nine closers are in (liquid 21:55, base and scene 22:00, frost 22:01, tree, village and shake 22:03, light 22:02, flakes 22:04) and saved; the glass's is awaited. Decision 69 logged (the flood's pin). The freeze merge with every part made again started at 22:05.
 
 - 22:22 UTC · Round 7 frozen at 22:16 on `4f10d97` (round line pushed as `709d02b`). All ten closers sent their final reports between 21:55 and 22:08 and pushed nothing after; each report and its detail file is kept in `out/work/reports4/`. Orders went to the four render agents at 22:18 (the gate on a clean clone; the measures at the final tier with the packs for R1, R2 and R3; the motion sheets in two halves with the pack for R4, the rest sheet now the film's frames 288 to 575). Published at 22:19: https://snow-globe-seasons.pplx.app holds the Round 7 build (Visibility: Organization); the check of the published page drew its first picture in 23.1 s with 53 requests and no error. `dist/` is 63.5 MB, `dist/review/` 36.9 MB.
+
+- 22:24 UTC · Status 58 sent with two pictures (the Round 7 build one second after the landing at draft; the new rest sheet of decision 67 at draft). Waiting on the four render agents and the scribe; the clock is ticked at least every 10 minutes while waiting.
