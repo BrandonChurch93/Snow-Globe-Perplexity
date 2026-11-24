@@ -40,6 +40,7 @@ Set with `setDiagnostic(view)` before a render call, `none` to clear. A diagnost
 - `document.documentElement.dataset.audio` is `none` until the first interaction, `started` once an audio context exists.
 - The stage is `#app`: `canvas#view`, then `div#opening`, then `div#ui`. `Session.grabStage(page)` captures that region with the interface. `grab` captures the canvas alone.
 - Controls carry `data-control`: `shake`, `season` (with `data-season`), `sound`. The menu on the `M` key is `[data-menu]`.
+- `document.documentElement.dataset.detail` is `loading` from the first picture until every whole picture has replaced its first file, then `ready`.
 
 ## Files
 
@@ -73,3 +74,7 @@ The repo is public, so no generated sound file is committed: `.gitignore` holds 
 - `stress`: `[--tier T] [--shot ID]`. Writes `out/work/stress/stress.json` with, for each moment, the frame before encoding, the encodes at `export.bitrateMbps` and `quality.compressionStressMbps`, and stills taken back out of each.
 - `render-local`: `--what film-b|film-a|loop --test | --go`, or `--proof`. `--rehearse` runs `--test` or `--go` small (preview, draft, software graphics) into `out/work/local/rehearsal/`. It refuses a master when the installed Chrome is missing or draws with software, unless `deliver.sandboxMaster` is true.
 - `Session.open` closes its server and drops the render lock when the browser cannot start.
+- `texpack`: `[--group shared,winter] [--fresh] [--table]`. The only way a file reaches `public/assets/`; the rules are in `tools/lib/webset.mjs` and in `assets-src/web-pack/RECIPE.md`. A picture becomes `name.webp` (WebP near-lossless, no channel of any pixel off by more than 2 of 255, checked as it is written) and, when it is opaque and 1024 px or more, `name.first.webp` at half the size; a picture with a side under 128 px stays `.png`. A `.glb` gets a lighter list of triangles for `medium` and `low` and is packed with `EXT_meshopt_compression`. Files the full set no longer names are removed. `--table` prints every file with its sizes, coding, largest change and triangles per level; `out/work/texpack/report.json` holds the same. `--fresh` ignores the cache in `out/work/texpack/cache/`.
+- `firstlook`: `[--camera hero,macro] [--season S] [--state S] [--tier T] [--stills | --live] [--wait SECONDS]`. Stills: the same still from the web set held at its first files and whole, and how far apart they are. Live: what the built page fetched before and after the first complete picture, whether every whole file arrived, and the longest wait between two frames. Writes `out/work/firstlook/`.
+- `still --live low|medium|high` draws through the app's path at that level, and the meshes of the web set are drawn from that level's list of triangles. Without `--live` a still draws the full meshes.
+- The page takes `detail=first` in its address to stay at the first files (what `firstlook` compares). The asset index is fetched with `cache: 'no-cache'` and every asset by `name?v=<hash>`, so a file that changed is never served from an old cache.
