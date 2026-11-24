@@ -1,7 +1,14 @@
-Village looks, push 4. Build: agent/p3-village at 3f1f6c3 (merged with main b4c3b18), rest, hero camera, hd, draft tier.
-Every picture: the approved crop on the left, the same box of the build on the right. Boxes are in approved pixels (2816 by 1584).
+Village, winter. State: agent/p3-village at c56f5ee (merged with main 784f106). Hero, rest, hd, draft tier. Boxes in approved pixels (2816 by 1584). In every row the approved crop is on the left and the build on the right.
 
-01-hero-pair.jpg  box 780,520,2040,1220. The whole globe. Snow body white and thick to the collar, bank up both sides of the glass, pond in place.
-02-cottage.jpg  box 1020,540,1480,930. Cottage shorter along the ridge, brick chimney with a snow cap on the left slope, gold eave bulbs with halos, gold panes, roof snow toned warm grey so the key shapes it, wreath, lamp, rail fence. Still wrong: the wall is about 28 px shorter than the approved because our ground is higher at the cottage foot; stones are blockier with heavier joints; roof snow has no dimples.
-03-ground.jpg  box 900,880,1900,1100. Bank, drifts, pond with the rear rim in shade and the lamp's reflection. Still wrong: pond is greyer and darker than the approved teal; the front bank is smoother than the approved granular snow.
-04-smoke.jpg  box 1080,520,1260,720. Chimney and the wisp: short, thin, leaning, blended. Still wrong: paler and straighter than the approved puff.
+01-final-sheet.jpg
+  Row 1: box 780,520,2040,1220 (the whole miniature).
+  Row 2: box 1270,900,1680,1030 (the pond and its lip).
+  Row 3: box 1080,520,1260,720 (chimney and smoke).
+
+02-cottage-ground.jpg
+  Row 1: box 1020,560,1480,930 (cottage, bulbs, lamp, fence).
+  Row 2: box 1180,800,1680,1050 (door, steps, lamp foot, pond, tree foot).
+
+03-interior-texels.jpg
+  Row 1: approved box 780,520,2040,1220 on the left; the interior camera still on the right (there is no approved picture from that camera).
+  Row 2: the texels view from the hero camera, whole frame on the left, box 780,520,2040,1220 on the right.
