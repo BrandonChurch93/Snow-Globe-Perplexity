@@ -3,7 +3,7 @@ import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import sharp from 'sharp'
 import { parseArgs, rel, readJson, writeJson } from './lib/paths.mjs'
-import { Session, cfg, formatById } from './lib/page.mjs'
+import { Session, cfg, formatById, recordMatches } from './lib/page.mjs'
 import { limits } from './lib/compose.mjs'
 import { fileSha, sha256 } from './lib/hashes.mjs'
 import { Pages, approvedFor, drawJudged, framingFromPose } from './lib/measures.mjs'
@@ -44,6 +44,18 @@ const SURFACES = [
   { name: 'what lies on the surface, left', x: -1.05, y: 1.45 },
   { name: 'what lies on the surface, right', x: 1.05, y: 1.45 },
 ]
+const STRESS = [
+  { name: 'the dark backdrop', pick: 'dark' },
+  { name: 'the soft discs of light', pick: 'lit' },
+  { name: 'the surface the globe stands on, left', x: -1.6, y: 1.5 },
+  { name: 'the surface the globe stands on, right', x: 1.6, y: 1.5 },
+  { name: 'the particles inside the globe', x: 0, y: -0.1 },
+  { name: 'frost on the glass', x: -0.62, y: -0.62 },
+  { name: 'fine branches', x: 0.35, y: -0.4 },
+  { name: 'glow', x: -0.1, y: 0.35 },
+]
+const STRESS_GRID = { cols: 4, rows: 2 }
+const STRESS_SCAN = { every: 4, lit: 128, none: 0.002, below: 0.25, stepsPerTile: 8 }
 const TABLE = {
   R1: (u) => seasonal(u),
   R2: () => true,
@@ -243,6 +255,11 @@ async function latticeTiles(file, cols, rows, tile) {
   return tiles
 }
 
+function lastWord(r) {
+  const lines = `${r.stdout ?? ''}\n${r.stderr ?? ''}`.trim().split('\n')
+  const thrown = lines.filter((l) => /^\w*Error: /.test(l)).pop()
+  return thrown ? thrown.replace(/^\w*Error: /, '') : lines.pop()
+}
 const sheetTool = rel('tools', 'sheet.mjs')
 const sheetRuns = new Map()
 function sheets(asked, what) {
@@ -257,7 +274,7 @@ function sheets(asked, what) {
     console.log(`running ${line}`)
     const r = spawnSync(process.execPath, [sheetTool, ...flags], { cwd: rel(), encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 })
     const out = r.stdout ?? ''
-    const last = `${out}\n${r.stderr ?? ''}`.trim().split('\n').pop()
+    const last = lastWord(r)
     if (r.status === 3) {
       console.log(`${line} ran out of its chunk budget, carrying on`)
       continue
@@ -573,9 +590,118 @@ async function buildR6(role) {
   return { groups, missing }
 }
 
-function buildR7() {
-  const dir = rel('out', 'work', 'stress')
-  return { groups: [], missing: [`stills from the stress encode beside the same frames before encoding: this tool does not know the output of tools/stress.mjs yet (${fs.existsSync(dir) ? 'out/work/stress exists but its shape is not read' : 'out/work/stress does not exist'}), so this pack is empty`] }
+const stressTool = rel('tools', 'stress.mjs')
+const stressFile = rel('out', 'work', 'stress', 'stress.json')
+const stressWhat = 'stills taken from the stress encode beside the same frames before encoding'
+let stressGot = null
+function stressNow() {
+  if (!fs.existsSync(stressFile)) return null
+  const s = readJson(stressFile)
+  if (!s.complete || s.tier !== tier || !s.moments?.length) return null
+  const want = { seasons: cfg.seasons, format: hd, tier }
+  const list = s.moments.map((m) => ({ ...m, low: m.encodes.find((e) => e.mbps === cfg.quality.compressionStressMbps) }))
+  return list.every((m) => m.low && recordMatches(rel(m.source), want) && recordMatches(rel(m.low.still), want)) ? list : null
+}
+function stress() {
+  if (stressGot) return stressGot
+  const flags = ['--tier', tier, '--look', 'no']
+  const line = `node tools/stress.mjs ${flags.join(' ')}`
+  let moments = stressNow()
+  let missing = ''
+  if (!moments && !fs.existsSync(stressTool)) missing = `${stressWhat}: tools/stress.mjs is not in this tree, so this pack is empty. It would come from: ${line}`
+  else if (!moments) {
+    if (session) throw new Error(`${line} has to run before the page is opened, because one render runs at a time`)
+    budget(line)
+    console.log(`running ${line}`)
+    const r = spawnSync(process.execPath, [stressTool, ...flags], { cwd: rel(), encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 })
+    const last = lastWord(r)
+    moments = stressNow()
+    if (!moments) missing = `${stressWhat}: ${line} ended with code ${r.status} and left no whole ${shown(stressFile)} for this build, so this pack is empty. Run the same pack command again to carry on: ${last}`
+  }
+  stressGot = { moments: moments ?? [], missing }
+  return stressGot
+}
+function stressRects(img, framing, tile) {
+  const known = !!framing && Number.isFinite(framing.globe.r)
+  const g = known ? framing.globe : { cx: img.width / 2, cy: img.height / 2, r: img.height / 3 }
+  const w = Math.min(tile.w, img.width)
+  const h = Math.min(tile.h, img.height)
+  const steps = (span, size) => {
+    const step = Math.max(1, Math.floor(size / STRESS_SCAN.stepsPerTile))
+    return [...new Set([...Array.from({ length: Math.floor((span - size) / step) + 1 }, (_, i) => i * step), span - size])]
+  }
+  const cands = []
+  for (const top of steps(img.height, h))
+    for (const left of steps(img.width, w)) {
+      let sum = 0
+      let lit = 0
+      let n = 0
+      for (let y = top; y < top + h; y += STRESS_SCAN.every)
+        for (let x = left; x < left + w; x += STRESS_SCAN.every) {
+          const o = (y * img.width + x) * 3
+          const l = 0.2126 * img.data[o] + 0.7152 * img.data[o + 1] + 0.0722 * img.data[o + 2]
+          sum += l
+          if (l > STRESS_SCAN.lit) lit++
+          n++
+        }
+      const clear = Math.hypot(Math.min(Math.max(g.cx, left), left + w) - g.cx, Math.min(Math.max(g.cy, top), top + h) - g.cy) >= g.r
+      cands.push({ left, top, mean: sum / n, lit: lit / n, rank: !known ? 0 : clear && top + h <= g.cy + g.r * STRESS_SCAN.below ? 0 : clear ? 1 : 2 })
+    }
+  const best = Math.min(...cands.map((c) => c.rank))
+  const pool = cands.filter((c) => c.rank === best)
+  const plain = pool.filter((c) => c.lit <= STRESS_SCAN.none)
+  const dark = plain.length ? plain.reduce((a, b) => (b.mean > a.mean ? b : a)) : pool.reduce((a, b) => (b.lit < a.lit ? b : a))
+  const rest = pool.filter((c) => c !== dark)
+  const lit = rest.length ? rest.reduce((a, b) => (b.lit > a.lit || (b.lit === a.lit && b.mean > a.mean) ? b : a)) : dark
+  const fixed = (s) => ({ left: Math.round(Math.min(Math.max(g.cx + s.x * g.r - w / 2, 0), img.width - w)), top: Math.round(Math.min(Math.max(g.cy + s.y * g.r - h / 2, 0), img.height - h)) })
+  return { known, w, h, rects: STRESS.map((s) => (s.pick === 'dark' ? dark : s.pick === 'lit' ? lit : fixed(s))) }
+}
+async function buildR7(role) {
+  const got = stress()
+  const missing = got.missing ? [got.missing] : []
+  const notes = []
+  const groups = []
+  if (!got.moments.length) return { groups, missing, notes }
+  await open()
+  const page = await pages.first()
+  const size = formatById(hd)
+  const tile = tileFor(STRESS_GRID.cols, STRESS_GRID.rows)
+  const names = STRESS.map((s, i) => `${i + 1} ${s.name}`).join('; ')
+  for (const m of got.moments) {
+    budget(`the stress pictures of ${m.shot}`)
+    let framing = null
+    try {
+      const state = await page.evaluate((f) => window.showcase.filmState(f), m.frame)
+      if (state?.camera) framing = framingFromPose(state.camera, size.width, size.height, state.globe?.heightMm ?? 0)
+    } catch {}
+    const a = await load(rel(m.source))
+    const b = await load(rel(m.low.still))
+    if (a.width !== b.width || a.height !== b.height) throw new Error(`${m.source} and ${m.low.still} are not the same size`)
+    const at = stressRects(a, framing, tile)
+    if (!at.known) notes.push(`${m.shot}: the film state gave no globe in frame ${m.frame}, so its crops are placed by the frame`)
+    const cells = []
+    for (const img of [a, b]) {
+      const row = []
+      for (const [i, r] of at.rects.entries()) row.push({ img: await cut(img, r.left, r.top, at.w, at.h), label: i + 1 })
+      cells.push(row)
+    }
+    const id = `${m.shot}-${m.frame}`
+    const title = `${m.moment === 'shake' ? 'the shake' : 'the hold'} ${m.shot} at ${(m.frame / cfg.film.fps).toFixed(2)} s`
+    const before = `film frame ${m.frame} before encoding, ${shown(rel(m.source))}`
+    const after = `the same frame taken out of the encode at ${m.low.mbps} Mbps (${m.low.fileMbps} Mbps in the file, ${m.low.psnr.toFixed(1)} dB against the frame before), ${shown(rel(m.low.still))}`
+    const whole = `${title}: the picture marked -a is the frame before encoding, the picture marked -b is the same frame taken out of the encode, both resized to fit`
+    const crops = `${title}: native size crops of that pair, -a before encoding and -b out of the encode: ${names}`
+    groups.push({
+      title,
+      files: [
+        one(await fitted(a, tmp(role, `${id}-a.jpg`)), `${title}: ${before}, resized to fit`, whole, { pair: 1, side: 'a', sha256Source: fileSha(rel(m.source)) }),
+        one(await fitted(b, tmp(role, `${id}-b.jpg`)), `${title}: ${after}, resized to fit`, whole, { pair: 1, side: 'b', sha256Source: fileSha(rel(m.low.still)) }),
+        one(await sheetOf(cells[0], STRESS_GRID.cols, tmp(role, `${id}-crops-a.jpg`)), `${title}: native size crops of the frame before encoding: ${names}`, crops, { pair: 2, side: 'a' }),
+        one(await sheetOf(cells[1], STRESS_GRID.cols, tmp(role, `${id}-crops-b.jpg`)), `${title}: native size crops of the frame out of the encode: ${names}`, crops, { pair: 2, side: 'b' }),
+      ],
+    })
+  }
+  return { groups, missing, notes }
 }
 
 async function buildR8(role) {
@@ -601,16 +727,17 @@ function kitSection(start) {
   while (j < kit.length && !/^#{2,3} /.test(kit[j])) j++
   return kit.slice(i, j).join('\n').trim()
 }
-function returnFormat() {
+function returnFormat(example) {
   const i = kit.findIndex((l) => l.startsWith('```json'))
   const j = kit.findIndex((l, n) => n > i && l.startsWith('```'))
   const after = kit.slice(j + 1).find((l) => l.startsWith('- `score`'))
-  return ['Return one JSON object in this shape and nothing else.', '', ...kit.slice(i, j + 1), '', after].join('\n')
+  const shape = kit.slice(i, j + 1).map((l) => l.replace(/"file": "[^"]*"/, `"file": "${example}"`))
+  return ['Return one JSON object in this shape and nothing else.', '', ...shape, '', after].join('\n')
 }
 function messageFor(role, part) {
   if (role === 'R2') return kit.find((l) => l.startsWith(JURY_TEXT_START)).slice(2)
   const head = role === BLOCKOUT ? '### R4 blockout ·' : `### ${role} ·`
-  const out = [kitSection(head), '', kitSection('### The severity scale'), '', '### The answer', '', returnFormat(), '', '### Files', '']
+  const out = [kitSection(head), '', kitSection('### The severity scale'), '', '### The answer', '', returnFormat(part.groups[0].files[0].name), '', '### Files', '']
   const settled = []
   for (const g of part.groups) {
     const pairs = new Map()
@@ -687,6 +814,7 @@ let stopped = ''
 const results = new Map()
 try {
   const first = ['R4', 'R5', BLOCKOUT]
+  if (roles.includes('R7')) stress()
   for (const role of [...first.filter((r) => roles.includes(r)), ...roles.filter((r) => !first.includes(r))]) results.set(role, await BUILD[role](role))
 } catch (e) {
   if (!(e instanceof Stop)) {
@@ -719,8 +847,8 @@ for (const role of roles) {
 writeJson(keyFile, key)
 fs.rmSync(buildDir, { recursive: true, force: true })
 if (fs.existsSync(path.dirname(buildDir)) && fs.readdirSync(path.dirname(buildDir)).length === 0) fs.rmdirSync(path.dirname(buildDir))
-const count = Object.values(key.roles).reduce((n, r) => n + r.parts.reduce((m, p) => m + p.files.length, 0), 0)
-const gaps = Object.values(key.roles).reduce((n, r) => n + r.missing.length, 0)
+const count = roles.reduce((n, r) => n + key.roles[r].parts.reduce((m, p) => m + p.files.length, 0), 0)
+const gaps = roles.reduce((n, r) => n + key.roles[r].missing.length, 0)
 console.log(`pack ${roundName}: ${count} files for ${roles.join(', ')}, ${gaps} parts missing · ${tier} · ${Math.round((Date.now() - started) / 1000)} s`)
 console.log(shown(keyFile))
 process.exit(0)
