@@ -2,7 +2,8 @@ import type { SdfGrid } from '../../core/stage'
 import type { Timeline } from '../../film/timeline'
 import { LIQUID_LENGTH } from '../../globe/liquid'
 import { makeShake } from '../../shake/table'
-import { packSnapshot, ParticleEngine, unpackSnapshot } from './engine'
+import { packSnapshot, unpackSnapshot } from './engine'
+import { LiveEngine } from './live'
 import type { Emitter } from './sdf'
 
 export interface PlainEvent {
@@ -10,6 +11,8 @@ export interface PlainEvent {
   startSec: number
   from: string
   to: string
+  seconds?: number
+  holdBeats?: number
 }
 
 export interface PlainTimeline {
@@ -18,18 +21,20 @@ export interface PlainTimeline {
   events: PlainEvent[]
 }
 
-export const plainTimeline = (tl: Timeline): PlainTimeline => ({ id: tl.id, startSeason: tl.startSeason, events: tl.events.map((e) => ({ id: e.id, startSec: e.startSec, from: e.from, to: e.to })) })
+export const plainTimeline = (tl: Timeline): PlainTimeline => ({ id: tl.id, startSeason: tl.startSeason, events: tl.events.map((e) => ({ id: e.id, startSec: e.startSec, from: e.from, to: e.to, ...(e.seconds === undefined ? {} : { seconds: e.seconds }), ...(e.holdBeats === undefined ? {} : { holdBeats: e.holdBeats }) })) })
 
-export const builtTimeline = (p: PlainTimeline): Timeline => ({ id: p.id, startSeason: p.startSeason, events: p.events.map((e) => ({ id: e.id, startSec: e.startSec, from: e.from, to: e.to, path: makeShake(e.id) })) })
+export const builtTimeline = (p: PlainTimeline): Timeline => ({ id: p.id, startSeason: p.startSeason, events: p.events.map((e) => ({ ...e, path: makeShake(e.id) })) })
 
 export type Colliders = SdfGrid | Record<string, SdfGrid>
 
 export type ToEngine =
   | { type: 'init'; season?: string; fraction?: number; colliders?: Colliders; emitters?: Record<string, Emitter[]> }
   | { type: 'collider'; colliders: Colliders; emitters?: Record<string, Emitter[]> }
+  | { type: 'grid'; season: string; grid: SdfGrid }
+  | { type: 'fraction'; fraction: number }
   | { type: 'reset'; season?: string }
   | { type: 'timeline'; timeline: PlainTimeline }
-  | { type: 'advance'; step: number; spare?: ArrayBuffer[] }
+  | { type: 'advance'; step: number; spare?: ArrayBuffer[]; budgetMs?: number }
   | { type: 'stir'; x: number; y: number; z: number }
   | { type: 'snapshot' }
   | { type: 'restore'; buffer: ArrayBuffer }
@@ -68,15 +73,7 @@ export function frameViews(buffer: ArrayBuffer, count: number): FrameViews {
   return { liquid, pos, prev, sizes, opacity, phase, kindOf: new Uint8Array(buffer, o, count), state: new Uint8Array(buffer, o + count, count) }
 }
 
-const colliderOf = (c: Colliders): SdfGrid | ((season: string) => SdfGrid) => {
-  if ('data' in c && 'n' in c) return c as SdfGrid
-  const table = c as Record<string, SdfGrid>
-  return (season: string): SdfGrid => {
-    const grid = table[season]
-    if (!grid) throw new Error(`no collider for the season: ${season}`)
-    return grid
-  }
-}
+const isGrid = (c: Colliders): c is SdfGrid => 'data' in c && 'n' in c
 
 export interface Reply {
   message: FromEngine
@@ -84,40 +81,61 @@ export interface Reply {
 }
 
 export class EngineHost {
-  private engine: ParticleEngine | null = null
+  private engine: LiveEngine | null = null
   private timeline: Timeline = { id: 'rest', startSeason: '', events: [] }
+  private table: Record<string, SdfGrid> = {}
+
+  private colliderOf(c: Colliders): SdfGrid | ((season: string) => SdfGrid) {
+    if (isGrid(c)) return c
+    this.table = { ...c }
+    return (season: string): SdfGrid => {
+      const grid = this.table[season]
+      if (!grid) throw new Error(`no collider for the season: ${season}`)
+      return grid
+    }
+  }
 
   handle(m: ToEngine): Reply | null {
     if (m.type === 'init') {
-      this.engine = new ParticleEngine({ season: m.season, fraction: m.fraction, collider: m.colliders ? colliderOf(m.colliders) : undefined, emitters: m.emitters })
+      this.engine = new LiveEngine({ season: m.season, fraction: m.fraction, collider: m.colliders ? this.colliderOf(m.colliders) : undefined, emitters: m.emitters })
       this.timeline = { id: 'rest', startSeason: this.engine.season, events: [] }
-      return { message: { type: 'ready', count: this.engine.count, kinds: this.engine.kinds, season: this.engine.season }, transfer: [] }
+      return { message: { type: 'ready', count: this.engine.active, kinds: this.engine.inner.kinds, season: this.engine.season }, transfer: [] }
     }
     const e = this.engine
     if (!e) throw new Error('the engine has not been started')
-    if (m.type === 'collider') e.setCollider(colliderOf(m.colliders), m.emitters)
+    if (m.type === 'collider') e.setCollider(this.colliderOf(m.colliders), m.emitters)
+    else if (m.type === 'grid') this.table[m.season] = m.grid
+    else if (m.type === 'fraction') e.setFraction(m.fraction)
     else if (m.type === 'reset') e.reset(m.season)
     else if (m.type === 'timeline') this.timeline = builtTimeline(m.timeline)
     else if (m.type === 'stir') e.stir(m.x, m.y, m.z)
-    else if (m.type === 'restore') e.restore(unpackSnapshot(m.buffer, e.liquid.length))
+    else if (m.type === 'restore') e.restore(unpackSnapshot(m.buffer, LIQUID_LENGTH))
     else if (m.type === 'snapshot') {
       const buffer = packSnapshot(e.snapshot())
       return { message: { type: 'snapshot', buffer }, transfer: [buffer] }
     } else if (m.type === 'advance') {
       if (m.step < e.step) e.reset()
-      e.advanceTo(m.step, this.timeline)
-      const bytes = frameBytes(e.count)
+      if (m.budgetMs === undefined) e.advanceTo(m.step, this.timeline)
+      else {
+        const t0 = performance.now()
+        while (e.step < m.step) {
+          e.advanceTo(e.step + 1, this.timeline)
+          if (performance.now() - t0 >= m.budgetMs) break
+        }
+      }
+      const p = e.inner
+      const bytes = frameBytes(p.count)
       const buffer = m.spare?.find((b) => b.byteLength === bytes) ?? new ArrayBuffer(bytes)
-      const v = frameViews(buffer, e.count)
-      v.liquid.set(e.liquid)
-      v.pos.set(e.pos)
-      v.prev.set(e.prev)
-      v.sizes.set(e.sizes)
-      v.opacity.set(e.opacity)
-      v.phase.set(e.phase)
-      v.kindOf.set(e.kindOf)
-      v.state.set(e.state)
-      return { message: { type: 'frame', step: e.step, season: e.seasonNow, count: e.count, buffer }, transfer: [buffer] }
+      const v = frameViews(buffer, p.count)
+      v.liquid.set(p.liquid)
+      v.pos.set(p.pos)
+      v.prev.set(p.prev)
+      v.sizes.set(p.sizes)
+      v.opacity.set(p.opacity)
+      v.phase.set(p.phase)
+      v.kindOf.set(p.kindOf)
+      v.state.set(p.state)
+      return { message: { type: 'frame', step: p.step, season: p.seasonNow, count: p.count, buffer }, transfer: [buffer] }
     }
     return null
   }
