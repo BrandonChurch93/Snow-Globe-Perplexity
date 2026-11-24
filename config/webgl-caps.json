@@ -67,157 +67,287 @@
     "R11F_G11F_B10F": true,
     "RGBA8": true
   },
-  "portable": {},
+  "portable": {
+    "EXT_clip_control": {
+      "portable": false,
+      "note": "Windows 98.8, macOS 96.0, iOS 99.3 percent, but Linux 78.7 and Firefox 74.8 percent (Firefox added it in 159) are under the 95 line; Android 70.9 percent."
+    },
+    "EXT_color_buffer_float": {
+      "portable": true,
+      "note": "Windows 99.98, macOS 99.99, Linux 99.5, iOS 99.99, Android 99.9 percent; RGBA16F and RGBA32F render on iOS, but 32F blending and filtering are missing on about 44 percent of iOS."
+    },
+    "EXT_color_buffer_half_float": {
+      "portable": false,
+      "note": "In WebGL2 Chrome 99.2, Edge 99.95, Safari 99.99 and iOS 99.99 percent expose it, but Firefox returns false in WebGL2 (survey 2.8 percent), so Windows 92.0 and Linux 60.5 percent."
+    },
+    "EXT_conservative_depth": {
+      "portable": false,
+      "note": "Chrome desktop, Edge 98.5 and Safari 98.6 percent have it (iOS 99.3), but Firefox does not implement it (survey 2.7 percent, MDN false); Android 10.2 percent."
+    },
+    "EXT_depth_clamp": {
+      "portable": false,
+      "note": "Windows 99.1, macOS 99.5, iOS 99.3 percent, but Linux 92.2 and Firefox 86.6 percent are under the 95 line; Android 24.2 percent."
+    },
+    "EXT_disjoint_timer_query_webgl2": {
+      "portable": false,
+      "note": "Chromium only: Windows 86.1, macOS 61.1, Linux 43.8 percent, but iOS 0.2, Safari 0.2 and Firefox 0.1 percent; MDN lists Firefox and Safari as unsupported."
+    },
+    "EXT_float_blend": {
+      "portable": false,
+      "note": "Windows 99.99, Linux 99.5, Firefox 98.7 percent, but iOS only 56.0 and Safari 61.6 percent: WebKit blends RGBA32F only on Apple GPU family 7 or newer; macOS 89.0, Android 99.8 percent."
+    },
+    "EXT_polygon_offset_clamp": {
+      "portable": false,
+      "note": "Windows 98.9, macOS 95.9, iOS 99.3 percent, but Linux 80.9 and Firefox 75.7 percent (Firefox added it in 158) are under the 95 line; Android 51.3 percent."
+    },
+    "EXT_texture_compression_bptc": {
+      "portable": false,
+      "note": "Windows 99.7, Linux 93.4, macOS 85.2 percent, but iOS only 56.0 and Safari 61.3 percent (only Apple GPUs with BC support); Android 23.7 percent."
+    },
+    "EXT_texture_compression_rgtc": {
+      "portable": false,
+      "note": "Windows 99.95, Linux 94.1, macOS 89.0 percent, but iOS only 56.0 and Safari 61.6 percent (MDN: Safari on iOS from 18.5, only Apple GPUs with BC support); Android 27.2 percent."
+    },
+    "EXT_texture_filter_anisotropic": {
+      "portable": true,
+      "note": "Windows 99.99, macOS 100, Linux 99.2, iOS 99.99 percent; Chrome 99.3, Edge 99.98, Firefox 99.8, Safari 100 percent; Android 95.3 percent."
+    },
+    "EXT_texture_mirror_clamp_to_edge": {
+      "portable": false,
+      "note": "Windows 98.4, macOS 95.9, iOS 98.1 percent, but Linux 74.6 and Firefox 67.5 percent (Firefox added it in 160) are under the 95 line; Android 24.7 percent."
+    },
+    "EXT_texture_norm16": {
+      "portable": false,
+      "note": "Windows 98.1, macOS 98.4, iOS 99.2 percent, but Linux 68.5 and Firefox 76.9 percent (Firefox added it in 159) are under the 95 line; Android 56.9 percent."
+    },
+    "KHR_parallel_shader_compile": {
+      "portable": false,
+      "note": "Chrome desktop, Edge 98.1 and Safari 99.1 percent have it (iOS 99.0), but Firefox does not implement it (survey 2.4 percent, MDN false); Android 0.3 percent."
+    },
+    "NV_shader_noperspective_interpolation": {
+      "portable": false,
+      "note": "Chrome desktop, Edge 99.3 and Safari 98.8 percent have it (iOS 99.3), but Firefox does not implement it (survey 2.7 percent, MDN false); Android 34.9 percent."
+    },
+    "OES_draw_buffers_indexed": {
+      "portable": true,
+      "note": "Windows 99.94, macOS 99.98, Linux 97.2, iOS 99.97 percent; Chrome 98.4, Edge 99.9, Firefox 99.9, Safari 99.99 percent; Android only 83.5 percent."
+    },
+    "OES_sample_variables": {
+      "portable": false,
+      "note": "Chrome 97.4, Edge 99.1, Safari 97.0, iOS 98.0 percent, but Firefox does not implement it (survey 2.7 percent, MDN false); Android 72.1 percent."
+    },
+    "OES_shader_multisample_interpolation": {
+      "portable": false,
+      "note": "Chrome 97.3, Edge 99.1, Safari 97.0, iOS 97.9 percent, but Firefox does not implement it (survey 2.7 percent, MDN false); Android 72.1 percent."
+    },
+    "OES_texture_float_linear": {
+      "portable": false,
+      "note": "Windows 99.99, Linux 97.5, Firefox 96.6 percent, but iOS only 56.1 and Safari 61.6 percent (older Apple GPUs cannot filter 32 bit float textures); macOS 89.0, Android 77.0 percent."
+    },
+    "OVR_multiview2": {
+      "portable": false,
+      "note": "Windows 99.6 percent (ANGLE only), but macOS 0.7, Linux 36.9, iOS 1.1, Safari 0.7 and Firefox 60.7 percent; MDN lists Safari as unsupported; Android 12.6 percent."
+    },
+    "WEBGL_clip_cull_distance": {
+      "portable": false,
+      "note": "Chrome desktop, Edge 99.3 and Safari 99.3 percent have it (iOS 99.4), but Firefox does not implement it (survey 2.7 percent, absent from Firefox source); Android 31.3 percent."
+    },
+    "WEBGL_compressed_texture_astc": {
+      "portable": false,
+      "note": "iOS 99.9, Android 99.8, macOS 92.2, Linux 82.2 percent, but Windows only 1.9 percent and Edge 6.2 percent."
+    },
+    "WEBGL_compressed_texture_etc": {
+      "portable": false,
+      "note": "iOS 99.9, Android 99.9, Linux 91.1, macOS 88.1 percent, but Windows only 1.9 percent and Edge 6.2 percent."
+    },
+    "WEBGL_compressed_texture_etc1": {
+      "portable": false,
+      "note": "iOS 99.9, Android 99.9, macOS 88.1 percent, but Windows only 1.9, Linux 53.5 and Edge 6.2 percent."
+    },
+    "WEBGL_compressed_texture_s3tc": {
+      "portable": false,
+      "note": "Windows 99.95, Linux 94.6, macOS 89.0 percent, but iOS only 56.0 and Safari 61.6 percent (only Apple GPUs with BC support); Android 31.1 percent."
+    },
+    "WEBGL_compressed_texture_s3tc_srgb": {
+      "portable": false,
+      "note": "Windows 99.95, Linux 94.5, macOS 89.0 percent, but iOS only 56.0 and Safari 61.6 percent (only Apple GPUs with BC support); Android 31.1 percent."
+    },
+    "WEBGL_debug_renderer_info": {
+      "portable": true,
+      "note": "Windows 99.99, macOS 100, Linux 99.9, iOS 100, Firefox 99.9 percent; MDN says Firefox deprecates it and may remove it, and Khronos says the strings may be masked."
+    },
+    "WEBGL_debug_shaders": {
+      "portable": true,
+      "note": "Windows 99.7, macOS 99.9, Linux 98.2, iOS 99.99 percent; Chrome 99.7, Edge 99.95, Firefox 99.1, Safari 100 percent; Android 99.5 percent."
+    },
+    "WEBGL_lose_context": {
+      "portable": true,
+      "note": "Windows 100, macOS 99.99, Linux 99.5, iOS 100 percent; Chrome 99.96, Edge 100, Firefox 99.97, Safari 100 percent; Android 100 percent."
+    },
+    "WEBGL_multi_draw": {
+      "portable": false,
+      "note": "Chrome 99.9, Edge 99.98, Safari 100, iOS 100 percent, but Firefox does not implement it (survey 2.8 percent, MDN false), so Windows 92.0, macOS 92.9, Linux 60.8 percent."
+    },
+    "WEBGL_polygon_mode": {
+      "portable": false,
+      "note": "Chrome desktop, Edge 98.4 and Safari 99.1 percent have it (iOS 99.3), but Firefox does not implement it (survey 2.7 percent, MDN false); Android 7.4 percent."
+    },
+    "WEBGL_stencil_texturing": {
+      "portable": false,
+      "note": "Chrome 97.6, Edge 99.6, Safari 97.1, iOS 98.1 percent, but Firefox does not implement it (survey 2.7 percent, MDN false); Android 72.2 percent."
+    }
+  },
   "extensions": [
     {
       "name": "EXT_clip_control",
       "portable": false,
-      "note": "not looked up yet"
+      "note": "Windows 98.8, macOS 96.0, iOS 99.3 percent, but Linux 78.7 and Firefox 74.8 percent (Firefox added it in 159) are under the 95 line; Android 70.9 percent."
     },
     {
       "name": "EXT_color_buffer_float",
-      "portable": false,
-      "note": "not looked up yet"
+      "portable": true,
+      "note": "Windows 99.98, macOS 99.99, Linux 99.5, iOS 99.99, Android 99.9 percent; RGBA16F and RGBA32F render on iOS, but 32F blending and filtering are missing on about 44 percent of iOS."
     },
     {
       "name": "EXT_color_buffer_half_float",
       "portable": false,
-      "note": "not looked up yet"
+      "note": "In WebGL2 Chrome 99.2, Edge 99.95, Safari 99.99 and iOS 99.99 percent expose it, but Firefox returns false in WebGL2 (survey 2.8 percent), so Windows 92.0 and Linux 60.5 percent."
     },
     {
       "name": "EXT_conservative_depth",
       "portable": false,
-      "note": "not looked up yet"
+      "note": "Chrome desktop, Edge 98.5 and Safari 98.6 percent have it (iOS 99.3), but Firefox does not implement it (survey 2.7 percent, MDN false); Android 10.2 percent."
     },
     {
       "name": "EXT_depth_clamp",
       "portable": false,
-      "note": "not looked up yet"
+      "note": "Windows 99.1, macOS 99.5, iOS 99.3 percent, but Linux 92.2 and Firefox 86.6 percent are under the 95 line; Android 24.2 percent."
     },
     {
       "name": "EXT_disjoint_timer_query_webgl2",
       "portable": false,
-      "note": "not looked up yet"
+      "note": "Chromium only: Windows 86.1, macOS 61.1, Linux 43.8 percent, but iOS 0.2, Safari 0.2 and Firefox 0.1 percent; MDN lists Firefox and Safari as unsupported."
     },
     {
       "name": "EXT_float_blend",
       "portable": false,
-      "note": "not looked up yet"
+      "note": "Windows 99.99, Linux 99.5, Firefox 98.7 percent, but iOS only 56.0 and Safari 61.6 percent: WebKit blends RGBA32F only on Apple GPU family 7 or newer; macOS 89.0, Android 99.8 percent."
     },
     {
       "name": "EXT_polygon_offset_clamp",
       "portable": false,
-      "note": "not looked up yet"
+      "note": "Windows 98.9, macOS 95.9, iOS 99.3 percent, but Linux 80.9 and Firefox 75.7 percent (Firefox added it in 158) are under the 95 line; Android 51.3 percent."
     },
     {
       "name": "EXT_texture_compression_bptc",
       "portable": false,
-      "note": "not looked up yet"
+      "note": "Windows 99.7, Linux 93.4, macOS 85.2 percent, but iOS only 56.0 and Safari 61.3 percent (only Apple GPUs with BC support); Android 23.7 percent."
     },
     {
       "name": "EXT_texture_compression_rgtc",
       "portable": false,
-      "note": "not looked up yet"
+      "note": "Windows 99.95, Linux 94.1, macOS 89.0 percent, but iOS only 56.0 and Safari 61.6 percent (MDN: Safari on iOS from 18.5, only Apple GPUs with BC support); Android 27.2 percent."
     },
     {
       "name": "EXT_texture_filter_anisotropic",
-      "portable": false,
-      "note": "not looked up yet"
+      "portable": true,
+      "note": "Windows 99.99, macOS 100, Linux 99.2, iOS 99.99 percent; Chrome 99.3, Edge 99.98, Firefox 99.8, Safari 100 percent; Android 95.3 percent."
     },
     {
       "name": "EXT_texture_mirror_clamp_to_edge",
       "portable": false,
-      "note": "not looked up yet"
+      "note": "Windows 98.4, macOS 95.9, iOS 98.1 percent, but Linux 74.6 and Firefox 67.5 percent (Firefox added it in 160) are under the 95 line; Android 24.7 percent."
     },
     {
       "name": "NV_shader_noperspective_interpolation",
       "portable": false,
-      "note": "not looked up yet"
+      "note": "Chrome desktop, Edge 99.3 and Safari 98.8 percent have it (iOS 99.3), but Firefox does not implement it (survey 2.7 percent, MDN false); Android 34.9 percent."
     },
     {
       "name": "OES_draw_buffers_indexed",
-      "portable": false,
-      "note": "not looked up yet"
+      "portable": true,
+      "note": "Windows 99.94, macOS 99.98, Linux 97.2, iOS 99.97 percent; Chrome 98.4, Edge 99.9, Firefox 99.9, Safari 99.99 percent; Android only 83.5 percent."
     },
     {
       "name": "OES_sample_variables",
       "portable": false,
-      "note": "not looked up yet"
+      "note": "Chrome 97.4, Edge 99.1, Safari 97.0, iOS 98.0 percent, but Firefox does not implement it (survey 2.7 percent, MDN false); Android 72.1 percent."
     },
     {
       "name": "OES_shader_multisample_interpolation",
       "portable": false,
-      "note": "not looked up yet"
+      "note": "Chrome 97.3, Edge 99.1, Safari 97.0, iOS 97.9 percent, but Firefox does not implement it (survey 2.7 percent, MDN false); Android 72.1 percent."
     },
     {
       "name": "OES_texture_float_linear",
       "portable": false,
-      "note": "not looked up yet"
+      "note": "Windows 99.99, Linux 97.5, Firefox 96.6 percent, but iOS only 56.1 and Safari 61.6 percent (older Apple GPUs cannot filter 32 bit float textures); macOS 89.0, Android 77.0 percent."
     },
     {
       "name": "OVR_multiview2",
       "portable": false,
-      "note": "not looked up yet"
+      "note": "Windows 99.6 percent (ANGLE only), but macOS 0.7, Linux 36.9, iOS 1.1, Safari 0.7 and Firefox 60.7 percent; MDN lists Safari as unsupported; Android 12.6 percent."
     },
     {
       "name": "WEBGL_clip_cull_distance",
       "portable": false,
-      "note": "not looked up yet"
+      "note": "Chrome desktop, Edge 99.3 and Safari 99.3 percent have it (iOS 99.4), but Firefox does not implement it (survey 2.7 percent, absent from Firefox source); Android 31.3 percent."
     },
     {
       "name": "WEBGL_compressed_texture_astc",
       "portable": false,
-      "note": "not looked up yet"
+      "note": "iOS 99.9, Android 99.8, macOS 92.2, Linux 82.2 percent, but Windows only 1.9 percent and Edge 6.2 percent."
     },
     {
       "name": "WEBGL_compressed_texture_etc",
       "portable": false,
-      "note": "not looked up yet"
+      "note": "iOS 99.9, Android 99.9, Linux 91.1, macOS 88.1 percent, but Windows only 1.9 percent and Edge 6.2 percent."
     },
     {
       "name": "WEBGL_compressed_texture_etc1",
       "portable": false,
-      "note": "not looked up yet"
+      "note": "iOS 99.9, Android 99.9, macOS 88.1 percent, but Windows only 1.9, Linux 53.5 and Edge 6.2 percent."
     },
     {
       "name": "WEBGL_compressed_texture_s3tc",
       "portable": false,
-      "note": "not looked up yet"
+      "note": "Windows 99.95, Linux 94.6, macOS 89.0 percent, but iOS only 56.0 and Safari 61.6 percent (only Apple GPUs with BC support); Android 31.1 percent."
     },
     {
       "name": "WEBGL_compressed_texture_s3tc_srgb",
       "portable": false,
-      "note": "not looked up yet"
+      "note": "Windows 99.95, Linux 94.5, macOS 89.0 percent, but iOS only 56.0 and Safari 61.6 percent (only Apple GPUs with BC support); Android 31.1 percent."
     },
     {
       "name": "WEBGL_debug_renderer_info",
-      "portable": false,
-      "note": "not looked up yet"
+      "portable": true,
+      "note": "Windows 99.99, macOS 100, Linux 99.9, iOS 100, Firefox 99.9 percent; MDN says Firefox deprecates it and may remove it, and Khronos says the strings may be masked."
     },
     {
       "name": "WEBGL_debug_shaders",
-      "portable": false,
-      "note": "not looked up yet"
+      "portable": true,
+      "note": "Windows 99.7, macOS 99.9, Linux 98.2, iOS 99.99 percent; Chrome 99.7, Edge 99.95, Firefox 99.1, Safari 100 percent; Android 99.5 percent."
     },
     {
       "name": "WEBGL_lose_context",
-      "portable": false,
-      "note": "not looked up yet"
+      "portable": true,
+      "note": "Windows 100, macOS 99.99, Linux 99.5, iOS 100 percent; Chrome 99.96, Edge 100, Firefox 99.97, Safari 100 percent; Android 100 percent."
     },
     {
       "name": "WEBGL_multi_draw",
       "portable": false,
-      "note": "not looked up yet"
+      "note": "Chrome 99.9, Edge 99.98, Safari 100, iOS 100 percent, but Firefox does not implement it (survey 2.8 percent, MDN false), so Windows 92.0, macOS 92.9, Linux 60.8 percent."
     },
     {
       "name": "WEBGL_polygon_mode",
       "portable": false,
-      "note": "not looked up yet"
+      "note": "Chrome desktop, Edge 98.4 and Safari 99.1 percent have it (iOS 99.3), but Firefox does not implement it (survey 2.7 percent, MDN false); Android 7.4 percent."
     },
     {
       "name": "WEBGL_stencil_texturing",
       "portable": false,
-      "note": "not looked up yet"
+      "note": "Chrome 97.6, Edge 99.6, Safari 97.1, iOS 98.1 percent, but Firefox does not implement it (survey 2.7 percent, MDN false); Android 72.2 percent."
     }
-  ]
+  ],
+  "portableRead": "2026-11-24, from web3dsurvey.com, MDN, the Khronos registry and browser sources. Quotes and sources: references/terms/webgl/NOTES.md"
 }

@@ -1,0 +1,118 @@
+import { config } from '../config'
+import type { Timeline } from '../film/timeline'
+import type { SimSnapshot, SpikeSim } from './spikeSim'
+
+const HZ = config.sim.stepHz
+const EVERY = Math.round(config.sim.checkpointSeconds * HZ)
+const KEEP = 6
+
+export interface SimStore {
+  list(key: string): Promise<number[]>
+  get(key: string, step: number): Promise<ArrayBuffer | null>
+  put(key: string, step: number, data: ArrayBuffer): Promise<void>
+}
+
+export function packSnapshot(s: SimSnapshot): ArrayBuffer {
+  const n = s.state.length
+  const l = s.liquid.length
+  const buf = new ArrayBuffer(8 + l * 8 + n * 36 + n)
+  const head = new Uint32Array(buf, 0, 2)
+  head[0] = s.step
+  head[1] = n
+  new Float64Array(buf, 8, l).set(s.liquid)
+  let o = 8 + l * 8
+  for (const part of [s.pos, s.prev, s.vel]) {
+    new Float32Array(buf, o, n * 3).set(part)
+    o += n * 12
+  }
+  new Uint8Array(buf, o, n).set(s.state)
+  return buf
+}
+
+export function unpackSnapshot(buf: ArrayBuffer, liquidLength: number): SimSnapshot {
+  const head = new Uint32Array(buf, 0, 2)
+  const n = head[1]!
+  const liquid = new Float64Array(buf.slice(8, 8 + liquidLength * 8))
+  let o = 8 + liquidLength * 8
+  const take = () => {
+    const part = new Float32Array(buf.slice(o, o + n * 12))
+    o += n * 12
+    return part
+  }
+  const pos = take()
+  const prev = take()
+  const vel = take()
+  const state = new Uint8Array(buf.slice(o, o + n))
+  return { step: head[0]!, pos, prev, vel, state, liquid }
+}
+
+export class SimDriver {
+  private timelineId = ''
+  private marks: SimSnapshot[] = []
+  private remote: number[] = []
+  replayed = 0
+
+  constructor(readonly sim: SpikeSim, private readonly store: SimStore | null, private readonly prefix: string) {}
+
+  private key(tl: Timeline): string {
+    return `${this.prefix}-${tl.id.replace(/[^a-z0-9]+/gi, '_')}-${this.sim.season}-${this.sim.count}`
+  }
+
+  async seek(tl: Timeline, timeSec: number): Promise<number> {
+    const f = timeSec * HZ
+    const target = Math.max(1, Math.ceil(f - 1e-7))
+    const mix = Math.min(1, Math.max(0, f - (target - 1)))
+    const sim = this.sim
+    if (tl.id !== this.timelineId) {
+      this.timelineId = tl.id
+      this.marks = []
+      this.remote = this.store ? await this.store.list(this.key(tl)) : []
+      sim.reset()
+    }
+    if (target < sim.step) {
+      const mark = this.marks.filter((m) => m.step <= target).sort((a, b) => b.step - a.step)[0]
+      if (mark) sim.restore(mark)
+      else sim.reset()
+    }
+    if (this.store) {
+      const best = this.remote.filter((s) => s <= target && s > sim.step).sort((a, b) => b - a)[0]
+      if (best !== undefined && best - sim.step > 24) {
+        const data = await this.store.get(this.key(tl), best)
+        if (data) sim.restore(unpackSnapshot(data, sim.liquid.length))
+      }
+    }
+    while (sim.step < target) {
+      const next = Math.min(target, (Math.floor(sim.step / EVERY) + 1) * EVERY)
+      const before = sim.step
+      sim.advanceTo(next, tl)
+      this.replayed += sim.step - before
+      if (sim.step % EVERY === 0) {
+        const snap = sim.snapshot()
+        this.marks.push(snap)
+        if (this.marks.length > KEEP) this.marks.shift()
+        if (this.store && !this.remote.includes(snap.step)) {
+          await this.store.put(this.key(tl), snap.step, packSnapshot(snap))
+          this.remote.push(snap.step)
+        }
+        await new Promise((r) => setTimeout(r, 0))
+      }
+    }
+    return mix
+  }
+}
+
+export function httpStore(base: string): SimStore {
+  return {
+    async list(key) {
+      const r = await fetch(`${base}/${key}/`)
+      return r.ok ? ((await r.json()) as number[]) : []
+    },
+    async get(key, step) {
+      const r = await fetch(`${base}/${key}/${step}.bin`)
+      return r.ok ? r.arrayBuffer() : null
+    },
+    async put(key, step, data) {
+      await fetch(`${base}/${key}/${step}.bin`, { method: 'PUT', body: data })
+    },
+  }
+}

@@ -63,6 +63,7 @@ if (!caps) {
   process.exit(1)
 }
 const portable = previous?.portable ?? {}
+const portableRead = previous?.portableRead
 const extensions = caps.extensions.map((name) => ({ name, portable: portable[name]?.portable ?? false, note: portable[name]?.note ?? 'not looked up yet' }))
 writeJson(file, {
   measured: new Date().toISOString(),
@@ -75,6 +76,7 @@ writeJson(file, {
   precision: caps.precision,
   renderTargets: caps.renderTargets,
   portable,
+  portableRead,
   extensions,
 })
 console.log(`caps: ${caps.renderer}`)

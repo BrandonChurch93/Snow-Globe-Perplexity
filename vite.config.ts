@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitest/config'
 import type { Plugin } from 'vite'
-import raw from './config/showcase.json'
-import { configProblems } from './src/configCheck'
+import raw from './config/showcase.json' with { type: 'json' }
+import { configProblems } from './src/configCheck.ts'
 import { approvedPresent, engineHash, packageVersions, writeAssetIndex } from './tools/lib/hashes.mjs'
 
 const present: string[] = approvedPresent()
@@ -14,6 +14,9 @@ const page = (): Plugin => ({
   name: 'showcase-page',
   buildStart() {
     writeAssetIndex()
+  },
+  generateBundle() {
+    this.emitFile({ type: 'asset', fileName: 'build.json', source: JSON.stringify({ engineHash: engineHash() }) + '\n' })
   },
   transformIndexHtml: (html) => html.replaceAll('%NAME%', raw.name),
 })

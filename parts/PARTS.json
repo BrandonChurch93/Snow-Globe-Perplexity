@@ -1,0 +1,592 @@
+{
+  "parts": [
+    {
+      "name": "glass",
+      "unit": "winter",
+      "state": "stand-in",
+      "files": [
+        "src/globe"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "liquid",
+      "unit": "winter",
+      "state": "stand-in",
+      "files": [
+        "src/globe"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "surface",
+      "unit": "winter",
+      "state": "stand-in",
+      "files": [
+        "src/scene"
+      ],
+      "standInHash": "62e8019e3d7ffc7c",
+      "commit": "2530677"
+    },
+    {
+      "name": "backdrop",
+      "unit": "winter",
+      "state": "stand-in",
+      "files": [
+        "src/scene"
+      ],
+      "standInHash": "62e8019e3d7ffc7c",
+      "commit": "2530677"
+    },
+    {
+      "name": "lens",
+      "unit": "winter",
+      "state": "stand-in",
+      "files": [
+        "src/scene",
+        "src/post"
+      ],
+      "standInHash": "0df4e8e95b32b46c",
+      "commit": "2530677"
+    },
+    {
+      "name": "shake",
+      "unit": "winter",
+      "state": "stand-in",
+      "files": [
+        "src/shake"
+      ],
+      "standInHash": "4967be6657f48ce6",
+      "commit": "2530677"
+    },
+    {
+      "name": "particle-engine",
+      "unit": "winter",
+      "state": "stand-in",
+      "files": [
+        "src/particles"
+      ],
+      "standInHash": "8357463252fb499a",
+      "commit": "2530677"
+    },
+    {
+      "name": "light-engine",
+      "unit": "winter",
+      "state": "stand-in",
+      "files": [
+        "src/scene",
+        "src/post"
+      ],
+      "standInHash": "0df4e8e95b32b46c",
+      "commit": "2530677"
+    },
+    {
+      "name": "base-winter",
+      "unit": "winter",
+      "state": "stand-in",
+      "files": [
+        "src/seasons/winter",
+        "public/assets/winter"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "miniature-winter",
+      "unit": "winter",
+      "state": "stand-in",
+      "files": [
+        "src/seasons/winter",
+        "public/assets/winter"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "glass-dressing-winter",
+      "unit": "winter",
+      "state": "stand-in",
+      "files": [
+        "src/seasons/winter",
+        "public/assets/winter"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "surface-dressing-winter",
+      "unit": "winter",
+      "state": "stand-in",
+      "files": [
+        "src/seasons/winter",
+        "public/assets/winter"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "light-winter",
+      "unit": "winter",
+      "state": "stand-in",
+      "files": [
+        "src/seasons/winter",
+        "public/assets/winter"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "veil-winter",
+      "unit": "winter",
+      "state": "stand-in",
+      "files": [
+        "src/seasons/winter",
+        "public/assets/winter"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "arrival-winter",
+      "unit": "winter",
+      "state": "stand-in",
+      "files": [
+        "src/seasons/winter",
+        "public/assets/winter"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "particle-flake",
+      "unit": "winter",
+      "state": "stand-in",
+      "files": [
+        "src/particles",
+        "src/seasons/winter"
+      ],
+      "standInHash": "8357463252fb499a",
+      "commit": "2530677"
+    },
+    {
+      "name": "particle-glitter",
+      "unit": "winter",
+      "state": "stand-in",
+      "files": [
+        "src/particles",
+        "src/seasons/winter"
+      ],
+      "standInHash": "8357463252fb499a",
+      "commit": "2530677"
+    },
+    {
+      "name": "base-spring",
+      "unit": "spring",
+      "state": "stand-in",
+      "files": [
+        "src/seasons/spring",
+        "public/assets/spring"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "miniature-spring",
+      "unit": "spring",
+      "state": "stand-in",
+      "files": [
+        "src/seasons/spring",
+        "public/assets/spring"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "glass-dressing-spring",
+      "unit": "spring",
+      "state": "stand-in",
+      "files": [
+        "src/seasons/spring",
+        "public/assets/spring"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "surface-dressing-spring",
+      "unit": "spring",
+      "state": "stand-in",
+      "files": [
+        "src/seasons/spring",
+        "public/assets/spring"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "light-spring",
+      "unit": "spring",
+      "state": "stand-in",
+      "files": [
+        "src/seasons/spring",
+        "public/assets/spring"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "veil-spring",
+      "unit": "spring",
+      "state": "stand-in",
+      "files": [
+        "src/seasons/spring",
+        "public/assets/spring"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "arrival-spring",
+      "unit": "spring",
+      "state": "stand-in",
+      "files": [
+        "src/seasons/spring",
+        "public/assets/spring"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "particle-petal",
+      "unit": "spring",
+      "state": "stand-in",
+      "files": [
+        "src/particles",
+        "src/seasons/spring"
+      ],
+      "standInHash": "8357463252fb499a",
+      "commit": "2530677"
+    },
+    {
+      "name": "particle-mote",
+      "unit": "spring",
+      "state": "stand-in",
+      "files": [
+        "src/particles",
+        "src/seasons/spring"
+      ],
+      "standInHash": "8357463252fb499a",
+      "commit": "2530677"
+    },
+    {
+      "name": "base-summer",
+      "unit": "summer",
+      "state": "stand-in",
+      "files": [
+        "src/seasons/summer",
+        "public/assets/summer"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "miniature-summer",
+      "unit": "summer",
+      "state": "stand-in",
+      "files": [
+        "src/seasons/summer",
+        "public/assets/summer"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "glass-dressing-summer",
+      "unit": "summer",
+      "state": "stand-in",
+      "files": [
+        "src/seasons/summer",
+        "public/assets/summer"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "surface-dressing-summer",
+      "unit": "summer",
+      "state": "stand-in",
+      "files": [
+        "src/seasons/summer",
+        "public/assets/summer"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "light-summer",
+      "unit": "summer",
+      "state": "stand-in",
+      "files": [
+        "src/seasons/summer",
+        "public/assets/summer"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "veil-summer",
+      "unit": "summer",
+      "state": "stand-in",
+      "files": [
+        "src/seasons/summer",
+        "public/assets/summer"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "arrival-summer",
+      "unit": "summer",
+      "state": "stand-in",
+      "files": [
+        "src/seasons/summer",
+        "public/assets/summer"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "particle-firefly",
+      "unit": "summer",
+      "state": "stand-in",
+      "files": [
+        "src/particles",
+        "src/seasons/summer"
+      ],
+      "standInHash": "8357463252fb499a",
+      "commit": "2530677"
+    },
+    {
+      "name": "particle-seed",
+      "unit": "summer",
+      "state": "stand-in",
+      "files": [
+        "src/particles",
+        "src/seasons/summer"
+      ],
+      "standInHash": "8357463252fb499a",
+      "commit": "2530677"
+    },
+    {
+      "name": "base-fall",
+      "unit": "fall",
+      "state": "stand-in",
+      "files": [
+        "src/seasons/fall",
+        "public/assets/fall"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "miniature-fall",
+      "unit": "fall",
+      "state": "stand-in",
+      "files": [
+        "src/seasons/fall",
+        "public/assets/fall"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "glass-dressing-fall",
+      "unit": "fall",
+      "state": "stand-in",
+      "files": [
+        "src/seasons/fall",
+        "public/assets/fall"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "surface-dressing-fall",
+      "unit": "fall",
+      "state": "stand-in",
+      "files": [
+        "src/seasons/fall",
+        "public/assets/fall"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "light-fall",
+      "unit": "fall",
+      "state": "stand-in",
+      "files": [
+        "src/seasons/fall",
+        "public/assets/fall"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "veil-fall",
+      "unit": "fall",
+      "state": "stand-in",
+      "files": [
+        "src/seasons/fall",
+        "public/assets/fall"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "arrival-fall",
+      "unit": "fall",
+      "state": "stand-in",
+      "files": [
+        "src/seasons/fall",
+        "public/assets/fall"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "particle-leaf",
+      "unit": "fall",
+      "state": "stand-in",
+      "files": [
+        "src/particles",
+        "src/seasons/fall"
+      ],
+      "standInHash": "8357463252fb499a",
+      "commit": "2530677"
+    },
+    {
+      "name": "particle-ember",
+      "unit": "fall",
+      "state": "stand-in",
+      "files": [
+        "src/particles",
+        "src/seasons/fall"
+      ],
+      "standInHash": "8357463252fb499a",
+      "commit": "2530677"
+    },
+    {
+      "name": "particle-bat",
+      "unit": "fall",
+      "state": "stand-in",
+      "files": [
+        "src/particles",
+        "src/seasons/fall"
+      ],
+      "standInHash": "8357463252fb499a",
+      "commit": "2530677"
+    },
+    {
+      "name": "change-winter-spring",
+      "unit": "change",
+      "state": "stand-in",
+      "files": [
+        "src/shake",
+        "src/seasons/winter",
+        "src/seasons/spring"
+      ],
+      "standInHash": "4967be6657f48ce6",
+      "commit": "2530677"
+    },
+    {
+      "name": "change-spring-summer",
+      "unit": "change",
+      "state": "stand-in",
+      "files": [
+        "src/shake",
+        "src/seasons/spring",
+        "src/seasons/summer"
+      ],
+      "standInHash": "4967be6657f48ce6",
+      "commit": "2530677"
+    },
+    {
+      "name": "change-summer-fall",
+      "unit": "change",
+      "state": "stand-in",
+      "files": [
+        "src/shake",
+        "src/seasons/summer",
+        "src/seasons/fall"
+      ],
+      "standInHash": "4967be6657f48ce6",
+      "commit": "2530677"
+    },
+    {
+      "name": "change-fall-winter",
+      "unit": "change",
+      "state": "stand-in",
+      "files": [
+        "src/shake",
+        "src/seasons/fall",
+        "src/seasons/winter"
+      ],
+      "standInHash": "4967be6657f48ce6",
+      "commit": "2530677"
+    },
+    {
+      "name": "interface",
+      "unit": "globe",
+      "state": "stand-in",
+      "files": [
+        "src/ui"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "sound-engine",
+      "unit": "globe",
+      "state": "stand-in",
+      "files": [
+        "src/audio"
+      ],
+      "standInHash": "e3b0c44298fc1c14",
+      "commit": "2530677"
+    },
+    {
+      "name": "quality-levels",
+      "unit": "globe",
+      "state": "stand-in",
+      "files": [
+        "src/core"
+      ],
+      "standInHash": "1d8401c667c7587f",
+      "commit": "2530677"
+    },
+    {
+      "name": "opening",
+      "unit": "film",
+      "state": "stand-in",
+      "files": [
+        "src/film"
+      ],
+      "standInHash": "af93a33f581d932d",
+      "commit": "2530677"
+    },
+    {
+      "name": "loop",
+      "unit": "film",
+      "state": "stand-in",
+      "files": [
+        "src/film",
+        "src/particles"
+      ],
+      "standInHash": "7e283ce61f48a329",
+      "commit": "2530677"
+    }
+  ]
+}

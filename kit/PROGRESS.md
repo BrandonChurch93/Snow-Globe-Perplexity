@@ -25,22 +25,22 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
+Status 3 · 2026-11-24 02:33 UTC
 
-Status 2 · 2026-11-24 02:14 UTC
-
-- `out/stills/status/status-2.jpg`: the approved winter image at rest. The first spike still will be shown beside it
+- `out/stills/status/status-3-1.jpg`: Left: the approved image for winter-rest. Right: the build's still of it. The right side is the measuring spike of Phase 0: plain shapes, plain points and a simple lens, every part still a stand-in
+- `out/stills/status/status-3-2.jpg`: Still: winter rest hero, hd, review
+- `out/stills/status/status-3-3.jpg`: Still: winter rest hero, preview, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 02:13 UTC
-clock: phase 0, tick of 0.5 minutes
-phase 0: 0.38 h used of its 4.00 h box
-allowance (before the review): 0.38 h used of 36.00 h allowed
-all time before the review: 0.38 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 02:33 UTC
+clock: phase 0, tick of 20.3 minutes
+phase 0: 0.72 h used of its 4.00 h box
+allowance (before the review): 0.72 h used of 36.00 h allowed
+all time before the review: 0.72 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
@@ -198,6 +198,14 @@ Read 2026-11-24 by three supporting agents. Every quote is kept with its URL und
 
 - `tests/clock.test.ts` (46 tests, written by a supporting agent, run and read here): the clock behaves as the kit describes. Three things the kit does not spell out, kept as they are: the time between the last tick and `--review`, `--continue` or the opening tick of a review round is dropped, not counted; a `--phase` tick after a review round tick on the same boot counts the gap since that tick; a phase with no box in the allowance in force prints both `half point: reached` and `box end: reached`.
 
+### WebGL2 extensions that every target browser has
+
+Read by a lookup agent from the WebGL registry, MDN's compatibility data, WebKit's and Firefox's source and the three.js migration notes on 2026-11-24. Sources and quotes: `references/terms/webgl/NOTES.md`. The map is in `config/webgl-caps.json` under `portable`.
+
+- Portable: `EXT_color_buffer_float`, `EXT_texture_filter_anisotropic`, `OES_draw_buffers_indexed`, `WEBGL_debug_renderer_info`, `WEBGL_debug_shaders`, `WEBGL_lose_context`.
+- Not portable, so the app never needs them: `EXT_color_buffer_half_float` (missing in Firefox on WebGL2), `OES_texture_float_linear`, `EXT_float_blend`, `WEBGL_multi_draw`, every compressed texture format, and the rest.
+- What the engine does with that: it draws each sample into a half float target, which `EXT_color_buffer_float` covers, and keeps the running mean in a 32 bit float target that is never blended and never filtered. Without `EXT_color_buffer_float` it falls back to half float through `EXT_color_buffer_half_float`, and without either to 8 bit targets. Check G10 renders with every extension outside the portable list denied, again without `EXT_color_buffer_float`, and again with neither float extension.
+
 ## Pinned versions
 
 Chosen 2026-11-24 02:02 UTC from the npm registry: the newest stable release of each, written into `package.json` without ranges. `package-lock.json` is committed.
@@ -267,6 +275,12 @@ Numbered. What, why, and the date.
 
 5. 2026-11-24. `vitest` is pinned to 4.1.12, not to the newest release, because 5.x needs Node 22 and the VMs here have Node 20. Every other package is the newest stable release.
 
+6. 2026-11-24. A still places all its samples at one moment, so only the pixel and the lens are sampled. A film or loop frame also spreads its samples over the shutter. Samples are sorted by time, so the stepped simulation only ever runs forward inside one picture.
+7. 2026-11-24. The stepped state of a still or a frame is reached by replay from the start of its timeline, with a checkpoint every `sim.checkpointSeconds`. Checkpoints are kept in the page and, in `capture`, stored by the harness server under `out/work/simcache/`, keyed by the engine hash, so a wrong cache can never be read after the code changed.
+8. 2026-11-24. Comparison images and crops are placed relative to the globe's circle: measured in each approved image and computed from the camera in each still. Labels `-a` (approved) and `-b` (build) are the ones the `settled` lines in the config use.
+9. 2026-11-24. Build and tool agents run at high reasoning effort. Critics, jurors and agents that judge or build what is seen run at the strongest setting available.
+10. 2026-11-24. The parts register is created in Phase 0 instead of Phase 2, with every part as a stand-in, because the frame interface of step 14 reports the stand-in list from it.
+
 ## Notes from Brandon
 
 Numbered, in his words, with the date and how each was applied. Review round items carry their round's number.
@@ -313,13 +327,12 @@ none
 
 The name, the branch, the folders it owns, its job, its limit, when it started.
 
-The name, the branch, the folders it owns, its job, its limit, when it started.
-
 | Name | Branch | Folders it owns | Job | Limit | Started | State |
 | --- | --- | --- | --- | --- | --- | --- |
-| `webgl_portability_reader` | none (shares this VM) | `agent-out/webgl_portable/` outside the repo | Lookup: which WebGL2 extensions are portable across current browsers | 30 minutes | 02:10 UTC | running |
+| `animatic_builder` | `agent/animatic` | `tools/animatic.mjs` | The rough cut tool of Phase 1, from the approved images on the default grid | 40 minutes | 02:17 UTC | running |
+| `compare_layout_builder` | `agent/compose` | `references/regions.json`, `pipeline/find_regions.py`, `tools/lib/compose.mjs`, `tests/compose.test.ts` | Where the globe and the base lie in each approved image, and the layout of comparison images and crop grids | 45 minutes | 02:17 UTC | running |
 
-Finished: `wait_tester`, `sandbox_prober`, `reader_01` to `reader_10` (the model test), `image_terms_reader` (02:04), `hosting_limits_reader` (02:06), `sound_terms_reader` (02:09), `clock_test_writer` (02:12: `tests/clock.test.ts`, 46 tests, run here and all pass; it reported no behaviour that differs from the kit).
+Finished: `wait_tester`, `sandbox_prober`, `reader_01` to `reader_10` (the model test), `image_terms_reader` (02:04), `hosting_limits_reader` (02:06), `sound_terms_reader` (02:09), `clock_test_writer` (02:12: `tests/clock.test.ts`, 46 tests, run here and all pass; it reported no behaviour that differs from the kit), `webgl_portability_reader` (02:19: its table is in `references/terms/webgl/` and merged into `config/webgl-caps.json`), `review_page_builder` (02:32: `tools/review.mjs` on `agent/review-page` at `5d5dc6d`, taken into `main` as that one file; it tested three screen sizes in headless Chrome, not Safari).
 
 ## Rounds
 
@@ -366,3 +379,4 @@ One entry per task: when it started, what it did, where it stopped.
 
 - 01:53 to 02:09: steps 5 to 13. The workspace, the tools, the polling test, a sandbox agent, the image limit, the model families, the sound tool and its listener, the two skills, the terms and the hosting limits were measured or read and recorded. Packages installed with exact pins.
 - 02:10 to 02:14: the browser library and `npm run caps` written; the clock tests arrived and pass; a lookup agent is reading which WebGL2 extensions are portable. Status 2 posted.
+- 02:14 to 02:34: three sandbox agents started for the rough cut tool, the review page tool and the comparison layout. The portability table merged. Step 14: config import, seeded random, sampler, accumulator, asset loader, shake path, default grid, spike simulation and spike scene written; `npm run build` exits clean; `npm run still` renders through `window.showcase` in `capture` mode. First timing at 1920 x 1080 in software: 0.84 s per sample. `npm run status` built. Status 3 posted with the first spike stills.

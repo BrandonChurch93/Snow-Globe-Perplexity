@@ -11,7 +11,14 @@
     "clock": "node tools/clock.mjs",
     "look": "node tools/look.mjs",
     "progress": "node tools/progress.mjs",
-    "caps": "node tools/caps.mjs"
+    "caps": "node tools/caps.mjs",
+    "build": "node tools/assetindex.mjs && tsc --noEmit && vite build",
+    "test": "vitest run",
+    "parts": "node tools/parts.mjs",
+    "dev": "vite",
+    "still": "node tools/still.mjs",
+    "review": "node tools/review.mjs",
+    "status": "node tools/status.mjs"
   },
   "dependencies": {
     "gsap": "3.15.1",
