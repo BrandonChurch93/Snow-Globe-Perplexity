@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 30 · 2026-11-24 11:32 UTC
+Status 31 · 2026-11-24 11:58 UTC
 
-- `out/stills/status/status-30-1.jpg`: Shake builder: the real test shake from the fixed hero camera in 12 frames (the landing is at frame 144). The path is real: unequal strokes with sharp reversals and a lift of 7.25 mm. Still wrong and owned by others: the stand-in veil whites the glass out and the contact shadow stays behind as a hard hole
-- `out/stills/status/status-30-2.jpg`: Shake builder: the path's curves over the bar. Six strokes of 15.6 to 22.4 mm that speed up; reversals of about 2 g; the rim of the foot kept 1 mm above the slab; the tilt capped at 6 degrees
-- `out/stills/status/status-30-3.jpg`: Village builder: the approved image above and the first real cottage below (stone walls and snow roof and brick chimney and string lights and the wreath on the arched door and the fence and lamppost and pond ice). Still wrong: out of focus at this camera and the stones too rounded and lain flakes bury the path
-- `out/stills/status/status-30-4.jpg`: Flake builder: the approved storm on the left and the build's storm on the right half a second after a landing (streaks along arcs; the miniature here is still a stand-in). Still wrong: flakes too large and too alike and the veil too even and too white
+- `out/stills/status/status-31-1.jpg`: Main at rest from the hero camera (draft tier with 2 samples): the real glass with its window highlight and crown bubble and the real frost on the glass and slab and the real flakes and tree and base. Still wrong: the cottage and fence and lamp are stand-ins until the village is merged and the backdrop discs are flat and the slab frost reads as white line drawing and the lens still blurs the miniature
+- `out/stills/status/status-31-2.jpg`: Main half a second after the landing of the real shake (draft tier): the storm sweeps round the miniature with the tree lights showing through and the icicles have begun to grow again. Still wrong: the storm reads as grey fur of equal streaks where the approved image has soft white smears and the frost on the glass has only begun to grow at this moment
+- `out/stills/status/status-31-3.jpg`: Still: winter landed hero, hd, draft
+- `out/stills/status/status-31-4.jpg`: Still: winter rest hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 11:45 UTC
-clock: phase 3, tick of 11.2 minutes
-phase 3: 3.30 h used of its 11.00 h box
-allowance (before the review): 9.92 h used of 36.00 h allowed
-all time before the review: 9.92 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 11:59 UTC
+clock: phase 3, tick of 0.9 minutes
+phase 3: 3.54 h used of its 11.00 h box
+allowance (before the review): 10.15 h used of 36.00 h allowed
+all time before the review: 10.15 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 13
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -507,6 +507,8 @@ Numbered. What, why, and the date.
 
 46. The pond stays clear of lain flakes (11:20 UTC, Phase 3). `kit/03-METHOD.md` has nothing pass through the ground, and the approved `winter-rest` shows the pond's ice clear and dark with the lamp's reflection on it while snow lies everywhere else. village_builder left the ice and the layout's pond disc out of the collider's `solid()` and sank the floor under the pond by 3.2 mm, so flakes that come to rest there lie under the ice sheet and the pond reads clear, as in the image. The image wins over the words. It is judged on the motion sheets: if flakes are seen passing through the ice from the `macro` camera, the pond goes back into `solid()` with a rule in the engine that lets nothing rest on ice (liquid_builder was asked what that rule costs). Listed in the `REVIEW` block.
 
+47. The frost is largely out half a second after the landing (11:55 UTC, Phase 3). `kit/02-SUBJECT.md` says the arrival grows over the next seconds ("Frost ferns grow in from the edge of the glass") and also that `states.landedSeconds` after the landing the globe looks like the season's approved mid-shake image; `winter-shake` shows frost on the glass and is the image the `landed` still is judged against. frost_builder had built a growth over seconds, so the `landed` still had little frost. The image wins: the growth is front-loaded, so that at 0.5 s the glass and the slab carry the frost `winter-shake` shows, and it goes on growing more slowly, branch by branch with an irregular front, to what `winter-rest` shows, finishing under the settling storm (`kit/04-LOOK.md`, "An arrival looks like a wipe"). Listed in the `REVIEW` block.
+
 ## Notes from Brandon
 
 Numbered, in his words, with the date and how each was applied. Review round items carry their round's number.
@@ -892,3 +894,9 @@ One entry per task: when it started, what it did, where it stopped.
 - 11:40 UTC. `npm run hostcheck` fails, and why: it builds from a copy of the tracked files only, as a host that builds from the repo would, and the built assets under `public/assets/shared/` and `public/assets/winter/` are held back from git until the round's commit (`AGENTS.md`: built assets are committed once per round, never per tuning look). The copy's app asks for `winter/base-wood.srgb.tile.w1024.png` and does not open. The published app is not affected: it is uploaded from the working folder, which has the files. Open item 30 holds this until Phase 3 step 9.
 - 11:42 UTC. `stageBlur()` in `src/core/materials.ts` (the blur channel of the `texels` view, which M2 reads as the sharp zone) now takes a point's true depth from the camera for parts inside the glass, not the depth the glass places it at, after village_builder's test of the lens (door sharp at 152 mm, placed at 171 mm). 370 of 370 tests.
 - 11:41 UTC. base_builder measured the approved base as cross lit: a warm source from the front left (left flank wood median 45, 28, 20 and brass 91, 61, 27 against 15, 10, 12 and 26, 20, 10 in the build) and a key that grazes the front from further right than the rig's. Passed to light_builder, who owns winter's rig.
+
+- 11:46 UTC. scene_builder measured the image behind the glass by moving the eye: the lens focuses on that image, which the true depth matches near the middle of the globe and misses by 18 to 35 mm at the back (about 10 px at the close camera). Its lines are in `src/core/materials.ts` (`18a20db`): in the `texels` view the blur takes the image's depth across and down and keeps the one further from the focus; outside that view nothing changes. Checked on a `--diag texels` still and a beauty still at `macro`; 370 of 370 tests. scene_builder may change the one focus line of the macro test in `tests/framing.test.ts` in its own branch, so the lens and its test reach `main` together.
+- 11:50 to 11:57 UTC. First reports from flake_builder, frost_builder and glass_builder; tree_builder found the same lens fault from its side. Merged into `main` and pushed as `567c9ed`: flakes, glitter and winter's veil (`agent/p3-flakes` at `70a5d7b`), winter's frost on the glass and the slab with its arrival (`agent/p3-frost` at `c803fd0`), the glass shell (`agent/p3-glass` at `0634c13`). `parts/PARTS.json`: `particle-flake`, `particle-glitter`, `veil-winter`, `glass-dressing-winter`, `surface-dressing-winter`, `arrival-winter` and `glass` are `built`; `liquid` and `particle-engine` wait for liquid_builder's word. Types clean, 370 of 370 tests. `texpack` now builds 16 pictures and 4 other files, 48.2 MB.
+- 11:52 UTC. flake_builder's merge commits up to `70a5d7b` carry git's default message without the trailer line. They were pushed before it was seen and history is not rewritten; its later merges carry the trailer.
+- 11:55 UTC. The frost's softening of what lies behind is opacity and a film, not a blur; `kit/03-METHOD.md` asks for a blur. A true blur needs a copy of the frame taken before the dressing draws, which is the stage's to give. frost_builder writes the blur as one function with a seam; the frame copy is work for after the builders' reports. Decision 47 (the frost at half a second) sent to frost_builder.
+- 11:59 UTC. Status 31 posted with two pictures of `main` at `567c9ed`: at rest and half a second after the landing, from `hero` at hd, draft tier.
