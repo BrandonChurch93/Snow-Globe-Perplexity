@@ -9,7 +9,7 @@ Written by `npm run cut` from the page. Do not edit by hand. Lengths are in mill
 - Move: Starts on the macro camera already moving and pulls back to hero over the first 2 bars, fast at first and easing to nothing. Then an arc of 2.6 degrees to one side and back, which lowers its aim by up to 4.5 mm and gives it back.
 - Starts: 134 mm from a point 68 mm up the axis, yaw 6, pitch 6, the frame 37.7 mm tall there, the globe and base 393 percent of that height.
 - Ends: 658 mm from a point 70.5 mm up the axis, yaw 0, pitch 9, the frame 185 mm tall there, the globe and base 80 percent of that height.
-- Focus: 144 mm from the lens, -10 mm in front of the aim point; at hero 618 mm from the lens, 40 mm in front of the aim point.
+- Focus: 144 mm from the lens, 10 mm behind the aim point; at hero 618 mm from the lens, 40 mm in front of the aim point.
 - Keys:
   - frame 0, 0:00.00: first frame
   - frame 120, 0:02.00: film.hookSeconds: the pull back is plain
@@ -126,7 +126,7 @@ Written by `npm run cut` from the page. Do not edit by hand. Lengths are in mill
 - Move: Starts on hero and lowers its aim by up to 4.5 mm over the first bar, then one unbroken push from hero to the macro camera, which is held for the last bar. The last frame is the camera of frame 0.
 - Starts: 658 mm from a point 70.5 mm up the axis, yaw 0, pitch 9, the frame 185 mm tall there, the globe and base 80 percent of that height.
 - Ends: 134 mm from a point 68 mm up the axis, yaw 6, pitch 6, the frame 37.7 mm tall there, the globe and base 393 percent of that height.
-- Focus: 618 mm from the lens, 40 mm in front of the aim point; at macro 144 mm from the lens, -10 mm in front of the aim point.
+- Focus: 618 mm from the lens, 40 mm in front of the aim point; at macro 144 mm from the lens, 10 mm behind the aim point.
 - Keys:
   - frame 2880, 0:48.00: first frame
   - frame 3024, 0:50.40: the push toward macro begins
