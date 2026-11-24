@@ -16,6 +16,12 @@ const WALL2 = WALL * WALL
 const NEAR = 3
 const INV_NEAR = 1 / NEAR
 const SLIP = 0.35
+const COARSE = 3
+const INV_COARSE = 1 / COARSE
+const REACH = 12
+const FLOOR = 2
+const INV_RAMP = 1 / (REACH - FLOOR)
+const DEFLECT_CAP = 4
 const SKIN = 0.02
 const CALM = 3
 const INV_FADE_IN = 1 / 1.4
@@ -223,6 +229,8 @@ interface Grid {
   top: number
   inv: number
   data: Float32Array
+  far: Float32Array
+  fn: number
   source: SdfGrid
   park: [number, number, number]
 }
@@ -247,8 +255,28 @@ export function parkPoint(source: SdfGrid): [number, number, number] {
   return park
 }
 
+function farOf(source: SdfGrid, fn: number): Float32Array {
+  const n = source.n
+  const d = source.data
+  const far = new Float32Array(fn * fn * fn)
+  for (let c = 0; c < far.length; c++) {
+    const x0 = (c % fn) * COARSE
+    const y0 = (Math.floor(c / fn) % fn) * COARSE
+    const z0 = Math.floor(c / (fn * fn)) * COARSE
+    let least = Infinity
+    for (let z = z0; z <= z0 + COARSE && z < n; z++) {
+      for (let y = y0; y <= y0 + COARSE && y < n; y++) {
+        for (let x = x0; x <= x0 + COARSE && x < n; x++) least = Math.min(least, d[x + n * (y + n * z)]!)
+      }
+    }
+    far[c] = least
+  }
+  return far
+}
+
 function gridOf(source: SdfGrid): Grid {
-  return { n: source.n, nn: source.n * source.n, scale: (source.n - 1) / source.sizeMm, half: source.sizeMm / 2, top: source.n - 1.001, inv: 1 / sdfSlope(source), data: source.data, source, park: parkPoint(source) }
+  const fn = Math.ceil((source.n - 1) / COARSE)
+  return { n: source.n, nn: source.n * source.n, scale: (source.n - 1) / source.sizeMm, half: source.sizeMm / 2, top: source.n - 1.001, inv: 1 / sdfSlope(source), data: source.data, far: farOf(source, fn), fn, source, park: parkPoint(source) }
 }
 
 export class ParticleEngine {
@@ -474,7 +502,8 @@ export class ParticleEngine {
     const u5 = unit(hash2(i, 191 + k))
     const big = Math.pow(u1, b.sizeSkew)
     this.sizes[i] = b.sizeMm[0] + (b.sizeMm[1] - b.sizeMm[0]) * big
-    this.sink[i] = b.sinkMmS[0] + (b.sinkMmS[1] - b.sinkMmS[0]) * (0.45 * big + 0.55 * u2)
+    const fall = b.settleMmS[1] > 0 && u5 >= Math.max(b.renew, b.floats) ? b.settleMmS : b.sinkMmS
+    this.sink[i] = fall[0] + (fall[1] - fall[0]) * (0.45 * big + 0.55 * u2)
     this.layer[i] = b.mode === 'steer' ? b.clearanceMm * 0.3 : b.layerMm[0] + (b.layerMm[1] - b.layerMm[0]) * Math.pow(u3, 2.4)
     this.lift[i] = b.liftMmS[1] - (b.liftMmS[1] - b.liftMmS[0]) * Math.pow(u3, 0.45)
     this.turnRate[i] = b.turnRadS[0] + (b.turnRadS[1] - b.turnRadS[0]) * u4
@@ -710,9 +739,9 @@ export class ParticleEngine {
         this.fade[i] = emberGlow(a)
         this.opacity[i] = this.fade[i]!
         this.phase[i] = a * TAU
-      } else if (K_REST[k] === STATE_REST) {
+      } else if (K_REST[k] === STATE_REST || (K_REST[k] === STATE_SNAG && this.sink[i]! > TABLE_OF[k]!.sinkMmS[1])) {
         this.drop(i, k, G)
-        this.state[i] = STATE_REST
+        this.state[i] = K_REST[k]!
         if (this.renews[i]) this.stamp[i] = Math.floor(unit(hash2(i, 33)) * TABLE_OF[k]!.dwellSeconds[1] * HZ)
       } else this.afloat(i, 21, G, 1.5, GROUND_Y + 1, WALL)
       if (this.state[i] === STATE_LIQUID) this.enlist(i)
@@ -965,6 +994,7 @@ export class ParticleEngine {
     const eA = this.nowIx
     const A = this.grid(eA)
     const B = this.window === 1 ? this.grid(this.swapTo) : A
+    const reach = REACH * (A.inv > B.inv ? A.inv : B.inv)
     const blend = calm ? K_BLEND_CALM : K_BLEND
     const grip = calm ? K_GRIP_CALM : K_GRIP
     const pos = this.pos
@@ -1030,7 +1060,10 @@ export class ParticleEngine {
       let near = false
       let touch = false
       let dirty = false
-      if (clear[i]! <= 0) {
+      let lay = 0
+      let fresh = false
+      let room = clear[i]!
+      if (room <= (due ? reach : 0)) {
         const G = era[i] === eA ? A : B
         const gn = G.n
         const data = G.data
@@ -1041,52 +1074,64 @@ export class ParticleEngine {
         fx = fx < 0 ? 0 : fx > top ? top : fx
         fy = fy < 0 ? 0 : fy > top ? top : fy
         fz = fz < 0 ? 0 : fz > top ? top : fz
-        const ix = fx | 0
-        const iy = fy | 0
-        const iz = fz | 0
-        const tx = fx - ix
-        const ty = fy - iy
-        const tz = fz - iz
-        const p0 = ix + gn * (iy + gn * iz)
-        const p4 = p0 + G.nn
-        const va = data[p0]!
-        const vb = data[p0 + 1]!
-        const vc = data[p0 + gn]!
-        const ve = data[p0 + gn + 1]!
-        const vf = data[p4]!
-        const vg = data[p4 + 1]!
-        const vh = data[p4 + gn]!
-        const vm = data[p4 + gn + 1]!
-        const x00 = va + (vb - va) * tx
-        const x10 = vc + (ve - vc) * tx
-        const x01 = vf + (vg - vf) * tx
-        const x11 = vh + (vm - vh) * tx
-        const y0 = x00 + (x10 - x00) * ty
-        const y1 = x01 + (x11 - x01) * ty
-        d = y0 + (y1 - y0) * tz
-        if (d < NEAR) {
-          const gx = ((vb - va) * (1 - ty) + (ve - vc) * ty) * (1 - tz) + ((vg - vf) * (1 - ty) + (vm - vh) * ty) * tz
-          const gy = (x10 - x00) * (1 - tz) + (x11 - x01) * tz
-          const gz = y1 - y0
-          const gl = Math.sqrt(gx * gx + gy * gy + gz * gz)
-          if (gl > 1e-9) {
-            nx = gx / gl
-            ny = gy / gl
-            nz = gz / gl
-          } else ny = 1
-          near = true
-          const lay = layer[i]!
-          if (d < lay + SKIN) {
-            touch = true
-            if (d < lay) {
-              const push = lay - d
-              x += nx * push
-              y += ny * push
-              z += nz * push
-              d = lay
+        lay = layer[i]!
+        fresh = true
+        if (due) {
+          const open = G.far[((fx * INV_COARSE) | 0) + G.fn * (((fy * INV_COARSE) | 0) + G.fn * ((fz * INV_COARSE) | 0))]!
+          if (open >= REACH) {
+            room = (open - lay - SKIN) * G.inv
+            fx = -1
+          }
+        }
+        if (fx >= 0) {
+          const ix = fx | 0
+          const iy = fy | 0
+          const iz = fz | 0
+          const tx = fx - ix
+          const ty = fy - iy
+          const tz = fz - iz
+          const p0 = ix + gn * (iy + gn * iz)
+          const p4 = p0 + G.nn
+          const va = data[p0]!
+          const vb = data[p0 + 1]!
+          const vc = data[p0 + gn]!
+          const ve = data[p0 + gn + 1]!
+          const vf = data[p4]!
+          const vg = data[p4 + 1]!
+          const vh = data[p4 + gn]!
+          const vm = data[p4 + gn + 1]!
+          const x00 = va + (vb - va) * tx
+          const x10 = vc + (ve - vc) * tx
+          const x01 = vf + (vg - vf) * tx
+          const x11 = vh + (vm - vh) * tx
+          const y0 = x00 + (x10 - x00) * ty
+          const y1 = x01 + (x11 - x01) * ty
+          d = y0 + (y1 - y0) * tz
+          room = (d - lay - SKIN) * G.inv
+          if (due ? d < REACH : room < Math.sqrt(vx * vx + vy * vy + vz * vz) * DT) {
+            const gx = ((vb - va) * (1 - ty) + (ve - vc) * ty) * (1 - tz) + ((vg - vf) * (1 - ty) + (vm - vh) * ty) * tz
+            const gy = (x10 - x00) * (1 - tz) + (x11 - x01) * tz
+            const gz = y1 - y0
+            const gl = Math.sqrt(gx * gx + gy * gy + gz * gz)
+            if (gl > 1e-9) {
+              nx = gx / gl
+              ny = gy / gl
+              nz = gz / gl
+            } else ny = 1
+            near = true
+            if (d < lay + SKIN) {
+              touch = true
+              if (d < lay) {
+                const push = lay - d
+                x += nx * push
+                y += ny * push
+                z += nz * push
+                d = lay
+                room = 0
+              }
             }
           }
-        } else clear[i] = (d - NEAR) * G.inv
+        }
       }
       if (due) {
         const h = calm ? K_CALM_H[k]! : STORM_H
@@ -1174,18 +1219,35 @@ export class ParticleEngine {
           phase[i] = ph
         } else {
           if (near) {
-            const f = d * INV_NEAR
             const un = ux * nx + uy * ny + uz * nz
             if (un < 0) {
-              const r = un * (1 - f)
-              ux -= nx * r
-              uy -= ny * r
-              uz -= nz * r
+              if (K_REST[k] === STATE_SNAG) {
+                if (d < NEAR) {
+                  const r = un * (1 - d * INV_NEAR)
+                  ux -= nx * r
+                  uy -= ny * r
+                  uz -= nz * r
+                }
+              } else {
+                const t = d <= FLOOR ? 0 : (d - FLOOR) * INV_RAMP
+                const r = un * (1 - t * t * (3 - 2 * t))
+                const before = ux * ux + uy * uy + uz * uz
+                ux -= nx * r
+                uy -= ny * r
+                uz -= nz * r
+                const after = ux * ux + uy * uy + uz * uz
+                const s = after * DEFLECT_CAP * DEFLECT_CAP > before ? Math.sqrt(before / after) : DEFLECT_CAP
+                ux *= s
+                uy *= s
+                uz *= s
+              }
             }
-            const slip = SLIP + (1 - SLIP) * f
-            ux *= slip
-            uy *= slip
-            uz *= slip
+            if (d < NEAR) {
+              const slip = SLIP + (1 - SLIP) * d * INV_NEAR
+              ux *= slip
+              uy *= slip
+              uz *= slip
+            }
           }
           let ph = phase[i]!
           const ia = (ph * TABLE_K) | 0
@@ -1291,14 +1353,16 @@ export class ParticleEngine {
       z += vz * span
       if (near) {
         const dn = d + (nx * vx + ny * vy + nz * vz) * span
-        const lay = layer[i]!
         if (dn < lay) {
           const push = lay - dn
           x += nx * push
           y += ny * push
           z += nz * push
+          room = 0
         }
-      } else clear[i] = clear[i]! - ((vx < 0 ? -vx : vx) + (vy < 0 ? -vy : vy) + (vz < 0 ? -vz : vz)) * span
+      }
+      if (due) clear[i] = room - Math.sqrt(vx * vx + vy * vy + vz * vz) * (lazy ? span + STORM_H : STORM_H)
+      else if (fresh) clear[i] = room - Math.sqrt(vx * vx + vy * vy + vz * vz) * DT * (STORM_MASK + 1 - ((i + n) & STORM_MASK))
       const r2 = x * x + y * y + z * z
       if (r2 > WALL2) {
         const vr = (vx * x + vy * y + vz * z) / r2
