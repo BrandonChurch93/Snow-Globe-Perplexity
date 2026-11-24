@@ -1,12 +1,13 @@
-# Status 7
+# Status 8
 
-2026-11-24 03:51 UTC
+2026-11-24 04:01 UTC
 
-- Ten build agents are at work, each on its own files: the engine, the film and app, the particles, the interface, the sound side and five groups of harness commands. Six have pushed first work
-- No new picture yet: the first ones of the real stage arrive with the engine agent's next heartbeat
-- phase 2: 0.82 h used of its 6.00 h box
-- allowance (before the review): 2.01 h used of 36.00 h allowed
+- Phase 2, hour 1 of 6. Ten build agents are at work. The first to finish is in: the sheet tools are merged, types clean, 93 tests green. The picture is its first run, on the measuring scene, so it shows the tool and the timing of a shake, not the look.
+- Sound, first takes heard: the glass ring and the two interface sounds fit their lines. The lift, the winter shake and the winter landing came back as plain glass clinks and wait for their remaining takes with plainer words. The winter ambience has used its three takes without one that fits, so winter stays without ambience until the review, and it is on the open list.
+- phase 2: 0.99 h used of its 6.00 h box
+- allowance (before the review): 2.18 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-7-1.jpg`: Nothing new was rendered since the last status. The approved images, for reference
+- `out/stills/status/status-8-1.jpg`: The sheet tool: the whole film in 12 frames on the measuring scene, every shot at least once. (by sheet_tools_builder)
+- `out/stills/status/status-8-2.jpg`: The sheet tool, first run: 12 frames across the first shake. It runs on the measuring scene, so this shows the tool and the shake's timing, not the look. (by sheet_tools_builder)
