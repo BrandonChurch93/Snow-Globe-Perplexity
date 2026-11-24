@@ -15,6 +15,8 @@ export interface GlowLook {
   frostAmount: number
   flicker: number
   cycles: number
+  through?: number
+  paneHot?: number
 }
 
 export function glowPiece(source: THREE.BufferGeometry, kindOf: (i: number, a: number, b: number) => readonly [number, number, number, number]): THREE.BufferGeometry {
@@ -41,51 +43,72 @@ export interface HaloLook {
   pullMm: number
   flicker: number
   cycles: number
+  through?: number
+  wide?: number
+  bloom?: number
+  glare?: readonly [number, number, number]
+}
+
+export interface HaloPoint {
+  size: number
+  rest: number
+  hot: number
+  bloom: number
 }
 
 const HALO_REACH = Math.sqrt(3)
 
-export function haloGeometry(points: readonly (readonly [number, number, number])[], radiusMm: number): THREE.BufferGeometry {
-  const ball = new THREE.OctahedronGeometry(radiusMm * HALO_REACH, 0)
+export function haloGeometry(points: readonly (readonly [number, number, number])[], radiusMm: number, kinds?: readonly HaloPoint[], wide = 1): THREE.BufferGeometry {
+  const ball = new THREE.OctahedronGeometry(radiusMm * HALO_REACH * wide, 0)
   const src = ball.getAttribute('position')
   const n = src.count
   const pos = new Float32Array(points.length * n * 3)
   const at = new Float32Array(points.length * n * 4)
+  const size = new Float32Array(points.length * n * 4)
   points.forEach((p, k) => {
+    const kind = kinds?.[k] ?? { size: 1, rest: 1, hot: 1, bloom: 1 }
+    const s = kind.size
     for (let i = 0; i < n; i++) {
       const o = k * n + i
-      pos.set([p[0] + src.getX(i), p[1] + src.getY(i), p[2] + src.getZ(i)], o * 3)
+      pos.set([p[0] + s * src.getX(i), p[1] + s * src.getY(i), p[2] + s * src.getZ(i)], o * 3)
       at.set([p[0], p[1], p[2], (k * 0.381966) % 1], o * 4)
+      size.set([s, kind.rest, kind.hot, kind.bloom], o * 4)
     }
   })
   const g = new THREE.BufferGeometry()
   g.setAttribute('position', new THREE.BufferAttribute(pos, 3))
   g.setAttribute('aHalo', new THREE.BufferAttribute(at, 4))
+  g.setAttribute('aHaloSize', new THREE.BufferAttribute(size, 4))
   return g
 }
 
-export function haloMaterial(part: string, edge: readonly [number, number, number], core: readonly [number, number, number], look: HaloLook, clock: THREE.IUniform<number>): THREE.ShaderMaterial {
+export function haloMaterial(part: string, edge: readonly [number, number, number], core: readonly [number, number, number], look: HaloLook, clock: THREE.IUniform<number>, storm: THREE.IUniform<number> = { value: 0 }): THREE.ShaderMaterial {
   return stageShader({
     part,
     standIn: false,
     inside: true,
     change: 'light',
-    uniforms: { uClock: clock },
+    uniforms: { uClock: clock, uHaloStorm: storm },
     params: { side: THREE.FrontSide, transparent: false, blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.SrcAlphaFactor, blendDst: THREE.OneMinusSrcAlphaFactor, depthWrite: false },
     vertexPars: `
 attribute vec4 aHalo;
+attribute vec4 aHaloSize;
 varying vec4 vHalo;
+varying vec4 vHaloSize;
 `,
     vertexMain: `
 vHalo = vec4((modelMatrix * vec4(aHalo.xyz, 1.0)).xyz, aHalo.w);
+vHaloSize = aHaloSize;
 #ifdef STAGE_INSIDE
-vec4 haloNear = projectionMatrix * vec4(stageView.xyz * (1.0 - ${look.pullMm.toFixed(2)} / length(stageView.xyz)), 1.0);
+vec4 haloNear = projectionMatrix * vec4(stageView.xyz * (1.0 - ${look.pullMm.toFixed(2)} * aHaloSize.x / length(stageView.xyz)), 1.0);
 gl_Position.z = haloNear.z / haloNear.w * gl_Position.w;
 #endif
 `,
     fragment: `
 uniform float uClock;
+uniform float uHaloStorm;
 varying vec4 vHalo;
+varying vec4 vHaloSize;
 void main() {
   if (uDiag != 0) discard;
   float c = stageChange();
@@ -99,12 +122,19 @@ void main() {
   float h = b * b - dot(oc, oc) + uLens.x * uLens.x;
   vec3 sight = normalize(cameraPosition + d * (-b - sqrt(max(h, 0.0))) - vStageWorld);
   vec3 off = cross(sight, vStageWorld - vHalo.xyz);
-  float g = max(0.0, 1.0 - dot(off, off) / ${(look.radiusMm * look.radiusMm).toFixed(4)});
+  float miss = dot(off, off) / (${(look.radiusMm * look.radiusMm).toFixed(4)} * vHaloSize.x * vHaloSize.x);
+  float g = max(0.0, 1.0 - miss);
+  float far = max(0.0, 1.0 - miss / ${((look.wide ?? 1) ** 2).toFixed(3)});
   float beat = 1.0 + ${look.flicker.toFixed(3)} * sin(6.2831853 * (${look.cycles.toFixed(1)} * uClock + vHalo.w));
   float glow = g * g;
-  float hot = pow(g, 12.0);
+  float hot = pow(g, 12.0) * vHaloSize.z;
   float fog = stageVeil(vStageAux.x);
-  gl_FragColor = vec4(mix(${v3(edge)}, ${v3(core)}, glow) * (1.0 + ${look.hot.toFixed(2)} * hot), clamp((g * g * g * ${look.strength.toFixed(3)} + hot) * beat, 0.0, 1.0) * (1.0 - fog));
+  float seen = min(1.0, ${(look.through ?? 1).toFixed(2)} * (1.0 - fog));
+  float spread = ${(look.bloom ?? 0).toFixed(3)} * vHaloSize.w * max(fog, uHaloStorm) * far * far * far * far * seen;
+  float body = (g * g * g * ${look.strength.toFixed(3)} * vHaloSize.y + hot) * beat * seen;
+  vec3 warm = mix(${v3(edge)}, ${v3(core)}, glow) * (1.0 + ${look.hot.toFixed(2)} * hot);
+  float a = clamp(body + spread, 0.0, 1.0);
+  gl_FragColor = vec4((warm * body + ${v3(look.glare ?? core)} * (1.0 + 1.5 * far * far * far * far) * spread) / max(body + spread, 1e-4), a);
 }
 `,
   })
@@ -192,7 +222,7 @@ void main() {
     float fold = 0.5 + 0.5 * sin(vUv.x * vKind.y * 7.4 + 1.3 * sin(vUv.y * 4.0 + vKind.w * 3.0));
     float side = smoothstep(0.2, 0.46, abs(vUv.x - 0.5)) * smoothstep(0.02, 0.3, vUv.y + 0.25 * abs(vUv.x - 0.5));
     float sway = glowFbm(mm * 1.7 + vKind.w * 11.0);
-    vec3 room = ${v3(look.room)} * (0.5 + 0.8 * lampIn) * (0.86 + 0.28 * sway);
+    vec3 room = ${v3(look.room)} * (0.5 + 0.8 * lampIn) * (0.86 + 0.28 * sway) + ${v3(look.glass)} * (${(look.paneHot ?? 0).toFixed(3)} * lampIn * lampIn);
     vec3 drape = ${v3(look.curtain)} * (0.55 + 0.45 * fold) * (0.7 + 0.5 * lampIn);
     col = mix(room, drape, side * 0.85);
     vec2 corner = min(vUv, 1.0 - vUv) * vKind.yz;
@@ -205,6 +235,7 @@ void main() {
     albedo = ${v3(look.room)};
   }
   float fog = stageVeil(vStageAux.x);
+  col *= min(1.0, ${(look.through ?? 1).toFixed(2)} * (1.0 - fog)) / max(1.0 - fog, 1e-3);
   gl_FragColor = vec4(stageFogged(col, stageGrid(vStageLocal), fog), 1.0);
   if (uDiag != 0) gl_FragColor = stageDiag(albedo, normalize(vN), fog, c, 0.0);
 }

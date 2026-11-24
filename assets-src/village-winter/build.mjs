@@ -27,7 +27,7 @@ const local = (x, y, z) => new THREE.Vector3(x, y, z).applyMatrix4(cottageInv)
 
 const SNOW = lin('#edf1f8')
 const ROOF_TONE = [0.6, 0.53, 0.48]
-const ICE_SHADE = { dark: 0.85, from: 0.45, to: 0.95 }
+const ICE_SHADE = { dark: 0.68, from: 0.15, to: 0.85, back: [0.3, 1] }
 const snow = new Bag('snow')
 const ice = new Bag('ice')
 const decor = new Bag('decor')
@@ -267,7 +267,7 @@ function snowAt(x, z) {
 }
 const BANK_TOP = 0.3
 const BANK_BLEND_MM = 5
-const BILLOW = { cycles: 6.5, deepMm: 2.8 }
+const BILLOW = { cycles: 6.5, deepMm: 2.8, clumps: 21, clumpMm: 0.7, grains: 40, grainMm: 0.32, crestMm: 0.45, crestFine: 0.2 }
 const UNDERCUT = { dark: 0.88, from: 0.985, to: 1.022, arc: [-135, -115, -5, 25] }
 function contact(x, z) {
   let k = 1
@@ -281,10 +281,10 @@ function contact(x, z) {
 }
 
 {
-  const around = 180
+  const around = 480
   const shore = [0.9, 0.93, 0.95, 0.962, 0.972, 0.981, 0.99, 1.0, 1.012, 1.028, 1.05, 1.08]
   const outer = 38
-  const skirt = 14
+  const skirt = 34
   const r = L.innerRadiusMm - 0.6
   const footY = L.collarY - 1.5
   const pc = Math.cos(L.pond.yaw)
@@ -295,6 +295,12 @@ function contact(x, z) {
   const row = around + 1
   const rows = shore.length + outer + skirt
   const topAt = (x, z) => L.moundAt(z) + L.bankAt(x, z) + L.rimAt(x, z)
+  const crestAt = (x, z) => {
+    const l = Math.hypot(x, z) || 1
+    const u = (x / l) * 9
+    const v = (z / l) * 9
+    return BILLOW.crestMm * (fbm(u * 2.1 + 4.2, 0.3, v * 2.1 + 1.1, 2) - 0.1) + BILLOW.crestFine * fbm(u * 7 + 0.6, 2.9, v * 7 + 3.3, 2)
+  }
   for (let j = 0; j <= around; j++) {
     const a = (j / around) * Math.PI * 2
     const dx = Math.cos(a) * pc + Math.sin(a) * ps
@@ -332,12 +338,14 @@ function contact(x, z) {
         x = L.pond.x + dx * t
         z = L.pond.z + dz * t
         y = snowAt(x, z)
-        if (q === 1) y = topAt(x, z)
+        const near = 1 - smooth(0, 2.6, edge - t)
+        y += near * crestAt(x, z)
+        if (q === 1) y = topAt(x, z) + crestAt(x, z)
         bank = BANK_TOP * (1 - smooth(0, BANK_BLEND_MM, edge - t))
       } else {
         const ex = L.pond.x + dx * edge
         const ez = L.pond.z + dz * edge
-        const ey = topAt(ex, ez)
+        const ey = topAt(ex, ez) + crestAt(ex, ez)
         const th = Math.atan2(ez, ex)
         const phi0 = Math.atan2(Math.hypot(ex, ez), -ey)
         const phi1 = Math.acos(clamp(-footY / r, -1, 1))
@@ -347,7 +355,9 @@ function contact(x, z) {
         const uy = -Math.cos(phi)
         const uz = Math.sin(th) * Math.sin(phi)
         const lump = clamp(0.5 + 0.75 * fbm(ux * BILLOW.cycles + 3.1, uy * BILLOW.cycles, uz * BILLOW.cycles + 7.7, 3))
-        const rr = r - 0.15 - BILLOW.deepMm * Math.pow(lump, 1.5) * smooth(0.08, 0.5, q)
+        const clump = clamp(0.5 + 0.8 * fbm(ux * BILLOW.clumps + 1.3, uy * BILLOW.clumps + 5.9, uz * BILLOW.clumps + 2.2, 2))
+        const grain = clamp(0.5 + 0.9 * fbm(ux * BILLOW.grains + 8.1, uy * BILLOW.grains + 0.7, uz * BILLOW.grains + 4.4, 2))
+        const rr = r - 0.15 - BILLOW.deepMm * Math.pow(lump, 1.5) * smooth(0.08, 0.5, q) - (BILLOW.clumpMm * clump * clump + BILLOW.grainMm * grain) * smooth(0.0, 0.16, q)
         x = ux * rr
         y = uy * rr
         z = uz * rr
@@ -449,7 +459,7 @@ function contact(x, z) {
   }
   let vi = 0
   const shadeAt = (p) => {
-    const k = 1 - ICE_SHADE.dark * smooth(ICE_SHADE.from, ICE_SHADE.to, L.pondField(p[0], p[2])) * smooth(0.2, 0.8, (L.pond.z - p[2]) / L.pond.rz)
+    const k = 1 - ICE_SHADE.dark * smooth(ICE_SHADE.from, ICE_SHADE.to, L.pondField(p[0], p[2])) * smooth(ICE_SHADE.back[0], ICE_SHADE.back[1], (L.pond.z - p[2]) / L.pond.rz)
     return [k, k, k]
   }
   ice.add(g, { keepUv: true, color: shadeAt, surf: () => [st[2 * vi++], 0] })

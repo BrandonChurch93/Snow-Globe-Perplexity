@@ -56,7 +56,8 @@ function stone(W, x, y, w, h, o = {}) {
     if (o.rake) py = Math.min(py, o.rake(px))
     P.setXYZ(i, px, py, P.getZ(i) + MORTAR + (o.lift ?? 0))
   }
-  const tone = mul3(pick(o.tones ?? STONES), 0.62 + 0.7 * R())
+  const vary = o.vary ?? 0.7
+  const tone = mul3(pick(o.tones ?? STONES), 0.97 - vary / 2 + vary * R())
   const c = mix3(tone, DIRT, o.dirt === false ? 0 : smooth(1.4, -1.4, y) * 0.5)
   solid.add(g, { matrix: W.M, color: c, surf: stoneSurf(), uv: planar(W.U, W.V), uvOffset: off() })
 }
@@ -249,6 +250,7 @@ const right = { M: frame(P3(C.halfWidth, 0, 0), neg(U3), UP, V3), U: neg(U3), V:
 const rear = { M: frame(P3(0, 0, -C.halfLength), neg(V3), UP, neg(U3)), U: neg(V3), V: UP }
 const BASE = -1.8
 const rake = (x) => C.wall + C.rise * (1 - Math.abs(x) / C.halfWidth) - 0.1
+const BLOCK = { rowH: 1.06, rowJ: 0.36, wide: 1.7, wideJ: 0.9, gap: 0.075, stack: 0.1, drift: 0.05, stone: { depth: 0.3, vary: 0.42, pillow: { square: 6.5, shear: 0.11, wobble: 0.05, lump: 0.3, tilt: 0.36, edge: 6.5 } } }
 const gableTop = (y) => (y <= C.wall ? C.halfWidth + 0.3 : C.halfWidth * (1 - (y - C.wall) / C.rise))
 const doorR = C.door.width / 2 + 1.47
 const doorSpring = C.door.height - C.door.width / 2
@@ -266,13 +268,13 @@ wall(front, {
     { x0: C.door.across - doorR, x1: C.door.across + doorR, y0: -9, y1: doorSpring, arch: { cx: C.door.across, cy: doorSpring, r: doorR } },
     { x0: win.across - win.width / 2 - 0.55, x1: win.across + win.width / 2 + 0.55, y0: win.sill - 0.95, y1: win.sill + win.height + 1.25 },
   ],
-})
+}, BLOCK)
 mortar(front, -C.halfWidth, C.halfWidth, BASE, C.wall, true)
 archAt(front)
 doorAt(front)
 windowAt(front, { x: win.across, sill: win.sill, width: win.width, height: win.height }, paneGable)
 
-wall(left, { x0: -C.halfLength - 0.3, x1: C.halfLength + 0.3, y0: BASE, y1: C.wall + 0.1, holes: [{ x0: side.along - side.width / 2 - 0.55, x1: side.along + side.width / 2 + 0.55, y0: side.sill - 0.95, y1: side.sill + side.height + 1.25 }] })
+wall(left, { x0: -C.halfLength - 0.3, x1: C.halfLength + 0.3, y0: BASE, y1: C.wall + 0.1, holes: [{ x0: side.along - side.width / 2 - 0.55, x1: side.along + side.width / 2 + 0.55, y0: side.sill - 0.95, y1: side.sill + side.height + 1.25 }] }, BLOCK)
 mortar(left, -C.halfLength, C.halfLength, BASE, C.wall + 0.1, false)
 windowAt(left, { x: side.along, sill: side.sill, width: side.width, height: side.height }, paneSide)
 
