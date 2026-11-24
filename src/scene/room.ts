@@ -6,12 +6,11 @@ export const ROOM_WINDOW = { halfWidth: 0.3, halfHeight: 0.62, edge: 0.075, lean
 export const ROOM_STRIP = { halfWidth: 0.055, halfHeight: 0.46, edge: 0.04, lean: -0.15 }
 export const ROOM_ROUGH_SPREAD = 1.4
 export const ROOM_SPILL = { spread: 0.373, floor: 0.42, gain: 0.75 }
-export const ROOM_GLOW = [
-  { azDeg: 3, elDeg: 9, spread: 0.012, gain: 1.6 },
-  { azDeg: 13, elDeg: 13.5, spread: 0.004, gain: 4 },
-]
+export const ROOM_WASH = { spread: 0.07, at: 0.16, gain: 1.5 }
+export const ROOM_GLOW = [{ azDeg: 21, elDeg: 9, spread: 0.003, gain: 5 }]
+export const ROOM_SEEN = 0.012
 
-const WASH = 0.045
+const WASH = ROOM_WASH.spread
 const f = (v: number) => v.toFixed(4)
 const glowTerms = ROOM_GLOW.map((g) => {
   const az = (g.azDeg * Math.PI) / 180
@@ -53,10 +52,11 @@ vec3 roomSource(vec3 d, vec3 axis, vec3 col, vec2 size, float s, float lean) {
 vec3 roomWall(vec3 d, float s) {
   float back = 0.5 - 0.5 * d.z / max(length(d.xz), 1e-4);
   float v = ${f(WASH)} + 2.0 * s * s;
-  float wash = (0.35 + 0.65 * back * back) * exp(-d.y * d.y / v) * sqrt(${f(WASH)} / v);
+  float up = d.y - ${f(ROOM_WASH.at)};
+  float wash = (0.35 + 0.65 * back * back) * exp(-up * up / v) * sqrt(${f(WASH)} / v);
   float spill = exp(-(1.0 - dot(d, uRoomRim)) / (${f(ROOM_SPILL.spread)} + s));
   float glow = ${glowTerms};
-  return uRoomWall * ((1.0 + 1.6 * wash) * (${f(ROOM_SPILL.floor)} + ${f(ROOM_SPILL.gain)} * spill + glow));
+  return uRoomWall * ((1.0 + ${f(ROOM_WASH.gain)} * wash) * (${f(ROOM_SPILL.floor)} + ${f(ROOM_SPILL.gain)} * spill + glow));
 }
 vec3 roomSources(vec3 d, float s) {
   return roomSource(d, uRoomKey, uRoomKeyCol, vec2(${f(ROOM_WINDOW.halfWidth)}, ${f(ROOM_WINDOW.halfHeight)}), length(vec2(${f(ROOM_WINDOW.edge)}, s)), ${f(ROOM_WINDOW.lean)})
@@ -68,6 +68,11 @@ vec3 stageRoomBlur(vec3 d, float s) {
 }
 vec3 stageRoom(vec3 d) {
   return stageRoomBlur(d, 0.0);
+}
+vec3 stageRoomSeen(vec3 d, float rough) {
+  float s = ${f(ROOM_ROUGH_SPREAD)} * rough * rough;
+  float above = 0.5 + 0.5 * roomErf((d.y + 0.005) * 0.70710678 / (0.018 + s));
+  return mix(uRoomFloor, roomWall(d, s), above) + roomSources(d, s) * ${f(ROOM_SEEN)};
 }
 vec3 stageRoomLights(vec3 d, float soft) {
   vec3 sum = vec3(0.0);

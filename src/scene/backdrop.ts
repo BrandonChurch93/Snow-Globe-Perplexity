@@ -7,7 +7,7 @@ import type { SeasonKit } from '../seasons/kit'
 import { FAR_GLSL, ROOM_RADIUS_MM, farApertureMm, farFromMm, lensUniforms, poseById, setLens } from './cameras'
 import type { StageFrame } from './frame'
 import { centreHeightMm } from './layout'
-import { ROOM_GLSL, ROOM_LIGHTS, roomUniforms } from './room'
+import { ROOM_GLSL, ROOM_LIGHTS, ROOM_SEEN, roomUniforms } from './room'
 import { SLAB_SHAPE_GLSL } from './surface'
 
 const RAD = Math.PI / 180
@@ -16,13 +16,14 @@ const CLEAR_UP = 9 * RAD
 
 export const DISCS = {
   zones: [
-    { share: 0.62, azFrom: 5.2, azTo: 15.2, elFrom: -6.6, elTo: 3.9, sidePower: 0.8, rightShare: 0.5, levelFrom: 0, depthFrom: 0 },
-    { share: 0.16, azFrom: 4, azTo: 20, elFrom: 4.2, elTo: 10.5, sidePower: 1, rightShare: 0.7, levelFrom: 0.5, depthFrom: 0.45 },
-    { share: 0.22, azFrom: 15.2, azTo: 48, elFrom: -6.6, elTo: 12, sidePower: 1, rightShare: 0.5, levelFrom: 0, depthFrom: 0 },
+    { share: 0.6, azFrom: 5.8, azTo: 15.2, elFrom: -6.6, elTo: 3.9, sidePower: 0.8, rightShare: 0.5, levelFrom: 0, depthFrom: 0 },
+    { share: 0.2, azFrom: 5, azTo: 22, elFrom: 4.4, elTo: 11, sidePower: 1, rightShare: 0.75, levelFrom: 0.3, depthFrom: 0.45 },
+    { share: 0.2, azFrom: 15.2, azTo: 48, elFrom: -6.6, elTo: 12, sidePower: 1, rightShare: 0.5, levelFrom: 0, depthFrom: 0 },
   ],
-  stringMost: 4,
-  stringAcrossDeg: 1.1,
-  stringDownDeg: 2.7,
+  stringMost: 3,
+  stringAcrossDeg: 0.8,
+  stringDownDeg: 1.5,
+  stringLevel: 0.18,
   stringDepth: 0.16,
   nearMm: 1000,
   spanMm: 2000,
@@ -30,7 +31,7 @@ export const DISCS = {
   sizeMm: [0.8, 3.5] as [number, number],
   largeShare: 0.1,
   largeMm: [5, 11] as [number, number],
-  dimmest: 0.028,
+  dimmest: 0.035,
   decades: 1.57,
   dimPower: 1.6,
   colourByLevel: 0.6,
@@ -43,7 +44,7 @@ export const DISCS = {
   roomLightGain: 0.8,
 }
 
-export const WALL = { seen: 0.012, streaks: 0.16, folds: 0.2, mottle: 0.22 }
+export const WALL = { seen: ROOM_SEEN, streaks: 0.16, fine: 0.1, folds: 0.2, mottle: 0.22 }
 
 interface Emitter {
   at: THREE.Vector3
@@ -80,7 +81,8 @@ void main() {
   float bands = 0.5 * sin(az * 23.0 + 1.3 + 0.9 * el) + 0.3 * sin(az * 41.0 + 4.1 - 1.4 * el) + 0.2 * sin(az * 67.0 + 0.7 + 0.5 * el);
   float folds = wallNoise(vec2(az * 11.0 + 3.0, el * 1.7 + 5.0)) - 0.5;
   float mottle = wallNoise(vec2(az * 3.3 + 7.0, el * 4.1 + 2.0)) + 0.5 * wallNoise(vec2(az * 7.9 + 1.0, el * 9.3 + 8.0)) - 0.75;
-  float marks = 1.0 + ${f4(WALL.streaks)} * keep * bands + ${f4(WALL.folds)} * folds + ${f4(WALL.mottle)} * mottle;
+  float fine = wallNoise(vec2(az * 260.0, el * 5.0 + 3.0)) + 0.6 * wallNoise(vec2(az * 610.0 + 9.0, el * 8.0 + 1.0)) - 0.8;
+  float marks = 1.0 + ${f4(WALL.streaks)} * keep * bands + ${f4(WALL.fine)} * keep * fine + ${f4(WALL.folds)} * folds + ${f4(WALL.mottle)} * mottle;
   vec3 col = roomWall(d, blur) * max(marks, 0.2) + roomSources(d, blur) * ${f4(WALL.seen)};
   gl_FragColor = vec4(col, 1.0);
   if (uDiag != 0) gl_FragColor = stageDiag(col, -d, 0.0, stageChange(), 0.0);
@@ -158,7 +160,7 @@ void main() {
   if (r >= ${f4(DISCS.quad)}) discard;
   float body = 1.0 - smoothstep(1.0 - vLook.x, 1.0 + vLook.x, r);
   float edge = 1.0 + vLook.y * smoothstep(0.45, 0.93, r);
-  float dust = 1.0 - 0.07 * smoothstep(0.62, 0.85, discNoise(vDisc * 5.3 + 17.0)) - 0.05 * (discNoise(vDisc * 2.1 + 3.0) - 0.5);
+  float dust = 1.0 - 0.1 * smoothstep(0.62, 0.85, discNoise(vDisc * 5.3 + 17.0 * vLook.w)) - 0.12 * (discNoise(vDisc * 2.1 + 3.0 * vLook.w) - 0.5);
   float seen = 1.0;
   if (vCat.w < 0.5 && vEmitter.y < 0.0 && vLensAt.y > 0.0) {
     float s = vLensAt.y / (vLensAt.y - vEmitter.y);
@@ -204,6 +206,8 @@ export class Backdrop {
         const side = rng.next() < zone.rightShare ? 1 : -1
         const azMid = zone.azFrom + (zone.azTo - zone.azFrom) * Math.pow(rng.next(), zone.sidePower)
         const elMid = rng.range(zone.elFrom, zone.elTo)
+        const levelMid = rng.next()
+        const pickMid = rng.next()
         const reachMid = D.nearMm + D.spanMm * (zone.depthFrom + (1 - zone.depthFrom) * Math.pow(rng.next(), D.depthPower))
         for (let k = 0; k < members; k++) {
           const lone = members === 1
@@ -213,11 +217,11 @@ export class Backdrop {
           const at = hero.position.clone().add(new THREE.Vector3(Math.sin(az) * Math.cos(el), Math.sin(el), -Math.cos(az) * Math.cos(el)).multiplyScalar(reach))
           const large = rng.next() < D.largeShare
           const size = large ? rng.range(D.largeMm[0], D.largeMm[1]) : rng.range(D.sizeMm[0], D.sizeMm[1])
-          const level = zone.levelFrom + (1 - zone.levelFrom) * rng.next()
+          const level = zone.levelFrom + (1 - zone.levelFrom) * Math.min(1, Math.max(0, levelMid + (lone ? 0 : rng.range(-D.stringLevel, D.stringLevel))))
           const shown = D.dimmest * Math.pow(10, D.decades * Math.pow(level, D.dimPower))
           const depth = at.clone().sub(hero.position).dot(forward)
           const heroRadius = size + hero.apertureMm * Math.abs(depth / hero.focusMm - 1) + farMm * Math.max(0, depth / fromMm - 1)
-          this.emitters.push({ at, size, shown, level, pick: rng.next(), energy: (shown * heroRadius * heroRadius) / (size * size), heroRadius })
+          this.emitters.push({ at, size, shown, level, pick: Math.min(0.999, Math.max(0, pickMid + (lone ? 0 : rng.range(-D.stringLevel, D.stringLevel)))), energy: (shown * heroRadius * heroRadius) / (size * size), heroRadius })
         }
       }
     })

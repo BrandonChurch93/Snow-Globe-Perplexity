@@ -31,7 +31,7 @@ export const grade = {
   grainSizePx: 1.25,
   grainChroma: 0.35,
 
-  fringePx: 1.1,
+  fringePx: 0.7,
   fringePower: 1.5,
 
   cornerDark: 0.2,

@@ -169,26 +169,26 @@ async function detail() {
       height[k] += tall * radius * mm * Math.sqrt(Math.max(0, 1 - u * u))
     })
   }
-  for (let i = 0; i < 900; i++) {
+  for (let i = 0; i < 110; i++) {
     const [x, y] = place()
     grain(x, y, 0.7 + 1.1 * Math.pow(rand(), 1.6), 0.12 + 0.4 * rand(), 0.5)
   }
-  for (let i = 0; i < 110; i++) {
+  for (let i = 0; i < 40; i++) {
     const [x, y] = place()
     grain(x, y, 1.8 + 2.6 * Math.pow(rand(), 1.8), 0.5 + 0.5 * rand(), 0.6)
   }
-  for (let i = 0; i < 15; i++) {
+  for (let i = 0; i < 14; i++) {
     const [x, y] = place()
-    const r = 3.6 + 5.4 * Math.pow(rand(), 2)
+    const r = 3.6 + 8.5 * Math.pow(rand(), 2)
     const lobes = 2 + Math.floor(rand() * 3)
     for (let l = 0; l < lobes; l++) grain(x + (rand() - 0.5) * r * 1.3, y + (rand() - 0.5) * r * 1.3, r * (0.45 + 0.5 * rand()), 0.75 + 0.25 * rand(), 0.7)
   }
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 3; i++) {
     let [x, y] = place()
     let angle = rand() * Math.PI * 2
     const length = (1.5 + 7 * rand()) / mm
     const curl = (rand() - 0.5) * 0.05
-    const bright = 0.35 + 0.35 * rand()
+    const bright = 0.2 + 0.25 * rand()
     for (let t = 0; t < length; t += 0.6) {
       grain(x, y, 0.95, bright, 0.25)
       x += Math.cos(angle) * 0.6
@@ -225,7 +225,7 @@ async function stone() {
   const ridge2 = warp(fbm(size, 7, 7, 4, 0.5, rand), size, wy, wx, 55)
   const where = spread(fbm(size, 2, 2, 3, 0.5, rand))
   const cloud = spread(warp(fbm(size, 4, 4, 6, 0.55, rand), size, wx, wy, 40))
-  const marksA = fbm(size, 2, 56, 4, 0.6, rand)
+  const marksA = fbm(size, 2, 22, 3, 0.45, rand)
   const marks = spread(warp(marksA, size, wx, wy, 70))
   const patch = spread(fbm(size, 3, 3, 3, 0.5, rand))
   const out = Buffer.alloc(size * size * 3)
@@ -234,7 +234,7 @@ async function stone() {
     const thin = Math.pow(1 - Math.min(1, Math.abs(ridge2[i]) * 4.2), 14) * 0.5 * smooth(0.45, 0.8, 1 - where[i])
     out[i * 3] = Math.round(255 * clamp(main + thin, 0, 1))
     out[i * 3 + 1] = Math.round(255 * clamp(Math.pow(cloud[i], 1.6), 0, 1))
-    out[i * 3 + 2] = Math.round(255 * clamp(smooth(0.5, 0.9, marks[i]) * smooth(0.35, 0.75, patch[i]), 0, 1))
+    out[i * 3 + 2] = Math.round(255 * clamp(smooth(0.38, 0.95, marks[i]) * smooth(0.3, 0.8, patch[i]), 0, 1))
   }
   const file = `${OUT}/scene-slab-stone.lin.tile.png`
   await sharp(out, { raw: { width: size, height: size, channels: 3 } }).png({ compressionLevel: 9 }).toFile(file)
