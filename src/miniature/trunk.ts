@@ -136,7 +136,7 @@ export function trunkRidge(phi: number, h: number): number {
 
 export function trunkRadius(phi: number, h: number): number {
   const R = trunkGirth(h)
-  let r = R * (1 + 0.32 * (trunkRidge(phi, h) - 0.6))
+  let r = R * (1 + 0.1 * (trunkRidge(phi, h) - 0.6))
   if (h < ROOT_RISE) {
     const a = phi + trunkTwist(h)
     const g = h <= 0 ? 1 - 0.1 * h : Math.pow(1 - h / ROOT_RISE, 2.2)
@@ -553,7 +553,7 @@ export function bakeGlow(g: THREE.BufferGeometry, lights: readonly GlowLight[], 
       const d = Math.sqrt(d2) || 1e-6
       const facing = Math.max(0, (dx * nx + dy * ny + dz * nz) / d)
       const wr = l.wrap ?? wrapLight
-      const w = (l.power * (wr + (1 - wr) * facing)) / (1 + d2 / reach2) ** 1.5
+      const w = (l.power * Math.max(0, wr + (1 - wr) * facing)) / (1 + d2 / reach2) ** 1.5
       r += l.color[0] * w
       gr += l.color[1] * w
       b += l.color[2] * w
@@ -621,7 +621,7 @@ export function buildTrunk(part: string, lights: readonly GlowLight[] = [], tint
     color: new THREE.Color(tint[0], tint[1], tint[2]),
     vertexColors: true,
     roughness: 0.86,
-    extra: { normalMap: normal, normalScale: new THREE.Vector2(1.1, 1.1) },
+    extra: { normalMap: normal, normalScale: new THREE.Vector2(1.8, 1.8) },
     hook: glowHook,
     key: 'trunk',
   })
