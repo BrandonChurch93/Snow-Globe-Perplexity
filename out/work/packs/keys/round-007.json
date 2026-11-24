@@ -1,0 +1,130 @@
+{
+  "round": 7,
+  "phase": 3,
+  "unit": "winter",
+  "tier": "review",
+  "motionTier": "review",
+  "record": false,
+  "limits": {
+    "longEdge": 1400,
+    "maxPixels": 1140000,
+    "maxFiles": 10
+  },
+  "engineHash": "",
+  "roles": {
+    "R4": {
+      "parts": [
+        {
+          "folder": "out/work/packs/round-007/R4-1",
+          "message": "out/work/packs/round-007/R4-1.message.md",
+          "files": [
+            {
+              "name": "set-A-01.jpg",
+              "what": "the lift of the shake, from node tools/sheet.mjs --motion lift --shot test --tier review: out/work/sheets/motion-lift-test-preview-review-1.jpg",
+              "source": "out/work/sheets/motion-lift-test-preview-review-1.jpg",
+              "sha256": "586790f3040e20efd11e354bd2d428a2464ff6b12abfc060ae5c12895f292acc",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-A-02.jpg",
+              "what": "the lift of the shake, from node tools/sheet.mjs --motion lift --shot test --tier review: out/work/sheets/motion-lift-test-preview-review-2.jpg",
+              "source": "out/work/sheets/motion-lift-test-preview-review-2.jpg",
+              "sha256": "7c90a8f1dd5d30270ad9dace37a659b1bca0239995ac2e001559f989c8f3e93e",
+              "width": 1149,
+              "height": 498
+            },
+            {
+              "name": "set-B-01.jpg",
+              "what": "the strokes of the shake, from node tools/sheet.mjs --motion strokes --shot test --tier review: out/work/sheets/motion-strokes-test-preview-review-1.jpg",
+              "source": "out/work/sheets/motion-strokes-test-preview-review-1.jpg",
+              "sha256": "bd6d97583c9d653989e2ee50acf7f42ef65f64a7ff9e15bd49c653c6a67bf2a2",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-B-02.jpg",
+              "what": "the strokes of the shake, from node tools/sheet.mjs --motion strokes --shot test --tier review: out/work/sheets/motion-strokes-test-preview-review-2.jpg",
+              "source": "out/work/sheets/motion-strokes-test-preview-review-2.jpg",
+              "sha256": "a685a74b99b76066b257dc39f97c564c01e490e2ae11b56b27626df223c358f2",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-B-03.jpg",
+              "what": "the strokes of the shake, from node tools/sheet.mjs --motion strokes --shot test --tier review: out/work/sheets/motion-strokes-test-preview-review-3.jpg",
+              "source": "out/work/sheets/motion-strokes-test-preview-review-3.jpg",
+              "sha256": "879a7398972a4ed4665b13d2c5f4a344df540decc074856301c13ccc7ed09d0a",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-C-01.jpg",
+              "what": "the set down of the shake, from node tools/sheet.mjs --motion setdown --shot test --tier review: out/work/sheets/motion-setdown-test-preview-review-1.jpg",
+              "source": "out/work/sheets/motion-setdown-test-preview-review-1.jpg",
+              "sha256": "445f098abbc014766f0bd580d720050c792830211fe119c53a71fc391058b77c",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-C-02.jpg",
+              "what": "the set down of the shake, from node tools/sheet.mjs --motion setdown --shot test --tier review: out/work/sheets/motion-setdown-test-preview-review-2.jpg",
+              "source": "out/work/sheets/motion-setdown-test-preview-review-2.jpg",
+              "sha256": "20e70ba3478636faa7cfe81871530efd0f61c25d4625affad80f67b97c367a9c",
+              "width": 1149,
+              "height": 498
+            },
+            {
+              "name": "set-D-01.jpg",
+              "what": "the first second after the landing of the shake, from node tools/sheet.mjs --motion landing --shot test --tier review: out/work/sheets/motion-landing-test-preview-review-1.jpg",
+              "source": "out/work/sheets/motion-landing-test-preview-review-1.jpg",
+              "sha256": "60b5d7fe9f54a98247de7c0a58ef5f2e9c52645531d004c736806e9272f6e3f0",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-D-02.jpg",
+              "what": "the first second after the landing of the shake, from node tools/sheet.mjs --motion landing --shot test --tier review: out/work/sheets/motion-landing-test-preview-review-2.jpg",
+              "source": "out/work/sheets/motion-landing-test-preview-review-2.jpg",
+              "sha256": "fa0af7e952af92060b3301e389ed552cb9e1c7602f6a735f21dd5916753b28e0",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-D-03.jpg",
+              "what": "the first second after the landing of the shake, from node tools/sheet.mjs --motion landing --shot test --tier review: out/work/sheets/motion-landing-test-preview-review-3.jpg",
+              "source": "out/work/sheets/motion-landing-test-preview-review-3.jpg",
+              "sha256": "65a4f378450e57b75569cb7d77ed2186338f69aada6035fddb112163089b1216",
+              "width": 1149,
+              "height": 498
+            }
+          ]
+        },
+        {
+          "folder": "out/work/packs/round-007/R4-2",
+          "message": "out/work/packs/round-007/R4-2.message.md",
+          "files": [
+            {
+              "name": "set-E-01.jpg",
+              "what": "one sheet across the whole shake and the clearing that follows, from node tools/sheet.mjs --shot test --tier review: out/work/sheets/shot-test-preview-review.jpg",
+              "source": "out/work/sheets/shot-test-preview-review.jpg",
+              "sha256": "51d13411b8d8ab5f43afd6420271c755cabecd9b2ceb42b53b68055aef8c6d85",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-F-01.jpg",
+              "what": "the globe at rest across several seconds, from node tools/sheet.mjs --first 288 --last 575 --tier review: out/work/sheets/range-film-288-575-preview-review.jpg",
+              "source": "out/work/sheets/range-film-288-575-preview-review.jpg",
+              "sha256": "943dc2a1ac7c3bdb8a05bb1e7488bfb81223e1545b138fac09995da3629c8903",
+              "width": 1149,
+              "height": 986
+            }
+          ]
+        }
+      ],
+      "missing": [],
+      "notes": []
+    }
+  }
+}
