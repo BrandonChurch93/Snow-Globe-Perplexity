@@ -148,14 +148,15 @@
     {
       "name": "veil-winter",
       "unit": "winter",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/winter",
         "public/assets/winter",
         "src/core/chunks/veil.ts"
       ],
       "standInHash": "8c7791d5c09652b1",
-      "commit": "2530677"
+      "commit": "a12d4de",
+      "note": "agent/p3-flakes at 70a5d7b: gone at rest, follows turbulence on the real shake"
     },
     {
       "name": "arrival-winter",
@@ -171,26 +172,28 @@
     {
       "name": "particle-flake",
       "unit": "winter",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/particles/draw",
         "src/particles/engine",
         "src/seasons/winter"
       ],
       "standInHash": "15af7dd90a8ca659",
-      "commit": "2530677"
+      "commit": "a12d4de",
+      "note": "agent/p3-flakes at 70a5d7b: flakes afloat and lying, lit by the light engine's functions; first report lists what is still wrong (round, even, white; storm reads as grey fur)"
     },
     {
       "name": "particle-glitter",
       "unit": "winter",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/particles/draw",
         "src/particles/engine",
         "src/seasons/winter"
       ],
       "standInHash": "15af7dd90a8ca659",
-      "commit": "2530677"
+      "commit": "a12d4de",
+      "note": "agent/p3-flakes at 70a5d7b"
     },
     {
       "name": "base-spring",
