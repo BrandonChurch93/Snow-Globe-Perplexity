@@ -30,19 +30,10 @@ export const LENS_LOOK = {
   glassFrom: 0.78,
   maxBlurPx: 60,
   farShrink: 0.36,
-  maxStreakPx: 50,
-  sampleSpanSteps: 0.25,
-  stormSpanSteps: 22,
-  stormFrom: 0.3,
-  stormTo: 0.62,
+  maxStreakPx: 160,
+  stormFrom: 0.03,
+  stormTo: 0.3,
   referenceHeightPx: 1080,
-}
-
-export const FLOW_LOOK = {
-  nodes: 14,
-  most: 30000,
-  minWeight: 1.5,
-  ownShare: 0.5,
 }
 
 export const LIGHT_LOOK = {
@@ -73,8 +64,9 @@ export const EDGE_HIGH = 1.25
 export const EDGE_DISC = 0.5
 export const PIXEL_SIGMA2 = 0.5
 export const STREAK_HOLD = 0.7
-export const STREAK_TAPER = 0.6
-export const STREAK_REACH = 1.5
+export const STREAK_CAPSULE = 0.8
+export const STREAK_TAPER = 0.75
+export const STREAK_REACH = 1.05
 export const BLUR_HOLD = 0.62
 export const BLUR_STRICT_FROM_PX = 5
 export const BLUR_STRICT_TO_PX = 24
@@ -83,9 +75,25 @@ export const SIZE_HIGH = 1.7
 export const SIZE_SKEW = 2
 export const STRETCH_LOW = 0.1
 export const STRETCH_HIGH = 1.5
-export const GLITTER_STREAK = 0.5
-export const STORM_SOFT = 0.08
-export const STORM_SHARP_SHARE = 0.22
-export const CLUMP = { floor: 0.06, gain: 1.9, most: 2.8, core: 0.3 }
+export const STORM_SMEAR_SHARE = 0.012
+export const STORM_SHARP_SHARE = 0.008
+export const STORM_FINE_SHARE = 0.06
+export const STORM_SMEAR = 0.75
+export const STORM_SHARP = 0.9
+export const STORM_FINE_HIGH = 0.5
+export const STORM_FINE_LOW = 0.1
+export const STORM_THIN = 0.1
+export const STORM_SMEAR_LOW_PX = 1.2
+export const STORM_SMEAR_HIGH_PX = 4.6
+export const STORM_SOFT_TOP = 4.5
+export const STORM_MOST_PX = 0.5
+export const STORM_GLITTER_PX = 0.5
+export const STORM_GLITTER = 0.9
+export const STORM_GLITTER_FROM = 0.6
+export const STORM_GLITTER_TO = 2.2
+export const STORM_FLASH = 1.6
+export const STORM_GLINT = 0.012
+export const FLASH_WHITE = 0.7
+export const CLUMP = { floor: 0.15, gain: 1.2, most: 1.6, core: 0.5 }
 export const GLINT_LOW = 0.9925
 export const GLINT_HIGH = 0.9994
