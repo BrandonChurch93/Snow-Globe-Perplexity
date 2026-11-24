@@ -686,6 +686,20 @@ Merged into `main`, each verified here with types clean and the tests green (126
   - `shake_builder`, `agent/p3-shake`: `src/shake/` (part `shake`; open item 29).
   - Ten build agents is the most allowed (`sandbox.maxAgents` less `sandbox.criticSlots`). `repo_courier` stays idle as the push fallback. Sound's remaining takes are done by the Builder against the finished shake, not by an agent.
 
+- 2026-11-24 13:18 UTC. Phase 3, step 6: the ten first builders ended at their limit with every part built, and winter went to its first round at once. The fix work of that round goes to ten fresh build agents (the one replacement the limits table allows per job; the light and the shake's change share one agent, and loading is a new job), each in its own sandbox at the strongest reasoning setting, each with `tools/briefs/p3b/COMMON.md`, its own brief in `tools/briefs/p3b/` sent verbatim, the first builder's final report and two pair pictures. Hard limit `budget.buildAgentMaxHours` each (to about 16:18 UTC); `main` is frozen for the next round at about 15:30 UTC. They commit no built file: `/root` makes those again with `npm run make` and `npm run texpack` and commits them once per round (decision 48).
+  - `tree_finisher`, `agent/p3-tree`: `src/seasons/winter/mini/tree.ts`, `src/miniature/trunk.ts`, `assets-src/trunk/`, `assets-src/tree-winter/`.
+  - `village_finisher`, `agent/p3-village`: `src/seasons/winter/mini/village.ts`, `palette.ts`, `src/miniature/` except the trunk, `src/scene/layout.ts`, `assets-src/village/`, `assets-src/village-winter/`.
+  - `base_finisher`, `agent/p3-base`: `src/seasons/winter/base.ts`, `assets-src/base-winter/`.
+  - `frost_finisher`, `agent/p3-frost`: `src/seasons/winter/frost.ts`, `arrival.ts`, `assets-src/frost-winter/`.
+  - `flake_finisher`, `agent/p3-flakes`: `src/particles/draw/`, `src/core/chunks/veil.ts`, `src/seasons/winter/veil.ts`, `assets-src/flakes/`.
+  - `liquid_finisher`, `agent/p3-liquid`: `src/globe/liquid.ts`, `src/particles/engine/`.
+  - `scene_finisher`, `agent/p3-scene`: `src/scene/surface.ts`, `backdrop.ts`, `room.ts`, `cameras.ts`, `passes.ts`, `src/post/`, `src/seasons/winter/backdrop.ts`, `assets-src/scene/`.
+  - `glass_finisher`, `agent/p3-glass`: `src/globe/shell.ts`, `src/globe/lens.ts`, `tools/lib/lens.mjs`, `assets-src/glass/`.
+  - `light_finisher`, `agent/p3-light`: `src/scene/lighting.ts`, `lightgrid.ts`, `src/core/chunks/light.ts`, `src/seasons/winter/rig.ts`, `src/shake/`.
+  - `load_finisher`, `agent/p3-load`: the texture pack tool, the asset loader, `src/app/`, `src/main.ts`, the Vite config, `package.json` (open item 30: the first load).
+  - `round_renderer` (a render agent, not a build agent), `agent/p3-round3-pack`: measures and the pack of round 3 at `final` tier on commit `2faac9e`; limit 90 minutes.
+  - `repo_courier` was told to stop watching the looks branches and stays idle as the push fallback.
+
 ## Rounds
 
 One line per round: its number, the unit, the commit it judged, each part ticked off as it finished, the scores, and what changed next.
@@ -693,6 +707,8 @@ One line per round: its number, the unit, the commit it judged, each part ticked
 - Round 1 · blockout (Phase 2, the floor round) · judges commit `48afed3` · started 2026-11-24 06:36 UTC. Parts: [x] build · [x] machine checks (06:50: G1 to G12 and G14 green on the judged build `e4a8b9bdbc7a55ec`; D2 and D3 are red until step 14) · [x] measures (06:51: M1 and M6 on seven winter stills, 14 lines, 0 red) · [x] pack (06:55: 19 files in two parts, 0 parts missing; built at `b94e722`, which differs from `48afed3` only in `kit/` and `audio/` text) · [x] critic part 1 (06:57: 8, one severe issue on the spring hold) · [x] critic part 2 (07:08: 5, two severe and five major issues on five cameras and two screens) · [x] issues read (07:22: each of the eight issues has a fix under way or a decision; `SUMMARY.md` written) · [x] fixes (07:08 to 07:58, 50 of the 90 minutes allowed: decisions 34 and 35, the cameras `surface`, `interior`, `low` and `macro` framed again, 7 percent of room over the controls on the wide screens, every storm thinned within its first bar; merged as `9ade96d`) · [x] logged (open items 10 to 17, `scorecards/round-001/SUMMARY.md`)
 
 - Round 2 · blockout (Phase 2, the floor round; the last the config allows) · judges commit `9ade96d` · started 2026-11-24 07:57 UTC. Parts: [x] build · [x] machine checks (G1 to G12 and G14 green at 08:09; D2 and D3 wait for step 14) · [x] measures (M1 and M6 for winter at draft: 14 lines, none red) · [x] pack (19 files in two parts, none missing, 08:15) · [x] critic part 1 (`claude_opus_5_5`, answered 08:38: 6, four major, none severe) · [x] critic part 2 (`gpt_6_2_astra`, answered 08:21: 8, two major, none severe) · [x] issues read · [x] logged (merged score 6 against a bar of 7, no severe issue open: round 2 does not pass, and it was the last blockout round; `scorecards/round-002/SUMMARY.md`; open items 25 to 29)
+
+- Round 3 · winter (Phase 3, the look lock; winter's first round) · judges commit `2faac9e` · started 2026-11-24 13:17 UTC. Parts: [ ] build · [ ] machine checks · [ ] measures (M1 to M6 at `final` tier) · [ ] pack (`final` tier, the `full` set; rendered by a render agent in its own sandbox, fetched from `agent/p3-round3-pack`) · [ ] R1 · [ ] R2 (the jury) · [ ] R3 · [ ] R4 · [ ] issues read · [ ] fixes · [ ] logged
 
 ## Final scores
 
