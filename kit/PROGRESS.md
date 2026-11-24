@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 25 · 2026-11-24 09:45 UTC
+Status 26 · 2026-11-24 10:01 UTC
 
-- `out/stills/status/status-25-1.jpg`: The approved winter image's edges in yellow, laid over the stand-in globe drawn with the reference camera: glass, collar and foot line up, everything inside is still a stand-in.
-- `out/stills/status/status-25-2.jpg`: Approved image above, the build below, same camera. This pair is what each part is now built against.
-- `out/stills/status/status-25-3.jpg`: Fall hold after the thinning, at 36.5, 38.4, 41 and 45 s (landing at 36 s), with the move down to the low camera (by particles_engineer_2)
-- `out/stills/status/status-25-4.jpg`: Spring hold after the thinning, at 12.5, 14.4, 17 and 21 s (landing at 12 s): the miniature is out of the storm one bar after the landing (by particles_engineer_2)
+- `out/stills/status/status-26-1.jpg`: The approved winter image with the regions each builder works against. Ten builders started at 10:00 UTC, one owner per file, each building its part of winter for real: no stand-in may remain in what a still shows.
+- `out/stills/status/status-26-2.jpg`: The opening camera, four candidates on stand-ins. Bottom right is the chosen frame: chimney, window, door, floor, lamppost and the foot of the tree, no edge of the glass (by engine_engineer_2)
+- `out/stills/status/status-26-3.jpg`: The hero camera after decision 35, winter at rest, draft: 7.8 percent above the glass, 4.2 percent under the foot of the base (it was 10.3 and 1.7) (by root)
+- `out/stills/status/status-26-4.jpg`: The app's screen after the new rule, at rest, at the top of the lift and at the widest stroke: 1920 by 1080 above, 390 by 844 and 1024 by 1366 below. The foot of the base now stands 7 percent of the height above the controls on the two wide screens (by film_app_engineer_2)
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 09:45 UTC
-clock: phase 3, tick of 0.2 minutes
-phase 3: 1.30 h used of its 11.00 h box
-allowance (before the review): 7.91 h used of 36.00 h allowed
-all time before the review: 7.91 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 10:01 UTC
+clock: phase 3, tick of 0.3 minutes
+phase 3: 1.58 h used of its 11.00 h box
+allowance (before the review): 8.19 h used of 36.00 h allowed
+all time before the review: 8.19 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
@@ -497,6 +497,8 @@ Numbered. What, why, and the date.
 40. 2026-11-24 09:20 UTC. The base is 33 mm tall, not 42, and the island's top is 51 mm above the surface, not 60 (`globe.baseHeightMm`, `globe.islandLevelMm`). This is a conflict the kit did not foresee, settled by the reading closest to the approved image, and it is listed for the `REVIEW` block. What was measured on `references/approved/winter-rest.png` (2816 by 1584): the glass is a circle of radius 549 px centred at (1409, 646); the foot of the base is 1069 px wide (872 to 1941), its side tips lie at about y 1340 and its lowest front point at about y 1445. Through any lens that is consistent with the foot being seen from above as an ellipse (its front edge drops about 105 px below its side tips), the centre of the glass stands 77 mm (76 to 78) above the surface. The config's numbers put it at 88 mm (42 less 14 plus 60), which only fits the picture if the foot is seen exactly edge on. The cause: the kit took the 84.5 percent of the frame's height that the globe covers on screen as its height seen side on; the front edge of a 116 mm foot seen from above drops well below the base's true height. With 42 mm and the glass at its approved size, the foot ends 2 percent above the frame's bottom edge (the approved image has 8.8 percent), which is also what the blockout critics marked (open items 14 and 29, decisions 29, 30 and 35). 33 mm is the lowest value that keeps `framing.heroFillMin` true at the approved size of the glass (139 mm over a frame of 173 mm is 0.803); the picture itself would ask for about 31. The island keeps its place inside the glass, 28 mm under the centre. `globe.*` is not among the values `kit/05-ARCHITECTURE.md` lets the Builder tune, so this change stands on `kit/00-README.md` (\"pick the reading that gets the still closer to its approved image and log the choice\") and `kit/06-ASSETS.md`; one number each puts it back. The cameras' aim heights moved down with the globe by 9 mm (`macro`, `interior`, `low`; `base` to 12.5).
 41. 2026-11-24 09:20 UTC. The reference camera, used to build every part against the approved winter image: field of view 16 degrees (the config's lens), 618.8 mm from the centre of the glass, 3.0 degrees above it, looking down 4.5 degrees, no turn. It puts the glass, the foot's width, the foot's side tips and its front edge where the approved image has them. A longer lens with a steeper view fits the foot equally well (8 degrees at 1.24 m, looking down 9), but opens the collar's ring too far (a drop of 43 px at a width of 1400 against about 28 measured and 34 for the chosen camera) and ends the slab 10 cm behind the globe. `cameras.hero` is this camera moved up by 4.6 mm, so that the lifted glass stays inside the frame through a shake (decision 29 stands; the holds of the film lower the aim by `MOVES.holdAimDropMm` and so show the approved framing): distance 616, pitch 4.5, aim 67.4. The final fit is made on rendered frames in step 3.
 
+42. 10:00. How Phase 3's work is cut. `kit/08-BUILD-ORDER.md` step 2 names eight owners of parts and sound. The Builder cut three of them in two, so that no agent holds more than it can finish inside `budget.buildAgentMaxHours` at the bar: the miniature into the village (with the layout and the ground) and the tree; the particles into the simulation with the liquid, and the drawing with the veil; winter's frost and arrival apart from the light rig and grid. That gives ten, the most build agents allowed. Shared contracts the Builder wrote before the start, so no two agents edit one file: `src/scene/room.ts` (the unseen room as one module with three fixed functions, owned by the scene's builder, called by the glass, the bases and the light engine), `ParticleSource.cover` with `src/core/chunks/cover.ts` (what has come to rest as a thickness map any material can read), the fixed exports of each winter file, and the list of files no builder edits. The sound takes stay with the Builder.
+
 ## Notes from Brandon
 
 Numbered, in his words, with the date and how each was applied. Review round items carry their round's number.
@@ -650,6 +652,19 @@ Merged into `main`, each verified here with types clean and the tests green (126
 - 08:11 started five render agents for the blockout film (step 14), each on its own sandbox VM, commit `07cfdb3` (engine hash `b98352868abb52c6`, the same sources as round 2's commit `9ade96d`), film B, `draft`, `preview`: `film_renderer_1` frames 0 to 718 on `agent/film-chunks-1`, `film_renderer_2` 720 to 1438 on `agent/film-chunks-2`, `film_renderer_3` 1440 to 2158 on `agent/film-chunks-3`, `film_renderer_4` 2160 to 2878 on `agent/film-chunks-4`, `film_renderer_5` 2880 to 3598 on `agent/film-chunks-5`. Brief: `tools/briefs/chunks.md`.
 
 - 08:16 started round 2's two critics, fresh, each on its own sandbox VM with only its part of the pack and the pack's message, word for word: `reviewer_r2_a` judges part 1 (the ten film sheets) on `claude_opus_5_5`, `reviewer_r2_b` judges part 2 (six camera pairs and three screens) on `gpt_6_2_astra`, both asked for reasoning `max`. Round 1 used `gpt_6_2_sol` and `gemini_4_carbon`.
+
+- 2026-11-24 10:00 UTC. Phase 3, step 2: ten build agents started, each in its own sandbox at the strongest reasoning setting, each with `tools/briefs/COMMON.md`, `tools/briefs/P3.md` and its own brief in `tools/briefs/p3/` sent verbatim. Hard limit `budget.buildAgentMaxHours` each (to about 13:00 UTC); a first report is asked for at about 90 minutes. One owner per file:
+  - `glass_builder`, `agent/p3-glass`: `src/globe/shell.ts`, `src/globe/lens.ts`, `tools/lib/lens.mjs` (parts `glass`, `liquid` as drawn).
+  - `liquid_builder`, `agent/p3-liquid`: `src/globe/liquid.ts`, `src/particles/engine/` (parts `liquid`, `particle-engine`; open items 2, 3, 6, 20, 21; M6; the cover map).
+  - `flake_builder`, `agent/p3-flakes`: `src/particles/draw/`, `src/core/chunks/veil.ts`, `src/seasons/winter/veil.ts` (parts `particle-flake`, `particle-glitter`, `veil-winter`; M4, M5).
+  - `scene_builder`, `agent/p3-scene`: `src/scene/surface.ts`, `backdrop.ts`, `room.ts`, `cameras.ts`, `passes.ts`, `src/post/`, `src/seasons/winter/backdrop.ts` (parts `surface`, `backdrop`, `lens`).
+  - `base_builder`, `agent/p3-base`: `src/seasons/winter/base.ts`, `assets-src/base-winter/` (part `base-winter`, with the icicles).
+  - `village_builder`, `agent/p3-village`: `src/miniature/` except the trunk, `src/seasons/winter/mini/village.ts`, `src/scene/layout.ts` (parts `miniature-winter`, `light-winter`).
+  - `tree_builder`, `agent/p3-tree`: `src/miniature/trunk.ts`, `src/seasons/winter/mini/tree.ts` (the same two parts).
+  - `frost_builder`, `agent/p3-frost`: `src/seasons/winter/frost.ts`, `arrival.ts` (parts `glass-dressing-winter`, `surface-dressing-winter`, `arrival-winter`).
+  - `light_builder`, `agent/p3-light`: `src/scene/lighting.ts`, `lightgrid.ts`, `src/core/chunks/light.ts`, `src/seasons/winter/rig.ts` (parts `light-engine`, `light-winter`).
+  - `shake_builder`, `agent/p3-shake`: `src/shake/` (part `shake`; open item 29).
+  - Ten build agents is the most allowed (`sandbox.maxAgents` less `sandbox.criticSlots`). `repo_courier` stays idle as the push fallback. Sound's remaining takes are done by the Builder against the finished shake, not by an agent.
 
 ## Rounds
 
@@ -832,3 +847,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 2026-11-24 09:22 UTC. Status 24 posted: the approved winter image measured (decisions 40 and 41), pictures `out/work/calib/fit-check.jpg`, `el-fit.jpg`, `ends.jpg`. 304 tests green at `a1d141f`.
 
 - 2026-11-24 09:45 UTC. Status 25 posted: the Phase 3 scaffold and the fit tool (pictures `out/work/fit/winter-lines.jpg`, `winter-pair.jpg`). The winter miniature split in two owners (`src/seasons/winter/mini/village.ts`, `tree.ts`, `0ad117f`), the parts register's file lists follow the new layout and the `lens` flag moved to `src/post/post.ts`. 305 tests green. Next: the Phase 3 briefs and ten build agents.
+
+- 2026-11-24 10:01 UTC. Status 26 posted: ten build agents running (picture `out/work/status/plan-p3.jpg`, the approved image with each builder's region). Briefs committed in `578bc78`, agents logged in `5d84277`.
