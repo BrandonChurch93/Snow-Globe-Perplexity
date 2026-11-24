@@ -180,12 +180,12 @@ vec2 baseTilt = baseSlope(baseDetail.rg) * 0.42 + baseSlope(baseCarve.rg) * (1.3
 `
 
 const WOOD_BENT = `
-float baseSide = smoothstep(-0.2, 0.75, vBasePos.x / max(length(vBasePos.xz), 1.0));
+float baseSide = smoothstep(0.0, 0.75, vBasePos.x / max(length(vBasePos.xz), 1.0));
 float baseUp = max(smoothstep(0.06, 0.5, baseObjectNormal.y), 0.5 * smoothstep(17.0, 11.0, vBasePos.y));
-float baseFrost = baseUp * baseSide * sqrt(baseSide) * (1.0 - 0.8 * smoothstep(12.0, 22.0, vBasePos.y)) * smoothstep(0.3, 0.8, baseNoise(vBasePos * 1.3) * 0.7 + baseNoise(vBasePos * 4.3) * 0.3 + 0.25 * baseSide);
+float baseFrost = baseUp * baseSide * sqrt(baseSide) * (1.0 - 0.5 * smoothstep(14.0, 26.0, vBasePos.y)) * smoothstep(0.3, 0.8, baseNoise(vBasePos * 1.3) * 0.7 + baseNoise(vBasePos * 4.3) * 0.3 + 0.25 * baseSide);
 float baseDust = (0.1 + 0.9 * baseUp) * (0.35 + 0.65 * baseNoise(vBasePos * 3.1)) * 0.08 + 0.12 * baseCavity;
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.07, 0.07, 0.075), clamp(baseDust, 0.0, 0.5));
-diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.6, 0.66, 0.75), clamp(baseFrost * 0.7, 0.0, 0.7));
+diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.88, 0.8, 0.83), clamp(baseFrost * 2.2 * mix(0.42, 1.7, baseHigh), 0.0, 0.92));
 roughnessFactor = mix(roughnessFactor, 0.92, clamp(baseDust * 1.6 + baseFrost, 0.0, 0.85));
 float baseWall = smoothstep(0.7, 2.0, length(baseTilt)) * baseCarved;
 roughnessFactor = mix(roughnessFactor, 0.86, 0.75 * baseWall);
@@ -212,9 +212,9 @@ vec2 baseTilt = baseSlope(baseDetail.rg) * 0.55;
 
 const BRASS_BENT = `
 float baseSide = smoothstep(-0.2, 0.75, vBasePos.x / max(length(vBasePos.xz), 1.0));
-float baseUp = smoothstep(0.06, 0.5, baseObjectNormal.y);
+float baseUp = max(smoothstep(0.06, 0.5, baseObjectNormal.y), 0.45);
 float baseFrost = baseUp * baseSide * sqrt(baseSide) * smoothstep(0.3, 0.8, baseNoise(vBasePos * 1.3) * 0.7 + baseNoise(vBasePos * 4.3) * 0.3 + 0.25 * baseSide);
-diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.6, 0.66, 0.75), clamp(baseFrost * 0.5, 0.0, 0.5));
+diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.92, 0.84, 0.72), clamp(baseFrost * 1.3, 0.0, 0.8));
 metalnessFactor = mix(metalnessFactor, 0.0, clamp(baseFrost * 0.6, 0.0, 0.6));
 roughnessFactor = mix(roughnessFactor, 0.92, clamp(baseFrost * 0.9, 0.0, 0.8));
 `
