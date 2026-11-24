@@ -3,6 +3,7 @@ import { config } from '../config'
 import { stageShader } from '../core/materials'
 import { stream } from '../core/rng'
 import type { SeasonKit } from '../seasons/kit'
+import { ROOM_RADIUS_MM } from './cameras'
 import { centreHeightMm } from './layout'
 
 export const ROOM_LIGHTS = 12
@@ -82,7 +83,7 @@ export class Backdrop {
     })
 
     const dome = (this.dome = new THREE.Mesh(
-      new THREE.SphereGeometry(5000, 48, 24),
+      new THREE.SphereGeometry(ROOM_RADIUS_MM, 48, 24),
       stageShader({
         part: 'backdrop',
         uniforms: { ...roomUniforms },
