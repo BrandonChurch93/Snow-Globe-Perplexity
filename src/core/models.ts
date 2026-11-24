@@ -1,4 +1,5 @@
 import type * as THREE from 'three'
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { binary } from './textures'
 
@@ -8,7 +9,9 @@ const loading = new Map<string, Promise<void>>()
 export function prepareModel(path: string): Promise<void> {
   let p = loading.get(path)
   if (!p) {
-    p = new GLTFLoader().parseAsync(binary(path), '').then((gltf) => {
+    // The web set packs a model's streams with EXT_meshopt_compression (tools/lib/glbpack.mjs); the full set's models have none and are read as before.
+    const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder)
+    p = loader.parseAsync(binary(path), '').then((gltf) => {
       const found = new Map<string, THREE.BufferGeometry>()
       gltf.scene.traverse((o) => {
         const mesh = o as THREE.Mesh

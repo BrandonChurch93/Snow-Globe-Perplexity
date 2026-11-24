@@ -216,7 +216,7 @@ function grow(ctx, p, h, o, depth = 0) {
   let s = 0
   const kids = o.kids
   const next = kids ? [kids.start ?? kids.gap * rng.next(), kids.start ?? kids.gap * rng.next()] : null
-  const line = ctx.keep && depth <= ctx.keepDepth ? { pts: [], w: [], h: [], t: [], depth } : null
+  const line = ctx.keep && depth <= ctx.keepDepth ? { pts: [], w: [], f: [], h: [], t: [], depth } : null
   let way = 0
   for (let i = 0; i < steps; i++) {
     const u0 = i / steps
@@ -250,23 +250,32 @@ function grow(ctx, p, h, o, depth = 0) {
     const B = space.map(q)
     const M = space.map(space.project(mix3(p, q, 0.5)))
     field.stroke(A.x, A.y, B.x, B.y, M.m, M.pxPerMm, wa, wb, ha, hb, t, t1, o.spark ?? 0.6, o.kappa ?? 2, o.reach ?? 0.12, o.power ?? 1.7)
+    let fa = 0
+    let fb = 0
     if (o.film) {
       const f = o.film
-      const fa = f.profile ? Math.max(f.w1, f.w0 * f.profile(u0)) : f.w1 + (f.w0 - f.w1) * shape(u0)
-      const fb = f.profile ? Math.max(f.w1, f.w0 * f.profile(u1)) : f.w1 + (f.w0 - f.w1) * shape(u1)
+      fa = f.profile ? Math.max(f.w1, f.w0 * f.profile(u0)) : f.w1 + (f.w0 - f.w1) * shape(u0)
+      fb = f.profile ? Math.max(f.w1, f.w0 * f.profile(u1)) : f.w1 + (f.w0 - f.w1) * shape(u1)
       const ga = f.h1 + (f.h0 - f.h1) * shape(u0)
       const gb = f.h1 + (f.h0 - f.h1) * shape(u1)
       field.stroke(A.x, A.y, B.x, B.y, M.m, M.pxPerMm, fa, fb, ga, gb, t, t1, f.spark ?? 0.15, f.kappa ?? 2.5, 0, f.power ?? 1.3)
+    }
+    if (o.halo) {
+      const f = o.halo
+      const wide = (u) => Math.max(f.w1, f.w0 * (f.profile ? f.profile(u) : shape(u)))
+      field.stroke(A.x, A.y, B.x, B.y, M.m, M.pxPerMm, wide(u0), wide(u1), f.h, f.h, t + f.late, t1 + f.late, f.spark ?? 0.1, f.kappa ?? 3, 0, f.power ?? 1.6)
     }
     if (line) {
       if (i === 0) {
         line.pts.push(p)
         line.w.push(wa)
+        line.f.push(fa)
         line.h.push(ha)
         line.t.push(t)
       }
       line.pts.push(q)
       line.w.push(wb)
+      line.f.push(fb)
       line.h.push(hb)
       line.t.push(t1)
     }
@@ -585,6 +594,37 @@ function buildGlass() {
   return field
 }
 
+// ---------- the snow heaped against the foot ----------
+// A height in millimetres over the slab. It rises from under the rim of the foot, so the lifted globe leaves a soft edge,
+// runs out as far as the profile says at that angle, and is lumpy at two sizes so it has lit tops and shaded sides.
+function driftProfile(deg) {
+  const P = L.slab.drift.profile
+  const n = P.length
+  let k = 0
+  while (k < n && P[k].deg <= deg) k++
+  const a = P[(k - 1 + n) % n]
+  const b = P[k % n]
+  const a0 = k === 0 ? a.deg - 360 : a.deg
+  const b0 = k === n ? b.deg + 360 : b.deg
+  const u = fade(clamp((deg - a0) / (b0 - a0)))
+  return { reachMm: a.reachMm + (b.reachMm - a.reachMm) * u, mm: a.mm + (b.mm - a.mm) * u }
+}
+function driftAt(x, z) {
+  const D = L.slab.drift
+  const out = Math.hypot(x, z) - footR
+  if (out <= -D.underMm || out >= D.outMm) return 0
+  const p = driftProfile(Math.atan2(z, x) / RAD)
+  const lobe = smooth(0.25, 0.75, fbm(x * 0.045 + 11, 2.7, z * 0.045, 3))
+  const reach = p.reachMm * (1 - D.lobe * 0.5 + D.lobe * lobe)
+  const far = Math.max(0, out) / reach
+  const q = far + (fbm(x * 0.42, 9.4, z * 0.42, 3) - 0.5) * D.fray * smooth(0.12, 0.6, far)
+  if (q >= 1) return 0
+  const hump = smooth(D.hump[0], D.hump[1], fbm(x / D.lumpMm[0], 5.1, z / D.lumpMm[0], 3))
+  const small = fbm(x / D.lumpMm[1] + 9, 1.3, z / D.lumpMm[1], 3)
+  const lumps = (D.lump[0] + D.lump[1] * hump) * (1 - D.lump[2] + 2 * D.lump[2] * small)
+  return p.mm * smooth(-D.underMm, D.wallMm, out) * Math.pow(1 - Math.max(q, 0), D.fall) * lumps
+}
+
 // ---------- the slab ----------
 function slabArm(length, rng, t0) {
   const twig = (l, u, r) => ({ step: 0.3, w0: r.range(0.16, 0.24), w1: 0.07, h0: r.range(0.35, 0.5), h1: 0.16, speed: 0.4, wobble: 0.02, spark: r.range(0.5, 1), kappa: 3, reach: 0.12, taper: 0.8, power: 1.5 })
@@ -622,6 +662,7 @@ function slabArm(length, rng, t0) {
       power: 1.6,
     }
     o.film = { w0: r.range(S.bladeMm[0], S.bladeMm[1]) * (0.6 + 0.4 * Math.min(1, l / 3)), w1: 0.15, h0: r.range(S.blade[0], S.blade[1]), h1: 0.16, profile: feather(r.range(0.22, 0.4), r.range(0.55, 0.85)), kappa: 2.5, spark: 0.4 }
+    o.halo = { w0: o.film.w0 * S.halo[0], w1: 0.4, h: r.range(S.halo[1], S.halo[2]), late: 2, profile: feather(0.3, 0.5) }
     if (strong) {
       o.stretch = r.range(S.strongStretch[0], S.strongStretch[1])
       const full = l * o.stretch
@@ -648,6 +689,7 @@ function slabArm(length, rng, t0) {
     taper: 0.8,
     power: 1.8,
     film: { w0: rng.range(S.bodyMm[0], S.bodyMm[1]), w1: 0.5, h0: rng.range(0.62, 0.82), h1: 0.1, kappa: 2.5, spark: 0.35, power: 1.15 },
+    halo: { w0: S.bodyMm[1] * S.halo[0], w1: 1, h: S.halo[2], late: 2 },
     kids: {
       gap: rng.range(S.gapMm[0], S.gapMm[1]),
       start: rng.range(1.5, 3),
@@ -765,7 +807,7 @@ function buildSlab() {
   for (let i = 0; i < L.slab.grains; i++) {
     const deg = rng.range(-180, 180)
     const r = footR + 0.5 + Math.min(70, -Math.log(1 - rng.next() * 0.985) * 15)
-    const size = 0.11 + 0.42 * Math.pow(rng.next(), 2.4)
+    const size = L.slab.grainMm[0] + L.slab.grainMm[1] * Math.pow(rng.next(), 2.6)
     const x = r * Math.cos(deg * RAD)
     const z = r * Math.sin(deg * RAD)
     const t = 2 + (r - footR) * 0.95 + rng.range(0, 7)
@@ -797,21 +839,69 @@ function buildSlab() {
   return { field, lines, grains }
 }
 
-// ---------- real small shapes on the slab ----------
+// ---------- real shapes on the slab ----------
+// One mesh in three kinds, drawn in this order: the heap, then the ridges of the arms and the grains, each sorted far to near
+// for the hero camera so that their soft edges blend over what is behind them.
+// uv = (when it appears, how deep the snow is there: 0 a film, 1 a full body), uv1 = (0 at a soft edge to 1 inside, how open it is to the sky).
 function slabShapes(lines, grains, tTop) {
   const rng = stream('frost-shapes')
   const pos = []
   const uv = []
-  const idx = []
+  const uv1 = []
   const mm = L.slab.heightMm
   const when = (t) => clamp((t / tTop) * 0.96)
-  const vert = (x, y, z, t, r) => {
+  const vert = (x, y, z, t, deep, edge, open) => {
     pos.push(x, y, z)
-    uv.push(when(t), r)
+    uv.push(when(t), deep)
+    uv1.push(edge, open)
     return pos.length / 3 - 1
   }
   const S = L.slab.shapes
-  const count = { ridges: 0, lumps: 0, far: 0 }
+  const D = L.slab.drift
+  const count = { heap: 0, ridges: 0, lumps: 0 }
+
+  const heap = []
+  const row = D.segments
+  const r0 = footR - D.underMm
+  const dr = (D.underMm + D.outMm) / D.rings
+  const tall = new Float32Array((D.rings + 1) * row)
+  const spot = (i, k) => {
+    const r = r0 + i * dr
+    const a = (k / row) * 2 * Math.PI
+    return [r * Math.cos(a), r * Math.sin(a)]
+  }
+  for (let i = 1; i < D.rings; i++) for (let k = 0; k < row; k++) {
+    const [x, z] = spot(i, k)
+    tall[i * row + k] = driftAt(x, z)
+  }
+  const tallAt = (i, k) => (i < 0 || i > D.rings ? 0 : tall[i * row + (((k % row) + row) % row)])
+  const ids = new Int32Array(tall.length).fill(-1)
+  const corner = (i, k) => {
+    const j = i * row + (k % row)
+    if (ids[j] < 0) {
+      const [x, z] = spot(i, k % row)
+      const r = r0 + i * dr
+      const si = Math.max(1, Math.round(D.openMm / dr))
+      const sk = Math.max(1, Math.round(D.openMm / ((r * 2 * Math.PI) / row)))
+      const around = (tallAt(i - si, k) + tallAt(i + si, k) + tallAt(i, k - sk) + tallAt(i, k + sk)) / 4
+      const open = clamp(1 - (around - tall[j]) * D.cavity, D.openMin, 1)
+      const t = 0.5 + Math.max(0, r - footR) * 0.8 + 2 * fbm(x * 0.5, 9.4, z * 0.5, 3)
+      ids[j] = vert(x, tall[j], z, t, smooth(0, D.deepMm, tall[j]), clamp(tall[j] / D.softMm), open)
+    }
+    return ids[j]
+  }
+  for (let i = 0; i < D.rings; i++) for (let k = 0; k < row; k++) {
+    if (Math.max(tallAt(i, k), tallAt(i + 1, k), tallAt(i, k + 1), tallAt(i + 1, k + 1)) <= D.minMm) continue
+    const a = corner(i, k)
+    const b = corner(i + 1, k)
+    const c = corner(i, k + 1)
+    const d = corner(i + 1, k + 1)
+    heap.push([a, c, b], [b, c, d])
+  }
+  count.heap = heap.length
+
+  const small = []
+  const onDrift = (y) => 1 - (1 - S.ridgeOnDrift) * smooth(0.15, 1.4, y)
   for (const line of lines) {
     const n = line.pts.length
     if (n < 3 || (line.depth > 0 && line.w[0] < S.branchMinMm)) continue
@@ -826,44 +916,78 @@ function slabShapes(lines, grains, tTop) {
       const d = norm([b[0] - a[0], 0, b[2] - a[2]])
       const lat = [-d[2], 0, d[0]]
       const sway = Math.sin(id * 40 + i * 0.37)
-      const w = line.w[i] * (1 + 0.12 * sway + rng.range(-0.05, 0.05))
-      const h = Math.min(line.h[i] * mm * (0.8 + 0.1 * sway), w * 0.6) * S.ridgeTall
-      const off = (0.22 * Math.sin(id * 70 + i * 0.23) + rng.range(-0.05, 0.05)) * w
+      const low = onDrift(driftAt(p[0], p[2]))
       const t = line.t[i]
-      const row = [
-        vert(p[0] - lat[0] * w, 0, p[2] - lat[2] * w, t + 2 * w, id),
-        vert(p[0] + lat[0] * (off - 0.4 * w), h * rng.range(0.84, 0.95), p[2] + lat[2] * (off - 0.4 * w), t, id),
-        vert(p[0] + lat[0] * (off + 0.4 * w), h * rng.range(0.84, 0.95), p[2] + lat[2] * (off + 0.4 * w), t, id),
-        vert(p[0] + lat[0] * w, 0, p[2] + lat[2] * w, t + 2 * w, id),
-      ]
-      if (prev) for (let k = 0; k < 3; k++) idx.push(prev[k], prev[k + 1], row[k], prev[k + 1], row[k + 1], row[k])
-      if (prev) count.ridges += 6
-      prev = row
+      const end = i === 0 || i === n - 1 ? 0 : 1
+      const at = (side, y, tt, edge, open) => {
+        const x = p[0] + lat[0] * side
+        const z = p[2] + lat[2] * side
+        const under = driftAt(x, z)
+        return vert(x, under + y, z, tt, Math.max(smooth(0, D.deepMm, under), open * open * (line.depth > 0 ? S.leafDeep : S.bodyDeep)), edge * end, open)
+      }
+      let rowNow
+      if (line.depth === 0) {
+        // An arm: a broad rounded body of snow with a low crest along the spine.
+        const body = Math.max(line.f[i] * S.bodyShare * (1 + 0.14 * sway + rng.range(-0.05, 0.05)), line.w[i])
+        const high = S.bodyTall * Math.pow(line.f[i] / line.f[0], S.bodyFall) * low * (0.85 + 0.3 * fbm(p[0] * 0.3, id * 9, p[2] * 0.3, 2))
+        const core = Math.min(line.w[i], 0.3 * body)
+        const crest = Math.min(line.h[i] * mm, core * S.ridgeSteep) * S.crestTall * low
+        const off = 0.08 * body * Math.sin(id * 70 + i * 0.23)
+        rowNow = [
+          at(-body, 0, t + 2.5 * body, 0, 0.5),
+          at(-0.72 * body, 0.5 * high, t + 1.8 * body, S.bodyEdge, 0.7),
+          at(-0.42 * body, 0.86 * high, t + body, 1, 0.88),
+          at(off - 0.9 * core, high + 0.35 * crest, t, 1, 0.95),
+          at(off, high + crest * rng.range(0.9, 1), t, 1, 1),
+          at(off + 0.9 * core, high + 0.35 * crest, t, 1, 0.95),
+          at(0.42 * body, 0.86 * high, t + body, 1, 0.88),
+          at(0.72 * body, 0.5 * high, t + 1.8 * body, S.bodyEdge, 0.7),
+          at(body, 0, t + 2.5 * body, 0, 0.5),
+        ]
+      } else {
+        // A side leaf: fat and rounded, as wide as the blade the map draws for it.
+        const core = line.w[i] * (1 + 0.12 * sway + rng.range(-0.05, 0.05))
+        const w = Math.max(core, line.f[i] * S.leafShare)
+        const h = Math.min(line.h[i] * mm * (0.8 + 0.1 * sway), core * S.ridgeSteep + (w - core) * 0.25) * S.ridgeTall * low
+        const off = (0.2 * Math.sin(id * 70 + i * 0.23) + rng.range(-0.05, 0.05)) * w
+        const crest = h * rng.range(0.9, 1)
+        rowNow = [
+          at(-w, 0, t + 2 * w, 0, 0.55),
+          at(off - 0.66 * w, 0.56 * h, t + w, S.leafEdge, 0.78),
+          at(off - 0.22 * w, crest, t, 1, 1),
+          at(off + 0.22 * w, crest * rng.range(0.94, 1), t, 1, 1),
+          at(off + 0.66 * w, 0.56 * h, t + w, S.leafEdge, 0.78),
+          at(w, 0, t + 2 * w, 0, 0.55),
+        ]
+      }
+      const strips = rowNow.length - 1
+      if (prev) for (let k = 0; k < strips; k++) small.push([prev[k], prev[k + 1], rowNow[k]], [prev[k + 1], rowNow[k + 1], rowNow[k]])
+      if (prev) count.ridges += 2 * strips
+      prev = rowNow
     }
   }
-  const lump = (x, z, r, h, t, y0 = 0) => {
-    const id = rng.next()
-    const tall = Math.min(h * mm, r * rng.range(0.45, 0.8))
-    const top = vert(x + rng.range(-0.2, 0.2) * r, y0 + tall, z + rng.range(-0.2, 0.2) * r, t, id)
+  const lump = (x, z, r, h, t, y0 = 0, soft = 1) => {
+    const base = y0 + driftAt(x, z)
+    const high = Math.min(h * mm, r * rng.range(0.5, 0.85))
+    const top = vert(x + rng.range(-0.15, 0.15) * r, base + high, z + rng.range(-0.15, 0.15) * r, t, soft, soft, 1)
     const ring = []
     const mid = []
-    const sides = r >= S.lumpFullMm ? 7 : 5
+    const sides = r >= S.lumpFullMm ? 8 : 6
     const turn = rng.range(0, 6.28)
     for (let k = 0; k < sides; k++) {
       const a = turn + (k / sides) * 2 * Math.PI
-      const rr = r * rng.range(0.9, 1.2)
-      ring.push(vert(x + rr * Math.cos(a), y0, z + rr * Math.sin(a), t, id))
-      const rm = r * rng.range(0.6, 0.78)
-      mid.push(vert(x + rm * Math.cos(a + 0.45), y0 + tall * rng.range(0.62, 0.8), z + rm * Math.sin(a + 0.45), t, id))
+      const rr = r * rng.range(0.95, 1.2)
+      ring.push(vert(x + rr * Math.cos(a), base, z + rr * Math.sin(a), t, 0.3 * soft, 0, 0.5))
+      const rm = r * rng.range(0.62, 0.76)
+      mid.push(vert(x + rm * Math.cos(a + 0.4), base + high * rng.range(0.66, 0.8), z + rm * Math.sin(a + 0.4), t, 0.75 * soft, soft * (soft < 1 ? 0.55 : 1), 0.85))
     }
     for (let k = 0; k < sides; k++) {
       const k1 = (k + 1) % sides
-      idx.push(ring[k], mid[k], ring[k1], ring[k1], mid[k], mid[k1], mid[k], top, mid[k1])
+      small.push([ring[k], mid[k], ring[k1]], [ring[k1], mid[k], mid[k1]], [mid[k], top, mid[k1]])
     }
+    count.lumps += sides * 3
   }
-  const before = idx.length
-  for (const g of grains) if (g.r >= S.grainMinMm) lump(g.x, g.z, g.r, g.h, g.t, (g.base ?? 0) * mm)
-  count.lumps = (idx.length - before) / 3
+  for (const g of grains) if (g.base !== undefined && g.r >= S.grainMinMm) lump(g.x, g.z, g.r, g.h, g.t, g.base * mm)
   for (const f of L.slab.farPatches) {
     const cx = f.mm * Math.cos(f.deg * RAD)
     const cz = f.mm * Math.sin(f.deg * RAD)
@@ -871,13 +995,16 @@ function slabShapes(lines, grains, tTop) {
     for (let k = 0; k < lumps; k++) {
       const a = rng.range(0, 2 * Math.PI)
       const d = f.sizeMm * Math.pow(rng.next(), 0.7)
-      lump(cx + d * Math.cos(a) * 1.6, cz + d * Math.sin(a) * 0.8, rng.range(0.4, 1.3), rng.range(0.25, 0.6), tTop * (0.55 + 0.4 * rng.next()))
+      lump(cx + d * Math.cos(a) * 1.6, cz + d * Math.sin(a) * 0.8, rng.range(1.2, 2.6), rng.range(0.12, 0.3), tTop * (0.55 + 0.4 * rng.next()), 0, S.farSoft)
     }
   }
+  const depth = (tri) => pos[tri[0] * 3 + 2] + pos[tri[1] * 3 + 2] + pos[tri[2] * 3 + 2]
+  const far = (list) => list.map((tri) => ({ tri, z: depth(tri) })).sort((a, b) => a.z - b.z).flatMap((e) => e.tri)
   const g = new THREE.BufferGeometry()
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
   g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2))
-  g.setIndex(idx)
+  g.setAttribute('uv1', new THREE.Float32BufferAttribute(uv1, 2))
+  g.setIndex([...far(heap), ...far(small)])
   g.computeVertexNormals()
   g.userData.count = count
   return g
@@ -1000,7 +1127,7 @@ if (!only || only === 'grain') await png(grainTile(L.grain.px), L.grain.px, path
 if (shapes) {
   const extras = { glassMaxPolarDeg: L.glass.maxPolarDeg, glassHeightMm: L.glass.heightMm, glassLiftMm: L.glass.liftMm, slabHalfMm: L.slab.halfMm, slabHeightMm: L.slab.heightMm, grainTileMm: L.grain.tileMm }
   const r = writeGlb(path.join(OUT, 'frost-shapes.glb'), [fromThree('glass', glassBand(), extras), fromThree('sheet', slabSheet(), extras), fromThree('shapes', shapes, extras)], extras)
-  report.push(`frost-shapes.glb ${(r.bytes / 1e6).toFixed(2)} MB, ${r.triangles} triangles in ${r.meshes} meshes (shapes ${shapes.index.count / 3}: ridges ${shapes.userData.count.ridges}, grain lumps ${shapes.userData.count.lumps})`)
+  report.push(`frost-shapes.glb ${(r.bytes / 1e6).toFixed(2)} MB, ${r.triangles} triangles in ${r.meshes} meshes (shapes ${shapes.index.count / 3}: heap ${shapes.userData.count.heap}, ridges ${shapes.userData.count.ridges}, grain lumps ${shapes.userData.count.lumps})`)
 }
 for (const f of fs.readdirSync(OUT).filter((f) => f.startsWith('frost-'))) report.push(`${f} ${(fs.statSync(path.join(OUT, f)).size / 1e6).toFixed(2)} MB`)
 console.log(report.join('\n'))

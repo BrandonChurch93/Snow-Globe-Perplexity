@@ -32,6 +32,10 @@ export const lightUniforms = {
   uLightFrame: { value: new THREE.Matrix3() },
   uLightGlow: { value: new THREE.Vector4(0, 0, 0, 0) },
   uLightGlowAt: { value: new THREE.Vector4(0, 0, 0, 1) },
+  uLightFlood: { value: new THREE.Color(0, 0, 0) },
+  uLightFloodAt: { value: new THREE.Vector4(60, 0.35, 0.84, 40) },
+  uLightFloodFloor: { value: new THREE.Vector4(-79, 50, 0.18, 70) },
+  uLightFloodNear: { value: new THREE.Vector2(1, 10) },
   uRigKeyDir: { value: new THREE.Vector3(0, 1, 0) },
   uRigKeyIn: { value: new THREE.Vector3(0, 1, 0) },
   uRigKeyCol: { value: new THREE.Color(0, 0, 0) },
@@ -65,6 +69,10 @@ uniform vec4 uGridShade;
 uniform mat3 uLightFrame;
 uniform vec4 uLightGlow;
 uniform vec4 uLightGlowAt;
+uniform vec3 uLightFlood;
+uniform vec4 uLightFloodAt;
+uniform vec4 uLightFloodFloor;
+uniform vec2 uLightFloodNear;
 uniform vec3 uRigKeyDir;
 uniform vec3 uRigKeyIn;
 uniform vec3 uRigKeyCol;
@@ -92,12 +100,16 @@ float stageGridGain(vec4 share, vec4 gain) {
   float sum = share.x + share.y + share.z + share.w;
   return sum > 1e-6 ? dot(share, gain) / sum : dot(gain, vec4(0.25));
 }
+vec3 stageFlood(vec3 local) {
+  vec3 d = local - uLightGlowAt.xyz;
+  return uLightFlood * (uLightFloodAt.z / (1.0 + dot(d, d) / (uLightFloodAt.w * uLightFloodAt.w)));
+}
 vec3 stageGrid(vec3 local) {
   vec3 a = vec3(0.0);
   vec3 b = vec3(0.0);
   if (uGrid.x < 1.0) a = texture(uGridA, stageGridAt(local, 0.0)).rgb * stageGridGain(texture(uGridA, stageGridAt(local, 2.0)), uGridGainA);
   if (uGrid.x > 0.0) b = texture(uGridB, stageGridAt(local, 0.0)).rgb * stageGridGain(texture(uGridB, stageGridAt(local, 2.0)), uGridGainB);
-  return mix(a, b, uGrid.x);
+  return mix(a, b, uGrid.x) + stageFlood(local);
 }
 void stageGridLit(vec3 local, out vec3 colour, out vec3 toward, out float open, out float shade) {
   vec4 e = vec4(0.0);
@@ -119,9 +131,9 @@ void stageGridLit(vec3 local, out vec3 colour, out vec3 toward, out float open, 
     m += d.xyz * gain;
     shade += d.a * uGrid.x;
   }
-  colour = e.rgb;
+  colour = e.rgb + stageFlood(local);
   open = e.a;
-  toward = m / max(dot(e.rgb, vec3(0.2126, 0.7152, 0.0722)), 1e-5);
+  toward = m / max(dot(colour, vec3(0.2126, 0.7152, 0.0722)), 1e-5);
 }
 vec3 stageGridToward(vec3 local) {
   vec3 colour;
@@ -298,6 +310,25 @@ vec3 stageLit = vec3(0.0);
       clearcoatSpecularDirect += lgGlow * (PI * saturate(dot(geometryClearcoatNormal, lgGlowV)) * uRigGlow.y) * BRDF_GGX_Clearcoat(lgGlowV, geometryViewDir, geometryClearcoatNormal, lgWide);
       #endif
     }
+    if (uLightFlood.r + uLightFlood.g + uLightFlood.b > 0.0) {
+      float lgFar = max(length(vStageLocal), uLightFloodAt.x);
+      vec3 lgUp = -vStageLocal / lgFar;
+      float lgSize = uLightFloodAt.x / lgFar;
+      float lgTurn = dot(lgNl, lgUp);
+      float lgBall = lgSize * lgSize * clamp((lgTurn + lgSize * uLightFloodAt.y) / (1.0 + lgSize * uLightFloodAt.y), 0.0, 1.0);
+      float lgRise = max(vStageLocal.y - uLightFloodFloor.x, 0.0);
+      float lgFloor = uLightFloodFloor.z * (0.5 - 0.5 * lgNl.y) * (1.0 - lgRise * inversesqrt(lgRise * lgRise + uLightFloodFloor.y * uLightFloodFloor.y));
+      float lgNear = uLightFloodNear.x * exp((uLightFloodAt.x - lgFar) / uLightFloodNear.y);
+      vec3 lgFlood = uLightFlood * uLightFloodFloor.w;
+      reflectedLight.indirectDiffuse += lgFlood * (lgBall + lgNear + lgFloor) * lgAlbedo;
+      vec3 lgBallV = normalize(lgView * ((lgUp * uLightFrame) * lgMirror));
+      float lgNdb = saturate(dot(geometryNormal, lgBallV)) * lgSize * lgSize;
+      if (lgNdb > 0.0) {
+        PhysicalMaterial lgWash = material;
+        lgWash.roughness = min(1.0, material.roughness + lgSize * 0.5);
+        reflectedLight.directSpecular += lgFlood * (PI * lgNdb) * BRDF_GGX(lgBallV, geometryViewDir, geometryNormal, lgWash);
+      }
+    }
   }
   #endif
   float lgNdk = dot(lgN, lgKey);
@@ -306,7 +337,16 @@ vec3 stageLit = vec3(0.0);
   vec3 lgAt = vDirectionalShadowCoord[0].xyz / vDirectionalShadowCoord[0].w;
   vec3 lgDx = dFdx(lgAt);
   vec3 lgDy = dFdy(lgAt);
-  float lgSure = receiveShadow ? smoothstep(uRigGlow.z, uRigGlow.w, dot(lgN, uRigKeyDir)) : 0.0;
+  float lgFacing = dot(lgN, uRigKeyDir);
+  #ifdef STAGE_INSIDE
+  vec3 lgFace = cross(dFdx(vStageLocal), dFdy(vStageLocal));
+  float lgFaceSq = dot(lgFace, lgFace);
+  if (lgFaceSq > 1e-20) {
+    lgFace *= inversesqrt(lgFaceSq) * (dot(lgFace, lgNl) < 0.0 ? -1.0 : 1.0);
+    lgFacing = min(lgFacing, dot(lgFace * uLightFrame, uRigKeyDir));
+  }
+  #endif
+  float lgSure = receiveShadow ? smoothstep(uRigGlow.z, uRigGlow.w, lgFacing) : 0.0;
   if (lgSure > 0.0) lgShade = mix(lgShade, stageKeyShade(directionalShadowMap[0], lgAt, lgDx, lgDy, lgSpread), lgSure);
   #endif
   vec3 lgKeyC = uRigKeyCol * lgThrough;
