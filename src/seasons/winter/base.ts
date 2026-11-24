@@ -8,7 +8,7 @@ import { ROOM_GLSL, roomUniforms } from '../../scene/room'
 import type { KitMoment } from '../kit'
 
 export const season = 'winter'
-export const main: Rgb = [0.035, 0.017, 0.01]
+export const main: Rgb = [0.034, 0.016, 0.009]
 
 const PART = 'base-winter'
 const MODEL = 'winter/base-winter.glb'
@@ -106,8 +106,8 @@ const SHADE = `
   #endif
   reflectedLight.indirectDiffuse *= baseAo;
   reflectedLight.indirectSpecular *= baseAo;
-  reflectedLight.directDiffuse *= mix(1.0, baseAo, 0.6);
-  reflectedLight.directSpecular *= mix(1.0, baseAo, 0.8);
+  reflectedLight.directDiffuse *= mix(1.0, baseAo, 0.85);
+  reflectedLight.directSpecular *= mix(1.0, baseAo, 0.9);
 }
 `
 
@@ -171,11 +171,11 @@ diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(2.6, 2.0, 1.25)
 `
 
 const WOOD_ROUGH = `
-roughnessFactor = clamp(mix(0.26, 0.6, baseDetail.b) + 0.3 * baseCavity - 0.16 * baseWear + 0.12 * baseCarved, 0.14, 1.0);
+roughnessFactor = clamp(mix(0.3, 0.64, baseDetail.b) + 0.3 * baseCavity - 0.16 * baseWear + 0.12 * baseCarved, 0.14, 1.0);
 `
 
 const WOOD_TILT = `
-vec2 baseTilt = baseSlope(baseDetail.rg) * 0.55 + baseSlope(baseCarve.rg) * (1.35 * baseCarved);
+vec2 baseTilt = baseSlope(baseDetail.rg) * 0.42 + baseSlope(baseCarve.rg) * (1.35 * baseCarved);
 `
 
 const WOOD_BENT = `
@@ -354,7 +354,7 @@ void main() {
   float core = smoothstep(0.2, 0.95, nv);
   float streak = baseNoise(vec3(vIceUv.z * 11.0 + seed * 5.0, t * 2.2 + seed * 3.0, seed * 1.7));
   float grit = baseNoise(vIcePos * 11.0);
-  float cloud = 0.12 + (0.05 + 0.2 * core * core) * smoothstep(0.25, 0.75, streak) * mix(1.0, 0.3, smoothstep(0.45, 1.0, t));
+  float cloud = 0.09 + (0.05 + 0.2 * core * core) * smoothstep(0.25, 0.75, streak) * mix(1.0, 0.3, smoothstep(0.45, 1.0, t));
   cloud += 0.13 * smoothstep(0.6, 0.85, grit) * (0.4 + 0.6 * core) + 0.6 * (1.0 - smoothstep(0.0, 0.17, t));
   cloud = clamp(cloud, 0.0, 0.8);
   float wrap = clamp(dot(n, uIceKeyDir) * 0.5 + 0.5, 0.0, 1.0);
@@ -362,7 +362,7 @@ void main() {
   vec3 lit = uIceKeyCol * (0.2 + 0.8 * wrap * wrap) + uIceRimCol * 0.5 * back * back + iceDome(n);
   vec3 milk = vec3(0.52, 0.58, 0.66) * lit * RECIPROCAL_PI;
   vec3 col = mix(behind * vec3(0.86, 0.94, 1.0), milk, cloud);
-  col = col * (1.0 - fres) + mirror * fres + milk * (0.6 * pow(1.0 - nv, 3.0));
+  col = col * (1.0 - fres) + mirror * fres + milk * (0.4 * pow(1.0 - nv, 3.0));
   float hk = max(dot(n, normalize(v + uIceKeyDir)), 0.0);
   float hr = max(dot(n, normalize(v + uIceRimDir)), 0.0);
   col += uIceKeyCol * (pow(hk, 420.0) * 4.5 + pow(hk, 36.0) * 0.12);
