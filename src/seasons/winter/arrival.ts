@@ -7,8 +7,10 @@ import { fresh } from './miniature'
 
 const own = frost as { arrival?: () => THREE.Object3D }
 
-const GLASS = { burst: 0.78, burstSeconds: 0.22, creep: 0.41, creepSeconds: 1.4 }
-const SLAB = { burst: 0.8, burstSeconds: 0.2, creep: 0.39, creepSeconds: 1.4 }
+// The frost shows on the landing frame itself: `start` is the growth at the landing, past the level at which the first texels
+// of the maps appear (frost.ts takes 0.07 off the growth), so a first ring hugs the foot as it lands and bursts outward from there.
+const GLASS = { start: 0.15, burst: 0.63, burstSeconds: 0.22, creep: 0.41, creepSeconds: 1.4 }
+const SLAB = { start: 0.2, burst: 0.6, burstSeconds: 0.2, creep: 0.39, creepSeconds: 1.4 }
 
 const rise = (t: number, seconds: number): number => 1 - Math.exp(-t / seconds)
 const burst = (t: number, seconds: number): number => 1 - Math.exp(-((t / seconds) ** 2))
@@ -17,8 +19,8 @@ export function growth(sinceLanding: number): { glass: number; slab: number } {
   if (!(sinceLanding < Infinity)) return { glass: frost.FULL, slab: frost.FULL }
   const t = Math.max(0, sinceLanding)
   return {
-    glass: GLASS.burst * burst(t, GLASS.burstSeconds) + GLASS.creep * rise(t, GLASS.creepSeconds),
-    slab: SLAB.burst * burst(t, SLAB.burstSeconds) + SLAB.creep * rise(t, SLAB.creepSeconds),
+    glass: GLASS.start + GLASS.burst * burst(t, GLASS.burstSeconds) + GLASS.creep * rise(t, GLASS.creepSeconds),
+    slab: SLAB.start + SLAB.burst * burst(t, SLAB.burstSeconds) + SLAB.creep * rise(t, SLAB.creepSeconds),
   }
 }
 
@@ -35,20 +37,18 @@ export function update(moment: KitMoment): void {
   const swap = config.shake.swapWindow
   const shaking = moment.beat !== null && moment.beat >= swap.fromBeat
   const two = f.from !== f.to && f.change > 0 && f.change < 1
+  // The growth is always the one function of the time since the landing, so it cannot step when the swap window opens or when
+  // the arrival is counted as done; only how much of the frost is kept changes inside the window.
+  const g = growth(moment.sinceLanding)
   if (two) {
-    if (moment.arrived >= 1) frost.setGrowth(frost.FULL, frost.FULL, 1, 1)
-    else if (shaking) frost.setGrowth(0, 0, 0, 0)
-    else {
-      const g = growth(moment.sinceLanding)
-      frost.setGrowth(g.glass, g.slab, 1, 1)
-    }
+    if (shaking && moment.arrived < 1) frost.setGrowth(0, 0, 0, 0)
+    else frost.setGrowth(g.glass, g.slab, 1, 1)
     return
   }
   if (shaking) {
     const through = (moment.beat! - swap.fromBeat) / (swap.toBeat - swap.fromBeat)
-    frost.setGrowth(frost.FULL, frost.FULL, 1 - partChange('glass-dressing', through), 1 - partChange('surface-dressing', through))
+    frost.setGrowth(g.glass, g.slab, 1 - partChange('glass-dressing', through), 1 - partChange('surface-dressing', through))
     return
   }
-  const g = growth(moment.sinceLanding)
   frost.setGrowth(g.glass, g.slab, 1, 1)
 }

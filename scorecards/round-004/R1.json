@@ -1,0 +1,98 @@
+{
+  "critic": "R1",
+  "score": 5,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the collar where the glass meets the base",
+      "what": "the snow shelf is taller and puffier than the low crystalline ring, and the glass ends on a hard dark line with a gap instead of seating into the snow",
+      "fix": "thin the snow to a low even shelf that leaves the metal lip showing, and seat the sphere so the joint is a soft shadow rather than a gap"
+    },
+    {
+      "severity": "major",
+      "file": "set-B-01-b.jpg",
+      "where": "the collar where the glass meets the base",
+      "what": "the snow on the collar is thicker and more bulbous, and the glass sits on a hard dark boundary instead of merging into the snow",
+      "fix": "lower and thin the collar snow to the uneven crystalline shelf, and seat the sphere behind that lip"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the rope trim and the relief highlights",
+      "what": "the brightest metal reads pale brass, about [216, 191, 164], against the deeper antique bronze of the target, about [217, 176, 131]",
+      "fix": "darken and redden the rope and the leaf highlights so they age back to antique bronze"
+    },
+    {
+      "severity": "major",
+      "file": "set-B-01-b.jpg",
+      "where": "the rope trim and the relief highlights",
+      "what": "the same paler, less aged brass on the rope and the leaf edges, against the warmer antique bronze of the target",
+      "fix": "shift the trim and the relief highlights down and toward antique bronze"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the icicles under the collar",
+      "what": "the icicles are thicker, blunter, and smoother, without the slender glassy taper of the target",
+      "fix": "narrow the icicles, sharpen the tips, and put the internal refraction back; keep the fringe, do not restyle it as plastic cones"
+    },
+    {
+      "severity": "major",
+      "file": "set-B-01-b.jpg",
+      "where": "the icicles under the collar",
+      "what": "the icicles are again thicker and rounder at the tips than the thin pointed fringe",
+      "fix": "thin and sharpen the icicles to the glassy taper of the target"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the surface around the foot, and its mirror image",
+      "what": "the frost is clumpy and granular instead of flat dendritic crystals, and the reflection of the rope and the icicle tips is duller",
+      "fix": "replace the clumps with flat dendritic ice and raise the contrast of the mirror under the foot"
+    },
+    {
+      "severity": "major",
+      "file": "set-B-01-b.jpg",
+      "where": "the surface around the foot, and its mirror image",
+      "what": "the table frost is clumpier and less crystalline, and the mirror of the foot is weaker",
+      "fix": "lay flat dendritic crystals on the table and sharpen the reflection of the rope and the icicle tips"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the frost on the glass at the shoulder",
+      "what": "the rim thickness matches, but the frost is separate fronds with bare gaps instead of the continuous dense crystalline band",
+      "fix": "fill the shoulder frost into a continuous dense band; do not leave clear gaps between clusters"
+    },
+    {
+      "severity": "major",
+      "file": "set-B-01-b.jpg",
+      "where": "the frost on the glass at the shoulder and the flanks",
+      "what": "frost is present but fainter and smoother, and it covers less of the rim than the sharp dendritic fringe",
+      "fix": "strengthen the frost on the glass edges to the sharp, opaque dendritic fringe"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the tree crown and the star",
+      "what": "the snow on the boughs is broken into round puffy pads instead of broad flat blankets, and the star is a soft bloom without the thin stem",
+      "fix": "flatten the snow into broad pads and set a crisp faceted star on a thin stem"
+    },
+    {
+      "severity": "minor",
+      "file": "set-A-01-b.jpg",
+      "where": "the cottage masonry",
+      "what": "the stones read darker and rounder, with heavier joints, against the paler coursed blocks",
+      "fix": "lighten the wall and use flatter coursed stone"
+    },
+    {
+      "severity": "minor",
+      "file": "set-A-01-b.jpg",
+      "where": "the lamp housing",
+      "what": "the lantern cap is a smoother dome instead of the peaked cap",
+      "fix": "restore the peaked lantern cap"
+    }
+  ]
+}
