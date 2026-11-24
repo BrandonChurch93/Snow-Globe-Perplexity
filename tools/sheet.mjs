@@ -8,6 +8,7 @@ import { SHEETS, across, around, composeSheet, gridLayout, labelUnits, layoutHas
 
 const USAGE = `npm run sheet -- <what> [--tier T] [--format F] [--assets A] [--diag V] [--cols N] [--force] [--look no] [--by NAME]
   --shot ID                 ${cfg.critics.contactSheetFrames} frames across a shot. ID may be test, for the test shake and the clearing after it
+  --mark N=WORD[,N=WORD]    with --shot or --film: film frame N is put on the sheet of its shot and WORD is added to its label
   --film                    one sheet for every shot and one overview
   --loop [--seam]           across the card loop, or its last frames then its first
   --opening                 across the opening of film A
@@ -44,6 +45,13 @@ const mode = motion ? 'motion' : args.film === true ? 'film' : args.seasons === 
 if (!mode) fail(USAGE, 2)
 const MOTIONS = ['lift', 'strokes', 'setdown', 'landing', 'swap', 'arrival', 'move']
 if (motion && !MOTIONS.includes(motion)) fail(`no such motion: ${motion}. One of ${MOTIONS.join(', ')}`, 2)
+const marks = new Map()
+for (const m of str('mark') ? str('mark').split(',') : []) {
+  const [n, word] = m.split('=')
+  if (!/^\d+$/.test(n ?? '') || !/^[a-z]+$/.test(word ?? '')) fail(`give --mark as N=WORD, a film frame and a word in small letters: ${m}`, 2)
+  marks.set(Number(n), word)
+}
+if (marks.size && mode !== 'shot' && mode !== 'film') fail('--mark goes with --shot or --film', 2)
 const LANDING_SECONDS = 1
 class Stop extends Error {}
 const MOVING = 0.05
@@ -116,7 +124,24 @@ async function moveRange(page, shot, step) {
   return { first: first + a * step, end: first + (b + 1) * step + 1 }
 }
 
-const frameLabel = (src, i, step, name) => [String(i), secondsText(i, src.fps, step), ...(name ? [name(i)] : [])]
+const frameLabel = (src, i, step, name) => [String(i), secondsText(i, src.fps, step), ...(name && name(i) ? [name(i)] : [])]
+
+function marked(frames, shot, step) {
+  const found = new Map()
+  for (const [n, word] of marks) {
+    const i = snapUp(n, step)
+    if (i >= shot.first && i <= shot.last) found.set(i, word)
+  }
+  if (!found.size) return null
+  const out = [...frames]
+  for (const i of found.keys()) {
+    if (out.includes(i)) continue
+    const free = out.map((f, k) => ({ f, k })).filter(({ f, k }) => k > 0 && !found.has(f))
+    if (!free.length) throw new Stop(`the sheet of ${shot.id} has no room for the marked frame ${i}`)
+    out[free.reduce((a, b) => (Math.abs(b.f - i) < Math.abs(a.f - i) ? b : a)).k] = i
+  }
+  return { frames: out.sort((a, b) => a - b), words: Object.fromEntries(found) }
+}
 
 const session = await Session.open({ what: `sheet ${process.argv.slice(2).join(' ')}` })
 const done = []
@@ -164,8 +189,11 @@ try {
         jobs.push({ file: sheetFile('shot', 'test', tag), frames, perSheet: per, spec: { kind: 'shot', source: 'test', shot: 'test', frames }, caption: `Sheet: ${frames.length} frames across the test shake and the clearing after it, ${tail}` })
       } else if (!wanted.length) throw new Stop(`no such shot: ${shotArg}. The film has ${plan.film.shots.map((s) => s.id).join(', ')}, and test is the test shake`)
       for (const s of wanted) {
-        const frames = across(s.first, s.last, per, src.step)
-        jobs.push({ file: sheetFile('shot', s.id, tag), frames, perSheet: per, spec: { kind: 'shot', source: 'film', shot: s.id, frames }, caption: `Sheet: ${frames.length} frames across the shot ${s.id}, frames ${s.first} to ${s.last}, ${tail}` })
+        const plain = across(s.first, s.last, per, src.step)
+        const mk = marked(plain, s, src.step)
+        const frames = mk?.frames ?? plain
+        const said = mk ? Object.entries(mk.words).map(([i, w]) => `frame ${i} marked ${w}`).join(', ') : ''
+        jobs.push({ file: sheetFile('shot', s.id, tag, ...(mk ? ['marked'] : [])), frames, perSheet: per, ...(mk ? { name: (i) => mk.words[i] ?? '' } : {}), spec: { kind: 'shot', source: 'film', shot: s.id, frames, ...(mk ? { marks: mk.words } : {}) }, caption: `Sheet: ${frames.length} frames across the shot ${s.id}, frames ${s.first} to ${s.last}${said ? `, ${said}` : ''}, ${tail}` })
       }
       if (mode === 'film') {
         const frames = overview(plan.film.shots, src.count, per, src.step)

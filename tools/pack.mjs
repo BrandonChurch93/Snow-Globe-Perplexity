@@ -293,7 +293,12 @@ function sheetLegend(file, fallback) {
   const spec = record?.spec ?? {}
   const shot = shots.find((x) => x.id === spec.shot)
   if (spec.kind === 'film-overview') return `the whole film in ${spec.frames?.length ?? 'a few'} frames, every shot at least once`
-  if (spec.kind === 'shot' && shot) return shot.from && shot.to ? `the shot ${shot.id}: one sheet across the shake from ${shot.from} to ${shot.to}` : `the shot ${shot.id}: a hold on ${shot.season}`
+  if (spec.kind === 'shot' && shot) {
+    const plain = shot.from && shot.to ? `the shot ${shot.id}: one sheet across the shake from ${shot.from} to ${shot.to}` : `the shot ${shot.id}: a hold on ${shot.season}`
+    const said = Object.entries(spec.marks ?? {}).map(([i, word]) => `the frame marked as the ${word} is the one labelled ${i} ${(i / cfg.film.fps).toFixed(2)} s ${word}`)
+    if (!said.length) return plain
+    return `${plain}. ${spec.frames?.[0] === 0 ? 'The first frame of the film is the one labelled 0 0.00 s, and ' : ''}${said.join(', and ')}`
+  }
   return fallback
 }
 
@@ -374,7 +379,7 @@ const sheetFlags = (...f) => [...f, '--tier', motionTier]
 async function buildBlockout(role) {
   const missing = []
   const draft = ['--tier', tier]
-  const groups = sheetGroups(role, [wholeFilm(['--film', ...draft]), ...shakes.map((s) => ({ what: `one sheet across the shake ${s.id}`, flags: ['--shot', s.id, ...draft] }))], missing)
+  const groups = sheetGroups(role, [wholeFilm(['--film', '--mark', `${Math.round(cfg.film.revealBySeconds * cfg.film.fps)}=reveal`, ...draft]), ...shakes.map((s) => ({ what: `one sheet across the shake ${s.id}`, flags: ['--shot', s.id, ...draft] }))], missing)
   await open()
   const target = control(lockKey)
   const tile = tileFor(1, 2, target.height / target.width)
