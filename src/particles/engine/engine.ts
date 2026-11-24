@@ -408,6 +408,53 @@ function probe(G: Grid, x: number, y: number, z: number, out: Float64Array): num
   return y0 + (y1 - y0) * tz
 }
 
+export function heapCover(n: number, state: Uint8Array, xyz: Float32Array, sizes: Float32Array, kindOf: Uint8Array, heap: Float32Array, out: Float32Array): void {
+  const scale = COVER_N / COVER_SPAN_MM
+  const each = POOL / n / COVER_CELL_MM2
+  heap.fill(0)
+  for (let i = 0; i < n; i++) {
+    if (state[i] !== STATE_REST) continue
+    const loft = K_LOFT[kindOf[i]!]!
+    if (loft === 0) continue
+    const o = i * 3
+    const fx = (xyz[o]! + R) * scale - 0.5
+    const fz = (xyz[o + 2]! + R) * scale - 0.5
+    const ix = Math.floor(fx)
+    const iz = Math.floor(fz)
+    if (ix < 0 || iz < 0 || ix >= COVER_N - 1 || iz >= COVER_N - 1) continue
+    const tx = fx - ix
+    const tz = fz - iz
+    const d = sizes[i]!
+    const v = loft * d * d * each
+    const c = iz * COVER_N + ix
+    heap[c] = heap[c]! + v * (1 - tx) * (1 - tz)
+    heap[c + 1] = heap[c + 1]! + v * tx * (1 - tz)
+    heap[c + COVER_N] = heap[c + COVER_N]! + v * (1 - tx) * tz
+    heap[c + COVER_N + 1] = heap[c + COVER_N + 1]! + v * tx * tz
+  }
+  for (let pass = 0; pass < COVER_PASSES; pass++) {
+    for (let j = 0; j < COVER_N; j++) {
+      const row = j * COVER_N
+      for (let i = 0; i < COVER_N; i++) {
+        const a = heap[row + (i > 0 ? i - 1 : i)]!
+        const b = heap[row + (i < COVER_N - 1 ? i + 1 : i)]!
+        out[row + i] = 0.25 * a + 0.5 * heap[row + i]! + 0.25 * b
+      }
+    }
+    for (let j = 0; j < COVER_N; j++) {
+      const up = (j > 0 ? j - 1 : j) * COVER_N
+      const down = (j < COVER_N - 1 ? j + 1 : j) * COVER_N
+      const row = j * COVER_N
+      for (let i = 0; i < COVER_N; i++) heap[row + i] = 0.25 * out[up + i]! + 0.5 * out[row + i]! + 0.25 * out[down + i]!
+    }
+  }
+  for (let c = 0; c < out.length; c++) {
+    const v = heap[c]!
+    const over = v - COVER_KNEE_MM
+    out[c] = over > 0 ? COVER_KNEE_MM + (COVER_ROOM_MM * over) / (over + COVER_ROOM_MM) : v
+  }
+}
+
 export class ParticleEngine {
   readonly count: number
   readonly kinds: readonly string[] = KINDS
@@ -662,57 +709,7 @@ export class ParticleEngine {
   }
 
   private heapUp(): void {
-    const n = this.count
-    const state = this.state
-    const xyz = this.xyz
-    const sizes = this.sizes
-    const kindOf = this.kindOf
-    const heap = this.heap
-    const out = this.lain.mm
-    const scale = COVER_N / COVER_SPAN_MM
-    const each = POOL / n / COVER_CELL_MM2
-    heap.fill(0)
-    for (let i = 0; i < n; i++) {
-      if (state[i] !== STATE_REST) continue
-      const loft = K_LOFT[kindOf[i]!]!
-      if (loft === 0) continue
-      const o = i * 3
-      const fx = (xyz[o]! + R) * scale - 0.5
-      const fz = (xyz[o + 2]! + R) * scale - 0.5
-      const ix = Math.floor(fx)
-      const iz = Math.floor(fz)
-      if (ix < 0 || iz < 0 || ix >= COVER_N - 1 || iz >= COVER_N - 1) continue
-      const tx = fx - ix
-      const tz = fz - iz
-      const d = sizes[i]!
-      const v = loft * d * d * each
-      const c = iz * COVER_N + ix
-      heap[c] = heap[c]! + v * (1 - tx) * (1 - tz)
-      heap[c + 1] = heap[c + 1]! + v * tx * (1 - tz)
-      heap[c + COVER_N] = heap[c + COVER_N]! + v * (1 - tx) * tz
-      heap[c + COVER_N + 1] = heap[c + COVER_N + 1]! + v * tx * tz
-    }
-    for (let pass = 0; pass < COVER_PASSES; pass++) {
-      for (let j = 0; j < COVER_N; j++) {
-        const row = j * COVER_N
-        for (let i = 0; i < COVER_N; i++) {
-          const a = heap[row + (i > 0 ? i - 1 : i)]!
-          const b = heap[row + (i < COVER_N - 1 ? i + 1 : i)]!
-          out[row + i] = 0.25 * a + 0.5 * heap[row + i]! + 0.25 * b
-        }
-      }
-      for (let j = 0; j < COVER_N; j++) {
-        const up = (j > 0 ? j - 1 : j) * COVER_N
-        const down = (j < COVER_N - 1 ? j + 1 : j) * COVER_N
-        const row = j * COVER_N
-        for (let i = 0; i < COVER_N; i++) heap[row + i] = 0.25 * out[up + i]! + 0.5 * out[row + i]! + 0.25 * out[down + i]!
-      }
-    }
-    for (let c = 0; c < out.length; c++) {
-      const v = heap[c]!
-      const over = v - COVER_KNEE_MM
-      out[c] = over > 0 ? COVER_KNEE_MM + (COVER_ROOM_MM * over) / (over + COVER_ROOM_MM) : v
-    }
+    heapCover(this.count, this.state, this.xyz, this.sizes, this.kindOf, this.heap, this.lain.mm)
     this.drifted = false
   }
 
