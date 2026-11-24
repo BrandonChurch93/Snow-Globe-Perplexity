@@ -10,7 +10,9 @@ export const FRAME = {
   leastAspect: 0.2,
   barShare: 0.08,
   barPx: 96,
-  airPx: 22,
+  clearShare: 0.07,
+  thumbShare: 0.05,
+  narrowAspect: 0.6,
   mostUnder: 0.35,
   easeRate: 4,
   shakePaths: 8,
@@ -50,9 +52,13 @@ const aimForFoot = (rig: Rig, foot: number): number => {
   return -(y * (rig.distanceMm - BASE_R * Math.cos(p)) + BASE_R * Math.sin(p)) / (Math.cos(p) + y * Math.sin(p))
 }
 
-export const roomUnder = (heightPx: number, controlsPx: number | null = null): number => {
+/** The share of the height the foot of the base keeps free under it: the controls, measured, or a bar of the usual height until they are,
+ * and over them `clearShare` of the height, or `thumbShare` on a narrow upright screen, where the controls stay within reach of a thumb. */
+export const roomUnder = (heightPx: number, controlsPx: number | null = null, widthPx: number | null = null): number => {
   const h = Math.max(1, heightPx)
-  return Math.min(FRAME.mostUnder, Math.max(FRAME.barShare, FRAME.barPx / h, controlsPx === null ? 0 : (controlsPx + FRAME.airPx) / h))
+  const bar = controlsPx === null ? Math.max(FRAME.barShare * h, FRAME.barPx) : controlsPx
+  const clear = widthPx !== null && widthPx / h < FRAME.narrowAspect ? FRAME.thumbShare : FRAME.clearShare
+  return Math.min(FRAME.mostUnder, bar / h + clear)
 }
 
 export function controlsPx(ui: Element | null, frame: Element): number | null {

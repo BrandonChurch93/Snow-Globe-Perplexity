@@ -146,11 +146,11 @@ export function startApp(d: AppDeps): AppBridge {
   const under = (dt: number): number => {
     if (playing !== 'live') return 0
     const h = app.clientHeight || window.innerHeight
-    if (count % MEASURE_EVERY === 0 && ui?.dataset.interface === 'shown') bar = controlsPx(ui, app) ?? bar
-    const want = roomUnder(h, bar)
+    if (count % MEASURE_EVERY === 0 && ui?.dataset.interface === 'shown' && !session.busy) bar = controlsPx(ui, app) ?? bar
+    const want = roomUnder(h, bar, app.clientWidth || window.innerWidth)
     const size = `${app.clientWidth}:${h}`
     if (room < 0 || size !== roomFor) room = want
-    else room += (want - room) * (1 - Math.exp(-dt * FRAME.easeRate))
+    else if (!session.busy) room += (want - room) * (1 - Math.exp(-dt * FRAME.easeRate))
     roomFor = size
     return room
   }

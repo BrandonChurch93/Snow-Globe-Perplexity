@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import path from 'node:path'
 import { execSync } from 'node:child_process'
 import { rel, loadConfig, parseArgs, writeJson, readJson } from './lib/paths.mjs'
 import { fileSha, listFiles, sha256 } from './lib/hashes.mjs'
@@ -47,7 +48,7 @@ export function filesHash(files) {
     if (!fs.existsSync(p)) return []
     return fs.statSync(p).isDirectory() ? listFiles(p) : [p]
   })
-  return sha256(list.map((f) => `${f}:${fileSha(f)}`).join('\n')).slice(0, 16)
+  return sha256(list.map((f) => `${path.relative(rel(), f).split(path.sep).join('/')}:${fileSha(f)}`).join('\n')).slice(0, 16)
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

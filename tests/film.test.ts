@@ -3,7 +3,7 @@ import { config, shots } from '../src/config'
 import { barSeconds, beatSeconds, defaultGrid, filmTimeline, globePoseAt, prerollSeconds, seasonAt } from '../src/film/timeline'
 import { makeShake } from '../src/shake/table'
 import { buildCut } from '../src/film/cut'
-import { MOVES, aimDropAt, cameraKeys, cameraNumbers, detailReach, filmPose, filmRig, largestReach, loopDistanceMm, loopPose, loopRig, movesOf, nearestAimDropMm, nearestRig, nearestRoom, poseOfRig, rigOf, roomOf, shotNotes } from '../src/film/moves'
+import { MOVES, aimDropAt, cameraKeys, cameraNumbers, detailReach, filmPose, filmRig, largestReach, loopDistanceMm, loopPose, loopRig, movesOf, nearestAimDropMm, nearestRig, nearestRoom, poseOfRig, reachOf, rigOf, roomOf, shotNotes } from '../src/film/moves'
 import { sphereRadiusMm } from '../src/scene/framing'
 import { judgedList, loopPlan } from '../src/film/judged'
 import { openingPlan } from '../src/film/opening'
@@ -236,6 +236,21 @@ describe('the camera of the film', () => {
         expect(rig, `frame ${i}`).toEqual(wide)
       }
     }
+  })
+
+  it('holds the lifted glass and the foot of the base inside the frame on every frame of every shake', () => {
+    const tl = filmTimeline(cut)
+    let top = 0
+    for (const s of cut.shakes) {
+      for (let i = s.first; i <= s.landing; i++) {
+        const t = i / fps
+        const r = reachOf(filmPose(cut, t), globePoseAt(tl, prerollSeconds + t))
+        expect(r.top, `frame ${i}`).toBeLessThan(1)
+        expect(r.foot, `frame ${i}`).toBeLessThan(1)
+        top = Math.max(top, r.top)
+      }
+    }
+    expect(top).toBeGreaterThan(reachOf(poseOfRig(wide), globePoseAt(tl, 0)).top)
   })
 
   it('lowers the aim in the holds by no more than the drop, and never in a shake or on the way to another camera', () => {
