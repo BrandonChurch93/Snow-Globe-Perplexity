@@ -2,6 +2,7 @@ import { config } from '../config'
 import type { AppBridge, AppState, InterfaceHandle } from '../core/bridge'
 import type { Overlay } from '../capture/showcase'
 import { topLevel } from '../core/quality'
+import { controlsPx } from './framing'
 import { audioShips, loadInterface } from './mounts'
 
 const WAIT_MS = 8000
@@ -24,6 +25,7 @@ const frames = (count: number): Promise<void> =>
 export function createOverlay(root: HTMLElement | null): Overlay {
   let handle: InterfaceHandle | null = null
   let mounting: Promise<void> | null = null
+  let bar: number | null = null
   const fns = new Set<(s: AppState) => void>()
   let state: AppState = {
     ready: true,
@@ -98,9 +100,11 @@ export function createOverlay(root: HTMLElement | null): Overlay {
         }
       }
       await frames(2)
+      bar = controlsPx(root, document.getElementById('app') ?? root) ?? bar
     },
     hide() {
       handle?.setVisible(false)
     },
+    controlsPx: () => bar,
   }
 }
