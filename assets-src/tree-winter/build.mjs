@@ -16,7 +16,7 @@ const STAR = { deep: 0.62, edge: 0.17, inset: 0.9, valley: 0.72, crest: 1.12, si
 const CORE_R = 0.155
 const WIRE_R = 0.075
 const SNOW_KEY = [-0.42, 0.819, 0.39]
-const BULBS = { stem: [2.3, 3.4], limb: [2.2, 3.3], lead: 0.16, pad: 0.36, clear: 0.3 }
+const BULBS = { stem: [2.3, 3.4], limb: [2.2, 3.3], lead: 0.16, pad: 0.36, clear: 0.3, rim: 0.42 }
 const ARRIVAL = { root: 0.16, limb: 0.08, shade: [0.42, 0.14] }
 const SPRIGS = { band: 0.25, share: 0.5, size: [1.3, 2.2], rise: 0.8 }
 
@@ -333,12 +333,12 @@ function strings() {
     for (let k = 0; k < n; k++) {
       const even = (k / n) * TAU + rng.range(-0.25, 0.25)
       const th = even + 0.55 * Math.cos(even)
-      const rim = rng.next() < 0.55
+      const rim = rng.next() < BULBS.rim
       const rho = rim ? 1.25 : rng.range(0.35, 0.8)
       const start = centre.clone().addScaledVector(side, Math.cos(th) * rho * pad.size[0]).addScaledVector(depth, Math.sin(th) * rho * pad.size[2])
       const dir = new THREE.Vector3()
       if (rim) {
-        start.addScaledVector(up, rng.range(-1.1, -0.15) * pad.size[1])
+        start.addScaledVector(up, rng.range(-1.15, 0.2) * pad.size[1])
         dir.copy(centre).addScaledVector(up, -0.45 * pad.size[1]).sub(start).normalize()
       } else {
         start.addScaledVector(up, -pad.size[1] - 2.5)

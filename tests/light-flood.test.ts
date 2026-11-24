@@ -5,10 +5,10 @@ import { LIGHT_FRAG, LIGHT_FRAG_PARS, floodCore, lightUniforms } from '../src/co
 import type { Moment } from '../src/core/stage'
 import { newFrame } from '../src/scene/frame'
 import { centreHeightMm, innerRadiusMm } from '../src/scene/layout'
-import { Lighting, ROOM_RIG } from '../src/scene/lighting'
+import { Lighting, ROOM_RIG, changeSwell } from '../src/scene/lighting'
 import { glowOf } from '../src/scene/lightgrid'
 import { kitOf } from '../src/seasons'
-import { changeBloom, changeSpan, partChange } from '../src/shake/change'
+import { changeSpan, partChange } from '../src/shake/change'
 import { REST_POSE } from '../src/shake/table'
 
 const winter = kitOf('winter')
@@ -23,7 +23,6 @@ function lit(change: number, to = winter) {
   f.to = to
   const two = to !== winter
   f.moment = { season: 'winter', from: 'winter', to: two ? 'other' : 'winter', change, sinceLanding: 0, globe: REST_POSE, mix: 0, seed: 1, time: 0, beat: null, period: null } as Moment
-  f.mix.bloom = two ? changeBloom(change) : 0
   f.mix.light = two ? partChange('light', change) : 0
   light.update(f)
   const u = lightUniforms
@@ -63,38 +62,72 @@ describe('the flood of a change', () => {
       const v = partChange('base', c)
       if (v <= 0 || v >= 1) continue
       seen++
-      expect(changeBloom(c), `bloom at ${c}`).toBe(1)
+      expect(changeSwell(c).whole, `flood at ${c}`).toBe(1)
     }
     expect(seen).toBeGreaterThan(16)
     expect(lit(span.from + 1e-6).flood).toBeCloseTo(lit(mid).flood, 9)
     expect(lit(span.to - 1e-6).flood).toBeCloseTo(lit(mid).flood, 9)
   })
 
-  it('rises and falls over frames, never in one', () => {
+  it('is nothing in the first frames of the window and nothing outside it', () => {
+    for (const c of [-1, 0, 1, 2, Number.NaN, 0.02, 0.98]) expect(changeSwell(c)).toEqual({ whole: 0, glow: 0 })
+    for (let c = 0; c <= 4 * FRAME; c += FRAME / 16) expect(changeSwell(c)).toEqual({ whole: 0, glow: 0 })
+  })
+
+  it('swells over a third of a second and falls over every frame the window leaves, never in three', () => {
     for (let phase = 0; phase < 1; phase += 0.125) {
       let before = 0
       let rise = 0
+      let fall = 0
       for (let c = phase * FRAME; c <= 1; c += FRAME) {
-        const v = changeBloom(c)
-        if (v > 0 && v < 1) rise++
-        expect(Math.abs(v - before), `step at ${c}`).toBeLessThan(0.4)
-        before = v
+        const { whole, glow } = changeSwell(c)
+        expect(glow).toBeLessThanOrEqual(whole)
+        if (c <= mid) {
+          expect(glow, `rise at ${c}`).toBeGreaterThanOrEqual(before)
+          expect(glow - before, `step up at ${c}`).toBeLessThan(0.08)
+          if (glow > 0 && glow < 1) rise++
+        } else {
+          expect(glow, `fall at ${c}`).toBeLessThanOrEqual(before)
+          expect(before - glow, `step down at ${c}`).toBeLessThan(0.22)
+          if (glow > 0 && glow < 1) fall++
+        }
+        if (c >= span.from && c <= span.to) expect(whole).toBe(1)
+        if (c >= span.from && c <= mid) expect(glow).toBe(1)
+        before = glow
       }
-      expect(rise).toBeGreaterThanOrEqual(6)
+      expect(rise).toBeGreaterThanOrEqual(19)
+      expect(fall).toBeGreaterThanOrEqual(6)
     }
   })
 
-  it('eases onto the base, so its first frame is a small share of its last', () => {
+  it('swells onto the base with the lights inside, so no frame of it is a jump', () => {
     const top = lit(mid).outside
-    let before = 0
-    for (let c = span.from - 0.2; c <= mid; c += FRAME) {
-      const v = lit(c).outside / top
-      expect(v).toBeGreaterThanOrEqual(before)
-      expect(v - before, `step at ${c}`).toBeLessThan(0.6)
-      if (changeBloom(c) > 0 && changeBloom(c) < 0.2) expect(v).toBeLessThan(0.02)
-      before = v
+    for (let phase = 0; phase < 1; phase += 0.25) {
+      let before = 0
+      let rise = 0
+      let fall = 0
+      for (let c = phase * FRAME; c < 1; c += FRAME) {
+        const at = lit(c)
+        const v = at.outside / top
+        expect(v, `the base follows the lights inside at ${c}`).toBeCloseTo((at.gainA / rest.gainA - 1) / ROOM_RIG.bloomGain, 9)
+        expect(at.tint / lit(mid).tint).toBeCloseTo(v, 9)
+        if (c <= mid) {
+          expect(v).toBeGreaterThanOrEqual(before)
+          expect(v - before, `step up at ${c}`).toBeLessThan(0.1)
+          if (v > 0.02 && v < 0.98) rise++
+        } else {
+          expect(v).toBeLessThanOrEqual(before)
+          expect(before - v, `step down at ${c}`).toBeLessThan(0.3)
+          if (v > 0.02 && v < 0.98) fall++
+        }
+        before = v
+      }
+      expect(before, 'the last frame of the window').toBeLessThan(0.001)
+      expect(rise).toBeGreaterThanOrEqual(14)
+      expect(fall).toBeGreaterThanOrEqual(4)
     }
-    expect(before).toBeCloseTo(1, 9)
+    expect(lit(span.from).outside / top).toBeCloseTo(1, 9)
+    expect(lit(mid).outside / top).toBeCloseTo(1, 9)
   })
 
   it('lifts only the new season where two seasons meet', () => {
