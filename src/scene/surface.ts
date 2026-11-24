@@ -262,7 +262,7 @@ void main() {
     vec2 kick = vec2(dot(slope, vec2(-ground.y, ground.x)) * grazing, dot(slope, ground)) * 2.0 * reach * uFocal;
     kick = clamp(kick, vec2(-1.5 * tall - 2.0), vec2(1.5 * tall + 2.0));
     float gapPx = 2.0 * tall / ${f(SLAB.mirrorTaps - 1)};
-    float lod = log2(max(gapPx * uMirrorSize.z, 1.0));
+    float lod = log2(max(gapPx * uMirrorSize.z * ${f(Math.max(1, Math.sqrt(SLAB.sideShare / SLAB.mirrorTaps) * (SLAB.mirrorTaps - 1)))}, 1.0));
     float total = 0.0;
     float span = mix(${f(SLAB.coreWidth)}, ${f(SLAB.farWidth)}, smoothstep(0.25, 0.7, reach));
     for (int i = 0; i < ${SLAB.mirrorTaps}; i++) {
