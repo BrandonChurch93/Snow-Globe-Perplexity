@@ -733,14 +733,15 @@ export class ParticleEngine {
     const u4 = unit(hash2(i, 171 + k))
     const u5 = unit(hash2(i, 191 + k))
     const lands = b.settleMmS[1] > 0 && u5 >= Math.max(b.renew, b.floats)
-    const fall = lands ? b.settleMmS : b.sinkMmS
+    const snows = u5 < b.renew && b.renewMmS[1] > 0
+    const fall = lands ? b.settleMmS : snows ? b.renewMmS : b.sinkMmS
     if (b.sizeSigma > 0) {
       const raw = b.sizeMedianMm * Math.exp(b.sizeSigma * bell(u1, unit(hash2(i, 211 + k))))
       const size = raw < b.sizeMm[0] ? b.sizeMm[0] : raw > b.sizeMm[1] ? b.sizeMm[1] : raw
-      const spread = lands ? b.sinkSigma : size > b.sizeMedianMm ? b.hangSigma * Math.sqrt(b.sizeMedianMm / size) : b.hangSigma
+      const spread = lands || snows ? b.sinkSigma : size > b.sizeMedianMm ? b.hangSigma * Math.sqrt(b.sizeMedianMm / size) : b.hangSigma
       const speed = Math.sqrt(fall[0] * fall[1]) * Math.pow(size / b.sizeMedianMm, b.sinkPower) * Math.exp(spread * bell(u2, unit(hash2(i, 231 + k))))
       this.sizes[i] = size
-      const least = fall[0] * (lands ? LANDS_LEAST : FLOATS_LEAST)
+      const least = fall[0] * (lands || snows ? LANDS_LEAST : FLOATS_LEAST)
       this.sink[i] = speed < least ? least : speed > fall[1] * 2.5 ? fall[1] * 2.5 : speed
     } else {
       const big = Math.pow(u1, b.sizeSkew)
@@ -1174,6 +1175,7 @@ export class ParticleEngine {
     const windK = ARM_WIND * TABLE_K
     const twistK = ARM_TWIST * TABLE_K
     const stiff = roll / (roll + ROLL_SOFT)
+    const stirred = c[6]! > 0
     const loose = 1 - stiff
     const m = L.motion
     const gux = m.gx
@@ -1648,7 +1650,7 @@ export class ParticleEngine {
               feel[f] = NaN
               this.drifted = true
               if (renews[i] !== 0) {
-                const dw = TABLE_OF[k]!.dwellSeconds
+                const dw = stirred && TABLE_OF[k]!.stormDwellSeconds[1] > 0 ? TABLE_OF[k]!.stormDwellSeconds : TABLE_OF[k]!.dwellSeconds
                 stamp[i] = n + Math.floor((dw[0] + (dw[1] - dw[0]) * unit(hash2(i, n))) * HZ)
               }
               continue
