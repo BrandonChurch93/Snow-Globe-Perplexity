@@ -15,12 +15,13 @@
     {
       "name": "liquid",
       "unit": "winter",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/globe/liquid.ts"
       ],
       "standInHash": "b754d1696452039f",
-      "commit": "2530677"
+      "commit": "3773997",
+      "note": "liquid_builder's final report 12:46 UTC: the real model of kit/03 section 7, no stand-in"
     },
     {
       "name": "surface",
@@ -68,12 +69,13 @@
     {
       "name": "particle-engine",
       "unit": "winter",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/particles/engine"
       ],
       "standInHash": "5243d476b99b7d22",
-      "commit": "2530677"
+      "commit": "3773997",
+      "note": "liquid_builder's final report 12:46 UTC: the real engine of kit/03 section 8, no stand-in"
     },
     {
       "name": "light-engine",
