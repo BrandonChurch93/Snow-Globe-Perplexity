@@ -272,6 +272,130 @@ export const pads: readonly Pad[] = localPads.map((p) => ({ ...p, at: place(p.at
 
 export const placePoint = (p: Vec3): Vec3 => place(p[0], p[1], p[2])
 
+export interface Cluster {
+  pad: number
+  local: Vec3
+  radius: number
+}
+
+const DOME = 0.72
+const BODY = { blend: 0.5, bias: 0.4 }
+const CAP = { lift: 1.1, puff: 0.3, blend: 0.9, bias: 1.3, depth: 0.55, lip: 0.35 }
+
+function gather(): Cluster[] {
+  const rng = stream('crown')
+  const out: Cluster[] = []
+  PADS.forEach((P, pad) => {
+    const f = padFrame(P.lean, P.tip)
+    const [a, b, c] = P.size
+    const n = Math.round(a * c * 0.95)
+    const put = (s: number, v: number, d: number, radius: number): void => {
+      out.push({ pad, radius, local: [P.at[0] + f.side[0] * s + f.up[0] * v + f.depth[0] * d, P.at[1] + f.side[1] * s + f.up[1] * v + f.depth[1] * d, P.at[2] + f.side[2] * s + f.up[2] * v + f.depth[2] * d] })
+    }
+    for (let k = 0; k < n; k++) {
+      const rr = Math.sqrt((k + 0.5) / n)
+      const th = k * 2.39996 + rng.range(-0.3, 0.3)
+      const r = lerp(1.95, 1.2, rr) * rng.range(0.84, 1.18)
+      const top = b * (1 - DOME * rr * rr) - CAP.lift - CAP.puff
+      put(Math.cos(th) * rr * (a - r), top - r + rng.range(-0.45, 0.2), Math.sin(th) * rr * (c - r), r)
+    }
+    const under = Math.round(n * 0.3)
+    for (let k = 0; k < under; k++) {
+      const rr = 0.66 * Math.sqrt((k + 0.5) / under)
+      const th = k * 2.39996 + 1.3 + rng.range(-0.4, 0.4)
+      const r = rng.range(1.0, 1.45)
+      put(Math.cos(th) * rr * a, -b + r + rng.range(0, 0.7), Math.sin(th) * rr * c, r)
+    }
+  })
+  return out
+}
+
+export const clusters: readonly Cluster[] = gather()
+
+interface PadField {
+  centre: Vec3
+  reach: number
+  balls: Float64Array
+  frame: { up: Vec3; side: Vec3; depth: Vec3 }
+  size: Vec3
+  n: number
+}
+
+const padFields: PadField[] = PADS.map((P, pad) => {
+  const mine = clusters.filter((c) => c.pad === pad)
+  const balls = new Float64Array(mine.length * 4)
+  let reach = 0
+  mine.forEach((c, i) => {
+    balls.set([c.local[0], c.local[1], c.local[2], c.radius], i * 4)
+    reach = Math.max(reach, Math.hypot(c.local[0] - P.at[0], c.local[1] - P.at[1], c.local[2] - P.at[2]) + c.radius)
+  })
+  return { centre: P.at, reach, balls, frame: padFrame(P.lean, P.tip), size: P.size, n: pad }
+})
+
+function ballField(f: PadField, x: number, h: number, z: number, blend: number): number {
+  const b = f.balls
+  let sum = 0
+  let near = Infinity
+  for (let o = 0; o < b.length; o += 4) {
+    const d = Math.hypot(x - b[o]!, h - b[o + 1]!, z - b[o + 2]!) - b[o + 3]!
+    if (d < near) near = d
+  }
+  for (let o = 0; o < b.length; o += 4) {
+    const d = Math.hypot(x - b[o]!, h - b[o + 1]!, z - b[o + 2]!) - b[o + 3]!
+    sum += Math.exp(-(d - near) / blend)
+  }
+  return near - blend * Math.log(sum)
+}
+
+const FAR = 2.5
+
+export function crownField(x: number, h: number, z: number): number {
+  let best = Infinity
+  for (const f of padFields) {
+    const far = Math.hypot(x - f.centre[0], h - f.centre[1], z - f.centre[2]) - f.reach
+    if (far > FAR) {
+      if (far < best) best = far
+      continue
+    }
+    const d = ballField(f, x, h, z, BODY.blend) + BODY.bias
+    if (d < best) best = d
+  }
+  return best
+}
+
+export function crownCap(x: number, h: number, z: number): number {
+  let best = Infinity
+  for (const f of padFields) {
+    const far = Math.hypot(x - f.centre[0], h - f.centre[1], z - f.centre[2]) - f.reach - CAP.lift - CAP.puff
+    if (far > FAR) {
+      if (far < best) best = far
+      continue
+    }
+    const u = f.frame.up
+    const px = x - f.centre[0]
+    const ph = h - f.centre[1]
+    const pz = z - f.centre[2]
+    const s = px * f.frame.side[0] + ph * f.frame.side[1] + pz * f.frame.side[2]
+    const v = px * u[0] + ph * u[1] + pz * u[2]
+    const d = px * f.frame.depth[0] + ph * f.frame.depth[1] + pz * f.frame.depth[2]
+    const body = ballField(f, x - u[0] * CAP.lift, h - u[1] * CAP.lift, z - u[2] * CAP.lift, CAP.blend) + CAP.bias - CAP.puff
+    const rim = (s * s) / (f.size[0] * f.size[0]) + (d * d) / (f.size[2] * f.size[2])
+    const lobes = 0.6 * Math.sin(0.93 * s + 1.7 * f.n) * Math.sin(0.81 * d + 2.3 * f.n) + 0.38 * Math.sin(1.73 * s - 1.12 * d + f.n) + 0.2 * Math.sin(3.1 * s + 2.7 * d + 0.6 * f.n)
+    const line = f.size[1] * (1 - DOME * rim) - CAP.lift - CAP.puff - CAP.depth + lobes
+    const cut = line - v
+    const k = CAP.lip
+    const t = clamp01(0.5 + (0.5 * (body - cut)) / k)
+    const both = lerp(cut, body, t) + k * t * (1 - t)
+    if (both < best) best = both
+  }
+  return best
+}
+
+export const crownOffset = (): Vec3 => {
+  const p = place(0, TOP_H, 0)
+  return [p[0], p[1] - TOP_H, p[2]]
+}
+
 export const padAxes = (pad: Pad): { up: Vec3; side: Vec3; depth: Vec3 } => {
   const up = pad.dir
   const side = norm([up[1], -up[0], 0])
