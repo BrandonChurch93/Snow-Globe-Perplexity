@@ -1,15 +1,16 @@
-import type * as THREE from 'three'
-import type { Rgb } from '../../core/materials'
-import { blockArrival } from '../blockout'
+import * as THREE from 'three'
 import type { KitMoment } from '../kit'
+import * as frost from './frost'
+import { fresh } from './miniature'
 
-const season = 'winter'
-const arrivalTint: Rgb = [0.92, 0.95, 1]
+const own = frost as { arrival?: () => THREE.Object3D }
 
 export async function prepare(): Promise<void> {}
 
 export function arrival(): THREE.Object3D {
-  return blockArrival(season, arrivalTint)
+  const g = new THREE.Group().add(fresh())
+  if (own.arrival) g.add(own.arrival())
+  return g
 }
 
 export function update(_moment: KitMoment): void {}

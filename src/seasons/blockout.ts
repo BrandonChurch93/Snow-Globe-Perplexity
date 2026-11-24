@@ -100,17 +100,18 @@ function tag<T extends THREE.Object3D>(o: T, part: string): T {
   return o
 }
 
-export function blockMiniature(season: string, palette: Palette): THREE.Object3D {
-  const parts = [tint(islandGeometry(), palette.ground), ...shapes.map((s) => tint(shapeGeometry(s), palette[s.role]))]
+export function blockMiniature(season: string, palette: Palette, keep: (role: string) => boolean = () => true): THREE.Object3D {
+  const parts = [...(keep('ground') ? [tint(islandGeometry(), palette.ground)] : []), ...shapes.filter((s) => keep(s.role)).map((s) => tint(shapeGeometry(s), palette[s.role]))]
   const mesh = new THREE.Mesh(mergeGeometries(parts), stageMaterial({ part: `miniature-${season}`, inside: true, miniature: true, vertexColors: true, roughness: 0.85, map: blankMap(), change: 'miniature' }))
   mesh.castShadow = true
   mesh.receiveShadow = true
   return tag(mesh, `miniature-${season}`)
 }
 
-export function blockArrival(season: string, color: Rgb): THREE.Object3D {
+export function blockArrival(season: string, color: Rgb, keep: (role: string) => boolean = () => true): THREE.Object3D {
   const caps: THREE.BufferGeometry[] = []
   for (const s of shapes) {
+    if (!keep(s.role)) continue
     if (s.role === 'roof') caps.push(shapeGeometry(s, 0.7))
     if (s.role === 'crown' && s.kind === 'ball') {
       const g = new THREE.SphereGeometry(s.radius + 0.8, 40, 12, 0, Math.PI * 2, 0, Math.PI * 0.36)
@@ -118,7 +119,7 @@ export function blockArrival(season: string, color: Rgb): THREE.Object3D {
     }
     if (s.role === 'fence' && s.kind === 'box' && s.half[0] > 2) caps.push(shapeGeometry({ ...s, centre: [s.centre[0], s.centre[1] + 0.7, s.centre[2]] }, 0.35))
   }
-  const spots: [number, number][] = [[-30, 6], [-4, 30], [22, 22], [34, 4], [-22, 38], [12, 40]]
+  const spots: [number, number][] = keep('ground') ? [[-30, 6], [-4, 30], [22, 22], [34, 4], [-22, 38], [12, 40]] : []
   for (const [x, z] of spots) caps.push(shapeGeometry({ kind: 'disc', role: 'path', centre: [x, groundAt(x, z) + 0.5, z], rx: 4.5, rz: 3.2, yaw: 0.4 * x }))
   const mesh = new THREE.Mesh(mergeGeometries(caps), stageMaterial({ part: `arrival-${season}`, inside: true, color: new THREE.Color(color[0], color[1], color[2]), roughness: 0.9, change: 'arrival' }))
   mesh.castShadow = true

@@ -3,10 +3,10 @@ import * as arrivalPart from './arrival'
 import * as basePart from './base'
 import * as frostPart from './frost'
 import * as miniaturePart from './miniature'
-import { backdrop, rig } from './rig'
+import { backdrop } from './backdrop'
+import { rig } from './rig'
 import { particles, standIns as veilStandIns, veil } from './veil'
 
-const optional = miniaturePart as { collider?: SeasonKit['collider'] }
 const frost = frostPart as { dressing?: SeasonKit['dressing'] }
 
 export const kit: SeasonKit = {
@@ -19,7 +19,7 @@ export const kit: SeasonKit = {
   miniature: miniaturePart.miniature,
   arrival: arrivalPart.arrival,
   lights: miniaturePart.lights,
-  ...(optional.collider ? { collider: optional.collider } : {}),
+  collider: miniaturePart.collider,
   ...(frost.dressing ? { dressing: frost.dressing } : {}),
   standIns: [...frostPart.standIns, ...veilStandIns],
   update: (moment) => {
@@ -35,7 +35,9 @@ export const kit: SeasonKit = {
     return frostPart.surfaceDressing
   },
   rig,
-  innerLights: miniaturePart.innerLights,
+  get innerLights() {
+    return miniaturePart.innerLights()
+  },
   veil,
   backdrop,
   particles,

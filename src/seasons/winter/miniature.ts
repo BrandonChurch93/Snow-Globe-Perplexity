@@ -1,25 +1,24 @@
-import type * as THREE from 'three'
-import { anchors } from '../../scene/layout'
-import { blockLights, blockMiniature, type Palette } from '../blockout'
+import * as THREE from 'three'
+import type { SdfGrid } from '../../core/stage'
+import { gridOf } from '../../scene/layout'
 import type { InnerLight, KitMoment } from '../kit'
+import * as tree from './mini/tree'
+import * as village from './mini/village'
 
-const season = 'winter'
-const palette: Palette = { ground: [0.82, 0.86, 0.92], cottage: [0.42, 0.36, 0.32], roof: [0.3, 0.12, 0.09], chimney: [0.3, 0.25, 0.23], trunk: [0.16, 0.1, 0.07], crown: [0.1, 0.24, 0.16], post: [0.03, 0.03, 0.035], lamp: [0.9, 0.7, 0.4], pond: [0.5, 0.62, 0.72], fence: [0.3, 0.22, 0.16], path: [0.5, 0.52, 0.56] }
+const group = (...parts: THREE.Object3D[]): THREE.Object3D => new THREE.Group().add(...parts)
 
-export const innerLights: InnerLight[] = [
-  { at: anchors.lamp, color: [1, 0.66, 0.3], power: 0.88, reachMm: 26, flicker: 0.06, cycles: 3, phase: 0.1 },
-  { at: anchors.window, color: [1, 0.55, 0.2], power: 0.64, reachMm: 18, flicker: 0.12, cycles: 5, phase: 0.4 },
-  { at: anchors.crownTop, color: [1, 0.8, 0.4], power: 0.48, reachMm: 22, flicker: 0.2, cycles: 7, phase: 0.7 },
-]
+export const innerLights = (): InnerLight[] => [...village.innerLights, ...tree.innerLights]
 
-export async function prepare(): Promise<void> {}
-
-export function miniature(): THREE.Object3D {
-  return blockMiniature(season, palette)
+export async function prepare(): Promise<void> {
+  await Promise.all([village.prepare(), tree.prepare()])
 }
 
-export function lights(): THREE.Object3D {
-  return blockLights(season, innerLights)
-}
+export const miniature = (): THREE.Object3D => group(village.build(), tree.build())
+export const lights = (): THREE.Object3D => group(village.lights(), tree.lights())
+export const fresh = (): THREE.Object3D => group(village.arrival(), tree.arrival())
+export const collider = (): SdfGrid => gridOf((x, y, z) => Math.min(village.solid(x, y, z), tree.solid(x, y, z)))
 
-export function update(_moment: KitMoment): void {}
+export function update(moment: KitMoment): void {
+  village.update(moment)
+  tree.update(moment)
+}

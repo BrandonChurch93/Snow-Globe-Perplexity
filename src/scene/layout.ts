@@ -203,9 +203,10 @@ function distance(s: Shape, x: number, y: number, z: number): number {
   return Infinity
 }
 
-export function solidDistance(x: number, y: number, z: number): number {
-  let d = (y - groundAt(x, z)) / Math.sqrt(1 + 4 * FALL * FALL * (x * x + (z - PEAK_Z) * (z - PEAK_Z)))
+export function solidDistance(x: number, y: number, z: number, keep?: (role: Role | 'ground') => boolean): number {
+  let d = !keep || keep('ground') ? (y - groundAt(x, z)) / Math.sqrt(1 + 4 * FALL * FALL * (x * x + (z - PEAK_Z) * (z - PEAK_Z))) : Infinity
   for (const s of shapes) {
+    if (keep && !keep(s.role)) continue
     const v = distance(s, x, y, z)
     if (v < d) d = v
   }
@@ -214,7 +215,7 @@ export function solidDistance(x: number, y: number, z: number): number {
 
 export const colliderCells = 64
 
-export function buildCollider(extra?: (x: number, y: number, z: number) => number): SdfGrid {
+export function gridOf(distanceAt: (x: number, y: number, z: number) => number): SdfGrid {
   const n = colliderCells
   const sizeMm = 2 * innerRadiusMm
   const data = new Float32Array(n * n * n)
@@ -224,15 +225,14 @@ export function buildCollider(extra?: (x: number, y: number, z: number) => numbe
     const z = -half + k * step
     for (let j = 0; j < n; j++) {
       const y = -half + j * step
-      for (let i = 0; i < n; i++) {
-        const x = -half + i * step
-        let d = solidDistance(x, y, z)
-        if (extra) d = Math.min(d, extra(x, y, z))
-        data[i + n * (j + n * k)] = d
-      }
+      for (let i = 0; i < n; i++) data[i + n * (j + n * k)] = distanceAt(-half + i * step, y, z)
     }
   }
   return { n, sizeMm, data }
+}
+
+export function buildCollider(extra?: (x: number, y: number, z: number) => number): SdfGrid {
+  return gridOf(extra ? (x, y, z) => Math.min(solidDistance(x, y, z), extra(x, y, z)) : (x, y, z) => solidDistance(x, y, z))
 }
 
 function find<K extends Shape['kind']>(role: Role, kind: K): Extract<Shape, { kind: K }> {
