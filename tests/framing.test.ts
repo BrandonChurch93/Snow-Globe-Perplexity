@@ -4,7 +4,7 @@ import { config } from '../src/config'
 import { lensPlace } from '../src/globe/lens'
 import { poseById, sphereCentreMm } from '../src/scene/cameras'
 import { framingOf, globeTopMm, sphereRadiusMm } from '../src/scene/framing'
-import { centreHeightMm, shapePoints, shapes, type Role } from '../src/scene/layout'
+import { anchors, centreHeightMm, shapePoints, shapes, type Role } from '../src/scene/layout'
 
 const hd = config.formats.hd
 const RAD = Math.PI / 180
@@ -130,5 +130,30 @@ describe('framing', () => {
     expect(f.globe.cx + f.globe.r).toBeLessThan(hd.width)
     expect(Math.abs(c.yawDeg - hero.yawDeg)).toBeGreaterThanOrEqual(15)
     expect(height).toBeLessThan(poseById('hero').position.y / 4)
+  })
+  it('macro holds the door, the window, the chimney, a lamppost clear of the cottage and the trunk, and focuses on the door', () => {
+    const v = viewOf('macro')
+    const door = v.inside(anchors.door)
+    const win = v.inside(anchors.window)
+    const chimney = v.box(['chimney'])
+    const house = v.box(['cottage', 'roof', 'chimney'])
+    const lamp = v.box(['post', 'lamp'])
+    const trunk = v.box(['trunk'])
+    for (const p of [door, win]) {
+      expect(p.seen).toBe(true)
+      expect(p.x).toBeGreaterThan(0.05)
+      expect(p.x).toBeLessThan(0.95)
+      expect(p.y).toBeGreaterThan(0.05)
+      expect(p.y).toBeLessThan(0.95)
+    }
+    expect(chimney.left).toBeGreaterThan(0)
+    expect(chimney.top).toBeGreaterThan(0)
+    expect(house.left).toBeGreaterThan(-0.12)
+    expect(lamp.left - house.right).toBeGreaterThanOrEqual(0.04)
+    expect(lamp.top).toBeGreaterThan(0)
+    expect(trunk.left).toBeGreaterThan(lamp.right)
+    expect(trunk.right).toBeLessThan(1)
+    expect(Math.abs(v.pose.focusMm - door.z)).toBeLessThanOrEqual(5)
+    expect(v.pose.apertureMm).toBeLessThanOrEqual(3)
   })
 })

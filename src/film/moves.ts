@@ -456,7 +456,7 @@ function framing(r: Rig): string {
 }
 
 const lensWords = (r: Rig): string => `field of view ${n1(r.fovDeg)} degrees, aperture ${n1(r.apertureMm)} mm`
-const focusWords = (r: Rig): string => `${n1(r.distanceMm + r.focusShiftMm)} mm from the lens, ${n1(-r.focusShiftMm)} mm in front of the aim point`
+const focusWords = (r: Rig): string => `${n1(r.distanceMm + r.focusShiftMm)} mm from the lens, ${n1(Math.abs(r.focusShiftMm))} mm ${r.focusShiftMm > 0 ? 'behind' : 'in front of'} the aim point`
 
 export function shotNotes(cut: Cut): ShotNote[] {
   const fps = cut.fps
