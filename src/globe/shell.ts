@@ -42,11 +42,11 @@ export const glassLook = {
   shoulder: { from: 1.4, to: 3.6 },
   floor: 0.4,
   band: { from: 0.976, to: 0.99, wander: 0.004, dim: 0.5, shade: 0.3, side: [-0.2, 0.5] as const, low: [-0.5, -0.1] as const },
-  edge: { from: 0.978, peak: 0.994, keyLobe: [0.84, 0.97] as const, key: 0.5, keyTint: [0.75, 0.76, 0.585] as V3, tip: 0.33, tipTint: [0.6, 0.78, 1] as V3, tipDeg: [4.3, 2.5, 1.3] as const, tipShare: [0.975, 0.997] as const, rimLobe: [0.16, 0.5] as const, rim: 0.04, sky: 0.04, pool: 0 },
+  edge: { from: 0.978, keyFrom: 0.988, peak: 0.994, keyLobe: [0.84, 0.97] as const, key: 0.5, keyTint: [0.75, 0.76, 0.585] as V3, tip: 0.33, tipTint: [0.6, 0.78, 1] as V3, tipDeg: [4.3, 2.5, 1.3] as const, tipShare: [0.975, 0.997] as const, rimLobe: [0.16, 0.5] as const, rim: 0.04, sky: 0.04, pool: 0 },
   body: { from: 0.962, to: 0.978, sky: 0.04, tint: [1.8, 1.2, 0.4] as V3 },
   rim: { from: 0.96, to: 0.967, clear: 0.65, tint: [0.9, 1, 1.08] as V3, high: 0.085, low: 0.28, line: 0.9655, lineWide: 0.0022, lineGain: 0.25, highTint: [0.9, 1.05, 1] as V3, streak: 0.6, outer: 0.9905, outerWide: 0.004, outerGain: 0.16 },
   wall: { from: [0.896, 0.926] as const, to: [0.966, 0.976] as const, crest: 0.9635, crestWide: 0.013, plate: 0.14, peak: 0.3, inTint: [1.15, 0.97, 0.8] as V3, tint: [1, 1, 0.83] as V3, lowY: [0.02, -0.22] as const, leftDrop: 0.1, lowTo: 0.012, grain: 0.5, speck: 0.5, spark: 1.2, wander: 0.006, mirror: 0.5, mirrorTo: 0.93, leftTo: 0.016 },
-  ring: { from: 0.9625, to: 0.9675, soft: 0.008, spanDeg: 21, around: 96, rows: 3, side: [0.5, 0.2] as const, low: [-0.22, -0.08] as const, wallSide: [0.1, -0.5] as const, keep: 0.3, cover: 0.75, wall: [0.17, 0.19, 0.165] as V3, grain: 0.5, speck: 0.4, streak: 1, streakRings: 110, mottle: 1.6, edge: [0.985, 0.991] as const, line: [0.26, 0.3, 0.25] as V3, lineTop: [0.11, 0.2, 0.25] as V3, lineMix: 0.9, lowMix: 1, lowLine: [0.67, 0.69, 0.55] as V3, lowAt: [0.992, 0.997] as const, lowEnd: [-0.8, -0.72] as const, night: [0.014, 0.0255, 0.026] as V3, reach: 1.002, lowFrom: 0.99, lowTo: 0.996, mirror: { from: 0.955, lowFrom: 0.972, wide: 0.022, side: [-0.34, -0.2, -0.06] as const, coverHigh: 0.2, gain: 1.6, cover: 0.55, steps: 10, solid: [0.35, 0.62] as const, snow: [0.2, 0.22] as const, warm: 0.5, air: 0.6, streak: 0.7, streakRings: 150 } },
+  ring: { from: 0.9625, to: 0.9675, soft: 0.008, spanDeg: 21, around: 96, rows: 3, side: [0.5, 0.2] as const, low: [-0.22, -0.08] as const, wallSide: [0.1, -0.5] as const, keep: 0.3, cover: 0.75, wall: [0.17, 0.19, 0.165] as V3, grain: 0.5, speck: 0.4, streak: 1, streakRings: 110, mottle: 1.6, edge: [0.989, 0.994] as const, line: [0.26, 0.3, 0.25] as V3, lineTop: [0.11, 0.2, 0.25] as V3, lineMix: 0.9, lowMix: 1, lowLine: [0.67, 0.69, 0.55] as V3, lowAt: [0.992, 0.997] as const, lowEnd: [-0.8, -0.72] as const, night: [0.014, 0.0255, 0.026] as V3, reach: 1.002, lowFrom: 0.99, lowTo: 0.996, mirror: { from: 0.955, lowFrom: 0.972, wide: 0.022, side: [-0.34, -0.2, -0.06] as const, coverHigh: 0.2, gain: 1.6, cover: 0.55, steps: 10, solid: [0.35, 0.62] as const, snow: [0.2, 0.22] as const, warm: 0.5, air: 0.6, streak: 0.7, streakRings: 150 } },
   wave: { rings: 46, ringDeg: 0.3, driftDeg: 0.35, inner: 1.9 },
   dust: { cells: 240, share: 0.085, depth: 0.42 },
   hair: { count: 7, widthMm: 0.035, depth: 0.32, bend: 0.012 },
@@ -486,7 +486,7 @@ void main() {
   vec3 piped = uKeyCol * WIN_TINT * ${vec(glassLook.edge.keyTint)} * ${num(glassLook.edge.key)} * lobe + uRimCol * ${num(glassLook.edge.rim)} * back;
   if (uOwn > 0.5) piped += uSky * ${num(glassLook.edge.sky)} * (0.4 + 0.6 * smoothstep(-0.7, 0.5, nWorld.y));
   piped += uPool * ${num(glassLook.edge.pool)} * smoothstep(-0.2, -0.75, n.y);
-  float edge = smoothstep(${num(glassLook.edge.from)}, ${num(glassLook.edge.peak)}, s) * (0.35 + 0.65 * thick) * (0.7 + 0.3 * fine);
+  float edge = smoothstep(mix(${num(glassLook.edge.from)}, ${num(glassLook.edge.keyFrom)}, lobe), ${num(glassLook.edge.peak)}, s) * (0.35 + 0.65 * thick) * (0.7 + 0.3 * fine);
   col += piped * edge;
 
   float lift = p.y - SEAT_Y;
