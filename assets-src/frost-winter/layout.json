@@ -23,6 +23,14 @@
       { "deg": 245, "reachMm": 34, "density": 0.85, "filmMm": 17, "film": 0.85 }
     ],
     "backShare": 0.62,
+    "minSquash": 0.5,
+    "maxStretch": 2,
+    "feathers": {
+      "large": { "front": 520, "back": 240, "inFrom": -1, "inShare": 0.62, "inPow": 1.15, "screenMm": [4.5, 16], "lenPow": 1.25, "fill": 0.98, "lean": 0.8, "spread": 0.4, "k": [0.75, 1], "barb": [0.4, 0.6], "barbMax": 7 },
+      "small": { "front": 800, "back": 360, "inFrom": -1.5, "inShare": 0.8, "inPow": 1.25, "screenMm": [1.6, 5], "lenPow": 1, "fill": 1.05, "lean": 0.7, "spread": 0.5, "k": [0.28, 0.6], "barb": [0.36, 0.55], "barbMax": 2.6 },
+      "fans": { "count": 150, "screenMm": [4.5, 10.5] },
+      "needles": 2200
+    },
     "plumes": [
       { "root": [1075, 245], "tip": [1272, 182], "barbMm": 6.5 },
       { "root": [985, 330], "tip": [1060, 243], "barbMm": 5.5 },

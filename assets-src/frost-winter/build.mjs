@@ -10,7 +10,7 @@ import { CENTRE, REF_GLASS, rayOf } from '../../tools/lib/refcam.mjs'
 // Grows the winter frost: fern arms on the glass (on the sphere) and on the slab (on the plane).
 // Every stroke carries the time it appears, so the maps hold a threshold the arrival can play back.
 // Outputs: assets-full/winter/frost-glass.lin.w1536.png, frost-slab.lin.w1536.png, frost-grain.lin.tile.png, frost-shapes.glb.
-// Map channels: R = square root of the height, G = when it appears (0 first, 1 last), B = how much it sparkles.
+// Map channels: R = the height, G = when it appears (0 first, 1 last), B = how much it sparkles.
 
 const cfg = loadConfig()
 const args = parseArgs(process.argv.slice(2))
@@ -168,7 +168,7 @@ class Field {
     this.top = top
     const out = Buffer.alloc(n * n * 3)
     for (let i = 0; i < n * n; i++) {
-      out[i * 3] = Math.round(255 * Math.sqrt(clamp(H[i])))
+      out[i * 3] = Math.round(255 * clamp(H[i]))
       out[i * 3 + 1] = Math.round(255 * clamp((T[i] / top) * 0.96))
       out[i * 3 + 2] = Math.round(255 * clamp(S[i]))
     }
@@ -252,8 +252,8 @@ function grow(ctx, p, h, o, depth = 0) {
     field.stroke(A.x, A.y, B.x, B.y, M.m, M.pxPerMm, wa, wb, ha, hb, t, t1, o.spark ?? 0.6, o.kappa ?? 2, o.reach ?? 0.12, o.power ?? 1.7)
     if (o.film) {
       const f = o.film
-      const fa = f.w1 + (f.w0 - f.w1) * shape(u0)
-      const fb = f.w1 + (f.w0 - f.w1) * shape(u1)
+      const fa = f.profile ? Math.max(f.w1, f.w0 * f.profile(u0)) : f.w1 + (f.w0 - f.w1) * shape(u0)
+      const fb = f.profile ? Math.max(f.w1, f.w0 * f.profile(u1)) : f.w1 + (f.w0 - f.w1) * shape(u1)
       const ga = f.h1 + (f.h0 - f.h1) * shape(u0)
       const gb = f.h1 + (f.h0 - f.h1) * shape(u1)
       field.stroke(A.x, A.y, B.x, B.y, M.m, M.pxPerMm, fa, fb, ga, gb, t, t1, f.spark ?? 0.15, f.kappa ?? 2.5, 0, f.power ?? 1.3)
@@ -285,9 +285,15 @@ function grow(ctx, p, h, o, depth = 0) {
           const ang = sgn * (kids.angle + (kids.angleTip - kids.angle) * u + rng.gauss() * (kids.spread ?? 0.08))
           const nn = space.normal(at)
           const cc = cross(nn, hh)
-          const hk = norm([hh[0] * Math.cos(ang) + cc[0] * Math.sin(ang), hh[1] * Math.cos(ang) + cc[1] * Math.sin(ang), hh[2] * Math.cos(ang) + cc[2] * Math.sin(ang)])
-          const child = kids.make(l, u, rng, depth + 1)
-          child.len = l
+          let hk = norm([hh[0] * Math.cos(ang) + cc[0] * Math.sin(ang), hh[1] * Math.cos(ang) + cc[1] * Math.sin(ang), hh[2] * Math.cos(ang) + cc[2] * Math.sin(ang)])
+          let ll = l
+          if (ctx.warp) {
+            const w = ctx.warp(at, hh, hk)
+            hk = w.dir
+            ll = l * w.scale
+          }
+          const child = kids.make(ll, u, rng, depth + 1)
+          child.len = ll * (child.stretch ?? 1)
           child.t0 = t + (f * ds) / o.speed + (kids.delay ?? 0) * rng.next()
           child.curl = (child.curl ?? 0) * -sgn
           grow(ctx, at, hk, child, depth + 1)
@@ -340,47 +346,70 @@ function profileAt(deg) {
   return P[0]
 }
 
-function needle(l, u, rng) {
-  return { step: 0.38, w0: rng.range(0.085, 0.125), w1: 0.04, h0: rng.range(0.6, 0.92), h1: 0.36, speed: 0.5, curl: rng.range(0.01, 0.07), wobble: 0.012, spark: rng.range(0.45, 1), kappa: 3, reach: 0.1, taper: 0.62, power: 1.5 }
+function fibre(rng, k) {
+  return { step: 0.7, w0: rng.range(0.085, 0.125), w1: 0.035, h0: k * rng.range(0.55, 0.9), h1: k * 0.3, speed: 0.6, curl: rng.range(0.003, 0.03), wobble: 0.008, spark: rng.range(0.45, 1), kappa: 3, reach: 0.1, taper: 0.62, power: 1.5 }
 }
-function plumeSpec(length, barbMm, rng, t0) {
-  const lean = rng.range(0.55, 1)
+// A feather: a spine, a low soft body in the feather's outline, and fine barbs set close enough to read as fibres.
+function plumeSpec(length, barbMm, rng, t0, k = 1) {
+  const lean = rng.range(0.6, 1)
+  const angle = rng.range(32, 46) * RAD
+  const profile = feather(rng.range(0.16, 0.36), rng.range(0.6, 0.95))
   return {
     len: length,
-    step: 0.3,
-    w0: rng.range(0.1, 0.145),
-    w1: 0.045,
-    h0: 1,
-    h1: 0.6,
+    step: 0.35,
+    w0: rng.range(0.13, 0.18),
+    w1: 0.05,
+    h0: k,
+    h1: 0.6 * k,
     speed: 1,
     t0,
-    wobble: 0.018,
-    curl: rng.gauss() * 0.006,
+    wobble: 0.016,
+    curl: rng.gauss() * 0.005,
     spark: 0.8,
     kappa: 2.5,
     reach: 0.15,
     taper: 0.75,
-    film: { w0: Math.min(1.5, 0.22 * barbMm + 0.3), w1: 0.15, h0: 0.08, h1: 0.03, kappa: 3 },
+    film: { w0: barbMm * Math.sin(angle) * 0.8, w1: 0.12, h0: 0.12 * k, h1: 0.05 * k, profile, kappa: 3, spark: 0.2 },
     kids: {
-      gap: rng.range(0.5, 0.68),
+      gap: rng.range(0.6, 0.82),
       len: barbMm,
-      min: 0.35,
+      min: 0.3,
       lean: rng.next() < 0.5 ? lean : 1 / lean,
-      angle: rng.range(34, 47) * RAD,
-      angleTip: rng.range(22, 31) * RAD,
-      spread: 0.09,
-      profile: feather(rng.range(0.08, 0.2), rng.range(0.75, 1.15)),
+      angle,
+      angleTip: angle * rng.range(0.55, 0.75),
+      spread: 0.06,
+      profile,
       make: (l, u, r) => {
-        const o = needle(l, u, r)
-        if (l > 2.6 && r.next() < 0.3) {
-          o.w0 *= 1.25
-          o.h0 = Math.min(0.9, o.h0 * 1.2)
-          o.speed = 0.65
-          o.kids = { gap: r.range(0.5, 0.66), len: l * 0.3, min: 0.3, angle: 40 * RAD, angleTip: 30 * RAD, profile: feather(0.15, 0.9), make: (l2, u2, r2) => ({ ...needle(l2, u2, r2), w0: 0.07, h0: 0.5, speed: 0.4 }) }
-        }
+        const o = fibre(r, k)
+        if (r.next() < 0.18) {
+          o.w0 *= 1.35
+          o.h0 = Math.min(1, o.h0 * 1.3)
+          o.stretch = r.range(1.15, 1.5)
+        } else o.h0 *= r.range(0.7, 1)
         return o
       },
     },
+  }
+}
+// A fan: one long bare needle with a few short teeth.
+function fanNeedle(length, rng, t0) {
+  return {
+    len: length,
+    step: 0.5,
+    w0: rng.range(0.1, 0.15),
+    w1: 0.04,
+    h0: rng.range(0.85, 1),
+    h1: 0.5,
+    speed: 1.4,
+    t0,
+    wobble: 0.006,
+    curl: rng.gauss() * 0.004,
+    spark: 0.9,
+    kappa: 2.5,
+    reach: 0.12,
+    taper: 0.7,
+    film: { w0: 0.5, w1: 0.12, h0: 0.14, h1: 0.05, kappa: 3, spark: 0.2 },
+    kids: { gap: rng.range(0.8, 1.5), len: rng.range(0.9, 1.7), min: 0.3, angle: rng.range(26, 36) * RAD, angleTip: 20 * RAD, spread: 0.08, profile: feather(0.1, 0.8), make: (l, u, r) => fibre(r, 0.9) },
   }
 }
 
@@ -401,17 +430,46 @@ function buildGlass() {
     const dn = dot(d, nn)
     return norm([d[0] - dn * nn[0], d[1] - dn * nn[1], d[2] - dn * nn[2]])
   }
+  // The picture is matched from the hero camera, which sees the rim band edge on. A branch is laid out as that camera sees it
+  // and then stretched along the glass toward the pole, so that the angle it makes on screen is the one that was asked for.
+  const squash = L.glass.minSquash
+  const frame = (p) => {
+    const nn = norm(p)
+    const er = toward(p, [0, 0, p[2] >= 0 ? Rs : -Rs])
+    return { nn, er, et: cross(nn, er) }
+  }
+  ctx.warp = (p, h, hk) => {
+    const { nn, er, et } = frame(p)
+    const c = Math.max(squash, Math.abs(nn[2]))
+    const sa = dot(h, er) * c
+    const sb = dot(h, et)
+    const sl = Math.hypot(sa, sb) || 1
+    const ang = Math.atan2(dot(cross(h, hk), nn), dot(h, hk))
+    const ra = (sa * Math.cos(ang) - sb * Math.sin(ang)) / sl
+    const rb = (sa * Math.sin(ang) + sb * Math.cos(ang)) / sl
+    const va = ra / c
+    return { dir: norm([er[0] * va + et[0] * rb, er[1] * va + et[1] * rb, er[2] * va + et[2] * rb]), scale: Math.hypot(va, rb) }
+  }
+  // A heading and a length on the glass from an angle on screen (0 inward, positive clockwise) and a length on screen.
+  const heading = (p, phi, screenMm) => {
+    const { nn, er, et } = frame(p)
+    const d0 = Math.asin(clamp(Math.abs(nn[2]), 0, 1))
+    const d1 = Math.acos(clamp(Math.cos(d0) - (screenMm * Math.cos(phi)) / Rs, 0.05, 1))
+    const va = Rs * (d1 - d0)
+    const vb = screenMm * Math.sin(phi)
+    const l = Math.hypot(va, vb) || 1
+    return { h: norm([er[0] * va + et[0] * vb, er[1] * va + et[1] * vb, er[2] * va + et[2] * vb]), scale: Math.min(l / screenMm, L.glass.maxStretch) }
+  }
+  const leanAt = (deg) => clamp((fbm(Math.cos(deg * RAD) * 1.9 + 5.3, Math.sin(deg * RAD) * 1.9 + 1.7, 3.3, 2) - 0.5) * 3.2, -0.75, 0.75)
   // The measured plumes: a stem from the rim to the root, then on to the tip.
   for (const pl of L.glass.plumes) {
     const root = pixelOnGlass(pl.root[0], pl.root[1])
     const tip = pixelOnGlass(pl.tip[0], pl.tip[1])
-    const deg = Math.atan2(root[1], root[0]) / RAD
-    const start = rimAt(deg + rng.range(-4, 4), rng.range(-1, 2))
-    const length = (arc(start, root) + arc(root, tip)) * 1.04
-    const o = plumeSpec(length, pl.barbMm, rng, rng.range(0, 3))
-    o.to = [root, tip]
+    const fromRim = Rs * Math.asin(clamp(Math.abs(root[2]) / Rs, 0, 1))
+    const o = plumeSpec(arc(root, tip) * 1.25, pl.barbMm, rng, rng.range(0, 3) + fromRim * 0.8)
+    o.to = [tip]
     o.steer = 0.5
-    grow(ctx, start, toward(start, root), o)
+    grow(ctx, root, toward(root, tip), o)
   }
   // Stars: seeded points on the glass, arms thrown out from each.
   for (const st of L.glass.stars) {
@@ -419,51 +477,68 @@ function buildGlass() {
     const t0 = Math.max(0, Rs * Math.asin(clamp(at[2] / Rs, -1, 1))) * 0.9
     for (const tp of st.tips) {
       const tip = pixelOnGlass(tp[0], tp[1])
-      const o = plumeSpec(arc(at, tip) * 1.03, st.barbMm, rng, t0 + rng.range(0, 2))
+      const o = plumeSpec(arc(at, tip) * 1.2, st.barbMm, rng, t0 + rng.range(0, 2))
       o.to = [tip]
       grow(ctx, at, toward(at, tip), o)
     }
   }
-  // Ferns seeded all along the rim, front and back, many short and a few long.
-  const seeded = (count, front) => {
+  // Feathers seeded along the rim, front and back. The large ones root at the rim and their tips make the band's inner edge;
+  // the small ones are thin and lie under them.
+  const seeded = (count, front, kind) => {
     for (let i = 0; i < count; i++) {
       const deg = rng.range(-90, 270)
       const pr = profileAt(deg)
       if (rng.next() > pr.density) continue
       const reach = pr.reachMm * (front ? 1 : L.glass.backShare)
-      const inMm = -1.5 + (reach * 0.8 + 1.5) * Math.pow(rng.next(), 1.5)
-      const length = Math.min(Math.max(2, reach - inMm) * 1.05, 2.2 + 12 * Math.pow(rng.next(), 2.2))
+      const inMm = kind.inFrom + (reach * kind.inShare - kind.inFrom) * Math.pow(rng.next(), kind.inPow)
       const start = rimAt(deg, front ? inMm : -inMm)
-      const inward = toward(start, [0, 0, front ? Rs : -Rs])
-      const up = toward(start, [0, Rs, 0])
-      const sweep = (rng.next() < 0.68 ? 1 : -1) * rng.range(5, 78) * RAD
-      const nn = norm(start)
-      const side = Math.sign(dot(cross(inward, up), nn)) || 1
-      const a = sweep * side
-      const c = cross(nn, inward)
-      const h = norm([inward[0] * Math.cos(a) + c[0] * Math.sin(a), inward[1] * Math.cos(a) + c[1] * Math.sin(a), inward[2] * Math.cos(a) + c[2] * Math.sin(a)])
-      const o = plumeSpec(length, clamp(length * rng.range(0.3, 0.5), 1.2, 5.6), rng, rng.range(0, 4) + Math.abs(inMm) * 0.8)
-      o.curl = rng.gauss() * 0.012
-      grow(ctx, start, h, o)
+      const screenMm = (kind.screenMm[0] + (kind.screenMm[1] - kind.screenMm[0]) * Math.pow(rng.next(), kind.lenPow)) * (0.45 + 0.55 * pr.density)
+      const phi = clamp(leanAt(deg) * kind.lean + rng.gauss() * kind.spread, -1.25, 1.25)
+      const hd = heading(start, phi, screenMm)
+      const length = Math.min(screenMm * hd.scale, Math.max(2, (reach - inMm) * kind.fill))
+      const k = rng.range(kind.k[0], kind.k[1])
+      const o = plumeSpec(length, clamp((length / hd.scale) * rng.range(kind.barb[0], kind.barb[1]), 0.8, kind.barbMax), rng, rng.range(0, 4) + Math.abs(inMm) * 0.8, k)
+      o.curl = rng.gauss() * 0.008
+      grow(ctx, start, hd.h, o)
     }
   }
-  seeded(1900, true)
-  seeded(900, false)
+  const F = L.glass.feathers
+  seeded(F.large.front, true, F.large)
+  seeded(F.large.back, false, F.large)
+  seeded(F.small.front, true, F.small)
+  seeded(F.small.back, false, F.small)
+  // Fans: a handful of long bare needles thrown from one point.
+  for (let i = 0; i < F.fans.count; i++) {
+    const deg = rng.range(-90, 270)
+    const pr = profileAt(deg)
+    if (rng.next() > pr.density * pr.density) continue
+    const front = rng.next() < 0.7
+    const reach = pr.reachMm * (front ? 1 : L.glass.backShare)
+    const inMm = reach * rng.range(0.08, 0.5)
+    const start = rimAt(deg, front ? inMm : -inMm)
+    const phi0 = leanAt(deg) * 0.9 + rng.gauss() * 0.2
+    const count = 4 + Math.floor(rng.next() * 6)
+    const t0 = rng.range(0, 4) + inMm * 0.8
+    for (let j = 0; j < count; j++) {
+      const off = rng.range(-0.62, 0.62)
+      const screenMm = rng.range(F.fans.screenMm[0], F.fans.screenMm[1]) * (1 - 0.55 * Math.abs(off) / 0.62) * (0.5 + 0.5 * pr.density)
+      const hd = heading(start, phi0 + off, screenMm)
+      const length = Math.min(screenMm * hd.scale, Math.max(2, (reach - inMm) * 1.1))
+      grow(ctx, start, hd.h, fanNeedle(length, rng, t0 + rng.range(0, 1.5)))
+    }
+  }
   // Loose needles in the rim band.
-  for (let i = 0; i < 5200; i++) {
+  for (let i = 0; i < F.needles; i++) {
     const deg = rng.range(-90, 270)
     const pr = profileAt(deg)
     if (rng.next() > pr.film) continue
     const front = rng.next() < 0.62
     const inMm = Math.pow(rng.next(), 1.4) * pr.filmMm * (front ? 1 : L.glass.backShare) * 1.15
     const start = rimAt(deg + rng.range(-0.5, 0.5), front ? inMm : -inMm)
-    const nn = norm(start)
-    const inward = toward(start, [0, 0, front ? Rs : -Rs])
-    const a = rng.range(-1.35, 1.35)
-    const c = cross(nn, inward)
-    const h = norm([inward[0] * Math.cos(a) + c[0] * Math.sin(a), inward[1] * Math.cos(a) + c[1] * Math.sin(a), inward[2] * Math.cos(a) + c[2] * Math.sin(a)])
-    const l = rng.range(0.7, 3.6)
-    grow(ctx, start, h, { ...needle(l, 0, rng), len: l, t0: 1 + inMm * 0.9 + rng.range(0, 5), curl: rng.gauss() * 0.03 })
+    const screenMm = rng.range(0.5, 2.2)
+    const hd = heading(start, leanAt(deg) * 0.6 + rng.gauss() * 0.7, screenMm)
+    const l = screenMm * hd.scale
+    grow(ctx, start, hd.h, { ...fibre(rng, rng.range(0.35, 0.8)), step: 0.4, len: l, t0: 1 + inMm * 0.9 + rng.range(0, 5), curl: rng.gauss() * 0.02 })
   }
   // The milky film in the rim band, thick at the rim and broken toward its inner edge.
   const { H, T, S } = field
@@ -505,9 +580,9 @@ function slabArm(length, rng, t0) {
   const twig = (l, u, r) => ({ step: 0.3, w0: r.range(0.16, 0.24), w1: 0.07, h0: r.range(0.35, 0.5), h1: 0.16, speed: 0.4, wobble: 0.02, spark: r.range(0.5, 1), kappa: 3, reach: 0.12, taper: 0.8, power: 1.5 })
   const barb = (l, u, r) => ({
     step: 0.32,
-    w0: r.range(0.34, 0.5) * (0.6 + 0.4 * Math.min(1, l / 2)),
+    w0: r.range(0.45, 0.65) * (0.6 + 0.4 * Math.min(1, l / 2)),
     w1: 0.1,
-    h0: r.range(0.45, 0.62),
+    h0: r.range(0.55, 0.75),
     h1: 0.2,
     speed: 0.45,
     wobble: 0.025,
@@ -521,7 +596,7 @@ function slabArm(length, rng, t0) {
   })
   const branch = (l, u, r) => ({
     step: 0.4,
-    w0: r.range(0.75, 1.05) * (0.55 + 0.45 * Math.min(1, l / 8)),
+    w0: r.range(1.0, 1.4) * (0.55 + 0.45 * Math.min(1, l / 8)),
     w1: 0.16,
     h0: r.range(0.65, 0.85),
     h1: 0.3,
@@ -533,8 +608,8 @@ function slabArm(length, rng, t0) {
     reach: 0.2,
     taper: 0.75,
     power: 1.6,
-    film: { w0: 1.7 * (1 - 0.6 * u), w1: 0.25, h0: 0.36 * (1 - 0.6 * u), h1: 0.08, kappa: 3, spark: 0.3 },
-    kids: { gap: r.range(1.1, 1.5), len: clamp(l * 0.34, 0.9, 4.2), min: 0.5, angle: r.range(46, 58) * RAD, angleTip: 36 * RAD, profile: feather(0.16, 0.95), make: barb },
+    film: { w0: 3.0 * (1 - 0.6 * u), w1: 0.25, h0: 0.6 * (1 - 0.5 * u), h1: 0.1, kappa: 3, spark: 0.3 },
+    kids: { gap: r.range(0.95, 1.3), len: clamp(l * 0.34, 0.9, 4.2), min: 0.5, angle: r.range(46, 58) * RAD, angleTip: 36 * RAD, profile: feather(0.16, 0.95), make: barb },
   })
   return {
     len: length,
@@ -552,9 +627,9 @@ function slabArm(length, rng, t0) {
     reach: 0.3,
     taper: 0.8,
     power: 1.8,
-    film: { w0: rng.range(3.6, 5.6), w1: 0.6, h0: rng.range(0.6, 0.8), h1: 0.1, kappa: 2.5, spark: 0.35, power: 1.15 },
+    film: { w0: rng.range(4.5, 6.5), w1: 0.6, h0: rng.range(0.62, 0.82), h1: 0.1, kappa: 2.5, spark: 0.35, power: 1.15 },
     kids: {
-      gap: rng.range(3.4, 4.6),
+      gap: rng.range(2.8, 3.8),
       start: rng.range(2.5, 5),
       len: clamp(length * rng.range(0.3, 0.4), 6, 21),
       min: 0.8,
@@ -626,9 +701,10 @@ function buildSlab() {
       const far = fbm(wx * 0.06 + 40, 1.7, wz * 0.06, 4)
       const thin = smooth(0.6, 0.74, far) * (1 - smooth(half * 0.72, half * 0.97, r)) * smooth(footR + 6, footR + 24, r)
       if (thin > 0) {
-        const h = thin * (0.035 + 0.075 * mid)
+        const speck = smooth(0.5, 0.68, 0.6 * noise3(wx * 3.1, 5.5, wz * 3.1) + 0.4 * noise3(wx * 7.3, 2.2, wz * 7.3))
+        const h = thin * (0.02 + 0.03 * mid + speck * (0.1 + 0.22 * mid))
         if (h > H[i]) H[i] = h
-        const s = 0.1 + 0.2 * mid
+        const s = 0.1 + 0.2 * mid + 0.5 * speck
         if (s > S[i]) S[i] = s
         const t = 6 + (r - footR) * 1.05 + mid * 8
         if (t < T[i]) T[i] = t

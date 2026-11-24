@@ -26,8 +26,8 @@ export const glassDressing: Dressing = { tint: [0.86, 0.92, 1], amount: 0 }
 export const surfaceDressing: Dressing & { reachMm: number } = { tint: [0.86, 0.92, 1], amount: 0, reachMm: 132 }
 
 const look = {
-  glass: { cover: 1.35, haze: 0.12, slope: 0.55, micro: 1.1, glint: 1, light: 0.68 },
-  slab: { cover: 1.5, slope: 0.8, micro: 0.9, glint: 1, pool: 0.035 },
+  glass: { cover: 1.15, haze: 0.12, slope: 0.55, micro: 1.1, glint: 1.6, light: 0.52 },
+  slab: { cover: 1.5, slope: 0.8, micro: 0.9, glint: 1.6, pool: 0.035 },
 }
 
 const frostUniforms = {
@@ -81,8 +81,8 @@ vec3 frostGlintLayer(vec2 q, float size, float k, vec3 n, vec3 v) {
   vec3 r = reflect(v, m);
   float bright = frostRnd(cell, k + 0.057);
   bright = 0.2 + 3.2 * bright * bright * bright;
-  vec3 light = uKeyCol * (2.4 * smoothstep(0.972, 0.996, dot(r, uKeyDir)));
-  light += uRimCol * (3.2 * smoothstep(0.978, 0.997, dot(r, uRimDir)));
+  vec3 light = uKeyCol * (2.4 * smoothstep(0.95, 0.992, dot(r, uKeyDir)));
+  light += uRimCol * (3.2 * smoothstep(0.955, 0.994, dot(r, uRimDir)));
   light += stageRoomLights(r, 0.012) * 0.5;
   return light * (spot * bright);
 }
@@ -130,10 +130,10 @@ void main() {
   vec3 m2 = texture(uGlassMap, uv + t2 * e, -0.6).rgb;
   vec3 mb = texture(uGlassMap, uv, 3.0).rgb;
   float on = smoothstep(0.0, FROST_SOFT, lvl - m0.g);
-  float h0 = m0.r * m0.r * on;
-  float h1 = m1.r * m1.r * smoothstep(0.0, FROST_SOFT, lvl - m1.g);
-  float h2 = m2.r * m2.r * smoothstep(0.0, FROST_SOFT, lvl - m2.g);
-  float haze = mb.r * mb.r * smoothstep(0.0, 2.0 * FROST_SOFT, lvl - mb.g + 0.04);
+  float h0 = m0.r * on;
+  float h1 = m1.r * smoothstep(0.0, FROST_SOFT, lvl - m1.g);
+  float h2 = m2.r * smoothstep(0.0, FROST_SOFT, lvl - m2.g);
+  float haze = mb.r * smoothstep(0.0, 2.0 * FROST_SOFT, lvl - mb.g + 0.04);
   float body = h0 * (0.45 + 1.5 * grain.r);
   float mmR = e * 2.0 * uShape.x * ${RS.toFixed(2)};
   float mmT = mmR * st / max(th, 0.05);
@@ -206,9 +206,9 @@ void main() {
   vec3 m1 = texture(uSlabMap, uv + vec2(e, 0.0)).rgb;
   vec3 m2 = texture(uSlabMap, uv - vec2(0.0, e)).rgb;
   float on = smoothstep(0.0, FROST_SOFT, lvl - m0.g);
-  float h0 = m0.r * m0.r * on;
-  float h1 = m1.r * m1.r * smoothstep(0.0, FROST_SOFT, lvl - m1.g);
-  float h2 = m2.r * m2.r * smoothstep(0.0, FROST_SOFT, lvl - m2.g);
+  float h0 = m0.r * on;
+  float h1 = m1.r * smoothstep(0.0, FROST_SOFT, lvl - m1.g);
+  float h2 = m2.r * smoothstep(0.0, FROST_SOFT, lvl - m2.g);
   float body = h0 * (0.65 + 0.7 * grain.r);
   vec2 slope = uField.z * uSlabLook.z * vec2(h1 - h0, h2 - h0) / (e * 2.0 * uField.x);
   vec2 micro = ((grain.gb - 0.5) * 1.2 + (fine.gb - 0.5) * 0.8) * uSlabLook.w * (0.2 + 0.8 * smoothstep(0.0, 0.25, h0));
