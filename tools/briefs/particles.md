@@ -13,4 +13,6 @@ This is the heart of the piece. The owner's words: the shake has to be on point 
 - Speed matters: the pool is about a hundred thousand particles at `sim.stepHz`. Measure a simulated second in the storm and at rest in Node, report it, and bring it down as far as you can (structure of arrays, no allocation in the step, particles at rest skipped until the liquid moves them).
 - Tests as "Tests" lists them for the simulation, the liquid model and the loop.
 
+- Added 03:50 UTC: the engine has `stir(x, y, z)`, which adds a turn to the liquid about that axis (radians a second, in the glass's frame) at the next step, for the app's stir gesture. The closed paths of the loop are given as an object with the same typed arrays as the simulation and a call that sets them to a loop time in seconds, so the drawing reads either.
+
 Report the branch, the commit, the test results, the timing, and anything about a kind's behaviour you were unsure of.

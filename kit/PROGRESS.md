@@ -25,25 +25,26 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 6 · 2026-11-24 03:26 UTC
+Status 8 · 2026-11-24 04:01 UTC
 
-- `out/stills/status/status-6-1.jpg`: Nothing new was rendered since the last status. The approved images, for reference
+- `out/stills/status/status-8-1.jpg`: The sheet tool: the whole film in 12 frames on the measuring scene, every shot at least once. (by sheet_tools_builder)
+- `out/stills/status/status-8-2.jpg`: The sheet tool, first run: 12 frames across the first shake. It runs on the measuring scene, so this shows the tool and the shake's timing, not the look. (by sheet_tools_builder)
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 03:40 UTC
-clock: phase 2, tick of 3.0 minutes
-phase 2: 0.64 h used of its 6.00 h box
-allowance (before the review): 1.83 h used of 36.00 h allowed
-all time before the review: 1.83 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 04:01 UTC
+clock: phase 2, tick of 10.2 minutes
+phase 2: 0.99 h used of its 6.00 h box
+allowance (before the review): 2.18 h used of 36.00 h allowed
+all time before the review: 2.18 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 13
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -309,7 +310,20 @@ none
 
 Every cue with its state: kept, open, or not made yet. Takes used. Which candidate soundtracks exist. After the review: which soundtrack was approved and where it came from. Credits spent on sound in all.
 
-none
+| Cue | State | Takes used | Note |
+| --- | --- | --- | --- |
+| `glass-clink` | kept, take 2 | 2 of 3 | Take 1 was the Phase 0 test call, almost silent |
+| `ui-sound-on` | kept, take 1 | 1 of 3 | Heard as a bright chime of two quick tones, a little synthetic |
+| `ui-tick` | kept, take 1, weak fit | 1 of 3 | Heard as a sharp high clink, sharper than the soft tick asked for. A softer take is due in Phase 3 |
+| `lift` | open, next take in Phase 3 | 1 of 3 | Take 1 is a high clink, not a heavy base leaving stone |
+| `shake-winter` | open, next take in Phase 3 | 1 of 3 | Take 1 is a spoon stirring a glass |
+| `land-winter` | open, last take in Phase 3 | 2 of 3 | Take 1 almost silent, take 2 one light clink with no crackling |
+| `amb-winter` | open, out of takes | 3 of 3 | Take 1 and 2 were a rumble under 60 Hz, take 3 a gust, a whoosh and sleigh bells up close. Silent until a review round |
+| every other cue | not made yet | 0 | Phase 3 to 5 |
+
+- Candidate soundtracks: none yet.
+- Credits spent on sound effects, by the cost header of each call: 768 for eleven takes, and two 3 second test calls whose headers were not kept, about 66 more. The account's counter read 48421 of 131000 at 04:02 UTC. It also moves with Brandon's other work, so it is not this build's total.
+- Texts, settings, verdicts and the listener's words for every take: `audio/prompts.json`.
 
 ## Card
 
@@ -351,6 +365,9 @@ Numbered. What, why, and the date.
 23. 2026-11-24. The cut list is computed in the page (`src/film/cut.ts`) from the config and the audio map, and `npm run cut` writes it out by asking the built page. The film, the checks and the mix therefore read one cut, and it cannot drift from what the page renders.
 24. 2026-11-24. Phase 2 is split across eight sandbox agents with one owner per file: five for the harness commands, one for the audio map, one for the interface and the probe, one for the simulation. The Builder builds the engine, the stand-ins, the film, the app and the seasons' skeleton meanwhile and integrates. The briefs are committed under `tools/briefs/`, so a replacement or a later task starts from the same words.
 25. 2026-11-24. The npm script lines for every remaining harness command were added before the agents started, so no agent edits `package.json`.
+26. 2026-11-24. The engine and the film with the app, which decision 24 kept with the Builder, went to two more sandbox agents at 03:48 and 03:50 (ten build agents, the limit in the config). Reason: the Builder's working memory is compacted every few minutes at this size of task, and each compaction costs a full reading of the kit, so code written here would be written between readings. The Builder now holds the contracts (`src/core/stage.ts`, `src/core/bridge.ts`), verifies every branch through the harness, integrates, runs the rounds, the sound and the statuses. The stage contract was widened first so the two can work apart: the moment carries the time, the beat and the loop's period, the particles reach the stage as one typed source, the stage gives the collider.
+
+27. 2026-11-24. Sound takes in Phase 2. Step 7 asks for the first take of seven cues, and the build order leaves winter's remaining takes to Phase 3. Two cues went further in this phase, because their takes came back so weak that there was nothing to judge or to carry: `land-winter` (take 2) and `amb-winter` (takes 2 and 3). `amb-winter` has now used its three takes and none fits its line, so by `kit/03-METHOD.md` section 12 it is an open item, silent in the mixes and in the app, and it will be named in the `REVIEW` block. What the three takes taught is written under `learned` in `audio/prompts.json` and goes into the brief of the sound agent in Phase 4, so spring, summer and fall do not pay for it again. The remaining takes of `lift`, `shake-winter`, `land-winter` and `ui-tick` are spent in Phase 3, against the finished shake, with texts already changed by what was learned. The listener's fixed questions are in `audio/QUESTIONS.md`.
 
 ## Notes from Brandon
 
@@ -372,7 +389,7 @@ none
 
 Severe and major issues still open when a limit was reached: the unit, the still, the critic's words, what was tried, what to try next.
 
-none
+1. Sound, `amb-winter`: no take fits after the three the cue is allowed. Its line is "wind and distant bells", looped and very quiet. Take 1 (asked for as very quiet, with the loop setting) and take 2 (asked for at full strength, with the loop setting) came back as a rumble under 60 Hz with nothing above it. Take 3 (no loop setting) is a gust of wind, a whoosh, then sleigh bells jingling close by for ten seconds: the listener's words are "the bells are loud and upfront rather than distant" and "a distinct, magical-sounding whoosh". Winter therefore has no ambience in the app and in the mixes. What to try next, when a review round buys new takes: one steady bed of wind with no named instrument up close, the bells as "far away and sparse", no loop setting, 20 seconds, and let the chain make the loop.
 
 ## Review items not done
 
@@ -410,8 +427,10 @@ The name, the branch, the folders it owns, its job, its limit, when it started.
 | `audiomap_builder` | `agent/tools-audiomap` | `tools/audiomap.mjs`, `tools/lib/beats.mjs`, `tests/audiomap.test.ts` | The audio map and its click track test | 3 h, heartbeat 25 min | 03:37 UTC | running |
 | `interface_builder` | `agent/ui` | `src/ui/`, `src/copy.ts`, `src/probe/`, `tools/ui-preview/`, `public/fonts/` | The controls, the menu on the `M` key and the probe page | 3 h, heartbeat 25 min | 03:37 UTC | running |
 | `particles_builder` | `agent/particles` | `src/particles/engine/`, `src/globe/liquid.ts`, `tests/sim.test.ts`, `tests/liquid.test.ts`, `tests/loop.test.ts` | The liquid model, the simulation of every kind, the season change by index, the loop's closed paths | 3 h, heartbeat 25 min | 03:37 UTC | running |
+| `engine_builder` | `agent/engine` | `src/globe/` except `liquid.ts`, `src/scene/`, `src/seasons/`, `src/post/`, `src/diagnostics/`, `src/particles/draw/`, `src/shake/change.ts`, `src/core/materials.ts`, `src/core/standins.ts`, `tools/parts.mjs`, `parts/PARTS.json`, `tests/layout.test.ts`, `tests/lens.test.ts`, `tests/framing.test.ts`, the numbers under `cameras` | The stage on stand-ins: refraction, the surface and its mirror, the backdrop, the layout and the collider, the four season folders, the change, the diagnostic views, the post chain, the rough camera fit, the render budget | 3 h, heartbeat 25 min | 03:48 UTC | running |
+| `film_app_builder` | `agent/film-app` | `src/film/`, `src/app/`, `src/capture/showcase.ts`, `src/main.ts`, `src/core/params.ts`, `src/core/quality.ts`, `src/vite-env.d.ts`, `index.html`, `vite.config.ts`, `tools/cut.mjs`, `tools/simcache.mjs`, `cut/`, `tests/film.test.ts`, `tests/cut.test.ts`, `tests/app.test.ts` | The cut, the camera moves, `autopilot`, the opening's stand-in, the loop's timeline, the `live` app with its gestures and quality levels | 3 h, heartbeat 25 min | 03:50 UTC | running |
 
-Every brief is in `tools/briefs/`: `COMMON.md` and one file per agent. All eight run in their own sandbox VMs. A replacement starts from the same brief and from what the first one pushed.
+Every brief is in `tools/briefs/`: `COMMON.md` and one file per agent. All ten run in their own sandbox VMs. Files nobody but the Builder edits while they run: `src/core/bridge.ts`, `src/core/stage.ts` (the engine agent may add optional members), `accumulator.ts`, `sampler.ts`, `gl.ts`, `sdf.ts`, `src/shake/table.ts`, `src/particles/spikeSim.ts`, `src/particles/driver.ts`, `package.json`. A replacement starts from the same brief and from what the first one pushed.
 
 Finished: `wait_tester`, `sandbox_prober`, `reader_01` to `reader_10` (the model test), `image_terms_reader` (02:04), `hosting_limits_reader` (02:06), `sound_terms_reader` (02:09), `clock_test_writer` (02:12: `tests/clock.test.ts`, 46 tests, run here and all pass; it reported no behaviour that differs from the kit), `webgl_portability_reader` (02:19: its table is in `references/terms/webgl/` and merged into `config/webgl-caps.json`), `review_page_builder` (02:32: `tools/review.mjs` on `agent/review-page` at `5d5dc6d`, taken into `main` as that one file; it tested three screen sizes in headless Chrome, not Safari), `compare_layout_builder` (02:40: `agent/compose`, merged as `a379413`, its layouts looked at here), `animatic_builder` (02:46: `tools/animatic.mjs` on `agent/animatic` at `072c59a`, with a rough cut of 1800 frames attached; merged in Phase 1), `vm_still_renderer_2` (02:47) and `vm_still_renderer_1` (02:52): the same still on two sandbox VMs, and the budget on one of them.
 
@@ -483,3 +502,4 @@ One entry per task: when it started, what it did, where it stopped.
 - 03:04 to 03:22: Phase 2 opened. The read first files read. The architecture decided (decisions 18 to 23) and the work split into files with one owner each. The contracts between the engine, the interface, the probe and the sound engine written into `src/core/bridge.ts`; the stand-in registry and the stage written; pushed as `99f62fb`.
 - 03:22 to 03:30: the helper calls the tools need were added to the frame interface under `window.showcase.dev` (poses, the judged list, the test shake and loop states, the plans of the loop and the opening, the simulation cache, shake moments). Status 6 posted at 03:26 with no new picture. `tools/README.md` written: what the page gives the tools, the diagnostic encodings, the signals and the file layout. Sound files excluded from the public repo in `.gitignore`. Pushed as `8584aae`.
 - 03:30 to 03:37: the kit and this file read again after a compaction. The npm script lines added (`d6d6895`). Eight briefs written and committed under `tools/briefs/` (`6bf3140`), and eight sandbox agents started at 03:37 (see "Running agents").
+- 03:37 to 03:51: two more compactions and readings. Decision 26: the engine and the film with the app handed to two more agents. The stage contract widened and pushed (`0ce1ad6`), both briefs written (`75f5936`), `engine_builder` started 03:48 and `film_app_builder` 03:50.
