@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { config } from '../config'
+import { lensFillOf, type LensFill } from '../core/accumulator'
 import type { Assets } from '../core/assets'
 import { updateCover } from '../core/chunks/cover'
 import { updateVeil } from '../core/chunks/veil'
@@ -31,7 +32,10 @@ interface SeasonSet {
   grid: THREE.Data3DTexture
   materials: THREE.Material[]
   arrival: THREE.Material[]
+  glass: THREE.Object3D[]
 }
+
+const BLUR_CLEAR = new THREE.Color(0, 1, 0.5)
 
 const TURBULENCE_FULL = 260
 
@@ -56,6 +60,8 @@ export class GlobeStage implements Stage {
   private readonly slab = makeSlab()
   private readonly backdrop = new Backdrop()
   private readonly shell = new Shell()
+  /** The glass as the lens fill's map takes it when the globe itself is in focus: one closed surface with no blur. */
+  private readonly keep = new THREE.Mesh(this.shell.shell.geometry, new THREE.MeshBasicMaterial({ color: 0x000000 }))
   private readonly draw = new ParticleDraw(outerRadiusMm)
   private readonly lighting: Lighting
   private readonly slice: THREE.Mesh
@@ -149,6 +155,7 @@ export class GlobeStage implements Stage {
       grid: bakeGrid(kit.innerLights, this.collider(season)),
       materials: collect([base, miniature, lights, dressing, ...glass]),
       arrival: collect([arrival]),
+      glass,
     }
     this.sets.set(season, s)
     return s
@@ -332,8 +339,77 @@ export class GlobeStage implements Stage {
     } else {
       applyPose(this.camera, pose, w, h, sample)
       drawPasses(this.pass, { shadows, mirror: view === '' && f.planar, sliceOnly, emitters: beauty }, f)
+      const fill = view === '' && pose.apertureMm > 0 ? lensFillOf(target) : undefined
+      if (fill?.wants(sample)) this.drawBlur(fill, target, pose, f, single ? [a] : [a, b])
     }
     renderer.autoClear = auto
     renderer.setClearColor(this.clear, alpha)
+  }
+
+  /**
+   * The lens fill's map, once a picture: the blur radius of the front surface at every pixel, from
+   * the sample in hand (the lens point nearest the centre). The materials write it as their texel
+   * view does. The backdrop and the glass are left out: their pixels keep the clear value and take
+   * the blur of what stands next to them, and so are the flakes. Then the guide: the backdrop's
+   * discs and the flakes afloat, alone.
+   */
+  private drawBlur(fill: LensFill, target: THREE.WebGLRenderTarget, pose: Pose, f: StageFrame, sets: SeasonSet[]): void {
+    const { renderer } = this.gfx
+    const u = stageUniforms
+    const { dome, lights } = this.backdrop
+    const points = this.draw.points
+    const hidden = [dome, lights, points, this.shell.through, this.shell.shell, this.shell.bubble, ...sets.flatMap((s) => s.glass)].filter((o) => o.visible)
+    for (const o of hidden) o.visible = false
+    const coc = u.uCoc.value.x
+    const drawn = { ...renderer.info.render }
+    u.uDiag.value = viewCode('texels')
+    u.uCoc.value.x = (8 * pose.apertureMm * f.focalPx) / fill.rangePx
+    renderer.setRenderTarget(fill.map)
+    renderer.setClearColor(BLUR_CLEAR, 1)
+    renderer.clear(true, true, false)
+    this.floor.visible = false
+    renderer.render(this.scene, this.camera)
+    this.globe.visible = false
+    this.floor.visible = true
+    renderer.render(this.scene, this.camera)
+    this.globe.visible = true
+    // A globe that is itself in focus is the front surface of the picture: what is seen in the glass
+    // is seen at the glass, so nothing inside its outline is filled and its rim stays as it is. Seen
+    // from close by through the near wall (the macro) the glass is far out of focus and no surface
+    // of the picture, and the map keeps what stands behind it.
+    const radius = (this.shell.shell.geometry as THREE.SphereGeometry).parameters.radius
+    const near = Math.max(this.camera.position.distanceTo(u.uLensCentre.value) - radius, 1)
+    if (pose.apertureMm * f.focalPx * Math.abs(1 / near - 1 / pose.focusMm) < fill.startPx) {
+      this.keep.matrixAutoUpdate = false
+      this.keep.matrixWorldAutoUpdate = false
+      this.keep.matrix.copy(this.shell.shell.matrixWorld)
+      this.keep.matrixWorld.copy(this.keep.matrix)
+      renderer.render(this.keep, this.camera)
+    }
+    for (const o of hidden) o.visible = true
+    u.uCoc.value.x = coc
+    // The guide: the discs as the picture has them and the cover of the flakes afloat, whatever
+    // stands before them. A flake that lies is drawn as a copy like the ground it lies on, so its
+    // lobes are closed here (`uLying.y`, the flakes' own uniform) and the fill treats it as ground.
+    const flakes = points.children.map((o) => (o as THREE.Mesh).material as THREE.ShaderMaterial)
+    const alone: THREE.Material[] = [lights.material as THREE.Material, ...flakes]
+    const tested = alone.map((m) => m.depthTest)
+    for (const m of alone) m.depthTest = false
+    const lying = [...new Set(flakes.map((m) => m.uniforms.uLying?.value as THREE.Vector4 | undefined))].filter((v): v is THREE.Vector4 => v !== undefined)
+    const lobes = lying.map((v) => v.y)
+    for (const v of lying) v.y = 0
+    renderer.setRenderTarget(fill.guide)
+    renderer.setClearColor(0x000000, 0)
+    renderer.clear(true, false, false)
+    u.uDiag.value = 0
+    renderer.render(lights, this.camera)
+    u.uDiag.value = viewCode('cover')
+    renderer.render(points, this.camera)
+    lying.forEach((v, i) => (v.y = lobes[i]!))
+    alone.forEach((m, i) => (m.depthTest = tested[i]!))
+    u.uDiag.value = 0
+    Object.assign(renderer.info.render, drawn)
+    renderer.setRenderTarget(target)
+    fill.drawn = true
   }
 }

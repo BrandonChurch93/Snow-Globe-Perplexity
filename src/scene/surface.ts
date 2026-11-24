@@ -103,6 +103,7 @@ export const SLAB = {
   poolGain: 4,
   poolRiseMm: 46,
   contactMm: 4,
+  contactLiftMm: 1.2,
   lumpEdge: 0.45,
   lumpRagged: 0.45,
   lumpGrainMm: 0.9,
@@ -207,7 +208,7 @@ float slabRim(vec2 at) {
 float slabShade(vec2 at) {
   float lift = slabRim(at);
   float gap = length(at - uFoot.xy - uLean.xy) - uFoot.z;
-  float tight = exp(-max(gap, 0.0) / (${f(SLAB.contactMm)} + 0.9 * lift)) / (1.0 + 0.07 * lift);
+  float tight = exp(-max(gap, 0.0) / (${f(SLAB.contactMm)} + 0.9 * lift) - lift / ${f(SLAB.contactLiftMm)});
   float wide = (1.0 - smoothstep(-0.25 * uFoot.z, uFoot.z * (${f(SLAB.shadowReach)} + 0.035 * lift), gap)) * 0.6 / (1.0 + 0.045 * lift);
   float under = (1.0 - smoothstep(-5.0 - lift, 1.0 + 0.6 * lift, gap)) / (1.0 + 0.05 * lift);
   return (1.0 - 0.85 * tight) * (1.0 - wide) * (1.0 - 0.9 * under);

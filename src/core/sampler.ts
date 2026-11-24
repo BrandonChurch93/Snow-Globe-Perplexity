@@ -7,6 +7,8 @@ export interface Sample {
   lu: number
   lv: number
   t: number
+  /** How many samples the set has. */
+  of?: number
 }
 
 const PHI5 = 1.1673039782614187
@@ -52,7 +54,7 @@ export function sampleSet(count: number, salt = 0, name = 'sampler'): Sample[] {
       lv = r * Math.sin(th)
     }
     const t = count === 1 ? 0.5 : (i + frac(offset[4]! + ALPHA[0]! * (i + 1))) / count
-    out.push({ index: i, px: v[0]! - 0.5, py: v[1]! - 0.5, lu, lv, t: count === 1 ? 0.5 : t })
+    out.push({ index: i, px: v[0]! - 0.5, py: v[1]! - 0.5, lu, lv, t: count === 1 ? 0.5 : t, of: count })
   }
   if (count > 1) {
     const order = out.map((_, i) => i).sort((a, b) => v4(out[a]!) - v4(out[b]!))
