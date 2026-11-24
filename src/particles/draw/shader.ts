@@ -2,7 +2,7 @@ import { COVER_GLSL } from '../../core/chunks/cover'
 import { LIGHT_FRAG_PARS } from '../../core/chunks/light'
 import { VEIL_GLSL } from '../../core/chunks/veil'
 import { viewCode } from '../../diagnostics/views'
-import { BLUR_HOLD, BLUR_STRICT_FROM_PX, BLUR_STRICT_TO_PX, CLUMP, EDGE_CRISP_HIGH, EDGE_CRISP_LOW, EDGE_SOFT_HIGH, EDGE_SOFT_LOW, FLASH_WHITE, GLINT_HIGH, GLINT_LOW, LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_CORE, LYING_LOOK, MAX_KINDS, PIXEL_SIGMA2, SETTLE_FADE, SIZE_HIGH, SIZE_LOW, SIZE_SKEW, STORM_CROSS, STORM_FAR, STORM_OFF_DISC, STORM_PACE, STORM_FINE_HIGH, STORM_FINE_LOW, STORM_FINE_SOFT, STORM_FINE_SHARE, STORM_FLASH, STORM_GLINT, STORM_GLITTER, STORM_GLITTER_FROM, STORM_GLITTER_PX, STORM_GLITTER_TO, STORM_MOST_PX, STORM_SHARP, STORM_SHARP_SHARE, STORM_SIDE, STORM_SLOW, STORM_SMEAR, STORM_SMEAR_BRIGHT, STORM_SMEAR_FAINT, STORM_SMEAR_HIGH_PX, STORM_SMEAR_LOW_PX, STORM_SMEAR_FAR, STORM_SMEAR_NEAR, STORM_SMEAR_SHARE, STORM_SOFT_TOP, STORM_STREAK_DIM, STORM_THIN, STORM_WINDOW, STREAK_CAPSULE, STREAK_HOLD, STREAK_REACH, STREAK_TAPER, STRETCH_HIGH, STRETCH_LOW, THIN_FROM, THIN_LOW, THIN_TO } from './looks'
+import { BLUR_HOLD, BLUR_STRICT_FROM_PX, BLUR_STRICT_TO_PX, CLUMP, EDGE_CRISP_HIGH, EDGE_CRISP_LOW, EDGE_SOFT_HIGH, EDGE_SOFT_LOW, FLASH_MOST, FLASH_WHITE, GLINT_HIGH, GLINT_LOW, GLINT_SOFT_PX, LAMPS, LENS_LOOK, LIT_MOST, LIGHT_LOOK, LOBE_CORE, LOBE_GIRTH, LOBE_REACH, LYING_LOOK, MAX_KINDS, PIXEL_SIGMA2, SETTLE_FADE, SIZE_HIGH, SIZE_LOW, SIZE_SKEW, STORM_CROSS, STORM_FAR, STORM_OFF_DISC, STORM_PACE, STORM_FINE_HIGH, STORM_FINE_LOW, STORM_FINE_SOFT, STORM_FINE_SHARE, STORM_FLASH, STORM_GLINT, STORM_GLITTER, STORM_GLITTER_FROM, STORM_GLITTER_PX, STORM_GLITTER_TO, STORM_MOST_PX, STORM_SHARP, STORM_SHARP_SHARE, STORM_SIDE, STORM_SLOW, STORM_SMEAR, STORM_SMEAR_BRIGHT, STORM_SMEAR_FAINT, STORM_SMEAR_HIGH_PX, STORM_SMEAR_LOW_PX, STORM_SMEAR_FAR, STORM_SMEAR_NEAR, STORM_SMEAR_SHARE, STORM_SOFT_TOP, STORM_STREAK_DIM, STORM_THIN, STORM_TOP, STORM_WINDOW, STREAK_CAPSULE, STREAK_HOLD, STREAK_REACH, STREAK_TAPER, STRETCH_HIGH, STRETCH_LOW, THIN_FROM, THIN_LOW, THIN_TO } from './looks'
 
 const MEAN_LOBE = 0.42
 const n = (v: number) => (Number.isInteger(v) ? v.toFixed(1) : String(v))
@@ -68,13 +68,14 @@ float pointGlint(vec3 face, vec3 l, vec3 v) {
   float wide = ${n(STORM_GLINT)} * uStorm.x;
   return smoothstep(${n(GLINT_LOW)} - wide, ${n(GLINT_HIGH)} - 0.5 * wide, abs(dot(face, normalize(l + v))));
 }
-vec4 pointLobe(int k, int variant, float shape, vec3 axis, float c, float s, float lying, float rPx, mat3 toView) {
+vec4 pointLobe(int k, uint id, int variant, float shape, vec3 axis, float c, float s, float lying, float rPx, mat3 toView) {
   vec3 o = vec3(0.0);
   float rho = k == 0 ? 1.0 : 0.0;
   if (shape > 0.5 && shape < 1.5) {
     vec4 t = texelFetch(uLobes, ivec2(k, variant), 0);
-    o = t.xyz * 2.0 - 1.0;
-    rho = t.w;
+    vec4 j = pointHash(id * 7u + uint(k) + 977u);
+    o = (t.xyz * 2.0 - 1.0) * mix(${n(LOBE_REACH.low)}, ${n(LOBE_REACH.high)}, j.x);
+    rho = t.w * mix(${n(LOBE_GIRTH.low)}, ${n(LOBE_GIRTH.high)}, j.y);
   }
   o = pointTurn(o, axis, c, s);
   o.y *= mix(1.0, uLying.x, lying);
@@ -156,7 +157,7 @@ export const VERT_MAIN = `
   vec2 along = halfLong > 1e-4 ? streak / (2.0 * halfLong) : vec2(1.0, 0.0);
 
   float sigma = 0.5 * blur;
-  float s2x = sigma * sigma + ${n(PIXEL_SIGMA2)} * uPoint.w * uPoint.w;
+  float s2x = sigma * sigma + (${n(PIXEL_SIGMA2)} + ${n(GLINT_SOFT_PX * GLINT_SOFT_PX)} * glints) * uPoint.w * uPoint.w;
   if (lying > 0.5) {
     float merge = uLimit.z * rPx * smoothstep(uLying.z, uLying.w, stageCover(nowL.xz));
     s2x += merge * merge;
@@ -176,7 +177,7 @@ export const VERT_MAIN = `
     vec2 flow2 = (toView * veilTangent(veilOnDisc(eyeL, normalize(nowL - eyeL)))).xy;
     float rollWith = abs(dot(normalize((toView * moved).xy + 1e-9), normalize(flow2 + 1e-9)));
     float want = smears * ${n(STORM_SMEAR)} * mix(${n(STORM_SMEAR_FAINT)}, ${n(STORM_SMEAR_BRIGHT)}, pow(fract(h.w * 37.0), 2.0)) + sharps * ${n(STORM_SHARP)} + fines * mix(${n(STORM_FINE_HIGH)}, ${n(STORM_FINE_LOW)}, fine);
-    float full = pow(stretch, ${n(1 - STORM_STREAK_DIM)}) / max(still, 0.02) * mix(${n(STORM_FAR)}, 1.0, smoothstep(-0.9, 0.0, depth)) * mix(${n(STORM_OFF_DISC)}, 1.0, veilDisc(nowL)) * mix(1.0, mix(${n(STORM_CROSS.keep)}, 1.0, smoothstep(${n(STORM_CROSS.from)}, ${n(STORM_CROSS.to)}, rollWith)), smoothstep(${n(STORM_CROSS.fromPx)}, ${n(STORM_CROSS.toPx)}, halfLong / uPoint.w)) * mix(1.0, mix(${n(STORM_WINDOW.floor)}, 1.0, smoothstep(${n(STORM_WINDOW.from)}, ${n(STORM_WINDOW.to)}, length((nowL.xy - vec2(${n(STORM_WINDOW.x)}, ${n(STORM_WINDOW.y)})) / vec2(${n(STORM_WINDOW.wide)}, ${n(STORM_WINDOW.high)})))), smoothstep(${n(STORM_WINDOW.back)}, ${n(STORM_WINDOW.front)}, nowL.z)) * (1.0 - ${n(STORM_SIDE)} * nowL.x / uLens.w);
+    float full = pow(stretch, ${n(1 - STORM_STREAK_DIM)}) / max(still, 0.02) * mix(${n(STORM_FAR)}, 1.0, smoothstep(-0.9, 0.0, depth)) * mix(${n(STORM_OFF_DISC)}, 1.0, veilDisc(nowL)) * mix(1.0, mix(${n(STORM_CROSS.keep)}, 1.0, smoothstep(${n(STORM_CROSS.from)}, ${n(STORM_CROSS.to)}, rollWith)), smoothstep(${n(STORM_CROSS.fromPx)}, ${n(STORM_CROSS.toPx)}, halfLong / uPoint.w)) * mix(1.0, mix(${n(STORM_WINDOW.floor)}, 1.0, smoothstep(${n(STORM_WINDOW.from)}, ${n(STORM_WINDOW.to)}, length((nowL.xy - vec2(${n(STORM_WINDOW.x)}, ${n(STORM_WINDOW.y)})) / vec2(${n(STORM_WINDOW.wide)}, ${n(STORM_WINDOW.high)})))), smoothstep(${n(STORM_WINDOW.back)}, ${n(STORM_WINDOW.front)}, nowL.z)) * (1.0 - ${n(STORM_SIDE)} * nowL.x / uLens.w) * mix(1.0, ${n(STORM_TOP.keep)}, smoothstep(${n(STORM_TOP.from)}, ${n(STORM_TOP.to)}, nowL.y / uLens.w));
     held = mix(1.0, glints > 0.5 ? ${n(STORM_GLITTER)} * full : clump * (want > 0.0 ? want * full : ${n(STORM_THIN)}), gusty);
   }
   held *= mix(1.0, mix(${n(STORM_PACE.unseen)}, 1.0, gust), afloat * classed * (1.0 - shown));
@@ -189,11 +190,11 @@ export const VERT_MAIN = `
   vec3 tilt = h2.yzw * 2.0 - 1.0;
   vec3 longAxis = normalize(tilt + 1e-3);
   mat3 shapeView = toView * (mat3(1.0) + (afloat * mix(${n(STRETCH_LOW)}, ${n(STRETCH_HIGH)}, fract(h2.x * 467.0))) * outerProduct(longAxis, longAxis));
-  vL0 = pointLobe(0, variant, shape, axis, ca, sa, lying, rPx, shapeView);
-  vL1 = pointLobe(1, variant, shape, axis, ca, sa, lying, rPx, shapeView);
-  vL2 = pointLobe(2, variant, shape, axis, ca, sa, lying, rPx, shapeView);
-  vL3 = pointLobe(3, variant, shape, axis, ca, sa, lying, rPx, shapeView);
-  vL4 = pointLobe(4, variant, shape, axis, ca, sa, lying, rPx, shapeView);
+  vL0 = pointLobe(0, pid, variant, shape, axis, ca, sa, lying, rPx, shapeView);
+  vL1 = pointLobe(1, pid, variant, shape, axis, ca, sa, lying, rPx, shapeView);
+  vL2 = pointLobe(2, pid, variant, shape, axis, ca, sa, lying, rPx, shapeView);
+  vL3 = pointLobe(3, pid, variant, shape, axis, ca, sa, lying, rPx, shapeView);
+  vL4 = pointLobe(4, pid, variant, shape, axis, ca, sa, lying, rPx, shapeView);
 
   vec3 keyTo;
   vec3 keyIn = stageKeyIn(nowL, keyTo);
@@ -220,7 +221,7 @@ export const VERT_MAIN = `
   if (glints > 0.5) flash += keyIn * pointGlint(face, uLightFrame * keyTo, toEye) + uRigRimCol * (uRigInside.x * pointGlint(face, uLightFrame * uRigRimDir, toEye));
   flash *= look.w * pow(c2 / (c2 + s2x), ${n(1 - BLUR_HOLD)});
   float flashMost = max(flash.r, max(flash.g, flash.b));
-  flash = mix(flash, vec3(flashMost), ${n(FLASH_WHITE)});
+  flash = mix(flash, vec3(flashMost), ${n(FLASH_WHITE)}) * min(1.0, ${n(FLASH_MOST)} / max(flashMost, 1e-3));
   flash *= mix(1.0, min(1.0, ${n(STORM_FLASH)} / max(flashMost, 1e-3)), glints * gusty);
 
   float reach = 1.2 * rPx + 2.6 * sqrt(s2x) + 1.0;
@@ -241,7 +242,8 @@ export const VERT_MAIN = `
   vStreak = vec4(along, halfLong, s2x);
   vKind = vec4(aData.y, lying, float(pid & 4095u) + 0.01 + 0.98 * gusty, flash.r);
   vec3 warmth = mix(vec3(1.0), vec3(${LENS_LOOK.glassDiscWarm.map(n).join(', ')}), byDisc * step(fract(h.y * 311.0), ${n(LENS_LOOK.glassDiscWarmShare)}));
-  vGrid = vec4(base * warmth, flash.g);
+  vec3 lit = base * warmth;
+  vGrid = vec4(lit * min(1.0, ${n(LIT_MOST)} / max(max(lit.r, max(lit.g, lit.b)), 1e-3)), flash.g);
   vDom = vec4(keyIn * uRigPoint.x * warmth, flash.b);
   vFog = veilPath(eye, placed.xyz, nowW, placed.w);
   gl_Position = aState > 2.5 || alpha <= 0.0 ? vec4(2.0, 2.0, 2.0, 1.0) : clip;
