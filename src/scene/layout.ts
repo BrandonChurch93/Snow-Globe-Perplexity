@@ -10,21 +10,57 @@ export const domeHeightMm = innerRadiusMm - groundY
 export const collarY = G.baseHeightMm - centreHeightMm
 
 const RAD = Math.PI / 180
-const PEAK_Z = -15
-const FALL = 0.0016
 const WALL_GAP = 0.6
 
-export const groundAt = (x: number, z: number): number => groundY - FALL * (x * x + (z - PEAK_Z) * (z - PEAK_Z))
+const MOUND = 8.64
+const BACK_SLOPE = 0.03
+const RAKE = 0.284
+const RAKE_FROM = -8
+const RAKE_FULL = 4
+const RAKE_SPAN = RAKE_FULL - RAKE_FROM
+
+export const pond = { x: 5.6, z: 26.2, rx: 17.2, rz: 18, yaw: -0.1, power: 3, dip: 1.3, level: 0.55 }
+
+export function pondField(x: number, z: number): number {
+  const c = Math.cos(pond.yaw)
+  const s = Math.sin(pond.yaw)
+  const dx = x - pond.x
+  const dz = z - pond.z
+  const lx = c * dx - s * dz
+  const lz = s * dx + c * dz
+  const a = Math.atan2(lz, lx)
+  const wobble = 1 + 0.045 * Math.sin(3 * a + 1.3) + 0.03 * Math.sin(5 * a + 0.4) + 0.018 * Math.sin(9 * a + 2.1)
+  return Math.pow(Math.pow(Math.abs(lx / pond.rx), pond.power) + Math.pow(Math.abs(lz / pond.rz), pond.power), 1 / pond.power) / wobble
+}
+
+export function moundAt(z: number): number {
+  if (z <= RAKE_FROM) return groundY + MOUND + BACK_SLOPE * (RAKE_FROM - z)
+  const t = Math.min(z, RAKE_FULL) - RAKE_FROM
+  const eased = groundY + MOUND - BACK_SLOPE * t - ((RAKE - BACK_SLOPE) * t * t) / (2 * RAKE_SPAN)
+  return z <= RAKE_FULL ? eased : eased - RAKE * (z - RAKE_FULL)
+}
+
+export function moundSlope(z: number): number {
+  if (z <= RAKE_FROM) return BACK_SLOPE
+  if (z >= RAKE_FULL) return RAKE
+  return BACK_SLOPE + ((RAKE - BACK_SLOPE) * (z - RAKE_FROM)) / RAKE_SPAN
+}
+
+const smooth = (a: number, b: number, v: number): number => {
+  const t = Math.min(1, Math.max(0, (v - a) / (b - a)))
+  return t * t * (3 - 2 * t)
+}
+
+export const groundAt = (x: number, z: number): number => moundAt(z) - pond.dip * (1 - smooth(0.86, 1.04, pondField(x, z)))
 
 export function islandEdge(angle: number): number {
-  const c = Math.cos(angle)
   const s = Math.sin(angle)
   const r = innerRadiusMm - WALL_GAP
   let lo = 0
   let hi = r
   for (let i = 0; i < 40; i++) {
     const mid = 0.5 * (lo + hi)
-    const y = groundAt(c * mid, s * mid)
+    const y = moundAt(s * mid)
     if (mid * mid + y * y < r * r) lo = mid
     else hi = mid
   }
@@ -67,65 +103,90 @@ export type Shape = Box | Cone | Ball | Disc
 
 const SINK = 0.4
 
+export const cottage = {
+  x: -14.6,
+  z: -10.3,
+  yawDeg: 28,
+  halfWidth: 8.5,
+  halfLength: 10,
+  sill: -4.2,
+  wall: 8.7,
+  footing: 2.6,
+  rise: 9.2,
+  overhang: 1.3,
+  gableOverhang: 1.1,
+  roofThick: 0.9,
+  chimney: { along: -8.4, across: 1.7, half: 1.8, top: 21.4 },
+  door: { across: 2.5, width: 5, height: 7.4 },
+  window: { across: -5.2, width: 2.6, height: 3.5, sill: 3.3 },
+  sideWindow: { along: 1.7, width: 2.9, height: 3.2, sill: 3.6 },
+}
+
+export const lamppost = { x: 1.3, z: 3.9, height: 11.9, lantern: 9.8, radius: 1.5, post: 0.45 }
+export const tree = { x: 12.5, z: -5, trunk: 3.5, top: 1.9, height: 17, crownY: 9, crown: 15 }
+export const fence = { from: [-33, -4.2] as [number, number], to: [-19.9, 20.8] as [number, number], posts: 5, height: 5.6, post: 0.55, rails: [4.1, 1.7] as [number, number] }
+export const steps: readonly [number, number][] = [[-6.7, -2.2], [-5.9, 0.6], [-5.2, 3.4]]
+export const stones: readonly [number, number][] = [[-6.4, 7], [-8.6, 10.4], [-10.7, 13.6], [-12.4, 16.9], [-12.9, 20.3]]
+
+export function cottageFrame(): { u: [number, number]; v: [number, number]; floor: number } {
+  const c = Math.cos(cottage.yawDeg * RAD)
+  const s = Math.sin(cottage.yawDeg * RAD)
+  return { u: [s, c], v: [c, -s], floor: moundAt(cottage.sill) }
+}
+
+export function cottagePoint(across: number, up: number, along: number): [number, number, number] {
+  const f = cottageFrame()
+  return [cottage.x + f.v[0] * across + f.u[0] * along, f.floor + up, cottage.z + f.v[1] * across + f.u[1] * along]
+}
+
 function build(): Shape[] {
   const out: Shape[] = []
   const on = (x: number, z: number) => groundAt(x, z) - SINK
-  const box = (role: Role, x: number, z: number, lift: number, half: [number, number, number], yawDeg: number, rollDeg = 0, ground = on(x, z)) =>
-    out.push({ kind: 'box', role, centre: [x, ground + lift, z], half, yaw: yawDeg * RAD, roll: rollDeg * RAD })
+  const box = (role: Role, at: [number, number, number], half: [number, number, number], yawDeg: number, rollDeg = 0) =>
+    out.push({ kind: 'box', role, centre: at, half, yaw: yawDeg * RAD, roll: rollDeg * RAD })
 
-  const cx = -17
-  const cz = -3
-  const yaw = 22
-  const floor = on(cx, cz)
-  const wall = 6.9
-  const local = (lx: number, lz: number): [number, number] => {
-    const c = Math.cos(yaw * RAD)
-    const s = Math.sin(yaw * RAD)
-    return [cx + c * lx + s * lz, cz - s * lx + c * lz]
+  const c = cottage
+  const high = (c.wall + c.footing) / 2
+  box('cottage', cottagePoint(0, high - c.footing, 0), [c.halfWidth, high, c.halfLength], c.yawDeg)
+  const pitch = Math.atan2(c.rise, c.halfWidth)
+  const run = (c.halfWidth + c.overhang) / Math.cos(pitch) / 2
+  const lift = c.wall + c.rise + c.roofThick * Math.cos(pitch) - run * Math.sin(pitch)
+  const out2 = run * Math.cos(pitch)
+  box('roof', cottagePoint(-out2, lift, 0), [c.halfLength + c.gableOverhang, c.roofThick, run], c.yawDeg - 90, pitch / RAD)
+  box('roof', cottagePoint(out2, lift, 0), [c.halfLength + c.gableOverhang, c.roofThick, run], c.yawDeg - 90, -pitch / RAD)
+  const core = (c.halfWidth - 0.4) / Math.SQRT2
+  box('roof', cottagePoint(0, c.wall + c.rise - 0.5 - core * Math.SQRT2, 0), [c.halfLength, core, core], c.yawDeg - 90, 45)
+  const stack = (c.chimney.top - c.wall) / 2
+  box('chimney', cottagePoint(c.chimney.across, c.wall + stack, c.chimney.along), [c.chimney.half, stack, c.chimney.half], c.yawDeg)
+
+  const tf = on(tree.x, tree.z)
+  out.push({ kind: 'cone', role: 'trunk', foot: [tree.x, tf, tree.z], radius: tree.trunk, top: tree.top, height: tree.height })
+  out.push({ kind: 'ball', role: 'crown', centre: [tree.x, tree.crownY, tree.z], radius: tree.crown })
+
+  const lf = on(lamppost.x, lamppost.z)
+  box('post', [lamppost.x, lf + lamppost.lantern / 2, lamppost.z], [lamppost.post, lamppost.lantern / 2, lamppost.post], 0)
+  out.push({ kind: 'ball', role: 'lamp', centre: [lamppost.x, lf + SINK + lamppost.lantern + 0.6, lamppost.z], radius: lamppost.radius })
+
+  out.push({ kind: 'disc', role: 'pond', centre: [pond.x, moundAt(pond.z) - pond.level, pond.z], rx: pond.rx, rz: pond.rz, yaw: pond.yaw })
+
+  const f = fence
+  const fdx = f.to[0] - f.from[0]
+  const fdz = f.to[1] - f.from[1]
+  const flen = Math.hypot(fdx, fdz)
+  for (let i = 0; i < f.posts; i++) {
+    const t = i / (f.posts - 1)
+    const x = f.from[0] + fdx * t
+    const z = f.from[1] + fdz * t
+    box('fence', [x, on(x, z) + f.height / 2, z], [f.post, f.height / 2, f.post], Math.atan2(fdx, fdz) / RAD)
   }
-  box('cottage', cx, cz, wall, [10.5, wall, 7.5], yaw, 0, floor)
-  box('roof', cx, cz, 2 * wall, [11.3, 5.3, 5.3], yaw, 45, floor)
-  const [chx, chz] = local(-5.5, -1.5)
-  box('chimney', chx, chz, 2 * wall + 6.4, [1.5, 2.8, 1.5], yaw, 0, floor)
+  const fy0 = on(f.from[0], f.from[1])
+  const fy1 = on(f.to[0], f.to[1])
+  const froll = Math.atan2(fy0 - fy1, flen) / RAD
+  for (const h of f.rails)
+    box('fence', [(f.from[0] + f.to[0]) / 2, (fy0 + fy1) / 2 + h, (f.from[1] + f.to[1]) / 2], [0.28, 0.42, Math.hypot(flen, fy0 - fy1) / 2], Math.atan2(fdx, fdz) / RAD, froll)
 
-  const tx = 18
-  const tz = -5
-  const tf = on(tx, tz)
-  out.push({ kind: 'cone', role: 'trunk', foot: [tx, tf, tz], radius: 4.4, top: 2.3, height: 34 })
-  out.push({ kind: 'ball', role: 'crown', centre: [tx, tf + 46.4, tz], radius: 17.5 })
-
-  const lx = 2.5
-  const lz = 13
-  const lf = on(lx, lz)
-  box('post', lx, lz, 8, [0.7, 8, 0.7], 0, 0, lf)
-  out.push({ kind: 'ball', role: 'lamp', centre: [lx, lf + 17.4, lz], radius: 1.9 })
-
-  out.push({ kind: 'disc', role: 'pond', centre: [3, groundAt(3, 33) + 0.25, 33], rx: 13, rz: 7.5, yaw: 0 })
-
-  const f0: [number, number] = [-34, 21]
-  const f1: [number, number] = [-15, 34]
-  const posts = 5
-  for (let i = 0; i < posts; i++) {
-    const t = i / (posts - 1)
-    const x = f0[0] + (f1[0] - f0[0]) * t
-    const z = f0[1] + (f1[1] - f0[1]) * t
-    box('fence', x, z, 3, [0.6, 3, 0.6], 0)
-  }
-  const fyaw = Math.atan2(-(f1[1] - f0[1]), f1[0] - f0[0]) / RAD
-  const flen = Math.hypot(f1[0] - f0[0], f1[1] - f0[1]) / 2
-  const fmx = (f0[0] + f1[0]) / 2
-  const fmz = (f0[1] + f1[1]) / 2
-  box('fence', fmx, fmz, 4.4, [flen, 0.45, 0.3], fyaw, 0, (on(f0[0], f0[1]) + on(f1[0], f1[1])) / 2)
-  box('fence', fmx, fmz, 2.2, [flen, 0.45, 0.3], fyaw, 0, (on(f0[0], f0[1]) + on(f1[0], f1[1])) / 2)
-
-  const [dx, dz] = local(4, 8.4)
-  const stones = 5
-  for (let i = 0; i < stones; i++) {
-    const t = (i + 0.6) / (stones + 0.4)
-    const x = dx + (1.5 - dx) * t + Math.sin(t * Math.PI) * 3
-    const z = dz + (24 - dz) * t
-    box('path', x, z, 0.3, [2.3, 0.35, 1.7], 30 - 50 * t, 0, groundAt(x, z))
-  }
+  steps.forEach(([x, z], i) => box('path', [x, groundAt(x, z) + 0.15, z], [2.9 + 0.25 * i, 0.5, 1.45], c.yawDeg))
+  stones.forEach(([x, z], i) => box('path', [x, groundAt(x, z) + 0.05, z], [1.9, 0.3, 1.4], 20 - 28 * i, Math.atan(moundSlope(z)) / RAD))
   return out
 }
 
@@ -176,8 +237,14 @@ export function shapeTop(s: Shape): number {
 }
 
 export function heights(): { cottage: number; tree: number; lamp: number; dome: number; island: number } {
-  const top = (roles: Role[]) => Math.max(...shapes.filter((s) => roles.includes(s.role)).map(shapeTop)) - groundY
-  return { cottage: top(['cottage', 'roof']), tree: top(['trunk', 'crown']), lamp: top(['post', 'lamp']), dome: domeHeightMm, island: groundY + centreHeightMm }
+  const top = (roles: Role[]) => Math.max(...shapes.filter((s) => roles.includes(s.role)).map(shapeTop))
+  return {
+    cottage: top(['cottage', 'roof', 'chimney']) - cottageFrame().floor,
+    tree: top(['trunk', 'crown']) - groundY,
+    lamp: top(['post', 'lamp']) - groundAt(lamppost.x, lamppost.z),
+    dome: domeHeightMm,
+    island: groundY + centreHeightMm,
+  }
 }
 
 function distance(s: Shape, x: number, y: number, z: number): number {
@@ -204,7 +271,7 @@ function distance(s: Shape, x: number, y: number, z: number): number {
 }
 
 export function solidDistance(x: number, y: number, z: number, keep?: (role: Role | 'ground') => boolean): number {
-  let d = !keep || keep('ground') ? (y - groundAt(x, z)) / Math.sqrt(1 + 4 * FALL * FALL * (x * x + (z - PEAK_Z) * (z - PEAK_Z))) : Infinity
+  let d = !keep || keep('ground') ? (y - groundAt(x, z)) / Math.sqrt(1 + moundSlope(z) * moundSlope(z)) : Infinity
   for (const s of shapes) {
     if (keep && !keep(s.role)) continue
     const v = distance(s, x, y, z)
@@ -253,16 +320,20 @@ export function onBox(b: Box, lx: number, ly: number, lz: number): [number, numb
 const walls = find('cottage', 'box')
 const crown = find('crown', 'ball')
 const lamp = find('lamp', 'ball')
-const pond = find('pond', 'disc')
+const water = find('pond', 'disc')
+
+const onGable = (across: number, up: number, out: number): [number, number, number] => cottagePoint(across, up, cottage.halfLength + out)
 
 export const anchors = {
   lamp: lamp.centre,
-  window: onBox(walls, 0.45, 0.1, 1.06),
-  door: onBox(walls, -0.25, -0.45, 1.06),
+  window: onGable(cottage.window.across, cottage.window.sill + cottage.window.height / 2, 0.45),
+  door: onGable(cottage.door.across, cottage.door.height * 0.45, 0.45),
   crown: crown.centre,
   crownTop: [crown.centre[0], crown.centre[1] + crown.radius, crown.centre[2]] as [number, number, number],
-  pond: pond.centre,
+  pond: water.centre,
   hearth: onBox(walls, 0, 0, 0),
+  sideWindow: cottagePoint(-cottage.halfWidth - 0.45, cottage.sideWindow.sill + cottage.sideWindow.height / 2, cottage.sideWindow.along),
+  chimney: cottagePoint(cottage.chimney.across, cottage.chimney.top + 0.8, cottage.chimney.along),
 }
 
 const CLEAR = 0.8
@@ -288,8 +359,8 @@ function spot(at: readonly [number, number, number], r: number): Emitter {
 
 const sparks: readonly Emitter[] = [
   spot([lamp.centre[0], lamp.centre[1] + lamp.radius + 2 + CLEAR, lamp.centre[2]], 2),
-  spot(onBox(walls, 0.45, 0.1, 1 + (2 + CLEAR) / walls.half[2]), 2),
-  spot(onBox(walls, -0.25, -0.3, 1 + (2 + CLEAR) / walls.half[2]), 2),
+  spot(onGable(cottage.window.across, cottage.window.sill + cottage.window.height / 2, 2 + CLEAR + 1.2), 2),
+  spot(onGable(cottage.door.across, cottage.door.height * 0.6, 2 + CLEAR + 1.2), 2),
   spot([trunk.foot[0] - 7, groundAt(trunk.foot[0] - 7, trunk.foot[2] + 7) + 2.2 + CLEAR, trunk.foot[2] + 7], 2.2),
   ...shell(crown.centre, crown.radius, 2.5, [[-1, -0.35, 0.5], [0.4, -0.3, 1], [1, 0.1, 0.6]]),
 ]
