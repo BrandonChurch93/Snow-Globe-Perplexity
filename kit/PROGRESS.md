@@ -37,16 +37,16 @@ Status 18 · 2026-11-24 07:26 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 07:26 UTC
-clock: phase 2, tick of 6.4 minutes
-phase 2: 4.42 h used of its 6.00 h box
-allowance (before the review): 5.61 h used of 36.00 h allowed
-all time before the review: 5.61 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 07:34 UTC
+clock: phase 2, tick of 8.0 minutes
+phase 2: 4.55 h used of its 6.00 h box
+allowance (before the review): 5.74 h used of 36.00 h allowed
+all time before the review: 5.74 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 8
 ```
 
 ## Phases
@@ -710,3 +710,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 07:26 Status 18 posted with three pictures: the six cameras of round 1, the three screens of round 1, the spring hold after decision 34 (where the petals still hide the miniature, open item 17).
 
 - 07:35 merged `agent/film-app2` `9d68bc4` as `cfbeb15`: types clean, 300 tests, build, cut and parts clean (`parts/PARTS.json` no longer changes with the checkout's place). The app's framing now keeps 7.0 percent of the height (75.6 px at 1920 by 1080, 95.6 px at 1024 by 1366) between the foot of the base at rest and the highest control, measured on the real controls, with the lifted glass 1.0 percent inside the top edge; the phone keeps its framing with 6.1 percent (51 px). `MOVES.holdAimDropMm` is 4.5; the spring move's nearest point keeps 8.0 percent under the foot and over the ridge; the film's lifted glass stays at 0.9924 of the half height on every frame of the four shakes. Open item 13 is answered by this, to be judged in round 2. The pause the engineer hunted (up to 6.5 s once the page shows its first picture) did not show again in 25 runs after the worker path was merged; cause not found, watched.
+
+- 07:36 published again from `8df3019` (the last publish was the 04:43 build): the stand-in globe as it stands, with the live shake, the four seasons, the controls and the new framing, and the review page with the latest pictures. Visibility: Organization. `npm run hostcheck` on the same commit: pass (0.86 MB in 14 files, first complete picture 1.9 s after opening on this machine, nothing logged).
