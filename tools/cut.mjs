@@ -120,16 +120,33 @@ function shotsText(c, shots) {
   return out.join('\n')
 }
 
+function judgedText(judged) {
+  const out = []
+  out.push('# The judged list')
+  out.push('')
+  out.push('Written by `npm run cut` from `dev.judged()`. Do not edit by hand. These are the rows for the Judged list of `kit/PROGRESS.md`: the id, its unit, and the picture.')
+  out.push('')
+  out.push('| Id | Unit | Picture |')
+  out.push('| --- | --- | --- |')
+  for (const e of judged) {
+    const where = e.kind === 'film' || e.kind === 'opening' || e.kind === 'loop' ? `${e.kind} frame ${e.frame}` : e.kind
+    out.push(`| \`${e.id}\` | ${e.unit} | ${where}, ${e.format}: ${e.what} |`)
+  }
+  out.push('')
+  return out.join('\n')
+}
+
 const session = await Session.open({ local: args.local === true })
 try {
   const page = await session.page({ simcache: false })
-  const { list, shots } = await page.evaluate(() => window.showcase.dev.cut())
+  const { list, shots, judged } = await page.evaluate(() => ({ ...window.showcase.dev.cut(), judged: window.showcase.dev.judged() }))
   fs.mkdirSync(dir, { recursive: true })
   writeJson(path.join(dir, 'CUTLIST.json'), list)
   fs.writeFileSync(path.join(dir, 'CUES.md'), cuesText(list))
   fs.writeFileSync(path.join(dir, 'SHOTS.md'), shotsText(list, shots))
-  console.log(`cut: ${list.source}, ${list.shots.length} shots, ${list.shakes.length} shakes, ${list.frameCount} frames at ${list.fps} a second (${n3(list.seconds)} s), ${list.cues.length} cues, ${list.cameraKeys.length} camera keys, opening ${list.opening.frameCount} frames, loop ${list.loop.frameCount} frames`)
-  console.log(`wrote ${['CUTLIST.json', 'CUES.md', 'SHOTS.md'].map((f) => path.relative(rel(), path.join(dir, f))).join(', ')}`)
+  fs.writeFileSync(path.join(dir, 'JUDGED.md'), judgedText(judged))
+  console.log(`cut: ${list.source}, ${list.shots.length} shots, ${list.shakes.length} shakes, ${list.frameCount} frames at ${list.fps} a second (${n3(list.seconds)} s), ${list.cues.length} cues, ${list.cameraKeys.length} camera keys, opening ${list.opening.frameCount} frames, loop ${list.loop.frameCount} frames, ${judged.length} judged pictures`)
+  console.log(`wrote ${['CUTLIST.json', 'CUES.md', 'SHOTS.md', 'JUDGED.md'].map((f) => path.relative(rel(), path.join(dir, f))).join(', ')}`)
   if (page.errors.length) console.log(`page messages:\n${page.errors.join('\n')}`)
 } finally {
   await session.close()
