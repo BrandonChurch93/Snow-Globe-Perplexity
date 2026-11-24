@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { config } from '../src/config'
 import { sampleSdf } from '../src/core/sdf'
-import { buildCollider, centreHeightMm, colliderCells, domeHeightMm, groundAt, groundY, heights, innerRadiusMm, islandEdge, shapePoints, shapes, solidDistance, type Role } from '../src/scene/layout'
+import { buildCollider, centreHeightMm, colliderCells, domeHeightMm, emitters, groundAt, groundY, heights, innerRadiusMm, islandEdge, shapePoints, shapes, solidDistance, type Role } from '../src/scene/layout'
 
 const by = (role: Role) => shapes.filter((s) => s.role === role)
 const middle = (role: Role): [number, number] => {
@@ -98,5 +98,16 @@ describe('the layout', () => {
       worst = Math.max(worst, Math.abs(sampleSdf(g, x, y, z) - solidDistance(x, y, z)))
     }
     expect(worst).toBeLessThan(1.2)
+  })
+
+  it('hands out emitters that lie in the liquid, clear of every solid and of the glass', () => {
+    expect(Object.keys(emitters).sort()).toEqual(['ember', 'leaf', 'petal'])
+    for (const [kind, list] of Object.entries(emitters)) {
+      expect(list.length, kind).toBeGreaterThan(0)
+      for (const e of list) {
+        expect(solidDistance(e.x, e.y, e.z), `${kind} at ${e.x.toFixed(1)}, ${e.y.toFixed(1)}, ${e.z.toFixed(1)}`).toBeGreaterThanOrEqual(e.r)
+        expect(Math.hypot(e.x, e.y, e.z) + e.r, `${kind} at ${e.x.toFixed(1)}, ${e.y.toFixed(1)}, ${e.z.toFixed(1)}`).toBeLessThanOrEqual(innerRadiusMm - 1)
+      }
+    }
   })
 })
