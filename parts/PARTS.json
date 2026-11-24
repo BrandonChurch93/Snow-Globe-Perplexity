@@ -146,13 +146,14 @@
     {
       "name": "light-winter",
       "unit": "winter",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/winter",
         "public/assets/winter"
       ],
       "standInHash": "3c6ea2bbcb3220ac",
-      "commit": "2530677"
+      "commit": "aeede63",
+      "note": "light_builder's final report 12:49 UTC: the rig, the shadow map and the light grid, no stand-in"
     },
     {
       "name": "veil-winter",
