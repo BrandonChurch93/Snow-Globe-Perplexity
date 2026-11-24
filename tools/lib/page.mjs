@@ -203,11 +203,11 @@ export async function renderStill(session, spec, { file, noext = [], force = fal
     if (s.live) call.live = s.live
     await sc.renderStill(call)
     const after = sc.dev.timings()
-    return { info: sc.info(), caps: sc.dev.caps(), timings: { simMs: after.simMs - before.simMs, drawMs: after.drawMs - before.drawMs, samples: after.samples - before.samples, steps: after.steps - before.steps } }
+    return { info: sc.info(), caps: sc.dev.caps(), framing: sc.dev.framing(s.camera), timings: { simMs: after.simMs - before.simMs, drawMs: after.drawMs - before.drawMs, samples: after.samples - before.samples, steps: after.steps - before.steps } }
   }, spec)
   const png = await session.grab(page)
   const seconds = (Date.now() - t0) / 1000
-  const record = session.record(result.info, { diag: spec.diag, spec, noext, seconds, timings: result.timings, precision: result.caps.precision, standIns: result.info.standIns.length, counts: result.info.counts, errors: page.errors.slice(0, 20) })
+  const record = session.record(result.info, { diag: spec.diag, spec, noext, seconds, timings: result.timings, precision: result.caps.precision, standIns: result.info.standIns.length, counts: result.info.counts, framing: result.framing, errors: page.errors.slice(0, 20) })
   writeWithRecord(out, png, record)
   if (!given) await page.context().close()
   return { file: out, reused: false, record }

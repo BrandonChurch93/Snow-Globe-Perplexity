@@ -8,6 +8,7 @@ import { defaultGrid, filmTimeline, globePoseAt, lastLandingBefore, prerollSecon
 import type { SimDriver } from '../particles/driver'
 import { Post } from '../post/post'
 import { poseById, type Pose } from '../scene/cameras'
+import { framingOf, type Framing } from '../scene/framing'
 import parts from '../../parts/PARTS.json'
 
 export interface StillSpec {
@@ -53,6 +54,7 @@ export interface Dev {
   timings(): { simMs: number; drawMs: number; samples: number; steps: number }
   parts(): { name: string; color: number }[]
   simulate(fromSeconds: number, seconds: number): Promise<{ ms: number; steps: number; floating: number }>
+  framing(camera: string): Framing
 }
 
 interface Register {
@@ -242,6 +244,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
       caps: () => ({ ...gfx.caps, precision: acc.precision }),
       timings: () => ({ ...timing }),
       parts: () => stage.parts(),
+      framing: (camera) => framingOf(camera, format.width, format.height),
       async simulate(fromSeconds, seconds) {
         const tl = stillTl(config.defaultSeason)
         await driver.seek(tl, fromSeconds)

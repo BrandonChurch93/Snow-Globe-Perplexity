@@ -96,14 +96,16 @@ export function globePoseAt(tl: Timeline, sec: number): GlobePose {
   return hit ? hit.event.path.poseAt(hit.beat) : REST_POSE
 }
 
+const EDGE = 1e-7
+
 export function seasonAt(tl: Timeline, sec: number): { season: string; from: string; to: string; change: number } {
   let season = tl.startSeason
   for (const e of tl.events) {
     if (sec < e.startSec) break
     const beat = (sec - e.startSec) / beatSeconds
     const w = config.shake.swapWindow
-    if (beat >= w.toBeat) season = e.to
-    else if (beat >= w.fromBeat) return { season: e.from, from: e.from, to: e.to, change: (beat - w.fromBeat) / (w.toBeat - w.fromBeat) }
+    if (beat >= w.toBeat - EDGE) season = e.to
+    else if (beat > w.fromBeat + EDGE) return { season: e.from, from: e.from, to: e.to, change: (beat - w.fromBeat) / (w.toBeat - w.fromBeat) }
     else season = e.from
   }
   return { season, from: season, to: season, change: 0 }

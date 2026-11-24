@@ -15,6 +15,7 @@ const smooth = (t: number) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t))
 
 export interface ShakePath {
   readonly standIn: true
+  readonly parts: { liftEnd: number; strokesEnd: number; landing: number }
   poseAt(beat: number): GlobePose
 }
 
@@ -26,27 +27,28 @@ export function makeShake(name: string): ShakePath {
   for (let i = 0; i < n; i++) amps.push((i % 2 === 0 ? 1 : -1) * s.strokeMm * rng.range(0.8, 1.2))
   const lean = rng.range(-0.35, 0.35)
   const bar = config.film.beatsPerBar
-  const strokeStart = s.liftBeats * 0.7
-  const strokeEnd = s.liftBeats + s.strokeBeats + s.setDownBeats * 0.25
+  const liftEnd = s.liftBeats
+  const strokesEnd = s.liftBeats + s.strokeBeats
   const lateral = (beat: number): number => {
-    if (beat <= strokeStart || beat >= strokeEnd) return 0
-    const u = (beat - strokeStart) / (strokeEnd - strokeStart)
+    if (beat <= liftEnd || beat >= strokesEnd) return 0
+    const u = (beat - liftEnd) / (strokesEnd - liftEnd)
     const warped = u * (0.6 + 0.4 * u)
     const f = warped * n
     const i = Math.min(n - 1, Math.floor(f))
     const local = f - i
-    const env = smooth(u / 0.12) * smooth((1 - u) / 0.14)
+    const env = smooth(u / 0.08) * smooth((1 - u) / 0.1)
     return amps[i]! * Math.sin(Math.PI * local) * env
   }
   return {
     standIn: true,
+    parts: { liftEnd, strokesEnd, landing: bar },
     poseAt(beat: number): GlobePose {
       if (beat <= 0 || beat >= bar) return REST_POSE
       let y: number
-      if (beat < s.liftBeats) y = s.liftMm * smooth(beat / s.liftBeats)
-      else if (beat < s.liftBeats + s.strokeBeats) y = s.liftMm
+      if (beat < liftEnd) y = s.liftMm * smooth(beat / liftEnd)
+      else if (beat < strokesEnd) y = s.liftMm
       else {
-        const u = (beat - s.liftBeats - s.strokeBeats) / s.setDownBeats
+        const u = (beat - strokesEnd) / s.setDownBeats
         y = s.liftMm * (1 - u * u)
       }
       const d = 0.02

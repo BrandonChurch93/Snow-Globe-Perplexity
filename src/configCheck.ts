@@ -151,7 +151,6 @@ export function configProblems(input: unknown, approvedPresent: readonly string[
   const out: string[] = []
   shape(input, spec, '', out)
   if (out.length) return out
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const c = input as any
   const seasons: string[] = c.seasons
   const cameras = Object.keys(c.cameras)

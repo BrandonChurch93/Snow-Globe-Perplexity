@@ -18,7 +18,13 @@
     "dev": "vite",
     "still": "node tools/still.mjs",
     "review": "node tools/review.mjs",
-    "status": "node tools/status.mjs"
+    "status": "node tools/status.mjs",
+    "determinism": "node tools/determinism.mjs",
+    "gate": "node tools/gate.mjs",
+    "budget": "node tools/budget.mjs",
+    "keep": "node tools/keep.mjs",
+    "crops": "node tools/crops.mjs",
+    "compare": "node tools/compare.mjs"
   },
   "dependencies": {
     "gsap": "3.15.1",
