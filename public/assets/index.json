@@ -73,7 +73,7 @@
         {
           "path": "winter/base-winter.glb",
           "bytes": 2225140,
-          "sha": "01abebc41fc339b0"
+          "sha": "3ca1d43ba28a7b8a"
         },
         {
           "path": "winter/base-wood-detail.lin.tile.w1024.png",
@@ -217,7 +217,7 @@
         {
           "path": "winter/base-winter.glb",
           "bytes": 2225140,
-          "sha": "01abebc41fc339b0"
+          "sha": "3ca1d43ba28a7b8a"
         },
         {
           "path": "winter/base-wood-detail.lin.tile.w1024.png",
@@ -291,7 +291,7 @@
     }
   },
   "seasonHashes": {
-    "winter": "0d13bbffc2593660",
+    "winter": "ea1f8d4607d1a243",
     "spring": "ef0db9baa34091f5",
     "summer": "ef0db9baa34091f5",
     "fall": "ef0db9baa34091f5"
