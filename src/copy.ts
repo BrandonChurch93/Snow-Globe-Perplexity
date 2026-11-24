@@ -53,9 +53,12 @@ export const copy = {
 
 export const timing = {
   idleSeconds: 8,
+  dimTo: 0.36,
   dimOutSeconds: 0.9,
   dimInSeconds: 0.18,
   hintSeconds: 1.9,
+  latchSeconds: 0.5,
+  moveGapSeconds: 0.2,
   fontWaitSeconds: 1.2,
   copiedSeconds: 1.6,
 } as const
