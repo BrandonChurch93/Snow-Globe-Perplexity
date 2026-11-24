@@ -63,9 +63,45 @@
     "heightMm": 1.3,
     "minSquash": 0.26,
     "heapMm": [5, 15], "heapSide": [0.8, 0.9],
+    "drift": {
+      "note": "The snow heaped against the foot, as real relief. reachMm is how far it runs out from the foot at that angle, mm how tall it stands; both measured on the approved image (out to 33 mm on the right at 25 degrees).",
+      "profile": [
+        { "deg": -180, "reachMm": 14, "mm": 2.4 },
+        { "deg": -152, "reachMm": 20, "mm": 3.0 },
+        { "deg": -120, "reachMm": 9, "mm": 1.6 },
+        { "deg": -70, "reachMm": 10, "mm": 1.7 },
+        { "deg": -32, "reachMm": 18, "mm": 3.0 },
+        { "deg": -5, "reachMm": 23, "mm": 4.3 },
+        { "deg": 24, "reachMm": 25, "mm": 4.6 },
+        { "deg": 46, "reachMm": 17, "mm": 3.2 },
+        { "deg": 70, "reachMm": 9, "mm": 1.9 },
+        { "deg": 96, "reachMm": 10, "mm": 2.0 },
+        { "deg": 125, "reachMm": 8, "mm": 1.7 },
+        { "deg": 150, "reachMm": 12, "mm": 2.3 }
+      ],
+      "underMm": 4.5,
+      "wallMm": 3.5,
+      "lobe": 0.55,
+      "fray": 0.5,
+      "lumpMm": [8.5, 2.4],
+      "hump": [0.36, 0.72],
+      "lump": [0.3, 1.35, 0.3],
+      "fall": 1.0,
+      "deepMm": 2.4,
+      "rings": 64,
+      "segments": 480,
+      "outMm": 47,
+      "minMm": 0.02,
+      "softMm": 0.45,
+      "openMm": 1.6,
+      "cavity": 1.1,
+      "openMin": 0.45
+    },
     "under": { "inMm": [6, 18], "film": 0.24, "speck": 0.4, "wallMm": 4.5 },
-    "frond": { "strong": 0.18, "strongStretch": [1.6, 2.3], "bodyMm": [4, 5.6], "leafMm": [0.9, 1.25], "bladeMm": [2, 2.8], "blade": [0.5, 0.7], "gapMm": [1.7, 2.3], "lenShare": [0.07, 0.095], "lenMm": [3.6, 5.8], "angleDeg": [46, 56], "angleTipDeg": [36, 44] },
-    "shapes": { "branchMinMm": 0.5, "branchEvery": 3, "spineEvery": 2, "ridgeTall": 0.7, "grainMinMm": 0.34, "lumpFullMm": 0.58, "farPerMm": 3 },
+    "frond": { "strong": 0.18, "strongStretch": [1.25, 1.6], "bodyMm": [4, 5.6], "leafMm": [0.9, 1.25], "bladeMm": [2, 2.8], "blade": [0.5, 0.7], "halo": [1.9, 0.17, 0.26], "gapMm": [3.0, 4.0], "lenShare": [0.13, 0.18], "lenMm": [7, 11], "angleDeg": [46, 56], "angleTipDeg": [36, 44] },
+    "shapes": { "branchMinMm": 0.5, "branchEvery": 4, "spineEvery": 2, "ridgeTall": 0.6, "ridgeSteep": 0.95, "ridgeOnDrift": 0.45, "leafShare": 0.6,
+      "leafEdge": 0.55,
+      "bodyEdge": 0.7, "leafDeep": 0.5, "bodyDeep": 0.88, "bodyShare": 0.72, "bodyTall": 1.5, "bodyFall": 1.5, "crestTall": 0.45, "grainMinMm": 0.42, "lumpFullMm": 0.62, "farPerMm": 2, "farSoft": 0.4 },
     "arms": [
       { "rootDeg": -136, "tipDeg": -145, "tipMm": 122 },
       { "rootDeg": -154, "tipDeg": -170, "tipMm": 101 },
@@ -86,8 +122,9 @@
       { "deg": -42, "mm": 160, "sizeMm": 4 },
       { "deg": -8, "mm": 124, "sizeMm": 3 }
     ],
-    "grains": 2400,
-    "clumps": 46
+    "grains": 1700,
+    "grainMm": [0.09, 0.36],
+    "clumps": 34
   },
   "grain": { "px": 512, "cells": [26, 61], "slopeGain": 4, "tileMm": 12 }
 }

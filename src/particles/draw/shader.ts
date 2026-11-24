@@ -2,7 +2,7 @@ import { COVER_GLSL } from '../../core/chunks/cover'
 import { LIGHT_FRAG_PARS } from '../../core/chunks/light'
 import { VEIL_GLSL } from '../../core/chunks/veil'
 import { viewCode } from '../../diagnostics/views'
-import { BLUR_HOLD, BLUR_STRICT_FROM_PX, BLUR_STRICT_TO_PX, CLUMP, EDGE_DISC, EDGE_HIGH, EDGE_LOW, GLITTER_STREAK, GLINT_HIGH, GLINT_LOW, LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_CORE, LYING_LOOK, MAX_KINDS, PIXEL_SIGMA2, SIZE_HIGH, SIZE_LOW, SIZE_SKEW, STREAK_HOLD, STORM_SHARP_SHARE, STORM_SOFT, STREAK_REACH, STREAK_TAPER, STRETCH_HIGH, STRETCH_LOW } from './looks'
+import { BLUR_HOLD, BLUR_STRICT_FROM_PX, BLUR_STRICT_TO_PX, CLUMP, EDGE_DISC, EDGE_HIGH, EDGE_LOW, FLASH_WHITE, GLINT_HIGH, GLINT_LOW, LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_CORE, LYING_LOOK, MAX_KINDS, PIXEL_SIGMA2, SIZE_HIGH, SIZE_LOW, SIZE_SKEW, STORM_FINE_HIGH, STORM_FINE_LOW, STORM_FINE_SHARE, STORM_FLASH, STORM_GLINT, STORM_GLITTER, STORM_GLITTER_FROM, STORM_GLITTER_PX, STORM_GLITTER_TO, STORM_MOST_PX, STORM_SHARP, STORM_SHARP_SHARE, STORM_SMEAR, STORM_SMEAR_HIGH_PX, STORM_SMEAR_LOW_PX, STORM_SMEAR_SHARE, STORM_SOFT_TOP, STORM_THIN, STREAK_CAPSULE, STREAK_HOLD, STREAK_REACH, STREAK_TAPER, STRETCH_HIGH, STRETCH_LOW } from './looks'
 
 const MEAN_LOBE = 0.42
 const n = (v: number) => (Number.isInteger(v) ? v.toFixed(1) : String(v))
@@ -20,7 +20,7 @@ varying vec4 vGrid;
 varying vec4 vDom;
 varying vec4 vFog;
 float pointSpread(float halfLong, float s2) {
-  return pow(1.0 + ${n(STREAK_TAPER * STREAK_TAPER)} * halfLong * halfLong / s2, ${n(0.5 * STREAK_HOLD)});
+  return pow(1.0 + ${n(STREAK_CAPSULE)} * halfLong / sqrt(s2), ${n(STREAK_HOLD)});
 }
 `
 
@@ -37,7 +37,6 @@ attribute vec4 aData;
 attribute float aState;
 uniform vec4 uPoint;
 uniform vec4 uStorm;
-uniform highp sampler3D uFlow;
 uniform vec4 uAperture;
 uniform vec3 uEyeShift;
 uniform vec4 uBlur;
@@ -66,7 +65,8 @@ vec3 pointTurn(vec3 v, vec3 k, float c, float s) {
   return v * c + cross(k, v) * s + k * dot(k, v) * (1.0 - c);
 }
 float pointGlint(vec3 face, vec3 l, vec3 v) {
-  return smoothstep(${n(GLINT_LOW)}, ${n(GLINT_HIGH)}, abs(dot(face, normalize(l + v))));
+  float wide = ${n(STORM_GLINT)} * uStorm.x;
+  return smoothstep(${n(GLINT_LOW)} - wide, ${n(GLINT_HIGH)} - 0.5 * wide, abs(dot(face, normalize(l + v))));
 }
 vec4 pointLobe(int k, int variant, float shape, vec3 axis, float c, float s, float lying, float rPx, mat3 toView) {
   vec3 o = vec3(0.0);
@@ -93,7 +93,7 @@ export const VERT_MAIN = `
   float shape = look.x;
   float lying = aState > 0.5 && aState < 2.5 ? 1.0 : 0.0;
   float afloat = 1.0 - lying;
-  vec3 nowL = mix(aPrev, aNow, uPoint.x);
+  vec3 nowL = mix(aPrev, aNow, uPoint.x + uPoint.z * uStorm.y * afloat);
   vec3 nowW = (modelMatrix * vec4(nowL, 1.0)).xyz;
   vec3 eye = cameraPosition - uEyeShift * afloat;
   vec4 placed = lensPlace(nowW, eye);
@@ -118,6 +118,13 @@ export const VERT_MAIN = `
   float shrink = mix(1.0, mix(uBlur.w, 1.0, smoothstep(-1.0, 0.15, depth)), afloat);
   float spread = shape > 0.5 && shape < 1.5 ? mix(${n(SIZE_LOW)}, ${n(SIZE_HIGH)}, pow(h2.w, ${n(SIZE_SKEW)})) : 1.0;
   float rPx = aData.x * look.y * spread * uPoint.y * mag / zImg * shrink * mix(1.0, ${n(LYING_LOOK.size)}, lying);
+  float gusty = afloat * uStorm.x;
+  float glints = shape > 1.5 ? 1.0 : 0.0;
+  float pick = fract(h.x * 91.0);
+  float smears = (1.0 - glints) * step(pick, ${n(STORM_SMEAR_SHARE)});
+  float sharps = (1.0 - glints) * (1.0 - smears) * step(pick, ${n(STORM_SMEAR_SHARE + STORM_SHARP_SHARE)});
+  float soft = gusty * smears;
+  rPx = mix(rPx, min(rPx, mix(${n(STORM_MOST_PX)}, ${n(STORM_GLITTER_PX)}, glints) * uPoint.w), gusty * (1.0 - smears));
   float coc = uAperture.w * uPoint.y * (1.0 / zImg - uAperture.z);
   float byGlass = smoothstep(${n(LENS_LOOK.glassFrom)}, 1.0, depth);
   float blur = uBlur.z * (1.0 - exp(-((coc > 0.0 ? coc * uBlur.x : -coc * uBlur.y) + uTone.w * byGlass * byGlass) / uBlur.z)) * afloat;
@@ -126,10 +133,6 @@ export const VERT_MAIN = `
 
   vec2 streak = vec2(0.0);
   vec3 moved = (aNow - aPrev) * uPoint.z;
-  if (uStorm.x > 0.0) {
-    vec3 carried = texture(uFlow, (nowL / (2.0 * uLens.w) + 0.5) * uStorm.z + uStorm.w).xyz;
-    moved += (carried * uStorm.x + (aNow - aPrev - carried) * uStorm.y) * (shape > 1.5 ? ${n(GLITTER_STREAK)} : 1.0);
-  }
   mat3 toView = mat3(modelViewMatrix);
   if (afloat > 0.5 && dot(moved, moved) > 1e-8) {
     #ifdef POINT_SPRITES
@@ -154,17 +157,17 @@ export const VERT_MAIN = `
   }
   float core = ${n(LOBE_CORE)} * rPx * (shape > 0.5 && shape < 1.5 ? ${n(MEAN_LOBE)} : 1.0);
   float c2 = core * core;
-  float held = 1.0;
-  if (afloat > 0.5 && shape < 1.5) {
-    float smear = uStorm.x * ${n(STORM_SOFT)} * rPx * (0.4 + 1.2 * fract(h.y * 53.0)) * step(${n(STORM_SHARP_SHARE)}, fract(h.x * 91.0));
-    held = pow(c2 / (c2 + smear * smear), ${n(1 - BLUR_HOLD)});
-    if (uStorm.x > 0.0) {
-      vec4 stir = veilStir(nowL);
-      held *= mix(1.0, min(${n(CLUMP.floor)} + ${n(CLUMP.gain)} * stir.x * mix(${n(CLUMP.core)}, 1.0, stir.y), ${n(CLUMP.most)}), uStorm.x * ${n(1 / LENS_LOOK.stormSpanSteps)});
-    }
-    s2x += smear * smear;
-  }
+  float smear = soft * mix(${n(STORM_SMEAR_LOW_PX)}, ${n(STORM_SMEAR_HIGH_PX)}, fract(h.y * 53.0)) * uPoint.w;
+  s2x += smear * smear;
   float amp = pow(c2 / (c2 + s2x), ${n(BLUR_HOLD)}) / pointSpread(halfLong, c2 + s2x);
+  float held = 1.0;
+  if (gusty > 0.0) {
+    vec4 stir = veilStir(nowL);
+    float clump = min(${n(CLUMP.floor)} + ${n(CLUMP.gain)} * stir.x * mix(${n(CLUMP.core)}, 1.0, stir.y), ${n(CLUMP.most)});
+    float fine = (pick - ${n(STORM_SMEAR_SHARE + STORM_SHARP_SHARE)}) / ${n(STORM_FINE_SHARE)};
+    float want = smears * ${n(STORM_SMEAR)} + sharps * ${n(STORM_SHARP)} + (1.0 - glints) * step(0.0, fine) * step(fine, 1.0) * mix(${n(STORM_FINE_HIGH)}, ${n(STORM_FINE_LOW)}, fine);
+    held = mix(1.0, glints > 0.5 ? ${n(STORM_GLITTER)} / max(amp, 0.02) : clump * (want > 0.0 ? want / max(amp, 0.02) : ${n(STORM_THIN)}), gusty);
+  }
 
   vec3 axis = normalize(h.xyz * 2.0 - 1.0 + 1e-3);
   float angle = aData.w + 6.2831853 * h.w;
@@ -194,7 +197,6 @@ export const VERT_MAIN = `
   vec3 base = stageSoftIn(nowL) + gridCol * mix(uTone.y, gridFace, lying) + cardIn * mix(uRigPoint.x * ${n(LIGHT_LOOK.cardShare)}, cardFace, lying);
   vec3 toEye = normalize((uGlobeInv * vec4(eye, 1.0)).xyz - nowL);
   vec3 face = lying > 0.5 ? normalize(vec3(0.0, 1.0, 0.0) + uLimit.w * tilt) : pointTurn(normalize(cross(axis, normalize(tilt + 1e-3))), axis, ca, sa);
-  float glints = shape > 1.5 ? 1.0 : 0.0;
   vec3 flash = vec3(0.0);
   for (int i = 0; i < ${LAMPS}; i++) {
     vec3 d = uLamp[i].xyz - nowL;
@@ -205,10 +207,13 @@ export const VERT_MAIN = `
   }
   if (glints > 0.5) flash += keyIn * pointGlint(face, uLightFrame * keyTo, toEye) + uRigRimCol * (uRigInside.x * pointGlint(face, uLightFrame * uRigRimDir, toEye));
   flash *= look.w * pow(c2 / (c2 + s2x), ${n(1 - BLUR_HOLD)});
+  float flashMost = max(flash.r, max(flash.g, flash.b));
+  flash = mix(flash, vec3(flashMost), ${n(FLASH_WHITE)});
+  flash *= mix(1.0, min(1.0, ${n(STORM_FLASH)} / max(flashMost, 1e-3)), glints * gusty);
 
   float reach = 1.2 * rPx + 2.6 * sqrt(s2x) + 1.0;
   vec2 ext = min(vec2(reach) + ${n(STREAK_REACH)} * halfLong * abs(along), vec2(uLimit.y));
-  float alpha = aData.z * rim * held * pow(c2 / (c2 + sigma * sigma), ${n(1 - BLUR_HOLD)} * smoothstep(${n(BLUR_STRICT_FROM_PX)} * uPoint.w, ${n(BLUR_STRICT_TO_PX)} * uPoint.w, sigma));
+  float alpha = aData.z * rim * held * mix(1.0, smoothstep(${n(STORM_GLITTER_FROM)}, ${n(STORM_GLITTER_TO)}, flashMost), glints * gusty) * pow(c2 / (c2 + sigma * sigma), ${n(1 - BLUR_HOLD)} * smoothstep(${n(BLUR_STRICT_FROM_PX)} * uPoint.w, ${n(BLUR_STRICT_TO_PX)} * uPoint.w, sigma));
   #ifdef POINT_SPRITES
   float side = 2.0 * max(ext.x, ext.y);
   gl_PointSize = side;
@@ -219,7 +224,7 @@ export const VERT_MAIN = `
   clip.xy += off * vec2(projectionMatrix[0][0], projectionMatrix[1][1]) * (clip.w / uPoint.y);
   #endif
   vStreak = vec4(along, halfLong, s2x);
-  vKind = vec4(aData.y, lying, float(pid & 4095u), flash.r);
+  vKind = vec4(aData.y, lying, float(pid & 4095u) + 0.01 + 0.98 * gusty, flash.r);
   vGrid = vec4(base, flash.g);
   vDom = vec4(keyIn * uRigPoint.x, flash.b);
   vFog = veilPath(eye, placed.xyz, nowW, placed.w);
@@ -241,10 +246,12 @@ void pointAdd(vec4 lobe, vec2 p, inout float f, inout vec3 nrm) {
   if (r2 <= 0.0) return;
   float s2 = r2 + vStreak.w;
   vec2 q = p - lobe.xy;
-  float run = dot(q, vStreak.xy);
-  q -= vStreak.xy * (run * (1.0 - sqrt(s2 / (s2 + ${n(STREAK_TAPER * STREAK_TAPER)} * vStreak.z * vStreak.z))));
+  float t = dot(q, vStreak.xy);
+  q -= vStreak.xy * clamp(t, -vStreak.z, vStreak.z);
+  float u = min(abs(t) / max(vStreak.z, 1e-3), 1.0);
+  float long2 = vStreak.z * vStreak.z;
   float sharp = r2 / s2;
-  float g = pow(sharp, ${n(BLUR_HOLD)}) / pointSpread(vStreak.z, s2) * exp(-0.5 * dot(q, q) / s2);
+  float g = pow(sharp, ${n(BLUR_HOLD)}) / pointSpread(vStreak.z, s2) * exp(-0.5 * dot(q, q) / s2) * (1.0 - ${n(STREAK_TAPER)} * u * u * u * u * long2 / (long2 + s2));
   f += g;
   nrm += g * (1.0 + 0.6 * lobe.w) * vec3(q / lobe.z * sharp, sqrt(max(1.0 - dot(q, q) / (lobe.z * lobe.z), 0.05)));
 }
@@ -272,7 +279,9 @@ void main() {
   float lit = clamp(max(flash.r, max(flash.g, flash.b)), 0.0, 1.0);
   float r0 = ${n(LOBE_CORE)} * vL0.z;
   float edge = mix(${n(EDGE_DISC)}, ${n(EDGE_HIGH)}, smoothstep(0.05, 0.4, r0 * r0 / (r0 * r0 + vStreak.w)));
-  float cover = min(amp * smoothstep(${n(EDGE_LOW)} * amp, edge * amp, f) * vCore.w * mix(look.z, 1.0, lit), 1.0);
+  float soft = clamp((fract(vKind.z) - 0.01) * ${n(1 / 0.98)}, 0.0, 1.0);
+  float body = mix(smoothstep(${n(EDGE_LOW)} * amp, edge * amp, f), min(f / ((look.x > 1.5 ? 1.0 : ${n(STORM_SOFT_TOP)}) * amp), 1.0), soft);
+  float cover = min(amp * body * vCore.w * mix(look.z, 1.0, lit), 1.0);
   if (uDiag == ${viewCode('cover')}) {
     gl_FragColor = vec4(cover, 0.0, cover, cover);
     return;
