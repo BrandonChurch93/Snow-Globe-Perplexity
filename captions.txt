@@ -1,4 +1,4 @@
-01-blockout-camera-pair.jpg: Blockout pack part 2, set-B-01. Marked a is the approved winter image, marked b is the hero camera on the placeholder globe at draft tier.
-02-blockout-film-overview.jpg: Blockout pack part 1, set-A-01. The whole film in 12 frames from the real sheet tool, every shot at least once, frame index, seconds and shot id under each frame.
-03-blockout-shake-1-sheet.jpg: Blockout pack part 1, set-A-03. One sheet across the shake from winter to spring, the film's own sheet for the shot shake-1.
-04-sharpness-comparison.jpg: The comparison sheet measure M3 reads its regions from, winter-rest at final tier beside the approved image.
+01-blockout-film-overview.jpg: Blockout pack part 1, set-A-01. The whole film in 12 frames from the real sheet tool, every shot at least once, frame index, seconds and shot id under each frame.
+02-loop-seam-sheet.jpg: Motion pack for the film unit, part 2, set-C-01. The loop's seam from the sheet tool, the last six frames then the first six, at draft tier.
+03-compression-frame-out-of-encode.jpg: Compression pack part 2, set-C-01-b. Film frame 666 in the shake from winter to spring, taken out of the stress encode at the stress bitrate, resized to fit. Its pair set-C-01-a is the same frame before encoding.
+04-compression-crops-out-of-encode.jpg: Compression pack part 2, set-C-02-b. Native size crops of that frame out of the encode: 1 dark backdrop, 2 soft discs of light, 3 and 4 the surface left and right, 5 particles inside the globe, 6 frost on the glass, 7 fine branches, 8 glow. Shown here resized to 1200 px.
