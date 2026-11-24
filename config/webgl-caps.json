@@ -1,0 +1,223 @@
+{
+  "measured": "2026-11-24T02:10:27.856Z",
+  "machine": "space-sandbox · 2 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7958 MB",
+  "os": "Linux 6.1.155",
+  "browser": {
+    "name": "Google Chrome for Testing",
+    "version": "147.0.7727.15"
+  },
+  "rendering": "software, through SwiftShader",
+  "webgl": {
+    "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+    "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+    "vendor": "Google Inc. (Google)",
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+  },
+  "limits": {
+    "MAX_TEXTURE_SIZE": 8192,
+    "MAX_3D_TEXTURE_SIZE": 2048,
+    "MAX_CUBE_MAP_TEXTURE_SIZE": 16384,
+    "MAX_ARRAY_TEXTURE_LAYERS": 2048,
+    "MAX_RENDERBUFFER_SIZE": 8192,
+    "MAX_DRAW_BUFFERS": 6,
+    "MAX_COLOR_ATTACHMENTS": 6,
+    "MAX_SAMPLES": 4,
+    "MAX_VERTEX_ATTRIBS": 16,
+    "MAX_VERTEX_UNIFORM_VECTORS": 4096,
+    "MAX_FRAGMENT_UNIFORM_VECTORS": 4096,
+    "MAX_VARYING_VECTORS": 31,
+    "MAX_TEXTURE_IMAGE_UNITS": 32,
+    "MAX_VERTEX_TEXTURE_IMAGE_UNITS": 32,
+    "MAX_COMBINED_TEXTURE_IMAGE_UNITS": 64,
+    "MAX_UNIFORM_BUFFER_BINDINGS": 72,
+    "MAX_UNIFORM_BLOCK_SIZE": 65536,
+    "MAX_ELEMENTS_VERTICES": 2147483647,
+    "MAX_ELEMENTS_INDICES": 2147483647,
+    "MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS": 4,
+    "MAX_VIEWPORT_DIMS": [
+      8192,
+      8192
+    ],
+    "ALIASED_POINT_SIZE_RANGE": [
+      1,
+      1023
+    ],
+    "MAX_TEXTURE_MAX_ANISOTROPY": 16
+  },
+  "precision": {
+    "vertexHighFloat": [
+      127,
+      127,
+      23
+    ],
+    "fragmentHighFloat": [
+      127,
+      127,
+      23
+    ],
+    "fragmentHighInt": [
+      31,
+      30,
+      0
+    ]
+  },
+  "renderTargets": {
+    "RGBA16F": true,
+    "RGBA32F": true,
+    "R11F_G11F_B10F": true,
+    "RGBA8": true
+  },
+  "portable": {},
+  "extensions": [
+    {
+      "name": "EXT_clip_control",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "EXT_color_buffer_float",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "EXT_color_buffer_half_float",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "EXT_conservative_depth",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "EXT_depth_clamp",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "EXT_disjoint_timer_query_webgl2",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "EXT_float_blend",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "EXT_polygon_offset_clamp",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "EXT_texture_compression_bptc",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "EXT_texture_compression_rgtc",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "EXT_texture_filter_anisotropic",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "EXT_texture_mirror_clamp_to_edge",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "NV_shader_noperspective_interpolation",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "OES_draw_buffers_indexed",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "OES_sample_variables",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "OES_shader_multisample_interpolation",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "OES_texture_float_linear",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "OVR_multiview2",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "WEBGL_clip_cull_distance",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "WEBGL_compressed_texture_astc",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "WEBGL_compressed_texture_etc",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "WEBGL_compressed_texture_etc1",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "WEBGL_compressed_texture_s3tc",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "WEBGL_compressed_texture_s3tc_srgb",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "WEBGL_debug_renderer_info",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "WEBGL_debug_shaders",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "WEBGL_lose_context",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "WEBGL_multi_draw",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "WEBGL_polygon_mode",
+      "portable": false,
+      "note": "not looked up yet"
+    },
+    {
+      "name": "WEBGL_stencil_texturing",
+      "portable": false,
+      "note": "not looked up yet"
+    }
+  ]
+}

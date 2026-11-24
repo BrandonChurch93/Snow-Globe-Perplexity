@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "sets": {
+    "web": {
+      "shared": [],
+      "winter": [],
+      "spring": [],
+      "summer": [],
+      "fall": []
+    },
+    "full": {
+      "shared": [],
+      "winter": [],
+      "spring": [],
+      "summer": [],
+      "fall": []
+    }
+  },
+  "seasonHashes": {
+    "winter": "e3b0c44298fc1c14",
+    "spring": "e3b0c44298fc1c14",
+    "summer": "e3b0c44298fc1c14",
+    "fall": "e3b0c44298fc1c14"
+  }
+}

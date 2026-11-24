@@ -10,6 +10,21 @@
   "scripts": {
     "clock": "node tools/clock.mjs",
     "look": "node tools/look.mjs",
-    "progress": "node tools/progress.mjs"
+    "progress": "node tools/progress.mjs",
+    "caps": "node tools/caps.mjs"
+  },
+  "dependencies": {
+    "gsap": "3.15.1",
+    "three": "0.187.0"
+  },
+  "devDependencies": {
+    "@types/node": "20.19.43",
+    "@types/three": "0.187.0",
+    "playwright-core": "1.59.0",
+    "pngjs": "7.0.0",
+    "sharp": "0.35.5",
+    "typescript": "7.0.2",
+    "vite": "8.3.8",
+    "vitest": "4.1.12"
   }
 }

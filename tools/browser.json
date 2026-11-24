@@ -1,0 +1,10 @@
+{
+  "name": "Google Chrome for Testing",
+  "version": "147.0.7727.15",
+  "driver": "playwright-core 1.59.0",
+  "build": "chromium-1217",
+  "paths": [
+    "~/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome",
+    "~/.cache/ms-playwright/chromium_headless_shell-1217/chrome-linux/headless_shell"
+  ]
+}

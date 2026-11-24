@@ -1,0 +1,13 @@
+{
+  "measured": "2026-11-24T02:00:00Z",
+  "how": "Test pictures with a 1 pixel checkerboard and digits 5 pixels tall were viewed by the Builder. A picture arrives untouched up to maxPixels and is scaled down to that count above it.",
+  "maxPixels": 1149184,
+  "safePixels": 1140000,
+  "tested": [
+    { "width": 1400, "height": 788, "arrivedAs": "1400x788", "untouched": true },
+    { "width": 1000, "height": 1000, "arrivedAs": "1000x1000", "untouched": true },
+    { "width": 1568, "height": 882, "arrivedAs": "about 1430x804", "untouched": false },
+    { "width": 1100, "height": 1100, "arrivedAs": "1072x1072", "untouched": false },
+    { "width": 1400, "height": 1400, "arrivedAs": "1072x1072", "untouched": false }
+  ]
+}
