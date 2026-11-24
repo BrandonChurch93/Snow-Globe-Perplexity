@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 35 · 2026-11-24 13:36 UTC
+Status 36 · 2026-11-24 14:04 UTC
 
-- `out/stills/status/status-35-1.jpg`: Winter at rest from the hero camera at 4K and the review tier: the newest frame of the render budget run at 13:28 UTC on the build the first round is judging
-- `out/stills/status/status-35-2.jpg`: Still: winter rest hero, hd, draft
-- `out/stills/status/status-35-3.jpg`: Still: winter rest macro, preview, draft
-- `out/stills/status/status-35-4.jpg`: Still: winter rest macro, preview, draft, texels view
+- `out/stills/status/status-36-1.jpg`: Winter at rest at 14:02 UTC: the approved image on the left and the build on the right (draft tier) after the first merges of the second set: the tree now forks into bare limbs under separate pads and the snow inside the glass is white and thick down to the collar
+- `out/stills/status/status-36-2.jpg`: Half a second after the landing: the approved shake image on the left and the build on the right now drawn with the film's shutter as a film frame is. The storm is a white-out of long smears and is the next thing to cure
+- `out/stills/status/status-36-3.jpg`: Still: winter rest hero, hd, draft
+- `out/stills/status/status-36-4.jpg`: Still: winter landed hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 13:39 UTC
-clock: phase 3, tick of 2.0 minutes
-phase 3: 5.19 h used of its 11.00 h box
-allowance (before the review): 11.81 h used of 36.00 h allowed
-all time before the review: 11.81 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 14:08 UTC
+clock: phase 3, tick of 1.4 minutes
+phase 3: 5.68 h used of its 11.00 h box
+allowance (before the review): 12.29 h used of 36.00 h allowed
+all time before the review: 12.29 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
-half point: not reached
+half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 2
+minutes since the last status: 3
 ```
 
 ## Phases
@@ -629,6 +629,9 @@ Severe and major issues still open when a limit was reached: the unit, the still
 
 32. A sample of the real winter scene costs 9.15 s at hd on this VM, seven times the blockout's (13:35 UTC, Phase 3, `npm run budget`). At that cost film B at hd is 17 h at `draft` and 118 h at `final` for one render process here; a sandbox VM draws a sample in a little over half the time, so about 60 VM-hours at `final`. Owed before Phase 5 plans its renders: (a) where the time goes, one `--diag` or timing run per pass (the lens, the frost's blur of what is behind it, the light grid, the shadow, the mirror image), and a cut of whatever costs most that changes no pixel a judge can see; (b) the same measurement on a sandbox VM with the real scene; (c) the plan of ranges across VMs inside `sandbox.maxAgents`. The live app's frame rate on a real graphics card is a separate question (G15 and the `live.quality` levels) and is measured in Phase 4's probe.
 
+33. The reference camera is 1 mm low and 0.7 percent far (13:50 UTC, Phase 3; the glass finisher's circle fit of the approved outline, 87 to 99 edge points, rms 1.2 px: centre (1410.9, 652.7), radius 553.1 px in 2816 by 1584; the render through `REF_RIG` gives (1407.6, 643.5), 549.2). The miniature's layout was fitted through the same camera, so correcting the camera alone would move every fitted part 9 px against its target; it is left as it is while ten agents fit against it. Owed: after the look lock's parts stop moving, set `REF_RIG` to distance 615.5 mm and aim 63.8 mm and the principal point 3.3 px right, refit the layout once, and carry the same camera to the other three seasons. It is below what a critic can see in a pair (0.3 percent of the frame's width).
+34. Triangles at the `low` level (14:03 UTC, Phase 3). G15 passes with 578302 of `perf.maxTriangles.low` 600000 a sample through the app's path after the 14:00 merges (592138 before them). Every part that grows eats that room about 1.6 times over, because shadow casters are drawn twice. Every finisher was told and reports its part's triangles; G15 is run again at every freeze of `main`. If it goes red: lighter meshes at the low level first, and `live.quality.low.particleFraction`, which the Builder may tune, second.
+
 ## Review items not done
 
 none
@@ -735,6 +738,15 @@ Merged into `main`, each verified here with types clean and the tests green (126
   - `round_renderer` (a render agent, not a build agent), `agent/p3-round3-pack`: measures and the pack of round 3 at `final` tier on commit `2faac9e`; limit 90 minutes.
   - `repo_courier` was told to stop watching the looks branches and stays idle as the push fallback.
 
+- 2026-11-24 14:08 UTC · Round 3's render agents and critics. All run in their own sandboxes and start no agents. Sixteen agents are running, which is `sandbox.maxAgents`: the ten finishers, and six in the critic slots (two render agents and four critics). The jurors of R2 are started as critics finish.
+  - `motion_renderer` (a render agent), `agent/p3-round3-motion`: R4's motion sheets of round 3 at `review` tier on commit `2faac9e`; limit 75 minutes; started 13:58.
+  - `gate_runner` (a render agent), no branch: `npm run gate -- --phase 3` on a clean clone of `2faac9e`, the machine checks of round 3, reported as the gate prints them; limit 80 minutes; started 14:05. It changes no file.
+  - `round_renderer` reported at 14:05 after 49 minutes and is idle: measures complete, the pack of R1, R2 and R3 complete, nothing missing, no command failed. The gate's own stand-ins picture came back black in its sandbox (noted, not looked into: it is not part of this round).
+  - `reviewer_r3_a`: R1 (the match to the approved images), 8 files, asked on `gpt_6_2_sol`, started 14:07, limit `budget.agentWaitMinutes`.
+  - `reviewer_r3_b`: R3 part 1 (rest, landed and the interior view), 9 files, asked on `claude_opus_5_5`, started 14:07.
+  - `reviewer_r3_c`: R3 part 2 (the base, the surface and the settled view), 9 files, asked on `gemini_4_carbon`, started 14:07.
+  - `reviewer_r3_d`: R3 part 3 (the macro view), 3 files, asked on `kimi_k3`, started 14:07, answered 14:08: score 4, 3 severe, 7 major, 2 minor. Written to `scorecards/round-003/R3-3.json`.
+
 ## Rounds
 
 One line per round: its number, the unit, the commit it judged, each part ticked off as it finished, the scores, and what changed next.
@@ -743,7 +755,7 @@ One line per round: its number, the unit, the commit it judged, each part ticked
 
 - Round 2 · blockout (Phase 2, the floor round; the last the config allows) · judges commit `9ade96d` · started 2026-11-24 07:57 UTC. Parts: [x] build · [x] machine checks (G1 to G12 and G14 green at 08:09; D2 and D3 wait for step 14) · [x] measures (M1 and M6 for winter at draft: 14 lines, none red) · [x] pack (19 files in two parts, none missing, 08:15) · [x] critic part 1 (`claude_opus_5_5`, answered 08:38: 6, four major, none severe) · [x] critic part 2 (`gpt_6_2_astra`, answered 08:21: 8, two major, none severe) · [x] issues read · [x] logged (merged score 6 against a bar of 7, no severe issue open: round 2 does not pass, and it was the last blockout round; `scorecards/round-002/SUMMARY.md`; open items 25 to 29)
 
-- Round 3 · winter (Phase 3, the look lock; winter's first round) · judges commit `2faac9e` · started 2026-11-24 13:17 UTC. Parts: [ ] build · [ ] machine checks · [ ] measures (M1 to M6 at `final` tier) · [ ] pack (`final` tier, the `full` set; rendered by a render agent in its own sandbox, fetched from `agent/p3-round3-pack`) · [ ] R1 · [ ] R2 (the jury) · [ ] R3 · [ ] R4 · [ ] issues read · [ ] fixes · [ ] logged
+- Round 3 · winter (Phase 3, the look lock; winter's first round) · judges commit `2faac9e` · started 2026-11-24 13:17 UTC. Parts: [x] build (the judged build is `2faac9e`, engine hash `c18b4b561b115610`) · [ ] machine checks (G15 green here at 13:58; the whole Phase 3 gate is being run on `2faac9e` by the render agent `gate_runner` in its own sandbox, started 14:05) · [x] measures (14:05, by `round_renderer` at `final` tier: 24 of 24 lines, 1 red: M3 `winter-rest` 0.7156 against 0.75, the base 0.716 of the approved image's fine detail, the miniature 1.017; M4 1, M5 0.9903; in `scorecards/round-003/measures-winter.md`) · [ ] pack (`final` tier, the `full` set; rendered by a render agent in its own sandbox, fetched from `agent/p3-round3-pack`; 14:06: R1, R2 and R3 are in, 34 files in five parts, none missing, branch head `74487b4`; R4's motion sheets are being rendered at `review` tier by `motion_renderer` on `agent/p3-round3-motion`) · [ ] R1 · [ ] R2 (the jury) · [ ] R3 (three parts; part 3, the macro view, answered 14:08: 4) · [ ] R4 · [ ] issues read · [ ] fixes · [ ] logged
 
 ## Final scores
 
@@ -978,3 +990,5 @@ One entry per task: when it started, what it did, where it stopped.
 - What the ten reports leave open, by part, in the owners' own words (full lists in the reports): tree: one stem with stacked pads where the approved tree forks into about five thick limbs, needles without texture away from the bulbs, the trunk's lit side; village: flat ground snow, smooth cream stones, thin roof load, grainy smoke, smudges on the bank's face; base: a straight taper where the picture is convex, matt wood, milky short icicles that snap to stubs in one frame at beat 2, thin ledge snow; frost: flat slab frost, graphic fronds on the right of the glass, nothing blurs behind it yet; flakes and veil: storm bands too regular, too few faint small flakes at rest, hard-edged discs close up; liquid and engine: the top band thin at rest, the storm's white gone a second after the landing, 18 percent of the pool under the pond's ice, speed 1.38 s for the worst second against an aim of 0.6; scene: no bright amber disc, slab nearly black beside the base, wall darker than approved; glass: the main pane evenly white, an upper cap that can read as haze; light: the change's bloom does not flood the base; shake: the outside change leans on the streak alone.
 
 - 13:17 to 13:37 UTC. Round 3 (winter's first round of the look lock) opened on `2faac9e` and its line written under "Rounds" before anything else. Eleven agents started, all in their own sandboxes: the ten finishers of decision 49 and `round_renderer` (measures and the pack at `final` tier; branch `agent/p3-round3-pack`, fetched, never merged). `repo_courier` told to stop its looks watch. Decision 49, open item 31 and the asset rows of the base and the slab logged (`f4af1a5`). Step 4: M4 and M5 passed at `draft` on `6329c4c` and again after the merges of 13:04, so no cycle of change and look was spent on them; the weak points of the shake seen in the 13:07 stills (the storm hides the miniature at the landing, the icicles are stubs at the landing) go to the round as they are and to the flake, liquid and base finishers. Published at 13:19 from `f4af1a5` (deploy, then publish to the same site; Visibility: Organization; the first picture of the published page came after 10.9 s with 38 requests and no error). Step 5: `npm run budget` on the real winter scene, 13:21 to 13:35 (table appended under "Render budget"). A clock tick of 14.1 minutes at 13:30, over `status.minGapMinutes`, while the budget run held the shell; ticks go back to at most 10 minutes. Status 35 at 13:36 with the budget run's 4K review frame.
+
+- 13:37 to 14:06 UTC. `src/capture/showcase.ts`: the `landed` still takes the film's shutter (decision 50; 371 tests pass; the draft `landed` still costs 39 s a sample at hd against 9 s at rest); decision 51 on the icicles. The flake and liquid finishers told at 13:44 with the pair picture. `npm run gate -- --phase 3 --only G15` on `abd2c3e`: pass in 898 s (texture memory web 129 of 500 MB, full 385.7 of 2000 MB; triangles a sample through the app's path: high 1100329 of 1800000, medium 937129 of 1100000, low 592138 of 600000; draw calls 60, 60 and 48 of 140). The pack of round 3 was found to draw its motion sheets first and at `final` they would have taken about 85 minutes on one VM, so at 13:58 the work was split: `round_renderer` draws R1, R2 and R3 at `final` (`--only R1,R2,R3`), and a second render agent, `motion_renderer` (sandbox, limit 75 minutes, branch `agent/p3-round3-motion`, fetched and never merged), draws R4's sheets at the `review` tier, which `kit/07` allows ("at the `review` tier or higher"). `round_renderer` at its 45 minute mark: the measures are complete on `2faac9e` at `final`, 24 lines, 1 red: M3 `winter-rest` 0.7156 against 0.75, on the base. `src/scene/stage.ts`: in a one-season shake `arrived` now falls to 0 across the base's change, under the flood, where it stepped at beat 2 in a clean frame (the light finisher's lines; a two-season shake is unchanged). `dev.meshes()` added to the page for triangle counts, and `out/work/bin/meshes.mjs` reads it. Merged at 14:00 without conflict: tree `edd2ca0` (a leaning trunk, a fork into nine limbs, six pads, 73 bulbs), village `5c8a575` (the snow body inside the glass), base `ddff33a`, glass `1a3a047` (the top band), scene `6c3d419`; `npm run make` for `trunk`, `tree-winter` and `village-winter`, `npm run texpack` (44.1 MB), build; built files not committed until the round's fixes are in. After those merges the app's path draws 1088125, 924925 and 578302 triangles a sample at high, medium and low. The glass finisher's circle fit: under the reference camera of `tools/lib/refcam.mjs` the glass sits 3.3 px left, 9.2 px high and 0.71 percent small against the approved outline in 2816 px (open item 33). Status 36 at 14:04 with the two pair pictures.
