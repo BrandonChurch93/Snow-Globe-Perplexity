@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { fromThree, writeGlb } from '../../tools/lib/glb.mjs'
 import { rel, writeJson } from '../../tools/lib/paths.mjs'
 import { loadLayout, loadRoof } from './layout.mjs'
-import { Bag, KIND, TILE_MM, Tris, add3, basis, boxMatrix, clamp, fbm, frame, grainUv, lin, mix3, mul3, noise, norm3, pillow, planar, rng, shade, slab, smooth, sub3, surf, writePng } from './kit.mjs'
+import { Bag, KIND, STOUT, TILE_MM, Tris, add3, basis, boxMatrix, clamp, fbm, frame, grainUv, lin, mix3, mul3, noise, norm3, pillow, planar, rng, shade, slab, smooth, sub3, surf, writePng } from './kit.mjs'
 
 const L = await loadLayout()
 const RF = await loadRoof()
@@ -19,18 +19,17 @@ const pick = (a) => a[Math.floor(R() * a.length)]
 const MORTAR = -0.5
 const T = (x, y, z) => new THREE.Matrix4().makeTranslation(x, y, z)
 
-const STONES = ['#aea69b', '#9a938a', '#bcb5aa', '#8d877f', '#a39c91', '#c4bdb1', '#968f84', '#b3ab9e', '#857f77', '#a8a39b'].map(lin)
+const STONES = ['#8c867d', '#7c766f', '#979289', '#726d66', '#837e75', '#9e988e', '#79736a', '#908a7f', '#6b6660', '#87837d'].map(lin)
 const ARCH = ['#b9b2a6', '#aba498', '#c5beb2', '#a09a8e'].map(lin)
 const BRICKS = ['#a07a62', '#8f6c58', '#ad866c', '#7f6050', '#98735c', '#a67f66', '#876655'].map(lin)
 const SHINGLES = ['#5c4838', '#4e3d31', '#68523f', '#43352b', '#57483c'].map(lin)
 const LEAVES = ['#22401f', '#2d5226', '#1b3319', '#3a5f2c', '#27481f'].map(lin)
-const MORTAR_C = lin('#2e2824')
+const MORTAR_C = lin('#2b2521')
 const DIRT = lin('#4b4538')
 const IRON = lin('#15161a')
-const DOOR = lin('#6b4126')
-const FRAME = lin('#5a3920')
-const FENCE = lin('#6a4a33')
-const PICKET = lin('#c9c2b4')
+const DOOR = lin('#47291a')
+const FRAME = lin('#3e2716')
+const FENCE = lin('#8a6344')
 const SLATE = lin('#8a857f')
 
 const solid = new Bag('solid')
@@ -47,7 +46,7 @@ const off = () => [R() * 7, R() * 7]
 
 function stone(W, x, y, w, h, o = {}) {
   const d = (o.depth ?? 0.46) * (0.7 + 0.6 * R())
-  const g = pillow(w, h, d, o.su ?? (w > 1.9 ? 6 : 5), o.sv ?? 4, R, o.pillow)
+  const g = pillow(w, h, d, o.su ?? (w > 1.7 ? 5 : 4), o.sv ?? 3, R, o.pillow)
   const P = g.getAttribute('position')
   for (let i = 0; i < P.count; i++) {
     const px = P.getX(i) + x
@@ -55,19 +54,19 @@ function stone(W, x, y, w, h, o = {}) {
     if (o.rake) py = Math.min(py, o.rake(px))
     P.setXYZ(i, px, py, P.getZ(i) + MORTAR + (o.lift ?? 0))
   }
-  const tone = mul3(pick(o.tones ?? STONES), 0.74 + 0.46 * R())
+  const tone = mul3(pick(o.tones ?? STONES), 0.62 + 0.7 * R())
   const c = mix3(tone, DIRT, o.dirt === false ? 0 : smooth(1.4, -1.4, y) * 0.5)
   solid.add(g, { matrix: W.M, color: c, surf: stoneSurf(), uv: planar(W.U, W.V), uvOffset: off() })
 }
 
 function wall(W, region, o = {}) {
-  const rowH = o.rowH ?? 1.08
-  const rowJ = o.rowJ ?? 0.4
-  const wide = o.wide ?? 1.32
-  const wideJ = o.wideJ ?? 0.5
-  const gap = o.gap ?? 0.12
-  const stack = o.stack ?? 0.16
-  const drift = o.drift ?? 0.09
+  const rowH = o.rowH ?? 1.02
+  const rowJ = o.rowJ ?? 0.55
+  const wide = o.wide ?? 1.08
+  const wideJ = o.wideJ ?? 0.6
+  const gap = o.gap ?? 0.17
+  const stack = o.stack ?? 0.25
+  const drift = o.drift ?? 0.12
   let y = region.y0
   while (y < region.y1 - 0.3) {
     let h = rowH + (R() - 0.5) * rowJ
@@ -99,7 +98,7 @@ function wall(W, region, o = {}) {
     }
     for (const [a, b] of spans) {
       const n = Math.max(1, Math.round((b - a) / (wide + (R() - 0.5) * wideJ)))
-      const ws = Array.from({ length: n }, () => 0.55 + 0.9 * R())
+      const ws = Array.from({ length: n }, () => 0.5 + 1.0 * R())
       const sum = ws.reduce((s, v) => s + v, 0)
       let x = a
       for (let i = 0; i < n; i++) {
@@ -392,6 +391,7 @@ const ironPart = (g, m) => {
 }
 ironPart(post)
 const { cageLo, cageHi, loHalf, hiHalf } = RF.LAMP
+const CAP_MM = 1
 const Q = Math.PI / 4
 for (let k = 0; k < 4; k++) {
   const a = Q + (k * Math.PI) / 2
@@ -399,13 +399,13 @@ for (let k = 0; k < 4; k++) {
   const B = [Math.cos(a) * hiHalf * Math.SQRT2, cageHi, Math.sin(a) * hiHalf * Math.SQRT2]
   const mid = sc(add3(A, B), 0.5)
   const len = Math.hypot(...sub3(B, A))
-  ironPart(slab(0.14, len, 0.14, { round: 0.03, sy: 2 }), basis(mid, [Math.cos(a + Q * 2), 0, Math.sin(a + Q * 2)], norm3(sub3(B, A))))
+  ironPart(slab(0.22, len, 0.22, { round: 0.04, sy: 2 }), basis(mid, [Math.cos(a + Q * 2), 0, Math.sin(a + Q * 2)], norm3(sub3(B, A))))
 }
 ironPart(new THREE.CylinderGeometry(hiHalf * Math.SQRT2 + 0.12, hiHalf * Math.SQRT2 + 0.05, 0.16, 4, 1).applyMatrix4(new THREE.Matrix4().makeRotationY(Q).setPosition(0, cageHi + 0.06, 0)))
-ironPart(new THREE.CylinderGeometry(0.3, hiHalf * Math.SQRT2 + 0.38, 0.72, 4, 3).applyMatrix4(new THREE.Matrix4().makeRotationY(Q).setPosition(0, cageHi + 0.5, 0)))
-ironPart(new THREE.CylinderGeometry(0.2, 0.34, 0.26, 10, 1).applyMatrix4(T(0, cageHi + 0.98, 0)))
-ironPart(new THREE.SphereGeometry(0.2, 10, 8).applyMatrix4(T(0, cageHi + 1.24, 0)))
-ironPart(new THREE.ConeGeometry(0.08, 0.34, 8).applyMatrix4(T(0, cageHi + 1.56, 0)))
+ironPart(new THREE.CylinderGeometry(0.3, hiHalf * Math.SQRT2 + 0.38, CAP_MM, 4, 3).applyMatrix4(new THREE.Matrix4().makeRotationY(Q).setPosition(0, cageHi + 0.14 + CAP_MM / 2, 0)))
+ironPart(new THREE.CylinderGeometry(0.2, 0.34, 0.26, 10, 1).applyMatrix4(T(0, cageHi + 0.26 + CAP_MM, 0)))
+ironPart(new THREE.SphereGeometry(0.2, 10, 8).applyMatrix4(T(0, cageHi + 0.52 + CAP_MM, 0)))
+ironPart(new THREE.ConeGeometry(0.08, 0.34, 8).applyMatrix4(T(0, cageHi + 0.84 + CAP_MM, 0)))
 {
   const g = new THREE.CylinderGeometry(hiHalf * Math.SQRT2 - 0.06, loHalf * Math.SQRT2 - 0.05, cageHi - cageLo - 0.04, 4, 1, true).applyMatrix4(new THREE.Matrix4().makeRotationY(Q).setPosition(0, (cageLo + cageHi) / 2, 0))
   lampGlass.add(g.toNonIndexed(), { matrix: lampM, keepUv: true, surf: [0, 0], renormal: true })
@@ -418,7 +418,7 @@ const fenceShapes = L.shapes.filter((s) => s.role === 'fence')
 const posts = fenceShapes.filter((s) => s.half[2] < 2)
 const rails = fenceShapes.filter((s) => s.half[2] >= 2)
 for (const s of posts) {
-  const g = slab(2 * s.half[0], 2 * s.half[1], 2 * s.half[2], { round: 0.13, sx: 2, sy: 6, sz: 2, warp: 0.04, seed: R() * 30 })
+  const g = slab(2 * s.half[0] * STOUT.post, 2 * s.half[1], 2 * s.half[2] * STOUT.post, { round: 0.2, sx: 2, sy: 6, sz: 2, warp: 0.05, seed: R() * 30 })
   const P = g.getAttribute('position')
   for (let i = 0; i < P.count; i++) {
     const y = P.getY(i)
@@ -430,46 +430,13 @@ for (const s of posts) {
   solid.add(g, { matrix: boxMatrix(s), color: mul3(FENCE, 0.85 + 0.3 * R()), surf: woodSurf(0.75), uv: grainUv(UP), uvOffset: off(), renormal: true })
 }
 for (const s of rails) {
-  const g = slab(2 * s.half[0], 2 * s.half[1], 2 * s.half[2], { round: 0.08, sx: 1, sy: 1, sz: 26, warp: 0.05, seed: R() * 30 })
+  const g = slab(2 * s.half[0] * STOUT.rail, 2 * s.half[1] * STOUT.rail, 2 * s.half[2], { round: 0.12, sx: 1, sy: 1, sz: 26, warp: 0.06, seed: R() * 30 })
   const seed = R() * 40
   shade(g, (x, y, z) => 0.8 + 0.32 * noise(x * 5, y * 5, z * 0.6 + seed))
   const M = boxMatrix(s)
   const axis = new THREE.Vector3(0, 0, 1).transformDirection(M)
   solid.add(g, { matrix: M, color: mul3(FENCE, 0.85 + 0.3 * R()), surf: woodSurf(0.75), uv: grainUv([axis.x, axis.y, axis.z]), uvOffset: off(), renormal: true })
 }
-{
-  const f = L.fence
-  const dx = f.to[0] - f.from[0]
-  const dz = f.to[1] - f.from[1]
-  const len = Math.hypot(dx, dz)
-  const dir = [dx / len, dz / len]
-  const out = [-dir[1], dir[0]]
-  const yaw = Math.atan2(dx, dz)
-  const n = Math.floor(len / 1.02)
-  for (let i = 0; i <= n; i++) {
-    const t = (i + 0.5) / (n + 1)
-    const along = t * len
-    const nearPost = Math.min(...Array.from({ length: f.posts }, (_, k) => Math.abs(along - (k * len) / (f.posts - 1))))
-    if (nearPost < 0.85) continue
-    const x = f.from[0] + dx * t + out[0] * 0.36
-    const z = f.from[1] + dz * t + out[1] * 0.36
-    const h = 4.25 + 0.3 * R()
-    const g = new THREE.BoxGeometry(0.2, h, 0.52, 1, 3, 2)
-    const P = g.getAttribute('position')
-    for (let k = 0; k < P.count; k++) {
-      let y = P.getY(k)
-      let zz = P.getZ(k)
-      if (y > h / 2 - 0.01) zz *= 0.12
-      else if (y > 0.1) y = h / 2 - 0.42
-      P.setXYZ(k, P.getX(k), y, zz)
-    }
-    const seed = R() * 40
-    shade(g, (px, py, pz) => (0.7 + 0.3 * smooth(-h / 2, -h / 2 + 1.5, py)) * (0.84 + 0.26 * noise(px * 5, py * 0.9, pz * 5 + seed)))
-    const M = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler((R() - 0.5) * 0.06, yaw + (R() - 0.5) * 0.05, (R() - 0.5) * 0.05, 'YXZ')).setPosition(x, L.groundAt(x, z) + 0.35 + h / 2, z)
-    solid.add(g, { matrix: M, color: mul3(PICKET, 0.8 + 0.25 * R()), surf: woodSurf(0.8), uv: grainUv(UP), uvOffset: off(), renormal: true })
-  }
-}
-
 const pathShapes = L.shapes.filter((s) => s.role === 'path')
 for (const [i, s] of pathShapes.entries()) {
   const step = i < L.steps.length
