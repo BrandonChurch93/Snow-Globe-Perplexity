@@ -69,6 +69,7 @@ varying vec3 vStageWorld;
 varying vec3 vStageLocal;
 varying vec3 vStageAux;
 varying vec3 vStagePlaced;
+varying float vStageSeen;
 `
 
 export const STAGE_VERT_MAIN = `
@@ -81,8 +82,9 @@ vStageWorld = stageWorld.xyz;
 vStageLocal = (uGlobeInv * stageWorld).xyz;
 vStageAux = vec3(0.0, -mvPosition.z, length(mvPosition.xyz));
 vStagePlaced = stageWorld.xyz;
+vStageSeen = 1.0;
 #ifdef STAGE_INSIDE
-vec4 stagePlaced = lensPlace(stageWorld.xyz, cameraPosition);
+vec4 stagePlaced = lensPlace(stageWorld.xyz, cameraPosition, vStageSeen);
 vec4 stageView = viewMatrix * vec4(stagePlaced.xyz, 1.0);
 gl_Position = projectionMatrix * stageView;
 // y is the depth the lens focuses at. Each lens sample places the vertex again from its own eye, so what is held sharp
@@ -117,7 +119,9 @@ varying vec3 vStageWorld;
 varying vec3 vStageLocal;
 varying vec3 vStageAux;
 varying vec3 vStagePlaced;
+varying float vStageSeen;
 bool stageOutside() {
+  if (vStageSeen <= 0.0) return true;
   vec3 c = cross(normalize(vStagePlaced - cameraPosition), uLensCentre - cameraPosition);
   return dot(c, c) > uLens.x * uLens.x;
 }
