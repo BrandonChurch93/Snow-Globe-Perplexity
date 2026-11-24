@@ -38,6 +38,7 @@ export const lightUniforms = {
   uRigRimCol: { value: new THREE.Color(0, 0, 0) },
   uRigCardDir: { value: new THREE.Vector3(0, 1, 0) },
   uRigCardCol: { value: new THREE.Color(0, 0, 0) },
+  uRigCard: { value: new THREE.Vector4(0.5, 0.3, 0, 1) },
   uRigSky: { value: new THREE.Color(0, 0, 0) },
   uRigGround: { value: new THREE.Color(0, 0, 0) },
   uRigShadow: { value: new THREE.Vector4(0.15, 0.3, 0.001, 0.4) },
@@ -45,7 +46,7 @@ export const lightUniforms = {
   uRigInside: { value: new THREE.Vector4(0.9, 0.25, 0.25, 1.5) },
   uRigLobe: { value: new THREE.Vector4(0.2, 1, 0.1, 1) },
   uRigRoom: { value: new THREE.Vector4(1, 1, 0.5, 0.6) },
-  uRigGlow: { value: new THREE.Vector4(0.3, 1, 0, 0) },
+  uRigGlow: { value: new THREE.Vector4(0.3, 1, 0.04, 0.3) },
   uRigPoint: { value: new THREE.Vector4(0.14, 0.05, 0.32, 0) },
   ...roomLit,
 }
@@ -68,6 +69,7 @@ uniform vec3 uRigRimDir;
 uniform vec3 uRigRimCol;
 uniform vec3 uRigCardDir;
 uniform vec3 uRigCardCol;
+uniform vec4 uRigCard;
 uniform vec3 uRigSky;
 uniform vec3 uRigGround;
 uniform vec4 uRigShadow;
@@ -93,20 +95,25 @@ vec3 stageGrid(vec3 local) {
   if (uGrid.x > 0.0) b = texture(uGridB, stageGridAt(local, 0.0)).rgb * stageGridGain(texture(uGridB, stageGridAt(local, 2.0)), uGridGainB);
   return mix(a, b, uGrid.x);
 }
-void stageGridLit(vec3 local, out vec3 colour, out vec3 toward, out float open) {
+void stageGridLit(vec3 local, out vec3 colour, out vec3 toward, out float open, out float shade) {
   vec4 e = vec4(0.0);
   vec3 m = vec3(0.0);
+  shade = 0.0;
   if (uGrid.x < 1.0) {
     float gain = stageGridGain(texture(uGridA, stageGridAt(local, 2.0)), uGridGainA) * (1.0 - uGrid.x);
     vec4 c = texture(uGridA, stageGridAt(local, 0.0));
+    vec4 d = texture(uGridA, stageGridAt(local, 1.0));
     e += vec4(c.rgb * gain, c.a * (1.0 - uGrid.x));
-    m += texture(uGridA, stageGridAt(local, 1.0)).xyz * gain;
+    m += d.xyz * gain;
+    shade += d.a * (1.0 - uGrid.x);
   }
   if (uGrid.x > 0.0) {
     float gain = stageGridGain(texture(uGridB, stageGridAt(local, 2.0)), uGridGainB) * uGrid.x;
     vec4 c = texture(uGridB, stageGridAt(local, 0.0));
+    vec4 d = texture(uGridB, stageGridAt(local, 1.0));
     e += vec4(c.rgb * gain, c.a * uGrid.x);
-    m += texture(uGridB, stageGridAt(local, 1.0)).xyz * gain;
+    m += d.xyz * gain;
+    shade += d.a * uGrid.x;
   }
   colour = e.rgb;
   open = e.a;
@@ -116,7 +123,8 @@ vec3 stageGridToward(vec3 local) {
   vec3 colour;
   vec3 toward;
   float open;
-  stageGridLit(local, colour, toward, open);
+  float shade;
+  stageGridLit(local, colour, toward, open, shade);
   return toward;
 }
 float stageGridShade(vec3 local) {
@@ -162,14 +170,11 @@ vec3 stageGridL = vec3(0.0, 1.0, 0.0);
 vec3 stageGridC = vec3(0.0);
 vec3 stageWraps = vec3(0.0);
 float stageOpen = 1.0;
-float stageShadeFade(float shade, float ndl, float wrap) {
-  return mix(1.0, shade, smoothstep(-wrap, 0.5 * wrap + 0.05, ndl));
-}
 vec3 stageWrapped(vec3 n, float wrap) {
   float k = dot(n, stageKeyL);
   float r = dot(n, stageRimL);
   float g = dot(n, stageGridL);
-  vec3 room = stageKeyC * (stageWrap(k, wrap) * stageShadeFade(stageKeyS, k, wrap) - stageWrap(k, stageWraps.x) * stageShadeFade(stageKeyS, k, stageWraps.x));
+  vec3 room = stageKeyC * (stageKeyS * (stageWrap(k, wrap) - stageWrap(k, stageWraps.x)));
   room += stageRimC * (stageWrap(r, wrap) - stageWrap(r, stageWraps.y));
   return max(room, 0.0) * 0.3183098861837907 + stageGridC * max(stageWrap(g, wrap) - stageWrap(g, stageWraps.z), 0.0);
 }
@@ -239,12 +244,14 @@ vec3 stageLit = vec3(0.0);
   float lgWrap = 0.0;
   float lgSpread = uRigShadow.x;
   float lgOpen = 1.0;
+  float lgShade = 1.0;
+  float lgCardIn = 1.0;
   #ifdef STAGE_INSIDE
   {
     vec3 lgCol;
     vec3 lgToward;
     float lgAir;
-    stageGridLit(vStageLocal, lgCol, lgToward, lgAir);
+    stageGridLit(vStageLocal, lgCol, lgToward, lgAir, lgShade);
     stageLit = lgCol;
     lgOpen = mix(uGridShade.w, 1.0, lgAir);
     float lgLen = length(lgToward);
@@ -263,6 +270,7 @@ vec3 stageLit = vec3(0.0);
     lgThrough = uRigInside.x;
     lgWrap = uRigInside.z;
     lgSpread *= uRigInside.w;
+    lgCardIn = uRigCard.w;
   }
   #else
   {
@@ -288,15 +296,15 @@ vec3 stageLit = vec3(0.0);
   #endif
   float lgNdk = dot(lgN, lgKey);
   float lgLitK = stageWrap(lgNdk, lgWrap);
-  float lgShade = 1.0;
   #if defined( USE_SHADOWMAP ) && NUM_DIR_LIGHT_SHADOWS > 0 && defined( SHADOWMAP_TYPE_PCF )
   vec3 lgAt = vDirectionalShadowCoord[0].xyz / vDirectionalShadowCoord[0].w;
   vec3 lgDx = dFdx(lgAt);
   vec3 lgDy = dFdy(lgAt);
-  if (receiveShadow && lgLitK > 0.0) lgShade = stageKeyShade(directionalShadowMap[0], lgAt, lgDx, lgDy, lgSpread);
+  float lgSure = receiveShadow ? smoothstep(uRigGlow.z, uRigGlow.w, dot(lgN, uRigKeyDir)) : 0.0;
+  if (lgSure > 0.0) lgShade = mix(lgShade, stageKeyShade(directionalShadowMap[0], lgAt, lgDx, lgDy, lgSpread), lgSure);
   #endif
   vec3 lgKeyC = uRigKeyCol * lgThrough;
-  float lgShadeK = stageShadeFade(lgShade, lgNdk, lgWrap);
+  float lgShadeK = lgShade;
   vec3 lgKeyV = normalize(lgView * (lgKey * lgMirror));
   reflectedLight.directDiffuse += lgKeyC * (lgLitK * lgShadeK * RECIPROCAL_PI) * lgAlbedo;
   PhysicalMaterial lgSoft = material;
@@ -314,7 +322,19 @@ vec3 stageLit = vec3(0.0);
   clearcoatSpecularDirect += lgKeyC * (uRigLobe.y * lgShade * saturate(dot(geometryClearcoatNormal, lgKeyV))) * BRDF_GGX_Clearcoat(lgKeyV, geometryViewDir, geometryClearcoatNormal, lgSoft);
   clearcoatSpecularDirect += lgRimC * (uRigLobe.w * saturate(dot(geometryClearcoatNormal, lgRimV))) * BRDF_GGX_Clearcoat(lgRimV, geometryViewDir, geometryClearcoatNormal, lgSoft);
   #endif
-  reflectedLight.directDiffuse += uRigCardCol * (stageWrap(dot(lgN, uRigCardDir), 0.5) * lgOpen * lgThrough * RECIPROCAL_PI) * lgAlbedo;
+  float lgNdc = dot(lgN, uRigCardDir);
+  vec3 lgCardC = uRigCardCol * (lgOpen * lgThrough * lgCardIn);
+  reflectedLight.directDiffuse += lgCardC * (stageWrap(lgNdc, uRigCard.x) * RECIPROCAL_PI) * lgAlbedo;
+  if (lgNdc > 0.0 && uRigCard.z > 0.0) {
+    vec3 lgCardV = normalize(lgView * (uRigCardDir * lgMirror));
+    PhysicalMaterial lgBroad = material;
+    lgBroad.roughness = min(1.0, material.roughness + uRigCard.y);
+    reflectedLight.directSpecular += lgCardC * (uRigCard.z * lgNdc) * BRDF_GGX(lgCardV, geometryViewDir, geometryNormal, lgBroad);
+    #ifdef USE_CLEARCOAT
+    lgBroad.clearcoatRoughness = min(1.0, material.clearcoatRoughness + uRigCard.y);
+    clearcoatSpecularDirect += lgCardC * (uRigCard.z * saturate(dot(geometryClearcoatNormal, lgCardV))) * BRDF_GGX_Clearcoat(lgCardV, geometryViewDir, geometryClearcoatNormal, lgBroad);
+    #endif
+  }
   reflectedLight.indirectDiffuse += mix(uRigGround, uRigSky, 0.5 + 0.5 * lgN.y) * (lgOpen * RECIPROCAL_PI) * lgAlbedo;
   float lgRough = material.roughness;
   vec3 lgR = normalize(mix(reflect(-lgV, lgN), lgN, lgRough * lgRough));

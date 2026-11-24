@@ -153,7 +153,8 @@ describe('framing', () => {
     expect(lamp.top).toBeGreaterThan(0)
     expect(trunk.left).toBeGreaterThan(lamp.right)
     expect(trunk.right).toBeLessThan(1)
-    expect(Math.abs(v.pose.focusMm - door.z)).toBeLessThanOrEqual(5)
+    const doorDepth = v.project([anchors.door[0]!, anchors.door[1]! + centreHeightMm, anchors.door[2]!]).z
+    expect(Math.abs(v.pose.focusMm - doorDepth)).toBeLessThanOrEqual(5)
     expect(v.pose.apertureMm).toBeLessThanOrEqual(3)
   })
 })
