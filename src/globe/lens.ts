@@ -19,7 +19,11 @@ float lensMiss(float s, vec2 eye, vec2 limb, vec2 p, float r, float eta) {
   vec2 t = lensRefract(normalize(at - eye), n, eta);
   return t.x * (p.y - at.y) - t.y * (p.x - at.x);
 }
-vec4 lensPlace(vec3 p, vec3 eye) {
+// seen is 1 where a ray from the eye reaches p through the glass and 0 where none does. Such a point is placed on the
+// outline, and a triangle whose corners are all unseen is a sliver along the outline with no area of the scene in it:
+// the wrapper in src/core/materials.ts takes seen as a varying and draws nothing where it is 0 (stageOutside)
+vec4 lensPlace(vec3 p, vec3 eye, out float seen) {
+  seen = 1.0;
   vec3 oe = eye - uLensCentre;
   float dist = length(oe);
   float r = uLens.x;
@@ -39,19 +43,24 @@ vec4 lensPlace(vec3 p, vec3 eye) {
   float hi = 1.0;
   float flo = -b;
   float fhi = lensMiss(1.0, e2, limb, p2, r, eta);
-  bool seen = fhi > 0.0;
+  bool through = fhi > 0.0;
+  seen = through ? 1.0 : 0.0;
   for (int i = 0; i < ${LENS_STEPS}; i++) {
     float mid = 0.5 * (lo + hi);
     float f = lensMiss(mid, e2, limb, p2, r, eta);
     if (f < 0.0) { lo = mid; flo = f; } else { hi = mid; fhi = f; }
   }
-  float s = seen ? (fhi > flo ? lo + (hi - lo) * (-flo) / (fhi - flo) : lo) : 1.0;
+  float s = through ? (fhi > flo ? lo + (hi - lo) * (-flo) / (fhi - flo) : lo) : 1.0;
   vec2 n2 = normalize(mix(vec2(1.0, 0.0), limb, s));
   vec3 at = uLensCentre + r * (n2.x * u + n2.y * v);
   float inside = length(p - at);
   vec3 ray = at - eye;
   float outside = length(ray);
   return vec4(eye + ray * ((outside + uLens.y * inside) / outside), inside);
+}
+vec4 lensPlace(vec3 p, vec3 eye) {
+  float seen;
+  return lensPlace(p, eye, seen);
 }
 `
 
