@@ -705,7 +705,7 @@ export class Shell {
     this.through.renderOrder = -0.5
     this.shell = new THREE.Mesh(sphere, stageShader({ part: 'glass', standIn: false, uniforms, vertexPars: eyeChunk.pars, vertexMain: eyeChunk.main, fragment: SHELL, params: { ...blend, transparent: true } }))
     this.shell.renderOrder = 10
-    this.ring = new THREE.Mesh(ringGeometry(), stageShader({ part: 'glass', standIn: false, uniforms, vertexPars: eyeChunk.pars, vertexMain: RING_VERT, fragment: `#define GLASS_RING 1\n${SHELL}`, params: { ...blend, transparent: true, side: THREE.DoubleSide } }))
+    this.ring = new THREE.Mesh(ringGeometry(), stageShader({ part: 'glass', standIn: false, uniforms, vertexPars: eyeChunk.pars, vertexMain: RING_VERT, fragment: `#define GLASS_RING 1\n${SHELL}`, params: { ...blend, transparent: true, side: THREE.DoubleSide, forceSinglePass: true } }))
     this.ring.renderOrder = 12
     this.ring.frustumCulled = false
     this.shell.add(this.ring)
