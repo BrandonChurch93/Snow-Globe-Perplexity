@@ -53,16 +53,40 @@ const smooth = (a: number, b: number, v: number): number => {
 
 export const groundAt = (x: number, z: number): number => moundAt(z) - pond.dip * (1 - smooth(0.86, 1.04, pondField(x, z)))
 
-const BANK = { riseMm: 3.2, reachMm: 8 }
+const BANK = { front: 0.85, side: 5, back: 3, wave: 0.3, ripple: 0.2, reachFront: 3.2, reachSide: 9.2 }
+
+const wallGap = (x: number, z: number): number => {
+  const y = moundAt(z)
+  return Math.sqrt(Math.max(0, innerRadiusMm * innerRadiusMm - y * y)) - Math.hypot(x, z)
+}
 
 export function bankAt(x: number, z: number): number {
-  const y = moundAt(z)
-  const gap = Math.sqrt(Math.max(0, innerRadiusMm * innerRadiusMm - y * y)) - Math.hypot(x, z)
+  const gap = wallGap(x, z)
+  if (gap >= BANK.reachSide) return 0
   const a = Math.atan2(z, x)
-  const lumps = 0.6 + 0.2 * Math.sin(3 * a + 0.7) + 0.13 * Math.sin(7 * a + 2.1) + 0.07 * Math.sin(13 * a + 4.4)
-  const reach = BANK.reachMm * (0.72 + 0.28 * Math.sin(5 * a + 1.9))
-  return BANK.riseMm * lumps * (1 - smooth(0, reach, gap))
+  const turn = Math.atan2(x, z) / RAD
+  const side = turn >= 0 ? smooth(20, 50, turn) : smooth(56, 74, -turn)
+  const back = smooth(100, 140, Math.abs(turn))
+  const wave = 0.5 * Math.sin(3 * a + 0.7) + 0.32 * Math.sin(7 * a + 2.1) + 0.18 * Math.sin(13 * a + 4.4)
+  const ripple = 0.5 * Math.sin(23 * a + 1.1) + 0.5 * Math.sin(37 * a + 5.2)
+  const rise = BANK.front + (BANK.side - BANK.front) * side * (1 + 0.1 * wave) - (BANK.side - BANK.back) * back + BANK.wave * wave + BANK.ripple * ripple
+  const reach = BANK.reachFront + (BANK.reachSide - BANK.reachFront) * Math.max(side, back) * (0.86 + 0.14 * Math.sin(5 * a + 1.9))
+  return rise * (1 - smooth(0, reach, gap))
 }
+
+const RIM = { riseMm: 1.25, from: 0.97, crest: 1.09, to: 1.5, clearMm: 3, wallMm: 6 }
+
+export function rimAt(x: number, z: number): number {
+  const f = pondField(x, z)
+  if (f <= RIM.from || f >= RIM.to) return 0
+  const a = Math.atan2(z - pond.z, x - pond.x)
+  const lumps = 1 + 0.22 * Math.sin(4 * a + 0.6) + 0.16 * Math.sin(9 * a + 2.9) + 0.1 * Math.sin(17 * a + 1.2)
+  let clear = smooth(0.5, RIM.wallMm, wallGap(x, z))
+  for (const [sx, sz] of [...steps, ...stones, [lamppost.x, lamppost.z] as const]) clear *= 1 - Math.exp(-((x - sx) * (x - sx) + (z - sz) * (z - sz)) / (RIM.clearMm * RIM.clearMm))
+  return RIM.riseMm * lumps * clear * smooth(RIM.from, RIM.crest, f) * (1 - smooth(RIM.crest, RIM.to, f))
+}
+
+export const snowTop = (x: number, z: number): number => groundAt(x, z) + bankAt(x, z) + rimAt(x, z)
 
 export function islandEdge(angle: number): number {
   const s = Math.sin(angle)
