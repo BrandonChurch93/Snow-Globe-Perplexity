@@ -71,7 +71,7 @@ if (keyId) {
   }
 }
 
-if (args.sounds === true) add(rel('out', 'work', 'sound', 'sheet.jpg'), 'The kept sounds as waveforms')
+if (args.sounds === true) add(rel('out', 'work', 'audio', 'sheet.jpg'), 'The kept sounds as waveforms')
 if (args.pics && args.pics !== true) {
   const files = String(args.pics).split(',')
   const captions = args.captions && args.captions !== true ? String(args.captions).split('|') : []
