@@ -85,7 +85,7 @@ if (args.table === true) {
     const was = r.files[0]?.plain
     console.log(
       `${`${r.group}/${r.source}`.padEnd(50)} full ${mib(r.fullBytes).padStart(7)}  plain ${(was === undefined ? '' : mib(was)).padStart(6)}  web ${mib(r.files.reduce((n, f) => n + f.bytes, 0)).padStart(6)}  ${r.files
-        .map((f) => `${f.name.replace(/^.*?(\.first)?(\.[a-z0-9]+)$/i, '$1$2')} ${mib(f.bytes)} ${f.width ? `${f.width}x${f.height} ` : ''}${f.coding}${f.max !== undefined ? `, largest change ${f.max} of 255` : ''}`)
+        .map((f) => `${f.name.replace(/^.*?(\.first)?(\.[a-z0-9]+)$/i, '$1$2')} ${mib(f.bytes)} ${f.width ? `${f.width}x${f.height} ` : ''}${f.coding}${f.max !== undefined ? `, largest change ${f.max} of 255` : ''}${f.triangles ? `, triangles ${Object.entries(f.triangles).map(([l, n]) => `${l} ${n}`).join(', ')}` : ''}`)
         .join(' | ')}`,
     )
   }
