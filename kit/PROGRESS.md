@@ -37,16 +37,16 @@ Status 42 · 2026-11-24 16:16 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 16:16 UTC
-clock: phase 3, tick of 3.0 minutes
-phase 3: 7.82 h used of its 11.00 h box
-allowance (before the review): 14.44 h used of 36.00 h allowed
-all time before the review: 14.44 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 16:25 UTC
+clock: phase 3, tick of 8.4 minutes
+phase 3: 7.97 h used of its 11.00 h box
+allowance (before the review): 14.59 h used of 36.00 h allowed
+all time before the review: 14.59 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 8
 ```
 
 ## Phases
@@ -550,6 +550,8 @@ Numbered. What, why, and the date.
 55. The landing may rock by up to 1.3 degrees (ruled 16:13 UTC, Phase 3, when the third set of builders was started; in force once the shake's builder pushes it). `kit/02-SUBJECT.md` and `kit/03-METHOD.md` say of the set down "a small overshoot in tilt that dies inside `shake.landSettleSeconds`" and "It does not bounce into the air", and give the overshoot no number. The 0.3 to 0.7 degree band in `tests/shake-path.test.ts` was the Builder's own. Round 3's motion critic (`scorecards/round-003/R4-2.json`) read the landing as a hover: the globe arrives level and stops, with no weight. So the band's upper bound may rise to 1.3 degrees if the set down and landing sheets at `review` tier then show one edge meeting the slab first and a short damped rock; the rock still dies inside `shake.landSettleSeconds`, which stays at its value (it is not one the Builder may tune), and the foot never leaves the slab after first contact. `shake.tiltDeg` may go from 6 to at most 7.5 (a quarter up, inside AGENTS.md's range) if the shake's builder asks for it. Listed in the REVIEW block.
 56. The app's texture set ships as WebP near-lossless decoded to plain RGBA, not as KTX2 (16:16 UTC, Phase 3; changes decision 39). `kit/06-ASSETS.md` asks for the `web` set "in a compressed GPU format with a fallback every target browser reads", and decision 39 named KTX2 with Basis Universal. The loading builder measured it on nine of winter's maps before shipping (`out/work/reports2/load-detail.md`, section 3): UASTC level 2 with zstd is larger on the wire than WebP near-lossless on seven of the nine, by up to 2.8 times, and less exact on the normal and height maps by 8 to 18 dB (36 to 38 dB against 46 to 48); ETC1S gave 20 to 39 dB. What a GPU format buys is texture memory, and G15 reads 129 MB of `assetSets.web.maxTextureMb` 500 with every map held as RGBA, while the bytes fetched are what `host.firstLoadMaxMb` and the visitor's wait are made of (first picture 9.4 MiB of 16). The kit did not foresee its format costing both exactness and weight here, so the reading closest to the approved image is taken: the exact maps. Every map is checked as it is written (no channel of any pixel off by more than 2 of 255). The line of the kit is therefore not met as written; it is in "Open items" and "For Brandon to decide", and in the REVIEW block. If a phone turns out to need the memory when the app is judged in Phase 5, the place for a second coding is `tools/lib/webset.mjs` and one branch in `src/core/textures.ts`.
 
+57. The reference camera is corrected and `hero` follows it in distance (16:38 UTC, Phase 3; closes open item 33). Two circle fits of the approved winter outline agree (the glass builder's, 87 to 99 edge points, rms 1.2 px; the scene builder's, 160 points, rms 0.9 px: centre (1411.5, 653.4), radius 553.9 px in 2816 by 1584), and a render through the old reference camera gave (1407.3, 643.0), radius 549.7. The camera that closes the sphere is 615.3 mm away with its aim 64.0 mm up the axis (pitch 4.5, 16 degrees). So: `REF_RIG` in `tools/lib/refcam.mjs` goes from 619.9 and 62.8 to 615.3 and 64; `cameras.hero.distanceMm` from 616 to 615.3 (the radius was 0.7 px small; inside `framing.heroFillMin`: 139 mm over 172.95 is 0.804); `MOVES.holdAimDropMm` in `src/film/moves.ts` from 4.5 to 3.4, so that the film's holds, which lower the aim from `hero`'s 67.4, show the approved outline (67.4 less 3.4 is 64.0). `hero`'s aim stays 67.4: raised to 68.6 (the corrected reference plus decision 41's 4.6) the shake clearance test fails, and lower it loses the room the lifted glass needs; at rest a `hero` still therefore shows the glass about 27 px of 1584 lower than the approved image, which is decision 41's price and stays listed for Brandon (item 6). Not closable by a camera number, and left open: the approved outline sits 4.2 px right of the axis (a shift of the picture's centre), and the foot's front edge lies about 30 px lower in the build than in the approved image once the sphere is closed, because the glass centre stands 79 mm above the slab against 76 in the picture; `globe.baseHeightMm` 30 would close it and is not taken, because `framing.heroFillMin` would then fail (136 over 172.95 is 0.786) and a threshold is not lowered (decision 40 stands). Tests of framing, film, clearance, loop, cut, lens and config pass (105).
+
 ## Notes from Brandon
 
 Numbered, in his words, with the date and how each was applied. Review round items carry their round's number.
@@ -645,6 +647,8 @@ Severe and major issues still open when a limit was reached: the unit, the still
 35. The `web` texture set is not in a compressed GPU format (16:16 UTC, Phase 3; decision 56). `kit/06-ASSETS.md` line 71 asks for one "with a fallback every target browser reads". It ships as WebP near-lossless, held as RGBA on the GPU: measured smaller on the wire on seven of nine maps and 8 to 18 dB more exact on the data maps than UASTC, with texture memory at 129 of 500 MB. Open until Brandon rules or Phase 5's phone pass shows a need.
 - Item 34, 15:59 UTC: cured. With the loading builder's lighter triangle lists the `low` level draws 356700 triangles a sample and `medium` 753012 through the app's path (`node out/work/bin/meshes.mjs` at the freeze of Round 4).
 - 15:59 UTC, a test bound widened by the village's builder and accepted: in `tests/layout.test.ts` the snow's rise at the glass may be up to 6.5 mm (was 4.2), because the approved image's bank stands that high against the glass; two layout tests were added with it.
+
+- Item 33, 16:38 UTC: cured by decision 57 (`REF_RIG` 615.3 mm and aim 64). What stays open of it is written there: 4.2 px to the right, and the foot's front edge about 30 px low.
 
 ## Review items not done
 
@@ -769,6 +773,8 @@ Merged into `main`, each verified here with types clean and the tests green (126
   - The ten finishers of decision 49 ended between 15:49 and 16:12 UTC with their final reports (kept in `out/work/reports2/`, each with its detail file); none is running.
   - Round 4's render agents, messaged at 16:07 on commit `53cd7dd`: `round_renderer` (measures and the pack of R1 to R3 at `final`; branch `agent/p3-round4-pack`; limit 100 minutes), `motion_renderer` (half of R4's frames at `review`, then the R4 pack; branch `agent/p3-round4-motion`; limit 100 minutes), `motion_renderer_b` (the other half; branch `agent/p3-round4-motion-b`; limit 80 minutes), `gate_runner` (the 12 still repeat test twice, then the whole Phase 3 gate on a clean clone with the sound files unpacked; limit 80 minutes).
   - `reviewer_r3_e` (Round 3, R4 part 1, `claude_fable_5_2`, asked 15:25) had not answered at 16:13, past `budget.agentWaitMinutes`: stopped and replaced once by `reviewer_r3_g` on `gemini_4_carbon` with the same message and the same ten sheets.
+
+- `shake_fixer`, started 16:38 UTC (a tenth job of the third set, decision 54: the shake's path, the landing, the timing of the change; branch `agent/p3-shake`; files `src/shake/` and the four `tests/shake-*.test.ts`, taken from `light_fixer`, which keeps the lights; limit 19:40 UTC). Why: Round 3's R4 part 1 came in at 3 with three of its findings on the hand's path (a lift that levitates, flat equal strokes, a hold in mid air before a glide down), and the light job already carries the warm pools.
 
 ## Rounds
 
@@ -1055,3 +1061,8 @@ One entry per task: when it started, what it did, where it stopped.
 - 16:13 UTC: the second set of builders' ten final reports are in (`out/work/reports2/`). The third set, nine agents, started on them (see "Running agents"). Ruling sent to `light_fixer` on the landing: the kit gives the overshoot no number ("a small overshoot in tilt that dies inside `shake.landSettleSeconds`", "It does not bounce into the air"), so the builder's own 0.7 degree bound in `tests/shake-path.test.ts` may rise to 1.3 degrees if the landing sheets at `review` tier then show weight; `shake.landSettleSeconds` stays, it is not a value the Builder may tune.
 
 - 16:17 UTC: Status 42 posted (shown inline) with the landed pair of the freeze (`out/work/status/pair-landed-1607.jpg`): Round 4 frozen and being drawn; the third set of builders and what comes first for each; decisions 55 and 56; Round 3 waits for R4 part 1 from the replacement critic. Small items closed before it: the loading builder's lines added to `tools/README.md`; the notes of the two frost dressings in `parts/PARTS.json`; open item 34 marked cured; open item 35 and item 7 of "For Brandon to decide" written for the web set's coding.
+
+- 16:25 UTC: `liquid_fixer` asked whether a pinned bound may move: `flake_fixer` wants the share of flakes afloat at rest doubled (`floats` 0.085 to 0.17; the approved rest image holds 819 blobs in the measured box against the build's 470) and `tests/engine-storm.test.ts` holds it under 0.1 of the pool. Answered yes: the kit gives the share no number, the band was the Builder's own, and the approved image outranks it; the bound goes to 0.2, the test's other lines stay (flakes through the whole dome, a little denser low down, far fewer once settled), and the bench is to be read after it.
+- 16:31 UTC: `liquid_fixer` again: with `floats` 0.17 a second line of the Builder's own trips (`tests/sim.test.ts`: at least 0.9 of the pool at rest after a shake and the rest time; now 0.867). Answered yes, to 0.8, with the cover of the miniature at `settled` to be read against `shake.minVisibleAfterSettle` after it.
+- 16:29 UTC: Round 3's last answer arrived from the replacement critic `reviewer_r3_g`: R4 part 1 scores 3 (five severe, one major): the lift levitates; the strokes are flat, equal and under 2 degrees of tilt; the globe hangs in mid air for 0.24 s and glides down; icicles, ledge snow, glass frost and a whiteout step in one frame at the swap window's first frame; the slab's frost dissolves in plain view and returns as an oval wipe; the storm is a fixed shell of streaks. Saved verbatim as `scorecards/round-003/R4-1.json` and pushed (`bedf77c`). R4 of Round 3 is the lower of its two parts: 3.
+- 16:38 UTC: the findings forwarded with the kit's own lines to `light_fixer` (the bloom that must carry the outside change), `base_fixer` (icicles and ledge snow), `frost_fixer` (the leaving and the burst), `flake_fixer` and `liquid_fixer` (the storm), and a tenth builder started for the shake itself, `shake_fixer` (see "Running agents"). `scene_fixer`'s camera numbers taken as decision 57.
