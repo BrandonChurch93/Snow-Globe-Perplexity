@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 34 · 2026-11-24 13:08 UTC
+Status 35 · 2026-11-24 13:36 UTC
 
-- `out/stills/status/status-34-1.jpg`: Approved winter at rest (left) beside the build at 13:07 UTC (right) with all ten builders' final work merged; draft tier
-- `out/stills/status/status-34-2.jpg`: Approved mid-shake (left) beside the build half a second after the landing (right); draft tier
-- `out/stills/status/status-34-3.jpg`: Still: winter landed hero, hd, draft
-- `out/stills/status/status-34-4.jpg`: Still: winter rest hero, hd, draft
+- `out/stills/status/status-35-1.jpg`: Winter at rest from the hero camera at 4K and the review tier: the newest frame of the render budget run at 13:28 UTC on the build the first round is judging
+- `out/stills/status/status-35-2.jpg`: Still: winter rest hero, hd, draft
+- `out/stills/status/status-35-3.jpg`: Still: winter rest macro, preview, draft
+- `out/stills/status/status-35-4.jpg`: Still: winter rest macro, preview, draft, texels view
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 13:16 UTC
-clock: phase 3, tick of 7.7 minutes
-phase 3: 4.81 h used of its 11.00 h box
-allowance (before the review): 11.43 h used of 36.00 h allowed
-all time before the review: 11.43 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 13:36 UTC
+clock: phase 3, tick of 6.0 minutes
+phase 3: 5.15 h used of its 11.00 h box
+allowance (before the review): 11.76 h used of 36.00 h allowed
+all time before the review: 11.76 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 7
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -299,6 +299,32 @@ Measured 2026-11-24 02:48 UTC by a sandbox agent at commit `2f3666f`, the same b
 
 - All three files have the SHA-256 `28f5f6211607689c...`. `quality.crossMachineMinPsnr` is 45, so the pairs are far inside it and film chunks from different VMs join without a seam, as long as this stays true on the real scene. It is measured again in Phase 2.
 - Sandbox VM 2 also ran `npm run determinism`: pass, and its rest still at preview size has the same hash as the one made here.
+
+### This VM, Phase 3: the real winter scene
+
+Step 5 of Phase 3. Every part of winter is real work here (commit `f4af1a5`, the same source as the round's `2faac9e`); the other three seasons are still stand-ins and are not measured. Against the blockout scene of Phase 2 a sample costs about seven times as much at hd (9.15 s against 1.27 s), with 590110 triangles against 86071 and 50 draw calls against 25. The film's cost at these numbers is over anything one VM can do in Phase 5's box, so the split across sandbox VMs and the cost of a sample are both on the table before Phase 5 plans its renders (open item 32).
+
+Measured 2026-11-24 13:21 UTC on space-sandbox · 2 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7958 MB (2 cores), software rendering, on the scene of build `c18b4b561b115610`: 102000 particles, 590110 triangles, 50 draw calls a sample, accumulation in float32.
+
+| Format | Size | Seconds per sample | Draft picture (2) | Review picture (8) | Final picture (24) |
+| --- | --- | --- | --- | --- | --- |
+| uhd | 3840 x 2160 | 36.04 | 90.8 s | 307.1 s | 883.7 s |
+| hd | 1920 x 1080 | 9.15 | 34.4 s | 89.3 s | 235.7 s |
+| preview | 960 x 540 | 2.14 | 18.5 s | 31.4 s | 65.7 s |
+| phone | 390 x 844 | 2.88 | 20.5 s | 37.8 s | 83.8 s |
+| tablet | 1024 x 1366 | 10.30 | 36.1 s | 97.9 s | 262.8 s |
+
+- Fixed cost of starting a render: the browser starts in 0.3 s and a page is ready in 6.2 s. The first still of a page also replays the test shake: 10.5 s for 14.4 simulated seconds without checkpoints.
+- One simulated second at winter's particle count (102000, 240 steps): 1.44 s in the storm, 1.45 s just after the landing, 0.12 s at rest.
+- The whole film's simulation, 60.0 s with 4 shakes plus the preroll's: about 0.9 minutes, once, then read from checkpoints.
+
+| Job | Frames | Draft | Review | Final |
+| --- | --- | --- | --- | --- |
+| Film B, preview | 1800 | 9.3 h | 15.7 h | 32.9 h |
+| Film B, hd | 1800 | 17.2 h | 44.7 h | 117.8 h |
+| Card loop, hd | 240 | 2.3 h | 6.0 h | 15.7 h |
+
+These are one render process on this VM. Sandbox VMs have more cores and render ranges in parallel, so a job split across N of them takes about 1/N of its time plus the join.
 
 ## Judged list
 
@@ -597,6 +623,8 @@ Severe and major issues still open when a limit was reached: the unit, the still
 - Open item 30, update at 12:28 UTC: since decision 48 every built file the code asks for is tracked on `main`, so a clean clone can open the app. `npm run hostcheck` was run again at 12:28 on `be9c7d8`; its result is in the session log line that follows this one. The item stays open until the check passes, the web set's size included.
 
 31. A still made while the asset index is half written comes back as blockout shapes with no error (13:00 UTC, Phase 3; seen twice by the first frost builder while a texture pack was running beside the render). The frame looks like a valid picture, so it could reach a critic or a status. Until the still tool fails loudly on a missing or half written index: no render starts while `npm run texpack` or `npm run make` runs; the render agent of every round first makes one still, looks at it, and checks `--diag standins` is black before the measures and the pack; `/root` looks at one frame of every pack before it goes to critics. Fix owed in Phase 4 at the latest: the still tool exits non-zero when any part falls back to a stand-in that the register calls built.
+
+32. A sample of the real winter scene costs 9.15 s at hd on this VM, seven times the blockout's (13:35 UTC, Phase 3, `npm run budget`). At that cost film B at hd is 17 h at `draft` and 118 h at `final` for one render process here; a sandbox VM draws a sample in a little over half the time, so about 60 VM-hours at `final`. Owed before Phase 5 plans its renders: (a) where the time goes, one `--diag` or timing run per pass (the lens, the frost's blur of what is behind it, the light grid, the shadow, the mirror image), and a cut of whatever costs most that changes no pixel a judge can see; (b) the same measurement on a sandbox VM with the real scene; (c) the plan of ranges across VMs inside `sandbox.maxAgents`. The live app's frame rate on a real graphics card is a separate question (G15 and the `live.quality` levels) and is measured in Phase 4's probe.
 
 ## Review items not done
 
@@ -945,3 +973,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 12:46 to 13:04 UTC. All ten build agents sent their final reports at their limit of `budget.buildAgentMaxHours`; each report is kept under `out/work/reports/`. Merged, in order: liquid `df4471d`, scene `0a3b549`, base `22d8b25`, frost `bbdf7cc`, light `48b2b3a`, tree `f0dd0db`, glass `3bd9871`, village `a4c7bfc`, flakes `ca84c1f`; the shake's branch held nothing new. After every merge: 370 tests green, 371 after the village's (one new layout test for the snow bank). Texture pack 45.2 MB. Pushed as `ee38706`. The register now holds no stand-in: `liquid`, `particle-engine`, `surface`, `backdrop`, `lens` and `light-winter` were set to `built` on their owners' word; `--diag standins` was black for every owner who ran it.
 - 13:09 UTC. Status 34 posted with two pictures: the approved winter at rest beside `main`, and the approved mid-shake beside `main` half a second after the landing, both from `hero` at draft tier. Said what is new (a white bank inside the glass, a dark crown with small warm lights, dimmer discs, a brighter base, a stronger lamp) and what is still wrong (the storm too dense and streaky, icicles as stubs right after the landing, the bank low and grey at the foot of the glass, the tree's form, flat stark frost on the slab, a hazier liquid).
 - What the ten reports leave open, by part, in the owners' own words (full lists in the reports): tree: one stem with stacked pads where the approved tree forks into about five thick limbs, needles without texture away from the bulbs, the trunk's lit side; village: flat ground snow, smooth cream stones, thin roof load, grainy smoke, smudges on the bank's face; base: a straight taper where the picture is convex, matt wood, milky short icicles that snap to stubs in one frame at beat 2, thin ledge snow; frost: flat slab frost, graphic fronds on the right of the glass, nothing blurs behind it yet; flakes and veil: storm bands too regular, too few faint small flakes at rest, hard-edged discs close up; liquid and engine: the top band thin at rest, the storm's white gone a second after the landing, 18 percent of the pool under the pond's ice, speed 1.38 s for the worst second against an aim of 0.6; scene: no bright amber disc, slab nearly black beside the base, wall darker than approved; glass: the main pane evenly white, an upper cap that can read as haze; light: the change's bloom does not flood the base; shake: the outside change leans on the streak alone.
+
+- 13:17 to 13:37 UTC. Round 3 (winter's first round of the look lock) opened on `2faac9e` and its line written under "Rounds" before anything else. Eleven agents started, all in their own sandboxes: the ten finishers of decision 49 and `round_renderer` (measures and the pack at `final` tier; branch `agent/p3-round3-pack`, fetched, never merged). `repo_courier` told to stop its looks watch. Decision 49, open item 31 and the asset rows of the base and the slab logged (`f4af1a5`). Step 4: M4 and M5 passed at `draft` on `6329c4c` and again after the merges of 13:04, so no cycle of change and look was spent on them; the weak points of the shake seen in the 13:07 stills (the storm hides the miniature at the landing, the icicles are stubs at the landing) go to the round as they are and to the flake, liquid and base finishers. Published at 13:19 from `f4af1a5` (deploy, then publish to the same site; Visibility: Organization; the first picture of the published page came after 10.9 s with 38 requests and no error). Step 5: `npm run budget` on the real winter scene, 13:21 to 13:35 (table appended under "Render budget"). A clock tick of 14.1 minutes at 13:30, over `status.minGapMinutes`, while the budget run held the shell; ticks go back to at most 10 minutes. Status 35 at 13:36 with the budget run's 4K review frame.
