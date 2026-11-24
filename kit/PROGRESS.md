@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 42 · 2026-11-24 16:16 UTC
+Status 43 · 2026-11-24 16:40 UTC
 
-- `out/stills/status/status-42-1.jpg`: Half a second after the landing: the approved image (left) and the build as frozen for Round 4 (right)
-- `out/stills/status/status-42-2.jpg`: Still: winter landed hero, hd, draft
-- `out/stills/status/status-42-3.jpg`: Still: winter rest hero, hd, draft
-- `out/stills/status/status-42-4.jpg`: Still: winter rest hero, preview, draft
+- `out/stills/status/status-43-1.jpg`: Round 4 build: the first 0.4 s after the landing of the test shake at review tier. The frost ring bursts outward from the foot from frame 150
+- `out/stills/status/status-43-2.jpg`: Still: winter rest hero, hd, draft
+- `out/stills/status/status-43-3.jpg`: The spring hold after decision 34, twelve frames at draft: the move toward the base now stops 55 percent of the way (frame 1044). Still wrong and being fixed: the petals fill the glass for nine seconds, so the miniature only comes out at the end (by film_app_engineer_2)
+- `out/stills/status/status-43-4.jpg`: Round 1: the three screens at 1920 by 1080, 390 by 844 and 1024 by 1366. On the two wide ones the foot of the base stands 28 and 23 pixels above the Shake control; the framing now gets a rule of 7 percent of the height (by root)
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 16:25 UTC
-clock: phase 3, tick of 8.4 minutes
-phase 3: 7.97 h used of its 11.00 h box
-allowance (before the review): 14.59 h used of 36.00 h allowed
-all time before the review: 14.59 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 16:46 UTC
+clock: phase 3, tick of 5.2 minutes
+phase 3: 8.32 h used of its 11.00 h box
+allowance (before the review): 14.93 h used of 36.00 h allowed
+all time before the review: 14.93 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 8
+minutes since the last status: 5
 ```
 
 ## Phases
@@ -65,7 +65,7 @@ minutes since the last status: 8
 
 | Unit | State | Rounds run | Best round | Commit | What ended its loop |
 | --- | --- | --- | --- | --- | --- |
-| `winter` | in its rounds (Phase 3) | 1 | 3 (R1 4, R3 3, R2 failed, R4 not in yet; 1 measure red) | `2faac9e` | |
+| `winter` | in its rounds (Phase 3) | 2 (Round 4 is running) | 3 (R1 4, R3 3, R2 failed, R4 3; 1 measure red) | `2faac9e` | |
 | `spring` | not started | 0 | | | |
 | `summer` | not started | 0 | | | |
 | `fall` | not started | 0 | | | |
@@ -784,9 +784,9 @@ One line per round: its number, the unit, the commit it judged, each part ticked
 
 - Round 2 · blockout (Phase 2, the floor round; the last the config allows) · judges commit `9ade96d` · started 2026-11-24 07:57 UTC. Parts: [x] build · [x] machine checks (G1 to G12 and G14 green at 08:09; D2 and D3 wait for step 14) · [x] measures (M1 and M6 for winter at draft: 14 lines, none red) · [x] pack (19 files in two parts, none missing, 08:15) · [x] critic part 1 (`claude_opus_5_5`, answered 08:38: 6, four major, none severe) · [x] critic part 2 (`gpt_6_2_astra`, answered 08:21: 8, two major, none severe) · [x] issues read · [x] logged (merged score 6 against a bar of 7, no severe issue open: round 2 does not pass, and it was the last blockout round; `scorecards/round-002/SUMMARY.md`; open items 25 to 29)
 
-- Round 3 · winter (Phase 3, the look lock; winter's first round) · judges commit `2faac9e` · started 2026-11-24 13:17 UTC. Parts: [x] build (the judged build is `2faac9e`, engine hash `c18b4b561b115610`) · [x] machine checks (14:46: the Phase 3 gate on a clean clone of `2faac9e`, run once by `gate_runner` in 34 min 33 s: 4 red, 11 pass. Red: G3 determinism (loop frame 288 differs in 15272 pixels between the run from checkpoints and the run stepped from the start), G5 (the sound control is hidden in the 4 screen stills because a clean clone has no `public/audio/`; the pixel part of the check held), G8 (8 shipped files with no recipe heading the check could read), G10 (the still with no float colour buffer logs a failed `glGenerateMipmap`: the mirror target is always half float). Each red check is a severe issue of this round. `scorecards/round-003/gate.log`, `gate-phase-3.json`) · [x] measures (14:05, by `round_renderer` at `final` tier: 24 of 24 lines, 1 red: M3 `winter-rest` 0.7156 against 0.75, the base 0.716 of the approved image's fine detail, the miniature 1.017; M4 1, M5 0.9903; in `scorecards/round-003/measures-winter.md`) · [ ] pack (`final` tier, the `full` set; rendered by a render agent in its own sandbox, fetched from `agent/p3-round3-pack`; 14:06: R1, R2 and R3 are in, 34 files in five parts, none missing, branch head `74487b4`; R4's motion sheets are being rendered at `review` tier by `motion_renderer` on `agent/p3-round3-motion`) · [x] R1 (14:11, `gpt_6_2_sol`: 4; 5 severe, 10 major) · [x] R2 (the jury; 14:17, 25 answers: judged 4 of 15 against controls 7 of 10, bar 0.50: fails) · [x] R3 (three parts: 6 on `claude_opus_5_5`, 3 on `gemini_4_carbon`, 4 on `kimi_k3`; the role's score is the lowest, 3; 9 severe, 26 major, 6 minor in all; last answer 14:22) · [ ] R4 · [ ] issues read · [ ] fixes · [ ] logged
+- Round 3 · winter (Phase 3, the look lock; winter's first round) · judges commit `2faac9e` · started 2026-11-24 13:17 UTC. Parts: [x] build (the judged build is `2faac9e`, engine hash `c18b4b561b115610`) · [x] machine checks (14:46: the Phase 3 gate on a clean clone of `2faac9e`, run once by `gate_runner` in 34 min 33 s: 4 red, 11 pass. Red: G3 determinism (loop frame 288 differs in 15272 pixels between the run from checkpoints and the run stepped from the start), G5 (the sound control is hidden in the 4 screen stills because a clean clone has no `public/audio/`; the pixel part of the check held), G8 (8 shipped files with no recipe heading the check could read), G10 (the still with no float colour buffer logs a failed `glGenerateMipmap`: the mirror target is always half float). Each red check is a severe issue of this round. `scorecards/round-003/gate.log`, `gate-phase-3.json`) · [x] measures (14:05, by `round_renderer` at `final` tier: 24 of 24 lines, 1 red: M3 `winter-rest` 0.7156 against 0.75, the base 0.716 of the approved image's fine detail, the miniature 1.017; M4 1, M5 0.9903; in `scorecards/round-003/measures-winter.md`) · [x] pack (`final` tier, the `full` set; rendered by a render agent in its own sandbox, fetched from `agent/p3-round3-pack`; 14:06: R1, R2 and R3 are in, 34 files in five parts, none missing, branch head `74487b4`; R4's motion sheets are being rendered at `review` tier by `motion_renderer` on `agent/p3-round3-motion`; 15:24: R4's 12 sheets in two parts fetched at `773c41e`, none missing) · [x] R1 (14:11, `gpt_6_2_sol`: 4; 5 severe, 10 major) · [x] R2 (the jury; 14:17, 25 answers: judged 4 of 15 against controls 7 of 10, bar 0.50: fails) · [x] R3 (three parts: 6 on `claude_opus_5_5`, 3 on `gemini_4_carbon`, 4 on `kimi_k3`; the role's score is the lowest, 3; 9 severe, 26 major, 6 minor in all; last answer 14:22) · [x] R4 (two parts: 3 on `gemini_4_carbon`, the one replacement for a critic on `claude_fable_5_2` that did not answer inside the limit, answered 16:29; 7 on `pplx_computer_glm_5_3_1009`, answered about 15:27; the role's score is the lower, 3; 5 severe, 3 major, 1 minor in all) · [x] issues read (16:38: every issue went to the builder of its part, to the second set as the answers came in and to the third set with its jobs at 16:12 and 16:37) · [x] fixes (13:17 to 16:00 by the second set of builders, merged as Round 4's judged commit `53cd7dd`; what R4 part 1 found arrived after that freeze and is with the third set) · [x] logged (16:40: R1 4, R2 fails, R3 3, R4 3, one measure red, four checks red and cured since: Round 3 does not pass; `scorecards/round-003/SUMMARY.md`)
 
-- Round 4 · winter (Phase 3, the look lock; winter's second round, an extra round: the clock printed `extra rounds: yes` at 16:06 with 7.64 h of the phase's 11 h used) · judges commit `53cd7dd` · started 2026-11-24 16:06 UTC. Parts: [x] build (the judged build is `53cd7dd`: every finisher's last push merged, all parts made again, texpack, tsc clean, 408 tests pass, G8 green) · [ ] machine checks · [ ] measures · [ ] pack · [ ] R1 · [ ] R2 · [ ] R3 · [ ] R4 · [ ] issues read · [ ] fixes · [ ] logged
+- Round 4 · winter (Phase 3, the look lock; winter's second round, an extra round: the clock printed `extra rounds: yes` at 16:06 with 7.64 h of the phase's 11 h used) · judges commit `53cd7dd` · started 2026-11-24 16:06 UTC. Parts: [x] build (the judged build is `53cd7dd`: every finisher's last push merged, all parts made again, texpack, tsc clean, 408 tests pass, G8 green) · [x] machine checks (16:51: the Phase 3 gate on a clean clone of `53cd7dd` with the sound files unpacked, run once by `gate_runner` in 39 min 41 s: all 15 green (the four red checks of Round 3 are green: G3 with 5 pictures pixel-identical across 4 fresh page loads in 4 orders, G5, G8 with 73 shipped files, G10 with no float target at 41.1 dB); before it the 12 still repeat test twice: 0 of 9 repeats differ in each run. `scorecards/round-004/gate.log`, `gate-phase-3.json`) · [x] measures (16:46, by `round_renderer` at `final` tier on `53cd7dd`: 24 of 24 lines, 0 red; M3 `winter-rest` 0.8324 against 0.75 with the base at 0.896 (red at 0.7156 in Round 3); M4 0.9449, M5 0.9975; in `scorecards/round-004/measures-winter.md`) · [x] pack (16:47: R1, R2 and R3 at `final` tier from `agent/p3-round4-pack` (`e10545f`, 34 files in five parts, none missing; as in Round 3 the stills `winter-interior`, `winter-base`, `winter-surface` and `winter-macro` are left out of the jury because no approved image has their framing); R4 at `review` tier from `agent/p3-round4-motion` (`46d3a49`, 12 sheets in two parts, none missing; half of the frames drawn by `motion_renderer_b` on `e882a14`, byte-identical where both drew one). Fetched, never merged) · [ ] R1 · [x] R2 (16:57: 15 jurors on the three judged images, five model families on each, all answered: 4 of 15 said photograph or film frame (rest 1 of 5, settled 1 of 5, landed 2 of 5) against 7 of 10 on the controls, whose votes are reused from Round 3 because the control files are the same bytes; the bar is 0.5, so R2 fails, the same count as Round 3. What they named: the repeated rounded clumps of snow on the tree (2), the chimney smoke plume (3), a too regular vortex of streaks (1), the centred studio product framing (5). `R2.json`, `R2-jurors.jsonl`) · [ ] R3 · [ ] R4 · [ ] issues read · [ ] fixes · [ ] logged
 
 ## Final scores
 
@@ -1066,3 +1066,7 @@ One entry per task: when it started, what it did, where it stopped.
 - 16:31 UTC: `liquid_fixer` again: with `floats` 0.17 a second line of the Builder's own trips (`tests/sim.test.ts`: at least 0.9 of the pool at rest after a shake and the rest time; now 0.867). Answered yes, to 0.8, with the cover of the miniature at `settled` to be read against `shake.minVisibleAfterSettle` after it.
 - 16:29 UTC: Round 3's last answer arrived from the replacement critic `reviewer_r3_g`: R4 part 1 scores 3 (five severe, one major): the lift levitates; the strokes are flat, equal and under 2 degrees of tilt; the globe hangs in mid air for 0.24 s and glides down; icicles, ledge snow, glass frost and a whiteout step in one frame at the swap window's first frame; the slab's frost dissolves in plain view and returns as an oval wipe; the storm is a fixed shell of streaks. Saved verbatim as `scorecards/round-003/R4-1.json` and pushed (`bedf77c`). R4 of Round 3 is the lower of its two parts: 3.
 - 16:38 UTC: the findings forwarded with the kit's own lines to `light_fixer` (the bloom that must carry the outside change), `base_fixer` (icicles and ledge snow), `frost_fixer` (the leaving and the burst), `flake_fixer` and `liquid_fixer` (the storm), and a tenth builder started for the shake itself, `shake_fixer` (see "Running agents"). `scene_fixer`'s camera numbers taken as decision 57.
+
+- 16:38 UTC: `base_fixer` asked for `globe.baseHeightMm` 31.4 (the approved foot meets the slab 16 px higher than the build's; all of it in the plinth under the rope: 34 px against 21). Refused: `framing.heroFillMin` 0.8 would fail at 0.794 with the glass at its approved size, and a threshold is not lowered (decisions 40 and 57); it keeps the dark painted foot line that hides the last 1.6 mm. Its first push of this set is `ec84e44` (oiled grain with sheen, thinner ledge snow in lobes).
+- 16:40 UTC: Round 3 closed and pushed (`973af89`): key, jury key, manifest, summary; R1 4, R2 fails, R3 3, R4 3. `motion_renderer_b` reported half B of Round 4's motion frames done (48 frames and 5 sheets on `agent/p3-round4-motion-b` at `e882a14`, about 34.5 s a frame; set down 10.8 minutes, landing 16.9); fetched, not merged; `motion_renderer` told to take them for the R4 pack.
+- 16:41 UTC: Status 43 posted (shown inline) with the landing sheet of Round 4's build (`out/work/r4b/motion-landing-test-preview-review-1.jpg`). My reading of that sheet: the slab is bare at the landing and the frost comes as a ring with arms from frame 150, wider each frame; the storm is still drawn as long curved streaks at 2.77 s; at this size the landing shows no rock.
