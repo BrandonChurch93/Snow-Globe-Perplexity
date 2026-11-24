@@ -38,6 +38,7 @@ export const lightUniforms = {
   uRigRimCol: { value: new THREE.Color(0, 0, 0) },
   uRigCardDir: { value: new THREE.Vector3(0, 1, 0) },
   uRigCardCol: { value: new THREE.Color(0, 0, 0) },
+  uRigCard: { value: new THREE.Vector4(0.5, 0.3, 0, 1) },
   uRigSky: { value: new THREE.Color(0, 0, 0) },
   uRigGround: { value: new THREE.Color(0, 0, 0) },
   uRigShadow: { value: new THREE.Vector4(0.15, 0.3, 0.001, 0.4) },
@@ -68,6 +69,7 @@ uniform vec3 uRigRimDir;
 uniform vec3 uRigRimCol;
 uniform vec3 uRigCardDir;
 uniform vec3 uRigCardCol;
+uniform vec4 uRigCard;
 uniform vec3 uRigSky;
 uniform vec3 uRigGround;
 uniform vec4 uRigShadow;
@@ -243,6 +245,7 @@ vec3 stageLit = vec3(0.0);
   float lgSpread = uRigShadow.x;
   float lgOpen = 1.0;
   float lgShade = 1.0;
+  float lgCardIn = 1.0;
   #ifdef STAGE_INSIDE
   {
     vec3 lgCol;
@@ -267,6 +270,7 @@ vec3 stageLit = vec3(0.0);
     lgThrough = uRigInside.x;
     lgWrap = uRigInside.z;
     lgSpread *= uRigInside.w;
+    lgCardIn = uRigCard.w;
   }
   #else
   {
@@ -318,7 +322,19 @@ vec3 stageLit = vec3(0.0);
   clearcoatSpecularDirect += lgKeyC * (uRigLobe.y * lgShade * saturate(dot(geometryClearcoatNormal, lgKeyV))) * BRDF_GGX_Clearcoat(lgKeyV, geometryViewDir, geometryClearcoatNormal, lgSoft);
   clearcoatSpecularDirect += lgRimC * (uRigLobe.w * saturate(dot(geometryClearcoatNormal, lgRimV))) * BRDF_GGX_Clearcoat(lgRimV, geometryViewDir, geometryClearcoatNormal, lgSoft);
   #endif
-  reflectedLight.directDiffuse += uRigCardCol * (stageWrap(dot(lgN, uRigCardDir), 0.5) * lgOpen * lgThrough * RECIPROCAL_PI) * lgAlbedo;
+  float lgNdc = dot(lgN, uRigCardDir);
+  vec3 lgCardC = uRigCardCol * (lgOpen * lgThrough * lgCardIn);
+  reflectedLight.directDiffuse += lgCardC * (stageWrap(lgNdc, uRigCard.x) * RECIPROCAL_PI) * lgAlbedo;
+  if (lgNdc > 0.0 && uRigCard.z > 0.0) {
+    vec3 lgCardV = normalize(lgView * (uRigCardDir * lgMirror));
+    PhysicalMaterial lgBroad = material;
+    lgBroad.roughness = min(1.0, material.roughness + uRigCard.y);
+    reflectedLight.directSpecular += lgCardC * (uRigCard.z * lgNdc) * BRDF_GGX(lgCardV, geometryViewDir, geometryNormal, lgBroad);
+    #ifdef USE_CLEARCOAT
+    lgBroad.clearcoatRoughness = min(1.0, material.clearcoatRoughness + uRigCard.y);
+    clearcoatSpecularDirect += lgCardC * (uRigCard.z * saturate(dot(geometryClearcoatNormal, lgCardV))) * BRDF_GGX_Clearcoat(lgCardV, geometryViewDir, geometryClearcoatNormal, lgBroad);
+    #endif
+  }
   reflectedLight.indirectDiffuse += mix(uRigGround, uRigSky, 0.5 + 0.5 * lgN.y) * (lgOpen * RECIPROCAL_PI) * lgAlbedo;
   float lgRough = material.roughness;
   vec3 lgR = normalize(mix(reflect(-lgV, lgN), lgN, lgRough * lgRough));

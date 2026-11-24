@@ -2,12 +2,15 @@ import * as THREE from 'three'
 import { lightUniforms } from '../core/chunks/light'
 import type { Rgb } from '../core/materials'
 import type { StageFrame } from './frame'
+import type { SeasonKit } from '../seasons/kit'
 import { centreHeightMm, groundY, innerRadiusMm } from './layout'
 import { GRID, breathOf, gainOf, glowAt, glowOf, gridInfo, groupGains, shadeGrid } from './lightgrid'
 import { lensIor } from '../globe/lens'
 
 const mixRgb = (a: Rgb, b: Rgb, t: number): [number, number, number] => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
+
+export type RigCard = { color: Rgb; intensity: number; from: Rgb; wrap: number; specular: number; inside: number }
 
 export const ROOM_RIG = {
   targetMm: [0, 70, 0] as Rgb,
@@ -19,7 +22,7 @@ export const ROOM_RIG = {
   keySpecular: 1,
   rimWrap: 0.12,
   rimSpecular: 1,
-  card: { share: 0.1, side: -0.9, lift: 0.3, front: 1.1 },
+  card: { share: 0.1, side: -0.9, lift: 0.3, front: 1.1, wrap: 0.5, specular: 0, inside: 1, lobe: 0.25 },
   inside: { through: 0.92, wrap: 0.15, spread: 1.6 },
   point: { key: 0.14, rim: 0.05, sky: 0.32 },
   room: { gain: 1, lights: 1, softPerRough: 0.5, lightsBelowRough: 0.62 },
@@ -29,6 +32,21 @@ export const ROOM_RIG = {
 } as const
 
 const SHADOW_OFF = 10
+
+export function cardOf(rig: SeasonKit['rig']): RigCard {
+  const own = (rig as SeasonKit['rig'] & { card?: RigCard }).card
+  if (own) return own
+  const c = ROOM_RIG.card
+  const peak = Math.max(rig.sky[0], rig.sky[1], rig.sky[2], 1e-4)
+  return {
+    color: [rig.sky[0] / peak, rig.sky[1] / peak, rig.sky[2] / peak],
+    intensity: rig.key.intensity * c.share,
+    from: [rig.key.from[0] * c.side, rig.key.from[1] * c.lift, Math.abs(rig.key.from[2]) * c.front],
+    wrap: c.wrap,
+    specular: c.specular,
+    inside: c.inside,
+  }
+}
 
 export class Lighting {
   readonly rig = new THREE.Group()
@@ -112,8 +130,11 @@ export class Lighting {
     const target = this.key.target.position
     this.key.position.set(keyFrom[0], keyFrom[1], keyFrom[2])
     this.rim.position.set(rimFrom[0], rimFrom[1], rimFrom[2])
-    const c = ROOM_RIG.card
-    this.card.position.set(keyFrom[0] * c.side, keyFrom[1] * c.lift, Math.abs(keyFrom[2]) * c.front)
+    const ca = cardOf(a.rig)
+    const cb = cardOf(b.rig)
+    const cardFrom = mixRgb(ca.from, cb.from, t)
+    const cardCol = mixRgb([ca.color[0] * ca.intensity, ca.color[1] * ca.intensity, ca.color[2] * ca.intensity], [cb.color[0] * cb.intensity, cb.color[1] * cb.intensity, cb.color[2] * cb.intensity], t)
+    this.card.position.set(cardFrom[0], cardFrom[1], cardFrom[2])
 
     f.keyDir.set(keyFrom[0], keyFrom[1], keyFrom[2]).sub(target).normalize()
     f.rimDir.set(rimFrom[0], rimFrom[1], rimFrom[2]).sub(target).normalize()
@@ -129,9 +150,8 @@ export class Lighting {
     u.uRigRimDir.value.copy(f.rimDir)
     u.uRigRimCol.value.copy(f.rimCol)
     u.uRigCardDir.value.copy(this.card.position).sub(target).normalize()
-    const skyPeak = Math.max(sky[0], sky[1], sky[2], 1e-4)
-    const cardPower = (keyPower * c.share) / skyPeak
-    u.uRigCardCol.value.setRGB(sky[0] * cardPower, sky[1] * cardPower, sky[2] * cardPower)
+    u.uRigCardCol.value.setRGB(cardCol[0], cardCol[1], cardCol[2])
+    u.uRigCard.value.set(lerp(ca.wrap, cb.wrap, t), ROOM_RIG.card.lobe, lerp(ca.specular, cb.specular, t), lerp(ca.inside, cb.inside, t))
     u.uRigSky.value.setRGB(sky[0] * fill, sky[1] * fill, sky[2] * fill)
     u.uRigGround.value.setRGB(ground[0] * fill, ground[1] * fill, ground[2] * fill)
     this.turn.makeRotationFromEuler(this.tilt.set(f.globe.tiltX, 0, f.globe.tiltZ))
