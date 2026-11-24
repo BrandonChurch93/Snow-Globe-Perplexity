@@ -11,7 +11,7 @@ import { MIRROR_GLSL, mirrorUniforms } from '../../../miniature/mirror'
 import { prepareVillage, tileMm, villageGeometry, villageGrain } from '../../../miniature/model'
 import { hangPoints, lampFlame, pitch, ridgeY, roofLength, shrubDistance, slopeLength } from '../../../miniature/roof'
 import { BUMP_GLSL, NEAR_LIGHT, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, withSurface, type Cover, type GlowSource } from '../../../miniature/surface'
-import { wispGeometry, wispMaterial, wispPose, type Wisp } from '../../../miniature/wisp'
+import { wispGeometry, wispMaterial, wispPose, type Wisp, type WispLook } from '../../../miniature/wisp'
 import { anchors, bankAt, cottage, cottageFrame, cottagePoint, driftAt, groundAt, heapAt, moundSlope, pond, pondField, rimAt, solidDistance } from '../../../scene/layout'
 import { gainOf } from '../../../scene/lightgrid'
 import type { InnerLight, KitMoment } from '../../kit'
@@ -20,6 +20,7 @@ import { isTree, season, tones } from './palette'
 const MODEL = 'winter/village-winter.glb'
 const SNOW = 'winter/village-snow.lin.tile.png'
 const ICE = 'winter/village-ice.lin.tile.png'
+const PLUME = 'winter/village-plume.lin.png'
 const PART = `miniature-${season}`
 const LIGHT = `light-${season}`
 const ARRIVAL = `arrival-${season}`
@@ -62,7 +63,7 @@ const BANK_SIDES = { front: 0.72, side: 1.25 }
 const bulbs = hangPoints()
 const flame = lampFlame()
 const mirrored: [number, number, number] = [flame[0], flame[1] - MIRROR.lowMm, flame[2]]
-const potTop = cottagePoint(cottage.chimney.across - 0.2, cottage.chimney.top + 1.45, cottage.chimney.along + 0.1)
+const potTop = cottagePoint(cottage.chimney.across - 0.2, cottage.chimney.top + 1.9, cottage.chimney.along + 0.1)
 
 export const innerLights: InnerLight[] = [
   { at: flame, color: tones.lampLight, ...LAMP },
@@ -281,8 +282,8 @@ const shadowed = <T extends THREE.Mesh>(m: T, cast = true): T => {
 }
 
 const SWEPT = Math.hypot(potTop[0], potTop[2])
-const WISP: Wisp = { from: potTop, height: 7.2, lean: [-2.7, 0.4], sway: 0.6, curl: 1.1, thin: 1, wide: 1.5, rings: 64, sides: 14, swept: [-potTop[2] / SWEPT, potTop[0] / SWEPT], sweepMm: 12 }
-const WISP_STRENGTH = 1
+const WISP: Wisp = { from: potTop, size: [9.2, 9.2], foot: 0.565, across: [1, 0], lean: -0.8, sway: 0.25, cols: 8, rows: 12, swept: [-potTop[2] / SWEPT, potTop[0] / SWEPT], sweepMm: 12 }
+const WISP_LOOK: WispLook = { thin: 0.04, dense: 0.88, curve: 1.6, crown: 0.55, drift: 0.035, cold: 3.5, warm: 1.1, laps: 2 }
 const plume = wispGeometry(WISP)
 const storm = { value: 0 }
 
@@ -291,7 +292,7 @@ export function build(): THREE.Object3D {
   const walls = shadowed(new THREE.Mesh(solids, surfaceMaterial({ part: PART, map: villageGrain(), gain, cover: dusting, key: 'village-solid-winter', fill: WALL_FILL })))
   const snow = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'snow'), near), snowMaterial(PART, 'miniature', 'village-snow', '')))
   const ice = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'ice'), near), iceMaterial()), false)
-  const smoke = new THREE.Mesh(plume, wispMaterial(PART, tones.smoke, WISP_STRENGTH, 2, clock, storm))
+  const smoke = new THREE.Mesh(plume, wispMaterial(PART, tones.smoke, WISP_LOOK, texture(PLUME), clock, storm))
   smoke.renderOrder = 3
   smoke.frustumCulled = false
   return new THREE.Group().add(walls, snow, ice, smoke)
