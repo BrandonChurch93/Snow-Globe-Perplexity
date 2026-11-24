@@ -1,3 +1,9 @@
 import type { SeasonKit } from '../kit'
 
-export const rig: SeasonKit['rig'] = { key: { color: [0.82, 0.9, 1], intensity: 2.6, from: [-260, 420, 300] }, rim: { color: [0.55, 0.7, 1], intensity: 1, from: [300, 200, -380] }, sky: [0.2, 0.26, 0.4], ground: [0.07, 0.08, 0.11], fill: 1.5 }
+export const rig: SeasonKit['rig'] = {
+  key: { color: [0.85, 0.91, 1], intensity: 2.4, from: [400, 260, 300] },
+  rim: { color: [0.5, 0.68, 1], intensity: 0.8, from: [-240, 230, -380] },
+  sky: [0.14, 0.2, 0.34],
+  ground: [0.05, 0.06, 0.09],
+  fill: 0.7,
+}
