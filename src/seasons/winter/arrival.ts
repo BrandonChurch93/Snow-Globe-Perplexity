@@ -37,20 +37,18 @@ export function update(moment: KitMoment): void {
   const swap = config.shake.swapWindow
   const shaking = moment.beat !== null && moment.beat >= swap.fromBeat
   const two = f.from !== f.to && f.change > 0 && f.change < 1
+  // The growth is always the one function of the time since the landing, so it cannot step when the swap window opens or when
+  // the arrival is counted as done; only how much of the frost is kept changes inside the window.
+  const g = growth(moment.sinceLanding)
   if (two) {
-    if (moment.arrived >= 1) frost.setGrowth(frost.FULL, frost.FULL, 1, 1)
-    else if (shaking) frost.setGrowth(0, 0, 0, 0)
-    else {
-      const g = growth(moment.sinceLanding)
-      frost.setGrowth(g.glass, g.slab, 1, 1)
-    }
+    if (shaking && moment.arrived < 1) frost.setGrowth(0, 0, 0, 0)
+    else frost.setGrowth(g.glass, g.slab, 1, 1)
     return
   }
   if (shaking) {
     const through = (moment.beat! - swap.fromBeat) / (swap.toBeat - swap.fromBeat)
-    frost.setGrowth(frost.FULL, frost.FULL, 1 - partChange('glass-dressing', through), 1 - partChange('surface-dressing', through))
+    frost.setGrowth(g.glass, g.slab, 1 - partChange('glass-dressing', through), 1 - partChange('surface-dressing', through))
     return
   }
-  const g = growth(moment.sinceLanding)
   frost.setGrowth(g.glass, g.slab, 1, 1)
 }
