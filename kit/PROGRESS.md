@@ -37,16 +37,16 @@ Status 41 · 2026-11-24 16:01 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 16:05 UTC
-clock: phase 3, tick of 4.3 minutes
-phase 3: 7.64 h used of its 11.00 h box
-allowance (before the review): 14.26 h used of 36.00 h allowed
-all time before the review: 14.26 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 16:11 UTC
+clock: phase 3, tick of 5.4 minutes
+phase 3: 7.73 h used of its 11.00 h box
+allowance (before the review): 14.35 h used of 36.00 h allowed
+all time before the review: 14.35 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 4
+minutes since the last status: 9
 ```
 
 ## Phases
@@ -756,6 +756,11 @@ Merged into `main`, each verified here with types clean and the tests green (126
 
   - `motion_renderer_b` (a render agent, sandbox), branch `agent/p3-round4-motion-b`: started 15:40 UTC to prepare a clone; at the freeze it draws half of Round 4's motion frames at `review` tier (the set-down and the landing sheets, about 41 minutes) so R4's pack takes about half the 90 minutes Round 3 needed; its frames are fetched by `motion_renderer`, never merged. Limit 80 minutes from the freeze message.
 
+- Third set of build agents, started 16:14 to 16:16 UTC (decision 54: round 4 fixes, one new job per part; limit 19:15 UTC; each in its own sandbox, on the same branch and files as the outgoing finisher; brief `out/work/briefs/wave3-common.md` plus the finisher's final report and detail file, the rest and landed pairs of the freeze, and the Round 3 answers in `scorecards/round-003/`): `tree_fixer` (`agent/p3-tree`), `village_fixer` (`agent/p3-village`), `base_fixer` (`agent/p3-base`), `frost_fixer` (`agent/p3-frost`), `flake_fixer` (`agent/p3-flakes`), `liquid_fixer` (`agent/p3-liquid`), `scene_fixer` (`agent/p3-scene`), `glass_fixer` (`agent/p3-glass`), `light_fixer` (`agent/p3-light`, also `src/shake/`). No loading job in this set: the loader's open points are /root's.
+  - The ten finishers of decision 49 ended between 15:49 and 16:12 UTC with their final reports (kept in `out/work/reports2/`, each with its detail file); none is running.
+  - Round 4's render agents, messaged at 16:07 on commit `53cd7dd`: `round_renderer` (measures and the pack of R1 to R3 at `final`; branch `agent/p3-round4-pack`; limit 100 minutes), `motion_renderer` (half of R4's frames at `review`, then the R4 pack; branch `agent/p3-round4-motion`; limit 100 minutes), `motion_renderer_b` (the other half; branch `agent/p3-round4-motion-b`; limit 80 minutes), `gate_runner` (the 12 still repeat test twice, then the whole Phase 3 gate on a clean clone with the sound files unpacked; limit 80 minutes).
+  - `reviewer_r3_e` (Round 3, R4 part 1, `claude_fable_5_2`, asked 15:25) had not answered at 16:13, past `budget.agentWaitMinutes`: stopped and replaced once by `reviewer_r3_g` on `gemini_4_carbon` with the same message and the same ten sheets.
+
 ## Rounds
 
 One line per round: its number, the unit, the commit it judged, each part ticked off as it finished, the scores, and what changed next.
@@ -1035,3 +1040,7 @@ One entry per task: when it started, what it did, where it stopped.
 - 15:24 UTC: `motion_renderer` reported the R4 part of Round 3's pack complete after about 90 minutes (12 sheets at `review`, nothing missing; 15 to 78 s a frame). Fetched from `agent/p3-round3-motion` at `773c41e`, not merged; `roles.R4` put into the key. R4 is split in two as the pack tool cut it: part 1 (lift, strokes, set down, the first second after the landing; 10 files) asked of `reviewer_r3_e` on `claude_fable_5_2`, part 2 (the whole shake with its clearing, the globe at rest; 2 files) of `reviewer_r3_f` on `pplx_computer_glm_5_3_1009`. Five families see pictures and this round has six critic parts, so Anthropic holds two (R3 part 1 on `claude_opus_5_5`, R4 part 1 on `claude_fable_5_2`), as `kit/07-QUALITY-BAR.md` allows.
 
 - 15:33 UTC: Status 40 posted with the rest and landed pairs of 15:33 (`out/work/status/pair-rest-1533.jpg`, `pair-landed-1533.jpg`; draft). Before it, 15:27 to 15:32: Round 3's R4 part 2 saved as `scorecards/round-003/R4-2.json` (7; two major: the peak storm reads as ribbons tracing the wall, the landing reads as a hover; one minor: no visible settling) and sent verbatim to `light_finisher` (the landing), `liquid_finisher` and `flake_finisher` (the storm, the settling) with the rule "cure safely by 15:55 or put the plan in the final report". `motion_renderer` answered how R4 can be split between two render agents (frames under `out/work/seq/` are reused across sandboxes when the engine and season hashes match; halves of about 42 and 40 minutes). `scene_finisher` told the config outcome; `frost_finisher` told the 2048 frost maps are approved. Determinism: `liquid_finisher` and `light_finisher` both reproduce the fault without their own code (a second still on one page differs in 1 to 10 pixels by one level, mostly red, up to 60 preview pixels outside the limb), so the source is a wide filter or a kept copy of the frame; the fault came in with the merges of 14:57 to 15:01.
+
+- 16:01 UTC: Status 41 posted with the rest pair of the freeze (`out/work/status/pair-rest-1600.jpg`). 15:38 to 16:00: decision 54 logged (each round's fix list is a new set of jobs); `motion_renderer_b` started so R4's frames are drawn by two agents; the determinism fault: `gate_runner` showed on `b4c3b18` that it is flaky (about one repeat in two of a 12 still test on one page) and gone with the glass's limb ring hidden; the glass finisher's reworked ring (`50df123`) and a one pass line on its material (`ce596b6`) give 0 of 9 repeats in its VM and 0 of 36 in the liquid finisher's on a tree equal to main; every finisher's own `npm run determinism` on its last commit passed. The mechanism (where two stills of one state differ in their last bits) was not found: kept as a watch point for the glass job and for Round 4's gate. Final merges at 15:49 and 15:59 (all ten branches; every part made again).
+- 16:06 UTC: Round 4 frozen and opened. Judged commit `53cd7dd`: sources as merged, five prose headings in three recipes made sub headings (G8 green: 73 shipped files, 68 made with recipes), tsc clean, 408 tests pass, mesh levels drawn (medium 753012, low 356700 triangles a sample), winter's built assets committed once for the round (90 files). Pushed with the round's line as `c3b4e7e`. Render agents messaged at 16:07. Published at 16:10 from the frozen build: first picture after 13.6 s, 52 requests, no errors; Visibility: Organization.
+- 16:13 UTC: the second set of builders' ten final reports are in (`out/work/reports2/`). The third set, nine agents, started on them (see "Running agents"). Ruling sent to `light_fixer` on the landing: the kit gives the overshoot no number ("a small overshoot in tilt that dies inside `shake.landSettleSeconds`", "It does not bounce into the air"), so the builder's own 0.7 degree bound in `tests/shake-path.test.ts` may rise to 1.3 degrees if the landing sheets at `review` tier then show weight; `shake.landSettleSeconds` stays, it is not a value the Builder may tune.
