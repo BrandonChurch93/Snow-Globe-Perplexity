@@ -1,44 +1,31 @@
 {
-  "number": 47,
-  "time": "2026-11-24 18:12 UTC",
+  "number": 49,
+  "time": "2026-11-24 18:52 UTC",
   "phase": "3",
   "unit": "",
   "lines": [
-    "Status 47 · 2026-11-24 18:12 UTC · Phase 3",
-    "Round 5 is frozen on 9be1c06 and its stills and motion sheets are being rendered at the final tier by four agents",
-    "Round 4 closed without a pass: likeness 5 and craft 4 and motion 5 of 10 and the jury fails",
-    "One test is red on main since the freeze (snow cover on the roof's lower slope) and it counts against Round 5 as a severe issue; the liquid's builder owns the cure",
-    "The change's bloom is cured on the light's branch: a white core that swells and shrinks instead of an even peach disc",
-    "Next: Round 5's critics from about 18:50 then a new set of builders at 19:15 for the last two rounds",
-    "phase 3: 9.76 h used of its 11.00 h box",
-    "allowance (before the review): 16.37 h used of 36.00 h allowed",
+    "Status 49 · 2026-11-24 18:52 UTC · Phase 3",
+    "Round 5 is with the critics. Two of six critic parts are in and both gave 7 (Round 4's merged scores were 4 and 5). Three of fifteen jurors are in: b and b and c",
+    "The round cannot pass as frozen: one unit test and one measure line are red on the judged commit. Both are cured or traced on newer work",
+    "Open in the critics' words: the storm reads as a milky ribbon of fog; a level belt hangs in the lower third while it clears; the roof snow is an even sheet; the pond is a flat blue insert; the crown is round pads",
+    "Next: the third set of builders hands over by 19:15 and a fourth set starts on these issues. Round 6 freezes at 20:15 and Round 7 at 22:15",
+    "phase 3: 10.42 h used of its 11.00 h box",
+    "allowance (before the review): 17.03 h used of 36.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-47-1.jpg",
-      "caption": "The tree's crown at rest: approved left and the build right (draft tier). Still wrong: the snow sits as round pads where the approved has broad blankets and the trunk is thicker and more orange",
+      "file": "out/stills/status/status-49-1.jpg",
+      "caption": "At rest: the approved image on the left and Round 5's judged still on the right (final tier)",
       "w": 1200,
-      "h": 610
+      "h": 582
     },
     {
-      "file": "out/stills/status/status-47-2.jpg",
-      "caption": "One second after the landing: approved left and the build right (draft tier). The storm is separate dashes in a swirl now. Still wrong: the bank is cooler than the approved warm glow and the glass frost is fainter",
+      "file": "out/stills/status/status-49-2.jpg",
+      "caption": "Mid shake: the approved image on the left and Round 5's judged still on the right (final tier)",
       "w": 1200,
-      "h": 597
-    },
-    {
-      "file": "out/stills/status/status-47-3.jpg",
-      "caption": "Still: winter rest hero, hd, draft",
-      "w": 1200,
-      "h": 675
-    },
-    {
-      "file": "out/stills/status/status-47-4.jpg",
-      "caption": "Sheet: 12 frames across the shot shake-1, frames 576 to 719, preview, draft",
-      "w": 1149,
-      "h": 986
+      "h": 582
     }
   ]
 }
