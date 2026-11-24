@@ -91,4 +91,4 @@ The steps of the build appear on frames 582, 636, 690, 744, 798. The reasoning m
 
 ## The card loop
 
-8 s, 480 frames at 60 a second, from the `hero` camera in the `hd` format. One shake: lift on frame 48, in the air on 84, strokes end on 156, landing on 192. The season does not change, and the frame after the last is frame 0.
+8 s, 480 frames at 60 a second, from the `hero` camera in the `hd` format. The camera stands at 783.7 mm: moved back from 658 mm along its own axis, so the glass and the base stay inside the centred square crop of the card through the shake. One shake: lift on frame 48, in the air on 84, strokes end on 156, landing on 192. The season does not change, and the frame after the last is frame 0.
