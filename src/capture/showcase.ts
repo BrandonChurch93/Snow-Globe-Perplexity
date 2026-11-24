@@ -102,7 +102,7 @@ interface Register {
 const DEG = 180 / Math.PI
 
 export interface Overlay {
-  show(season: string): Promise<void>
+  show(season: string, state: string): Promise<void>
   hide(): void
 }
 
@@ -308,7 +308,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
       const pose = poseById(spec.camera)
       if (spec.live) await livePicture(along(stillTl(spec.season)), stateSeconds(spec.state), pose, spec.live)
       else await picture(along(stillTl(spec.season)), stateSeconds(spec.state), 0, () => pose, samples, 0)
-      if (spec.interface) await overlay.show(spec.season)
+      if (spec.interface) await overlay.show(spec.season, spec.state)
     },
     film() {
       const g = getGrid()

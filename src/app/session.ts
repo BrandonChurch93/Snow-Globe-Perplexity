@@ -17,6 +17,7 @@ export const LIVE = {
   stepCap: Math.round(config.sim.stepHz * 0.05),
   dissolveSeconds: 1.8,
   skipSliceSteps: 12,
+  sliceSteps: 2,
 }
 
 const HZ = config.sim.stepHz
@@ -129,7 +130,7 @@ export class LiveSession {
     if (!this.skipping) this.skipTo = 0
   }
 
-  tick(dt: number): number {
+  tick(dt: number, over: () => boolean = () => false): number {
     if (this.skipping) return 1
     let next = this.clock + Math.min(Math.max(dt, 0), LIVE.maxFrameSeconds)
     this.hold(next)
@@ -138,7 +139,15 @@ export class LiveSession {
       target = this.sim.step + LIVE.stepCap
       next = target / HZ
     }
-    this.sim.advanceTo(target, this.tl)
+    while (this.sim.step < target) {
+      const to = Math.min(target, this.sim.step + LIVE.sliceSteps)
+      this.sim.advanceTo(to, this.tl)
+      if (this.sim.step < to) break
+      if (to < target && over()) {
+        target = to
+        next = to / HZ
+      }
+    }
     this.clock = next
     this.settle()
     return Math.min(1, Math.max(0, next * HZ - (target - 1)))
