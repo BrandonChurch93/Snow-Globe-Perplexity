@@ -32,6 +32,7 @@ type Playing = AppState['playing']
 
 const SOUND_ON_AT_START = true
 const STEP_BUDGET_MS = 9
+const STEP_SHARE = 0.4
 const SKIP_BUDGET_MS = 14
 const FILMS: Playing[] = ['film-a', 'film-b']
 const CONTROL = 'button, a[href], input, select, textarea, summary, [role="button"], [contenteditable=""], [contenteditable="true"]'
@@ -79,6 +80,8 @@ export function startApp(d: AppDeps): AppBridge {
   let asked = false
   let onFrame: ((seconds: number) => void) | null = null
   let told = params.season
+  let stepMs = 0
+  let budget = STEP_BUDGET_MS
 
   const state = (): AppState => ({
     ready,
@@ -329,8 +332,10 @@ export function startApp(d: AppDeps): AppBridge {
       const t0 = now()
       const wasBusy = session.busy
       let mix = 1
+      budget = Math.max(STEP_BUDGET_MS, STEP_SHARE * (dt * 1000 - stepMs))
       if (session.skipping) session.skip(() => now() - t0, SKIP_BUDGET_MS)
-      else mix = session.tick(dt, () => now() - t0 > STEP_BUDGET_MS)
+      else mix = session.tick(dt, () => now() - t0 > budget)
+      stepMs = now() - t0
       look.tick(dt)
       if (wasBusy && !session.busy) {
         governor.rest()

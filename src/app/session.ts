@@ -13,11 +13,11 @@ export interface LiveSim {
 }
 
 export const LIVE = {
-  maxFrameSeconds: 0.1,
-  stepCap: Math.round(config.sim.stepHz * 0.05),
+  maxFrameSeconds: 0.25,
+  stepCap: Math.round(config.sim.stepHz * 0.25),
   dissolveSeconds: 1.8,
   skipSliceSteps: 12,
-  sliceSteps: 2,
+  sliceSteps: 1,
 }
 
 const HZ = config.sim.stepHz
