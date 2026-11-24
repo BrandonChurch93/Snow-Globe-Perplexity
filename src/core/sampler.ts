@@ -12,6 +12,7 @@ export interface Sample {
 const PHI5 = 1.1673039782614187
 const ALPHA = [1, 2, 3, 4, 5].map((k) => 1 / PHI5 ** k)
 const frac = (x: number) => x - Math.floor(x)
+const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5))
 
 export function diskPoint(u: number, v: number): [number, number] {
   const a = 2 * u - 1
@@ -35,7 +36,21 @@ export function sampleSet(count: number, salt = 0, name = 'sampler'): Sample[] {
   const out: Sample[] = []
   for (let i = 0; i < count; i++) {
     const v = ALPHA.map((a, d) => frac(offset[d]! + a * (i + 1)))
-    const [lu, lv] = diskPoint(v[2]!, v[3]!)
+    // The lens. One sample keeps the old point. A set is a sunflower spiral, turned by the
+    // picture's own angle and slid along its radius: its points fall on `count` different
+    // offsets along every direction, so an edge out of focus is a ramp of `count` fine steps.
+    // (Two dimensions of the R sequence gave a few rows of points at 24, and a far ridge drew
+    // as five stacked copies of itself.)
+    let lu: number
+    let lv: number
+    if (count === 1) {
+      ;[lu, lv] = diskPoint(v[2]!, v[3]!)
+    } else {
+      const r = Math.sqrt((i + offset[3]!) / count)
+      const th = 2 * Math.PI * offset[2]! + GOLDEN_ANGLE * i
+      lu = r * Math.cos(th)
+      lv = r * Math.sin(th)
+    }
     const t = count === 1 ? 0.5 : (i + frac(offset[4]! + ALPHA[0]! * (i + 1))) / count
     out.push({ index: i, px: v[0]! - 0.5, py: v[1]! - 0.5, lu, lv, t: count === 1 ? 0.5 : t })
   }
