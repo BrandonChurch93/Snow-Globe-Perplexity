@@ -25,7 +25,22 @@
     "keep": "node tools/keep.mjs",
     "crops": "node tools/crops.mjs",
     "compare": "node tools/compare.mjs",
-    "animatic": "node tools/animatic.mjs"
+    "animatic": "node tools/animatic.mjs",
+    "simcache": "node tools/simcache.mjs",
+    "measure": "node tools/measure.mjs",
+    "sheet": "node tools/sheet.mjs",
+    "seq": "node tools/seq.mjs",
+    "sound": "node tools/sound.mjs",
+    "soundcheck": "node tools/soundcheck.mjs",
+    "audiomap": "node tools/audiomap.mjs",
+    "cut": "node tools/cut.mjs",
+    "mix": "node tools/mix.mjs",
+    "film": "node tools/film.mjs",
+    "loop": "node tools/loop.mjs",
+    "stress": "node tools/stress.mjs",
+    "pack": "node tools/pack.mjs",
+    "hostcheck": "node tools/hostcheck.mjs",
+    "render:local": "node tools/render-local.mjs"
   },
   "dependencies": {
     "gsap": "3.15.1",
