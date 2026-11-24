@@ -24,9 +24,9 @@ const PLAIN: KindLook = { shape: SHAPE.soft, size: 1, body: 1, flash: 0, real: f
 export const lookOf = (kind: string): KindLook => LOOKS[kind] ?? PLAIN
 
 export const LENS_LOOK = {
-  nearGain: 8,
+  nearGain: 4,
   farGain: 0.12,
-  maxBlurPx: 15,
+  maxBlurPx: 60,
   farShrink: 0.36,
   maxStreakPx: 110,
   sampleSpanSteps: 0.25,
@@ -46,19 +46,20 @@ export const FLOW_LOOK = {
 export const LIGHT_LOOK = {
   wrap: 0.55,
   grid: 1.15,
-  veilShare: 0.4,
+  veilShare: 0.7,
   lampFlash: 9,
-  keyFloor: 0.45,
-  keySide: 2.1,
+  keyFloor: 0.4,
+  keySide: 1.5,
   skyTilt: 0.25,
 }
 
 export const LYING_LOOK = {
-  flat: 0.3,
+  flat: 0.22,
+  size: 0.6,
   lobe: 0.72,
   mergeFromMm: 0.3,
   mergeToMm: 2.2,
-  mergeSpread: 0.7,
+  mergeSpread: 0.4,
   glitterTilt: 0.7,
 }
 
@@ -70,7 +71,7 @@ export const PIXEL_SIGMA2 = 0.5
 export const STREAK_HOLD = 0.45
 export const STREAK_TAPER = 0.6
 export const STREAK_REACH = 1.5
-export const BLUR_HOLD = 0.5
+export const BLUR_HOLD = 0.62
 export const SIZE_LOW = 0.22
 export const SIZE_HIGH = 1.7
 export const SIZE_SKEW = 1.8

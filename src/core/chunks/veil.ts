@@ -3,7 +3,7 @@ import { config } from '../../config'
 import { LIQUID_PHASE, LIQUID_PHASE_B } from '../../globe/liquid'
 import type { StageFrame } from '../../scene/frame'
 
-const TURBULENCE_POWER = 7
+const TURBULENCE_POWER = 4.2
 const NOISE_N = 32
 const TAU = 2 * Math.PI
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
@@ -31,7 +31,7 @@ export const VEIL_LOOK = {
   peakFrom: 0.7,
   bank: 5.6,
   bankPower: 3,
-  bankRest: -1.33,
+  bankRest: -1.1,
   bankRise: 1.2,
   bankRing: 0.4,
   bankSoft: 0.2,

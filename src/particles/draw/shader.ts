@@ -2,7 +2,7 @@ import { COVER_GLSL } from '../../core/chunks/cover'
 import { LIGHT_FRAG_PARS } from '../../core/chunks/light'
 import { VEIL_GLSL } from '../../core/chunks/veil'
 import { viewCode } from '../../diagnostics/views'
-import { BLUR_HOLD, EDGE_DISC, EDGE_HIGH, EDGE_LOW, GLITTER_STREAK, GLINT_HIGH, GLINT_LOW, LAMPS, LIGHT_LOOK, LOBE_CORE, MAX_KINDS, PIXEL_SIGMA2, SIZE_HIGH, SIZE_LOW, SIZE_SKEW, STREAK_HOLD, STREAK_REACH, STREAK_TAPER } from './looks'
+import { BLUR_HOLD, EDGE_DISC, EDGE_HIGH, EDGE_LOW, GLITTER_STREAK, GLINT_HIGH, GLINT_LOW, LAMPS, LIGHT_LOOK, LOBE_CORE, LYING_LOOK, MAX_KINDS, PIXEL_SIGMA2, SIZE_HIGH, SIZE_LOW, SIZE_SKEW, STREAK_HOLD, STREAK_REACH, STREAK_TAPER } from './looks'
 
 const MEAN_LOBE = 0.42
 const n = (v: number) => (Number.isInteger(v) ? v.toFixed(1) : String(v))
@@ -117,9 +117,9 @@ export const VERT_MAIN = `
   float depth = clamp(a / uLens.w, -1.0, 1.0);
   float shrink = mix(1.0, mix(uBlur.w, 1.0, smoothstep(-1.0, 0.15, depth)), afloat);
   float spread = shape > 0.5 && shape < 1.5 ? mix(${n(SIZE_LOW)}, ${n(SIZE_HIGH)}, pow(h2.w, ${n(SIZE_SKEW)})) : 1.0;
-  float rPx = aData.x * look.y * spread * uPoint.y * mag / zImg * shrink;
+  float rPx = aData.x * look.y * spread * uPoint.y * mag / zImg * shrink * mix(1.0, ${n(LYING_LOOK.size)}, lying);
   float coc = uAperture.w * uPoint.y * (1.0 / zImg - uAperture.z);
-  float blur = min(coc > 0.0 ? coc * uBlur.x : -coc * uBlur.y, uBlur.z) * afloat;
+  float blur = uBlur.z * (1.0 - exp(-(coc > 0.0 ? coc * uBlur.x : -coc * uBlur.y) / uBlur.z)) * afloat;
   vec3 rimAxis = cross(normalize(placed.xyz - eye), uLensCentre - eye);
   float rim = on > 0.5 ? 1.0 - smoothstep(0.9, 0.985, length(rimAxis) / R) : 1.0;
 
