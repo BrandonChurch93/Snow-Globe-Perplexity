@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { config } from '../src/config'
 import { stream } from '../src/core/rng'
 import { barSeconds, stateSeconds, stillTimeline } from '../src/film/timeline'
+import { LIQUID_ROLL, LIQUID_TURBULENCE, ROLL_AXIS, ROLL_CENTRE, ROLL_MAX, TURBULENCE_MAX } from '../src/globe/liquid'
 import { ParticleEngine, STATE_HIDDEN, STATE_LIQUID, WALL } from '../src/particles/engine/engine'
 import { KINDS } from '../src/particles/engine/kinds'
 import { sdfSample } from '../src/particles/engine/sdf'
@@ -50,7 +51,94 @@ function fill(e: ParticleEngine): number[] {
   return out.map((c, b) => c / n / even[b]!)
 }
 
+function swirl(e: ParticleEngine): { median: number; fast: number; slow: number; round: number; flat: number } {
+  const speeds: number[] = []
+  let round = 0
+  let across = 0
+  let upright = 0
+  for (let i = 0; i < e.count; i++) {
+    if (e.state[i] !== STATE_LIQUID) continue
+    const o = i * 3
+    const vx = e.vel[o]!
+    const vy = e.vel[o + 1]!
+    const vz = e.vel[o + 2]!
+    const v = Math.hypot(vx, vy, vz)
+    speeds.push(v)
+    const rx = e.pos[o]! - ROLL_CENTRE[0]
+    const ry = e.pos[o + 1]! - ROLL_CENTRE[1]
+    const rz = e.pos[o + 2]! - ROLL_CENTRE[2]
+    const tx = ROLL_AXIS[1] * rz - ROLL_AXIS[2] * ry
+    const ty = ROLL_AXIS[2] * rx - ROLL_AXIS[0] * rz
+    const tz = ROLL_AXIS[0] * ry - ROLL_AXIS[1] * rx
+    const t = Math.hypot(tx, ty, tz)
+    if (t > 1e-6 && v > 1e-6) round += (vx * tx + vy * ty + vz * tz) / (t * v)
+    across += Math.abs(vx)
+    upright += Math.abs(vy)
+  }
+  speeds.sort((a, b) => a - b)
+  const at = (q: number): number => speeds[Math.floor((speeds.length - 1) * q)] ?? 0
+  return { median: at(0.5), fast: at(0.9), slow: at(0.1), round: round / Math.max(1, speeds.length), flat: across / Math.max(1e-9, upright) }
+}
+
 describe('the storm of the look lock season', () => {
+  it('turns as one flat swirl at the landing, at the pace of the streaks in the approved picture, and slows over seconds', () => {
+    const e = new ParticleEngine({ season, fraction: 0.25, collider })
+    e.reset(season)
+    e.advanceTo(steps(stateSeconds('landed')), tl)
+    const landed = swirl(e)
+    expect(e.liquid[LIQUID_ROLL]!).toBeGreaterThan(0.5 * ROLL_MAX)
+    expect(e.liquid[LIQUID_ROLL]!).toBeLessThanOrEqual(ROLL_MAX)
+    expect(e.liquid[LIQUID_TURBULENCE]! / TURBULENCE_MAX).toBeGreaterThan(0.5)
+    expect(landed.median).toBeGreaterThan(280)
+    expect(landed.median).toBeLessThan(450)
+    expect(landed.slow).toBeGreaterThan(100)
+    expect(landed.slow).toBeLessThan(0.55 * landed.median)
+    expect(landed.fast).toBeGreaterThan(1.5 * landed.median)
+    expect(landed.fast).toBeLessThan(750)
+    expect(landed.round).toBeGreaterThan(0.45)
+    expect(landed.round).toBeLessThan(0.85)
+    expect(landed.flat).toBeGreaterThan(1.25)
+    expect(landed.flat).toBeLessThan(2.2)
+    e.advanceTo(steps(stateSeconds('landed') + 1), tl)
+    const later = swirl(e)
+    expect(later.median).toBeGreaterThan(0.3 * landed.median)
+    expect(later.median).toBeLessThan(0.6 * landed.median)
+    expect(later.round).toBeGreaterThan(0.3)
+    e.advanceTo(steps(stateSeconds('landed') + 2.5), tl)
+    const late = swirl(e)
+    expect(late.median).toBeGreaterThan(0.05 * landed.median)
+    expect(late.median).toBeLessThan(0.2 * landed.median)
+    e.advanceTo(steps(stateSeconds('rest')), tl)
+    expect(e.liquid[LIQUID_ROLL]).toBe(0)
+    expect(swirl(e).median).toBeLessThan(6)
+  }, 120000)
+
+  it('banks the heavy flakes low in the storm and leaves the light ones through the dome', () => {
+    const e = new ParticleEngine({ season, fraction: 0.25, collider })
+    e.reset(season)
+    e.advanceTo(steps(stateSeconds('landed')), tl)
+    const [low, near, mid, high] = fill(e) as [number, number, number, number]
+    expect(low).toBeGreaterThan(1.2)
+    expect(near).toBeGreaterThan(1.1)
+    expect(high).toBeLessThan(0.8 * mid)
+    e.advanceTo(steps(stateSeconds('landed') + 1), tl)
+    const [lower, nearer] = fill(e) as [number, number, number, number]
+    expect(lower).toBeGreaterThan(low)
+    expect(nearer).toBeGreaterThan(1.1)
+    let dense = 0
+    const cells = new Map<number, number>()
+    let afloat = 0
+    for (let i = 0; i < e.count; i++) {
+      if (e.state[i] !== STATE_LIQUID) continue
+      afloat++
+      const key = Math.floor(e.pos[i * 3]! / 4 + 64) + 128 * (Math.floor(e.pos[i * 3 + 1]! / 4 + 64) + 128 * Math.floor(e.pos[i * 3 + 2]! / 4 + 64))
+      const c = (cells.get(key) ?? 0) + 1
+      cells.set(key, c)
+      if (c > dense) dense = c
+    }
+    expect(dense).toBeLessThan((afloat / cells.size) * 25)
+  }, 120000)
+
   it('fills the whole dome at the landing and does not press into a low layer', () => {
     const e = new ParticleEngine({ season, fraction: 0.25, collider })
     e.reset(season)
