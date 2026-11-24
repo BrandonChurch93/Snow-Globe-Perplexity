@@ -21,15 +21,17 @@ const T = (x, y, z) => new THREE.Matrix4().makeTranslation(x, y, z)
 
 const STONES = ['#8c867d', '#7c766f', '#979289', '#726d66', '#837e75', '#9e988e', '#79736a', '#908a7f', '#6b6660', '#87837d'].map(lin)
 const ARCH = ['#b9b2a6', '#aba498', '#c5beb2', '#a09a8e'].map(lin)
-const BRICKS = ['#a07a62', '#8f6c58', '#ad866c', '#7f6050', '#98735c', '#a67f66', '#876655'].map(lin)
+const BRICKS = ['#c69f88', '#b48c77', '#d3ab94', '#a5806d', '#be9681', '#cca48d', '#ae8873'].map(lin)
 const SHINGLES = ['#5c4838', '#4e3d31', '#68523f', '#43352b', '#57483c'].map(lin)
 const LEAVES = ['#22401f', '#2d5226', '#1b3319', '#3a5f2c', '#27481f'].map(lin)
-const MORTAR_C = lin('#2b2521')
+const MORTAR_C = lin('#4a3d33')
 const DIRT = lin('#4b4538')
 const IRON = lin('#15161a')
-const DOOR = lin('#47291a')
+const DOOR = lin('#5a3620')
 const FRAME = lin('#3e2716')
-const FENCE = lin('#8a6344')
+const FENCE = lin('#a87a55')
+const PICKET_C = lin('#d8d2ca')
+const PICKET = { each: 7, clear: 0.95, thick: 0.15, wide: 0.24, over: 0.5 }
 const SLATE = lin('#8a857f')
 
 const solid = new Bag('solid')
@@ -45,7 +47,7 @@ const leafSurf = [surf(KIND.leaf, 0.62), 0]
 const off = () => [R() * 7, R() * 7]
 
 function stone(W, x, y, w, h, o = {}) {
-  const d = (o.depth ?? 0.46) * (0.7 + 0.6 * R())
+  const d = (o.depth ?? 0.34) * (0.7 + 0.6 * R())
   const g = pillow(w, h, d, o.su ?? (w > 1.7 ? 5 : 4), o.sv ?? 3, R, o.pillow)
   const P = g.getAttribute('position')
   for (let i = 0; i < P.count; i++) {
@@ -64,7 +66,7 @@ function wall(W, region, o = {}) {
   const rowJ = o.rowJ ?? 0.55
   const wide = o.wide ?? 1.08
   const wideJ = o.wideJ ?? 0.6
-  const gap = o.gap ?? 0.17
+  const gap = o.gap ?? 0.1
   const stack = o.stack ?? 0.25
   const drift = o.drift ?? 0.12
   let y = region.y0
@@ -356,7 +358,7 @@ for (const [k, f] of chimneyFaces.entries()) {
   wall(W, { x0: -f.half - 0.12, x1: f.half + 0.12, y0: stackBase, y1: stackTop }, { rowH: 0.66, rowJ: 0.1, wide: 1.05, wideJ: 0.3, gap: 0.1, stack: 0, drift: 0.03, stone: { depth: 0.24, su: 3, sv: 3, tones: BRICKS, dirt: false, pillow: { square: 6, shear: 0.07, wobble: 0.035, lump: 0.34, tilt: 0.3 } } })
   const back = new THREE.PlaneGeometry(2 * f.half, stackTop - stackBase, 4, 8).applyMatrix4(T(0, (stackTop + stackBase) / 2, MORTAR + 0.04))
   shade(back, (x, y) => 0.8 + 0.3 * noise(x * 2, y * 2, k))
-  solid.add(back, { matrix: W.M, color: lin('#3d342f'), surf: [surf(KIND.stone, 0.95), 0], uv: planar(f.U, f.V), uvOffset: off(), renormal: true })
+  solid.add(back, { matrix: W.M, color: lin('#5e5048'), surf: [surf(KIND.stone, 0.95), 0], uv: planar(f.U, f.V), uvOffset: off(), renormal: true })
 }
 const crown = (w, l, h, y, tone, round) => {
   const g = slab(w, h, l, { round, sx: 6, sy: 2, sz: 6, warp: 0.035, seed: R() * 20 })
@@ -436,6 +438,23 @@ for (const s of rails) {
   const M = boxMatrix(s)
   const axis = new THREE.Vector3(0, 0, 1).transformDirection(M)
   solid.add(g, { matrix: M, color: mul3(FENCE, 0.85 + 0.3 * R()), surf: woodSurf(0.75), uv: grainUv([axis.x, axis.y, axis.z]), uvOffset: off(), renormal: true })
+}
+{
+  const top = rails.reduce((m, s) => (s.centre[1] > m.centre[1] ? s : m), rails[0])
+  const low = rails.reduce((m, s) => (s.centre[1] < m.centre[1] ? s : m), rails[0])
+  const M = boxMatrix(top)
+  const drop = top.centre[1] - low.centre[1]
+  const len = top.half[2]
+  const bays = L.fence.posts - 1
+  for (let i = 0; i < bays; i++)
+    for (let j = 0; j < PICKET.each; j++) {
+      const z0 = -len + (2 * len * i) / bays + PICKET.clear
+      const z1 = -len + (2 * len * (i + 1)) / bays - PICKET.clear
+      const at = new THREE.Vector3(0, 0, z0 + ((z1 - z0) * j) / (PICKET.each - 1)).applyMatrix4(M)
+      const tall = drop + PICKET.over * (0.8 + 0.4 * noise(i * 3.1, j * 1.7, 5))
+      const g = slab(PICKET.thick, tall, PICKET.wide, { round: 0.04, sx: 1, sy: 2, sz: 1, warp: 0.03, seed: i * 7 + j })
+      solid.add(g, { matrix: new THREE.Matrix4().makeRotationY(top.yaw).setPosition(at.x, at.y - drop / 2, at.z), color: mul3(PICKET_C, 0.85 + 0.3 * noise(i * 5.3, j * 2.9, 8)), surf: woodSurf(0.8), uv: grainUv(UP), uvOffset: [i * 1.3, j * 0.7], renormal: true })
+    }
 }
 const pathShapes = L.shapes.filter((s) => s.role === 'path')
 for (const [i, s] of pathShapes.entries()) {

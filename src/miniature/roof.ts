@@ -54,9 +54,9 @@ export function lampFlame(): Point {
 const SHRUBS: { at: [number, number]; r: Point }[] = [
   { at: [c.halfWidth + 0.9, c.halfLength + 0.9], r: [1.9, 2.5, 1.8] },
   { at: [-c.halfWidth + 1.3, c.halfLength + 1.7], r: [2.3, 1.7, 1.9] },
-  { at: [-c.halfWidth - 1.5, 6.3], r: [1.8, 2, 2.3] },
-  { at: [-c.halfWidth - 1.6, -2.6], r: [1.7, 1.8, 2.4] },
-  { at: [-c.halfWidth - 1.5, -7.4], r: [1.8, 2.3, 2.2] },
+  { at: [-c.halfWidth - 1.5, 5.5], r: [1.8, 2, 2.3] },
+  { at: [-c.halfWidth - 1.6, -2.1], r: [1.7, 1.8, 2.4] },
+  { at: [-c.halfWidth - 1.5, -6.8], r: [1.8, 2.3, 2.2] },
 ]
 
 export function shrubs(): { centre: Point; r: Point }[] {
