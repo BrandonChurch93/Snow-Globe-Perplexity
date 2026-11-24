@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 43 · 2026-11-24 16:40 UTC
+Status 44 · 2026-11-24 17:01 UTC
 
-- `out/stills/status/status-43-1.jpg`: Round 4 build: the first 0.4 s after the landing of the test shake at review tier. The frost ring bursts outward from the foot from frame 150
-- `out/stills/status/status-43-2.jpg`: Still: winter rest hero, hd, draft
-- `out/stills/status/status-43-3.jpg`: The spring hold after decision 34, twelve frames at draft: the move toward the base now stops 55 percent of the way (frame 1044). Still wrong and being fixed: the petals fill the glass for nine seconds, so the miniature only comes out at the end (by film_app_engineer_2)
-- `out/stills/status/status-43-4.jpg`: Round 1: the three screens at 1920 by 1080, 390 by 844 and 1024 by 1366. On the two wide ones the foot of the base stands 28 and 23 pixels above the Shake control; the framing now gets a rule of 7 percent of the height (by root)
+- `out/stills/status/status-44-1.jpg`: Round 4 build at final tier: the hero still at rest as the jury saw it
+- `out/stills/status/status-44-2.jpg`: Round 4 build: strokes of the test shake at frames 84 to 106. The bloom of the swap window turns the base one flat orange for five frames (with the lights builder now)
+- `out/stills/status/status-44-3.jpg`: Still: winter rest hero, hd, draft
+- `out/stills/status/status-44-4.jpg`: Round 1, what the second critic judged: the stand-in globe from the six cameras, each beside its target. Top row hero, macro, interior; bottom row base, surface, low. Four are being framed again: surface shows the wall of the base, interior stands too far back, low nearly repeats hero, macro cuts the cottage (by root)
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 16:46 UTC
-clock: phase 3, tick of 5.2 minutes
-phase 3: 8.32 h used of its 11.00 h box
-allowance (before the review): 14.93 h used of 36.00 h allowed
-all time before the review: 14.93 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 17:01 UTC
+clock: phase 3, tick of 14.7 minutes
+phase 3: 8.56 h used of its 11.00 h box
+allowance (before the review): 15.18 h used of 36.00 h allowed
+all time before the review: 15.18 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 5
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -1070,3 +1070,10 @@ One entry per task: when it started, what it did, where it stopped.
 - 16:38 UTC: `base_fixer` asked for `globe.baseHeightMm` 31.4 (the approved foot meets the slab 16 px higher than the build's; all of it in the plinth under the rope: 34 px against 21). Refused: `framing.heroFillMin` 0.8 would fail at 0.794 with the glass at its approved size, and a threshold is not lowered (decisions 40 and 57); it keeps the dark painted foot line that hides the last 1.6 mm. Its first push of this set is `ec84e44` (oiled grain with sheen, thinner ledge snow in lobes).
 - 16:40 UTC: Round 3 closed and pushed (`973af89`): key, jury key, manifest, summary; R1 4, R2 fails, R3 3, R4 3. `motion_renderer_b` reported half B of Round 4's motion frames done (48 frames and 5 sheets on `agent/p3-round4-motion-b` at `e882a14`, about 34.5 s a frame; set down 10.8 minutes, landing 16.9); fetched, not merged; `motion_renderer` told to take them for the R4 pack.
 - 16:41 UTC: Status 43 posted (shown inline) with the landing sheet of Round 4's build (`out/work/r4b/motion-landing-test-preview-review-1.jpg`). My reading of that sheet: the slab is bare at the landing and the frost comes as a ring with arms from frame 150, wider each frame; the storm is still drawn as long curved streaks at 2.77 s; at this size the landing shows no rock.
+
+- 16:46 to 16:57 UTC, Round 4's answers as they came (each saved verbatim and pushed at once): `round_renderer` done at 16:45 (measures 24 of 24 green, pack of R1 to R3 on `e10545f`, 39 minutes); `motion_renderer` done at 16:47 (R4 pack on `46d3a49`, about 40 minutes); `gate_runner` done at 16:50 (all 15 green in 39 min 41 s, the repeat test clean twice; its note that G2 prints 408 of 412 is the 4 skipped tests, none fails). Critics started 16:48 as fresh agents with files only: R1 `reviewer_r4_a` (`claude_fable_5_2`), R3 part 1 `reviewer_r4_b` (`gemini_4_carbon`), part 2 `reviewer_r4_c` (`kimi_k3`), part 3 `reviewer_r4_d` (`pplx_computer_glm_5_3_1009`), R4 part 1 `reviewer_r4_e` (`gpt_6_2_sol`); R4 part 2 `reviewer_r4_f` (`claude_opus_5_5`) at 16:52 when a slot opened; 15 jurors `viewer_r4_01` to `15` in threes from 16:52 to 16:56 (the six shared slots were never exceeded). In: R3 part 3 at 16:49 (7), R3 part 2 and R4 part 1 at 16:51 (6 and 6), R3 part 1 at 16:55 (4), the jury complete at 16:57 (4 of 15, fails). Still out at 17:04: R1 and R4 part 2.
+- 16:54 and 16:58 UTC: every finding sent to its owner in the critic's words with the file it names: `tree_fixer` (bark, crown snow; named by three critics and two jurors), `village_fixer` (chimney smoke, named by three jurors and three critics; shrubs; fence post caps; windows), `flake_fixer` (the landed storm as one milky spin blur, severe; the cover as an opacity switch at frame 72, severe; flakes as opaque pebbles and polygon shards; one red hot pixel), `liquid_fixer` (one coherent ring at the landing; a pulse at the contact), `shake_fixer` (the hang and the glide), `frost_fixer` (the slab frost leaving in a clear frame and arriving as a mask; comb teeth at the fern roots; no melt edge), `base_fixer` (icicles as resin spikes, intersections at the pinecone and the rope, the ledge snow), `glass_fixer` (a stair-stepped glass edge and a notch at the collar; the rim zone; a razor-edged highlight), `light_fixer` (the bloom turns the base one flat orange for five frames), `scene_fixer` (hard-ringed discs; the mirror's blur should grow with distance).
+- R3 part 2's two majors on the base still name trees, a lamp, cobblestones and a puddle; none is in any file of its pack (the named crops show the ledge snow, the icicles and the carved band). The answer stays verbatim and its score counts. I read the named crops for the nearest real fault (the ledge snow reads as grey faceted stone with a plastic speckle) and gave that to `base_fixer`. How it is booked is decided when the round closes.
+- 16:55 UTC, mine (`src/core/sampler.ts`): R3 part 3 named "multiple parallel light and dark bands" along the far snowbank in the macro still. Cause: the lens points came from two dimensions of a five-dimensional R sequence, which at 24 samples fall on a few rows, so an edge far out of focus drew as about five stacked copies. The lens points of a set are now a sunflower spiral turned by the picture's own angle (24 different offsets along every direction; the largest gap between neighbours is 0.29 of the lens radius over all directions); one sample keeps the old point. tsc clean, 408 tests pass. A macro still at `final` is drawing to check it.
+- 17:05 UTC: `base_fixer` reported that with the corrected reference camera the base projects 13 px (lip) to 34 px (foot) lower than the approved image. Known and already booked: decision 40 (the picture asks for a base of about 31 mm; 33 is the lowest that keeps `framing.heroFillMin`), decision 57 and item 6 for Brandon. Nothing changes.
+- 17:04 UTC: Status 44 posted (shown inline): the hero still at rest of Round 4's build at `final` tier as the jury saw it, and the strokes sheet with the bloom.
