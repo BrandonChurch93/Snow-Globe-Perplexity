@@ -1,0 +1,4 @@
+01-blockout-camera-pair.jpg: Blockout pack, one camera picture. Marked a is the approved winter image, marked b is the hero camera on the placeholder globe at draft tier.
+02-match-crop-grids.jpg: Match pack, the two crop grids of one pair put side by side for this look only. Left is the approved image resized to the size of the still, right is the still at native size. Tiles are numbered.
+03-film-frames-grid.jpg: The whole pack for the film, first grid of the film's judged frames in order at draft tier, numbered.
+04-sharpness-comparison.jpg: The comparison sheet measure M3 reads its regions from, winter-rest at final tier beside the approved image.
