@@ -16,6 +16,8 @@ const WALL2 = WALL * WALL
 const NEAR = 3
 const INV_NEAR = 1 / NEAR
 const SLIP = 0.35
+const COARSE = 3
+const INV_COARSE = 1 / COARSE
 const REACH = 12
 const FLOOR = 2
 const INV_RAMP = 1 / (REACH - FLOOR)
@@ -227,6 +229,8 @@ interface Grid {
   top: number
   inv: number
   data: Float32Array
+  far: Float32Array
+  fn: number
   source: SdfGrid
   park: [number, number, number]
 }
@@ -251,8 +255,28 @@ export function parkPoint(source: SdfGrid): [number, number, number] {
   return park
 }
 
+function farOf(source: SdfGrid, fn: number): Float32Array {
+  const n = source.n
+  const d = source.data
+  const far = new Float32Array(fn * fn * fn)
+  for (let c = 0; c < far.length; c++) {
+    const x0 = (c % fn) * COARSE
+    const y0 = (Math.floor(c / fn) % fn) * COARSE
+    const z0 = Math.floor(c / (fn * fn)) * COARSE
+    let least = Infinity
+    for (let z = z0; z <= z0 + COARSE && z < n; z++) {
+      for (let y = y0; y <= y0 + COARSE && y < n; y++) {
+        for (let x = x0; x <= x0 + COARSE && x < n; x++) least = Math.min(least, d[x + n * (y + n * z)]!)
+      }
+    }
+    far[c] = least
+  }
+  return far
+}
+
 function gridOf(source: SdfGrid): Grid {
-  return { n: source.n, nn: source.n * source.n, scale: (source.n - 1) / source.sizeMm, half: source.sizeMm / 2, top: source.n - 1.001, inv: 1 / sdfSlope(source), data: source.data, source, park: parkPoint(source) }
+  const fn = Math.ceil((source.n - 1) / COARSE)
+  return { n: source.n, nn: source.n * source.n, scale: (source.n - 1) / source.sizeMm, half: source.sizeMm / 2, top: source.n - 1.001, inv: 1 / sdfSlope(source), data: source.data, far: farOf(source, fn), fn, source, park: parkPoint(source) }
 }
 
 export class ParticleEngine {
@@ -969,6 +993,7 @@ export class ParticleEngine {
     const eA = this.nowIx
     const A = this.grid(eA)
     const B = this.window === 1 ? this.grid(this.swapTo) : A
+    const reach = REACH * (A.inv > B.inv ? A.inv : B.inv)
     const blend = calm ? K_BLEND_CALM : K_BLEND
     const grip = calm ? K_GRIP_CALM : K_GRIP
     const pos = this.pos
@@ -1035,9 +1060,9 @@ export class ParticleEngine {
       let touch = false
       let dirty = false
       let lay = 0
-      const disp = (Math.abs(vx) + Math.abs(vy) + Math.abs(vz)) * span
+      let fresh = false
       let room = clear[i]!
-      if (room <= (due && disp < REACH ? REACH : disp)) {
+      if (room <= (due ? reach : 0)) {
         const G = era[i] === eA ? A : B
         const gn = G.n
         const data = G.data
@@ -1048,51 +1073,61 @@ export class ParticleEngine {
         fx = fx < 0 ? 0 : fx > top ? top : fx
         fy = fy < 0 ? 0 : fy > top ? top : fy
         fz = fz < 0 ? 0 : fz > top ? top : fz
-        const ix = fx | 0
-        const iy = fy | 0
-        const iz = fz | 0
-        const tx = fx - ix
-        const ty = fy - iy
-        const tz = fz - iz
-        const p0 = ix + gn * (iy + gn * iz)
-        const p4 = p0 + G.nn
-        const va = data[p0]!
-        const vb = data[p0 + 1]!
-        const vc = data[p0 + gn]!
-        const ve = data[p0 + gn + 1]!
-        const vf = data[p4]!
-        const vg = data[p4 + 1]!
-        const vh = data[p4 + gn]!
-        const vm = data[p4 + gn + 1]!
-        const x00 = va + (vb - va) * tx
-        const x10 = vc + (ve - vc) * tx
-        const x01 = vf + (vg - vf) * tx
-        const x11 = vh + (vm - vh) * tx
-        const y0 = x00 + (x10 - x00) * ty
-        const y1 = x01 + (x11 - x01) * ty
-        d = y0 + (y1 - y0) * tz
         lay = layer[i]!
-        room = (d - lay - SKIN) * G.inv
-        if (d < (due && disp < REACH ? REACH : lay + SKIN + disp)) {
-          const gx = ((vb - va) * (1 - ty) + (ve - vc) * ty) * (1 - tz) + ((vg - vf) * (1 - ty) + (vm - vh) * ty) * tz
-          const gy = (x10 - x00) * (1 - tz) + (x11 - x01) * tz
-          const gz = y1 - y0
-          const gl = Math.sqrt(gx * gx + gy * gy + gz * gz)
-          if (gl > 1e-9) {
-            nx = gx / gl
-            ny = gy / gl
-            nz = gz / gl
-          } else ny = 1
-          near = true
-          if (d < lay + SKIN) {
-            touch = true
-            if (d < lay) {
-              const push = lay - d
-              x += nx * push
-              y += ny * push
-              z += nz * push
-              d = lay
-              room = 0
+        fresh = true
+        if (due) {
+          const open = G.far[((fx * INV_COARSE) | 0) + G.fn * (((fy * INV_COARSE) | 0) + G.fn * ((fz * INV_COARSE) | 0))]!
+          if (open >= REACH) {
+            room = (open - lay - SKIN) * G.inv
+            fx = -1
+          }
+        }
+        if (fx >= 0) {
+          const ix = fx | 0
+          const iy = fy | 0
+          const iz = fz | 0
+          const tx = fx - ix
+          const ty = fy - iy
+          const tz = fz - iz
+          const p0 = ix + gn * (iy + gn * iz)
+          const p4 = p0 + G.nn
+          const va = data[p0]!
+          const vb = data[p0 + 1]!
+          const vc = data[p0 + gn]!
+          const ve = data[p0 + gn + 1]!
+          const vf = data[p4]!
+          const vg = data[p4 + 1]!
+          const vh = data[p4 + gn]!
+          const vm = data[p4 + gn + 1]!
+          const x00 = va + (vb - va) * tx
+          const x10 = vc + (ve - vc) * tx
+          const x01 = vf + (vg - vf) * tx
+          const x11 = vh + (vm - vh) * tx
+          const y0 = x00 + (x10 - x00) * ty
+          const y1 = x01 + (x11 - x01) * ty
+          d = y0 + (y1 - y0) * tz
+          room = (d - lay - SKIN) * G.inv
+          if (due ? d < REACH : room < Math.sqrt(vx * vx + vy * vy + vz * vz) * DT) {
+            const gx = ((vb - va) * (1 - ty) + (ve - vc) * ty) * (1 - tz) + ((vg - vf) * (1 - ty) + (vm - vh) * ty) * tz
+            const gy = (x10 - x00) * (1 - tz) + (x11 - x01) * tz
+            const gz = y1 - y0
+            const gl = Math.sqrt(gx * gx + gy * gy + gz * gz)
+            if (gl > 1e-9) {
+              nx = gx / gl
+              ny = gy / gl
+              nz = gz / gl
+            } else ny = 1
+            near = true
+            if (d < lay + SKIN) {
+              touch = true
+              if (d < lay) {
+                const push = lay - d
+                x += nx * push
+                y += ny * push
+                z += nz * push
+                d = lay
+                room = 0
+              }
             }
           }
         }
@@ -1325,7 +1360,8 @@ export class ParticleEngine {
           room = 0
         }
       }
-      clear[i] = room - (dirty ? (Math.abs(vx) + Math.abs(vy) + Math.abs(vz)) * span : disp)
+      if (due) clear[i] = room - Math.sqrt(vx * vx + vy * vy + vz * vz) * (lazy ? span + STORM_H : STORM_H)
+      else if (fresh) clear[i] = room - Math.sqrt(vx * vx + vy * vy + vz * vz) * DT * (STORM_MASK + 1 - ((i + n) & STORM_MASK))
       const r2 = x * x + y * y + z * z
       if (r2 > WALL2) {
         const vr = (vx * x + vy * y + vz * z) / r2
