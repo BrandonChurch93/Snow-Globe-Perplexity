@@ -223,34 +223,38 @@ export function shade(g, f) {
 }
 
 export function pillow(w, h, d, su, sv, R, o = {}) {
-  const k = o.square ?? 3.4
+  const k = o.square ?? 3.2 + 3.6 * R()
   const g = new THREE.PlaneGeometry(2, 2, su, sv)
   const P = g.getAttribute('position')
-  const sh = (R() - 0.5) * (o.shear ?? 0.14)
-  const sk = (R() - 0.5) * (o.shear ?? 0.14) * 0.7
+  const sh = (R() - 0.5) * (o.shear ?? 0.26)
+  const sk = (R() - 0.5) * (o.shear ?? 0.26) * 0.8
   const off = R() * 97
-  const lump = o.lump ?? 0.22
-  const tx = (R() - 0.5) * 0.3
-  const ty = (R() - 0.5) * 0.3
+  const lump = o.lump ?? 0.3
+  const tx = (R() - 0.5) * (o.tilt ?? 0.5)
+  const ty = (R() - 0.5) * (o.tilt ?? 0.5)
+  const edge = o.edge ?? 5
+  const lobes = [0, 1, 2].map((i) => ({ n: 3 + i, a: (o.wobble ?? 0.075) * (0.5 + R()) * (i === 0 ? 1 : 0.7), p: R() * 6.2832 }))
   const col = new Float32Array(P.count * 3)
   for (let i = 0; i < P.count; i++) {
     let a = P.getX(i)
     let b = P.getY(i)
-    a = Math.sign(a) * (1 - Math.pow(1 - Math.abs(a), 1.6))
-    b = Math.sign(b) * (1 - Math.pow(1 - Math.abs(b), 1.6))
+    a = Math.sign(a) * (1 - Math.pow(1 - Math.abs(a), 1.7))
+    b = Math.sign(b) * (1 - Math.pow(1 - Math.abs(b), 1.7))
     const r = Math.min(1, Math.max(Math.abs(a), Math.abs(b)))
     const nk = Math.pow(Math.pow(Math.abs(a), k) + Math.pow(Math.abs(b), k), 1 / k) || 1
     let x = (a * r) / nk
     let y = (b * r) / nk
-    const wob = 1 + (o.wobble ?? 0.07) * noise(x * 1.9 + off, y * 1.9, off)
+    const ang = Math.atan2(y, x)
+    let wob = 1
+    for (const l of lobes) wob += l.a * Math.cos(l.n * ang + l.p)
     x *= wob
     y *= wob
     const x2 = x + y * sh
     const y2 = y + x * sk
-    let z = Math.sqrt(Math.max(0, 1 - Math.pow(r, 4)))
-    z *= 1 + lump * noise(x * 2.6 + off, y * 2.6 + 7, off + 3) + tx * x + ty * y
+    let z = Math.pow(Math.max(0, 1 - Math.pow(r, edge)), 0.55)
+    z *= 1 + lump * noise(x * 2.3 + off, y * 2.3 + 7, off + 3) + 0.5 * lump * noise(x * 5.1 + off, y * 5.1 + 3, off + 9) + tx * x + ty * y
     P.setXYZ(i, (x2 * w) / 2, (y2 * h) / 2, Math.max(0, z) * d)
-    const s = 0.34 + 0.66 * smooth(0, 0.75, z)
+    const s = 0.3 + 0.7 * smooth(0, 0.6, z)
     col.fill(s, i * 3, i * 3 + 3)
   }
   g.setAttribute('color', new THREE.BufferAttribute(col, 3))

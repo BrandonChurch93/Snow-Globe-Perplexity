@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { afterLight } from '../core/chunks/light'
 import { stageMaterial, type Rgb } from '../core/materials'
 
 export interface GlowSource {
@@ -78,8 +79,7 @@ vec3 villageBump(vec3 pos, vec3 n, vec2 dH, float face) {
 }
 `
 
-export const STAGE_LIGHT_LINE = 'reflectedLight.indirectDiffuse += stageLit * material.diffuseContribution;'
-export const GLOW_LIGHT_LINE = 'reflectedLight.indirectDiffuse += (stageLit + vGlow * uGlowGain) * material.diffuseContribution;'
+export const NEAR_LIGHT = 'reflectedLight.indirectDiffuse += vGlow * uGlowGain * material.diffuseContribution;'
 
 const SURFACE_PARS = `
 ${BUMP_GLSL}
@@ -143,7 +143,7 @@ export function surfaceMaterial(o: { part: string; map: THREE.Texture; gain: THR
         .replace('#include <roughnessmap_fragment>', 'float roughnessFactor = villageRough;')
         .replace('#include <metalnessmap_fragment>', 'float metalnessFactor = villageMetal;')
         .replace('#include <normal_fragment_maps>', SURFACE_NORMAL)
-        .replace(STAGE_LIGHT_LINE, GLOW_LIGHT_LINE)
+      afterLight(shader, NEAR_LIGHT)
     },
   })
 }

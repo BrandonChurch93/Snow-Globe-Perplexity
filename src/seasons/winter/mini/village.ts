@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import { config } from '../../../config'
 import { COVER_GLSL, coverUniforms } from '../../../core/chunks/cover'
+import { afterLight } from '../../../core/chunks/light'
 import { stageMaterial, type Rgb } from '../../../core/materials'
 import { geometry, prepareModel } from '../../../core/models'
 import { texture } from '../../../core/textures'
@@ -9,7 +10,7 @@ import { GLOW, glowGeometry, glowMaterial, glowPiece } from '../../../miniature/
 import { MIRROR_GLSL, mirrorUniforms } from '../../../miniature/mirror'
 import { prepareVillage, tileMm, villageGeometry, villageGrain } from '../../../miniature/model'
 import { hangPoints, lampFlame, shrubDistance } from '../../../miniature/roof'
-import { BUMP_GLSL, GLOW_LIGHT_LINE, STAGE_LIGHT_LINE, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, withSurface, type Cover, type GlowSource } from '../../../miniature/surface'
+import { BUMP_GLSL, NEAR_LIGHT, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, withSurface, type Cover, type GlowSource } from '../../../miniature/surface'
 import { wispGeometry, wispMaterial } from '../../../miniature/wisp'
 import { anchors, cottage, cottagePoint, groundAt, moundSlope, pond, pondField, solidDistance } from '../../../scene/layout'
 import { gainOf } from '../../../scene/lightgrid'
@@ -23,10 +24,10 @@ const PART = `miniature-${season}`
 const LIGHT = `light-${season}`
 const ARRIVAL = `arrival-${season}`
 
-const LAMP = { power: 0.42, reachMm: 10, flicker: 0.05, cycles: 3, phase: 0.1 }
-const WINDOW = { power: 0.16, reachMm: 6, flicker: 0.1, cycles: 5, phase: 0.4 }
-const SIDE = { power: 0.1, reachMm: 6, flicker: 0.1, cycles: 4, phase: 0.75 }
-const BULB = { power: 0.012, reachMm: 4.5, flicker: 0.07, cycles: 2 }
+const LAMP = { power: 1.2, reachMm: 12, flicker: 0.05, cycles: 3, phase: 0.1 }
+const WINDOW = { power: 0.8, reachMm: 8, flicker: 0.1, cycles: 5, phase: 0.4 }
+const SIDE = { power: 0.6, reachMm: 7, flicker: 0.1, cycles: 4, phase: 0.75 }
+const BULB = { power: 0.18, reachMm: 4.5, flicker: 0.07, cycles: 2 }
 const NEAR = { bulb: { power: 0.9, reachMm: 0.85 }, lamp: { power: 1.1, reachMm: 3.4 }, pane: { power: 0.6, reachMm: 2 } }
 const MIRROR = { lamp: 9, pane: 1.4, bulb: 0.55, tight: 0.0016, wide: 0.028, wideShare: 0.07 }
 const COVER_GAIN = 0.12
@@ -34,23 +35,24 @@ const FRESH_RISE_MM = 0.3
 const SNOW_GRAIN_MM = 0.05
 const SNOW_LUMP_MM = 0.16
 const SPARK = 2.6
+const SNOW_WRAP = 0.6
 
 const bulbs = hangPoints()
 const flame = lampFlame()
 const potTop = cottagePoint(cottage.chimney.across - 0.2, cottage.chimney.top + 1.45, cottage.chimney.along + 0.1)
 
 export const innerLights: InnerLight[] = [
-  { at: flame, color: tones.lamp, ...LAMP },
-  { at: anchors.window, color: tones.room, ...WINDOW },
-  { at: anchors.sideWindow, color: tones.room, ...SIDE },
-  ...bulbs.map((at, i): InnerLight => ({ at, color: tones.bulb, power: BULB.power, reachMm: BULB.reachMm, flicker: BULB.flicker, cycles: BULB.cycles, phase: (i * 0.381966) % 1 })),
+  { at: flame, color: tones.lampLight, ...LAMP },
+  { at: anchors.window, color: tones.roomLight, ...WINDOW },
+  { at: anchors.sideWindow, color: tones.roomLight, ...SIDE },
+  ...bulbs.map((at, i): InnerLight => ({ at, color: tones.bulbLight, power: BULB.power, reachMm: BULB.reachMm, flicker: BULB.flicker, cycles: BULB.cycles, phase: (i * 0.381966) % 1 })),
 ]
 
 const near: GlowSource[] = [
-  { at: flame, color: tones.lamp, ...NEAR.lamp },
-  { at: anchors.window, color: tones.room, ...NEAR.pane },
-  { at: anchors.sideWindow, color: tones.room, ...NEAR.pane },
-  ...bulbs.map((at): GlowSource => ({ at, color: tones.bulb, ...NEAR.bulb })),
+  { at: flame, color: tones.lampLight, ...NEAR.lamp },
+  { at: anchors.window, color: tones.roomLight, ...NEAR.pane },
+  { at: anchors.sideWindow, color: tones.roomLight, ...NEAR.pane },
+  ...bulbs.map((at): GlowSource => ({ at, color: tones.bulbLight, ...NEAR.bulb })),
 ]
 
 const gain = { value: 1 }
@@ -133,15 +135,16 @@ diffuseColor.rgb *= ${glsl(tones.snow)} * (0.88 + 0.16 * snowT.r + 0.12 * (snowW
 }
 `,
         )
-        .replace(
-          STAGE_LIGHT_LINE,
-          `${GLOW_LIGHT_LINE}
+      afterLight(
+        shader,
+        `${NEAR_LIGHT}
 {
+  reflectedLight.directDiffuse += stageWrapped(geometryNormal, ${SNOW_WRAP.toFixed(2)}) * material.diffuseContribution;
   float snowTwinkle = fract(snowT.g * 61.7 + dot(normalize(vViewPosition), vec3(17.3, 31.7, 23.1)) + dot(normal, vec3(5.1, 3.3, 7.7)));
   float snowSpark = smoothstep(0.3, 0.9, snowT.g) * smoothstep(0.62, 1.0, snowTwinkle);
   reflectedLight.directSpecular += (reflectedLight.directDiffuse + reflectedLight.indirectDiffuse) * snowSpark * ${SPARK.toFixed(2)};
 }`,
-        )
+      )
     },
   })
 }
@@ -208,7 +211,7 @@ float iceRough = mix(0.09, 0.72, iceFrost);
 }
 `,
         )
-        .replace(STAGE_LIGHT_LINE, GLOW_LIGHT_LINE)
+      afterLight(shader, NEAR_LIGHT)
     },
   })
 }

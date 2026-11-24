@@ -19,9 +19,9 @@ const pick = (a) => a[Math.floor(R() * a.length)]
 const MORTAR = -0.5
 const T = (x, y, z) => new THREE.Matrix4().makeTranslation(x, y, z)
 
-const STONES = ['#b9a690', '#a69582', '#c6b6a0', '#9b8c7b', '#8d8073', '#b29c84', '#cbbfac', '#a39078', '#bfae9b'].map(lin)
-const ARCH = ['#c9baa3', '#bcab94', '#d2c5b0', '#b3a28c'].map(lin)
-const BRICKS = ['#7d4130', '#6c3528', '#8b4b36', '#5e2f25', '#74402f', '#834635'].map(lin)
+const STONES = ['#aea69b', '#9a938a', '#bcb5aa', '#8d877f', '#a39c91', '#c4bdb1', '#968f84', '#b3ab9e', '#857f77', '#a8a39b'].map(lin)
+const ARCH = ['#b9b2a6', '#aba498', '#c5beb2', '#a09a8e'].map(lin)
+const BRICKS = ['#9c8a7a', '#8b7b6d', '#a89685', '#7d6f63', '#938171', '#a08c7c', '#84766a'].map(lin)
 const SHINGLES = ['#5c4838', '#4e3d31', '#68523f', '#43352b', '#57483c'].map(lin)
 const LEAVES = ['#22401f', '#2d5226', '#1b3319', '#3a5f2c', '#27481f'].map(lin)
 const MORTAR_C = lin('#2e2824')
@@ -46,8 +46,8 @@ const leafSurf = [surf(KIND.leaf, 0.62), 0]
 const off = () => [R() * 7, R() * 7]
 
 function stone(W, x, y, w, h, o = {}) {
-  const d = (o.depth ?? 0.5) * (0.8 + 0.45 * R())
-  const g = pillow(w, h, d, o.su ?? (w > 2.3 ? 7 : 6), o.sv ?? 4, R, o.pillow)
+  const d = (o.depth ?? 0.46) * (0.7 + 0.6 * R())
+  const g = pillow(w, h, d, o.su ?? (w > 1.9 ? 6 : 5), o.sv ?? 4, R, o.pillow)
   const P = g.getAttribute('position')
   for (let i = 0; i < P.count; i++) {
     const px = P.getX(i) + x
@@ -55,17 +55,19 @@ function stone(W, x, y, w, h, o = {}) {
     if (o.rake) py = Math.min(py, o.rake(px))
     P.setXYZ(i, px, py, P.getZ(i) + MORTAR + (o.lift ?? 0))
   }
-  const tone = mul3(pick(o.tones ?? STONES), 0.8 + 0.36 * R())
+  const tone = mul3(pick(o.tones ?? STONES), 0.74 + 0.46 * R())
   const c = mix3(tone, DIRT, o.dirt === false ? 0 : smooth(1.4, -1.4, y) * 0.5)
   solid.add(g, { matrix: W.M, color: c, surf: stoneSurf(), uv: planar(W.U, W.V), uvOffset: off() })
 }
 
 function wall(W, region, o = {}) {
   const rowH = o.rowH ?? 1.08
-  const rowJ = o.rowJ ?? 0.32
-  const wide = o.wide ?? 1.85
-  const wideJ = o.wideJ ?? 0.9
-  const gap = o.gap ?? 0.15
+  const rowJ = o.rowJ ?? 0.4
+  const wide = o.wide ?? 1.32
+  const wideJ = o.wideJ ?? 0.5
+  const gap = o.gap ?? 0.12
+  const stack = o.stack ?? 0.16
+  const drift = o.drift ?? 0.09
   let y = region.y0
   while (y < region.y1 - 0.3) {
     let h = rowH + (R() - 0.5) * rowJ
@@ -97,12 +99,17 @@ function wall(W, region, o = {}) {
     }
     for (const [a, b] of spans) {
       const n = Math.max(1, Math.round((b - a) / (wide + (R() - 0.5) * wideJ)))
-      const ws = Array.from({ length: n }, () => 0.62 + 0.76 * R())
+      const ws = Array.from({ length: n }, () => 0.55 + 0.9 * R())
       const sum = ws.reduce((s, v) => s + v, 0)
       let x = a
       for (let i = 0; i < n; i++) {
         const w = (ws[i] / sum) * (b - a)
-        stone(W, x + w / 2, ym, w - gap, h - gap, { ...o.stone, rake: region.rake })
+        const up = (R() - 0.5) * 2 * drift
+        if (w > 0.95 && h > 0.9 && R() < stack) {
+          const cut = h * (0.42 + 0.16 * R())
+          stone(W, x + w / 2, y + cut / 2, w - gap, cut - gap, { ...o.stone, rake: region.rake })
+          stone(W, x + w / 2, y + cut + (h - cut) / 2, w - gap, h - cut - gap, { ...o.stone, rake: region.rake })
+        } else stone(W, x + w / 2, ym + up, w - gap, h - gap + (R() - 0.5) * drift, { ...o.stone, rake: region.rake })
         x += w
       }
     }
@@ -268,7 +275,7 @@ wall(left, { x0: -C.halfLength - 0.3, x1: C.halfLength + 0.3, y0: BASE, y1: C.wa
 mortar(left, -C.halfLength, C.halfLength, BASE, C.wall + 0.1, false)
 windowAt(left, { x: side.along, sill: side.sill, width: side.width, height: side.height }, paneSide)
 
-const far = { stone: { su: 3, sv: 3 }, wide: 2.2, rowH: 1.25 }
+const far = { stone: { su: 2, sv: 2 }, wide: 2.6, rowH: 1.5, stack: 0 }
 wall(right, { x0: -C.halfLength - 0.3, x1: C.halfLength + 0.3, y0: BASE, y1: C.wall + 0.1 }, far)
 mortar(right, -C.halfLength, C.halfLength, BASE, C.wall + 0.1, false)
 wall(rear, { x0: -C.halfWidth - 0.3, x1: C.halfWidth + 0.3, y0: BASE, y1: C.wall + C.rise - 0.2, top: gableTop, rake }, far)
@@ -347,7 +354,7 @@ const stackBase = C.wall + 2.5
 const stackTop = ch.top - 0.95
 for (const [k, f] of chimneyFaces.entries()) {
   const W = { M: f.M.clone().multiply(T(0, 0, 0.36)), U: f.U, V: f.V }
-  wall(W, { x0: -f.half - 0.12, x1: f.half + 0.12, y0: stackBase, y1: stackTop }, { rowH: 0.62, rowJ: 0.06, wide: 1.25, wideJ: 0.25, gap: 0.11, stone: { depth: 0.19, su: 3, sv: 2, tones: BRICKS, dirt: false, pillow: { square: 7, shear: 0.04, wobble: 0.03, lump: 0.3 } } })
+  wall(W, { x0: -f.half - 0.12, x1: f.half + 0.12, y0: stackBase, y1: stackTop }, { rowH: 0.66, rowJ: 0.1, wide: 1.05, wideJ: 0.3, gap: 0.1, stack: 0, drift: 0.03, stone: { depth: 0.24, su: 3, sv: 3, tones: BRICKS, dirt: false, pillow: { square: 6, shear: 0.07, wobble: 0.035, lump: 0.34, tilt: 0.3 } } })
   const back = new THREE.PlaneGeometry(2 * f.half, stackTop - stackBase, 4, 8).applyMatrix4(T(0, (stackTop + stackBase) / 2, MORTAR + 0.04))
   shade(back, (x, y) => 0.8 + 0.3 * noise(x * 2, y * 2, k))
   solid.add(back, { matrix: W.M, color: lin('#3d342f'), surf: [surf(KIND.stone, 0.95), 0], uv: planar(f.U, f.V), uvOffset: off(), renormal: true })
@@ -361,7 +368,7 @@ crown(2 * ch.half + 0.75, 2 * ch.halfAlong + 0.75, 0.5, stackTop + 0.22, lin('#8
 crown(2 * ch.half + 0.3, 2 * ch.halfAlong + 0.3, 0.42, stackTop + 0.64, lin('#7b4233'), 0.12)
 const pot = new THREE.LatheGeometry([[0.36, 0], [0.5, 0.05], [0.52, 0.3], [0.44, 0.45], [0.42, 1.25], [0.52, 1.35], [0.53, 1.55], [0.4, 1.6], [0.34, 1.45], [0.3, 0.2]].map(([x, y]) => new THREE.Vector2(x, y)), 14)
 shade(pot, (x, y, z) => 0.75 + 0.35 * noise(x * 3, y * 2, z * 3))
-solid.add(pot, { matrix: T(...P3(ch.across - 0.2, stackTop + 0.82, ch.along + 0.1)), color: lin('#3b2b25'), surf: [surf(KIND.stone, 0.7), 0], uvOffset: off(), renormal: true })
+solid.add(pot, { matrix: T(...P3(ch.across - 0.2, stackTop + 0.82, ch.along + 0.1)), color: lin('#1f2023'), surf: [surf(KIND.iron, 0.5), 0], uvOffset: off(), renormal: true })
 
 const lampM = new THREE.Matrix4().makeRotationY(RF.LAMP.yaw).setPosition(...RF.lampFoot())
 const post = new THREE.LatheGeometry(

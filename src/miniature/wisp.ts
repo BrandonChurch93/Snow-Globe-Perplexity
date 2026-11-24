@@ -109,7 +109,7 @@ void main() {
   float body = pow(abs(dot(normalize(vN), normalize(vV))), 1.7);
   float along = smoothstep(0.0, 0.05, t) * pow(1.0 - t, 1.35);
   float a = clamp(body * along * (0.35 + 1.1 * n) * ${strength.toFixed(3)}, 0.0, 1.0);
-  vec3 lit = uVeilLight * 1.6 + stageGrid(vStageLocal) * 0.9;
+  vec3 lit = stageCold(vStageLocal) * 2.2 + stageGrid(vStageLocal) * 1.2;
   vec3 col = ${`vec3(${tint[0].toFixed(4)}, ${tint[1].toFixed(4)}, ${tint[2].toFixed(4)})`} * lit;
   float fog = stageVeil(vStageAux.x);
   gl_FragColor = vec4(stageFogged(col, stageGrid(vStageLocal), fog), a);
