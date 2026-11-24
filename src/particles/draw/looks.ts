@@ -15,7 +15,7 @@ export interface KindLook {
 }
 
 const LOOKS: Record<string, KindLook> = {
-  flake: { shape: SHAPE.cluster, size: 0.95, body: 0.85, flash: 0, real: true },
+  flake: { shape: SHAPE.cluster, size: 1.3, body: 0.85, flash: 0, real: true },
   glitter: { shape: SHAPE.mirror, size: 1.15, body: 0.3, flash: 5.5, real: true },
 }
 
@@ -24,8 +24,10 @@ const PLAIN: KindLook = { shape: SHAPE.soft, size: 1, body: 1, flash: 0, real: f
 export const lookOf = (kind: string): KindLook => LOOKS[kind] ?? PLAIN
 
 export const LENS_LOOK = {
-  nearGain: 4,
-  farGain: 0.12,
+  nearGain: 2.5,
+  farGain: 0.5,
+  glassDiscPx: 10,
+  glassFrom: 0.78,
   maxBlurPx: 60,
   farShrink: 0.36,
   maxStreakPx: 110,
@@ -48,14 +50,16 @@ export const LIGHT_LOOK = {
   grid: 1.9,
   veilShare: 0.7,
   lampFlash: 9,
-  keyFloor: 0.55,
-  keySide: 1.7,
+  keyFloor: 1.6,
+  keySide: 4.5,
+  cardShare: 2.5,
   skyTilt: 0.25,
 }
 
 export const LYING_LOOK = {
   flat: 0.22,
-  size: 0.6,
+  size: 0.45,
+  shade: 0.55,
   lobe: 0.72,
   mergeFromMm: 0.3,
   mergeToMm: 2.2,
@@ -74,9 +78,9 @@ export const STREAK_REACH = 1.5
 export const BLUR_HOLD = 0.62
 export const BLUR_STRICT_FROM_PX = 5
 export const BLUR_STRICT_TO_PX = 24
-export const SIZE_LOW = 0.22
-export const SIZE_HIGH = 1.7
-export const SIZE_SKEW = 1.8
+export const SIZE_LOW = 0.25
+export const SIZE_HIGH = 2.4
+export const SIZE_SKEW = 2.2
 export const STRETCH_LOW = 0.1
 export const STRETCH_HIGH = 1.5
 export const GLITTER_STREAK = 0.5

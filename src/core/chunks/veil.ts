@@ -43,8 +43,8 @@ export const VEIL_LOOK = {
   bankEvenLow: 0.35,
   axis: [0, 0.08, 1] as const,
   centreMm: [-26, 15, 0] as const,
-  keyShare: 1.9,
-  keyFloor: 0.45,
+  keyShare: 3.2,
+  keyFloor: 0.7,
   shadow: 0.5,
   bankShadow: 0.05,
   ambientShare: 1,
@@ -181,7 +181,8 @@ vec3 veilLit(vec3 p, vec3 field) {
   float low = field.y / max(field.x + field.y, 1e-6);
   float packed = mix(1.0, mix(${n(L.bankShade)}, 1.0, smoothstep(${n(L.bankShadeFrom)}, ${n(L.bankShadeTo)}, field.y / max(uVeilBank.z, 1e-6))), low);
   vec3 toward;
-  return stageSoftIn(p) * ${n(L.ambientShare)} + stageKeyIn(p, toward) * (uRigPoint.x * ${n(L.keyShare)} * packed * (uVeilKey.w + (1.0 - uVeilKey.w) * dim)) + stageGrid(p) * mix(${n(L.gridShare)}, ${n(L.bankGridShare)}, low);
+  vec3 card = uRigCardCol * (uRigInside.x * uRigCard.w * stageGridOpen(p));
+  return stageSoftIn(p) * ${n(L.ambientShare)} + (stageKeyIn(p, toward) + card) * (uRigPoint.x * ${n(L.keyShare)} * packed * (uVeilKey.w + (1.0 - uVeilKey.w) * dim)) + stageGrid(p) * mix(${n(L.gridShare)}, ${n(L.bankGridShare)}, low);
 }
 vec4 veilPath(vec3 eye, vec3 placed, vec3 world, float path) {
   float thin = (uVeil.a + uVeilBank.z) * path;

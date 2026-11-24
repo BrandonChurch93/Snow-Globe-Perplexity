@@ -2,7 +2,7 @@ import { COVER_GLSL } from '../../core/chunks/cover'
 import { LIGHT_FRAG_PARS } from '../../core/chunks/light'
 import { VEIL_GLSL } from '../../core/chunks/veil'
 import { viewCode } from '../../diagnostics/views'
-import { BLUR_HOLD, BLUR_STRICT_FROM_PX, BLUR_STRICT_TO_PX, EDGE_DISC, EDGE_HIGH, EDGE_LOW, GLITTER_STREAK, GLINT_HIGH, GLINT_LOW, LAMPS, LIGHT_LOOK, LOBE_CORE, LYING_LOOK, MAX_KINDS, PIXEL_SIGMA2, SIZE_HIGH, SIZE_LOW, SIZE_SKEW, STREAK_HOLD, STORM_SHARP_SHARE, STORM_SOFT, STREAK_REACH, STREAK_TAPER, STRETCH_HIGH, STRETCH_LOW } from './looks'
+import { BLUR_HOLD, BLUR_STRICT_FROM_PX, BLUR_STRICT_TO_PX, EDGE_DISC, EDGE_HIGH, EDGE_LOW, GLITTER_STREAK, GLINT_HIGH, GLINT_LOW, LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_CORE, LYING_LOOK, MAX_KINDS, PIXEL_SIGMA2, SIZE_HIGH, SIZE_LOW, SIZE_SKEW, STREAK_HOLD, STORM_SHARP_SHARE, STORM_SOFT, STREAK_REACH, STREAK_TAPER, STRETCH_HIGH, STRETCH_LOW } from './looks'
 
 const MEAN_LOBE = 0.42
 const n = (v: number) => (Number.isInteger(v) ? v.toFixed(1) : String(v))
@@ -119,7 +119,8 @@ export const VERT_MAIN = `
   float spread = shape > 0.5 && shape < 1.5 ? mix(${n(SIZE_LOW)}, ${n(SIZE_HIGH)}, pow(h2.w, ${n(SIZE_SKEW)})) : 1.0;
   float rPx = aData.x * look.y * spread * uPoint.y * mag / zImg * shrink * mix(1.0, ${n(LYING_LOOK.size)}, lying);
   float coc = uAperture.w * uPoint.y * (1.0 / zImg - uAperture.z);
-  float blur = uBlur.z * (1.0 - exp(-(coc > 0.0 ? coc * uBlur.x : -coc * uBlur.y) / uBlur.z)) * afloat;
+  float byGlass = smoothstep(${n(LENS_LOOK.glassFrom)}, 1.0, depth);
+  float blur = uBlur.z * (1.0 - exp(-((coc > 0.0 ? coc * uBlur.x : -coc * uBlur.y) + uTone.w * byGlass * byGlass) / uBlur.z)) * afloat;
   vec3 rimAxis = cross(normalize(placed.xyz - eye), uLensCentre - eye);
   float rim = on > 0.5 ? 1.0 - smoothstep(0.9, 0.985, length(rimAxis) / R) : 1.0;
 
@@ -177,7 +178,16 @@ export const VERT_MAIN = `
 
   vec3 keyTo;
   vec3 keyIn = stageKeyIn(nowL, keyTo);
-  vec3 base = stageSoftIn(nowL) + stageGrid(nowL) * uTone.y;
+  vec3 gridCol;
+  vec3 gridTo;
+  float gridAir;
+  float gridShade;
+  stageGridLit(nowL, gridCol, gridTo, gridAir, gridShade);
+  float gridLen = length(gridTo);
+  float gridFace = mix(uGridShade.x, stageWrap(gridTo.y / max(gridLen, 1e-4), uGridShade.y), min(gridLen, 1.0));
+  vec3 cardIn = uRigCardCol * (uRigInside.x * uRigCard.w * mix(uGridShade.w, 1.0, gridAir));
+  float cardFace = stageWrap((uLightFrame * uRigCardDir).y, uRigCard.x) * 0.31831;
+  vec3 base = stageSoftIn(nowL) + gridCol * mix(uTone.y, gridFace, lying) + cardIn * mix(uRigPoint.x * ${n(LIGHT_LOOK.cardShare)}, cardFace, lying);
   vec3 toEye = normalize((uGlobeInv * vec4(eye, 1.0)).xyz - nowL);
   vec3 face = lying > 0.5 ? normalize(vec3(0.0, 1.0, 0.0) + uLimit.w * tilt) : pointTurn(normalize(cross(axis, normalize(tilt + 1e-3))), axis, ca, sa);
   float glints = shape > 1.5 ? 1.0 : 0.0;
@@ -284,7 +294,7 @@ void main() {
   float kd = stageWrap(nk, uTone.x);
   float keyShare = mix(${n(LIGHT_LOOK.keyFloor)} + ${n(LIGHT_LOOK.keySide)} * kd * kd, stageWrap(nk, uRigInside.z) * 0.31831 / max(uRigPoint.x, 1e-3), lying);
   vec3 light = vGrid.rgb * (1.0 + ${n(LIGHT_LOOK.skyTilt)} * dot(nv, upV)) + vDom.rgb * keyShare;
-  vec3 col = k.rgb * light;
+  vec3 col = k.rgb * light * mix(1.0, ${n(LYING_LOOK.shade)}, lying);
   col = mix(col, uVeil.rgb * vFog.rgb, vFog.a * mix(uTone.z, 1.0, lying));
   col += flash * k.rgb * k.a;
   gl_FragColor = vec4(col * cover, cover);
