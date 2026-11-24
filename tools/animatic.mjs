@@ -22,7 +22,7 @@ const LEVEL_STEP = 1.25
 const LEVEL_MIN_RATIO = 1.02
 const FONT = 'DejaVu Sans, Liberation Sans, Noto Sans, Helvetica, Arial, sans-serif'
 const ENCODERS = { h264: 'libx264' }
-// The encoder's output depends on its thread count, so it is pinned.
+// The encoder's bytes depend on its thread count, so it is pinned. A rate cap is left out for the same reason.
 const ENCODER_THREADS = '2'
 
 const cfg = loadConfig()
@@ -495,7 +495,7 @@ async function encode(render, file) {
       '-vf', 'scale=in_range=full:out_range=tv:out_color_matrix=bt709,format=yuv420p',
       '-c:v', encoder, '-preset', 'medium', '-pix_fmt', 'yuv420p',
       '-threads', ENCODER_THREADS, '-g', gop, '-sc_threshold', '0', '-force_key_frames', keys, '-x264-params', 'ipratio=1.0:pbratio=1.0',
-      '-b:v', `${kbps}k`, '-maxrate', `${kbps * 2}k`, '-bufsize', `${kbps * 2}k`,
+      '-b:v', `${kbps}k`,
       '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-color_range', 'tv',
       '-fflags', '+bitexact', '-flags:v', '+bitexact',
       '-movflags', '+faststart', '-f', cfg.export.container, file
