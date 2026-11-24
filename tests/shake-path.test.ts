@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 import { config, shots } from '../src/config'
 import { FRAME } from '../src/app/framing'
+import { poseOfRig, rigOf } from '../src/film/moves'
+import { sphereCentreHeightMm } from '../src/scene/framing'
 import { REST_POSE, SHAKE_CHANNELS, makeShake, shakeMotion, tiltSine, type GlobePose, type ShakeChannel } from '../src/shake/table'
 
 const s = config.shake
@@ -23,6 +25,12 @@ const PAD_MM = 0.05
 /** Two strokes are alike when they agree in length to within this share of `strokeMm` and in time to within this share of the longer one. */
 const UNLIKE_LENGTH = 0.04
 const UNLIKE_MOMENT = 0.05
+/** A globe in the air is still when the lens sees its glass move less than this share of the frame's width across three frames: 4 px of 1920, 80 px a second. */
+const STILL_SHARE = 4 / 1920
+/** What the lens must see of the strokes: the longest over the shortest, in length and in time, and the rise and fall of the glass as a share of the frame's height. */
+const SEEN_LENGTH = 1.25
+const SEEN_MOMENT = 1.5
+const SEEN_PUMP = 9 / 1080
 
 const film = shots.filter((shot) => shot.kind === 'shake').map((shot) => shot.id)
 const NAMES = ['test', ...config.seasons.map((season) => `test:${season}`), 'preroll', ...film, 'loop', ...Array.from({ length: FRAME.shakePaths }, (_, i) => `live-${i}`)]
@@ -31,6 +39,40 @@ const ANGULAR: ShakeChannel[] = ['tiltX', 'tiltZ']
 
 const rimGap = (p: GlobePose): number => p.y - FOOT_MM * tiltSine(p.tiltX, p.tiltZ)
 const tiltOf = (p: GlobePose): number => Math.asin(Math.min(1, tiltSine(p.tiltX, p.tiltZ)))
+
+const HD = config.formats.hd
+const hero = poseOfRig(rigOf('hero'))
+/** A point of the globe through the `hero` lens at `hd`, in pixels: the globe turned and placed as the stage turns and places it. */
+function throughLens(g: GlobePose, x: number, y: number, z: number): { x: number; y: number } {
+  const e = hero.position
+  const a = hero.aim
+  const f = [a.x - e.x, a.y - e.y, a.z - e.z]
+  const fl = Math.hypot(f[0]!, f[1]!, f[2]!)
+  const [fx, fy, fz] = [f[0]! / fl, f[1]! / fl, f[2]! / fl]
+  const rl = Math.hypot(fz, fx)
+  const [rx, rz] = [-fz / rl, fx / rl]
+  const [ux, uy, uz] = [-rz * fy, rz * fx - rx * fz, rx * fy]
+  const k = Math.tan((hero.fovDeg * Math.PI) / 360)
+  const cz = Math.cos(g.tiltZ)
+  const sz = Math.sin(g.tiltZ)
+  const cx = Math.cos(g.tiltX)
+  const sx = Math.sin(g.tiltX)
+  const ax = x * cz - y * sz
+  const ay = x * sz + y * cz
+  const wx = ax + g.x - e.x
+  const wy = ay * cx - z * sx + g.y - e.y
+  const wz = ay * sx + z * cx + g.z - e.z
+  const X = wx * rx + wz * rz
+  const Y = wx * ux + wy * uy + wz * uz
+  const Z = wx * fx + wy * fy + wz * fz
+  return { x: HD.width / 2 + (X / Z / k) * (HD.height / 2), y: HD.height / 2 - (Y / Z / k) * (HD.height / 2) }
+}
+/** What the eye follows: the middle of the glass in pixels, and the roll of the globe about the lens axis in degrees, the top to the right counted up. */
+function seen(g: GlobePose): { x: number; y: number; roll: number } {
+  const glass = throughLens(g, 0, sphereCentreHeightMm, 0)
+  const foot = throughLens(g, 0, 0, 0)
+  return { x: glass.x, y: glass.y, roll: Math.atan2(glass.x - foot.x, foot.y - glass.y) * DEG }
+}
 
 describe('the shake path: a table in beats from the seed', () => {
   it('is written in the config beats and ends with the settle', () => {
@@ -161,7 +203,7 @@ describe('the shake path: continuous from the first frame of the lift to the end
 })
 
 describe('the shake path: a heavy thing in a hand', () => {
-  it('is gripped before it lifts: the foot rocks on the surface, then leaves it with effort and eases at the top, tilted back', () => {
+  it('is gripped before it lifts: the foot rocks on the surface, then leaves it with effort, drawn to the side away from the first stroke and rolled that way, and eases at the top', () => {
     for (const name of NAMES) {
       const m = shakeMotion(name)
       const path = makeShake(name)
@@ -183,9 +225,26 @@ describe('the shake path: a heavy thing in a hand', () => {
       expect(m.at('y', s.liftBeats, 2)).toBe(0)
       const top = path.poseAt(s.liftBeats)
       expect(top.y).toBeCloseTo(s.liftMm, 9)
-      expect(top.tiltX * DEG).toBeLessThan(-3)
+      expect(top.tiltX).toBeLessThan(0)
       expect(tiltOf(top) * DEG).toBeLessThanOrEqual(s.tiltDeg)
       expect(top.z).toBeLessThan(0)
+      // A lean away from the lens is not seen from the front. The pick up is a wind up: the lens sees the glass go to the side and roll that way.
+      const side = -Math.sign(m.plan.strokes[0]!.mm)
+      const rest = seen(REST_POSE)
+      let shift = 0
+      let roll = 0
+      let across = 0
+      for (let b = off; b <= s.liftBeats; b += FRAME_BEATS / 4) {
+        const p = path.poseAt(b)
+        const now = seen(p)
+        shift = Math.max(shift, side * p.x)
+        roll = Math.max(roll, side * now.roll)
+        across = Math.max(across, side * (now.x - rest.x))
+      }
+      expect(shift / s.strokeMm, `${name} wind up`).toBeGreaterThan(0.4)
+      expect(shift, `${name} wind up`).toBeLessThan(1.1 * m.plan.windMm)
+      expect(roll, `${name} roll in the lift`).toBeGreaterThan(0.5 * s.tiltDeg)
+      expect(across / HD.width, `${name} shift on screen`).toBeGreaterThan(0.04)
     }
   })
 
@@ -251,7 +310,7 @@ describe('the shake path: a heavy thing in a hand', () => {
     }
   })
 
-  it('rocks about two axes inside the config tilt, the tilt trailing the stroke and the second axis out of step with the first', () => {
+  it('rocks about two axes inside the config tilt: the top swings out with each stroke and trails it, and the second axis is out of step with the first', () => {
     for (const name of NAMES) {
       const m = shakeMotion(name)
       const path = makeShake(name)
@@ -263,6 +322,7 @@ describe('the shake path: a heavy thing in a hand', () => {
       expect(m.plan.peakTilt * DEG).toBeCloseTo(peak, 2)
       const from = s.liftBeats + 0.05
       const to = s.liftBeats + s.strokeBeats - 0.05
+      const place = (b: number): number => m.at('x', b) / Math.cos(th)
       const rate = (b: number): number => m.at('x', b, 1) / Math.cos(th)
       const whip = (b: number): number => m.at('tiltX', b) * Math.sin(th) - m.at('tiltZ', b) * Math.cos(th)
       const rock = (b: number): number => -m.at('tiltX', b) * Math.cos(th) - m.at('tiltZ', b) * Math.sin(th)
@@ -275,8 +335,9 @@ describe('the shake path: a heavy thing in a hand', () => {
         }
         return sum / n
       }
-      const lagOf = (f: (b: number) => number): { lag: number; fit: number; swing: number } => {
+      const lagOf = (f: (b: number) => number, drive: (b: number) => number): { lag: number; fit: number; swing: number } => {
         const mid = mean(f)
+        const base = mean(drive)
         let best = { lag: 0, fit: 0, swing: 0 }
         let lo = Infinity
         let hi = -Infinity
@@ -286,19 +347,30 @@ describe('the shake path: a heavy thing in a hand', () => {
         }
         for (let lag = -0.1; lag <= 0.2; lag += 0.001) {
           let fit = 0
-          for (let b = from; b <= to - 0.2; b += 0.002) fit += rate(b) * (f(b + lag) - mid)
+          for (let b = from; b <= to - 0.2; b += 0.002) fit += (drive(b) - base) * (f(b + lag) - mid)
           if (Math.abs(fit) > Math.abs(best.fit)) best = { lag, fit, swing: hi - lo }
         }
         return best
       }
-      const first = lagOf(whip)
-      const second = lagOf(rock)
+      // The first axis follows where the stroke has carried the globe, a moment late. The second follows how fast it is going, so the two are a quarter of a stroke apart.
+      const first = lagOf(whip, place)
+      const second = lagOf(rock, rate)
       expect(first.fit, name).toBeGreaterThan(0)
       expect(first.lag, `${name} whip lag`).toBeGreaterThan(0.012)
       expect(first.lag, `${name} whip lag`).toBeLessThan(0.12)
-      expect(first.swing * DEG, `${name} whip`).toBeGreaterThan(2)
+      expect(first.swing * DEG, `${name} whip`).toBeGreaterThan(1.4 * s.tiltDeg)
       expect(second.swing * DEG, `${name} second axis`).toBeGreaterThan(0.4)
-      expect(Math.abs(second.lag - first.lag), `${name} out of step`).toBeGreaterThan(0.004)
+      const midWhip = mean(whip)
+      const midRock = mean(rock)
+      let both = 0
+      let whips = 0
+      let rocks = 0
+      for (let b = from; b <= to; b += 0.002) {
+        both += (whip(b) - midWhip) * (rock(b) - midRock)
+        whips += (whip(b) - midWhip) ** 2
+        rocks += (rock(b) - midRock) ** 2
+      }
+      expect(Math.abs(both) / Math.sqrt(whips * rocks), `${name} out of step`).toBeLessThan(0.6)
     }
   })
 
@@ -338,14 +410,31 @@ describe('the shake path: a heavy thing in a hand', () => {
       const path = makeShake(name)
       const landing = path.parts.landing
       const strokesEnd = path.parts.strokesEnd
+      const touch = m.plan.touch
       let before = path.poseAt(strokesEnd).y
+      let swung = 0
       for (let b = strokesEnd + FRAME_BEATS / 4; b <= landing - FRAME_BEATS + 1e-9; b += FRAME_BEATS / 4) {
         const p = path.poseAt(b)
         expect(rimGap(p), `${name} at ${b}`).toBeGreaterThan(0)
         expect(p.y, `${name} at ${b}`).toBeLessThan(before)
-        expect(p.x).toBe(0)
+        if (b >= touch) expect(p.x, `${name} slides at ${b}`).toBe(0)
+        swung = Math.max(swung, -Math.sign(m.plan.strokes.at(-1)!.mm) * p.x)
         before = p.y
       }
+      // It comes down on an arc: one more, slower swing carries it across and back while it sinks, and it is over its mark when its edge meets the surface.
+      expect(swung / s.strokeMm, `${name} last swing`).toBeGreaterThan(0.3)
+      expect(m.plan.lastTurn.beat, `${name} last swing`).toBeGreaterThan(strokesEnd)
+      expect(m.plan.lastTurn.beat, `${name} last swing`).toBeLessThan(touch - 4 * FRAME_BEATS)
+      expect(path.poseAt(m.plan.lastTurn.beat).y, `${name} sinks through the swing`).toBeLessThan(s.liftMm - 0.25)
+      expect(touch).toBeGreaterThan(strokesEnd + 0.5 * s.setDownBeats)
+      expect(touch).toBeLessThan(landing - FRAME_BEATS)
+      // Faster and faster: it falls further in the last third of the way down than in the first two, and is at its fastest inside the last three frames before the edge meets the surface.
+      const third = (touch - strokesEnd) / 3
+      const fell = (from: number, to: number): number => path.poseAt(from).y - path.poseAt(to).y
+      expect(fell(strokesEnd + 2 * third, touch), `${name} speeds up`).toBeGreaterThan(fell(strokesEnd, strokesEnd + 2 * third))
+      let fastest = { beat: strokesEnd, v: 0 }
+      for (let b = strokesEnd; b <= touch; b += FRAME_BEATS / 8) if (-m.at('y', b, 1) > fastest.v) fastest = { beat: b, v: -m.at('y', b, 1) }
+      expect(touch - fastest.beat, `${name} fastest at the end`).toBeLessThan(3 * FRAME_BEATS)
       for (let b = landing - FRAME_BEATS; b < landing; b += 0.0005) {
         expect(rimGap(path.poseAt(b))).toBeGreaterThan(-PAD_MM)
         expect(m.at('y', b, 1)).toBeLessThan(0)
@@ -360,7 +449,7 @@ describe('the shake path: a heavy thing in a hand', () => {
     }
   })
 
-  it('settles as a heavy base does: it rocks over once, rattles out inside the settle and never leaves the surface again', () => {
+  it('settles as a heavy base does: one edge meets the surface first, the foot rolls flat onto the bar, rocks over once, rattles out inside the settle and never leaves the surface again', () => {
     for (const name of NAMES) {
       const m = shakeMotion(name)
       const path = makeShake(name)
@@ -369,6 +458,18 @@ describe('the shake path: a heavy thing in a hand', () => {
       expect(settle * BEAT_S).toBeCloseTo(s.landSettleSeconds, 12)
       const lean = (b: number): { x: number; z: number } => ({ x: m.at('tiltX', b), z: m.at('tiltZ', b) })
       const into = lean(landing - 0.02)
+      // One edge takes the load: at the touch the foot is tipped, toward the side the last swing came back from, and from there it stands on its rim and rolls flat.
+      const touch = m.plan.touch
+      const tipped = path.poseAt(touch)
+      expect(tiltOf(tipped) * DEG, `${name} edge first`).toBeGreaterThan(1.5)
+      expect(Math.sign(seen(tipped).roll), `${name} trailing edge`).toBe(Math.sign(m.plan.lastTurn.mm))
+      let flatter = tiltOf(tipped)
+      for (let b = touch + FRAME_BEATS / 4; b < landing; b += FRAME_BEATS / 4) {
+        const p = path.poseAt(b)
+        expect(Math.abs(rimGap(p)), `${name} at ${b}`).toBeLessThan(PAD_MM)
+        expect(tiltOf(p), `${name} at ${b}`).toBeLessThan(flatter)
+        flatter = tiltOf(p)
+      }
       let over = 0
       let overBeat = landing
       let late = 0
@@ -394,12 +495,95 @@ describe('the shake path: a heavy thing in a hand', () => {
       const peak = lean(overBeat)
       expect(peak.x * into.x + peak.z * into.z, `${name} rocks over to the other side`).toBeLessThan(0)
       expect(over, `${name} overshoot`).toBeGreaterThan(0.3)
-      expect(over, `${name} overshoot`).toBeLessThan(0.7)
+      expect(over, `${name} overshoot`).toBeLessThan(1.3)
       expect(m.plan.overshoot * DEG).toBeCloseTo(over, 1)
       expect(overBeat - landing).toBeLessThan(0.3 * settle)
       expect(late / over, `${name} dies`).toBeLessThan(0.12)
       expect(crossings, `${name} rattles`).toBeGreaterThanOrEqual(2)
       expect(tiltOf(path.poseAt(m.endBeat - 0.02)) * DEG).toBeLessThan(0.002)
+    }
+  })
+})
+
+describe('the shake path: as the hero lens sees it', () => {
+  it('is never still off the slab: from the foot leaving the surface to its edge meeting it again, no three frames pass in which the glass stays put', () => {
+    for (const name of NAMES) {
+      const m = shakeMotion(name)
+      const path = makeShake(name)
+      for (const phase of [0, 0.25, 0.5, 0.75]) {
+        let slowest = { beat: 0, moved: Infinity }
+        for (let b = m.plan.liftOff + phase * FRAME_BEATS; b + 3 * FRAME_BEATS <= m.plan.touch; b += FRAME_BEATS) {
+          let moved = 0
+          for (let k = 0; k < 3; k++) {
+            const one = seen(path.poseAt(b + k * FRAME_BEATS))
+            const two = seen(path.poseAt(b + (k + 1) * FRAME_BEATS))
+            moved += Math.hypot(two.x - one.x, two.y - one.y)
+          }
+          if (moved < slowest.moved) slowest = { beat: b, moved }
+        }
+        expect(slowest.moved / HD.width, `${name} from beat ${slowest.beat.toFixed(3)}`).toBeGreaterThan(STILL_SHARE)
+      }
+    }
+  })
+
+  it('makes strokes that differ on screen in length and in time, on an arc: low through the middle and carried up to each end', () => {
+    for (const name of NAMES) {
+      const m = shakeMotion(name)
+      const path = makeShake(name)
+      const turns = m.plan.strokes
+      let wind = { beat: m.plan.liftOff, x: seen(REST_POSE).x }
+      const side = Math.sign(turns[0]!.mm)
+      for (let b = m.plan.liftOff; b < turns[0]!.beat; b += FRAME_BEATS / 8) {
+        const x = seen(path.poseAt(b)).x
+        if (-side * x > -side * wind.x) wind = { beat: b, x }
+      }
+      const ends = [wind, ...turns.map((t) => ({ beat: t.beat, x: seen(path.poseAt(t.beat)).x }))]
+      const lengths = turns.map((_, k) => Math.abs(ends[k + 1]!.x - ends[k]!.x))
+      const moments = turns.map((_, k) => ends[k + 1]!.beat - ends[k]!.beat)
+      expect(Math.max(...lengths) / Math.min(...lengths), `${name} lengths on screen`).toBeGreaterThan(SEEN_LENGTH)
+      expect(Math.max(...moments) / Math.min(...moments), `${name} moments on screen`).toBeGreaterThan(SEEN_MOMENT)
+      expect(Math.min(...lengths) / HD.width, `${name} shortest stroke on screen`).toBeGreaterThan(0.08)
+      let high = Infinity
+      let low = -Infinity
+      let arcs = 0
+      for (let k = 1; k < turns.length; k++) {
+        const from = turns[k - 1]!.beat
+        const to = turns[k]!.beat
+        let dip = -Infinity
+        for (let b = from; b <= to; b += FRAME_BEATS / 8) {
+          const y = seen(path.poseAt(b)).y
+          dip = Math.max(dip, y)
+          high = Math.min(high, y)
+          low = Math.max(low, y)
+        }
+        if (dip - Math.max(seen(path.poseAt(from)).y, seen(path.poseAt(to)).y) > SEEN_PUMP * HD.height * 0.4) arcs++
+      }
+      expect((low - high) / HD.height, `${name} pump on screen`).toBeGreaterThan(SEEN_PUMP)
+      expect(arcs, `${name} strokes that swoop`).toBeGreaterThanOrEqual(turns.length - 2)
+    }
+  })
+
+  it('rolls about the lens axis toward the side it has swung to, furthest over just after each reversal and near the config tilt', () => {
+    for (const name of NAMES) {
+      const m = shakeMotion(name)
+      const path = makeShake(name)
+      let most = 0
+      for (const turn of m.plan.strokes) {
+        const side = Math.sign(turn.mm)
+        let peak = { beat: 0, roll: -Infinity }
+        for (let b = turn.beat - 3 * FRAME_BEATS; b <= turn.beat + 5 * FRAME_BEATS; b += FRAME_BEATS / 8) {
+          const roll = side * seen(path.poseAt(b)).roll
+          if (roll > peak.roll) peak = { beat: b, roll }
+        }
+        expect(peak.roll, `${name} roll at the turn at beat ${turn.beat.toFixed(3)}`).toBeGreaterThan(0.6 * s.tiltDeg)
+        // The first pull starts from the wind up with the wrist already coming over, so its roll peaks on the turn itself, to within half a frame; every later one trails its turn.
+        const first = turn === m.plan.strokes[0]
+        expect(peak.beat - turn.beat, `${name} roll trails the turn at beat ${turn.beat.toFixed(3)}`).toBeGreaterThan(first ? -0.5 * FRAME_BEATS : 0)
+        expect(peak.beat - turn.beat, `${name} roll trails the turn at beat ${turn.beat.toFixed(3)}`).toBeLessThan(3 * FRAME_BEATS)
+        most = Math.max(most, peak.roll)
+      }
+      expect(most, `${name} roll`).toBeGreaterThan(0.87 * s.tiltDeg)
+      expect(most, `${name} roll`).toBeLessThan(s.tiltDeg + 0.5)
     }
   })
 })
