@@ -84,7 +84,7 @@ export class GlobeStage implements Stage {
 
     this.slice = new THREE.Mesh(
       new THREE.CircleGeometry(innerRadiusMm, 96),
-      stageShader({ part: 'light-engine', inside: true, uniforms: { uSlice: { value: new THREE.Vector4() }, uSpin: { value: new THREE.Vector3() }, uSlosh: { value: new THREE.Vector3() } }, fragment: SLICE, params: { side: THREE.DoubleSide } }),
+      stageShader({ part: 'light-engine', standIn: false, inside: true, uniforms: { uSlice: { value: new THREE.Vector4() }, uSpin: { value: new THREE.Vector3() }, uSlosh: { value: new THREE.Vector3() } }, fragment: SLICE, params: { side: THREE.DoubleSide } }),
     )
     this.slice.visible = false
     inside.add(this.slice)
