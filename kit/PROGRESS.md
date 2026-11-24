@@ -5,7 +5,7 @@ The Builder's memory. Read it at the start of every task and after every compact
 ## Status
 
 - Build: in progress
-- Phase: 2
+- Phase: 3
 - Review: not reached
 - Review round: none
 - Review round step: none
@@ -37,16 +37,16 @@ Status 21 · 2026-11-24 08:27 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 08:27 UTC
-clock: phase 2, tick of 12.2 minutes
-phase 2: 5.43 h used of its 6.00 h box
-allowance (before the review): 6.61 h used of 36.00 h allowed
-all time before the review: 6.61 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 08:40 UTC
+clock: phase 3, tick of 0.2 minutes
+phase 3: 0.22 h used of its 11.00 h box
+allowance (before the review): 6.84 h used of 36.00 h allowed
+all time before the review: 6.84 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
-half point: reached
+half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 13
 ```
 
 ## Phases
@@ -55,8 +55,8 @@ minutes since the last status: 0
 | --- | --- | --- | --- | --- |
 | 0 · Ground truth | done | 2026-11-24 01:45 UTC | 2026-11-24 02:56 UTC | All eight gate lines met. G1, G2, G3, G4, G8, G9, G10 green at build `649783eb70c1c499`. Line by line in the session log at 02:56 |
 | 1 · The rough cut | done | 2026-11-24 02:56 UTC | 2026-11-24 03:04 UTC | D1 pass: `out/roughcut.mp4`, 960 x 540, 30 frames a second, 1800 frames. Pushed as `681b78b`, on the review page, Status 5 posted at 03:03 |
-| 2 · Engine and blockout | in progress | 2026-11-24 03:04 UTC | | |
-| 3 · The look lock | not started | | | |
+| 2 · Engine and blockout | done, at the limit of its blockout rounds | 2026-11-24 03:04 UTC | 2026-11-24 08:40 UTC | G1 to G12 and G14 green on the final build `b98352868abb52c6` (08:09), D2 and D3 green (08:24). R4 blockout: round 1 scored 5, round 2 scored 6 with no severe issue open; the bar is 7 and `quality.blockoutMaxRounds` is 2, so the limit was reached, not a pass. Open blockout issues are items 25 to 29, each carried to a named phase. The judged list is in this file. The preview is committed (`0866555`). Line by line in the session log at 08:40 |
+| 3 · The look lock | in progress | 2026-11-24 08:40 UTC | | |
 | 4 · The other seasons and the changes | not started | | | |
 | 5 · The whole globe, the soundtrack and the review | not started | | | |
 | 6 · The films and delivery | not started | | | |
@@ -534,6 +534,12 @@ Severe and major issues still open when a limit was reached: the unit, the still
 
 24. Same report, carried to Phase 5. The phone's landscape framing assumes a 60 px bar until the controls are measured, and was not rendered. The ridge's room in the spring move was proven by geometry and test; round 2's sheets show it in pictures since the thinning.
 
+25. Blockout round 2, part 2 (score 8, major, `set-B-02.jpg`, camera `macro`), carried to Phase 3. \"The lamp meets the snow almost on the frame edge and the bottom edge cuts the right side of the tree's foot.\" Its fix: aim slightly lower, keep the scale, check the corners again. Tried: the framing of items 16 and 18, which is at the limit of the corner check on the stand-in layout. Next: `macro` is framed again on the real miniature in the look lock, with items 18 and 19.
+26. Blockout round 2, part 2 (major, `set-C-02.jpg`, the phone screen), carried to Phase 5. \"The speaker icon straddles the pale outline of the reflected base.\" Its fix: move the sound control clear, or give it a small dark backing. Tried: nothing yet. Next: with the interface in Phase 5, where the mirror image is the real one.
+27. Blockout round 2, part 1 (score 6, major, `set-A-02.jpg`, the opening, frames 0 to 180), carried to the film's rounds in Phase 6. \"The pull-back eases in from rest instead of starting already moving and fast ... only about 15 percent of the zoom happens in the first 52 frames.\" `cut/SHOTS.md` asks for fast at first and easing to nothing, so the critic is right. Its fix: an ease out only, on the logarithm of the distance, frame 0 unchanged, about half the zoom by frame 52. Next: made in `src/film/moves.ts` at the start of Phase 3; it stays open until a critic sees the film's sheets again.
+28. Blockout round 2, part 1 (major, `set-A-04.jpg`, the spring hold, frames 928 to 1138), carried to the film's rounds in Phase 6. \"The tree crown and the top of the dome leave the top of the frame ... for about 3.5 s of the spring hold the miniature does not stay in the frame.\" Tried: decision 34 stopped the move 55 percent of the way to `base`, which kept the cottage's ridge and lost the crown. Its fix: raise the aim as the camera nears the base, and give up depth before cropping the miniature. Next: made with item 27 at the start of Phase 3; open until judged.
+29. Blockout round 2, part 1 (major, `set-A-03.jpg`, `-05`, `-07`, `-09`, every shake, worst 116 frames into each), carried to Phase 3. \"On the last hop before landing it comes within 2 px, about 1 percent of the frame height, so the globe nearly touches the top edge in all four shakes.\" Tried: decision 35 (`shake.liftMm` 13.5, hero aim 70.5). Its fix: lower the hop and the tilt peaks so the glass keeps about 5 percent of the frame height below the top edge. Next: the real shake of the look lock is built to that rule and measured on every frame at `hero`. Its second suggestion, pulling `hero` back, is not taken: `hero` is fitted to the approved winter image.
+
 ## Review items not done
 
 none
@@ -617,7 +623,7 @@ One line per round: its number, the unit, the commit it judged, each part ticked
 
 - Round 1 · blockout (Phase 2, the floor round) · judges commit `48afed3` · started 2026-11-24 06:36 UTC. Parts: [x] build · [x] machine checks (06:50: G1 to G12 and G14 green on the judged build `e4a8b9bdbc7a55ec`; D2 and D3 are red until step 14) · [x] measures (06:51: M1 and M6 on seven winter stills, 14 lines, 0 red) · [x] pack (06:55: 19 files in two parts, 0 parts missing; built at `b94e722`, which differs from `48afed3` only in `kit/` and `audio/` text) · [x] critic part 1 (06:57: 8, one severe issue on the spring hold) · [x] critic part 2 (07:08: 5, two severe and five major issues on five cameras and two screens) · [x] issues read (07:22: each of the eight issues has a fix under way or a decision; `SUMMARY.md` written) · [x] fixes (07:08 to 07:58, 50 of the 90 minutes allowed: decisions 34 and 35, the cameras `surface`, `interior`, `low` and `macro` framed again, 7 percent of room over the controls on the wide screens, every storm thinned within its first bar; merged as `9ade96d`) · [x] logged (open items 10 to 17, `scorecards/round-001/SUMMARY.md`)
 
-- Round 2 · blockout (Phase 2, the floor round; the last the config allows) · judges commit `9ade96d` · started 2026-11-24 07:57 UTC. Parts: [x] build · [x] machine checks (G1 to G12 and G14 green at 08:09; D2 and D3 wait for step 14) · [x] measures (M1 and M6 for winter at draft: 14 lines, none red) · [x] pack (19 files in two parts, none missing, 08:15) · [ ] critic part 1 · [ ] critic part 2 · [ ] issues read · [ ] logged
+- Round 2 · blockout (Phase 2, the floor round; the last the config allows) · judges commit `9ade96d` · started 2026-11-24 07:57 UTC. Parts: [x] build · [x] machine checks (G1 to G12 and G14 green at 08:09; D2 and D3 wait for step 14) · [x] measures (M1 and M6 for winter at draft: 14 lines, none red) · [x] pack (19 files in two parts, none missing, 08:15) · [x] critic part 1 (`claude_opus_5_5`, answered 08:38: 6, four major, none severe) · [x] critic part 2 (`gpt_6_2_astra`, answered 08:21: 8, two major, none severe) · [x] issues read · [x] logged (merged score 6 against a bar of 7, no severe issue open: round 2 does not pass, and it was the last blockout round; `scorecards/round-002/SUMMARY.md`; open items 25 to 29)
 
 ## Final scores
 
@@ -650,6 +656,8 @@ none
 - 2026-11-24 02:57 UTC: `dbe01e8` pushed. 03:01 UTC: `681b78b` pushed.
 
 - 2026-11-24 08:18 UTC: `366a1c8` pushed, the last push that went through. 08:24 UTC: the push of `0866555` failed with "could not read Username for 'https://github.com'", and again on three retries until 08:26. Cause as far as seen from here: the workspace no longer hands git and the GitHub CLI their sign-in (the session token is missing from the environment of every command since about 08:20; reading the public repo still works). Nothing in the repo or its history is wrong. Commits are kept locally, in order; the push is tried again at every commit, as AGENTS.md says for a failed push after Phase 0.
+
+- 2026-11-24 08:29 UTC: `9f84ed1` is on `main` at the remote (fast forward from `366a1c8`, two commits). Carried there by `repo_courier`, an agent on a sandbox VM whose git sign-in works: this workspace hands it a git bundle of its finished commits, the courier verifies the bundle, fast forwards and pushes, and changes nothing. This is how every push goes until the sign-in returns here; a direct push is still tried first at each commit.
 
 ## Session log
 
@@ -774,3 +782,8 @@ One entry per task: when it started, what it did, where it stopped.
 - 08:24 the push failed (see "Push log"). The build continues on local commits.
 
 - 08:27 Status 21 posted with four pictures from round 2's pack: the whole film in 12 frames, the opening, one sheet across shake 1, the close. It says the globe can be shaken at the published address now.
+
+- 08:29 `repo_courier` (a sandbox agent with a working git sign-in) fast forwarded `main` at the remote to `9f84ed1` from a git bundle. The workspace's own push still fails; see \"Push log\".
+- 08:34 published again from the Phase 2 final build (the review page now holds the blockout preview). `npm run hostcheck` passed at 08:34.
+- 08:38 `reviewer_r2_a` answered part 1 of round 2: score 6, four major issues, none severe (`scorecards/round-002/R4-blockout-1.json`). One of the four says the camera pairs and the screens were not in its pack: they were part 2's material, judged there (8). Merged score 6 against a bar of 7. Round 2 does not pass and was the last blockout round. The key file is copied into the round folder now that both answers are in. `scorecards/round-002/SUMMARY.md` written. Open items 25 to 29.
+- 08:40: the Phase 2 gate, line by line. (1) G1 to G12 and G14: green on the final build `b98352868abb52c6` (`npm run gate -- --phase 2`, 08:09; `out/work/gate/phase-2.md`). (2) R4 blockout: 5 in round 1, 6 in round 2, no severe issue open after round 2; the bar of `quality.blockoutPass` (7) is not met and the limit of `quality.blockoutMaxRounds` (2) is reached. Phase 2 closes at that limit. (3) Every open blockout issue is under \"Open items\" with the phase that will settle it: items 25 and 29 to Phase 3, 26 to Phase 5, 27 and 28 to the film's rounds, beside the earlier items 18, 19, 20, 22, 23 and 24. (4) The judged list is in this file under \"Judged list\". (5) D2 and D3 green at 08:24 (`node tools/gate.mjs --phase 2 --only D2,D3`); the preview `out/preview-b.mp4` is committed as `0866555` with its record. (6) The published app opens in `live` mode (hostcheck, 08:34) and was shaken through the four seasons in the app's own script at round 2 (the three screens in the pack come from it); `autopilot` and `loop` were opened from the built site at 08:39 with no error logged, and two captures five seconds apart differ in 97 and 77 percent of their pixels, so both play (`out/work/modes-check.json`). Phase 2 is done. Phase 3 starts at 08:40.

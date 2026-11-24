@@ -1,0 +1,177 @@
+{
+  "round": 2,
+  "phase": 2,
+  "unit": null,
+  "tier": "draft",
+  "motionTier": "review",
+  "record": false,
+  "limits": {
+    "longEdge": 1400,
+    "maxPixels": 1140000,
+    "maxFiles": 10
+  },
+  "engineHash": "b98352868abb52c6",
+  "roles": {
+    "R4-blockout": {
+      "parts": [
+        {
+          "folder": "out/work/packs/round-002/R4-blockout-1",
+          "message": "out/work/packs/round-002/R4-blockout-1.message.md",
+          "files": [
+            {
+              "name": "set-A-01.jpg",
+              "what": "the whole film, from node tools/sheet.mjs --film --mark 180=reveal --tier draft: out/work/sheets/film-preview-draft-overview.jpg",
+              "source": "out/work/sheets/film-preview-draft-overview.jpg",
+              "sha256": "d89cae8984701c5a54557e0e6460d9059ad54ecd7a88e387e30013bc25b27ade",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-A-02.jpg",
+              "what": "the whole film, from node tools/sheet.mjs --film --mark 180=reveal --tier draft: out/work/sheets/shot-open-preview-draft-marked.jpg",
+              "source": "out/work/sheets/shot-open-preview-draft-marked.jpg",
+              "sha256": "eccc6e2d8cfc047c813fd1ab58810009d06880d00ad52e5ff3346785bcf04015",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-A-03.jpg",
+              "what": "the whole film, from node tools/sheet.mjs --film --mark 180=reveal --tier draft: out/work/sheets/shot-shake-1-preview-draft.jpg. Also: one sheet across the shake shake-1",
+              "source": "out/work/sheets/shot-shake-1-preview-draft.jpg",
+              "sha256": "d26d597e05ca91e6a8175d8eb2c21d0abf6246935eb4f52c45669304fa730f67",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-A-04.jpg",
+              "what": "the whole film, from node tools/sheet.mjs --film --mark 180=reveal --tier draft: out/work/sheets/shot-spring-preview-draft.jpg",
+              "source": "out/work/sheets/shot-spring-preview-draft.jpg",
+              "sha256": "1b38de8a02084e3e473b2135e1ca5a5b2f16bd4feb1d1e5f88b2aeda07ade1b1",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-A-05.jpg",
+              "what": "the whole film, from node tools/sheet.mjs --film --mark 180=reveal --tier draft: out/work/sheets/shot-shake-2-preview-draft.jpg. Also: one sheet across the shake shake-2",
+              "source": "out/work/sheets/shot-shake-2-preview-draft.jpg",
+              "sha256": "01f39458ad22260240f154664be5938f94a0ada2aa01cc03cfc09f6d75e7c3a5",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-A-06.jpg",
+              "what": "the whole film, from node tools/sheet.mjs --film --mark 180=reveal --tier draft: out/work/sheets/shot-summer-preview-draft.jpg",
+              "source": "out/work/sheets/shot-summer-preview-draft.jpg",
+              "sha256": "db67212b612affd596de110bd7f76d90ec53bb55f61b7f0ca88b308ea15d04b5",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-A-07.jpg",
+              "what": "the whole film, from node tools/sheet.mjs --film --mark 180=reveal --tier draft: out/work/sheets/shot-shake-3-preview-draft.jpg. Also: one sheet across the shake shake-3",
+              "source": "out/work/sheets/shot-shake-3-preview-draft.jpg",
+              "sha256": "ed2d86461e2b0db5fd4c28f5d43760225965e4f0d63417108baf5804a6c64f82",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-A-08.jpg",
+              "what": "the whole film, from node tools/sheet.mjs --film --mark 180=reveal --tier draft: out/work/sheets/shot-fall-preview-draft.jpg",
+              "source": "out/work/sheets/shot-fall-preview-draft.jpg",
+              "sha256": "40aed5119a322decfef2afe209b625e075cbf586d9005679518a6d27fd6a2e84",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-A-09.jpg",
+              "what": "the whole film, from node tools/sheet.mjs --film --mark 180=reveal --tier draft: out/work/sheets/shot-shake-4-preview-draft.jpg. Also: one sheet across the shake shake-4",
+              "source": "out/work/sheets/shot-shake-4-preview-draft.jpg",
+              "sha256": "daf9326c85981d4be08aaeae909370e2760b9645262955aad2a0484998b210bb",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-A-10.jpg",
+              "what": "the whole film, from node tools/sheet.mjs --film --mark 180=reveal --tier draft: out/work/sheets/shot-close-preview-draft.jpg",
+              "source": "out/work/sheets/shot-close-preview-draft.jpg",
+              "sha256": "e07234533284a8eb443c169ba15a3e4912e93c3ac267e9609d2da0f98328cadc",
+              "width": 1149,
+              "height": 986
+            }
+          ]
+        },
+        {
+          "folder": "out/work/packs/round-002/R4-blockout-2",
+          "message": "out/work/packs/round-002/R4-blockout-2.message.md",
+          "files": [
+            {
+              "name": "set-B-01.jpg",
+              "what": "a: the approved image references/approved/winter-rest.png. b: winter-rest: winter in the rest state from hero, hd, draft tier, the camera hero",
+              "sha256": "f97ee3c2b1ed4be1491157aea51db52a8b46f2c5e182b4baf2748d6bb457ece7",
+              "width": 986,
+              "height": 1156
+            },
+            {
+              "name": "set-B-02.jpg",
+              "what": "a: the approved image references/approved/winter-rest.png. b: winter-macro: winter in the rest state from macro, hd, draft tier, the camera macro",
+              "sha256": "097f8a76dd7255a9da12c7064b4dc30e5aae9b452726b20839fa668eefbdde55",
+              "width": 986,
+              "height": 1156
+            },
+            {
+              "name": "set-B-03.jpg",
+              "what": "a: the approved image references/approved/winter-rest.png. b: winter-interior: winter in the rest state from interior, hd, draft tier, the camera interior",
+              "sha256": "1b2a72c3b88e6ba9201db06c0a9165b8e8e85cc2f48895ee655f07a89c882f23",
+              "width": 986,
+              "height": 1156
+            },
+            {
+              "name": "set-B-04.jpg",
+              "what": "a: the approved image references/approved/winter-rest.png. b: winter-base: winter in the rest state from base, hd, draft tier, the camera base",
+              "sha256": "09c4ca26d9889a31ed96f3f99df9cea46baeccd5b82bf982cd815c7c6c84c48e",
+              "width": 986,
+              "height": 1156
+            },
+            {
+              "name": "set-B-05.jpg",
+              "what": "a: the approved image references/approved/winter-rest.png. b: winter-surface: winter in the rest state from surface, hd, draft tier, the camera surface",
+              "sha256": "b41fc7a92eb01739fef144acc987cb2baab5eca3e147025c96397d5a2888027a",
+              "width": 986,
+              "height": 1156
+            },
+            {
+              "name": "set-B-06.jpg",
+              "what": "a: the approved image references/approved/winter-rest.png. b: view-winter-rest-low: winter in the rest state from low, hd, draft tier, the camera low",
+              "sha256": "1a7d91d82f48e897ab3b4126e0c695270391c242a189f7e0a89802490c773415",
+              "width": 986,
+              "height": 1156
+            },
+            {
+              "name": "set-C-01.jpg",
+              "what": "screen-wide: winter in the rest state from hero, with the controls on, hd, draft tier",
+              "sha256": "f1c46b6fce05e1fa961b60430e1c78cc01d9e2c549de39afc25d1fb63d0ed1aa",
+              "width": 1400,
+              "height": 787
+            },
+            {
+              "name": "set-C-02.jpg",
+              "what": "screen-phone: spring in the rest state from hero, with the controls on, phone, draft tier",
+              "sha256": "723c848eb2f9990da3029cf7653077052628420784d4e3acdb183e99bb7f86c1",
+              "width": 390,
+              "height": 844
+            },
+            {
+              "name": "set-C-03.jpg",
+              "what": "screen-tablet: summer in the rest state from hero, with the controls on, tablet, draft tier",
+              "sha256": "82eb4d525fe0e4c33e082de4d15088f486e24daa5d074238a20c90897fdda3b7",
+              "width": 924,
+              "height": 1233
+            }
+          ]
+        }
+      ],
+      "missing": [],
+      "notes": []
+    }
+  }
+}

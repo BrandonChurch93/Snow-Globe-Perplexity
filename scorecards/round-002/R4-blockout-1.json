@@ -1,0 +1,35 @@
+{
+  "critic": "R4",
+  "score": 6,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "major",
+      "file": "set-A-02.jpg",
+      "where": "the opening pull-back from macro, frames 0 to 180",
+      "what": "the pull-back eases in from rest instead of starting already moving and fast. Measured on the miniature (lamp-to-window spacing) the scale runs 1.00 at frame 0, 0.79 at 52, 0.52 at 104, 0.25 at 180 and 0.20 at hero, so only about 15 percent of the zoom happens in the first 52 frames and the move runs about twice as fast over 104 to 180 as it does at the start. It reads as an S-curve that starts nearly still, not fast at first and easing to nothing",
+      "fix": "drive the pull-back with an ease-out only, with peak speed on frame 0 decaying to zero at frame 288 (for example exponential or cubic out on log distance), so roughly half the zoom is done by frame 52. Keep frame 0 exactly as it is. The glass edge will then arrive earlier, still well before 180"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-04.jpg",
+      "where": "the deepest part of the move toward the base camera, frames 928 to 1138, worst at 980, 1034 and 1086",
+      "what": "the tree crown and the top of the dome leave the top of the frame. At 1034 only a sliver of the pink crown is left and at 1086 only the trunk, so for about 3.5 s of the spring hold the miniature does not stay in the frame",
+      "fix": "tilt the aim up as the camera nears the base, or re-aim the base camera higher, so the whole tree, crown included, stays inside the frame with headroom at the deepest frame. If the base then reads too small, reduce the 55 percent rather than crop the miniature"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-03.jpg, set-A-05.jpg, set-A-07.jpg, set-A-09.jpg",
+      "where": "the top edge of the locked hero during every shake, worst at shake offset 116 (frames 692, 1412, 2132, 2852)",
+      "what": "hero leaves too little headroom for the shake. At rest the crown sits 16 to 18 px below the top of the 206 px frame. During the tilts it rises to 4 to 8 px, and on the last hop before landing it comes within 2 px, about 1 percent of the frame height, so the globe nearly touches the top edge in all four shakes",
+      "fix": "lower the hop and tilt peaks so the crown keeps at least about 5 percent of the frame height below the top edge. If hero is not tied to the approved winter image, pull hero back about 5 percent instead and recheck every shot that starts or ends on it"
+    },
+    {
+      "severity": "major",
+      "file": "not in pack",
+      "where": "the sheet of cameras framed beside the approved winter image, and the app screen with its controls in the three screen formats",
+      "what": "only the ten film sheets were supplied. Without the other two, the framing of each camera against the approved winter image could not be checked, and neither could the placement of the controls or their clearance from the globe. This score covers the cameras and the timing only",
+      "fix": "add the cameras sheet and the three app-screen captures, and rerun this check before the blockout is passed"
+    }
+  ]
+}
