@@ -1,0 +1,2 @@
+winter_a.jpg: Winter, the full pool of 102000, front view of the particle positions only with the blockout outlines, streaks drawn along each velocity. Panels from the start of the shake to the landing: 0.02 s, 0.6 s (lift), 1.2 s and 1.8 s (strokes), 2.4 s (landing), 2.9 s (the landed state). This is a debug plot of the simulation, not the app's drawing.
+winter_b.jpg: The same run settling: 3.9 s, 5.4 s, 8 s and 14.4 s (the rest state, 12 s after the landing). About 1600 flakes keep falling at rest and snow lies on the box roof and the ground.
