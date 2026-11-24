@@ -247,15 +247,15 @@
       "shot": "open",
       "what": "first frame",
       "camera": [
-        13.93,
-        73.007,
-        132.536,
+        -15.593,
+        81.679,
+        148.361,
         0,
-        59,
+        66,
         0,
         16
       ],
-      "focusMm": 144,
+      "focusMm": 171.5,
       "apertureMm": 2.5
     },
     {
@@ -263,15 +263,15 @@
       "shot": "open",
       "what": "film.hookSeconds: the pull back is plain",
       "camera": [
-        6.944,
-        107.95,
-        505.13,
+        -6.673,
+        109.449,
+        512.469,
         0,
-        66.326,
+        67.221,
         0,
         16
       ],
-      "focusMm": 473.3,
+      "focusMm": 482.1,
       "apertureMm": 8.17
     },
     {
@@ -279,15 +279,15 @@
       "shot": "open",
       "what": "film.revealBySeconds: the edge of the glass is in frame",
       "camera": [
-        0.071,
-        113.74,
-        594.414,
+        -2.597,
+        114.002,
+        595.843,
         0,
-        67.22,
+        67.37,
         0,
         16
       ],
-      "focusMm": 557.3,
+      "focusMm": 559,
       "apertureMm": 8.86
     },
     {
@@ -423,32 +423,32 @@
       "shot": "spring",
       "what": "the nearest point to the base camera",
       "camera": [
-        39.911,
-        58.782,
-        334.997,
+        37.101,
+        64.768,
+        365.626,
         0,
-        29.92,
+        33.65,
         0,
         16
       ],
-      "focusMm": 291.6,
-      "apertureMm": 7.6
+      "focusMm": 322.8,
+      "apertureMm": 7.8
     },
     {
       "frame": 1066,
       "shot": "spring",
       "what": "leaving the nearest point to base",
       "camera": [
-        41.245,
-        58.427,
-        334.866,
+        38.556,
+        64.38,
+        365.508,
         0,
-        29.92,
+        33.65,
         0,
         16
       ],
-      "focusMm": 291.6,
-      "apertureMm": 7.6
+      "focusMm": 322.8,
+      "apertureMm": 7.8
     },
     {
       "frame": 1260,
@@ -551,15 +551,15 @@
       "shot": "summer",
       "what": "the interior camera reached",
       "camera": [
-        0.027,
-        90.803,
-        394.776,
+        0.021,
+        82.441,
+        309.824,
         0,
-        77.5,
+        72,
         0,
         16
       ],
-      "focusMm": 385,
+      "focusMm": 300,
       "apertureMm": 7
     },
     {
@@ -567,15 +567,15 @@
       "shot": "summer",
       "what": "leaving interior",
       "camera": [
-        2.32,
-        91.002,
-        394.762,
+        1.82,
+        82.597,
+        309.813,
         0,
-        77.5,
+        72,
         0,
         16
       ],
-      "focusMm": 385,
+      "focusMm": 300,
       "apertureMm": 7
     },
     {
@@ -807,15 +807,15 @@
       "shot": "close",
       "what": "the macro camera reached, held to the end",
       "camera": [
-        14.168,
-        73.134,
-        132.497,
+        -15.324,
+        81.821,
+        148.374,
         0,
-        59,
+        66,
         0,
         16
       ],
-      "focusMm": 144,
+      "focusMm": 171.5,
       "apertureMm": 2.5
     },
     {
@@ -823,15 +823,15 @@
       "shot": "close",
       "what": "last frame",
       "camera": [
-        13.93,
-        73.007,
-        132.536,
+        -15.593,
+        81.679,
+        148.361,
         0,
-        59,
+        66,
         0,
         16
       ],
-      "focusMm": 144,
+      "focusMm": 171.5,
       "apertureMm": 2.5
     }
   ],
