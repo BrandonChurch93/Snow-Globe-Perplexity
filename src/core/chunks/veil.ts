@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { config } from '../../config'
-import { LIQUID_PHASE_B, LIQUID_ROLL, LIQUID_SWIRL, ROLL_AXIS, ROLL_CENTRE, ROLL_FREE } from '../../globe/liquid'
+import { LIQUID_PHASE_B, LIQUID_ROLL, LIQUID_SLOSH, LIQUID_SWIRL, ROLL_AXIS, ROLL_CENTRE, ROLL_FLOOR_MM, ROLL_FREE, ROLL_MAX } from '../../globe/liquid'
 import type { StageFrame } from '../../scene/frame'
 
 const NOISE_N = 32
@@ -70,8 +70,8 @@ export const VEIL_LOOK = {
   bankWave: 0.3,
   bankEven: 0.45,
   bankLean: 0.38,
-  bankGrainLow: 0.5,
-  bankGrainHigh: 1.35,
+  bankGrainLow: 0.84,
+  bankGrainHigh: 1.32,
   bankGrainFlood: 0.85,
   axis: [0, 0.08, 1] as const,
   keyShare: 3.2,
@@ -93,34 +93,63 @@ export const VEIL_LOOK = {
   fibreTileLowMm: 9,
   fibreTileHighMm: 17,
   fibreFine: 6,
-  fibreFineLong: 5,
-  fibreFineShare: 0.7,
+  fibreFineLong: 2,
+  fibreWarp: 1.5,
+  fibreFineShare: 0.4,
   fibreSpiral: 3,
   fibreTurns: 3,
   fibreTurnsMore: 3,
-  drift: 1.15,
-  driftPower: 1.5,
-  driftRest: -0.952,
-  driftRise: 0.57,
+  drift: 0.835,
+  driftPower: 2,
+  driftRest: -0.838,
+  driftRise: 0.504,
   driftRisePower: 0.5,
+  lean: 0.0056,
+  leanMost: 0.6,
+  leanBank: 0.5,
+  leanDrift: 0.5,
+  leanFlood: 1,
+  leanFloor: 0.35,
   driftWallLeft: 1.3,
-  driftWallRight: 0.57,
+  driftWallLeftPower: 2.5,
+  driftWallRight: 0.4,
+  driftDip: 0.09,
+  driftDipAtMm: -8,
+  driftDipWideMm: 22,
+  driftFront: 0.85,
+  driftFrontFromMm: 8,
+  driftFrontToMm: 30,
+  driftBehind: 0.45,
+  driftSoftWall: 0.3,
+  driftSoftWallFrom: 0.2,
+  driftSoftWallTo: 0.8,
   driftWhite: 0.9,
-  driftSoft: 0.12,
-  driftWisp: 3,
+  driftSoft: 0.06,
+  driftWisp: 4,
   driftDeep: 0.25,
-  lieMm: 10,
+  lieMm: 26,
   lieFromMm: 1.5,
+  lieGroundMm: ROLL_FLOOR_MM - 2.5,
+  lieTopFromMm: 1,
+  lieTopToMm: 5,
   lieTileMm: 12,
   lieDeepMm: 12,
   lieTurns: 4,
-  driftCutDeep: 0.36,
+  lieFine: 6,
+  lieFineLong: 2,
+  driftCutDeep: 0.38,
   driftCutCrest: 0.58,
-  driftEdgeDeep: 0.3,
+  driftEdgeDeep: 0.4,
   driftEdgeCrest: 0.1,
-  driftMist: 0.2,
-  driftRollFrom: 0.3,
-  driftRollTo: 4,
+  driftMist: 0.45,
+  driftShadow: 0.05,
+  driftKeyFloor: 0.42,
+  driftShadeWhite: 0.5,
+  strand: 5,
+  tuftFrom: 0.3,
+  tuftTo: 0.7,
+  tuftLow: 0.35,
+  tuftHigh: 1.5,
   arcLow: 0.45,
   arcHigh: 0.7,
   arcGain: 1.2,
@@ -130,8 +159,6 @@ export const VEIL_LOOK = {
   foldGain: 1.8,
   floodEvenFrom: 0.25,
   floodEvenTo: 0.8,
-  grainLow: 0.36,
-  grainHigh: 0.64,
 }
 
 function hash(x: number, y: number, z: number, s: number): number {
@@ -219,6 +246,7 @@ export const veilUniforms = {
   uVeilTurn: { value: new THREE.Matrix3() },
   uVeilRoll: { value: new THREE.Vector4(1, 0, 0, 0) },
   uVeilDrift: { value: new THREE.Vector4() },
+  uVeilLean: { value: new THREE.Vector3() },
   uVeilNoise: { value: stirNoise() as THREE.Texture },
 }
 
@@ -241,6 +269,7 @@ uniform vec4 uVeilBank;
 uniform mat3 uVeilTurn;
 uniform vec4 uVeilRoll;
 uniform vec4 uVeilDrift;
+uniform vec3 uVeilLean;
 uniform highp sampler3D uVeilNoise;
 float veilDisc(vec3 p) {
   vec3 c = p - ${vec(CENTRE)};
@@ -279,8 +308,17 @@ vec3 veilFlow(vec3 p) {
   vec3 r = c - off * ${vec(ROLL)};
   return vec3(lam * uLens.w, off, atan(dot(r, ${vec(OTHER)}), dot(r, ${vec(SIDE)}) + 1e-6) / 6.2831853);
 }
+vec3 veilCurrent(vec3 p) {
+  vec3 d = p - ${vec(CENTRE)};
+  float dc = dot(d, ${vec(CENTRE)});
+  float lam = min((dc + sqrt(dc * dc + ${n(ROLL_FREE)} * dot(d, d))) / ${n(ROLL_FREE)}, 1.0);
+  return normalize(cross(${vec(ROLL)}, d + lam * ${vec(CENTRE)}) + 1e-5);
+}
 float veilSheetOf(vec3 p) {
   return floor((dot(p - ${vec(CENTRE)}, ${vec(ROLL)}) - ${n(L.sheetLowMm)}) / ${n(L.sheetMm)});
+}
+float veilStrand(float coarse, float fine) {
+  return pow(1.0 - abs(2.0 * fine - 1.0), ${n(L.strand)}) * mix(${n(L.tuftLow)}, ${n(L.tuftHigh)}, smoothstep(${n(L.tuftFrom)}, ${n(L.tuftTo)}, coarse));
 }
 vec3 veilFibre(vec3 at, float k) {
   vec3 fl = veilFlow(at);
@@ -289,47 +327,52 @@ vec3 veilFibre(vec3 at, float k) {
   float pace = turns - floor(j.y * 1.999);
   vec3 q = vec3(fl.x / mix(${n(L.fibreTileLowMm)}, ${n(L.fibreTileHighMm)}, j.z) + fl.z * (floor(j.w * ${n(2 * L.fibreSpiral + 0.999)}) - ${n(L.fibreSpiral)}), 0.37 * k + j.w, fl.z * turns - uVeilDrift.y * pace);
   float coarse = texture(uVeilNoise, q).a;
-  float fine = texture(uVeilNoise, vec3(q.x * ${n(L.fibreFine)}, q.y + 0.43, q.z * ${n(L.fibreFineLong)})).a;
-  return vec3(coarse, mix(coarse, fine, ${n(L.fibreFineShare)}), fine);
+  float fine = texture(uVeilNoise, vec3(q.x * ${n(L.fibreFine)} + ${n(L.fibreWarp)} * coarse, q.y + 0.43, q.z * ${n(L.fibreFineLong)})).a;
+  return vec3(coarse, mix(coarse, fine, ${n(L.fibreFineShare)}), veilStrand(coarse, fine));
 }
 vec3 veilLie(vec3 at) {
   vec3 fl = veilFlow(at);
   vec3 q = vec3(fl.x / ${n(L.lieTileMm)} + fl.z, fl.y / ${n(L.lieDeepMm)}, (fl.z - uVeilDrift.y) * ${n(L.lieTurns)});
   float coarse = texture(uVeilNoise, q).a;
-  float fine = texture(uVeilNoise, vec3(q.x * ${n(L.fibreFine)}, q.y * ${n(L.fibreFine)} + 0.43, q.z * ${n(L.fibreFineLong)})).a;
-  return vec3(coarse, mix(coarse, fine, ${n(L.fibreFineShare)}), fine);
+  float fine = texture(uVeilNoise, vec3(q.x * ${n(L.lieFine)} + ${n(L.fibreWarp)} * coarse, q.y * ${n(L.lieFine)} + 0.43, q.z * ${n(L.lieFineLong)})).a;
+  return vec3(coarse, mix(coarse, fine, ${n(L.fibreFineShare)}), veilStrand(coarse, fine));
 }
-float veilStreak(vec3 p, vec3 f, out float deep) {
+float veilStreak(vec3 p, vec3 f, float aloft, out float deep) {
   float side = p.x / uLens.w;
-  deep = uVeilDrift.z - dot(p, uVeilUp.xyz) / uLens.w + (side < 0.0 ? ${n(L.driftWallLeft)} : ${n(L.driftWallRight)}) * side * side * abs(side);
-  float inside = smoothstep(-1.0, 1.0, deep / ${n(L.driftSoft)} + ${n(L.driftWisp)} * (f.x - 0.5));
+  float dip = (p.x - ${n(L.driftDipAtMm)}) / ${n(L.driftDipWideMm)};
+  float open = exp(-dip * dip);
+  deep = uVeilDrift.z - dot(p, uVeilUp.xyz - ${n(L.leanDrift)} * uVeilLean) / uLens.w + (side < 0.0 ? ${n(L.driftWallLeft)} * pow(-side, ${n(L.driftWallLeftPower)}) : ${n(L.driftWallRight)} * side * side * side) - ${n(L.driftDip)} * open;
+  float soft = mix(${n(L.driftSoft)}, ${n(L.driftSoftWall)}, smoothstep(${n(L.driftSoftWallFrom)}, ${n(L.driftSoftWallTo)}, -side));
+  float inside = smoothstep(-1.0, 1.0, deep / soft + ${n(L.driftWisp)} * (f.x - 0.5));
   float cut = mix(${n(L.driftCutCrest)}, ${n(L.driftCutDeep)}, inside);
-  return inside * (${n(L.driftMist)} + smoothstep(cut, cut + mix(${n(L.driftEdgeCrest)}, ${n(L.driftEdgeDeep)}, inside), f.y) * (1.0 + ${n(L.driftDeep)} * max(deep, 0.0) * uLens.w));
+  return inside * (1.0 - ${n(L.driftFront)} * aloft * open * smoothstep(${n(L.driftFrontFromMm)}, ${n(L.driftFrontToMm)}, p.z)) * (${n(L.driftMist)} * inside + smoothstep(cut, cut + mix(${n(L.driftEdgeCrest)}, ${n(L.driftEdgeDeep)}, inside), f.y) * (1.0 + ${n(L.driftDeep)} * max(deep, 0.0) * uLens.w));
 }
 vec4 veilField(vec3 p, vec3 f, float sheet) {
   vec3 out2 = p - dot(p, ${vec(AXIS)}) * ${vec(AXIS)};
-  float level = dot(p, uVeilUp.xyz) / uLens.w - ${n(L.bankRing)} * dot(out2, out2) / (uLens.w * uLens.w) + ${n(L.bankLean)} * p.x / uLens.w;
+  float lean = dot(p, uVeilLean) / uLens.w;
+  float level = dot(p, uVeilUp.xyz) / uLens.w - ${n(L.leanBank)} * lean - ${n(L.bankRing)} * dot(out2, out2) / (uLens.w * uLens.w) + ${n(L.bankLean)} * p.x / uLens.w;
   float deep;
-  float streak = veilStreak(p, f, deep);
+  float streak = veilStreak(p, f, 1.0, deep);
   float arc = ${n(L.arcGain)} * smoothstep(${n(L.arcLow)}, ${n(L.arcHigh)}, f.x);
   float fold = ${n(L.foldGain)} * smoothstep(${n(L.foldLow)}, ${n(L.foldHigh)}, f.x);
   vec3 flat2 = p - dot(p, ${vec(AXIS)}) * ${vec(AXIS)};
   float ring = mix(${n(L.arcCore)}, 1.0, smoothstep(${n(L.hazeFrom)}, ${n(L.hazeTo)}, (length(flat2) - ${n(L.hazeLift)} * dot(p, uVeilUp.xyz) - ${n(L.hazeSide)} * p.x) / uLens.w));
   float even = smoothstep(uVeilBank.x + uVeilBank.y, uVeilBank.x - uVeilBank.y, level + ${n(L.bankWave)} * (f.x - 0.5));
-  float thin = uVeil.a * mix(1.0, ring * arc * sheet, uVeilUp.w) + uVeilRoll.z * mix(1.0, fold, uVeilRoll.w);
+  float thin = uVeil.a * mix(1.0, ring * arc * sheet, uVeilUp.w) + uVeilRoll.z * mix(1.0, fold, uVeilRoll.w) * max(1.0 + ${n(L.leanFlood)} * lean, ${n(L.leanFloor)});
   float bank = uVeilBank.z * even * mix(fold, 1.0, uVeilBank.w) + uVeilDrift.x * streak * sheet;
   return vec4(thin, bank, max(mix(deep, uVeilBank.x - level, uVeilRoll.y), 0.0) * uLens.w, f.z);
 }
 vec3 veilLit(vec3 p, vec4 field) {
   float pk = dot(p, uVeilKey.xyz);
   float reach = -pk + sqrt(max(pk * pk - dot(p, p) + uLens.w * uLens.w, 0.0));
-  float dim = exp(-(uVeil.a + uVeilRoll.z) * ${n(L.shadow)} * reach - ${n(L.bankShadow)} * field.z / max(dot(uVeilKey.xyz, uVeilUp.xyz), 0.3));
+  float dim = exp(-(uVeil.a + uVeilRoll.z) * ${n(L.shadow)} * reach - mix(${n(L.driftShadow)}, ${n(L.bankShadow)}, uVeilRoll.y) * field.z / max(dot(uVeilKey.xyz, uVeilUp.xyz), 0.3));
   float low = field.y / max(field.x + field.y, 1e-6);
+  float floorKey = mix(uVeilKey.w, min(uVeilKey.w, ${n(L.driftKeyFloor)}), low);
   float packed = mix(1.0, mix(${n(L.bankShade)}, 1.0, smoothstep(${n(L.bankShadeFrom)}, ${n(L.bankShadeTo)}, field.y / max(uVeilBank.z, 1e-6))), low);
   vec3 toward;
   vec3 card = uRigCardCol * (uRigInside.x * uRigCard.w * stageGridOpen(p));
-  vec3 lit = stageSoftIn(p) * ${n(L.ambientShare)} + (stageKeyIn(p, toward) + card) * (uRigPoint.x * ${n(L.keyShare)} * packed * (uVeilKey.w + (1.0 - uVeilKey.w) * dim)) + stageGrid(p) * mix(${n(L.gridShare)}, ${n(L.bankGridShare)}, low);
-  return lit * mix(vec3(1.0), vec3(1.0) / max(uVeil.rgb, vec3(0.05)), mix(${n(L.driftWhite)}, ${n(L.bankWhite)}, uVeilRoll.y) * low) * mix(1.0, ${n(L.bankDim)} * mix(${n(L.bankGrainLow)}, ${n(L.bankGrainHigh)}, smoothstep(${n(L.grainLow)}, ${n(L.grainHigh)}, field.w)), low * (1.0 - ${n(L.bankGrainFlood)} * uVeilRoll.y));
+  vec3 lit = stageSoftIn(p) * ${n(L.ambientShare)} + (stageKeyIn(p, toward) + card) * (uRigPoint.x * ${n(L.keyShare)} * packed * (floorKey + (1.0 - floorKey) * dim)) + mix(stageGrid(p) * ${n(L.gridShare)}, (stageGridWarm(p) + stageFlood(p)) * ${n(L.bankGridShare)}, low);
+  return lit * mix(vec3(1.0), vec3(1.0) / max(uVeil.rgb, vec3(0.05)), mix(${n(L.driftWhite)} * mix(${n(L.driftShadeWhite)}, 1.0, dim), ${n(L.bankWhite)}, uVeilRoll.y) * low) * mix(1.0, ${n(L.bankDim)} * mix(${n(L.bankGrainLow)}, ${n(L.bankGrainHigh)}, field.w), low * (1.0 - ${n(L.bankGrainFlood)} * uVeilRoll.y));
 }
 vec4 veilPath(vec3 eye, vec3 placed, vec3 world, float path) {
   float thin = (uVeil.a + uVeilRoll.z + uVeilBank.z + uVeilDrift.x) * path;
@@ -365,7 +408,7 @@ vec4 veilPath(vec3 eye, vec3 placed, vec3 world, float path) {
     float sheet = smoothstep(0.0, ${n(L.sheetNearMm)}, tc) * smoothstep(0.0, ${n(L.sheetSoftMm)}, path - tc) * dt / max(ds, 1e-3);
     vec4 field = veilField(p, veilFibre(from + along * tc, k), sheet);
     float a = 1.0 - exp(-(field.x + field.y) * ds);
-    glow += seen * a * veilLit(p, field);
+    glow += seen * a * veilLit(p, field) * mix(1.0, mix(${n(L.driftBehind)}, 1.0, seen), (1.0 - uVeilRoll.y) * field.y / max(field.x + field.y, 1e-6));
     seen *= 1.0 - a;
     if (t1 >= path || seen < 0.004) break;
     t0 = t1;
@@ -376,7 +419,7 @@ vec4 veilPath(vec3 eye, vec3 placed, vec3 world, float path) {
     vec3 pe = from + along * path;
     vec3 f = veilLie(pe);
     float deep;
-    float a = 1.0 - exp(-uVeilDrift.x * veilStreak(pe, f, deep) * ${n(L.lieMm)} * smoothstep(0.0, ${n(L.lieFromMm)}, path));
+    float a = 1.0 - exp(-uVeilDrift.x * veilStreak(pe, f, 0.0, deep) * ${n(L.lieMm)} * smoothstep(0.0, ${n(L.lieFromMm)}, path) * smoothstep(${n(L.lieTopToMm)}, ${n(L.lieTopFromMm)}, pe.y - ${n(L.lieGroundMm)}));
     glow += seen * a * veilLit(pe, vec4(0.0, 1.0, max(deep, 0.0) * uLens.w, f.z));
     seen *= 1.0 - a;
   }
@@ -437,8 +480,9 @@ function densities(): void {
   u.uVeilRoll.value.w = lerp(L.foldEarly, L.foldPeak, flood)
   const rise = Math.pow(turb, L.bankRisePower)
   u.uVeilBank.value.set(L.bankRest + L.bankRise * rise + L.bankFlood * flood, L.bankSoft, most * L.bank * L.bankFloodGain * flood, ramp(flood, L.floodEvenFrom, L.floodEvenTo))
-  u.uVeilDrift.value.x = most * L.drift * Math.pow(turb, L.driftPower) * ramp(roll, L.driftRollFrom, L.driftRollTo)
-  u.uVeilDrift.value.z = L.driftRest + L.driftRise * Math.pow(turb, L.driftRisePower)
+  const rolling = Math.min(1, Math.max(0, roll / ROLL_MAX))
+  u.uVeilDrift.value.x = most * L.drift * Math.pow(rolling, L.driftPower)
+  u.uVeilDrift.value.z = L.driftRest + L.driftRise * Math.pow(rolling, L.driftRisePower)
 }
 
 export function veilSettle(afloat: number): void {
@@ -474,6 +518,12 @@ export function updateVeil(f: StageFrame): void {
   u.uVeilDrift.value.y = pa / TAU
   densities()
   u.uVeilRoll.value.x = ramp(now.roll, L.rollFrom, L.rollTo)
+  const sx = f.liquid[LIQUID_SLOSH] ?? 0
+  const sy = f.liquid[LIQUID_SLOSH + 1] ?? 0
+  const sz = f.liquid[LIQUID_SLOSH + 2] ?? 0
+  const pace = Math.hypot(sx, sy, sz)
+  const lean = pace > 0 ? Math.min(L.lean, L.leanMost / pace) : 0
+  u.uVeilLean.value.set(sx * lean, sy * lean, sz * lean)
   const pb = f.liquid[LIQUID_PHASE_B] ?? 0
   u.uVeilFlow.value.set((pa / TAU) * L.arcTurns, Math.sin(pb) * 0.5 * L.blobDrift, Math.sin(pb) * L.blobDrift, Math.cos(pb) * L.blobDrift)
 }

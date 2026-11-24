@@ -42,7 +42,7 @@ export function rakeHangs(): Point[] {
 
 export const hangPoints = (): Point[] => [...eaveHangs(), ...rakeHangs()]
 
-export const LAMP = { yaw: 0.5, sink: 0.3, cageLo: 8.6, cageHi: 10.9, loHalf: 0.48, hiHalf: 0.76, flame: 1 }
+export const LAMP = { yaw: 0.12, sink: 0.3, cageLo: 9.9, cageHi: 11.65, loHalf: 0.64, hiHalf: 0.88, flame: 0.9 }
 
 export function lampFoot(): Point {
   return [lamppost.x, groundAt(lamppost.x, lamppost.z) - LAMP.sink, lamppost.z]
@@ -54,12 +54,22 @@ export function lampFlame(): Point {
 }
 
 const SHRUBS: { at: [number, number]; r: Point }[] = [
-  { at: [c.halfWidth + 0.9, c.halfLength + 0.9], r: [1.9, 2.5, 1.8] },
-  { at: [-c.halfWidth + 1.3, c.halfLength + 1.7], r: [2.3, 1.7, 1.9] },
-  { at: [-c.halfWidth - 1.5, 5.5], r: [1.8, 2, 2.3] },
-  { at: [-c.halfWidth - 1.6, -2.1], r: [1.7, 1.8, 2.4] },
-  { at: [-c.halfWidth - 1.5, -6.8], r: [1.8, 2.3, 2.2] },
+  { at: [c.halfWidth + 0.9, c.halfLength + 0.9], r: [2, 3.2, 1.9] },
+  { at: [-c.halfWidth + 1.3, c.halfLength + 1.7], r: [2.6, 2.8, 2.2] },
+  { at: [-c.halfWidth + 0.2, -8.7], r: [1.25, 4.9, 1.25] },
+  { at: [-c.halfWidth + 0.2, -7.3], r: [1.2, 4.7, 1.2] },
+  { at: [-c.halfWidth + 0.2, -5.9], r: [1.2, 4.8, 1.2] },
+  { at: [-c.halfWidth + 0.2, -4.5], r: [1.15, 4.4, 1.15] },
+  { at: [-c.halfWidth + 0.2, -3.1], r: [1.1, 3.4, 1.1] },
 ]
+
+export const isIvy = (r: Point): boolean => r[1] > 2 * r[0]
+
+export function wallOutward(): number {
+  const a = cottagePoint(-1, 0, 0)
+  const b = cottagePoint(0, 0, 0)
+  return Math.atan2(a[2] - b[2], a[0] - b[0])
+}
 
 export function shrubs(): { centre: Point; r: Point }[] {
   return SHRUBS.map((s) => {
