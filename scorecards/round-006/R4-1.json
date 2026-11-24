@@ -1,0 +1,42 @@
+{
+  "critic": "R4",
+  "score": 5,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "severe",
+      "file": "set-B-03.jpg",
+      "where": "the snowflake on the table under the globe",
+      "what": "the snowflake is gone by the last frames of this sheet, while the globe is still up, stays gone through the landing, then grows back across set-D-01.jpg after the globe is seated",
+      "fix": "keep the snowflake fixed on the table through the shake, and do not grow it back on as a decal after the landing"
+    },
+    {
+      "severity": "major",
+      "file": "set-C-01.jpg",
+      "where": "the globe from the hover through the seat",
+      "what": "the set down eases onto the table with no impact and no settle; the lift in set-A-02.jpg is a small tip on one rim, and the strokes are a soft rock whose tilt does not lag",
+      "fix": "lift with effort, shake with unequal strokes, a lagging tilt and sharp reversals, and land so the globe settles"
+    },
+    {
+      "severity": "major",
+      "file": "set-D-01.jpg",
+      "where": "the snow inside the glass after the landing",
+      "what": "the storm is a milky fog that thins in place, not flakes that lagged the glass, slammed, turned as one whirl, and fell onto the cabin and the tree",
+      "fix": "drive the flakes from the glass motion so they lag, slam, whirl, and then fall at many depths onto what they meet"
+    },
+    {
+      "severity": "major",
+      "file": "set-B-03.jpg",
+      "where": "the center of the glass",
+      "what": "a blown-out white orb grows in the middle of the storm and then collapses, apart from the cabin lights",
+      "fix": "keep the light as the cabin and the tree seen through the snow, with no separate orb"
+    },
+    {
+      "severity": "minor",
+      "file": "set-D-03.jpg",
+      "where": "the fine streaks on the upper inside of the glass",
+      "what": "the last wisps crawl in place instead of drifting to rest",
+      "fix": "let the last flakes drift and settle, with no texture crawl"
+    }
+  ]
+}
