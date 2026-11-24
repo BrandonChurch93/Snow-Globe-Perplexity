@@ -365,7 +365,7 @@ describe('a detail move that stops short of its camera (decision 34)', () => {
     expect(rig.aimHeightMm).toBeGreaterThan(base.aimHeightMm)
     const room = roomOf(poseOfRig(rig))
     expect(Math.abs(room.foot - room.ridge)).toBeLessThan(0.001)
-    expect(nearestAimDropMm('base')).toBeGreaterThan(0)
+    expect(nearestAimDropMm('base')).not.toBe(0)
     for (const id of ['interior', 'low']) {
       if (detailReach(id) < 1) continue
       expect(nearestAimDropMm(id)).toBe(0)

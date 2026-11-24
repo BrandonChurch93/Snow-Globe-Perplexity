@@ -248,10 +248,10 @@
       "what": "first frame",
       "camera": [
         13.93,
-        82.007,
+        73.007,
         132.536,
         0,
-        68,
+        59,
         0,
         16
       ],
@@ -263,47 +263,47 @@
       "shot": "open",
       "what": "film.hookSeconds: the pull back is plain",
       "camera": [
-        15.547,
-        107.666,
-        291.41,
+        6.944,
+        107.95,
+        505.13,
         0,
-        69.236,
+        66.326,
         0,
         16
       ],
-      "focusMm": 279.6,
-      "apertureMm": 5.71
+      "focusMm": 473.3,
+      "apertureMm": 8.17
     },
     {
       "frame": 180,
       "shot": "open",
       "what": "film.revealBySeconds: the edge of the glass is in frame",
       "camera": [
-        7.754,
-        143.825,
-        497.228,
+        0.071,
+        113.74,
+        594.414,
         0,
-        70.077,
+        67.22,
         0,
         16
       ],
-      "focusMm": 471.2,
-      "apertureMm": 7.9
+      "focusMm": 557.3,
+      "apertureMm": 8.86
     },
     {
       "frame": 270,
       "shot": "open",
       "what": "the hero camera reached",
       "camera": [
-        -1.829,
-        173.17,
-        649.938,
+        -1.728,
+        115.481,
+        614.118,
         0,
-        70.5,
+        67.4,
         0,
         16
       ],
-      "focusMm": 618,
+      "focusMm": 576,
       "apertureMm": 9
     },
     {
@@ -311,15 +311,15 @@
       "shot": "open",
       "what": "the widest point of the drift",
       "camera": [
-        30.978,
-        169.451,
-        649.078,
+        29.273,
+        111.719,
+        613.364,
         0,
-        66,
+        62.9,
         0,
         16
       ],
-      "focusMm": 618,
+      "focusMm": 576,
       "apertureMm": 9
     },
     {
@@ -327,15 +327,15 @@
       "shot": "open",
       "what": "back at hero, 1 beat before the shake",
       "camera": [
-        0.754,
-        172.734,
-        650.009,
+        0.713,
+        115.07,
+        614.152,
         0,
-        70.5,
+        67.4,
         0,
         16
       ],
-      "focusMm": 618,
+      "focusMm": 576,
       "apertureMm": 9
     },
     {
@@ -344,14 +344,14 @@
       "what": "last frame",
       "camera": [
         0,
-        173.434,
-        649.899,
+        115.731,
+        614.101,
         0,
-        70.5,
+        67.4,
         0,
         16
       ],
-      "focusMm": 618,
+      "focusMm": 576,
       "apertureMm": 9
     },
     {
@@ -360,14 +360,14 @@
       "what": "first frame",
       "camera": [
         0,
-        173.434,
-        649.899,
+        115.731,
+        614.101,
         0,
-        70.5,
+        67.4,
         0,
         16
       ],
-      "focusMm": 618,
+      "focusMm": 576,
       "apertureMm": 9
     },
     {
@@ -376,14 +376,14 @@
       "what": "last frame",
       "camera": [
         0,
-        173.434,
-        649.899,
+        115.731,
+        614.101,
         0,
-        70.5,
+        67.4,
         0,
         16
       ],
-      "focusMm": 618,
+      "focusMm": 576,
       "apertureMm": 9
     },
     {
@@ -392,14 +392,14 @@
       "what": "the landing, the first frame of the next shot",
       "camera": [
         0,
-        173.434,
-        649.899,
+        115.731,
+        614.101,
         0,
-        70.5,
+        67.4,
         0,
         16
       ],
-      "focusMm": 618,
+      "focusMm": 576,
       "apertureMm": 9
     },
     {
@@ -407,15 +407,15 @@
       "shot": "spring",
       "what": "the move toward base begins",
       "camera": [
-        1.172,
-        168.612,
-        650.022,
+        1.108,
+        110.952,
+        614.158,
         0,
-        66.466,
+        63.366,
         0,
         16
       ],
-      "focusMm": 618,
+      "focusMm": 576,
       "apertureMm": 9
     },
     {
@@ -423,47 +423,47 @@
       "shot": "spring",
       "what": "the nearest point to the base camera",
       "camera": [
-        36.326,
-        81.014,
-        392.021,
+        39.911,
+        58.782,
+        334.997,
         0,
-        33.79,
+        29.92,
         0,
         16
       ],
-      "focusMm": 351,
-      "apertureMm": 7.9
+      "focusMm": 291.6,
+      "apertureMm": 7.6
     },
     {
       "frame": 1066,
       "shot": "spring",
       "what": "leaving the nearest point to base",
       "camera": [
-        37.888,
-        80.599,
-        391.922,
+        41.245,
+        58.427,
+        334.866,
         0,
-        33.79,
+        29.92,
         0,
         16
       ],
-      "focusMm": 351,
-      "apertureMm": 7.9
+      "focusMm": 291.6,
+      "apertureMm": 7.6
     },
     {
       "frame": 1260,
       "shot": "spring",
       "what": "back at hero, 1 beat before the shake",
       "camera": [
-        1.024,
-        174.155,
-        649.783,
+        0.967,
+        116.412,
+        614.046,
         0,
-        70.5,
+        67.4,
         0,
         16
       ],
-      "focusMm": 618,
+      "focusMm": 576,
       "apertureMm": 9
     },
     {
@@ -472,14 +472,14 @@
       "what": "last frame",
       "camera": [
         0,
-        173.434,
-        649.899,
+        115.731,
+        614.101,
         0,
-        70.5,
+        67.4,
         0,
         16
       ],
-      "focusMm": 618,
+      "focusMm": 576,
       "apertureMm": 9
     },
     {
@@ -488,14 +488,14 @@
       "what": "first frame",
       "camera": [
         0,
-        173.434,
-        649.899,
+        115.731,
+        614.101,
         0,
-        70.5,
+        67.4,
         0,
         16
       ],
-      "focusMm": 618,
+      "focusMm": 576,
       "apertureMm": 9
     },
     {
@@ -504,14 +504,14 @@
       "what": "last frame",
       "camera": [
         0,
-        173.434,
-        649.899,
+        115.731,
+        614.101,
         0,
-        70.5,
+        67.4,
         0,
         16
       ],
-      "focusMm": 618,
+      "focusMm": 576,
       "apertureMm": 9
     },
     {
@@ -520,14 +520,14 @@
       "what": "the landing, the first frame of the next shot",
       "camera": [
         0,
-        173.434,
-        649.899,
+        115.731,
+        614.101,
         0,
-        70.5,
+        67.4,
         0,
         16
       ],
-      "focusMm": 618,
+      "focusMm": 576,
       "apertureMm": 9
     },
     {
@@ -535,15 +535,15 @@
       "shot": "summer",
       "what": "the move toward interior begins",
       "camera": [
-        -2.038,
-        169.952,
-        649.808,
+        -1.926,
+        112.219,
+        614.057,
         0,
-        66.466,
+        63.366,
         0,
         16
       ],
-      "focusMm": 618,
+      "focusMm": 576,
       "apertureMm": 9
     },
     {
@@ -552,10 +552,10 @@
       "what": "the interior camera reached",
       "camera": [
         0.027,
-        99.803,
+        90.803,
         394.776,
         0,
-        86.5,
+        77.5,
         0,
         16
       ],
@@ -568,10 +568,10 @@
       "what": "leaving interior",
       "camera": [
         2.32,
-        100.002,
+        91.002,
         394.762,
         0,
-        86.5,
+        77.5,
         0,
         16
       ],
@@ -583,15 +583,15 @@
       "shot": "summer",
       "what": "back at hero, 1 beat before the shake",
       "camera": [
-        -2.021,
-        173.264,
-        649.923,
+        -1.91,
+        115.571,
+        614.111,
         0,
-        70.5,
+        67.4,
         0,
         16
       ],
-      "focusMm": 618,
+      "focusMm": 576,
       "apertureMm": 9
     },
     {
@@ -600,14 +600,14 @@
       "what": "last frame",
       "camera": [
         0,
-        173.434,
-        649.899,
+        115.731,
+        614.101,
         0,
-        70.5,
+        67.4,
         0,
         16
       ],
-      "focusMm": 618,
+      "focusMm": 576,
       "apertureMm": 9
     },
     {
@@ -616,14 +616,14 @@
       "what": "first frame",
       "camera": [
         0,
-        173.434,
-        649.899,
+        115.731,
+        614.101,
         0,
-        70.5,
+        67.4,
         0,
         16
       ],
-      "focusMm": 618,
+      "focusMm": 576,
       "apertureMm": 9
     },
     {
@@ -632,14 +632,14 @@
       "what": "last frame",
       "camera": [
         0,
-        173.434,
-        649.899,
+        115.731,
+        614.101,
         0,
-        70.5,
+        67.4,
         0,
         16
       ],
-      "focusMm": 618,
+      "focusMm": 576,
       "apertureMm": 9
     },
     {
@@ -648,14 +648,14 @@
       "what": "the landing, the first frame of the next shot",
       "camera": [
         0,
-        173.434,
-        649.899,
+        115.731,
+        614.101,
         0,
-        70.5,
+        67.4,
         0,
         16
       ],
-      "focusMm": 618,
+      "focusMm": 576,
       "apertureMm": 9
     },
     {
@@ -663,15 +663,15 @@
       "shot": "fall",
       "what": "the move toward low begins",
       "camera": [
-        1.35,
-        169.522,
-        649.878,
+        1.276,
+        111.812,
+        614.091,
         0,
-        66.466,
+        63.366,
         0,
         16
       ],
-      "focusMm": 618,
+      "focusMm": 576,
       "apertureMm": 9
     },
     {
@@ -680,10 +680,10 @@
       "what": "the low camera reached",
       "camera": [
         -204.981,
-        23.963,
+        14.963,
         453.567,
         0,
-        71.5,
+        62.5,
         0,
         20
       ],
@@ -696,10 +696,10 @@
       "what": "leaving low",
       "camera": [
         -201.8,
-        24.185,
+        15.185,
         455.014,
         0,
-        71.5,
+        62.5,
         0,
         20
       ],
@@ -711,15 +711,15 @@
       "shot": "fall",
       "what": "back at hero, 1 beat before the shake",
       "camera": [
-        1.477,
-        172.917,
-        649.979,
+        1.396,
+        115.242,
+        614.138,
         0,
-        70.5,
+        67.4,
         0,
         16
       ],
-      "focusMm": 618,
+      "focusMm": 576,
       "apertureMm": 9
     },
     {
@@ -728,14 +728,14 @@
       "what": "last frame",
       "camera": [
         0,
-        173.434,
-        649.899,
+        115.731,
+        614.101,
         0,
-        70.5,
+        67.4,
         0,
         16
       ],
-      "focusMm": 618,
+      "focusMm": 576,
       "apertureMm": 9
     },
     {
@@ -744,14 +744,14 @@
       "what": "first frame",
       "camera": [
         0,
-        173.434,
-        649.899,
+        115.731,
+        614.101,
         0,
-        70.5,
+        67.4,
         0,
         16
       ],
-      "focusMm": 618,
+      "focusMm": 576,
       "apertureMm": 9
     },
     {
@@ -760,14 +760,14 @@
       "what": "last frame",
       "camera": [
         0,
-        173.434,
-        649.899,
+        115.731,
+        614.101,
         0,
-        70.5,
+        67.4,
         0,
         16
       ],
-      "focusMm": 618,
+      "focusMm": 576,
       "apertureMm": 9
     },
     {
@@ -776,14 +776,14 @@
       "what": "the landing, the first frame of the next shot",
       "camera": [
         0,
-        173.434,
-        649.899,
+        115.731,
+        614.101,
         0,
-        70.5,
+        67.4,
         0,
         16
       ],
-      "focusMm": 618,
+      "focusMm": 576,
       "apertureMm": 9
     },
     {
@@ -791,15 +791,15 @@
       "shot": "close",
       "what": "the push toward macro begins",
       "camera": [
-        1.311,
-        168.67,
-        649.939,
+        1.239,
+        110.981,
+        614.119,
         0,
-        66,
+        62.9,
         0,
         16
       ],
-      "focusMm": 618,
+      "focusMm": 576,
       "apertureMm": 9
     },
     {
@@ -808,10 +808,10 @@
       "what": "the macro camera reached, held to the end",
       "camera": [
         14.168,
-        82.134,
+        73.134,
         132.497,
         0,
-        68,
+        59,
         0,
         16
       ],
@@ -824,10 +824,10 @@
       "what": "last frame",
       "camera": [
         13.93,
-        82.007,
+        73.007,
         132.536,
         0,
-        68,
+        59,
         0,
         16
       ],
@@ -1516,17 +1516,17 @@
     "frameCount": 480,
     "seconds": 8,
     "camera": "hero",
-    "distanceMm": 783.5,
+    "distanceMm": 765.9,
     "cameraNumbers": [
-      9.144,
-      196.906,
-      773.224,
+      9.026,
+      131.274,
+      763.175,
       0,
-      70.5,
+      67.4,
       0,
       16
     ],
-    "fit": "moved back from 658 mm along its own axis, so the glass and the base stay inside the centred square crop of the card through the shake",
+    "fit": "moved back from 616 mm along its own axis, so the glass and the base stay inside the centred square crop of the card through the shake",
     "format": "hd",
     "shake": {
       "first": 48,
