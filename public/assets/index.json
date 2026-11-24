@@ -2,14 +2,36 @@
   "version": 1,
   "sets": {
     "web": {
-      "shared": [],
+      "shared": [
+        {
+          "path": "shared/village-grain.lin.tile.png",
+          "bytes": 867473,
+          "sha": "459ea1e4d64e9f2e"
+        },
+        {
+          "path": "shared/village-model.glb",
+          "bytes": 2240144,
+          "sha": "f38e45934eb49960"
+        }
+      ],
       "winter": [],
       "spring": [],
       "summer": [],
       "fall": []
     },
     "full": {
-      "shared": [],
+      "shared": [
+        {
+          "path": "shared/village-grain.lin.tile.png",
+          "bytes": 867473,
+          "sha": "459ea1e4d64e9f2e"
+        },
+        {
+          "path": "shared/village-model.glb",
+          "bytes": 2240144,
+          "sha": "f38e45934eb49960"
+        }
+      ],
       "winter": [],
       "spring": [],
       "summer": [],
@@ -17,9 +39,9 @@
     }
   },
   "seasonHashes": {
-    "winter": "e3b0c44298fc1c14",
-    "spring": "e3b0c44298fc1c14",
-    "summer": "e3b0c44298fc1c14",
-    "fall": "e3b0c44298fc1c14"
+    "winter": "05ecd2e0e5cd2da8",
+    "spring": "05ecd2e0e5cd2da8",
+    "summer": "05ecd2e0e5cd2da8",
+    "fall": "05ecd2e0e5cd2da8"
   }
 }
