@@ -18,26 +18,39 @@ The Builder's memory. Read it at the start of every task and after every compact
 - Extension step: none
 - App URL: none yet
 - Review page: none yet
-- Repo is private: not measured
-- Sound files: not decided
+- Repo is private: no. Measured 2026-11-24 01:48 UTC through the GitHub API: visibility public. `repo.expectPrivate` is true, so the two disagree and the public rules apply
+- Sound files: held back from the repo because it is public. Prompts, settings and measurements are committed as text. The files live in the workspace under `audio/` and in the published app, and one archive of every kept file is attached with each status that follows new sounds and with the REVIEW block
 
 ## Latest pictures
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-none
+Status 1 · 2026-11-24 01:52 UTC
+
+- `out/stills/status/status-1.jpg`: the eight approved images: winter, spring, summer, fall, each at rest and just after a landing
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
-none
+```
+2026-11-24 01:51 UTC
+clock: phase 0, tick of 1.1 minutes
+phase 0: 0.02 h used of its 4.00 h box
+allowance (before the review): 0.02 h used of 36.00 h allowed
+all time before the review: 0.02 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+extra rounds: yes
+half point: not reached
+box end: not reached
+budget report: not due
+minutes since the last status: 0
+```
 
 ## Phases
 
 | Phase | State | Started | Ended | Gate evidence |
 | --- | --- | --- | --- | --- |
-| 0 · Ground truth | in progress | 2026-11-24 01:36 UTC | | |
+| 0 · Ground truth | in progress | 2026-11-24 01:45 UTC | | |
 | 1 · The rough cut | not started | | | |
 | 2 · Engine and blockout | not started | | | |
 | 3 · The look lock | not started | | | |
@@ -73,7 +86,12 @@ none
 
 The inline display method. What can be called. The sound tools, with their test calls. The audio evaluation tool. The names of the prompt screen skill and the audio map skill, or that they were not found. The terms that were read. The hosting limits.
 
-none
+### Inline display
+
+- Method, proven 2026-11-24 01:52 UTC with `references/approved/contact-sheet.jpg`: the pictures are written into one JSON file, `out/work/status/gallery.json`, as `{"lines": [...], "pics": [{"label", "w", "h", "src"}]}` where `src` is a JPEG data URL at most `status.pictureLongEdgePx` on the long edge. The file is shown with the inline visualization tool, passed as a JSON source named `pics`, through a small widget that creates one `img` per entry and sets its `src` from the data URL. The picture appeared in the thread with no download.
+- External URLs and workspace paths are not used as image sources: the widget's content policy allows only `data:` and `blob:`.
+- A source file may be at most 10 MB. Four pictures at 1200 px come to well under 2 MB.
+- Links cannot be clicked inside the widget, so the app and review links are also written in the message text.
 
 ## Pinned versions
 
@@ -189,13 +207,15 @@ none
 
 ## Push log
 
-none
+- 2026-11-24 01:49 UTC: `4c24ecc` pushed to `main`. The first push of the build succeeded.
 
 ## Session log
 
 One entry per task: when it started, what it did, where it stopped.
 
-### Task 1 · started 2026-11-24 01:36 UTC
+### Task 1 · started 2026-11-24, about 01:45 UTC
 
-- 01:36 to 01:49: pulled the repo at `6cc59f6`, checked stop condition 1 (manifest present, all nine hashes match, every image named in `keys` exists), read `AGENTS.md` and the kit in its reading order. No addenda. This reading time is before the clock existed and is not counted by it.
+- 01:45 to 01:49: pulled the repo at `6cc59f6`, checked stop condition 1 (manifest present, all nine hashes match, every image named in `keys` exists), read `AGENTS.md` and the kit in its reading order. No addenda. This reading time is before the clock existed and is not counted by it.
 - 01:49: Phase 0 step 1. Wrote `in progress` under "Build" and pushed.
+- 01:50: steps 2 and 3. `package.json` created. `npm run clock`, `npm run look` and `npm run progress` built. Clock started.
+- 01:52: step 4. The contact sheet was shown inline in the thread. Repo measured public. First status posted.
