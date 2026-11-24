@@ -9,7 +9,7 @@ const RAD = Math.PI / 180
 
 export const WOOD = { tileMm: 28.8, mean: [0.108, 0.047, 0.0245], px: 2048 }
 export const BRASS = { tileMm: 12, px: 1024 }
-export const SNOW = { tileMm: 6, px: 512 }
+export const SNOW = { tileMm: 12, px: 512 }
 export const CARVE = {
   width: 4096,
   height: 1024,
@@ -208,29 +208,32 @@ export async function brassMaps(dir) {
 export async function snowMaps(dir) {
   const n = SNOW.px
   const height = new Float32Array(n * n)
+  const cavity = new Float32Array(n * n)
   for (let y = 0; y < n; y++) {
     for (let x = 0; x < n; x++) {
       const u = x / n
       const v = y / n
-      const clump = fbm(u * 5, v * 5, 5, 5, 61, 4)
-      const grain = fbm(u * 42, v * 42, 42, 42, 67, 2)
-      const crystal = smooth(0.66, 0.9, pnoise(u * 90, v * 90, 90, 90, 73))
-      height[y * n + x] = clump * 1.6 + grain * 0.55 + crystal * 0.45
+      const lump = fbm(u * 3, v * 3, 3, 3, 59, 2)
+      const clump = fbm(u * 8, v * 8, 8, 8, 61, 3)
+      const grain = fbm(u * 22, v * 22, 22, 22, 67, 2)
+      const crystal = smooth(0.62, 0.9, pnoise(u * 60, v * 60, 60, 60, 73))
+      height[y * n + x] = lump * 0.3 + clump * 0.38 + grain * 0.2 + crystal * 0.05
+      cavity[y * n + x] = clump * 0.4 + grain * 0.6
     }
   }
   const colour = new Uint8Array(n * n * 3)
   const detail = new Uint8Array(n * n * 3)
+  const perMm = n / SNOW.tileMm / 2
   for (let y = 0; y < n; y++) {
     for (let x = 0; x < n; x++) {
       const i = y * n + x
-      const hgt = height[i]
-      const gx = (height[y * n + ((x + 1) % n)] - height[y * n + ((x + n - 1) % n)]) * 2.2
-      const gy = (height[((y + 1) % n) * n + x] - height[((y + n - 1) % n) * n + x]) * 2.2
+      const gx = (height[y * n + ((x + 1) % n)] - height[y * n + ((x + n - 1) % n)]) * perMm
+      const gy = (height[((y + 1) % n) * n + x] - height[((y + n - 1) % n) * n + x]) * perMm
       const l = Math.hypot(gx, gy, 1)
-      const shade = clamp(0.8 + 0.2 * smooth(0.7, 1.7, hgt))
-      colour[i * 3] = byte(toSrgb(0.86 * shade))
-      colour[i * 3 + 1] = byte(toSrgb(0.9 * shade))
-      colour[i * 3 + 2] = byte(toSrgb(0.96 * mix(shade, 1, 0.35)))
+      const shade = clamp(0.74 + 0.26 * smooth(0.3, 0.62, cavity[i]))
+      colour[i * 3] = byte(toSrgb(0.93 * shade))
+      colour[i * 3 + 1] = byte(toSrgb(0.94 * shade))
+      colour[i * 3 + 2] = byte(toSrgb(0.96 * mix(shade, 1, 0.3)))
       detail[i * 3] = byte(0.5 - (0.5 * gx) / l)
       detail[i * 3 + 1] = byte(0.5 - (0.5 * gy) / l)
       detail[i * 3 + 2] = byte(hashInt(x >> 1, y >> 1, 83))

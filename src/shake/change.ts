@@ -6,7 +6,8 @@ export interface ChangeSpan {
   lag: number
 }
 
-const OUTSIDE: ChangeSpan = { from: 0.46, to: 0.64, lag: 0 }
+const OUTSIDE: ChangeSpan = { from: 0.49, to: 0.61, lag: 0 }
+const BLOOM_RAMP = 0.12
 const SPANS: Record<string, ChangeSpan> = {
   miniature: { from: 0.05, to: 0.95, lag: 0.5 },
   arrival: { from: 0.05, to: 0.95, lag: 0.5 },
@@ -39,7 +40,7 @@ export function partChange(part: string, change: number, side = 0.5): number {
 export function changeBloom(change: number): number {
   if (!(change > 0) || change >= 1) return 0
   const mid = (OUTSIDE.from + OUTSIDE.to) / 2
-  const half = (OUTSIDE.to - OUTSIDE.from) / 2 + 0.12
-  const v = 1 - Math.abs(change - mid) / half
+  const half = (OUTSIDE.to - OUTSIDE.from) / 2
+  const v = Math.min(1, (half + BLOOM_RAMP - Math.abs(change - mid)) / BLOOM_RAMP)
   return v <= 0 ? 0 : v * v * (3 - 2 * v)
 }
