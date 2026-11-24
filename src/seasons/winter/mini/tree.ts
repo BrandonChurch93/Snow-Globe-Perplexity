@@ -20,7 +20,7 @@ const COVER_RISE = 0.12
 const WARM: [number, number, number] = [1, 0.56, 0.33]
 const GOLD: [number, number, number] = [1, 0.84, 0.52]
 const BULB_GAIN = 12
-const GLOW = { needles: { power: 3.2, reachMm: 2.4, star: 0.6 }, snow: { power: 1.56, reachMm: 1.3, star: 0.36 }, wood: { power: 1.8, reachMm: 1.3, star: 0.6 } }
+const GLOW = { needles: { power: 14, reachMm: 1, star: 0.6 }, snow: { power: 1.56, reachMm: 1.3, star: 0.36 }, wood: { power: 3, reachMm: 0.9, star: 0.6 } }
 const HALO = { cover: 0.55, edge: 2.5, glow: 0.85, core: 10 }
 const STAR_LOCAL: Vec3 = [0.05, 45.7, 0.1]
 
@@ -79,7 +79,8 @@ function needleHook(shader: Shader): void {
       float treeH = dot(treeC.rgb, vec3(0.3, 0.6, 0.1));
       ${TREE_SLOPES}
       if (treeCard && treeC.a < 0.04 + 0.96 * stageHash(vec3(gl_FragCoord.xy, uSeed + floor(vCard.y + 0.5) / 64.0))) discard;
-      diffuseColor.rgb *= treeC.rgb * vec3(2.6, 2.6, 4.2) / (1.0 + 2.0 * treeC.rgb);`,
+      vec3 treeOwn = pow(treeC.rgb, vec3(1.25)) * 1.5;
+      diffuseColor.rgb *= mix(vec3(dot(treeOwn, vec3(0.3, 0.6, 0.1))), treeOwn, 0.5);`,
     )
     .replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\nif (vCard.x > 0.5) normal *= faceDirection;')
     .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>\n${TREE_BUMP}`)
