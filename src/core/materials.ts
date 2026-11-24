@@ -63,6 +63,8 @@ export function setPresence(m: THREE.Material, mode: number, presence = 1): void
 export const STAGE_VERT_PARS = `
 ${LENS_GLSL}
 uniform mat4 uGlobeInv;
+uniform int uDiag;
+uniform vec3 uCoc;
 varying vec3 vStageWorld;
 varying vec3 vStageLocal;
 varying vec3 vStageAux;
@@ -83,10 +85,21 @@ vStagePlaced = stageWorld.xyz;
 vec4 stagePlaced = lensPlace(stageWorld.xyz, cameraPosition);
 vec4 stageView = viewMatrix * vec4(stagePlaced.xyz, 1.0);
 gl_Position = projectionMatrix * stageView;
-// y is the true depth from the camera, not the placed one: each lens sample places the vertex again from its own eye,
-// so what the lens holds sharp follows where the point really is (measured on the door: sharp at 152 mm, placed at 171)
+// y is the depth the lens focuses at. Each lens sample places the vertex again from its own eye, so what is held sharp
+// follows the image of the point behind the glass and not the depth it is placed at (the door: sharp at 152 mm, placed
+// at 171). The true depth is right near the middle of the globe; the texels view takes the image itself, from the
+// parallax of an eye moved 4 mm across and 4 mm up, and of the two keeps the one further from the focus
 vStageAux = vec3(stagePlaced.w, -mvPosition.z, length(stageView.xyz));
 vStagePlaced = stagePlaced.xyz;
+if (uDiag == ${viewCode('texels')}) {
+  vec3 stageRight = vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]);
+  vec3 stageUp = vec3(viewMatrix[0][1], viewMatrix[1][1], viewMatrix[2][1]);
+  vec3 stageA = (viewMatrix * vec4(lensPlace(stageWorld.xyz, cameraPosition + 4.0 * stageRight).xyz, 1.0)).xyz;
+  vec3 stageB = (viewMatrix * vec4(lensPlace(stageWorld.xyz, cameraPosition + 4.0 * stageUp).xyz, 1.0)).xyz;
+  float stageAcross = ((stageA.x - 4.0) / stageA.z - stageView.x / stageView.z) / 4.0;
+  float stageDown = ((stageB.y - 4.0) / stageB.z - stageView.y / stageView.z) / 4.0;
+  vStageAux.y = 1.0 / max(abs(stageAcross - uCoc.y) > abs(stageDown - uCoc.y) ? stageAcross : stageDown, 1e-5);
+}
 #endif
 `
 
