@@ -27,7 +27,7 @@ export const ROOM_RIG = {
   inside: { through: 0.7, wrap: 0.6, spread: 1.6, bounce: 0.27, sky: 0.5, axis: [0, 0.45, 1] as Rgb, pull: 0.3 },
   point: { key: 0.4, rim: 0.1, sky: 0.32 },
   room: { gain: 1, lights: 1, softPerRough: 0.5, lightsBelowRough: 0.62 },
-  grid: { flat: 0.25, wrap: 0.3, specular: 1, openFloor: 0.35 },
+  grid: { flat: 0.25, wrap: 0.3, specular: 1, openFloor: 0.35, air: 1.2 },
   bloomGain: 9,
   flood: { inside: 0.84, insideMm: 40, outside: 70, ease: 4, wrap: 0.35, near: 1, nearMm: 10, floor: 0.18, floorMm: 50, pool: 14 },
   glow: { outside: 0.8, islandMm: innerRadiusMm * 0.88, lobe: 0.3, specular: 1 },
@@ -105,6 +105,7 @@ export class Lighting {
     u.uRigLobe.value.set(ROOM_RIG.keyLobe, ROOM_RIG.keySpecular, ROOM_RIG.rimWrap, ROOM_RIG.rimSpecular)
     u.uRigRoom.value.set(ROOM_RIG.room.gain, ROOM_RIG.room.lights, ROOM_RIG.room.softPerRough, ROOM_RIG.room.lightsBelowRough)
     u.uGridShade.value.set(ROOM_RIG.grid.flat, ROOM_RIG.grid.wrap, ROOM_RIG.grid.specular, ROOM_RIG.grid.openFloor)
+    u.uGridAir.value = ROOM_RIG.grid.air * ROOM_RIG.grid.air
     u.uRigGlow.value.set(ROOM_RIG.glow.lobe, ROOM_RIG.glow.specular, s.sureFrom, s.sureTo)
     u.uRigPoint.value.set(ROOM_RIG.point.key, ROOM_RIG.point.rim, ROOM_RIG.point.sky, 0)
     u.uLightFloodAt.value.set(outerRadiusMm, ROOM_RIG.flood.wrap, ROOM_RIG.flood.inside, ROOM_RIG.flood.insideMm)
