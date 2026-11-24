@@ -103,7 +103,7 @@
     {
       "name": "miniature-winter",
       "unit": "winter",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/winter",
         "public/assets/winter",
@@ -111,7 +111,8 @@
         "public/assets/shared"
       ],
       "standInHash": "3c6ea2bbcb3220ac",
-      "commit": "2530677"
+      "commit": "a628f5f",
+      "note": "the village (agent/p3-village at 6704bcc: 6 draw calls, every material real) and the tree (agent/p3-tree, merged earlier at 9e79410) are both in; each builder's report lists what is still wrong"
     },
     {
       "name": "glass-dressing-winter",

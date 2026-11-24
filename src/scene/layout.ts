@@ -115,8 +115,8 @@ export const cottage = {
   rise: 9.2,
   overhang: 1.3,
   gableOverhang: 1.1,
-  roofThick: 0.9,
-  chimney: { along: -8.4, across: 1.7, half: 1.8, top: 21.4 },
+  roofThick: 0.65,
+  chimney: { along: -5.7, across: -2.25, half: 1.5, halfAlong: 2, top: 21.4 },
   door: { across: 2.5, width: 5, height: 7.4 },
   window: { across: -5.2, width: 2.6, height: 3.5, sill: 3.3 },
   sideWindow: { along: 1.7, width: 2.9, height: 3.2, sill: 3.6 },
@@ -157,7 +157,7 @@ function build(): Shape[] {
   const core = (c.halfWidth - 0.4) / Math.SQRT2
   box('roof', cottagePoint(0, c.wall + c.rise - 0.5 - core * Math.SQRT2, 0), [c.halfLength, core, core], c.yawDeg - 90, 45)
   const stack = (c.chimney.top - c.wall) / 2
-  box('chimney', cottagePoint(c.chimney.across, c.wall + stack, c.chimney.along), [c.chimney.half, stack, c.chimney.half], c.yawDeg)
+  box('chimney', cottagePoint(c.chimney.across, c.wall + stack, c.chimney.along), [c.chimney.half, stack, c.chimney.halfAlong], c.yawDeg)
 
   const tf = on(tree.x, tree.z)
   out.push({ kind: 'cone', role: 'trunk', foot: [tree.x, tf, tree.z], radius: tree.trunk, top: tree.top, height: tree.height })

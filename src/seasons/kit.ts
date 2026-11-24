@@ -51,7 +51,7 @@ export interface SeasonKit {
   readonly standIns?: readonly string[]
   readonly glassDressing: Dressing
   readonly surfaceDressing: Dressing & { reachMm: number }
-  readonly rig: { key: RoomLight; rim: RoomLight; sky: Rgb; ground: Rgb; fill: number }
+  readonly rig: { key: RoomLight; rim: RoomLight; sky: Rgb; ground: Rgb; fill: number; card?: { color: Rgb; intensity: number; from: Vec3; wrap: number; specular: number; inside: number } }
   readonly innerLights: readonly InnerLight[]
   readonly veil: { tint: Rgb; density: number; rest: number }
   readonly backdrop: { colors: readonly Rgb[]; room: Rgb; floor: Rgb }

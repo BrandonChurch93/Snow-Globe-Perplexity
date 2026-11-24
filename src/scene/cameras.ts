@@ -13,12 +13,41 @@ export interface Pose {
 const RAD = Math.PI / 180
 
 const LENS: Record<string, { apertureMm: number; focusShiftMm: number }> = {
-  hero: { apertureMm: 9, focusShiftMm: -40 },
-  macro: { apertureMm: 2.5, focusShiftMm: 21.5 },
-  interior: { apertureMm: 7, focusShiftMm: -10 },
-  base: { apertureMm: 7, focusShiftMm: -50 },
-  surface: { apertureMm: 7, focusShiftMm: -52 },
-  low: { apertureMm: 8, focusShiftMm: -40 },
+  hero: { apertureMm: 2, focusShiftMm: -12 },
+  macro: { apertureMm: 2.5, focusShiftMm: 1.7 },
+  interior: { apertureMm: 0.5, focusShiftMm: -12 },
+  base: { apertureMm: 0.5, focusShiftMm: -31 },
+  surface: { apertureMm: 1.8, focusShiftMm: -52 },
+  low: { apertureMm: 1.4, focusShiftMm: -12 },
+}
+
+export const FAR_FIELD = { apertureMm: 5.4, startsPastFocus: 0.12 }
+
+export const farApertureMm = (pose: Pose): number => (pose.apertureMm > 0 ? FAR_FIELD.apertureMm : 0)
+export const farFromMm = (pose: Pose): number => pose.focusMm * (1 + FAR_FIELD.startsPastFocus)
+
+export const lensUniforms = {
+  uFar: { value: new THREE.Vector4(0, 1, 0, 1) },
+  uEye: { value: new THREE.Vector3() },
+  uShift: { value: new THREE.Vector2() },
+  uFocal: { value: 1 },
+}
+
+export const FAR_GLSL = `
+uniform vec4 uFar;
+uniform vec3 uEye;
+uniform vec2 uShift;
+uniform float uFocal;
+float lensBlurMm(float depth) {
+  return uFar.z * abs(depth * uFar.w - 1.0) + uFar.x * max(depth * uFar.y - 1.0, 0.0);
+}
+`
+
+export function setLens(pose: Pose, sample: Sample | null, focalPx: number, on: boolean): void {
+  lensUniforms.uFar.value.set(on ? farApertureMm(pose) : 0, 1 / farFromMm(pose), on ? pose.apertureMm : 0, 1 / pose.focusMm)
+  lensUniforms.uEye.value.copy(pose.position)
+  lensUniforms.uShift.value.set(sample ? sample.lu * pose.apertureMm : 0, sample ? sample.lv * pose.apertureMm : 0)
+  lensUniforms.uFocal.value = focalPx
 }
 
 export function poseOf(spec: CameraSpec, lens = { apertureMm: 8, focusShiftMm: 0 }): Pose {
