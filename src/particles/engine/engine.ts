@@ -63,11 +63,12 @@ const ARM_WIND = 4
 const ARM_TWIST = (TAU / 3) / 18
 const ROLL_SOFT = 1
 const ARM_HUB2 = 12 * 12
-const BANK_GAIN = 5
-const BANK_LOW = 0.15
+const BANK_GAIN = 4.5
+const BANK_LIGHT = 4
+const BANK_LOW = 0.2
 const BALL_ROOM_MM = 0.1
-const BANK_FROM = 9 / ROLL_RISE_MM
-const BANK_OVER = ROLL_RISE_MM / 39
+const BANK_FROM = 6 / ROLL_RISE_MM
+const BANK_OVER = ROLL_RISE_MM / (48 - 6)
 const LEAP2 = 3 * 3
 
 const TABLE = 4096
@@ -1376,7 +1377,8 @@ export class ParticleEngine {
             fx = arm * tx
             const hb = (ht - BANK_FROM) * BANK_OVER
             const fall = hb <= 0 ? BANK_LOW : hb >= 1 ? 1 : BANK_LOW + (1 - BANK_LOW) * hb * hb * (3 - 2 * hb)
-            fy = arm * ty - bankK * gk * fall * sink[i]!
+            const sk = sink[i]!
+            fy = sk > BANK_LIGHT ? arm * ty - bankK * gk * fall * sk : arm * ty
             fz = arm * tz
           }
         }
