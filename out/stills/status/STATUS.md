@@ -1,15 +1,16 @@
-# Status 51
+# Status 53
 
-2026-11-24 19:38 UTC
+2026-11-24 20:25 UTC
 
-- The new shake path is on main and in the app: the globe swings and rolls through the set down where Round 5's motion critic saw no movement on the old path
-- Still open on it: the storm fills the glass as a solid white and the lift of 7.25 mm reads by its sideways draw more than by its height. The ten builders are on both: the mirror image and the contact shadow are being made to open under the foot
-- A push from my own sandbox failed twice at 19:25 after the session resumed. Main went up once through an idle agent from a bundle (decision 63) and my own push works again since 19:28
-- Next: the cure of the red measure by 19:50 and the Round 6 freeze at 20:15
-- phase 3: 11.19 h used of its 11.00 h box
-- allowance (before the review): 17.80 h used of 36.00 h allowed
+- Round 6 is frozen at 20:20 on commit 2569976 with the first pushes of all ten builders merged: 418 tests pass · the sources check is green · the app is published again
+- The strokes are back at 22 mm (decision 65): with the new liquid engine 24 failed one pin and no pin is moved to pass
+- Four render agents are rendering the judged stills at the final tier and the motion sheets and running the gate and the measures
+- The ten builders go on for Round 7 which freezes at 22:15 and is the last round of the look lock
+- phase 3: 11.97 h used of its 11.00 h box
+- allowance (before the review): 18.58 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-51-1.jpg`: The set down of the test shake on main with the new path: frames 108 to 130 at the draft tier
-- `out/stills/status/status-51-2.jpg`: The lift of the same shake: frames 0 to 22 at the draft tier
+- `out/stills/status/status-53-1.jpg`: The build that Round 6 judges at the draft tier: at rest on the left and one second after the landing on the right. The storm is streaks along the roll now and the cottage and the tree read through it
+- `out/stills/status/status-53-2.jpg`: Still: winter landed hero, hd, draft
+- `out/stills/status/status-53-3.jpg`: Still: winter rest hero, hd, draft
