@@ -538,6 +538,8 @@ describe('the shake path: a heavy thing in a hand', () => {
       const peak = lean(overBeat)
       expect(peak.x * into.x + peak.z * into.z, `${name} rocks over to the other side`).toBeLessThan(0)
       expect(over, `${name} overshoot`).toBeGreaterThan(0.3)
+      // Decision 59 caps the rock at 1.3 degrees; it is kept close under the cap, so that it is as large on screen as the rule allows.
+      expect(over, `${name} overshoot`).toBeGreaterThan(1.1)
       expect(over, `${name} overshoot`).toBeLessThan(1.3)
       expect(m.plan.overshoot * DEG).toBeCloseTo(over, 1)
       expect(overBeat - landing).toBeLessThan(0.3 * settle)
@@ -619,9 +621,10 @@ describe('the shake path: as the hero lens sees it', () => {
           if (roll > peak.roll) peak = { beat: b, roll }
         }
         expect(peak.roll, `${name} roll at the turn at beat ${turn.beat.toFixed(3)}`).toBeGreaterThan(0.6 * s.tiltDeg)
-        // The first pull starts from the wind up with the wrist already coming over, so its roll peaks on the turn itself, to within half a frame; every later one trails its turn.
+        // The tilt lags the travel: the top is still going over when the hand has turned. The first pull starts from the wind up with the wrist already coming over,
+        // so its roll may peak on the turn itself, never more than a quarter of a frame before it; every later one trails its turn.
         const first = turn === m.plan.strokes[0]
-        expect(peak.beat - turn.beat, `${name} roll trails the turn at beat ${turn.beat.toFixed(3)}`).toBeGreaterThan(first ? -0.5 * FRAME_BEATS : 0)
+        expect(peak.beat - turn.beat, `${name} roll trails the turn at beat ${turn.beat.toFixed(3)}`).toBeGreaterThan(first ? -0.25 * FRAME_BEATS : 0)
         expect(peak.beat - turn.beat, `${name} roll trails the turn at beat ${turn.beat.toFixed(3)}`).toBeLessThan(3 * FRAME_BEATS)
         most = Math.max(most, peak.roll)
       }
