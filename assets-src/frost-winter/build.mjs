@@ -249,7 +249,8 @@ function grow(ctx, p, h, o, depth = 0) {
     const t1 = t + ds / o.speed
     const A = space.map(p)
     const B = space.map(q)
-    const M = space.map(space.project(mix3(p, q, 0.5)))
+    const M0 = space.map(space.project(mix3(p, q, 0.5)))
+    const M = ctx.metric ? ctx.metric(M0) : M0
     field.stroke(A.x, A.y, B.x, B.y, M.m, M.pxPerMm, wa, wb, ha, hb, t, t1, o.spark ?? 0.6, o.kappa ?? 2, o.reach ?? 0.12, o.power ?? 1.7)
     let fa = 0
     let fb = 0
@@ -656,80 +657,84 @@ function driftAt(x, z) {
 }
 
 // ---------- the slab ----------
-function slabArm(length, rng, t0) {
-  const twig = (l, u, r) => ({ step: 0.3, w0: r.range(0.16, 0.24), w1: 0.07, h0: r.range(0.35, 0.5), h1: 0.16, speed: 0.4, wobble: 0.02, spark: r.range(0.5, 1), kappa: 3, reach: 0.12, taper: 0.8, power: 1.5 })
-  const leaf = (l, u, r) => ({
-    step: 0.32,
-    w0: r.range(0.3, 0.44) * (0.65 + 0.35 * Math.min(1, l / 1.2)),
-    w1: 0.08,
-    h0: r.range(0.55, 0.8),
-    h1: 0.2,
-    speed: 0.45,
+function slabArm(length, rng, t0, bold = 1) {
+  // A fern of ice: a spine, side branches that are longest a third of the way out, and on each of those a row of short
+  // needles. Widths are in millimetres as the hero camera sees them (see the metric in buildSlab). No broad body under it:
+  // the dark slab shows between the branches, and the fern thins to single needles at its tip.
+  const S = L.slab.fern
+  const scale = rng.range(S.scale[0], S.scale[1]) * bold
+  const fine = rng.next()
+  const needle = (l, u, r) => ({
+    step: 0.25,
+    w0: r.range(S.needleMm[0], S.needleMm[1]) * scale,
+    w1: S.needleTipMm,
+    h0: r.range(0.6, 0.85),
+    h1: 0.35,
+    speed: 0.4,
     wobble: 0.03,
-    curl: r.range(0, 0.06),
     spark: r.range(0.5, 1),
     kappa: 3,
-    reach: 0.15,
-    taper: 0.85,
-    power: 1.5,
-    kids: l > 1.5 ? { gap: r.range(0.6, 0.8), len: l * 0.3, min: 0.25, angle: 46 * RAD, angleTip: 38 * RAD, profile: feather(0.2, 0.9), make: twig } : undefined,
+    reach: 0.1,
+    taper: 0.8,
+    power: 1.6,
   })
-  const branch = (l, u, r) => {
-    const strong = r.next() < S.strong
-    const o = {
-      step: 0.4,
-      w0: r.range(S.leafMm[0], S.leafMm[1]) * (0.7 + 0.3 * Math.min(1, l / 3)) * (strong ? 1.2 : 1),
-      w1: 0.12,
-      h0: r.range(0.6, 0.85),
-      h1: 0.26,
-      speed: 0.62,
-      wobble: 0.024,
-      curl: r.range(0.0, 0.04),
-      spark: 0.7,
-      kappa: 2.5,
-      reach: 0.2,
-      taper: 0.8,
-      power: 1.6,
-    }
-    o.film = { w0: r.range(S.bladeMm[0], S.bladeMm[1]) * (0.6 + 0.4 * Math.min(1, l / 3)), w1: 0.15, h0: r.range(S.blade[0], S.blade[1]), h1: 0.16, profile: feather(r.range(0.22, 0.4), r.range(0.55, 0.85)), kappa: 2.5, spark: 0.4 }
-    o.halo = { w0: o.film.w0 * S.halo[0], w1: 0.4, h: r.range(S.halo[1], S.halo[2]), late: 2, profile: feather(0.3, 0.5) }
-    if (strong) {
-      o.stretch = r.range(S.strongStretch[0], S.strongStretch[1])
-      const full = l * o.stretch
-      o.film.w0 *= 1.25
-      o.kids = { gap: r.range(0.8, 1.15), start: r.range(0.6, 1.2), len: clamp(full * 0.34, 0.7, 2.2), min: 0.4, angle: r.range(40, 50) * RAD, angleTip: 34 * RAD, spread: 0.08, profile: feather(0.14, 0.9), make: leaf }
-    }
-    return o
-  }
-  const S = L.slab.frond
+  const branch = (l, u, r) => ({
+    step: 0.3,
+    w0: r.range(S.branchMm[0], S.branchMm[1]) * scale * (0.6 + 0.4 * Math.min(1, l / 5)),
+    w1: S.branchTipMm,
+    h0: r.range(0.75, 0.95),
+    h1: 0.5,
+    speed: 0.6,
+    wobble: 0.03,
+    curl: r.range(0.0, 0.05),
+    spark: r.range(0.5, 0.9),
+    kappa: 2.5,
+    reach: 0.14,
+    taper: 0.6,
+    power: 1.7,
+    kids:
+      l > 1.2
+        ? {
+            gap: r.range(S.needleGapMm[0], S.needleGapMm[1]),
+            start: r.range(0.3, 0.7),
+            len: clamp(l * r.range(S.needleShare[0], S.needleShare[1]), 0.5, S.needleMaxMm),
+            min: 0.3,
+            angle: r.range(42, 52) * RAD,
+            angleTip: r.range(30, 38) * RAD,
+            spread: 0.1,
+            profile: feather(r.range(0.1, 0.25), r.range(0.7, 1.1)),
+            make: needle,
+          }
+        : undefined,
+  })
   return {
     len: length,
-    step: 0.5,
-    w0: rng.range(1.1, 1.5),
-    w1: 0.2,
+    step: 0.4,
+    w0: rng.range(S.spineMm[0], S.spineMm[1]) * scale,
+    w1: S.spineTipMm,
     h0: 1,
-    h1: 0.36,
+    h1: 0.5,
     speed: 1,
     t0,
-    wobble: 0.014,
+    wobble: 0.016,
     curl: rng.gauss() * 0.003,
     spark: 0.7,
     kappa: 2,
-    reach: 0.3,
-    taper: 0.8,
+    reach: 0.2,
+    taper: 0.7,
     power: 1.8,
-    film: { w0: rng.range(S.bodyMm[0], S.bodyMm[1]), w1: 0.5, h0: rng.range(0.62, 0.82), h1: 0.1, kappa: 2.5, spark: 0.35, power: 1.15 },
-    halo: { w0: S.bodyMm[1] * S.halo[0], w1: 1, h: S.halo[2], late: 2 },
+    film: { w0: rng.range(S.rootMm[0], S.rootMm[1]) * scale, w1: 0.1, h0: rng.range(0.5, 0.7), h1: 0.0, profile: (u) => Math.pow(1 - Math.min(1, u / S.rootShare), 1.5), kappa: 2.5, spark: 0.35, power: 1.2 },
     kids: {
-      gap: rng.range(S.gapMm[0], S.gapMm[1]),
-      start: rng.range(1.5, 3),
-      len: clamp(length * rng.range(S.lenShare[0], S.lenShare[1]), S.lenMm[0], S.lenMm[1]),
+      gap: (S.gapMm[0] + (S.gapMm[1] - S.gapMm[0]) * fine) * scale,
+      start: rng.range(1, 2.5),
+      len: clamp(length * rng.range(S.lenShare[0], S.lenShare[1]), S.lenMm[0], S.lenMm[1]) * (0.8 + 0.4 * fine) * Math.sqrt(bold),
       min: 0.5,
       delay: 1.5,
+      lean: rng.range(S.lean[0], S.lean[1]),
       angle: rng.range(S.angleDeg[0], S.angleDeg[1]) * RAD,
       angleTip: rng.range(S.angleTipDeg[0], S.angleTipDeg[1]) * RAD,
-      spread: 0.08,
-      profile: feather(rng.range(0.08, 0.18), rng.range(0.75, 1.05)),
+      spread: 0.07,
+      profile: feather(rng.range(S.rise[0], S.rise[1]), rng.range(S.fall[0], S.fall[1])),
       make: branch,
     },
   }
@@ -756,6 +761,9 @@ function buildSlab() {
     const va = ra / squash
     return { dir: norm([rb, 0, va]), scale: Math.hypot(va, rb) }
   }
+  // A stroke's width is measured as that camera sees it too: a spine that runs across the picture is as thick on screen
+  // as one that runs toward the camera, so every stroke is drawn wider along z by the same share.
+  ctx.metric = (M) => ({ ...M, m: [M.m[0], M.m[1], M.m[2] * squash, M.m[3] * squash], pxPerMm: M.pxPerMm / squash })
   const at = (deg, r) => [r * Math.cos(deg * RAD), 0, r * Math.sin(deg * RAD)]
   const arms = L.slab.arms.map((a) => ({ ...a }))
   const taken = arms.map((a) => a.rootDeg)
@@ -771,7 +779,7 @@ function buildSlab() {
     const tip = at(a.tipDeg, a.tipMm)
     const d = norm([tip[0] - root[0], 0, tip[2] - root[2]])
     const length = Math.hypot(tip[0] - root[0], tip[2] - root[2]) * 1.02
-    const o = slabArm(length, rng, rng.range(0, 2.5))
+    const o = slabArm(length, rng, rng.range(0, 2.5), a.bold ?? 1)
     o.to = [tip]
     o.steer = 0.25
     grow(ctx, root, d, o)
@@ -825,7 +833,7 @@ function buildSlab() {
       const thin = smooth(0.6, 0.74, far) * (1 - smooth(half * 0.72, half * 0.97, r)) * smooth(footR + 6, footR + 24, r)
       if (thin > 0) {
         const speck = smooth(0.5, 0.68, 0.6 * noise3(wx * 3.1, 5.5, wz * 3.1) + 0.4 * noise3(wx * 7.3, 2.2, wz * 7.3))
-        const h = thin * (0.02 + 0.03 * mid + speck * (0.1 + 0.22 * mid))
+        const h = thin * speck * (0.1 + 0.22 * mid)
         if (h > H[i]) H[i] = h
         const s = 0.1 + 0.2 * mid + 0.5 * speck
         if (s > S[i]) S[i] = s
@@ -932,7 +940,7 @@ function slabShapes(lines, grains, tTop) {
 
   const small = []
   const onDrift = (y) => 1 - (1 - S.ridgeOnDrift) * smooth(0.15, 1.4, y)
-  for (const line of lines) {
+  for (const line of S.ridges ? lines : []) {
     const n = line.pts.length
     if (n < 3 || (line.depth > 0 && line.w[0] < S.branchMinMm)) continue
     const id = rng.next()

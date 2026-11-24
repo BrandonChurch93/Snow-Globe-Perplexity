@@ -12,10 +12,10 @@ Date: 2026-11-24
 
 ## assets-full/winter/frost-slab.lin.w2048.png
 Made by: `assets-src/frost-winter/build.mjs` (Node 20.20.2, sharp 0.35.5)
-From: `assets-src/frost-winter/layout.json` (the `slab` block: 9 arms by the angle and distance of their tips as measured on the approved image, the fill arms, the `frond` rules, the heaped `drift` against the foot, the film `under` the rim of the foot, the far patches, the grain and clump counts), `config/showcase.json` (the base diameter)
+From: `assets-src/frost-winter/layout.json` (the `slab` block: 9 arms by the angle and distance of their tips as measured on the approved image, the fill arms and each arm's `bold`, the `fern` rules (a crisp spine, side branches and rows of needles, widths in mm as the hero camera sees them), the heaped `drift` against the foot, the film `under` the rim of the foot, the far patches, the grain and clump counts), `config/showcase.json` (the base diameter)
 Prompt or command: `npm run make -- frost-winter` (or `--only slab`), then `npm run texpack`
 Takes: none generated; the committed file is the last run
-Why this one: a flat map of the slab under and round the foot, 4096 px over 264 mm in the full set and 2048 px in the web set, linear, with the same three channels. G runs outward from the foot, branch by branch, so the arrival's ring is uneven. The side branches of a frond are laid out as the hero camera sees them and stretched away from it by at most 1 over `slab.minSquash`, so a frond reads as a frond at that grazing angle. A thin broken film creeps in under the rim of the foot, so the lifted globe leaves no clean hole
+Why this one: a flat map of the slab under and round the foot, 4096 px over 264 mm in the full set and 2048 px in the web set, linear, with the same three channels. G runs outward from the foot, branch by branch, so the arrival's ring is uneven. Every arm is a fern drawn in the hero camera's own frame and stretched away from it by at most 1 over `slab.minSquash`, stroke widths included, so spine, branch and needle read at their drawn widths at that grazing angle. A thin broken film creeps in under the rim of the foot, so the lifted globe leaves no clean hole
 Date: 2026-11-24
 
 ## assets-full/winter/frost-grain.lin.tile.png
@@ -31,5 +31,5 @@ Made by: `assets-src/frost-winter/build.mjs` (Node 20.20.2, three as installed a
 From: the same run that draws the slab map (the kept arm lines and grains), `assets-src/frost-winter/layout.json` (`slab.shapes`, `glass.meshFromPolarDeg`, `glass.meshRings`, `glass.meshSegments`)
 Prompt or command: `npm run make -- frost-winter`, then `npm run texpack`
 Takes: none generated; the committed file is the last run
-Why this one: three meshes in one file. `glass` is the band of the sphere the frost is drawn on, `glass.liftMm` off the shell. `sheet` is a flat disc under and round the foot. `shapes` are the real small things near the camera: the heaped drift against the foot (lit tops, shaded sides), ridges along the arms and their branches, and faceted lumps for the larger grains and clumps, each vertex carrying when it appears
+Why this one: three meshes in one file. `glass` is the band of the sphere the frost is drawn on, `glass.liftMm` off the shell. `sheet` is a flat disc under and round the foot. `shapes` are the real small things near the camera: the heaped drift against the foot (lit tops, shaded sides), ridges along the arms and their branches (off while `slab.shapes.ridges` is false), and faceted lumps for the larger grains and clumps, each vertex carrying when it appears
 Date: 2026-11-24

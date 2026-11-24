@@ -27,9 +27,9 @@ export const surfaceDressing: Dressing & { reachMm: number } = { tint: [0.86, 0.
 
 const look = {
   glass: { cover: 1.5, haze: 0.5, slope: 0.55, micro: 1.1, glint: 1.6, light: 0.96, through: 2.4, thin: 0.6, thick: 0.8, blur: 0.012, bend: 0.012, scatter: 0.4, room: 0.5, soften: 0.2, rimMu: 0.3, front: 1.9, sugarMm: 0.3, gritty: 0.45, clear: [0.255, 0.28, 0.8] },
-  slab: { cover: 2.2, film: 1.7, slope: 1.6, micro: 1.2, glint: 1.6, pool: 0.5, poolBack: 0.12, poolThick: 0.9, skyCut: 0.55, gainFar: 0.9, gainKey: 1.5, gainFront: 0.24, grey: 0.85, light: 2.95, wrap: 0.3, broad: 1.4, shade: 0.35, edge: 0.6, ball: 0.3, rim: 0.55, sky: 1.3, sugarMm: 0.34, clotMm: 1.15, room: 0.1, lace: 0.3, gritty: 0.75 },
+  slab: { cover: 2.2, film: 1.7, slope: 1.6, micro: 1.2, glint: 1.6, pool: 0.5, poolBack: 0.12, poolThick: 0.9, skyCut: 0.55, gainFar: 0.9, gainKey: 1.5, gainFront: 0.24, grey: 0.85, light: 2.95, wrap: 0.3, broad: 1.4, shade: 0.35, edge: 0.6, ball: 0.3, rim: 0.55, sky: 1.3, sugarMm: 0.34, clotMm: 1.15, room: 0.1, lace: 0.3, gritty: 0.5, leftBack: 2.0, leftMid: 0.42, leftSkyCut: 0.7, leftWarm: 0.5, leftHeap: 1.6, leftHeapSky: 0.6, heapGlint: 0.4 },
 }
-const SNOW = { thin: [0.32, 0.49, 0.7], thick: [0.92, 0.955, 0.99], body: [0.9, 0.93, 0.98] }
+const SNOW = { thin: [0.6, 0.68, 0.8], thick: [0.92, 0.955, 0.99], body: [0.9, 0.93, 0.98] }
 const vec = (v: number[]): string => `vec3(${v.map((x) => x.toFixed(3)).join(', ')})`
 
 const frostUniforms = {
@@ -229,7 +229,7 @@ uniform sampler2D uSlabMap;
 uniform vec4 uField;
 uniform vec4 uSlabLook;
 ${SLAB_LIGHT_GLSL}
-vec3 frostSlabLight(vec3 n, vec3 P, vec3 albedo, float open) {
+vec3 frostSlabLight(vec3 n, vec3 P, vec3 albedo, float open, float piled) {
   vec3 keyDir;
   vec3 rimDir;
   vec3 warm;
@@ -249,7 +249,13 @@ vec3 frostSlabLight(vec3 n, vec3 P, vec3 albedo, float open) {
   float lean = side * (1.0 - heaped * ${look.slab.poolThick.toFixed(3)});
   albedo = mix(albedo, vec3(dot(albedo, vec3(0.3333))) * vec3(1.0, 0.98, 0.95), side * ${look.slab.grey.toFixed(3)});
   float gain = mix(${look.slab.gainFar.toFixed(3)}, ${look.slab.gainKey.toFixed(3)}, smoothstep(-0.4, 0.5, dot(dir2, vec2(0.949, -0.316)))) * (1.0 - ${look.slab.gainFront.toFixed(3)} * smoothstep(0.5, 0.95, dir2.y));
-  return albedo * (0.3183 * ${look.slab.light.toFixed(3)} * gain) * (lit + (uSky * ((0.55 + 0.45 * n.y) * ${look.slab.sky.toFixed(3)} * (1.0 - ${look.slab.skyCut.toFixed(3)} * lean)) + warm * mix(${look.slab.poolBack.toFixed(3)}, 1.0, lean) * (uSlabLook.y * (1.0 - ${look.slab.poolThick.toFixed(3)} * heaped))) * (occl * open));
+  float back = smoothstep(-0.05, 0.45, -dir2.y);
+  float frontLeft = side * smoothstep(0.05, 0.65, dir2.y);
+  float heapLeft = side * piled * smoothstep(-0.5, 0.0, dir2.y);
+  gain *= mix(1.0, mix(${look.slab.leftMid.toFixed(3)}, ${look.slab.leftBack.toFixed(3)}, back), side);
+  float skyShare = (1.0 - ${look.slab.skyCut.toFixed(3)} * lean) * (1.0 - ${look.slab.leftSkyCut.toFixed(3)} * frontLeft) * (1.0 - ${look.slab.leftHeapSky.toFixed(3)} * heapLeft);
+  float poolShare = mix(${look.slab.poolBack.toFixed(3)}, 1.0, lean) * (uSlabLook.y * (1.0 - ${look.slab.poolThick.toFixed(3)} * heaped)) + ${look.slab.leftWarm.toFixed(3)} * frontLeft;
+  return albedo * (0.3183 * ${look.slab.light.toFixed(3)} * gain) * (lit + (uSky * ((0.55 + 0.45 * n.y) * ${look.slab.sky.toFixed(3)} * skyShare) + warm * poolShare) * (occl * open) + warm * (${look.slab.leftHeap.toFixed(3)} * heapLeft * (0.5 + 0.5 * n.y)));
 }
 vec2 frostSlabUv(vec2 xz) {
   return vec2(xz.x + uField.x, uField.x - xz.y) / (2.0 * uField.x);
@@ -295,10 +301,10 @@ void main() {
   vec3 v = normalize(vStageWorld - cameraPosition);
   float mu = max(-v.y, 0.0);
   float alpha = 1.0 - exp(-uSlabLook.x * body * body / max(mu, 0.3) - ${look.slab.film.toFixed(3)} * body);
-  float thick = smoothstep(0.16, 0.86, mix(s0, h0, 0.6));
+  float thick = smoothstep(0.1, 0.62, max(h0, mix(s0, h0, 0.6)));
   vec3 albedo = mix(${vec(SNOW.thin)}, ${vec(SNOW.thick)}, thick);
   float open = 0.55 + 0.45 * smoothstep(-0.12, 0.2, h0 - s0 + 0.35 * thick);
-  vec3 col = frostSlabLight(n, vStageWorld, albedo, open) * (0.7 + 0.6 * sugar);
+  vec3 col = frostSlabLight(n, vStageWorld, albedo, open, 0.0) * (0.7 + 0.6 * sugar);
   vec3 spark = frostGlints(xz, pxMm, vec3(0.0, 1.0, 0.0), v, ${look.slab.room.toFixed(3)}) * uGlint.y * (0.05 + 1.5 * m0.b * on) * smoothstep(0.02, 0.25, alpha) * thick;
   gl_FragColor = vec4(col * alpha + spark, alpha);
   if (uDiag != 0) {
@@ -338,8 +344,8 @@ void main() {
   float open = vFrostOn.w * (0.86 + 0.14 * alpha);
   float deep = (0.22 + 0.78 * vFrostOn.y) * smoothstep(0.1, 0.75, alpha);
   vec3 albedo = mix(${vec(SNOW.thin)}, ${vec(SNOW.body)}, deep) * (0.9 + 0.16 * leaf);
-  vec3 col = frostSlabLight(n, vStageWorld, albedo, open) * (0.58 + 0.62 * sugar + 0.22 * clot);
-  vec3 spark = frostGlints(xz + vStageWorld.y * 3.1, pxMm, normalize(vFrostN), v, ${look.slab.room.toFixed(3)}) * uGlint.y * 1.3 * alpha * open;
+  vec3 col = frostSlabLight(n, vStageWorld, albedo, open, deep) * (0.58 + 0.62 * sugar + 0.22 * clot);
+  vec3 spark = frostGlints(xz + vStageWorld.y * 3.1, pxMm, normalize(vFrostN), v, ${look.slab.room.toFixed(3)}) * uGlint.y * ${(1.3 * look.slab.heapGlint).toFixed(3)} * alpha * open;
   gl_FragColor = vec4(col * alpha + spark, alpha);
   if (uDiag != 0) {
     if (alpha < 0.3) discard;
