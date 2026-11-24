@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { stageShader } from '../core/materials'
 import { partBytes, viewCode } from '../diagnostics/views'
 import type { StageFrame } from '../scene/frame'
-import { ROOM_GLSL, roomUniforms } from '../scene/backdrop'
+import { ROOM_GLSL, roomUniforms } from '../scene/room'
 import { innerRadiusMm, lensRadiusMm } from './lens'
 
 export const shellUniforms = {

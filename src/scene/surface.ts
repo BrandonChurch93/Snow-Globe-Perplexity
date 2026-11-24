@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { config } from '../config'
 import { stageShader } from '../core/materials'
 import type { SeasonKit } from '../seasons/kit'
-import { roomUniforms } from './backdrop'
+import { roomUniforms } from './room'
 import type { StageFrame } from './frame'
 
 const footRadius = config.globe.baseDiameterMm / 2

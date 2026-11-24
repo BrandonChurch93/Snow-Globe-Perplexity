@@ -8,7 +8,7 @@
         "src/globe/shell.ts",
         "src/globe/lens.ts"
       ],
-      "standInHash": "be816c0f743b7644",
+      "standInHash": "045386e0f03d33f7",
       "commit": "2530677"
     },
     {
@@ -28,7 +28,7 @@
       "files": [
         "src/scene/surface.ts"
       ],
-      "standInHash": "97808de38ea246ea",
+      "standInHash": "754fa16b2da95235",
       "commit": "2530677"
     },
     {
@@ -39,7 +39,7 @@
         "src/scene/backdrop.ts",
         "src/scene/room.ts"
       ],
-      "standInHash": "51f513a90749c65d",
+      "standInHash": "35315ddf0c8bc086",
       "commit": "2530677"
     },
     {
@@ -588,7 +588,7 @@
       "files": [
         "src/core"
       ],
-      "standInHash": "97b6c9385ba7f93c",
+      "standInHash": "ae594edb3f804c43",
       "commit": "2530677"
     },
     {

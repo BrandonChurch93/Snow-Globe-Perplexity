@@ -41,6 +41,7 @@ export interface ParticleSource {
   readonly liquid: Float64Array
   readonly opacity?: Float32Array
   readonly phase?: Float32Array
+  readonly cover?: { readonly n: number; readonly spanMm: number; readonly mm: Float32Array }
 }
 
 export interface Emitter {

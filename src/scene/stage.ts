@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { config } from '../config'
 import type { Assets } from '../core/assets'
+import { updateCover } from '../core/chunks/cover'
 import { updateVeil } from '../core/chunks/veil'
 import type { Gfx } from '../core/gl'
 import { MODE, setPresence, stageShader, stageUniforms, type Rgb } from '../core/materials'
@@ -273,6 +274,7 @@ export class GlobeStage implements Stage {
     this.shell.update(f)
     updateSurface(f)
     this.backdrop.update(f)
+    updateCover(this.source)
     this.draw.frame(this.source, f)
 
     for (const s of this.sets.values()) {
