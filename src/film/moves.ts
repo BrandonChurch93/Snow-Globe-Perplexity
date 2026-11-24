@@ -1,7 +1,7 @@
 import { cameraById, config } from '../config'
 import { poseById, poseOf, type Pose } from '../scene/cameras'
 import { globeTopMm, sphereCentreHeightMm, sphereRadiusMm } from '../scene/framing'
-import { centreHeightMm, shapePoints, shapes } from '../scene/layout'
+import { centreHeightMm, groundY, innerRadiusMm, shapePoints, shapes } from '../scene/layout'
 import { REST_POSE, makeShake, type GlobePose } from '../shake/table'
 import type { CameraKey, Cut } from './cut'
 import { barSeconds, beatSeconds, type ShotSpan } from './timeline'
@@ -28,7 +28,8 @@ export const MOVES = {
   detailStartBars: 0.75,
   detailTravel: 0.45,
   detailReach: { base: 0.55, interior: 1, low: 1 } as Record<string, number>,
-  detailRoom: 0.06,
+  detailKeep: { base: ['foot', 'ridge'], interior: ['ground', 'ridge'], low: ['foot', 'dome'] } as Record<string, [keyof Room, keyof Room]>,
+  detailRoom: { base: 0.06, interior: 0, low: 0 } as Record<string, number>,
   detailGrid: 0.05,
   sweepYawDeg: 1.6,
   settleBars: 1,
@@ -156,16 +157,19 @@ export function breathAt(cut: Cut, t: number): number {
 }
 
 export const detailReach = (camera: string): number => clamp01(MOVES.detailReach[camera] ?? 1)
+export const detailKeep = (camera: string): [keyof Room, keyof Room] => MOVES.detailKeep[camera] ?? ['foot', 'ridge']
+export const detailRoom = (camera: string): number => MOVES.detailRoom[camera] ?? 0
 
 const aims = new Map<string, number>()
 
-/** How far a detail move that stops short lowers its aim at the nearest point, beyond the mix, so the foot of the base and the cottage's ridge have the same room. Nothing for a move that goes the whole way. */
+/** How far a detail move that stops short lowers its aim at the nearest point, beyond the mix, so the two things it keeps, one low and one high, have the same room. Nothing for a move that goes the whole way. */
 export function nearestAimDropMm(camera: string, reach = detailReach(camera)): number {
   const r = clamp01(reach)
   if (r >= 1) return 0
   const key = `${camera}:${r}`
   const had = aims.get(key)
   if (had !== undefined) return had
+  const [under, over] = detailKeep(camera)
   const rig = mixRig(rigOf(MOVES.wide), rigOf(camera), r)
   rig.aimHeightMm -= MOVES.holdAimDropMm * (1 - r)
   let lo = -globeTopMm
@@ -173,7 +177,7 @@ export function nearestAimDropMm(camera: string, reach = detailReach(camera)): n
   for (let i = 0; i < 40; i++) {
     const mid = (lo + hi) / 2
     const room = roomOf(poseOfRig({ ...rig, aimHeightMm: rig.aimHeightMm - mid }))
-    if (room.foot < room.ridge) lo = mid
+    if (room[under] < room[over]) lo = mid
     else hi = mid
   }
   const drop = Math.round(((lo + hi) / 2) * 100) / 100
@@ -191,15 +195,17 @@ export function nearestRig(camera: string, reach = detailReach(camera)): Rig {
 
 export interface Room {
   foot: number
+  ground: number
   ridge: number
   dome: number
   side: number
 }
 
+const GROUND_R = Math.sqrt(Math.max(0, innerRadiusMm * innerRadiusMm - groundY * groundY))
 const RIDGE = shapes.filter((s) => s.role === 'roof').flatMap(shapePoints)
 const HOUSE = shapes.filter((s) => s.role === 'cottage' || s.role === 'roof' || s.role === 'trunk').flatMap(shapePoints)
 
-/** The room left around what a detail move must keep, through the real pose, as shares of the frame's height: under the foot of the base, over the cottage's ridge and over the top of the glass.
+/** The room left around what a detail move must keep, through the real pose, as shares of the frame's height: under the foot of the base, under the ground of the miniature, over the cottage's ridge and over the top of the glass.
  * `side` is the least room beside the cottage and the trunk, as a share of the frame's width at `aspect`. Under 0 is outside the frame. */
 export function roomOf(pose: Pose, aspect = 16 / 9): Room {
   const ex = pose.position.x
@@ -228,9 +234,11 @@ export function roomOf(pose: Pose, aspect = 16 / 9): Room {
   }
   const half = config.globe.baseDiameterMm / 2
   let foot = -Infinity
+  let ground = -Infinity
   for (let i = 0; i < 72; i++) {
     const a = (i / 72) * TAU
     foot = Math.max(foot, -seen(Math.cos(a) * half, 0, Math.sin(a) * half)[1])
+    ground = Math.max(ground, -seen(Math.cos(a) * GROUND_R, config.globe.islandLevelMm, Math.sin(a) * GROUND_R)[1])
   }
   let ridge = -Infinity
   for (const p of RIDGE) ridge = Math.max(ridge, seen(p[0], p[1] + centreHeightMm, p[2])[1])
@@ -239,7 +247,7 @@ export function roomOf(pose: Pose, aspect = 16 / 9): Room {
   const c = seen(0, sphereCentreHeightMm, 0)
   const depth = Math.hypot(ex, ey - sphereCentreHeightMm, ez)
   const dome = Math.tan(Math.atan(c[1] * k) + Math.asin(Math.min(1, sphereRadiusMm / depth))) / k
-  return { foot: (1 - foot) / 2, ridge: (1 - ridge) / 2, dome: (1 - dome) / 2, side: (aspect - side) / (2 * aspect) }
+  return { foot: (1 - foot) / 2, ground: (1 - ground) / 2, ridge: (1 - ridge) / 2, dome: (1 - dome) / 2, side: (aspect - side) / (2 * aspect) }
 }
 
 /** The least room at the nearest point of a detail move, over the sweep and the breath that play on it. */
@@ -247,11 +255,12 @@ export function nearestRoom(camera: string, reach = detailReach(camera)): Room {
   const rig = nearestRig(camera, reach)
   const a = MOVES.detailTravel
   const yaw = MOVES.breathYawDeg + Math.abs(MOVES.sweepYawDeg * (2 * a - 1) * Math.sin(Math.PI * a))
-  const out: Room = { foot: Infinity, ridge: Infinity, dome: Infinity, side: Infinity }
+  const out: Room = { foot: Infinity, ground: Infinity, ridge: Infinity, dome: Infinity, side: Infinity }
   for (const y of [-yaw, 0, yaw]) {
     for (const p of [-MOVES.breathPitchDeg, 0, MOVES.breathPitchDeg]) {
       const r = roomOf(poseOfRig({ ...rig, yawDeg: rig.yawDeg + y, pitchDeg: rig.pitchDeg + p }))
       out.foot = Math.min(out.foot, r.foot)
+      out.ground = Math.min(out.ground, r.ground)
       out.ridge = Math.min(out.ridge, r.ridge)
       out.dome = Math.min(out.dome, r.dome)
       out.side = Math.min(out.side, r.side)
@@ -260,12 +269,13 @@ export function nearestRoom(camera: string, reach = detailReach(camera)): Room {
   return out
 }
 
-/** The largest share of the way to a detail camera, on the grid, that leaves `detailRoom` under the foot of the base and over the cottage's ridge. */
+/** The largest share of the way to a detail camera, on the grid, that leaves its `detailRoom` around the two things the move keeps in the frame. */
 export function largestReach(camera: string): number {
   const steps = Math.round(1 / MOVES.detailGrid)
+  const [under, over] = detailKeep(camera)
   for (let i = steps; i > 0; i--) {
     const r = nearestRoom(camera, i / steps)
-    if (r.foot >= MOVES.detailRoom && r.ridge >= MOVES.detailRoom) return i / steps
+    if (r[under] >= detailRoom(camera) && r[over] >= detailRoom(camera)) return i / steps
   }
   return 0
 }
@@ -478,7 +488,7 @@ export function shotNotes(cut: Cut): ShotNote[] {
       keys.push({ frame: frame(m.from + span * MOVES.detailTravel), what: reach < 1 ? `the nearest point to the ${m.camera} camera` : `the ${m.camera} camera reached` })
       keys.push({ frame: frame(m.from + span * (1 - MOVES.detailTravel)), what: `leaving ${there}` })
       keys.push({ frame: frame(m.back), what: `back at ${MOVES.wide}, ${MOVES.backBeats} beat before the shake` })
-      const way = reach < 1 ? `one slow move toward the ${m.camera} camera and back, ${Math.round(reach * 100)} percent of the way, so the miniature stays in the frame` : `one slow move to the ${m.camera} camera and back`
+      const way = reach < 1 ? `one slow move toward the ${m.camera} camera and back, ${Math.round(reach * 100)} percent of the way, so the ${detailKeep(m.camera).some((k) => k === 'ridge' || k === 'ground') ? 'miniature' : 'globe'} stays in the frame` : `one slow move to the ${m.camera} camera and back`
       move = `Starts on ${MOVES.wide} and ${drop} as the globe settles, then ${way}, with a sweep of ${n1(MOVES.sweepYawDeg)} degrees across it so the camera never rests there.`
       lens = `${lensWords(a)} at ${MOVES.wide}; ${lensWords(near)} at ${there}`
       focus = `${focusWords(a)}; at ${there} ${focusWords(near)}`
