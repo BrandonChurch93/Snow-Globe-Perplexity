@@ -341,17 +341,17 @@ function profileAt(deg) {
 }
 
 function needle(l, u, rng) {
-  return { step: 0.38, w0: rng.range(0.06, 0.1), w1: 0.025, h0: rng.range(0.5, 0.78), h1: 0.28, speed: 0.5, curl: rng.range(0.01, 0.07), wobble: 0.012, spark: rng.range(0.45, 1), kappa: 3, reach: 0.1, taper: 0.8, power: 1.5 }
+  return { step: 0.38, w0: rng.range(0.085, 0.125), w1: 0.04, h0: rng.range(0.6, 0.92), h1: 0.36, speed: 0.5, curl: rng.range(0.01, 0.07), wobble: 0.012, spark: rng.range(0.45, 1), kappa: 3, reach: 0.1, taper: 0.62, power: 1.5 }
 }
 function plumeSpec(length, barbMm, rng, t0) {
   const lean = rng.range(0.55, 1)
   return {
     len: length,
     step: 0.3,
-    w0: rng.range(0.15, 0.22),
-    w1: 0.05,
+    w0: rng.range(0.1, 0.145),
+    w1: 0.045,
     h0: 1,
-    h1: 0.55,
+    h1: 0.6,
     speed: 1,
     t0,
     wobble: 0.018,
@@ -360,14 +360,14 @@ function plumeSpec(length, barbMm, rng, t0) {
     kappa: 2.5,
     reach: 0.15,
     taper: 0.75,
-    film: { w0: Math.min(1.5, 0.22 * barbMm + 0.3), w1: 0.15, h0: 0.17, h1: 0.05, kappa: 3 },
+    film: { w0: Math.min(1.5, 0.22 * barbMm + 0.3), w1: 0.15, h0: 0.08, h1: 0.03, kappa: 3 },
     kids: {
-      gap: rng.range(0.27, 0.36),
+      gap: rng.range(0.5, 0.68),
       len: barbMm,
       min: 0.35,
       lean: rng.next() < 0.5 ? lean : 1 / lean,
-      angle: rng.range(44, 58) * RAD,
-      angleTip: rng.range(30, 40) * RAD,
+      angle: rng.range(34, 47) * RAD,
+      angleTip: rng.range(22, 31) * RAD,
       spread: 0.09,
       profile: feather(rng.range(0.08, 0.2), rng.range(0.75, 1.15)),
       make: (l, u, r) => {
@@ -376,7 +376,7 @@ function plumeSpec(length, barbMm, rng, t0) {
           o.w0 *= 1.25
           o.h0 = Math.min(0.9, o.h0 * 1.2)
           o.speed = 0.65
-          o.kids = { gap: r.range(0.3, 0.42), len: l * 0.26, min: 0.25, angle: 48 * RAD, angleTip: 36 * RAD, profile: feather(0.15, 0.9), make: (l2, u2, r2) => ({ ...needle(l2, u2, r2), w0: 0.05, h0: 0.42, speed: 0.4 }) }
+          o.kids = { gap: r.range(0.5, 0.66), len: l * 0.3, min: 0.3, angle: 40 * RAD, angleTip: 30 * RAD, profile: feather(0.15, 0.9), make: (l2, u2, r2) => ({ ...needle(l2, u2, r2), w0: 0.07, h0: 0.5, speed: 0.4 }) }
         }
         return o
       },
@@ -431,8 +431,8 @@ function buildGlass() {
       const pr = profileAt(deg)
       if (rng.next() > pr.density) continue
       const reach = pr.reachMm * (front ? 1 : L.glass.backShare)
-      const length = 1.5 + reach * Math.pow(rng.next(), 2.1) * 0.95
-      const inMm = rng.range(-1.5, 5) + (rng.next() < 0.3 ? rng.range(0, pr.filmMm * 0.8) : 0)
+      const inMm = -1.5 + (reach * 0.8 + 1.5) * Math.pow(rng.next(), 1.5)
+      const length = Math.min(Math.max(2, reach - inMm) * 1.05, 2.2 + 12 * Math.pow(rng.next(), 2.2))
       const start = rimAt(deg, front ? inMm : -inMm)
       const inward = toward(start, [0, 0, front ? Rs : -Rs])
       const up = toward(start, [0, Rs, 0])
@@ -442,13 +442,13 @@ function buildGlass() {
       const a = sweep * side
       const c = cross(nn, inward)
       const h = norm([inward[0] * Math.cos(a) + c[0] * Math.sin(a), inward[1] * Math.cos(a) + c[1] * Math.sin(a), inward[2] * Math.cos(a) + c[2] * Math.sin(a)])
-      const o = plumeSpec(length, clamp(length * rng.range(0.2, 0.34), 0.9, 5.2), rng, rng.range(0, 4) + Math.abs(inMm) * 0.8)
+      const o = plumeSpec(length, clamp(length * rng.range(0.3, 0.5), 1.2, 5.6), rng, rng.range(0, 4) + Math.abs(inMm) * 0.8)
       o.curl = rng.gauss() * 0.012
       grow(ctx, start, h, o)
     }
   }
-  seeded(760, true)
-  seeded(430, false)
+  seeded(1900, true)
+  seeded(900, false)
   // Loose needles in the rim band.
   for (let i = 0; i < 5200; i++) {
     const deg = rng.range(-90, 270)
@@ -502,13 +502,13 @@ function buildGlass() {
 
 // ---------- the slab ----------
 function slabArm(length, rng, t0) {
-  const twig = (l, u, r) => ({ step: 0.3, w0: r.range(0.1, 0.16), w1: 0.04, h0: r.range(0.3, 0.45), h1: 0.14, speed: 0.4, wobble: 0.02, spark: r.range(0.5, 1), kappa: 3, reach: 0.12, taper: 0.8, power: 1.5 })
+  const twig = (l, u, r) => ({ step: 0.3, w0: r.range(0.16, 0.24), w1: 0.07, h0: r.range(0.35, 0.5), h1: 0.16, speed: 0.4, wobble: 0.02, spark: r.range(0.5, 1), kappa: 3, reach: 0.12, taper: 0.8, power: 1.5 })
   const barb = (l, u, r) => ({
     step: 0.32,
-    w0: r.range(0.17, 0.26) * (0.6 + 0.4 * Math.min(1, l / 2)),
-    w1: 0.05,
-    h0: r.range(0.36, 0.52),
-    h1: 0.16,
+    w0: r.range(0.34, 0.5) * (0.6 + 0.4 * Math.min(1, l / 2)),
+    w1: 0.1,
+    h0: r.range(0.45, 0.62),
+    h1: 0.2,
     speed: 0.45,
     wobble: 0.025,
     curl: r.range(0, 0.05),
@@ -517,14 +517,14 @@ function slabArm(length, rng, t0) {
     reach: 0.15,
     taper: 0.8,
     power: 1.5,
-    kids: l > 1.5 ? { gap: r.range(0.36, 0.5), len: l * 0.3, min: 0.2, angle: 52 * RAD, angleTip: 40 * RAD, profile: feather(0.2, 0.9), make: twig } : undefined,
+    kids: l > 1.8 ? { gap: r.range(0.6, 0.8), len: l * 0.32, min: 0.25, angle: 52 * RAD, angleTip: 40 * RAD, profile: feather(0.2, 0.9), make: twig } : undefined,
   })
   const branch = (l, u, r) => ({
     step: 0.4,
-    w0: r.range(0.36, 0.5) * (0.55 + 0.45 * Math.min(1, l / 8)),
-    w1: 0.09,
-    h0: r.range(0.55, 0.75),
-    h1: 0.22,
+    w0: r.range(0.75, 1.05) * (0.55 + 0.45 * Math.min(1, l / 8)),
+    w1: 0.16,
+    h0: r.range(0.65, 0.85),
+    h1: 0.3,
     speed: 0.62,
     wobble: 0.022,
     curl: r.range(0.0, 0.035),
@@ -533,16 +533,16 @@ function slabArm(length, rng, t0) {
     reach: 0.2,
     taper: 0.75,
     power: 1.6,
-    film: { w0: 0.95 * (1 - 0.6 * u), w1: 0.15, h0: 0.26 * (1 - 0.7 * u), h1: 0.05, kappa: 3, spark: 0.3 },
-    kids: { gap: r.range(0.62, 0.86), len: clamp(l * 0.32, 0.6, 4.2), min: 0.3, angle: r.range(46, 58) * RAD, angleTip: 36 * RAD, profile: feather(0.16, 0.95), make: barb },
+    film: { w0: 1.7 * (1 - 0.6 * u), w1: 0.25, h0: 0.36 * (1 - 0.6 * u), h1: 0.08, kappa: 3, spark: 0.3 },
+    kids: { gap: r.range(1.1, 1.5), len: clamp(l * 0.34, 0.9, 4.2), min: 0.5, angle: r.range(46, 58) * RAD, angleTip: 36 * RAD, profile: feather(0.16, 0.95), make: barb },
   })
   return {
     len: length,
     step: 0.5,
-    w0: rng.range(0.85, 1.15),
-    w1: 0.16,
+    w0: rng.range(1.1, 1.5),
+    w1: 0.2,
     h0: 1,
-    h1: 0.32,
+    h1: 0.36,
     speed: 1,
     t0,
     wobble: 0.014,
@@ -552,11 +552,11 @@ function slabArm(length, rng, t0) {
     reach: 0.3,
     taper: 0.8,
     power: 1.8,
-    film: { w0: rng.range(3.2, 5.2), w1: 0.5, h0: rng.range(0.5, 0.72), h1: 0.08, kappa: 2.5, spark: 0.35, power: 1.15 },
+    film: { w0: rng.range(3.6, 5.6), w1: 0.6, h0: rng.range(0.6, 0.8), h1: 0.1, kappa: 2.5, spark: 0.35, power: 1.15 },
     kids: {
-      gap: rng.range(2.1, 2.9),
-      start: rng.range(1.5, 3),
-      len: clamp(length * rng.range(0.27, 0.36), 5, 19),
+      gap: rng.range(3.4, 4.6),
+      start: rng.range(2.5, 5),
+      len: clamp(length * rng.range(0.3, 0.4), 6, 21),
       min: 0.8,
       delay: 1.5,
       angle: rng.range(50, 62) * RAD,
@@ -699,7 +699,7 @@ function slabShapes(lines, grains, tTop) {
       const d = norm([b[0] - a[0], 0, b[2] - a[2]])
       const lat = [-d[2], 0, d[0]]
       const w = line.w[i] * rng.range(0.85, 1.2)
-      const h = line.h[i] * mm * rng.range(0.7, 1.15)
+      const h = Math.min(line.h[i] * mm * rng.range(0.7, 1.15), w * rng.range(0.55, 0.8))
       const off = rng.range(-0.3, 0.3) * w
       const t = line.t[i]
       const row = [
@@ -715,24 +715,22 @@ function slabShapes(lines, grains, tTop) {
   }
   const lump = (x, z, r, h, t, y0 = 0) => {
     const id = rng.next()
-    const top = vert(x + rng.range(-0.2, 0.2) * r, y0 + h * mm, z + rng.range(-0.2, 0.2) * r, t, id)
+    const tall = Math.min(h * mm, r * rng.range(0.45, 0.8))
+    const top = vert(x + rng.range(-0.2, 0.2) * r, y0 + tall, z + rng.range(-0.2, 0.2) * r, t, id)
     const ring = []
     const mid = []
-    const full = r >= S.lumpFullMm
-    const sides = full ? 5 : 4
+    const sides = r >= S.lumpFullMm ? 7 : 5
     const turn = rng.range(0, 6.28)
     for (let k = 0; k < sides; k++) {
       const a = turn + (k / sides) * 2 * Math.PI
-      const rr = r * rng.range(0.85, 1.25)
+      const rr = r * rng.range(0.9, 1.2)
       ring.push(vert(x + rr * Math.cos(a), y0, z + rr * Math.sin(a), t, id))
-      if (!full) continue
-      const rm = r * rng.range(0.6, 0.85)
-      mid.push(vert(x + rm * Math.cos(a + 0.6), y0 + h * mm * rng.range(0.5, 0.75), z + rm * Math.sin(a + 0.6), t, id))
+      const rm = r * rng.range(0.6, 0.78)
+      mid.push(vert(x + rm * Math.cos(a + 0.45), y0 + tall * rng.range(0.62, 0.8), z + rm * Math.sin(a + 0.45), t, id))
     }
     for (let k = 0; k < sides; k++) {
       const k1 = (k + 1) % sides
-      if (full) idx.push(ring[k], mid[k], ring[k1], ring[k1], mid[k], mid[k1], mid[k], top, mid[k1])
-      else idx.push(ring[k], top, ring[k1])
+      idx.push(ring[k], mid[k], ring[k1], ring[k1], mid[k], mid[k1], mid[k], top, mid[k1])
     }
   }
   const before = idx.length

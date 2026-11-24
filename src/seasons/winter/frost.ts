@@ -26,20 +26,20 @@ export const glassDressing: Dressing = { tint: [0.86, 0.92, 1], amount: 0 }
 export const surfaceDressing: Dressing & { reachMm: number } = { tint: [0.86, 0.92, 1], amount: 0, reachMm: 132 }
 
 const look = {
-  glass: { cover: 2.6, haze: 1.1, slope: 0.55, micro: 1.1, glint: 1 },
-  slab: { cover: 0.9, slope: 0.8, micro: 0.9, glint: 1, pool: 1.2 },
+  glass: { cover: 1.35, haze: 0.12, slope: 0.55, micro: 1.1, glint: 1, light: 0.68 },
+  slab: { cover: 1.5, slope: 0.8, micro: 0.9, glint: 1, pool: 0.035 },
 }
 
 const frostUniforms = {
   uGlassMap: { value: null as THREE.Texture | null },
   uSlabMap: { value: null as THREE.Texture | null },
   uGrain: { value: null as THREE.Texture | null },
-  uGrow: { value: new THREE.Vector4(FULL, FULL, 1, 0) },
+  uGrow: { value: new THREE.Vector4(FULL, FULL, 1, 1) },
   uShape: { value: new THREE.Vector4(1, 1, 1, 1) },
   uField: { value: new THREE.Vector4(1, 1, 1, 1) },
   uGlassLook: { value: new THREE.Vector4(look.glass.cover, look.glass.haze, look.glass.slope, look.glass.micro) },
   uSlabLook: { value: new THREE.Vector4(look.slab.cover, look.slab.pool, look.slab.slope, look.slab.micro) },
-  uGlint: { value: new THREE.Vector4(look.glass.glint, look.slab.glint, 0.3, 0) },
+  uGlint: { value: new THREE.Vector4(look.glass.glint, look.slab.glint, 0.3, look.glass.light) },
 }
 
 const lightUniforms = {
@@ -64,8 +64,8 @@ const float FROST_SOFT = 0.05;
 float frostRnd(vec2 cell, float k) {
   return stageHash(vec3(cell + 8192.0, k));
 }
-bool frostHidden() {
-  return uGrow.z < 1.0 && stageHash(vec3(gl_FragCoord.xy + 17.0, uSeed + 0.37)) >= uGrow.z;
+bool frostHidden(float keep) {
+  return keep < 1.0 && stageHash(vec3(gl_FragCoord.xy + 17.0, uSeed + 0.37)) >= keep;
 }
 vec3 frostGlintLayer(vec2 q, float size, float k, vec3 n, vec3 v) {
   vec2 g = q / size;
@@ -106,7 +106,7 @@ varying vec3 vAxisZ;
 void main() {
   float c = stageChange();
   if (stageGone(c)) discard;
-  if (frostHidden()) discard;
+  if (frostHidden(uGrow.z)) discard;
   vec3 d = normalize(vStageLocal);
   float ct = clamp(d.z, -0.999, 0.999);
   float st = sqrt(1.0 - ct * ct);
@@ -125,16 +125,16 @@ void main() {
   float fw = max(length(dFdx(uv)), length(dFdy(uv)));
   float e = max(fw, uShape.y) * 1.2;
   float lvl = uGrow.x + (grain.r - 0.33) * 0.07 + (fine.r - 0.33) * 0.03;
-  vec3 m0 = texture(uGlassMap, uv).rgb;
-  vec3 m1 = texture(uGlassMap, uv + e2 * e).rgb;
-  vec3 m2 = texture(uGlassMap, uv + t2 * e).rgb;
+  vec3 m0 = texture(uGlassMap, uv, -0.6).rgb;
+  vec3 m1 = texture(uGlassMap, uv + e2 * e, -0.6).rgb;
+  vec3 m2 = texture(uGlassMap, uv + t2 * e, -0.6).rgb;
   vec3 mb = texture(uGlassMap, uv, 3.0).rgb;
   float on = smoothstep(0.0, FROST_SOFT, lvl - m0.g);
   float h0 = m0.r * m0.r * on;
   float h1 = m1.r * m1.r * smoothstep(0.0, FROST_SOFT, lvl - m1.g);
   float h2 = m2.r * m2.r * smoothstep(0.0, FROST_SOFT, lvl - m2.g);
   float haze = mb.r * mb.r * smoothstep(0.0, 2.0 * FROST_SOFT, lvl - mb.g + 0.04);
-  float body = h0 * (0.7 + 0.6 * grain.r);
+  float body = h0 * (0.45 + 1.5 * grain.r);
   float mmR = e * 2.0 * uShape.x * ${RS.toFixed(2)};
   float mmT = mmR * st / max(th, 0.05);
   vec2 slope = uShape.z * uGlassLook.z * vec2((h1 - h0) / mmR, (h2 - h0) / mmT);
@@ -146,14 +146,16 @@ void main() {
   vec3 ng = normalize(vStageWorld - uLensCentre);
   vec3 v = normalize(vStageWorld - cameraPosition);
   float mu = max(dot(ng, -v), 0.0);
-  float tau = (uGlassLook.x * body + uGlassLook.y * haze) / max(mu, 0.28);
-  float alpha = max(1.0 - exp(-tau), 0.92 * smoothstep(0.3, 0.75, body));
-  float wrapK = clamp(dot(n, uKeyDir) * 0.65 + 0.35, 0.0, 1.0);
-  float wrapR = clamp(dot(n, uRimDir) * 0.6 + 0.4, 0.0, 1.0);
+  float tau = uGlassLook.x * body / max(mu, 0.42) + uGlassLook.y * haze / max(mu, 0.3);
+  float alpha = 1.0 - exp(-tau);
+  float kd = dot(n, uKeyDir);
+  float rd = dot(n, uRimDir);
+  float keyLit = max(kd, 0.0) * 0.8 + smoothstep(-1.0, 0.6, kd) * 0.3 + max(-kd, 0.0) * 0.22;
+  float rimLit = max(rd, 0.0) * 0.8 + smoothstep(-1.0, 0.6, rd) * 0.3 + max(-rd, 0.0) * 0.22;
   float thru = pow(clamp(dot(v, uRimDir), 0.0, 1.0), 2.0) * clamp(0.6 + 0.6 * dot(ng, uRimDir), 0.0, 1.0);
-  vec3 lit = uKeyCol * wrapK + uRimCol * (wrapR + 1.5 * thru) + uSky * (0.55 + 0.45 * n.y);
-  vec3 albedo = mix(vec3(0.78, 0.86, 0.96), vec3(0.96, 0.97, 0.98), smoothstep(0.08, 0.6, h0));
-  vec3 col = albedo * (lit * 0.3183 + stageGrid(vStageLocal * 0.9) * 0.6);
+  vec3 lit = uKeyCol * keyLit + uRimCol * (rimLit + 1.5 * thru) + uSky * (0.55 + 0.45 * n.y);
+  vec3 albedo = mix(vec3(0.7, 0.8, 0.93), vec3(0.93, 0.95, 0.98), smoothstep(0.08, 0.7, h0));
+  vec3 col = albedo * (lit * 0.3183 + stageGrid(vStageLocal * 0.9) * 0.6) * uGlint.w;
   float pxMm = sqrt(length(dFdx(vStageWorld)) * length(dFdy(vStageWorld)));
   vec3 spark = frostGlints(ga * ${RS.toFixed(2)}, pxMm, ng, v) * uGlint.x * (0.06 + 1.5 * m0.b * on) * smoothstep(0.02, 0.25, alpha);
   gl_FragColor = vec4(col * alpha + spark, alpha);
@@ -191,7 +193,7 @@ ${SLAB_GLSL}
 void main() {
   float c = stageChange();
   if (stageGone(c)) discard;
-  if (frostHidden()) discard;
+  if (frostHidden(uGrow.w)) discard;
   vec2 xz = vStageWorld.xz;
   vec2 uv = vec2(xz.x + uField.x, uField.x - xz.y) / (2.0 * uField.x);
   vec2 guv = xz * uField.w;
@@ -232,7 +234,7 @@ varying vec2 vFrostOn;
 void main() {
   float c = stageChange();
   if (stageGone(c)) discard;
-  if (frostHidden()) discard;
+  if (frostHidden(uGrow.w)) discard;
   if (vFrostOn.x < 0.03) discard;
   vec2 xz = vStageWorld.xz;
   vec2 guv = xz * uField.w;
@@ -338,8 +340,8 @@ export function dressing(): { glass: THREE.Object3D; surface: THREE.Object3D } {
   return { glass, surface }
 }
 
-export function setGrowth(glassLevel: number, slabLevel: number, keep: number): void {
-  frostUniforms.uGrow.value.set(glassLevel, slabLevel, keep, 0)
+export function setGrowth(glassLevel: number, slabLevel: number, keepGlass: number, keepSlab: number): void {
+  frostUniforms.uGrow.value.set(glassLevel, slabLevel, keepGlass, keepSlab)
 }
 
 export function update(_moment: KitMoment): void {}

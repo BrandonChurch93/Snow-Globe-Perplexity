@@ -7,7 +7,7 @@ import { fresh } from './miniature'
 
 const own = frost as { arrival?: () => THREE.Object3D }
 
-const GLASS = { burst: 0.46, burstSeconds: 0.22, creep: 0.66, creepSeconds: 2.2 }
+const GLASS = { burst: 0.32, burstSeconds: 0.18, creep: 0.8, creepSeconds: 2.4 }
 const SLAB = { burst: 0.86, burstSeconds: 0.16, creep: 0.26, creepSeconds: 1.6 }
 
 const rise = (t: number, seconds: number): number => 1 - Math.exp(-t / seconds)
@@ -35,19 +35,19 @@ export function update(moment: KitMoment): void {
   const shaking = moment.beat !== null && moment.beat >= swap.fromBeat
   const two = f.from !== f.to && f.change > 0 && f.change < 1
   if (two) {
-    if (moment.arrived >= 1) frost.setGrowth(frost.FULL, frost.FULL, 1)
-    else if (shaking) frost.setGrowth(0, 0, 0)
+    if (moment.arrived >= 1) frost.setGrowth(frost.FULL, frost.FULL, 1, 1)
+    else if (shaking) frost.setGrowth(0, 0, 0, 0)
     else {
       const g = growth(moment.sinceLanding)
-      frost.setGrowth(g.glass, g.slab, 1)
+      frost.setGrowth(g.glass, g.slab, 1, 1)
     }
     return
   }
   if (shaking) {
     const through = (moment.beat! - swap.fromBeat) / (swap.toBeat - swap.fromBeat)
-    frost.setGrowth(frost.FULL, frost.FULL, 1 - partChange('glass-dressing', through))
+    frost.setGrowth(frost.FULL, frost.FULL, 1 - partChange('glass-dressing', through), 1 - partChange('surface-dressing', through))
     return
   }
   const g = growth(moment.sinceLanding)
-  frost.setGrowth(g.glass, g.slab, 1)
+  frost.setGrowth(g.glass, g.slab, 1, 1)
 }
