@@ -26,7 +26,7 @@ export const PLACED = {
   sizeMm: 2.5,
   reachMm: [1100, 3200] as [number, number],
   discs: [
-    [2525, 368, 48, AMBER, 0.85, 0.14, 0.45, 1950],
+    [2525, 368, 48, AMBER, 0.85, 0.14, 0.45, 1900],
     [2640, 650, 45, WHITE, 1.5, 0.3, 0.1, 1600],
     [2295, 510, 55, PALE, 0.47, 0.32, 0.1, 1557],
     [2275, 212, 48, PALE, 0.24, 0.34, 0.15],
@@ -119,7 +119,7 @@ export const WALL = {
   column: 2.8,
   columnDeg: 5.5,
   rightLift: 0.5,
-  tints: { winter: { base: [0.9, 1, 1.2], column: [0.67, 0.85, 0.83] } } as Record<string, { base: [number, number, number]; column: [number, number, number] }>,
+  tints: { winter: { base: [0.9, 1, 1.05], column: [0.67, 0.85, 0.83] } } as Record<string, { base: [number, number, number]; column: [number, number, number] }>,
 }
 
 export const APRON = {

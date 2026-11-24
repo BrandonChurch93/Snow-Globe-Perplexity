@@ -49,6 +49,13 @@ export function entriesOf(files: readonly AssetFile[]): AssetEntry[] {
   return out
 }
 
+/**
+ * The address of a file of a set, under the root of that set. It carries the hash the index holds for the file, so the address
+ * changes whenever the file does: the host may then keep every file of `assets/` for as long as it likes (`vercel.json` says a
+ * year), and a visitor who comes back after a new build still gets the new picture and never an old one under the same name.
+ */
+export const fileAddress = (root: string, file: string, sha = ''): string => `${root}${file}${sha ? `?v=${sha}` : ''}`
+
 export class Assets {
   index: AssetIndex = EMPTY
   set = 'web'
@@ -59,13 +66,27 @@ export class Assets {
   firstOnly = false
   private readonly loaded = new Map<string, Promise<ArrayBuffer>>()
   private readonly listed = new Map<string, AssetEntry[]>()
+  private readonly shas = new Map<string, string>()
 
   async init(set: string): Promise<void> {
-    this.set = set
-    const r = await fetch(new URL('assets/index.json', document.baseURI))
+    // The index has one name for ever, so it is the one file that is always asked of the host again (a short answer when nothing changed).
+    const r = await fetch(new URL('assets/index.json', document.baseURI), { cache: 'no-cache' })
     if (!r.ok) throw new Error(`asset index did not load: ${r.status}`)
-    this.index = (await r.json()) as AssetIndex
+    this.use((await r.json()) as AssetIndex, set)
+  }
+
+  /** Takes an index and the set to read from it. */
+  use(index: AssetIndex, set: string): void {
+    this.set = set
+    this.index = index
     this.listed.clear()
+    this.shas.clear()
+    for (const files of Object.values(index.sets[set] ?? {})) for (const f of files) this.shas.set(f.path, f.sha)
+  }
+
+  /** Where a file of the current set is fetched from, relative to the page. */
+  address(file: string): string {
+    return fileAddress(this.root(), file, this.shas.get(file))
   }
 
   root(): string {
@@ -92,7 +113,7 @@ export class Assets {
     let p = this.loaded.get(file)
     if (!p) {
       const init = (low ? { priority: 'low' } : {}) as RequestInit
-      p = fetch(new URL(this.root() + file, document.baseURI), init).then((r) => {
+      p = fetch(new URL(this.address(file), document.baseURI), init).then((r) => {
         if (!r.ok) throw new Error(`asset did not load: ${file}`)
         return r.arrayBuffer()
       })

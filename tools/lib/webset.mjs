@@ -18,7 +18,7 @@ import { rel } from './paths.mjs'
  */
 
 /** Raise when a rule changes, so nothing made by the old rule is taken from the cache. */
-export const CODER = 3
+export const CODER = 4
 
 export const WEB = {
   /** libwebp's near-lossless level. 60 keeps every value within 2 of 255. */
@@ -102,14 +102,18 @@ async function makePicture(file, name, limit) {
   const meta = await sharp(file).metadata()
   const size = webSize(meta.width, meta.height, limit)
   const picture = () => (size.resized ? sharp(file).resize({ width: size.width, height: size.height, kernel: 'lanczos3' }) : sharp(file))
-  const lossless = async () => ({ name, data: size.resized ? await picture().png({ compressionLevel: 9 }).toBuffer() : fs.readFileSync(file), coding: 'png', max: 0, width: size.width, height: size.height })
+  const lossless = async () => {
+    const data = size.resized ? await picture().png({ compressionLevel: 9 }).toBuffer() : fs.readFileSync(file)
+    return { name, data, coding: 'png', max: 0, width: size.width, height: size.height, plain: data.length }
+  }
   if (Math.min(size.width, size.height) < WEB.tablePx) return [await lossless()]
   const got = await picture().raw().toBuffer({ resolveWithObject: true })
   const raw = { data: got.data, width: got.info.width, height: got.info.height, channels: got.info.channels }
   const full = raw.channels >= 3 ? await nearLossless(raw) : null
   const plain = await lossless()
   if (!full || full.data.length >= plain.data.length) return [plain]
-  const out = [{ name: `${stem(name)}.webp`, data: full.data, coding: full.coding, max: full.max, psnr: full.psnr, width: raw.width, height: raw.height }]
+  // `plain` is what the same picture weighs as a lossless PNG at this size, which is how the web set held it before.
+  const out = [{ name: `${stem(name)}.webp`, data: full.data, coding: full.coding, max: full.max, psnr: full.psnr, width: raw.width, height: raw.height, plain: plain.data.length }]
   // Only an opaque picture: the page draws a `.first.` file at twice its size, and a browser may not keep colour under alpha exact when it does.
   if (raw.channels === 3 && Math.max(raw.width, raw.height) >= WEB.firstFromPx && raw.width % 2 === 0 && raw.height % 2 === 0) {
     const small = halve(raw.data, raw.width, raw.height, raw.channels, /\.srgb\./i.test(name))
@@ -122,7 +126,7 @@ async function makePicture(file, name, limit) {
 async function makeModel(file, name) {
   const source = fs.readFileSync(file)
   const r = await packGlb(source)
-  return [{ name, data: r.glb, coding: r.packed ? `meshopt, ${r.packed} of ${r.packed + r.kept} streams` : 'as it is', change: r.change }]
+  return [{ name, data: r.glb, coding: r.packed ? `meshopt, ${r.packed} of ${r.packed + r.kept} streams` : 'as it is', change: r.change, plain: source.length }]
 }
 
 /**
