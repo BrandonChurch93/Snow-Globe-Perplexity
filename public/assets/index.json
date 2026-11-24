@@ -31,7 +31,7 @@
         {
           "path": "shared/village-model.glb",
           "bytes": 2339984,
-          "sha": "d292030e95c7b8c3"
+          "sha": "b9115dfb443442dc"
         }
       ],
       "winter": [
@@ -165,7 +165,7 @@
         {
           "path": "shared/village-model.glb",
           "bytes": 2339984,
-          "sha": "d292030e95c7b8c3"
+          "sha": "b9115dfb443442dc"
         }
       ],
       "winter": [
@@ -271,9 +271,9 @@
     }
   },
   "seasonHashes": {
-    "winter": "21ebca2aa6cbe70d",
-    "spring": "cb9702e69f0a1cc1",
-    "summer": "cb9702e69f0a1cc1",
-    "fall": "cb9702e69f0a1cc1"
+    "winter": "0ec00ff1a8bdae42",
+    "spring": "43939c0870bc73c2",
+    "summer": "43939c0870bc73c2",
+    "fall": "43939c0870bc73c2"
   }
 }

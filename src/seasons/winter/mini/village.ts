@@ -26,16 +26,18 @@ const ARRIVAL = `arrival-${season}`
 
 const LAMP = { power: 1.2, reachMm: 12, flicker: 0.05, cycles: 3, phase: 0.1 }
 const WINDOW = { power: 0.8, reachMm: 8, flicker: 0.1, cycles: 5, phase: 0.4 }
-const SIDE = { power: 0.6, reachMm: 7, flicker: 0.1, cycles: 4, phase: 0.75 }
-const BULB = { power: 0.18, reachMm: 4.5, flicker: 0.07, cycles: 2 }
-const NEAR = { bulb: { power: 0.75, reachMm: 2 }, lamp: { power: 4, reachMm: 7 }, pane: { power: 0.9, reachMm: 2.4 } }
+const SIDE = { power: 0.8, reachMm: 7, flicker: 0.1, cycles: 4, phase: 0.75 }
+const BULB = { power: 0.6, reachMm: 4.5, flicker: 0.07, cycles: 2 }
+const NEAR = { bulb: { power: 1, reachMm: 2 }, lamp: { power: 4.5, reachMm: 7 }, pane: { power: 0.9, reachMm: 2.4 } }
 const MIRROR = { lamp: 7, pane: 1.2, bulb: 0.5, tight: 0.0016, wide: 0.028, wideShare: 0.04 }
 const COVER_GAIN = 0.12
 const FRESH_RISE_MM = 0.3
 const SNOW_GRAIN_MM = 0.05
-const SNOW_LUMP_MM = 0.16
+const SNOW_LUMP_MM = 0.3
+const SNOW_DRIFT_MM = 1.1
 const SPARK = 2.6
 const SNOW_WRAP = 0.45
+const ICE_NEAR = 0.3
 
 const bulbs = hangPoints()
 const flame = lampFlame()
@@ -110,8 +112,9 @@ vec3 snowWeights;
 vec3 snowAt(vec3 p) {
   return texture2D(map, p.zy).rgb * snowWeights.x + texture2D(map, p.xz).rgb * snowWeights.y + texture2D(map, p.xy).rgb * snowWeights.z;
 }
-float snowHeight(vec3 t) {
-  return t.r * ${SNOW_GRAIN_MM.toFixed(3)} + t.b * ${SNOW_LUMP_MM.toFixed(3)};
+float snowHeight(vec3 p) {
+  vec3 t = snowAt(p);
+  return t.r * ${SNOW_GRAIN_MM.toFixed(3)} + t.b * ${SNOW_LUMP_MM.toFixed(3)} + snowAt(p * 0.23 + 0.41).b * ${SNOW_DRIFT_MM.toFixed(3)};
 }`,
         )
         .replace(
@@ -129,8 +132,8 @@ diffuseColor.rgb *= ${glsl(tones.snow)} * (0.88 + 0.16 * snowT.r + 0.12 * (snowW
           '#include <normal_fragment_maps>',
           `
 {
-  float snowH = snowHeight(snowT);
-  vec2 snowDh = vec2(snowHeight(snowAt(snowP + dFdx(snowP))) - snowH, snowHeight(snowAt(snowP + dFdy(snowP))) - snowH);
+  float snowH = snowHeight(snowP);
+  vec2 snowDh = vec2(snowHeight(snowP + dFdx(snowP)) - snowH, snowHeight(snowP + dFdy(snowP)) - snowH);
   normal = villageBump(-vViewPosition, normal, snowDh, faceDirection);
 }
 `,
@@ -211,7 +214,7 @@ float iceRough = mix(0.09, 0.72, iceFrost);
 }
 `,
         )
-      afterLight(shader, NEAR_LIGHT)
+      afterLight(shader, `reflectedLight.indirectDiffuse += vGlow * (uGlowGain * ${ICE_NEAR.toFixed(2)}) * material.diffuseContribution;`)
     },
   })
 }
@@ -239,7 +242,7 @@ export function lights(): THREE.Object3D {
     glowPiece(villageGeometry('pane-gable'), (_i, w, h) => [GLOW.pane, w, h, 1]),
     glowPiece(villageGeometry('pane-side'), (_i, w, h) => [GLOW.pane, w, h, 2]),
   ]
-  const look = { bulb: 0.9, bulbCore: 1.7, glass: tones.lamp.map((v) => v * 1.8) as unknown as Rgb, flame: tones.flame.map((v) => v * 4.5) as unknown as Rgb, room: tones.room.map((v) => v * 2.3) as unknown as Rgb, curtain: tones.curtain.map((v) => v * 1.5) as unknown as Rgb, frost: tones.rime.map((v) => v * 0.55) as unknown as Rgb, frostAmount: 0.8, flicker: 0.08, cycles: 3 }
+  const look = { bulb: 1.5, bulbCore: 4.5, glass: tones.lamp.map((v) => v * 2.4) as unknown as Rgb, flame: tones.flame.map((v) => v * 6) as unknown as Rgb, room: tones.room.map((v) => v * 2.3) as unknown as Rgb, curtain: tones.curtain.map((v) => v * 1.5) as unknown as Rgb, frost: tones.rime.map((v) => v * 0.55) as unknown as Rgb, frostAmount: 0.8, flicker: 0.08, cycles: 3 }
   return new THREE.Mesh(glowGeometry(pieces), glowMaterial(LIGHT, look, clock))
 }
 
