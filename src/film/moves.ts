@@ -27,7 +27,7 @@ export const MOVES = {
   backBeats: 1,
   detailStartBars: 0.75,
   detailTravel: 0.45,
-  detailReach: { base: 0.7, interior: 1, low: 1 } as Record<string, number>,
+  detailReach: { base: 0.6, interior: 1, low: 1 } as Record<string, number>,
   detailKeep: { base: ['foot', 'ridge'], interior: ['ground', 'ridge'], low: ['foot', 'dome'] } as Record<string, [keyof Room, keyof Room]>,
   detailRoom: { base: 0.06, interior: 0, low: 0 } as Record<string, number>,
   detailGrid: 0.05,

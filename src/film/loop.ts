@@ -22,9 +22,10 @@ export function loopBeat(t: number): number | null {
   return u >= loopShakeStart && u < loopLanding ? (u - loopShakeStart) / beatSeconds : null
 }
 
+/** The loop's globe. The path is asked past its bar too, for the tilt that settles after the landing. */
 export function loopGlobe(t: number): GlobePose {
-  const beat = loopBeat(t)
-  return beat === null ? REST_POSE : path.poseAt(beat)
+  const u = wrapLoop(t)
+  return u < loopShakeStart ? REST_POSE : path.poseAt((u - loopShakeStart) / beatSeconds)
 }
 
 export function loopSinceLanding(t: number): number {
