@@ -2,7 +2,7 @@ import { config } from '../../config'
 import { hash2, unit } from '../../core/rng'
 import type { SdfGrid } from '../../core/stage'
 import { globePoseAt, seasonAt, type Timeline } from '../../film/timeline'
-import { Liquid, LIQUID_LENGTH, LIQUID_R, LIQUID_SWIRL, NOISE_N, ROLL_AXIS, ROLL_CENTRE, ROLL_EDGE, ROLL_FLOOR_MM, ROLL_FLOOR_SLOPE, ROLL_FREE, ROLL_RISE_MM, SOLID_REACH_MM, TURBULENCE_MAX } from '../../globe/liquid'
+import { Liquid, LIQUID_LENGTH, LIQUID_R, LIQUID_SWIRL, NOISE_N, ROLL_AXIS, ROLL_CENTRE, ROLL_EDGE, ROLL_FLOOR_MM, ROLL_FLOOR_SLOPE, ROLL_FREE, ROLL_RISE_MM, ROLL_SLAB_MM, SOLID_REACH_MM, TURBULENCE_MAX } from '../../globe/liquid'
 import { BEHAVIOUR, KINDS, KIND_IN, NONE, POOL, SEASONS, type Behaviour } from './kinds'
 import { blockoutEmitters, blockoutSdf, GROUND_Y, sdfSample, sdfSlope, type Emitter } from './sdf'
 
@@ -50,6 +50,7 @@ const CY = ROLL_CENTRE[1]
 const CZ = ROLL_CENTRE[2]
 const INV_FREE = 1 / ROLL_FREE
 const INV_RISE = 1 / ROLL_RISE_MM
+const SLAB2 = ROLL_SLAB_MM * ROLL_SLAB_MM
 const SKIM_X = AZ + ROLL_FLOOR_SLOPE * AY
 const SKIM_Y = -ROLL_FLOOR_SLOPE * AX
 const SKIM_Z = -AX
@@ -64,7 +65,7 @@ const ROLL_SOFT = 1
 const ARM_HUB2 = 12 * 12
 const BANK_GAIN = 4
 const BALL_ROOM_MM = 0.1
-const BANK_FROM = 16 / ROLL_RISE_MM
+const BANK_FROM = 24 / ROLL_RISE_MM
 const BANK_OVER = ROLL_RISE_MM / 24
 const LEAP2 = 3 * 3
 
@@ -1350,11 +1351,13 @@ export class ParticleEngine {
           const edge = 1 - ROLL_EDGE * l2 * l2
           const ht = (y - ROLL_FLOOR_MM - ROLL_FLOOR_SLOPE * z) * INV_RISE
           const rise = ht <= 0 ? 0 : ht >= 1 ? 1 : ht * ht * (3 - 2 * ht)
-          const rate = (rollK * rise * lam * edge) / es
-          const skim = ht <= 0 || ht >= 1 ? 0 : rollK * 6 * ht * (1 - ht) * INV_RISE * ((1 - l2) / 2 - (ROLL_EDGE * (1 - l2 * l2 * l2)) / 6)
           const nx = ex + lam * CX
           const ny = ey + lam * CY
           const nz = ez + lam * CZ
+          const along = nx * AX + ny * AY + nz * AZ
+          const discK = (rollK * SLAB2) / (SLAB2 + along * along)
+          const rate = (discK * rise * lam * edge) / es
+          const skim = ht <= 0 || ht >= 1 ? 0 : discK * 6 * ht * (1 - ht) * INV_RISE * ((1 - l2) / 2 - (ROLL_EDGE * (1 - l2 * l2 * l2)) / 6)
           const tx = AY * nz - AZ * ny
           const ty = AZ * nx - AX * nz
           const tz = AX * ny - AY * nx
@@ -1366,7 +1369,6 @@ export class ParticleEngine {
           const rho2 = tx * tx + ty * ty + tz * tz
           if (gk !== 0 && rho2 > 1e-4) {
             const rho = Math.sqrt(rho2)
-            const along = nx * AX + ny * AY + nz * AZ
             const px = nx - along * AX
             const py = ny - along * AY
             const pz = nz - along * AZ

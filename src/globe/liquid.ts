@@ -57,7 +57,7 @@ export const ROLL_MAX = 20
 export const ROLL_EDGE = 0.5
 const ARM_PACE = 0.84
 const ROLL_SECONDS = config.shake.spinDownSeconds * 0.6
-const ROLL_FROM_STORM = 0.15
+const ROLL_FROM_STORM = 0.22
 const ROLL_DRAIN = 3
 const ROLL_EPS = 0.01
 const ROLL_TILT = 0.85
@@ -66,6 +66,7 @@ export const ROLL_CENTRE: readonly [number, number, number] = [-16, 10, 0]
 export const ROLL_FLOOR_MM = G.islandLevelMm - (G.baseHeightMm - G.collarDepthMm + G.sphereDiameterMm / 2) + 2.5
 export const ROLL_FLOOR_SLOPE = -0.1625
 export const ROLL_RISE_MM = 30
+export const ROLL_SLAB_MM = 14
 const ROLL_OFF = Math.hypot(ROLL_CENTRE[0], ROLL_CENTRE[1], ROLL_CENTRE[2])
 export const ROLL_FREE = LIQUID_R * LIQUID_R - ROLL_OFF * ROLL_OFF
 const ROLL_CREST = Math.min(1, Math.pow(1 / (5 * ROLL_EDGE), 0.25))
@@ -573,11 +574,13 @@ export class Liquid {
         const h = t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t)
         const dh = t <= 0 || t >= 1 ? 0 : (6 * t * (1 - t)) / ROLL_RISE_MM
         const k = roll * LIQUID_R * LIQUID_R
-        const rate = (k * h * lam * (1 - ROLL_EDGE * l2 * l2)) / s
-        const along = k * dh * ((1 - l2) / 2 - (ROLL_EDGE * (1 - l2 * l2 * l2)) / 6)
         const nx = dx + lam * ROLL_CENTRE[0]
         const ny = dy + lam * ROLL_CENTRE[1]
         const nz = dz + lam * ROLL_CENTRE[2]
+        const off = nx * ROLL_AXIS[0] + ny * ROLL_AXIS[1] + nz * ROLL_AXIS[2]
+        const disc = (ROLL_SLAB_MM * ROLL_SLAB_MM) / (ROLL_SLAB_MM * ROLL_SLAB_MM + off * off)
+        const rate = (k * disc * h * lam * (1 - ROLL_EDGE * l2 * l2)) / s
+        const along = k * disc * dh * ((1 - l2) / 2 - (ROLL_EDGE * (1 - l2 * l2 * l2)) / 6)
         ux += rate * (ROLL_AXIS[1] * nz - ROLL_AXIS[2] * ny) + along * (ROLL_AXIS[2] + ROLL_FLOOR_SLOPE * ROLL_AXIS[1])
         uy += rate * (ROLL_AXIS[2] * nx - ROLL_AXIS[0] * nz) - along * ROLL_FLOOR_SLOPE * ROLL_AXIS[0]
         uz += rate * (ROLL_AXIS[0] * ny - ROLL_AXIS[1] * nx) - along * ROLL_AXIS[0]
