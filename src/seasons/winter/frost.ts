@@ -5,7 +5,7 @@ import { geometry, prepareModel } from '../../core/models'
 import { texture } from '../../core/textures'
 import { shellUniforms } from '../../globe/shell'
 import { ROOM_GLSL, roomUniforms } from '../../scene/room'
-import { KEY_POOL_MM, surfaceUniforms } from '../../scene/surface'
+import { SLAB_LIGHT_GLSL, slabLightUniforms, surfaceUniforms } from '../../scene/surface'
 import type { Dressing, KitMoment } from '../kit'
 import { season } from './base'
 
@@ -26,8 +26,8 @@ export const glassDressing: Dressing = { tint: [0.86, 0.92, 1], amount: 0 }
 export const surfaceDressing: Dressing & { reachMm: number } = { tint: [0.86, 0.92, 1], amount: 0, reachMm: 132 }
 
 const look = {
-  glass: { cover: 1.15, haze: 0.09, slope: 0.55, micro: 1.1, glint: 1.6, light: 0.52, through: 0.55, thin: 0.7, thick: 0.6 },
-  slab: { cover: 1.5, slope: 0.8, micro: 0.9, glint: 1.6, pool: 0.035 },
+  glass: { cover: 1.7, haze: 0.3, slope: 0.55, micro: 1.1, glint: 1.6, light: 0.85, through: 2.4, thin: 0.6, thick: 0.8, blur: 0.006, bend: 0.012 },
+  slab: { cover: 0.75, slope: 1.6, micro: 1.2, glint: 1.6, pool: 0.35, light: 1.75 },
 }
 
 const frostUniforms = {
@@ -41,6 +41,11 @@ const frostUniforms = {
   uSlabLook: { value: new THREE.Vector4(look.slab.cover, look.slab.pool, look.slab.slope, look.slab.micro) },
   uGlint: { value: new THREE.Vector4(look.glass.glint, look.slab.glint, 0.3, look.glass.light) },
   uGlassThru: { value: new THREE.Vector4(look.glass.through, look.glass.thin, look.glass.thick, 0) },
+}
+
+export const behindUniforms = {
+  uBehind: { value: null as THREE.Texture | null },
+  uBehindSize: { value: new THREE.Vector2(0, 0) },
 }
 
 const lightUniforms = {
@@ -102,9 +107,27 @@ uniform sampler2D uGlassMap;
 uniform vec4 uShape;
 uniform vec4 uGlassLook;
 uniform vec4 uGlassThru;
+uniform sampler2D uBehind;
+uniform vec2 uBehindSize;
 varying vec3 vAxisX;
 varying vec3 vAxisY;
 varying vec3 vAxisZ;
+vec3 frostBehind(vec2 uv, float thickness, vec2 slope) {
+  vec2 px = 1.0 / uBehindSize;
+  vec2 at = uv + slope * (thickness * ${look.glass.bend.toFixed(4)} * uBehindSize.y) * px;
+  float r = thickness * ${look.glass.blur.toFixed(4)} * uBehindSize.y;
+  vec3 sum = textureLod(uBehind, at, 0.0).rgb;
+  float total = 1.0;
+  for (int i = 1; i <= 12; i++) {
+    float fi = float(i);
+    float a = fi * 2.3999632;
+    float k = sqrt(fi / 12.0);
+    float w = 1.0 - 0.5 * k;
+    sum += textureLod(uBehind, at + vec2(cos(a), sin(a)) * (k * r) * px, 0.0).rgb * w;
+    total += w;
+  }
+  return sum / total;
+}
 void main() {
   float c = stageChange();
   if (stageGone(c)) discard;
@@ -160,7 +183,12 @@ void main() {
   vec3 col = albedo * (lit * 0.3183 + stageGrid(vStageLocal * 0.9) * 0.6) * uGlint.w * (uGlassThru.y + uGlassThru.z * smoothstep(0.04, 0.6, h0));
   float pxMm = sqrt(length(dFdx(vStageWorld)) * length(dFdy(vStageWorld)));
   vec3 spark = frostGlints(ga * ${RS.toFixed(2)}, pxMm, ng, v) * uGlint.x * (0.06 + 1.5 * m0.b * on) * smoothstep(0.02, 0.25, alpha);
-  gl_FragColor = vec4(col * alpha + spark, alpha);
+  if (uBehindSize.x > 0.0) {
+    float thickness = clamp(h0 + 0.6 * haze, 0.0, 1.0);
+    float soft = smoothstep(0.02, 0.35, thickness);
+    vec3 behind = frostBehind(gl_FragCoord.xy / uBehindSize, thickness, (viewMatrix * vec4(n - ng, 0.0)).xy);
+    gl_FragColor = vec4(col * alpha + spark + behind * ((1.0 - alpha) * soft), 1.0 - (1.0 - alpha) * (1.0 - soft));
+  } else gl_FragColor = vec4(col * alpha + spark, alpha);
   if (uDiag != 0) {
     if (alpha < 0.3) discard;
     gl_FragColor = stageDiag(albedo, n, 0.0, c, fw / uShape.y);
@@ -172,21 +200,17 @@ ${FROST_GLSL}
 uniform sampler2D uSlabMap;
 uniform vec4 uField;
 uniform vec4 uSlabLook;
-uniform vec4 uFoot;
-uniform vec3 uPool;
-vec3 frostSlabLight(vec3 n, vec2 xz, vec3 albedo) {
-  float d = length(xz - uFoot.xy);
-  float lift = uFoot.w;
-  float contact = (0.8 / (1.0 + lift * 0.1)) * (1.0 - smoothstep(uFoot.z * 0.85, uFoot.z * (1.5 + lift * 0.03), d));
-  vec2 throwAt = uFoot.xy - uKeyDir.xz / max(uKeyDir.y, 0.2) * (40.0 + lift);
-  float thrown = 0.45 * (1.0 - smoothstep(uFoot.z * 0.6, uFoot.z * 1.5, length(xz - throwAt)));
-  float shade = mix(1.0, (1.0 - contact) * (1.0 - thrown), 0.75);
-  float pool = exp(-d * d / (2.0 * ${KEY_POOL_MM.toFixed(1)} * ${KEY_POOL_MM.toFixed(1)}));
-  float wrapK = clamp(dot(n, uKeyDir) * 0.7 + 0.3, 0.0, 1.0) * shade * pool;
-  float wrapR = clamp(dot(n, uRimDir) * 0.6 + 0.4, 0.0, 1.0);
-  vec3 lit = uKeyCol * wrapK + uRimCol * wrapR * 0.6 + uSky * (0.55 + 0.45 * n.y) * (1.0 - 0.45 * contact);
-  vec3 glow = uPool * (uSlabLook.y * exp(-d * d / (2.0 * 110.0 * 110.0)) * (1.0 - 0.6 * contact));
-  return albedo * (lit * 0.3183 + glow);
+${SLAB_LIGHT_GLSL}
+vec3 frostSlabLight(vec3 n, vec3 P, vec3 albedo) {
+  vec3 keyDir;
+  vec3 rimDir;
+  vec3 warm;
+  float keyGain;
+  float rimGain;
+  float occl;
+  slabLight(P, keyDir, keyGain, rimDir, rimGain, occl, warm);
+  vec3 lit = uKeyCol * (clamp(dot(n, keyDir) * 0.7 + 0.3, 0.0, 1.0) * keyGain) + uRimCol * (clamp(dot(n, rimDir) * 0.6 + 0.4, 0.0, 1.0) * rimGain);
+  return albedo * (0.3183 * ${look.slab.light.toFixed(3)}) * (lit + (uSky * (0.55 + 0.45 * n.y) + warm * uSlabLook.y) * occl);
 }
 `
 
@@ -211,15 +235,15 @@ void main() {
   float h0 = m0.r * on;
   float h1 = m1.r * smoothstep(0.0, FROST_SOFT, lvl - m1.g);
   float h2 = m2.r * smoothstep(0.0, FROST_SOFT, lvl - m2.g);
-  float body = h0 * (0.65 + 0.7 * grain.r);
+  float body = h0 * (0.4 + 1.8 * grain.r);
   vec2 slope = uField.z * uSlabLook.z * vec2(h1 - h0, h2 - h0) / (e * 2.0 * uField.x);
   vec2 micro = ((grain.gb - 0.5) * 1.2 + (fine.gb - 0.5) * 0.8) * uSlabLook.w * (0.2 + 0.8 * smoothstep(0.0, 0.25, h0));
   vec3 n = normalize(vec3(-slope.x - micro.x, 1.0, -slope.y + micro.y));
   vec3 v = normalize(vStageWorld - cameraPosition);
   float mu = max(-v.y, 0.0);
-  float alpha = max(1.0 - exp(-uSlabLook.x * body / max(mu, 0.2)), smoothstep(0.1, 0.38, body));
-  vec3 albedo = mix(vec3(0.8, 0.87, 0.96), vec3(0.96, 0.97, 0.98), smoothstep(0.05, 0.4, h0));
-  vec3 col = frostSlabLight(n, xz, albedo);
+  float alpha = max(1.0 - exp(-uSlabLook.x * body / max(mu, 0.2)), smoothstep(0.15, 0.7, body));
+  vec3 albedo = mix(vec3(0.6, 0.72, 0.88), vec3(0.96, 0.97, 0.98), smoothstep(0.2, 0.9, h0));
+  vec3 col = frostSlabLight(n, vStageWorld, albedo) * (0.62 + 0.7 * grain.r + 0.45 * fine.r);
   float pxMm = sqrt(length(dFdx(vStageWorld)) * length(dFdy(vStageWorld)));
   vec3 spark = frostGlints(xz, pxMm, vec3(0.0, 1.0, 0.0), v) * uGlint.y * (0.05 + 1.5 * m0.b * on) * smoothstep(0.02, 0.25, alpha);
   gl_FragColor = vec4(col * alpha + spark, alpha);
@@ -246,7 +270,7 @@ void main() {
   vec3 n = normalize(normalize(vFrostN) + vec3(-micro.x, 0.0, micro.y) * 0.7);
   vec3 v = normalize(vStageWorld - cameraPosition);
   vec3 albedo = vec3(0.95, 0.965, 0.98) * (0.86 + 0.14 * vFrostOn.y);
-  vec3 col = frostSlabLight(n, xz, albedo);
+  vec3 col = frostSlabLight(n, vStageWorld, albedo) * (0.7 + 0.5 * grain.r + 0.4 * fine.r);
   float pxMm = sqrt(length(dFdx(vStageWorld)) * length(dFdy(vStageWorld)));
   vec3 spark = frostGlints(xz + vStageWorld.y * 3.1, pxMm, normalize(vFrostN), v) * uGlint.y * 1.3;
   gl_FragColor = vec4(col + spark, 1.0);
@@ -288,7 +312,7 @@ function makeGlass(): THREE.Mesh {
     change: 'glass-dressing',
     textured: true,
     texels: 1 / frostUniforms.uShape.value.y,
-    uniforms: { ...roomUniforms, ...lightUniforms, uGlassMap: frostUniforms.uGlassMap, uGrain: frostUniforms.uGrain, uGrow: frostUniforms.uGrow, uShape: frostUniforms.uShape, uGlassLook: frostUniforms.uGlassLook, uGlassThru: frostUniforms.uGlassThru, uGlint: frostUniforms.uGlint },
+    uniforms: { ...roomUniforms, ...lightUniforms, uGlassMap: frostUniforms.uGlassMap, uGrain: frostUniforms.uGrain, uGrow: frostUniforms.uGrow, uShape: frostUniforms.uShape, uGlassLook: frostUniforms.uGlassLook, uGlassThru: frostUniforms.uGlassThru, uGlint: frostUniforms.uGlint, ...behindUniforms },
     vertexPars: 'varying vec3 vAxisX;\nvarying vec3 vAxisY;\nvarying vec3 vAxisZ;',
     vertexMain: 'vAxisX = normalize(modelMatrix[0].xyz);\nvAxisY = normalize(modelMatrix[1].xyz);\nvAxisZ = normalize(modelMatrix[2].xyz);',
     fragment: GLASS,
@@ -301,7 +325,7 @@ function makeGlass(): THREE.Mesh {
 }
 
 function makeSurface(): THREE.Group {
-  const shared = { ...roomUniforms, ...lightUniforms, uSlabMap: frostUniforms.uSlabMap, uGrain: frostUniforms.uGrain, uGrow: frostUniforms.uGrow, uField: frostUniforms.uField, uSlabLook: frostUniforms.uSlabLook, uGlint: frostUniforms.uGlint, uFoot: surfaceUniforms.uFoot, uPool: surfaceUniforms.uPool }
+  const shared = { ...roomUniforms, ...lightUniforms, uSlabMap: frostUniforms.uSlabMap, uGrain: frostUniforms.uGrain, uGrow: frostUniforms.uGrow, uField: frostUniforms.uField, uSlabLook: frostUniforms.uSlabLook, uGlint: frostUniforms.uGlint, ...slabLightUniforms }
   const sheet = new THREE.Mesh(
     geometry(MODEL, 'sheet'),
     stageShader({ part: SLAB_PART, standIn: false, change: 'surface-dressing', textured: true, texels: 1 / frostUniforms.uField.value.y, uniforms: shared, fragment: SHEET, params: { ...veil } }),
