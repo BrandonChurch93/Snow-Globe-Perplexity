@@ -496,7 +496,7 @@ const off = () => [R() * 7, R() * 7]
 }
 
 const hangs = { eave: RF.eaveHangs(), rake: RF.rakeHangs() }
-const bulbTones = ['#ffd9a0', '#ffcf8f', '#ffe2b4', '#ffc67d', '#ffdca8'].map(lin)
+const bulbTones = ['#ffc176', '#ffb561', '#ffcb86', '#ffaa52', '#ffc47c'].map(lin)
 let bulbIndex = 0
 for (const run of [hangs.eave, hangs.rake]) {
   const tops = run.map((p) => [p[0], p[1] + 0.56, p[2]])

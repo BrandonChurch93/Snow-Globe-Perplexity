@@ -28,14 +28,14 @@ const LAMP = { power: 1.2, reachMm: 12, flicker: 0.05, cycles: 3, phase: 0.1 }
 const WINDOW = { power: 0.8, reachMm: 8, flicker: 0.1, cycles: 5, phase: 0.4 }
 const SIDE = { power: 0.6, reachMm: 7, flicker: 0.1, cycles: 4, phase: 0.75 }
 const BULB = { power: 0.18, reachMm: 4.5, flicker: 0.07, cycles: 2 }
-const NEAR = { bulb: { power: 0.9, reachMm: 0.85 }, lamp: { power: 1.1, reachMm: 3.4 }, pane: { power: 0.6, reachMm: 2 } }
-const MIRROR = { lamp: 9, pane: 1.4, bulb: 0.55, tight: 0.0016, wide: 0.028, wideShare: 0.07 }
+const NEAR = { bulb: { power: 0.75, reachMm: 2 }, lamp: { power: 4, reachMm: 7 }, pane: { power: 0.9, reachMm: 2.4 } }
+const MIRROR = { lamp: 7, pane: 1.2, bulb: 0.5, tight: 0.0016, wide: 0.028, wideShare: 0.04 }
 const COVER_GAIN = 0.12
 const FRESH_RISE_MM = 0.3
 const SNOW_GRAIN_MM = 0.05
 const SNOW_LUMP_MM = 0.16
 const SPARK = 2.6
-const SNOW_WRAP = 0.6
+const SNOW_WRAP = 0.45
 
 const bulbs = hangPoints()
 const flame = lampFlame()
@@ -227,7 +227,7 @@ export function build(): THREE.Object3D {
   const walls = shadowed(new THREE.Mesh(solids, surfaceMaterial({ part: PART, map: villageGrain(), gain, cover: dusting, key: 'village-solid-winter' })))
   const snow = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'snow'), near), snowMaterial(PART, 'miniature', 'village-snow', '')))
   const ice = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'ice'), near), iceMaterial()), false)
-  const smoke = new THREE.Mesh(wispGeometry({ from: potTop, height: 15, lean: [1.6, 0.5], sway: 0.5, thin: 0.42, wide: 1.5, rings: 40, sides: 10 }), wispMaterial(PART, tones.smoke, 0.8, 2, clock))
+  const smoke = new THREE.Mesh(wispGeometry({ from: potTop, height: 15, lean: [1.6, 0.5], sway: 0.5, thin: 0.42, wide: 1.5, rings: 40, sides: 10 }), wispMaterial(PART, tones.smoke, 1.15, 2, clock))
   smoke.renderOrder = 2
   return new THREE.Group().add(walls, snow, ice, smoke)
 }
@@ -239,7 +239,7 @@ export function lights(): THREE.Object3D {
     glowPiece(villageGeometry('pane-gable'), (_i, w, h) => [GLOW.pane, w, h, 1]),
     glowPiece(villageGeometry('pane-side'), (_i, w, h) => [GLOW.pane, w, h, 2]),
   ]
-  const look = { bulb: 1.5, bulbCore: 3.6, glass: tones.lamp.map((v) => v * 3.4) as unknown as Rgb, flame: tones.flame.map((v) => v * 9) as unknown as Rgb, room: tones.room.map((v) => v * 2.3) as unknown as Rgb, curtain: tones.curtain.map((v) => v * 1.5) as unknown as Rgb, frost: tones.rime.map((v) => v * 0.55) as unknown as Rgb, frostAmount: 0.8, flicker: 0.08, cycles: 3 }
+  const look = { bulb: 0.9, bulbCore: 1.7, glass: tones.lamp.map((v) => v * 1.8) as unknown as Rgb, flame: tones.flame.map((v) => v * 4.5) as unknown as Rgb, room: tones.room.map((v) => v * 2.3) as unknown as Rgb, curtain: tones.curtain.map((v) => v * 1.5) as unknown as Rgb, frost: tones.rime.map((v) => v * 0.55) as unknown as Rgb, frostAmount: 0.8, flicker: 0.08, cycles: 3 }
   return new THREE.Mesh(glowGeometry(pieces), glowMaterial(LIGHT, look, clock))
 }
 

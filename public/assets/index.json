@@ -103,7 +103,7 @@
         {
           "path": "winter/village-winter.glb",
           "bytes": 2143672,
-          "sha": "4b191d5823fdc65e"
+          "sha": "f0ead5258a8eefee"
         }
       ],
       "spring": [],
@@ -212,7 +212,7 @@
         {
           "path": "winter/village-winter.glb",
           "bytes": 2143672,
-          "sha": "4b191d5823fdc65e"
+          "sha": "f0ead5258a8eefee"
         }
       ],
       "spring": [],
@@ -221,7 +221,7 @@
     }
   },
   "seasonHashes": {
-    "winter": "f3c9a6b10767bd5d",
+    "winter": "75bb412443cd52eb",
     "spring": "c94b081a1cd4b942",
     "summer": "c94b081a1cd4b942",
     "fall": "c94b081a1cd4b942"

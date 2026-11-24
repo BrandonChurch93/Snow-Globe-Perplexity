@@ -84,7 +84,7 @@ export const NEAR_LIGHT = 'reflectedLight.indirectDiffuse += vGlow * uGlowGain *
 const SURFACE_PARS = `
 ${BUMP_GLSL}
 float villageHeightAt(vec2 uv, vec3 k) {
-  return dot(texture2D(map, uv).rgb, k);
+  return dot(texture2D(map, uv).rgb, k) + 0.45 * k.x * texture2D(map, uv * 2.7 + 0.13).r;
 }
 `
 
@@ -97,7 +97,8 @@ float villageWood = step(0.5, villageKind) * (1.0 - step(1.5, villageKind));
 float villageIron = step(1.5, villageKind) * (1.0 - step(2.5, villageKind));
 float villageLeaf = step(2.5, villageKind);
 vec3 villageK = villageStone * vec3(0.085, 0.0, 0.03) + villageWood * vec3(0.0, 0.06, 0.012) + villageIron * vec3(0.014, 0.0, 0.01) + villageLeaf * vec3(0.0, 0.0, 0.04);
-float villageTone = villageStone * (0.5 + 0.46 * villageGrain.r) + villageWood * (0.6 + 0.78 * villageGrain.g) + villageIron * (0.8 + 0.4 * villageGrain.r) + villageLeaf * (0.72 + 0.56 * villageGrain.b);
+float villageFine = texture2D(map, vMapUv * 2.7 + 0.13).r;
+float villageTone = villageStone * (0.26 + 0.44 * villageGrain.r + 0.36 * villageFine) + villageWood * (0.6 + 0.78 * villageGrain.g) + villageIron * (0.8 + 0.4 * villageGrain.r) + villageLeaf * (0.72 + 0.56 * villageGrain.b);
 diffuseColor.rgb *= villageTone * (0.78 + 0.44 * villageMottle);
 float villageRough = clamp((fract(vSurf.x) - 0.02) / 0.9 + 0.22 * (0.5 - dot(villageGrain, villageStone * vec3(1.0, 0.0, 0.0) + villageWood * vec3(0.0, 1.0, 0.0) + (villageIron + villageLeaf) * vec3(0.0, 0.0, 1.0))), 0.08, 1.0);
 float villageMetal = villageIron * 0.55;

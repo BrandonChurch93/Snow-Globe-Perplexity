@@ -64,7 +64,7 @@ export function wispMaterial(part: string, tint: Rgb, strength: number, laps: nu
     miniature: true,
     change: 'miniature',
     uniforms: { uClock: clock },
-    params: { transparent: true, depthWrite: false, side: THREE.FrontSide },
+    params: { side: THREE.FrontSide },
     vertexPars: `
 varying vec2 vUv;
 varying vec3 vN;
@@ -109,10 +109,11 @@ void main() {
   float body = pow(abs(dot(normalize(vN), normalize(vV))), 1.7);
   float along = smoothstep(0.0, 0.05, t) * pow(1.0 - t, 1.35);
   float a = clamp(body * along * (0.35 + 1.1 * n) * ${strength.toFixed(3)}, 0.0, 1.0);
-  vec3 lit = stageCold(vStageLocal) * 2.2 + stageGrid(vStageLocal) * 1.2;
+  if (uDiag == 0 && stageHash(vec3(gl_FragCoord.xy + 71.0, uSeed + 0.37)) >= a) discard;
+  vec3 lit = stageCold(vStageLocal) * 3.2 + stageGrid(vStageLocal) * 1.4;
   vec3 col = ${`vec3(${tint[0].toFixed(4)}, ${tint[1].toFixed(4)}, ${tint[2].toFixed(4)})`} * lit;
   float fog = stageVeil(vStageAux.x);
-  gl_FragColor = vec4(stageFogged(col, stageGrid(vStageLocal), fog), a);
+  gl_FragColor = vec4(stageFogged(col, stageGrid(vStageLocal), fog), 1.0);
   if (uDiag != 0) {
     if (a < 0.35) discard;
     gl_FragColor = stageDiag(vec3(${tint[0].toFixed(4)}, ${tint[1].toFixed(4)}, ${tint[2].toFixed(4)}), normalize(vN), fog, c, 0.0);
