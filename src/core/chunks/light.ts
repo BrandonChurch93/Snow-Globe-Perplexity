@@ -58,7 +58,11 @@ export const lightUniforms = {
   ...roomLit,
 }
 
-export const gridAir = (lum: number, knee: number): number => (lum * lum) / Math.max(lum * lum + knee * knee, 1e-9)
+export const gridAir = (lum: number, knee: number): number => {
+  const q = lum * lum
+  const k = knee * knee
+  return (q * q) / Math.max(q * q + k * k, 1e-9)
+}
 
 const f1 = (v: number) => v.toFixed(1)
 
@@ -110,7 +114,8 @@ vec3 stageFlood(vec3 local) {
 }
 vec3 stageGridAir(vec3 colour) {
   float l = dot(colour, vec3(0.2126, 0.7152, 0.0722));
-  return colour * (l * l / max(l * l + uGridAir, 1e-9));
+  float q = l * l;
+  return colour * (q * q / max(q * q + uGridAir * uGridAir, 1e-9));
 }
 vec3 stageGrid(vec3 local) {
   vec3 a = vec3(0.0);
