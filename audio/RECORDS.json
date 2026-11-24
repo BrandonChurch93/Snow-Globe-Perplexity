@@ -1,0 +1,859 @@
+{
+  "version": 1,
+  "takes": [
+    {
+      "cue": "glass-clink",
+      "take": 1,
+      "round": "build",
+      "class": "touch",
+      "season": null,
+      "line": "One small clean ring of glass",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "the Phase 0 test call for glass-clink (its exact words were not kept), 0.5 s asked",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 0.5,
+        "output_format": "pcm_48000",
+        "cost": 6
+      },
+      "source": {
+        "name": "glass-clink-take1.wav",
+        "bytes": 92238,
+        "sha256": "b304836c00bde47dcf78fdbbda204f9fc3270653af9b1856d78e66c07ba3c09a",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 0.48,
+        "kbps": 1537
+      },
+      "sha256": "fc849a956fa33b0f46eb2e9d01ef2083de8273ad56139a9c1d2e03452ddeb7d7",
+      "measured": {
+        "seconds": 0.48,
+        "peakDb": -33,
+        "truePeakDb": -32.98,
+        "lufs": -50.77,
+        "rmsDb": -55.36,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0,
+        "soundSeconds": 0.48,
+        "tailDb": -78.94,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 1369,
+          "bands": {
+            "sub": 0.0238,
+            "low": 0.004,
+            "lowMid": 0.0074,
+            "mid": 0.9637,
+            "high": 0.0007,
+            "air": 0.0004
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -50.8,
+        "lra": 0,
+        "truePeakDb": -33
+      },
+      "fits": {
+        "wantSeconds": 0.3,
+        "soundSeconds": 0.48,
+        "ok": false,
+        "note": "the sound is 0.48 s, long for a cue of 0.3 s: the chain cuts it to length"
+      },
+      "answers": {
+        "verdict": "rejected by the numbers: almost silent, peak -33 dBFS",
+        "why": "",
+        "listener": "not asked: the numbers rejected it"
+      },
+      "time": "2026-11-24T04:09:48.742Z",
+      "answersTime": "2026-11-24T04:09:49.138Z"
+    },
+    {
+      "cue": "lift",
+      "take": 1,
+      "round": "build",
+      "class": "touch",
+      "season": null,
+      "line": "Glass and a heavy base leaving a stone surface, soft",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "A heavy glass snow globe with a carved base lifted off a stone table: a soft low scrape, the weight leaving the stone, a faint slosh of water inside the glass as it rises, gentle and short, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 1,
+        "prompt_influence": 0.5,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 11
+      },
+      "source": {
+        "name": "lift-take1.wav",
+        "bytes": 192078,
+        "sha256": "180062eb5d8098a9e428471fcf8adc58beb85c17617b05953c7898c6d6ac9dc5",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 1,
+        "kbps": 1537
+      },
+      "sha256": "9b014da2d9f88844a27fc37339517f3aa2ab9bcfbf6e22a5e7f40a6dff52e641",
+      "measured": {
+        "seconds": 1,
+        "peakDb": -19.2,
+        "truePeakDb": -18.88,
+        "lufs": -32.78,
+        "rmsDb": -39.97,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0,
+        "soundSeconds": 1,
+        "tailDb": -78.23,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 5735,
+          "bands": {
+            "sub": 0.0003,
+            "low": 0.1097,
+            "lowMid": 0.0442,
+            "mid": 0.245,
+            "high": 0.4389,
+            "air": 0.1618
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -32.8,
+        "lra": 0,
+        "truePeakDb": -18.9
+      },
+      "fits": {
+        "wantSeconds": 0.5,
+        "soundSeconds": 1,
+        "ok": false,
+        "note": "the sound is 1 s, long for a cue of 0.5 s: the chain cuts it to length"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: 0.75 s, peak -19 dBFS, almost nothing under 200 Hz, centred near 6.7 kHz. Listener: a sharp high clink or a squeak, not a heavy base leaving stone.",
+        "listener": {
+          "line": "Glass and a heavy base leaving a stone surface, soft",
+          "open": "1. I hear a sharp, high-pitched metallic clink or ding. It sounds like a small metal object, such as a coin or a glass, striking a hard surface and ringing out.\n2. There is one separate sound event.\n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or musical instrument.\n5. It starts abruptly and ends by fading out naturally.",
+          "fit": "1. No, because the audio features a very brief, high-pitched squeak or chirp rather than the scraping or lifting sound of heavy glass on stone. \n2. The abrupt, sharp squeaking noise does not fit the description of a heavy object or a stone surface. \n3. No, there is no human voice, spoken word, or singing present in the recording."
+        }
+      },
+      "time": "2026-11-24T04:09:49.726Z",
+      "answersTime": "2026-11-24T04:09:50.147Z"
+    },
+    {
+      "cue": "shake-winter",
+      "take": 1,
+      "round": "build",
+      "class": "impact",
+      "season": "winter",
+      "line": "Liquid sloshing and churning inside glass, with snow hiss and tiny bells in it",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "A snow globe shaken hard by hand: water sloshing and churning inside thick glass in six quick strokes, a fine hiss of snow swirling in the water, tiny bells jingling faintly inside, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 2.6,
+        "prompt_influence": 0.4,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 29
+      },
+      "source": {
+        "name": "shake-winter-take1.wav",
+        "bytes": 491598,
+        "sha256": "f5fc5f3c81d04fc6d49ff6a236f20944efb8e30e796ea97783090b26571ac123",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 2.56,
+        "kbps": 1536
+      },
+      "sha256": "451c7663106436da2bc74342717dcc59948cf3aae37a049681c93b3b6949742c",
+      "measured": {
+        "seconds": 2.56,
+        "peakDb": -1.85,
+        "truePeakDb": -1.85,
+        "lufs": -24.41,
+        "rmsDb": -33.15,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0.3,
+        "soundSeconds": 2.26,
+        "tailDb": -76.65,
+        "events": 2,
+        "spectrum": {
+          "centroidHz": 5862,
+          "bands": {
+            "sub": 0.0003,
+            "low": 0.0148,
+            "lowMid": 0.0076,
+            "mid": 0.3431,
+            "high": 0.4053,
+            "air": 0.2289
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -24.4,
+        "lra": 0,
+        "truePeakDb": -1.8
+      },
+      "fits": {
+        "wantSeconds": 2.6,
+        "soundSeconds": 2.26,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: six bursts in 2.25 s, peak -1.8 dBFS. Listener: a metal spoon stirring liquid and ice in a glass, no snow hiss and no bells.",
+        "listener": {
+          "line": "Liquid sloshing and churning inside glass, with a hiss of snow and tiny bells in it",
+          "open": "1. I hear liquid and ice being rapidly stirred in a glass or ceramic container, likely with a metal spoon. The sound consists of a continuous, rhythmic clinking and sloshing.\n2. There is one continuous sound event of stirring.\n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or musical instrument.\n5. It starts abruptly and ends abruptly, cutting off mid-sound.",
+          "fit": "1. No, because the sound is distinctly a metal spoon rapidly stirring and hitting the inside of a glass or mug, rather than the sound of sloshing liquid, hissing snow, or bells.\n2. The sharp, repetitive metallic clinking and scraping of the utensil against the hard glass does not belong to the description.\n3. No, there is no human voice, spoken word, or singing in it."
+        }
+      },
+      "time": "2026-11-24T04:09:50.811Z",
+      "answersTime": "2026-11-24T04:09:51.199Z"
+    },
+    {
+      "cue": "land-winter",
+      "take": 1,
+      "round": "build",
+      "class": "impact",
+      "season": "winter",
+      "line": "The set down, heavy and short, then ice crackling outward",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "A heavy glass snow globe set down firmly on a stone table: one short weighty thud, then ice crackling and creeping outward as frost forms across the stone, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 1.5,
+        "prompt_influence": 0.5,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 17
+      },
+      "source": {
+        "name": "land-winter-take1.wav",
+        "bytes": 284238,
+        "sha256": "b4f124b879edde6210e4d84b24f9e8f97091d381d27b6af2659eda23c6529e00",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 1.48,
+        "kbps": 1536
+      },
+      "sha256": "67748aa64b953f663756af61950727a85a639ea14175134fa4d4b3fea1881980",
+      "measured": {
+        "seconds": 1.48,
+        "peakDb": -37.07,
+        "truePeakDb": -37.07,
+        "lufs": -62.19,
+        "rmsDb": -58.7,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 1.1,
+        "soundSeconds": 0.38,
+        "tailDb": -84.81,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 63,
+          "bands": {
+            "sub": 0.8755,
+            "low": 0.0833,
+            "lowMid": 0.0367,
+            "mid": 0.0031,
+            "high": 0.0012,
+            "air": 0.0002
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -62.2,
+        "lra": 0,
+        "truePeakDb": -37.1
+      },
+      "fits": {
+        "wantSeconds": 1.5,
+        "soundSeconds": 0.38,
+        "ok": false,
+        "note": "the sound is 0.38 s, short for a cue of 1.5 s"
+      },
+      "answers": {
+        "verdict": "rejected by the numbers: peak -37 dBFS, sound only in the first 0.29 s of 1.5 s, 85 percent of its energy under 200 Hz: a faint thud with no ice after it",
+        "why": "",
+        "listener": "not asked: the numbers rejected it"
+      },
+      "time": "2026-11-24T04:09:51.845Z",
+      "answersTime": "2026-11-24T04:09:52.226Z"
+    },
+    {
+      "cue": "amb-winter",
+      "take": 1,
+      "round": "build",
+      "class": "ambience",
+      "season": "winter",
+      "line": "Wind and distant bells",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "A very quiet winter night: soft steady wind and faint sleigh bells far in the distance, calm, even, with no single loud event, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 20,
+        "prompt_influence": 0.3,
+        "loop": true,
+        "output_format": "pcm_48000",
+        "cost": 220
+      },
+      "source": {
+        "name": "amb-winter-take1.wav",
+        "bytes": 3840078,
+        "sha256": "4ad7fee71b3d3bd43b4f907b4647c58cc400d54a337b2dd06cb06a29d696d9db",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 20,
+        "kbps": 1536
+      },
+      "sha256": "4e37e9e7cb39cb22e00c40eb816a313d16306ff0bfb7b5758bd21eee86e56acf",
+      "measured": {
+        "seconds": 20,
+        "peakDb": -38.14,
+        "truePeakDb": -38.13,
+        "lufs": -62.8,
+        "rmsDb": -52.28,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0,
+        "soundSeconds": 20,
+        "tailDb": -53.19,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 32,
+          "bands": {
+            "sub": 0.9825,
+            "low": 0.0144,
+            "lowMid": 0.0016,
+            "mid": 0.0005,
+            "high": 0.0004,
+            "air": 0.0005
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -62.8,
+        "lra": 0.7,
+        "truePeakDb": -38.1
+      },
+      "fits": {
+        "wantSeconds": 20,
+        "soundSeconds": 20,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "rejected by the numbers: peak -38 dBFS and 99.7 percent of its energy under 200 Hz: a low rumble with no wind and no bells in it",
+        "why": "",
+        "listener": "not asked: the numbers rejected it"
+      },
+      "time": "2026-11-24T04:09:53.239Z",
+      "answersTime": "2026-11-24T04:09:53.653Z"
+    },
+    {
+      "cue": "glass-clink",
+      "take": 2,
+      "round": "build",
+      "class": "touch",
+      "season": null,
+      "line": "One small clean ring of glass",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "One small clean ring of thick glass touched once: a single bright clear ping with a short natural decay, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 1,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 11
+      },
+      "source": {
+        "name": "glass-clink-take2.wav",
+        "bytes": 192078,
+        "sha256": "ab56f74f6d5c57fb07bf0f06f39870ff4dfa2bd3c5df4e8cb2f6bc307ca1f4d7",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 1,
+        "kbps": 1537
+      },
+      "sha256": "5736f3bf9f2549d8d8dc86ab2544629ecacaca6b04c03088afe1cbd24c6354c8",
+      "measured": {
+        "seconds": 1,
+        "peakDb": -13.3,
+        "truePeakDb": -13.26,
+        "lufs": -27.32,
+        "rmsDb": -33.09,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0,
+        "soundSeconds": 1,
+        "tailDb": -73.07,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 2496,
+          "bands": {
+            "sub": 0.0005,
+            "low": 0.0001,
+            "lowMid": 0.0001,
+            "mid": 0.9992,
+            "high": 0.0001,
+            "air": 0
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -27.3,
+        "lra": 0,
+        "truePeakDb": -13.3
+      },
+      "fits": {
+        "wantSeconds": 0.3,
+        "soundSeconds": 1,
+        "ok": false,
+        "note": "the sound is 1 s, long for a cue of 0.3 s: the chain cuts it to length"
+      },
+      "answers": {
+        "verdict": "fits",
+        "why": "Numbers: one ping, 0.47 s, peak -13 dBFS, almost all of its energy between 2 and 8 kHz. Listener: one high ring like a small bell or a struck glass, no voice, no music; fits the line.",
+        "listener": {
+          "line": "One small clean ring of glass",
+          "open": "1. I hear a single, high-pitched ringing sound, similar to a small bell, a triangle, or a glass being struck. It has a clear, bright, and resonant character.\n2. There is exactly one separate sound event.\n3. No, there is no human voice, spoken word, breath, or singing present.\n4. There is no continuous music or melody, but the sound may have been produced by a percussive musical instrument like a triangle or bell.\n5. It starts abruptly with a sharp, crisp strike. It ends by gradually decaying and fading out into silence.",
+          "fit": "1. Yes, because the audio delivers a single, crisp, high-pitched resonance that perfectly resembles a light tap on a small glass object like a wine glass.\n2. There is nothing in the sound that does not belong to the description.\n3. No, there is no human voice, spoken word, or singing in it."
+        }
+      },
+      "time": "2026-11-24T04:09:54.236Z",
+      "answersTime": "2026-11-24T04:09:54.658Z"
+    },
+    {
+      "cue": "ui-tick",
+      "take": 1,
+      "round": "build",
+      "class": "interface",
+      "season": null,
+      "line": "A soft tick for a control",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "One single soft tick, a fingernail tapping a small glass bead once, very short and dry, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 0.5,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 6
+      },
+      "source": {
+        "name": "ui-tick-take1.wav",
+        "bytes": 92238,
+        "sha256": "a68428f4b2d16374fa328509c4ee8f4d8bfee81e0d4d9a00750674bcc2840a46",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 0.48,
+        "kbps": 1537
+      },
+      "sha256": "3aca039169ecc16beba4a333466c95a2cb27d692612c3e01194b1bbd5cb48647",
+      "measured": {
+        "seconds": 0.48,
+        "peakDb": -7.95,
+        "truePeakDb": -7.95,
+        "lufs": -30.96,
+        "rmsDb": -38.09,
+        "silenceFrontSeconds": 0.005,
+        "silenceEndSeconds": 0.05,
+        "soundSeconds": 0.425,
+        "tailDb": -71.97,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 10600,
+          "bands": {
+            "sub": 0.002,
+            "low": 0.0018,
+            "lowMid": 0.0013,
+            "mid": 0.0071,
+            "high": 0.3619,
+            "air": 0.626
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -31,
+        "lra": 0,
+        "truePeakDb": -8
+      },
+      "fits": {
+        "wantSeconds": 0.08,
+        "soundSeconds": 0.425,
+        "ok": false,
+        "note": "the sound is 0.425 s, long for a cue of 0.08 s: the chain cuts it to length"
+      },
+      "answers": {
+        "verdict": "fits weakly",
+        "why": "Numbers: one tick, 0.11 s, peak -8 dBFS, three quarters of its energy above 8 kHz. Listener on the padded copy: a sharp high metallic clink like a coin on a hard surface, one event. With the line shown it said yes. It is sharper than the soft tick the line asks for. Two takes are left.",
+        "listener": {
+          "line": "A soft tick for a control",
+          "open": "1. I hear the rapid, rhythmic clicking of an old-fashioned mechanical film projector running. The sound is fast, clattering, and highly repetitive.\n2. There is one continuous sound event.\n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or musical instrument.\n5. It starts abruptly and cut off abruptly.",
+          "fit": "1. Yes, it fits the description because it is a very brief, subtle, and crisp click that sounds exactly like a user interface button or mechanical dial being engaged.\n2. There is nothing in the sound that does not belong to the description.\n3. No, there is no human voice, spoken word, or singing in this sound.",
+          "openAgain": [
+            "1. I hear a deep, heavy percussive boom followed by a long, resonant echo. It has the character of a large drum being struck or a heavy object dropping in a spacious room.\n2. There is exactly one separate sound event.\n3. There is no human voice, spoken word, breath, or singing present.\n4. There is no continuous music or melody, but it sounds like a single hit on a large percussion instrument like a bass drum.\n5. It starts with a sudden, loud impact and ends by gradually fading out into silence as the echo decays.",
+            "1. I cannot hear anything because no audio file was provided.\n2. Not sure.\n3. Not sure.\n4. Not sure.\n5. Not sure.",
+            "1. I hear a sharp, high-pitched metallic clink. It sounds like a small metal object, such as a coin, striking a hard surface.\n2. There is exactly one separate sound event.\n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or musical instrument present.\n5. It starts abruptly with a sharp metallic strike. It ends quickly as the brief ringing resonance fades into silence."
+          ]
+        }
+      },
+      "time": "2026-11-24T04:09:55.209Z",
+      "answersTime": "2026-11-24T04:09:55.666Z"
+    },
+    {
+      "cue": "ui-sound-on",
+      "take": 1,
+      "round": "build",
+      "class": "interface",
+      "season": null,
+      "line": "A small chime when sound comes on",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "One small soft chime, a single tiny glass bell struck once and ringing briefly, gentle and warm, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 1,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 11
+      },
+      "source": {
+        "name": "ui-sound-on-take1.wav",
+        "bytes": 192078,
+        "sha256": "68c5ba8b5f9362f3a7079223a226d03f4ce4d51672c0f6a842321edc4c3719f5",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 1,
+        "kbps": 1537
+      },
+      "sha256": "b4859b700b058b175d403ae8e5d70ce267cbd4b2fab65240779c6b63b5a8835d",
+      "measured": {
+        "seconds": 1,
+        "peakDb": -16.98,
+        "truePeakDb": -16.98,
+        "lufs": -33.1,
+        "rmsDb": -37.61,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0,
+        "soundSeconds": 1,
+        "tailDb": -76.33,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 2152,
+          "bands": {
+            "sub": 0,
+            "low": 0.0001,
+            "lowMid": 0.0002,
+            "mid": 0.9944,
+            "high": 0.0036,
+            "air": 0.0018
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -33.1,
+        "lra": 0,
+        "truePeakDb": -17
+      },
+      "fits": {
+        "wantSeconds": 0.4,
+        "soundSeconds": 1,
+        "ok": false,
+        "note": "the sound is 1 s, long for a cue of 0.4 s: the chain cuts it to length"
+      },
+      "answers": {
+        "verdict": "fits",
+        "why": "Numbers: one chime, 0.57 s, peak -17 dBFS. Listener: a bright high chime of two rapid overlapping tones, called digital or synthesized; fits the line. Two takes are left if a more natural glass bell is wanted.",
+        "listener": {
+          "line": "A small chime when sound comes on",
+          "open": "1. I hear a digital notification sound or electronic alert. It has the character of a bright, high-pitched, synthesized chime or bell.\n2. There is one main sound event consisting of two rapid, overlapping tones.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. There is no full piece of music, but it features a very brief two-note melody played by a synthesized musical bell instrument.\n5. It starts abruptly and ends by fading out smoothly.",
+          "fit": "1. Yes, it perfectly fits the description because the audio consists of a single, bright, high-pitched ringing tone typical of a small electronic notification or activation chime.\n2. There is nothing in the sound that does not belong to the description.\n3. No, there is no human voice, spoken word, or singing in it."
+        }
+      },
+      "time": "2026-11-24T04:09:56.226Z",
+      "answersTime": "2026-11-24T04:09:56.616Z"
+    },
+    {
+      "cue": "land-winter",
+      "take": 2,
+      "round": "build",
+      "class": "impact",
+      "season": "winter",
+      "line": "The set down, heavy and short, then ice crackling outward",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "A heavy glass snow globe set down hard on a stone table: one loud short weighty thud with a small ring of glass, followed at once by ice crackling and spreading outward for a full second as frost forms, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 1.5,
+        "prompt_influence": 0.5,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 17
+      },
+      "source": {
+        "name": "land-winter-take2.wav",
+        "bytes": 284238,
+        "sha256": "7016baae7fa490089c84e297c1ee16db252602099d83e9ada33413a03d43e9d0",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 1.48,
+        "kbps": 1536
+      },
+      "sha256": "91af789360889fe641633535cd7ff4c6e88c5590fba62de72c6e583c27c99d12",
+      "measured": {
+        "seconds": 1.48,
+        "peakDb": -0.04,
+        "truePeakDb": -0.03,
+        "lufs": -18.38,
+        "rmsDb": -29.4,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0,
+        "soundSeconds": 1.48,
+        "tailDb": -62.26,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 2052,
+          "bands": {
+            "sub": 0.0001,
+            "low": 0.0006,
+            "lowMid": 0.001,
+            "mid": 0.9716,
+            "high": 0.0259,
+            "air": 0.0008
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -18.4,
+        "lra": 0,
+        "truePeakDb": 0
+      },
+      "fits": {
+        "wantSeconds": 1.5,
+        "soundSeconds": 1.48,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: a loud hit, then 30 dB down within 0.1 s and silent by 0.5 s. Listener: one light bright clink on glass, not heavy, and no crackling.",
+        "listener": {
+          "line": "A heavy glass globe set down on stone, heavy and short, then ice crackling outward",
+          "open": "1. I hear a sharp, bright clinking sound, likely made by a metal object striking glass or ceramic. It is high-pitched and rings cleanly for a brief moment.\n2. There is exactly one distinct sound event.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument present.\n5. The sound starts abruptly with a sudden, percussive impact. It ends by naturally ringing out and quickly fading into complete silence.",
+          "fit": "1. No, it does not fit the description because the sound is a light, sharp chime rather than a heavy impact, and it completely lacks any crackling noise.\n2. The high-pitched, ringing tone sounds like a light metallic tap against a glass, which contradicts the description of a heavy object and crackling ice. \n3. No, there is no human voice, spoken word, or singing in the audio."
+        }
+      },
+      "time": "2026-11-24T04:09:57.207Z",
+      "answersTime": "2026-11-24T04:09:57.601Z"
+    },
+    {
+      "cue": "amb-winter",
+      "take": 2,
+      "round": "build",
+      "class": "ambience",
+      "season": "winter",
+      "line": "Wind and distant bells",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "Winter night wind: a soft airy hush of wind rising and falling slowly, with faint sleigh bells far in the distance, calm and even, with no single loud event, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 20,
+        "prompt_influence": 0.3,
+        "loop": true,
+        "output_format": "pcm_48000",
+        "cost": 220
+      },
+      "source": {
+        "name": "amb-winter-take2.wav",
+        "bytes": 3840078,
+        "sha256": "6dd77dca30f569c5e647250a9dbae3d0a266caed36f8c964a3dd5ccade8c575c",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 20,
+        "kbps": 1536
+      },
+      "sha256": "43e21709a4885ab43640384735fbcbd4d10fbf4cbbc1e7eefd5b5d550bb6650d",
+      "measured": {
+        "seconds": 20,
+        "peakDb": -22.82,
+        "truePeakDb": -22.82,
+        "lufs": -52.17,
+        "rmsDb": -43.56,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0,
+        "soundSeconds": 20,
+        "tailDb": -49.77,
+        "events": 5,
+        "spectrum": {
+          "centroidHz": 21,
+          "bands": {
+            "sub": 0.9963,
+            "low": 0.0036,
+            "lowMid": 0.0001,
+            "mid": 0,
+            "high": 0,
+            "air": 0
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -52.2,
+        "lra": 3.8,
+        "truePeakDb": -22.8
+      },
+      "fits": {
+        "wantSeconds": 20,
+        "soundSeconds": 20,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "rejected by the numbers: after a 60 Hz cut its level is -69 dBFS: a rumble under 60 Hz and nothing else",
+        "why": "",
+        "listener": "not asked: the numbers rejected it"
+      },
+      "time": "2026-11-24T04:09:58.571Z",
+      "answersTime": "2026-11-24T04:09:58.987Z"
+    },
+    {
+      "cue": "amb-winter",
+      "take": 3,
+      "round": "build",
+      "class": "ambience",
+      "season": "winter",
+      "line": "Wind and distant bells",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "Winter wind blowing steadily across open snow: a full airy whoosh, gusts rising and falling, and sleigh bells ringing clearly somewhere in the distance, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 20,
+        "prompt_influence": 0.5,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 220
+      },
+      "source": {
+        "name": "amb-winter-take3.wav",
+        "bytes": 3840078,
+        "sha256": "ba0606046b65ce06bbb8341d27414dfbdbbacf2a8a1ab6721047d8068f2b6c23",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 20,
+        "kbps": 1536
+      },
+      "sha256": "03e8c9fbe44c55a316a9cb394954393809e0fa86b2807e69967f294c9f76b125",
+      "measured": {
+        "seconds": 20,
+        "peakDb": -3.67,
+        "truePeakDb": -3.66,
+        "lufs": -26.07,
+        "rmsDb": -24.57,
+        "silenceFrontSeconds": 0.1,
+        "silenceEndSeconds": 0.785,
+        "soundSeconds": 19.115,
+        "tailDb": -84.94,
+        "events": 2,
+        "spectrum": {
+          "centroidHz": 307,
+          "bands": {
+            "sub": 0.9191,
+            "low": 0.0293,
+            "lowMid": 0.0062,
+            "mid": 0.0138,
+            "high": 0.0256,
+            "air": 0.006
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -26.1,
+        "lra": 12.5,
+        "truePeakDb": -3.7
+      },
+      "fits": {
+        "wantSeconds": 20,
+        "soundSeconds": 19.115,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: level uneven, a gust at 2 to 3 s, bells from 6 to 16 s, quiet ends; 92 percent of its energy under 60 Hz before the low cut. Listener: a gust of wind, a magical whoosh, then sleigh bells jingling loud and close as if passing by; not distant, and the whoosh does not belong.",
+        "listener": {
+          "line": "Wind and distant bells, very quiet, an ambience that loops",
+          "open": "1. I hear a gust of wind blowing, followed by the rhythmic jingling of metallic bells. The sound has a festive, wintery character, strongly resembling sleigh bells passing by.\n2. There are roughly three distinct sound events: an initial rushing wind, a quick swooshing sound effect, and the continuous jingling of bells.\n3. No, there is no human voice, spoken word, breath, or singing present in the audio.\n4. There is no formal music or melody, but the sleigh bells function as a rhythmic percussion instrument.\n5. The audio starts with a low, rumbling sound of wind blowing. It ends with the jingling sleigh bells gradually fading out into silence.",
+          "fit": "1. No, because the bells are loud and upfront rather than distant, and the track has a clear beginning and end instead of a continuous loop. \n2. There is a distinct, magical-sounding \"whoosh\" or swoosh effect that does not fit the description. \n3. No, there is no human voice, spoken word, or singing in the audio."
+        }
+      },
+      "time": "2026-11-24T04:10:00.001Z",
+      "answersTime": "2026-11-24T04:10:00.388Z"
+    }
+  ],
+  "kept": [
+    {
+      "cue": "ui-sound-on",
+      "take": 1,
+      "round": "build",
+      "file": "audio/kept/ui-sound-on.wav",
+      "sha256": "8ee966e01733fd3fe5aa502e82f4405f6872aa7467f8cb195b2c547315be00dd",
+      "seconds": 0.4,
+      "lufs": -26,
+      "time": "2026-11-24T04:10:34.670Z"
+    },
+    {
+      "cue": "glass-clink",
+      "take": 2,
+      "round": "build",
+      "file": "audio/kept/glass-clink.wav",
+      "sha256": "a62138e2781a5f480ec29a3cbe16cabf876f0f466600e4e9223fa2e54c2f984e",
+      "seconds": 0.3,
+      "lufs": -22,
+      "time": "2026-11-24T04:10:35.207Z"
+    }
+  ],
+  "pack": {
+    "time": "2026-11-24T04:11:34.901Z",
+    "kbps": 192,
+    "bytes": 35136,
+    "fits": true,
+    "files": [
+      {
+        "file": "sprite.mp3",
+        "bytes": 35136,
+        "sha256": "a0c334ba7570c328cdef089f7449f964f7b9b42a052ea2f001dbfdbf86d30223"
+      }
+    ],
+    "sprites": [
+      "glass-clink",
+      "ui-sound-on"
+    ],
+    "loops": [],
+    "notes": []
+  },
+  "mixes": {}
+}

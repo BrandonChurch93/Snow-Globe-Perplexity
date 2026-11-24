@@ -1,0 +1,117 @@
+{
+  "id": "ui-sound-on",
+  "file": "ui-sound-on.wav",
+  "class": "interface",
+  "season": null,
+  "line": "A small chime when sound comes on",
+  "seconds": 0.4,
+  "take": 1,
+  "takes": 1,
+  "round": "build",
+  "why": "One chime. The listener heard a bright high chime of two quick tones, no voice, and said it fits the line. It called it a little synthetic, so a more natural glass bell may be asked for with the takes that are left. The fade out is 200 ms because the chime is still ringing, 23 dB under its peak, where the cue ends.",
+  "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+  "prompt": "One small soft chime, a single tiny glass bell struck once and ringing briefly, gentle and warm, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+  "settings": {
+    "endpoint": "POST /v1/sound-generation",
+    "model": "default",
+    "duration_seconds": 1,
+    "prompt_influence": 0.6,
+    "loop": false,
+    "output_format": "pcm_48000",
+    "cost": 11
+  },
+  "chain": {
+    "settings": {
+      "trimDb": -48,
+      "padMs": 2,
+      "fadeInMs": 2,
+      "fadeOutMs": 200,
+      "lowCutHz": 120,
+      "loop": false,
+      "targetLufs": -26,
+      "capSeconds": 0.4
+    },
+    "steps": [
+      "trimmed 0 s in front and 0 s at the end",
+      "low cut at 120 Hz",
+      "cut to 0.4 s",
+      "fade in 2 ms, fade out 200 ms",
+      "level: 2.6 dB to -26 LUFS"
+    ],
+    "gainDb": 2.6
+  },
+  "loop": null,
+  "measured": {
+    "seconds": 0.4,
+    "peakDb": -15.09,
+    "truePeakDb": -15.09,
+    "lufs": -26,
+    "rmsDb": -31.58,
+    "silenceFrontSeconds": 0,
+    "silenceEndSeconds": 0.02,
+    "soundSeconds": 0.38,
+    "tailDb": -51.3,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 2156,
+      "bands": {
+        "sub": 0,
+        "low": 0,
+        "lowMid": 0.0002,
+        "mid": 0.9939,
+        "high": 0.0039,
+        "air": 0.002
+      }
+    }
+  },
+  "ffmpeg": {
+    "lufs": -26,
+    "lra": 0,
+    "truePeakDb": -15.1
+  },
+  "takeMeasured": {
+    "seconds": 1,
+    "peakDb": -16.98,
+    "truePeakDb": -16.98,
+    "lufs": -33.1,
+    "rmsDb": -37.61,
+    "silenceFrontSeconds": 0,
+    "silenceEndSeconds": 0,
+    "soundSeconds": 1,
+    "tailDb": -76.33,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 2152,
+      "bands": {
+        "sub": 0,
+        "low": 0.0001,
+        "lowMid": 0.0002,
+        "mid": 0.9944,
+        "high": 0.0036,
+        "air": 0.0018
+      }
+    }
+  },
+  "answers": {
+    "verdict": "fits",
+    "why": "Numbers: one chime, 0.57 s, peak -17 dBFS. Listener: a bright high chime of two rapid overlapping tones, called digital or synthesized; fits the line. Two takes are left if a more natural glass bell is wanted.",
+    "listener": {
+      "line": "A small chime when sound comes on",
+      "open": "1. I hear a digital notification sound or electronic alert. It has the character of a bright, high-pitched, synthesized chime or bell.\n2. There is one main sound event consisting of two rapid, overlapping tones.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. There is no full piece of music, but it features a very brief two-note melody played by a synthesized musical bell instrument.\n5. It starts abruptly and ends by fading out smoothly.",
+      "fit": "1. Yes, it perfectly fits the description because the audio consists of a single, bright, high-pitched ringing tone typical of a small electronic notification or activation chime.\n2. There is nothing in the sound that does not belong to the description.\n3. No, there is no human voice, spoken word, or singing in it."
+    }
+  },
+  "source": {
+    "name": "ui-sound-on-take1.wav",
+    "bytes": 192078,
+    "sha256": "68c5ba8b5f9362f3a7079223a226d03f4ce4d51672c0f6a842321edc4c3719f5",
+    "codec": "pcm_s16le",
+    "sampleRate": 48000,
+    "channels": 2,
+    "seconds": 1,
+    "kbps": 1537
+  },
+  "takeSha256": "b4859b700b058b175d403ae8e5d70ce267cbd4b2fab65240779c6b63b5a8835d",
+  "sha256": "8ee966e01733fd3fe5aa502e82f4405f6872aa7467f8cb195b2c547315be00dd",
+  "time": "2026-11-24T04:10:34.670Z"
+}

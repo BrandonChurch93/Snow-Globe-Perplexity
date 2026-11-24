@@ -57,3 +57,13 @@ Set with `setDiagnostic(view)` before a render call, `none` to clear. A diagnost
 | `public/audio/index.json` and the files it names | What the app ships. Shape: `AudioIndex` in `src/core/bridge.ts` |
 
 The repo is public, so no generated sound file is committed: `.gitignore` holds every sound file under `audio/` and all of `public/audio/`. Their records and recipes are text and are committed.
+
+## Notes added at the merges
+
+- `out/work/seq/<source>-<format>-<tier>/` holds single frames, one PNG and one record each. `sheet` and `seq` share it and reuse each other's frames. It is held to `sandbox.maxFramesOnDisk` by pruning the oldest.
+- `measure`: `--unit ID [--only M1,M4] [--tier T] [--force]`. The default tier is `final`. A diagnostic view whose encoding is off fails its measure with a note instead of giving a number.
+- `pack`: `--phase N --round R --unit ID [--tier T] [--only R1,R3] [--record]`. Phase 2 builds only the blockout pack. Beside each pack folder, never in it, is `<role>.message.md` with the critic's section, the severity scale and the return format. The key is `out/work/packs/keys/round-RRR.json`.
+- `gate`: `--phase N [--only ID,ID] [--unit ID] [--fresh]`. `--unit` names the unit of the round for G13. `--fresh` draws the G5 and G13 pictures again.
+- `hostcheck`: `[--wait SECONDS] [--keep]`. Writes `out/work/hostcheck/result.json` and `live.png`. The default wait is 120 s. `--keep` keeps the temp folder.
+- `sound`: see `node tools/sound.mjs --help`. The ledger of every take is `audio/RECORDS.json`. `mix`: `--candidate NAME | --final [--which a] [--music FILE] [--skip CUE] [--gain cue=dB]`.
+- `audiomap`: `--file F [--approved] [--name N] [--force]`. A map marked `grid` found no clear pulse: the cut must not trust its beats.

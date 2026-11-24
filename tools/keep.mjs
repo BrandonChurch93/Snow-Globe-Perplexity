@@ -68,7 +68,10 @@ if (args.film === true) {
     if (fs.existsSync(`${src}.json`)) writeJson(rel('out', `${name}.json`), { ...readJson(`${src}.json`), keptFrom: short(src), sourceSha256: fileSha(src) })
     kept.push(`out/${name}`)
   }
-  for (const src of listFiles(path.join(work, 'review')).filter((f) => f.endsWith('.mp4'))) {
+  // the film tool writes out/work/review-<candidate>.mp4. A file marked -partial is not the whole film and is not kept.
+  const top = fs.existsSync(work) ? fs.readdirSync(work).sort().map((n) => path.join(work, n)) : []
+  const reviewCuts = [...top.filter((f) => /^review-[a-z-]+\.mp4$/.test(path.basename(f)) && !/-partial\.mp4$/.test(f)), ...listFiles(path.join(work, 'review')).filter((f) => f.endsWith('.mp4'))]
+  for (const src of reviewCuts) {
     fs.copyFileSync(src, rel('out', path.basename(src)))
     if (fs.existsSync(`${src}.json`)) fs.copyFileSync(`${src}.json`, rel('out', `${path.basename(src)}.json`))
     kept.push(`out/${path.basename(src)}`)
