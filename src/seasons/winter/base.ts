@@ -6,6 +6,7 @@ import { geometry, prepareModel } from '../../core/models'
 import { stream } from '../../core/rng'
 import { texture } from '../../core/textures'
 import { ROOM_GLSL, roomUniforms } from '../../scene/room'
+import { partChange } from '../../shake/change'
 import type { KitMoment } from '../kit'
 
 export const season = 'winter'
@@ -407,7 +408,7 @@ const iceUniforms = {
 }
 
 const growth: { delay: number; length: number }[] = []
-const STUB = 0.3
+const SHORT = 0.72
 const FLOOR_SHARE = 0.3
 
 export async function prepare(): Promise<void> {
@@ -451,10 +452,10 @@ export function base(): THREE.Object3D {
   const iceGeometry = geometry(MODEL, 'ice')
   const extras = iceGeometry.userData.extras as IceExtras
   const tile = geometry(MODEL, 'wood').userData.extras as TileExtras
-  const settle = config.shake.settleCheckSeconds
+  const landed = config.states.landedSeconds
   const rng = stream(`${PART}/icicles`)
   growth.length = 0
-  for (let i = 0; i < extras.count; i++) growth.push({ delay: rng.range(0.03, 0.36) * settle, length: rng.range(0.4, 0.55) * settle })
+  for (let i = 0; i < extras.count; i++) growth.push({ delay: rng.range(0, 0.3) * landed, length: rng.range(0.45, 0.58) * landed })
   iceUniforms.uIceGrow.value = growth.map(() => 1)
   iceUniforms.uIceBody.value = [...extras.body]
   iceUniforms.uIceSpan.value.set(extras.bodyFrom, extras.bodyStep, extras.rootHeight, 0)
@@ -485,12 +486,17 @@ export function update(moment: KitMoment): void {
   const lift = (FLOOR_SHARE / Math.PI) * Math.max(lightUniforms.uRigCardDir.value.y, 0)
   const down = (FLOOR_SHARE / Math.PI) * Math.max(f.keyDir.y, 0)
   iceUniforms.uIceFloor.value.setRGB(f.keyCol.r * down + card.r * lift, f.keyCol.g * down + card.g * lift, f.keyCol.b * down + card.b * lift)
-  const swapping = moment.beat !== null && moment.beat >= config.shake.swapWindow.fromBeat
-  const since = swapping ? 0 : Math.max(0, moment.sinceLanding)
+  const swap = config.shake.swapWindow
+  const shaking = moment.beat !== null && moment.beat >= swap.fromBeat
+  const two = f.from !== f.to && f.change > 0 && f.change < 1
+  let held = -1
+  if (two) held = moment.arrived >= 1 ? 1 : shaking ? 0 : -1
+  else if (shaking) held = 1 - partChange('base', (moment.beat! - swap.fromBeat) / (swap.toBeat - swap.fromBeat))
+  const since = Math.max(0, moment.sinceLanding)
   const grow = iceUniforms.uIceGrow.value
   for (let i = 0; i < growth.length; i++) {
     const g = growth[i]!
-    const x = Math.min(1, Math.max(0, (since - g.delay) / g.length))
-    grow[i] = STUB + (1 - STUB) * x * x * (3 - 2 * x)
+    const x = held >= 0 ? held : Math.min(1, Math.max(0, (since - g.delay) / g.length))
+    grow[i] = SHORT + (1 - SHORT) * x * x * (3 - 2 * x)
   }
 }

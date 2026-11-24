@@ -26,6 +26,7 @@ export interface GlowLight {
   power: number
   reachMm: number
   phase: number
+  wrap?: number
 }
 
 type Table = readonly (readonly [number, number])[]
@@ -39,7 +40,6 @@ const FORK_H = 13.6
 const TOP_H = 37.6
 const DEEP_H = -4.5
 const MIN_SHAFT = 5
-const LIMB = { share: 0.64, thin: 1.02, thick: 1.8, tip: 0.5, taper: 0.9 }
 const ROOT_RISE = 7
 const TWIST_LOW = 0.16
 const TWIST_HIGH = 0.055
@@ -49,31 +49,55 @@ const MODEL = 'shared/trunk-wood.glb'
 const BARK = 'shared/trunk-bark.srgb.tile.w1024.png'
 const BARK_NORMAL = 'shared/trunk-bark-n.lin.tile.w1024.png'
 
-const RADIUS: Table = [[-4.5, 4.2], [0, 3.6], [1.2, 3.3], [3.2, 2.9], [5.2, 2.72], [8, 2.85], [10, 2.5], [11.6, 2.75], [13.6, 2.95], [16.5, 2.1], [20, 1.62], [26.2, 1.34], [33, 1.0], [37.6, 0.5]]
-const AXIS_X: Table = [[-4.5, -0.3], [0, -0.2], [8.4, 0.4], [11.6, 0.8], [13.6, 0.7], [26.2, 0.35], [37.6, 0.2]]
+const RADIUS: Table = [[-4.5, 4.9], [0, 4.3], [1.2, 3.9], [3.2, 3.5], [5.2, 3.3], [8, 3.4], [10, 3.1], [11.6, 3.0], [13.6, 2.7], [15.5, 2.25], [18, 2.05], [19.6, 1.5], [21, 1.12], [24, 1.0], [27.5, 0.95], [30, 0.82], [33, 0.62], [37.6, 0.4]]
+const AXIS_X: Table = [[-4.5, -0.5], [0, -0.4], [5, 0.05], [10, 0.75], [13.6, 0.7], [16.5, 0.45], [19, 0.1], [22, -0.75], [25, -1.3], [27.5, -1.7], [30, -1.6], [33, -0.8], [35.5, 0.2], [37.6, 0.7]]
 const AXIS_Z: Table = [[-4.5, 0], [0, 0], [8, 0.35], [14, -0.1], [26, -0.4], [37.6, 0]]
 
 const ROOTS: readonly { angle: number; reach: number; width: number }[] = [
-  { angle: 3.07, reach: 8.3, width: 0.3 },
-  { angle: 2.23, reach: 7.2, width: 0.26 },
-  { angle: 1.43, reach: 7.0, width: 0.27 },
-  { angle: 0.24, reach: 7.9, width: 0.3 },
-  { angle: 5.67, reach: 6.9, width: 0.25 },
-  { angle: 4.85, reach: 6.4, width: 0.24 },
-  { angle: 3.98, reach: 7.1, width: 0.28 },
+  { angle: 3.02, reach: 8.6, width: 0.3 },
+  { angle: 2.2, reach: 7.4, width: 0.26 },
+  { angle: 1.43, reach: 7.2, width: 0.27 },
+  { angle: 0.52, reach: 7.6, width: 0.24 },
+  { angle: 6.2, reach: 8.2, width: 0.26 },
+  { angle: 5.5, reach: 7.0, width: 0.25 },
+  { angle: 4.75, reach: 6.6, width: 0.24 },
+  { angle: 3.9, reach: 7.2, width: 0.28 },
 ]
 
-const PADS: readonly { at: Vec3; size: Vec3; lean: number; tip: number; from: number }[] = [
-  { at: [0.7, 38.9, 0], size: [7.2, 2.95, 5.6], lean: 0.05, tip: 0, from: TOP_H },
-  { at: [-7.1, 35.2, -3], size: [6.7, 3.5, 5.2], lean: -0.17, tip: -0.08, from: 27 },
-  { at: [7.4, 32.1, 2], size: [8.7, 3.9, 5.6], lean: 0.58, tip: 0.1, from: 22 },
-  { at: [-9.2, 26.9, 4], size: [7.9, 3.6, 5.8], lean: -0.14, tip: 0.1, from: 16.5 },
-  { at: [-13, 19.6, 1], size: [4.3, 3.4, 4.2], lean: -0.21, tip: 0.08, from: 12.2 },
-  { at: [9.5, 20.2, 5], size: [8.5, 4.1, 5.6], lean: 0.44, tip: 0.12, from: 12.8 },
-  { at: [3.5, 33.5, -8.5], size: [6, 3.2, 4.5], lean: 0.1, tip: -0.25, from: 24.5 },
-  { at: [-7.5, 27.5, -6.5], size: [5.5, 3, 4.2], lean: -0.1, tip: -0.25, from: 18.5 },
-  { at: [1.3, 30.4, 3.3], size: [4.6, 2.6, 3.4], lean: 0.25, tip: 0.2, from: 28.5 },
+const PADS: readonly { at: Vec3; size: Vec3; lean: number; tip: number }[] = [
+  { at: [0.7, 38.8, 0], size: [7.2, 2.95, 5.2], lean: 0.05, tip: 0 },
+  { at: [-7.1, 35.1, -2.6], size: [6.7, 3.4, 4.8], lean: -0.17, tip: -0.06 },
+  { at: [7.5, 32, 1.6], size: [8.6, 3.8, 5.2], lean: 0.57, tip: 0.08 },
+  { at: [-9.2, 26.9, 3.2], size: [7.9, 3.5, 5.4], lean: -0.14, tip: 0.1 },
+  { at: [-13, 19.6, -0.6], size: [4.4, 3.3, 4], lean: -0.21, tip: 0.06 },
+  { at: [9.5, 20.2, 3.6], size: [8.4, 4, 5.4], lean: 0.44, tip: 0.1 },
 ]
+
+interface Bough {
+  kind: 'limb' | 'twig'
+  pad: number
+  r: readonly [number, number]
+  via: readonly Vec3[]
+  forks: readonly number[]
+}
+
+const BOUGHS: readonly Bough[] = [
+  { kind: 'limb', pad: 4, r: [1.3, 0.42], via: [[-0.3, 12.2, 0.5], [-2.2, 14.9, 0.8], [-4.6, 17.3, 0.7], [-7.2, 18.2, 0.2], [-9.4, 18, -0.3], [-11.5, 17.7, -0.6], [-13.4, 18, -0.8]], forks: [0.72, 0.86, 0.95] },
+  { kind: 'limb', pad: 4, r: [0.95, 0.36], via: [[-0.4, 15, -0.7], [-2.5, 17.9, -1.3], [-4.5, 19.6, -1.7], [-7, 20, -1.7], [-9.6, 19.5, -1.4], [-12, 19.8, -1], [-14.4, 20.4, -0.6]], forks: [0.7, 0.84, 0.95] },
+  { kind: 'limb', pad: 3, r: [1.1, 0.4], via: [[-0.3, 16.6, 0.9], [-2.1, 19.4, 1.8], [-3.6, 22, 2.6], [-5.2, 24.4, 3.1], [-7.6, 25.3, 3.3], [-10.4, 25.1, 3.2], [-13.4, 25.2, 3]], forks: [0.6, 0.72, 0.84, 0.94] },
+  { kind: 'limb', pad: 3, r: [0.72, 0.3], via: [[-0.5, 20.4, -0.6], [-2.6, 22.6, -0.3], [-4.8, 23.9, 0.5], [-7.4, 24.2, 1.3], [-9.8, 24.1, 1.9]], forks: [0.75, 0.92] },
+  { kind: 'limb', pad: 1, r: [0.8, 0.36], via: [[-1.5, 25.8, -0.4], [-2.6, 28.6, -1.1], [-3.7, 30.4, -1.7], [-5.2, 31.4, -2.2], [-7.3, 31.8, -2.5], [-9.6, 32.4, -2.6]], forks: [0.55, 0.7, 0.84, 0.95] },
+  { kind: 'limb', pad: 5, r: [1.3, 0.42], via: [[0.9, 10, 1], [3.1, 12.2, 1.8], [4.7, 13.8, 2.4], [6.1, 15.3, 3], [7.6, 16.6, 3.4], [9.3, 17.5, 3.6], [11.2, 17.9, 3.6]], forks: [0.62, 0.76, 0.88, 0.96] },
+  { kind: 'limb', pad: 5, r: [0.7, 0.28], via: [[1, 14, -0.4], [2.9, 16, 0], [4.4, 17.4, 0.8], [6.2, 17.9, 1.6], [8.6, 17.7, 2.2]], forks: [0.8, 0.94] },
+  { kind: 'limb', pad: 2, r: [1.05, 0.4], via: [[0.5, 16.4, 0.2], [1.6, 19, 0.5], [2.9, 21.5, 0.9], [4.2, 23.7, 1.2], [5.6, 25.5, 1.4], [7, 26.9, 1.5], [8.8, 28.3, 1.5], [10.4, 29.2, 1.5]], forks: [0.64, 0.76, 0.88, 0.96] },
+  { kind: 'limb', pad: 0, r: [0.8, 0.36], via: [[-1.2, 24.8, 0.2], [0, 27.8, 0.5], [1.1, 30.4, 0.7], [2.2, 33, 0.6], [3.4, 35.6, 0.3]], forks: [0.7, 0.9] },
+  { kind: 'twig', pad: 4, r: [0.34, 0.1], via: [[-9.2, 18, -0.3], [-10.6, 17.2, 0.1], [-11.8, 16.4, 0.3], [-12.7, 15.7, 0.4]], forks: [] },
+  { kind: 'twig', pad: 5, r: [0.42, 0.14], via: [[4.5, 13.6, 2.3], [6.6, 14.6, 3.2], [9.4, 15.3, 3.9], [12.2, 15.7, 4.2], [14.6, 15.6, 4.2]], forks: [] },
+  { kind: 'twig', pad: 5, r: [0.17, 0.06], via: [[10.4, 22.4, 3.5], [11.9, 24.2, 3.6], [13.3, 25.9, 3.6]], forks: [] },
+  { kind: 'twig', pad: 2, r: [0.36, 0.12], via: [[4.2, 23.7, 1.2], [5.2, 24.9, 2.2], [6.6, 25.4, 3]], forks: [] },
+]
+const LIMB_TAPER = 0.9
+const LIMB_STEP = 0.55
 
 const lerp = (a: number, b: number, t: number): number => a + (b - a) * t
 const clamp01 = (v: number): number => Math.min(1, Math.max(0, v))
@@ -105,14 +129,14 @@ export const trunkGirth = (h: number): number => curve(RADIUS, h)
 export function trunkRidge(phi: number, h: number): number {
   const a = phi + trunkTwist(h)
   const wander = 0.5 * Math.sin(2 * a + 0.31 * h + 1.7) + 0.35 * Math.sin(3 * a - 0.23 * h + 0.4)
-  const r1 = Math.abs(Math.sin(5.5 * a + wander))
-  const r2 = Math.pow(Math.abs(Math.sin(11.5 * a + 1.3 * wander + 0.9)), 0.6)
-  return 0.68 * r1 + 0.32 * r2
+  const r1 = 0.5 * Math.abs(Math.sin(4 * a + wander)) + 0.5 * (0.5 - 0.5 * Math.cos(8 * a + 2 * wander))
+  const r2 = Math.pow(Math.abs(Math.sin(8.5 * a + 1.3 * wander + 0.9)), 0.6)
+  return 0.86 * r1 + 0.14 * r2
 }
 
 export function trunkRadius(phi: number, h: number): number {
   const R = trunkGirth(h)
-  let r = R * (1 + 0.4 * (trunkRidge(phi, h) - 0.6))
+  let r = R * (1 + 0.32 * (trunkRidge(phi, h) - 0.6))
   if (h < ROOT_RISE) {
     const a = phi + trunkTwist(h)
     const g = h <= 0 ? 1 - 0.1 * h : Math.pow(1 - h / ROOT_RISE, 2.2)
@@ -153,13 +177,20 @@ function padFrame(lean: number, tip: number): { up: Vec3; side: Vec3; depth: Vec
   return { up, side, depth }
 }
 
-function bezier(p0: Vec3, p1: Vec3, p2: Vec3, p3: Vec3, t: number): [number, number, number] {
-  const u = 1 - t
-  const a = u * u * u
-  const b = 3 * u * u * t
-  const c = 3 * u * t * t
-  const d = t * t * t
-  return [a * p0[0] + b * p1[0] + c * p2[0] + d * p3[0], a * p0[1] + b * p1[1] + c * p2[1] + d * p3[1], a * p0[2] + b * p1[2] + c * p2[2] + d * p3[2]]
+function spline(via: readonly Vec3[], u: number): [number, number, number] {
+  const n = via.length - 1
+  const f = Math.min(n - 1e-9, Math.max(0, u * n))
+  const i = Math.floor(f)
+  const t = f - i
+  const p0 = via[Math.max(0, i - 1)]!
+  const p1 = via[i]!
+  const p2 = via[i + 1]!
+  const p3 = via[Math.min(n, i + 2)]!
+  const t2 = t * t
+  const t3 = t2 * t
+  const out: [number, number, number] = [0, 0, 0]
+  for (let k = 0; k < 3; k++) out[k] = 0.5 * (2 * p1[k]! + (p2[k]! - p0[k]!) * t + (2 * p0[k]! - 5 * p1[k]! + 4 * p2[k]! - p3[k]!) * t2 + (3 * p1[k]! - p0[k]! - 3 * p2[k]! + p3[k]!) * t3)
+  return out
 }
 
 function grow(): Limb[] {
@@ -222,46 +253,40 @@ function grow(): Limb[] {
     }
   }
 
-  for (let i = 1; i < PADS.length; i++) {
-    const P = PADS[i]!
-    const f = padFrame(P.lean, P.tip)
-    const h0 = P.from - 1.6
-    const [ax, az] = trunkAxis(h0)
-    const p0: Vec3 = [ax, h0, az]
-    const end: Vec3 = [P.at[0] - f.up[0] * 0.35 * P.size[1], P.at[1] - f.up[1] * 0.35 * P.size[1], P.at[2] - f.up[2] * 0.35 * P.size[1]]
-    const flat = norm([end[0] - p0[0], 0, end[2] - p0[2]])
-    const L = Math.hypot(end[0] - p0[0], end[1] - p0[1], end[2] - p0[2])
-    const t0 = norm([flat[0] * 0.6, 0.8, flat[2] * 0.6])
-    const t3 = norm([flat[0] * 0.82, 0.48, flat[2] * 0.82])
-    const p1: Vec3 = [p0[0] + t0[0] * 0.42 * L, p0[1] + t0[1] * 0.42 * L, p0[2] + t0[2] * 0.42 * L]
-    const p2: Vec3 = [end[0] - t3[0] * 0.3 * L, end[1] - t3[1] * 0.3 * L, end[2] - t3[2] * 0.3 * L]
+  for (const B of BOUGHS) {
+    let length = 0
+    let last = spline(B.via, 0)
+    for (let s = 1; s <= 40; s++) {
+      const q = spline(B.via, s / 40)
+      length += Math.hypot(q[0] - last[0], q[1] - last[1], q[2] - last[2])
+      last = q
+    }
     const w1 = rng.range(0, TAU)
     const w2 = rng.range(0, TAU)
-    const amp = rng.range(0.25, 0.5)
-    const r0 = Math.min(LIMB.thick, Math.max(LIMB.thin, trunkGirth(P.from) * LIMB.share))
+    const amp = B.kind === 'limb' ? rng.range(0.16, 0.34) : 0.05
     const at = (t: number): Vec3 => {
-      const b = bezier(p0, p1, p2, end, t)
+      const b = spline(B.via, t)
       const e = Math.sin(Math.PI * t) * amp
-      return [b[0] - flat[2] * e * Math.sin(5.1 * t + w1), b[1] + e * 0.8 * Math.sin(6.3 * t + w2), b[2] + flat[0] * e * Math.sin(5.1 * t + w1)]
+      return [b[0] + e * 0.5 * Math.sin(5.1 * t + w1), b[1] + e * 0.6 * Math.sin(6.3 * t + w2), b[2] + e * Math.cos(5.1 * t + w1)]
     }
-    const radius = (t: number): number => lerp(r0, LIMB.tip, Math.pow(t, LIMB.taper))
-    const steps = Math.max(12, Math.round(L / 0.6))
+    const radius = (t: number): number => lerp(B.r[0], B.r[1], Math.pow(t, LIMB_TAPER))
+    const steps = Math.max(8, Math.round(length / LIMB_STEP))
     const pts: Vec3[] = []
     const rad: number[] = []
     for (let s = 0; s <= steps; s++) {
       pts.push(at(s / steps))
       rad.push(radius(s / steps))
     }
-    chain('limb', i, pts, rad)
-    twigs(i, at, radius, [0.5, 0.63, 0.76, 0.88])
+    chain(B.kind, B.pad, pts, rad)
+    twigs(B.pad, at, radius, B.forks)
   }
 
   const up = (t: number): Vec3 => {
-    const h = lerp(30, TOP_H, t)
+    const h = lerp(31.5, TOP_H, t)
     const [x, z] = trunkAxis(h)
     return [x, h, z]
   }
-  twigs(0, up, (t) => trunkGirth(lerp(30, TOP_H, t)) * 0.55, [0.1, 0.3, 0.5, 0.7, 0.85])
+  twigs(0, up, (t) => trunkGirth(lerp(31.5, TOP_H, t)) * 0.55, [0.1, 0.3, 0.5, 0.7, 0.85])
   return out
 }
 
@@ -283,7 +308,8 @@ export interface Cluster {
 
 const DOME = 0.5
 const BODY = { blend: 0.5, bias: 0.4 }
-const CAP = { lift: 1.15, puff: 0.3, blend: 0.46, bias: 0.52, depth: 0.5, lip: 0.35 }
+const CAP = { lift: 1.8, puff: 0.36, blend: 0.46, bias: 0.52, depth: 0.5, lip: 0.35 }
+const wobble = (x: number, h: number, z: number): number => 0.16 * Math.sin(1.9 * x + 0.3 * h) * Math.sin(2.3 * h + 1.1 * z) * Math.sin(1.7 * z + 0.5 * x) + 0.07 * Math.sin(4.3 * x + 1) * Math.sin(3.9 * h + 2) * Math.sin(4.7 * z)
 const dome = (rim: number): number => 1 - DOME * Math.pow(rim, 1.5)
 
 function gather(): Cluster[] {
@@ -364,7 +390,7 @@ export function crownField(x: number, h: number, z: number): number {
     const d = ballField(f, x, h, z, BODY.blend) + BODY.bias
     if (d < best) best = d
   }
-  return best
+  return best + wobble(x, h, z)
 }
 
 export function crownCap(x: number, h: number, z: number): number {
@@ -382,7 +408,7 @@ export function crownCap(x: number, h: number, z: number): number {
     const s = px * f.frame.side[0] + ph * f.frame.side[1] + pz * f.frame.side[2]
     const v = px * u[0] + ph * u[1] + pz * u[2]
     const d = px * f.frame.depth[0] + ph * f.frame.depth[1] + pz * f.frame.depth[2]
-    const lumps = 0.26 * Math.sin(2.7 * x + 1.1 * h + f.n) * Math.sin(2.9 * z - 0.8 * x + 2 * f.n) + 0.12 * Math.sin(5.9 * x + 2.3 * z) * Math.sin(6.1 * z + 1.7 * h + 1)
+    const lumps = 0.46 * Math.sin(1.25 * s + 1.9 * f.n) * Math.sin(1.4 * d + 2.6 * f.n) + 0.13 * Math.sin(2.7 * x + 1.1 * h + f.n) * Math.sin(2.9 * z - 0.8 * x + 2 * f.n) + 0.04 * Math.sin(5.9 * x + 2.3 * z) * Math.sin(6.1 * z + 1.7 * h + 1)
     const body = ballField(f, x - u[0] * CAP.lift, h - u[1] * CAP.lift, z - u[2] * CAP.lift, CAP.blend) + CAP.bias - CAP.puff - lumps
     const rim = (s * s) / (f.size[0] * f.size[0]) + (d * d) / (f.size[2] * f.size[2])
     const gully = Math.sin(0.62 * s + 2.1 * f.n + 0.5 * Math.sin(0.9 * d)) * Math.sin(0.7 * d + 1.3 * f.n)
@@ -394,7 +420,7 @@ export function crownCap(x: number, h: number, z: number): number {
     const both = lerp(cut, body, t) + k * t * (1 - t)
     if (both < best) best = both
   }
-  return best
+  return best + 0.9 * wobble(0.7 * x + 3, 0.7 * h, 0.7 * z)
 }
 
 export const crownOffset = (): Vec3 => {
@@ -526,7 +552,8 @@ export function bakeGlow(g: THREE.BufferGeometry, lights: readonly GlowLight[], 
       if (d2 > 36 * reach2) continue
       const d = Math.sqrt(d2) || 1e-6
       const facing = Math.max(0, (dx * nx + dy * ny + dz * nz) / d)
-      const w = (l.power * (wrapLight + (1 - wrapLight) * facing)) / (1 + d2 / reach2) ** 1.5
+      const wr = l.wrap ?? wrapLight
+      const w = (l.power * (wr + (1 - wr) * facing)) / (1 + d2 / reach2) ** 1.5
       r += l.color[0] * w
       gr += l.color[1] * w
       b += l.color[2] * w
@@ -580,7 +607,7 @@ export function placeGeometry(source: THREE.BufferGeometry): THREE.BufferGeometr
   return g
 }
 
-export function buildTrunk(part: string, lights: readonly GlowLight[] = []): THREE.Mesh {
+export function buildTrunk(part: string, lights: readonly GlowLight[] = [], tint: Rgb = [0.8, 1.5, 2.6]): THREE.Mesh {
   const g = placeGeometry(geometry(MODEL, 'trunk'))
   bakeGlow(g, lights)
   const normal = texture(BARK_NORMAL)
@@ -591,10 +618,10 @@ export function buildTrunk(part: string, lights: readonly GlowLight[] = []): THR
     miniature: true,
     change: 'miniature',
     map: texture(BARK),
-    color: new THREE.Color(0.8, 1.5, 2.6),
+    color: new THREE.Color(tint[0], tint[1], tint[2]),
     vertexColors: true,
     roughness: 0.86,
-    extra: { normalMap: normal, normalScale: new THREE.Vector2(2.8, 2.8) },
+    extra: { normalMap: normal, normalScale: new THREE.Vector2(1.1, 1.1) },
     hook: glowHook,
     key: 'trunk',
   })
