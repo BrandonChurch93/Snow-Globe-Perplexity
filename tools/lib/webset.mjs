@@ -3,6 +3,7 @@ import path from 'node:path'
 import sharp from 'sharp'
 import { packGlb, STREAMS } from './glbpack.mjs'
 import { sha256 } from './hashes.mjs'
+import { LEVELS, NORMAL_WEIGHT, addLevels } from './glblevels.mjs'
 import { rel } from './paths.mjs'
 
 /**
@@ -18,7 +19,7 @@ import { rel } from './paths.mjs'
  */
 
 /** Raise when a rule changes, so nothing made by the old rule is taken from the cache. */
-export const CODER = 4
+export const CODER = 5
 
 export const WEB = {
   /** libwebp's near-lossless level. 60 keeps every value within 2 of 255. */
@@ -29,6 +30,15 @@ export const WEB = {
   tablePx: 128,
   /** A picture at least this long gets a `.first.` file. */
   firstFromPx: 1024,
+}
+
+/** The first quality level draws the full mesh. */
+const TOP = 'high'
+/** The triangles a mesh draws at a level: its own list, or that of the nearest level above it that has one. */
+export function levelTriangles(mesh, level) {
+  const names = Object.keys(LEVELS)
+  for (let i = names.indexOf(level); i >= 0; i--) if (mesh[names[i]] !== undefined) return mesh[names[i]]
+  return mesh.triangles
 }
 
 const PICTURE = /\.png$/i
@@ -125,8 +135,12 @@ async function makePicture(file, name, limit) {
 
 async function makeModel(file, name) {
   const source = fs.readFileSync(file)
-  const r = await packGlb(source)
-  return [{ name, data: r.glb, coding: r.packed ? `meshopt, ${r.packed} of ${r.packed + r.kept} streams` : 'as it is', change: r.change, plain: source.length }]
+  // The lighter lists of triangles for the lower quality levels go in first, so they are packed with the rest.
+  const levelled = await addLevels(source)
+  const r = await packGlb(levelled.glb)
+  const triangles = { [TOP]: levelled.meshes.reduce((n, m) => n + m.triangles, 0) }
+  for (const level of Object.keys(LEVELS)) triangles[level] = levelled.meshes.reduce((n, m) => n + levelTriangles(m, level), 0)
+  return [{ name, data: r.glb, coding: r.packed ? `meshopt, ${r.packed} of ${r.packed + r.kept} streams` : 'as it is', change: r.change, plain: source.length, triangles, meshes: levelled.meshes }]
 }
 
 /**
@@ -136,7 +150,7 @@ export async function webFiles(file, name, cap, { cache = true } = {}) {
   const kind = PICTURE.test(name) ? 'picture' : MODEL.test(name) ? 'model' : 'copy'
   if (kind === 'copy') return [{ name, data: fs.readFileSync(file), coding: 'as it is' }]
   const limit = webLimit(name, cap)
-  const key = sha256(JSON.stringify({ CODER, kind, name, limit, WEB, STREAMS, sharp: sharp.versions, sha: sha256(fs.readFileSync(file)) })).slice(0, 32)
+  const key = sha256(JSON.stringify({ CODER, kind, name, limit, WEB, STREAMS, LEVELS, NORMAL_WEIGHT, sharp: sharp.versions, sha: sha256(fs.readFileSync(file)) })).slice(0, 32)
   const dir = path.join(CACHE(), key)
   const list = path.join(dir, 'files.json')
   if (cache && fs.existsSync(list)) {

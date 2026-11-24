@@ -2,7 +2,7 @@ import { config } from '../../config'
 import { hash2, unit } from '../../core/rng'
 import type { SdfGrid } from '../../core/stage'
 import { globePoseAt, seasonAt, type Timeline } from '../../film/timeline'
-import { Liquid, LIQUID_LENGTH, LIQUID_R, LIQUID_SWIRL, NOISE_N, ROLL_AXIS, ROLL_CENTRE, ROLL_EDGE, ROLL_FLOOR_MM, ROLL_FLOOR_SLOPE, ROLL_FREE, ROLL_RISE_MM, SOLID_REACH_MM, TURBULENCE_MAX } from '../../globe/liquid'
+import { Liquid, LIQUID_LENGTH, LIQUID_R, LIQUID_SWIRL, NOISE_N, ROLL_AXIS, ROLL_CENTRE, ROLL_EDGE, ROLL_FLOOR_MM, ROLL_FLOOR_SLOPE, ROLL_FREE, ROLL_RISE_MM, ROLL_SLAB_MM, SOLID_REACH_MM, TURBULENCE_MAX } from '../../globe/liquid'
 import { BEHAVIOUR, KINDS, KIND_IN, NONE, POOL, SEASONS, type Behaviour } from './kinds'
 import { blockoutEmitters, blockoutSdf, GROUND_Y, sdfSample, sdfSlope, type Emitter } from './sdf'
 
@@ -50,6 +50,7 @@ const CY = ROLL_CENTRE[1]
 const CZ = ROLL_CENTRE[2]
 const INV_FREE = 1 / ROLL_FREE
 const INV_RISE = 1 / ROLL_RISE_MM
+const SLAB2 = ROLL_SLAB_MM * ROLL_SLAB_MM
 const SKIM_X = AZ + ROLL_FLOOR_SLOPE * AY
 const SKIM_Y = -ROLL_FLOOR_SLOPE * AX
 const SKIM_Z = -AX
@@ -63,7 +64,8 @@ const ARM_WIND = 4
 const ROLL_SOFT = 1
 const ARM_HUB2 = 12 * 12
 const BANK_GAIN = 4
-const BANK_FROM = 16 / ROLL_RISE_MM
+const BALL_ROOM_MM = 0.1
+const BANK_FROM = 24 / ROLL_RISE_MM
 const BANK_OVER = ROLL_RISE_MM / 24
 const LEAP2 = 3 * 3
 
@@ -406,6 +408,53 @@ function probe(G: Grid, x: number, y: number, z: number, out: Float64Array): num
   return y0 + (y1 - y0) * tz
 }
 
+export function heapCover(n: number, state: Uint8Array, xyz: Float32Array, sizes: Float32Array, kindOf: Uint8Array, heap: Float32Array, out: Float32Array): void {
+  const scale = COVER_N / COVER_SPAN_MM
+  const each = POOL / n / COVER_CELL_MM2
+  heap.fill(0)
+  for (let i = 0; i < n; i++) {
+    if (state[i] !== STATE_REST) continue
+    const loft = K_LOFT[kindOf[i]!]!
+    if (loft === 0) continue
+    const o = i * 3
+    const fx = (xyz[o]! + R) * scale - 0.5
+    const fz = (xyz[o + 2]! + R) * scale - 0.5
+    const ix = Math.floor(fx)
+    const iz = Math.floor(fz)
+    if (ix < 0 || iz < 0 || ix >= COVER_N - 1 || iz >= COVER_N - 1) continue
+    const tx = fx - ix
+    const tz = fz - iz
+    const d = sizes[i]!
+    const v = loft * d * d * each
+    const c = iz * COVER_N + ix
+    heap[c] = heap[c]! + v * (1 - tx) * (1 - tz)
+    heap[c + 1] = heap[c + 1]! + v * tx * (1 - tz)
+    heap[c + COVER_N] = heap[c + COVER_N]! + v * (1 - tx) * tz
+    heap[c + COVER_N + 1] = heap[c + COVER_N + 1]! + v * tx * tz
+  }
+  for (let pass = 0; pass < COVER_PASSES; pass++) {
+    for (let j = 0; j < COVER_N; j++) {
+      const row = j * COVER_N
+      for (let i = 0; i < COVER_N; i++) {
+        const a = heap[row + (i > 0 ? i - 1 : i)]!
+        const b = heap[row + (i < COVER_N - 1 ? i + 1 : i)]!
+        out[row + i] = 0.25 * a + 0.5 * heap[row + i]! + 0.25 * b
+      }
+    }
+    for (let j = 0; j < COVER_N; j++) {
+      const up = (j > 0 ? j - 1 : j) * COVER_N
+      const down = (j < COVER_N - 1 ? j + 1 : j) * COVER_N
+      const row = j * COVER_N
+      for (let i = 0; i < COVER_N; i++) heap[row + i] = 0.25 * out[up + i]! + 0.5 * out[row + i]! + 0.25 * out[down + i]!
+    }
+  }
+  for (let c = 0; c < out.length; c++) {
+    const v = heap[c]!
+    const over = v - COVER_KNEE_MM
+    out[c] = over > 0 ? COVER_KNEE_MM + (COVER_ROOM_MM * over) / (over + COVER_ROOM_MM) : v
+  }
+}
+
 export class ParticleEngine {
   readonly count: number
   readonly kinds: readonly string[] = KINDS
@@ -660,57 +709,7 @@ export class ParticleEngine {
   }
 
   private heapUp(): void {
-    const n = this.count
-    const state = this.state
-    const xyz = this.xyz
-    const sizes = this.sizes
-    const kindOf = this.kindOf
-    const heap = this.heap
-    const out = this.lain.mm
-    const scale = COVER_N / COVER_SPAN_MM
-    const each = POOL / n / COVER_CELL_MM2
-    heap.fill(0)
-    for (let i = 0; i < n; i++) {
-      if (state[i] !== STATE_REST) continue
-      const loft = K_LOFT[kindOf[i]!]!
-      if (loft === 0) continue
-      const o = i * 3
-      const fx = (xyz[o]! + R) * scale - 0.5
-      const fz = (xyz[o + 2]! + R) * scale - 0.5
-      const ix = Math.floor(fx)
-      const iz = Math.floor(fz)
-      if (ix < 0 || iz < 0 || ix >= COVER_N - 1 || iz >= COVER_N - 1) continue
-      const tx = fx - ix
-      const tz = fz - iz
-      const d = sizes[i]!
-      const v = loft * d * d * each
-      const c = iz * COVER_N + ix
-      heap[c] = heap[c]! + v * (1 - tx) * (1 - tz)
-      heap[c + 1] = heap[c + 1]! + v * tx * (1 - tz)
-      heap[c + COVER_N] = heap[c + COVER_N]! + v * (1 - tx) * tz
-      heap[c + COVER_N + 1] = heap[c + COVER_N + 1]! + v * tx * tz
-    }
-    for (let pass = 0; pass < COVER_PASSES; pass++) {
-      for (let j = 0; j < COVER_N; j++) {
-        const row = j * COVER_N
-        for (let i = 0; i < COVER_N; i++) {
-          const a = heap[row + (i > 0 ? i - 1 : i)]!
-          const b = heap[row + (i < COVER_N - 1 ? i + 1 : i)]!
-          out[row + i] = 0.25 * a + 0.5 * heap[row + i]! + 0.25 * b
-        }
-      }
-      for (let j = 0; j < COVER_N; j++) {
-        const up = (j > 0 ? j - 1 : j) * COVER_N
-        const down = (j < COVER_N - 1 ? j + 1 : j) * COVER_N
-        const row = j * COVER_N
-        for (let i = 0; i < COVER_N; i++) heap[row + i] = 0.25 * out[up + i]! + 0.5 * out[row + i]! + 0.25 * out[down + i]!
-      }
-    }
-    for (let c = 0; c < out.length; c++) {
-      const v = heap[c]!
-      const over = v - COVER_KNEE_MM
-      out[c] = over > 0 ? COVER_KNEE_MM + (COVER_ROOM_MM * over) / (over + COVER_ROOM_MM) : v
-    }
+    heapCover(this.count, this.state, this.xyz, this.sizes, this.kindOf, this.heap, this.lain.mm)
     this.drifted = false
   }
 
@@ -745,7 +744,9 @@ export class ParticleEngine {
       this.sizes[i] = b.sizeMm[0] + (b.sizeMm[1] - b.sizeMm[0]) * big
       this.sink[i] = fall[0] + (fall[1] - fall[0]) * (0.45 * big + 0.55 * u2)
     }
-    this.layer[i] = b.mode === 'steer' ? b.clearanceMm * 0.3 : b.layerMm[0] + (b.layerMm[1] - b.layerMm[0]) * Math.pow(u3, 2.4)
+    const lies = b.layerMm[0] + (b.layerMm[1] - b.layerMm[0]) * Math.pow(u3, 2.4)
+    const clear = b.ball > 0 ? b.ball * this.sizes[i]! + BALL_ROOM_MM : 0
+    this.layer[i] = b.mode === 'steer' ? b.clearanceMm * 0.3 : lies > clear ? lies : clear
     this.lift[i] = b.liftMmS[1] - (b.liftMmS[1] - b.liftMmS[0]) * Math.pow(u3, 0.45)
     this.turnRate[i] = b.turnRadS[0] + (b.turnRadS[1] - b.turnRadS[0]) * u4
     this.life[i] = b.lifeSeconds[0] + (b.lifeSeconds[1] - b.lifeSeconds[0]) * u5
@@ -1347,11 +1348,13 @@ export class ParticleEngine {
           const edge = 1 - ROLL_EDGE * l2 * l2
           const ht = (y - ROLL_FLOOR_MM - ROLL_FLOOR_SLOPE * z) * INV_RISE
           const rise = ht <= 0 ? 0 : ht >= 1 ? 1 : ht * ht * (3 - 2 * ht)
-          const rate = (rollK * rise * lam * edge) / es
-          const skim = ht <= 0 || ht >= 1 ? 0 : rollK * 6 * ht * (1 - ht) * INV_RISE * ((1 - l2) / 2 - (ROLL_EDGE * (1 - l2 * l2 * l2)) / 6)
           const nx = ex + lam * CX
           const ny = ey + lam * CY
           const nz = ez + lam * CZ
+          const along = nx * AX + ny * AY + nz * AZ
+          const discK = (rollK * SLAB2) / (SLAB2 + along * along)
+          const rate = (discK * rise * lam * edge) / es
+          const skim = ht <= 0 || ht >= 1 ? 0 : discK * 6 * ht * (1 - ht) * INV_RISE * ((1 - l2) / 2 - (ROLL_EDGE * (1 - l2 * l2 * l2)) / 6)
           const tx = AY * nz - AZ * ny
           const ty = AZ * nx - AX * nz
           const tz = AX * ny - AY * nx
@@ -1363,7 +1366,6 @@ export class ParticleEngine {
           const rho2 = tx * tx + ty * ty + tz * tz
           if (gk !== 0 && rho2 > 1e-4) {
             const rho = Math.sqrt(rho2)
-            const along = nx * AX + ny * AY + nz * AZ
             const px = nx - along * AX
             const py = ny - along * AY
             const pz = nz - along * AZ

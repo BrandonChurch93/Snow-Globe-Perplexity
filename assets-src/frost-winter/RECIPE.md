@@ -2,7 +2,7 @@
 
 Everything here is grown by one script from numbers measured on the approved winter image. No picture was generated and no pixel of an approved image is used: the script reads `layout.json`, not the image. The same seed gives the same files, byte for byte.
 
-## assets-full/winter/frost-glass.lin.w1536.png
+## assets-full/winter/frost-glass.lin.w2048.png
 Made by: `assets-src/frost-winter/build.mjs` (Node 20.20.2, sharp 0.35.5)
 From: `assets-src/frost-winter/layout.json` (the `glass` block: the band's reach, density and film by rim angle, 14 plumes and 4 stars placed by pixel of `references/approved/winter-rest.png`, the seeded feathers, fans and needles), `config/showcase.json` (globe size, the hero camera), `tools/lib/refcam.mjs` (turns a pixel of the approved image into a point on the glass)
 Prompt or command: `npm run make -- frost-winter` (or `npm run make -- frost-winter --only glass`), then `npm run texpack`
@@ -10,7 +10,7 @@ Takes: none generated. The script was run again after each change of `layout.jso
 Why this one: a polar map of the rim band of the sphere, 4096 px, linear. R is the height, G is when a texel appears as the frost grows in from the rim (0 first, 0.96 last, 1 never), B is how much it sparkles. Feathers are laid out as the hero camera sees them and stretched along the glass by at most `glass.maxStretch`, so the picture matches from the front and holds from 35 degrees to either side
 Date: 2026-11-24
 
-## assets-full/winter/frost-slab.lin.w1536.png
+## assets-full/winter/frost-slab.lin.w2048.png
 Made by: `assets-src/frost-winter/build.mjs` (Node 20.20.2, sharp 0.35.5)
 From: `assets-src/frost-winter/layout.json` (the `slab` block: 9 arms by the angle and distance of their tips as measured on the approved image, the fill arms, the `frond` rules, the film `under` the rim of the foot, the far patches, the grain and clump counts), `config/showcase.json` (the base diameter)
 Prompt or command: `npm run make -- frost-winter` (or `--only slab`), then `npm run texpack`
