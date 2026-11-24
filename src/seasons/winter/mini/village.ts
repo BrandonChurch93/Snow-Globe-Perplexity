@@ -30,8 +30,8 @@ const WINDOW = { power: 0.8, reachMm: 8, flicker: 0.1, cycles: 5, phase: 0.4 }
 const SIDE = { power: 0.8, reachMm: 7, flicker: 0.1, cycles: 4, phase: 0.75 }
 const BULB = { power: 0.6, reachMm: 4.5, flicker: 0.07, cycles: 2 }
 const NEAR = { bulb: { power: 0.6, reachMm: 1.2, ends: 3 }, lamp: { power: 4, reachMm: 7 }, pane: { power: 0.7, reachMm: 2.4 } }
-const NEAR_WALL = { bulb: { power: 8, reachMm: 2.4, ends: 3 }, lamp: { power: 3.4, reachMm: 9, ends: 3 }, pane: { power: 1.7, reachMm: 5, ends: 3 } }
-const MIRROR = { lamp: 9, pane: 1.2, bulb: 0.5, tight: 0.0011, wide: 0.03, wideShare: 0.004, bump: 0.8, lowMm: 3.4, sparkle: 1.7 }
+const NEAR_WALL = { bulb: { power: 12, reachMm: 1.7, ends: 3 }, lamp: { power: 3.4, reachMm: 9, ends: 3 }, pane: { power: 1.7, reachMm: 5, ends: 3 } }
+const MIRROR = { lamp: 9, pane: 1.2, bulb: 0.2, tight: 0.0011, wide: 0.03, wideShare: 0.004, bump: 0.8, lowMm: 3.4, sparkle: 1.7 }
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
 const HALO_KIND = { bulb: { size: 1.15, rest: 0.6, hot: 6, bloom: 0.2 }, lamp: { size: 5.6, rest: 0.32, hot: 0, bloom: 0.3 }, pane: { size: 2.4, rest: 0, hot: 0, bloom: 0.3 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
 const THROUGH = 6
@@ -44,6 +44,7 @@ const SNOW_DRIFT_MM = 1.1
 const SPARK = 2.6
 const SNOW_WRAP = 0.4
 const SNOW_SOFT = 1.5
+const SNOW_GRIT = { scale: 0.125, tone: 0.22, glint: 0.8, from: 0.55, to: 0.9 }
 const BANK_RELIEF = 0.7
 const BANK_TIP = 0.8
 const BANK_WRAP = 1.3
@@ -174,7 +175,8 @@ snowWeights /= snowWeights.x + snowWeights.y + snowWeights.z;
 vec3 snowP = vStageLocal * ${tile};
 vec3 snowT = snowAt(snowP);
 float snowWide = snowAt(snowP * 0.23 + 0.41).b;
-diffuseColor.rgb *= ${glsl(tones.snow)} * (0.92 + 0.16 * snowT.r + 0.12 * (snowWide - 0.5));
+vec3 snowGrit = snowAt(snowP * ${SNOW_GRIT.scale.toFixed(3)} + 0.17);
+diffuseColor.rgb *= ${glsl(tones.snow)} * (0.92 + 0.16 * snowT.r + 0.12 * (snowWide - 0.5)) * (1.0 + ${SNOW_GRIT.tone.toFixed(2)} * (snowGrit.r - 0.5));
 `,
         )
         .replace(
@@ -210,6 +212,8 @@ diffuseColor.rgb *= ${glsl(tones.snow)} * (0.92 + 0.16 * snowT.r + 0.12 * (snowW
   reflectedLight.indirectDiffuse *= snowPooled;
   float snowTwinkle = fract(snowT.g * 61.7 + dot(normalize(vViewPosition), vec3(17.3, 31.7, 23.1)) + dot(normal, vec3(5.1, 3.3, 7.7)));
   float snowSpark = smoothstep(0.3, 0.9, snowT.g) * smoothstep(0.62, 1.0, snowTwinkle);
+  float snowGlint = fract(snowGrit.g * 61.7 + dot(normalize(vViewPosition), vec3(17.3, 31.7, 23.1)) + dot(normal, vec3(5.1, 3.3, 7.7)));
+  snowSpark += ${SNOW_GRIT.glint.toFixed(2)} * smoothstep(${SNOW_GRIT.from.toFixed(2)}, ${SNOW_GRIT.to.toFixed(2)}, snowGrit.g) * smoothstep(0.55, 1.0, snowGlint);
   reflectedLight.directSpecular += (reflectedLight.directDiffuse + reflectedLight.indirectDiffuse) * snowSpark * ${SPARK.toFixed(2)};
 }`,
       )

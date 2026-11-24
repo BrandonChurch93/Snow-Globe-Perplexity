@@ -25,22 +25,22 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 55 · 2026-11-24 21:10 UTC
+Status 56 · 2026-11-24 21:38 UTC
 
-- `out/stills/status/status-55-1.jpg`: Round 6 at rest: the judged still at the final tier
-- `out/stills/status/status-55-2.jpg`: Round 6 one second after the landing: the judged still at the final tier
-- `out/stills/status/status-55-3.jpg`: Round 6: one sheet across the whole shake and the clearing that follows
+- `out/stills/status/status-56-1.jpg`: Round 6 judged still: the globe at rest at the final tier. Likeness 5 of 10
+- `out/stills/status/status-56-2.jpg`: Round 6 judged still: one second after the landing. The likeness critic calls the storm a dull grey haze with ring bands; the cause is found and being cured
+- `out/stills/status/status-56-3.jpg`: Round 6 motion sheet: the set down and the second after it. The motion critic misses an impact and a settle
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 21:10 UTC
-clock: phase 3, tick of 1.3 minutes
-phase 3: 12.72 h used of its 11.00 h box
-allowance (before the review): 19.34 h used of 36.00 h allowed
-all time before the review: 19.34 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 21:38 UTC
+clock: phase 3, tick of 6.6 minutes
+phase 3: 13.19 h used of its 11.00 h box
+allowance (before the review): 19.80 h used of 36.00 h allowed
+all time before the review: 19.80 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: reached
@@ -597,6 +597,8 @@ Numbered. What, why, and the date.
 
 66. `shake.strokeMm` is 25, was 22 (21:20 UTC, Phase 3, for Round 7; it takes up decision 64 again, which decision 65 withdrew for Round 6 only). `AGENTS.md` lets the Builder tune it by up to a quarter either way, 16.5 to 27.5. Why: Round 6's motion critic reads the strokes as "a soft rock", and decision 65 held the value back only until the liquid's engine carried it. With the liquid closer's engine `cb51a3e` merged, the whole suite is green on the merged `main` at 24 (419 pass, 21:18) and at 25 (419 pass, 21:23); the shake's closer ran it green at 22, 24, 25, 26 and 27.5 and the liquid's closer read its pins at 22, 23, 24 and 25 (flakes through the dome at rest 0.50, 0.49, 0.47, 0.43 against over 0.3; the landed storm's flatness 1.80, 1.91, 1.83, 1.68 inside 1.25 to 2.2). 25 is the top of what the liquid's closer checked, so it goes no higher. Seen by the shake's closer at 25 beside the approved shake image: the same picture, the tree about 5 percent more veiled, nothing outside the glass moves; the strokes' side travel is 26.3 mm either way (23.1 at 22). No pin moved. Listed for the `REVIEW` block.
 67. The sheet "the globe at rest across several seconds" of winter's motion pack starts where the opening's pull back ends (21:27 UTC, Phase 3, from Round 7 on; `tools/pack.mjs`). A conflict the kit did not foresee: `kit/07-QUALITY-BAR.md` asks for "one sheet of the globe at rest across several seconds", the pack tool took it from the season's first hold, and winter's first hold is the film's `open` shot, whose first two bars are the opening's pull back from the `macro` camera (`kit/01-FILM.md`: "The camera is already moving in frame 0, pulling back"; "The pull back reaches the `hero` camera by the end of the shot's second bar"). Round 6's motion critic was told it saw the globe at rest, saw 3.5 seconds of camera move and marked it severe. The opening's camera is the `film` unit's to judge, and the film's own pack already carries the sheet "the opening pull back". So for the hold that opens the film the rest sheet now runs from the end of its second bar to its last frame (frames 288 to 575, 4.8 seconds, with the drift of a few degrees that `kit/01-FILM.md` asks for); every other hold is drawn whole as before. Nothing in the picture changes. Listed for the `REVIEW` block.
+
+68. **The engine may start with the calm snowfall under way** (21:38 UTC, Phase 3, Round 6's fixes). Round 6's motion critic (part 2) wrote that "at 0.00 s before the shake the liquid contains zero drifting snow particles", while the approved image of winter at rest shows fine flakes in the liquid and `kit/02-SUBJECT.md` says a flake at rest in still liquid "sinks slowly with a slight sideways wander". The engine's start had every winter flake lying, and one of the Builder's own pins in `tests/sim.test.ts` ("starts each season the same way every time, with what rests already lying") held it there: `expect(census(winter).rest).toBe(winter.count)`. The pin is not one of the tests `kit/05-ARCHITECTURE.md` lists and no config threshold; it now reads: what rests plus what drifts is every flake, and what drifts is under 6 % of them. It passes on `main` as it was (none in the air) and with the liquid's change (about 4 % in the air at step 0, level over 120 s without a shake); the same start every time is still pinned by the lines above it. A lower bound (more than 2.5 % in the air) goes in once the liquid's branch is merged.
 
 ## Notes from Brandon
 
@@ -1179,3 +1181,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 20:45 to 20:59 UTC. Status 54 shown at 20:45 with two of the builders' own looks (frame 96 of the test shake at the review tier with the new bloom; the tree's crown beside the approved image) and the archive of the four kept sounds attached ("Kept sounds (archive)": `lift`, `glass-clink`, `ui-tick`, `ui-sound-on`). 20:52: the second motion agent finished its half of Round 6's motion pack (`agent/p3-round6-motion-b` `8a09bfc`, fetched, never merged: the set down in 18 frames and the landing in 30 frames at the review tier, nothing failed). It noted, without judging, that on the first set down sheet (frames 108 to 130) the globe reads as an almost fully white ball with the miniature not visible; I looked at the sheet: so it is, with swirls in the white. Those are the last strokes, where `kit/02-SUBJECT.md` asks that "the storm fills the glass"; whether it reads as a storm of flakes or as milk is for Round 6's motion critic, and the note went to the flakes' and the liquid's closers at once. The session was resumed once at 20:57; nothing was lost. The light's closer pushed a smoother fall of the bloom for Round 7 at 20:53.
 
 - 20:59 to 21:11 UTC (Status 55, Round 6 under judgement). The push failed from 20:58 to 21:01 after a session resume ("could not read Username"); `motion_renderer_b` relayed the bundle as `a8bf2b6` (decision 63) and my own push works again since 21:06 (`540f04d`). The closers' pushes of 21:02 (tree, village, base, flakes, light) are merged and green with 419 tests; their built assets wait for the Round 7 freeze. Round 6's pack came in whole at 21:06 (46 files, 0 parts missing) with the measures: 24 lines, 1 red, M3 on `winter-rest` 0.7186 against 0.75, the miniature at 0.719 and the base at 0.943; the miniature has fallen each round (1.017, 0.832, 0.787, 0.719). Seen in the measure's own crop: large soft flakes lie over cottage, tree and pond where the approved image has small sharp dots, and crown, snow and stone are softer than approved. Sent at 21:07 to `tree_closer`, `village_closer` and `flake_closer`, with a check of M3 at the final tier on the merged `main` planned before the freeze. The gate on `2569976` is 15 of 15 green on a clean clone (`gate_runner`, 43 minutes). Critics: R4-1 and R4-2 started 21:05; R1 answered 5 at 21:08; R3's three parts answered 5, 8 and 7 by 21:09, so R3 is 5; jurors run in batches under the six slots. Every answer is in `scorecards/round-006/` as it arrived.
+
+- 21:39 UTC · Status 56 sent with three pictures of Round 6 (the judged still at rest, the judged still one second after the landing, the motion sheet of the set down). Round 6's record is complete in `scorecards/round-006/` (summary, keys, manifest; pushed `c09040a`). M3 at the final tier on the merged `main` of 21:20 (`7a04e17`, before the village's new surfaces): 0.7875 against 0.75, green, the miniature 0.787 and the base 1.211; at the draft tier the same build reads 0.883. Merge of 21:34 (tree `7db157f`, village `568648c`, base `6007fc8`, liquid `0f2eb36`): types clean, 419 of 423 tests green, 4 skipped. Decision 68 (the start pin allows the calm snowfall) pushed as `4fc6b61` at 21:38; M3 at the final tier is running on it. Clock ticked at 21:32: 19.69 h of 36 used, extra rounds: yes.
