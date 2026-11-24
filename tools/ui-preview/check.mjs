@@ -454,6 +454,46 @@ try {
     )
   })
 
+  await check('while measuring, the probe page writes only when something changes, and its line only moves forward', async () => {
+    const context = await browser.newContext({ viewport: { width: config.formats.phone.width, height: config.formats.phone.height } })
+    await context.addInitScript(() => {
+      const writes = { table: 0, status: 0, left: 0, line: [] }
+      window.writes = writes
+      new MutationObserver((list) => {
+        for (const m of list) {
+          const t = m.target.nodeType === 1 ? m.target : m.target.parentElement
+          if (!t || !t.closest('#ui')) continue
+          if (m.type === 'attributes') {
+            const found = t.tagName === 'I' ? /scaleX\(([\d.]+)\)/.exec(t.style.transform) : null
+            if (found) writes.line.push(Number(found[1]))
+          } else if (t.closest('tbody')) writes.table++
+          else if (t.matches('[role="status"]')) writes.status++
+          else if (t.matches('[role="status"] + span')) writes.left++
+        }
+      }).observe(document, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['style'] })
+    })
+    const page = await context.newPage()
+    const perLevel = 1.2
+    await page.goto(`${origin}/tools/ui-preview/?page=probe&seconds=${perLevel}`)
+    await page.waitForSelector('#ui[data-probe="done"]', { timeout: 20000 })
+    await page.waitForTimeout(200)
+    const seen = await page.evaluate(() => ({ ...window.writes, frames: window.probeFrames.count }))
+    await context.close()
+    const phases = levels.length * 2
+    const cells = levels.length * 4
+    const steps = seen.line.slice(1).map((v, i) => v - seen.line[i])
+    return first(
+      seen.frames >= phases * 8 ? '' : `the mock reported only ${seen.frames} frames`,
+      seen.table <= cells * (phases + 3) ? '' : `${seen.table} writes to the table in ${seen.frames} frames`,
+      seen.status <= phases + 2 ? '' : `${seen.status} writes to the status line in ${seen.frames} frames`,
+      seen.left <= Math.ceil(perLevel * levels.length) + 2 ? '' : `${seen.left} writes to the time left in ${seen.frames} frames`,
+      seen.line.length > phases && seen.line.length <= seen.frames + 2 ? '' : `${seen.line.length} writes to the line in ${seen.frames} frames`,
+      steps.every((d) => d >= 0) ? '' : 'the line moved backwards',
+      Math.max(...steps) < 1 / (4 * levels.length) ? '' : `the line jumped by ${Math.max(...steps).toFixed(3)} of its length`,
+      seen.line.at(-1) === 1 ? '' : `the line ended at ${seen.line.at(-1)}`,
+    )
+  })
+
   await check('a short phone screen keeps Copy in view and fades what scrolls under the edges', async () => {
     const width = config.formats.phone.width
     const height = Math.round(config.formats.phone.height * 0.78)

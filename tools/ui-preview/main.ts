@@ -101,37 +101,58 @@ function mockProbe(): ProbeBridge {
     const [restMedianFps, restSlowFps, stormMedianFps, stormSlowFps] = numbers[i % 3]
     return { level, restMedianFps, restSlowFps, stormMedianFps, stormSlowFps }
   }
-  const wait = (ms: number): Promise<void> => new Promise((r) => window.setTimeout(r, ms))
+  const total = config.perf.probeSeconds
+  const barSeconds = (config.film.beatsPerBar * 60) / config.film.defaultBpm
+  const storm = Math.min(total / 2, barSeconds + config.shake.settleCheckSeconds) / total
+  const stopAt = query.get('stop')
+  const frames = { count: 0 }
+  Object.assign(window, { probeFrames: frames })
   return {
     levels: () => levels,
     secondsPerLevel: () => seconds,
-    run: async (onProgress) => {
-      const done: ProbeLevelResult[] = []
-      const stopAt = query.get('stop')
-      for (const [i, level] of levels.entries()) {
-        for (const phase of ['rest', 'storm'] as const) {
-          for (let k = 0; k < 6; k++) {
-            onProgress([...done], { level, phase, fraction: k / 6 })
-            if (stopAt === `${level}-${phase}` && k === 3) {
-              document.documentElement.dataset.parked = ''
-              await new Promise(() => {})
-            }
-            await wait((seconds * 1000) / 12)
+    run: (onProgress) =>
+      new Promise<ProbeResult>((resolve) => {
+        const done: ProbeLevelResult[] = []
+        let at = 0
+        let spent = 0
+        const frame = (): void => {
+          spent += 1 / config.film.fps
+          frames.count++
+          const level = levels[at]
+          const fraction = seconds > 0 ? spent / seconds : 1
+          const phase = fraction >= 1 - storm ? 'storm' : 'rest'
+          const park = phase === 'storm' ? 1 - storm / 2 : (1 - storm) / 2
+          if (stopAt === `${level}-${phase}` && fraction >= park) {
+            onProgress([...done], { level, phase, fraction: park })
+            document.documentElement.dataset.parked = ''
+            return
           }
+          if (fraction < 1) {
+            onProgress([...done], { level, phase, fraction })
+            requestAnimationFrame(frame)
+            return
+          }
+          done.push(row(level, at))
+          at++
+          spent = 0
+          if (at < levels.length) {
+            onProgress([...done], { level: levels[at], phase: 'rest', fraction: 0 })
+            requestAnimationFrame(frame)
+            return
+          }
+          onProgress([...done], null)
+          resolve({
+            levels: done,
+            graphics: query.get('graphics') ?? 'ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)',
+            screen: `${window.screen.width} x ${window.screen.height}`,
+            pixelRatio: window.devicePixelRatio,
+            pick: levels[Math.min(1, levels.length - 1)],
+            userAgent: navigator.userAgent,
+          })
         }
-        done.push(row(level, i))
-      }
-      onProgress([...done], null)
-      const result: ProbeResult = {
-        levels: done,
-        graphics: query.get('graphics') ?? 'ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)',
-        screen: `${window.screen.width} x ${window.screen.height}`,
-        pixelRatio: window.devicePixelRatio,
-        pick: levels[Math.min(1, levels.length - 1)],
-        userAgent: navigator.userAgent,
-      }
-      return result
-    },
+        onProgress([], { level: levels[0], phase: 'rest', fraction: 0 })
+        requestAnimationFrame(frame)
+      }),
   }
 }
 
