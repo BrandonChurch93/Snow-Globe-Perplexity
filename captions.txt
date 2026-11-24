@@ -1,0 +1,4 @@
+01-hd-idle.jpg: hd, idle, winter lit, over the approved winter picture (mock bridge, not the engine)
+02-phone-idle.jpg: phone, idle, spring lit, marks above the pill, sound beside it
+03-tablet-idle.jpg: tablet, idle, summer lit, one row
+04-look-states.jpg: hd controls at 2x: idle, dimmed, busy, hover, focus on Shake, focus on a mark, focus on sound, sound on
