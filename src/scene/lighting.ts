@@ -24,7 +24,7 @@ export const ROOM_RIG = {
   rimWrap: 0.12,
   rimSpecular: 1,
   card: { share: 0.1, side: -0.9, lift: 0.3, front: 1.1, wrap: 0.5, specular: 0, inside: 1, lobe: 0.25 },
-  inside: { through: 0.7, wrap: 0.6, spread: 1.6, bounce: 0.27, sky: 0.5, axis: [0, 0.45, 1] as Rgb, pull: 0.3 },
+  inside: { through: 0.7, wrap: 0.1, spread: 1.6, bounce: 0.08, sky: 0.15, axis: [0, 0.45, 1] as Rgb, pull: 0.3 },
   point: { key: 0.4, rim: 0.1, sky: 0.32 },
   room: { gain: 1, lights: 1, softPerRough: 0.5, lightsBelowRough: 0.62 },
   grid: { flat: 0.25, wrap: 0.3, specular: 1, openFloor: 0.35, air: 1.2 },
