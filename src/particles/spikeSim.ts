@@ -28,6 +28,7 @@ export interface SimSnapshot {
 
 export class SpikeSim {
   readonly count: number
+  readonly kinds: readonly string[]
   readonly kindOf: Uint8Array
   readonly sizes: Float32Array
   pos: Float32Array
@@ -43,6 +44,7 @@ export class SpikeSim {
 
   constructor(readonly season: string, fraction = 1) {
     const kinds = particleKinds(season)
+    this.kinds = kinds.map((k) => k.kind)
     this.count = kinds.reduce((n, k) => n + Math.max(1, Math.round(k.count * fraction)), 0)
     const n = this.count
     this.pos = new Float32Array(n * 3)
