@@ -22,9 +22,9 @@ export const kit: SeasonKit = {
   lights: () => blockLights(season, innerLights),
   glassDressing: { tint: [1, 0.9, 0.6], amount: 0.06 },
   surfaceDressing: { tint: [0.9, 0.75, 0.3], amount: 0.28, reachMm: 130 },
-  rig: { key: { color: [1, 0.74, 0.42], intensity: 2.5, from: [-340, 260, 300] }, rim: { color: [0.4, 0.6, 0.9], intensity: 0.9, from: [300, 240, -340] }, sky: [0.3, 0.3, 0.42], ground: [0.06, 0.04, 0.02], fill: 0.9 },
+  rig: { key: { color: [1, 0.74, 0.42], intensity: 2.5, from: [-340, 260, 300] }, rim: { color: [0.4, 0.6, 0.9], intensity: 0.9, from: [300, 240, -340] }, sky: [0.3, 0.3, 0.42], ground: [0.1, 0.085, 0.075], fill: 1.5 },
   innerLights,
   veil: { tint: [1, 0.86, 0.5], density: 0.1, rest: 0.0014 },
-  backdrop: { colors: [[1, 0.7, 0.3], [1, 0.85, 0.5], [0.4, 0.75, 0.8], [0.8, 1, 0.4]], room: [0.008, 0.006, 0.004], floor: [0.016, 0.012, 0.009] },
+  backdrop: { colors: [[1, 0.7, 0.3], [1, 0.85, 0.5], [0.4, 0.75, 0.8], [0.8, 1, 0.4]], room: [0.0062, 0.0056, 0.0086], floor: [0.012, 0.0108, 0.0158] },
   particles: { firefly: { color: [0.8, 1, 0.3], glow: 5 }, seed: { color: [0.95, 0.93, 0.85], glow: 0 }, mote: { color: [1, 0.9, 0.6], glow: 0.3 } },
 }

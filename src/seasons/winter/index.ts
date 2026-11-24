@@ -22,9 +22,9 @@ export const kit: SeasonKit = {
   lights: () => blockLights(season, innerLights),
   glassDressing: { tint: [0.75, 0.85, 1], amount: 0.1 },
   surfaceDressing: { tint: [0.7, 0.82, 1], amount: 0.35, reachMm: 150 },
-  rig: { key: { color: [0.82, 0.9, 1], intensity: 2.6, from: [-260, 420, 300] }, rim: { color: [0.55, 0.7, 1], intensity: 1, from: [300, 200, -380] }, sky: [0.2, 0.26, 0.4], ground: [0.04, 0.035, 0.03], fill: 0.9 },
+  rig: { key: { color: [0.82, 0.9, 1], intensity: 2.6, from: [-260, 420, 300] }, rim: { color: [0.55, 0.7, 1], intensity: 1, from: [300, 200, -380] }, sky: [0.2, 0.26, 0.4], ground: [0.07, 0.08, 0.11], fill: 1.5 },
   innerLights,
   veil: { tint: [0.86, 0.9, 1], density: 0.11, rest: 0.0012 },
-  backdrop: { colors: [[0.45, 0.62, 1], [0.8, 0.88, 1], [0.55, 0.75, 1], [1, 0.72, 0.4]], room: [0.004, 0.005, 0.008], floor: [0.012, 0.013, 0.016] },
+  backdrop: { colors: [[0.45, 0.62, 1], [0.8, 0.88, 1], [0.55, 0.75, 1], [1, 0.72, 0.4]], room: [0.0045, 0.0058, 0.0105], floor: [0.0092, 0.0113, 0.019] },
   particles: { flake: { color: [0.86, 0.9, 0.96], glow: 0 }, glitter: { color: [1, 0.9, 0.65], glow: 2.2 } },
 }

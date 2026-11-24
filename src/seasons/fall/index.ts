@@ -22,9 +22,9 @@ export const kit: SeasonKit = {
   lights: () => blockLights(season, innerLights),
   glassDressing: { tint: [0.5, 1, 0.5], amount: 0.06 },
   surfaceDressing: { tint: [0.9, 0.4, 0.05], amount: 0.32, reachMm: 145 },
-  rig: { key: { color: [0.7, 0.75, 1], intensity: 2, from: [-240, 400, 280] }, rim: { color: [1, 0.5, 0.15], intensity: 1.1, from: [320, 180, -360] }, sky: [0.2, 0.16, 0.3], ground: [0.05, 0.03, 0.02], fill: 0.8 },
+  rig: { key: { color: [0.7, 0.75, 1], intensity: 2, from: [-240, 400, 280] }, rim: { color: [1, 0.5, 0.15], intensity: 1.1, from: [320, 180, -360] }, sky: [0.2, 0.16, 0.3], ground: [0.07, 0.06, 0.09], fill: 1.4 },
   innerLights,
   veil: { tint: [0.5, 0.9, 0.45], density: 0.1, rest: 0.003 },
-  backdrop: { colors: [[1, 0.5, 0.1], [0.6, 0.3, 0.9], [1, 0.75, 0.3], [0.4, 0.9, 0.4]], room: [0.006, 0.004, 0.008], floor: [0.013, 0.01, 0.014] },
+  backdrop: { colors: [[1, 0.5, 0.1], [0.6, 0.3, 0.9], [1, 0.75, 0.3], [0.4, 0.9, 0.4]], room: [0.0046, 0.0042, 0.0092], floor: [0.0086, 0.0078, 0.0158] },
   particles: { leaf: { color: [0.9, 0.38, 0.06], glow: 0 }, ember: { color: [1, 0.5, 0.1], glow: 4 }, mote: { color: [0.8, 0.95, 0.7], glow: 0.3 }, bat: { color: [0.02, 0.02, 0.03], glow: 0 } },
 }

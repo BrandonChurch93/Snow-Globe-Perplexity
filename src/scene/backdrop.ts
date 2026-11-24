@@ -6,6 +6,7 @@ import type { SeasonKit } from '../seasons/kit'
 import { centreHeightMm } from './layout'
 
 export const ROOM_LIGHTS = 12
+export const DISC_EDGE = 0.8
 
 export const ROOM_GLSL = `
 uniform vec3 uRoomWall;
@@ -13,8 +14,10 @@ uniform vec3 uRoomFloor;
 uniform vec4 uRoomDir[${ROOM_LIGHTS}];
 uniform vec3 uRoomCol[${ROOM_LIGHTS}];
 vec3 stageRoom(vec3 d) {
-  vec3 wall = uRoomWall * (1.0 + 2.0 * smoothstep(-0.05, 0.6, d.y));
-  return d.y < 0.0 ? mix(uRoomFloor, uRoomWall, smoothstep(-0.03, 0.0, d.y)) : wall;
+  float back = 0.5 - 0.5 * d.z / max(length(d.xz), 1e-4);
+  float wash = (0.35 + 0.65 * back * back) * exp(-d.y * d.y / 0.045);
+  vec3 wall = uRoomWall * (1.0 + 1.6 * wash);
+  return mix(uRoomFloor, wall, smoothstep(-0.03, 0.02, d.y));
 }
 vec3 stageRoomLights(vec3 d, float soft) {
   vec3 sum = vec3(0.0);
@@ -99,25 +102,30 @@ void main() {
       part: 'backdrop',
       change: 'backdrop',
       uniforms: { uBokeh: { value: new THREE.Vector4() }, uBackMix: { value: 0 } },
-      vertexPars: `attribute vec3 aColorA;\nattribute vec3 aColorB;\nuniform vec4 uBokeh;\nuniform float uBackMix;\nvarying vec3 vColor;`,
+      vertexPars: `attribute vec3 aColorA;\nattribute vec3 aColorB;\nuniform vec4 uBokeh;\nuniform float uBackMix;\nvarying vec3 vColor;\nvarying vec2 vDisc;`,
       vertexMain: `
   vec3 mid = (modelMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
   float size = length((instanceMatrix * vec4(1.0, 0.0, 0.0, 0.0)).xyz);
-  float depth = -(viewMatrix * vec4(mid, 1.0)).z;
-  float defocus = 1.0 - depth * uBokeh.y;
-  float grow = (size + uBokeh.x * abs(defocus)) / size;
-  vec4 placed = viewMatrix * vec4(mid + (stageWorld.xyz - mid) * grow, 1.0);
-  placed.xy += uBokeh.zw * defocus;
+  vec4 placed = viewMatrix * vec4(mid, 1.0);
+  float defocus = 1.0 + placed.z * uBokeh.y;
+  float radius = size + uBokeh.x * abs(defocus);
+  placed.xy += position.xy * radius + uBokeh.zw * defocus;
   gl_Position = projectionMatrix * placed;
-  vColor = mix(aColorA, aColorB, uBackMix) / (grow * grow);`,
+  vStageWorld = mid;
+  vStageAux = vec3(0.0, -placed.z, length(placed.xyz));
+  vDisc = position.xy;
+  vColor = mix(aColorA, aColorB, uBackMix) * (size * size) / (radius * radius);`,
       fragment: `varying vec3 vColor;
+varying vec2 vDisc;
 void main() {
-  gl_FragColor = vec4(vColor, 1.0);
+  float r = length(vDisc);
+  if (r >= 1.0) discard;
+  gl_FragColor = vec4(vColor * (1.0 - smoothstep(${DISC_EDGE.toFixed(2)}, 1.0, r)), 1.0);
   if (uDiag != 0) gl_FragColor = stageDiag(vColor, vec3(0.0, 0.0, 1.0), 0.0, stageChange(), 0.0);
 }`,
-      params: { blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendSrcAlpha: THREE.ZeroFactor, blendDstAlpha: THREE.OneFactor, depthWrite: false },
+      params: { blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendSrcAlpha: THREE.ZeroFactor, blendDstAlpha: THREE.OneFactor, depthWrite: false, side: THREE.DoubleSide },
     })
-    const g = new THREE.SphereGeometry(1, 14, 10)
+    const g = new THREE.PlaneGeometry(2, 2)
     this.lights = new THREE.InstancedMesh(g, this.material, n)
     const m = new THREE.Matrix4()
     this.emitters.forEach((e, i) => {

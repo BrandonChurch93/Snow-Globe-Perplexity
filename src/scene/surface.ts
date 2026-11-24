@@ -5,6 +5,10 @@ import type { SeasonKit } from '../seasons/kit'
 import { roomUniforms } from './backdrop'
 
 const footRadius = config.globe.baseDiameterMm / 2
+export const SLAB_MM = 6000
+export const FADE_FROM_MM = 1400
+export const FADE_TO_MM = 2900
+export const KEY_POOL_MM = 650
 
 export const surfaceUniforms = {
   uSlab: { value: new THREE.Color(0.0075, 0.008, 0.0095) },
@@ -21,7 +25,6 @@ const SLAB = `
 uniform vec3 uSlab;
 uniform vec3 uKeyDir;
 uniform vec3 uKeyCol;
-uniform vec3 uSky;
 uniform vec4 uFoot;
 uniform vec3 uPool;
 uniform vec4 uReflect;
@@ -37,16 +40,20 @@ void main() {
   vec2 throwAt = uFoot.xy - uKeyDir.xz / max(uKeyDir.y, 0.2) * (40.0 + lift);
   float thrown = 0.45 * (1.0 - smoothstep(uFoot.z * 0.6, uFoot.z * 1.5, length(vStageWorld.xz - throwAt)));
   float shade = (1.0 - contact) * (1.0 - thrown);
-  vec3 col = uSlab * (uSky + uKeyCol * max(uKeyDir.y, 0.0) * shade);
+  float lit = exp(-d * d / (2.0 * ${KEY_POOL_MM.toFixed(1)} * ${KEY_POOL_MM.toFixed(1)}));
+  vec3 col = uRoomFloor * (1.0 - 0.6 * contact) + uSlab * uKeyCol * max(uKeyDir.y, 0.0) * shade * lit;
   col += uSlab * uPool * 3.0 * exp(-d * d / (2.0 * 110.0 * 110.0)) * (1.0 - 0.6 * contact);
   vec3 r = reflect(v, vec3(0.0, 1.0, 0.0));
   col += uKeyCol * 0.5 * pow(max(dot(r, uKeyDir), 0.0), 220.0);
   float blob = 1.0 - smoothstep(uFoot.z * 0.7, uFoot.z * 1.25, length(vec2(vStageWorld.x - uFoot.x, (vStageWorld.z - uFoot.y) * 0.5)));
   col += uBaked * fresnel * blob * uReflect.y;
-  float away = smoothstep(1400.0, 2900.0, length(vStageWorld.xz));
+  float away = smoothstep(${FADE_FROM_MM.toFixed(1)}, ${FADE_TO_MM.toFixed(1)}, length(vStageWorld.xz));
   col = mix(col, uRoomFloor, away);
   gl_FragColor = vec4(col, fresnel * uReflect.x * 0.85 * (1.0 - away));
-  if (uDiag != 0) gl_FragColor = vec4(stageDiag(uSlab, vec3(0.0, 1.0, 0.0), 0.0, 0.0, 0.0).rgb, 0.0);
+  if (uDiag != 0) {
+    if (away >= 1.0) discard;
+    gl_FragColor = vec4(stageDiag(uSlab, vec3(0.0, 1.0, 0.0), 0.0, 0.0, 0.0).rgb, 0.0);
+  }
 }`
 
 const DRESSING = `
@@ -79,9 +86,10 @@ export function makeSlab(): THREE.Mesh {
       blendDst: THREE.SrcAlphaFactor,
       blendSrcAlpha: THREE.ZeroFactor,
       blendDstAlpha: THREE.ZeroFactor,
+      depthWrite: false,
     },
   })
-  const slab = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), m)
+  const slab = new THREE.Mesh(new THREE.PlaneGeometry(SLAB_MM, SLAB_MM), m)
   slab.rotation.x = -Math.PI / 2
   slab.userData.standIn = 'surface'
   slab.frustumCulled = false

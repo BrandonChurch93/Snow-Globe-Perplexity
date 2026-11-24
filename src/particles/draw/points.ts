@@ -6,6 +6,8 @@ import type { ParticleSource } from '../../core/stage'
 import { partBytes, viewCode } from '../../diagnostics/views'
 
 export const MAX_KINDS = 16
+export const SIZE_TO_RADIUS = 0.5
+export const MIN_POINT_PX = 1.5
 
 const VERT_PARS = `
 attribute vec3 aPrev;
@@ -28,7 +30,9 @@ const VERT_MAIN = `
   float reach = max(-(viewMatrix * nowWorld).z, 1.0);
   vec3 rimAxis = cross(normalize(nowPlaced.xyz - cameraPosition), uLensCentre - cameraPosition);
   float rim = uLens.z > 0.5 ? 1.0 - smoothstep(0.86, 0.975, length(rimAxis) / uLens.x) : 1.0;
-  float size = max(2.0 * aData.x * uPoint.y * (uLens.z > 0.5 ? uLens.y : 1.0) / reach, 1.5) * (0.4 + 0.6 * rim);
+  float want = 2.0 * aData.x * uPoint.y * (uLens.z > 0.5 ? uLens.y : 1.0) / reach;
+  float thin = min(1.0, want / ${MIN_POINT_PX.toFixed(1)});
+  float size = max(want, ${MIN_POINT_PX.toFixed(1)}) * (0.4 + 0.6 * rim);
   vec2 streak = vec2(0.0);
   if (uPoint.z > 0.0) {
     vec4 wasPlaced = lensPlace((modelMatrix * vec4(aPrev, 1.0)).xyz, cameraPosition);
@@ -40,7 +44,7 @@ const VERT_MAIN = `
   float extra = length(streak);
   size = min(size, uPoint.w);
   gl_PointSize = min(size + extra, uPoint.w);
-  vPoint = vec4(aData.y, float(gl_VertexID), aData.z * rim, aData.w);
+  vPoint = vec4(aData.y, float(gl_VertexID), aData.z * rim * thin * thin, aData.w);
   vStreak = vec4(streak, size, size + extra);
 `
 
@@ -161,7 +165,7 @@ export class ParticleDraw {
     const opacity = source.opacity
     const phase = source.phase ?? this.phaseOf(n)
     for (let i = 0, o = 0; i < n; i++, o += 4) {
-      d[o] = sizes[i]!
+      d[o] = sizes[i]! * SIZE_TO_RADIUS
       d[o + 1] = kindOf[i]!
       d[o + 2] = opacity ? opacity[i]! : 1
       d[o + 3] = phase[i]!
