@@ -146,7 +146,7 @@ const OIL = `
   vec3 oilCell = floor(vBasePos * 5.0);
   vec3 oilFacet = normalize(normalMatrix * normalize(baseObjectNormal + 1.2 * (vec3(baseHash(oilCell + 3.7), baseHash(oilCell + 11.3), baseHash(oilCell + 23.9)) - 0.5)));
   float oilGrit = smoothstep(0.5, 0.12, length(fract(vBasePos * 5.0) - 0.5)) * step(0.5, baseHash(oilCell));
-  reflectedLight.directSpecular += oilKeyC * (pow(max(dot(oilFacet, normalize(oilKey + geometryViewDir)), 0.0), 200.0) * oilGrit * baseFrost * 9.0 + 0.5 * pow(oilNh, 10.0) * baseFrost);
+  reflectedLight.directSpecular += oilKeyC * (pow(max(dot(oilFacet, normalize(oilKey + geometryViewDir)), 0.0), 200.0) * oilGrit * baseFrost * 1.6 + 0.5 * pow(oilNh, 10.0) * baseFrost);
   reflectedLight.directSpecular += (oilKeyC * pow(max(dot(oilFacet, normalize(oilKey + geometryViewDir)), 0.0), 90.0) + uRigCardCol * vec3(1.0, 0.72, 0.42) * 1.5 * pow(max(dot(oilFacet, normalize(oilCard + geometryViewDir)), 0.0), 90.0)) * oilGrit * baseLeaf * (1.0 - baseFrost) * baseAo * 0.5;
   reflectedLight.indirectSpecular += stageRoomLights(oilAway, 0.09) * min(oilF, 0.35) * 0.4 * baseOil * baseAo;
 }
@@ -311,7 +311,7 @@ roughnessFactor = 0.82 + 0.16 * baseDetail.b;
 `
 
 const SNOW_TILT = `
-vec2 baseTilt = baseSlope(baseDetail.rg) * 2.2 + (vec2(baseNoise(vBasePos * 2.3 + 17.0), baseNoise(vBasePos * 2.3 + 51.0)) - 0.5) * 0.45 + (vec2(baseNoise(vBasePos * 5.1 + 3.0), baseNoise(vBasePos * 5.1 + 29.0)) - 0.5) * 0.35;
+vec2 baseTilt = baseSlope(baseDetail.rg) * 2.2 + (vec2(baseNoise(vBasePos * 2.3 + 17.0), baseNoise(vBasePos * 2.3 + 51.0)) - 0.5) * 0.45 + (vec2(baseNoise(vBasePos * 5.1 + 3.0), baseNoise(vBasePos * 5.1 + 29.0)) - 0.5) * 0.35 + (vec2(baseNoise(vBasePos * 0.95 + 5.0), baseNoise(vBasePos * 0.95 + 37.0)) - 0.5) * 0.8;
 `
 
 const SNOW_AFTER = `
@@ -334,14 +334,15 @@ const SNOW_AFTER = `
   float baseCard = clamp(dot(inverseTransformDirection(nonPerturbedNormal, viewMatrix), uRigCardDir) * 0.5 + 0.5, 0.0, 1.0);
   reflectedLight.indirectDiffuse += uRigCardCol * vec3(0.92, 0.94, 1.0) * material.diffuseContribution * RECIPROCAL_PI * 0.7 * baseCard * baseCard * baseDeep * mix(0.5, 1.0, baseUnder) * mix(0.1, 1.0, smoothstep(18.0, -14.0, vBasePos.x));
   #endif
+  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * (uRigCardCol * 0.3 * smoothstep(18.0, -14.0, vBasePos.x) + baseKeyC * 0.22) * (1.0 - smoothstep(-0.3, 0.6, normalize(vBaseNormal).y)) * baseDeep;
   vec3 baseCell = floor(vBasePos * 4.0);
   float baseOne = baseHash(baseCell);
   vec3 baseFacet = normalize(normalMatrix * normalize(baseObjectNormal + 1.2 * (vec3(baseHash(baseCell + 3.7), baseHash(baseCell + 11.3), baseHash(baseCell + 23.9)) - 0.5)));
   vec3 baseIn = fract(vBasePos * 4.0) - 0.5;
   float baseTwo = baseHash(baseCell + 41.0);
-  float baseGrit = smoothstep(mix(0.22, 0.5, baseTwo), 0.1, length(baseIn)) * step(0.5, baseOne) * (0.25 + 2.6 * baseTwo * baseTwo * baseTwo) * vBasePaint.y;
-  reflectedLight.directSpecular += baseKeyC * (pow(max(dot(baseFacet, normalize(baseKey + geometryViewDir)), 0.0), 220.0) * baseGrit * 24.0);
-  reflectedLight.directSpecular += uRigCardCol * (pow(max(dot(baseFacet, normalize(normalize(mat3(viewMatrix) * uRigCardDir) + geometryViewDir)), 0.0), 160.0) * baseGrit * 16.0 * smoothstep(34.0, -8.0, vBasePos.x));
+  float baseGrit = smoothstep(mix(0.22, 0.5, baseTwo), 0.1, length(baseIn)) * step(0.3, baseOne) * (0.25 + 2.6 * baseTwo * baseTwo * baseTwo) * vBasePaint.y;
+  reflectedLight.directSpecular += baseKeyC * (pow(max(dot(baseFacet, normalize(baseKey + geometryViewDir)), 0.0), 130.0) * baseGrit * 8.0);
+  reflectedLight.directSpecular += uRigCardCol * (pow(max(dot(baseFacet, normalize(normalize(mat3(viewMatrix) * uRigCardDir) + geometryViewDir)), 0.0), 100.0) * baseGrit * 6.0 * smoothstep(34.0, -8.0, vBasePos.x));
 }
 `
 
@@ -422,7 +423,8 @@ void main() {
   float nv = clamp(dot(n, v), 0.0, 1.0);
   float fres = 0.018 + 0.982 * pow(1.0 - nv, 5.0);
   vec3 away = reflect(-v, n);
-  vec3 mirror = stageRoom(away) + stageRoomLights(away, 0.06) + iceDome(away) * RECIPROCAL_PI + uIceFloor * smoothstep(0.0, -0.3, away.y);
+  float leeward = smoothstep(0.3, -0.5, vIcePos.x / max(length(vIcePos.xz), 1.0));
+  vec3 mirror = stageRoom(away) + stageRoomLights(away, 0.06) + iceDome(away) * RECIPROCAL_PI * (1.0 - 0.75 * leeward) + uIceFloor * smoothstep(0.0, -0.3, away.y);
 
   vec3 into = refract(-v, n, 1.0 / 1.31);
   vec3 outW = normalize(2.0 * dot(-v, into) * into + v);
@@ -455,7 +457,7 @@ void main() {
   float side = vIcePos.x / max(length(vIcePos.xz), 1.0);
   float lee = smoothstep(0.3, -0.5, side);
   vec3 keyC = uIceKeyCol * (1.0 - 0.8 * lee) * (1.0 + 0.5 * smoothstep(0.2, 0.8, side));
-  vec3 cardC = uRigCardCol * (1.0 + 1.6 * lee);
+  vec3 cardC = uRigCardCol * (1.0 - 0.2 * lee);
   float core = smoothstep(0.2, 0.95, nv);
   float streak = baseNoise(vec3(vIceUv.z * 11.0 + seed * 5.0, t * 2.2 + seed * 3.0, seed * 1.7));
   float grit = baseNoise(vIcePos * 11.0);
@@ -463,14 +465,14 @@ void main() {
   float vein = smoothstep(0.3, 0.72, streak);
   float cloud = 0.03 + band * (0.06 + 0.22 * vein) + 0.1 * core * vein * vein + 0.04 * smoothstep(0.66, 0.9, grit);
   float wrap = clamp(dot(n, uIceKeyDir) * 0.5 + 0.5, 0.0, 1.0);
-  cloud = clamp((0.3 + 1.1 * lee) * cloud, 0.0, 0.85);
+  cloud = clamp((0.3 + 0.5 * lee) * cloud * (1.0 - 0.65 * smoothstep(0.55, 1.0, t)) * (0.6 + 0.4 * smoothstep(0.0, 0.25, t)), 0.0, 0.85);
   float back = clamp(dot(n, uIceRimDir) * 0.5 + 0.5, 0.0, 1.0);
   float warm = clamp(dot(n, uRigCardDir) * 0.5 + 0.5, 0.0, 1.0);
-  vec3 lit = keyC * (0.1 + 1.2 * wrap * wrap) + cardC * (0.2 + 1.8 * warm * warm) + uIceRimCol * 0.5 * back * back + (0.7 - 0.35 * lee) * iceDome(n);
+  vec3 lit = keyC * (0.1 + 1.2 * wrap * wrap) + cardC * (0.2 + 1.8 * warm * warm) + uIceRimCol * 0.5 * back * back + (0.7 - 0.5 * lee) * iceDome(n);
   vec3 milk = vec3(0.84, 0.86, 0.92) * lit * RECIPROCAL_PI;
-  vec3 col = mix(behind * vec3(0.9, 0.95, 1.0) * (0.36 + 0.16 * core), milk, cloud);
-  col += (keyC * 0.3 + cardC * 0.1 + iceDome(vec3(0.0, 1.0, 0.0)) * 0.5) * RECIPROCAL_PI * smoothstep(0.5, 0.1, nv) * (0.35 + 0.65 * vein) * smoothstep(0.03, 0.15, t);
-  col = col * (1.0 - fres) + mirror * fres + milk * (0.3 * pow(1.0 - nv, 2.4));
+  vec3 col = mix(behind * vec3(0.9, 0.95, 1.0) * (0.36 + 0.16 * core) * (0.75 + 0.25 * smoothstep(0.0, 0.3, t)), milk, cloud);
+  col += (keyC * 0.3 + cardC * 0.1 + iceDome(vec3(0.0, 1.0, 0.0)) * (0.5 - 0.4 * lee)) * RECIPROCAL_PI * smoothstep(0.5, 0.1, nv) * (0.35 + 0.65 * vein) * smoothstep(0.03, 0.15, t);
+  col = col * (1.0 - fres) + mirror * fres + milk * ((0.3 - 0.18 * lee) * pow(1.0 - nv, 2.4));
   float hk = max(dot(n, normalize(v + uIceKeyDir)), 0.0);
   float hr = max(dot(n, normalize(v + uIceRimDir)), 0.0);
   col += keyC * (pow(hk, 420.0) * 7.0 + pow(hk, 36.0) * 0.06);
@@ -479,7 +481,11 @@ void main() {
   float lane = 0.55 + 0.45 * ring;
   float keyLane = exp(-pow((dot(around, -normalize(vec3(uIceKeyDir.x, 0.0, uIceKeyDir.z))) - 0.42) / 0.06, 2.0));
   float cardLane = exp(-pow((dot(around, -normalize(vec3(uRigCardDir.x, 0.0, uRigCardDir.z))) - 0.42) / 0.06, 2.0));
-  col += (keyC * 0.55 * keyLane + cardC * 0.2 * cardLane) * lane * (0.2 + 1.6 * smoothstep(0.45, 0.8, grit)) * (0.35 + 0.65 * vein) * smoothstep(0.02, 0.12, t) * (1.0 - 0.4 * smoothstep(0.75, 1.0, t));
+  col += (keyC * 0.55 * keyLane + cardC * 0.2 * cardLane * (0.3 + 0.7 * lee)) * lane * (0.2 + 1.6 * smoothstep(0.45, 0.8, grit)) * (0.35 + 0.65 * vein) * smoothstep(0.02, 0.12, t) * (1.0 - 0.4 * smoothstep(0.75, 1.0, t));
+  float thru = smoothstep(0.05, 0.8, dot(around, -normalize(vec3(uRigCardDir.x, 0.0, uRigCardDir.z))));
+  float mott = baseNoise(vIcePos * vec3(3.4, 1.5, 3.4) + seed * 7.0);
+  float fleck = 0.25 + 1.2 * smoothstep(0.35, 0.72, mott) + 2.4 * smoothstep(0.7, 0.84, mott);
+  col += uRigCardCol * vec3(1.0, 0.92, 0.9) * RECIPROCAL_PI * lee * fleck * (1.0 * thru * thru * (0.4 + 0.6 * vein) * smoothstep(0.02, 0.14, t) + 0.4 * smoothstep(0.7, 0.98, t) * core);
   float hc = max(dot(n, normalize(v + uRigCardDir)), 0.0);
   col += cardC * (pow(hc, 48.0) * 0.2 + pow(hc, 300.0) * 2.2);
   vec3 cell = floor(vIcePos * 4.5);
