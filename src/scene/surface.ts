@@ -59,7 +59,7 @@ export const SLAB = {
   nearBlurRiseMm: 90,
   nearHeightMm: 10,
   mirrorMark: 0.35,
-  mirrorTint: [0.88, 0.88, 0.8],
+  mirrorTint: [0.88, 0.88, 0.88],
   sheenUnder: 0.28,
   girthMoreMm: 6,
   girthSoftMm: 4,
