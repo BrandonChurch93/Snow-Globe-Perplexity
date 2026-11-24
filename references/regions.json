@@ -1,0 +1,130 @@
+{
+  "winter-rest": {
+    "file": "references/approved/winter-rest.png",
+    "width": 2816,
+    "height": 1584,
+    "globe": {
+      "cx": 1411.3,
+      "cy": 652.0,
+      "r": 553.0
+    },
+    "base": {
+      "left": 872,
+      "right": 1939,
+      "top": 1075,
+      "foot": 1443
+    }
+  },
+  "winter-shake": {
+    "file": "references/approved/winter-shake.png",
+    "width": 2816,
+    "height": 1584,
+    "globe": {
+      "cx": 1411.3,
+      "cy": 651.0,
+      "r": 550.9
+    },
+    "base": {
+      "left": 873,
+      "right": 1938,
+      "top": 1075,
+      "foot": 1443
+    }
+  },
+  "spring-rest": {
+    "file": "references/approved/spring-rest.png",
+    "width": 2816,
+    "height": 1584,
+    "globe": {
+      "cx": 1413.2,
+      "cy": 654.8,
+      "r": 547.9
+    },
+    "base": {
+      "left": 861,
+      "right": 1976,
+      "top": 1086,
+      "foot": 1441
+    }
+  },
+  "spring-shake": {
+    "file": "references/approved/spring-shake.png",
+    "width": 2816,
+    "height": 1584,
+    "globe": {
+      "cx": 1413.5,
+      "cy": 655.1,
+      "r": 546.4
+    },
+    "base": {
+      "left": 861,
+      "right": 1976,
+      "top": 1086,
+      "foot": 1441
+    }
+  },
+  "summer-rest": {
+    "file": "references/approved/summer-rest.png",
+    "width": 2816,
+    "height": 1584,
+    "globe": {
+      "cx": 1407.0,
+      "cy": 658.4,
+      "r": 550.7
+    },
+    "base": {
+      "left": 862,
+      "right": 1940,
+      "top": 1087,
+      "foot": 1442
+    }
+  },
+  "summer-shake": {
+    "file": "references/approved/summer-shake.png",
+    "width": 2816,
+    "height": 1584,
+    "globe": {
+      "cx": 1405.6,
+      "cy": 652.1,
+      "r": 544.7
+    },
+    "base": {
+      "left": 866,
+      "right": 1940,
+      "top": 1085,
+      "foot": 1441
+    }
+  },
+  "fall-rest": {
+    "file": "references/approved/fall-rest.png",
+    "width": 2816,
+    "height": 1584,
+    "globe": {
+      "cx": 1418.8,
+      "cy": 659.6,
+      "r": 564.1
+    },
+    "base": {
+      "left": 883,
+      "right": 1938,
+      "top": 1083,
+      "foot": 1442
+    }
+  },
+  "fall-shake": {
+    "file": "references/approved/fall-shake.png",
+    "width": 2816,
+    "height": 1584,
+    "globe": {
+      "cx": 1420.3,
+      "cy": 661.7,
+      "r": 563.2
+    },
+    "base": {
+      "left": 883,
+      "right": 1938,
+      "top": 1080,
+      "foot": 1442
+    }
+  }
+}
