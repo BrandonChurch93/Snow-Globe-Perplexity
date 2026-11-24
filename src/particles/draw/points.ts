@@ -10,14 +10,13 @@ import { partBytes } from '../../diagnostics/views'
 import type { StageFrame } from '../../scene/frame'
 import { flickerOf } from '../../scene/lightgrid'
 import type { InnerLight } from '../../seasons/kit'
-import { LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_TABLE, LYING_LOOK, MAX_KINDS, SETTLE_SHOWN, SHAPE, STORM_FINE_SHARE, STORM_SHARP_SHARE, STORM_SMEAR_SHARE, TABLE_COLUMNS, lookOf } from './looks'
+import { LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_TABLE, LYING_LOOK, MAX_KINDS, SETTLE_SHOWN, SHAPE, TABLE_COLUMNS, lookOf } from './looks'
 import { FRAG, VERT_MAIN, VERT_PARS } from './shader'
 
 export { MAX_KINDS } from './looks'
 export const SIZE_TO_RADIUS = 0.5
 const SHUTTER = (config.film.shutterDegrees / 360) * (config.sim.stepHz / config.film.fps)
 const TAU = 2 * Math.PI
-const CLASSES = STORM_SMEAR_SHARE + STORM_SHARP_SHARE + STORM_FINE_SHARE
 
 type KindColors = Readonly<Record<string, { color: Rgb; glow: number }>>
 
@@ -51,6 +50,7 @@ export class ParticleDraw {
   private cover: boolean | null = null
   private storm = 0
   private shown = 1
+  private paced = 0
   private afloat = 0
   drawn = 0
   maxPointPx = 256
@@ -149,7 +149,8 @@ export class ParticleDraw {
     const stormy = f.live || f.view === 'cover' || (f.sample !== null && f.view === '')
     this.storm = stormy ? gate * gate * (3 - 2 * gate) : 0
     this.fill(source, f.quality.particleFraction, f.live)
-    this.shown = stormy ? Math.min(1, Math.max(0, (SETTLE_SHOWN / Math.max(this.afloat, 1e-3) - CLASSES) / (1 - CLASSES))) : 1
+    this.shown = stormy ? Math.min(1, SETTLE_SHOWN / Math.max(this.afloat, 1e-3)) : 1
+    this.paced = stormy ? 1 : 0
     veilSettle(this.afloat)
     this.lens(f)
     this.lights(f)
@@ -204,7 +205,7 @@ export class ParticleDraw {
     const scale = f.height / LENS_LOOK.referenceHeightPx
     const sampled = f.sample !== null && f.view === ''
     const span = f.live || sampled ? SHUTTER : 0
-    ;(u.uStorm!.value as THREE.Vector4).set(this.storm, sampled ? 0.5 - f.sample!.t : 0, this.shown, 0)
+    ;(u.uStorm!.value as THREE.Vector4).set(this.storm, sampled ? 0.5 - f.sample!.t : 0, this.shown, this.paced)
     ;(u.uPoint!.value as THREE.Vector4).set(f.moment.mix, f.focalPx, span, scale)
     const pose = f.pose
     const dx = f.sample && pose.apertureMm > 0 ? f.sample.lu * pose.apertureMm : 0

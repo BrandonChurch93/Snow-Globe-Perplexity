@@ -58,12 +58,13 @@ const SIDE = Math.hypot(AY, AZ)
 const E2Y = AZ / SIDE
 const E2Z = -AY / SIDE
 const ARMS = 3
-const ARM_MM_S = 120
+const ARM_MM_S = 150
 const ARM_CORE = 0.15
 const ARM_WIND = 4
+const ARM_TWIST = (TAU / 3) / 18
 const ROLL_SOFT = 1
 const ARM_HUB2 = 12 * 12
-const BANK_GAIN = 4
+const BANK_GAIN = 5
 const BALL_ROOM_MM = 0.1
 const BANK_FROM = 24 / ROLL_RISE_MM
 const BANK_OVER = ROLL_RISE_MM / 24
@@ -1165,11 +1166,12 @@ export class ParticleEngine {
     const roll = c[7]!
     const rolling = roll !== 0
     const swirl = L.state[LIQUID_SWIRL]!
-    const rollK = roll * R2
+    const slabK = roll * R2 * SLAB2
     const armK = (ARM_MM_S * c[6]!) / TURBULENCE_MAX
     const bankK = (BANK_GAIN * c[6]!) / TURBULENCE_MAX
     const phaseK = ARMS * swirl * TABLE_K
     const windK = ARM_WIND * TABLE_K
+    const twistK = ARM_TWIST * TABLE_K
     const stiff = roll / (roll + ROLL_SOFT)
     const loose = 1 - stiff
     const m = L.motion
@@ -1352,8 +1354,9 @@ export class ParticleEngine {
           const ny = ey + lam * CY
           const nz = ez + lam * CZ
           const along = nx * AX + ny * AY + nz * AZ
-          const discK = (rollK * SLAB2) / (SLAB2 + along * along)
-          const rate = (discK * rise * lam * edge) / es
+          const inv = slabK / ((SLAB2 + along * along) * es)
+          const discK = inv * es
+          const rate = inv * rise * lam * edge
           const skim = ht <= 0 || ht >= 1 ? 0 : discK * 6 * ht * (1 - ht) * INV_RISE * ((1 - l2) / 2 - (ROLL_EDGE * (1 - l2 * l2 * l2)) / 6)
           const tx = AY * nz - AZ * ny
           const ty = AZ * nx - AX * nz
@@ -1365,17 +1368,11 @@ export class ParticleEngine {
           const gk = K_GATHER[k]!
           const rho2 = tx * tx + ty * ty + tz * tz
           if (gk !== 0 && rho2 > 1e-4) {
-            const rho = Math.sqrt(rho2)
-            const px = nx - along * AX
-            const py = ny - along * AY
-            const pz = nz - along * AZ
-            const ca = px / rho
-            const sa = (py * E2Y + pz * E2Z) / rho
-            const c3 = ca * (4 * ca * ca - 3)
-            const s3 = sa * (3 - 4 * sa * sa)
-            const ia = (phaseK - windK * l2) | 0
-            const wave = s3 * SIN[(ia + QUARTER) & MASK]! - c3 * SIN[ia & MASK]!
-            const arm = (-armK * gk * wave * l2 * rho) / ((l2 + ARM_CORE) * (rho2 + ARM_HUB2))
+            const pa = nx - along * AX
+            const pb = (ny - along * AY) * E2Y + (nz - along * AZ) * E2Z
+            const ia = (phaseK - windK * l2 + twistK * along) | 0
+            const wave = pb * (3 * rho2 - 4 * pb * pb) * SIN[(ia + QUARTER) & MASK]! - pa * (4 * pa * pa - 3 * rho2) * SIN[ia & MASK]!
+            const arm = (-armK * gk * wave * l2) / ((l2 + ARM_CORE) * (rho2 + ARM_HUB2) * rho2)
             fx = arm * tx
             const hb = (ht - BANK_FROM) * BANK_OVER
             const fall = hb <= 0 ? 0 : hb >= 1 ? 1 : hb * hb * (3 - 2 * hb)
