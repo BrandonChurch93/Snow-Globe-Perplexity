@@ -1,0 +1,117 @@
+{
+  "id": "glass-clink",
+  "file": "glass-clink.wav",
+  "class": "touch",
+  "season": null,
+  "line": "One small clean ring of glass",
+  "seconds": 0.3,
+  "take": 2,
+  "takes": 2,
+  "round": "build",
+  "why": "One clean ping. The listener heard one high ring like a small bell or a struck glass, no voice, no music, and said it fits the line. Take 1 was almost silent.",
+  "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+  "prompt": "One small clean ring of thick glass touched once: a single bright clear ping with a short natural decay, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+  "settings": {
+    "endpoint": "POST /v1/sound-generation",
+    "model": "default",
+    "duration_seconds": 1,
+    "prompt_influence": 0.6,
+    "loop": false,
+    "output_format": "pcm_48000",
+    "cost": 11
+  },
+  "chain": {
+    "settings": {
+      "trimDb": -48,
+      "padMs": 3,
+      "fadeInMs": 3,
+      "fadeOutMs": 120,
+      "lowCutHz": 45,
+      "loop": false,
+      "targetLufs": -22,
+      "capSeconds": 0.3
+    },
+    "steps": [
+      "trimmed 0 s in front and 0 s at the end",
+      "low cut at 45 Hz",
+      "cut to 0.3 s",
+      "fade in 3 ms, fade out 120 ms",
+      "level: 0.34 dB to -22 LUFS"
+    ],
+    "gainDb": 0.34
+  },
+  "loop": null,
+  "measured": {
+    "seconds": 0.3,
+    "peakDb": -17.13,
+    "truePeakDb": -17.13,
+    "lufs": -22,
+    "rmsDb": -27.9,
+    "silenceFrontSeconds": 0,
+    "silenceEndSeconds": 0.01,
+    "soundSeconds": 0.29,
+    "tailDb": -41.03,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 2498,
+      "bands": {
+        "sub": 0,
+        "low": 0.0001,
+        "lowMid": 0.0001,
+        "mid": 0.9997,
+        "high": 0.0001,
+        "air": 0
+      }
+    }
+  },
+  "ffmpeg": {
+    "lufs": -70,
+    "lra": 0,
+    "truePeakDb": -17.1
+  },
+  "takeMeasured": {
+    "seconds": 1,
+    "peakDb": -13.3,
+    "truePeakDb": -13.26,
+    "lufs": -27.32,
+    "rmsDb": -33.09,
+    "silenceFrontSeconds": 0,
+    "silenceEndSeconds": 0,
+    "soundSeconds": 1,
+    "tailDb": -73.07,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 2496,
+      "bands": {
+        "sub": 0.0005,
+        "low": 0.0001,
+        "lowMid": 0.0001,
+        "mid": 0.9992,
+        "high": 0.0001,
+        "air": 0
+      }
+    }
+  },
+  "answers": {
+    "verdict": "fits",
+    "why": "Numbers: one ping, 0.47 s, peak -13 dBFS, almost all of its energy between 2 and 8 kHz. Listener: one high ring like a small bell or a struck glass, no voice, no music; fits the line.",
+    "listener": {
+      "line": "One small clean ring of glass",
+      "open": "1. I hear a single, high-pitched ringing sound, similar to a small bell, a triangle, or a glass being struck. It has a clear, bright, and resonant character.\n2. There is exactly one separate sound event.\n3. No, there is no human voice, spoken word, breath, or singing present.\n4. There is no continuous music or melody, but the sound may have been produced by a percussive musical instrument like a triangle or bell.\n5. It starts abruptly with a sharp, crisp strike. It ends by gradually decaying and fading out into silence.",
+      "fit": "1. Yes, because the audio delivers a single, crisp, high-pitched resonance that perfectly resembles a light tap on a small glass object like a wine glass.\n2. There is nothing in the sound that does not belong to the description.\n3. No, there is no human voice, spoken word, or singing in it."
+    }
+  },
+  "source": {
+    "name": "glass-clink-take2.wav",
+    "bytes": 192078,
+    "sha256": "ab56f74f6d5c57fb07bf0f06f39870ff4dfa2bd3c5df4e8cb2f6bc307ca1f4d7",
+    "codec": "pcm_s16le",
+    "sampleRate": 48000,
+    "channels": 2,
+    "seconds": 1,
+    "kbps": 1537
+  },
+  "takeSha256": "5736f3bf9f2549d8d8dc86ab2544629ecacaca6b04c03088afe1cbd24c6354c8",
+  "sha256": "a62138e2781a5f480ec29a3cbe16cabf876f0f466600e4e9223fa2e54c2f984e",
+  "time": "2026-11-24T04:10:35.207Z"
+}

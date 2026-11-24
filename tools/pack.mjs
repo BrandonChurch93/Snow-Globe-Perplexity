@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import sharp from 'sharp'
-import { parseArgs, rel, writeJson } from './lib/paths.mjs'
+import { parseArgs, rel, readJson, writeJson } from './lib/paths.mjs'
 import { Session, cfg, formatById } from './lib/page.mjs'
 import { limits } from './lib/compose.mjs'
 import { fileSha, sha256 } from './lib/hashes.mjs'
@@ -244,37 +244,40 @@ async function latticeTiles(file, cols, rows, tile) {
 }
 
 const sheetTool = rel('tools', 'sheet.mjs')
-const sheetDir = rel('out', 'work', 'sheets')
 const sheetRuns = new Map()
-function listSheets() {
-  const out = new Map()
-  if (!fs.existsSync(sheetDir)) return out
-  for (const f of fs.readdirSync(sheetDir).sort()) if (/\.jpe?g$/i.test(f)) out.set(f, fs.statSync(path.join(sheetDir, f)).mtimeMs)
-  return out
-}
-function sheets(flags, what) {
+function sheets(asked, what) {
+  const flags = [...asked, '--look', 'no']
   const line = `node tools/sheet.mjs ${flags.join(' ')}`
   if (sheetRuns.has(line)) return sheetRuns.get(line)
   if (session) throw new Error(`${line} has to run before the page is opened, because one render runs at a time`)
-  let got
-  if (!fs.existsSync(sheetTool)) got = { files: [], missing: `${what}: tools/sheet.mjs is not in this tree yet, so this part is empty. It would come from: ${line}` }
-  else {
+  let got = null
+  if (!fs.existsSync(sheetTool)) got = { files: [], missing: `${what}: tools/sheet.mjs is not in this tree, so this part is empty. It would come from: ${line}` }
+  while (!got) {
     budget(line)
-    const before = listSheets()
     console.log(`running ${line}`)
-    const r = spawnSync(process.execPath, [sheetTool, ...flags], { cwd: rel(), encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
-    const text = `${r.stdout ?? ''}\n${r.stderr ?? ''}`
-    const named = [...new Set([...(r.stdout ?? '').matchAll(/out\/work\/sheets\/[^\s'"`,;)]+\.jpe?g/gi)].map((m) => rel(m[0])))].filter((f) => fs.existsSync(f))
-    const after = listSheets()
-    const changed = [...after.keys()].filter((f) => before.get(f) !== after.get(f)).map((f) => path.join(sheetDir, f))
-    const files = named.length ? named : changed
-    if (r.status !== 0) got = { files: [], missing: `${what}: ${line} ended with code ${r.status}: ${text.trim().split('\n').pop()}` }
-    else if (/run (it|this|the same command) again/i.test(text)) throw new Stop(line)
-    else if (!files.length) got = { files: [], missing: `${what}: ${line} ran, but named no sheet under out/work/sheets and wrote none` }
+    const r = spawnSync(process.execPath, [sheetTool, ...flags], { cwd: rel(), encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 })
+    const out = r.stdout ?? ''
+    const last = `${out}\n${r.stderr ?? ''}`.trim().split('\n').pop()
+    if (r.status === 3) {
+      console.log(`${line} ran out of its chunk budget, carrying on`)
+      continue
+    }
+    const files = [...new Set([...out.matchAll(/^(?:wrote|reused) (out\/work\/sheets\/\S+\.jpe?g)(?: |$)/gim)].map((m) => rel(m[1])))].filter((f) => fs.existsSync(f))
+    if (r.status === 1) got = { files: [], missing: `${what}: ${line} had nothing to show: ${last}` }
+    else if (r.status !== 0) got = { files: [], missing: `${what}: ${line} ended with code ${r.status}: ${last}` }
+    else if (!files.length) got = { files: [], missing: `${what}: ${line} ran, but named no sheet under out/work/sheets` }
     else got = { files, missing: '' }
   }
   sheetRuns.set(line, got)
   return got
+}
+function sheetLegend(file, fallback) {
+  const record = fs.existsSync(`${file}.json`) ? readJson(`${file}.json`) : null
+  const spec = record?.spec ?? {}
+  const shot = shots.find((x) => x.id === spec.shot)
+  if (spec.kind === 'film-overview') return `the whole film in ${spec.frames?.length ?? 'a few'} frames, every shot at least once`
+  if (spec.kind === 'shot' && shot) return shot.from && shot.to ? `the shot ${shot.id}: one sheet across the shake from ${shot.from} to ${shot.to}` : `the shot ${shot.id}: a hold on ${shot.season}`
+  return fallback
 }
 
 let session = null
@@ -320,7 +323,7 @@ const one = (file, what, legend, extra = {}) => ({ file, what, legend, ...extra 
 
 function sheetGroups(role, wanted, missing) {
   const groups = []
-  const seen = new Set()
+  const seen = new Map()
   for (const w of wanted) {
     if (!w.flags) {
       missing.push(`${w.what}: no tool makes this yet, so this part is empty`)
@@ -328,19 +331,33 @@ function sheetGroups(role, wanted, missing) {
     }
     const got = sheets(w.flags, w.what)
     if (got.missing) missing.push(got.missing)
-    const files = got.files.filter((f) => !seen.has(fileSha(f)))
-    files.forEach((f) => seen.add(fileSha(f)))
-    if (files.length) groups.push({ title: w.what, files: files.map((f, i) => one(f, `${w.what}, from node tools/sheet.mjs ${w.flags.join(' ')}: ${shown(f)}`, files.length > 1 ? `${w.what}, sheet ${i + 1} of ${files.length}` : w.what)) })
+    const list = w.order ? w.order(got.files) : got.files
+    const fresh = []
+    for (const f of list) {
+      const sha = fileSha(f)
+      if (seen.has(sha)) seen.get(sha).what += `. Also: ${w.what}`
+      else {
+        const item = one(f, `${w.what}, from node tools/sheet.mjs ${w.flags.join(' ')}: ${shown(f)}`, '')
+        seen.set(sha, item)
+        fresh.push(item)
+      }
+    }
+    fresh.forEach((item, i) => {
+      const plain = fresh.length > 1 ? `${w.what}, sheet ${i + 1} of ${fresh.length}` : w.what
+      item.legend = w.byRecord ? sheetLegend(item.file, plain) : plain
+    })
+    if (fresh.length) groups.push({ title: w.what, files: fresh })
   }
   return groups
 }
-const holdAfter = (shake) => shots[shots.indexOf(shake) + 1]
+const overviewFirst = (files) => [...files.filter((f) => readJson(`${f}.json`).spec?.kind === 'film-overview'), ...files.filter((f) => readJson(`${f}.json`).spec?.kind !== 'film-overview')]
+const wholeFilm = (flags) => ({ what: 'the whole film', flags, byRecord: true, order: overviewFirst })
 const sheetFlags = (...f) => [...f, '--tier', motionTier]
 
 async function buildBlockout(role) {
   const missing = []
   const draft = ['--tier', tier]
-  const groups = sheetGroups(role, [{ what: 'the whole film', flags: ['--film', ...draft] }, ...shakes.map((s) => ({ what: `one sheet across the shake ${s.id}`, flags: ['--shot', s.id, ...draft] }))], missing)
+  const groups = sheetGroups(role, [wholeFilm(['--film', ...draft]), ...shakes.map((s) => ({ what: `one sheet across the shake ${s.id}`, flags: ['--shot', s.id, ...draft] }))], missing)
   await open()
   const target = control(lockKey)
   const tile = tileFor(1, 2, target.height / target.width)
@@ -465,21 +482,21 @@ function buildR4(role) {
     const rest = holds.find((h) => h.season === unit)
     if (test) for (const m of ['lift', 'strokes', 'setdown', 'landing']) wanted.push({ what: `the ${m === 'setdown' ? 'set down' : m === 'landing' ? 'first second after the landing' : m} of the shake`, flags: sheetFlags('--motion', m, '--shot', shot) })
     wanted.push({ what: 'one sheet across the whole shake and the clearing that follows', flags: sheetFlags('--shot', shot) })
-    if (!test) wanted.push({ what: 'the arrival', flags: sheetFlags('--motion', 'arrival', '--shot', holdAfter(into).id) })
+    if (!test) wanted.push({ what: 'the arrival', flags: sheetFlags('--motion', 'arrival', '--shot', into.id) })
     wanted.push({ what: 'the globe at rest across several seconds', flags: sheetFlags('--shot', rest.id) })
   } else if (unit === 'change') {
     for (const s of shakes) {
-      wanted.push({ what: `the change ${s.from} to ${s.to}: across the swap window`, flags: sheetFlags('--motion', 'strokes', '--shot', s.id) })
-      wanted.push({ what: `the change ${s.from} to ${s.to}: from the landing through the arrival`, flags: sheetFlags('--motion', 'arrival', '--shot', holdAfter(s).id) })
+      wanted.push({ what: `the change ${s.from} to ${s.to}: across the swap window`, flags: sheetFlags('--motion', 'swap', '--fit', '--shot', s.id) })
+      wanted.push({ what: `the change ${s.from} to ${s.to}: from the landing through the arrival`, flags: sheetFlags('--motion', 'arrival', '--shot', s.id) })
     }
   } else if (unit === 'globe') {
     for (const w of ['a shake', 'a stir', 'a drag around the globe', 'a jump to another season']) wanted.push({ what: `${w}, drawn through the app's path` })
   } else {
-    wanted.push({ what: 'the whole film', flags: sheetFlags('--film') })
+    wanted.push(wholeFilm(sheetFlags('--film')))
     for (const s of shakes) wanted.push({ what: `one sheet across the shake ${s.id}`, flags: sheetFlags('--shot', s.id) })
     holds.forEach((h, i) => wanted.push({ what: i === 0 ? 'the opening pull back' : i === holds.length - 1 ? 'the last push in' : `the camera move in ${h.id}`, flags: sheetFlags('--motion', 'move', '--shot', h.id) }))
     wanted.push({ what: 'one sheet across the loop', flags: sheetFlags('--loop') })
-    wanted.push({ what: "the loop's seam, last frames then first frames" })
+    wanted.push({ what: "the loop's seam, last frames then first frames", flags: sheetFlags('--loop', '--seam') })
   }
   return { groups: sheetGroups(role, wanted, missing), missing }
 }
@@ -521,7 +538,7 @@ async function buildR5(role) {
     if (scr.files.length) groups.push(scr)
     missing.push("one sheet across a shake in the app: no tool makes this yet, so this part is empty")
   } else {
-    groups = sheetGroups(role, [{ what: 'the whole film', flags: sheetFlags('--film') }], missing)
+    groups = sheetGroups(role, [wholeFilm(sheetFlags('--film'))], missing)
     await open()
     const files = await frameGrid(role, judged.filter((e) => e.kind === 'film'), 'frames', 3, 3, 0, missing)
     if (files.length) groups.push({ title: "the film's judged frames in order", files })
@@ -622,7 +639,8 @@ async function emit(src, dest) {
 async function writeRole(role, built) {
   const max = cfg.critics.maxFilesPerMessage
   const parts = []
-  for (const g of built.groups) {
+  const whole = built.groups.flatMap((g) => (g.files.length > max && !g.settled && !g.files.some((f) => f.pair) ? chunks(g.files, max).map((files) => ({ ...g, files })) : [g]))
+  for (const g of whole) {
     if (g.files.length > max) throw new Error(`${role}: ${g.title} alone is ${g.files.length} files, over critics.maxFilesPerMessage`)
     const last = parts[parts.length - 1]
     if (last && last.count + g.files.length <= max) {
@@ -682,8 +700,12 @@ if (session) {
   await session.close()
 }
 if (stopped) {
-  console.log(`pack ${roundName}: stopped at sandbox.chunkBudgetMinutes before ${stopped}. Nothing was written to the pack folders. Run the same command again to carry on.`)
+  console.log(`pack ${roundName}: stopped at sandbox.chunkBudgetMinutes before ${stopped}. Nothing was written to the pack folders, and what was drawn is kept. Run the same pack command again to carry on.`)
   process.exit(0)
+}
+if (only && fs.existsSync(keyFile)) {
+  const prev = readJson(keyFile)
+  for (const r of Object.keys(prev.roles ?? {})) if (!roles.includes(r)) key.roles[r] = prev.roles[r]
 }
 for (const role of roles) {
   const built = results.get(role)
@@ -696,7 +718,7 @@ for (const role of roles) {
 }
 writeJson(keyFile, key)
 fs.rmSync(buildDir, { recursive: true, force: true })
-if (fs.readdirSync(path.dirname(buildDir)).length === 0) fs.rmdirSync(path.dirname(buildDir))
+if (fs.existsSync(path.dirname(buildDir)) && fs.readdirSync(path.dirname(buildDir)).length === 0) fs.rmdirSync(path.dirname(buildDir))
 const count = Object.values(key.roles).reduce((n, r) => n + r.parts.reduce((m, p) => m + p.files.length, 0), 0)
 const gaps = Object.values(key.roles).reduce((n, r) => n + r.missing.length, 0)
 console.log(`pack ${roundName}: ${count} files for ${roles.join(', ')}, ${gaps} parts missing · ${tier} · ${Math.round((Date.now() - started) / 1000)} s`)
