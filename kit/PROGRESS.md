@@ -25,27 +25,27 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 52 · 2026-11-24 19:59 UTC
+Status 53 · 2026-11-24 20:25 UTC
 
-- `out/stills/status/status-52-1.jpg`: The base: the approved image above and the build below. The 18 icicles are now measured one by one from the approved image
-- `out/stills/status/status-52-2.jpg`: The chimney and the pond: the approved image on the left and the build on the right. The plume is now a picture made from the approved plume
-- `out/stills/status/status-52-3.jpg`: Still: winter rest base, hd, final
+- `out/stills/status/status-53-1.jpg`: The build that Round 6 judges at the draft tier: at rest on the left and one second after the landing on the right. The storm is streaks along the roll now and the cottage and the tree read through it
+- `out/stills/status/status-53-2.jpg`: Still: winter landed hero, hd, draft
+- `out/stills/status/status-53-3.jpg`: Still: winter rest hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 20:20 UTC
-clock: phase 3, tick of 17.5 minutes
-phase 3: 11.89 h used of its 11.00 h box
-allowance (before the review): 18.50 h used of 36.00 h allowed
-all time before the review: 18.50 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 20:25 UTC
+clock: phase 3, tick of 4.9 minutes
+phase 3: 11.97 h used of its 11.00 h box
+allowance (before the review): 18.58 h used of 36.00 h allowed
+all time before the review: 18.58 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: reached
 budget report: not due
-minutes since the last status: 21
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -1151,3 +1151,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 19:20 to 19:40 UTC. Motion sheets of the lift and the set down drawn on the merged `main` at the draft tier (`out/work/sheets/motion-lift-test-preview-draft-1.jpg`, `motion-setdown-test-preview-draft-1.jpg`): the new path moves the globe visibly through the set down; the storm is a solid white fill from frame 108 to 130 and the tabletop frost is gone through those frames; the lift's height does not read in a tile. At 19:25, after the session was resumed, two pushes failed for want of a credential; `gate_runner` pushed `92a18c7` from a bundle at 19:28 and /root's own push worked again at 19:28 (decision 63). Ladder moves 6 to 10 and the base's move went to the closers at 19:19. Status 51 shown at 19:39 with the two sheets. No agent branch had moved by 19:38.
 
 - 19:40 to 20:01 UTC. Merged and green on `main` (`42c4f35`, 416 tests pass): the glass closer's cure of measure M1 (`ff73dc4`: an inside triangle with all three corners unseen through the glass is no longer drawn; a `winter-base` still at the final tier on the merge shows no pure green, cyan or yellow pixel, where Round 5's showed a speck), the village (`b939db8`: ladder move 9 done, the plume is a generated picture of the approved plume on a card; a new file `assets-full/winter/village-plume.lin.png`), the base (`0eb22eb`: 18 icicles measured one by one from the approved image), the tree (`876ec69`), the shake (`ebddaba`: the foot is level and 3.1 mm clear at frame 19). Decision 64: `shake.strokeMm` 24. Pushed after 19:58 and merged at the freeze: the light (`b465e56`: the bloom swells from frame 77 to 97, peaks to 100 and falls to 107; its core 8 times weaker) and the flakes (`1ec4f91`: the cream bank at the landing is gone, the drift is streak sheets along the liquid's roll). Status 52 shown at 20:00 with the base and the chimney beside the approved image (the builders' own looks).
+
+- 20:01 to 20:26 UTC. The Round 6 freeze. Merged after 20:01: flakes `1ec4f91`, liquid `d38e0c2`, light `b465e56`, frost `8e25585`, tree `c04dab8`, scene `21bea60`, glass `f6fc045`. The shake's and the liquid's closers both reported that the liquid's new engine with `shake.strokeMm` 24 fails one pin of `tests/engine-storm.test.ts`; decision 65 puts the value back to 22 and the suite is green (418 passed, 4 skipped, 0 failed). Every part made again, texpack, tsc clean, G8 green with 75 shipped files. The clock printed `extra rounds: yes` at 20:20. Draft stills of `rest` and `landed` looked at: at rest the crown carries broad snow blankets and the slab ends in the approved far corner; one second after the landing the storm is streaks along the roll and the cottage, lamp and tree read through it (Round 5: a cream bank that hid them). Built assets committed once as `2569976`, the commit Round 6 judges; the round's line pushed as `7977b88` before anything else. The four render agents have their orders (stills at the final tier, motion sheets, gate and measures). Published at 20:23 (Visibility: Organization; the check of the live page: first picture seen, 53 requests, no errors). Status 53 shown at 20:25 with the pair. The scene's closer reported that a clean checkout of `42c4f35` could not render ("texture is not prepared: winter/village-plume.lin.png") because built assets are committed once per round; cured by `2569976`, and all ten closers were told to merge it.
