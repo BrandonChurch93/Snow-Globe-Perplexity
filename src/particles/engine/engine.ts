@@ -25,6 +25,7 @@ const PUSHES = 3
 export const COVER_N = 96
 export const COVER_SPAN_MM = 2 * R
 export const COVER_CAP_MM = 4
+const COVER_PASSES = 3
 const COVER_CELL_MM2 = (COVER_SPAN_MM / COVER_N) * (COVER_SPAN_MM / COVER_N)
 const INV_FADE_IN = 1 / 1.4
 const INV_FADE_OUT = 1 / 0.7
@@ -653,14 +654,14 @@ export class ParticleEngine {
       const tx = fx - ix
       const tz = fz - iz
       const d = sizes[i]!
-      const v = loft * d * d * d * each
+      const v = loft * d * d * each
       const c = iz * COVER_N + ix
       heap[c] = heap[c]! + v * (1 - tx) * (1 - tz)
       heap[c + 1] = heap[c + 1]! + v * tx * (1 - tz)
       heap[c + COVER_N] = heap[c + COVER_N]! + v * (1 - tx) * tz
       heap[c + COVER_N + 1] = heap[c + COVER_N + 1]! + v * tx * tz
     }
-    for (let pass = 0; pass < 2; pass++) {
+    for (let pass = 0; pass < COVER_PASSES; pass++) {
       for (let j = 0; j < COVER_N; j++) {
         const row = j * COVER_N
         for (let i = 0; i < COVER_N; i++) {

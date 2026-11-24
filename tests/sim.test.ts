@@ -4,7 +4,7 @@ import { sampleSdf } from '../src/core/sdf'
 import type { ParticleSource } from '../src/core/stage'
 import { barSeconds, beatSeconds, stillTimeline, type Timeline } from '../src/film/timeline'
 import { LIQUID_LENGTH, LIQUID_TURBULENCE, LIQUID_TURN } from '../src/globe/liquid'
-import { makeShake } from '../src/shake/table'
+import { makeShake, REST_POSE, type GlobePose, type ShakePath } from '../src/shake/table'
 import { COVER_N, packSnapshot, ParticleEngine, STATE_HIDDEN, STATE_LIQUID, STATE_REST, STATE_SNAG, unpackSnapshot, WALL } from '../src/particles/engine/engine'
 import { countsIn, KINDS, POOL, SEASONS } from '../src/particles/engine/kinds'
 import { blockoutSdf, buildSdf, GROUND_Y, INNER_R, sdfSample } from '../src/particles/engine/sdf'
@@ -23,6 +23,38 @@ function swapTimeline(from: string, to: string): Timeline {
 }
 
 const idle = (season: string): Timeline => ({ id: `idle:${season}`, startSeason: season, events: [] })
+
+const TURN_PEAK_FLOOR = 1.1
+const TURN_AFTER_FLOOR = 0.45
+
+function rockingTimeline(season: string, degrees: number): Timeline {
+  const s = config.shake
+  const bar = config.film.beatsPerBar
+  const liftEnd = s.liftBeats
+  const strokesEnd = s.liftBeats + s.strokeBeats
+  const smooth = (t: number): number => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t))
+  const n = Math.round(s.strokes)
+  const lateral = (beat: number): number => {
+    if (beat <= liftEnd || beat >= strokesEnd) return 0
+    const u = (beat - liftEnd) / (strokesEnd - liftEnd)
+    const f = u * (0.6 + 0.4 * u) * n
+    const i = Math.min(n - 1, Math.floor(f))
+    return (i % 2 === 0 ? 1 : -1) * s.strokeMm * Math.sin(Math.PI * (f - i)) * smooth(u / 0.08) * smooth((1 - u) / 0.1)
+  }
+  const path: ShakePath = {
+    standIn: true,
+    parts: { liftEnd, strokesEnd, landing: bar },
+    poseAt(beat: number): GlobePose {
+      if (beat <= 0 || beat >= bar) return REST_POSE
+      const lift = beat < liftEnd ? smooth(beat / liftEnd) : beat < strokesEnd ? 1 : 1 - ((beat - strokesEnd) / s.setDownBeats) ** 2
+      const rate = (lateral(beat + 0.02) - lateral(beat - 0.02)) / 0.04
+      const tilt = (Math.max(-1, Math.min(1, rate / (s.strokeMm * 6))) * degrees * Math.PI) / 180
+      const x = lateral(beat)
+      return { x, y: s.liftMm * lift, z: x * 0.3, tiltX: tilt * 0.18, tiltZ: -tilt }
+    },
+  }
+  return { id: `rock:${season}`, startSeason: season, events: [{ id: `rock:${season}`, startSec: 0, from: season, to: season, path }] }
+}
 
 function same(a: ParticleEngine, b: ParticleEngine): void {
   expect(b.step).toBe(a.step)
@@ -336,11 +368,7 @@ describe('the simulation', () => {
     expect(snagged).toBeGreaterThan(seeds * 0.1)
     expect(snagged).toBeLessThan(seeds)
   }, 120000)
-  it('carries what hangs in the liquid round with it, not out against the glass', () => {
-    const e = new ParticleEngine({ season: 'summer', fraction: 0.2 })
-    e.reset()
-    const tl = stillTimeline('summer')
-    const mote = e.kinds.indexOf('mote')
+  describe('what hangs in the liquid goes round with it, not out against the glass', () => {
     const even = { glass: 0, core: 0, n: 0 }
     for (let x = -WALL; x <= WALL; x += 1.5) {
       for (let y = GROUND_Y; y <= WALL; y += 1.5) {
@@ -353,7 +381,8 @@ describe('the simulation', () => {
         }
       }
     }
-    const shares = (): { glass: number; core: number } => {
+    const shares = (e: ParticleEngine): { glass: number; core: number } => {
+      const mote = e.kinds.indexOf('mote')
       let n = 0
       let glass = 0
       let core = 0
@@ -366,18 +395,39 @@ describe('the simulation', () => {
       }
       return { glass: (glass / n) * (even.n / even.glass), core: (core / n) * (even.n / even.core) }
     }
-    let peak = 0
-    for (const beat of [2, 3, 4]) {
-      e.advanceTo(steps(beat * beatSeconds), tl)
-      peak = Math.max(peak, Math.hypot(e.liquid[LIQUID_TURN]!, e.liquid[LIQUID_TURN + 1]!, e.liquid[LIQUID_TURN + 2]!))
-      const now = shares()
-      expect(now.glass).toBeLessThan(1.8)
+    const turn = (e: ParticleEngine): number => Math.hypot(e.liquid[LIQUID_TURN]!, e.liquid[LIQUID_TURN + 1]!, e.liquid[LIQUID_TURN + 2]!)
+    const run = (tl: Timeline): { peak: number; after: number; upright: number } => {
+      const e = new ParticleEngine({ season: 'summer', fraction: 0.2 })
+      e.reset()
+      let peak = 0
+      for (let quarter = 8; quarter <= 16; quarter++) {
+        e.advanceTo(steps((quarter / 4) * beatSeconds), tl)
+        peak = Math.max(peak, turn(e))
+        if (quarter % 4 === 0) expect(shares(e).glass).toBeLessThan(1.8)
+      }
+      e.advanceTo(steps(5 * beatSeconds), tl)
+      const after = turn(e)
+      const upright = Math.abs(e.liquid[LIQUID_TURN + 1]!) / after
+      e.advanceTo(steps(barSeconds + config.states.restSeconds), tl)
+      const rest = shares(e)
+      expect(rest.glass).toBeLessThan(1.3)
+      expect(rest.core).toBeGreaterThan(0.6)
+      expect(turn(e)).toBeLessThan(0.01)
+      return { peak, after, upright }
     }
-    expect(peak).toBeGreaterThan(2)
-    e.advanceTo(steps(barSeconds + config.states.restSeconds), tl)
-    const rest = shares()
-    expect(rest.glass).toBeLessThan(1.3)
-    expect(rest.core).toBeGreaterThan(0.6)
+
+    it('under the real shake, which leaves the liquid turning about the upright axis', () => {
+      const { peak, after, upright } = run(stillTimeline('summer'))
+      expect(peak).toBeGreaterThan(TURN_PEAK_FLOOR)
+      expect(after).toBeGreaterThan(TURN_AFTER_FLOOR)
+      expect(after).toBeLessThan(peak)
+      expect(upright).toBeGreaterThan(0.97)
+    })
+
+    it('and under a hand that rocks the globe 14 degrees, which turns it faster than 2 rad/s', () => {
+      const { peak } = run(rockingTimeline('summer', 14))
+      expect(peak).toBeGreaterThan(2)
+    })
   })
 })
 
