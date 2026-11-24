@@ -561,7 +561,7 @@ Merged into `main`, each verified here with types clean and the tests green (126
 
 One line per round: its number, the unit, the commit it judged, each part ticked off as it finished, the scores, and what changed next.
 
-- Round 1 · blockout (Phase 2, the floor round) · judges commit `48afed3` · started 2026-11-24 06:36 UTC. Parts: [x] build · [x] machine checks (06:50: G1 to G12 and G14 green on the judged build `e4a8b9bdbc7a55ec`; D2 and D3 are red until step 14) · [ ] measures · [ ] pack · [ ] critic part 1 · [ ] critic part 2 · [ ] issues read · [ ] fixes · [ ] logged
+- Round 1 · blockout (Phase 2, the floor round) · judges commit `48afed3` · started 2026-11-24 06:36 UTC. Parts: [x] build · [x] machine checks (06:50: G1 to G12 and G14 green on the judged build `e4a8b9bdbc7a55ec`; D2 and D3 are red until step 14) · [x] measures (06:51: M1 and M6 on seven winter stills, 14 lines, 0 red) · [ ] pack · [ ] critic part 1 · [ ] critic part 2 · [ ] issues read · [ ] fixes · [ ] logged
 
 ## Final scores
 
