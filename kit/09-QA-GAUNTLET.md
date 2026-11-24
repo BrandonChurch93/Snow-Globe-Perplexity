@@ -22,7 +22,7 @@ The gauntlet runs at most `quality.gauntletMaxPasses` times. An item that still 
 11. Every judged still and frame on the list in `kit/PROGRESS.md` exists with a record that matches the frozen build.
 12. Measures M1 to M6 were run on the frozen build and their numbers are in the record round's scorecard.
 13. No frame of film B, of the loop, or of a still without `interface` holds an interface pixel, text or a logo. Evidence: G5, and one look at the whole film sheets.
-14. No stand-in is loaded in any season, in any frame of either film or in the loop. Evidence: `info().standIns` is empty in each season and for the opening and the loop, and G13 is green for every unit.
+14. No stand-in is loaded in any season, in any frame of either film or in the loop. Evidence: G13 is green with every part covered, `info().standIns` is empty in each season and for the opening and the loop, and the `standins` view of every judged still and frame shows no flagged pixel.
 15. No person, hand, face, readable text, brand or logo appears in any judged still. Evidence: one look at every judged still, and the R3 answers of the record round.
 16. The dark backdrop is smooth in every at-rest still. Evidence: an enlarged crop of the backdrop from each, with no block grid and no banding.
 
@@ -36,7 +36,7 @@ The gauntlet runs at most `quality.gauntletMaxPasses` times. An item that still 
 
 ## The films, the sound and the card
 
-22. Film B's preview exists as `export.files.previewB`, has the frame count of the cut list at `film.previewFps`, and carries sound. Evidence: `ffprobe`.
+22. Film B's preview exists as `export.files.previewB`, has the frame count of the cut list at `film.previewFps`, and carries sound if any sound exists. Evidence: `ffprobe`.
 23. Film A's preview exists as `export.files.previewA`: the opening, then film B unchanged. The opening shows the prompt in `intro.prompt` typed at a readable speed, the reasoning level set to `intro.reasoning`, the send, and the build screen with every line of `intro.steps`. Evidence: `ffprobe`, and the sheet across the opening.
 24. Frame 0 of film B shows no edge of the glass. The frame at `film.revealBySeconds` does. Evidence: both frames.
 25. The last frame's camera is frame 0's camera. Evidence: `filmState` of both.

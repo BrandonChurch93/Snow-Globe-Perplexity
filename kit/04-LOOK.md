@@ -73,7 +73,7 @@ Study the six real photographs listed in `references/drafts/round2/NOTES.md` bef
 | View | Shows |
 | --- | --- |
 | `ids` | Which part each pixel belongs to, as flat colours |
-| `standins` | Every stand-in in one loud colour |
+| `standins` | Every stand-in, each in a flat loud colour of its own part, so a check can count one part's pixels |
 | `albedo` | Colour with no light |
 | `normals` | Surface direction |
 | `depth` | Distance, with the refraction applied |

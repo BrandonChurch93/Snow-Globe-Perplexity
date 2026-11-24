@@ -73,7 +73,7 @@ What to change:
 
 ### When the sound and the globe are right
 
-Replace the lines in angle brackets. If you would rather use your own audio file, attach it and write "my own file".
+Replace the lines in angle brackets. If you would rather use your own audio file, attach it and write "my own file" on the Soundtrack line. Your file is only used as the music when that line says so.
 
 ```
 BUILD MODE.
@@ -91,6 +91,7 @@ Speed results, if you ran the speed page:
 <paste them, or leave this out>
 ```
 
+- If the repo is still public, the `REVIEW` message has one archive of the sounds attached. Attach that same file to this prompt, and to any review notes prompt, so the build works with the sounds you heard.
 - The first status after this says, in its first line, which soundtrack the films are being cut to.
 - There is no second stop. Anything in your notes that cannot be done inside the limits is listed at the end.
 

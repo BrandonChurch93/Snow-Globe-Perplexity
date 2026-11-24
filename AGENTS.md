@@ -68,7 +68,7 @@ The budget report comes before all of it. When the report is due you stop, even 
   2. Fix work. When the clock prints `extra rounds: no` during fix work between rounds, finish the one fix in hand and close the loop. After a floor round there is always one fix pass of at most `budget.floorFixMinutes`, even when no extra round is left, so a floor round is never wasted.
   3. First round. A unit goes to its first round as soon as none of it is a stand-in. Once the clock prints `half point: reached`, no polishing is allowed on a unit before that round.
   4. Fallback. Once the clock prints `box end: reached`, every part of a unit that is still a stand-in is finished with its fallback from `kit/03-METHOD.md`, logged as an open item, and the unit goes to its round. The fallback chain there has three steps and its last step can always be made, so this always ends. A stand-in is never logged away, never relabelled and never shipped.
-- Rules 3 and 4 apply in the phases that build units: Phase 3 and Phase 4. In Phase 2 everything is a stand-in on purpose.
+- Rules 3 and 4 apply in every phase that builds a unit: Phases 3 to 6. In Phase 5 they cover the parts of `globe`, and in Phase 6 the parts of `film`. In Phase 2 everything is a stand-in on purpose.
 - The clock never changes a threshold, a sample count or the judged list.
 
 ### The budget report
@@ -80,7 +80,7 @@ Brandon set `budget.runHours` as the most this build may run before the review s
 - Once "Review" says `waiting`, the review stop is the stop. No budget report is filed on top of it. Approving the review starts the second allowance from zero.
 - Stop starting things: no new round, no new numbered step, no new agent, no new job. Within `budget.wrapUpMinutes`, bring the code to a state that builds, collect what running agents and jobs have pushed, stop them, and log exactly where each piece of work stands. Do not try to finish the step.
 - Units and phases keep the state they are really in. A unit that is not finished stays `in progress`.
-- Then: run `npm run status` with the pictures that already exist, rendering nothing new, write `reported` under "Budget" and the filled-in block under "Last report block" in `kit/PROGRESS.md`, commit, push, publish, and end the task with the `BUDGET REPORT` block from `kit/08-BUILD-ORDER.md`.
+- Then: run `npm run status -- --no-render`, which uses the pictures that already exist, write `reported` under "Budget" and the filled-in block under "Last report block" in `kit/PROGRESS.md`, commit, push, publish, and end the task with the `BUDGET REPORT` block from `kit/08-BUILD-ORDER.md`.
 - A task that starts while "Budget" says `reported` looks for the line `Continue past the budget.` in its prompt. With it: run `npm run clock -- --continue N`, log "Continuation N", write `running` and carry on exactly where the build stopped. Without it: print the block under "Last report block" again and build nothing.
 - N is "Continuations" in `kit/PROGRESS.md` plus one. Write the new count back.
 - A continuation adds `budget.continueHours`. Before the review the clock gives the phases from 0 to 5 that are not done new boxes out of those hours. After the review Phase 6 gets all of them. Every clock rule applies as before. When the clock prints `budget report: due` again, report again the same way.
@@ -91,9 +91,9 @@ Nothing waits without a limit, and waiting is polling. While you wait for a job,
 
 - Jobs. Every long job is written under "Running jobs" in `kit/PROGRESS.md` with the time the render budget says it should take. Poll it. Past `budget.jobOverrunFactor` times that, stop it, log it and start it once more in smaller chunks or on a sandbox agent. After a second overrun it becomes an open item and the best output that exists is used. If the job was a judged still, render it at the highest tier that finishes, say so in its record, and the unit cannot pass in that round.
 - A job of a kind the render budget table does not list yet, an install, a download, a bake, a first simulation cache, is given `budget.defaultJobMinutes` as its expected time, and its real time is added to the table when it ends.
-- Agents. Write every agent under "Running agents" in `kit/PROGRESS.md` when it starts. A render agent's limit is the time the render budget gives its job, times `budget.jobOverrunFactor`. A critic, a listener or a lookup has `budget.agentWaitMinutes`. A build agent has a heartbeat: at least every `budget.statusMaxGapMinutes` it pushes its work to its own branch and its newest looks to a second branch named `agent/<folder>-looks`. A looks branch is only ever fetched. It is never merged, so those pictures never enter the history of `repo.branch`. A build agent that has pushed nothing for `budget.agentWaitMinutes`, and any other agent past its limit, is replaced once, starting from what the first one pushed. If the replacement fails too, do the work yourself, or drop it and log it when nothing else depends on it.
+- Agents. Write every agent under "Running agents" in `kit/PROGRESS.md` when it starts. A render agent's limit is the time the render budget gives its job, times `budget.jobOverrunFactor`. A critic, a juror, a listener or a lookup has `budget.agentWaitMinutes`. Every agent's brief states its time limit and tells it to return what it has when the limit is reached. A build agent has a heartbeat: at least every `budget.statusMaxGapMinutes` it pushes its work to its own branch and its newest looks to a second branch named `agent/<folder>-looks`. A looks branch is only ever fetched. It is never merged, so those pictures never enter the history of `repo.branch`. A build agent that has pushed nothing for `budget.agentWaitMinutes`, and any other agent past its limit, is replaced once, starting from what the first one pushed. If the replacement fails too, do the work yourself, or drop it and log it when nothing else depends on it.
 - A build agent also has a total limit of `budget.buildAgentMaxHours` of wall-clock time. At that limit you take what it has pushed as it stands and stop it. What it left unfinished follows the stand-in and fallback rules like anything else.
-- You must be able to tick the clock and post a status while agents work. Phase 0 tests this. If starting an agent blocks you until it returns, give every agent a job short enough to end inside `budget.statusMaxGapMinutes` less `status.minGapMinutes`, and chain longer work through the agent's branch, one short agent after another.
+- You must be able to tick the clock and post a status while agents work. Phase 0 tests this. If starting an agent blocks you until it returns, give every agent a job short enough to end inside `budget.statusMaxGapMinutes` less `status.minGapMinutes`, and chain longer work through the agent's branch, one short agent after another. A critic, a juror, a listener or a lookup cannot be chained, so in that case each is given that same shorter time in place of `budget.agentWaitMinutes`, one that runs past it counts as not having answered, and you post every status that is due between one agent and the next.
 - Agents do not survive the end of a task. A new task fetches the branch of every agent listed under "Running agents", takes what it pushed, and starts a new agent for what is left.
 - A critic that never answers is logged as missing. Its part of the pass bar does not hold in that round.
 - Tools. A failing tool call gets `budget.toolRetryMax` tries, then a substitute or an open item.
@@ -108,10 +108,12 @@ Stop only for one of these:
 
 1. The reference images are not approved. Check this before anything else in every task: `references/approved/MANIFEST.sha256` exists, every image named in `keys` in the config exists, and every listed hash matches. If not, stop with exactly: `BLOCKED: the reference images are not approved.`
 2. The budget report, as "The budget report" above describes.
-3. The review stop. There is exactly one, at the Phase 5 gate. "Review" in `kit/PROGRESS.md` holds `not reached`, `waiting` or `approved`. At that gate you write `waiting` and end the task with the `REVIEW` block from `kit/08-BUILD-ORDER.md`. A task that starts on `waiting` reads its prompt:
+3. The review stop. There is exactly one, at the Phase 5 gate. "Review" in `kit/PROGRESS.md` holds `not reached`, `waiting`, `approving` or `approved`. At that gate you write `waiting` and end the task with the `REVIEW` block from `kit/08-BUILD-ORDER.md`. A task that starts on `waiting` reads its prompt:
    - With the line `The review is done.`: do what "After the review" in `kit/08-BUILD-ORDER.md` says and carry on to Phase 6.
    - With the line `Review notes.`: this is a review round. Brandon has listened and looked, and wants changes before he approves. Do what "A review round" in `kit/08-BUILD-ORDER.md` says, inside `budget.reviewRoundHours`, then end the task with the `REVIEW` block again. "Review" stays `waiting`. Brandon may send as many review rounds as he likes. Each one is a bounded piece of work that he starts, so none of them is a loop of yours.
    - With neither line: show the stored block again and build nothing.
+
+   A task that starts on `approving` carries the approval on from where it stopped, as "After the review" in `kit/08-BUILD-ORDER.md` says, whatever its prompt says.
 
    There is no second review stop. Once the review is approved nothing asks for Brandon again before `BUILD COMPLETE`.
 4. A true blocker. Only these count:
@@ -185,7 +187,8 @@ Measured in earlier builds in this kind of workspace, November 18 to 23, 2026. M
 
 - Remote: `repo.url`. Branch: `repo.branch`.
 - Commit after every meaningful step. Push as "Showing the work" says.
-- Never force push, rewrite pushed history or delete a remote branch.
+- Never force push or rewrite pushed history. Never delete a remote branch, with one exception: an agent's looks branch, and an agent's branch that carried only render chunks, is deleted once that agent is done and what it carried has been copied out.
+- A looks push holds at most `status.maxPictures` new pictures, each resized to `status.pictureLongEdgePx` on its long edge.
 - Brandon's review notes are pushed to `repo.branch` as addenda while you work. Fetch and merge `repo.branch` from the remote at the start of every phase, before you read `kit/addenda/`, and before every push. Merge, never rebase. If a push is rejected, fetch, merge and push once more. If it is rejected again, log it and try at the next commit.
 - Clone shallow.
 - No file over `repo.maxFileMb` megabytes. No push over `repo.maxPushGb` gigabytes: push more often if one would be.

@@ -28,14 +28,14 @@ They test the code and the files, not the picture. They are cheap and they run o
 | G10 | The app needs only WebGL2 core and the extensions marked portable in `config/webgl-caps.json`. Where it uses float targets it has a half float path | Phase 0 |
 | G11 | The change stays in its window. Read from `filmState` for every frame of the film: every seasonal part's change is 0 or 1 outside the swap windows, and the same holds for the test shake of `winter` and for the loop, where nothing changes at all | Phase 2 |
 | G12 | Landings. Read from `filmState`: in every shake the globe's height is above zero from the end of the first beat until the landing frame, the landing frame is a bar line of the cut list, and the camera is at `hero` on the first frame of every shake | Phase 2 |
-| G13 | Stand-ins. No part in `parts/PARTS.json` that belongs to a unit marked `finished` in `kit/PROGRESS.md` is a stand-in, by the tests in `kit/05-ARCHITECTURE.md` | Phase 3 |
+| G13 | Stand-ins. No part that it covers is a stand-in, by the three tests in `kit/05-ARCHITECTURE.md`. It covers every part of the unit a round is about, in that round; every part of a unit marked `finished` in `kit/PROGRESS.md`; from the first round on `globe` in Phase 5, every part outside the `film` unit; and from the first round on `film` in Phase 6, every part there is | Phase 3 |
 | G14 | The loop's seam. The loop frame one past the last is pixel-identical to frame 0 | Phase 2 |
 | G15 | Memory and counts. `info().textureMb` is at or under `assetSets.<set>.maxTextureMb` for both asset sets in every season, and `info().counts` is within `perf` for every level of `live.quality` | Phase 3 |
 | G16 | Hosting. `npm run hostcheck` is inside every limit in `host`, and the built site opens in `live` mode | Phase 5 |
 
 - A red machine check is a bug. Fix it before critics see the round.
 - If a machine check is still red after `quality.gateFixMaxAttempts` attempts in one round, or in one phase when no round is running, log it as a severe open item. A round goes on to the critics if pictures can still be rendered, and ends there if they cannot. A phase goes on to its next step.
-- G13 is the one exception. A stand-in is never logged away. A red G13 is fixed by finishing the part with its fallback from `kit/03-METHOD.md`. That chain has three steps, and its last step can always be made, so G13 can always be brought to green.
+- G13 is the one exception. A stand-in is never logged away. A red G13 is fixed by finishing the part with its fallback from `kit/03-METHOD.md`. That chain's last step can always be made, so G13 can always be brought to green. Changing a part's label in the register never turns it green: the file hash and the `standins` view are tested too.
 
 ### Measures
 
@@ -61,10 +61,10 @@ They test files that take long to make. They run only where `kit/08-BUILD-ORDER.
 | Id | Check | Checked at the end of |
 | --- | --- | --- |
 | D1 | `out/roughcut.mp4` exists, at the `formats.preview` size, with the frame count of the default grid at `film.previewFps` | Phase 1 |
-| D2 | A preview of film B exists as `export.files.previewB` under `out/` and was rendered from the phase's final build. `ffprobe` reports `film.previewFps`, the `formats.preview` size and the right number of frames. The file is under `repo.maxFileMb` | Phases 2 and 6 |
+| D2 | A preview of film B exists as `export.files.previewB` under `out/` and was rendered from the phase's final build. `ffprobe` reports `film.previewFps`, the `formats.preview` size and the right number of frames. In Phase 6 it carries a sound stream if any sound exists. The file is under `repo.maxFileMb` | Phases 2 and 6 |
 | D3 | The local render proof exists from the phase's final build, as `kit/05-ARCHITECTURE.md` defines it. In Phase 2 for film B only. In Phase 6 for film B and the opening | Phases 2 and 6 |
 | D4 | One review cut exists for each candidate that could be made, as `kit/01-FILM.md` defines it, with a sound stream. If no candidate could be made, one review cut exists without music | Phase 5 |
-| D5 | A preview of film A exists as `export.files.previewA` under `out/`: the opening followed by film B, with the final mix | Phase 6 |
+| D5 | A preview of film A exists as `export.files.previewA` under `out/`: the opening followed by film B, with the final mix if any sound exists | Phase 6 |
 | D6 | `deliver/` holds the card loop, its web copy and the card still. `ffprobe` reports `deliver.cardLoop.fps`, the right number of frames and the right sizes. The still is frame 0 | Phase 6 |
 
 - A deliverable check that stays red after three tries is logged as a failed item and the phase goes on. In Phase 6 it is listed under "Failed QA items". It does not hold the build open.

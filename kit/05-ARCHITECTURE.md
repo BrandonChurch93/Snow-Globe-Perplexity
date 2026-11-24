@@ -55,7 +55,7 @@ One owner per folder. `src/seasons/<season>/` is split so three agents can build
 
 - `src/config.ts` imports `config/showcase.json`, validates it and exports it typed.
 - No other file contains a number, an id, a name or an approved image path that the config holds.
-- Startup fails loudly if a key is missing, if a shot, a key or a still names a season or a camera that does not exist, if `budget.phaseHours` does not add up to `budget.runHours`, if `shake.liftBeats`, `shake.strokeBeats` and `shake.setDownBeats` do not add up to `film.beatsPerBar`, if `shake.swapWindow` does not lie inside the strokes, if a shake's `from` is not the season of the hold before it or its `to` not the season of the hold after it, if `film.fps` is not a whole multiple of `film.previewFps` and of `deliver.cardLoop.fps`, or if an approved image is missing.
+- Startup fails loudly if a key is missing, if a shot, a key or a still names a season or a camera that does not exist, if `budget.phaseHours` does not add up to `budget.runHours`, if `shake.liftBeats`, `shake.strokeBeats` and `shake.setDownBeats` do not add up to `film.beatsPerBar`, if `shake.swapWindow` does not lie inside the strokes, if a shake's `from` is not the season of the hold before it or its `to` not the season of the hold after it, if `film.fps` is not a whole multiple of `film.previewFps` and of `deliver.cardLoop.fps`, if `deliver.cardLoop.shakeStartSeconds` plus one bar at `film.defaultBpm` plus `shake.spinDownSeconds` is not less than `deliver.cardLoop.seconds`, or if an approved image is missing.
 - A camera in `cameras` is a lens angle, a distance from its aim point, a turn around the globe, a height above the horizon, and the height of its aim point above the surface on the globe's axis.
 - A handful of values are the Builder's to tune and write back: everything under `cameras`, inside the checks of `kit/02-SUBJECT.md` section 9; each count in `particles`, inside `particles.tuneMin` and `particles.tuneMax`; `scene.bokehLights`; `shake.strokes`, `shake.liftMm`, `shake.strokeMm` and `shake.tiltDeg`, each by up to a quarter either way; and what each level of `live.quality` draws. Log each change. Two more values may move, each in one direction only: the map sizes under `assetSets.web` may be lowered to fit `host`, and `critics.maxImageLongEdgePx` may be lowered in Phase 0. Nothing else in the config is yours to change.
 
@@ -97,7 +97,10 @@ A computed picture is a pure function of what it shows, the format, the tier, th
 - In `live`, `defaultSeason` loads first, then the others behind it in the order of `seasons`.
 - Once a texture is uploaded, its decoded source is released.
 - A stand-in is never silent. `parts/PARTS.json` is the register of every part, as `kit/03-METHOD.md` defines it. `info().standIns` is every part whose state is `stand-in`, with its unit.
-- Check G13 reads the register and does not take its word alone. It is red if a part of a finished unit is `stand-in`, or if a part marked `built` still has the file hash Phase 2 recorded for its stand-in.
+- Check G13 does not take the register's word alone. For every part it covers, as `kit/07-QUALITY-BAR.md` says which, it makes three tests, and it is red if any fails:
+  1. The part's state in the register is not `stand-in`.
+  2. The hash of the part's files differs from the hash recorded when it was a stand-in. This holds for every state, `fallback`, `general fallback` and `last resort` included, so changing a label changes nothing. Finishing a part always changes its files, if only because its stand-in flag is removed, so a part that is really finished always passes.
+  3. The `standins` view shows no pixel flagged for that part in any judged still or frame, and the page reports no flagged code path for that part. Pixels and code paths flagged for other parts do not count against it.
 
 ## The frame interface
 
@@ -168,14 +171,14 @@ Scripts in `tools/`, run through npm.
 | `npm run crops -- --key ID` | Grids of native-size crops, each with a long edge of at most `critics.maxImageLongEdgePx`: the glass at its shoulder and its rim, the cottage, the tree's crown, the pond, particles near and far, the base, the collar, the foot and its mirror image, the dressing |
 | `npm run compare -- --key ID` | A comparison image `compare-<key>.jpg`: the approved image beside the key's still, both cropped to the globe, the base and the surface around them at the same size, and under them matching native-size crops |
 | `npm run measure -- --unit ID` | Every measure for that unit, as `kit/07-QUALITY-BAR.md` defines them |
-| `npm run sheet -- --shot ID --tier T` | A contact sheet of `critics.contactSheetFrames` frames across a shot. `--film` gives sheets across the whole film. `--loop` gives one across the card loop. `--opening` gives one across film A's opening. `--motion NAME` gives consecutive frames of a shake's lift, strokes, set down or first second after landing, of an arrival, or of a camera move |
+| `npm run sheet -- --shot ID --tier T` | A contact sheet of `critics.contactSheetFrames` frames across a shot. `--film` gives sheets across the whole film. `--loop` gives one across the card loop. `--opening` gives one across film A's opening. `--seasons` puts the four at-rest keys' stills on one sheet. `--motion NAME` gives consecutive frames of a shake's lift, strokes, set down or first second after landing, of an arrival, or of a camera move |
 | `npm run seq -- --first N --last M --tier T` | Every film frame from N to M as separate pictures |
 | `npm run sound -- --cue ID --file F` | Measures a take the Builder got from the sound tool and files it. `--keep` runs the chain in `kit/03-METHOD.md` section 12 and writes the kept take with its record. `--pack` builds what the app ships. `--sheet` draws the kept sounds as waveforms on one picture |
 | `npm run audiomap -- --file F` | The map of a piece of music. For the approved music it writes `cut/AUDIO-MAP.json`. See below |
 | `npm run cut` | `cut/CUTLIST.json` and `cut/CUES.md` from `film.shots` and the audio map or the default grid |
 | `npm run mix -- --candidate NAME` | One soundtrack laid on the cut list. `--final` mixes the approved one for film B and for film A |
 | `npm run film -- --which b --tier T --format F` | A film as `out/work/film-<which>-F-T.mp4`, with its sound if there is any. Takes `--first` and `--last`. `--shot ID` renders one shot's chunk. `--join` joins the chunks that exist. `--from-hd` makes the `formats.preview` copy by scaling down a `formats.hd` film of the same build. `--review` makes the review cut |
-| `npm run loop -- --tier T` | The card loop, its web copy and the card still under `out/work/loop/` |
+| `npm run loop -- --tier T --format F` | The card loop, its web copy and the card still under `out/work/loop/`. Takes `--first` and `--last` to render a range, and `--join` to join the ranges that exist, so the loop can be split across sandbox agents |
 | `npm run stress` | For two holds and two shakes, half a second of film at `formats.hd`, encoded at `export.bitrateMbps` and again at `quality.compressionStressMbps`, with stills from both |
 | `npm run pack -- --phase N --round R --unit ID` | The critic packs for a round |
 | `npm run look -- --add FILE --caption TEXT --by NAME` | Adds a picture to the look log |
@@ -215,7 +218,7 @@ Rules:
 - `npm run clock -- --start` marks the start of a task. It adds no time, and the next tick counts from it. A tick made on a different machine boot from the last one is treated the same way, so a forgotten `--start` cannot count the time between two tasks.
 - `npm run clock -- --phase N` is a tick. It adds the whole time since the previous tick or start to phase N.
 - `npm run clock -- --review-round N` ticks review round N. The first tick of a round opens it with `budget.reviewRoundHours`. Its time is kept apart from both allowances. It prints the time used in the round out of the time allowed, and `extra rounds: yes` or `no`, which is no once those hours are used. It never prints `budget report: due`.
-- `npm run clock -- --review` records that the review was approved. From then on the allowance in force is `budget.afterReviewHours`, counted from zero, and Phase 6 has all of it as its box.
+- `npm run clock -- --review` records that the review was approved. From then on the allowance in force is `budget.afterReviewHours`, counted from zero, and Phase 6 has all of it as its box. A second call changes nothing.
 - `npm run clock -- --continue N` records continuation N, where N is "Continuations" in `kit/PROGRESS.md` plus one. The Builder writes the new count back. Before the review it gives each of Phases 0 to 5 that is not `done` a new box: `budget.continueHours` split in proportion to those phases' boxes in `budget.phaseHours`. After the review it gives Phase 6 all of `budget.continueHours`. From then on the lines below are measured from the start of the continuation against the new boxes.
 - `npm run clock -- --extension N` ticks an extension after completion. Its time is kept apart from the build's. It prints the time used in the extension out of `budget.extendHours`, and `extra rounds: yes` or `no`, which is no once those hours are used. It never prints `budget report: due`.
 - A tick with `--phase N` prints, in plain words:
@@ -241,6 +244,7 @@ Rules:
   4. Writes them to `out/stills/status/`, replacing the last set, with `STATUS.md` holding the captions and the time.
   5. Writes whatever file the inline display method from Phase 0 needs under `out/work/status/`.
   6. Prints the lines of the status message, including the time used out of the time allowed.
+  - With `--no-render` it renders nothing and uses only pictures that already exist. With `--no-tick` it does not tick the clock. The pictures above a `REVIEW` block use both. The pictures above a `BUDGET REPORT` block use `--no-render`.
 - The Builder then shows the gallery in the thread and posts the lines, as "Showing the work" in `AGENTS.md` says.
 
 ## The rough cut
@@ -328,6 +332,6 @@ Brandon reviews on a tablet. He needs one link where everything plays.
 - The shake: the path starts and ends at rest height, touches the surface on the landing and not before, and its three parts have the lengths the config gives.
 - Film: the shots fill the film with no gap or overlap, every shake is one bar, every landing is on a bar line of the grid or the map, every part's change lies inside its swap window, the camera is at `hero` at the start of every shake, and the judged frame list follows its rule.
 - The loop: every period divides the loop length, and every particle's path closes.
-- The clock: `--start` adds nothing, a tick on a new machine boot adds nothing, every other gap is counted in full, `--review` starts the second allowance, a review round's time touches neither allowance, the reserve switches `extra rounds` at the right moment, `--continue` gives the unfinished phases new boxes, and each printed line switches at the right moment.
+- The clock: `--start` adds nothing, a tick on a new machine boot adds nothing, every other gap is counted in full, `--review` starts the second allowance and a second `--review` changes nothing, a review round's time touches neither allowance, the reserve switches `extra rounds` at the right moment, `--continue` gives the unfinished phases new boxes, and each printed line switches at the right moment.
 - Sampler: sequences are deterministic and cover the pixel, the shutter and the lens.
 - The mix: the same inputs give the same bytes.

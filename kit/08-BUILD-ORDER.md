@@ -21,7 +21,8 @@ Every loop below has a limit in `kit/07-QUALITY-BAR.md`. The clock rules and the
 5. Look at "Build", "Review", "Review round" and "Budget" in `kit/PROGRESS.md`, in this order:
    - "Build" says `complete`: follow stop condition 5 in `AGENTS.md`.
    - "Build" says `extension N in progress`: carry that extension on from the step after "Extension step", as "Extensions" below describes. Skip the rest of this list.
-   - "Review round" says `round N in progress`: carry that review round on from the step after "Review round step", as "A review round" below describes, whatever the prompt says. Skip the rest of this list.
+   - "Review" says `approving`: carry the approval on from the step after "After review step", as "After the review" below describes, whatever the prompt says. Skip the rest of this list.
+   - "Review round" says `round N in progress`: carry that review round on from the step after "Review round step", as "A review round" below describes. If this task's prompt holds notes that are not yet logged, add them to the round's items first. If it holds the line `The review is done.`, close the round at once: put back the kept takes and the mixes of the last `REVIEW` block he was sent, because those are what he heard and approved, do the round's step 7 without ending the task, with the round's unfinished items listed under "Review items not done", and then do "After the review" with this prompt. Skip the rest of this list.
    - "Review" says `waiting`: read the prompt. With the line `The review is done.`, do "After the review" below. With the line `Review notes.`, do "A review round" below. With neither, show the block under "Last report block" again and build nothing.
    - "Budget" says `reported`: follow "The budget report" in `AGENTS.md`.
    - Otherwise tick the clock for the current phase. If it prints `budget report: due`, go straight to "The budget report" in `AGENTS.md`. Start nothing first.
@@ -142,7 +143,7 @@ Steps:
 7. From the final build of this phase: `npm run compare` for the two keys, then `npm run keep`.
 8. Write "Look lock" in `kit/PROGRESS.md`: every locked setting; each technique that worked and each that did not; and the recipe, as numbered steps with commands, for making one more base, one more season of the miniature, one more particle kind, one more dressing for the glass and one more arrival. Phase 4's agents work from those recipes.
 9. Commit the built assets. Run `npm run review` and publish.
-10. Run `npm run gate -- --phase 3`, check every line of the gate below and log the evidence. Mark `winter` `finished` in the "Units" table with the commit and what ended its loop, mark Phase 3 `done`, push, and post the status with the two comparison images and one sheet across the shake.
+10. Mark `winter` `finished` in the "Units" table with the commit and what ended its loop. Then run `npm run gate -- --phase 3`, check every line of the gate below and log the evidence. Mark Phase 3 `done`, push, and post the status with the two comparison images and one sheet across the shake.
 
 Gate:
 
@@ -188,7 +189,7 @@ Then `change`, once the three seasons are finished or have reached their limits:
 4. Run rounds on `change` with R2 and R4 until the pass bar holds, `quality.maxRoundsPerUnit` is reached, or the clock ends the loop. The first is a floor round.
 5. `npm run keep`, mark it `finished`, publish, and post the status with one sheet across each change.
 
-Clock rules 3 and 4 in `AGENTS.md` apply to every unit here. Once the clock prints `half point: reached`, a unit with no stand-in left goes to its round at once. Once it prints `box end: reached`, every part that is still a stand-in is finished with its fallback and its unit goes to its round. `change` then gets its floor round on whatever the seasons are.
+Clock rules 3 and 4 in `AGENTS.md` apply to every unit here, and in the same way to `globe` in Phase 5 and to `film` in Phase 6. Once the clock prints `half point: reached`, a unit with no stand-in left goes to its round at once. Once it prints `box end: reached`, every part that is still a stand-in is finished with its fallback and its unit goes to its round. `change` then gets its floor round on whatever the seasons are.
 
 Gate:
 
@@ -203,28 +204,29 @@ Read first: sections 12, 14 and 15 of `kit/03-METHOD.md`, section 7 of `kit/02-S
 
 Steps:
 
-1. Remove every stand-in path that is left in the six units built so far. G13 covers every part outside the `film` unit now.
+1. Remove every stand-in path that is left in the five units finished so far.
 2. Go through the app once as a visitor would, on the wide layout, the phone and the tablet: the Shake control, the space bar, a stir, a drag around the globe, each season mark, the sound control, the keyboard, reduced motion, each season by its own link. Fix what is wrong in one pass. What is not fixed by the end of that pass is an open item.
 3. Finish sound in the app: `npm run sound -- --pack`, the loops, the levels, the music changing on the landing. Run the sound checks.
 4. Fit the web asset set to `host`. Set the loading order. Run `npm run hostcheck`. Write `vercel.json` and `.vercelignore`.
-5. Run the first round on `globe`: machine checks, then R2, R4, R5 and R8. It is a floor round. Run more only while the count and the clock allow, up to `quality.globeMaxRounds`.
+5. Run the first round on `globe`: machine checks, then R2, R4, R5 and R8. It is a floor round. From this round on G13 covers every part outside the `film` unit, so the interface, the sound engine and the levels of quality must be finished by now: one that is still a stand-in is finished first, by its method, or by its fallback after three failed tries at the method or once the clock has printed `box end: reached`. Run more rounds only while the count and the clock allow, up to `quality.globeMaxRounds`.
 6. Work the open items from every unit, worst first, for up to `quality.polishMaxRounds` polish rounds. Every polish round is an extra round: start one only while the clock allows. In each round fix a batch, then run the measures and the critics that raised those issues on the stills they touch. After a change to a shared system, check each finished unit as "Freshness" in `kit/07-QUALITY-BAR.md` says.
 7. If a second browser engine can be driven here, load the app in it and keep a still. Three tries, then log it.
 8. Make the candidates: `npm run mix -- --candidate` for each entry of `audio.candidates` whose music exists, on the default grid. A cue with no kept take is left out of the mix and named in the `REVIEW` block.
 9. Make the review cut: run `npm run simcache`, then render film B on the default grid with `npm run film -- --review`, split across sandbox agents, at the highest tier that fits `sandbox.reviewCutMaxHours`, and never below `draft`. Join that one picture with each candidate. If no candidate has music, make one review cut with the sound effects and ambience alone, or a silent one if there are none. Render the card loop in `formats.preview` at the `review` tier for the review page. Run `npm run keep -- --film`.
-10. Render every key and every judged still of `globe` again from this build, with the stills split across sandbox agents, run `npm run compare` for the keys, and run `npm run keep`.
+10. Render every key and every judged still of `globe` again from this build, with the stills split across sandbox agents, run `npm run compare` for the keys, and run `npm run keep`. Make the sheet of the four seasons with `npm run sheet -- --seasons` and one sheet across a shake, so both exist as looks for the `REVIEW` block.
 11. Run `npm run review` and publish.
-12. Run `npm run gate -- --phase 5` and log the evidence. Tick the clock one last time for this phase. If it prints `budget report: due`, file the budget report and stop there: the review stop comes after the continuation.
+12. Mark `globe` `finished` in the "Units" table with the commit and what ended its loop. Run `npm run gate -- --phase 5` and log the evidence. Tick the clock one last time for this phase. If it prints `budget report: due`, file the budget report and stop there: the review stop comes after the continuation.
 13. Otherwise mark Phase 5 `done`, write `waiting` under "Review" and the filled-in `REVIEW` block under "Last report block", commit and push. From this moment no budget report is filed and the build's clock is not ticked again until the review is approved.
-14. End the task with the `REVIEW` block, as "REVIEW" below describes.
+14. End the task with the `REVIEW` block, as "REVIEW" below describes. Its pictures come from `npm run status -- --no-tick --no-render --sounds`.
 
 Gate:
 
 - The machine checks are met, including G15 and G16.
-- The pass bar holds for `globe`, or its limit was reached. The polish rounds ran to their count or to the clock.
-- D4 is met for each candidate whose music exists.
+- The pass bar holds for `globe`, or its limit was reached, and `globe` is marked `finished`. The polish rounds ran to their count or to the clock.
+- D4 is met.
 - The app, the probe, the film in `autopilot` and the loop open from the published URL, or the log says why not.
-- "Review" says `waiting` and the block is stored.
+
+Steps 13 and 14 come after the gate.
 
 ## A review round
 
@@ -232,28 +234,30 @@ A task whose prompt contains the line `Review notes.` and that finds "Review" at
 
 After each step, write its number under "Review round step" in `kit/PROGRESS.md` and push.
 
-1. N is "Review rounds" plus one. Write `round N in progress` under "Review round". Copy Brandon's notes under "Notes from Brandon" as numbered items of review round N, in his words. Push. Tick with `npm run clock -- --review-round N`. Every status in the round ticks the same way, and statuses fall due at the same rhythm as in a phase.
+1. Before anything else, in one commit: N is "Review rounds" plus one, write `round N in progress` under "Review round" and `1` under "Review round step", and copy Brandon's notes under "Notes from Brandon" as numbered items of review round N, in his words. Push. Tick with `npm run clock -- --review-round N`. Every status in the round ticks the same way, and statuses fall due at the same rhythm as in a phase.
 2. Sort the items: a sound to change, a preference between the candidates, a level in the mix, a change to how something looks or moves, a change to how the app feels, or a decision on something listed under "For Brandon to decide". Post a status that lists the items as you understood them and the order you will work them in. It is not a question.
-3. Work the sound items. Each cue or piece of music he names gets up to `audio.maxTakesPerCue` new takes, with his words added to its prompt, chosen as before. Mix the candidates again.
+3. Work the sound items. Each cue or piece of music he names gets up to `audio.maxTakesPerCue` new takes, with his words added to its prompt, chosen as before. Mix the candidates again. Keep the kept takes and the mixes of the last `REVIEW` block he was sent beside the new ones until this round's own block has been posted.
 4. Work the picture and app items, the ones he stressed first. A change to a finished unit gets rounds on that unit inside `quality.maxRoundsPerUnit` for this request. None is a floor round: each starts only while the round's clock prints `extra rounds: yes`.
 5. When the items are done, or the clock prints `extra rounds: no`: finish the one fix in hand and list what is left under "Review items not done".
-6. If any picture in the film changed, make the review cut again, once. If only sound changed, join the existing picture with the new mixes. Run `npm run review` and publish.
-7. Add one to "Review rounds". Write `none` under "Review round" and clear "Review round step". Write the `REVIEW` block again under "Last report block", with one line added at its top: what review round N changed and what it did not. Commit, push, and end the task with that block.
+6. If any picture in the film changed, make the review cut again, once, and the sheet of the four seasons with it. If only sound changed, join the existing picture with the new mixes. Run `npm run review` and publish. The block's pictures come from `npm run status -- --review-round N --no-render --sounds`.
+7. Write N under "Review rounds": the round's own number, not one more than what is there. Write `none` under "Review round" and clear "Review round step". Write the `REVIEW` block again under "Last report block", with one line added at its top: what review round N changed and what it did not. Commit, push, and end the task with that block.
 
 A review round never approves the review, never starts Phase 6 and never files a budget report. "Review" stays `waiting`.
 
 ## After the review
 
-A task whose prompt contains the line `The review is done.` and that finds "Review" at `waiting` does this before anything else:
+A task whose prompt contains the line `The review is done.` and that finds "Review" at `waiting` does this before anything else. So does a task that finds "Review" at `approving`, starting at the step after "After review step".
 
-1. Save what Brandon sent, before anything else. If items from this approval are already under "Notes from Brandon", an earlier task got this far: do not log them again, and go to step 2. Otherwise his notes go under "Notes from Brandon" as numbered review items, in his words. Whatever he pasted from the probe goes under "Probe results". Find his choice of soundtrack: a candidate named in the prompt, or an audio file of his own attached to the task or under `audio/supplied/` on `repo.branch`. Save an attached file there. Commit and push.
-2. Only then run `npm run clock -- --review`, write `approved` under "Review" and `running` under "Budget", and push.
-3. Settle the music. His own file wins over a candidate. A named candidate is used as he heard it last. If he named none and sent no file, use the first entry of `audio.candidates` whose music exists, and log that the choice was yours. If no music exists at all, the films are cut on the default grid and carry the sound effects and ambience alone.
+After each step, write its number under "After review step" in `kit/PROGRESS.md` and push.
+
+1. Before anything else, in one commit: write `approving` under "Review" and `1` under "After review step". Copy his notes under "Notes from Brandon" as numbered review items, in his words. Whatever he pasted from the probe goes under "Probe results". Read the `Soundtrack:` line of the prompt and write his choice under "Soundtrack chosen": the name of a candidate, or `his own file` if the line says so, or `not named` if there is no such line. Only when it says `his own file`: the audio file he attached, or one already under `audio/supplied/` on `repo.branch`, is his music, and an attached one is saved there. An attached archive of the build's own sounds is never his music. Unpack it to where the kept sounds live, and do not commit it while the repo is public. Push.
+2. Run `npm run clock -- --review` and write `running` under "Budget".
+3. Settle the music from "Soundtrack chosen". A named candidate is used as it was in the last `REVIEW` block he was sent. `his own file` uses his file with the build's sound effects and ambience around it. If it says `not named`, or names his own file and none can be found, use the first entry of `audio.candidates` whose music exists, and log that the choice was yours. If no music exists at all, the films are cut on the default grid and carry the sound effects and ambience alone. Write what was settled under "Sound".
 4. Sort the remaining review items: a change to a unit, a change to the film, a change to the app, or a decision on something listed under "For Brandon to decide".
 5. If the probe shows a level of `live.quality` falling short of its `minFps` on one of his machines, lower what that level draws, by the ladder in `kit/04-LOOK.md`, and log the new numbers.
-6. Post a status that says, in its first line, which soundtrack the films will be cut to and where it came from. Then list the review items as you understood them and the order you will work them in. It is not a question. Carry on with Phase 6.
+6. Post a status that says, in its first line, which soundtrack the films will be cut to and where it came from. Then list the review items as you understood them and the order you will work them in. It is not a question. Write `approved` under "Review" and `done` under "After review step", push, and carry on with Phase 6.
 
-A task that starts with "Review" at `approved` and review items already logged carries on from Phase 6. It does not need the notes again.
+A task that starts with "Review" at `approved` carries on from Phase 6. It does not need the notes again.
 
 A review item is never a reason for a second stop. One that cannot be done inside the limits is logged and listed in the `BUILD COMPLETE` block.
 
@@ -269,8 +273,8 @@ Steps:
 4. Mix the final soundtrack: `npm run mix -- --final`, for film B and for film A.
 5. Make the opening of film A, as `kit/01-FILM.md` and `kit/03-METHOD.md` section 13 say. Mark the `opening` part by how it was made. Render a sheet across it and check that each typed word can be read on the frame it appears.
 6. Finish the card: run the pick if `deliver.cardLoop.season` is `auto`, set the loop to that season, and check its seam with G14.
-7. Run the first round on `film`: machine checks, the measures, `npm run stress`, then R2, R4, R5, R6 and R7. It is a floor round. Run more only while the count and the clock allow, up to `quality.filmMaxRounds`.
-8. Freeze the build. From here on, nothing under `src/`, `public/`, `assets-full/` or `config/` changes except to fix a machine check or a failed QA item.
+7. Run the first round on `film`: machine checks, the measures, `npm run stress`, then R2, R4, R5, R6 and R7. It is a floor round. From this round on G13 covers every part there is, so the opening and the loop must be finished by now: one that is still a stand-in is finished first, by its method, or by its fallback after three failed tries at the method or once the clock has printed `box end: reached`. Run more rounds only while the count and the clock allow, up to `quality.filmMaxRounds`.
+8. Mark `film` `finished` in the "Units" table with the commit and what ended its loop. Then freeze the build: nothing under `src/`, `public/`, `assets-full/` or `config/` changes from here on except to fix a machine check or a failed QA item.
 9. Render every judged still, every judged frame and every comparison image from the frozen build, with the work split across sandbox agents.
 10. Run the record round, as `kit/07-QUALITY-BAR.md` defines it. Write the scores into `kit/PROGRESS.md` as the final scores.
 11. Render the preview films: film B in `formats.hd` at `film.previewFps` with the final mix, one chunk per shot, split across sandbox agents, at the highest tier whose wall-clock time the render budget says fits in `sandbox.previewFilmMaxHours`, and never below `draft`. Film A is the opening's chunk joined in front of it. Make their `formats.preview` copies with `npm run film -- --from-hd`, then run `npm run keep -- --film`. Put the `formats.hd` films on the review page and attach them to the final message. If `deliver.sandboxMaster` is true, also render the masters here at the `final` tier and share them in the final message.
@@ -281,7 +285,7 @@ Steps:
 16. Write `README.md`: what this is, the app URL here, how to use it, how to render film B, film A and the loop on a Mac with `npm run render:local`, starting with the test, how to deploy it to `host.name`, where the comparison images and scorecards are, where the sound files are and what to do if a clean clone has none, and the list of third-party credits from `ASSETS.md`.
 17. Run `npm run review` and publish the final build.
 18. Run every item in `kit/09-QA-GAUNTLET.md` and record the evidence. If an item fails, fix it, do step 19, and only then run the gauntlet again, for at most `quality.gauntletMaxPasses` passes in all. A second pass and a second record run are extra: they happen only while their counts and the clock allow. When they are not allowed, make only fixes that change no pixel, and list every other failing item under "Failed QA items" with the fix it would need. The scores in the `BUILD COMPLETE` block must always be the scores of the build that is delivered. Item 14 is the one exception: a stand-in found there is always finished with its fallback chain and the stills it touches are rendered again, as floor work. If no record run is left for it, the `BUILD COMPLETE` block names that part and says the final scores were taken before it changed.
-19. If a fix in step 18 changed anything under `src/`, `public/`, `assets-full/` or `config/`: render the judged stills and frames it touched again, run `npm run compare` for their keys, run `npm run keep`, and run the record round again, for at most `quality.recordRoundMaxRuns` runs in all. If the fix changed what a film or the loop shows, render the affected chunks again, once, join them, make the `formats.preview` copies again, and run `npm run keep -- --film --deliver`, `npm run review` and publish.
+19. If a fix in step 18 changed anything under `src/`, `public/`, `assets-full/` or `config/`: render the judged stills and frames it touched again, run `npm run compare` for their keys, run `npm run keep`, and run the record round again, for at most `quality.recordRoundMaxRuns` runs in all. If the fix changed what a film or the loop shows, render the affected chunks again, once, join them, make the `formats.preview` copies again, and run `npm run keep -- --film --deliver`. In every case run `npm run determinism`, `npm run render:local -- --proof` and `npm run hostcheck` again, once, so their evidence comes from the build that is delivered, then `npm run review` and publish.
 20. Write `complete` under "Build" and the filled-in `BUILD COMPLETE` block under "Last report block" in `kit/PROGRESS.md`. Commit and push.
 
 Gate:
@@ -382,6 +386,6 @@ After each step below, write its number under "Extension step" in `kit/PROGRESS.
 5. Run the record round once.
 6. Do Phase 6 steps 4 and 11 to 17 once: the final mix, the preview films, the loop, the proof, the host check, the cues, the README, the review page and the publish.
 7. Run the QA gauntlet once. An item that fails is fixed if the fix changes no pixel. Otherwise it is listed under "Failed QA items". There is no second pass and no second record round in an extension.
-8. Add one to "Extensions", clear "Extension step", write `complete` under "Build" and the new block under "Last report block", commit, push, and end with the `BUILD COMPLETE` block.
+8. Write N under "Extensions": the extension's own number, not one more than what is there. Clear "Extension step", write `complete` under "Build" and the new block under "Last report block", commit, push, and end with the `BUILD COMPLETE` block.
 
 An extension has no budget report and no review stop. When its clock prints `extra rounds: no`, finish the one fix in hand and go to step 3.

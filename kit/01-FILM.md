@@ -103,7 +103,7 @@ The cues are listed in `audio.sfx` with their lengths.
 | `land-<season>` | On the landing | The set down, heavy and short, then the season arriving: ice crackling outward for winter, one drop and a breath of air for spring, a warm chime and a hiss of sand for summer, a wooden creak and a low eerie tone for fall |
 | `amb-<season>` | Under each hold, looped, very quiet, crossfading through the shake | Winter: wind and distant bells. Spring: birds and light rain. Summer: crickets and warm air. Fall: wind, dry leaves and a low eerie tone |
 | `glass-clink` | On the set down, under `land-<season>` | One small clean ring of glass |
-| `music-box` | Before frame 0 of film A's body and under the last bar of `close`, if it suits the music | A music box mechanism turning |
+| `music-box` | Under the first bar of `open` and the last bar of `close`, if it suits the music | A music box mechanism turning |
 | `key-tap`, `ui-send`, `riser` | The prompt opening of film A | Soft key presses, one press of a button, a rising breath of air into frame 0 |
 | `ui-tick`, `ui-sound-on` | The app only | A soft tick for a control, a small chime when sound comes on |
 
@@ -136,8 +136,8 @@ For the review stop, film B is rendered once on the default grid in `formats.pre
 Every project on Brandon's portfolio has a card. The card shows a still. When a visitor hovers it, a short loop plays from that still and ends exactly where it began.
 
 - The loop is `deliver.cardLoop.seconds` seconds at `deliver.cardLoop.fps`, from the `deliver.cardLoop.camera` camera in `deliver.cardLoop.format`, with no interface and no text. It has no sound.
-- It shows one season. `deliver.cardLoop.season` is `auto`: the season is chosen once by the pick in `kit/07-QUALITY-BAR.md`, from the four finished at-rest stills, and written to `kit/PROGRESS.md`. A season name in that key skips the pick.
-- What happens: the globe stands at rest, particles drifting. At `deliver.cardLoop.shakeStartSeconds` it is shaken, with the same lift, strokes and set down as in the film. The season does not change. The storm fills the glass, thins, and everything comes to rest exactly as it began.
+- It shows one season. `deliver.cardLoop.season` is `auto`: the season is chosen once by the pick in `kit/07-QUALITY-BAR.md`, from the four finished at-rest stills, and written to `kit/PROGRESS.md`. A season name in that key skips the pick. Until the pick has been run the loop shows `defaultSeason`.
+- What happens: the globe stands at rest, particles drifting. At `deliver.cardLoop.shakeStartSeconds` it is shaken, with the same lift, strokes and set down as in the film. The loop's shake always lasts one bar at `film.defaultBpm`, whatever tempo the approved music has. The season does not change. The storm fills the glass, thins, and everything comes to rest exactly as it began.
 - It is seamless. The frame after the last frame is the first frame, to the pixel. `kit/03-METHOD.md` section 8 says how the particles are made to return. Check G14 in `kit/07-QUALITY-BAR.md` renders that frame and compares.
 - It is one interesting shot, not a summary of the film.
 - The globe and its base stay inside a centred 4:3 crop and a centred square crop, so the card can crop it either way.

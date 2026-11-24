@@ -10,6 +10,8 @@ The Builder's memory. Read it at the start of every task and after every compact
 - Review round: none
 - Review round step: none
 - Review rounds: 0
+- After review step: none
+- Soundtrack chosen: none
 - Budget: running
 - Continuations: 0
 - Extensions: 0

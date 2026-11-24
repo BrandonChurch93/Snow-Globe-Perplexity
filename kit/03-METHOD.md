@@ -6,7 +6,9 @@ One rule above all the others: match the approved image first. A technique is ri
 
 ## The parts register
 
-`parts/PARTS.json` lists every part with its unit, its state and the commit that set the state. Phase 2 creates it with every part as `stand-in`.
+`parts/PARTS.json` lists every part with its unit, its state, the files that make it up, the hash of those files as they were when the part was recorded as a stand-in, and the commit that set the state. Phase 2 creates it with every part as `stand-in`.
+
+A stand-in also says so itself, apart from the register: every stand-in asset, shape, material or screen carries a flag in its own data or code, and the `standins` view in `kit/04-LOOK.md` draws whatever carries it in one loud colour. A part made by its method below does not carry the flag. Check G13 reads both.
 
 | Part | One for | Unit |
 | --- | --- | --- |
@@ -29,7 +31,7 @@ Every part ends in one of three steps, tried in this order, three tries each:
 
 A part that ends on step 2 or 3 is real, is judged in its round like anything else, and is logged as an open item with what was tried.
 
-Some parts are motion or code and have no surface to project a picture onto: the liquid, the shake, a change, an arrival, the two engines, the lens, the sound engine, the levels of quality, the interface, the loop and the opening. For these the named fallback is the last step. Each one below is written so that it can always be made.
+Some parts are motion, light or code and have no surface to project a picture onto: the liquid, the shake, a change, an arrival, the particle engine, the light engine, a season's light, a veil, the lens, the sound engine, the levels of quality, the interface, the loop and the opening. For these the named fallback is the last step. Each one below is written so that it can always be made.
 
 ## 1. Scale and scene
 
@@ -170,7 +172,7 @@ Named fallback for the particle engine: the same simulation with collisions agai
 - Lights that flicker or twinkle scale their part of the grid with a function of time.
 - The glow from inside reaches out: onto the surface, onto the base's upper edge, into the lens as a soft bloom.
 - Shadows inside are soft and short. The tree shadows the ground. The cottage shadows its own wall under the eaves.
-- Named fallback: the rig, plus a point light at each cluster of small lights with no grid.
+- Named fallback for the light engine and for a season's light: the rig, plus a point light at each cluster of small lights with no grid.
 
 ## 10. The shake
 
@@ -194,7 +196,8 @@ Read `kit/02-SUBJECT.md` section 6 first. The method has to produce weight.
 - Particles change kind in place, as "The change" in `kit/02-SUBJECT.md` section 6 says. Give each old particle a new one by index, so the pairing is fixed.
 - Outside the glass: the bloom. For a few frames at the fastest stroke the inner light of the new season rises far above its resting level and floods the base and the surface, while the globe is streaked by its own motion. The base and the dressing dissolve across those frames. Tune the bloom so that no clean frame shows a base that is half one season and half another.
 - The arrivals in `kit/02-SUBJECT.md` section 6 are functions of the time since the landing: a frost front's radius, a count of lit faces, a crack's length. Nothing is stepped from an earlier frame, so any frame can be rendered alone.
-- Named fallback: a plain dissolve of every seasonal part across the swap window, under the same bloom.
+- Named fallback for a change: a plain dissolve of every seasonal part across the swap window, under the same bloom.
+- Named fallback for an arrival: its finished state faded in evenly over the first `shake.settleCheckSeconds` after the landing.
 
 ## 12. Sound
 
