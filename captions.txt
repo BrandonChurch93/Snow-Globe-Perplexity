@@ -1,5 +1,5 @@
-Scene looks at 1fc8d9f on main 282616e, draft tier, hd. Approved image first in every pair.
-01-whole-pair.jpg: approved rest image above, hero rest still below. Mean difference per channel 17.8, 18.0, 19.2 (was 18.1, 18.2, 19.5 at the last looks).
-02-discs-right-pair.jpg: backdrop right of the globe, approved left, render right. Discs refitted to the approved edges and sizes, a soft halo round each, two overlapping companions at the white disc, no bright outer ring on the amber disc.
-03-surface-camera-before-after.jpg: surface camera, before left, after right (no approved image for this camera). The mirror image is sharp where the base meets it and softens with height.
-04-landing-foot-frames.jpg: test shake, frames 132, 136, 140, 144 at the foot (no approved image for motion). The mirror image rises to meet the rope and sharpens as the foot comes down; this is on the path on main, before the new landing of shake_fixer.
+Scene looks at the last push of scene_fixer (main with the new shake path merged), draft tier, hd. Approved image first in every pair.
+01-whole-pair.jpg: approved rest image above, hero rest still below. Mean difference per channel 18.5, 18.3, 19.4 (17.8, 18.0, 19.2 before the other parts' Round 5 work came in with main; the scene's own changes since then moved it by less than 0.1).
+02-foot-mirror-pair.jpg: the foot and its mirror image, approved above, render below. The image of the rope keeps its gold (the mirror tint was blue white), stands at 0.93 of the rope's level as in the approved image, and is as soft as the approved one (step of the twist: image 0.52 of rope, approved 0.51).
+03-set-down-new-path.jpg: test shake on the new path, frames 124 to 146 (no approved image for motion). The mirror image under the foot closes on the rope from frame 124 to 142; that is the weight cue of the landing.
+04-outside-change-glare.jpg: test shake on the new path, frames 90 to 110. The glare of the outside change sits on frames 94 to 104; nothing in src/post changed.
