@@ -25,26 +25,27 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 51 · 2026-11-24 19:38 UTC
+Status 52 · 2026-11-24 19:59 UTC
 
-- `out/stills/status/status-51-1.jpg`: The set down of the test shake on main with the new path: frames 108 to 130 at the draft tier
-- `out/stills/status/status-51-2.jpg`: The lift of the same shake: frames 0 to 22 at the draft tier
+- `out/stills/status/status-52-1.jpg`: The base: the approved image above and the build below. The 18 icicles are now measured one by one from the approved image
+- `out/stills/status/status-52-2.jpg`: The chimney and the pond: the approved image on the left and the build on the right. The plume is now a picture made from the approved plume
+- `out/stills/status/status-52-3.jpg`: Still: winter rest base, hd, final
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 19:58 UTC
-clock: phase 3, tick of 9.8 minutes
-phase 3: 11.51 h used of its 11.00 h box
-allowance (before the review): 18.13 h used of 36.00 h allowed
-all time before the review: 18.13 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 20:03 UTC
+clock: phase 3, tick of 3.7 minutes
+phase 3: 11.59 h used of its 11.00 h box
+allowance (before the review): 18.21 h used of 36.00 h allowed
+all time before the review: 18.21 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: reached
 budget report: not due
-minutes since the last status: 19
+minutes since the last status: 3
 ```
 
 ## Phases
@@ -580,6 +581,7 @@ Numbered. What, why, and the date.
 62. Round 5's two jury controls are cropped 6 px narrower than in Rounds 3 and 4, and their votes of Round 3 are reused (18:49 UTC, Phase 3). `kit/07-QUALITY-BAR.md`: the controls are "the approved images, cropped to the globe, its base and the surface around them, resized and encoded exactly like the judged images", and "A control's votes are collected once and reused in later rounds." The pack crops every R2 image to one frame taken from the judged stills; decision 57 moved the hero camera from 616 to 615.3 mm, so the frame is 1078 by 1051 px where it was 1084 by 1050, and the two control files have new bytes. They are the same two approved pictures with the same globe, base and surface. Reading taken: the kit's own line, the votes are reused (10 votes, 7 of them (a) or (b)); asking the jurors again would give the judged stills a second draw of the bar that the kit does not allow. The jurors of Round 5 are the same five models as in Rounds 3 and 4, one of each per judged image, so the judged votes and the control votes come from the same mix.
 63. While /root's own push fails, `main` is pushed by an idle agent from a git bundle (19:28 UTC, Phase 3). At 19:25 UTC, after the session was resumed, every push from /root's sandbox failed with "could not read Username for 'https://github.com'" (twice, a minute apart; reads still work). `AGENTS.md` has a failed push logged and tried again at the next commit, and that is done at every commit. But ten builders merge `origin/main` and four render agents draw the freeze from it, so a `main` that stays behind would stop the round. Until the push works again, /root bundles its new commits (`git bundle create ... origin/main..main`) and `gate_runner`, whose sandbox can push, fetches the bundle and pushes it as a plain fast forward: no merge, no rebase, no commit of its own, so author, messages and trailers are /root's, unchanged. Used once, at 19:28 for `92a18c7`. /root's own push worked again a minute later (`7ff842f`); the bundle stays the fallback (`out/work/bin/relay.sh`). Nothing else changes: agents' own branches are fetched as before.
 64. `shake.strokeMm` is 24, was 22 (19:56 UTC, Phase 3). `AGENTS.md` lets the Builder tune it by up to a quarter either way, 16.5 to 27.5. Why: Round 5's motion critic read the globe as not moving, so the strokes are as long as the pins allow with room to spare. The shake's closer ran the whole suite with 22, 24, 25, 26, 27 and 27.5 on the path of `ebddaba`: green up to 25; from 26 one test fails, `tests/engine-storm.test.ts` "turns as one flat swirl at the landing" (its `flat` reads 1.53 at 22, 1.35 at 24, 1.27 at 25, 1.19 at 26, against more than 1.25). 24 leaves 0.10 on that pin. Every pin of the shake and every frame rule (4.5 percent of room above the glass, 1 mm at the rim, speed, pull, jerk, the framing for phone and tablet) holds up to 27.5. Written once the path with `awayMm` was on `main` (`355104c`).
+65. `shake.strokeMm` is 22 again, was 24 for 7 minutes (20:03 UTC, Phase 3; decision 64 is withdrawn for Round 6, not for good). Why: decision 64's figures were measured on the old liquid engine. With the liquid closer's new engine merged (`d38e0c2`, the cure for the dashes that cross the flow: ladder move 6) and the new lift, 24 fails one pin, `tests/engine-storm.test.ts` "still has flakes through the whole dome at rest" (the high band at rest reads 0.277 against over 0.3). The shake's closer ran the six readings of that file at 22, 22.5, 23, 23.5, 24, 24.5 and 25 on that merge: only 22 (high band 0.346, nothing within 5 % of a pin) and 23 (0.314, green by 5 %) pass. The liquid's closer voted for 22 with its engine in, as the smaller loss for one round. The suite on the merge with 22: 416 passed, 0 failed, 4 skipped. No pin was moved and no test was changed. For Round 7 the liquid's closer makes the high band hold at 24 to 25 with margin; the value goes up again only with a green suite.
 
 ## Notes from Brandon
 
@@ -1145,3 +1147,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 18:53 to 19:20 UTC. Round 5 is judged in full: the last craft part answered at 19:11 (6), so R1 5, R3 6, R4 3, R2 3 of 15 against 7 of 10, gate 14 of 15, measures 1 red; no pass. Summary, keys and manifest are in `scorecards/round-005/`; ladder moves 6 to 10 and Declined issue 4 are written. The third set of builders ended (ten final reports in `out/work/reports3/`) and was merged into `main` between 19:00 and 19:09: every changed part made again, texpack, tsc clean, 415 tests pass, 0 fail. Draft stills of the merge (`out/work/status/merge-1909-pair.jpg`): at rest the globe holds; one second after the landing the storm on the new shake path is a cream bank over the cottage, the lamp and the pond. The fourth set, ten closers, started at 19:13 with Round 5's issues by owner (see "Running agents"). Published at 19:15 from `d27fed6` plus the merge's built assets (Visibility: Organization); Status 50 shown at 19:16 with the merge's pair. Built assets of the merge are not committed: they are committed once, at the Round 6 freeze.
 
 - 19:20 to 19:40 UTC. Motion sheets of the lift and the set down drawn on the merged `main` at the draft tier (`out/work/sheets/motion-lift-test-preview-draft-1.jpg`, `motion-setdown-test-preview-draft-1.jpg`): the new path moves the globe visibly through the set down; the storm is a solid white fill from frame 108 to 130 and the tabletop frost is gone through those frames; the lift's height does not read in a tile. At 19:25, after the session was resumed, two pushes failed for want of a credential; `gate_runner` pushed `92a18c7` from a bundle at 19:28 and /root's own push worked again at 19:28 (decision 63). Ladder moves 6 to 10 and the base's move went to the closers at 19:19. Status 51 shown at 19:39 with the two sheets. No agent branch had moved by 19:38.
+
+- 19:40 to 20:01 UTC. Merged and green on `main` (`42c4f35`, 416 tests pass): the glass closer's cure of measure M1 (`ff73dc4`: an inside triangle with all three corners unseen through the glass is no longer drawn; a `winter-base` still at the final tier on the merge shows no pure green, cyan or yellow pixel, where Round 5's showed a speck), the village (`b939db8`: ladder move 9 done, the plume is a generated picture of the approved plume on a card; a new file `assets-full/winter/village-plume.lin.png`), the base (`0eb22eb`: 18 icicles measured one by one from the approved image), the tree (`876ec69`), the shake (`ebddaba`: the foot is level and 3.1 mm clear at frame 19). Decision 64: `shake.strokeMm` 24. Pushed after 19:58 and merged at the freeze: the light (`b465e56`: the bloom swells from frame 77 to 97, peaks to 100 and falls to 107; its core 8 times weaker) and the flakes (`1ec4f91`: the cream bank at the landing is gone, the drift is streak sheets along the liquid's roll). Status 52 shown at 20:00 with the base and the chimney beside the approved image (the builders' own looks).

@@ -153,7 +153,7 @@
     "setDownBeats": 1,
     "strokes": 6,
     "liftMm": 7.25,
-    "strokeMm": 24,
+    "strokeMm": 22,
     "tiltDeg": 6,
     "landSettleSeconds": 0.4,
     "swapWindow": { "fromBeat": 2.0, "toBeat": 3.0 },
