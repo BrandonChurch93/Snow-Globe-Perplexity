@@ -3,7 +3,8 @@ import { config, shots } from '../src/config'
 import { barSeconds, beatSeconds, defaultGrid, filmTimeline, globePoseAt, prerollSeconds, seasonAt } from '../src/film/timeline'
 import { makeShake } from '../src/shake/table'
 import { buildCut } from '../src/film/cut'
-import { MOVES, cameraKeys, cameraNumbers, filmPose, filmRig, loopPose, movesOf, rigOf, shotNotes } from '../src/film/moves'
+import { MOVES, cameraKeys, cameraNumbers, easeAt, filmPose, filmRig, loopPose, movesOf, rigOf, shotNotes } from '../src/film/moves'
+import { sphereRadiusMm } from '../src/scene/framing'
 import { judgedList, loopPlan } from '../src/film/judged'
 import { openingPlan } from '../src/film/opening'
 import { loopGlobe, loopSeconds, standInLoop, wrapLoop } from '../src/film/loop'
@@ -241,8 +242,9 @@ describe('the camera of the film', () => {
         expect(rig.distanceMm).toBeGreaterThanOrEqual(wide.distanceMm * (1 - MOVES.shakeEaseIn) - 1e-9)
         last = rig.distanceMm
       }
-      const after = filmRig(cut, (s.landing + Math.round(barSeconds * fps * MOVES.settleBars)) / fps).rig
-      expect(Math.abs(after.distanceMm - wide.distanceMm) / wide.distanceMm).toBeLessThan(MOVES.shakeEaseIn)
+      expect(easeAt(cut, (s.landing - 1) / fps)).toBeGreaterThan(0.99)
+      expect(easeAt(cut, s.landing / fps + s.seconds * MOVES.settleBars)).toBe(0)
+      for (let i = s.landing; i < s.landing + Math.round(s.seconds * MOVES.settleBars * fps); i++) expect(easeAt(cut, (i + 1) / fps)).toBeLessThanOrEqual(easeAt(cut, i / fps))
     }
   })
 
@@ -275,10 +277,17 @@ describe('the camera of the film', () => {
     const close = rigOf(MOVES.close).distanceMm
     expect(d(0)).toBeCloseTo(close, 6)
     expect(d(1 / fps) - d(0)).toBeGreaterThan(0.2)
-    const total = wide.distanceMm - close
-    expect((d(config.film.hookSeconds) - close) / total).toBeGreaterThan(0.35)
-    expect((d(config.film.revealBySeconds) - close) / total).toBeGreaterThan(0.6)
+    expect(d(config.film.hookSeconds) / close).toBeGreaterThan(1.5)
+    const hd = config.formats.hd
+    const halfWidth = (t: number) => {
+      const r = filmRig(cut, t).rig
+      return r.distanceMm * Math.tan((r.fovDeg * Math.PI) / 360) * (hd.width / hd.height)
+    }
+    expect(halfWidth(0)).toBeLessThan(sphereRadiusMm)
+    expect(halfWidth(config.film.revealBySeconds)).toBeGreaterThan(sphereRadiusMm * 1.15)
     for (let i = 1; i <= Math.round(config.film.revealBySeconds * fps); i++) expect(d(i / fps)).toBeGreaterThan(d((i - 1) / fps))
+    const reached = cut.lines[MOVES.pullBars]!
+    expect(d(reached)).toBeCloseTo(wide.distanceMm, 3)
   })
 
   it("ends on frame 0's camera so the film can repeat", () => {
