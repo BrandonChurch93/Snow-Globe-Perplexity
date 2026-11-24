@@ -1,0 +1,3 @@
+01-tree-pair.jpg: The stand-in tree in the hero frame (right) beside the same region of the approved image (left), before any of my work. Everything is still wrong: the trunk is a plain cone 8.8 mm too low and 5.7 mm too far right, the crown is one ball instead of six snow-capped pads, there are no roots, no bark, no needles, no string lights and no star.
+02-bark-take1.jpg: Take 1 of the bark sheet made from a crop of the approved trunk. Not yet on the model; edges still need a seam check and a height map has to be derived from it.
+03-needles-take1.jpg: Take 1 of the needle sheet made from a crop of the approved crown. Not yet on the model; it will be cut into tuft cards with hashed coverage.
