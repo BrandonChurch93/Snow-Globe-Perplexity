@@ -26,8 +26,11 @@ export function hashList(files) {
   return h.digest('hex').slice(0, 16)
 }
 
+/** Everything a rendered frame depends on: the source, the config, the packages, and the approved audio map when there is one, since the cut is fitted to it. */
+export const engineFiles = (exists = (f) => fs.existsSync(f)) => [...listFiles(rel('src')), ...listFiles(rel('config')), rel('package-lock.json'), rel('cut', 'AUDIO-MAP.json')].filter((f) => exists(f))
+
 export function engineHash() {
-  return hashList([...listFiles(rel('src')), ...listFiles(rel('config')), rel('package-lock.json')].filter((f) => fs.existsSync(f)))
+  return hashList(engineFiles())
 }
 
 const INDEX = rel('public', 'assets', 'index.json')

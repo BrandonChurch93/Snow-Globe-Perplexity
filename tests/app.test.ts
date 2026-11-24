@@ -1,12 +1,14 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { config } from '../src/config'
-import { FRAME, edges, livePath, liveRig, margins, roomUnder, shakeReach } from '../src/app/framing'
+import { FRAME, edges, framingOfRig, livePath, liveRig, margins, roomUnder, shakeReach } from '../src/app/framing'
 import { Drag, Look, MotionShake, TOUCH, stirAxis } from '../src/app/gestures'
+import { INTERFACE_STATES, createOverlay } from '../src/app/overlay'
 import { Autopilot, LoopPlayer } from '../src/app/players'
 import { createProbe, pickLevel, slowest, type ProbeHost } from '../src/app/probe'
 import { Replay, SCRIPT, SCRIPTS, scriptPlan } from '../src/app/replay'
 import { LIVE, LiveSession, SeasonLoader, type LiveSim } from '../src/app/session'
 import { GOVERN, Governor, levelById, levels, median, stageQuality, topLevel } from '../src/core/quality'
+import type { AppBridge, AppState } from '../src/core/bridge'
 import type { ParticleSource } from '../src/core/stage'
 import { filmCut } from '../src/film/cut'
 import { SourceSwitch, loopSeconds, standInLoop } from '../src/film/loop'
@@ -15,6 +17,9 @@ import { openingPlan } from '../src/film/opening'
 import { barSeconds, beatSeconds, type Timeline } from '../src/film/timeline'
 import { REST_POSE, makeShake } from '../src/shake/table'
 import { framingOf } from '../src/scene/framing'
+
+const ui = vi.hoisted(() => ({ mount: null as null | ((root: unknown, bridge: unknown) => { setVisible(v: boolean): void; dispose(): void }) }))
+vi.mock('../src/app/mounts', () => ({ audioShips: false, loadInterface: async () => (ui.mount ? { mountInterface: ui.mount } : null) }))
 
 const HZ = config.sim.stepHz
 const FRAME_S = 1 / 60
@@ -602,6 +607,26 @@ describe('the framing of the app', () => {
     expect(tablet.rig.distanceMm).toBeLessThan(rigOf('hero').distanceMm * 1.1)
   })
 
+  it('gives a screen still the framing numbers of the camera that drew it, as the harness gives them for a camera of the config', () => {
+    for (const f of [config.formats.hd, config.formats.phone]) {
+      const a = framingOf('hero', f.width, f.height)
+      const b = framingOfRig(rigOf('hero'), f.width, f.height)
+      for (const k of ['cx', 'cy', 'r'] as const) expect(b.globe[k]).toBeCloseTo(a.globe[k], 6)
+      for (const k of ['left', 'right', 'top', 'foot'] as const) expect(b.base[k]).toBeCloseTo(a.base[k], 6)
+      for (const k of ['frameHeightMm', 'frameWidthMm', 'heroFill', 'cornerReachMm'] as const) expect(b[k]).toBeCloseTo(a[k], 6)
+    }
+    for (const [, w, h] of sizes) {
+      const rig = liveRig(w / h, 0, 0, roomUnder(h))
+      const f = framingOfRig(rig, w, h)
+      expect(1 - (2 * f.base.foot) / h).toBeCloseTo(edges(rig).foot, 6)
+      expect(1 - (2 * (f.globe.cy - f.globe.r)) / h).toBeCloseTo(edges(rig).top, 2)
+      expect(f.base.foot).toBeLessThanOrEqual(h * (1 - roomUnder(h)) + 1e-6)
+      expect(f.globe.cx).toBeCloseTo(w / 2, 6)
+    }
+    const hd = config.formats.hd
+    expect(framingOfRig(liveRig(hd.width / hd.height, 0, 0, roomUnder(hd.height)), hd.width, hd.height).globe.r).toBeLessThan(framingOf('hero', hd.width, hd.height).globe.r)
+  })
+
   it('measures the top of the glass and the foot of the base as the harness does', () => {
     const hd = config.formats.hd
     const f = framingOf('hero', hd.width, hd.height)
@@ -636,6 +661,200 @@ describe('the framing of the app', () => {
     const low = liveRig(16 / 9, -500, -500)
     expect(low.yawDeg).toBe(-config.live.orbitYawDeg)
     expect(low.pitchDeg).toBe(config.live.orbitPitchMinDeg)
+  })
+})
+
+describe('the fixed states of the interface for the harness', () => {
+  class FakeAnim {
+    playbackRate = 1
+    currentTime = 0
+    ended = false
+    effect: { getComputedTiming(): { duration: number } }
+    constructor(readonly ms: number) {
+      this.effect = { getComputedTiming: () => ({ duration: ms }) }
+    }
+    finish(): void {
+      this.ended = true
+    }
+    cancel(): void {
+      this.ended = true
+    }
+  }
+  class FakeTransition extends FakeAnim {}
+  class FakeEl {
+    dataset: Record<string, string> = {}
+    kids: FakeEl[] = []
+    anims: FakeAnim[] = []
+    events: string[] = []
+    focused = 0
+    constructor(
+      readonly attrs: Record<string, string> = {},
+      public box: [number, number, number, number] = [0, 0, 0, 0],
+    ) {}
+    getBoundingClientRect() {
+      const [left, top, width, height] = this.box
+      return { left, top, width, height, right: left + width, bottom: top + height }
+    }
+    is(one: string): boolean {
+      const m = /^\[data-([a-z]+)(?:="([^"]*)")?\]$/.exec(one.trim())
+      if (!m) return false
+      const v = this.attrs[m[1]!]
+      return v !== undefined && (m[2] === undefined || v === m[2])
+    }
+    querySelectorAll(sel: string): FakeEl[] {
+      return this.kids.filter((k) => sel.split(',').some((one) => k.is(one)))
+    }
+    querySelector(sel: string): FakeEl | null {
+      return this.querySelectorAll(sel)[0] ?? null
+    }
+    getAnimations(): FakeAnim[] {
+      return this.anims
+    }
+    dispatchEvent(e: Event): boolean {
+      this.events.push(e.type)
+      return true
+    }
+    focus(): void {
+      this.focused++
+      doc.activeElement = this
+    }
+    blur(): void {
+      if (doc.activeElement === this) doc.activeElement = null
+    }
+    matches(sel: string): boolean {
+      return sel === ':focus-visible' && doc.activeElement === this
+    }
+  }
+  const doc = { activeElement: null as FakeEl | null, anims: [] as FakeAnim[], frame: new FakeEl({}, [0, 0, 390, 844]) }
+  let root: FakeEl
+  let seen: AppState[]
+  let visible: boolean[]
+  const shake = () => root.querySelector('[data-control="shake"]')!
+  const overlay = () => createOverlay(root as unknown as HTMLElement)
+
+  beforeEach(() => {
+    root = new FakeEl()
+    root.kids = [
+      new FakeEl({ control: 'shake' }, [133, 772, 124, 50]),
+      new FakeEl({ control: 'sound' }, [0, 0, 0, 0]),
+      ...seasons.map((s, i) => new FakeEl({ season: s }, [100 + 54 * i, 716, 44, 44])),
+    ]
+    seen = []
+    visible = []
+    doc.activeElement = null
+    doc.anims = [new FakeAnim(300)]
+    ui.mount = (_el, bridge) => {
+      const b = bridge as AppBridge
+      seen.push(b.state())
+      b.subscribe((st) => seen.push(st))
+      return {
+        setVisible(v) {
+          visible.push(v)
+          if (v) root.dataset.interface = 'shown'
+          else delete root.dataset.interface
+        },
+        dispose: () => undefined,
+      }
+    }
+    vi.stubGlobal('window', { setTimeout: (fn: () => void, ms: number) => setTimeout(fn, ms), clearTimeout: (id: ReturnType<typeof setTimeout>) => clearTimeout(id) })
+    vi.stubGlobal('requestAnimationFrame', (fn: () => void) => setTimeout(fn, 0))
+    vi.stubGlobal('document', { getAnimations: () => doc.anims, getElementById: (id: string) => (id === 'app' ? doc.frame : null), get activeElement() { return doc.activeElement } })
+    vi.stubGlobal('HTMLElement', FakeEl)
+    vi.stubGlobal('CSSTransition', FakeTransition)
+    vi.stubGlobal('MutationObserver', class { observe(): void {} disconnect(): void {} })
+  })
+  afterEach(() => {
+    ui.mount = null
+    vi.unstubAllGlobals()
+  })
+
+  it('shows the interface at rest in the asked season, undimmed, and says where the control is', async () => {
+    const o = overlay()
+    expect(o.controlsPx()).toBeNull()
+    const r = await o.put('rest', {})
+    expect(r).toEqual({ state: 'rest', control: 'shake', season: first, target: null, phase: null, rect: [133, 772, 124, 50], at: [195, 797], focusVisible: false, paused: 0, shown: true })
+    expect(visible).toEqual([true])
+    expect(seen.at(-1)).toMatchObject({ season: first, state: 'rest', target: null, busy: false, playing: 'live', ready: true })
+    expect(seen.some((st) => st.busy)).toBe(true)
+    expect(doc.anims[0]!.ended).toBe(true)
+    expect(o.controlsPx()).toBe(844 - 716)
+    expect(roomUnder(844, o.controlsPx())).toBeCloseTo((128 + FRAME.airPx) / 844, 12)
+    const other = await o.put('rest', { season: next(first), control: next(first) })
+    expect(other.season).toBe(next(first))
+    expect(other.control).toBe(next(first))
+    expect(other.rect).toEqual([154, 716, 44, 44])
+    expect(seen.at(-1)!.season).toBe(next(first))
+    expect(visible).toEqual([true, true])
+    o.hide()
+    expect(visible.at(-1)).toBe(false)
+    expect(o.controlsPx()).toBe(128)
+  })
+
+  it('gives a control the focus a keyboard gives it', async () => {
+    const o = overlay()
+    const mark = root.querySelector(`[data-season="${first}"]`)!
+    mark.focus()
+    const r = await o.put('focus', {})
+    expect(r.state).toBe('focus')
+    expect(r.focusVisible).toBe(true)
+    expect(shake().focused).toBe(1)
+    expect(doc.activeElement).toBe(shake())
+    expect(r.phase).toBeNull()
+    expect((await o.put('rest', {})).focusVisible).toBe(false)
+  })
+
+  it('holds a press at the asked phase of each animation, a press on a mark going to its season', async () => {
+    const o = overlay()
+    const slow = new FakeAnim(400)
+    const quick = new FakeAnim(120)
+    const fade = new FakeTransition(200)
+    root.anims = [slow, quick, fade]
+    const r = await o.put('pressed', { phase: 0.25 })
+    expect(r).toMatchObject({ state: 'pressed', control: 'shake', target: next(first), phase: 0.25, paused: 2, shown: true })
+    expect(seen.at(-1)).toMatchObject({ busy: true, target: next(first), season: first })
+    expect([slow.playbackRate, quick.playbackRate]).toEqual([0, 0])
+    expect(slow.currentTime).toBeCloseTo(100, 9)
+    expect(quick.currentTime).toBeCloseTo(30, 9)
+    expect(fade.ended).toBe(true)
+    expect(fade.playbackRate).toBe(1)
+    const far = seasons[(seasons.indexOf(first) + 2) % seasons.length]!
+    const mark = await o.put('pressed', { control: far, phase: 7 })
+    expect(mark.target).toBe(far)
+    expect(mark.phase).toBe(1)
+    expect(slow.currentTime).toBeCloseTo(399, 9)
+    expect((await o.put('pressed', {})).phase).toBe(0.5)
+    expect((await o.put('pressed', { phase: -3 })).phase).toBe(0)
+    await expect(o.put('pressed', { control: first })).rejects.toThrow(/season shown/)
+  })
+
+  it('holds the hint at one phase of its longest animation, so its parts stay together', async () => {
+    const o = overlay()
+    const slow = new FakeAnim(1000)
+    const quick = new FakeAnim(200)
+    root.anims = [slow, quick]
+    const r = await o.put('hint', { phase: 0.5 })
+    expect(root.events).toEqual(['hint'])
+    expect(r).toMatchObject({ state: 'hint', phase: 0.5, paused: 2, target: null })
+    expect(slow.currentTime).toBeCloseTo(500, 9)
+    expect(quick.currentTime).toBeCloseTo(199, 9)
+    expect(seen.at(-1)!.busy).toBe(false)
+  })
+
+  it('says a control is not on screen, and refuses what it does not know', async () => {
+    const o = overlay()
+    const r = await o.put('rest', { control: 'sound' })
+    expect(r.rect).toBeNull()
+    expect(r.at).toBeNull()
+    expect(INTERFACE_STATES).toEqual(['rest', 'focus', 'pressed', 'hint'])
+    await expect(o.put('dimmed', {})).rejects.toThrow(/no such interface state/)
+    await expect(o.put('rest', { season: 'monsoon' })).rejects.toThrow(/no such season/)
+    await expect(o.put('rest', { control: 'menu' })).rejects.toThrow(/no such control/)
+  })
+
+  it('says so when the build has no interface', async () => {
+    ui.mount = null
+    await expect(overlay().put('rest', {})).rejects.toThrow(/no interface/)
+    await expect(createOverlay(null).put('rest', {})).rejects.toThrow(/no interface/)
   })
 })
 

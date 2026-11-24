@@ -1,7 +1,7 @@
 import { config } from '../config'
 import { MOVES, poseOfRig, rigOf, type Rig } from '../film/moves'
 import type { Pose } from '../scene/cameras'
-import { sphereCentreHeightMm, sphereRadiusMm } from '../scene/framing'
+import { globeTopMm, sphereCentreHeightMm, sphereRadiusMm, type Framing } from '../scene/framing'
 import { REST_POSE, makeShake, type GlobePose, type ShakePath } from '../shake/table'
 
 export const FRAME = {
@@ -189,3 +189,46 @@ export function liveRig(aspect: number, yawDeg = 0, pitchDeg = 0, under = 0): Ri
 }
 
 export const livePose = (aspect: number, yawDeg = 0, pitchDeg = 0, under = 0): Pose => poseOfRig(liveRig(aspect, yawDeg, pitchDeg, under))
+
+/** The framing numbers of `framingOf`, for a rig that no camera of the config names: the app's own. */
+export function framingOfRig(rig: Rig, width: number, height: number): Framing {
+  const yaw = rig.yawDeg * RAD
+  const pitch = rig.pitchDeg * RAD
+  const dir = [Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), Math.cos(yaw) * Math.cos(pitch)] as const
+  const pos = [dir[0] * rig.distanceMm, rig.aimHeightMm + dir[1] * rig.distanceMm, dir[2] * rig.distanceMm] as const
+  const rl = Math.hypot(dir[2], dir[0])
+  const right = [dir[2] / rl, 0, -dir[0] / rl] as const
+  const up = [right[2] * dir[1], right[0] * dir[2] - right[2] * dir[0], -right[0] * dir[1]] as const
+  const tanHalf = Math.tan((rig.fovDeg * RAD) / 2)
+  const f = height / 2 / tanHalf
+  const project = (x: number, y: number, z: number): [number, number, number] => {
+    const vx = x - pos[0]
+    const vy = y - pos[1]
+    const vz = z - pos[2]
+    const depth = -(vx * dir[0] + vy * dir[1] + vz * dir[2])
+    return [width / 2 + (f * (vx * right[0] + vz * right[2])) / depth, height / 2 - (f * (vx * up[0] + vy * up[1] + vz * up[2])) / depth, depth]
+  }
+  const [cx, cy, cz] = project(0, sphereCentreHeightMm, 0)
+  const d = Math.hypot(pos[0], sphereCentreHeightMm - pos[1], pos[2])
+  const r = (f * sphereRadiusMm) / Math.sqrt(d * d - sphereRadiusMm * sphereRadiusMm)
+  const base = { left: Infinity, right: -Infinity, top: Infinity, foot: -Infinity }
+  for (let i = 0; i < 180; i++) {
+    const a = (i / 180) * Math.PI * 2
+    for (const y of [0, config.globe.baseHeightMm]) {
+      const [x, py] = project(Math.cos(a) * BASE_R, y, Math.sin(a) * BASE_R)
+      base.left = Math.min(base.left, x)
+      base.right = Math.max(base.right, x)
+      if (y > 0) base.top = Math.min(base.top, py)
+      else base.foot = Math.max(base.foot, py)
+    }
+  }
+  const frameHeightMm = 2 * rig.distanceMm * tanHalf
+  const frameWidthMm = (frameHeightMm * width) / height
+  const planeH = 2 * cz * tanHalf
+  const planeW = (planeH * width) / height
+  const ox = ((cx - width / 2) / width) * planeW
+  const oy = ((cy - height / 2) / height) * planeH
+  let cornerReachMm = 0
+  for (const sx of [-1, 1]) for (const sy of [-1, 1]) cornerReachMm = Math.max(cornerReachMm, Math.hypot((sx * planeW) / 2 - ox, (sy * planeH) / 2 - oy))
+  return { globe: { cx, cy, r }, base, frameHeightMm, frameWidthMm, heroFill: globeTopMm / frameHeightMm, cornerReachMm }
+}
