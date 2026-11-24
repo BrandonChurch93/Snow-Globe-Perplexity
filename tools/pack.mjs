@@ -38,7 +38,7 @@ const SURFACES = [
   { name: 'the pond and the ground around it', x: 0.02, y: 0.6 },
   { name: 'particles near the glass', x: -0.1, y: -0.05 },
   { name: 'particles far behind', x: 0.55, y: -0.55 },
-  { name: 'the base from its rim to its foot', x: 0, y: 1.2, pair: true },
+  { name: 'the base from its rim to its foot', x: -0.5, y: 1.25, pair: true },
   { name: 'the collar', x: 0.45, y: 0.88, pair: true },
   { name: 'the line where the base meets the surface, and the mirror image', x: 0, y: 1.62, pair: true },
   { name: 'what lies on the surface, left', x: -1.05, y: 1.45 },
@@ -449,7 +449,7 @@ async function buildR3(role) {
     const names = hero ? SURFACES.map((s, i) => `${i + 1} ${s.name}`).join('; ') : 'numbered left to right, top to bottom across the still, four to a row'
     const files = [one(await fitted(still.file, tmp(role, `${e.id}.jpg`)), `${still.what}, resized to fit`, 'a still, resized to fit')]
     const parts = chunks(tiles.map((img, i) => ({ img, label: i + 1 })), 6)
-    for (let i = 0; i < parts.length; i++) files.push(one(await sheetOf(parts[i], 3, tmp(role, `${e.id}-crops-${i + 1}.jpg`)), `native size crops of ${still.what}: ${names}`, `native size crops of the still before it: ${names}`))
+    for (let i = 0; i < parts.length; i++) files.push(one(await sheetOf(parts[i], 3, tmp(role, `${e.id}-crops-${i + 1}.jpg`)), `native size crops of ${still.what}: ${names}`, `native size crops of {first}: ${names}`))
     groups.push({ title: e.id, files })
   }
   return { groups, missing }
@@ -649,6 +649,7 @@ async function writeRole(role, built) {
           no = pairNo.get(f.pair)
         } else no = ++n
         f.name = `set-${L}-${String(no).padStart(2, '0')}${f.side ? `-${f.side}` : ''}.jpg`
+        f.legend = f.legend.replace('{first}', `\`${g.files[0].name}\``)
         if (!NAME.test(f.name)) throw new Error(`not a neutral name: ${f.name}`)
         const dest = path.join(folder, f.name)
         const size = await emit(f.file, dest)
@@ -695,6 +696,7 @@ for (const role of roles) {
 }
 writeJson(keyFile, key)
 fs.rmSync(buildDir, { recursive: true, force: true })
+if (fs.readdirSync(path.dirname(buildDir)).length === 0) fs.rmdirSync(path.dirname(buildDir))
 const count = Object.values(key.roles).reduce((n, r) => n + r.parts.reduce((m, p) => m + p.files.length, 0), 0)
 const gaps = Object.values(key.roles).reduce((n, r) => n + r.missing.length, 0)
 console.log(`pack ${roundName}: ${count} files for ${roles.join(', ')}, ${gaps} parts missing · ${tier} · ${Math.round((Date.now() - started) / 1000)} s`)
