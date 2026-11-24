@@ -89,13 +89,14 @@
     {
       "name": "base-winter",
       "unit": "winter",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/winter",
         "public/assets/winter"
       ],
       "standInHash": "3c6ea2bbcb3220ac",
-      "commit": "2530677"
+      "commit": "f5afe64",
+      "note": "Lathe profile, carved relief, brass ring and collar, snow and 35 icicles, agent/p3-base at 1950f69"
     },
     {
       "name": "miniature-winter",
