@@ -484,7 +484,7 @@ function buildR4(role) {
   return { groups: sheetGroups(role, wanted, missing), missing }
 }
 
-async function frameGrid(role, entries, name, cols, rows, width, missing) {
+async function frameGrid(role, entries, name, cols, rows, width, missing, legend = null) {
   const files = []
   const stills = []
   for (const e of entries) {
@@ -502,7 +502,7 @@ async function frameGrid(role, entries, name, cols, rows, width, missing) {
     for (const s of parts[i]) cells.push({ img: await sized(await load(s.file), tile.w, tile.h), label: ++n })
     const first = n - cells.length + 1
     const list = parts[i].map((s, j) => `${first + j} ${s.entry.what}`).join('; ')
-    files.push(one(await sheetOf(cells, cols, tmp(role, `${name}-${i + 1}.jpg`)), `frames ${parts[i].map((s) => s.id).join(', ')}, ${tier} tier: ${list}`, `frames in order: ${list}`))
+    files.push(one(await sheetOf(cells, cols, tmp(role, `${name}-${i + 1}.jpg`)), `frames ${parts[i].map((s) => s.id).join(', ')}, ${tier} tier: ${list}`, legend ? `${legend}: ${list}` : `frames in order, numbered ${first} to ${n}`))
   }
   return files
 }
@@ -547,8 +547,8 @@ async function buildR6(role) {
     const first = await tryDraw(film.make(0), missing)
     if (first) {
       const img = await load(first.file)
-      files.push(one(await save(await sized(img, wide, Math.round((wide * img.height) / img.width)), tmp(role, `${film.name.replace(' ', '-')}-first.jpg`)), `${film.name}, frame 0, ${wide} px wide`, 'the first frame'))
-      files.push(...(await frameGrid(role, frames.map(film.make), film.name.replace(' ', '-'), 3, 3, wide, missing)))
+      files.push(one(await save(await sized(img, wide, Math.round((wide * img.height) / img.width)), tmp(role, `${film.name.replace(' ', '-')}-first.jpg`)), `${film.name}, frame 0, ${wide} px wide`, `${film.name}: the first frame`))
+      files.push(...(await frameGrid(role, frames.map(film.make), film.name.replace(' ', '-'), 3, 3, wide, missing, `${film.name}: frames in order`)))
     }
     if (files.length) groups.push({ title: film.name, files })
     else missing.push(`${film.name}: no frame could be drawn, so this part is empty`)
