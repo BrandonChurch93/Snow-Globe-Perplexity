@@ -6,7 +6,7 @@ The parts `glass` and `liquid` ship no file. Everything is computed in `src/glob
 Made by: hand, fitted with `assets-src/glass/measure.mjs` and `assets-src/glass/profile.mjs` (Node 20.20.2, sharp)
 From: `references/approved/winter-rest.png`, `tools/lib/refcam.mjs` (the camera of the approved image), `config/showcase.json`
 Prompt or command: `node assets-src/glass/measure.mjs`, then the loop in "Making it again" below
-Takes: 0 generated assets. 28 tuning looks in the first round, 37 in the finishing round (limit 40 a round)
+Takes: 0 generated assets. 28 tuning looks in the first round, 37 in the finishing round; in the closing rounds 19 by the builder and about 26 by the closer up to the Round 6 freeze (over the limit of 40 if every crop counts as one), and 40 in the round to the Round 7 freeze (limit 40 a round)
 Why this one: three reflections of one window, the wall zone, the through view and the bubble land within about 15 of the approved image in the open liquid, the top cap and the panes; the ring at the limb puts the rim within about 15 at 105 to 200 degrees and at -30 to -54 degrees; the gap between the panes, the pane's edges and the bubble's rings are further off (see "Still off")
 Date: 2026-11-24
 
@@ -55,7 +55,37 @@ What the room gives and what the glass takes from it (main `b6ab917`): every ref
 
 ### Still off
 
-Against the approved image at the end of the round 4 fixes (the fit camera, hd draft), worst first: in the lower bowl and in the outer 4 percent of the lower half the render is smooth where the approved image is granular frost to the outline (the frost clears from share 0.96 outward all round, `src/seasons/winter/frost.ts`; the glass's ring there is now only shares 0.99 to 0.996); the wall band on the upper left (95 to 185 degrees, share 0.961 to 0.979) is smoother and a little wider than the approved one, whose spread of p10 to p90 is 40 to 60 against 30 to 55; the bubble's lower rim lacks the crisp bright line with the warm tan line under it; the first reflection's outer edge at 45 to 55 degrees starts 0.004 of the radius further in (share 0.974: 215 and 238 against 142 and 124); at draft tier (2 samples) the outline shows single pixel steps, at review tier (8) it is smooth; at `landed` the limb highlights are fainter than in `winter-shake.png`; nothing beyond exact refraction squeezes the inside toward the rim (the overall magnification is fitted and stays), the mirrored band at the very edge (`ring.mirror`) stands in for it.
+Against the approved image at the Round 7 freeze (the fit camera, hd draft), worst first:
+
+1. The bubble at the crown (Round 6, R1: "a flat oval disc" where the approved image has "a raised neck ring with visible glass thickness"). The approved feature's upper oval spans shares 0.941 to 0.99 and its ring's lower edge 0.889 to 0.914; the render's patch spans 0.925 to 0.961 and its ring's lower edge 0.867 to 0.878. On the centre column the patch sits about 15 px of the 2816 frame too low, with a dark gap (53 to 55 against 88 to 111) between it and the outline; below the patch the levels agree within 10. The lens presses everything inside the liquid below share about 0.96, so the patch cannot reach 0.99 from inside: matching it needs a disc drawn by the wall itself (angular radius about 5.2 degrees, centred about 11 degrees from true up toward the viewer, with a rim), which is not built. `leanDeg` 13 puts the ring's lower edge right (share 0.90) but squeezes the patch to 0.944 to 0.956, so 16 stays. A lit band inside the lower rim was tried and cut (129 to 154 where the approved image reads 85 to 119).
+2. The lower front between the pond and the collar (Round 6, R3-2: "a broad opaque gray band with a clean cutoff at the collar"). Read up from the collar ring's top at the centre column, at 0.8, 1.5, 2.5, 3.5, 5 and 6.5 mm: approved 67, 86, 95, 98, 109, 124; render 79, 76, 87, 92, 119, 126; before the seat's front shade and mirror 72, 65, 76, 101, 130, 133. The bank's lit top, 8 to 10 mm up, is the landform's, and the frost there is the frost's. The "narrow refracted edge" the critic asked for is not in the approved image, which darkens evenly down to one thin contact line; see `seat` below for what was tried.
+3. The first reflection: share 0.99 at 65 to 70 degrees is 42 to 49 too bright; shares 0.965 to 0.975 at 85 to 90 degrees are 40 to 75 too dark (the bubble's patch again); shares 0.965 to 0.97 at -10 to -5 degrees are 40 to 68 too dark.
+4. In the outer 4 percent of the lower half the render is smooth where the approved image is granular frost to the outline (`src/seasons/winter/frost.ts`).
+5. At `landed` the limb highlights are fainter than in `winter-shake.png`. The approved rest and shake images disagree at the rim; rest was followed.
+6. At draft tier (2 samples) the outline shows single pixel steps; at review tier (8) it is smooth.
+
+### What the closing rounds added (rounds 5 to 7)
+
+| Where | What it does | Locked value |
+| --- | --- | --- |
+| `src/globe/lens.ts`, `lensPlace(p, eye, out seen)` | Also says whether the point can be seen through the glass. The stage wrapper in `src/core/materials.ts` carries it as `vStageSeen` and `stageOutside()` draws nothing where all three corners of a triangle are unseen; that cured the invalid values of measure M1 at the base camera. Placement is unchanged, so `tools/lib/lens.mjs` is unchanged | 0 invalid values at 6 cameras, rest and landed |
+| `assets-src/glass/sanity.mjs` | Renders hd stills and counts the values outside the finite range, camera by camera | `sanity: pass` |
+| `band.dim` | How much the band inside the rim darkens the wall | 0.25 (was 0.5) |
+| `window.orders[0].outFrom`, `outSlope`; `edgeDeg.firstOuter` | The first reflection reaches the rim between 45 and 60 degrees and its outer edge is crisp | 0.8, -1; 1.12 |
+| `tip.tailLevel`, `tailLeanDeg` | The first reflection's low tail | 0.021, 3.2 |
+| `edge.line` | A crisp line on the lit limb at shares `from` to `peak`: `dir` and `lobe` say where along the limb, `spanDir` and `span` how far it runs, `rest` its level elsewhere, `wander` its slow noise, `glint`, `glintDir` and `glintLobe` the hot spot | `from` 0.9955, `peak` 0.998, `gain` 1.3, `rest` 0.35, `wander` 0.5, `glint` 1.8 |
+| `edge.keyOn`, `keyLow`, `keyLowDir`, `keyLowLobe`, `tip`, `tipShare` | Where the key light is piped along the rim and how far down it reaches | 0.35, 0.45, [0.5, 0.866, 0], [0.8, 0.93], 0.5, [0.984, 0.997] |
+| `seat.topMm` | How much of the shell above `SEAT_Y` the collar ring hides; everything below is measured up from there | 4 |
+| `seat.lineMm`, `lineDepth` | The thin dark contact line on the ring | 0.8, 0.7 |
+| `seat.shadeMm`, `shade`, `gain` | The contact shade at the limb (squared) and the lift of the base's reflection near the seat | 4.5, 0.4, 1.5 |
+| `seat.wideMm`, `wide` | On the front the shade is linear over this height instead | 9, 0.32 |
+| `seat.footMm`, `footWideMm`, `foot`, `footTint` | A thin warm line above the collar | 1.1, 0.14, 0.1, [1.5, 1.15, 0.85] |
+| `seat.mirrorMm`, `mirrorSpanMm`, `mirror`, `mirrorCap`, `mirrorTaps` | Between the collar and `mirrorMm` the inner face gives back a faint, flipped image of the bank, squeezed from `mirrorSpanMm` more, read from the copy of the inside; strongest a third of the way down, nothing at the collar | 4, 2, 0.2, 0.8, 4 |
+| `seat.limb` | Shares between which the front's treatment hands over to the limb's | [0.9, 0.975] |
+| `bend` (`from`, `soft`, `shift`, `power`, `dark`, `taps`, `bubbleDeg`), `uBehind`, `uBehindSize`, `uBubbleAt`, `copyBehind()` | The named fallback of `kit/03-METHOD.md` section 2: the inside is copied when the wall is about to be drawn (`THREE.FramebufferTexture`, no draw call) and the rim zone from share `from` outward is read from that copy, squeezed toward the rim. Skipped with no target, a multisampled target or a diagnostic view. At rest it moves 1237 pixels of the hd still by more than 2 (largest 42), because the rim zone holds dark liquid, frost and reflections and the lens already places every vertex by exact refraction; the approved image shows no more | 0.92, 0.2, 0.16, 2, 0.5, 4, [13, 19] |
+| `bubble.under`, `underTint` | A faint warm line under the bubble's outer ring on the front | 0.03, [1, 0.66, 0.36] |
+
+Tried for the seat and cut: a bent edge that replaced the lowest 2.4 mm with a stretched copy of the inside (a dark band at the hero camera, stretched stripes at the base camera; the approved image has neither), a sheen of sky light above the collar (it put a step where it began), and a shade of 0.7 over 9 mm (20 to 40 darker than the approved image in the lowest 2.5 mm).
 
 ### Making it again for another season
 
@@ -81,3 +111,9 @@ Against the approved image at the end of the round 4 fixes (the fit camera, hd d
    The three numbers after the file are the centre and radius of the glass circle in pixels of a 2816 by 1584 frame (`node assets-src/glass/outline.mjs` fits them); then angles from, to, step in degrees (0 is right, 90 is up), shares from, to, step, the percentile, and `rgb` or `lum`.
 9. Test: `npx vitest run`, `npm run determinism`, the fit of step 1, stills at `rest` and `landed` from `hero`, `macro`, `low` and `interior`, `--diag standins`, and once at `--format hd`.
 10. After every merge of `origin/main` run the loop of step 6 once and read the patches: the rig, the room and the grade all move the glass. If the open liquid drifts, only `room.level` should need to change.
+11. The seat at the collar. `seat.topMm` first: `node assets-src/glass/sanity.mjs --season <season> --cameras base --states rest --keep` writes `out/work/glass/sanity-rest-base.png`; move `topMm` until the dark contact line sits on the ring's top edge. Then read the approved image up from the ring on the front and the fit still the same way (one step of 0.0167 is about 1 mm; angles run from -90 to 270, so the columns left of the bottom are `250,270,10`):
+   `node assets-src/glass/polar.mjs approved 1410.9,652.7,553.1 -90,-70,10 0.66,0.78,0.0167 50 lum <season>`
+   `node assets-src/glass/polar.mjs out/work/stills/<season>-rest-hero-hd-draft-rig.png 1407.9,652.5,554.1 -90,-70,10 0.66,0.78,0.0167 50 lum`
+   Set `seat.wide` until the upper rows agree, then `seat.mirror` until the lowest 3 mm agree. Never replace what is behind with a stretched copy there: it shows as stripes at the base camera. Look at the base camera's still after every change.
+12. The rim zone (`bend`) needs no fitting; keep `bend.from` below 1. Its check is `npm run still -- --season <season> --state rest --camera hero --tier draft --format hd --diag refraction --force`: the miniature must be larger with the lens than without.
+13. Before every push: `npx tsc --noEmit`, `npx vitest run`, `node assets-src/glass/sanity.mjs --season <season>` (12 lines of `"invalid":0`, then `sanity: pass`), `npm run measure -- --unit <season> --only M1 --tier draft`, `npm run determinism`, and `npm run still -- --season <season> --state rest --camera hero --tier draft --format hd --diag standins --force` (black).

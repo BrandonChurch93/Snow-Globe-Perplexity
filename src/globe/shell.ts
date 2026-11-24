@@ -51,10 +51,10 @@ export const glassLook = {
   wave: { rings: 46, ringDeg: 0.3, driftDeg: 0.35, inner: 1.9 },
   dust: { cells: 240, share: 0.085, depth: 0.42 },
   hair: { count: 7, widthMm: 0.035, depth: 0.32, bend: 0.012 },
-  seat: { topMm: 4, lineMm: 0.8, lineDepth: 0.7, shadeMm: 4.5, shade: 0.4, gain: 1.5, footMm: 1.1, footWideMm: 0.14, foot: 0.1, footTint: [1.5, 1.15, 0.85] as V3 },
+  seat: { topMm: 4, lineMm: 0.8, lineDepth: 0.7, shadeMm: 4.5, shade: 0.4, gain: 1.5, wideMm: 9, wide: 0.32, footMm: 1.1, footWideMm: 0.14, foot: 0.1, footTint: [1.5, 1.15, 0.85] as V3, mirrorMm: 4, mirrorSpanMm: 2, mirror: 0.2, mirrorCap: 0.8, mirrorTaps: 4, limb: [0.9, 0.975] as const },
   bloom: { gain: 0.6, floor: 0.1, power: 3, white: 3, whitePower: 8 },
   through: { disc: 0.0009, point: 3, pointGain: 2.5, wall: [0.94, 0.975, 0.985] as V3, mirror: 0.06, steps: 5, own: 0.12, window: 0.018, softDeg: 3, lift: [0.056, 0.012, 2.5] as const, liftTint: [0.9, 1.25, 1] as V3, arcs: 0.4, arcRings: 13 },
-  bubble: { widthMm: 20.5, depthMm: 5.6, gapMm: 0.12, patch: 0.46, waist: 0.5, flat: 2.7, leanDeg: 16, slide: 0.0025, wobble: 0.09, line: 0.015, sky: 0.2, inner: 0.08, glint: 0.5, milk: 0.05, patchFill: 0.15, fill: [1.6, 1.25, 0.85] as V3, shade: 0.12, edge: 0.5, warm: 1, reach: 0.35, patchGain: 0.1, swirl: 0.12, streakDir: [-0.9, 0, 0.35] as V3, streakPower: 2.5, lip: 0.6, spark: 2.5, sparkTint: [1, 0.92, 0.75] as V3 },
+  bubble: { widthMm: 20.5, depthMm: 5.6, gapMm: 0.12, patch: 0.46, waist: 0.5, flat: 2.7, leanDeg: 16, under: 0.03, underTint: [1, 0.66, 0.36] as V3, slide: 0.0025, wobble: 0.09, line: 0.015, sky: 0.2, inner: 0.08, glint: 0.5, milk: 0.05, patchFill: 0.15, fill: [1.6, 1.25, 0.85] as V3, shade: 0.12, edge: 0.5, warm: 1, reach: 0.35, patchGain: 0.1, swirl: 0.12, streakDir: [-0.9, 0, 0.35] as V3, streakPower: 2.5, lip: 0.6, spark: 2.5, sparkTint: [1, 0.92, 0.75] as V3 },
 }
 
 const G = config.globe
@@ -409,6 +409,7 @@ void main() {
   float s = glassShare(v);
   float bendRaw = glassShareRaw(normalize(vStageLocal - vEye));
   vec2 bendSlope = vec2(dFdx(bendRaw), dFdy(bendRaw));
+  vec2 footSlope = vec2(dFdx(p.y), dFdy(p.y));
 #endif
   float nv = clamp(dot(n, -v), 0.0, 1.0);
 
@@ -506,12 +507,14 @@ void main() {
   float lift = p.y - SEAT_Y;
   float above = lift - ${num(glassLook.seat.topMm)};
   float shade = 1.0 - smoothstep(0.0, ${num(glassLook.seat.shadeMm)}, above);
+  float wide = clamp(1.0 - above / ${num(glassLook.seat.wideMm)}, 0.0, 1.0);
   float line = 1.0 - smoothstep(${num(glassLook.seat.lineMm * 0.25)}, ${num(glassLook.seat.lineMm)}, above);
   float low = smoothstep(${num(glassLook.seat.shadeMm * 2.5)}, 0.0, lift);
   col *= 1.0 + (${num(glassLook.seat.gain)} - 1.0) * low * step(0.0, -r1.y);
-  float seat = (1.0 - ${num(glassLook.seat.shade)} * shade * shade) * (1.0 - ${num(glassLook.seat.lineDepth)} * line);
+  float footLimb = 1.0 - smoothstep(${num(glassLook.seat.limb[0])}, ${num(glassLook.seat.limb[1])}, s);
+  float seat = (1.0 - mix(${num(glassLook.seat.shade)} * shade * shade, ${num(glassLook.seat.wide)} * wide, footLimb)) * (1.0 - ${num(glassLook.seat.lineDepth)} * line);
   col *= seat;
-  if (uOwn > 0.5) col += uSky * ${vec(glassLook.seat.footTint)} * (${num(glassLook.seat.foot)} * exp(-pow((above - ${num(glassLook.seat.footMm)}) / ${num(glassLook.seat.footWideMm)}, 2.0)) * (0.5 + 0.5 * fine));
+  if (uOwn > 0.5) col += uSky * ${vec(glassLook.seat.footTint)} * (${num(glassLook.seat.foot)} * exp(-pow((above - ${num(glassLook.seat.footMm)}) / ${num(glassLook.seat.footWideMm)}, 2.0)) * (0.5 + 0.5 * fine) * footLimb);
 
   col = min(col, ${num(glassLook.shoulder.from)}) + ${num(glassLook.shoulder.to - glassLook.shoulder.from)} * (1.0 - exp(-max(col - ${num(glassLook.shoulder.from)}, 0.0) / ${num(glassLook.shoulder.to - glassLook.shoulder.from)}));
   float alpha = (1.0 - f1) * (1.0 - ${num(glassLook.band.shade)} * band) * seat * (1.0 - ${num(W.dark.shade)} * deep) * (1.0 - ${num(glassLook.rim.clear)} * rimZone * uOwn);
@@ -579,6 +582,18 @@ void main() {
     lit += bent * (keep * bendOn * (1.0 - ${num(glassLook.bend.dark)} * bendAt) / ${num(glassLook.bend.taps)});
     keep *= 1.0 - bendOn;
   }
+  float footPer = length(footSlope);
+  float footU = 1.0 - above / ${num(glassLook.seat.mirrorMm)};
+  if (uBehindSize.x > 0.0 && uLens.z > 0.5 && above > 0.0 && footU > 0.0 && footPer > 1e-6) {
+    vec3 foot = vec3(0.0);
+    for (int i = 0; i < ${glassLook.seat.mirrorTaps}; i++) {
+      float uj = clamp(footU - ((float(i) + 0.5) / ${num(glassLook.seat.mirrorTaps)} - 0.5) * footPer / ${num(glassLook.seat.mirrorMm)}, 0.0, 1.0);
+      vec3 tap = textureLod(uBehind, (gl_FragCoord.xy + footSlope * ((${num(glassLook.seat.mirrorSpanMm)} * uj + ${num(glassLook.seat.mirrorMm)} * footU) / (footPer * footPer))) / uBehindSize, 0.0).rgb;
+      if (any(isnan(tap)) || any(isinf(tap))) tap = vec3(0.0);
+      foot += max(tap, 0.0);
+    }
+    lit += min(foot / ${num(glassLook.seat.mirrorTaps)}, vec3(${num(glassLook.seat.mirrorCap)})) * (${num(glassLook.seat.mirror)} * 6.75 * footU * (1.0 - footU) * (1.0 - footU) * footLimb * limb * (1.0 - ${num(glassLook.seat.lineDepth)} * line));
+  }
   gl_FragColor = vec4(lit, keep);
 #endif
 }`
@@ -633,6 +648,7 @@ void main() {
   col += inPatch * (uSky * ${vec(glassLook.bubble.fill)} * ${num(glassLook.bubble.patchFill)} * (0.8 + 0.4 * fine) + streak * ${num(glassLook.bubble.patchGain)} * (0.6 + 0.4 * swirl));
   col += between * (uSky * ${num(glassLook.bubble.milk * 0.2)} + streak * ${num(glassLook.bubble.swirl)} * smoothstep(0.42, 0.8, swirl) * smoothstep(${num(glassLook.bubble.patch)}, 0.9, x));
   col += lip * spark * uKeyCol * ${vec(glassLook.bubble.sparkTint)} * ${num(glassLook.bubble.spark)};
+  col += uKeyCol * ${vec(glassLook.bubble.underTint)} * (${num(glassLook.bubble.under)} * exp(-pow((x - ${num(1 - glassLook.bubble.line * 0.5)}) / (wide * 0.8), 2.0)) * thin * front * front * (0.6 + 0.8 * fine));
   float alpha = (1.0 - ${num(glassLook.bubble.lip)} * lip) * (1.0 - ${num(glassLook.bubble.shade)} * inPatch) * (1.0 - ${num(glassLook.bubble.edge)} * outerRing * (1.0 - 0.5 * front)) * (1.0 - ${num(glassLook.bubble.edge)} * innerRing * front);
   gl_FragColor = vec4(col, alpha);
   if (uDiag != 0) gl_FragColor = vec4(stageDiag(vec3(1.0), nb, 0.0, 0.0, 0.0).rgb, 0.0);
