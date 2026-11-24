@@ -395,10 +395,12 @@ function snowOver(azIn) {
 function snowThickness(azIn, r) {
   const u = (azIn + 180) / 360
   const lobes = snowLobes(azIn)
+  const wobble = (fbm(u * 60, r / 2.4, 60, 64, 173, 2) - 0.5) * 9
   let sum = 0
   for (const m of HEAPS) {
     const az = turnTo(azIn, (m.a0 + m.a1) / 2)
-    const a = smooth(m.a0, m.a0 + m.ea, az) * (1 - smooth(m.a1 - m.eb, m.a1, az))
+    const ragged = az + wobble
+    const a = smooth(m.a0, m.a0 + m.ea, ragged) * (1 - smooth(m.a1 - m.eb, m.a1, ragged))
     if (a <= 0) continue
     const over = overOf(m, az) * lobes
     const end = mix(m.r1, snowEdge - 0.4, over)
