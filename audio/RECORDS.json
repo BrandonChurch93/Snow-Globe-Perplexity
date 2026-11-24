@@ -1043,6 +1043,242 @@
       },
       "time": "2026-11-24T06:44:38.198Z",
       "answersTime": "2026-11-24T06:44:38.938Z"
+    },
+    {
+      "cue": "lift",
+      "take": 3,
+      "round": "build",
+      "class": "touch",
+      "season": null,
+      "line": "Glass and a heavy base leaving a stone surface, soft",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "A heavy stone mortar slid a hand's width across a marble countertop and picked up off it: one short deep grinding scrape of stone on stone, then the weight leaving the surface, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 1.5,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 17
+      },
+      "source": {
+        "name": "lift-take3.wav",
+        "bytes": 284238,
+        "sha256": "03b6ef267cae30bfec1e40d58b2a7abca22dd148b480bb91d48ac827900b7f16",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 1.48,
+        "kbps": 1536
+      },
+      "sha256": "b66d63f1ccbb0d84b2f7faaaecae5fe653116bf25ff86b0dff2476a7427250f3",
+      "measured": {
+        "seconds": 1.48,
+        "peakDb": 0,
+        "truePeakDb": 0.09,
+        "lufs": -16.05,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -19.38,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0.135,
+        "soundSeconds": 1.345,
+        "tailDb": -67.15,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 602,
+          "bands": {
+            "sub": 0.0171,
+            "low": 0.5157,
+            "lowMid": 0.3256,
+            "mid": 0.1319,
+            "high": 0.0091,
+            "air": 0.0006
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -16.1,
+        "lra": 0,
+        "truePeakDb": 0.1
+      },
+      "fits": {
+        "wantSeconds": 0.5,
+        "soundSeconds": 1.345,
+        "ok": false,
+        "note": "the sound is 1.345 s, long for a cue of 0.5 s: the chain cuts it to length"
+      },
+      "answers": {
+        "verdict": "fits",
+        "why": "Numbers: 1.48 s, one continuous event, 26 percent of its energy under 200 Hz and 59 percent between 200 Hz and 1 kHz, low and dull. Listener: one brief harsh scrape of a hard heavy thing, like ceramic or heavy glass, moved across and lifted off a hard stone surface; no voice, no music. It is louder and harsher than the soft the line asks; the chain sets the level, and the cue plays its first half second.",
+        "listener": {
+          "line": "Glass and a heavy base leaving a stone surface, soft",
+          "open": "1. I hear a brief, harsh scraping or dragging sound. It resembles a hard object, like a ceramic cup or a piece of furniture, being pushed across a solid surface.\n2. There is exactly one continuous sound event.\n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or musical instrument present.\n5. The sound starts abruptly with a loud friction noise and ends suddenly as soon as the movement stops.",
+          "fit": "1. No, the sound does not perfectly fit the description. While it does sound like a heavy glass or ceramic object moving and lifting off a hard stone surface, the grating noise is loud and harsh, which contradicts the word \"soft.\"\n2. The loud, abrasive dragging and scraping noise does not belong to the description of a \"soft\" sound. \n3. No, there is no human voice, spoken word, or singing in this audio.",
+          "note": "the first open call answered that no file came; it was asked again once and the second answer is recorded, as audio/QUESTIONS.md says"
+        }
+      },
+      "time": "2026-11-24T20:31:22.803Z",
+      "answersTime": "2026-11-24T20:31:23.246Z"
+    },
+    {
+      "cue": "shake-winter",
+      "take": 3,
+      "round": "build",
+      "class": "impact",
+      "season": "winter",
+      "line": "Liquid sloshing and churning inside glass, with a hiss of snow and tiny bells in it",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "Water sloshing and churning hard inside a sealed bottle that is shaken back and forth six times, and a strap of small sleigh bells shaken along with it: wet heavy sloshes and bright tiny jingles together, with a fine hiss, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 2.6,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 29
+      },
+      "source": {
+        "name": "shake-winter-take3.wav",
+        "bytes": 491598,
+        "sha256": "48d1d28cd08befe2b8c508d21515fe28ca044683ab68c966a8447b328134f151",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 2.56,
+        "kbps": 1536
+      },
+      "sha256": "10ab4d8d611aaf40d4de98f77035d5ab79d84a417e97592b38fee77185d4cfef",
+      "measured": {
+        "seconds": 2.56,
+        "peakDb": -5.08,
+        "truePeakDb": -5.05,
+        "lufs": -20.79,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": -68.17,
+        "rmsDb": -28.13,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0.14,
+        "soundSeconds": 2.42,
+        "tailDb": -76.2,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 7505,
+          "bands": {
+            "sub": 0.0023,
+            "low": 0.0003,
+            "lowMid": 0.0004,
+            "mid": 0.2365,
+            "high": 0.3542,
+            "air": 0.4062
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -20.8,
+        "lra": 0,
+        "truePeakDb": -5.1
+      },
+      "fits": {
+        "wantSeconds": 2.6,
+        "soundSeconds": 2.42,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: 2.37 s, four bursts, 59 percent of its energy above 8 kHz and nothing under 1 kHz, so there is no body of water in it. Listener: small sleigh bells shaken four times in open air; no liquid, no glass, no hiss.",
+        "listener": {
+          "line": "Liquid sloshing and churning inside glass, with a hiss of snow and tiny bells in it",
+          "open": "1. I hear the bright, metallic jingling of small bells, similar to sleigh bells, being rhythmically shaken.\n2. There are four separate shaking events.\n3. No, there is no human voice, spoken word, breath, or singing present.\n4. Yes, the sound is produced by a musical percussion instrument, though there is no tune or melody.\n5. It begins abruptly with the first shake of the bells. It ends shortly after the fourth shake as the metallic ringing quickly fades out.",
+          "fit": "1. No, because the audio only consists of metallic bells shaking, without any sounds of liquid sloshing, glass, or hissing snow.\n2. The clear, unmuffled ringing of the bells does not quite fit, as they sound like they are shaking in the open air rather than submerged in liquid inside a glass container.\n3. No, there is no human voice, spoken word, or singing in the audio."
+        }
+      },
+      "time": "2026-11-24T20:31:23.926Z",
+      "answersTime": "2026-11-24T20:31:24.355Z"
+    },
+    {
+      "cue": "ui-tick",
+      "take": 2,
+      "round": "build",
+      "class": "interface",
+      "season": null,
+      "line": "A soft tick for a control",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "One short dull tick, a small wooden bead tapped once on a thick wooden table, muted and dry, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 0.5,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 6
+      },
+      "source": {
+        "name": "ui-tick-take2.wav",
+        "bytes": 92238,
+        "sha256": "71e89c9f354df10dc48bf5f7d625ab17c906ed28c13a0adfd4bc3ee347c42090",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 0.48,
+        "kbps": 1537
+      },
+      "sha256": "823a1f759117a7f1974264210f69ae52f8d9aad48e7b7b0ec6b89e34be8f5b37",
+      "measured": {
+        "seconds": 0.48,
+        "peakDb": 0,
+        "truePeakDb": 0,
+        "lufs": -20.54,
+        "lufsMeasure": "gated",
+        "soundLufs": -19.96,
+        "offsetDb": -79.85,
+        "rmsDb": -22.98,
+        "silenceFrontSeconds": 0.02,
+        "silenceEndSeconds": 0.11,
+        "soundSeconds": 0.35,
+        "tailDb": -63.72,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 178,
+          "bands": {
+            "sub": 0.0599,
+            "low": 0.776,
+            "lowMid": 0.1637,
+            "mid": 0.0002,
+            "high": 0.0001,
+            "air": 0
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -20.5,
+        "lra": 0,
+        "truePeakDb": 0
+      },
+      "fits": {
+        "wantSeconds": 0.08,
+        "soundSeconds": 0.35,
+        "ok": false,
+        "note": "the sound is 0.35 s, long for a cue of 0.08 s: the chain cuts it to length"
+      },
+      "answers": {
+        "verdict": "fits",
+        "why": "Numbers: 0.37 s, one event, all of its energy under 1 kHz, dull where take 1 was a high clink. Listener: on the copy with silence around it, one brief dry click like a mouse button or a small plastic switch; the fit call says yes, a single brief quiet click of a control. The first open call, on the bare 0.37 s file, heard a struck bell; the numbers show nothing above 1 kHz, and a short bare file misled the listener before (audio/QUESTIONS.md).",
+        "listener": {
+          "line": "A soft tick for a control",
+          "open": "1. I hear a brief, sharp clicking or popping sound. It has a dry, percussive character, much like a computer mouse click or a small plastic switch.\n2. There is only one separate sound event.\n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or musical instrument present.\n5. The audio starts abruptly with a sharp transient impact and ends almost instantly as the sound quickly fades into silence.",
+          "fit": "1. Yes, it fits the description because the audio consists of a single, brief, and quiet clicking noise typical of a mechanical button or digital interface control.\n2. Nothing in the sound contradicts the description, as it contains only the isolated soft tick with no additional noises.\n3. No, there is no human voice, spoken word, or singing present in the audio.",
+          "openBare": "1. I hear a sharp, high-pitched metallic \"ding,\" similar to a reception bell being struck or a digital notification chime. The sound is clear and has a brief, resonant echo.\n2. There is exactly one separate sound event.\n3. No, there is no human voice, spoken word, breath, or singing present.\n4. There is no music or melody, although the sound is produced by a bell-like instrument or synthesizer.\n5. It starts suddenly with a sharp, percussive strike and ends by naturally fading out as the ringing sound decays."
+        }
+      },
+      "time": "2026-11-24T20:31:24.932Z",
+      "answersTime": "2026-11-24T20:31:25.354Z"
     }
   ],
   "kept": [
@@ -1067,30 +1303,42 @@
       "time": "2026-11-24T04:10:35.207Z"
     },
     {
+      "cue": "lift",
+      "take": 3,
+      "round": "build",
+      "file": "audio/kept/lift.wav",
+      "sha256": "3def1da6008ad9f0cb4e3435664c84e5bc123b468ffa00a1872b2ae509ee85c6",
+      "seconds": 0.5,
+      "lufs": -22,
+      "lufsMeasure": "gated",
+      "time": "2026-11-24T20:31:26.066Z"
+    },
+    {
       "cue": "ui-tick",
-      "take": 1,
+      "take": 2,
       "round": "build",
       "file": "audio/kept/ui-tick.wav",
-      "sha256": "fb7f879928a0e672832e6cde6947bea32e3b5b5ea65430b9a0eeaac02a814598",
+      "sha256": "1e5e5777e90657a53cdc34ed688370992adb9a744ee111b37dbfcb3746b54cb8",
       "seconds": 0.08,
-      "lufs": -26.07,
+      "lufs": -26,
       "lufsMeasure": "own-length",
-      "time": "2026-11-24T04:24:27.295Z"
+      "time": "2026-11-24T20:31:26.778Z"
     }
   ],
   "pack": {
-    "time": "2026-11-24T04:24:36.799Z",
+    "time": "2026-11-24T20:31:35.696Z",
     "kbps": 192,
-    "bytes": 44352,
+    "bytes": 63360,
     "fits": true,
     "files": [
       {
         "file": "sprite.mp3",
-        "bytes": 44352,
-        "sha256": "8c3a0b5c1e4b71ca80b8c5d9c7d00df9ea59eecb615f081130de502407334744"
+        "bytes": 63360,
+        "sha256": "d3386a561bf88bc721dd7a4177a01527af17c3012c3fe1047968ea9c40204054"
       }
     ],
     "sprites": [
+      "lift",
       "glass-clink",
       "ui-tick",
       "ui-sound-on"
@@ -1100,12 +1348,12 @@
   },
   "mixes": {
     "audio/mix/blockout.wav": {
-      "sha256": "746d00f3c956e1bcd64e3cec4ce967c457f0b8e1b6e2f25f29b2e1485b93ae3a",
+      "sha256": "0bea7fb6edbc17a43fa7710f0abcfb279b7de8043acf993ea445d120810388c7",
       "lufs": -14,
-      "truePeakDb": -6.9,
+      "truePeakDb": -1.1,
       "candidate": "blockout",
       "which": "b",
-      "time": "2026-11-24T08:21:51.162Z"
+      "time": "2026-11-24T20:34:59.266Z"
     }
   }
 }
