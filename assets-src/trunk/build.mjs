@@ -197,7 +197,7 @@ async function barkMaps() {
     const round = 1 - Math.pow(1 - Math.min(1, gap / 0.7), 2)
     const fibre = smooth(0.03, 0.22, gapFine)
     const flat = 0.3 / Math.max(wide[i], 0.05)
-    const k = (0.55 + 0.45 * flat) * Math.pow(grain, 0.2) * (STRANDS.dark + (1 - STRANDS.dark) * whole) * (0.84 + 0.3 * tone) * (0.72 + 0.28 * fibre)
+    const k = (0.44 + 0.56 * flat) * Math.pow(grain, 0.2) * (STRANDS.dark + (1 - STRANDS.dark) * whole) * (0.84 + 0.3 * tone) * (0.62 + 0.38 * fibre)
     const r = Math.pow(lerp(img.px[i * 3], lanes[0][i], STRANDS.streak) * k, 0.92) * 1.08
     const g = Math.pow(lerp(img.px[i * 3 + 1], lanes[1][i], STRANDS.streak) * k, 0.92) * 1.02
     const b = Math.pow(lerp(img.px[i * 3 + 2], lanes[2][i], STRANDS.streak) * k, 0.92) * 0.9

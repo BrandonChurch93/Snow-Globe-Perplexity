@@ -341,7 +341,7 @@ export interface Cluster {
 const DOME = 0.3
 const BODY = { blend: 0.5, bias: 0.4 }
 const TOP_DROP = 1.56
-const CAP = { lift: 1.05, thick: 0.25, cover: 1.08, fore: 0.12, lee: 0.12, skew: 0.45, rim: 0.98, brow: 0.5, swell: 0.42, ripple: 0.16, lump: 0.08, flat: 2.4, gap: 2.2, gapFrom: 0.24, gapTo: 0.8, sink: 0.1, slope: 0.75, depth: -0.75, lip: 0.4, droop: 0.7, hem: 0.9 }
+const CAP = { lift: 1.05, thick: 0.25, cover: 1.08, fore: 0.12, lee: 0.12, skew: 0.45, rim: 0.98, brow: 0.5, swell: 0.42, ripple: 0.16, lump: 0.08, flat: 2.4, gap: 2.2, gapFrom: 0.24, gapTo: 0.8, sink: 0.1, slope: 0.75, depth: -0.75, lip: 0.7, droop: 0.7, hem: 0.9 }
 const LOADS: readonly (readonly [number, number, number, number, number])[] = [[1.3, 1, 0.2, 0, 0.3], [1.4, 1.02, 0, 0.8, 1], [1.5, 1.02, -0.2, -0.5, -1], [0.9, 1, 0, 0.8, 1], [1.3, 0.95, -0.8, -1, -1], [1.2, 1.05, -1.2, -1.2, -1], [0.35, 0.5, 0, 0, 1], [0.95, 1.02, 0.1, 1.2, 1], [1.2, 1, 0.3, 1.2, 1], [1, 1.02, -0.6, -0.6, -1]]
 const wobble = (x: number, h: number, z: number): number => 0.16 * Math.sin(1.9 * x + 0.3 * h) * Math.sin(2.3 * h + 1.1 * z) * Math.sin(1.7 * z + 0.5 * x) + 0.07 * Math.sin(4.3 * x + 1) * Math.sin(3.9 * h + 2) * Math.sin(4.7 * z)
 const dome = (rim: number): number => 1 - DOME * Math.pow(rim, 1.5)
@@ -354,14 +354,14 @@ function gather(): Cluster[] {
     const [a, b, c] = P.size
     const thin = Math.min(1, Math.max(0.62, b / 3.3))
     const drop = TOP_DROP * thin
-    const n = Math.round((a * c * 0.95) / (thin * thin))
+    const n = Math.round((a * c * 1.25) / (thin * thin))
     const put = (s: number, v: number, d: number, radius: number): void => {
       out.push({ pad, radius, local: [P.at[0] + f.side[0] * s + f.up[0] * v + f.depth[0] * d, P.at[1] + f.side[1] * s + f.up[1] * v + f.depth[1] * d, P.at[2] + f.side[2] * s + f.up[2] * v + f.depth[2] * d] })
     }
     for (let k = 0; k < n; k++) {
       const rr = Math.sqrt((k + 0.5) / n)
       const th = k * 2.39996 + rng.range(-0.3, 0.3)
-      const r = lerp(1.95, 1.6, rr) * rng.range(0.84, 1.18) * thin
+      const r = lerp(1.7, 1.4, rr) * rng.range(0.84, 1.18) * thin
       const top = b * dome(rr * rr) - drop
       put(Math.cos(th) * rr * (a - r), top - r + rng.range(-0.45, 0.2) * thin, Math.sin(th) * rr * (c - r), r)
     }
@@ -369,7 +369,7 @@ function gather(): Cluster[] {
     for (let k = 0; k < under; k++) {
       const rr = 0.93 * Math.sqrt((k + 0.5) / under)
       const th = k * 2.39996 + 1.3 + rng.range(-0.4, 0.4)
-      const r = rng.range(1.05, 1.6) * thin
+      const r = rng.range(0.95, 1.4) * thin
       put(Math.cos(th) * rr * (a - r), -b + r + 0.36 * b * rr * rr * rr + rng.range(0, 0.6) * thin, Math.sin(th) * rr * (c - r), r)
     }
   })
