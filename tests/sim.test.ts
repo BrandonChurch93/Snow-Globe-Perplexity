@@ -11,6 +11,7 @@ import { blockoutSdf, buildSdf, GROUND_Y, INNER_R, sdfSample } from '../src/part
 import { EngineClient, type EnginePort } from '../src/particles/engine/client'
 import { builtTimeline, EngineHost, frameBytes, plainTimeline } from '../src/particles/engine/host'
 import { LiveEngine } from '../src/particles/engine/live'
+import { LiveRunner, type EngineWorker } from '../src/particles/engine/remote'
 import { SimDriver, type SimStore } from '../src/particles/driver'
 
 const HZ = config.sim.stepHz
@@ -584,5 +585,155 @@ describe('the live engine', () => {
     expect(far).toBeLessThan(0.5)
     live.advanceTo(steps(3), idle('fall'))
     expect(live.floating()).toBeLessThan(live.active)
+  }, 120000)
+})
+
+describe('the live runner', () => {
+  const fraction = 0.02
+  const n = Math.round(POOL * fraction)
+  const settle = (): Promise<void> => new Promise<void>((resolve) => setTimeout(resolve, 0))
+
+  function fakeWorker(o: { silent?: boolean; dieAtFrame?: number } = {}): EngineWorker & { closed: boolean } {
+    const host = new EngineHost()
+    let frames = 0
+    const w: EngineWorker & { closed: boolean } = {
+      closed: false,
+      onmessage: null,
+      onerror: null,
+      onmessageerror: null,
+      terminate() {
+        w.closed = true
+      },
+      postMessage(message, transfer) {
+        const arrived = structuredClone(message, { transfer: transfer ?? [] })
+        if (o.silent || w.closed) return
+        queueMicrotask(() => {
+          if (w.closed) return
+          const reply = host.handle(arrived)
+          if (!reply) return
+          if (reply.message.type === 'frame' && ++frames === o.dieAtFrame) {
+            w.onerror?.(new Error('gone'))
+            return
+          }
+          const back = structuredClone(reply.message, { transfer: reply.transfer })
+          queueMicrotask(() => w.onmessage?.({ data: back }))
+        })
+      },
+    }
+    return w
+  }
+
+  function agrees(runner: LiveRunner, direct: ParticleEngine): void {
+    const s = runner.source
+    expect(runner.step).toBe(direct.step)
+    expect([...s.pos.subarray(0, n * 3)]).toEqual([...direct.pos])
+    expect([...s.prev.subarray(0, n * 3)]).toEqual([...direct.prev])
+    expect([...s.state.subarray(0, n)]).toEqual([...direct.state])
+    expect([...s.kindOf.subarray(0, n)]).toEqual([...direct.kindOf])
+    expect([...s.opacity.subarray(0, n)]).toEqual([...direct.opacity])
+    expect([...s.liquid]).toEqual([...direct.liquid])
+    for (let i = n; i < POOL; i++) expect(s.state[i]).toBe(STATE_HIDDEN)
+  }
+
+  it('hands the simulation to the worker and shows the same state as the main thread would', async () => {
+    const worker = fakeWorker()
+    const runner = new LiveRunner({ season: 'winter', fraction, spawn: () => worker })
+    runner.reset('winter')
+    const tl = swapTimeline('winter', 'spring')
+    expect(runner.remote).toBe(false)
+    runner.advanceTo(4, tl)
+    expect(runner.step).toBe(4)
+    await settle()
+    let target = 4
+    for (let frame = 0; frame < 150; frame++) {
+      target += 4
+      runner.advanceTo(target, tl)
+      await settle()
+    }
+    expect(runner.remote).toBe(true)
+    expect(runner.frames).toBeGreaterThan(0)
+    for (let wait = 0; wait < 50 && runner.step < target; wait++) {
+      runner.advanceTo(target, tl)
+      await settle()
+    }
+    const direct = new ParticleEngine({ season: 'winter', fraction })
+    direct.reset()
+    direct.advanceTo(target, tl)
+    agrees(runner, direct)
+    expect(runner.fallbacks).toBe(0)
+
+    runner.setFraction(0.01)
+    expect(runner.active).toBe(Math.round(POOL * 0.01))
+    target += 8
+    for (let wait = 0; wait < 50 && (runner.step < target || runner.source.state[n - 1] !== STATE_HIDDEN); wait++) {
+      runner.advanceTo(target, tl)
+      await settle()
+    }
+    expect(runner.step).toBe(target)
+    expect(runner.source.state[n - 1]).toBe(STATE_HIDDEN)
+
+    runner.reset()
+    expect(runner.step).toBe(0)
+    const idleTl = idle('summer')
+    for (let wait = 0; wait < 50 && (runner.step < 12 || runner.season !== 'summer'); wait++) {
+      runner.advanceTo(12, idleTl)
+      await settle()
+    }
+    expect(runner.step).toBe(12)
+    expect(runner.season).toBe('summer')
+  }, 120000)
+
+  it('stays on the main thread when the worker never answers', async () => {
+    let clock = 0
+    const worker = fakeWorker({ silent: true })
+    const runner = new LiveRunner({ season: 'winter', fraction, spawn: () => worker, now: () => clock, readyMs: 1000 })
+    runner.reset('winter')
+    const tl = swapTimeline('winter', 'spring')
+    for (let target = 4; target <= 400; target += 4) {
+      clock += 16
+      runner.advanceTo(target, tl)
+      expect(runner.step).toBe(target)
+      await settle()
+    }
+    expect(runner.remote).toBe(false)
+    expect(worker.closed).toBe(true)
+    const direct = new ParticleEngine({ season: 'winter', fraction })
+    direct.reset()
+    direct.advanceTo(400, tl)
+    agrees(runner, direct)
+  }, 120000)
+
+  it('falls back to the main thread when the worker stops, and carries on at the same step', async () => {
+    let clock = 0
+    for (const how of ['error', 'silence'] as const) {
+      const worker = fakeWorker(how === 'error' ? { dieAtFrame: 6 } : {})
+      const runner = new LiveRunner({ season: 'winter', fraction, spawn: () => worker, now: () => clock, frameMs: 500 })
+      runner.reset('winter')
+      const tl = idle('winter')
+      let target = 0
+      for (let frame = 0; frame < 40; frame++) {
+        target += 4
+        clock += 16
+        runner.advanceTo(target, tl)
+        await settle()
+        if (how === 'silence' && frame === 20) {
+          expect(runner.remote).toBe(true)
+          worker.closed = true
+        }
+      }
+      for (let frame = 0; frame < 40; frame++) {
+        target += 4
+        clock += 16
+        runner.advanceTo(target, tl)
+        await settle()
+      }
+      expect(runner.remote).toBe(false)
+      expect(runner.fallbacks).toBe(1)
+      expect(runner.step).toBe(target)
+      expect(runner.season).toBe('winter')
+      const s = runner.source
+      for (let i = 0; i < n * 3; i++) expect(Number.isFinite(s.pos[i])).toBe(true)
+      expect(runner.floating()).toBeLessThan(n)
+    }
   }, 120000)
 })

@@ -7,6 +7,7 @@ import { REST_POSE, makeShake } from '../shake/table'
 
 export interface LiveSim {
   readonly step: number
+  readonly remote?: boolean
   advanceTo(step: number, tl: Timeline): void
   reset(): void
   stir?(x: number, y: number, z: number): void
@@ -125,7 +126,8 @@ export class LiveSession {
   }
 
   skip(spent: () => number, budgetMs: number): void {
-    while (this.skipping && spent() < budgetMs) this.sim.advanceTo(Math.min(this.skipTo, this.sim.step + LIVE.skipSliceSteps), this.tl)
+    if (this.sim.remote) this.sim.advanceTo(this.skipTo, this.tl)
+    else while (this.skipping && spent() < budgetMs) this.sim.advanceTo(Math.min(this.skipTo, this.sim.step + LIVE.skipSliceSteps), this.tl)
     this.clock = this.sim.step / HZ
     if (!this.skipping) this.skipTo = 0
   }
@@ -140,7 +142,7 @@ export class LiveSession {
       next = target / HZ
     }
     while (this.sim.step < target) {
-      const to = Math.min(target, this.sim.step + LIVE.sliceSteps)
+      const to = this.sim.remote ? target : Math.min(target, this.sim.step + LIVE.sliceSteps)
       this.sim.advanceTo(to, this.tl)
       if (this.sim.step < to) break
       if (to < target && over()) {
@@ -150,7 +152,7 @@ export class LiveSession {
     }
     this.clock = next
     this.settle()
-    return Math.min(1, Math.max(0, next * HZ - (target - 1)))
+    return this.sim.step < target ? 1 : Math.min(1, Math.max(0, next * HZ - (target - 1)))
   }
 
   private hold(next: number): void {
