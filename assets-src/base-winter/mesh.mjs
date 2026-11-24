@@ -276,25 +276,30 @@ export function buildBrass() {
     const open = smooth(-128, -70, deg) * (1 - smooth(150, 214, deg))
     lip.push([P.LIP.ringR + P.LIP.tube * Math.cos(psi), P.LIP.h + P.LIP.tube * Math.sin(psi), 0.15 + 0.85 * open, 0.85 * Math.exp(-(((deg - 48) / 44) ** 2)), 0.9 - 0.75 * open])
   }
-  lathe(soup, lip, even(128), 0.55, 5)
+  const facing = []
+  for (let az = -180; az < 180 - 1e-6; az += front(az + 1.4) <= 118 ? 2.8125 : 5.625) facing.push(az)
+  facing.push(180)
+  lathe(soup, lip, facing, 0.55, 5)
   const [fo, fi] = [P.LEDGE.outer, P.LEDGE.inner]
   const floor = [0, 0.34, 0.68, 1].map((t) => [mix(fo[0] - 0.15, fi[0] + 0.15, t), mix(fo[1], fi[1], t) - 0.16 * Math.sin(Math.PI * t), 0.55 + 0.2 * Math.sin(Math.PI * t), 0.02, 0.94])
   lathe(soup, floor, even(96), 0.12, 7)
   const glass = (h) => P.sphereRadiusAt(h) + P.COLLAR.gap
   const [cf, cc] = [P.COLLAR.foot, P.COLLAR.crown]
+  const bead = (deg) => [cc[0] - 0.14 + P.COLLAR.bead * Math.cos(deg * RAD), cc[1] + 0.01 - P.COLLAR.bead + P.COLLAR.bead * Math.sin(deg * RAD)]
   lathe(
     soup,
     [
       [fi[0] + 0.15, fi[1] - 0.04, 0.3, 0, 0.85],
-      [cf[0] + 0.22, cf[1] + 0.2, 0.8, 0.2, 0.3],
-      [cf[0], cf[1] + 0.68, 1, 0.5, 0.1],
-      [cc[0] + 0.38, cc[1] - 0.16, 1, 0.8, 0.06],
-      [cc[0] + 0.05, cc[1], 1, 0.7, 0.08],
-      [cc[0] - 0.1, cc[1] - 0.01, 0.85, 0.3, 0.25],
-      [glass(cc[1] - 0.06) + 0.24, cc[1] - 0.06, 0.04, 0, 1],
-      [glass(cc[1] - 0.22), cc[1] - 0.22, 0.02, 0, 1],
+      [cf[0], cf[1], 0.5, 0.1, 0.5],
+      [cf[0] + 0.25, cf[1] + 1.4, 0.7, 0.2, 0.3],
+      [...bead(-70), 0.85, 0.4, 0.12],
+      [...bead(-15), 1, 0.8, 0.05],
+      [...bead(35), 1, 0.9, 0.04],
+      [...bead(80), 1, 0.7, 0.08],
+      [glass(cc[1] - 0.1) + 0.22, cc[1] - 0.1, 0.04, 0, 1],
+      [glass(cc[1] - 0.28), cc[1] - 0.28, 0.02, 0, 1],
     ],
-    even(128),
+    facing,
     0.78,
     9,
   )
@@ -310,19 +315,21 @@ export function buildBrass() {
 }
 
 const HEAPS = [
-  { a0: -136, a1: -68, ea: 18, eb: 16, p: 1, t: 0.5, bank: 5.9, r1: 55.4, over: [[-132, -63, 1]] },
-  { a0: -85, a1: -39, ea: 8, eb: 12, t: 3.6, r0: 46.4, r1: 54.5 },
-  { a0: -47, a1: -7, ea: 8, eb: 9, t: 2.1, r0: 44.8, r1: 54.6, over: [[-35, -12, 0.38]] },
+  { a0: -136, a1: -79, ea: 18, eb: 13, p: 1, t: 0.5, bank: 3.9, r1: 55.4, over: [[-132, -96, 0.7]] },
+  { a0: -100, a1: -60, ea: 10, eb: 12, t: 3.2, r0: 48.9, r1: 54.1 },
+  { a0: -85, a1: -39, ea: 8, eb: 12, t: 3.4, r0: 48.7, r1: 53.9 },
+  { a0: -47, a1: -7, ea: 8, eb: 9, t: 2.3, r0: 48.5, r1: 54.0, over: [[-35, -12, 0.38]] },
   { a0: -6, a1: 4, ea: 4, eb: 4, t: 1.5, r0: 49.6, r1: 54.4 },
   { a0: 2, a1: 36, ea: 9, eb: 16, t: 1.8, r0: 48.6, r1: 54.9, over: [[5, 32, 0.3]] },
-  { a0: 12, a1: 72, ea: 18, eb: 14, t: 1.9, bank: 0.9, r1: 55, over: [[16, 70, 0.32], [26, 45, 1]] },
+  { a0: 12, a1: 72, ea: 18, eb: 14, t: 1.9, bank: 0.7, r1: 55, over: [[16, 70, 0.32], [26, 45, 1]] },
   { a0: 52, a1: 98, ea: 12, eb: 10, t: 2.2, r0: 45.8, r1: 55, over: [[52, 97, 0.35], [66, 97, 1]] },
-  { a0: 86, a1: 136, ea: 13, eb: 18, p: 1, t: 0.5, bank: 5.6, r1: 55.4, over: [[80, 132, 1]] },
-  { a0: 136, a1: 184, ea: 12, eb: 12, t: 1.6, bank: 1.6, r1: 54.8, over: [[144, 172, 0.9]] },
-  { a0: 180, a1: 228, ea: 12, eb: 12, t: 1.5, bank: 1.2, r1: 54.3, over: [[196, 216, 0.6]] },
+  { a0: 86, a1: 136, ea: 13, eb: 18, p: 1, t: 0.5, bank: 3.6, r1: 55.4, over: [[80, 132, 1]] },
+  { a0: 136, a1: 184, ea: 12, eb: 12, t: 1.6, bank: 0.6, r1: 54.8, over: [[144, 172, 0.9]] },
+  { a0: 180, a1: 228, ea: 12, eb: 12, t: 1.5, bank: 0.4, r1: 54.3, over: [[196, 216, 0.6]] },
 ]
 
 const lipOuter = P.LIP.ringR + P.LIP.tube
+const collarEdge = P.COLLAR.crown[0] - 0.14 + P.COLLAR.bead + 0.04
 const snowEdge = lipOuter + 1.25
 const noseFrom = P.LIP.ringR + 0.3
 const turnTo = (az, mid) => {
@@ -338,10 +345,8 @@ function snowSupport(r) {
   const floorLine = fi[1] + ((r - fi[0]) * (fo[1] - fi[1])) / (fo[0] - fi[0])
   if (r >= lipOuter) return P.LIP.h - 0.25 - (r - lipOuter) * 2.1
   if (r >= P.LIP.ringR - P.LIP.tube) return Math.max(P.LIP.h + Math.sqrt(Math.max(P.LIP.tube ** 2 - (r - P.LIP.ringR) ** 2, 0)), floorLine)
-  if (r >= fi[0]) return floorLine
-  const crown = P.COLLAR.crown
-  if (r >= crown[0]) return mix(crown[1], fi[1], (r - crown[0]) / (fi[0] - crown[0]))
-  return crown[1]
+  if (r >= collarEdge) return Math.max(floorLine, P.COLLAR.crown[1] - (r - collarEdge) * 1.6)
+  return P.COLLAR.crown[1]
 }
 
 function snowLobes(azIn) {
@@ -381,12 +386,13 @@ function snowThickness(azIn, r) {
     sum += t ** 4
   }
   const t = Math.pow(sum, 0.25)
-  const lump = 0.78 + 0.44 * fbm(u * 46, r / 5.2, 46, 64, 91, 3)
+  const lump = 0.7 + 0.6 * fbm(u * 46, r / 5.2, 46, 64, 91, 3)
   const heap = 0.86 + 0.28 * fbm(u * 19, r / 12, 19, 64, 119, 2)
-  const knob = (fbm(u * 96, r / 3.0, 96, 64, 127, 2) - 0.5) * 1.5 * Math.sqrt(Math.min(t, 4) / 4)
+  const knob = (fbm(u * 96, r / 3.0, 96, 64, 127, 2) - 0.5) * 2.1 * Math.sqrt(Math.min(t, 4) / 4)
   const crumb = smooth(0.7, 0.84, fbm(u * 150, r / 2.1, 150, 64, 97, 2)) * 0.55 * smooth(0.04, 0.5, t + 0.25 * fbm(u * 20, r / 9, 20, 64, 103, 2))
   const dust = 0.34 * smooth(0.6, 0.8, fbm(u * 30, r / 6, 30, 64, 109, 3)) * (1 - smooth(45.5, 49.5, r))
-  return Math.max(t * lump * heap + knob, crumb, dust) - 0.1
+  const loose = r < collarEdge || r > collarEdge + 2.6 ? 1 : 0
+  return Math.max(t * lump * heap + knob, crumb * loose, dust * loose) - 0.1
 }
 
 export function buildSnow() {
@@ -533,10 +539,15 @@ export function icicleList(f) {
   list.sort((a, b) => a.az - b.az)
   const mer = f.mer
   return list.map((it, id) => {
-    const tipH = P.ICE.h - it.length
-    const s = P.sOfH(mer, Math.max(tipH, 7.6))
-    const wood = P.atS(mer, s).r + Math.max(f.atSoft(it.az, s), f.atSoft(it.az, s + 1.2), 0) * P.CARVING.relief
-    const need = Math.max(0, wood + 0.45 + it.radius * 0.18 - P.ICE.r)
+    let need = 0
+    for (let k = 3; k <= 10; k++) {
+      const t = k / 10
+      const s = P.sOfH(mer, Math.max(P.ICE.h - it.length * t, 7.6))
+      let relief = 0
+      for (const da of [-1.6, -0.8, 0, 0.8, 1.6]) for (const ds of [-0.8, 0, 0.8]) relief = Math.max(relief, f.atSoft(it.az + da, s + ds))
+      const wood = P.atS(mer, s).r + relief * P.CARVING.relief
+      need = Math.max(need, (wood + 0.4 + it.radius * Math.pow(1 - t, 0.7) - P.ICE.r) / Math.pow(t, 1.3))
+    }
     return { ...it, id, lean: need }
   })
 }
@@ -553,20 +564,28 @@ export function buildIce(list) {
     const root = place(P.ICE.r + 0.25 * (rng() - 0.5), P.ICE.h + 0.5 + P.ICE.up, it.az)
     const out = dir(1, 0, it.az)
     const side = [Math.cos(it.az * RAD), 0, -Math.sin(it.az * RAD)]
-    const swing = (rng() - 0.5) * 0.9
+    const swing = (rng() - 0.5) * 1.5
     const k1 = rng()
     const k2 = rng()
     const a0 = rng() * 6.28
     const a1 = rng() * 6.28
+    const taper = 0.5 + 0.55 * rng()
+    const wave = 0.05 + 0.1 * rng()
+    const pitch = 2.6 + 2.2 * rng()
+    const bend = (rng() - 0.5) * 0.9
+    const belly = 0.12 + 0.3 * rng()
+    const swell = rng() < 0.6 ? 0.04 + 0.1 * rng() : 0
+    const bead = rng() < 0.45 ? 0.5 + 0.5 * rng() : 0
     const total = it.length + 0.5 + P.ICE.up
-    const axis = (t) => add3(add3(add3(root, [0, -1, 0], total * t), out, it.lean * Math.pow(t, 1.3)), side, swing * t * t)
+    const neck = Math.min(0.12, 1.5 / total)
+    const axis = (t) => add3(add3(add3(root, [0, -1, 0], total * t), out, it.lean * Math.pow(t, 1.3)), side, swing * t * t + bend * Math.sin(Math.PI * t) * (1 - t))
     const radius = (t) => {
-      const body = it.radius * (0.955 * Math.pow(1 - t, 0.62) + 0.045)
-      const ripple = 1 + 0.07 * Math.sin(2 * Math.PI * ((t * total) / 3.6 + k1)) * smooth(0.02, 0.15, t) + 0.04 * Math.sin(2 * Math.PI * ((t * total) / 2.1 + k2)) + 0.02 * Math.sin(2 * Math.PI * ((t * total) / 1.1 + 3 * k1))
-      const flare = it.radius * 0.3 * Math.exp(-t / 0.07)
+      const body = it.radius * (0.95 * Math.pow(1 - t, taper) + 0.05) * (1 + swell * Math.exp(-(((t - belly) / 0.12) ** 2)))
+      const ripple = 1 + wave * Math.sin(2 * Math.PI * ((t * total) / pitch + k1)) * smooth(0.02, 0.15, t) + 0.045 * Math.sin(2 * Math.PI * ((t * total) / 2.1 + k2)) + 0.02 * Math.sin(2 * Math.PI * ((t * total) / 1.1 + 3 * k1))
+      const drop = bead * 0.16 * it.radius * Math.exp(-(((t - 0.955) / 0.03) ** 2))
       const cap = t > 0.965 ? Math.sqrt(Math.max(1 - ((t - 0.965) / 0.035) ** 2, 0)) : 1
-      const shoulder = t < 0.04 ? 0.6 + 0.4 * Math.sqrt(t / 0.04) : 1
-      return (Math.max(body * ripple, 0) + flare) * cap * shoulder
+      const shoulder = t < neck ? 0.72 + 0.28 * Math.sin((Math.PI / 2) * (t / neck)) : 1
+      return (Math.max(body * ripple, 0) + drop) * cap * shoulder
     }
     const surface = (al, t) => {
       const c = axis(t)
