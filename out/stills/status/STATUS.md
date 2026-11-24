@@ -1,19 +1,19 @@
-# Status 29
+# Status 30
 
-2026-11-24 11:04 UTC
+2026-11-24 11:32 UTC
 
-- Phase 3 (the look lock) is 2 hours 25 minutes into its 11 hour box. Ten builders are 65 minutes into their parts. These are first passes against the approved image and none is finished work
-- The base and the tree's crown and the frost are real geometry now and not stand-ins. The cottage and lamp and the ground detail are still to come from the village builder
-- The real shake path draws with the smaller lift and tilt of decision 45 (7.25 mm and 6 degrees). It keeps 4.6 percent of the frame above the glass and the foot's rim clear of the surface on every frame
-- In the app a shake asked while the last one still settles now starts when the settle is over so the globe never jumps (306 of 306 tests green)
-- The liquid builder is tuning the storm against the smaller shake: everything at rest must still be torn loose and that number did not move
-- The published app is unchanged since 08:34 UTC. It is published again when the builders' parts are merged after their first reports at about 11:30 UTC
-- phase 3: 2.62 h used of its 11.00 h box
-- allowance (before the review): 9.23 h used of 36.00 h allowed
+- Phase 3 (the look lock) is 2 hours 53 minutes into its 11 hour box. The builders are 93 minutes into their 3 hours
+- Merged into main and pushed (dc24715): the light engine and the tree and winter's base. Parts light-engine and base-winter are built in the register. 330 of 330 tests green
+- The shake's real path is done on its branch: 4.56 percent of the frame kept above the glass on the worst frame of 19 paths (rule 4.5) and the foot's rim 1.06 mm clear of the slab (rule 1). It is merged together with the liquid's answer to two simulation tests
+- First reports are in from light and tree and base and shake and village. Each lists what is still wrong and keeps raising its part until about 13:00 UTC
+- Passed between builders: the veil must vanish at rest (it made the grey wash in the glass) and settled flakes take the light engine's shade and the close camera's focus goes on the door and the contact shadow and mirror image must follow the lifted globe
+- The published app is unchanged since 08:34 UTC. It is published again as soon as the real shake is on main so it can be shaken
+- phase 3: 3.08 h used of its 11.00 h box
+- allowance (before the review): 9.69 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-29-1.jpg`: Base builder: the approved base above and the first real build below (lathe profile and carved leaves and a cone and the rope ring and 35 icicles). Still wrong: too bright and flat and the carving is too small and reads pink and the brass has no dark in its grooves
-- `out/stills/status/status-29-2.jpg`: Tree builder: the first crown on the left and the approved tree on the right. Still wrong: the pads are too smooth and domed and too far apart and the trunk is too pale and straight and the bulbs have almost no halo
-- `out/stills/status/status-29-3.jpg`: Frost builder: the approved left rim on the left and the grown fern frost on the right. Still wrong: the plumes are whiter and coarser than the approved ones and the fine milky band at the rim is missing. The inside is other builders' stand-in
-- `out/stills/status/status-29-4.jpg`: Light builder: the lamp's pool and the lit gable from the close camera with trial lights on the stand-in miniature. Still wrong: the pool is white where the approved image is peach and the gable is overlit
+- `out/stills/status/status-30-1.jpg`: Shake builder: the real test shake from the fixed hero camera in 12 frames (the landing is at frame 144). The path is real: unequal strokes with sharp reversals and a lift of 7.25 mm. Still wrong and owned by others: the stand-in veil whites the glass out and the contact shadow stays behind as a hard hole
+- `out/stills/status/status-30-2.jpg`: Shake builder: the path's curves over the bar. Six strokes of 15.6 to 22.4 mm that speed up; reversals of about 2 g; the rim of the foot kept 1 mm above the slab; the tilt capped at 6 degrees
+- `out/stills/status/status-30-3.jpg`: Village builder: the approved image above and the first real cottage below (stone walls and snow roof and brick chimney and string lights and the wreath on the arched door and the fence and lamppost and pond ice). Still wrong: out of focus at this camera and the stones too rounded and lain flakes bury the path
+- `out/stills/status/status-30-4.jpg`: Flake builder: the approved storm on the left and the build's storm on the right half a second after a landing (streaks along arcs; the miniature here is still a stand-in). Still wrong: flakes too large and too alike and the veil too even and too white
