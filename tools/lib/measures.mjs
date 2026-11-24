@@ -28,10 +28,11 @@ export function shakesFor(unit, film) {
   return []
 }
 
-export const seasonsOf = (entry) => (entry.season && (entry.kind === 'key' || entry.kind === 'still' || entry.kind === 'live') ? [entry.season] : [...cfg.seasons])
+export const seasonsOf = (entry) => (entry.season && (entry.kind === 'key' || entry.kind === 'still' || entry.kind === 'live' || entry.kind === 'view') ? [entry.season] : [...cfg.seasons])
 
 export function specOf(entry, tier, diag = '') {
   if (entry.kind === 'key' || entry.kind === 'still') return stillSpec({ id: entry.id, tier, diag: diag || undefined })
+  if (entry.kind === 'view') return { ...stillSpec({ season: entry.season, state: entry.state, camera: entry.camera, tier, format: entry.format, diag: diag || undefined }), id: entry.id }
   if (entry.kind === 'live') return { ...stillSpec({ season: entry.season, state: entry.state, camera: entry.camera, tier, format: entry.format, diag: diag || undefined, live: entry.level }), id: entry.id }
   const spec = { id: entry.id, kind: entry.kind, tier, format: entry.format, assets: 'full', diag }
   for (const k of ['shot', 'at', 'frame', 'camera']) if (entry[k] !== undefined) spec[k] = entry[k]
@@ -78,7 +79,7 @@ export async function drawJudged(session, pages, entry, { tier, diag = '', force
       await sc.setFormat(e.format)
       sc.setDiagnostic(d || 'none')
       const before = sc.dev.timings()
-      if (e.kind === 'key' || e.kind === 'still' || e.kind === 'live') {
+      if (e.kind === 'key' || e.kind === 'still' || e.kind === 'live' || e.kind === 'view') {
         const call = { season: e.season, state: e.state, camera: e.camera, tier: t }
         if (e.interface) call.interface = true
         if (e.kind === 'live') call.live = e.level
