@@ -37,16 +37,16 @@ Status 45 · 2026-11-24 17:22 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 17:22 UTC
-clock: phase 3, tick of 5.2 minutes
-phase 3: 8.92 h used of its 11.00 h box
-allowance (before the review): 15.53 h used of 36.00 h allowed
-all time before the review: 15.53 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 17:29 UTC
+clock: phase 3, tick of 5.6 minutes
+phase 3: 9.03 h used of its 11.00 h box
+allowance (before the review): 15.65 h used of 36.00 h allowed
+all time before the review: 15.65 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 6
 ```
 
 ## Phases
@@ -1091,3 +1091,6 @@ One entry per task: when it started, what it did, where it stopped.
 - 17:20 UTC: `light_fixer` pushed `agent/p3-light` `76d38e6` (the bloom rises over frames 86 to 90 and falls over 94 to 98, the base keeps its carving under it; `ROOM_RIG.inside.through` 0.7 to 0.5). `village_fixer` pushed `bb75331` (practicals that carry through the storm, a lumpy front bank, block masonry; smoke, shrubs and post caps not yet). `liquid_fixer` pushed `1702bce` (eddies 3 to 4 times stronger at the landing; the share of flakes round the one centre 0.69 at `landed`).
 - 17:24 UTC, a ruling for the shake's builder: with the new path two flake tests flip on a degree of plan angle (`tests/engine-cover.test.ts:88` roof cover at `settled` 0.36 or 0.46 against 0.6; `tests/engine-storm.test.ts:129` low bank at `landed` 1.23 to 1.30 against 1.3). It pushes its best path by 17:35 with the two named; the flakes' builder merges it and re-fits (a floor that stands for a kit number or an approved picture is never lowered; a pin of its own earlier fit may be re-fit with the reason). The judged commit must be green: if the merged build is still red at about 18:05 and cannot be cured in ten minutes, Round 5 is frozen without the new path.
 - 17:23 UTC: Status 45 posted (shown inline): the macro still at `final` with the new lens points, and the far snowbank before and after.
+
+- 17:33 UTC: the R1 critic of Round 4 (`reviewer_r4_a`, `claude_fable_5_2`, started 16:48) had not answered inside `budget.agentWaitMinutes` 45, the second time that family has run out the limit on a likeness pack. Stopped and replaced once, as the kit says, by a fresh agent with the same message and the same eight files: `reviewer_r4_g` on `grok_4_7` (a family not yet used in this round; the tool ran it at "high" effort, the highest that model takes). Its limit is 18:18.
+- 17:30 to 17:33 UTC, pushes for Round 5: `frost_fixer` `1f7f22d` (the slab frost no longer arrives as a ring: each arm's spine shoots out from the landing frame at its own speed, pieces nucleate ahead and join; it leaves by erosion, thinnest first; glass frost with a bristle crust and frayed roots), `glass_fixer` `9a2212e` (the stair-stepped dark line at the lower outline was the ring painting an opaque night colour past the outline: removed; no pane ends on a razor edge), `scene_fixer` `b407640` (the mirror image sharp at the contact line and softer with height; the backdrop discs refitted with a soft halo and no bright outer ring), `shake_fixer` `1080577` (the new path; with it two engine tests are red, with the engine's owner).
