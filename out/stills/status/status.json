@@ -1,42 +1,44 @@
 {
-  "number": 46,
-  "time": "2026-11-24 17:57 UTC",
+  "number": 47,
+  "time": "2026-11-24 18:12 UTC",
   "phase": "3",
   "unit": "",
   "lines": [
-    "Status 46 · 2026-11-24 17:57 UTC · Phase 3",
-    "Round 4 closed: R1 5 - R3 4 - R4 5 - jury 4 of 15 - checks and measures all green",
-    "Round 5 is being frozen now from nine builders' pushes - the new shake path waits for Round 6",
-    "One test is red on the merged build (fresh snow on one roof slope 0.19 mm against 0.2) and is counted against Round 5",
-    "phase 3: 9.50 h used of its 11.00 h box",
-    "allowance (before the review): 16.11 h used of 36.00 h allowed",
+    "Status 47 · 2026-11-24 18:12 UTC · Phase 3",
+    "Round 5 is frozen on 9be1c06 and its stills and motion sheets are being rendered at the final tier by four agents",
+    "Round 4 closed without a pass: likeness 5 and craft 4 and motion 5 of 10 and the jury fails",
+    "One test is red on main since the freeze (snow cover on the roof's lower slope) and it counts against Round 5 as a severe issue; the liquid's builder owns the cure",
+    "The change's bloom is cured on the light's branch: a white core that swells and shrinks instead of an even peach disc",
+    "Next: Round 5's critics from about 18:50 then a new set of builders at 19:15 for the last two rounds",
+    "phase 3: 9.76 h used of its 11.00 h box",
+    "allowance (before the review): 16.37 h used of 36.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-46-1.jpg",
-      "caption": "Round 5 build before the freeze at draft tier: at rest (left) and one second after the landing (right)",
+      "file": "out/stills/status/status-47-1.jpg",
+      "caption": "The tree's crown at rest: approved left and the build right (draft tier). Still wrong: the snow sits as round pads where the approved has broad blankets and the trunk is thicker and more orange",
       "w": 1200,
-      "h": 560
+      "h": 610
     },
     {
-      "file": "out/stills/status/status-46-2.jpg",
-      "caption": "Still: winter landed hero, hd, draft",
+      "file": "out/stills/status/status-47-2.jpg",
+      "caption": "One second after the landing: approved left and the build right (draft tier). The storm is separate dashes in a swirl now. Still wrong: the bank is cooler than the approved warm glow and the glass frost is fainter",
       "w": 1200,
-      "h": 675
+      "h": 597
     },
     {
-      "file": "out/stills/status/status-46-3.jpg",
+      "file": "out/stills/status/status-47-3.jpg",
       "caption": "Still: winter rest hero, hd, draft",
       "w": 1200,
       "h": 675
     },
     {
-      "file": "out/stills/status/status-46-4.jpg",
-      "caption": "The live app through a shake at three sizes: at rest, lifted, mid stroke. Top row 1920 by 1080, bottom row a phone and a tablet. The camera stays locked and the lifted glass stays under the top edge (by film_app_engineer_2)",
-      "w": 1200,
-      "h": 455
+      "file": "out/stills/status/status-47-4.jpg",
+      "caption": "Sheet: 12 frames across the shot shake-1, frames 576 to 719, preview, draft",
+      "w": 1149,
+      "h": 986
     }
   ]
 }
