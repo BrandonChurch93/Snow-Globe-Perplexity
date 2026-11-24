@@ -86,7 +86,7 @@ export interface Dev {
   renderTestShakeFrame(frameIndex: number, tier: string): Promise<void>
   renderShakeMoment(shot: string, at: ShakeMoment, tier: string): Promise<void>
   appScript(name: string, ask?: AppFrameAsk): ScriptPlan
-  renderAppFrame(name: string, frameIndex: number, level: string, ask?: AppFrameAsk): Promise<ScriptFrame & { camera: number[]; globe: { heightMm: number; tiltDeg: number[] }; level: string }>
+  renderAppFrame(name: string, frameIndex: number, level: string, ask?: AppFrameAsk): Promise<ScriptFrame & { camera: number[]; globe: { heightMm: number; tiltDeg: number[] }; level: string; controlsPx: number | null; under: number; framing: Framing }>
   interfaceState(state: string, ask?: InterfaceAsk): Promise<InterfaceRecord>
 }
 
@@ -346,7 +346,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
       let under = 0
       if (onScreen && spec.interface) {
         await overlay.show(spec.season, spec.state)
-        under = roomUnder(format.height, overlay.controlsPx())
+        under = roomUnder(format.height, overlay.controlsPx(), format.width)
       }
       const pose = onScreen ? livePose(format.width / format.height, 0, 0, under) : poseById(spec.camera)
       if (onScreen) drawn = framingOfRig(liveRig(format.width / format.height, 0, 0, under), format.width, format.height)
@@ -452,7 +452,9 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
         const run = replay.run
         run.advanceTo(index)
         lastSeason = run.session.season
-        const pose = run.pose(roomUnder(format.height, overlay.controlsPx()))
+        const bar = overlay.controlsPx()
+        const under = roomUnder(format.height, bar, format.width)
+        const pose = run.pose(under)
         const moment = run.moment()
         stage.setQuality?.(stageQuality(q))
         gfx.renderer.info.reset()
@@ -463,7 +465,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
         count(1)
         stage.setQuality?.(stageQuality(topLevel))
         const g = moment.globe
-        return { ...run.record(), camera: cameraNumbers(pose), globe: { heightMm: g.y, tiltDeg: [g.tiltX * DEG, g.tiltZ * DEG] }, level: q.id }
+        return { ...run.record(), camera: cameraNumbers(pose), globe: { heightMm: g.y, tiltDeg: [g.tiltX * DEG, g.tiltZ * DEG] }, level: q.id, controlsPx: bar, under, framing: framingOfRig(liveRig(format.width / format.height, 0, 0, under), format.width, format.height) }
       },
       async interfaceState(state, ask = {}) {
         await ready

@@ -484,7 +484,7 @@ describe('the framing of the app', () => {
   const bar = config.film.beatsPerBar
 
   const measure = (w: number, h: number, controls: number | null) => {
-    const under = roomUnder(h, controls)
+    const under = roomUnder(h, controls, w)
     const rig = liveRig(w / h, 0, 0, under)
     const pose = poseOfRig(rig)
     const rest = reachOf(pose, REST_POSE)
@@ -498,7 +498,9 @@ describe('the framing of the app', () => {
         side = Math.max(side, r.side)
       }
     }
-    return { under, rig, rest, top, side, aspect: w / h, low: -1 + 2 * under }
+    const barPx = controls ?? Math.max(FRAME.barShare * h, FRAME.barPx)
+    const clearPx = ((1 - rest.foot) / 2) * h - barPx
+    return { under, rig, rest, top, side, aspect: w / h, low: -1 + 2 * under, clearPx, clear: clearPx / h }
   }
 
   it('is the wide camera of the film moved back along its own axis, never nearer', () => {
@@ -583,7 +585,7 @@ describe('the framing of the app', () => {
     const hero = rigOf('hero')
     for (const aspect of [0.3, 0.46, 0.6, 0.75, 0.95, 1, 1.1, 1.33, 16 / 9, 2.16, 3]) {
       for (const under of [0.08, 0.0889, 0.12, 0.18, 0.25, 0.35]) {
-        const m = measure(4000 * aspect, 4000, 4000 * under - FRAME.airPx)
+        const m = measure(4000 * aspect, 4000, 4000 * (under - (aspect < FRAME.narrowAspect ? FRAME.thumbShare : FRAME.clearShare)))
         expect(m.under).toBeCloseTo(under, 9)
         const upright = Math.abs(m.top - high) < 1e-4 && Math.abs(-m.rest.foot - m.low) < 1e-6
         const across = Math.abs((aspect >= 1 ? m.side : m.rest.side) / aspect - (1 - 2 * FRAME.edgeShare)) < 1.5e-3
@@ -595,16 +597,37 @@ describe('the framing of the app', () => {
     }
   })
 
-  it('gives the numbers of decision 33 at the judged sizes', () => {
-    const hd = measure(1920, 1080, null)
-    expect(hd.top).toBeCloseTo(high, 4)
-    expect(-hd.rest.foot).toBeCloseTo(-1 + 2 * (FRAME.barPx / 1080), 6)
-    expect(hd.rest.top).toBeGreaterThan(0.78)
-    expect(hd.rest.top).toBeLessThan(0.82)
-    expect(hd.rig.distanceMm).toBeLessThan(rigOf('hero').distanceMm * 1.1)
-    const tablet = measure(1024, 1366, null)
-    expect(tablet.top).toBeCloseTo(high, 4)
-    expect(tablet.rig.distanceMm).toBeLessThan(rigOf('hero').distanceMm * 1.1)
+  it('stands the foot of the base at rest 7 percent of the height over the highest control on a wide screen and on a tablet, with the globe as large as that and the top edge allow', () => {
+    const hero = rigOf('hero')
+    for (const [w, h] of [[config.formats.hd.width, config.formats.hd.height], [config.formats.tablet.width, config.formats.tablet.height]] as const) {
+      for (const controls of [60, 74, 86, 130]) {
+        const m = measure(w, h, controls)
+        expect(m.clear, `${w} ${controls}`).toBeGreaterThanOrEqual(FRAME.clearShare - 1e-9)
+        expect(m.clear, `${w} ${controls}`).toBeCloseTo(FRAME.clearShare, 6)
+        expect(m.clearPx, `${w} ${controls}`).toBeCloseTo(FRAME.clearShare * h, 3)
+        expect(m.top, `${w} ${controls}`).toBeCloseTo(high, 4)
+        expect(m.rig.distanceMm, `${w} ${controls}`).toBeGreaterThan(hero.distanceMm)
+        const nearer = { ...m.rig, distanceMm: m.rig.distanceMm * 0.995 }
+        const pose = poseOfRig(nearer)
+        let top = -Infinity
+        for (let n = 0; n < FRAME.shakePaths; n++) for (let b = 0; b <= bar; b += 0.004) top = Math.max(top, reachOf(pose, livePath(n).poseAt(b)).top)
+        const span = top + reachOf(pose, REST_POSE).foot
+        expect(span, `${w} ${controls}`).toBeGreaterThan(high - m.low)
+      }
+    }
+  })
+
+  it('keeps the framing of a phone: the glass fills the width, and the foot stands 5 percent of the height or more over the highest control', () => {
+    const p = config.formats.phone
+    for (const controls of [100, 128, 150]) {
+      const m = measure(p.width, p.height, controls)
+      expect(m.rest.side / m.aspect, `${controls}`).toBeCloseTo(1 - 2 * FRAME.edgeShare, 4)
+      expect(m.clear, `${controls}`).toBeGreaterThanOrEqual(FRAME.thumbShare - 1e-9)
+      expect(m.top, `${controls}`).toBeLessThanOrEqual(high + 1e-6)
+      expect(Math.abs(m.rig.distanceMm / measure(p.width, p.height, 0).rig.distanceMm - 1), `${controls}`).toBeLessThan(0.002)
+    }
+    expect(roomUnder(p.height, 128, p.width) - 128 / p.height).toBeCloseTo(FRAME.thumbShare, 12)
+    expect(roomUnder(p.width, 60, p.height) - 60 / p.width).toBeCloseTo(FRAME.clearShare, 12)
   })
 
   it('gives a screen still the framing numbers of the camera that drew it, as the harness gives them for a camera of the config', () => {
@@ -644,10 +667,12 @@ describe('the framing of the app', () => {
   })
 
   it('takes the room from the height of the window and from the controls when they are measured', () => {
-    expect(roomUnder(1080)).toBeCloseTo(Math.max(FRAME.barShare, FRAME.barPx / 1080), 12)
-    expect(roomUnder(4000)).toBe(FRAME.barShare)
-    expect(roomUnder(1080, 20)).toBe(roomUnder(1080))
-    expect(roomUnder(844, 130)).toBeCloseTo((130 + FRAME.airPx) / 844, 12)
+    expect(roomUnder(1080)).toBeCloseTo(Math.max(FRAME.barShare, FRAME.barPx / 1080) + FRAME.clearShare, 12)
+    expect(roomUnder(4000)).toBeCloseTo(FRAME.barShare + FRAME.clearShare, 12)
+    expect(roomUnder(1080, 74)).toBeCloseTo(74 / 1080 + FRAME.clearShare, 12)
+    expect(roomUnder(1080, 74, 1920)).toBe(roomUnder(1080, 74))
+    expect(roomUnder(1366, 86, 1024)).toBeCloseTo(86 / 1366 + FRAME.clearShare, 12)
+    expect(roomUnder(844, 130, 390)).toBeCloseTo(130 / 844 + FRAME.thumbShare, 12)
     expect(roomUnder(100, 500)).toBe(FRAME.mostUnder)
     expect(roomUnder(0)).toBe(FRAME.mostUnder)
     const far = liveRig(16 / 9, 0, 0, 5)
@@ -778,7 +803,7 @@ describe('the fixed states of the interface for the harness', () => {
     expect(seen.some((st) => st.busy)).toBe(true)
     expect(doc.anims[0]!.ended).toBe(true)
     expect(o.controlsPx()).toBe(844 - 716)
-    expect(roomUnder(844, o.controlsPx())).toBeCloseTo((128 + FRAME.airPx) / 844, 12)
+    expect(roomUnder(844, o.controlsPx(), 390)).toBeCloseTo(128 / 844 + FRAME.thumbShare, 12)
     const other = await o.put('rest', { season: next(first), control: next(first) })
     expect(other.season).toBe(next(first))
     expect(other.control).toBe(next(first))
