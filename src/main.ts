@@ -28,6 +28,9 @@ const canvas = document.getElementById('view') as HTMLCanvasElement
 const capture = params.mode === 'capture'
 const gfx = createGfx(canvas, { deny: params.deny, preserve: capture })
 const assets = new Assets()
+// The live page draws its first picture from what that picture needs and fetches the rest behind it (src/app/app.ts). Every other
+// page waits for the whole set. `detail=first` holds any page at the first files: `npm run firstlook` measures what they cost with it.
+assets.firstOnly = params.mode === 'live' || new URLSearchParams(location.search).get('detail') === 'first'
 const ready = assets.init(params.assets).then(() => assets.loadGroup('shared'))
 const named = isLevel(params.quality) ? levelById(params.quality) : null
 
