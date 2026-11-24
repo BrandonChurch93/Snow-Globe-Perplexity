@@ -10,8 +10,8 @@ import type { Dressing, KitMoment } from '../kit'
 import { season } from './base'
 
 const MODEL = `${season}/frost-shapes.glb`
-const GLASS_MAP = `${season}/frost-glass.lin.w1536.png`
-const SLAB_MAP = `${season}/frost-slab.lin.w1536.png`
+const GLASS_MAP = `${season}/frost-glass.lin.w2048.png`
+const SLAB_MAP = `${season}/frost-slab.lin.w2048.png`
 const GRAIN_MAP = `${season}/frost-grain.lin.tile.png`
 const GLASS_PART = `glass-dressing-${season}`
 const SLAB_PART = `surface-dressing-${season}`
@@ -26,7 +26,7 @@ export const glassDressing: Dressing = { tint: [0.86, 0.92, 1], amount: 0 }
 export const surfaceDressing: Dressing & { reachMm: number } = { tint: [0.86, 0.92, 1], amount: 0, reachMm: 132 }
 
 const look = {
-  glass: { cover: 1.7, haze: 0.5, slope: 0.55, micro: 1.1, glint: 1.6, light: 0.96, through: 2.4, thin: 0.6, thick: 0.8, blur: 0.012, bend: 0.012, scatter: 0.4, room: 0.5, soften: 0.2, rimMu: 0.3, front: 1.9, sugarMm: 0.3, gritty: 0.45, clear: [0.255, 0.28, 0.8] },
+  glass: { cover: 1.5, haze: 0.5, slope: 0.55, micro: 1.1, glint: 1.6, light: 0.96, through: 2.4, thin: 0.6, thick: 0.8, blur: 0.012, bend: 0.012, scatter: 0.4, room: 0.5, soften: 0.2, rimMu: 0.3, front: 1.9, sugarMm: 0.3, gritty: 0.45, clear: [0.255, 0.28, 0.8] },
   slab: { cover: 2.2, film: 1.7, slope: 1.6, micro: 1.2, glint: 1.6, pool: 0.5, poolBack: 0.12, poolThick: 0.9, skyCut: 0.55, gainFar: 0.9, gainKey: 1.5, gainFront: 0.24, grey: 0.85, light: 2.95, wrap: 0.3, broad: 1.4, shade: 0.35, edge: 0.6, ball: 0.3, rim: 0.55, sky: 1.3, sugarMm: 0.34, clotMm: 1.15, room: 0.1, lace: 0.3, gritty: 0.75 },
 }
 const SNOW = { thin: [0.32, 0.49, 0.7], thick: [0.92, 0.955, 0.99], body: [0.9, 0.93, 0.98] }
@@ -69,6 +69,7 @@ uniform vec3 uRimDir;
 uniform vec3 uRimCol;
 uniform vec3 uSky;
 const float FROST_SOFT = 0.05;
+const float FROST_START = 0.07;
 float frostRnd(vec2 cell, float k) {
   return stageHash(vec3(cell + 8192.0, k));
 }
@@ -170,7 +171,7 @@ void main() {
   vec3 fine = textureGrad(uGrain, ga * gs * 3.0 + 0.37, gdx * 3.0, gdy * 3.0).rgb;
   float fw = max(length(dFdx(uv)), length(dFdy(uv)));
   float e = max(fw, uShape.y) * 1.2;
-  float lvl = uGrow.x + (grain.r - 0.33) * 0.07 + (fine.r - 0.33) * 0.03;
+  float lvl = uGrow.x - FROST_START + (grain.r - 0.33) * 0.07 + (fine.r - 0.33) * 0.03;
   vec3 m0 = texture(uGlassMap, uv, -0.6).rgb;
   vec3 m1 = texture(uGlassMap, uv + e2 * e, -0.6).rgb;
   vec3 m2 = texture(uGlassMap, uv + t2 * e, -0.6).rgb;
@@ -269,7 +270,7 @@ void main() {
   float fw = max(length(dFdx(uv)), length(dFdy(uv)));
   float e = max(min(length(dFdx(uv)), length(dFdy(uv))), uField.y) * 1.2;
   float eb = max(4.0 * e, 0.45 / uField.x);
-  float lvl = uGrow.y + (grain.r - 0.33) * 0.07 + (fine.r - 0.33) * 0.03;
+  float lvl = uGrow.y - FROST_START + (grain.r - 0.33) * 0.07 + (fine.r - 0.33) * 0.03;
   vec3 m0 = texture(uSlabMap, uv).rgb;
   vec3 m1 = texture(uSlabMap, uv + vec2(e, 0.0)).rgb;
   vec3 m2 = texture(uSlabMap, uv - vec2(0.0, e)).rgb;
@@ -320,7 +321,7 @@ void main() {
   vec3 grain = texture(uGrain, guv).rgb;
   vec3 coarse = texture(uGrain, guv * 0.31 + 0.61).rgb;
   vec3 fern = texture(uSlabMap, frostSlabUv(xz), 1.0).rgb;
-  float lvl = uGrow.y + (grain.r - 0.33) * 0.07;
+  float lvl = uGrow.y - FROST_START + (grain.r - 0.33) * 0.07;
   float leaf = fern.r * smoothstep(0.0, FROST_SOFT, lvl - fern.g);
   float pxMm = sqrt(length(dFdx(vStageWorld)) * length(dFdy(vStageWorld)));
   float sugar = smoothstep(0.26, 0.74, frostSugar(vStageWorld, pxMm, ${look.slab.sugarMm.toFixed(3)}, 0.31));
@@ -442,7 +443,7 @@ function makeSurface(): THREE.Group {
       uniforms: shared,
       vertexPars: 'attribute vec2 uv1;\nuniform vec4 uGrow;\nvarying vec3 vFrostN;\nvarying vec4 vFrostOn;',
       vertexMain: `
-float frostOn = smoothstep(0.0, 0.07, uGrow.y - uv.x);
+float frostOn = smoothstep(0.0, 0.14, uGrow.y - 0.07 - uv.x);
 vec4 frostW = modelMatrix * vec4(position.x, position.y * frostOn, position.z, 1.0);
 vec4 frostV = viewMatrix * frostW;
 gl_Position = projectionMatrix * frostV;
