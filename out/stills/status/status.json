@@ -1,20 +1,20 @@
 {
-  "number": 6,
-  "time": "2026-11-24 03:26 UTC",
+  "number": 7,
+  "time": "2026-11-24 03:51 UTC",
   "phase": "2",
   "unit": "",
   "lines": [
-    "Status 6 · 2026-11-24 03:26 UTC · Phase 2",
-    "Phase 2, engine and blockout: the contracts between the engine, the interface, the probe and the sound engine are pushed, with the computed judged list, the opening's frame plan and a sample cut list",
-    "Next: six supporting agents start on the harness tools, the sound side and the interface while the engine goes onto stand-ins",
-    "phase 2: 0.40 h used of its 6.00 h box",
-    "allowance (before the review): 1.59 h used of 36.00 h allowed",
+    "Status 7 · 2026-11-24 03:51 UTC · Phase 2",
+    "Ten build agents are at work, each on its own files: the engine, the film and app, the particles, the interface, the sound side and five groups of harness commands. Six have pushed first work",
+    "No new picture yet: the first ones of the real stage arrive with the engine agent's next heartbeat",
+    "phase 2: 0.82 h used of its 6.00 h box",
+    "allowance (before the review): 2.01 h used of 36.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-6-1.jpg",
+      "file": "out/stills/status/status-7-1.jpg",
       "caption": "Nothing new was rendered since the last status. The approved images, for reference",
       "w": 1200,
       "h": 368

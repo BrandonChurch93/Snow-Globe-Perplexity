@@ -25,25 +25,25 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 6 · 2026-11-24 03:26 UTC
+Status 7 · 2026-11-24 03:51 UTC
 
-- `out/stills/status/status-6-1.jpg`: Nothing new was rendered since the last status. The approved images, for reference
+- `out/stills/status/status-7-1.jpg`: Nothing new was rendered since the last status. The approved images, for reference
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 03:40 UTC
-clock: phase 2, tick of 3.0 minutes
-phase 2: 0.64 h used of its 6.00 h box
-allowance (before the review): 1.83 h used of 36.00 h allowed
-all time before the review: 1.83 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 03:51 UTC
+clock: phase 2, tick of 11.2 minutes
+phase 2: 0.82 h used of its 6.00 h box
+allowance (before the review): 2.01 h used of 36.00 h allowed
+all time before the review: 2.01 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 13
+minutes since the last status: 0
 ```
 
 ## Phases
