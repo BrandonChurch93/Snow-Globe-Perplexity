@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 42 · 2026-11-24 16:16 UTC
+Status 43 · 2026-11-24 16:40 UTC
 
-- `out/stills/status/status-42-1.jpg`: Half a second after the landing: the approved image (left) and the build as frozen for Round 4 (right)
-- `out/stills/status/status-42-2.jpg`: Still: winter landed hero, hd, draft
-- `out/stills/status/status-42-3.jpg`: Still: winter rest hero, hd, draft
-- `out/stills/status/status-42-4.jpg`: Still: winter rest hero, preview, draft
+- `out/stills/status/status-43-1.jpg`: Round 4 build: the first 0.4 s after the landing of the test shake at review tier. The frost ring bursts outward from the foot from frame 150
+- `out/stills/status/status-43-2.jpg`: Still: winter rest hero, hd, draft
+- `out/stills/status/status-43-3.jpg`: The spring hold after decision 34, twelve frames at draft: the move toward the base now stops 55 percent of the way (frame 1044). Still wrong and being fixed: the petals fill the glass for nine seconds, so the miniature only comes out at the end (by film_app_engineer_2)
+- `out/stills/status/status-43-4.jpg`: Round 1: the three screens at 1920 by 1080, 390 by 844 and 1024 by 1366. On the two wide ones the foot of the base stands 28 and 23 pixels above the Shake control; the framing now gets a rule of 7 percent of the height (by root)
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 16:25 UTC
-clock: phase 3, tick of 8.4 minutes
-phase 3: 7.97 h used of its 11.00 h box
-allowance (before the review): 14.59 h used of 36.00 h allowed
-all time before the review: 14.59 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 16:40 UTC
+clock: phase 3, tick of 0.5 minutes
+phase 3: 8.22 h used of its 11.00 h box
+allowance (before the review): 14.84 h used of 36.00 h allowed
+all time before the review: 14.84 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 8
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -1066,3 +1066,7 @@ One entry per task: when it started, what it did, where it stopped.
 - 16:31 UTC: `liquid_fixer` again: with `floats` 0.17 a second line of the Builder's own trips (`tests/sim.test.ts`: at least 0.9 of the pool at rest after a shake and the rest time; now 0.867). Answered yes, to 0.8, with the cover of the miniature at `settled` to be read against `shake.minVisibleAfterSettle` after it.
 - 16:29 UTC: Round 3's last answer arrived from the replacement critic `reviewer_r3_g`: R4 part 1 scores 3 (five severe, one major): the lift levitates; the strokes are flat, equal and under 2 degrees of tilt; the globe hangs in mid air for 0.24 s and glides down; icicles, ledge snow, glass frost and a whiteout step in one frame at the swap window's first frame; the slab's frost dissolves in plain view and returns as an oval wipe; the storm is a fixed shell of streaks. Saved verbatim as `scorecards/round-003/R4-1.json` and pushed (`bedf77c`). R4 of Round 3 is the lower of its two parts: 3.
 - 16:38 UTC: the findings forwarded with the kit's own lines to `light_fixer` (the bloom that must carry the outside change), `base_fixer` (icicles and ledge snow), `frost_fixer` (the leaving and the burst), `flake_fixer` and `liquid_fixer` (the storm), and a tenth builder started for the shake itself, `shake_fixer` (see "Running agents"). `scene_fixer`'s camera numbers taken as decision 57.
+
+- 16:38 UTC: `base_fixer` asked for `globe.baseHeightMm` 31.4 (the approved foot meets the slab 16 px higher than the build's; all of it in the plinth under the rope: 34 px against 21). Refused: `framing.heroFillMin` 0.8 would fail at 0.794 with the glass at its approved size, and a threshold is not lowered (decisions 40 and 57); it keeps the dark painted foot line that hides the last 1.6 mm. Its first push of this set is `ec84e44` (oiled grain with sheen, thinner ledge snow in lobes).
+- 16:40 UTC: Round 3 closed and pushed (`973af89`): key, jury key, manifest, summary; R1 4, R2 fails, R3 3, R4 3. `motion_renderer_b` reported half B of Round 4's motion frames done (48 frames and 5 sheets on `agent/p3-round4-motion-b` at `e882a14`, about 34.5 s a frame; set down 10.8 minutes, landing 16.9); fetched, not merged; `motion_renderer` told to take them for the R4 pack.
+- 16:41 UTC: Status 43 posted (shown inline) with the landing sheet of Round 4's build (`out/work/r4b/motion-landing-test-preview-review-1.jpg`). My reading of that sheet: the slab is bare at the landing and the frost comes as a ring with arms from frame 150, wider each frame; the storm is still drawn as long curved streaks at 2.77 s; at this size the landing shows no rock.
