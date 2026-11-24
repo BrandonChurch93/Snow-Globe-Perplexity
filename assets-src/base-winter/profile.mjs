@@ -9,26 +9,27 @@ export const FOOT_R = 58.8
 export const sphereRadiusAt = (h) => Math.sqrt(Math.max(SPHERE_R * SPHERE_R - (CENTRE_H - h) * (CENTRE_H - h), 0))
 
 export const RIM = { r: FOOT_R, top: 3.6 }
-export const ROPE = { ringR: 57.25, h: 4.95, tube: 1.5, lobes: 124, strands: 3, depth: 0.32 }
+export const ROPE = { ringR: 57.3, h: 4.9, tube: 1.4, lobes: 124, strands: 1.9, depth: 0.36 }
 export const BEAD = { ringR: 56.3, h: 7.5, tube: 0.92 }
-export const LIP = { ringR: 53.7, h: TOP + 0.1, tube: 1.05 }
+export const LIP = { ringR: 53.45, h: TOP - 0.3, tube: 1.45 }
 export const LEDGE = { outer: [52.75, TOP], inner: [43.6, TOP + 1.9] }
-export const COLLAR = { foot: [43.3, TOP + 2.0], crown: [42.55, TOP + 3.25], gap: 0.12 }
+export const COLLAR = { foot: [44.2, TOP + 2.5], crown: [44.9, TOP + 5.62], bead: 0.62, gap: 0.12 }
 export const CUP = { offset: 0.15 }
-export const ICE = { r: 54.5, h: TOP - 0.55, up: 0.6 }
+export const ICE = { r: 54.75, h: TOP - 0.55, up: 0.6 }
 
 export const BODY = [
-  [56.5, 8.4],
-  [57.15, 9.2],
-  [57.3, 10.4],
-  [57.05, 11.8],
-  [56.3, 13.4],
-  [54.95, 15.2],
-  [53.6, 17.2],
-  [52.3, 19.5],
-  [51.25, 21.9],
-  [50.5, 24.2],
-  [50.1, 26.3],
+  [56.95, 8.4],
+  [57.3, 9.0],
+  [57.3, 9.9],
+  [57.0, 11.0],
+  [56.4, 12.3],
+  [55.5, 13.8],
+  [54.4, 15.5],
+  [53.3, 17.4],
+  [52.25, 19.6],
+  [51.3, 21.9],
+  [50.55, 24.2],
+  [50.12, 26.3],
   [50.15, 28.2],
   [50.6, 29.8],
   [51.35, 31.0],

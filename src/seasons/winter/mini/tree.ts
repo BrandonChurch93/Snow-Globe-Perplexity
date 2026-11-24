@@ -32,6 +32,7 @@ const HALO = { cover: 1.5, edge: 3, glow: 0.9, core: 10 }
 const AURA = { cover: 0.24, edge: 2.4, glow: 1.1 }
 const STAR_LOCAL: Vec3 = [0.25, 45.2, 0.1]
 const SPARKLE = { share: 0.014, perMm: 8, gain: 1.4 }
+const EDGE_MM = 0.3
 const STEM_LIGHTS: readonly Vec3[] = [[1.2, 12.5, 4.4], [-0.4, 19.5, 3.6], [0.2, 27, 3]]
 
 const offset = crownOffset()
@@ -112,14 +113,17 @@ function snowFragment(shader: Shader): void {
 
 function snowHook(shader: Shader): void {
   glowHook(shader)
-  Object.assign(shader.uniforms, coverUniforms, { uTile: { value: 1 / tileOf('snow') }, uBump: { value: 0.03 } })
+  Object.assign(shader.uniforms, coverUniforms, { uTile: { value: 1 / tileOf('snow') }, uBump: { value: 0.09 } })
   shader.vertexShader = shader.vertexShader
-    .replace('#include <common>', `#include <common>\n${COVER_GLSL}\n${TREE_VERT_PARS}`)
+    .replace('#include <common>', `#include <common>\n${COVER_GLSL}\n${TREE_VERT_PARS}\nattribute vec2 uv1;\nvarying float vTreeEdge;`)
     .replace(
       '#include <begin_vertex>',
-      `#include <begin_vertex>\n${TREE_VERT}\ntransformed += normalize(normal + vec3(0.0, 1.2, 0.0)) * (${COVER_RISE.toFixed(3)} * stageCover(position.xz) * smoothstep(-0.2, 0.6, normal.y));`,
+      `#include <begin_vertex>\n${TREE_VERT}\nvTreeEdge = uv1.x;\ntransformed += normalize(normal + vec3(0.0, 1.2, 0.0)) * (${COVER_RISE.toFixed(3)} * stageCover(position.xz) * smoothstep(-0.2, 0.6, normal.y));`,
     )
   snowFragment(shader)
+  shader.fragmentShader = shader.fragmentShader
+    .replace('#include <common>', '#include <common>\nvarying float vTreeEdge;')
+    .replace('vec3 treeN = normalize(vTreeN);', `if (vTreeEdge < ${EDGE_MM.toFixed(2)} * stageHash(floor(vTreeP * ${SPARKLE.perMm.toFixed(1)}) + 0.5)) discard;\nvec3 treeN = normalize(vTreeN);`)
 }
 
 function arrivalHook(shader: Shader): void {
