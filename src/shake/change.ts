@@ -6,11 +6,11 @@ export interface ChangeSpan {
   lag: number
 }
 
-const OUTSIDE: ChangeSpan = { from: 0.4, to: 0.7, lag: 0 }
+const OUTSIDE: ChangeSpan = { from: 0.46, to: 0.64, lag: 0 }
 const SPANS: Record<string, ChangeSpan> = {
   miniature: { from: 0.05, to: 0.95, lag: 0.5 },
   arrival: { from: 0.05, to: 0.95, lag: 0.5 },
-  light: { from: 0.35, to: 0.65, lag: 0 },
+  light: { from: 0, to: 1, lag: 0 },
   veil: { from: 0, to: 1, lag: 0 },
   particles: { from: 0, to: 1, lag: 0 },
   base: OUTSIDE,

@@ -54,6 +54,9 @@ export class Padded implements ParticleSource {
   get liquid(): Float64Array {
     return this.inner().liquid
   }
+  get cover(): ParticleSource['cover'] {
+    return this.inner().cover
+  }
   get pos(): Float32Array {
     return this.sync().pos
   }
