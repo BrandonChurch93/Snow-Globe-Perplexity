@@ -119,6 +119,11 @@ export function mountProbe(root: HTMLElement, bridge: ProbeBridge): void {
   let measured: ProbeLevelResult[] = []
   let copiedTimer = 0
 
+  const more = (): void => {
+    card.toggleAttribute('data-above', scroll.scrollTop > 1)
+    card.toggleAttribute('data-more', scroll.scrollHeight - scroll.scrollTop - scroll.clientHeight > 1)
+  }
+
   const fillRows = (done: ProbeLevelResult[], running: Running, picked: string): void => {
     rows.forEach(({ tr, cells }, i) => {
       const r = done.find((d) => d.level === levels[i])
@@ -163,6 +168,7 @@ export function mountProbe(root: HTMLElement, bridge: ProbeBridge): void {
     text.hidden = false
     button.hidden = false
     root.dataset.probe = result ? 'done' : 'failed'
+    more()
   }
 
   const selectText = (): void => {
@@ -198,6 +204,8 @@ export function mountProbe(root: HTMLElement, bridge: ProbeBridge): void {
     else fallback()
   })
 
+  scroll.addEventListener('scroll', more, { passive: true })
+  new ResizeObserver(more).observe(scroll)
   fillRows([], null, '')
   bridge.run(onProgress).then(finish, () => finish(null))
 }

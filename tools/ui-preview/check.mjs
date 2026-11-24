@@ -453,6 +453,44 @@ try {
       pasted && pasted !== text ? 'the clipboard does not hold the text block' : '',
     )
   })
+
+  await check('a short phone screen keeps Copy in view and fades what scrolls under the edges', async () => {
+    const width = config.formats.phone.width
+    const height = Math.round(config.formats.phone.height * 0.78)
+    const context = await browser.newContext({ viewport: { width, height } })
+    const page = await context.newPage()
+    await page.goto(`${origin}/tools/ui-preview/?page=probe&seconds=0.2`)
+    await page.waitForSelector('#ui[data-probe="done"]')
+    await page.waitForTimeout(600)
+    const read = () =>
+      page.evaluate(() => {
+        const card = document.querySelector('#ui [data-more], #ui [data-above]')
+        const scroller = [...document.querySelectorAll('#ui *')].find((e) => e.scrollHeight - e.clientHeight > 1 && getComputedStyle(e).overflowY === 'auto')
+        const box = document.querySelector('#ui button').getBoundingClientRect()
+        return {
+          more: !!card && card.hasAttribute('data-more'),
+          above: !!card && card.hasAttribute('data-above'),
+          overflows: !!scroller,
+          copyInView: box.top >= 0 && box.bottom <= window.innerHeight,
+        }
+      })
+    const rest = await read()
+    await page.evaluate(() => {
+      const scroller = [...document.querySelectorAll('#ui *')].find((e) => e.scrollHeight - e.clientHeight > 1 && getComputedStyle(e).overflowY === 'auto')
+      if (scroller) scroller.scrollTop = scroller.scrollHeight
+    })
+    await page.waitForTimeout(400)
+    const end = await read()
+    await page.setViewportSize({ width, height: config.formats.phone.height })
+    await page.waitForTimeout(400)
+    const tall = await read()
+    await context.close()
+    return first(
+      want(rest, { more: true, above: false, overflows: true, copyInView: true }, 'at rest'),
+      want(end, { more: false, above: true, overflows: true, copyInView: true }, 'scrolled to the end'),
+      want(tall, { more: false, above: false, overflows: false, copyInView: true }, 'on the full phone height'),
+    )
+  })
 } finally {
   await browser.close()
   await server.close()
