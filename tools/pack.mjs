@@ -103,7 +103,7 @@ const shots = cfg.film.shots
 // What each camera is for, in the kit's words: kit/07 M1, kit/02 section 9 and the shot table of kit/01. A critic asked whether a camera frames what it is for has to be told what that is.
 const CAMERA_FOR = {
   hero: `the whole globe and its base, large in the frame; every shake is seen from it with the camera locked, and the globe lifts ${cfg.shake.liftMm} mm off the surface in a shake, so the frame keeps that much room above the glass at rest`,
-  macro: 'the miniature from close, inside the glass, with no edge of the glass in the frame; the film opens and ends on it',
+  macro: `the film's first and last frame: the lit cottage, the lamppost and the foot of the tree from close, filling the frame, with no edge of the glass in it; a check keeps every corner of this frame within ${cfg.framing.macroMaxRadiusFraction} of the glass's radius from its centre`,
   interior: 'the miniature inside the glass',
   base: 'the base alone, filling the width of the frame; each season has its own sculpted base and this camera is how it is judged',
   surface: 'the surface the globe stands on, with the foot of the base and its reflection',
