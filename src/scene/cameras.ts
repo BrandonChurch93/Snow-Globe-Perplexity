@@ -17,7 +17,7 @@ const LENS: Record<string, { apertureMm: number; focusShiftMm: number }> = {
   macro: { apertureMm: 3, focusShiftMm: -7 },
   interior: { apertureMm: 7, focusShiftMm: -10 },
   base: { apertureMm: 7, focusShiftMm: -50 },
-  surface: { apertureMm: 7, focusShiftMm: -40 },
+  surface: { apertureMm: 7, focusShiftMm: -52 },
   low: { apertureMm: 8, focusShiftMm: -40 },
 }
 

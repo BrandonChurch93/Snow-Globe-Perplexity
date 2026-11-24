@@ -68,7 +68,7 @@ Written by `npm run cut` from the page. Do not edit by hand. Lengths are in mill
 - Move: Starts on hero and lowers its aim by up to 4.5 mm as the globe settles, then one slow move to the interior camera and back, with a sweep of 1.6 degrees across it so the camera never rests there.
 - Starts: 658 mm from a point 70.5 mm up the axis, yaw 0, pitch 9, the frame 185 mm tall there, the globe and base 80 percent of that height.
 - Ends: 658 mm from a point 70.5 mm up the axis, yaw 0, pitch 9, the frame 185 mm tall there, the globe and base 80 percent of that height.
-- Focus: 618 mm from the lens, 40 mm in front of the aim point; at interior 450 mm from the lens, 10 mm in front of the aim point.
+- Focus: 618 mm from the lens, 40 mm in front of the aim point; at interior 385 mm from the lens, 10 mm in front of the aim point.
 - Keys:
   - frame 1440, 0:24.00: first frame
   - frame 1548, 0:25.80: the move toward interior begins
@@ -97,7 +97,7 @@ Written by `npm run cut` from the page. Do not edit by hand. Lengths are in mill
 - Move: Starts on hero and lowers its aim by up to 4.5 mm as the globe settles, then one slow move to the low camera and back, with a sweep of 1.6 degrees across it so the camera never rests there.
 - Starts: 658 mm from a point 70.5 mm up the axis, yaw 0, pitch 9, the frame 185 mm tall there, the globe and base 80 percent of that height.
 - Ends: 658 mm from a point 70.5 mm up the axis, yaw 0, pitch 9, the frame 185 mm tall there, the globe and base 80 percent of that height.
-- Focus: 618 mm from the lens, 40 mm in front of the aim point; at low 480 mm from the lens, 40 mm in front of the aim point.
+- Focus: 618 mm from the lens, 40 mm in front of the aim point; at low 460 mm from the lens, 40 mm in front of the aim point.
 - Keys:
   - frame 2160, 0:36.00: first frame
   - frame 2268, 0:37.80: the move toward low begins

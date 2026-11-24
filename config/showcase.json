@@ -137,10 +137,10 @@
   "cameras": {
     "hero": { "fovDeg": 16, "distanceMm": 658, "yawDeg": 0, "pitchDeg": 9, "aimHeightMm": 70.5 },
     "macro": { "fovDeg": 16, "distanceMm": 130, "yawDeg": -13, "pitchDeg": 3, "aimHeightMm": 67 },
-    "interior": { "fovDeg": 16, "distanceMm": 460, "yawDeg": 0, "pitchDeg": 6, "aimHeightMm": 91 },
+    "interior": { "fovDeg": 16, "distanceMm": 395, "yawDeg": 0, "pitchDeg": 2, "aimHeightMm": 86.5 },
     "base": { "fovDeg": 16, "distanceMm": 262, "yawDeg": 10, "pitchDeg": 5, "aimHeightMm": 16 },
-    "surface": { "fovDeg": 16, "distanceMm": 330, "yawDeg": 24, "pitchDeg": 14, "aimHeightMm": 6 },
-    "low": { "fovDeg": 20, "distanceMm": 520, "yawDeg": -18, "pitchDeg": 2, "aimHeightMm": 60 }
+    "surface": { "fovDeg": 16, "distanceMm": 540, "yawDeg": 24, "pitchDeg": 18, "aimHeightMm": -34 },
+    "low": { "fovDeg": 20, "distanceMm": 500, "yawDeg": -24, "pitchDeg": -5.5, "aimHeightMm": 71.5 }
   },
   "framing": {
     "heroFillMin": 0.8,
