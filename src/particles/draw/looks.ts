@@ -139,6 +139,7 @@ export const STORM_FLASH = 1.6
 export const STORM_GLINT = 0.05
 export const STORM_GLINT_REACH = { low: 0.12, high: 0.42 }
 export const STORM_GLINT_KEEP = 0.4
+export const REST_CLEAR = { from: 0.72, to: 0.92, near: 0.3, size: 1.6, mostPx: 3.1 }
 export const STORM_WARM = 0.4
 export const STORM_PALE = 0.6
 export const STORM_PALE_TO = [0.93, 1.05, 1.045] as const
