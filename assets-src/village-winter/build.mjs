@@ -162,6 +162,7 @@ function strip(n, at, across, up, w, h, seg = 6) {
 }
 
 const fenceShapes = L.shapes.filter((s) => s.role === 'fence')
+const FENCE_SNOW = { posts: false, rails: false }
 for (const s of fenceShapes) {
   const M = boxMatrix(s)
   if (s.half[2] < 2) {
@@ -176,7 +177,7 @@ for (const s of fenceShapes) {
       const hem = top - 0.06 - 0.16 * noise(x * 2.4 + seed, z * 2.4, 3) - y
       return Math.max(dome, hem) + 0.045 * fbm(x * 2.2 + seed, y * 2.2, z * 2.2, 2)
     }
-    addSnow(netGeometry(sdf, [-1.4, top - 0.7, -1.4], [1.4, top + 1.05, 1.4], 0.18), M, 0.6, snow, 'posts')
+    if (FENCE_SNOW.posts) addSnow(netGeometry(sdf, [-1.4, top - 0.7, -1.4], [1.4, top + 1.05, 1.4], 0.18), M, 0.6, snow, 'posts')
   } else {
     const seed = R() * 40
     const len = s.half[2]
@@ -190,7 +191,7 @@ for (const s of fenceShapes) {
       (t) => (low ? 0.2 : 0.3) * clamp(0.75 + 0.6 * noise(t * 22, seed, 5) + 0.3 * noise(t * 60, seed, 9), 0.12, 1.4),
       5,
     )
-    addSnow(g, M, 0.6, snow, 'rails')
+    if (FENCE_SNOW.rails) addSnow(g, M, 0.6, snow, 'rails')
   }
 }
 
@@ -597,7 +598,7 @@ for (const s of fenceShapes.filter((q) => q.half[2] < 2)) {
   const wide = s.half[0] * STOUT.post + 0.13
   const seed = s.centre[0] * 3.1 + s.centre[2] * 1.7
   const sdf = (x, y, z) => Math.max(ell(x, y - top + 0.12, z, wide, 0.62, wide), top - 0.1 - 0.22 * noise(x * 2.4 + seed, z * 2.4, 5) - y) + 0.05 * fbm(x * 2 + seed, y * 2, z * 2, 2)
-  addSnow(netGeometry(sdf, [-1.5, top - 0.7, -1.5], [1.5, top + 1.3, 1.5], 0.2), boxMatrix(s), 1, fresh, 'fresh')
+  if (FENCE_SNOW.posts) addSnow(netGeometry(sdf, [-1.5, top - 0.7, -1.5], [1.5, top + 1.3, 1.5], 0.2), boxMatrix(s), 1, fresh, 'fresh')
 }
 
 const names = [snow, ice, decor, bulbs, fresh]
