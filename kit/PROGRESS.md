@@ -37,16 +37,16 @@ Status 35 · 2026-11-24 13:36 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 13:36 UTC
-clock: phase 3, tick of 6.0 minutes
-phase 3: 5.15 h used of its 11.00 h box
-allowance (before the review): 11.76 h used of 36.00 h allowed
-all time before the review: 11.76 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 13:39 UTC
+clock: phase 3, tick of 2.0 minutes
+phase 3: 5.19 h used of its 11.00 h box
+allowance (before the review): 11.81 h used of 36.00 h allowed
+all time before the review: 11.81 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 2
 ```
 
 ## Phases
@@ -538,6 +538,9 @@ Numbered. What, why, and the date.
 48. Built assets were committed more than once per round by build agents; the rule is restored and the cost is logged (12:22 UTC, Phase 3). `AGENTS.md` says built assets are committed once per round, after the best take is chosen, never per take and never per tuning look, because history cannot be rewritten. My own clone kept `assets-full/` and `public/assets/` out of commits with two local exclude lines; the build agents' clones did not have those lines, so their tuning looks went into history: 6 versions of the slab's frost tile (about 54 MB), 3 of the glass's frost tile (about 41 MB), 5 of the tree's crown model, 6 of winter's base model, 4 of the tree's sprigs. The pack stood at 258 MiB when found, against `repo.maxTreeGb` 2 and `repo.maxPushGb` 1; no file passes `repo.maxFileMb` 45. Nothing can be taken back. What was done: the two exclude lines were removed so `main` is consistent (everything under `public/assets/` that the code asks for is tracked, which also lets a clean clone open the app; see open item 30); every builder was told at 12:23 to commit no built file again until its one final commit of the best take; from the second wave on, a builder's brief carries the rule in its first lines and the exclude lines are written into its clone at the start. Listed in the REVIEW block.
 
 49. The second set of build agents is the one replacement the limits table allows per job, and it carries the fix work of winter's first round; loading is a new job; looks are counted per part per round from round 1 on (13:18 UTC, Phase 3). `kit/07-QUALITY-BAR.md` gives a build agent `budget.buildAgentMaxHours`, "then one replacement". All ten first builders reached that limit at about 13:00 with their parts built and the picture still short of the approved images in ways each of them named in its final report. Reading taken: each job gets its one replacement now (`tree`, `village`, `base`, `frost`, `flakes`, `liquid`, `scene`, `glass`, `light`; the light's replacement also owns `src/shake/`, where the first shake builder had nothing left to change), and the replacement's brief is the first builder's own list of what is still wrong plus two side by side pictures against the approved images; the round's critic findings are added per part when they arrive. One job is new, not a replacement: the first load (open item 30: `host.firstLoadMaxMb` against the measured first load). No job gets a third agent: after these, a part's fixes are `/root`'s own work, or a later round's fix list for that part is logged as a new job before anyone is started on it. The tuning looks: `kit/07` counts `assets.maxTuningLooksPerPart` "per part, per round, and per phase for parts tuned outside a round". The first builders tuned outside a round and four of them spent or passed the phase's count (base 42 viewed, village about 51, flakes about 51, scene 44; logged here as limits passed, not as passes). From round 1 on the count is per part per round, and every finisher's brief says so and asks for the count in the final report. Built files: the finishers commit none; `/root` makes them again with `npm run make -- <part>` and `npm run texpack` (tested at 13:11: every part's script reproduces its committed files bit for bit; base-winter 58 s, frost-winter 33 s, village-winter 13 s, tree-winter 10 s, trunk 5 s, scene 4 s, village 3 s, flakes under 1 s) and commits them once per round, as decision 48 restored.
+
+50. The still of the `landed` state is drawn with the film's shutter, as the film's frame at that moment is (13:43 UTC, Phase 3). `kit/05-ARCHITECTURE.md` gives the shutter to "a film or loop frame"; a state still had none, so the key `winter-shake` froze the storm half a second after the landing and was judged on a picture no frame of the film or the loop shows. The first flake builder had made up the difference by letting the storm's exposure grow with turbulence, and offered the cure. Tested at 13:40 at `draft`: with the shutter of `film.shutterDegrees` at `film.fps` the same moment is a white-out of broad smears, far from `winter-shake.png` (a soft swirl of short streaks, the cottage, the tree's lights and the star all readable); with no shutter it was a dense fur of streaks. Reading taken, the one that makes the judged still and the film agree: `src/capture/showcase.ts` passes the film's shutter for the `landed` state and none for `rest` and `settled`, where nothing moves a pixel in 1/120 s and a shutter would only redraw the shadows every sample. The flake and liquid finishers were told at once and tune the storm, the speeds of the liquid half a second after the landing and the streaks against this. Round 3's pack was drawn on `2faac9e`, before the change, and its `winter-shake` still is read with that in mind.
+51. Half a second after the landing the icicles hang at full length (13:43 UTC, Phase 3). `kit/02-SUBJECT.md` section 6 says of winter's arrival "Icicles lengthen" over the next seconds, and also that `states.landedSeconds` after the landing the globe looks like the mid-shake approved image; `winter-shake.png` shows eighteen icicles at full length. The image wins, as with the frost in decision 47: the icicles lengthen from the swap, under the blur of the strokes, and through the landing, reach nearly their full length by `states.landedSeconds`, and finish, with the drip at their tips, over the next seconds. A winter into winter shake must not show stubs in a clean frame. `src/scene/stage.ts` keeps `arrived` at 0 from `shake.swapWindow.fromBeat` to the landing in a one-season shake as in a two-season one, so the test shake shows what a real arrival shows; the base owns what it does with it.
 
 ## Notes from Brandon
 
