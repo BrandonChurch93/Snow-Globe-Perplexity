@@ -37,16 +37,16 @@ Status 20 · 2026-11-24 08:00 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 08:00 UTC
-clock: phase 2, tick of 2.9 minutes
-phase 2: 4.97 h used of its 6.00 h box
-allowance (before the review): 6.16 h used of 36.00 h allowed
-all time before the review: 6.16 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 08:09 UTC
+clock: phase 2, tick of 9.0 minutes
+phase 2: 5.12 h used of its 6.00 h box
+allowance (before the review): 6.31 h used of 36.00 h allowed
+all time before the review: 6.31 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 9
 ```
 
 ## Phases
@@ -603,13 +603,15 @@ Merged into `main`, each verified here with types clean and the tests green (126
 
 - 08:05 no build agent is running. `engine_engineer_2` (done 07:53), `particles_engineer_2` (done 07:54) and `film_app_engineer_2` (done 08:03) have sent their final reports and all of their work is merged. Every build job has used its one replacement. Next to start: two fresh critics for round 2, then five render agents for the blockout film.
 
+- 08:11 started five render agents for the blockout film (step 14), each on its own sandbox VM, commit `07cfdb3` (engine hash `b98352868abb52c6`, the same sources as round 2's commit `9ade96d`), film B, `draft`, `preview`: `film_renderer_1` frames 0 to 718 on `agent/film-chunks-1`, `film_renderer_2` 720 to 1438 on `agent/film-chunks-2`, `film_renderer_3` 1440 to 2158 on `agent/film-chunks-3`, `film_renderer_4` 2160 to 2878 on `agent/film-chunks-4`, `film_renderer_5` 2880 to 3598 on `agent/film-chunks-5`. Brief: `tools/briefs/chunks.md`.
+
 ## Rounds
 
 One line per round: its number, the unit, the commit it judged, each part ticked off as it finished, the scores, and what changed next.
 
 - Round 1 · blockout (Phase 2, the floor round) · judges commit `48afed3` · started 2026-11-24 06:36 UTC. Parts: [x] build · [x] machine checks (06:50: G1 to G12 and G14 green on the judged build `e4a8b9bdbc7a55ec`; D2 and D3 are red until step 14) · [x] measures (06:51: M1 and M6 on seven winter stills, 14 lines, 0 red) · [x] pack (06:55: 19 files in two parts, 0 parts missing; built at `b94e722`, which differs from `48afed3` only in `kit/` and `audio/` text) · [x] critic part 1 (06:57: 8, one severe issue on the spring hold) · [x] critic part 2 (07:08: 5, two severe and five major issues on five cameras and two screens) · [x] issues read (07:22: each of the eight issues has a fix under way or a decision; `SUMMARY.md` written) · [x] fixes (07:08 to 07:58, 50 of the 90 minutes allowed: decisions 34 and 35, the cameras `surface`, `interior`, `low` and `macro` framed again, 7 percent of room over the controls on the wide screens, every storm thinned within its first bar; merged as `9ade96d`) · [x] logged (open items 10 to 17, `scorecards/round-001/SUMMARY.md`)
 
-- Round 2 · blockout (Phase 2, the floor round; the last the config allows) · judges commit `9ade96d` · started 2026-11-24 07:57 UTC. Parts: [ ] build · [ ] machine checks · [ ] measures · [ ] pack · [ ] critic part 1 · [ ] critic part 2 · [ ] issues read · [ ] logged
+- Round 2 · blockout (Phase 2, the floor round; the last the config allows) · judges commit `9ade96d` · started 2026-11-24 07:57 UTC. Parts: [x] build · [x] machine checks (G1 to G12 and G14 green at 08:09; D2 and D3 wait for step 14) · [ ] measures · [ ] pack · [ ] critic part 1 · [ ] critic part 2 · [ ] issues read · [ ] logged
 
 ## Final scores
 
@@ -744,3 +746,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 08:01 Status 20 posted with three pictures: the opening camera's six candidates with the chosen frame (the caption in the picture says four), the spring hold and the fall hold after the thinning. It says the published app still shows the 07:36 build and that this commit is published when the gate has run.
 
 - 08:03 `film_app_engineer_2` sent its final report and is done (`agent/film-app2` `dec56e1`, already merged; looks on `agent/film-app2-looks` `67e7ccb`). Its checks at `dec56e1`: types clean, 304 tests, build, cut unchanged, determinism pass, G4, G6, G7, G11, G12 and G14 pass; G5 red in its VM only because no sound file exists there. What it left open is in open items 22 to 24.
+
+- 08:10 round 2's machine checks: `npm run gate -- --phase 2` finished at 08:09 with G1 to G12 and G14 green; D2 and D3 are red as expected until step 14 (the preview film and the proof do not exist for this build yet). The measures and the pack run now.
