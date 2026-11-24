@@ -591,7 +591,7 @@ export function buildTrunk(part: string, lights: readonly GlowLight[] = []): THR
     miniature: true,
     change: 'miniature',
     map: texture(BARK),
-    color: new THREE.Color(0.43, 0.345, 0.235),
+    color: new THREE.Color(0.8, 1.5, 1.9),
     vertexColors: true,
     roughness: 0.86,
     extra: { normalMap: normal, normalScale: new THREE.Vector2(2.8, 2.8) },
