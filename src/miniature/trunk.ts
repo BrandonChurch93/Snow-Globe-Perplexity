@@ -308,7 +308,7 @@ export interface Cluster {
 
 const DOME = 0.3
 const BODY = { blend: 0.5, bias: 0.4 }
-const CAP = { lift: 1.2, puff: 0.36, blend: 0.8, bias: 1.3, depth: 0.5, lip: 0.35, droop: 2.4 }
+const CAP = { lift: 1.2, puff: 0.36, blend: 0.8, bias: 1.3, depth: 0.5, lip: 0.35, droop: 2.4, taper: 0.65 }
 const wobble = (x: number, h: number, z: number): number => 0.16 * Math.sin(1.9 * x + 0.3 * h) * Math.sin(2.3 * h + 1.1 * z) * Math.sin(1.7 * z + 0.5 * x) + 0.07 * Math.sin(4.3 * x + 1) * Math.sin(3.9 * h + 2) * Math.sin(4.7 * z)
 const dome = (rim: number): number => 1 - DOME * Math.pow(rim, 1.5)
 
@@ -408,9 +408,9 @@ export function crownCap(x: number, h: number, z: number): number {
     const s = px * f.frame.side[0] + ph * f.frame.side[1] + pz * f.frame.side[2]
     const v = px * u[0] + ph * u[1] + pz * u[2]
     const d = px * f.frame.depth[0] + ph * f.frame.depth[1] + pz * f.frame.depth[2]
-    const lumps = 0.5 * Math.sin(1.25 * s + 1.9 * f.n) * Math.sin(1.4 * d + 2.6 * f.n) + 0.08 * Math.sin(2.7 * x + 1.1 * h + f.n) * Math.sin(2.9 * z - 0.8 * x + 2 * f.n)
-    const body = ballField(f, x, h - CAP.lift, z, CAP.blend) + CAP.bias - CAP.puff - lumps
+    const lumps = 0.5 * Math.sin(1.25 * s + 1.9 * f.n) * Math.sin(1.4 * d + 2.6 * f.n) + 0.2 * Math.sin(2.7 * x + 1.1 * h + f.n) * Math.sin(2.9 * z - 0.8 * x + 2 * f.n)
     const rim = (s * s) / (f.size[0] * f.size[0]) + (d * d) / (f.size[2] * f.size[2])
+    const body = ballField(f, x, h - CAP.lift, z, CAP.blend) + CAP.bias - CAP.puff - lumps + CAP.taper * rim
     const gully = Math.sin(0.62 * s + 2.1 * f.n + 0.5 * Math.sin(0.9 * d)) * Math.sin(0.7 * d + 1.3 * f.n)
     const lobes = 0.6 * Math.sin(0.93 * s + 1.7 * f.n) * Math.sin(0.81 * d + 2.3 * f.n) + 0.38 * Math.sin(1.73 * s - 1.12 * d + f.n) + 0.2 * Math.sin(3.1 * s + 2.7 * d + 0.6 * f.n) + 2.4 * clamp01((gully - 0.62) / 0.3)
     const line = f.size[1] * dome(rim) - CAP.lift - CAP.puff - CAP.depth + lobes - CAP.droop * rim * rim

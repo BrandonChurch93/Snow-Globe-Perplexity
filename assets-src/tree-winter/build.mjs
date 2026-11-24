@@ -218,7 +218,7 @@ function snow() {
     const both = (a, bb, c) => Math.min(snowField(a, bb, c), needleField(a, bb, c))
     const open = 0.1 * openness(both, x, h, z, n, 0.8) + 0.9 * openness(both, x, h, z, n, 2.4)
     const lit = 0.5 + 0.5 * (n[0] * SNOW_KEY[0] + n[1] * SNOW_KEY[1] + n[2] * SNOW_KEY[2])
-    const shade = (0.5 + 0.5 * open) * (0.34 + 0.66 * Math.pow(lit, 1.6))
+    const shade = (0.66 + 0.34 * open) * (0.46 + 0.54 * Math.pow(lit, 1.1))
     const cool = 1 - lit * lit
     uv.push(x / SNOW_TILE_MM, h / SNOW_TILE_MM)
     col.push(shade * (1 - 0.34 * cool), shade * (1 - 0.2 * cool), shade)
