@@ -58,12 +58,14 @@ const SLAM_KNEE = 45
 const ROLL_WAKES = 0.3
 const ROLL_WOKEN = 0.9
 
-export const ROLL_MAX = 20
+export const ROLL_MAX = 14
+const EDDY_GAIN = 3
+const EDDY_MAX = 450
 export const ROLL_EDGE = 0.5
 const ARM_PACE = 0.84
 const ROLL_SECONDS = config.shake.spinDownSeconds * 0.6
 const ROLL_FROM_STORM = 0.22
-const ROLL_DRAIN = 3
+const ROLL_DRAIN = 2
 const ROLL_EPS = 0.01
 const ROLL_TILT = 0.85
 export const ROLL_AXIS: readonly [number, number, number] = [0, Math.sin(ROLL_TILT), Math.cos(ROLL_TILT)]
@@ -403,9 +405,11 @@ export class Liquid {
     if (Math.round(time * HZ) % MIX_STEPS === 0) {
       if (turb > TURB_EPS) {
         const sp = Math.sin(L[7]!)
-        L[12] = turb * Math.cos(L[7]!)
-        L[13] = turb * sp * Math.cos(L[8]!)
-        L[14] = turb * sp * Math.sin(L[8]!)
+        const all = turb * (1 + (EDDY_GAIN * turb) / TURBULENCE_MAX)
+        const loud = all > EDDY_MAX ? EDDY_MAX : all
+        L[12] = loud * Math.cos(L[7]!)
+        L[13] = loud * sp * Math.cos(L[8]!)
+        L[14] = loud * sp * Math.sin(L[8]!)
       } else {
         L[12] = 0
         L[13] = 0
