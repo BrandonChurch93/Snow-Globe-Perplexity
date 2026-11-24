@@ -1,0 +1,49 @@
+{
+  "critic": "R3",
+  "score": 3,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "severe",
+      "file": "set-B-02.jpg",
+      "where": "the collar icicles on the base, the frost on the glass, and the interior snowstorm between frames 70 (1.17 s) and 72 (1.20 s)",
+      "what": "in a single 0.03 s step while the base is in plain view, the long hanging icicles around the collar snap off to short stubs, the collar snow rim jumps shape, the etched glass frost vanishes, and an opaque milky whiteout pops on across the whole sphere",
+      "fix": "do not trigger season-swap resets when shaking winter into winter, never cut collar geometry or snow rims on a visible frame, and build interior whiteout continuously from rising particle density rather than popping an opaque layer on"
+    },
+    {
+      "severity": "severe",
+      "file": "set-B-03.jpg",
+      "where": "the white frost starburst on the table surface from frames 90–96 (1.50–1.60 s) through set-C-01.jpg, set-C-02.jpg, and frames 144–156 of set-D-01.jpg",
+      "what": "while the globe hovers in mid-air during the final stroke, the table frost dissolves into bare dark wood with sparse gold specks, stays missing throughout set-down, and then wipes radially back outward as an oval ring after landing at 2.40–2.60 s while the collar icicles re-grow",
+      "fix": "keep winter table frost and collar icicles persistent during a winter shake instead of clearing and re-arriving them, and when frost arrives on a real transition into winter, grow branching frost crystals organically rather than expanding a radial ring wipe"
+    },
+    {
+      "severity": "severe",
+      "file": "set-C-01.jpg",
+      "where": "the mid-air hold across frames 108–118 (1.80–1.97 s, continuing from frame 104 in set-B-03.jpg) and the descent through set-C-02.jpg to frame 144",
+      "what": "after centering at 1.73 s, the globe hangs dead-still in mid-air for 0.24 s at constant height and near-zero tilt as if weightless, then glides straight vertically down with zero horizontal drift and touches down at 2.40 s without a weighted drop or settle",
+      "fix": "carry momentum continuously from the final stroke into an accelerating downward hand arc with no mid-air freeze, and land with a clear contact impulse and subtle damped settle"
+    },
+    {
+      "severity": "severe",
+      "file": "set-B-01.jpg",
+      "where": "the globe body trajectory and tilt across the strokes in frames 38–58 and continuing through set-B-02.jpg and set-B-03.jpg",
+      "what": "the globe slides side to side mechanically along a flat horizontal line (vertical position varies by less than 2 px across 1.1 s, all three stroke cycles have nearly equal ~23–29 px amplitudes, and tilt stays under 2 deg), reading as weightless rather than a heavy object shaken in a hand",
+      "fix": "use unequal stroke distances and timings, add a curved wrist/arm arc with vertical pump on each stroke, sharpen the velocity reversals, and add a pronounced lagging tilt (roughly 8–15 deg) at stroke reversals"
+    },
+    {
+      "severity": "severe",
+      "file": "set-D-01.jpg",
+      "where": "the swirling snow streaks inside the glass across set-D-01.jpg, set-D-02.jpg, and set-D-03.jpg (originating at frame 48 in set-B-01.jpg)",
+      "what": "instead of discrete particles slamming opposite walls on reversals and turning in a 3D volumetric whirl, a fixed helical shell of parallel diagonal white streaks (with barber-pole stripes around the lower glass rim) never reverses direction during the strokes, stays smeared as long fast-motion streaks for ~0.8 s after the globe sits still on the table, and then cross-fades into granular point noise in set-D-03.jpg while bottom rim stripes remain",
+      "fix": "drive true 3D particles with fluid inertia so they lag and slam into alternating walls during strokes, fold into multi-depth turbulence, and decelerate smoothly after landing with motion blur tied strictly to instantaneous particle speed"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01.jpg",
+      "where": "the globe pickup path and interior snow/liquid across set-A-01.jpg, set-A-02.jpg, and frames 36–46 of set-B-01.jpg (0.00–0.77 s)",
+      "what": "the globe levitates straight vertically (0 px horizontal shift, under 0.5 deg tilt, stalling at frames 6–12) by less than 10% of its height with no hand-pickup arc, and the snow inside stays motionless through the entire lift and the first leftward stroke until the streak layer fades in at 0.80 s",
+      "fix": "add an effortful pickup with slight off-axis hand shift, subtle wrist tilt, and a fuller lift height, and couple particle/fluid forces from frame 0 so settled snow lags and lifts off the ground mound as soon as the globe accelerates"
+    }
+  ]
+}
