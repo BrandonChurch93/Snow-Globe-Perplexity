@@ -1,0 +1,121 @@
+{
+  "engineHash": "c5811ea1c5834970",
+  "seasonHashes": {
+    "winter": "ffdfb619f574e8a0",
+    "spring": "9163f04bfdaf85ef",
+    "summer": "9163f04bfdaf85ef",
+    "fall": "9163f04bfdaf85ef"
+  },
+  "format": "preview",
+  "tier": "review",
+  "assets": "full",
+  "diagnostic": "",
+  "browser": "Google Chrome for Testing 147.0.7727.15",
+  "graphics": "software",
+  "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB",
+  "time": "2026-11-24T18:19:47.576Z",
+  "diag": "",
+  "layoutHash": "eaef1fec3b7393d1",
+  "spec": {
+    "kind": "motion",
+    "motion": "setdown",
+    "source": "test",
+    "shot": "test",
+    "stride": 1,
+    "frames": [
+      132,
+      134,
+      136,
+      138,
+      140,
+      142
+    ]
+  },
+  "caption": "Motion sheet 2 of 2: the setdown of the test shake, frames 132 to 142, 2 frames apart at 60 frames a second, preview, review",
+  "width": 1149,
+  "height": 498,
+  "limits": {
+    "longEdge": 1400,
+    "maxPixels": 1140000
+  },
+  "layout": {
+    "cols": 3,
+    "rows": 2,
+    "cell": {
+      "width": 367,
+      "height": 206
+    },
+    "labelHeight": 24,
+    "gap": 12,
+    "rowGap": 14,
+    "margin": 12
+  },
+  "frames": [
+    {
+      "index": 132,
+      "seconds": 2.2,
+      "file": "out/work/seq/test-preview-review/test-000132.png",
+      "at": {
+        "left": 12,
+        "top": 12,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 134,
+      "seconds": 2.2333333333333334,
+      "file": "out/work/seq/test-preview-review/test-000134.png",
+      "at": {
+        "left": 391,
+        "top": 12,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 136,
+      "seconds": 2.2666666666666666,
+      "file": "out/work/seq/test-preview-review/test-000136.png",
+      "at": {
+        "left": 770,
+        "top": 12,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 138,
+      "seconds": 2.3,
+      "file": "out/work/seq/test-preview-review/test-000138.png",
+      "at": {
+        "left": 12,
+        "top": 256,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 140,
+      "seconds": 2.3333333333333335,
+      "file": "out/work/seq/test-preview-review/test-000140.png",
+      "at": {
+        "left": 391,
+        "top": 256,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 142,
+      "seconds": 2.3666666666666667,
+      "file": "out/work/seq/test-preview-review/test-000142.png",
+      "at": {
+        "left": 770,
+        "top": 256,
+        "width": 367,
+        "height": 206
+      }
+    }
+  ]
+}
