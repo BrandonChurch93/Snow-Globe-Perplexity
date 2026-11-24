@@ -36,16 +36,16 @@ Status 55 · 2026-11-24 21:10 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 21:10 UTC
-clock: phase 3, tick of 1.3 minutes
-phase 3: 12.72 h used of its 11.00 h box
-allowance (before the review): 19.34 h used of 36.00 h allowed
-all time before the review: 19.34 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 21:32 UTC
+clock: phase 3, tick of 21.4 minutes
+phase 3: 13.08 h used of its 11.00 h box
+allowance (before the review): 19.69 h used of 36.00 h allowed
+all time before the review: 19.69 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 21
 ```
 
 ## Phases
@@ -597,6 +597,8 @@ Numbered. What, why, and the date.
 
 66. `shake.strokeMm` is 25, was 22 (21:20 UTC, Phase 3, for Round 7; it takes up decision 64 again, which decision 65 withdrew for Round 6 only). `AGENTS.md` lets the Builder tune it by up to a quarter either way, 16.5 to 27.5. Why: Round 6's motion critic reads the strokes as "a soft rock", and decision 65 held the value back only until the liquid's engine carried it. With the liquid closer's engine `cb51a3e` merged, the whole suite is green on the merged `main` at 24 (419 pass, 21:18) and at 25 (419 pass, 21:23); the shake's closer ran it green at 22, 24, 25, 26 and 27.5 and the liquid's closer read its pins at 22, 23, 24 and 25 (flakes through the dome at rest 0.50, 0.49, 0.47, 0.43 against over 0.3; the landed storm's flatness 1.80, 1.91, 1.83, 1.68 inside 1.25 to 2.2). 25 is the top of what the liquid's closer checked, so it goes no higher. Seen by the shake's closer at 25 beside the approved shake image: the same picture, the tree about 5 percent more veiled, nothing outside the glass moves; the strokes' side travel is 26.3 mm either way (23.1 at 22). No pin moved. Listed for the `REVIEW` block.
 67. The sheet "the globe at rest across several seconds" of winter's motion pack starts where the opening's pull back ends (21:27 UTC, Phase 3, from Round 7 on; `tools/pack.mjs`). A conflict the kit did not foresee: `kit/07-QUALITY-BAR.md` asks for "one sheet of the globe at rest across several seconds", the pack tool took it from the season's first hold, and winter's first hold is the film's `open` shot, whose first two bars are the opening's pull back from the `macro` camera (`kit/01-FILM.md`: "The camera is already moving in frame 0, pulling back"; "The pull back reaches the `hero` camera by the end of the shot's second bar"). Round 6's motion critic was told it saw the globe at rest, saw 3.5 seconds of camera move and marked it severe. The opening's camera is the `film` unit's to judge, and the film's own pack already carries the sheet "the opening pull back". So for the hold that opens the film the rest sheet now runs from the end of its second bar to its last frame (frames 288 to 575, 4.8 seconds, with the drift of a few degrees that `kit/01-FILM.md` asks for); every other hold is drawn whole as before. Nothing in the picture changes. Listed for the `REVIEW` block.
+
+68. **The engine may start with the calm snowfall under way** (21:38 UTC, Phase 3, Round 6's fixes). Round 6's motion critic (part 2) wrote that "at 0.00 s before the shake the liquid contains zero drifting snow particles", while the approved image of winter at rest shows fine flakes in the liquid and `kit/02-SUBJECT.md` says a flake at rest in still liquid "sinks slowly with a slight sideways wander". The engine's start had every winter flake lying, and one of the Builder's own pins in `tests/sim.test.ts` ("starts each season the same way every time, with what rests already lying") held it there: `expect(census(winter).rest).toBe(winter.count)`. The pin is not one of the tests `kit/05-ARCHITECTURE.md` lists and no config threshold; it now reads: what rests plus what drifts is every flake, and what drifts is under 6 % of them. It passes on `main` as it was (none in the air) and with the liquid's change (about 4 % in the air at step 0, level over 120 s without a shake); the same start every time is still pinned by the lines above it. A lower bound (more than 2.5 % in the air) goes in once the liquid's branch is merged.
 
 ## Notes from Brandon
 
