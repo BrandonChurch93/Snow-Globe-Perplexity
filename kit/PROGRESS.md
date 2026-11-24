@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 37 · 2026-11-24 14:24 UTC
+Status 38 · 2026-11-24 14:44 UTC
 
-- `out/stills/status/status-37-1.jpg`: Winter at rest. Left the approved image and right the build at 14:23 UTC (draft tier)
-- `out/stills/status/status-37-2.jpg`: Half a second after a landing. Left the approved image and right the build at 14:23 UTC (draft tier): the flakes no longer smear but the swirl is not there yet
-- `out/stills/status/status-37-3.jpg`: Still: winter landed hero, hd, draft
-- `out/stills/status/status-37-4.jpg`: Still: winter rest hero, hd, draft
+- `out/stills/status/status-38-1.jpg`: At rest: the approved image on the left and the build at 14:42 on the right (draft tier)
+- `out/stills/status/status-38-2.jpg`: Half a second after the landing: approved on the left and the build on the right. The water now rolls as one swirl
+- `out/stills/status/status-38-3.jpg`: The surface camera at 14:36: the mirror image of the globe is no longer clipped to a strip
+- `out/stills/status/status-38-4.jpg`: Still: winter landed hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 14:33 UTC
-clock: phase 3, tick of 4.6 minutes
-phase 3: 6.10 h used of its 11.00 h box
-allowance (before the review): 12.71 h used of 36.00 h allowed
-all time before the review: 12.71 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 14:44 UTC
+clock: phase 3, tick of 7.7 minutes
+phase 3: 6.28 h used of its 11.00 h box
+allowance (before the review): 12.89 h used of 36.00 h allowed
+all time before the review: 12.89 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 9
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -1003,3 +1003,7 @@ One entry per task: when it started, what it did, where it stopped.
 - 14:25 Status 37: the two pairs (approved beside the build at 14:23), Round 3's first scores.
 
 - 14:28 UTC: published from `98a15a2` plus the built files of 14:21 (not yet committed: the round's one commit comes with Round 4). https://snow-globe-seasons.pplx.app , Visibility: Organization. The built app shows its first picture in 11.3 s here, 43 requests of which 32 are assets, no errors; the first load is 9.67 MiB, down from 44. The review page was rebuilt with it (motion: nothing yet).
+
+- 14:35 UTC: decision 53 told to all ten finishers (freeze of Round 4 at 16:00 UTC, best work on the branch by 15:55). `motion_renderer` reported at 40 minutes that the storm frames cost about 65 s each and four of the R4 sheets were drawn; its limit was moved from 75 to 120 minutes (to 15:58 UTC), with a push after every sheet. No tier, frame count or sheet was dropped.
+- 14:39 UTC: merged tree `9a4c906`, village `643b4f4`, frost `432653b`, flakes `f987f7e`, liquid `7554fb1` (the roll: at `landed` the flakes turn as one swirl about a tilted axis, p50 387 mm/s, still from 3.4 s after the landing; M4 1, M5 0.9697, M6 pass), scene `127af6a`, glass `eb43f0f`, load `6217380`. Types clean, 397 tests pass. Rebuilt `trunk`, `tree-winter`, `village`, `village-winter`, `frost-winter`, `flakes`; texture pack 21.6 MiB in 41 files, the first picture needs 9.27 MiB.
+- 14:45 UTC: Status 38 posted with the rest pair, the landed pair and the surface camera (`out/work/status/pair-rest-1445.jpg`, `pair-landed-1445.jpg`, `look-surface-1436.jpg`). The Builder's reading of the pairs against the approved image: glass rim milky and too wide, water behind it too pale (the approved shows the dark room through clear water), streaks at `landed` thin sharp needles where the approved has soft smears of many sizes over a dense low cloud, icicles opaque, bank flat and grey, slab frost lilac, background darker and bluer than the approved teal with fewer warm discs.
