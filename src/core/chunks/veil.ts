@@ -3,7 +3,9 @@ import { config } from '../../config'
 import { LIQUID_PHASE, LIQUID_PHASE_B } from '../../globe/liquid'
 import type { StageFrame } from '../../scene/frame'
 
-const TURBULENCE_POWER = 4.2
+const TURBULENCE_POWER = 3
+const TURBULENCE_FROM = 0.12
+const TURBULENCE_TO = 0.5
 const NOISE_N = 32
 const TAU = 2 * Math.PI
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
@@ -23,8 +25,8 @@ export const VEIL_LOOK = {
   cutHigh: 0.8,
   blobLow: 0.3,
   blobGain: 1.4,
-  hazeCore: 0.22,
-  hazeFrom: 0.25,
+  hazeCore: 0.12,
+  hazeFrom: 0.3,
   hazeTo: 1.15,
   uneven: 0.96,
   unevenAtPeak: 0.5,
@@ -41,13 +43,16 @@ export const VEIL_LOOK = {
   bankEvenLow: 0.35,
   axis: [0, 0.08, 1] as const,
   centreMm: [-26, 15, 0] as const,
-  keyShare: 1.25,
-  keyFloor: 0.3,
+  keyShare: 1.9,
+  keyFloor: 0.45,
   shadow: 0.5,
   bankShadow: 0.05,
   ambientShare: 1,
-  gridShare: 1.3,
-  bankGridShare: 2.2,
+  gridShare: 0.75,
+  bankGridShare: 1.2,
+  bankShade: 0.62,
+  bankShadeFrom: 0.25,
+  bankShadeTo: 1.3,
 }
 
 function hash(x: number, y: number, z: number, s: number): number {
@@ -174,8 +179,9 @@ vec3 veilLit(vec3 p, vec3 field) {
   float reach = -pk + sqrt(max(pk * pk - dot(p, p) + uLens.w * uLens.w, 0.0));
   float dim = exp(-uVeil.a * ${n(L.shadow)} * reach - ${n(L.bankShadow)} * field.z / max(dot(uVeilKey.xyz, uVeilUp.xyz), 0.3));
   float low = field.y / max(field.x + field.y, 1e-6);
+  float packed = mix(1.0, mix(${n(L.bankShade)}, 1.0, smoothstep(${n(L.bankShadeFrom)}, ${n(L.bankShadeTo)}, field.y / max(uVeilBank.z, 1e-6))), low);
   vec3 toward;
-  return stageSoftIn(p) * ${n(L.ambientShare)} + stageKeyIn(p, toward) * (uRigPoint.x * ${n(L.keyShare)} * (uVeilKey.w + (1.0 - uVeilKey.w) * dim)) + stageGrid(p) * mix(${n(L.gridShare)}, ${n(L.bankGridShare)}, low);
+  return stageSoftIn(p) * ${n(L.ambientShare)} + stageKeyIn(p, toward) * (uRigPoint.x * ${n(L.keyShare)} * packed * (uVeilKey.w + (1.0 - uVeilKey.w) * dim)) + stageGrid(p) * mix(${n(L.gridShare)}, ${n(L.bankGridShare)}, low);
 }
 vec4 veilPath(vec3 eye, vec3 placed, vec3 world, float path) {
   float thin = (uVeil.a + uVeilBank.z) * path;
@@ -243,7 +249,8 @@ export function updateVeil(f: StageFrame): void {
   const a = f.from.veil
   const b = f.to.veil
   const t = f.mix.veil
-  const density = lerp(a.rest, b.rest, t) + lerp(a.density, b.density, t) * Math.pow(f.turbulence, TURBULENCE_POWER)
+  const stirred = Math.min(1, Math.max(0, (f.turbulence - TURBULENCE_FROM) / (TURBULENCE_TO - TURBULENCE_FROM)))
+  const density = lerp(a.rest, b.rest, t) + lerp(a.density, b.density, t) * Math.pow(f.turbulence, TURBULENCE_POWER) * stirred * stirred * (3 - 2 * stirred)
   const u = veilUniforms
   u.uVeil.value.set(lerp(a.tint[0], b.tint[0], t), lerp(a.tint[1], b.tint[1], t), lerp(a.tint[2], b.tint[2], t), density)
   const amb = (L.ambientShare * 0.5) / Math.PI
