@@ -13,19 +13,19 @@ export const VEIL_LOOK = {
   steps: 8,
   stepMm: 15,
   blobTileMm: 120,
-  arcTileMm: 16,
-  arcDeepMm: 110,
-  arcTurns: 7,
+  arcTileMm: 8,
+  arcDeepMm: 320,
+  arcTurns: 5,
   warp: 0.3,
   blobDrift: 0.3,
-  wisp: 4,
-  cutLow: 0.46,
+  wisp: 3,
+  cutLow: 0.5,
   cutHigh: 0.8,
   blobLow: 0.3,
   blobGain: 1.4,
-  hazeCore: 0,
-  hazeFrom: 0.3,
-  hazeTo: 0.9,
+  hazeCore: 0.22,
+  hazeFrom: 0.25,
+  hazeTo: 1.15,
   uneven: 0.96,
   unevenAtPeak: 0.5,
   peakFrom: 0.7,
@@ -41,13 +41,13 @@ export const VEIL_LOOK = {
   bankEvenLow: 0.35,
   axis: [0, 0.08, 1] as const,
   centreMm: [-26, 15, 0] as const,
-  keyShare: 0.95,
+  keyShare: 1.25,
   keyFloor: 0.3,
   shadow: 0.5,
   bankShadow: 0.05,
-  ambientShare: 0.8,
-  gridShare: 0.55,
-  bankGridShare: 1.1,
+  ambientShare: 1,
+  gridShare: 1.3,
+  bankGridShare: 2.2,
 }
 
 function hash(x: number, y: number, z: number, s: number): number {
@@ -153,11 +153,6 @@ uniform vec4 uVeilUp;
 uniform vec4 uVeilBank;
 uniform mat3 uVeilTurn;
 uniform highp sampler3D uVeilNoise;
-vec3 veilGrid(vec3 p) {
-  vec3 at = clamp(p / (2.0 * uGrid.w) + 0.5, 0.0, 1.0);
-  vec3 a = texture(uGridA, at).rgb * uGrid.y;
-  return uGrid.x > 0.001 ? mix(a, texture(uGridB, at).rgb * uGrid.z, uGrid.x) : a;
-}
 vec3 veilField(vec3 p) {
   vec4 w = texture(uVeilNoise, p / ${n(L.blobTileMm)} + vec3(uVeilFlow.z, uVeilFlow.w, -uVeilFlow.z));
   vec3 c = p - ${vec(CENTRE)};
@@ -179,11 +174,13 @@ vec3 veilLit(vec3 p, vec3 field) {
   float reach = -pk + sqrt(max(pk * pk - dot(p, p) + uLens.w * uLens.w, 0.0));
   float dim = exp(-uVeil.a * ${n(L.shadow)} * reach - ${n(L.bankShadow)} * field.z / max(dot(uVeilKey.xyz, uVeilUp.xyz), 0.3));
   float low = field.y / max(field.x + field.y, 1e-6);
-  return uVeilLight + uVeilKeyCol * (uVeilKey.w + (1.0 - uVeilKey.w) * dim) + veilGrid(p) * mix(${n(L.gridShare)}, ${n(L.bankGridShare)}, low);
+  vec3 toward;
+  return stageSoftIn(p) * ${n(L.ambientShare)} + stageKeyIn(p, toward) * (uRigPoint.x * ${n(L.keyShare)} * (uVeilKey.w + (1.0 - uVeilKey.w) * dim)) + stageGrid(p) * mix(${n(L.gridShare)}, ${n(L.bankGridShare)}, low);
 }
 vec4 veilPath(vec3 eye, vec3 placed, vec3 world, float path) {
   float thin = (uVeil.a + uVeilBank.z) * path;
-  if (thin < 0.003) return vec4(uVeilLight + uVeilKeyCol, thin);
+  if (thin <= 0.0) return vec4(0.0);
+  if (thin < 0.003) return vec4(stageCold(uVeilTurn * (world - uLensCentre)), thin);
   vec3 dir = normalize(placed - eye);
   vec3 oc = eye - uLensCentre;
   float b = dot(oc, dir);
@@ -209,7 +206,7 @@ vec4 veilPath(vec3 eye, vec3 placed, vec3 world, float path) {
     seen *= 1.0 - a;
   }
   float fog = 1.0 - seen;
-  return vec4(fog > 1e-4 ? glow / fog : uVeilLight + uVeilKeyCol, fog);
+  return vec4(fog > 1e-4 ? glow / fog : vec3(0.0), fog);
 }
 `
 
@@ -224,7 +221,7 @@ float stageVeil(float path) {
   return v.a;
 }
 vec3 stageFogged(vec3 col, vec3 lit, float fog) {
-  vec3 glow = stageVeilMarched > 0.5 ? stageVeilGlow : uVeilLight + uVeilKeyCol + lit * ${n(L.gridShare)};
+  vec3 glow = stageVeilMarched > 0.5 ? stageVeilGlow : stageCold(vStageLocal) + lit * ${n(L.gridShare)};
   return mix(col, uVeil.rgb * glow, fog);
 }
 `

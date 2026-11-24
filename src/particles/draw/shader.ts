@@ -1,7 +1,8 @@
 import { COVER_GLSL } from '../../core/chunks/cover'
+import { LIGHT_FRAG_PARS } from '../../core/chunks/light'
 import { VEIL_GLSL } from '../../core/chunks/veil'
 import { viewCode } from '../../diagnostics/views'
-import { BLUR_HOLD, EDGE_HIGH, EDGE_LOW, GLITTER_STREAK, GLINT_HIGH, GLINT_LOW, LAMPS, LOBE_CORE, MAX_KINDS, PIXEL_SIGMA2, SIZE_HIGH, SIZE_LOW, SIZE_SKEW, STREAK_HOLD, STREAK_REACH, STREAK_TAPER } from './looks'
+import { BLUR_HOLD, EDGE_DISC, EDGE_HIGH, EDGE_LOW, GLITTER_STREAK, GLINT_HIGH, GLINT_LOW, LAMPS, LIGHT_LOOK, LOBE_CORE, MAX_KINDS, PIXEL_SIGMA2, SIZE_HIGH, SIZE_LOW, SIZE_SKEW, STREAK_HOLD, STREAK_REACH, STREAK_TAPER } from './looks'
 
 const MEAN_LOBE = 0.42
 const n = (v: number) => (Number.isInteger(v) ? v.toFixed(1) : String(v))
@@ -43,17 +44,12 @@ uniform vec4 uBlur;
 uniform vec4 uLying;
 uniform vec4 uLimit;
 uniform vec4 uKindLook[${MAX_KINDS}];
-uniform vec3 uKeyLocal;
-uniform vec3 uKeyCol;
-uniform vec3 uRimLocal;
-uniform vec3 uRimCol;
+uniform vec4 uTone;
 uniform vec4 uLamp[${LAMPS}];
 uniform vec4 uLampCol[${LAMPS}];
 uniform sampler2D uLobes;
 uniform float uLobeRows;
-uniform highp sampler3D uGridA;
-uniform highp sampler3D uGridB;
-uniform vec4 uGrid;
+${LIGHT_FRAG_PARS}
 ${VEIL_GLSL}
 ${COVER_GLSL}
 ${VARYINGS}
@@ -170,25 +166,23 @@ export const VERT_MAIN = `
   vL3 = pointLobe(3, variant, shape, axis, ca, sa, lying, rPx, toView);
   vL4 = pointLobe(4, variant, shape, axis, ca, sa, lying, rPx, toView);
 
-  vec3 at = clamp(nowL / (2.0 * uGrid.w) + 0.5, 0.0, 1.0);
-  vec3 grid = mix(texture(uGridA, at).rgb * uGrid.y, texture(uGridB, at).rgb * uGrid.z, uGrid.x);
+  vec3 keyTo;
+  vec3 keyIn = stageKeyIn(nowL, keyTo);
+  vec3 base = stageSoftIn(nowL) + stageGrid(nowL) * uTone.y;
   vec3 toEye = normalize((uGlobeInv * vec4(eye, 1.0)).xyz - nowL);
   vec3 tilt = h2.yzw * 2.0 - 1.0;
   vec3 face = lying > 0.5 ? normalize(vec3(0.0, 1.0, 0.0) + uLimit.w * tilt) : pointTurn(normalize(cross(axis, normalize(tilt + 1e-3))), axis, ca, sa);
   float glints = shape > 1.5 ? 1.0 : 0.0;
-  vec3 dom = vec3(0.0);
   vec3 flash = vec3(0.0);
   for (int i = 0; i < ${LAMPS}; i++) {
     vec3 d = uLamp[i].xyz - nowL;
     float d2 = dot(d, d);
     vec3 dn = d / sqrt(d2 + 1e-4);
     float fall = 1.0 / (1.0 + d2 / (uLampCol[i].w * uLampCol[i].w));
-    dom += dn * fall * dot(uLampCol[i].rgb, vec3(0.3333));
     if (glints > 0.5) flash += uLampCol[i].rgb * (fall * uLamp[i].w * pointGlint(face, dn, toEye));
   }
-  if (glints > 0.5) flash += uKeyCol * pointGlint(face, uKeyLocal, toEye) + uRimCol * pointGlint(face, uRimLocal, toEye);
-  flash *= look.w;
-  vec3 domV = dot(dom, dom) > 1e-10 ? normalize(toView * dom) : vec3(0.0, 0.0, 1.0);
+  if (glints > 0.5) flash += keyIn * pointGlint(face, uLightFrame * keyTo, toEye) + uRigRimCol * (uRigInside.x * pointGlint(face, uLightFrame * uRigRimDir, toEye));
+  flash *= look.w * pow(c2 / (c2 + s2x), ${n(1 - BLUR_HOLD)});
 
   float reach = 1.2 * rPx + 2.6 * sqrt(s2x) + 1.0;
   vec2 ext = min(vec2(reach) + ${n(STREAK_REACH)} * halfLong * abs(along), vec2(uLimit.y));
@@ -204,8 +198,8 @@ export const VERT_MAIN = `
   #endif
   vStreak = vec4(along, halfLong, s2x);
   vKind = vec4(aData.y, lying, float(pid & 4095u), flash.r);
-  vGrid = vec4(grid, flash.g);
-  vDom = vec4(domV, flash.b);
+  vGrid = vec4(base, flash.g);
+  vDom = vec4(keyIn * uRigPoint.x, flash.b);
   vFog = veilPath(eye, placed.xyz, nowW, placed.w);
   gl_Position = aState > 2.5 || alpha <= 0.0 ? vec4(2.0, 2.0, 2.0, 1.0) : clip;
 `
@@ -214,12 +208,6 @@ export const FRAG = `
 uniform vec4 uKindColor[${MAX_KINDS}];
 uniform vec4 uKindPart[${MAX_KINDS}];
 uniform vec4 uKindLook[${MAX_KINDS}];
-uniform vec3 uKeyLocal;
-uniform vec3 uKeyCol;
-uniform vec3 uRimLocal;
-uniform vec3 uRimCol;
-uniform vec3 uSkyCol;
-uniform vec3 uGroundCol;
 uniform vec3 uUpLocal;
 uniform vec4 uTone;
 uniform float uPointChange;
@@ -237,9 +225,6 @@ void pointAdd(vec4 lobe, vec2 p, inout float f, inout vec3 nrm) {
   float g = pow(sharp, ${n(BLUR_HOLD)}) / pointSpread(vStreak.z, s2) * exp(-0.5 * dot(q, q) / s2);
   f += g;
   nrm += g * (1.0 + 0.6 * lobe.w) * vec3(q / lobe.z * sharp, sqrt(max(1.0 - dot(q, q) / (lobe.z * lobe.z), 0.05)));
-}
-float pointWrap(vec3 nrm, vec3 l) {
-  return clamp((dot(nrm, l) + uTone.x) / (1.0 + uTone.x), 0.0, 1.0);
 }
 void main() {
   int kind = int(vKind.x + 0.5);
@@ -263,7 +248,9 @@ void main() {
   float amp = vCore.z;
   vec3 flash = vec3(vKind.w, vGrid.w, vDom.w);
   float lit = clamp(max(flash.r, max(flash.g, flash.b)), 0.0, 1.0);
-  float cover = amp * smoothstep(${n(EDGE_LOW)} * amp, ${n(EDGE_HIGH)} * amp, f) * vCore.w * mix(look.z, 1.0, lit);
+  float r0 = ${n(LOBE_CORE)} * vL0.z;
+  float edge = mix(${n(EDGE_DISC)}, ${n(EDGE_HIGH)}, smoothstep(0.05, 0.4, r0 * r0 / (r0 * r0 + vStreak.w)));
+  float cover = amp * smoothstep(${n(EDGE_LOW)} * amp, edge * amp, f) * vCore.w * mix(look.z, 1.0, lit);
   if (uDiag == ${viewCode('cover')}) {
     gl_FragColor = vec4(cover, 0.0, cover, cover);
     return;
@@ -285,11 +272,10 @@ void main() {
   mat3 toView = mat3(modelViewMatrix);
   vec3 upV = normalize(toView * uUpLocal);
   vec3 nv = normalize(mix(normalize(nrm), upV, 0.55 * lying));
-  float kd = pointWrap(nv, normalize(toView * uKeyLocal));
-  float rd = pointWrap(nv, normalize(toView * uRimLocal));
-  float gd = pointWrap(nv, vDom.xyz);
-  vec3 light = mix(uGroundCol, uSkyCol, 0.5 + 0.5 * dot(nv, upV)) + uKeyCol * (kd * kd) + uRimCol * (rd * rd);
-  light = light * 0.31831 + vGrid.rgb * ((0.35 + 0.65 * gd) * uTone.y);
+  float nk = dot(nv, normalize(mat3(viewMatrix) * stageKeyBent(vStageLocal)));
+  float kd = stageWrap(nk, uTone.x);
+  float keyShare = mix(${n(LIGHT_LOOK.keyFloor)} + ${n(LIGHT_LOOK.keySide)} * kd * kd, stageWrap(nk, uRigInside.z) * 0.31831 / max(uRigPoint.x, 1e-3), lying);
+  vec3 light = vGrid.rgb * (1.0 + ${n(LIGHT_LOOK.skyTilt)} * dot(nv, upV)) + vDom.rgb * keyShare;
   vec3 col = k.rgb * light;
   col = mix(col, uVeil.rgb * vFog.rgb, vFog.a * mix(uTone.z, 1.0, lying));
   col += flash * k.rgb * k.a;

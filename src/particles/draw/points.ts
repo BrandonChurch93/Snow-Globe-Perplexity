@@ -44,8 +44,6 @@ export class ParticleDraw {
   private readonly bounds: THREE.Sphere
   private readonly phases = new Map<number, Float32Array>()
   private readonly plain = plainTable()
-  private readonly turn = new THREE.Quaternion()
-  private readonly tilt = new THREE.Euler()
   private readonly back = new THREE.Vector3()
   private readonly right = new THREE.Vector3()
   private readonly up = new THREE.Vector3()
@@ -69,12 +67,6 @@ export class ParticleDraw {
       uLying: { value: new THREE.Vector4(LYING_LOOK.flat, LYING_LOOK.lobe, LYING_LOOK.mergeFromMm, LYING_LOOK.mergeToMm) },
       uLimit: { value: new THREE.Vector4(1, 1, LYING_LOOK.mergeSpread, LYING_LOOK.glitterTilt) },
       uTone: { value: new THREE.Vector4(LIGHT_LOOK.wrap, LIGHT_LOOK.grid, LIGHT_LOOK.veilShare, 0) },
-      uKeyLocal: { value: new THREE.Vector3(0, 1, 0) },
-      uKeyCol: { value: new THREE.Color() },
-      uRimLocal: { value: new THREE.Vector3(0, 1, 0) },
-      uRimCol: { value: new THREE.Color() },
-      uSkyCol: { value: new THREE.Color() },
-      uGroundCol: { value: new THREE.Color() },
       uUpLocal: { value: new THREE.Vector3(0, 1, 0) },
       uLamp: { value: Array.from({ length: LAMPS }, () => new THREE.Vector4()) },
       uLampCol: { value: Array.from({ length: LAMPS }, () => new THREE.Vector4(0, 0, 0, 1)) },
@@ -283,14 +275,7 @@ export class ParticleDraw {
 
   private lights(f: StageFrame): void {
     const u = this.uniforms
-    this.turn.setFromEuler(this.tilt.set(f.globe.tiltX, 0, f.globe.tiltZ)).invert()
-    ;(u.uKeyLocal!.value as THREE.Vector3).copy(f.keyDir).applyQuaternion(this.turn)
-    ;(u.uRimLocal!.value as THREE.Vector3).copy(f.rimDir).applyQuaternion(this.turn)
     ;(u.uUpLocal!.value as THREE.Vector3).copy(f.globeUp)
-    ;(u.uKeyCol!.value as THREE.Color).copy(f.keyCol)
-    ;(u.uRimCol!.value as THREE.Color).copy(f.rimCol)
-    ;(u.uSkyCol!.value as THREE.Color).copy(f.ambient)
-    ;(u.uGroundCol!.value as THREE.Color).copy(f.ground).multiplyScalar(f.fill)
     const lamp = u.uLamp!.value as THREE.Vector4[]
     const lampCol = u.uLampCol!.value as THREE.Vector4[]
     let slot = 0
