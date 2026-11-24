@@ -14,11 +14,11 @@ const RAD = Math.PI / 180
 
 const LENS: Record<string, { apertureMm: number; focusShiftMm: number }> = {
   hero: { apertureMm: 2, focusShiftMm: -12 },
-  macro: { apertureMm: 2.5, focusShiftMm: 21.5 },
-  interior: { apertureMm: 0.6, focusShiftMm: -15 },
-  base: { apertureMm: 0.8, focusShiftMm: -44 },
-  surface: { apertureMm: 2.2, focusShiftMm: -52 },
-  low: { apertureMm: 1.6, focusShiftMm: -10 },
+  macro: { apertureMm: 2.5, focusShiftMm: 1.7 },
+  interior: { apertureMm: 0.5, focusShiftMm: -12 },
+  base: { apertureMm: 0.5, focusShiftMm: -31 },
+  surface: { apertureMm: 1.8, focusShiftMm: -52 },
+  low: { apertureMm: 1.4, focusShiftMm: -12 },
 }
 
 export const FAR_FIELD = { apertureMm: 5.4, startsPastFocus: 0.12 }

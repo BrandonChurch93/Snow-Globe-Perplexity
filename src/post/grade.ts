@@ -9,6 +9,12 @@ export const grade = {
   curveMid: 0.59,
   curveBlack: 0.14,
 
+  colourHold: 0.7,
+  colourHoldFrom: 0.1,
+  colourHoldFull: 0.6,
+  whiteFrom: 3,
+  whiteFull: 12,
+
   lift: [0, 0.0003, 0.0009] as [number, number, number],
   gamma: [1, 1, 1] as [number, number, number],
   gain: [0.985, 1, 1.02] as [number, number, number],

@@ -174,7 +174,7 @@ void main() {
   float occl = (1.0 - 0.85 * tight) * (1.0 - wide) * (1.0 - 0.9 * under);
 
   vec2 foot = uFoot.xy + uLean.xy;
-  vec3 heart = vec3(uFoot.x, lift + ${f(centreHeight)}, uFoot.y);
+  vec3 heart = vec3(0.0, ${f(centreHeight)}, 0.0);
   vec3 toKey = uKeyAt - P;
   float keyFar = length(toKey);
   vec3 lk = toKey / keyFar;
@@ -276,7 +276,7 @@ uniform vec3 uKeyDir;
 void main() {
   float c = stageChange();
   if (stageGone(c)) discard;
-  float d = length(vStageWorld.xz - uFoot.xy);
+  float d = length(vStageWorld.xz);
   float a = uShape.x * (1.0 - smoothstep(uFoot.z, uShape.y, d));
   vec3 col = uTint * (uSky + uKeyCol * max(uKeyDir.y, 0.0)) * 0.22;
   gl_FragColor = vec4(col, a);
@@ -325,7 +325,7 @@ export function makeDressing(kit: SeasonKit): THREE.Mesh {
     fragment: DRESSING,
     params: { transparent: true, depthWrite: false },
   })
-  const ring = new THREE.Mesh(new THREE.RingGeometry(footRadius - 1, d.reachMm, 96, 1), m)
+  const ring = new THREE.Mesh(new THREE.CircleGeometry(d.reachMm, 96), m)
   ring.rotation.x = -Math.PI / 2
   ring.position.y = 0.08
   ring.userData.standIn = `surface-dressing-${kit.season}`

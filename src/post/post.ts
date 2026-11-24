@@ -73,6 +73,8 @@ uniform vec2 uGlowTexel;
 uniform vec3 uGlowGain;
 uniform vec4 uCurve;
 uniform float uCurveBlack;
+uniform vec4 uHold;
+uniform float uHoldEnd;
 uniform vec3 uLift;
 uniform vec3 uGamma;
 uniform vec3 uGain;
@@ -88,6 +90,14 @@ const vec3 LUMA = vec3(0.2126, 0.7152, 0.0722);
 vec3 curve(vec3 x) {
   x = max(x, 0.0);
   return clamp((x * (uCurve.x * x + uCurve.y)) / (x * (uCurve.z * x + uCurve.w) + uCurveBlack), 0.0, 1.0);
+}
+vec3 film(vec3 x) {
+  x = max(x, 0.0);
+  vec3 each = curve(x);
+  float top = max(x.r, max(x.g, x.b));
+  vec3 held = x * (curve(vec3(top)).r / max(top, 1e-5));
+  float hold = uHold.x * smoothstep(uHold.y, uHold.z, top) * (1.0 - smoothstep(uHold.w, uHoldEnd, top));
+  return mix(each, held, hold);
 }
 vec3 encode(vec3 c) {
   vec3 lo = c * 12.92;
@@ -144,7 +154,7 @@ void main() {
   vec3 glow = texture(uGlow, uv + g).rgb + texture(uGlow, uv - g).rgb + texture(uGlow, uv + vec2(g.x, -g.y)).rgb + texture(uGlow, uv + vec2(-g.x, g.y)).rgb;
   c += glow * 0.25 * uGlowGain;
   c *= 1.0 - uLens.z * pow(r2, uLens.w);
-  c = curve(c);
+  c = film(c);
   c = pow(max(c * uGain + uLift * (1.0 - c), 0.0), uGamma);
   float l = dot(c, LUMA);
   c = max(mix(vec3(l), c, uSat), 0.0);
@@ -179,6 +189,8 @@ export class Post {
       uGlowGain: { value: new THREE.Vector3() },
       uCurve: { value: new THREE.Vector4() },
       uCurveBlack: { value: 1 },
+      uHold: { value: new THREE.Vector4(0, 0, 1, 1) },
+      uHoldEnd: { value: 2 },
       uLift: { value: new THREE.Vector3() },
       uGamma: { value: new THREE.Vector3(1, 1, 1) },
       uGain: { value: new THREE.Vector3(1, 1, 1) },
@@ -290,6 +302,8 @@ export class Post {
       ;(u.uGlowGain!.value as THREE.Vector3).set(k * (1 + g.glowTint * t.r), k * (1 + g.glowTint * t.g), k * (1 + g.glowTint * t.b))
       ;(u.uCurve!.value as THREE.Vector4).set(g.curveGain, g.curveToe, g.curveShoulder, g.curveMid)
       u.uCurveBlack!.value = g.curveBlack
+      ;(u.uHold!.value as THREE.Vector4).set(g.colourHold, g.colourHoldFrom, g.colourHoldFull, g.whiteFrom)
+      u.uHoldEnd!.value = g.whiteFull
       ;(u.uLift!.value as THREE.Vector3).set(g.lift[0], g.lift[1], g.lift[2])
       ;(u.uGamma!.value as THREE.Vector3).set(1 / g.gamma[0], 1 / g.gamma[1], 1 / g.gamma[2])
       ;(u.uGain!.value as THREE.Vector3).set(g.gain[0], g.gain[1], g.gain[2])
