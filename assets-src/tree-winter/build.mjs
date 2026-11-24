@@ -7,7 +7,7 @@ import { blurWrap, loadSource, luma, readPicture, seamless, toBytes, writePng } 
 
 const TAU = Math.PI * 2
 const NEEDLE_CELL = 0.62
-const SNOW_CELL = 0.52
+const SNOW_CELL = 0.56
 const NEEDLE_TILE_MM = 9
 const SNOW_TILE_MM = 7
 const STAR_AT = [0.25, 45.2, 0.1]
@@ -161,7 +161,7 @@ function needles() {
   const t = new THREE.Vector3()
   const b = new THREE.Vector3()
   for (let v = 0; v < count; v++) {
-    if (rng.next() > 0.3) continue
+    if (rng.next() > 0.25) continue
     p.fromArray(s.pos, v * 3)
     n.fromArray(s.nor, v * 3)
     if (snowField(p.x, p.y, p.z) < 0.25) continue

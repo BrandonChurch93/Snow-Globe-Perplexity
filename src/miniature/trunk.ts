@@ -312,7 +312,7 @@ export interface Cluster {
 
 const DOME = 0.3
 const BODY = { blend: 0.5, bias: 0.4 }
-const CAP = { lift: 1.2, puff: 0.36, blend: 0.8, bias: 1.1, depth: 0.5, lip: 0.35, droop: 2.4, taper: 0.7 }
+const CAP = { lift: 1.2, puff: 0.36, blend: 0.8, bias: 1.1, depth: -0.7, lip: 0.35, droop: 2.4, taper: 0.7 }
 const wobble = (x: number, h: number, z: number): number => 0.16 * Math.sin(1.9 * x + 0.3 * h) * Math.sin(2.3 * h + 1.1 * z) * Math.sin(1.7 * z + 0.5 * x) + 0.07 * Math.sin(4.3 * x + 1) * Math.sin(3.9 * h + 2) * Math.sin(4.7 * z)
 const dome = (rim: number): number => 1 - DOME * Math.pow(rim, 1.5)
 
