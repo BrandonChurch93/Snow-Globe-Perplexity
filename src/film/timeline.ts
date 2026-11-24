@@ -112,9 +112,15 @@ export function eventAt(tl: Timeline, sec: number): { event: ShakeEvent; beat: n
   return null
 }
 
+/** The globe's pose at a time. A path answers past its bar as well (the tilt that settles after the landing), so the last shake that has begun is asked, not only the one in progress. */
 export function globePoseAt(tl: Timeline, sec: number): GlobePose {
-  const hit = eventAt(tl, sec)
-  return hit ? hit.event.path.poseAt(hit.beat) : REST_POSE
+  let pose = REST_POSE
+  for (const e of tl.events) {
+    if (sec < e.startSec) break
+    const end = e.startSec + eventSeconds(e)
+    pose = e.path.poseAt(sec < end ? eventBeat(e, sec) : BEATS + (sec - end) / beatOf(e))
+  }
+  return pose
 }
 
 const EDGE = 1e-7
