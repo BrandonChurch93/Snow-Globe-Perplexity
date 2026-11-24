@@ -1,0 +1,191 @@
+{
+  "engineHash": "a657047103a04c48",
+  "seasonHashes": {
+    "winter": "d99bf4f50a9ce788",
+    "spring": "e92d6d0026e5c762",
+    "summer": "e92d6d0026e5c762",
+    "fall": "e92d6d0026e5c762"
+  },
+  "format": "preview",
+  "tier": "review",
+  "assets": "full",
+  "diagnostic": "",
+  "browser": "Google Chrome for Testing 147.0.7727.15",
+  "graphics": "software",
+  "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB",
+  "time": "2026-11-24T16:41:05.484Z",
+  "diag": "",
+  "layoutHash": "eaef1fec3b7393d1",
+  "spec": {
+    "kind": "shot",
+    "source": "film",
+    "shot": "open",
+    "frames": [
+      0,
+      52,
+      104,
+      156,
+      208,
+      260,
+      314,
+      366,
+      418,
+      470,
+      522,
+      574
+    ]
+  },
+  "caption": "Sheet: 12 frames across the shot open, frames 0 to 575, preview, review",
+  "width": 1149,
+  "height": 986,
+  "limits": {
+    "longEdge": 1400,
+    "maxPixels": 1140000
+  },
+  "layout": {
+    "cols": 3,
+    "rows": 4,
+    "cell": {
+      "width": 367,
+      "height": 206
+    },
+    "labelHeight": 24,
+    "gap": 12,
+    "rowGap": 14,
+    "margin": 12
+  },
+  "frames": [
+    {
+      "index": 0,
+      "seconds": 0,
+      "file": "out/work/seq/film-preview-review/film-000000.png",
+      "at": {
+        "left": 12,
+        "top": 12,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 52,
+      "seconds": 0.8666666666666667,
+      "file": "out/work/seq/film-preview-review/film-000052.png",
+      "at": {
+        "left": 391,
+        "top": 12,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 104,
+      "seconds": 1.7333333333333334,
+      "file": "out/work/seq/film-preview-review/film-000104.png",
+      "at": {
+        "left": 770,
+        "top": 12,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 156,
+      "seconds": 2.6,
+      "file": "out/work/seq/film-preview-review/film-000156.png",
+      "at": {
+        "left": 12,
+        "top": 256,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 208,
+      "seconds": 3.466666666666667,
+      "file": "out/work/seq/film-preview-review/film-000208.png",
+      "at": {
+        "left": 391,
+        "top": 256,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 260,
+      "seconds": 4.333333333333333,
+      "file": "out/work/seq/film-preview-review/film-000260.png",
+      "at": {
+        "left": 770,
+        "top": 256,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 314,
+      "seconds": 5.233333333333333,
+      "file": "out/work/seq/film-preview-review/film-000314.png",
+      "at": {
+        "left": 12,
+        "top": 500,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 366,
+      "seconds": 6.1,
+      "file": "out/work/seq/film-preview-review/film-000366.png",
+      "at": {
+        "left": 391,
+        "top": 500,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 418,
+      "seconds": 6.966666666666667,
+      "file": "out/work/seq/film-preview-review/film-000418.png",
+      "at": {
+        "left": 770,
+        "top": 500,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 470,
+      "seconds": 7.833333333333333,
+      "file": "out/work/seq/film-preview-review/film-000470.png",
+      "at": {
+        "left": 12,
+        "top": 744,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 522,
+      "seconds": 8.7,
+      "file": "out/work/seq/film-preview-review/film-000522.png",
+      "at": {
+        "left": 391,
+        "top": 744,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 574,
+      "seconds": 9.566666666666666,
+      "file": "out/work/seq/film-preview-review/film-000574.png",
+      "at": {
+        "left": 770,
+        "top": 744,
+        "width": 367,
+        "height": 206
+      }
+    }
+  ]
+}
