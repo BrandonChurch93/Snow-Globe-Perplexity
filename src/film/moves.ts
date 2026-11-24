@@ -295,6 +295,17 @@ export const loopPose = (t: number): Pose => poseOfRig(loopRig(t))
 
 export const cameraNumbers = (p: Pose): number[] => [p.position.x, p.position.y, p.position.z, p.aim.x, p.aim.y, p.aim.z, p.fovDeg]
 
+/** What the cut list says of the loop's camera: how far it stands, its numbers on the first frame, and why it is not the config's as given. */
+export function loopCamera(): { distanceMm: number; numbers: number[]; fit: string } {
+  const given = rigOf(config.deliver.cardLoop.camera).distanceMm
+  const stood = loopDistanceMm()
+  return {
+    distanceMm: Math.round(stood * 10) / 10,
+    numbers: cameraNumbers(loopPose(0)).map((v) => Math.round(v * 1000) / 1000),
+    fit: stood > given ? `moved back from ${Math.round(given * 10) / 10} mm along its own axis, so the glass and the base stay inside the centred square crop of the card through the shake` : 'as the config gives it',
+  }
+}
+
 export interface ShotNote {
   shot: string
   kind: string

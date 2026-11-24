@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { config, shots } from '../src/config'
 import { buildCut, cuesOf, cutList, groupsOf, openingCues, type AudioMap, type Cut } from '../src/film/cut'
-import { cameraKeys, filmPose, cameraNumbers } from '../src/film/moves'
+import { cameraKeys, filmPose, cameraNumbers, loopCamera, loopDistanceMm, loopPose } from '../src/film/moves'
 import { openingPlan } from '../src/film/opening'
 import { barSeconds, filmTimeline, prerollSeconds, seasonAt } from '../src/film/timeline'
 
@@ -259,5 +259,17 @@ describe('the cut list the tools read', () => {
     expect(list.loop.frameCount).toBe(Math.round(config.deliver.cardLoop.seconds * fps))
     expect(list.cameraKeys.length).toBeGreaterThan(0)
     expect(JSON.stringify(list)).not.toMatch(/NaN|Infinity/)
+  })
+
+  it('says where the camera of the loop stands when it is not the camera of the config as given', () => {
+    expect(list.loop.distanceMm).toBeUndefined()
+    const told = cutList(cut, cameraKeys(cut), loopCamera()) as Record<string, any>
+    expect(told.loop.camera).toBe(config.deliver.cardLoop.camera)
+    expect(told.loop.distanceMm).toBeCloseTo(loopDistanceMm(), 1)
+    expect(told.loop.cameraNumbers.length).toBe(7)
+    cameraNumbers(loopPose(0)).forEach((v, i) => expect(told.loop.cameraNumbers[i]).toBeCloseTo(v, 3))
+    expect(typeof told.loop.fit).toBe('string')
+    expect(told.loop.fit).not.toMatch(/\u2014|!/)
+    expect(JSON.stringify(told)).not.toMatch(/NaN|Infinity/)
   })
 })

@@ -91,7 +91,7 @@ function cuesText(c) {
   out.push('## The card loop')
   out.push('')
   const l = c.loop
-  out.push(`${n3(l.seconds)} s, ${l.frameCount} frames at ${l.fps} a second, from the \`${l.camera}\` camera in the \`${l.format}\` format. One shake: lift on frame ${l.shake.first}, in the air on ${l.shake.liftEnd}, strokes end on ${l.shake.strokesEnd}, landing on ${l.shake.landing}. The season does not change, and the frame after the last is frame 0.`)
+  out.push(`${n3(l.seconds)} s, ${l.frameCount} frames at ${l.fps} a second, from the \`${l.camera}\` camera in the \`${l.format}\` format.${l.distanceMm !== undefined ? ` The camera stands at ${n3(l.distanceMm)} mm: ${l.fit}.` : ''} One shake: lift on frame ${l.shake.first}, in the air on ${l.shake.liftEnd}, strokes end on ${l.shake.strokesEnd}, landing on ${l.shake.landing}. The season does not change, and the frame after the last is frame 0.`)
   out.push('')
   return out.join('\n')
 }
