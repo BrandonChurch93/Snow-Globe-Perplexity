@@ -1,0 +1,4 @@
+01-card-still.jpg: Card still: frame 0 of the card loop, preview, draft, as tools/loop.mjs wrote it from the rendered frame. Blockout scene.
+02-stress-shake-1-5mbps.jpg: Stress: shake-1, frame 666 of film B, hd, draft, taken back out of the 5 Mbps encode (42.7 dB against the frame before encoding).
+03-proof-film-b-749.jpg: Local render proof: film B frame 749, just after the landing at 720, preview, draft, 60 frames a second, software graphics.
+04-test-kept-and-this-machine.jpg: render-local --test --rehearse: the kept still winter-rest (left) beside the same still rendered now (right), PSNR 44.6 dB. The kept still is from an older build.
