@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 12 · 2026-11-24 05:19 UTC
+Status 13 · 2026-11-24 05:44 UTC
 
-- `out/stills/status/status-12-1.jpg`: The app in live mode with the real interface, still on the measuring scene: at rest, then three moments of one shake (lift and tilt, the storm, the landing). The season marks sit at the bottom left, the Shake control at the bottom centre. (by film_app_builder)
-- `out/stills/status/status-12-2.jpg`: Film B on the new cut, measuring scene: frame 0 (the close opening before the pull back), frame 666 (the locked camera inside the first shake), frame 720 (the landing on its bar line) and the last frame, back on the camera of frame 0. In frame 666 the top of the glass leaves the picture: to be settled when the cameras are fitted. (by film_app_builder)
-- `out/stills/status/status-12-3.jpg`: The interface on a phone, over the approved spring image on a mock: the season marks above the Shake control, sound beside it. (by interface_builder)
-- `out/stills/status/status-12-4.jpg`: The first picture of the new stage, which replaces the measuring scene: winter at rest from the hero camera at draft. Stand-in shapes for the cottage, the tree, the base and the lights, with the lens and the mirror pass on. A blockout, not a look. (by engine_builder)
+- `out/stills/status/status-13-1.jpg`: The controls at twice their size, on a mock: idle, dimmed, busy, hover, pressed, then keyboard focus on Shake, on a season mark and on sound, sound on, and the hint pulse at its middle. (by interface_builder)
+- `out/stills/status/status-13-2.jpg`: Spring, summer and fall from the particle engine, same debug plot: the last stroke, landed, and settling to rest. Petals lie on the ground and the roof, summer's motes and fireflies float, fall's leaves settle with two ember columns and the bats. (by particles_builder)
+- `out/stills/status/status-13-3.jpg`: The particle engine, winter, the full pool of 102000: a debug plot of positions with streaks along each velocity, from the start of a shake to the landed state (0.02 s, 0.6 s lift, 1.2 s and 1.8 s strokes, 2.4 s landing, 2.9 s). Not the app's drawing. (by particles_builder)
+- `out/stills/status/status-13-4.jpg`: The first shake from the hero camera after the fit, on the measuring scene, twelve frames from the lift to the landing. The camera is locked. It now stands a little further back with its aim raised, so the lifted globe stays inside the frame: before, the top of the glass left the picture.
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 05:23 UTC
-clock: phase 2, tick of 4.4 minutes
-phase 2: 2.36 h used of its 6.00 h box
-allowance (before the review): 3.55 h used of 36.00 h allowed
-all time before the review: 3.55 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 05:44 UTC
+clock: phase 2, tick of 0.4 minutes
+phase 2: 2.71 h used of its 6.00 h box
+allowance (before the review): 3.90 h used of 36.00 h allowed
+all time before the review: 3.90 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 4
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -445,6 +445,8 @@ Numbered. What, why, and the date.
 
 28. 2026-11-24. The Phase 2 blockout preview carries a sound stream: the kept cues placed on the cut by `npm run mix -- --candidate blockout`. Check D2 asks for sound only from Phase 6 and does not forbid it earlier, and step 7 of Phase 2 says the blockout carries sound from the start. Where a cue has no kept take the stream is silent at that point, and the review page says which cues are missing.
 
+29. 2026-11-24. The hero camera: 658 mm from a point 74 mm up the axis, 16 degrees, pitch 9 (it was 620 and 71). Reason: three things in the kit cannot all hold with its own numbers, and it did not foresee it. The shake lifts the globe by `shake.liftMm`, 18 mm, in front of a locked camera that starts at `hero`; M1 asks for the whole globe and base inside the frame at `hero` in every judged still, and two judged frames of `change` lie in the middle of each shake; and the approved winter image leaves 6 percent of the frame above the glass and 9 percent under the foot. Measured with a true projection (`out/work/fit/fit.mjs`): on the kit's numbers the glass top stood 5.5 percent under the top edge, the front of the foot 0.9 percent above the bottom edge, and the lifted glass left the frame by 5 percent. The globe of the config is also about 10 mm taller between foot and sphere than the one in the approved image, so its foot reaches lower in the frame at the same glass size. What was done: the camera pulled back to the lowest fill the check allows (0.800, `framing.heroFillMin`) and the aim raised, so that at rest the glass top is 9.7 percent under the top edge and the foot 2.3 percent above the bottom edge, and at the top of the lift the glass reaches the top edge (0.3 mm over for a few frames, about 2 pixels in hd). The stand-in shake path (`src/shake/table.ts`) now holds the globe tilted back 4 degrees while it is lifted and swings its strokes on an arc that is highest in the middle, so the glass never rises more than the lift. The camera does not ease in during a shake. What it costs: the glass is 36.8 percent of the frame's width instead of 39, and less of the surface in front of the base shows than in the approved image. This is the reading that keeps every rule; it is listed for the review. Seen on a draft sheet across the first shake.
+
 ## Notes from Brandon
 
 Numbered, in his words, with the date and how each was applied. Review round items carry their round's number.
@@ -480,6 +482,8 @@ Things only he can settle. Nothing waits on them.
 3. The approved images and Seedream 5 Pro. The terms that could be read do not clearly allow its output in a published video and on a public website: it depends on which route the image tool uses to reach the model, which is not published, and on the plan of this account. Nothing was changed because of this, as the kit says. New pictures that ship are made with models whose terms allow both. Quotes: `references/terms/images/TERMS.md`.
 4. The plan of this account. The image tool's own terms allow commercial use of generated pictures on Enterprise Pro and Enterprise Max, and only personal use on individual plans. The account belongs to an organization, but the plan was not measured.
 5. The hosting plan. Vercel's Hobby plan is for personal or non-commercial use only. A company portfolio piece may need the Pro plan. The limit behind `host.maxShippedMb` counts the source files uploaded by the command line tool, not the built site and not a deploy from Git, so the key is safe as it is and was not changed. Details: `references/terms/hosting/LIMITS.md`.
+
+6. The hero framing and the lift of the shake (decision 29). The approved images show the globe with about 9 percent of the frame under its foot and 6 percent above the glass. The shake lifts the globe by a tenth of the frame's height in front of a locked camera, and the kit's checks do not let the camera stand further back than it now does. So the globe sits lower in the frame than in the approved images, with less of the surface in front of the base, and stays whole while it is shaken. The other choice is the approved framing with the top of the glass leaving the picture for about a second in each shake. It is one number in the config (`cameras.hero.aimHeightMm`, 74 now, about 66 for the approved framing).
 
 ## Running jobs
 
@@ -604,3 +608,8 @@ One entry per task: when it started, what it did, where it stopped.
 - 05:13 to 05:23 The Phase 2 gate ran on main with the film and the app in, still on the measuring scene (`out/work/gate-run.log`): G1, G2, G3, G4, G5, G7, G9, G10, G11, G12 and G14 green; G6 red (no judged list in this file yet), G8 red (the packed sounds and the font had no row or recipe), D2 and D3 red (no preview and no proof yet). G3 took about five minutes of the ten, because it now also draws a late film frame and a loop frame on four fresh pages.
 - 05:24 Merged `agent/film-app` at `eed4911` (tests for the cut and the app, `cut/JUDGED.md`), `agent/ui` at `8ba3b49` and `agent/particles` at `2e40414` (the worker wrapper): types clean, 241 tests green in 14 files.
 - 05:27 The judged list is written above from `cut/JUDGED.md`: 69 entries. `assets-src/audio/RECIPE.md` covers `public/audio/`. The font's two rows are asked of `interface_builder`, which knows the exact source.
+
+- 05:31 to 05:36 G8 green: the two rows for the font are in `ASSETS.md` (both downloads compared with the files here, byte for byte the same) and the recipe covers the packed sounds. G6 green with the judged list. The gate on main now shows only D2 and D3 red, which wait for the blockout film.
+- 05:36 `interface_builder` reported done (`agent/ui` at `fc9ee3f`, merged): 24 of 24 of its own behaviour checks, 82 preview shots, the real bridge driven with the keyboard and the mouse in software graphics. Never run on a real phone or a real graphics card, which it says itself.
+- 05:36 to 05:45 The hero camera fitted and the stand-in shake path changed (decision 29, item 6 for Brandon). Three draft sheets across the first shake: the kit's numbers (the glass leaves the frame), aim 67.5 (the approved margins, the glass still cut) and aim 74 (kept). 241 tests green; one assertion in `tests/film.test.ts` changed to the new path.
+- 05:46 Status 13 posted: the shake sheet after the fit, two debug plots of the particle engine, the controls' states.
