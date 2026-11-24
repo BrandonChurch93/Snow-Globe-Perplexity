@@ -19,6 +19,8 @@ const RAMP = SOLID_REACH_MM
 const INV_RAMP = 1 / RAMP
 const R2 = R * R
 const SKIN = 0.02
+const LANDS_LEAST = 0.75
+const FLOATS_LEAST = 0.3
 const PUSHES = 3
 export const COVER_N = 96
 export const COVER_SPAN_MM = 2 * R
@@ -698,13 +700,15 @@ export class ParticleEngine {
     const u3 = unit(hash2(i, 151 + k))
     const u4 = unit(hash2(i, 171 + k))
     const u5 = unit(hash2(i, 191 + k))
-    const fall = b.settleMmS[1] > 0 && u5 >= Math.max(b.renew, b.floats) ? b.settleMmS : b.sinkMmS
+    const lands = b.settleMmS[1] > 0 && u5 >= Math.max(b.renew, b.floats)
+    const fall = lands ? b.settleMmS : b.sinkMmS
     if (b.sizeSigma > 0) {
       const raw = b.sizeMedianMm * Math.exp(b.sizeSigma * bell(u1, unit(hash2(i, 211 + k))))
       const size = raw < b.sizeMm[0] ? b.sizeMm[0] : raw > b.sizeMm[1] ? b.sizeMm[1] : raw
-      const speed = Math.sqrt(fall[0] * fall[1]) * Math.pow(size / b.sizeMedianMm, b.sinkPower) * Math.exp(b.sinkSigma * bell(u2, unit(hash2(i, 231 + k))))
+      const speed = Math.sqrt(fall[0] * fall[1]) * Math.pow(size / b.sizeMedianMm, b.sinkPower) * Math.exp((lands ? b.sinkSigma : b.hangSigma) * bell(u2, unit(hash2(i, 231 + k))))
       this.sizes[i] = size
-      this.sink[i] = speed < fall[0] * 0.3 ? fall[0] * 0.3 : speed > fall[1] * 2.5 ? fall[1] * 2.5 : speed
+      const least = fall[0] * (lands ? LANDS_LEAST : FLOATS_LEAST)
+      this.sink[i] = speed < least ? least : speed > fall[1] * 2.5 ? fall[1] * 2.5 : speed
     } else {
       const big = Math.pow(u1, b.sizeSkew)
       this.sizes[i] = b.sizeMm[0] + (b.sizeMm[1] - b.sizeMm[0]) * big
