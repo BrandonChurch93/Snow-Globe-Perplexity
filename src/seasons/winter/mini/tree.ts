@@ -24,11 +24,12 @@ const GOLD: [number, number, number] = [1, 0.84, 0.52]
 const BULB_GAIN = 16
 const GLOW = { needles: { power: 50, reachMm: 1, star: 0.6 }, snow: { power: 1, reachMm: 1.4, star: 0.36 }, wood: { power: 7.5, reachMm: 1.5, star: 0.6 } }
 const LAMP_ON_WOOD = { power: 100, reachMm: 12, wrap: -0.3 }
+const LAMP_ON_SNOW = { power: 1.5, reachMm: 14, wrap: 0.6 }
 const LAMP_SHIFT: Vec3 = [-3, 0, -5]
 const FILL_ON_WOOD = { power: 3, reachMm: 1000, wrap: 0.4 }
 const FILL_FROM: Vec3 = [40, 20, 60]
 const BARK: [number, number, number] = [0.09, 0.105, 0.1]
-const SNOW_TINT: [number, number, number] = [1.3, 1.45, 1.72]
+const SNOW_TINT: [number, number, number] = [1.16, 1.18, 1.28]
 const NEEDLE_TINT: [number, number, number] = [1.3, 1.82, 3.84]
 const NEEDLE_LIT = 'vec3(1.75, 0.95, 0.45)'
 const HALO = { radiusMm: 0.45, strength: 0.6, hot: 9, pullMm: 0.6, flicker: FLICKER, cycles: CYCLES }
@@ -211,6 +212,13 @@ function bulbs(on: { power: number; reachMm: number; star: number }): GlowLight[
   return out
 }
 
+function lampOn(on: { power: number; reachMm: number; wrap: number }): GlowLight {
+  const flame = lampFlame()
+  return { at: [flame[0] + LAMP_SHIFT[0], flame[1] + LAMP_SHIFT[1], flame[2] + LAMP_SHIFT[2]], color: tones.lampLight, ...on, phase: 0.1 }
+}
+
+const onSnow = (): GlowLight[] => [...bulbs(GLOW.snow), lampOn(LAMP_ON_SNOW)]
+
 function placed(name: string, lit: readonly GlowLight[]): THREE.BufferGeometry {
   const g = placeGeometry(geometry(MODEL, name))
   bakeGlow(g, lit)
@@ -232,10 +240,8 @@ export function build(): THREE.Object3D {
   const part = `miniature-${season}`
   const needles = stageMaterial({ part, standIn: false, inside: true, miniature: true, change: 'miniature', map: texture(NEEDLES), color: new THREE.Color(NEEDLE_TINT[0], NEEDLE_TINT[1], NEEDLE_TINT[2]), vertexColors: true, roughness: 0.88, side: THREE.DoubleSide, hook: needleHook, key: 'tree-needles' })
   const snow = stageMaterial({ part, standIn: false, inside: true, miniature: true, change: 'miniature', map: texture(SNOW), color: new THREE.Color(SNOW_TINT[0], SNOW_TINT[1], SNOW_TINT[2]), vertexColors: true, roughness: 0.8, hook: snowHook, key: 'tree-snow' })
-  const flame = lampFlame()
-  const lamp: GlowLight = { at: [flame[0] + LAMP_SHIFT[0], flame[1] + LAMP_SHIFT[1], flame[2] + LAMP_SHIFT[2]], color: tones.lampLight, ...LAMP_ON_WOOD, phase: 0.1 }
   const fill: GlowLight = { at: placePoint(FILL_FROM), color: tones.sheen, ...FILL_ON_WOOD, phase: 0.6 }
-  return new THREE.Group().add(buildTrunk(part, [...bulbs(GLOW.wood), lamp, fill], BARK), solidMesh(placed('needles', bulbs(GLOW.needles)), needles), solidMesh(placed('snow', bulbs(GLOW.snow)), snow))
+  return new THREE.Group().add(buildTrunk(part, [...bulbs(GLOW.wood), lampOn(LAMP_ON_WOOD), fill], BARK), solidMesh(placed('needles', bulbs(GLOW.needles)), needles), solidMesh(placed('snow', onSnow()), snow))
 }
 
 export function lights(): THREE.Object3D {
@@ -252,7 +258,7 @@ export function lights(): THREE.Object3D {
 }
 
 export function arrival(): THREE.Object3D {
-  const g = placed('arrival', bulbs(GLOW.snow))
+  const g = placed('arrival', onSnow())
   const base = g.getAttribute('tangent')
   const out = new Float32Array(base.count * 4)
   for (let i = 0; i < base.count; i++) {
