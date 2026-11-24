@@ -217,7 +217,7 @@ float baseTarnish = clamp(vBasePaint.z * 1.25 + 0.04 + (baseDetail.b - 0.42) * 0
 float baseAo = vBasePaint.x;
 vec3 baseClean = mix(diffuseColor.rgb * vec3(1.0, 0.8, 0.62), vec3(1.0, 0.63, 0.3), 0.6 + 0.3 * baseWear) * (0.9 + 0.2 * baseWear);
 diffuseColor.rgb = mix(baseClean, vec3(0.05, 0.032, 0.018) + 0.18 * baseClean, smoothstep(0.15, 0.9, baseTarnish));
-diffuseColor.rgb *= mix(0.5, 1.0, smoothstep(1.2, 3.8, vBasePos.y));
+diffuseColor.rgb *= mix(0.3, 1.0, smoothstep(2.6, 3.4, vBasePos.y)) * mix(0.35, 1.0, smoothstep(0.1, 1.6, vBasePos.y));
 `
 
 const BRASS_ROUGH = `
@@ -242,7 +242,7 @@ const BRASS_CARD = `
 {
   vec3 brassCard = normalize(mat3(viewMatrix) * uRigCardDir);
   float brassCh = max(dot(geometryNormal, normalize(brassCard + geometryViewDir)), 0.0);
-  reflectedLight.directSpecular += uRigCardCol * material.specularColorBlended * (0.5 * pow(brassCh, 6.0) + 2.2 * pow(brassCh, 40.0)) * smoothstep(0.0, 0.25, dot(geometryNormal, brassCard)) * baseAo * (1.0 - baseFrost) * mix(0.3, 1.0, smoothstep(1.2, 3.8, vBasePos.y));
+  reflectedLight.directSpecular += uRigCardCol * material.specularColorBlended * (0.5 * pow(brassCh, 6.0) + 2.2 * pow(brassCh, 40.0)) * smoothstep(0.0, 0.25, dot(geometryNormal, brassCard)) * baseAo * (1.0 - baseFrost) * mix(0.03, 1.0, smoothstep(2.7, 3.5, vBasePos.y));
 }
 `
 
@@ -268,7 +268,7 @@ vec2 baseTilt = baseSlope(baseDetail.rg) * 0.9;
 
 const SNOW_AFTER = `
 {
-  reflectedLight.indirectDiffuse *= baseAo * vec3(0.6, 0.76, 1.0) * (0.4 + 0.6 * smoothstep(-0.3, 0.6, normalize(vBaseNormal).y));
+  reflectedLight.indirectDiffuse *= baseAo * vec3(0.6, 0.76, 1.0) * (0.28 + 0.72 * smoothstep(-0.3, 0.6, normalize(vBaseNormal).y));
   vec3 baseKey = vec3(0.0, 1.0, 0.0);
   vec3 baseKeyC = vec3(0.0);
   #ifdef STAGE_LIGHT_DONE
@@ -280,7 +280,7 @@ const SNOW_AFTER = `
   #endif
   float baseWrap = clamp(dot(nonPerturbedNormal, baseKey) * 0.5 + 0.5, 0.0, 1.0);
   float baseDeep = smoothstep(0.1, 0.9, baseThick);
-  reflectedLight.indirectDiffuse += baseKeyC * material.diffuseContribution * RECIPROCAL_PI * 0.26 * baseWrap * baseWrap * baseDeep * smoothstep(-30.0, 20.0, vBasePos.x);
+  reflectedLight.indirectDiffuse += baseKeyC * material.diffuseContribution * RECIPROCAL_PI * 0.42 * baseWrap * baseWrap * baseWrap * baseDeep * smoothstep(-30.0, 20.0, vBasePos.x);
   #ifdef STAGE_LIGHT_DONE
   float baseCard = clamp(dot(inverseTransformDirection(nonPerturbedNormal, viewMatrix), uRigCardDir) * 0.5 + 0.5, 0.0, 1.0);
   reflectedLight.indirectDiffuse += uRigCardCol * material.diffuseContribution * RECIPROCAL_PI * 0.34 * baseCard * baseCard * baseDeep * smoothstep(34.0, -8.0, vBasePos.x);
