@@ -188,6 +188,13 @@ float stageGridOpen(vec3 local) {
   if (uGrid.x > 0.0) b = texture(uGridB, stageGridAt(local, 0.0)).a;
   return mix(uGridShade.w, 1.0, mix(a, b, uGrid.x));
 }
+vec3 stageGridWarm(vec3 local) {
+  vec3 a = vec3(0.0);
+  vec3 b = vec3(0.0);
+  if (uGrid.x < 1.0) a = texture(uGridA, stageGridAt(local, 0.0)).rgb * stageGridGain(texture(uGridA, stageGridAt(local, 2.0)), uGridGainA);
+  if (uGrid.x > 0.0) b = texture(uGridB, stageGridAt(local, 0.0)).rgb * stageGridGain(texture(uGridB, stageGridAt(local, 2.0)), uGridGainB);
+  return mix(a, b, uGrid.x);
+}
 vec3 stageKeyBent(vec3 local) {
   vec3 kl = uLightFrame * uRigKeyIn;
   vec3 off = (local - kl * dot(local, kl)) / uGrid.w;

@@ -22,7 +22,7 @@ const COVER_RISE = 0.12
 const WARM: [number, number, number] = [1, 0.56, 0.33]
 const GOLD: [number, number, number] = [1, 0.84, 0.52]
 const BULB_GAIN = 16
-const GLOW = { needles: { power: 30, reachMm: 0.9, star: 0.6 }, snow: { power: 1, reachMm: 1.4, star: 0.36 }, wood: { power: 14, reachMm: 1.7, star: 0.6 } }
+const GLOW = { needles: { power: 46, reachMm: 0.9, star: 0.6 }, snow: { power: 1, reachMm: 1.4, star: 0.36 }, wood: { power: 14, reachMm: 1.7, star: 0.6 } }
 const LAMP_ON_WOOD = { power: 125, reachMm: 12, wrap: -0.45 }
 const LAMP_ON_SNOW = { power: 1.5, reachMm: 14, wrap: 0.6 }
 const LAMP_SHIFT: Vec3 = [-3, 0, -5]
@@ -30,17 +30,17 @@ const FILL_ON_WOOD = { power: 2.6, reachMm: 1000, wrap: 0.4 }
 const SKY_ON_SNOW = { power: 1.25, reachMm: 14, wrap: 0.15 }
 const SKY_FROM: Vec3 = [20, 42, 7]
 const FILL_FROM: Vec3 = [40, 20, 60]
-const BARK: [number, number, number] = [0.108, 0.126, 0.12]
-const SNOW_TINT: [number, number, number] = [1.33, 1.36, 1.47]
-const NEEDLE_TINT: [number, number, number] = [1.3, 1.82, 3.84]
+const BARK: [number, number, number] = [0.101, 0.12, 0.112]
+const SNOW_TINT: [number, number, number] = [1.26, 1.56, 1.95]
+const NEEDLE_TINT: [number, number, number] = [0.98, 1.16, 2.4]
 const NEEDLE_LIT = 'vec3(1.6, 0.94, 0.64)'
 const LAMP_ON_NEEDLES = { power: 9, reachMm: 12, wrap: 0.1 }
-const FILL_ON_NEEDLES = { power: 2.6, reachMm: 1000, wrap: 0.25, color: GOLD }
+const FILL_ON_NEEDLES = { power: 1.9, reachMm: 1000, wrap: 0.25, color: GOLD }
 const FILL_ON_NEEDLES_FROM: Vec3 = [30, 80, 60]
 const HALO = { radiusMm: 0.6, strength: 0.75, hot: 9, pullMm: 0.6, flicker: FLICKER, cycles: CYCLES }
 const HALO_EDGE: [number, number, number] = [0.75, 0.36, 0.08]
 const HALO_CORE: [number, number, number] = [1, 0.74, 0.4]
-const AURA = { radiusMm: 2.6, strength: 0.06, flicker: 0.08, cycles: 3 }
+const AURA = { radiusMm: 2.6, strength: 0.2, flicker: 0.08, cycles: 3 }
 const AURA_EDGE: [number, number, number] = [0.85, 0.5, 0.16]
 const AURA_CORE: [number, number, number] = [1, 0.8, 0.46]
 const FOG_DIM = { from: 0.5, to: 0.9, cap: 0.6 }
@@ -50,6 +50,7 @@ const EDGE_MM = 0.42
 const EDGE_PER_MM = 24
 const PORE_MM = 0.55
 const PORE_SHADE = 0.72
+const LUMP = { coarse: 0.42, fine: 1.2, height: 6, pit: 'vec3(0.8, 0.86, 0.94)', from: 0.25, to: 0.6 }
 const STEM_LIGHTS: readonly Vec3[] = [[1.2, 12.5, 4.4], [-0.4, 19.5, 3.6], [0.2, 27, 3]]
 
 const offset = crownOffset()
@@ -73,6 +74,17 @@ vec4 treeTri(sampler2D t, vec3 p, vec3 n) {
   vec3 w = pow(abs(n), vec3(4.0));
   w /= w.x + w.y + w.z;
   return texture2D(t, p.zy) * w.x + texture2D(t, p.xz) * w.y + texture2D(t, p.xy) * w.z;
+}
+float stageHash(vec3 p);
+float treeNoise(vec3 p) {
+  vec3 i = floor(p) + 4096.5;
+  vec3 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  float a = mix(stageHash(i), stageHash(i + vec3(1.0, 0.0, 0.0)), f.x);
+  float b = mix(stageHash(i + vec3(0.0, 1.0, 0.0)), stageHash(i + vec3(1.0, 1.0, 0.0)), f.x);
+  float c = mix(stageHash(i + vec3(0.0, 0.0, 1.0)), stageHash(i + vec3(1.0, 0.0, 1.0)), f.x);
+  float d = mix(stageHash(i + vec3(0.0, 1.0, 1.0)), stageHash(i + vec3(1.0, 1.0, 1.0)), f.x);
+  return mix(mix(a, b, f.y), mix(c, d, f.y), f.z);
 }
 vec3 treeBump(vec3 sx, vec3 sy, vec2 dh, vec3 n, float face) {
   vec2 len = max(vec2(length(sx), length(sy)), vec2(1e-5));
@@ -117,10 +129,11 @@ function needleHook(shader: Shader): void {
 
 const SNOW_MAP = `vec3 treeN = normalize(vTreeN);
 vec4 treeC = treeTri(map, vTreeP * uTile, treeN);
-float treeH = treeC.g + 0.6 * treeTri(map, vTreeP * uTile * 3.3 + 0.37, treeN).g;
+float treeLump = 0.75 * treeNoise(vTreeP * ${LUMP.coarse.toFixed(2)} + 31.0) + 0.25 * treeNoise(vTreeP * ${LUMP.fine.toFixed(2)} + 57.0);
+float treeH = treeC.g + 0.6 * treeTri(map, vTreeP * uTile * 3.3 + 0.37, treeN).g + ${LUMP.height.toFixed(1)} * treeLump;
 ${TREE_SLOPES}
 float treeGlint = step(${(1 - SPARKLE.share).toFixed(4)}, stageHash(floor(vTreeP * ${SPARKLE.perMm.toFixed(1)}) + 4096.5));
-diffuseColor.rgb *= mix(vec3(1.0), treeC.rgb, 0.3) * (1.0 + ${SPARKLE.gain.toFixed(2)} * treeGlint);`
+diffuseColor.rgb *= mix(vec3(1.0), treeC.rgb, 0.3) * (1.0 + ${SPARKLE.gain.toFixed(2)} * treeGlint) * mix(${LUMP.pit}, vec3(1.12), smoothstep(${LUMP.from.toFixed(2)}, ${LUMP.to.toFixed(2)}, treeLump));`
 
 function snowFragment(shader: Shader): void {
   shader.fragmentShader = shader.fragmentShader

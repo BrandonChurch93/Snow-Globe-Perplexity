@@ -6,7 +6,7 @@ import type { SeasonKit } from '../seasons/kit'
 import { centreHeightMm, groundY, innerRadiusMm, outerRadiusMm } from './layout'
 import { GRID, breathOf, gainOf, glowAt, glowOf, gridInfo, groupGains, shadeGrid } from './lightgrid'
 import { lensIor } from '../globe/lens'
-import { changeBloom } from '../shake/change'
+import { changeSpan } from '../shake/change'
 
 const mixRgb = (a: Rgb, b: Rgb, t: number): [number, number, number] => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
@@ -29,11 +29,27 @@ export const ROOM_RIG = {
   room: { gain: 1, lights: 1, softPerRough: 0.5, lightsBelowRough: 0.62 },
   grid: { flat: 0.1, wrap: 0.3, specular: 1, openFloor: 0.35, air: 0.62 },
   bloomGain: 9,
-  flood: { inside: 12, insideMm: 8, outside: 18, ease: 4, wrap: 0.35, near: 0.3, nearMm: 10, floor: 0.07, floorMm: 50, pool: 45 },
+  flood: { inside: 1.5, insideMm: 8, outside: 18, wrap: 0.35, near: 0.3, nearMm: 10, floor: 0.07, floorMm: 50, pool: 45, spill: 30, lens: 0.04, swellFrom: 0.12, swellTo: 0.975 },
   glow: { outside: 0.8, islandMm: innerRadiusMm * 0.88, lobe: 0.3, specular: 1 },
 } as const
 
 const SHADOW_OFF = 10
+
+const smooth = (v: number) => (v <= 0 ? 0 : v >= 1 ? 1 : v * v * (3 - 2 * v))
+
+/**
+ * The light of a change inside the glass, by how far the swap window has run.
+ * `whole` rises slowly from the first frames of the window, is 1 on every frame of the base's change and is gone before the window ends.
+ * `glow` is the same rise, and it starts to fall from the middle of the base's change, so the fall has as many frames as the window leaves.
+ */
+export function changeSwell(change: number): { whole: number; glow: number } {
+  if (!(change > 0) || change >= 1) return { whole: 0, glow: 0 }
+  const f = ROOM_RIG.flood
+  const span = changeSpan('base')
+  const mid = (span.from + span.to) / 2
+  const rise = (change - f.swellFrom) / (span.from - f.swellFrom)
+  return { whole: smooth(Math.min(1, rise, (f.swellTo - change) / (f.swellTo - span.to))), glow: smooth(Math.min(1, rise, (f.swellTo - change) / (f.swellTo - mid))) }
+}
 
 export function keyInside(from: Rgb): [number, number, number] {
   const t = ROOM_RIG.targetMm
@@ -177,8 +193,9 @@ export class Lighting {
     u.uLightFrame.value.setFromMatrix4(this.turn).transpose()
 
     const breath = breathOf(f.time, f.period)
-    const through = f.moment && f.moment.from === f.moment.to ? changeBloom(f.moment.change) : f.mix.bloom
-    const bloom = 1 + ROOM_RIG.bloomGain * through
+    const swell = changeSwell(f.moment ? f.moment.change : 0)
+    const bloom = Math.pow(1 + ROOM_RIG.bloomGain, swell.glow)
+    const lift = (bloom - 1) / ROOM_RIG.bloomGain
     const bloomA = a === b ? bloom : 1
     const gainA = gainOf(a.innerLights, f.time, f.period) * breath * bloomA
     const gainB = gainOf(b.innerLights, f.time, f.period) * breath * bloom
@@ -196,19 +213,19 @@ export class Lighting {
     const pa = glowAt(a.innerLights)
     const pb = glowAt(b.innerLights)
     this.at.set(lerp(pa[0], pb[0], t), lerp(pa[1], pb[1], t), lerp(pa[2], pb[2], t))
-    const out = ROOM_RIG.glow.outside * GRID.glowReachMm * GRID.glowReachMm
+    const out = ROOM_RIG.glow.outside * GRID.glowReachMm * GRID.glowReachMm * (1 + (ROOM_RIG.flood.spill * lift) / bloom)
     u.uLightGlow.value.set(pool[0] * out, pool[1] * out, pool[2] * out, groundY)
     u.uLightGlowAt.value.set(this.at.x, this.at.y, this.at.z, ROOM_RIG.glow.islandMm)
     this.glow.position.set(this.at.x, centreHeightMm + this.at.y, this.at.z)
 
-    const spill = 1 + (ROOM_RIG.flood.pool * through) / bloom
+    const spill = 1 + (ROOM_RIG.flood.pool * lift) / bloom
     f.pool.setRGB(pool[0] * spill, pool[1] * spill, pool[2] * spill)
-    f.bloomTint.setRGB(gb[0] * through, gb[1] * through, gb[2] * through)
-    const flood = through * breath
+    const lens = ROOM_RIG.flood.lens * lift
+    f.bloomTint.setRGB(gb[0] * lens, gb[1] * lens, gb[2] * lens)
+    const flood = swell.whole * breath
     u.uLightFlood.value.setRGB(gb[0] * flood, gb[1] * flood, gb[2] * flood)
-    const ease = through > 0 ? Math.expm1(ROOM_RIG.flood.ease * through) / (Math.expm1(ROOM_RIG.flood.ease) * through) : 0
-    u.uLightFloodFloor.value.w = ROOM_RIG.flood.outside * ease
-    u.uLightFloodAt.value.z = ROOM_RIG.flood.inside * ease
+    u.uLightFloodFloor.value.w = swell.whole > 0 ? (ROOM_RIG.flood.outside * lift) / swell.whole : 0
+    u.uLightFloodAt.value.z = swell.whole > 0 ? (ROOM_RIG.flood.inside * lift) / swell.whole : 0
     if (f.pose) {
       u.uLightEye.value.set(f.pose.position.x - f.globe.x, f.pose.position.y - f.globe.y, f.pose.position.z - f.globe.z).applyMatrix3(u.uLightFrame.value)
       u.uLightEye.value.y -= centreHeightMm

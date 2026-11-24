@@ -248,6 +248,49 @@ describe('the shake path: a heavy thing in a hand', () => {
     }
   })
 
+  it('breaks contact cleanly: the grip tips the top toward the first stroke, the far edge leaves as the wind up swings the foot level, and the whole rim is clear before the roll comes back over', () => {
+    for (const name of NAMES) {
+      const m = shakeMotion(name)
+      const path = makeShake(name)
+      const off = m.plan.liftOff
+      const side = -Math.sign(m.plan.strokes[0]!.mm)
+      // The hand takes it from the side it will draw it back to: that edge comes up first, so the lens sees the top go the other way before the wind up.
+      expect(side * seen(path.poseAt(off)).roll, `${name} tip at lift off`).toBeLessThan(-0.3)
+      let tip = { beat: off, roll: 0 }
+      for (let b = off; b <= s.liftBeats; b += FRAME_BEATS / 8) {
+        const roll = side * seen(path.poseAt(b)).roll
+        if (roll < tip.roll) tip = { beat: b, roll }
+      }
+      expect(tip.roll, `${name} tip`).toBeLessThan(-1.2)
+      expect(tip.roll, `${name} tip`).toBeGreaterThan(-2.2)
+      expect(tip.beat, `${name} tip`).toBeLessThan(0.4 * s.liftBeats)
+      // The foot swings level in the first part of the lift, and when it is level the whole rim is off the surface.
+      let level = { beat: tip.beat, tilt: Infinity }
+      for (let b = tip.beat; b <= s.liftBeats; b += FRAME_BEATS / 8) {
+        const t = tiltOf(path.poseAt(b)) * DEG
+        if (t < level.tilt) level = { beat: b, tilt: t }
+      }
+      expect(level.tilt, `${name} level`).toBeLessThan(1.2)
+      expect(level.beat, `${name} level`).toBeLessThan(0.6 * s.liftBeats)
+      expect(rimGap(path.poseAt(level.beat)), `${name} clear when level`).toBeGreaterThan(0.3 * s.liftMm)
+      // No edge drags: once the low edge is off the felt it only rises until the foot is level, it is a millimetre clear before the middle of the lift, and the roll of the wind up never brings it back down.
+      let clear = Number.NaN
+      let free = false
+      let before = -Infinity
+      for (let b = off; b <= level.beat; b += FRAME_BEATS / 8) {
+        const gap = rimGap(path.poseAt(b))
+        if (!free && gap > PAD_MM) free = true
+        if (free) expect(gap, `${name} low edge at ${b.toFixed(3)}`).toBeGreaterThan(before)
+        if (free) before = gap
+        if (Number.isNaN(clear) && gap >= 1) clear = b
+      }
+      expect(clear, `${name} a millimetre clear`).toBeLessThan(0.45 * s.liftBeats)
+      let low = Infinity
+      for (let b = level.beat; b <= s.liftBeats; b += FRAME_BEATS / 8) low = Math.min(low, rimGap(path.poseAt(b)))
+      expect(low, `${name} rim through the wind up`).toBeGreaterThan(0.3 * s.liftMm)
+    }
+  })
+
   it('makes the config count of strokes on alternating sides, each about strokeMm, unequal, the hand speeding up', () => {
     for (const name of NAMES) {
       const turns = shakeMotion(name).plan.strokes
