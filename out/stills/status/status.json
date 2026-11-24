@@ -1,40 +1,40 @@
 {
-  "number": 32,
-  "time": "2026-11-24 12:26 UTC",
+  "number": 33,
+  "time": "2026-11-24 12:44 UTC",
   "phase": "3",
   "unit": "",
   "lines": [
-    "Status 32 · 2026-11-24 12:26 UTC · Phase 3",
-    "Every part of winter on main is now real work and the stand-in view counts 0 stand-in pixels in the hero frame. The measured checks ran 24 of 24 green at the draft tier.",
-    "Still wrong against the approved image: a dark grey band where the snow should bank against the front glass and the snow afloat is too thin and the glass frost is faint and the slab ferns read as line drawing and the trunk is too orange.",
-    "The storm hides more than half the miniature as the settled note asks but it reads as streaked fur rather than separate flakes. All ten builders have these findings and report by 13:00 UTC.",
-    "phase 3: 3.98 h used of its 11.00 h box",
-    "allowance (before the review): 10.59 h used of 36.00 h allowed",
+    "Status 33 · 2026-11-24 12:44 UTC · Phase 3",
+    "Merged since Status 32: the tree and the base and the bolder frost on the glass and the slab and the glass with a clear dark liquid. The app was published again at 12:33 UTC and opens with no page error.",
+    "Still wrong against the approved image: the snow inside is a grey disc with a dark band where the approved has a white bank curving up the glass. The tree crown turned yellow green after its last merge. The snow afloat is thin. The base reads at about half the approved brightness. The discs behind are too bright.",
+    "The host check passes the clean build and fails one line: 59.5 MB fetched before the first picture against a limit of 16 MB. That is second wave work. Final reports from the ten builders are due by 13:00 UTC.",
+    "phase 3: 4.29 h used of its 11.00 h box",
+    "allowance (before the review): 10.90 h used of 36.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-32-1.jpg",
-      "caption": "Winter at rest on main at 12:25 UTC with every part real work (draft tier)",
+      "file": "out/stills/status/status-33-1.jpg",
+      "caption": "Approved winter at rest (left) beside main at 12:44 UTC (right) at the draft tier",
+      "w": 1200,
+      "h": 537
+    },
+    {
+      "file": "out/stills/status/status-33-2.jpg",
+      "caption": "Main at rest from the hero camera at 12:44 UTC with the bolder frost and the darker liquid merged (draft tier)",
       "w": 1200,
       "h": 675
     },
     {
-      "file": "out/stills/status/status-32-2.jpg",
-      "caption": "Winter half a second after landing on main at 12:25 UTC (draft tier)",
-      "w": 1200,
-      "h": 675
-    },
-    {
-      "file": "out/stills/status/status-32-3.jpg",
-      "caption": "Still: winter landed hero, hd, draft",
-      "w": 1200,
-      "h": 675
-    },
-    {
-      "file": "out/stills/status/status-32-4.jpg",
+      "file": "out/stills/status/status-33-3.jpg",
       "caption": "Still: winter rest hero, hd, draft",
+      "w": 1200,
+      "h": 675
+    },
+    {
+      "file": "out/stills/status/status-33-4.jpg",
+      "caption": "Still: winter rest hero, hd, draft, standins view",
       "w": 1200,
       "h": 675
     }

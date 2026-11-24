@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 32 · 2026-11-24 12:26 UTC
+Status 33 · 2026-11-24 12:44 UTC
 
-- `out/stills/status/status-32-1.jpg`: Winter at rest on main at 12:25 UTC with every part real work (draft tier)
-- `out/stills/status/status-32-2.jpg`: Winter half a second after landing on main at 12:25 UTC (draft tier)
-- `out/stills/status/status-32-3.jpg`: Still: winter landed hero, hd, draft
-- `out/stills/status/status-32-4.jpg`: Still: winter rest hero, hd, draft
+- `out/stills/status/status-33-1.jpg`: Approved winter at rest (left) beside main at 12:44 UTC (right) at the draft tier
+- `out/stills/status/status-33-2.jpg`: Main at rest from the hero camera at 12:44 UTC with the bolder frost and the darker liquid merged (draft tier)
+- `out/stills/status/status-33-3.jpg`: Still: winter rest hero, hd, draft
+- `out/stills/status/status-33-4.jpg`: Still: winter rest hero, hd, draft, standins view
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 12:34 UTC
-clock: phase 3, tick of 8.4 minutes
-phase 3: 4.12 h used of its 11.00 h box
-allowance (before the review): 10.73 h used of 36.00 h allowed
-all time before the review: 10.73 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 12:44 UTC
+clock: phase 3, tick of 5.8 minutes
+phase 3: 4.29 h used of its 11.00 h box
+allowance (before the review): 10.90 h used of 36.00 h allowed
+all time before the review: 10.90 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 8
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -917,3 +917,7 @@ One entry per task: when it started, what it did, where it stopped.
 - 12:28 to 12:32 UTC. Merged the tree (`18c0ff0`: inner lights at the light builder's numbers, the bark's baked glow cut) and the base (`0caed8f`: darker, browner wood and brass), 370 tests green, texture pack 45.4 MB, pushed as `713a3e8`.
 - 12:32 UTC. `npm run hostcheck` on a clean copy of `be9c7d8`: FAIL on one line only. The clean install and build pass (0.13 minutes against `host.maxBuildMinutes` 20), `dist/` holds none of the kept-out folders, and the built site opens in live mode with nothing logged, so the clean clone opens the app now. The failing line: 59.52 MB in 31 requests were fetched before the first complete picture, 11.1 s after the page was opened, against `host.firstLoadMaxMb` 16. The first load must come down to 16 MB or less; this is second-wave work (compressed textures and meshes, and an order of loading that asks first only for what the first picture needs). Open item 30 stays open on that line.
 - 12:33 UTC. Published: https://snow-globe-seasons.pplx.app from `713a3e8` (every part of winter is real work). Visibility: Organization. Opened as built: first picture after 10.8 s, 38 requests, 27 built assets, no page error. Review page: https://snow-globe-seasons.pplx.app/review.html
+
+- 12:37 to 12:44 UTC. Reread after a compaction: this file, `kit/addenda/` (a README only), Phase 3's read-first files and the Phase 3 steps of `kit/08-BUILD-ORDER.md`. light_builder's finding went to base_builder: the base was fitted under the old key and reads at about half the approved brightness under the rig on `main` (wood mid 12, 8, 10 against 26, 20, 19); the rig stays, the base's colours move.
+- 12:41 to 12:44 UTC. Merged the frost (`4adfcc3`: bold plumes on the left rim, slab fronds with body, slab frost under the slab's light) and the glass (`424b399`: a clear dark liquid), 370 tests green, texture pack 45.0 MB, pushed as `2fecdf8`.
+- 12:45 UTC. Status 33 posted with two pictures: the approved winter at rest beside `main`, and `main` from `hero`, both draft tier. Said what still reads wrong: the snow inside is a grey disc with a dark band, the crown turned yellow green after the tree's last merge, the snow afloat is thin, the base is at about half brightness, the discs behind are too bright; and the host check's one failing line.
