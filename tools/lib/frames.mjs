@@ -13,7 +13,10 @@ const PNG_HEAD = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
 const PNG_TAIL = Buffer.from([0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82])
 const LOCAL_CHUNK_SECONDS = 2
 
-export const short = (f) => path.relative(rel(), f).split(path.sep).join('/')
+export const short = (f) => {
+  const r = path.relative(rel(), path.resolve(f))
+  return r.startsWith('..') || path.isAbsolute(r) ? path.resolve(f) : r.split(path.sep).join('/')
+}
 export const minutes = (sec) => (sec < 90 ? `${Math.round(sec)} s` : sec < 5400 ? `${(sec / 60).toFixed(1)} min` : `${(sec / 3600).toFixed(1)} h`)
 const pad = (i) => String(i).padStart(6, '0')
 
@@ -35,13 +38,13 @@ export function argFrame(args, key) {
   return n
 }
 
-export function makeTrack({ kind, name, dir, format, tier, assets = 'full', fps, local = false, graphics = local }) {
+export function makeTrack({ kind, name, dir, format, tier, assets = 'full', fps, local = false, graphics = local, mbps = null, keep = [] }) {
   if (!(tier in cfg.tiers)) throw new Error(`no such tier: ${tier}`)
   if (!(assets in cfg.assetSets)) throw new Error(`no such asset set: ${assets}`)
   const f = formatById(format)
   const step = stepOf(fps)
   const maxFrames = local ? Math.min(cfg.sandbox.maxFramesOnDisk, Math.round(fps * LOCAL_CHUNK_SECONDS)) : cfg.sandbox.maxFramesOnDisk
-  return { kind, name, dir, format: f, tier, assets, fps, step, local, graphics, maxFrames, settings: videoSettings({ format: f, fps, local }) }
+  return { kind, name, dir, format: f, tier, assets, fps, step, local, graphics, maxFrames, keep, settings: videoSettings({ format: f, fps, local, mbps }) }
 }
 
 export function planChunks(track, spans, { first = null, last = null } = {}) {
@@ -59,6 +62,7 @@ export function planChunks(track, spans, { first = null, last = null } = {}) {
   return out
 }
 
+export const keptFrame = (track, index) => path.join(track.dir, `frame-${index}.png`)
 export const chunkFile = (track, c) => path.join(track.dir, `chunk-${c.first}-${c.last}.${track.settings.container}`)
 
 let current = null
@@ -323,6 +327,12 @@ export class Run {
       errors,
     })
     record.tier = track.tier
+    for (const index of c.frames) {
+      if (!track.keep.includes(index)) continue
+      const to = keptFrame(track, index)
+      fs.copyFileSync(path.join(dir, `${pad(index)}.png`), to)
+      writeJson(`${to}.json`, { ...record, index, chunk: short(file), sha256: fileSha(to), bytes: fs.statSync(to).size })
+    }
     fs.renameSync(`${file}.new`, file)
     writeJson(`${file}.json`, record)
     fs.rmSync(dir, { recursive: true, force: true })
