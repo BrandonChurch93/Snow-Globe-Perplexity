@@ -412,6 +412,11 @@ describe('a detail move that stops short of its camera (decision 34)', () => {
         expect(room[under], `${id} frame ${i}`).toBeGreaterThanOrEqual(detailRoom(id))
         expect(room[over], `${id} frame ${i}`).toBeGreaterThanOrEqual(detailRoom(id))
       }
+      for (let i = m.span.first; i <= m.span.last; i++) {
+        const room = roomOf(filmPose(cut, i / fps))
+        expect(room[under], `${id} frame ${i}`).toBeGreaterThanOrEqual(0)
+        expect(room[over], `${id} frame ${i}`).toBeGreaterThanOrEqual(0)
+      }
     }
   })
 
