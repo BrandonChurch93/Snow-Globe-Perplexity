@@ -3,13 +3,14 @@
     {
       "name": "glass",
       "unit": "winter",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/globe/shell.ts",
         "src/globe/lens.ts"
       ],
       "standInHash": "045386e0f03d33f7",
-      "commit": "2530677"
+      "commit": "9b1d705",
+      "note": "agent/p3-glass at 0634c13: shell with its own through view, wall, bubble and depth stamp; no three.js transmission; first report lists what is still wrong (top right too bright and grey, bubble, rim line too grey)"
     },
     {
       "name": "liquid",
@@ -115,24 +116,26 @@
     {
       "name": "glass-dressing-winter",
       "unit": "winter",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/winter",
         "public/assets/winter"
       ],
       "standInHash": "3c6ea2bbcb3220ac",
-      "commit": "2530677"
+      "commit": "3dc65dd",
+      "note": "agent/p3-frost at c803fd0: grown by assets-src/frost-winter/build.mjs from measures of the approved image; softens what lies behind by opacity and a film, not yet a blur"
     },
     {
       "name": "surface-dressing-winter",
       "unit": "winter",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/winter",
         "public/assets/winter"
       ],
       "standInHash": "3c6ea2bbcb3220ac",
-      "commit": "2530677"
+      "commit": "3dc65dd",
+      "note": "agent/p3-frost at c803fd0: grown by assets-src/frost-winter/build.mjs from measures of the approved image; softens what lies behind by opacity and a film, not yet a blur"
     },
     {
       "name": "light-winter",
@@ -148,49 +151,53 @@
     {
       "name": "veil-winter",
       "unit": "winter",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/winter",
         "public/assets/winter",
         "src/core/chunks/veil.ts"
       ],
       "standInHash": "8c7791d5c09652b1",
-      "commit": "2530677"
+      "commit": "a12d4de",
+      "note": "agent/p3-flakes at 70a5d7b: gone at rest, follows turbulence on the real shake"
     },
     {
       "name": "arrival-winter",
       "unit": "winter",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/winter",
         "public/assets/winter"
       ],
       "standInHash": "3c6ea2bbcb3220ac",
-      "commit": "2530677"
+      "commit": "3dc65dd",
+      "note": "agent/p3-frost at c803fd0: grown by assets-src/frost-winter/build.mjs from measures of the approved image; softens what lies behind by opacity and a film, not yet a blur"
     },
     {
       "name": "particle-flake",
       "unit": "winter",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/particles/draw",
         "src/particles/engine",
         "src/seasons/winter"
       ],
       "standInHash": "15af7dd90a8ca659",
-      "commit": "2530677"
+      "commit": "a12d4de",
+      "note": "agent/p3-flakes at 70a5d7b: flakes afloat and lying, lit by the light engine's functions; first report lists what is still wrong (round, even, white; storm reads as grey fur)"
     },
     {
       "name": "particle-glitter",
       "unit": "winter",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/particles/draw",
         "src/particles/engine",
         "src/seasons/winter"
       ],
       "standInHash": "15af7dd90a8ca659",
-      "commit": "2530677"
+      "commit": "a12d4de",
+      "note": "agent/p3-flakes at 70a5d7b"
     },
     {
       "name": "base-spring",
