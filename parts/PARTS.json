@@ -3,13 +3,14 @@
     {
       "name": "glass",
       "unit": "winter",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/globe/shell.ts",
         "src/globe/lens.ts"
       ],
       "standInHash": "045386e0f03d33f7",
-      "commit": "2530677"
+      "commit": "9b1d705",
+      "note": "agent/p3-glass at 0634c13: shell with its own through view, wall, bubble and depth stamp; no three.js transmission; first report lists what is still wrong (top right too bright and grey, bubble, rim line too grey)"
     },
     {
       "name": "liquid",
