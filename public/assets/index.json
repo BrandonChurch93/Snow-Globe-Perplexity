@@ -150,6 +150,26 @@
           "sha": "224ee454048a5e1c"
         },
         {
+          "path": "winter/frost-glass.lin.w1536.png",
+          "bytes": 14589662,
+          "sha": "0db2f75be610230d"
+        },
+        {
+          "path": "winter/frost-grain.lin.tile.png",
+          "bytes": 775002,
+          "sha": "cd40b84b0900f134"
+        },
+        {
+          "path": "winter/frost-shapes.glb",
+          "bytes": 1456356,
+          "sha": "c4ea6545ae02990c"
+        },
+        {
+          "path": "winter/frost-slab.lin.w1536.png",
+          "bytes": 10456805,
+          "sha": "bead328a01c2f4cf"
+        },
+        {
           "path": "winter/tree-crown.glb",
           "bytes": 5032840,
           "sha": "a52191392707a09a"
@@ -176,7 +196,7 @@
     }
   },
   "seasonHashes": {
-    "winter": "e9dfc43a4346d733",
+    "winter": "7c4e561b7da1ae53",
     "spring": "aae9b9b1517851a3",
     "summer": "aae9b9b1517851a3",
     "fall": "aae9b9b1517851a3"

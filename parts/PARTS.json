@@ -115,24 +115,26 @@
     {
       "name": "glass-dressing-winter",
       "unit": "winter",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/winter",
         "public/assets/winter"
       ],
       "standInHash": "3c6ea2bbcb3220ac",
-      "commit": "2530677"
+      "commit": "3dc65dd",
+      "note": "agent/p3-frost at c803fd0: grown by assets-src/frost-winter/build.mjs from measures of the approved image; softens what lies behind by opacity and a film, not yet a blur"
     },
     {
       "name": "surface-dressing-winter",
       "unit": "winter",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/winter",
         "public/assets/winter"
       ],
       "standInHash": "3c6ea2bbcb3220ac",
-      "commit": "2530677"
+      "commit": "3dc65dd",
+      "note": "agent/p3-frost at c803fd0: grown by assets-src/frost-winter/build.mjs from measures of the approved image; softens what lies behind by opacity and a film, not yet a blur"
     },
     {
       "name": "light-winter",
@@ -161,13 +163,14 @@
     {
       "name": "arrival-winter",
       "unit": "winter",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/winter",
         "public/assets/winter"
       ],
       "standInHash": "3c6ea2bbcb3220ac",
-      "commit": "2530677"
+      "commit": "3dc65dd",
+      "note": "agent/p3-frost at c803fd0: grown by assets-src/frost-winter/build.mjs from measures of the approved image; softens what lies behind by opacity and a film, not yet a blur"
     },
     {
       "name": "particle-flake",
