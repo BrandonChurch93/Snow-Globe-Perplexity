@@ -242,31 +242,35 @@ What this build takes from them: every render target pass sets its viewport in t
 
 Seconds per sample at each format, the cost of one simulated second, and the time each long job should take. Measured in Phases 0, 2 and 3.
 
-The spike scene of Phase 0 (plain shapes, winter's particle count as plain points, a simple lens). The table is measured again on the real scene in Phase 2.
+Measured in Phase 0 on the spike scene and again in Phase 2 on the blockout scene. It is measured once more on the real winter scene in Phase 3.
 
 ### This VM
 
-Measured 2026-11-24 02:48 UTC on space-sandbox · 2 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7958 MB (2 cores), software rendering, on the scene of build `649783eb70c1c499`: 102000 particles, 43624 triangles, 16 draw calls a sample, accumulation in float32.
+Phase 2, the blockout scene: stand-in shapes, the real particle engine, the real lens and the real film. (The Phase 0 measurement on the spike scene, 02:48 UTC, build `649783eb70c1c499`, was 2.68, 0.75, 0.21, 0.23 and 0.82 s per sample for uhd, hd, preview, phone and tablet.)
+
+Measured 2026-11-24 08:17 UTC on space-sandbox · 2 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7958 MB (2 cores), software rendering, on the scene of build `b98352868abb52c6`: 102000 particles, 86071 triangles, 25 draw calls a sample, accumulation in float32.
 
 | Format | Size | Seconds per sample | Draft picture (2) | Review picture (8) | Final picture (24) |
 | --- | --- | --- | --- | --- | --- |
-| uhd | 3840 x 2160 | 2.68 | 7.3 s | 23.4 s | 66.3 s |
-| hd | 1920 x 1080 | 0.75 | 2.0 s | 6.5 s | 18.5 s |
-| preview | 960 x 540 | 0.21 | 0.9 s | 2.1 s | 5.5 s |
-| phone | 390 x 844 | 0.23 | 0.9 s | 2.2 s | 5.9 s |
-| tablet | 1024 x 1366 | 0.82 | 2.0 s | 7.0 s | 20.1 s |
+| uhd | 3840 x 2160 | 4.43 | 12.0 s | 38.5 s | 109.4 s |
+| hd | 1920 x 1080 | 1.27 | 4.5 s | 12.1 s | 32.3 s |
+| preview | 960 x 540 | 0.35 | 2.5 s | 4.7 s | 10.3 s |
+| phone | 390 x 844 | 0.48 | 3.1 s | 6.0 s | 13.7 s |
+| tablet | 1024 x 1366 | 1.60 | 5.0 s | 14.6 s | 40.2 s |
 
-- Fixed cost of starting a render: the browser starts in 0.3 s and a page is ready in 0.8 s. The first still of a page also replays the test shake: 14.7 s for 14.4 simulated seconds without checkpoints.
-- One simulated second at winter's particle count (102000, 240 steps): 1.85 s in the storm, 1.84 s just after the landing, 0.14 s at rest.
-- The whole film's simulation, 60.0 s with 4 shakes plus the preroll's: about 1.2 minutes, once, then read from checkpoints.
+- Fixed cost of starting a render: the browser starts in 0.3 s and a page is ready in 2.4 s. The first still of a page also replays the test shake: 8.2 s for 14.4 simulated seconds without checkpoints.
+- One simulated second at winter's particle count (102000, 240 steps): 2.31 s in the storm, 1.45 s just after the landing, 0.02 s at rest.
+- The whole film's simulation, 60.0 s with 4 shakes plus the preroll's: about 0.7 minutes, once, then read from checkpoints.
 
 | Job | Frames | Draft | Review | Final |
 | --- | --- | --- | --- | --- |
-| Film B, preview | 1800 | 0.5 h | 1.1 h | 2.8 h |
-| Film B, hd | 1800 | 1.0 h | 3.3 h | 9.3 h |
-| Card loop, hd | 240 | 0.1 h | 0.4 h | 1.2 h |
+| Film B, preview | 1800 | 1.3 h | 2.3 h | 5.2 h |
+| Film B, hd | 1800 | 2.2 h | 6.0 h | 16.2 h |
+| Card loop, hd | 240 | 0.3 h | 0.8 h | 2.2 h |
 
 These are one render process on this VM. Sandbox VMs have more cores and render ranges in parallel, so a job split across N of them takes about 1/N of its time plus the join.
+
+- Measured on sandbox VMs in Phase 2 (08:11 to 08:19 UTC, five render agents, 4 cores each, one process each, film B at `draft` in `preview`, 360 frames each, build `b98352868abb52c6`): 0.73, 0.99, 1.00, 0.99 and 1.36 s a frame with the simulation, 30.5 minutes of machine time for the whole film and about 9 minutes by the clock, the start of the VMs included.
 
 ### A sandbox VM
 

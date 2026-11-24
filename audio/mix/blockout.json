@@ -1,0 +1,126 @@
+{
+  "name": "blockout",
+  "file": "blockout.wav",
+  "which": "b",
+  "candidate": "blockout",
+  "args": {
+    "skip": [],
+    "gains": {},
+    "music": null
+  },
+  "cutlist": {
+    "sha256": "639fd688767fe33b57f9e047cd324a0ace58cf3ac58dcda876cbeca50555799e",
+    "source": "default-grid",
+    "seconds": 60,
+    "frameCount": 3600
+  },
+  "seconds": 60,
+  "openingSeconds": 0,
+  "placed": [
+    {
+      "cue": "glass-clink",
+      "at": 12,
+      "cents": 0
+    },
+    {
+      "cue": "glass-clink",
+      "at": 24,
+      "cents": 0
+    },
+    {
+      "cue": "glass-clink",
+      "at": 36,
+      "cents": 0
+    },
+    {
+      "cue": "glass-clink",
+      "at": 48,
+      "cents": 0
+    }
+  ],
+  "skipped": [
+    {
+      "cue": "music-box",
+      "why": "no kept file"
+    },
+    {
+      "cue": "lift",
+      "why": "no kept file"
+    },
+    {
+      "cue": "shake-spring",
+      "why": "no kept file"
+    },
+    {
+      "cue": "land-spring",
+      "why": "no kept file"
+    },
+    {
+      "cue": "shake-summer",
+      "why": "no kept file"
+    },
+    {
+      "cue": "land-summer",
+      "why": "no kept file"
+    },
+    {
+      "cue": "shake-fall",
+      "why": "no kept file"
+    },
+    {
+      "cue": "land-fall",
+      "why": "no kept file"
+    },
+    {
+      "cue": "shake-winter",
+      "why": "no kept file"
+    },
+    {
+      "cue": "land-winter",
+      "why": "no kept file"
+    },
+    {
+      "cue": "amb-winter",
+      "why": "no kept file"
+    },
+    {
+      "cue": "amb-spring",
+      "why": "no kept file"
+    },
+    {
+      "cue": "amb-summer",
+      "why": "no kept file"
+    },
+    {
+      "cue": "amb-fall",
+      "why": "no kept file"
+    }
+  ],
+  "music": {
+    "candidate": "blockout",
+    "source": "none",
+    "parts": []
+  },
+  "master": {
+    "targetLufs": -14,
+    "ceilingDb": -1,
+    "gainDb": 10.236,
+    "limiterReductionDb": 0,
+    "lufs": -14,
+    "truePeakDb": -6.89,
+    "passes": 1,
+    "silent": false
+  },
+  "inputs": {
+    "glass-clink": "a62138e2781a5f480ec29a3cbe16cabf876f0f466600e4e9223fa2e54c2f984e"
+  },
+  "measuredByFfmpeg": {
+    "lufs": -14,
+    "lra": 0.1,
+    "truePeakDb": -6.9
+  },
+  "sha256": "746d00f3c956e1bcd64e3cec4ce967c457f0b8e1b6e2f25f29b2e1485b93ae3a",
+  "musicStem": null,
+  "engineHash": "b98352868abb52c6",
+  "time": "2026-11-24T08:21:51.162Z"
+}

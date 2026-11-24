@@ -1,0 +1,102 @@
+{
+  "engineHash": "b98352868abb52c6",
+  "seasonHashes": {
+    "winter": "e3b0c44298fc1c14",
+    "spring": "e3b0c44298fc1c14",
+    "summer": "e3b0c44298fc1c14",
+    "fall": "e3b0c44298fc1c14"
+  },
+  "format": "preview",
+  "tier": "draft",
+  "assets": "full",
+  "diagnostic": "",
+  "browser": "Google Chrome for Testing 147.0.7727.15",
+  "graphics": "software",
+  "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB",
+  "joinedOn": "space-sandbox · 2 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7958 MB",
+  "time": "2026-11-24T08:22:07.053Z",
+  "fps": 30,
+  "frames": 1800,
+  "seconds": 60,
+  "chunks": [
+    {
+      "file": "out/work/film/b-preview-draft/chunk-0-718.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 0,
+      "last": 718,
+      "frames": 360,
+      "sha256": "2fbb69223a7dc324bce4c8fa1987d5a5b9e71cbd4635253a58f9e9cdb655defa",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-720-1438.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 720,
+      "last": 1438,
+      "frames": 360,
+      "sha256": "4a3681b677581ac98ce374812506f5d69eb15c0be1a98af42431a8856d105765",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-1440-2158.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 1440,
+      "last": 2158,
+      "frames": 360,
+      "sha256": "6b2d809064881ff645fcf996305a0ec1cffeee7d36c7cc0b6cf052760389e11d",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-2160-2878.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 2160,
+      "last": 2878,
+      "frames": 360,
+      "sha256": "0ad292d272cb6c6e4b05af17bdb01c9dd15e7cc97cd7a2cb40a78d6aa08940c0",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-2880-3598.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 2880,
+      "last": 3598,
+      "frames": 360,
+      "sha256": "9fbd19f2192fce38c111eb0cf0d70874b538b081ee698b81bb89ee5868c31420",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    }
+  ],
+  "sound": {
+    "file": "audio/mix/blockout.wav",
+    "sha256": "746d00f3c956e1bcd64e3cec4ce967c457f0b8e1b6e2f25f29b2e1485b93ae3a",
+    "offsetSeconds": 0
+  },
+  "probe": {
+    "codec": "h264",
+    "profile": "High",
+    "pixFmt": "yuv420p",
+    "width": 960,
+    "height": 540,
+    "fps": 30,
+    "frames": 1800,
+    "seconds": 60,
+    "bytes": 19134961,
+    "mbps": 2.55,
+    "streams": 2,
+    "audio": {
+      "codec": "aac",
+      "sampleRate": 48000,
+      "channels": 2
+    }
+  },
+  "worstFrameOffsetMs": 0,
+  "sha256": "029aafd87b52c26b8376042d5d2c4bdab4b50a01a7938a7ffb75e0f9f8a61e28",
+  "which": "b",
+  "complete": true,
+  "keptFrom": "out/work/film-b-preview-draft.mp4",
+  "sourceSha256": "029aafd87b52c26b8376042d5d2c4bdab4b50a01a7938a7ffb75e0f9f8a61e28"
+}

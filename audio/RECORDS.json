@@ -1098,5 +1098,14 @@
     "loops": [],
     "notes": []
   },
-  "mixes": {}
+  "mixes": {
+    "audio/mix/blockout.wav": {
+      "sha256": "746d00f3c956e1bcd64e3cec4ce967c457f0b8e1b6e2f25f29b2e1485b93ae3a",
+      "lufs": -14,
+      "truePeakDb": -6.9,
+      "candidate": "blockout",
+      "which": "b",
+      "time": "2026-11-24T08:21:51.162Z"
+    }
+  }
 }
