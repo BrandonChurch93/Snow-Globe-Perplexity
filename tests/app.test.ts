@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { config } from '../src/config'
-import { FRAME, edges, livePose, liveRig, margins, roomUnder } from '../src/app/framing'
+import { FRAME, edges, livePath, liveRig, margins, roomUnder, shakeReach } from '../src/app/framing'
 import { Drag, Look, MotionShake, TOUCH, stirAxis } from '../src/app/gestures'
 import { Autopilot, LoopPlayer } from '../src/app/players'
 import { createProbe, pickLevel, slowest, type ProbeHost } from '../src/app/probe'
@@ -10,11 +10,11 @@ import { GOVERN, Governor, levelById, levels, median, stageQuality, topLevel } f
 import type { ParticleSource } from '../src/core/stage'
 import { filmCut } from '../src/film/cut'
 import { SourceSwitch, loopSeconds, standInLoop } from '../src/film/loop'
-import { cameraNumbers, filmPose, rigOf } from '../src/film/moves'
+import { cameraNumbers, filmPose, poseOfRig, reachOf, rigOf } from '../src/film/moves'
 import { openingPlan } from '../src/film/opening'
 import { barSeconds, beatSeconds, type Timeline } from '../src/film/timeline'
-import { REST_POSE } from '../src/shake/table'
-import { framingOf, sphereRadiusMm } from '../src/scene/framing'
+import { REST_POSE, makeShake } from '../src/shake/table'
+import { framingOf } from '../src/scene/framing'
 
 const HZ = config.sim.stepHz
 const FRAME_S = 1 / 60
@@ -468,24 +468,138 @@ describe('touch', () => {
 })
 
 describe('the framing of the app', () => {
-  it('is the hero camera on a wide screen', () => {
-    const hd = config.formats.hd
-    expect(cameraNumbers(livePose(hd.width / hd.height))).toEqual(cameraNumbers(filmPose(filmCut(), filmCut().shakes[0]!.startSec)))
-  })
+  const sizes = [
+    ['hd', config.formats.hd.width, config.formats.hd.height],
+    ['phone', config.formats.phone.width, config.formats.phone.height],
+    ['tablet', config.formats.tablet.width, config.formats.tablet.height],
+    ['landscape phone', config.formats.phone.height, config.formats.phone.width],
+  ] as const
+  const bars = [null, 60, 130] as const
+  const high = 1 - 2 * FRAME.edgeShare
+  const bar = config.film.beatsPerBar
 
-  it('steps back on an upright screen until the globe and its base fit the width', () => {
+  const measure = (w: number, h: number, controls: number | null) => {
+    const under = roomUnder(h, controls)
+    const rig = liveRig(w / h, 0, 0, under)
+    const pose = poseOfRig(rig)
+    const rest = reachOf(pose, REST_POSE)
+    let top = rest.top
+    let side = rest.side
+    for (let n = 0; n < FRAME.shakePaths; n++) {
+      const path = livePath(n)
+      for (let b = 0; b <= bar; b += 0.004) {
+        const r = reachOf(pose, path.poseAt(b))
+        top = Math.max(top, r.top)
+        side = Math.max(side, r.side)
+      }
+    }
+    return { under, rig, rest, top, side, aspect: w / h, low: -1 + 2 * under }
+  }
+
+  it('is the wide camera of the film moved back along its own axis, never nearer', () => {
     const hero = rigOf('hero')
-    for (const f of [config.formats.phone, config.formats.tablet]) {
-      const aspect = f.width / f.height
-      const rig = liveRig(aspect)
-      const frameWidth = 2 * rig.distanceMm * Math.tan((rig.fovDeg * Math.PI) / 360) * aspect
-      const across = Math.max(2 * sphereRadiusMm, config.globe.baseDiameterMm)
-      expect(rig.distanceMm).toBeGreaterThan(hero.distanceMm)
-      expect(across / frameWidth).toBeCloseTo(FRAME.widthFill, 6)
-      expect(rig.aimHeightMm).toBeLessThan(hero.aimHeightMm)
+    for (const [, w, h] of sizes) {
+      const rig = liveRig(w / h, 0, 0, roomUnder(h))
+      expect(rig.distanceMm).toBeGreaterThanOrEqual(hero.distanceMm)
+      expect(rig.pitchDeg).toBe(hero.pitchDeg)
+      expect(rig.yawDeg).toBe(hero.yawDeg)
       expect(rig.fovDeg).toBe(hero.fovDeg)
+      expect(rig.apertureMm).toBe(hero.apertureMm)
+      expect(rig.focusShiftMm).toBe(hero.focusShiftMm)
     }
     expect(liveRig(0.01).distanceMm).toBe(liveRig(FRAME.leastAspect).distanceMm)
+  })
+
+  it('plays one of a fixed ring of shake paths, the ones the framing is fitted to', () => {
+    for (const b of [0.5, 1.3, 2.2, 3.1, 3.7]) {
+      expect(livePath(FRAME.shakePaths).poseAt(b)).toEqual(livePath(0).poseAt(b))
+      expect(livePath(3).poseAt(b)).toEqual(makeShake('live-3').poseAt(b))
+    }
+    const sim = new FakeSim()
+    const s = new LiveSession(sim, first)
+    for (let n = 0; n < FRAME.shakePaths + 2; n++) {
+      expect(s.shake()).not.toBeNull()
+      const e = s.tl.events.at(-1)!
+      expect(e.id).toBe(`live-${n}`)
+      for (const b of [1.4, 2.6]) expect(e.path.poseAt(b)).toEqual(livePath(n).poseAt(b))
+      for (let i = 0; i < 60 * 12 && s.busy; i++) s.tick(FRAME_S)
+      expect(s.busy).toBe(false)
+    }
+  })
+
+  it('keeps the lifted glass under the top edge through every shake, at every size', () => {
+    for (const [name, w, h] of sizes) {
+      for (const controls of bars) {
+        const m = measure(w, h, controls)
+        expect(m.top, `${name} ${controls}`).toBeLessThanOrEqual(high + 1e-6)
+        expect(m.rest.top, `${name} ${controls}`).toBeLessThan(m.top)
+      }
+    }
+  })
+
+  it('keeps the foot of the base at rest clear of the controls, at every size', () => {
+    for (const [name, w, h] of sizes) {
+      for (const controls of bars) {
+        const m = measure(w, h, controls)
+        expect(-m.rest.foot, `${name} ${controls}`).toBeGreaterThanOrEqual(m.low - 1e-9)
+        expect(margins(m.rig).under, `${name} ${controls}`).toBeGreaterThanOrEqual(m.under - 1e-9)
+      }
+    }
+  })
+
+  it('keeps the widest stroke between the sides of a wide screen', () => {
+    for (const [name, w, h] of sizes) {
+      if (w < h) continue
+      for (const controls of bars) {
+        const m = measure(w, h, controls)
+        expect(m.side / m.aspect, `${name} ${controls}`).toBeLessThanOrEqual(1 - 2 * FRAME.edgeShare + 1e-6)
+      }
+    }
+    for (const aspect of [1, 1.05, 1.2]) {
+      const m = measure(1000 * aspect, 1000, null)
+      expect(m.side / m.aspect, `${aspect}`).toBeLessThanOrEqual(1 - 2 * FRAME.edgeShare + 1e-6)
+      expect(m.top, `${aspect}`).toBeLessThanOrEqual(high + 1e-6)
+    }
+  })
+
+  it('lets the glass at rest fill the width of an upright screen, where the strokes may pass the sides', () => {
+    const p = config.formats.phone
+    const m = measure(p.width, p.height, 130)
+    expect(m.rest.side / m.aspect).toBeCloseTo(1 - 2 * FRAME.edgeShare, 4)
+    expect(m.side / m.aspect).toBeGreaterThan(1)
+    expect(-m.rest.foot).toBeGreaterThan(m.low)
+    const t = config.formats.tablet
+    const tablet = measure(t.width, t.height, null)
+    expect(tablet.rest.side / tablet.aspect).toBeLessThan(1 - 2 * FRAME.edgeShare)
+    expect(tablet.rest.side / tablet.aspect).toBeGreaterThan(0.75)
+  })
+
+  it('stands as near as the edges allow: a limit is met exactly at every size', () => {
+    const hero = rigOf('hero')
+    for (const aspect of [0.3, 0.46, 0.6, 0.75, 0.95, 1, 1.1, 1.33, 16 / 9, 2.16, 3]) {
+      for (const under of [0.08, 0.0889, 0.12, 0.18, 0.25, 0.35]) {
+        const m = measure(4000 * aspect, 4000, 4000 * under - FRAME.airPx)
+        expect(m.under).toBeCloseTo(under, 9)
+        const upright = Math.abs(m.top - high) < 1e-4 && Math.abs(-m.rest.foot - m.low) < 1e-6
+        const across = Math.abs((aspect >= 1 ? m.side : m.rest.side) / aspect - (1 - 2 * FRAME.edgeShare)) < 1.5e-3
+        expect(upright || across || m.rig.distanceMm === hero.distanceMm, `${aspect} ${under}`).toBe(true)
+        expect(m.top, `${aspect} ${under}`).toBeLessThanOrEqual(high + 1e-4)
+        expect(-m.rest.foot, `${aspect} ${under}`).toBeGreaterThanOrEqual(m.low - 1e-9)
+        expect((aspect >= 1 ? m.side : m.rest.side) / aspect, `${aspect} ${under}`).toBeLessThanOrEqual(1 - 2 * FRAME.edgeShare + 1e-4)
+      }
+    }
+  })
+
+  it('gives the numbers of decision 33 at the judged sizes', () => {
+    const hd = measure(1920, 1080, null)
+    expect(hd.top).toBeCloseTo(high, 4)
+    expect(-hd.rest.foot).toBeCloseTo(-1 + 2 * (FRAME.barPx / 1080), 6)
+    expect(hd.rest.top).toBeGreaterThan(0.78)
+    expect(hd.rest.top).toBeLessThan(0.82)
+    expect(hd.rig.distanceMm).toBeLessThan(rigOf('hero').distanceMm * 1.1)
+    const tablet = measure(1024, 1366, null)
+    expect(tablet.top).toBeCloseTo(high, 4)
+    expect(tablet.rig.distanceMm).toBeLessThan(rigOf('hero').distanceMm * 1.1)
   })
 
   it('measures the top of the glass and the foot of the base as the harness does', () => {
@@ -497,36 +611,11 @@ describe('the framing of the app', () => {
     const m = margins(rigOf('hero'))
     expect(m.over).toBeCloseTo((f.globe.cy - f.globe.r) / hd.height, 2)
     expect(m.under).toBeCloseTo(1 - f.base.foot / hd.height, 6)
-  })
-
-  it('keeps the room the controls take clear under the globe, by stepping back no further than it must', () => {
-    const hero = rigOf('hero')
-    for (const [w, h] of [[1920, 1080], [1440, 780], [1280, 600], [2560, 1440]] as const) {
-      const under = roomUnder(h)
-      const rig = liveRig(w / h, 0, 0, under)
-      const m = margins(rig)
-      expect(m.under).toBeCloseTo(under, 6)
-      expect(m.over).toBeGreaterThanOrEqual(FRAME.overShare - 1e-9)
-      expect(m.over).toBeLessThan(FRAME.overShare + 0.01)
-      expect(rig.distanceMm).toBeGreaterThan(hero.distanceMm)
-      expect(rig.distanceMm).toBeLessThan(hero.distanceMm * 1.25)
-      expect(rig.pitchDeg).toBe(hero.pitchDeg)
-      expect(rig.fovDeg).toBe(hero.fovDeg)
-    }
-    const t = config.formats.tablet
-    const plain = liveRig(t.width / t.height)
-    const tablet = liveRig(t.width / t.height, 0, 0, roomUnder(t.height))
-    expect(tablet.distanceMm).toBe(plain.distanceMm)
-    expect(tablet.aimHeightMm).toBeLessThan(plain.aimHeightMm)
-    expect(margins(tablet).under).toBeCloseTo(roomUnder(t.height), 9)
-    expect(margins(tablet).over).toBeGreaterThanOrEqual(FRAME.overShare)
-  })
-
-  it('leaves an upright phone as it is, where the room is there already', () => {
-    const p = config.formats.phone
-    const under = roomUnder(p.height, 130)
-    expect(margins(liveRig(p.width / p.height)).under).toBeGreaterThan(under)
-    expect(liveRig(p.width / p.height, 0, 0, under)).toEqual(liveRig(p.width / p.height))
+    const rig = liveRig(16 / 9, 0, 0, 0.1)
+    const r = reachOf(poseOfRig(rig), REST_POSE)
+    expect(edges(rig).top).toBeCloseTo(r.top, 9)
+    expect(edges(rig).foot).toBeCloseTo(-r.foot, 3)
+    expect(shakeReach(rig).top).toBeGreaterThan(r.top)
   })
 
   it('takes the room from the height of the window and from the controls when they are measured', () => {

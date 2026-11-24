@@ -447,7 +447,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
         const run = replay.run
         run.advanceTo(index)
         lastSeason = run.session.season
-        const pose = run.pose(roomUnder(format.height))
+        const pose = run.pose(roomUnder(format.height, overlay.controlsPx()))
         const moment = run.moment()
         stage.setQuality?.(stageQuality(q))
         gfx.renderer.info.reset()
