@@ -194,6 +194,7 @@ describe('the simulation', () => {
     const start = census(winter)
     expect(start.rest + start.liquid).toBe(winter.count)
     expect(start.liquid).toBeLessThan(winter.count * 0.06)
+    expect(start.liquid).toBeGreaterThan(winter.count * 0.025)
   })
 
   for (const season of SEASONS) {
