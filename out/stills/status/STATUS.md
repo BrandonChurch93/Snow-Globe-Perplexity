@@ -1,18 +1,18 @@
-# Status 47
+# Status 48
 
-2026-11-24 18:12 UTC
+2026-11-24 18:35 UTC
 
-- Round 5 is frozen on 9be1c06 and its stills and motion sheets are being rendered at the final tier by four agents
-- Round 4 closed without a pass: likeness 5 and craft 4 and motion 5 of 10 and the jury fails
-- One test is red on main since the freeze (snow cover on the roof's lower slope) and it counts against Round 5 as a severe issue; the liquid's builder owns the cure
-- The change's bloom is cured on the light's branch: a white core that swells and shrinks instead of an even peach disc
-- Next: Round 5's critics from about 18:50 then a new set of builders at 19:15 for the last two rounds
-- phase 3: 9.76 h used of its 11.00 h box
-- allowance (before the review): 16.37 h used of 36.00 h allowed
+- main is green again: the liquid's cure holds snow on both roof slopes and the new shake path is in for Round 6
+- The app is published from this state so the new shake can be tried
+- Round 5's renders come in from about 18:42 and its critics start then
+- One measure is red at the base camera: a single invalid pixel on the glass's right outline and its builder has it
+- Next: a new set of builders at 19:15 and the last two freezes at 20:15 and 22:15
+- phase 3: 10.13 h used of its 11.00 h box
+- allowance (before the review): 16.74 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-47-1.jpg`: The tree's crown at rest: approved left and the build right (draft tier). Still wrong: the snow sits as round pads where the approved has broad blankets and the trunk is thicker and more orange
-- `out/stills/status/status-47-2.jpg`: One second after the landing: approved left and the build right (draft tier). The storm is separate dashes in a swirl now. Still wrong: the bank is cooler than the approved warm glow and the glass frost is fainter
-- `out/stills/status/status-47-3.jpg`: Still: winter rest hero, hd, draft
-- `out/stills/status/status-47-4.jpg`: Sheet: 12 frames across the shot shake-1, frames 576 to 719, preview, draft
+- `out/stills/status/status-48-1.jpg`: The new shake path on main: the strokes every second frame from 36 to 58 at draft tier. The globe swings and rolls to the side it has swung to while the storm builds. Still wrong: the dome veils within about eight frames
+- `out/stills/status/status-48-2.jpg`: The set down on the shake builder's branch at review tier: no hold in the air. The last stroke carries into a shorter swing and the globe sinks through it and lands. Still wrong: the storm here is the older veil and the landing's rock is too small to read
+- `out/stills/status/status-48-3.jpg`: Film B on the new cut, measuring scene: frame 0 (the close opening before the pull back), frame 666 (the locked camera inside the first shake), frame 720 (the landing on its bar line) and the last frame, back on the camera of frame 0. In frame 666 the top of the glass leaves the picture: to be settled when the cameras are fitted. (by film_app_builder)
+- `out/stills/status/status-48-4.jpg`: The app in live mode with the real interface, still on the measuring scene: at rest, then three moments of one shake (lift and tilt, the storm, the landing). The season marks sit at the bottom left, the Shake control at the bottom centre. (by film_app_builder)
