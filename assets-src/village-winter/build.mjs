@@ -238,7 +238,7 @@ function wallGap(x, z) {
 }
 function snowAt(x, z) {
   const pf = L.pondField(x, z)
-  const m = L.moundAt(z) + L.bankAt(x, z) + L.rimAt(x, z)
+  const m = L.moundAt(z) + L.bankAt(x, z) + L.rimAt(x, z) + L.driftAt(x, z)
   const lip = smooth(0.94, 1.03, pf)
   let extra = 0.34 * fbm(x * 0.17, z * 0.17, 3.3, 3) + 0.1 * fbm(x * 0.62, z * 0.62, 9.1, 2)
   const gap = wallGap(x, z)
@@ -258,6 +258,7 @@ function snowAt(x, z) {
 const BANK_TOP = 0.3
 const BANK_BLEND_MM = 5
 const BILLOW = { cycles: 6.5, deepMm: 2.2 }
+const UNDERCUT = { dark: 0.88, from: 0.985, to: 1.022, arc: [-135, -115, -5, 25] }
 function contact(x, z) {
   let k = 1
   k *= 1 - 0.34 * Math.exp(-Math.max(wallGap(x, z), 0) / 1.3)
@@ -383,7 +384,14 @@ function contact(x, z) {
     P.setXYZ(b, P.getX(a), P.getY(a), P.getZ(a))
   }
   const puff = (_p, _n, i) => [1, bankOf[i]]
-  snow.add(g, { color: (p) => mul3(SNOW, (0.9 + 0.08 * noise(p[0] * 0.5, p[2] * 0.5, 3)) * contact(p[0], p[2])), surf: puff })
+  const undercut = (x, z) => {
+    const pf = L.pondField(x, z)
+    if (pf > UNDERCUT.to) return 1
+    const deg = (Math.atan2(z - L.pond.z, x - L.pond.x) * 180) / Math.PI
+    const arc = smooth(UNDERCUT.arc[0], UNDERCUT.arc[1], deg) * (1 - smooth(UNDERCUT.arc[2], UNDERCUT.arc[3], deg))
+    return 1 - UNDERCUT.dark * arc * (1 - smooth(UNDERCUT.from, UNDERCUT.to, pf))
+  }
+  snow.add(g, { color: (p) => mul3(SNOW, (0.9 + 0.08 * noise(p[0] * 0.5, p[2] * 0.5, 3)) * contact(p[0], p[2]) * undercut(p[0], p[2])), surf: puff })
 }
 
 {

@@ -12,7 +12,7 @@ import { prepareVillage, tileMm, villageGeometry, villageGrain } from '../../../
 import { hangPoints, lampFlame, shrubDistance } from '../../../miniature/roof'
 import { BUMP_GLSL, NEAR_LIGHT, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, withSurface, type Cover, type GlowSource } from '../../../miniature/surface'
 import { wispGeometry, wispMaterial } from '../../../miniature/wisp'
-import { anchors, bankAt, cottage, cottagePoint, groundAt, moundSlope, pond, pondField, rimAt, solidDistance } from '../../../scene/layout'
+import { anchors, bankAt, cottage, cottagePoint, driftAt, groundAt, moundSlope, pond, pondField, rimAt, solidDistance } from '../../../scene/layout'
 import { gainOf } from '../../../scene/lightgrid'
 import type { InnerLight, KitMoment } from '../../kit'
 import { isTree, season, tones } from './palette'
@@ -29,7 +29,7 @@ const WINDOW = { power: 0.8, reachMm: 8, flicker: 0.1, cycles: 5, phase: 0.4 }
 const SIDE = { power: 0.8, reachMm: 7, flicker: 0.1, cycles: 4, phase: 0.75 }
 const BULB = { power: 0.6, reachMm: 4.5, flicker: 0.07, cycles: 2 }
 const NEAR = { bulb: { power: 1, reachMm: 2 }, lamp: { power: 2.2, reachMm: 7 }, pane: { power: 0.7, reachMm: 2.4 } }
-const MIRROR = { lamp: 7, pane: 1.2, bulb: 0.5, tight: 0.0016, wide: 0.028, wideShare: 0.04 }
+const MIRROR = { lamp: 7, pane: 1.2, bulb: 0.5, tight: 0.0007, wide: 0.02, wideShare: 0.012, bump: 0.8, lowMm: 3.4, sparkle: 1.1 }
 const COVER_GAIN = 0.12
 const FRESH_RISE_MM = 0.3
 const SNOW_GRAIN_MM = 0.05
@@ -45,10 +45,11 @@ const BANK_HOLLOW = 0.25
 const BANK_FOOT = 0.33
 const BANK_CREST = 0.35
 const BANK_AIR = 0.6
-const ICE_NEAR = 0.3
+const ICE_NEAR = 0.15
 
 const bulbs = hangPoints()
 const flame = lampFlame()
+const mirrored: [number, number, number] = [flame[0], flame[1] - MIRROR.lowMm, flame[2]]
 const potTop = cottagePoint(cottage.chimney.across - 0.2, cottage.chimney.top + 1.45, cottage.chimney.along + 0.1)
 
 export const innerLights: InnerLight[] = [
@@ -180,7 +181,7 @@ diffuseColor.rgb *= ${glsl(tones.snow)} * (0.92 + 0.16 * snowT.r + 0.12 * (snowW
 }
 
 function iceMaterial(): THREE.MeshStandardMaterial {
-  const sources = [{ at: flame, strength: MIRROR.lamp }, { at: anchors.window, strength: MIRROR.pane }, { at: anchors.sideWindow, strength: MIRROR.pane }, ...bulbs.map((at) => ({ at, strength: MIRROR.bulb }))]
+  const sources = [{ at: mirrored, strength: MIRROR.lamp }, { at: anchors.window, strength: MIRROR.pane }, { at: anchors.sideWindow, strength: MIRROR.pane }, ...bulbs.map((at) => ({ at, strength: MIRROR.bulb }))]
   return stageMaterial({
     part: PART,
     standIn: false,
@@ -201,6 +202,7 @@ function iceMaterial(): THREE.MeshStandardMaterial {
           `#include <map_pars_fragment>
 ${BUMP_GLSL}
 ${MIRROR_GLSL}
+vec3 iceFlat = vec3(0.0, 0.0, 1.0);
 float iceHeight(vec2 uv) {
   vec3 t = texture2D(map, uv).rgb;
   return t.g * 0.05 + t.b * 0.035 - t.r * 0.05 + texture2D(map, uv * 3.1 + 0.17).g * 0.012;
@@ -225,6 +227,7 @@ float iceRough = mix(0.09, 0.72, iceFrost);
 {
   float iceH = iceHeight(vMapUv);
   vec2 iceDh = vec2(iceHeight(vMapUv + dFdx(vMapUv)) - iceH, iceHeight(vMapUv + dFdy(vMapUv)) - iceH);
+  iceFlat = normal;
   normal = villageBump(-vViewPosition, normal, iceDh, faceDirection);
 }
 `,
@@ -236,8 +239,8 @@ float iceRough = mix(0.09, 0.72, iceFrost);
   vec3 iceN = villageInside(normal);
   vec3 iceSight = villageSight();
   float iceFresnel = 0.03 + 0.97 * pow(1.0 - clamp(dot(iceN, iceSight), 0.0, 1.0), 5.0);
-  float iceGlint = villageMirror(iceN, iceSight, ${MIRROR.tight.toFixed(5)}, ${MIRROR.wide.toFixed(5)}, ${MIRROR.wideShare.toFixed(3)});
-  totalEmissiveRadiance += ${glsl(tones.lamp)} * iceGlint * iceFresnel * (1.0 - 0.55 * iceFrost) * uGlowGain;
+  float iceGlint = villageMirror(villageInside(normalize(mix(iceFlat, normal, ${MIRROR.bump.toFixed(2)}))), iceSight, ${MIRROR.tight.toFixed(5)}, ${MIRROR.wide.toFixed(5)}, ${MIRROR.wideShare.toFixed(3)});
+  totalEmissiveRadiance += ${glsl(tones.lamp)} * iceGlint * iceFresnel * (1.0 - 0.55 * iceFrost) * (1.0 + ${MIRROR.sparkle.toFixed(2)} * (iceT.g - 0.5 + iceT.r)) * uGlowGain;
 }
 `,
         )
@@ -282,15 +285,17 @@ const SINK = { depthMm: 3.2, from: 0.74, to: 0.97 }
 const BANK_SHUTS = { from: 0.2, to: 0.8 }
 const BANK_SLOPE = 0.9
 const RIM_SLOPE = 1.2
+const DRIFT_SLOPE = 0.5
 
 function groundDistance(x: number, y: number, z: number): number {
   const t = Math.min(1, Math.max(0, (pondField(x, z) - SINK.from) / (SINK.to - SINK.from)))
   const bank = bankAt(x, z)
   const rim = rimAt(x, z)
+  const drift = driftAt(x, z)
   const b = Math.min(1, Math.max(0, (bank - BANK_SHUTS.from) / (BANK_SHUTS.to - BANK_SHUTS.from)))
   const under = (SINK.depthMm - pond.dip) * (1 - t * t * (3 - 2 * t)) * (1 - b * b * (3 - 2 * b))
-  const slope = moundSlope(z) + BANK_SLOPE * Math.min(1, bank * 0.5) + RIM_SLOPE * Math.min(1, rim)
-  return (y - (groundAt(x, z) + bank + rim - under)) / Math.sqrt(1 + slope * slope)
+  const slope = moundSlope(z) + BANK_SLOPE * Math.min(1, bank * 0.5) + RIM_SLOPE * Math.min(1, rim) + DRIFT_SLOPE * Math.min(1, drift * 2)
+  return (y - (groundAt(x, z) + bank + rim + drift - under)) / Math.sqrt(1 + slope * slope)
 }
 
 export function solid(x: number, y: number, z: number): number {
