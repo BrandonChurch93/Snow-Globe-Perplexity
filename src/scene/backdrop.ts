@@ -16,10 +16,12 @@ const CLEAR_UP = 9 * RAD
 
 export const DISCS = {
   zones: [
-    { share: 0.6, azFrom: 5.8, azTo: 15.2, elFrom: -6.6, elTo: 3.9, sidePower: 0.8, rightShare: 0.5, levelFrom: 0, depthFrom: 0 },
-    { share: 0.2, azFrom: 5, azTo: 22, elFrom: 4.4, elTo: 11, sidePower: 1, rightShare: 0.75, levelFrom: 0.3, depthFrom: 0.45 },
-    { share: 0.2, azFrom: 15.2, azTo: 48, elFrom: -6.6, elTo: 12, sidePower: 1, rightShare: 0.5, levelFrom: 0, depthFrom: 0 },
+    { share: 0.75, azFrom: 5.8, azTo: 15, elFrom: -6.2, elTo: 3.9, sidePower: 0.8, rightShare: 0.52, levelFrom: 0, depthFrom: 0 },
+    { share: 0.1, azFrom: 5, azTo: 22, elFrom: 4.4, elTo: 11, sidePower: 1, rightShare: 0.75, levelFrom: 0.3, depthFrom: 0.45 },
+    { share: 0.15, azFrom: 15, azTo: 48, elFrom: -6.2, elTo: 12, sidePower: 1, rightShare: 0.5, levelFrom: 0, depthFrom: 0 },
   ],
+  spread: [0.6180339887, 0.8191725134, 0.6710436067, 0.5497004779] as [number, number, number, number],
+  rightLevel: 0.8,
   stringMost: 3,
   stringAcrossDeg: 0.8,
   stringDownDeg: 1.5,
@@ -200,13 +202,21 @@ export class Backdrop {
     counts[0] = n - counts.slice(1).reduce((a, b) => a + b, 0)
     D.zones.forEach((zone, z) => {
       let left = counts[z]!
+      const start = [rng.next(), rng.next(), rng.next(), rng.next()]
+      const turns = [0, 0]
+      let strings = 0
       while (left > 0) {
         const members = Math.min(left, 1 + rng.int(D.stringMost))
         left -= members
-        const side = rng.next() < zone.rightShare ? 1 : -1
-        const azMid = zone.azFrom + (zone.azTo - zone.azFrom) * Math.pow(rng.next(), zone.sidePower)
-        const elMid = rng.range(zone.elFrom, zone.elTo)
-        const levelMid = rng.next()
+        const right = (start[0]! + strings * D.spread[0]) % 1 < zone.rightShare
+        strings += 1
+        const side = right ? 1 : -1
+        const j = turns[right ? 1 : 0]!
+        turns[right ? 1 : 0] = j + 1
+        const offset = right ? 0.5 : 0
+        const azMid = zone.azFrom + (zone.azTo - zone.azFrom) * Math.pow((start[1]! + offset + j * D.spread[1]) % 1, zone.sidePower)
+        const elMid = zone.elFrom + (zone.elTo - zone.elFrom) * ((start[2]! + offset + j * D.spread[2]) % 1)
+        const levelMid = Math.pow((start[3]! + offset + j * D.spread[3]) % 1, right ? D.rightLevel : 1 / D.rightLevel)
         const pickMid = rng.next()
         const reachMid = D.nearMm + D.spanMm * (zone.depthFrom + (1 - zone.depthFrom) * Math.pow(rng.next(), D.depthPower))
         for (let k = 0; k < members; k++) {
