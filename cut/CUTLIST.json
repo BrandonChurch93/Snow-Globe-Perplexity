@@ -247,48 +247,48 @@
       "shot": "open",
       "what": "first frame",
       "camera": [
-        -29.204,
-        73.804,
-        126.495,
+        13.93,
+        82.007,
+        132.536,
         0,
-        67,
+        68,
         0,
         16
       ],
-      "focusMm": 123,
-      "apertureMm": 3
+      "focusMm": 144,
+      "apertureMm": 2.5
     },
     {
       "frame": 120,
       "shot": "open",
       "what": "film.hookSeconds: the pull back is plain",
       "camera": [
-        -32.889,
-        98.957,
-        286.407,
+        15.547,
+        107.666,
+        291.41,
         0,
-        68.731,
+        69.236,
         0,
         16
       ],
-      "focusMm": 266.6,
-      "apertureMm": 5.97
+      "focusMm": 279.6,
+      "apertureMm": 5.71
     },
     {
       "frame": 180,
       "shot": "open",
       "what": "film.revealBySeconds: the edge of the glass is in frame",
       "camera": [
-        -20.055,
-        138.895,
-        494.971,
+        7.754,
+        143.825,
+        497.228,
         0,
-        69.908,
+        70.077,
         0,
         16
       ],
-      "focusMm": 465.7,
-      "apertureMm": 7.99
+      "focusMm": 471.2,
+      "apertureMm": 7.9
     },
     {
       "frame": 270,
@@ -807,32 +807,32 @@
       "shot": "close",
       "what": "the macro camera reached, held to the end",
       "camera": [
-        -28.974,
-        73.927,
-        126.541,
+        14.168,
+        82.134,
+        132.497,
         0,
-        67,
+        68,
         0,
         16
       ],
-      "focusMm": 123,
-      "apertureMm": 3
+      "focusMm": 144,
+      "apertureMm": 2.5
     },
     {
       "frame": 3599,
       "shot": "close",
       "what": "last frame",
       "camera": [
-        -29.204,
-        73.804,
-        126.495,
+        13.93,
+        82.007,
+        132.536,
         0,
-        67,
+        68,
         0,
         16
       ],
-      "focusMm": 123,
-      "apertureMm": 3
+      "focusMm": 144,
+      "apertureMm": 2.5
     }
   ],
   "cues": [
