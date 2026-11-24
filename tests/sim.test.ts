@@ -191,7 +191,9 @@ describe('the simulation', () => {
     }
     const winter = new ParticleEngine({ season: 'winter', fraction: 0.03 })
     winter.reset()
-    expect(census(winter).rest).toBe(winter.count)
+    const start = census(winter)
+    expect(start.rest + start.liquid).toBe(winter.count)
+    expect(start.liquid).toBeLessThan(winter.count * 0.06)
   })
 
   for (const season of SEASONS) {

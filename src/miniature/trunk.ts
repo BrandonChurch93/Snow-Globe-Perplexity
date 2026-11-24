@@ -57,7 +57,7 @@ const KNOTS: readonly { phi: number; h: number; r: number }[] = [
 ]
 const BARK_MM = 6.5
 const BARK_AROUND = 3
-const BARK_RELIEF = 0.85
+const BARK_RELIEF = 0.95
 const MODEL = 'shared/trunk-wood.glb'
 const BARK = 'shared/trunk-bark.srgb.tile.w1024.png'
 const BARK_NORMAL = 'shared/trunk-bark-n.lin.tile.w1024.png'
@@ -342,7 +342,7 @@ const DOME = 0.3
 const BODY = { blend: 0.5, bias: 0.4 }
 const TOP_DROP = 1.56
 const CAP = { lift: 1.05, thick: 0.25, cover: 1.08, fore: 0.12, lee: 0.12, skew: 0.45, rim: 0.98, brow: 0.5, swell: 0.42, ripple: 0.16, lump: 0.08, flat: 2.4, gap: 2.2, gapFrom: 0.24, gapTo: 0.8, sink: 0.1, slope: 0.75, depth: -0.75, lip: 0.4, droop: 0.7, hem: 0.9 }
-const LOADS: readonly (readonly [number, number, number, number, number])[] = [[1.3, 1, 0.2, 0, 0.3], [1.4, 1.02, 0, 0.8, 1], [1.5, 1.02, -0.2, -0.5, -1], [0.9, 1, 0, 0.8, 1], [1.3, 0.95, -0.8, -1, -1], [1.2, 1.05, -1.2, -1.2, -1], [0.35, 0.5, 0, 0, 1], [0.95, 1.02, 0.3, 2, 1], [1.2, 1, 0.3, 1.2, 1], [1, 1.02, -0.6, -1.2, -1]]
+const LOADS: readonly (readonly [number, number, number, number, number])[] = [[1.3, 1, 0.2, 0, 0.3], [1.4, 1.02, 0, 0.8, 1], [1.5, 1.02, -0.2, -0.5, -1], [0.9, 1, 0, 0.8, 1], [1.3, 0.95, -0.8, -1, -1], [1.2, 1.05, -1.2, -1.2, -1], [0.35, 0.5, 0, 0, 1], [0.95, 1.02, 0.1, 1.2, 1], [1.2, 1, 0.3, 1.2, 1], [1, 1.02, -0.6, -0.6, -1]]
 const wobble = (x: number, h: number, z: number): number => 0.16 * Math.sin(1.9 * x + 0.3 * h) * Math.sin(2.3 * h + 1.1 * z) * Math.sin(1.7 * z + 0.5 * x) + 0.07 * Math.sin(4.3 * x + 1) * Math.sin(3.9 * h + 2) * Math.sin(4.7 * z)
 const dome = (rim: number): number => 1 - DOME * Math.pow(rim, 1.5)
 
@@ -672,7 +672,7 @@ export function buildTrunk(part: string, lights: readonly GlowLight[] = [], tint
     color: new THREE.Color(tint[0], tint[1], tint[2]),
     vertexColors: true,
     roughness: 0.86,
-    extra: { normalMap: normal, normalScale: new THREE.Vector2(1.2, 1.2) },
+    extra: { normalMap: normal, normalScale: new THREE.Vector2(1.6, 1.6) },
     hook: (shader) => glowHook(shader, undefined, BARK_RELIEF),
     key: 'trunk',
   })

@@ -1,36 +1,34 @@
 {
-  "number": 55,
-  "time": "2026-11-24 21:10 UTC",
+  "number": 56,
+  "time": "2026-11-24 21:38 UTC",
   "phase": "3",
   "unit": "",
   "lines": [
-    "Status 55 · 2026-11-24 21:10 UTC · Phase 3",
-    "Round 6 is being judged on the build frozen at 20:20. The machine checks are all 15 green on a clean clone",
-    "Measures: 23 of 24 lines green. One red: the fine detail of the miniature at rest reads 0.72 of the approved image and 0.75 is needed. It went to the tree and village and flake builders at 21:07",
-    "Critics so far: the match critic gives 5 and the realism critic 5 (its three parts gave 5 and 8 and 7). The two motion critics and the 15 jurors are at work",
-    "Their worst point: the storm after the landing is a grey haze with regular bands where the approved image has a bright warm blizzard",
-    "Round 7 is the last round the kit allows for the look. It freezes at 22:15",
-    "phase 3: 12.72 h used of its 11.00 h box",
-    "allowance (before the review): 19.34 h used of 36.00 h allowed",
+    "Status 56 · 2026-11-24 21:38 UTC · Phase 3",
+    "Round 6 is judged and does not pass: likeness 5 and craft 5 and motion 5 (Round 5: 5 and 6 and 3); the jury fails with 5 of 15 votes against 7 of 10 for real photographs; machine checks 15 of 15 green; one measure red (the miniature's fine detail 0.72 against 0.75)",
+    "The red measure is being cured first: the merged build reads 0.79 at the final tier and is measured again now with the village's new stone and snow and the tree's new bark",
+    "Every issue went to the ten closers in the critics' words. Round 7 is the last round the look lock allows and freezes at 22:15 UTC; three severe issues stood in Round 6 (five in Round 5) and one of them is declined because it asks the camera of the film's opening to stand still",
+    "phase 3: 13.19 h used of its 11.00 h box",
+    "allowance (before the review): 19.80 h used of 36.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-55-1.jpg",
-      "caption": "Round 6 at rest: the judged still at the final tier",
+      "file": "out/stills/status/status-56-1.jpg",
+      "caption": "Round 6 judged still: the globe at rest at the final tier. Likeness 5 of 10",
       "w": 1078,
       "h": 1051
     },
     {
-      "file": "out/stills/status/status-55-2.jpg",
-      "caption": "Round 6 one second after the landing: the judged still at the final tier",
-      "w": 1078,
-      "h": 1051
+      "file": "out/stills/status/status-56-2.jpg",
+      "caption": "Round 6 judged still: one second after the landing. The likeness critic calls the storm a dull grey haze with ring bands; the cause is found and being cured",
+      "w": 1200,
+      "h": 699
     },
     {
-      "file": "out/stills/status/status-55-3.jpg",
-      "caption": "Round 6: one sheet across the whole shake and the clearing that follows",
+      "file": "out/stills/status/status-56-3.jpg",
+      "caption": "Round 6 motion sheet: the set down and the second after it. The motion critic misses an impact and a settle",
       "w": 1149,
       "h": 986
     }

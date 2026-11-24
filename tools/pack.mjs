@@ -528,7 +528,14 @@ function buildR4(role) {
     if (test) for (const m of ['lift', 'strokes', 'setdown', 'landing']) wanted.push({ what: `the ${m === 'setdown' ? 'set down' : m === 'landing' ? 'first second after the landing' : m} of the shake`, flags: sheetFlags('--motion', m, '--shot', shot) })
     wanted.push({ what: 'one sheet across the whole shake and the clearing that follows', flags: sheetFlags('--shot', shot) })
     if (!test) wanted.push({ what: 'the arrival', flags: sheetFlags('--motion', 'arrival', '--shot', into.id) })
-    wanted.push({ what: 'the globe at rest across several seconds', flags: sheetFlags('--shot', rest.id) })
+    // The film's first hold opens with the pull back from the macro camera, which the film's own pack shows as "the opening pull back"
+    // (kit/01: it reaches the hero camera by the end of the shot's second bar). The rest sheet of that hold starts there, so it shows
+    // the globe at rest and not the opening's camera move.
+    const cut = fs.existsSync(rel('cut', 'CUTLIST.json')) ? readJson(rel('cut', 'CUTLIST.json')) : null
+    const held = cut?.shots?.find((s) => s.id === rest.id)
+    const barFrames = cut ? Math.round((cut.beatsPerBar * 60 * cut.fps) / cut.bpm) : 0
+    const opens = Boolean(held) && rest.id === shots[0].id && held.last - held.first + 1 > 2 * barFrames
+    wanted.push({ what: 'the globe at rest across several seconds', flags: opens ? sheetFlags('--first', String(held.first + 2 * barFrames), '--last', String(held.last)) : sheetFlags('--shot', rest.id) })
   } else if (unit === 'change') {
     for (const s of shakes) {
       wanted.push({ what: `the change ${s.from} to ${s.to}: across the swap window`, flags: sheetFlags('--motion', 'swap', '--fit', '--shot', s.id) })
