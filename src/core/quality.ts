@@ -30,7 +30,7 @@ export function median(values: number[]): number {
   return s.length % 2 ? s[m]! : (s[m - 1]! + s[m]!) / 2
 }
 
-const LONGEST_FRAME = 0.25
+const LONGEST_FRAME = 1
 
 export class Governor {
   level: Level
@@ -54,8 +54,8 @@ export class Governor {
   }
 
   frame(seconds: number): boolean {
-    if (!(seconds > 0) || seconds > LONGEST_FRAME) return false
-    this.frames.push(seconds)
+    if (!(seconds > 0)) return false
+    this.frames.push(Math.min(seconds, LONGEST_FRAME))
     if (this.frames.length < config.live.probeFrames) return false
     this.measuredFps = 1 / median(this.frames)
     this.frames = []
