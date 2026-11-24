@@ -10,7 +10,7 @@ import { lensIor } from '../globe/lens'
 const mixRgb = (a: Rgb, b: Rgb, t: number): [number, number, number] => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 
-export type RigCard = { color: Rgb; intensity: number; from: Rgb; wrap: number; specular: number; inside: number }
+export type RigCard = NonNullable<SeasonKit['rig']['card']>
 
 export const ROOM_RIG = {
   targetMm: [0, 70, 0] as Rgb,
@@ -23,8 +23,8 @@ export const ROOM_RIG = {
   rimWrap: 0.12,
   rimSpecular: 1,
   card: { share: 0.1, side: -0.9, lift: 0.3, front: 1.1, wrap: 0.5, specular: 0, inside: 1, lobe: 0.25 },
-  inside: { through: 0.92, wrap: 0.15, spread: 1.6 },
-  point: { key: 0.14, rim: 0.05, sky: 0.32 },
+  inside: { through: 0.7, wrap: 0.6, spread: 1.6, bounce: 0.27, sky: 0.5 },
+  point: { key: 0.4, rim: 0.1, sky: 0.32 },
   room: { gain: 1, lights: 1, softPerRough: 0.5, lightsBelowRough: 0.62 },
   grid: { flat: 0.25, wrap: 0.3, specular: 1, openFloor: 0.35 },
   bloomGain: 2.5,
@@ -34,8 +34,7 @@ export const ROOM_RIG = {
 const SHADOW_OFF = 10
 
 export function cardOf(rig: SeasonKit['rig']): RigCard {
-  const own = (rig as SeasonKit['rig'] & { card?: RigCard }).card
-  if (own) return own
+  if (rig.card) return rig.card
   const c = ROOM_RIG.card
   const peak = Math.max(rig.sky[0], rig.sky[1], rig.sky[2], 1e-4)
   return {
@@ -153,6 +152,7 @@ export class Lighting {
     u.uRigCardCol.value.setRGB(cardCol[0], cardCol[1], cardCol[2])
     u.uRigCard.value.set(lerp(ca.wrap, cb.wrap, t), ROOM_RIG.card.lobe, lerp(ca.specular, cb.specular, t), lerp(ca.inside, cb.inside, t))
     u.uRigSky.value.setRGB(sky[0] * fill, sky[1] * fill, sky[2] * fill)
+    u.uRigBounce.value.set(f.keyCol.r * ROOM_RIG.inside.bounce, f.keyCol.g * ROOM_RIG.inside.bounce, f.keyCol.b * ROOM_RIG.inside.bounce, ROOM_RIG.inside.sky)
     u.uRigGround.value.setRGB(ground[0] * fill, ground[1] * fill, ground[2] * fill)
     this.turn.makeRotationFromEuler(this.tilt.set(f.globe.tiltX, 0, f.globe.tiltZ))
     u.uLightFrame.value.setFromMatrix4(this.turn).transpose()
