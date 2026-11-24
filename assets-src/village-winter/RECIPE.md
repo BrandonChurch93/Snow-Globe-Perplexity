@@ -7,7 +7,7 @@ Made by: `assets-src/village-winter/build.mjs` (Node 20.20.2, three.js from the 
 From: `assets-src/village/layout.mjs` and `assets-src/village/kit.mjs` (the same places and sizes as the shared model, so the cover sits on the shapes), and the hang points of `src/miniature/roof.ts` for the bulbs
 Prompt or command: `npm run make -- village-winter`
 Takes: no generated picture. 7 builds looked at while tuning the roof load, the pond rim and the bulbs
-Why this one: the snow is one skin grown from distance fields (roof load with dents and a rounded eave, caps on the chimney, posts, rails, steps and stones, drifts against the walls, the lamp foot and the shrubs, a bank at the pond rim), so it has thickness and soft edges everywhere and stays within half a millimetre of `solid()`. Meshes: `snow`, `ice`, `decor` (wreath, bow, shrub leaves), `bulbs` (25, with a tone and a flicker phase each), `fresh` (the arrival layer)
+Why this one: the snow is one skin grown from distance fields (roof load with dents, a rounded lip that runs past the eave, scallops and a collar at the chimney; pillows on the steps and stones; drifts against the walls and the lamp foot; clumps over the shrubs; a bank with a crest at the pond rim; the chimney, the lamp's cap and the fence's posts and rails stay bare, as in the approved image), so it has thickness and soft edges everywhere and stays within half a millimetre of `solid()`. Meshes: `snow`, `ice`, `decor` (wreath, bow, shrub leaves), `bulbs` (25, with a tone and a flicker phase each), `fresh` (the arrival layer)
 Date: 2026-11-24
 
 ## assets-full/winter/village-snow.lin.tile.png

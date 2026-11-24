@@ -221,16 +221,16 @@ for (const [i, s] of pathShapes.entries()) {
   }
 }
 
-const SHRUB_CAP = { up: 0.58, wide: 0.8, tall: 0.46 }
+const SHRUB_CAP = { up: 0.58, wide: 0.8, tall: 0.46, clumps: 30, low: 0.05 }
 const shrubList = RF.shrubs()
 for (const [i, sh] of shrubList.entries()) {
   const [cx, cy, cz] = sh.centre
   const seed = 11 * i + 3
   const SR = rng(977 + 31 * i)
   const ivy = RF.isIvy(sh.r)
-  const clumps = Array.from({ length: ivy ? Math.round(0.5 * sh.r[1]) : 20 }, () => {
+  const clumps = Array.from({ length: ivy ? Math.round(0.5 * sh.r[1]) : SHRUB_CAP.clumps }, () => {
     const a = ivy ? RF.wallOutward() + (SR() - 0.5) * Math.PI * 0.95 : SR() * Math.PI * 2
-    const up = ivy ? -0.3 + 1.2 * SR() : 0.2 + 0.8 * Math.sqrt(SR())
+    const up = ivy ? -0.3 + 1.2 * SR() : SHRUB_CAP.low + (1 - SHRUB_CAP.low) * Math.sqrt(SR())
     const rr = Math.sqrt(Math.max(0, 1 - up * up))
     const wide = ivy ? 0.12 + 0.1 * SR() : 0.36 + 0.42 * SR()
     return { at: [cx + Math.cos(a) * rr * sh.r[0] * 0.95, cy + up * sh.r[1] * 0.95, cz + Math.sin(a) * rr * sh.r[2] * 0.95], wide, tall: wide * (0.42 + 0.3 * SR()) }
@@ -274,7 +274,7 @@ function snowAt(x, z) {
 }
 const BANK_TOP = 0.3
 const BANK_BLEND_MM = 5
-const BILLOW = { cycles: 6.5, deepMm: 2.2, clumps: 12, clumpMm: 0.5, crestMm: 0.45, crestFine: 0.2 }
+const BILLOW = { cycles: 6.5, deepMm: 2.2, clumps: 12, clumpMm: 0.75, crestMm: 0.75, crestFine: 0.3 }
 const UNDERCUT = { dark: 0.88, from: 0.985, to: 1.022, arc: [-135, -115, -5, 25] }
 function contact(x, z) {
   let k = 1
