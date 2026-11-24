@@ -4,7 +4,7 @@ import type { Assets } from '../core/assets'
 import { finish, type Gfx } from '../core/gl'
 import { sampleSet, type Sample } from '../core/sampler'
 import type { Moment, Stage } from '../core/stage'
-import { barSeconds, beatSeconds, defaultGrid, eventAt, filmTimeline, globePoseAt, lastLandingBefore, prerollSeconds, seasonAt, stateSeconds, stillTimeline, type Grid, type Timeline } from '../film/timeline'
+import { barSeconds, beatSeconds, filmTimeline, globePoseAt, prerollSeconds, seasonAt, stateSeconds, stillTimeline, type Timeline } from '../film/timeline'
 import type { SimDriver } from '../particles/driver'
 import { Post } from '../post/post'
 import { poseById, type Pose } from '../scene/cameras'
@@ -14,6 +14,15 @@ import { partChange, SEASONAL_PARTS } from '../shake/change'
 import { sampleSdf } from '../core/sdf'
 import { INNER_R } from '../particles/spikeSim'
 import { openingPlan } from '../film/opening'
+import { drawOpening } from '../film/openingStandIn'
+import { cutList, filmCut, type Cut } from '../film/cut'
+import { cameraKeys, cameraNumbers, filmPose, loopPose, MOVES, shotNotes, type ShotNote } from '../film/moves'
+import { loopGlobe, type LoopParticles, type SourceSwitch } from '../film/loop'
+import { loopMoment, timelineMoment } from '../film/moments'
+import { flaggedStandIns } from '../core/standins'
+import { levelById, stageQuality, topLevel } from '../core/quality'
+import { livePose } from '../app/framing'
+import { Painter } from '../app/painter'
 import parts from '../../parts/PARTS.json'
 
 export interface StillSpec {
@@ -69,7 +78,9 @@ export interface Dev {
   openingPlan(): { frameCount: number; typing: { first: number; last: number }; reasoning: { first: number; open: number; choose: number; last: number }; send: number; build: { first: number; last: number }; steps: number[]; keyTaps: number[] }
   sanity(): { invalid: number; pixels: number }
   inside(): { inside: number; outside: number; total: number }
-  simcache(what: 'film' | 'stills' | 'loop'): Promise<{ checkpoints: number; simulatedSeconds: number; ms: number }>
+  simcache(what: 'film' | 'stills' | 'loop', budgetSeconds?: number, fromSeconds?: number): Promise<{ checkpoints: number; simulatedSeconds: number; ms: number; done: boolean; totalSeconds: number }>
+  flagged(): string[]
+  cut(): { list: Record<string, unknown>; shots: ShotNote[] }
   renderTestShakeFrame(frameIndex: number, tier: string): Promise<void>
   renderShakeMoment(shot: string, at: ShakeMoment, tier: string): Promise<void>
 }
@@ -91,23 +102,35 @@ interface Register {
 
 const DEG = 180 / Math.PI
 
+export interface Overlay {
+  show(season: string, state: string): Promise<void>
+  hide(): void
+}
+
 export interface Deps {
   gfx: Gfx
   stage: Stage
   driver: SimDriver
   assets: Assets
   format: string
+  particles: SourceSwitch
+  loop: LoopParticles
+  overlay: Overlay
 }
 
+type At = (t: number, seed: number) => Promise<Moment>
+
 export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
-  const { gfx, stage, driver, assets } = deps
+  const { gfx, stage, driver, assets, particles, loop, overlay } = deps
   const post = new Post(gfx)
+  const painter = new Painter(gfx, stage)
+  const app = document.getElementById('app')
+  const opening = document.getElementById('opening')
   let format: FormatSpec = formatById(deps.format)
   let acc = new Accumulator(gfx, format.width, format.height)
   let tier = 'draft'
   let diag = ''
   let lastSeason: string = config.defaultSeason
-  let grid: Grid | null = null
   let filmTl: Timeline | null = null
   const stills = new Map<string, Timeline>()
   const timing = { simMs: 0, drawMs: 0, samples: 0, steps: 0 }
@@ -118,10 +141,14 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
     gfx.renderer.setSize(format.width, format.height, false)
     gfx.canvas.style.width = `${format.width}px`
     gfx.canvas.style.height = `${format.height}px`
+    if (app) {
+      app.style.width = `${format.width}px`
+      app.style.height = `${format.height}px`
+    }
   }
   size()
 
-  const getGrid = () => (grid ??= defaultGrid())
+  const getGrid = (): Cut => filmCut()
   const getFilm = () => (filmTl ??= filmTimeline(getGrid()))
   const stillTl = (season: string) => {
     let t = stills.get(season)
@@ -129,25 +156,47 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
     return t
   }
 
-  async function picture(tl: Timeline, timeSec: number, shutterSec: number, pose: (t: number) => Pose, samples: number, salt: number, live: boolean): Promise<void> {
-    const flat = diag !== ''
-    const set: (Sample | null)[] = live || flat ? [null] : sampleSet(samples, salt, 'picture').sort((a, b) => a.t - b.t)
+  const plain = () => {
+    if (opening) opening.hidden = true
+    overlay.hide()
+  }
+
+  const along = (tl: Timeline): At => async (t, seed) => {
+    particles.use(null)
+    const before = driver.replayed
+    const mix = await driver.seek(tl, t)
+    timing.steps += driver.replayed - before
+    lastSeason = seasonAt(tl, t).season
+    return timelineMoment(tl, t, mix, seed)
+  }
+
+  const around: At = async (t, seed) => {
+    loop.setTime(t)
+    particles.use(loop.source)
+    lastSeason = config.defaultSeason
+    return loopMoment(config.defaultSeason, t, seed)
+  }
+
+  const count = (done: number) => {
     const info = gfx.renderer.info
-    info.reset()
+    counts.triangles = Math.round(info.render.triangles / Math.max(1, done))
+    counts.drawCalls = Math.round(info.render.calls / Math.max(1, done))
+    counts.particles = stage.particleCount()
+  }
+
+  async function picture(at: At, timeSec: number, shutterSec: number, pose: (t: number) => Pose, samples: number, salt: number): Promise<void> {
+    plain()
+    const flat = diag !== ''
+    const set: (Sample | null)[] = flat ? [null] : sampleSet(samples, salt, 'picture').sort((a, b) => a.t - b.t)
+    gfx.renderer.info.reset()
     acc.begin()
     let done = 0
     for (const s of set) {
       const t = timeSec + (s && shutterSec > 0 ? s.t * shutterSec : 0)
       const t0 = now()
-      const before = driver.replayed
-      const mix = await driver.seek(tl, t)
-      timing.steps += driver.replayed - before
+      const moment = await at(t, salt * 0.618 + 1)
       const t1 = now()
       timing.simMs += t1 - t0
-      const at = seasonAt(tl, t)
-      lastSeason = at.season
-      const hit = eventAt(tl, t)
-      const moment: Moment = { ...at, sinceLanding: t - lastLandingBefore(tl, t), globe: globePoseAt(tl, t), mix, seed: salt * 0.618 + 1, time: t, beat: hit ? hit.beat : null, period: null }
       stage.drawSample(acc.sample, pose(t), s, moment, done === 0 || shutterSec > 0)
       acc.add()
       done++
@@ -158,9 +207,26 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
     post.seed = (salt * 0.37) % 1
     post.resolve(acc.result, flat)
     finish(gfx)
-    counts.triangles = Math.round(info.render.triangles / Math.max(1, done))
-    counts.drawCalls = Math.round(info.render.calls / Math.max(1, done))
-    counts.particles = stage.particleCount()
+    count(done)
+  }
+
+  async function livePicture(at: At, timeSec: number, pose: Pose, level: string): Promise<void> {
+    plain()
+    const q = levelById(level)
+    stage.setQuality?.(stageQuality(q))
+    gfx.renderer.info.reset()
+    const t0 = now()
+    const moment = await at(timeSec, 1)
+    const t1 = now()
+    timing.simMs += t1 - t0
+    painter.size(format.width, format.height)
+    painter.flat = diag !== ''
+    painter.paint(pose, moment)
+    finish(gfx)
+    timing.drawMs += now() - t1
+    timing.samples++
+    count(1)
+    stage.setQuality?.(stageQuality(topLevel))
   }
 
   const frameTime = (i: number) => prerollSeconds + i / config.film.fps
@@ -170,7 +236,10 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
     const c = Math.max(0, Math.min(g.frameCount - 1, i))
     return g.spans.find((s) => c >= s.first && c <= s.last)!
   }
-  const filmPose = (_t: number) => poseById('hero')
+  const filmCamera = (t: number) => filmPose(getGrid(), t - prerollSeconds)
+  const hero = () => poseById('hero')
+  const loopFrames = () => loopPlan().frameCount
+  const wrapFrame = (i: number) => ((i % loopFrames()) + loopFrames()) % loopFrames()
 
   const stateOf = (tl: Timeline, t: number, shot: string, p: Pose): FilmState => {
     const at = seasonAt(tl, t)
@@ -178,7 +247,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
     const change: Record<string, number> = {}
     for (const part of SEASONAL_PARTS) change[part] = partChange(part, at.change)
     return {
-      camera: [p.position.x, p.position.y, p.position.z, p.aim.x, p.aim.y, p.aim.z, p.fovDeg],
+      camera: cameraNumbers(p),
       shot,
       season: at.season,
       globe: { heightMm: g.y, tiltDeg: [g.tiltX * DEG, g.tiltZ * DEG] },
@@ -234,11 +303,14 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
         if (!span || span.shot.kind !== 'shake') throw new Error(`no such shake: ${spec.change.shot}`)
         const swap = g.swaps.find((s) => s.shot === span.shot.id)!
         const i = spec.change.at === 'swap' ? Math.round((swap.first + swap.last) / 2) : span.last + 1
-        await picture(getFilm(), frameTime(i), shutter, filmPose, samples, i + 1, false)
+        await picture(along(getFilm()), frameTime(i), shutter, hero, samples, i + 1)
         return
       }
-      const pose = poseById(spec.camera)
-      await picture(stillTl(spec.season), stateSeconds(spec.state), 0, () => pose, samples, 0, !!spec.live)
+      const onScreen = (spec.interface || !!spec.live) && spec.camera === MOVES.wide
+      const pose = onScreen ? livePose(format.width / format.height) : poseById(spec.camera)
+      if (spec.live) await livePicture(along(stillTl(spec.season)), stateSeconds(spec.state), pose, spec.live)
+      else await picture(along(stillTl(spec.season)), stateSeconds(spec.state), 0, () => pose, samples, 0)
+      if (spec.interface) await overlay.show(spec.season, spec.state)
     },
     film() {
       const g = getGrid()
@@ -251,38 +323,39 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
       }
     },
     filmState(i) {
-      return stateOf(getFilm(), frameTime(i), spanAt(i).shot.id, filmPose(frameTime(i)))
+      return stateOf(getFilm(), frameTime(i), spanAt(i).shot.id, filmCamera(frameTime(i)))
     },
     async renderFilmFrame(i, t) {
       await ready
       tier = t
-      await picture(getFilm(), frameTime(i), shutter, filmPose, tierSamples(t), i + 1, false)
+      await picture(along(getFilm()), frameTime(i), shutter, filmCamera, tierSamples(t), i + 1)
     },
     opening() {
-      return { frameCount: 0 }
+      return { frameCount: openingPlan().frameCount }
     },
-    async renderOpeningFrame() {
-      throw new Error('the opening is not built yet')
+    async renderOpeningFrame(i) {
+      plain()
+      if (!opening) throw new Error('the page has no #opening')
+      drawOpening(opening, i)
+      opening.hidden = false
     },
     loop() {
-      return { frameCount: Math.round(config.deliver.cardLoop.seconds * config.film.fps) }
+      return { frameCount: loopFrames() }
     },
     async renderLoopFrame(i, t) {
       await ready
       tier = t
-      const n = Math.round(config.deliver.cardLoop.seconds * config.film.fps)
-      const pose = poseById(config.deliver.cardLoop.camera)
-      await picture(stillTl(config.defaultSeason), stateSeconds('rest'), 0, () => pose, tierSamples(t), 100000 + (((i % n) + n) % n), false)
+      const w = wrapFrame(i)
+      await picture(around, w / fpsFilm, shutter, loopPose, tierSamples(t), 100000 + w)
     },
     dev: {
       caps: () => ({ ...gfx.caps, precision: acc.precision }),
       timings: () => ({ ...timing }),
       parts: () => stage.parts(),
       framing: (camera) => framingOf(camera, format.width, format.height),
-      pose: (camera) => {
-        const p = poseById(camera)
-        return [p.position.x, p.position.y, p.position.z, p.aim.x, p.aim.y, p.aim.z, p.fovDeg]
-      },
+      pose: (camera) => cameraNumbers(poseById(camera)),
+      flagged: () => flaggedStandIns(),
+      cut: () => ({ list: cutList(getGrid(), cameraKeys(getGrid())), shots: shotNotes(getGrid()) }),
       judged: () => judgedList(getGrid(), openingPlan()),
       testShake: () => ({
         frameCount: Math.round((barSeconds + config.states.restSeconds) * fpsFilm),
@@ -294,14 +367,17 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
       }),
       testShakeState: (i) => stateOf(stillTl(config.lookLockUnit), i / fpsFilm, 'test', poseById('hero')),
       loopState: (i) => {
-        const n = loopPlan().frameCount
-        return stateOf(stillTl(config.defaultSeason), stateSeconds('rest') + ((((i % n) + n) % n) * 0), 'loop', poseById(config.deliver.cardLoop.camera))
+        const t = wrapFrame(i) / fpsFilm
+        const g = loopGlobe(t)
+        const change: Record<string, number> = {}
+        for (const part of SEASONAL_PARTS) change[part] = partChange(part, 0)
+        return { camera: cameraNumbers(loopPose(t)), shot: 'loop', season: config.defaultSeason, globe: { heightMm: g.y, tiltDeg: [g.tiltX * DEG, g.tiltZ * DEG] }, change, cover: null }
       },
       loopPlan: () => loopPlan(),
       openingPlan: () => openingPlan(),
       sanity: () => acc.invalid(),
       inside: () => {
-        const sim = driver.sim
+        const sim = particles
         const grid = stage.collider ? stage.collider(lastSeason) : null
         let inside = 0
         let outside = 0
@@ -315,48 +391,54 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
         }
         return { inside, outside, total: sim.count }
       },
-      async simcache(what) {
+      async simcache(what, budgetSeconds = Infinity, fromSeconds = 0) {
         const t0 = now()
-        const tl = what === 'film' ? getFilm() : stillTl(config.defaultSeason)
-        const seconds = what === 'film' ? frameTime(getGrid().frameCount) : stateSeconds('rest')
         const every = config.sim.checkpointSeconds
+        const longest = Math.max(...Object.keys(config.states).map((k) => stateSeconds(k.replace(/Seconds$/, ''))))
+        const runs: { tl: Timeline; seconds: number }[] =
+          what === 'film' ? [{ tl: getFilm(), seconds: frameTime(getGrid().frameCount) }] : what === 'stills' ? config.seasons.map((season) => ({ tl: stillTl(season), seconds: longest })) : []
+        const totalSeconds = runs.reduce((n, r) => n + r.seconds, 0)
         let checkpoints = 0
-        for (let t = every; t < seconds + every; t += every) {
-          await driver.seek(tl, Math.min(t, seconds))
-          checkpoints++
+        let reached = 0
+        let base = 0
+        particles.use(null)
+        for (const run of runs) {
+          for (let t = every; t < run.seconds + every; t += every) {
+            const to = Math.min(t, run.seconds)
+            if (base + to <= fromSeconds) continue
+            if (now() - t0 > budgetSeconds * 1000) return { checkpoints, simulatedSeconds: reached, ms: now() - t0, done: false, totalSeconds }
+            await driver.seek(run.tl, to)
+            checkpoints++
+            reached = base + to
+          }
+          base += run.seconds
         }
-        return { checkpoints, simulatedSeconds: seconds, ms: now() - t0 }
+        return { checkpoints, simulatedSeconds: totalSeconds, ms: now() - t0, done: true, totalSeconds }
       },
       async renderTestShakeFrame(i, t) {
         await ready
         tier = t
-        const hero = poseById('hero')
-        await picture(stillTl(config.lookLockUnit), i / fpsFilm, shutter, () => hero, tierSamples(t), 200000 + i, false)
+        await picture(along(stillTl(config.lookLockUnit)), i / fpsFilm, shutter, hero, tierSamples(t), 200000 + i)
       },
       async renderShakeMoment(shot, at, t) {
         await ready
         tier = t
-        const hero = poseById('hero')
         const w = config.shake.swapWindow
-        const offset =
-          at === 'swap'
-            ? ((w.fromBeat + w.toBeat) / 2) * beatSeconds
-            : at === 'landing'
-              ? barSeconds
-              : at === 'landed'
-                ? barSeconds + config.states.landedSeconds
-                : barSeconds + config.shake.settleCheckSeconds
+        const offset = (bar: number) =>
+          at === 'swap' ? ((w.fromBeat + w.toBeat) / 2) * (bar / config.film.beatsPerBar) : at === 'landing' ? bar : at === 'landed' ? bar + config.states.landedSeconds : bar + config.shake.settleCheckSeconds
         if (shot === 'test') {
-          await picture(stillTl(config.lookLockUnit), offset, shutter, () => hero, tierSamples(t), 300000 + Math.round(offset * fpsFilm), false)
+          const o = offset(barSeconds)
+          await picture(along(stillTl(config.lookLockUnit)), o, shutter, hero, tierSamples(t), 300000 + Math.round(o * fpsFilm))
           return
         }
         const span = getGrid().spans.find((s) => s.shot.id === shot)
         if (!span || span.shot.kind !== 'shake') throw new Error(`no such shake: ${shot}`)
-        const i = span.first + Math.round(offset * fpsFilm)
-        await picture(getFilm(), frameTime(i), shutter, () => hero, tierSamples(t), i + 1, false)
+        const i = span.first + Math.round(offset(span.seconds) * fpsFilm)
+        await picture(along(getFilm()), frameTime(i), shutter, hero, tierSamples(t), i + 1)
       },
       async simulate(fromSeconds, seconds) {
         const tl = stillTl(config.defaultSeason)
+        particles.use(null)
         await driver.seek(tl, fromSeconds)
         const sim = driver.sim
         const snap = sim.snapshot()

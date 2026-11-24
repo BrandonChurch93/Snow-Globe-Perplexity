@@ -10,6 +10,25 @@ export interface ShakeEvent {
   from: string
   to: string
   path: ShakePath
+  seconds?: number
+  holdBeats?: number
+}
+
+const BEATS = config.film.beatsPerBar
+const beatOf = (e: ShakeEvent): number => (e.seconds === undefined ? beatSeconds : e.seconds / BEATS)
+
+export const eventSeconds = (e: ShakeEvent): number => (e.seconds ?? barSeconds) + (e.holdBeats ?? 0) * beatOf(e)
+
+export function eventBeat(e: ShakeEvent, sec: number): number {
+  const raw = (sec - e.startSec) / beatOf(e)
+  const hold = e.holdBeats ?? 0
+  if (hold <= 0) return raw
+  const at = config.shake.swapWindow.fromBeat
+  if (raw <= at) return raw
+  if (raw >= at + hold) return raw - hold
+  const span = at - config.shake.liftBeats
+  const turn = ((raw - at) / span) % 2
+  return turn < 1 ? at - turn * span : at - (2 - turn) * span
 }
 
 export interface Timeline {
@@ -36,11 +55,13 @@ export interface ShotSpan {
   first: number
   last: number
   startSec: number
+  seconds: number
   bars: number
   firstBar: number
 }
 
 export interface Grid {
+  id?: string
   fps: number
   frameCount: number
   spans: ShotSpan[]
@@ -57,7 +78,7 @@ export function defaultGrid(fps: number = config.film.fps): Grid {
   for (const shot of shots) {
     const first = Math.round(bar * perBar)
     const last = Math.round((bar + shot.bars) * perBar) - 1
-    spans.push({ shot, first, last, startSec: bar * barSeconds, bars: shot.bars, firstBar: bar })
+    spans.push({ shot, first, last, startSec: bar * barSeconds, seconds: shot.bars * barSeconds, bars: shot.bars, firstBar: bar })
     bar += shot.bars
   }
   const frameCount = Math.round(bar * perBar)
@@ -79,14 +100,14 @@ export function filmTimeline(grid: Grid = defaultGrid()): Timeline {
   const startSeason = first.kind === 'hold' ? first.season : first.from
   const events: ShakeEvent[] = [{ id: 'preroll', startSec: 0, from: startSeason, to: startSeason, path: makeShake('preroll') }]
   for (const s of grid.spans) {
-    if (s.shot.kind === 'shake') events.push({ id: s.shot.id, startSec: prerollSeconds + s.startSec, from: s.shot.from, to: s.shot.to, path: makeShake(s.shot.id) })
+    if (s.shot.kind === 'shake') events.push({ id: s.shot.id, startSec: prerollSeconds + s.startSec, from: s.shot.from, to: s.shot.to, path: makeShake(s.shot.id), ...(grid.id ? { seconds: s.seconds } : {}) })
   }
-  return { id: 'film', startSeason, events }
+  return { id: grid.id ? `film-${grid.id}` : 'film', startSeason, events }
 }
 
 export function eventAt(tl: Timeline, sec: number): { event: ShakeEvent; beat: number } | null {
   for (const e of tl.events) {
-    if (sec >= e.startSec && sec < e.startSec + barSeconds) return { event: e, beat: (sec - e.startSec) / beatSeconds }
+    if (sec >= e.startSec && sec < e.startSec + eventSeconds(e)) return { event: e, beat: eventBeat(e, sec) }
   }
   return null
 }
@@ -102,7 +123,7 @@ export function seasonAt(tl: Timeline, sec: number): { season: string; from: str
   let season = tl.startSeason
   for (const e of tl.events) {
     if (sec < e.startSec) break
-    const beat = (sec - e.startSec) / beatSeconds
+    const beat = eventBeat(e, sec)
     const w = config.shake.swapWindow
     if (beat >= w.toBeat - EDGE) season = e.to
     else if (beat > w.fromBeat + EDGE) return { season: e.from, from: e.from, to: e.to, change: (beat - w.fromBeat) / (w.toBeat - w.fromBeat) }
@@ -113,6 +134,6 @@ export function seasonAt(tl: Timeline, sec: number): { season: string; from: str
 
 export function lastLandingBefore(tl: Timeline, sec: number): number {
   let t = -Infinity
-  for (const e of tl.events) if (e.startSec + barSeconds <= sec) t = e.startSec + barSeconds
+  for (const e of tl.events) if (e.startSec + eventSeconds(e) <= sec) t = e.startSec + eventSeconds(e)
   return t
 }
