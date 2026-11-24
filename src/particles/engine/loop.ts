@@ -534,6 +534,10 @@ export class LoopPaths {
     this.st = st
   }
 
+  get source(): LoopPaths {
+    return this
+  }
+
   setTime(seconds: number): void {
     const L = this.seconds
     const n = this.count

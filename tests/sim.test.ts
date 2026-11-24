@@ -182,6 +182,20 @@ describe('the simulation', () => {
     }, 120000)
   }
 
+  it('starts the whole pool inside the glass in every season', () => {
+    for (const season of SEASONS) {
+      const e = new ParticleEngine({ season })
+      e.reset()
+      expect(e.count).toBe(POOL)
+      let outside = 0
+      for (let i = 0; i < e.count; i++) {
+        if (e.state[i] === STATE_HIDDEN) continue
+        if (Math.hypot(e.pos[i * 3]!, e.pos[i * 3 + 1]!, e.pos[i * 3 + 2]!) > INNER_R + 0.05) outside++
+      }
+      expect(outside).toBe(0)
+    }
+  })
+
   it('throws what rests back into the liquid and lets it settle again, not stacked in a grid', () => {
     const e = new ParticleEngine({ season: 'winter', fraction: 0.08 })
     const tl = stillTimeline('winter')
@@ -319,6 +333,49 @@ describe('the simulation', () => {
     expect(snagged).toBeGreaterThan(seeds * 0.1)
     expect(snagged).toBeLessThan(seeds)
   }, 120000)
+  it('carries what hangs in the liquid round with it, not out against the glass', () => {
+    const e = new ParticleEngine({ season: 'summer', fraction: 0.2 })
+    e.reset()
+    const tl = stillTimeline('summer')
+    const mote = e.kinds.indexOf('mote')
+    const even = { glass: 0, core: 0, n: 0 }
+    for (let x = -WALL; x <= WALL; x += 1.5) {
+      for (let y = GROUND_Y; y <= WALL; y += 1.5) {
+        for (let z = -WALL; z <= WALL; z += 1.5) {
+          const r = Math.hypot(x, y, z)
+          if (r > WALL) continue
+          even.n++
+          if (r > WALL - 3) even.glass++
+          if (r < WALL * 0.6) even.core++
+        }
+      }
+    }
+    const shares = (): { glass: number; core: number } => {
+      let n = 0
+      let glass = 0
+      let core = 0
+      for (let i = 0; i < e.count; i++) {
+        if (e.kindOf[i] !== mote) continue
+        const r = Math.hypot(e.pos[i * 3]!, e.pos[i * 3 + 1]!, e.pos[i * 3 + 2]!)
+        n++
+        if (r > WALL - 3) glass++
+        if (r < WALL * 0.6) core++
+      }
+      return { glass: (glass / n) * (even.n / even.glass), core: (core / n) * (even.n / even.core) }
+    }
+    let peak = 0
+    for (const beat of [2, 3, 4]) {
+      e.advanceTo(steps(beat * beatSeconds), tl)
+      peak = Math.max(peak, Math.hypot(e.liquid[LIQUID_TURN]!, e.liquid[LIQUID_TURN + 1]!, e.liquid[LIQUID_TURN + 2]!))
+      const now = shares()
+      expect(now.glass).toBeLessThan(1.8)
+    }
+    expect(peak).toBeGreaterThan(2)
+    e.advanceTo(steps(barSeconds + config.states.restSeconds), tl)
+    const rest = shares()
+    expect(rest.glass).toBeLessThan(1.3)
+    expect(rest.core).toBeGreaterThan(0.6)
+  })
 })
 
 describe('the distance grid helper', () => {
