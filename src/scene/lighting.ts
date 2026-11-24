@@ -27,7 +27,7 @@ export const ROOM_RIG = {
   inside: { through: 0.5, wrap: 0.1, spread: 1.6, bounce: 0.08, sky: 0.15, axis: [0, 0.45, 1] as Rgb, pull: 0.3 },
   point: { key: 0.4, rim: 0.1, sky: 0.32 },
   room: { gain: 1, lights: 1, softPerRough: 0.5, lightsBelowRough: 0.62 },
-  grid: { flat: 0.25, wrap: 0.3, specular: 1, openFloor: 0.35, air: 0.62 },
+  grid: { flat: 0.1, wrap: 0.3, specular: 1, openFloor: 0.35, air: 0.62 },
   bloomGain: 9,
   flood: { inside: 14, insideMm: 18, outside: 18, ease: 4, wrap: 0.35, near: 0.3, nearMm: 10, floor: 0.18, floorMm: 50, pool: 45 },
   glow: { outside: 0.8, islandMm: innerRadiusMm * 0.88, lobe: 0.3, specular: 1 },
