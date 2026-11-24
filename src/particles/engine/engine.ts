@@ -24,6 +24,7 @@ export const SWAP_HALF = 0.22
 const HOLD = 0.6
 const GRAVITY_MM = 9810
 const STEER_GAIN = 1.5
+const DISPERSE = 0.45
 const NOISE_INV_CELL = (NOISE_N - 1) / (2 * R)
 const NOISE_TOP = NOISE_N - 1.0001
 const NOISE_DY = NOISE_N * 3
@@ -571,11 +572,11 @@ export class ParticleEngine {
       y = GROUND_Y + 2 + 6 * unit(hash2(i, salt + 1))
       z = rr * Math.sin(az)
     } else {
-      y = 14 + 36 * unit(hash2(i, salt + 1))
       const az = unit(hash2(i, salt + 2)) * TAU
-      const rr = Math.sqrt(unit(hash2(i, salt + 3)) * (WALL2 - y * y)) * 0.92
+      const rr = Math.sqrt(unit(hash2(i, salt + 3))) * WALL * 0.985
       x = rr * Math.cos(az)
       z = rr * Math.sin(az)
+      y = Math.max(GROUND_Y + 4, Math.sqrt(WALL2 - rr * rr) - 1.5 - 9 * unit(hash2(i, salt + 1)))
     }
     const r2 = x * x + y * y + z * z
     const lim = WALL - 1
@@ -715,11 +716,12 @@ export class ParticleEngine {
     this.fade[i] = 1
     this.state[i] = STATE_LIQUID
     const mode = K_MODE[k]!
-    if (mode === 1) this.perch(i, k, ix, (n + 1) * DT)
-    else if (mode === 2) {
-      const age = Math.floor(unit(hash2(i, 9)) * this.life[i]! * HZ)
-      this.spring(i, k, 41 + (n & 1023) * 5, ix)
-      this.stamp[i] = n - age
+    if (mode === 1) {
+      if (shown) this.nest(i, k, ix)
+      else this.perch(i, k, ix, (n + 1) * DT)
+    } else if (mode === 2) {
+      if (!shown) this.spring(i, k, 41 + (n & 1023) * 5, ix)
+      this.stamp[i] = n - Math.floor(unit(hash2(i, 9)) * this.life[i]! * HZ)
     } else if (!shown) this.afloat(i, 21 + (n & 1023) * 3, this.grid(ix), 1.5, GROUND_Y + 1, WALL)
     this.enlist(i)
   }
@@ -924,6 +926,7 @@ export class ParticleEngine {
     const hz = c[5]!
     const noise = L.noise
     const ng = L.grid
+    const kick = (c[6]! * DISPERSE) / 512
     const m = L.motion
     const gux = m.gx
     const guy = m.gy
@@ -1118,6 +1121,13 @@ export class ParticleEngine {
           uy += py - my * radial
           uz += pz - mz * radial
         }
+        const us2 = ux * ux + uy * uy + uz * uz
+        if (noise) {
+          const bits = hash2(i, n)
+          ux += ((bits & 1023) - 511.5) * kick
+          uy += (((bits >>> 10) & 1023) - 511.5) * kick
+          uz += ((bits >>> 20) - 2047.5) * kick * 0.25
+        }
         const mode = K_MODE[k]!
         if (mode === 1) {
           this.steer(i, k, n, x, y, z, ux, uy, uz, blend[k]!)
@@ -1128,7 +1138,6 @@ export class ParticleEngine {
           if (ph >= TAU) ph -= TAU
           phase[i] = ph
         } else {
-          const us2 = ux * ux + uy * uy + uz * uz
           if (near) {
             const f = d * INV_NEAR
             const un = ux * nx + uy * ny + uz * nz
