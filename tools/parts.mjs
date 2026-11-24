@@ -17,23 +17,24 @@ const head = () => {
 export function partList() {
   const out = []
   const add = (name, unit, files) => out.push({ name, unit, files })
-  for (const n of ['glass', 'liquid']) add(n, first, ['src/globe'])
-  add('surface', first, ['src/scene'])
-  add('backdrop', first, ['src/scene'])
-  add('lens', first, ['src/scene', 'src/post'])
-  add('shake', first, ['src/shake'])
+  add('glass', first, ['src/globe/shell.ts'])
+  add('liquid', first, ['src/globe/shell.ts', 'src/globe/liquid.ts'])
+  add('surface', first, ['src/scene/surface.ts'])
+  add('backdrop', first, ['src/scene/backdrop.ts'])
+  add('lens', first, ['src/scene/cameras.ts', 'src/post'])
+  add('shake', first, ['src/shake/table.ts'])
   add('particle-engine', first, ['src/particles'])
-  add('light-engine', first, ['src/scene', 'src/post'])
+  add('light-engine', first, ['src/scene/lightgrid.ts', 'src/scene/stage.ts', 'src/core/materials.ts'])
   const seen = new Set()
   for (const s of cfg.seasons) {
     for (const p of ['base', 'miniature', 'glass-dressing', 'surface-dressing', 'light', 'veil', 'arrival']) add(`${p}-${s}`, s, [`src/seasons/${s}`, `public/assets/${s}`])
     for (const k of cfg.particles[s]) {
       if (seen.has(k.kind)) continue
       seen.add(k.kind)
-      add(`particle-${k.kind}`, s, ['src/particles', `src/seasons/${s}`])
+      add(`particle-${k.kind}`, s, ['src/particles/draw', 'src/particles/engine', `src/seasons/${s}`])
     }
   }
-  for (const shot of cfg.film.shots) if (shot.kind === 'shake') add(`change-${shot.from}-${shot.to}`, 'change', ['src/shake', `src/seasons/${shot.from}`, `src/seasons/${shot.to}`])
+  for (const shot of cfg.film.shots) if (shot.kind === 'shake') add(`change-${shot.from}-${shot.to}`, 'change', ['src/shake/change.ts', `src/seasons/${shot.from}`, `src/seasons/${shot.to}`])
   for (const n of ['interface', 'sound-engine', 'quality-levels']) add(n, 'globe', n === 'interface' ? ['src/ui'] : n === 'sound-engine' ? ['src/audio'] : ['src/core'])
   add('opening', 'film', ['src/film'])
   add('loop', 'film', ['src/film', 'src/particles'])

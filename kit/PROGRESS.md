@@ -37,16 +37,16 @@ Status 13 · 2026-11-24 05:44 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 05:44 UTC
-clock: phase 2, tick of 0.4 minutes
-phase 2: 2.71 h used of its 6.00 h box
-allowance (before the review): 3.90 h used of 36.00 h allowed
-all time before the review: 3.90 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 05:47 UTC
+clock: phase 2, tick of 2.7 minutes
+phase 2: 2.75 h used of its 6.00 h box
+allowance (before the review): 3.94 h used of 36.00 h allowed
+all time before the review: 3.94 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 2
 ```
 
 ## Phases
@@ -469,6 +469,10 @@ Severe and major issues still open when a limit was reached: the unit, the still
 
 1. Sound, `amb-winter`: no take fits after the three the cue is allowed. Its line is "wind and distant bells", looped and very quiet. Take 1 (asked for as very quiet, with the loop setting) and take 2 (asked for at full strength, with the loop setting) came back as a rumble under 60 Hz with nothing above it. Take 3 (no loop setting) is a gust of wind, a whoosh, then sleigh bells jingling close by for ten seconds: the listener's words are "the bells are loud and upfront rather than distant" and "a distinct, magical-sounding whoosh". Winter therefore has no ambience in the app and in the mixes. What to try next, when a review round buys new takes: one steady bed of wind with no named instrument up close, the bells as "far away and sparse", no loop setting, 20 seconds, and let the chain make the loop.
 
+2. The particle engine at winter's full pool of 102000 runs the storm at about half real time on one core of this workspace (1.83 to 1.93 s of work for one simulated second, measured in Node by `particles_builder`). The live app therefore needs the worker and a lower `particleFraction` on slow machines, or the storm plays slowly. Carried to Phase 3, where the winter simulation is finished and measured in a browser.
+3. The liquid's field fills the whole sphere and treats the ground only as a collider, so flow that points down presses particles into a low layer: at the winter landing about 37 percent of the flakes afloat are within 3 mm of the ground, and at summer rest about 12 percent of the motes, against 3.7 percent for an even spread. The fix named by `particles_builder` is a field that slides along the ground. Carried to Phase 3.
+4. The loop's storm is closed paths driven by one run of the liquid, not the engine's storm: it settles faster than the film's and turns about the upright axis only. In winter 1 to 3 of 102000 particles can step up to 3.8 mm near the tip of the cone. Carried to Phase 5, where the card loop is judged.
+
 ## Review items not done
 
 none
@@ -613,3 +617,8 @@ One entry per task: when it started, what it did, where it stopped.
 - 05:36 `interface_builder` reported done (`agent/ui` at `fc9ee3f`, merged): 24 of 24 of its own behaviour checks, 82 preview shots, the real bridge driven with the keyboard and the mouse in software graphics. Never run on a real phone or a real graphics card, which it says itself.
 - 05:36 to 05:45 The hero camera fitted and the stand-in shake path changed (decision 29, item 6 for Brandon). Three draft sheets across the first shake: the kit's numbers (the glass leaves the frame), aim 67.5 (the approved margins, the glass still cut) and aim 74 (kept). 241 tests green; one assertion in `tests/film.test.ts` changed to the new path.
 - 05:46 Status 13 posted: the shake sheet after the fit, two debug plots of the particle engine, the controls' states.
+
+- 05:46 `engine_builder`: `createStage` returns the whole stage on stand-ins (four seasons, the change, eleven diagnostic views, the collider, the quality levels, the post chain, 54 parts all stand-ins). Its run: 254 tests, gate G3, G4, G10, G11, G12, G14 green, M1 green on the 7 winter stills, M6 red because the page still feeds the spike simulation.
+- 05:48 `agent/engine` at `0745117` merged (`3037bd0`). Its config edits are two cameras: `interior` to distance 460 and aim 91, `base` to distance 262 and aim 16. `hero` untouched.
+- 05:50 `particles_builder` reported: engine, loop paths and worker client done, 133 tests of its own; the whole film's simulation (74.4 s, five shakes) in 53.2 s of work with no particle outside the glass. Three weak spots are now open items 2 to 4. `agent/particles` at `c1b6c7a` merged (`e095298`). On main: types clean, 256 tests in 16 files, the build runs. Pushed.
+- 05:54 Work handed out. `particles_builder`: its engine behind the page and the capture path in place of the spike simulation, the worker for the live app, until 06:25. `engine_builder`: its report, the emitters for the particle engine, then the camera fit on the real stage. `film_app_builder`: its report, `npm run cut` and two draft sheets on the real stage with every rule of `kit/01-FILM.md` checked, then the two dev calls for the packs.
