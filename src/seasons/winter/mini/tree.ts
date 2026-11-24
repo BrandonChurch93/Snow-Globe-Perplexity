@@ -21,13 +21,17 @@ const COVER_RISE = 0.12
 const WARM: [number, number, number] = [1, 0.56, 0.33]
 const GOLD: [number, number, number] = [1, 0.84, 0.52]
 const BULB_GAIN = 16
-const GLOW = { needles: { power: 16, reachMm: 1.6, star: 0.6 }, snow: { power: 1, reachMm: 1.4, star: 0.36 }, wood: { power: 11, reachMm: 1.5, star: 0.6 } }
-const LAMP_ON_WOOD = { power: 26, reachMm: 12, wrap: 0 }
+const GLOW = { needles: { power: 85, reachMm: 1.25, star: 0.6 }, snow: { power: 1, reachMm: 1.4, star: 0.36 }, wood: { power: 11, reachMm: 1.5, star: 0.6 } }
+const LAMP_ON_WOOD = { power: 110, reachMm: 12, wrap: -0.5 }
 const LAMP_SHIFT: Vec3 = [-3, 0, -5]
-const BARK: [number, number, number] = [0.13, 0.2, 0.29]
+const FILL_ON_WOOD = { power: 2, reachMm: 1000, wrap: 0.4 }
+const FILL_FROM: Vec3 = [40, 20, 60]
+const BARK: [number, number, number] = [0.1, 0.135, 0.14]
+const SNOW_TINT: [number, number, number] = [0.95, 1.03, 1.2]
 const HALO = { cover: 1.5, edge: 3, glow: 0.9, core: 10 }
 const AURA = { cover: 0.24, edge: 2.4, glow: 1.1 }
 const STAR_LOCAL: Vec3 = [0.25, 45.2, 0.1]
+const SPARKLE = { share: 0.014, perMm: 8, gain: 1.4 }
 const STEM_LIGHTS: readonly Vec3[] = [[1.2, 12.5, 4.4], [-0.4, 19.5, 3.6], [0.2, 27, 3]]
 
 const offset = crownOffset()
@@ -85,8 +89,8 @@ function needleHook(shader: Shader): void {
       float treeH = dot(treeC.rgb, vec3(0.3, 0.6, 0.1));
       ${TREE_SLOPES}
       if (treeCard && treeC.a < 0.04 + 0.96 * stageHash(vec3(gl_FragCoord.xy, uSeed + floor(vCard.y + 0.5) / 64.0))) discard;
-      vec3 treeOwn = pow(treeC.rgb, vec3(1.9)) * 2.9;
-      diffuseColor.rgb *= mix(vec3(dot(treeOwn, vec3(0.3, 0.6, 0.1))), treeOwn, 0.5);`,
+      vec3 treeOwn = pow(treeC.rgb, vec3(1.9)) * 1.9;
+      diffuseColor.rgb *= mix(vec3(dot(treeOwn, vec3(0.3, 0.6, 0.1))), treeOwn, 0.38);`,
     )
     .replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\nif (vCard.x > 0.5) normal *= faceDirection;')
     .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>\n${TREE_BUMP}`)
@@ -96,7 +100,8 @@ const SNOW_MAP = `vec3 treeN = normalize(vTreeN);
 vec4 treeC = treeTri(map, vTreeP * uTile, treeN);
 float treeH = treeC.g + 0.6 * treeTri(map, vTreeP * uTile * 3.3 + 0.37, treeN).g;
 ${TREE_SLOPES}
-diffuseColor.rgb *= mix(vec3(1.0), treeC.rgb, 0.4);`
+float treeGlint = step(${(1 - SPARKLE.share).toFixed(4)}, stageHash(floor(vTreeP * ${SPARKLE.perMm.toFixed(1)}) + 0.5));
+diffuseColor.rgb *= mix(vec3(1.0), treeC.rgb, 0.3) * (1.0 + ${SPARKLE.gain.toFixed(2)} * treeGlint);`
 
 function snowFragment(shader: Shader): void {
   shader.fragmentShader = shader.fragmentShader
@@ -107,7 +112,7 @@ function snowFragment(shader: Shader): void {
 
 function snowHook(shader: Shader): void {
   glowHook(shader)
-  Object.assign(shader.uniforms, coverUniforms, { uTile: { value: 1 / tileOf('snow') }, uBump: { value: 0.06 } })
+  Object.assign(shader.uniforms, coverUniforms, { uTile: { value: 1 / tileOf('snow') }, uBump: { value: 0.03 } })
   shader.vertexShader = shader.vertexShader
     .replace('#include <common>', `#include <common>\n${COVER_GLSL}\n${TREE_VERT_PARS}`)
     .replace(
@@ -188,11 +193,12 @@ export async function prepare(): Promise<void> {
 
 export function build(): THREE.Object3D {
   const part = `miniature-${season}`
-  const needles = stageMaterial({ part, standIn: false, inside: true, miniature: true, change: 'miniature', map: texture(NEEDLES), color: new THREE.Color(0.9, 1, 1.3), vertexColors: true, roughness: 0.88, side: THREE.DoubleSide, hook: needleHook, key: 'tree-needles' })
-  const snow = stageMaterial({ part, standIn: false, inside: true, miniature: true, change: 'miniature', map: texture(SNOW), vertexColors: true, roughness: 0.8, hook: snowHook, key: 'tree-snow' })
+  const needles = stageMaterial({ part, standIn: false, inside: true, miniature: true, change: 'miniature', map: texture(NEEDLES), color: new THREE.Color(0.95, 1, 1.45), vertexColors: true, roughness: 0.88, side: THREE.DoubleSide, hook: needleHook, key: 'tree-needles' })
+  const snow = stageMaterial({ part, standIn: false, inside: true, miniature: true, change: 'miniature', map: texture(SNOW), color: new THREE.Color(SNOW_TINT[0], SNOW_TINT[1], SNOW_TINT[2]), vertexColors: true, roughness: 0.8, hook: snowHook, key: 'tree-snow' })
   const flame = lampFlame()
   const lamp: GlowLight = { at: [flame[0] + LAMP_SHIFT[0], flame[1] + LAMP_SHIFT[1], flame[2] + LAMP_SHIFT[2]], color: tones.lampLight, ...LAMP_ON_WOOD, phase: 0.1 }
-  return new THREE.Group().add(buildTrunk(part, [...bulbs(GLOW.wood), lamp], BARK), solidMesh(placed('needles', bulbs(GLOW.needles)), needles), solidMesh(placed('snow', bulbs(GLOW.snow)), snow))
+  const fill: GlowLight = { at: placePoint(FILL_FROM), color: tones.sheen, ...FILL_ON_WOOD, phase: 0.6 }
+  return new THREE.Group().add(buildTrunk(part, [...bulbs(GLOW.wood), lamp, fill], BARK), solidMesh(placed('needles', bulbs(GLOW.needles)), needles), solidMesh(placed('snow', bulbs(GLOW.snow)), snow))
 }
 
 export function lights(): THREE.Object3D {
@@ -213,7 +219,7 @@ export function arrival(): THREE.Object3D {
   }
   g.deleteAttribute('tangent')
   g.setAttribute('aBase', new THREE.BufferAttribute(out, 4))
-  const m = stageMaterial({ part: `arrival-${season}`, standIn: false, inside: true, miniature: true, change: 'arrival', map: texture(SNOW), vertexColors: true, roughness: 0.82, hook: arrivalHook, key: 'tree-arrival' })
+  const m = stageMaterial({ part: `arrival-${season}`, standIn: false, inside: true, miniature: true, change: 'arrival', map: texture(SNOW), color: new THREE.Color(SNOW_TINT[0], SNOW_TINT[1], SNOW_TINT[2]), vertexColors: true, roughness: 0.82, hook: arrivalHook, key: 'tree-arrival' })
   return solidMesh(g, m)
 }
 

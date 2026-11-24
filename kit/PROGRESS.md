@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 37 · 2026-11-24 14:24 UTC
+Status 38 · 2026-11-24 14:44 UTC
 
-- `out/stills/status/status-37-1.jpg`: Winter at rest. Left the approved image and right the build at 14:23 UTC (draft tier)
-- `out/stills/status/status-37-2.jpg`: Half a second after a landing. Left the approved image and right the build at 14:23 UTC (draft tier): the flakes no longer smear but the swirl is not there yet
-- `out/stills/status/status-37-3.jpg`: Still: winter landed hero, hd, draft
-- `out/stills/status/status-37-4.jpg`: Still: winter rest hero, hd, draft
+- `out/stills/status/status-38-1.jpg`: At rest: the approved image on the left and the build at 14:42 on the right (draft tier)
+- `out/stills/status/status-38-2.jpg`: Half a second after the landing: approved on the left and the build on the right. The water now rolls as one swirl
+- `out/stills/status/status-38-3.jpg`: The surface camera at 14:36: the mirror image of the globe is no longer clipped to a strip
+- `out/stills/status/status-38-4.jpg`: Still: winter landed hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 14:28 UTC
-clock: phase 3, tick of 4.7 minutes
-phase 3: 6.02 h used of its 11.00 h box
-allowance (before the review): 12.64 h used of 36.00 h allowed
-all time before the review: 12.64 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 14:49 UTC
+clock: phase 3, tick of 5.1 minutes
+phase 3: 6.36 h used of its 11.00 h box
+allowance (before the review): 12.98 h used of 36.00 h allowed
+all time before the review: 12.98 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 4
+minutes since the last status: 5
 ```
 
 ## Phases
@@ -65,7 +65,7 @@ minutes since the last status: 4
 
 | Unit | State | Rounds run | Best round | Commit | What ended its loop |
 | --- | --- | --- | --- | --- | --- |
-| `winter` | not started | 0 | | | |
+| `winter` | in its rounds (Phase 3) | 1 | 3 (R1 4, R3 3, R2 failed, R4 not in yet; 1 measure red) | `2faac9e` | |
 | `spring` | not started | 0 | | | |
 | `summer` | not started | 0 | | | |
 | `fall` | not started | 0 | | | |
@@ -542,6 +542,9 @@ Numbered. What, why, and the date.
 50. The still of the `landed` state is drawn with the film's shutter, as the film's frame at that moment is (13:43 UTC, Phase 3). `kit/05-ARCHITECTURE.md` gives the shutter to "a film or loop frame"; a state still had none, so the key `winter-shake` froze the storm half a second after the landing and was judged on a picture no frame of the film or the loop shows. The first flake builder had made up the difference by letting the storm's exposure grow with turbulence, and offered the cure. Tested at 13:40 at `draft`: with the shutter of `film.shutterDegrees` at `film.fps` the same moment is a white-out of broad smears, far from `winter-shake.png` (a soft swirl of short streaks, the cottage, the tree's lights and the star all readable); with no shutter it was a dense fur of streaks. Reading taken, the one that makes the judged still and the film agree: `src/capture/showcase.ts` passes the film's shutter for the `landed` state and none for `rest` and `settled`, where nothing moves a pixel in 1/120 s and a shutter would only redraw the shadows every sample. The flake and liquid finishers were told at once and tune the storm, the speeds of the liquid half a second after the landing and the streaks against this. Round 3's pack was drawn on `2faac9e`, before the change, and its `winter-shake` still is read with that in mind.
 51. Half a second after the landing the icicles hang at full length (13:43 UTC, Phase 3). `kit/02-SUBJECT.md` section 6 says of winter's arrival "Icicles lengthen" over the next seconds, and also that `states.landedSeconds` after the landing the globe looks like the mid-shake approved image; `winter-shake.png` shows eighteen icicles at full length. The image wins, as with the frost in decision 47: the icicles lengthen from the swap, under the blur of the strokes, and through the landing, reach nearly their full length by `states.landedSeconds`, and finish, with the drip at their tips, over the next seconds. A winter into winter shake must not show stubs in a clean frame. `src/scene/stage.ts` keeps `arrived` at 0 from `shake.swapWindow.fromBeat` to the landing in a one-season shake as in a two-season one, so the test shake shows what a real arrival shows; the base owns what it does with it.
 
+52. A juror is sent one sentence more than the kit's question: "Send your answer as one message to `/root`." (14:10 UTC, Phase 3, Round 3). `kit/07-QUALITY-BAR.md` says a juror "receives one image and exactly this text, nothing else". Here a fresh agent's answer reaches the Builder only as a message it sends, so without an address there is no answer to count. The sentence names no picture, no options and no project; the same sentence goes to every juror, on controls and judged images alike. Critics get the matching sentence after their pack's message, as since Round 1.
+53. Round 4 judges the finishers' finished work, and rounds from here are about two hours apart (14:35 UTC, Phase 3). The second set of build agents ends at 16:17 UTC, before any answer of a round frozen at 15:30 could reach them, so an earlier freeze would spend one of `quality.lookLockMaxRounds` rounds on work an hour short of done. The freeze is 16:00 UTC. The clock allows it: extra rounds in Phase 3 stop when the time used reaches the boxes of Phases 0 to 3 together, 22 h, and 12.7 h are used, because Phases 0 to 2 took 6.6 h of their 11. A round is not started unless the fixes for the round before it have had about an hour of work; a round whose judged build would differ little from the last one's is not worth its count.
+
 ## Notes from Brandon
 
 Numbered, in his words, with the date and how each was applied. Review round items carry their round's number.
@@ -631,6 +634,8 @@ Severe and major issues still open when a limit was reached: the unit, the still
 
 33. The reference camera is 1 mm low and 0.7 percent far (13:50 UTC, Phase 3; the glass finisher's circle fit of the approved outline, 87 to 99 edge points, rms 1.2 px: centre (1410.9, 652.7), radius 553.1 px in 2816 by 1584; the render through `REF_RIG` gives (1407.6, 643.5), 549.2). The miniature's layout was fitted through the same camera, so correcting the camera alone would move every fitted part 9 px against its target; it is left as it is while ten agents fit against it. Owed: after the look lock's parts stop moving, set `REF_RIG` to distance 615.5 mm and aim 63.8 mm and the principal point 3.3 px right, refit the layout once, and carry the same camera to the other three seasons. It is below what a critic can see in a pair (0.3 percent of the frame's width).
 34. Triangles at the `low` level (14:03 UTC, Phase 3). G15 passes with 578302 of `perf.maxTriangles.low` 600000 a sample through the app's path after the 14:00 merges (592138 before them). Every part that grows eats that room about 1.6 times over, because shadow casters are drawn twice. Every finisher was told and reports its part's triangles; G15 is run again at every freeze of `main`. If it goes red: lighter meshes at the low level first, and `live.quality.low.particleFraction`, which the Builder may tune, second.
+
+  - 14:31 UTC, after the merges of 14:20: `low` draws 601727 triangles a sample, 1727 over `perf.maxTriangles.low`; medium 948200 of 1100000; high 1111400 of 1800000. Visible meshes hold 401281, 462481 and 544081; the rest is the casters' second draw. So G15 would be red on main now. `load_finisher` was given the cure at 14:33: lighter meshes for `low` (and `medium` if needed) made by meshoptimizer's simplifier at pack time, picked by the loader by quality level, with targets of 480000 and 900000 drawn. If that is not in by the freeze of Round 4, `live.quality.low.particleFraction` goes from 0.3 to 0.25 for that round (each 0.1 of it is about 20000 triangles) and is put back when the lighter meshes land.
 
 ## Review items not done
 
@@ -755,7 +760,7 @@ One line per round: its number, the unit, the commit it judged, each part ticked
 
 - Round 2 · blockout (Phase 2, the floor round; the last the config allows) · judges commit `9ade96d` · started 2026-11-24 07:57 UTC. Parts: [x] build · [x] machine checks (G1 to G12 and G14 green at 08:09; D2 and D3 wait for step 14) · [x] measures (M1 and M6 for winter at draft: 14 lines, none red) · [x] pack (19 files in two parts, none missing, 08:15) · [x] critic part 1 (`claude_opus_5_5`, answered 08:38: 6, four major, none severe) · [x] critic part 2 (`gpt_6_2_astra`, answered 08:21: 8, two major, none severe) · [x] issues read · [x] logged (merged score 6 against a bar of 7, no severe issue open: round 2 does not pass, and it was the last blockout round; `scorecards/round-002/SUMMARY.md`; open items 25 to 29)
 
-- Round 3 · winter (Phase 3, the look lock; winter's first round) · judges commit `2faac9e` · started 2026-11-24 13:17 UTC. Parts: [x] build (the judged build is `2faac9e`, engine hash `c18b4b561b115610`) · [ ] machine checks (G15 green here at 13:58; the whole Phase 3 gate is being run on `2faac9e` by the render agent `gate_runner` in its own sandbox, started 14:05) · [x] measures (14:05, by `round_renderer` at `final` tier: 24 of 24 lines, 1 red: M3 `winter-rest` 0.7156 against 0.75, the base 0.716 of the approved image's fine detail, the miniature 1.017; M4 1, M5 0.9903; in `scorecards/round-003/measures-winter.md`) · [ ] pack (`final` tier, the `full` set; rendered by a render agent in its own sandbox, fetched from `agent/p3-round3-pack`; 14:06: R1, R2 and R3 are in, 34 files in five parts, none missing, branch head `74487b4`; R4's motion sheets are being rendered at `review` tier by `motion_renderer` on `agent/p3-round3-motion`) · [x] R1 (14:11, `gpt_6_2_sol`: 4; 5 severe, 10 major) · [x] R2 (the jury; 14:17, 25 answers: judged 4 of 15 against controls 7 of 10, bar 0.50: fails) · [x] R3 (three parts: 6 on `claude_opus_5_5`, 3 on `gemini_4_carbon`, 4 on `kimi_k3`; the role's score is the lowest, 3; 9 severe, 26 major, 6 minor in all; last answer 14:22) · [ ] R4 · [ ] issues read · [ ] fixes · [ ] logged
+- Round 3 · winter (Phase 3, the look lock; winter's first round) · judges commit `2faac9e` · started 2026-11-24 13:17 UTC. Parts: [x] build (the judged build is `2faac9e`, engine hash `c18b4b561b115610`) · [x] machine checks (14:46: the Phase 3 gate on a clean clone of `2faac9e`, run once by `gate_runner` in 34 min 33 s: 4 red, 11 pass. Red: G3 determinism (loop frame 288 differs in 15272 pixels between the run from checkpoints and the run stepped from the start), G5 (the sound control is hidden in the 4 screen stills because a clean clone has no `public/audio/`; the pixel part of the check held), G8 (8 shipped files with no recipe heading the check could read), G10 (the still with no float colour buffer logs a failed `glGenerateMipmap`: the mirror target is always half float). Each red check is a severe issue of this round. `scorecards/round-003/gate.log`, `gate-phase-3.json`) · [x] measures (14:05, by `round_renderer` at `final` tier: 24 of 24 lines, 1 red: M3 `winter-rest` 0.7156 against 0.75, the base 0.716 of the approved image's fine detail, the miniature 1.017; M4 1, M5 0.9903; in `scorecards/round-003/measures-winter.md`) · [ ] pack (`final` tier, the `full` set; rendered by a render agent in its own sandbox, fetched from `agent/p3-round3-pack`; 14:06: R1, R2 and R3 are in, 34 files in five parts, none missing, branch head `74487b4`; R4's motion sheets are being rendered at `review` tier by `motion_renderer` on `agent/p3-round3-motion`) · [x] R1 (14:11, `gpt_6_2_sol`: 4; 5 severe, 10 major) · [x] R2 (the jury; 14:17, 25 answers: judged 4 of 15 against controls 7 of 10, bar 0.50: fails) · [x] R3 (three parts: 6 on `claude_opus_5_5`, 3 on `gemini_4_carbon`, 4 on `kimi_k3`; the role's score is the lowest, 3; 9 severe, 26 major, 6 minor in all; last answer 14:22) · [ ] R4 · [ ] issues read · [ ] fixes · [ ] logged
 
 ## Final scores
 
@@ -998,3 +1003,19 @@ One entry per task: when it started, what it did, where it stopped.
 - 14:25 Status 37: the two pairs (approved beside the build at 14:23), Round 3's first scores.
 
 - 14:28 UTC: published from `98a15a2` plus the built files of 14:21 (not yet committed: the round's one commit comes with Round 4). https://snow-globe-seasons.pplx.app , Visibility: Organization. The built app shows its first picture in 11.3 s here, 43 requests of which 32 are assets, no errors; the first load is 9.67 MiB, down from 44. The review page was rebuilt with it (motion: nothing yet).
+
+- 14:35 UTC: decision 53 told to all ten finishers (freeze of Round 4 at 16:00 UTC, best work on the branch by 15:55). `motion_renderer` reported at 40 minutes that the storm frames cost about 65 s each and four of the R4 sheets were drawn; its limit was moved from 75 to 120 minutes (to 15:58 UTC), with a push after every sheet. No tier, frame count or sheet was dropped.
+- 14:39 UTC: merged tree `9a4c906`, village `643b4f4`, frost `432653b`, flakes `f987f7e`, liquid `7554fb1` (the roll: at `landed` the flakes turn as one swirl about a tilted axis, p50 387 mm/s, still from 3.4 s after the landing; M4 1, M5 0.9697, M6 pass), scene `127af6a`, glass `eb43f0f`, load `6217380`. Types clean, 397 tests pass. Rebuilt `trunk`, `tree-winter`, `village`, `village-winter`, `frost-winter`, `flakes`; texture pack 21.6 MiB in 41 files, the first picture needs 9.27 MiB.
+- 14:45 UTC: Status 38 posted with the rest pair, the landed pair and the surface camera (`out/work/status/pair-rest-1445.jpg`, `pair-landed-1445.jpg`, `look-surface-1436.jpg`). The Builder's reading of the pairs against the approved image: glass rim milky and too wide, water behind it too pale (the approved shows the dark room through clear water), streaks at `landed` thin sharp needles where the approved has soft smears of many sizes over a dense low cloud, icicles opaque, bank flat and grey, slab frost lilac, background darker and bluer than the approved teal with fewer warm discs.
+
+- 14:46 UTC: the Phase 3 gate on the judged commit of Round 3, from `gate_runner` (clean clone of `2faac9e`, `npm ci`, build clean, the real scene seen in a first draft; the gate run once, alone, in the foreground, 2073 s, exit 0). Reds first, each line as the gate printed it (cut at 500 characters by the agent; whole lines in `scorecards/round-003/gate.log`):
+  - G3 FAIL · determinism: 1 comparisons differ: loop-288 pass b (15272 pixels)
+  - G5 FAIL · no interface pixel where none belongs: in 25 stills without interface, film B frames 0, 666, 720, 3598 and loop frames 0, 120, 478 the stage is pixel-identical to the canvas and #ui is empty or hidden; 4 of 4 screen stills (screen-wide, screen-wide-fall, screen-phone, screen-tablet): the sound control is not visible (public/audio/index.json does not exist, and the app hides the control when it has no sound files)
+  - G8 FAIL · sources and recipes: eight files of `public/assets/shared/` (flake-lobes, the two scene-slab tiles, the two trunk-bark tiles, trunk-wood.glb, village-grain, village-model.glb) have neither a row in ASSETS.md nor a recipe in assets-src/
+  - G10 FAIL · portable WebGL2: the byte run logged: warning: GL_INVALID_OPERATION: glGenerateMipmap: Texture format does not support mipmap generation.
+  - G1 pass (build clean, 3.2 s) · G2 pass (371 of 375 tests in 26 files; the 4 are the skipped ones) · G4 pass (sizes and counts) · G6 pass (startup validation; all 69 judged ids listed) · G7 pass (film B 60.00 s, opening 14.50 s, film A 74.50 s) · G9 pass (542 tracked files, 494 MB, largest 18.2 MB, no secret, 9 of 9 approved hashes) · G11 pass (the change stays in its window) · G12 pass (landings on bar lines; lowest height 0.43 mm) · G13 pass (covers no part yet: no unit is finished) · G14 pass (loop seam identical) · G15 pass (web 129 of 500 MB, full 385.7 of 2000 MB; high 1100329, medium 937129, low 592138 triangles; 60, 60 and 48 draw calls)
+- 14:48 UTC: what was done about each red check (the messages to the three finishers carry the stamp 14:58 by the Builder's mistake; the clock read 14:48).
+  - G3: pass b is "a fresh page, the reverse order, checkpoints off", so the loop frame drawn from the simulation cache differs from the same frame stepped from the start. Given to `liquid_finisher` (the engine's state is its part) ahead of its clearance work: find the state a checkpoint does not carry or restore exactly, fix it, add a unit test that compares a restored state with a stepped one, run `tools/determinism.mjs --film` on main's code.
+  - G5: not a fault of the build. The sound files are not committed (the repo is public; "For Brandon to decide" item 2), so a clean clone has no `public/audio/` and the app hides the control. From Round 4 on, the agent that runs the gate receives `public/audio/` (index and packed file) as an attachment and unpacks it before the gate. Sound never blocks a gate (`AGENTS.md`).
+  - G8: two causes. Three part recipes head a block with a list of files separated by commas, which `kit/06-ASSETS.md` allows ("<file or group of files>") and the check did not read; `tools/gate.mjs` now splits a heading at commas. That is not a looser check: every file must still be named by a heading. The other cause is real: nothing names the web pack. On main now 41 files under `public/assets/` have no recipe. `load_finisher`, who owns the packer, writes `assets-src/web-pack/RECIPE.md` with the encoders and their exact settings.
+  - G10: `mirrorTarget()` in `src/scene/passes.ts` is always half float with mipmaps. Given to `scene_finisher`: the mirror target follows the accumulator's capability (half float where a float colour buffer exists, bytes otherwise), proved with `npm run -s gate -- --phase 3 --only G10`.

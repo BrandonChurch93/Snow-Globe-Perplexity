@@ -1,0 +1,113 @@
+{
+  "phase": 3,
+  "time": "2026-11-24T14:45:30.878Z",
+  "engineHash": "c18b4b561b115610",
+  "commit": "2faac9e",
+  "results": [
+    {
+      "id": "G1",
+      "name": "the build is clean",
+      "pass": true,
+      "detail": "npm run build exited 0 in 3.2 s, no type errors",
+      "seconds": 3.24
+    },
+    {
+      "id": "G2",
+      "name": "unit tests",
+      "pass": true,
+      "detail": "371 of 375 tests pass in 26 files",
+      "seconds": 43.59
+    },
+    {
+      "id": "G3",
+      "name": "determinism",
+      "pass": false,
+      "detail": "1 comparisons differ: loop-288 pass b (15272 pixels)",
+      "seconds": 362.21
+    },
+    {
+      "id": "G4",
+      "name": "sizes and counts",
+      "pass": true,
+      "detail": "a still in every format has its exact size (uhd 3840 x 2160, hd 1920 x 1080, preview 960 x 540, phone 390 x 844, tablet 1024 x 1366), 5 stills on disk agree with their records, loop().frameCount is 480, film().frameCount 3600 matches frameCount in cut/CUTLIST.json",
+      "seconds": 133.517
+    },
+    {
+      "id": "G5",
+      "name": "no interface pixel where none belongs",
+      "pass": false,
+      "detail": "in 25 stills without interface, film B frames 0, 666, 720, 3598 and loop frames 0, 120, 478 the stage is pixel-identical to the canvas and #ui is empty or hidden; 4 of 4 screen stills (screen-wide, screen-wide-fall, screen-phone, screen-tablet): the sound control is not visible (public/audio/index.json does not exist, and the app hides the control when it has no sound files)",
+      "seconds": 947.676
+    },
+    {
+      "id": "G6",
+      "name": "startup validation and the judged list",
+      "pass": true,
+      "detail": "the page starts in capture mode with no error, so the config passes startup validation; all 69 ids of dev.judged() are in the Judged list of kit/PROGRESS.md (69 rows), each under its unit",
+      "seconds": 5.438
+    },
+    {
+      "id": "G7",
+      "name": "lengths",
+      "pass": true,
+      "detail": "film B is 3600 frames, 60.00 s: at most film.maxSeconds 80 and at least film.minSeconds 45; the opening is 870 frames, 14.50 s of at most 16; film A is 74.50 s of at most 140; at 20 Mbit/s of picture and 256 kbit/s of sound film A is 189 MB (152 MB for film B), under platform.maxFileMb 512",
+      "seconds": 5.101
+    },
+    {
+      "id": "G8",
+      "name": "sources and recipes",
+      "pass": false,
+      "detail": "public/assets/shared/flake-lobes.lin.png has neither a row in ASSETS.md nor a recipe in assets-src/; public/assets/shared/scene-slab-detail.lin.tile.png has neither a row in ASSETS.md nor a recipe in assets-src/; public/assets/shared/scene-slab-stone.lin.tile.png has neither a row in ASSETS.md nor a recipe in assets-src/; public/assets/shared/trunk-bark-n.lin.tile.w1024.png has neither a row in ASSETS.md nor a recipe in assets-src/; public/assets/shared/trunk-bark.srgb.tile.w1024.png has neither a row in ASSETS.md nor a recipe in assets-src/; public/assets/shared/trunk-wood.glb has neither a row in ASSETS.md nor a recipe in assets-src/; public/assets/shared/village-grain.lin.tile.png has neither a row in ASSETS.md nor a recipe in assets-src/; public/assets/shared/village-model.glb has neither a row in ASSETS.md nor a recipe in assets-src/",
+      "seconds": 0.004
+    },
+    {
+      "id": "G9",
+      "name": "the repo",
+      "pass": true,
+      "detail": "542 tracked files, 494 MB in all, the largest 18.2 MB (out/preview-b.mp4); no secret found; references/cache/ and out/work/ untracked; 9 of 9 approved files hold their hashes",
+      "seconds": 0.183
+    },
+    {
+      "id": "G10",
+      "name": "portable WebGL2",
+      "pass": false,
+      "detail": "the byte run logged: warning: [.WebGL-0x3eec00104e00] GL_INVALID_OPERATION: glGenerateMipmap: Texture format does not support mipmap generation.",
+      "seconds": 71.669
+    },
+    {
+      "id": "G11",
+      "name": "the change stays in its window",
+      "pass": true,
+      "detail": "film: 7 seasonal parts read on all 3600 frames, every value 0 or 1 on the 3456 frames outside the 4 swap windows (648 to 683, 1368 to 1403, 2088 to 2123, 2808 to 2843), a part mid change on 140 frames inside them; test shake: the same on 828 of 864 frames outside 72 to 107; loop: no value changes across 480 frames and the frame one past the last",
+      "seconds": 5.378
+    },
+    {
+      "id": "G12",
+      "name": "landings",
+      "pass": true,
+      "detail": "4 shakes of the cut list: globe.heightMm is above zero on all 432 frames from each liftEnd to the frame before each landing (the lowest is 0.43 mm); every landing frame (720, 1440, 2160, 2880) is one of the 25 bar lines of the cut list and of film().landings; the camera on each first frame (576, 1296, 2016, 2736) equals dev.pose('hero') within 0.001 mm and degrees (the largest difference is 0.0e+0)",
+      "seconds": 5.14
+    },
+    {
+      "id": "G13",
+      "name": "stand-ins",
+      "pass": true,
+      "detail": "it covers no part yet: no unit is marked finished in kit/PROGRESS.md and no --unit was given, so none of the 54 parts of the register is tested",
+      "seconds": 0.004
+    },
+    {
+      "id": "G14",
+      "name": "the loop's seam",
+      "pass": true,
+      "detail": "renderLoopFrame(480), one past the last, is pixel-identical to frame 0 (hd, draft)",
+      "seconds": 49.787
+    },
+    {
+      "id": "G15",
+      "name": "memory and counts",
+      "pass": true,
+      "detail": "info().textureMb in uhd, the largest format, after all 4 seasons were drawn on one page: web 129 of 500 MB (most in winter), full 385.7 of 2000 MB (most in winter); the most info().counts gives in any season through the app's path in hd: high 1100329 of 1800000 triangles and 60 of 140 draw calls with 102000 particles, medium 937129 of 1100000 triangles and 60 of 140 draw calls with 61200 particles, low 592138 of 600000 triangles and 48 of 140 draw calls with 30600 particles",
+      "seconds": 439.923
+    }
+  ]
+}
