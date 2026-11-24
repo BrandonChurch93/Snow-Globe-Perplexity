@@ -695,6 +695,7 @@ function buildSlab() {
   }
   // The heap that hugs the foot, loose grains, clumps and thin patches further out.
   const { H, T, S } = field
+  const U = L.slab.under
   const grains = []
   const bump = (x, z, r, h, t, spark) => {
     const m = space.map([x, 0, z])
@@ -705,14 +706,31 @@ function buildSlab() {
       const wx = ((x + 0.5) / n) * 2 * half - half
       const wz = ((y + 0.5) / n) * 2 * half - half
       const r = Math.hypot(wx, wz)
-      if (r < footR - 2.5) continue
       const i = y * n + x
+      if (r < footR) {
+        // Under the rim of the foot a thin film creeps inward and breaks into specks, so the lifted globe leaves no clean hole.
+        const lobe = fbm(wx * 0.11 + 7, 6.3, wz * 0.11, 3)
+        const fray = fbm(wx * 0.5, 9.4, wz * 0.5, 3)
+        const q = (footR - r) / (U.inMm[0] + (U.inMm[1] - U.inMm[0]) * smooth(0.3, 0.72, lobe))
+        if (q < 1.3) {
+          const speck = smooth(0.45, 0.68, 0.6 * noise3(wx * 2.6, 5.5, wz * 2.6) + 0.4 * noise3(wx * 6.4, 2.2, wz * 6.4))
+          const body = 1 - smooth(0.1, 1.1, q + (fray - 0.5) * 0.7)
+          const h = body * (U.film * (0.4 + 1.2 * fray) + U.speck * speck)
+          if (h > H[i]) H[i] = h
+          const s = body * (0.15 + 0.5 * speck)
+          if (s > S[i]) S[i] = s
+          const t = 0.4 + (footR - r) * 0.5 + fray * 1.5
+          if (t < T[i]) T[i] = t
+        }
+      }
+      if (r < footR - 8) continue
       const big = fbm(wx * 0.09, 3.1, wz * 0.09, 3)
       const mid = fbm(wx * 0.5, 9.4, wz * 0.5, 3)
       const reach = 3.5 + 11 * smooth(0.3, 0.75, big)
       const q = (r - footR + 1.5) / reach
       if (q < 1.2) {
-        const body = (1 - smooth(0.35, 1.1, q + (mid - 0.5) * 0.5)) * smooth(-2.5, -0.5, r - footR)
+        const wall = U.wallMm * smooth(0.35, 0.7, fbm(wx * 0.3 + 3, 1.1, wz * 0.3, 3))
+        const body = (1 - smooth(0.35, 1.1, q + (mid - 0.5) * 0.5)) * smooth(-2.5 - wall, -0.5 - 0.6 * wall, r - footR)
         const h = body * (0.5 + 0.35 * mid + 0.25 * (1 - clamp(q)))
         if (h > H[i]) H[i] = h
         const s = body * (0.3 + 0.4 * mid)
@@ -879,7 +897,7 @@ function glassBand() {
 }
 
 function slabSheet() {
-  const g = new THREE.RingGeometry(footR - 2.5, L.slab.halfMm, 128, 1)
+  const g = new THREE.CircleGeometry(L.slab.halfMm, 128)
   g.rotateX(-Math.PI / 2)
   g.deleteAttribute('uv')
   return g

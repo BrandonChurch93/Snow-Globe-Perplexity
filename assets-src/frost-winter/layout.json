@@ -64,6 +64,7 @@
     "halfMm": 132,
     "heightMm": 1.3,
     "minSquash": 0.26,
+    "under": { "inMm": [6, 18], "film": 0.24, "speck": 0.4, "wallMm": 4.5 },
     "frond": { "strong": 0.18, "strongStretch": [1.6, 2.3], "bodyMm": [3.4, 4.8], "leafMm": [0.75, 1.05], "gapMm": [1.5, 2.1], "lenShare": [0.06, 0.085], "lenMm": [3, 5], "angleDeg": [46, 56], "angleTipDeg": [36, 44] },
     "shapes": { "branchMinMm": 0.5, "branchEvery": 3, "spineEvery": 2, "ridgeTall": 0.7, "grainMinMm": 0.34, "lumpFullMm": 0.58, "farPerMm": 3 },
     "arms": [
