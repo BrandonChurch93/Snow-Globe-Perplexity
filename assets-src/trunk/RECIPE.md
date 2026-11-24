@@ -10,12 +10,12 @@ Takes: 1 made, take 1 kept
 Why this one: the ridges run from top to bottom at one even scale, in the brown of the approved trunk, with no highlight or shadow painted in
 Date: 2026-11-24
 
-## assets-full/shared/trunk-bark.srgb.tile.png, assets-full/shared/trunk-bark-n.lin.tile.png
+## assets-full/shared/trunk-bark.srgb.tile.w1024.png, assets-full/shared/trunk-bark-n.lin.tile.w1024.png
 Made by: `assets-src/trunk/build.mjs` with `assets-src/trunk/source.mjs` (sharp, in Node)
 From: `assets-src/trunk/bark-take1.png`
 Prompt or command: `npm run make -- trunk`. The sheet is not truly seamless as it comes, so the script cross-fades a tenth of it over each edge, flattens the wide brightness so no patch repeats as a blotch, and takes the luminance over its own wide blur as height for the normal map.
 Takes: 1 picture in, rebuilt each time the script changed, the last build kept
-Why this one: it tiles without a seam at 6.5 mm a tile and gives the grooves a normal as well as a colour
+Why this one: it tiles without a seam at 6.5 mm a tile and gives the grooves a normal as well as a colour; the full copies are 2048 px and the web copies are capped at 1024 px, which is still about four texels a pixel from the macro camera
 Date: 2026-11-24
 
 ## assets-full/shared/trunk-wood.glb
