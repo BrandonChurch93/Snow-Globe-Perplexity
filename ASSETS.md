@@ -43,5 +43,7 @@ The tool is ElevenLabs, on the Creator plan (measured from the account on 2026-1
 
 | File | What it is | Source URL | License | Date added |
 | --- | --- | --- | --- | --- |
+| `public/fonts/jost-latin-wght-normal.woff2` | Jost variable font, weight axis 100 to 900, latin subset, font version 3.710, 232 glyphs, 26576 bytes, sha256 7726a5cd6f3c0e876c028ea2a643d45f7aad4b0f164b70966c669f4a4668f4b9. The typeface of the interface and the probe page. Not subset or converted here: it is the file as the package publishes it | https://cdn.jsdelivr.net/npm/@fontsource-variable/jost@5.3.0/files/jost-latin-wght-normal.woff2 (npm package `@fontsource-variable/jost`, version 5.3.0, file `files/jost-latin-wght-normal.woff2`) | SIL Open Font License 1.1, text in `public/fonts/OFL.txt` | 2026-11-24 |
+| `public/fonts/OFL.txt` | The license text for Jost: "Copyright 2020 The Jost Project Authors" followed by the SIL Open Font License 1.1. 4384 bytes, sha256 1af3438a4d5f0ed2bdbc5751a5a67ebf6d537334161184b7fbb68503ef0ea0c5 | https://raw.githubusercontent.com/google/fonts/392d8403c9bcff1bdb011c16a24b0d5436eb35d0/ofl/jost/OFL.txt (repo `google/fonts`, path `ofl/jost/OFL.txt`, pinned to the last commit that changed the file) | SIL Open Font License 1.1, this file is the text | 2026-11-24 |
 
-None yet.
+Both downloads were compared with the files here on 2026-11-24 05:35 UTC and are byte for byte the same. The font was looked at in the interface stills before it shipped.

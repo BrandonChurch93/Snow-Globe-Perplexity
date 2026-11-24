@@ -104,7 +104,9 @@ describe('the shake path', () => {
     for (let b = s.liftBeats; b <= s.liftBeats + s.strokeBeats; b += 0.002) {
       const x = path.poseAt(b).x
       peak = Math.max(peak, Math.abs(x))
-      expect(path.poseAt(b).y).toBeGreaterThanOrEqual(s.liftMm - 1e-9)
+      // The strokes swing on an arc that is highest in the middle: never above the lift, never far below it.
+      expect(path.poseAt(b).y).toBeLessThanOrEqual(s.liftMm + 1e-9)
+      expect(path.poseAt(b).y).toBeGreaterThan(s.liftMm * 0.7)
       const sign = Math.abs(x) < 0.2 ? 0 : Math.sign(x)
       if (sign !== 0 && sign !== last) {
         turns++
