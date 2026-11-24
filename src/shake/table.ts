@@ -92,7 +92,7 @@ const HAND = {
   planDeg: [6, 10],
   leanDeg: [1.6, 1.9],
   leanShare: 0.74,
-  awayMm: [12.8, 13.8],
+  awayMm: [13.3, 14.3],
   rimAirMm: 1.06,
   tiltHair: 0.00005,
   unlikeLength: 0.05,
@@ -474,8 +474,10 @@ function build(name: string): ShakeMotion {
   const gripBeats = HAND.gripBeats * liftEnd
   const hold = { x: -Math.cos(planAngle), z: -Math.sin(planAngle) }
   const along = { x: Math.sin(planAngle), z: -Math.cos(planAngle) }
-  // The grip tips the globe onto the edge of the side it is drawn back to; it comes down on the edge that trails the last swing.
-  const gripDir = { x: -Math.sin(gripAngle), z: first * Math.cos(gripAngle) }
+  // The hand takes the globe from the side it will draw it back to, so that edge of the foot comes up first and the top tips the other way,
+  // toward the first stroke. The far edge breaks contact as the wind up swings the foot level, and the whole rim is clear before the roll comes back over.
+  // It comes down on the edge that trails the last swing.
+  const gripDir = { x: -Math.sin(gripAngle), z: -first * Math.cos(gripAngle) }
   const landDir = { x: -Math.sin(landAngle), z: -lastSide * Math.cos(landAngle) }
   const landGap = c.liftMm - rockHeight(Math.sin(approach))
   const rise = (beat: number): number => s5(Math.pow(clamp((beat - liftOff) / (liftEnd - liftOff), 0, 1), HAND.liftEffort))

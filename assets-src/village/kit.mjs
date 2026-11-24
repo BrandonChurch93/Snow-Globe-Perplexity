@@ -223,6 +223,8 @@ export function shade(g, f) {
 }
 
 export const STOUT = { post: 1.3, rail: 1.35 }
+/** How far the top of the chimney's brick stack stands above the layout's chimney top, mm: the approved chimney is taller than the collider's. */
+export const STACK_LIFT = -0.3
 
 export function pillow(w, h, d, su, sv, R, o = {}) {
   const k = o.square ?? 3.2 + 3 * R()

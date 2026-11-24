@@ -35,16 +35,16 @@ Status 51 · 2026-11-24 19:38 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 19:38 UTC
-clock: phase 3, tick of 10.1 minutes
-phase 3: 11.19 h used of its 11.00 h box
-allowance (before the review): 17.80 h used of 36.00 h allowed
-all time before the review: 17.80 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 19:58 UTC
+clock: phase 3, tick of 9.8 minutes
+phase 3: 11.51 h used of its 11.00 h box
+allowance (before the review): 18.13 h used of 36.00 h allowed
+all time before the review: 18.13 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 19
 ```
 
 ## Phases
@@ -579,6 +579,7 @@ Numbered. What, why, and the date.
 
 62. Round 5's two jury controls are cropped 6 px narrower than in Rounds 3 and 4, and their votes of Round 3 are reused (18:49 UTC, Phase 3). `kit/07-QUALITY-BAR.md`: the controls are "the approved images, cropped to the globe, its base and the surface around them, resized and encoded exactly like the judged images", and "A control's votes are collected once and reused in later rounds." The pack crops every R2 image to one frame taken from the judged stills; decision 57 moved the hero camera from 616 to 615.3 mm, so the frame is 1078 by 1051 px where it was 1084 by 1050, and the two control files have new bytes. They are the same two approved pictures with the same globe, base and surface. Reading taken: the kit's own line, the votes are reused (10 votes, 7 of them (a) or (b)); asking the jurors again would give the judged stills a second draw of the bar that the kit does not allow. The jurors of Round 5 are the same five models as in Rounds 3 and 4, one of each per judged image, so the judged votes and the control votes come from the same mix.
 63. While /root's own push fails, `main` is pushed by an idle agent from a git bundle (19:28 UTC, Phase 3). At 19:25 UTC, after the session was resumed, every push from /root's sandbox failed with "could not read Username for 'https://github.com'" (twice, a minute apart; reads still work). `AGENTS.md` has a failed push logged and tried again at the next commit, and that is done at every commit. But ten builders merge `origin/main` and four render agents draw the freeze from it, so a `main` that stays behind would stop the round. Until the push works again, /root bundles its new commits (`git bundle create ... origin/main..main`) and `gate_runner`, whose sandbox can push, fetches the bundle and pushes it as a plain fast forward: no merge, no rebase, no commit of its own, so author, messages and trailers are /root's, unchanged. Used once, at 19:28 for `92a18c7`. /root's own push worked again a minute later (`7ff842f`); the bundle stays the fallback (`out/work/bin/relay.sh`). Nothing else changes: agents' own branches are fetched as before.
+64. `shake.strokeMm` is 24, was 22 (19:56 UTC, Phase 3). `AGENTS.md` lets the Builder tune it by up to a quarter either way, 16.5 to 27.5. Why: Round 5's motion critic read the globe as not moving, so the strokes are as long as the pins allow with room to spare. The shake's closer ran the whole suite with 22, 24, 25, 26, 27 and 27.5 on the path of `ebddaba`: green up to 25; from 26 one test fails, `tests/engine-storm.test.ts` "turns as one flat swirl at the landing" (its `flat` reads 1.53 at 22, 1.35 at 24, 1.27 at 25, 1.19 at 26, against more than 1.25). 24 leaves 0.10 on that pin. Every pin of the shake and every frame rule (4.5 percent of room above the glass, 1 mm at the rim, speed, pull, jerk, the framing for phone and tablet) holds up to 27.5. Written once the path with `awayMm` was on `main` (`355104c`).
 
 ## Notes from Brandon
 
