@@ -114,6 +114,7 @@ export function addChecks(checks, { cfg, phase, args, dir, run, tail, probe, gri
       const plain = all.filter((p) => !p.interface)
       const screens = cfg.stills.filter((p) => p.interface)
       const seen = { stills: 0, film: [], loop: [], screens: [], reused: 0, least: Infinity, most: 0 }
+      const lacking = new Map()
       const pair = async (name, entry, wantSeasons) => {
         const canvasFile = path.join(out, `${name}-canvas.png`)
         const stageFile = path.join(out, `${name}-stage.png`)
@@ -174,8 +175,10 @@ export function addChecks(checks, { cfg, phase, args, dir, run, tail, probe, gri
           if (marks.length < cfg.seasons.length) missing.push(`${marks.length} of ${cfg.seasons.length} season marks are present and visible`)
           if (k.sound.visible < 1) missing.push(k.sound.count ? `the sound control is not visible${fs.existsSync(rel('public', 'audio', 'index.json')) ? '' : ' (public/audio/index.json does not exist, and the app hides the control when it has no sound files)'}` : 'no [data-control="sound"]')
           if (c.identical) missing.push('the stage grab is the same as the canvas grab, so no control was drawn')
-          if (missing.length) problems.push(`${p.id}: ${missing.join(', ')}`)
-          else {
+          if (missing.length) {
+            const why = missing.join(', ')
+            lacking.set(why, [...(lacking.get(why) ?? []), p.id])
+          } else {
             seen.screens.push(p.id)
             seen.least = Math.min(seen.least, c.differing)
             seen.most = Math.max(seen.most, c.differing)
@@ -184,11 +187,15 @@ export function addChecks(checks, { cfg, phase, args, dir, run, tail, probe, gri
       } finally {
         await session.close()
       }
+      const dirty = problems.length
+      for (const [why, ids] of lacking) problems.push(`${ids.length} of ${screens.length} screen stills (${ids.join(', ')}): ${why}`)
+      const measured = `${seen.stills} stills without interface, film B frames ${seen.film.join(', ')} and loop frames ${seen.loop.join(', ')}`
+      const reused = seen.reused ? `; ${seen.reused} pictures reused from records of this build` : ''
       return {
         pass: problems.length === 0,
         detail: problems.length
-          ? list(problems)
-          : `in ${seen.stills} stills without interface, film B frames ${seen.film.join(', ')} and loop frames ${seen.loop.join(', ')} the stage is pixel-identical to the canvas and #ui is empty or hidden; ${seen.screens.length} screen stills (${seen.screens.join(', ')}) show the Shake control, ${cfg.seasons.length} season marks and the sound control, and their stage differs from the canvas in ${seen.least} to ${seen.most} pixels${seen.reused ? `; ${seen.reused} pictures reused from records of this build` : ''}`,
+          ? `${dirty ? '' : `in ${measured} the stage is pixel-identical to the canvas and #ui is empty or hidden; `}${list(problems)}${reused}`
+          : `in ${measured} the stage is pixel-identical to the canvas and #ui is empty or hidden; ${seen.screens.length} screen stills (${seen.screens.join(', ')}) show the Shake control, ${cfg.seasons.length} season marks and the sound control, and their stage differs from the canvas in ${seen.least} to ${seen.most} pixels${reused}`,
       }
     },
   }
@@ -546,9 +553,10 @@ export function addChecks(checks, { cfg, phase, args, dir, run, tail, probe, gri
       const problems = []
       const texture = {}
       const counts = {}
+      const largest = Object.values(cfg.formats).reduce((a, b) => (b.width * b.height > a.width * a.height ? b : a))
       try {
         for (const [set, limit] of Object.entries(cfg.assetSets)) {
-          const page = await session.page({ format: cfg.formats.preview.id, assets: set })
+          const page = await session.page({ format: largest.id, assets: set })
           texture[set] = { most: 0, season: '' }
           for (const season of cfg.seasons) {
             const info = await page.evaluate(async (s) => {
@@ -593,7 +601,7 @@ export function addChecks(checks, { cfg, phase, args, dir, run, tail, probe, gri
         pass: problems.length === 0,
         detail: problems.length
           ? list(problems)
-          : `info().textureMb after all ${cfg.seasons.length} seasons were drawn: ${Object.entries(texture).map(([set, t]) => `${set} ${t.most} of ${cfg.assetSets[set].maxTextureMb} MB (most in ${t.season})`).join(', ')}; the most info().counts gives in any season through the app's path: ${levels.map((l) => `${l} ${counts[l].triangles} of ${cfg.perf.maxTriangles[l]} triangles and ${counts[l].drawCalls} of ${cfg.perf.maxDrawCalls} draw calls with ${counts[l].particles} particles`).join(', ')}${sameCounts ? '; the levels do not differ yet' : ''}`,
+          : `info().textureMb in ${largest.id}, the largest format, after all ${cfg.seasons.length} seasons were drawn on one page: ${Object.entries(texture).map(([set, t]) => `${set} ${t.most} of ${cfg.assetSets[set].maxTextureMb} MB (most in ${t.season})`).join(', ')}; the most info().counts gives in any season through the app's path in ${cfg.formats.hd.id}: ${levels.map((l) => `${l} ${counts[l].triangles} of ${cfg.perf.maxTriangles[l]} triangles and ${counts[l].drawCalls} of ${cfg.perf.maxDrawCalls} draw calls with ${counts[l].particles} particles`).join(', ')}${sameCounts ? '; the levels do not differ yet' : ''}`,
       }
     },
   }
@@ -617,6 +625,7 @@ export function addChecks(checks, { cfg, phase, args, dir, run, tail, probe, gri
         else if (!r.live.firstPicture) problems.push(`the built site opened in live mode but never set dataset.firstPicture within ${r.live.waitSeconds} s, so what loads before the first complete picture cannot be measured (${r.firstLoad.mb.toFixed(2)} MB fetched by then)`)
         else if (!(r.firstLoad.mb <= h.firstLoadMaxMb)) problems.push(`${r.firstLoad.mb.toFixed(2)} MB are fetched before the first complete picture, over host.firstLoadMaxMb ${h.firstLoadMaxMb}`)
         if (r.live?.errors?.length) problems.push(`the live page logged: ${r.live.errors[0]}`)
+        if (r.dist.never?.length) problems.push(`dist/ holds ${r.dist.never.join(', ')}, which the Hosting section says is never copied into it`)
       }
       return {
         pass: problems.length === 0,
@@ -673,7 +682,7 @@ export function addChecks(checks, { cfg, phase, args, dir, run, tail, probe, gri
       const label = (r) => [r.what, r.id, r.name, r.which].filter((v) => typeof v === 'string').join(' ') || path.basename(String(r.file ?? ''))
       const wanted = [['film B', /film[-_ ]?b\b/i]]
       if (phase >= 6) wanted.push(['the opening', /opening|film[-_ ]?a\b/i])
-      const frames = Math.round(cfg.export.proofSeconds * fps)
+      const rates = [fps, cfg.film.previewFps]
       const seen = []
       for (const [what, re] of wanted) {
         const r = results.find((x) => re.test(label(x)))
@@ -691,12 +700,14 @@ export function addChecks(checks, { cfg, phase, args, dir, run, tail, probe, gri
           problems.push(`ffprobe cannot read ${short(f)}`)
           continue
         }
-        const want = { width: cfg.formats.preview.width, height: cfg.formats.preview.height, fps, frames }
+        const want = { width: cfg.formats.preview.width, height: cfg.formats.preview.height }
         const off = Object.keys(want).filter((k) => p[k] !== want[k]).map((k) => `${k} is ${p[k]}, not ${want[k]}`)
+        if (!rates.includes(p.fps)) off.push(`fps is ${p.fps}, not film.fps ${fps} or film.previewFps ${cfg.film.previewFps}`)
+        else if (p.frames !== Math.round(cfg.export.proofSeconds * p.fps)) off.push(`frames is ${p.frames}, not ${Math.round(cfg.export.proofSeconds * p.fps)}, which is export.proofSeconds at ${p.fps} frames a second`)
         if (off.length) problems.push(`${what}, ${short(f)}: ${off.join(', ')}`)
         seen.push(`${what} ${short(f)}: ${p.codec}, ${p.width} x ${p.height}, ${p.fps} frames a second, ${p.frames} frames`)
       }
-      return { pass: problems.length === 0, detail: problems.length ? `${name}: ${list(problems)}` : `${name} names the current build ${hash}; ffprobe reads ${seen.join('; ')}, which is export.proofSeconds at film.fps in ${cfg.formats.preview.id}` }
+      return { pass: problems.length === 0, detail: problems.length ? `${name}: ${list(problems)}` : `${name} names the current build ${hash}; ffprobe reads ${seen.join('; ')}, each export.proofSeconds (${cfg.export.proofSeconds} s) long in ${cfg.formats.preview.id}` }
     },
   }
 
@@ -704,20 +715,24 @@ export function addChecks(checks, { cfg, phase, args, dir, run, tail, probe, gri
     at: [5],
     name: 'the review cuts',
     async run() {
-      const find = (id) => [rel('out', 'work', `review-${id}.mp4`), rel('out', `review-${id}.mp4`)].find((f) => fs.existsSync(f))
+      const ext = cfg.export.container
+      const places = (id) => [rel('out', 'work', `review-${id}.${ext}`), rel('out', 'work', 'review-cuts', id, cfg.export.files.reviewCut)]
       const makeable = cfg.audio.candidates.filter((c) => listFiles(rel('audio', 'mix')).some((f) => SOUND.test(f) && path.basename(f).replace(SOUND, '') === c))
       const frames = gridFrames(cfg.film.previewFps)
       const problems = []
       const seen = []
       const one = (id, sound) => {
-        const f = find(id)
-        if (!f) return problems.push(`out/work/review-${id}.mp4 does not exist. Run npm run film -- --review${sound ? ` --candidate ${id}` : ''}`)
+        const f = places(id).find((x) => fs.existsSync(x))
+        if (!f) {
+          const part = rel('out', 'work', `review-${id}-partial.${ext}`)
+          return problems.push(`out/work/review-${id}.${ext} does not exist${fs.existsSync(part) ? `; ${short(part)} does, and it is not the whole film` : ''}. Run npm run film -- --review${sound ? ` --candidate ${id}` : ''}`)
+        }
         const p = probe(f)
         if (!p) return problems.push(`ffprobe cannot read ${short(f)}`)
         const off = shape(p, frames)
         if (sound && !p.sound) off.push('it carries no sound stream')
         if (off.length) problems.push(`${short(f)}: ${off.join(', ')}`)
-        else seen.push(`${short(f)} (${p.frames} frames${p.sound ? ', with sound' : ', silent'})`)
+        else seen.push(`${short(f)} (${p.frames} frames${p.sound ? ', with a sound stream' : ', silent'})`)
       }
       if (makeable.length) for (const c of makeable) one(c, true)
       else one('silent', false)
@@ -726,7 +741,7 @@ export function addChecks(checks, { cfg, phase, args, dir, run, tail, probe, gri
         pass: problems.length === 0,
         detail: problems.length
           ? `${list(problems)}${not.length ? `; no mix exists in audio/mix/ for ${not.join(', ')}` : ''}`
-          : `${makeable.length ? `one review cut for each of the ${makeable.length} candidates with a mix in audio/mix/` : 'no candidate has a mix in audio/mix/, and one review cut without music exists'}: ${seen.join(', ')}, each ${cfg.formats.preview.width} x ${cfg.formats.preview.height} at ${cfg.film.previewFps} frames a second on the default grid${makeable.length && not.length ? `; no mix exists for ${not.join(', ')}` : ''}`,
+          : `${makeable.length ? `one review cut for each of the ${makeable.length} candidates with a mix in audio/mix/` : 'no candidate has a mix in audio/mix/, and one review cut without music exists'}: ${seen.join(', ')}, each ${cfg.formats.preview.width} x ${cfg.formats.preview.height} at ${cfg.film.previewFps} frames a second with the frame count of the default grid${makeable.length && not.length ? `; no mix exists for ${not.join(', ')}` : ''}`,
       }
     },
   }
