@@ -37,16 +37,16 @@ Status 36 · 2026-11-24 14:04 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 14:04 UTC
-clock: phase 3, tick of 3.9 minutes
-phase 3: 5.61 h used of its 11.00 h box
-allowance (before the review): 12.22 h used of 36.00 h allowed
-all time before the review: 12.22 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 14:08 UTC
+clock: phase 3, tick of 1.4 minutes
+phase 3: 5.68 h used of its 11.00 h box
+allowance (before the review): 12.29 h used of 36.00 h allowed
+all time before the review: 12.29 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 3
 ```
 
 ## Phases
@@ -738,6 +738,15 @@ Merged into `main`, each verified here with types clean and the tests green (126
   - `round_renderer` (a render agent, not a build agent), `agent/p3-round3-pack`: measures and the pack of round 3 at `final` tier on commit `2faac9e`; limit 90 minutes.
   - `repo_courier` was told to stop watching the looks branches and stays idle as the push fallback.
 
+- 2026-11-24 14:08 UTC · Round 3's render agents and critics. All run in their own sandboxes and start no agents. Sixteen agents are running, which is `sandbox.maxAgents`: the ten finishers, and six in the critic slots (two render agents and four critics). The jurors of R2 are started as critics finish.
+  - `motion_renderer` (a render agent), `agent/p3-round3-motion`: R4's motion sheets of round 3 at `review` tier on commit `2faac9e`; limit 75 minutes; started 13:58.
+  - `gate_runner` (a render agent), no branch: `npm run gate -- --phase 3` on a clean clone of `2faac9e`, the machine checks of round 3, reported as the gate prints them; limit 80 minutes; started 14:05. It changes no file.
+  - `round_renderer` reported at 14:05 after 49 minutes and is idle: measures complete, the pack of R1, R2 and R3 complete, nothing missing, no command failed. The gate's own stand-ins picture came back black in its sandbox (noted, not looked into: it is not part of this round).
+  - `reviewer_r3_a`: R1 (the match to the approved images), 8 files, asked on `gpt_6_2_sol`, started 14:07, limit `budget.agentWaitMinutes`.
+  - `reviewer_r3_b`: R3 part 1 (rest, landed and the interior view), 9 files, asked on `claude_opus_5_5`, started 14:07.
+  - `reviewer_r3_c`: R3 part 2 (the base, the surface and the settled view), 9 files, asked on `gemini_4_carbon`, started 14:07.
+  - `reviewer_r3_d`: R3 part 3 (the macro view), 3 files, asked on `kimi_k3`, started 14:07, answered 14:08: score 4, 3 severe, 7 major, 2 minor. Written to `scorecards/round-003/R3-3.json`.
+
 ## Rounds
 
 One line per round: its number, the unit, the commit it judged, each part ticked off as it finished, the scores, and what changed next.
@@ -746,7 +755,7 @@ One line per round: its number, the unit, the commit it judged, each part ticked
 
 - Round 2 · blockout (Phase 2, the floor round; the last the config allows) · judges commit `9ade96d` · started 2026-11-24 07:57 UTC. Parts: [x] build · [x] machine checks (G1 to G12 and G14 green at 08:09; D2 and D3 wait for step 14) · [x] measures (M1 and M6 for winter at draft: 14 lines, none red) · [x] pack (19 files in two parts, none missing, 08:15) · [x] critic part 1 (`claude_opus_5_5`, answered 08:38: 6, four major, none severe) · [x] critic part 2 (`gpt_6_2_astra`, answered 08:21: 8, two major, none severe) · [x] issues read · [x] logged (merged score 6 against a bar of 7, no severe issue open: round 2 does not pass, and it was the last blockout round; `scorecards/round-002/SUMMARY.md`; open items 25 to 29)
 
-- Round 3 · winter (Phase 3, the look lock; winter's first round) · judges commit `2faac9e` · started 2026-11-24 13:17 UTC. Parts: [ ] build · [ ] machine checks · [ ] measures (M1 to M6 at `final` tier) · [ ] pack (`final` tier, the `full` set; rendered by a render agent in its own sandbox, fetched from `agent/p3-round3-pack`) · [ ] R1 · [ ] R2 (the jury) · [ ] R3 · [ ] R4 · [ ] issues read · [ ] fixes · [ ] logged
+- Round 3 · winter (Phase 3, the look lock; winter's first round) · judges commit `2faac9e` · started 2026-11-24 13:17 UTC. Parts: [x] build (the judged build is `2faac9e`, engine hash `c18b4b561b115610`) · [ ] machine checks (G15 green here at 13:58; the whole Phase 3 gate is being run on `2faac9e` by the render agent `gate_runner` in its own sandbox, started 14:05) · [x] measures (14:05, by `round_renderer` at `final` tier: 24 of 24 lines, 1 red: M3 `winter-rest` 0.7156 against 0.75, the base 0.716 of the approved image's fine detail, the miniature 1.017; M4 1, M5 0.9903; in `scorecards/round-003/measures-winter.md`) · [ ] pack (`final` tier, the `full` set; rendered by a render agent in its own sandbox, fetched from `agent/p3-round3-pack`; 14:06: R1, R2 and R3 are in, 34 files in five parts, none missing, branch head `74487b4`; R4's motion sheets are being rendered at `review` tier by `motion_renderer` on `agent/p3-round3-motion`) · [ ] R1 · [ ] R2 (the jury) · [ ] R3 (three parts; part 3, the macro view, answered 14:08: 4) · [ ] R4 · [ ] issues read · [ ] fixes · [ ] logged
 
 ## Final scores
 
