@@ -43,6 +43,13 @@ export interface ParticleSource {
   readonly phase?: Float32Array
 }
 
+export interface Emitter {
+  x: number
+  y: number
+  z: number
+  r: number
+}
+
 export interface StageQuality {
   particleFraction: number
   shadowMapPx: number
@@ -57,6 +64,7 @@ export interface Stage {
   setDiagnostic(view: string): void
   setQuality?(level: StageQuality): void
   collider?(season: string): SdfGrid
+  emitters?(season: string): Record<string, Emitter[]>
   particleCount(): number
   textureBytes(): number
 }
