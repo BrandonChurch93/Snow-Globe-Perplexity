@@ -338,8 +338,8 @@ export interface Cluster {
 const DOME = 0.3
 const BODY = { blend: 0.5, bias: 0.4 }
 const TOP_DROP = 1.56
-const CAP = { lift: 1.2, thick: 0.25, cover: 0.66, fore: 0.12, lee: 0.12, skew: 0.45, rim: 0.85, swell: 0.95, sink: 0.1, slope: 0.75, depth: 0.25, lip: 0.4, droop: 1.6 }
-const LOADS: readonly (readonly [number, number])[] = [[1.05, 1.05], [0.9, 1.04], [0.95, 1.06], [0.6, 0.9], [0.85, 1], [1, 1.05], [0.35, 0.6], [1.2, 1.1], [0.75, 0.95], [1.3, 1.08]]
+const CAP = { lift: 1.2, thick: 0.25, cover: 0.66, fore: 0.12, lee: 0.12, skew: 0.45, rim: 0.95, swell: 0.95, sink: 0.1, slope: 0.75, depth: 0.25, lip: 0.4, droop: 1.6 }
+const LOADS: readonly (readonly [number, number])[] = [[1.05, 1], [0.9, 0.88], [0.95, 0.9], [0.6, 0.8], [0.85, 0.86], [1, 0.92], [0.35, 0.6], [0.85, 1.02], [0.7, 0.95], [0.9, 1.02]]
 const wobble = (x: number, h: number, z: number): number => 0.16 * Math.sin(1.9 * x + 0.3 * h) * Math.sin(2.3 * h + 1.1 * z) * Math.sin(1.7 * z + 0.5 * x) + 0.07 * Math.sin(4.3 * x + 1) * Math.sin(3.9 * h + 2) * Math.sin(4.7 * z)
 const dome = (rim: number): number => 1 - DOME * Math.pow(rim, 1.5)
 
@@ -448,11 +448,11 @@ export function crownCap(x: number, h: number, z: number): number {
     const fore = d / f.size[2] - CAP.fore
     const lee = s / f.size[0] + CAP.lee
     const turn = Math.atan2(fore, lee)
-    const edge = (lee * lee + fore * fore) / (f.cover * (1 + 0.24 * Math.sin(2 * turn + 2.3 * f.n) + 0.2 * Math.sin(3 * turn + 1.7 * f.n) + 0.12 * Math.sin(5 * turn + 2.9 * f.n)))
+    const edge = (lee * lee + fore * fore) / (f.cover * (1 + 0.2 * Math.sin(2 * turn + 2.3 * f.n) + 0.16 * Math.sin(3 * turn + 1.7 * f.n) + 0.1 * Math.sin(5 * turn + 2.9 * f.n)))
     const load = Math.sqrt(Math.max(0, 1 - edge))
     const swell = CAP.swell * (Math.sin(0.75 * s + 1.9 * f.n) * Math.sin(0.8 * d + 2.6 * f.n) + 0.35 * Math.sin(1.5 * s - 1.2 * d + f.n))
     const top = f.size[1] * dome(rim) - f.drop + (f.lift * (1 - CAP.skew * lee) + swell) * load - CAP.sink - 0.8 * Math.max(0, edge - 1)
-    const body = Math.max(CAP.slope * (v - top), 2 * (Math.sqrt(Math.max(edge, rim / CAP.rim)) - 1.02))
+    const body = Math.max(CAP.slope * (v - top), 1.2 * (Math.sqrt(Math.max(edge, rim / CAP.rim)) - 1.02))
     const hem = 0.6 * Math.sin(0.93 * s + 1.7 * f.n) * Math.sin(0.81 * d + 2.3 * f.n) + 0.4 * Math.sin(1.73 * s - 1.12 * d + f.n) + 0.25 * Math.sin(3.1 * s + 2.7 * d + 0.6 * f.n)
     const line = f.size[1] * dome(rim) - f.drop - CAP.depth + hem - CAP.droop * rim * rim
     const cut = line - v

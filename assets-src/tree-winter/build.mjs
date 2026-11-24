@@ -7,7 +7,7 @@ import { blurWrap, loadSource, luma, readPicture, seamless, toBytes, writePng } 
 
 const TAU = Math.PI * 2
 const NEEDLE_CELL = 0.62
-const SNOW_CELL = 0.56
+const SNOW_CELL = 0.45
 const NEEDLE_TILE_MM = 9
 const SNOW_TILE_MM = 7
 const STAR_AT = [0.25, 45.2, 0.1]
@@ -220,7 +220,7 @@ function snow() {
     const open = 0.45 * openness(both, x, h, z, n, 0.6) + 0.55 * openness(both, x, h, z, n, 1.8)
     const lit = 0.5 + 0.5 * (n[0] * SNOW_KEY[0] + n[1] * SNOW_KEY[1] + n[2] * SNOW_KEY[2])
     const deep = needleField(x, h, z)
-    const shade = (0.4 + 0.6 * Math.pow(open, 1.3)) * (0.2 + 0.95 * Math.pow(lit, 5)) * (0.6 + 0.4 * smooth(0.1, 1.7, deep))
+    const shade = (0.4 + 0.6 * Math.pow(open, 1.3)) * (0.36 + 0.78 * Math.pow(lit, 4)) * (0.6 + 0.4 * smooth(0.1, 1.7, deep))
     const cool = 1 - lit * lit
     uv.push(x / SNOW_TILE_MM, h / SNOW_TILE_MM)
     thin.push(deep, 0)
@@ -536,7 +536,7 @@ function arrival() {
     const col = []
     const index = []
     const across = 7
-    const most = limb.kind === 'root' ? 0.46 : 0.44
+    const most = limb.kind === 'root' ? 0.46 : 0.3
     for (let i = 0; i < f.length; i++) {
       const tan = f[i].tan
       const u = up.clone().sub(tan.clone().multiplyScalar(up.dot(tan)))
@@ -558,7 +558,7 @@ function arrival() {
         pos.push(p1.x, p1.y, p1.z)
         base.push(p0.x, p0.y, p0.z, seed)
         uv.push(p1.x / SNOW_TILE_MM, p1.z / SNOW_TILE_MM)
-        const shade = 0.82 + 0.18 * edge
+        const shade = 0.56 + 0.2 * edge
         col.push(shade * 0.93, shade * 0.96, shade)
       }
     }

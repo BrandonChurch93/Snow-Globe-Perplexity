@@ -7,6 +7,8 @@ import { blurWrap, loadSource, luma, normalsOf, readPicture, seamless, toBytes, 
 const TAU = Math.PI * 2
 const AROUND = 144
 const MAP_PX = 2048
+const PLATES = { across: 10, down: 6, tall: 0.6, crack: 0.09, dark: 0.22, sway: 0.1, hue: 0.72 }
+const lerp = (a, b, t) => a + (b - a) * t
 
 const [T] = await loadSource(['/src/miniature/trunk.ts'])
 const S = T.trunkShape
@@ -143,13 +145,41 @@ async function barkMaps() {
   const wide = blurWrap(l, w, h, Math.round(w / 14))
   const colour = new Float32Array(img.px.length)
   const height = new Float32Array(w * h)
+  const seeds = []
+  for (let cy = 0; cy < PLATES.down; cy++) for (let cx = 0; cx < PLATES.across; cx++) seeds.push([cx + 0.15 + 0.7 * hash(cx * 7.3 + cy * 13.1 + 1), cy + 0.15 + 0.7 * hash(cx * 3.7 + cy * 5.9 + 2), hash(cx * 11.7 + cy * 2.3 + 3)])
   for (let i = 0; i < w * h; i++) {
+    const grain = l[i] / Math.max(wide[i], 0.05)
+    const px = (((i % w) / w) * PLATES.across + PLATES.sway * (grain - 1) + PLATES.across) % PLATES.across
+    const py = (Math.floor(i / w) / h) * PLATES.down
+    const cx = Math.floor(px)
+    const cy = Math.floor(py)
+    let f1 = 9
+    let f2 = 9
+    let tone = 0
+    for (let oy = -1; oy <= 1; oy++) {
+      for (let ox = -1; ox <= 1; ox++) {
+        const sx = (((cx + ox) % PLATES.across) + PLATES.across) % PLATES.across
+        const sy = (((cy + oy) % PLATES.down) + PLATES.down) % PLATES.down
+        const seed = seeds[sy * PLATES.across + sx]
+        const d = Math.hypot(seed[0] - sx + cx + ox - px, (seed[1] - sy + cy + oy - py) * PLATES.tall)
+        if (d < f1) {
+          f2 = f1
+          f1 = d
+          tone = seed[2]
+        } else if (d < f2) f2 = d
+      }
+    }
+    const whole = smooth(0.02, PLATES.crack, f2 - f1)
     const flat = 0.3 / Math.max(wide[i], 0.05)
-    const k = (0.55 + 0.45 * flat) * Math.pow(Math.max(l[i], 0.02) / Math.max(wide[i], 0.05), 0.35)
-    colour[i * 3] = Math.pow(img.px[i * 3] * k, 0.92) * 1.16
-    colour[i * 3 + 1] = Math.pow(img.px[i * 3 + 1] * k, 0.92) * 1.02
-    colour[i * 3 + 2] = Math.pow(img.px[i * 3 + 2] * k, 0.92) * 0.9
-    height[i] = l[i] / Math.max(wide[i], 0.05)
+    const k = (0.55 + 0.45 * flat) * Math.pow(grain, 0.2) * (PLATES.dark + (1 - PLATES.dark) * whole) * (0.84 + 0.3 * tone)
+    const r = Math.pow(img.px[i * 3] * k, 0.92) * 1.16
+    const g = Math.pow(img.px[i * 3 + 1] * k, 0.92) * 1.02
+    const b = Math.pow(img.px[i * 3 + 2] * k, 0.92) * 0.9
+    const grey = 0.3 * r + 0.6 * g + 0.1 * b
+    colour[i * 3] = lerp(grey, r, PLATES.hue + 0.2 * tone)
+    colour[i * 3 + 1] = lerp(grey, g, PLATES.hue + 0.2 * tone)
+    colour[i * 3 + 2] = lerp(grey, b, PLATES.hue + 0.2 * tone)
+    height[i] = 0.45 * grain + 0.9 * whole + 0.3 * tone
   }
   const soft = blurWrap(height, w, h, 2)
   const fine = blurWrap(height, w, h, 1)

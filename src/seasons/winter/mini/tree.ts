@@ -30,8 +30,8 @@ const FILL_ON_WOOD = { power: 3, reachMm: 1000, wrap: 0.4 }
 const SKY_ON_SNOW = { power: 1.25, reachMm: 14, wrap: 0.15 }
 const SKY_FROM: Vec3 = [20, 42, 7]
 const FILL_FROM: Vec3 = [40, 20, 60]
-const BARK: [number, number, number] = [0.09, 0.105, 0.1]
-const SNOW_TINT: [number, number, number] = [1.16, 1.18, 1.28]
+const BARK: [number, number, number] = [0.108, 0.126, 0.12]
+const SNOW_TINT: [number, number, number] = [1.33, 1.36, 1.47]
 const NEEDLE_TINT: [number, number, number] = [1.3, 1.82, 3.84]
 const NEEDLE_LIT = 'vec3(1.55, 1.02, 0.78)'
 const LAMP_ON_NEEDLES = { power: 9, reachMm: 12, wrap: 0.1 }
@@ -45,6 +45,9 @@ const FOG_DIM = { from: 0.5, to: 0.9, cap: 0.6 }
 const STAR_LOCAL: Vec3 = [0.25, 45.2, 0.1]
 const SPARKLE = { share: 0.014, perMm: 8, gain: 1.4 }
 const EDGE_MM = 0.42
+const EDGE_PER_MM = 24
+const PORE_MM = 0.55
+const PORE_SHADE = 0.72
 const STEM_LIGHTS: readonly Vec3[] = [[1.2, 12.5, 4.4], [-0.4, 19.5, 3.6], [0.2, 27, 3]]
 
 const offset = crownOffset()
@@ -114,7 +117,7 @@ const SNOW_MAP = `vec3 treeN = normalize(vTreeN);
 vec4 treeC = treeTri(map, vTreeP * uTile, treeN);
 float treeH = treeC.g + 0.6 * treeTri(map, vTreeP * uTile * 3.3 + 0.37, treeN).g;
 ${TREE_SLOPES}
-float treeGlint = step(${(1 - SPARKLE.share).toFixed(4)}, stageHash(floor(vTreeP * ${SPARKLE.perMm.toFixed(1)}) + 0.5));
+float treeGlint = step(${(1 - SPARKLE.share).toFixed(4)}, stageHash(floor(vTreeP * ${SPARKLE.perMm.toFixed(1)}) + 4096.5));
 diffuseColor.rgb *= mix(vec3(1.0), treeC.rgb, 0.3) * (1.0 + ${SPARKLE.gain.toFixed(2)} * treeGlint);`
 
 function snowFragment(shader: Shader): void {
@@ -136,7 +139,8 @@ function snowHook(shader: Shader): void {
   snowFragment(shader)
   shader.fragmentShader = shader.fragmentShader
     .replace('#include <common>', '#include <common>\nvarying float vTreeEdge;')
-    .replace('vec3 treeN = normalize(vTreeN);', `if (vTreeEdge < ${EDGE_MM.toFixed(2)} * stageHash(floor(vTreeP * ${SPARKLE.perMm.toFixed(1)}) + 0.5)) discard;\nvec3 treeN = normalize(vTreeN);`)
+    .replace('vec3 treeN = normalize(vTreeN);', `float treePore = stageHash(floor(vTreeP * ${EDGE_PER_MM.toFixed(1)}) + 4096.5);\nif (vTreeEdge < ${EDGE_MM.toFixed(2)} * treePore) discard;\nvec3 treeN = normalize(vTreeN);`)
+    .replace('#include <normal_fragment_begin>', `#include <normal_fragment_begin>\nif (vTreeEdge < ${EDGE_MM.toFixed(2)} * treePore + ${PORE_MM.toFixed(2)} * treePore * treePore * treePore) diffuseColor.rgb *= ${PORE_SHADE.toFixed(2)};`)
 }
 
 function arrivalHook(shader: Shader): void {
