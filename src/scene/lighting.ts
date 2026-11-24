@@ -29,7 +29,7 @@ export const ROOM_RIG = {
   room: { gain: 1, lights: 1, softPerRough: 0.5, lightsBelowRough: 0.62 },
   grid: { flat: 0.1, wrap: 0.3, specular: 1, openFloor: 0.35, air: 0.62 },
   bloomGain: 9,
-  flood: { inside: 14, insideMm: 18, outside: 18, ease: 4, wrap: 0.35, near: 0.3, nearMm: 10, floor: 0.18, floorMm: 50, pool: 45 },
+  flood: { inside: 12, insideMm: 8, outside: 18, ease: 4, wrap: 0.35, near: 0.3, nearMm: 10, floor: 0.18, floorMm: 50, pool: 45 },
   glow: { outside: 0.8, islandMm: innerRadiusMm * 0.88, lobe: 0.3, specular: 1 },
 } as const
 
@@ -209,5 +209,9 @@ export class Lighting {
     const ease = through > 0 ? Math.expm1(ROOM_RIG.flood.ease * through) / (Math.expm1(ROOM_RIG.flood.ease) * through) : 0
     u.uLightFloodFloor.value.w = ROOM_RIG.flood.outside * ease
     u.uLightFloodAt.value.z = ROOM_RIG.flood.inside * ease
+    if (f.pose) {
+      u.uLightEye.value.set(f.pose.position.x - f.globe.x, f.pose.position.y - f.globe.y, f.pose.position.z - f.globe.z).applyMatrix3(u.uLightFrame.value)
+      u.uLightEye.value.y -= centreHeightMm
+    }
   }
 }

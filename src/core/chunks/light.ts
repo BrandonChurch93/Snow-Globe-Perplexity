@@ -37,6 +37,7 @@ export const lightUniforms = {
   uLightFloodAt: { value: new THREE.Vector4(60, 0.35, 0.84, 40) },
   uLightFloodFloor: { value: new THREE.Vector4(-79, 50, 0.18, 70) },
   uLightFloodNear: { value: new THREE.Vector2(1, 10) },
+  uLightEye: { value: new THREE.Vector3(0, 0, 400) },
   uRigKeyDir: { value: new THREE.Vector3(0, 1, 0) },
   uRigKeyIn: { value: new THREE.Vector3(0, 1, 0) },
   uRigKeyCol: { value: new THREE.Color(0, 0, 0) },
@@ -64,6 +65,11 @@ export const gridAir = (lum: number, knee: number): number => {
   return (q * q) / Math.max(q * q + k * k, 1e-9)
 }
 
+export const floodCore = (offMm: number, reachMm: number): number => {
+  const q = 1 + (offMm * offMm) / (reachMm * reachMm)
+  return 1 / (q * Math.sqrt(q))
+}
+
 const f1 = (v: number) => v.toFixed(1)
 
 export const LIGHT_FRAG_PARS = `
@@ -81,6 +87,7 @@ uniform vec3 uLightFlood;
 uniform vec4 uLightFloodAt;
 uniform vec4 uLightFloodFloor;
 uniform vec2 uLightFloodNear;
+uniform vec3 uLightEye;
 uniform vec3 uRigKeyDir;
 uniform vec3 uRigKeyIn;
 uniform vec3 uRigKeyCol;
@@ -110,8 +117,9 @@ float stageGridGain(vec4 share, vec4 gain) {
 }
 vec3 stageFlood(vec3 local) {
   vec3 d = local - uLightGlowAt.xyz;
-  float q = dot(d, d) / (uLightFloodAt.w * uLightFloodAt.w);
-  return uLightFlood * (uLightFloodAt.z / (1.0 + q * q));
+  float along = dot(d, normalize(local - uLightEye));
+  float q = 1.0 + max(dot(d, d) - along * along, 0.0) / (uLightFloodAt.w * uLightFloodAt.w);
+  return uLightFlood * (uLightFloodAt.z / (q * sqrt(q)));
 }
 vec3 stageGridAir(vec3 colour) {
   float l = dot(colour, vec3(0.2126, 0.7152, 0.0722));

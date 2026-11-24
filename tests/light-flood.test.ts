@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { config } from '../src/config'
-import { LIGHT_FRAG, LIGHT_FRAG_PARS, lightUniforms } from '../src/core/chunks/light'
+import * as THREE from 'three'
+import { LIGHT_FRAG, LIGHT_FRAG_PARS, floodCore, lightUniforms } from '../src/core/chunks/light'
 import type { Moment } from '../src/core/stage'
 import { newFrame } from '../src/scene/frame'
+import { centreHeightMm, innerRadiusMm } from '../src/scene/layout'
 import { Lighting, ROOM_RIG } from '../src/scene/lighting'
 import { glowOf } from '../src/scene/lightgrid'
 import { kitOf } from '../src/seasons'
@@ -111,6 +113,46 @@ describe('the flood of a change', () => {
     expect(outside).toContain('uLightFlood')
     expect(outside).toContain('reflectedLight.indirectDiffuse += lgFlood')
     for (const n of ['uLightFlood', 'uLightFloodAt', 'uLightFloodFloor', 'uLightFloodNear']) expect(Object.keys(lightUniforms)).toContain(n)
+  })
+})
+
+describe('the source of the flood inside the glass', () => {
+  it('is measured from the line of sight, so it has a core and the rim keeps its own light', () => {
+    const flood = LIGHT_FRAG_PARS.slice(LIGHT_FRAG_PARS.indexOf('vec3 stageFlood(vec3 local)'), LIGHT_FRAG_PARS.indexOf('vec3 stageGridAir'))
+    expect(flood).toContain('float along = dot(d, normalize(local - uLightEye));')
+    expect(flood).toContain('float q = 1.0 + max(dot(d, d) - along * along, 0.0) / (uLightFloodAt.w * uLightFloodAt.w);')
+    expect(flood).toContain('return uLightFlood * (uLightFloodAt.z / (q * sqrt(q)));')
+    const reach = ROOM_RIG.flood.insideMm
+    expect(floodCore(0, reach)).toBe(1)
+    expect(floodCore(reach, reach)).toBeCloseTo(2 ** -1.5, 12)
+    expect(floodCore(innerRadiusMm * 0.45, reach)).toBeLessThan(0.04)
+    expect(floodCore(innerRadiusMm * 0.95, reach)).toBeLessThan(0.004)
+    let before = 1
+    for (let mm = 1; mm <= innerRadiusMm; mm++) {
+      const v = floodCore(mm, reach)
+      expect(v).toBeLessThan(before)
+      before = v
+    }
+    expect(Object.keys(lightUniforms)).toContain('uLightEye')
+  })
+
+  it('takes the eye into the frame of the globe, moved and tilted with it', () => {
+    const light = new Lighting(quality.shadowMapPx)
+    const f = newFrame(winter, quality)
+    f.moment = { season: 'winter', from: 'winter', to: 'winter', change: 0.5, sinceLanding: 0, globe: REST_POSE, mix: 0, seed: 1, time: 0, beat: null, period: null } as Moment
+    f.pose = { position: new THREE.Vector3(30, centreHeightMm + 12, 400), aim: new THREE.Vector3(), fovDeg: 30, focusMm: 400, apertureMm: 2 }
+    light.update(f)
+    const eye = lightUniforms.uLightEye.value
+    expect(eye.x).toBeCloseTo(30, 9)
+    expect(eye.y).toBeCloseTo(12, 9)
+    expect(eye.z).toBeCloseTo(400, 9)
+    f.globe = { x: 5, y: 20, z: -8, tiltX: 0.3, tiltZ: -0.2 }
+    light.update(f)
+    const turn = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(0.3, 0, -0.2))
+    const back = new THREE.Vector3(eye.x, eye.y + centreHeightMm, eye.z).applyMatrix4(turn).add(new THREE.Vector3(5, 20, -8))
+    expect(back.x).toBeCloseTo(30, 6)
+    expect(back.y).toBeCloseTo(centreHeightMm + 12, 6)
+    expect(back.z).toBeCloseTo(400, 6)
   })
 })
 
