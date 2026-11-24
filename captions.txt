@@ -1,4 +1,4 @@
-01-card-still.jpg: Card still: frame 0 of the card loop, preview, draft, as tools/loop.mjs wrote it from the rendered frame. Blockout scene.
-02-stress-shake-1-5mbps.jpg: Stress: shake-1, frame 666 of film B, hd, draft, taken back out of the 5 Mbps encode (42.7 dB against the frame before encoding).
-03-proof-film-b-749.jpg: Local render proof: film B frame 749, just after the landing at 720, preview, draft, 60 frames a second, software graphics.
-04-test-kept-and-this-machine.jpg: render-local --test --rehearse: the kept still winter-rest (left) beside the same still rendered now (right), PSNR 44.6 dB. The kept still is from an older build.
+01-film-b-joined-sheet.jpg: Film B joined from its 9 chunks, preview, draft, 30 frames a second: frames 150, 359, 360, 700 (top) and 1100, 1439, 1440, 1790 (bottom) taken back out of out/work/film-b-preview-draft.mp4. 359 to 360 and 1439 to 1440 are chunk joins. Blockout scene.
+02-card-still-hd.jpg: Card still: frame 0 of the whole card loop, hd, draft, written by tools/loop.mjs from the rendered frame.
+03-stress-shake-1-5mbps.jpg: Stress: shake-1, frame 666 of film B, hd, draft, taken back out of the 5 Mbps encode (42.7 dB against the frame before encoding, 46.5 dB at 20 Mbps).
+04-test-kept-and-this-machine.jpg: render-local --test --rehearse: the kept still winter-rest (left) beside the same still rendered now (right), PSNR 44.6 dB. The kept still is from an older build of the engine.
