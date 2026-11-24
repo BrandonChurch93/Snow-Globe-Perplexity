@@ -31,6 +31,11 @@ Each has its recipe, with the full prompt, beside it. None shows a person, a han
 | --- | --- | --- | --- | --- | --- | --- |
 | `assets-src/trunk/bark-take1.png` | The bark sheet of the tree's trunk and limbs (colour and the height the normal map is taken from) | Nano Banana Pro through the image tool of this product | `references/approved/winter-rest.png`, x 1490, y 700, 170 by 190 px | 1 made, take 1 kept | `assets-src/trunk/RECIPE.md` | 2026-11-24 |
 | `assets-src/tree-winter/needles-take1.png` | The foliage sheet of winter's tree | Nano Banana Pro through the image tool of this product | `references/approved/winter-rest.png`, x 1340, y 360, 440 by 340 px | 1 made, take 1 kept | `assets-src/tree-winter/RECIPE.md` | 2026-11-24 |
+| `assets-src/base-winter/gen/wood-take1.png` | The wood sheet of winter's base (colour, and the fine grain the detail map is taken from) | Nano Banana Pro through the image tool of this product (take 2, not kept, was GPT Image 2.6 Flare) | `references/approved/winter-rest.png`, x 850, y 1040, 1120 by 430 px | 2 made, take 1 kept | `assets-src/base-winter/RECIPE.md` | 2026-11-24 |
+| `assets-src/base-winter/gen/carving-take1.png` | A height field of carved leaf sprays, pressed into the wood of winter's base (the long sprays and the fan with berries) | Nano Banana Pro through the image tool of this product | `references/approved/winter-rest.png`, x 960, y 1150, 600 by 250 px, enlarged to 1800 by 750 | 2 made, both kept and both used | `assets-src/base-winter/RECIPE.md` | 2026-11-24 |
+| `assets-src/base-winter/gen/carving-take2.png` | A second height field of carved ornaments for the same base (the short twigs and the fan), so no two neighbours on the ring are the same spray | GPT Image 2.6 Sunburst through the image tool of this product | The same crop as take 1 | 2 made, both kept and both used | `assets-src/base-winter/RECIPE.md` | 2026-11-24 |
+
+Made by script, with no generated picture in them (2026-11-24): `assets-full/shared/scene-slab-detail.lin.tile.png` (2048 by 2048, 4,339,349 bytes) and `assets-full/shared/scene-slab-stone.lin.tile.png` (1024 by 1024, 1,594,214 bytes), both by `assets-src/scene/build.mjs` through `npm run make -- scene`, seeded noise only, 0 takes; the recipe is `assets-src/scene/RECIPE.md`.
 
 ## Generated sounds
 

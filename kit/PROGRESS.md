@@ -37,16 +37,16 @@ Status 34 · 2026-11-24 13:08 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 13:08 UTC
-clock: phase 3, tick of 12.0 minutes
-phase 3: 4.69 h used of its 11.00 h box
-allowance (before the review): 11.30 h used of 36.00 h allowed
-all time before the review: 11.30 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 13:16 UTC
+clock: phase 3, tick of 7.7 minutes
+phase 3: 4.81 h used of its 11.00 h box
+allowance (before the review): 11.43 h used of 36.00 h allowed
+all time before the review: 11.43 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 7
 ```
 
 ## Phases
@@ -511,6 +511,8 @@ Numbered. What, why, and the date.
 
 48. Built assets were committed more than once per round by build agents; the rule is restored and the cost is logged (12:22 UTC, Phase 3). `AGENTS.md` says built assets are committed once per round, after the best take is chosen, never per take and never per tuning look, because history cannot be rewritten. My own clone kept `assets-full/` and `public/assets/` out of commits with two local exclude lines; the build agents' clones did not have those lines, so their tuning looks went into history: 6 versions of the slab's frost tile (about 54 MB), 3 of the glass's frost tile (about 41 MB), 5 of the tree's crown model, 6 of winter's base model, 4 of the tree's sprigs. The pack stood at 258 MiB when found, against `repo.maxTreeGb` 2 and `repo.maxPushGb` 1; no file passes `repo.maxFileMb` 45. Nothing can be taken back. What was done: the two exclude lines were removed so `main` is consistent (everything under `public/assets/` that the code asks for is tracked, which also lets a clean clone open the app; see open item 30); every builder was told at 12:23 to commit no built file again until its one final commit of the best take; from the second wave on, a builder's brief carries the rule in its first lines and the exclude lines are written into its clone at the start. Listed in the REVIEW block.
 
+49. The second set of build agents is the one replacement the limits table allows per job, and it carries the fix work of winter's first round; loading is a new job; looks are counted per part per round from round 1 on (13:18 UTC, Phase 3). `kit/07-QUALITY-BAR.md` gives a build agent `budget.buildAgentMaxHours`, "then one replacement". All ten first builders reached that limit at about 13:00 with their parts built and the picture still short of the approved images in ways each of them named in its final report. Reading taken: each job gets its one replacement now (`tree`, `village`, `base`, `frost`, `flakes`, `liquid`, `scene`, `glass`, `light`; the light's replacement also owns `src/shake/`, where the first shake builder had nothing left to change), and the replacement's brief is the first builder's own list of what is still wrong plus two side by side pictures against the approved images; the round's critic findings are added per part when they arrive. One job is new, not a replacement: the first load (open item 30: `host.firstLoadMaxMb` against the measured first load). No job gets a third agent: after these, a part's fixes are `/root`'s own work, or a later round's fix list for that part is logged as a new job before anyone is started on it. The tuning looks: `kit/07` counts `assets.maxTuningLooksPerPart` "per part, per round, and per phase for parts tuned outside a round". The first builders tuned outside a round and four of them spent or passed the phase's count (base 42 viewed, village about 51, flakes about 51, scene 44; logged here as limits passed, not as passes). From round 1 on the count is per part per round, and every finisher's brief says so and asks for the count in the final report. Built files: the finishers commit none; `/root` makes them again with `npm run make -- <part>` and `npm run texpack` (tested at 13:11: every part's script reproduces its committed files bit for bit; base-winter 58 s, frost-winter 33 s, village-winter 13 s, tree-winter 10 s, trunk 5 s, scene 4 s, village 3 s, flakes under 1 s) and commits them once per round, as decision 48 restored.
+
 ## Notes from Brandon
 
 Numbered, in his words, with the date and how each was applied. Review round items carry their round's number.
@@ -593,6 +595,8 @@ Severe and major issues still open when a limit was reached: the unit, the still
 30. Until Phase 3 step 9 a clean clone of `main` builds an app that does not open (11:40 UTC, Phase 3). The code on `main` asks for winter's built textures and models, and those files are committed once per round (`AGENTS.md`, "Commit built assets once per round"), so between the first merge of a real part and the round's commit the repo holds the index that names them and not the files. `npm run hostcheck` shows it as a fail. The published app is built from the working folder and opens (checked at each publish with `out/work/bin/distcheck.mjs`). Closes when step 9 commits the built assets and `npm run hostcheck` passes.
 
 - Open item 30, update at 12:28 UTC: since decision 48 every built file the code asks for is tracked on `main`, so a clean clone can open the app. `npm run hostcheck` was run again at 12:28 on `be9c7d8`; its result is in the session log line that follows this one. The item stays open until the check passes, the web set's size included.
+
+31. A still made while the asset index is half written comes back as blockout shapes with no error (13:00 UTC, Phase 3; seen twice by the first frost builder while a texture pack was running beside the render). The frame looks like a valid picture, so it could reach a critic or a status. Until the still tool fails loudly on a missing or half written index: no render starts while `npm run texpack` or `npm run make` runs; the render agent of every round first makes one still, looks at it, and checks `--diag standins` is black before the measures and the pack; `/root` looks at one frame of every pack before it goes to critics. Fix owed in Phase 4 at the latest: the still tool exits non-zero when any part falls back to a stand-in that the register calls built.
 
 ## Review items not done
 
