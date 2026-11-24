@@ -35,7 +35,6 @@ export const SWAP_HALF = 0.22
 const HOLD = 0.6
 const GRAVITY_MM = 9810
 const STEER_GAIN = 1.5
-const DISPERSE = 1
 const CURL = 2.5 / (R * R)
 const NOISE_INV_CELL = (NOISE_N - 1) / (2 * R)
 const NOISE_TOP = NOISE_N - 1.0001
@@ -65,9 +64,10 @@ const ARM_TWIST = (TAU / 3) / 18
 const ROLL_SOFT = 1
 const ARM_HUB2 = 12 * 12
 const BANK_GAIN = 5
+const BANK_LOW = 0.15
 const BALL_ROOM_MM = 0.1
-const BANK_FROM = 24 / ROLL_RISE_MM
-const BANK_OVER = ROLL_RISE_MM / 24
+const BANK_FROM = 9 / ROLL_RISE_MM
+const BANK_OVER = ROLL_RISE_MM / 39
 const LEAP2 = 3 * 3
 
 const TABLE = 4096
@@ -736,7 +736,8 @@ export class ParticleEngine {
     if (b.sizeSigma > 0) {
       const raw = b.sizeMedianMm * Math.exp(b.sizeSigma * bell(u1, unit(hash2(i, 211 + k))))
       const size = raw < b.sizeMm[0] ? b.sizeMm[0] : raw > b.sizeMm[1] ? b.sizeMm[1] : raw
-      const speed = Math.sqrt(fall[0] * fall[1]) * Math.pow(size / b.sizeMedianMm, b.sinkPower) * Math.exp((lands ? b.sinkSigma : b.hangSigma) * bell(u2, unit(hash2(i, 231 + k))))
+      const spread = lands ? b.sinkSigma : size > b.sizeMedianMm ? b.hangSigma * Math.sqrt(b.sizeMedianMm / size) : b.hangSigma
+      const speed = Math.sqrt(fall[0] * fall[1]) * Math.pow(size / b.sizeMedianMm, b.sinkPower) * Math.exp(spread * bell(u2, unit(hash2(i, 231 + k))))
       this.sizes[i] = size
       const least = fall[0] * (lands ? LANDS_LEAST : FLOATS_LEAST)
       this.sink[i] = speed < least ? least : speed > fall[1] * 2.5 ? fall[1] * 2.5 : speed
@@ -1162,7 +1163,6 @@ export class ParticleEngine {
     const noise = L.noise
     const ng = L.grid
     const np = L.pot
-    const kick = (c[6]! * DISPERSE) / 512
     const roll = c[7]!
     const rolling = roll !== 0
     const swirl = L.state[LIQUID_SWIRL]!
@@ -1375,7 +1375,7 @@ export class ParticleEngine {
             const arm = (-armK * gk * wave * l2) / ((l2 + ARM_CORE) * (rho2 + ARM_HUB2) * rho2)
             fx = arm * tx
             const hb = (ht - BANK_FROM) * BANK_OVER
-            const fall = hb <= 0 ? 0 : hb >= 1 ? 1 : hb * hb * (3 - 2 * hb)
+            const fall = hb <= 0 ? BANK_LOW : hb >= 1 ? 1 : BANK_LOW + (1 - BANK_LOW) * hb * hb * (3 - 2 * hb)
             fy = arm * ty - bankK * gk * fall * sink[i]!
             fz = arm * tz
           }
@@ -1440,12 +1440,6 @@ export class ParticleEngine {
       ux += rx
       uy += ry
       uz += rz
-      if (noise) {
-        const bits = hash2(i, n)
-        ux += ((bits & 1023) - 511.5) * kick
-        uy += (((bits >>> 10) & 1023) - 511.5) * kick
-        uz += ((bits >>> 20) - 2047.5) * kick * 0.25
-      }
       const ox = wx + (hy * z - hz * y) * CURL + spin * AX
       const oy = wy + (hz * x - hx * z) * CURL + spin * AY
       const oz = wz + (hx * y - hy * x) * CURL + spin * AZ
