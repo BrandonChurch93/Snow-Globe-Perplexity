@@ -87,7 +87,7 @@ export const SLAB = {
   lumpEdge: 0.45,
   lumpRagged: 0.45,
   lumpGrainMm: 0.9,
-  lumpBlur: 1,
+  lumpBlur: 0.75,
   lumpGain: 1.3,
   lumpSeasons: { winter: 1 } as Record<string, number>,
   lumpShade: 0.5,
