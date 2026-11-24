@@ -6,7 +6,7 @@ export interface ChangeSpan {
   lag: number
 }
 
-const OUTSIDE: ChangeSpan = { from: 0.49, to: 0.61, lag: 0 }
+const OUTSIDE: ChangeSpan = { from: 0.69, to: 0.85, lag: 0 }
 const BLOOM_RAMP = 0.12
 const SPANS: Record<string, ChangeSpan> = {
   miniature: { from: 0.05, to: 0.95, lag: 0.5 },
