@@ -7,7 +7,7 @@ import { blurWrap, loadSource, luma, readPicture, seamless, toBytes, writePng } 
 
 const TAU = Math.PI * 2
 const NEEDLE_CELL = 0.62
-const SNOW_CELL = 0.56
+const SNOW_CELL = 0.45
 const NEEDLE_TILE_MM = 9
 const SNOW_TILE_MM = 7
 const STAR_AT = [0.25, 45.2, 0.1]
@@ -15,8 +15,8 @@ const STAR_R = 2.2
 const STAR = { deep: 0.62, edge: 0.17, inset: 0.9, valley: 0.72, crest: 1.12, glow: [0.07, 0.035, 0.02], stem: [0.2, 0.11], collar: 0.27 }
 const CORE_R = 0.155
 const WIRE_R = 0.075
-const SNOW_KEY = [-0.451, 0.701, 0.552]
-const BULBS = { stem: [2.3, 3.4], limb: [2.2, 3.3], lead: 0.16, pad: 0.19, clear: 0.34 }
+const SNOW_KEY = [-0.42, 0.819, 0.39]
+const BULBS = { stem: [2.3, 3.4], limb: [2.2, 3.3], lead: 0.16, pad: 0.32, clear: 0.3 }
 
 const [T, R] = await loadSource(['/src/miniature/trunk.ts', '/src/core/rng.ts'])
 const rng = R.stream('tree-winter')
@@ -217,12 +217,13 @@ function snow() {
     const z = s.pos[v * 3 + 2]
     const n = [s.nor[v * 3], s.nor[v * 3 + 1], s.nor[v * 3 + 2]]
     const both = (a, bb, c) => Math.min(snowField(a, bb, c), needleField(a, bb, c))
-    const open = 0.1 * openness(both, x, h, z, n, 0.8) + 0.9 * openness(both, x, h, z, n, 2.4)
+    const open = 0.45 * openness(both, x, h, z, n, 0.6) + 0.55 * openness(both, x, h, z, n, 1.8)
     const lit = 0.5 + 0.5 * (n[0] * SNOW_KEY[0] + n[1] * SNOW_KEY[1] + n[2] * SNOW_KEY[2])
-    const shade = (0.66 + 0.34 * open) * (0.38 + 0.62 * Math.pow(lit, 2))
+    const deep = needleField(x, h, z)
+    const shade = (0.4 + 0.6 * Math.pow(open, 1.3)) * (0.36 + 0.78 * Math.pow(lit, 4)) * (0.6 + 0.4 * smooth(0.1, 1.7, deep))
     const cool = 1 - lit * lit
     uv.push(x / SNOW_TILE_MM, h / SNOW_TILE_MM)
-    thin.push(needleField(x, h, z), 0)
+    thin.push(deep, 0)
     col.push(shade * (1 - 0.34 * cool), shade * (1 - 0.2 * cool), shade)
   }
   const g = new THREE.BufferGeometry()
@@ -320,7 +321,7 @@ function strings() {
     const side = new THREE.Vector3(...ax.side)
     const depth = new THREE.Vector3(...ax.depth)
     const centre = new THREE.Vector3(...pad.at)
-    const n = Math.max(5, Math.round(pad.size[0] * pad.size[2] * BULBS.pad))
+    const n = Math.max(7, Math.round(pad.size[0] * pad.size[2] * BULBS.pad))
     const ring = []
     for (let k = 0; k < n; k++) {
       const even = (k / n) * TAU + rng.range(-0.25, 0.25)
@@ -535,7 +536,7 @@ function arrival() {
     const col = []
     const index = []
     const across = 7
-    const most = limb.kind === 'root' ? 0.46 : 0.44
+    const most = limb.kind === 'root' ? 0.46 : 0.24
     for (let i = 0; i < f.length; i++) {
       const tan = f[i].tan
       const u = up.clone().sub(tan.clone().multiplyScalar(up.dot(tan)))
@@ -544,7 +545,7 @@ function arrival() {
       const side = new THREE.Vector3().crossVectors(tan, u)
       const ends = smooth(limb.kind === 'root' ? 0.52 : 0.42, limb.kind === 'root' ? 0.74 : 0.6, f[i].along / total) * smooth(0, 0.1, 1 - f[i].along / total)
       const lump = 0.55 + 0.45 * Math.sin(f[i].along * 1.5 + n * 1.7) * Math.sin(f[i].along * 0.6 + n)
-      const thick = most * smooth(0.45, 0.9, flat) * ends * smooth(0.36, 0.7, lump) * (0.8 + 0.2 * Math.sin(f[i].along * 3.7 + n * 0.9))
+      const thick = most * smooth(0.45, 0.9, flat) * ends * smooth(0.3, 1, lump) * (0.8 + 0.2 * Math.sin(f[i].along * 3.7 + n * 0.9))
       const seed = clamp01(0.5 + 0.5 * Math.sin(f[i].along * 1.4 + n * 2.1))
       for (let j = 0; j < across; j++) {
         const a = lerp(-1.1, 1.1, j / (across - 1))
@@ -557,7 +558,7 @@ function arrival() {
         pos.push(p1.x, p1.y, p1.z)
         base.push(p0.x, p0.y, p0.z, seed)
         uv.push(p1.x / SNOW_TILE_MM, p1.z / SNOW_TILE_MM)
-        const shade = 0.82 + 0.18 * edge
+        const shade = 0.56 + 0.2 * edge
         col.push(shade * 0.93, shade * 0.96, shade)
       }
     }
