@@ -25,21 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 8 · 2026-11-24 04:01 UTC
+Status 9 · 2026-11-24 04:20 UTC
 
-- `out/stills/status/status-8-1.jpg`: The sheet tool: the whole film in 12 frames on the measuring scene, every shot at least once. (by sheet_tools_builder)
-- `out/stills/status/status-8-2.jpg`: The sheet tool, first run: 12 frames across the first shake. It runs on the measuring scene, so this shows the tool and the shake's timing, not the look. (by sheet_tools_builder)
+- `out/stills/status/status-9-1.jpg`: The host check: the site built from a clean copy of the tracked files and opened live at 1920 x 1080. It draws and logs nothing, and it does not yet signal its first picture, so the load time check is red. (by gate_checks_builder)
+- `out/stills/status/status-9-2.jpg`: The compression test: frame 666, in the middle of the first shake, taken back out of a 5 Mbps encode (42.7 dB against the frame before encoding). Measuring scene. (by film_tools_builder)
+- `out/stills/status/status-9-3.jpg`: The first page of the blockout critic's pack: the approved winter image (a) above the hero camera (b). The build side is still the measuring scene with blocks for the cottage and the tree, so this shows how far there is to go. (by measure_pack_builder)
+- `out/stills/status/status-9-4.jpg`: The 2 kept sounds as waveforms, each with its name, length and loudness
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 04:01 UTC
-clock: phase 2, tick of 10.2 minutes
-phase 2: 0.99 h used of its 6.00 h box
-allowance (before the review): 2.18 h used of 36.00 h allowed
-all time before the review: 2.18 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 04:20 UTC
+clock: phase 2, tick of 19.2 minutes
+phase 2: 1.31 h used of its 6.00 h box
+allowance (before the review): 2.50 h used of 36.00 h allowed
+all time before the review: 2.50 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
@@ -369,6 +371,8 @@ Numbered. What, why, and the date.
 
 27. 2026-11-24. Sound takes in Phase 2. Step 7 asks for the first take of seven cues, and the build order leaves winter's remaining takes to Phase 3. Two cues went further in this phase, because their takes came back so weak that there was nothing to judge or to carry: `land-winter` (take 2) and `amb-winter` (takes 2 and 3). `amb-winter` has now used its three takes and none fits its line, so by `kit/03-METHOD.md` section 12 it is an open item, silent in the mixes and in the app, and it will be named in the `REVIEW` block. What the three takes taught is written under `learned` in `audio/prompts.json` and goes into the brief of the sound agent in Phase 4, so spring, summer and fall do not pay for it again. The remaining takes of `lift`, `shake-winter`, `land-winter` and `ui-tick` are spent in Phase 3, against the finished shake, with texts already changed by what was learned. The listener's fixed questions are in `audio/QUESTIONS.md`.
 
+28. 2026-11-24. The Phase 2 blockout preview carries a sound stream: the kept cues placed on the cut by `npm run mix -- --candidate blockout`. Check D2 asks for sound only from Phase 6 and does not forbid it earlier, and step 7 of Phase 2 says the blockout carries sound from the start. Where a cue has no kept take the stream is silent at that point, and the review page says which cues are missing.
+
 ## Notes from Brandon
 
 Numbered, in his words, with the date and how each was applied. Review round items carry their round's number.
@@ -441,6 +445,8 @@ Merged into `main`, each verified here with types clean and the tests green (126
 - 04:08 `agent/tools-audiomap` (audiomap). Checked here on a click track of 93 beats a minute, 40 s, accent every fourth: `tracked`, 93 beats a minute, 62 beats, 15 bars, bar lines on the accents, first at 0.0013 s. The agent's own tests: 100 and 87 beats a minute, with a quiet middle and with an offset, largest beat error 1.56 ms. Its weak spot, by its own report: a dotted or triplet feel can end as `grid`, and a `grid` map must not be cut to.
 - 04:10 `agent/tools-audio` (sound, mix, soundcheck, the app's sound engine). Follow-up sent 04:12: a sound of a tenth of a second cannot be levelled yet (`ui-tick` take 1 is refused as too quiet to measure).
 - 04:14 `agent/tools-checks` (gate G5 to G7, G11 to G16, D2 to D6, hostcheck). Its run of the Phase 2 gate on the measuring scene: G1 to G4, G8 to G12 and G14 green; G5 red (no interface yet), G6 red (no judged list yet), G7 red (no opening yet), D2 and D3 red (no preview and no proof yet).
+
+- 04:19 `agent/tools-measure` again (`2830daf`): the pack calls the real sheet tool with `--look no`, runs a sheet command again when it stops at its chunk (exit 3), and holds the whole run to `sandbox.chunkBudgetMinutes`. Its blockout pack on the measuring scene: 19 files in two parts (ten film sheets; six camera pairs and three screens), 0 missing. Not proven by a run: the exit 3 path, `--loop`, `--loop --seam`, `--motion move`. Still without a tool: the app path sheets (shake, stir, drag, jump), the R8 control crops, the hint sheet, and R7 (the stress output's shape was unknown to it). The sheet, audio map and gate agents are done and idle.
 
 ## Rounds
 

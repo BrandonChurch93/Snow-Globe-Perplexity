@@ -1,29 +1,41 @@
 {
-  "number": 8,
-  "time": "2026-11-24 04:01 UTC",
+  "number": 9,
+  "time": "2026-11-24 04:20 UTC",
   "phase": "2",
   "unit": "",
   "lines": [
-    "Status 8 · 2026-11-24 04:01 UTC · Phase 2",
-    "Phase 2, hour 1 of 6. Ten build agents are at work. The first to finish is in: the sheet tools are merged, types clean, 93 tests green. The picture is its first run, on the measuring scene, so it shows the tool and the timing of a shake, not the look.",
-    "Sound, first takes heard: the glass ring and the two interface sounds fit their lines. The lift, the winter shake and the winter landing came back as plain glass clinks and wait for their remaining takes with plainer words. The winter ambience has used its three takes without one that fits, so winter stays without ambience until the review, and it is on the open list.",
-    "phase 2: 0.99 h used of its 6.00 h box",
-    "allowance (before the review): 2.18 h used of 36.00 h allowed",
+    "Status 9 · 2026-11-24 04:20 UTC · Phase 2",
+    "Phase 2, engine and blockout. No unit or round yet. Since Status 8: six tool branches are merged and verified (sheets, measures and packs, the audio map, the sound tools, the gate checks, and the pack now drawing from the real sheet tool). Two sounds are kept.",
+    "Next: the engine, the interface, the particles and the film with the app are still being built by four agents. When they are in, the blockout goes to its critic and the globe is published to shake.",
+    "phase 2: 1.31 h used of its 6.00 h box",
+    "allowance (before the review): 2.50 h used of 36.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-8-1.jpg",
-      "caption": "The sheet tool: the whole film in 12 frames on the measuring scene, every shot at least once. (by sheet_tools_builder)",
-      "w": 1149,
-      "h": 986
+      "file": "out/stills/status/status-9-1.jpg",
+      "caption": "The host check: the site built from a clean copy of the tracked files and opened live at 1920 x 1080. It draws and logs nothing, and it does not yet signal its first picture, so the load time check is red. (by gate_checks_builder)",
+      "w": 1200,
+      "h": 675
     },
     {
-      "file": "out/stills/status/status-8-2.jpg",
-      "caption": "The sheet tool, first run: 12 frames across the first shake. It runs on the measuring scene, so this shows the tool and the shake's timing, not the look. (by sheet_tools_builder)",
-      "w": 1149,
-      "h": 986
+      "file": "out/stills/status/status-9-2.jpg",
+      "caption": "The compression test: frame 666, in the middle of the first shake, taken back out of a 5 Mbps encode (42.7 dB against the frame before encoding). Measuring scene. (by film_tools_builder)",
+      "w": 1200,
+      "h": 675
+    },
+    {
+      "file": "out/stills/status/status-9-3.jpg",
+      "caption": "The first page of the blockout critic's pack: the approved winter image (a) above the hero camera (b). The build side is still the measuring scene with blocks for the cottage and the tree, so this shows how far there is to go. (by measure_pack_builder)",
+      "w": 986,
+      "h": 1156
+    },
+    {
+      "file": "out/stills/status/status-9-4.jpg",
+      "caption": "The 2 kept sounds as waveforms, each with its name, length and loudness",
+      "w": 1200,
+      "h": 330
     }
   ]
 }
