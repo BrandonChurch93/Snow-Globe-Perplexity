@@ -44,22 +44,51 @@ function mockApp(): AppBridge {
   const next = (): string => config.seasons[(config.seasons.indexOf(state.season) + 1) % config.seasons.length]
   backdrop(state.season)
   if (!state.ready) window.setTimeout(() => set({ ready: true }), Number(query.get('readyAfter') ?? 1.5) * 1000)
-  const bridge: AppBridge & { set: typeof set } = {
+  const calls: string[] = []
+  const note = (name: string, value: unknown = ''): void => {
+    calls.push(value === '' ? name : `${name}:${String(value)}`)
+  }
+  const bridge: AppBridge & { set: typeof set; calls: string[] } = {
     state: () => state,
     subscribe: (fn) => {
       listeners.add(fn)
       return () => listeners.delete(fn)
     },
-    shake: () => shakeTo(next()),
-    goTo: (season) => shakeTo(season),
-    setSound: (on) => set({ soundOn: on }),
-    setQuality: (level) => set(level === 'auto' ? { auto: true } : { auto: false, quality: level }),
-    setSeason: (season) => set({ season }),
-    setState: (s) => set({ state: s }),
-    setDiagnostic: (v) => set({ diagnostic: v }),
-    play: (what) => set({ playing: what }),
-    activity: () => {},
+    shake: () => {
+      note('shake')
+      shakeTo(next())
+    },
+    goTo: (season) => {
+      note('goTo', season)
+      shakeTo(season)
+    },
+    setSound: (on) => {
+      note('setSound', on)
+      set({ soundOn: on })
+    },
+    setQuality: (level) => {
+      note('setQuality', level)
+      set(level === 'auto' ? { auto: true } : { auto: false, quality: level })
+    },
+    setSeason: (season) => {
+      note('setSeason', season)
+      set({ season })
+    },
+    setState: (s) => {
+      note('setState', s)
+      set({ state: s })
+    },
+    setDiagnostic: (v) => {
+      note('setDiagnostic', v)
+      set({ diagnostic: v })
+    },
+    play: (what) => {
+      note('play', what)
+      set({ playing: what })
+    },
+    activity: () => note('activity'),
     set,
+    calls,
   }
   return bridge
 }
@@ -83,7 +112,10 @@ function mockProbe(): ProbeBridge {
         for (const phase of ['rest', 'storm'] as const) {
           for (let k = 0; k < 6; k++) {
             onProgress([...done], { level, phase, fraction: k / 6 })
-            if (stopAt === `${level}-${phase}` && k === 3) await new Promise(() => {})
+            if (stopAt === `${level}-${phase}` && k === 3) {
+              document.documentElement.dataset.parked = ''
+              await new Promise(() => {})
+            }
             await wait((seconds * 1000) / 12)
           }
         }

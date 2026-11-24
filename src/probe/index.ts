@@ -99,16 +99,17 @@ export function mountProbe(root: HTMLElement, bridge: ProbeBridge): void {
   const screen = fact(copy.probe.screen)
   const pick = fact(copy.probe.pick)
 
-  const out = make('div', s.out)
-  out.hidden = true
   const text = make('pre', s.text)
   text.tabIndex = 0
   text.setAttribute('aria-label', copy.probe.textName)
   const button = make('button', s.copy, copy.probe.copy)
   button.type = 'button'
-  out.append(text, button)
+  const foot = make('div', s.foot)
+  foot.append(button)
+  const after = [facts, text, button]
+  for (const e of after) e.hidden = true
 
-  card.append(head, track, table, facts, out)
+  card.append(head, track, table, facts, text, foot)
   page.append(card)
   root.append(page)
   root.dataset.probe = 'running'
@@ -156,7 +157,9 @@ export function mountProbe(root: HTMLElement, bridge: ProbeBridge): void {
       pick.textContent = result.pick
     }
     text.textContent = report(done, result)
-    out.hidden = false
+    facts.hidden = !result
+    text.hidden = false
+    button.hidden = false
     root.dataset.probe = result ? 'done' : 'failed'
   }
 

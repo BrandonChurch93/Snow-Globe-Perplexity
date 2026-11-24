@@ -85,13 +85,15 @@ try {
     await page.goto(`${origin}/tools/ui-preview/?${query}`)
     let frozen = true
     if (shot.act?.startsWith('probe')) {
-      await page.waitForSelector(shot.act === 'probe-done' ? '[data-probe="done"]' : '[data-probe="running"]')
-      if (shot.act === 'probe-running') await page.waitForTimeout(900)
+      await page.waitForSelector(shot.act === 'probe-done' ? '[data-probe="done"]' : 'html[data-parked]')
+      await page.evaluate(() => document.fonts.ready)
+      await page.waitForTimeout(500)
     } else {
       await page.waitForSelector('#ui[data-interface="shown"]')
       await page.evaluate(() => document.fonts.ready)
       await page.waitForFunction(() => [...document.querySelectorAll('#view i')].every((i) => getComputedStyle(i).backgroundImage !== 'none'))
-      await page.waitForTimeout(900)
+      await page.waitForTimeout(300)
+      await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)))
       if (shot.act === 'dim') {
         await page.mouse.move(40, 40)
         await page.evaluate(() => document.querySelector('#ui > div').setAttribute('data-dim', ''))
