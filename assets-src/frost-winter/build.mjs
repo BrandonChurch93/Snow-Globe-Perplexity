@@ -357,12 +357,13 @@ function profileAt(deg) {
 }
 
 function fibre(rng, k) {
-  return { step: 0.7, w0: rng.range(0.085, 0.125), w1: 0.035, h0: k * rng.range(0.55, 0.9), h1: k * 0.3, speed: 0.6, curl: rng.range(0.003, 0.03), wobble: 0.008, spark: rng.range(0.45, 1), kappa: 3, reach: 0.1, taper: 0.62, power: 1.5 }
+  return { step: 0.7, w0: rng.range(0.085, 0.125), w1: 0.035, h0: k * rng.range(0.55, 0.9), h1: k * L.glass.barbTip, speed: 0.6, curl: rng.range(0.003, 0.03), wobble: 0.008, spark: rng.range(0.45, 1), kappa: 3, reach: 0.1, taper: 0.62, power: 1.5 }
 }
 // A feather: a spine, a low soft body in the feather's outline, and fine barbs set close enough to read as fibres.
 function plumeSpec(length, barbMm, rng, t0, k = 1, bold = 1, body = bold) {
+  const G = L.glass
   const lean = rng.range(0.6, 1)
-  const angle = rng.range(32, 46) * RAD
+  const angle = rng.range(G.barbAngle[0], G.barbAngle[1]) * RAD
   const profile = feather(rng.range(0.16, 0.36), rng.range(0.6, 0.95))
   return {
     len: length,
@@ -373,13 +374,13 @@ function plumeSpec(length, barbMm, rng, t0, k = 1, bold = 1, body = bold) {
     h1: 0.6 * k,
     speed: 1,
     t0,
-    wobble: 0.016,
+    wobble: G.spineWobble,
     curl: rng.gauss() * 0.005,
     spark: 0.8,
     kappa: 2.5,
     reach: 0.15,
     taper: 0.75,
-    film: { w0: barbMm * Math.sin(angle) * 0.8, w1: 0.12, h0: L.glass.bodyFilm * k * body, h1: 0.05 * k, profile, kappa: 3, spark: 0.2 },
+    film: { w0: barbMm * Math.sin(angle) * G.bodyWide, w1: 0.12, h0: G.bodyFilm * k * body, h1: 0.05 * k, profile, kappa: 3, spark: 0.2 },
     kids: {
       gap: rng.range(L.glass.barbGap[0], L.glass.barbGap[1]),
       len: barbMm,
@@ -387,16 +388,19 @@ function plumeSpec(length, barbMm, rng, t0, k = 1, bold = 1, body = bold) {
       lean: rng.next() < 0.5 ? lean : 1 / lean,
       angle,
       angleTip: angle * rng.range(0.55, 0.75),
-      spread: 0.06,
+      spread: G.barbSpread,
       profile,
       make: (l, u, r) => {
         const o = fibre(r, k)
         o.w0 *= bold
-        if (r.next() < 0.18) {
+        if (r.next() < G.longBarbs[0]) {
           o.w0 *= 1.35
           o.h0 = Math.min(1, o.h0 * 1.3)
-          o.stretch = r.range(1.15, 1.5)
-        } else o.h0 *= r.range(0.7, 1)
+          o.stretch = r.range(G.longBarbs[1], G.longBarbs[2])
+        } else {
+          o.h0 *= r.range(0.7, 1)
+          o.stretch = r.range(G.barbVary[0], G.barbVary[1])
+        }
         return o
       },
     },
@@ -512,14 +516,14 @@ function buildGlass() {
     for (let j = 0; j < tf.count; j++) {
       const off = rng.range(-1, 1)
       const a = (off * 0.7 + rng.gauss() * 0.3) * tf.spreadDeg * RAD
-      const l = (tf.len[0] + (tf.len[1] - tf.len[0]) * rng.next()) * (1 - 0.45 * Math.abs(off))
+      const l = (tf.len[0] + (tf.len[1] - tf.len[0]) * rng.next()) * (1 - (tf.round ?? 0.45) * Math.abs(off))
       const from = [tf.at[0] + across[0] * off * basePx, tf.at[1] + across[1] * off * basePx]
       const dir = [ax[0] * Math.cos(a) - ax[1] * Math.sin(a), ax[0] * Math.sin(a) + ax[1] * Math.cos(a)]
       const at = pixelOnGlass(from[0], from[1])
       const tip = pixelOnGlass(from[0] + dir[0] * l, from[1] + dir[1] * l)
       const t0 = Math.max(0, Rs * Math.asin(clamp(at[2] / Rs, -1, 1))) * 0.9
       const along = arc(at, tip)
-      const o = plumeSpec(along * 1.1, clamp(along * tf.barb, 0.5, 3), rng, t0 + rng.range(0, 2.5), T.k * rng.range(0.7, 1), T.bold, T.body)
+      const o = plumeSpec(along * 1.1, clamp(along * tf.barb, 0.5, 3), rng, t0 + rng.range(0, 2.5), (tf.k ?? T.k) * rng.range(0.7, 1), T.bold, tf.body ?? T.body)
       o.to = [tip]
       o.wobble = 0.03
       grow(ctx, at, toward(at, tip), o)
