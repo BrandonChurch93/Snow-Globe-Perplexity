@@ -4,7 +4,7 @@ import type { SdfGrid } from '../../core/stage'
 import { barSeconds, beatSeconds, globePoseAt, stateSeconds, stillTimeline, type Timeline } from '../../film/timeline'
 import { Liquid, LIQUID_LENGTH, LIQUID_R, LIQUID_SLOSH, LIQUID_TURBULENCE, LIQUID_TURN, TURBULENCE_MAX } from '../../globe/liquid'
 import { makeShake } from '../../shake/table'
-import { DT, emberGlow, ParticleEngine, parkPoint, STATE_HIDDEN, STATE_LIQUID, WALL, wanderAt, wanderRates, type EngineOptions } from './engine'
+import { COVER_N, COVER_SPAN_MM, DT, emberGlow, heapCover, ParticleEngine, parkPoint, STATE_HIDDEN, STATE_LIQUID, WALL, wanderAt, wanderRates, type EngineOptions } from './engine'
 import { BEHAVIOUR, KINDS } from './kinds'
 import { sdfSample } from './sdf'
 
@@ -102,6 +102,9 @@ export class LoopPaths {
   private readonly w = new Float64Array(3)
   private readonly then = new Float64Array(5)
   private readonly now = new Float64Array(5)
+  private readonly heap = new Float32Array(COVER_N * COVER_N)
+  private readonly lain = { n: COVER_N, spanMm: COVER_SPAN_MM, mm: new Float32Array(COVER_N * COVER_N) }
+  private drifted = true
   private parked = false
   private op = 0
   private ph = 0
@@ -538,6 +541,14 @@ export class LoopPaths {
     return this
   }
 
+  get cover(): { readonly n: number; readonly spanMm: number; readonly mm: Float32Array } {
+    if (this.drifted) {
+      heapCover(this.count, this.state, this.pos, this.sizes, this.kindOf, this.heap, this.lain.mm)
+      this.drifted = false
+    }
+    return this.lain
+  }
+
   setTime(seconds: number): void {
     const L = this.seconds
     const n = this.count
@@ -576,5 +587,6 @@ export class LoopPaths {
       const a = tr[j * LIQUID_LENGTH + c]!
       this.liquid[c] = a + (tr[(j + 1) * LIQUID_LENGTH + c]! - a) * m
     }
+    this.drifted = true
   }
 }

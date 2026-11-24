@@ -102,7 +102,7 @@ void main() {
   float g = max(0.0, 1.0 - dot(off, off) / ${(look.radiusMm * look.radiusMm).toFixed(4)});
   float beat = 1.0 + ${look.flicker.toFixed(3)} * sin(6.2831853 * (${look.cycles.toFixed(1)} * uClock + vHalo.w));
   float glow = g * g;
-  float hot = pow(g, 6.0);
+  float hot = pow(g, 12.0);
   float fog = stageVeil(vStageAux.x);
   gl_FragColor = vec4(mix(${v3(edge)}, ${v3(core)}, glow) * (1.0 + ${look.hot.toFixed(2)} * hot), clamp((g * g * g * ${look.strength.toFixed(3)} + hot) * beat, 0.0, 1.0) * (1.0 - fog));
 }

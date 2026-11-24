@@ -26,8 +26,16 @@ float stageCover(vec2 xz) {
 
 export function updateCover(source: ParticleSource): void {
   const c = source.cover
-  if (!c) return
   let t = coverUniforms.uCover.value
+  if (!c) {
+    // a source with no map must not inherit the map of whatever was drawn before it (the red G3 of round 3)
+    if (t.image.width !== 1) {
+      t.dispose()
+      coverUniforms.uCover.value = blank()
+    }
+    coverUniforms.uCoverSpan.value = 1
+    return
+  }
   if (t.image.width !== c.n) {
     t.dispose()
     t = new THREE.DataTexture(new Uint8Array(c.n * c.n), c.n, c.n, THREE.RedFormat, THREE.UnsignedByteType)
