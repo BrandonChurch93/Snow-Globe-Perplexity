@@ -1,15 +1,14 @@
-# Status 10
+# Status 11
 
-2026-11-24 04:38 UTC
+2026-11-24 04:53 UTC
 
-- Phase 2, engine and blockout. No unit or round yet. Since Status 9: the film, loop, compression and local render tools are merged, and so is the compression pack. A third sound is kept: the tick of the controls, once the tool could level a sound of 0.08 s. The three kept sounds can be heard on the review page after the next publish.
-- The engine, the particles, the interface and the film with the app are all pushing work in progress. Next: merge them, then the blockout round.
-- phase 2: 1.60 h used of its 6.00 h box
-- allowance (before the review): 2.79 h used of 36.00 h allowed
+- Phase 2, engine and blockout. No unit or round yet. Since Status 10: the new stage drew its first picture, and the app is published again with the three kept sounds on the review page (the globe there is still the measuring scene).
+- Next: the stage, the particles, the interface and the film with the app come together on main, then the blockout round.
+- phase 2: 1.86 h used of its 6.00 h box
+- allowance (before the review): 3.05 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-10-1.jpg`: The kept sounds as waveforms
-- `out/stills/status/status-10-2.jpg`: The interface at 1920 x 1080, laid over the approved winter image on a mock (not the engine yet): four season marks at the left, the Shake control in the middle, sound at the right. (by interface_builder)
-- `out/stills/status/status-10-3.jpg`: The controls at twice their size in each state: idle, dimmed, busy, hover, focus on Shake, focus on a season mark, focus on sound, sound on. (by interface_builder)
-- `out/stills/status/status-10-4.jpg`: The card loop's seam on the measuring scene: its last six frames, then its first six. The sheet a critic will get to say where the loop ends and begins. (by measure_pack_builder)
+- `out/stills/status/status-11-1.jpg`: The first picture of the new stage, which replaces the measuring scene: winter at rest from the hero camera at draft. Stand-in shapes for the cottage, the tree, the base and the lights, with the lens and the mirror pass on. A blockout, not a look. (by engine_builder)
+- `out/stills/status/status-11-2.jpg`: The interface on a phone, over the approved spring image on a mock: the season marks above the Shake control, sound beside it. (by interface_builder)
+- `out/stills/status/status-11-3.jpg`: The 3 kept sounds as waveforms, each with its name, length and loudness
