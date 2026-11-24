@@ -84,7 +84,7 @@ function probe(file) {
 }
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-const plain = (s) => String(s ?? '').replace(/\u2014/g, ', ').replace(/!/g, '.')
+const plain = (s) => String(s ?? '').replace(/\s*\u2014\s*/g, ', ').replace(/!/g, '.')
 const text = (s) => esc(plain(s))
 const url = (p) => './review/' + p.split('/').map(encodeURIComponent).join('/')
 const words = (s) => String(s).replace(/[-_]+/g, ' ')
@@ -99,7 +99,7 @@ function length(seconds) {
 }
 function size(bytes) {
   if (bytes >= MB) return `${(bytes / MB).toFixed(1)} MB`
-  return `${Math.max(1, Math.round(bytes / 1024))} KB`
+  return `${bytes > 0 ? Math.max(1, Math.round(bytes / 1024)) : 0} KB`
 }
 
 function put(src, to) {
@@ -118,6 +118,7 @@ function putSound(src, base) {
   const done = run('ffmpeg', ['-v', 'error', '-y', '-i', src, '-vn', '-c:a', 'aac', '-b:a', '256k', '-movflags', '+faststart', dest])
   if (done !== null && sizeOf(dest) > 0) return to
   fs.rmSync(dest, { force: true })
+  asWav.push(path.basename(src))
   return put(src, `audio/${base}.wav`)
 }
 
@@ -257,12 +258,15 @@ function placeVideo(v) {
   const at = Number.isFinite(v.seconds) ? Math.min(1, v.seconds / 4) : 0
   const made = run('ffmpeg', ['-v', 'error', '-y', '-ss', at.toFixed(3), '-i', v.src, '-frames:v', '1', '-vf', "scale='min(1280,iw)':-2", '-q:v', '4', dest])
   v.poster = made !== null && sizeOf(dest) > 0 ? poster : null
+  if (!v.poster) fs.rmSync(dest, { force: true })
 }
 
 function removeVideo(v) {
   fs.rmSync(path.join(OUT, v.to), { force: true })
   if (v.poster) fs.rmSync(path.join(OUT, v.poster), { force: true })
 }
+
+const asWav = []
 
 const NOTHING = '<p class="none">Nothing here yet.</p>'
 const label = (s) => `<p class="label">${text(s)}</p>`
@@ -275,10 +279,10 @@ function videoTag(v) {
   return `<figure class="film"><video controls playsinline preload="metadata"${mode}${dims}${poster} aria-label="${text(v.title)}" src="${url(v.to)}"></video><figcaption><span>${text(v.title)}</span><span class="facts">${esc(facts)}</span></figcaption></figure>`
 }
 
-function pictureTag(p, eager) {
+function pictureTag(p) {
   const dims = p.w && p.h ? ` width="${p.w}" height="${p.h}"` : ''
   const caption = p.caption ? `<figcaption>${text(p.caption)}</figcaption>` : ''
-  return `<figure><a href="${url(p.to)}"><img${eager ? '' : ' loading="lazy"'} decoding="async"${dims} alt="${text(p.alt || p.caption || 'Picture')}" src="${url(p.to)}"></a>${caption}</figure>`
+  return `<figure><a href="${url(p.to)}"><img loading="lazy" decoding="async"${dims} alt="${text(p.alt || p.caption || 'Picture')}" src="${url(p.to)}"></a>${caption}</figure>`
 }
 
 function soundTag(s) {
@@ -291,11 +295,11 @@ function soundTag(s) {
 function page(d) {
   const title = `${plain(config.name ?? 'Showcase')} review`
   const meta = [`Built ${d.built}`, d.clock.phase != null ? `Phase ${d.clock.phase}` : null, ...d.clock.lines].filter(Boolean)
-  const left = d.dropped.length ? `<p class="left">Left out to fit ${maxMb} MB: ${d.dropped.map((v) => `${text(v.title)} (${size(v.bytes)})`).join(', ')}.</p>` : ''
+  const left = d.dropped.length ? `<p class="left">Left out to fit ${maxMb} MB: ${d.dropped.map((v) => `${text(v.title)} (${size(v.bytes)})`).join('; ')}.</p>` : ''
   const over = d.over ? `<p class="left">The site is still over ${maxMb} MB.</p>` : ''
 
   const latest = d.status.pictures.length
-    ? [d.status.head ? `<p class="when">${text(d.status.head)}</p>` : '', ...d.status.lines.map((l) => `<p class="note">${text(l)}</p>`), ...d.status.pictures.map((p, i) => pictureTag(p, i === 0))].join('\n')
+    ? [d.status.head ? `<p class="when">${text(d.status.head)}</p>` : '', ...d.status.lines.map((l) => `<p class="note">${text(l)}</p>`), ...d.status.pictures.map((p) => pictureTag(p))].join('\n')
     : NOTHING
 
   const links = [
@@ -323,15 +327,15 @@ function page(d) {
     group('Other', d.cues.filter((c) => !known.includes(c.cls))),
   ].filter(Boolean)
 
-  const card = [...of('card').map(videoTag), ...(d.still ? [pictureTag(d.still, false)] : [])]
+  const card = [...of('card').map(videoTag), ...(d.still ? [pictureTag(d.still)] : [])]
   const parts = [
     ['latest', 'Latest', latest],
     ['open', 'Open it', open],
     ['listen', 'Listen', listen.join('\n') || NOTHING],
     ['films', 'Films', of('films').map(videoTag).join('\n') || NOTHING],
     ['card', 'The card', card.join('\n') || NOTHING],
-    ['comparisons', 'Comparisons', d.compares.map((p) => pictureTag(p, false)).join('\n') || NOTHING],
-    ['motion', 'Motion', d.sheets.map((p) => pictureTag(p, false)).join('\n') || NOTHING],
+    ['comparisons', 'Comparisons', d.compares.map((p) => pictureTag(p)).join('\n') || NOTHING],
+    ['motion', 'Motion', d.sheets.map((p) => pictureTag(p)).join('\n') || NOTHING],
   ]
 
   return `<!doctype html>
@@ -455,6 +459,8 @@ function build() {
   const { kept, dropped } = fit(all, dirSize(DIST))
   for (const v of kept) placeVideo(v)
 
+  if (!list(path.join(OUT, 'poster')).length) fs.rmSync(path.join(OUT, 'poster'), { recursive: true, force: true })
+
   const clock = readClock()
   const built = new Date().toISOString().slice(0, 16).replace('T', ' ') + ' UTC'
   const data = { built, clock, status, mixes, cues, still, compares, sheets, videos: kept, dropped, app: exists(path.join(DIST, 'index.html')), over: false }
@@ -481,6 +487,7 @@ function build() {
   say('the card', [...names('card'), ...(still ? [still.to] : [])])
   say('comparisons', compares.length ? [count(compares.length, 'picture', 'pictures')] : [])
   say('motion', sheets.length ? [count(sheets.length, 'picture', 'pictures')] : [])
+  if (asWav.length) console.log(`review: ffmpeg could not make an .m4a of ${asWav.join(', ')}. Copied as .wav`)
   if (dropped.length) console.log(`review: left out to fit ${maxMb} MB: ${dropped.map((v) => `${path.relative(ROOT, v.src)} (${size(v.bytes)})`).join(', ')}`)
   if (data.over) console.log(`review: dist/ is still over ${maxMb} MB with every video left out`)
   console.log(`review: wrote dist/review.html. dist/ is ${size(dirSize(DIST))}, dist/review/ is ${size(dirSize(OUT))}`)
