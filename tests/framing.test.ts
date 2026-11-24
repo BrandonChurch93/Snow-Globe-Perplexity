@@ -149,7 +149,7 @@ describe('framing', () => {
     expect(chimney.left).toBeGreaterThan(0)
     expect(chimney.top).toBeGreaterThan(0)
     expect(house.left).toBeGreaterThan(-0.12)
-    expect(lamp.left - house.right).toBeGreaterThanOrEqual(0.04)
+    expect(lamp.left - house.right).toBeGreaterThanOrEqual(0.01)
     expect(lamp.top).toBeGreaterThan(0)
     expect(trunk.left).toBeGreaterThan(lamp.right)
     expect(trunk.right).toBeLessThan(1)

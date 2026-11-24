@@ -1,17 +1,17 @@
-# Status 26
+# Status 27
 
-2026-11-24 10:01 UTC
+2026-11-24 10:23 UTC
 
-- Ten build agents are running, each in its own machine at the strongest setting: the glass with its bubble; the liquid and the simulation; the flakes and the veil; the slab, the backdrop and the lens; the base with its icicles; the village; the tree; the frost and the arrival; the light engine; the shake as a hand model.
-- Each one works against the approved image through the reference camera, pushes pictures of its part every 25 minutes, and sends a first report at about 90 minutes. Their pictures appear here from the next status on.
-- Before the start two shared contracts were written so that no two builders edit one file: the unseen room as one module that the glass, the brass and the light engine all reflect, and a map of the snow that has come to rest, which the roof and the boughs can read to thicken.
-- The published app still shows the Phase 2 stand-in globe until the first real parts are merged, about 11:30 UTC.
-- phase 3: 1.57 h used of its 11.00 h box
-- allowance (before the review): 8.18 h used of 36.00 h allowed
+- Ten builders are 23 minutes in. Every picture so far is a starting point or a measurement, none is finished work.
+- The ground inside the globe now follows the approved picture: a mound that rises toward the back and falls to the front glass, with the cottage, lamp, tree and pond placed where the picture has them.
+- The measuring and critic pack tools ran clean on the stand-ins as a dry run. No critic saw it and it is not a round.
+- Next: the builders' first real parts, and the cameras fitted again to the new ground.
+- phase 3: 1.93 h used of its 11.00 h box
+- allowance (before the review): 8.54 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-26-1.jpg`: The approved winter image with the regions each builder works against. Ten builders started at 10:00 UTC, one owner per file, each building its part of winter for real: no stand-in may remain in what a still shows.
-- `out/stills/status/status-26-2.jpg`: The opening camera, four candidates on stand-ins. Bottom right is the chosen frame: chimney, window, door, floor, lamppost and the foot of the tree, no edge of the glass (by engine_engineer_2)
-- `out/stills/status/status-26-3.jpg`: The hero camera after decision 35, winter at rest, draft: 7.8 percent above the glass, 4.2 percent under the foot of the base (it was 10.3 and 1.7) (by root)
-- `out/stills/status/status-26-4.jpg`: The app's screen after the new rule, at rest, at the top of the lift and at the widest stroke: 1920 by 1080 above, 390 by 844 and 1024 by 1366 below. The foot of the base now stands 7 percent of the height above the controls on the two wide screens (by film_app_engineer_2)
+- `out/stills/status/status-27-1.jpg`: The base's profile measured from the approved image and drawn back onto it as rings. The model is being built to these numbers.
+- `out/stills/status/status-27-2.jpg`: Bark sheet, take 1, made from a crop of the approved trunk. Not yet on the model.
+- `out/stills/status/status-27-3.jpg`: Needle sheet, take 1, made from a crop of the approved crown. Not yet on the model.
+- `out/stills/status/status-27-4.jpg`: Approved image above, the build below before the village work. Every part in the build is still a stand-in.
