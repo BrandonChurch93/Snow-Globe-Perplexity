@@ -28,7 +28,7 @@ const LAMP = { power: 1.2, reachMm: 12, flicker: 0.05, cycles: 3, phase: 0.1 }
 const WINDOW = { power: 0.8, reachMm: 8, flicker: 0.1, cycles: 5, phase: 0.4 }
 const SIDE = { power: 0.8, reachMm: 7, flicker: 0.1, cycles: 4, phase: 0.75 }
 const BULB = { power: 0.6, reachMm: 4.5, flicker: 0.07, cycles: 2 }
-const NEAR = { bulb: { power: 1, reachMm: 2 }, lamp: { power: 4.5, reachMm: 7 }, pane: { power: 0.9, reachMm: 2.4 } }
+const NEAR = { bulb: { power: 1, reachMm: 2 }, lamp: { power: 2.2, reachMm: 7 }, pane: { power: 0.7, reachMm: 2.4 } }
 const MIRROR = { lamp: 7, pane: 1.2, bulb: 0.5, tight: 0.0016, wide: 0.028, wideShare: 0.04 }
 const COVER_GAIN = 0.12
 const FRESH_RISE_MM = 0.3
@@ -36,7 +36,7 @@ const SNOW_GRAIN_MM = 0.05
 const SNOW_LUMP_MM = 0.3
 const SNOW_DRIFT_MM = 1.1
 const SPARK = 2.6
-const SNOW_WRAP = 0.45
+const SNOW_WRAP = 0.7
 const ICE_NEAR = 0.3
 
 const bulbs = hangPoints()
