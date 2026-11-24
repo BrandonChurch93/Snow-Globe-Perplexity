@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { config } from '../../config'
-import { changeBloom, changeSpan, partChange } from '../../shake/change'
+import { ROOM_RIG, changeSwell } from '../../scene/lighting'
+import { changeSpan, partChange } from '../../shake/change'
 import { rimGapMm } from '../../shake/table'
 import type { KitMoment } from '../kit'
 import * as frost from './frost'
@@ -10,39 +11,47 @@ const own = frost as { arrival?: () => THREE.Object3D }
 
 // The frost answers the landing. `start` is the growth on the frame the foot is flat, just past the level at which the first
 // texels of the maps appear (frost.ts takes 0.07 off the growth), so only the first rime hugs the foot on that frame and nothing
-// stands there at once. The thump then throws the first of it out fast (`kick`, over `kickSeconds`: the heap at the foot and the
-// roots of the arms, strongest by the first rock of the foot), and the arms grow out of that more slowly (`burst`), so no frame
-// has the whole star that the frame before did not have.
-// The glass reaches almost its rest pattern by `states.landedSeconds`, as in `references/approved/winter-shake.png`; the last tips
+// stands there at once.
+// The glass: the thump throws the first of it out fast (`kick`, over `kickSeconds`) and the feathers grow out of that (`burst`);
+// it reaches almost its rest pattern by `states.landedSeconds`, as in `references/approved/winter-shake.png`, and the last tips
 // creep on after that.
-const GLASS = { start: 0.1, kick: 0.12, kickSeconds: 0.05, burst: 0.71, burstSeconds: 0.26, creep: 0.27, creepSeconds: 1.2 }
-const SLAB = { start: 0.1, kick: 0.12, kickSeconds: 0.05, burst: 0.58, burstSeconds: 0.26, creep: 0.39, creepSeconds: 1.4 }
+// The slab: no kick. The spines of the arms hold the first sixth of the map's time, so a kick put every spine out at its full
+// length two frames after the landing. The growth now climbs at a near even pace through that sixth (`burst` over `burstSeconds`
+// with `power` 1.35): the spines run from the foot to their tips over some ten frames, fastest by the first rock of the foot,
+// the side branches fill in behind them, about 96 in 100 of the frost stands at `states.landedSeconds` (the approved image has
+// it nearly whole there), and the last needles creep in under the settling storm.
+const GLASS = { start: 0.1, kick: 0.12, kickSeconds: 0.05, burst: 0.71, burstSeconds: 0.26, power: 2, creep: 0.27, creepSeconds: 1.2 }
+const SLAB = { start: 0.16, kick: 0, kickSeconds: 0.05, burst: 0.66, burstSeconds: 0.5, power: 1.35, creep: 0.39, creepSeconds: 1.4 }
 // The answer begins at the touch, before the foot is flat: from the frame the low edge of the rim meets the slab (the rim's gap
-// is under `gapMm`) the growth climbs from nothing to `start` as the foot rolls flat. `riseMm` is the height of the foot's centre
-// at the touch (58 mm of foot at 2.8 degrees); the pose is read, never a frame number.
-const TOUCH = { gapMm: 0.1, riseMm: 2.8 }
+// is under `gapMm`) the rime begins under that edge and runs round the foot as it rolls flat, the touching side `lead` of the
+// roll ahead of the far side, until every side has `start` on the frame the foot is flat. `riseMm` is the height of the foot's
+// centre at the touch (58 mm of foot at 3 degrees); the pose is read, never a frame number. The roll is eased (`ease`, a power
+// under 1) so the edge that touched has its rime two frames after the touch instead of four: the foot comes down slowly at
+// first, and the rime should not wait for it.
+const TOUCH = { gapMm: 0.1, riseMm: 3, lead: 1.5, ease: 0.5 }
 
-// The leaving follows the bloom's own light. `through` is the place in the swap window. While the bloom rises the front leaves
-// the foot and crosses the first `lead` of its way (the heap and the roots of the arms, where the light pool is brightest);
-// it crosses the rest during the dressing's own span, when the bloom is full. Before the bloom there is no step at all, and
-// the last crystal is gone while the bloom is still full.
-const LEAVE = { lead: 0.3 }
+// The leaving follows the light of the change. `through` is the place in the swap window. The light inside the glass swells
+// slowly (`changeSwell` of the lighting) and the frost melts into it: the front leaves the foot as the swell begins and has
+// crossed `lead` of its way when the swell is full, each step as large as the light the slab receives on that frame (ten to
+// the swell's `glow`, as the lighting gives it to the slab), so the frost goes fastest where the light grows fastest and
+// never moves on a frame the light does not. The rest, the far tips and the thick of the heap, goes during the dressing's own
+// span, when the light is full. Before the swell there is no step at all.
+const LEAVE = { lead: 0.5 }
 export function kept(part: string, through: number): number {
   if (!(through > 0)) return 1
-  const lit = through >= changeSpan(part).from ? 1 : changeBloom(through)
+  const gain = ROOM_RIG.bloomGain
+  const lit = through >= changeSpan(part).from ? 1 : Math.min(1, ((1 + gain) ** changeSwell(through).glow - 1) / gain)
   return 1 - (LEAVE.lead * lit + (1 - LEAVE.lead) * partChange(part, through))
 }
 
 const rise = (t: number, seconds: number): number => 1 - Math.exp(-t / seconds)
-const burst = (t: number, seconds: number): number => 1 - Math.exp(-((t / seconds) ** 2))
+const burst = (t: number, seconds: number, power: number): number => 1 - Math.exp(-((t / seconds) ** power))
+const level = (t: number, p: typeof GLASS): number => p.start + p.kick * rise(t, p.kickSeconds) + p.burst * burst(t, p.burstSeconds, p.power) + p.creep * rise(t, p.creepSeconds)
 
 export function growth(sinceLanding: number): { glass: number; slab: number } {
   if (!(sinceLanding < Infinity)) return { glass: frost.FULL, slab: frost.FULL }
   const t = Math.max(0, sinceLanding)
-  return {
-    glass: GLASS.start + GLASS.kick * rise(t, GLASS.kickSeconds) + GLASS.burst * burst(t, GLASS.burstSeconds) + GLASS.creep * rise(t, GLASS.creepSeconds),
-    slab: SLAB.start + SLAB.kick * rise(t, SLAB.kickSeconds) + SLAB.burst * burst(t, SLAB.burstSeconds) + SLAB.creep * rise(t, SLAB.creepSeconds),
-  }
+  return { glass: level(t, GLASS), slab: level(t, SLAB) }
 }
 
 export async function prepare(): Promise<void> {}
@@ -69,10 +78,11 @@ export function update(moment: KitMoment): void {
   if (shaking) {
     const through = (moment.beat! - swap.fromBeat) / (swap.toBeat - swap.fromBeat)
     if (through >= 1) {
-      // After the window the frost is gone until the rim meets the slab again; then the first rime comes with the foot rolling flat.
+      // After the window the frost is gone until the rim meets the slab again; then the first rime comes with the foot rolling
+      // flat, from the edge that touched round to the far edge (frost.ts reads the side from the foot's tilt).
       const pose = f.globe
-      const down = rimGapMm(pose) <= TOUCH.gapMm ? 1 - Math.min(1, Math.max(0, pose.y / TOUCH.riseMm)) : 0
-      if (down > 0) frost.setGrowth(GLASS.start * down, SLAB.start * down, 1, 1)
+      const rolled = rimGapMm(pose) <= TOUCH.gapMm ? (1 - Math.min(1, Math.max(0, pose.y / TOUCH.riseMm))) ** TOUCH.ease : 0
+      if (rolled > 0) frost.setGrowth(GLASS.start * rolled, SLAB.start, 1, 1, rolled, TOUCH.lead)
       else frost.setGrowth(0, 0, 0, 0)
       return
     }
