@@ -25,27 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 11 · 2026-11-24 04:53 UTC
+Status 12 · 2026-11-24 05:19 UTC
 
-- `out/stills/status/status-11-1.jpg`: The first picture of the new stage, which replaces the measuring scene: winter at rest from the hero camera at draft. Stand-in shapes for the cottage, the tree, the base and the lights, with the lens and the mirror pass on. A blockout, not a look. (by engine_builder)
-- `out/stills/status/status-11-2.jpg`: The interface on a phone, over the approved spring image on a mock: the season marks above the Shake control, sound beside it. (by interface_builder)
-- `out/stills/status/status-11-3.jpg`: The 3 kept sounds as waveforms, each with its name, length and loudness
+- `out/stills/status/status-12-1.jpg`: The app in live mode with the real interface, still on the measuring scene: at rest, then three moments of one shake (lift and tilt, the storm, the landing). The season marks sit at the bottom left, the Shake control at the bottom centre. (by film_app_builder)
+- `out/stills/status/status-12-2.jpg`: Film B on the new cut, measuring scene: frame 0 (the close opening before the pull back), frame 666 (the locked camera inside the first shake), frame 720 (the landing on its bar line) and the last frame, back on the camera of frame 0. In frame 666 the top of the glass leaves the picture: to be settled when the cameras are fitted. (by film_app_builder)
+- `out/stills/status/status-12-3.jpg`: The interface on a phone, over the approved spring image on a mock: the season marks above the Shake control, sound beside it. (by interface_builder)
+- `out/stills/status/status-12-4.jpg`: The first picture of the new stage, which replaces the measuring scene: winter at rest from the hero camera at draft. Stand-in shapes for the cottage, the tree, the base and the lights, with the lens and the mirror pass on. A blockout, not a look. (by engine_builder)
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 04:57 UTC
-clock: phase 2, tick of 4.1 minutes
-phase 2: 1.93 h used of its 6.00 h box
-allowance (before the review): 3.12 h used of 36.00 h allowed
-all time before the review: 3.12 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 05:19 UTC
+clock: phase 2, tick of 10.9 minutes
+phase 2: 2.29 h used of its 6.00 h box
+allowance (before the review): 3.48 h used of 36.00 h allowed
+all time before the review: 3.48 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 4
+minutes since the last status: 0
 ```
 
 ## Phases
