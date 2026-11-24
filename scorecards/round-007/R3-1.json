@@ -1,0 +1,35 @@
+{
+  "critic": "R3",
+  "score": 7,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "major",
+      "file": "set-A-02.jpg",
+      "where": "the glass at its rim, and the cottage against the left glass",
+      "what": "the rim has two edges, so the wall has thickness, but the cottage, fence, and tree stay straight and the same size up to the glass. The liquid does not bend or enlarge them. The closer rim crops in set-C-02.jpg and set-C-03.jpg show the same thing",
+      "fix": "enlarge and bend the interior as it nears the inner wall, the way water in a sphere would"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-02.jpg",
+      "where": "the glass at its shoulder, upper right",
+      "what": "a hard-edged elliptical ring sits on the glass, apart from the soft discs of light behind it. The same shoulder is in set-B-02.jpg",
+      "fix": "replace the hard ring with a soft stretched reflection of those lights"
+    },
+    {
+      "severity": "minor",
+      "file": "set-A-02.jpg",
+      "where": "the frost on the inner left glass",
+      "what": "the ferns repeat along the curve like a flat brush, with little thickness of their own",
+      "fix": "vary the crystals and give the spines a little thickness and overlap"
+    },
+    {
+      "severity": "minor",
+      "file": "set-C-03.jpg",
+      "where": "the snow bank where it meets the pond",
+      "what": "the near bank is smooth like icing, and the water meets it on a hard dry line with no wet edge",
+      "fix": "break the bank into grains and darken a thin wet margin at the water"
+    }
+  ]
+}
