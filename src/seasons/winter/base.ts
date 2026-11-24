@@ -181,7 +181,7 @@ vec2 baseTilt = baseSlope(baseDetail.rg) * 0.42 + baseSlope(baseCarve.rg) * (1.3
 const WOOD_BENT = `
 float baseSide = smoothstep(-0.2, 0.75, vBasePos.x / max(length(vBasePos.xz), 1.0));
 float baseUp = smoothstep(0.06, 0.5, baseObjectNormal.y);
-float baseFrost = baseUp * baseSide * sqrt(baseSide) * (1.0 - 0.8 * smoothstep(10.0, 19.0, vBasePos.y)) * smoothstep(0.3, 0.8, baseNoise(vBasePos * 1.3) * 0.7 + baseNoise(vBasePos * 4.3) * 0.3 + 0.25 * baseSide);
+float baseFrost = baseUp * baseSide * sqrt(baseSide) * (1.0 - 0.8 * smoothstep(12.0, 22.0, vBasePos.y)) * smoothstep(0.3, 0.8, baseNoise(vBasePos * 1.3) * 0.7 + baseNoise(vBasePos * 4.3) * 0.3 + 0.25 * baseSide);
 float baseDust = (0.1 + 0.9 * baseUp) * (0.35 + 0.65 * baseNoise(vBasePos * 3.1)) * 0.08 + 0.12 * baseCavity;
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.07, 0.07, 0.075), clamp(baseDust, 0.0, 0.5));
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.34, 0.39, 0.47), clamp(baseFrost * 0.7, 0.0, 0.7));
@@ -196,7 +196,7 @@ vec4 baseDetail = texture2D(uBaseDetail, vMapUv);
 float baseWear = vBasePaint.y;
 float baseTarnish = clamp(vBasePaint.z * 1.25 + 0.24 + (baseDetail.b - 0.42) * 0.5 - 0.5 * baseWear, 0.0, 1.0);
 float baseAo = vBasePaint.x;
-vec3 baseClean = mix(diffuseColor.rgb * vec3(1.0, 0.8, 0.62), vec3(0.78, 0.47, 0.18), 0.5 + 0.4 * baseWear) * (0.62 + 0.3 * baseWear);
+vec3 baseClean = mix(diffuseColor.rgb * vec3(1.0, 0.8, 0.62), vec3(0.72, 0.51, 0.24), 0.5 + 0.4 * baseWear) * (0.62 + 0.3 * baseWear);
 diffuseColor.rgb = mix(baseClean, vec3(0.04, 0.028, 0.016) + 0.15 * baseClean, smoothstep(0.12, 0.85, baseTarnish));
 `
 
@@ -207,6 +207,15 @@ metalnessFactor = mix(0.9, 0.35, smoothstep(0.4, 1.0, baseTarnish));
 
 const BRASS_TILT = `
 vec2 baseTilt = baseSlope(baseDetail.rg) * 0.55;
+`
+
+const BRASS_BENT = `
+float baseSide = smoothstep(-0.2, 0.75, vBasePos.x / max(length(vBasePos.xz), 1.0));
+float baseUp = smoothstep(0.06, 0.5, baseObjectNormal.y);
+float baseFrost = baseUp * baseSide * sqrt(baseSide) * smoothstep(0.3, 0.8, baseNoise(vBasePos * 1.3) * 0.7 + baseNoise(vBasePos * 4.3) * 0.3 + 0.25 * baseSide);
+diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.34, 0.39, 0.47), clamp(baseFrost * 0.5, 0.0, 0.5));
+metalnessFactor = mix(metalnessFactor, 0.0, clamp(baseFrost * 0.6, 0.0, 0.6));
+roughnessFactor = mix(roughnessFactor, 0.92, clamp(baseFrost * 0.9, 0.0, 0.8));
 `
 
 const SNOW_PAINT = `
@@ -338,7 +347,7 @@ void main() {
     }
     if (at.y < 0.0) break;
   }
-  vec3 behind = stageRoom(outW) + stageRoomLights(outW, 0.3) * 0.3;
+  vec3 behind = stageRoom(outW);
   if (hit > 0.5) {
     vec3 rb = turn * normalize(vec3(at.x, 0.0, at.z));
     float under = smoothstep(0.5, 10.0, uIceSpan.z - at.y);
@@ -354,8 +363,8 @@ void main() {
   float core = smoothstep(0.2, 0.95, nv);
   float streak = baseNoise(vec3(vIceUv.z * 11.0 + seed * 5.0, t * 2.2 + seed * 3.0, seed * 1.7));
   float grit = baseNoise(vIcePos * 11.0);
-  float cloud = 0.09 + (0.05 + 0.2 * core * core) * smoothstep(0.25, 0.75, streak) * mix(1.0, 0.3, smoothstep(0.45, 1.0, t));
-  cloud += 0.13 * smoothstep(0.6, 0.85, grit) * (0.4 + 0.6 * core) + 0.6 * (1.0 - smoothstep(0.0, 0.17, t));
+  float cloud = 0.04 + (0.03 + 0.12 * core * core) * smoothstep(0.25, 0.75, streak) * mix(1.0, 0.3, smoothstep(0.45, 1.0, t));
+  cloud += 0.08 * smoothstep(0.6, 0.85, grit) * (0.4 + 0.6 * core) + 0.6 * (1.0 - smoothstep(0.0, 0.17, t));
   cloud = clamp(cloud, 0.0, 0.8);
   float wrap = clamp(dot(n, uIceKeyDir) * 0.5 + 0.5, 0.0, 1.0);
   float back = clamp(dot(n, uIceRimDir) * 0.5 + 0.5, 0.0, 1.0);
@@ -423,7 +432,7 @@ export function base(): THREE.Object3D {
     physical: true,
     metalness: 1,
     map: map('brass.srgb.tile.w512'),
-    hook: hookOf({ uBaseDetail: { value: map('brass-detail.lin.tile.w512') } }, { paint: BRASS_PAINT, rough: BRASS_ROUGH, tilt: BRASS_TILT, after: SHADE }),
+    hook: hookOf({ uBaseDetail: { value: map('brass-detail.lin.tile.w512') } }, { paint: BRASS_PAINT, rough: BRASS_ROUGH, tilt: BRASS_TILT, bent: BRASS_BENT, after: SHADE }),
   })
   const snow = stageMaterial({
     ...lit,
