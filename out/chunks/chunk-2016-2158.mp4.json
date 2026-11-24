@@ -1,0 +1,43 @@
+{
+  "engineHash": "17895cb44206dea9",
+  "seasonHashes": {
+    "winter": "e3b0c44298fc1c14",
+    "spring": "e3b0c44298fc1c14",
+    "summer": "e3b0c44298fc1c14",
+    "fall": "e3b0c44298fc1c14"
+  },
+  "format": "preview",
+  "tier": "draft",
+  "assets": "full",
+  "diagnostic": "",
+  "browser": "Google Chrome for Testing 147.0.7727.15",
+  "graphics": "software",
+  "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB",
+  "time": "2026-11-24T06:19:03.033Z",
+  "kind": "film",
+  "name": "film-b",
+  "shot": "shake-3",
+  "first": 2016,
+  "last": 2158,
+  "step": 2,
+  "fps": 30,
+  "frames": 72,
+  "total": 3600,
+  "codec": "h264",
+  "mbps": 2.5,
+  "gopSeconds": 2,
+  "card": false,
+  "framesReused": 0,
+  "renderSeconds": 48.342,
+  "encodeSeconds": 3.187,
+  "secondsPerFrame": 0.6714166666666667,
+  "bytes": 765428,
+  "sha256": "620cc19a95adef1fb91d89df2e0fc6357ed2efe613eb16eac8dd332679dd64bd",
+  "standIns": 54,
+  "counts": {
+    "triangles": 66141,
+    "drawCalls": 24,
+    "particles": 102000
+  },
+  "errors": []
+}
