@@ -48,7 +48,7 @@ export const LENS_LOOK = {
 
 export const LIGHT_LOOK = {
   wrap: 0.55,
-  grid: 1.9,
+  grid: 3.3,
   veilShare: 0.7,
   lampFlash: 9,
   keyFloor: 2.3,
@@ -72,8 +72,8 @@ export const LYING_LOOK = {
 export const LOBE_CORE = 0.5
 export const EDGE_SOFT_LOW = 0.03
 export const EDGE_SOFT_HIGH = 2.3
-export const EDGE_CRISP_LOW = 0.2
-export const EDGE_CRISP_HIGH = 0.95
+export const EDGE_CRISP_LOW = 0.1
+export const EDGE_CRISP_HIGH = 1.5
 export const PIXEL_SIGMA2 = 0.18
 export const STREAK_HOLD = 0.7
 export const STREAK_CAPSULE = 0.8
@@ -82,28 +82,31 @@ export const STREAK_REACH = 1.05
 export const BLUR_HOLD = 0.5
 export const BLUR_STRICT_FROM_PX = 5
 export const BLUR_STRICT_TO_PX = 24
-export const SIZE_LOW = 0.2
-export const SIZE_HIGH = 3.4
-export const SIZE_SKEW = 5
+export const SIZE_LOW = 0.33
+export const SIZE_HIGH = 3
+export const SIZE_SKEW = 7
+export const THIN_LOW = 0.16
+export const THIN_FROM = 0.3
+export const THIN_TO = 0.7
 export const STRETCH_LOW = 0.1
-export const STRETCH_HIGH = 1.5
-export const STORM_SMEAR_SHARE = 0.18
+export const STRETCH_HIGH = 0.7
+export const STORM_SMEAR_SHARE = 0.34
 export const STORM_SHARP_SHARE = 0.008
 export const STORM_FINE_SHARE = 0.18
 export const STORM_SMEAR = 0.6
-export const STORM_OFF_DISC = 0.4
-export const STORM_CROSS = { keep: 0.06, from: 0.8, to: 0.97, fromPx: 1.5, toPx: 4 }
+export const STORM_OFF_DISC = 0.75
+export const STORM_CROSS = { keep: 1, from: 0.8, to: 0.97, fromPx: 1.5, toPx: 4 }
 export const STORM_SIDE = 0.8
 export const STORM_SLOW = { keep: 0.35, fromPx: 2, toPx: 9 }
 export const STORM_SMEAR_FAINT = 0.45
 export const STORM_SMEAR_BRIGHT = 1.7
-export const STORM_WINDOW = { x: -6, y: 6, wide: 42, high: 30, from: 0.75, to: 1.25, floor: 0.14, back: -20, front: 0 }
+export const STORM_WINDOW = { x: -6, y: 6, wide: 42, high: 30, from: 0.75, to: 1.25, floor: 0.07, back: -20, front: 0 }
 export const STORM_PACE = { fromPx: 0.5, toPx: 2, unseen: 0.1 }
 export const STORM_SHARP = 0.9
 export const STORM_FINE_HIGH = 0.45
 export const STORM_FINE_SOFT = 0.5
 export const STORM_FINE_LOW = 0.1
-export const STORM_THIN = 0.1
+export const STORM_THIN = 0.04
 export const STORM_STREAK_DIM = 0.5
 export const STORM_FAR = 1
 export const STORM_SMEAR_FAR = 0.45
@@ -113,7 +116,7 @@ export const SETTLE_FADE = 0.08
 export const STORM_SMEAR_LOW_PX = 2
 export const STORM_SMEAR_HIGH_PX = 7
 export const STORM_SOFT_TOP = 4.5
-export const STORM_MOST_PX = 0.5
+export const STORM_MOST_PX = 0.75
 export const STORM_GLITTER_PX = 0.5
 export const STORM_GLITTER = 0.9
 export const STORM_GLITTER_FROM = 0.6

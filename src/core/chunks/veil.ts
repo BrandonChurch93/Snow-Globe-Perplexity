@@ -32,14 +32,24 @@ export const VEIL_LOOK = {
   whiteFrom: 0.5,
   whiteTo: 0.97,
   whitePower: 3.5,
-  whiteEven: 0.5,
-  haze: 0.14,
+  shakenFrom: 0.25,
+  shakenTo: 1.0,
+  shakenPower: 3,
+  shakenShare: 0.35,
+  aloftFrom: 0.8,
+  aloftTo: 1.0,
+  white: 0.24,
+  heldFrom: 0.15,
+  heldTo: 0.6,
+  foldEarly: 0.9,
+  foldPeak: 0.85,
+  haze: 0.05,
   hazePower: 1.3,
   peakFrom: 0.7,
   bank: 4,
   bankPower: 1.5,
   bankRest: -1.15,
-  bankRise: 0.87,
+  bankRise: 0.74,
   bankRisePower: 0.5,
   bankFlood: 0.55,
   bankFloodGain: 2,
@@ -60,8 +70,8 @@ export const VEIL_LOOK = {
   slowHaze: 0.2,
   slowBank: 0.12,
   slowRise: 0.6,
-  bankRing: 0.6,
-  bankSoft: 0.13,
+  bankRing: 0.8,
+  bankSoft: 0.08,
   bankWhite: 2.2,
   bankWave: 0.3,
   bankWisp: 0.36,
@@ -69,6 +79,8 @@ export const VEIL_LOOK = {
   bankEvenLow: 0.55,
   bankLean: 0.23,
   bankTileMm: 46,
+  bankGrainWide: 0.45,
+  bankGrainTall: 1.5,
   bankPuffLow: 0.35,
   bankPuffGain: 1.3,
   bankGrainLow: 0.62,
@@ -77,11 +89,12 @@ export const VEIL_LOOK = {
   axis: [0, 0.08, 1] as const,
   keyShare: 3.2,
   keyFloor: 0.5,
+  keyFloorFlood: 0.18,
   shadow: 0.5,
   bankShadow: 0.09,
   ambientShare: 1,
-  gridShare: 10,
-  bankGridShare: 12,
+  gridShare: 4,
+  bankGridShare: 6,
   bankShade: 0.65,
   bankShadeFrom: 0.25,
   bankShadeTo: 1.3,
@@ -224,15 +237,16 @@ vec4 veilStir(vec3 p) {
 vec4 veilField(vec3 p) {
   vec4 s = veilStir(p);
   vec3 out2 = p - dot(p, ${vec(AXIS)}) * ${vec(AXIS)};
-  float puff = texture(uVeilNoise, p / ${n(L.bankTileMm)} + vec3(-uVeilFlow.w, uVeilFlow.z, uVeilFlow.w)).a;
+  float puff = texture(uVeilNoise, p * vec3(${n(L.bankGrainWide)}, ${n(L.bankGrainTall)}, ${n(L.bankGrainWide)}) / ${n(L.bankTileMm)} + vec3(-uVeilFlow.w, uVeilFlow.z, uVeilFlow.w)).a;
   float level = dot(p, uVeilUp.xyz) / uLens.w - ${n(L.bankRing)} * dot(out2, out2) / (uLens.w * uLens.w) + (s.w - 0.5) * ${n(L.bankWave)} + (puff - 0.5) * ${n(L.bankWisp)} + ${n(L.bankLean)} * p.x / uLens.w;
   float bank = smoothstep(uVeilBank.x + uVeilBank.y, uVeilBank.x - uVeilBank.y, level);
-  return vec4(uVeil.a * mix(1.0, s.x * s.y, uVeilUp.w), uVeilBank.z * bank * mix(${n(L.bankPuffLow)} + ${n(L.bankPuffGain)} * puff, 1.0, uVeilBank.w * bank * bank), max(uVeilBank.x - level, 0.0) * uLens.w, puff);
+  float fold = ${n(L.wisp)} * smoothstep(${n(L.cutLow)}, ${n(L.cutHigh)}, s.z) * (${n(L.blobLow)} + ${n(L.blobGain)} * s.w);
+  return vec4(uVeil.a * mix(1.0, s.x * s.y, uVeilUp.w) + uVeilRoll.z * mix(1.0, fold, uVeilRoll.w), uVeilBank.z * bank * mix(${n(L.bankPuffLow)} + ${n(L.bankPuffGain)} * puff, 1.0, uVeilBank.w * bank * bank), max(uVeilBank.x - level, 0.0) * uLens.w, puff);
 }
 vec3 veilLit(vec3 p, vec4 field) {
   float pk = dot(p, uVeilKey.xyz);
   float reach = -pk + sqrt(max(pk * pk - dot(p, p) + uLens.w * uLens.w, 0.0));
-  float dim = exp(-uVeil.a * ${n(L.shadow)} * reach - ${n(L.bankShadow)} * field.z / max(dot(uVeilKey.xyz, uVeilUp.xyz), 0.3));
+  float dim = exp(-(uVeil.a + uVeilRoll.z) * ${n(L.shadow)} * reach - ${n(L.bankShadow)} * field.z / max(dot(uVeilKey.xyz, uVeilUp.xyz), 0.3));
   float low = field.y / max(field.x + field.y, 1e-6);
   float packed = mix(1.0, mix(${n(L.bankShade)}, 1.0, smoothstep(${n(L.bankShadeFrom)}, ${n(L.bankShadeTo)}, field.y / max(uVeilBank.z, 1e-6))), low);
   vec3 toward;
@@ -241,7 +255,7 @@ vec3 veilLit(vec3 p, vec4 field) {
   return lit * mix(vec3(1.0), vec3(1.0) / max(uVeil.rgb, vec3(0.05)), ${n(L.bankWhite)} * low) * mix(1.0, ${n(L.bankDim)} * mix(${n(L.bankGrainLow)}, ${n(L.bankGrainHigh)}, smoothstep(0.25, 0.75, field.w)), low * (1.0 - ${n(L.bankGrainFlood)} * uVeilRoll.y));
 }
 vec4 veilPath(vec3 eye, vec3 placed, vec3 world, float path) {
-  float thin = (uVeil.a + uVeilBank.z) * path;
+  float thin = (uVeil.a + uVeilRoll.z + uVeilBank.z) * path;
   if (thin <= 0.0) return vec4(0.0);
   if (thin < 0.003) return vec4(stageCold(uVeilTurn * (world - uLensCentre)), thin);
   vec3 dir = normalize(placed - eye);
@@ -302,19 +316,23 @@ const tilt = new THREE.Euler()
 const local = new THREE.Vector3()
 const spin = new THREE.Matrix4()
 
-const now = { most: 0, rest: 0, turb: 0, slow: 0 }
+const now = { most: 0, rest: 0, turb: 0, slow: 0, held: 0, aloft: 0 }
 
 function densities(): void {
-  const { most, rest, turb, slow } = now
+  const { most, rest, turb, slow, held, aloft } = now
   const w = Math.min(1, Math.max(0, (turb - L.whiteFrom) / (L.whiteTo - L.whiteFrom)))
-  const flood = Math.pow(w, L.whitePower)
-  veilUniforms.uVeilRoll.value.y = flood
-  const white = most * flood
+  const up = Math.min(1, Math.max(0, (turb - L.shakenFrom) / (L.shakenTo - L.shakenFrom)))
+  const flood = Math.max(Math.pow(w, L.whitePower), held * lerp(aloft * aloft, Math.pow(up, L.shakenPower), L.shakenShare))
+  const white = most * L.white * flood
   const haze = most * L.haze * Math.max(Math.pow(turb, L.hazePower), L.slowHaze * slow)
-  const density = rest + white + haze
+  const density = rest + haze
   const u = veilUniforms
   u.uVeil.value.w = density
-  u.uVeilUp.value.w = density > 0 ? Math.min(L.uneven, (haze + white * L.whiteEven) / density) : L.uneven
+  u.uVeilUp.value.w = density > 0 ? Math.min(L.uneven, haze / density) : L.uneven
+  u.uVeilRoll.value.y = flood
+  u.uVeilKey.value.w = lerp(L.keyFloor, L.keyFloorFlood, flood)
+  u.uVeilRoll.value.z = white
+  u.uVeilRoll.value.w = lerp(L.foldEarly, L.foldPeak, flood)
   const peak = Math.min(1, Math.max(0, (turb - L.peakFrom) / (1 - L.peakFrom)))
   const rise = Math.max(Math.pow(turb, L.bankRisePower), L.slowRise * Math.sqrt(slow))
   const thick = Math.max(Math.pow(turb, L.bankPower), L.slowBank * slow)
@@ -324,6 +342,8 @@ function densities(): void {
 export function veilSettle(afloat: number): void {
   const s = Math.min(1, Math.max(0, (afloat - L.slowFrom) / (L.slowTo - L.slowFrom)))
   now.slow = s * s * (3 - 2 * s)
+  const k = Math.min(1, Math.max(0, (afloat - L.aloftFrom) / (L.aloftTo - L.aloftFrom)))
+  now.aloft = k * k * (3 - 2 * k)
   densities()
 }
 
@@ -334,6 +354,8 @@ export function updateVeil(f: StageFrame): void {
   now.most = lerp(a.density, b.density, t)
   now.rest = lerp(a.rest, b.rest, t)
   now.turb = Math.min(1, Math.max(0, f.turbulence))
+  const h = Math.min(1, Math.max(0, (f.globe.y / config.shake.liftMm - L.heldFrom) / (L.heldTo - L.heldFrom)))
+  now.held = h * h * (3 - 2 * h)
   const u = veilUniforms
   u.uVeil.value.set(lerp(a.tint[0], b.tint[0], t), lerp(a.tint[1], b.tint[1], t), lerp(a.tint[2], b.tint[2], t), 0)
   const amb = (L.ambientShare * 0.5) / Math.PI
