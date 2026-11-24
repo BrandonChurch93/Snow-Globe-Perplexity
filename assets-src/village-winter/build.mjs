@@ -28,8 +28,8 @@ const cottageInv = cottageM.clone().invert()
 const local = (x, y, z) => new THREE.Vector3(x, y, z).applyMatrix4(cottageInv)
 
 const SNOW = lin('#edf1f8')
-const ROOF_TONE = [0.84, 0.73, 0.65]
-const ICE_SHADE = { dark: 0.68, from: 0.15, to: 0.85, back: [0.3, 1] }
+const ROOF_TONE = [0.98, 0.8, 0.67]
+const ICE_SHADE = { dark: 0.55, from: 0.15, to: 0.85, back: [0.3, 1] }
 const snow = new Bag('snow')
 const ice = new Bag('ice')
 const decor = new Bag('decor')
@@ -53,9 +53,12 @@ const rbox = (x, y, z, hx, hy, hz, r) => {
 }
 const ell = (x, y, z, rx, ry, rz) => (Math.hypot(x / rx, y / ry, z / rz) - 1) * Math.min(rx, ry, rz)
 
-const T0 = 1.6
-const RR = 0.74
-const ROLL = { out: 0.85, dropMm: 0.55, round: 0.34, clear: 0.14 }
+const T0 = 1.8
+const RR = 0.86
+const ROLL = { out: 0.95, dropMm: 0.55, round: 0.34, clear: 0.14 }
+const EAVE = { scallopMm: 0.4, pillowMm: 0.32, fromMm: 3.2 }
+const COLLAR = { wideMm: 0.85, highMm: 0.55, fadeMm: 1.1 }
+const FRESH_MM = 0.22
 const ch = C.chimney
 const stackTop = ch.top + STACK_LIFT
 const prism = (a, l) => {
@@ -83,9 +86,9 @@ function roofSnow(extra, lumps) {
     let d = 1e9
     for (const sd of [-1, 1]) {
       const [s, lift] = slopeOf(sd, a, h)
-      const eave = SLOPE + ROLL.out + 0.42 * (noise(l * 0.34, sd * 3.1, 1.7) - 0.5) + 0.14 * noise(l * 1.5, sd * 1.3, 5.2)
+      const eave = SLOPE + ROLL.out + 0.42 * (noise(l * 0.34, sd * 3.1, 1.7) - 0.5) + 0.14 * noise(l * 1.5, sd * 1.3, 5.2) + EAVE.scallopMm * (noise(l * 0.8, sd * 5.7, 9.1) - 0.5)
       const gable = roofLen + ROLL.out + 0.1 * noise(s * 0.5, sd * 5.3, l > 0 ? 2.2 : 8.4) + 0.05 * noise(s * 1.9, sd * 2.3, l > 0 ? 4.2 : 6.4)
-      const th = T0 * (0.86 + 0.3 * noise(s * 0.33, l * 0.33, 7 + sd)) - dent(sd, s, l) + extra
+      const th = T0 * (0.86 + 0.3 * noise(s * 0.33, l * 0.33, 7 + sd)) - dent(sd, s, l) + extra + EAVE.pillowMm * smooth(SLOPE - EAVE.fromMm, SLOPE - 0.2, s) * noise(l * 0.55, sd * 2.3, 4.4)
       const s0 = -T0 * (sp / cp) + 0.12
       const box = rbox(s - (s0 + eave) / 2, lift - th / 2, l, (eave - s0) / 2, th / 2, gable, Math.min(RR, th / 2 - 0.02))
       const drop = ROLL.dropMm * (0.8 + 0.5 * noise(l * 0.9, s * 0.9, 3 + sd))
@@ -96,7 +99,7 @@ function roofSnow(extra, lumps) {
     const pr = prism(a, l)
     const [, liftL] = slopeOf(-1, a, h)
     const [, liftR] = slopeOf(1, a, h)
-    const bank = Math.max(pr - 0.5, Math.max(liftL, liftR) - (T0 + 0.42 - 0.5 * smooth(0, 0.7, pr)))
+    const bank = Math.max(pr - COLLAR.wideMm, Math.max(liftL, liftR) - (T0 + COLLAR.highMm - (COLLAR.highMm + 0.1) * smooth(0, COLLAR.fadeMm, pr)))
     d = smin(d, bank, 0.45)
     return d + lumps * fbm(a * 1.05, h * 1.05, l * 1.05, 2)
   }
@@ -109,8 +112,9 @@ const underDeck = (a, h, l) => {
   return false
 }
 const keepRoof = (a, h, l) => !(prism(a, l) < -0.08 && h < stackTop + 0.2) && !underDeck(a, h, l)
-const roofMin = [-(C.halfWidth + C.overhang + 1.2), ridgeY - (SLOPE + 1.1) * sp - 0.7, -(roofLen + 1.1)]
-const roofMax = [C.halfWidth + C.overhang + 1.2, ridgeY + T0 / cp + 0.7, roofLen + 1.1]
+const ROOF_ROOM = { across: 2.7, down: 1.4, along: 1.9, up: 1.1 }
+const roofMin = [-(C.halfWidth + C.overhang + ROOF_ROOM.across), ridgeY - (SLOPE + 1.1) * sp - ROOF_ROOM.down, -(roofLen + ROOF_ROOM.along)]
+const roofMax = [C.halfWidth + C.overhang + ROOF_ROOM.across, ridgeY + T0 / cp + ROOF_ROOM.up, roofLen + ROOF_ROOM.along]
 addSnow(netGeometry(roofSnow(0, 0.07), roofMin, roofMax, 0.45, keepRoof), cottageM, 1, snow, 'roof', ROOF_TONE)
 
 function strip(n, at, across, up, w, h, seg = 6) {
@@ -190,12 +194,6 @@ for (const s of fenceShapes) {
   }
 }
 
-{
-  const lampM = new THREE.Matrix4().makeRotationY(RF.LAMP.yaw).setPosition(...RF.lampFoot())
-  const y0 = RF.LAMP.cageHi + 0.62
-  const sdf = (x, y, z) => ell(x + 0.42, y - y0, z - 0.2, 0.46, 0.2, 0.5) + 0.03 * fbm(x * 2 + 3, y * 2, z * 2, 2)
-  addSnow(netGeometry(sdf, [-1.2, y0 - 0.5, -1], [1, y0 + 0.5, 1.2], 0.12), lampM, 0.6)
-}
 
 const front = frame(P3(0, 0, C.halfLength), V3, UP, U3)
 const left = frame(P3(-C.halfWidth, 0, 0), U3, UP, neg(V3))
@@ -222,25 +220,28 @@ for (const [i, s] of pathShapes.entries()) {
   }
 }
 
+const SHRUB_CAP = { up: 0.58, wide: 0.8, tall: 0.46 }
 const shrubList = RF.shrubs()
 for (const [i, sh] of shrubList.entries()) {
   const [cx, cy, cz] = sh.centre
   const seed = 11 * i + 3
   const SR = rng(977 + 31 * i)
-  const clumps = Array.from({ length: i < 2 ? 13 : 10 }, () => {
-    const a = SR() * Math.PI * 2
-    const up = 0.45 + 0.55 * Math.sqrt(SR())
+  const ivy = RF.isIvy(sh.r)
+  const clumps = Array.from({ length: ivy ? Math.round(0.5 * sh.r[1]) : 20 }, () => {
+    const a = ivy ? RF.wallOutward() + (SR() - 0.5) * Math.PI * 0.95 : SR() * Math.PI * 2
+    const up = ivy ? -0.3 + 1.2 * SR() : 0.2 + 0.8 * Math.sqrt(SR())
     const rr = Math.sqrt(Math.max(0, 1 - up * up))
-    const wide = 0.36 + 0.42 * SR()
+    const wide = ivy ? 0.12 + 0.1 * SR() : 0.36 + 0.42 * SR()
     return { at: [cx + Math.cos(a) * rr * sh.r[0] * 0.95, cy + up * sh.r[1] * 0.95, cz + Math.sin(a) * rr * sh.r[2] * 0.95], wide, tall: wide * (0.42 + 0.3 * SR()) }
   })
+  if (!ivy) clumps.push({ at: [cx, cy + SHRUB_CAP.up * sh.r[1], cz], wide: SHRUB_CAP.wide * Math.min(sh.r[0], sh.r[2]), tall: SHRUB_CAP.tall * sh.r[1] })
   const sdf = (x, y, z) => {
     let d = 1e9
     for (const c of clumps) d = smin(d, ell(x - c.at[0], y - c.at[1], z - c.at[2], c.wide, c.tall, c.wide), 0.16)
     return d + 0.06 * fbm(x * 2.4 + seed, y * 2.4, z * 2.4, 2)
   }
   const inside = (x, y, z) => ell(x - cx, y - cy, z - cz, sh.r[0] * 0.78, sh.r[1] * 0.78, sh.r[2] * 0.78) < 0
-  addSnow(netGeometry(sdf, [cx - sh.r[0] - 0.9, cy - sh.r[1], cz - sh.r[2] - 0.9], [cx + sh.r[0] + 0.9, cy + sh.r[1] + 1, cz + sh.r[2] + 0.9], 0.2, (x, y, z) => !inside(x, y, z)), undefined, 0.6, snow, 'shrubs')
+  addSnow(netGeometry(sdf, [cx - sh.r[0] - 0.9, cy - sh.r[1], cz - sh.r[2] - 0.9], [cx + sh.r[0] + 0.9, cy + sh.r[1] + 1, cz + sh.r[2] + 0.9], ivy ? 0.12 : 0.2, (x, y, z) => !inside(x, y, z)), undefined, 0.6, snow, 'shrubs')
 }
 
 const fposts = fenceShapes.filter((s) => s.half[2] < 2).map((s) => [s.centre[0], s.centre[2]])
@@ -272,7 +273,7 @@ function snowAt(x, z) {
 }
 const BANK_TOP = 0.3
 const BANK_BLEND_MM = 5
-const BILLOW = { cycles: 6.5, deepMm: 2.2, clumps: 21, clumpMm: 0.7, grains: 40, grainMm: 0.32, crestMm: 0.45, crestFine: 0.2 }
+const BILLOW = { cycles: 6.5, deepMm: 2.2, clumps: 12, clumpMm: 0.5, crestMm: 0.45, crestFine: 0.2 }
 const UNDERCUT = { dark: 0.88, from: 0.985, to: 1.022, arc: [-135, -115, -5, 25] }
 function contact(x, z) {
   let k = 1
@@ -289,7 +290,7 @@ function contact(x, z) {
   const around = 480
   const shore = [0.9, 0.93, 0.95, 0.962, 0.972, 0.981, 0.99, 1.0, 1.012, 1.028, 1.05, 1.08]
   const outer = 38
-  const skirt = 34
+  const skirt = 50
   const r = L.innerRadiusMm - 0.6
   const footY = L.collarY - 1.5
   const pc = Math.cos(L.pond.yaw)
@@ -361,8 +362,7 @@ function contact(x, z) {
         const uz = Math.sin(th) * Math.sin(phi)
         const lump = clamp(0.5 + 0.75 * fbm(ux * BILLOW.cycles + 3.1, uy * BILLOW.cycles, uz * BILLOW.cycles + 7.7, 3))
         const clump = clamp(0.5 + 0.8 * fbm(ux * BILLOW.clumps + 1.3, uy * BILLOW.clumps + 5.9, uz * BILLOW.clumps + 2.2, 2))
-        const grain = clamp(0.5 + 0.9 * fbm(ux * BILLOW.grains + 8.1, uy * BILLOW.grains + 0.7, uz * BILLOW.grains + 4.4, 2))
-        const rr = r - 0.15 - BILLOW.deepMm * Math.pow(lump, 1.5) * smooth(0.08, 0.5, q) - (BILLOW.clumpMm * clump * clump + BILLOW.grainMm * grain) * smooth(0.0, 0.16, q)
+        const rr = r - 0.15 - BILLOW.deepMm * Math.pow(lump, 1.5) * smooth(0.08, 0.5, q) - BILLOW.clumpMm * clump * clump * smooth(0.0, 0.16, q)
         x = ux * rr
         y = uy * rr
         z = uz * rr
@@ -590,7 +590,8 @@ for (const run of [hangs.eave, hangs.rake]) {
   }
 }
 
-addSnow(netGeometry(roofSnow(0.2, 0.1), roofMin.map((v) => v - 0.4), roofMax.map((v) => v + 0.4), 0.85, (a, h, l) => keepRoof(a, h, l) && Math.max(slopeOf(-1, a, h)[1], slopeOf(1, a, h)[1]) > 0.45), cottageM, 1, fresh, 'fresh', ROOF_TONE)
+const roofBase = roofSnow(0, 0.07)
+addSnow(netGeometry((a, h, l) => roofBase(a, h, l) - FRESH_MM, roofMin.map((v) => v - 0.4), roofMax.map((v) => v + 0.4), 0.6, (a, h, l) => keepRoof(a, h, l) && Math.max(slopeOf(-1, a, h)[1], slopeOf(1, a, h)[1]) > 0.12), cottageM, 1, fresh, 'fresh', ROOF_TONE)
 for (const s of fenceShapes.filter((q) => q.half[2] < 2)) {
   const top = s.half[1] + 0.12
   const wide = s.half[0] * STOUT.post + 0.13

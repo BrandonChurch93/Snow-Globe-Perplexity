@@ -8,14 +8,17 @@ export const FOOT_R = 58.8
 
 export const sphereRadiusAt = (h) => Math.sqrt(Math.max(SPHERE_R * SPHERE_R - (CENTRE_H - h) * (CENTRE_H - h), 0))
 
-export const RIM = { r: FOOT_R, top: 3.3 }
-export const ROPE = { ringR: 57.3, h: 4.42, tube: 1.2, lobes: 124, strands: 1.9, depth: 0.36 }
-export const BEAD = { ringR: 56.45, h: 7.05, tube: 1.1 }
-export const LIP = { ringR: 53.45, h: TOP - 0.3, tube: 1.45 }
-export const LEDGE = { outer: [52.75, TOP], inner: [42.5, TOP + 2.75] }
-export const COLLAR = { foot: [43.05, TOP + 2.95], crown: [43.66, TOP + 4.3], bead: 0.62, gap: 0.12 }
+export const PLINTH = { r: 57.3, top: 2.75 }
+export const RIM = { r: FOOT_R, top: 5.5 }
+export const ROPE = { ringR: 57.3, h: 6.65, tube: 1.2, lobes: 124, strands: 1.9, depth: 0.36 }
+export const BEAD = { ringR: 56.45, h: 9.3, tube: 1.1 }
+export const LIP = { ringR: 53.45, h: TOP + 1.0, tube: 1.45 }
+export const LEDGE = { outer: [52.75, TOP + 1.3], inner: [42.5, TOP + 2.75] }
+export const COLLAR = { foot: [43.05, TOP + 2.95], crown: [44.93, TOP + 5.6], bead: 0.8, gap: 0.12 }
 export const CUP = { offset: 0.15 }
-export const ICE = { r: 54.05, h: TOP - 0.55, up: -0.4 }
+export const ICE = { r: 54.05, h: TOP + 0.75, up: -0.4 }
+
+export const lift = (h) => Number((TOP - (31.7 - h) * (22.35 / 23.3)).toFixed(3))
 
 export const BODY = [
   [56.95, 8.4],
@@ -34,9 +37,9 @@ export const BODY = [
   [50.6, 29.8],
   [51.35, 31.0],
   [52.3, 31.7],
-]
+].map(([r, h]) => [r, lift(h)])
 
-export const CARVING = { low: 8.0, high: 25.0, relief: 2.1, rRef: 54.5 }
+export const CARVING = { low: lift(8.0), high: lift(25.0), relief: 2.1, rRef: 54.5 }
 
 function catmull(points, per) {
   const out = []
@@ -58,7 +61,7 @@ function catmull(points, per) {
 }
 
 export function meridian() {
-  const control = [[56.0, 7.3], ...BODY, [53.0, TOP - 0.45]]
+  const control = [[56.0, lift(7.3)], ...BODY, [53.0, TOP + 0.85]]
   const pts = catmull(control, 16)
   const s = [0]
   for (let i = 1; i < pts.length; i++) s.push(s[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]))
@@ -105,7 +108,7 @@ export function bodyRadiusAt(m, h) {
 }
 
 export const PROFILE_NOTES = [
-  `rim: a foot that flares from radius ${RIM.r - 0.45} at ${RIM.top} to 59.3 on the slab`,
+  `rim: a gilt band at radius 59.3 from 2.95 to ${RIM.top} over a dark plinth of radius ${PLINTH.r} that stands ${PLINTH.top} high`,
   `rope ring: centre radius ${ROPE.ringR}, height ${ROPE.h}, tube ${ROPE.tube}, ${ROPE.lobes} lobes of ${ROPE.strands} strands`,
   `bead: centre radius ${BEAD.ringR}, height ${BEAD.h}, tube ${BEAD.tube}`,
   `body, radius at height: ${BODY.map(([r, h]) => `${r}@${h}`).join(' ')}`,
