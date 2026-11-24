@@ -182,6 +182,20 @@ describe('the simulation', () => {
     }, 120000)
   }
 
+  it('starts the whole pool inside the glass in every season', () => {
+    for (const season of SEASONS) {
+      const e = new ParticleEngine({ season })
+      e.reset()
+      expect(e.count).toBe(POOL)
+      let outside = 0
+      for (let i = 0; i < e.count; i++) {
+        if (e.state[i] === STATE_HIDDEN) continue
+        if (Math.hypot(e.pos[i * 3]!, e.pos[i * 3 + 1]!, e.pos[i * 3 + 2]!) > INNER_R + 0.05) outside++
+      }
+      expect(outside).toBe(0)
+    }
+  })
+
   it('throws what rests back into the liquid and lets it settle again, not stacked in a grid', () => {
     const e = new ParticleEngine({ season: 'winter', fraction: 0.08 })
     const tl = stillTimeline('winter')

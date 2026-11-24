@@ -520,12 +520,15 @@ export class ParticleEngine {
     let z = 0
     for (let tries = 0; tries < 16; tries++) {
       const s = salt + tries * 3
-      x = (unit(hash2(i, s)) * 2 - 1) * WALL
-      y = low + (high - low) * unit(hash2(i, s + 1))
-      z = (unit(hash2(i, s + 2)) * 2 - 1) * WALL
+      const cx = (unit(hash2(i, s)) * 2 - 1) * WALL
+      const cy = low + (high - low) * unit(hash2(i, s + 1))
+      const cz = (unit(hash2(i, s + 2)) * 2 - 1) * WALL
       const lim = WALL - margin
-      if (x * x + y * y + z * z > lim * lim) continue
-      if (sdfSample(G.source, x, y, z, g) > margin + 0.5) break
+      if (cx * cx + cy * cy + cz * cz > lim * lim) continue
+      x = cx
+      y = cy
+      z = cz
+      if (sdfSample(G.source, cx, cy, cz, g) > margin + 0.5) break
     }
     this.put(i, x, y, z)
   }
