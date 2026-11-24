@@ -174,7 +174,7 @@ export const cottage = {
   overhang: 1.3,
   gableOverhang: 1.1,
   roofThick: 0.65,
-  chimney: { along: -5.4, across: -3.5, half: 1.75, halfAlong: 2.1, top: 21.9 },
+  chimney: { along: -5.4, across: -3.5, half: 1.75, halfAlong: 2.1, top: 23.6 },
   door: { across: 2.5, width: 5, height: 8 },
   window: { across: -5.2, width: 3, height: 4.3, sill: 3.5 },
   sideWindow: { along: 0.7, width: 2.9, height: 3.4, sill: 4 },
