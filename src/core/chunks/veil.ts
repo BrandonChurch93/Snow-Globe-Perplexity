@@ -23,25 +23,25 @@ export const VEIL_LOOK = {
   cutHigh: 0.8,
   blobLow: 0.3,
   blobGain: 1.4,
-  hazeCore: 0.3,
-  hazeFrom: 0.12,
-  hazeTo: 0.8,
+  hazeCore: 0,
+  hazeFrom: 0.3,
+  hazeTo: 0.9,
   uneven: 0.88,
   unevenAtPeak: 0.5,
   peakFrom: 0.7,
   bank: 5.6,
   bankPower: 3,
-  bankRest: -1.5,
+  bankRest: -1.33,
   bankRise: 1.2,
-  bankRing: 0.69,
-  bankSoft: 0.1,
-  bankWave: 0.25,
-  bankWisp: 0.7,
+  bankRing: 0.4,
+  bankSoft: 0.2,
+  bankWave: 0.16,
+  bankWisp: 0.8,
   bankEven: 0.75,
   bankEvenLow: 0.35,
   axis: [0, 0.08, 1] as const,
   centreMm: [-26, 15, 0] as const,
-  keyShare: 0.8,
+  keyShare: 0.95,
   keyFloor: 0.3,
   shadow: 0.5,
   bankShadow: 0.05,
@@ -168,11 +168,11 @@ vec3 veilField(vec3 p) {
   vec3 q = vec3(rad / ${n(L.arcTileMm)}, h / ${n(L.arcDeepMm)}, turn * ${n(L.arcTurns)} - uVeilFlow.x);
   float a = texture(uVeilNoise, q + vec3((w.rg - 0.5) * ${n(L.warp)}, uVeilFlow.y)).a;
   float d = ${n(L.wisp)} * smoothstep(${n(L.cutLow)}, ${n(L.cutHigh)}, a) * (${n(L.blobLow)} + ${n(L.blobGain)} * w.a);
-  float ring = rad / uLens.w;
-  float level = dot(p, uVeilUp.xyz) / uLens.w - ${n(L.bankRing)} * ring * ring + (w.a - 0.5) * ${n(L.bankWave)} + (a - 0.5) * ${n(L.bankWisp)};
+  vec3 out2 = p - dot(p, ${vec(AXIS)}) * ${vec(AXIS)};
+  float level = dot(p, uVeilUp.xyz) / uLens.w - ${n(L.bankRing)} * dot(out2, out2) / (uLens.w * uLens.w) + (w.a - 0.5) * ${n(L.bankWave)} + (a - 0.5) * ${n(L.bankWisp)};
   float bank = smoothstep(uVeilBank.x + uVeilBank.y, uVeilBank.x - uVeilBank.y, level);
-  float haze = mix(${n(L.hazeCore)}, 1.0, smoothstep(${n(L.hazeFrom)}, ${n(L.hazeTo)}, ring));
-  return vec3(uVeil.a * haze * mix(1.0, d, uVeilUp.w), uVeilBank.z * bank * mix(d, 1.0, uVeilBank.w), max(uVeilBank.x - level, 0.0) * uLens.w);
+  float haze = mix(${n(L.hazeCore)}, 1.0, smoothstep(${n(L.hazeFrom)}, ${n(L.hazeTo)}, rad / uLens.w));
+  return vec3(uVeil.a * mix(1.0, d * haze, uVeilUp.w), uVeilBank.z * bank * mix(d, 1.0, uVeilBank.w * bank * bank), max(uVeilBank.x - level, 0.0) * uLens.w);
 }
 vec3 veilLit(vec3 p, vec3 field) {
   float pk = dot(p, uVeilKey.xyz);

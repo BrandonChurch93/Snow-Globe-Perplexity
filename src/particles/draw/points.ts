@@ -6,10 +6,11 @@ import { clearStandIn, flagStandIn } from '../../core/standins'
 import type { ParticleSource } from '../../core/stage'
 import { hasTexture, texture } from '../../core/textures'
 import { partBytes } from '../../diagnostics/views'
+import { LIQUID_R } from '../../globe/liquid'
 import type { StageFrame } from '../../scene/frame'
 import { flickerOf } from '../../scene/lightgrid'
 import type { InnerLight } from '../../seasons/kit'
-import { LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_TABLE, LYING_LOOK, MAX_KINDS, SHAPE, TABLE_COLUMNS, lookOf } from './looks'
+import { FLOW_LOOK, LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_TABLE, LYING_LOOK, MAX_KINDS, SHAPE, TABLE_COLUMNS, lookOf } from './looks'
 import { FRAG, VERT_MAIN, VERT_PARS } from './shader'
 
 export { MAX_KINDS } from './looks'
@@ -49,6 +50,10 @@ export class ParticleDraw {
   private readonly right = new THREE.Vector3()
   private readonly up = new THREE.Vector3()
   private cover: boolean | null = null
+  private readonly flowSum = new Float32Array(FLOW_LOOK.nodes ** 3 * 4)
+  private readonly flowData = new Uint16Array(FLOW_LOOK.nodes ** 3 * 4)
+  private readonly flow = new THREE.Data3DTexture(this.flowData, FLOW_LOOK.nodes, FLOW_LOOK.nodes, FLOW_LOOK.nodes)
+  private storm = 0
   drawn = 0
   maxPointPx = 256
 
@@ -56,6 +61,8 @@ export class ParticleDraw {
     this.uniforms = {
       ...coverUniforms,
       uPoint: { value: new THREE.Vector4(1, 1, 0, 1) },
+      uStorm: { value: new THREE.Vector4(0, 0, (FLOW_LOOK.nodes - 1) / FLOW_LOOK.nodes, 0.5 / FLOW_LOOK.nodes) },
+      uFlow: { value: this.flow as THREE.Texture },
       uAperture: { value: new THREE.Vector4(0, 0, 0, 0) },
       uEyeShift: { value: new THREE.Vector3() },
       uBlur: { value: new THREE.Vector4() },
@@ -79,6 +86,11 @@ export class ParticleDraw {
       uKindLook: { value: Array.from({ length: MAX_KINDS }, () => new THREE.Vector4()) },
     }
     this.bounds = new THREE.Sphere(new THREE.Vector3(), radiusMm)
+    this.flow.format = THREE.RGBAFormat
+    this.flow.type = THREE.HalfFloatType
+    this.flow.minFilter = THREE.LinearFilter
+    this.flow.magFilter = THREE.LinearFilter
+    this.flow.needsUpdate = true
     this.sprites = new THREE.Points(new THREE.BufferGeometry(), this.material(true))
     this.quads = new THREE.Mesh(new THREE.InstancedBufferGeometry(), this.material(false))
     for (const o of [this.sprites, this.quads]) {
@@ -147,7 +159,10 @@ export class ParticleDraw {
     this.points.visible = f.view !== 'flow' && f.view !== 'lightgrid'
     this.sprites.visible = !f.live
     this.quads.visible = f.live
+    const gate = Math.min(1, Math.max(0, (f.turbulence - LENS_LOOK.stormFrom) / (LENS_LOOK.stormTo - LENS_LOOK.stormFrom)))
+    this.storm = f.live || (f.sample && f.view === '') ? LENS_LOOK.stormSpanSteps * gate * gate * (3 - 2 * gate) : 0
     this.fill(source, f.quality.particleFraction, f.live)
+    if (this.storm > 0) this.flowOf(source)
     this.lens(f)
     this.lights(f)
     this.kinds(source, f.from.particles, f.to.particles, f.kinds, f.mix.particles)
@@ -190,12 +205,67 @@ export class ParticleDraw {
     ;(this.quads.geometry as THREE.InstancedBufferGeometry).instanceCount = this.drawn
   }
 
+  private flowOf(source: ParticleSource): void {
+    const N = FLOW_LOOK.nodes
+    const R = LIQUID_R
+    const k = (N - 1) / (2 * R)
+    const top = N - 1.001
+    const sum = this.flowSum
+    sum.fill(0)
+    const pos = source.pos
+    const prev = source.prev
+    const state = source.state
+    const n = this.drawn
+    const stride = Math.max(1, Math.floor(n / FLOW_LOOK.most))
+    for (let i = 0; i < n; i += stride) {
+      if (state[i] !== 0) continue
+      const o = i * 3
+      const x = pos[o]!
+      const y = pos[o + 1]!
+      const z = pos[o + 2]!
+      const fx = Math.min(top, Math.max(0, (x + R) * k))
+      const fy = Math.min(top, Math.max(0, (y + R) * k))
+      const fz = Math.min(top, Math.max(0, (z + R) * k))
+      const ix = fx | 0
+      const iy = fy | 0
+      const iz = fz | 0
+      const tx = fx - ix
+      const ty = fy - iy
+      const tz = fz - iz
+      const dx = x - prev[o]!
+      const dy = y - prev[o + 1]!
+      const dz = z - prev[o + 2]!
+      for (let c = 0; c < 8; c++) {
+        const cx = c & 1
+        const cy = (c >> 1) & 1
+        const cz = c >> 2
+        const w = (cx ? tx : 1 - tx) * (cy ? ty : 1 - ty) * (cz ? tz : 1 - tz)
+        const q = (ix + cx + N * (iy + cy + N * (iz + cz))) * 4
+        sum[q] = sum[q]! + w * dx
+        sum[q + 1] = sum[q + 1]! + w * dy
+        sum[q + 2] = sum[q + 2]! + w * dz
+        sum[q + 3] = sum[q + 3]! + w
+      }
+    }
+    const data = this.flowData
+    const half = THREE.DataUtils.toHalfFloat
+    for (let q = 0; q < sum.length; q += 4) {
+      const w = Math.max(sum[q + 3]!, FLOW_LOOK.minWeight)
+      data[q] = half(sum[q]! / w)
+      data[q + 1] = half(sum[q + 1]! / w)
+      data[q + 2] = half(sum[q + 2]! / w)
+      data[q + 3] = half(1)
+    }
+    this.flow.needsUpdate = true
+  }
+
   private lens(f: StageFrame): void {
     const u = this.uniforms
     const scale = f.height / LENS_LOOK.referenceHeightPx
-    const gate = Math.min(1, Math.max(0, (f.turbulence - LENS_LOOK.stormFrom) / (LENS_LOOK.stormTo - LENS_LOOK.stormFrom)))
-    const storm = LENS_LOOK.stormSpanSteps * gate * gate * (3 - 2 * gate)
-    const span = f.live ? SHUTTER + storm : f.sample && f.view === '' ? LENS_LOOK.sampleSpanSteps + storm : 0
+    const span = f.live ? SHUTTER : f.sample && f.view === '' ? LENS_LOOK.sampleSpanSteps : 0
+    const gust = u.uStorm!.value as THREE.Vector4
+    gust.x = this.storm
+    gust.y = Math.sqrt(this.storm) * FLOW_LOOK.ownShare
     ;(u.uPoint!.value as THREE.Vector4).set(f.moment.mix, f.focalPx, span, scale)
     const pose = f.pose
     const dx = f.sample && pose.apertureMm > 0 ? f.sample.lu * pose.apertureMm : 0

@@ -35,6 +35,8 @@ attribute vec3 aPrev;
 attribute vec4 aData;
 attribute float aState;
 uniform vec4 uPoint;
+uniform vec4 uStorm;
+uniform highp sampler3D uFlow;
 uniform vec4 uAperture;
 uniform vec3 uEyeShift;
 uniform vec4 uBlur;
@@ -125,13 +127,17 @@ export const VERT_MAIN = `
   float rim = on > 0.5 ? 1.0 - smoothstep(0.9, 0.985, length(rimAxis) / R) : 1.0;
 
   vec2 streak = vec2(0.0);
-  vec3 moved = aNow - aPrev;
+  vec3 moved = (aNow - aPrev) * uPoint.z;
+  if (uStorm.x > 0.0) {
+    vec3 carried = texture(uFlow, (nowL / (2.0 * uLens.w) + 0.5) * uStorm.z + uStorm.w).xyz;
+    moved += (carried * uStorm.x + (aNow - aPrev - carried) * uStorm.y) * (shape > 1.5 ? ${n(GLITTER_STREAK)} : 1.0);
+  }
   mat3 toView = mat3(modelViewMatrix);
-  if (afloat > 0.5 && uPoint.z > 0.0 && dot(moved, moved) > 1e-8) {
+  if (afloat > 0.5 && dot(moved, moved) > 1e-8) {
     #ifdef POINT_SPRITES
-    streak = (toView * moved).xy * (uPoint.z * (shape > 1.5 ? ${n(GLITTER_STREAK)} : 1.0) * uPoint.y * mag / zImg);
+    streak = (toView * moved).xy * (uPoint.y * mag / zImg);
     #else
-    vec3 aheadW = (modelMatrix * vec4(nowL + moved * (0.5 * uPoint.z * (shape > 1.5 ? ${n(GLITTER_STREAK)} : 1.0)), 1.0)).xyz;
+    vec3 aheadW = (modelMatrix * vec4(nowL + moved * 0.5, 1.0)).xyz;
     vec4 aheadV = viewMatrix * vec4(lensPlace(aheadW, eye).xyz, 1.0);
     aheadV.xy += uAperture.xy;
     streak = 2.0 * uPoint.y * (aheadV.xy / -aheadV.z - view.xy / -view.z);

@@ -36,6 +36,13 @@ export const LENS_LOOK = {
   referenceHeightPx: 1080,
 }
 
+export const FLOW_LOOK = {
+  nodes: 20,
+  most: 30000,
+  minWeight: 1.5,
+  ownShare: 1,
+}
+
 export const LIGHT_LOOK = {
   wrap: 0.55,
   grid: 1.15,
