@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 21 · 2026-11-24 08:27 UTC
+Status 22 · 2026-11-24 08:41 UTC
 
-- `out/stills/status/status-21-1.jpg`: The whole blockout film in 12 frames, every shot at least once (stand-in shapes)
-- `out/stills/status/status-21-2.jpg`: The opening: from the close camera with no edge of the glass, pulling back to the whole globe; the reveal is marked at 3.00 s
-- `out/stills/status/status-21-3.jpg`: One sheet across shake 1, winter into spring: the camera is locked, only the globe moves
-- `out/stills/status/status-21-4.jpg`: The close: one push from the whole globe back to the opening's camera, so the last frame meets the first
+- `out/stills/status/status-22-1.jpg`: Round 2, the opening: the critic measured a pull back that starts nearly still. Fixed next, as an ease out from frame 0
+- `out/stills/status/status-22-2.jpg`: Round 2, the spring hold: at its deepest the move toward the base loses the tree's crown for about 3.5 s. Fixed next
+- `out/stills/status/status-22-3.jpg`: Round 2, camera macro beside the approved winter image: the lamp sits on the frame edge. Framed again on the real miniature in the look lock
+- `out/stills/status/status-22-4.jpg`: Film B, frame 749 at 60 frames a second, preview, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 08:40 UTC
-clock: phase 3, tick of 0.2 minutes
-phase 3: 0.22 h used of its 11.00 h box
+2026-11-24 08:41 UTC
+clock: phase 3, tick of 0.3 minutes
+phase 3: 0.23 h used of its 11.00 h box
 allowance (before the review): 6.84 h used of 36.00 h allowed
 all time before the review: 6.84 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 13
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -463,6 +463,11 @@ Numbered. What, why, and the date.
 
 35. 07:20. `shake.liftMm` is 13.5, not 18, and the hero camera's aim is 70.5 mm, not 75; the holds lower the aim to 66 mm (`MOVES.holdAimDropMm` 4.5). The second blockout critic marked the hero framing: the foot of the base 2.2 percent above the bottom edge, "grazing the bottom border and cutting off the foreground tabletop surface and reflection", against 10 percent of headroom, and asked for the foot of the app's globe to stand clear of the Shake control. The cause is decision 29's squeeze: the fill is at the lowest value the check allows (0.800), the camera is locked through a shake, and M1 wants the lifted glass inside the frame, so every millimetre of lift is a millimetre the foot sinks. The one lever the kit leaves is the lift, which `kit/05-ARCHITECTURE.md` lets the Builder tune by a quarter either way. At 13.5 mm, measured through the real poses over every frame of the four shakes: the lifted glass keeps the same 0.4 percent under the top edge as before, the foot at rest stands 4.2 percent above the bottom edge (it was 1.7) and the glass 7.8 percent under the top (it was 10.3). In a hold the globe sits about 5.3 percent from the top and 6.7 from the bottom; the approved winter image has 6 and 9. The approved shake image shows no lift at all, so a smaller lift moves toward it, not away. What it costs: the globe rises 79 pixels at 1080 lines instead of 105. Not met: the critic's 10 to 12 percent under the foot, which the fill check and a locked camera do not allow together. For the REVIEW block, with decisions 29 and 30.
 
+36. 08:52. Phase 3 scaffold, so that nine agents can work side by side without touching each other's files. A season is now a folder of parts (`src/seasons/winter/`: `base.ts`, `miniature.ts`, `frost.ts`, `rig.ts`, `arrival.ts`, `veil.ts`, composed by `index.ts`), and the season kit (`src/seasons/kit.ts`) gained three optional members: `prepare()` (asynchronous, runs once after the season's asset group is loaded and before its set is built), `collider()` (the miniature's own distance field, used instead of the one made from boxes) and `update(moment)` (called once per drawn set with the time, the period, the time since the landing, the arrival, the beat and the seed). `Stage` gained an optional `prepare(season)`; the app's season loader calls it, and the films wait until every season is prepared. `stageMaterial` takes `physical` and `extra` for the physical material's parameters. Textures come through `src/core/textures.ts`: a path with `.srgb.` is colour, anything else is linear data, `.tile.` repeats, and the memory of every prepared texture is counted in `info().textureMb`. Nothing a still shows has changed: every part is still the stand-in and still flagged as one.
+37. 08:52. `701ffa0`, the commit that closed Phase 2, also carried `src/core/textures.ts`, which nothing used yet. The engine hash of that commit therefore differs from the hash of Phase 2's final build (`b98352868abb52c6`, commit `07cfdb3`), which is the build the blockout film, the gate and round 2 were made from. No picture differs between the two.
+38. 08:52. Open item 27 is fixed in the source and stays open until a film round judges it: the opening's pull back is an ease out only, `1 - (1 - v)^3.5` on the logarithm of the distance (`MOVES.pullPower`), frame 0 unchanged, a little over half of the zoom done by frame 52. Open item 28 (the spring move loses the crown) is not changed in this phase: the move depends on the real spring base, which does not exist yet, so it is judged in the film's rounds and is listed for Brandon in the REVIEW block.
+39. 08:52. The texture sets. `kit/06-ASSETS.md` asks for the `web` set "in a compressed GPU format with a fallback every target browser reads". `config/webgl-caps.json` marks no compressed format as present on every target browser, so the `web` set ships as KTX2 with Basis Universal, which the page transcodes to whichever compressed format the device has and to plain RGBA where it has none; that plain path is the fallback. The `full` set stays lossless (PNG) at up to `maps` 4096. Memory is counted as what the GPU holds after transcoding, so G15 measures the worst case honestly on the software renderer.
+
 ## Notes from Brandon
 
 Numbered, in his words, with the date and how each was applied. Review round items carry their round's number.
@@ -537,7 +542,7 @@ Severe and major issues still open when a limit was reached: the unit, the still
 25. Blockout round 2, part 2 (score 8, major, `set-B-02.jpg`, camera `macro`), carried to Phase 3. \"The lamp meets the snow almost on the frame edge and the bottom edge cuts the right side of the tree's foot.\" Its fix: aim slightly lower, keep the scale, check the corners again. Tried: the framing of items 16 and 18, which is at the limit of the corner check on the stand-in layout. Next: `macro` is framed again on the real miniature in the look lock, with items 18 and 19.
 26. Blockout round 2, part 2 (major, `set-C-02.jpg`, the phone screen), carried to Phase 5. \"The speaker icon straddles the pale outline of the reflected base.\" Its fix: move the sound control clear, or give it a small dark backing. Tried: nothing yet. Next: with the interface in Phase 5, where the mirror image is the real one.
 27. Blockout round 2, part 1 (score 6, major, `set-A-02.jpg`, the opening, frames 0 to 180), carried to the film's rounds in Phase 6. \"The pull-back eases in from rest instead of starting already moving and fast ... only about 15 percent of the zoom happens in the first 52 frames.\" `cut/SHOTS.md` asks for fast at first and easing to nothing, so the critic is right. Its fix: an ease out only, on the logarithm of the distance, frame 0 unchanged, about half the zoom by frame 52. Next: made in `src/film/moves.ts` at the start of Phase 3; it stays open until a critic sees the film's sheets again.
-28. Blockout round 2, part 1 (major, `set-A-04.jpg`, the spring hold, frames 928 to 1138), carried to the film's rounds in Phase 6. \"The tree crown and the top of the dome leave the top of the frame ... for about 3.5 s of the spring hold the miniature does not stay in the frame.\" Tried: decision 34 stopped the move 55 percent of the way to `base`, which kept the cottage's ridge and lost the crown. Its fix: raise the aim as the camera nears the base, and give up depth before cropping the miniature. Next: made with item 27 at the start of Phase 3; open until judged.
+28. Blockout round 2, part 1 (major, `set-A-04.jpg`, the spring hold, frames 928 to 1138), carried to the film's rounds in Phase 6. \"The tree crown and the top of the dome leave the top of the frame ... for about 3.5 s of the spring hold the miniature does not stay in the frame.\" Tried: decision 34 stopped the move 55 percent of the way to `base`, which kept the cottage's ridge and lost the crown. Its fix: raise the aim as the camera nears the base, and give up depth before cropping the miniature. Next: not changed now. `kit/01-FILM.md` sends this move down toward `base`, "past the trickle of water and the mushrooms on the mossy stone", and none of that exists on stand-ins, so the critic judged a move toward a plain lump. It is judged again in the film's rounds with the real spring base in view; if it is still marked there, the aim is raised so the crown keeps room and depth is given up. Listed for Brandon in the REVIEW block.
 29. Blockout round 2, part 1 (major, `set-A-03.jpg`, `-05`, `-07`, `-09`, every shake, worst 116 frames into each), carried to Phase 3. \"On the last hop before landing it comes within 2 px, about 1 percent of the frame height, so the globe nearly touches the top edge in all four shakes.\" Tried: decision 35 (`shake.liftMm` 13.5, hero aim 70.5). Its fix: lower the hop and the tilt peaks so the glass keeps about 5 percent of the frame height below the top edge. Next: the real shake of the look lock is built to that rule and measured on every frame at `hero`. Its second suggestion, pulling `hero` back, is not taken: `hero` is fitted to the approved winter image.
 
 ## Review items not done
@@ -658,6 +663,8 @@ none
 - 2026-11-24 08:18 UTC: `366a1c8` pushed, the last push that went through. 08:24 UTC: the push of `0866555` failed with "could not read Username for 'https://github.com'", and again on three retries until 08:26. Cause as far as seen from here: the workspace no longer hands git and the GitHub CLI their sign-in (the session token is missing from the environment of every command since about 08:20; reading the public repo still works). Nothing in the repo or its history is wrong. Commits are kept locally, in order; the push is tried again at every commit, as AGENTS.md says for a failed push after Phase 0.
 
 - 2026-11-24 08:29 UTC: `9f84ed1` is on `main` at the remote (fast forward from `366a1c8`, two commits). Carried there by `repo_courier`, an agent on a sandbox VM whose git sign-in works: this workspace hands it a git bundle of its finished commits, the courier verifies the bundle, fast forwards and pushes, and changes nothing. This is how every push goes until the sign-in returns here; a direct push is still tried first at each commit.
+
+- 2026-11-24 08:40 UTC: the direct push works again (`701ffa0` on `main`). The sign-in was missing from about 08:20 to 08:40.
 
 ## Session log
 
@@ -787,3 +794,6 @@ One entry per task: when it started, what it did, where it stopped.
 - 08:34 published again from the Phase 2 final build (the review page now holds the blockout preview). `npm run hostcheck` passed at 08:34.
 - 08:38 `reviewer_r2_a` answered part 1 of round 2: score 6, four major issues, none severe (`scorecards/round-002/R4-blockout-1.json`). One of the four says the camera pairs and the screens were not in its pack: they were part 2's material, judged there (8). Merged score 6 against a bar of 7. Round 2 does not pass and was the last blockout round. The key file is copied into the round folder now that both answers are in. `scorecards/round-002/SUMMARY.md` written. Open items 25 to 29.
 - 08:40: the Phase 2 gate, line by line. (1) G1 to G12 and G14: green on the final build `b98352868abb52c6` (`npm run gate -- --phase 2`, 08:09; `out/work/gate/phase-2.md`). (2) R4 blockout: 5 in round 1, 6 in round 2, no severe issue open after round 2; the bar of `quality.blockoutPass` (7) is not met and the limit of `quality.blockoutMaxRounds` (2) is reached. Phase 2 closes at that limit. (3) Every open blockout issue is under \"Open items\" with the phase that will settle it: items 25 and 29 to Phase 3, 26 to Phase 5, 27 and 28 to the film's rounds, beside the earlier items 18, 19, 20, 22, 23 and 24. (4) The judged list is in this file under \"Judged list\". (5) D2 and D3 green at 08:24 (`node tools/gate.mjs --phase 2 --only D2,D3`); the preview `out/preview-b.mp4` is committed as `0866555` with its record. (6) The published app opens in `live` mode (hostcheck, 08:34) and was shaken through the four seasons in the app's own script at round 2 (the three screens in the pack come from it); `autopilot` and `loop` were opened from the built site at 08:39 with no error logged, and two captures five seconds apart differ in 97 and 77 percent of their pixels, so both play (`out/work/modes-check.json`). Phase 2 is done. Phase 3 starts at 08:40.
+
+- 08:41 Status 22 posted with pictures from round 2's pack (the opening, the spring hold, camera `macro` beside the approved image): Phase 2 closed at its limit, the five carried issues, Phase 3 started.
+- 08:40 the workspace's own push works again: `701ffa0` went to `main` directly. `repo_courier` stays available.

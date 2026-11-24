@@ -53,7 +53,7 @@ if (capture) {
   const fraction = named ? named.particleFraction : 1
   const sim = new ParticleEngine({ season: config.defaultSeason, fraction })
   const particles = new SourceSwitch(sim)
-  const stage = createStage(gfx, particles, 16, 16)
+  const stage = createStage(gfx, particles, assets)
   const collider = colliderOf(stage)
   const emitters = emittersOf(stage)
   sim.setCollider(collider, emitters)
@@ -62,7 +62,8 @@ if (capture) {
   document.body.style.overflow = 'auto'
   const store = params.simcache ? httpStore(new URL('__simcache', document.baseURI).href.replace(/\/$/, '')) : null
   const driver = new SimDriver(sim, store, __ENGINE_HASH__)
-  const showcase = createShowcase({ gfx, stage, driver, assets, format: params.format, particles, loop, overlay: createOverlay(document.getElementById('ui')) }, ready)
+  const prepared = ready.then(() => Promise.all(config.seasons.map((s) => stage.prepare?.(s)))).then(() => undefined)
+  const showcase = createShowcase({ gfx, stage, driver, assets, format: params.format, particles, loop, overlay: createOverlay(document.getElementById('ui')) }, prepared)
   stage.resize(gfx.canvas.width, gfx.canvas.height)
   if (params.diag) showcase.setDiagnostic(params.diag)
   window.showcase = showcase
@@ -71,7 +72,7 @@ if (capture) {
   const onWorker = params.mode === 'live' && new URLSearchParams(location.search).get('sim') !== 'main'
   const sim = new LiveRunner({ season: params.season, fraction: level.particleFraction, spawn: onWorker ? spawnEngineWorker : null })
   const particles = new SourceSwitch(sim.source)
-  const stage = createStage(gfx, particles, 16, 16)
+  const stage = createStage(gfx, particles, assets)
   const collider = colliderOf(stage)
   const emitters = emittersOf(stage)
   sim.setCollider(collider, emitters)

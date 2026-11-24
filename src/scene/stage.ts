@@ -1,10 +1,12 @@
 import * as THREE from 'three'
 import { config } from '../config'
+import type { Assets } from '../core/assets'
 import type { Gfx } from '../core/gl'
 import { MODE, setPresence, stageShader, stageUniforms, type Rgb } from '../core/materials'
 import type { Sample } from '../core/sampler'
 import type { Emitter, Moment, ParticleSource, SdfGrid, Stage, StageQuality } from '../core/stage'
 import { flagStandIn } from '../core/standins'
+import { preparedBytes, prepareGroup, setAnisotropy } from '../core/textures'
 import { FLOW_RANGE_MM_S, LIGHT_RANGE, allParts, partBytes, viewCode } from '../diagnostics/views'
 import { Shell, shellUniforms } from '../globe/shell'
 import { ParticleDraw } from '../particles/draw/points'
@@ -74,6 +76,7 @@ export class GlobeStage implements Stage {
   private readonly slice: THREE.Mesh
   private readonly sets = new Map<string, SeasonSet>()
   private readonly colliders = new Map<string, SdfGrid>()
+  private readonly prepared = new Map<string, Promise<void>>()
   private solid: SdfGrid | null = null
   private readonly empty = blankGrid()
   private diag = ''
@@ -81,7 +84,7 @@ export class GlobeStage implements Stage {
   private readonly savedShadow = new THREE.Matrix4()
   private readonly clear = new THREE.Color()
 
-  constructor(private readonly gfx: Gfx, private readonly source: ParticleSource) {
+  constructor(private readonly gfx: Gfx, private readonly source: ParticleSource, private readonly assets: Assets) {
     const { scene, world, floor, globe, inside, rig, key, rim, card, fill, glow } = this
     scene.add(world, floor)
     world.add(globe, this.backdrop.group, rig)
@@ -116,12 +119,27 @@ export class GlobeStage implements Stage {
 
     for (const part of ['lens', 'light-engine']) flagStandIn(part)
     const { renderer } = gfx
+    setAnisotropy(renderer.capabilities.getMaxAnisotropy())
     renderer.shadowMap.enabled = true
     renderer.shadowMap.type = THREE.PCFShadowMap
     renderer.shadowMap.autoUpdate = false
     const range = gfx.gl.getParameter(gfx.gl.ALIASED_POINT_SIZE_RANGE) as Float32Array
     this.draw.maxPointPx = Math.min(1024, range[1] ?? 256)
-    this.set(config.defaultSeason)
+  }
+
+  prepare(season: string): Promise<void> {
+    let p = this.prepared.get(season)
+    if (!p) {
+      const kit = kitOf(season)
+      p = prepareGroup(this.assets, 'shared')
+        .then(() => prepareGroup(this.assets, season))
+        .then(() => kit.prepare?.())
+        .then(() => {
+          this.set(season)
+        })
+      this.prepared.set(season, p)
+    }
+    return p
   }
 
   private set(season: string): SeasonSet {
@@ -180,8 +198,12 @@ export class GlobeStage implements Stage {
     kitOf(season)
     let c = this.colliders.get(season)
     if (!c) {
-      this.solid ??= buildCollider()
-      c = this.solid
+      const own = kitOf(season).collider
+      if (own) c = own()
+      else {
+        this.solid ??= buildCollider()
+        c = this.solid
+      }
       this.colliders.set(season, c)
     }
     return c
@@ -202,7 +224,7 @@ export class GlobeStage implements Stage {
 
   textureBytes(): number {
     const s = this.key.shadow.mapSize
-    return s.x * s.y * 4 + this.sets.size * gridBytes + 64 * 64 * 4
+    return s.x * s.y * 4 + this.sets.size * gridBytes + 64 * 64 * 4 + preparedBytes()
   }
 
   private orient(sign: number): void {
@@ -266,7 +288,9 @@ export class GlobeStage implements Stage {
       if (!on) continue
       const mode = single ? MODE.always : s === a ? MODE.outgoing : MODE.incoming
       for (const m of s.materials) setPresence(m, mode, 1)
-      for (const m of s.arrival) setPresence(m, mode, single ? arrived : s === a ? 1 : 0)
+      const here = single ? arrived : s === a ? 1 : 0
+      for (const m of s.arrival) setPresence(m, mode, here)
+      s.kit.update?.({ time: moment.time, period, sinceLanding: single || s === b ? moment.sinceLanding : Infinity, arrived: here, beat: moment.beat, seed: moment.seed })
       s.lights.traverse((o) => {
         const l = o.userData.light
         const m = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined

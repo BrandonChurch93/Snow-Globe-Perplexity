@@ -52,7 +52,7 @@ export function startApp(d: AppDeps): AppBridge {
   const drag = new Drag(look)
   const motion = new MotionShake()
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)')
-  const loader = new SeasonLoader(params.season, (season) => d.ready.then(() => d.assets.loadGroup(season)))
+  const loader = new SeasonLoader(params.season, (season) => d.ready.then(() => d.stage.prepare?.(season) ?? d.assets.loadGroup(season)))
   const screen = formatById(params.format)
   const probing = params.mode === 'probe'
   const fns = new Set<(s: AppState) => void>()
@@ -310,9 +310,13 @@ export function startApp(d: AppDeps): AppBridge {
       tell()
     },
     play(what) {
-      start(what)
-      engine?.tick()
-      tell()
+      const go = (): void => {
+        start(what)
+        engine?.tick()
+        tell()
+      }
+      if (FILMS.includes(what) && !config.seasons.every(loader.ready)) void loader.all.then(go)
+      else go()
     },
     activity: () => undefined,
   }
@@ -427,7 +431,7 @@ export function startApp(d: AppDeps): AppBridge {
   if (playing !== 'live') start(playing)
   applyLevel()
 
-  void Promise.all([d.ready, loader.first.catch(() => undefined)]).then(() => requestAnimationFrame(frame))
+  void Promise.all([d.ready, (FILMS.includes(playing) ? loader.all : loader.first).catch(() => undefined)]).then(() => requestAnimationFrame(frame))
 
   void afterFirstPicture.then(async () => {
     if (probing) {

@@ -1,44 +1,43 @@
 {
-  "number": 21,
-  "time": "2026-11-24 08:27 UTC",
-  "phase": "2",
+  "number": 22,
+  "time": "2026-11-24 08:41 UTC",
+  "phase": "3",
   "unit": "",
   "lines": [
-    "Status 21 · 2026-11-24 08:27 UTC · Phase 2",
-    "Phase 2's machine gate is green on the final build: all 15 checks (G1 to G12, G14, D2, D3).",
-    "The blockout film is rendered: 1800 frames on five VMs in about 9 minutes, joined with the blockout mix (only the kept cues sound) and kept as out/preview-b.mp4. The render budget was measured again on this scene.",
-    "Round 2: the cameras and screens scored 8 with two major issues and none severe (the opening camera cuts the foot of the tree at the bottom edge; on the phone the sound control sits on the reflection's outline). Both are carried. The film sheets are still being judged.",
-    "The globe can be shaken now at the app link: stand-in shapes, live shake, four seasons, published 08:16.",
-    "A push to the repo failed at 08:24: the sign-in for git is missing in this workspace since then. Commits are kept locally and the push is tried again at every commit.",
-    "phase 2: 5.43 h used of its 6.00 h box",
-    "allowance (before the review): 6.61 h used of 36.00 h allowed",
+    "Status 22 · 2026-11-24 08:41 UTC · Phase 3",
+    "Phase 2 is closed at its limit, not as a pass: the second and last blockout review scored 6 and 8, merged 6 against a bar of 7, with no severe issue open",
+    "All 15 machine and deliverable checks are green on the final blockout build, and the preview film is committed",
+    "Five open issues are carried: the opening's easing and the spring move (fixed next, judged with the film), headroom in the shake and the macro framing (look lock), the phone's sound control (interface)",
+    "Phase 3, the look lock, has started: the real photographs and two clips of a globe being shaken are studied, and the build of the real winter globe is being split across supporting agents",
+    "phase 3: 0.23 h used of its 11.00 h box",
+    "allowance (before the review): 6.84 h used of 36.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-21-1.jpg",
-      "caption": "The whole blockout film in 12 frames, every shot at least once (stand-in shapes)",
+      "file": "out/stills/status/status-22-1.jpg",
+      "caption": "Round 2, the opening: the critic measured a pull back that starts nearly still. Fixed next, as an ease out from frame 0",
       "w": 1149,
       "h": 986
     },
     {
-      "file": "out/stills/status/status-21-2.jpg",
-      "caption": "The opening: from the close camera with no edge of the glass, pulling back to the whole globe; the reveal is marked at 3.00 s",
+      "file": "out/stills/status/status-22-2.jpg",
+      "caption": "Round 2, the spring hold: at its deepest the move toward the base loses the tree's crown for about 3.5 s. Fixed next",
       "w": 1149,
       "h": 986
     },
     {
-      "file": "out/stills/status/status-21-3.jpg",
-      "caption": "One sheet across shake 1, winter into spring: the camera is locked, only the globe moves",
-      "w": 1149,
-      "h": 986
+      "file": "out/stills/status/status-22-3.jpg",
+      "caption": "Round 2, camera macro beside the approved winter image: the lamp sits on the frame edge. Framed again on the real miniature in the look lock",
+      "w": 986,
+      "h": 1156
     },
     {
-      "file": "out/stills/status/status-21-4.jpg",
-      "caption": "The close: one push from the whole globe back to the opening's camera, so the last frame meets the first",
-      "w": 1149,
-      "h": 986
+      "file": "out/stills/status/status-22-4.jpg",
+      "caption": "Film B, frame 749 at 60 frames a second, preview, draft",
+      "w": 960,
+      "h": 540
     }
   ]
 }

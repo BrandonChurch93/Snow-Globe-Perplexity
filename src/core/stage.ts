@@ -63,6 +63,7 @@ export interface Stage {
   drawSample(target: THREE.WebGLRenderTarget, pose: Pose, sample: Sample | null, moment: Moment, shadows: boolean): void
   setDiagnostic(view: string): void
   setQuality?(level: StageQuality): void
+  prepare?(season: string): Promise<void>
   collider?(season: string): SdfGrid
   emitters?(season: string): Record<string, Emitter[]>
   particleCount(): number

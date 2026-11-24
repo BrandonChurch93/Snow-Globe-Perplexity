@@ -23,7 +23,7 @@ Merged score: 6, the lower of the two. The bar is `quality.blockoutPass` (7) wit
 ## What changes next
 
 - Issue 1: the pull back is driven by an ease out on the logarithm of the distance, with frame 0 unchanged. Made at the start of Phase 3 in `src/film/moves.ts`; no blockout critic sees it, so it stays an open item until the film's sheets are judged.
-- Issue 2: the spring move raises its aim as it nears `base` so the crown keeps room at the deepest frame, and gives up depth before it crops the miniature. Made with issue 1; open until judged.
+- Issue 2: not changed now. The kit's shot table sends this move down toward the `base` camera, past the detail of the spring base, and that detail does not exist on stand-ins; round 1 already cut the move to 55 percent of the way (decision 34). It is carried to the film's rounds and judged there with the real base in view. If it is still marked, the aim is raised so the crown keeps room, and depth is given up before the miniature is cropped. Listed for Brandon in the REVIEW block.
 - Issue 3: carried to the look lock. Phase 3 builds the real shake as a hand model, and its brief holds the path to at least 5 percent of the frame height between the glass and the top edge at `hero` on every frame. `hero` is tied to the approved winter image and to the fill check, so the camera is not pulled back.
 - Issue 4: carried to the look lock, where `macro` is framed again on the real miniature (open items 18 and 19).
 - Issue 5: carried to Phase 5, where the interface is finished: the sound control moves clear of the mirror image or gets a small dark backing.

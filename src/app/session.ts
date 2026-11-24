@@ -28,6 +28,7 @@ const STATES = Object.keys(config.states).map((k) => k.replace(/Seconds$/, ''))
 export class SeasonLoader {
   private readonly done = new Set<string>()
   readonly first: Promise<void>
+  readonly all: Promise<void>
 
   constructor(first: string, load: (season: string) => Promise<void>, onReady: (season: string) => void = () => undefined) {
     const one = (season: string) =>
@@ -37,7 +38,7 @@ export class SeasonLoader {
       })
     this.first = one(first)
     const rest = config.seasons.filter((s) => s !== first)
-    void rest.reduce((chain, s) => chain.then(() => one(s)).catch(() => undefined), this.first.catch(() => undefined))
+    this.all = rest.reduce((chain, s) => chain.then(() => one(s)).catch(() => undefined), this.first.catch(() => undefined))
   }
 
   ready = (season: string): boolean => this.done.has(season)

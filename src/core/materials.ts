@@ -207,18 +207,22 @@ export interface LitSpec extends PartSpec {
   emissive?: Rgb
   map?: THREE.Texture
   side?: THREE.Side
+  physical?: boolean
+  extra?: THREE.MeshPhysicalMaterialParameters
 }
 
 export function stageMaterial(spec: LitSpec): THREE.MeshStandardMaterial {
   const handle = makeHandle({ ...spec, texels: spec.map ? Math.max((spec.map.image as { width: number }).width, (spec.map.image as { height: number }).height) : 0, textured: !!spec.map && spec.textured !== false })
-  const m = new THREE.MeshStandardMaterial({
+  const given = {
     color: spec.color ?? 0xffffff,
     vertexColors: !!spec.vertexColors,
     roughness: spec.roughness ?? 0.8,
     metalness: spec.metalness ?? 0,
     map: spec.map ?? null,
     side: spec.side ?? THREE.FrontSide,
-  })
+    ...spec.extra,
+  }
+  const m = spec.physical ? new THREE.MeshPhysicalMaterial(given) : new THREE.MeshStandardMaterial(given)
   if (spec.emissive) m.emissive.setRGB(spec.emissive[0], spec.emissive[1], spec.emissive[2])
   m.userData.stage = handle
   if (spec.inside) m.defines = { ...m.defines, STAGE_INSIDE: 1 }

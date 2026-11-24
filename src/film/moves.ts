@@ -21,7 +21,7 @@ export const MOVES = {
   close: 'macro',
   details: ['base', 'interior', 'low'],
   pullBars: 2,
-  pullStartSpeed: 0.55,
+  pullPower: 3.5,
   driftYawDeg: 2.6,
   driftPitchDeg: 0.5,
   backBeats: 1,
@@ -52,10 +52,7 @@ export const smoother = (v: number): number => {
   const u = clamp01(v)
   return u * u * u * (u * (u * 6 - 15) + 10)
 }
-export const pullCurve = (v: number, speed: number): number => {
-  const u = clamp01(v)
-  return smoother(u) + speed * u * (1 - u) * (1 - u) * (1 - u) * (1 + 3 * u)
-}
+export const pullCurve = (v: number, power: number): number => 1 - Math.pow(1 - clamp01(v), power)
 
 export function rigOf(id: string): Rig {
   const c = cameraById(id)
@@ -286,7 +283,7 @@ export function filmRig(cut: Cut, t: number): { rig: Rig; move: Move } {
   let rig: Rig
   let away = 0
   if (move.role === 'open') {
-    if (t < move.to) rig = mixRig(rigOf(move.camera), wide, pullCurve((t - move.from) / (move.to - move.from), MOVES.pullStartSpeed))
+    if (t < move.to) rig = mixRig(rigOf(move.camera), wide, pullCurve((t - move.from) / (move.to - move.from), MOVES.pullPower))
     else {
       const v = clamp01((t - move.to) / (move.back - move.to))
       const arc = Math.sin(Math.PI * v) ** 2
