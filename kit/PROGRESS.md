@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 41 · 2026-11-24 16:01 UTC
+Status 42 · 2026-11-24 16:16 UTC
 
-- `out/stills/status/status-41-1.jpg`: At rest at the Round 4 freeze: the approved image (left) and the build at 16:00 UTC (right) at draft quality
-- `out/stills/status/status-41-2.jpg`: Still: winter rest hero, hd, draft
-- `out/stills/status/status-41-3.jpg`: Still: winter landed hero, hd, draft
-- `out/stills/status/status-41-4.jpg`: Still: winter rest surface, hd, draft
+- `out/stills/status/status-42-1.jpg`: Half a second after the landing: the approved image (left) and the build as frozen for Round 4 (right)
+- `out/stills/status/status-42-2.jpg`: Still: winter landed hero, hd, draft
+- `out/stills/status/status-42-3.jpg`: Still: winter rest hero, hd, draft
+- `out/stills/status/status-42-4.jpg`: Still: winter rest hero, preview, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 16:13 UTC
-clock: phase 3, tick of 2.4 minutes
-phase 3: 7.77 h used of its 11.00 h box
-allowance (before the review): 14.39 h used of 36.00 h allowed
-all time before the review: 14.39 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 16:16 UTC
+clock: phase 3, tick of 3.0 minutes
+phase 3: 7.82 h used of its 11.00 h box
+allowance (before the review): 14.44 h used of 36.00 h allowed
+all time before the review: 14.44 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 12
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -1053,3 +1053,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 16:01 UTC: Status 41 posted with the rest pair of the freeze (`out/work/status/pair-rest-1600.jpg`). 15:38 to 16:00: decision 54 logged (each round's fix list is a new set of jobs); `motion_renderer_b` started so R4's frames are drawn by two agents; the determinism fault: `gate_runner` showed on `b4c3b18` that it is flaky (about one repeat in two of a 12 still test on one page) and gone with the glass's limb ring hidden; the glass finisher's reworked ring (`50df123`) and a one pass line on its material (`ce596b6`) give 0 of 9 repeats in its VM and 0 of 36 in the liquid finisher's on a tree equal to main; every finisher's own `npm run determinism` on its last commit passed. The mechanism (where two stills of one state differ in their last bits) was not found: kept as a watch point for the glass job and for Round 4's gate. Final merges at 15:49 and 15:59 (all ten branches; every part made again).
 - 16:06 UTC: Round 4 frozen and opened. Judged commit `53cd7dd`: sources as merged, five prose headings in three recipes made sub headings (G8 green: 73 shipped files, 68 made with recipes), tsc clean, 408 tests pass, mesh levels drawn (medium 753012, low 356700 triangles a sample), winter's built assets committed once for the round (90 files). Pushed with the round's line as `c3b4e7e`. Render agents messaged at 16:07. Published at 16:10 from the frozen build: first picture after 13.6 s, 52 requests, no errors; Visibility: Organization.
 - 16:13 UTC: the second set of builders' ten final reports are in (`out/work/reports2/`). The third set, nine agents, started on them (see "Running agents"). Ruling sent to `light_fixer` on the landing: the kit gives the overshoot no number ("a small overshoot in tilt that dies inside `shake.landSettleSeconds`", "It does not bounce into the air"), so the builder's own 0.7 degree bound in `tests/shake-path.test.ts` may rise to 1.3 degrees if the landing sheets at `review` tier then show weight; `shake.landSettleSeconds` stays, it is not a value the Builder may tune.
+
+- 16:17 UTC: Status 42 posted (shown inline) with the landed pair of the freeze (`out/work/status/pair-landed-1607.jpg`): Round 4 frozen and being drawn; the third set of builders and what comes first for each; decisions 55 and 56; Round 3 waits for R4 part 1 from the replacement critic. Small items closed before it: the loading builder's lines added to `tools/README.md`; the notes of the two frost dressings in `parts/PARTS.json`; open item 34 marked cured; open item 35 and item 7 of "For Brandon to decide" written for the web set's coding.
