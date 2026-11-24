@@ -37,6 +37,10 @@ export interface ShakePlan {
   strokes: ShakeStroke[]
   fastest: { beat: number; mmPerBeat: number }
   rocking: number
+  dipMm: number
+  windMm: number
+  lastTurn: ShakeStroke
+  touch: number
   peakTilt: number
   rollStart: number
   overshoot: number
@@ -68,59 +72,74 @@ const HAND = {
   damping: 0.62,
   stopDamping: 1.15,
   jerkPerMm: 16000,
-  turnBeats: 0.19,
+  turnBeats: 0.175,
   easeBeats: 0.075,
-  startTurn: 0.34,
-  startEase: 0.16,
-  stopTurn: 0.5,
-  stopEase: 0.25,
-  stopRest: 0.08,
+  startTurn: 0.24,
+  startEase: 0.1,
+  stopTurn: 0.34,
+  stopEase: 0.16,
+  stopRest: 0.03,
   turnFloor: 0.2,
-  firstReach: 0.78,
-  slowStroke: 1.28,
-  fastStroke: 0.84,
-  returnShare: 1.35,
-  returnBlend: 0.55,
-  reach: [0.74, 1.08],
-  lateReach: [0.9, 1.06],
+  firstReach: 1.4,
+  slowStroke: 1.38,
+  fastStroke: 1,
+  breath: 0.72,
+  returnBlend: 0.22,
+  reachEnds: 1.08,
+  reachWaist: 0.33,
+  reachDraw: 0.04,
   peakReach: [1.02, 1.12],
-  planDeg: [8, 18],
-  leanDeg: [4.1, 4.4],
+  planDeg: [6, 10],
+  leanDeg: [1.6, 1.9],
   leanShare: 0.74,
-  awayMm: [7.5, 9],
+  awayMm: [12.8, 13.8],
   rimAirMm: 1.06,
   tiltHair: 0.00005,
   unlikeLength: 0.05,
   unlikeMoment: 0.06,
   redraws: 24,
-  gripRockDeg: [0.45, 0.65],
-  gripBeats: 0.2,
-  liftOffBeats: 0.24,
-  liftEffort: 1.18,
+  gripRockDeg: [1.6, 2],
+  gripBeats: 0.36,
+  liftOffBeats: 0.14,
+  liftEffort: 1.05,
+  windReach: [0.5, 0.62],
+  windLate: 1.2,
+  windShare: 0.84,
+  windCarry: 0.8,
+  dipShare: 0.286,
+  dipRampBeats: 0.2,
+  turnRoom: 0.04,
+  lastReach: [0.5, 0.6],
+  lastTurn: 0.34,
+  touchShare: 0.8,
+  lastTurnSlow: 1.7,
+  fallPower: 9,
+  fallSink: 0.3,
+  fallStopBeats: 0.07,
   leanLag: 1.4,
-  droopHigh: [0.1, 0.16],
-  droopLow: [0.045, 0.085],
-  droopKnee: 0.3,
   sagShare: 0.012,
-  whipTurns: 3.9,
+  whipReach: 2.5,
+  whipTurns: 3.45,
   whipDamping: 0.42,
   rockTurns: 3.1,
   rockDamping: 0.5,
-  rockGain: [0.3, 0.45],
-  ringHold: 0.2,
-  ringFade: 0.62,
+  rockGain: [0.12, 0.2],
+  ringFade: 0.75,
+  lastUpright: 0.2,
   tremorTurns: [4.4, 7.4],
   tremorMm: 0.11,
   tremorDeg: 0.045,
   padRad: 0.003,
-  landDeg: [38, 58],
-  gripDeg: [30, 55],
-  overshootDeg: [0.4, 0.5],
-  rockFirst: 0.21,
-  rockChirp: 1.07,
-  rockDecay: 5,
+  landDeg: [8, 18],
+  gripDeg: [8, 18],
+  overshootDeg: [1, 1.1],
+  approachDeg: 2.6,
+  approachLead: 0.36,
+  crestShare: 0.95,
+  rockFirst: 0.34,
+  rockChirp: 3,
+  rockDecay: 3.8,
   contactLead: 0.11,
-  descentPull: 1.5,
 } as const
 
 const s5 = (u: number): number => (u <= 0 ? 0 : u >= 1 ? 1 : u * u * u * (10 + u * (-15 + 6 * u)))
@@ -205,10 +224,55 @@ function build(name: string): ShakeMotion {
   const cap = Math.max(0, Math.min(c.tiltDeg * RAD, Math.asin(clamp((c.liftMm - HAND.rimAirMm) / FOOT_MM, 0, 1))))
   const lean = Math.min(pick(rng, HAND.leanDeg) * RAD, HAND.leanShare * cap)
   const awayMm = pick(rng, HAND.awayMm)
-  const gripRock = Math.min(pick(rng, HAND.gripRockDeg) * RAD, 0.5 * lean)
-  const gripAngle = rng.sign() * pick(rng, HAND.gripDeg) * RAD
-  const landAngle = rng.sign() * pick(rng, HAND.landDeg) * RAD
+  const gripRock = pick(rng, HAND.gripRockDeg) * RAD
+  const gripAngle = pick(rng, HAND.gripDeg) * RAD
+  const landAngle = pick(rng, HAND.landDeg) * RAD
   const overshoot = pick(rng, HAND.overshootDeg) * RAD
+  const windMm = pick(rng, HAND.windReach) * c.strokeMm
+  const lastReach = pick(rng, HAND.lastReach)
+  const iOff = Math.round(HAND.liftOffBeats * liftEnd * K)
+  const liftOff = iOff * h
+  const contactLead = HAND.contactLead * settle
+  // The landing, solved backward from the bar: the foot rolls flat exactly on it, rocks over by the overshoot and rattles out.
+  const lobe = HAND.rockFirst * settle
+  const chirp = HAND.rockChirp / settle
+  const decay = HAND.rockDecay / settle
+  const rate = Math.PI / (lobe * (1 + chirp * lobe))
+  const rattle = (t: number): number => -Math.exp(-decay * t) * Math.sin(rate * t * (1 + chirp * t)) * (t > 0 ? 1 - s5(t / settle) : 1)
+  let over = 0
+  for (let t = 0; t < lobe; t += lobe / 400) over = Math.max(over, -rattle(t))
+  const landGain = over > 0 ? overshoot / over : 0
+  let crest = contactLead
+  let crestValue = rattle(-contactLead)
+  for (let t = contactLead; t < Math.min(0.9 * c.setDownBeats, 3 * contactLead); t += contactLead / 200) {
+    const value = rattle(-t)
+    if (value < crestValue) break
+    crest = t
+    crestValue = value
+  }
+  // The trailing edge meets the surface at the approach tilt, and the foot rolls flat on it, faster and faster, to be level exactly on the bar.
+  const approach = Math.max(crestValue * landGain, HAND.approachDeg * RAD)
+  const approachLead = Math.max(crest, HAND.approachLead * settle)
+  const easeSpan = 2 * (HAND.crestShare * crest - contactLead)
+  const eased = (lead: number): number => {
+    const u = (lead - contactLead) / easeSpan
+    return u >= 1 ? contactLead + 0.5 * easeSpan : lead - easeSpan * u * u * u * u * (2.5 + u * (u - 3))
+  }
+  const landTilt = (beat: number): number => {
+    const t = beat - landing
+    if (t >= -contactLead) return landGain * rattle(t)
+    if (t <= -approachLead) return approach
+    return approach + (landGain * rattle(-eased(-t)) - approach) * s5((t + approachLead) / (approachLead - contactLead))
+  }
+  const touch = landing - HAND.touchShare * approachLead
+  const iTouch = Math.floor(touch * K)
+
+  const lastBeat = strokesEnd + HAND.lastTurn * c.setDownBeats
+  const lastSide = first * (Math.max(1, Math.round(c.strokes)) % 2 === 0 ? 1 : -1)
+  /** The wind up: while it lifts, the hand draws the globe back to the side away from the first stroke. */
+  const windEnd = Math.round((liftOff + HAND.windShare * (liftEnd - liftOff)) * K) * h
+  // It is still moving out when the first stroke takes it back: the wind up ends in a reversal, not in a rest.
+  const wind = (beat: number): number => (-first * windMm * s5(HAND.windCarry * Math.pow(clamp((beat - liftOff) / (windEnd - liftOff), 0, 1), HAND.windLate))) / s5(HAND.windCarry)
 
   // The strokes: targets on alternating sides, each with its own reach and its own moment, the hand speeding up.
   const n = Math.max(1, Math.round(c.strokes))
@@ -221,14 +285,15 @@ function build(name: string): ShakeMotion {
     weights = [HAND.firstReach * rng.range(0.94, 1.06)]
     for (let i = 1; i < n; i++) {
       const t = n > 2 ? (i - 1) / (n - 2) : 1
-      const w = HAND.slowStroke + (HAND.fastStroke - HAND.slowStroke) * t
+      // The hand speeds up on the whole, but it takes one long breath in the middle: a slow, wide stroke before the last quick ones.
+      const w = HAND.slowStroke + (HAND.fastStroke - HAND.slowStroke) * t * t * t + HAND.breath * Math.pow(Math.sin(Math.PI * t), 4)
       weights.push(i === n - 1 ? w * rng.range(0.96, 1) : Math.max(w * rng.range(0.93, 1.07), HAND.fastStroke * 1.05))
     }
     reach = []
     for (let k = 0; k < n; k++) {
-      let r = pick(rng, k >= n - 2 ? HAND.lateReach : HAND.reach)
-      if (k > 0 && Math.abs(r - reach[k - 1]!) < 0.05) r += r < reach[k - 1]! ? -0.06 : 0.06
-      reach.push(r)
+      // Wide at both ends and narrow at the waist, so the strokes the lens sees differ in length as well as in time.
+      const waist = Math.pow(Math.sin((Math.PI * k) / Math.max(1, n - 1)), 1.5)
+      reach.push(HAND.reachEnds - HAND.reachWaist * waist + rng.range(-HAND.reachDraw, HAND.reachDraw))
     }
     peakReach = pick(rng, HAND.peakReach)
     before = weights.slice(0, n - 1).reduce((s, w) => s + w, 0)
@@ -242,30 +307,32 @@ function build(name: string): ShakeMotion {
   // The grip sweeps straight from target to target and makes each turn with a pull that cannot change faster than the limit on jerk.
   // The globe follows it through a stiff spring: it lags, and it overshoots a little at each turn.
   const sweepOf = (lag: number): { turnBeat: number[]; turnMm: number[]; stroke: Float64Array; anchored: boolean } => {
-    let unit = (bloomBeat - lag - liftEnd) / (before + (n > 1 ? weights[n - 1]! / 2 : 0))
-    let back = c.strokeBeats - whole * unit
-    const anchored = n > 1 && unit > 0 && back >= 0.75 * unit && back <= 2.2 * unit
-    if (!anchored) {
-      unit = c.strokeBeats / (whole + HAND.returnShare)
-      back = HAND.returnShare * unit
-    }
-    const turnBeat: number[] = [liftEnd]
-    const turnMm: number[] = [0]
+    let unit = (bloomBeat - lag - windEnd) / (before + (n > 1 ? weights[n - 1]! / 2 : 0))
+    const anchored = n > 1 && unit > 0 && windEnd + whole * unit <= strokesEnd - HAND.turnRoom
+    if (!anchored) unit = (strokesEnd - windEnd - 2 * HAND.turnRoom) / whole
+    const back = touch - lastBeat
+    const turnBeat: number[] = [windEnd]
+    const carry = (wind(windEnd) - wind(windEnd - h / 4)) / (h / 4)
+    const turnMm: number[] = [-first * windMm]
     for (let k = 0; k < n; k++) {
       turnBeat.push(turnBeat[k]! + weights[k]! * unit)
       turnMm.push(first * (k % 2 === 0 ? 1 : -1) * reach[k]! * c.strokeMm)
     }
-    const stopCentre = strokesEnd - HAND.stopRest * back - (HAND.stopTurn + HAND.stopEase) * back * 0.5
-    const startCentre = liftEnd + (HAND.startTurn + HAND.startEase) * unit * 0.5
+    // The last, slower swing carries the globe to the side it comes down from.
+    turnBeat.push(lastBeat)
+    turnMm.push(lastSide * lastReach * c.strokeMm)
+    const stopCentre = touch - HAND.stopRest * back - (HAND.stopTurn + HAND.stopEase) * back * 0.5
+    const startCentre = windEnd + (HAND.startTurn + HAND.startEase) * unit * 0.5
     const sweeps: number[] = []
-    for (let k = 0; k < n; k++) sweeps.push((turnMm[k + 1]! - turnMm[k]!) / (turnBeat[k + 1]! - (k === 0 ? startCentre : turnBeat[k]!)))
-    sweeps.push(-turnMm[n]! / (stopCentre - turnBeat[n]!))
+    for (let k = 0; k <= n; k++) sweeps.push((turnMm[k + 1]! - turnMm[k]! - (k === 0 ? carry * (startCentre - windEnd) : 0)) / (turnBeat[k + 1]! - (k === 0 ? startCentre : turnBeat[k]!)))
+    sweeps.push(-turnMm[n + 1]! / (stopCentre - turnBeat[n + 1]!))
     const pulls: { at: number; dv: number; turn: number; ease: number }[] = []
-    for (let k = 0; k <= n + 1; k++) {
-      const dv = (k <= n ? sweeps[k]! : 0) - (k > 0 ? sweeps[k - 1]! : 0)
-      const turn = k === 0 ? HAND.startTurn * unit : k === n + 1 ? HAND.stopTurn * back : HAND.turnBeats * unit
-      const ease = k === 0 ? HAND.startEase * unit : k === n + 1 ? HAND.stopEase * back : HAND.easeBeats * unit
-      pulls.push({ at: k === 0 ? startCentre : k === n + 1 ? stopCentre : turnBeat[k]!, dv, turn, ease: Math.max(ease, Math.abs(dv) / (turn * jerkLimit)) })
+    for (let k = 0; k <= n + 2; k++) {
+      const dv = (k <= n + 1 ? sweeps[k]! : 0) - (k > 0 ? sweeps[k - 1]! : carry)
+      const slow = k === n + 1 ? HAND.lastTurnSlow : 1
+      const turn = k === 0 ? HAND.startTurn * unit : k === n + 2 ? HAND.stopTurn * back : HAND.turnBeats * unit * slow
+      const ease = k === 0 ? HAND.startEase * unit : k === n + 2 ? HAND.stopEase * back : HAND.easeBeats * unit * slow
+      pulls.push({ at: k === 0 ? startCentre : k === n + 2 ? stopCentre : turnBeat[k]!, dv, turn, ease: Math.max(ease, Math.abs(dv) / (turn * jerkLimit)) })
     }
     const pull = (beat: number): number => {
       let a = 0
@@ -281,14 +348,19 @@ function build(name: string): ShakeMotion {
     let gv = 0
     let p = 0
     let v = 0
-    for (let i = iLift; i <= iStrokes; i++) {
+    for (let i = iOff; i <= iTouch; i++) {
       stroke[i] = p
       for (let k = 0; k < HAND.substeps; k++) {
         const b = beatOf(i) + k * dt
-        const ga = pull(b + dt / 2)
-        g += gv * dt + (ga * dt * dt) / 2
-        gv += ga * dt
-        const stop = s5((b - turnBeat[n]!) / (strokesEnd - turnBeat[n]!))
+        if (b + dt / 2 < windEnd) {
+          g = wind(b + dt)
+          gv = (wind(b + dt) - wind(b)) / dt
+        } else {
+          const ga = pull(b + dt / 2)
+          g += gv * dt + (ga * dt * dt) / 2
+          gv += ga * dt
+        }
+        const stop = s5((b - lastBeat) / (touch - lastBeat))
         const zeta = HAND.damping + (HAND.stopDamping - HAND.damping) * stop
         v += (omega * omega * (g - p) + 2 * zeta * omega * (gv - v)) * dt
         p += v * dt
@@ -296,17 +368,19 @@ function build(name: string): ShakeMotion {
     }
     const blend = back * HAND.returnBlend
     let peak = 0
-    for (let i = iLift; i <= iStrokes; i++) {
-      stroke[i] = stroke[i]! * (1 - s5((beatOf(i) - (strokesEnd - blend)) / blend))
-      peak = Math.max(peak, Math.abs(stroke[i]!))
+    for (let i = iOff; i <= iTouch; i++) {
+      stroke[i] = stroke[i]! * (1 - s5((beatOf(i) - (touch - blend)) / blend))
+      if (i >= iLift && i <= iStrokes) peak = Math.max(peak, Math.abs(stroke[i]!))
     }
     const scale = peak > 0 ? (c.strokeMm * peakReach) / peak : 0
-    for (let i = iLift; i <= iStrokes; i++) stroke[i] = i === iLift || i === iStrokes ? 0 : stroke[i]! * scale
+    for (let i = iOff; i <= iTouch; i++) stroke[i] = i === iOff || i === iTouch ? 0 : stroke[i]! * scale
     return { turnBeat, turnMm, stroke, anchored }
   }
   const extremesOf = (s: Float64Array): ShakeStroke[] => {
     const out: ShakeStroke[] = []
-    for (let i = iLift + 1; i < iStrokes; i++) {
+    let from = iLift + 1
+    while (from < iStrokes && s[from]! * first <= 0) from++
+    for (let i = from; i < iStrokes; i++) {
       const d0 = s[i]! - s[i - 1]!
       const d1 = s[i + 1]! - s[i]!
       if (d0 !== 0 && d0 * d1 <= 0 && Math.abs(s[i]!) > HAND.turnFloor * c.strokeMm) {
@@ -360,21 +434,22 @@ function build(name: string): ShakeMotion {
     }
   }
   const { turnBeat, turnMm, stroke } = made
-  const strokeRate = derive(stroke, h, (i) => i <= iLift || i >= iStrokes, [iLift, iStrokes]).d1
+  const strokeRate = derive(stroke, h, (i) => i <= iOff || i >= iTouch, [iOff, iTouch]).d1
 
-  // The rocking: the globe tips into each stroke and whips back at each reversal, a second axis a little out of step.
-  const ringEnd = strokesEnd + HAND.ringFade * c.setDownBeats
-  const ringHold = strokesEnd + HAND.ringHold * c.setDownBeats
-  const follower = (turns: number, damping: number): Float64Array => {
+  // The rocking. A held globe pivots about the wrist: its top swings out with each stroke and is furthest over just after each reversal,
+  // which the lens sees as a roll. The second axis follows the stroke's speed, so it is out of step with the first.
+  const ringHold = lastBeat
+  const ringEnd = lastBeat + HAND.ringFade * (touch - lastBeat)
+  const follower = (drive: Float64Array, turns: number, damping: number): Float64Array => {
     const out = new Float64Array(count)
     const w = TAU * turns
     const dt = h / HAND.substeps
     let p = 0
     let v = 0
-    for (let i = iLift; i < count && beatOf(i) < ringEnd; i++) {
+    for (let i = iOff; i < count && beatOf(i) < ringEnd; i++) {
       out[i] = p * (1 - s5((beatOf(i) - ringHold) / (ringEnd - ringHold)))
-      const u0 = strokeRate[i]!
-      const u1 = i + 1 < count ? strokeRate[i + 1]! : 0
+      const u0 = drive[i]!
+      const u1 = i + 1 < count ? drive[i + 1]! : 0
       for (let k = 0; k < HAND.substeps; k++) {
         const u = u0 + ((u1 - u0) * k) / HAND.substeps
         v += (w * w * (u - p) - 2 * damping * w * v) * dt
@@ -383,68 +458,53 @@ function build(name: string): ShakeMotion {
     }
     return out
   }
-  const whip = follower(HAND.whipTurns, HAND.whipDamping)
-  const rock = follower(HAND.rockTurns, HAND.rockDamping)
+  // The wrist is over as far as it goes well before the end of a long stroke, so a short stroke rolls the globe nearly as far as a long one.
+  const wrist = new Float64Array(count)
+  for (let i = 0; i < count; i++) wrist[i] = Math.tanh((HAND.whipReach * stroke[i]!) / c.strokeMm)
+  const whip = follower(wrist, HAND.whipTurns, HAND.whipDamping)
+  const rock = follower(strokeRate, HAND.rockTurns, HAND.rockDamping)
   let whipPeak = 0
-  for (let i = 0; i < count; i++) whipPeak = Math.max(whipPeak, Math.abs(whip[i]!))
+  let rockPeak = 0
+  for (let i = iLift; i <= iStrokes; i++) {
+    whipPeak = Math.max(whipPeak, Math.abs(whip[i]!))
+    rockPeak = Math.max(rockPeak, Math.abs(rock[i]!))
+  }
   const rockGain = rng.sign() * pick(rng, HAND.rockGain)
 
-  // The landing, solved backward from the bar: the foot rolls flat exactly on it, rocks over by the overshoot and rattles out.
-  const lobe = HAND.rockFirst * settle
-  const chirp = HAND.rockChirp / settle
-  const decay = HAND.rockDecay / settle
-  const rate = Math.PI / (lobe * (1 + chirp * lobe))
-  const rattle = (t: number): number => -Math.exp(-decay * t) * Math.sin(rate * t * (1 + chirp * t)) * (t > 0 ? 1 - s5(t / settle) : 1)
-  let over = 0
-  for (let t = 0; t < lobe; t += lobe / 400) over = Math.max(over, -rattle(t))
-  const landGain = over > 0 ? overshoot / over : 0
-  const contactLead = HAND.contactLead * settle
-  let crest = contactLead
-  let crestValue = rattle(-contactLead)
-  for (let t = contactLead; t < Math.min(0.9 * c.setDownBeats, 3 * contactLead); t += contactLead / 200) {
-    const value = rattle(-t)
-    if (value < crestValue) break
-    crest = t
-    crestValue = value
-  }
-  const approach = crestValue * landGain
-  const landTilt = (beat: number): number => {
-    const t = beat - landing
-    if (t >= -contactLead) return landGain * rattle(t)
-    if (t <= -crest) return approach
-    return approach + (landGain * rattle(t) - approach) * s5((t + crest) / (crest - contactLead))
-  }
-
-  const liftOff = HAND.liftOffBeats * liftEnd
   const gripBeats = HAND.gripBeats * liftEnd
   const hold = { x: -Math.cos(planAngle), z: -Math.sin(planAngle) }
   const along = { x: Math.sin(planAngle), z: -Math.cos(planAngle) }
-  const gripDir = { x: -Math.cos(gripAngle), z: Math.sin(gripAngle) }
-  const landDir = { x: -Math.cos(landAngle), z: Math.sin(landAngle) }
-  const rockRest = rockHeight(Math.sin(gripRock))
-  const liftGap = c.liftMm - rockRest
+  // The grip tips the globe onto the edge of the side it is drawn back to; it comes down on the edge that trails the last swing.
+  const gripDir = { x: -Math.sin(gripAngle), z: first * Math.cos(gripAngle) }
+  const landDir = { x: -Math.sin(landAngle), z: -lastSide * Math.cos(landAngle) }
   const landGap = c.liftMm - rockHeight(Math.sin(approach))
   const rise = (beat: number): number => s5(Math.pow(clamp((beat - liftOff) / (liftEnd - liftOff), 0, 1), HAND.liftEffort))
-  const fall = (beat: number): number => 1 - s5(Math.pow(clamp((beat - strokesEnd) / (landing - strokesEnd), 0, 1), HAND.descentPull))
-
-  const droopFirst = pick(rng, HAND.droopHigh)
-  const droopOther = pick(rng, HAND.droopLow)
-  const lowSide = rng.sign()
-  const knee = HAND.droopKnee * c.strokeMm
-  const droop = (s: number): number => {
-    const share = Math.sign(s) === lowSide ? droopFirst : droopOther
-    const a = Math.abs(s)
-    return ((share * c.liftMm * (c.strokeMm * c.strokeMm + knee * knee)) / (c.strokeMm * c.strokeMm * c.strokeMm)) * ((a * a * a) / (a * a + knee * knee))
+  // The fall: it sinks through the last swing, then comes down faster and faster, and is stopped short as the trailing edge meets the surface.
+  const fallen = new Float64Array(count)
+  {
+    const stop = HAND.fallStopBeats / (touch - strokesEnd)
+    const speed = (beat: number): number => {
+      const u = clamp((beat - strokesEnd) / (touch - strokesEnd), 0, 1)
+      return (HAND.fallSink * 2 * u + (1 - HAND.fallSink) * HAND.fallPower * Math.pow(u, HAND.fallPower - 1)) * (1 - s5((u - (1 - stop)) / stop))
+    }
+    let sum = 0
+    for (let i = iStrokes + 1; i < count; i++) {
+      if (beatOf(i) <= touch) sum += (speed(beatOf(i - 1)) + 4 * speed(beatOf(i) - h / 2) + speed(beatOf(i))) / 6
+      fallen[i] = sum
+    }
+    for (let i = iStrokes + 1; i < count; i++) fallen[i] = beatOf(i) >= touch ? 1 : fallen[i]! / sum
   }
 
   const shiver = { x: tremorOf(rng), y: tremorOf(rng), z: tremorOf(rng), tiltX: tremorOf(rng), tiltZ: tremorOf(rng) }
-  const airFade = Math.min(strokesEnd + 0.75 * c.setDownBeats, landing - crest)
+  const airFade = Math.min(strokesEnd + 0.75 * c.setDownBeats, touch)
   const inAir = (beat: number): number => s5((beat - liftOff - 0.1 * liftEnd) / (liftEnd - liftOff - 0.1 * liftEnd)) * (1 - s5((beat - ringHold) / (airFade - ringHold)))
   const inHold = (beat: number): number => s5((beat - liftEnd) / (0.125 * c.strokeBeats)) * (1 - s5((beat - strokesEnd + 0.125 * c.strokeBeats) / (0.125 * c.strokeBeats)))
 
   const x = new Float64Array(count)
   const y = new Float64Array(count)
   const z = new Float64Array(count)
+  const yTop = new Float64Array(count)
+  const pump = new Float64Array(count)
   const baseX = new Float64Array(count)
   const baseZ = new Float64Array(count)
   const moveX = new Float64Array(count)
@@ -455,71 +515,75 @@ function build(name: string): ShakeMotion {
     if (b >= endBeat) continue
     const s = stroke[i]!
     const air = inAir(b)
+    const a = whipPeak > 0 ? whip[i]! / whipPeak : 0
     let lx: number
     let lz: number
-    let held: number
     if (b <= liftEnd) {
       const up = rise(b)
-      held = Math.pow(up, HAND.leanLag)
+      const held = Math.pow(up, HAND.leanLag)
       const rocked = gripRock * s5(b / gripBeats) * (1 - held)
       lx = rocked * gripDir.x + lean * held * hold.x
       lz = rocked * gripDir.z + lean * held * hold.z
-      y[i] = b <= liftOff ? rockHeight(tiltSine(lx, lz)) : rockRest + liftGap * up
-      z[i] = -awayMm * Math.pow(up, 1.2)
+      yTop[i] = rockHeight(tiltSine(lx, lz)) + (c.liftMm - rockHeight(Math.sin(lean))) * up
+      z[i] = -awayMm * up
     } else if (b < strokesEnd) {
-      held = 1
       lx = lean * hold.x
       lz = lean * hold.z
-      y[i] = c.liftMm - droop(s) - HAND.sagShare * c.liftMm * inHold(b) * (0.5 + 0.5 * shiver.y(b))
-      z[i] = -awayMm + s * Math.sin(planAngle)
+      yTop[i] = c.liftMm - HAND.sagShare * c.liftMm * inHold(b) * (0.5 + 0.5 * shiver.y(b))
+      // The pump: the globe swoops low through the middle of a stroke, where it is upright, and is carried up to each end, where it is furthest over.
+      pump[i] = (1 - a * a) * (1 - a * a) * s5((b - liftEnd) / HAND.dipRampBeats) * (1 - s5((b - bloomBeat) / (strokesEnd - bloomBeat)))
+      z[i] = -awayMm
     } else {
-      const down = fall(b)
-      held = down
+      const down = 1 - fallen[i]!
       const flat = landTilt(b)
-      lx = flat * landDir.x + (lean * hold.x - approach * landDir.x) * down
-      lz = flat * landDir.z + (lean * hold.z - approach * landDir.z) * down
-      y[i] = rockHeight(Math.sin(Math.abs(flat))) + landGap * down
+      // The hand turns the foot toward the edge it will land on all the way down, not at the last moment.
+      const held = 1 - s5((b - strokesEnd) / (touch - strokesEnd))
+      lx = flat * landDir.x + (lean * hold.x - approach * landDir.x) * held
+      lz = flat * landDir.z + (lean * hold.z - approach * landDir.z) * held
+      yTop[i] = rockHeight(Math.sin(Math.abs(flat))) + landGap * down
       z[i] = -awayMm * down
     }
-    x[i] = i <= iLift || i >= iStrokes ? 0 : s * Math.cos(planAngle) + HAND.tremorMm * 0.6 * inHold(b) * shiver.x(b)
-    z[i] = z[i]! + HAND.tremorMm * air * shiver.z(b)
+    x[i] = s * Math.cos(planAngle) + HAND.tremorMm * 0.6 * inHold(b) * shiver.x(b)
+    z[i] = z[i]! + s * Math.sin(planAngle) + HAND.tremorMm * air * shiver.z(b)
     baseX[i] = lx + HAND.tremorDeg * RAD * air * shiver.tiltX(b)
     baseZ[i] = lz + HAND.tremorDeg * RAD * air * shiver.tiltZ(b)
     leanOnly[i] = Math.hypot(lx, lz)
-    if (whipPeak > 0) {
-      const a = whip[i]! / whipPeak
-      const r = (rock[i]! / whipPeak) * rockGain
-      moveX[i] = a * along.x + r * hold.x
-      moveZ[i] = a * along.z + r * hold.z
-    }
+    const r = rockPeak > 0 ? (rock[i]! / rockPeak) * rockGain : 0
+    // The hand is already bringing the globe upright for the table through the last swing, so that swing rolls it less than a stroke does.
+    const upright = b > strokesEnd ? 1 - HAND.lastUpright * s5((b - strokesEnd) / (lastBeat - strokesEnd)) : 1
+    moveX[i] = (a * along.x + r * hold.x) * upright
+    moveZ[i] = (a * along.z + r * hold.z) * upright
   }
 
-  // One factor for the whole shake: the rocking as large as the config's tilt and the room under the rim allow.
-  const fits = (k: number): boolean => {
-    for (let i = iLift; i < count && beatOf(i) < ringEnd; i++) {
+  // One factor for the whole shake: the rocking as large as the config's tilt allows. Then the pump as deep as the room under the rim allows.
+  const fits = (k: number, dip: number): boolean => {
+    for (let i = iOff + 1; i < count && beatOf(i) < touch; i++) {
       const tx = baseX[i]! + k * moveX[i]!
       const tz = baseZ[i]! + k * moveZ[i]!
       const sine = tiltSine(tx, tz)
       if (Math.asin(Math.min(1, sine)) > c.tiltDeg * RAD - HAND.tiltHair) return false
-      const gap = y[i]! - FOOT_MM * sine
-      const needs = i <= iStrokes ? HAND.rimAirMm : Math.min(HAND.rimAirMm, 0.5 * (y[i]! - FOOT_MM * Math.sin(leanOnly[i]!)))
+      const height = yTop[i]! - dip * pump[i]!
+      const gap = height - FOOT_MM * sine
+      // In the lift the foot may still be on the felt: it is never asked to stand higher than a foot rocking on its rim does.
+      const needs = i < iLift ? Math.min(0, rockHeight(sine) - FOOT_MM * sine) : i <= iStrokes ? HAND.rimAirMm : Math.min(HAND.rimAirMm, 0.5 * (height - FOOT_MM * Math.sin(leanOnly[i]!)))
       if (gap < needs) return false
     }
     return true
   }
-  let rocking = 0
-  {
+  const most = (ok: (v: number) => boolean, top: number): number => {
+    if (ok(top)) return top
     let lo = 0
-    let hi = c.tiltDeg * RAD * 2
-    if (fits(hi)) lo = hi
-    else
-      for (let step = 0; step < 40; step++) {
-        const mid = (lo + hi) / 2
-        if (fits(mid)) lo = mid
-        else hi = mid
-      }
-    rocking = fits(lo) ? lo : 0
+    let hi = top
+    for (let step = 0; step < 40; step++) {
+      const mid = (lo + hi) / 2
+      if (ok(mid)) lo = mid
+      else hi = mid
+    }
+    return ok(lo) ? lo : 0
   }
+  const rocking = most((k) => fits(k, 0), c.tiltDeg * RAD * 2)
+  const dipMm = most((d) => fits(rocking, d), HAND.dipShare * c.liftMm)
+  for (let i = 0; i < count; i++) y[i] = yTop[i]! - dipMm * pump[i]!
   const tiltX = new Float64Array(count)
   const tiltZ = new Float64Array(count)
   let peakTilt = 0
@@ -535,11 +599,12 @@ function build(name: string): ShakeMotion {
   }
   y[iLift] = c.liftMm
   y[iStrokes] = c.liftMm
+  const iRest = iTouch
 
   const ends = (i: number): boolean => i === 0 || beatOf(i) >= endBeat
   const iEnd = Math.min(last, Math.ceil(endBeat * K - 1e-9))
   const channels: Record<ShakeChannel, Channel> = {
-    x: derive(x, h, (i) => ends(i) || i <= iLift || i >= iStrokes, [iLift, iStrokes]),
+    x: derive(x, h, (i) => ends(i) || i <= iOff || i >= iRest, [iOff, iRest]),
     y: derive(y, h, (i) => ends(i) || i === iLift || i === iStrokes, [0, iLift, iStrokes, iEnd]),
     z: derive(z, h, ends, [0, iEnd]),
     tiltX: derive(tiltX, h, ends, [0, iEnd]),
@@ -547,6 +612,8 @@ function build(name: string): ShakeMotion {
   }
 
   const strokes = extremesOf(stroke)
+  let lastSwing: ShakeStroke = { beat: lastBeat, mm: 0 }
+  for (let i = iStrokes; i < iTouch; i++) if (Math.abs(stroke[i]!) > Math.abs(lastSwing.mm) && stroke[i]! * lastSide > 0) lastSwing = { beat: beatOf(i), mm: stroke[i]! }
   let fastest = { beat: liftEnd, mmPerBeat: 0 }
   for (let i = iLift + 1; i < iStrokes; i++) if (Math.abs(strokeRate[i]!) > fastest.mmPerBeat) fastest = { beat: beatOf(i), mmPerBeat: Math.abs(strokeRate[i]!) }
 
@@ -588,12 +655,16 @@ function build(name: string): ShakeMotion {
       awayMm,
       gripRock,
       liftOff,
-      gripTurns: turnBeat.slice(1).map((beat, k) => ({ beat, mm: turnMm[k + 1]! })),
+      gripTurns: turnBeat.slice(1, n + 1).map((beat, k) => ({ beat, mm: turnMm[k + 1]! })),
       strokes,
       fastest,
       rocking,
+      dipMm,
+      windMm,
+      lastTurn: lastSwing,
+      touch,
       peakTilt,
-      rollStart: landing - contactLead,
+      rollStart: touch,
       overshoot,
       settleEnd: endBeat,
     },
