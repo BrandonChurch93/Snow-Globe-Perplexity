@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 16 · 2026-11-24 06:49 UTC
+Status 17 · 2026-11-24 07:04 UTC
 
-- `out/stills/status/status-16-1.jpg`: Frame 0 of the film from the macro camera after its fit and focus: the lit cottage, the lamppost and the foot of the tree in falling snow, no edge of the glass. Stand-in shapes.
-- `out/stills/status/status-16-2.jpg`: The six cameras of the config on the winter stand-in stage at rest, review tier, each tile labelled with its numbers: hero, macro (new fit: distance 130, yaw -13, pitch 3, aim 67), interior, base, surface, low. Macro now shows the lit cottage, the lamppost and the foot of the tree with no edge of the glass. (by engine_builder)
-- `out/stills/status/status-16-3.jpg`: The four seasons at rest with the real particle engine at its full pool through the stage's drawing, hero camera, preview, draft: winter, spring, summer, fall. Summer's seeds are now 0.5 to 1.1 mm so the scene shows through; it is still the busiest of the four. Miniature, base and lights are stand-ins. (by particles_builder)
-- `out/stills/status/status-16-4.jpg`: Sheet: 12 frames across the shot shake-1, frames 576 to 719, preview, draft
+- `out/stills/status/status-17-1.jpg`: The live app through a shake at three sizes: rest, lifted, mid stroke. The camera stays locked and the lifted glass stays under the top edge
+- `out/stills/status/status-17-2.jpg`: What the first critic called severe: in the spring hold the camera sinks all the way to the base and the miniature leaves the frame for about 2.5 s
+- `out/stills/status/status-17-3.jpg`: Frame 0 of the film, the macro camera after the fit and the focus change: the lit cottage, the lamppost and the foot of the tree in falling snow, no edge of the glass. Stand-in shapes, review tier. (by engine_builder)
+- `out/stills/status/status-17-4.jpg`: Sheet: 12 frames across the shot shake-1, frames 576 to 719, preview, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 06:49 UTC
-clock: phase 2, tick of 4.2 minutes
-phase 2: 3.80 h used of its 6.00 h box
-allowance (before the review): 4.99 h used of 36.00 h allowed
-all time before the review: 4.99 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 07:04 UTC
+clock: phase 2, tick of 14.7 minutes
+phase 2: 4.04 h used of its 6.00 h box
+allowance (before the review): 5.23 h used of 36.00 h allowed
+all time before the review: 5.23 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
@@ -679,3 +679,5 @@ One entry per task: when it started, what it did, where it stopped.
 
 - 06:55 round 1: the pack is built (19 files in two parts). Critics asked at 06:56: part 1 (ten film sheets) on `gpt_6_2_sol` at reasoning max; part 2 (six camera pairs, three screens) on `gemini_4_carbon`, which the spawn reports at reasoning medium although max was asked. 06:57 part 1 answered: 8, one severe issue (open item 10).
 - 06:59 merged `agent/film-app2` `a8cb453` (live framing of decision 33, governor) and `agent/particles2` `a415b4e` (worker path) into main at `87fe501`: types clean, 284 tests, build, cut and parts clean. The pack of round 1 was built before the merge, so round 1 still judges `48afed3`. 07:02 worker path checked in headless Chrome (items 5 and 7 closed). 07:04 decision 34 sent to `film_app_engineer_2` as the first job of the fix pass.
+
+- 07:04 Status 17 posted with two pictures: the live app through a shake at three sizes (`film_app_engineer_2`) and the spring hold sheet the first critic marked. The pack tool now writes the camera move into a hold's line and the purpose into a camera pair's line, for round 2.
