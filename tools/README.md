@@ -61,6 +61,7 @@ The repo is public, so no generated sound file is committed: `.gitignore` holds 
 ## Notes added at the merges
 
 - `out/work/seq/<source>-<format>-<tier>/` holds single frames, one PNG and one record each. `sheet` and `seq` share it and reuse each other's frames. It is held to `sandbox.maxFramesOnDisk` by pruning the oldest.
+- `sheet`: `--mark N=WORD[,N=WORD]` with `--shot` or `--film` puts film frame N on the sheet of its shot and adds WORD to its label. The blockout pack uses it to show the reveal frame of the opening.
 - `measure`: `--unit ID [--only M1,M4] [--tier T] [--force]`. The default tier is `final`. A diagnostic view whose encoding is off fails its measure with a note instead of giving a number.
 - `pack`: `--phase N --round R --unit ID [--tier T] [--only R1,R3] [--record]`. Phase 2 builds only the blockout pack. Beside each pack folder, never in it, is `<role>.message.md` with the critic's section, the severity scale and the return format. The key is `out/work/packs/keys/round-RRR.json`.
 - `gate`: `--phase N [--only ID,ID] [--unit ID] [--fresh]`. `--unit` names the unit of the round for G13. `--fresh` draws the G5 and G13 pictures again.

@@ -255,8 +255,8 @@
         0,
         16
       ],
-      "focusMm": 130,
-      "apertureMm": 5
+      "focusMm": 123,
+      "apertureMm": 3
     },
     {
       "frame": 120,
@@ -271,8 +271,8 @@
         0,
         16
       ],
-      "focusMm": 270.1,
-      "apertureMm": 6.98
+      "focusMm": 266.6,
+      "apertureMm": 5.97
     },
     {
       "frame": 180,
@@ -287,8 +287,8 @@
         0,
         16
       ],
-      "focusMm": 466.9,
-      "apertureMm": 8.32
+      "focusMm": 465.7,
+      "apertureMm": 7.99
     },
     {
       "frame": 270,
@@ -815,8 +815,8 @@
         0,
         16
       ],
-      "focusMm": 130,
-      "apertureMm": 5
+      "focusMm": 123,
+      "apertureMm": 3
     },
     {
       "frame": 3599,
@@ -831,8 +831,8 @@
         0,
         16
       ],
-      "focusMm": 130,
-      "apertureMm": 5
+      "focusMm": 123,
+      "apertureMm": 3
     }
   ],
   "cues": [
