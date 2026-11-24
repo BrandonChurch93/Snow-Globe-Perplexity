@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { config } from '../src/config'
-import { FRAME, livePose, liveRig } from '../src/app/framing'
+import { FRAME, edges, livePose, liveRig, margins, roomUnder } from '../src/app/framing'
 import { Drag, Look, MotionShake, TOUCH, stirAxis } from '../src/app/gestures'
 import { Autopilot, LoopPlayer } from '../src/app/players'
 import { createProbe, pickLevel, slowest, type ProbeHost } from '../src/app/probe'
@@ -13,7 +13,7 @@ import { cameraNumbers, filmPose, rigOf } from '../src/film/moves'
 import { openingPlan } from '../src/film/opening'
 import { barSeconds, beatSeconds, type Timeline } from '../src/film/timeline'
 import { REST_POSE } from '../src/shake/table'
-import { sphereRadiusMm } from '../src/scene/framing'
+import { framingOf, sphereRadiusMm } from '../src/scene/framing'
 
 const HZ = config.sim.stepHz
 const FRAME_S = 1 / 60
@@ -485,6 +485,58 @@ describe('the framing of the app', () => {
       expect(rig.fovDeg).toBe(hero.fovDeg)
     }
     expect(liveRig(0.01).distanceMm).toBe(liveRig(FRAME.leastAspect).distanceMm)
+  })
+
+  it('measures the top of the glass and the foot of the base as the harness does', () => {
+    const hd = config.formats.hd
+    const f = framingOf('hero', hd.width, hd.height)
+    const e = edges(rigOf('hero'))
+    expect(e.top).toBeCloseTo(1 - (2 * (f.globe.cy - f.globe.r)) / hd.height, 2)
+    expect(e.foot).toBeCloseTo(1 - (2 * f.base.foot) / hd.height, 6)
+    const m = margins(rigOf('hero'))
+    expect(m.over).toBeCloseTo((f.globe.cy - f.globe.r) / hd.height, 2)
+    expect(m.under).toBeCloseTo(1 - f.base.foot / hd.height, 6)
+  })
+
+  it('keeps the room the controls take clear under the globe, by stepping back no further than it must', () => {
+    const hero = rigOf('hero')
+    for (const [w, h] of [[1920, 1080], [1440, 780], [1280, 600], [2560, 1440]] as const) {
+      const under = roomUnder(h)
+      const rig = liveRig(w / h, 0, 0, under)
+      const m = margins(rig)
+      expect(m.under).toBeCloseTo(under, 6)
+      expect(m.over).toBeGreaterThanOrEqual(FRAME.overShare - 1e-9)
+      expect(m.over).toBeLessThan(FRAME.overShare + 0.01)
+      expect(rig.distanceMm).toBeGreaterThan(hero.distanceMm)
+      expect(rig.distanceMm).toBeLessThan(hero.distanceMm * 1.25)
+      expect(rig.pitchDeg).toBe(hero.pitchDeg)
+      expect(rig.fovDeg).toBe(hero.fovDeg)
+    }
+    const t = config.formats.tablet
+    const plain = liveRig(t.width / t.height)
+    const tablet = liveRig(t.width / t.height, 0, 0, roomUnder(t.height))
+    expect(tablet.distanceMm).toBe(plain.distanceMm)
+    expect(tablet.aimHeightMm).toBeLessThan(plain.aimHeightMm)
+    expect(margins(tablet).under).toBeCloseTo(roomUnder(t.height), 9)
+    expect(margins(tablet).over).toBeGreaterThanOrEqual(FRAME.overShare)
+  })
+
+  it('leaves an upright phone as it is, where the room is there already', () => {
+    const p = config.formats.phone
+    const under = roomUnder(p.height, 130)
+    expect(margins(liveRig(p.width / p.height)).under).toBeGreaterThan(under)
+    expect(liveRig(p.width / p.height, 0, 0, under)).toEqual(liveRig(p.width / p.height))
+  })
+
+  it('takes the room from the height of the window and from the controls when they are measured', () => {
+    expect(roomUnder(1080)).toBeCloseTo(Math.max(FRAME.barShare, FRAME.barPx / 1080), 12)
+    expect(roomUnder(4000)).toBe(FRAME.barShare)
+    expect(roomUnder(1080, 20)).toBe(roomUnder(1080))
+    expect(roomUnder(844, 130)).toBeCloseTo((130 + FRAME.airPx) / 844, 12)
+    expect(roomUnder(100, 500)).toBe(FRAME.mostUnder)
+    expect(roomUnder(0)).toBe(FRAME.mostUnder)
+    const far = liveRig(16 / 9, 0, 0, 5)
+    expect(margins(far).under).toBeCloseTo(FRAME.mostUnder, 6)
   })
 
   it('keeps a turned view inside the orbit limits', () => {

@@ -21,7 +21,7 @@ import { loopGlobe, type LoopParticles, type SourceSwitch } from '../film/loop'
 import { loopMoment, timelineMoment } from '../film/moments'
 import { flaggedStandIns } from '../core/standins'
 import { levelById, stageQuality, topLevel } from '../core/quality'
-import { livePose } from '../app/framing'
+import { livePose, roomUnder } from '../app/framing'
 import { Painter } from '../app/painter'
 import parts from '../../parts/PARTS.json'
 
@@ -105,6 +105,7 @@ const DEG = 180 / Math.PI
 export interface Overlay {
   show(season: string, state: string): Promise<void>
   hide(): void
+  controlsPx(): number | null
 }
 
 export interface Deps {
@@ -307,7 +308,12 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
         return
       }
       const onScreen = (spec.interface || !!spec.live) && spec.camera === MOVES.wide
-      const pose = onScreen ? livePose(format.width / format.height) : poseById(spec.camera)
+      let under = 0
+      if (onScreen && spec.interface) {
+        await overlay.show(spec.season, spec.state)
+        under = roomUnder(format.height, overlay.controlsPx())
+      }
+      const pose = onScreen ? livePose(format.width / format.height, 0, 0, under) : poseById(spec.camera)
       if (spec.live) await livePicture(along(stillTl(spec.season)), stateSeconds(spec.state), pose, spec.live)
       else await picture(along(stillTl(spec.season)), stateSeconds(spec.state), 0, () => pose, samples, 0)
       if (spec.interface) await overlay.show(spec.season, spec.state)
