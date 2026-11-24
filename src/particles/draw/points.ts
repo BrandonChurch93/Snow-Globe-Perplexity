@@ -67,7 +67,7 @@ void main() {
   vec4 k = uKindColor[kind];
   float twinkle = pow(0.5 + 0.5 * sin(6.2831853 * (vPoint.w + 3.0 * uPointClock.x)), 6.0);
   vec3 col = k.rgb * (uPointLight + stageGrid(vStageLocal)) + k.rgb * k.a * twinkle;
-  col = mix(col, uVeil.rgb * (uVeilLight + stageGrid(vStageLocal)), fog * 0.6);
+  col = stageFogged(col, stageGrid(vStageLocal), fog * 0.6);
   gl_FragColor = vec4(col, 1.0);
   if (uDiag == ${viewCode('ids')} || uDiag == ${viewCode('standins')}) gl_FragColor = vec4(uKindPart[kind], 1.0);
   else if (uDiag != 0) gl_FragColor = stageDiag(k.rgb, vec3(0.0, 0.0, 1.0), fog, uPointChange, 0.0);

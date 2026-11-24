@@ -61,7 +61,7 @@ void main() {
   if (stageGone(c)) discard;
   float d = length(vStageWorld.xz - uFoot.xy);
   float a = uShape.x * (1.0 - smoothstep(uFoot.z, uShape.y, d));
-  vec3 col = uTint * (uSky + uKeyCol * max(uKeyDir.y, 0.0)) * 0.5;
+  vec3 col = uTint * (uSky + uKeyCol * max(uKeyDir.y, 0.0)) * 0.22;
   gl_FragColor = vec4(col, a);
   if (uDiag != 0) gl_FragColor = stageDiag(uTint, vec3(0.0, 1.0, 0.0), 0.0, c, 0.0);
   else if (a < 0.004) discard;
@@ -85,6 +85,7 @@ export function makeSlab(): THREE.Mesh {
   slab.rotation.x = -Math.PI / 2
   slab.userData.standIn = 'surface'
   slab.frustumCulled = false
+  slab.renderOrder = -3
   return slab
 }
 

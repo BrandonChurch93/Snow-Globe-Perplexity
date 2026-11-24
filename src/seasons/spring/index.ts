@@ -8,9 +8,9 @@ const main: Rgb = [0.16, 0.27, 0.09]
 const palette: Palette = { ground: [0.22, 0.42, 0.14], cottage: [0.46, 0.42, 0.36], roof: [0.2, 0.3, 0.12], chimney: [0.34, 0.3, 0.27], trunk: [0.2, 0.13, 0.08], crown: [0.95, 0.55, 0.68], post: [0.03, 0.03, 0.035], lamp: [0.9, 0.75, 0.5], pond: [0.25, 0.45, 0.6], fence: [0.42, 0.32, 0.22], path: [0.5, 0.48, 0.44] }
 const arrivalTint: Rgb = [1, 0.72, 0.82]
 const innerLights: InnerLight[] = [
-    { at: anchors.lamp, color: [1, 0.78, 0.5], power: 1.6, reachMm: 24, flicker: 0.04, cycles: 2, phase: 0.2 },
-    { at: anchors.window, color: [1, 0.68, 0.36], power: 1.5, reachMm: 18, flicker: 0.08, cycles: 4, phase: 0.5 },
-    { at: anchors.crown, color: [1, 0.6, 0.75], power: 0.9, reachMm: 30, flicker: 0.03, cycles: 1, phase: 0 },
+    { at: anchors.lamp, color: [1, 0.78, 0.5], power: 0.64, reachMm: 24, flicker: 0.04, cycles: 2, phase: 0.2 },
+    { at: anchors.window, color: [1, 0.68, 0.36], power: 0.6, reachMm: 18, flicker: 0.08, cycles: 4, phase: 0.5 },
+    { at: anchors.crown, color: [1, 0.6, 0.75], power: 0.36, reachMm: 30, flicker: 0.03, cycles: 1, phase: 0 },
   ]
 
 export const kit: SeasonKit = {

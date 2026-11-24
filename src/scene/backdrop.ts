@@ -59,7 +59,7 @@ export class Backdrop {
       const z = -rng.range(700, 2400)
       const spread = 0.42 * -z
       const radius = rng.range(5, 13)
-      this.emitters.push({ at: new THREE.Vector3(rng.range(-spread, spread), rng.range(20, 0.3 * -z), z), radius, power: rng.range(1.5, 7), pick: rng.int(1 << 16) })
+      this.emitters.push({ at: new THREE.Vector3(rng.range(-spread, spread), rng.range(20, 0.3 * -z), z), radius, power: rng.range(0.5, 2.6), pick: rng.int(1 << 16) })
     }
     const centre = new THREE.Vector3(0, centreHeightMm, 0)
     this.brightest = this.emitters
@@ -115,7 +115,7 @@ void main() {
   gl_FragColor = vec4(vColor, 1.0);
   if (uDiag != 0) gl_FragColor = stageDiag(vColor, vec3(0.0, 0.0, 1.0), 0.0, stageChange(), 0.0);
 }`,
-      params: { blending: THREE.AdditiveBlending, depthWrite: false },
+      params: { blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendSrcAlpha: THREE.ZeroFactor, blendDstAlpha: THREE.OneFactor, depthWrite: false },
     })
     const g = new THREE.SphereGeometry(1, 14, 10)
     this.lights = new THREE.InstancedMesh(g, this.material, n)
@@ -130,7 +130,7 @@ void main() {
     g.setAttribute('aColorB', this.colorB)
     this.lights.frustumCulled = false
     this.lights.userData.standIn = 'backdrop'
-    this.lights.renderOrder = -1
+    this.lights.renderOrder = 20
     this.group.add(this.lights)
   }
 

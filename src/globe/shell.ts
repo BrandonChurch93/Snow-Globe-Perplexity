@@ -29,7 +29,7 @@ void main() {
   vec3 col = stageRoom(o) + stageRoomLights(o, 0.012);
   float fog = stageVeil(chord);
   vec3 lit = stageGrid(vStageLocal * 0.5);
-  col = mix(col, uVeil.rgb * (uVeilLight + lit), fog);
+  col = stageFogged(col, lit, fog);
   gl_FragColor = vec4(col, 1.0);
   if (uDiag != 0) gl_FragColor = stageDiag(col, n, fog, 0.0, 0.0);
 }`
@@ -86,6 +86,7 @@ export class Shell {
   readonly through: THREE.Mesh
   readonly shell: THREE.Mesh
   readonly bubble: THREE.Mesh
+  readonly stamp: THREE.Mesh
   readonly bubbleRadius = 2.4
 
   constructor() {
@@ -126,6 +127,10 @@ export class Shell {
     )
     this.bubble.userData.standIn = 'liquid'
     this.bubble.renderOrder = 4
+    this.stamp = new THREE.Mesh(sphere, stageShader({ part: 'glass', fragment: 'void main() { gl_FragColor = vec4(0.0); }', params: { colorWrite: false } }))
+    this.stamp.scale.setScalar(0.998)
+    this.stamp.userData.standIn = 'glass'
+    this.stamp.renderOrder = 6
   }
 
   placeBubble(up: THREE.Vector3, slosh: THREE.Vector3): void {

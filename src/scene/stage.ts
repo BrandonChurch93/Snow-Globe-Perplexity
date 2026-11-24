@@ -87,7 +87,7 @@ export class GlobeStage implements Stage {
     globe.add(inside)
     glow.position.y = centreHeightMm
     globe.add(glow)
-    inside.add(this.shell.through, this.shell.shell, this.shell.bubble, this.draw.points)
+    inside.add(this.shell.through, this.shell.shell, this.shell.bubble, this.shell.stamp, this.draw.points)
 
     this.slice = new THREE.Mesh(
       new THREE.CircleGeometry(innerRadiusMm, 96),
@@ -199,30 +199,32 @@ export class GlobeStage implements Stage {
     stageUniforms.uGlobeInv.value.copy(this.inside.matrixWorld).invert()
   }
 
-  private passes(shadows: boolean, mirror: boolean, sliceOnly: boolean): void {
+  private passes(shadows: boolean, mirror: boolean, sliceOnly: boolean, emitters: boolean): void {
     const { renderer } = this.gfx
     const key = this.key
+    const { dome, lights } = this.backdrop
     this.floor.visible = false
-    this.world.visible = true
+    lights.visible = false
     this.orient(1)
     renderer.shadowMap.needsUpdate = shadows && !sliceOnly
     renderer.render(this.scene, this.camera)
     renderer.shadowMap.needsUpdate = false
     if (sliceOnly) return
+    dome.visible = false
+    lights.visible = emitters
     if (mirror) {
       this.orient(-1)
       this.savedShadow.copy(key.shadow.matrix)
       key.shadow.matrix.multiply(MIRROR)
-      this.backdrop.dome.visible = false
       renderer.render(this.scene, this.camera)
-      this.backdrop.dome.visible = true
       key.shadow.matrix.copy(this.savedShadow)
       this.orient(1)
     }
-    this.world.visible = false
+    this.globe.visible = false
     this.floor.visible = true
     renderer.render(this.scene, this.camera)
-    this.world.visible = true
+    this.globe.visible = true
+    dome.visible = true
   }
 
   drawSample(target: THREE.WebGLRenderTarget, pose: Pose, sample: Sample | null, moment: Moment, shadows: boolean): void {
@@ -261,6 +263,7 @@ export class GlobeStage implements Stage {
     this.shell.through.visible = !sliceOnly
     this.shell.shell.visible = !sliceOnly
     this.shell.bubble.visible = !sliceOnly
+    this.shell.stamp.visible = !sliceOnly
     this.draw.points.visible = !sliceOnly
     this.backdrop.group.visible = !sliceOnly
     this.slab.visible = !sliceOnly
@@ -282,7 +285,7 @@ export class GlobeStage implements Stage {
 
     const turbulence = Math.min(1, Math.max(0, (liquid[6] ?? 0) / TURBULENCE_FULL))
     const veilTint = mixRgb(ka.veil.tint, kb.veil.tint, tVeil)
-    const density = lerp(ka.veil.rest, kb.veil.rest, tVeil) + lerp(ka.veil.density, kb.veil.density, tVeil) * Math.pow(turbulence, 0.6)
+    const density = lerp(ka.veil.rest, kb.veil.rest, tVeil) + lerp(ka.veil.density, kb.veil.density, tVeil) * Math.pow(turbulence, 1.5)
     u.uVeil.value.set(veilTint[0], veilTint[1], veilTint[2], density)
 
     const keyCol = mixRgb(ka.rig.key.color, kb.rig.key.color, tLight)
@@ -348,7 +351,6 @@ export class GlobeStage implements Stage {
 
     const lensOn = view === ''
     this.backdrop.set(ka, kb, tOut, lensOn ? pose.apertureMm : 0, pose.focusMm, lensOn && sample ? sample.lu * pose.apertureMm : 0, lensOn && sample ? sample.lv * pose.apertureMm : 0)
-    this.backdrop.lights.visible = beauty
 
     const all: Record<string, { color: Rgb; glow: number }> = {}
     for (const k of kits) for (const [name, c] of Object.entries(k.particles)) all[name] ??= c
@@ -391,7 +393,7 @@ export class GlobeStage implements Stage {
         renderer.setRenderTarget(target)
         applyPose(this.camera, pose, half, h, null)
         u.uLens.value.z = side === 0 ? 1 : 0
-        this.passes(shadows && side === 0, false, false)
+        this.passes(shadows && side === 0, false, false, true)
       }
       u.uLens.value.z = 1
       target.scissorTest = false
@@ -400,7 +402,7 @@ export class GlobeStage implements Stage {
       renderer.setRenderTarget(target)
     } else {
       applyPose(this.camera, pose, w, h, sample)
-      this.passes(shadows, view === '' && planar, sliceOnly)
+      this.passes(shadows, view === '' && planar, sliceOnly, beauty)
     }
     renderer.autoClear = auto
     renderer.setClearColor(this.clear, alpha)

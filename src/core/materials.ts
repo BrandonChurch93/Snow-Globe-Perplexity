@@ -134,6 +134,9 @@ bool stageGone(float c) {
 float stageVeil(float path) {
   return 1.0 - exp(-uVeil.a * path);
 }
+vec3 stageFogged(vec3 col, vec3 lit, float fog) {
+  return mix(col, uVeil.rgb * (uVeilLight + 0.35 * lit), fog);
+}
 float stageBlur() {
   return clamp(uCoc.x * abs(1.0 / max(vStageAux.y, 1.0) - uCoc.y) / 8.0, 0.0, 1.0);
 }
@@ -171,7 +174,7 @@ const FRAG_TAIL = `
 float stageFog = 0.0;
 #ifdef STAGE_INSIDE
 stageFog = stageVeil(vStageAux.x);
-gl_FragColor.rgb = mix(gl_FragColor.rgb, uVeil.rgb * (uVeilLight + stageLit), stageFog);
+gl_FragColor.rgb = stageFogged(gl_FragColor.rgb, stageLit, stageFog);
 #endif
 if (uDiag != 0) {
   float stageTexels = 0.0;
