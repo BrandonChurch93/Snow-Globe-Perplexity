@@ -10,6 +10,8 @@ import { countsIn, KINDS, POOL, SEASONS } from '../src/particles/engine/kinds'
 import { blockoutSdf, buildSdf, GROUND_Y, INNER_R, sdfSample } from '../src/particles/engine/sdf'
 import { EngineClient, type EnginePort } from '../src/particles/engine/client'
 import { builtTimeline, EngineHost, frameBytes, plainTimeline } from '../src/particles/engine/host'
+import { LiveEngine } from '../src/particles/engine/live'
+import { SimDriver, type SimStore } from '../src/particles/driver'
 
 const HZ = config.sim.stepHz
 const steps = (seconds: number): number => Math.round(seconds * HZ)
@@ -182,6 +184,20 @@ describe('the simulation', () => {
     }, 120000)
   }
 
+  it('starts the whole pool inside the glass in every season', () => {
+    for (const season of SEASONS) {
+      const e = new ParticleEngine({ season })
+      e.reset()
+      expect(e.count).toBe(POOL)
+      let outside = 0
+      for (let i = 0; i < e.count; i++) {
+        if (e.state[i] === STATE_HIDDEN) continue
+        if (Math.hypot(e.pos[i * 3]!, e.pos[i * 3 + 1]!, e.pos[i * 3 + 2]!) > INNER_R + 0.05) outside++
+      }
+      expect(outside).toBe(0)
+    }
+  })
+
   it('throws what rests back into the liquid and lets it settle again, not stacked in a grid', () => {
     const e = new ParticleEngine({ season: 'winter', fraction: 0.08 })
     const tl = stillTimeline('winter')
@@ -319,6 +335,49 @@ describe('the simulation', () => {
     expect(snagged).toBeGreaterThan(seeds * 0.1)
     expect(snagged).toBeLessThan(seeds)
   }, 120000)
+  it('carries what hangs in the liquid round with it, not out against the glass', () => {
+    const e = new ParticleEngine({ season: 'summer', fraction: 0.2 })
+    e.reset()
+    const tl = stillTimeline('summer')
+    const mote = e.kinds.indexOf('mote')
+    const even = { glass: 0, core: 0, n: 0 }
+    for (let x = -WALL; x <= WALL; x += 1.5) {
+      for (let y = GROUND_Y; y <= WALL; y += 1.5) {
+        for (let z = -WALL; z <= WALL; z += 1.5) {
+          const r = Math.hypot(x, y, z)
+          if (r > WALL) continue
+          even.n++
+          if (r > WALL - 3) even.glass++
+          if (r < WALL * 0.6) even.core++
+        }
+      }
+    }
+    const shares = (): { glass: number; core: number } => {
+      let n = 0
+      let glass = 0
+      let core = 0
+      for (let i = 0; i < e.count; i++) {
+        if (e.kindOf[i] !== mote) continue
+        const r = Math.hypot(e.pos[i * 3]!, e.pos[i * 3 + 1]!, e.pos[i * 3 + 2]!)
+        n++
+        if (r > WALL - 3) glass++
+        if (r < WALL * 0.6) core++
+      }
+      return { glass: (glass / n) * (even.n / even.glass), core: (core / n) * (even.n / even.core) }
+    }
+    let peak = 0
+    for (const beat of [2, 3, 4]) {
+      e.advanceTo(steps(beat * beatSeconds), tl)
+      peak = Math.max(peak, Math.hypot(e.liquid[LIQUID_TURN]!, e.liquid[LIQUID_TURN + 1]!, e.liquid[LIQUID_TURN + 2]!))
+      const now = shares()
+      expect(now.glass).toBeLessThan(1.8)
+    }
+    expect(peak).toBeGreaterThan(2)
+    e.advanceTo(steps(barSeconds + config.states.restSeconds), tl)
+    const rest = shares()
+    expect(rest.glass).toBeLessThan(1.3)
+    expect(rest.core).toBeGreaterThan(0.6)
+  })
 })
 
 describe('the distance grid helper', () => {
@@ -427,4 +486,103 @@ describe('the worker wrapper', () => {
     matches(client, fresh)
     expect(frameBytes(client.count)).toBe(LIQUID_LENGTH * 8 + client.count * 38)
   })
+})
+
+function memoryStore(): SimStore & { size: number } {
+  const kept = new Map<string, ArrayBuffer>()
+  return {
+    get size() {
+      return kept.size
+    },
+    async list(key) {
+      return [...kept.keys()].filter((k) => k.startsWith(`${key}/`)).map((k) => Number(k.slice(key.length + 1)))
+    },
+    async get(key, step) {
+      return kept.get(`${key}/${step}`) ?? null
+    },
+    async put(key, step, data) {
+      kept.set(`${key}/${step}`, data)
+    },
+  }
+}
+
+describe('the driver on the engine', () => {
+  const fraction = 0.02
+  const tl = swapTimeline('winter', 'spring')
+  const straight = (seconds: number): ParticleEngine => {
+    const e = new ParticleEngine({ fraction })
+    e.reset()
+    e.advanceTo(Math.max(1, Math.ceil(seconds * HZ - 1e-7)), tl)
+    return e
+  }
+
+  it('a seek to any time gives the same arrays as a straight run', async () => {
+    const store = memoryStore()
+    const sim = new ParticleEngine({ fraction })
+    const driver = new SimDriver(sim, store, 'test')
+    await driver.seek(tl, 5.3)
+    same(straight(5.3), sim)
+    expect(store.size).toBe(2)
+    await driver.seek(tl, 2.6)
+    same(straight(2.6), sim)
+    await driver.seek(tl, 0.5)
+    same(straight(0.5), sim)
+    await driver.seek(tl, 4.1)
+    same(straight(4.1), sim)
+
+    const other = new ParticleEngine({ fraction })
+    const cold = new SimDriver(other, store, 'test')
+    await cold.seek(tl, 5.3)
+    same(straight(5.3), other)
+    expect(cold.replayed).toBeLessThan(steps(5.3) - steps(4) + 2)
+  }, 120000)
+})
+
+describe('the live engine', () => {
+  it('shows a full pool with the tail hidden and follows the quality level', () => {
+    const live = new LiveEngine({ season: 'winter', fraction: 0.3 })
+    live.reset('winter')
+    const src = live.source
+    expect(src.count).toBe(POOL)
+    expect(src.pos.length).toBe(POOL * 3)
+    const n = live.active
+    expect(n).toBe(Math.round(POOL * 0.3))
+    let shown = 0
+    for (let i = 0; i < POOL; i++) if (src.state[i] !== STATE_HIDDEN) shown++
+    expect(shown).toBeGreaterThan(0)
+    for (let i = n; i < POOL; i++) expect(src.state[i] === STATE_HIDDEN && src.opacity[i] === 0 && src.sizes[i] === 0).toBe(true)
+
+    const tl = swapTimeline('winter', 'spring')
+    live.advanceTo(steps(1.5), tl)
+    const before = src.pos.slice(0, 300)
+    live.setFraction(0.1)
+    expect(live.active).toBe(Math.round(POOL * 0.1))
+    expect(live.step).toBe(steps(1.5))
+    expect([...src.pos.subarray(0, 300)]).toEqual([...before])
+    for (let i = live.active; i < POOL; i++) expect(src.state[i] === STATE_HIDDEN && src.opacity[i] === 0).toBe(true)
+    live.advanceTo(steps(1.6), tl)
+    live.setFraction(0.3)
+    expect(live.active).toBe(n)
+    live.advanceTo(steps(7), tl)
+    expect(live.season).toBe('spring')
+    for (let i = 0; i < live.active * 3; i++) expect(Number.isFinite(src.pos[i])).toBe(true)
+  }, 120000)
+
+  it('lands at rest in the new season when the timeline jumps without a shake', () => {
+    const live = new LiveEngine({ season: 'winter', fraction: 0.05 })
+    live.reset('winter')
+    live.advanceTo(steps(1), idle('winter'))
+    live.advanceTo(steps(1) + 1, idle('fall'))
+    expect(live.season).toBe('fall')
+    expect(live.step).toBe(steps(1) + 1)
+    const rest = new ParticleEngine({ season: 'fall', fraction: 0.05 })
+    rest.reset()
+    rest.advanceTo(1, idle('fall'))
+    expect([...live.source.kindOf.subarray(0, live.active)]).toEqual([...rest.kindOf])
+    let far = 0
+    for (let i = 0; i < live.active * 3; i++) far = Math.max(far, Math.abs(live.source.pos[i]! - rest.pos[i]!))
+    expect(far).toBeLessThan(0.5)
+    live.advanceTo(steps(3), idle('fall'))
+    expect(live.floating()).toBeLessThan(live.active)
+  }, 120000)
 })

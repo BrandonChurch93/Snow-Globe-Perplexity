@@ -1,6 +1,7 @@
 import { cameraById, config } from '../config'
 import { poseById, poseOf, type Pose } from '../scene/cameras'
-import { globeTopMm } from '../scene/framing'
+import { globeTopMm, sphereCentreHeightMm, sphereRadiusMm } from '../scene/framing'
+import { REST_POSE, makeShake, type GlobePose } from '../shake/table'
 import type { CameraKey, Cut } from './cut'
 import { barSeconds, beatSeconds, type ShotSpan } from './timeline'
 
@@ -28,16 +29,19 @@ export const MOVES = {
   sweepYawDeg: 1.6,
   settleBars: 1,
   closeHoldBars: 1,
-  shakeEaseIn: 0.025,
+  holdAimDropMm: 7.5,
+  holdAimBars: 1,
   breathYawDeg: 0.18,
   breathPitchDeg: 0.07,
   breathYawSeconds: 7.3,
   breathPitchSeconds: 5.1,
   loopYawDeg: 1.2,
   loopPitchDeg: 0.3,
+  loopCropMargin: 0.03,
 }
 
 const TAU = Math.PI * 2
+const RAD = Math.PI / 180
 const clamp01 = (v: number): number => (v <= 0 ? 0 : v >= 1 ? 1 : v)
 export const smoother = (v: number): number => {
   const u = clamp01(v)
@@ -125,14 +129,13 @@ export function moveAt(cut: Cut, t: number): Move {
   return all.at(-1)!
 }
 
-export function easeAt(cut: Cut, t: number): number {
-  let k = 0
-  for (const s of cut.shakes) {
-    if (t < s.startSec) break
-    if (t < s.endSec) return smoother((t - s.startSec) / s.seconds)
-    k = 1 - smoother((t - s.endSec) / (s.seconds * MOVES.settleBars))
-  }
-  return k
+export function aimDropAt(move: Move, t: number, away: number): number {
+  if (move.role === 'shake') return 0
+  const from = move.role === 'open' ? move.to : move.start
+  const room = move.back - from
+  if (room <= 0) return 0
+  const ramp = Math.min(((move.end - move.start) / move.span.bars) * MOVES.holdAimBars, room / 2)
+  return MOVES.holdAimDropMm * (1 - clamp01(away)) * smoother((t - from) / ramp) * smoother((move.back - t) / ramp)
 }
 
 export function breathAt(cut: Cut, t: number): number {
@@ -152,6 +155,7 @@ export function filmRig(cut: Cut, t: number): { rig: Rig; move: Move } {
   const move = moveAt(cut, t)
   const wide = rigOf(MOVES.wide)
   let rig: Rig
+  let away = 0
   if (move.role === 'open') {
     if (t < move.to) rig = mixRig(rigOf(move.camera), wide, pullCurve((t - move.from) / (move.to - move.from), MOVES.pullStartSpeed))
     else {
@@ -163,16 +167,17 @@ export function filmRig(cut: Cut, t: number): { rig: Rig; move: Move } {
     const v = clamp01((t - move.from) / (move.to - move.from))
     const a = MOVES.detailTravel
     const w = v < a ? smoother(v / a) : v > 1 - a ? smoother((1 - v) / a) : 1
+    away = w
     rig = mixRig(wide, rigOf(move.camera), w)
     rig.yawDeg += MOVES.sweepYawDeg * (2 * v - 1) * Math.sin(Math.PI * v)
   } else if (move.role === 'close') {
-    rig = mixRig(wide, rigOf(move.camera), smoother((t - move.from) / (move.to - move.from)))
+    away = smoother((t - move.from) / (move.to - move.from))
+    rig = mixRig(wide, rigOf(move.camera), away)
   } else if (move.role === 'plain') {
     const v = clamp01((t - move.from) / (move.to - move.from))
     rig = { ...wide, yawDeg: wide.yawDeg + MOVES.driftYawDeg * Math.sin(Math.PI * v) ** 2 }
   } else rig = { ...wide }
-  const ease = easeAt(cut, t)
-  if (ease > 0) rig.distanceMm *= 1 - MOVES.shakeEaseIn * ease
+  rig.aimHeightMm -= aimDropAt(move, t, away)
   const breath = breathAt(cut, t)
   if (breath > 0) {
     rig.yawDeg += breath * MOVES.breathYawDeg * Math.sin((TAU * t) / MOVES.breathYawSeconds + 1.3)
@@ -183,16 +188,101 @@ export function filmRig(cut: Cut, t: number): { rig: Rig; move: Move } {
 
 export const filmPose = (cut: Cut, t: number): Pose => poseOfRig(filmRig(cut, t).rig)
 
+/** How far the glass and the base reach from the middle of the frame, in half heights of the frame: to either side, up and down.
+ * A centred square crop ends at 1 to the side, a centred 4:3 crop at 4/3. */
+export function reachOf(pose: Pose, g: GlobePose): { side: number; top: number; foot: number } {
+  const ex = pose.position.x
+  const ey = pose.position.y
+  const ez = pose.position.z
+  let fx = pose.aim.x - ex
+  let fy = pose.aim.y - ey
+  let fz = pose.aim.z - ez
+  const fl = Math.hypot(fx, fy, fz)
+  fx /= fl
+  fy /= fl
+  fz /= fl
+  const rl = Math.hypot(fz, fx)
+  const rx = -fz / rl
+  const rz = fx / rl
+  const ux = -rz * fy
+  const uy = rz * fx - rx * fz
+  const uz = rx * fy
+  const k = Math.tan((pose.fovDeg * RAD) / 2)
+  const cz = Math.cos(g.tiltZ)
+  const sz = Math.sin(g.tiltZ)
+  const cx = Math.cos(g.tiltX)
+  const sx = Math.sin(g.tiltX)
+  const seen = (x: number, y: number, z: number): [number, number, number] => {
+    const ax = x * cz - y * sz
+    const ay = x * sz + y * cz
+    const wx = ax + g.x - ex
+    const wy = ay * cx - z * sx + g.y - ey
+    const wz = ay * sx + z * cx + g.z - ez
+    return [wx * rx + wz * rz, wx * ux + wy * uy + wz * uz, wx * fx + wy * fy + wz * fz]
+  }
+  const c = seen(0, sphereCentreHeightMm, 0)
+  const round = (off: number, depth: number): number => Math.asin(Math.min(1, sphereRadiusMm / Math.hypot(off, depth)))
+  let side = Math.tan(Math.abs(Math.atan2(c[0], c[2])) + round(c[0], c[2])) / k
+  let top = Math.tan(Math.atan2(c[1], c[2]) + round(c[1], c[2])) / k
+  let foot = Math.tan(round(c[1], c[2]) - Math.atan2(c[1], c[2])) / k
+  const half = config.globe.baseDiameterMm / 2
+  for (let i = 0; i < 72; i++) {
+    const a = (i / 72) * TAU
+    for (const y of [0, config.globe.baseHeightMm]) {
+      const b = seen(Math.cos(a) * half, y, Math.sin(a) * half)
+      side = Math.max(side, Math.abs(b[0] / b[2]) / k)
+      top = Math.max(top, b[1] / b[2] / k)
+      foot = Math.max(foot, -b[1] / b[2] / k)
+    }
+  }
+  return { side, top, foot }
+}
+
+let cardDistance: number | null = null
+
+/** The card is cropped to a centred 4:3 or to a centred square, so the loop's camera is the config's camera moved back along its own axis,
+ * by the least that keeps the glass and the base inside the square, and inside the frame, on every frame of the loop's shake.
+ * It stands there for the whole loop: the first frame is the card's still. */
+export function loopDistanceMm(): number {
+  if (cardDistance !== null) return cardDistance
+  const rig = rigOf(config.deliver.cardLoop.camera)
+  const path = makeShake('loop')
+  const fps = config.film.fps
+  const shaken: GlobePose[] = []
+  for (let i = 0; i < Math.round(barSeconds * fps); i++) shaken.push(path.poseAt(i / fps / beatSeconds))
+  const drift = [-1, 1].flatMap((y) => [-1, 1].map((p) => [y * MOVES.loopYawDeg, p * MOVES.loopPitchDeg] as const))
+  const most = (distanceMm: number): number => {
+    const at = { ...rig, distanceMm }
+    const locked = poseOfRig(at)
+    let m = 0
+    const add = (pose: Pose, g: GlobePose): void => {
+      const r = reachOf(pose, g)
+      m = Math.max(m, r.side, r.top, r.foot)
+    }
+    add(locked, REST_POSE)
+    for (const g of shaken) add(locked, g)
+    for (const [y, p] of drift) add(poseOfRig({ ...at, yawDeg: at.yawDeg + y, pitchDeg: at.pitchDeg + p }), REST_POSE)
+    return m
+  }
+  const room = 1 - MOVES.loopCropMargin
+  let d = rig.distanceMm
+  for (let i = 0; i < 12; i++) {
+    const m = most(d)
+    if (m <= room) break
+    d *= m / room
+  }
+  cardDistance = d
+  return d
+}
+
 export function loopRig(t: number): Rig {
   const c = config.deliver.cardLoop
   const period = c.seconds
   const u = ((t % period) + period) % period
   const rig = rigOf(c.camera)
+  rig.distanceMm = loopDistanceMm()
   const s0 = c.shakeStartSeconds
   const s1 = s0 + barSeconds
-  const settle = Math.min(barSeconds, (period - s1) / 2)
-  const ease = u < s0 ? 0 : u < s1 ? smoother((u - s0) / barSeconds) : 1 - smoother((u - s1) / settle)
-  if (ease > 0) rig.distanceMm *= 1 - MOVES.shakeEaseIn * ease
   const env = u < s0 ? smoother((s0 - u) / Math.min(beatSeconds, s0)) : u < s1 ? 0 : smoother((u - s1) / Math.min(2 * beatSeconds, period - s1))
   if (env > 0) {
     rig.yawDeg += env * MOVES.loopYawDeg * Math.sin((TAU * u) / period + 0.6)
@@ -230,7 +320,7 @@ const focusWords = (r: Rig): string => `${n1(r.distanceMm + r.focusShiftMm)} mm 
 export function shotNotes(cut: Cut): ShotNote[] {
   const fps = cut.fps
   const frame = (t: number) => Math.round(t * fps)
-  const pc = n1(MOVES.shakeEaseIn * 100)
+  const drop = `lowers its aim by up to ${n1(MOVES.holdAimDropMm)} mm`
   return movesOf(cut).map((m): ShotNote => {
     const s = m.span
     const a = filmRig(cut, s.first / fps).rig
@@ -245,7 +335,7 @@ export function shotNotes(cut: Cut): ShotNote[] {
       keys.push({ frame: frame(m.to), what: `the ${MOVES.wide} camera reached` })
       keys.push({ frame: frame((m.to + m.back) / 2), what: 'the widest point of the drift' })
       keys.push({ frame: frame(m.back), what: `back at ${MOVES.wide}, ${MOVES.backBeats} beat before the shake` })
-      move = `Starts on the ${m.camera} camera already moving and pulls back to ${MOVES.wide} over the first ${MOVES.pullBars} bars, fast at first and easing to nothing. Then an arc of ${n1(MOVES.driftYawDeg)} degrees to one side and back.`
+      move = `Starts on the ${m.camera} camera already moving and pulls back to ${MOVES.wide} over the first ${MOVES.pullBars} bars, fast at first and easing to nothing. Then an arc of ${n1(MOVES.driftYawDeg)} degrees to one side and back, which ${drop} and gives it back.`
       lens = `${lensWords(a)}, opening to ${n1(rigOf(MOVES.wide).apertureMm)} mm at ${MOVES.wide}`
       focus = `${focusWords(a)}; at ${MOVES.wide} ${focusWords(rigOf(MOVES.wide))}`
     } else if (m.role === 'detail') {
@@ -254,18 +344,18 @@ export function shotNotes(cut: Cut): ShotNote[] {
       keys.push({ frame: frame(m.from + span * MOVES.detailTravel), what: `the ${m.camera} camera reached` })
       keys.push({ frame: frame(m.from + span * (1 - MOVES.detailTravel)), what: `leaving ${m.camera}` })
       keys.push({ frame: frame(m.back), what: `back at ${MOVES.wide}, ${MOVES.backBeats} beat before the shake` })
-      move = `Settles from the shake over the first bar, then one slow move to the ${m.camera} camera and back, with a sweep of ${n1(MOVES.sweepYawDeg)} degrees across it so the camera never rests there.`
+      move = `Starts on ${MOVES.wide} and ${drop} as the globe settles, then one slow move to the ${m.camera} camera and back, with a sweep of ${n1(MOVES.sweepYawDeg)} degrees across it so the camera never rests there.`
       lens = `${lensWords(a)} at ${MOVES.wide}; ${lensWords(rigOf(m.camera))} at ${m.camera}`
       focus = `${focusWords(a)}; at ${m.camera} ${focusWords(rigOf(m.camera))}`
     } else if (m.role === 'close') {
       keys.push({ frame: frame(m.from), what: `the push toward ${m.camera} begins` })
       keys.push({ frame: frame(m.to), what: `the ${m.camera} camera reached, held to the end` })
-      move = `Settles from the shake over the first bar, then one unbroken push from ${MOVES.wide} to the ${m.camera} camera, which is held for the last bar. The last frame is the camera of frame 0.`
+      move = `Starts on ${MOVES.wide} and ${drop} over the first bar, then one unbroken push from ${MOVES.wide} to the ${m.camera} camera, which is held for the last bar. The last frame is the camera of frame 0.`
       lens = `${lensWords(a)}, closing to ${n1(rigOf(m.camera).apertureMm)} mm at ${m.camera}`
       focus = `${focusWords(a)}; at ${m.camera} ${focusWords(rigOf(m.camera))}`
     } else if (m.role === 'shake') {
       keys.push({ frame: frame(m.end), what: 'the landing, the first frame of the next shot' })
-      move = `Locked at ${MOVES.wide}. Only the globe moves. The camera closes ${pc} percent of its distance over the bar and gives it back over the bar after the landing.`
+      move = `Locked at ${MOVES.wide} on every frame, with no ease in. Only the globe moves.`
       focus = `${focusWords(a)}: it stays where ${MOVES.wide} holds it, on the glass, and does not follow the globe`
     } else {
       keys.push({ frame: frame(m.back), what: `back at ${MOVES.wide}` })

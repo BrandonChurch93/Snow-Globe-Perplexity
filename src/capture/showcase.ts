@@ -12,7 +12,7 @@ import { framingOf, type Framing } from '../scene/framing'
 import { judgedList, loopPlan, type JudgedEntry } from '../film/judged'
 import { partChange, SEASONAL_PARTS } from '../shake/change'
 import { sampleSdf } from '../core/sdf'
-import { INNER_R } from '../particles/spikeSim'
+import { INNER_R } from '../particles/engine/sdf'
 import { openingPlan } from '../film/opening'
 import { drawOpening } from '../film/openingStandIn'
 import { cutList, filmCut, type Cut } from '../film/cut'
@@ -21,8 +21,9 @@ import { loopGlobe, type LoopParticles, type SourceSwitch } from '../film/loop'
 import { loopMoment, timelineMoment } from '../film/moments'
 import { flaggedStandIns } from '../core/standins'
 import { levelById, stageQuality, topLevel } from '../core/quality'
-import { livePose } from '../app/framing'
+import { livePose, roomUnder } from '../app/framing'
 import { Painter } from '../app/painter'
+import { Replay, scriptPlan, type ScriptFrame, type ScriptPlan } from '../app/replay'
 import parts from '../../parts/PARTS.json'
 
 export interface StillSpec {
@@ -83,6 +84,9 @@ export interface Dev {
   cut(): { list: Record<string, unknown>; shots: ShotNote[] }
   renderTestShakeFrame(frameIndex: number, tier: string): Promise<void>
   renderShakeMoment(shot: string, at: ShakeMoment, tier: string): Promise<void>
+  appScript(name: string, ask?: AppFrameAsk): ScriptPlan
+  renderAppFrame(name: string, frameIndex: number, level: string, ask?: AppFrameAsk): Promise<ScriptFrame & { camera: number[]; globe: { heightMm: number; tiltDeg: number[] }; level: string }>
+  interfaceState(state: string, ask?: InterfaceAsk): Promise<InterfaceRecord>
 }
 
 export type ShakeMoment = 'swap' | 'landing' | 'landed' | 'settle'
@@ -102,9 +106,35 @@ interface Register {
 
 const DEG = 180 / Math.PI
 
+export interface InterfaceAsk {
+  control?: string
+  phase?: number
+  season?: string
+}
+
+export interface InterfaceRecord {
+  state: string
+  control: string
+  season: string
+  target: string | null
+  phase: number | null
+  rect: number[] | null
+  at: number[] | null
+  focusVisible: boolean
+  paused: number
+  shown: boolean
+}
+
+export interface AppFrameAsk {
+  from?: string
+  to?: string
+}
+
 export interface Overlay {
   show(season: string, state: string): Promise<void>
+  put(state: string, ask: InterfaceAsk): Promise<InterfaceRecord>
   hide(): void
+  controlsPx(): number | null
 }
 
 export interface Deps {
@@ -156,7 +186,10 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
     return t
   }
 
+  let replay: { key: string; run: Replay } | null = null
+  const apart: Timeline = { id: 'replay', startSeason: config.defaultSeason, events: [] }
   const plain = () => {
+    replay = null
     if (opening) opening.hidden = true
     overlay.hide()
   }
@@ -307,7 +340,12 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
         return
       }
       const onScreen = (spec.interface || !!spec.live) && spec.camera === MOVES.wide
-      const pose = onScreen ? livePose(format.width / format.height) : poseById(spec.camera)
+      let under = 0
+      if (onScreen && spec.interface) {
+        await overlay.show(spec.season, spec.state)
+        under = roomUnder(format.height, overlay.controlsPx())
+      }
+      const pose = onScreen ? livePose(format.width / format.height, 0, 0, under) : poseById(spec.camera)
       if (spec.live) await livePicture(along(stillTl(spec.season)), stateSeconds(spec.state), pose, spec.live)
       else await picture(along(stillTl(spec.season)), stateSeconds(spec.state), 0, () => pose, samples, 0)
       if (spec.interface) await overlay.show(spec.season, spec.state)
@@ -391,7 +429,43 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
         }
         return { inside, outside, total: sim.count }
       },
+      appScript: (name, ask = {}) => scriptPlan(name, ask.from, ask.to),
+      async renderAppFrame(name, frameIndex, level, ask = {}) {
+        await ready
+        const plan = scriptPlan(name, ask.from, ask.to)
+        const q = levelById(level)
+        const key = [plan.name, plan.from, plan.to, format.id].join(':')
+        const index = Math.max(0, Math.min(plan.frameCount - 1, Math.round(frameIndex)))
+        const had = replay
+        plain()
+        particles.use(null)
+        if (had && had.key === key && index >= had.run.frame) replay = had
+        else {
+          await driver.seek(apart, 1 / config.sim.stepHz)
+          replay = { key, run: new Replay(driver.sim, plan, format.width / format.height) }
+        }
+        const run = replay.run
+        run.advanceTo(index)
+        lastSeason = run.session.season
+        const pose = run.pose(roomUnder(format.height))
+        const moment = run.moment()
+        stage.setQuality?.(stageQuality(q))
+        gfx.renderer.info.reset()
+        painter.size(format.width, format.height)
+        painter.flat = diag !== ''
+        painter.paint(pose, moment)
+        finish(gfx)
+        count(1)
+        stage.setQuality?.(stageQuality(topLevel))
+        const g = moment.globe
+        return { ...run.record(), camera: cameraNumbers(pose), globe: { heightMm: g.y, tiltDeg: [g.tiltX * DEG, g.tiltZ * DEG] }, level: q.id }
+      },
+      async interfaceState(state, ask = {}) {
+        await ready
+        return overlay.put(state, ask)
+      },
       async simcache(what, budgetSeconds = Infinity, fromSeconds = 0) {
+        replay = null
         const t0 = now()
         const every = config.sim.checkpointSeconds
         const longest = Math.max(...Object.keys(config.states).map((k) => stateSeconds(k.replace(/Seconds$/, ''))))
@@ -437,6 +511,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
         await picture(along(getFilm()), frameTime(i), shutter, hero, tierSamples(t), i + 1)
       },
       async simulate(fromSeconds, seconds) {
+        replay = null
         const tl = stillTl(config.defaultSeason)
         particles.use(null)
         await driver.seek(tl, fromSeconds)

@@ -395,7 +395,9 @@ export class Liquid {
       const nx = g[o]! * a00 + g[o1]! * b00 + g[o2]! * a10 + g[o3]! * b10 + g[o4]! * a01 + g[o5]! * b01 + g[o6]! * a11 + g[o7]! * b11
       const ny = g[o + 1]! * a00 + g[o1 + 1]! * b00 + g[o2 + 1]! * a10 + g[o3 + 1]! * b10 + g[o4 + 1]! * a01 + g[o5 + 1]! * b01 + g[o6 + 1]! * a11 + g[o7 + 1]! * b11
       const nz = g[o + 2]! * a00 + g[o1 + 2]! * b00 + g[o2 + 2]! * a10 + g[o3 + 2]! * b10 + g[o4 + 2]! * a01 + g[o5 + 2]! * b01 + g[o6 + 2]! * a11 + g[o7 + 2]! * b11
-      const radial = (nx * x + ny * y + nz * z) * INV_R2
+      const qc = q > 1 ? 1 : q
+      const q4 = qc * qc * qc * qc
+      const radial = (nx * x + ny * y + nz * z) * INV_R2 * q4 * q4
       ux += nx - x * radial
       uy += ny - y * radial
       uz += nz - z * radial
