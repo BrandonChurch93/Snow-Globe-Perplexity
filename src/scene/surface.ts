@@ -34,7 +34,7 @@ export const SLAB = {
   dustAlbedo: 0.3,
   vein: 1.1,
   cloud: 0.7,
-  veil: 0.45,
+  veil: 0.65,
   veilAlbedo: 0.012,
   f0: 0.05,
   fresnelPower: 4.2,
@@ -46,7 +46,9 @@ export const SLAB = {
   mirrorTaps: 25,
   mirrorMaxPx: 0.075,
   farPathMm: 2600,
-  farShare: 0.45,
+  farShare: 0.8,
+  sideShare: 0.3,
+  cloudGloss: 0.45,
   fadeHeightMm: 170,
   fadeFloor: 0.42,
   poolGain: 4,
@@ -67,6 +69,67 @@ float slabInside(vec2 p) {
   vec2 q = vec2(p.x * ${f(Math.cos(turn))} - p.y * ${f(Math.sin(turn))}, p.x * ${f(Math.sin(turn))} + p.y * ${f(Math.cos(turn))});
   vec2 d = abs(q - vec2(0.0, ${f((SLAB_SHAPE.nearMm - SLAB_SHAPE.farMm) / 2)})) - vec2(${f(SLAB_SHAPE.halfWidthMm)}, ${f((SLAB_SHAPE.nearMm + SLAB_SHAPE.farMm) / 2)}) + ${f(SLAB_SHAPE.cornerMm)};
   return ${f(SLAB_SHAPE.cornerMm)} - length(max(d, 0.0)) - min(max(d.x, d.y), 0.0);
+}
+`
+
+export const SLAB_LIGHT_GLSL = `
+uniform vec3 uKeyAt;
+uniform vec3 uRimAt;
+uniform vec4 uFoot;
+uniform vec4 uLean;
+uniform vec3 uPool;
+float slabCapsule(vec2 p, vec2 a, vec2 b) {
+  vec2 pa = p - a;
+  vec2 ba = b - a;
+  float h = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-4), 0.0, 1.0);
+  return length(pa - ba * h);
+}
+vec2 slabCast(vec2 at, vec2 foot, float lift, vec2 along) {
+  float rise = ${f(G.baseHeightMm)};
+  float baseFar = length(along) * (lift + rise);
+  float baseSoft = 2.5 + 0.11 * baseFar + 0.5 * lift;
+  float baseShade = 1.0 - smoothstep(-baseSoft, baseSoft, slabCapsule(at, foot - along * lift, foot - along * (lift + rise)) - uFoot.z);
+  vec2 ball = at - (foot - along * (lift + ${f(centreHeight)}));
+  vec2 dirL = along / max(length(along), 1e-3);
+  float stretch = sqrt(1.0 + dot(along, along));
+  float ballAt = length(vec2(dot(ball, dirL) / stretch, dot(ball, vec2(-dirL.y, dirL.x)))) / ${f(globeRadius)};
+  return vec2(1.0 - baseShade, ballAt);
+}
+float slabShade(vec2 at) {
+  float lift = uFoot.w;
+  float gap = length(at - uFoot.xy - uLean.xy) - uFoot.z;
+  float tight = exp(-max(gap, 0.0) / (${f(SLAB.contactMm)} + 0.9 * lift)) / (1.0 + 0.07 * lift);
+  float wide = (1.0 - smoothstep(-0.25 * uFoot.z, uFoot.z * (${f(SLAB.shadowReach)} + 0.035 * lift), gap)) * 0.6 / (1.0 + 0.045 * lift);
+  float under = (1.0 - smoothstep(-5.0 - lift, 1.0 + 0.6 * lift, gap)) / (1.0 + 0.05 * lift);
+  return (1.0 - 0.85 * tight) * (1.0 - wide) * (1.0 - 0.9 * under);
+}
+void slabLight(vec3 P, out vec3 keyDir, out float keyGain, out vec3 rimDir, out float rimGain, out float occl, out vec3 warm) {
+  float lift = uFoot.w;
+  vec2 foot = uFoot.xy + uLean.xy;
+  float d = length(P.xz - foot);
+  vec3 heart = vec3(0.0, ${f(centreHeight)}, 0.0);
+  vec3 toKey = uKeyAt - P;
+  float keyFar = length(toKey);
+  keyDir = toKey / keyFar;
+  vec3 keyAxis = uKeyAt - heart;
+  float keyReach = length(keyAxis);
+  float cone = exp(-(1.0 - dot(keyDir, keyAxis / keyReach)) / ${f(KEY_CONE)});
+  vec2 keyCast = slabCast(P.xz, foot, lift, keyDir.xz / max(keyDir.y, 0.25));
+  float keyBall = 0.5 * (1.0 - smoothstep(0.72, 1.12, keyCast.y));
+  float caustic = 2.2 * exp(-keyCast.y * keyCast.y / 0.06);
+  keyGain = cone * keyReach * keyReach / (keyFar * keyFar) * keyCast.x * (1.0 - keyBall + caustic);
+  vec3 toRim = uRimAt - P;
+  float rimFar = length(toRim);
+  rimDir = toRim / rimFar;
+  float rimReach = length(uRimAt - heart);
+  vec2 rimCast = slabCast(P.xz, foot, lift, rimDir.xz / max(rimDir.y, 0.25));
+  float rimBall = 0.5 * (1.0 - smoothstep(0.72, 1.12, rimCast.y));
+  rimGain = min(rimReach * rimReach / (rimFar * rimFar), ${f(RIM_NEAR_GAIN)}) * rimCast.x * (1.0 - rimBall);
+  float source = ${f(centreHeight)} + lift;
+  float glowFall = pow(source * source / (source * source + d * d), 1.5);
+  float glowRise = smoothstep(uFoot.z - 4.0, uFoot.z + ${f(SLAB.poolRiseMm)} + lift, d);
+  warm = uPool * (${f(SLAB.poolGain)} * glowFall * glowRise);
+  occl = slabShade(P.xz);
 }
 `
 
@@ -94,19 +157,22 @@ export const surfaceUniforms = {
   uStone: { value: dark as THREE.Texture },
 }
 
+export const slabLightUniforms = {
+  uKeyAt: surfaceUniforms.uKeyAt,
+  uRimAt: surfaceUniforms.uRimAt,
+  uFoot: surfaceUniforms.uFoot,
+  uLean: surfaceUniforms.uLean,
+  uPool: surfaceUniforms.uPool,
+}
+
 const SLAB_FRAG = `${ROOM_GLSL}
 ${FAR_GLSL}
 ${SLAB_SHAPE_GLSL}
 uniform vec3 uSlab;
 uniform vec3 uKeyDir;
 uniform vec3 uKeyCol;
-uniform vec3 uKeyAt;
-uniform vec3 uRimAt;
 uniform vec3 uRimCol;
 uniform vec3 uSky;
-uniform vec4 uFoot;
-uniform vec4 uLean;
-uniform vec3 uPool;
 uniform vec4 uReflect;
 uniform vec3 uBaked;
 uniform sampler2D uMirror;
@@ -121,23 +187,7 @@ float discShare(float x) {
   x = clamp(x, -1.0, 1.0);
   return 0.5 + (asin(x) + x * sqrt(1.0 - x * x)) * 0.31830989;
 }
-float capsule(vec2 p, vec2 a, vec2 b) {
-  vec2 pa = p - a;
-  vec2 ba = b - a;
-  float h = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-4), 0.0, 1.0);
-  return length(pa - ba * h);
-}
-vec2 castBy(vec2 at, vec2 foot, float lift, vec2 along) {
-  float rise = ${f(G.baseHeightMm)};
-  float baseFar = length(along) * (lift + rise);
-  float baseSoft = 2.5 + 0.11 * baseFar + 0.5 * lift;
-  float baseShade = 1.0 - smoothstep(-baseSoft, baseSoft, capsule(at, foot - along * lift, foot - along * (lift + rise)) - uFoot.z);
-  vec2 ball = at - (foot - along * (lift + ${f(centreHeight)}));
-  vec2 dirL = along / max(length(along), 1e-3);
-  float stretch = sqrt(1.0 + dot(along, along));
-  float ballAt = length(vec2(dot(ball, dirL) / stretch, dot(ball, vec2(-dirL.y, dirL.x)))) / ${f(globeRadius)};
-  return vec2(1.0 - baseShade, ballAt);
-}
+${SLAB_LIGHT_GLSL}
 void main() {
   vec3 P = vStageWorld;
   vec3 toP = P - cameraPosition;
@@ -167,43 +217,18 @@ void main() {
   float cloud = stone.g;
   float veil = clamp(stone.b + 0.35 * cloud, 0.0, 1.0);
 
-  vec2 q = P.xz - uFoot.xy - uLean.xy;
-  float d = length(q);
   float lift = uFoot.w;
-  float gap = d - uFoot.z;
-  float tight = exp(-max(gap, 0.0) / (${f(SLAB.contactMm)} + 0.9 * lift)) / (1.0 + 0.07 * lift);
-  float wide = (1.0 - smoothstep(-0.25 * uFoot.z, uFoot.z * (${f(SLAB.shadowReach)} + 0.035 * lift), gap)) * 0.6 / (1.0 + 0.045 * lift);
-  float under = (1.0 - smoothstep(-5.0 - lift, 1.0 + 0.6 * lift, gap)) / (1.0 + 0.05 * lift);
-  float occl = (1.0 - 0.85 * tight) * (1.0 - wide) * (1.0 - 0.9 * under);
-
-  vec2 foot = uFoot.xy + uLean.xy;
-  vec3 heart = vec3(0.0, ${f(centreHeight)}, 0.0);
-  vec3 toKey = uKeyAt - P;
-  float keyFar = length(toKey);
-  vec3 lk = toKey / keyFar;
-  vec3 keyAxis = uKeyAt - heart;
-  float keyReach = length(keyAxis);
-  float cone = exp(-(1.0 - dot(lk, keyAxis / keyReach)) / ${f(KEY_CONE)});
-  vec2 keyCast = castBy(P.xz, foot, lift, lk.xz / max(lk.y, 0.25));
-  float keyBall = 0.5 * (1.0 - smoothstep(0.72, 1.12, keyCast.y));
-  float caustic = 2.2 * exp(-keyCast.y * keyCast.y / 0.06);
-  vec3 key = uKeyCol * (max(dot(n, lk), 0.0) * cone * keyReach * keyReach / (keyFar * keyFar) * keyCast.x * (1.0 - keyBall + caustic));
-  vec3 toRim = uRimAt - P;
-  float rimFar = length(toRim);
-  vec3 lr = toRim / rimFar;
-  float rimReach = length(uRimAt - heart);
-  vec2 rimCast = castBy(P.xz, foot, lift, lr.xz / max(lr.y, 0.25));
-  float rimBall = 0.5 * (1.0 - smoothstep(0.72, 1.12, rimCast.y));
-  key += uRimCol * (max(dot(n, lr), 0.0) * min(rimReach * rimReach / (rimFar * rimFar), ${f(RIM_NEAR_GAIN)}) * rimCast.x * (1.0 - rimBall));
-
-  float source = ${f(centreHeight)} + lift;
-  float glowFall = pow(source * source / (source * source + d * d), 1.5);
-  float glowRise = smoothstep(uFoot.z - 4.0, uFoot.z + ${f(SLAB.poolRiseMm)} + lift, d);
-  vec3 warm = uPool * (${f(SLAB.poolGain)} * glowFall * glowRise);
 
   vec3 albedo = uSlab * (1.0 + ${f(SLAB.vein)} * vein + ${f(SLAB.cloud)} * cloud) + vec3(0.8, 0.95, 1.1) * (${f(SLAB.veilAlbedo)} * veil);
   vec3 scatter = albedo + vec3(${f(SLAB.dustAlbedo)}) * dust;
-  vec3 col = scatter * (key + uSky * occl + warm * occl);
+  vec3 keyDir;
+  vec3 rimDir;
+  vec3 warm;
+  float keyGain;
+  float rimGain;
+  float occl;
+  slabLight(P, keyDir, keyGain, rimDir, rimGain, occl, warm);
+  vec3 col = scatter * (uKeyCol * (max(dot(n, keyDir), 0.0) * keyGain) + uRimCol * (max(dot(n, rimDir), 0.0) * rimGain) + (uSky + warm) * occl);
 
   vec3 r0 = vec3(v.x, -v.y, v.z);
   vec2 ground = v.xz / max(length(v.xz), 1e-4);
@@ -226,6 +251,10 @@ void main() {
   float height = tGlobe * r0.y;
   float fade = mix(1.0, mix(1.0, ${f(SLAB.fadeFloor)}, smoothstep(0.0, ${f(SLAB.fadeHeightMm)}, height)), sil);
 
+  float tUnder = lift / max(r0.y, 1e-3);
+  float underSoft = 1.0 + ${f(SLAB.roughSpread)} * tUnder;
+  float underHit = (1.0 - smoothstep(uFoot.z - underSoft, uFoot.z + underSoft, length(P.xz + r0.xz * tUnder - uFoot.xy))) * smoothstep(0.0, 0.5, lift);
+
   vec3 seen = vec3(0.0);
   float held = 0.0;
   if (uReflect.x > 0.5) {
@@ -239,7 +268,8 @@ void main() {
     for (int i = 0; i < ${SLAB.mirrorTaps}; i++) {
       float u = float(i) / ${f(SLAB.mirrorTaps - 1)} * 2.0 - 1.0;
       float w = exp(-u * u / (2.0 * span * span)) + ${f(tail)} * span * (1.0 - u * u);
-      vec4 m = textureLod(uMirror, st + (kick + vec2(0.0, u * tall)) * uMirrorSize.xy, lod);
+      float across = (fract(float(i) * 0.6180339887 + 0.25) * 2.0 - 1.0) * ${f(SLAB.sideShare)} * tall;
+      vec4 m = textureLod(uMirror, st + (kick + vec2(across, u * tall)) * uMirrorSize.xy, lod);
       seen += w * m.rgb * mix((1.0 - m.a) * ${f(SLAB.farShare)}, 1.0, sil);
       held += w * m.a * sil;
       total += w;
@@ -258,8 +288,10 @@ void main() {
     seen += lit * body + (uPool * 0.35 + uSky * 0.05) * glass;
     held = clamp(body + glass, 0.0, 1.0);
   }
+  seen *= 1.0 - underHit;
+  held = max(held, underHit);
   vec3 room = stageRoomSeen(r, ${f(SLAB.roomRough)});
-  col += (seen * fade + room * (1.0 - held)) * fres * (1.0 - 0.6 * dust) * (1.0 - ${f(SLAB.veil)} * veil);
+  col += (seen * fade + room * (1.0 - held)) * fres * (1.0 - 0.6 * dust) * (1.0 - ${f(SLAB.veil)} * veil) * (1.0 - ${f(SLAB.cloudGloss)} * (1.0 - cloud));
 
   gl_FragColor = vec4(col * cover, 1.0 - cover);
   if (uDiag != 0) {
