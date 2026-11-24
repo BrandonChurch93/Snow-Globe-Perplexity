@@ -78,9 +78,9 @@ const ROOTS: readonly { angle: number; reach: number; width: number }[] = [
 
 const PADS: readonly { at: Vec3; size: Vec3; lean: number; tip: number }[] = [
   { at: [0.5, 39.2, 0], size: [6.4, 2.4, 4.6], lean: 0.03, tip: 0.12 },
-  { at: [-4.6, 35.6, 2.4], size: [7.4, 2.8, 4.8], lean: -0.1, tip: 0.15 },
-  { at: [3.8, 35.4, 3.2], size: [5.6, 2.7, 4.4], lean: 0.12, tip: 0.2 },
-  { at: [-8.4, 34.3, 1], size: [6, 2.5, 4.6], lean: -0.12, tip: 0.12 },
+  { at: [-6.6, 36.9, 2.4], size: [6.6, 2.8, 4.8], lean: -0.16, tip: 0.15 },
+  { at: [3.8, 36, 3.2], size: [5.6, 2.7, 4.4], lean: 0.12, tip: 0.2 },
+  { at: [-8, 34, 1], size: [6, 2.5, 4.6], lean: -0.12, tip: 0.12 },
   { at: [7.8, 33.8, 3.6], size: [5.2, 2.8, 4.4], lean: 0.32, tip: 0.15 },
   { at: [11.6, 30.8, 1.2], size: [3.9, 2.9, 3.8], lean: 0.42, tip: 0.15 },
   { at: [2.6, 33.6, 0], size: [6.2, 1.8, 4.4], lean: 0.12, tip: 0 },
@@ -341,7 +341,7 @@ const DOME = 0.3
 const BODY = { blend: 0.5, bias: 0.4 }
 const TOP_DROP = 1.56
 const CAP = { lift: 1.05, thick: 0.25, cover: 1.08, fore: 0.12, lee: 0.12, skew: 0.45, rim: 0.98, brow: 0.5, swell: 0.42, ripple: 0.24, lump: 0.16, flat: 2.4, gap: 2.2, gapFrom: 0.24, gapTo: 0.8, sink: 0.1, slope: 0.75, depth: 0.25, lip: 0.4, droop: 0.3, hem: 1.3 }
-const LOADS: readonly (readonly [number, number])[] = [[0.85, 1], [1, 1], [0.95, 1], [0.9, 1], [0.9, 0.95], [0.85, 1.05], [0.35, 0.5], [0.85, 1.02], [0.8, 1], [0.85, 1.02]]
+const LOADS: readonly (readonly [number, number])[] = [[1, 1], [1.25, 1], [1.2, 1], [0.9, 1], [1.1, 0.95], [0.95, 1.05], [0.35, 0.5], [0.95, 1.02], [0.8, 1], [0.95, 1.02]]
 const wobble = (x: number, h: number, z: number): number => 0.16 * Math.sin(1.9 * x + 0.3 * h) * Math.sin(2.3 * h + 1.1 * z) * Math.sin(1.7 * z + 0.5 * x) + 0.07 * Math.sin(4.3 * x + 1) * Math.sin(3.9 * h + 2) * Math.sin(4.7 * z)
 const dome = (rim: number): number => 1 - DOME * Math.pow(rim, 1.5)
 
