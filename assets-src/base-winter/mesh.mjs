@@ -583,7 +583,7 @@ export function buildIce(list) {
   const far = [0, 0.05, 0.2, 0.4, 0.6, 0.8, 0.95, 1]
   for (const it of list) {
     const back = front(it.az) > 135
-    const around = back ? 5 : 8
+    const around = back ? 5 : 12
     const ts = back ? far : near
     const root = place(P.ICE.r + 0.25 * (rng() - 0.5), P.ICE.h + 0.5 + P.ICE.up, it.az)
     const out = dir(1, 0, it.az)
@@ -601,14 +601,14 @@ export function buildIce(list) {
     const swell = rng() < 0.6 ? 0.04 + 0.1 * rng() : 0
     const bead = rng() < 0.45 ? 0.5 + 0.5 * rng() : 0
     const total = it.length + 0.5 + P.ICE.up
-    const neck = Math.min(0.12, 1.5 / total)
+    const neck = Math.min(0.16, 1.8 / total)
     const axis = (t) => add3(add3(add3(root, [0, -1, 0], total * t), out, it.lean * Math.pow(t, 1.3)), side, swing * t * t + bend * Math.sin(Math.PI * t) * (1 - t))
     const radius = (t) => {
       const body = it.radius * (0.95 * Math.pow(1 - t, taper) + 0.05) * (1 + swell * Math.exp(-(((t - belly) / 0.12) ** 2)))
       const ripple = 1 + wave * Math.sin(2 * Math.PI * ((t * total) / pitch + k1)) * smooth(0.02, 0.15, t) + 0.045 * Math.sin(2 * Math.PI * ((t * total) / 2.1 + k2)) + 0.02 * Math.sin(2 * Math.PI * ((t * total) / 1.1 + 3 * k1))
       const drop = bead * 0.16 * it.radius * Math.exp(-(((t - 0.955) / 0.03) ** 2))
       const cap = t > 0.965 ? Math.sqrt(Math.max(1 - ((t - 0.965) / 0.035) ** 2, 0)) : 1
-      const shoulder = t < neck ? 0.72 + 0.28 * Math.sin((Math.PI / 2) * (t / neck)) : 1
+      const shoulder = t < neck ? 0.62 + 0.38 * Math.sin((Math.PI / 2) * (t / neck)) : 1
       return (Math.max(body * ripple, 0) + drop) * cap * shoulder
     }
     const surface = (al, t) => {
