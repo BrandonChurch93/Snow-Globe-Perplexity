@@ -1,0 +1,34 @@
+{
+  "engineHash": "c5811ea1c5834970",
+  "seasonHashes": {
+    "winter": "ffdfb619f574e8a0",
+    "spring": "9163f04bfdaf85ef",
+    "summer": "9163f04bfdaf85ef",
+    "fall": "9163f04bfdaf85ef"
+  },
+  "format": "preview",
+  "tier": "review",
+  "assets": "full",
+  "diagnostic": "",
+  "browser": "Google Chrome for Testing 147.0.7727.15",
+  "graphics": "software",
+  "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB",
+  "time": "2026-11-24T18:28:13.798Z",
+  "diag": "",
+  "spec": {
+    "source": "test",
+    "index": 168
+  },
+  "frameSeconds": 2.8,
+  "shot": "test",
+  "season": "winter",
+  "seconds": 34.601,
+  "timings": {
+    "simMs": 81.70000000298023,
+    "drawMs": 34339.69999999739,
+    "samples": 8,
+    "steps": 8
+  },
+  "precision": "float32",
+  "errors": []
+}
