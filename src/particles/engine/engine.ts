@@ -21,6 +21,9 @@ const R2 = R * R
 const SKIN = 0.02
 const LANDS_LEAST = 0.75
 const FLOATS_LEAST = 0.3
+// the calm snowfall is under way before the first frame: a flake that keeps falling starts in the air for the share of its round that it falls
+// (this many mm of fall at its own speed against its mean wait on the ground), anywhere on its way down; the others wait what a waiting flake has left
+const CALM_FALL_MM = 48
 const PUSHES = 3
 export const COVER_N = 96
 export const COVER_SPAN_MM = 2 * R
@@ -551,11 +554,13 @@ export class ParticleEngine {
   }
 
   get pos(): Float32Array {
+    if (this.pending) this.reset()
     if (this.behind) this.present()
     return this.xyz
   }
 
   get prev(): Float32Array {
+    if (this.pending) this.reset()
     if (this.behind) this.present()
     return this.old
   }
@@ -736,7 +741,9 @@ export class ParticleEngine {
     const snows = u5 < b.renew && b.renewMmS[1] > 0
     const fall = lands ? b.settleMmS : snows ? b.renewMmS : b.sinkMmS
     if (b.sizeSigma > 0) {
-      const raw = b.sizeMedianMm * Math.exp(b.sizeSigma * bell(u1, unit(hash2(i, 211 + k))))
+      const wide = bell(u1, unit(hash2(i, 211 + k)))
+      // what keeps falling from the top is the fine share: the big flakes settle first and stay down
+      const raw = b.sizeMedianMm * Math.exp(b.sizeSigma * (snows && wide > 0 ? -wide : wide))
       const size = raw < b.sizeMm[0] ? b.sizeMm[0] : raw > b.sizeMm[1] ? b.sizeMm[1] : raw
       const spread = lands || snows ? b.sinkSigma : size > b.sizeMedianMm ? b.hangSigma * Math.sqrt(b.sizeMedianMm / size) : b.hangSigma
       const speed = Math.sqrt(fall[0] * fall[1]) * Math.pow(size / b.sizeMedianMm, b.sinkPower) * Math.exp(spread * bell(u2, unit(hash2(i, 231 + k))))
@@ -979,9 +986,13 @@ export class ParticleEngine {
         this.opacity[i] = this.fade[i]!
         this.phase[i] = a * TAU
       } else if (K_REST[k] === STATE_REST || (K_REST[k] === STATE_SNAG && this.sink[i]! > TABLE_OF[k]!.sinkMmS[1])) {
-        this.drop(i, k, G)
-        this.state[i] = K_REST[k]!
-        if (this.renews[i]) this.stamp[i] = Math.floor(unit(hash2(i, 33)) * TABLE_OF[k]!.dwellSeconds[1] * HZ)
+        const dw = TABLE_OF[k]!.dwellSeconds
+        if (this.renews[i] && TABLE_OF[k]!.renewMmS[1] > 0 && unit(hash2(i, 35)) * (CALM_FALL_MM + (0.5 * (dw[0] + dw[1]) + 1 / INV_FADE_OUT) * this.sink[i]!) < CALM_FALL_MM) this.afloat(i, 37, G, 1.5, GROUND_Y + 1, WALL)
+        else {
+          this.drop(i, k, G)
+          this.state[i] = K_REST[k]!
+          if (this.renews[i]) this.stamp[i] = Math.floor(unit(hash2(i, 33)) * Math.sqrt(dw[0] * dw[0] + unit(hash2(i, 34)) * (dw[1] * dw[1] - dw[0] * dw[0])) * HZ)
+        }
       } else this.afloat(i, 21, G, 1.5, GROUND_Y + 1, WALL)
     }
     this.old.set(this.xyz)
