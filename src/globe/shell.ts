@@ -16,8 +16,6 @@ export const shellUniforms = {
 
 const THROUGH = `
 ${ROOM_GLSL}
-uniform vec3 uLensCentre;
-uniform vec4 uLens;
 void main() {
   vec3 n = normalize(vStageWorld - uLensCentre);
   vec3 v = normalize(vStageWorld - cameraPosition);
@@ -35,8 +33,6 @@ void main() {
 }`
 
 const SHELL = `
-uniform vec3 uLensCentre;
-uniform vec4 uLens;
 uniform vec3 uKeyDir;
 uniform vec3 uKeyCol;
 uniform vec3 uRimDir;

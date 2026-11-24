@@ -26,7 +26,9 @@ const VERT_MAIN = `
   gl_Position = projectionMatrix * nowView;
   vStageAux = vec3(nowPlaced.w, -nowView.z, length(nowView.xyz));
   float reach = max(-(viewMatrix * nowWorld).z, 1.0);
-  float size = max(2.0 * aData.x * uPoint.y * (uLens.z > 0.5 ? uLens.y : 1.0) / reach, 1.5);
+  vec3 rimAxis = cross(normalize(nowPlaced.xyz - cameraPosition), uLensCentre - cameraPosition);
+  float rim = uLens.z > 0.5 ? 1.0 - smoothstep(0.86, 0.975, length(rimAxis) / uLens.x) : 1.0;
+  float size = max(2.0 * aData.x * uPoint.y * (uLens.z > 0.5 ? uLens.y : 1.0) / reach, 1.5) * (0.4 + 0.6 * rim);
   vec2 streak = vec2(0.0);
   if (uPoint.z > 0.0) {
     vec4 wasPlaced = lensPlace((modelMatrix * vec4(aPrev, 1.0)).xyz, cameraPosition);
@@ -38,7 +40,7 @@ const VERT_MAIN = `
   float extra = length(streak);
   size = min(size, uPoint.w);
   gl_PointSize = min(size + extra, uPoint.w);
-  vPoint = vec4(aData.y, float(gl_VertexID), aData.z, aData.w);
+  vPoint = vec4(aData.y, float(gl_VertexID), aData.z * rim, aData.w);
   vStreak = vec4(streak, size, size + extra);
 `
 
@@ -57,7 +59,7 @@ void main() {
   float d = length(p - a * along) / (0.5 * vStreak.z);
   if (d > 1.0) discard;
   int kind = int(vPoint.x + 0.5);
-  float cover = (1.0 - d * d) * vPoint.z * (vStreak.z / vStreak.w);
+  float cover = clamp((1.0 - d) * 2.5, 0.0, 1.0) * vPoint.z * (vStreak.z / vStreak.w);
   float fog = stageVeil(vStageAux.x);
   if (uDiag == ${viewCode('cover')}) {
     gl_FragColor = vec4(cover, 0.0, cover, cover);

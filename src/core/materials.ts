@@ -67,6 +67,7 @@ uniform mat4 uGlobeInv;
 varying vec3 vStageWorld;
 varying vec3 vStageLocal;
 varying vec3 vStageAux;
+varying vec3 vStagePlaced;
 `
 
 export const STAGE_VERT_MAIN = `
@@ -78,11 +79,13 @@ stageWorld = modelMatrix * stageWorld;
 vStageWorld = stageWorld.xyz;
 vStageLocal = (uGlobeInv * stageWorld).xyz;
 vStageAux = vec3(0.0, -mvPosition.z, length(mvPosition.xyz));
+vStagePlaced = stageWorld.xyz;
 #ifdef STAGE_INSIDE
 vec4 stagePlaced = lensPlace(stageWorld.xyz, cameraPosition);
 vec4 stageView = viewMatrix * vec4(stagePlaced.xyz, 1.0);
 gl_Position = projectionMatrix * stageView;
 vStageAux = vec3(stagePlaced.w, -stageView.z, length(stageView.xyz));
+vStagePlaced = stagePlaced.xyz;
 #endif
 `
 
@@ -99,9 +102,16 @@ uniform vec3 uCoc;
 uniform vec4 uPart;
 uniform vec4 uState;
 uniform vec4 uFlags;
+uniform vec3 uLensCentre;
+uniform vec4 uLens;
 varying vec3 vStageWorld;
 varying vec3 vStageLocal;
 varying vec3 vStageAux;
+varying vec3 vStagePlaced;
+bool stageOutside() {
+  vec3 c = cross(normalize(vStagePlaced - cameraPosition), uLensCentre - cameraPosition);
+  return dot(c, c) > uLens.x * uLens.x;
+}
 float stageHash(vec3 p) {
   uvec3 v = uvec3(uint(p.x), uint(p.y), uint(p.z * 4096.0));
   v = v * 1664525u + 1013904223u;
@@ -160,6 +170,9 @@ vec4 stageDiag(vec3 albedo, vec3 n, float veil, float c, float texels) {
 const FRAG_HEAD = `
 float stageC = stageChange();
 if (stageGone(stageC)) discard;
+#ifdef STAGE_INSIDE
+if (stageOutside()) discard;
+#endif
 `
 
 const FRAG_LIGHT = `

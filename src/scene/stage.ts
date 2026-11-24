@@ -31,6 +31,7 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 const MIRROR = new THREE.Matrix4().makeScale(1, -1, 1)
 const SHUTTER = (config.film.shutterDegrees / 360) * (config.sim.stepHz / config.film.fps)
 const TURBULENCE_FULL = 260
+const EMITTER_GROWTH = 0.5
 const blankGrid = (): THREE.Data3DTexture => {
   const t = new THREE.Data3DTexture(new Uint16Array(4), 1, 1, 1)
   t.format = THREE.RGBAFormat
@@ -350,7 +351,8 @@ export class GlobeStage implements Stage {
     ;[partBytes('glass'), partBytes(`glass-dressing-${shown}`), partBytes(`veil-${tVeil < 0.5 ? ka.season : kb.season}`)].forEach((c, i) => sh.uOverlay.value[i]!.set(c[0] / 255, c[1] / 255, c[2] / 255))
 
     const lensOn = view === ''
-    this.backdrop.set(ka, kb, tOut, lensOn ? pose.apertureMm : 0, pose.focusMm, lensOn && sample ? sample.lu * pose.apertureMm : 0, lensOn && sample ? sample.lv * pose.apertureMm : 0)
+    const grown = !lensOn ? 0 : sample ? EMITTER_GROWTH : 1
+    this.backdrop.set(ka, kb, tOut, pose.apertureMm * grown, pose.focusMm, sample ? sample.lu * pose.apertureMm * grown : 0, sample ? sample.lv * pose.apertureMm * grown : 0)
 
     const all: Record<string, { color: Rgb; glow: number }> = {}
     for (const k of kits) for (const [name, c] of Object.entries(k.particles)) all[name] ??= c

@@ -6,7 +6,7 @@ export type View = (typeof VIEWS)[number]
 export const viewCode = (view: string): number => VIEWS.indexOf(view as View) + 1
 export const DEPTH_RANGE_MM = 4096
 export const FLOW_RANGE_MM_S = 400
-export const LIGHT_RANGE = 4
+export const LIGHT_RANGE = 1
 
 export const SEASON_PARTS = ['base', 'miniature', 'glass-dressing', 'surface-dressing', 'light', 'veil', 'arrival'] as const
 export const SHARED_PARTS = ['glass', 'liquid', 'surface', 'backdrop', 'lens', 'shake', 'particle-engine', 'light-engine'] as const
