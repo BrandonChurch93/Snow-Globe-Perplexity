@@ -15,7 +15,7 @@ export interface KindLook {
 }
 
 const LOOKS: Record<string, KindLook> = {
-  flake: { shape: SHAPE.cluster, size: 0.8, body: 0.85, flash: 0, real: true },
+  flake: { shape: SHAPE.cluster, size: 0.95, body: 0.85, flash: 0, real: true },
   glitter: { shape: SHAPE.mirror, size: 1.15, body: 0.3, flash: 5.5, real: true },
 }
 

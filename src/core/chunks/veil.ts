@@ -3,7 +3,7 @@ import { config } from '../../config'
 import { LIQUID_PHASE, LIQUID_PHASE_B } from '../../globe/liquid'
 import type { StageFrame } from '../../scene/frame'
 
-const TURBULENCE_POWER = 3
+const TURBULENCE_POWER = 3.2
 const TURBULENCE_FROM = 0.12
 const TURBULENCE_TO = 0.5
 const NOISE_N = 32
@@ -20,12 +20,12 @@ export const VEIL_LOOK = {
   arcTurns: 5,
   warp: 0.3,
   blobDrift: 0.3,
-  wisp: 3,
-  cutLow: 0.5,
+  wisp: 3.3,
+  cutLow: 0.55,
   cutHigh: 0.8,
   blobLow: 0.3,
   blobGain: 1.4,
-  hazeCore: 0.12,
+  hazeCore: 0.06,
   hazeFrom: 0.3,
   hazeTo: 1.15,
   uneven: 0.96,
@@ -49,7 +49,7 @@ export const VEIL_LOOK = {
   bankShadow: 0.05,
   ambientShare: 1,
   gridShare: 0.75,
-  bankGridShare: 1.2,
+  bankGridShare: 1.6,
   bankShade: 0.62,
   bankShadeFrom: 0.25,
   bankShadeTo: 1.3,
