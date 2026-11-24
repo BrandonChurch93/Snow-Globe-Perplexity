@@ -2,7 +2,7 @@ import { COVER_GLSL } from '../../core/chunks/cover'
 import { LIGHT_FRAG_PARS } from '../../core/chunks/light'
 import { VEIL_GLSL } from '../../core/chunks/veil'
 import { viewCode } from '../../diagnostics/views'
-import { BLUR_HOLD, BLUR_STRICT_FROM_PX, BLUR_STRICT_TO_PX, CLUMP, EDGE_CRISP_HIGH, EDGE_CRISP_LOW, EDGE_SOFT_HIGH, EDGE_SOFT_LOW, FLASH_MOST, FLASH_WHITE, GLINT_HIGH, GLINT_LOW, GLINT_SOFT_PX, LAMPS, LENS_LOOK, LIT_MOST, LIGHT_LOOK, LOBE_CORE, LOBE_GIRTH, LOBE_REACH, LYING_LOOK, MAX_KINDS, PIXEL_SIGMA2, SETTLE_FADE, SIZE_HIGH, SIZE_LOW, SIZE_SKEW, STORM_CROSS, STORM_FAR, STORM_OFF_DISC, STORM_PACE, STORM_FINE_HIGH, STORM_FINE_LOW, STORM_FINE_SOFT, STORM_FINE_SHARE, STORM_FLASH, STORM_GLINT, STORM_GLITTER, STORM_GLITTER_FROM, STORM_GLITTER_PX, STORM_GLITTER_TO, STORM_MOST_PX, STORM_SHARP, STORM_SHARP_SHARE, STORM_SIDE, STORM_SLOW, STORM_SMEAR, STORM_SMEAR_BRIGHT, STORM_SMEAR_FAINT, STORM_SMEAR_HIGH_PX, STORM_SMEAR_LOW_PX, STORM_SMEAR_FAR, STORM_SMEAR_NEAR, STORM_SMEAR_SHARE, STORM_SOFT_TOP, STORM_STREAK_DIM, STORM_THIN, STORM_TOP, STORM_WINDOW, STREAK_CAPSULE, STREAK_HOLD, STREAK_REACH, STREAK_TAPER, STRETCH_HIGH, STRETCH_LOW, THIN_FROM, THIN_LOW, THIN_TO } from './looks'
+import { BLUR_HOLD, BLUR_STRICT_FROM_PX, BLUR_STRICT_TO_PX, CLUMP, EDGE_CRISP_HIGH, EDGE_CRISP_LOW, EDGE_SOFT_HIGH, EDGE_SOFT_LOW, FLASH_MOST, FLASH_WHITE, GLINT_HIGH, GLINT_LOW, GLINT_SOFT_PX, LAMPS, LENS_LOOK, LIT_MOST, LIGHT_LOOK, LOBE_CORE, LOBE_GIRTH, LOBE_REACH, LYING_LOOK, MAX_KINDS, PIXEL_SIGMA2, SETTLE_FADE, SIZE_HIGH, SIZE_LOW, SIZE_SKEW, STORM_CROSS, STORM_FAR, STORM_OFF_DISC, STORM_PACE, STORM_FINE_HIGH, STORM_FINE_LOW, STORM_FINE_SOFT, STORM_FINE_SHARE, STORM_FLASH, STORM_GLINT, STORM_GLITTER, STORM_GLITTER_FROM, STORM_GLITTER_PX, STORM_GLITTER_TO, STORM_MOST_PX, STORM_SHARP, STORM_SHARP_SHARE, STORM_SHUTTER, STORM_SIDE, STORM_SLOW, STORM_SMEAR, STORM_SMEAR_BRIGHT, STORM_SMEAR_FAINT, STORM_SMEAR_HIGH_PX, STORM_SMEAR_LOW_PX, STORM_SMEAR_FAR, STORM_SMEAR_NEAR, STORM_SMEAR_SHARE, STORM_SOFT_TOP, STORM_STREAK_DIM, STORM_THIN, STORM_TOP, STORM_WALL, STORM_WINDOW, STREAK_CAPSULE, STREAK_HOLD, STREAK_REACH, STREAK_TAPER, STRETCH_HIGH, STRETCH_LOW, THIN_FROM, THIN_LOW, THIN_TO } from './looks'
 
 const MEAN_LOBE = 0.42
 const n = (v: number) => (Number.isInteger(v) ? v.toFixed(1) : String(v))
@@ -94,7 +94,8 @@ export const VERT_MAIN = `
   float shape = look.x;
   float lying = aState > 0.5 && aState < 2.5 ? 1.0 : 0.0;
   float afloat = 1.0 - lying;
-  vec3 nowL = mix(aPrev, aNow, uPoint.x + uPoint.z * uStorm.y * afloat);
+  float shut = uPoint.z * mix(1.0, ${n(STORM_SHUTTER)}, uStorm.x);
+  vec3 nowL = mix(aPrev, aNow, uPoint.x + shut * uStorm.y * afloat);
   vec3 nowW = (modelMatrix * vec4(nowL, 1.0)).xyz;
   vec3 eye = cameraPosition - uEyeShift * afloat;
   vec4 placed = lensPlace(nowW, eye);
@@ -139,7 +140,7 @@ export const VERT_MAIN = `
   float rim = on > 0.5 ? 1.0 - smoothstep(0.9, 0.985, length(rimAxis) / R) : 1.0;
 
   vec2 streak = vec2(0.0);
-  vec3 moved = (aNow - aPrev) * uPoint.z;
+  vec3 moved = (aNow - aPrev) * shut;
   mat3 toView = mat3(modelViewMatrix);
   if (afloat > 0.5 && dot(moved, moved) > 1e-8) {
     #ifdef POINT_SPRITES
@@ -181,6 +182,7 @@ export const VERT_MAIN = `
     held = mix(1.0, glints > 0.5 ? ${n(STORM_GLITTER)} * full : clump * (want > 0.0 ? want * full : ${n(STORM_THIN)}), gusty);
   }
   held *= mix(1.0, mix(${n(STORM_PACE.unseen)}, 1.0, gust), afloat * classed * (1.0 - shown));
+  held *= 1.0 - ${n(STORM_WALL.dim)} * smoothstep(${n(STORM_WALL.from)}, ${n(STORM_WALL.to)}, nowL.x / uLens.w) * uStorm.x * afloat;
 
   vec3 axis = normalize(h.xyz * 2.0 - 1.0 + 1e-3);
   float angle = aData.w + 6.2831853 * h.w;
