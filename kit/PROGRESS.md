@@ -434,6 +434,14 @@ Every brief is in `tools/briefs/`: `COMMON.md` and one file per agent. All ten r
 
 Finished: `wait_tester`, `sandbox_prober`, `reader_01` to `reader_10` (the model test), `image_terms_reader` (02:04), `hosting_limits_reader` (02:06), `sound_terms_reader` (02:09), `clock_test_writer` (02:12: `tests/clock.test.ts`, 46 tests, run here and all pass; it reported no behaviour that differs from the kit), `webgl_portability_reader` (02:19: its table is in `references/terms/webgl/` and merged into `config/webgl-caps.json`), `review_page_builder` (02:32: `tools/review.mjs` on `agent/review-page` at `5d5dc6d`, taken into `main` as that one file; it tested three screen sizes in headless Chrome, not Safari), `compare_layout_builder` (02:40: `agent/compose`, merged as `a379413`, its layouts looked at here), `animatic_builder` (02:46: `tools/animatic.mjs` on `agent/animatic` at `072c59a`, with a rough cut of 1800 frames attached; merged in Phase 1), `vm_still_renderer_2` (02:47) and `vm_still_renderer_1` (02:52): the same still on two sandbox VMs, and the budget on one of them.
 
+Merged into `main`, each verified here with types clean and the tests green (126 tests after the fifth):
+
+- 04:01 `agent/tools-sheet` (sheet, seq). The agent is idle and can take follow-ups.
+- 04:06 `agent/tools-measure` (measure, pack). Follow-up sent 04:07: run the blockout pack against the real sheet tool.
+- 04:08 `agent/tools-audiomap` (audiomap). Checked here on a click track of 93 beats a minute, 40 s, accent every fourth: `tracked`, 93 beats a minute, 62 beats, 15 bars, bar lines on the accents, first at 0.0013 s. The agent's own tests: 100 and 87 beats a minute, with a quiet middle and with an offset, largest beat error 1.56 ms. Its weak spot, by its own report: a dotted or triplet feel can end as `grid`, and a `grid` map must not be cut to.
+- 04:10 `agent/tools-audio` (sound, mix, soundcheck, the app's sound engine). Follow-up sent 04:12: a sound of a tenth of a second cannot be levelled yet (`ui-tick` take 1 is refused as too quiet to measure).
+- 04:14 `agent/tools-checks` (gate G5 to G7, G11 to G16, D2 to D6, hostcheck). Its run of the Phase 2 gate on the measuring scene: G1 to G4, G8 to G12 and G14 green; G5 red (no interface yet), G6 red (no judged list yet), G7 red (no opening yet), D2 and D3 red (no preview and no proof yet).
+
 ## Rounds
 
 One line per round: its number, the unit, the commit it judged, each part ticked off as it finished, the scores, and what changed next.
