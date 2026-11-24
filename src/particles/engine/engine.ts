@@ -502,7 +502,8 @@ export class ParticleEngine {
     const u5 = unit(hash2(i, 191 + k))
     const big = Math.pow(u1, b.sizeSkew)
     this.sizes[i] = b.sizeMm[0] + (b.sizeMm[1] - b.sizeMm[0]) * big
-    this.sink[i] = b.sinkMmS[0] + (b.sinkMmS[1] - b.sinkMmS[0]) * (0.45 * big + 0.55 * u2)
+    const fall = b.settleMmS[1] > 0 && u5 >= Math.max(b.renew, b.floats) ? b.settleMmS : b.sinkMmS
+    this.sink[i] = fall[0] + (fall[1] - fall[0]) * (0.45 * big + 0.55 * u2)
     this.layer[i] = b.mode === 'steer' ? b.clearanceMm * 0.3 : b.layerMm[0] + (b.layerMm[1] - b.layerMm[0]) * Math.pow(u3, 2.4)
     this.lift[i] = b.liftMmS[1] - (b.liftMmS[1] - b.liftMmS[0]) * Math.pow(u3, 0.45)
     this.turnRate[i] = b.turnRadS[0] + (b.turnRadS[1] - b.turnRadS[0]) * u4
@@ -738,9 +739,9 @@ export class ParticleEngine {
         this.fade[i] = emberGlow(a)
         this.opacity[i] = this.fade[i]!
         this.phase[i] = a * TAU
-      } else if (K_REST[k] === STATE_REST) {
+      } else if (K_REST[k] === STATE_REST || (K_REST[k] === STATE_SNAG && this.sink[i]! > TABLE_OF[k]!.sinkMmS[1])) {
         this.drop(i, k, G)
-        this.state[i] = STATE_REST
+        this.state[i] = K_REST[k]!
         if (this.renews[i]) this.stamp[i] = Math.floor(unit(hash2(i, 33)) * TABLE_OF[k]!.dwellSeconds[1] * HZ)
       } else this.afloat(i, 21, G, 1.5, GROUND_Y + 1, WALL)
       if (this.state[i] === STATE_LIQUID) this.enlist(i)
