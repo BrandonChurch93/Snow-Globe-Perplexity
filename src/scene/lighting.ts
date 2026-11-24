@@ -27,7 +27,7 @@ export const ROOM_RIG = {
   inside: { through: 0.5, wrap: 0.1, spread: 1.6, bounce: 0.08, sky: 0.15, axis: [0, 0.45, 1] as Rgb, pull: 0.3 },
   point: { key: 0.4, rim: 0.1, sky: 0.32 },
   room: { gain: 1, lights: 1, softPerRough: 0.5, lightsBelowRough: 0.62 },
-  grid: { flat: 0.1, wrap: 0.3, specular: 1, openFloor: 0.35, air: 0.62 },
+  grid: { flat: 0.1, wrap: 0.3, specular: 1, openFloor: 0.35, air: 0.62, surface: 0.25 },
   bloomGain: 9,
   flood: { inside: 1.5, insideMm: 8, outside: 18, wrap: 0.35, near: 0.3, nearMm: 10, floor: 0.07, floorMm: 50, pool: 45, spill: 30, lens: 0.04, swellFrom: 0.12, swellTo: 0.975 },
   glow: { outside: 0.8, islandMm: innerRadiusMm * 0.88, lobe: 0.3, specular: 1 },
@@ -40,15 +40,20 @@ const smooth = (v: number) => (v <= 0 ? 0 : v >= 1 ? 1 : v * v * (3 - 2 * v))
 /**
  * The light of a change inside the glass, by how far the swap window has run.
  * `whole` rises slowly from the first frames of the window, is 1 on every frame of the base's change and is gone before the window ends.
- * `glow` is the same rise, and it starts to fall from the middle of the base's change, so the fall has as many frames as the window leaves.
+ * `glow` is the same rise to the frame the base begins to change. From there the light itself (the lift, not the gain's exponent)
+ * falls smoothly over every frame the window leaves, so the fall is as easy to follow as the rise, and through the base's change
+ * it is still above four tenths of its top.
  */
 export function changeSwell(change: number): { whole: number; glow: number } {
   if (!(change > 0) || change >= 1) return { whole: 0, glow: 0 }
   const f = ROOM_RIG.flood
   const span = changeSpan('base')
-  const mid = (span.from + span.to) / 2
   const rise = (change - f.swellFrom) / (span.from - f.swellFrom)
-  return { whole: smooth(Math.min(1, rise, (f.swellTo - change) / (f.swellTo - span.to))), glow: smooth(Math.min(1, rise, (f.swellTo - change) / (f.swellTo - mid))) }
+  const lift = smooth((f.swellTo - change) / (f.swellTo - span.from))
+  return {
+    whole: smooth(Math.min(1, rise, (f.swellTo - change) / (f.swellTo - span.to))),
+    glow: Math.min(smooth(Math.min(1, rise)), Math.log(1 + ROOM_RIG.bloomGain * lift) / Math.log(1 + ROOM_RIG.bloomGain)),
+  }
 }
 
 export function keyInside(from: Rgb): [number, number, number] {
@@ -123,7 +128,7 @@ export class Lighting {
     u.uGridShade.value.set(ROOM_RIG.grid.flat, ROOM_RIG.grid.wrap, ROOM_RIG.grid.specular, ROOM_RIG.grid.openFloor)
     u.uGridAir.value = ROOM_RIG.grid.air * ROOM_RIG.grid.air
     u.uRigGlow.value.set(ROOM_RIG.glow.lobe, ROOM_RIG.glow.specular, s.sureFrom, s.sureTo)
-    u.uRigPoint.value.set(ROOM_RIG.point.key, ROOM_RIG.point.rim, ROOM_RIG.point.sky, 0)
+    u.uRigPoint.value.set(ROOM_RIG.point.key, ROOM_RIG.point.rim, ROOM_RIG.point.sky, ROOM_RIG.grid.surface)
     u.uLightFloodAt.value.set(outerRadiusMm, ROOM_RIG.flood.wrap, ROOM_RIG.flood.inside, ROOM_RIG.flood.insideMm)
     u.uLightFloodFloor.value.set(-centreHeightMm, ROOM_RIG.flood.floorMm, ROOM_RIG.flood.floor, ROOM_RIG.flood.outside)
     u.uLightFloodNear.value.set(ROOM_RIG.flood.near, ROOM_RIG.flood.nearMm)

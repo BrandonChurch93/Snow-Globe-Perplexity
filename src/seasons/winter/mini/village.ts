@@ -9,10 +9,10 @@ import { texture } from '../../../core/textures'
 import { GLOW, glowGeometry, glowMaterial, glowPiece, haloGeometry, haloMaterial } from '../../../miniature/glow'
 import { MIRROR_GLSL, mirrorUniforms } from '../../../miniature/mirror'
 import { prepareVillage, tileMm, villageGeometry, villageGrain } from '../../../miniature/model'
-import { hangPoints, lampFlame, pitch, ridgeY, roofLength, shrubDistance, slopeLength } from '../../../miniature/roof'
+import { hangPoints, lampFlame, lampFoot, pitch, ridgeY, roofLength, shrubDistance, slopeLength } from '../../../miniature/roof'
 import { BUMP_GLSL, NEAR_LIGHT, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, withSurface, type Cover, type GlowSource } from '../../../miniature/surface'
 import { wispGeometry, wispMaterial, wispPose, type Wisp, type WispLook } from '../../../miniature/wisp'
-import { anchors, bankAt, cottage, cottageFrame, cottagePoint, driftAt, groundAt, heapAt, moundSlope, pond, pondField, rimAt, solidDistance } from '../../../scene/layout'
+import { anchors, bankAt, cottage, cottageFrame, cottagePoint, driftAt, groundAt, heapAt, moundSlope, pond, pondField, rimAt, solidDistance, tree } from '../../../scene/layout'
 import { gainOf } from '../../../scene/lightgrid'
 import type { InnerLight, KitMoment } from '../../kit'
 import { isTree, season, tones } from './palette'
@@ -30,10 +30,10 @@ const WINDOW = { power: 0.8, reachMm: 8, flicker: 0.1, cycles: 5, phase: 0.4 }
 const SIDE = { power: 0.8, reachMm: 7, flicker: 0.1, cycles: 4, phase: 0.75 }
 const BULB = { power: 0.6, reachMm: 4.5, flicker: 0.07, cycles: 2 }
 const NEAR = { bulb: { power: 0.6, reachMm: 1.2, ends: 3 }, lamp: { power: 4, reachMm: 7 }, pane: { power: 0.7, reachMm: 2.4 } }
-const NEAR_WALL = { bulb: { power: 8.5, reachMm: 1.7, ends: 3 }, lamp: { power: 3.4, reachMm: 9, ends: 3 }, pane: { power: 1.7, reachMm: 5, ends: 3 } }
+const NEAR_WALL = { bulb: { power: 8, reachMm: 2.4, ends: 3 }, lamp: { power: 3.4, reachMm: 9, ends: 3 }, pane: { power: 1.7, reachMm: 5, ends: 3 } }
 const MIRROR = { lamp: 9, pane: 1.2, bulb: 0.5, tight: 0.0011, wide: 0.03, wideShare: 0.004, bump: 0.8, lowMm: 3.4, sparkle: 1.7 }
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
-const HALO_KIND = { bulb: { size: 1.2, rest: 1.5, hot: 1, bloom: 0.2 }, lamp: { size: 3.4, rest: 0.4, hot: 0, bloom: 0.3 }, pane: { size: 2.4, rest: 0, hot: 0, bloom: 0.3 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
+const HALO_KIND = { bulb: { size: 1.15, rest: 0.6, hot: 6, bloom: 0.2 }, lamp: { size: 5.6, rest: 0.32, hot: 0, bloom: 0.3 }, pane: { size: 2.4, rest: 0, hot: 0, bloom: 0.3 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
 const THROUGH = 6
 const LAMP_GLASS: Rgb = [7.5, 6.7, 5.2]
 const COVER_GAIN = 0.12
@@ -43,6 +43,7 @@ const SNOW_LUMP_MM = 0.3
 const SNOW_DRIFT_MM = 1.1
 const SPARK = 2.6
 const SNOW_WRAP = 0.4
+const SNOW_SOFT = 1.5
 const BANK_RELIEF = 0.7
 const BANK_TIP = 0.8
 const BANK_WRAP = 1.3
@@ -55,14 +56,20 @@ const BANK_AIR = 0.6
 const ICE_NEAR = 0.15
 const POOL: Rgb = [1, 0.5, 0.22]
 const POOL_TINT = { blue: 0.78, from: 0.4, to: 0.62, underMm: -16, fadeMm: 3 }
-const ICE_RIM = 0.9
+const ICE_RIM = 0.8
+const ICE_MARGIN = { from: 0.915, to: 0.95, wobble: 0.07, clear: 0.9, dark: 0.42 }
+const POST = { lamp: 0.4, lampMm: 0.5, lampTall: 11.5, trunk: 0.18, trunkMm: 2.8, trunkTall: 24, body: 0.45 }
 const SNOW_FILL = 1.6
+const WALL_BARE = { share: 0.75, from: -18.7, to: -17.9 }
+const LEAF_DUST = 0.45
 const WALL_FILL = 2.4
 const BANK_SIDES = { front: 0.72, side: 1.25 }
 
 const bulbs = hangPoints()
 const flame = lampFlame()
 const mirrored: [number, number, number] = [flame[0], flame[1] - MIRROR.lowMm, flame[2]]
+const postFoot = lampFoot() as Rgb
+const trunkFoot: Rgb = [tree.x, groundAt(tree.x, tree.z), tree.z]
 const potTop = cottagePoint(cottage.chimney.across - 0.2, cottage.chimney.top + 1.9, cottage.chimney.along + 0.1)
 
 export const innerLights: InnerLight[] = [
@@ -104,6 +111,8 @@ const dusting: Cover = {
   float winterLain = clamp(stageCover(vStageLocal.xz) * 0.5, 0.0, 1.0);
   float winterUp = normalize(vObjN).y + 0.5 * (villageMottle - 0.5) + 0.3 * (villageGrain.r - 0.5);
   float winterDust = smoothstep(0.86 - 0.36 * winterLain, 0.98, winterUp) * (0.3 + 0.7 * winterLain);
+  winterDust *= 1.0 - ${WALL_BARE.share.toFixed(2)} * villageStone * smoothstep(${WALL_BARE.from.toFixed(2)}, ${WALL_BARE.to.toFixed(2)}, vStageLocal.y);
+  winterDust *= 1.0 - ${(1 - LEAF_DUST).toFixed(2)} * villageLeaf;
   diffuseColor.rgb = mix(diffuseColor.rgb, ${glsl(tones.dust)} * (0.86 + 0.2 * villageGrain.r), winterDust * 0.88);
   villageRough = mix(villageRough, 0.96, winterDust);
   villageMetal *= 1.0 - winterDust;
@@ -146,8 +155,11 @@ vec3 bankN = vec3(0.0, 0.0, 1.0);
 vec3 snowAt(vec3 p) {
   return texture2D(map, p.zy).rgb * snowWeights.x + texture2D(map, p.xz).rgb * snowWeights.y + texture2D(map, p.xy).rgb * snowWeights.z;
 }
+vec3 snowSoftAt(vec3 p) {
+  return texture2D(map, p.zy, ${SNOW_SOFT.toFixed(1)}).rgb * snowWeights.x + texture2D(map, p.xz, ${SNOW_SOFT.toFixed(1)}).rgb * snowWeights.y + texture2D(map, p.xy, ${SNOW_SOFT.toFixed(1)}).rgb * snowWeights.z;
+}
 float snowHeight(vec3 p) {
-  vec3 t = snowAt(p);
+  vec3 t = snowSoftAt(p);
   return (t.r * ${SNOW_GRAIN_MM.toFixed(3)} + t.b * ${SNOW_LUMP_MM.toFixed(3)}) * (1.0 + ${BANK_GRAIN.toFixed(2)} * bankMask) + snowAt(p * 0.23 + 0.41).b * ${SNOW_DRIFT_MM.toFixed(3)} * (1.0 + ${BANK_RELIEF.toFixed(2)} * bankMask);
 }`,
         )
@@ -228,6 +240,7 @@ function iceMaterial(): THREE.MeshStandardMaterial {
 ${BUMP_GLSL}
 ${MIRROR_GLSL}
 vec3 iceFlat = vec3(0.0, 0.0, 1.0);
+float iceShade = 0.0;
 float iceHeight(vec2 uv) {
   vec3 t = texture2D(map, uv).rgb;
   return t.g * 0.05 + t.b * 0.035 - t.r * 0.05 + texture2D(map, uv * 3.1 + 0.17).g * 0.012;
@@ -238,10 +251,13 @@ float iceHeight(vec2 uv) {
           `
 vec3 iceT = texture2D(map, vMapUv).rgb;
 vec3 iceWide = texture2D(map, vMapUv * 0.37 + 0.21).rgb;
-float iceRim = smoothstep(${ICE_RIM.toFixed(2)}, 1.0, vSurf.x);
+float iceEdge = vSurf.x + ${ICE_MARGIN.wobble.toFixed(3)} * (texture2D(map, vMapUv * 0.83 + 0.31).g - 0.5) + 0.02 * (iceT.g - 0.5);
+float iceRim = smoothstep(${ICE_RIM.toFixed(2)}, ${ICE_MARGIN.from.toFixed(3)}, iceEdge);
+float iceWet = ${ICE_MARGIN.clear.toFixed(2)} * smoothstep(${ICE_MARGIN.from.toFixed(3)}, ${ICE_MARGIN.to.toFixed(3)}, iceEdge);
 float iceFrost = clamp(iceRim * iceRim * 0.9 + smoothstep(0.4, 0.8, iceWide.g) * (0.35 + 0.4 * iceRim) + (iceT.g - 0.5) * 0.24, 0.0, 1.0);
-iceFrost = max(iceFrost, iceT.r * 0.75);
+iceFrost = max(iceFrost, iceT.r * 0.75) * (1.0 - iceWet);
 diffuseColor.rgb = mix(${glsl(tones.iceDeep)}, ${glsl(tones.icePale)}, iceFrost * 0.9) + ${glsl(tones.icePale)} * iceT.b * 0.07;
+diffuseColor.rgb = mix(diffuseColor.rgb, ${glsl(tones.iceDeep)} * ${ICE_MARGIN.dark.toFixed(2)}, iceWet);
 float iceRough = mix(0.09, 0.72, iceFrost);
 `,
         )
@@ -265,12 +281,14 @@ float iceRough = mix(0.09, 0.72, iceFrost);
   vec3 iceSight = villageSight();
   float iceFresnel = 0.03 + 0.97 * pow(1.0 - clamp(dot(iceN, iceSight), 0.0, 1.0), 5.0);
   float iceGlitter = 0.6 + 1.4 * smoothstep(0.45, 0.85, texture2D(map, vMapUv * 2.3 + 0.37).g);
-  float iceGlint = iceGlitter * villageMirror(villageInside(normalize(mix(iceFlat, normal, ${MIRROR.bump.toFixed(2)}))), iceSight, ${MIRROR.tight.toFixed(5)}, ${MIRROR.wide.toFixed(5)}, ${MIRROR.wideShare.toFixed(3)});
+  vec3 iceMirror = villageInside(normalize(mix(iceFlat, normal, ${MIRROR.bump.toFixed(2)})));
+  float iceGlint = iceGlitter * villageMirror(iceMirror, iceSight, ${MIRROR.tight.toFixed(5)}, ${MIRROR.wide.toFixed(5)}, ${MIRROR.wideShare.toFixed(3)});
+  iceShade = max(${POST.lamp.toFixed(2)} * villagePost(iceMirror, iceSight, ${glsl(postFoot)}, ${POST.lampMm.toFixed(2)}, ${POST.lampTall.toFixed(1)}), ${POST.trunk.toFixed(2)} * villagePost(iceMirror, iceSight, ${glsl(trunkFoot)}, ${POST.trunkMm.toFixed(2)}, ${POST.trunkTall.toFixed(1)}));
   totalEmissiveRadiance += ${glsl(tones.lamp)} * iceGlint * iceFresnel * (1.0 - 0.55 * iceFrost) * (1.0 + ${MIRROR.sparkle.toFixed(2)} * (iceT.g - 0.5 + iceT.r)) * uGlowGain * vColor.r;
 }
 `,
         )
-      afterLight(shader, `reflectedLight.indirectDiffuse += vGlow * (uGlowGain * ${ICE_NEAR.toFixed(2)}) * material.diffuseContribution;\nreflectedLight.directSpecular *= vColor.r;\nreflectedLight.indirectSpecular *= vColor.r;`)
+      afterLight(shader, `reflectedLight.indirectDiffuse += vGlow * (uGlowGain * ${ICE_NEAR.toFixed(2)}) * material.diffuseContribution;\nreflectedLight.directSpecular *= vColor.r;\nreflectedLight.indirectSpecular *= vColor.r * (1.0 - iceShade);\nreflectedLight.directDiffuse *= 1.0 - ${POST.body.toFixed(2)} * iceShade;\nreflectedLight.indirectDiffuse *= 1.0 - ${POST.body.toFixed(2)} * iceShade;`)
     },
   })
 }
