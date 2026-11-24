@@ -34,7 +34,7 @@ export function loopSinceLanding(t: number): number {
 
 export class SourceSwitch implements ParticleSource {
   private other: ParticleSource | null = null
-  private stamp = 0
+  private stamp = 1
 
   constructor(private readonly base: ParticleSource) {}
 
@@ -84,6 +84,7 @@ export class SourceSwitch implements ParticleSource {
 }
 
 const TAU = Math.PI * 2
+const STAND_IN = { floatShare: 0.0015, liftShare: 0.012 }
 const smooth5 = (v: number): number => {
   const u = v <= 0 ? 0 : v >= 1 ? 1 : v
   return u * u * u * (u * (u * 6 - 15) + 10)
@@ -109,7 +110,8 @@ export function standInLoop(like: ParticleSource, innerR: number, groundY: numbe
   const groundR = Math.sqrt(Math.max(0, innerR * innerR - groundY * groundY)) - 1
   const reach = innerR - 2
   for (let i = 0; i < n; i++) {
-    const floats = rng.next() < 0.05
+    const floats = rng.next() < STAND_IN.floatShare
+    const lifts = rng.next() < STAND_IN.liftShare
     const r = Math.sqrt(rng.next()) * groundR
     home[i * 3] = r
     home[i * 3 + 1] = rng.next() * TAU
@@ -133,7 +135,7 @@ export function standInLoop(like: ParticleSource, innerR: number, groundY: numbe
       drift[i * 3 + 2] = rng.next() * TAU
     }
     turns[i] = 1 + rng.int(3)
-    from[i] = loopShakeStart + rise * rng.range(0.85, 1.25)
+    from[i] = lifts ? loopShakeStart + rise * rng.range(0.85, 1.25) : Infinity
     sink[i] = quiet * rng.range(0.3, 0.92)
   }
   const dt = 1 / config.sim.stepHz
