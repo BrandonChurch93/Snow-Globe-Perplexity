@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 47 · 2026-11-24 18:12 UTC
+Status 48 · 2026-11-24 18:35 UTC
 
-- `out/stills/status/status-47-1.jpg`: The tree's crown at rest: approved left and the build right (draft tier). Still wrong: the snow sits as round pads where the approved has broad blankets and the trunk is thicker and more orange
-- `out/stills/status/status-47-2.jpg`: One second after the landing: approved left and the build right (draft tier). The storm is separate dashes in a swirl now. Still wrong: the bank is cooler than the approved warm glow and the glass frost is fainter
-- `out/stills/status/status-47-3.jpg`: Still: winter rest hero, hd, draft
-- `out/stills/status/status-47-4.jpg`: Sheet: 12 frames across the shot shake-1, frames 576 to 719, preview, draft
+- `out/stills/status/status-48-1.jpg`: The new shake path on main: the strokes every second frame from 36 to 58 at draft tier. The globe swings and rolls to the side it has swung to while the storm builds. Still wrong: the dome veils within about eight frames
+- `out/stills/status/status-48-2.jpg`: The set down on the shake builder's branch at review tier: no hold in the air. The last stroke carries into a shorter swing and the globe sinks through it and lands. Still wrong: the storm here is the older veil and the landing's rock is too small to read
+- `out/stills/status/status-48-3.jpg`: Film B on the new cut, measuring scene: frame 0 (the close opening before the pull back), frame 666 (the locked camera inside the first shake), frame 720 (the landing on its bar line) and the last frame, back on the camera of frame 0. In frame 666 the top of the glass leaves the picture: to be settled when the cameras are fitted. (by film_app_builder)
+- `out/stills/status/status-48-4.jpg`: The app in live mode with the real interface, still on the measuring scene: at rest, then three moments of one shake (lift and tilt, the storm, the landing). The season marks sit at the bottom left, the Shake control at the bottom centre. (by film_app_builder)
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 18:16 UTC
-clock: phase 3, tick of 1.0 minutes
-phase 3: 9.82 h used of its 11.00 h box
-allowance (before the review): 16.44 h used of 36.00 h allowed
-all time before the review: 16.44 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 18:35 UTC
+clock: phase 3, tick of 5.3 minutes
+phase 3: 10.13 h used of its 11.00 h box
+allowance (before the review): 16.74 h used of 36.00 h allowed
+all time before the review: 16.74 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 3
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -1122,3 +1122,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 18:07 to 18:15 UTC. Status 47 shown at 18:13 (the tree's crown and the storm beside the approved images, from the builders' own looks). The base's and the glass's builders reported `main`'s one red test (`tests/engine-cover.test.ts:87`) and held their pushes; every builder but the liquid's was told to push when that is the only failure and to name it in the commit. The light's branch (`eaa60a9`) turns the change's even peach disc into a white core that swells and shrinks; its merge commit lacks the trailer and is not rewritten. The third set was asked to put a `Handover` section first in its final report. The brief for the fourth set is written (`out/work/briefs/wave4-common.md`); decision 61 sets the last two freezes at 20:15 and 22:15. The plateau rule's moves after Round 4 are written under "Look lock" (late). Slip: two messages to builders were stamped 18:10 and 18:16 without reading the clock; both went out at about 18:10.
 
 - 18:17 to 18:25 UTC. The liquid's builder could not push from its sandbox ("could not read Username for 'https://github.com'"; it touched no credential) and sent its cure as a patch with the tree hash it must give. Applied here on `agent/p3-liquid` (`720d307` merge of the shake path `4ee1aec`, `6ca6f49` the patch, `5f87516` merge of `main`); blob and tree hashes match the builder's (`b316f52`, `7c12d087`). `main` fast-forwarded to it: tsc clean, vitest 413 passed, 4 skipped, 0 failed. So `main` is green again: the roof holds 1.5 and 1.8 mm of fresh cover at `settled` (the builder's numbers; floor 0.2) and the new shake path of decision 59 is in `main` for Round 6. Round 5 is still judged on `9be1c06` with its one red test. The builder keeps sending patches if its pushes keep failing.
+
+- 18:25 to 18:36 UTC. A draft sheet of the strokes on `main` `fe03988` seen (frames 36 to 58: the globe swings and rolls, nothing missing or black; the dome veils within about eight frames, which is the flakes' open cover ramp). Published from `fe03988` at 18:33 (first picture true in 14.8 s, 52 requests, no errors; Visibility: Organization). Status 48 shown at 18:35 (the strokes on `main` at draft; the shake builder's set down at review tier). The frost's builder found `M1` red on `winter-base` at draft on `fe03988` and on the Round 5 freeze: one pixel with invalid values at about x 1742, y 0, on the glass's right outline; clean on `ed53408`. Sent to the glass's builder, whose `9a2212e` changed the outline between the two. If the final tier shows it too, Round 5's measures are red.
