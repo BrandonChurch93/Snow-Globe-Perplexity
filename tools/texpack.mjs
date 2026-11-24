@@ -7,7 +7,8 @@ import { webFiles } from './lib/webset.mjs'
 /**
  * Makes the web set (public/assets) from the full set (assets-full). The rules are in tools/lib/webset.mjs.
  * `--group winter,shared` packs only those groups, `--fresh` makes every file again instead of taking it from the cache,
- * `--table` prints one line per file. What was made is also written to out/work/texpack/report.json.
+ * `--table` prints one line per file: its size in the full set, as the web set held it before these rules (`plain`: a lossless
+ * PNG at the web size, a model as it is), and now. What was made is also written to out/work/texpack/report.json.
  */
 
 const cfg = loadConfig()
@@ -76,14 +77,21 @@ for (const group of groups) {
 writeAssetIndex()
 
 const mib = (n) => (n / 1048576).toFixed(3)
-writeJson(rel('out', 'work', 'texpack', 'report.json'), { time: new Date().toISOString(), cap, bytes, firstBytes: first, files: report })
+// `plain` is what a file weighed in the web set before these rules: the lossless PNG at the web size, or the model as it is.
+const plain = report.reduce((n, r) => n + (r.files[0]?.plain ?? r.files.reduce((m, f) => m + f.bytes, 0)), 0)
+writeJson(rel('out', 'work', 'texpack', 'report.json'), { time: new Date().toISOString(), cap, bytes, firstBytes: first, plainBytes: plain, files: report })
 if (args.table === true) {
   for (const r of report) {
-    console.log(`${`${r.group}/${r.source}`.padEnd(52)} full ${mib(r.fullBytes).padStart(7)}  web ${mib(r.files.reduce((n, f) => n + f.bytes, 0)).padStart(6)}  ${r.files.map((f) => `${f.name.replace(/^.*?(\.first)?(\.[a-z0-9]+)$/i, '$1$2')} ${mib(f.bytes)} ${f.coding}${f.max !== undefined ? `, largest change ${f.max} of 255` : ''}`).join(' | ')}`)
+    const was = r.files[0]?.plain
+    console.log(
+      `${`${r.group}/${r.source}`.padEnd(50)} full ${mib(r.fullBytes).padStart(7)}  plain ${(was === undefined ? '' : mib(was)).padStart(6)}  web ${mib(r.files.reduce((n, f) => n + f.bytes, 0)).padStart(6)}  ${r.files
+        .map((f) => `${f.name.replace(/^.*?(\.first)?(\.[a-z0-9]+)$/i, '$1$2')} ${mib(f.bytes)} ${f.width ? `${f.width}x${f.height} ` : ''}${f.coding}${f.max !== undefined ? `, largest change ${f.max} of 255` : ''}`)
+        .join(' | ')}`,
+    )
   }
 }
 console.log(
   `texpack: ${jobs.length} files of the full set into ${report.reduce((n, r) => n + r.files.length, 0)} of public/assets (${Object.entries(kinds)
     .map(([k, n]) => `${n} ${k}`)
-    .join(', ')}), ${mib(bytes)} MiB, of which the first picture needs ${mib(first)} MiB; ${written} written, asset index written`,
+    .join(', ')}), ${mib(bytes)} MiB (${mib(plain)} as lossless PNG and plain models), of which the first picture needs ${mib(first)} MiB; ${written} written, asset index written`,
 )

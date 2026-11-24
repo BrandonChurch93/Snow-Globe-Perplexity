@@ -26,7 +26,7 @@ export const glassDressing: Dressing = { tint: [0.86, 0.92, 1], amount: 0 }
 export const surfaceDressing: Dressing & { reachMm: number } = { tint: [0.86, 0.92, 1], amount: 0, reachMm: 132 }
 
 const look = {
-  glass: { cover: 1.7, haze: 0.3, slope: 0.55, micro: 1.1, glint: 1.6, light: 0.96, through: 2.4, thin: 0.6, thick: 0.8, blur: 0.006, bend: 0.012, room: 0.5 },
+  glass: { cover: 1.7, haze: 0.5, slope: 0.55, micro: 1.1, glint: 1.6, light: 0.96, through: 2.4, thin: 0.6, thick: 0.8, blur: 0.006, bend: 0.012, room: 0.5, soften: 0.3, rimMu: 0.3, front: 1.9, clear: [0.255, 0.28, 0.8] },
   slab: { cover: 2.2, film: 1.7, slope: 1.6, micro: 1.2, glint: 1.6, pool: 0.35, poolBack: 0.2, light: 2.65, wrap: 0.3, broad: 1.4, shade: 0.35, edge: 0.6, ball: 0.3, rim: 0.55, sky: 1.5, sugarMm: 0.34, clotMm: 1.15, room: 0.1, lace: 0.3, gritty: 0.75 },
 }
 const SNOW = { thin: [0.3, 0.43, 0.66], thick: [0.92, 0.945, 0.985], body: [0.9, 0.93, 0.98] }
@@ -174,13 +174,15 @@ void main() {
   vec3 m0 = texture(uGlassMap, uv, -0.6).rgb;
   vec3 m1 = texture(uGlassMap, uv + e2 * e, -0.6).rgb;
   vec3 m2 = texture(uGlassMap, uv + t2 * e, -0.6).rgb;
+  vec3 ms = texture(uGlassMap, uv, 1.4).rgb;
   vec3 mb = texture(uGlassMap, uv, 3.0).rgb;
   float on = smoothstep(0.0, FROST_SOFT, lvl - m0.g);
   float h0 = m0.r * on;
+  float hs = ms.r * smoothstep(0.0, 1.5 * FROST_SOFT, lvl - ms.g + 0.02);
   float h1 = m1.r * smoothstep(0.0, FROST_SOFT, lvl - m1.g);
   float h2 = m2.r * smoothstep(0.0, FROST_SOFT, lvl - m2.g);
   float haze = mb.r * smoothstep(0.0, 2.0 * FROST_SOFT, lvl - mb.g + 0.04);
-  float body = h0 * (0.45 + 1.5 * grain.r);
+  float body = mix(h0, 1.3 * hs, ${look.glass.soften.toFixed(3)}) * (0.45 + 1.5 * grain.r);
   float mmR = e * 2.0 * uShape.x * ${RS.toFixed(2)};
   float mmT = mmR * st / max(th, 0.05);
   vec2 slope = uShape.z * uGlassLook.z * vec2((h1 - h0) / mmR, (h2 - h0) / mmT);
@@ -192,15 +194,16 @@ void main() {
   vec3 ng = normalize(vStageWorld - uLensCentre);
   vec3 v = normalize(vStageWorld - cameraPosition);
   float mu = max(dot(ng, -v), 0.0);
-  float tau = uGlassLook.x * body / max(mu, 0.42) + uGlassLook.y * haze / max(mu, 0.3);
+  float tau = uGlassLook.x * body / max(mu, ${look.glass.rimMu.toFixed(3)}) + uGlassLook.y * haze / max(mu, 0.3);
   float alpha = 1.0 - exp(-tau);
+  alpha *= 1.0 - ${look.glass.clear[2]!.toFixed(3)} * (1.0 - smoothstep(${look.glass.clear[0]!.toFixed(3)}, ${look.glass.clear[1]!.toFixed(3)}, mu));
   float kd = dot(n, uKeyDir);
   float rd = dot(n, uRimDir);
-  float keyLit = max(kd, 0.0) * 0.8 + smoothstep(-1.0, 0.6, kd) * 0.3 + max(-kd, 0.0) * uGlassThru.x;
+  float keyLit = max(kd, 0.0) * ${look.glass.front.toFixed(3)} + smoothstep(-1.0, 0.6, kd) * 0.3 + max(-kd, 0.0) * uGlassThru.x;
   float rimLit = max(rd, 0.0) * 0.8 + smoothstep(-1.0, 0.6, rd) * 0.3 + max(-rd, 0.0) * uGlassThru.x;
   float thru = pow(clamp(dot(v, uRimDir), 0.0, 1.0), 2.0) * clamp(0.6 + 0.6 * dot(ng, uRimDir), 0.0, 1.0);
   vec3 lit = uKeyCol * keyLit + uRimCol * (rimLit + 1.5 * thru) + uSky * (0.55 + 0.45 * n.y);
-  vec3 albedo = mix(vec3(0.7, 0.8, 0.93), vec3(0.93, 0.95, 0.98), smoothstep(0.08, 0.7, h0));
+  vec3 albedo = mix(vec3(0.76, 0.84, 0.92), vec3(0.93, 0.95, 0.98), smoothstep(0.08, 0.7, h0));
   vec3 col = albedo * (lit * 0.3183 + stageGrid(vStageLocal * 0.9) * 0.6) * uGlint.w * (uGlassThru.y + uGlassThru.z * smoothstep(0.04, 0.6, h0));
   float pxMm = sqrt(length(dFdx(vStageWorld)) * length(dFdy(vStageWorld)));
   vec3 spark = frostGlints(ga * ${RS.toFixed(2)}, pxMm, ng, v, ${look.glass.room.toFixed(3)}) * uGlint.x * (0.06 + 1.5 * m0.b * on) * smoothstep(0.02, 0.25, alpha);

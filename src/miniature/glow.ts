@@ -34,6 +34,82 @@ export function glowPiece(source: THREE.BufferGeometry, kindOf: (i: number, a: n
 
 export const glowGeometry = (pieces: THREE.BufferGeometry[]): THREE.BufferGeometry => mergeGeometries(pieces)
 
+export interface HaloLook {
+  radiusMm: number
+  strength: number
+  hot: number
+  pullMm: number
+  flicker: number
+  cycles: number
+}
+
+const HALO_REACH = Math.sqrt(3)
+
+export function haloGeometry(points: readonly (readonly [number, number, number])[], radiusMm: number): THREE.BufferGeometry {
+  const ball = new THREE.OctahedronGeometry(radiusMm * HALO_REACH, 0)
+  const src = ball.getAttribute('position')
+  const n = src.count
+  const pos = new Float32Array(points.length * n * 3)
+  const at = new Float32Array(points.length * n * 4)
+  points.forEach((p, k) => {
+    for (let i = 0; i < n; i++) {
+      const o = k * n + i
+      pos.set([p[0] + src.getX(i), p[1] + src.getY(i), p[2] + src.getZ(i)], o * 3)
+      at.set([p[0], p[1], p[2], (k * 0.381966) % 1], o * 4)
+    }
+  })
+  const g = new THREE.BufferGeometry()
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3))
+  g.setAttribute('aHalo', new THREE.BufferAttribute(at, 4))
+  return g
+}
+
+export function haloMaterial(part: string, edge: readonly [number, number, number], core: readonly [number, number, number], look: HaloLook, clock: THREE.IUniform<number>): THREE.ShaderMaterial {
+  return stageShader({
+    part,
+    standIn: false,
+    inside: true,
+    change: 'light',
+    uniforms: { uClock: clock },
+    params: { side: THREE.FrontSide, transparent: false, blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.SrcAlphaFactor, blendDst: THREE.OneMinusSrcAlphaFactor, depthWrite: false },
+    vertexPars: `
+attribute vec4 aHalo;
+varying vec4 vHalo;
+`,
+    vertexMain: `
+vHalo = vec4((modelMatrix * vec4(aHalo.xyz, 1.0)).xyz, aHalo.w);
+#ifdef STAGE_INSIDE
+vec4 haloNear = projectionMatrix * vec4(stageView.xyz * (1.0 - ${look.pullMm.toFixed(2)} / length(stageView.xyz)), 1.0);
+gl_Position.z = haloNear.z / haloNear.w * gl_Position.w;
+#endif
+`,
+    fragment: `
+uniform float uClock;
+varying vec4 vHalo;
+void main() {
+  if (uDiag != 0) discard;
+  float c = stageChange();
+  if (stageGone(c)) discard;
+  #ifdef STAGE_INSIDE
+  if (stageOutside()) discard;
+  #endif
+  vec3 d = normalize(vStagePlaced - cameraPosition);
+  vec3 oc = cameraPosition - uLensCentre;
+  float b = dot(oc, d);
+  float h = b * b - dot(oc, oc) + uLens.x * uLens.x;
+  vec3 sight = normalize(cameraPosition + d * (-b - sqrt(max(h, 0.0))) - vStageWorld);
+  vec3 off = cross(sight, vStageWorld - vHalo.xyz);
+  float g = max(0.0, 1.0 - dot(off, off) / ${(look.radiusMm * look.radiusMm).toFixed(4)});
+  float beat = 1.0 + ${look.flicker.toFixed(3)} * sin(6.2831853 * (${look.cycles.toFixed(1)} * uClock + vHalo.w));
+  float glow = g * g;
+  float hot = pow(g, 6.0);
+  float fog = stageVeil(vStageAux.x);
+  gl_FragColor = vec4(mix(${v3(edge)}, ${v3(core)}, glow) * (1.0 + ${look.hot.toFixed(2)} * hot), clamp((g * g * g * ${look.strength.toFixed(3)} + hot) * beat, 0.0, 1.0) * (1.0 - fog));
+}
+`,
+  })
+}
+
 const v3 = (c: readonly [number, number, number]): string => `vec3(${c[0].toFixed(4)}, ${c[1].toFixed(4)}, ${c[2].toFixed(4)})`
 
 export function glowMaterial(part: string, look: GlowLook, clock: THREE.IUniform<number>): THREE.ShaderMaterial {
