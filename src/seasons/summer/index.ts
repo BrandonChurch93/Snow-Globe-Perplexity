@@ -1,31 +1,62 @@
-import type { Rgb } from '../../core/materials'
-import { anchors } from '../../scene/layout'
-import { blockArrival, blockBase, blockLights, blockMiniature, type Palette } from '../blockout'
-import type { InnerLight, SeasonKit } from '../kit'
+import type * as THREE from 'three'
+import type { SdfGrid } from '../../core/stage'
+import type { KitMoment, SeasonKit } from '../kit'
+import * as arrivalPart from './arrival'
+import { backdrop } from './backdrop'
+import * as basePart from './base'
+import * as glassPart from './glass'
+import * as miniaturePart from './miniature'
+import { rig } from './rig'
+import * as slabPart from './slab'
+import { particles, standIns as veilStandIns, veil } from './veil'
 
-const season = 'summer'
-const main: Rgb = [0.36, 0.2, 0.06]
-const palette: Palette = { ground: [0.2, 0.36, 0.08], cottage: [0.55, 0.47, 0.36], roof: [0.42, 0.2, 0.1], chimney: [0.38, 0.32, 0.27], trunk: [0.22, 0.14, 0.08], crown: [0.12, 0.38, 0.1], post: [0.03, 0.03, 0.035], lamp: [1, 0.85, 0.5], pond: [0.1, 0.3, 0.42], fence: [0.5, 0.4, 0.26], path: [0.56, 0.5, 0.42] }
-const arrivalTint: Rgb = [0.85, 0.95, 0.3]
-const innerLights: InnerLight[] = [
-    { at: anchors.lamp, color: [1, 0.8, 0.4], power: 0.72, reachMm: 26, flicker: 0.04, cycles: 2, phase: 0.3 },
-    { at: anchors.window, color: [1, 0.7, 0.3], power: 0.52, reachMm: 18, flicker: 0.06, cycles: 3, phase: 0.6 },
-    { at: anchors.pond, color: [0.75, 1, 0.3], power: 0.44, reachMm: 24, flicker: 0.3, cycles: 6, phase: 0.2 },
-  ]
+// Wiring only. Each part of the season lives in its own file with one owner; this file is `/root`'s.
+interface Optional {
+  dressing?: () => THREE.Object3D
+  collider?: () => SdfGrid
+  standIns?: string[]
+}
+const glass = glassPart as Optional
+const slab = slabPart as Optional
+const mini = miniaturePart as Optional
+const base = basePart as Optional
+const arrival = arrivalPart as Optional
 
 export const kit: SeasonKit = {
-  season,
-  main,
-  standIns: [`glass-dressing-${season}`, `veil-${season}`],
-  base: () => blockBase(season, main, 0.74),
-  miniature: () => blockMiniature(season, palette),
-  arrival: () => blockArrival(season, arrivalTint),
-  lights: () => blockLights(season, innerLights),
-  glassDressing: { tint: [1, 0.9, 0.6], amount: 0.06 },
-  surfaceDressing: { tint: [0.9, 0.75, 0.3], amount: 0.28, reachMm: 130 },
-  rig: { key: { color: [1, 0.74, 0.42], intensity: 2.5, from: [-340, 260, 300] }, rim: { color: [0.4, 0.6, 0.9], intensity: 0.9, from: [300, 240, -340] }, sky: [0.3, 0.3, 0.42], ground: [0.1, 0.085, 0.075], fill: 1.5 },
-  innerLights,
-  veil: { tint: [1, 0.86, 0.5], density: 0.1, rest: 0.0014 },
-  backdrop: { colors: [[1, 0.7, 0.3], [1, 0.85, 0.5], [0.4, 0.75, 0.8], [0.8, 1, 0.4]], room: [0.0062, 0.0056, 0.0086], floor: [0.012, 0.0108, 0.0158] },
-  particles: { firefly: { color: [0.8, 1, 0.3], glow: 5 }, seed: { color: [0.95, 0.93, 0.85], glow: 0 }, mote: { color: [1, 0.9, 0.6], glow: 0.3 } },
+  season: basePart.season,
+  main: basePart.main,
+  prepare: async () => {
+    await Promise.all([basePart.prepare(), miniaturePart.prepare(), glassPart.prepare(), slabPart.prepare(), arrivalPart.prepare()])
+  },
+  base: basePart.base,
+  miniature: miniaturePart.miniature,
+  arrival: arrivalPart.arrival,
+  lights: miniaturePart.lights,
+  ...(mini.collider ? { collider: mini.collider } : {}),
+  ...(glass.dressing || slab.dressing
+    ? { dressing: () => ({ ...(glass.dressing ? { glass: glass.dressing() } : {}), ...(slab.dressing ? { surface: slab.dressing() } : {}) }) }
+    : {}),
+  get standIns() {
+    return [...(base.standIns ?? []), ...(mini.standIns ?? []), ...(glass.standIns ?? []), ...(slab.standIns ?? []), ...(arrival.standIns ?? []), ...veilStandIns]
+  },
+  update: (moment: KitMoment) => {
+    basePart.update(moment)
+    miniaturePart.update(moment)
+    arrivalPart.update(moment)
+    glassPart.update(moment)
+    slabPart.update(moment)
+  },
+  get glassDressing() {
+    return glassPart.glassDressing
+  },
+  get surfaceDressing() {
+    return slabPart.surfaceDressing
+  },
+  rig,
+  get innerLights() {
+    return miniaturePart.innerLights()
+  },
+  veil,
+  backdrop,
+  particles,
 }

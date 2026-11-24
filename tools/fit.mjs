@@ -7,13 +7,19 @@ import { REF_RIG, REF_SIZE } from './lib/refcam.mjs'
 
 const args = parseArgs(process.argv.slice(2))
 const season = args.season && args.season !== true ? String(args.season) : 'winter'
-const approved = rel('references', 'approved', `${season}-rest.png`)
+const state = args.state && args.state !== true ? String(args.state) : 'rest'
+// At rest the build is put beside the season's at-rest approved image; one moment after a landing beside its mid-shake image.
+const approved = rel('references', 'approved', `${season}-${state === 'landed' ? 'shake' : 'rest'}.png`)
 if (!fs.existsSync(approved)) throw new Error(`no approved image at ${approved}`)
 const name = args.name && args.name !== true ? String(args.name) : season
 const wide = Number(args.wide ?? 1200)
 const box = args.box && args.box !== true ? String(args.box).split(',').map(Number) : [0, 0, REF_SIZE[0], REF_SIZE[1]]
 if (box.length !== 4 || box.some((v) => !Number.isFinite(v)) || box[2] <= box[0] || box[3] <= box[1]) throw new Error('--box takes x0,y0,x1,y1 in pixels of the approved image')
-const spec = stillSpec({ season, state: args.state ?? 'rest', camera: 'hero', tier: args.tier ?? 'draft', format: args.format, assets: args.assets, diag: args.diag, rig: REF_RIG })
+// A season whose approved image was drawn by a slightly different camera gives its own numbers in
+// `assets-src/refrig/<season>.json` (any of fovDeg, distanceMm, yawDeg, pitchDeg, aimHeightMm); winter's are `REF_RIG`.
+const rigFile = rel('assets-src', 'refrig', `${season}.json`)
+const rig = fs.existsSync(rigFile) ? { ...REF_RIG, ...JSON.parse(fs.readFileSync(rigFile, 'utf8')) } : REF_RIG
+const spec = stillSpec({ season, state, camera: 'hero', tier: args.tier ?? 'draft', format: args.format, assets: args.assets, diag: args.diag, rig })
 const dir = rel('out', 'work', 'fit')
 fs.mkdirSync(dir, { recursive: true })
 const session = await Session.open({ local: args.local === true })
