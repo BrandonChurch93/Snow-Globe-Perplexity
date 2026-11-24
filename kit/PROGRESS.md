@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 27 · 2026-11-24 10:23 UTC
+Status 28 · 2026-11-24 10:43 UTC
 
-- `out/stills/status/status-27-1.jpg`: The base's profile measured from the approved image and drawn back onto it as rings. The model is being built to these numbers.
-- `out/stills/status/status-27-2.jpg`: Bark sheet, take 1, made from a crop of the approved trunk. Not yet on the model.
-- `out/stills/status/status-27-3.jpg`: Needle sheet, take 1, made from a crop of the approved crown. Not yet on the model.
-- `out/stills/status/status-27-4.jpg`: Approved image above, the build below before the village work. Every part in the build is still a stand-in.
+- `out/stills/status/status-28-1.jpg`: Glass builder: the approved image above and the rebuilt glass shell below on the stand-in miniature. A starting point. Still wrong: grey wash through the liquid and an even grey rim and a blown highlight
+- `out/stills/status/status-28-2.jpg`: Light builder: the approved image above and the first pass of the light engine below on the stand-in miniature. Still wrong: the key is too strong and the warm pools by the lamp and the window do not read
+- `out/stills/status/status-28-3.jpg`: Tree builder: the real trunk from the film's close camera with bark from one generated sheet. Still wrong: no crown and no snow on the roots and the bark is too orange. The cottage and lamp beside it are stand-ins
+- `out/stills/status/status-28-4.jpg`: Three cameras framed again on the stand-in globe, draft: surface (the foot of the base above, the surface and the globe's reflection under it), interior (the miniature fills the height), low (looking up at the whole globe from 24 mm above the surface) (by engine_engineer_2)
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 10:33 UTC
-clock: phase 3, tick of 9.2 minutes
-phase 3: 2.11 h used of its 11.00 h box
-allowance (before the review): 8.72 h used of 36.00 h allowed
-all time before the review: 8.72 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 10:50 UTC
+clock: phase 3, tick of 6.1 minutes
+phase 3: 2.38 h used of its 11.00 h box
+allowance (before the review): 8.99 h used of 36.00 h allowed
+all time before the review: 8.99 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 10
+minutes since the last status: 6
 ```
 
 ## Phases
@@ -865,3 +865,7 @@ One entry per task: when it started, what it did, where it stopped.
 - 2026-11-24 10:23 UTC. Status 27 posted: four pictures (the base's profile measured from the approved image and drawn back onto it; the bark and needle sheets, take 1, from crops of the approved tree; the village's starting pair), all starting points or measurements, none finished work. `agent/p3-village` at `487b866` merged into `main` (the layout moved to the approved image); four tests pinned to the stand-in's heights fail (two in `tests/framing.test.ts`, two in `tests/film.test.ts`) and are the Builder's to fit with `cameras.interior` and `cameras.macro` before `main` is pushed.
 
 - 2026-11-24 10:24 to 10:42 UTC. After a compaction: this file, the addenda folder and Phase 3's read first files read again. `agent/p3-village` (`487b866`, the picture's layout) merged into `main`; the four tests it turned red were mine and are green again (decision 43: new `macro` and `interior` cameras, the macro focus, two bounds). Decisions 44 (key light from the upper right, as the image shows) and 45 (lift and tilt of the shake) logged. Two changes in frozen files asked for by builders: `globePoseAt` in `src/film/timeline.ts` and `loopGlobe` in `src/film/loop.ts` now ask a shake's path past its bar too, so the tilt can settle after the landing (`shake_builder`; the stand-in path answers rest there, so nothing moves yet); `standIn: false` on the light slice in `src/scene/stage.ts` is held until `agent/p3-light` is merged (`light_builder`). Earlier and not yet written here: `SourceSwitch` forwards `cover` (`26f5141`, asked by `liquid_builder`); `repo_courier` also watches the builders' looks branches and wakes me when one moves. New looks seen: the tree's real trunk at `macro` and `hero` (bare, no crown yet), the liquid's and the shake's baselines. Clock ticked 10:34.
+
+- 2026-11-24 10:44 UTC. Status 28 posted: three pictures from the builders' looks (the rebuilt glass shell against the approved image, the first pass of the light engine against it, the real trunk at the close camera), all starting points on stand-ins, none finished work. `main` pushed as `034f0bb`; all ten builders told to merge it. Next: wait on the builders, tick the clock, the next status by 11:14 UTC; first reports at about 11:30 UTC.
+
+- 2026-11-24 10:50 UTC. Decision 45's numbers, measured by `shake_builder` through `reachOf` at `hero`: `shake.liftMm` 7.25 (the top of the lift leans back 4.1 to 4.5 degrees and stands 7.5 to 9 mm further from the lens, and keeps 4.59 percent of the frame above the glass in the worst case; 7.5 mm does not hold with a lean of "a few degrees") and `shake.tiltDeg` 6, read as the cap on the whole angle between the globe's axis and the vertical (the rim rule allows 6.19 degrees at 7.25 mm). Tried on `main` with the stand-in path: two tests go red (the film test's stroke height against 0.7 of the lift, by 0.04 mm; `tests/sim.test.ts`, 91 percent of the particles floating at 0.7 of the bar against the 97 it asks), so the two numbers reach `main` together with the real path and the liquid's answer to it, and `main` stays at 13.5 and 14 until then. `liquid_builder` was told to build against the smaller shake and that no number in a test moves. `village_builder` pushed `0d0f0c8` (chimney on the left slope of the roof, roof slab 0.65 mm, as the picture has them; the shared model script). Clock ticked 10:50.
