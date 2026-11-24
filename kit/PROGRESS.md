@@ -37,16 +37,16 @@ Status 37 · 2026-11-24 14:24 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 14:24 UTC
+2026-11-24 14:28 UTC
 clock: phase 3, tick of 4.7 minutes
-phase 3: 5.95 h used of its 11.00 h box
-allowance (before the review): 12.56 h used of 36.00 h allowed
-all time before the review: 12.56 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+phase 3: 6.02 h used of its 11.00 h box
+allowance (before the review): 12.64 h used of 36.00 h allowed
+all time before the review: 12.64 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 4
 ```
 
 ## Phases
@@ -996,3 +996,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 14:05 to 14:25 UTC: Round 3's answers. `round_renderer` reported (measures 24 lines, 1 red; pack of R1 to R3, 34 files); the pack was fetched from `agent/p3-round3-pack` at `74487b4`, not merged. `gate_runner` started on a clean clone of `2faac9e` for the round's machine checks. Critics asked at 14:07: R1 on `gpt_6_2_sol` (4; 5 severe, 10 major), R3 part 1 on `claude_opus_5_5` (6; 1 severe, 7 major, 3 minor), R3 part 2 on `gemini_4_carbon` (3; 5 severe, 12 major, 1 minor), R3 part 3 on `kimi_k3` (4; 3 severe, 7 major, 2 minor). The kit's answer example names `R3` in every role's message, so the R1 critic's JSON says `"critic": "R3"`; it is kept as sent, in `R1.json`. R2: 25 jurors, five an image, on `claude_sonnet_5_5`, `gpt_6_2_astra`, `gemini_neon`, `pplx_computer_glm_5_3_1009` and `kimi_k3`, each a fresh agent with one image, the kit's question word for word and one more sentence, "Send your answer as one message to `/root`.", without which an answer cannot reach the Builder; all 25 answered between 14:11 and 14:17, none replaced. Judged: settled 1 of 5, landed 2 of 5, rest 1 of 5, so 4 of 15 (0.27). Controls: approved mid-shake 5 of 5, approved at rest 2 of 5, so 7 of 10 (0.70). The bar is 0.70 less `quality.jury.maxShareGap` 0.2 = 0.50: R2 fails. Left out of the jury because their framing cannot be cropped to what a control shows: `winter-interior`, `winter-base`, `winter-surface`, `winter-macro`. Findings of R1 and R3 parts 1 and 3, with the jurors' words, went to nine finishers at 14:15, each with my reading of the approved crops.
 - 14:15 to 14:23: merged `agent/p3-frost` `85fc363`, `-village` `0a146c3`, `-base` `69784e1`, `-flakes` `cf5a9a1`, `-glass` `3160105`, `-light` `43bf35c`, `-load` `da6fda2`; types clean, 394 tests pass; `npm run make` for `base-winter`, `frost-winter`, `village-winter`; the texture pack is now 21.8 MiB in 41 files (34 webp), of which the first picture needs 9.67 MiB (`host.firstLoadMaxMb` 16). Draft stills of rest and landed: 603178 triangles at rest (the `high` level; open item 34 watches `low`).
 - 14:25 Status 37: the two pairs (approved beside the build at 14:23), Round 3's first scores.
+
+- 14:28 UTC: published from `98a15a2` plus the built files of 14:21 (not yet committed: the round's one commit comes with Round 4). https://snow-globe-seasons.pplx.app , Visibility: Organization. The built app shows its first picture in 11.3 s here, 43 requests of which 32 are assets, no errors; the first load is 9.67 MiB, down from 44. The review page was rebuilt with it (motion: nothing yet).
