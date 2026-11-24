@@ -49,12 +49,12 @@ const BUBBLE_SECONDS = 0.12
 const AMBIENT_FLOW = 0.45
 const AMBIENT_TURN = 0.008
 const TURB_EPS = 0.2
+const OVERTURN = 1
 
 export const AMBIENT_MAX = 1.5 * AMBIENT_FLOW * 1.2 + AMBIENT_TURN * 1.2 * LIQUID_R
 
 const INV_R2 = 1 / (LIQUID_R * LIQUID_R)
 const INV_REACH = 1 / SOLID_REACH_MM
-export const LIQUID_GAUGE = 0.5 * LIQUID_R * LIQUID_R
 const CELL = (2 * LIQUID_R) / (NOISE_N - 1)
 const INV_CELL = 1 / CELL
 const NOISE_LEN = NOISE_N * NOISE_N * NOISE_N * 3
@@ -62,7 +62,6 @@ const NOISE_LEN = NOISE_N * NOISE_N * NOISE_N * 3
 interface Constants {
   fields: Float32Array[]
   pots: Float32Array[]
-  potPeak: number
   axis: [number, number, number]
   hand: number
 }
@@ -147,20 +146,13 @@ function build(): Constants {
     fields.push(field)
     pots.push(pot)
   }
-  let potPeak = 0
-  for (let q = 0; q < NOISE_LEN; q += 3) {
-    let sum = 0
-    for (const pot of pots) sum += pot[q]! * pot[q]! + pot[q + 1]! * pot[q + 1]! + pot[q + 2]! * pot[q + 2]!
-    if (sum > potPeak) potPeak = sum
-  }
-  potPeak = Math.sqrt(potPeak)
   const lean = stream('liquid:axis')
   const tip = lean.range(0.09, 0.15)
   const about = lean.next() * TAU
   const ax = tip * Math.cos(about)
   const az = tip * Math.sin(about)
   const len = Math.sqrt(ax * ax + 1 + az * az)
-  return { fields, pots, potPeak, axis: [ax / len, 1 / len, az / len], hand: lean.sign() }
+  return { fields, pots, axis: [ax / len, 1 / len, az / len], hand: lean.sign() }
 }
 
 export interface LiquidMotion {
@@ -188,7 +180,6 @@ export class Liquid {
   readonly motion: LiquidMotion = { ax: 0, ay: 0, az: 0, gx: 0, gy: -1, gz: 0 }
   noise = false
   maxSpeed = 0
-  maxSurface = 0
   private readonly mixed = new Float64Array(3)
   private readonly work = new Float64Array(6)
   private readonly pending = new Float64Array(3)
@@ -360,7 +351,7 @@ export class Liquid {
     c[1] = L[1]! + AMBIENT_TURN * Math.cos(th + 1.1)
     c[2] = L[2]! + AMBIENT_TURN * 0.3 * c2
     c[3] = 1.5 * (L[3]! + AMBIENT_FLOW * c1)
-    c[4] = 1.5 * (L[4]! + AMBIENT_FLOW * 0.5 * s2)
+    c[4] = 1.5 * (L[4]! + AMBIENT_FLOW * 0.5 * s2) + (OVERTURN * L[6]! * L[6]!) / TURBULENCE_MAX
     c[5] = 1.5 * (L[5]! + AMBIENT_FLOW * s1)
     const turb = L[6]!
     c[6] = turb
@@ -387,17 +378,16 @@ export class Liquid {
     const mix = Math.sqrt(wa * wa + wb * wb + wc * wc)
     const loud = mix > turb ? mix : turb
     this.maxSpeed = w * LIQUID_R + h * 1.05 + loud * 1.6
-    this.maxSurface = this.maxSpeed + 2 * INV_REACH * (0.5 * LIQUID_GAUGE * w + 0.2 * LIQUID_R * h + this.k.potPeak * loud)
   }
 
-  potentialAt(x: number, y: number, z: number, out: Float64Array | number[]): void {
+  potentialAt(x: number, y: number, z: number, ring: number, out: Float64Array | number[]): void {
     const c = this.coef
     const r2 = x * x + y * y + z * z
-    const turn = -0.5 * (r2 - LIQUID_GAUGE)
+    const turn = -0.5 * (r2 - LIQUID_R * LIQUID_R)
     const q = r2 * INV_R2
     const hill = 0.5 * (1 - (q > 1 ? 1 : q))
     let ax = turn * c[0]! + hill * (c[4]! * z - c[5]! * y)
-    let ay = turn * c[1]! + hill * (c[5]! * x - c[3]! * z)
+    let ay = -0.5 * (x * x + z * z - ring) * c[1]! + hill * (c[5]! * x - c[3]! * z)
     let az = turn * c[2]! + hill * (c[3]! * y - c[4]! * x)
     if (this.noise) {
       const g = this.pot
@@ -422,39 +412,51 @@ export class Liquid {
       const w01 = (1 - ty) * tz
       const w11 = ty * tz
       const sx = 1 - tx
-      for (let j = 0; j < 3; j++) {
-        const v =
-          (g[o + j]! * sx + g[o + 3 + j]! * tx) * w00 +
-          (g[o + dy + j]! * sx + g[o + dy + 3 + j]! * tx) * w10 +
-          (g[o + dz + j]! * sx + g[o + dz + 3 + j]! * tx) * w01 +
-          (g[o + dz + dy + j]! * sx + g[o + dz + dy + 3 + j]! * tx) * w11
-        if (j === 0) ax += v
-        else if (j === 1) ay += v
-        else az += v
-      }
+      const at = (j: number): number =>
+        (g[o + j]! * sx + g[o + 3 + j]! * tx) * w00 +
+        (g[o + dy + j]! * sx + g[o + dy + 3 + j]! * tx) * w10 +
+        (g[o + dz + j]! * sx + g[o + dz + 3 + j]! * tx) * w01 +
+        (g[o + dz + dy + j]! * sx + g[o + dz + dy + 3 + j]! * tx) * w11
+      ax += at(0)
+      ay += at(1)
+      az += at(2)
     }
     out[0] = ax
     out[1] = ay
     out[2] = az
   }
 
-  flowAt(x: number, y: number, z: number, d: number, gx: number, gy: number, gz: number, out: Float64Array | number[]): void {
-    if (d >= SOLID_REACH_MM) {
-      this.velocityAt(x, y, z, out)
-      return
-    }
+  flowAt(x: number, y: number, z: number, d: number, gx: number, gy: number, gz: number, ring: number, out: Float64Array | number[]): number {
     const w = this.work
     this.velocityAt(x, y, z, w)
     const ux = w[0]!
     const uy = w[1]!
     const uz = w[2]!
-    this.potentialAt(x, y, z, w)
+    const open = ux * ux + uy * uy + uz * uz
+    if (d >= SOLID_REACH_MM) {
+      out[0] = ux
+      out[1] = uy
+      out[2] = uz
+      return open
+    }
+    this.potentialAt(x, y, z, ring, w)
     const s = d <= 0 ? 1 : 1 - d * INV_REACH
     const m = 1 - s * s
     const dm = 2 * s * INV_REACH
-    out[0] = m * ux + dm * (gy * w[2]! - gz * w[1]!)
-    out[1] = m * uy + dm * (gz * w[0]! - gx * w[2]!)
-    out[2] = m * uz + dm * (gx * w[1]! - gy * w[0]!)
+    let fx = m * ux + dm * (gy * w[2]! - gz * w[1]!)
+    let fy = m * uy + dm * (gz * w[0]! - gx * w[2]!)
+    let fz = m * uz + dm * (gx * w[1]! - gy * w[0]!)
+    const away = ux * gx + uy * gy + uz * gz
+    if (away > 0) {
+      const rise = ((1 - m) * away) / (gx * gx + gy * gy + gz * gz)
+      fx += gx * rise
+      fy += gy * rise
+      fz += gz * rise
+    }
+    out[0] = fx
+    out[1] = fy
+    out[2] = fz
+    return open
   }
 
   velocityAt(x: number, y: number, z: number, out: Float64Array | number[]): void {

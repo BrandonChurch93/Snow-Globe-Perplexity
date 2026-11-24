@@ -5,7 +5,7 @@ import type { ParticleSource } from '../src/core/stage'
 import { barSeconds, beatSeconds, stillTimeline, type Timeline } from '../src/film/timeline'
 import { LIQUID_LENGTH, LIQUID_TURBULENCE, LIQUID_TURN } from '../src/globe/liquid'
 import { makeShake } from '../src/shake/table'
-import { packSnapshot, ParticleEngine, STATE_HIDDEN, STATE_LIQUID, STATE_REST, STATE_SNAG, unpackSnapshot, WALL } from '../src/particles/engine/engine'
+import { COVER_N, packSnapshot, ParticleEngine, STATE_HIDDEN, STATE_LIQUID, STATE_REST, STATE_SNAG, unpackSnapshot, WALL } from '../src/particles/engine/engine'
 import { countsIn, KINDS, POOL, SEASONS } from '../src/particles/engine/kinds'
 import { blockoutSdf, buildSdf, GROUND_Y, INNER_R, sdfSample } from '../src/particles/engine/sdf'
 import { EngineClient, type EnginePort } from '../src/particles/engine/client'
@@ -440,6 +440,9 @@ describe('the worker wrapper', () => {
     expect(client.kindOf).toEqual(direct.kindOf)
     expect(client.state).toEqual(direct.state)
     expect(client.liquid).toEqual(direct.liquid)
+    expect(client.cover.n).toBe(direct.cover.n)
+    expect(client.cover.spanMm).toBe(direct.cover.spanMm)
+    expect(client.cover.mm).toEqual(direct.cover.mm)
   }
 
   it('a timeline crosses to the worker as plain data and is rebuilt the same', () => {
@@ -485,7 +488,7 @@ describe('the worker wrapper', () => {
     fresh.reset()
     fresh.advanceTo(40, idle('summer'))
     matches(client, fresh)
-    expect(frameBytes(client.count)).toBe(LIQUID_LENGTH * 8 + client.count * 38)
+    expect(frameBytes(client.count)).toBe(LIQUID_LENGTH * 8 + COVER_N * COVER_N * 4 + client.count * 38)
   })
 })
 
