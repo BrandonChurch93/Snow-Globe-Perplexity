@@ -25,3 +25,7 @@ r6-light-1-change-f92-108-draft.jpg: the change on main fe03988 with the new sha
 r6-light-2-change-f84-100-review.jpg: the same change at review tier on main 0eb6641 (the old window, frames 84 to 100), agent/p3-light eaa60a9.
 r6-light-3-rest-pair.jpg: rest, approved left, build right (fit camera, draft, main 0eb6641 with eaa60a9). Lower glass median 126 against 113, warm bright share 0.127 against 0.087: over since the Round 5 merges.
 r6-light-4-landed-pair.jpg: landed, approved left, build right (same state). Lower median 181 against 179, warm bright 0.198 against 0.204, miniature 0.302 against 0.306. The low bank is still a flat grey band.
+
+Round 6 window, light_fixer, the final state (pushed 18:5x UTC)
+r6-light-5-rest-pair-final.jpg: rest, approved left, build right (fit camera, draft, main babb71d with agent/p3-light dfb088d). Lower glass median 127 against 113, warm bright share 0.142 against 0.087.
+r6-light-6-landed-pair-final.jpg: landed, approved left, build right (same state, the new shake path). Lower median 185 against 179, warm bright 0.156 against 0.204, miniature 0.225 against 0.306, upper median 159 against 140. The low storm is an opaque cream slab over the cottage's lower half, the lamp and the pond; the gold is behind it.
