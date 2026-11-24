@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 14 · 2026-11-24 06:06 UTC
+Status 15 · 2026-11-24 06:28 UTC
 
-- `out/stills/status/status-14-1.jpg`: The whole film on the new stage, twelve frames from start to end: the pull back from inside the glass, four shakes with the season changing in each, a different camera between them, and the push back in that closes the loop. Every shape is a stand-in. (by Builder)
-- `out/stills/status/status-14-2.jpg`: The first shake on the new stage from the locked hero camera, twelve frames across the bar: the lift, six strokes, the set down. The storm hides the miniature, the base and the lights turn from winter to spring behind it, and the globe lands on the bar line. Everything is a stand-in. (by Builder)
-- `out/stills/status/status-14-3.jpg`: Sheet: 12 frames across the shot shake-1, frames 576 to 719, preview, draft
-- `out/stills/status/status-14-4.jpg`: The new stage on main, winter at rest from the hero camera, draft samples. Everything in it is a stand-in: a clear ball with simple refraction, the miniature as blocks, a turned base in one colour, sprite lights behind. The snow in this picture still comes from the old test simulation. (by Builder)
+- `out/stills/status/status-15-1.jpg`: The four seasons at rest with the real particle engine at its full pool: winter, spring, summer, fall. Hero camera, draft tier. Miniature, base and lights are stand-ins.
+- `out/stills/status/status-15-2.jpg`: The six cameras on the winter stand-in stage. Macro (top middle) is newly fitted: the lit cottage, the lamppost and the foot of the tree, no edge of the glass.
+- `out/stills/status/status-15-3.jpg`: Film B, frame 749 at 60 frames a second, preview, draft
+- `out/stills/status/status-15-4.jpg`: Still: winter rest hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 06:06 UTC
-clock: phase 2, tick of 19.5 minutes
-phase 2: 3.08 h used of its 6.00 h box
-allowance (before the review): 4.27 h used of 36.00 h allowed
-all time before the review: 4.27 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 06:28 UTC
+clock: phase 2, tick of 0.2 minutes
+phase 2: 3.45 h used of its 6.00 h box
+allowance (before the review): 4.64 h used of 36.00 h allowed
+all time before the review: 4.64 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
@@ -482,6 +482,8 @@ Severe and major issues still open when a limit was reached: the unit, the still
 7. In `auto` the quality governor never stepped down at 2 frames a second: it waits for `live.probeFrames` frames between two rests, which a slow machine never reaches. To be fixed by `film_app_builder` so that a slow machine steps down by time.
 8. With reduced motion, and on a jump from the menu, the particles change in one frame at the end of the dissolve. A cross-fade needs the dissolve's progress from the session. Carried to Phase 5 (`globe`).
 
+   - 06:25 update to item 6: summer's seeds are now 0.5 to 1.1 mm and the scene shows through at rest. Reduced, not closed: all 9000 seeds and 40000 motes stay afloat, so summer is the busiest season at rest, and the winter storm still fills the glass white in the middle of a live shake. Carried to Phase 4 (`summer`) and Phase 3 (`winter`), where the particle looks are judged.
+
 ## Review items not done
 
 none
@@ -641,3 +643,9 @@ One entry per task: when it started, what it did, where it stopped.
 
 - 06:17 Three reports in. `measure_pack_builder` (`ece90c6`): the opening's sheet in the blockout pack now holds frame 0 and the frame marked `180 3.00 s reveal`. `film_app_builder` (`dd84023`): every rule of `kit/01-FILM.md` checked on the real stage by test and on sheets; the opening's prompt card fixed (a quote inside a style attribute had ended it early at every format); the card loop moved back to fit the square crop (decision 31); the two dev calls for the packs (`dev.appScript`, `dev.renderAppFrame`, `dev.interfaceState`). `particles_builder` (`e76371a`): its engine is behind the page and the capture path with the stage's collider and emitters; M6 green with 0 of 102000 inside a solid; a seek gives the same arrays as a straight run; the worker is not wired (decision 32).
 - 06:19 All four branches merged: types clean, the build runs. Hero aim to 75 and the hold's drop to 7.5 mm (decision 30); `npm run cut` run again; 273 tests green.
+
+- 06:25 `particles_builder` addendum: seeds are 0.5 to 1.1 mm (were 1.4 to 2.6), so summer at rest shows the scene through the drift. Merged `agent/particles` at `3eb65fb`, `agent/film-app` at `0bf8926` (cut files on hero aim 75, card loop camera at 783.5 mm).
+- 06:25 the pre-round checks on `3ba641a`: determinism pass (3 pictures, 4 page loads, 106 s), local render proof written (60 frames, prores 422 hq, 960 x 540, 1.12 s a frame).
+- 06:27 `engine_builder`: macro fitted, fov 16, distance 130, yaw -13, pitch 3, aim 67 (corner reach 50.65 mm against 51.0). Frame 0 shows the cottage, the lamppost and the trunk with no edge of the glass and no base pixel. Merged `agent/engine` at `84b4fd3`; cut files written again. Asked for the macro focus on the cottage front, limit 06:38.
+- 06:28 Status 15 posted with two pictures: the four seasons with the particle engine, the six cameras. Main at `44d54fa`: types clean, 274 tests, build ok.
+- 06:30 `film_tools_builder` finished: a whole draft film B on the old hash `17895cb44206dea9`, 1800 frames at 0.70 s a frame in 22 minutes on one sandbox VM of 4 cores. It cannot join on the current build. It stands as the measure for step 14: about 22 minutes on one VM, less on five.

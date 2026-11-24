@@ -1,16 +1,17 @@
-# Status 14
+# Status 15
 
-2026-11-24 06:06 UTC
+2026-11-24 06:28 UTC
 
-- The new stage is on main in place of the measuring scene: a clear ball with simple refraction, the miniature as blocks, a base and lights per season, and the season change. The whole film now plays through all four seasons on it.
-- The particle engine is merged too and is being wired into the page in place of the test simulation. That is the last piece before the blockout round.
-- Next: the wiring, the machine checks, then the first blockout round and a publish with a globe you can shake.
-- phase 2: 3.08 h used of its 6.00 h box
-- allowance (before the review): 4.27 h used of 36.00 h allowed
+- Summer no longer whites out: its seeds are smaller and the scene shows through. It is still the busiest season and its seeds do not yet come to rest.
+- The macro camera is fitted, so frame 0 of the film now opens inside the scene with no glass edge. All six cameras frame what they are for.
+- Merged and verified on main: types clean, 274 tests, build, the same picture twice, the local render proof.
+- Next: the first blockout round. Two critics from different families judge cameras, timing and layout on fresh packs.
+- phase 2: 3.45 h used of its 6.00 h box
+- allowance (before the review): 4.64 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-14-1.jpg`: The whole film on the new stage, twelve frames from start to end: the pull back from inside the glass, four shakes with the season changing in each, a different camera between them, and the push back in that closes the loop. Every shape is a stand-in. (by Builder)
-- `out/stills/status/status-14-2.jpg`: The first shake on the new stage from the locked hero camera, twelve frames across the bar: the lift, six strokes, the set down. The storm hides the miniature, the base and the lights turn from winter to spring behind it, and the globe lands on the bar line. Everything is a stand-in. (by Builder)
-- `out/stills/status/status-14-3.jpg`: Sheet: 12 frames across the shot shake-1, frames 576 to 719, preview, draft
-- `out/stills/status/status-14-4.jpg`: The new stage on main, winter at rest from the hero camera, draft samples. Everything in it is a stand-in: a clear ball with simple refraction, the miniature as blocks, a turned base in one colour, sprite lights behind. The snow in this picture still comes from the old test simulation. (by Builder)
+- `out/stills/status/status-15-1.jpg`: The four seasons at rest with the real particle engine at its full pool: winter, spring, summer, fall. Hero camera, draft tier. Miniature, base and lights are stand-ins.
+- `out/stills/status/status-15-2.jpg`: The six cameras on the winter stand-in stage. Macro (top middle) is newly fitted: the lit cottage, the lamppost and the foot of the tree, no edge of the glass.
+- `out/stills/status/status-15-3.jpg`: Film B, frame 749 at 60 frames a second, preview, draft
+- `out/stills/status/status-15-4.jpg`: Still: winter rest hero, hd, draft

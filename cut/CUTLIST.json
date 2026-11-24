@@ -247,15 +247,15 @@
       "shot": "open",
       "what": "first frame",
       "camera": [
-        -13.042,
-        92.463,
-        149.065,
+        -29.204,
+        73.804,
+        126.495,
         0,
-        82,
+        67,
         0,
         16
       ],
-      "focusMm": 150,
+      "focusMm": 130,
       "apertureMm": 5
     },
     {
@@ -263,15 +263,15 @@
       "shot": "open",
       "what": "film.hookSeconds: the pull back is plain",
       "camera": [
-        -13.542,
-        113.765,
-        309.322,
+        -32.889,
+        101.182,
+        286.407,
         0,
-        78.539,
+        70.956,
         0,
         16
       ],
-      "focusMm": 291.8,
+      "focusMm": 270.1,
       "apertureMm": 6.98
     },
     {
@@ -279,15 +279,15 @@
       "shot": "open",
       "what": "film.revealBySeconds: the edge of the glass is in frame",
       "camera": [
-        -8.563,
-        148.358,
-        507.23,
+        -20.055,
+        142.633,
+        494.971,
         0,
-        76.184,
+        73.647,
         0,
         16
       ],
-      "focusMm": 479.2,
+      "focusMm": 466.9,
       "apertureMm": 8.32
     },
     {
@@ -807,15 +807,15 @@
       "shot": "close",
       "what": "the macro camera reached, held to the end",
       "camera": [
-        -12.772,
-        92.606,
-        149.078,
+        -28.974,
+        73.927,
+        126.541,
         0,
-        82,
+        67,
         0,
         16
       ],
-      "focusMm": 150,
+      "focusMm": 130,
       "apertureMm": 5
     },
     {
@@ -823,15 +823,15 @@
       "shot": "close",
       "what": "last frame",
       "camera": [
-        -13.042,
-        92.463,
-        149.065,
+        -29.204,
+        73.804,
+        126.495,
         0,
-        82,
+        67,
         0,
         16
       ],
-      "focusMm": 150,
+      "focusMm": 130,
       "apertureMm": 5
     }
   ],
