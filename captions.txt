@@ -1,0 +1,13 @@
+engine_engineer_2 looks, agent/engine2 at 3d47198. Winter, rest, draft tier unless noted. Numbers are fov, distance, yaw, pitch, aim.
+
+1-cameras-before-after.jpg
+Left column main, right column agent/engine2. surface 16, 330, 24, 14, 6 to 16, 540, 24, 18, -34. interior 16, 460, 0, 6, 91 to 16, 395, 0, 2, 86.5. low 20, 520, -18, 2, 60 to 20, 500, -24, -5.5, 71.5. macro 16, 130, -13, 3, 67 to 16, 134, 6, 6, 68.
+
+2-interior-ids.jpg
+The ids view of interior. The miniature is clear of every edge: the snow cap on the crown tops out 4.8 percent from the top, the miniature ends 4.3 percent above the bottom, and it spans 24.9 to 75.4 percent across. The base is a strip below 87.4 percent at the sides. The top of the glass is out of the frame.
+
+3-macro-candidates.jpg
+Six macro candidates, all inside the hard test (every corner within 0.85 of the radius). Top left is main. Top right, yaw about 38, holds the whole cottage but the lamppost stands in front of the snowy roof and is lost. Yaw 13 puts the lamp on the roof's edge. Yaw 3 and yaw 8 at aim 67 clear the lamp but sit tight on the chimney. Bottom right is the chosen one, review tier: yaw 6, aim 68, distance 134, aperture 2.5 focused on the front wall at the door. It cuts the left gable (the roof's left end is about 10 percent of the width outside the frame) and about 2 percent of the width off the left end of the front wall.
+
+4-fall-low.jpg
+Fall at the new low camera: camera 23.6 mm above the surface looking up 5.5 degrees, the glass top about 6 percent from the top, the foot about 7 percent above the bottom, the mirror image under it.
