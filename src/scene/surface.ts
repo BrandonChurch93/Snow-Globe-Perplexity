@@ -29,26 +29,44 @@ export const SLAB = {
   crumbTurnDeg: -31,
   broadMm: 613,
   broadTurnDeg: 15,
+  streakMm: 157,
+  streakTurnDeg: 20,
+  streakLong: 3,
+  washMm: 280,
+  washTurnDeg: -25,
+  washLong: 2.5,
   slopeFull: 1,
-  crumbDust: 0.85,
+  crumbDust: 0.3,
   dustAlbedo: 0.3,
   vein: 1.1,
   cloud: 0.7,
-  veil: 0.65,
-  veilAlbedo: 0.012,
+  markFloor: 0.3,
+  markCloud: 8.3,
+  markPower: 2.6,
+  markWipe: 0.95,
+  markMost: 2.6,
+  filmAlbedo: 0.002,
+  filmTint: [0.7, 1, 1.05],
+  hazeAlbedo: 0.012,
+  hazeMm: 50,
+  gloss: 0.65,
   f0: 0.05,
   fresnelPower: 4.2,
+  mirrorShare: 0.5,
+  mirrorMark: 0.35,
+  farGain: 1.6,
+  farFrom: 0.165,
+  farTo: 0.125,
   roughSpread: 0.03,
   coreShare: 0.8,
   coreWidth: 0.2,
-  farWidth: 0.5,
+  farWidth: 0.32,
   roomRough: 0.046,
   mirrorTaps: 25,
   mirrorMaxPx: 0.075,
   farPathMm: 2600,
-  farShare: 0.8,
-  sideShare: 0.3,
-  cloudGloss: 0.45,
+  farShare: 0.5,
+  sideShare: 0.08,
   fadeHeightMm: 170,
   fadeFloor: 0.42,
   poolGain: 4,
@@ -62,6 +80,8 @@ const f = (v: number) => v.toFixed(4)
 const turn = (SLAB_SHAPE.turnDeg * Math.PI) / 180
 const broadTurn = (SLAB.broadTurnDeg * Math.PI) / 180
 const crumbTurn = (SLAB.crumbTurnDeg * Math.PI) / 180
+const streakTurn = (SLAB.streakTurnDeg * Math.PI) / 180
+const washTurn = (SLAB.washTurnDeg * Math.PI) / 180
 const tail = (((1 - SLAB.coreShare) / SLAB.coreShare) * Math.sqrt(2 * Math.PI)) / (4 / 3)
 
 export const SLAB_SHAPE_GLSL = `
@@ -208,18 +228,25 @@ void main() {
   vec2 uvB = vec2(P.x * ${f(Math.cos(broadTurn))} + P.z * ${f(Math.sin(broadTurn))}, P.z * ${f(Math.cos(broadTurn))} - P.x * ${f(Math.sin(broadTurn))}) / ${f(SLAB.broadMm)};
   vec4 fine = textureGrad(uDetail, uvA, dFdx(uvA) * spread, dFdy(uvA) * spread);
   vec4 crumb = textureGrad(uDetail, uvC, dFdx(uvC) * spread, dFdy(uvC) * spread);
+  vec2 uvS = vec2(P.x * ${f(Math.cos(streakTurn))} + P.z * ${f(Math.sin(streakTurn))}, P.z * ${f(Math.cos(streakTurn))} - P.x * ${f(Math.sin(streakTurn))}) / vec2(${f(SLAB.streakMm)}, ${f(SLAB.streakMm * SLAB.streakLong)}) + vec2(0.29, 0.53);
+  vec2 uvW = vec2(P.x * ${f(Math.cos(washTurn))} + P.z * ${f(Math.sin(washTurn))}, P.z * ${f(Math.cos(washTurn))} - P.x * ${f(Math.sin(washTurn))}) / vec2(${f(SLAB.washMm)}, ${f(SLAB.washMm * SLAB.washLong)}) + vec2(0.61, 0.17);
   vec4 stone = textureGrad(uStone, uvB, dFdx(uvB) * spread, dFdy(uvB) * spread);
+  vec4 fleck = textureGrad(uStone, uvS, dFdx(uvS) * spread, dFdy(uvS) * spread);
+  vec4 wash = textureGrad(uStone, uvW, dFdx(uvW) * spread, dFdy(uvW) * spread);
   vec2 turned = slabSlope(crumb);
   vec2 tilt = slabSlope(fine) + vec2(turned.x * ${f(Math.cos(crumbTurn))} - turned.y * ${f(Math.sin(crumbTurn))}, turned.x * ${f(Math.sin(crumbTurn))} + turned.y * ${f(Math.cos(crumbTurn))});
   vec3 n = normalize(vec3(tilt.x, 1.0, tilt.y));
   float dust = clamp(max(fine.b, crumb.b * ${f(SLAB.crumbDust)}), 0.0, 1.0);
   float vein = stone.r;
   float cloud = stone.g;
-  float veil = clamp(stone.b + 0.35 * cloud, 0.0, 1.0);
+  float patchy = 0.5 * (wash.g + fleck.g);
+  float mark = min(${f(SLAB.markFloor)} + ${f(SLAB.markCloud)} * pow(max(patchy, 1e-4), ${f(SLAB.markPower)}) + ${f(SLAB.markWipe)} * max(wash.b, fleck.b), ${f(SLAB.markMost)});
 
   float lift = uFoot.w;
+  float haze = exp(-max(length(P.xz - uFoot.xy - uLean.xy) - uFoot.z, 0.0) / ${f(SLAB.hazeMm)});
 
-  vec3 albedo = uSlab * (1.0 + ${f(SLAB.vein)} * vein + ${f(SLAB.cloud)} * cloud) + vec3(0.8, 0.95, 1.1) * (${f(SLAB.veilAlbedo)} * veil);
+  vec3 film = vec3(${SLAB.filmTint.map(f).join(', ')}) * mark;
+  vec3 albedo = uSlab * (1.0 + ${f(SLAB.vein)} * vein + ${f(SLAB.cloud)} * cloud) + film * ${f(SLAB.filmAlbedo)};
   vec3 scatter = albedo + vec3(${f(SLAB.dustAlbedo)}) * dust;
   vec3 keyDir;
   vec3 rimDir;
@@ -228,7 +255,8 @@ void main() {
   float rimGain;
   float occl;
   slabLight(P, keyDir, keyGain, rimDir, rimGain, occl, warm);
-  vec3 col = scatter * (uKeyCol * (max(dot(n, keyDir), 0.0) * keyGain) + uRimCol * (max(dot(n, rimDir), 0.0) * rimGain) + (uSky + warm) * occl);
+  vec3 direct = uKeyCol * (max(dot(n, keyDir), 0.0) * keyGain) + uRimCol * (max(dot(n, rimDir), 0.0) * rimGain);
+  vec3 col = scatter * (direct + (uSky + warm) * occl) + film * direct * (${f(SLAB.hazeAlbedo)} * haze);
 
   vec3 r0 = vec3(v.x, -v.y, v.z);
   vec2 ground = v.xz / max(length(v.xz), 1e-4);
@@ -291,7 +319,9 @@ void main() {
   seen *= 1.0 - underHit;
   held = max(held, underHit);
   vec3 room = stageRoomSeen(r, ${f(SLAB.roomRough)});
-  col += (seen * fade + room * (1.0 - held)) * fres * (1.0 - 0.6 * dust) * (1.0 - ${f(SLAB.veil)} * veil) * (1.0 - ${f(SLAB.cloudGloss)} * (1.0 - cloud));
+  float farGloss = fres * mark * ${f(SLAB.gloss)} * mix(1.0, ${f(SLAB.farGain)}, smoothstep(${f(SLAB.farFrom)}, ${f(SLAB.farTo)}, grazing));
+  float nearGloss = max(fres, ${f(SLAB.mirrorShare)}) * fade * mix(1.0, mark, ${f(SLAB.mirrorMark)});
+  col += (seen * mix(farGloss, nearGloss, sil) + room * (1.0 - held) * farGloss) * (1.0 - 0.6 * dust);
 
   gl_FragColor = vec4(col * cover, 1.0 - cover);
   if (uDiag != 0) {

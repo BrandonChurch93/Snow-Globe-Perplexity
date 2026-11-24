@@ -69,6 +69,7 @@ export interface Dev {
   caps(): Gfx['caps'] & { precision: string }
   timings(): { simMs: number; drawMs: number; samples: number; steps: number }
   parts(): { name: string; color: number }[]
+  meshes(): { path: string; triangles: number; visible: boolean }[]
   simulate(fromSeconds: number, seconds: number): Promise<{ ms: number; steps: number; floating: number }>
   framing(camera: string): Framing
   stillFraming(): Framing
@@ -395,6 +396,25 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
       caps: () => ({ ...gfx.caps, precision: acc.precision }),
       timings: () => ({ ...timing }),
       parts: () => stage.parts(),
+      meshes: () => {
+        type Node3 = { name: string; type: string; visible: boolean; parent: Node3 | null; isMesh?: boolean; isInstancedMesh?: boolean; count?: number; geometry?: { index: { count: number } | null; attributes: Record<string, { count: number } | undefined>; instanceCount?: number }; traverse(f: (o: Node3) => void): void }
+        const rows: { path: string; triangles: number; visible: boolean }[] = []
+        const root = (stage as unknown as { scene: Node3 }).scene
+        root.traverse((o) => {
+          if (!o.isMesh || !o.geometry) return
+          const g = o.geometry
+          const n = g.index ? g.index.count : (g.attributes.position?.count ?? 0)
+          const inst = o.isInstancedMesh ? (o.count ?? 1) : typeof g.instanceCount === 'number' && Number.isFinite(g.instanceCount) ? g.instanceCount : 1
+          let visible = true
+          let path = ''
+          for (let p: Node3 | null = o; p; p = p.parent) {
+            if (!p.visible) visible = false
+            path = (p.name || p.type) + (path ? '/' + path : '')
+          }
+          rows.push({ path, triangles: Math.round((n / 3) * inst), visible })
+        })
+        return rows
+      },
       framing: (camera) => framingOf(camera, format.width, format.height),
       stillFraming: () => drawn ?? framingOf(MOVES.wide, format.width, format.height),
       pose: (camera) => cameraNumbers(poseById(camera)),

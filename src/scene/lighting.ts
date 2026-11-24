@@ -3,9 +3,10 @@ import { lightUniforms } from '../core/chunks/light'
 import type { Rgb } from '../core/materials'
 import type { StageFrame } from './frame'
 import type { SeasonKit } from '../seasons/kit'
-import { centreHeightMm, groundY, innerRadiusMm } from './layout'
+import { centreHeightMm, groundY, innerRadiusMm, outerRadiusMm } from './layout'
 import { GRID, breathOf, gainOf, glowAt, glowOf, gridInfo, groupGains, shadeGrid } from './lightgrid'
 import { lensIor } from '../globe/lens'
+import { changeBloom } from '../shake/change'
 
 const mixRgb = (a: Rgb, b: Rgb, t: number): [number, number, number] => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
@@ -27,7 +28,8 @@ export const ROOM_RIG = {
   point: { key: 0.4, rim: 0.1, sky: 0.32 },
   room: { gain: 1, lights: 1, softPerRough: 0.5, lightsBelowRough: 0.62 },
   grid: { flat: 0.25, wrap: 0.3, specular: 1, openFloor: 0.35 },
-  bloomGain: 2.5,
+  bloomGain: 9,
+  flood: { inside: 0.84, insideMm: 40, outside: 70, ease: 4, wrap: 0.35, near: 1, nearMm: 10, floor: 0.18, floorMm: 50, pool: 14 },
   glow: { outside: 0.8, islandMm: innerRadiusMm * 0.88, lobe: 0.3, specular: 1 },
 } as const
 
@@ -105,6 +107,9 @@ export class Lighting {
     u.uGridShade.value.set(ROOM_RIG.grid.flat, ROOM_RIG.grid.wrap, ROOM_RIG.grid.specular, ROOM_RIG.grid.openFloor)
     u.uRigGlow.value.set(ROOM_RIG.glow.lobe, ROOM_RIG.glow.specular, s.sureFrom, s.sureTo)
     u.uRigPoint.value.set(ROOM_RIG.point.key, ROOM_RIG.point.rim, ROOM_RIG.point.sky, 0)
+    u.uLightFloodAt.value.set(outerRadiusMm, ROOM_RIG.flood.wrap, ROOM_RIG.flood.inside, ROOM_RIG.flood.insideMm)
+    u.uLightFloodFloor.value.set(-centreHeightMm, ROOM_RIG.flood.floorMm, ROOM_RIG.flood.floor, ROOM_RIG.flood.outside)
+    u.uLightFloodNear.value.set(ROOM_RIG.flood.near, ROOM_RIG.flood.nearMm)
   }
 
   private shade(grid: THREE.Texture | null, from: Rgb): void {
@@ -171,15 +176,17 @@ export class Lighting {
     u.uLightFrame.value.setFromMatrix4(this.turn).transpose()
 
     const breath = breathOf(f.time, f.period)
-    const bloom = 1 + ROOM_RIG.bloomGain * f.mix.bloom
-    const gainA = gainOf(a.innerLights, f.time, f.period) * breath
+    const through = f.moment && f.moment.from === f.moment.to ? changeBloom(f.moment.change) : f.mix.bloom
+    const bloom = 1 + ROOM_RIG.bloomGain * through
+    const bloomA = a === b ? bloom : 1
+    const gainA = gainOf(a.innerLights, f.time, f.period) * breath * bloomA
     const gainB = gainOf(b.innerLights, f.time, f.period) * breath * bloom
     this.shade(f.grids[0], a.rig.key.from)
     this.shade(f.grids[1], b.rig.key.from)
     u.uGridA.value = f.grids[0]
     u.uGridB.value = f.grids[1]
     u.uGrid.value.set(t, gainA, gainB, innerRadiusMm)
-    groupGains(gridInfo(f.grids[0]), a.innerLights, f.time, f.period, u.uGridGainA.value).multiplyScalar(breath)
+    groupGains(gridInfo(f.grids[0]), a.innerLights, f.time, f.period, u.uGridGainA.value).multiplyScalar(breath * bloomA)
     groupGains(gridInfo(f.grids[1]), b.innerLights, f.time, f.period, u.uGridGainB.value).multiplyScalar(breath * bloom)
 
     const ga = glowOf(a.innerLights)
@@ -193,7 +200,11 @@ export class Lighting {
     u.uLightGlowAt.value.set(this.at.x, this.at.y, this.at.z, ROOM_RIG.glow.islandMm)
     this.glow.position.set(this.at.x, centreHeightMm + this.at.y, this.at.z)
 
-    f.pool.setRGB(pool[0], pool[1], pool[2])
-    f.bloomTint.setRGB(gb[0] * f.mix.bloom, gb[1] * f.mix.bloom, gb[2] * f.mix.bloom)
+    const spill = 1 + (ROOM_RIG.flood.pool * through) / bloom
+    f.pool.setRGB(pool[0] * spill, pool[1] * spill, pool[2] * spill)
+    f.bloomTint.setRGB(gb[0] * through, gb[1] * through, gb[2] * through)
+    const flood = through * breath
+    u.uLightFlood.value.setRGB(gb[0] * flood, gb[1] * flood, gb[2] * flood)
+    u.uLightFloodFloor.value.w = through > 0 ? (ROOM_RIG.flood.outside * Math.expm1(ROOM_RIG.flood.ease * through)) / (Math.expm1(ROOM_RIG.flood.ease) * through) : 0
   }
 }
