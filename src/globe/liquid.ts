@@ -21,18 +21,19 @@ export const NOISE_N = 24
 export const NOISE_RMS = 0.33
 
 const GRAVITY_MM = 9810
-const LAG = 0.45
+const LAG = 0.35
 const LAG_UPRIGHT = 0.9
 const TURN_LEVEL_SECONDS = config.shake.spinDownSeconds / 7
 const TURN_UPRIGHT_SECONDS = config.shake.spinDownSeconds / 2.6
 const TURN_QUADRATIC = 0.1
 const SLOSH_GAIN = 0.3
 const SLOSH_SECONDS = 0.22
+const SLOSH_LENGTH_MM = 30
 const TURB_SECONDS = config.shake.spinDownSeconds * 0.4
 const TURB_FROM_SLOSH = 0.85
 const TURB_FROM_REVERSAL = 0.16
 const TURB_FROM_TURN = 0.22
-const SWIRL_GAIN = 0.095
+const SWIRL_GAIN = 0.4
 const HAND_SECONDS = 1.6
 const HAND_KNEE = 18
 const HAND_ORBIT = 1.4
@@ -172,6 +173,10 @@ export class Liquid {
     this.prepare(0)
   }
 
+  get axis(): readonly [number, number, number] {
+    return this.k.axis
+  }
+
   reset(): void {
     this.state.fill(0)
     this.pending.fill(0)
@@ -236,7 +241,7 @@ export class Liquid {
     const sy0 = L[4]!
     const sz0 = L[5]!
     const s0 = Math.sqrt(sx0 * sx0 + sy0 * sy0 + sz0 * sz0)
-    const keep = Math.exp(-DT / SLOSH_SECONDS)
+    const keep = Math.exp(-DT / SLOSH_SECONDS) / (1 + (s0 * DT) / SLOSH_LENGTH_MM)
     let sx = sx0 * keep - SLOSH_GAIN * ax * DT
     let sy = sy0 * keep - SLOSH_GAIN * ay * DT
     let sz = sz0 * keep - SLOSH_GAIN * az * DT
@@ -254,7 +259,7 @@ export class Liquid {
     let ex = wx - par * n[0]
     let ey = wy - par * n[1]
     let ez = wz - par * n[2]
-    par += (side * SWIRL_GAIN * level * DT) / LIQUID_R
+    par += (side * SWIRL_GAIN * sh * DT) / (LIQUID_R * SLOSH_SECONDS)
     const before = Math.abs(par)
     par *= Math.exp(-DT / TURN_UPRIGHT_SECONDS) / (1 + Math.abs(par) * TURN_QUADRATIC * DT)
     const shed = (before - Math.abs(par)) * LIQUID_R
