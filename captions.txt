@@ -1,0 +1,4 @@
+01-base0-pair.jpg: Baseline before any work. Approved image above, the stand-in build below, whole frame. Wrong: the key comes from the upper left, the approved image has it upper right in front; the inside is lit evenly warm with no pools and no blue between the lights; the base shows no reflection of the room.
+02-interior0.jpg: Baseline, the interior camera. Wrong: the warm light has no direction, so walls, snow and crown are flat; the lamp lights the whole inside instead of a pool a few millimetres wide; shadows are hard and even.
+03-lightgrid0.jpg: Baseline, the lightgrid view (the inside light on a slice). Wrong: 24 coarse cells, colour only, light reaches the whole sphere, solids are simply dark, no bounce off the snow.
+04-base0.jpg: Baseline, the base camera. Wrong: the base is lit by three plain lights and a constant fill, no soft shadow under the ledge, no reflection of the room on it.
