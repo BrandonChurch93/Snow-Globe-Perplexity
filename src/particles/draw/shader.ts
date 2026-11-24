@@ -2,7 +2,7 @@ import { COVER_GLSL } from '../../core/chunks/cover'
 import { LIGHT_FRAG_PARS } from '../../core/chunks/light'
 import { VEIL_GLSL } from '../../core/chunks/veil'
 import { viewCode } from '../../diagnostics/views'
-import { BLUR_HOLD, EDGE_DISC, EDGE_HIGH, EDGE_LOW, GLITTER_STREAK, GLINT_HIGH, GLINT_LOW, LAMPS, LIGHT_LOOK, LOBE_CORE, LYING_LOOK, MAX_KINDS, PIXEL_SIGMA2, SIZE_HIGH, SIZE_LOW, SIZE_SKEW, STREAK_HOLD, STREAK_REACH, STREAK_TAPER } from './looks'
+import { BLUR_HOLD, BLUR_STRICT_FROM_PX, BLUR_STRICT_TO_PX, CLUMP, EDGE_DISC, EDGE_HIGH, EDGE_LOW, GLITTER_STREAK, GLINT_HIGH, GLINT_LOW, LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_CORE, LYING_LOOK, MAX_KINDS, PIXEL_SIGMA2, SIZE_HIGH, SIZE_LOW, SIZE_SKEW, STREAK_HOLD, STORM_SHARP_SHARE, STORM_SOFT, STREAK_REACH, STREAK_TAPER, STRETCH_HIGH, STRETCH_LOW } from './looks'
 
 const MEAN_LOBE = 0.42
 const n = (v: number) => (Number.isInteger(v) ? v.toFixed(1) : String(v))
@@ -119,7 +119,8 @@ export const VERT_MAIN = `
   float spread = shape > 0.5 && shape < 1.5 ? mix(${n(SIZE_LOW)}, ${n(SIZE_HIGH)}, pow(h2.w, ${n(SIZE_SKEW)})) : 1.0;
   float rPx = aData.x * look.y * spread * uPoint.y * mag / zImg * shrink * mix(1.0, ${n(LYING_LOOK.size)}, lying);
   float coc = uAperture.w * uPoint.y * (1.0 / zImg - uAperture.z);
-  float blur = uBlur.z * (1.0 - exp(-(coc > 0.0 ? coc * uBlur.x : -coc * uBlur.y) / uBlur.z)) * afloat;
+  float byGlass = smoothstep(${n(LENS_LOOK.glassFrom)}, 1.0, depth);
+  float blur = uBlur.z * (1.0 - exp(-((coc > 0.0 ? coc * uBlur.x : -coc * uBlur.y) + uTone.w * byGlass * byGlass) / uBlur.z)) * afloat;
   vec3 rimAxis = cross(normalize(placed.xyz - eye), uLensCentre - eye);
   float rim = on > 0.5 ? 1.0 - smoothstep(0.9, 0.985, length(rimAxis) / R) : 1.0;
 
@@ -140,7 +141,7 @@ export const VERT_MAIN = `
     streak = 2.0 * uPoint.y * (aheadV.xy / -aheadV.z - view.xy / -view.z);
     #endif
     float span = length(streak);
-    if (span > uLimit.x) streak *= uLimit.x / span;
+    streak *= uLimit.x / (uLimit.x + span);
   }
   float halfLong = 0.5 * length(streak);
   vec2 along = halfLong > 1e-4 ? streak / (2.0 * halfLong) : vec2(1.0, 0.0);
@@ -153,6 +154,16 @@ export const VERT_MAIN = `
   }
   float core = ${n(LOBE_CORE)} * rPx * (shape > 0.5 && shape < 1.5 ? ${n(MEAN_LOBE)} : 1.0);
   float c2 = core * core;
+  float held = 1.0;
+  if (afloat > 0.5 && shape < 1.5) {
+    float smear = uStorm.x * ${n(STORM_SOFT)} * rPx * (0.4 + 1.2 * fract(h.y * 53.0)) * step(${n(STORM_SHARP_SHARE)}, fract(h.x * 91.0));
+    held = pow(c2 / (c2 + smear * smear), ${n(1 - BLUR_HOLD)});
+    if (uStorm.x > 0.0) {
+      vec4 stir = veilStir(nowL);
+      held *= mix(1.0, min(${n(CLUMP.floor)} + ${n(CLUMP.gain)} * stir.x * mix(${n(CLUMP.core)}, 1.0, stir.y), ${n(CLUMP.most)}), uStorm.x * ${n(1 / LENS_LOOK.stormSpanSteps)});
+    }
+    s2x += smear * smear;
+  }
   float amp = pow(c2 / (c2 + s2x), ${n(BLUR_HOLD)}) / pointSpread(halfLong, c2 + s2x);
 
   vec3 axis = normalize(h.xyz * 2.0 - 1.0 + 1e-3);
@@ -160,17 +171,28 @@ export const VERT_MAIN = `
   float ca = cos(angle);
   float sa = sin(angle);
   int variant = int(min(h2.x * uLobeRows, uLobeRows - 1.0));
-  vL0 = pointLobe(0, variant, shape, axis, ca, sa, lying, rPx, toView);
-  vL1 = pointLobe(1, variant, shape, axis, ca, sa, lying, rPx, toView);
-  vL2 = pointLobe(2, variant, shape, axis, ca, sa, lying, rPx, toView);
-  vL3 = pointLobe(3, variant, shape, axis, ca, sa, lying, rPx, toView);
-  vL4 = pointLobe(4, variant, shape, axis, ca, sa, lying, rPx, toView);
+  vec3 tilt = h2.yzw * 2.0 - 1.0;
+  vec3 longAxis = normalize(tilt + 1e-3);
+  mat3 shapeView = toView * (mat3(1.0) + (afloat * mix(${n(STRETCH_LOW)}, ${n(STRETCH_HIGH)}, fract(h2.x * 467.0))) * outerProduct(longAxis, longAxis));
+  vL0 = pointLobe(0, variant, shape, axis, ca, sa, lying, rPx, shapeView);
+  vL1 = pointLobe(1, variant, shape, axis, ca, sa, lying, rPx, shapeView);
+  vL2 = pointLobe(2, variant, shape, axis, ca, sa, lying, rPx, shapeView);
+  vL3 = pointLobe(3, variant, shape, axis, ca, sa, lying, rPx, shapeView);
+  vL4 = pointLobe(4, variant, shape, axis, ca, sa, lying, rPx, shapeView);
 
   vec3 keyTo;
   vec3 keyIn = stageKeyIn(nowL, keyTo);
-  vec3 base = stageSoftIn(nowL) + stageGrid(nowL) * uTone.y;
+  vec3 gridCol;
+  vec3 gridTo;
+  float gridAir;
+  float gridShade;
+  stageGridLit(nowL, gridCol, gridTo, gridAir, gridShade);
+  float gridLen = length(gridTo);
+  float gridFace = mix(uGridShade.x, stageWrap(gridTo.y / max(gridLen, 1e-4), uGridShade.y), min(gridLen, 1.0));
+  vec3 cardIn = uRigCardCol * (uRigInside.x * uRigCard.w * mix(uGridShade.w, 1.0, gridAir));
+  float cardFace = stageWrap((uLightFrame * uRigCardDir).y, uRigCard.x) * 0.31831;
+  vec3 base = stageSoftIn(nowL) + gridCol * mix(uTone.y, gridFace, lying) + cardIn * mix(uRigPoint.x * ${n(LIGHT_LOOK.cardShare)}, cardFace, lying);
   vec3 toEye = normalize((uGlobeInv * vec4(eye, 1.0)).xyz - nowL);
-  vec3 tilt = h2.yzw * 2.0 - 1.0;
   vec3 face = lying > 0.5 ? normalize(vec3(0.0, 1.0, 0.0) + uLimit.w * tilt) : pointTurn(normalize(cross(axis, normalize(tilt + 1e-3))), axis, ca, sa);
   float glints = shape > 1.5 ? 1.0 : 0.0;
   vec3 flash = vec3(0.0);
@@ -186,7 +208,7 @@ export const VERT_MAIN = `
 
   float reach = 1.2 * rPx + 2.6 * sqrt(s2x) + 1.0;
   vec2 ext = min(vec2(reach) + ${n(STREAK_REACH)} * halfLong * abs(along), vec2(uLimit.y));
-  float alpha = aData.z * rim;
+  float alpha = aData.z * rim * held * pow(c2 / (c2 + sigma * sigma), ${n(1 - BLUR_HOLD)} * smoothstep(${n(BLUR_STRICT_FROM_PX)} * uPoint.w, ${n(BLUR_STRICT_TO_PX)} * uPoint.w, sigma));
   #ifdef POINT_SPRITES
   float side = 2.0 * max(ext.x, ext.y);
   gl_PointSize = side;
@@ -250,7 +272,7 @@ void main() {
   float lit = clamp(max(flash.r, max(flash.g, flash.b)), 0.0, 1.0);
   float r0 = ${n(LOBE_CORE)} * vL0.z;
   float edge = mix(${n(EDGE_DISC)}, ${n(EDGE_HIGH)}, smoothstep(0.05, 0.4, r0 * r0 / (r0 * r0 + vStreak.w)));
-  float cover = amp * smoothstep(${n(EDGE_LOW)} * amp, edge * amp, f) * vCore.w * mix(look.z, 1.0, lit);
+  float cover = min(amp * smoothstep(${n(EDGE_LOW)} * amp, edge * amp, f) * vCore.w * mix(look.z, 1.0, lit), 1.0);
   if (uDiag == ${viewCode('cover')}) {
     gl_FragColor = vec4(cover, 0.0, cover, cover);
     return;
@@ -276,7 +298,7 @@ void main() {
   float kd = stageWrap(nk, uTone.x);
   float keyShare = mix(${n(LIGHT_LOOK.keyFloor)} + ${n(LIGHT_LOOK.keySide)} * kd * kd, stageWrap(nk, uRigInside.z) * 0.31831 / max(uRigPoint.x, 1e-3), lying);
   vec3 light = vGrid.rgb * (1.0 + ${n(LIGHT_LOOK.skyTilt)} * dot(nv, upV)) + vDom.rgb * keyShare;
-  vec3 col = k.rgb * light;
+  vec3 col = k.rgb * light * mix(1.0, ${n(LYING_LOOK.shade)}, lying);
   col = mix(col, uVeil.rgb * vFog.rgb, vFog.a * mix(uTone.z, 1.0, lying));
   col += flash * k.rgb * k.a;
   gl_FragColor = vec4(col * cover, cover);

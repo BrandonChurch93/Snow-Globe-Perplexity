@@ -3,7 +3,9 @@ import { config } from '../../config'
 import { LIQUID_PHASE, LIQUID_PHASE_B } from '../../globe/liquid'
 import type { StageFrame } from '../../scene/frame'
 
-const TURBULENCE_POWER = 4.2
+const TURBULENCE_POWER = 3.2
+const TURBULENCE_FROM = 0.12
+const TURBULENCE_TO = 0.5
 const NOISE_N = 32
 const TAU = 2 * Math.PI
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
@@ -16,20 +18,20 @@ export const VEIL_LOOK = {
   arcTileMm: 8,
   arcDeepMm: 320,
   arcTurns: 5,
-  warp: 0.3,
+  warp: 0.45,
   blobDrift: 0.3,
-  wisp: 3,
-  cutLow: 0.5,
+  wisp: 3.3,
+  cutLow: 0.55,
   cutHigh: 0.8,
   blobLow: 0.3,
   blobGain: 1.4,
-  hazeCore: 0.22,
-  hazeFrom: 0.25,
+  hazeCore: 0.06,
+  hazeFrom: 0.3,
   hazeTo: 1.15,
   uneven: 0.96,
   unevenAtPeak: 0.5,
   peakFrom: 0.7,
-  bank: 5.6,
+  bank: 8,
   bankPower: 3,
   bankRest: -1.1,
   bankRise: 1.2,
@@ -41,13 +43,16 @@ export const VEIL_LOOK = {
   bankEvenLow: 0.35,
   axis: [0, 0.08, 1] as const,
   centreMm: [-26, 15, 0] as const,
-  keyShare: 1.25,
-  keyFloor: 0.3,
+  keyShare: 3.2,
+  keyFloor: 0.7,
   shadow: 0.5,
   bankShadow: 0.05,
   ambientShare: 1,
-  gridShare: 1.3,
-  bankGridShare: 2.2,
+  gridShare: 0.75,
+  bankGridShare: 2.4,
+  bankShade: 0.75,
+  bankShadeFrom: 0.25,
+  bankShadeTo: 1.3,
 }
 
 function hash(x: number, y: number, z: number, s: number): number {
@@ -153,7 +158,7 @@ uniform vec4 uVeilUp;
 uniform vec4 uVeilBank;
 uniform mat3 uVeilTurn;
 uniform highp sampler3D uVeilNoise;
-vec3 veilField(vec3 p) {
+vec4 veilStir(vec3 p) {
   vec4 w = texture(uVeilNoise, p / ${n(L.blobTileMm)} + vec3(uVeilFlow.z, uVeilFlow.w, -uVeilFlow.z));
   vec3 c = p - ${vec(CENTRE)};
   float h = dot(c, ${vec(AXIS)});
@@ -163,19 +168,25 @@ vec3 veilField(vec3 p) {
   vec3 q = vec3(rad / ${n(L.arcTileMm)}, h / ${n(L.arcDeepMm)}, turn * ${n(L.arcTurns)} - uVeilFlow.x);
   float a = texture(uVeilNoise, q + vec3((w.rg - 0.5) * ${n(L.warp)}, uVeilFlow.y)).a;
   float d = ${n(L.wisp)} * smoothstep(${n(L.cutLow)}, ${n(L.cutHigh)}, a) * (${n(L.blobLow)} + ${n(L.blobGain)} * w.a);
-  vec3 out2 = p - dot(p, ${vec(AXIS)}) * ${vec(AXIS)};
-  float level = dot(p, uVeilUp.xyz) / uLens.w - ${n(L.bankRing)} * dot(out2, out2) / (uLens.w * uLens.w) + (w.a - 0.5) * ${n(L.bankWave)} + (a - 0.5) * ${n(L.bankWisp)};
-  float bank = smoothstep(uVeilBank.x + uVeilBank.y, uVeilBank.x - uVeilBank.y, level);
   float haze = mix(${n(L.hazeCore)}, 1.0, smoothstep(${n(L.hazeFrom)}, ${n(L.hazeTo)}, rad / uLens.w));
-  return vec3(uVeil.a * mix(1.0, d * haze, uVeilUp.w), uVeilBank.z * bank * mix(d, 1.0, uVeilBank.w * bank * bank), max(uVeilBank.x - level, 0.0) * uLens.w);
+  return vec4(d, haze, a, w.a);
+}
+vec3 veilField(vec3 p) {
+  vec4 s = veilStir(p);
+  vec3 out2 = p - dot(p, ${vec(AXIS)}) * ${vec(AXIS)};
+  float level = dot(p, uVeilUp.xyz) / uLens.w - ${n(L.bankRing)} * dot(out2, out2) / (uLens.w * uLens.w) + (s.w - 0.5) * ${n(L.bankWave)} + (s.z - 0.5) * ${n(L.bankWisp)};
+  float bank = smoothstep(uVeilBank.x + uVeilBank.y, uVeilBank.x - uVeilBank.y, level);
+  return vec3(uVeil.a * mix(1.0, s.x * s.y, uVeilUp.w), uVeilBank.z * bank * mix(s.x, 1.0, uVeilBank.w * bank * bank), max(uVeilBank.x - level, 0.0) * uLens.w);
 }
 vec3 veilLit(vec3 p, vec3 field) {
   float pk = dot(p, uVeilKey.xyz);
   float reach = -pk + sqrt(max(pk * pk - dot(p, p) + uLens.w * uLens.w, 0.0));
   float dim = exp(-uVeil.a * ${n(L.shadow)} * reach - ${n(L.bankShadow)} * field.z / max(dot(uVeilKey.xyz, uVeilUp.xyz), 0.3));
   float low = field.y / max(field.x + field.y, 1e-6);
+  float packed = mix(1.0, mix(${n(L.bankShade)}, 1.0, smoothstep(${n(L.bankShadeFrom)}, ${n(L.bankShadeTo)}, field.y / max(uVeilBank.z, 1e-6))), low);
   vec3 toward;
-  return stageSoftIn(p) * ${n(L.ambientShare)} + stageKeyIn(p, toward) * (uRigPoint.x * ${n(L.keyShare)} * (uVeilKey.w + (1.0 - uVeilKey.w) * dim)) + stageGrid(p) * mix(${n(L.gridShare)}, ${n(L.bankGridShare)}, low);
+  vec3 card = uRigCardCol * (uRigInside.x * uRigCard.w * stageGridOpen(p));
+  return stageSoftIn(p) * ${n(L.ambientShare)} + (stageKeyIn(p, toward) + card) * (uRigPoint.x * ${n(L.keyShare)} * packed * (uVeilKey.w + (1.0 - uVeilKey.w) * dim)) + stageGrid(p) * mix(${n(L.gridShare)}, ${n(L.bankGridShare)}, low);
 }
 vec4 veilPath(vec3 eye, vec3 placed, vec3 world, float path) {
   float thin = (uVeil.a + uVeilBank.z) * path;
@@ -243,7 +254,8 @@ export function updateVeil(f: StageFrame): void {
   const a = f.from.veil
   const b = f.to.veil
   const t = f.mix.veil
-  const density = lerp(a.rest, b.rest, t) + lerp(a.density, b.density, t) * Math.pow(f.turbulence, TURBULENCE_POWER)
+  const stirred = Math.min(1, Math.max(0, (f.turbulence - TURBULENCE_FROM) / (TURBULENCE_TO - TURBULENCE_FROM)))
+  const density = lerp(a.rest, b.rest, t) + lerp(a.density, b.density, t) * Math.pow(f.turbulence, TURBULENCE_POWER) * stirred * stirred * (3 - 2 * stirred)
   const u = veilUniforms
   u.uVeil.value.set(lerp(a.tint[0], b.tint[0], t), lerp(a.tint[1], b.tint[1], t), lerp(a.tint[2], b.tint[2], t), density)
   const amb = (L.ambientShare * 0.5) / Math.PI

@@ -11,3 +11,12 @@ Why this one: 64 variants of 5 lobes in four families (clump, rod, branched, pai
 Date: 2026-11-24
 
 Layout: 8 columns by 64 rows, RGBA, linear. One row is one variant. Columns 0 to 4 are its lobes: R, G, B hold the lobe's centre from -1 to 1 as 0 to 255, A holds its radius from 0 to 1. Columns 5 to 7 are unused. `src/particles/draw/shader.ts` reads it with `texelFetch`, so it is never filtered and never packed lossy.
+
+## Fitting tools
+
+Two small measures used to fit the look against the approved images. They need Python 3 with Pillow, numpy and scipy, write nothing, and ship nowhere.
+
+- `python3 assets-src/flakes/count.py [approved.png] [still.png] [x0,y0,x1,y1]` counts the flakes at rest in a box of the approved image and in the same box of a still: blobs, cover and diameters at three steps over the background, and the brightest 0.3 percent. Without arguments it compares `references/approved/winter-rest.png` with the fit still at rest.
+- `python3 assets-src/flakes/storm.py [approved.png] [still.png]` prints mean colour and spread in three boxes of the storm (upper dome, bank, centre). Without arguments it compares `references/approved/winter-shake.png` with the fit still at `landed`.
+- The fit stills come from `npm run fit -- --tier draft --format hd --box 858,99,1964,1205 --name p3-globe --force` (add `--state landed` for the storm).
+

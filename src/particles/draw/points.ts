@@ -268,6 +268,7 @@ export class ParticleDraw {
     ;(u.uAperture!.value as THREE.Vector4).set(dx, dy, 1 / pose.focusMm, f.blurMm)
     ;(u.uEyeShift!.value as THREE.Vector3).set(0, 0, 0).addScaledVector(this.right, dx).addScaledVector(this.up, dy)
     ;(u.uBlur!.value as THREE.Vector4).set(LENS_LOOK.nearGain, LENS_LOOK.farGain, LENS_LOOK.maxBlurPx * scale, LENS_LOOK.farShrink)
+    ;(u.uTone!.value as THREE.Vector4).w = LENS_LOOK.glassDiscPx * scale
     const limit = u.uLimit!.value as THREE.Vector4
     limit.x = LENS_LOOK.maxStreakPx * scale
     limit.y = Math.max(4, this.maxPointPx / 2)
