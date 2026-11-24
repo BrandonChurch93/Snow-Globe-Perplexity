@@ -22,7 +22,7 @@ export const shippedHash = () =>
       .filter((f) => fs.existsSync(f)),
   )
 
-const uiState = () => {
+export const uiState = () => {
   const ui = document.getElementById('ui')
   if (!ui) return { exists: false, empty: true, hidden: true }
   const cs = getComputedStyle(ui)
@@ -35,7 +35,7 @@ const uiState = () => {
   }
 }
 
-const controlState = () => {
+export const controlState = () => {
   const seen = (el) => {
     const r = el.getBoundingClientRect()
     if (r.width < 1 || r.height < 1) return false
