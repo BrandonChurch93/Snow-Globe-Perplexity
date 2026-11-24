@@ -45,8 +45,13 @@ export const VEIL_LOOK = {
   discMm: 5,
   discFlare: 0.25,
   discFloor: 0.15,
-  discPeak: 1.6,
-  bankDim: 0.8,
+  discPeak: 1.8,
+  eyeFromMm: 5,
+  eyeToMm: 20,
+  topCut: 0.75,
+  topFrom: 0.55,
+  topTo: 0.9,
+  bankDim: 0.68,
   rollFrom: 0.2,
   rollTo: 3,
   slowFrom: 0.1,
@@ -63,11 +68,11 @@ export const VEIL_LOOK = {
   bankEvenLow: 0.15,
   axis: [0, 0.08, 1] as const,
   keyShare: 3.2,
-  keyFloor: 0.7,
+  keyFloor: 0.5,
   shadow: 0.5,
-  bankShadow: 0.05,
+  bankShadow: 0.09,
   ambientShare: 1,
-  gridShare: 0.75,
+  gridShare: 1,
   bankGridShare: 2.4,
   bankShade: 0.65,
   bankShadeFrom: 0.25,
@@ -183,8 +188,9 @@ uniform highp sampler3D uVeilNoise;
 float veilDisc(vec3 p) {
   vec3 c = p - ${vec(CENTRE)};
   float h = dot(c, ${vec(ROLL)});
-  float s = ${n(L.discMm)} + ${n(L.discFlare)} * length(c - h * ${vec(ROLL)});
-  return mix(1.0, exp(-h * h / (s * s)), uVeilRoll.x);
+  float rad = length(c - h * ${vec(ROLL)});
+  float s = ${n(L.discMm)} + ${n(L.discFlare)} * rad;
+  return mix(1.0, exp(-h * h / (s * s)) * smoothstep(${n(L.eyeFromMm)}, ${n(L.eyeToMm)}, rad) * (1.0 - ${n(L.topCut)} * smoothstep(${n(L.topFrom)}, ${n(L.topTo)}, p.y / uLens.w)), uVeilRoll.x);
 }
 vec4 veilStir(vec3 p) {
   vec4 w = texture(uVeilNoise, p / ${n(L.blobTileMm)} + vec3(uVeilFlow.z, uVeilFlow.w, -uVeilFlow.z));
