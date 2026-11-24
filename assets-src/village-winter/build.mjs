@@ -190,12 +190,6 @@ for (const s of fenceShapes) {
   }
 }
 
-{
-  const lampM = new THREE.Matrix4().makeRotationY(RF.LAMP.yaw).setPosition(...RF.lampFoot())
-  const y0 = RF.LAMP.cageHi + 0.62
-  const sdf = (x, y, z) => ell(x + 0.42, y - y0, z - 0.2, 0.46, 0.2, 0.5) + 0.03 * fbm(x * 2 + 3, y * 2, z * 2, 2)
-  addSnow(netGeometry(sdf, [-1.2, y0 - 0.5, -1], [1, y0 + 0.5, 1.2], 0.12), lampM, 0.6)
-}
 
 const front = frame(P3(0, 0, C.halfLength), V3, UP, U3)
 const left = frame(P3(-C.halfWidth, 0, 0), U3, UP, neg(V3))
@@ -227,11 +221,12 @@ for (const [i, sh] of shrubList.entries()) {
   const [cx, cy, cz] = sh.centre
   const seed = 11 * i + 3
   const SR = rng(977 + 31 * i)
-  const clumps = Array.from({ length: i < 2 ? 13 : 10 }, () => {
-    const a = SR() * Math.PI * 2
-    const up = 0.45 + 0.55 * Math.sqrt(SR())
+  const ivy = RF.isIvy(sh.r)
+  const clumps = Array.from({ length: ivy ? Math.round(1.1 * sh.r[1]) : 20 }, () => {
+    const a = ivy ? RF.wallOutward() + (SR() - 0.5) * Math.PI * 0.95 : SR() * Math.PI * 2
+    const up = ivy ? -0.3 + 1.2 * SR() : 0.2 + 0.8 * Math.sqrt(SR())
     const rr = Math.sqrt(Math.max(0, 1 - up * up))
-    const wide = 0.36 + 0.42 * SR()
+    const wide = ivy ? 0.17 + 0.14 * SR() : 0.36 + 0.42 * SR()
     return { at: [cx + Math.cos(a) * rr * sh.r[0] * 0.95, cy + up * sh.r[1] * 0.95, cz + Math.sin(a) * rr * sh.r[2] * 0.95], wide, tall: wide * (0.42 + 0.3 * SR()) }
   })
   const sdf = (x, y, z) => {
@@ -240,7 +235,7 @@ for (const [i, sh] of shrubList.entries()) {
     return d + 0.06 * fbm(x * 2.4 + seed, y * 2.4, z * 2.4, 2)
   }
   const inside = (x, y, z) => ell(x - cx, y - cy, z - cz, sh.r[0] * 0.78, sh.r[1] * 0.78, sh.r[2] * 0.78) < 0
-  addSnow(netGeometry(sdf, [cx - sh.r[0] - 0.9, cy - sh.r[1], cz - sh.r[2] - 0.9], [cx + sh.r[0] + 0.9, cy + sh.r[1] + 1, cz + sh.r[2] + 0.9], 0.2, (x, y, z) => !inside(x, y, z)), undefined, 0.6, snow, 'shrubs')
+  addSnow(netGeometry(sdf, [cx - sh.r[0] - 0.9, cy - sh.r[1], cz - sh.r[2] - 0.9], [cx + sh.r[0] + 0.9, cy + sh.r[1] + 1, cz + sh.r[2] + 0.9], ivy ? 0.12 : 0.2, (x, y, z) => !inside(x, y, z)), undefined, 0.6, snow, 'shrubs')
 }
 
 const fposts = fenceShapes.filter((s) => s.half[2] < 2).map((s) => [s.centre[0], s.centre[2]])
@@ -272,7 +267,7 @@ function snowAt(x, z) {
 }
 const BANK_TOP = 0.3
 const BANK_BLEND_MM = 5
-const BILLOW = { cycles: 6.5, deepMm: 2.2, clumps: 21, clumpMm: 0.7, grains: 40, grainMm: 0.32, crestMm: 0.45, crestFine: 0.2 }
+const BILLOW = { cycles: 6.5, deepMm: 2.2, clumps: 12, clumpMm: 0.5, crestMm: 0.45, crestFine: 0.2 }
 const UNDERCUT = { dark: 0.88, from: 0.985, to: 1.022, arc: [-135, -115, -5, 25] }
 function contact(x, z) {
   let k = 1
@@ -289,7 +284,7 @@ function contact(x, z) {
   const around = 480
   const shore = [0.9, 0.93, 0.95, 0.962, 0.972, 0.981, 0.99, 1.0, 1.012, 1.028, 1.05, 1.08]
   const outer = 38
-  const skirt = 34
+  const skirt = 50
   const r = L.innerRadiusMm - 0.6
   const footY = L.collarY - 1.5
   const pc = Math.cos(L.pond.yaw)
@@ -361,8 +356,7 @@ function contact(x, z) {
         const uz = Math.sin(th) * Math.sin(phi)
         const lump = clamp(0.5 + 0.75 * fbm(ux * BILLOW.cycles + 3.1, uy * BILLOW.cycles, uz * BILLOW.cycles + 7.7, 3))
         const clump = clamp(0.5 + 0.8 * fbm(ux * BILLOW.clumps + 1.3, uy * BILLOW.clumps + 5.9, uz * BILLOW.clumps + 2.2, 2))
-        const grain = clamp(0.5 + 0.9 * fbm(ux * BILLOW.grains + 8.1, uy * BILLOW.grains + 0.7, uz * BILLOW.grains + 4.4, 2))
-        const rr = r - 0.15 - BILLOW.deepMm * Math.pow(lump, 1.5) * smooth(0.08, 0.5, q) - (BILLOW.clumpMm * clump * clump + BILLOW.grainMm * grain) * smooth(0.0, 0.16, q)
+        const rr = r - 0.15 - BILLOW.deepMm * Math.pow(lump, 1.5) * smooth(0.08, 0.5, q) - BILLOW.clumpMm * clump * clump * smooth(0.0, 0.16, q)
         x = ux * rr
         y = uy * rr
         z = uz * rr

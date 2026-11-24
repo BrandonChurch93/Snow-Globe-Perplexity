@@ -33,7 +33,7 @@ const NEAR = { bulb: { power: 0.6, reachMm: 1.2, ends: 3 }, lamp: { power: 4, re
 const NEAR_WALL = { bulb: { power: 8.5, reachMm: 1.7, ends: 3 }, lamp: { power: 3.4, reachMm: 9, ends: 3 }, pane: { power: 1.7, reachMm: 5, ends: 3 } }
 const MIRROR = { lamp: 9, pane: 1.2, bulb: 0.5, tight: 0.0011, wide: 0.03, wideShare: 0.004, bump: 0.8, lowMm: 3.4, sparkle: 1.7 }
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
-const HALO_KIND = { bulb: { size: 1.2, rest: 1.5, hot: 1, bloom: 0.2 }, lamp: { size: 3.4, rest: 0.4, hot: 0, bloom: 0.3 }, pane: { size: 2.4, rest: 0, hot: 0, bloom: 0.3 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
+const HALO_KIND = { bulb: { size: 1.2, rest: 1.5, hot: 1, bloom: 0.2 }, lamp: { size: 5.6, rest: 0.26, hot: 0, bloom: 0.3 }, pane: { size: 2.4, rest: 0, hot: 0, bloom: 0.3 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
 const THROUGH = 6
 const LAMP_GLASS: Rgb = [7.5, 6.7, 5.2]
 const COVER_GAIN = 0.12
@@ -43,6 +43,7 @@ const SNOW_LUMP_MM = 0.3
 const SNOW_DRIFT_MM = 1.1
 const SPARK = 2.6
 const SNOW_WRAP = 0.4
+const SNOW_SOFT = 1.5
 const BANK_RELIEF = 0.7
 const BANK_TIP = 0.8
 const BANK_WRAP = 1.3
@@ -146,8 +147,11 @@ vec3 bankN = vec3(0.0, 0.0, 1.0);
 vec3 snowAt(vec3 p) {
   return texture2D(map, p.zy).rgb * snowWeights.x + texture2D(map, p.xz).rgb * snowWeights.y + texture2D(map, p.xy).rgb * snowWeights.z;
 }
+vec3 snowSoftAt(vec3 p) {
+  return texture2D(map, p.zy, ${SNOW_SOFT.toFixed(1)}).rgb * snowWeights.x + texture2D(map, p.xz, ${SNOW_SOFT.toFixed(1)}).rgb * snowWeights.y + texture2D(map, p.xy, ${SNOW_SOFT.toFixed(1)}).rgb * snowWeights.z;
+}
 float snowHeight(vec3 p) {
-  vec3 t = snowAt(p);
+  vec3 t = snowSoftAt(p);
   return (t.r * ${SNOW_GRAIN_MM.toFixed(3)} + t.b * ${SNOW_LUMP_MM.toFixed(3)}) * (1.0 + ${BANK_GRAIN.toFixed(2)} * bankMask) + snowAt(p * 0.23 + 0.41).b * ${SNOW_DRIFT_MM.toFixed(3)} * (1.0 + ${BANK_RELIEF.toFixed(2)} * bankMask);
 }`,
         )
