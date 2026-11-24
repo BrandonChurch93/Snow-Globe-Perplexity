@@ -255,6 +255,11 @@ async function latticeTiles(file, cols, rows, tile) {
   return tiles
 }
 
+function lastWord(r) {
+  const lines = `${r.stdout ?? ''}\n${r.stderr ?? ''}`.trim().split('\n')
+  const thrown = lines.filter((l) => /^\w*Error: /.test(l)).pop()
+  return thrown ? thrown.replace(/^\w*Error: /, '') : lines.pop()
+}
 const sheetTool = rel('tools', 'sheet.mjs')
 const sheetRuns = new Map()
 function sheets(asked, what) {
@@ -269,7 +274,7 @@ function sheets(asked, what) {
     console.log(`running ${line}`)
     const r = spawnSync(process.execPath, [sheetTool, ...flags], { cwd: rel(), encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 })
     const out = r.stdout ?? ''
-    const last = `${out}\n${r.stderr ?? ''}`.trim().split('\n').pop()
+    const last = lastWord(r)
     if (r.status === 3) {
       console.log(`${line} ran out of its chunk budget, carrying on`)
       continue
@@ -609,7 +614,7 @@ function stress() {
     budget(line)
     console.log(`running ${line}`)
     const r = spawnSync(process.execPath, [stressTool, ...flags], { cwd: rel(), encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 })
-    const last = `${r.stdout ?? ''}\n${r.stderr ?? ''}`.trim().split('\n').pop()
+    const last = lastWord(r)
     moments = stressNow()
     if (!moments) missing = `${stressWhat}: ${line} ended with code ${r.status} and left no whole ${shown(stressFile)} for this build, so this pack is empty. Run the same pack command again to carry on: ${last}`
   }
