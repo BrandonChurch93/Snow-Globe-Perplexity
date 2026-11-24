@@ -11,7 +11,7 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 
 export const ROOM_RIG = {
   targetMm: [0, 70, 0] as Rgb,
-  shadow: { halfWidthMm: 130, topMm: 150, bottomMm: -130, nearMm: 100, farMm: 1200, normalBiasMm: 0.6, biasMm: 0.45, tiltLimit: 2 },
+  shadow: { halfWidthMm: 130, topMm: 150, bottomMm: -130, nearMm: 100, farMm: 1200, normalBiasMm: 0.6, biasMm: 0.45, tiltLimit: 4, sureFrom: 0.06, sureTo: 0.32 },
   keySpread: 0.16,
   shadowMinMm: 0.35,
   shadowMaxMm: 6,
@@ -70,7 +70,7 @@ export class Lighting {
     u.uRigLobe.value.set(ROOM_RIG.keyLobe, ROOM_RIG.keySpecular, ROOM_RIG.rimWrap, ROOM_RIG.rimSpecular)
     u.uRigRoom.value.set(ROOM_RIG.room.gain, ROOM_RIG.room.lights, ROOM_RIG.room.softPerRough, ROOM_RIG.room.lightsBelowRough)
     u.uGridShade.value.set(ROOM_RIG.grid.flat, ROOM_RIG.grid.wrap, ROOM_RIG.grid.specular, ROOM_RIG.grid.openFloor)
-    u.uRigGlow.value.set(ROOM_RIG.glow.lobe, ROOM_RIG.glow.specular, 0, 0)
+    u.uRigGlow.value.set(ROOM_RIG.glow.lobe, ROOM_RIG.glow.specular, s.sureFrom, s.sureTo)
     u.uRigPoint.value.set(ROOM_RIG.point.key, ROOM_RIG.point.rim, ROOM_RIG.point.sky, 0)
   }
 
