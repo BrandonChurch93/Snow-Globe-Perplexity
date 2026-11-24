@@ -1,4 +1,4 @@
 01-hd-idle.jpg: hd, idle, winter lit, over the approved winter picture (mock bridge, not the engine)
 02-look-phone-tablet.jpg: phone idle, phone with the owner menu open (M key), tablet idle: marks above the pill on a phone, one row on a tablet
 03-look-states.jpg: hd controls at 2x. Left column: idle, dimmed, busy, hover, pressed. Right column: focus on Shake, focus on a mark, focus on sound, sound on, the hint pulse at its middle
-04-look-probe.jpg: probe page on the mock bridge at phone width: while measuring, done at the full phone height, done on a short screen (390 by 664) where the text fades under the Copy foot
+04-look-real-app.jpg: the newest looks, on the real bridge: the app from agent/film-app (1e30017) with these files, in software GL at low quality, so the picture is the engine's blockout and not the final look. Top: probe page while measuring and when done on a short phone screen (390 by 664), then the controls on a phone. Bottom: the controls on a phone on its side (667 by 375), now on one row clear of the globe, and the owner menu there
