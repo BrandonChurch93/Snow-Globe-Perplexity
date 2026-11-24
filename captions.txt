@@ -1,5 +1,5 @@
-Round 4, tree, branch agent/p3-tree at 7e5ad86 (17:42 UTC). Draft tier, hd. Approved on the left in the pairs.
-01-rest-pair.jpg: rest, reference camera (npm run fit), approved crop | build. Ten thin tiers with caps as height-field loads; bare limb shows between the tiers.
-02-crown-pair.jpg: the crown of the same still, approved | build. Granular cap edges, caps differ pad to pad. Still open: caps smoother and thicker than approved, bulbs softer.
-03-macro.jpg: rest, macro camera. Bark is plated with cross fissures and knots, no long grooves. Still open: two thin loads on the left limb read as pills.
-04-interior.jpg: rest, interior camera. Still open: the caps of the upper crown read grey with dark breaks from this camera; next on the list.
+Tree, Round 5 state at bc09ef2 (18:33 UTC). Approved is on the left of every pair.
+01-rest-pair.jpg: hero rest through the reference camera, approved | build, box 1300,240,1960,960. Still wrong: the needle band is darker and taller than approved, the upper crown is a flat disc where approved steps in three tiers, caps cover more (white share 0.186 against 0.140).
+02-crown-pair.jpg: crown, approved | build, box 1340,250,1800,720. Blanket caps with bare gaps and a wavy hem; bulbs scattered over the pad faces; star faceted on a thin stem.
+03-macro.jpg: macro camera, rest. Ribbed and plated bark, gold on the lamp side; the left-low cap still reads as a hat.
+04-interior.jpg: interior camera, rest. The star's top point is cut by this camera's frame.
