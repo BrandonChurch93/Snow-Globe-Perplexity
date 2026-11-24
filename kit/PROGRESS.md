@@ -37,16 +37,16 @@ Status 37 · 2026-11-24 14:24 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 14:28 UTC
-clock: phase 3, tick of 4.7 minutes
-phase 3: 6.02 h used of its 11.00 h box
-allowance (before the review): 12.64 h used of 36.00 h allowed
-all time before the review: 12.64 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 14:33 UTC
+clock: phase 3, tick of 4.6 minutes
+phase 3: 6.10 h used of its 11.00 h box
+allowance (before the review): 12.71 h used of 36.00 h allowed
+all time before the review: 12.71 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 4
+minutes since the last status: 9
 ```
 
 ## Phases
@@ -65,7 +65,7 @@ minutes since the last status: 4
 
 | Unit | State | Rounds run | Best round | Commit | What ended its loop |
 | --- | --- | --- | --- | --- | --- |
-| `winter` | not started | 0 | | | |
+| `winter` | in its rounds (Phase 3) | 1 | 3 (R1 4, R3 3, R2 failed, R4 not in yet; 1 measure red) | `2faac9e` | |
 | `spring` | not started | 0 | | | |
 | `summer` | not started | 0 | | | |
 | `fall` | not started | 0 | | | |
