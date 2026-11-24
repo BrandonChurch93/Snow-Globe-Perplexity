@@ -2,7 +2,7 @@ import { config } from '../../config'
 import type { SdfGrid } from '../../core/stage'
 import type { Timeline } from '../../film/timeline'
 import { LIQUID_LENGTH } from '../../globe/liquid'
-import { STATE_HIDDEN } from './engine'
+import { COVER_N, COVER_SPAN_MM, STATE_HIDDEN } from './engine'
 import { frameViews, plainTimeline, type Colliders, type FromEngine, type ToEngine } from './host'
 import { KINDS, POOL } from './kinds'
 import type { Emitter } from './sdf'
@@ -34,6 +34,7 @@ export class EngineClient {
   kindOf: Uint8Array
   state: Uint8Array
   liquid: Float64Array = new Float64Array(LIQUID_LENGTH)
+  cover: { n: number; spanMm: number; mm: Float32Array } = { n: COVER_N, spanMm: COVER_SPAN_MM, mm: new Float32Array(COVER_N * COVER_N) }
   step = 0
   season: string
   frames = 0
@@ -138,6 +139,7 @@ export class EngineClient {
       const v = frameViews(buffer, count)
       this.count = count
       this.liquid = v.liquid
+      this.cover = { n: COVER_N, spanMm: COVER_SPAN_MM, mm: v.cover }
       this.pos = v.pos
       this.prev = v.prev
       this.sizes = v.sizes
