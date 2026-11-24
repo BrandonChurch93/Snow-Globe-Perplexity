@@ -1,0 +1,4 @@
+before-shake.jpg: winter still "winter-shake", hd, draft, engine as on main at a415b4e (flow presses snow into a low layer).
+after-shake.jpg: the same still with the flow sliding along the ground and the miniature (0d87a50). The storm fills the globe more evenly; it is a whiteout in both.
+before-interior.jpg: winter still "winter-interior", hd, draft, engine at a415b4e.
+after-interior.jpg: the same still at 0d87a50. Flakes sit a little higher above the ground; nothing inside a solid.
