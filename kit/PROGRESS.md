@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 44 · 2026-11-24 17:01 UTC
+Status 45 · 2026-11-24 17:22 UTC
 
-- `out/stills/status/status-44-1.jpg`: Round 4 build at final tier: the hero still at rest as the jury saw it
-- `out/stills/status/status-44-2.jpg`: Round 4 build: strokes of the test shake at frames 84 to 106. The bloom of the swap window turns the base one flat orange for five frames (with the lights builder now)
-- `out/stills/status/status-44-3.jpg`: Still: winter rest hero, hd, draft
-- `out/stills/status/status-44-4.jpg`: Round 1, what the second critic judged: the stand-in globe from the six cameras, each beside its target. Top row hero, macro, interior; bottom row base, surface, low. Four are being framed again: surface shows the wall of the base, interior stands too far back, low nearly repeats hero, macro cuts the cottage (by root)
+- `out/stills/status/status-45-1.jpg`: Macro still at final tier with the new lens points (Round 4 build)
+- `out/stills/status/status-45-2.jpg`: Far snowbank before (top) and after (bottom): the stacked copies are finer but still there
+- `out/stills/status/status-45-3.jpg`: Still: winter rest macro, hd, final
+- `out/stills/status/status-45-4.jpg`: Still: winter rest hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 17:04 UTC
-clock: phase 3, tick of 3.0 minutes
-phase 3: 8.61 h used of its 11.00 h box
-allowance (before the review): 15.23 h used of 36.00 h allowed
-all time before the review: 15.23 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 17:22 UTC
+clock: phase 3, tick of 5.2 minutes
+phase 3: 8.92 h used of its 11.00 h box
+allowance (before the review): 15.53 h used of 36.00 h allowed
+all time before the review: 15.53 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 3
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -552,6 +552,9 @@ Numbered. What, why, and the date.
 
 57. The reference camera is corrected and `hero` follows it in distance (16:38 UTC, Phase 3; closes open item 33). Two circle fits of the approved winter outline agree (the glass builder's, 87 to 99 edge points, rms 1.2 px; the scene builder's, 160 points, rms 0.9 px: centre (1411.5, 653.4), radius 553.9 px in 2816 by 1584), and a render through the old reference camera gave (1407.3, 643.0), radius 549.7. The camera that closes the sphere is 615.3 mm away with its aim 64.0 mm up the axis (pitch 4.5, 16 degrees). So: `REF_RIG` in `tools/lib/refcam.mjs` goes from 619.9 and 62.8 to 615.3 and 64; `cameras.hero.distanceMm` from 616 to 615.3 (the radius was 0.7 px small; inside `framing.heroFillMin`: 139 mm over 172.95 is 0.804); `MOVES.holdAimDropMm` in `src/film/moves.ts` from 4.5 to 3.4, so that the film's holds, which lower the aim from `hero`'s 67.4, show the approved outline (67.4 less 3.4 is 64.0). `hero`'s aim stays 67.4: raised to 68.6 (the corrected reference plus decision 41's 4.6) the shake clearance test fails, and lower it loses the room the lifted glass needs; at rest a `hero` still therefore shows the glass about 27 px of 1584 lower than the approved image, which is decision 41's price and stays listed for Brandon (item 6). Not closable by a camera number, and left open: the approved outline sits 4.2 px right of the axis (a shift of the picture's centre), and the foot's front edge lies about 30 px lower in the build than in the approved image once the sphere is closed, because the glass centre stands 79 mm above the slab against 76 in the picture; `globe.baseHeightMm` 30 would close it and is not taken, because `framing.heroFillMin` would then fail (136 over 172.95 is 0.786) and a threshold is not lowered (decision 40 stands). Tests of framing, film, clearance, loop, cut, lens and config pass (105).
 
+58. A critic's issue that names things no file of its pack shows stays open against the nearest real fault in the crops it names (17:00 UTC, Phase 3, Round 4). R3 part 2 (`kimi_k3`, `scorecards/round-004/R3-2.json`) gave 6 and three majors. Two of them, on `set-D-02.jpg` (the crop sheet of the `base` still), describe "the trees and lamp behind the globe on the right" and "the cobblestone foreground and puddle margin"; that still shows the ledge snow, the icicles and the carved band, and no tree, lamp, cobble or puddle is in any file of the pack. The kit did not foresee an issue about something that is not in the picture. `kit/07-QUALITY-BAR.md` lets an issue be declined only where it asks to move away from an approved image or a stated choice of Brandon's ("No other severe or major issue may be declined"), so these two are not declined. The reading taken: the answer stays verbatim, its score counts in the merged score, and each of the two issues stays open against what its named crops do show: crops 4 and 6 show the ledge snow reading as grey faceted stone with a plastic speckle (given to the base's builder at 16:58 as a major); crop 5 shows the icicles and the rim band (already a major of the same answer). Each closes when a later round's critic of the same still raises nothing major there. Listed in the REVIEW block.
+59. The shake path may wind up sideways in the lift and carry its last swing into the set down (17:11 UTC, Phase 3, Round 4). Both motion critics of Round 4 marked the set down: "base hangs at 1.80 to 2.00 s and lowers straight down without weight". `kit/02-SUBJECT.md` says of the set down "The last stroke carries the globe down". The test `tests/film.test.ts` ("has three parts of the lengths the config gives") held the path to no sideways motion at all in the lift and in the set down; that bound was mine and not the kit's, and it forbade what the kit's own sentence asks. Changed: in the lift and in the set down the sideways offset stays under 0.7 of `shake.strokeMm` (the shake's builder measures 11 to 13 mm against a stroke of 22), and the count of strokes starts from the side the lift ends on, so the path still holds exactly `shake.strokes` strokes inside the strokes part, each still measured against `shake.strokeMm`. The lift still rises without falling back and still reaches `shake.liftMm`; the landing still touches on the landing frame moving down. The kit's lift says "a short dip as if gripped, then up by `shake.liftMm` and tilted back a few degrees, easing" and does not speak of a sideways wind up; the reading taken is that a hand about to shake draws back as it lifts, and that it is judged by R4 like the rest of the path. Listed in the REVIEW block.
+
 ## Notes from Brandon
 
 Numbered, in his words, with the date and how each was applied. Review round items carry their round's number.
@@ -566,7 +569,9 @@ none
 
 The issue, the critic, the round, and the approved image or stated choice it would have moved away from.
 
-none
+1. Round 4, R4 parts 1 and 2 (`gpt_6_2_sol`, `claude_opus_5_5`), the fix asked in their major on the tabletop frost: "Keep the existing winter snow fixed in table space through the shake, and let the landing push a few nearby grains outward rather than erasing and repainting the whole patch" and "keep the table frost fixed through the lift, the landing and the settle". Declined as asked, because it moves away from a stated choice of Brandon's: `kit/02-SUBJECT.md` section 6 has the dressing change "at the fastest moment of the strokes, under motion blur, inside a short bloom of the new season's light", and gives winter's arrival as "A ring of frost bursts outward on the surface from the foot of the base" on the landing; the test shake is winter into winter by `kit/07-QUALITY-BAR.md`, so the frost that leaves and the frost that arrives are the same. What the two critics saw is not declined and stays open as a major with the frost's builder: the frost leaves in a frame that is too clear and comes back "like a mask" and as "a frost decal scaling and resetting"; it has to leave under the blur and the bloom and arrive as growth.
+2. Round 4, R3 part 1 (`gemini_4_carbon`), half of its major on the glass: its fix asks to "refract the interior through a liquid volume so peripheral forms magnify and curve near the rim", which is more than the approved images show. Declined in that half only: in the approved winter images the cottage and the tree stand almost undistorted to within a few millimetres of the rim, and the approved image wins. The other half is not declined and stays open with the glass's builder: the rim zone where the picture does compress and darken in the approved image, and the highlight whose edge is razor sharp.
+3. Round 4, R2, the reason five of the fifteen jurors gave for answering "computer made": the globe sits centred and symmetric as a studio product shot. Not an issue in the kit's sense (jurors give a share, not issues) and written here so it is not chased: the framing is the approved images' own composition and decision 41's reference camera. The jury's share stays as counted.
 
 ## Open items
 
@@ -649,6 +654,8 @@ Severe and major issues still open when a limit was reached: the unit, the still
 - 15:59 UTC, a test bound widened by the village's builder and accepted: in `tests/layout.test.ts` the snow's rise at the glass may be up to 6.5 mm (was 4.2), because the approved image's bank stands that high against the glass; two layout tests were added with it.
 
 - Item 33, 16:38 UTC: cured by decision 57 (`REF_RIG` 615.3 mm and aim 64). What stays open of it is written there: 4.2 px to the right, and the foot's front edge about 30 px low.
+
+36. An edge far out of focus draws as stacked copies of itself (17:18 UTC, Phase 3; Round 4, R3 part 3, major, the far snowbank from `macro`). A limit of `tiers.samplesPerFrame.final` 24 lens points where the blur circle is about 30 px. The lens points were moved to a sunflower spiral (`fad6b08`: finer steps, not a cure). Cure briefed in `out/work/briefs/lens.md` for a builder of the next set (about 19:15): a blur guided by each pixel's parallax that fills the gaps between copies and leaves what is in focus alone.
 
 ## Review items not done
 
@@ -1077,3 +1084,10 @@ One entry per task: when it started, what it did, where it stopped.
 - 16:55 UTC, mine (`src/core/sampler.ts`): R3 part 3 named "multiple parallel light and dark bands" along the far snowbank in the macro still. Cause: the lens points came from two dimensions of a five-dimensional R sequence, which at 24 samples fall on a few rows, so an edge far out of focus drew as about five stacked copies. The lens points of a set are now a sunflower spiral turned by the picture's own angle (24 different offsets along every direction; the largest gap between neighbours is 0.29 of the lens radius over all directions); one sample keeps the old point. tsc clean, 408 tests pass. A macro still at `final` is drawing to check it.
 - 17:05 UTC: `base_fixer` reported that with the corrected reference camera the base projects 13 px (lip) to 34 px (foot) lower than the approved image. Known and already booked: decision 40 (the picture asks for a base of about 31 mm; 33 is the lowest that keeps `framing.heroFillMin`), decision 57 and item 6 for Brandon. Nothing changes.
 - 17:04 UTC: Status 44 posted (shown inline): the hero still at rest of Round 4's build at `final` tier as the jury saw it, and the strokes sheet with the bloom.
+
+- 17:08 UTC: R4 part 2 in (`reviewer_r4_f`, `claude_opus_5_5`, 16 minutes): 5, with 1 severe (frame 78: "the storm is a flat, opaque white fill ... a ball of milk or frosted glass") and 1 major (the table frost "reads as a frost decal scaling and resetting"). Saved verbatim as `scorecards/round-004/R4-2.json`, R3 and R4 ticked (merged 4 and 5), pushed, and both issues sent to the flakes' and the frost's builders in the critic's words. Decisions 58 and 59 and three entries under "Declined issues" written.
+- 17:11 UTC: the shake's builder was blocked by my own test (`tests/film.test.ts` forbade any sideways motion in the lift and the set down); decision 59, the test changed on `main` (`f5f4488`), the old path still passes it.
+- 17:18 UTC, the lens check: the macro still at `final` with the sunflower lens points took 894 s here (24 samples in 872 s). Against Round 4's macro still the far snowbank's stacked copies are finer but still there (`out/work/status/lens-pair.jpg`, `lens-pair-zoom.jpg`). It is a limit of 24 lens points, not of the pattern: an edge with a blur circle of about 30 px is drawn 24 times 2 to 9 px apart. The pattern change stays (every computed picture changes slightly: same picture, finer steps in what is out of focus; tsc and 408 tests green) and the real cure, a blur that fills the gaps between copies and leaves what is in focus alone, is written as a brief (`out/work/briefs/lens.md`) for a builder of the next set, because the ten build places are taken until 19:15. The major stays open (open item 36).
+- 17:20 UTC: `light_fixer` pushed `agent/p3-light` `76d38e6` (the bloom rises over frames 86 to 90 and falls over 94 to 98, the base keeps its carving under it; `ROOM_RIG.inside.through` 0.7 to 0.5). `village_fixer` pushed `bb75331` (practicals that carry through the storm, a lumpy front bank, block masonry; smoke, shrubs and post caps not yet). `liquid_fixer` pushed `1702bce` (eddies 3 to 4 times stronger at the landing; the share of flakes round the one centre 0.69 at `landed`).
+- 17:24 UTC, a ruling for the shake's builder: with the new path two flake tests flip on a degree of plan angle (`tests/engine-cover.test.ts:88` roof cover at `settled` 0.36 or 0.46 against 0.6; `tests/engine-storm.test.ts:129` low bank at `landed` 1.23 to 1.30 against 1.3). It pushes its best path by 17:35 with the two named; the flakes' builder merges it and re-fits (a floor that stands for a kit number or an approved picture is never lowered; a pin of its own earlier fit may be re-fit with the reason). The judged commit must be green: if the merged build is still red at about 18:05 and cannot be cured in ten minutes, Round 5 is frozen without the new path.
+- 17:23 UTC: Status 45 posted (shown inline): the macro still at `final` with the new lens points, and the far snowbank before and after.
