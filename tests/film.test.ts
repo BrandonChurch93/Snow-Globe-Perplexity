@@ -3,7 +3,7 @@ import { config, shots } from '../src/config'
 import { barSeconds, beatSeconds, defaultGrid, filmTimeline, globePoseAt, prerollSeconds, seasonAt } from '../src/film/timeline'
 import { makeShake } from '../src/shake/table'
 import { buildCut } from '../src/film/cut'
-import { MOVES, cameraKeys, cameraNumbers, easeAt, filmPose, filmRig, loopPose, movesOf, rigOf, shotNotes } from '../src/film/moves'
+import { MOVES, aimDropAt, cameraKeys, cameraNumbers, filmPose, filmRig, loopPose, movesOf, rigOf, shotNotes } from '../src/film/moves'
 import { sphereRadiusMm } from '../src/scene/framing'
 import { judgedList, loopPlan } from '../src/film/judged'
 import { openingPlan } from '../src/film/opening'
@@ -228,26 +228,29 @@ describe('the camera of the film', () => {
     }
   })
 
-  it('is locked through every shake but for the ease in of a few percent', () => {
-    expect(MOVES.shakeEaseIn).toBeGreaterThan(0)
-    expect(MOVES.shakeEaseIn).toBeLessThanOrEqual(0.05)
+  it('is locked on hero through every shake, with no ease in at all', () => {
     for (const s of cut.shakes) {
-      let last = wide.distanceMm
-      for (let i = s.first; i < s.landing; i++) {
+      for (let i = s.first; i <= s.landing; i++) {
         const { rig } = filmRig(cut, i / fps)
-        expect(rig.yawDeg, `frame ${i}`).toBe(wide.yawDeg)
-        expect(rig.pitchDeg, `frame ${i}`).toBe(wide.pitchDeg)
-        expect(rig.aimHeightMm, `frame ${i}`).toBe(wide.aimHeightMm)
-        expect(rig.fovDeg, `frame ${i}`).toBe(wide.fovDeg)
-        expect(rig.focusShiftMm, `frame ${i}`).toBe(wide.focusShiftMm)
-        expect(rig.distanceMm).toBeLessThanOrEqual(last + 1e-9)
-        expect(rig.distanceMm).toBeGreaterThanOrEqual(wide.distanceMm * (1 - MOVES.shakeEaseIn) - 1e-9)
-        last = rig.distanceMm
+        expect(rig, `frame ${i}`).toEqual(wide)
       }
-      expect(easeAt(cut, (s.landing - 1) / fps)).toBeGreaterThan(0.99)
-      expect(easeAt(cut, s.landing / fps + s.seconds * MOVES.settleBars)).toBe(0)
-      for (let i = s.landing; i < s.landing + Math.round(s.seconds * MOVES.settleBars * fps); i++) expect(easeAt(cut, (i + 1) / fps)).toBeLessThanOrEqual(easeAt(cut, i / fps))
     }
+  })
+
+  it('lowers the aim in the holds by no more than the drop, and never in a shake or on the way to another camera', () => {
+    let deepest = 0
+    for (const m of movesOf(cut)) {
+      for (let i = m.span.first; i <= m.span.last; i++) {
+        const t = i / fps
+        const d = aimDropAt(m, t, 0)
+        expect(d, `frame ${i}`).toBeGreaterThanOrEqual(0)
+        expect(d, `frame ${i}`).toBeLessThanOrEqual(MOVES.holdAimDropMm + 1e-9)
+        expect(aimDropAt(m, t, 1), `frame ${i}`).toBe(0)
+        if (m.role === 'shake' || t >= m.back || (m.role === 'open' && t <= m.to)) expect(d, `frame ${i}`).toBe(0)
+        deepest = Math.max(deepest, wide.aimHeightMm - filmRig(cut, t).rig.aimHeightMm)
+      }
+    }
+    expect(deepest).toBeGreaterThan(MOVES.holdAimDropMm * 0.9)
   })
 
   it('never stops in a hold: no two frames next to each other hold the same camera', () => {

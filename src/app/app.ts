@@ -3,13 +3,13 @@ import type { Assets } from '../core/assets'
 import type { AppBridge, AppState, SoundEngine } from '../core/bridge'
 import type { Gfx } from '../core/gl'
 import type { Params } from '../core/params'
-import { Governor, stageQuality } from '../core/quality'
+import { Governor, levels, stageQuality } from '../core/quality'
 import type { Moment, Stage } from '../core/stage'
 import type { LoopParticles, SourceSwitch } from '../film/loop'
 import { drawOpening } from '../film/openingStandIn'
 import { barSeconds } from '../film/timeline'
 import type { Pose } from '../scene/cameras'
-import { livePose, liveRig } from './framing'
+import { FRAME, controlsPx, livePose, liveRig, roomUnder } from './framing'
 import { Drag, Look, MotionShake, stirAxis, type Stir } from './gestures'
 import { audioBase, audioIndex, audioShips, loadAudio, loadInterface, loadProbe } from './mounts'
 import { Painter } from './painter'
@@ -31,10 +31,11 @@ export interface AppDeps {
 type Playing = AppState['playing']
 
 const SOUND_ON_AT_START = true
-const STEP_BUDGET_MS = 9
+const STEP_BUDGET_MS = (0.7 * 1000) / Math.min(...levels.map((l) => l.minFps))
 const STEP_SHARE = 0.4
 const SKIP_BUDGET_MS = 14
 const FILMS: Playing[] = ['film-a', 'film-b']
+const MEASURE_EVERY = 20
 const CONTROL = 'button, a[href], input, select, textarea, summary, [role="button"], [contenteditable=""], [contenteditable="true"]'
 
 export function startApp(d: AppDeps): AppBridge {
@@ -82,6 +83,9 @@ export function startApp(d: AppDeps): AppBridge {
   let told = params.season
   let stepMs = 0
   let budget = STEP_BUDGET_MS
+  let bar: number | null = null
+  let room = -1
+  let roomFor = ''
 
   const state = (): AppState => ({
     ready,
@@ -139,6 +143,18 @@ export function startApp(d: AppDeps): AppBridge {
     if (painter.size(cw * ratio, ch * ratio)) governor.rest()
   }
 
+  const under = (dt: number): number => {
+    if (playing !== 'live') return 0
+    const h = app.clientHeight || window.innerHeight
+    if (count % MEASURE_EVERY === 0 && ui?.dataset.interface === 'shown') bar = controlsPx(ui, app) ?? bar
+    const want = roomUnder(h, bar)
+    const size = `${app.clientWidth}:${h}`
+    if (room < 0 || size !== roomFor) room = want
+    else room += (want - room) * (1 - Math.exp(-dt * FRAME.easeRate))
+    roomFor = size
+    return room
+  }
+
   const muted = (): boolean => !soundOn || playing !== 'live'
 
   const unlock = (): void => {
@@ -184,6 +200,7 @@ export function startApp(d: AppDeps): AppBridge {
     look.yaw = 0
     look.pitch = 0
     box = ''
+    room = -1
     if (what === 'live') {
       const season = session.season
       sim.reset()
@@ -341,7 +358,7 @@ export function startApp(d: AppDeps): AppBridge {
         governor.rest()
         if (told !== session.season) engine?.setSeason((told = session.season))
       }
-      pose = livePose(painter.width / Math.max(1, painter.height), look.yaw, look.pitch)
+      pose = livePose(painter.width / Math.max(1, painter.height), look.yaw, look.pitch, under(dt))
       moment = session.moment(mix, seed)
     }
     painter.paint(pose, moment)
