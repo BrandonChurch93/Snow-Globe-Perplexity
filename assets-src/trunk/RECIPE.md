@@ -21,7 +21,7 @@ Date: 2026-11-24
 ## assets-full/shared/trunk-wood.glb
 Made by: `assets-src/trunk/build.mjs` (three 0.187 in Node, `tools/lib/glb.mjs`)
 From: `src/miniature/trunk.ts` (the radius and axis tables, the ridges, the roots, the limbs and twigs that reach each pad), loaded through `assets-src/trunk/source.mjs`
-Prompt or command: `npm run make -- trunk`. One fluted column of 64 sides for the stem and the root skirt, a tube for every root, limb and twig, vertex colours that darken the grooves and the crotches, uv in bark tiles. The mesh is in tree coordinates (x, height above the foot, z) and the page stands it on the ground with `placeGeometry`.
+Prompt or command: `npm run make -- trunk`. One fluted column of 64 sides for the stem and the root skirt, which flares into the root toes, a tube for every root, limb and twig (55 chains), vertex colours that darken the grooves and the crotches, uv in bark tiles. The script prints how far the farthest vertex lies outside `trunkSolid`, which must stay under half a millimetre. The mesh is in tree coordinates (x, height above the foot, z) and the page stands it on the ground with `placeGeometry`.
 Takes: rebuilt at every change of the shape, the last build kept
 Why this one: the waist, the root skirt and the fork heights are the ones measured on the approved image
 Date: 2026-11-24
