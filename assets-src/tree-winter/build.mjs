@@ -12,13 +12,13 @@ const NEEDLE_TILE_MM = 9
 const SNOW_TILE_MM = 7
 const STAR_AT = [0.1, 45.75, 0.1]
 const STAR_R = 2.6
-const STAR = { deep: 0.62, edge: 0.17, inset: 0.9, valley: 0.72, crest: 1.12, side: 0.62, glow: [0.1, 0.055, 0.03], stem: [0.12, 0.085], collar: 0.17 }
+const STAR = { deep: 0.62, edge: 0.17, inset: 0.9, valley: 0.62, crest: 1.12, side: 0.5, glow: [0.1, 0.055, 0.03], stem: [0.12, 0.085], collar: 0.17 }
 const CORE_R = 0.13
 const WIRE_R = 0.075
 const SNOW_KEY = [-0.45, 0.8, 0.35]
-const BULBS = { stem: [1.9, 2.9], limb: [1.7, 2.7], lead: 0.16, pad: 0.4, clear: 0.3, rim: 0.25, face: 0.5 }
+const BULBS = { stem: [1.9, 2.9], limb: [1.5, 2.4], lead: 0.16, pad: 0.5, clear: 0.3, rim: 0.25, face: 0.5 }
 const ARRIVAL = { root: 0, limb: 0.045, shade: [0.42, 0.14] }
-const SPRIGS = { band: 0.25, share: 0.5, size: [1.3, 2.2], rise: 0.8 }
+const SPRIGS = { band: 0.25, share: 0.75, size: [1.0, 1.8], rise: 0.8 }
 
 const [T, R] = await loadSource(['/src/miniature/trunk.ts', '/src/core/rng.ts'])
 const rng = R.stream('tree-winter')
@@ -199,7 +199,7 @@ function needles() {
   for (let v = 0; v < count; v++) {
     const cover = snowField(s.pos[v * 3], s.pos[v * 3 + 1], s.pos[v * 3 + 2])
     if (cover >= SPRIGS.band) {
-      if (rng.next() <= 0.25) plant(v, rng.range(0.9, 1.7), 0)
+      if (rng.next() <= 0.4) plant(v, rng.range(0.9, 1.7), 0)
     } else if (rng.next() <= SPRIGS.share) plant(v, rng.range(SPRIGS.size[0], SPRIGS.size[1]), SPRIGS.rise)
   }
   const g = new THREE.BufferGeometry()
