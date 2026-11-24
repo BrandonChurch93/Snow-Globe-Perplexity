@@ -18,7 +18,7 @@ const CROPS = [
 ]
 const GROUND = { r: 20, g: 20, b: 23 }
 const INK = [112, 112, 120]
-const EDGE_BLUR = 14
+const EDGE_BLUR = 40
 const JPEG = { quality: 92, chromaSubsampling: '4:4:4' }
 const GLYPHS = {
   a: ['.....', '.....', '.###.', '....#', '.####', '#...#', '.####'],
@@ -137,7 +137,7 @@ async function cut(scaled, rect, outW, outH) {
     field = soft
   }
   const out = await toRgb(fromRgb(field).extract({ left: left + pad.left, top: top + pad.top, width: outW, height: outH }))
-  return { img: out, filled, pad }
+  return { img: out, pad }
 }
 
 const frameRect = (g) => ({
@@ -216,8 +216,8 @@ export async function composeComparison({ a, b, out, caption = '' }) {
         name: c.name,
         centreInRadii: { x: c.x, y: c.y },
         file: shown(file),
-        a: { source: roundRect(rectA), at: { left: 0, top, width: cropW, height: CROP_HEIGHT }, filled: tileA.filled },
-        b: { source: roundRect(rectB), at: { left: cropW + PANEL_GAP, top, width: cropW, height: CROP_HEIGHT }, filled: tileB.filled },
+        a: { source: roundRect(rectA), at: { left: 0, top, width: cropW, height: CROP_HEIGHT }, edgeFillPx: tileA.pad },
+        b: { source: roundRect(rectB), at: { left: cropW + PANEL_GAP, top, width: cropW, height: CROP_HEIGHT }, edgeFillPx: tileB.pad },
       })
     }
     await save(sheet, file)
@@ -234,7 +234,7 @@ export async function composeComparison({ a, b, out, caption = '' }) {
     globe: v.globe,
     base: v.base ?? null,
     frame: roundRect(frame),
-    edgeFilled: panel.filled,
+    edgeFillPx: panel.pad,
   })
   writeJson(`${stem}.json`, {
     caption,
@@ -371,9 +371,9 @@ export async function psnr(fileA, fileB) {
   return { psnr: mse === 0 ? Infinity : 10 * Math.log10((255 * 255) / mse), mse, maxDiff, differingPixels, width: a.width, height: a.height }
 }
 
-export async function sideBySide({ files, out, gap = PANEL_GAP, maxLongEdge }) {
+export async function sideBySide({ files, out, gap = PANEL_GAP, maxLongEdge = limits().statusLongEdge }) {
   if (!Array.isArray(files) || files.length === 0) throw new Error('sideBySide: no files')
-  const longEdge = maxLongEdge ?? limits().statusLongEdge
+  const longEdge = maxLongEdge
   const sources = []
   for (const f of files) sources.push(await loadRgb(f))
   const gaps = gap * (sources.length - 1)
