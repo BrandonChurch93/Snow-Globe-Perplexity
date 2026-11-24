@@ -4,12 +4,12 @@ import { createShowcase, type Showcase } from './capture/showcase'
 import { Assets } from './core/assets'
 import { createGfx } from './core/gl'
 import { readParams } from './core/params'
-import { barSeconds, defaultGrid, filmTimeline, globePoseAt, lastLandingBefore, prerollSeconds, seasonAt, type Timeline } from './film/timeline'
+import { barSeconds, defaultGrid, eventAt, filmTimeline, globePoseAt, lastLandingBefore, prerollSeconds, seasonAt, type Timeline } from './film/timeline'
 import { httpStore, SimDriver } from './particles/driver'
 import { SpikeSim } from './particles/spikeSim'
 import { Post } from './post/post'
 import { poseOf } from './scene/cameras'
-import { SpikeStage } from './scene/spike'
+import { createStage } from './scene/createStage'
 import { makeShake } from './shake/table'
 
 declare global {
@@ -25,7 +25,7 @@ const gfx = createGfx(canvas, { deny: params.deny, preserve: capture })
 const assets = new Assets()
 const sim = new SpikeSim(config.defaultSeason, 1)
 const format = capture ? params.format : config.formats.hd.id
-const stage = new SpikeStage(gfx, sim, 16, 16)
+const stage = createStage(gfx, sim, 16, 16)
 const store = capture && params.simcache ? httpStore(new URL('__simcache', document.baseURI).href.replace(/\/$/, '')) : null
 const driver = new SimDriver(sim, store, __ENGINE_HASH__)
 const ready = assets.init(params.assets).then(() => assets.loadGroup('shared'))
@@ -143,7 +143,7 @@ function play(): void {
     const hero = config.cameras.hero
     const pose = poseOf({ ...hero, yawDeg: yaw, pitchDeg: pitch, distanceMm: wide ? hero.distanceMm : hero.distanceMm / Math.max(0.45, aspect) }, { apertureMm: 0, focusShiftMm: 0 })
     const at = seasonAt(tl, clock)
-    stage.drawSample(target!, pose, null, { ...at, sinceLanding: clock - lastLandingBefore(tl, clock), globe: globePoseAt(tl, clock), mix: 1, seed: (clock * 60) % 97 }, true)
+    stage.drawSample(target!, pose, null, { ...at, sinceLanding: clock - lastLandingBefore(tl, clock), globe: globePoseAt(tl, clock), mix: 1, seed: (clock * 60) % 97, time: clock, beat: eventAt(tl, clock)?.beat ?? null, period: null }, true)
     post.resolve(target!.texture)
   }
   requestAnimationFrame(tick)

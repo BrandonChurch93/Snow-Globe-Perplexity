@@ -3,8 +3,8 @@ import { config } from '../config'
 import type { Gfx } from '../core/gl'
 import { hashText, stream } from '../core/rng'
 import type { Sample } from '../core/sampler'
-import type { Moment, Stage } from '../core/stage'
-import { CENTRE_Y, GROUND_Y, INNER_R, SHAPES, type SpikeSim } from '../particles/spikeSim'
+import type { Moment, ParticleSource, Stage } from '../core/stage'
+import { CENTRE_Y, GROUND_Y, INNER_R, SHAPES } from '../particles/spikeSim'
 import { applyPose, type Pose } from './cameras'
 
 const G = config.globe
@@ -138,7 +138,7 @@ export class SpikeStage implements Stage {
   private readonly lit = new Map<THREE.Object3D, THREE.Material | THREE.Material[]>()
   private readonly names = new Set<string>()
 
-  constructor(private readonly gfx: Gfx, private readonly sim: SpikeSim, width: number, height: number) {
+  constructor(private readonly gfx: Gfx, private readonly sim: ParticleSource, width: number, height: number) {
     const { scene, globe, interior } = this
     scene.background = new THREE.Color(0.0035, 0.004, 0.0055)
     this.inner = this.makeInner(width, height)

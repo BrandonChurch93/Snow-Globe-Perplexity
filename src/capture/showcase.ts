@@ -4,12 +4,15 @@ import type { Assets } from '../core/assets'
 import { finish, type Gfx } from '../core/gl'
 import { sampleSet, type Sample } from '../core/sampler'
 import type { Moment, Stage } from '../core/stage'
-import { barSeconds, beatSeconds, defaultGrid, filmTimeline, globePoseAt, lastLandingBefore, prerollSeconds, seasonAt, stateSeconds, stillTimeline, type Grid, type Timeline } from '../film/timeline'
+import { barSeconds, beatSeconds, defaultGrid, eventAt, filmTimeline, globePoseAt, lastLandingBefore, prerollSeconds, seasonAt, stateSeconds, stillTimeline, type Grid, type Timeline } from '../film/timeline'
 import type { SimDriver } from '../particles/driver'
 import { Post } from '../post/post'
 import { poseById, type Pose } from '../scene/cameras'
 import { framingOf, type Framing } from '../scene/framing'
 import { judgedList, loopPlan, type JudgedEntry } from '../film/judged'
+import { partChange, SEASONAL_PARTS } from '../shake/change'
+import { sampleSdf } from '../core/sdf'
+import { INNER_R } from '../particles/spikeSim'
 import { openingPlan } from '../film/opening'
 import parts from '../../parts/PARTS.json'
 
@@ -103,6 +106,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
   let acc = new Accumulator(gfx, format.width, format.height)
   let tier = 'draft'
   let diag = ''
+  let lastSeason: string = config.defaultSeason
   let grid: Grid | null = null
   let filmTl: Timeline | null = null
   const stills = new Map<string, Timeline>()
@@ -141,7 +145,9 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
       const t1 = now()
       timing.simMs += t1 - t0
       const at = seasonAt(tl, t)
-      const moment: Moment = { ...at, sinceLanding: t - lastLandingBefore(tl, t), globe: globePoseAt(tl, t), mix, seed: salt * 0.618 + 1 }
+      lastSeason = at.season
+      const hit = eventAt(tl, t)
+      const moment: Moment = { ...at, sinceLanding: t - lastLandingBefore(tl, t), globe: globePoseAt(tl, t), mix, seed: salt * 0.618 + 1, time: t, beat: hit ? hit.beat : null, period: null }
       stage.drawSample(acc.sample, pose(t), s, moment, done === 0 || shutterSec > 0)
       acc.add()
       done++
@@ -166,12 +172,11 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
   }
   const filmPose = (_t: number) => poseById('hero')
 
-  const SEASONAL = ['base', 'miniature', 'glass-dressing', 'surface-dressing', 'light', 'veil', 'particles']
   const stateOf = (tl: Timeline, t: number, shot: string, p: Pose): FilmState => {
     const at = seasonAt(tl, t)
     const g = globePoseAt(tl, t)
     const change: Record<string, number> = {}
-    for (const part of SEASONAL) change[part] = at.change
+    for (const part of SEASONAL_PARTS) change[part] = partChange(part, at.change)
     return {
       camera: [p.position.x, p.position.y, p.position.z, p.aim.x, p.aim.y, p.aim.z, p.fovDeg],
       shot,
@@ -294,8 +299,22 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
       },
       loopPlan: () => loopPlan(),
       openingPlan: () => openingPlan(),
-      sanity: () => ({ invalid: 0, pixels: format.width * format.height }),
-      inside: () => ({ inside: 0, outside: 0, total: stage.particleCount() }),
+      sanity: () => acc.invalid(),
+      inside: () => {
+        const sim = driver.sim
+        const grid = stage.collider ? stage.collider(lastSeason) : null
+        let inside = 0
+        let outside = 0
+        const lim = (INNER_R + 0.05) * (INNER_R + 0.05)
+        for (let i = 0; i < sim.count; i++) {
+          const x = sim.pos[i * 3]!
+          const y = sim.pos[i * 3 + 1]!
+          const z = sim.pos[i * 3 + 2]!
+          if (x * x + y * y + z * z > lim) outside++
+          else if (grid && sampleSdf(grid, x, y, z) < -0.05) inside++
+        }
+        return { inside, outside, total: sim.count }
+      },
       async simcache(what) {
         const t0 = now()
         const tl = what === 'film' ? getFilm() : stillTl(config.defaultSeason)
