@@ -19,8 +19,9 @@ export const glassLook = {
     along: [-0.5279, 0.8442, 0.0931] as V3,
     across: [0.7394, 0.4029, 0.5395] as V3,
     tint: [0.56, 0.73, 1] as V3,
-    gain: 5,
-    edgeDeg: { outer: 0.45, inner: 1.2, end: 1.1, tail: 4 },
+    level: 3.2,
+    gain: 11,
+    edgeDeg: { outer: 0.45, inner: 1.8, end: 1.1, tail: 4 },
     halo: { wideDeg: [2.5, 5] as const, tint: [0.4, 0.75, 1] as V3, gain: 0.14 },
     tip: { flatDeg: [6, 10.5] as const, fadeDeg: [8.5, 14] as const, tint: [0.4, 0.55, 0.75] as V3, slant: 0.35, slantFromDeg: -3.5, tailDeg: [-19, -13.5] as const, tailSlope: 1.2 },
     dark: { atDeg: [13.6, -8.7] as const, axis: [0.803, -0.595] as const, sideDeg: [-1.5, 1.5, 11, 17] as const, inDeg: [-17, -11] as const, depth: 0.95, shade: 0.3, share: [0.935, 0.965] as const, glow: [0.0018, 0.019, 0.021] as V3 },
@@ -31,23 +32,23 @@ export const glassLook = {
       { alongDeg: [-16, 15.5], acrossDeg: [-3.8, 14.6], outFrom: 0, outSlope: 0, inFrom: 0, inSlope: 0, outer: 1, inner: 1, power: 1 },
     ],
   },
-  rimCard: { wide: 0.05, widePower: 3, core: 0.75, corePower: 26, tint: [1.15, 1, 0.7] as V3 },
-  strip: { centre: [-0.449, -0.031, -0.893] as V3, tint: [0.3, 0.8, 1] as V3, wideDeg: 3.4, tallDeg: [-9, 7] as const, endDeg: 3, gain: [0.1, 0.3, 1.4, 0.04] as const },
-  room: { gain: 0.3, side: 0.22, blotch: 0.5, level: 2.5, tint: [1.2, 1.1, 1] as V3 },
-  ceiling: { dir: [0, 0.5, -0.866] as V3, edge: [0.55, 0.66] as const, low: [0.25, 1] as const, gain: 1.9, tint: [0.85, 1.05, 1] as V3 },
-  second: { face: 0.72, gain: 4.1, tint: [1, 1, 1] as V3, softDeg: 0.15, own: 0.15 },
-  third: { face: 0.6, gain: 0.243, tint: [0.55, 0.79, 1] as V3, softDeg: 0.9, own: 0.15, fade: [0.78, 0.97] as const },
-  shoulder: { from: 0.8, to: 1.06 },
+  rimCard: { wide: 0.05, widePower: 3, core: 0.75, corePower: 26, tint: [2.63, 2.29, 1.6] as V3 },
+  strip: { centre: [-0.449, -0.031, -0.893] as V3, tint: [0.3, 0.8, 1] as V3, wideDeg: 3.4, tallDeg: [-9, 7] as const, endDeg: 3, gain: [0.32, 0.96, 4.48, 0.128] as const },
+  room: { gain: 0.3, side: 0.22, blotch: 0.5, level: 3.19, tint: [1.62, 1.04, 1.04] as V3, innerRough: 0.1, throughRough: 0.3 },
+  ceiling: { dir: [0, 0.5, -0.866] as V3, edge: [0.55, 0.66] as const, low: [0.25, 1] as const, gain: 2.1, tint: [0.95, 1.05, 1] as V3 },
+  second: { face: 0.72, gain: 2.8, tint: [1, 1, 1] as V3, softDeg: 0.5, own: 0.15 },
+  third: { face: 0.6, gain: 0.11, tint: [0.55, 0.79, 1] as V3, softDeg: 0.9, own: 0.15, fade: [0.78, 0.97] as const },
+  shoulder: { from: 1.4, to: 3.6 },
   floor: 0.4,
   band: { from: 0.976, to: 0.99, wander: 0.004, dim: 0.5, shade: 0.3 },
-  edge: { from: 0.978, peak: 0.994, keyLobe: [0.6, 0.85] as const, key: 0.17, keyTint: [0.8, 1, 1.3] as V3, tip: 0.33, tipTint: [0.45, 0.6, 1] as V3, tipDeg: [4.3, 2.5] as const, tipShare: [0.975, 0.997] as const, rimLobe: [0.16, 0.5] as const, rim: 0.06, sky: 0.04, pool: 0.5 },
+  edge: { from: 0.978, peak: 0.994, keyLobe: [0.84, 0.97] as const, key: 0.38, keyTint: [0.8, 1, 1.3] as V3, tip: 0.33, tipTint: [0.6, 0.78, 1] as V3, tipDeg: [4.3, 2.5, 1.3] as const, tipShare: [0.975, 0.997] as const, rimLobe: [0.16, 0.5] as const, rim: 0.137, sky: 0.04, pool: 0.5 },
   body: { from: 0.962, to: 0.978, sky: 0.04, tint: [1.8, 1.2, 0.4] as V3 },
   wave: { rings: 46, ringDeg: 0.3, driftDeg: 0.35, inner: 1.9 },
   dust: { cells: 240, share: 0.085, depth: 0.42 },
-  hair: { count: 7, widthMm: 0.035, depth: 0.55, bend: 0.012 },
+  hair: { count: 7, widthMm: 0.035, depth: 0.32, bend: 0.012 },
   seat: { lineMm: 1.3, shadeMm: 8, gain: 1.5 },
-  through: { disc: 0.0009, point: 3, pointGain: 2.5, wall: [0.94, 0.975, 0.985] as V3, mirror: 0.06, steps: 5, own: 0.12, window: 0.04, softDeg: 3, lift: [0.058, 0.045, 2.5] as const, liftTint: [0.9, 1.25, 1] as V3 },
-  bubble: { widthMm: 20.5, depthMm: 5.6, gapMm: 0.12, patch: 0.46, waist: 0.5, flat: 2.7, leanDeg: 16, slide: 0.0025, wobble: 0.09, line: 0.022, sky: 0.11, inner: 0.08, glint: 0.5, milk: 0.12, fill: [1.6, 1.25, 0.85] as V3, shade: 0.12, edge: 0.5, warm: 0.5, reach: 0.35, patchGain: 0.1, swirl: 0.3, streakDir: [-0.9, 0, 0.35] as V3, streakPower: 2.5, lip: 0.6, spark: 0.25, sparkTint: [1, 0.92, 0.75] as V3 },
+  through: { disc: 0.0009, point: 3, pointGain: 2.5, wall: [0.94, 0.975, 0.985] as V3, mirror: 0.06, steps: 5, own: 0.12, window: 0.018, softDeg: 3, lift: [0.058, 0.045, 2.5] as const, liftTint: [0.9, 1.25, 1] as V3 },
+  bubble: { widthMm: 20.5, depthMm: 5.6, gapMm: 0.12, patch: 0.46, waist: 0.5, flat: 2.7, leanDeg: 16, slide: 0.0025, wobble: 0.09, line: 0.022, sky: 0.11, inner: 0.08, glint: 0.5, milk: 0.12, fill: [1.6, 1.25, 0.85] as V3, shade: 0.12, edge: 0.5, warm: 0.5, reach: 0.35, patchGain: 0.1, swirl: 0.3, streakDir: [-0.9, 0, 0.35] as V3, streakPower: 2.5, lip: 0.6, spark: 2.5, sparkTint: [1, 0.92, 0.75] as V3 },
 }
 
 const G = config.globe
@@ -112,7 +113,7 @@ const float CENTRE_Y = ${num(centreHeightMm)};
 const vec3 WIN_C = ${vec(unit(W.centre))};
 const vec3 WIN_A = ${vec(unit(W.along))};
 const vec3 WIN_B = ${vec(unit(W.across))};
-const vec3 WIN_TINT = ${vec(W.tint)};
+const vec3 WIN_TINT = ${vec(W.tint.map((x) => x * W.level))};
 const vec4 WIN_SPAN[4] = vec4[4](${W.orders.map((o) => vec([o.alongDeg[0] * RAD, o.alongDeg[1] * RAD, o.acrossDeg[0] * RAD, o.acrossDeg[1] * RAD])).join(', ')});
 const vec4 WIN_CUT[4] = vec4[4](${W.orders.map((o) => vec([o.outFrom * RAD, o.outSlope, o.inFrom * RAD, o.inSlope])).join(', ')});
 const vec3 WIN_LEVEL[4] = vec3[4](${W.orders.map((o) => vec([o.outer, o.inner, o.power])).join(', ')});
@@ -223,7 +224,7 @@ vec3 glassPoints(vec3 d) {
   return sum * ${num(glassLook.through.pointGain)};
 }
 vec3 glassRoom(vec3 d, float soft, int k, float own) {
-  vec3 c = soft > 0.0 ? stageRoomSoft(d, soft) : stageRoom(d);
+  vec3 c = k == 0 ? stageRoom(d) : stageRoomSeen(d, k == 3 ? ${num(glassLook.room.throughRough)} : ${num(glassLook.room.innerRough)});
   c += soft < 0.0 ? glassPoints(d) : stageRoomLights(d, ${num(glassLook.through.disc)} + soft * 0.05);
   if (uOwn < 0.5) return c;
   soft = max(soft, 0.0);
@@ -395,7 +396,8 @@ void main() {
   vec3 seen = uTurn * r1;
   float seenZ = dot(seen, WIN_C);
   float dark = uOwn > 0.5 ? glassDark(seen) : 0.0;
-  float tipAt = seenZ > 0.2 ? (atan(dot(seen, WIN_A), seenZ) - ${num(glassLook.edge.tipDeg[0] * RAD)}) / ${num(glassLook.edge.tipDeg[1] * RAD)} : 9.0;
+  float tipAt = seenZ > 0.2 ? atan(dot(seen, WIN_A), seenZ) - ${num(glassLook.edge.tipDeg[0] * RAD)} : 9.0;
+  tipAt /= tipAt > 0.0 ? ${num(glassLook.edge.tipDeg[2] * RAD)} : ${num(glassLook.edge.tipDeg[1] * RAD)};
   float wallZone = smoothstep(${num(glassLook.body.from)}, ${num(glassLook.body.to)}, s);
   float deep = dark * smoothstep(${num(W.dark.share[0])}, ${num(W.dark.share[1])}, s);
   if (uOwn > 0.5) col += uSky * ${vec(glassLook.body.tint)} * ${num(glassLook.body.sky)} * wallZone * (0.6 + 0.4 * thick) * (1.0 - dark);
@@ -608,8 +610,14 @@ export class Shell {
     sh.uRimDir.value.copy(f.rimDir)
     sh.uRimCol.value.copy(f.rimCol)
     const room = glassLook.room
-    sh.uSky.value.setRGB(f.ambient.r * room.level * room.tint[0], f.ambient.g * room.level * room.tint[1], f.ambient.b * room.level * room.tint[2])
-    sh.uGround.value.setRGB(f.ground.r * f.fill * room.level * room.tint[0], f.ground.g * f.fill * room.level * room.tint[1], f.ground.b * f.fill * room.level * room.tint[2])
+    const ra = a.backdrop.room
+    const rb = b.backdrop.room
+    const hue = [ra[0] + (rb[0] - ra[0]) * t, ra[1] + (rb[1] - ra[1]) * t, ra[2] + (rb[2] - ra[2]) * t]
+    const top = Math.max(hue[0]!, hue[1]!, hue[2]!, 1e-6)
+    const sky = (0.2126 * f.ambient.r + 0.7152 * f.ambient.g + 0.0722 * f.ambient.b) * room.level
+    const ground = (0.2126 * f.ground.r + 0.7152 * f.ground.g + 0.0722 * f.ground.b) * f.fill * room.level
+    sh.uSky.value.setRGB((hue[0]! / top) * sky * room.tint[0], (hue[1]! / top) * sky * room.tint[1], (hue[2]! / top) * sky * room.tint[2])
+    sh.uGround.value.setRGB((hue[0]! / top) * ground * room.tint[0], (hue[1]! / top) * ground * room.tint[1], (hue[2]! / top) * ground * room.tint[2])
     sh.uBase.value.setRGB(a.main[0] + (b.main[0] - a.main[0]) * t, a.main[1] + (b.main[1] - a.main[1]) * t, a.main[2] + (b.main[2] - a.main[2]) * t)
     sh.uPool.value.copy(f.pool)
     sh.uOwn.value = glassLook.ownSources ? 1 : 0
