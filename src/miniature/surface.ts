@@ -82,6 +82,8 @@ vec3 villageBump(vec3 pos, vec3 n, vec2 dH, float face) {
 `
 
 export const NEAR_LIGHT = 'reflectedLight.indirectDiffuse += vGlow * uGlowGain * material.diffuseContribution;'
+const LEAF_GLOW = 0.4
+const SOLID_NEAR = NEAR_LIGHT.replace('uGlowGain', `(uGlowGain * (1.0 - ${(1 - LEAF_GLOW).toFixed(2)} * villageLeaf))`)
 
 const SURFACE_PARS = `
 ${BUMP_GLSL}
@@ -146,7 +148,7 @@ export function surfaceMaterial(o: { part: string; map: THREE.Texture; gain: THR
         .replace('#include <roughnessmap_fragment>', 'float roughnessFactor = villageRough;')
         .replace('#include <metalnessmap_fragment>', 'float metalnessFactor = villageMetal;')
         .replace('#include <normal_fragment_maps>', SURFACE_NORMAL)
-      afterLight(shader, o.fill ? `${NEAR_LIGHT}\nreflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${o.fill.toFixed(3)} * stageWrap(dot(geometryNormal, stageKeyL), 3.0)) * material.diffuseContribution;` : NEAR_LIGHT)
+      afterLight(shader, o.fill ? `${SOLID_NEAR}\nreflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${o.fill.toFixed(3)} * stageWrap(dot(geometryNormal, stageKeyL), 3.0)) * material.diffuseContribution;` : SOLID_NEAR)
     },
   })
 }

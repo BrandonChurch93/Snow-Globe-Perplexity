@@ -1,16 +1,17 @@
-# Status 53
+# Status 55
 
-2026-11-24 20:25 UTC
+2026-11-24 21:10 UTC
 
-- Round 6 is frozen at 20:20 on commit 2569976 with the first pushes of all ten builders merged: 418 tests pass · the sources check is green · the app is published again
-- The strokes are back at 22 mm (decision 65): with the new liquid engine 24 failed one pin and no pin is moved to pass
-- Four render agents are rendering the judged stills at the final tier and the motion sheets and running the gate and the measures
-- The ten builders go on for Round 7 which freezes at 22:15 and is the last round of the look lock
-- phase 3: 11.97 h used of its 11.00 h box
-- allowance (before the review): 18.58 h used of 36.00 h allowed
+- Round 6 is being judged on the build frozen at 20:20. The machine checks are all 15 green on a clean clone
+- Measures: 23 of 24 lines green. One red: the fine detail of the miniature at rest reads 0.72 of the approved image and 0.75 is needed. It went to the tree and village and flake builders at 21:07
+- Critics so far: the match critic gives 5 and the realism critic 5 (its three parts gave 5 and 8 and 7). The two motion critics and the 15 jurors are at work
+- Their worst point: the storm after the landing is a grey haze with regular bands where the approved image has a bright warm blizzard
+- Round 7 is the last round the kit allows for the look. It freezes at 22:15
+- phase 3: 12.72 h used of its 11.00 h box
+- allowance (before the review): 19.34 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-53-1.jpg`: The build that Round 6 judges at the draft tier: at rest on the left and one second after the landing on the right. The storm is streaks along the roll now and the cottage and the tree read through it
-- `out/stills/status/status-53-2.jpg`: Still: winter landed hero, hd, draft
-- `out/stills/status/status-53-3.jpg`: Still: winter rest hero, hd, draft
+- `out/stills/status/status-55-1.jpg`: Round 6 at rest: the judged still at the final tier
+- `out/stills/status/status-55-2.jpg`: Round 6 one second after the landing: the judged still at the final tier
+- `out/stills/status/status-55-3.jpg`: Round 6: one sheet across the whole shake and the clearing that follows
