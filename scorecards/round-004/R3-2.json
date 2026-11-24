@@ -1,0 +1,15 @@
+{
+  "critic": "R3",
+  "score": 6,
+  "pass": false,
+  "issues": [
+    { "severity": "major", "file": "set-E-02.jpg", "where": "crops 3 and 4, the icicles hanging from the rim band", "what": "the icicles are flat-shaded resin spikes: smooth gray gradients, blunt rounded tips, no internal refraction, bubbles or scene light passing through them", "fix": "give each icicle internal structure (bubbles, streaks), sharper tapered tips, and refracted color from the scene behind the glass" },
+    { "severity": "major", "file": "set-D-02.jpg", "where": "crop 5, the trees and lamp behind the globe on the right", "what": "the background trees are flat cutout shapes with a stippled dot texture instead of needles, and the lamp head is dark with no glow or halo", "fix": "replace with dimensional trees carrying real branch structure, and give the lamp a warm light with falloff on the ground and bench" },
+    { "severity": "major", "file": "set-D-02.jpg", "where": "crops 4 and 6, the cobblestone foreground and puddle margin", "what": "the wet cobbles read as a low-detail model: chunky faceted stones with a speckled plastic sheen, no mortar joints, and water that sits on top without wetting the stone", "fix": "rebuild the foreground ground with beveled, higher-detail stones, visible joints, and puddles that darken and wet the stone around their edges" },
+    { "severity": "minor", "file": "set-E-01.jpg", "where": "the mirror image below the base", "what": "the reflection carries the same heavy blur at the contact line as it does far below, so the base never quite meets its reflection", "fix": "sharpen the reflection where the base touches the surface and let it soften only with distance" },
+    { "severity": "minor", "file": "set-D-03.jpg", "where": "crop 12, the slush and foam at the foot of the base", "what": "the foam is a field of uniform round beads the size of plastic pellets, all one tone", "fix": "vary bubble size, collapse some cells, and mix in clear ice shards" },
+    { "severity": "minor", "file": "set-F-03.jpg", "where": "crop 8, the carved band from rim to foot", "what": "the reindeer and pine relief is so dark and shallow it reads as a printed silhouette rather than carving", "fix": "deepen the cuts and let the rim light catch the carved edges so the relief reads at a glance" },
+    { "severity": "minor", "file": "set-F-02.jpg", "where": "crop 3, the chimney smoke", "what": "the smoke is a smooth tube with a clipped blunt end, not drifting puffs", "fix": "break the plume into thinning puffs with soft irregular edges" },
+    { "severity": "minor", "file": "set-F-02.jpg", "where": "crop 1, the frost feathers on the glass at the shoulder", "what": "the frost ferns sit on the glass like flat white decals, with uniform opaque strokes and no sparkle at the tips", "fix": "thin the strokes, break the frond tips, and add small crystal glints so the frost catches light" }
+  ]
+}
