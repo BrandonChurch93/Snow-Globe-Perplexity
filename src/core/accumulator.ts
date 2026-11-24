@@ -78,6 +78,28 @@ export class Accumulator {
     return this.mean[this.flip].texture
   }
 
+  invalid(): { invalid: number; pixels: number } {
+    const t = this.mean[this.flip]
+    const w = t.width
+    const h = t.height
+    let invalid = 0
+    if (this.precision === 'byte') return { invalid, pixels: w * h }
+    const rows = 64
+    const half = this.precision === 'half'
+    const buf = half ? new Uint16Array(w * rows * 4) : new Float32Array(w * rows * 4)
+    for (let y = 0; y < h; y += rows) {
+      const n = Math.min(rows, h - y)
+      this.gfx.renderer.readRenderTargetPixels(t, 0, y, w, n, buf)
+      const len = w * n * 4
+      if (half) {
+        for (let i = 0; i < len; i++) if ((buf[i]! & 0x7c00) === 0x7c00) invalid++
+      } else {
+        for (let i = 0; i < len; i++) if (!Number.isFinite(buf[i]!)) invalid++
+      }
+    }
+    return { invalid, pixels: w * h }
+  }
+
   dispose(): void {
     this.sample.dispose()
     this.mean[0].dispose()
