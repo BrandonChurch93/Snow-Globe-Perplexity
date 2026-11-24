@@ -86,9 +86,14 @@ export interface Reply {
 }
 
 export class EngineHost {
+  private readonly now: () => number
   private engine: LiveEngine | null = null
   private timeline: Timeline = { id: 'rest', startSeason: '', events: [] }
   private table: Record<string, SdfGrid> = {}
+
+  constructor(now: () => number = () => performance.now()) {
+    this.now = now
+  }
 
   private colliderOf(c: Colliders): SdfGrid | ((season: string) => SdfGrid) {
     if (isGrid(c)) return c
@@ -122,10 +127,10 @@ export class EngineHost {
       if (m.step < e.step) e.reset()
       if (m.budgetMs === undefined) e.advanceTo(m.step, this.timeline)
       else {
-        const t0 = performance.now()
+        const t0 = this.now()
         while (e.step < m.step) {
           e.advanceTo(e.step + 1, this.timeline)
-          if (performance.now() - t0 >= m.budgetMs) break
+          if (this.now() - t0 >= m.budgetMs) break
         }
       }
       const p = e.inner

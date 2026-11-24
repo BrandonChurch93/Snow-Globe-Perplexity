@@ -40,7 +40,7 @@ describe('the grid light a flake takes', () => {
     new Lighting(256)
     expect(lightUniforms.uGridAir.value).toBeCloseTo(knee * knee, 12)
     expect(LIGHT_FRAG_PARS).toContain('uniform float uGridAir;')
-    expect(LIGHT_FRAG_PARS).toContain('return colour * (l * l / max(l * l + uGridAir, 1e-9));')
+    expect(LIGHT_FRAG_PARS).toContain('return colour * (q * q / max(q * q + uGridAir * uGridAir, 1e-9));')
     const grid = LIGHT_FRAG_PARS.slice(LIGHT_FRAG_PARS.indexOf('vec3 stageGrid(vec3 local)'), LIGHT_FRAG_PARS.indexOf('void stageGridRead('))
     expect(grid).toContain('a = stageGridAir(texture(uGridA, stageGridAt(local, 0.0)).rgb) * stageGridGain(')
     expect(grid).toContain('b = stageGridAir(texture(uGridB, stageGridAt(local, 0.0)).rgb) * stageGridGain(')

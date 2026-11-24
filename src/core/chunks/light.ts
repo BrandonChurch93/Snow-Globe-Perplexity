@@ -58,7 +58,11 @@ export const lightUniforms = {
   ...roomLit,
 }
 
-export const gridAir = (lum: number, knee: number): number => (lum * lum) / Math.max(lum * lum + knee * knee, 1e-9)
+export const gridAir = (lum: number, knee: number): number => {
+  const q = lum * lum
+  const k = knee * knee
+  return (q * q) / Math.max(q * q + k * k, 1e-9)
+}
 
 const f1 = (v: number) => v.toFixed(1)
 
@@ -106,11 +110,13 @@ float stageGridGain(vec4 share, vec4 gain) {
 }
 vec3 stageFlood(vec3 local) {
   vec3 d = local - uLightGlowAt.xyz;
-  return uLightFlood * (uLightFloodAt.z / (1.0 + dot(d, d) / (uLightFloodAt.w * uLightFloodAt.w)));
+  float q = dot(d, d) / (uLightFloodAt.w * uLightFloodAt.w);
+  return uLightFlood * (uLightFloodAt.z / (1.0 + q * q));
 }
 vec3 stageGridAir(vec3 colour) {
   float l = dot(colour, vec3(0.2126, 0.7152, 0.0722));
-  return colour * (l * l / max(l * l + uGridAir, 1e-9));
+  float q = l * l;
+  return colour * (q * q / max(q * q + uGridAir * uGridAir, 1e-9));
 }
 vec3 stageGrid(vec3 local) {
   vec3 a = vec3(0.0);
@@ -337,7 +343,7 @@ vec3 stageLit = vec3(0.0);
       float lgRise = max(vStageLocal.y - uLightFloodFloor.x, 0.0);
       float lgFloor = uLightFloodFloor.z * (0.5 - 0.5 * lgNl.y) * (1.0 - lgRise * inversesqrt(lgRise * lgRise + uLightFloodFloor.y * uLightFloodFloor.y));
       float lgNear = uLightFloodNear.x * exp((uLightFloodAt.x - lgFar) / uLightFloodNear.y);
-      vec3 lgFlood = uLightFlood * uLightFloodFloor.w;
+      vec3 lgFlood = uLightFlood * (uLightFloodFloor.w * RECIPROCAL_PI);
       reflectedLight.indirectDiffuse += lgFlood * (lgBall + lgNear + lgFloor) * lgAlbedo;
       vec3 lgBallV = normalize(lgView * ((lgUp * uLightFrame) * lgMirror));
       float lgNdb = saturate(dot(geometryNormal, lgBallV)) * lgSize * lgSize;

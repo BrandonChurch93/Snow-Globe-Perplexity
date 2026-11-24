@@ -23,57 +23,61 @@ const WHITE = 0.85
 const AMBER = 0.95
 
 export const PLACED = {
-  view: { widthPx: 2816, heightPx: 1584, fovDeg: 16, distanceMm: 619.9, pitchDeg: 4.5, aimHeightMm: 62.8 },
+  view: { widthPx: 2816, heightPx: 1584, fovDeg: 16, distanceMm: 615.3, pitchDeg: 4.5, aimHeightMm: 64 },
   sizeMm: 2.5,
   reachMm: [1100, 3200] as [number, number],
   discs: [
-    [2525, 368, 48, AMBER, 1.3, 0.14, 0.45, 2150],
-    [2640, 650, 45, WHITE, 0.83, 0.3, 0.1, 1600],
-    [2295, 510, 55, PALE, 0.46, 0.32, 0.1, 1557],
-    [2275, 212, 48, PALE, 0.16, 0.34, 0.15],
-    [2605, 333, 48, PALE, 0.16, 0.37, 0.1],
-    [2045, 108, 50, PALE, 0.12, 0.5, 0.1],
-    [2285, 585, 50, BLUE, 0.11, 0.55, 0],
-    [2620, 190, 47, BLUE, 0.11, 0.55, 0.05],
+    [2525, 368, 46, AMBER, 1.3, 0.1, 0.1, 2150],
+    [2640, 650, 44, WHITE, 0.83, 0.16, 0.1, 1600],
+    [2295, 510, 48, PALE, 0.46, 0.4, -0.2, 1557],
+    [2275, 212, 50, PALE, 0.16, 0.21, 0],
+    [2605, 333, 47, PALE, 0.16, 0.14, -0.1],
+    [2045, 108, 52, PALE, 0.12, 0.17, 0.1],
+    [2285, 585, 47, BLUE, 0.11, 0.25, 0],
+    [2620, 190, 39, BLUE, 0.11, 0.9, -0.2],
     [2330, 455, 45, BLUE, 0.091, 0.6, 0],
     [2560, 665, 45, BLUE, 0.07, 0.65, 0],
-    [2238, 275, 50, BLUE, 0.085, 0.65, 0],
+    [2238, 275, 46, BLUE, 0.085, 0.75, 0],
     [2200, 515, 40, BLUE, 0.045, 0.65, 0],
-    [2352, 632, 45, AMBER, 0.033, 0.6, 0.05],
-    [2098, 180, 45, WARM, 0.044, 0.65, 0],
-    [2170, 410, 55, WARM, 0.042, 0.7, 0],
-    [2655, 555, 42, COOL, 0.07, 0.65, 0],
+    [2352, 632, 41, AMBER, 0.033, 0.28, 0.05],
+    [2098, 180, 45, WARM, 0.031, 0.35, 0],
+    [2170, 410, 46, WARM, 0.037, 1, 0],
+    [2655, 555, 42, COOL, 0.055, 0.65, 0],
     [2780, 420, 42, COOL, 0.041, 0.6, 0],
     [2270, 70, 58, COOL, 0.058, 0.65, 0],
-    [2020, 365, 55, COOL, 0.023, 0.7, 0],
+    [2020, 365, 44, COOL, 0.023, 1, 0],
     [2330, 380, 50, COOL, 0.023, 0.7, 0],
-    [2000, 30, 45, COOL, 0.075, 0.7, 0],
-    [2604, 108, 50, COOL, 0.032, 0.7, 0],
-    [2788, 148, 42, COOL, 0.023, 0.7, 0],
+    [2000, 30, 38, COOL, 0.075, 0.95, 0],
+    [2604, 108, 50, COOL, 0.032, 1, 0],
+    [2788, 148, 46, COOL, 0.023, 0.9, 0],
     [2330, 830, 60, COOL, 0.004, 0.7, 0],
     [2788, 610, 40, WARM, 0.014, 0.7, 0],
-    [252, 478, 48, PALE, 0.25, 0.34, 0.1],
-    [300, 470, 48, PALE, 0.11, 0.5, 0.05],
-    [285, 740, 45, PALE, 0.094, 0.5, 0.05],
-    [455, 935, 45, BLUE, 0.077, 0.75, 0],
-    [250, 545, 48, BLUE, 0.16, 0.55, 0],
+    [252, 478, 48, PALE, 0.22, 0.25, -0.35],
+    [300, 470, 48, PALE, 0.11, 0.42, 0.05],
+    [285, 740, 45, PALE, 0.08, 0.27, 0.05],
+    [455, 935, 45, BLUE, 0.09, 0.75, 0],
+    [250, 545, 48, BLUE, 0.16, 0.7, 0],
     [650, 80, 55, BLUE, 0.11, 0.5, 0.05],
     [400, 668, 55, BLUE, 0.069, 0.55, 0],
-    [285, 605, 50, COOL, 0.04, 0.6, 0],
-    [640, 560, 60, BLUE, 0.049, 0.7, 0],
-    [215, 420, 45, BLUE, 0.041, 0.65, 0],
+    [285, 605, 50, COOL, 0.033, 0.33, 0],
+    [640, 560, 50, BLUE, 0.049, 1, 0],
+    [215, 420, 45, BLUE, 0.035, 0.65, 0],
     [700, 610, 55, BLUE, 0.033, 0.7, 0],
-    [472, 172, 50, WARM, 0.097, 0.37, 0.1],
-    [890, 320, 50, WARM, 0.1, 0.5, 0.05],
-    [465, 215, 48, WARM, 0.066, 0.6, 0],
+    [472, 172, 50, WARM, 0.075, 0.18, 0.1],
+    [890, 320, 45, WARM, 0.1, 0.9, -0.2],
+    [465, 215, 48, WARM, 0.056, 0.4, 0],
     [285, 790, 45, WHITE, 0.06, 0.6, 0],
-    [75, 150, 45, AMBER, 0.015, 0.7, 0],
+    [75, 150, 45, AMBER, 0.015, 0.4, 0],
     [690, 815, 58, COOL, 0.065, 0.6, 0],
-    [815, 250, 50, COOL, 0.022, 0.7, 0],
+    [815, 250, 50, COOL, 0.022, 0.35, 0.2],
     [650, 225, 50, COOL, 0.024, 0.7, 0],
-    [492, 345, 50, COOL, 0.02, 0.7, 0],
+    [492, 345, 50, COOL, 0.02, 0.43, 0],
     [295, 270, 50, COOL, 0.03, 0.7, 0],
-    [140, 820, 50, COOL, 0.017, 0.7, 0],
+    [140, 820, 50, COOL, 0.017, 0.43, 0],
+  ] as [number, number, number, number, number, number, number, number?][],
+  ghosts: [
+    [2622, 614, 42, PALE, 0.14, 0.12, 0.1],
+    [2648, 658, 42, PALE, 0.19, 0.1, 0.15],
   ] as [number, number, number, number, number, number, number, number?][],
 }
 
@@ -108,6 +112,11 @@ export const DISCS = {
   catEye: 0.15,
   specks: 0.03,
   mottle: 0.2,
+  halo: 0.2,
+  haloLong: 0.16,
+  haloShift: 0.1,
+  tall: 1.07,
+  tallTurn: 0.3,
   roomLightGain: 0.8,
   haze: 0.028,
   hazeWide: 1.15,
@@ -134,15 +143,15 @@ export const WALL = {
 }
 
 export const APRON = {
-  tone: [1.56, 2.6, 2.4] as [number, number, number],
+  tone: [1.1, 1.75, 1.5] as [number, number, number],
   reachMm: 150,
-  leftShare: 0.33,
+  leftShare: 0.5,
   sideMm: 150,
   ledgeAtMm: [-230.6, -302.5] as [number, number],
   ledgeDir: [0.3745, -0.9273] as [number, number],
   band: [3.4, 3, 2.3] as [number, number, number],
   bandMm: 16,
-  bandFadeMm: [400, 1100] as [number, number],
+  bandFadeMm: [300, 900] as [number, number],
 }
 
 const wallUniforms = {
@@ -161,6 +170,7 @@ interface Emitter {
   energy: number
   heroRadius: number
   look?: [number, number]
+  ghost?: boolean
 }
 
 const f4 = (v: number) => v.toFixed(4)
@@ -284,6 +294,8 @@ void main() {
   vec2 cut = vCat.xy * vCat.z;
   float r = max(length(q - cut), length(q + cut));
   float body = 1.0 - smoothstep(1.0 - vLook.x, 1.0 + vLook.x, r);
+  float ghost = length(q - ${f4(DISCS.haloShift)} * vec2(cos(vLook.w * 7.0), sin(vLook.w * 7.0)));
+  body += (1.0 - body) * ${f4(DISCS.halo)} * exp(-max(ghost - 1.0, 0.0) / ${f4(DISCS.haloLong)});
   float edge = 1.0 + vLook.y * smoothstep(0.45, 0.93, r);
   float dust = 1.0 - ${f4(DISCS.specks)} * smoothstep(0.62, 0.85, discNoise(vDisc * 5.3 + 17.0 * vLook.w)) - ${f4(DISCS.mottle)} * (discNoise(vDisc * 2.1 + 3.0 * vLook.w) - 0.5);
   float seen = 1.0;
@@ -332,7 +344,7 @@ export class Backdrop {
     const eye = new THREE.Vector3(0, V.aimHeightMm + Math.sin(tilt) * V.distanceMm, Math.cos(tilt) * V.distanceMm)
     const focal = V.heightPx / 2 / Math.tan((V.fovDeg * RAD) / 2)
     const perMm = hero.apertureMm / hero.focusMm + farMm / fromMm
-    PLACED.discs.slice(0, n).forEach(([x, y, r, tone, shown, soft, edge, set]) => {
+    const place = ([x, y, r, tone, shown, soft, edge, set]: (typeof PLACED.discs)[number], ghost: boolean) => {
       const narrow = perMm - r / focal
       const depth = set ?? Math.min(PLACED.reachMm[1], Math.max(PLACED.reachMm[0], narrow > 1e-6 ? (hero.apertureMm + farMm - PLACED.sizeMm) / narrow : PLACED.reachMm[1]))
       const size = Math.max(1, (r * depth) / focal - hero.apertureMm * (depth / hero.focusMm - 1) - farMm * (depth / fromMm - 1))
@@ -340,9 +352,10 @@ export class Backdrop {
       const at = eye.clone().addScaledVector(ray, depth / focal)
       const seenAt = at.clone().sub(hero.position).dot(forward)
       const heroRadius = size + hero.apertureMm * Math.abs(seenAt / hero.focusMm - 1) + farMm * Math.max(0, seenAt / fromMm - 1)
-      this.emitters.push({ at, size, shown, level: tone, pick: tone, energy: (shown * heroRadius * heroRadius) / (size * size), heroRadius, look: [soft, edge] })
-    })
-    const spare = n - this.emitters.length
+      this.emitters.push({ at, size, shown, level: tone, pick: tone, energy: (shown * heroRadius * heroRadius) / (size * size), heroRadius, look: [soft, edge], ghost })
+    }
+    PLACED.discs.slice(0, n).forEach((row) => place(row, false))
+    const spare = Math.max(0, n - this.emitters.length - PLACED.ghosts.length)
     const wedge = D.wedgeDeg * RAD
     const axisMm = Math.hypot(hero.position.x, hero.position.z)
     const counts = D.zones.map((z) => Math.round(z.share * spare))
@@ -384,10 +397,11 @@ export class Backdrop {
         }
       }
     })
+    PLACED.ghosts.slice(0, n - this.emitters.length).forEach((row) => place(row, true))
     const centre = new THREE.Vector3(0, centreHeightMm, 0)
     this.brightest = this.emitters
       .map((e, i) => ({ i, w: (e.shown * e.heroRadius * e.heroRadius) / e.at.distanceToSquared(centre), d: e.at.clone().sub(centre).normalize() }))
-      .filter((p) => Math.abs(Math.atan2(p.d.x, -p.d.z)) >= CLEAR_SIDE || Math.asin(p.d.y) >= CLEAR_UP)
+      .filter((p) => !this.emitters[p.i]!.ghost && (Math.abs(Math.atan2(p.d.x, -p.d.z)) >= CLEAR_SIDE || Math.asin(p.d.y) >= CLEAR_UP))
       .sort((p, q) => q.w - p.w)
       .slice(0, ROOM_LIGHTS)
       .map((p) => p.i)
@@ -434,6 +448,10 @@ export class Backdrop {
       }
       look[i * 4 + 2] = looks.range(0.93, 1.07)
       look[i * 4 + 3] = looks.range(0, Math.PI)
+      if (e.look) {
+        look[i * 4 + 2] = DISCS.tall
+        look[i * 4 + 3] = (look[i * 4 + 3]! / Math.PI - 0.5) * 2 * DISCS.tallTurn
+      }
       const turn = looks.range(0, 2 * Math.PI)
       const tilt = looks.range(DISCS.lean[0], DISCS.lean[1])
       lean[i * 2] = Math.cos(turn) * tilt
