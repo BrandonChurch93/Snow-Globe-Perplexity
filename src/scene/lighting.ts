@@ -40,15 +40,20 @@ const smooth = (v: number) => (v <= 0 ? 0 : v >= 1 ? 1 : v * v * (3 - 2 * v))
 /**
  * The light of a change inside the glass, by how far the swap window has run.
  * `whole` rises slowly from the first frames of the window, is 1 on every frame of the base's change and is gone before the window ends.
- * `glow` is the same rise, and it starts to fall from the middle of the base's change, so the fall has as many frames as the window leaves.
+ * `glow` is the same rise to the frame the base begins to change. From there the light itself (the lift, not the gain's exponent)
+ * falls smoothly over every frame the window leaves, so the fall is as easy to follow as the rise, and through the base's change
+ * it is still above four tenths of its top.
  */
 export function changeSwell(change: number): { whole: number; glow: number } {
   if (!(change > 0) || change >= 1) return { whole: 0, glow: 0 }
   const f = ROOM_RIG.flood
   const span = changeSpan('base')
-  const mid = (span.from + span.to) / 2
   const rise = (change - f.swellFrom) / (span.from - f.swellFrom)
-  return { whole: smooth(Math.min(1, rise, (f.swellTo - change) / (f.swellTo - span.to))), glow: smooth(Math.min(1, rise, (f.swellTo - change) / (f.swellTo - mid))) }
+  const lift = smooth((f.swellTo - change) / (f.swellTo - span.from))
+  return {
+    whole: smooth(Math.min(1, rise, (f.swellTo - change) / (f.swellTo - span.to))),
+    glow: Math.min(smooth(Math.min(1, rise)), Math.log(1 + ROOM_RIG.bloomGain * lift) / Math.log(1 + ROOM_RIG.bloomGain)),
+  }
 }
 
 export function keyInside(from: Rgb): [number, number, number] {
