@@ -22,6 +22,8 @@ const LEVEL_STEP = 1.25
 const LEVEL_MIN_RATIO = 1.02
 const FONT = 'DejaVu Sans, Liberation Sans, Noto Sans, Helvetica, Arial, sans-serif'
 const ENCODERS = { h264: 'libx264' }
+// The encoder's output depends on its thread count, so it is pinned.
+const ENCODER_THREADS = '2'
 
 const cfg = loadConfig()
 const args = parseArgs(process.argv.slice(2))
@@ -482,7 +484,8 @@ async function encode(render, file) {
   const encoder = ENCODERS[cfg.export.videoCodec]
   if (!encoder) throw new Error(`no encoder for ${cfg.export.videoCodec}`)
   const kbps = Math.round(cfg.previewFilm.bitrateMbps * 1000)
-  const gop = String(Math.round(framesPerBar))
+  const gop = String(Math.max(...shots.map((s) => s.end - s.first)))
+  const keys = 'expr:' + shots.map((s) => `eq(n,${s.first})`).join('+')
   const ff = spawn(
     'ffmpeg',
     [
@@ -491,7 +494,7 @@ async function encode(render, file) {
       '-an', '-map_metadata', '-1',
       '-vf', 'scale=in_range=full:out_range=tv:out_color_matrix=bt709,format=yuv420p',
       '-c:v', encoder, '-preset', 'medium', '-pix_fmt', 'yuv420p',
-      '-g', gop, '-keyint_min', gop, '-sc_threshold', '0', '-x264-params', 'ipratio=1.0:pbratio=1.0',
+      '-threads', ENCODER_THREADS, '-g', gop, '-sc_threshold', '0', '-force_key_frames', keys, '-x264-params', 'ipratio=1.0:pbratio=1.0',
       '-b:v', `${kbps}k`, '-maxrate', `${kbps * 2}k`, '-bufsize', `${kbps * 2}k`,
       '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-color_range', 'tv',
       '-fflags', '+bitexact', '-flags:v', '+bitexact',
