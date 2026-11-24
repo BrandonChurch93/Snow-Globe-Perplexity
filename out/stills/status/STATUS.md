@@ -1,15 +1,13 @@
-# Status 56
+# Status 57
 
-2026-11-24 21:38 UTC
+2026-11-24 22:04 UTC
 
-- Round 6 is judged and does not pass: likeness 5 and craft 5 and motion 5 (Round 5: 5 and 6 and 3); the jury fails with 5 of 15 votes against 7 of 10 for real photographs; machine checks 15 of 15 green; one measure red (the miniature's fine detail 0.72 against 0.75)
-- The red measure is being cured first: the merged build reads 0.79 at the final tier and is measured again now with the village's new stone and snow and the tree's new bark
-- Every issue went to the ten closers in the critics' words. Round 7 is the last round the look lock allows and freezes at 22:15 UTC; three severe issues stood in Round 6 (five in Round 5) and one of them is declined because it asks the camera of the film's opening to stand still
-- phase 3: 13.19 h used of its 11.00 h box
-- allowance (before the review): 19.80 h used of 36.00 h allowed
+- The red measure of Round 6 is cured: the merged build reads 0.88 at the final tier (0.72 in Round 6; the bar is 0.75) with every test green
+- All ten closers sent their final reports and what they still see wrong goes to the log as open items after the round. The landing still lacks an impact and the lift is small and both are pinned by earlier decisions
+- Round 7 freezes at about 22:15 UTC: every part is being made again from its script and the build is then judged by six fresh critics and fifteen jurors
+- phase 3: 13.63 h used of its 11.00 h box
+- allowance (before the review): 20.24 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-56-1.jpg`: Round 6 judged still: the globe at rest at the final tier. Likeness 5 of 10
-- `out/stills/status/status-56-2.jpg`: Round 6 judged still: one second after the landing. The likeness critic calls the storm a dull grey haze with ring bands; the cause is found and being cured
-- `out/stills/status/status-56-3.jpg`: Round 6 motion sheet: the set down and the second after it. The motion critic misses an impact and a settle
+- `out/stills/status/status-57-1.jpg`: The build for Round 7 at rest at the final tier (22:04 UTC): small sharp flakes over the miniature and clear icicles and the new stone and bark. Fine detail measures 0.88 against 0.75 (Round 6: 0.72)
