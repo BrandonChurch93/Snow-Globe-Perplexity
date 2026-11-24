@@ -1,0 +1,35 @@
+{
+  "critic": "R4",
+  "score": 6,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "severe",
+      "file": "set-F-01.jpg",
+      "where": "frames 0 to 522 (0.00 s to 8.70 s) across the whole frame",
+      "what": "the rest sheet never shows the globe at rest across several seconds: frames 0 to 208 (0.00 s to 3.47 s) pull the camera back from inside the dome straight through the glass wall to the wide view, and frames 260 to 522 (4.33 s to 8.70 s) orbit and pitch around the globe, leaving under one second (8.70 s to 9.57 s) of settled framing",
+      "fix": "lock or gently settle the camera outside the glass before the rest window begins so the globe sits at rest across several full seconds, and never pull the camera through the glass wall"
+    },
+    {
+      "severity": "major",
+      "file": "set-E-01.jpg",
+      "where": "inside the globe from frame 470 to frame 862 (7.83 s to 14.37 s)",
+      "what": "after the storm haze clears down to fine specks around 7.83 s to 9.13 s, the snow never dies away and instead coarsens from 10.43 s to 14.37 s as new large out-of-focus foreground flakes spawn from the top and nearly double bright-flake coverage over the cottage, tree and pond",
+      "fix": "stop spawning heavy storm flakes after set-down so coarse flakes settle out first, fine specks linger longest, and the whirl steadily dies away to a sparse rest drift"
+    },
+    {
+      "severity": "major",
+      "file": "set-E-01.jpg",
+      "where": "inside the globe at frame 0 (0.00 s) compared with frame 862 (14.37 s) and set-F-01.jpg",
+      "what": "at 0.00 s before the shake the liquid contains zero drifting snow particles, looking completely empty and frozen and failing to match the post-shake state at 14.37 s or the dense ambient snowfall in set-F-01.jpg",
+      "fix": "pre-warm the ambient snow simulation before frame 0 so the globe starts in the same calm multi-depth rest drift to which it returns after clearing"
+    },
+    {
+      "severity": "minor",
+      "file": "set-E-01.jpg",
+      "where": "the cottage roof and frozen pond from frame 470 to frame 862 (7.83 s to 14.37 s)",
+      "what": "falling particles pass in front of or through the dark roof shingles and pond and vanish without any flakes coming to rest on the surfaces they meet",
+      "fix": "let settling particles collide with and briefly come to rest on the roof, branches, pond and ground before fading into the snowpack"
+    }
+  ]
+}
