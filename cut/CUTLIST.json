@@ -421,34 +421,34 @@
     {
       "frame": 1022,
       "shot": "spring",
-      "what": "the base camera reached",
+      "what": "the nearest point to the base camera",
       "camera": [
-        44.396,
-        39.016,
-        257.183,
+        36.326,
+        81.019,
+        392.021,
         0,
-        16,
+        33.795,
         0,
         16
       ],
-      "focusMm": 212,
-      "apertureMm": 7
+      "focusMm": 351,
+      "apertureMm": 7.9
     },
     {
       "frame": 1066,
       "shot": "spring",
-      "what": "leaving base",
+      "what": "leaving the nearest point to base",
       "camera": [
-        45.421,
-        38.741,
-        257.029,
+        37.888,
+        80.604,
+        391.922,
         0,
-        16,
+        33.795,
         0,
         16
       ],
-      "focusMm": 212,
-      "apertureMm": 7
+      "focusMm": 351,
+      "apertureMm": 7.9
     },
     {
       "frame": 1260,

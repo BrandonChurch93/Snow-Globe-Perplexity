@@ -1,9 +1,14 @@
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { config, shots } from '../src/config'
 import { buildCut, cuesOf, cutList, groupsOf, openingCues, type AudioMap, type Cut } from '../src/film/cut'
 import { cameraKeys, filmPose, cameraNumbers, loopCamera, loopDistanceMm, loopPose } from '../src/film/moves'
 import { openingPlan } from '../src/film/opening'
 import { barSeconds, filmTimeline, prerollSeconds, seasonAt } from '../src/film/timeline'
+import { engineFiles, engineHash, hashList } from '../tools/lib/hashes.mjs'
+import { rel } from '../tools/lib/paths.mjs'
 
 const beats = config.film.beatsPerBar
 const fps = config.film.fps
@@ -271,5 +276,35 @@ describe('the cut list the tools read', () => {
     expect(typeof told.loop.fit).toBe('string')
     expect(told.loop.fit).not.toMatch(/\u2014|!/)
     expect(JSON.stringify(told)).not.toMatch(/NaN|Infinity/)
+  })
+})
+
+describe('the engine hash and the audio map', () => {
+  const map = rel('cut', 'AUDIO-MAP.json')
+
+  it('takes in the approved audio map when there is one, so a new map leaves no cached frame in place', () => {
+    const without = engineFiles((f: string) => f !== map && fs.existsSync(f))
+    const withIt = engineFiles((f: string) => f === map || fs.existsSync(f))
+    expect(without).not.toContain(map)
+    expect(withIt.at(-1)).toBe(map)
+    expect(withIt.slice(0, -1)).toEqual(without)
+    expect(engineFiles().includes(map)).toBe(fs.existsSync(map))
+    expect(engineHash()).toBe(hashList(engineFiles()))
+    expect(without.some((f: string) => f.endsWith(path.join('config', 'showcase.json')))).toBe(true)
+    expect(without.some((f: string) => f.endsWith(path.join('src', 'film', 'cut.ts')))).toBe(true)
+  })
+
+  it('changes when a file of the list changes, and with every file added to it', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'audiomap-'))
+    const stand = path.join(dir, 'AUDIO-MAP.json')
+    const some = engineFiles().slice(0, 3)
+    fs.writeFileSync(stand, JSON.stringify({ bpm: 100 }))
+    const a = hashList([...some, stand])
+    fs.writeFileSync(stand, JSON.stringify({ bpm: 101 }))
+    const b = hashList([...some, stand])
+    expect(a).not.toBe(b)
+    expect(a).not.toBe(hashList(some))
+    expect(a).toMatch(/^[0-9a-f]{16}$/)
+    fs.rmSync(dir, { recursive: true })
   })
 })
