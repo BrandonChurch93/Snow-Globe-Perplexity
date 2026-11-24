@@ -93,7 +93,7 @@ export async function woodMaps(dir) {
     for (let x = 0; x < n; x++) {
       const i = y * n + x
       const gx = (height[y * n + ((x + 1) % n)] - height[y * n + ((x + n - 1) % n)]) * strength
-      const gy = -(height[((y + 1) % n) * n + x] - height[((y + n - 1) % n) * n + x]) * strength
+      const gy = (height[((y + 1) % n) * n + x] - height[((y + n - 1) % n) * n + x]) * strength
       const l = Math.hypot(gx, gy, 1)
       const pore = clamp((low[i] - fine[i]) * 4.5)
       const dense = clamp((fine[i] - low[i]) * 3)
@@ -192,7 +192,7 @@ export async function brassMaps(dir) {
       const t = tarnish[i]
       const g = smooth(0.7, 1, t) * 0.4
       const gx = (height[y * n + ((x + 1) % n)] - height[y * n + ((x + n - 1) % n)]) * 0.5
-      const gy = -(height[((y + 1) % n) * n + x] - height[((y + n - 1) % n) * n + x]) * 0.5
+      const gy = (height[((y + 1) % n) * n + x] - height[((y + n - 1) % n) * n + x]) * 0.5
       const l = Math.hypot(gx, gy, 1)
       for (let c = 0; c < 3; c++) colour[i * 3 + c] = byte(toSrgb(mix(mix(bright[c], dull[c], t), green[c], g)))
       detail[i * 3] = byte(0.5 - (0.5 * gx) / l)
@@ -225,7 +225,7 @@ export async function snowMaps(dir) {
       const i = y * n + x
       const hgt = height[i]
       const gx = (height[y * n + ((x + 1) % n)] - height[y * n + ((x + n - 1) % n)]) * 2.2
-      const gy = -(height[((y + 1) % n) * n + x] - height[((y + n - 1) % n) * n + x]) * 2.2
+      const gy = (height[((y + 1) % n) * n + x] - height[((y + n - 1) % n) * n + x]) * 2.2
       const l = Math.hypot(gx, gy, 1)
       const shade = clamp(0.8 + 0.2 * smooth(0.7, 1.7, hgt))
       colour[i * 3] = byte(toSrgb(0.86 * shade))
