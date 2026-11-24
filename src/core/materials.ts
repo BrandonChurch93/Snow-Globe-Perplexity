@@ -83,7 +83,9 @@ vStagePlaced = stageWorld.xyz;
 vec4 stagePlaced = lensPlace(stageWorld.xyz, cameraPosition);
 vec4 stageView = viewMatrix * vec4(stagePlaced.xyz, 1.0);
 gl_Position = projectionMatrix * stageView;
-vStageAux = vec3(stagePlaced.w, -stageView.z, length(stageView.xyz));
+// y is the true depth from the camera, not the placed one: each lens sample places the vertex again from its own eye,
+// so what the lens holds sharp follows where the point really is (measured on the door: sharp at 152 mm, placed at 171)
+vStageAux = vec3(stagePlaced.w, -mvPosition.z, length(stageView.xyz));
 vStagePlaced = stagePlaced.xyz;
 #endif
 `
