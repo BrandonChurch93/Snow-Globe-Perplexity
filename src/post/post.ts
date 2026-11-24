@@ -2,6 +2,9 @@ import * as THREE from 'three'
 import type { Gfx } from '../core/gl'
 import { Pass } from '../core/fullscreen'
 import { config } from '../config'
+import { flagStandIn } from '../core/standins'
+
+flagStandIn('lens')
 
 export const GLOW_ROWS = 135
 export const GLOW_THRESHOLD = 1

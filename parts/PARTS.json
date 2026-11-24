@@ -5,9 +5,10 @@
       "unit": "winter",
       "state": "stand-in",
       "files": [
-        "src/globe/shell.ts"
+        "src/globe/shell.ts",
+        "src/globe/lens.ts"
       ],
-      "standInHash": "dd36e20b7bc1829c",
+      "standInHash": "be816c0f743b7644",
       "commit": "2530677"
     },
     {
@@ -15,10 +16,9 @@
       "unit": "winter",
       "state": "stand-in",
       "files": [
-        "src/globe/shell.ts",
         "src/globe/liquid.ts"
       ],
-      "standInHash": "cb5857a70f5e0631",
+      "standInHash": "b754d1696452039f",
       "commit": "2530677"
     },
     {
@@ -28,7 +28,7 @@
       "files": [
         "src/scene/surface.ts"
       ],
-      "standInHash": "fee0efc647bbec64",
+      "standInHash": "97808de38ea246ea",
       "commit": "2530677"
     },
     {
@@ -36,9 +36,10 @@
       "unit": "winter",
       "state": "stand-in",
       "files": [
-        "src/scene/backdrop.ts"
+        "src/scene/backdrop.ts",
+        "src/scene/room.ts"
       ],
-      "standInHash": "e3802556f1f06bfc",
+      "standInHash": "51f513a90749c65d",
       "commit": "2530677"
     },
     {
@@ -49,7 +50,7 @@
         "src/scene/cameras.ts",
         "src/post"
       ],
-      "standInHash": "3aeca236954a4f8f",
+      "standInHash": "75038aadccf3d69a",
       "commit": "2530677"
     },
     {
@@ -57,9 +58,9 @@
       "unit": "winter",
       "state": "stand-in",
       "files": [
-        "src/shake/table.ts"
+        "src/shake"
       ],
-      "standInHash": "ddf038c0f3978e16",
+      "standInHash": "8f6938e4820e8db3",
       "commit": "2530677"
     },
     {
@@ -67,9 +68,9 @@
       "unit": "winter",
       "state": "stand-in",
       "files": [
-        "src/particles"
+        "src/particles/engine"
       ],
-      "standInHash": "1cf2d5a27bc1b04b",
+      "standInHash": "5243d476b99b7d22",
       "commit": "2530677"
     },
     {
@@ -77,11 +78,11 @@
       "unit": "winter",
       "state": "stand-in",
       "files": [
+        "src/scene/lighting.ts",
         "src/scene/lightgrid.ts",
-        "src/scene/stage.ts",
-        "src/core/materials.ts"
+        "src/core/chunks/light.ts"
       ],
-      "standInHash": "fea520c59bbc5a1f",
+      "standInHash": "342065c5ccf7aa4c",
       "commit": "2530677"
     },
     {
@@ -92,7 +93,7 @@
         "src/seasons/winter",
         "public/assets/winter"
       ],
-      "standInHash": "86e99279c65fd4f3",
+      "standInHash": "3c6ea2bbcb3220ac",
       "commit": "2530677"
     },
     {
@@ -101,9 +102,11 @@
       "state": "stand-in",
       "files": [
         "src/seasons/winter",
-        "public/assets/winter"
+        "public/assets/winter",
+        "src/miniature",
+        "public/assets/shared"
       ],
-      "standInHash": "86e99279c65fd4f3",
+      "standInHash": "3c6ea2bbcb3220ac",
       "commit": "2530677"
     },
     {
@@ -114,7 +117,7 @@
         "src/seasons/winter",
         "public/assets/winter"
       ],
-      "standInHash": "86e99279c65fd4f3",
+      "standInHash": "3c6ea2bbcb3220ac",
       "commit": "2530677"
     },
     {
@@ -125,7 +128,7 @@
         "src/seasons/winter",
         "public/assets/winter"
       ],
-      "standInHash": "86e99279c65fd4f3",
+      "standInHash": "3c6ea2bbcb3220ac",
       "commit": "2530677"
     },
     {
@@ -136,7 +139,7 @@
         "src/seasons/winter",
         "public/assets/winter"
       ],
-      "standInHash": "86e99279c65fd4f3",
+      "standInHash": "3c6ea2bbcb3220ac",
       "commit": "2530677"
     },
     {
@@ -145,9 +148,10 @@
       "state": "stand-in",
       "files": [
         "src/seasons/winter",
-        "public/assets/winter"
+        "public/assets/winter",
+        "src/core/chunks/veil.ts"
       ],
-      "standInHash": "86e99279c65fd4f3",
+      "standInHash": "8c7791d5c09652b1",
       "commit": "2530677"
     },
     {
@@ -158,7 +162,7 @@
         "src/seasons/winter",
         "public/assets/winter"
       ],
-      "standInHash": "86e99279c65fd4f3",
+      "standInHash": "3c6ea2bbcb3220ac",
       "commit": "2530677"
     },
     {
@@ -170,7 +174,7 @@
         "src/particles/engine",
         "src/seasons/winter"
       ],
-      "standInHash": "bfa77f6100075643",
+      "standInHash": "15af7dd90a8ca659",
       "commit": "2530677"
     },
     {
@@ -182,7 +186,7 @@
         "src/particles/engine",
         "src/seasons/winter"
       ],
-      "standInHash": "bfa77f6100075643",
+      "standInHash": "15af7dd90a8ca659",
       "commit": "2530677"
     },
     {
@@ -193,7 +197,7 @@
         "src/seasons/spring",
         "public/assets/spring"
       ],
-      "standInHash": "8782d46fb76af093",
+      "standInHash": "cc932466df558d97",
       "commit": "2530677"
     },
     {
@@ -202,9 +206,11 @@
       "state": "stand-in",
       "files": [
         "src/seasons/spring",
-        "public/assets/spring"
+        "public/assets/spring",
+        "src/miniature",
+        "public/assets/shared"
       ],
-      "standInHash": "8782d46fb76af093",
+      "standInHash": "cc932466df558d97",
       "commit": "2530677"
     },
     {
@@ -215,7 +221,7 @@
         "src/seasons/spring",
         "public/assets/spring"
       ],
-      "standInHash": "8782d46fb76af093",
+      "standInHash": "cc932466df558d97",
       "commit": "2530677"
     },
     {
@@ -226,7 +232,7 @@
         "src/seasons/spring",
         "public/assets/spring"
       ],
-      "standInHash": "8782d46fb76af093",
+      "standInHash": "cc932466df558d97",
       "commit": "2530677"
     },
     {
@@ -237,7 +243,7 @@
         "src/seasons/spring",
         "public/assets/spring"
       ],
-      "standInHash": "8782d46fb76af093",
+      "standInHash": "cc932466df558d97",
       "commit": "2530677"
     },
     {
@@ -246,9 +252,10 @@
       "state": "stand-in",
       "files": [
         "src/seasons/spring",
-        "public/assets/spring"
+        "public/assets/spring",
+        "src/core/chunks/veil.ts"
       ],
-      "standInHash": "8782d46fb76af093",
+      "standInHash": "fad37ce32673c17c",
       "commit": "2530677"
     },
     {
@@ -259,7 +266,7 @@
         "src/seasons/spring",
         "public/assets/spring"
       ],
-      "standInHash": "8782d46fb76af093",
+      "standInHash": "cc932466df558d97",
       "commit": "2530677"
     },
     {
@@ -271,7 +278,7 @@
         "src/particles/engine",
         "src/seasons/spring"
       ],
-      "standInHash": "f4831ecb8573aa70",
+      "standInHash": "8f916e5d3795c913",
       "commit": "2530677"
     },
     {
@@ -283,7 +290,7 @@
         "src/particles/engine",
         "src/seasons/spring"
       ],
-      "standInHash": "f4831ecb8573aa70",
+      "standInHash": "8f916e5d3795c913",
       "commit": "2530677"
     },
     {
@@ -294,7 +301,7 @@
         "src/seasons/summer",
         "public/assets/summer"
       ],
-      "standInHash": "6615fc23bd564017",
+      "standInHash": "823d191bcc66aa2a",
       "commit": "2530677"
     },
     {
@@ -303,9 +310,11 @@
       "state": "stand-in",
       "files": [
         "src/seasons/summer",
-        "public/assets/summer"
+        "public/assets/summer",
+        "src/miniature",
+        "public/assets/shared"
       ],
-      "standInHash": "6615fc23bd564017",
+      "standInHash": "823d191bcc66aa2a",
       "commit": "2530677"
     },
     {
@@ -316,7 +325,7 @@
         "src/seasons/summer",
         "public/assets/summer"
       ],
-      "standInHash": "6615fc23bd564017",
+      "standInHash": "823d191bcc66aa2a",
       "commit": "2530677"
     },
     {
@@ -327,7 +336,7 @@
         "src/seasons/summer",
         "public/assets/summer"
       ],
-      "standInHash": "6615fc23bd564017",
+      "standInHash": "823d191bcc66aa2a",
       "commit": "2530677"
     },
     {
@@ -338,7 +347,7 @@
         "src/seasons/summer",
         "public/assets/summer"
       ],
-      "standInHash": "6615fc23bd564017",
+      "standInHash": "823d191bcc66aa2a",
       "commit": "2530677"
     },
     {
@@ -347,9 +356,10 @@
       "state": "stand-in",
       "files": [
         "src/seasons/summer",
-        "public/assets/summer"
+        "public/assets/summer",
+        "src/core/chunks/veil.ts"
       ],
-      "standInHash": "6615fc23bd564017",
+      "standInHash": "23650a07f50232b0",
       "commit": "2530677"
     },
     {
@@ -360,7 +370,7 @@
         "src/seasons/summer",
         "public/assets/summer"
       ],
-      "standInHash": "6615fc23bd564017",
+      "standInHash": "823d191bcc66aa2a",
       "commit": "2530677"
     },
     {
@@ -372,7 +382,7 @@
         "src/particles/engine",
         "src/seasons/summer"
       ],
-      "standInHash": "d84d070e4083cb12",
+      "standInHash": "c8921ffa5062f8f0",
       "commit": "2530677"
     },
     {
@@ -384,7 +394,7 @@
         "src/particles/engine",
         "src/seasons/summer"
       ],
-      "standInHash": "d84d070e4083cb12",
+      "standInHash": "c8921ffa5062f8f0",
       "commit": "2530677"
     },
     {
@@ -395,7 +405,7 @@
         "src/seasons/fall",
         "public/assets/fall"
       ],
-      "standInHash": "f2822b8c578331a0",
+      "standInHash": "80afa9ee5fdea3b2",
       "commit": "2530677"
     },
     {
@@ -404,9 +414,11 @@
       "state": "stand-in",
       "files": [
         "src/seasons/fall",
-        "public/assets/fall"
+        "public/assets/fall",
+        "src/miniature",
+        "public/assets/shared"
       ],
-      "standInHash": "f2822b8c578331a0",
+      "standInHash": "80afa9ee5fdea3b2",
       "commit": "2530677"
     },
     {
@@ -417,7 +429,7 @@
         "src/seasons/fall",
         "public/assets/fall"
       ],
-      "standInHash": "f2822b8c578331a0",
+      "standInHash": "80afa9ee5fdea3b2",
       "commit": "2530677"
     },
     {
@@ -428,7 +440,7 @@
         "src/seasons/fall",
         "public/assets/fall"
       ],
-      "standInHash": "f2822b8c578331a0",
+      "standInHash": "80afa9ee5fdea3b2",
       "commit": "2530677"
     },
     {
@@ -439,7 +451,7 @@
         "src/seasons/fall",
         "public/assets/fall"
       ],
-      "standInHash": "f2822b8c578331a0",
+      "standInHash": "80afa9ee5fdea3b2",
       "commit": "2530677"
     },
     {
@@ -448,9 +460,10 @@
       "state": "stand-in",
       "files": [
         "src/seasons/fall",
-        "public/assets/fall"
+        "public/assets/fall",
+        "src/core/chunks/veil.ts"
       ],
-      "standInHash": "f2822b8c578331a0",
+      "standInHash": "af2370f4422e7866",
       "commit": "2530677"
     },
     {
@@ -461,7 +474,7 @@
         "src/seasons/fall",
         "public/assets/fall"
       ],
-      "standInHash": "f2822b8c578331a0",
+      "standInHash": "80afa9ee5fdea3b2",
       "commit": "2530677"
     },
     {
@@ -473,7 +486,7 @@
         "src/particles/engine",
         "src/seasons/fall"
       ],
-      "standInHash": "aeb41b55bd9ecd78",
+      "standInHash": "77911efe78f20e87",
       "commit": "2530677"
     },
     {
@@ -485,7 +498,7 @@
         "src/particles/engine",
         "src/seasons/fall"
       ],
-      "standInHash": "aeb41b55bd9ecd78",
+      "standInHash": "77911efe78f20e87",
       "commit": "2530677"
     },
     {
@@ -497,7 +510,7 @@
         "src/particles/engine",
         "src/seasons/fall"
       ],
-      "standInHash": "aeb41b55bd9ecd78",
+      "standInHash": "77911efe78f20e87",
       "commit": "2530677"
     },
     {
@@ -509,7 +522,7 @@
         "src/seasons/winter",
         "src/seasons/spring"
       ],
-      "standInHash": "886b59f8c33ebaea",
+      "standInHash": "d493cfe7ff3d1011",
       "commit": "2530677"
     },
     {
@@ -521,7 +534,7 @@
         "src/seasons/spring",
         "src/seasons/summer"
       ],
-      "standInHash": "f9470eec1eac6708",
+      "standInHash": "b4aff42beb8bed0c",
       "commit": "2530677"
     },
     {
@@ -533,7 +546,7 @@
         "src/seasons/summer",
         "src/seasons/fall"
       ],
-      "standInHash": "259ae0f31e57cbed",
+      "standInHash": "c89dba8de0170d3f",
       "commit": "2530677"
     },
     {
@@ -545,7 +558,7 @@
         "src/seasons/fall",
         "src/seasons/winter"
       ],
-      "standInHash": "bcff4da0d85aa967",
+      "standInHash": "f7661b85c20d11d2",
       "commit": "2530677"
     },
     {
@@ -575,7 +588,7 @@
       "files": [
         "src/core"
       ],
-      "standInHash": "07f43b96699880df",
+      "standInHash": "97b6c9385ba7f93c",
       "commit": "2530677"
     },
     {
@@ -585,7 +598,7 @@
       "files": [
         "src/film"
       ],
-      "standInHash": "c8056e6e5cd00591",
+      "standInHash": "f6039ec135b48f56",
       "commit": "2530677"
     },
     {
@@ -596,7 +609,7 @@
         "src/film",
         "src/particles"
       ],
-      "standInHash": "e981bd9aabc0c235",
+      "standInHash": "aa4573d6cd335f01",
       "commit": "2530677"
     }
   ]

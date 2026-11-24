@@ -18,17 +18,17 @@ const head = () => {
 export function partList() {
   const out = []
   const add = (name, unit, files) => out.push({ name, unit, files })
-  add('glass', first, ['src/globe/shell.ts'])
-  add('liquid', first, ['src/globe/shell.ts', 'src/globe/liquid.ts'])
+  add('glass', first, ['src/globe/shell.ts', 'src/globe/lens.ts'])
+  add('liquid', first, ['src/globe/liquid.ts'])
   add('surface', first, ['src/scene/surface.ts'])
-  add('backdrop', first, ['src/scene/backdrop.ts'])
+  add('backdrop', first, ['src/scene/backdrop.ts', 'src/scene/room.ts'])
   add('lens', first, ['src/scene/cameras.ts', 'src/post'])
-  add('shake', first, ['src/shake/table.ts'])
-  add('particle-engine', first, ['src/particles'])
-  add('light-engine', first, ['src/scene/lightgrid.ts', 'src/scene/stage.ts', 'src/core/materials.ts'])
+  add('shake', first, ['src/shake'])
+  add('particle-engine', first, ['src/particles/engine'])
+  add('light-engine', first, ['src/scene/lighting.ts', 'src/scene/lightgrid.ts', 'src/core/chunks/light.ts'])
   const seen = new Set()
   for (const s of cfg.seasons) {
-    for (const p of ['base', 'miniature', 'glass-dressing', 'surface-dressing', 'light', 'veil', 'arrival']) add(`${p}-${s}`, s, [`src/seasons/${s}`, `public/assets/${s}`])
+    for (const p of ['base', 'miniature', 'glass-dressing', 'surface-dressing', 'light', 'veil', 'arrival']) add(`${p}-${s}`, s, [`src/seasons/${s}`, `public/assets/${s}`, ...(p === 'miniature' ? ['src/miniature', 'public/assets/shared'] : p === 'veil' ? ['src/core/chunks/veil.ts'] : [])])
     for (const k of cfg.particles[s]) {
       if (seen.has(k.kind)) continue
       seen.add(k.kind)
