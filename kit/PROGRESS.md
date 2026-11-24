@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 45 · 2026-11-24 17:22 UTC
+Status 46 · 2026-11-24 17:57 UTC
 
-- `out/stills/status/status-45-1.jpg`: Macro still at final tier with the new lens points (Round 4 build)
-- `out/stills/status/status-45-2.jpg`: Far snowbank before (top) and after (bottom): the stacked copies are finer but still there
-- `out/stills/status/status-45-3.jpg`: Still: winter rest macro, hd, final
-- `out/stills/status/status-45-4.jpg`: Still: winter rest hero, hd, draft
+- `out/stills/status/status-46-1.jpg`: Round 5 build before the freeze at draft tier: at rest (left) and one second after the landing (right)
+- `out/stills/status/status-46-2.jpg`: Still: winter landed hero, hd, draft
+- `out/stills/status/status-46-3.jpg`: Still: winter rest hero, hd, draft
+- `out/stills/status/status-46-4.jpg`: The live app through a shake at three sizes: at rest, lifted, mid stroke. Top row 1920 by 1080, bottom row a phone and a tablet. The camera stays locked and the lifted glass stays under the top edge (by film_app_engineer_2)
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 17:33 UTC
-clock: phase 3, tick of 4.2 minutes
-phase 3: 9.10 h used of its 11.00 h box
-allowance (before the review): 15.72 h used of 36.00 h allowed
-all time before the review: 15.72 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 17:57 UTC
+clock: phase 3, tick of 0.2 minutes
+phase 3: 9.50 h used of its 11.00 h box
+allowance (before the review): 16.11 h used of 36.00 h allowed
+all time before the review: 16.11 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 11
+minutes since the last status: 0
 ```
 
 ## Phases
