@@ -9,7 +9,7 @@ import type { StageFrame } from './frame'
 import { centreHeightMm } from './layout'
 import { ROOM_RIG, cardOf } from './lighting'
 import { ROOM_GLSL, ROOM_LIGHTS, ROOM_SEEN, roomUniforms } from './room'
-import { SLAB_SHAPE, SLAB_SHAPE_GLSL } from './surface'
+import { SLAB_EDGE_GLSL, SLAB_SHAPE_GLSL } from './surface'
 
 const RAD = Math.PI / 180
 const CLEAR_SIDE = 16 * RAD
@@ -142,18 +142,6 @@ export const WALL = {
   tints: { winter: { base: [0.9, 1, 1.05], column: [0.67, 0.85, 0.83], haze: [0.22, 0.72, 1] } } as Record<string, { base: [number, number, number]; column: [number, number, number]; haze: [number, number, number] }>,
 }
 
-export const APRON = {
-  tone: [1.1, 1.75, 1.5] as [number, number, number],
-  reachMm: 150,
-  leftShare: 0.5,
-  sideMm: 150,
-  ledgeAtMm: [-230.6, -302.5] as [number, number],
-  ledgeDir: [0.3745, -0.9273] as [number, number],
-  band: [3.4, 3, 2.3] as [number, number, number],
-  bandMm: 16,
-  bandFadeMm: [300, 900] as [number, number],
-}
-
 const wallUniforms = {
   uWallBase: { value: new THREE.Vector3(1, 1, 1) },
   uWallColumn: { value: new THREE.Vector3(1, 1, 1) },
@@ -177,6 +165,7 @@ const f4 = (v: number) => v.toFixed(4)
 
 const DOME = `${ROOM_GLSL}
 ${FAR_GLSL}
+${SLAB_EDGE_GLSL}
 uniform vec3 uWallBase;
 uniform vec3 uWallColumn;
 float wallHash(vec2 p) {
@@ -209,15 +198,7 @@ void main() {
   if (ray.y < -0.002 && cameraPosition.y > 0.0) {
     float reach = -cameraPosition.y / ray.y;
     vec2 g = cameraPosition.xz + ray.xz * reach;
-    float soft = 1.2 * lensBlurMm(reach);
-    float beyond = max(-(g.x * ${f4(Math.sin(SLAB_SHAPE.turnDeg * RAD))} + g.y * ${f4(Math.cos(SLAB_SHAPE.turnDeg * RAD))} + ${f4(SLAB_SHAPE.farMm)}), 0.0);
-    vec2 from = g - vec2(${f4(APRON.ledgeAtMm[0])}, ${f4(APRON.ledgeAtMm[1])});
-    float across = dot(from, vec2(${f4(-APRON.ledgeDir[1])}, ${f4(APRON.ledgeDir[0])}));
-    float along = dot(from, vec2(${f4(APRON.ledgeDir[0])}, ${f4(APRON.ledgeDir[1])}));
-    float wideMm = length(vec2(${f4(APRON.bandMm)}, soft));
-    float ledge = smoothstep(-wideMm, wideMm, across);
-    float band = exp(-across * across / (2.0 * wideMm * wideMm)) * (${f4(APRON.bandMm)} / wideMm) * (1.0 - smoothstep(${f4(APRON.bandFadeMm[0])}, ${f4(APRON.bandFadeMm[1])}, along));
-    col += uRoomWall * (vec3(${APRON.tone.map(f4).join(', ')}) * (exp(-beyond / ${f4(APRON.reachMm)}) * ledge * mix(${f4(APRON.leftShare)}, 1.0, smoothstep(${f4(-APRON.sideMm)}, ${f4(APRON.sideMm)}, g.x))) + vec3(${APRON.band.map(f4).join(', ')}) * band) * max(marks, 0.2);
+    col += uRoomWall * slabEdgeGlow(g, 1.2 * lensBlurMm(reach)) * max(marks, 0.2);
   }
   gl_FragColor = vec4(col, 1.0);
   if (uDiag != 0) gl_FragColor = stageDiag(col, -d, 0.0, stageChange(), 0.0);
