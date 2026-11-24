@@ -56,12 +56,13 @@
     {
       "name": "shake",
       "unit": "winter",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/shake"
       ],
       "standInHash": "8f6938e4820e8db3",
-      "commit": "2530677"
+      "commit": "16f6a1a",
+      "note": "The real path from agent/p3-shake at 4639804: six unequal strokes that speed up, sharp reversals, lift 7.25 mm, tilt capped at 6 degrees, landing on beat 4 with a short settle; 19 paths keep 4.5 percent of the frame above the glass and the foot's rim 1 mm above the slab"
     },
     {
       "name": "particle-engine",
