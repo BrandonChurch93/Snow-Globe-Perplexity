@@ -272,9 +272,10 @@ vec2 baseWallUv = vec2(atan(vBasePos.x, vBasePos.z) * 55.0, vBasePos.y) * uBaseT
 vec4 baseDetail = mix(texture2D(uBaseDetail, baseFlatUv), texture2D(uBaseDetail, baseWallUv), baseSteep);
 diffuseColor.rgb = diffuse * mix(vec3(1.0), mix(texture2D(map, baseFlatUv).rgb, texture2D(map, baseWallUv).rgb, baseSteep), 0.55);
 float baseThick = vBasePaint.x;
-float baseAo = (0.55 + 0.45 * smoothstep(0.0, 0.5, baseThick)) * mix(0.5, 1.0, smoothstep(0.0, 3.0, length(vBasePos - vec3(0.0, 79.0, 0.0)) - 60.0));
+float baseAo = (0.55 + 0.45 * smoothstep(0.0, 0.25, baseThick)) * mix(0.5, 1.0, smoothstep(0.0, 3.0, length(vBasePos - vec3(0.0, 79.0, 0.0)) - 60.0));
+float baseUnder = smoothstep(0.0, 8.0, length(vBasePos - vec3(0.0, 79.0, 0.0)) - 60.0);
 if (baseThick - 0.05 * baseNoise(vBasePos * 2.3) * baseNoise(vBasePos * 0.7 + 9.0) < 0.012) discard;
-diffuseColor.rgb *= mix(vec3(0.56, 0.66, 0.82), vec3(1.0), smoothstep(0.02, 0.6, baseThick));
+diffuseColor.rgb *= mix(vec3(0.56, 0.66, 0.82), vec3(1.0), smoothstep(0.02, 0.3, baseThick));
 diffuseColor.rgb *= mix(vec3(0.6, 0.73, 0.95), vec3(1.0), smoothstep(-0.3, 0.7, normalize(vBaseNormal).y));
 `
 
@@ -283,12 +284,13 @@ roughnessFactor = 0.82 + 0.16 * baseDetail.b;
 `
 
 const SNOW_TILT = `
-vec2 baseTilt = baseSlope(baseDetail.rg) * 1.5;
+vec2 baseTilt = baseSlope(baseDetail.rg) * 1.5 + (vec2(baseNoise(vBasePos * 2.3 + 17.0), baseNoise(vBasePos * 2.3 + 51.0)) - 0.5) * 0.9 + (vec2(baseNoise(vBasePos * 5.1 + 3.0), baseNoise(vBasePos * 5.1 + 29.0)) - 0.5) * 0.6;
 `
 
 const SNOW_AFTER = `
 {
-  reflectedLight.indirectDiffuse *= baseAo * vec3(0.66, 0.8, 1.0) * (0.34 + 0.66 * smoothstep(-0.3, 0.6, normalize(vBaseNormal).y));
+  reflectedLight.directDiffuse *= mix(vec3(0.4, 0.52, 0.72), vec3(1.0), baseUnder);
+  reflectedLight.indirectDiffuse *= baseAo * vec3(0.5, 0.67, 0.96) * (0.46 + 0.54 * smoothstep(-0.3, 0.6, normalize(vBaseNormal).y));
   vec3 baseKey = vec3(0.0, 1.0, 0.0);
   vec3 baseKeyC = vec3(0.0);
   #ifdef STAGE_LIGHT_DONE
@@ -299,11 +301,11 @@ const SNOW_AFTER = `
   baseKeyC = directionalLights[0].color;
   #endif
   float baseWrap = clamp(dot(nonPerturbedNormal, baseKey) * 0.5 + 0.5, 0.0, 1.0);
-  float baseDeep = smoothstep(0.1, 0.9, baseThick);
-  reflectedLight.indirectDiffuse += baseKeyC * material.diffuseContribution * RECIPROCAL_PI * 0.8 * baseWrap * baseWrap * baseWrap * baseWrap * baseDeep * smoothstep(-30.0, 20.0, vBasePos.x);
+  float baseDeep = smoothstep(0.02, 0.35, baseThick);
+  reflectedLight.indirectDiffuse += baseKeyC * material.diffuseContribution * RECIPROCAL_PI * 1.15 * baseWrap * baseWrap * baseWrap * baseWrap * baseDeep * mix(0.3, 1.0, baseUnder) * smoothstep(-30.0, 20.0, vBasePos.x);
   #ifdef STAGE_LIGHT_DONE
   float baseCard = clamp(dot(inverseTransformDirection(nonPerturbedNormal, viewMatrix), uRigCardDir) * 0.5 + 0.5, 0.0, 1.0);
-  reflectedLight.indirectDiffuse += uRigCardCol * vec3(0.8, 0.96, 1.16) * material.diffuseContribution * RECIPROCAL_PI * 0.7 * baseCard * baseCard * baseDeep * smoothstep(34.0, -8.0, vBasePos.x);
+  reflectedLight.indirectDiffuse += uRigCardCol * vec3(0.8, 0.96, 1.16) * material.diffuseContribution * RECIPROCAL_PI * 0.7 * baseCard * baseCard * baseDeep * mix(0.5, 1.0, baseUnder) * mix(0.2, 1.0, smoothstep(34.0, -8.0, vBasePos.x));
   #endif
   vec3 baseCell = floor(vBasePos * 4.0);
   float baseOne = baseHash(baseCell);
