@@ -25,21 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 59 · 2026-11-24 22:42 UTC
+Status 60 · 2026-11-24 23:05 UTC
 
-- `out/stills/status/status-59-1.jpg`: The winter base up close on the Round 7 build (draft tier; the base camera)
-- `out/stills/status/status-59-2.jpg`: The miniature up close on the Round 7 build (draft tier; the macro camera). Still wrong here: the trunk reads as carved rather than bark and the far drift has a hard edge
+- `out/stills/status/status-60-1.jpg`: Winter at rest: the approved image (left) beside the Round 7 build at final tier (right). The build's inside is greyer and flatter than the approved image and its tree is less warmly lit
+- `out/stills/status/status-60-2.jpg`: Round 7: the whole test shake and the clearing after it (review tier; one frame about every 1.3 s). The storm now lets the cottage glow through from 2.6 s
+- `out/stills/status/status-60-3.jpg`: Comparison crops 3: winter-rest, approved image left, build right
+- `out/stills/status/status-60-4.jpg`: Comparison crops 2: winter-rest, approved image left, build right
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 22:42 UTC
-clock: phase 3, tick of 0.4 minutes
-phase 3: 14.26 h used of its 11.00 h box
-allowance (before the review): 20.87 h used of 36.00 h allowed
-all time before the review: 20.87 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 23:05 UTC
+clock: phase 3, tick of 1.0 minutes
+phase 3: 14.64 h used of its 11.00 h box
+allowance (before the review): 21.25 h used of 36.00 h allowed
+all time before the review: 21.25 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: reached
@@ -1199,3 +1201,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 22:24 UTC · Status 58 sent with two pictures (the Round 7 build one second after the landing at draft; the new rest sheet of decision 67 at draft). Waiting on the four render agents and the scribe; the clock is ticked at least every 10 minutes while waiting.
 
 - 22:43 UTC. Status 59 (two pictures: the base camera and the macro camera on the Round 7 build, draft tier). While Round 7 renders: Phase 4 prepared without starting it. Local only: branch `prep/phase4` (each season's folder split into one file per part; the fit tool reads a season's reference camera), the common brief, ten job messages made by a script that stamps their UTC times at the start, a sound job, half-size copies of the approved pairs for the builders, a merge script for the `agent/p4-*` branches. A slip, put right: the first try of this status saved its two pictures into the status tool's own output folder, which the tool empties, so the tool failed and its second try numbered itself 1; the committed folder was restored and the status was made again as 59.
+
+- 23:06 UTC. Round 7: `motion_renderer_b` reported at 22:56 (frames 108 to 202, pushed 22:55, 795921f) and `motion_renderer` at 23:05 (the R4 pack, 12 sheets in two parts, pushed 23:04, ca548e4, 47 minutes; "up to about 40 s a frame, the slowest round"); both reports kept in `out/work/reports-r7/`. The two motion critics were started at 23:05 while the gate and the still pack render (two render agents and two critics at work, inside the six slots): `reviewer_r7_e` (R4 part 1, ten sheets, `pplx_computer_glm_5_3_1009`) and `reviewer_r7_f` (R4 part 2, two sheets, `kimi_k3`); limit 23:50. Status 60 (the approved image beside the Round 7 build at rest, final tier; the whole test shake). Step 7 begun on `4f10d97`: `npm run compare -- --key winter-rest --tier final` made; `winter-shake` is rendering here.
