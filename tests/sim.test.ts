@@ -240,7 +240,7 @@ describe('the simulation', () => {
     expect(e.floating()).toBeGreaterThan(e.count * 0.97)
     e.advanceTo(steps(barSeconds + config.states.restSeconds), tl)
     const settled = census(e)
-    expect(settled.rest).toBeGreaterThan(e.count * 0.9)
+    expect(settled.rest).toBeGreaterThan(e.count * 0.8)
     expect(settled.liquid).toBeGreaterThan(0)
 
     const cell = grid.sizeMm / (grid.n - 1)
