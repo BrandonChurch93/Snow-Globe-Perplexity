@@ -338,7 +338,7 @@ export interface Cluster {
 const DOME = 0.3
 const BODY = { blend: 0.5, bias: 0.4 }
 const TOP_DROP = 1.56
-const CAP = { lift: 1.2, thick: 0.25, cover: 0.66, fore: 0.12, lee: 0.12, skew: 0.45, rim: 0.95, swell: 0.42, ripple: 0.2, flat: 3, gap: 2.2, gapFrom: 0.5, gapTo: 0.85, sink: 0.1, slope: 0.75, depth: 0.25, lip: 0.4, droop: 1.6 }
+const CAP = { lift: 1.2, thick: 0.25, cover: 0.66, fore: 0.12, lee: 0.12, skew: 0.45, rim: 0.95, swell: 0.42, ripple: 0.2, flat: 3, gap: 2.2, gapFrom: 0.34, gapTo: 0.8, sink: 0.1, slope: 0.75, depth: 0.25, lip: 0.4, droop: 1.6 }
 const LOADS: readonly (readonly [number, number])[] = [[1.05, 1], [0.9, 0.88], [0.95, 0.9], [0.9, 1], [0.85, 0.86], [1, 1.05], [0.35, 0.6], [0.85, 1.02], [0.85, 1.12], [0.9, 1.02]]
 const wobble = (x: number, h: number, z: number): number => 0.16 * Math.sin(1.9 * x + 0.3 * h) * Math.sin(2.3 * h + 1.1 * z) * Math.sin(1.7 * z + 0.5 * x) + 0.07 * Math.sin(4.3 * x + 1) * Math.sin(3.9 * h + 2) * Math.sin(4.7 * z)
 const dome = (rim: number): number => 1 - DOME * Math.pow(rim, 1.5)

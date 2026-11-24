@@ -326,12 +326,12 @@ function strings() {
     for (let k = 0; k < n; k++) {
       const even = (k / n) * TAU + rng.range(-0.25, 0.25)
       const th = even + 0.55 * Math.cos(even)
-      const rim = rng.next() < 0.4
+      const rim = rng.next() < 0.55
       const rho = rim ? 1.25 : rng.range(0.35, 0.8)
       const start = centre.clone().addScaledVector(side, Math.cos(th) * rho * pad.size[0]).addScaledVector(depth, Math.sin(th) * rho * pad.size[2])
       const dir = new THREE.Vector3()
       if (rim) {
-        start.addScaledVector(up, rng.range(-0.6, -0.25) * pad.size[1])
+        start.addScaledVector(up, rng.range(-0.95, 0.3) * pad.size[1])
         dir.copy(centre).addScaledVector(up, -0.45 * pad.size[1]).sub(start).normalize()
       } else {
         start.addScaledVector(up, -pad.size[1] - 2.5)
