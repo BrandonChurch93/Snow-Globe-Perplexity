@@ -1,4 +1,4 @@
-01-blockout-camera-pair.jpg: Blockout pack, one camera picture. Marked a is the approved winter image, marked b is the hero camera on the placeholder globe at draft tier.
-02-match-crop-grids.jpg: Match pack, the two crop grids of one pair put side by side for this look only. Left is the approved image resized to the size of the still, right is the still at native size. Tiles are numbered.
-03-film-frames-grid.jpg: The whole pack for the film, first grid of the film's judged frames in order at draft tier, numbered.
+01-blockout-camera-pair.jpg: Blockout pack part 2, set-B-01. Marked a is the approved winter image, marked b is the hero camera on the placeholder globe at draft tier.
+02-blockout-film-overview.jpg: Blockout pack part 1, set-A-01. The whole film in 12 frames from the real sheet tool, every shot at least once, frame index, seconds and shot id under each frame.
+03-blockout-shake-1-sheet.jpg: Blockout pack part 1, set-A-03. One sheet across the shake from winter to spring, the film's own sheet for the shot shake-1.
 04-sharpness-comparison.jpg: The comparison sheet measure M3 reads its regions from, winter-rest at final tier beside the approved image.
