@@ -1,0 +1,83 @@
+{
+  "note": "Measured from references/approved/winter-rest.png, 2816 by 1584. Pixels are pixels of that image. Angles on the glass are degrees round the rim as the hero camera sees it: 0 right, 90 top, 180 left. Angles on the slab are atan2(z, x) in degrees: 0 right, 90 toward the hero camera.",
+  "glass": {
+    "mapPx": 4096,
+    "maxPolarDeg": 125,
+    "meshFromPolarDeg": 30,
+    "meshRings": 24,
+    "meshSegments": 144,
+    "liftMm": 0.06,
+    "heightMm": 0.4,
+    "profile": [
+      { "deg": -60, "reachMm": 26, "density": 0.75, "filmMm": 15, "film": 0.75 },
+      { "deg": -35, "reachMm": 30, "density": 0.7, "filmMm": 13, "film": 0.6 },
+      { "deg": -5, "reachMm": 27, "density": 0.55, "filmMm": 10, "film": 0.45 },
+      { "deg": 25, "reachMm": 24, "density": 0.45, "filmMm": 8, "film": 0.38 },
+      { "deg": 50, "reachMm": 24, "density": 0.4, "filmMm": 7, "film": 0.34 },
+      { "deg": 75, "reachMm": 15, "density": 0.16, "filmMm": 5, "film": 0.26 },
+      { "deg": 100, "reachMm": 18, "density": 0.25, "filmMm": 6, "film": 0.3 },
+      { "deg": 120, "reachMm": 34, "density": 0.75, "filmMm": 13, "film": 0.6 },
+      { "deg": 150, "reachMm": 41, "density": 1.0, "filmMm": 19, "film": 0.85 },
+      { "deg": 180, "reachMm": 44, "density": 1.0, "filmMm": 21, "film": 0.95 },
+      { "deg": 215, "reachMm": 44, "density": 1.0, "filmMm": 22, "film": 1.0 },
+      { "deg": 245, "reachMm": 34, "density": 0.85, "filmMm": 17, "film": 0.85 }
+    ],
+    "backShare": 0.62,
+    "plumes": [
+      { "root": [1075, 245], "tip": [1272, 182], "barbMm": 6.5 },
+      { "root": [985, 330], "tip": [1060, 243], "barbMm": 5.5 },
+      { "root": [955, 425], "tip": [1014, 345], "barbMm": 5.5 },
+      { "root": [925, 505], "tip": [977, 415], "barbMm": 5 },
+      { "root": [890, 585], "tip": [978, 548], "barbMm": 4.5 },
+      { "root": [885, 650], "tip": [962, 612], "barbMm": 4.5 },
+      { "root": [900, 740], "tip": [1002, 668], "barbMm": 6 },
+      { "root": [905, 790], "tip": [1012, 745], "barbMm": 5.5 },
+      { "root": [925, 865], "tip": [1006, 800], "barbMm": 5 },
+      { "root": [950, 930], "tip": [1012, 880], "barbMm": 4.5 },
+      { "root": [1120, 235], "tip": [1192, 190], "barbMm": 3.5 },
+      { "root": [1215, 204], "tip": [1322, 216], "barbMm": 3.5 },
+      { "root": [1535, 183], "tip": [1468, 216], "barbMm": 2.6 },
+      { "root": [1650, 152], "tip": [1742, 216], "barbMm": 3.2 },
+      { "root": [1702, 172], "tip": [1802, 266], "barbMm": 3.4 },
+      { "root": [1802, 276], "tip": [1852, 346], "barbMm": 3 },
+      { "root": [1916, 470], "tip": [1880, 560], "barbMm": 3.6 },
+      { "root": [1926, 560], "tip": [1876, 640], "barbMm": 3.4 },
+      { "root": [1930, 640], "tip": [1890, 692], "barbMm": 3 },
+      { "root": [1882, 782], "tip": [1860, 702], "barbMm": 3.2 }
+    ],
+    "stars": [
+      { "at": [1830, 885], "tips": [[1790, 800], [1815, 790], [1850, 800], [1872, 830], [1775, 840]], "barbMm": 3 },
+      { "at": [1735, 950], "tips": [[1700, 870], [1740, 860], [1766, 880], [1690, 905]], "barbMm": 2.8 },
+      { "at": [930, 900], "tips": [[985, 845], [1000, 880], [960, 835]], "barbMm": 3.4 }
+    ]
+  },
+  "slab": {
+    "mapPx": 4096,
+    "halfMm": 132,
+    "heightMm": 1.3,
+    "shapes": { "branchMinMm": 0.5, "branchEvery": 3, "spineEvery": 2, "grainMinMm": 0.34, "lumpFullMm": 0.58, "farPerMm": 3 },
+    "arms": [
+      { "rootDeg": -136, "tipDeg": -145, "tipMm": 122 },
+      { "rootDeg": -154, "tipDeg": -170, "tipMm": 101 },
+      { "rootDeg": 172, "tipDeg": 170.5, "tipMm": 104 },
+      { "rootDeg": 140, "tipDeg": 137, "tipMm": 111 },
+      { "rootDeg": 104, "tipDeg": 102, "tipMm": 79 },
+      { "rootDeg": 77, "tipDeg": 79, "tipMm": 83 },
+      { "rootDeg": 38, "tipDeg": 34.5, "tipMm": 104 },
+      { "rootDeg": -15.7, "tipDeg": 2.6, "tipMm": 113 },
+      { "rootDeg": -50, "tipDeg": -44, "tipMm": 118 }
+    ],
+    "fillArms": 15,
+    "fillMm": [72, 98],
+    "farPatches": [
+      { "deg": -54, "mm": 168, "sizeMm": 9 },
+      { "deg": -122, "mm": 146, "sizeMm": 8 },
+      { "deg": -147, "mm": 139, "sizeMm": 6 },
+      { "deg": -42, "mm": 160, "sizeMm": 4 },
+      { "deg": -8, "mm": 124, "sizeMm": 3 }
+    ],
+    "grains": 2400,
+    "clumps": 46
+  },
+  "grain": { "px": 512, "cells": [26, 61], "slopeGain": 4, "tileMm": 12 }
+}
