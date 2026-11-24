@@ -2,16 +2,56 @@ import * as THREE from 'three'
 
 export const ROOM_LIGHTS = 12
 
+export const ROOM_WINDOW = { halfWidth: 0.3, halfHeight: 0.62, edge: 0.075, lean: 0.22 }
+export const ROOM_STRIP = { halfWidth: 0.055, halfHeight: 0.46, edge: 0.04, lean: -0.15 }
+export const ROOM_ROUGH_SPREAD = 1.4
+
+const WASH = 0.045
+const f = (v: number) => v.toFixed(4)
+
 export const ROOM_GLSL = `
 uniform vec3 uRoomWall;
 uniform vec3 uRoomFloor;
 uniform vec4 uRoomDir[${ROOM_LIGHTS}];
 uniform vec3 uRoomCol[${ROOM_LIGHTS}];
-vec3 stageRoom(vec3 d) {
+uniform vec3 uRoomKey;
+uniform vec3 uRoomKeyCol;
+uniform vec3 uRoomRim;
+uniform vec3 uRoomRimCol;
+float roomErf(float x) {
+  float a = abs(x);
+  float t = 1.0 / (1.0 + 0.3275911 * a);
+  float y = 1.0 - ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * exp(-a * a);
+  return x < 0.0 ? -y : y;
+}
+float roomSpan(float x, float h, float s) {
+  float k = 0.70710678 / s;
+  return 0.5 * (roomErf((x + h) * k) - roomErf((x - h) * k));
+}
+vec3 roomSource(vec3 d, vec3 axis, vec3 col, vec2 size, float s, float lean) {
+  float facing = dot(d, axis);
+  if (facing <= 0.02) return vec3(0.0);
+  vec3 side = cross(vec3(0.0, 1.0, 0.0), axis);
+  side /= max(length(side), 1e-3);
+  vec3 up = cross(axis, side);
+  vec2 p = vec2(dot(d, side), dot(d, up)) / facing;
+  float shape = roomSpan(p.x, size.x, s) * roomSpan(p.y, size.y, s);
+  float slope = 1.0 + lean * clamp(p.y / size.y, -1.5, 1.5) + 0.4 * lean * clamp(p.x / size.x, -1.5, 1.5);
+  return col * (shape * slope * smoothstep(0.02, 0.2, facing) / (4.0 * size.x * size.y));
+}
+vec3 stageRoomBlur(vec3 d, float s) {
   float back = 0.5 - 0.5 * d.z / max(length(d.xz), 1e-4);
-  float wash = (0.35 + 0.65 * back * back) * exp(-d.y * d.y / 0.045);
+  float v = ${f(WASH)} + 2.0 * s * s;
+  float wash = (0.35 + 0.65 * back * back) * exp(-d.y * d.y / v) * sqrt(${f(WASH)} / v);
   vec3 wall = uRoomWall * (1.0 + 1.6 * wash);
-  return mix(uRoomFloor, wall, smoothstep(-0.03, 0.02, d.y));
+  float above = 0.5 + 0.5 * roomErf((d.y + 0.005) * 0.70710678 / (0.018 + s));
+  vec3 col = mix(uRoomFloor, wall, above);
+  col += roomSource(d, uRoomKey, uRoomKeyCol, vec2(${f(ROOM_WINDOW.halfWidth)}, ${f(ROOM_WINDOW.halfHeight)}), length(vec2(${f(ROOM_WINDOW.edge)}, s)), ${f(ROOM_WINDOW.lean)});
+  col += roomSource(d, uRoomRim, uRoomRimCol, vec2(${f(ROOM_STRIP.halfWidth)}, ${f(ROOM_STRIP.halfHeight)}), length(vec2(${f(ROOM_STRIP.edge)}, s)), ${f(ROOM_STRIP.lean)});
+  return col;
+}
+vec3 stageRoom(vec3 d) {
+  return stageRoomBlur(d, 0.0);
 }
 vec3 stageRoomLights(vec3 d, float soft) {
   vec3 sum = vec3(0.0);
@@ -22,7 +62,7 @@ vec3 stageRoomLights(vec3 d, float soft) {
   return sum;
 }
 vec3 stageRoomSoft(vec3 d, float rough) {
-  return stageRoom(d) + 0.0 * rough;
+  return stageRoomBlur(d, ${f(ROOM_ROUGH_SPREAD)} * rough * rough);
 }
 `
 
@@ -31,4 +71,8 @@ export const roomUniforms = {
   uRoomFloor: { value: new THREE.Color() },
   uRoomDir: { value: Array.from({ length: ROOM_LIGHTS }, () => new THREE.Vector4(0, 1, 0, 2)) },
   uRoomCol: { value: Array.from({ length: ROOM_LIGHTS }, () => new THREE.Color(0, 0, 0)) },
+  uRoomKey: { value: new THREE.Vector3(0, 1, 0) },
+  uRoomKeyCol: { value: new THREE.Color(0, 0, 0) },
+  uRoomRim: { value: new THREE.Vector3(0, 1, 0) },
+  uRoomRimCol: { value: new THREE.Color(0, 0, 0) },
 }
