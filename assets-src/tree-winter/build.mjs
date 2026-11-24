@@ -10,9 +10,9 @@ const NEEDLE_CELL = 0.62
 const SNOW_CELL = 0.52
 const NEEDLE_TILE_MM = 9
 const SNOW_TILE_MM = 7
-const STAR_H = 45.2
-const STAR_R = 2.45
-const HALO_R = 0.8
+const STAR_H = 45.7
+const STAR_R = 2.25
+const HALO_R = 0.62
 
 const [T, R] = await loadSource(['/src/miniature/trunk.ts', '/src/core/rng.ts'])
 const rng = R.stream('tree-winter')
@@ -412,15 +412,15 @@ function star() {
   const col = []
   const face = (a, b, c, glowShare) => {
     pos.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z)
-    for (let i = 0; i < 3; i++) col.push(1, 0.66, 0.2, glowShare)
+    for (let i = 0; i < 3; i++) col.push(1, 0.6, 0.17, glowShare)
   }
   const front = new THREE.Vector3(0, 0, 0.55)
   const back = new THREE.Vector3(0, 0, -0.55)
   for (let k = 0; k < 10; k++) {
     const a = pts[k]
     const b = pts[(k + 1) % 10]
-    face(front, a, b, k % 2 === 0 ? 0.075 : 0.04)
-    face(back, b, a, 0.035)
+    face(front, a, b, k % 2 === 0 ? 0.04 : 0.014)
+    face(back, b, a, 0.014)
   }
   const g = new THREE.BufferGeometry()
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
@@ -439,7 +439,7 @@ function lights() {
   const { bulbs, wires } = strings()
   const parts = []
   for (const b of bulbs) {
-    const g = new THREE.IcosahedronGeometry(0.26, 1)
+    const g = new THREE.IcosahedronGeometry(0.2, 1)
     g.deleteAttribute('uv')
     g.applyMatrix4(new THREE.Matrix4().makeScale(1, 1.32, 1))
     g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.out))

@@ -17,11 +17,12 @@ const SNOW = 'winter/tree-snow.srgb.tile.w1024.png'
 const CYCLES = 5
 const FLICKER = 0.14
 const COVER_RISE = 0.12
+const SNOW_GLOW = 0.6
 const WARM: [number, number, number] = [1, 0.6, 0.25]
 const GOLD: [number, number, number] = [1, 0.84, 0.52]
 const BULB = { power: 2.6, reachMm: 1.3, gain: 12 }
 const HALO = { cover: 0.55, edge: 2.5, glow: 0.85, core: 10 }
-const STAR_LOCAL: Vec3 = [0.05, 45.2, 0.1]
+const STAR_LOCAL: Vec3 = [0.05, 45.7, 0.1]
 
 const offset = crownOffset()
 const star = placePoint(STAR_LOCAL)
@@ -160,9 +161,9 @@ function bulbs(): GlowLight[] {
   return out
 }
 
-function placed(name: string, lit: readonly GlowLight[]): THREE.BufferGeometry {
+function placed(name: string, lit: readonly GlowLight[], share = 1): THREE.BufferGeometry {
   const g = placeGeometry(geometry(MODEL, name))
-  bakeGlow(g, lit)
+  bakeGlow(g, share === 1 ? lit : lit.map((l) => ({ ...l, power: l.power * share })))
   return g
 }
 
@@ -182,7 +183,7 @@ export function build(): THREE.Object3D {
   const lit = bulbs()
   const needles = stageMaterial({ part, standIn: false, inside: true, miniature: true, change: 'miniature', map: texture(NEEDLES), vertexColors: true, roughness: 0.88, side: THREE.DoubleSide, hook: needleHook, key: 'tree-needles' })
   const snow = stageMaterial({ part, standIn: false, inside: true, miniature: true, change: 'miniature', map: texture(SNOW), vertexColors: true, roughness: 0.8, hook: snowHook, key: 'tree-snow' })
-  return new THREE.Group().add(buildTrunk(part, lit), solidMesh(placed('needles', lit), needles), solidMesh(placed('snow', lit), snow))
+  return new THREE.Group().add(buildTrunk(part, lit), solidMesh(placed('needles', lit), needles), solidMesh(placed('snow', lit, SNOW_GLOW), snow))
 }
 
 export function lights(): THREE.Object3D {
@@ -194,7 +195,7 @@ export function lights(): THREE.Object3D {
 }
 
 export function arrival(): THREE.Object3D {
-  const g = placed('arrival', bulbs())
+  const g = placed('arrival', bulbs(), SNOW_GLOW)
   const base = g.getAttribute('tangent')
   const out = new Float32Array(base.count * 4)
   for (let i = 0; i < base.count; i++) {

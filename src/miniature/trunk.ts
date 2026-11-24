@@ -71,6 +71,7 @@ const PADS: readonly { at: Vec3; size: Vec3; lean: number; tip: number; from: nu
   { at: [9.5, 20.2, 5], size: [8.5, 4.1, 5.6], lean: 0.44, tip: 0.12, from: 12.8 },
   { at: [3.5, 33.5, -8.5], size: [6, 3.2, 4.5], lean: 0.1, tip: -0.25, from: 24.5 },
   { at: [-7.5, 27.5, -6.5], size: [5.5, 3, 4.2], lean: -0.1, tip: -0.25, from: 18.5 },
+  { at: [1.3, 30.4, 3.3], size: [4.6, 2.6, 3.4], lean: 0.25, tip: 0.2, from: 28.5 },
 ]
 
 const lerp = (a: number, b: number, t: number): number => a + (b - a) * t
@@ -589,7 +590,7 @@ export function buildTrunk(part: string, lights: readonly GlowLight[] = []): THR
     miniature: true,
     change: 'miniature',
     map: texture(BARK),
-    color: new THREE.Color(0.44, 0.31, 0.225),
+    color: new THREE.Color(0.43, 0.345, 0.235),
     vertexColors: true,
     roughness: 0.86,
     extra: { normalMap: normal, normalScale: new THREE.Vector2(2.8, 2.8) },
