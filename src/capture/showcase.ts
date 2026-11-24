@@ -16,11 +16,12 @@ import { INNER_R } from '../particles/spikeSim'
 import { openingPlan } from '../film/opening'
 import { drawOpening } from '../film/openingStandIn'
 import { cutList, filmCut, type Cut } from '../film/cut'
-import { cameraKeys, cameraNumbers, filmPose, loopPose, shotNotes, type ShotNote } from '../film/moves'
+import { cameraKeys, cameraNumbers, filmPose, loopPose, MOVES, shotNotes, type ShotNote } from '../film/moves'
 import { loopGlobe, type LoopParticles, type SourceSwitch } from '../film/loop'
 import { loopMoment, timelineMoment } from '../film/moments'
 import { flaggedStandIns } from '../core/standins'
 import { levelById, stageQuality, topLevel } from '../core/quality'
+import { livePose } from '../app/framing'
 import { Painter } from '../app/painter'
 import parts from '../../parts/PARTS.json'
 
@@ -305,7 +306,8 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
         await picture(along(getFilm()), frameTime(i), shutter, hero, samples, i + 1)
         return
       }
-      const pose = poseById(spec.camera)
+      const onScreen = (spec.interface || !!spec.live) && spec.camera === MOVES.wide
+      const pose = onScreen ? livePose(format.width / format.height) : poseById(spec.camera)
       if (spec.live) await livePicture(along(stillTl(spec.season)), stateSeconds(spec.state), pose, spec.live)
       else await picture(along(stillTl(spec.season)), stateSeconds(spec.state), 0, () => pose, samples, 0)
       if (spec.interface) await overlay.show(spec.season, spec.state)
