@@ -29,6 +29,7 @@ export const lightUniforms = {
   uGridGainA: { value: new THREE.Vector4(1, 1, 1, 1) },
   uGridGainB: { value: new THREE.Vector4(1, 1, 1, 1) },
   uGridShade: { value: new THREE.Vector4(0.25, 0.3, 1, 0.3) },
+  uGridAir: { value: 0 },
   uLightFrame: { value: new THREE.Matrix3() },
   uLightGlow: { value: new THREE.Vector4(0, 0, 0, 0) },
   uLightGlowAt: { value: new THREE.Vector4(0, 0, 0, 1) },
@@ -57,6 +58,8 @@ export const lightUniforms = {
   ...roomLit,
 }
 
+export const gridAir = (lum: number, knee: number): number => (lum * lum) / Math.max(lum * lum + knee * knee, 1e-9)
+
 const f1 = (v: number) => v.toFixed(1)
 
 export const LIGHT_FRAG_PARS = `
@@ -66,6 +69,7 @@ uniform vec4 uGrid;
 uniform vec4 uGridGainA;
 uniform vec4 uGridGainB;
 uniform vec4 uGridShade;
+uniform float uGridAir;
 uniform mat3 uLightFrame;
 uniform vec4 uLightGlow;
 uniform vec4 uLightGlowAt;
@@ -104,22 +108,28 @@ vec3 stageFlood(vec3 local) {
   vec3 d = local - uLightGlowAt.xyz;
   return uLightFlood * (uLightFloodAt.z / (1.0 + dot(d, d) / (uLightFloodAt.w * uLightFloodAt.w)));
 }
+vec3 stageGridAir(vec3 colour) {
+  float l = dot(colour, vec3(0.2126, 0.7152, 0.0722));
+  return colour * (l * l / max(l * l + uGridAir, 1e-9));
+}
 vec3 stageGrid(vec3 local) {
   vec3 a = vec3(0.0);
   vec3 b = vec3(0.0);
-  if (uGrid.x < 1.0) a = texture(uGridA, stageGridAt(local, 0.0)).rgb * stageGridGain(texture(uGridA, stageGridAt(local, 2.0)), uGridGainA);
-  if (uGrid.x > 0.0) b = texture(uGridB, stageGridAt(local, 0.0)).rgb * stageGridGain(texture(uGridB, stageGridAt(local, 2.0)), uGridGainB);
+  if (uGrid.x < 1.0) a = stageGridAir(texture(uGridA, stageGridAt(local, 0.0)).rgb) * stageGridGain(texture(uGridA, stageGridAt(local, 2.0)), uGridGainA);
+  if (uGrid.x > 0.0) b = stageGridAir(texture(uGridB, stageGridAt(local, 0.0)).rgb) * stageGridGain(texture(uGridB, stageGridAt(local, 2.0)), uGridGainB);
   return mix(a, b, uGrid.x) + stageFlood(local);
 }
-void stageGridLit(vec3 local, out vec3 colour, out vec3 toward, out float open, out float shade) {
+void stageGridRead(vec3 local, out vec3 colour, out vec3 air, out vec3 toward, out float open, out float shade) {
   vec4 e = vec4(0.0);
   vec3 m = vec3(0.0);
+  air = vec3(0.0);
   shade = 0.0;
   if (uGrid.x < 1.0) {
     float gain = stageGridGain(texture(uGridA, stageGridAt(local, 2.0)), uGridGainA) * (1.0 - uGrid.x);
     vec4 c = texture(uGridA, stageGridAt(local, 0.0));
     vec4 d = texture(uGridA, stageGridAt(local, 1.0));
     e += vec4(c.rgb * gain, c.a * (1.0 - uGrid.x));
+    air += stageGridAir(c.rgb) * gain;
     m += d.xyz * gain;
     shade += d.a * (1.0 - uGrid.x);
   }
@@ -128,12 +138,19 @@ void stageGridLit(vec3 local, out vec3 colour, out vec3 toward, out float open, 
     vec4 c = texture(uGridB, stageGridAt(local, 0.0));
     vec4 d = texture(uGridB, stageGridAt(local, 1.0));
     e += vec4(c.rgb * gain, c.a * uGrid.x);
+    air += stageGridAir(c.rgb) * gain;
     m += d.xyz * gain;
     shade += d.a * uGrid.x;
   }
-  colour = e.rgb + stageFlood(local);
+  vec3 flood = stageFlood(local);
+  colour = e.rgb + flood;
+  air += flood;
   open = e.a;
   toward = m / max(dot(colour, vec3(0.2126, 0.7152, 0.0722)), 1e-5);
+}
+void stageGridLit(vec3 local, out vec3 colour, out vec3 toward, out float open, out float shade) {
+  vec3 soft;
+  stageGridRead(local, soft, colour, toward, open, shade);
 }
 vec3 stageGridToward(vec3 local) {
   vec3 colour;
@@ -268,7 +285,8 @@ vec3 stageLit = vec3(0.0);
     vec3 lgCol;
     vec3 lgToward;
     float lgAir;
-    stageGridLit(vStageLocal, lgCol, lgToward, lgAir, lgShade);
+    vec3 lgThin;
+    stageGridRead(vStageLocal, lgCol, lgThin, lgToward, lgAir, lgShade);
     stageLit = lgCol;
     lgOpen = mix(uGridShade.w, 1.0, lgAir);
     float lgLen = length(lgToward);
