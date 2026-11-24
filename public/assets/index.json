@@ -9,6 +9,16 @@
           "sha": "f8ad3ac3aaa043ca"
         },
         {
+          "path": "shared/scene-slab-detail.lin.tile.png",
+          "bytes": 4339349,
+          "sha": "919e685beca8bb51"
+        },
+        {
+          "path": "shared/scene-slab-stone.lin.tile.png",
+          "bytes": 1594214,
+          "sha": "019946313786b537"
+        },
+        {
           "path": "shared/trunk-bark-n.lin.tile.png",
           "bytes": 10492024,
           "sha": "74f6a1df6d71fc66"
@@ -22,6 +32,16 @@
           "path": "shared/trunk-wood.glb",
           "bytes": 533860,
           "sha": "1c1d348b807adc12"
+        },
+        {
+          "path": "shared/village-grain.lin.tile.png",
+          "bytes": 867473,
+          "sha": "459ea1e4d64e9f2e"
+        },
+        {
+          "path": "shared/village-model.glb",
+          "bytes": 2339984,
+          "sha": "d292030e95c7b8c3"
         }
       ],
       "winter": [
@@ -104,6 +124,21 @@
           "path": "winter/tree-sprigs.srgb.w512.png",
           "bytes": 744349,
           "sha": "df4d16f3ee65e1ad"
+        },
+        {
+          "path": "winter/village-ice.lin.tile.png",
+          "bytes": 645078,
+          "sha": "2aa7ad7b3ac3ce2d"
+        },
+        {
+          "path": "winter/village-snow.lin.tile.png",
+          "bytes": 1267842,
+          "sha": "a4e6f11b0e892b8d"
+        },
+        {
+          "path": "winter/village-winter.glb",
+          "bytes": 2143672,
+          "sha": "f0ead5258a8eefee"
         }
       ],
       "spring": [],
@@ -116,6 +151,16 @@
           "path": "shared/flake-lobes.lin.png",
           "bytes": 1547,
           "sha": "f8ad3ac3aaa043ca"
+        },
+        {
+          "path": "shared/scene-slab-detail.lin.tile.png",
+          "bytes": 4339349,
+          "sha": "919e685beca8bb51"
+        },
+        {
+          "path": "shared/scene-slab-stone.lin.tile.png",
+          "bytes": 1594214,
+          "sha": "019946313786b537"
         },
         {
           "path": "shared/trunk-bark-n.lin.tile.png",
@@ -131,6 +176,16 @@
           "path": "shared/trunk-wood.glb",
           "bytes": 533860,
           "sha": "1c1d348b807adc12"
+        },
+        {
+          "path": "shared/village-grain.lin.tile.png",
+          "bytes": 867473,
+          "sha": "459ea1e4d64e9f2e"
+        },
+        {
+          "path": "shared/village-model.glb",
+          "bytes": 2339984,
+          "sha": "d292030e95c7b8c3"
         }
       ],
       "winter": [
@@ -213,6 +268,21 @@
           "path": "winter/tree-sprigs.srgb.w512.png",
           "bytes": 3348898,
           "sha": "467c638d3c1d148d"
+        },
+        {
+          "path": "winter/village-ice.lin.tile.png",
+          "bytes": 645078,
+          "sha": "2aa7ad7b3ac3ce2d"
+        },
+        {
+          "path": "winter/village-snow.lin.tile.png",
+          "bytes": 1267842,
+          "sha": "a4e6f11b0e892b8d"
+        },
+        {
+          "path": "winter/village-winter.glb",
+          "bytes": 2143672,
+          "sha": "f0ead5258a8eefee"
         }
       ],
       "spring": [],
@@ -221,9 +291,9 @@
     }
   },
   "seasonHashes": {
-    "winter": "59b7e7f22303d6b7",
-    "spring": "1c2ccea72ba8bc5f",
-    "summer": "1c2ccea72ba8bc5f",
-    "fall": "1c2ccea72ba8bc5f"
+    "winter": "6acfdde132232007",
+    "spring": "74c42986651a1874",
+    "summer": "74c42986651a1874",
+    "fall": "74c42986651a1874"
   }
 }

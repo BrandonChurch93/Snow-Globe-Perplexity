@@ -449,8 +449,6 @@ export function shadeGrid(t: THREE.Texture | null, key: readonly number[], bend:
   const cells = n * n * n
   const data = (t.image as { data: Uint16Array }).data
   const half = THREE.DataUtils.toHalfFloat
-  const shade = new Float32Array(cells)
-  const live = new Uint8Array(cells)
   const p = [0, 0, 0]
   const g = [0, 0, 0]
   const dir = [0, 1, 0]
@@ -461,17 +459,17 @@ export function shadeGrid(t: THREE.Texture | null, key: readonly number[], bend:
         p[0] = ((i + 0.5) / n - 0.5) * size
         p[1] = ((j + 0.5) / n - 0.5) * size
         p[2] = ((k + 0.5) / n - 0.5) * size
+        let v = 1
         const d0 = sampleSdf(info.solid, p[0], p[1], p[2])
-        if (d0 < -GRID.deepMm) continue
-        if (d0 < GRID.skinMm) lift(info.solid, p, g)
-        keyBend(p[0], p[1]!, p[2]!, key, bend, dir)
-        shade[c] = keySeen(info.solid, p[0], p[1]!, p[2]!, dir, spread)
-        live[c] = 1
+        if (d0 >= -GRID.deepMm) {
+          if (d0 < GRID.skinMm) lift(info.solid, p, g)
+          keyBend(p[0], p[1]!, p[2]!, key, bend, dir)
+          v = keySeen(info.solid, p[0], p[1]!, p[2]!, dir, spread)
+        }
+        data[(cells + c) * 4 + 3] = half(v)
       }
     }
   }
-  fillDeep(n, live, [{ data: shade, width: 1 }])
-  for (let c = 0; c < cells; c++) data[(cells + c) * 4 + 3] = half(shade[c]!)
   info.shade = want
   t.needsUpdate = true
   return true

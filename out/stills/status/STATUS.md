@@ -1,19 +1,20 @@
-# Status 30
+# Status 31
 
-2026-11-24 11:32 UTC
+2026-11-24 11:58 UTC
 
-- Phase 3 (the look lock) is 2 hours 53 minutes into its 11 hour box. The builders are 93 minutes into their 3 hours
-- Merged into main and pushed (dc24715): the light engine and the tree and winter's base. Parts light-engine and base-winter are built in the register. 330 of 330 tests green
-- The shake's real path is done on its branch: 4.56 percent of the frame kept above the glass on the worst frame of 19 paths (rule 4.5) and the foot's rim 1.06 mm clear of the slab (rule 1). It is merged together with the liquid's answer to two simulation tests
-- First reports are in from light and tree and base and shake and village. Each lists what is still wrong and keeps raising its part until about 13:00 UTC
-- Passed between builders: the veil must vanish at rest (it made the grey wash in the glass) and settled flakes take the light engine's shade and the close camera's focus goes on the door and the contact shadow and mirror image must follow the lifted globe
-- The published app is unchanged since 08:34 UTC. It is published again as soon as the real shake is on main so it can be shaken
-- phase 3: 3.08 h used of its 11.00 h box
-- allowance (before the review): 9.69 h used of 36.00 h allowed
+- Phase 3 (the look lock) is 3 hours 18 minutes into its 11 hour box. The builders are 1 hour 58 minutes into their 3 hours
+- Merged into main since the last status (567c9ed): the real shake path with the engine that floats on it and the flakes and glitter and veil and winter frost on glass and slab with its arrival and the glass shell. 370 of 370 tests green
+- Built in the parts register now: light engine and winter base and shake and flake and glitter and winter veil and winter glass dressing and surface dressing and arrival and the glass. Still stand-ins on main: the village and the surface and backdrop and room and the lens table and post and (until its builder confirms) the liquid and particle engine
+- Published at 11:40 UTC with the real shake so it can be shaken. It is published again after this status with the glass and frost and flakes
+- Found by three builders at once and now being fitted by the scene builder: the hero lens focused 40 mm in front of the miniature so everything inside was soft at the final tier. The sharp zone check now follows the image behind the glass
+- Decided (47): the frost grows fast in the first half second so the landed picture carries what the approved shake image shows and then grows on slowly to the rest image
+- Open and logged (item 30): a clean clone of main cannot open the app until the built assets are committed at the round. The published app is not affected
+- phase 3: 3.52 h used of its 11.00 h box
+- allowance (before the review): 10.13 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-30-1.jpg`: Shake builder: the real test shake from the fixed hero camera in 12 frames (the landing is at frame 144). The path is real: unequal strokes with sharp reversals and a lift of 7.25 mm. Still wrong and owned by others: the stand-in veil whites the glass out and the contact shadow stays behind as a hard hole
-- `out/stills/status/status-30-2.jpg`: Shake builder: the path's curves over the bar. Six strokes of 15.6 to 22.4 mm that speed up; reversals of about 2 g; the rim of the foot kept 1 mm above the slab; the tilt capped at 6 degrees
-- `out/stills/status/status-30-3.jpg`: Village builder: the approved image above and the first real cottage below (stone walls and snow roof and brick chimney and string lights and the wreath on the arched door and the fence and lamppost and pond ice). Still wrong: out of focus at this camera and the stones too rounded and lain flakes bury the path
-- `out/stills/status/status-30-4.jpg`: Flake builder: the approved storm on the left and the build's storm on the right half a second after a landing (streaks along arcs; the miniature here is still a stand-in). Still wrong: flakes too large and too alike and the veil too even and too white
+- `out/stills/status/status-31-1.jpg`: Main at rest from the hero camera (draft tier with 2 samples): the real glass with its window highlight and crown bubble and the real frost on the glass and slab and the real flakes and tree and base. Still wrong: the cottage and fence and lamp are stand-ins until the village is merged and the backdrop discs are flat and the slab frost reads as white line drawing and the lens still blurs the miniature
+- `out/stills/status/status-31-2.jpg`: Main half a second after the landing of the real shake (draft tier): the storm sweeps round the miniature with the tree lights showing through and the icicles have begun to grow again. Still wrong: the storm reads as grey fur of equal streaks where the approved image has soft white smears and the frost on the glass has only begun to grow at this moment
+- `out/stills/status/status-31-3.jpg`: Still: winter landed hero, hd, draft
+- `out/stills/status/status-31-4.jpg`: Still: winter rest hero, hd, draft
