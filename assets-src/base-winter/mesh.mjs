@@ -314,15 +314,15 @@ export function buildBrass() {
 }
 
 const HEAPS = [
-  { a0: -138, a1: -78, ea: 20, eb: 15, p: 0.75, t: 0.5, bank: 3.9, r1: 55.4, over: [[-132, -96, 0.7]] },
-  { a0: -100, a1: -60, ea: 10, eb: 12, t: 3.9, r0: 47.9, r1: 54.1 },
-  { a0: -85, a1: -39, ea: 8, eb: 12, t: 4.3, r0: 47.7, r1: 53.9 },
-  { a0: -47, a1: -7, ea: 8, eb: 9, t: 3.5, r0: 47.5, r1: 54.0, over: [[-35, -12, 0.6]] },
-  { a0: -6, a1: 4, ea: 4, eb: 4, t: 1.5, r0: 49.6, r1: 54.4 },
-  { a0: 2, a1: 36, ea: 9, eb: 16, t: 2.9, r0: 47.4, r1: 54.9, over: [[5, 32, 0.6]] },
-  { a0: 7, a1: 72, ea: 13, eb: 14, t: 2.9, bank: 2.2, r1: 55, over: [[13, 72, 0.95]] },
-  { a0: 52, a1: 98, ea: 12, eb: 10, t: 3.0, bank: 1.6, r1: 55, over: [[52, 97, 1]] },
-  { a0: 84, a1: 138, ea: 15, eb: 20, p: 0.75, t: 0.5, bank: 3.6, r1: 55.4, over: [[80, 132, 1]] },
+  { a0: -138, a1: -78, ea: 20, eb: 15, p: 0.75, t: 0.5, bank: 2.7, r1: 55.4, over: [[-132, -96, 0.8]] },
+  { a0: -100, a1: -60, ea: 10, eb: 12, t: 3.0, r0: 47.9, r1: 54.1 },
+  { a0: -85, a1: -39, ea: 8, eb: 12, t: 3.0, r0: 47.7, r1: 53.9 },
+  { a0: -47, a1: -7, ea: 8, eb: 9, t: 2.4, r0: 47.5, r1: 54.0, over: [[-36, -11, 0.8]] },
+  { a0: -6, a1: 4, ea: 4, eb: 4, t: 1.0, r0: 49.6, r1: 54.4 },
+  { a0: 2, a1: 36, ea: 9, eb: 16, t: 1.8, r0: 47.4, r1: 54.9, over: [[5, 32, 0.8]] },
+  { a0: 7, a1: 72, ea: 13, eb: 14, t: 1.8, bank: 1.0, r1: 55, over: [[13, 72, 1]] },
+  { a0: 52, a1: 98, ea: 12, eb: 10, t: 1.9, bank: 0.9, r1: 55, over: [[52, 97, 1]] },
+  { a0: 84, a1: 138, ea: 15, eb: 20, p: 0.75, t: 0.5, bank: 2.5, r1: 55.4, over: [[80, 132, 1]] },
   { a0: 136, a1: 184, ea: 12, eb: 12, t: 1.6, bank: 0.6, r1: 54.8, over: [[144, 172, 0.9]] },
   { a0: 180, a1: 228, ea: 12, eb: 12, t: 1.5, bank: 0.4, r1: 54.3, over: [[196, 216, 0.6]] },
 ]
@@ -348,12 +348,36 @@ function snowSupport(r) {
   return P.COLLAR.crown[1]
 }
 
-function snowLobes(azIn) {
-  const u = (azIn + 180) / 360
-  let lobes = 0.4 + 0.6 * smooth(0.3, 0.62, fbm(u * 84, 0.37, 84, 4, 113, 2))
+let scallops = null
+function scallop(azIn) {
+  if (!scallops) {
+    const rng = mulberry(4177)
+    scallops = []
+    let a = -180
+    while (a < 180) {
+      const w = 4.2 + 4.6 * rng()
+      scallops.push({ a, w, k: 0.4 + 0.6 * Math.pow(rng(), 0.7) })
+      a += w
+    }
+  }
+  const az = ((((azIn + 180) % 360) + 360) % 360) - 180
+  for (const c of scallops) {
+    if (az < c.a || az >= c.a + c.w) continue
+    const x = ((az - c.a) / c.w) * 2 - 1
+    return c.k * Math.pow(Math.max(1 - x * x, 0), 0.85)
+  }
+  return 0
+}
+
+function hangNear(azIn) {
   hangAz ??= MEASURED.map(([x, , y1]) => onCylinder(x, y1, P.ICE.r).az)
-  for (const az of hangAz) lobes = Math.max(lobes, 1 - smooth(1.6, 4.4, Math.abs(turnTo(azIn, az) - az)))
-  return lobes
+  let near = 0
+  for (const az of hangAz) near = Math.max(near, 1 - smooth(0.9, 2.5, Math.abs(turnTo(azIn, az) - az)))
+  return near
+}
+
+function snowLobes(azIn) {
+  return Math.max(0.1 + 0.9 * scallop(azIn), hangNear(azIn))
 }
 
 function overOf(m, az) {
@@ -387,7 +411,7 @@ function snowThickness(azIn, r) {
   const t = Math.pow(sum, 0.25)
   const lump = 0.7 + 0.6 * fbm(u * 46, r / 5.2, 46, 64, 91, 3)
   const heap = 0.86 + 0.28 * fbm(u * 19, r / 12, 19, 64, 119, 2)
-  const knob = (fbm(u * 96, r / 3.0, 96, 64, 127, 2) - 0.5) * 1.5 * Math.sqrt(Math.min(t, 4) / 4)
+  const knob = (fbm(u * 96, r / 3.0, 96, 64, 127, 2) - 0.5) * 1.5 * Math.sqrt(Math.min(t, 4) / 4) + (fbm(u * 230, r / 1.3, 230, 64, 151, 2) - 0.5) * 0.4 * smooth(0.15, 1.1, t)
   const crumb = smooth(0.7, 0.84, fbm(u * 150, r / 2.1, 150, 64, 97, 2)) * 0.55 * smooth(0.04, 0.5, t + 0.25 * fbm(u * 20, r / 9, 20, 64, 103, 2))
   const dust = 0.34 * smooth(0.6, 0.8, fbm(u * 30, r / 6, 30, 64, 109, 3)) * (1 - smooth(45.5, 49.5, r))
   const loose = r > collarEdge + 1.4 ? 1 : 0
@@ -396,15 +420,15 @@ function snowThickness(azIn, r) {
 
 export function buildSnow() {
   const soup = new Soup('snow')
-  const cols = azList(-180, 180, (az) => (front(az) <= 132 ? 1.1 : 2.6), 48)
-  const inner = 5
-  const mid = 6
-  const nose = 6
+  const cols = azList(-180, 180, (az) => (front(az) <= 132 ? 0.55 : 2.6), 48)
+  const inner = 11
+  const mid = 7
+  const nose = 9
   const rowsN = inner + mid + nose
   const repeats = Math.round((2 * Math.PI * 48) / SNOW.tileMm)
   const grid = []
   const heavy = cols.map((az) => snowOver(az) * smooth(0.05, 0.6, Math.max(snowThickness(az, noseFrom), 0)))
-  const spread = 3
+  const spread = 2
   const eased = heavy.map((_, i) => {
     let sum = 0
     let weight = 0
@@ -427,8 +451,9 @@ export function buildSnow() {
     const w = eased[i]
     const tA = Math.max(snowThickness(az, noseFrom), 0)
     const hA = snowSupport(noseFrom) + tA
-    const hB = P.LIP.h - 0.55 - (0.35 + 1.5 * fbm(u * 53, 0.71, 53, 4, 137, 3))
-    const reachOut = lipOuter + 0.45 + 0.9 * fbm(u * 37, 0.13, 37, 4, 139, 3) - noseFrom
+    const near = hangNear(az)
+    const hB = P.LIP.h - 0.55 - (0.35 + 1.5 * fbm(u * 53, 0.71, 53, 4, 137, 3)) - 0.8 * near
+    const reachOut = lipOuter + 0.45 + 0.9 * fbm(u * 37, 0.13, 37, 4, 139, 3) + 0.8 * near - noseFrom
     const low = mix(Math.min(hA - 0.15, P.LIP.h + 0.62), hB, smooth(0.3, 1, w))
     const reach = Math.max(0.6, reachOut * w)
     const turn = smooth(0, 0.22, w)
@@ -442,7 +467,7 @@ export function buildSnow() {
         continue
       }
       const th = (90 - (k * 200) / nose) * RAD
-      const hung = { r: noseFrom + reach * Math.cos(th), h: (hA + low) / 2 + ((hA - low) / 2) * Math.sin(th), t: mix(Math.max(tA, 0.6), 0.34, smooth(2, 6, k)), ru: noseFrom + (k * 3.85) / nose }
+      const hung = { r: noseFrom + reach * Math.cos(th), h: (hA + low) / 2 + ((hA - low) / 2) * Math.sin(th), t: mix(Math.max(tA, 0.6), 0.34, smooth(nose / 3, nose, k)), ru: noseFrom + (k * 3.85) / nose }
       column.push({ r: mix(flat.r, hung.r, turn), h: mix(flat.h, hung.h, turn), t: mix(flat.t, hung.t, turn), ru: mix(flat.ru, hung.ru, turn) })
     }
     grid.push(column)

@@ -132,10 +132,11 @@ const OIL = `
   float oilNl = smoothstep(0.0, 0.12, dot(geometryNormal, oilKey));
   vec3 oilAway = inverseTransformDirection(reflect(-geometryViewDir, geometryNormal), viewMatrix);
   reflectedLight.directSpecular += oilKeyC * (3.2 * pow(oilNh, 110.0)) * oilF * oilNl * baseOil * baseAo;
+  reflectedLight.directSpecular += oilKeyC * vec3(0.62, 0.8, 1.2) * (0.025 * pow(oilNh, 9.0) + 0.3 * pow(oilNh, 44.0)) * oilNl * (0.45 + 0.55 * baseOil) * (1.0 - 0.9 * baseLeaf) * baseAo;
   vec3 oilCard = normalize(mat3(viewMatrix) * uRigCardDir);
   float oilCh = max(dot(geometryNormal, normalize(oilCard + geometryViewDir)), 0.0);
   float oilCl = smoothstep(0.0, 0.25, dot(geometryNormal, oilCard));
-  reflectedLight.directSpecular += uRigCardCol * (0.002 * pow(oilCh, 4.0) + 0.02 * pow(oilCh, 60.0) + 0.11 * baseLeaf * pow(oilCh, 14.0)) * oilCl * baseOil * baseAo;
+  reflectedLight.directSpecular += uRigCardCol * (vec3(1.0, 0.7, 0.48) * (0.004 * pow(oilCh, 3.0) + 0.03 * pow(oilCh, 22.0)) * baseSheen + vec3(1.0, 0.74, 0.5) * baseLeaf * (0.03 * pow(oilCh, 10.0) + 0.34 * pow(oilCh, 110.0))) * oilCl * baseOil * baseAo;
   vec3 oilCell = floor(vBasePos * 5.0);
   vec3 oilFacet = normalize(normalMatrix * normalize(baseObjectNormal + 1.2 * (vec3(baseHash(oilCell + 3.7), baseHash(oilCell + 11.3), baseHash(oilCell + 23.9)) - 0.5)));
   float oilGrit = smoothstep(0.5, 0.12, length(fract(vBasePos * 5.0) - 0.5)) * step(0.5, baseHash(oilCell));
@@ -175,18 +176,24 @@ float baseCarved = vBasePaint.z;
 float baseCavity = clamp(1.0 - 2.0 * baseCarve.b, 0.0, 1.0) * baseCarved;
 float baseHigh = clamp(2.0 * baseCarve.b - 1.0, 0.0, 1.0) * baseCarved;
 float baseWear = clamp(vBasePaint.y + 0.6 * baseHigh, 0.0, 1.0);
-float baseAo = vBasePaint.x * (1.0 - 0.85 * baseCavity);
+float baseAo = vBasePaint.x * (1.0 - 0.62 * baseCavity);
 float baseBlotch = baseNoise(vBasePos * 0.21) * 0.6 + baseNoise(vBasePos * 0.9) * 0.4;
 float baseLeaf = smoothstep(0.02, 0.2, baseHigh);
-diffuseColor.rgb = mix(vec3(0.1, 0.066, 0.04), diffuseColor.rgb * vec3(0.95, 1.45, 1.65), 0.45 - 0.3 * baseLeaf) * vec3(0.78, 0.5, 0.42) * mix(0.75, 1.15, baseBlotch) * mix(1.15, 1.0, baseLeaf);
-diffuseColor.rgb *= mix(1.0, 0.3, baseCavity);
+float baseTurn = atan(vBasePos.x, vBasePos.z);
+float baseFigure = baseNoise(vec3(baseTurn * 7.0, vBasePos.y * 0.42 + 0.9 * sin(baseTurn * 3.0), 2.7)) * 0.6 + baseNoise(vec3(baseTurn * 23.0, vBasePos.y * 1.3, 9.1)) * 0.4;
+float baseLight = dot(diffuseColor.rgb, vec3(4.2, 7.0, 6.0));
+float baseStreak = clamp(smoothstep(0.62, 1.75, baseLight) * (0.55 + 0.7 * smoothstep(0.3, 0.72, baseFigure)), 0.0, 1.0) * (1.0 - baseLeaf);
+vec3 baseGrainCol = diffuseColor.rgb * vec3(0.95, 1.45, 1.65);
+diffuseColor.rgb = mix(vec3(0.1, 0.066, 0.04), baseGrainCol, 0.45 - 0.3 * baseLeaf) * vec3(0.78, 0.5, 0.42) * mix(0.75, 1.15, baseBlotch) * mix(1.15, 1.0, baseLeaf);
+diffuseColor.rgb *= mix(vec3(0.72, 0.66, 0.62), vec3(1.95, 1.5, 1.2), baseStreak) * mix(1.0, 0.72, baseLeaf);
+diffuseColor.rgb *= mix(1.0, 0.5, baseCavity);
 float baseGild = smoothstep(0.3, 0.85, baseWear);
-diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.6, 0.34, 0.15), 0.5 * baseGild);
+diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.6, 0.3, 0.13), (0.16 + 0.34 * (1.0 - baseCarved)) * baseGild);
 `
 
 const WOOD_ROUGH = `
-roughnessFactor = clamp(mix(0.26, 0.48, baseDetail.b) + 0.3 * baseCavity - 0.12 * baseGild + 0.06 * baseCarved, 0.14, 1.0);
-metalnessFactor = 0.3 * baseGild;
+roughnessFactor = clamp(mix(0.24, 0.46, baseDetail.b) + 0.3 * baseCavity - 0.12 * baseGild + 0.06 * baseCarved - 0.08 * baseStreak, 0.14, 1.0);
+metalnessFactor = 0.5 * baseGild;
 `
 
 const WOOD_TILT = `
@@ -196,18 +203,19 @@ vec2 baseTilt = baseSlope(baseDetail.rg) * 0.42 + baseSlope(baseCarve.rg) * (1.3
 const WOOD_BENT = `
 float baseSin = vBasePos.x / max(length(vBasePos.xz), 1.0);
 float baseLow = 1.0 - smoothstep(10.2, 13.2, vBasePos.y);
-float baseSide = smoothstep(0.2, 0.85, baseSin) * mix(0.05 + 0.25 * smoothstep(0.3, 0.7, baseNoise(vBasePos * 0.4 + 5.0)), 1.0, 1.0 - smoothstep(8.0, 13.0, vBasePos.y)) * (1.0 - smoothstep(26.0, 31.0, vBasePos.y));
-float baseUp = smoothstep(0.0, 0.42, baseObjectNormal.y);
+float baseSide = pow(smoothstep(0.4, 1.0, baseSin), 1.5) * mix(0.04 + 0.16 * smoothstep(0.3, 0.7, baseNoise(vBasePos * 0.4 + 5.0)), 1.0, 1.0 - smoothstep(11.0, 18.0, vBasePos.y)) * (1.0 - smoothstep(26.0, 31.0, vBasePos.y));
+float baseUp = smoothstep(0.12, 0.5, baseObjectNormal.y);
 float baseGrain = baseNoise(vBasePos * 5.3) * 0.55 + baseNoise(vBasePos * 11.7) * 0.45;
-float baseFrost = clamp(baseSide * (0.08 + 1.0 * baseUp) * (1.0 - 0.88 * smoothstep(0.02, 0.25, baseHigh)) * (1.0 - 0.8 * baseCavity) * (0.75 + 0.5 * baseGrain), 0.0, 1.0);
+float baseFrost = clamp(baseSide * clamp(0.08 + baseUp + 0.9 * smoothstep(0.7, 0.95, baseSin) * (1.0 - smoothstep(10.0, 15.0, vBasePos.y)), 0.0, 1.0) * (1.0 - 0.88 * smoothstep(0.02, 0.25, baseHigh)) * (1.0 - 0.8 * baseCavity) * (0.75 + 0.5 * baseGrain), 0.0, 1.0);
 float baseDust = (0.1 + 0.9 * smoothstep(0.06, 0.5, baseObjectNormal.y)) * (0.35 + 0.65 * baseNoise(vBasePos * 3.1)) * 0.06 + 0.12 * baseCavity;
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.07, 0.07, 0.075), clamp(baseDust, 0.0, 0.5));
-diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.9, 0.94, 1.0) * (0.8 + 0.4 * baseGrain), 0.68 * baseFrost);
+diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.66, 0.78, 1.0) * (0.75 + 0.5 * baseGrain), (0.4 + 0.5 * smoothstep(0.78, 0.99, baseSin)) * baseFrost);
 roughnessFactor = mix(roughnessFactor, 0.9, clamp(baseDust * 1.6 + 0.9 * baseFrost, 0.0, 0.85));
 metalnessFactor *= 1.0 - baseFrost;
 float baseWall = smoothstep(0.7, 2.0, length(baseTilt)) * baseCarved;
 roughnessFactor = mix(roughnessFactor, 0.62, 0.6 * baseWall);
 float baseOil = clamp(1.0 - 2.2 * baseDust - 1.4 * baseFrost, 0.0, 1.0) * (1.0 - 0.7 * baseCavity) * (1.0 - 0.45 * baseWall);
+float baseSheen = mix(0.5, 1.9, baseStreak) * (1.0 - baseLeaf) + baseLeaf;
 `
 
 const BRASS_PAINT = `
@@ -256,6 +264,7 @@ float baseThick = vBasePaint.x;
 float baseAo = 0.55 + 0.45 * smoothstep(0.0, 0.5, baseThick);
 if (baseThick - 0.05 * baseNoise(vBasePos * 2.3) * baseNoise(vBasePos * 0.7 + 9.0) < 0.012) discard;
 diffuseColor.rgb *= mix(vec3(0.56, 0.66, 0.82), vec3(1.0), smoothstep(0.02, 0.6, baseThick));
+diffuseColor.rgb *= mix(vec3(0.7, 0.79, 0.93), vec3(1.0), smoothstep(-0.5, 0.25, normalize(vBaseNormal).y));
 `
 
 const SNOW_ROUGH = `
@@ -263,7 +272,7 @@ roughnessFactor = 0.82 + 0.16 * baseDetail.b;
 `
 
 const SNOW_TILT = `
-vec2 baseTilt = baseSlope(baseDetail.rg) * 0.9;
+vec2 baseTilt = baseSlope(baseDetail.rg) * 1.5;
 `
 
 const SNOW_AFTER = `
@@ -280,10 +289,10 @@ const SNOW_AFTER = `
   #endif
   float baseWrap = clamp(dot(nonPerturbedNormal, baseKey) * 0.5 + 0.5, 0.0, 1.0);
   float baseDeep = smoothstep(0.1, 0.9, baseThick);
-  reflectedLight.indirectDiffuse += baseKeyC * material.diffuseContribution * RECIPROCAL_PI * 0.42 * baseWrap * baseWrap * baseWrap * baseDeep * smoothstep(-30.0, 20.0, vBasePos.x);
+  reflectedLight.indirectDiffuse += baseKeyC * material.diffuseContribution * RECIPROCAL_PI * 0.62 * baseWrap * baseWrap * baseWrap * baseWrap * baseDeep * smoothstep(-30.0, 20.0, vBasePos.x);
   #ifdef STAGE_LIGHT_DONE
   float baseCard = clamp(dot(inverseTransformDirection(nonPerturbedNormal, viewMatrix), uRigCardDir) * 0.5 + 0.5, 0.0, 1.0);
-  reflectedLight.indirectDiffuse += uRigCardCol * material.diffuseContribution * RECIPROCAL_PI * 0.34 * baseCard * baseCard * baseDeep * smoothstep(34.0, -8.0, vBasePos.x);
+  reflectedLight.indirectDiffuse += uRigCardCol * material.diffuseContribution * RECIPROCAL_PI * 0.6 * baseCard * baseCard * baseDeep * smoothstep(34.0, -8.0, vBasePos.x);
   #endif
   vec3 baseCell = floor(vBasePos * 4.0);
   float baseOne = baseHash(baseCell);
