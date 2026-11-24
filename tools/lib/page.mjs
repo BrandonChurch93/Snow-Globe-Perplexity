@@ -107,6 +107,14 @@ export class Session {
     return Buffer.from(data.slice(data.indexOf(',') + 1), 'base64')
   }
 
+  async grabStage(page) {
+    const box = await page.evaluate(() => {
+      const r = document.getElementById('app').getBoundingClientRect()
+      return { x: r.x, y: r.y, width: r.width, height: r.height }
+    })
+    return page.screenshot({ type: 'png', clip: box, animations: 'disabled', caret: 'hide' })
+  }
+
   record(info, extra = {}) {
     return {
       engineHash: info.engineHash,
