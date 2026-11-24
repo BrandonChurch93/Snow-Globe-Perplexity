@@ -25,27 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 53 · 2026-11-24 20:25 UTC
+Status 54 · 2026-11-24 20:45 UTC
 
-- `out/stills/status/status-53-1.jpg`: The build that Round 6 judges at the draft tier: at rest on the left and one second after the landing on the right. The storm is streaks along the roll now and the cottage and the tree read through it
-- `out/stills/status/status-53-2.jpg`: Still: winter landed hero, hd, draft
-- `out/stills/status/status-53-3.jpg`: Still: winter rest hero, hd, draft
+- `out/stills/status/status-54-1.jpg`: Frame 96 of the test shake at the review tier: the bloom that hides the change of season is now a warm glow with a small core. In Round 5 it was a white disc that came and went in three frames
+- `out/stills/status/status-54-2.jpg`: The crown of the tree: the approved image on the left and the build on the right. The snow lies in broad blankets now and the foliage is still lighter and mossier than approved
+- `out/stills/status/status-54-3.jpg`: Still: winter landed hero, hd, draft
+- `out/stills/status/status-54-4.jpg`: Still: winter rest hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 20:25 UTC
+2026-11-24 20:57 UTC
 clock: phase 3, tick of 4.9 minutes
-phase 3: 11.97 h used of its 11.00 h box
-allowance (before the review): 18.58 h used of 36.00 h allowed
-all time before the review: 18.58 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+phase 3: 12.51 h used of its 11.00 h box
+allowance (before the review): 19.12 h used of 36.00 h allowed
+all time before the review: 19.12 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 12
 ```
 
 ## Phases
@@ -1158,3 +1159,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 20:01 to 20:26 UTC. The Round 6 freeze. Merged after 20:01: flakes `1ec4f91`, liquid `d38e0c2`, light `b465e56`, frost `8e25585`, tree `c04dab8`, scene `21bea60`, glass `f6fc045`. The shake's and the liquid's closers both reported that the liquid's new engine with `shake.strokeMm` 24 fails one pin of `tests/engine-storm.test.ts`; decision 65 puts the value back to 22 and the suite is green (418 passed, 4 skipped, 0 failed). Every part made again, texpack, tsc clean, G8 green with 75 shipped files. The clock printed `extra rounds: yes` at 20:20. Draft stills of `rest` and `landed` looked at: at rest the crown carries broad snow blankets and the slab ends in the approved far corner; one second after the landing the storm is streaks along the roll and the cottage, lamp and tree read through it (Round 5: a cream bank that hid them). Built assets committed once as `2569976`, the commit Round 6 judges; the round's line pushed as `7977b88` before anything else. The four render agents have their orders (stills at the final tier, motion sheets, gate and measures). Published at 20:23 (Visibility: Organization; the check of the live page: first picture seen, 53 requests, no errors). Status 53 shown at 20:25 with the pair. The scene's closer reported that a clean checkout of `42c4f35` could not render ("texture is not prepared: winter/village-plume.lin.png") because built assets are committed once per round; cured by `2569976`, and all ten closers were told to merge it.
 
 - 20:27 to 20:45 UTC, while the render agents work on Round 6: the last takes of winter's cues (Phase 3 step 2, the sound job). The "Sound" table was stale: the ledger shows that `lift` take 2, `shake-winter` take 2 and `land-winter` take 3 were made and rejected at 06:37 to 06:44; the table now says so. Three takes at 20:29: `lift` take 3 (17 credits) is kept: heard as one brief harsh scrape of a hard heavy thing moved across and lifted off stone, the first take of the cue that is that; the first open call said no file came and was asked again once. `ui-tick` take 2 (6 credits) is kept in place of take 1: dull, under 1 kHz, heard with silence around it as a dry click. `shake-winter` take 3 (29 credits) does not fit: sleigh bells alone; the cue is out of takes, open item 37. By a mistyped command `lift` take 2 was kept for one minute at 20:30 and replaced by take 3 at 20:31; nothing was committed in between. `ASSETS.md` has the row for `lift` and take 2 for `ui-tick`; G8 green with 4 kept sound records; the sound checks: 7 pass, 1 open (A2, the click on the sound control times out here because the live app draws 0.25 frames a second on this VM; noted under "Sound"). The blockout mix was made again and is byte equal twice. Four lessons added to `audio/prompts.json`. The archive of kept sounds now holds four files.
+
+- 20:45 to 20:59 UTC. Status 54 shown at 20:45 with two of the builders' own looks (frame 96 of the test shake at the review tier with the new bloom; the tree's crown beside the approved image) and the archive of the four kept sounds attached ("Kept sounds (archive)": `lift`, `glass-clink`, `ui-tick`, `ui-sound-on`). 20:52: the second motion agent finished its half of Round 6's motion pack (`agent/p3-round6-motion-b` `8a09bfc`, fetched, never merged: the set down in 18 frames and the landing in 30 frames at the review tier, nothing failed). It noted, without judging, that on the first set down sheet (frames 108 to 130) the globe reads as an almost fully white ball with the miniature not visible; I looked at the sheet: so it is, with swirls in the white. Those are the last strokes, where `kit/02-SUBJECT.md` asks that "the storm fills the glass"; whether it reads as a storm of flakes or as milk is for Round 6's motion critic, and the note went to the flakes' and the liquid's closers at once. The session was resumed once at 20:57; nothing was lost. The light's closer pushed a smoother fall of the bloom for Round 7 at 20:53.
