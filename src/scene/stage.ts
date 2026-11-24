@@ -29,6 +29,8 @@ interface SeasonSet {
 const mixRgb = (a: Rgb, b: Rgb, t: number): [number, number, number] => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 const MIRROR = new THREE.Matrix4().makeScale(1, -1, 1)
+const CARD_SHARE = 0.14
+const SHADOW_SOFTNESS = 3
 const SHUTTER = (config.film.shutterDegrees / 360) * (config.sim.stepHz / config.film.fps)
 const TURBULENCE_FULL = 260
 const blankGrid = (): THREE.Data3DTexture => {
@@ -62,6 +64,7 @@ export class GlobeStage implements Stage {
   private readonly rig = new THREE.Group()
   private readonly key = new THREE.DirectionalLight(0xffffff, 1)
   private readonly rim = new THREE.DirectionalLight(0xffffff, 1)
+  private readonly card = new THREE.DirectionalLight(0xffffff, 0)
   private readonly fill = new THREE.HemisphereLight(0xffffff, 0x000000, 1)
   private readonly glow = new THREE.PointLight(0xffffff, 0, 0, 0)
   private readonly slab = makeSlab()
@@ -79,7 +82,7 @@ export class GlobeStage implements Stage {
   private readonly clear = new THREE.Color()
 
   constructor(private readonly gfx: Gfx, private readonly source: ParticleSource) {
-    const { scene, world, floor, globe, inside, rig, key, rim, fill, glow } = this
+    const { scene, world, floor, globe, inside, rig, key, rim, card, fill, glow } = this
     scene.add(world, floor)
     world.add(globe, this.backdrop.group, rig)
     floor.add(this.slab)
@@ -108,7 +111,8 @@ export class GlobeStage implements Stage {
     sc.far = 1200
     key.shadow.bias = -0.0004
     key.shadow.normalBias = 0.6
-    rig.add(key, key.target, rim, fill)
+    key.shadow.radius = SHADOW_SOFTNESS
+    rig.add(key, key.target, rim, card, fill)
 
     for (const part of ['lens', 'light-engine']) flagStandIn(part)
     const { renderer } = gfx
@@ -303,6 +307,10 @@ export class GlobeStage implements Stage {
     this.rim.color.setRGB(rimCol[0], rimCol[1], rimCol[2])
     this.rim.intensity = rimPower
     this.rim.position.set(rimFrom[0], rimFrom[1], rimFrom[2])
+    const skyPeak = Math.max(sky[0], sky[1], sky[2], 1e-4)
+    this.card.color.setRGB(sky[0] / skyPeak, sky[1] / skyPeak, sky[2] / skyPeak)
+    this.card.intensity = keyPower * CARD_SHARE
+    this.card.position.set(-keyFrom[0] * 0.9, keyFrom[1] * 0.3, Math.abs(keyFrom[2]) * 1.1)
     this.fill.color.setRGB(sky[0], sky[1], sky[2])
     this.fill.groundColor.setRGB(ground[0], ground[1], ground[2])
     this.fill.intensity = fill

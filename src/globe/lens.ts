@@ -39,12 +39,13 @@ vec4 lensPlace(vec3 p, vec3 eye) {
   float hi = 1.0;
   float flo = -b;
   float fhi = lensMiss(1.0, e2, limb, p2, r, eta);
+  bool seen = fhi > 0.0;
   for (int i = 0; i < ${LENS_STEPS}; i++) {
     float mid = 0.5 * (lo + hi);
     float f = lensMiss(mid, e2, limb, p2, r, eta);
     if (f < 0.0) { lo = mid; flo = f; } else { hi = mid; fhi = f; }
   }
-  float s = fhi > 0.0 && flo < 0.0 ? lo + (hi - lo) * (-flo) / (fhi - flo) : (fhi > 0.0 ? lo : 1.0);
+  float s = seen ? (fhi > flo ? lo + (hi - lo) * (-flo) / (fhi - flo) : lo) : 1.0;
   vec2 n2 = normalize(mix(vec2(1.0, 0.0), limb, s));
   vec3 at = uLensCentre + r * (n2.x * u + n2.y * v);
   float inside = length(p - at);
@@ -113,6 +114,7 @@ export function lensPlace(p: V3, eye: V3, centre: V3, radius: number = lensRadiu
   let hi = 1
   let flo = -b
   let fhi = miss(1)
+  const seen = fhi > 0
   for (let i = 0; i < steps; i++) {
     const mid = 0.5 * (lo + hi)
     const f = miss(mid)
@@ -124,8 +126,7 @@ export function lensPlace(p: V3, eye: V3, centre: V3, radius: number = lensRadiu
       fhi = f
     }
   }
-  const seen = fhi > 0
-  const s = fhi > 0 && flo < 0 ? lo + ((hi - lo) * -flo) / (fhi - flo) : fhi > 0 ? lo : 1
+  const s = seen ? (fhi > flo ? lo + ((hi - lo) * -flo) / (fhi - flo) : lo) : 1
   const [nx, ny] = normalAt(s)
   const exit: [number, number, number] = [
     centre[0] + radius * (nx * u[0] + ny * v[0]),
