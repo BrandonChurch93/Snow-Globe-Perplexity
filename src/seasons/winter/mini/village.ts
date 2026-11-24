@@ -29,12 +29,12 @@ const WINDOW = { power: 0.8, reachMm: 8, flicker: 0.1, cycles: 5, phase: 0.4 }
 const SIDE = { power: 0.8, reachMm: 7, flicker: 0.1, cycles: 4, phase: 0.75 }
 const BULB = { power: 0.6, reachMm: 4.5, flicker: 0.07, cycles: 2 }
 const NEAR = { bulb: { power: 0.6, reachMm: 1.2, ends: 3 }, lamp: { power: 4, reachMm: 7 }, pane: { power: 0.7, reachMm: 2.4 } }
-const NEAR_WALL = { bulb: { power: 9, reachMm: 1.7, ends: 3 }, lamp: { power: 2.6, reachMm: 8, ends: 3 }, pane: { power: 1.4, reachMm: 3.6, ends: 3 } }
+const NEAR_WALL = { bulb: { power: 8.5, reachMm: 1.7, ends: 3 }, lamp: { power: 3.4, reachMm: 9, ends: 3 }, pane: { power: 1.7, reachMm: 5, ends: 3 } }
 const MIRROR = { lamp: 9, pane: 1.2, bulb: 0.5, tight: 0.0011, wide: 0.03, wideShare: 0.004, bump: 0.8, lowMm: 3.4, sparkle: 1.7 }
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
-const HALO_KIND = { bulb: { size: 1.2, rest: 1.5, hot: 1, bloom: 0.2 }, lamp: { size: 3.4, rest: 0.55, hot: 0, bloom: 0.3 }, pane: { size: 2.4, rest: 0, hot: 0, bloom: 0.3 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
+const HALO_KIND = { bulb: { size: 1.2, rest: 1.5, hot: 1, bloom: 0.2 }, lamp: { size: 3.4, rest: 0.4, hot: 0, bloom: 0.3 }, pane: { size: 2.4, rest: 0, hot: 0, bloom: 0.3 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
 const THROUGH = 6
-const LAMP_GLASS: Rgb = [5.4, 4.5, 3.1]
+const LAMP_GLASS: Rgb = [7.5, 6.7, 5.2]
 const COVER_GAIN = 0.12
 const FRESH_RISE_MM = 0.3
 const SNOW_GRAIN_MM = 0.05
@@ -56,8 +56,8 @@ const POOL: Rgb = [1, 0.5, 0.22]
 const POOL_TINT = { blue: 0.78, from: 0.4, to: 0.62, underMm: -16, fadeMm: 3 }
 const ICE_RIM = 0.9
 const SNOW_FILL = 1.6
-const WALL_FILL = 1.5
-const BANK_SIDES = { front: 0.95, side: 1.25 }
+const WALL_FILL = 2.4
+const BANK_SIDES = { front: 0.72, side: 1.25 }
 
 const bulbs = hangPoints()
 const flame = lampFlame()
@@ -281,8 +281,8 @@ const shadowed = <T extends THREE.Mesh>(m: T, cast = true): T => {
 }
 
 const SWEPT = Math.hypot(potTop[0], potTop[2])
-const WISP: Wisp = { from: potTop, height: 10.5, lean: [-4.4, 0.6], sway: 0.9, curl: 1.5, thin: 0.5, wide: 2.3, rings: 64, sides: 14, swept: [-potTop[2] / SWEPT, potTop[0] / SWEPT], sweepMm: 12 }
-const WISP_STRENGTH = 0.7
+const WISP: Wisp = { from: potTop, height: 7.2, lean: [-2.7, 0.4], sway: 0.6, curl: 1.1, thin: 1, wide: 1.5, rings: 64, sides: 14, swept: [-potTop[2] / SWEPT, potTop[0] / SWEPT], sweepMm: 12 }
+const WISP_STRENGTH = 1
 const plume = wispGeometry(WISP)
 const storm = { value: 0 }
 
@@ -304,7 +304,7 @@ export function lights(): THREE.Object3D {
     glowPiece(villageGeometry('pane-gable'), (_i, w, h) => [GLOW.pane, w, h, 1]),
     glowPiece(villageGeometry('pane-side'), (_i, w, h) => [GLOW.pane, w, h, 2]),
   ]
-  const look = { bulb: 1.7, bulbCore: 3.4, glass: LAMP_GLASS, flame: tones.flame.map((v) => v * 6) as unknown as Rgb, room: tones.room.map((v) => v * 0.8) as unknown as Rgb, curtain: tones.curtain.map((v) => v * 1.5) as unknown as Rgb, frost: tones.rime.map((v) => v * 0.55) as unknown as Rgb, frostAmount: 0.3, flicker: 0.08, cycles: 3, through: THROUGH, paneHot: 0.2 }
+  const look = { bulb: 1.7, bulbCore: 3.4, glass: LAMP_GLASS, flame: tones.flame.map((v) => v * 6) as unknown as Rgb, room: tones.room.map((v) => v * 0.8) as unknown as Rgb, curtain: tones.curtain.map((v) => v * 1.5) as unknown as Rgb, frost: tones.rime.map((v) => v * 0.55) as unknown as Rgb, frostAmount: 0.3, flicker: 0.08, cycles: 3, through: THROUGH, paneHot: 0.12 }
   const lit = (x: number, z: number): [number, number, number] => [x, groundAt(x, z) + 1.5, z]
   const pools = [lit(flame[0] + 0.4, flame[2] + 1.6), lit(anchors.door[0] * 0.75 + flame[0] * 0.25, anchors.door[2] * 0.75 + flame[2] * 0.25)]
   const halos = new THREE.Mesh(
