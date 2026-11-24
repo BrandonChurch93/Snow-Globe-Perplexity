@@ -7,7 +7,7 @@ import { blurWrap, loadSource, luma, normalsOf, readPicture, seamless, toBytes, 
 const TAU = Math.PI * 2
 const AROUND = 144
 const MAP_PX = 2048
-const STRANDS = { across: 9, fine: 23, crack: 0.1, dark: 0.2, sway: 0.22, bend: 0.3, hue: 0.72, streakPx: 110, streak: 0.7 }
+const STRANDS = { across: 9, fine: 23, crack: 0.1, dark: 0.2, sway: 0.22, bend: 0.3, hue: 0.62, streakPx: 110, streak: 0.7 }
 const lerp = (a, b, t) => a + (b - a) * t
 
 const [T] = await loadSource(['/src/miniature/trunk.ts'])
@@ -197,8 +197,8 @@ async function barkMaps() {
     const round = 1 - Math.pow(1 - Math.min(1, gap / 0.7), 2)
     const fibre = smooth(0.03, 0.22, gapFine)
     const flat = 0.3 / Math.max(wide[i], 0.05)
-    const k = (0.55 + 0.45 * flat) * Math.pow(grain, 0.2) * (STRANDS.dark + (1 - STRANDS.dark) * whole) * (0.84 + 0.3 * tone) * (0.86 + 0.14 * fibre)
-    const r = Math.pow(lerp(img.px[i * 3], lanes[0][i], STRANDS.streak) * k, 0.92) * 1.16
+    const k = (0.55 + 0.45 * flat) * Math.pow(grain, 0.2) * (STRANDS.dark + (1 - STRANDS.dark) * whole) * (0.84 + 0.3 * tone) * (0.72 + 0.28 * fibre)
+    const r = Math.pow(lerp(img.px[i * 3], lanes[0][i], STRANDS.streak) * k, 0.92) * 1.08
     const g = Math.pow(lerp(img.px[i * 3 + 1], lanes[1][i], STRANDS.streak) * k, 0.92) * 1.02
     const b = Math.pow(lerp(img.px[i * 3 + 2], lanes[2][i], STRANDS.streak) * k, 0.92) * 0.9
     const grey = 0.3 * r + 0.6 * g + 0.1 * b

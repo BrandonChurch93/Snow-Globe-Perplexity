@@ -15,8 +15,8 @@ const STAR_R = 2.6
 const STAR = { deep: 0.62, edge: 0.17, inset: 0.9, valley: 0.72, crest: 1.12, side: 0.62, glow: [0.1, 0.055, 0.03], stem: [0.12, 0.085], collar: 0.17 }
 const CORE_R = 0.13
 const WIRE_R = 0.075
-const SNOW_KEY = [0.27, 0.92, 0.27]
-const BULBS = { stem: [2.3, 3.4], limb: [2.2, 3.3], lead: 0.16, pad: 0.36, clear: 0.3, rim: 0.25, face: 0.5 }
+const SNOW_KEY = [-0.45, 0.8, 0.35]
+const BULBS = { stem: [1.9, 2.9], limb: [1.7, 2.7], lead: 0.16, pad: 0.4, clear: 0.3, rim: 0.25, face: 0.5 }
 const ARRIVAL = { root: 0, limb: 0.045, shade: [0.42, 0.14] }
 const SPRIGS = { band: 0.25, share: 0.5, size: [1.3, 2.2], rise: 0.8 }
 
@@ -227,11 +227,11 @@ function snow() {
     const open = 0.45 * openness(both, x, h, z, n, 0.6) + 0.55 * openness(both, x, h, z, n, 1.8)
     const lit = 0.5 + 0.5 * (n[0] * SNOW_KEY[0] + n[1] * SNOW_KEY[1] + n[2] * SNOW_KEY[2])
     const deep = needleField(x, h, z)
-    const shade = (0.4 + 0.6 * Math.pow(open, 1.3)) * (0.3 + 0.95 * Math.pow(lit, 3)) * (0.6 + 0.4 * smooth(0.1, 1.7, deep))
+    const shade = (0.4 + 0.6 * Math.pow(open, 1.3)) * (0.24 + 1.0 * Math.pow(lit, 3)) * (0.6 + 0.4 * smooth(0.1, 1.7, deep))
     const cool = 1 - lit * lit
     uv.push(x / SNOW_TILE_MM, h / SNOW_TILE_MM)
     thin.push(deep, 0)
-    col.push(shade * (1 - 0.24 * cool), shade * (1 - 0.12 * cool), shade)
+    col.push(shade * (1 - 0.34 * cool), shade * (1 - 0.18 * cool), shade)
   }
   const g = new THREE.BufferGeometry()
   g.setAttribute('position', new THREE.Float32BufferAttribute(s.pos, 3))
