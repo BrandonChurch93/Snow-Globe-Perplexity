@@ -61,11 +61,27 @@ describe('the grid light a flake takes', () => {
     expect(LIGHT_FRAG_PARS.match(/vec3 stageGridWarm\(/g)?.length).toBe(1)
   })
 
-  it('goes to what flies, while a surface keeps the whole grid', () => {
+  it('goes to what flies, while a surface reads the grid without the knee', () => {
     const lit = LIGHT_FRAG_PARS.slice(LIGHT_FRAG_PARS.indexOf('void stageGridLit('), LIGHT_FRAG_PARS.indexOf('vec3 stageGridToward('))
     expect(lit).toContain('stageGridRead(local, soft, colour, toward, open, shade);')
     expect(LIGHT_FRAG).toContain('stageGridRead(vStageLocal, lgCol, lgThin, lgToward, lgAir, lgShade);')
     expect(LIGHT_FRAG).toContain('stageLit = lgCol;')
     expect(LIGHT_FRAG).not.toContain('stageGridLit(')
+  })
+
+  it('gives a surface a share of the grid and the whole flood, and leaves what flies and the fog on a surface the grid unshared', () => {
+    new Lighting(256)
+    expect(ROOM_RIG.grid.surface).toBeGreaterThan(0.2)
+    expect(ROOM_RIG.grid.surface).toBeLessThan(0.7)
+    expect(lightUniforms.uRigPoint.value.w).toBe(ROOM_RIG.grid.surface)
+    const fog = LIGHT_FRAG.indexOf('stageLit = lgCol;')
+    const share = LIGHT_FRAG.indexOf('lgCol = (lgCol - lgFlood) * uRigPoint.w + lgFlood;')
+    expect(fog).toBeGreaterThan(0)
+    expect(share).toBeGreaterThan(fog)
+    expect(LIGHT_FRAG.slice(fog, share)).toContain('vec3 lgFlood = stageFlood(vStageLocal);')
+    expect(share).toBeLessThan(LIGHT_FRAG.indexOf('reflectedLight.indirectDiffuse += lgCol'))
+    expect(share).toBeLessThan(LIGHT_FRAG.indexOf('stageGridC = lgCol'))
+    expect(LIGHT_FRAG.match(/uRigPoint\.w/g)?.length).toBe(1)
+    expect(LIGHT_FRAG_PARS).not.toContain('uRigPoint.w')
   })
 })
