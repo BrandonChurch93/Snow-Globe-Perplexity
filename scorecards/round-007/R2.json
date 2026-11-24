@@ -1,0 +1,133 @@
+{
+ "critic": "R2",
+ "round": 7,
+ "unit": "winter",
+ "judgedCommit": "4f10d97",
+ "tier": "final",
+ "jurorsPerImage": 5,
+ "panel": [
+  "claude_sonnet_5_5",
+  "gemini_neon",
+  "gpt_6_2_astra",
+  "kimi_k3",
+  "pplx_computer_glm_5_3_1009"
+ ],
+ "controlShare": 0.7,
+ "controlVotes": "7 of 10",
+ "judgedShare": 0.2667,
+ "judgedVotes": "4 of 15",
+ "maxShareGap": 0.2,
+ "bar": 0.5,
+ "pass": false,
+ "missing": false,
+ "images": [
+  {
+   "file": "set-A-01.jpg",
+   "kind": "control",
+   "id": "the approved image references/approved/winter-rest.png",
+   "sha256": "ae54e079e8ac8fe5109f003a1ace33949017287add5065d888385a1fcf7d33cf",
+   "votes": [],
+   "reusedFromRound": [],
+   "aOrB": 0,
+   "answers": 0
+  },
+  {
+   "file": "set-A-02.jpg",
+   "kind": "judged",
+   "id": "winter-rest",
+   "sha256": "39b0873fb57faab8d1d8b92f49c0dda6768a4ea34be8849a4003876d3ac9e901",
+   "votes": [
+    "b",
+    "c",
+    "c",
+    "c",
+    "c"
+   ],
+   "jurors": [
+    "viewer_r7_01",
+    "viewer_r7_04",
+    "viewer_r7_07",
+    "viewer_r7_10",
+    "viewer_r7_13"
+   ],
+   "models": [
+    "claude_sonnet_5_5",
+    "gpt_6_2_astra",
+    "gemini_neon",
+    "pplx_computer_glm_5_3_1009",
+    "kimi_k3"
+   ],
+   "aOrB": 1,
+   "answers": 5
+  },
+  {
+   "file": "set-A-03.jpg",
+   "kind": "control",
+   "id": "the approved image references/approved/winter-shake.png",
+   "sha256": "6edc5d90c832114afbaa59c029a3f49d492cfb59f6397d2d436a1cf33092ad4f",
+   "votes": [],
+   "reusedFromRound": [],
+   "aOrB": 0,
+   "answers": 0
+  },
+  {
+   "file": "set-A-04.jpg",
+   "kind": "judged",
+   "id": "winter-shake",
+   "sha256": "f0d6220f4503018216945252c2ac4b523b0107265e4f3363d1f151c90c1c7b4c",
+   "votes": [
+    "b",
+    "c",
+    "c",
+    "c",
+    "b"
+   ],
+   "jurors": [
+    "viewer_r7_02",
+    "viewer_r7_05",
+    "viewer_r7_08",
+    "viewer_r7_11",
+    "viewer_r7_14"
+   ],
+   "models": [
+    "claude_sonnet_5_5",
+    "gpt_6_2_astra",
+    "gemini_neon",
+    "pplx_computer_glm_5_3_1009",
+    "kimi_k3"
+   ],
+   "aOrB": 2,
+   "answers": 5
+  },
+  {
+   "file": "set-A-05.jpg",
+   "kind": "judged",
+   "id": "winter-settled",
+   "sha256": "25a635db700f18db90760d3df727533ab6954468bc1ee9e27e6943fd10dec750",
+   "votes": [
+    "b",
+    "c",
+    "c",
+    "c",
+    "c"
+   ],
+   "jurors": [
+    "viewer_r7_03",
+    "viewer_r7_06",
+    "viewer_r7_09",
+    "viewer_r7_12",
+    "viewer_r7_15"
+   ],
+   "models": [
+    "claude_sonnet_5_5",
+    "gpt_6_2_astra",
+    "gemini_neon",
+    "pplx_computer_glm_5_3_1009",
+    "kimi_k3"
+   ],
+   "aOrB": 1,
+   "answers": 5
+  }
+ ],
+ "countsAs": "one major issue (kit/07-QUALITY-BAR.md, R2: \"A failed R2 counts as one major issue\")"
+}
