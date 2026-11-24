@@ -15,6 +15,7 @@ const STAR_R = 2.2
 const STAR_GLOW_R = 2.9
 const CORE_R = 0.155
 const HALO_R = 0.5
+const SNOW_KEY = [-0.451, 0.701, 0.552]
 const BULBS = { stem: [2.3, 3.4], limb: [2.2, 3.3], lead: 0.16, pad: 0.19, clear: 0.34 }
 
 const [T, R] = await loadSource(['/src/miniature/trunk.ts', '/src/core/rng.ts'])
@@ -215,11 +216,12 @@ function snow() {
     const z = s.pos[v * 3 + 2]
     const n = [s.nor[v * 3], s.nor[v * 3 + 1], s.nor[v * 3 + 2]]
     const both = (a, bb, c) => Math.min(snowField(a, bb, c), needleField(a, bb, c))
-    const open = 0.25 * openness(both, x, h, z, n, 0.8) + 0.75 * openness(both, x, h, z, n, 2.4)
-    const sky = 0.5 + 0.5 * n[1]
-    const shade = (0.6 + 0.4 * open) * (0.5 + 0.5 * Math.pow(sky, 1.3))
+    const open = 0.1 * openness(both, x, h, z, n, 0.8) + 0.9 * openness(both, x, h, z, n, 2.4)
+    const lit = 0.5 + 0.5 * (n[0] * SNOW_KEY[0] + n[1] * SNOW_KEY[1] + n[2] * SNOW_KEY[2])
+    const shade = (0.66 + 0.34 * open) * (0.46 + 0.54 * Math.pow(lit, 1.1))
+    const cool = 1 - lit * lit
     uv.push(x / SNOW_TILE_MM, h / SNOW_TILE_MM)
-    col.push(shade * (0.82 + 0.18 * sky), shade * (0.9 + 0.1 * sky), shade)
+    col.push(shade * (1 - 0.34 * cool), shade * (1 - 0.2 * cool), shade)
   }
   const g = new THREE.BufferGeometry()
   g.setAttribute('position', new THREE.Float32BufferAttribute(s.pos, 3))
