@@ -81,6 +81,9 @@ export class SourceSwitch implements ParticleSource {
   get phase(): Float32Array | undefined {
     return this.now.phase
   }
+  get cover(): ParticleSource['cover'] {
+    return this.now.cover
+  }
 }
 
 const TAU = Math.PI * 2
