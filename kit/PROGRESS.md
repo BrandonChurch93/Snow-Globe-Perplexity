@@ -37,16 +37,16 @@ Status 32 · 2026-11-24 12:26 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 12:26 UTC
-clock: phase 3, tick of 0.2 minutes
-phase 3: 3.98 h used of its 11.00 h box
-allowance (before the review): 10.59 h used of 36.00 h allowed
-all time before the review: 10.59 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 12:38 UTC
+clock: phase 3, tick of 1.0 minutes
+phase 3: 4.19 h used of its 11.00 h box
+allowance (before the review): 10.81 h used of 36.00 h allowed
+all time before the review: 10.81 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 12
 ```
 
 ## Phases
@@ -912,3 +912,8 @@ One entry per task: when it started, what it did, where it stopped.
 - 12:18 to 12:25 UTC. Merged the light's fit inside the liquid (`206ab49`) and the scene's second push (`44b9ce7`) as `be9c7d8`, pushed. The texture pack is now 21 pictures and 6 other files, 61.4 MB; four seasons at this weight would pass the host's 95 MB, so the web set must shrink before Phase 4 (decision 39 covers how).
 - 12:22 UTC. Found that build agents had committed built files with tuning looks; see decision 48.
 - 12:26 UTC. Status 32: `main` at rest and half a second after the landing, both at the draft tier, with what still reads wrong. All ten builders hold those findings; the snow bank against the front glass went to the village builder as a clear fault. Reports are due by 13:00 UTC.
+
+- 12:01 UTC. The 12:00 publish, opened as built: first picture after 7.5 s, 31 requests, 20 built assets, no page error.
+- 12:28 to 12:32 UTC. Merged the tree (`18c0ff0`: inner lights at the light builder's numbers, the bark's baked glow cut) and the base (`0caed8f`: darker, browner wood and brass), 370 tests green, texture pack 45.4 MB, pushed as `713a3e8`.
+- 12:32 UTC. `npm run hostcheck` on a clean copy of `be9c7d8`: FAIL on one line only. The clean install and build pass (0.13 minutes against `host.maxBuildMinutes` 20), `dist/` holds none of the kept-out folders, and the built site opens in live mode with nothing logged, so the clean clone opens the app now. The failing line: 59.52 MB in 31 requests were fetched before the first complete picture, 11.1 s after the page was opened, against `host.firstLoadMaxMb` 16. The first load must come down to 16 MB or less; this is second-wave work (compressed textures and meshes, and an order of loading that asks first only for what the first picture needs). Open item 30 stays open on that line.
+- 12:33 UTC. Published: https://snow-globe-seasons.pplx.app from `713a3e8` (every part of winter is real work). Visibility: Organization. Opened as built: first picture after 10.8 s, 38 requests, 27 built assets, no page error. Review page: https://snow-globe-seasons.pplx.app/review.html
