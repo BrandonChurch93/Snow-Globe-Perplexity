@@ -1,0 +1,70 @@
+{
+  "critic": "R3",
+  "score": 4,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "severe",
+      "file": "set-B-01.jpg",
+      "where": "the swirling snow across the interior of the globe (set-B-02.jpg crops 1 to 6)",
+      "what": "the snowstorm reads as a concentric 2D spin-blur and milky haze centered above the chimney that washes out the cottage, smears streaks over the tree, and completely erases the pond while leaving a faint ghost of the lamp reflection in the white blur",
+      "fix": "replace the radial blur overlay with discrete 3D motion-blurred snow particles sorted in depth so the pond water, cottage stonework, and tree remain intact behind and between moving flakes"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01.jpg",
+      "where": "the glass sphere interior and upper-right highlight (set-A-02.jpg crops 2 to 4, set-C-02.jpg crop 4)",
+      "what": "the inside is neither bent nor enlarged toward the rim by liquid despite the double glass wall and top air bubble, and the rectangular highlight on the upper-right glass ends on a razor-sharp straight line",
+      "fix": "refract the interior through a liquid volume so peripheral forms magnify and curve near the rim, and soften the edges of the studio light reflection on the glass"
+    },
+    {
+      "severity": "major",
+      "file": "set-C-03.jpg",
+      "where": "the bushes under the cottage windows and the snow on the fence posts (crop 10, and set-A-02.jpg crop 3)",
+      "what": "the shrubs are built from flat intersecting low-poly triangles with sharp polygon edges, and the snow caps on the fence posts sit like smooth grey pebbles floating on top of the wood",
+      "fix": "rebuild the shrubs with detailed foliage and natural snow buildup, and sculpt slumped snow caps that drape over the fence post tops"
+    },
+    {
+      "severity": "major",
+      "file": "set-C-02.jpg",
+      "where": "the snow resting on the tree crown and the trunk bark (crop 3, and set-C-03.jpg crop 7)",
+      "what": "the snow on the branches forms chunky, faceted grey blobs with dark polygon creases, black gaps, and straight brown twigs poking through the mesh, over repetitive wavy grooves on the trunk",
+      "fix": "sculpt soft, granular snow masses with subsurface scattering that settle into the needles without polygon seams or twig intersections, and break up the procedural bark grooves"
+    },
+    {
+      "severity": "major",
+      "file": "set-C-02.jpg",
+      "where": "the falling snow particles and chimney smoke inside the globe (crops 2 and 6, and set-C-03.jpg crops 7 and 10)",
+      "what": "particles look like opaque matte pebbles rather than translucent flakes, several pass directly into the chimney, roof, branches, and fence, one particle right of the trunk in set-C-03.jpg crop 7 has a chromatic hot-pixel glitch, and the chimney smoke is a smooth rubbery tube with a dark ring kink near the top",
+      "fix": "give flakes thin crystalline translucency and collision clearance from all surfaces, clean up the hot pixel, and rework or remove the solid tubular smoke mesh"
+    },
+    {
+      "severity": "major",
+      "file": "set-C-03.jpg",
+      "where": "the lower glass rim, inner frost ferns, and collar contact (crops 9 and 12, and set-C-02.jpg crop 5)",
+      "what": "the outer glass edge shows stair-stepped aliasing and meets the collar snow with a jagged dark cutout gap, while the frost on the glass in set-C-02.jpg crop 5 ends in straight parallel comb teeth like a flat stamp",
+      "fix": "anti-alias the glass silhouette, seat the sphere cleanly into the collar and snow without gaps, and feather the roots of the frost crystals so they do not end on a straight stamped baseline"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-03.jpg",
+      "where": "the icicles, carved base, foot trim, and surface frost (crops 8 to 12, and set-B-03.jpg crops 8 to 12)",
+      "what": "icicles hang from a dry brass rim without wetting the metal or bronze, the large right icicle passes straight into the carved pinecone, ice lumps intersect through the twisted gold rope foot on the left, and opaque white frost on the right meets the dark surface with no wet melt edge",
+      "fix": "add wet darkening and sheen where snow and ice touch the rim, base, and tabletop, resolve the mesh intersections at the pinecone and rope trim, and make the surface frost translucent at its edges"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01.jpg",
+      "where": "the background light discs and tabletop mirror image (set-C-03.jpg crop 8 and set-A-03.jpg crop 10)",
+      "what": "bright background bokeh circles such as the amber disc on the right have hard outer rings, and the mirror reflection of the gold rope trim stays nearly as sharp in the foreground as at the contact line despite frost on the surface",
+      "fix": "soften the bokeh edges with natural optical falloff and blur and occlude the tabletop reflection progressively away from the base contact line"
+    },
+    {
+      "severity": "minor",
+      "file": "set-C-02.jpg",
+      "where": "the cottage windows and eaves lights (crop 6)",
+      "what": "the lit windows are flat yellow-orange gradients with no glass reflection or interior depth, and two eaves bulbs overlap and clip into the roof peak",
+      "fix": "add subtle pane reflections and interior depth behind the window frames and separate the bulbs cleanly at the gable apex"
+    }
+  ]
+}

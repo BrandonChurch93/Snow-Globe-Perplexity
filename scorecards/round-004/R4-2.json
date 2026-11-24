@@ -1,0 +1,21 @@
+{
+  "critic": "R4",
+  "score": 5,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "severe",
+      "file": "set-E-01.jpg",
+      "where": "frame 78 (1.30 s), the whole inside of the glass at the height of the shake",
+      "what": "the storm is a flat, opaque white fill: the tree, house, star and warm lights are completely gone and the inside has almost no tonal variation (about an eighth of the rest frame's), with no separate flakes, folds or gaps, so the globe reads as a ball of milk or frosted glass rather than snow being thrown into a storm",
+      "fix": "cap the storm's cover so the dark trunk and roof shapes and the warm lights still show through at the peak; build the peak from discrete motion-blurred flakes at several depths, gathered into dense folding sheets with clear gaps between them, and drop or limit any uniform white fog layer"
+    },
+    {
+      "severity": "major",
+      "file": "set-E-01.jpg",
+      "where": "the frost on the table around the base, frames 0, 156 and 236 (0.00 s, 2.60 s, 3.93 s)",
+      "what": "just after the landing the table frost shrinks inward and loses its long fern spikes on both sides, then by 3.93 s it is back to exactly its rest pattern, so it reads as a frost decal scaling and resetting rather than frost on the table answering the set down",
+      "fix": "keep the table frost fixed through the lift, the landing and the settle; if the landing needs a reaction, puff a little loose powder out from the rim of the base and let it settle over the unchanged frost"
+    }
+  ]
+}
