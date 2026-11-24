@@ -49,7 +49,7 @@ export function wispPose(g: THREE.BufferGeometry, w: Wisp, phase: number, storm:
     dir.set(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]).normalize()
     side.copy(AXIS).cross(dir).normalize()
     other.copy(dir).cross(side).normalize()
-    const r = (w.thin + (w.wide - w.thin) * Math.pow(t, 0.8)) * (1 + 0.5 * storm * t)
+    const r = (w.thin + (w.wide - w.thin) * Math.pow(t, 0.8)) * (1 + 0.5 * storm * t) * (1 + 0.22 * t * Math.sin(t * 9.5 - 2 * TURN * phase))
     for (let k = 0; k <= w.sides; k++) {
       const ang = (k / w.sides) * TURN
       const nx = Math.cos(ang) * side.x + Math.sin(ang) * other.x
@@ -140,7 +140,7 @@ void main() {
   float along = smoothstep(0.0, 0.04, t) * pow(1.0 - t, 1.5);
   float torn = mix(1.0, 0.25 + 1.5 * n * n, clamp(t * 1.6 + uStorm, 0.0, 1.0));
   float a = clamp(body * along * torn * ${strength.toFixed(3)} * (1.0 - 0.6 * uStorm), 0.0, 1.0);
-  vec3 lit = stageCold(vStageLocal) * 3.2 + stageGrid(vStageLocal) * 1.4;
+  vec3 lit = stageCold(vStageLocal) * 3.8 + stageGrid(vStageLocal) * 1.4;
   vec3 col = ${`vec3(${tint[0].toFixed(4)}, ${tint[1].toFixed(4)}, ${tint[2].toFixed(4)})`} * lit;
   float fog = stageVeil(vStageAux.x);
   gl_FragColor = vec4(stageFogged(col, stageGrid(vStageLocal), fog), a);

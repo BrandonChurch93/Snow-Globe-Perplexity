@@ -12,10 +12,8 @@ const NEEDLE_TILE_MM = 9
 const SNOW_TILE_MM = 7
 const STAR_AT = [0.25, 45.2, 0.1]
 const STAR_R = 2.2
-const STAR_GLOW_R = 2.9
-const STAR = { deep: 0.62, edge: 0.17, inset: 0.9, valley: 0.72, crest: 1.12, glow: [0.1, 0.05, 0.03], stem: [0.2, 0.11], collar: 0.27 }
+const STAR = { deep: 0.62, edge: 0.17, inset: 0.9, valley: 0.72, crest: 1.12, glow: [0.07, 0.035, 0.02], stem: [0.2, 0.11], collar: 0.27 }
 const CORE_R = 0.155
-const HALO_R = 0.5
 const WIRE_R = 0.075
 const SNOW_KEY = [-0.451, 0.701, 0.552]
 const BULBS = { stem: [2.3, 3.4], limb: [2.2, 3.3], lead: 0.16, pad: 0.19, clear: 0.34 }
@@ -145,9 +143,9 @@ function needles() {
     const open = 0.6 * openness(needleField, x, h, z, n, 0.7) + 0.4 * openness(needleField, x, h, z, n, 1.8)
     const roof = smooth(0.1, 1.4, snowField(x, h + 0.9, z))
     const sky = 0.5 + 0.5 * n[1]
-    const shade = (0.25 + 0.75 * open) * (0.16 + 0.84 * Math.pow(sky, 1.5)) * (0.5 + 0.5 * roof)
+    const shade = (0.4 + 0.6 * open) * (0.35 + 0.65 * Math.pow(sky, 1.5)) * (0.65 + 0.35 * roof)
     const hue = 0.5 + 0.5 * Math.sin(0.7 * x + 1.3 * h + 0.9 * z) * Math.sin(1.1 * x - 0.6 * z + 2)
-    return [shade * (0.86 + 0.3 * hue), shade * (0.98 + 0.06 * hue), shade * (0.9 - 0.16 * hue)]
+    return [shade * (0.72 + 0.2 * hue), shade * (1 + 0.04 * hue), shade * (1 - 0.14 * hue)]
   }
   for (let v = 0; v < count; v++) {
     uv.push(s.pos[v * 3] / NEEDLE_TILE_MM, s.pos[v * 3 + 1] / NEEDLE_TILE_MM)
@@ -221,7 +219,7 @@ function snow() {
     const both = (a, bb, c) => Math.min(snowField(a, bb, c), needleField(a, bb, c))
     const open = 0.1 * openness(both, x, h, z, n, 0.8) + 0.9 * openness(both, x, h, z, n, 2.4)
     const lit = 0.5 + 0.5 * (n[0] * SNOW_KEY[0] + n[1] * SNOW_KEY[1] + n[2] * SNOW_KEY[2])
-    const shade = (0.66 + 0.34 * open) * (0.46 + 0.54 * Math.pow(lit, 1.1))
+    const shade = (0.66 + 0.34 * open) * (0.38 + 0.62 * Math.pow(lit, 2))
     const cool = 1 - lit * lit
     uv.push(x / SNOW_TILE_MM, h / SNOW_TILE_MM)
     thin.push(needleField(x, h, z), 0)
@@ -459,23 +457,7 @@ function star() {
   colourOf(stem, 0.5, 0.37, 0.14, 0)
   const collar = rod([new THREE.Vector3(STAR_AT[0], seat - 0.62, STAR_AT[2]), new THREE.Vector3(STAR_AT[0], seat - 0.5, STAR_AT[2]), new THREE.Vector3(STAR_AT[0], seat - 0.12, STAR_AT[2]), new THREE.Vector3(STAR_AT[0], seat + 0.16, STAR_AT[2])], [STAR.stem[1], STAR.collar, STAR.collar, STAR.stem[1]])
   colourOf(collar, 0.72, 0.53, 0.2, 0.012)
-  const aura = new THREE.IcosahedronGeometry(STAR_GLOW_R, 2)
-  aura.deleteAttribute('uv')
-  const hp = aura.getAttribute('position')
-  const hn = aura.getAttribute('normal')
-  for (let i = 0; i < hp.count; i += 3) {
-    const a = new THREE.Vector3().fromBufferAttribute(hp, i + 1)
-    const b = new THREE.Vector3().fromBufferAttribute(hp, i + 2)
-    hp.setXYZ(i + 1, b.x, b.y, b.z)
-    hp.setXYZ(i + 2, a.x, a.y, a.z)
-  }
-  for (let i = 0; i < hp.count; i++) {
-    const v = new THREE.Vector3(hp.getX(i), hp.getY(i), hp.getZ(i)).normalize()
-    hn.setXYZ(i, -v.x, -v.y, -v.z)
-  }
-  aura.applyMatrix4(new THREE.Matrix4().makeTranslation(STAR_AT[0], STAR_AT[1], STAR_AT[2]))
-  colourOf(aura, 1, 0.7, 0.3, 1)
-  const all = mergeGeometries([phaseOf(g, 0.31, 2), phaseOf(stem, 0.31, 0).toNonIndexed(), phaseOf(collar, 0.31, 0).toNonIndexed(), phaseOf(aura, 0.31, 4)])
+  const all = mergeGeometries([phaseOf(g, 0.31, 2), phaseOf(stem, 0.31, 0).toNonIndexed(), phaseOf(collar, 0.31, 0).toNonIndexed()])
   return all
 }
 
@@ -521,17 +503,6 @@ function lights() {
     g.applyMatrix4(new THREE.Matrix4().makeTranslation(b.at.x, b.at.y, b.at.z))
     colourOf(g, 1, 0.7 + 0.1 * b.warm, 0.34 + 0.1 * b.warm, 1)
     parts.push(phaseOf(g, b.phase, 1))
-    const halo = new THREE.IcosahedronGeometry(HALO_R * b.size, 1)
-    halo.deleteAttribute('uv')
-    const hp = halo.getAttribute('position')
-    const hn = halo.getAttribute('normal')
-    for (let i = 0; i < hp.count; i++) {
-      const v = new THREE.Vector3(hp.getX(i), hp.getY(i), hp.getZ(i)).normalize()
-      hn.setXYZ(i, v.x, v.y, v.z)
-    }
-    halo.applyMatrix4(new THREE.Matrix4().makeTranslation(b.at.x, b.at.y, b.at.z))
-    colourOf(halo, 1, 0.52 + 0.08 * b.warm, 0.17 + 0.05 * b.warm, 1)
-    parts.push(phaseOf(halo, b.phase, 3))
   }
   let wireTriangles = 0
   for (const w of wires) {

@@ -45,6 +45,8 @@ const ROOT_FALL = 1.6
 const ROOT_SKIRT = 1.8
 const TWIST_LOW = 0.16
 const TWIST_HIGH = 0.055
+const RIDGE_DEEP = 0.07
+const GNARL = 0.06
 const BARK_MM = 6.5
 const BARK_AROUND = 3
 const MODEL = 'shared/trunk-wood.glb'
@@ -138,7 +140,7 @@ export function trunkRidge(phi: number, h: number): number {
 
 export function trunkRadius(phi: number, h: number): number {
   const R = trunkGirth(h)
-  let r = R * (1 + 0.1 * (trunkRidge(phi, h) - 0.6))
+  let r = R * (1 + RIDGE_DEEP * (trunkRidge(phi, h) - 0.6) + GNARL * (0.6 * Math.sin(2 * (phi + trunkTwist(h)) - 0.41 * h + 0.8) + 0.4 * Math.sin(3 * (phi + trunkTwist(h)) + 0.29 * h + 2.1)))
   if (h < ROOT_RISE) {
     const a = phi + trunkTwist(h)
     const g = h <= 0 ? 1 - 0.1 * h : Math.pow(1 - h / ROOT_RISE, ROOT_SKIRT)
@@ -310,7 +312,7 @@ export interface Cluster {
 
 const DOME = 0.3
 const BODY = { blend: 0.5, bias: 0.4 }
-const CAP = { lift: 1.2, puff: 0.36, blend: 0.8, bias: 1.3, depth: 0.5, lip: 0.35, droop: 2.4, taper: 0.65 }
+const CAP = { lift: 1.2, puff: 0.36, blend: 0.8, bias: 1.1, depth: 0.5, lip: 0.35, droop: 2.4, taper: 0.7 }
 const wobble = (x: number, h: number, z: number): number => 0.16 * Math.sin(1.9 * x + 0.3 * h) * Math.sin(2.3 * h + 1.1 * z) * Math.sin(1.7 * z + 0.5 * x) + 0.07 * Math.sin(4.3 * x + 1) * Math.sin(3.9 * h + 2) * Math.sin(4.7 * z)
 const dome = (rim: number): number => 1 - DOME * Math.pow(rim, 1.5)
 
@@ -410,7 +412,7 @@ export function crownCap(x: number, h: number, z: number): number {
     const s = px * f.frame.side[0] + ph * f.frame.side[1] + pz * f.frame.side[2]
     const v = px * u[0] + ph * u[1] + pz * u[2]
     const d = px * f.frame.depth[0] + ph * f.frame.depth[1] + pz * f.frame.depth[2]
-    const lumps = 0.5 * Math.sin(1.25 * s + 1.9 * f.n) * Math.sin(1.4 * d + 2.6 * f.n) + 0.2 * Math.sin(2.7 * x + 1.1 * h + f.n) * Math.sin(2.9 * z - 0.8 * x + 2 * f.n)
+    const lumps = 0.62 * Math.sin(1.25 * s + 1.9 * f.n) * Math.sin(1.4 * d + 2.6 * f.n) + 0.25 * Math.sin(2.7 * x + 1.1 * h + f.n) * Math.sin(2.9 * z - 0.8 * x + 2 * f.n)
     const rim = (s * s) / (f.size[0] * f.size[0]) + (d * d) / (f.size[2] * f.size[2])
     const body = ballField(f, x, h - CAP.lift, z, CAP.blend) + CAP.bias - CAP.puff - lumps + CAP.taper * rim
     const gully = Math.sin(0.62 * s + 2.1 * f.n + 0.5 * Math.sin(0.9 * d)) * Math.sin(0.7 * d + 1.3 * f.n)
@@ -569,7 +571,7 @@ export function bakeGlow(g: THREE.BufferGeometry, lights: readonly GlowLight[], 
   g.setAttribute('aGlow', new THREE.BufferAttribute(out, 4))
 }
 
-export function glowHook(shader: THREE.WebGLProgramParametersWithUniforms): void {
+export function glowHook(shader: THREE.WebGLProgramParametersWithUniforms, albedo = 'material.diffuseContribution'): void {
   shader.uniforms.uTwinkle = glow.uTwinkle
   shader.vertexShader = shader.vertexShader
     .replace('#include <common>', '#include <common>\nattribute vec4 aGlow;\nvarying vec4 vGlow;')
@@ -578,7 +580,7 @@ export function glowHook(shader: THREE.WebGLProgramParametersWithUniforms): void
     .replace('#include <common>', '#include <common>\nuniform vec4 uTwinkle;\nvarying vec4 vGlow;')
     .replace(
       '#include <lights_fragment_end>',
-      '#include <lights_fragment_end>\nreflectedLight.indirectDiffuse += vGlow.rgb * uTwinkle.z * (1.0 + uTwinkle.y * sin(6.2831853 * (uTwinkle.x + vGlow.a))) * material.diffuseContribution;',
+      `#include <lights_fragment_end>\nreflectedLight.indirectDiffuse += vGlow.rgb * uTwinkle.z * (1.0 + uTwinkle.y * sin(6.2831853 * (uTwinkle.x + vGlow.a))) * ${albedo};`,
     )
 }
 

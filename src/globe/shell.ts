@@ -27,7 +27,7 @@ export const glassLook = {
     dark: { atDeg: [13.6, -8.7] as const, axis: [0.803, -0.595] as const, sideDeg: [-1.5, 1.5, 11, 17] as const, inDeg: [-17, -11] as const, depth: 0.95, shade: 0.3, share: [0.935, 0.965] as const, glow: [0.0018, 0.019, 0.021] as V3 },
     orders: [
       { alongDeg: [-44, 15.5], acrossDeg: [-3.8, 14.6], outFrom: 2, outSlope: -0.5, inFrom: 8.5, inSlope: 1.9, outer: 1, inner: 0.078, power: 4, cutDeg: -90, cutSlant: 0, tail: 1, tint: [2.5, 1.83, 1.35] as V3, base: [1, 1, 1] as V3, core: [0, 0, 0] as V3, fallDeg: [80, 90, 80, 90] as const, fallTo: 1 },
-      { alongDeg: [-22.5, 4.2], acrossDeg: [-2.4, 15.4], outFrom: -1.5, outSlope: 0.73, inFrom: 0.2, inSlope: 2.9, outer: 1, inner: 0.27, power: 3.2, cutDeg: -12.7, cutSlant: 0.16, tail: 0.004, tint: [1, 1, 1] as V3, base: [0.9, 0.98, 0.93] as V3, core: [3.2, 2, 1.2] as V3, fallDeg: [-7.5, -2, -5, -1] as const, fallTo: 0.5 },
+      { alongDeg: [-22.5, 4.2], acrossDeg: [-2.4, 15.4], outFrom: -1.5, outSlope: 0.73, inFrom: 0.2, inSlope: 2.9, outer: 1, inner: 0.235, power: 3.7, cutDeg: -12.7, cutSlant: 0.16, tail: 0.004, tint: [1, 1, 1] as V3, base: [0.9, 0.98, 0.93] as V3, core: [3.2, 2, 1.2] as V3, fallDeg: [-9.5, -4, -7, -2] as const, fallTo: 0.46 },
       { alongDeg: [-17, 3.5], acrossDeg: [-2.5, 11.3], outFrom: -0.5, outSlope: 0.2, inFrom: -7.2, inSlope: 0.15, outer: 1, inner: 0.7, power: 1, cutDeg: -90, cutSlant: 0, tail: 1, tint: [1, 1, 1] as V3, base: [1, 1, 1] as V3, core: [0, 0, 0] as V3, fallDeg: [80, 90, 80, 90] as const, fallTo: 1 },
       { alongDeg: [-16, 15.5], acrossDeg: [-3.8, 14.6], outFrom: 0, outSlope: 0, inFrom: 0, inSlope: 0, outer: 1, inner: 1, power: 1, cutDeg: -90, cutSlant: 0, tail: 1, tint: [1, 1, 1] as V3, base: [1, 1, 1] as V3, core: [0, 0, 0] as V3, fallDeg: [80, 90, 80, 90] as const, fallTo: 1 },
     ],
@@ -40,12 +40,12 @@ export const glassLook = {
   third: { face: 0.6, gain: 0.085, tint: [0.55, 0.79, 1] as V3, softDeg: 0.9, own: 0.15, fade: [0.78, 0.97] as const },
   shoulder: { from: 1.4, to: 3.6 },
   floor: 0.4,
-  band: { from: 0.976, to: 0.99, wander: 0.004, dim: 0.5, shade: 0.3, side: [-0.2, 0.5] as const },
-  edge: { from: 0.978, peak: 0.994, keyLobe: [0.84, 0.97] as const, key: 0.5, keyTint: [0.75, 0.76, 0.585] as V3, tip: 0.33, tipTint: [0.6, 0.78, 1] as V3, tipDeg: [4.3, 2.5, 1.3] as const, tipShare: [0.975, 0.997] as const, rimLobe: [0.16, 0.5] as const, rim: 0.04, sky: 0.04, pool: 0.12 },
+  band: { from: 0.976, to: 0.99, wander: 0.004, dim: 0.5, shade: 0.3, side: [-0.2, 0.5] as const, low: [-0.5, -0.1] as const },
+  edge: { from: 0.978, peak: 0.994, keyLobe: [0.84, 0.97] as const, key: 0.5, keyTint: [0.75, 0.76, 0.585] as V3, tip: 0.33, tipTint: [0.6, 0.78, 1] as V3, tipDeg: [4.3, 2.5, 1.3] as const, tipShare: [0.975, 0.997] as const, rimLobe: [0.16, 0.5] as const, rim: 0.04, sky: 0.04, pool: 0 },
   body: { from: 0.962, to: 0.978, sky: 0.04, tint: [1.8, 1.2, 0.4] as V3 },
   rim: { from: 0.96, to: 0.967, clear: 0.65, tint: [0.9, 1, 1.08] as V3, high: 0.085, low: 0.28, line: 0.9655, lineWide: 0.0022, lineGain: 0.25, highTint: [0.9, 1.05, 1] as V3, streak: 0.6, outer: 0.9905, outerWide: 0.004, outerGain: 0.16 },
-  wall: { from: [0.893, 0.918] as const, to: [0.966, 0.976] as const, crest: 0.9635, crestWide: 0.013, plate: 0.42, peak: 0.9, inTint: [1.15, 0.97, 0.8] as V3, tint: [1, 1, 0.83] as V3, lowY: [0.04, -0.12] as const, grain: 0.5, speck: 0.5, spark: 1.2, wander: 0.006, mirror: 0.5, mirrorTo: 0.93, leftTo: 0.016 },
-  ring: { from: 0.9625, to: 0.9675, spanDeg: 21, around: 96, rows: 3 },
+  wall: { from: [0.896, 0.926] as const, to: [0.966, 0.976] as const, crest: 0.9635, crestWide: 0.013, plate: 0.42, peak: 0.9, inTint: [1.15, 0.97, 0.8] as V3, tint: [1, 1, 0.83] as V3, lowY: [0.02, -0.22] as const, leftDrop: 0.1, lowTo: 0.012, grain: 0.5, speck: 0.5, spark: 1.2, wander: 0.006, mirror: 0.5, mirrorTo: 0.93, leftTo: 0.016 },
+  ring: { from: 0.9625, to: 0.9675, soft: 0.008, spanDeg: 21, around: 96, rows: 3, side: [0.5, 0.2] as const, low: [-0.22, -0.08] as const, wallSide: [0.1, -0.5] as const, keep: 0.3, cover: 0.75, wall: [0.17, 0.19, 0.165] as V3, grain: 0.5, speck: 0.4, edge: [0.985, 0.991] as const, line: [0.26, 0.3, 0.25] as V3, lineTop: [0.11, 0.2, 0.25] as V3, lineMix: 0.9, lowMix: 1, lowLine: [0.67, 0.69, 0.55] as V3, lowAt: [0.986, 0.993] as const, lowEnd: [-0.8, -0.72] as const, night: [0.014, 0.0255, 0.026] as V3, reach: 1.002 },
   wave: { rings: 46, ringDeg: 0.3, driftDeg: 0.35, inner: 1.9 },
   dust: { cells: 240, share: 0.085, depth: 0.42 },
   hair: { count: 7, widthMm: 0.035, depth: 0.32, bend: 0.012 },
@@ -371,12 +371,18 @@ void main() {
     else discard;
     return;
   }
+#ifdef GLASS_RING
+  vec3 v = normalize(vStageLocal - vEye);
+  float ringB = dot(vEye, v);
+  vec3 n = normalize(vEye - v * (ringB + sqrt(max(ringB * ringB - dot(vEye, vEye) + uLens.x * uLens.x, 0.0))));
+  vec3 p = n * uLens.x;
+  float s = glassShare(v);
+  if (s < ${num(glassLook.ring.from - glassLook.ring.soft)}) discard;
+#else
   vec3 n = normalize(vStageLocal);
   vec3 p = n * uLens.x;
   vec3 v = normalize(p - vEye);
   float s = glassShare(v);
-#ifdef GLASS_RING
-  if (s < ${num(glassLook.ring.from)}) discard;
 #endif
   float nv = clamp(dot(n, -v), 0.0, 1.0);
 
@@ -420,7 +426,7 @@ void main() {
   float back = smoothstep(${num(glassLook.edge.rimLobe[0])}, ${num(glassLook.edge.rimLobe[1])}, dot(nWorld, uRimDir));
   float from = ${num(glassLook.band.from)} + ${num(glassLook.band.wander)} * (thick - 0.5) * 2.0;
   float to = ${num(glassLook.band.to)} + ${num(glassLook.band.wander * 0.4)} * (fine - 0.5) * 2.0;
-  float band = smoothstep(from - 0.004, from + 0.003, s) * (1.0 - smoothstep(to - 0.003, to + 0.004, s)) * (0.5 + 0.5 * fine) * smoothstep(${num(glassLook.band.side[0])}, ${num(glassLook.band.side[1])}, nWorld.x);
+  float band = smoothstep(from - 0.004, from + 0.003, s) * (1.0 - smoothstep(to - 0.003, to + 0.004, s)) * (0.5 + 0.5 * fine) * smoothstep(${num(glassLook.band.side[0])}, ${num(glassLook.band.side[1])}, nWorld.x) * smoothstep(${num(glassLook.band.low[0])}, ${num(glassLook.band.low[1])}, nWorld.y);
   float rimZone = smoothstep(${num(glassLook.rim.from)}, ${num(glassLook.rim.to)}, s);
   float rimHigh = smoothstep(-0.35, 0.15, nWorld.y);
   float rimLine = exp(-pow((s - ${num(glassLook.rim.line)}) / ${num(glassLook.rim.lineWide)}, 2.0));
@@ -430,7 +436,8 @@ void main() {
   float rimStreak = 1.0 + ${num(glassLook.rim.streak)} * rimHigh * (glassNoise(rimAround * 9.0 + rimAxis * (s * 60.0) + 41.0) - 0.5);
   float rimOuter = exp(-pow((s - ${num(glassLook.rim.outer)}) / ${num(glassLook.rim.outerWide)}, 2.0)) * (0.3 + 0.7 * smoothstep(0.35, 0.75, glassNoise(rimAround * 5.0 + 31.0)));
   if (uOwn > 0.5) col += uSky * mix(${vec(glassLook.rim.tint)}, ${vec(glassLook.rim.highTint)}, rimHigh) * (mix(${num(glassLook.rim.low)}, ${num(glassLook.rim.high)}, rimHigh) * rimZone * (0.75 + 0.5 * thick) * rimStreak + ${num(glassLook.rim.lineGain)} * rimLine * (0.3 + 0.7 * fine) * (1.0 - 0.7 * rimHigh) + ${num(glassLook.rim.outerGain)} * rimOuter * rimHigh);
-  float wallLow = smoothstep(${num(glassLook.wall.lowY[0])}, ${num(glassLook.wall.lowY[1])}, nWorld.y) * uOwn;
+  float wallLeft = smoothstep(0.3, -0.3, nWorld.x);
+  float wallLow = smoothstep(${num(glassLook.wall.lowY[0])}, ${num(glassLook.wall.lowY[1])}, nWorld.y + ${num(glassLook.wall.leftDrop)} * wallLeft) * uOwn;
   if (wallLow > 0.0) {
     vec3 axis = normalize(-vEye);
     vec3 around = n - axis * dot(n, axis);
@@ -439,7 +446,7 @@ void main() {
     float speck = glassNoise(around * 190.0 + axis * (s * 200.0) + 9.0);
     float spark = smoothstep(0.84, 0.97, glassNoise(around * 330.0 + axis * (s * 300.0) + 21.0));
     float inner = ${num(glassLook.wall.wander)} * (thick - 0.5) * 2.0;
-    float wallTo = ${num(glassLook.wall.leftTo)} * smoothstep(0.3, -0.3, nWorld.x);
+    float wallTo = ${num(glassLook.wall.leftTo)} * wallLeft + ${num(glassLook.wall.lowTo)} * smoothstep(-0.3, -0.6, nWorld.y);
     float plate = smoothstep(${num(glassLook.wall.from[0])} + inner, ${num(glassLook.wall.from[1])} + inner, s) * (1.0 - smoothstep(${num(glassLook.wall.to[0])} + wallTo, ${num(glassLook.wall.to[1])} + wallTo, s));
     float crest = exp(-pow((s - ${num(glassLook.wall.crest)}) / ${num(glassLook.wall.crestWide)}, 2.0));
     vec3 hue = mix(${vec(glassLook.wall.inTint)}, ${vec(glassLook.wall.tint)}, smoothstep(${num(glassLook.wall.from[1])}, ${num(glassLook.wall.mirrorTo)}, s));
@@ -484,8 +491,18 @@ void main() {
 
   float limb = glassLimb(s);
 #ifdef GLASS_RING
-  float ring = smoothstep(${num(glassLook.ring.from)}, ${num(glassLook.ring.to)}, s);
-  gl_FragColor = vec4(col * ring * limb, 1.0 - ring);
+  float ringTop = smoothstep(${num(glassLook.ring.side[0])}, ${num(glassLook.ring.side[1])}, nWorld.x) * smoothstep(${num(glassLook.ring.low[0])}, ${num(glassLook.ring.low[1])}, nWorld.y);
+  float ringWall = ringTop * smoothstep(${num(glassLook.ring.wallSide[0])}, ${num(glassLook.ring.wallSide[1])}, nWorld.x);
+  float ringEdge = ringTop * smoothstep(${num(glassLook.ring.edge[0])}, ${num(glassLook.ring.edge[1])}, s);
+  float ringGrain = glassNoise(rimAround * 70.0 + rimAxis * (s * 90.0) + 3.0) - 0.5;
+  float ringSpeck = glassNoise(rimAround * 190.0 + rimAxis * (s * 200.0) + 9.0) - 0.5;
+  float ring = smoothstep(${num(glassLook.ring.from)} - ${num(glassLook.ring.soft)} * ringTop, ${num(glassLook.ring.to)}, s);
+  vec3 ringCol = col * mix(1.0, ${num(glassLook.ring.keep)}, ringTop) + uSky * ${vec(glassLook.ring.wall)} * (ringWall * (1.0 + ${num(glassLook.ring.grain)} * ringGrain + ${num(glassLook.ring.speck)} * ringSpeck));
+  ringCol = mix(ringCol, uSky * mix(${vec(glassLook.ring.line)}, ${vec(glassLook.ring.lineTop)}, smoothstep(0.6, 0.95, nWorld.y)), ${num(glassLook.ring.lineMix)} * ringEdge);
+  float ringLow = (1.0 - smoothstep(${num(glassLook.ring.low[0])}, ${num(glassLook.ring.low[1])}, nWorld.y)) * smoothstep(${num(glassLook.ring.lowEnd[0])}, ${num(glassLook.ring.lowEnd[1])}, nWorld.y);
+  ringCol = mix(ringCol, uSky * ${vec(glassLook.ring.lowLine)}, ${num(glassLook.ring.lowMix)} * ringLow * smoothstep(${num(glassLook.ring.lowAt[0])}, ${num(glassLook.ring.lowAt[1])}, s));
+  float ringCover = ring * mix(1.0, mix(${num(glassLook.ring.cover)}, 1.0, ringEdge), ringTop);
+  gl_FragColor = vec4((ringCol * limb + uSky * ${vec(glassLook.ring.night)} * ((1.0 - limb) * ringLow)) * ringCover, 1.0 - ringCover * mix(limb, 1.0, ringLow));
 #else
   gl_FragColor = vec4(col * limb, mix(1.0, alpha, limb));
 #endif
@@ -499,7 +516,7 @@ vec3 ringAxis = ringEye / ringFar;
 vec3 ringSide = normalize(cross(abs(ringAxis.y) < 0.99 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0), ringAxis));
 vec3 ringUp = cross(ringAxis, ringSide);
 float ringTheta = acos(clamp(${num(lensRadiusMm)} / ringFar, 0.0, 1.0)) - (1.0 - position.z) * ${num(glassLook.ring.spanDeg * RAD)};
-float ringOut = ${num(lensRadiusMm)} * (position.z > 0.999 ? ${num(1 / Math.cos(Math.PI / glassLook.ring.around))} : 1.0);
+float ringOut = ${num(lensRadiusMm)} * (position.z > 0.999 ? ${num(glassLook.ring.reach)} : 1.0);
 vec4 ringWorld = modelMatrix * vec4(ringOut * (sin(ringTheta) * (position.x * ringSide + position.y * ringUp) + cos(ringTheta) * ringAxis), 1.0);
 vec4 ringView = viewMatrix * ringWorld;
 gl_Position = projectionMatrix * ringView;
