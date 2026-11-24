@@ -1,4 +1,4 @@
 01-hd-idle.jpg: hd, idle, winter lit, over the approved winter picture (mock bridge, not the engine)
-02-phone-idle.jpg: phone, idle, spring lit, marks above the pill, sound beside it
-03-tablet-idle.jpg: tablet, idle, summer lit, one row
-04-look-states.jpg: hd controls at 2x: idle, dimmed, busy, hover, focus on Shake, focus on a mark, focus on sound, sound on
+02-look-phone-tablet.jpg: phone idle, phone with the owner menu open (M key), tablet idle: marks above the pill on a phone, one row on a tablet
+03-look-states.jpg: hd controls at 2x: idle, dimmed, busy, hover, pressed, focus on Shake, focus on a mark, focus on sound, sound on, the hint pulse at its middle
+04-look-probe.jpg: probe page on the mock bridge: phone while measuring, phone when done, tablet when done
