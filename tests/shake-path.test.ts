@@ -461,7 +461,7 @@ describe('the shake path: a heavy thing in a hand', () => {
       // One edge takes the load: at the touch the foot is tipped, toward the side the last swing came back from, and from there it stands on its rim and rolls flat.
       const touch = m.plan.touch
       const tipped = path.poseAt(touch)
-      expect(tiltOf(tipped) * DEG, `${name} edge first`).toBeGreaterThan(1.5)
+      expect(tiltOf(tipped) * DEG, `${name} edge first`).toBeGreaterThan(2.7)
       expect(Math.sign(seen(tipped).roll), `${name} trailing edge`).toBe(Math.sign(m.plan.lastTurn.mm))
       let flatter = tiltOf(tipped)
       for (let b = touch + FRAME_BEATS / 4; b < landing; b += FRAME_BEATS / 4) {
