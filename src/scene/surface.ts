@@ -14,29 +14,36 @@ const centreHeight = G.baseHeightMm - G.collarDepthMm + globeRadius
 export const SLAB_MM = 6000
 export const KEY_POOL_MM = 650
 export const SLAB_DETAIL = 'shared/scene-slab-detail.lin.tile.png'
+export const SLAB_STONE = 'shared/scene-slab-stone.lin.tile.png'
 export const SLAB_DETAIL_PX = 2048
 
 export const SLAB_SHAPE = { turnDeg: 18, farMm: 328, nearMm: 620, halfWidthMm: 900, cornerMm: 14 }
 
 export const SLAB = {
   fineMm: 163,
+  crumbMm: 271,
+  crumbTurnDeg: -31,
   broadMm: 613,
   broadTurnDeg: 15,
-  normalFine: 0.5,
-  normalBroad: 0.0016,
-  dustFine: 0.85,
-  dustBroad: 0.35,
-  dustAlbedo: 0.16,
-  vein: 1.4,
+  slopeFull: 1,
+  crumbDust: 0.85,
+  dustAlbedo: 0.09,
+  vein: 1.1,
+  cloud: 0.7,
+  veil: 0.3,
+  veilAlbedo: 0.0012,
   f0: 0.05,
-  roughSpread: 0.0115,
+  fresnelPower: 4.2,
+  roughSpread: 0.024,
+  coreShare: 0.7,
+  coreWidth: 0.2,
   roomRough: 0.09,
-  mirrorTaps: 13,
-  mirrorMaxPx: 0.05,
+  mirrorTaps: 25,
+  mirrorMaxPx: 0.075,
   farPathMm: 2600,
   fadeHeightMm: 170,
   fadeFloor: 0.42,
-  poolGain: 9,
+  poolGain: 4,
   poolRiseMm: 46,
   contactMm: 7,
   shadowReach: 0.6,
@@ -46,6 +53,8 @@ export const SLAB = {
 const f = (v: number) => v.toFixed(4)
 const turn = (SLAB_SHAPE.turnDeg * Math.PI) / 180
 const broadTurn = (SLAB.broadTurnDeg * Math.PI) / 180
+const crumbTurn = (SLAB.crumbTurnDeg * Math.PI) / 180
+const tail = (((1 - SLAB.coreShare) / SLAB.coreShare) * SLAB.coreWidth * Math.sqrt(2 * Math.PI)) / (4 / 3)
 
 export const SLAB_SHAPE_GLSL = `
 float slabInside(vec2 p) {
@@ -55,13 +64,13 @@ float slabInside(vec2 p) {
 }
 `
 
-const blank = new THREE.DataTexture(new Uint8Array([128, 128, 0, 0]), 1, 1)
+const blank = new THREE.DataTexture(new Uint8Array([128, 128, 0, 255]), 1, 1)
 blank.needsUpdate = true
 const dark = new THREE.DataTexture(new Uint8Array([0, 0, 0, 0]), 1, 1)
 dark.needsUpdate = true
 
 export const surfaceUniforms = {
-  uSlab: { value: new THREE.Color(0.0016, 0.0022, 0.0032) },
+  uSlab: { value: new THREE.Color(0.0002, 0.0005, 0.0011) },
   uKeyDir: { value: new THREE.Vector3(0, 1, 0) },
   uKeyCol: { value: new THREE.Color() },
   uSky: { value: new THREE.Color() },
@@ -73,6 +82,7 @@ export const surfaceUniforms = {
   uMirror: { value: dark as THREE.Texture },
   uMirrorSize: { value: new THREE.Vector4(1, 1, 1, 0) },
   uDetail: { value: blank as THREE.Texture },
+  uStone: { value: dark as THREE.Texture },
 }
 
 const SLAB_FRAG = `${ROOM_GLSL}
@@ -90,6 +100,11 @@ uniform vec3 uBaked;
 uniform sampler2D uMirror;
 uniform vec4 uMirrorSize;
 uniform sampler2D uDetail;
+uniform sampler2D uStone;
+vec2 slabSlope(vec4 t) {
+  vec2 c = (t.rg * 255.0 - 128.0) / 127.0;
+  return vec2(c.x, -c.y) * abs(c) * ${f(SLAB.slopeFull)};
+}
 float discShare(float x) {
   x = clamp(x, -1.0, 1.0);
   return 0.5 + (asin(x) + x * sqrt(1.0 - x * x)) * 0.31830989;
@@ -116,16 +131,18 @@ void main() {
 
   float spread = max(1.0, 1.7 * blurPx);
   vec2 uvA = P.xz / ${f(SLAB.fineMm)} + vec2(0.37, 0.11);
+  vec2 uvC = vec2(P.x * ${f(Math.cos(crumbTurn))} + P.z * ${f(Math.sin(crumbTurn))}, P.z * ${f(Math.cos(crumbTurn))} - P.x * ${f(Math.sin(crumbTurn))}) / ${f(SLAB.crumbMm)} + vec2(0.13, 0.71);
   vec2 uvB = vec2(P.x * ${f(Math.cos(broadTurn))} + P.z * ${f(Math.sin(broadTurn))}, P.z * ${f(Math.cos(broadTurn))} - P.x * ${f(Math.sin(broadTurn))}) / ${f(SLAB.broadMm)};
-  vec2 ax = dFdx(uvA);
-  vec2 ay = dFdy(uvA);
-  vec4 fine = textureGrad(uDetail, uvA, ax * spread, ay * spread);
-  vec4 broad = textureGrad(uDetail, uvB, dFdx(uvB) * spread, dFdy(uvB) * spread);
-  vec2 tilt = (fine.rg - 0.5) * ${f(2 * SLAB.normalFine)};
-  vec2 wave = (broad.rg - 0.5) * ${f(2 * SLAB.normalBroad)};
+  vec4 fine = textureGrad(uDetail, uvA, dFdx(uvA) * spread, dFdy(uvA) * spread);
+  vec4 crumb = textureGrad(uDetail, uvC, dFdx(uvC) * spread, dFdy(uvC) * spread);
+  vec4 stone = textureGrad(uStone, uvB, dFdx(uvB) * spread, dFdy(uvB) * spread);
+  vec2 turned = slabSlope(crumb);
+  vec2 tilt = slabSlope(fine) + vec2(turned.x * ${f(Math.cos(crumbTurn))} - turned.y * ${f(Math.sin(crumbTurn))}, turned.x * ${f(Math.sin(crumbTurn))} + turned.y * ${f(Math.cos(crumbTurn))});
   vec3 n = normalize(vec3(tilt.x, 1.0, tilt.y));
-  float dust = clamp(fine.a * ${f(SLAB.dustFine)} + broad.a * ${f(SLAB.dustBroad)}, 0.0, 1.0);
-  float vein = broad.b;
+  float dust = clamp(max(fine.b, crumb.b * ${f(SLAB.crumbDust)}), 0.0, 1.0);
+  float vein = stone.r;
+  float cloud = stone.g;
+  float veil = clamp(stone.b + 0.35 * cloud, 0.0, 1.0);
 
   vec2 q = P.xz - uFoot.xy - uLean.xy;
   float d = length(q);
@@ -156,15 +173,15 @@ void main() {
   float glowRise = smoothstep(uFoot.z - 4.0, uFoot.z + ${f(SLAB.poolRiseMm)} + lift, d);
   vec3 warm = uPool * (${f(SLAB.poolGain)} * glowFall * glowRise);
 
-  vec3 albedo = uSlab * (1.0 + ${f(SLAB.vein)} * vein);
+  vec3 albedo = uSlab * (1.0 + ${f(SLAB.vein)} * vein + ${f(SLAB.cloud)} * cloud) + vec3(${f(SLAB.veilAlbedo)}) * veil;
   vec3 scatter = albedo + vec3(${f(SLAB.dustAlbedo)}) * dust;
   vec3 col = scatter * (key + uSky * occl + warm * occl);
 
   vec3 r0 = vec3(v.x, -v.y, v.z);
   vec2 ground = v.xz / max(length(v.xz), 1e-4);
-  vec2 slope = wave + tilt * 0.006;
+  vec2 slope = tilt;
   vec3 r = normalize(r0 + 2.0 * vec3(slope.x * grazing, -dot(v.xz, slope), slope.y * grazing));
-  float fres = ${f(SLAB.f0)} + ${f(1 - SLAB.f0)} * pow(1.0 - clamp(grazing, 0.0, 1.0), 5.0);
+  float fres = ${f(SLAB.f0)} + ${f(1 - SLAB.f0)} * pow(1.0 - clamp(grazing, 0.0, 1.0), ${f(SLAB.fresnelPower)});
 
   float rl = max(length(r0.xz), 1e-4);
   vec2 rdir = r0.xz / rl;
@@ -186,12 +203,13 @@ void main() {
   if (uReflect.x > 0.5) {
     vec2 st = gl_FragCoord.xy * uMirrorSize.xy;
     vec2 kick = vec2(dot(slope, vec2(-ground.y, ground.x)) * grazing, dot(slope, ground)) * 2.0 * reach * uFocal;
+    kick = clamp(kick, vec2(-1.5 * tall - 2.0), vec2(1.5 * tall + 2.0));
     float gapPx = 2.0 * tall / ${f(SLAB.mirrorTaps - 1)};
     float lod = log2(max(gapPx * uMirrorSize.z, 1.0));
     float total = 0.0;
     for (int i = 0; i < ${SLAB.mirrorTaps}; i++) {
       float u = float(i) / ${f(SLAB.mirrorTaps - 1)} * 2.0 - 1.0;
-      float w = exp(-2.6 * u * u);
+      float w = exp(-u * u / ${f(2 * SLAB.coreWidth * SLAB.coreWidth)}) + ${f(tail)} * (1.0 - u * u);
       vec4 m = textureLod(uMirror, st + (kick + vec2(0.0, u * tall)) * uMirrorSize.xy, lod);
       seen += w * m.rgb * mix(1.0 - m.a, 1.0, sil);
       held += w * m.a * sil;
@@ -212,7 +230,7 @@ void main() {
     held = clamp(body + glass, 0.0, 1.0);
   }
   vec3 room = stageRoomSoft(r, ${f(SLAB.roomRough)});
-  col += (seen * fade + room * (1.0 - held)) * fres * (1.0 - 0.6 * dust);
+  col += (seen * fade + room * (1.0 - held)) * fres * (1.0 - 0.6 * dust) * (1.0 - ${f(SLAB.veil)} * veil);
 
   gl_FragColor = vec4(col * cover, 1.0 - cover);
   if (uDiag != 0) {
@@ -294,6 +312,7 @@ export function updateSurface(f: StageFrame): void {
   const g = f.globe
   const t = f.mix.base
   if (su.uDetail.value === blank && hasTexture(SLAB_DETAIL)) su.uDetail.value = texture(SLAB_DETAIL)
+  if (su.uStone.value === dark && hasTexture(SLAB_STONE)) su.uStone.value = texture(SLAB_STONE)
   su.uKeyDir.value.copy(f.keyDir)
   su.uKeyCol.value.copy(f.keyCol)
   su.uSky.value.copy(f.ambient)

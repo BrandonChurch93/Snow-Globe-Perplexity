@@ -5,10 +5,20 @@ export const ROOM_LIGHTS = 12
 export const ROOM_WINDOW = { halfWidth: 0.3, halfHeight: 0.62, edge: 0.075, lean: 0.22 }
 export const ROOM_STRIP = { halfWidth: 0.055, halfHeight: 0.46, edge: 0.04, lean: -0.15 }
 export const ROOM_ROUGH_SPREAD = 1.4
-export const ROOM_SPILL = { spread: 0.373, floor: 0.42, gain: 0.9 }
+export const ROOM_SPILL = { spread: 0.373, floor: 0.42, gain: 0.75 }
+export const ROOM_GLOW = [
+  { azDeg: 3, elDeg: 9, spread: 0.012, gain: 1.6 },
+  { azDeg: 13, elDeg: 13.5, spread: 0.004, gain: 4 },
+]
 
 const WASH = 0.045
 const f = (v: number) => v.toFixed(4)
+const glowTerms = ROOM_GLOW.map((g) => {
+  const az = (g.azDeg * Math.PI) / 180
+  const el = (g.elDeg * Math.PI) / 180
+  const dir = [Math.sin(az) * Math.cos(el), Math.sin(el), -Math.cos(az) * Math.cos(el)]
+  return `${f(g.gain)} * ${f(g.spread)} / (${f(g.spread)} + s) * exp(-(1.0 - dot(d, vec3(${dir.map(f).join(', ')}))) / (${f(g.spread)} + s))`
+}).join(' + ')
 
 export const ROOM_GLSL = `
 uniform vec3 uRoomWall;
@@ -45,7 +55,8 @@ vec3 roomWall(vec3 d, float s) {
   float v = ${f(WASH)} + 2.0 * s * s;
   float wash = (0.35 + 0.65 * back * back) * exp(-d.y * d.y / v) * sqrt(${f(WASH)} / v);
   float spill = exp(-(1.0 - dot(d, uRoomRim)) / (${f(ROOM_SPILL.spread)} + s));
-  return uRoomWall * ((1.0 + 1.6 * wash) * (${f(ROOM_SPILL.floor)} + ${f(ROOM_SPILL.gain)} * spill));
+  float glow = ${glowTerms};
+  return uRoomWall * ((1.0 + 1.6 * wash) * (${f(ROOM_SPILL.floor)} + ${f(ROOM_SPILL.gain)} * spill + glow));
 }
 vec3 roomSources(vec3 d, float s) {
   return roomSource(d, uRoomKey, uRoomKeyCol, vec2(${f(ROOM_WINDOW.halfWidth)}, ${f(ROOM_WINDOW.halfHeight)}), length(vec2(${f(ROOM_WINDOW.edge)}, s)), ${f(ROOM_WINDOW.lean)})

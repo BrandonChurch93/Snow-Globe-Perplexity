@@ -21,7 +21,7 @@ const LENS: Record<string, { apertureMm: number; focusShiftMm: number }> = {
   low: { apertureMm: 1.6, focusShiftMm: -10 },
 }
 
-export const FAR_FIELD = { apertureMm: 5.8, startsPastFocus: 0.12 }
+export const FAR_FIELD = { apertureMm: 5.4, startsPastFocus: 0.12 }
 
 export const farApertureMm = (pose: Pose): number => (pose.apertureMm > 0 ? FAR_FIELD.apertureMm : 0)
 export const farFromMm = (pose: Pose): number => pose.focusMm * (1 + FAR_FIELD.startsPastFocus)

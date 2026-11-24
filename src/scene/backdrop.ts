@@ -15,19 +15,30 @@ const CLEAR_SIDE = 16 * RAD
 const CLEAR_UP = 9 * RAD
 
 export const DISCS = {
-  frontShare: 0.62,
-  front: { azFrom: 3, azTo: 15.5, elFrom: -7.5, elTo: 4.5 },
-  side: { azFrom: 15.5, azTo: 48, elFrom: -7.5, elTo: 14 },
-  nearMm: 1300,
-  spanMm: 3300,
-  depthPower: 0.8,
-  sizeMm: [1.2, 5.5] as [number, number],
-  largeShare: 0.14,
-  largeMm: [7, 15] as [number, number],
-  dimmest: 0.009,
-  decades: 2.14,
-  dimPower: 1.35,
-  quad: 1.45,
+  zones: [
+    { share: 0.62, azFrom: 5.2, azTo: 15.2, elFrom: -6.6, elTo: 3.9, sidePower: 0.8, rightShare: 0.5, levelFrom: 0, depthFrom: 0 },
+    { share: 0.16, azFrom: 4, azTo: 20, elFrom: 4.2, elTo: 10.5, sidePower: 1, rightShare: 0.7, levelFrom: 0.5, depthFrom: 0.45 },
+    { share: 0.22, azFrom: 15.2, azTo: 48, elFrom: -6.6, elTo: 12, sidePower: 1, rightShare: 0.5, levelFrom: 0, depthFrom: 0 },
+  ],
+  stringMost: 4,
+  stringAcrossDeg: 1.1,
+  stringDownDeg: 2.7,
+  stringDepth: 0.16,
+  nearMm: 1000,
+  spanMm: 2000,
+  depthPower: 1,
+  sizeMm: [0.8, 3.5] as [number, number],
+  largeShare: 0.1,
+  largeMm: [5, 11] as [number, number],
+  dimmest: 0.028,
+  decades: 1.57,
+  dimPower: 1.6,
+  colourByLevel: 0.6,
+  soft: [0.4, 0.95] as [number, number],
+  edgeShare: 0.32,
+  edge: [0.1, 0.36] as [number, number],
+  lean: [0.06, 0.3] as [number, number],
+  quad: 2,
   catEye: 0.52,
   roomLightGain: 0.8,
 }
@@ -38,6 +49,7 @@ interface Emitter {
   at: THREE.Vector3
   size: number
   shown: number
+  level: number
   pick: number
   energy: number
   heroRadius: number
@@ -182,19 +194,33 @@ export class Backdrop {
     const farMm = farApertureMm(hero)
     const fromMm = farFromMm(hero)
     const D = DISCS
-    for (let i = 0; i < n; i++) {
-      const zone = rng.next() < D.frontShare ? D.front : D.side
-      const az = rng.sign() * rng.range(zone.azFrom, zone.azTo) * RAD
-      const el = rng.range(zone.elFrom, zone.elTo) * RAD
-      const reach = D.nearMm + D.spanMm * Math.pow(rng.next(), D.depthPower)
-      const at = hero.position.clone().add(new THREE.Vector3(Math.sin(az) * Math.cos(el), Math.sin(el), -Math.cos(az) * Math.cos(el)).multiplyScalar(reach))
-      const large = rng.next() < D.largeShare
-      const size = large ? rng.range(D.largeMm[0], D.largeMm[1]) : rng.range(D.sizeMm[0], D.sizeMm[1])
-      const shown = D.dimmest * Math.pow(10, D.decades * Math.pow(rng.next(), D.dimPower))
-      const depth = at.clone().sub(hero.position).dot(forward)
-      const heroRadius = size + hero.apertureMm * Math.abs(depth / hero.focusMm - 1) + farMm * Math.max(0, depth / fromMm - 1)
-      this.emitters.push({ at, size, shown, pick: rng.int(1 << 16), energy: (shown * heroRadius * heroRadius) / (size * size), heroRadius })
-    }
+    const counts = D.zones.map((z) => Math.round(z.share * n))
+    counts[0] = n - counts.slice(1).reduce((a, b) => a + b, 0)
+    D.zones.forEach((zone, z) => {
+      let left = counts[z]!
+      while (left > 0) {
+        const members = Math.min(left, 1 + rng.int(D.stringMost))
+        left -= members
+        const side = rng.next() < zone.rightShare ? 1 : -1
+        const azMid = zone.azFrom + (zone.azTo - zone.azFrom) * Math.pow(rng.next(), zone.sidePower)
+        const elMid = rng.range(zone.elFrom, zone.elTo)
+        const reachMid = D.nearMm + D.spanMm * (zone.depthFrom + (1 - zone.depthFrom) * Math.pow(rng.next(), D.depthPower))
+        for (let k = 0; k < members; k++) {
+          const lone = members === 1
+          const az = side * Math.max(zone.azFrom, azMid + (lone ? 0 : rng.range(-D.stringAcrossDeg, D.stringAcrossDeg))) * RAD
+          const el = Math.max(zone.elFrom, elMid + (lone ? 0 : rng.range(-D.stringDownDeg, D.stringDownDeg))) * RAD
+          const reach = reachMid * (1 + (lone ? 0 : rng.range(-D.stringDepth, D.stringDepth)))
+          const at = hero.position.clone().add(new THREE.Vector3(Math.sin(az) * Math.cos(el), Math.sin(el), -Math.cos(az) * Math.cos(el)).multiplyScalar(reach))
+          const large = rng.next() < D.largeShare
+          const size = large ? rng.range(D.largeMm[0], D.largeMm[1]) : rng.range(D.sizeMm[0], D.sizeMm[1])
+          const level = zone.levelFrom + (1 - zone.levelFrom) * rng.next()
+          const shown = D.dimmest * Math.pow(10, D.decades * Math.pow(level, D.dimPower))
+          const depth = at.clone().sub(hero.position).dot(forward)
+          const heroRadius = size + hero.apertureMm * Math.abs(depth / hero.focusMm - 1) + farMm * Math.max(0, depth / fromMm - 1)
+          this.emitters.push({ at, size, shown, level, pick: rng.next(), energy: (shown * heroRadius * heroRadius) / (size * size), heroRadius })
+        }
+      }
+    })
     const centre = new THREE.Vector3(0, centreHeightMm, 0)
     this.brightest = this.emitters
       .map((e, i) => ({ i, w: (e.shown * e.heroRadius * e.heroRadius) / e.at.distanceToSquared(centre), d: e.at.clone().sub(centre).normalize() }))
@@ -237,12 +263,12 @@ export class Backdrop {
     this.emitters.forEach((e, i) => {
       m.makeScale(e.size, e.size, e.size).setPosition(e.at)
       this.lights.setMatrixAt(i, m)
-      look[i * 4] = looks.range(0.1, 0.36)
-      look[i * 4 + 1] = looks.next() < 0.4 ? looks.range(0.12, 0.42) : looks.range(-0.1, 0.08)
+      look[i * 4] = looks.range(DISCS.soft[0], DISCS.soft[1])
+      look[i * 4 + 1] = looks.next() < DISCS.edgeShare ? looks.range(DISCS.edge[0], DISCS.edge[1]) : looks.range(-0.12, 0.05)
       look[i * 4 + 2] = looks.range(0.93, 1.07)
       look[i * 4 + 3] = looks.range(0, Math.PI)
       const turn = looks.range(0, 2 * Math.PI)
-      const tilt = looks.range(0.02, 0.13)
+      const tilt = looks.range(DISCS.lean[0], DISCS.lean[1])
       lean[i * 2] = Math.cos(turn) * tilt
       lean[i * 2 + 1] = Math.sin(turn) * tilt
     })
@@ -260,7 +286,8 @@ export class Backdrop {
   private fill(attr: THREE.InstancedBufferAttribute, kit: SeasonKit): void {
     const a = attr.array as Float32Array
     this.emitters.forEach((e, i) => {
-      const c = kit.backdrop.colors[e.pick % kit.backdrop.colors.length]!
+      const list = kit.backdrop.colors
+      const c = list[Math.min(list.length - 1, Math.floor(list.length * (DISCS.colourByLevel * e.level + (1 - DISCS.colourByLevel) * e.pick)))]!
       a[i * 3] = c[0] * e.energy
       a[i * 3 + 1] = c[1] * e.energy
       a[i * 3 + 2] = c[2] * e.energy
