@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 19 · 2026-11-24 07:50 UTC
+Status 20 · 2026-11-24 08:00 UTC
 
-- `out/stills/status/status-19-1.jpg`: Three cameras framed again, draft: surface, interior, low
-- `out/stills/status/status-19-2.jpg`: The app at three sizes: at rest, at the top of the lift, at the widest stroke. 7 percent of the height between the foot and the controls on the two wide screens
-- `out/stills/status/status-19-3.jpg`: The hero camera after decision 35: 7.8 percent above the glass, 4.2 percent under the foot
-- `out/stills/status/status-19-4.jpg`: The summer hold pushes to the new interior camera (left), the fall hold drops to the new low camera (right). Storms still too thick here
+- `out/stills/status/status-20-1.jpg`: The opening camera on stand-ins, four candidates; bottom right is the chosen frame: chimney, window, door, floor, lamppost and the foot of the tree, with no edge of the glass
+- `out/stills/status/status-20-2.jpg`: Spring hold after the thinning at 12.5, 14.4, 17 and 21 s (the landing is at 12 s): the miniature is out of the storm one bar after the landing
+- `out/stills/status/status-20-3.jpg`: Fall hold after the thinning at 36.5, 38.4, 41 and 45 s (the landing is at 36 s), with the move down to the low camera
+- `out/stills/status/status-20-4.jpg`: The summer hold (left) now pushes all the way to the new interior camera, the fall hold (right) drops to the new low camera, twelve frames each at draft. The storms are still too thick here; the thinning is being merged next (by film_app_engineer_2)
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 07:57 UTC
-clock: phase 2, tick of 6.8 minutes
-phase 2: 4.92 h used of its 6.00 h box
-allowance (before the review): 6.11 h used of 36.00 h allowed
-all time before the review: 6.11 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 08:00 UTC
+clock: phase 2, tick of 2.9 minutes
+phase 2: 4.97 h used of its 6.00 h box
+allowance (before the review): 6.16 h used of 36.00 h allowed
+all time before the review: 6.16 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 6
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -732,3 +732,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 07:54 `particles_engineer_2` sent its final report and is done (`agent/particles2` `203204a`, looks on `agent/particles2-looks` `3a34a88`): every storm thins within its first bar; new numbers per kind `settleMmS` and `floats`; the cover numbers are in open item 20.
 
 - 07:57 merged `agent/film-app2` `dec56e1` (with `agent/engine2` `3d47198`) and `agent/particles2` `203204a` as `a9b5613`: types clean, 304 tests, build, cut and parts clean. The pack tool's line for `macro` now carries the kit's words for frame 0 and its corner check (`9ade96d`). The fix pass took 50 of its 90 minutes. Round 2 of the blockout review started 07:57 on `9ade96d`: build, the Phase 2 gate, the measures and the pack run first, then two fresh critics.
+
+- 08:01 Status 20 posted with three pictures: the opening camera's six candidates with the chosen frame (the caption in the picture says four), the spring hold and the fall hold after the thinning. It says the published app still shows the 07:36 build and that this commit is published when the gate has run.
