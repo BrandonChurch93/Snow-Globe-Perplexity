@@ -1,0 +1,38 @@
+# Snow Globe build, Phase 3 (the look lock): second set of build agents
+
+You are a build agent. You work alone in your own VM, you start no agents, and you answer to `/root`.
+Read this file to the end, then your job message, then the first builder's final report (attached), then in the repo: `AGENTS.md`, `tools/README.md`, and the kit sections your job message names. The two attached pictures show the approved image (left) beside the build as it stood at 13:07 UTC (right): at rest, and half a second after the landing of a shake.
+
+## What this is
+A photoreal snow globe rendered in the browser (three.js, WebGL2). Winter is the first season; everything is judged against two approved images that outrank every word and every critic: `references/approved/winter-rest.png` and `references/approved/winter-shake.png` (2816 by 1584; glass circle centre (1409, 646), radius 549 px). Where the kit's words and an approved image disagree, the image wins. The bar is a still that a viewer takes for a photograph of that same globe. Open the approved images at full size around your part before you change anything, and put the approved crop beside every look.
+Every part of winter is built; no stand-in is left. Ten builders worked three hours each and stopped at their limit. Your job is the list of faults they left, worst first, plus what the first critic round finds (it is running now; `/root` sends you its findings for your part at about 14:45 UTC).
+
+## Repo and git
+- `https://github.com/BrandonChurch93/Snow-Globe-Perplexity`, branch `main`. Clone with history deep enough to merge `main` again later (`git clone --depth 400`, or deepen when a merge asks for it). `npm ci` at the repo root.
+- `git config user.name "Brandon Church"`; `git config user.email "200545962+BrandonChurch93@users.noreply.github.com"`. Every commit message, merge commits too, ends with the trailer `Co-authored-by: Perplexity <noreply@perplexity.ai>` exactly once.
+- Your branch is `agent/p3-<name>` (your job message gives the name). Start it from `origin/main`. If the branch exists on the remote it is already contained in `main`, so your push is a fast forward. Never force push, never push to `main`, never delete a remote branch, never rewrite history.
+- Looks branch `agent/p3-<name>-looks`: it is only ever fetched, never merged. Add a commit on top of what is there. At most 4 pictures a push, each at most 1200 px on its long edge, with a `captions.txt`.
+- Merge `origin/main` into your branch before every push (merge, never rebase).
+- `/root` merges your branch into `main` about every 30 minutes without asking, whenever it has moved. So push at least every 30 minutes, and every push must pass `npx tsc --noEmit` and `npx vitest run` and be a state you would show. Never push a half change.
+- LARGE FILES. History cannot be rewritten. Commit by naming paths, never `git add -A` or `git add .`. NEVER commit anything under `assets-full/` or `public/assets/`: not per take, not per look, not at the end. `/root` makes those files again from your scripts with `npm run make -- <part>` and `npm run texpack` (this was tested at 13:11 UTC: every part's script reproduces its files bit for bit) and commits them once per round. So your scripts under `assets-src/` and their committed inputs must make your final files exactly; say in your final report which `npm run make -- <part>` targets changed. Before merging `main`, drop local changes to tracked built files (`git checkout -- assets-full public/assets`), merge, then make them again.
+- Generated or fetched pictures: at most `assets.maxTakesPerAsset` (6) takes per asset over the whole build; the first builder's takes count. Keep each take under `assets-src/<part>/gen/` with its prompt, as `kit/06-ASSETS.md` says, and send the `ASSETS.md` row. Web photographs are never committed and never shown.
+- Never change `references/approved/`, `references/drafts/`, `planning/`, `kit/` or `config/showcase.json`.
+
+## Files
+- You edit only your own files (your job message lists them). One owner per file.
+- Files only `/root` edits: `src/core/bridge.ts`, `stage.ts`, `materials.ts`, `accumulator.ts`, `sampler.ts`, `gl.ts`, `sdf.ts`, `src/core/chunks/cover.ts`, `src/scene/stage.ts`, `frame.ts`, `src/seasons/kit.ts`, `blockout.ts`, `src/seasons/winter/index.ts`, `miniature.ts`, `src/capture/showcase.ts`, `src/film/**`, `src/app/**`, `tests/framing.test.ts`, `tests/film.test.ts`, `tests/app.test.ts`, `package.json`, `config/showcase.json`, `tools/**`, `parts/PARTS.json`. If you need a change there, send `/root` the exact lines once. (The loading job is the one exception; its message says so.)
+- A change you need in another builder's file: message that builder directly with the exact lines. Names: `tree_finisher`, `village_finisher`, `base_finisher`, `frost_finisher`, `flake_finisher`, `liquid_finisher`, `scene_finisher`, `glass_finisher`, `light_finisher`, `load_finisher` (address them as `/root/<name>`). Keep such messages short.
+- The rig is frozen: key 0.75, rim 0.35, the warm card, `ROOM_RIG.inside` as on `main`. Only `light_finisher` may move it, and only after telling every builder. Fit your materials to it.
+
+## How to work
+- Fit by numbers first: `npm run fit -- --tier draft --box x0,y0,x1,y1 --name <n> --force` renders through the reference camera and writes `out/work/fit/<n>-pair.jpg` (approved half and build half); read medians in fixed boxes on both halves, change one constant at a time. Then look.
+- A look is a rendered picture you view while tuning. At most 40 looks per part in this round. Count them and report the count. Every look is at `--format hd` unless a sheet, with the approved crop beside it.
+- Stills: `npm run texpack && npm run build` first (stills refuse a stale `dist`), then `npm run still -- --season winter --state rest|landed|settled --camera hero|macro|interior|base|surface|low --tier draft --format hd --force`. Motion: `npm run sheet -- --shot test --first 0 --last 204 --tier draft` and `npm run sheet -- --motion lift|strokes|setdown|landing|arrival --shot test --fit --tier draft`. Diagnostics: `--diag standins|ids|texels|cover|change|lightgrid|normals`.
+- One render process at a time in your VM. Never run `npm run make`, `texpack` or `build` while a still is rendering: a still made on a half-written asset index comes back as grey blockout shapes with no error. If a still shows blockout shapes, rebuild and render again.
+- Before every push: `npx tsc --noEmit`, `npx vitest run`. Before your final report also `npm run determinism` and `npm run measure -- --unit winter --only <your measures> --tier draft`, and one `--diag standins` still (must be black).
+- Never lower a threshold, never weaken a test to make it pass, never ship a placeholder, never report something unseen as seen.
+
+## Time and reports
+- Your limit is 3 hours from your start. At about 15:30 UTC `main` is frozen for the second critic round: have your best state pushed by 15:20 UTC, then keep working until your limit.
+- Do not message `/root` while you work, except: a blocker outside your files; exact lines for a file only `/root` edits; and one line when a push fixes the worst fault on your list (at most three such lines in all).
+- Final report at your limit, to `/root`, as ONE message of at most 30 lines: branch and last commit; what is still wrong, worst first; what you changed; which `npm run make` targets changed; tests run and what they printed; looks used. Put everything else (measured numbers, counts, the recipe for another season with commands, `ASSETS.md` rows) in a file and attach it to that message.
