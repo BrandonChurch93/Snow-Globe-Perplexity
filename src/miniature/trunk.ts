@@ -45,9 +45,9 @@ const ROOT_FALL = 1.6
 const ROOT_SKIRT = 1.8
 const TWIST_LOW = 0.06
 const TWIST_HIGH = 0.03
-const RIDGE_DEEP = 0.11
+const RIDGE_DEEP = 0.16
 const GNARL = 0.06
-const PLATE = { perMm: 0.85, width: 0.03, deep: 0.6 }
+const PLATE = { perMm: 0.85, width: 0.03, deep: 0.42 }
 const KNOTS: readonly { phi: number; h: number; r: number }[] = [
   { phi: 1.95, h: 8.4, r: 1.15 },
   { phi: 1.05, h: 5.3, r: 0.85 },
@@ -61,7 +61,7 @@ const MODEL = 'shared/trunk-wood.glb'
 const BARK = 'shared/trunk-bark.srgb.tile.w1024.png'
 const BARK_NORMAL = 'shared/trunk-bark-n.lin.tile.w1024.png'
 
-const RADIUS: Table = [[-4.5, 4.9], [0, 4.3], [1.2, 3.9], [3.2, 3.5], [5.2, 3.3], [8, 3.4], [10, 3.1], [11.6, 3.0], [13.6, 2.7], [15.5, 2.25], [18, 2.05], [19.6, 1.5], [21, 1.12], [24, 1.0], [27.5, 0.95], [30, 0.82], [33, 0.62], [37.6, 0.4]]
+const RADIUS: Table = [[-4.5, 4.9], [0, 4.3], [1.2, 3.9], [3.2, 3.5], [5.2, 3.3], [8, 3.1], [10, 2.78], [11.6, 2.68], [13.6, 2.58], [15.5, 2.25], [18, 2.05], [19.6, 1.5], [21, 1.12], [24, 1.0], [27.5, 0.95], [30, 0.82], [33, 0.62], [37.6, 0.4]]
 const AXIS_X: Table = [[-4.5, -0.5], [0, -0.4], [5, 0.05], [10, 0.75], [13.6, 0.7], [16.5, 0.45], [19, 0.1], [22, -0.75], [25, -1.3], [27.5, -1.7], [30, -1.6], [33, -0.8], [35.5, 0.2], [37.6, 0.7]]
 const AXIS_Z: Table = [[-4.5, 0], [0, 0], [8, 0.35], [14, -0.1], [26, -0.4], [37.6, 0]]
 

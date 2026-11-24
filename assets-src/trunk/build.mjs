@@ -7,7 +7,7 @@ import { blurWrap, loadSource, luma, normalsOf, readPicture, seamless, toBytes, 
 const TAU = Math.PI * 2
 const AROUND = 144
 const MAP_PX = 2048
-const PLATES = { across: 10, down: 6, tall: 0.6, crack: 0.09, dark: 0.22, sway: 0.1, hue: 0.72 }
+const PLATES = { across: 10, down: 6, tall: 0.6, crack: 0.09, dark: 0.14, sway: 0.1, hue: 0.72 }
 const lerp = (a, b, t) => a + (b - a) * t
 
 const [T] = await loadSource(['/src/miniature/trunk.ts'])
