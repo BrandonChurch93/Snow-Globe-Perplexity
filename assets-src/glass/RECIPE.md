@@ -1,13 +1,13 @@
 # Recipe: the glass and the liquid
 
-The parts `glass` and `liquid` ship no file. Everything is computed in `src/globe/shell.ts` from the constants in `glassLook`, in four draw calls (the view through the liquid, the wall, the bubble, the depth stamp). State reached: `built`.
+The parts `glass` and `liquid` ship no file. Everything is computed in `src/globe/shell.ts` from the constants in `glassLook`, in five draw calls (the view through the liquid, the wall, the bubble, the depth stamp, the ring at the limb), 41984 triangles, no texture. State reached: `built`.
 
 ## src/globe/shell.ts (`glassLook`)
 Made by: hand, fitted with `assets-src/glass/measure.mjs` and `assets-src/glass/profile.mjs` (Node 20.20.2, sharp)
 From: `references/approved/winter-rest.png`, `tools/lib/refcam.mjs` (the camera of the approved image), `config/showcase.json`
 Prompt or command: `node assets-src/glass/measure.mjs`, then the loop in "Making it again" below
-Takes: 0 generated assets. 28 tuning looks up to this file's date (limit 40)
-Why this one: three reflections of one window, the wall zone, the through view and the bubble land within about 15 of the approved image in the open liquid, the top cap and the panes; the rim, the gap between the panes and the bubble's rings are further off (see "Still off")
+Takes: 0 generated assets. 28 tuning looks in the first round, 37 in the finishing round (limit 40 a round)
+Why this one: three reflections of one window, the wall zone, the through view and the bubble land within about 15 of the approved image in the open liquid, the top cap and the panes; the ring at the limb puts the rim within about 15 at 105 to 200 degrees and at -30 to -54 degrees; the gap between the panes, the pane's edges and the bubble's rings are further off (see "Still off")
 Date: 2026-11-24
 
 ## What the approved image holds
@@ -55,7 +55,7 @@ What the room gives and what the glass takes from it (main `b6ab917`): every ref
 
 ## Still off
 
-Against the approved image on the last look (m14): limb band on the key side 20 to 40 dimmer at share 0.995 and greyer at 0.987; the gap between the first two panes 30 to 60 too dark at angles 20 to 30; the second pane evenly white with a crisp inner edge; the third band wider than the approved arc; the left soft arc greyer, (46, 69, 87) against (39, 73, 99); the bubble's rings smoother and fewer; the render's sphere sits about 5 approved pixels left of the approved outline (layout). The dark band under the snow line is the ground's missing body, not the glass.
+Against the approved image on the last look of the finishing round (g8, the fit camera, hd draft), worst first: the inside is not squeezed toward the rim and no mirrored band shows at the very edge (the lens in `src/globe/lens.ts` is unchanged); the main pane is a white blade with crisp edges where the approved pane feathers to blue inward and ends broad at 46 degrees (ours tapers above 36); the gap between the panes at share 0.860 to 0.867 is (52 to 114, ...) against (94 to 156, ...); in the lower half the ring covers the frost in the outer 3 percent, so the band there is smooth where the approved image is frost to the edge; the approved outline sits about 3 pixels inside the fitted circle at 195 to 200 degrees and the render's does not; the bubble's lip is brighter on the left and its rings fewer; the render's sphere sits 3.3 approved pixels left and 9.2 higher than the approved outline with a radius 3.9 smaller (layout and cameras, not the glass).
 
 ## Making it again for another season
 
@@ -73,5 +73,9 @@ Against the approved image on the last look (m14): limb band on the key side 20 
    `npm run still -- --season <season> --state rest --camera hero --tier draft --format preview --diag normals 2>&1 | grep -i error`
    `node assets-src/glass/profile.mjs --season <season> --patches --looks <tag>` writes `out/work/fit/<tag>-glass.jpg`, `-shoulder.jpg`, `-crown.jpg` and `-collar.jpg`, approved beside render.
 7. The bubble: `glassLook.bubble` holds its width, depth, the flat patch against the wall (`patch`), the widest ring (`waist`), the lean and how far it slides and wobbles with `f.liquid`. Check it at `landed` as well as `rest`.
-8. Test: `npx vitest run`, `npm run determinism`, the fit of step 1, stills at `rest` and `landed` from `hero`, `macro`, `low` and `interior`, `--diag standins`, and once at `--format hd`.
-9. After every merge of `origin/main` run the loop of step 6 once and read the patches: the rig, the room and the grade all move the glass. If the open liquid drifts, only `room.level` should need to change.
+8. The ring at the limb (`glassLook.ring`) is the fifth draw, after the frost, and carries the outline. It takes the exact ray of each pixel, so its edge is the true silhouette. `from`, `to` and `soft` are where it starts; `side`, `low` and `wallSide` bound the top and upper left, where it is a translucent wall (`keep`, `cover`, `wall`) with a bright line at the outline (`edge`, `line`, `lineTop`, `lineMix`); in the lower half (`low`, `lowEnd`) it covers what lies under it, replaces the mirror of the lit base in the last pixels by `lowLine` over `lowAt`, and reaches `reach` of the radius so that no bright pixel of the frost shows outside the silhouette (`night` is the room's tone there). Read the rim in polar boxes, approved beside render, and move one value at a time:
+   `node assets-src/glass/polar.mjs approved 1410.9,652.7,553.1 60,210,15 0.956,1.0,0.006 50 rgb <season>`
+   `node assets-src/glass/polar.mjs <the still that npm run fit printed, under out/work/stills/> 1407.6,643.5,549.2 60,210,15 0.956,1.0,0.006 50 rgb`
+   The three numbers after the file are the centre and radius of the glass circle in pixels of a 2816 by 1584 frame (`node assets-src/glass/outline.mjs` fits them); then angles from, to, step in degrees (0 is right, 90 is up), shares from, to, step, the percentile, and `rgb` or `lum`.
+9. Test: `npx vitest run`, `npm run determinism`, the fit of step 1, stills at `rest` and `landed` from `hero`, `macro`, `low` and `interior`, `--diag standins`, and once at `--format hd`.
+10. After every merge of `origin/main` run the loop of step 6 once and read the patches: the rig, the room and the grade all move the glass. If the open liquid drifts, only `room.level` should need to change.
