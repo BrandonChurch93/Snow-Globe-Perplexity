@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 28 · 2026-11-24 10:43 UTC
+Status 29 · 2026-11-24 11:04 UTC
 
-- `out/stills/status/status-28-1.jpg`: Glass builder: the approved image above and the rebuilt glass shell below on the stand-in miniature. A starting point. Still wrong: grey wash through the liquid and an even grey rim and a blown highlight
-- `out/stills/status/status-28-2.jpg`: Light builder: the approved image above and the first pass of the light engine below on the stand-in miniature. Still wrong: the key is too strong and the warm pools by the lamp and the window do not read
-- `out/stills/status/status-28-3.jpg`: Tree builder: the real trunk from the film's close camera with bark from one generated sheet. Still wrong: no crown and no snow on the roots and the bark is too orange. The cottage and lamp beside it are stand-ins
-- `out/stills/status/status-28-4.jpg`: Three cameras framed again on the stand-in globe, draft: surface (the foot of the base above, the surface and the globe's reflection under it), interior (the miniature fills the height), low (looking up at the whole globe from 24 mm above the surface) (by engine_engineer_2)
+- `out/stills/status/status-29-1.jpg`: Base builder: the approved base above and the first real build below (lathe profile and carved leaves and a cone and the rope ring and 35 icicles). Still wrong: too bright and flat and the carving is too small and reads pink and the brass has no dark in its grooves
+- `out/stills/status/status-29-2.jpg`: Tree builder: the first crown on the left and the approved tree on the right. Still wrong: the pads are too smooth and domed and too far apart and the trunk is too pale and straight and the bulbs have almost no halo
+- `out/stills/status/status-29-3.jpg`: Frost builder: the approved left rim on the left and the grown fern frost on the right. Still wrong: the plumes are whiter and coarser than the approved ones and the fine milky band at the rim is missing. The inside is other builders' stand-in
+- `out/stills/status/status-29-4.jpg`: Light builder: the lamp's pool and the lit gable from the close camera with trial lights on the stand-in miniature. Still wrong: the pool is white where the approved image is peach and the gable is overlit
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 11:00 UTC
-clock: phase 3, tick of 10.6 minutes
-phase 3: 2.56 h used of its 11.00 h box
-allowance (before the review): 9.17 h used of 36.00 h allowed
-all time before the review: 9.17 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 11:04 UTC
+clock: phase 3, tick of 3.7 minutes
+phase 3: 2.62 h used of its 11.00 h box
+allowance (before the review): 9.23 h used of 36.00 h allowed
+all time before the review: 9.23 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 16
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -871,3 +871,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 2026-11-24 10:50 UTC. Decision 45's numbers, measured by `shake_builder` through `reachOf` at `hero`: `shake.liftMm` 7.25 (the top of the lift leans back 4.1 to 4.5 degrees and stands 7.5 to 9 mm further from the lens, and keeps 4.59 percent of the frame above the glass in the worst case; 7.5 mm does not hold with a lean of "a few degrees") and `shake.tiltDeg` 6, read as the cap on the whole angle between the globe's axis and the vertical (the rim rule allows 6.19 degrees at 7.25 mm). Tried on `main` with the stand-in path: two tests go red (the film test's stroke height against 0.7 of the lift, by 0.04 mm; `tests/sim.test.ts`, 91 percent of the particles floating at 0.7 of the bar against the 97 it asks), so the two numbers reach `main` together with the real path and the liquid's answer to it, and `main` stays at 13.5 and 14 until then. `liquid_builder` was told to build against the smaller shake and that no number in a test moves. `village_builder` pushed `0d0f0c8` (chimney on the left slope of the roof, roof slab 0.65 mm, as the picture has them; the shared model script). Clock ticked 10:50.
 
 - 2026-11-24 11:03 UTC. `shake_builder`'s real path draws and holds the film test's "the shake path" block as it stands. Three tests outside its files go red with it; settled as follows. (1) `tests/app.test.ts`: the globe is asked to be at rest only after `shake.landSettleSeconds` (kit/02 section 6: the overshoot in tilt dies inside it), and `LiveSession.go()` in `src/app/session.ts` now starts a shake that is asked during the last one's settle when that settle is over, so the globe never jumps between two paths (one new test; 306 of 306 green). (2) `tests/sim.test.ts`, 97 percent floating at 0.7 of the bar (90.8 with the real path): the number stays, the liquid builder has to tear the resting particles loose with the strokes' reversals (2.05 to 2.46 g). (3) `tests/sim.test.ts`, peak turn above 2 rad/s (1.27 with the real path): that 2 was a precondition set against the stand-in's 14 degree rock, not a kit number; the liquid builder replaces it with floors under what the real shake gives, once a motion sheet shows the turn after the landing clearly, and adds a case that drives the engine with a turn above 2 rad/s so the bounds on particles pressed to the glass keep their meaning. Clock ticked 11:00.
+
+- 2026-11-24 11:04 UTC. Status 29 posted: four pictures from the builders' looks (the first real base beside the approved one, the first crown of the tree beside the approved tree, the grown fern frost at the left rim beside the approved rim, the lamp's pool with trial lights), all first passes, none finished work. `main` pushed as `4bc375c`. Next status by 11:34 UTC; first reports at about 11:30 UTC.
