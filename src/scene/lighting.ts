@@ -20,11 +20,11 @@ export const ROOM_RIG = {
   rimWrap: 0.12,
   rimSpecular: 1,
   card: { share: 0.1, side: -0.9, lift: 0.3, front: 1.1 },
-  inside: { through: 0.88, wrap: 0.22, spread: 1.6 },
+  inside: { through: 0.92, wrap: 0.15, spread: 1.6 },
   room: { gain: 1, lights: 1, softPerRough: 0.5, lightsBelowRough: 0.62 },
   grid: { flat: 0.25, wrap: 0.3, specular: 1, openFloor: 0.35 },
   bloomGain: 2.5,
-  glow: { outside: 0.8, islandMm: innerRadiusMm * 0.88 },
+  glow: { outside: 0.8, islandMm: innerRadiusMm * 0.88, lobe: 0.3, specular: 1 },
 } as const
 
 const SHADOW_OFF = 10
@@ -69,6 +69,7 @@ export class Lighting {
     u.uRigLobe.value.set(ROOM_RIG.keyLobe, ROOM_RIG.keySpecular, ROOM_RIG.rimWrap, ROOM_RIG.rimSpecular)
     u.uRigRoom.value.set(ROOM_RIG.room.gain, ROOM_RIG.room.lights, ROOM_RIG.room.softPerRough, ROOM_RIG.room.lightsBelowRough)
     u.uGridShade.value.set(ROOM_RIG.grid.flat, ROOM_RIG.grid.wrap, ROOM_RIG.grid.specular, ROOM_RIG.grid.openFloor)
+    u.uRigGlow.value.set(ROOM_RIG.glow.lobe, ROOM_RIG.glow.specular, 0, 0)
   }
 
   setShadowMap(px: number): void {

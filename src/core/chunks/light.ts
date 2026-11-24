@@ -45,6 +45,7 @@ export const lightUniforms = {
   uRigInside: { value: new THREE.Vector4(0.9, 0.25, 0.25, 1.5) },
   uRigLobe: { value: new THREE.Vector4(0.2, 1, 0.1, 1) },
   uRigRoom: { value: new THREE.Vector4(1, 1, 0.5, 0.6) },
+  uRigGlow: { value: new THREE.Vector4(0.3, 1, 0, 0) },
   ...roomLit,
 }
 
@@ -73,6 +74,7 @@ uniform vec4 uRigShadowUv;
 uniform vec4 uRigInside;
 uniform vec4 uRigLobe;
 uniform vec4 uRigRoom;
+uniform vec4 uRigGlow;
 vec3 stageGridAt(vec3 local, float page) {
   vec3 at = clamp(local / (2.0 * uGrid.w) + 0.5, 0.0, 1.0);
   at.z = (clamp(at.z * ${f1(GRID_CELLS)}, 0.5, ${f1(GRID_CELLS - 0.5)}) + page * ${f1(GRID_CELLS)}) / ${f1(GRID_CELLS * GRID_PAGES)};
@@ -219,6 +221,9 @@ vec3 stageLit = vec3(0.0);
     vec3 lgDirV = normalize(lgView * ((lgDir * uLightFrame) * lgMirror));
     float lgNdg = saturate(dot(geometryNormal, lgDirV)) * lgSided * uGridShade.z;
     if (lgNdg > 0.0 && lgLen > 1e-3) reflectedLight.directSpecular += lgCol * (PI * lgNdg) * BRDF_GGX(lgDirV, geometryViewDir, geometryNormal, material);
+    #ifdef USE_CLEARCOAT
+    if (lgLen > 1e-3) clearcoatSpecularDirect += lgCol * (PI * saturate(dot(geometryClearcoatNormal, lgDirV)) * lgSided * uGridShade.z) * BRDF_GGX_Clearcoat(lgDirV, geometryViewDir, geometryClearcoatNormal, material);
+    #endif
     stageGridL = lgLen > 1e-3 ? lgDirV : geometryNormal;
     stageGridC = lgCol * lgSided;
     vec3 lgKl = uLightFrame * lgKey;
@@ -235,7 +240,20 @@ vec3 stageLit = vec3(0.0);
     float lgD2 = max(dot(lgTo, lgTo), 1.0);
     float lgT = (uLightGlow.w - vStageLocal.y) / max(lgTo.y, 1e-3);
     float lgClear = vStageLocal.y >= uLightGlow.w ? 1.0 : smoothstep(0.85 * uLightGlowAt.w, 1.05 * uLightGlowAt.w, length(vStageLocal.xz + lgTo.xz * lgT));
-    reflectedLight.indirectDiffuse += uLightGlow.rgb * (lgClear * saturate(dot(lgNl, lgTo) * inversesqrt(lgD2)) / lgD2) * lgAlbedo;
+    vec3 lgGlow = uLightGlow.rgb * (lgClear / lgD2);
+    vec3 lgToN = lgTo * inversesqrt(lgD2);
+    reflectedLight.indirectDiffuse += lgGlow * saturate(dot(lgNl, lgToN)) * lgAlbedo;
+    vec3 lgGlowV = normalize(lgView * ((lgToN * uLightFrame) * lgMirror));
+    float lgNdw = saturate(dot(geometryNormal, lgGlowV)) * uRigGlow.y;
+    if (lgNdw > 0.0) {
+      PhysicalMaterial lgWide = material;
+      lgWide.roughness = min(1.0, material.roughness + uRigGlow.x);
+      reflectedLight.directSpecular += lgGlow * (PI * lgNdw) * BRDF_GGX(lgGlowV, geometryViewDir, geometryNormal, lgWide);
+      #ifdef USE_CLEARCOAT
+      lgWide.clearcoatRoughness = min(1.0, material.clearcoatRoughness + uRigGlow.x);
+      clearcoatSpecularDirect += lgGlow * (PI * saturate(dot(geometryClearcoatNormal, lgGlowV)) * uRigGlow.y) * BRDF_GGX_Clearcoat(lgGlowV, geometryViewDir, geometryClearcoatNormal, lgWide);
+      #endif
+    }
   }
   #endif
   float lgNdk = dot(lgN, lgKey);
@@ -253,12 +271,19 @@ vec3 stageLit = vec3(0.0);
   reflectedLight.directDiffuse += lgKeyC * (lgLitK * lgShadeK * RECIPROCAL_PI) * lgAlbedo;
   PhysicalMaterial lgSoft = material;
   lgSoft.roughness = min(1.0, material.roughness + uRigLobe.x);
+  #ifdef USE_CLEARCOAT
+  lgSoft.clearcoatRoughness = min(1.0, material.clearcoatRoughness + uRigLobe.x);
+  #endif
   if (lgNdk > 0.0) reflectedLight.directSpecular += lgKeyC * (uRigLobe.y * lgShade * lgNdk) * BRDF_GGX(lgKeyV, geometryViewDir, geometryNormal, lgSoft);
   float lgNdr = dot(lgN, uRigRimDir);
   vec3 lgRimV = normalize(lgView * (uRigRimDir * lgMirror));
   vec3 lgRimC = uRigRimCol * (lgThrough * lgOpen);
   reflectedLight.directDiffuse += lgRimC * (stageWrap(lgNdr, uRigLobe.z) * RECIPROCAL_PI) * lgAlbedo;
   if (lgNdr > 0.0) reflectedLight.directSpecular += lgRimC * (uRigLobe.w * lgNdr) * BRDF_GGX(lgRimV, geometryViewDir, geometryNormal, lgSoft);
+  #ifdef USE_CLEARCOAT
+  clearcoatSpecularDirect += lgKeyC * (uRigLobe.y * lgShade * saturate(dot(geometryClearcoatNormal, lgKeyV))) * BRDF_GGX_Clearcoat(lgKeyV, geometryViewDir, geometryClearcoatNormal, lgSoft);
+  clearcoatSpecularDirect += lgRimC * (uRigLobe.w * saturate(dot(geometryClearcoatNormal, lgRimV))) * BRDF_GGX_Clearcoat(lgRimV, geometryViewDir, geometryClearcoatNormal, lgSoft);
+  #endif
   reflectedLight.directDiffuse += uRigCardCol * (stageWrap(dot(lgN, uRigCardDir), 0.5) * lgOpen * lgThrough * RECIPROCAL_PI) * lgAlbedo;
   reflectedLight.indirectDiffuse += mix(uRigGround, uRigSky, 0.5 + 0.5 * lgN.y) * (lgOpen * RECIPROCAL_PI) * lgAlbedo;
   float lgRough = material.roughness;
