@@ -352,7 +352,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
       const pose = onScreen ? livePose(format.width / format.height, 0, 0, under) : spec.rig ? poseWith(spec.camera, spec.rig) : poseById(spec.camera)
       if (onScreen) drawn = framingOfRig(liveRig(format.width / format.height, 0, 0, under), format.width, format.height)
       if (spec.live) await livePicture(along(stillTl(spec.season)), stateSeconds(spec.state), pose, spec.live)
-      else await picture(along(stillTl(spec.season)), stateSeconds(spec.state), 0, () => pose, samples, 0)
+      else await picture(along(stillTl(spec.season)), stateSeconds(spec.state), spec.state === 'landed' ? shutter : 0, () => pose, samples, 0)
       if (spec.interface) await overlay.show(spec.season, spec.state)
     },
     film() {
