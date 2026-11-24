@@ -1,41 +1,41 @@
 {
-  "number": 23,
-  "time": "2026-11-24 08:57 UTC",
+  "number": 24,
+  "time": "2026-11-24 09:21 UTC",
   "phase": "3",
   "unit": "",
   "lines": [
-    "Status 23 · 2026-11-24 08:57 UTC · Phase 3",
-    "Phase 2 is closed at its limit, not as a pass: the second blockout review scored 6 and 8, merged 6, against a bar of 7. All 15 machine checks are green and five issues are carried forward.",
-    "Phase 3, the look lock, has begun. Its box is 11 hours and ends near 19:40 UTC.",
-    "Studied eight sources before building: six photographs and two clips of real globes being shaken. Ten lines of findings go into the log. One of them: a real storm takes more than 15 seconds to clear, so the film clears faster by design.",
-    "The opening pull back now starts fast and eases out, as the critic asked.",
-    "The code is reshaped so each part of winter has its own file and its own owner. Next: ten supporting agents start in parallel on the glass, the liquid, the particles, the scene, the base, the miniature, the frost, the light and the shake.",
-    "phase 3: 0.51 h used of its 11.00 h box",
-    "allowance (before the review): 7.12 h used of 36.00 h allowed",
+    "Status 24 · 2026-11-24 09:21 UTC · Phase 3",
+    "Phase 3, step 2: the approved winter image was measured before any part is built against it.",
+    "Found: the base in the approved image is about a quarter shorter than the config said (33 mm, not 42) and the camera sits lower (4.5 degrees down, not 9). No camera could match the image with the old numbers; this was the cause of the foot touching the frame's bottom edge in the blockout rounds.",
+    "Decision 40: base height 33 mm, island level 51 mm (the reading closest to the approved image; listed for the review, two numbers put it back). Decision 41: one reference camera for fitting every part to the image.",
+    "All 304 tests green, the cut list rebuilt, pushed as a1d141f.",
+    "Next: the shared frame for the scene, the model and texture tools, then ten build agents (glass, liquid and simulation, particles and veil, scene, base, miniature in two halves, frost and arrival, light, shake).",
+    "phase 3: 0.90 h used of its 11.00 h box",
+    "allowance (before the review): 7.52 h used of 36.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-23-1.jpg",
-      "caption": "The target: the approved winter image at rest. Every shared technique is proven against this one picture first",
+      "file": "out/stills/status/status-24-1.jpg",
+      "caption": "Approved winter image above, the stand-in globe with the corrected sizes below. The yellow circle and the three crosses are the glass and the foot as measured on the approved image.",
+      "w": 1062,
+      "h": 1200
+    },
+    {
+      "file": "out/stills/status/status-24-2.jpg",
+      "caption": "The foot of the base in the approved image with three fitted arcs: the camera looks down only 4.5 degrees.",
       "w": 1200,
-      "h": 675
+      "h": 257
     },
     {
-      "file": "out/stills/status/status-23-2.jpg",
-      "caption": "Where the build stands as Phase 3 begins: the same camera, the same layout, every part still a placeholder",
-      "w": 1200,
-      "h": 675
+      "file": "out/stills/status/status-24-3.jpg",
+      "caption": "The two ends of the foot, enlarged, with a pixel grid: the foot is 116 mm across, as the config says.",
+      "w": 1028,
+      "h": 510
     },
     {
-      "file": "out/stills/status/status-23-3.jpg",
-      "caption": "The second target: winter half a second after a landing. The storm, the streaks and the lights showing through are matched to this",
-      "w": 927,
-      "h": 1100
-    },
-    {
-      "file": "out/stills/status/status-23-4.jpg",
+      "file": "out/stills/status/status-24-4.jpg",
       "caption": "Still: winter rest hero, hd, draft",
       "w": 1200,
       "h": 675

@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 23 · 2026-11-24 08:57 UTC
+Status 24 · 2026-11-24 09:21 UTC
 
-- `out/stills/status/status-23-1.jpg`: The target: the approved winter image at rest. Every shared technique is proven against this one picture first
-- `out/stills/status/status-23-2.jpg`: Where the build stands as Phase 3 begins: the same camera, the same layout, every part still a placeholder
-- `out/stills/status/status-23-3.jpg`: The second target: winter half a second after a landing. The storm, the streaks and the lights showing through are matched to this
-- `out/stills/status/status-23-4.jpg`: Still: winter rest hero, hd, draft
+- `out/stills/status/status-24-1.jpg`: Approved winter image above, the stand-in globe with the corrected sizes below. The yellow circle and the three crosses are the glass and the foot as measured on the approved image.
+- `out/stills/status/status-24-2.jpg`: The foot of the base in the approved image with three fitted arcs: the camera looks down only 4.5 degrees.
+- `out/stills/status/status-24-3.jpg`: The two ends of the foot, enlarged, with a pixel grid: the foot is 116 mm across, as the config says.
+- `out/stills/status/status-24-4.jpg`: Still: winter rest hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 08:57 UTC
-clock: phase 3, tick of 16.7 minutes
-phase 3: 0.51 h used of its 11.00 h box
-allowance (before the review): 7.12 h used of 36.00 h allowed
-all time before the review: 7.12 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 09:21 UTC
+clock: phase 3, tick of 0.2 minutes
+phase 3: 0.91 h used of its 11.00 h box
+allowance (before the review): 7.52 h used of 36.00 h allowed
+all time before the review: 7.52 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
@@ -828,3 +828,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 08:40 the workspace's own push works again: `701ffa0` went to `main` directly. `repo_courier` stays available.
 
 - 08:58 Status 23 posted (Phase 3 begins): the two approved winter images and the stand-in still at `hero`, with Status 22's lines folded in, since those were logged at 08:41 but not shown as text. The ten study lines and the eight sources are written under "Look lock" (step 1 of Phase 3 is done). Required reading after the compaction: `kit/02`, `03`, `04`, `06`, `07`, the two sections of the round 2 notes, the addenda folder (still only its README).
+
+- 2026-11-24 09:22 UTC. Status 24 posted: the approved winter image measured (decisions 40 and 41), pictures `out/work/calib/fit-check.jpg`, `el-fit.jpg`, `ends.jpg`. 304 tests green at `a1d141f`.
