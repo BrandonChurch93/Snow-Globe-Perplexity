@@ -26,7 +26,7 @@ export const glassDressing: Dressing = { tint: [0.86, 0.92, 1], amount: 0 }
 export const surfaceDressing: Dressing & { reachMm: number } = { tint: [0.86, 0.92, 1], amount: 0, reachMm: 132 }
 
 const look = {
-  glass: { cover: 1.15, haze: 0.09, slope: 0.55, micro: 1.1, glint: 1.6, light: 0.52, through: 0.55, thin: 0.7, thick: 0.6 },
+  glass: { cover: 1.15, haze: 0.09, slope: 0.55, micro: 1.1, glint: 1.6, light: 0.6, through: 0.55, thin: 0.6, thick: 0.8, blur: 0.006, bend: 0.012 },
   slab: { cover: 1.5, slope: 0.8, micro: 0.9, glint: 1.6, pool: 0.035 },
 }
 
@@ -41,6 +41,11 @@ const frostUniforms = {
   uSlabLook: { value: new THREE.Vector4(look.slab.cover, look.slab.pool, look.slab.slope, look.slab.micro) },
   uGlint: { value: new THREE.Vector4(look.glass.glint, look.slab.glint, 0.3, look.glass.light) },
   uGlassThru: { value: new THREE.Vector4(look.glass.through, look.glass.thin, look.glass.thick, 0) },
+}
+
+export const behindUniforms = {
+  uBehind: { value: null as THREE.Texture | null },
+  uBehindSize: { value: new THREE.Vector2(0, 0) },
 }
 
 const lightUniforms = {
@@ -102,9 +107,27 @@ uniform sampler2D uGlassMap;
 uniform vec4 uShape;
 uniform vec4 uGlassLook;
 uniform vec4 uGlassThru;
+uniform sampler2D uBehind;
+uniform vec2 uBehindSize;
 varying vec3 vAxisX;
 varying vec3 vAxisY;
 varying vec3 vAxisZ;
+vec3 frostBehind(vec2 uv, float thickness, vec2 slope) {
+  vec2 px = 1.0 / uBehindSize;
+  vec2 at = uv + slope * (thickness * ${look.glass.bend.toFixed(4)} * uBehindSize.y) * px;
+  float r = thickness * ${look.glass.blur.toFixed(4)} * uBehindSize.y;
+  vec3 sum = textureLod(uBehind, at, 0.0).rgb;
+  float total = 1.0;
+  for (int i = 1; i <= 12; i++) {
+    float fi = float(i);
+    float a = fi * 2.3999632;
+    float k = sqrt(fi / 12.0);
+    float w = 1.0 - 0.5 * k;
+    sum += textureLod(uBehind, at + vec2(cos(a), sin(a)) * (k * r) * px, 0.0).rgb * w;
+    total += w;
+  }
+  return sum / total;
+}
 void main() {
   float c = stageChange();
   if (stageGone(c)) discard;
@@ -160,7 +183,12 @@ void main() {
   vec3 col = albedo * (lit * 0.3183 + stageGrid(vStageLocal * 0.9) * 0.6) * uGlint.w * (uGlassThru.y + uGlassThru.z * smoothstep(0.04, 0.6, h0));
   float pxMm = sqrt(length(dFdx(vStageWorld)) * length(dFdy(vStageWorld)));
   vec3 spark = frostGlints(ga * ${RS.toFixed(2)}, pxMm, ng, v) * uGlint.x * (0.06 + 1.5 * m0.b * on) * smoothstep(0.02, 0.25, alpha);
-  gl_FragColor = vec4(col * alpha + spark, alpha);
+  if (uBehindSize.x > 0.0) {
+    float thickness = clamp(h0 + 0.6 * haze, 0.0, 1.0);
+    float soft = smoothstep(0.02, 0.35, thickness);
+    vec3 behind = frostBehind(gl_FragCoord.xy / uBehindSize, thickness, (viewMatrix * vec4(n - ng, 0.0)).xy);
+    gl_FragColor = vec4(col * alpha + spark + behind * ((1.0 - alpha) * soft), 1.0 - (1.0 - alpha) * (1.0 - soft));
+  } else gl_FragColor = vec4(col * alpha + spark, alpha);
   if (uDiag != 0) {
     if (alpha < 0.3) discard;
     gl_FragColor = stageDiag(albedo, n, 0.0, c, fw / uShape.y);
@@ -288,7 +316,7 @@ function makeGlass(): THREE.Mesh {
     change: 'glass-dressing',
     textured: true,
     texels: 1 / frostUniforms.uShape.value.y,
-    uniforms: { ...roomUniforms, ...lightUniforms, uGlassMap: frostUniforms.uGlassMap, uGrain: frostUniforms.uGrain, uGrow: frostUniforms.uGrow, uShape: frostUniforms.uShape, uGlassLook: frostUniforms.uGlassLook, uGlassThru: frostUniforms.uGlassThru, uGlint: frostUniforms.uGlint },
+    uniforms: { ...roomUniforms, ...lightUniforms, uGlassMap: frostUniforms.uGlassMap, uGrain: frostUniforms.uGrain, uGrow: frostUniforms.uGrow, uShape: frostUniforms.uShape, uGlassLook: frostUniforms.uGlassLook, uGlassThru: frostUniforms.uGlassThru, uGlint: frostUniforms.uGlint, ...behindUniforms },
     vertexPars: 'varying vec3 vAxisX;\nvarying vec3 vAxisY;\nvarying vec3 vAxisZ;',
     vertexMain: 'vAxisX = normalize(modelMatrix[0].xyz);\nvAxisY = normalize(modelMatrix[1].xyz);\nvAxisZ = normalize(modelMatrix[2].xyz);',
     fragment: GLASS,
