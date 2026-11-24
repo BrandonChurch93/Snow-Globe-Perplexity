@@ -235,11 +235,11 @@ for (const [i, sh] of shrubList.entries()) {
   const [cx, cy, cz] = sh.centre
   const seed = 11 * i + 3
   const SR = rng(977 + 31 * i)
-  const clumps = Array.from({ length: i < 2 ? 16 : 12 }, () => {
+  const clumps = Array.from({ length: i < 2 ? 13 : 10 }, () => {
     const a = SR() * Math.PI * 2
     const up = 0.45 + 0.55 * Math.sqrt(SR())
     const rr = Math.sqrt(Math.max(0, 1 - up * up))
-    const wide = 0.42 + 0.5 * SR()
+    const wide = 0.36 + 0.42 * SR()
     return { at: [cx + Math.cos(a) * rr * sh.r[0] * 0.95, cy + up * sh.r[1] * 0.95, cz + Math.sin(a) * rr * sh.r[2] * 0.95], wide, tall: wide * (0.42 + 0.3 * SR()) }
   })
   const sdf = (x, y, z) => {
