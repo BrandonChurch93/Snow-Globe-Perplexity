@@ -656,7 +656,44 @@ function driftProfile(deg) {
   const u = fade(clamp((deg - a0) / (b0 - a0)))
   return { reachMm: a.reachMm + (b.reachMm - a.reachMm) * u, mm: a.mm + (b.mm - a.mm) * u }
 }
+// The mound in front of the foot: how full the snow is there, 0 to 1, and when it gets there. It is a crescent that leaves
+// the heap on either side of the foot and closes in front of it, away from the rim, so the dark slab shows between.
+function moundAt(x, z) {
+  const M = L.slab.mound
+  const out = Math.hypot(x, z) - footR
+  if (out < 0 || out > M.outMm[1] * 1.1) return null
+  const deg = Math.atan2(z, x) / RAD
+  if (deg < M.deg[0] - 14 || deg > M.deg[1] + 14) return null
+  const lobe = fbm(x * 0.07 + 31, 4.2, z * 0.07, 3)
+  const reach = fbm(x * 0.05 + 77, 2.2, z * 0.05, 3)
+  const fray = fbm(x * 0.45 + 5, 7.7, z * 0.45, 3)
+  const ends = smooth(M.deg[0] - 12 + 20 * lobe, M.deg[0] + 6 + 20 * lobe, deg) * (1 - smooth(M.deg[1] - 6 - 20 * lobe, M.deg[1] + 12 - 20 * lobe, deg))
+  // At its two ends the crescent meets the heap, so it starts nearer the foot there.
+  const mid = Math.sin(Math.PI * clamp((deg - M.deg[0]) / (M.deg[1] - M.deg[0])))
+  const inner = M.outMm[0] * (0.6 + 0.4 * smooth(0.0, 0.6, mid)) + M.inVaryMm * (lobe - 0.5) * 2
+  // It is a narrow tongue where it leaves the heap and widest in front of the foot.
+  const outer = inner + (M.outMm[1] * (0.72 + 0.36 * smooth(0.28, 0.72, reach)) - inner) * (M.endShare + (1 - M.endShare) * smooth(0.0, 0.7, mid))
+  const u = (out - inner) / (outer - inner)
+  if (u <= 0 || u >= 1) return null
+  const across = Math.pow(Math.sin(Math.PI * Math.pow(u, 0.62)), 1.15)
+  // Broken into clumps: under a broad noise the mound is cut away, so the slab shows through it in places.
+  const clump = 0.1 + 0.9 * smooth(M.gap[0], M.gap[1], fbm(x / M.gapMm + 13, 5.5, z / M.gapMm, 3))
+  const full = clamp(across * ends * 1.5 * clump - (fray - 0.5) * 2 * M.fray * (1 - 0.6 * across))
+  if (full <= 0) return null
+  const arc = Math.min(deg - M.deg[0], M.deg[1] - deg)
+  return { full, t: M.startAt + Math.max(0, arc) * M.perDeg + Math.max(0, out - inner) * M.perMm + 3 * fray }
+}
 function driftAt(x, z) {
+  const heap = heapAt(x, z)
+  const m = moundAt(x, z)
+  if (!m) return heap
+  const D = L.slab.drift
+  const hump = smooth(D.hump[0], D.hump[1], fbm(x / D.lumpMm[0] + 3, 8.6, z / D.lumpMm[0], 3))
+  const small = fbm(x / D.lumpMm[1] + 9, 1.3, z / D.lumpMm[1], 3)
+  const lumps = (0.45 + 0.9 * hump) * (1 - D.lump[2] + 2 * D.lump[2] * small)
+  return Math.max(heap, L.slab.mound.mm * smooth(0.0, 0.7, m.full) * lumps)
+}
+function heapAt(x, z) {
   const D = L.slab.drift
   const out = Math.hypot(x, z) - footR
   if (out <= -D.underMm || out >= D.outMm) return 0
@@ -814,7 +851,8 @@ function buildSlab() {
     o.when = (x) => Math.min(...marks.map((m) => m.t + Math.abs(x - m.s) / o.speed))
     o.to = [tip]
     o.steer = 0.25
-    grow(ctx, root, d, o)
+    // An arm marked skip is grown into nothing: it takes its random numbers, so the arms after it keep their shapes.
+    grow(a.skip ? { ...ctx, field: { stroke() {} }, keep: null } : ctx, root, d, o)
   }
   // The heap that hugs the foot, loose grains, clumps and thin patches further out.
   const { H, T, S } = field
@@ -849,7 +887,8 @@ function buildSlab() {
       if (r < footR - 8) continue
       const big = fbm(wx * 0.09, 3.1, wz * 0.09, 3)
       const mid = fbm(wx * 0.5, 9.4, wz * 0.5, 3)
-      const reach = (L.slab.heapMm[0] + L.slab.heapMm[1] * smooth(0.3, 0.75, big)) * (L.slab.heapSide[0] + L.slab.heapSide[1] * (wx / (r || 1)) ** 2)
+      const frontClear = 1 - (1 - L.slab.front.keep) * smooth(L.slab.front.clear[0], L.slab.front.clear[1], wz / (r || 1))
+      const reach = (L.slab.heapMm[0] + L.slab.heapMm[1] * smooth(0.3, 0.75, big)) * (L.slab.heapSide[0] + L.slab.heapSide[1] * (wx / (r || 1)) ** 2) * frontClear
       const q = (r - footR + 1.5) / reach
       if (q < 1.2) {
         const wall = U.wallMm * smooth(0.35, 0.7, fbm(wx * 0.3 + 3, 1.1, wz * 0.3, 3))
@@ -860,6 +899,15 @@ function buildSlab() {
         if (s > S[i]) S[i] = s
         const t = 0.5 + Math.max(0, r - footR) * 0.8 + mid * 2
         if (t < T[i]) T[i] = t
+      }
+      const md = moundAt(wx, wz)
+      if (md) {
+        const body = smooth(0.0, 0.55, md.full)
+        const h = body * L.slab.mound.body * (0.55 + 0.6 * mid + 0.3 * md.full)
+        if (h > H[i]) H[i] = h
+        const s = body * (0.3 + 0.4 * mid)
+        if (s > S[i]) S[i] = s
+        if (md.t < T[i]) T[i] = md.t
       }
       const far = fbm(wx * 0.06 + 40, 1.7, wz * 0.06, 4)
       const thin = smooth(0.6, 0.74, far) * (1 - smooth(half * 0.72, half * 0.97, r)) * smooth(footR + 6, footR + 24, r)
@@ -956,8 +1004,11 @@ function slabShapes(lines, grains, tTop) {
       const sk = Math.max(1, Math.round(D.openMm / ((r * 2 * Math.PI) / row)))
       const around = (tallAt(i - si, k) + tallAt(i + si, k) + tallAt(i, k - sk) + tallAt(i, k + sk)) / 4
       const open = clamp(1 - (around - tall[j]) * D.cavity, D.openMin, 1)
-      const t = 0.5 + Math.max(0, r - footR) * 0.8 + 2 * fbm(x * 0.5, 9.4, z * 0.5, 3)
-      ids[j] = vert(x, tall[j], z, t, smooth(0, D.deepMm, tall[j]), clamp(tall[j] / D.softMm), open)
+      const md = moundAt(x, z)
+      const loose = md && heapAt(x, z) < tall[j]
+      const t = loose ? md.t : 0.5 + Math.max(0, r - footR) * 0.8 + 2 * fbm(x * 0.5, 9.4, z * 0.5, 3)
+      // The mound in front is thin loose snow: a wide soft edge and less body than the heap at the foot.
+      ids[j] = vert(x, tall[j], z, t, smooth(0, D.deepMm, tall[j]) * (loose ? L.slab.mound.deep : 1), clamp(tall[j] / (loose ? L.slab.mound.softMm : D.softMm)), open)
     }
     return ids[j]
   }
