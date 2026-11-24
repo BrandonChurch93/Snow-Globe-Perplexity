@@ -76,25 +76,27 @@
     {
       "name": "light-engine",
       "unit": "winter",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/scene/lighting.ts",
         "src/scene/lightgrid.ts",
         "src/core/chunks/light.ts"
       ],
       "standInHash": "342065c5ccf7aa4c",
-      "commit": "2530677"
+      "commit": "9e233ac",
+      "note": "The light grid, the rig's chunk and the room's reflection, agent/p3-light at 54f7879"
     },
     {
       "name": "base-winter",
       "unit": "winter",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/winter",
         "public/assets/winter"
       ],
       "standInHash": "3c6ea2bbcb3220ac",
-      "commit": "2530677"
+      "commit": "f5afe64",
+      "note": "Lathe profile, carved relief, brass ring and collar, snow and 35 icicles, agent/p3-base at 1950f69"
     },
     {
       "name": "miniature-winter",
