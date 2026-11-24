@@ -1,44 +1,31 @@
 {
-  "number": 48,
-  "time": "2026-11-24 18:35 UTC",
+  "number": 49,
+  "time": "2026-11-24 18:52 UTC",
   "phase": "3",
   "unit": "",
   "lines": [
-    "Status 48 · 2026-11-24 18:35 UTC · Phase 3",
-    "main is green again: the liquid's cure holds snow on both roof slopes and the new shake path is in for Round 6",
-    "The app is published from this state so the new shake can be tried",
-    "Round 5's renders come in from about 18:42 and its critics start then",
-    "One measure is red at the base camera: a single invalid pixel on the glass's right outline and its builder has it",
-    "Next: a new set of builders at 19:15 and the last two freezes at 20:15 and 22:15",
-    "phase 3: 10.13 h used of its 11.00 h box",
-    "allowance (before the review): 16.74 h used of 36.00 h allowed",
+    "Status 49 · 2026-11-24 18:52 UTC · Phase 3",
+    "Round 5 is with the critics. Two of six critic parts are in and both gave 7 (Round 4's merged scores were 4 and 5). Three of fifteen jurors are in: b and b and c",
+    "The round cannot pass as frozen: one unit test and one measure line are red on the judged commit. Both are cured or traced on newer work",
+    "Open in the critics' words: the storm reads as a milky ribbon of fog; a level belt hangs in the lower third while it clears; the roof snow is an even sheet; the pond is a flat blue insert; the crown is round pads",
+    "Next: the third set of builders hands over by 19:15 and a fourth set starts on these issues. Round 6 freezes at 20:15 and Round 7 at 22:15",
+    "phase 3: 10.42 h used of its 11.00 h box",
+    "allowance (before the review): 17.03 h used of 36.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-48-1.jpg",
-      "caption": "The new shake path on main: the strokes every second frame from 36 to 58 at draft tier. The globe swings and rolls to the side it has swung to while the storm builds. Still wrong: the dome veils within about eight frames",
-      "w": 1149,
-      "h": 986
+      "file": "out/stills/status/status-49-1.jpg",
+      "caption": "At rest: the approved image on the left and Round 5's judged still on the right (final tier)",
+      "w": 1200,
+      "h": 582
     },
     {
-      "file": "out/stills/status/status-48-2.jpg",
-      "caption": "The set down on the shake builder's branch at review tier: no hold in the air. The last stroke carries into a shorter swing and the globe sinks through it and lands. Still wrong: the storm here is the older veil and the landing's rock is too small to read",
+      "file": "out/stills/status/status-49-2.jpg",
+      "caption": "Mid shake: the approved image on the left and Round 5's judged still on the right (final tier)",
       "w": 1200,
-      "h": 761
-    },
-    {
-      "file": "out/stills/status/status-48-3.jpg",
-      "caption": "Film B on the new cut, measuring scene: frame 0 (the close opening before the pull back), frame 666 (the locked camera inside the first shake), frame 720 (the landing on its bar line) and the last frame, back on the camera of frame 0. In frame 666 the top of the glass leaves the picture: to be settled when the cameras are fitted. (by film_app_builder)",
-      "w": 1200,
-      "h": 676
-    },
-    {
-      "file": "out/stills/status/status-48-4.jpg",
-      "caption": "The app in live mode with the real interface, still on the measuring scene: at rest, then three moments of one shake (lift and tilt, the storm, the landing). The season marks sit at the bottom left, the Shake control at the bottom centre. (by film_app_builder)",
-      "w": 1200,
-      "h": 676
+      "h": 582
     }
   ]
 }
