@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 24 · 2026-11-24 09:21 UTC
+Status 25 · 2026-11-24 09:45 UTC
 
-- `out/stills/status/status-24-1.jpg`: Approved winter image above, the stand-in globe with the corrected sizes below. The yellow circle and the three crosses are the glass and the foot as measured on the approved image.
-- `out/stills/status/status-24-2.jpg`: The foot of the base in the approved image with three fitted arcs: the camera looks down only 4.5 degrees.
-- `out/stills/status/status-24-3.jpg`: The two ends of the foot, enlarged, with a pixel grid: the foot is 116 mm across, as the config says.
-- `out/stills/status/status-24-4.jpg`: Still: winter rest hero, hd, draft
+- `out/stills/status/status-25-1.jpg`: The approved winter image's edges in yellow, laid over the stand-in globe drawn with the reference camera: glass, collar and foot line up, everything inside is still a stand-in.
+- `out/stills/status/status-25-2.jpg`: Approved image above, the build below, same camera. This pair is what each part is now built against.
+- `out/stills/status/status-25-3.jpg`: Fall hold after the thinning, at 36.5, 38.4, 41 and 45 s (landing at 36 s), with the move down to the low camera (by particles_engineer_2)
+- `out/stills/status/status-25-4.jpg`: Spring hold after the thinning, at 12.5, 14.4, 17 and 21 s (landing at 12 s): the miniature is out of the storm one bar after the landing (by particles_engineer_2)
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 09:21 UTC
+2026-11-24 09:45 UTC
 clock: phase 3, tick of 0.2 minutes
-phase 3: 0.91 h used of its 11.00 h box
-allowance (before the review): 7.52 h used of 36.00 h allowed
-all time before the review: 7.52 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+phase 3: 1.30 h used of its 11.00 h box
+allowance (before the review): 7.91 h used of 36.00 h allowed
+all time before the review: 7.91 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
@@ -830,3 +830,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 08:58 Status 23 posted (Phase 3 begins): the two approved winter images and the stand-in still at `hero`, with Status 22's lines folded in, since those were logged at 08:41 but not shown as text. The ten study lines and the eight sources are written under "Look lock" (step 1 of Phase 3 is done). Required reading after the compaction: `kit/02`, `03`, `04`, `06`, `07`, the two sections of the round 2 notes, the addenda folder (still only its README).
 
 - 2026-11-24 09:22 UTC. Status 24 posted: the approved winter image measured (decisions 40 and 41), pictures `out/work/calib/fit-check.jpg`, `el-fit.jpg`, `ends.jpg`. 304 tests green at `a1d141f`.
+
+- 2026-11-24 09:45 UTC. Status 25 posted: the Phase 3 scaffold and the fit tool (pictures `out/work/fit/winter-lines.jpg`, `winter-pair.jpg`). The winter miniature split in two owners (`src/seasons/winter/mini/village.ts`, `tree.ts`, `0ad117f`), the parts register's file lists follow the new layout and the `lens` flag moved to `src/post/post.ts`. 305 tests green. Next: the Phase 3 briefs and ten build agents.
