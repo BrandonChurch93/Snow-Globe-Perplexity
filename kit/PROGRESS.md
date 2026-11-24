@@ -34,16 +34,16 @@ Status 57 · 2026-11-24 22:04 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 22:10 UTC
-clock: phase 3, tick of 0.1 minutes
-phase 3: 13.72 h used of its 11.00 h box
-allowance (before the review): 20.33 h used of 36.00 h allowed
-all time before the review: 20.33 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 22:22 UTC
+clock: phase 3, tick of 12.6 minutes
+phase 3: 13.93 h used of its 11.00 h box
+allowance (before the review): 20.54 h used of 36.00 h allowed
+all time before the review: 20.54 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: reached
 budget report: not due
-minutes since the last status: 5
+minutes since the last status: 18
 ```
 
 ## Phases
@@ -837,6 +837,11 @@ Merged into `main`, each verified here with types clean and the tests green (126
 - Fourth set of build agents, the closers, started 19:13 UTC (limit 22:13 UTC) (round 5 and 6 fixes, one new job per part; each in its own sandbox, on the same branch and files as the outgoing builder of the third set; brief `out/work/briefs/wave4-common.md` plus every Round 5 issue by owner in the critics' own words (`out/work/briefs/r5-issues.md`), the outgoing builder's final report and detail file (`out/work/reports3/`), the rest and landed pairs of the Round 5 freeze and the same pair on `main` after the merge of 19:09 (`out/work/status/merge-1909-pair.jpg`)): `flake_closer` (`agent/p3-flakes`), `liquid_closer` (`agent/p3-liquid`), `shake_closer` (`agent/p3-shake`), `light_closer` (`agent/p3-light`), `tree_closer` (`agent/p3-tree`), `village_closer` (`agent/p3-village`), `base_closer` (`agent/p3-base`), `frost_closer` (`agent/p3-frost`), `glass_closer` (`agent/p3-glass`; lent `tools/lib/lens.mjs` and `src/core/materials.ts` for the cure of measure M1, due 19:50), `scene_closer` (`agent/p3-scene`; carries the lens cure of open item 36 with `src/core/sampler.ts`, `src/core/accumulator.ts` and `src/scene/stage.ts` lent). Ten build agents, the limit of the kit. Times: push by 20:10 for the Round 6 freeze at 20:15, by 22:10 for the Round 7 freeze at 22:15, final report by 22:14, inside `budget.buildAgentMaxHours` 3 from the start.
   - The third set ended between 18:55 and 19:07 UTC with its ten final reports (kept in `out/work/reports3/`, each with its detail file); none is running. Its branches were merged into `main` at 19:00 to 19:09 (`tree` `5289b91`, `village` `c2ee419`, `base` `1008406`, `frost` `73cda7e`, `flakes` `58a8e76`, `liquid` `2bb27d5`, `scene` `6e8c064`, `glass` `549885a`, `light` `dfb088d`, `shake` `588785f`).
   - Round 5's critic still out at 19:14: `reviewer_r5_c` (R3 part 2, `claude_opus_5_5`, started 18:49, limit 19:34). Round 5's render agents (`round_renderer`, `motion_renderer`, `motion_renderer_b`, `gate_runner`) are idle and are used again for Round 6.
+
+- Round 7's agents, logged 22:23 UTC.
+  - The fourth set, the closers, ended between 21:55 and 22:08 UTC with its ten final reports (kept in `out/work/reports4/`, each with its detail file); none is running and none was past its limit of 22:13. Their last pushes are in the judged build `4f10d97`: tree `ef99abc`, village `c592dab`, base `a807a2f`, frost `988374e`, flakes `eae5220`, liquid `78e60ec`, scene `df43cf5`, glass `41d0707`, light `4a0a414`, shake `acbf066`.
+  - Round 7's render agents, messaged at 22:18 on commit `4f10d97`: `gate_runner` (the Phase 3 gate on a clean clone and the 12 still repeat test), `round_renderer` (the measures at `final` and the pack of R1 to R3; branch `agent/p3-round7-pack`), `motion_renderer` (half of R4's frames at `review`, the whole shake, the rest sheet of decision 67, then the R4 pack; branch `agent/p3-round7-motion`), `motion_renderer_b` (the other half; branch `agent/p3-round7-motion-b`). Limit for each: 100 minutes, as in Rounds 4 to 6.
+  - `looklock_scribe`, started 22:22 UTC in the Builder's own workspace (no branch; it writes one file, `out/work/notes/looklock-draft.md`, and changes nothing else): the draft of "Look lock" (locked settings, what worked and did not, the recipes with their commands) from the ten final reports and the `RECIPE.md` files; limit 30 minutes. The Builder checks the draft and writes the section.
 
 ## Rounds
 
