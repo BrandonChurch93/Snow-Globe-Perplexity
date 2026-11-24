@@ -1,8 +1,6 @@
 import * as THREE from 'three'
 import { stageMaterial, type Rgb } from '../core/materials'
 
-export const glowUniforms = { uGlowGain: { value: 1 } }
-
 export interface GlowSource {
   at: readonly [number, number, number]
   color: Rgb
@@ -99,7 +97,7 @@ float villageWood = step(0.5, villageKind) * (1.0 - step(1.5, villageKind));
 float villageIron = step(1.5, villageKind) * (1.0 - step(2.5, villageKind));
 float villageLeaf = step(2.5, villageKind);
 vec3 villageK = villageStone * vec3(0.085, 0.0, 0.03) + villageWood * vec3(0.0, 0.06, 0.012) + villageIron * vec3(0.014, 0.0, 0.01) + villageLeaf * vec3(0.0, 0.0, 0.04);
-float villageTone = villageStone * (0.66 + 0.6 * villageGrain.r) + villageWood * (0.6 + 0.78 * villageGrain.g) + villageIron * (0.8 + 0.4 * villageGrain.r) + villageLeaf * (0.72 + 0.56 * villageGrain.b);
+float villageTone = villageStone * (0.5 + 0.46 * villageGrain.r) + villageWood * (0.6 + 0.78 * villageGrain.g) + villageIron * (0.8 + 0.4 * villageGrain.r) + villageLeaf * (0.72 + 0.56 * villageGrain.b);
 diffuseColor.rgb *= villageTone * (0.78 + 0.44 * villageMottle);
 float villageRough = clamp((fract(vSurf.x) - 0.02) / 0.9 + 0.22 * (0.5 - dot(villageGrain, villageStone * vec3(1.0, 0.0, 0.0) + villageWood * vec3(0.0, 1.0, 0.0) + (villageIron + villageLeaf) * vec3(0.0, 0.0, 1.0))), 0.08, 1.0);
 float villageMetal = villageIron * 0.55;
@@ -121,7 +119,7 @@ export interface Cover {
   uniforms: Record<string, THREE.IUniform>
 }
 
-export function surfaceMaterial(o: { part: string; map: THREE.Texture; cover?: Cover; key: string; change?: string }): THREE.MeshStandardMaterial {
+export function surfaceMaterial(o: { part: string; map: THREE.Texture; gain: THREE.IUniform<number>; cover?: Cover; key: string; change?: string }): THREE.MeshStandardMaterial {
   return stageMaterial({
     part: o.part,
     standIn: false,
@@ -132,10 +130,11 @@ export function surfaceMaterial(o: { part: string; map: THREE.Texture; cover?: C
     roughness: 1,
     metalness: 0,
     side: THREE.DoubleSide,
+    extra: { shadowSide: THREE.BackSide },
     change: o.change ?? 'miniature',
     key: o.key,
     hook: (shader) => {
-      Object.assign(shader.uniforms, glowUniforms, o.cover?.uniforms)
+      Object.assign(shader.uniforms, { uGlowGain: o.gain }, o.cover?.uniforms)
       shader.vertexShader = shader.vertexShader.replace('#include <uv_pars_vertex>', `#include <uv_pars_vertex>\n${SURFACE_VERT_PARS}`).replace('#include <uv_vertex>', `#include <uv_vertex>\n${SURFACE_VERT_MAIN}`)
       shader.fragmentShader = shader.fragmentShader
         .replace('#include <map_pars_fragment>', `#include <map_pars_fragment>\n${SURFACE_PARS}\n${o.cover?.pars ?? ''}`)
