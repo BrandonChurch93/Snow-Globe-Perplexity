@@ -65,7 +65,7 @@ export const BEHAVIOUR: Record<string, Behaviour> = {
   seed: { ...base, sinkMmS: [-0.1, 0.5], followSeconds: 0.035, swayMmS: 0.6, crossMmS: 0.5, dip: 0.2, turnRadS: [0.2, 0.6], spinPerMm: 0.03, rest: 'snags', slope: -2, restSpeedMmS: 60, gripPerSecond: 14, liftMmS: [18, 110], kick: 0.45, layerMm: [0.3, 1.2], sizeMm: [1.4, 2.6], sizeSkew: 1.2 },
   firefly: { ...base, mode: 'steer', followSeconds: 0.12, turnRadS: [0.6, 1.3], sizeMm: [0.7, 1], cruiseMmS: 16, reachMm: 9, clearanceMm: 5 },
   leaf: { ...base, sinkMmS: [11, 19], followSeconds: 0.08, swayMmS: 13, crossMmS: 6, dip: 0.5, turnRadS: [3.5, 5.5], spinPerMm: 0.05, rest: 'lies', slope: 0.72, restSpeedMmS: 18, gripPerSecond: 5, liftMmS: [16, 100], kick: 0.5, layerMm: [0.15, 1], renew: 0.04, dwellSeconds: [6, 24], sizeMm: [2.6, 4.4], sizeSkew: 1.3 },
-  ember: { ...base, mode: 'cycle', sinkMmS: [-13, -7], followSeconds: 0.05, swayMmS: 2.5, crossMmS: 2, turnRadS: [3, 6], sizeMm: [0.3, 0.75], sizeSkew: 1.6, lifeSeconds: [2.4, 5] },
+  ember: { ...base, mode: 'cycle', sinkMmS: [-13, -7], followSeconds: 0.05, swayMmS: 5, crossMmS: 3.5, turnRadS: [3, 6], sizeMm: [0.3, 0.75], sizeSkew: 1.6, lifeSeconds: [2.4, 5] },
   bat: { ...base, mode: 'steer', followSeconds: 0.25, turnRadS: [7, 10], sizeMm: [5, 7], cruiseMmS: 55, reachMm: 24, clearanceMm: 7, orbit: true },
 }
 
