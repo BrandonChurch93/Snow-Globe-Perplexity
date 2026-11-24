@@ -231,7 +231,11 @@ checks.G10 = {
     } finally {
       await session.close()
     }
-    for (const [k, r] of Object.entries(runs)) if (r.record.errors.length) problems.push(`the ${k} run logged: ${r.record.errors[0]}`)
+    const expected = (k, line) => (k === 'half' || k === 'byte') && /^warning: THREE\.WebGLRenderer: EXT_color_buffer_float extension not supported\.$/.test(line)
+    for (const [k, r] of Object.entries(runs)) {
+      const logged = r.record.errors.filter((line) => !expected(k, line))
+      if (logged.length) problems.push(`the ${k} run logged: ${logged[0]}`)
+    }
     const same = await compareFiles(runs.all.file, runs.portable.file)
     if (!same.identical) problems.push(`with every extension that is not portable denied the still differs in ${same.differing} pixels`)
     if (runs.portable.record.precision !== 'float32') problems.push(`with only portable extensions the accumulation is ${runs.portable.record.precision}`)

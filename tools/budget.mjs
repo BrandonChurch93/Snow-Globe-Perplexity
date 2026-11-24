@@ -12,55 +12,76 @@ const formats = Object.values(cfg.formats)
 const tiers = Object.entries(cfg.tiers).map(([id, t]) => ({ id, samples: t.samplesPerFrame }))
 const bar = (cfg.film.beatsPerBar * 60) / cfg.film.defaultBpm
 
-const t0 = Date.now()
-const session = await Session.open({ what: 'budget' })
-const launchSeconds = (Date.now() - t0) / 1000
-const rows = []
+const reuse = args.reuse === true && fs.existsSync(path.join(dir, 'budget.json')) ? JSON.parse(fs.readFileSync(path.join(dir, 'budget.json'), 'utf8')) : null
+let rows = []
 let sim
 let pageSeconds = 0
 let replaySeconds = 0
+let launchSeconds = 0
 let scene
-try {
-  for (const f of formats) {
-    const s = Date.now()
-    const page = await session.page({ format: f.id, simcache: false })
-    const load = (Date.now() - s) / 1000
-    if (!sim) {
-      pageSeconds = load
-      sim = await page.evaluate(async ([barSec, rest]) => {
-        const d = window.showcase.dev
-        const storm = await d.simulate(barSec * 0.6, 1)
-        const landed = await d.simulate(barSec + 0.5, 1)
-        const atRest = await d.simulate(barSec + rest, 1)
-        return { storm, landed, atRest }
-      }, [bar, cfg.states.restSeconds])
+let hash
+let measuredOn = machineId()
+let measuredAt = new Date().toISOString()
+if (reuse) {
+  rows = reuse.formats
+  const q = reuse.simulation.secondsPerSimulatedSecond
+  const fl = reuse.simulation.floating
+  sim = { storm: { ms: q.storm * 1000, floating: fl.storm }, landed: { ms: q.justLanded * 1000, floating: fl.justLanded }, atRest: { ms: q.atRest * 1000, floating: fl.atRest } }
+  pageSeconds = reuse.fixed.pageLoadSeconds
+  replaySeconds = reuse.fixed.stillReplaySeconds
+  launchSeconds = reuse.fixed.browserLaunchSeconds
+  scene = reuse.scene
+  hash = reuse.engineHash
+  measuredOn = reuse.machine
+  measuredAt = reuse.time
+} else {
+  const t0 = Date.now()
+  const session = await Session.open({ what: 'budget' })
+  hash = session.hash
+  launchSeconds = (Date.now() - t0) / 1000
+  try {
+    for (const f of formats) {
+      const s = Date.now()
+      const page = await session.page({ format: f.id, simcache: false })
+      const load = (Date.now() - s) / 1000
+      if (!sim) {
+        pageSeconds = load
+        sim = await page.evaluate(async ([barSec, rest]) => {
+          const d = window.showcase.dev
+          const storm = await d.simulate(barSec * 0.6, 1)
+          const landed = await d.simulate(barSec + 0.5, 1)
+          const atRest = await d.simulate(barSec + rest, 1)
+          return { storm, landed, atRest }
+        }, [bar, cfg.states.restSeconds])
+      }
+      const per = {}
+      for (const tier of ['draft', 'review']) {
+        const r = await renderStill(session, stillSpec({ season: cfg.defaultSeason, state: 'rest', camera: 'hero', tier, format: f.id }), { file: path.join(dir, `${f.id}-${tier}.png`), force: true, page })
+        per[tier] = r.record
+        if (!scene) scene = { counts: r.record.counts, precision: r.record.precision, standIns: r.record.standIns }
+        if (!replaySeconds && r.record.timings.simMs > 1000) replaySeconds = r.record.timings.simMs / 1000
+      }
+      const a = per.draft.timings
+      const b = per.review.timings
+      const perSample = (b.drawMs - a.drawMs) / (b.samples - a.samples) / 1000
+      const fixed = Math.max(0, a.drawMs / 1000 - perSample * a.samples)
+      const whole = per.review.seconds - b.simMs / 1000
+      rows.push({ format: f.id, width: f.width, height: f.height, pageLoadSeconds: load, secondsPerSample: perSample, perPictureFixedSeconds: fixed, outsideDrawSeconds: Math.max(0, whole - b.drawMs / 1000), draftDrawSeconds: a.drawMs / 1000, reviewDrawSeconds: b.drawMs / 1000 })
+      console.log(`${f.id}: ${perSample.toFixed(2)} s per sample, page ready in ${load.toFixed(1)} s`)
+      await page.context().close()
     }
-    const per = {}
-    for (const tier of ['draft', 'review']) {
-      const r = await renderStill(session, stillSpec({ season: cfg.defaultSeason, state: 'rest', camera: 'hero', tier, format: f.id }), { file: path.join(dir, `${f.id}-${tier}.png`), force: true, page })
-      per[tier] = r.record
-      if (!scene) scene = { counts: r.record.counts, precision: r.record.precision, standIns: r.record.standIns }
-      if (!replaySeconds && r.record.timings.simMs > 1000) replaySeconds = r.record.timings.simMs / 1000
-    }
-    const a = per.draft.timings
-    const b = per.review.timings
-    const perSample = (b.drawMs - a.drawMs) / (b.samples - a.samples) / 1000
-    const fixed = Math.max(0, a.drawMs / 1000 - perSample * a.samples)
-    const whole = per.review.seconds - b.simMs / 1000
-    rows.push({ format: f.id, width: f.width, height: f.height, pageLoadSeconds: load, secondsPerSample: perSample, perPictureFixedSeconds: fixed, outsideDrawSeconds: Math.max(0, whole - b.drawMs / 1000), draftDrawSeconds: a.drawMs / 1000, reviewDrawSeconds: b.drawMs / 1000 })
-    console.log(`${f.id}: ${perSample.toFixed(2)} s per sample, page ready in ${load.toFixed(1)} s`)
-    await page.context().close()
+  } finally {
+    await session.close()
   }
-} finally {
-  await session.close()
 }
 
 const picture = (row, samples) => samples * row.secondsPerSample + row.perPictureFixedSeconds + row.outsideDrawSeconds
 const shakes = cfg.film.shots.filter((s) => s.kind === 'shake').length
 const bars = cfg.film.shots.reduce((n, s) => n + s.bars, 0)
 const filmSeconds = bars * bar
-const stormSeconds = shakes * (bar + 2)
-const simFilm = ((stormSeconds + bar + 2) * sim.storm.ms + (filmSeconds - stormSeconds + cfg.states.restSeconds - 2) * sim.atRest.ms) / 1000
+const window = bar + cfg.states.restSeconds
+const holdsLeft = Math.max(0, filmSeconds + window - (shakes + 1) * window)
+const simFilm = (shakes + 1) * replaySeconds + (holdsLeft * sim.atRest.ms) / 1000
 const filmFrames = Math.round(filmSeconds * cfg.film.previewFps)
 const loopFrames = Math.round(cfg.deliver.cardLoop.seconds * cfg.deliver.cardLoop.fps)
 const row = (id) => rows.find((r) => r.format === id)
@@ -75,10 +96,10 @@ for (const [what, frames, format] of [
 
 const nproc = spawnSync('nproc', { encoding: 'utf8' }).stdout.trim()
 const result = {
-  time: new Date().toISOString(),
-  machine: machineId(),
-  cores: Number(nproc),
-  engineHash: session.hash,
+  time: measuredAt,
+  machine: measuredOn,
+  cores: reuse ? reuse.cores : Number(nproc),
+  engineHash: hash,
   scene,
   fixed: { browserLaunchSeconds: launchSeconds, pageLoadSeconds: pageSeconds, stillReplaySeconds: replaySeconds, stillReplaySimulatedSeconds: bar + cfg.states.restSeconds },
   simulation: { stepHz: cfg.sim.stepHz, secondsPerSimulatedSecond: { storm: sim.storm.ms / 1000, justLanded: sim.landed.ms / 1000, atRest: sim.atRest.ms / 1000 }, floating: { storm: sim.storm.floating, justLanded: sim.landed.floating, atRest: sim.atRest.floating } },
@@ -98,7 +119,7 @@ for (const r of rows) md.push(`| ${r.format} | ${r.width} x ${r.height} | ${n(r.
 md.push('')
 md.push(`- Fixed cost of starting a render: the browser starts in ${n(launchSeconds, 1)} s and a page is ready in ${n(pageSeconds, 1)} s. The first still of a page also replays the test shake: ${n(replaySeconds, 1)} s for ${n(bar + cfg.states.restSeconds, 1)} simulated seconds without checkpoints.`)
 md.push(`- One simulated second at winter's particle count (${scene.counts.particles}, ${cfg.sim.stepHz} steps): ${n(sim.storm.ms / 1000)} s in the storm, ${n(sim.landed.ms / 1000)} s just after the landing, ${n(sim.atRest.ms / 1000)} s at rest.`)
-md.push(`- The whole film's simulation, ${n(filmSeconds, 1)} s plus the preroll: about ${n(simFilm / 60, 1)} minutes, once, then read from checkpoints.`)
+md.push(`- The whole film's simulation, ${n(filmSeconds, 1)} s with ${shakes} shakes plus the preroll's: about ${n(simFilm / 60, 1)} minutes, once, then read from checkpoints.`)
 md.push('')
 md.push('| Job | Frames | Draft | Review | Final |')
 md.push('| --- | --- | --- | --- | --- |')

@@ -14,7 +14,13 @@ export async function serve({ dist = rel('dist'), simcache = rel('out', 'work', 
   if (!fs.existsSync(path.join(dist, 'index.html'))) throw new Error('dist/ is missing. Run npm run build first.')
   const mounts = [['/assets-full/', rel('assets-full')]]
   const server = http.createServer((req, res) => {
-    const url = new URL(req.url, 'http://x')
+    let url
+    try {
+      url = new URL(req.url.replace(/^\/+/, '/'), 'http://x')
+    } catch {
+      res.writeHead(400)
+      return res.end('bad request')
+    }
     let p = decodeURIComponent(url.pathname)
     const send = (code, body, type = 'text/plain') => {
       res.writeHead(code, { 'content-type': type, 'cache-control': 'no-store' })

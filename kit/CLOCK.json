@@ -1,7 +1,7 @@
 {
   "version": 1,
   "bootId": "ff5d1bae-befd-4c1b-b74f-d269fb040d4b",
-  "last": 1795487636350,
+  "last": 1795488835767,
   "sinceStatus": 0,
   "segment": {
     "kind": "run",
@@ -14,32 +14,32 @@
       "4": 9.5,
       "5": 4.5
     },
-    "used": 2601.186,
+    "used": 3800.603,
     "phaseUsed": {
-      "0": 2601.186
+      "0": 3800.603
     },
     "continuation": 0
   },
   "totals": {
-    "run": 2601.186,
+    "run": 3800.603,
     "afterReview": 0,
     "reviewRounds": 0,
     "extensions": 0
   },
   "phaseTotals": {
-    "0": 2601.186
+    "0": 3800.603
   },
   "reviewApproved": false,
   "continuations": 0,
   "reviewRounds": {},
   "extensions": {},
-  "ticks": 8,
+  "ticks": 9,
   "lastReport": [
-    "2026-11-24 02:33 UTC",
-    "clock: phase 0, tick of 20.3 minutes",
-    "phase 0: 0.72 h used of its 4.00 h box",
-    "allowance (before the review): 0.72 h used of 36.00 h allowed",
-    "all time before the review: 0.72 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h",
+    "2026-11-24 02:53 UTC",
+    "clock: phase 0, tick of 20.0 minutes",
+    "phase 0: 1.06 h used of its 4.00 h box",
+    "allowance (before the review): 1.06 h used of 36.00 h allowed",
+    "all time before the review: 1.06 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h",
     "extra rounds: yes",
     "half point: not reached",
     "box end: not reached",

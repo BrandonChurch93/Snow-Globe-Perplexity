@@ -7,6 +7,10 @@ import { readLooks, shownSet, markShown } from './lib/looks.mjs'
 import { ensureDir } from './lib/browser.mjs'
 
 const args = parseArgs(process.argv.slice(2))
+if (args.help === true || args.h === true) {
+  console.log('npm run status -- --phase N [--unit ID] [--key ID] [--say "a|b"] [--pics a,b --captions "x|y"] [--pair-note T] [--sounds] [--no-render] [--no-tick] [--review-round N] [--extension N]')
+  process.exit(0)
+}
 const cfg = loadConfig()
 const outDir = rel('out', 'stills', 'status')
 const workDir = rel('out', 'work', 'status')

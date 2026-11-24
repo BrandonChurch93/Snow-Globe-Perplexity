@@ -18,4 +18,11 @@ This repo holds the plan for the build and, once the build has run, the build it
 
 ## Status
 
-The build has not started. The app's address, how to use it, how to render the films and how to deploy will be written here by the build.
+The build is running. The log is `kit/PROGRESS.md`.
+
+- The app as it stands: https://snow-globe-seasons.pplx.app
+- The review page, where the newest pictures, films and sounds are in one place: https://snow-globe-seasons.pplx.app/review.html
+
+Both open for a signed-in member of the organization that hosts them. Until the scene is built, the app shows a measuring spike made of plain shapes.
+
+How to use it, how to render the films and how to deploy will be written here by the build.

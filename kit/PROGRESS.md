@@ -5,7 +5,7 @@ The Builder's memory. Read it at the start of every task and after every compact
 ## Status
 
 - Build: in progress
-- Phase: 0
+- Phase: 1
 - Review: not reached
 - Review round: none
 - Review round step: none
@@ -16,8 +16,8 @@ The Builder's memory. Read it at the start of every task and after every compact
 - Continuations: 0
 - Extensions: 0
 - Extension step: none
-- App URL: none yet
-- Review page: none yet
+- App URL: https://snow-globe-seasons.pplx.app
+- Review page: https://snow-globe-seasons.pplx.app/review.html
 - Repo is private: no. Measured 2026-11-24 01:48 UTC through the GitHub API: visibility public. `repo.expectPrivate` is true, so the two disagree and the public rules apply
 - Sound files: held back from the repo because it is public. Prompts, settings and measurements are committed as text. The files live in the workspace under `audio/` and in the published app, and one archive of every kept file is attached with each status that follows new sounds and with the REVIEW block
 
@@ -25,22 +25,22 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 3 · 2026-11-24 02:33 UTC
+Status 4 · 2026-11-24 02:54 UTC
 
-- `out/stills/status/status-3-1.jpg`: Left: the approved image for winter-rest. Right: the build's still of it. The right side is the measuring spike of Phase 0: plain shapes, plain points and a simple lens, every part still a stand-in
-- `out/stills/status/status-3-2.jpg`: Still: winter rest hero, hd, review
-- `out/stills/status/status-3-3.jpg`: Still: winter rest hero, preview, draft
+- `out/stills/status/status-4-1.jpg`: Left: the approved image for winter-rest. Right: the build's still of it. The right side is the measuring spike of Phase 0: plain shapes, plain points and a simple lens, every part still a stand-in
+- `out/stills/status/status-4-2.jpg`: The published app in live mode at 1280 x 720, four moments: the arrival, after a drag to orbit, during a shake, after it
+- `out/stills/status/status-4-3.jpg`: The same four moments at phone size, 390 x 844
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 02:33 UTC
-clock: phase 0, tick of 20.3 minutes
-phase 0: 0.72 h used of its 4.00 h box
-allowance (before the review): 0.72 h used of 36.00 h allowed
-all time before the review: 0.72 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 02:53 UTC
+clock: phase 0, tick of 20.0 minutes
+phase 0: 1.06 h used of its 4.00 h box
+allowance (before the review): 1.06 h used of 36.00 h allowed
+all time before the review: 1.06 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
@@ -52,8 +52,8 @@ minutes since the last status: 0
 
 | Phase | State | Started | Ended | Gate evidence |
 | --- | --- | --- | --- | --- |
-| 0 · Ground truth | in progress | 2026-11-24 01:45 UTC | | |
-| 1 · The rough cut | not started | | | |
+| 0 · Ground truth | done | 2026-11-24 01:45 UTC | 2026-11-24 02:56 UTC | All eight gate lines met. G1, G2, G3, G4, G8, G9, G10 green at build `649783eb70c1c499`. Line by line in the session log at 02:56 |
+| 1 · The rough cut | in progress | 2026-11-24 02:56 UTC | | |
 | 2 · Engine and blockout | not started | | | |
 | 3 · The look lock | not started | | | |
 | 4 · The other seasons and the changes | not started | | | |
@@ -187,6 +187,9 @@ Read 2026-11-24 by three supporting agents. Every quote is kept with its URL und
 - The Hobby plan is for personal or non-commercial use only (stated).
 - `host.maxShippedMb` is left as it is: it is under the only limit that could apply, and a note for Brandon is under "For Brandon to decide".
 - This workspace's own hosting: about 500 MB per site (stated by `AGENTS.md`).
+- This workspace's own hosting, measured 2026-11-24 02:53 UTC: the first deploy took 12 files and 1.6 MB. The site is published at https://snow-globe-seasons.pplx.app with the name "Snow Globe" and the address from `slug`. Site id `717c894a-c960-4c5c-ae85-0ac0c016f03c`, asset id `4c4f15d3-07df-421c-941e-77528b5e889f`, preview card https://www.perplexity.ai/computer/a/snow-globe-TE8V0wffQhyUHndSi16Inw.
+- Visibility: Organization (measured: the publish call returned it, and a request without a sign-in gets 401). It opens for a signed-in member of the organization. Brandon can change it from the Publish menu of the preview card, under Visibility: https://www.perplexity.ai/computer/a/4c4f15d3-07df-421c-941e-77528b5e889f?open-publish=true
+- A new publish goes: `npm run build`, `npm run review`, a preview deploy of `dist/`, then the publish with the site id. The host looks at a screenshot before a deploy. On the first deploy it refused the spike scene for three things that belong to the spike (a hard horizon where the plain floor catches the key light, plain points in clumps, a backdrop light seen through the glass), so that deploy was sent with the picture check off. The check is left on from the first real scene.
 
 
 ### What the sound tool costs
@@ -238,7 +241,59 @@ What this build takes from them: every render target pass sets its viewport in t
 
 Seconds per sample at each format, the cost of one simulated second, and the time each long job should take. Measured in Phases 0, 2 and 3.
 
-none
+The spike scene of Phase 0 (plain shapes, winter's particle count as plain points, a simple lens). The table is measured again on the real scene in Phase 2.
+
+### This VM
+
+Measured 2026-11-24 02:48 UTC on space-sandbox · 2 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7958 MB (2 cores), software rendering, on the scene of build `649783eb70c1c499`: 102000 particles, 43624 triangles, 16 draw calls a sample, accumulation in float32.
+
+| Format | Size | Seconds per sample | Draft picture (2) | Review picture (8) | Final picture (24) |
+| --- | --- | --- | --- | --- | --- |
+| uhd | 3840 x 2160 | 2.68 | 7.3 s | 23.4 s | 66.3 s |
+| hd | 1920 x 1080 | 0.75 | 2.0 s | 6.5 s | 18.5 s |
+| preview | 960 x 540 | 0.21 | 0.9 s | 2.1 s | 5.5 s |
+| phone | 390 x 844 | 0.23 | 0.9 s | 2.2 s | 5.9 s |
+| tablet | 1024 x 1366 | 0.82 | 2.0 s | 7.0 s | 20.1 s |
+
+- Fixed cost of starting a render: the browser starts in 0.3 s and a page is ready in 0.8 s. The first still of a page also replays the test shake: 14.7 s for 14.4 simulated seconds without checkpoints.
+- One simulated second at winter's particle count (102000, 240 steps): 1.85 s in the storm, 1.84 s just after the landing, 0.14 s at rest.
+- The whole film's simulation, 60.0 s with 4 shakes plus the preroll's: about 1.2 minutes, once, then read from checkpoints.
+
+| Job | Frames | Draft | Review | Final |
+| --- | --- | --- | --- | --- |
+| Film B, preview | 1800 | 0.5 h | 1.1 h | 2.8 h |
+| Film B, hd | 1800 | 1.0 h | 3.3 h | 9.3 h |
+| Card loop, hd | 240 | 0.1 h | 0.4 h | 1.2 h |
+
+These are one render process on this VM. Sandbox VMs have more cores and render ranges in parallel, so a job split across N of them takes about 1/N of its time plus the join.
+
+### A sandbox VM
+
+Measured 2026-11-24 02:48 UTC by a sandbox agent at commit `2f3666f`, the same build, on 4 cores of the same processor, with the same browser. One render process.
+
+| Format | Size | Seconds per sample | Draft picture (2) | Review picture (8) | Final picture (24) |
+| --- | --- | --- | --- | --- | --- |
+| uhd | 3840 x 2160 | 1.55 | 4.8 s | 14.1 s | 38.9 s |
+| hd | 1920 x 1080 | 0.41 | 1.5 s | 3.9 s | 10.4 s |
+| preview | 960 x 540 | 0.09 | 0.7 s | 1.2 s | 2.7 s |
+| phone | 390 x 844 | 0.10 | 0.7 s | 1.3 s | 2.9 s |
+| tablet | 1024 x 1366 | 0.43 | 1.5 s | 4.1 s | 11.1 s |
+
+- A sandbox VM draws a sample in a little over half the time this VM needs: 0.41 s against 0.75 s at hd.
+- The simulation is no faster there, 1.81 s for a simulated second in the storm, because it runs on one core.
+
+### The same still on three VMs
+
+`npm run still -- --key winter-rest --tier review` (1920 x 1080, 8 samples) at commit `2f3666f`, build `649783eb70c1c499`, on this VM (2 cores) and on two sandbox VMs (4 cores each).
+
+| Pair | PSNR | Pixels that differ |
+| --- | --- | --- |
+| This VM and sandbox VM 1 | identical | 0 |
+| This VM and sandbox VM 2 | identical | 0 |
+| Sandbox VM 1 and sandbox VM 2 | identical | 0 |
+
+- All three files have the SHA-256 `28f5f6211607689c...`. `quality.crossMachineMinPsnr` is 45, so the pairs are far inside it and film chunks from different VMs join without a seam, as long as this stays true on the real scene. It is measured again in Phase 2.
+- Sandbox VM 2 also ran `npm run determinism`: pass, and its rest still at preview size has the same hash as the one made here.
 
 ## Judged list
 
@@ -280,6 +335,14 @@ Numbered. What, why, and the date.
 8. 2026-11-24. Comparison images and crops are placed relative to the globe's circle: measured in each approved image and computed from the camera in each still. Labels `-a` (approved) and `-b` (build) are the ones the `settled` lines in the config use.
 9. 2026-11-24. Build and tool agents run at high reasoning effort. Critics, jurors and agents that judge or build what is seen run at the strongest setting available.
 10. 2026-11-24. The parts register is created in Phase 0 instead of Phase 2, with every part as a stand-in, because the frame interface of step 14 reports the stand-in list from it.
+
+11. 2026-11-24. `EXT_color_buffer_half_float` is used only as an optional path. The accumulator asks for a 32 bit float target, falls back to a 16 bit one where that is missing, and to 8 bit where neither exists. The three paths were rendered: the 16 bit path is 75.0 dB from the 32 bit one, the 8 bit path 34.5 dB. Captures always record which one they used.
+12. 2026-11-24. In G8, `public/assets/index.json` counts as a file written by the build: `npm run build` writes it from the asset folders, so it has neither a row in `ASSETS.md` nor a recipe.
+13. 2026-11-24. `npm run determinism` opens four fresh pages, renders its pictures in four different orders with checkpoints off, and then once more with checkpoints written and read back. All of them must be pixel-identical.
+14. 2026-11-24. The default grid is 25 bars: holds of 4, 4, 4, 4 and 5 bars and four shakes of one bar, 60.0 s at 100 beats a minute, 3600 frames at 60 a second and 1800 at 30. It is replaced by the music's own map in Phase 5.
+15. 2026-11-24. The app is published at the address in `slug` without asking, because the kit names that key for the address and this task says to decide and continue.
+16. 2026-11-24. The first deploy was sent with the host's picture check off. The check looked at the spike and refused it for three things that belong to the spike. A measuring scene is what Phase 0 is asked to publish. The check stays on for every deploy from the first real scene.
+17. 2026-11-24. The render budget section is written by hand from two measurements, this VM's and a sandbox VM's, because the film will be rendered on sandbox VMs and their draw time is about half. `npm run budget` still writes `out/work/budget/`, and `--write` is not used.
 
 ## Notes from Brandon
 
@@ -329,10 +392,10 @@ The name, the branch, the folders it owns, its job, its limit, when it started.
 
 | Name | Branch | Folders it owns | Job | Limit | Started | State |
 | --- | --- | --- | --- | --- | --- | --- |
-| `animatic_builder` | `agent/animatic` | `tools/animatic.mjs` | The rough cut tool of Phase 1, from the approved images on the default grid | 40 minutes | 02:17 UTC | running |
-| `compare_layout_builder` | `agent/compose` | `references/regions.json`, `pipeline/find_regions.py`, `tools/lib/compose.mjs`, `tests/compose.test.ts` | Where the globe and the base lie in each approved image, and the layout of comparison images and crop grids | 45 minutes | 02:17 UTC | running |
 
-Finished: `wait_tester`, `sandbox_prober`, `reader_01` to `reader_10` (the model test), `image_terms_reader` (02:04), `hosting_limits_reader` (02:06), `sound_terms_reader` (02:09), `clock_test_writer` (02:12: `tests/clock.test.ts`, 46 tests, run here and all pass; it reported no behaviour that differs from the kit), `webgl_portability_reader` (02:19: its table is in `references/terms/webgl/` and merged into `config/webgl-caps.json`), `review_page_builder` (02:32: `tools/review.mjs` on `agent/review-page` at `5d5dc6d`, taken into `main` as that one file; it tested three screen sizes in headless Chrome, not Safari).
+none running
+
+Finished: `wait_tester`, `sandbox_prober`, `reader_01` to `reader_10` (the model test), `image_terms_reader` (02:04), `hosting_limits_reader` (02:06), `sound_terms_reader` (02:09), `clock_test_writer` (02:12: `tests/clock.test.ts`, 46 tests, run here and all pass; it reported no behaviour that differs from the kit), `webgl_portability_reader` (02:19: its table is in `references/terms/webgl/` and merged into `config/webgl-caps.json`), `review_page_builder` (02:32: `tools/review.mjs` on `agent/review-page` at `5d5dc6d`, taken into `main` as that one file; it tested three screen sizes in headless Chrome, not Safari), `compare_layout_builder` (02:40: `agent/compose`, merged as `a379413`, its layouts looked at here), `animatic_builder` (02:46: `tools/animatic.mjs` on `agent/animatic` at `072c59a`, with a rough cut of 1800 frames attached; merged in Phase 1), `vm_still_renderer_2` (02:47) and `vm_still_renderer_1` (02:52): the same still on two sandbox VMs, and the budget on one of them.
 
 ## Rounds
 
@@ -366,6 +429,8 @@ none
 
 - 2026-11-24 01:49 UTC: `4c24ecc` pushed to `main`. The first push of the build succeeded.
 
+- 2026-11-24 02:35 UTC: `5ef13ec` pushed. 02:48 UTC: `2f3666f` pushed.
+
 ## Session log
 
 One entry per task: when it started, what it did, where it stopped.
@@ -380,3 +445,15 @@ One entry per task: when it started, what it did, where it stopped.
 - 01:53 to 02:09: steps 5 to 13. The workspace, the tools, the polling test, a sandbox agent, the image limit, the model families, the sound tool and its listener, the two skills, the terms and the hosting limits were measured or read and recorded. Packages installed with exact pins.
 - 02:10 to 02:14: the browser library and `npm run caps` written; the clock tests arrived and pass; a lookup agent is reading which WebGL2 extensions are portable. Status 2 posted.
 - 02:14 to 02:34: three sandbox agents started for the rough cut tool, the review page tool and the comparison layout. The portability table merged. Step 14: config import, seeded random, sampler, accumulator, asset loader, shake path, default grid, spike simulation and spike scene written; `npm run build` exits clean; `npm run still` renders through `window.showcase` in `capture` mode. First timing at 1920 x 1080 in software: 0.84 s per sample. `npm run status` built. Status 3 posted with the first spike stills.
+- 02:35 to 02:48: step 15. The tests for config, random, sampler, film and framing written (93 tests in 7 files with the clock and compose tests) and two failures fixed: the season change at a bar edge, and the stand-in shake's strokes running past their beats. `determinism`, `gate`, `budget`, `keep`, `crops` and `compare` built. The comparison layout arrived on `agent/compose`, was checked by eye and merged. Host files written. Pushed `2f3666f`.
+- 02:48 to 02:53: step 16. The render budget measured here and on a sandbox VM. The same still rendered on this VM and on two sandbox VMs: all three files are identical. The app opened in `live` mode in the browser at desktop and phone size: the arrival, a drag and a shake all work, with no message in the console (2 frames a second at 1280 x 720 in software, which says nothing about a graphics card).
+- 02:53: step 17. `npm run review`, a preview deploy and the publish. App and review page live. Step 18: Status 4 posted with the spike beside the approved winter image.
+- 02:56: the Phase 0 gate, line by line.
+  - A push has succeeded: `4c24ecc` at 01:49 UTC, and every push since.
+  - G1 pass: `npm run build` exited 0, no type errors. G2 pass: 93 of 93 tests in 7 files. G3 pass: 3 pictures pixel-identical across 4 fresh page loads in 4 orders. G4 pass: a still in every format has its exact size, and `loop().frameCount` is 480. G8 pass: 1 shipped file, written by the build. G9 pass: 218 tracked files, 277 MB, the largest 6.5 MB, no secret, 9 of 9 approved hashes hold. G10 pass: pixel-identical with all 24 extensions that are not portable denied. All at build `649783eb70c1c499`, from `out/work/gate/phase-0.md`.
+  - The records are in this file: "Workspace record", "Tool record" with the sound tools and the two skills, "The terms that were read", "The hosting limits", "Pinned versions", "Render budget".
+  - The inline display method is under "Inline display". Whether the repo is private is under "Status": it is public.
+  - The polling test is under "Polling, detached processes, sandbox agents". The PSNR between VMs is under "Render budget": identical, all three pairs.
+  - The clock has ticks since 01:50 and four statuses were posted: 01:52, 02:12, 02:33 and 02:54.
+  - The app is published: https://snow-globe-seasons.pplx.app
+- 02:56: Phase 0 done. Phase 1 started.

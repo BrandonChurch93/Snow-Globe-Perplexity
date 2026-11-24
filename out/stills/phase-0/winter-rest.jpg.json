@@ -1,0 +1,66 @@
+{
+  "engineHash": "649783eb70c1c499",
+  "seasonHashes": {
+    "winter": "e3b0c44298fc1c14",
+    "spring": "e3b0c44298fc1c14",
+    "summer": "e3b0c44298fc1c14",
+    "fall": "e3b0c44298fc1c14"
+  },
+  "format": "hd",
+  "tier": "review",
+  "assets": "full",
+  "diagnostic": "",
+  "browser": "Google Chrome for Testing 147.0.7727.15",
+  "graphics": "software",
+  "machine": "space-sandbox · 2 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7958 MB",
+  "time": "2026-11-24T02:43:52.823Z",
+  "diag": "",
+  "spec": {
+    "id": "winter-rest",
+    "season": "winter",
+    "state": "rest",
+    "camera": "hero",
+    "tier": "review",
+    "format": "hd",
+    "assets": "full",
+    "diag": "",
+    "interface": false,
+    "live": ""
+  },
+  "noext": [],
+  "seconds": 7.377,
+  "timings": {
+    "simMs": 168.80000000074506,
+    "drawMs": 6876.60000000149,
+    "samples": 8,
+    "steps": 96
+  },
+  "precision": "float32",
+  "standIns": 54,
+  "counts": {
+    "triangles": 42983,
+    "drawCalls": 14,
+    "particles": 102000
+  },
+  "framing": {
+    "globe": {
+      "cx": 960,
+      "cy": 435.495442645485,
+      "r": 375.07357680477554
+    },
+    "base": {
+      "left": 601.6893204686867,
+      "right": 1318.3106795313133,
+      "top": 650.2822077576736,
+      "foot": 1070.3162555556976
+    },
+    "frameHeightMm": 174.2706350309654,
+    "frameWidthMm": 309.8144622772718,
+    "heroFill": 0.8492538055748894,
+    "cornerReachMm": 185.7791914518618
+  },
+  "errors": [],
+  "keptFrom": "out/work/stills/winter-rest-hd-review.png",
+  "sourceSha256": "28f5f6211607689c6bd30b2f481361ef7e3e66922a8c9fd52f651d101df8677f",
+  "keptAt": "2026-11-24T02:51:52.236Z"
+}
