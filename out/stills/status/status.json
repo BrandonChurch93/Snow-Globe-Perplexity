@@ -1,43 +1,46 @@
 {
-  "number": 27,
-  "time": "2026-11-24 10:23 UTC",
+  "number": 28,
+  "time": "2026-11-24 10:43 UTC",
   "phase": "3",
   "unit": "",
   "lines": [
-    "Status 27 · 2026-11-24 10:23 UTC · Phase 3",
-    "Ten builders are 23 minutes in. Every picture so far is a starting point or a measurement, none is finished work.",
-    "The ground inside the globe now follows the approved picture: a mound that rises toward the back and falls to the front glass, with the cottage, lamp, tree and pond placed where the picture has them.",
-    "The measuring and critic pack tools ran clean on the stand-ins as a dry run. No critic saw it and it is not a round.",
-    "Next: the builders' first real parts, and the cameras fitted again to the new ground.",
-    "phase 3: 1.93 h used of its 11.00 h box",
-    "allowance (before the review): 8.54 h used of 36.00 h allowed",
+    "Status 28 · 2026-11-24 10:43 UTC · Phase 3",
+    "Phase 3 (the look lock) is 2 hours into its 11 hour box. Ten builders are 45 minutes into their parts and none of these pictures is finished work",
+    "The layout measured on the approved winter image is in main: the ground is a mound raked toward the viewer and the cottage and the tree stand where the image has them (decision 43)",
+    "The film's close camera and the interior camera are fitted to that layout again and all 305 tests are green",
+    "Decision 44: the key light comes from the upper right in front as the approved image shows. The kit says upper left",
+    "Decision 45: the shake's lift and tilt go below the range the kit gives the Builder so the lifted glass keeps about 5 percent of the frame above it and the foot's rim never enters the surface. Listed for your review",
+    "The published app is unchanged since 08:34 UTC (the Phase 2 stand-in globe). It is published again when the builders' parts are merged",
+    "First reports from the builders are due at about 11:30 UTC",
+    "phase 3: 2.28 h used of its 11.00 h box",
+    "allowance (before the review): 8.89 h used of 36.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-27-1.jpg",
-      "caption": "The base's profile measured from the approved image and drawn back onto it as rings. The model is being built to these numbers.",
-      "w": 1200,
-      "h": 478
-    },
-    {
-      "file": "out/stills/status/status-27-2.jpg",
-      "caption": "Bark sheet, take 1, made from a crop of the approved trunk. Not yet on the model.",
-      "w": 900,
-      "h": 900
-    },
-    {
-      "file": "out/stills/status/status-27-3.jpg",
-      "caption": "Needle sheet, take 1, made from a crop of the approved crown. Not yet on the model.",
-      "w": 900,
-      "h": 900
-    },
-    {
-      "file": "out/stills/status/status-27-4.jpg",
-      "caption": "Approved image above, the build below before the village work. Every part in the build is still a stand-in.",
-      "w": 952,
+      "file": "out/stills/status/status-28-1.jpg",
+      "caption": "Glass builder: the approved image above and the rebuilt glass shell below on the stand-in miniature. A starting point. Still wrong: grey wash through the liquid and an even grey rim and a blown highlight",
+      "w": 589,
       "h": 1200
+    },
+    {
+      "file": "out/stills/status/status-28-2.jpg",
+      "caption": "Light builder: the approved image above and the first pass of the light engine below on the stand-in miniature. Still wrong: the key is too strong and the warm pools by the lamp and the window do not read",
+      "w": 964,
+      "h": 1200
+    },
+    {
+      "file": "out/stills/status/status-28-3.jpg",
+      "caption": "Tree builder: the real trunk from the film's close camera with bark from one generated sheet. Still wrong: no crown and no snow on the roots and the bark is too orange. The cottage and lamp beside it are stand-ins",
+      "w": 960,
+      "h": 540
+    },
+    {
+      "file": "out/stills/status/status-28-4.jpg",
+      "caption": "Three cameras framed again on the stand-in globe, draft: surface (the foot of the base above, the surface and the globe's reflection under it), interior (the miniature fills the height), low (looking up at the whole globe from 24 mm above the surface) (by engine_engineer_2)",
+      "w": 1200,
+      "h": 223
     }
   ]
 }
