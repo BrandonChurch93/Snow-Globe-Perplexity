@@ -171,7 +171,7 @@ diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(2.6, 2.0, 1.25)
 `
 
 const WOOD_ROUGH = `
-roughnessFactor = clamp(mix(0.2, 0.58, baseDetail.b) + 0.3 * baseCavity - 0.16 * baseWear, 0.12, 1.0);
+roughnessFactor = clamp(mix(0.26, 0.6, baseDetail.b) + 0.3 * baseCavity - 0.16 * baseWear + 0.12 * baseCarved, 0.14, 1.0);
 `
 
 const WOOD_TILT = `
@@ -338,7 +338,7 @@ void main() {
     }
     if (at.y < 0.0) break;
   }
-  vec3 behind = stageRoom(outW) + stageRoomLights(outW, 0.12);
+  vec3 behind = stageRoom(outW) + stageRoomLights(outW, 0.3) * 0.3;
   if (hit > 0.5) {
     vec3 rb = turn * normalize(vec3(at.x, 0.0, at.z));
     float under = smoothstep(0.5, 10.0, uIceSpan.z - at.y);
@@ -362,16 +362,16 @@ void main() {
   vec3 lit = uIceKeyCol * (0.2 + 0.8 * wrap * wrap) + uIceRimCol * 0.5 * back * back + iceDome(n);
   vec3 milk = vec3(0.52, 0.58, 0.66) * lit * RECIPROCAL_PI;
   vec3 col = mix(behind * vec3(0.86, 0.94, 1.0), milk, cloud);
-  col = col * (1.0 - fres) + mirror * fres + milk * (0.9 * pow(1.0 - nv, 3.0));
+  col = col * (1.0 - fres) + mirror * fres + milk * (0.6 * pow(1.0 - nv, 3.0));
   float hk = max(dot(n, normalize(v + uIceKeyDir)), 0.0);
   float hr = max(dot(n, normalize(v + uIceRimDir)), 0.0);
-  col += uIceKeyCol * (pow(hk, 420.0) * 7.0 + pow(hk, 36.0) * 0.16);
+  col += uIceKeyCol * (pow(hk, 420.0) * 4.5 + pow(hk, 36.0) * 0.12);
   col += uIceRimCol * (pow(hr, 240.0) * 2.4 + pow(hr, 30.0) * 0.1);
   vec3 cell = floor(vIcePos * 4.5);
   vec3 jit = vec3(baseHash(cell + 1.3), baseHash(cell + 7.1), baseHash(cell + 13.7)) - 0.5;
   vec3 fn = normalize(n + turn * jit * 1.3);
   float inCell = smoothstep(0.5, 0.12, length(fract(vIcePos * 4.5) - 0.5)) * step(0.35, baseHash(cell + 29.0));
-  col += (stageRoomLights(reflect(-v, fn), 0.03) * 2.2 + uIceKeyCol * pow(max(dot(fn, normalize(v + uIceKeyDir)), 0.0), 220.0) * 4.0) * inCell;
+  col += (stageRoomLights(reflect(-v, fn), 0.03) * 1.4 + uIceKeyCol * pow(max(dot(fn, normalize(v + uIceKeyDir)), 0.0), 320.0) * 2.0) * inCell;
   gl_FragColor = vec4(col, 1.0);
   if (uDiag != 0) gl_FragColor = stageDiag(vec3(0.8, 0.88, 1.0), n, 0.0, c, 0.0);
 }

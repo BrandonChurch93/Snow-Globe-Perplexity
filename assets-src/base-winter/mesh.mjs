@@ -353,17 +353,36 @@ function snowThickness(azIn, r) {
     const lean = 1 + 0.4 * m.glass * (1 - smooth(43.5, 47.5, r))
     t += m.peak * a * outer * inner * lean
   }
-  const lump = 0.62 + 0.76 * fbm(u * 46, r / 5.2, 46, 64, 91, 3)
+  const lump = 0.5 + 1.0 * fbm(u * 46, r / 5.2, 46, 64, 91, 3)
   const crumb = smooth(0.7, 0.84, fbm(u * 150, r / 2.1, 150, 64, 97, 2)) * 0.55 * smooth(0.04, 0.5, t + 0.25 * fbm(u * 20, r / 9, 20, 64, 103, 2))
   const dust = 0.34 * smooth(0.6, 0.8, fbm(u * 30, r / 6, 30, 64, 109, 3)) * (1 - smooth(45.5, 49.5, r))
-  const knob = 0.72 + 0.56 * fbm(u * 128, r / 2.4, 128, 64, 127, 2)
+  const knob = 0.62 + 0.76 * fbm(u * 128, r / 2.4, 128, 64, 127, 2)
   return Math.max(t * lump * heap * knob, crumb, dust) - 0.1
+}
+
+function snowOver(azIn) {
+  const reach = fbm(((azIn + 180) / 360) * 31, 0.37, 31, 4, 113, 3)
+  let best = 0
+  for (const m of MOUNDS) {
+    if (!m.over) continue
+    let az = azIn
+    const mid = (m.a0 + m.a1) / 2
+    while (az - mid > 180) az -= 360
+    while (az - mid < -180) az += 360
+    const window = smooth(m.over[0] - 3, m.over[0] + 3, az) * (1 - smooth(m.over[1] - 3, m.over[1] + 3, az))
+    best = Math.max(best, window * smooth(0.3, 0.52, reach))
+  }
+  return best
 }
 
 export function buildSnow() {
   const soup = new Soup('snow')
-  const cols = azList(-180, 180, (az) => (front(az) <= 132 ? 0.9 : 2.6), 48)
-  const rowsN = 18
+  const cols = azList(-180, 180, (az) => (front(az) <= 132 ? 1.0 : 2.6), 48)
+  const inner = 6
+  const mid = 7
+  const nose = 7
+  const rowsN = inner + mid + nose
+  const noseFrom = P.LIP.ringR + 0.3
   const repeats = Math.round((2 * Math.PI * 48) / SNOW.tileMm)
   const grid = []
   for (let i = 0; i < cols.length; i++) {
@@ -374,11 +393,24 @@ export function buildSnow() {
       rin = P.sphereRadiusAt(top) + 0.08
     }
     const column = []
+    const u = (az + 180) / 360
+    const ov = smooth(0.05, 0.5, snowOver(az))
+    const tA = Math.max(snowThickness(az, noseFrom), 0)
+    const hA = snowSupport(noseFrom) + tA
+    const hB = P.LIP.h - 0.55 - (0.35 + 1.5 * fbm(u * 53, 0.71, 53, 4, 137, 3))
+    const reachOut = lipOuter + 0.45 + 0.9 * fbm(u * 37, 0.13, 37, 4, 139, 3) - noseFrom
     for (let j = 0; j < rowsN; j++) {
-      const q = j / (rowsN - 1)
-      const r = q < 0.4 ? mix(rin, 50.4, q / 0.4) : mix(50.4, snowEdge + 0.25, (q - 0.4) / 0.6)
+      const k = j - inner - mid + 1
+      const r = j < inner ? mix(rin, 50.4, j / inner) : k <= 0 ? mix(50.4, noseFrom, (j - inner) / (mid - 1)) : mix(noseFrom, snowEdge + 0.25, k / nose)
       const t = snowThickness(az, r)
-      column.push({ r, t, h: snowSupport(r) + (t > 0 ? t : Math.max(t * 3, -0.45)) })
+      const flat = { r, t, h: snowSupport(r) + (t > 0 ? t : Math.max(t * 3, -0.45)), ru: r }
+      if (k <= 0 || ov <= 0) {
+        column.push(flat)
+        continue
+      }
+      const th = (90 - (k * 200) / nose) * RAD
+      const round = { r: noseFrom + reachOut * Math.cos(th), h: (hA + hB) / 2 + ((hA - hB) / 2) * Math.sin(th), t: mix(tA, 0.3, smooth(2, 6, k)), ru: noseFrom + k * 0.55 }
+      column.push({ r: mix(flat.r, round.r, ov), h: mix(flat.h, round.h, ov), t: mix(flat.t, round.t, ov), ru: mix(flat.ru, round.ru, ov) })
     }
     grid.push(column)
   }
@@ -386,7 +418,7 @@ export function buildSnow() {
   for (let j = 0; j < rowsN; j++) {
     for (let i = 0; i < cols.length; i++) {
       const g = grid[i][j]
-      soup.vert(place(g.r, g.h, cols[i]), [0, 1, 0], [(cols[i] / 360) * repeats, -g.r / SNOW.tileMm], [0, 0], [clamp(g.t / 1.6), clamp(0.35 + 0.65 * fbm(((cols[i] + 180) / 360) * 80, g.r / 3, 80, 64, 131, 2)), 1])
+      soup.vert(place(g.r, g.h, cols[i]), [0, 1, 0], [(cols[i] / 360) * repeats, -g.ru / SNOW.tileMm], [0, 0], [clamp(g.t / 1.6), clamp(0.35 + 0.65 * fbm(((cols[i] + 180) / 360) * 80, g.ru / 3, 80, 64, 131, 2)), 1])
     }
   }
   const acc = new Float32Array(cols.length * rowsN * 3)
