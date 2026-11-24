@@ -37,16 +37,16 @@ Status 28 · 2026-11-24 10:43 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 10:50 UTC
-clock: phase 3, tick of 6.1 minutes
-phase 3: 2.38 h used of its 11.00 h box
-allowance (before the review): 8.99 h used of 36.00 h allowed
-all time before the review: 8.99 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 11:00 UTC
+clock: phase 3, tick of 10.6 minutes
+phase 3: 2.56 h used of its 11.00 h box
+allowance (before the review): 9.17 h used of 36.00 h allowed
+all time before the review: 9.17 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 6
+minutes since the last status: 16
 ```
 
 ## Phases
@@ -869,3 +869,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 2026-11-24 10:44 UTC. Status 28 posted: three pictures from the builders' looks (the rebuilt glass shell against the approved image, the first pass of the light engine against it, the real trunk at the close camera), all starting points on stand-ins, none finished work. `main` pushed as `034f0bb`; all ten builders told to merge it. Next: wait on the builders, tick the clock, the next status by 11:14 UTC; first reports at about 11:30 UTC.
 
 - 2026-11-24 10:50 UTC. Decision 45's numbers, measured by `shake_builder` through `reachOf` at `hero`: `shake.liftMm` 7.25 (the top of the lift leans back 4.1 to 4.5 degrees and stands 7.5 to 9 mm further from the lens, and keeps 4.59 percent of the frame above the glass in the worst case; 7.5 mm does not hold with a lean of "a few degrees") and `shake.tiltDeg` 6, read as the cap on the whole angle between the globe's axis and the vertical (the rim rule allows 6.19 degrees at 7.25 mm). Tried on `main` with the stand-in path: two tests go red (the film test's stroke height against 0.7 of the lift, by 0.04 mm; `tests/sim.test.ts`, 91 percent of the particles floating at 0.7 of the bar against the 97 it asks), so the two numbers reach `main` together with the real path and the liquid's answer to it, and `main` stays at 13.5 and 14 until then. `liquid_builder` was told to build against the smaller shake and that no number in a test moves. `village_builder` pushed `0d0f0c8` (chimney on the left slope of the roof, roof slab 0.65 mm, as the picture has them; the shared model script). Clock ticked 10:50.
+
+- 2026-11-24 11:03 UTC. `shake_builder`'s real path draws and holds the film test's "the shake path" block as it stands. Three tests outside its files go red with it; settled as follows. (1) `tests/app.test.ts`: the globe is asked to be at rest only after `shake.landSettleSeconds` (kit/02 section 6: the overshoot in tilt dies inside it), and `LiveSession.go()` in `src/app/session.ts` now starts a shake that is asked during the last one's settle when that settle is over, so the globe never jumps between two paths (one new test; 306 of 306 green). (2) `tests/sim.test.ts`, 97 percent floating at 0.7 of the bar (90.8 with the real path): the number stays, the liquid builder has to tear the resting particles loose with the strokes' reversals (2.05 to 2.46 g). (3) `tests/sim.test.ts`, peak turn above 2 rad/s (1.27 with the real path): that 2 was a precondition set against the stand-in's 14 degree rock, not a kit number; the liquid builder replaces it with floors under what the real shake gives, once a motion sheet shows the turn after the landing clearly, and adds a case that drives the engine with a turn above 2 rad/s so the bounds on particles pressed to the glass keep their meaning. Clock ticked 11:00.

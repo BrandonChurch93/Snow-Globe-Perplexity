@@ -98,7 +98,10 @@ export class LiveSession {
       return to
     }
     const n = this.made++
-    const e: ShakeEvent = { id: `live-${n}`, startSec: (this.sim.step + 1) / HZ, from: this.season, to, path: livePath(n) }
+    // A shake asked while the last one's tilt still settles begins when that settle is over, so the globe never jumps between two paths.
+    const last = this.tl.events.at(-1)
+    const free = last ? last.startSec + eventSeconds(last) + config.shake.landSettleSeconds : 0
+    const e: ShakeEvent = { id: `live-${n}`, startSec: Math.max(this.sim.step + 1, Math.ceil(free * HZ - 1e-7)) / HZ, from: this.season, to, path: livePath(n) }
     this.tl.events.push(e)
     this.playing = e
     this.shakes++
