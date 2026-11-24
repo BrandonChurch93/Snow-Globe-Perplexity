@@ -5,7 +5,7 @@ import { geometry, prepareModel } from '../../core/models'
 import { texture } from '../../core/textures'
 import { shellUniforms } from '../../globe/shell'
 import { ROOM_GLSL, roomUniforms } from '../../scene/room'
-import { KEY_CONE, RIM_NEAR_GAIN, SLAB, surfaceUniforms } from '../../scene/surface'
+import { SLAB_LIGHT_GLSL, slabLightUniforms, surfaceUniforms } from '../../scene/surface'
 import type { Dressing, KitMoment } from '../kit'
 import { season } from './base'
 
@@ -17,8 +17,6 @@ const GLASS_PART = `glass-dressing-${season}`
 const SLAB_PART = `surface-dressing-${season}`
 const RS = config.globe.sphereDiameterMm / 2
 const RAD = Math.PI / 180
-const BASE_RISE = config.globe.baseHeightMm
-const HEART = config.globe.baseHeightMm - config.globe.collarDepthMm + RS
 
 export const FULL = 2
 
@@ -202,60 +200,17 @@ ${FROST_GLSL}
 uniform sampler2D uSlabMap;
 uniform vec4 uField;
 uniform vec4 uSlabLook;
-uniform vec4 uFoot;
-uniform vec4 uLean;
-uniform vec3 uPool;
-uniform vec3 uKeyAt;
-uniform vec3 uRimAt;
-float frostCapsule(vec2 p, vec2 a, vec2 b) {
-  vec2 pa = p - a;
-  vec2 ba = b - a;
-  float h = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-4), 0.0, 1.0);
-  return length(pa - ba * h);
-}
-vec2 frostCast(vec2 at, vec2 foot, float lift, vec2 along) {
-  float rise = ${BASE_RISE.toFixed(2)};
-  float baseFar = length(along) * (lift + rise);
-  float baseSoft = 2.5 + 0.11 * baseFar + 0.5 * lift;
-  float baseShade = 1.0 - smoothstep(-baseSoft, baseSoft, frostCapsule(at, foot - along * lift, foot - along * (lift + rise)) - uFoot.z);
-  vec2 ball = at - (foot - along * (lift + ${HEART.toFixed(2)}));
-  vec2 dirL = along / max(length(along), 1e-3);
-  float stretch = sqrt(1.0 + dot(along, along));
-  float ballAt = length(vec2(dot(ball, dirL) / stretch, dot(ball, vec2(-dirL.y, dirL.x)))) / ${RS.toFixed(2)};
-  return vec2(1.0 - baseShade, ballAt);
-}
+${SLAB_LIGHT_GLSL}
 vec3 frostSlabLight(vec3 n, vec3 P, vec3 albedo) {
-  vec2 foot = uFoot.xy + uLean.xy;
-  float d = length(P.xz - foot);
-  float lift = uFoot.w;
-  float gap = d - uFoot.z;
-  float tight = exp(-max(gap, 0.0) / (${SLAB.contactMm.toFixed(2)} + 0.9 * lift)) / (1.0 + 0.07 * lift);
-  float wide = (1.0 - smoothstep(-0.25 * uFoot.z, uFoot.z * (${SLAB.shadowReach.toFixed(3)} + 0.035 * lift), gap)) * 0.6 / (1.0 + 0.045 * lift);
-  float under = (1.0 - smoothstep(-5.0 - lift, 1.0 + 0.6 * lift, gap)) / (1.0 + 0.05 * lift);
-  float occl = (1.0 - 0.85 * tight) * (1.0 - wide) * (1.0 - 0.9 * under);
-  vec3 heart = vec3(0.0, ${HEART.toFixed(2)}, 0.0);
-  vec3 toKey = uKeyAt - P;
-  float keyFar = length(toKey);
-  vec3 lk = toKey / keyFar;
-  vec3 keyAxis = uKeyAt - heart;
-  float keyReach = length(keyAxis);
-  float cone = exp(-(1.0 - dot(lk, keyAxis / keyReach)) / ${KEY_CONE.toFixed(4)});
-  vec2 keyCast = frostCast(P.xz, foot, lift, lk.xz / max(lk.y, 0.25));
-  float keyBall = 0.5 * (1.0 - smoothstep(0.72, 1.12, keyCast.y));
-  float caustic = 2.2 * exp(-keyCast.y * keyCast.y / 0.06);
-  vec3 lit = uKeyCol * (clamp(dot(n, lk) * 0.7 + 0.3, 0.0, 1.0) * cone * keyReach * keyReach / (keyFar * keyFar) * keyCast.x * (1.0 - keyBall + caustic));
-  vec3 toRim = uRimAt - P;
-  float rimFar = length(toRim);
-  vec3 lr = toRim / rimFar;
-  float rimReach = length(uRimAt - heart);
-  vec2 rimCast = frostCast(P.xz, foot, lift, lr.xz / max(lr.y, 0.25));
-  float rimBall = 0.5 * (1.0 - smoothstep(0.72, 1.12, rimCast.y));
-  lit += uRimCol * (clamp(dot(n, lr) * 0.6 + 0.4, 0.0, 1.0) * min(rimReach * rimReach / (rimFar * rimFar), ${RIM_NEAR_GAIN.toFixed(2)}) * rimCast.x * (1.0 - rimBall));
-  float source = ${HEART.toFixed(2)} + lift;
-  float glowFall = pow(source * source / (source * source + d * d), 1.5);
-  float glowRise = smoothstep(uFoot.z - 4.0, uFoot.z + ${SLAB.poolRiseMm.toFixed(2)} + lift, d);
-  vec3 warm = uPool * (${SLAB.poolGain.toFixed(3)} * uSlabLook.y * glowFall * glowRise);
-  return albedo * (0.3183 * ${look.slab.light.toFixed(3)}) * (lit + (uSky * (0.55 + 0.45 * n.y) + warm) * occl);
+  vec3 keyDir;
+  vec3 rimDir;
+  vec3 warm;
+  float keyGain;
+  float rimGain;
+  float occl;
+  slabLight(P, keyDir, keyGain, rimDir, rimGain, occl, warm);
+  vec3 lit = uKeyCol * (clamp(dot(n, keyDir) * 0.7 + 0.3, 0.0, 1.0) * keyGain) + uRimCol * (clamp(dot(n, rimDir) * 0.6 + 0.4, 0.0, 1.0) * rimGain);
+  return albedo * (0.3183 * ${look.slab.light.toFixed(3)}) * (lit + (uSky * (0.55 + 0.45 * n.y) + warm * uSlabLook.y) * occl);
 }
 `
 
@@ -370,7 +325,7 @@ function makeGlass(): THREE.Mesh {
 }
 
 function makeSurface(): THREE.Group {
-  const shared = { ...roomUniforms, ...lightUniforms, uSlabMap: frostUniforms.uSlabMap, uGrain: frostUniforms.uGrain, uGrow: frostUniforms.uGrow, uField: frostUniforms.uField, uSlabLook: frostUniforms.uSlabLook, uGlint: frostUniforms.uGlint, uFoot: surfaceUniforms.uFoot, uLean: surfaceUniforms.uLean, uPool: surfaceUniforms.uPool, uKeyAt: surfaceUniforms.uKeyAt, uRimAt: surfaceUniforms.uRimAt }
+  const shared = { ...roomUniforms, ...lightUniforms, uSlabMap: frostUniforms.uSlabMap, uGrain: frostUniforms.uGrain, uGrow: frostUniforms.uGrow, uField: frostUniforms.uField, uSlabLook: frostUniforms.uSlabLook, uGlint: frostUniforms.uGlint, ...slabLightUniforms }
   const sheet = new THREE.Mesh(
     geometry(MODEL, 'sheet'),
     stageShader({ part: SLAB_PART, standIn: false, change: 'surface-dressing', textured: true, texels: 1 / frostUniforms.uField.value.y, uniforms: shared, fragment: SHEET, params: { ...veil } }),
