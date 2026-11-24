@@ -25,6 +25,7 @@ const HOLD = 0.6
 const GRAVITY_MM = 9810
 const STEER_GAIN = 1.5
 const DISPERSE = 0.45
+const CURL = 2.5 / (R * R)
 const NOISE_INV_CELL = (NOISE_N - 1) / (2 * R)
 const NOISE_TOP = NOISE_N - 1.0001
 const NOISE_DY = NOISE_N * 3
@@ -1133,7 +1134,9 @@ export class ParticleEngine {
           const px = ng[o0]! * a00 + ng[o1]! * b00 + ng[o2]! * a10 + ng[o3]! * b10 + ng[o4]! * a01 + ng[o5]! * b01 + ng[o6]! * a11 + ng[o7]! * b11
           const py = ng[o0 + 1]! * a00 + ng[o1 + 1]! * b00 + ng[o2 + 1]! * a10 + ng[o3 + 1]! * b10 + ng[o4 + 1]! * a01 + ng[o5 + 1]! * b01 + ng[o6 + 1]! * a11 + ng[o7 + 1]! * b11
           const pz = ng[o0 + 2]! * a00 + ng[o1 + 2]! * b00 + ng[o2 + 2]! * a10 + ng[o3 + 2]! * b10 + ng[o4 + 2]! * a01 + ng[o5 + 2]! * b01 + ng[o6 + 2]! * a11 + ng[o7 + 2]! * b11
-          const radial = (px * mx + py * my + pz * mz) * INV_R2
+          const qc = q > 1 ? 1 : q
+          const q4 = qc * qc * qc * qc
+          const radial = (px * mx + py * my + pz * mz) * INV_R2 * q4 * q4
           ux += px - mx * radial
           uy += py - my * radial
           uz += pz - mz * radial
@@ -1145,8 +1148,20 @@ export class ParticleEngine {
           uy += (((bits >>> 10) & 1023) - 511.5) * kick
           uz += ((bits >>> 20) - 2047.5) * kick * 0.25
         }
+        const ox = wx + (hy * mz - hz * my) * CURL
+        const oy = wy + (hz * mx - hx * mz) * CURL
+        const oz = wz + (hx * my - hy * mx) * CURL
+        const rx = oy * vz - oz * vy
+        const ry = oz * vx - ox * vz
+        const rz = ox * vy - oy * vx
+        vx += rx * h
+        vy += ry * h
+        vz += rz * h
         const mode = K_MODE[k]!
         if (mode === 1) {
+          vel[o] = vx
+          vel[o + 1] = vy
+          vel[o + 2] = vz
           this.steer(i, k, n, x, y, z, ux, uy, uz, blend[k]!)
           vx = vel[o]!
           vy = vel[o + 1]!
