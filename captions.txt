@@ -1,13 +1,10 @@
-Village, winter. State: agent/p3-village at 5dc54ee (0015c7e merged with main at 5a17ada). hd, draft tier. Boxes in approved pixels (2816 by 1584). 01 to 03 are from the fit still, which is taken from the reference camera; 04 is the interior camera, which has no approved twin, so the approved crop of the same thing stands beside it. The large soft discs in front of the cottage are the flakes at rest, not the village.
-
-01-rest-miniature.jpg
-  Rest. Box 780,520,2040,1220 (the whole miniature). Approved above, build below.
+Village, winter. State: agent/p3-village at c592dab (8765710 merged with main at 83d5055). hd, draft tier. Boxes in approved pixels (2816 by 1584). 02 and 03 are from the fit still, which is taken from the reference camera; 04 is the macro camera, which has no approved twin, so the approved crop of the same thing stands beside it. Three pictures: these are the three I looked at for this push.
 
 02-rest-cottage.jpg
-  Rest. Box 1000,620,1400,900. Approved on the left, build on the right. The roof snow is a rounded sheet with a full lip over the eave (its mesh bounds had clipped the lip: that was the straight cut above the shingles) and a collar where it meets the chimney. The eave bulbs are small hot dots in place of large soft discs. Brown ivy climbs the left wall under the eave in place of the three round bushes.
+  Rest. Box 1000,620,1400,900. Approved on the left, build on the right. The wall is a cobble wall now: small pillowed stones with dark, deep joints (this is the fine detail M3 asked for; the tool at the draft tier reads the miniature at 1.031, and /root read 0.922 at the final tier on the push before this one). The eave bulbs are small separate cores, each with its own pool of light on the stones. The door is brown wood. Still off: the stones are larger and their joints darker than approved, the wall above the door is darker than approved, the window frames read orange, and the cottage sits larger in the frame.
 
 03-rest-fence-lamp-pond.jpg
-  Rest. Box 960,740,1700,1040. Approved above, build below. The lamp is slimmer with a bare pointed cap and a wide warm halo. The pond has an uneven wet margin inside its frosted rim and carries a faint mirror image of the lamp's post. Still off: the fence is too orange and its posts wear snow caps, the lamp's foot hides behind the snow, the pond is smaller than the approved one.
+  Rest. Box 960,740,1700,1040. Approved above, build below. The fence is dark weathered wood with bare posts and rails. The pond is paler, with a wet dark margin under the far bank and one soft warm reflection of the lamp in place of the red pinpricks. The shrubs carry snow down their sides. Still off: the pond is greyer than the approved blue and its reflection is a smooth streak where approved has a broken glitter; the ground before the door is brighter than approved; the front rim of the snow is still one broad smooth band without drifts or fronds.
 
-04-interior-roof-pond.jpg
-  Rest, interior camera (build on the right; the approved crop of the same thing on the left). Row 1: the roof, eave and wall. Row 2: the pond and its shore.
+04-macro-cottage.jpg
+  Rest, macro camera on the right; the approved crop of the cottage (box 1000,620,1400,900) on the left. The roof load runs past the eave with a thick rounded lip (no straight seam, no exposed strip above it). Each stone is a separate solid with depth. The bulbs have small hot cores; they still have no socket. The door has planks and iron straps.
