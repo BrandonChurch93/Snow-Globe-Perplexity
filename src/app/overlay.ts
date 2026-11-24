@@ -8,6 +8,10 @@ import { audioShips, loadInterface } from './mounts'
 const WAIT_MS = 8000
 const FRAME_MS = 150
 export const INTERFACE_STATES = ['rest', 'focus', 'pressed', 'hint']
+/** An animation is held by a playback rate of zero and not by a pause: the harness grabs the stage with animations off,
+ * which ends every animation that is still running or paused and leaves alone only those whose rate is zero.
+ * It is held this far short of its own end, so that its end is never announced and the interface does not clear it. */
+const HELD_SHORT_MS = 1
 
 const frames = (count: number): Promise<void> =>
   new Promise((resolve) => {
@@ -109,8 +113,8 @@ export function createOverlay(root: HTMLElement | null): Overlay {
     const length = (a: Animation): number => Number(a.effect?.getComputedTiming().duration) || 0
     const longest = Math.max(0, ...moving.map(length))
     for (const a of moving) {
-      a.pause()
-      a.currentTime = phase * (together ? longest : length(a))
+      a.playbackRate = 0
+      a.currentTime = Math.min(phase * (together ? longest : length(a)), Math.max(0, length(a) - HELD_SHORT_MS))
     }
     return moving.length
   }
