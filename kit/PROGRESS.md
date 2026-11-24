@@ -36,16 +36,16 @@ Status 11 · 2026-11-24 04:53 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 04:53 UTC
-clock: phase 2, tick of 9.1 minutes
-phase 2: 1.86 h used of its 6.00 h box
-allowance (before the review): 3.05 h used of 36.00 h allowed
-all time before the review: 3.05 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 04:57 UTC
+clock: phase 2, tick of 4.1 minutes
+phase 2: 1.93 h used of its 6.00 h box
+allowance (before the review): 3.12 h used of 36.00 h allowed
+all time before the review: 3.12 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 4
 ```
 
 ## Phases
@@ -450,6 +450,8 @@ Merged into `main`, each verified here with types clean and the tests green (126
 - 04:26 `agent/tools-film` at `9156a8e` (film, loop, stress, render-local, encode, frames), merged before its report arrived so that the R7 pack can be built on the stress tool: types clean, 126 tests green. Not run here yet, because every one of them needs a build that matches the source and the app is not in. Follow-up 2 to the pack agent at 04:27: the R7 pack from `out/work/stress/stress.json`, one run each of `--loop`, `--loop --seam` and `--motion move`, a real file name in the answer example. R8 and the globe unit's motion pack wait for the interface and the app.
 
 - 04:25 `agent/tools-audio` again (`b80dc58`): sounds shorter than one 400 ms loudness block are levelled over their own length, a constant offset is taken out, and the low cut runs before the trim. 131 tests green here. Proven on the real take: `ui-tick` take 1 kept at 0.08 s, -26.07 LUFS, peak -10 dB, packed into the app's sprite with `glass-clink` and `ui-sound-on`. The agent's own note: a nearly empty film A mix needed 12 dB of gain and 9.65 dB of limiting to reach film loudness, which should not arise with ambience and the full cue set, and is not tested.
+
+- 05:04 `agent/ui` at `1252103` and `agent/particles` at `adb3a22` merged as work in progress, before their reports, so the film and app agent can wire the page against the real interface and the engine agent can see the particle engine: types clean, 151 tests green, the build runs. Their reports and the rows for `ASSETS.md` (the typeface in `public/fonts/`, with its licence file) are still due.
 
 ## Rounds
 
