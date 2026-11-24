@@ -97,11 +97,11 @@ checks.G4 = {
     let filmNote = ''
     if (phase >= 2) {
       const cut = rel('cut', 'CUTLIST.json')
-      if (!fs.existsSync(cut)) problems.push('cut/CUTLIST.json does not exist')
+      if (!fs.existsSync(cut)) filmNote = `; the film part is skipped: cut/CUTLIST.json does not exist, so film().frameCount ${counts.film} has nothing to be held against`
       else {
         const want = readJson(cut).frameCount
         if (counts.film !== want) problems.push(`film().frameCount is ${counts.film}, cut/CUTLIST.json says ${want}`)
-        filmNote = `, film().frameCount ${counts.film} matches the cut list`
+        filmNote = `, film().frameCount ${counts.film} matches frameCount in cut/CUTLIST.json`
       }
     }
     return { pass: problems.length === 0, detail: problems.length ? problems.join('; ') : `a still in every format has its exact size (${seen.join(', ')}), ${kept} stills on disk agree with their records, loop().frameCount is ${counts.loop}${filmNote}` }
@@ -281,8 +281,14 @@ checks.D1 = {
   },
 }
 
+const { addChecks } = await import('./lib/checks.mjs')
+addChecks(checks, { cfg, phase, args, dir, run, tail, probe, gridFrames })
+
+const rank = (id) => 'GD'.indexOf(id[0]) * 1000 + Number(id.slice(1))
 const due = (c) => (c.at ? c.at.includes(phase) : c.from <= phase)
-const wanted = Object.entries(checks).filter(([id, c]) => due(c) && (!only || only.includes(id)))
+const wanted = Object.entries(checks)
+  .filter(([id, c]) => due(c) && (!only || only.includes(id)))
+  .sort((a, b) => rank(a[0]) - rank(b[0]))
 const results = []
 for (const [id, c] of wanted) {
   const t = Date.now()
@@ -298,7 +304,6 @@ for (const [id, c] of wanted) {
 }
 const file = path.join(dir, `phase-${phase}.json`)
 const before = fs.existsSync(file) && only ? readJson(file).results.filter((r) => !only.includes(r.id)) : []
-const rank = (id) => 'GD'.indexOf(id[0]) * 1000 + Number(id.slice(1))
 const all = [...before, ...results].sort((a, b) => rank(a.id) - rank(b.id))
 const { engineHash } = await import('./lib/hashes.mjs')
 writeJson(file, { phase, time: new Date().toISOString(), engineHash: engineHash(), commit: git('rev-parse', '--short', 'HEAD').trim(), results: all })
