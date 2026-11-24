@@ -23,11 +23,11 @@ export const VEIL_LOOK = {
   cutHigh: 0.82,
   blobLow: 0.3,
   blobGain: 1.4,
-  hazeCore: 0.08,
+  hazeCore: 0.14,
   hazeFrom: 0.3,
   hazeTo: 1.0,
   hazeLift: 0.6,
-  hazeSide: 0.25,
+  hazeSide: 0.55,
   uneven: 0.97,
   whiteFrom: 0.76,
   whiteTo: 0.97,
@@ -72,7 +72,7 @@ export const VEIL_LOOK = {
   shadow: 0.5,
   bankShadow: 0.09,
   ambientShare: 1,
-  gridShare: 1,
+  gridShare: 2,
   bankGridShare: 2.4,
   bankShade: 0.65,
   bankShadeFrom: 0.25,
@@ -191,6 +191,13 @@ float veilDisc(vec3 p) {
   float rad = length(c - h * ${vec(ROLL)});
   float s = ${n(L.discMm)} + ${n(L.discFlare)} * rad;
   return mix(1.0, exp(-h * h / (s * s)) * smoothstep(${n(L.eyeFromMm)}, ${n(L.eyeToMm)}, rad) * (1.0 - ${n(L.topCut)} * smoothstep(${n(L.topFrom)}, ${n(L.topTo)}, p.y / uLens.w)), uVeilRoll.x);
+}
+vec3 veilTangent(vec3 p) {
+  return normalize(cross(${vec(ROLL)}, p - ${vec(CENTRE)}) + 1e-5);
+}
+vec3 veilOnDisc(vec3 from, vec3 dir) {
+  float d = dot(dir, ${vec(ROLL)});
+  return from + dir * (dot(${vec(CENTRE)} - from, ${vec(ROLL)}) / (abs(d) < 0.05 ? 0.05 : d));
 }
 vec4 veilStir(vec3 p) {
   vec4 w = texture(uVeilNoise, p / ${n(L.blobTileMm)} + vec3(uVeilFlow.z, uVeilFlow.w, -uVeilFlow.z));

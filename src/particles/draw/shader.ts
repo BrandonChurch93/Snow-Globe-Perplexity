@@ -2,7 +2,7 @@ import { COVER_GLSL } from '../../core/chunks/cover'
 import { LIGHT_FRAG_PARS } from '../../core/chunks/light'
 import { VEIL_GLSL } from '../../core/chunks/veil'
 import { viewCode } from '../../diagnostics/views'
-import { BLUR_HOLD, BLUR_STRICT_FROM_PX, BLUR_STRICT_TO_PX, CLUMP, EDGE_CRISP_HIGH, EDGE_CRISP_LOW, EDGE_SOFT_HIGH, EDGE_SOFT_LOW, FLASH_WHITE, GLINT_HIGH, GLINT_LOW, LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_CORE, LYING_LOOK, MAX_KINDS, PIXEL_SIGMA2, SETTLE_FADE, SIZE_HIGH, SIZE_LOW, SIZE_SKEW, STORM_FAR, STORM_FINE_HIGH, STORM_FINE_LOW, STORM_FINE_SOFT, STORM_FINE_SHARE, STORM_FLASH, STORM_GLINT, STORM_GLITTER, STORM_GLITTER_FROM, STORM_GLITTER_PX, STORM_GLITTER_TO, STORM_MOST_PX, STORM_SHARP, STORM_SHARP_SHARE, STORM_SIDE, STORM_SLOW, STORM_SMEAR, STORM_SMEAR_BRIGHT, STORM_SMEAR_FAINT, STORM_SMEAR_HIGH_PX, STORM_SMEAR_LOW_PX, STORM_SMEAR_FAR, STORM_SMEAR_NEAR, STORM_SMEAR_SHARE, STORM_SOFT_TOP, STORM_STREAK_DIM, STORM_THIN, STORM_WINDOW, STREAK_CAPSULE, STREAK_HOLD, STREAK_REACH, STREAK_TAPER, STRETCH_HIGH, STRETCH_LOW } from './looks'
+import { BLUR_HOLD, BLUR_STRICT_FROM_PX, BLUR_STRICT_TO_PX, CLUMP, EDGE_CRISP_HIGH, EDGE_CRISP_LOW, EDGE_SOFT_HIGH, EDGE_SOFT_LOW, FLASH_WHITE, GLINT_HIGH, GLINT_LOW, LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_CORE, LYING_LOOK, MAX_KINDS, PIXEL_SIGMA2, SETTLE_FADE, SIZE_HIGH, SIZE_LOW, SIZE_SKEW, STORM_CROSS, STORM_FAR, STORM_OFF_DISC, STORM_FINE_HIGH, STORM_FINE_LOW, STORM_FINE_SOFT, STORM_FINE_SHARE, STORM_FLASH, STORM_GLINT, STORM_GLITTER, STORM_GLITTER_FROM, STORM_GLITTER_PX, STORM_GLITTER_TO, STORM_MOST_PX, STORM_SHARP, STORM_SHARP_SHARE, STORM_SIDE, STORM_SLOW, STORM_SMEAR, STORM_SMEAR_BRIGHT, STORM_SMEAR_FAINT, STORM_SMEAR_HIGH_PX, STORM_SMEAR_LOW_PX, STORM_SMEAR_FAR, STORM_SMEAR_NEAR, STORM_SMEAR_SHARE, STORM_SOFT_TOP, STORM_STREAK_DIM, STORM_THIN, STORM_WINDOW, STREAK_CAPSULE, STREAK_HOLD, STREAK_REACH, STREAK_TAPER, STRETCH_HIGH, STRETCH_LOW } from './looks'
 
 const MEAN_LOBE = 0.42
 const n = (v: number) => (Number.isInteger(v) ? v.toFixed(1) : String(v))
@@ -169,8 +169,11 @@ export const VERT_MAIN = `
   if (gusty > 0.0) {
     vec4 stir = veilStir(nowL);
     float clump = min(${n(CLUMP.floor)} + ${n(CLUMP.gain)} * stir.x * mix(${n(CLUMP.core)}, 1.0, stir.y), ${n(CLUMP.most)});
+    vec3 eyeL = (uGlobeInv * vec4(eye, 1.0)).xyz;
+    vec2 flow2 = (toView * veilTangent(veilOnDisc(eyeL, normalize(nowL - eyeL)))).xy;
+    float rollWith = abs(dot(normalize((toView * moved).xy + 1e-9), normalize(flow2 + 1e-9)));
     float want = smears * ${n(STORM_SMEAR)} * mix(${n(STORM_SMEAR_FAINT)}, ${n(STORM_SMEAR_BRIGHT)}, pow(fract(h.w * 37.0), 2.0)) + sharps * ${n(STORM_SHARP)} + fines * mix(${n(STORM_FINE_HIGH)}, ${n(STORM_FINE_LOW)}, fine);
-    float full = pow(stretch, ${n(1 - STORM_STREAK_DIM)}) / max(still, 0.02) * mix(${n(STORM_FAR)}, 1.0, smoothstep(-0.9, 0.0, depth)) * veilDisc(nowL) * mix(1.0, mix(${n(STORM_WINDOW.floor)}, 1.0, smoothstep(${n(STORM_WINDOW.from)}, ${n(STORM_WINDOW.to)}, length((nowL.xy - vec2(${n(STORM_WINDOW.x)}, ${n(STORM_WINDOW.y)})) / vec2(${n(STORM_WINDOW.wide)}, ${n(STORM_WINDOW.high)})))), smoothstep(${n(STORM_WINDOW.back)}, ${n(STORM_WINDOW.front)}, nowL.z)) * (1.0 - ${n(STORM_SIDE)} * nowL.x / uLens.w);
+    float full = pow(stretch, ${n(1 - STORM_STREAK_DIM)}) / max(still, 0.02) * mix(${n(STORM_FAR)}, 1.0, smoothstep(-0.9, 0.0, depth)) * mix(${n(STORM_OFF_DISC)}, 1.0, veilDisc(nowL)) * mix(1.0, mix(${n(STORM_CROSS.keep)}, 1.0, smoothstep(${n(STORM_CROSS.from)}, ${n(STORM_CROSS.to)}, rollWith)), smoothstep(${n(STORM_CROSS.fromPx)}, ${n(STORM_CROSS.toPx)}, halfLong / uPoint.w)) * mix(1.0, mix(${n(STORM_WINDOW.floor)}, 1.0, smoothstep(${n(STORM_WINDOW.from)}, ${n(STORM_WINDOW.to)}, length((nowL.xy - vec2(${n(STORM_WINDOW.x)}, ${n(STORM_WINDOW.y)})) / vec2(${n(STORM_WINDOW.wide)}, ${n(STORM_WINDOW.high)})))), smoothstep(${n(STORM_WINDOW.back)}, ${n(STORM_WINDOW.front)}, nowL.z)) * (1.0 - ${n(STORM_SIDE)} * nowL.x / uLens.w);
     held = mix(1.0, glints > 0.5 ? ${n(STORM_GLITTER)} * full : clump * (want > 0.0 ? want * full : ${n(STORM_THIN)}), gusty);
   }
 
