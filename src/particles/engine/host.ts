@@ -2,7 +2,7 @@ import type { SdfGrid } from '../../core/stage'
 import type { Timeline } from '../../film/timeline'
 import { LIQUID_LENGTH } from '../../globe/liquid'
 import { makeShake } from '../../shake/table'
-import { packSnapshot, unpackSnapshot } from './engine'
+import { COVER_N, packSnapshot, unpackSnapshot } from './engine'
 import { LiveEngine } from './live'
 import type { Emitter } from './sdf'
 
@@ -46,6 +46,7 @@ export type FromEngine =
 
 export interface FrameViews {
   liquid: Float64Array
+  cover: Float32Array
   pos: Float32Array
   prev: Float32Array
   sizes: Float32Array
@@ -55,7 +56,9 @@ export interface FrameViews {
   state: Uint8Array
 }
 
-export const frameBytes = (count: number): number => LIQUID_LENGTH * 8 + count * 38
+const COVER_CELLS = COVER_N * COVER_N
+
+export const frameBytes = (count: number): number => LIQUID_LENGTH * 8 + COVER_CELLS * 4 + count * 38
 
 export function frameViews(buffer: ArrayBuffer, count: number): FrameViews {
   let o = LIQUID_LENGTH * 8
@@ -65,12 +68,14 @@ export function frameViews(buffer: ArrayBuffer, count: number): FrameViews {
     return v
   }
   const liquid = new Float64Array(buffer, 0, LIQUID_LENGTH)
+  const cover = new Float32Array(buffer, o, COVER_CELLS)
+  o += COVER_CELLS * 4
   const pos = floats(3)
   const prev = floats(3)
   const sizes = floats(1)
   const opacity = floats(1)
   const phase = floats(1)
-  return { liquid, pos, prev, sizes, opacity, phase, kindOf: new Uint8Array(buffer, o, count), state: new Uint8Array(buffer, o + count, count) }
+  return { liquid, cover, pos, prev, sizes, opacity, phase, kindOf: new Uint8Array(buffer, o, count), state: new Uint8Array(buffer, o + count, count) }
 }
 
 const isGrid = (c: Colliders): c is SdfGrid => 'data' in c && 'n' in c
@@ -128,6 +133,7 @@ export class EngineHost {
       const buffer = m.spare?.find((b) => b.byteLength === bytes) ?? new ArrayBuffer(bytes)
       const v = frameViews(buffer, p.count)
       v.liquid.set(p.liquid)
+      v.cover.set(p.cover.mm)
       v.pos.set(p.pos)
       v.prev.set(p.prev)
       v.sizes.set(p.sizes)
