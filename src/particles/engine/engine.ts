@@ -16,6 +16,10 @@ const WALL2 = WALL * WALL
 const NEAR = 3
 const INV_NEAR = 1 / NEAR
 const SLIP = 0.35
+const REACH = 12
+const FLOOR = 2
+const INV_RAMP = 1 / (REACH - FLOOR)
+const DEFLECT_CAP = 4
 const SKIN = 0.02
 const CALM = 3
 const INV_FADE_IN = 1 / 1.4
@@ -1030,7 +1034,10 @@ export class ParticleEngine {
       let near = false
       let touch = false
       let dirty = false
-      if (clear[i]! <= 0) {
+      let lay = 0
+      const disp = (Math.abs(vx) + Math.abs(vy) + Math.abs(vz)) * span
+      let room = clear[i]!
+      if (room <= (due && disp < REACH ? REACH : disp)) {
         const G = era[i] === eA ? A : B
         const gn = G.n
         const data = G.data
@@ -1064,7 +1071,9 @@ export class ParticleEngine {
         const y0 = x00 + (x10 - x00) * ty
         const y1 = x01 + (x11 - x01) * ty
         d = y0 + (y1 - y0) * tz
-        if (d < NEAR) {
+        lay = layer[i]!
+        room = (d - lay - SKIN) * G.inv
+        if (d < (due && disp < REACH ? REACH : lay + SKIN + disp)) {
           const gx = ((vb - va) * (1 - ty) + (ve - vc) * ty) * (1 - tz) + ((vg - vf) * (1 - ty) + (vm - vh) * ty) * tz
           const gy = (x10 - x00) * (1 - tz) + (x11 - x01) * tz
           const gz = y1 - y0
@@ -1075,7 +1084,6 @@ export class ParticleEngine {
             nz = gz / gl
           } else ny = 1
           near = true
-          const lay = layer[i]!
           if (d < lay + SKIN) {
             touch = true
             if (d < lay) {
@@ -1084,9 +1092,10 @@ export class ParticleEngine {
               y += ny * push
               z += nz * push
               d = lay
+              room = 0
             }
           }
-        } else clear[i] = (d - NEAR) * G.inv
+        }
       }
       if (due) {
         const h = calm ? K_CALM_H[k]! : STORM_H
@@ -1174,18 +1183,35 @@ export class ParticleEngine {
           phase[i] = ph
         } else {
           if (near) {
-            const f = d * INV_NEAR
             const un = ux * nx + uy * ny + uz * nz
             if (un < 0) {
-              const r = un * (1 - f)
-              ux -= nx * r
-              uy -= ny * r
-              uz -= nz * r
+              if (K_REST[k] === STATE_SNAG) {
+                if (d < NEAR) {
+                  const r = un * (1 - d * INV_NEAR)
+                  ux -= nx * r
+                  uy -= ny * r
+                  uz -= nz * r
+                }
+              } else {
+                const t = d <= FLOOR ? 0 : (d - FLOOR) * INV_RAMP
+                const r = un * (1 - t * t * (3 - 2 * t))
+                const before = ux * ux + uy * uy + uz * uz
+                ux -= nx * r
+                uy -= ny * r
+                uz -= nz * r
+                const after = ux * ux + uy * uy + uz * uz
+                const s = after * DEFLECT_CAP * DEFLECT_CAP > before ? Math.sqrt(before / after) : DEFLECT_CAP
+                ux *= s
+                uy *= s
+                uz *= s
+              }
             }
-            const slip = SLIP + (1 - SLIP) * f
-            ux *= slip
-            uy *= slip
-            uz *= slip
+            if (d < NEAR) {
+              const slip = SLIP + (1 - SLIP) * d * INV_NEAR
+              ux *= slip
+              uy *= slip
+              uz *= slip
+            }
           }
           let ph = phase[i]!
           const ia = (ph * TABLE_K) | 0
@@ -1291,14 +1317,15 @@ export class ParticleEngine {
       z += vz * span
       if (near) {
         const dn = d + (nx * vx + ny * vy + nz * vz) * span
-        const lay = layer[i]!
         if (dn < lay) {
           const push = lay - dn
           x += nx * push
           y += ny * push
           z += nz * push
+          room = 0
         }
-      } else clear[i] = clear[i]! - ((vx < 0 ? -vx : vx) + (vy < 0 ? -vy : vy) + (vz < 0 ? -vz : vz)) * span
+      }
+      clear[i] = room - (dirty ? (Math.abs(vx) + Math.abs(vy) + Math.abs(vz)) * span : disp)
       const r2 = x * x + y * y + z * z
       if (r2 > WALL2) {
         const vr = (vx * x + vy * y + vz * z) / r2
