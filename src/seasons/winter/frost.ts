@@ -143,18 +143,24 @@ uniform vec2 uBehindSize;
 varying vec3 vAxisX;
 varying vec3 vAxisY;
 varying vec3 vAxisZ;
+// One tap of what lies behind the frost. A value that is not a number there (another part's pixel) must not be smeared over
+// the frost by the blur, so such a tap counts as black; the pixel itself stays as it is for the measure to find.
+vec3 frostTap(vec2 at) {
+  vec3 c = textureLod(uBehind, at, 0.0).rgb;
+  return any(isnan(c)) || any(isinf(c)) ? vec3(0.0) : c;
+}
 vec3 frostBehind(vec2 uv, float thickness, vec2 slope) {
   vec2 px = 1.0 / uBehindSize;
   vec2 at = uv + slope * (thickness * ${look.glass.bend.toFixed(4)} * uBehindSize.y) * px;
   float r = thickness * ${look.glass.blur.toFixed(4)} * uBehindSize.y;
-  vec3 sum = textureLod(uBehind, at, 0.0).rgb;
+  vec3 sum = frostTap(at);
   float total = 1.0;
   for (int i = 1; i <= 12; i++) {
     float fi = float(i);
     float a = fi * 2.3999632;
     float k = sqrt(fi / 12.0);
     float w = 1.0 - 0.5 * k;
-    sum += textureLod(uBehind, at + vec2(cos(a), sin(a)) * (k * r) * px, 0.0).rgb * w;
+    sum += frostTap(at + vec2(cos(a), sin(a)) * (k * r) * px) * w;
     total += w;
   }
   return sum / total;

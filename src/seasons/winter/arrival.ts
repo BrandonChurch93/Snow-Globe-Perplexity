@@ -7,12 +7,13 @@ import { fresh } from './miniature'
 
 const own = frost as { arrival?: () => THREE.Object3D }
 
-// The frost shows on the landing frame itself: `start` is the growth at the landing, past the level at which the first texels
-// of the maps appear (frost.ts takes 0.07 off the growth), so a first ring hugs the foot as it lands and bursts outward from there.
+// The frost starts on the landing frame itself: `start` is the growth at the landing, just past the level at which the first
+// texels of the maps appear (frost.ts takes 0.07 off the growth), so only the first rime hugs the foot on that frame and nothing
+// stands there at once; the heap and the arms then grow out of it over the next frames.
 // The glass reaches almost its rest pattern by `states.landedSeconds`, as in `references/approved/winter-shake.png`; the last tips
 // creep on after that.
-const GLASS = { start: 0.15, burst: 0.78, burstSeconds: 0.2, creep: 0.27, creepSeconds: 1.2 }
-const SLAB = { start: 0.2, burst: 0.6, burstSeconds: 0.2, creep: 0.39, creepSeconds: 1.4 }
+const GLASS = { start: 0.1, burst: 0.83, burstSeconds: 0.2, creep: 0.27, creepSeconds: 1.2 }
+const SLAB = { start: 0.1, burst: 0.7, burstSeconds: 0.2, creep: 0.39, creepSeconds: 1.4 }
 
 const rise = (t: number, seconds: number): number => 1 - Math.exp(-t / seconds)
 const burst = (t: number, seconds: number): number => 1 - Math.exp(-((t / seconds) ** 2))
