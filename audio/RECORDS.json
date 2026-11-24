@@ -834,22 +834,34 @@
       "seconds": 0.3,
       "lufs": -22,
       "time": "2026-11-24T04:10:35.207Z"
+    },
+    {
+      "cue": "ui-tick",
+      "take": 1,
+      "round": "build",
+      "file": "audio/kept/ui-tick.wav",
+      "sha256": "fb7f879928a0e672832e6cde6947bea32e3b5b5ea65430b9a0eeaac02a814598",
+      "seconds": 0.08,
+      "lufs": -26.07,
+      "lufsMeasure": "own-length",
+      "time": "2026-11-24T04:24:27.295Z"
     }
   ],
   "pack": {
-    "time": "2026-11-24T04:11:34.901Z",
+    "time": "2026-11-24T04:24:36.799Z",
     "kbps": 192,
-    "bytes": 35136,
+    "bytes": 44352,
     "fits": true,
     "files": [
       {
         "file": "sprite.mp3",
-        "bytes": 35136,
-        "sha256": "a0c334ba7570c328cdef089f7449f964f7b9b42a052ea2f001dbfdbf86d30223"
+        "bytes": 44352,
+        "sha256": "8c3a0b5c1e4b71ca80b8c5d9c7d00df9ea59eecb615f081130de502407334744"
       }
     ],
     "sprites": [
       "glass-clink",
+      "ui-tick",
       "ui-sound-on"
     ],
     "loops": [],

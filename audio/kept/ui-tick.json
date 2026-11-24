@@ -1,0 +1,136 @@
+{
+  "id": "ui-tick",
+  "file": "ui-tick.wav",
+  "class": "interface",
+  "season": null,
+  "line": "A soft tick for a control",
+  "seconds": 0.08,
+  "take": 1,
+  "takes": 1,
+  "round": "build",
+  "why": "The only take so far. Heard as a sharp high clink, sharper than the soft tick its line asks for. Kept so the app and the blockout carry a tick from the start. A softer take is due in Phase 3.",
+  "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+  "prompt": "One single soft tick, a fingernail tapping a small glass bead once, very short and dry, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+  "settings": {
+    "endpoint": "POST /v1/sound-generation",
+    "model": "default",
+    "duration_seconds": 0.5,
+    "prompt_influence": 0.6,
+    "loop": false,
+    "output_format": "pcm_48000",
+    "cost": 6
+  },
+  "chain": {
+    "settings": {
+      "trimDb": -48,
+      "padMs": 2,
+      "fadeInMs": 2,
+      "fadeOutMs": 30,
+      "lowCutHz": 120,
+      "loop": false,
+      "targetLufs": -26,
+      "capSeconds": 0.08
+    },
+    "steps": [
+      "low cut at 120 Hz, before the trim",
+      "trimmed 0.148 s in front and 0.182 s at the end",
+      "cut to 0.08 s",
+      "fade in 2 ms, fade out 30 ms",
+      "held 0.07 dB under -26 LUFS so the peak of this short sound stays within 16 dB of its class level",
+      "level: -2.07 dB to -26.07 LUFS, measured as K weighted mean square over the sound's own length (it is shorter than one 400 ms block), 0.08 s"
+    ],
+    "gainDb": -2.07,
+    "level": {
+      "measure": "own-length",
+      "measuredAs": "K weighted mean square over the sound's own length (it is shorter than one 400 ms block), 0.08 s",
+      "seconds": 0.08,
+      "beforeLufs": -24,
+      "afterLufs": -26.07,
+      "targetLufs": -26,
+      "truePeakDb": -10
+    }
+  },
+  "loop": null,
+  "measured": {
+    "seconds": 0.08,
+    "peakDb": -10,
+    "truePeakDb": -10,
+    "lufs": -26.07,
+    "lufsMeasure": "own-length",
+    "soundLufs": -25.49,
+    "offsetDb": null,
+    "rmsDb": -32.42,
+    "silenceFrontSeconds": 0.005,
+    "silenceEndSeconds": 0.005,
+    "soundSeconds": 0.07,
+    "tailDb": -32.42,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 10595,
+      "bands": {
+        "sub": 0,
+        "low": 0.0014,
+        "lowMid": 0.0012,
+        "mid": 0.0062,
+        "high": 0.3809,
+        "air": 0.6102
+      }
+    }
+  },
+  "ffmpeg": {
+    "lufs": null,
+    "lra": 0,
+    "truePeakDb": -10,
+    "note": "the meter of ffmpeg gives no loudness under 400 ms, so the level stands on the measure named in chain.level"
+  },
+  "takeMeasured": {
+    "seconds": 0.48,
+    "peakDb": -7.95,
+    "truePeakDb": -7.95,
+    "lufs": -30.96,
+    "rmsDb": -38.09,
+    "silenceFrontSeconds": 0.005,
+    "silenceEndSeconds": 0.05,
+    "soundSeconds": 0.425,
+    "tailDb": -71.97,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 10600,
+      "bands": {
+        "sub": 0.002,
+        "low": 0.0018,
+        "lowMid": 0.0013,
+        "mid": 0.0071,
+        "high": 0.3619,
+        "air": 0.626
+      }
+    }
+  },
+  "answers": {
+    "verdict": "fits weakly",
+    "why": "Numbers: one tick, 0.11 s, peak -8 dBFS, three quarters of its energy above 8 kHz. Listener on the padded copy: a sharp high metallic clink like a coin on a hard surface, one event. With the line shown it said yes. It is sharper than the soft tick the line asks for. Two takes are left.",
+    "listener": {
+      "line": "A soft tick for a control",
+      "open": "1. I hear the rapid, rhythmic clicking of an old-fashioned mechanical film projector running. The sound is fast, clattering, and highly repetitive.\n2. There is one continuous sound event.\n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or musical instrument.\n5. It starts abruptly and cut off abruptly.",
+      "fit": "1. Yes, it fits the description because it is a very brief, subtle, and crisp click that sounds exactly like a user interface button or mechanical dial being engaged.\n2. There is nothing in the sound that does not belong to the description.\n3. No, there is no human voice, spoken word, or singing in this sound.",
+      "openAgain": [
+        "1. I hear a deep, heavy percussive boom followed by a long, resonant echo. It has the character of a large drum being struck or a heavy object dropping in a spacious room.\n2. There is exactly one separate sound event.\n3. There is no human voice, spoken word, breath, or singing present.\n4. There is no continuous music or melody, but it sounds like a single hit on a large percussion instrument like a bass drum.\n5. It starts with a sudden, loud impact and ends by gradually fading out into silence as the echo decays.",
+        "1. I cannot hear anything because no audio file was provided.\n2. Not sure.\n3. Not sure.\n4. Not sure.\n5. Not sure.",
+        "1. I hear a sharp, high-pitched metallic clink. It sounds like a small metal object, such as a coin, striking a hard surface.\n2. There is exactly one separate sound event.\n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or musical instrument present.\n5. It starts abruptly with a sharp metallic strike. It ends quickly as the brief ringing resonance fades into silence."
+      ]
+    }
+  },
+  "source": {
+    "name": "ui-tick-take1.wav",
+    "bytes": 92238,
+    "sha256": "a68428f4b2d16374fa328509c4ee8f4d8bfee81e0d4d9a00750674bcc2840a46",
+    "codec": "pcm_s16le",
+    "sampleRate": 48000,
+    "channels": 2,
+    "seconds": 0.48,
+    "kbps": 1537
+  },
+  "takeSha256": "3aca039169ecc16beba4a333466c95a2cb27d692612c3e01194b1bbd5cb48647",
+  "sha256": "fb7f879928a0e672832e6cde6947bea32e3b5b5ea65430b9a0eeaac02a814598",
+  "time": "2026-11-24T04:24:27.295Z"
+}

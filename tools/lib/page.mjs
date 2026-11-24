@@ -74,7 +74,14 @@ export class Session {
     checkDisk()
     await takeLock(what, wait)
     s.server = await serve()
-    s.browser = await launch({ local, headless })
+    try {
+      s.browser = await launch({ local, headless })
+    } catch (e) {
+      // a browser that cannot start must not leave the server open, or the process never ends
+      await s.server.close().catch(() => {})
+      dropLock()
+      throw e
+    }
     s.browserVersion = s.browser.version()
     s.local = local
     s.pages = new Set()

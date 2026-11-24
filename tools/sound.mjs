@@ -6,7 +6,7 @@ import { engineHash, fileSha } from './lib/hashes.mjs'
 import { freeDiskGb } from './lib/browser.mjs'
 import { limits } from './lib/compose.mjs'
 import { addLook } from './lib/looks.mjs'
-import { cfg, RATE, KEPT, TAKES, PUBLIC_AUDIO, classOf, seasonOf, chainOf, cueSeconds, isLoop, decodeFile, encodeWav, ffmpeg, ffmpegLoudness, keepChain, measure, peak, readKept, readLedger, writeLedger, currentRound, writePack, round, seconds } from './lib/audio.mjs'
+import { cfg, RATE, MEASURES, KEPT, TAKES, PUBLIC_AUDIO, classOf, seasonOf, chainOf, cueSeconds, isLoop, decodeFile, encodeWav, ffmpeg, ffmpegLoudness, keepChain, measure, peak, readKept, readLedger, writeLedger, currentRound, writePack, round, seconds } from './lib/audio.mjs'
 
 const args = parseArgs(process.argv.slice(2))
 const text = (k) => (args[k] !== undefined && args[k] !== true ? String(args[k]) : null)
@@ -85,7 +85,8 @@ function describe(m) {
   const share = (v) => `${Math.round(v * 100)}%`
   return [
     `length ${m.seconds} s, sound ${m.soundSeconds} s, silence in front ${m.silenceFrontSeconds} s, at the end ${m.silenceEndSeconds} s`,
-    `peak ${m.peakDb} dB, true peak ${m.truePeakDb} dB, loudness ${m.lufs} LUFS, tail ${m.tailDb} dB, separate events ${m.events}`,
+    `peak ${m.peakDb} dB, true peak ${m.truePeakDb} dB, loudness ${m.lufs === null ? 'none' : `${m.lufs} LUFS`}, tail ${m.tailDb === null ? 'silent' : `${m.tailDb} dB`}, separate events ${m.events}${Number.isFinite(m.offsetDb) ? `, constant offset ${m.offsetDb} dB` : ''}`,
+    `loudness measured as ${MEASURES[m.lufsMeasure] ?? 'gated loudness'}${Number.isFinite(m.soundLufs) ? ` · the sound alone, over its own ${m.soundSeconds} s: ${m.soundLufs} LUFS` : ''}`,
     `spectrum: centre ${m.spectrum.centroidHz} Hz · under 60 Hz ${share(b.sub)} · 60 to 250 ${share(b.low)} · 250 to 1k ${share(b.lowMid)} · 1k to 4k ${share(b.mid)} · 4k to 10k ${share(b.high)} · over 10k ${share(b.air)}`,
   ]
 }
@@ -207,6 +208,8 @@ function keep() {
   fs.writeFileSync(out, encodeWav(done.audio))
   const m = measure(decodeFile(out, RATE))
   const { cap: _cap, ...chainSettings } = done.settings
+  const read = ffmpegLoudness(out)
+  const byFfmpeg = m.lufsMeasure === 'own-length' ? { ...read, lufs: null, note: 'the meter of ffmpeg gives no loudness under 400 ms, so the level stands on the measure named in chain.level' } : read
   const record = {
     id: cue,
     file: `${cue}.wav`,
@@ -221,10 +224,10 @@ function keep() {
     tool: entry.tool,
     prompt: entry.prompt,
     settings: entry.settings,
-    chain: { settings: chainSettings, steps: done.steps, gainDb: done.gainDb },
+    chain: { settings: chainSettings, steps: done.steps, gainDb: done.gainDb, level: done.level },
     loop: done.loop,
     measured: m,
-    ffmpeg: ffmpegLoudness(out),
+    ffmpeg: byFfmpeg,
     takeMeasured: entry.measured,
     answers: entry.answers,
     source: entry.source,
@@ -234,7 +237,7 @@ function keep() {
   }
   writeJson(path.join(KEPT, `${cue}.json`), record)
   writeJson(`${out}.json`, { record: `${cue}.json`, sha256: record.sha256, engineHash: engineHash(), time: record.time })
-  ledger.kept = [...ledger.kept.filter((k) => k.cue !== cue), { cue, take: entry.take, round: entry.round, file: `audio/kept/${cue}.wav`, sha256: record.sha256, seconds: m.seconds, lufs: m.lufs, time: record.time }]
+  ledger.kept = [...ledger.kept.filter((k) => k.cue !== cue), { cue, take: entry.take, round: entry.round, file: `audio/kept/${cue}.wav`, sha256: record.sha256, seconds: m.seconds, lufs: m.lufs, lufsMeasure: m.lufsMeasure, time: record.time }]
   writeLedger(ledger)
   console.log(`kept take ${entry.take} of ${cue} as ${show(out)} · ${cls}, ${m.seconds} s, ${m.lufs} LUFS, peak ${m.truePeakDb} dB`)
   for (const s of done.steps) console.log(`  ${s}`)
@@ -315,10 +318,6 @@ async function sheet() {
   await sharp(Buffer.from(svg)).jpeg({ quality: 92, chromaSubsampling: '4:4:4' }).toFile(out)
   const record = { engineHash: engineHash(), width, height, sounds: kept.map((k) => ({ id: k.id, sha256: k.record.sha256 })), time: new Date().toISOString() }
   writeJson(`${out}.json`, record)
-  const mirror = rel('out', 'work', 'sound', 'sheet.jpg')
-  fs.mkdirSync(path.dirname(mirror), { recursive: true })
-  fs.copyFileSync(out, mirror)
-  writeJson(`${mirror}.json`, record)
   if (args.look !== 'no') addLook(out, `The ${kept.length} kept sounds as waveforms, each with its name, length and loudness`)
   console.log(`${show(out)} · ${kept.length} sounds, ${width} x ${height}`)
 }

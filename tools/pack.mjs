@@ -2,8 +2,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import sharp from 'sharp'
-import { parseArgs, rel, writeJson } from './lib/paths.mjs'
-import { Session, cfg, formatById } from './lib/page.mjs'
+import { parseArgs, rel, readJson, writeJson } from './lib/paths.mjs'
+import { Session, cfg, formatById, recordMatches } from './lib/page.mjs'
 import { limits } from './lib/compose.mjs'
 import { fileSha, sha256 } from './lib/hashes.mjs'
 import { Pages, approvedFor, drawJudged, framingFromPose } from './lib/measures.mjs'
@@ -44,6 +44,18 @@ const SURFACES = [
   { name: 'what lies on the surface, left', x: -1.05, y: 1.45 },
   { name: 'what lies on the surface, right', x: 1.05, y: 1.45 },
 ]
+const STRESS = [
+  { name: 'the dark backdrop', pick: 'dark' },
+  { name: 'the soft discs of light', pick: 'lit' },
+  { name: 'the surface the globe stands on, left', x: -1.6, y: 1.5 },
+  { name: 'the surface the globe stands on, right', x: 1.6, y: 1.5 },
+  { name: 'the particles inside the globe', x: 0, y: -0.1 },
+  { name: 'frost on the glass', x: -0.62, y: -0.62 },
+  { name: 'fine branches', x: 0.35, y: -0.4 },
+  { name: 'glow', x: -0.1, y: 0.35 },
+]
+const STRESS_GRID = { cols: 4, rows: 2 }
+const STRESS_SCAN = { every: 4, lit: 128, none: 0.002, below: 0.25, stepsPerTile: 8 }
 const TABLE = {
   R1: (u) => seasonal(u),
   R2: () => true,
@@ -243,38 +255,46 @@ async function latticeTiles(file, cols, rows, tile) {
   return tiles
 }
 
-const sheetTool = rel('tools', 'sheet.mjs')
-const sheetDir = rel('out', 'work', 'sheets')
-const sheetRuns = new Map()
-function listSheets() {
-  const out = new Map()
-  if (!fs.existsSync(sheetDir)) return out
-  for (const f of fs.readdirSync(sheetDir).sort()) if (/\.jpe?g$/i.test(f)) out.set(f, fs.statSync(path.join(sheetDir, f)).mtimeMs)
-  return out
+function lastWord(r) {
+  const lines = `${r.stdout ?? ''}\n${r.stderr ?? ''}`.trim().split('\n')
+  const thrown = lines.filter((l) => /^\w*Error: /.test(l)).pop()
+  return thrown ? thrown.replace(/^\w*Error: /, '') : lines.pop()
 }
-function sheets(flags, what) {
+const sheetTool = rel('tools', 'sheet.mjs')
+const sheetRuns = new Map()
+function sheets(asked, what) {
+  const flags = [...asked, '--look', 'no']
   const line = `node tools/sheet.mjs ${flags.join(' ')}`
   if (sheetRuns.has(line)) return sheetRuns.get(line)
   if (session) throw new Error(`${line} has to run before the page is opened, because one render runs at a time`)
-  let got
-  if (!fs.existsSync(sheetTool)) got = { files: [], missing: `${what}: tools/sheet.mjs is not in this tree yet, so this part is empty. It would come from: ${line}` }
-  else {
+  let got = null
+  if (!fs.existsSync(sheetTool)) got = { files: [], missing: `${what}: tools/sheet.mjs is not in this tree, so this part is empty. It would come from: ${line}` }
+  while (!got) {
     budget(line)
-    const before = listSheets()
     console.log(`running ${line}`)
-    const r = spawnSync(process.execPath, [sheetTool, ...flags], { cwd: rel(), encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
-    const text = `${r.stdout ?? ''}\n${r.stderr ?? ''}`
-    const named = [...new Set([...(r.stdout ?? '').matchAll(/out\/work\/sheets\/[^\s'"`,;)]+\.jpe?g/gi)].map((m) => rel(m[0])))].filter((f) => fs.existsSync(f))
-    const after = listSheets()
-    const changed = [...after.keys()].filter((f) => before.get(f) !== after.get(f)).map((f) => path.join(sheetDir, f))
-    const files = named.length ? named : changed
-    if (r.status !== 0) got = { files: [], missing: `${what}: ${line} ended with code ${r.status}: ${text.trim().split('\n').pop()}` }
-    else if (/run (it|this|the same command) again/i.test(text)) throw new Stop(line)
-    else if (!files.length) got = { files: [], missing: `${what}: ${line} ran, but named no sheet under out/work/sheets and wrote none` }
+    const r = spawnSync(process.execPath, [sheetTool, ...flags], { cwd: rel(), encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 })
+    const out = r.stdout ?? ''
+    const last = lastWord(r)
+    if (r.status === 3) {
+      console.log(`${line} ran out of its chunk budget, carrying on`)
+      continue
+    }
+    const files = [...new Set([...out.matchAll(/^(?:wrote|reused) (out\/work\/sheets\/\S+\.jpe?g)(?: |$)/gim)].map((m) => rel(m[1])))].filter((f) => fs.existsSync(f))
+    if (r.status === 1) got = { files: [], missing: `${what}: ${line} had nothing to show: ${last}` }
+    else if (r.status !== 0) got = { files: [], missing: `${what}: ${line} ended with code ${r.status}: ${last}` }
+    else if (!files.length) got = { files: [], missing: `${what}: ${line} ran, but named no sheet under out/work/sheets` }
     else got = { files, missing: '' }
   }
   sheetRuns.set(line, got)
   return got
+}
+function sheetLegend(file, fallback) {
+  const record = fs.existsSync(`${file}.json`) ? readJson(`${file}.json`) : null
+  const spec = record?.spec ?? {}
+  const shot = shots.find((x) => x.id === spec.shot)
+  if (spec.kind === 'film-overview') return `the whole film in ${spec.frames?.length ?? 'a few'} frames, every shot at least once`
+  if (spec.kind === 'shot' && shot) return shot.from && shot.to ? `the shot ${shot.id}: one sheet across the shake from ${shot.from} to ${shot.to}` : `the shot ${shot.id}: a hold on ${shot.season}`
+  return fallback
 }
 
 let session = null
@@ -320,7 +340,7 @@ const one = (file, what, legend, extra = {}) => ({ file, what, legend, ...extra 
 
 function sheetGroups(role, wanted, missing) {
   const groups = []
-  const seen = new Set()
+  const seen = new Map()
   for (const w of wanted) {
     if (!w.flags) {
       missing.push(`${w.what}: no tool makes this yet, so this part is empty`)
@@ -328,19 +348,33 @@ function sheetGroups(role, wanted, missing) {
     }
     const got = sheets(w.flags, w.what)
     if (got.missing) missing.push(got.missing)
-    const files = got.files.filter((f) => !seen.has(fileSha(f)))
-    files.forEach((f) => seen.add(fileSha(f)))
-    if (files.length) groups.push({ title: w.what, files: files.map((f, i) => one(f, `${w.what}, from node tools/sheet.mjs ${w.flags.join(' ')}: ${shown(f)}`, files.length > 1 ? `${w.what}, sheet ${i + 1} of ${files.length}` : w.what)) })
+    const list = w.order ? w.order(got.files) : got.files
+    const fresh = []
+    for (const f of list) {
+      const sha = fileSha(f)
+      if (seen.has(sha)) seen.get(sha).what += `. Also: ${w.what}`
+      else {
+        const item = one(f, `${w.what}, from node tools/sheet.mjs ${w.flags.join(' ')}: ${shown(f)}`, '')
+        seen.set(sha, item)
+        fresh.push(item)
+      }
+    }
+    fresh.forEach((item, i) => {
+      const plain = fresh.length > 1 ? `${w.what}, sheet ${i + 1} of ${fresh.length}` : w.what
+      item.legend = w.byRecord ? sheetLegend(item.file, plain) : plain
+    })
+    if (fresh.length) groups.push({ title: w.what, files: fresh })
   }
   return groups
 }
-const holdAfter = (shake) => shots[shots.indexOf(shake) + 1]
+const overviewFirst = (files) => [...files.filter((f) => readJson(`${f}.json`).spec?.kind === 'film-overview'), ...files.filter((f) => readJson(`${f}.json`).spec?.kind !== 'film-overview')]
+const wholeFilm = (flags) => ({ what: 'the whole film', flags, byRecord: true, order: overviewFirst })
 const sheetFlags = (...f) => [...f, '--tier', motionTier]
 
 async function buildBlockout(role) {
   const missing = []
   const draft = ['--tier', tier]
-  const groups = sheetGroups(role, [{ what: 'the whole film', flags: ['--film', ...draft] }, ...shakes.map((s) => ({ what: `one sheet across the shake ${s.id}`, flags: ['--shot', s.id, ...draft] }))], missing)
+  const groups = sheetGroups(role, [wholeFilm(['--film', ...draft]), ...shakes.map((s) => ({ what: `one sheet across the shake ${s.id}`, flags: ['--shot', s.id, ...draft] }))], missing)
   await open()
   const target = control(lockKey)
   const tile = tileFor(1, 2, target.height / target.width)
@@ -465,21 +499,21 @@ function buildR4(role) {
     const rest = holds.find((h) => h.season === unit)
     if (test) for (const m of ['lift', 'strokes', 'setdown', 'landing']) wanted.push({ what: `the ${m === 'setdown' ? 'set down' : m === 'landing' ? 'first second after the landing' : m} of the shake`, flags: sheetFlags('--motion', m, '--shot', shot) })
     wanted.push({ what: 'one sheet across the whole shake and the clearing that follows', flags: sheetFlags('--shot', shot) })
-    if (!test) wanted.push({ what: 'the arrival', flags: sheetFlags('--motion', 'arrival', '--shot', holdAfter(into).id) })
+    if (!test) wanted.push({ what: 'the arrival', flags: sheetFlags('--motion', 'arrival', '--shot', into.id) })
     wanted.push({ what: 'the globe at rest across several seconds', flags: sheetFlags('--shot', rest.id) })
   } else if (unit === 'change') {
     for (const s of shakes) {
-      wanted.push({ what: `the change ${s.from} to ${s.to}: across the swap window`, flags: sheetFlags('--motion', 'strokes', '--shot', s.id) })
-      wanted.push({ what: `the change ${s.from} to ${s.to}: from the landing through the arrival`, flags: sheetFlags('--motion', 'arrival', '--shot', holdAfter(s).id) })
+      wanted.push({ what: `the change ${s.from} to ${s.to}: across the swap window`, flags: sheetFlags('--motion', 'swap', '--fit', '--shot', s.id) })
+      wanted.push({ what: `the change ${s.from} to ${s.to}: from the landing through the arrival`, flags: sheetFlags('--motion', 'arrival', '--shot', s.id) })
     }
   } else if (unit === 'globe') {
     for (const w of ['a shake', 'a stir', 'a drag around the globe', 'a jump to another season']) wanted.push({ what: `${w}, drawn through the app's path` })
   } else {
-    wanted.push({ what: 'the whole film', flags: sheetFlags('--film') })
+    wanted.push(wholeFilm(sheetFlags('--film')))
     for (const s of shakes) wanted.push({ what: `one sheet across the shake ${s.id}`, flags: sheetFlags('--shot', s.id) })
     holds.forEach((h, i) => wanted.push({ what: i === 0 ? 'the opening pull back' : i === holds.length - 1 ? 'the last push in' : `the camera move in ${h.id}`, flags: sheetFlags('--motion', 'move', '--shot', h.id) }))
     wanted.push({ what: 'one sheet across the loop', flags: sheetFlags('--loop') })
-    wanted.push({ what: "the loop's seam, last frames then first frames" })
+    wanted.push({ what: "the loop's seam, last frames then first frames", flags: sheetFlags('--loop', '--seam') })
   }
   return { groups: sheetGroups(role, wanted, missing), missing }
 }
@@ -521,7 +555,7 @@ async function buildR5(role) {
     if (scr.files.length) groups.push(scr)
     missing.push("one sheet across a shake in the app: no tool makes this yet, so this part is empty")
   } else {
-    groups = sheetGroups(role, [{ what: 'the whole film', flags: sheetFlags('--film') }], missing)
+    groups = sheetGroups(role, [wholeFilm(sheetFlags('--film'))], missing)
     await open()
     const files = await frameGrid(role, judged.filter((e) => e.kind === 'film'), 'frames', 3, 3, 0, missing)
     if (files.length) groups.push({ title: "the film's judged frames in order", files })
@@ -556,9 +590,118 @@ async function buildR6(role) {
   return { groups, missing }
 }
 
-function buildR7() {
-  const dir = rel('out', 'work', 'stress')
-  return { groups: [], missing: [`stills from the stress encode beside the same frames before encoding: this tool does not know the output of tools/stress.mjs yet (${fs.existsSync(dir) ? 'out/work/stress exists but its shape is not read' : 'out/work/stress does not exist'}), so this pack is empty`] }
+const stressTool = rel('tools', 'stress.mjs')
+const stressFile = rel('out', 'work', 'stress', 'stress.json')
+const stressWhat = 'stills taken from the stress encode beside the same frames before encoding'
+let stressGot = null
+function stressNow() {
+  if (!fs.existsSync(stressFile)) return null
+  const s = readJson(stressFile)
+  if (!s.complete || s.tier !== tier || !s.moments?.length) return null
+  const want = { seasons: cfg.seasons, format: hd, tier }
+  const list = s.moments.map((m) => ({ ...m, low: m.encodes.find((e) => e.mbps === cfg.quality.compressionStressMbps) }))
+  return list.every((m) => m.low && recordMatches(rel(m.source), want) && recordMatches(rel(m.low.still), want)) ? list : null
+}
+function stress() {
+  if (stressGot) return stressGot
+  const flags = ['--tier', tier, '--look', 'no']
+  const line = `node tools/stress.mjs ${flags.join(' ')}`
+  let moments = stressNow()
+  let missing = ''
+  if (!moments && !fs.existsSync(stressTool)) missing = `${stressWhat}: tools/stress.mjs is not in this tree, so this pack is empty. It would come from: ${line}`
+  else if (!moments) {
+    if (session) throw new Error(`${line} has to run before the page is opened, because one render runs at a time`)
+    budget(line)
+    console.log(`running ${line}`)
+    const r = spawnSync(process.execPath, [stressTool, ...flags], { cwd: rel(), encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 })
+    const last = lastWord(r)
+    moments = stressNow()
+    if (!moments) missing = `${stressWhat}: ${line} ended with code ${r.status} and left no whole ${shown(stressFile)} for this build, so this pack is empty. Run the same pack command again to carry on: ${last}`
+  }
+  stressGot = { moments: moments ?? [], missing }
+  return stressGot
+}
+function stressRects(img, framing, tile) {
+  const known = !!framing && Number.isFinite(framing.globe.r)
+  const g = known ? framing.globe : { cx: img.width / 2, cy: img.height / 2, r: img.height / 3 }
+  const w = Math.min(tile.w, img.width)
+  const h = Math.min(tile.h, img.height)
+  const steps = (span, size) => {
+    const step = Math.max(1, Math.floor(size / STRESS_SCAN.stepsPerTile))
+    return [...new Set([...Array.from({ length: Math.floor((span - size) / step) + 1 }, (_, i) => i * step), span - size])]
+  }
+  const cands = []
+  for (const top of steps(img.height, h))
+    for (const left of steps(img.width, w)) {
+      let sum = 0
+      let lit = 0
+      let n = 0
+      for (let y = top; y < top + h; y += STRESS_SCAN.every)
+        for (let x = left; x < left + w; x += STRESS_SCAN.every) {
+          const o = (y * img.width + x) * 3
+          const l = 0.2126 * img.data[o] + 0.7152 * img.data[o + 1] + 0.0722 * img.data[o + 2]
+          sum += l
+          if (l > STRESS_SCAN.lit) lit++
+          n++
+        }
+      const clear = Math.hypot(Math.min(Math.max(g.cx, left), left + w) - g.cx, Math.min(Math.max(g.cy, top), top + h) - g.cy) >= g.r
+      cands.push({ left, top, mean: sum / n, lit: lit / n, rank: !known ? 0 : clear && top + h <= g.cy + g.r * STRESS_SCAN.below ? 0 : clear ? 1 : 2 })
+    }
+  const best = Math.min(...cands.map((c) => c.rank))
+  const pool = cands.filter((c) => c.rank === best)
+  const plain = pool.filter((c) => c.lit <= STRESS_SCAN.none)
+  const dark = plain.length ? plain.reduce((a, b) => (b.mean > a.mean ? b : a)) : pool.reduce((a, b) => (b.lit < a.lit ? b : a))
+  const rest = pool.filter((c) => c !== dark)
+  const lit = rest.length ? rest.reduce((a, b) => (b.lit > a.lit || (b.lit === a.lit && b.mean > a.mean) ? b : a)) : dark
+  const fixed = (s) => ({ left: Math.round(Math.min(Math.max(g.cx + s.x * g.r - w / 2, 0), img.width - w)), top: Math.round(Math.min(Math.max(g.cy + s.y * g.r - h / 2, 0), img.height - h)) })
+  return { known, w, h, rects: STRESS.map((s) => (s.pick === 'dark' ? dark : s.pick === 'lit' ? lit : fixed(s))) }
+}
+async function buildR7(role) {
+  const got = stress()
+  const missing = got.missing ? [got.missing] : []
+  const notes = []
+  const groups = []
+  if (!got.moments.length) return { groups, missing, notes }
+  await open()
+  const page = await pages.first()
+  const size = formatById(hd)
+  const tile = tileFor(STRESS_GRID.cols, STRESS_GRID.rows)
+  const names = STRESS.map((s, i) => `${i + 1} ${s.name}`).join('; ')
+  for (const m of got.moments) {
+    budget(`the stress pictures of ${m.shot}`)
+    let framing = null
+    try {
+      const state = await page.evaluate((f) => window.showcase.filmState(f), m.frame)
+      if (state?.camera) framing = framingFromPose(state.camera, size.width, size.height, state.globe?.heightMm ?? 0)
+    } catch {}
+    const a = await load(rel(m.source))
+    const b = await load(rel(m.low.still))
+    if (a.width !== b.width || a.height !== b.height) throw new Error(`${m.source} and ${m.low.still} are not the same size`)
+    const at = stressRects(a, framing, tile)
+    if (!at.known) notes.push(`${m.shot}: the film state gave no globe in frame ${m.frame}, so its crops are placed by the frame`)
+    const cells = []
+    for (const img of [a, b]) {
+      const row = []
+      for (const [i, r] of at.rects.entries()) row.push({ img: await cut(img, r.left, r.top, at.w, at.h), label: i + 1 })
+      cells.push(row)
+    }
+    const id = `${m.shot}-${m.frame}`
+    const title = `${m.moment === 'shake' ? 'the shake' : 'the hold'} ${m.shot} at ${(m.frame / cfg.film.fps).toFixed(2)} s`
+    const before = `film frame ${m.frame} before encoding, ${shown(rel(m.source))}`
+    const after = `the same frame taken out of the encode at ${m.low.mbps} Mbps (${m.low.fileMbps} Mbps in the file, ${m.low.psnr.toFixed(1)} dB against the frame before), ${shown(rel(m.low.still))}`
+    const whole = `${title}: the picture marked -a is the frame before encoding, the picture marked -b is the same frame taken out of the encode, both resized to fit`
+    const crops = `${title}: native size crops of that pair, -a before encoding and -b out of the encode: ${names}`
+    groups.push({
+      title,
+      files: [
+        one(await fitted(a, tmp(role, `${id}-a.jpg`)), `${title}: ${before}, resized to fit`, whole, { pair: 1, side: 'a', sha256Source: fileSha(rel(m.source)) }),
+        one(await fitted(b, tmp(role, `${id}-b.jpg`)), `${title}: ${after}, resized to fit`, whole, { pair: 1, side: 'b', sha256Source: fileSha(rel(m.low.still)) }),
+        one(await sheetOf(cells[0], STRESS_GRID.cols, tmp(role, `${id}-crops-a.jpg`)), `${title}: native size crops of the frame before encoding: ${names}`, crops, { pair: 2, side: 'a' }),
+        one(await sheetOf(cells[1], STRESS_GRID.cols, tmp(role, `${id}-crops-b.jpg`)), `${title}: native size crops of the frame out of the encode: ${names}`, crops, { pair: 2, side: 'b' }),
+      ],
+    })
+  }
+  return { groups, missing, notes }
 }
 
 async function buildR8(role) {
@@ -584,16 +727,17 @@ function kitSection(start) {
   while (j < kit.length && !/^#{2,3} /.test(kit[j])) j++
   return kit.slice(i, j).join('\n').trim()
 }
-function returnFormat() {
+function returnFormat(example) {
   const i = kit.findIndex((l) => l.startsWith('```json'))
   const j = kit.findIndex((l, n) => n > i && l.startsWith('```'))
   const after = kit.slice(j + 1).find((l) => l.startsWith('- `score`'))
-  return ['Return one JSON object in this shape and nothing else.', '', ...kit.slice(i, j + 1), '', after].join('\n')
+  const shape = kit.slice(i, j + 1).map((l) => l.replace(/"file": "[^"]*"/, `"file": "${example}"`))
+  return ['Return one JSON object in this shape and nothing else.', '', ...shape, '', after].join('\n')
 }
 function messageFor(role, part) {
   if (role === 'R2') return kit.find((l) => l.startsWith(JURY_TEXT_START)).slice(2)
   const head = role === BLOCKOUT ? '### R4 blockout ·' : `### ${role} ·`
-  const out = [kitSection(head), '', kitSection('### The severity scale'), '', '### The answer', '', returnFormat(), '', '### Files', '']
+  const out = [kitSection(head), '', kitSection('### The severity scale'), '', '### The answer', '', returnFormat(part.groups[0].files[0].name), '', '### Files', '']
   const settled = []
   for (const g of part.groups) {
     const pairs = new Map()
@@ -622,7 +766,8 @@ async function emit(src, dest) {
 async function writeRole(role, built) {
   const max = cfg.critics.maxFilesPerMessage
   const parts = []
-  for (const g of built.groups) {
+  const whole = built.groups.flatMap((g) => (g.files.length > max && !g.settled && !g.files.some((f) => f.pair) ? chunks(g.files, max).map((files) => ({ ...g, files })) : [g]))
+  for (const g of whole) {
     if (g.files.length > max) throw new Error(`${role}: ${g.title} alone is ${g.files.length} files, over critics.maxFilesPerMessage`)
     const last = parts[parts.length - 1]
     if (last && last.count + g.files.length <= max) {
@@ -669,6 +814,7 @@ let stopped = ''
 const results = new Map()
 try {
   const first = ['R4', 'R5', BLOCKOUT]
+  if (roles.includes('R7')) stress()
   for (const role of [...first.filter((r) => roles.includes(r)), ...roles.filter((r) => !first.includes(r))]) results.set(role, await BUILD[role](role))
 } catch (e) {
   if (!(e instanceof Stop)) {
@@ -682,8 +828,12 @@ if (session) {
   await session.close()
 }
 if (stopped) {
-  console.log(`pack ${roundName}: stopped at sandbox.chunkBudgetMinutes before ${stopped}. Nothing was written to the pack folders. Run the same command again to carry on.`)
+  console.log(`pack ${roundName}: stopped at sandbox.chunkBudgetMinutes before ${stopped}. Nothing was written to the pack folders, and what was drawn is kept. Run the same pack command again to carry on.`)
   process.exit(0)
+}
+if (only && fs.existsSync(keyFile)) {
+  const prev = readJson(keyFile)
+  for (const r of Object.keys(prev.roles ?? {})) if (!roles.includes(r)) key.roles[r] = prev.roles[r]
 }
 for (const role of roles) {
   const built = results.get(role)
@@ -696,9 +846,9 @@ for (const role of roles) {
 }
 writeJson(keyFile, key)
 fs.rmSync(buildDir, { recursive: true, force: true })
-if (fs.readdirSync(path.dirname(buildDir)).length === 0) fs.rmdirSync(path.dirname(buildDir))
-const count = Object.values(key.roles).reduce((n, r) => n + r.parts.reduce((m, p) => m + p.files.length, 0), 0)
-const gaps = Object.values(key.roles).reduce((n, r) => n + r.missing.length, 0)
+if (fs.existsSync(path.dirname(buildDir)) && fs.readdirSync(path.dirname(buildDir)).length === 0) fs.rmdirSync(path.dirname(buildDir))
+const count = roles.reduce((n, r) => n + key.roles[r].parts.reduce((m, p) => m + p.files.length, 0), 0)
+const gaps = roles.reduce((n, r) => n + key.roles[r].missing.length, 0)
 console.log(`pack ${roundName}: ${count} files for ${roles.join(', ')}, ${gaps} parts missing · ${tier} · ${Math.round((Date.now() - started) / 1000)} s`)
 console.log(shown(keyFile))
 process.exit(0)
