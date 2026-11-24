@@ -1,7 +1,7 @@
 import { COVER_GLSL } from '../../core/chunks/cover'
 import { VEIL_GLSL } from '../../core/chunks/veil'
 import { viewCode } from '../../diagnostics/views'
-import { EDGE_HIGH, EDGE_LOW, GLITTER_STREAK, GLINT_HIGH, GLINT_LOW, LAMPS, LOBE_CORE, MAX_KINDS, PIXEL_SIGMA2, STREAK_HOLD } from './looks'
+import { BLUR_HOLD, EDGE_HIGH, EDGE_LOW, GLITTER_STREAK, GLINT_HIGH, GLINT_LOW, LAMPS, LOBE_CORE, MAX_KINDS, PIXEL_SIGMA2, SIZE_HIGH, SIZE_LOW, SIZE_SKEW, STREAK_HOLD, STREAK_REACH, STREAK_TAPER } from './looks'
 
 const MEAN_LOBE = 0.42
 const n = (v: number) => (Number.isInteger(v) ? v.toFixed(1) : String(v))
@@ -19,7 +19,7 @@ varying vec4 vGrid;
 varying vec4 vDom;
 varying vec4 vFog;
 float pointSpread(float halfLong, float s2) {
-  return pow(1.0 + 2.0 * halfLong / sqrt(6.2831853 * s2), ${n(STREAK_HOLD)});
+  return pow(1.0 + ${n(STREAK_TAPER * STREAK_TAPER)} * halfLong * halfLong / s2, ${n(0.5 * STREAK_HOLD)});
 }
 `
 
@@ -120,7 +120,8 @@ export const VERT_MAIN = `
   float zImg = max(dist - mix(a, R - R * (R - a) / den, on), 1.0);
   float depth = clamp(a / uLens.w, -1.0, 1.0);
   float shrink = mix(1.0, mix(uBlur.w, 1.0, smoothstep(-1.0, 0.15, depth)), afloat);
-  float rPx = aData.x * look.y * uPoint.y * mag / zImg * shrink;
+  float spread = shape > 0.5 && shape < 1.5 ? mix(${n(SIZE_LOW)}, ${n(SIZE_HIGH)}, pow(h2.w, ${n(SIZE_SKEW)})) : 1.0;
+  float rPx = aData.x * look.y * spread * uPoint.y * mag / zImg * shrink;
   float coc = uAperture.w * uPoint.y * (1.0 / zImg - uAperture.z);
   float blur = min(coc > 0.0 ? coc * uBlur.x : -coc * uBlur.y, uBlur.z) * afloat;
   vec3 rimAxis = cross(normalize(placed.xyz - eye), uLensCentre - eye);
@@ -149,14 +150,14 @@ export const VERT_MAIN = `
   vec2 along = halfLong > 1e-4 ? streak / (2.0 * halfLong) : vec2(1.0, 0.0);
 
   float sigma = 0.5 * blur;
-  float s2x = sigma * sigma + ${n(PIXEL_SIGMA2)};
+  float s2x = sigma * sigma + ${n(PIXEL_SIGMA2)} * uPoint.w * uPoint.w;
   if (lying > 0.5) {
-    float spread = uLimit.z * rPx * smoothstep(uLying.z, uLying.w, stageCover(nowL.xz));
-    s2x += spread * spread;
+    float merge = uLimit.z * rPx * smoothstep(uLying.z, uLying.w, stageCover(nowL.xz));
+    s2x += merge * merge;
   }
   float core = ${n(LOBE_CORE)} * rPx * (shape > 0.5 && shape < 1.5 ? ${n(MEAN_LOBE)} : 1.0);
   float c2 = core * core;
-  float amp = c2 / (c2 + s2x) / pointSpread(halfLong, c2 + s2x);
+  float amp = pow(c2 / (c2 + s2x), ${n(BLUR_HOLD)}) / pointSpread(halfLong, c2 + s2x);
 
   vec3 axis = normalize(h.xyz * 2.0 - 1.0 + 1e-3);
   float angle = aData.w + 6.2831853 * h.w;
@@ -190,7 +191,7 @@ export const VERT_MAIN = `
   vec3 domV = dot(dom, dom) > 1e-10 ? normalize(toView * dom) : vec3(0.0, 0.0, 1.0);
 
   float reach = 1.2 * rPx + 2.6 * sqrt(s2x) + 1.0;
-  vec2 ext = min(vec2(reach) + halfLong * abs(along), vec2(uLimit.y));
+  vec2 ext = min(vec2(reach) + ${n(STREAK_REACH)} * halfLong * abs(along), vec2(uLimit.y));
   float alpha = aData.z * rim;
   #ifdef POINT_SPRITES
   float side = 2.0 * max(ext.x, ext.y);
@@ -230,9 +231,10 @@ void pointAdd(vec4 lobe, vec2 p, inout float f, inout vec3 nrm) {
   if (r2 <= 0.0) return;
   float s2 = r2 + vStreak.w;
   vec2 q = p - lobe.xy;
-  q -= vStreak.xy * clamp(dot(q, vStreak.xy), -vStreak.z, vStreak.z);
+  float run = dot(q, vStreak.xy);
+  q -= vStreak.xy * (run * (1.0 - sqrt(s2 / (s2 + ${n(STREAK_TAPER * STREAK_TAPER)} * vStreak.z * vStreak.z))));
   float sharp = r2 / s2;
-  float g = sharp / pointSpread(vStreak.z, s2) * exp(-0.5 * dot(q, q) / s2);
+  float g = pow(sharp, ${n(BLUR_HOLD)}) / pointSpread(vStreak.z, s2) * exp(-0.5 * dot(q, q) / s2);
   f += g;
   nrm += g * (1.0 + 0.6 * lobe.w) * vec3(q / lobe.z * sharp, sqrt(max(1.0 - dot(q, q) / (lobe.z * lobe.z), 0.05)));
 }
@@ -246,7 +248,7 @@ void main() {
   vec4 look = uKindLook[kind];
   #ifdef POINT_SPRITES
   vec2 p = (gl_PointCoord - 0.5) * vec2(vCore.x, -vCore.x);
-  vec2 off = p - vStreak.xy * clamp(dot(p, vStreak.xy), -vStreak.z, vStreak.z);
+  vec2 off = p - vStreak.xy * clamp(dot(p, vStreak.xy), -${n(STREAK_REACH)} * vStreak.z, ${n(STREAK_REACH)} * vStreak.z);
   if (dot(off, off) > vCore.y * vCore.y) discard;
   #else
   vec2 p = vCore.xy;
