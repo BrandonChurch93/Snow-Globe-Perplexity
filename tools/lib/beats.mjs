@@ -1,27 +1,34 @@
 export const MAP_VERSION = 1
 
 export const SETTINGS = [
-  { name: 'short window', windowSeconds: 0.0213, hopSeconds: 0.005, bands: 40, lowHz: 30, highHz: 16000, compression: 1000, lagSeconds: 0.01, spread: 0, tightness: 100 },
-  { name: 'long window', windowSeconds: 0.0427, hopSeconds: 0.005, bands: 40, lowHz: 30, highHz: 16000, compression: 100, lagSeconds: 0.015, spread: 1, tightness: 100 },
-  { name: 'wide bands', windowSeconds: 0.0213, hopSeconds: 0.005, bands: 12, lowHz: 60, highHz: 12000, compression: 10000, lagSeconds: 0.01, spread: 0, tightness: 300 },
+  { name: 'short window', windowSeconds: 0.0213, hopSeconds: 0.005, bands: 40, lowHz: 30, highHz: 16000, compression: 1000, lagSeconds: 0.01, spread: 0, tightness: 1000 },
+  { name: 'long window', windowSeconds: 0.0427, hopSeconds: 0.005, bands: 40, lowHz: 30, highHz: 16000, compression: 100, lagSeconds: 0.015, spread: 1, tightness: 1000 },
+  { name: 'wide bands', windowSeconds: 0.0213, hopSeconds: 0.005, bands: 12, lowHz: 60, highHz: 12000, compression: 10000, lagSeconds: 0.01, spread: 0, tightness: 3000 },
 ]
 
 export const LIMITS = {
   minBpm: 40,
   maxBpm: 240,
-  priorOctaves: 1,
+  priorOctaves: 0.7,
   tempoToleranceBpm: 1,
   steadyTolerance: 0.04,
   steadyShare: 0.9,
-  peakReachSeconds: 0.035,
+  slipTolerance: 0.15,
+  peakReachSeconds: 0.025,
+  peakShare: 0.3,
   smoothBars: 2,
   accentSeconds: 0.12,
   bassHz: 160,
   barConfidence: 3,
-  noveltyBars: 2,
+  harmonyWindowSeconds: 0.17,
+  harmonyHopSeconds: 0.04,
+  harmonyLowHz: 55,
+  harmonyOctaves: 5,
   minSectionBars: 2,
-  loudnessStepDb: 3,
-  shapeStepDb: 3,
+  sectionBands: 10,
+  sectionStepDb: 3,
+  sectionNoiseFloorDb: 1.5,
+  sectionPenalty: 8,
   soundFloorDb: 60,
   blockSeconds: 0.05,
   combWindowSeconds: 12,
@@ -157,6 +164,39 @@ export function spectra(samples, sampleRate, setting) {
   return { sampleRate, n, hop, frames, bands, power, centres: plan.centres, frameRate: sampleRate / hop, centreOffset: n / 2 / sampleRate }
 }
 
+export function harmony(samples, sampleRate, limits = LIMITS) {
+  const n = 2 ** Math.round(Math.log2(limits.harmonyWindowSeconds * sampleRate))
+  const hop = Math.max(1, Math.round(limits.harmonyHopSeconds * sampleRate))
+  const notes = 12 * limits.harmonyOctaves
+  const frames = Math.floor((samples.length + n) / hop) + 1
+  const index = new Int32Array(n / 2 + 1).fill(-1)
+  for (let k = 1; k <= n / 2; k++) {
+    const note = Math.round(12 * Math.log2((k * sampleRate) / n / limits.harmonyLowHz))
+    if (note >= 0 && note < notes) index[k] = note
+  }
+  const hann = new Float64Array(n)
+  for (let i = 0; i < n; i++) hann[i] = 0.5 - 0.5 * Math.cos((2 * Math.PI * (i + 0.5)) / n)
+  const fft = makeFft(n)
+  const re = new Float64Array(n)
+  const im = new Float64Array(n)
+  const power = new Float32Array(frames * notes)
+  for (let f = 0; f < frames; f++) {
+    const start = f * hop - n
+    let any = false
+    for (let i = 0; i < n; i++) {
+      const j = start + i
+      const v = j >= 0 && j < samples.length ? samples[j] : 0
+      if (v !== 0) any = true
+      re[i] = v * hann[i]
+      im[i] = 0
+    }
+    if (!any) continue
+    fft(re, im)
+    for (let k = 1; k <= n / 2; k++) if (index[k] >= 0) power[f * notes + index[k]] += re[k] * re[k] + im[k] * im[k]
+  }
+  return { sampleRate, n, hop, frames, bands: notes, power }
+}
+
 export function onsetEnvelope(spec, setting) {
   const { frames, bands, power, frameRate } = spec
   let top = 0
@@ -256,7 +296,7 @@ export function tempoByAutocorrelation(env, frameRate, centreBpm, limits = LIMIT
     if (!(acf[lag] >= acf[lag - 1] && acf[lag] >= acf[lag + 1])) continue
     let sum = 0
     for (let m = 1; m <= multiples; m++) sum += near(lag * m)
-    const score = (sum / multiples) * prior((frameRate * 60) / lag, centreBpm, limits.priorOctaves)
+    const score = Math.sqrt(Math.max(0, acf[lag]) * Math.max(0, sum / multiples)) * prior((frameRate * 60) / lag, centreBpm, limits.priorOctaves)
     if (score > bestScore) {
       bestScore = score
       bestLag = lag
@@ -277,20 +317,25 @@ export function tempoByAutocorrelation(env, frameRate, centreBpm, limits = LIMIT
 function combScore(env, frameRate, bpm, windowFrames) {
   const period = (frameRate * 60) / bpm
   const bins = Math.max(2, Math.round(period))
-  const sum = new Float64Array(bins)
-  const count = new Float64Array(bins)
+  const sum = new Float64Array(2 * bins)
+  const count = new Float64Array(2 * bins)
   const hopFrames = Math.max(1, windowFrames >> 1)
+  const at = (b) => {
+    const l = (b + 2 * bins - 1) % (2 * bins)
+    const r = (b + 1) % (2 * bins)
+    return (sum[l] + 2 * sum[b] + sum[r]) / Math.max(1, count[l] + 2 * count[b] + count[r])
+  }
   let total = 0
   let windows = 0
   for (let start = 0; start === 0 || start + hopFrames < env.length; start += hopFrames) {
     const end = Math.min(env.length, start + windowFrames)
-    if (end - start < 2 * period) break
+    if (end - start < 4 * period) break
     sum.fill(0)
     count.fill(0)
     let mean = 0
     for (let t = start; t < end; t++) {
-      const x = t / period
-      const b = Math.min(bins - 1, Math.floor((x - Math.floor(x)) * bins))
+      const x = t / (2 * period)
+      const b = Math.min(2 * bins - 1, Math.floor((x - Math.floor(x)) * 2 * bins))
       sum[b] += env[t]
       count[b]++
       mean += env[t]
@@ -298,12 +343,12 @@ function combScore(env, frameRate, bpm, windowFrames) {
     mean /= end - start
     let best = 0
     for (let b = 0; b < bins; b++) {
-      const l = (b + bins - 1) % bins
-      const r = (b + 1) % bins
-      const v = (sum[l] + 2 * sum[b] + sum[r]) / Math.max(1, count[l] + 2 * count[b] + count[r])
+      const one = Math.max(0, at(b) - mean)
+      const other = Math.max(0, at(b + bins) - mean)
+      const v = Math.sqrt(one * other)
       if (v > best) best = v
     }
-    total += best - mean
+    total += best
     windows++
   }
   return windows ? total / windows : 0
@@ -388,9 +433,11 @@ export function trackBeats(env, frameRate, bpm, tightness = 100) {
 export function measureBeats(frames, onset, limits = LIMITS) {
   const { env, frameRate, latency } = onset
   const reach = Math.max(1, Math.round(limits.peakReachSeconds * frameRate))
-  return frames.map((f) => {
-    const at = localMax(env, f - reach, f + reach)
-    const found = at >= 0 && env[at] > 0.1
+  const peaks = frames.map((f) => localMax(env, f - reach, f + reach))
+  const floor = limits.peakShare * median(peaks.filter((at) => at >= 0).map((at) => env[at]))
+  return frames.map((f, i) => {
+    const at = peaks[i]
+    const found = at >= 0 && env[at] > 0 && env[at] >= floor
     return { time: (found ? peakAt(env, at) : f) / frameRate - latency, weight: found ? env[at] : 0.02, found }
   })
 }
@@ -521,7 +568,7 @@ function zScores(values) {
   return values.map((v) => (sd > 1e-9 ? clamp((v - m) / sd, -6, 6) : 0))
 }
 
-export function beatFeatures(spec, onset, sums, times, seconds, limits = LIMITS) {
+export function beatFeatures(spec, onset, sums, times, seconds, limits = LIMITS, tones = null) {
   const { bands, centres } = spec
   let top = 0
   for (let i = 0; i < spec.power.length; i++) if (spec.power[i] > top) top = spec.power[i]
@@ -533,6 +580,7 @@ export function beatFeatures(spec, onset, sums, times, seconds, limits = LIMITS)
   const hit = []
   const bass = []
   const strength = []
+  const chords = []
   for (let i = 0; i < times.length; i++) {
     const start = times[i]
     const end = i + 1 < times.length ? times[i + 1] : Math.min(seconds, start + (i ? start - times[i - 1] : 0.5))
@@ -549,7 +597,22 @@ export function beatFeatures(spec, onset, sums, times, seconds, limits = LIMITS)
       if (k < bassBands) low += head[k]
     }
     hit.push(10 * Math.log10(all + eps))
-    bass.push(10 * Math.log10(low + eps))
+    const before = bandMeans(spec, start - limits.accentSeconds, start - 0.01)
+    let lowBefore = 0
+    for (let k = 0; k < bassBands; k++) lowBefore += before[k]
+    bass.push(10 * Math.log10(low + eps * 1e3) - 10 * Math.log10(lowBefore + eps * 1e3))
+    if (tones) {
+      const pad = Math.min(tones.n / 2 / tones.sampleRate, (end - start) / 4)
+      const chord = bandMeans(tones, start + pad, Math.max(end - pad, start + pad + 0.02))
+      let norm = 0
+      for (let k = 0; k < chord.length; k++) {
+        chord[k] = Math.sqrt(chord[k])
+        norm += chord[k] * chord[k]
+      }
+      norm = Math.sqrt(norm)
+      if (norm > 0) for (let k = 0; k < chord.length; k++) chord[k] /= norm
+      chords.push(chord)
+    }
     const f = Math.round((start + onset.latency) * onset.frameRate)
     let s = 0
     for (let j = Math.max(0, f - reach); j <= Math.min(onset.env.length - 1, f + reach); j++) if (onset.env[j] > s) s = onset.env[j]
@@ -561,7 +624,13 @@ export function beatFeatures(spec, onset, sums, times, seconds, limits = LIMITS)
     for (let k = 0; k < bands; k++) d += (shape[k] - shapes[i - 1][k]) ** 2
     return Math.sqrt(d / bands)
   })
-  return { shapes, loudness, hit, bass, strength, change }
+  const chordChange = chords.map((chord, i) => {
+    if (!i) return 0
+    let dot = 0
+    for (let k = 0; k < chord.length; k++) dot += chord[k] * chords[i - 1][k]
+    return 1 - dot
+  })
+  return { shapes, loudness, hit, bass, strength, change, chordChange }
 }
 
 function againstNeighbours(values, reach) {
@@ -570,8 +639,10 @@ function againstNeighbours(values, reach) {
 
 export function barPhase(features, beatsPerBar, firstSounding = 0, limits = LIMITS) {
   const n = features.hit.length
-  const parts = [features.hit, features.strength, features.bass, features.change].map((v) => zScores(againstNeighbours(v, beatsPerBar)))
-  const weights = [1, 1, 0.5, 1]
+  const named = { hit: 1, strength: 1, bass: 1, change: 0.5, chordChange: 1.5 }
+  const used = Object.keys(named).filter((k) => features[k]?.length === n)
+  const parts = used.map((k) => zScores(againstNeighbours(features[k], beatsPerBar)))
+  const weights = used.map((k) => named[k])
   const accent = new Array(n).fill(0)
   for (let p = 0; p < parts.length; p++) for (let i = 0; i < n; i++) accent[i] += weights[p] * parts[p][i]
   const sum = new Array(beatsPerBar).fill(0)
@@ -599,51 +670,80 @@ export function barPhase(features, beatsPerBar, firstSounding = 0, limits = LIMI
 }
 
 export function findSections(features, times, phase, beatsPerBar, seconds, sums, sampleRate, limits = LIMITS) {
-  const n = times.length
-  const side = limits.noveltyBars * beatsPerBar
-  const least = limits.minSectionBars * beatsPerBar
+  const beats = times.length
+  const starts = []
+  if (phase > 0) starts.push(0)
+  for (let i = phase; i < beats; i += beatsPerBar) starts.push(i)
+  const n = starts.length
+  const least = limits.minSectionBars
   const floor = Math.max(...features.loudness) - limits.soundFloorDb
-  const loud = features.loudness.map((v) => Math.max(v, floor))
   const bands = features.shapes[0]?.length ?? 0
-  const novelty = new Array(n).fill(0)
-  const meanOf = (from, to) => {
-    let energy = 0
-    const shape = new Float64Array(bands)
+  const group = Math.max(1, Math.ceil(bands / limits.sectionBands))
+  const pooled = Math.ceil(bands / group)
+  const dims = pooled + 1
+  const scale = 1 / limits.sectionStepDb
+  const raw = starts.map((from, b) => {
+    const to = b + 1 < n ? starts[b + 1] : beats
+    const row = new Float64Array(dims)
     for (let i = from; i < to; i++) {
-      energy += 10 ** (loud[i] / 10)
-      for (let k = 0; k < bands; k++) shape[k] += features.shapes[i][k]
+      row[0] += (Math.max(features.loudness[i], floor) * scale) / (to - from)
+      for (let k = 0; k < bands; k++) row[1 + Math.floor(k / group)] += (features.shapes[i][k] * scale) / Math.sqrt(pooled) / Math.min(group, bands - Math.floor(k / group) * group) / (to - from)
     }
-    const c = to - from
-    for (let k = 0; k < bands; k++) shape[k] /= c
-    return { db: 10 * Math.log10(energy / c), shape }
-  }
-  for (let i = least; i <= n - least; i++) {
-    const w = Math.min(side, i, n - i)
-    const a = meanOf(i - w, i)
-    const b = meanOf(i, i + w)
+    return row
+  })
+  const rows = raw.map((row, b) => (b === 0 || b === n - 1 ? row : row.map((_, k) => median([raw[b - 1][k], row[k], raw[b + 1][k]]))))
+  const apart = []
+  for (let b = 0; b + 1 < n; b++) {
     let d = 0
-    for (let k = 0; k < bands; k++) d += (a.shape[k] - b.shape[k]) ** 2
-    novelty[i] = Math.abs(a.db - b.db) / limits.loudnessStepDb + Math.sqrt(d / (bands || 1)) / limits.shapeStepDb
+    for (let k = 0; k < dims; k++) d += (raw[b][k] - raw[b + 1][k]) ** 2
+    apart.push(d / 2)
   }
-  const candidates = []
-  for (let i = least; i <= n - least; i++) {
-    if (novelty[i] >= 1 && novelty[i] >= novelty[i - 1] && novelty[i] >= novelty[i + 1 < n ? i + 1 : i]) candidates.push(i)
+  const noise = Math.max(median(apart), (limits.sectionNoiseFloorDb * scale) ** 2)
+  const penalty = limits.sectionPenalty * noise
+  const linear = Array.from({ length: dims }, () => new Float64Array(n + 1))
+  const squares = new Float64Array(n + 1)
+  for (let i = 0; i < n; i++) {
+    let sq = 0
+    for (let k = 0; k < dims; k++) {
+      linear[k][i + 1] = linear[k][i] + rows[i][k]
+      sq += rows[i][k] ** 2
+    }
+    squares[i + 1] = squares[i] + sq
   }
-  candidates.sort((a, b) => novelty[b] - novelty[a] || a - b)
-  const chosen = []
-  for (const c of candidates) {
-    const r = ((c - phase) % beatsPerBar + beatsPerBar) % beatsPerBar
-    const snapped = r === 1 ? c - 1 : r === beatsPerBar - 1 ? c + 1 : c
-    const at = snapped >= least && snapped <= n - least ? snapped : c
-    if (chosen.every((o) => Math.abs(o.beat - at) >= least)) chosen.push({ beat: at, novelty: novelty[c] })
+  const cost = (from, to) => {
+    let mean = 0
+    for (let k = 0; k < dims; k++) mean += (linear[k][to] - linear[k][from]) ** 2
+    return Math.max(0, squares[to] - squares[from] - mean / (to - from))
   }
-  chosen.sort((a, b) => a.beat - b.beat)
-  const edges = [0, ...chosen.map((c) => times[c.beat]), seconds]
+  const best = new Float64Array(n + 1).fill(Infinity)
+  const back = new Int32Array(n + 1).fill(-1)
+  best[0] = -penalty
+  for (let to = 1; to <= n; to++) {
+    if (to !== n && (to < least || n - to < least)) continue
+    for (let from = 0; from < to; from++) {
+      if (best[from] === Infinity || (to - from < least && !(from === 0 && to === n))) continue
+      const v = best[from] + penalty + cost(from, to)
+      if (v < best[to]) {
+        best[to] = v
+        back[to] = from
+      }
+    }
+  }
+  const cuts = []
+  for (let at = back[n]; at > 0; at = back[at]) cuts.push(at)
+  cuts.reverse()
+  const boundaries = cuts.map((cut, c) => {
+    const before = c ? cuts[c - 1] : 0
+    const after = c + 1 < cuts.length ? cuts[c + 1] : n
+    const gain = cost(before, after) - cost(before, cut) - cost(cut, after)
+    return { beat: starts[cut], time: round(times[starts[cut]]), strength: round(gain / noise, 1) }
+  })
+  const edges = [0, ...boundaries.map((c) => times[c.beat]), seconds]
   const sections = []
   for (let i = 0; i + 1 < edges.length; i++) {
     sections.push({ start: round(edges[i]), end: round(edges[i + 1]), loudness: round(loudnessBetween(sums, sampleRate, edges[i], edges[i + 1]), 2) })
   }
-  return { sections, boundaries: chosen.map((c) => ({ beat: c.beat, time: round(times[c.beat]), novelty: round(c.novelty, 2) })) }
+  return { sections, boundaries }
 }
 
 export function steadiness(measured, sections, limits = LIMITS) {
@@ -651,12 +751,14 @@ export function steadiness(measured, sections, limits = LIMITS) {
     const inside = measured.filter((m) => m.time >= s.start - 1e-6 && m.time < s.end)
     const gaps = []
     for (let i = 1; i < inside.length; i++) gaps.push(inside[i].time - inside[i - 1].time)
-    if (gaps.length < 3) return { start: s.start, beats: inside.length, spread: 0, steady: true }
+    if (gaps.length < 3) return { start: s.start, beats: inside.length, spread: 0, worst: 0, steady: true }
     const mid = median(gaps)
-    const spread = quantile(gaps.map((g) => Math.abs(g / mid - 1)), limits.steadyShare)
-    return { start: s.start, beats: inside.length, bpm: round(60 / mid, 2), spread: round(spread, 4), steady: spread <= limits.steadyTolerance }
+    const off = gaps.map((g) => Math.abs(g / mid - 1))
+    const spread = quantile(off, limits.steadyShare)
+    const worst = Math.max(...off)
+    return { start: s.start, beats: inside.length, bpm: round(60 / mid, 2), spread: round(spread, 4), worst: round(worst, 4), steady: spread <= limits.steadyTolerance && worst <= limits.slipTolerance }
   })
-  return { tolerance: limits.steadyTolerance, share: limits.steadyShare, sections: rows, pass: rows.every((r) => r.steady) }
+  return { tolerance: limits.steadyTolerance, share: limits.steadyShare, slip: limits.slipTolerance, sections: rows, pass: rows.every((r) => r.steady) }
 }
 
 export function gridBeats(seconds, defaultBpm, beatsPerBar) {
@@ -712,6 +814,7 @@ export function analyse(samples, sampleRate, opts, limits = LIMITS, settings = S
   const seconds = samples.length / sampleRate
   const bounds = soundBounds(samples, sampleRate, limits)
   const sums = squareSums(kWeighted(samples, sampleRate))
+  const tones = bounds.silent ? null : harmony(samples, sampleRate, limits)
   const tries = []
   let kept = null
   let base = null
@@ -723,11 +826,13 @@ export function analyse(samples, sampleRate, opts, limits = LIMITS, settings = S
         const smooth = smoothBeats(t.measured, beatsPerBar, limits)
         const times = extendBeats(smooth, bounds.start, Math.min(seconds, bounds.end)).filter((v) => v >= 0 && v < seconds)
         const firstSounding = times.findIndex((v) => v >= smooth[0] - 1e-6)
-        const features = beatFeatures(t.spec, t.onset, sums, times, seconds, limits)
+        const features = beatFeatures(t.spec, t.onset, sums, times, seconds, limits, tones)
         const bar = barPhase(features, beatsPerBar, Math.max(0, firstSounding), limits)
         const found = findSections(features, times, bar.phase, beatsPerBar, seconds, sums, sampleRate, limits)
         const steady = steadiness(t.measured, found.sections, limits)
         t.row.steady = steady.pass
+        t.row.spread = Math.max(...steady.sections.map((r) => r.spread))
+        t.row.worst = Math.max(...steady.sections.map((r) => r.worst))
         tries.push(t.row)
         if (steady.pass) {
           kept = { t, times, bar, found, steady }
@@ -772,7 +877,7 @@ export function analyse(samples, sampleRate, opts, limits = LIMITS, settings = S
   let sections = [{ start: 0, end: round(seconds), loudness: round(loudnessBetween(sums, sampleRate, 0, seconds), 2) }]
   let boundaries = []
   if (base && !bounds.silent && beats.length >= 2 * beatsPerBar) {
-    const features = beatFeatures(base.spec, base.onset, sums, grid.beats, seconds, limits)
+    const features = beatFeatures(base.spec, base.onset, sums, grid.beats, seconds, limits, tones)
     const found = findSections(features, grid.beats, 0, beatsPerBar, seconds, sums, sampleRate, limits)
     sections = found.sections
     boundaries = found.boundaries
@@ -789,7 +894,7 @@ export function analyse(samples, sampleRate, opts, limits = LIMITS, settings = S
     loudestSectionStart: loudest(sections),
     checks: {
       tempo: { autocorrelation: last?.autocorrelation ?? 0, comb: last?.comb ?? 0, difference: last?.difference ?? null, tolerance: limits.tempoToleranceBpm, agree: false },
-      steady: { tolerance: limits.steadyTolerance, share: limits.steadyShare, sections: [], pass: false },
+      steady: { tolerance: limits.steadyTolerance, share: limits.steadyShare, slip: limits.slipTolerance, sections: [], pass: false },
       tries,
       settings: 'grid',
       barPhase: { phase: 0, method: 'grid', confidence: 0, scores: [] },
