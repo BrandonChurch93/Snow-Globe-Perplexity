@@ -23,7 +23,7 @@ const WHITE = 0.85
 const AMBER = 0.95
 
 export const PLACED = {
-  view: { widthPx: 2816, heightPx: 1584, fovDeg: 16, distanceMm: 619.9, pitchDeg: 4.5, aimHeightMm: 62.8 },
+  view: { widthPx: 2816, heightPx: 1584, fovDeg: 16, distanceMm: 615.3, pitchDeg: 4.5, aimHeightMm: 64 },
   sizeMm: 2.5,
   reachMm: [1100, 3200] as [number, number],
   discs: [

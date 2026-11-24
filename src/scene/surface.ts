@@ -6,6 +6,7 @@ import type { SeasonKit } from '../seasons/kit'
 import { FAR_GLSL, lensUniforms } from './cameras'
 import type { StageFrame } from './frame'
 import { ROOM_GLSL, roomUniforms } from './room'
+import { partChange } from '../shake/change'
 
 const G = config.globe
 const footRadius = G.baseDiameterMm / 2
@@ -53,13 +54,14 @@ export const SLAB = {
   fresnelPower: 4.2,
   mirrorShare: 1,
   nearFloor: 0.6,
-  nearBlur: 2.5,
+  nearBlur: 1,
   nearHeightMm: 10,
   mirrorMark: 0.35,
   mirrorTint: [0.7, 1, 1.25],
   sheenUnder: 0.28,
   girthMoreMm: 6,
   girthSoftMm: 4,
+  girthSoftRise: 0.3,
   farGain: 1.8,
   farFrom: 0.165,
   farTo: 0.125,
@@ -76,10 +78,18 @@ export const SLAB = {
   sideByGrazing: 1,
   sideMost: 0.45,
   fadeHeightMm: 170,
-  fadeFloor: 0.42,
+  fadeFloor: 0.3,
   poolGain: 4,
   poolRiseMm: 46,
-  contactMm: 7,
+  contactMm: 4,
+  lumpEdge: 0.45,
+  lumpRagged: 0.45,
+  lumpGrainMm: 0.9,
+  lumpBlur: 1,
+  lumpGain: 1.3,
+  lumpSeasons: { winter: 1 } as Record<string, number>,
+  lumpShade: 0.5,
+  dustTint: [0.55, 1, 1.5],
   shadowReach: 0.6,
   bakedGain: 0.5,
   underSky: 0.6,
@@ -88,6 +98,30 @@ export const SLAB = {
   underSoftMm: 2,
   underSpread: 0.1,
 }
+
+export const LUMPS: readonly (readonly [number, number, number, number, number])[] = [
+  [-161.5, -108.3, 1.7, 3.1, 0.75],
+  [-145.1, -108.3, 6.5, 2.8, 0.7],
+  [-147.1, -77.7, 1.0, 1.7, 0.6],
+  [-129.8, -72.4, 2.8, 1.7, 0.75],
+  [-113.1, -109.9, 1.7, 3.1, 0.8],
+  [-87.5, -152.7, 1.8, 3.3, 0.3],
+  [-118.9, -39.2, 0.5, 0.8, 0.6],
+  [-102.4, -21.1, 0.3, 0.6, 0.9],
+  [-167.2, -89.5, 4.4, 2.3, 0.2],
+  [94.0, -145.2, 5.6, 4.1, 0.85],
+  [83.6, -143.4, 1.6, 3.0, 0.3],
+  [93.4, -105.7, 1.2, 2.2, 0.6],
+  [99.2, -98.3, 2.4, 2.8, 0.95],
+  [107.2, -56.8, 3.7, 2.2, 0.7],
+  [113.9, -74.7, 0.9, 1.5, 0.35],
+  [110.0, -39.9, 1.5, 1.2, 0.5],
+  [115.2, -46.8, 0.7, 1.3, 0.9],
+  [123.2, -51.8, 0.6, 1.1, 0.6],
+  [139.0, -108.3, 1.2, 2.2, 0.3],
+  [149.5, -44.0, 0.5, 0.8, 0.7],
+  [145.9, -23.1, 0.3, 0.6, 0.8],
+]
 
 const f = (v: number) => v.toFixed(4)
 const turn = (SLAB_SHAPE.turnDeg * Math.PI) / 180
@@ -128,8 +162,14 @@ vec2 slabCast(vec2 at, vec2 foot, float lift, vec2 along) {
   float ballAt = length(vec2(dot(ball, dirL) / stretch, dot(ball, vec2(-dirL.y, dirL.x)))) / ${f(globeRadius)};
   return vec2(1.0 - baseShade, ballAt);
 }
+float slabRim(vec2 at) {
+  vec2 d = at - uFoot.xy;
+  d *= min(1.0, uFoot.z / max(length(d), 1e-3));
+  float up = sqrt(max(1.0 - dot(uLean.zw, uLean.zw), 0.0));
+  return max(uFoot.w - dot(uLean.zw, d) / max(up, 0.2), 0.0);
+}
 float slabShade(vec2 at) {
-  float lift = uFoot.w;
+  float lift = slabRim(at);
   float gap = length(at - uFoot.xy - uLean.xy) - uFoot.z;
   float tight = exp(-max(gap, 0.0) / (${f(SLAB.contactMm)} + 0.9 * lift)) / (1.0 + 0.07 * lift);
   float wide = (1.0 - smoothstep(-0.25 * uFoot.z, uFoot.z * (${f(SLAB.shadowReach)} + 0.035 * lift), gap)) * 0.6 / (1.0 + 0.045 * lift);
@@ -188,6 +228,7 @@ export const surfaceUniforms = {
   uMirrorSize: { value: new THREE.Vector4(1, 1, 1, 0) },
   uDetail: { value: blank as THREE.Texture },
   uStone: { value: dark as THREE.Texture },
+  uLumps: { value: 0 },
 }
 
 export const slabLightUniforms = {
@@ -212,9 +253,44 @@ uniform sampler2D uMirror;
 uniform vec4 uMirrorSize;
 uniform sampler2D uDetail;
 uniform sampler2D uStone;
+uniform float uLumps;
 vec2 slabSlope(vec4 t) {
   vec2 c = (t.rg * 255.0 - 128.0) / 127.0;
   return vec2(c.x, -c.y) * abs(c) * ${f(SLAB.slopeFull)};
+}
+const vec4 slabLumpAt[${LUMPS.length}] = vec4[${LUMPS.length}](${LUMPS.map((l) => `vec4(${f(l[0])}, ${f(l[1])}, ${f(l[2])}, ${f(l[3])})`).join(', ')});
+const float slabLumpGain[${LUMPS.length}] = float[${LUMPS.length}](${LUMPS.map((l) => f(l[4])).join(', ')});
+float slabHash(vec2 p) {
+  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}
+vec2 slabNoise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 u = fract(p);
+  u = u * u * (3.0 - 2.0 * u);
+  float a = mix(mix(slabHash(i), slabHash(i + vec2(1.0, 0.0)), u.x), mix(slabHash(i + vec2(0.0, 1.0)), slabHash(i + vec2(1.0, 1.0)), u.x), u.y);
+  vec2 k = i + 17.0;
+  float b = mix(mix(slabHash(k), slabHash(k + vec2(1.0, 0.0)), u.x), mix(slabHash(k + vec2(0.0, 1.0)), slabHash(k + vec2(1.0, 1.0)), u.x), u.y);
+  return vec2(a, b) - 0.5;
+}
+vec2 slabLumps(vec3 at, vec3 toEye, float blurMm) {
+  vec3 across = normalize(vec3(toEye.z, 0.0, -toEye.x));
+  vec3 upward = cross(toEye, across);
+  float sum = 0.0;
+  float lit = 0.0;
+  for (int i = 0; i < ${LUMPS.length}; i++) {
+    vec4 c = slabLumpAt[i];
+    vec3 rel = vec3(at.x - c.x, 0.0, at.z - c.y);
+    vec2 s = vec2(dot(rel, across), dot(rel, upward));
+    vec2 size = vec2(c.z, 0.5 * c.w) + blurMm;
+    vec2 rag = slabNoise(s / (${f(SLAB.lumpGrainMm)} + blurMm) + float(i) * 7.3) + 0.5 * slabNoise(s / (${f(SLAB.lumpGrainMm * 0.37)} + 0.5 * blurMm) + float(i) * 3.1);
+    vec2 q = (s - vec2(0.0, 0.5 * c.w)) / size;
+    float far = length(q) + rag.x * ${f(SLAB.lumpRagged)};
+    float soft = clamp(${f(SLAB.lumpEdge)} + blurMm / c.w, 0.0, 0.95);
+    float m = slabLumpGain[i] * (1.0 - smoothstep(1.0 - soft, 1.0 + 0.5 * soft, far)) * sqrt(c.z * 0.5 * c.w / (size.x * size.y));
+    sum += m;
+    lit += m * mix(${f(SLAB.lumpShade)}, 1.0, clamp(0.5 + 0.5 * q.y + rag.y, 0.0, 1.0));
+  }
+  return vec2(sum, lit);
 }
 float discShare(float x) {
   x = clamp(x, -1.0, 1.0);
@@ -267,7 +343,9 @@ void main() {
   vec2 turned = slabSlope(crumb);
   vec2 tilt = slabSlope(fine) + vec2(turned.x * ${f(Math.cos(crumbTurn))} - turned.y * ${f(Math.sin(crumbTurn))}, turned.x * ${f(Math.sin(crumbTurn))} + turned.y * ${f(Math.cos(crumbTurn))});
   vec3 n = normalize(vec3(tilt.x, 1.0, tilt.y));
+  vec2 lump = uLumps > 0.0 ? uLumps * slabLumps(P, -v, ${f(SLAB.lumpBlur)} * lensBlurMm(depth)) : vec2(0.0);
   float dust = clamp(max(fine.b, crumb.b * ${f(SLAB.crumbDust)}), 0.0, 1.0);
+  dust = max(dust * (1.0 - min(lump.x, 1.0)), min(lump.y * ${f(SLAB.lumpGain)}, 1.0));
   float vein = stone.r;
   float cloud = stone.g;
   float patchy = 0.5 * (wash.g + fleck.g);
@@ -278,7 +356,7 @@ void main() {
 
   vec3 film = vec3(${SLAB.filmTint.map(f).join(', ')}) * mark;
   vec3 albedo = uSlab * (1.0 + ${f(SLAB.vein)} * vein + ${f(SLAB.cloud)} * cloud) + film * ${f(SLAB.filmAlbedo)};
-  vec3 scatter = albedo + vec3(${f(SLAB.dustAlbedo)}) * dust;
+  vec3 scatter = albedo + vec3(${SLAB.dustTint.map(f).join(', ')}) * (${f(SLAB.dustAlbedo)} * dust);
   vec3 keyDir;
   vec3 rimDir;
   vec3 warm;
@@ -303,10 +381,11 @@ void main() {
   float girth = ${f(globeRadius + SLAB.girthMoreMm)} + length(uLean.xy);
   float tIn = (th - sqrt(max(girth * girth - side * side, 0.0))) / rl;
   float tGlobe = max(max(tIn, lift / max(r0.y, 1e-3)), 0.0);
-  float sil = (1.0 - smoothstep(girth - ${f(SLAB.girthSoftMm)}, girth, side)) * step(0.0, th + girth);
   float reachFar = ${f(SLAB.farPathMm)} / (dist + ${f(SLAB.farPathMm)});
   float reachNear = tGlobe / (dist + tGlobe);
   float height = tGlobe * r0.y;
+  float silSoft = ${f(SLAB.girthSoftMm)} + ${f(SLAB.girthSoftRise)} * height;
+  float sil = (1.0 - smoothstep(girth - silSoft, girth + 0.25 * silSoft, side)) * step(0.0, th + girth);
   float fade = mix(1.0, ${f(SLAB.nearFloor)}, smoothstep(0.0, ${f(SLAB.nearHeightMm)}, height)) * mix(1.0, ${f(SLAB.fadeFloor)}, smoothstep(0.0, ${f(SLAB.fadeHeightMm)}, height));
 
   vec3 footUp = vec3(uLean.z, sqrt(max(1.0 - dot(uLean.zw, uLean.zw), 0.0)), uLean.w);
@@ -446,6 +525,8 @@ export function updateSurface(f: StageFrame): void {
   const lean = 0.5 * G.baseHeightMm + g.y
   su.uLean.value.set(-Math.sin(g.tiltZ) * lean, Math.sin(g.tiltX) * lean, -Math.sin(g.tiltZ), Math.sin(g.tiltX) * Math.cos(g.tiltZ))
   su.uPool.value.copy(f.pool)
+  const lumpsA = SLAB.lumpSeasons[f.from.season] ?? 0
+  su.uLumps.value = lumpsA + ((SLAB.lumpSeasons[f.to.season] ?? 0) - lumpsA) * partChange('surface-dressing', f.change)
   const mirror = f.view === '' && f.planar
   su.uReflect.value.set(mirror ? 1 : 0, mirror ? 0 : 1, 0, 0)
   const a = f.from.main
