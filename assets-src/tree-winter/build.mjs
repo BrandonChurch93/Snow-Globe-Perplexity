@@ -247,7 +247,7 @@ function frames(points) {
 function strings() {
   const bulbs = []
   const wires = []
-  const drop = (at, out, group) => bulbs.push({ at: at.clone(), out: out.clone().normalize(), phase: rng.int(64) / 64, warm: rng.next(), group })
+  const drop = (at, out, group) => bulbs.push({ at: at.clone(), out: out.clone().normalize(), phase: rng.int(64) / 64, warm: rng.next(), size: rng.range(0.7, 1.12), group })
 
   const helix = []
   const h0 = 4.6
@@ -307,7 +307,7 @@ function strings() {
     const side = new THREE.Vector3(...ax.side)
     const depth = new THREE.Vector3(...ax.depth)
     const centre = new THREE.Vector3(...pad.at)
-    const n = Math.max(6, Math.round(pad.size[0] * pad.size[2] * 0.36))
+    const n = Math.max(6, Math.round(pad.size[0] * pad.size[2] * 0.28))
     const ring = []
     for (let k = 0; k < n; k++) {
       const even = (k / n) * TAU + rng.range(-0.25, 0.25)
@@ -439,14 +439,14 @@ function lights() {
   const { bulbs, wires } = strings()
   const parts = []
   for (const b of bulbs) {
-    const g = new THREE.IcosahedronGeometry(0.2, 1)
+    const g = new THREE.IcosahedronGeometry(0.2 * b.size, 1)
     g.deleteAttribute('uv')
     g.applyMatrix4(new THREE.Matrix4().makeScale(1, 1.32, 1))
     g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.out))
     g.applyMatrix4(new THREE.Matrix4().makeTranslation(b.at.x, b.at.y, b.at.z))
     colourOf(g, 1, 0.5 + 0.1 * b.warm, 0.13 + 0.08 * b.warm, 1)
     parts.push(phaseOf(g, b.phase, 1))
-    const halo = new THREE.IcosahedronGeometry(HALO_R, 0)
+    const halo = new THREE.IcosahedronGeometry(HALO_R * b.size, 0)
     halo.deleteAttribute('uv')
     const hp = halo.getAttribute('position')
     const hn = halo.getAttribute('normal')

@@ -79,7 +79,7 @@ function needleHook(shader: Shader): void {
       float treeH = dot(treeC.rgb, vec3(0.3, 0.6, 0.1));
       ${TREE_SLOPES}
       if (treeCard && treeC.a < 0.04 + 0.96 * stageHash(vec3(gl_FragCoord.xy, uSeed + floor(vCard.y + 0.5) / 64.0))) discard;
-      diffuseColor.rgb *= treeC.rgb * 1.15;`,
+      diffuseColor.rgb *= pow(treeC.rgb, vec3(1.25)) * 1.3;`,
     )
     .replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\nif (vCard.x > 0.5) normal *= faceDirection;')
     .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>\n${TREE_BUMP}`)

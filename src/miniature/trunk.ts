@@ -39,6 +39,7 @@ const FORK_H = 13.6
 const TOP_H = 37.6
 const DEEP_H = -4.5
 const MIN_SHAFT = 5
+const LIMB = { share: 0.64, thin: 1.02, thick: 1.8, tip: 0.5, taper: 0.9 }
 const ROOT_RISE = 7
 const TWIST_LOW = 0.16
 const TWIST_HIGH = 0.055
@@ -48,7 +49,7 @@ const MODEL = 'shared/trunk-wood.glb'
 const BARK = 'shared/trunk-bark.srgb.tile.w1024.png'
 const BARK_NORMAL = 'shared/trunk-bark-n.lin.tile.w1024.png'
 
-const RADIUS: Table = [[-4.5, 4.2], [0, 3.6], [1.2, 3.3], [3.2, 2.9], [5.2, 2.72], [8, 2.85], [10, 2.5], [11.6, 2.75], [13.6, 2.95], [16.5, 2.2], [20, 1.8], [26.2, 1.55], [33, 1.1], [37.6, 0.5]]
+const RADIUS: Table = [[-4.5, 4.2], [0, 3.6], [1.2, 3.3], [3.2, 2.9], [5.2, 2.72], [8, 2.85], [10, 2.5], [11.6, 2.75], [13.6, 2.95], [16.5, 2.1], [20, 1.62], [26.2, 1.34], [33, 1.0], [37.6, 0.5]]
 const AXIS_X: Table = [[-4.5, -0.3], [0, -0.2], [8.4, 0.4], [11.6, 0.8], [13.6, 0.7], [26.2, 0.35], [37.6, 0.2]]
 const AXIS_Z: Table = [[-4.5, 0], [0, 0], [8, 0.35], [14, -0.1], [26, -0.4], [37.6, 0]]
 
@@ -237,13 +238,13 @@ function grow(): Limb[] {
     const w1 = rng.range(0, TAU)
     const w2 = rng.range(0, TAU)
     const amp = rng.range(0.25, 0.5)
-    const r0 = trunkGirth(P.from) * (P.from < 20 ? 0.6 : 0.5)
+    const r0 = Math.min(LIMB.thick, Math.max(LIMB.thin, trunkGirth(P.from) * LIMB.share))
     const at = (t: number): Vec3 => {
       const b = bezier(p0, p1, p2, end, t)
       const e = Math.sin(Math.PI * t) * amp
       return [b[0] - flat[2] * e * Math.sin(5.1 * t + w1), b[1] + e * 0.8 * Math.sin(6.3 * t + w2), b[2] + flat[0] * e * Math.sin(5.1 * t + w1)]
     }
-    const radius = (t: number): number => lerp(r0, 0.42, Math.pow(t, 0.75))
+    const radius = (t: number): number => lerp(r0, LIMB.tip, Math.pow(t, LIMB.taper))
     const steps = Math.max(12, Math.round(L / 0.6))
     const pts: Vec3[] = []
     const rad: number[] = []
