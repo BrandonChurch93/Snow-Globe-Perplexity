@@ -1,5 +1,6 @@
 import { MeshoptDecoder } from 'meshoptimizer'
 import sharp from 'sharp'
+import * as THREE from 'three'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
@@ -7,6 +8,9 @@ import { describe, expect, it } from 'vitest'
 import { SeasonLoader } from '../src/app/session'
 import { Assets, entriesOf, fileAddress, type AssetFile } from '../src/core/assets'
 import { config } from '../src/config'
+import { LevelIndex, meshLevel, meshLevelOf, setMeshLevel } from '../src/core/models'
+import { levels as qualityLevels, stageQuality } from '../src/core/quality'
+import { LEVELS, addLevels } from '../tools/lib/glblevels.mjs'
 import { packGlb, readGlb, writeGlb, STREAMS } from '../tools/lib/glbpack.mjs'
 import { WEB, difference, halve, webFiles, webLimit, webSize } from '../tools/lib/webset.mjs'
 
@@ -320,6 +324,123 @@ describe('the models of the web set', () => {
       expect(box.min[c]).toBe(lo)
       expect(box.max[c]).toBe(hi)
     }
+  })
+
+  const triangles = (list: ArrayLike<number>): string[] => {
+    const out: string[] = []
+    for (let i = 0; i < list.length; i += 3) {
+      const t = [list[i]!, list[i + 1]!, list[i + 2]!]
+      const k = t.indexOf(Math.min(...t))
+      out.push(`${t[k]},${t[(k + 1) % 3]},${t[(k + 2) % 3]}`)
+    }
+    return out.sort()
+  }
+
+  it('adds lighter lists of triangles over the very same vertices, each within its share of the list above, and packs them', async () => {
+    const g = grid(48)
+    const wide = { medium: { error: 0.6, worth: 0.9 }, low: { error: 2.5, worth: 0.9 } }
+    const r = await addLevels(g.glb, { levels: wide })
+    const { json, bin } = readGlb(r.glb)
+    const before = readGlb(g.glb)
+    expect(bin.subarray(0, before.bin.length).equals(before.bin)).toBe(true)
+    expect(json.accessors.slice(0, 4)).toEqual(before.json.accessors)
+    expect(json.meshes[0].primitives[0].indices).toBe(3)
+    expect(json.meshes[0].extras).toEqual({ role: 'roof', lod: 2 })
+    const named = json.meshes[0].primitives[0].extras.levels as Record<string, number>
+    expect(Object.keys(named)).toEqual(['medium', 'low'])
+    const list = (accessor: number): Uint32Array => {
+      const a = json.accessors[accessor]
+      const v = json.bufferViews[a.bufferView]
+      expect([a.componentType, a.type]).toEqual([5125, 'SCALAR'])
+      return new Uint32Array(bin.buffer.slice(bin.byteOffset + v.byteOffset, bin.byteOffset + v.byteOffset + v.byteLength))
+    }
+    const lists = { medium: list(named.medium!), low: list(named.low!) }
+    let above = g.index.length
+    const edge = (v: number): boolean => v % 48 === 0 || v % 48 === 47 || v < 48 || v >= 48 * 47
+    for (const [level, l] of Object.entries(lists)) {
+      expect(l.length % 3).toBe(0)
+      expect(l.length).toBeGreaterThan(0)
+      expect(l.length).toBeLessThanOrEqual(above * 0.9)
+      expect(Math.max(...l)).toBeLessThan(48 * 48)
+      // No triangle is turned over, none is a line, and the four corners of the sheet are still corners of it.
+      for (let i = 0; i < l.length; i += 3) {
+        const [a, b, c] = [l[i]!, l[i + 1]!, l[i + 2]!].map((v) => Array.from(g.position.subarray(v * 3, v * 3 + 3))) as [number[], number[], number[]]
+        const [ux, uy, uz] = [b[0]! - a[0]!, b[1]! - a[1]!, b[2]! - a[2]!]
+        const [vx, vy, vz] = [c[0]! - a[0]!, c[1]! - a[1]!, c[2]! - a[2]!]
+        const facing = [uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx]
+        expect(Math.hypot(...facing)).toBeGreaterThan(0)
+        // (A sliver that stands on the edge of the sheet has no area seen from above, to the rounding of a float32.)
+        expect(facing[1]).toBeGreaterThan(-1e-3)
+      }
+      for (const corner of [0, 47, 48 * 47, 48 * 48 - 1]) expect(l.includes(corner)).toBe(true)
+      // The outline stays the outline: a vertex inside the sheet is never moved onto its edge to stand for an edge vertex.
+      const used = new Set(l)
+      expect([...used].filter(edge).length).toBeGreaterThanOrEqual(4)
+      const row = r.meshes[0] as Record<string, number>
+      expect(row[level]).toBe(l.length / 3)
+      above = l.length
+    }
+    expect(r.meshes[0]!.triangles).toBe(g.index.length / 3)
+
+    const again = await addLevels(g.glb, { levels: wide })
+    expect(again.glb.equals(r.glb)).toBe(true)
+    expect((await addLevels(r.glb, { levels: wide })).glb.equals(r.glb)).toBe(true)
+    // The rule of the web set keeps the surface where it is to a tenth of a millimetre: this rough sheet gives it nothing to take.
+    expect(LEVELS.low.error).toBeLessThanOrEqual(0.1)
+    expect(LEVELS.medium.error).toBeLessThan(LEVELS.low.error)
+
+    const packed = await packGlb(r.glb)
+    expect(packed.packed).toBe(6)
+    const p = readGlb(packed.glb)
+    expect(p.json.meshes[0].primitives[0].extras.levels).toEqual(named)
+    await MeshoptDecoder.ready
+    const decoded = (accessor: number): Uint32Array => {
+      const view = p.json.bufferViews[p.json.accessors[accessor].bufferView]
+      const ext = view.extensions.EXT_meshopt_compression
+      const out = new Uint8Array(ext.count * ext.byteStride)
+      MeshoptDecoder.decodeGltfBuffer(out, ext.count, ext.byteStride, new Uint8Array(p.bin.buffer, p.bin.byteOffset + ext.byteOffset, ext.byteLength), ext.mode, ext.filter)
+      return new Uint32Array(out.buffer)
+    }
+    expect(decoded(3)).toEqual(g.index)
+    expect(triangles(decoded(named.medium!))).toEqual(triangles(lists.medium))
+    expect(triangles(decoded(named.low!))).toEqual(triangles(lists.low))
+  })
+
+  it('draws a mesh, and every copy a part made of it, from the list of the level the page is at', () => {
+    const [top, mid, last] = qualityLevels.map((l) => l.id) as [string, string, string]
+    const full = Uint32Array.from([0, 1, 2, 2, 1, 3, 2, 3, 4, 4, 3, 5])
+    const light = new Uint32Array(full.length)
+    light.set([0, 1, 5])
+    const index = new LevelIndex({ [top]: { array: full, count: full.length }, [last]: { array: light, count: 3 } })
+    const g = new THREE.BufferGeometry()
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(18), 3))
+    g.setIndex(index)
+    const copy = g.clone()
+    expect(copy.index).toBeInstanceOf(LevelIndex)
+    expect(copy.index).not.toBe(index)
+    try {
+      expect(meshLevel()).toBe(top)
+      expect([index.count, copy.index!.count]).toEqual([12, 12])
+      const version = index.version
+      setMeshLevel(last)
+      expect([index.count, copy.index!.count]).toEqual([3, 3])
+      expect(Array.from(index.array.subarray(0, 3))).toEqual([0, 1, 5])
+      expect(index.array.byteLength).toBe(full.byteLength)
+      expect(index.version).toBeGreaterThan(version)
+      // A copy made while the page is at a lower level starts there, and goes back up with the rest.
+      const late = copy.clone()
+      expect(late.index!.count).toBe(3)
+      // A level without a list of its own draws the nearest list above it.
+      setMeshLevel(mid)
+      expect([index.count, copy.index!.count, late.index!.count]).toEqual([12, 12, 12])
+      expect(index.array).toBe(full)
+      setMeshLevel('no such level')
+      expect(meshLevel()).toBe(top)
+    } finally {
+      setMeshLevel(top)
+    }
+    for (const l of qualityLevels) expect(meshLevelOf(stageQuality(l))).toBe(l.id)
+    expect(meshLevelOf({ particleFraction: 0.123, shadowMapPx: 1, surfaceReflection: 'none' })).toBe(top)
   })
 
   it('gives the same bytes for the same model, and leaves a model that is already packed as it is', async () => {
