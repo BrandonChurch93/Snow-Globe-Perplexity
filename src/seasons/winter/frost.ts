@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { config } from '../../config'
-import { stageShader } from '../../core/materials'
+import { stageShader, stageUniforms } from '../../core/materials'
 import { geometry, prepareModel } from '../../core/models'
 import { texture } from '../../core/textures'
 import { shellUniforms } from '../../globe/shell'
@@ -26,10 +26,10 @@ export const glassDressing: Dressing = { tint: [0.86, 0.92, 1], amount: 0 }
 export const surfaceDressing: Dressing & { reachMm: number } = { tint: [0.86, 0.92, 1], amount: 0, reachMm: 132 }
 
 const look = {
-  glass: { cover: 1.7, haze: 0.3, slope: 0.55, micro: 1.1, glint: 1.6, light: 0.96, through: 2.4, thin: 0.6, thick: 0.8, blur: 0.006, bend: 0.012, room: 0.5 },
-  slab: { cover: 2.2, film: 1.7, slope: 1.6, micro: 1.2, glint: 1.6, pool: 0.35, poolBack: 0.2, light: 2.65, wrap: 0.3, broad: 1.4, shade: 0.35, edge: 0.6, ball: 0.3, rim: 0.55, sky: 1.5, sugarMm: 0.34, clotMm: 1.15, room: 0.1, lace: 0.3, gritty: 0.75 },
+  glass: { cover: 1.7, haze: 0.5, slope: 0.55, micro: 1.1, glint: 1.6, light: 0.96, through: 2.4, thin: 0.6, thick: 0.8, blur: 0.012, bend: 0.012, scatter: 0.4, room: 0.5, soften: 0.2, rimMu: 0.3, front: 1.9, sugarMm: 0.3, gritty: 0.45, clear: [0.255, 0.28, 0.8] },
+  slab: { cover: 2.2, film: 1.7, slope: 1.6, micro: 1.2, glint: 1.6, pool: 0.5, poolBack: 0.12, poolThick: 0.9, skyCut: 0.55, gainFar: 0.9, gainKey: 1.5, gainFront: 0.24, grey: 0.85, light: 2.95, wrap: 0.3, broad: 1.4, shade: 0.35, edge: 0.6, ball: 0.3, rim: 0.55, sky: 1.3, sugarMm: 0.34, clotMm: 1.15, room: 0.1, lace: 0.3, gritty: 0.75 },
 }
-const SNOW = { thin: [0.3, 0.43, 0.66], thick: [0.92, 0.945, 0.985], body: [0.9, 0.93, 0.98] }
+const SNOW = { thin: [0.32, 0.49, 0.7], thick: [0.92, 0.955, 0.99], body: [0.9, 0.93, 0.98] }
 const vec = (v: number[]): string => `vec3(${v.map((x) => x.toFixed(3)).join(', ')})`
 
 const frostUniforms = {
@@ -174,13 +174,18 @@ void main() {
   vec3 m0 = texture(uGlassMap, uv, -0.6).rgb;
   vec3 m1 = texture(uGlassMap, uv + e2 * e, -0.6).rgb;
   vec3 m2 = texture(uGlassMap, uv + t2 * e, -0.6).rgb;
+  vec3 ms = texture(uGlassMap, uv, 1.4).rgb;
   vec3 mb = texture(uGlassMap, uv, 3.0).rgb;
   float on = smoothstep(0.0, FROST_SOFT, lvl - m0.g);
   float h0 = m0.r * on;
+  float hs = ms.r * smoothstep(0.0, 1.5 * FROST_SOFT, lvl - ms.g + 0.02);
   float h1 = m1.r * smoothstep(0.0, FROST_SOFT, lvl - m1.g);
   float h2 = m2.r * smoothstep(0.0, FROST_SOFT, lvl - m2.g);
   float haze = mb.r * smoothstep(0.0, 2.0 * FROST_SOFT, lvl - mb.g + 0.04);
-  float body = h0 * (0.45 + 1.5 * grain.r);
+  vec2 sxy = vStageLocal.xy;
+  float pxS = max(sqrt(length(dFdx(sxy)) * length(dFdy(sxy))), 0.02);
+  float sugar = smoothstep(0.28, 0.72, frostSugar(vec3(sxy.x, d.z > 0.0 ? 0.0 : 40.0, sxy.y), pxS, ${look.glass.sugarMm.toFixed(3)}, 0.71));
+  float body = mix(h0, 1.3 * hs, ${look.glass.soften.toFixed(3)}) * (0.45 + 1.5 * grain.r) * mix(${(1 - look.glass.gritty).toFixed(3)} + ${(2 * look.glass.gritty).toFixed(3)} * sugar, 1.0, smoothstep(0.3, 0.6, h0));
   float mmR = e * 2.0 * uShape.x * ${RS.toFixed(2)};
   float mmT = mmR * st / max(th, 0.05);
   vec2 slope = uShape.z * uGlassLook.z * vec2((h1 - h0) / mmR, (h2 - h0) / mmT);
@@ -192,23 +197,24 @@ void main() {
   vec3 ng = normalize(vStageWorld - uLensCentre);
   vec3 v = normalize(vStageWorld - cameraPosition);
   float mu = max(dot(ng, -v), 0.0);
-  float tau = uGlassLook.x * body / max(mu, 0.42) + uGlassLook.y * haze / max(mu, 0.3);
+  float tau = uGlassLook.x * body / max(mu, ${look.glass.rimMu.toFixed(3)}) + uGlassLook.y * haze / max(mu, 0.3);
   float alpha = 1.0 - exp(-tau);
+  alpha *= 1.0 - ${look.glass.clear[2]!.toFixed(3)} * (1.0 - smoothstep(${look.glass.clear[0]!.toFixed(3)}, ${look.glass.clear[1]!.toFixed(3)}, mu));
   float kd = dot(n, uKeyDir);
   float rd = dot(n, uRimDir);
-  float keyLit = max(kd, 0.0) * 0.8 + smoothstep(-1.0, 0.6, kd) * 0.3 + max(-kd, 0.0) * uGlassThru.x;
+  float keyLit = max(kd, 0.0) * ${look.glass.front.toFixed(3)} + smoothstep(-1.0, 0.6, kd) * 0.3 + max(-kd, 0.0) * uGlassThru.x;
   float rimLit = max(rd, 0.0) * 0.8 + smoothstep(-1.0, 0.6, rd) * 0.3 + max(-rd, 0.0) * uGlassThru.x;
   float thru = pow(clamp(dot(v, uRimDir), 0.0, 1.0), 2.0) * clamp(0.6 + 0.6 * dot(ng, uRimDir), 0.0, 1.0);
   vec3 lit = uKeyCol * keyLit + uRimCol * (rimLit + 1.5 * thru) + uSky * (0.55 + 0.45 * n.y);
-  vec3 albedo = mix(vec3(0.7, 0.8, 0.93), vec3(0.93, 0.95, 0.98), smoothstep(0.08, 0.7, h0));
-  vec3 col = albedo * (lit * 0.3183 + stageGrid(vStageLocal * 0.9) * 0.6) * uGlint.w * (uGlassThru.y + uGlassThru.z * smoothstep(0.04, 0.6, h0));
+  vec3 albedo = mix(vec3(0.76, 0.84, 0.92), vec3(0.93, 0.95, 0.98), smoothstep(0.08, 0.7, h0));
+  vec3 col = albedo * (lit * 0.3183 + stageGrid(vStageLocal * 0.9) * 0.6) * uGlint.w * (uGlassThru.y + uGlassThru.z * smoothstep(0.04, 0.6, h0)) * (0.84 + 0.32 * sugar);
   float pxMm = sqrt(length(dFdx(vStageWorld)) * length(dFdy(vStageWorld)));
   vec3 spark = frostGlints(ga * ${RS.toFixed(2)}, pxMm, ng, v, ${look.glass.room.toFixed(3)}) * uGlint.x * (0.06 + 1.5 * m0.b * on) * smoothstep(0.02, 0.25, alpha);
   if (uBehindSize.x > 0.0) {
     float thickness = clamp(h0 + 0.6 * haze, 0.0, 1.0);
     float soft = smoothstep(0.02, 0.35, thickness);
     vec3 behind = frostBehind(gl_FragCoord.xy / uBehindSize, thickness, (viewMatrix * vec4(n - ng, 0.0)).xy);
-    gl_FragColor = vec4(col * alpha + spark + behind * ((1.0 - alpha) * soft), 1.0 - (1.0 - alpha) * (1.0 - soft));
+    gl_FragColor = vec4(col * alpha + spark + behind * ((1.0 - alpha) * soft + alpha * ${look.glass.scatter.toFixed(3)}), 1.0 - (1.0 - alpha) * (1.0 - soft));
   } else gl_FragColor = vec4(col * alpha + spark, alpha);
   if (uDiag != 0) {
     if (alpha < 0.3) discard;
@@ -236,8 +242,13 @@ vec3 frostSlabLight(vec3 n, vec3 P, vec3 albedo, float open) {
   float rim = clamp(dot(n, rimDir) * 0.6 + 0.4, 0.0, 1.0);
   vec3 lit = (uKeyCol * (key * keyGain * ball) + uRimCol * (rim * rimGain * ${look.slab.rim.toFixed(3)})) * mix(${look.slab.shade.toFixed(3)}, 1.0, open);
   vec2 out2 = P.xz - foot;
-  float front = smoothstep(-0.2, 0.8, out2.y / max(length(out2), 1.0));
-  return albedo * (0.3183 * ${look.slab.light.toFixed(3)}) * (lit + (uSky * ((0.55 + 0.45 * n.y) * ${look.slab.sky.toFixed(3)}) + warm * mix(${look.slab.poolBack.toFixed(3)}, 1.0, front) * uSlabLook.y) * (occl * open));
+  vec2 dir2 = out2 / max(length(out2), 1.0);
+  float side = smoothstep(0.0, 0.8, dot(dir2, vec2(-1.0, 0.1)));
+  float heaped = smoothstep(0.36, 0.7, albedo.r);
+  float lean = side * (1.0 - heaped * ${look.slab.poolThick.toFixed(3)});
+  albedo = mix(albedo, vec3(dot(albedo, vec3(0.3333))) * vec3(1.0, 0.98, 0.95), side * ${look.slab.grey.toFixed(3)});
+  float gain = mix(${look.slab.gainFar.toFixed(3)}, ${look.slab.gainKey.toFixed(3)}, smoothstep(-0.4, 0.5, dot(dir2, vec2(0.949, -0.316)))) * (1.0 - ${look.slab.gainFront.toFixed(3)} * smoothstep(0.5, 0.95, dir2.y));
+  return albedo * (0.3183 * ${look.slab.light.toFixed(3)} * gain) * (lit + (uSky * ((0.55 + 0.45 * n.y) * ${look.slab.sky.toFixed(3)} * (1.0 - ${look.slab.skyCut.toFixed(3)} * lean)) + warm * mix(${look.slab.poolBack.toFixed(3)}, 1.0, lean) * (uSlabLook.y * (1.0 - ${look.slab.poolThick.toFixed(3)} * heaped))) * (occl * open));
 }
 vec2 frostSlabUv(vec2 xz) {
   return vec2(xz.x + uField.x, uField.x - xz.y) / (2.0 * uField.x);
@@ -363,6 +374,36 @@ const veil = {
   blendDstAlpha: THREE.OneFactor,
 } as const
 
+const copies = new Map<string, THREE.FramebufferTexture>()
+
+function copyBehind(renderer: THREE.WebGLRenderer, material: THREE.Material): void {
+  const target = renderer.getRenderTarget()
+  const u = behindUniforms
+  ;(material as THREE.ShaderMaterial).uniformsNeedUpdate = true
+  if (!target || target.samples > 0 || stageUniforms.uDiag.value !== 0) {
+    u.uBehindSize.value.set(0, 0)
+    return
+  }
+  const type = target.texture.type
+  const key = `${target.width} ${target.height} ${type}`
+  let copy = copies.get(key)
+  if (!copy) {
+    if (copies.size >= 4) {
+      for (const old of copies.values()) old.dispose()
+      copies.clear()
+    }
+    copy = new THREE.FramebufferTexture(target.width, target.height)
+    copy.type = type
+    copy.magFilter = THREE.LinearFilter
+    copy.minFilter = THREE.LinearFilter
+    copy.colorSpace = THREE.NoColorSpace
+    copies.set(key, copy)
+  }
+  renderer.copyFramebufferToTexture(copy)
+  u.uBehind.value = copy
+  u.uBehindSize.value.set(target.width, target.height)
+}
+
 function makeGlass(): THREE.Mesh {
   const m = stageShader({
     part: GLASS_PART,
@@ -379,6 +420,7 @@ function makeGlass(): THREE.Mesh {
   const mesh = new THREE.Mesh(geometry(MODEL, 'glass'), m)
   mesh.renderOrder = 11
   mesh.frustumCulled = false
+  mesh.onBeforeRender = (renderer, _scene, _camera, _geometry, material) => copyBehind(renderer, material)
   return mesh
 }
 

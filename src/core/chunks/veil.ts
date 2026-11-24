@@ -42,6 +42,11 @@ export const VEIL_LOOK = {
   bankRisePower: 0.5,
   bankFlood: 0.55,
   bankFloodGain: 2,
+  slowFrom: 0.1,
+  slowTo: 0.9,
+  slowHaze: 0.2,
+  slowBank: 0.3,
+  slowRise: 0.6,
   bankRing: 0.5,
   bankSoft: 0.14,
   bankWhite: 1.35,
@@ -260,18 +265,39 @@ const tilt = new THREE.Euler()
 const local = new THREE.Vector3()
 const spin = new THREE.Matrix4()
 
+const now = { most: 0, rest: 0, turb: 0, slow: 0 }
+
+function densities(): void {
+  const { most, rest, turb, slow } = now
+  const w = Math.min(1, Math.max(0, (turb - L.whiteFrom) / (L.whiteTo - L.whiteFrom)))
+  const flood = w * w * (3 - 2 * w)
+  const white = most * flood
+  const haze = most * L.haze * Math.max(Math.pow(turb, L.hazePower), L.slowHaze * slow)
+  const density = rest + white + haze
+  const u = veilUniforms
+  u.uVeil.value.w = density
+  u.uVeilUp.value.w = density > 0 ? Math.min(L.uneven, (haze + white * L.whiteEven) / density) : L.uneven
+  const peak = Math.min(1, Math.max(0, (turb - L.peakFrom) / (1 - L.peakFrom)))
+  const rise = Math.max(Math.pow(turb, L.bankRisePower), L.slowRise * Math.sqrt(slow))
+  const thick = Math.max(Math.pow(turb, L.bankPower), L.slowBank * slow)
+  u.uVeilBank.value.set(L.bankRest + L.bankRise * rise + L.bankFlood * flood, L.bankSoft, most * L.bank * (thick + L.bankFloodGain * flood), lerp(L.bankEvenLow, L.bankEven, peak * peak * (3 - 2 * peak)))
+}
+
+export function veilSettle(afloat: number): void {
+  const s = Math.min(1, Math.max(0, (afloat - L.slowFrom) / (L.slowTo - L.slowFrom)))
+  now.slow = s * s * (3 - 2 * s)
+  densities()
+}
+
 export function updateVeil(f: StageFrame): void {
   const a = f.from.veil
   const b = f.to.veil
   const t = f.mix.veil
-  const most = lerp(a.density, b.density, t)
-  const turb = Math.min(1, Math.max(0, f.turbulence))
-  const w = Math.min(1, Math.max(0, (turb - L.whiteFrom) / (L.whiteTo - L.whiteFrom)))
-  const white = most * w * w * (3 - 2 * w)
-  const haze = most * L.haze * Math.pow(turb, L.hazePower)
-  const density = lerp(a.rest, b.rest, t) + white + haze
+  now.most = lerp(a.density, b.density, t)
+  now.rest = lerp(a.rest, b.rest, t)
+  now.turb = Math.min(1, Math.max(0, f.turbulence))
   const u = veilUniforms
-  u.uVeil.value.set(lerp(a.tint[0], b.tint[0], t), lerp(a.tint[1], b.tint[1], t), lerp(a.tint[2], b.tint[2], t), density)
+  u.uVeil.value.set(lerp(a.tint[0], b.tint[0], t), lerp(a.tint[1], b.tint[1], t), lerp(a.tint[2], b.tint[2], t), 0)
   const amb = (L.ambientShare * 0.5) / Math.PI
   u.uVeilLight.value.set((f.ambient.r + f.ground.r * f.fill) * amb, (f.ambient.g + f.ground.g * f.fill) * amb, (f.ambient.b + f.ground.b * f.fill) * amb)
   turn.setFromEuler(tilt.set(f.globe.tiltX, 0, f.globe.tiltZ)).invert()
@@ -280,11 +306,8 @@ export function updateVeil(f: StageFrame): void {
   const key = L.keyShare / Math.PI
   u.uVeilKeyCol.value.set(f.keyCol.r * key, f.keyCol.g * key, f.keyCol.b * key)
   u.uVeilTurn.value.setFromMatrix4(spin.makeRotationFromQuaternion(turn))
-  const peak = Math.min(1, Math.max(0, (turb - L.peakFrom) / (1 - L.peakFrom)))
-  const uneven = density > 0 ? Math.min(L.uneven, (haze + white * L.whiteEven) / density) : L.uneven
-  u.uVeilUp.value.set(f.globeUp.x, f.globeUp.y, f.globeUp.z, uneven)
-  const flood = w * w * (3 - 2 * w)
-  u.uVeilBank.value.set(L.bankRest + L.bankRise * Math.pow(turb, L.bankRisePower) + L.bankFlood * flood, L.bankSoft, most * L.bank * (Math.pow(turb, L.bankPower) + L.bankFloodGain * flood), lerp(L.bankEvenLow, L.bankEven, peak * peak * (3 - 2 * peak)))
+  u.uVeilUp.value.set(f.globeUp.x, f.globeUp.y, f.globeUp.z, L.uneven)
+  densities()
   const pa = f.liquid[LIQUID_PHASE] ?? 0
   const pb = f.liquid[LIQUID_PHASE_B] ?? 0
   u.uVeilFlow.value.set((pa / TAU) * L.arcTurns, Math.sin(pb) * 0.5 * L.blobDrift, Math.sin(pb) * L.blobDrift, Math.cos(pb) * L.blobDrift)

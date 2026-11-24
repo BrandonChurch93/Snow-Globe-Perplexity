@@ -14,7 +14,6 @@ const centreHeight = G.baseHeightMm - G.collarDepthMm + globeRadius
 export const SLAB_MM = 6000
 export const FADE_FROM_MM = 1400
 export const FADE_TO_MM = 2900
-export const KEY_POOL_MM = 650
 export const KEY_CONE = 0.07
 export const RIM_NEAR_GAIN = 3
 export const SLAB_DETAIL = 'shared/scene-slab-detail.lin.tile.png'
@@ -31,30 +30,36 @@ export const SLAB = {
   broadTurnDeg: 15,
   streakMm: 157,
   streakTurnDeg: 20,
-  streakLong: 3,
+  streakLong: 5.5,
   washMm: 280,
   washTurnDeg: -25,
-  washLong: 2.5,
+  washLong: 4.5,
   slopeFull: 1,
   crumbDust: 0.3,
   dustAlbedo: 0.3,
   vein: 1.1,
   cloud: 0.7,
-  markFloor: 0.3,
-  markCloud: 8.3,
+  markFloor: 0.5,
+  markCloud: 5.5,
   markPower: 2.6,
-  markWipe: 0.95,
+  markWipe: 0.7,
   markMost: 2.6,
   filmAlbedo: 0.002,
   filmTint: [0.7, 1, 1.05],
-  hazeAlbedo: 0.012,
+  hazeAlbedo: 0.006,
   hazeMm: 50,
-  gloss: 0.65,
+  gloss: 0.76,
   f0: 0.05,
   fresnelPower: 4.2,
-  mirrorShare: 0.5,
+  mirrorShare: 1,
+  nearFloor: 0.4,
+  nearHeightMm: 10,
   mirrorMark: 0.35,
-  farGain: 1.6,
+  mirrorTint: [0.7, 1, 1.25],
+  sheenUnder: 0.2,
+  girthMoreMm: 6,
+  girthSoftMm: 4,
+  farGain: 1.8,
   farFrom: 0.165,
   farTo: 0.125,
   roughSpread: 0.03,
@@ -67,6 +72,8 @@ export const SLAB = {
   farPathMm: 2600,
   farShare: 0.5,
   sideShare: 0.08,
+  sideByGrazing: 1,
+  sideMost: 0.45,
   fadeHeightMm: 170,
   fadeFloor: 0.42,
   poolGain: 4,
@@ -74,6 +81,11 @@ export const SLAB = {
   contactMm: 7,
   shadowReach: 0.6,
   bakedGain: 0.5,
+  underSky: 0.6,
+  underBounce: 0.8,
+  underReach: 4,
+  underSoftMm: 2,
+  underSpread: 0.1,
 }
 
 const f = (v: number) => v.toFixed(4)
@@ -208,6 +220,24 @@ float discShare(float x) {
   return 0.5 + (asin(x) + x * sqrt(1.0 - x * x)) * 0.31830989;
 }
 ${SLAB_LIGHT_GLSL}
+vec4 slabMirror(vec2 st, vec2 lean, float reach, float beyond, float wide) {
+  float tall = min(2.0 * ${f(SLAB.roughSpread)} * reach * uFocal, ${f(SLAB.mirrorMaxPx)} * uFocal);
+  vec2 kick = clamp(lean * reach, vec2(-1.5 * tall - 2.0), vec2(1.5 * tall + 2.0));
+  float gapPx = 2.0 * tall / ${f(SLAB.mirrorTaps - 1)};
+  float lod = log2(max(gapPx * uMirrorSize.z * max(1.0, sqrt(wide / ${f(SLAB.mirrorTaps)}) * ${f(SLAB.mirrorTaps - 1)}), 1.0));
+  float span = mix(${f(SLAB.coreWidth)}, ${f(SLAB.farWidth)}, smoothstep(0.25, 0.7, reach));
+  vec4 sum = vec4(0.0);
+  float total = 0.0;
+  for (int i = 0; i < ${SLAB.mirrorTaps}; i++) {
+    float u = float(i) / ${f(SLAB.mirrorTaps - 1)} * 2.0 - 1.0;
+    float w = exp(-u * u / (2.0 * span * span)) + ${f(tail)} * span * (1.0 - u * u);
+    float across = (fract(float(i) * 0.6180339887 + 0.25) * 2.0 - 1.0) * wide * tall;
+    vec4 m = textureLod(uMirror, st + (kick + vec2(across, u * tall)) * uMirrorSize.xy, lod);
+    sum += w * vec4(m.rgb * mix(m.a, (1.0 - m.a) * ${f(SLAB.farShare)}, beyond), m.a);
+    total += w;
+  }
+  return sum / total;
+}
 void main() {
   vec3 P = vStageWorld;
   vec3 toP = P - cameraPosition;
@@ -269,59 +299,55 @@ void main() {
   vec2 fq = P.xz - uFoot.xy;
   float th = -dot(fq, rdir);
   float side = abs(fq.x * rdir.y - fq.y * rdir.x);
-  float girth = ${f(globeRadius)};
+  float girth = ${f(globeRadius + SLAB.girthMoreMm)} + length(uLean.xy);
   float tIn = (th - sqrt(max(girth * girth - side * side, 0.0))) / rl;
   float tGlobe = max(max(tIn, lift / max(r0.y, 1e-3)), 0.0);
-  float sil = (1.0 - smoothstep(girth - 1.5, girth + 1.5, side)) * step(0.0, th + girth);
-  float path = mix(${f(SLAB.farPathMm)}, tGlobe, sil);
-  float reach = path / (dist + path);
-  float tall = min(2.0 * ${f(SLAB.roughSpread)} * reach * uFocal, ${f(SLAB.mirrorMaxPx)} * uFocal);
+  float sil = (1.0 - smoothstep(girth - ${f(SLAB.girthSoftMm)}, girth, side)) * step(0.0, th + girth);
+  float reachFar = ${f(SLAB.farPathMm)} / (dist + ${f(SLAB.farPathMm)});
+  float reachNear = tGlobe / (dist + tGlobe);
   float height = tGlobe * r0.y;
-  float fade = mix(1.0, mix(1.0, ${f(SLAB.fadeFloor)}, smoothstep(0.0, ${f(SLAB.fadeHeightMm)}, height)), sil);
+  float fade = mix(1.0, ${f(SLAB.nearFloor)}, smoothstep(0.0, ${f(SLAB.nearHeightMm)}, height)) * mix(1.0, ${f(SLAB.fadeFloor)}, smoothstep(0.0, ${f(SLAB.fadeHeightMm)}, height));
 
-  float tUnder = lift / max(r0.y, 1e-3);
-  float underSoft = 1.0 + ${f(SLAB.roughSpread)} * tUnder;
-  float underHit = (1.0 - smoothstep(uFoot.z - underSoft, uFoot.z + underSoft, length(P.xz + r0.xz * tUnder - uFoot.xy))) * smoothstep(0.0, 0.5, lift);
+  vec3 footUp = vec3(uLean.z, sqrt(max(1.0 - dot(uLean.zw, uLean.zw), 0.0)), uLean.w);
+  vec3 footAt = vec3(uFoot.x, lift, uFoot.y);
+  float tUnder = max(dot(footAt - P, footUp) / max(dot(r0, footUp), 1e-3), 0.0);
+  float underSoft = ${f(SLAB.underSoftMm)} + ${f(SLAB.underSpread)} * tUnder;
+  float underFar = length(P + r0 * tUnder - footAt);
+  float underGap = r0.y * tUnder;
+  float underHit = (1.0 - smoothstep(uFoot.z - underSoft, uFoot.z + underSoft, underFar)) * smoothstep(0.0, 0.5, lift);
+  vec3 underSeen = uBaked * (uSky * ${f(SLAB.underSky)} + uKeyCol * (${f(SLAB.underBounce)} * smoothstep(uFoot.z - ${f(SLAB.underReach)} * underGap - 4.0, uFoot.z, underFar)));
 
   vec3 seen = vec3(0.0);
+  vec3 image = vec3(0.0);
   float held = 0.0;
   if (uReflect.x > 0.5) {
     vec2 st = gl_FragCoord.xy * uMirrorSize.xy;
-    vec2 kick = vec2(dot(slope, vec2(-ground.y, ground.x)) * grazing, dot(slope, ground)) * 2.0 * reach * uFocal;
-    kick = clamp(kick, vec2(-1.5 * tall - 2.0), vec2(1.5 * tall + 2.0));
-    float gapPx = 2.0 * tall / ${f(SLAB.mirrorTaps - 1)};
-    float lod = log2(max(gapPx * uMirrorSize.z * ${f(Math.max(1, Math.sqrt(SLAB.sideShare / SLAB.mirrorTaps) * (SLAB.mirrorTaps - 1)))}, 1.0));
-    float total = 0.0;
-    float span = mix(${f(SLAB.coreWidth)}, ${f(SLAB.farWidth)}, smoothstep(0.25, 0.7, reach));
-    for (int i = 0; i < ${SLAB.mirrorTaps}; i++) {
-      float u = float(i) / ${f(SLAB.mirrorTaps - 1)} * 2.0 - 1.0;
-      float w = exp(-u * u / (2.0 * span * span)) + ${f(tail)} * span * (1.0 - u * u);
-      float across = (fract(float(i) * 0.6180339887 + 0.25) * 2.0 - 1.0) * ${f(SLAB.sideShare)} * tall;
-      vec4 m = textureLod(uMirror, st + (kick + vec2(across, u * tall)) * uMirrorSize.xy, lod);
-      seen += w * m.rgb * mix((1.0 - m.a) * ${f(SLAB.farShare)}, 1.0, sil);
-      held += w * m.a * sil;
-      total += w;
+    vec2 lean = vec2(dot(slope, vec2(-ground.y, ground.x)) * grazing, dot(slope, ground)) * 2.0 * uFocal;
+    seen = slabMirror(st, lean, reachFar, 1.0, ${f(SLAB.sideShare)}).rgb;
+    if (sil > 0.002) {
+      vec4 hit = slabMirror(st, lean, reachNear, 0.0, clamp(grazing * ${f(SLAB.sideByGrazing)}, ${f(SLAB.sideShare)}, ${f(SLAB.sideMost)}));
+      image = hit.rgb * sil;
+      held = hit.a * sil;
     }
-    seen /= total;
-    held /= total;
   } else if (uReflect.y > 0.5) {
-    float soft = 0.004 + 0.02 * reach;
-    seen = stageRoomLights(normalize(r + vec3(0.0, 0.5 * ${f(SLAB.roughSpread)} * reach, 0.0)), soft) * 0.6;
+    float soft = 0.004 + 0.02 * reachFar;
+    seen = stageRoomLights(normalize(r + vec3(0.0, 0.5 * ${f(SLAB.roughSpread)} * reachFar, 0.0)), soft) * 0.6;
     float bodyTop = lift + ${f(G.baseHeightMm)};
     float blurMm = max(${f(SLAB.roughSpread)} * tGlobe * 2.0, 1.0);
     float body = sil * (1.0 - smoothstep(bodyTop - blurMm, bodyTop + blurMm, height)) * smoothstep(lift - blurMm, lift + blurMm, height);
     float domeTop = lift + ${f(centreHeight + globeRadius)};
     float glass = sil * smoothstep(bodyTop - blurMm, bodyTop + blurMm, height) * (1.0 - smoothstep(domeTop - 3.0 * blurMm, domeTop, height));
     vec3 lit = uBaked * (uSky + uKeyCol * 0.22) * ${f(SLAB.bakedGain)};
-    seen += lit * body + (uPool * 0.35 + uSky * 0.05) * glass;
+    image = lit * body + (uPool * 0.35 + uSky * 0.05) * glass;
     held = clamp(body + glass, 0.0, 1.0);
+    seen *= 1.0 - held;
   }
-  seen *= 1.0 - underHit;
+  image = mix(image, underSeen, underHit);
   held = max(held, underHit);
   vec3 room = stageRoomSeen(r, ${f(SLAB.roomRough)});
   float farGloss = fres * mark * ${f(SLAB.gloss)} * mix(1.0, ${f(SLAB.farGain)}, smoothstep(${f(SLAB.farFrom)}, ${f(SLAB.farTo)}, grazing));
   float nearGloss = max(fres, ${f(SLAB.mirrorShare)}) * fade * mix(1.0, mark, ${f(SLAB.mirrorMark)});
-  col += (seen * mix(farGloss, nearGloss, sil) + room * (1.0 - held) * farGloss) * (1.0 - 0.6 * dust);
+  col += (image * vec3(${SLAB.mirrorTint.map(f).join(', ')}) * nearGloss + (seen + room * (1.0 - held * ${f(1 - SLAB.sheenUnder)})) * farGloss) * (1.0 - 0.6 * dust);
 
   gl_FragColor = vec4(col * cover, 1.0 - cover);
   if (uDiag != 0) {
@@ -417,7 +443,7 @@ export function updateSurface(f: StageFrame): void {
   su.uSky.value.copy(f.ambient)
   su.uFoot.value.set(g.x, g.z, footRadius, g.y)
   const lean = 0.5 * G.baseHeightMm + g.y
-  su.uLean.value.set(-Math.sin(g.tiltZ) * lean, Math.sin(g.tiltX) * lean, 0, 0)
+  su.uLean.value.set(-Math.sin(g.tiltZ) * lean, Math.sin(g.tiltX) * lean, -Math.sin(g.tiltZ), Math.sin(g.tiltX) * Math.cos(g.tiltZ))
   su.uPool.value.copy(f.pool)
   const mirror = f.view === '' && f.planar
   su.uReflect.value.set(mirror ? 1 : 0, mirror ? 0 : 1, 0, 0)

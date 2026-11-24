@@ -115,7 +115,8 @@ checks.G8 = {
     const assetsMd = fs.readFileSync(rel('ASSETS.md'), 'utf8')
     const recipes = listFiles(rel('assets-src')).filter((f) => path.basename(f) === 'RECIPE.md')
     const recipeText = recipes.map((f) => fs.readFileSync(f, 'utf8')).join('\n')
-    const heads = [...recipeText.matchAll(/^## (.+)$/gm)].map((m) => m[1].trim())
+    // kit/06-ASSETS.md: a heading is "<file or group of files>"; a group may be written as a list with commas
+    const heads = [...recipeText.matchAll(/^## (.+)$/gm)].flatMap((m) => m[1].split(',').map((h) => h.trim().replace(/^`|`$/g, '')).filter(Boolean))
     const covered = (p) =>
       heads.some((h) => {
         if (h === p) return true

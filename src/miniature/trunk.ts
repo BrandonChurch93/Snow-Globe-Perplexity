@@ -41,6 +41,8 @@ const TOP_H = 37.6
 const DEEP_H = -4.5
 const MIN_SHAFT = 5
 const ROOT_RISE = 7
+const ROOT_FALL = 1.6
+const ROOT_SKIRT = 1.8
 const TWIST_LOW = 0.16
 const TWIST_HIGH = 0.055
 const BARK_MM = 6.5
@@ -54,14 +56,14 @@ const AXIS_X: Table = [[-4.5, -0.5], [0, -0.4], [5, 0.05], [10, 0.75], [13.6, 0.
 const AXIS_Z: Table = [[-4.5, 0], [0, 0], [8, 0.35], [14, -0.1], [26, -0.4], [37.6, 0]]
 
 const ROOTS: readonly { angle: number; reach: number; width: number }[] = [
-  { angle: 3.02, reach: 8.6, width: 0.3 },
-  { angle: 2.2, reach: 7.4, width: 0.26 },
-  { angle: 1.43, reach: 7.2, width: 0.27 },
-  { angle: 0.52, reach: 7.6, width: 0.24 },
-  { angle: 6.2, reach: 8.2, width: 0.26 },
-  { angle: 5.5, reach: 7.0, width: 0.25 },
-  { angle: 4.75, reach: 6.6, width: 0.24 },
-  { angle: 3.9, reach: 7.2, width: 0.28 },
+  { angle: 3.02, reach: 7.4, width: 0.4 },
+  { angle: 2.2, reach: 6.4, width: 0.35 },
+  { angle: 1.43, reach: 6.3, width: 0.36 },
+  { angle: 0.52, reach: 6.6, width: 0.33 },
+  { angle: 6.2, reach: 7.0, width: 0.35 },
+  { angle: 5.5, reach: 6.2, width: 0.33 },
+  { angle: 4.75, reach: 5.8, width: 0.31 },
+  { angle: 3.9, reach: 6.3, width: 0.36 },
 ]
 
 const PADS: readonly { at: Vec3; size: Vec3; lean: number; tip: number }[] = [
@@ -136,10 +138,10 @@ export function trunkRidge(phi: number, h: number): number {
 
 export function trunkRadius(phi: number, h: number): number {
   const R = trunkGirth(h)
-  let r = R * (1 + 0.32 * (trunkRidge(phi, h) - 0.6))
+  let r = R * (1 + 0.1 * (trunkRidge(phi, h) - 0.6))
   if (h < ROOT_RISE) {
     const a = phi + trunkTwist(h)
-    const g = h <= 0 ? 1 - 0.1 * h : Math.pow(1 - h / ROOT_RISE, 2.2)
+    const g = h <= 0 ? 1 - 0.1 * h : Math.pow(1 - h / ROOT_RISE, ROOT_SKIRT)
     let sum = 0
     for (const root of ROOTS) {
       const d = wrap(a - root.angle)
@@ -216,12 +218,12 @@ function grow(): Limb[] {
     const extra = rng.range(0.2, 1.2)
     for (let i = 0; i <= 10; i++) {
       const t = i / 10
-      const h = 4 - 5 * Math.pow(t, 2.2)
+      const h = 4 - 5 * Math.pow(t, ROOT_FALL)
       const phi = root.angle - trunkTwist(h) + drift * t * t
       const [ax, az] = trunkAxis(h)
-      const d = lerp(trunkGirth(4) * 0.7, root.reach + extra, Math.pow(t, 1.1))
+      const d = lerp(trunkGirth(4) * 0.7, root.reach + extra, Math.pow(t, ROOT_FALL))
       pts.push([ax + Math.cos(phi) * d, h, az + Math.sin(phi) * d])
-      rad.push(lerp(1.3, 0.3, Math.pow(t, 0.8)))
+      rad.push(lerp(1.9, 0.4, Math.pow(t, 0.75)))
     }
     chain('root', 0, pts, rad)
   }
@@ -306,9 +308,9 @@ export interface Cluster {
   radius: number
 }
 
-const DOME = 0.5
+const DOME = 0.3
 const BODY = { blend: 0.5, bias: 0.4 }
-const CAP = { lift: 1.8, puff: 0.36, blend: 0.46, bias: 0.52, depth: 0.5, lip: 0.35 }
+const CAP = { lift: 1.2, puff: 0.36, blend: 0.8, bias: 1.3, depth: 0.5, lip: 0.35, droop: 2.4, taper: 0.65 }
 const wobble = (x: number, h: number, z: number): number => 0.16 * Math.sin(1.9 * x + 0.3 * h) * Math.sin(2.3 * h + 1.1 * z) * Math.sin(1.7 * z + 0.5 * x) + 0.07 * Math.sin(4.3 * x + 1) * Math.sin(3.9 * h + 2) * Math.sin(4.7 * z)
 const dome = (rim: number): number => 1 - DOME * Math.pow(rim, 1.5)
 
@@ -325,16 +327,16 @@ function gather(): Cluster[] {
     for (let k = 0; k < n; k++) {
       const rr = Math.sqrt((k + 0.5) / n)
       const th = k * 2.39996 + rng.range(-0.3, 0.3)
-      const r = lerp(1.95, 1.2, rr) * rng.range(0.84, 1.18)
+      const r = lerp(1.95, 1.6, rr) * rng.range(0.84, 1.18)
       const top = b * dome(rr * rr) - CAP.lift - CAP.puff
       put(Math.cos(th) * rr * (a - r), top - r + rng.range(-0.45, 0.2), Math.sin(th) * rr * (c - r), r)
     }
     const under = Math.round(n * 0.62)
     for (let k = 0; k < under; k++) {
-      const rr = 0.86 * Math.sqrt((k + 0.5) / under)
+      const rr = 0.93 * Math.sqrt((k + 0.5) / under)
       const th = k * 2.39996 + 1.3 + rng.range(-0.4, 0.4)
       const r = rng.range(1.05, 1.6)
-      put(Math.cos(th) * rr * (a - r), -b + r + 0.75 * b * rr * rr * rr + rng.range(0, 0.6), Math.sin(th) * rr * (c - r), r)
+      put(Math.cos(th) * rr * (a - r), -b + r + 0.36 * b * rr * rr * rr + rng.range(0, 0.6), Math.sin(th) * rr * (c - r), r)
     }
   })
   return out
@@ -408,19 +410,19 @@ export function crownCap(x: number, h: number, z: number): number {
     const s = px * f.frame.side[0] + ph * f.frame.side[1] + pz * f.frame.side[2]
     const v = px * u[0] + ph * u[1] + pz * u[2]
     const d = px * f.frame.depth[0] + ph * f.frame.depth[1] + pz * f.frame.depth[2]
-    const lumps = 0.46 * Math.sin(1.25 * s + 1.9 * f.n) * Math.sin(1.4 * d + 2.6 * f.n) + 0.13 * Math.sin(2.7 * x + 1.1 * h + f.n) * Math.sin(2.9 * z - 0.8 * x + 2 * f.n) + 0.04 * Math.sin(5.9 * x + 2.3 * z) * Math.sin(6.1 * z + 1.7 * h + 1)
-    const body = ballField(f, x - u[0] * CAP.lift, h - u[1] * CAP.lift, z - u[2] * CAP.lift, CAP.blend) + CAP.bias - CAP.puff - lumps
+    const lumps = 0.5 * Math.sin(1.25 * s + 1.9 * f.n) * Math.sin(1.4 * d + 2.6 * f.n) + 0.2 * Math.sin(2.7 * x + 1.1 * h + f.n) * Math.sin(2.9 * z - 0.8 * x + 2 * f.n)
     const rim = (s * s) / (f.size[0] * f.size[0]) + (d * d) / (f.size[2] * f.size[2])
+    const body = ballField(f, x, h - CAP.lift, z, CAP.blend) + CAP.bias - CAP.puff - lumps + CAP.taper * rim
     const gully = Math.sin(0.62 * s + 2.1 * f.n + 0.5 * Math.sin(0.9 * d)) * Math.sin(0.7 * d + 1.3 * f.n)
     const lobes = 0.6 * Math.sin(0.93 * s + 1.7 * f.n) * Math.sin(0.81 * d + 2.3 * f.n) + 0.38 * Math.sin(1.73 * s - 1.12 * d + f.n) + 0.2 * Math.sin(3.1 * s + 2.7 * d + 0.6 * f.n) + 2.4 * clamp01((gully - 0.62) / 0.3)
-    const line = f.size[1] * dome(rim) - CAP.lift - CAP.puff - CAP.depth + lobes
+    const line = f.size[1] * dome(rim) - CAP.lift - CAP.puff - CAP.depth + lobes - CAP.droop * rim * rim
     const cut = line - v
     const k = CAP.lip
     const t = clamp01(0.5 + (0.5 * (body - cut)) / k)
     const both = lerp(cut, body, t) + k * t * (1 - t)
     if (both < best) best = both
   }
-  return best + 0.9 * wobble(0.7 * x + 3, 0.7 * h, 0.7 * z)
+  return best + 0.4 * wobble(0.7 * x + 3, 0.7 * h, 0.7 * z)
 }
 
 export const crownOffset = (): Vec3 => {
@@ -553,7 +555,7 @@ export function bakeGlow(g: THREE.BufferGeometry, lights: readonly GlowLight[], 
       const d = Math.sqrt(d2) || 1e-6
       const facing = Math.max(0, (dx * nx + dy * ny + dz * nz) / d)
       const wr = l.wrap ?? wrapLight
-      const w = (l.power * (wr + (1 - wr) * facing)) / (1 + d2 / reach2) ** 1.5
+      const w = (l.power * Math.max(0, wr + (1 - wr) * facing)) / (1 + d2 / reach2) ** 1.5
       r += l.color[0] * w
       gr += l.color[1] * w
       b += l.color[2] * w
@@ -621,7 +623,7 @@ export function buildTrunk(part: string, lights: readonly GlowLight[] = [], tint
     color: new THREE.Color(tint[0], tint[1], tint[2]),
     vertexColors: true,
     roughness: 0.86,
-    extra: { normalMap: normal, normalScale: new THREE.Vector2(1.1, 1.1) },
+    extra: { normalMap: normal, normalScale: new THREE.Vector2(1.8, 1.8) },
     hook: glowHook,
     key: 'trunk',
   })

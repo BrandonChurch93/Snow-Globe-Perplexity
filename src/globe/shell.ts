@@ -23,11 +23,11 @@ export const glassLook = {
     gain: 11,
     edgeDeg: { outer: 0.45, inner: 1.8, innerMain: 0.5, tipInner: 0.8, end: 1.1, tail: 4, cut: 0.5 },
     halo: { wideDeg: [2.5, 5] as const, tint: [0.4, 0.75, 1] as V3, gain: 0.24 },
-    tip: { flatDeg: [6, 10.5] as const, fadeDeg: [8.5, 14] as const, tint: [0.4, 0.55, 0.75] as V3, slant: 0.35, slantFromDeg: -3.5, tailDeg: [-19, -13.5] as const, tailSlope: 0, tailFromDeg: -18, tailCurve: 0.037, tailLevel: 0.5 },
+    tip: { flatDeg: [6, 10.5] as const, fadeDeg: [8.5, 14] as const, tint: [0.4, 0.55, 0.75] as V3, slant: 0.35, slantFromDeg: -3.5, tailDeg: [-16, -13.5] as const, tailSlope: 0, tailFromDeg: -18, tailCurve: 0.037, tailLevel: 0.08 },
     dark: { atDeg: [13.6, -8.7] as const, axis: [0.803, -0.595] as const, sideDeg: [-1.5, 1.5, 11, 17] as const, inDeg: [-17, -11] as const, depth: 0.95, shade: 0.3, share: [0.935, 0.965] as const, glow: [0.0018, 0.019, 0.021] as V3 },
     orders: [
       { alongDeg: [-44, 15.5], acrossDeg: [-3.8, 14.6], outFrom: 2, outSlope: -0.5, inFrom: 8.5, inSlope: 1.9, outer: 1, inner: 0.078, power: 4, cutDeg: -90, cutSlant: 0, tail: 1, tint: [2.5, 1.83, 1.35] as V3, base: [1, 1, 1] as V3, core: [0, 0, 0] as V3, fallDeg: [80, 90, 80, 90] as const, fallTo: 1 },
-      { alongDeg: [-22.5, 4.2], acrossDeg: [-2.4, 14.4], outFrom: -1.5, outSlope: 0.73, inFrom: 0.2, inSlope: 2.9, outer: 1, inner: 0.27, power: 3.2, cutDeg: -14, cutSlant: 0.16, tail: 0.035, tint: [1, 1, 1] as V3, base: [0.9, 0.98, 0.93] as V3, core: [3.2, 2, 1.2] as V3, fallDeg: [-7.5, -2, -5, -1] as const, fallTo: 0.5 },
+      { alongDeg: [-22.5, 4.2], acrossDeg: [-2.4, 15.4], outFrom: -1.5, outSlope: 0.73, inFrom: 0.2, inSlope: 2.9, outer: 1, inner: 0.27, power: 3.2, cutDeg: -12.7, cutSlant: 0.16, tail: 0.004, tint: [1, 1, 1] as V3, base: [0.9, 0.98, 0.93] as V3, core: [3.2, 2, 1.2] as V3, fallDeg: [-7.5, -2, -5, -1] as const, fallTo: 0.5 },
       { alongDeg: [-17, 3.5], acrossDeg: [-2.5, 11.3], outFrom: -0.5, outSlope: 0.2, inFrom: -7.2, inSlope: 0.15, outer: 1, inner: 0.7, power: 1, cutDeg: -90, cutSlant: 0, tail: 1, tint: [1, 1, 1] as V3, base: [1, 1, 1] as V3, core: [0, 0, 0] as V3, fallDeg: [80, 90, 80, 90] as const, fallTo: 1 },
       { alongDeg: [-16, 15.5], acrossDeg: [-3.8, 14.6], outFrom: 0, outSlope: 0, inFrom: 0, inSlope: 0, outer: 1, inner: 1, power: 1, cutDeg: -90, cutSlant: 0, tail: 1, tint: [1, 1, 1] as V3, base: [1, 1, 1] as V3, core: [0, 0, 0] as V3, fallDeg: [80, 90, 80, 90] as const, fallTo: 1 },
     ],
@@ -40,10 +40,12 @@ export const glassLook = {
   third: { face: 0.6, gain: 0.085, tint: [0.55, 0.79, 1] as V3, softDeg: 0.9, own: 0.15, fade: [0.78, 0.97] as const },
   shoulder: { from: 1.4, to: 3.6 },
   floor: 0.4,
-  band: { from: 0.976, to: 0.99, wander: 0.004, dim: 0.5, shade: 0.3 },
-  edge: { from: 0.978, peak: 0.994, keyLobe: [0.84, 0.97] as const, key: 0.5, keyTint: [0.75, 0.76, 0.585] as V3, tip: 0.33, tipTint: [0.6, 0.78, 1] as V3, tipDeg: [4.3, 2.5, 1.3] as const, tipShare: [0.975, 0.997] as const, rimLobe: [0.16, 0.5] as const, rim: 0.137, sky: 0.04, pool: 0.5 },
+  band: { from: 0.976, to: 0.99, wander: 0.004, dim: 0.5, shade: 0.3, side: [-0.2, 0.5] as const },
+  edge: { from: 0.978, peak: 0.994, keyLobe: [0.84, 0.97] as const, key: 0.5, keyTint: [0.75, 0.76, 0.585] as V3, tip: 0.33, tipTint: [0.6, 0.78, 1] as V3, tipDeg: [4.3, 2.5, 1.3] as const, tipShare: [0.975, 0.997] as const, rimLobe: [0.16, 0.5] as const, rim: 0.04, sky: 0.04, pool: 0.12 },
   body: { from: 0.962, to: 0.978, sky: 0.04, tint: [1.8, 1.2, 0.4] as V3 },
-  rim: { from: 0.96, to: 0.967, clear: 0.65, tint: [0.9, 1, 1.08] as V3, high: 0.07, low: 0.22, line: 0.9655, lineWide: 0.0022, lineGain: 0.25 },
+  rim: { from: 0.96, to: 0.967, clear: 0.65, tint: [0.9, 1, 1.08] as V3, high: 0.085, low: 0.28, line: 0.9655, lineWide: 0.0022, lineGain: 0.25, highTint: [0.9, 1.05, 1] as V3, streak: 0.6, outer: 0.9905, outerWide: 0.004, outerGain: 0.16 },
+  wall: { from: [0.893, 0.918] as const, to: [0.966, 0.976] as const, crest: 0.9635, crestWide: 0.013, plate: 0.42, peak: 0.9, inTint: [1.15, 0.97, 0.8] as V3, tint: [1, 1, 0.83] as V3, lowY: [0.04, -0.12] as const, grain: 0.5, speck: 0.5, spark: 1.2, wander: 0.006, mirror: 0.5, mirrorTo: 0.93, leftTo: 0.016 },
+  ring: { from: 0.9625, to: 0.9675, spanDeg: 21, around: 96, rows: 3 },
   wave: { rings: 46, ringDeg: 0.3, driftDeg: 0.35, inner: 1.9 },
   dust: { cells: 240, share: 0.085, depth: 0.42 },
   hair: { count: 7, widthMm: 0.035, depth: 0.32, bend: 0.012 },
@@ -357,6 +359,9 @@ uniform vec3 uOverlay[3];
 uniform vec3 uOverlayOn;
 ${GLASS_GLSL}
 void main() {
+#ifdef GLASS_RING
+  if (uDiag != 0) discard;
+#endif
   if (uDiag != 0) {
     if (uDiag != ${viewCode('ids')} && uDiag != ${viewCode('standins')}) discard;
     vec2 cell = mod(floor(gl_FragCoord.xy), 4.0);
@@ -370,6 +375,9 @@ void main() {
   vec3 p = n * uLens.x;
   vec3 v = normalize(p - vEye);
   float s = glassShare(v);
+#ifdef GLASS_RING
+  if (s < ${num(glassLook.ring.from)}) discard;
+#endif
   float nv = clamp(dot(n, -v), 0.0, 1.0);
 
   vec3 nw = glassWavy(n, 1.0);
@@ -412,10 +420,35 @@ void main() {
   float back = smoothstep(${num(glassLook.edge.rimLobe[0])}, ${num(glassLook.edge.rimLobe[1])}, dot(nWorld, uRimDir));
   float from = ${num(glassLook.band.from)} + ${num(glassLook.band.wander)} * (thick - 0.5) * 2.0;
   float to = ${num(glassLook.band.to)} + ${num(glassLook.band.wander * 0.4)} * (fine - 0.5) * 2.0;
-  float band = smoothstep(from - 0.004, from + 0.003, s) * (1.0 - smoothstep(to - 0.003, to + 0.004, s)) * (0.5 + 0.5 * fine);
+  float band = smoothstep(from - 0.004, from + 0.003, s) * (1.0 - smoothstep(to - 0.003, to + 0.004, s)) * (0.5 + 0.5 * fine) * smoothstep(${num(glassLook.band.side[0])}, ${num(glassLook.band.side[1])}, nWorld.x);
   float rimZone = smoothstep(${num(glassLook.rim.from)}, ${num(glassLook.rim.to)}, s);
+  float rimHigh = smoothstep(-0.35, 0.15, nWorld.y);
   float rimLine = exp(-pow((s - ${num(glassLook.rim.line)}) / ${num(glassLook.rim.lineWide)}, 2.0));
-  if (uOwn > 0.5) col += uSky * ${vec(glassLook.rim.tint)} * (mix(${num(glassLook.rim.low)}, ${num(glassLook.rim.high)}, smoothstep(-0.6, 0.6, nWorld.y)) * rimZone * (0.75 + 0.5 * thick) + ${num(glassLook.rim.lineGain)} * rimLine * (0.3 + 0.7 * fine));
+  vec3 rimAxis = normalize(-vEye);
+  vec3 rimAround = n - rimAxis * dot(n, rimAxis);
+  rimAround /= max(length(rimAround), 1e-4);
+  float rimStreak = 1.0 + ${num(glassLook.rim.streak)} * rimHigh * (glassNoise(rimAround * 9.0 + rimAxis * (s * 60.0) + 41.0) - 0.5);
+  float rimOuter = exp(-pow((s - ${num(glassLook.rim.outer)}) / ${num(glassLook.rim.outerWide)}, 2.0)) * (0.3 + 0.7 * smoothstep(0.35, 0.75, glassNoise(rimAround * 5.0 + 31.0)));
+  if (uOwn > 0.5) col += uSky * mix(${vec(glassLook.rim.tint)}, ${vec(glassLook.rim.highTint)}, rimHigh) * (mix(${num(glassLook.rim.low)}, ${num(glassLook.rim.high)}, rimHigh) * rimZone * (0.75 + 0.5 * thick) * rimStreak + ${num(glassLook.rim.lineGain)} * rimLine * (0.3 + 0.7 * fine) * (1.0 - 0.7 * rimHigh) + ${num(glassLook.rim.outerGain)} * rimOuter * rimHigh);
+  float wallLow = smoothstep(${num(glassLook.wall.lowY[0])}, ${num(glassLook.wall.lowY[1])}, nWorld.y) * uOwn;
+  if (wallLow > 0.0) {
+    vec3 axis = normalize(-vEye);
+    vec3 around = n - axis * dot(n, axis);
+    around /= max(length(around), 1e-4);
+    float grain = glassNoise(around * 70.0 + axis * (s * 90.0) + 3.0);
+    float speck = glassNoise(around * 190.0 + axis * (s * 200.0) + 9.0);
+    float spark = smoothstep(0.84, 0.97, glassNoise(around * 330.0 + axis * (s * 300.0) + 21.0));
+    float inner = ${num(glassLook.wall.wander)} * (thick - 0.5) * 2.0;
+    float wallTo = ${num(glassLook.wall.leftTo)} * smoothstep(0.3, -0.3, nWorld.x);
+    float plate = smoothstep(${num(glassLook.wall.from[0])} + inner, ${num(glassLook.wall.from[1])} + inner, s) * (1.0 - smoothstep(${num(glassLook.wall.to[0])} + wallTo, ${num(glassLook.wall.to[1])} + wallTo, s));
+    float crest = exp(-pow((s - ${num(glassLook.wall.crest)}) / ${num(glassLook.wall.crestWide)}, 2.0));
+    vec3 hue = mix(${vec(glassLook.wall.inTint)}, ${vec(glassLook.wall.tint)}, smoothstep(${num(glassLook.wall.from[1])}, ${num(glassLook.wall.mirrorTo)}, s));
+    vec3 tw = refract(v, n, 1.0 / uLens.y);
+    float chordW = 2.0 * uLens.x * max(dot(-n, tw), 0.0);
+    vec3 qw = p + tw * chordW;
+    vec3 mirrored = stageGrid(qw + reflect(tw, -normalize(qw)) * chordW * 0.5);
+    col += wallLow * (1.0 + ${num(glassLook.wall.grain)} * (grain - 0.5) + ${num(glassLook.wall.speck)} * (speck - 0.5) + ${num(glassLook.wall.spark)} * spark) * (uSky * hue * (${num(glassLook.wall.plate)} * plate + ${num(glassLook.wall.peak)} * crest) + mirrored * ${num(glassLook.wall.mirror)} * plate * (1.0 - smoothstep(${num(glassLook.wall.from[1])}, ${num(glassLook.wall.mirrorTo)}, s)));
+  }
   col *= 1.0 - ${num(glassLook.band.dim)} * band;
 
   vec3 seen = uTurn * r1;
@@ -450,8 +483,30 @@ void main() {
   alpha *= 1.0 - 0.5 * uDress.a;
 
   float limb = glassLimb(s);
+#ifdef GLASS_RING
+  float ring = smoothstep(${num(glassLook.ring.from)}, ${num(glassLook.ring.to)}, s);
+  gl_FragColor = vec4(col * ring * limb, 1.0 - ring);
+#else
   gl_FragColor = vec4(col * limb, mix(1.0, alpha, limb));
+#endif
 }`
+
+const RING_VERT = `
+vEye = (uGlobeInv * vec4(cameraPosition, 1.0)).xyz;
+vec3 ringEye = (inverse(modelMatrix) * vec4(cameraPosition, 1.0)).xyz;
+float ringFar = length(ringEye);
+vec3 ringAxis = ringEye / ringFar;
+vec3 ringSide = normalize(cross(abs(ringAxis.y) < 0.99 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0), ringAxis));
+vec3 ringUp = cross(ringAxis, ringSide);
+float ringTheta = acos(clamp(${num(lensRadiusMm)} / ringFar, 0.0, 1.0)) - (1.0 - position.z) * ${num(glassLook.ring.spanDeg * RAD)};
+float ringOut = ${num(lensRadiusMm)} * (position.z > 0.999 ? ${num(1 / Math.cos(Math.PI / glassLook.ring.around))} : 1.0);
+vec4 ringWorld = modelMatrix * vec4(ringOut * (sin(ringTheta) * (position.x * ringSide + position.y * ringUp) + cos(ringTheta) * ringAxis), 1.0);
+vec4 ringView = viewMatrix * ringWorld;
+gl_Position = projectionMatrix * ringView;
+vStageWorld = ringWorld.xyz;
+vStageLocal = (uGlobeInv * ringWorld).xyz;
+vStageAux = vec3(0.0, -ringView.z, length(ringView.xyz));
+vStagePlaced = ringWorld.xyz;`
 
 const BUBBLE = `
 ${GLASS_GLSL}
@@ -580,9 +635,37 @@ function bubbleGeometry(): THREE.BufferGeometry {
   return g
 }
 
+function ringGeometry(): THREE.BufferGeometry {
+  const around = glassLook.ring.around
+  const rows = glassLook.ring.rows
+  const position = new Float32Array((rows + 1) * (around + 1) * 3)
+  const index: number[] = []
+  for (let j = 0; j <= rows; j++) {
+    for (let i = 0; i <= around; i++) {
+      const phi = (i / around) * Math.PI * 2
+      const o = (j * (around + 1) + i) * 3
+      position[o] = Math.cos(phi)
+      position[o + 1] = Math.sin(phi)
+      position[o + 2] = j / rows
+    }
+  }
+  for (let j = 0; j < rows; j++) {
+    for (let i = 0; i < around; i++) {
+      const p = j * (around + 1) + i
+      const q = p + around + 1
+      index.push(p, p + 1, q, p + 1, q + 1, q)
+    }
+  }
+  const g = new THREE.BufferGeometry()
+  g.setAttribute('position', new THREE.BufferAttribute(position, 3))
+  g.setIndex(index)
+  return g
+}
+
 export class Shell {
   readonly through: THREE.Mesh
   readonly shell: THREE.Mesh
+  readonly ring: THREE.Mesh
   readonly bubble: THREE.Mesh
   readonly stamp: THREE.Mesh
   readonly bubbleRadius = glassLook.bubble.widthMm / 2
@@ -605,6 +688,10 @@ export class Shell {
     this.through.renderOrder = -0.5
     this.shell = new THREE.Mesh(sphere, stageShader({ part: 'glass', standIn: false, uniforms, vertexPars: eyeChunk.pars, vertexMain: eyeChunk.main, fragment: SHELL, params: { ...blend, transparent: true } }))
     this.shell.renderOrder = 10
+    this.ring = new THREE.Mesh(ringGeometry(), stageShader({ part: 'glass', standIn: false, uniforms, vertexPars: eyeChunk.pars, vertexMain: RING_VERT, fragment: `#define GLASS_RING 1\n${SHELL}`, params: { ...blend, transparent: true, side: THREE.DoubleSide } }))
+    this.ring.renderOrder = 12
+    this.ring.frustumCulled = false
+    this.shell.add(this.ring)
     this.bubble = new THREE.Mesh(
       bubbleGeometry(),
       stageShader({
@@ -620,7 +707,7 @@ export class Shell {
     )
     this.bubble.renderOrder = 4
     this.bubble.frustumCulled = false
-    this.stamp = new THREE.Mesh(new THREE.SphereGeometry(lensRadiusMm, 64, 40), stageShader({ part: 'glass', standIn: false, fragment: 'void main() { gl_FragColor = vec4(0.0); }', params: { colorWrite: false } }))
+    this.stamp = new THREE.Mesh(new THREE.SphereGeometry(lensRadiusMm, 64, 34), stageShader({ part: 'glass', standIn: false, fragment: 'void main() { gl_FragColor = vec4(0.0); }', params: { colorWrite: false } }))
     this.stamp.scale.setScalar(0.998)
     this.stamp.renderOrder = 6
   }

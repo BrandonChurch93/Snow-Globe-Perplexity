@@ -9,7 +9,7 @@ const TAU = Math.PI * 2
 
 export const LIQUID_R = G.sphereDiameterMm / 2 - G.glassThicknessMm
 export const LIQUID_PIVOT_MM = G.baseHeightMm - G.collarDepthMm + G.sphereDiameterMm / 2
-export const LIQUID_LENGTH = 15
+export const LIQUID_LENGTH = 17
 export const LIQUID_TURN = 0
 export const LIQUID_SLOSH = 3
 export const LIQUID_TURBULENCE = 6
@@ -18,6 +18,8 @@ export const LIQUID_PHASE_B = 8
 export const LIQUID_HAND = 9
 export const LIQUID_BUBBLE = 10
 export const LIQUID_MIX = 12
+export const LIQUID_ROLL = 15
+export const LIQUID_SWIRL = 16
 export const TURBULENCE_MAX = 260
 export const NOISE_N = 24
 export const NOISE_RMS = 0.33
@@ -50,6 +52,24 @@ const AMBIENT_FLOW = 0.45
 const AMBIENT_TURN = 0.008
 const TURB_EPS = 0.2
 const OVERTURN = 1
+
+export const ROLL_MAX = 20
+export const ROLL_EDGE = 0.5
+const ARM_PACE = 0.84
+const ROLL_SECONDS = config.shake.spinDownSeconds * 0.6
+const ROLL_FROM_STORM = 0.15
+const ROLL_DRAIN = 3
+const ROLL_EPS = 0.01
+const ROLL_TILT = 0.85
+export const ROLL_AXIS: readonly [number, number, number] = [0, Math.sin(ROLL_TILT), Math.cos(ROLL_TILT)]
+export const ROLL_CENTRE: readonly [number, number, number] = [-16, 10, 0]
+export const ROLL_FLOOR_MM = G.islandLevelMm - (G.baseHeightMm - G.collarDepthMm + G.sphereDiameterMm / 2) + 2.5
+export const ROLL_FLOOR_SLOPE = -0.1625
+export const ROLL_RISE_MM = 30
+const ROLL_OFF = Math.hypot(ROLL_CENTRE[0], ROLL_CENTRE[1], ROLL_CENTRE[2])
+export const ROLL_FREE = LIQUID_R * LIQUID_R - ROLL_OFF * ROLL_OFF
+const ROLL_CREST = Math.min(1, Math.pow(1 / (5 * ROLL_EDGE), 0.25))
+const ROLL_REACH = ((LIQUID_R * LIQUID_R) / (LIQUID_R - ROLL_OFF)) * ROLL_CREST * (1 - ROLL_EDGE * Math.pow(ROLL_CREST, 4)) + (LIQUID_R * LIQUID_R * (0.5 - ROLL_EDGE / 6) * 1.5) / ROLL_RISE_MM
 
 export const AMBIENT_MAX = 1.5 * AMBIENT_FLOW * 1.2 + AMBIENT_TURN * 1.2 * LIQUID_R
 
@@ -216,7 +236,7 @@ export class Liquid {
 
   get atRest(): boolean {
     const L = this.state
-    return L[0] === 0 && L[1] === 0 && L[2] === 0 && L[3] === 0 && L[4] === 0 && L[5] === 0 && L[6] === 0
+    return L[0] === 0 && L[1] === 0 && L[2] === 0 && L[3] === 0 && L[4] === 0 && L[5] === 0 && L[6] === 0 && L[15] === 0
   }
 
   step(p0: GlobePose, p1: GlobePose, p2: GlobePose, time: number): void {
@@ -290,8 +310,17 @@ export class Liquid {
     wy = par * n[1] + ey
     wz = par * n[2] + ez
 
-    let turb = L[6]! * Math.exp(-DT / TURB_SECONDS) + TURB_FROM_SLOSH * s0 * (1 - keep) + TURB_FROM_REVERSAL * SLOSH_GAIN * Math.max(0, against) * DT + TURB_FROM_TURN * shed
+    const fed = TURB_FROM_SLOSH * s0 * (1 - keep) + TURB_FROM_REVERSAL * SLOSH_GAIN * Math.max(0, against) * DT + TURB_FROM_TURN * shed
+    let turb = L[6]! * Math.exp(-DT / TURB_SECONDS) + fed
     if (turb > TURBULENCE_MAX) turb = TURBULENCE_MAX
+    let roll = L[15]! * Math.exp(-DT / ROLL_SECONDS) + ROLL_FROM_STORM * fed - ROLL_DRAIN * DT
+    if (roll > ROLL_MAX) roll = ROLL_MAX
+    let swirl = L[16]! + roll * ARM_PACE * DT
+    if (swirl >= TAU) swirl -= TAU
+    if (roll <= 0) {
+      roll = 0
+      swirl = 0
+    }
 
     const still = ax === 0 && ay === 0 && az === 0 && dda === 0 && ddb === 0 && !stirred
     if (still) {
@@ -299,6 +328,10 @@ export class Liquid {
       if (sx * sx + sy * sy + sz * sz < 1e-8) sx = sy = sz = 0
       if (turb < TURB_EPS) turb = 0
       if (Math.abs(hand) < 1e-5) hand = 0
+      if (roll < ROLL_EPS) {
+        roll = 0
+        swirl = 0
+      }
     }
 
     let bx = L[10]!
@@ -324,6 +357,8 @@ export class Liquid {
     L[9] = hand
     L[10] = bx
     L[11] = bz
+    L[15] = roll
+    L[16] = swirl
     if (Math.round(time * HZ) % MIX_STEPS === 0) {
       if (turb > TURB_EPS) {
         const sp = Math.sin(L[7]!)
@@ -355,6 +390,7 @@ export class Liquid {
     c[5] = 1.5 * (L[5]! + AMBIENT_FLOW * s1)
     const turb = L[6]!
     c[6] = turb
+    c[7] = L[15]!
     const wa = L[12]!
     const wb = L[13]!
     const wc = L[14]!
@@ -377,7 +413,7 @@ export class Liquid {
     const h = Math.sqrt(c[3]! * c[3]! + c[4]! * c[4]! + c[5]! * c[5]!)
     const mix = Math.sqrt(wa * wa + wb * wb + wc * wc)
     const loud = mix > turb ? mix : turb
-    this.maxSpeed = w * LIQUID_R + h * 1.05 + loud * 1.6
+    this.maxSpeed = w * LIQUID_R + h * 1.05 + loud * 1.6 + c[7]! * ROLL_REACH
   }
 
   potentialAt(x: number, y: number, z: number, ring: number, out: Float64Array | number[]): void {
@@ -521,6 +557,31 @@ export class Liquid {
       ux += nx - x * radial
       uy += ny - y * radial
       uz += nz - z * radial
+    }
+    const roll = c[7]!
+    if (roll !== 0) {
+      const dx = x - ROLL_CENTRE[0]
+      const dy = y - ROLL_CENTRE[1]
+      const dz = z - ROLL_CENTRE[2]
+      const dc = dx * ROLL_CENTRE[0] + dy * ROLL_CENTRE[1] + dz * ROLL_CENTRE[2]
+      const s = Math.sqrt(dc * dc + ROLL_FREE * (dx * dx + dy * dy + dz * dz))
+      if (s > 1e-6) {
+        let lam = (dc + s) / ROLL_FREE
+        if (lam > 1) lam = 1
+        const l2 = lam * lam
+        const t = (y - ROLL_FLOOR_MM - ROLL_FLOOR_SLOPE * z) / ROLL_RISE_MM
+        const h = t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t)
+        const dh = t <= 0 || t >= 1 ? 0 : (6 * t * (1 - t)) / ROLL_RISE_MM
+        const k = roll * LIQUID_R * LIQUID_R
+        const rate = (k * h * lam * (1 - ROLL_EDGE * l2 * l2)) / s
+        const along = k * dh * ((1 - l2) / 2 - (ROLL_EDGE * (1 - l2 * l2 * l2)) / 6)
+        const nx = dx + lam * ROLL_CENTRE[0]
+        const ny = dy + lam * ROLL_CENTRE[1]
+        const nz = dz + lam * ROLL_CENTRE[2]
+        ux += rate * (ROLL_AXIS[1] * nz - ROLL_AXIS[2] * ny) + along * (ROLL_AXIS[2] + ROLL_FLOOR_SLOPE * ROLL_AXIS[1])
+        uy += rate * (ROLL_AXIS[2] * nx - ROLL_AXIS[0] * nz) - along * ROLL_FLOOR_SLOPE * ROLL_AXIS[0]
+        uz += rate * (ROLL_AXIS[0] * ny - ROLL_AXIS[1] * nx) - along * ROLL_AXIS[0]
+      }
     }
     out[0] = ux
     out[1] = uy
