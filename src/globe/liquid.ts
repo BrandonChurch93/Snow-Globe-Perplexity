@@ -52,15 +52,18 @@ const BUBBLE_SECONDS = 0.12
 const AMBIENT_FLOW = 0.45
 const AMBIENT_TURN = 0.008
 const TURB_EPS = 0.2
-const OVERTURN = 1
 const SLAM = 8
 const SLAM_KNEE = 45
 const ROLL_WAKES = 0.3
 const ROLL_WOKEN = 0.9
 
-export const ROLL_MAX = 14
+export const ROLL_MAX = 15
 const EDDY_GAIN = 3
 const EDDY_MAX = 450
+const EDDY_FROM = 85
+const EDDY_FULL = 170
+const ROLL_BODY = 0.1
+const ROLL_BODY_LEAN = 0.5
 export const ROLL_EDGE = 0.5
 const ARM_PACE = 0.84
 const ROLL_SECONDS = config.shake.spinDownSeconds * 0.6
@@ -406,7 +409,10 @@ export class Liquid {
       if (turb > TURB_EPS) {
         const sp = Math.sin(L[7]!)
         const all = turb * (1 + (EDDY_GAIN * turb) / TURBULENCE_MAX)
-        const loud = all > EDDY_MAX ? EDDY_MAX : all
+        const cap = all > EDDY_MAX ? EDDY_MAX : all
+        const lv = (turb - EDDY_FROM) / (EDDY_FULL - EDDY_FROM)
+        const lw = lv <= 0 ? 0 : lv >= 1 ? 1 : lv * lv * (3 - 2 * lv)
+        const loud = cap * lw
         L[12] = loud * Math.cos(L[7]!)
         L[13] = loud * sp * Math.cos(L[8]!)
         L[14] = loud * sp * Math.sin(L[8]!)
@@ -427,12 +433,13 @@ export class Liquid {
     const c1 = Math.cos(th)
     const s2 = Math.sin(2 * th)
     const c2 = Math.cos(2 * th)
-    c[0] = L[0]! + AMBIENT_TURN * 0.3 * s1
-    c[1] = L[1]! + AMBIENT_TURN * Math.cos(th + 1.1)
-    c[2] = L[2]! + AMBIENT_TURN * 0.3 * c2
+    const own = 1 - L[15]! / ROLL_MAX
+    c[0] = L[0]! * own + AMBIENT_TURN * 0.3 * s1
+    c[1] = L[1]! * own + AMBIENT_TURN * Math.cos(th + 1.1) + ROLL_BODY * L[15]!
+    c[2] = L[2]! * own + AMBIENT_TURN * 0.3 * c2 + ROLL_BODY_LEAN * ROLL_BODY * L[15]! * ROLL_AXIS[2]
     const slam = SLAM / (1 + Math.sqrt(L[3]! * L[3]! + L[4]! * L[4]! + L[5]! * L[5]!) / SLAM_KNEE)
     c[3] = slam * L[3]! + 1.5 * AMBIENT_FLOW * c1 + L[17]!
-    c[4] = slam * L[4]! + 1.5 * AMBIENT_FLOW * 0.5 * s2 + (OVERTURN * L[6]! * L[6]!) / TURBULENCE_MAX + L[18]! * ROLL_AXIS[2]
+    c[4] = slam * L[4]! + 1.5 * AMBIENT_FLOW * 0.5 * s2 + (L[6]! * L[6]!) / TURBULENCE_MAX + L[18]! * ROLL_AXIS[2]
     c[5] = slam * L[5]! + 1.5 * AMBIENT_FLOW * s1 - L[18]! * ROLL_AXIS[1]
     const turb = L[6]!
     c[6] = turb
