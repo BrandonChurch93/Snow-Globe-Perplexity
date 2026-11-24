@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 20 · 2026-11-24 08:00 UTC
+Status 21 · 2026-11-24 08:27 UTC
 
-- `out/stills/status/status-20-1.jpg`: The opening camera on stand-ins, four candidates; bottom right is the chosen frame: chimney, window, door, floor, lamppost and the foot of the tree, with no edge of the glass
-- `out/stills/status/status-20-2.jpg`: Spring hold after the thinning at 12.5, 14.4, 17 and 21 s (the landing is at 12 s): the miniature is out of the storm one bar after the landing
-- `out/stills/status/status-20-3.jpg`: Fall hold after the thinning at 36.5, 38.4, 41 and 45 s (the landing is at 36 s), with the move down to the low camera
-- `out/stills/status/status-20-4.jpg`: The summer hold (left) now pushes all the way to the new interior camera, the fall hold (right) drops to the new low camera, twelve frames each at draft. The storms are still too thick here; the thinning is being merged next (by film_app_engineer_2)
+- `out/stills/status/status-21-1.jpg`: The whole blockout film in 12 frames, every shot at least once (stand-in shapes)
+- `out/stills/status/status-21-2.jpg`: The opening: from the close camera with no edge of the glass, pulling back to the whole globe; the reveal is marked at 3.00 s
+- `out/stills/status/status-21-3.jpg`: One sheet across shake 1, winter into spring: the camera is locked, only the globe moves
+- `out/stills/status/status-21-4.jpg`: The close: one push from the whole globe back to the opening's camera, so the last frame meets the first
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 08:15 UTC
-clock: phase 2, tick of 6.0 minutes
-phase 2: 5.22 h used of its 6.00 h box
-allowance (before the review): 6.41 h used of 36.00 h allowed
-all time before the review: 6.41 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 08:27 UTC
+clock: phase 2, tick of 12.2 minutes
+phase 2: 5.43 h used of its 6.00 h box
+allowance (before the review): 6.61 h used of 36.00 h allowed
+all time before the review: 6.61 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 14
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -649,6 +649,8 @@ none
 
 - 2026-11-24 02:57 UTC: `dbe01e8` pushed. 03:01 UTC: `681b78b` pushed.
 
+- 2026-11-24 08:18 UTC: `366a1c8` pushed, the last push that went through. 08:24 UTC: the push of `0866555` failed with "could not read Username for 'https://github.com'", and again on three retries until 08:26. Cause as far as seen from here: the workspace no longer hands git and the GitHub CLI their sign-in (the session token is missing from the environment of every command since about 08:20; reading the public repo still works). Nothing in the repo or its history is wrong. Commits are kept locally, in order; the push is tried again at every commit, as AGENTS.md says for a failed push after Phase 0.
+
 ## Session log
 
 One entry per task: when it started, what it did, where it stopped.
@@ -760,3 +762,15 @@ One entry per task: when it started, what it did, where it stopped.
 - 08:16 published from `b1399c0` (the sources of round 2's commit): the stand-in globe with the cameras framed again, the storms that thin within a bar, and the 7 percent of room over the controls. `npm run hostcheck` passed at 08:16 (dist holds no source picture or sound, the built site opens in live mode with nothing logged). Visibility: Organization.
 
 - 08:17 `film_renderer_3` sent frames 1440 to 2158 (`agent/film-chunks-3` `185e199`, engine hash `b98352868abb52c6`, 0.73 s a frame). Its record names 54 stand-ins and empty season hashes, which is right for the blockout: no season asset exists yet.
+
+- 08:19 all five render agents delivered: frames 0 to 3598 of film B at `draft` in `preview`, engine hash `b98352868abb52c6` in every record, 0.73 to 1.36 s a frame. Joined here to 1800 frames, 60.000 s, with the blockout mix (`npm run mix -- --candidate blockout`: 4 cues placed, the others have no kept take, -14 LUFS, true peak -6.9 dB) and kept as `out/preview-b.mp4` (19.1 MB, `0866555`).
+
+- 08:19 step 11: `npm run budget` on the blockout scene; the table under "Render budget" is updated (this VM: 4.43, 1.27, 0.35, 0.48 and 1.60 s per sample for uhd, hd, preview, phone and tablet; one simulated second costs 2.31 s in the storm).
+
+- 08:21 `reviewer_r2_b` answered part 2 of round 2: score 8, two major issues, none severe (`scorecards/round-002/R4-blockout-2.json`, pushed as `366a1c8`).
+
+- 08:24 `npm run render:local -- --proof` written; `node tools/gate.mjs --phase 2 --only D2,D3`: D2 pass, D3 pass, "gate, phase 2: all 15 green".
+
+- 08:24 the push failed (see "Push log"). The build continues on local commits.
+
+- 08:27 Status 21 posted with four pictures from round 2's pack: the whole film in 12 frames, the opening, one sheet across shake 1, the close. It says the globe can be shaken at the published address now.
