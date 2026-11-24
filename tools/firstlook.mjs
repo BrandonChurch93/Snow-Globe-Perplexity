@@ -132,15 +132,20 @@ async function live(session) {
   // Every picture that was drawn from its first file must have had its whole file fetched afterwards.
   const index = readJson(rel('dist', 'assets', 'index.json'))
   const names = new Set(Object.values(index.sets.web).flatMap((files) => files.map((x) => `assets/${x.path}`)))
-  const owed = early.filter((x) => /\.first\.[a-z0-9]+$/i.test(x.url)).map((x) => x.url.replace(/\.first(\.[a-z0-9]+)$/i, '$1'))
-  const missing = owed.filter((url) => names.has(url) && !late.some((x) => x.url === url))
-  const twice = early.filter((x) => late.some((y) => y.url === x.url)).map((x) => x.url)
+  // An address carries the hash of its file (`name?v=sha`): files are told apart by their names.
+  const bare = (url) => url.replace(/\?.*$/, '')
+  const owed = early.map((x) => bare(x.url)).filter((url) => /\.first\.[a-z0-9]+$/i.test(url)).map((url) => url.replace(/\.first(\.[a-z0-9]+)$/i, '$1'))
+  const missing = owed.filter((url) => names.has(url) && !late.some((x) => bare(x.url) === url))
+  const twice = early.filter((x) => late.some((y) => bare(y.url) === bare(x.url))).map((x) => bare(x.url))
+  // The first files of the season the page opened with: when it fetched none of them, it did not start from what the first picture needs.
+  const firstFiles = [...names].filter((n) => n.startsWith('assets/shared/') || n.startsWith(`assets/${cfg.defaultSeason}/`)).filter((n) => /\.first\.[a-z0-9]+$/i.test(n)).length
   return {
     firstPictureSeconds: (seen.first - t) / 1000,
     wholeSeconds: (seen.ready - t) / 1000,
     before: { mb: mb(sum(early)), requests: early.length },
     after: { mb: mb(sum(late)), requests: late.length, files: late.map((x) => ({ url: x.url, bytes: x.bytes })) },
     owed: owed.length,
+    firstFiles,
     missing,
     twice,
     frames: {
@@ -162,7 +167,8 @@ try {
     console.log(
       `live: while the whole pictures arrived, ${l.frames.whileArriving.frames} frames, usual wait ${l.frames.whileArriving.medianMs.toFixed(0)} ms, longest ${l.frames.whileArriving.longestMs.toFixed(0)} ms; afterwards ${l.frames.afterwards.frames} frames, usual ${l.frames.afterwards.medianMs.toFixed(0)} ms, longest ${l.frames.afterwards.longestMs.toFixed(0)} ms`,
     )
-    if (l.missing.length) failed = `the whole file never came for ${l.missing.join(', ')}`
+    if (l.owed < l.firstFiles) failed = `the page fetched ${l.owed} of the ${l.firstFiles} first files before its first picture: it did not start from what the first picture needs`
+    else if (l.missing.length) failed = `the whole file never came for ${l.missing.join(', ')}`
     else if (l.twice.length) failed = `fetched before and again after the first picture: ${l.twice.join(', ')}`
     else if (l.errors.length) failed = `the page logged:\n${l.errors.join('\n')}`
     else console.log(`live: all ${l.owed} pictures drawn from a first file got their whole file, nothing was fetched twice, nothing logged`)
