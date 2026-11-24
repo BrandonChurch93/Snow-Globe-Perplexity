@@ -40,6 +40,8 @@ export const VEIL_LOOK = {
   bankRest: -1.15,
   bankRise: 0.65,
   bankRisePower: 0.5,
+  bankFlood: 0.55,
+  bankFloodGain: 2,
   bankRing: 0.5,
   bankSoft: 0.14,
   bankWhite: 1.35,
@@ -281,7 +283,8 @@ export function updateVeil(f: StageFrame): void {
   const peak = Math.min(1, Math.max(0, (turb - L.peakFrom) / (1 - L.peakFrom)))
   const uneven = density > 0 ? Math.min(L.uneven, (haze + white * L.whiteEven) / density) : L.uneven
   u.uVeilUp.value.set(f.globeUp.x, f.globeUp.y, f.globeUp.z, uneven)
-  u.uVeilBank.value.set(L.bankRest + L.bankRise * Math.pow(turb, L.bankRisePower), L.bankSoft, most * L.bank * Math.pow(turb, L.bankPower), lerp(L.bankEvenLow, L.bankEven, peak * peak * (3 - 2 * peak)))
+  const flood = w * w * (3 - 2 * w)
+  u.uVeilBank.value.set(L.bankRest + L.bankRise * Math.pow(turb, L.bankRisePower) + L.bankFlood * flood, L.bankSoft, most * L.bank * (Math.pow(turb, L.bankPower) + L.bankFloodGain * flood), lerp(L.bankEvenLow, L.bankEven, peak * peak * (3 - 2 * peak)))
   const pa = f.liquid[LIQUID_PHASE] ?? 0
   const pb = f.liquid[LIQUID_PHASE_B] ?? 0
   u.uVeilFlow.value.set((pa / TAU) * L.arcTurns, Math.sin(pb) * 0.5 * L.blobDrift, Math.sin(pb) * L.blobDrift, Math.cos(pb) * L.blobDrift)
