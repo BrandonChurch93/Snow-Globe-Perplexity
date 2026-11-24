@@ -812,6 +812,237 @@
       },
       "time": "2026-11-24T04:10:00.001Z",
       "answersTime": "2026-11-24T04:10:00.388Z"
+    },
+    {
+      "cue": "lift",
+      "take": 2,
+      "round": "build",
+      "class": "touch",
+      "season": null,
+      "line": "Glass and a heavy base leaving a stone surface, soft",
+      "tool": "ElevenLabs sound generation",
+      "prompt": "A heavy object with a wooden base dragged a short way across a stone table and lifted off it: a low dull gritty scrape and the weight leaving the stone, with a little water moving inside, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 1.5,
+        "prompt_influence": 0.5,
+        "loop": false,
+        "output_format": "pcm_48000"
+      },
+      "source": {
+        "name": "lift-take2.wav",
+        "bytes": 284238,
+        "sha256": "36abb5ec9f36fa5d5d070f1b29322809cc8ad6e7990caf0443fd67954095eead",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 1.48,
+        "kbps": 1536
+      },
+      "sha256": "ef4d25cedefefa651da87c88fb43062ff1893b090b9f25c1e55c0b719f9a8208",
+      "measured": {
+        "seconds": 1.48,
+        "peakDb": -13.06,
+        "truePeakDb": -13.06,
+        "lufs": -24.83,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -29.87,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0,
+        "soundSeconds": 1.48,
+        "tailDb": -72.11,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 1978,
+          "bands": {
+            "sub": 0.0111,
+            "low": 0.3748,
+            "lowMid": 0.0744,
+            "mid": 0.4288,
+            "high": 0.0882,
+            "air": 0.0226
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -24.8,
+        "lra": 0,
+        "truePeakDb": -13.1
+      },
+      "fits": {
+        "wantSeconds": 0.5,
+        "soundSeconds": 1.48,
+        "ok": false,
+        "note": "the sound is 1.48 s, long for a cue of 0.5 s: the chain cuts it to length"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: 1.48 s, peak -13 dBFS, one burst, a quarter of its energy under 200 Hz, centred near 2 kHz. Listener: low wet grunts or snorts, like a pig, in both calls; no scrape of a base on stone and no glass.",
+        "listener": {
+          "line": "Glass and a heavy base leaving a stone surface, soft",
+          "open": "1. I hear a series of low, guttural grunts and snorts, most likely made by a pig. The sound has a wet, heavy, and resonant character.\n2. There are roughly five distinct grunting noises that make up one continuous sequence.\n3. No, there is no human voice, spoken word, breath, or singing in this recording.\n4. No, there is no music, melody, or musical instrument present.\n5. The audio begins abruptly with a loud snort and ends suddenly right after the final grunt.",
+          "fit": "1. No, it does not fit the description because the audio consists of rhythmic breathing rather than the sound of hard objects scraping or moving.\n2. The prominent, heavy snoring or breathing noises heard throughout the clip do not belong to the description.\n3. No, there are no spoken words or singing present, only the sound of heavy snoring."
+        }
+      },
+      "time": "2026-11-24T06:39:48.512Z",
+      "answersTime": "2026-11-24T06:39:49.202Z"
+    },
+    {
+      "cue": "shake-winter",
+      "take": 2,
+      "round": "build",
+      "class": "impact",
+      "season": "winter",
+      "line": "Liquid sloshing and churning inside glass, with a hiss of snow and tiny bells in it",
+      "tool": "ElevenLabs sound generation",
+      "prompt": "Water sloshing and churning back and forth inside a sealed glass jar that is being shaken, six fast sloshes, with the fine hiss of snow swirling in the water and tiny sleigh bells jingling inside, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 2.6,
+        "prompt_influence": 0.4,
+        "loop": false,
+        "output_format": "pcm_48000"
+      },
+      "source": {
+        "name": "shake-winter-take2.wav",
+        "bytes": 491598,
+        "sha256": "85cbd94267629528bdf75ea78aad605aea9ff2a47e8f7d150fe0723ded79f021",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 2.56,
+        "kbps": 1536
+      },
+      "sha256": "c7c3cb2d4d3184bfef0ee005feddce7e0cba600d597a1cd0f72d9f167b495eae",
+      "measured": {
+        "seconds": 2.56,
+        "peakDb": -7.48,
+        "truePeakDb": -7.44,
+        "lufs": -22.76,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": -78.18,
+        "rmsDb": -30.18,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0,
+        "soundSeconds": 2.56,
+        "tailDb": -61.86,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 5298,
+          "bands": {
+            "sub": 0.064,
+            "low": 0.0008,
+            "lowMid": 0.0006,
+            "mid": 0.198,
+            "high": 0.6405,
+            "air": 0.0961
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -22.8,
+        "lra": 0,
+        "truePeakDb": -7.4
+      },
+      "fits": {
+        "wantSeconds": 2.6,
+        "soundSeconds": 2.56,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: 2.56 s, peak -7.5 dBFS, four bursts, bright, 65 percent of its energy between 2 and 8 kHz and almost nothing under 1 kHz. Listener: small hard things like ice cubes or dice shaken in a container, with liquid sloshing in glass; no hiss of snow and no bells.",
+        "listener": {
+          "line": "Liquid sloshing and churning inside glass, with a hiss of snow and tiny bells in it",
+          "open": "1. I hear a rapid, repetitive clinking or rattling sound, similar to small, hard objects like ice cubes or dice being vigorously shaken inside a container. The sound has a sharp, clattering, and energetic character.\n2. There is one continuous sound event consisting of many rapid, overlapping impacts.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument.\n5. The sound starts abruptly with the beginning of the shaking motion and ends abruptly as soon as the movement stops.",
+          "fit": "1. No, it does not fit the description because while there is liquid sloshing in a glass, there are no sounds of hissing snow or tiny bells.\n2. The audio contains the distinct clinking of ice cubes, which is not part of the provided description.\n3. No, there is no human voice, spoken word, or singing in the clip."
+        }
+      },
+      "time": "2026-11-24T06:41:25.046Z",
+      "answersTime": "2026-11-24T06:41:25.703Z"
+    },
+    {
+      "cue": "land-winter",
+      "take": 3,
+      "round": "build",
+      "class": "impact",
+      "season": "winter",
+      "line": "A heavy glass globe set down on stone, heavy and short, then ice crackling outward",
+      "tool": "ElevenLabs sound generation",
+      "prompt": "Two sounds in a row. First one deep heavy thud as a heavy glass object is set down on a stone table. Then at once ice crackling, cracking and creaking as frost spreads quickly outward across the stone, crisp and close, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 3,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000"
+      },
+      "source": {
+        "name": "land-winter-take3.wav",
+        "bytes": 576078,
+        "sha256": "2d09fc2af2d591059abb233fb6867d79f4b3af40d6df49932ebc42579d6b7b95",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 3,
+        "kbps": 1536
+      },
+      "sha256": "edd73f76f7c735b2f084d396e755c0448b4444d6f6e4aaf7139bcf907f07550d",
+      "measured": {
+        "seconds": 3,
+        "peakDb": 0,
+        "truePeakDb": 0.07,
+        "lufs": -23.89,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -28.65,
+        "silenceFrontSeconds": 0.045,
+        "silenceEndSeconds": 0.915,
+        "soundSeconds": 2.04,
+        "tailDb": -76.78,
+        "events": 2,
+        "spectrum": {
+          "centroidHz": 504,
+          "bands": {
+            "sub": 0.0015,
+            "low": 0.2287,
+            "lowMid": 0.7064,
+            "mid": 0.0632,
+            "high": 0.0001,
+            "air": 0
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -23.9,
+        "lra": 20,
+        "truePeakDb": 0.1
+      },
+      "fits": {
+        "wantSeconds": 1.5,
+        "soundSeconds": 2.04,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: two knocks 1.5 s apart, 96 percent of the energy between 200 Hz and 2 kHz and nothing above 2 kHz, so no crackle. Listener: a small hard hollow thing dropped on wood that bounces and settles, light, and no ice.",
+        "listener": {
+          "line": "A heavy glass globe set down on stone, heavy and short, then ice crackling outward",
+          "open": "1. I hear a sharp, hollow impact followed by a rapid, rattling sequence of bounces. It sounds like a small, hard object dropping onto a wooden surface and settling.\n2. There are two main sound events: a single loud initial strike, followed by a rapid succession of smaller bounces.\n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or musical instrument.\n5. It starts abruptly with a sharp, loud impact. It ends by quickly trailing off into silence as the rapidly accelerating bounces stop.",
+          "fit": "1. No, because it sounds like a light, hollow plastic object being dropped rather than heavy glass hitting stone. It also completely lacks any sound of crackling ice.\n2. The rapid, hollow wobbling and rolling sound of a lightweight object does not belong to the description.\n3. No, there is no human voice, spoken word, or singing in this audio."
+        }
+      },
+      "time": "2026-11-24T06:44:38.198Z",
+      "answersTime": "2026-11-24T06:44:38.938Z"
     }
   ],
   "kept": [
