@@ -420,7 +420,7 @@ function snowThickness(azIn, r) {
   const t = Math.pow(sum, 0.25)
   const lump = 0.7 + 0.6 * fbm(u * 46, r / 5.2, 46, 64, 91, 3)
   const heap = 0.7 + 0.6 * fbm(u * 26, r / 7, 26, 64, 119, 2)
-  const knob = (fbm(u * 96, r / 3.0, 96, 64, 127, 2) - 0.5) * 1.1 * Math.sqrt(Math.min(t, 4) / 4) + (fbm(u * 230, r / 1.3, 230, 64, 151, 2) - 0.5) * 0.4 * smooth(0.15, 1.1, t)
+  const knob = (fbm(u * 96, r / 3.0, 96, 64, 127, 2) - 0.5) * 2.1 * Math.sqrt(Math.min(t, 4) / 4) + (fbm(u * 230, r / 1.3, 230, 64, 151, 2) - 0.5) * 0.4 * smooth(0.15, 1.1, t)
   const crumb = smooth(0.7, 0.84, fbm(u * 150, r / 2.1, 150, 64, 97, 2)) * 0.55 * smooth(0.04, 0.5, t + 0.25 * fbm(u * 20, r / 9, 20, 64, 103, 2))
   const dust = 0.34 * smooth(0.6, 0.8, fbm(u * 30, r / 6, 30, 64, 109, 3)) * (1 - smooth(45.5, 49.5, r))
   const loose = r > collarEdge + 1.4 ? 1 : 0
