@@ -21,7 +21,26 @@ export const SLAB_DETAIL = 'shared/scene-slab-detail.lin.tile.png'
 export const SLAB_STONE = 'shared/scene-slab-stone.lin.tile.png'
 export const SLAB_DETAIL_PX = 2048
 
-export const SLAB_SHAPE = { turnDeg: 18, farMm: 328, nearMm: 620, halfWidthMm: 900, cornerMm: 14 }
+export const SLAB_SHAPE = {
+  turnDeg: 18,
+  farMm: 1100,
+  nearMm: 620,
+  halfWidthMm: 900,
+  cornerMm: 14,
+  farLeftMm: [-226.2, -311.9] as [number, number],
+  farLeftDir: [0.3911, -0.9204] as [number, number],
+  farRightMm: [233, -331.5] as [number, number],
+  farRightDir: [0.4136, 0.9105] as [number, number],
+}
+
+export const SLAB_EDGE = {
+  tone: [16.5, 8.6, 5.7] as [number, number, number],
+  wideMm: 9,
+  floor: 0.3,
+  fadeMm: [150, 200] as [number, number],
+  humpAtMm: 125,
+  humpMm: 15,
+}
 
 export const SLAB = {
   fineMm: 163,
@@ -137,7 +156,22 @@ export const SLAB_SHAPE_GLSL = `
 float slabInside(vec2 p) {
   vec2 q = vec2(p.x * ${f(Math.cos(turn))} - p.y * ${f(Math.sin(turn))}, p.x * ${f(Math.sin(turn))} + p.y * ${f(Math.cos(turn))});
   vec2 d = abs(q - vec2(0.0, ${f((SLAB_SHAPE.nearMm - SLAB_SHAPE.farMm) / 2)})) - vec2(${f(SLAB_SHAPE.halfWidthMm)}, ${f((SLAB_SHAPE.nearMm + SLAB_SHAPE.farMm) / 2)}) + ${f(SLAB_SHAPE.cornerMm)};
-  return ${f(SLAB_SHAPE.cornerMm)} - length(max(d, 0.0)) - min(max(d.x, d.y), 0.0);
+  float box = ${f(SLAB_SHAPE.cornerMm)} - length(max(d, 0.0)) - min(max(d.x, d.y), 0.0);
+  float left = dot(p - vec2(${f(SLAB_SHAPE.farLeftMm[0])}, ${f(SLAB_SHAPE.farLeftMm[1])}), vec2(${f(-SLAB_SHAPE.farLeftDir[1])}, ${f(SLAB_SHAPE.farLeftDir[0])}));
+  float right = dot(p - vec2(${f(SLAB_SHAPE.farRightMm[0])}, ${f(SLAB_SHAPE.farRightMm[1])}), vec2(${f(-SLAB_SHAPE.farRightDir[1])}, ${f(SLAB_SHAPE.farRightDir[0])}));
+  return min(box, min(left, right));
+}
+`
+
+export const SLAB_EDGE_GLSL = `
+vec3 slabEdgeGlow(vec2 p, float softMm) {
+  vec2 from = p - vec2(${f(SLAB_SHAPE.farLeftMm[0])}, ${f(SLAB_SHAPE.farLeftMm[1])});
+  float across = dot(from, vec2(${f(-SLAB_SHAPE.farLeftDir[1])}, ${f(SLAB_SHAPE.farLeftDir[0])}));
+  float along = dot(from, vec2(${f(SLAB_SHAPE.farLeftDir[0])}, ${f(SLAB_SHAPE.farLeftDir[1])}));
+  float wide = length(vec2(${f(SLAB_EDGE.wideMm)}, softMm));
+  float hump = (along - ${f(SLAB_EDGE.humpAtMm)}) / ${f(SLAB_EDGE.humpMm)};
+  float share = ${f(SLAB_EDGE.floor)} * (1.0 - smoothstep(${f(SLAB_EDGE.fadeMm[0])}, ${f(SLAB_EDGE.fadeMm[1])}, along)) + ${f(1 - SLAB_EDGE.floor)} * exp(-0.5 * hump * hump);
+  return vec3(${SLAB_EDGE.tone.map(f).join(', ')}) * (exp(-across * across / (2.0 * wide * wide)) * (${f(SLAB_EDGE.wideMm)} / wide) * share);
 }
 `
 
@@ -244,6 +278,7 @@ export const slabLightUniforms = {
 const SLAB_FRAG = `${ROOM_GLSL}
 ${FAR_GLSL}
 ${SLAB_SHAPE_GLSL}
+${SLAB_EDGE_GLSL}
 uniform vec3 uSlab;
 uniform vec3 uKeyDir;
 uniform vec3 uKeyCol;
@@ -430,6 +465,7 @@ void main() {
   float farGloss = fres * mark * ${f(SLAB.gloss)} * mix(1.0, ${f(SLAB.farGain)}, smoothstep(${f(SLAB.farFrom)}, ${f(SLAB.farTo)}, grazing));
   float nearGloss = max(fres, ${f(SLAB.mirrorShare)}) * fade * mix(1.0, mark, ${f(SLAB.mirrorMark)});
   col += (image * vec3(${SLAB.mirrorTint.map(f).join(', ')}) * nearGloss + (seen + room * (1.0 - held * ${f(1 - SLAB.sheenUnder)})) * farGloss) * (1.0 - 0.6 * dust);
+  col += uRoomWall * slabEdgeGlow(P.xz, 1.2 * lensBlurMm(depth));
 
   gl_FragColor = vec4(col * cover, 1.0 - cover);
   if (uDiag != 0) {
