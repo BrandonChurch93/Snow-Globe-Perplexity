@@ -65,4 +65,5 @@ export const timing = {
   moveGapSeconds: 0.2,
   fontWaitSeconds: 1.2,
   copiedSeconds: 1.6,
+  lineSteps: 240,
 } as const

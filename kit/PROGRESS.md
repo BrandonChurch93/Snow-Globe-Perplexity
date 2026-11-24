@@ -25,22 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 11 · 2026-11-24 04:53 UTC
+Status 12 · 2026-11-24 05:19 UTC
 
-- `out/stills/status/status-11-1.jpg`: The first picture of the new stage, which replaces the measuring scene: winter at rest from the hero camera at draft. Stand-in shapes for the cottage, the tree, the base and the lights, with the lens and the mirror pass on. A blockout, not a look. (by engine_builder)
-- `out/stills/status/status-11-2.jpg`: The interface on a phone, over the approved spring image on a mock: the season marks above the Shake control, sound beside it. (by interface_builder)
-- `out/stills/status/status-11-3.jpg`: The 3 kept sounds as waveforms, each with its name, length and loudness
+- `out/stills/status/status-12-1.jpg`: The app in live mode with the real interface, still on the measuring scene: at rest, then three moments of one shake (lift and tilt, the storm, the landing). The season marks sit at the bottom left, the Shake control at the bottom centre. (by film_app_builder)
+- `out/stills/status/status-12-2.jpg`: Film B on the new cut, measuring scene: frame 0 (the close opening before the pull back), frame 666 (the locked camera inside the first shake), frame 720 (the landing on its bar line) and the last frame, back on the camera of frame 0. In frame 666 the top of the glass leaves the picture: to be settled when the cameras are fitted. (by film_app_builder)
+- `out/stills/status/status-12-3.jpg`: The interface on a phone, over the approved spring image on a mock: the season marks above the Shake control, sound beside it. (by interface_builder)
+- `out/stills/status/status-12-4.jpg`: The first picture of the new stage, which replaces the measuring scene: winter at rest from the hero camera at draft. Stand-in shapes for the cottage, the tree, the base and the lights, with the lens and the mirror pass on. A blockout, not a look. (by engine_builder)
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 04:57 UTC
-clock: phase 2, tick of 4.1 minutes
-phase 2: 1.93 h used of its 6.00 h box
-allowance (before the review): 3.12 h used of 36.00 h allowed
-all time before the review: 3.12 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 05:23 UTC
+clock: phase 2, tick of 4.4 minutes
+phase 2: 2.36 h used of its 6.00 h box
+allowance (before the review): 3.55 h used of 36.00 h allowed
+all time before the review: 3.55 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
@@ -299,7 +300,79 @@ Measured 2026-11-24 02:48 UTC by a sandbox agent at commit `2f3666f`, the same b
 
 Written in Phase 2. The film's part is replaced once in Phase 6.
 
-none
+Written 2026-11-24 05:27 UTC from `cut/JUDGED.md`, which `npm run cut` writes from `dev.judged()` in the built page: 69 entries (winter 7, spring 6, summer 6, fall 6, change 8, globe 8, film 28, the film's part on the default grid of 25 bars). Entries can be added and are never removed.
+
+| Id | Unit | What |
+| --- | --- | --- |
+| `winter-rest` | winter | key, hd: winter in the rest state from hero |
+| `winter-shake` | winter | key, hd: winter in the landed state from hero |
+| `spring-rest` | spring | key, hd: spring in the rest state from hero |
+| `spring-shake` | spring | key, hd: spring in the landed state from hero |
+| `summer-rest` | summer | key, hd: summer in the rest state from hero |
+| `summer-shake` | summer | key, hd: summer in the landed state from hero |
+| `fall-rest` | fall | key, hd: fall in the rest state from hero |
+| `fall-shake` | fall | key, hd: fall in the landed state from hero |
+| `winter-interior` | winter | still, hd: winter in the rest state from interior |
+| `winter-base` | winter | still, hd: winter in the rest state from base |
+| `winter-surface` | winter | still, hd: winter in the rest state from surface |
+| `winter-settled` | winter | still, hd: winter in the settled state from hero |
+| `winter-macro` | winter | still, hd: winter in the rest state from macro |
+| `spring-interior` | spring | still, hd: spring in the rest state from interior |
+| `spring-base` | spring | still, hd: spring in the rest state from base |
+| `spring-surface` | spring | still, hd: spring in the rest state from surface |
+| `spring-settled` | spring | still, hd: spring in the settled state from hero |
+| `summer-interior` | summer | still, hd: summer in the rest state from interior |
+| `summer-base` | summer | still, hd: summer in the rest state from base |
+| `summer-surface` | summer | still, hd: summer in the rest state from surface |
+| `summer-settled` | summer | still, hd: summer in the settled state from hero |
+| `fall-interior` | fall | still, hd: fall in the rest state from interior |
+| `fall-base` | fall | still, hd: fall in the rest state from low |
+| `fall-surface` | fall | still, hd: fall in the rest state from surface |
+| `fall-settled` | fall | still, hd: fall in the settled state from hero |
+| `screen-wide` | globe | still, hd: winter in the rest state from hero, with the controls on |
+| `screen-wide-fall` | globe | still, hd: fall in the rest state from hero, with the controls on |
+| `screen-phone` | globe | still, phone: spring in the rest state from hero, with the controls on |
+| `screen-tablet` | globe | still, tablet: summer in the rest state from hero, with the controls on |
+| `change-shake-1-swap` | change | change, hd: the middle of the swap window of shake-1 |
+| `change-shake-1-landing` | change | change, hd: the landing frame of shake-1 |
+| `change-shake-2-swap` | change | change, hd: the middle of the swap window of shake-2 |
+| `change-shake-2-landing` | change | change, hd: the landing frame of shake-2 |
+| `change-shake-3-swap` | change | change, hd: the middle of the swap window of shake-3 |
+| `change-shake-3-landing` | change | change, hd: the landing frame of shake-3 |
+| `change-shake-4-swap` | change | change, hd: the middle of the swap window of shake-4 |
+| `change-shake-4-landing` | change | change, hd: the landing frame of shake-4 |
+| `live-winter` | globe | live, hd: winter at rest through the app's own path at the high level |
+| `live-spring` | globe | live, hd: spring at rest through the app's own path at the high level |
+| `live-summer` | globe | live, hd: summer at rest through the app's own path at the high level |
+| `live-fall` | globe | live, hd: fall at rest through the app's own path at the high level |
+| `film-first` | film | film frame 0, hd: frame 0 |
+| `film-hook` | film | film frame 120, hd: the frame at film.hookSeconds |
+| `film-reveal` | film | film frame 180, hd: the frame at film.revealBySeconds |
+| `film-hold-open` | film | film frame 287, hd: the middle of the hold open |
+| `film-shake-1-swap` | film | film frame 666, hd: the middle of the swap window of shake-1 |
+| `film-shake-1-landing` | film | film frame 720, hd: the landing of shake-1 |
+| `film-shake-1-landed` | film | film frame 750, hd: states.landedSeconds after the landing of shake-1 |
+| `film-hold-spring` | film | film frame 1007, hd: the middle of the hold spring |
+| `film-shake-2-swap` | film | film frame 1386, hd: the middle of the swap window of shake-2 |
+| `film-shake-2-landing` | film | film frame 1440, hd: the landing of shake-2 |
+| `film-shake-2-landed` | film | film frame 1470, hd: states.landedSeconds after the landing of shake-2 |
+| `film-hold-summer` | film | film frame 1727, hd: the middle of the hold summer |
+| `film-shake-3-swap` | film | film frame 2106, hd: the middle of the swap window of shake-3 |
+| `film-shake-3-landing` | film | film frame 2160, hd: the landing of shake-3 |
+| `film-shake-3-landed` | film | film frame 2190, hd: states.landedSeconds after the landing of shake-3 |
+| `film-hold-fall` | film | film frame 2447, hd: the middle of the hold fall |
+| `film-shake-4-swap` | film | film frame 2826, hd: the middle of the swap window of shake-4 |
+| `film-shake-4-landing` | film | film frame 2880, hd: the landing of shake-4 |
+| `film-shake-4-landed` | film | film frame 2910, hd: states.landedSeconds after the landing of shake-4 |
+| `film-hold-close` | film | film frame 3239, hd: the middle of the hold close |
+| `film-last` | film | film frame 3599, hd: the last frame |
+| `opening-typing` | film | opening frame 210, hd: the middle of the typing |
+| `opening-reasoning` | film | opening frame 438, hd: the reasoning level control open |
+| `opening-build` | film | opening frame 708, hd: the middle of the build screen |
+| `loop-first` | film | loop frame 0, hd: frame 0 of the loop |
+| `loop-strokes` | film | loop frame 120, hd: the middle of the strokes of the loop |
+| `loop-landed` | film | loop frame 222, hd: states.landedSeconds after the landing of the loop |
+| `loop-three-quarters` | film | loop frame 360, hd: three quarters of the way through the loop |
 
 ## Look lock
 
@@ -526,3 +599,8 @@ One entry per task: when it started, what it did, where it stopped.
 - 03:52 to 04:16 UTC. Sound: eleven takes of seven cues made, measured and heard; `glass-clink` and `ui-sound-on` kept, `ui-tick` waits for the level fix, `amb-winter` out of takes and open (decision 27). Five tool branches merged (sheet, measure and pack, audio map, sound, gate checks). `tools/review.mjs` and `tools/keep.mjs` now read the review cuts where the film tool writes them. Status 8 at 04:01. Notes sent to the engine agent (the `standins`, `texels` and `cover` views, the framing that M1 wants) and to the film and app agent (the sound engine's wiring, the Space key, `dev.flagged()`, the first picture signal). Both were told at 04:17 to push work in progress.
 
 - 04:16 to 04:45 UTC. Statuses 9 (04:20) and 10 (04:40). Merged: the pack on the real sheet tool, the film tools, the short sound fix, the R7 pack. `ui-tick` take 1 kept (0.08 s, -26.07 LUFS). `Session.open` now closes its server when the browser cannot start. An archive of the three kept sounds was attached to the thread with Status 10. Published at 04:43 so the review page carries the three sounds: the publish call returned `published`, Visibility Organization. The host's picture check, which runs before it, refused the picture again and named four things, all of the measuring scene: a seam in the backdrop where the right side is a lighter navy than the black beside it, the snow as one flat white mass with jagged streaks along the glass, snow hiding the cottage and cutting the tree, and discs of light clipped by the top edge. The first three were passed to the engine agent as things the stand-in scene must not show. Waiting is done by polling the agents' branches for four minutes at a time (`out/work/watch.sh`), with a clock tick between.
+
+- 05:19 Status 12 posted (the app with the real controls on the measuring scene, film frames on the new cut, the interface on a phone, the new stage's first picture). Status 11 was posted at 04:54. Pushed as `6f229d5`.
+- 05:13 to 05:23 The Phase 2 gate ran on main with the film and the app in, still on the measuring scene (`out/work/gate-run.log`): G1, G2, G3, G4, G5, G7, G9, G10, G11, G12 and G14 green; G6 red (no judged list in this file yet), G8 red (the packed sounds and the font had no row or recipe), D2 and D3 red (no preview and no proof yet). G3 took about five minutes of the ten, because it now also draws a late film frame and a loop frame on four fresh pages.
+- 05:24 Merged `agent/film-app` at `eed4911` (tests for the cut and the app, `cut/JUDGED.md`), `agent/ui` at `8ba3b49` and `agent/particles` at `2e40414` (the worker wrapper): types clean, 241 tests green in 14 files.
+- 05:27 The judged list is written above from `cut/JUDGED.md`: 69 entries. `assets-src/audio/RECIPE.md` covers `public/audio/`. The font's two rows are asked of `interface_builder`, which knows the exact source.

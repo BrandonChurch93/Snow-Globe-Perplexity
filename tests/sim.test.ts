@@ -8,6 +8,8 @@ import { makeShake } from '../src/shake/table'
 import { packSnapshot, ParticleEngine, STATE_HIDDEN, STATE_LIQUID, STATE_REST, STATE_SNAG, unpackSnapshot, WALL } from '../src/particles/engine/engine'
 import { countsIn, KINDS, POOL, SEASONS } from '../src/particles/engine/kinds'
 import { blockoutSdf, buildSdf, GROUND_Y, INNER_R, sdfSample } from '../src/particles/engine/sdf'
+import { EngineClient, type EnginePort } from '../src/particles/engine/client'
+import { builtTimeline, EngineHost, frameBytes, plainTimeline } from '../src/particles/engine/host'
 
 const HZ = config.sim.stepHz
 const steps = (seconds: number): number => Math.round(seconds * HZ)
@@ -340,5 +342,89 @@ describe('the distance grid helper', () => {
     expect(sampleSdf(g, 20, 10, 5 + 12)).toBeCloseTo(4, 0)
     expect(sampleSdf(g, -10 + 9, 0, 0)).toBeCloseTo(4, 0)
     expect(sampleSdf(g, 30, GROUND_Y + 5, -30)).toBeCloseTo(5, 0)
+  })
+})
+
+describe('the worker wrapper', () => {
+  function wire(): EnginePort {
+    const host = new EngineHost()
+    const port: EnginePort = {
+      onmessage: null,
+      postMessage(message, transfer) {
+        const arrived = structuredClone(message, { transfer: transfer ?? [] })
+        const reply = host.handle(arrived)
+        if (!reply) return
+        const back = structuredClone(reply.message, { transfer: reply.transfer })
+        queueMicrotask(() => port.onmessage?.({ data: back }))
+      },
+    }
+    return port
+  }
+
+  const frameOf = (client: EngineClient, step: number): Promise<void> =>
+    new Promise<void>((resolve) => {
+      client.onFrame = () => {
+        if (client.step === step) resolve()
+      }
+      client.advanceTo(step)
+    })
+
+  function matches(client: EngineClient, direct: ParticleEngine): void {
+    expect(client.step).toBe(direct.step)
+    expect(client.season).toBe(direct.seasonNow)
+    expect(client.pos).toEqual(direct.pos)
+    expect(client.prev).toEqual(direct.prev)
+    expect(client.sizes).toEqual(direct.sizes)
+    expect(client.opacity).toEqual(direct.opacity)
+    expect(client.phase).toEqual(direct.phase)
+    expect(client.kindOf).toEqual(direct.kindOf)
+    expect(client.state).toEqual(direct.state)
+    expect(client.liquid).toEqual(direct.liquid)
+  }
+
+  it('a timeline crosses to the worker as plain data and is rebuilt the same', () => {
+    const tl = swapTimeline('winter', 'spring')
+    const plain = plainTimeline(tl)
+    expect(JSON.parse(JSON.stringify(plain))).toEqual(plain)
+    const built = builtTimeline(plain)
+    expect(built.id).toBe(tl.id)
+    expect(built.startSeason).toBe(tl.startSeason)
+    for (const beat of [0.3, 1.1, 1.9, 2.7, 3.6]) expect(built.events[0]!.path.poseAt(beat)).toEqual(tl.events[0]!.path.poseAt(beat))
+  })
+
+  it('posts the same typed arrays as the engine on the main thread', async () => {
+    const fraction = 0.02
+    const client = new EngineClient(wire(), { season: 'winter', fraction })
+    const source: ParticleSource = client
+    expect(source.count).toBe(Math.round(POOL * fraction))
+    expect(Array.from(client.state).every((v) => v === STATE_HIDDEN)).toBe(true)
+    await client.ready
+    const tl = swapTimeline('winter', 'spring')
+    client.setTimeline(tl)
+    const direct = new ParticleEngine({ season: 'winter', fraction })
+    direct.reset()
+    for (const step of [1, 130, 131, 420, steps(barSeconds) + 60]) {
+      await frameOf(client, step)
+      direct.advanceTo(step, tl)
+      matches(client, direct)
+    }
+    expect(client.season).toBe('spring')
+    client.stir(0, 2.5, 0)
+    direct.stir(0, 2.5, 0)
+    const far = direct.step + 90
+    client.advanceTo(far - 50)
+    client.advanceTo(far - 20)
+    await frameOf(client, far)
+    direct.advanceTo(far, tl)
+    matches(client, direct)
+
+    client.reset('summer')
+    client.setTimeline(idle('summer'))
+    await frameOf(client, 40)
+    const fresh = new ParticleEngine({ season: 'summer', fraction })
+    fresh.reset()
+    fresh.advanceTo(40, idle('summer'))
+    matches(client, fresh)
+    expect(frameBytes(client.count)).toBe(LIQUID_LENGTH * 8 + client.count * 38)
   })
 })
