@@ -90,6 +90,7 @@ function fit(from: EngineSnapshot, to: EngineSnapshot): EngineSnapshot {
   to.kindOf.set(from.kindOf.subarray(0, m))
   to.era.set(from.era.subarray(0, m))
   to.mark.set(from.mark.subarray(0, m))
+  for (let i = m; i < to.stamp.length; i++) to.stamp[i] = to.stamp[i]! + from.step
   return { ...to, step: from.step, liquid: from.liquid, now: from.now, start: from.start }
 }
 

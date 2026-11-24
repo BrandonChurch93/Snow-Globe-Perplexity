@@ -18,6 +18,7 @@ import { createStage } from './scene/createStage'
 declare global {
   interface Window {
     showcase: Showcase
+    liveSim?: LiveEngine
   }
 }
 
@@ -85,5 +86,6 @@ if (capture) {
     rest.reset()
     return new LoopPaths(rest)
   }, true)
+  if (params.diag) window.liveSim = sim
   startApp({ gfx, stage, sim, particles, loop, assets, params, ready })
 }
