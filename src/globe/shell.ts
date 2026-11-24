@@ -21,14 +21,14 @@ export const glassLook = {
     tint: [0.56, 0.73, 1] as V3,
     level: 3.2,
     gain: 11,
-    edgeDeg: { outer: 2, outerMain: 1, inner: 1.8, innerMain: 1.3, tipInner: 0.8, end: 1.1, tail: 4, cut: 2, wobble: 0.6, wobbleRate: 12 },
+    edgeDeg: { outer: 2, outerMain: 1, inner: 1.2, innerMain: 1.3, tipInner: 0.8, end: 1.1, tail: 4, cut: 2, wobble: 0.6, wobbleRate: 12 },
     gap: { wideDeg: [6, 13] as const, tint: [0.9, 0.89, 0.8] as V3, gain: 0.9, mid: [0.22, 0.36, 0.55] as const, top: [0.46, 0.6] as const, low: [-0.24, -0.06] as const },
     halo: { wideDeg: [2.5, 5] as const, tint: [0.4, 0.75, 1] as V3, gain: 0.24 },
-    tip: { flatDeg: [7.5, 12] as const, fadeDeg: [8.5, 14] as const, tint: [0.4, 0.55, 0.75] as V3, slant: 0.35, slantFromDeg: -3.5, tailDeg: [-16, -13.5] as const, tailSlope: 0, tailFromDeg: -18, tailCurve: 0.037, tailLevel: 0.08, widenDeg: [-7, 5] as const, widen: 7 },
+    tip: { flatDeg: [7.5, 12] as const, fadeDeg: [8.5, 14] as const, tint: [0.4, 0.55, 0.75] as V3, slant: 0.35, slantFromDeg: -3.5, tailDeg: [-16, -13.5] as const, tailSlope: 0, tailFromDeg: -18, tailCurve: 0.037, tailLevel: 0.08, widenDeg: [-12, 7] as const, widen: 10, plate: 2.8, plateDeg: [-7, -2] as const },
     dark: { atDeg: [13.6, -8.7] as const, axis: [0.803, -0.595] as const, sideDeg: [-1.5, 1.5, 11, 17] as const, inDeg: [-17, -11] as const, depth: 0.95, shade: 0.3, share: [0.935, 0.965] as const, glow: [0.0018, 0.019, 0.021] as V3 },
     orders: [
-      { alongDeg: [-44, 15.5], acrossDeg: [-3.8, 14.6], outFrom: 2, outSlope: -0.5, inFrom: 8.5, inSlope: 0.7, outer: 1, inner: 0.078, power: 4, cutDeg: -90, cutSlant: 0, tail: 1, tint: [2.5, 1.83, 1.35] as V3, base: [1, 1, 1] as V3, core: [0, 0, 0] as V3, fallDeg: [80, 90, 80, 90] as const, fallTo: 1 },
-      { alongDeg: [-22.5, 2.7], acrossDeg: [-2.4, 15.4], outFrom: -9, outSlope: -0.35, inFrom: 0.2, inSlope: 2.9, outer: 1, inner: 0.235, power: 3.7, cutDeg: -11.5, cutSlant: 0.3, tail: 0.004, tint: [1, 1, 1] as V3, base: [0.8, 0.96, 1.05] as V3, core: [3.2, 2, 1.2] as V3, fallDeg: [-9.5, -4, -7, -2] as const, fallTo: 0.46 },
+      { alongDeg: [-44, 15.5], acrossDeg: [-3.8, 11.6], outFrom: -2, outSlope: -0.5, inFrom: 8.5, inSlope: 0.7, outer: 1, inner: 0.07, power: 1.5, cutDeg: -90, cutSlant: 0, tail: 1, tint: [2.5, 1.83, 1.35] as V3, base: [1, 1, 1] as V3, core: [0.4, 0.4, 0.4] as V3, fallDeg: [-5, 1, 80, 90] as const, fallTo: 1 },
+      { alongDeg: [-22.5, 2.7], acrossDeg: [-4.2, 13.2], outFrom: -9, outSlope: -0.05, inFrom: 1.2, inSlope: 2.9, outer: 1, inner: 0.235, power: 2.6, cutDeg: -10, cutSlant: 0.3, tail: 0.004, tint: [1, 1, 1] as V3, base: [0.8, 0.96, 1.05] as V3, core: [3.2, 2, 1.2] as V3, fallDeg: [-9.5, -4, -7, -2] as const, fallTo: 0.46 },
       { alongDeg: [-17, 3.5], acrossDeg: [-2.5, 11.3], outFrom: -0.5, outSlope: 0.2, inFrom: -7.2, inSlope: 0.15, outer: 1.6, inner: 0.7, power: 4, cutDeg: -90, cutSlant: 0, tail: 1, tint: [1, 1, 1] as V3, base: [1, 1, 1] as V3, core: [0, 0, 0] as V3, fallDeg: [80, 90, 80, 90] as const, fallTo: 1 },
       { alongDeg: [-16, 15.5], acrossDeg: [-3.8, 14.6], outFrom: 0, outSlope: 0, inFrom: 0, inSlope: 0, outer: 1, inner: 1, power: 1, cutDeg: -90, cutSlant: 0, tail: 1, tint: [1, 1, 1] as V3, base: [1, 1, 1] as V3, core: [0, 0, 0] as V3, fallDeg: [80, 90, 80, 90] as const, fallTo: 1 },
     ],
@@ -204,7 +204,8 @@ vec3 glassWindow(vec3 d, float soft, int k) {
   m *= (1.0 - ${num(1 - W.tip.tailLevel)} * first * tail) * mix(1.0, WIN_FLOOR[k], smoothstep(WIN_FALL[k].z, WIN_FALL[k].w, q.x));
   vec3 fade = WIN_HUE[k] * mix(vec3(1.0), ${vec(W.tip.tint)}, first * smoothstep(${num(W.tip.fadeDeg[0] * RAD)}, ${num(W.tip.fadeDeg[1] * RAD)}, reach));
   vec3 core = vec3(1.0) + WIN_CORE[k] * (1.0 - smoothstep(WIN_FALL[k].x, WIN_FALL[k].y, q.x));
-  return fade * (level.y * WIN_BASE[k] + (top - level.y) * pow(1.0 - u, level.z) * core) * (m * (0.9 + 0.1 * glassNoise(vec3(q * 22.0, 3.0))));
+  float plate = 1.0 + first * ${num(W.tip.plate)} * (1.0 - smoothstep(${num(W.tip.plateDeg[0] * RAD)}, ${num(W.tip.plateDeg[1] * RAD)}, q.x));
+  return fade * (level.y * plate * WIN_BASE[k] + (top - level.y) * pow(1.0 - u, level.z) * core) * (m * (0.9 + 0.1 * glassNoise(vec3(q * 22.0, 3.0))));
 }
 float glassHalo(vec3 d) {
   float z = dot(d, WIN_C);
