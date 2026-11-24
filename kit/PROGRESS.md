@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 40 · 2026-11-24 15:32 UTC
+Status 41 · 2026-11-24 16:01 UTC
 
-- `out/stills/status/status-40-1.jpg`: At rest: the approved image (left) and the build at 15:33 UTC (right) at draft quality
-- `out/stills/status/status-40-2.jpg`: Half a second after the landing: the approved image (left) and the build at 15:33 UTC (right) at draft quality
-- `out/stills/status/status-40-3.jpg`: Still: winter landed hero, hd, draft
-- `out/stills/status/status-40-4.jpg`: Still: winter rest hero, hd, draft
+- `out/stills/status/status-41-1.jpg`: At rest at the Round 4 freeze: the approved image (left) and the build at 16:00 UTC (right) at draft quality
+- `out/stills/status/status-41-2.jpg`: Still: winter rest hero, hd, draft
+- `out/stills/status/status-41-3.jpg`: Still: winter landed hero, hd, draft
+- `out/stills/status/status-41-4.jpg`: Still: winter rest surface, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 15:32 UTC
-clock: phase 3, tick of 3.6 minutes
-phase 3: 7.09 h used of its 11.00 h box
-allowance (before the review): 13.70 h used of 36.00 h allowed
-all time before the review: 13.70 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 16:05 UTC
+clock: phase 3, tick of 4.3 minutes
+phase 3: 7.64 h used of its 11.00 h box
+allowance (before the review): 14.26 h used of 36.00 h allowed
+all time before the review: 14.26 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 4
 ```
 
 ## Phases
@@ -545,6 +545,8 @@ Numbered. What, why, and the date.
 52. A juror is sent one sentence more than the kit's question: "Send your answer as one message to `/root`." (14:10 UTC, Phase 3, Round 3). `kit/07-QUALITY-BAR.md` says a juror "receives one image and exactly this text, nothing else". Here a fresh agent's answer reaches the Builder only as a message it sends, so without an address there is no answer to count. The sentence names no picture, no options and no project; the same sentence goes to every juror, on controls and judged images alike. Critics get the matching sentence after their pack's message, as since Round 1.
 53. Round 4 judges the finishers' finished work, and rounds from here are about two hours apart (14:35 UTC, Phase 3). The second set of build agents ends at 16:17 UTC, before any answer of a round frozen at 15:30 could reach them, so an earlier freeze would spend one of `quality.lookLockMaxRounds` rounds on work an hour short of done. The freeze is 16:00 UTC. The clock allows it: extra rounds in Phase 3 stop when the time used reaches the boxes of Phases 0 to 3 together, 22 h, and 12.7 h are used, because Phases 0 to 2 took 6.6 h of their 11. A round is not started unless the fixes for the round before it have had about an hour of work; a round whose judged build would differ little from the last one's is not worth its count.
 
+54. Each round's fix list is a new set of jobs, one per part, with one build agent each (written 15:40 UTC, Phase 3, before anyone is started on it). `kit/07-QUALITY-BAR.md` allows one replacement of an agent per job, and decision 49 spent that replacement on the finishers, whose three hours end at 16:17 UTC; it also said that a later round's fix list for a part is logged as a new job before anyone is started on it. The kit's Phase 3 loop (`kit/08-BUILD-ORDER.md` step 6) runs rounds until the pass bar holds, the count is reached or the clock ends the loop, and step 2 gives the work between rounds to supporting agents, one owner per folder; it does not say who fixes what a later round finds once a builder's hours are spent. Reading taken, the one that keeps the work moving toward the approved images: after each freeze, the open severe and major issues of the rounds judged so far, with the outgoing agent's own list of what is still wrong, are one new job per part (`tree`, `village`, `base`, `frost`, `flakes`, `liquid`, `scene`, `glass`, `light and shake`, `load and checks`), named `round N fixes: <part>`. Each job gets one build agent with a limit of at most `budget.buildAgentMaxHours`, the same file ownership as before, the critics' words verbatim and the newest side by side pictures; the answers of the rounds judged while it works are added per part as they arrive, and when its hours end, what the later rounds found is the next job for that part. Each such job may have its one replacement if its agent runs past its limit or goes silent. A part with nothing open gets no agent. Build agents stay inside `sandbox.maxAgents` less `sandbox.criticSlots` (10), so the round's critics, jurors and render agents can always start. This lowers no threshold and drops no critic; it only says who does the fix work. It is listed in the REVIEW block.
+
 ## Notes from Brandon
 
 Numbered, in his words, with the date and how each was applied. Review round items carry their round's number.
@@ -751,6 +753,8 @@ Merged into `main`, each verified here with types clean and the tests green (126
   - `reviewer_r3_b`: R3 part 1 (rest, landed and the interior view), 9 files, asked on `claude_opus_5_5`, started 14:07.
   - `reviewer_r3_c`: R3 part 2 (the base, the surface and the settled view), 9 files, asked on `gemini_4_carbon`, started 14:07.
   - `reviewer_r3_d`: R3 part 3 (the macro view), 3 files, asked on `kimi_k3`, started 14:07, answered 14:08: score 4, 3 severe, 7 major, 2 minor. Written to `scorecards/round-003/R3-3.json`.
+
+  - `motion_renderer_b` (a render agent, sandbox), branch `agent/p3-round4-motion-b`: started 15:40 UTC to prepare a clone; at the freeze it draws half of Round 4's motion frames at `review` tier (the set-down and the landing sheets, about 41 minutes) so R4's pack takes about half the 90 minutes Round 3 needed; its frames are fetched by `motion_renderer`, never merged. Limit 80 minutes from the freeze message.
 
 ## Rounds
 

@@ -12,7 +12,7 @@ Date: 2026-11-24
 
 Layout: 8 columns by 64 rows, RGBA, linear. One row is one variant. Columns 0 to 4 are its lobes: R, G, B hold the lobe's centre from -1 to 1 as 0 to 255, A holds its radius from 0 to 1. Columns 5 to 7 are unused. `src/particles/draw/shader.ts` reads it with `texelFetch`, so it is never filtered and never packed lossy.
 
-## Fitting tools
+### Fitting tools
 
 Two small measures used to fit the look against the approved images. They need Python 3 with Pillow, numpy and scipy, write nothing, and ship nowhere.
 

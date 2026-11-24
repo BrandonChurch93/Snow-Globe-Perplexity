@@ -10,7 +10,7 @@ Takes: 0 generated assets. 28 tuning looks in the first round, 37 in the finishi
 Why this one: three reflections of one window, the wall zone, the through view and the bubble land within about 15 of the approved image in the open liquid, the top cap and the panes; the ring at the limb puts the rim within about 15 at 105 to 200 degrees and at -30 to -54 degrees; the gap between the panes, the pane's edges and the bubble's rings are further off (see "Still off")
 Date: 2026-11-24
 
-## What the approved image holds
+### What the approved image holds
 
 Glass outline in `winter-rest.png`: centre (1409, 646), radius 549 px. "Share" is the distance from that centre as a fraction of the radius; angles run counter-clockwise from 3 o'clock. Colours are display values, median or 3 by 3 mean.
 
@@ -53,11 +53,11 @@ The tone curve is the one in `src/post/grade.ts`: x(2.51x + 0.03) / (x(2.43x + 0
 
 What the room gives and what the glass takes from it (main `b6ab917`): every reflection and the through view read `stageRoomSeen` (wall, wash, the discs through `stageRoomLights`, and the room's two sources at the 1.2 percent the backdrop draws). `stageRoom` at full strength puts the room's window (16.7 by 31.8 degrees at the key's direction) on the outer face at share 0.5 to 0.8, a grey block where the approved image is clear; that is why the highlight is the glass's own limb window, fitted to the approved panes, lit by `f.keyCol`. The sky colour the glass sees is the hue of `kit.backdrop.room` at the luminance of `f.ambient` times `room.level`, so a change of the rig's sky hue does not tint the liquid.
 
-## Still off
+### Still off
 
 Against the approved image on the last look of the finishing round (g8, the fit camera, hd draft), worst first: the inside is not squeezed toward the rim and no mirrored band shows at the very edge (the lens in `src/globe/lens.ts` is unchanged); the main pane is a white blade with crisp edges where the approved pane feathers to blue inward and ends broad at 46 degrees (ours tapers above 36); the gap between the panes at share 0.860 to 0.867 is (52 to 114, ...) against (94 to 156, ...); in the lower half the ring covers the frost in the outer 3 percent, so the band there is smooth where the approved image is frost to the edge; the approved outline sits about 3 pixels inside the fitted circle at 195 to 200 degrees and the render's does not; the bubble's lip is brighter on the left and its rings fewer; the render's sphere sits 3.3 approved pixels left and 9.2 higher than the approved outline with a radius 3.9 smaller (layout and cameras, not the glass).
 
-## Making it again for another season
+### Making it again for another season
 
 1. Render the frame the approved image was taken from and put it beside the image:
    `npm run texpack && npm run build && npm run fit -- --season <season> --tier draft --box 820,60,2000,1260 --name glass --force`
