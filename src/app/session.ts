@@ -3,7 +3,8 @@ import type { Moment } from '../core/stage'
 import { timelineMoment } from '../film/moments'
 import { smoother } from '../film/moves'
 import { beatSeconds, eventSeconds, stateSeconds, stillTimeline, type ShakeEvent, type Timeline } from '../film/timeline'
-import { REST_POSE, makeShake } from '../shake/table'
+import { REST_POSE } from '../shake/table'
+import { livePath } from './framing'
 
 export interface LiveSim {
   readonly step: number
@@ -94,8 +95,8 @@ export class LiveSession {
       this.dissolve = { from: this.season, to, asked: this.clock, start: null }
       return to
     }
-    const id = `live-${this.made++}`
-    const e: ShakeEvent = { id, startSec: (this.sim.step + 1) / HZ, from: this.season, to, path: makeShake(id) }
+    const n = this.made++
+    const e: ShakeEvent = { id: `live-${n}`, startSec: (this.sim.step + 1) / HZ, from: this.season, to, path: livePath(n) }
     this.tl.events.push(e)
     this.playing = e
     this.shakes++
