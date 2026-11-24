@@ -8,7 +8,7 @@ import { fileSha } from './lib/hashes.mjs'
 // The lit cottage, the lamppost and the foot of the tree in winter-rest.png: left, top and width as fractions of the image.
 const TIGHT = { x: 0.371, y: 0.356, w: 0.224 }
 const GLOBE = { x: 0.5, y: 0.45 }
-const HOLD_PUSH = 0.05
+const HOLD_PUSH = 0.06
 const OPEN_DRIFT = 0.035
 const CLOSE_PRE_SPEED = 0.02
 const LANDED_HOLD_BEATS = 2
@@ -150,8 +150,8 @@ function buildVisits(geo) {
       const start = Math.floor(a)
       const run = [0]
       for (let f = start; f < p1; f++) run.push(run[run.length - 1] + speed(f + 0.5))
-      const whole = run[run.length - 1]
-      cam = (f) => at(tightPoint, f >= p1 ? tightZoom : (tightZoom * run[Math.max(0, f - start)]) / whole)
+      const sum = run[run.length - 1]
+      cam = (f) => at(tightPoint, f >= p1 ? tightZoom : (tightZoom * run[Math.max(0, f - start)]) / sum)
     } else {
       cam = (f) => {
         const u = clamp01((f - a) / (b - a))
@@ -243,8 +243,8 @@ function taps(n, start, size, limit) {
 let scratch = new Float32Array(0)
 
 function drawLayer(level, geo, cam, shift, weight, out) {
-  const { data, width, height, k } = level
-  const rw = cam.w * geo.fw * k
+  const { data, width, height } = level
+  const rw = (cam.w * geo.fw * width) / geo.iw
   const rh = rw / ASPECT
   const x0 = cam.cx * width - rw / 2 - shift * rw
   const y0 = cam.cy * height - rh / 2
@@ -482,6 +482,7 @@ async function encode(render, file) {
   const encoder = ENCODERS[cfg.export.videoCodec]
   if (!encoder) throw new Error(`no encoder for ${cfg.export.videoCodec}`)
   const kbps = Math.round(cfg.previewFilm.bitrateMbps * 1000)
+  const gop = String(Math.round(framesPerBar))
   const ff = spawn(
     'ffmpeg',
     [
@@ -490,6 +491,7 @@ async function encode(render, file) {
       '-an', '-map_metadata', '-1',
       '-vf', 'scale=in_range=full:out_range=tv:out_color_matrix=bt709,format=yuv420p',
       '-c:v', encoder, '-preset', 'medium', '-pix_fmt', 'yuv420p',
+      '-g', gop, '-keyint_min', gop, '-sc_threshold', '0',
       '-b:v', `${kbps}k`, '-maxrate', `${kbps * 2}k`, '-bufsize', `${kbps * 2}k`,
       '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-color_range', 'tv',
       '-fflags', '+bitexact', '-flags:v', '+bitexact',
