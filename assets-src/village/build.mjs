@@ -20,16 +20,16 @@ const MORTAR = -0.5
 const T = (x, y, z) => new THREE.Matrix4().makeTranslation(x, y, z)
 
 const STONES = ['#8c867d', '#7c766f', '#979289', '#726d66', '#837e75', '#9e988e', '#79736a', '#908a7f', '#6b6660', '#87837d'].map(lin)
-const ARCH = ['#b9b2a6', '#aba498', '#c5beb2', '#a09a8e'].map(lin)
+const ARCH = ['#a59f95', '#999388', '#aea89d', '#918b80'].map(lin)
 const BRICKS = ['#f3bf9a', '#e6b08c', '#fac9a6', '#dba585', '#eeb893', '#f6c4a0', '#e2ab8a'].map(lin)
 const SHINGLES = ['#5c4838', '#4e3d31', '#68523f', '#43352b', '#57483c'].map(lin)
 const LEAVES = ['#22401f', '#2d5226', '#1b3319', '#3a5f2c', '#27481f'].map(lin)
-const MORTAR_C = lin('#85766a')
+const MORTAR_C = lin('#463d34')
 const DIRT = lin('#4b4538')
 const IRON = lin('#15161a')
-const DOOR = lin('#553c33')
-const FRAME = lin('#8a6a4c')
-const FENCE = lin('#a87a55')
+const DOOR = lin('#7e6a5a')
+const FRAME = lin('#6e4a32')
+const FENCE = lin('#80604c')
 const PICKET_C = lin('#d8d2ca')
 const PICKET = { each: 7, clear: 0.95, thick: 0.15, wide: 0.24, over: 0.5 }
 const SLATE = lin('#8a857f')
@@ -249,7 +249,7 @@ const rear = { M: frame(P3(0, 0, -C.halfLength), neg(V3), UP, neg(U3)), U: neg(V
 const BASE = -1.8
 const rake = (x) => C.wall + C.rise * (1 - Math.abs(x) / C.halfWidth) - 0.1
 const SIDE_DIM = 0.6
-const BLOCK = { rowH: 1.06, rowJ: 0.36, wide: 1.7, wideJ: 0.9, gap: 0.075, stack: 0.1, drift: 0.05, stone: { depth: 0.3, vary: 0.42, pillow: { square: 6.5, shear: 0.11, wobble: 0.05, lump: 0.3, tilt: 0.36, edge: 6.5 } } }
+const BLOCK = { rowH: 0.98, rowJ: 0.4, wide: 1.3, wideJ: 0.8, gap: 0.15, stack: 0.1, drift: 0.07, stone: { depth: 0.36, vary: 0.62, pillow: { square: 4.2, shear: 0.14, wobble: 0.09, lump: 0.42, tilt: 0.42, edge: 5 } } }
 const gableTop = (y) => (y <= C.wall ? C.halfWidth + 0.3 : C.halfWidth * (1 - (y - C.wall) / C.rise))
 const doorR = C.door.width / 2 + 1.47
 const doorSpring = C.door.height - C.door.width / 2
@@ -478,7 +478,7 @@ for (const [i, s] of pathShapes.entries()) {
   solid.add(g, { matrix: boxMatrix(s), color: mul3(step ? pick(ARCH) : SLATE, 0.8 + 0.25 * R()), surf: stoneSurf(), uvOffset: off(), renormal: true })
 }
 
-const IVY = ['#4f4a40', '#5c4b44', '#3d4238', '#665552', '#473f3a'].map(lin)
+const IVY = ['#645743', '#755847', '#4d4d3b', '#826356', '#5a4a3d'].map(lin)
 const shrubs = RF.shrubs()
 const shrubList = []
 for (const sh of shrubs) {
