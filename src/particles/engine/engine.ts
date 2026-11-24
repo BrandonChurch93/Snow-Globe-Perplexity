@@ -95,27 +95,40 @@ const smooth = (t: number): number => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 
 
 export const emberGlow = (a: number): number => smooth(a / 0.12) * smooth((1 - a) / 0.5)
 
-export function wanderAt(i: number, kind: number, home: ArrayLike<number>, time: number, loopSeconds: number, out: Float64Array): void {
-  const o = i * 3
+const RATES = new Float64Array(3)
+
+export function wanderRates(i: number, kind: number, loopSeconds: number, out: Float64Array): void {
   const b = TABLE_OF[kind]!
-  const rate = b.cruiseMmS / b.reachMm
   const snap = (w: number): number => (loopSeconds > 0 ? (TAU * Math.max(1, Math.round((w * loopSeconds) / TAU))) / loopSeconds : w)
   if (b.orbit) {
     const ring = b.reachMm * (0.55 + 0.45 * unit(hash2(i, 61)))
-    const w = snap(b.cruiseMmS / ring)
-    const a = w * time + unit(hash2(i, 62)) * TAU
+    out[0] = snap(b.cruiseMmS / ring)
+    out[1] = 2 * out[0]!
+    out[2] = out[0]!
+    return
+  }
+  const rate = b.cruiseMmS / b.reachMm
+  out[0] = snap(rate * (0.35 + 0.5 * unit(hash2(i, 64))))
+  out[1] = snap(rate * (0.35 + 0.5 * unit(hash2(i, 65))))
+  out[2] = snap(rate * (0.35 + 0.5 * unit(hash2(i, 66))))
+}
+
+export function wanderAt(i: number, kind: number, home: ArrayLike<number>, time: number, loopSeconds: number, out: Float64Array): void {
+  const o = i * 3
+  const b = TABLE_OF[kind]!
+  wanderRates(i, kind, loopSeconds, RATES)
+  if (b.orbit) {
+    const ring = b.reachMm * (0.55 + 0.45 * unit(hash2(i, 61)))
+    const a = RATES[0]! * time + unit(hash2(i, 62)) * TAU
     out[0] = home[o]! + ring * Math.cos(a)
     out[1] = home[o + 1]! + 2.5 * Math.sin(2 * a + unit(hash2(i, 63)) * TAU)
     out[2] = home[o + 2]! + ring * Math.sin(a)
     return
   }
-  const w1 = snap(rate * (0.35 + 0.5 * unit(hash2(i, 64))))
-  const w2 = snap(rate * (0.35 + 0.5 * unit(hash2(i, 65))))
-  const w3 = snap(rate * (0.35 + 0.5 * unit(hash2(i, 66))))
   const reach = b.reachMm * 0.7
-  out[0] = home[o]! + reach * Math.sin(w1 * time + unit(hash2(i, 67)) * TAU)
-  out[1] = home[o + 1]! + reach * 0.5 * Math.sin(w2 * time + unit(hash2(i, 68)) * TAU)
-  out[2] = home[o + 2]! + reach * Math.sin(w3 * time + unit(hash2(i, 69)) * TAU)
+  out[0] = home[o]! + reach * Math.sin(RATES[0]! * time + unit(hash2(i, 67)) * TAU)
+  out[1] = home[o + 1]! + reach * 0.5 * Math.sin(RATES[1]! * time + unit(hash2(i, 68)) * TAU)
+  out[2] = home[o + 2]! + reach * Math.sin(RATES[2]! * time + unit(hash2(i, 69)) * TAU)
 }
 
 export interface EngineOptions {
@@ -213,7 +226,7 @@ interface Grid {
   park: [number, number, number]
 }
 
-function gridOf(source: SdfGrid): Grid {
+export function parkPoint(source: SdfGrid): [number, number, number] {
   const park: [number, number, number] = [0, 0, 0]
   const g = new Float64Array(3)
   const cells = 14
@@ -230,7 +243,11 @@ function gridOf(source: SdfGrid): Grid {
       park[2] = z
     }
   }
-  return { n: source.n, nn: source.n * source.n, scale: (source.n - 1) / source.sizeMm, half: source.sizeMm / 2, top: source.n - 1.001, inv: 1 / sdfSlope(source), data: source.data, source, park }
+  return park
+}
+
+function gridOf(source: SdfGrid): Grid {
+  return { n: source.n, nn: source.n * source.n, scale: (source.n - 1) / source.sizeMm, half: source.sizeMm / 2, top: source.n - 1.001, inv: 1 / sdfSlope(source), data: source.data, source, park: parkPoint(source) }
 }
 
 export class ParticleEngine {
@@ -255,11 +272,11 @@ export class ParticleEngine {
   step = 0
 
   private readonly clear: Float32Array
-  private readonly sink: Float32Array
-  private readonly lift: Float32Array
+  readonly sink: Float32Array
+  readonly lift: Float32Array
   private readonly layer: Float32Array
-  private readonly turnRate: Float32Array
-  private readonly life: Float32Array
+  readonly turnRate: Float32Array
+  readonly life: Float32Array
   private readonly swapAt: Float32Array
   private readonly renews: Uint8Array
   private readonly listed: Uint8Array
