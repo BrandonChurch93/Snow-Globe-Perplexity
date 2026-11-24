@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 18 · 2026-11-24 07:26 UTC
+Status 19 · 2026-11-24 07:50 UTC
 
-- `out/stills/status/status-18-1.jpg`: Round 1: the six cameras on the stand-in globe, each beside its target (hero, macro, interior; base, surface, low). Four are being framed again
-- `out/stills/status/status-18-2.jpg`: Round 1: the three screens. On the two wide ones the foot of the base stands 28 and 23 pixels above the Shake control
-- `out/stills/status/status-18-3.jpg`: The spring hold after decision 34: the move stops 55 percent of the way to the base (frame 1044). The petals still hide the miniature for nine seconds; being fixed
-- `out/stills/status/status-18-4.jpg`: What the first critic called severe: in the spring hold the camera sinks all the way to the base and the miniature leaves the frame for about 2.5 s. Being fixed: the move stops where the cottage and the trunk stay in (by root)
+- `out/stills/status/status-19-1.jpg`: Three cameras framed again, draft: surface, interior, low
+- `out/stills/status/status-19-2.jpg`: The app at three sizes: at rest, at the top of the lift, at the widest stroke. 7 percent of the height between the foot and the controls on the two wide screens
+- `out/stills/status/status-19-3.jpg`: The hero camera after decision 35: 7.8 percent above the glass, 4.2 percent under the foot
+- `out/stills/status/status-19-4.jpg`: The summer hold pushes to the new interior camera (left), the fall hold drops to the new low camera (right). Storms still too thick here
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 07:38 UTC
-clock: phase 2, tick of 3.7 minutes
-phase 2: 4.61 h used of its 6.00 h box
-allowance (before the review): 5.80 h used of 36.00 h allowed
-all time before the review: 5.80 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 07:50 UTC
+clock: phase 2, tick of 11.9 minutes
+phase 2: 4.81 h used of its 6.00 h box
+allowance (before the review): 6.00 h used of 36.00 h allowed
+all time before the review: 6.00 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 11
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -714,3 +714,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 07:36 published again from `8df3019` (the last publish was the 04:43 build): the stand-in globe as it stands, with the live shake, the four seasons, the controls and the new framing, and the review page with the latest pictures. Visibility: Organization. `npm run hostcheck` on the same commit: pass (0.86 MB in 14 files, first complete picture 1.9 s after opening on this machine, nothing logged).
 
 - 07:47 merged `agent/film-app2` `6e790b4` with `agent/engine2` `ca7660b` as `fa4c686`: types clean, 303 tests, build, cut and parts clean. Cameras now (field of view, distance, yaw, pitch, aim): `surface` 16, 540, 24, 18, -34 (was 16, 330, 24, 14, 6); `interior` 16, 395, 0, 2, 86.5 (was 16, 460, 0, 6, 91); `low` 20, 500, -24, -5.5, 71.5 (was 20, 520, -18, 2, 60), its own height 23.6 mm above the surface. The engineer measured M1 and M6 green on the winter stills at draft. Looked at here, one draft still each: `surface` shows the foot of the base at the top and the surface with the globe's reflection under it; `interior` fills the height with the miniature, the top of the glass just outside, the base a thin strip; `low` looks up at the whole globe with room over the dome. The moves follow: the summer hold goes the whole way to `interior`, the fall hold the whole way to `low`, each keeping two named things in the frame (`ce10df6`). `macro` is still being chosen.
+
+- 07:51 Status 19 posted with four pictures: the three cameras framed again, the app at three sizes with the new room over the controls, the hero camera after decision 35, the summer and fall holds on the new cameras.
