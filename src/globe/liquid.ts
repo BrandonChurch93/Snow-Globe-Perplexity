@@ -9,7 +9,7 @@ const TAU = Math.PI * 2
 
 export const LIQUID_R = G.sphereDiameterMm / 2 - G.glassThicknessMm
 export const LIQUID_PIVOT_MM = G.baseHeightMm - G.collarDepthMm + G.sphereDiameterMm / 2
-export const LIQUID_LENGTH = 17
+export const LIQUID_LENGTH = 19
 export const LIQUID_TURN = 0
 export const LIQUID_SLOSH = 3
 export const LIQUID_TURBULENCE = 6
@@ -20,6 +20,7 @@ export const LIQUID_BUBBLE = 10
 export const LIQUID_MIX = 12
 export const LIQUID_ROLL = 15
 export const LIQUID_SWIRL = 16
+export const LIQUID_FOLD = 17
 export const TURBULENCE_MAX = 260
 export const NOISE_N = 24
 export const NOISE_RMS = 0.33
@@ -52,6 +53,10 @@ const AMBIENT_FLOW = 0.45
 const AMBIENT_TURN = 0.008
 const TURB_EPS = 0.2
 const OVERTURN = 1
+const SLAM = 8
+const SLAM_KNEE = 45
+const ROLL_WAKES = 0.3
+const ROLL_WOKEN = 0.9
 
 export const ROLL_MAX = 20
 export const ROLL_EDGE = 0.5
@@ -67,6 +72,13 @@ export const ROLL_FLOOR_MM = G.islandLevelMm - (G.baseHeightMm - G.collarDepthMm
 export const ROLL_FLOOR_SLOPE = -0.1625
 export const ROLL_RISE_MM = 30
 export const ROLL_SLAB_MM = 14
+export const FOLD_MAX = 220
+const FOLD_SECONDS = 0.3
+const FOLD_FROM_STORM = 20
+const FOLD_DRAIN = 560
+const FOLD_PACE = 0.3
+const FOLD_START = -0.6
+const FOLD_EPS = 0.5
 const ROLL_OFF = Math.hypot(ROLL_CENTRE[0], ROLL_CENTRE[1], ROLL_CENTRE[2])
 export const ROLL_FREE = LIQUID_R * LIQUID_R - ROLL_OFF * ROLL_OFF
 const ROLL_CREST = Math.min(1, Math.pow(1 / (5 * ROLL_EDGE), 0.25))
@@ -316,11 +328,36 @@ export class Liquid {
     if (turb > TURBULENCE_MAX) turb = TURBULENCE_MAX
     let roll = L[15]! * Math.exp(-DT / ROLL_SECONDS) + ROLL_FROM_STORM * fed - ROLL_DRAIN * DT
     if (roll > ROLL_MAX) roll = ROLL_MAX
+    if (roll > L[15]!) {
+      const woke = (turb / TURBULENCE_MAX - ROLL_WAKES) / (ROLL_WOKEN - ROLL_WAKES)
+      const top = woke <= 0 ? 0 : woke >= 1 ? ROLL_MAX : ROLL_MAX * woke
+      if (roll > top) roll = top > L[15]! ? top : L[15]!
+    }
     let swirl = L[16]! + roll * ARM_PACE * DT
     if (swirl >= TAU) swirl -= TAU
     if (roll <= 0) {
       roll = 0
       swirl = 0
+    }
+    let fa = L[17]!
+    let fb = L[18]!
+    const was = Math.sqrt(fa * fa + fb * fb)
+    let fold = was * Math.exp(-DT / FOLD_SECONDS) + FOLD_FROM_STORM * fed - FOLD_DRAIN * DT
+    const most = (FOLD_MAX * roll) / ROLL_MAX
+    if (fold > most) fold = most
+    if (fold <= 0) {
+      fa = 0
+      fb = 0
+    } else if (was === 0) {
+      fa = fold * Math.cos(FOLD_START)
+      fb = fold * Math.sin(FOLD_START)
+    } else {
+      const by = -FOLD_PACE * roll * DT
+      const cs = (Math.cos(by) * fold) / was
+      const sn = (Math.sin(by) * fold) / was
+      const na = fa * cs - fb * sn
+      fb = fa * sn + fb * cs
+      fa = na
     }
 
     const still = ax === 0 && ay === 0 && az === 0 && dda === 0 && ddb === 0 && !stirred
@@ -333,6 +370,7 @@ export class Liquid {
         roll = 0
         swirl = 0
       }
+      if (fa * fa + fb * fb < FOLD_EPS * FOLD_EPS) fa = fb = 0
     }
 
     let bx = L[10]!
@@ -360,6 +398,8 @@ export class Liquid {
     L[11] = bz
     L[15] = roll
     L[16] = swirl
+    L[17] = fa
+    L[18] = fb
     if (Math.round(time * HZ) % MIX_STEPS === 0) {
       if (turb > TURB_EPS) {
         const sp = Math.sin(L[7]!)
@@ -386,9 +426,10 @@ export class Liquid {
     c[0] = L[0]! + AMBIENT_TURN * 0.3 * s1
     c[1] = L[1]! + AMBIENT_TURN * Math.cos(th + 1.1)
     c[2] = L[2]! + AMBIENT_TURN * 0.3 * c2
-    c[3] = 1.5 * (L[3]! + AMBIENT_FLOW * c1)
-    c[4] = 1.5 * (L[4]! + AMBIENT_FLOW * 0.5 * s2) + (OVERTURN * L[6]! * L[6]!) / TURBULENCE_MAX
-    c[5] = 1.5 * (L[5]! + AMBIENT_FLOW * s1)
+    const slam = SLAM / (1 + Math.sqrt(L[3]! * L[3]! + L[4]! * L[4]! + L[5]! * L[5]!) / SLAM_KNEE)
+    c[3] = slam * L[3]! + 1.5 * AMBIENT_FLOW * c1 + L[17]!
+    c[4] = slam * L[4]! + 1.5 * AMBIENT_FLOW * 0.5 * s2 + (OVERTURN * L[6]! * L[6]!) / TURBULENCE_MAX + L[18]! * ROLL_AXIS[2]
+    c[5] = slam * L[5]! + 1.5 * AMBIENT_FLOW * s1 - L[18]! * ROLL_AXIS[1]
     const turb = L[6]!
     c[6] = turb
     c[7] = L[15]!
