@@ -1,42 +1,44 @@
 {
-  "number": 45,
-  "time": "2026-11-24 17:22 UTC",
+  "number": 47,
+  "time": "2026-11-24 18:12 UTC",
   "phase": "3",
   "unit": "",
   "lines": [
-    "Status 45 · 2026-11-24 17:22 UTC · Phase 3",
-    "Round 4 answers in: R3 4 and 6 and 7 - R4 6 and 5 - jury 4 of 15 - R1 still out",
-    "Every finding is with its builder and ten builders push by 17:55 for the Round 5 freeze at 18:00",
-    "The far snowbank bands are a limit of 24 lens samples and a cure is queued for the next set of builders",
-    "phase 3: 8.92 h used of its 11.00 h box",
-    "allowance (before the review): 15.53 h used of 36.00 h allowed",
+    "Status 47 · 2026-11-24 18:12 UTC · Phase 3",
+    "Round 5 is frozen on 9be1c06 and its stills and motion sheets are being rendered at the final tier by four agents",
+    "Round 4 closed without a pass: likeness 5 and craft 4 and motion 5 of 10 and the jury fails",
+    "One test is red on main since the freeze (snow cover on the roof's lower slope) and it counts against Round 5 as a severe issue; the liquid's builder owns the cure",
+    "The change's bloom is cured on the light's branch: a white core that swells and shrinks instead of an even peach disc",
+    "Next: Round 5's critics from about 18:50 then a new set of builders at 19:15 for the last two rounds",
+    "phase 3: 9.76 h used of its 11.00 h box",
+    "allowance (before the review): 16.37 h used of 36.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-45-1.jpg",
-      "caption": "Macro still at final tier with the new lens points (Round 4 build)",
+      "file": "out/stills/status/status-47-1.jpg",
+      "caption": "The tree's crown at rest: approved left and the build right (draft tier). Still wrong: the snow sits as round pads where the approved has broad blankets and the trunk is thicker and more orange",
       "w": 1200,
-      "h": 675
+      "h": 610
     },
     {
-      "file": "out/stills/status/status-45-2.jpg",
-      "caption": "Far snowbank before (top) and after (bottom): the stacked copies are finer but still there",
-      "w": 960,
-      "h": 728
-    },
-    {
-      "file": "out/stills/status/status-45-3.jpg",
-      "caption": "Still: winter rest macro, hd, final",
+      "file": "out/stills/status/status-47-2.jpg",
+      "caption": "One second after the landing: approved left and the build right (draft tier). The storm is separate dashes in a swirl now. Still wrong: the bank is cooler than the approved warm glow and the glass frost is fainter",
       "w": 1200,
-      "h": 675
+      "h": 597
     },
     {
-      "file": "out/stills/status/status-45-4.jpg",
+      "file": "out/stills/status/status-47-3.jpg",
       "caption": "Still: winter rest hero, hd, draft",
       "w": 1200,
       "h": 675
+    },
+    {
+      "file": "out/stills/status/status-47-4.jpg",
+      "caption": "Sheet: 12 frames across the shot shake-1, frames 576 to 719, preview, draft",
+      "w": 1149,
+      "h": 986
     }
   ]
 }

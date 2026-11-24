@@ -27,14 +27,16 @@ export function eaveHangs(): Point[] {
 
 export function rakeHangs(): Point[] {
   const out: Point[] = []
-  const m = Math.floor((slopeLength - 1.4) / HANG.rakeStep)
+  const run = slopeLength - 0.5 - 0.95 * HANG.rakeStep
+  const m = Math.max(1, Math.round(run / HANG.rakeStep))
+  const step = run / m
   const at = (side: number, down: number, extra: number): Point => {
     const p = roofAt(side, down, roofLength + HANG.gableOut, -HANG.rakeUnder)
     return [p[0], p[1] - HANG.drop - extra, p[2]]
   }
-  for (let i = 0; i <= m; i++) out.push(at(-1, slopeLength - 0.5 - i * HANG.rakeStep, 0))
+  for (let i = 0; i <= m; i++) out.push(at(-1, slopeLength - 0.5 - i * step, 0))
   out.push(at(1, 0, 0.25))
-  for (let i = m; i >= 0; i--) out.push(at(1, slopeLength - 0.5 - i * HANG.rakeStep, 0))
+  for (let i = m; i >= 0; i--) out.push(at(1, slopeLength - 0.5 - i * step, 0))
   return out
 }
 

@@ -168,16 +168,16 @@ export const cottage = {
   halfWidth: 8.9,
   halfLength: 9,
   sill: -4.2,
-  wall: 9.4,
+  wall: 10.8,
   footing: 2.6,
-  rise: 7.9,
+  rise: 8.1,
   overhang: 1.3,
   gableOverhang: 1.1,
   roofThick: 0.65,
-  chimney: { along: -5.4, across: -3.5, half: 1.75, halfAlong: 2.1, top: 21.8 },
-  door: { across: 2.5, width: 5, height: 7.4 },
-  window: { across: -5.2, width: 3, height: 4.1, sill: 3.1 },
-  sideWindow: { along: 0.7, width: 2.9, height: 3.2, sill: 3.6 },
+  chimney: { along: -5.4, across: -3.5, half: 1.75, halfAlong: 2.1, top: 21.9 },
+  door: { across: 2.5, width: 5, height: 8 },
+  window: { across: -5.2, width: 3, height: 4.3, sill: 3.5 },
+  sideWindow: { along: 0.7, width: 2.9, height: 3.4, sill: 4 },
 }
 
 export const lamppost = { x: 1.3, z: 3.9, height: 11.9, lantern: 9.8, radius: 1.5, post: 0.45 }
