@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { fromThree, writeGlb } from '../../tools/lib/glb.mjs'
 import { rel, writeJson } from '../../tools/lib/paths.mjs'
 import { loadLayout, loadRoof } from '../village/layout.mjs'
-import { Bag, KIND, TILE_MM, add3, basis, boxMatrix, clamp, fbm, frame, lin, mul3, netGeometry, noise, norm3, rng, shade, smin, smooth, sub3, surf, writePng } from '../village/kit.mjs'
+import { Bag, KIND, STOUT, TILE_MM, add3, basis, boxMatrix, clamp, fbm, frame, lin, mul3, netGeometry, noise, norm3, rng, shade, smin, smooth, sub3, surf, writePng } from '../village/kit.mjs'
 
 const L = await loadLayout()
 const RF = await loadRoof()
@@ -48,8 +48,9 @@ const rbox = (x, y, z, hx, hy, hz, r) => {
 }
 const ell = (x, y, z, rx, ry, rz) => (Math.hypot(x / rx, y / ry, z / rz) - 1) * Math.min(rx, ry, rz)
 
-const T0 = 0.95
-const RR = 0.38
+const T0 = 1.2
+const RR = 0.56
+const ROLL = { out: 0.85, dropMm: 0.55, round: 0.34, clear: 0.14 }
 const ch = C.chimney
 const stackTop = ch.top - 0.95
 const prism = (a, l) => {
@@ -58,11 +59,11 @@ const prism = (a, l) => {
   return Math.hypot(Math.max(qa, 0), Math.max(ql, 0)) + Math.min(Math.max(qa, ql), 0)
 }
 const dents = [
-  [-1, 6.2, -2.4, 1.5, 0.16],
-  [-1, 10.4, 4.6, 1.9, 0.12],
-  [-1, 3.6, 6.8, 1.3, 0.1],
-  [1, 7.5, 2, 1.7, 0.12],
-  [1, 11.2, -5, 1.4, 0.1],
+  [-1, 6.2, -2.4, 1.5, 0.24],
+  [-1, 10.4, 4.6, 1.9, 0.18],
+  [-1, 3.6, 6.8, 1.3, 0.15],
+  [1, 7.5, 2, 1.7, 0.18],
+  [1, 11.2, -5, 1.4, 0.15],
 ]
 const dent = (sd, s, l) => {
   let v = 0
@@ -76,12 +77,15 @@ function roofSnow(extra, lumps) {
     let d = 1e9
     for (const sd of [-1, 1]) {
       const [s, lift] = slopeOf(sd, a, h)
-      const eave = SLOPE + 0.5 + 0.15 * noise(l * 0.42, sd * 3.1, 1.7) + 0.06 * noise(l * 1.7, sd * 1.3, 5.2)
-      const gable = roofLen + 0.5 + 0.1 * noise(s * 0.5, sd * 5.3, l > 0 ? 2.2 : 8.4) + 0.05 * noise(s * 1.9, sd * 2.3, l > 0 ? 4.2 : 6.4)
+      const eave = SLOPE + ROLL.out + 0.15 * noise(l * 0.42, sd * 3.1, 1.7) + 0.06 * noise(l * 1.7, sd * 1.3, 5.2)
+      const gable = roofLen + ROLL.out + 0.1 * noise(s * 0.5, sd * 5.3, l > 0 ? 2.2 : 8.4) + 0.05 * noise(s * 1.9, sd * 2.3, l > 0 ? 4.2 : 6.4)
       const th = T0 * (0.94 + 0.1 * noise(s * 0.2, l * 0.2, 7 + sd)) - dent(sd, s, l) + extra
       const s0 = -T0 * (sp / cp) + 0.12
       const box = rbox(s - (s0 + eave) / 2, lift - th / 2, l, (eave - s0) / 2, th / 2, gable, Math.min(RR, th / 2 - 0.02))
-      d = smin(d, box, 0.5)
+      const drop = ROLL.dropMm * (0.8 + 0.5 * noise(l * 0.9, s * 0.9, 3 + sd))
+      const vw = (gable - roofLen - ROLL.clear) / 2
+      const verge = rbox(s - (s0 + eave) / 2, lift - (th - drop) / 2, Math.abs(l) - (gable - vw), (eave - s0) / 2, (th + drop) / 2, vw, Math.min(ROLL.round, vw - 0.02))
+      d = smin(d, smin(box, verge, 0.22), 0.5)
     }
     const pr = prism(a, l)
     const [, liftL] = slopeOf(-1, a, h)
@@ -163,18 +167,18 @@ for (const s of fenceShapes) {
   if (s.half[2] < 2) {
     const seed = R() * 40
     const top = s.half[1] + 0.12
-    const sdf = (x, y, z) => rbox(x + 0.05 * noise(seed, y, 1), y - top - 0.24, z, 0.66, 0.3, 0.66, 0.29) + 0.05 * fbm(x * 2.2 + seed, y * 2.2, z * 2.2, 2)
-    addSnow(netGeometry(sdf, [-1.1, top - 0.4, -1.1], [1.1, top + 0.95, 1.1], 0.2), M, 0.6, snow, 'posts')
+    const sdf = (x, y, z) => rbox(x + 0.05 * noise(seed, y, 1), y - top - 0.26, z, 0.66 * STOUT.post, 0.34, 0.66 * STOUT.post, 0.33) + 0.05 * fbm(x * 2.2 + seed, y * 2.2, z * 2.2, 2)
+    addSnow(netGeometry(sdf, [-1.3, top - 0.4, -1.3], [1.3, top + 1.05, 1.3], 0.22), M, 0.6, snow, 'posts')
   } else {
     const seed = R() * 40
     const len = s.half[2]
     const low = s.centre[1] < fenceShapes.filter((q) => q.half[2] >= 2).reduce((m, q) => Math.max(m, q.centre[1]), -1e9) - 0.1
     const g = strip(
       70,
-      (t) => [0, s.half[1], -len + 0.4 + t * (2 * len - 0.8)],
+      (t) => [0, s.half[1] * STOUT.rail, -len + 0.4 + t * (2 * len - 0.8)],
       () => [1, 0, 0],
       [0, 1, 0],
-      (t) => 0.3 + 0.05 * noise(t * 30, seed, 2),
+      (t) => 0.3 * STOUT.rail + 0.05 * noise(t * 30, seed, 2),
       (t) => (low ? 0.2 : 0.3) * clamp(0.75 + 0.6 * noise(t * 22, seed, 5) + 0.3 * noise(t * 60, seed, 9), 0.12, 1.4),
       5,
     )
@@ -184,9 +188,9 @@ for (const s of fenceShapes) {
 
 {
   const lampM = new THREE.Matrix4().makeRotationY(RF.LAMP.yaw).setPosition(...RF.lampFoot())
-  const y0 = RF.LAMP.cageHi + 0.62
-  const sdf = (x, y, z) => ell(x, y - y0, z, 1.22, 0.46, 1.22) + 0.05 * fbm(x * 2 + 3, y * 2, z * 2, 2)
-  addSnow(netGeometry(sdf, [-1.7, y0 - 0.8, -1.7], [1.7, y0 + 0.8, 1.7], 0.2), lampM, 0.6)
+  const y0 = RF.LAMP.cageHi + 1.2
+  const sdf = (x, y, z) => ell(x, y - y0, z, 0.62, 0.24, 0.62) + 0.03 * fbm(x * 2 + 3, y * 2, z * 2, 2)
+  addSnow(netGeometry(sdf, [-1, y0 - 0.5, -1], [1, y0 + 0.5, 1], 0.14), lampM, 0.6)
 }
 
 const front = frame(P3(0, 0, C.halfLength), V3, UP, U3)
@@ -218,9 +222,9 @@ const shrubList = RF.shrubs()
 for (const [i, sh] of shrubList.entries()) {
   const [cx, cy, cz] = sh.centre
   const seed = 11 * i + 3
-  const full = i < 2 ? 0.05 : 0.38
+  const full = i < 2 ? 0.42 : 0.58
   const sdf = (x, y, z) => {
-    const body = ell(x - cx, y - cy, z - cz, sh.r[0] + 0.32, sh.r[1] + 0.34, sh.r[2] + 0.32)
+    const body = ell(x - cx, y - cy, z - cz, sh.r[0] + 0.2, sh.r[1] + 0.3, sh.r[2] + 0.2)
     const edge = cy + sh.r[1] * full + 0.55 * noise(x * 0.9 + seed, z * 0.9, 2) + 0.25 * noise(x * 2.3, z * 2.3, seed)
     return Math.max(body, edge - y) + 0.09 * fbm(x * 1.5 + seed, y * 1.5, z * 1.5, 2)
   }
@@ -238,7 +242,7 @@ function wallGap(x, z) {
 }
 function snowAt(x, z) {
   const pf = L.pondField(x, z)
-  const m = L.moundAt(z) + L.bankAt(x, z) + L.rimAt(x, z) + L.driftAt(x, z)
+  const m = L.moundAt(z) + L.bankAt(x, z) + L.rimAt(x, z) + L.driftAt(x, z) + L.heapAt(x, z)
   const lip = smooth(0.94, 1.03, pf)
   let extra = 0.34 * fbm(x * 0.17, z * 0.17, 3.3, 3) + 0.1 * fbm(x * 0.62, z * 0.62, 9.1, 2)
   const gap = wallGap(x, z)
@@ -441,7 +445,7 @@ function contact(x, z) {
   ice.add(g, { keepUv: true, color: [1, 1, 1], surf: () => [st[2 * vi++], 0] })
 }
 
-const GREENS = ['#1f4a22', '#2c5c27', '#183a1b', '#35692c', '#244f21'].map(lin)
+const GREENS = ['#17361a', '#20441d', '#122b15', '#274d21', '#1b3a19'].map(lin)
 const RED = lin('#b3121b')
 const WIRE = lin('#101a12')
 const leafSurf = [surf(KIND.leaf, 0.55), 0]
@@ -493,29 +497,21 @@ const off = () => [R() * 7, R() * 7]
     shade(geo, (x, y, z) => 0.75 + 0.35 * noise(x * 4, y * 4, z * 4))
     decor.add(geo, { matrix: front, color: mul3(RED, k), surf: [surf(KIND.stone, 0.38), 0], uvOffset: off(), renormal: true })
   }
-  const by = cy - ringR - 0.05
+  const by = cy + ringR * 0.62
   const bz = zc + 0.34
   for (const sd of [-1, 1]) {
-    red(new THREE.TorusGeometry(0.3, 0.1, 6, 12).applyMatrix4(new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(0.5, sd * 0.5, sd * 0.35)).scale(new THREE.Vector3(1.5, 0.85, 1)).setPosition(cx + sd * 0.42, by + 0.08, bz)))
-    const tail = new THREE.BoxGeometry(0.2, 0.95, 0.05, 1, 4, 1)
+    red(new THREE.TorusGeometry(0.4, 0.14, 6, 12).applyMatrix4(new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(0.5, sd * 0.5, sd * 0.35)).scale(new THREE.Vector3(1.5, 0.85, 1)).setPosition(cx + sd * 0.56, by + 0.08, bz)))
+    const tail = new THREE.BoxGeometry(0.3, 1.5, 0.06, 1, 4, 1)
     const P = tail.getAttribute('position')
     for (let i = 0; i < P.count; i++) P.setXYZ(i, P.getX(i) + sd * 0.12 * (0.5 - P.getY(i)) + 0.04 * Math.sin(P.getY(i) * 7), P.getY(i), P.getZ(i) + 0.05 * Math.sin(P.getY(i) * 6 + sd))
-    red(tail.applyMatrix4(T(cx + sd * 0.2, by - 0.52, bz - 0.06)), 0.85)
+    red(tail.applyMatrix4(T(cx + sd * 0.24, by - 0.8, bz - 0.06)), 0.85)
   }
-  red(new THREE.SphereGeometry(0.15, 8, 6).applyMatrix4(T(cx, by + 0.06, bz + 0.05)), 1.1)
+  red(new THREE.SphereGeometry(0.2, 8, 6).applyMatrix4(T(cx, by + 0.06, bz + 0.05)), 1.1)
   for (let i = 0; i < 9; i++) {
     const th = R() * Math.PI * 2
-    if (Math.abs(th - Math.PI * 1.5) < 0.5) continue
+    if (Math.abs(th - Math.PI * 0.5) < 0.5) continue
     red(new THREE.SphereGeometry(0.085 + 0.03 * R(), 7, 5).applyMatrix4(T(cx + Math.cos(th) * (ringR + (R() - 0.5) * 0.25), cy + Math.sin(th) * (ringR + (R() - 0.5) * 0.25), zc + 0.3)), 1.15)
   }
-  const dust = (x, y, z) => {
-    const dx = x - cx
-    const dy = y - cy
-    const ring = Math.hypot(Math.hypot(dx, dy) - ringR, z - zc - 0.08) - 0.36
-    const edge = cy + ringR * 0.5 + 0.35 * noise(x * 1.7, 3, 8)
-    return Math.max(ring, edge - y) + 0.07 * fbm(x * 2.6, y * 2.6, z * 2.6, 2)
-  }
-  addSnow(netGeometry(dust, [cx - 1.9, cy, zc - 0.5], [cx + 1.9, cy + 1.9, zc + 0.8], 0.17, (x, y, z) => Math.hypot(Math.hypot(x - cx, y - cy) - ringR, z - zc) > 0.25), front, 0.3)
 }
 
 const hangs = { eave: RF.eaveHangs(), rake: RF.rakeHangs() }
@@ -572,8 +568,8 @@ for (const run of [hangs.eave, hangs.rake]) {
 addSnow(netGeometry(roofSnow(0.2, 0.1), roofMin.map((v) => v - 0.4), roofMax.map((v) => v + 0.4), 0.85, (a, h, l) => keepRoof(a, h, l) && Math.max(slopeOf(-1, a, h)[1], slopeOf(1, a, h)[1]) > 0.45), cottageM, 1, fresh, 'fresh')
 for (const s of fenceShapes.filter((q) => q.half[2] < 2)) {
   const top = s.half[1] + 0.12
-  const sdf = (x, y, z) => rbox(x, y - top - 0.36, z, 0.74, 0.4, 0.74, 0.36) + 0.06 * fbm(x * 2 + 9, y * 2, z * 2, 2)
-  addSnow(netGeometry(sdf, [-1.3, top - 0.3, -1.3], [1.3, top + 1.3, 1.3], 0.3), boxMatrix(s), 1, fresh, 'fresh')
+  const sdf = (x, y, z) => rbox(x, y - top - 0.36, z, 0.74 * STOUT.post, 0.4, 0.74 * STOUT.post, 0.36) + 0.06 * fbm(x * 2 + 9, y * 2, z * 2, 2)
+  addSnow(netGeometry(sdf, [-1.5, top - 0.3, -1.5], [1.5, top + 1.3, 1.5], 0.3), boxMatrix(s), 1, fresh, 'fresh')
 }
 
 const names = [snow, ice, decor, bulbs, fresh]

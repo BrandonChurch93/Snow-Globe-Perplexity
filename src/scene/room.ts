@@ -4,6 +4,7 @@ export const ROOM_LIGHTS = 12
 
 export const ROOM_WINDOW = { halfWidth: 0.3, halfHeight: 0.62, edge: 0.075, lean: 0.22 }
 export const ROOM_STRIP = { halfWidth: 0.055, halfHeight: 0.46, edge: 0.04, lean: -0.15 }
+export const ROOM_CARD = { halfWidth: 0.42, halfHeight: 0.55, edge: 0.12, lean: 0.1 }
 export const ROOM_ROUGH_SPREAD = 1.4
 export const ROOM_SPILL = { spread: 0.373, floor: 0.42, gain: 0.75 }
 export const ROOM_WASH = { spread: 0.07, at: 0.16, gain: 1.5 }
@@ -31,6 +32,8 @@ uniform vec3 uRoomKey;
 uniform vec3 uRoomKeyCol;
 uniform vec3 uRoomRim;
 uniform vec3 uRoomRimCol;
+uniform vec3 uRoomCard;
+uniform vec3 uRoomCardCol;
 float roomErf(float x) {
   float a = abs(x);
   float t = 1.0 / (1.0 + 0.3275911 * a);
@@ -76,10 +79,13 @@ vec3 stageRoomBlur(vec3 d, float s) {
 vec3 stageRoom(vec3 d) {
   return stageRoomBlur(d, 0.0);
 }
+vec3 stageRoomCard(vec3 d, float s) {
+  return roomSource(d, uRoomCard, uRoomCardCol, vec2(${f(ROOM_CARD.halfWidth)}, ${f(ROOM_CARD.halfHeight)}), length(vec2(${f(ROOM_CARD.edge)}, s)), ${f(ROOM_CARD.lean)});
+}
 vec3 stageRoomSeen(vec3 d, float rough) {
   float s = ${f(ROOM_ROUGH_SPREAD)} * rough * rough;
   float above = 0.5 + 0.5 * roomErf((d.y + 0.005) * 0.70710678 / (0.018 + s));
-  return mix(uRoomFloor, roomWall(d, s), above) + roomSources(d, s) * ${f(ROOM_SEEN)};
+  return mix(uRoomFloor, roomWall(d, s), above) + (roomSources(d, s) + stageRoomCard(d, s)) * ${f(ROOM_SEEN)};
 }
 vec3 stageRoomLights(vec3 d, float soft) {
   vec3 sum = vec3(0.0);
@@ -103,4 +109,6 @@ export const roomUniforms = {
   uRoomKeyCol: { value: new THREE.Color(0, 0, 0) },
   uRoomRim: { value: new THREE.Vector3(0, 1, 0) },
   uRoomRimCol: { value: new THREE.Color(0, 0, 0) },
+  uRoomCard: { value: new THREE.Vector3(0, 1, 0) },
+  uRoomCardCol: { value: new THREE.Color(0, 0, 0) },
 }

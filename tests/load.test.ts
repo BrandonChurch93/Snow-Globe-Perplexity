@@ -5,7 +5,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { SeasonLoader } from '../src/app/session'
-import { Assets, entriesOf, type AssetFile } from '../src/core/assets'
+import { Assets, entriesOf, fileAddress, type AssetFile } from '../src/core/assets'
 import { config } from '../src/config'
 import { packGlb, readGlb, writeGlb, STREAMS } from '../tools/lib/glbpack.mjs'
 import { WEB, difference, halve, webFiles, webLimit, webSize } from '../tools/lib/webset.mjs'
@@ -59,6 +59,32 @@ describe('the names of the web set', () => {
     expect(a.early(e!).path).toBe('winter/x.lin.first.webp')
     const [whole] = entriesOf([file('winter/y.lin.webp')])
     expect(a.early(whole!).path).toBe('winter/y.lin.webp')
+  })
+})
+
+describe('the address of a file', () => {
+  it('carries the hash of the file, so a file that changes under the same name is fetched anew', () => {
+    expect(fileAddress('assets/', 'winter/a.lin.webp', '0123456789abcdef')).toBe('assets/winter/a.lin.webp?v=0123456789abcdef')
+    expect(fileAddress('assets/', 'winter/a.lin.webp')).toBe('assets/winter/a.lin.webp')
+    const a = new Assets()
+    const index = (sha: string) => ({
+      version: 1,
+      seasonHashes: {},
+      sets: {
+        web: { shared: [{ path: 'shared/s.lin.webp', bytes: 1, sha: 'aaaa' }], winter: [{ path: 'winter/a.lin.webp', bytes: 1, sha }] },
+        full: { shared: [], winter: [{ path: 'winter/a.lin.png', bytes: 1, sha: 'ffff' }] },
+      },
+    })
+    a.use(index('1111'), 'web')
+    expect(a.address('winter/a.lin.webp')).toBe('assets/winter/a.lin.webp?v=1111')
+    expect(a.address('shared/s.lin.webp')).toBe('assets/shared/s.lin.webp?v=aaaa')
+    expect(a.address('winter/unknown.bin')).toBe('assets/winter/unknown.bin')
+    a.use(index('2222'), 'web')
+    expect(a.address('winter/a.lin.webp')).toBe('assets/winter/a.lin.webp?v=2222')
+    a.use(index('2222'), 'full')
+    expect(a.address('winter/a.lin.png')).toBe('assets-full/winter/a.lin.png?v=ffff')
+    expect(a.address('winter/a.lin.webp')).toBe('assets-full/winter/a.lin.webp')
+    expect(a.entries('winter').map((e) => e.name)).toEqual(['winter/a.lin.png'])
   })
 })
 

@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { config } from '../../config'
 import { coverUniforms } from '../../core/chunks/cover'
+import { veilSettle } from '../../core/chunks/veil'
 import { handleOf, stageShader, type Rgb } from '../../core/materials'
 import { clearStandIn, flagStandIn } from '../../core/standins'
 import type { ParticleSource } from '../../core/stage'
@@ -9,13 +10,14 @@ import { partBytes } from '../../diagnostics/views'
 import type { StageFrame } from '../../scene/frame'
 import { flickerOf } from '../../scene/lightgrid'
 import type { InnerLight } from '../../seasons/kit'
-import { LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_TABLE, LYING_LOOK, MAX_KINDS, SHAPE, TABLE_COLUMNS, lookOf } from './looks'
+import { LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_TABLE, LYING_LOOK, MAX_KINDS, SETTLE_SHOWN, SHAPE, STORM_FINE_SHARE, STORM_SHARP_SHARE, STORM_SMEAR_SHARE, TABLE_COLUMNS, lookOf } from './looks'
 import { FRAG, VERT_MAIN, VERT_PARS } from './shader'
 
 export { MAX_KINDS } from './looks'
 export const SIZE_TO_RADIUS = 0.5
 const SHUTTER = (config.film.shutterDegrees / 360) * (config.sim.stepHz / config.film.fps)
 const TAU = 2 * Math.PI
+const CLASSES = STORM_SMEAR_SHARE + STORM_SHARP_SHARE + STORM_FINE_SHARE
 
 type KindColors = Readonly<Record<string, { color: Rgb; glow: number }>>
 
@@ -48,6 +50,8 @@ export class ParticleDraw {
   private readonly up = new THREE.Vector3()
   private cover: boolean | null = null
   private storm = 0
+  private shown = 1
+  private afloat = 0
   drawn = 0
   maxPointPx = 256
 
@@ -142,8 +146,11 @@ export class ParticleDraw {
     this.sprites.visible = !f.live
     this.quads.visible = f.live
     const gate = Math.min(1, Math.max(0, (f.turbulence - LENS_LOOK.stormFrom) / (LENS_LOOK.stormTo - LENS_LOOK.stormFrom)))
-    this.storm = f.live || (f.sample && f.view === '') ? gate * gate * (3 - 2 * gate) : 0
+    const stormy = f.live || f.view === 'cover' || (f.sample !== null && f.view === '')
+    this.storm = stormy ? gate * gate * (3 - 2 * gate) : 0
     this.fill(source, f.quality.particleFraction, f.live)
+    this.shown = stormy ? Math.min(1, Math.max(0, (SETTLE_SHOWN / Math.max(this.afloat, 1e-3) - CLASSES) / (1 - CLASSES))) : 1
+    veilSettle(this.afloat)
     this.lens(f)
     this.lights(f)
     this.kinds(source, f.from.particles, f.to.particles, f.kinds, f.mix.particles)
@@ -173,13 +180,19 @@ export class ParticleDraw {
     const opacity = source.opacity
     const state = source.state
     const phase = source.phase ?? this.phaseOf(n)
+    let up = 0
+    let down = 0
     for (let i = 0, o = 0; i < n; i++, o += 4) {
       d[o] = sizes[i]! * SIZE_TO_RADIUS
       d[o + 1] = kindOf[i]!
       d[o + 2] = opacity ? opacity[i]! : 1
       d[o + 3] = phase[i]!
-      st[i] = state[i]!
+      const s = state[i]!
+      st[i] = s
+      if (s < 0.5) up++
+      else if (s < 2.5) down++
     }
+    this.afloat = up + down > 0 ? up / (up + down) : 0
     for (const a of live ? this.instanced : this.single) a.needsUpdate = true
     this.drawn = Math.max(0, Math.min(n, Math.floor(n * fraction)))
     this.sprites.geometry.setDrawRange(0, this.drawn)
@@ -191,7 +204,7 @@ export class ParticleDraw {
     const scale = f.height / LENS_LOOK.referenceHeightPx
     const sampled = f.sample !== null && f.view === ''
     const span = f.live || sampled ? SHUTTER : 0
-    ;(u.uStorm!.value as THREE.Vector4).set(this.storm, sampled ? 0.5 - f.sample!.t : 0, 0, 0)
+    ;(u.uStorm!.value as THREE.Vector4).set(this.storm, sampled ? 0.5 - f.sample!.t : 0, this.shown, 0)
     ;(u.uPoint!.value as THREE.Vector4).set(f.moment.mix, f.focalPx, span, scale)
     const pose = f.pose
     const dx = f.sample && pose.apertureMm > 0 ? f.sample.lu * pose.apertureMm : 0

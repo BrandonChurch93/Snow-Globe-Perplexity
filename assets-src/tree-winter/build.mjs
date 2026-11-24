@@ -13,8 +13,11 @@ const SNOW_TILE_MM = 7
 const STAR_AT = [0.25, 45.2, 0.1]
 const STAR_R = 2.2
 const STAR_GLOW_R = 2.9
+const STAR = { deep: 0.62, edge: 0.17, inset: 0.9, valley: 0.72, crest: 1.12, glow: [0.1, 0.05, 0.03], stem: [0.2, 0.11], collar: 0.27 }
 const CORE_R = 0.155
 const HALO_R = 0.5
+const WIRE_R = 0.075
+const SNOW_KEY = [-0.451, 0.701, 0.552]
 const BULBS = { stem: [2.3, 3.4], limb: [2.2, 3.3], lead: 0.16, pad: 0.19, clear: 0.34 }
 
 const [T, R] = await loadSource(['/src/miniature/trunk.ts', '/src/core/rng.ts'])
@@ -208,6 +211,7 @@ function snow() {
   const s = surface(snowField, crownBox(2.6), SNOW_CELL, needleField)
   const count = s.pos.length / 3
   const uv = []
+  const thin = []
   const col = []
   for (let v = 0; v < count; v++) {
     const x = s.pos[v * 3]
@@ -215,16 +219,19 @@ function snow() {
     const z = s.pos[v * 3 + 2]
     const n = [s.nor[v * 3], s.nor[v * 3 + 1], s.nor[v * 3 + 2]]
     const both = (a, bb, c) => Math.min(snowField(a, bb, c), needleField(a, bb, c))
-    const open = 0.25 * openness(both, x, h, z, n, 0.8) + 0.75 * openness(both, x, h, z, n, 2.4)
-    const sky = 0.5 + 0.5 * n[1]
-    const shade = (0.6 + 0.4 * open) * (0.5 + 0.5 * Math.pow(sky, 1.3))
+    const open = 0.1 * openness(both, x, h, z, n, 0.8) + 0.9 * openness(both, x, h, z, n, 2.4)
+    const lit = 0.5 + 0.5 * (n[0] * SNOW_KEY[0] + n[1] * SNOW_KEY[1] + n[2] * SNOW_KEY[2])
+    const shade = (0.66 + 0.34 * open) * (0.46 + 0.54 * Math.pow(lit, 1.1))
+    const cool = 1 - lit * lit
     uv.push(x / SNOW_TILE_MM, h / SNOW_TILE_MM)
-    col.push(shade * (0.82 + 0.18 * sky), shade * (0.9 + 0.1 * sky), shade)
+    thin.push(needleField(x, h, z), 0)
+    col.push(shade * (1 - 0.34 * cool), shade * (1 - 0.2 * cool), shade)
   }
   const g = new THREE.BufferGeometry()
   g.setAttribute('position', new THREE.Float32BufferAttribute(s.pos, 3))
   g.setAttribute('normal', new THREE.Float32BufferAttribute(s.nor, 3))
   g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2))
+  g.setAttribute('uv1', new THREE.Float32BufferAttribute(thin, 2))
   g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3))
   g.setIndex(s.index)
   return g
@@ -410,25 +417,35 @@ function wireTube(points, radius) {
 }
 
 function star() {
-  const pts = []
+  const rim = []
   for (let k = 0; k < 10; k++) {
     const a = Math.PI / 2 + (k * TAU) / 10
     const r = k % 2 === 0 ? STAR_R * (0.97 + 0.06 * rng.next()) : STAR_R * 0.42
-    pts.push(new THREE.Vector3(Math.cos(a) * r, Math.sin(a) * r, 0))
+    rim.push([Math.cos(a) * r, Math.sin(a) * r])
   }
+  const ring = (scale, z) => rim.map(([x, y]) => new THREE.Vector3(x * scale, y * scale, z))
   const pos = []
   const col = []
-  const face = (a, b, c, glowShare) => {
-    pos.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z)
-    for (let i = 0; i < 3; i++) col.push(1, 0.74, 0.3, glowShare)
+  const face = (pts, tones, glowShare) => {
+    pts.forEach((q, i) => {
+      pos.push(q.x, q.y, q.z)
+      col.push(tones[i], 0.72 * tones[i], 0.28 * tones[i], glowShare * tones[i])
+    })
   }
-  const front = new THREE.Vector3(0, 0, 0.6)
-  const back = new THREE.Vector3(0, 0, -0.6)
+  const tone = (k) => (k % 2 === 0 ? 1 : STAR.valley)
+  const front = new THREE.Vector3(0, 0, STAR.deep)
+  const back = new THREE.Vector3(0, 0, -STAR.deep)
+  const near = ring(STAR.inset, STAR.edge)
+  const mid = ring(1, 0)
+  const far = ring(STAR.inset, -STAR.edge)
   for (let k = 0; k < 10; k++) {
-    const a = pts[k]
-    const b = pts[(k + 1) % 10]
-    face(front, a, b, k % 2 === 0 ? 0.105 : 0.045)
-    face(back, b, a, 0.04)
+    const j = (k + 1) % 10
+    face([front, near[k], near[j]], [STAR.crest, tone(k), tone(j)], k % 2 === 0 ? STAR.glow[0] : STAR.glow[1])
+    face([near[k], mid[k], mid[j]], [tone(k), tone(k), tone(j)], STAR.glow[2])
+    face([near[k], mid[j], near[j]], [tone(k), tone(j), tone(j)], STAR.glow[2])
+    face([far[k], mid[j], mid[k]], [tone(k), tone(j), tone(k)], STAR.glow[2])
+    face([far[k], far[j], mid[j]], [tone(k), tone(j), tone(j)], STAR.glow[2])
+    face([back, far[j], far[k]], [STAR.crest, tone(j), tone(k)], STAR.glow[2])
   }
   const g = new THREE.BufferGeometry()
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
@@ -437,8 +454,11 @@ function star() {
   g.applyMatrix4(new THREE.Matrix4().makeRotationY(0.22).multiply(new THREE.Matrix4().makeRotationZ(-0.06)))
   g.applyMatrix4(new THREE.Matrix4().makeTranslation(STAR_AT[0], STAR_AT[1], STAR_AT[2]))
   const [ax, az] = T.trunkAxis(T.trunkShape.top)
-  const stem = wireTube([new THREE.Vector3(ax, T.trunkShape.top + 2.2, az), new THREE.Vector3(lerp(ax, STAR_AT[0], 0.6), T.trunkShape.top + 4.4, lerp(az, STAR_AT[2], 0.6)), new THREE.Vector3(STAR_AT[0], STAR_AT[1] - STAR_R * 0.4, STAR_AT[2])], 0.085)
-  colourOf(stem, 0.55, 0.4, 0.15, 0)
+  const seat = STAR_AT[1] - STAR_R * 0.42
+  const stem = rod([new THREE.Vector3(ax, T.trunkShape.top + 2.2, az), new THREE.Vector3(lerp(ax, STAR_AT[0], 0.6), T.trunkShape.top + 4.4, lerp(az, STAR_AT[2], 0.6)), new THREE.Vector3(STAR_AT[0], seat + 0.1, STAR_AT[2])], [STAR.stem[0], lerp(STAR.stem[0], STAR.stem[1], 0.5), STAR.stem[1]])
+  colourOf(stem, 0.5, 0.37, 0.14, 0)
+  const collar = rod([new THREE.Vector3(STAR_AT[0], seat - 0.62, STAR_AT[2]), new THREE.Vector3(STAR_AT[0], seat - 0.5, STAR_AT[2]), new THREE.Vector3(STAR_AT[0], seat - 0.12, STAR_AT[2]), new THREE.Vector3(STAR_AT[0], seat + 0.16, STAR_AT[2])], [STAR.stem[1], STAR.collar, STAR.collar, STAR.stem[1]])
+  colourOf(collar, 0.72, 0.53, 0.2, 0.012)
   const aura = new THREE.IcosahedronGeometry(STAR_GLOW_R, 2)
   aura.deleteAttribute('uv')
   const hp = aura.getAttribute('position')
@@ -455,16 +475,47 @@ function star() {
   }
   aura.applyMatrix4(new THREE.Matrix4().makeTranslation(STAR_AT[0], STAR_AT[1], STAR_AT[2]))
   colourOf(aura, 1, 0.7, 0.3, 1)
-  const all = mergeGeometries([phaseOf(g, 0.31, 2), phaseOf(stem, 0.31, 0).toNonIndexed(), phaseOf(aura, 0.31, 4)])
+  const all = mergeGeometries([phaseOf(g, 0.31, 2), phaseOf(stem, 0.31, 0).toNonIndexed(), phaseOf(collar, 0.31, 0).toNonIndexed(), phaseOf(aura, 0.31, 4)])
   return all
+}
+
+function rod(points, radii, sides = 6) {
+  const f = frames(points.map((p) => [p.x, p.y, p.z]))
+  const pos = []
+  const index = []
+  for (let i = 0; i < f.length; i++) {
+    for (let j = 0; j < sides; j++) {
+      const a = (j / sides) * TAU
+      const p = f[i].p.clone().addScaledVector(f[i].nrm, Math.cos(a) * radii[i]).addScaledVector(f[i].bin, Math.sin(a) * radii[i])
+      pos.push(p.x, p.y, p.z)
+    }
+  }
+  for (let i = 0; i < f.length - 1; i++) {
+    for (let j = 0; j < sides; j++) {
+      const a = i * sides + j
+      const b = i * sides + ((j + 1) % sides)
+      index.push(a, b, a + sides, b, b + sides, a + sides)
+    }
+  }
+  const g = new THREE.BufferGeometry()
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
+  g.setIndex(index)
+  g.computeVertexNormals()
+  return g
 }
 
 function lights() {
   const { bulbs, wires } = strings()
   const parts = []
   for (const b of bulbs) {
-    const g = new THREE.IcosahedronGeometry(CORE_R * b.size, 1)
+    const g = new THREE.IcosahedronGeometry(CORE_R * b.size, 0)
     g.deleteAttribute('uv')
+    const cp = g.getAttribute('position')
+    const cn = g.getAttribute('normal')
+    for (let i = 0; i < cp.count; i++) {
+      const v = new THREE.Vector3(cp.getX(i), cp.getY(i), cp.getZ(i)).normalize()
+      cn.setXYZ(i, v.x, v.y, v.z)
+    }
     g.applyMatrix4(new THREE.Matrix4().makeScale(1, 1.32, 1))
     g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.out))
     g.applyMatrix4(new THREE.Matrix4().makeTranslation(b.at.x, b.at.y, b.at.z))
@@ -484,7 +535,7 @@ function lights() {
   }
   let wireTriangles = 0
   for (const w of wires) {
-    const g = wireTube(w, 0.05)
+    const g = wireTube(w, WIRE_R)
     wireTriangles += g.index.count / 3
     colourOf(g, 0.07, 0.085, 0.05, 0)
     parts.push(phaseOf(g, 0, 0).toNonIndexed())
