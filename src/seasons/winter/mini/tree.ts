@@ -1,9 +1,10 @@
 import * as THREE from 'three'
 import { config } from '../../../config'
 import { COVER_GLSL, coverUniforms } from '../../../core/chunks/cover'
-import { stageMaterial } from '../../../core/materials'
+import { stageMaterial, stageShader } from '../../../core/materials'
 import { geometry, prepareModel } from '../../../core/models'
 import { texture } from '../../../core/textures'
+import { haloGeometry, haloMaterial } from '../../../miniature/glow'
 import { lampFlame } from '../../../miniature/roof'
 import { bakeGlow, buildTrunk, crownCap, crownField, crownOffset, glow, glowHook, pads, placeGeometry, placePoint, prepareTrunk, trunkSolid, type GlowLight } from '../../../miniature/trunk'
 import type { InnerLight, KitMoment, Vec3 } from '../../kit'
@@ -21,24 +22,32 @@ const COVER_RISE = 0.12
 const WARM: [number, number, number] = [1, 0.56, 0.33]
 const GOLD: [number, number, number] = [1, 0.84, 0.52]
 const BULB_GAIN = 16
-const GLOW = { needles: { power: 85, reachMm: 1.25, star: 0.6 }, snow: { power: 1, reachMm: 1.4, star: 0.36 }, wood: { power: 11, reachMm: 1.5, star: 0.6 } }
-const LAMP_ON_WOOD = { power: 110, reachMm: 12, wrap: -0.5 }
+const GLOW = { needles: { power: 50, reachMm: 1, star: 0.6 }, snow: { power: 1, reachMm: 1.4, star: 0.36 }, wood: { power: 7.5, reachMm: 1.5, star: 0.6 } }
+const LAMP_ON_WOOD = { power: 100, reachMm: 12, wrap: -0.3 }
 const LAMP_SHIFT: Vec3 = [-3, 0, -5]
-const FILL_ON_WOOD = { power: 2, reachMm: 1000, wrap: 0.4 }
+const FILL_ON_WOOD = { power: 3, reachMm: 1000, wrap: 0.4 }
 const FILL_FROM: Vec3 = [40, 20, 60]
-const BARK: [number, number, number] = [0.1, 0.135, 0.14]
-const SNOW_TINT: [number, number, number] = [0.95, 1.03, 1.2]
-const HALO = { cover: 1.5, edge: 3, glow: 0.9, core: 10 }
-const AURA = { cover: 0.24, edge: 2.4, glow: 1.1 }
+const BARK: [number, number, number] = [0.09, 0.105, 0.1]
+const SNOW_TINT: [number, number, number] = [1.3, 1.45, 1.72]
+const NEEDLE_TINT: [number, number, number] = [1.3, 1.82, 3.84]
+const NEEDLE_LIT = 'vec3(1.75, 0.95, 0.45)'
+const HALO = { radiusMm: 0.45, strength: 0.6, hot: 9, pullMm: 0.6, flicker: FLICKER, cycles: CYCLES }
+const HALO_EDGE: [number, number, number] = [0.75, 0.36, 0.08]
+const HALO_CORE: [number, number, number] = [1, 0.74, 0.4]
+const AURA = { radiusMm: 3.2, strength: 0.2, flicker: 0.08, cycles: 3 }
+const AURA_EDGE: [number, number, number] = [0.85, 0.5, 0.16]
+const AURA_CORE: [number, number, number] = [1, 0.8, 0.46]
+const FOG_DIM = { from: 0.5, to: 0.9, cap: 0.6 }
 const STAR_LOCAL: Vec3 = [0.25, 45.2, 0.1]
 const SPARKLE = { share: 0.014, perMm: 8, gain: 1.4 }
-const EDGE_MM = 0.3
+const EDGE_MM = 0.15
 const STEM_LIGHTS: readonly Vec3[] = [[1.2, 12.5, 4.4], [-0.4, 19.5, 3.6], [0.2, 27, 3]]
 
 const offset = crownOffset()
 const star = placePoint(STAR_LOCAL)
 const arrive = { value: 1 }
 const bulbGain = { value: BULB_GAIN }
+const clock = { value: 0 }
 
 export const innerLights: InnerLight[] = [
   ...pads.map((p, i): InnerLight => ({ at: [p.at[0], p.at[1] - 0.7 * p.size[1], p.at[2]], color: WARM, power: 0.16, reachMm: 4.5, flicker: FLICKER, cycles: CYCLES, phase: (0.13 + i * 0.381) % 1 })),
@@ -74,7 +83,7 @@ const TREE_SLOPES = 'vec3 treeSx = dFdx(-vViewPosition);\nvec3 treeSy = dFdy(-vV
 const TREE_BUMP = 'normal = treeBump(treeSx, treeSy, treeDh, normal, faceDirection);'
 
 function needleHook(shader: Shader): void {
-  glowHook(shader)
+  glowHook(shader, `material.diffuseContribution * ${NEEDLE_LIT}`)
   Object.assign(shader.uniforms, { uTile: { value: 1 / tileOf('needles') }, uBump: { value: 0.3 }, uSprigs: { value: texture(SPRIGS) } })
   shader.vertexShader = shader.vertexShader
     .replace('#include <common>', `#include <common>\nattribute vec2 uv1;\nvarying vec2 vCard;\n${TREE_VERT_PARS}`)
@@ -145,27 +154,51 @@ function lightHook(shader: Shader): void {
     .replace('#include <begin_vertex>', '#include <begin_vertex>\nvBulb = uv;')
   shader.fragmentShader = shader.fragmentShader
     .replace('#include <common>', '#include <common>\nuniform vec4 uTwinkle;\nuniform float uBulb;\nvarying vec2 vBulb;')
-    .replace(
-      '#include <color_fragment>',
-      '#include <color_fragment>\nfloat treeLit = vColor.a;\nvec3 treeTint = diffuseColor.rgb;\nbool treeHalo = vBulb.y > 2.5;\nbool treeAura = vBulb.y > 3.5;\nfloat treeFace = 0.0;\ndiffuseColor.rgb *= treeHalo ? 0.0 : 1.0 - 0.8 * treeLit;',
-    )
-    .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nif (treeHalo) roughnessFactor = 1.0;')
-    .replace('#include <metalnessmap_fragment>', '#include <metalnessmap_fragment>\nif (treeHalo) metalnessFactor = 0.0;')
-    .replace(
-      '#include <normal_fragment_maps>',
-      `#include <normal_fragment_maps>
-      if (treeHalo) {
-        treeFace = max(dot(normal, normalize(vViewPosition)), 0.0);
-        float treeCover = treeAura ? ${AURA.cover.toFixed(2)} * pow(treeFace, ${AURA.edge.toFixed(1)}) : ${HALO.cover.toFixed(2)} * pow(treeFace, ${HALO.edge.toFixed(1)});
-        if (treeCover < stageHash(vec3(gl_FragCoord.xy, uSeed + floor(vBulb.x * 64.0 + 0.5) / 64.0))) discard;
-      }`,
-    )
+    .replace('#include <color_fragment>', '#include <color_fragment>\nfloat treeLit = vColor.a;\nvec3 treeTint = diffuseColor.rgb;\ndiffuseColor.rgb *= 1.0 - 0.8 * treeLit;')
     .replace(
       '#include <emissivemap_fragment>',
-      `#include <emissivemap_fragment>
-      float treeBlink = uTwinkle.z * (1.0 + uTwinkle.y * sin(6.2831853 * (uTwinkle.x + vBulb.x)));
-      totalEmissiveRadiance = treeHalo ? treeTint * treeBlink * (treeAura ? ${AURA.glow.toFixed(2)} : ${HALO.glow.toFixed(2)} + uBulb * pow(treeFace, ${HALO.core.toFixed(1)})) : treeTint * treeLit * uBulb * treeBlink;`,
+      '#include <emissivemap_fragment>\ntotalEmissiveRadiance = treeTint * treeLit * uBulb * uTwinkle.z * (1.0 + uTwinkle.y * sin(6.2831853 * (uTwinkle.x + vBulb.x)));',
     )
+    .replace(
+      '#include <dithering_fragment>',
+      `#include <dithering_fragment>\n#ifdef STAGE_INSIDE\ngl_FragColor.rgb = mix(gl_FragColor.rgb, min(gl_FragColor.rgb, vec3(${FOG_DIM.cap.toFixed(2)})), smoothstep(${FOG_DIM.from.toFixed(2)}, ${FOG_DIM.to.toFixed(2)}, stageVeil(vStageAux.x)));\n#endif`,
+    )
+}
+
+const v3 = (c: readonly number[]): string => `vec3(${c[0]!.toFixed(3)}, ${c[1]!.toFixed(3)}, ${c[2]!.toFixed(3)})`
+
+function auraMaterial(part: string): THREE.ShaderMaterial {
+  return stageShader({
+    part,
+    standIn: false,
+    inside: true,
+    change: 'light',
+    uniforms: { uClock: clock },
+    params: { side: THREE.FrontSide, transparent: false, blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.SrcAlphaFactor, blendDst: THREE.OneFactor, blendSrcAlpha: THREE.ZeroFactor, blendDstAlpha: THREE.OneFactor, depthWrite: false },
+    vertexPars: 'attribute vec4 aHalo;\nvarying vec4 vHalo;',
+    vertexMain: 'vHalo = vec4((modelMatrix * vec4(aHalo.xyz, 1.0)).xyz, aHalo.w);',
+    fragment: `
+uniform float uClock;
+varying vec4 vHalo;
+void main() {
+  if (uDiag != 0) discard;
+  float c = stageChange();
+  if (stageGone(c)) discard;
+  #ifdef STAGE_INSIDE
+  if (stageOutside()) discard;
+  #endif
+  vec3 d = normalize(vStagePlaced - cameraPosition);
+  vec3 oc = cameraPosition - uLensCentre;
+  float b = dot(oc, d);
+  float h = b * b - dot(oc, oc) + uLens.x * uLens.x;
+  vec3 sight = normalize(cameraPosition + d * (-b - sqrt(max(h, 0.0))) - vStageWorld);
+  vec3 off = cross(sight, vStageWorld - vHalo.xyz);
+  float g = max(0.0, 1.0 - dot(off, off) / ${(AURA.radiusMm * AURA.radiusMm).toFixed(3)});
+  float beat = 1.0 + ${AURA.flicker.toFixed(3)} * sin(6.2831853 * (${AURA.cycles.toFixed(1)} * uClock + vHalo.w));
+  gl_FragColor = vec4(mix(${v3(AURA_EDGE)}, ${v3(AURA_CORE)}, g), g * g * ${AURA.strength.toFixed(3)} * beat * (1.0 - stageVeil(vStageAux.x)));
+}
+`,
+  })
 }
 
 const tileOf = (name: string): number => (geometry(MODEL, name).userData.extras as { tileMm: number }).tileMm
@@ -197,7 +230,7 @@ export async function prepare(): Promise<void> {
 
 export function build(): THREE.Object3D {
   const part = `miniature-${season}`
-  const needles = stageMaterial({ part, standIn: false, inside: true, miniature: true, change: 'miniature', map: texture(NEEDLES), color: new THREE.Color(0.95, 1, 1.45), vertexColors: true, roughness: 0.88, side: THREE.DoubleSide, hook: needleHook, key: 'tree-needles' })
+  const needles = stageMaterial({ part, standIn: false, inside: true, miniature: true, change: 'miniature', map: texture(NEEDLES), color: new THREE.Color(NEEDLE_TINT[0], NEEDLE_TINT[1], NEEDLE_TINT[2]), vertexColors: true, roughness: 0.88, side: THREE.DoubleSide, hook: needleHook, key: 'tree-needles' })
   const snow = stageMaterial({ part, standIn: false, inside: true, miniature: true, change: 'miniature', map: texture(SNOW), color: new THREE.Color(SNOW_TINT[0], SNOW_TINT[1], SNOW_TINT[2]), vertexColors: true, roughness: 0.8, hook: snowHook, key: 'tree-snow' })
   const flame = lampFlame()
   const lamp: GlowLight = { at: [flame[0] + LAMP_SHIFT[0], flame[1] + LAMP_SHIFT[1], flame[2] + LAMP_SHIFT[2]], color: tones.lampLight, ...LAMP_ON_WOOD, phase: 0.1 }
@@ -206,11 +239,16 @@ export function build(): THREE.Object3D {
 }
 
 export function lights(): THREE.Object3D {
-  const m = stageMaterial({ part: `light-${season}`, standIn: false, inside: true, miniature: true, change: 'light', vertexColors: true, roughness: 0.35, metalness: 0.2, hook: lightHook, key: 'tree-lights' })
+  const part = `light-${season}`
+  const m = stageMaterial({ part, standIn: false, inside: true, miniature: true, change: 'light', vertexColors: true, roughness: 0.35, metalness: 0.2, hook: lightHook, key: 'tree-lights' })
   const mesh = new THREE.Mesh(placeGeometry(geometry(MODEL, 'lights')), m)
   mesh.castShadow = false
   mesh.receiveShadow = false
-  return mesh
+  const halos = new THREE.Mesh(haloGeometry(bulbs(GLOW.wood).slice(0, -1).map((b) => b.at), HALO.radiusMm), haloMaterial(part, HALO_EDGE, HALO_CORE, HALO, clock))
+  halos.renderOrder = 3
+  const aura = new THREE.Mesh(haloGeometry([star], AURA.radiusMm), auraMaterial(part))
+  aura.renderOrder = 3
+  return new THREE.Group().add(mesh, halos, aura)
 }
 
 export function arrival(): THREE.Object3D {
@@ -236,6 +274,7 @@ export function solid(x: number, y: number, z: number): number {
 
 export function update(moment: KitMoment): void {
   glow.uTwinkle.value.set((CYCLES * moment.time) / moment.period, FLICKER, 1, 0)
+  clock.value = (((moment.time / moment.period) % 1) + 1) % 1
   const t = Number.isFinite(moment.sinceLanding) ? Math.min(1, Math.max(0, moment.sinceLanding / config.states.restSeconds)) : 1
   arrive.value = t * t * (3 - 2 * t)
 }

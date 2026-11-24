@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { config } from '../../config'
-import { LIQUID_PHASE, LIQUID_PHASE_B } from '../../globe/liquid'
+import { LIQUID_PHASE_B, LIQUID_ROLL, LIQUID_SWIRL, ROLL_AXIS, ROLL_CENTRE } from '../../globe/liquid'
 import type { StageFrame } from '../../scene/frame'
 
 const NOISE_N = 32
@@ -12,9 +12,9 @@ export const VEIL_LOOK = {
   steps: 8,
   stepMm: 15,
   blobTileMm: 120,
-  arcTileMm: 34,
+  arcTileMm: 24,
   arcDeepMm: 320,
-  arcTurns: 2,
+  arcTurns: 3,
   arcSpiral: 1,
   warp: 0.45,
   blobDrift: 0.3,
@@ -38,24 +38,30 @@ export const VEIL_LOOK = {
   bank: 1.5,
   bankPower: 1.5,
   bankRest: -1.15,
-  bankRise: 0.65,
+  bankRise: 0.78,
   bankRisePower: 0.5,
   bankFlood: 0.55,
   bankFloodGain: 2,
+  discMm: 5,
+  discFlare: 0.25,
+  discFloor: 0.15,
+  discPeak: 1.6,
+  bankDim: 0.8,
+  rollFrom: 0.2,
+  rollTo: 3,
   slowFrom: 0.1,
   slowTo: 0.9,
   slowHaze: 0.2,
   slowBank: 0.3,
   slowRise: 0.6,
-  bankRing: 0.5,
+  bankRing: 0.4,
   bankSoft: 0.14,
-  bankWhite: 1.35,
+  bankWhite: 2.2,
   bankWave: 0.2,
   bankWisp: 0.3,
-  bankEven: 0.75,
-  bankEvenLow: 0.35,
+  bankEven: 0.45,
+  bankEvenLow: 0.15,
   axis: [0, 0.08, 1] as const,
-  centreMm: [-26, 15, 0] as const,
   keyShare: 3.2,
   keyFloor: 0.7,
   shadow: 0.5,
@@ -63,7 +69,7 @@ export const VEIL_LOOK = {
   ambientShare: 1,
   gridShare: 0.75,
   bankGridShare: 2.4,
-  bankShade: 0.75,
+  bankShade: 0.65,
   bankShadeFrom: 0.25,
   bankShadeTo: 1.3,
 }
@@ -151,14 +157,16 @@ export const veilUniforms = {
   uVeilUp: { value: new THREE.Vector4(0, 1, 0, VEIL_LOOK.uneven) },
   uVeilBank: { value: new THREE.Vector4(VEIL_LOOK.bankRest, VEIL_LOOK.bankSoft, 0, VEIL_LOOK.bankEven) },
   uVeilTurn: { value: new THREE.Matrix3() },
+  uVeilRoll: { value: new THREE.Vector4(1, 0, 0, 0) },
   uVeilNoise: { value: stirNoise() as THREE.Texture },
 }
 
 const L = VEIL_LOOK
 const AXIS = new THREE.Vector3(L.axis[0], L.axis[1], L.axis[2]).normalize()
-const SIDE = new THREE.Vector3(1, 0, 0).cross(AXIS).normalize()
-const OTHER = new THREE.Vector3().crossVectors(AXIS, SIDE).normalize()
-const CENTRE = new THREE.Vector3(L.centreMm[0], L.centreMm[1], L.centreMm[2])
+const ROLL = new THREE.Vector3(ROLL_AXIS[0], ROLL_AXIS[1], ROLL_AXIS[2]).normalize()
+const SIDE = new THREE.Vector3(1, 0, 0).cross(ROLL).normalize()
+const OTHER = new THREE.Vector3().crossVectors(ROLL, SIDE).normalize()
+const CENTRE = new THREE.Vector3(ROLL_CENTRE[0], ROLL_CENTRE[1], ROLL_CENTRE[2])
 const vec = (v: THREE.Vector3) => `vec3(${n(v.x)}, ${n(v.y)}, ${n(v.z)})`
 
 export const VEIL_GLSL = `
@@ -170,17 +178,24 @@ uniform vec4 uVeilFlow;
 uniform vec4 uVeilUp;
 uniform vec4 uVeilBank;
 uniform mat3 uVeilTurn;
+uniform vec4 uVeilRoll;
 uniform highp sampler3D uVeilNoise;
+float veilDisc(vec3 p) {
+  vec3 c = p - ${vec(CENTRE)};
+  float h = dot(c, ${vec(ROLL)});
+  float s = ${n(L.discMm)} + ${n(L.discFlare)} * length(c - h * ${vec(ROLL)});
+  return mix(1.0, exp(-h * h / (s * s)), uVeilRoll.x);
+}
 vec4 veilStir(vec3 p) {
   vec4 w = texture(uVeilNoise, p / ${n(L.blobTileMm)} + vec3(uVeilFlow.z, uVeilFlow.w, -uVeilFlow.z));
   vec3 c = p - ${vec(CENTRE)};
-  float h = dot(c, ${vec(AXIS)});
-  vec3 r = c - h * ${vec(AXIS)};
+  float h = dot(c, ${vec(ROLL)});
+  vec3 r = c - h * ${vec(ROLL)};
   float rad = length(r);
   float turn = atan(dot(r, ${vec(OTHER)}), dot(r, ${vec(SIDE)})) / 6.2831853;
   vec3 q = vec3(rad / ${n(L.arcTileMm)} + turn * ${n(L.arcSpiral)}, h / ${n(L.arcDeepMm)}, turn * ${n(L.arcTurns)} - uVeilFlow.x);
-  float a = texture(uVeilNoise, q + vec3((w.rg - 0.5) * ${n(L.warp)}, uVeilFlow.y)).a;
-  float d = ${n(L.wisp)} * smoothstep(${n(L.cutLow)}, ${n(L.cutHigh)}, a) * (${n(L.blobLow)} + ${n(L.blobGain)} * w.a);
+  float a = mix(w.b, texture(uVeilNoise, q + vec3((w.rg - 0.5) * ${n(L.warp)}, uVeilFlow.y)).a, uVeilRoll.x);
+  float d = ${n(L.wisp)} * smoothstep(${n(L.cutLow)}, ${n(L.cutHigh)}, a) * (${n(L.blobLow)} + ${n(L.blobGain)} * w.a) * mix(1.0, mix(${n(L.discFloor)}, ${n(L.discPeak)}, veilDisc(p)), uVeilRoll.x);
   vec3 flat2 = p - dot(p, ${vec(AXIS)}) * ${vec(AXIS)};
   float haze = mix(${n(L.hazeCore)}, 1.0, smoothstep(${n(L.hazeFrom)}, ${n(L.hazeTo)}, (length(flat2) - ${n(L.hazeLift)} * dot(p, uVeilUp.xyz) - ${n(L.hazeSide)} * p.x) / uLens.w));
   return vec4(d, haze, a, w.a);
@@ -201,7 +216,7 @@ vec3 veilLit(vec3 p, vec3 field) {
   vec3 toward;
   vec3 card = uRigCardCol * (uRigInside.x * uRigCard.w * stageGridOpen(p));
   vec3 lit = stageSoftIn(p) * ${n(L.ambientShare)} + (stageKeyIn(p, toward) + card) * (uRigPoint.x * ${n(L.keyShare)} * packed * (uVeilKey.w + (1.0 - uVeilKey.w) * dim)) + stageGrid(p) * mix(${n(L.gridShare)}, ${n(L.bankGridShare)}, low);
-  return lit * mix(vec3(1.0), vec3(1.0) / max(uVeil.rgb, vec3(0.05)), ${n(L.bankWhite)} * low);
+  return lit * mix(vec3(1.0), vec3(1.0) / max(uVeil.rgb, vec3(0.05)), ${n(L.bankWhite)} * low) * mix(1.0, ${n(L.bankDim)}, low);
 }
 vec4 veilPath(vec3 eye, vec3 placed, vec3 world, float path) {
   float thin = (uVeil.a + uVeilBank.z) * path;
@@ -308,7 +323,9 @@ export function updateVeil(f: StageFrame): void {
   u.uVeilTurn.value.setFromMatrix4(spin.makeRotationFromQuaternion(turn))
   u.uVeilUp.value.set(f.globeUp.x, f.globeUp.y, f.globeUp.z, L.uneven)
   densities()
-  const pa = f.liquid[LIQUID_PHASE] ?? 0
+  const r = Math.min(1, Math.max(0, ((f.liquid[LIQUID_ROLL] ?? 0) - L.rollFrom) / (L.rollTo - L.rollFrom)))
+  u.uVeilRoll.value.set(r * r * (3 - 2 * r), 0, 0, 0)
+  const pa = f.liquid[LIQUID_SWIRL] ?? 0
   const pb = f.liquid[LIQUID_PHASE_B] ?? 0
   u.uVeilFlow.value.set((pa / TAU) * L.arcTurns, Math.sin(pb) * 0.5 * L.blobDrift, Math.sin(pb) * L.blobDrift, Math.cos(pb) * L.blobDrift)
 }
