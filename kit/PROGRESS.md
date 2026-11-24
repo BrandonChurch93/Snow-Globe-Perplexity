@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 44 · 2026-11-24 17:01 UTC
+Status 45 · 2026-11-24 17:22 UTC
 
-- `out/stills/status/status-44-1.jpg`: Round 4 build at final tier: the hero still at rest as the jury saw it
-- `out/stills/status/status-44-2.jpg`: Round 4 build: strokes of the test shake at frames 84 to 106. The bloom of the swap window turns the base one flat orange for five frames (with the lights builder now)
-- `out/stills/status/status-44-3.jpg`: Still: winter rest hero, hd, draft
-- `out/stills/status/status-44-4.jpg`: Round 1, what the second critic judged: the stand-in globe from the six cameras, each beside its target. Top row hero, macro, interior; bottom row base, surface, low. Four are being framed again: surface shows the wall of the base, interior stands too far back, low nearly repeats hero, macro cuts the cottage (by root)
+- `out/stills/status/status-45-1.jpg`: Macro still at final tier with the new lens points (Round 4 build)
+- `out/stills/status/status-45-2.jpg`: Far snowbank before (top) and after (bottom): the stacked copies are finer but still there
+- `out/stills/status/status-45-3.jpg`: Still: winter rest macro, hd, final
+- `out/stills/status/status-45-4.jpg`: Still: winter rest hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 17:04 UTC
-clock: phase 3, tick of 3.0 minutes
-phase 3: 8.61 h used of its 11.00 h box
-allowance (before the review): 15.23 h used of 36.00 h allowed
-all time before the review: 15.23 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 17:22 UTC
+clock: phase 3, tick of 5.2 minutes
+phase 3: 8.92 h used of its 11.00 h box
+allowance (before the review): 15.53 h used of 36.00 h allowed
+all time before the review: 15.53 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 3
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -655,6 +655,8 @@ Severe and major issues still open when a limit was reached: the unit, the still
 
 - Item 33, 16:38 UTC: cured by decision 57 (`REF_RIG` 615.3 mm and aim 64). What stays open of it is written there: 4.2 px to the right, and the foot's front edge about 30 px low.
 
+36. An edge far out of focus draws as stacked copies of itself (17:18 UTC, Phase 3; Round 4, R3 part 3, major, the far snowbank from `macro`). A limit of `tiers.samplesPerFrame.final` 24 lens points where the blur circle is about 30 px. The lens points were moved to a sunflower spiral (`fad6b08`: finer steps, not a cure). Cure briefed in `out/work/briefs/lens.md` for a builder of the next set (about 19:15): a blur guided by each pixel's parallax that fills the gaps between copies and leaves what is in focus alone.
+
 ## Review items not done
 
 none
@@ -1082,3 +1084,10 @@ One entry per task: when it started, what it did, where it stopped.
 - 16:55 UTC, mine (`src/core/sampler.ts`): R3 part 3 named "multiple parallel light and dark bands" along the far snowbank in the macro still. Cause: the lens points came from two dimensions of a five-dimensional R sequence, which at 24 samples fall on a few rows, so an edge far out of focus drew as about five stacked copies. The lens points of a set are now a sunflower spiral turned by the picture's own angle (24 different offsets along every direction; the largest gap between neighbours is 0.29 of the lens radius over all directions); one sample keeps the old point. tsc clean, 408 tests pass. A macro still at `final` is drawing to check it.
 - 17:05 UTC: `base_fixer` reported that with the corrected reference camera the base projects 13 px (lip) to 34 px (foot) lower than the approved image. Known and already booked: decision 40 (the picture asks for a base of about 31 mm; 33 is the lowest that keeps `framing.heroFillMin`), decision 57 and item 6 for Brandon. Nothing changes.
 - 17:04 UTC: Status 44 posted (shown inline): the hero still at rest of Round 4's build at `final` tier as the jury saw it, and the strokes sheet with the bloom.
+
+- 17:08 UTC: R4 part 2 in (`reviewer_r4_f`, `claude_opus_5_5`, 16 minutes): 5, with 1 severe (frame 78: "the storm is a flat, opaque white fill ... a ball of milk or frosted glass") and 1 major (the table frost "reads as a frost decal scaling and resetting"). Saved verbatim as `scorecards/round-004/R4-2.json`, R3 and R4 ticked (merged 4 and 5), pushed, and both issues sent to the flakes' and the frost's builders in the critic's words. Decisions 58 and 59 and three entries under "Declined issues" written.
+- 17:11 UTC: the shake's builder was blocked by my own test (`tests/film.test.ts` forbade any sideways motion in the lift and the set down); decision 59, the test changed on `main` (`f5f4488`), the old path still passes it.
+- 17:18 UTC, the lens check: the macro still at `final` with the sunflower lens points took 894 s here (24 samples in 872 s). Against Round 4's macro still the far snowbank's stacked copies are finer but still there (`out/work/status/lens-pair.jpg`, `lens-pair-zoom.jpg`). It is a limit of 24 lens points, not of the pattern: an edge with a blur circle of about 30 px is drawn 24 times 2 to 9 px apart. The pattern change stays (every computed picture changes slightly: same picture, finer steps in what is out of focus; tsc and 408 tests green) and the real cure, a blur that fills the gaps between copies and leaves what is in focus alone, is written as a brief (`out/work/briefs/lens.md`) for a builder of the next set, because the ten build places are taken until 19:15. The major stays open (open item 36).
+- 17:20 UTC: `light_fixer` pushed `agent/p3-light` `76d38e6` (the bloom rises over frames 86 to 90 and falls over 94 to 98, the base keeps its carving under it; `ROOM_RIG.inside.through` 0.7 to 0.5). `village_fixer` pushed `bb75331` (practicals that carry through the storm, a lumpy front bank, block masonry; smoke, shrubs and post caps not yet). `liquid_fixer` pushed `1702bce` (eddies 3 to 4 times stronger at the landing; the share of flakes round the one centre 0.69 at `landed`).
+- 17:24 UTC, a ruling for the shake's builder: with the new path two flake tests flip on a degree of plan angle (`tests/engine-cover.test.ts:88` roof cover at `settled` 0.36 or 0.46 against 0.6; `tests/engine-storm.test.ts:129` low bank at `landed` 1.23 to 1.30 against 1.3). It pushes its best path by 17:35 with the two named; the flakes' builder merges it and re-fits (a floor that stands for a kit number or an approved picture is never lowered; a pin of its own earlier fit may be re-fit with the reason). The judged commit must be green: if the merged build is still red at about 18:05 and cannot be cured in ten minutes, Round 5 is frozen without the new path.
+- 17:23 UTC: Status 45 posted (shown inline): the macro still at `final` with the new lens points, and the far snowbank before and after.
