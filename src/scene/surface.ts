@@ -52,7 +52,8 @@ export const SLAB = {
   f0: 0.05,
   fresnelPower: 4.2,
   mirrorShare: 1,
-  nearFloor: 0.4,
+  nearFloor: 0.6,
+  nearBlur: 2.5,
   nearHeightMm: 10,
   mirrorMark: 0.35,
   mirrorTint: [0.7, 1, 1.25],
@@ -325,7 +326,7 @@ void main() {
     vec2 lean = vec2(dot(slope, vec2(-ground.y, ground.x)) * grazing, dot(slope, ground)) * 2.0 * uFocal;
     seen = slabMirror(st, lean, reachFar, 1.0, ${f(SLAB.sideShare)}).rgb;
     if (sil > 0.002) {
-      vec4 hit = slabMirror(st, lean, reachNear, 0.0, clamp(grazing * ${f(SLAB.sideByGrazing)}, ${f(SLAB.sideShare)}, ${f(SLAB.sideMost)}));
+      vec4 hit = slabMirror(st, lean, min(reachNear * ${f(SLAB.nearBlur)}, 1.0), 0.0, clamp(grazing * ${f(SLAB.sideByGrazing)}, ${f(SLAB.sideShare)}, ${f(SLAB.sideMost)}));
       image = hit.rgb * sil;
       held = hit.a * sil;
     }
