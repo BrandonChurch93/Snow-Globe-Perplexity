@@ -1,43 +1,46 @@
 {
-  "number": 26,
-  "time": "2026-11-24 10:01 UTC",
+  "number": 28,
+  "time": "2026-11-24 10:43 UTC",
   "phase": "3",
   "unit": "",
   "lines": [
-    "Status 26 · 2026-11-24 10:01 UTC · Phase 3",
-    "Ten build agents are running, each in its own machine at the strongest setting: the glass with its bubble; the liquid and the simulation; the flakes and the veil; the slab, the backdrop and the lens; the base with its icicles; the village; the tree; the frost and the arrival; the light engine; the shake as a hand model.",
-    "Each one works against the approved image through the reference camera, pushes pictures of its part every 25 minutes, and sends a first report at about 90 minutes. Their pictures appear here from the next status on.",
-    "Before the start two shared contracts were written so that no two builders edit one file: the unseen room as one module that the glass, the brass and the light engine all reflect, and a map of the snow that has come to rest, which the roof and the boughs can read to thicken.",
-    "The published app still shows the Phase 2 stand-in globe until the first real parts are merged, about 11:30 UTC.",
-    "phase 3: 1.57 h used of its 11.00 h box",
-    "allowance (before the review): 8.18 h used of 36.00 h allowed",
+    "Status 28 · 2026-11-24 10:43 UTC · Phase 3",
+    "Phase 3 (the look lock) is 2 hours into its 11 hour box. Ten builders are 45 minutes into their parts and none of these pictures is finished work",
+    "The layout measured on the approved winter image is in main: the ground is a mound raked toward the viewer and the cottage and the tree stand where the image has them (decision 43)",
+    "The film's close camera and the interior camera are fitted to that layout again and all 305 tests are green",
+    "Decision 44: the key light comes from the upper right in front as the approved image shows. The kit says upper left",
+    "Decision 45: the shake's lift and tilt go below the range the kit gives the Builder so the lifted glass keeps about 5 percent of the frame above it and the foot's rim never enters the surface. Listed for your review",
+    "The published app is unchanged since 08:34 UTC (the Phase 2 stand-in globe). It is published again when the builders' parts are merged",
+    "First reports from the builders are due at about 11:30 UTC",
+    "phase 3: 2.28 h used of its 11.00 h box",
+    "allowance (before the review): 8.89 h used of 36.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-26-1.jpg",
-      "caption": "The approved winter image with the regions each builder works against. Ten builders started at 10:00 UTC, one owner per file, each building its part of winter for real: no stand-in may remain in what a still shows.",
-      "w": 1200,
-      "h": 675
+      "file": "out/stills/status/status-28-1.jpg",
+      "caption": "Glass builder: the approved image above and the rebuilt glass shell below on the stand-in miniature. A starting point. Still wrong: grey wash through the liquid and an even grey rim and a blown highlight",
+      "w": 589,
+      "h": 1200
     },
     {
-      "file": "out/stills/status/status-26-2.jpg",
-      "caption": "The opening camera, four candidates on stand-ins. Bottom right is the chosen frame: chimney, window, door, floor, lamppost and the foot of the tree, no edge of the glass (by engine_engineer_2)",
-      "w": 1200,
-      "h": 1017
+      "file": "out/stills/status/status-28-2.jpg",
+      "caption": "Light builder: the approved image above and the first pass of the light engine below on the stand-in miniature. Still wrong: the key is too strong and the warm pools by the lamp and the window do not read",
+      "w": 964,
+      "h": 1200
     },
     {
-      "file": "out/stills/status/status-26-3.jpg",
-      "caption": "The hero camera after decision 35, winter at rest, draft: 7.8 percent above the glass, 4.2 percent under the foot of the base (it was 10.3 and 1.7) (by root)",
+      "file": "out/stills/status/status-28-3.jpg",
+      "caption": "Tree builder: the real trunk from the film's close camera with bark from one generated sheet. Still wrong: no crown and no snow on the roots and the bark is too orange. The cottage and lamp beside it are stand-ins",
       "w": 960,
       "h": 540
     },
     {
-      "file": "out/stills/status/status-26-4.jpg",
-      "caption": "The app's screen after the new rule, at rest, at the top of the lift and at the widest stroke: 1920 by 1080 above, 390 by 844 and 1024 by 1366 below. The foot of the base now stands 7 percent of the height above the controls on the two wide screens (by film_app_engineer_2)",
+      "file": "out/stills/status/status-28-4.jpg",
+      "caption": "Three cameras framed again on the stand-in globe, draft: surface (the foot of the base above, the surface and the globe's reflection under it), interior (the miniature fills the height), low (looking up at the whole globe from 24 mm above the surface) (by engine_engineer_2)",
       "w": 1200,
-      "h": 455
+      "h": 223
     }
   ]
 }
