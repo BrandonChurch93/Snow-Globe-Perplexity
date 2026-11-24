@@ -29,12 +29,25 @@ export interface PassOptions {
   emitters: boolean
 }
 
-export const mirrorBytes = (): number => (mirror ? Math.round(mirror.width * mirror.height * (8 * (4 / 3) + 4)) : 0)
+const DEPTH_BYTES = 4
+const colourBytes = (type: THREE.TextureDataType): number => (type === THREE.UnsignedByteType ? 4 : 8)
 
-function mirrorTarget(width: number, height: number): THREE.WebGLRenderTarget {
+export const mirrorBytes = (): number => (mirror ? Math.round(mirror.width * mirror.height * (colourBytes(mirror.texture.type) * (4 / 3) + DEPTH_BYTES)) : 0)
+
+function mirrorType(renderer: THREE.WebGLRenderer, main: THREE.WebGLRenderTarget | null): THREE.TextureDataType {
+  if (main) return main.texture.type === THREE.UnsignedByteType ? THREE.UnsignedByteType : THREE.HalfFloatType
+  const has = (name: string) => renderer.extensions.has(name)
+  return has('EXT_color_buffer_float') || has('EXT_color_buffer_half_float') ? THREE.HalfFloatType : THREE.UnsignedByteType
+}
+
+function mirrorTarget(width: number, height: number, type: THREE.TextureDataType): THREE.WebGLRenderTarget {
+  if (mirror && mirror.texture.type !== type) {
+    mirror.dispose()
+    mirror = null
+  }
   if (!mirror) {
     mirror = new THREE.WebGLRenderTarget(width, height, {
-      type: THREE.HalfFloatType,
+      type,
       format: THREE.RGBAFormat,
       colorSpace: THREE.NoColorSpace,
       minFilter: THREE.LinearMipmapLinearFilter,
@@ -65,7 +78,7 @@ export function drawPasses(c: PassContext, o: PassOptions, frame: StageFrame): v
     const scale = frame.live ? MIRROR_SCALE.live : MIRROR_SCALE.still
     const width = Math.max(2, Math.round(frame.width * scale))
     const height = Math.max(2, Math.round(frame.height * scale))
-    const target = mirrorTarget(width, height)
+    const target = mirrorTarget(width, height, mirrorType(renderer, main as THREE.WebGLRenderTarget | null))
     const alpha = renderer.getClearAlpha()
     renderer.getClearColor(clear)
     renderer.setRenderTarget(target)
