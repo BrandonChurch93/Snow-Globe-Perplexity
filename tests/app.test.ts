@@ -52,6 +52,26 @@ const run = (s: LiveSession, seconds: number, each: () => void = () => undefined
 }
 
 describe('a shake in the app', () => {
+  it('starts a shake asked during the settle only when the settle is over, so the globe never jumps between two paths', () => {
+    const sim = new FakeSim()
+    const s = new LiveSession(sim, first)
+    s.shake()
+    const landing = s.shaking!.startSec + barSeconds
+    run(s, barSeconds + 2 * FRAME_S)
+    expect(s.busy).toBe(false)
+    expect(s.clock).toBeLessThan(landing + config.shake.landSettleSeconds)
+    expect(s.shake()).not.toBeNull()
+    const e = s.shaking!
+    expect(e.startSec).toBeGreaterThanOrEqual(landing + config.shake.landSettleSeconds - 1e-9)
+    expect(e.startSec).toBeLessThan(landing + config.shake.landSettleSeconds + 2 / config.sim.stepHz)
+    run(s, config.shake.landSettleSeconds + 2 * FRAME_S)
+    const later = new LiveSession(new FakeSim(), first)
+    later.shake()
+    run(later, barSeconds + config.shake.landSettleSeconds + 4 * FRAME_S)
+    later.shake()
+    expect(later.shaking!.startSec).toBeCloseTo((later.clock * config.sim.stepHz + 1) / config.sim.stepHz, 1)
+  })
+
   it('is one bar, goes to the next season and lands there', () => {
     const sim = new FakeSim()
     const s = new LiveSession(sim, first)
@@ -73,8 +93,10 @@ describe('a shake in the app', () => {
     expect(s.busy).toBe(false)
     expect(s.season).toBe(next(first))
     expect(s.target).toBeNull()
-    expect(s.moment(1, 1).globe).toEqual(REST_POSE)
     expect(s.moment(1, 1).season).toBe(next(first))
+    // The tilt that settles after the landing dies inside `shake.landSettleSeconds`; after that the globe is at rest exactly.
+    run(s, config.shake.landSettleSeconds + 2 * FRAME_S)
+    expect(s.moment(1, 1).globe).toEqual(REST_POSE)
     expect(s.shakes).toBe(1)
     expect(sim.step).toBe(Math.ceil(s.clock * HZ - 1e-7))
     expect(sim.seen).toBe(s.tl)
@@ -112,7 +134,7 @@ describe('a shake in the app', () => {
     const seen = [s.season]
     for (let i = 0; i < seasons.length; i++) {
       s.shake()
-      run(s, barSeconds + 0.1)
+      run(s, barSeconds + config.shake.landSettleSeconds + 0.1)
       seen.push(s.season)
     }
     expect(seen).toEqual([...seasons.map((_, i) => seasons[(seasons.indexOf(first) + i) % seasons.length]!), first])
