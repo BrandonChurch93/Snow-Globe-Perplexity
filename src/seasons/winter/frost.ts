@@ -26,7 +26,7 @@ export const glassDressing: Dressing = { tint: [0.86, 0.92, 1], amount: 0 }
 export const surfaceDressing: Dressing & { reachMm: number } = { tint: [0.86, 0.92, 1], amount: 0, reachMm: 132 }
 
 const look = {
-  glass: { cover: 1.15, haze: 0.12, slope: 0.55, micro: 1.1, glint: 1.6, light: 0.52 },
+  glass: { cover: 1.15, haze: 0.09, slope: 0.55, micro: 1.1, glint: 1.6, light: 0.52, through: 0.55, thin: 0.7, thick: 0.6 },
   slab: { cover: 1.5, slope: 0.8, micro: 0.9, glint: 1.6, pool: 0.035 },
 }
 
@@ -40,6 +40,7 @@ const frostUniforms = {
   uGlassLook: { value: new THREE.Vector4(look.glass.cover, look.glass.haze, look.glass.slope, look.glass.micro) },
   uSlabLook: { value: new THREE.Vector4(look.slab.cover, look.slab.pool, look.slab.slope, look.slab.micro) },
   uGlint: { value: new THREE.Vector4(look.glass.glint, look.slab.glint, 0.3, look.glass.light) },
+  uGlassThru: { value: new THREE.Vector4(look.glass.through, look.glass.thin, look.glass.thick, 0) },
 }
 
 const lightUniforms = {
@@ -100,6 +101,7 @@ ${FROST_GLSL}
 uniform sampler2D uGlassMap;
 uniform vec4 uShape;
 uniform vec4 uGlassLook;
+uniform vec4 uGlassThru;
 varying vec3 vAxisX;
 varying vec3 vAxisY;
 varying vec3 vAxisZ;
@@ -150,12 +152,12 @@ void main() {
   float alpha = 1.0 - exp(-tau);
   float kd = dot(n, uKeyDir);
   float rd = dot(n, uRimDir);
-  float keyLit = max(kd, 0.0) * 0.8 + smoothstep(-1.0, 0.6, kd) * 0.3 + max(-kd, 0.0) * 0.22;
-  float rimLit = max(rd, 0.0) * 0.8 + smoothstep(-1.0, 0.6, rd) * 0.3 + max(-rd, 0.0) * 0.22;
+  float keyLit = max(kd, 0.0) * 0.8 + smoothstep(-1.0, 0.6, kd) * 0.3 + max(-kd, 0.0) * uGlassThru.x;
+  float rimLit = max(rd, 0.0) * 0.8 + smoothstep(-1.0, 0.6, rd) * 0.3 + max(-rd, 0.0) * uGlassThru.x;
   float thru = pow(clamp(dot(v, uRimDir), 0.0, 1.0), 2.0) * clamp(0.6 + 0.6 * dot(ng, uRimDir), 0.0, 1.0);
   vec3 lit = uKeyCol * keyLit + uRimCol * (rimLit + 1.5 * thru) + uSky * (0.55 + 0.45 * n.y);
   vec3 albedo = mix(vec3(0.7, 0.8, 0.93), vec3(0.93, 0.95, 0.98), smoothstep(0.08, 0.7, h0));
-  vec3 col = albedo * (lit * 0.3183 + stageGrid(vStageLocal * 0.9) * 0.6) * uGlint.w;
+  vec3 col = albedo * (lit * 0.3183 + stageGrid(vStageLocal * 0.9) * 0.6) * uGlint.w * (uGlassThru.y + uGlassThru.z * smoothstep(0.04, 0.6, h0));
   float pxMm = sqrt(length(dFdx(vStageWorld)) * length(dFdy(vStageWorld)));
   vec3 spark = frostGlints(ga * ${RS.toFixed(2)}, pxMm, ng, v) * uGlint.x * (0.06 + 1.5 * m0.b * on) * smoothstep(0.02, 0.25, alpha);
   gl_FragColor = vec4(col * alpha + spark, alpha);
@@ -286,7 +288,7 @@ function makeGlass(): THREE.Mesh {
     change: 'glass-dressing',
     textured: true,
     texels: 1 / frostUniforms.uShape.value.y,
-    uniforms: { ...roomUniforms, ...lightUniforms, uGlassMap: frostUniforms.uGlassMap, uGrain: frostUniforms.uGrain, uGrow: frostUniforms.uGrow, uShape: frostUniforms.uShape, uGlassLook: frostUniforms.uGlassLook, uGlint: frostUniforms.uGlint },
+    uniforms: { ...roomUniforms, ...lightUniforms, uGlassMap: frostUniforms.uGlassMap, uGrain: frostUniforms.uGrain, uGrow: frostUniforms.uGrow, uShape: frostUniforms.uShape, uGlassLook: frostUniforms.uGlassLook, uGlassThru: frostUniforms.uGlassThru, uGlint: frostUniforms.uGlint },
     vertexPars: 'varying vec3 vAxisX;\nvarying vec3 vAxisY;\nvarying vec3 vAxisZ;',
     vertexMain: 'vAxisX = normalize(modelMatrix[0].xyz);\nvAxisY = normalize(modelMatrix[1].xyz);\nvAxisZ = normalize(modelMatrix[2].xyz);',
     fragment: GLASS,

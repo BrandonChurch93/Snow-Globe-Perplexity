@@ -598,7 +598,7 @@ function slabArm(length, rng, t0) {
     const strong = r.next() < S.strong
     const o = {
       step: 0.4,
-      w0: r.range(0.42, 0.6) * (0.7 + 0.3 * Math.min(1, l / 3)) * (strong ? 1.25 : 1),
+      w0: r.range(S.leafMm[0], S.leafMm[1]) * (0.7 + 0.3 * Math.min(1, l / 3)) * (strong ? 1.2 : 1),
       w1: 0.12,
       h0: r.range(0.6, 0.85),
       h1: 0.26,
@@ -752,7 +752,7 @@ function buildSlab() {
     const spread = rng.range(0.8, 3.6)
     const count = Math.round(rng.range(8, 16) * spread)
     const t0 = 2 + (r - footR) * 0.95 + rng.range(0, 5)
-    bump(cx, cz, spread * 1.1, 0.16 + 0.1 * spread, t0, 0.3)
+    bump(cx, cz, spread * 0.9, 0.07 + 0.04 * spread, t0, 0.3)
     for (let k = 0; k < count; k++) {
       const a = rng.range(0, 2 * Math.PI)
       const d = spread * Math.sqrt(rng.next())
@@ -796,14 +796,15 @@ function slabShapes(lines, grains, tTop) {
       const b = line.pts[Math.min(n - 1, i + every)]
       const d = norm([b[0] - a[0], 0, b[2] - a[2]])
       const lat = [-d[2], 0, d[0]]
-      const w = line.w[i] * rng.range(0.85, 1.2)
-      const h = Math.min(line.h[i] * mm * rng.range(0.7, 1.15), w * rng.range(0.55, 0.8))
-      const off = rng.range(-0.3, 0.3) * w
+      const sway = Math.sin(id * 40 + i * 0.37)
+      const w = line.w[i] * (1 + 0.12 * sway + rng.range(-0.05, 0.05))
+      const h = Math.min(line.h[i] * mm * (0.8 + 0.1 * sway), w * 0.6) * S.ridgeTall
+      const off = (0.22 * Math.sin(id * 70 + i * 0.23) + rng.range(-0.05, 0.05)) * w
       const t = line.t[i]
       const row = [
         vert(p[0] - lat[0] * w, 0, p[2] - lat[2] * w, t + 2 * w, id),
-        vert(p[0] + lat[0] * (off - 0.4 * w), h * rng.range(0.72, 0.95), p[2] + lat[2] * (off - 0.4 * w), t, id),
-        vert(p[0] + lat[0] * (off + 0.4 * w), h * rng.range(0.72, 0.95), p[2] + lat[2] * (off + 0.4 * w), t, id),
+        vert(p[0] + lat[0] * (off - 0.4 * w), h * rng.range(0.84, 0.95), p[2] + lat[2] * (off - 0.4 * w), t, id),
+        vert(p[0] + lat[0] * (off + 0.4 * w), h * rng.range(0.84, 0.95), p[2] + lat[2] * (off + 0.4 * w), t, id),
         vert(p[0] + lat[0] * w, 0, p[2] + lat[2] * w, t + 2 * w, id),
       ]
       if (prev) for (let k = 0; k < 3; k++) idx.push(prev[k], row[k], prev[k + 1], prev[k + 1], row[k], row[k + 1])
