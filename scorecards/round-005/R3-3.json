@@ -1,0 +1,35 @@
+{
+  "critic": "R3",
+  "score": 6,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "major",
+      "file": "set-G-01.jpg",
+      "where": "the blurred fence in the lower left, crop 9",
+      "what": "the foreground blur breaks into a comb of steps and wavy streaks instead of smooth defocus",
+      "fix": "replace that blur with smooth optical defocus so the fence edge has no stair steps"
+    },
+    {
+      "severity": "major",
+      "file": "set-G-01.jpg",
+      "where": "the tree base where the trunk meets the snow, crops 11 and 12",
+      "what": "a hard white facet sticks out of the snow against the bark",
+      "fix": "remove the facet and let the snow meet the trunk with a soft contact and a thin shadow"
+    },
+    {
+      "severity": "major",
+      "file": "set-G-01.jpg",
+      "where": "the snowbank behind the lamp, crops 7 and 8",
+      "what": "horizontal brush streaks and bands run across the pale snow against the dark sky",
+      "fix": "smooth the snowbank into a continuous gradient with no horizontal strokes"
+    },
+    {
+      "severity": "minor",
+      "file": "set-G-02.jpg",
+      "where": "the snow on the tree bough in crop 2",
+      "what": "the lit face of the snow is stippled with render noise",
+      "fix": "denoise that snow cap so the surface reads as one smooth drift"
+    }
+  ]
+}
