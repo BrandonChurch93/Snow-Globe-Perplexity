@@ -24,15 +24,22 @@ const PLAIN: KindLook = { shape: SHAPE.soft, size: 1, body: 1, flash: 0, real: f
 export const lookOf = (kind: string): KindLook => LOOKS[kind] ?? PLAIN
 
 export const LENS_LOOK = {
-  nearGain: 2,
+  nearGain: 2.6,
   farGain: 0.5,
-  glassDiscPx: 14,
-  glassDiscCover: 0.32,
-  glassFrom: 0.9,
-  glassShare: 0.2,
+  glassDiscPx: 6,
+  glassDiscCover: 0.62,
+  glassDiscWarm: [1.3, 0.92, 0.62] as const,
+  glassDiscWarmShare: 0.5,
+  glassDiscLow: 0.45,
+  glassDiscHigh: 1.25,
+  glassFrom: 0.8,
+  glassShare: 0.45,
   maxBlurPx: 60,
   liftMostMm: 1.5,
   farShrink: 0.36,
+  farDim: 0.3,
+  farDimFrom: -0.7,
+  farDimTo: 0.3,
   maxStreakPx: 160,
   stormFrom: 0.03,
   stormTo: 0.3,
@@ -63,36 +70,37 @@ export const LYING_LOOK = {
 }
 
 export const LOBE_CORE = 0.5
-export const EDGE_SOFT_LOW = 0.02
-export const EDGE_SOFT_HIGH = 1.3
-export const EDGE_CRISP_LOW = 0.25
-export const EDGE_CRISP_HIGH = 0.8
-export const PIXEL_SIGMA2 = 0.5
+export const EDGE_SOFT_LOW = 0.03
+export const EDGE_SOFT_HIGH = 2.3
+export const EDGE_CRISP_LOW = 0.2
+export const EDGE_CRISP_HIGH = 0.95
+export const PIXEL_SIGMA2 = 0.18
 export const STREAK_HOLD = 0.7
 export const STREAK_CAPSULE = 0.8
 export const STREAK_TAPER = 0.75
 export const STREAK_REACH = 1.05
-export const BLUR_HOLD = 0.62
+export const BLUR_HOLD = 0.5
 export const BLUR_STRICT_FROM_PX = 5
 export const BLUR_STRICT_TO_PX = 24
-export const SIZE_LOW = 0.22
-export const SIZE_HIGH = 1.9
-export const SIZE_SKEW = 4
+export const SIZE_LOW = 0.2
+export const SIZE_HIGH = 3.4
+export const SIZE_SKEW = 5
 export const STRETCH_LOW = 0.1
 export const STRETCH_HIGH = 1.5
 export const STORM_SMEAR_SHARE = 0.18
 export const STORM_SHARP_SHARE = 0.008
-export const STORM_FINE_SHARE = 0.12
-export const STORM_SMEAR = 0.9
+export const STORM_FINE_SHARE = 0.18
+export const STORM_SMEAR = 0.6
 export const STORM_OFF_DISC = 0.4
 export const STORM_CROSS = { keep: 0.06, from: 0.8, to: 0.97, fromPx: 1.5, toPx: 4 }
 export const STORM_SIDE = 0.8
 export const STORM_SLOW = { keep: 0.35, fromPx: 2, toPx: 9 }
 export const STORM_SMEAR_FAINT = 0.45
 export const STORM_SMEAR_BRIGHT = 1.7
-export const STORM_WINDOW = { x: -6, y: 6, wide: 42, high: 30, from: 0.75, to: 1.25, floor: 0.22, back: -20, front: 0 }
+export const STORM_WINDOW = { x: -6, y: 6, wide: 42, high: 30, from: 0.75, to: 1.25, floor: 0.14, back: -20, front: 0 }
+export const STORM_PACE = { fromPx: 0.5, toPx: 2, unseen: 0.1 }
 export const STORM_SHARP = 0.9
-export const STORM_FINE_HIGH = 0.3
+export const STORM_FINE_HIGH = 0.45
 export const STORM_FINE_SOFT = 0.5
 export const STORM_FINE_LOW = 0.1
 export const STORM_THIN = 0.1
@@ -102,8 +110,8 @@ export const STORM_SMEAR_FAR = 0.45
 export const STORM_SMEAR_NEAR = 0.9
 export const SETTLE_SHOWN = 0.13
 export const SETTLE_FADE = 0.08
-export const STORM_SMEAR_LOW_PX = 1.2
-export const STORM_SMEAR_HIGH_PX = 4
+export const STORM_SMEAR_LOW_PX = 2
+export const STORM_SMEAR_HIGH_PX = 7
 export const STORM_SOFT_TOP = 4.5
 export const STORM_MOST_PX = 0.5
 export const STORM_GLITTER_PX = 0.5
