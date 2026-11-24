@@ -37,16 +37,16 @@ Status 17 · 2026-11-24 07:04 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 07:04 UTC
-clock: phase 2, tick of 14.7 minutes
-phase 2: 4.04 h used of its 6.00 h box
-allowance (before the review): 5.23 h used of 36.00 h allowed
-all time before the review: 5.23 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 07:20 UTC
+clock: phase 2, tick of 16.0 minutes
+phase 2: 4.31 h used of its 6.00 h box
+allowance (before the review): 5.50 h used of 36.00 h allowed
+all time before the review: 5.50 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 15
 ```
 
 ## Phases
@@ -501,6 +501,21 @@ Severe and major issues still open when a limit was reached: the unit, the still
 
 10. Blockout round 1, part 1 (score 8, severe, `set-A-04.jpg`, the spring hold): "The push-in drops the spring scene almost entirely out of frame and holds on the pedestal instead. The viewer loses the subject of the shot for several seconds." Cause: the move ran the whole way to `base`, where the frame is 74 mm tall and ends below the island. The critic was told only "a hold on spring", not what the move is for. Being fixed in the fix pass by decision 34; the pack's lines get the move and each camera's purpose for round 2.
 
+
+11. Blockout round 1, part 2 (score 5), camera `surface` (severe, `set-B-05.jpg`): "the surface camera fills 72% of the frame width and 67% of the height with the vertical wall of the brown base, nearly duplicating set-B-04.jpg (base) and cropping off the tabletop surface on the left, right and front where the surrounding frost skirt and reflection sit". Fix under way: `engine_engineer_2` frames it again from rendered candidates (the foot's front edge at or above the middle, at least half a base width of surface each side).
+
+12. Same part, camera `interior` (severe, `set-B-03.jpg`): "the interior camera stands far outside the globe as an exterior full-sphere wide shot ... while the miniature scene occupies only the central third". Fix under way: `engine_engineer_2` pushes it in until the miniature fills the height with a little to spare (M1 still wants the whole miniature inside).
+
+13. Same part, the screens (major, `set-C-03.jpg` and `set-C-01.jpg`): at 1024 by 1366 "only a 1.7% (23 px) gap above the SHAKE pill", at 1920 by 1080 "only 2.6% (28 px) of clearance". Fix under way: `film_app_engineer_2` builds the rule into the app's framing: at least 7 percent of the height between the foot at rest and the highest control on the two wide screens, the lifted glass still 1 percent inside the top, the camera still locked through a shake.
+
+14. Same part, camera `hero` (major, `set-B-01.jpg`): "the bottom of the base drops to 97.8% of the frame height (leaving a 2.2% sliver at the bottom versus 10% empty headroom above the crown)". Decision 35 takes it as far as the kit's checks allow: 4.2 percent under the foot at rest and about 6.7 in a hold. The critic's 10 to 12 percent is not reachable while the fill stays at or above `framing.heroFillMin` and the camera stays locked through a lift that must remain in the frame. Carried, and listed for Brandon with decisions 29, 30 and 35.
+
+15. Same part, camera `low` (major, `set-B-06.jpg`): "the crown of the glass sits only 1.1% (6 px) from the top border in a near-tangent while the shot scale and angle remain nearly indistinguishable from hero". Fix under way: `engine_engineer_2` drops the camera to between 12 and 30 mm above the surface, looking up, with at least 5 percent above the crown.
+
+16. Same part, camera `macro` (major, `set-B-02.jpg`): "aiming at the centre of the globe slices the left gable, chimney and fence of the cottage off the left border while giving the right third of the frame to a bare section of tree trunk". The aim lies on the axis and the kit's check keeps every corner within 0.85 of the radius, so the frame cannot simply pan or widen: by the arithmetic the cottage (21 mm wide at 17 mm left of the axis) and the foot of the tree span about 51 mm and the widest frame the check allows shows about 52 to 55 mm of the inside. Fix under way: `engine_engineer_2` chooses aim, distance, yaw and lens from rendered candidates inside the check; if none holds the whole cottage, the best one is kept and the rest is carried.
+
+17. Found while reading round 1's answers (not a critic's line): in the spring hold at draft the petals fill the glass from 12 s to past 21 s, so the miniature is not seen through them; the kit thins each storm over the first bar after its landing. Fix under way: `particles_engineer_2` measures the cover of the miniature after each landing in all four seasons and tunes the stand-in kinds (under a quarter by 2.4 s, under a tenth by 5 s). Ties to item 6.
+
 ## Review items not done
 
 none
@@ -569,11 +584,14 @@ Merged into `main`, each verified here with types clean and the tests green (126
 
 - 06:44 started `film_app_engineer_2`, the one replacement for the film and app job: branch `agent/film-app2` cut from `agent/film-app` at `e602e2b`, looks `agent/film-app2-looks`, sandbox VM. Jobs: the live framing of decision 33, the small fixes listed above (the governor's numbers stay in `src/core/quality.ts`, since the config does not hold them), the 5 s pause seen once, then round 1's issues. First push asked by 07:25 UTC, hard limit 08:05 UTC.
 
+
+- 07:25 started `engine_engineer_2`, the one replacement for the engine job: branch `agent/engine2`, looks `agent/engine2-looks`, sandbox VM, brief in `out/work/briefs/engine2.md` (COMMON.md plus the four cameras the second critic marked, with its words; it may change only the numbers of `macro`, `interior`, `surface` and `low` under `cameras`, the lens table for them and its three test files). First push due 07:55, hard limit 08:20. Every build job has now used its one replacement except the harness, interface and tools jobs, which needed none.
+
 ## Rounds
 
 One line per round: its number, the unit, the commit it judged, each part ticked off as it finished, the scores, and what changed next.
 
-- Round 1 · blockout (Phase 2, the floor round) · judges commit `48afed3` · started 2026-11-24 06:36 UTC. Parts: [x] build · [x] machine checks (06:50: G1 to G12 and G14 green on the judged build `e4a8b9bdbc7a55ec`; D2 and D3 are red until step 14) · [x] measures (06:51: M1 and M6 on seven winter stills, 14 lines, 0 red) · [x] pack (06:55: 19 files in two parts, 0 parts missing; built at `b94e722`, which differs from `48afed3` only in `kit/` and `audio/` text) · [x] critic part 1 (06:57: 8, one severe issue on the spring hold) · [x] critic part 2 (07:08: 5, two severe and five major issues on five cameras and two screens) · [ ] issues read · [ ] fixes · [ ] logged
+- Round 1 · blockout (Phase 2, the floor round) · judges commit `48afed3` · started 2026-11-24 06:36 UTC. Parts: [x] build · [x] machine checks (06:50: G1 to G12 and G14 green on the judged build `e4a8b9bdbc7a55ec`; D2 and D3 are red until step 14) · [x] measures (06:51: M1 and M6 on seven winter stills, 14 lines, 0 red) · [x] pack (06:55: 19 files in two parts, 0 parts missing; built at `b94e722`, which differs from `48afed3` only in `kit/` and `audio/` text) · [x] critic part 1 (06:57: 8, one severe issue on the spring hold) · [x] critic part 2 (07:08: 5, two severe and five major issues on five cameras and two screens) · [x] issues read (07:22: each of the eight issues has a fix under way or a decision; `SUMMARY.md` written) · [ ] fixes · [ ] logged
 
 ## Final scores
 
@@ -684,3 +702,7 @@ One entry per task: when it started, what it did, where it stopped.
 - 06:59 merged `agent/film-app2` `a8cb453` (live framing of decision 33, governor) and `agent/particles2` `a415b4e` (worker path) into main at `87fe501`: types clean, 284 tests, build, cut and parts clean. The pack of round 1 was built before the merge, so round 1 still judges `48afed3`. 07:02 worker path checked in headless Chrome (items 5 and 7 closed). 07:04 decision 34 sent to `film_app_engineer_2` as the first job of the fix pass.
 
 - 07:04 Status 17 posted with two pictures: the live app through a shake at three sizes (`film_app_engineer_2`) and the spring hold sheet the first critic marked. The pack tool now writes the camera move into a hold's line and the purpose into a camera pair's line, for round 2.
+
+- 07:08 round 1, part 2 answered: 5, two severe and five major issues (open items 11 to 16). Merged score 5 against a bar of 7: round 1 fails. The fix pass began 07:08 and may last `budget.floorFixMinutes` (90), so until 08:38; round 2 is the last the config allows.
+- 07:15 merged `agent/film-app2` `98d9ca1` (decision 34) as `e2afc16`. 07:20 decision 35 (lift 13.5, hero aim 70.5) pushed as `c288bcd`: types clean, 297 of 298 tests (the one red test pins the app's old framing numbers and is with `film_app_engineer_2`).
+- 07:20 to 07:26 the fix pass handed out: `film_app_engineer_2` (the 7 percent rule for the two wide screens, the hold's aim drop 4.5, its tests, the hash of `parts`; limit 08:25), `engine_engineer_2` started as the engine job's one replacement (cameras `surface`, `interior`, `low`, `macro` from rendered candidates; limit 08:20), `particles_engineer_2` (every storm thins within the first bar; limit 08:15). Round 1's folder is complete: both answers, `KEY.json`, `MANIFEST.md`, the measures, the two message files and `SUMMARY.md`.
