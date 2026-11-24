@@ -1,0 +1,193 @@
+{
+  "engineHash": "ff72ea5c293221f1",
+  "seasonHashes": {
+    "winter": "5c39d16f98d3d0be",
+    "spring": "70ee49aaec2b26c1",
+    "summer": "70ee49aaec2b26c1",
+    "fall": "70ee49aaec2b26c1"
+  },
+  "format": "preview",
+  "tier": "review",
+  "assets": "full",
+  "diagnostic": "",
+  "browser": "Google Chrome for Testing 147.0.7727.15",
+  "graphics": "software",
+  "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB",
+  "time": "2026-11-24T22:57:46.468Z",
+  "diag": "",
+  "layoutHash": "eaef1fec3b7393d1",
+  "spec": {
+    "kind": "range",
+    "source": "film",
+    "frames": [
+      288,
+      314,
+      340,
+      366,
+      392,
+      418,
+      444,
+      470,
+      496,
+      522,
+      548,
+      574
+    ]
+  },
+  "caption": "Sheet: 12 frames across frames 288 to 575 of the film, preview, review",
+  "width": 1149,
+  "height": 986,
+  "limits": {
+    "longEdge": 1400,
+    "maxPixels": 1140000
+  },
+  "layout": {
+    "cols": 3,
+    "rows": 4,
+    "cell": {
+      "width": 367,
+      "height": 206
+    },
+    "labelHeight": 24,
+    "gap": 12,
+    "rowGap": 14,
+    "margin": 12
+  },
+  "frames": [
+    {
+      "index": 288,
+      "seconds": 4.8,
+      "file": "out/work/seq/film-preview-review/film-000288.png",
+      "at": {
+        "left": 12,
+        "top": 12,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 314,
+      "seconds": 5.233333333333333,
+      "file": "out/work/seq/film-preview-review/film-000314.png",
+      "at": {
+        "left": 391,
+        "top": 12,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 340,
+      "seconds": 5.666666666666667,
+      "file": "out/work/seq/film-preview-review/film-000340.png",
+      "at": {
+        "left": 770,
+        "top": 12,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 366,
+      "seconds": 6.1,
+      "file": "out/work/seq/film-preview-review/film-000366.png",
+      "at": {
+        "left": 12,
+        "top": 256,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 392,
+      "seconds": 6.533333333333333,
+      "file": "out/work/seq/film-preview-review/film-000392.png",
+      "at": {
+        "left": 391,
+        "top": 256,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 418,
+      "seconds": 6.966666666666667,
+      "file": "out/work/seq/film-preview-review/film-000418.png",
+      "at": {
+        "left": 770,
+        "top": 256,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 444,
+      "seconds": 7.4,
+      "file": "out/work/seq/film-preview-review/film-000444.png",
+      "at": {
+        "left": 12,
+        "top": 500,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 470,
+      "seconds": 7.833333333333333,
+      "file": "out/work/seq/film-preview-review/film-000470.png",
+      "at": {
+        "left": 391,
+        "top": 500,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 496,
+      "seconds": 8.266666666666667,
+      "file": "out/work/seq/film-preview-review/film-000496.png",
+      "at": {
+        "left": 770,
+        "top": 500,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 522,
+      "seconds": 8.7,
+      "file": "out/work/seq/film-preview-review/film-000522.png",
+      "at": {
+        "left": 12,
+        "top": 744,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 548,
+      "seconds": 9.133333333333333,
+      "file": "out/work/seq/film-preview-review/film-000548.png",
+      "at": {
+        "left": 391,
+        "top": 744,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 574,
+      "seconds": 9.566666666666666,
+      "file": "out/work/seq/film-preview-review/film-000574.png",
+      "at": {
+        "left": 770,
+        "top": 744,
+        "width": 367,
+        "height": 206
+      }
+    }
+  ],
+  "keptFrom": "out/work/sheets/range-film-288-575-preview-review.jpg",
+  "sourceSha256": "943dc2a1ac7c3bdb8a05bb1e7488bfb81223e1545b138fac09995da3629c8903",
+  "keptAt": "2026-11-24T23:13:36.031Z"
+}

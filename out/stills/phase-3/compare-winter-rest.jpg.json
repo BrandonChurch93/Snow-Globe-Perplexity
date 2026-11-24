@@ -1,0 +1,360 @@
+{
+  "caption": "winter-rest: the approved image (a) beside the build (b), hd, final",
+  "a": {
+    "file": "references/approved/winter-rest.png",
+    "sha256": "1cbc7f6c260402fd025a9c08d5fe1e945a8f704bbdef57ff298b96d531cb06e8",
+    "width": 2816,
+    "height": 1584,
+    "globe": {
+      "cx": 1411.3,
+      "cy": 652,
+      "r": 553
+    },
+    "base": {
+      "left": 872,
+      "right": 1939,
+      "top": 1075,
+      "foot": 1443
+    },
+    "frame": {
+      "x": 609.45,
+      "y": -39.25,
+      "w": 1603.7,
+      "h": 1824.9
+    },
+    "edgeFillPx": {
+      "left": 0,
+      "top": 17,
+      "right": 0,
+      "bottom": 88
+    }
+  },
+  "b": {
+    "file": "out/work/stills/winter-rest-hd-final.png",
+    "sha256": "694c8a8077af8bc9fafe74ac98d6529cc55b9b84571e307d828c459c864451d5",
+    "width": 1920,
+    "height": 1080,
+    "globe": {
+      "cx": 960,
+      "cy": 467.67901740126274,
+      "r": 376.96554629536996
+    },
+    "base": {
+      "left": 597.8286732017048,
+      "right": 1322.171326798295,
+      "top": 709.1023468384356,
+      "foot": 1029.8254169683203
+    },
+    "frame": {
+      "x": 413.4,
+      "y": -3.53,
+      "w": 1093.2,
+      "h": 1243.99
+    },
+    "edgeFillPx": {
+      "left": 0,
+      "top": 2,
+      "right": 0,
+      "bottom": 102
+    }
+  },
+  "limits": {
+    "longEdge": 1400,
+    "maxPixels": 1140000
+  },
+  "frameInRadii": {
+    "left": 1.45,
+    "right": 1.45,
+    "up": 1.25,
+    "down": 2.05
+  },
+  "panels": {
+    "file": "out/work/compare/compare-winter-rest.jpg",
+    "stripHeight": 22,
+    "globeRadiusPx": 240,
+    "a": {
+      "left": 0,
+      "top": 22,
+      "width": 696,
+      "height": 792
+    },
+    "b": {
+      "left": 704,
+      "top": 22,
+      "width": 696,
+      "height": 792
+    }
+  },
+  "cropScale": {
+    "a": 0.68,
+    "b": 1
+  },
+  "crops": [
+    {
+      "name": "miniature",
+      "centreInRadii": {
+        "x": 0,
+        "y": 0.15
+      },
+      "file": "out/work/compare/compare-winter-rest-crops-1.jpg",
+      "a": {
+        "source": {
+          "x": 900.79,
+          "y": 447.42,
+          "w": 1021.02,
+          "h": 575.06
+        },
+        "at": {
+          "left": 0,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      },
+      "b": {
+        "source": {
+          "x": 612,
+          "y": 328.22,
+          "w": 696,
+          "h": 392
+        },
+        "at": {
+          "left": 704,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      }
+    },
+    {
+      "name": "crown",
+      "centreInRadii": {
+        "x": -0.45,
+        "y": -0.72
+      },
+      "file": "out/work/compare/compare-winter-rest-crops-1.jpg",
+      "a": {
+        "source": {
+          "x": 651.94,
+          "y": -33.69,
+          "w": 1021.02,
+          "h": 575.06
+        },
+        "at": {
+          "left": 0,
+          "top": 400,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 23,
+          "right": 0,
+          "bottom": 0
+        }
+      },
+      "b": {
+        "source": {
+          "x": 442.37,
+          "y": 0.26,
+          "w": 696,
+          "h": 392
+        },
+        "at": {
+          "left": 704,
+          "top": 400,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      }
+    },
+    {
+      "name": "collar",
+      "centreInRadii": {
+        "x": 0,
+        "y": 0.93
+      },
+      "file": "out/work/compare/compare-winter-rest-crops-2.jpg",
+      "a": {
+        "source": {
+          "x": 900.79,
+          "y": 878.76,
+          "w": 1021.02,
+          "h": 575.06
+        },
+        "at": {
+          "left": 0,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      },
+      "b": {
+        "source": {
+          "x": 612,
+          "y": 622.26,
+          "w": 696,
+          "h": 392
+        },
+        "at": {
+          "left": 704,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      }
+    },
+    {
+      "name": "base-front",
+      "centreInRadii": {
+        "x": 0,
+        "y": 1.3
+      },
+      "file": "out/work/compare/compare-winter-rest-crops-2.jpg",
+      "a": {
+        "source": {
+          "x": 900.79,
+          "y": 1083.37,
+          "w": 1021.02,
+          "h": 575.06
+        },
+        "at": {
+          "left": 0,
+          "top": 400,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 51
+        }
+      },
+      "b": {
+        "source": {
+          "x": 612,
+          "y": 761.73,
+          "w": 696,
+          "h": 392
+        },
+        "at": {
+          "left": 704,
+          "top": 400,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 74
+        }
+      }
+    },
+    {
+      "name": "foot",
+      "centreInRadii": {
+        "x": 0,
+        "y": 1.75
+      },
+      "file": "out/work/compare/compare-winter-rest-crops-3.jpg",
+      "a": {
+        "source": {
+          "x": 900.79,
+          "y": 1332.22,
+          "w": 1021.02,
+          "h": 575.06
+        },
+        "at": {
+          "left": 0,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 220
+        }
+      },
+      "b": {
+        "source": {
+          "x": 612,
+          "y": 931.37,
+          "w": 696,
+          "h": 392
+        },
+        "at": {
+          "left": 704,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 243
+        }
+      }
+    }
+  ],
+  "files": [
+    {
+      "file": "out/work/compare/compare-winter-rest.jpg",
+      "width": 1400,
+      "height": 814
+    },
+    {
+      "file": "out/work/compare/compare-winter-rest-crops-1.jpg",
+      "width": 1400,
+      "height": 792
+    },
+    {
+      "file": "out/work/compare/compare-winter-rest-crops-2.jpg",
+      "width": 1400,
+      "height": 792
+    },
+    {
+      "file": "out/work/compare/compare-winter-rest-crops-3.jpg",
+      "width": 1400,
+      "height": 392
+    }
+  ],
+  "comparison": "winter-rest: the approved image (a) beside the build (b), hd, final",
+  "keptFrom": "out/work/compare/compare-winter-rest.jpg",
+  "sourceSha256": "03b98b427e090cc9458c2c8cb525ec9c8643067f1a5a51907a2d456b3d5fccc3",
+  "keptAt": "2026-11-24T23:13:36.005Z"
+}

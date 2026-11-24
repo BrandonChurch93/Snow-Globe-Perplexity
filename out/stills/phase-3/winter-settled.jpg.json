@@ -1,0 +1,78 @@
+{
+  "engineHash": "ff72ea5c293221f1",
+  "seasonHashes": {
+    "winter": "5c39d16f98d3d0be",
+    "spring": "70ee49aaec2b26c1",
+    "summer": "70ee49aaec2b26c1",
+    "fall": "70ee49aaec2b26c1"
+  },
+  "format": "hd",
+  "tier": "final",
+  "assets": "full",
+  "diagnostic": "",
+  "browser": "Google Chrome for Testing 147.0.7727.15",
+  "graphics": "software",
+  "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB",
+  "time": "2026-11-24T22:54:30.669Z",
+  "diag": "",
+  "spec": {
+    "id": "winter-settled",
+    "season": "winter",
+    "state": "settled",
+    "camera": "hero",
+    "tier": "final",
+    "format": "hd",
+    "assets": "full",
+    "diag": "",
+    "interface": false,
+    "live": ""
+  },
+  "noext": [],
+  "method": 3,
+  "seconds": 208.315,
+  "timings": {
+    "simMs": 138.7000000178814,
+    "drawMs": 207425.8999999836,
+    "samples": 24,
+    "steps": 96
+  },
+  "measured": {
+    "sanity": {
+      "invalid": 0,
+      "pixels": 2073600
+    },
+    "inside": {
+      "inside": 0,
+      "outside": 0,
+      "total": 102000
+    }
+  },
+  "framing": {
+    "globe": {
+      "cx": 960,
+      "cy": 467.67901740126274,
+      "r": 376.96554629536996
+    },
+    "base": {
+      "left": 597.8286732017048,
+      "right": 1322.171326798295,
+      "top": 709.1023468384356,
+      "foot": 1029.8254169683203
+    },
+    "frameHeightMm": 172.94955118476292,
+    "frameWidthMm": 307.46586877291185,
+    "heroFill": 0.8037025771261214,
+    "cornerReachMm": 182.0728848812925
+  },
+  "state": null,
+  "standIns": 37,
+  "counts": {
+    "triangles": 769412,
+    "drawCalls": 47,
+    "particles": 102000
+  },
+  "errors": [],
+  "keptFrom": "out/work/stills/winter-settled-hd-final.png",
+  "sourceSha256": "4b0216c5b8676c89c9c68b67415868590d9025886d1c72c53739c75b0fa83bff",
+  "keptAt": "2026-11-24T23:13:35.516Z"
+}

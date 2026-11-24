@@ -37,16 +37,16 @@ Status 60 · 2026-11-24 23:05 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 23:05 UTC
-clock: phase 3, tick of 1.0 minutes
-phase 3: 14.64 h used of its 11.00 h box
-allowance (before the review): 21.25 h used of 36.00 h allowed
-all time before the review: 21.25 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 23:10 UTC
+clock: phase 3, tick of 5.1 minutes
+phase 3: 14.72 h used of its 11.00 h box
+allowance (before the review): 21.34 h used of 36.00 h allowed
+all time before the review: 21.34 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 5
 ```
 
 ## Phases
@@ -845,6 +845,12 @@ Merged into `main`, each verified here with types clean and the tests green (126
   - The fourth set, the closers, ended between 21:55 and 22:08 UTC with its ten final reports (kept in `out/work/reports4/`, each with its detail file); none is running and none was past its limit of 22:13. Their last pushes are in the judged build `4f10d97`: tree `ef99abc`, village `c592dab`, base `a807a2f`, frost `988374e`, flakes `eae5220`, liquid `78e60ec`, scene `df43cf5`, glass `41d0707`, light `4a0a414`, shake `acbf066`.
   - Round 7's render agents, messaged at 22:18 on commit `4f10d97`: `gate_runner` (the Phase 3 gate on a clean clone and the 12 still repeat test), `round_renderer` (the measures at `final` and the pack of R1 to R3; branch `agent/p3-round7-pack`), `motion_renderer` (half of R4's frames at `review`, the whole shake, the rest sheet of decision 67, then the R4 pack; branch `agent/p3-round7-motion`), `motion_renderer_b` (the other half; branch `agent/p3-round7-motion-b`). Limit for each: 100 minutes, as in Rounds 4 to 6.
   - `looklock_scribe`, started 22:22 UTC in the Builder's own workspace (no branch; it writes one file, `out/work/notes/looklock-draft.md`, and changes nothing else): the draft of "Look lock" (locked settings, what worked and did not, the recipes with their commands) from the ten final reports and the `RECIPE.md` files; limit 30 minutes. The Builder checks the draft and writes the section.
+
+- Round 7's critics and jurors, logged 23:12 UTC. Fresh agents, each in its own sandbox, files only as attachments under neutral names; no critic or juror sees the repo, the key or another answer.
+  - The render agents reported between 22:55 and 23:07 (their reports are in `out/work/reports-r7/`); none is running. `round_renderer` was asked at 23:11 to push the five raw judged stills of the round, with their records, to its branch for `npm run keep` (no new rendering).
+  - R4: `reviewer_r7_e` (part 1, ten sheets, `pplx_computer_glm_5_3_1009`) and `reviewer_r7_f` (part 2, two sheets, `kimi_k3`), started 23:05, both answered 23:06.
+  - R1: `reviewer_r7_a` (`gpt_6_2_sol`), started 23:07, answered 23:09. R3: `reviewer_r7_b` (part 1, `grok_4_7`) and `reviewer_r7_c` (part 2, `gemini_4_carbon`), started 23:07, limit 23:52; `reviewer_r7_d` (part 3, `claude_opus_5_5`), started 23:07, answered 23:09.
+  - R2: `viewer_r7_01` to `viewer_r7_15`, five per judged image, three each of `claude_sonnet_5_5`, `gpt_6_2_astra`, `gemini_neon`, `pplx_computer_glm_5_3_1009` and `kimi_k3`, started in waves between 23:07 and 23:10 so that never more than six critics, jurors and render agents worked at once; all fifteen answered by 23:10.
 
 ## Rounds
 

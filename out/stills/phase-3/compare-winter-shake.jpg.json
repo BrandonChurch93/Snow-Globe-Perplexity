@@ -1,0 +1,360 @@
+{
+  "caption": "winter-shake: the approved image (a) beside the build (b), hd, final",
+  "a": {
+    "file": "references/approved/winter-shake.png",
+    "sha256": "0cf9572935aa3aeba0f84df70a45632b1107b95f8ed2166f7c5ce2ab7477fbc1",
+    "width": 2816,
+    "height": 1584,
+    "globe": {
+      "cx": 1411.3,
+      "cy": 651,
+      "r": 550.9
+    },
+    "base": {
+      "left": 873,
+      "right": 1938,
+      "top": 1075,
+      "foot": 1443
+    },
+    "frame": {
+      "x": 612.5,
+      "y": -37.62,
+      "w": 1597.61,
+      "h": 1817.97
+    },
+    "edgeFillPx": {
+      "left": 0,
+      "top": 16,
+      "right": 0,
+      "bottom": 86
+    }
+  },
+  "b": {
+    "file": "out/work/stills/winter-shake-hd-final.png",
+    "sha256": "2eb66d176d953d02106def249837ecbf897b7a51463eec47101116f247da64cf",
+    "width": 1920,
+    "height": 1080,
+    "globe": {
+      "cx": 960,
+      "cy": 467.67901740126274,
+      "r": 376.96554629536996
+    },
+    "base": {
+      "left": 597.8286732017048,
+      "right": 1322.171326798295,
+      "top": 709.1023468384356,
+      "foot": 1029.8254169683203
+    },
+    "frame": {
+      "x": 413.4,
+      "y": -3.53,
+      "w": 1093.2,
+      "h": 1243.99
+    },
+    "edgeFillPx": {
+      "left": 0,
+      "top": 2,
+      "right": 0,
+      "bottom": 102
+    }
+  },
+  "limits": {
+    "longEdge": 1400,
+    "maxPixels": 1140000
+  },
+  "frameInRadii": {
+    "left": 1.45,
+    "right": 1.45,
+    "up": 1.25,
+    "down": 2.05
+  },
+  "panels": {
+    "file": "out/work/compare/compare-winter-shake.jpg",
+    "stripHeight": 22,
+    "globeRadiusPx": 240,
+    "a": {
+      "left": 0,
+      "top": 22,
+      "width": 696,
+      "height": 792
+    },
+    "b": {
+      "left": 704,
+      "top": 22,
+      "width": 696,
+      "height": 792
+    }
+  },
+  "cropScale": {
+    "a": 0.68,
+    "b": 1
+  },
+  "crops": [
+    {
+      "name": "miniature",
+      "centreInRadii": {
+        "x": 0,
+        "y": 0.15
+      },
+      "file": "out/work/compare/compare-winter-shake-crops-1.jpg",
+      "a": {
+        "source": {
+          "x": 902.73,
+          "y": 447.2,
+          "w": 1017.14,
+          "h": 572.87
+        },
+        "at": {
+          "left": 0,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      },
+      "b": {
+        "source": {
+          "x": 612,
+          "y": 328.22,
+          "w": 696,
+          "h": 392
+        },
+        "at": {
+          "left": 704,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      }
+    },
+    {
+      "name": "crown",
+      "centreInRadii": {
+        "x": -0.45,
+        "y": -0.72
+      },
+      "file": "out/work/compare/compare-winter-shake-crops-1.jpg",
+      "a": {
+        "source": {
+          "x": 654.83,
+          "y": -32.08,
+          "w": 1017.14,
+          "h": 572.87
+        },
+        "at": {
+          "left": 0,
+          "top": 400,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 22,
+          "right": 0,
+          "bottom": 0
+        }
+      },
+      "b": {
+        "source": {
+          "x": 442.37,
+          "y": 0.26,
+          "w": 696,
+          "h": 392
+        },
+        "at": {
+          "left": 704,
+          "top": 400,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      }
+    },
+    {
+      "name": "collar",
+      "centreInRadii": {
+        "x": 0,
+        "y": 0.93
+      },
+      "file": "out/work/compare/compare-winter-shake-crops-2.jpg",
+      "a": {
+        "source": {
+          "x": 902.73,
+          "y": 876.9,
+          "w": 1017.14,
+          "h": 572.87
+        },
+        "at": {
+          "left": 0,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      },
+      "b": {
+        "source": {
+          "x": 612,
+          "y": 622.26,
+          "w": 696,
+          "h": 392
+        },
+        "at": {
+          "left": 704,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      }
+    },
+    {
+      "name": "base-front",
+      "centreInRadii": {
+        "x": 0,
+        "y": 1.3
+      },
+      "file": "out/work/compare/compare-winter-shake-crops-2.jpg",
+      "a": {
+        "source": {
+          "x": 902.73,
+          "y": 1080.73,
+          "w": 1017.14,
+          "h": 572.87
+        },
+        "at": {
+          "left": 0,
+          "top": 400,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 48
+        }
+      },
+      "b": {
+        "source": {
+          "x": 612,
+          "y": 761.73,
+          "w": 696,
+          "h": 392
+        },
+        "at": {
+          "left": 704,
+          "top": 400,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 74
+        }
+      }
+    },
+    {
+      "name": "foot",
+      "centreInRadii": {
+        "x": 0,
+        "y": 1.75
+      },
+      "file": "out/work/compare/compare-winter-shake-crops-3.jpg",
+      "a": {
+        "source": {
+          "x": 902.73,
+          "y": 1328.64,
+          "w": 1017.14,
+          "h": 572.87
+        },
+        "at": {
+          "left": 0,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 217
+        }
+      },
+      "b": {
+        "source": {
+          "x": 612,
+          "y": 931.37,
+          "w": 696,
+          "h": 392
+        },
+        "at": {
+          "left": 704,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 243
+        }
+      }
+    }
+  ],
+  "files": [
+    {
+      "file": "out/work/compare/compare-winter-shake.jpg",
+      "width": 1400,
+      "height": 814
+    },
+    {
+      "file": "out/work/compare/compare-winter-shake-crops-1.jpg",
+      "width": 1400,
+      "height": 792
+    },
+    {
+      "file": "out/work/compare/compare-winter-shake-crops-2.jpg",
+      "width": 1400,
+      "height": 792
+    },
+    {
+      "file": "out/work/compare/compare-winter-shake-crops-3.jpg",
+      "width": 1400,
+      "height": 392
+    }
+  ],
+  "comparison": "winter-shake: the approved image (a) beside the build (b), hd, final",
+  "keptFrom": "out/work/compare/compare-winter-shake.jpg",
+  "sourceSha256": "c942c5c066f40f76daef867ab2824f99503da60fee0cf476fc41040cb9f5e406",
+  "keptAt": "2026-11-24T23:13:36.012Z"
+}

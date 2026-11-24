@@ -1,0 +1,124 @@
+{
+  "engineHash": "ff72ea5c293221f1",
+  "seasonHashes": {
+    "winter": "5c39d16f98d3d0be",
+    "spring": "70ee49aaec2b26c1",
+    "summer": "70ee49aaec2b26c1",
+    "fall": "70ee49aaec2b26c1"
+  },
+  "format": "preview",
+  "tier": "review",
+  "assets": "full",
+  "diagnostic": "",
+  "browser": "Google Chrome for Testing 147.0.7727.15",
+  "graphics": "software",
+  "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB",
+  "time": "2026-11-24T22:54:44.884Z",
+  "diag": "",
+  "layoutHash": "eaef1fec3b7393d1",
+  "spec": {
+    "kind": "motion",
+    "motion": "landing",
+    "source": "test",
+    "shot": "test",
+    "stride": 1,
+    "frames": [
+      192,
+      194,
+      196,
+      198,
+      200,
+      202
+    ]
+  },
+  "caption": "Motion sheet 3 of 3: the landing of the test shake, frames 192 to 202, 2 frames apart at 60 frames a second, preview, review",
+  "width": 1149,
+  "height": 498,
+  "limits": {
+    "longEdge": 1400,
+    "maxPixels": 1140000
+  },
+  "layout": {
+    "cols": 3,
+    "rows": 2,
+    "cell": {
+      "width": 367,
+      "height": 206
+    },
+    "labelHeight": 24,
+    "gap": 12,
+    "rowGap": 14,
+    "margin": 12
+  },
+  "frames": [
+    {
+      "index": 192,
+      "seconds": 3.2,
+      "file": "out/work/seq/test-preview-review/test-000192.png",
+      "at": {
+        "left": 12,
+        "top": 12,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 194,
+      "seconds": 3.2333333333333334,
+      "file": "out/work/seq/test-preview-review/test-000194.png",
+      "at": {
+        "left": 391,
+        "top": 12,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 196,
+      "seconds": 3.2666666666666666,
+      "file": "out/work/seq/test-preview-review/test-000196.png",
+      "at": {
+        "left": 770,
+        "top": 12,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 198,
+      "seconds": 3.3,
+      "file": "out/work/seq/test-preview-review/test-000198.png",
+      "at": {
+        "left": 12,
+        "top": 256,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 200,
+      "seconds": 3.3333333333333335,
+      "file": "out/work/seq/test-preview-review/test-000200.png",
+      "at": {
+        "left": 391,
+        "top": 256,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 202,
+      "seconds": 3.3666666666666667,
+      "file": "out/work/seq/test-preview-review/test-000202.png",
+      "at": {
+        "left": 770,
+        "top": 256,
+        "width": 367,
+        "height": 206
+      }
+    }
+  ],
+  "keptFrom": "out/work/sheets/motion-landing-test-preview-review-3.jpg",
+  "sourceSha256": "65a4f378450e57b75569cb7d77ed2186338f69aada6035fddb112163089b1216",
+  "keptAt": "2026-11-24T23:13:36.018Z"
+}
