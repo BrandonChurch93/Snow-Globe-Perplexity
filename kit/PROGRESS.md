@@ -77,7 +77,14 @@ minutes since the last status: 5
 
 A summary of `parts/PARTS.json`: every part that is not `built`, with its state and why.
 
-none
+Read from the register at 23:14 UTC on 2026-11-24: 54 parts, 17 `built` (all of `winter`), 37 stand-ins. Until this entry the section said "none", which was wrong from Phase 2 on: the register itself was right throughout.
+
+- `spring`, 9 stand-ins from the blockout: `base-spring`, `miniature-spring`, `glass-dressing-spring`, `surface-dressing-spring`, `light-spring`, `veil-spring`, `arrival-spring`, `particle-petal`, `particle-mote`. Phase 4 builds them.
+- `summer`, 9 stand-ins from the blockout: `base-summer`, `miniature-summer`, `glass-dressing-summer`, `surface-dressing-summer`, `light-summer`, `veil-summer`, `arrival-summer`, `particle-firefly`, `particle-seed`. Phase 4 builds them.
+- `fall`, 10 stand-ins from the blockout: `base-fall`, `miniature-fall`, `glass-dressing-fall`, `surface-dressing-fall`, `light-fall`, `veil-fall`, `arrival-fall`, `particle-leaf`, `particle-ember`, `particle-bat`. Phase 4 builds them.
+- `change`, 4 stand-ins: `change-winter-spring`, `change-spring-summer`, `change-summer-fall`, `change-fall-winter`. Phase 4, after the seasons.
+- `globe`, 3 stand-ins: `interface`, `sound-engine`, `quality-levels`. Phase 5.
+- `film`, 2 stand-ins: `opening`, `loop`. Phase 5 and the phases after the review.
 
 ## Workspace record
 
