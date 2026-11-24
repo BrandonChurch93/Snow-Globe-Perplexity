@@ -17,9 +17,12 @@ const list = (items, n = 6) => (items.length > n ? `${items.slice(0, n).join(', 
 const mb = (bytes) => `${(bytes / 1048576).toFixed(2)} MB`
 
 const INIT = `(() => {
-  const seen = { contexts: 0, plays: 0, fetches: [], media: [] }
-  const first = () => document.documentElement.dataset.firstPicture === '1'
+  const seen = { contexts: 0, plays: 0, fetches: [], media: [], firstAt: null }
+  const first = () => !!document.documentElement && document.documentElement.dataset.firstPicture === '1'
   window.__soundcheck = seen
+  new MutationObserver(() => {
+    if (seen.firstAt === null && first()) seen.firstAt = performance.now()
+  }).observe(document, { attributes: true, subtree: true, attributeFilter: ['data-first-picture'] })
   for (const k of ['AudioContext', 'webkitAudioContext']) {
     const C = window[k]
     if (!C) continue
@@ -93,9 +96,8 @@ async function liveChecks(session) {
   await context.addInitScript(INIT)
   const page = await context.newPage()
   const requests = []
-  let firstSeen = false
   page.on('request', (r) => {
-    if (isSound(r.url())) requests.push({ url: r.url(), afterFirstPicture: firstSeen, bytes: 0 })
+    if (isSound(r.url())) requests.push({ url: r.url(), bytes: 0 })
   })
   page.on('response', async (r) => {
     const hit = requests.find((q) => q.url === r.url() && !q.bytes)
@@ -111,7 +113,6 @@ async function liveChecks(session) {
     .waitForFunction(() => document.documentElement.dataset.firstPicture === '1', null, { timeout: cfg.live.loadWaitSeconds * 15000 })
     .then(() => true)
     .catch(() => false)
-  firstSeen = marked
   await page.waitForTimeout(1500)
   const state = () =>
     page.evaluate(() => {
@@ -131,7 +132,7 @@ async function liveChecks(session) {
         return null
       }
       const s = window.__soundcheck
-      return { audio: document.documentElement.dataset.audio ?? null, contexts: s.contexts, plays: s.plays, fetches: s.fetches, media: s.media, control: !!el, name: label(el), shown: shown(el), tag: el ? el.tagName.toLowerCase() : '', focusable: el ? el.tabIndex >= 0 : false }
+      return { audio: document.documentElement.dataset.audio ?? null, contexts: s.contexts, plays: s.plays, fetches: s.fetches, media: s.media, firstAt: s.firstAt, resources: performance.getEntriesByType('resource').map((e) => ({ url: e.name, at: e.startTime })), control: !!el, name: label(el), shown: shown(el), tag: el ? el.tagName.toLowerCase() : '', focusable: el ? el.tabIndex >= 0 : false }
     })
   const before = await state()
 
@@ -188,14 +189,14 @@ async function liveChecks(session) {
     const limit = cfg.audio.appMaxMb * 1048576
     if (!pack || !pack.files.length) set('A4', 'not run', 'dist/audio/ holds no sound file. Run npm run sound -- --pack, then npm run build.')
     else {
-      const early = [...requests.filter((r) => !r.afterFirstPicture).map((r) => r.url), ...after.fetches.filter((f) => isSound(f.url) && !f.afterFirstPicture).map((f) => f.url), ...after.media.filter((m) => isSound(m.url) && !m.afterFirstPicture).map((m) => m.url)]
+      const early = [...after.resources.filter((r) => isSound(r.url) && (after.firstAt === null || r.at < after.firstAt)).map((r) => r.url), ...after.fetches.filter((f) => isSound(f.url) && !f.afterFirstPicture).map((f) => f.url), ...after.media.filter((m) => isSound(m.url) && !m.afterFirstPicture).map((m) => m.url)]
       const names = [...new Set(early.map((u) => u.split('/').pop()))]
       const got = requests.reduce((s, r) => s + r.bytes, 0)
       const bad = []
       if (pack.bytes > limit) bad.push(`the files are ${mb(pack.bytes)} together, over audio.appMaxMb of ${cfg.audio.appMaxMb} MB`)
       if (!marked) bad.push('the page never marked its first picture (data-first-picture), so the order cannot be shown')
       else if (names.length) bad.push(`fetched before the first picture was complete: ${list(names)}`)
-      const fetched = `${requests.length} of ${pack.files.length} files fetched in this visit (${mb(got)})${before.control ? '' : ', sound could not be turned on without its control'}`
+      const fetched = `${new Set(requests.map((r) => r.url)).size} of ${pack.files.length} files fetched in this visit (${mb(got)})${before.control ? '' : ', sound could not be turned on without its control'}`
       set('A4', bad.length ? 'open' : 'pass', bad.length ? `${bad.join(', ')} · ${fetched}` : `${pack.files.length} files, ${mb(pack.bytes)} together, under ${cfg.audio.appMaxMb} MB, none asked for before the first picture · ${fetched}`, { files: pack.files, fetched: requests })
     }
   }
