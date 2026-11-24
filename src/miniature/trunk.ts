@@ -43,9 +43,9 @@ const MIN_SHAFT = 5
 const ROOT_RISE = 7
 const ROOT_FALL = 1.6
 const ROOT_SKIRT = 1.8
-const TWIST_LOW = 0.16
-const TWIST_HIGH = 0.055
-const RIDGE_DEEP = 0.07
+const TWIST_LOW = 0.06
+const TWIST_HIGH = 0.03
+const RIDGE_DEEP = 0.085
 const GNARL = 0.06
 const BARK_MM = 6.5
 const BARK_AROUND = 3
@@ -69,12 +69,16 @@ const ROOTS: readonly { angle: number; reach: number; width: number }[] = [
 ]
 
 const PADS: readonly { at: Vec3; size: Vec3; lean: number; tip: number }[] = [
-  { at: [0.7, 38.8, 0], size: [7.2, 2.95, 5.2], lean: 0.05, tip: 0 },
-  { at: [-7.1, 35.1, -2.6], size: [6.7, 3.4, 4.8], lean: -0.17, tip: -0.06 },
-  { at: [7.5, 32, 1.6], size: [8.6, 3.8, 5.2], lean: 0.57, tip: 0.08 },
-  { at: [-9.2, 26.9, 3.2], size: [7.9, 3.5, 5.4], lean: -0.14, tip: 0.1 },
-  { at: [-13, 19.6, -0.6], size: [4.4, 3.3, 4], lean: -0.21, tip: 0.06 },
-  { at: [9.5, 20.2, 3.6], size: [8.4, 4, 5.4], lean: 0.44, tip: 0.1 },
+  { at: [0.5, 38.9, 0], size: [6.6, 2.1, 4.6], lean: 0.03, tip: 0.12 },
+  { at: [-4.2, 36.2, 2.4], size: [7.4, 2.3, 4.8], lean: -0.1, tip: 0.15 },
+  { at: [3.8, 36.2, 3.2], size: [5.4, 2.1, 4.4], lean: 0.12, tip: 0.2 },
+  { at: [-8, 33.5, 1], size: [6.2, 2, 4.6], lean: -0.12, tip: 0.12 },
+  { at: [7.6, 34.2, 3.6], size: [5.2, 2.5, 4.4], lean: 0.32, tip: 0.25 },
+  { at: [11.4, 30.4, 1.2], size: [3.9, 3, 3.8], lean: 0.42, tip: 0.15 },
+  { at: [2.6, 31.4, 0], size: [6.2, 2, 4.4], lean: 0.12, tip: 0 },
+  { at: [-10, 27.2, 3.2], size: [7.6, 3.1, 5.2], lean: -0.14, tip: 0.18 },
+  { at: [-13.6, 19.8, -0.6], size: [3.9, 2.8, 3.8], lean: -0.21, tip: 0.12 },
+  { at: [9, 20.8, 3.6], size: [8, 3.9, 5.4], lean: 0.3, tip: 0.2 },
 ]
 
 interface Bough {
@@ -86,19 +90,19 @@ interface Bough {
 }
 
 const BOUGHS: readonly Bough[] = [
-  { kind: 'limb', pad: 4, r: [1.3, 0.42], via: [[-0.3, 12.2, 0.5], [-2.2, 14.9, 0.8], [-4.6, 17.3, 0.7], [-7.2, 18.2, 0.2], [-9.4, 18, -0.3], [-11.5, 17.7, -0.6], [-13.4, 18, -0.8]], forks: [0.72, 0.86, 0.95] },
-  { kind: 'limb', pad: 4, r: [0.95, 0.36], via: [[-0.4, 15, -0.7], [-2.5, 17.9, -1.3], [-4.5, 19.6, -1.7], [-7, 20, -1.7], [-9.6, 19.5, -1.4], [-12, 19.8, -1], [-14.4, 20.4, -0.6]], forks: [0.7, 0.84, 0.95] },
-  { kind: 'limb', pad: 3, r: [1.1, 0.4], via: [[-0.3, 16.6, 0.9], [-2.1, 19.4, 1.8], [-3.6, 22, 2.6], [-5.2, 24.4, 3.1], [-7.6, 25.3, 3.3], [-10.4, 25.1, 3.2], [-13.4, 25.2, 3]], forks: [0.6, 0.72, 0.84, 0.94] },
-  { kind: 'limb', pad: 3, r: [0.72, 0.3], via: [[-0.5, 20.4, -0.6], [-2.6, 22.6, -0.3], [-4.8, 23.9, 0.5], [-7.4, 24.2, 1.3], [-9.8, 24.1, 1.9]], forks: [0.75, 0.92] },
-  { kind: 'limb', pad: 1, r: [0.8, 0.36], via: [[-1.5, 25.8, -0.4], [-2.6, 28.6, -1.1], [-3.7, 30.4, -1.7], [-5.2, 31.4, -2.2], [-7.3, 31.8, -2.5], [-9.6, 32.4, -2.6]], forks: [0.55, 0.7, 0.84, 0.95] },
-  { kind: 'limb', pad: 5, r: [1.3, 0.42], via: [[0.9, 10, 1], [3.1, 12.2, 1.8], [4.7, 13.8, 2.4], [6.1, 15.3, 3], [7.6, 16.6, 3.4], [9.3, 17.5, 3.6], [11.2, 17.9, 3.6]], forks: [0.62, 0.76, 0.88, 0.96] },
-  { kind: 'limb', pad: 5, r: [0.7, 0.28], via: [[1, 14, -0.4], [2.9, 16, 0], [4.4, 17.4, 0.8], [6.2, 17.9, 1.6], [8.6, 17.7, 2.2]], forks: [0.8, 0.94] },
-  { kind: 'limb', pad: 2, r: [1.05, 0.4], via: [[0.5, 16.4, 0.2], [1.6, 19, 0.5], [2.9, 21.5, 0.9], [4.2, 23.7, 1.2], [5.6, 25.5, 1.4], [7, 26.9, 1.5], [8.8, 28.3, 1.5], [10.4, 29.2, 1.5]], forks: [0.64, 0.76, 0.88, 0.96] },
-  { kind: 'limb', pad: 0, r: [0.8, 0.36], via: [[-1.2, 24.8, 0.2], [0, 27.8, 0.5], [1.1, 30.4, 0.7], [2.2, 33, 0.6], [3.4, 35.6, 0.3]], forks: [0.7, 0.9] },
-  { kind: 'twig', pad: 4, r: [0.34, 0.1], via: [[-9.2, 18, -0.3], [-10.6, 17.2, 0.1], [-11.8, 16.4, 0.3], [-12.7, 15.7, 0.4]], forks: [] },
-  { kind: 'twig', pad: 5, r: [0.42, 0.14], via: [[4.5, 13.6, 2.3], [6.6, 14.6, 3.2], [9.4, 15.3, 3.9], [12.2, 15.7, 4.2], [14.6, 15.6, 4.2]], forks: [] },
-  { kind: 'twig', pad: 5, r: [0.17, 0.06], via: [[10.4, 22.4, 3.5], [11.9, 24.2, 3.6], [13.3, 25.9, 3.6]], forks: [] },
-  { kind: 'twig', pad: 2, r: [0.36, 0.12], via: [[4.2, 23.7, 1.2], [5.2, 24.9, 2.2], [6.6, 25.4, 3]], forks: [] },
+  { kind: 'limb', pad: 8, r: [1.3, 0.42], via: [[-0.3, 12.2, 0.5], [-2.2, 14.9, 0.8], [-4.6, 17.3, 0.7], [-7.2, 18.2, 0.2], [-9.4, 18, -0.3], [-11.5, 17.7, -0.6], [-13.4, 18, -0.8]], forks: [0.72, 0.86, 0.95] },
+  { kind: 'limb', pad: 8, r: [0.95, 0.36], via: [[-0.4, 15, -0.7], [-2.5, 17.9, -1.3], [-4.5, 19.6, -1.7], [-7, 20, -1.7], [-9.6, 19.5, -1.4], [-12, 19.8, -1], [-14.4, 20.4, -0.6]], forks: [0.7, 0.84, 0.95] },
+  { kind: 'limb', pad: 7, r: [1.1, 0.4], via: [[-0.3, 16.6, 0.9], [-2.1, 19.4, 1.8], [-3.6, 22, 2.6], [-5.2, 24.4, 3.1], [-7.6, 25.3, 3.3], [-10.4, 25.1, 3.2], [-13.4, 25.2, 3]], forks: [0.6, 0.72, 0.84, 0.94] },
+  { kind: 'limb', pad: 7, r: [0.72, 0.3], via: [[-0.5, 20.4, -0.6], [-2.6, 22.6, -0.3], [-4.8, 23.9, 0.5], [-7.4, 24.2, 1.3], [-9.8, 24.1, 1.9]], forks: [0.75, 0.92] },
+  { kind: 'limb', pad: 3, r: [0.8, 0.36], via: [[-1.5, 25.8, -0.4], [-2.6, 28.6, -1.1], [-3.7, 30.4, -1.7], [-5.2, 31.4, -2.2], [-7.3, 31.8, -2.5], [-9.6, 32.4, -2.6]], forks: [0.55, 0.7, 0.84, 0.95] },
+  { kind: 'limb', pad: 9, r: [1.3, 0.42], via: [[0.9, 10, 1], [3.1, 12.2, 1.8], [4.7, 13.8, 2.4], [6.1, 15.3, 3], [7.6, 16.6, 3.4], [9.3, 17.5, 3.6], [11.2, 17.9, 3.6]], forks: [0.62, 0.76, 0.88, 0.96] },
+  { kind: 'limb', pad: 9, r: [0.7, 0.28], via: [[1, 14, -0.4], [2.9, 16, 0], [4.4, 17.4, 0.8], [6.2, 17.9, 1.6], [8.6, 17.7, 2.2]], forks: [0.8, 0.94] },
+  { kind: 'limb', pad: 5, r: [1.05, 0.4], via: [[0.5, 16.4, 0.2], [1.6, 19, 0.5], [2.9, 21.5, 0.9], [4.2, 23.7, 1.2], [5.6, 25.5, 1.4], [7, 26.9, 1.5], [8.8, 28.3, 1.5], [10.4, 29.2, 1.5]], forks: [0.64, 0.76, 0.88, 0.96] },
+  { kind: 'limb', pad: 2, r: [0.8, 0.36], via: [[-1.2, 24.8, 0.2], [0, 27.8, 0.5], [1.1, 30.4, 0.7], [2.2, 33, 0.6], [3.4, 35.6, 0.3]], forks: [0.7, 0.9] },
+  { kind: 'twig', pad: 8, r: [0.34, 0.1], via: [[-9.2, 18, -0.3], [-10.6, 17.2, 0.1], [-11.8, 16.4, 0.3], [-12.7, 15.7, 0.4]], forks: [] },
+  { kind: 'twig', pad: 9, r: [0.42, 0.14], via: [[4.5, 13.6, 2.3], [6.6, 14.6, 3.2], [9.4, 15.3, 3.9], [12.2, 15.7, 4.2], [14.6, 15.6, 4.2]], forks: [] },
+  { kind: 'twig', pad: 9, r: [0.17, 0.06], via: [[10.4, 22.4, 3.5], [11.9, 24.2, 3.6], [13.3, 25.9, 3.6]], forks: [] },
+  { kind: 'twig', pad: 5, r: [0.36, 0.12], via: [[4.2, 23.7, 1.2], [5.2, 24.9, 2.2], [6.6, 25.4, 3]], forks: [] },
 ]
 const LIMB_TAPER = 0.9
 const LIMB_STEP = 0.55
@@ -133,9 +137,9 @@ export const trunkGirth = (h: number): number => curve(RADIUS, h)
 export function trunkRidge(phi: number, h: number): number {
   const a = phi + trunkTwist(h)
   const wander = 0.5 * Math.sin(2 * a + 0.31 * h + 1.7) + 0.35 * Math.sin(3 * a - 0.23 * h + 0.4)
-  const r1 = 0.5 * Math.abs(Math.sin(4 * a + wander)) + 0.5 * (0.5 - 0.5 * Math.cos(8 * a + 2 * wander))
-  const r2 = Math.pow(Math.abs(Math.sin(8.5 * a + 1.3 * wander + 0.9)), 0.6)
-  return 0.86 * r1 + 0.14 * r2
+  const r1 = 0.6 * Math.pow(Math.abs(Math.sin(5.5 * a + wander)), 0.8) + 0.4 * (0.5 - 0.5 * Math.cos(11 * a + 2 * wander))
+  const r2 = Math.pow(Math.abs(Math.sin(13.5 * a + 1.6 * wander + 0.9 + 0.5 * Math.sin(0.7 * h))), 0.6)
+  return 0.7 * r1 + 0.3 * r2
 }
 
 export function trunkRadius(phi: number, h: number): number {
@@ -290,7 +294,11 @@ function grow(): Limb[] {
     const [x, z] = trunkAxis(h)
     return [x, h, z]
   }
-  twigs(0, up, (t) => trunkGirth(lerp(31.5, TOP_H, t)) * 0.55, [0.1, 0.3, 0.5, 0.7, 0.85])
+  const girth = (t: number): number => trunkGirth(lerp(31.5, TOP_H, t)) * 0.55
+  twigs(6, up, girth, [0, 0.08])
+  twigs(4, up, girth, [0.12, 0.3])
+  twigs(1, up, girth, [0.35, 0.5, 0.62])
+  twigs(0, up, girth, [0.7, 0.85, 0.95])
   return out
 }
 
@@ -312,7 +320,8 @@ export interface Cluster {
 
 const DOME = 0.3
 const BODY = { blend: 0.5, bias: 0.4 }
-const CAP = { lift: 1.2, puff: 0.36, blend: 0.8, bias: 1.1, depth: -0.7, lip: 0.35, droop: 2.4, taper: 0.7 }
+const TOP_DROP = 1.56
+const CAP = { lift: 1.2, thick: 0.25, cover: 0.66, fore: 0.12, rim: 0.85, sink: 0.1, slope: 0.75, depth: 0.25, lip: 0.4, droop: 1.6 }
 const wobble = (x: number, h: number, z: number): number => 0.16 * Math.sin(1.9 * x + 0.3 * h) * Math.sin(2.3 * h + 1.1 * z) * Math.sin(1.7 * z + 0.5 * x) + 0.07 * Math.sin(4.3 * x + 1) * Math.sin(3.9 * h + 2) * Math.sin(4.7 * z)
 const dome = (rim: number): number => 1 - DOME * Math.pow(rim, 1.5)
 
@@ -322,23 +331,25 @@ function gather(): Cluster[] {
   PADS.forEach((P, pad) => {
     const f = padFrame(P.lean, P.tip)
     const [a, b, c] = P.size
-    const n = Math.round(a * c * 0.95)
+    const thin = Math.min(1, Math.max(0.62, b / 3.3))
+    const drop = TOP_DROP * thin
+    const n = Math.round((a * c * 0.95) / (thin * thin))
     const put = (s: number, v: number, d: number, radius: number): void => {
       out.push({ pad, radius, local: [P.at[0] + f.side[0] * s + f.up[0] * v + f.depth[0] * d, P.at[1] + f.side[1] * s + f.up[1] * v + f.depth[1] * d, P.at[2] + f.side[2] * s + f.up[2] * v + f.depth[2] * d] })
     }
     for (let k = 0; k < n; k++) {
       const rr = Math.sqrt((k + 0.5) / n)
       const th = k * 2.39996 + rng.range(-0.3, 0.3)
-      const r = lerp(1.95, 1.6, rr) * rng.range(0.84, 1.18)
-      const top = b * dome(rr * rr) - CAP.lift - CAP.puff
-      put(Math.cos(th) * rr * (a - r), top - r + rng.range(-0.45, 0.2), Math.sin(th) * rr * (c - r), r)
+      const r = lerp(1.95, 1.6, rr) * rng.range(0.84, 1.18) * thin
+      const top = b * dome(rr * rr) - drop
+      put(Math.cos(th) * rr * (a - r), top - r + rng.range(-0.45, 0.2) * thin, Math.sin(th) * rr * (c - r), r)
     }
     const under = Math.round(n * 0.62)
     for (let k = 0; k < under; k++) {
       const rr = 0.93 * Math.sqrt((k + 0.5) / under)
       const th = k * 2.39996 + 1.3 + rng.range(-0.4, 0.4)
-      const r = rng.range(1.05, 1.6)
-      put(Math.cos(th) * rr * (a - r), -b + r + 0.36 * b * rr * rr * rr + rng.range(0, 0.6), Math.sin(th) * rr * (c - r), r)
+      const r = rng.range(1.05, 1.6) * thin
+      put(Math.cos(th) * rr * (a - r), -b + r + 0.36 * b * rr * rr * rr + rng.range(0, 0.6) * thin, Math.sin(th) * rr * (c - r), r)
     }
   })
   return out
@@ -353,6 +364,8 @@ interface PadField {
   frame: { up: Vec3; side: Vec3; depth: Vec3 }
   size: Vec3
   n: number
+  drop: number
+  lift: number
 }
 
 const padFields: PadField[] = PADS.map((P, pad) => {
@@ -363,7 +376,7 @@ const padFields: PadField[] = PADS.map((P, pad) => {
     balls.set([c.local[0], c.local[1], c.local[2], c.radius], i * 4)
     reach = Math.max(reach, Math.hypot(c.local[0] - P.at[0], c.local[1] - P.at[1], c.local[2] - P.at[2]) + c.radius)
   })
-  return { centre: P.at, reach, balls, frame: padFrame(P.lean, P.tip), size: P.size, n: pad }
+  return { centre: P.at, reach, balls, frame: padFrame(P.lean, P.tip), size: P.size, n: pad, drop: TOP_DROP * Math.min(1, Math.max(0.62, P.size[1] / 3.3)), lift: CAP.lift + CAP.thick * P.size[1] }
 })
 
 function ballField(f: PadField, x: number, h: number, z: number, blend: number): number {
@@ -400,7 +413,7 @@ export function crownField(x: number, h: number, z: number): number {
 export function crownCap(x: number, h: number, z: number): number {
   let best = Infinity
   for (const f of padFields) {
-    const far = Math.hypot(x - f.centre[0], h - f.centre[1], z - f.centre[2]) - f.reach - CAP.lift - CAP.puff
+    const far = Math.hypot(x - f.centre[0], h - f.centre[1], z - f.centre[2]) - f.reach - f.lift
     if (far > FAR) {
       if (far < best) best = far
       continue
@@ -412,19 +425,23 @@ export function crownCap(x: number, h: number, z: number): number {
     const s = px * f.frame.side[0] + ph * f.frame.side[1] + pz * f.frame.side[2]
     const v = px * u[0] + ph * u[1] + pz * u[2]
     const d = px * f.frame.depth[0] + ph * f.frame.depth[1] + pz * f.frame.depth[2]
-    const lumps = 0.62 * Math.sin(1.25 * s + 1.9 * f.n) * Math.sin(1.4 * d + 2.6 * f.n) + 0.25 * Math.sin(2.7 * x + 1.1 * h + f.n) * Math.sin(2.9 * z - 0.8 * x + 2 * f.n)
     const rim = (s * s) / (f.size[0] * f.size[0]) + (d * d) / (f.size[2] * f.size[2])
-    const body = ballField(f, x, h - CAP.lift, z, CAP.blend) + CAP.bias - CAP.puff - lumps + CAP.taper * rim
-    const gully = Math.sin(0.62 * s + 2.1 * f.n + 0.5 * Math.sin(0.9 * d)) * Math.sin(0.7 * d + 1.3 * f.n)
-    const lobes = 0.6 * Math.sin(0.93 * s + 1.7 * f.n) * Math.sin(0.81 * d + 2.3 * f.n) + 0.38 * Math.sin(1.73 * s - 1.12 * d + f.n) + 0.2 * Math.sin(3.1 * s + 2.7 * d + 0.6 * f.n) + 2.4 * clamp01((gully - 0.62) / 0.3)
-    const line = f.size[1] * dome(rim) - CAP.lift - CAP.puff - CAP.depth + lobes - CAP.droop * rim * rim
+    const fore = d / f.size[2] - CAP.fore
+    const turn = Math.atan2(fore, s / f.size[0])
+    const edge = ((s * s) / (f.size[0] * f.size[0]) + fore * fore) / (CAP.cover * (1 + 0.2 * Math.sin(3 * turn + 1.7 * f.n) + 0.1 * Math.sin(5 * turn + 2.9 * f.n)))
+    const load = Math.sqrt(Math.max(0, 1 - edge))
+    const swell = 0.45 * Math.sin(0.75 * s + 1.9 * f.n) * Math.sin(0.8 * d + 2.6 * f.n) + 0.2 * Math.sin(1.5 * s - 1.2 * d + f.n)
+    const top = f.size[1] * dome(rim) - f.drop + (f.lift + swell) * load - CAP.sink - 0.8 * Math.max(0, edge - 1)
+    const body = Math.max(CAP.slope * (v - top), 2 * (Math.sqrt(Math.max(edge, rim / CAP.rim)) - 1.02))
+    const hem = 0.6 * Math.sin(0.93 * s + 1.7 * f.n) * Math.sin(0.81 * d + 2.3 * f.n) + 0.4 * Math.sin(1.73 * s - 1.12 * d + f.n) + 0.25 * Math.sin(3.1 * s + 2.7 * d + 0.6 * f.n)
+    const line = f.size[1] * dome(rim) - f.drop - CAP.depth + hem - CAP.droop * rim * rim
     const cut = line - v
     const k = CAP.lip
     const t = clamp01(0.5 + (0.5 * (body - cut)) / k)
     const both = lerp(cut, body, t) + k * t * (1 - t)
     if (both < best) best = both
   }
-  return best + 0.4 * wobble(0.7 * x + 3, 0.7 * h, 0.7 * z)
+  return best + 0.25 * wobble(0.7 * x + 3, 0.7 * h, 0.7 * z)
 }
 
 export const crownOffset = (): Vec3 => {
