@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { config } from '../src/config'
 import { sampleSdf } from '../src/core/sdf'
-import { anchors, bankAt, buildCollider, centreHeightMm, colliderCells, cottage, domeHeightMm, emitters, groundAt, groundY, heights, innerRadiusMm, islandEdge, lamppost, moundAt, moundSlope, pond, pondField, shapePoints, shapes, solidDistance, tree, type Role } from '../src/scene/layout'
+import { anchors, bankAt, buildCollider, centreHeightMm, colliderCells, cottage, domeHeightMm, emitters, groundAt, groundY, heights, innerRadiusMm, islandEdge, lamppost, moundAt, moundSlope, pond, pondField, rimAt, shapePoints, shapes, snowTop, solidDistance, stones, tree, type Role } from '../src/scene/layout'
 
 const by = (role: Role) => shapes.filter((s) => s.role === role)
 const middle = (role: Role): [number, number] => {
@@ -48,9 +48,44 @@ describe('the layout', () => {
       const r = islandEdge(a)
       const rise = bankAt(Math.cos(a) * r, Math.sin(a) * r)
       expect(rise, `at ${i}`).toBeGreaterThan(0.2)
-      expect(rise, `at ${i}`).toBeLessThan(4.2)
+      expect(rise, `at ${i}`).toBeLessThan(6.5)
       expect(bankAt(Math.cos(a) * (r - 10), Math.sin(a) * (r - 10)), `inside ${i}`).toBe(0)
     }
+  })
+
+  it('keeps the lip low in front of the pond and lifts it up the glass at the sides, as the approved image has it', () => {
+    const lip = (deg: number): number => {
+      const a = (deg * Math.PI) / 180
+      const r = islandEdge(a)
+      return bankAt(Math.cos(a) * r, Math.sin(a) * r)
+    }
+    for (const deg of [75, 82, 90, 98, 105, 115]) expect(lip(deg), `front ${deg}`).toBeLessThan(1.5)
+    for (const deg of [20, 30, 40]) expect(lip(deg), `right ${deg}`).toBeGreaterThan(3.6)
+    for (const deg of [165, 172]) expect(lip(deg), `left ${deg}`).toBeGreaterThan(3.2)
+    const a = Math.PI / 2
+    const front = islandEdge(a)
+    expect(bankAt(0, front - 4), 'the pond comes forward').toBe(0)
+  })
+
+  it('rings the pond with a soft lip that stays off the path, the lamp and the glass', () => {
+    expect(rimAt(pond.x, pond.z)).toBe(0)
+    let most = 0
+    for (let i = 0; i < 72; i++) {
+      const a = (i / 72) * Math.PI * 2
+      for (let d = 0; d < 12; d += 0.25) {
+        const x = pond.x + Math.cos(a) * (pond.rx + d)
+        const z = pond.z + Math.sin(a) * (pond.rz + d)
+        const rise = rimAt(x, z)
+        expect(rise).toBeGreaterThanOrEqual(0)
+        expect(rise).toBeLessThan(2)
+        most = Math.max(most, rise)
+      }
+    }
+    expect(most).toBeGreaterThan(1.2)
+    expect(rimAt(lamppost.x, lamppost.z)).toBe(0)
+    for (const [x, z] of stones) expect(rimAt(x, z), `${x}, ${z}`).toBeLessThan(1e-9)
+    expect(rimAt(pond.x + pond.rx + 12, pond.z)).toBe(0)
+    expect(snowTop(tree.x, tree.z)).toBe(groundAt(tree.x, tree.z))
   })
 
   it('makes the island a mound raked toward the viewer, higher at the back, the island level through the pond', () => {
