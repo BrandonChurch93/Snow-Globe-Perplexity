@@ -1516,13 +1516,13 @@
     "frameCount": 480,
     "seconds": 8,
     "camera": "hero",
-    "distanceMm": 783.7,
+    "distanceMm": 783.5,
     "cameraNumbers": [
-      9.147,
-      200.437,
-      773.412,
+      9.144,
+      201.406,
+      773.224,
       0,
-      74,
+      75,
       0,
       16
     ],
