@@ -3,12 +3,13 @@ import { stream } from '../core/rng'
 import type { GlobePose } from '../shake/table'
 
 const G = config.globe
-const DT = 1 / config.sim.stepHz
+const HZ = config.sim.stepHz
+const DT = 1 / HZ
 const TAU = Math.PI * 2
 
 export const LIQUID_R = G.sphereDiameterMm / 2 - G.glassThicknessMm
 export const LIQUID_PIVOT_MM = G.baseHeightMm - G.collarDepthMm + G.sphereDiameterMm / 2
-export const LIQUID_LENGTH = 12
+export const LIQUID_LENGTH = 15
 export const LIQUID_TURN = 0
 export const LIQUID_SLOSH = 3
 export const LIQUID_TURBULENCE = 6
@@ -16,9 +17,12 @@ export const LIQUID_PHASE = 7
 export const LIQUID_PHASE_B = 8
 export const LIQUID_HAND = 9
 export const LIQUID_BUBBLE = 10
+export const LIQUID_MIX = 12
 export const TURBULENCE_MAX = 260
 export const NOISE_N = 24
 export const NOISE_RMS = 0.33
+export const SOLID_REACH_MM = 9
+export const MIX_STEPS = 4
 
 const GRAVITY_MM = 9810
 const LAG = 0.35
@@ -49,12 +53,16 @@ const TURB_EPS = 0.2
 export const AMBIENT_MAX = 1.5 * AMBIENT_FLOW * 1.2 + AMBIENT_TURN * 1.2 * LIQUID_R
 
 const INV_R2 = 1 / (LIQUID_R * LIQUID_R)
+const INV_REACH = 1 / SOLID_REACH_MM
+export const LIQUID_GAUGE = 0.5 * LIQUID_R * LIQUID_R
 const CELL = (2 * LIQUID_R) / (NOISE_N - 1)
 const INV_CELL = 1 / CELL
 const NOISE_LEN = NOISE_N * NOISE_N * NOISE_N * 3
 
 interface Constants {
   fields: Float32Array[]
+  pots: Float32Array[]
+  potPeak: number
   axis: [number, number, number]
   hand: number
 }
@@ -64,6 +72,7 @@ let constants: Constants | null = null
 function build(): Constants {
   const rng = stream('liquid:noise')
   const fields: Float32Array[] = []
+  const pots: Float32Array[] = []
   for (let f = 0; f < 3; f++) {
     const modes: number[] = []
     for (let m = 0; m < 9; m++) {
@@ -76,6 +85,7 @@ function build(): Constants {
       modes.push(k * sr * Math.cos(az), k * sr * Math.sin(az), k * cz, amp * rng.gauss(), amp * rng.gauss(), amp * rng.gauss(), rng.next() * TAU)
     }
     const field = new Float32Array(NOISE_LEN)
+    const pot = new Float32Array(NOISE_LEN)
     let sum = 0
     let count = 0
     for (let kz = 0; kz < NOISE_N; kz++) {
@@ -119,6 +129,9 @@ function build(): Constants {
           field[o] = ux
           field[o + 1] = uy
           field[o + 2] = uz
+          pot[o] = mask * px
+          pot[o + 1] = mask * py
+          pot[o + 2] = mask * pz
           if (r2 <= LIQUID_R * LIQUID_R) {
             sum += ux * ux + uy * uy + uz * uz
             count++
@@ -127,16 +140,27 @@ function build(): Constants {
       }
     }
     const scale = NOISE_RMS / Math.sqrt(sum / count)
-    for (let q = 0; q < NOISE_LEN; q++) field[q] = field[q]! * scale
+    for (let q = 0; q < NOISE_LEN; q++) {
+      field[q] = field[q]! * scale
+      pot[q] = pot[q]! * scale
+    }
     fields.push(field)
+    pots.push(pot)
   }
+  let potPeak = 0
+  for (let q = 0; q < NOISE_LEN; q += 3) {
+    let sum = 0
+    for (const pot of pots) sum += pot[q]! * pot[q]! + pot[q + 1]! * pot[q + 1]! + pot[q + 2]! * pot[q + 2]!
+    if (sum > potPeak) potPeak = sum
+  }
+  potPeak = Math.sqrt(potPeak)
   const lean = stream('liquid:axis')
   const tip = lean.range(0.09, 0.15)
   const about = lean.next() * TAU
   const ax = tip * Math.cos(about)
   const az = tip * Math.sin(about)
   const len = Math.sqrt(ax * ax + 1 + az * az)
-  return { fields, axis: [ax / len, 1 / len, az / len], hand: lean.sign() }
+  return { fields, pots, potPeak, axis: [ax / len, 1 / len, az / len], hand: lean.sign() }
 }
 
 export interface LiquidMotion {
@@ -160,9 +184,13 @@ export class Liquid {
   readonly state = new Float64Array(LIQUID_LENGTH)
   readonly coef = new Float64Array(8)
   readonly grid = new Float32Array(NOISE_LEN)
+  readonly pot = new Float32Array(NOISE_LEN)
   readonly motion: LiquidMotion = { ax: 0, ay: 0, az: 0, gx: 0, gy: -1, gz: 0 }
   noise = false
   maxSpeed = 0
+  maxSurface = 0
+  private readonly mixed = new Float64Array(3)
+  private readonly work = new Float64Array(6)
   private readonly pending = new Float64Array(3)
   private readonly scratch = new Float64Array(9)
   private readonly k: Constants
@@ -305,6 +333,18 @@ export class Liquid {
     L[9] = hand
     L[10] = bx
     L[11] = bz
+    if (Math.round(time * HZ) % MIX_STEPS === 0) {
+      if (turb > TURB_EPS) {
+        const sp = Math.sin(L[7]!)
+        L[12] = turb * Math.cos(L[7]!)
+        L[13] = turb * sp * Math.cos(L[8]!)
+        L[14] = turb * sp * Math.sin(L[8]!)
+      } else {
+        L[12] = 0
+        L[13] = 0
+        L[14] = 0
+      }
+    }
     this.prepare(time)
   }
 
@@ -324,19 +364,97 @@ export class Liquid {
     c[5] = 1.5 * (L[5]! + AMBIENT_FLOW * s1)
     const turb = L[6]!
     c[6] = turb
-    this.noise = turb > TURB_EPS
-    if (this.noise) {
-      const sa = Math.sin(L[7]!)
-      const wa = turb * Math.cos(L[7]!)
-      const wb = turb * sa * Math.cos(L[8]!)
-      const wc = turb * sa * Math.sin(L[8]!)
+    const wa = L[12]!
+    const wb = L[13]!
+    const wc = L[14]!
+    const held = this.mixed
+    this.noise = wa !== 0 || wb !== 0 || wc !== 0
+    if (this.noise && (wa !== held[0] || wb !== held[1] || wc !== held[2])) {
       const [fa, fb, fc] = this.k.fields as [Float32Array, Float32Array, Float32Array]
+      const [pa, pb, pc] = this.k.pots as [Float32Array, Float32Array, Float32Array]
       const g = this.grid
-      for (let q = 0; q < NOISE_LEN; q++) g[q] = wa * fa[q]! + wb * fb[q]! + wc * fc[q]!
+      const p = this.pot
+      for (let q = 0; q < NOISE_LEN; q++) {
+        g[q] = wa * fa[q]! + wb * fb[q]! + wc * fc[q]!
+        p[q] = wa * pa[q]! + wb * pb[q]! + wc * pc[q]!
+      }
+      held[0] = wa
+      held[1] = wb
+      held[2] = wc
     }
     const w = Math.sqrt(c[0]! * c[0]! + c[1]! * c[1]! + c[2]! * c[2]!)
     const h = Math.sqrt(c[3]! * c[3]! + c[4]! * c[4]! + c[5]! * c[5]!)
-    this.maxSpeed = w * LIQUID_R + h * 1.05 + turb * 1.6
+    const mix = Math.sqrt(wa * wa + wb * wb + wc * wc)
+    const loud = mix > turb ? mix : turb
+    this.maxSpeed = w * LIQUID_R + h * 1.05 + loud * 1.6
+    this.maxSurface = this.maxSpeed + 2 * INV_REACH * (0.5 * LIQUID_GAUGE * w + 0.2 * LIQUID_R * h + this.k.potPeak * loud)
+  }
+
+  potentialAt(x: number, y: number, z: number, out: Float64Array | number[]): void {
+    const c = this.coef
+    const r2 = x * x + y * y + z * z
+    const turn = -0.5 * (r2 - LIQUID_GAUGE)
+    const q = r2 * INV_R2
+    const hill = 0.5 * (1 - (q > 1 ? 1 : q))
+    let ax = turn * c[0]! + hill * (c[4]! * z - c[5]! * y)
+    let ay = turn * c[1]! + hill * (c[5]! * x - c[3]! * z)
+    let az = turn * c[2]! + hill * (c[3]! * y - c[4]! * x)
+    if (this.noise) {
+      const g = this.pot
+      const top = NOISE_N - 1.0001
+      let fx = (x + LIQUID_R) * INV_CELL
+      let fy = (y + LIQUID_R) * INV_CELL
+      let fz = (z + LIQUID_R) * INV_CELL
+      fx = fx < 0 ? 0 : fx > top ? top : fx
+      fy = fy < 0 ? 0 : fy > top ? top : fy
+      fz = fz < 0 ? 0 : fz > top ? top : fz
+      const ix = fx | 0
+      const iy = fy | 0
+      const iz = fz | 0
+      const tx = fx - ix
+      const ty = fy - iy
+      const tz = fz - iz
+      const o = (ix + NOISE_N * (iy + NOISE_N * iz)) * 3
+      const dy = NOISE_N * 3
+      const dz = NOISE_N * NOISE_N * 3
+      const w00 = (1 - ty) * (1 - tz)
+      const w10 = ty * (1 - tz)
+      const w01 = (1 - ty) * tz
+      const w11 = ty * tz
+      const sx = 1 - tx
+      for (let j = 0; j < 3; j++) {
+        const v =
+          (g[o + j]! * sx + g[o + 3 + j]! * tx) * w00 +
+          (g[o + dy + j]! * sx + g[o + dy + 3 + j]! * tx) * w10 +
+          (g[o + dz + j]! * sx + g[o + dz + 3 + j]! * tx) * w01 +
+          (g[o + dz + dy + j]! * sx + g[o + dz + dy + 3 + j]! * tx) * w11
+        if (j === 0) ax += v
+        else if (j === 1) ay += v
+        else az += v
+      }
+    }
+    out[0] = ax
+    out[1] = ay
+    out[2] = az
+  }
+
+  flowAt(x: number, y: number, z: number, d: number, gx: number, gy: number, gz: number, out: Float64Array | number[]): void {
+    if (d >= SOLID_REACH_MM) {
+      this.velocityAt(x, y, z, out)
+      return
+    }
+    const w = this.work
+    this.velocityAt(x, y, z, w)
+    const ux = w[0]!
+    const uy = w[1]!
+    const uz = w[2]!
+    this.potentialAt(x, y, z, w)
+    const s = d <= 0 ? 1 : 1 - d * INV_REACH
+    const m = 1 - s * s
+    const dm = 2 * s * INV_REACH
+    out[0] = m * ux + dm * (gy * w[2]! - gz * w[1]!)
+    out[1] = m * uy + dm * (gz * w[0]! - gx * w[2]!)
+    out[2] = m * uz + dm * (gx * w[1]! - gy * w[0]!)
   }
 
   velocityAt(x: number, y: number, z: number, out: Float64Array | number[]): void {
