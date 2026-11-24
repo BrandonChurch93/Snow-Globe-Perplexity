@@ -1,6 +1,8 @@
 {
   "note": "Measured from references/approved/winter-rest.png, 2816 by 1584. Pixels are pixels of that image. Angles on the glass are degrees round the rim as the hero camera sees it: 0 right, 90 top, 180 left. Angles on the slab are atan2(z, x) in degrees: 0 right, 90 toward the hero camera.",
   "glass": {
+    "pace": [1.8, 3.6],
+    "barbWait": [0.5, 3.5],
     "mapPx": 4096,
     "maxPolarDeg": 125,
     "meshFromPolarDeg": 30,
@@ -22,7 +24,7 @@
       { "deg": 215, "reachMm": 31, "density": 1.0, "filmMm": 36, "film": 0.84, "large": 0.4, "fan": 1.0, "lean": 0.8 },
       { "deg": 245, "reachMm": 30, "density": 0.85, "filmMm": 37, "film": 0.86, "large": 0.4, "fan": 1.0, "lean": 0.4 }
     ],
-    "backShare": 0.62,
+    "backShare": 0.5,
     "minSquash": 0.5,
     "maxStretch": 2,
     "measuredBold": 1.3,
@@ -49,7 +51,7 @@
       "needles": 2200
     },
     "plumes": [
-      { "root": [1075, 245], "tip": [1272, 182], "barbMm": 8, "gap": 0.6, "bold": 1.5 },
+      { "root": [1075, 245], "tip": [1272, 182], "barbMm": 9, "gap": 0.55, "bold": 2.0 },
       { "root": [985, 330], "tip": [1060, 243], "barbMm": 6.5, "gap": 0.75 },
       { "root": [955, 425], "tip": [1014, 345], "barbMm": 6, "gap": 0.75 },
       { "root": [925, 505], "tip": [977, 415], "barbMm": 5 },
@@ -59,16 +61,42 @@
       { "root": [1750, 277], "tip": [1662, 258], "barbMm": 2.4, "gap": 0.7, "bold": 1.0 }
     ],
     "stars": [],
+    "crustNote": "Bristles packed along the rim, drawn last from their own stream so nothing else moves: the crust down the left rim and the hair-fine fringe down the upper right, placed by pixel of the approved image like the tufts.",
+    "crust": [
+      {"at": [1081, 218], "to": [1124, 218], "spreadDeg": 30, "count": 13, "baseMm": 3.2, "len": [0.3, 1.0], "barb": 0.3, "k": 0.55, "bold": 0.75, "body": 0.6, "round": 0.3},
+      {"at": [1031, 261], "to": [1072, 256], "spreadDeg": 30, "count": 13, "baseMm": 3.2, "len": [0.3, 1.0], "barb": 0.3, "k": 0.55, "bold": 0.75, "body": 0.6, "round": 0.3},
+      {"at": [995, 300], "to": [1041, 290], "spreadDeg": 30, "count": 13, "baseMm": 3.2, "len": [0.3, 1.0], "barb": 0.3, "k": 0.55, "bold": 0.75, "body": 0.6, "round": 0.3},
+      {"at": [969, 334], "to": [1016, 320], "spreadDeg": 30, "count": 13, "baseMm": 3.2, "len": [0.3, 1.0], "barb": 0.3, "k": 0.55, "bold": 0.75, "body": 0.6, "round": 0.3},
+      {"at": [939, 381], "to": [983, 362], "spreadDeg": 30, "count": 13, "baseMm": 3.2, "len": [0.3, 1.0], "barb": 0.3, "k": 0.55, "bold": 0.75, "body": 0.6, "round": 0.3},
+      {"at": [914, 433], "to": [950, 413], "spreadDeg": 30, "count": 13, "baseMm": 3.2, "len": [0.3, 1.0], "barb": 0.3, "k": 0.55, "bold": 0.75, "body": 0.6, "round": 0.3},
+      {"at": [891, 495], "to": [935, 463], "spreadDeg": 30, "count": 13, "baseMm": 3.2, "len": [0.3, 1.0], "barb": 0.3, "k": 0.55, "bold": 0.75, "body": 0.6, "round": 0.3},
+      {"at": [880, 542], "to": [913, 513], "spreadDeg": 30, "count": 13, "baseMm": 3.2, "len": [0.3, 1.0], "barb": 0.3, "k": 0.55, "bold": 0.75, "body": 0.6, "round": 0.3},
+      {"at": [871, 612], "to": [909, 569], "spreadDeg": 30, "count": 13, "baseMm": 3.2, "len": [0.3, 1.0], "barb": 0.3, "k": 0.55, "bold": 0.75, "body": 0.6, "round": 0.3},
+      {"at": [870, 667], "to": [897, 629], "spreadDeg": 30, "count": 13, "baseMm": 3.2, "len": [0.3, 1.0], "barb": 0.3, "k": 0.55, "bold": 0.75, "body": 0.6, "round": 0.3},
+      {"at": [877, 734], "to": [896, 698], "spreadDeg": 30, "count": 13, "baseMm": 3.2, "len": [0.3, 1.0], "barb": 0.3, "k": 0.55, "bold": 0.75, "body": 0.6, "round": 0.3},
+      {"at": [888, 786], "to": [905, 744], "spreadDeg": 30, "count": 13, "baseMm": 3.2, "len": [0.3, 1.0], "barb": 0.3, "k": 0.55, "bold": 0.75, "body": 0.6, "round": 0.3},
+      {"at": [899, 821], "to": [913, 781], "spreadDeg": 30, "count": 13, "baseMm": 3.2, "len": [0.3, 1.0], "barb": 0.3, "k": 0.55, "bold": 0.75, "body": 0.6, "round": 0.3},
+      {"at": [922, 877], "to": [934, 824], "spreadDeg": 30, "count": 13, "baseMm": 3.2, "len": [0.3, 1.0], "barb": 0.3, "k": 0.55, "bold": 0.75, "body": 0.6, "round": 0.3},
+      {"at": [947, 924], "to": [953, 874], "spreadDeg": 30, "count": 13, "baseMm": 3.2, "len": [0.3, 1.0], "barb": 0.3, "k": 0.55, "bold": 0.75, "body": 0.6, "round": 0.3},
+      {"at": [987, 981], "to": [986, 934], "spreadDeg": 30, "count": 13, "baseMm": 3.2, "len": [0.3, 1.0], "barb": 0.3, "k": 0.55, "bold": 0.75, "body": 0.6, "round": 0.3},
+      {"at": [1792, 275], "to": [1768, 278], "spreadDeg": 26, "count": 9, "baseMm": 3.2, "len": [0.3, 1.0], "barb": 0.3, "k": 0.4, "bold": 0.4, "body": 0.5, "round": 0.3},
+      {"at": [1829, 317], "to": [1803, 318], "spreadDeg": 26, "count": 9, "baseMm": 3.2, "len": [0.3, 1.0], "barb": 0.3, "k": 0.4, "bold": 0.4, "body": 0.5, "round": 0.3},
+      {"at": [1850, 345], "to": [1822, 344], "spreadDeg": 26, "count": 9, "baseMm": 3.2, "len": [0.3, 1.0], "barb": 0.3, "k": 0.4, "bold": 0.4, "body": 0.5, "round": 0.3},
+      {"at": [1877, 390], "to": [1847, 386], "spreadDeg": 26, "count": 9, "baseMm": 3.2, "len": [0.3, 1.0], "barb": 0.3, "k": 0.4, "bold": 0.4, "body": 0.5, "round": 0.3},
+      {"at": [1897, 430], "to": [1871, 424], "spreadDeg": 26, "count": 9, "baseMm": 3.2, "len": [0.3, 1.0], "barb": 0.3, "k": 0.4, "bold": 0.4, "body": 0.5, "round": 0.3},
+      {"at": [1912, 467], "to": [1882, 458], "spreadDeg": 26, "count": 9, "baseMm": 3.2, "len": [0.3, 1.0], "barb": 0.3, "k": 0.4, "bold": 0.4, "body": 0.5, "round": 0.3}
+    ],
+    "rootFray": 0.3,
     "tufts": [
       { "at": [1842, 898], "to": [1812, 760], "spreadDeg": 56, "count": 28, "baseMm": 3.4, "len": [0.5, 1.0], "barb": 0.15, "k": 1.0, "bold": 1.5, "body": 1.2 },
       { "at": [1750, 938], "to": [1736, 846], "spreadDeg": 44, "count": 16, "baseMm": 2.4, "len": [0.5, 1.0], "barb": 0.15, "k": 1.0, "bold": 1.4, "body": 1.2 },
       { "at": [1700, 950], "to": [1694, 902], "spreadDeg": 26, "count": 7, "baseMm": 1.4, "len": [0.5, 1.0], "barb": 0.15, "k": 0.9, "body": 0.8 },
-      { "at": [1546, 168], "to": [1486, 174], "spreadDeg": 14, "count": 7, "baseMm": 2.4, "len": [0.3, 1.0], "barb": 0.22, "k": 0.62, "bold": 0.6, "body": 1.0, "round": 0.2 },
-      { "at": [1595, 185], "to": [1525, 185], "spreadDeg": 14, "count": 10, "baseMm": 2.4, "len": [0.3, 1.0], "barb": 0.22, "k": 0.62, "bold": 0.6, "body": 1.0, "round": 0.2 },
-      { "at": [1642, 207], "to": [1564, 199], "spreadDeg": 14, "count": 11, "baseMm": 2.4, "len": [0.3, 1.0], "barb": 0.22, "k": 0.62, "bold": 0.6, "body": 1.0, "round": 0.2 },
-      { "at": [1687, 234], "to": [1607, 217], "spreadDeg": 14, "count": 12, "baseMm": 2.4, "len": [0.3, 1.0], "barb": 0.22, "k": 0.62, "bold": 0.6, "body": 1.0, "round": 0.2 },
-      { "at": [1728, 265], "to": [1660, 243], "spreadDeg": 14, "count": 9, "baseMm": 2.4, "len": [0.3, 1.0], "barb": 0.22, "k": 0.62, "bold": 0.6, "body": 1.0, "round": 0.2 },
-      { "at": [1766, 301], "to": [1715, 278], "spreadDeg": 14, "count": 6, "baseMm": 2.4, "len": [0.3, 1.0], "barb": 0.22, "k": 0.62, "bold": 0.6, "body": 1.0, "round": 0.2 },
+      { "at": [1546, 168], "to": [1486, 174], "spreadDeg": 14, "count": 7, "baseMm": 3.0, "len": [0.25, 0.8], "barb": 0.3, "k": 0.42, "bold": 0.42, "body": 0.7, "round": 0.2 },
+      { "at": [1595, 185], "to": [1525, 185], "spreadDeg": 14, "count": 10, "baseMm": 3.0, "len": [0.25, 0.8], "barb": 0.3, "k": 0.42, "bold": 0.42, "body": 0.7, "round": 0.2 },
+      { "at": [1642, 207], "to": [1564, 199], "spreadDeg": 14, "count": 11, "baseMm": 3.0, "len": [0.25, 0.8], "barb": 0.3, "k": 0.42, "bold": 0.42, "body": 0.7, "round": 0.2 },
+      { "at": [1687, 234], "to": [1607, 217], "spreadDeg": 14, "count": 12, "baseMm": 3.0, "len": [0.25, 0.8], "barb": 0.3, "k": 0.42, "bold": 0.42, "body": 0.7, "round": 0.2 },
+      { "at": [1728, 265], "to": [1660, 243], "spreadDeg": 14, "count": 9, "baseMm": 3.0, "len": [0.25, 0.8], "barb": 0.3, "k": 0.42, "bold": 0.42, "body": 0.7, "round": 0.2 },
+      { "at": [1766, 301], "to": [1715, 278], "spreadDeg": 14, "count": 6, "baseMm": 3.0, "len": [0.25, 0.8], "barb": 0.3, "k": 0.42, "bold": 0.42, "body": 0.7, "round": 0.2 },
       { "at": [1927, 620], "to": [1871, 634], "spreadDeg": 40, "count": 8, "baseMm": 1.8, "len": [0.45, 1.0], "barb": 0.2, "k": 0.9, "bold": 0.9, "body": 0.8 },
       { "at": [1922, 562], "to": [1892, 514], "spreadDeg": 30, "count": 6, "baseMm": 1.4, "len": [0.45, 1.0], "barb": 0.2, "k": 0.7, "bold": 0.8, "body": 0.9 },
       { "at": [1922, 664], "to": [1879, 703], "spreadDeg": 30, "count": 6, "baseMm": 1.2, "len": [0.45, 1.0], "barb": 0.2, "k": 0.9, "bold": 0.9, "body": 0.8 },
@@ -126,7 +154,7 @@
       "openMin": 0.45
     },
     "under": { "inMm": [9, 17], "film": 0.42, "speck": 0.4, "wallMm": 4.5 },
-    "fern": { "scale": [0.8, 1.25], "spineMm": [0.9, 1.2], "spineTipMm": 0.22, "rootMm": [2.2, 3.2], "rootShare": 0.4, "branchMm": [0.42, 0.58], "branchTipMm": 0.13, "needleMm": [0.2, 0.28], "needleTipMm": 0.09, "gapMm": [3.6, 2.2], "needleGapMm": [0.9, 1.4], "needleShare": [0.3, 0.45], "needleMaxMm": 4.5, "lenShare": [0.2, 0.27], "lenMm": [9, 13], "lean": [0.75, 1.0], "angleDeg": [46, 58], "angleTipDeg": [34, 42], "rise": [0.2, 0.34], "fall": [0.85, 1.2] },
+    "fern": { "speed": [2.2, 5.5], "startAt": [1, 7], "branchWait": [5, 16], "branchSpeed": 0.5, "needleSpeed": 0.35, "seeds": { "count": 2, "at": [0.4, 0.98], "early": [0.25, 0.55] }, "scale": [0.8, 1.25], "spineMm": [0.9, 1.2], "spineTipMm": 0.22, "rootMm": [2.2, 3.2], "rootShare": 0.4, "branchMm": [0.42, 0.58], "branchTipMm": 0.13, "needleMm": [0.2, 0.28], "needleTipMm": 0.09, "gapMm": [3.6, 2.2], "needleGapMm": [0.9, 1.4], "needleShare": [0.3, 0.45], "needleMaxMm": 4.5, "lenShare": [0.2, 0.27], "lenMm": [9, 13], "lean": [0.75, 1.0], "angleDeg": [46, 58], "angleTipDeg": [34, 42], "rise": [0.2, 0.34], "fall": [0.85, 1.2] },
     "shapes": { "ridges": false, "branchMinMm": 0.5, "branchEvery": 5, "spineEvery": 3, "ridgeTall": 0.6, "ridgeSteep": 0.95, "ridgeOnDrift": 0.45, "leafShare": 0.6,
       "leafEdge": 0.55,
       "bodyEdge": 0.7, "leafDeep": 0.5, "bodyDeep": 0.88, "bodyShare": 0.72, "bodyTall": 1.5, "bodyFall": 1.5, "crestTall": 0.45, "grainMinMm": 0.5, "lumpFullMm": 0.62, "farPerMm": 2, "farSoft": 0.4 },
@@ -150,6 +178,7 @@
       { "deg": -42, "mm": 160, "sizeMm": 4 },
       { "deg": -8, "mm": 124, "sizeMm": 3 }
     ],
+    "thrown": { "count": 54, "outMm": [3, 42], "sizeMm": [0.4, 1.1], "skidMm": [6, 22], "when": [0.32, 0.9] },
     "grains": 1700,
     "grainMm": [0.09, 0.36],
     "clumps": 34

@@ -213,7 +213,9 @@ function grow(ctx, p, h, o, depth = 0) {
   const { space, rng, field } = ctx
   const steps = Math.max(2, Math.round(o.len / o.step))
   const ds = o.len / steps
-  let t = o.t0
+  // When the stroke reaches a place along itself: at its own speed from its root, or sooner where a seed sits ahead.
+  const when = o.when ?? ((x) => o.t0 + x / o.speed)
+  let t = when(0)
   let s = 0
   const kids = o.kids
   const next = kids ? [kids.start ?? kids.gap * rng.next(), kids.start ?? kids.gap * rng.next()] : null
@@ -246,7 +248,7 @@ function grow(ctx, p, h, o, depth = 0) {
     const wb = o.w1 + (o.w0 - o.w1) * shape(u1)
     const ha = o.h1 + (o.h0 - o.h1) * shape(u0)
     const hb = o.h1 + (o.h0 - o.h1) * shape(u1)
-    const t1 = t + ds / o.speed
+    const t1 = when(s + ds)
     const A = space.map(p)
     const B = space.map(q)
     const M0 = space.map(space.project(mix3(p, q, 0.5)))
@@ -305,7 +307,7 @@ function grow(ctx, p, h, o, depth = 0) {
           }
           const child = kids.make(ctx.designed ? l : ll, u, rng, depth + 1)
           child.len = ll * (child.stretch ?? 1)
-          child.t0 = t + (f * ds) / o.speed + (kids.delay ?? 0) * rng.next()
+          child.t0 = when(s + f * ds) + (kids.wait ?? 0) + (kids.delay ?? 0) * rng.next()
           child.curl = (child.curl ?? 0) * -sgn
           grow(ctx, at, hk, child, depth + 1)
         }
@@ -362,8 +364,11 @@ function fibre(rng, k) {
   return { step: 0.7, w0: rng.range(W[0], W[1]), w1: W[2], h0: k * rng.range(0.55, 0.9), h1: k * L.glass.barbTip, speed: 0.6, curl: rng.range(0.003, 0.03), wobble: 0.008, spark: rng.range(0.45, 1), kappa: 3, reach: 0.1, taper: 0.62, power: L.glass.barbPower }
 }
 // A feather: a spine, a low soft body in the feather's outline, and fine barbs set close enough to read as fibres.
+// How fast each feather's spine runs in from the rim: its own stream, so the drawn shapes do not move with it.
+let glassPace = null
 function plumeSpec(length, barbMm, rng, t0, k = 1, bold = 1, body = bold) {
   const G = L.glass
+  glassPace ??= stream('frost-glass-pace')
   const lean = rng.range(0.6, 1)
   const angle = rng.range(G.barbAngle[0], G.barbAngle[1]) * RAD
   const profile = feather(rng.range(0.16, 0.36), rng.range(0.6, 0.95))
@@ -374,7 +379,7 @@ function plumeSpec(length, barbMm, rng, t0, k = 1, bold = 1, body = bold) {
     w1: 0.05,
     h0: k,
     h1: 0.6 * k,
-    speed: 1,
+    speed: G.pace[0] + (G.pace[1] - G.pace[0]) * glassPace.next(),
     t0,
     wobble: G.spineWobble,
     curl: rng.gauss() * 0.005,
@@ -387,6 +392,8 @@ function plumeSpec(length, barbMm, rng, t0, k = 1, bold = 1, body = bold) {
       gap: rng.range(L.glass.barbGap[0], L.glass.barbGap[1]),
       len: barbMm,
       min: 0.3,
+      wait: G.barbWait[0],
+      delay: G.barbWait[1] - G.barbWait[0],
       lean: rng.next() < 0.5 ? lean : 1 / lean,
       angle,
       angleTip: angle * rng.range(0.55, 0.75),
@@ -510,7 +517,10 @@ function buildGlass() {
     }
   }
   // Tufts: soft fans of fine fronds that rise out of the milk, laid out on screen so the fan opens as the picture's does.
-  for (const tf of L.glass.tufts) {
+  // The roots of a tuft are frayed along its own axis from their own stream, so a fan does not end on one straight line.
+  const fray = stream('frost-tuft-root')
+  const tufts = (list, rng, ctx) => {
+  for (const tf of list) {
     const T = L.glass.tuft
     const ax = [tf.to[0] - tf.at[0], tf.to[1] - tf.at[1]]
     const al = Math.hypot(ax[0], ax[1])
@@ -520,7 +530,8 @@ function buildGlass() {
       const off = rng.range(-1, 1)
       const a = (off * 0.7 + rng.gauss() * 0.3) * tf.spreadDeg * RAD
       const l = (tf.len[0] + (tf.len[1] - tf.len[0]) * rng.next()) * (1 - (tf.round ?? 0.45) * Math.abs(off))
-      const from = [tf.at[0] + across[0] * off * basePx, tf.at[1] + across[1] * off * basePx]
+      const back = (fray.next() - 0.7) * L.glass.rootFray
+      const from = [tf.at[0] + across[0] * off * basePx + ax[0] * back, tf.at[1] + across[1] * off * basePx + ax[1] * back]
       const dir = [ax[0] * Math.cos(a) - ax[1] * Math.sin(a), ax[0] * Math.sin(a) + ax[1] * Math.cos(a)]
       const at = pixelOnGlass(from[0], from[1])
       const tip = pixelOnGlass(from[0] + dir[0] * l, from[1] + dir[1] * l)
@@ -532,6 +543,8 @@ function buildGlass() {
       grow(ctx, at, toward(at, tip), o)
     }
   }
+  }
+  tufts(L.glass.tufts, rng, ctx)
   // Feathers seeded along the rim, front and back. The large ones root at the rim and their tips make the band's inner edge;
   // the small ones are thin and lie under them.
   const seeded = (count, front, kind) => {
@@ -590,6 +603,9 @@ function buildGlass() {
     const l = screenMm * hd.scale
     grow(ctx, start, hd.h, { ...fibre(rng, rng.range(0.35, 0.8)), step: 0.4, len: l, t0: 1 + inMm * 0.9 + rng.range(0, 5), curl: rng.gauss() * 0.02 })
   }
+  // The packed bristles of the rim, last and from their own stream.
+  const crustRng = stream('frost-glass-crust')
+  tufts(L.glass.crust, crustRng, { ...ctx, rng: crustRng })
   // The milky film in the rim band, thick at the rim and broken toward its inner edge.
   const { H, T, S } = field
   for (let y = 0; y < n; y++) {
@@ -657,7 +673,7 @@ function driftAt(x, z) {
 }
 
 // ---------- the slab ----------
-function slabArm(length, rng, t0, bold = 1) {
+function slabArm(length, rng, t0, bold = 1, pace = 0.5) {
   // A fern of ice: a spine, side branches that are longest a third of the way out, and on each of those a row of short
   // needles. Widths are in millimetres as the hero camera sees them (see the metric in buildSlab). No broad body under it:
   // the dark slab shows between the branches, and the fern thins to single needles at its tip.
@@ -670,7 +686,7 @@ function slabArm(length, rng, t0, bold = 1) {
     w1: S.needleTipMm,
     h0: r.range(0.6, 0.85),
     h1: 0.35,
-    speed: 0.4,
+    speed: S.needleSpeed,
     wobble: 0.03,
     spark: r.range(0.5, 1),
     kappa: 3,
@@ -684,7 +700,7 @@ function slabArm(length, rng, t0, bold = 1) {
     w1: S.branchTipMm,
     h0: r.range(0.75, 0.95),
     h1: 0.5,
-    speed: 0.6,
+    speed: S.branchSpeed * r.range(0.8, 1.25),
     wobble: 0.03,
     curl: r.range(0.0, 0.05),
     spark: r.range(0.5, 0.9),
@@ -714,7 +730,8 @@ function slabArm(length, rng, t0, bold = 1) {
     w1: S.spineTipMm,
     h0: 1,
     h1: 0.5,
-    speed: 1,
+    // The spine shoots out first, each arm at its own speed; the side branches start well behind its tip and fill in slowly.
+    speed: S.speed[0] + (S.speed[1] - S.speed[0]) * pace,
     t0,
     wobble: 0.016,
     curl: rng.gauss() * 0.003,
@@ -729,7 +746,8 @@ function slabArm(length, rng, t0, bold = 1) {
       start: rng.range(1, 2.5),
       len: clamp(length * rng.range(S.lenShare[0], S.lenShare[1]), S.lenMm[0], S.lenMm[1]) * (0.8 + 0.4 * fine) * Math.sqrt(bold),
       min: 0.5,
-      delay: 1.5,
+      wait: S.branchWait[0],
+      delay: S.branchWait[1] - S.branchWait[0],
       lean: rng.range(S.lean[0], S.lean[1]),
       angle: rng.range(S.angleDeg[0], S.angleDeg[1]) * RAD,
       angleTip: rng.range(S.angleTipDeg[0], S.angleTipDeg[1]) * RAD,
@@ -774,12 +792,26 @@ function buildSlab() {
     taken.push(deg)
     arms.push({ rootDeg: deg, tipDeg: deg + rng.range(-9, 9), tipMm: rng.range(L.slab.fillMm[0], L.slab.fillMm[1]) })
   }
+  // When each arm starts and how fast its spine runs come from their own stream, so the drawn shapes do not move with them.
+  const paces = stream('frost-slab-pace')
+  const seeds = stream('frost-slab-seed')
   for (const a of arms) {
     const root = at(a.rootDeg, footR - 0.6)
     const tip = at(a.tipDeg, a.tipMm)
     const d = norm([tip[0] - root[0], 0, tip[2] - root[2]])
     const length = Math.hypot(tip[0] - root[0], tip[2] - root[2]) * 1.02
-    const o = slabArm(length, rng, rng.range(0, 2.5), a.bold ?? 1)
+    const jitter = rng.range(0, 2.5)
+    const startAt = L.slab.fern.startAt[0] + (L.slab.fern.startAt[1] - L.slab.fern.startAt[0]) * paces.next() + 0.4 * jitter
+    const o = slabArm(length, rng, startAt, a.bold ?? 1, paces.next())
+    // Crystals nucleate ahead of the front on the arm's own line and grow both ways until they join it, so the arm is never
+    // one picture scaling outward from the foot.
+    const E = L.slab.fern.seeds
+    const marks = [{ s: 0, t: startAt }]
+    for (let k = 0; k < E.count; k++) {
+      const s = length * (E.at[0] + ((E.at[1] - E.at[0]) * (k + seeds.next())) / E.count)
+      marks.push({ s, t: startAt + (s / o.speed) * (E.early[0] + (E.early[1] - E.early[0]) * seeds.next()) })
+    }
+    o.when = (x) => Math.min(...marks.map((m) => m.t + Math.abs(x - m.s) / o.speed))
     o.to = [tip]
     o.steer = 0.25
     grow(ctx, root, d, o)
@@ -837,7 +869,8 @@ function buildSlab() {
         if (h > H[i]) H[i] = h
         const s = 0.1 + 0.2 * mid + 0.5 * speck
         if (s > S[i]) S[i] = s
-        const t = 6 + (r - footR) * 1.05 + mid * 8
+        // The thin patches nucleate on their own, ahead of the arms, in the order of the noise rather than of the distance.
+        const t = 5 + (r - footR) * 0.35 + mid * 26
         if (t < T[i]) T[i] = t
       }
     }
@@ -848,7 +881,7 @@ function buildSlab() {
     const size = L.slab.grainMm[0] + L.slab.grainMm[1] * Math.pow(rng.next(), 2.6)
     const x = r * Math.cos(deg * RAD)
     const z = r * Math.sin(deg * RAD)
-    const t = 2 + (r - footR) * 0.95 + rng.range(0, 7)
+    const t = 3 + (r - footR) * 0.55 + rng.range(0, 12)
     const h = clamp(size * rng.range(0.9, 1.5), 0.1, 0.7)
     bump(x, z, size, h, t, rng.range(0.4, 1))
     grains.push({ x, z, r: size, h, t })
@@ -860,7 +893,7 @@ function buildSlab() {
     const cz = r * Math.sin(deg * RAD)
     const spread = rng.range(0.8, 3.6)
     const count = Math.round(rng.range(8, 16) * spread)
-    const t0 = 2 + (r - footR) * 0.95 + rng.range(0, 5)
+    const t0 = 3 + (r - footR) * 0.3 + rng.range(0, 26)
     bump(cx, cz, spread * 0.9, 0.07 + 0.04 * spread, t0, 0.3)
     for (let k = 0; k < count; k++) {
       const a = rng.range(0, 2 * Math.PI)
@@ -1001,10 +1034,13 @@ function slabShapes(lines, grains, tTop) {
       prev = rowNow
     }
   }
-  const lump = (x, z, r, h, t, y0 = 0, soft = 1) => {
+  // `thrown` marks a loose grain the landing throws outward: its vertices carry 2 + (how far it skids, mm) / 64 in place of
+  // how open they are, and the shader slides the grain in from that far nearer the foot.
+  const lump = (x, z, r, h, t, y0 = 0, soft = 1, thrown = 0) => {
     const base = y0 + driftAt(x, z)
     const high = Math.min(h * mm, r * rng.range(0.5, 0.85))
-    const top = vert(x + rng.range(-0.15, 0.15) * r, base + high, z + rng.range(-0.15, 0.15) * r, t, soft, soft, 1)
+    const open = (o) => (thrown > 0 ? 2 + thrown / 64 : o)
+    const top = vert(x + rng.range(-0.15, 0.15) * r, base + high, z + rng.range(-0.15, 0.15) * r, t, soft, soft, open(1))
     const ring = []
     const mid = []
     const sides = r >= S.lumpFullMm ? 8 : 6
@@ -1012,9 +1048,9 @@ function slabShapes(lines, grains, tTop) {
     for (let k = 0; k < sides; k++) {
       const a = turn + (k / sides) * 2 * Math.PI
       const rr = r * rng.range(0.95, 1.2)
-      ring.push(vert(x + rr * Math.cos(a), base, z + rr * Math.sin(a), t, 0.3 * soft, 0, 0.5))
+      ring.push(vert(x + rr * Math.cos(a), base, z + rr * Math.sin(a), t, 0.3 * soft, 0, open(0.5)))
       const rm = r * rng.range(0.62, 0.76)
-      mid.push(vert(x + rm * Math.cos(a + 0.4), base + high * rng.range(0.66, 0.8), z + rm * Math.sin(a + 0.4), t, 0.75 * soft, soft * (soft < 1 ? 0.55 : 1), 0.85))
+      mid.push(vert(x + rm * Math.cos(a + 0.4), base + high * rng.range(0.66, 0.8), z + rm * Math.sin(a + 0.4), t, 0.75 * soft, soft * (soft < 1 ? 0.55 : 1), open(0.85)))
     }
     for (let k = 0; k < sides; k++) {
       const k1 = (k + 1) % sides
@@ -1032,6 +1068,20 @@ function slabShapes(lines, grains, tTop) {
       const d = f.sizeMm * Math.pow(rng.next(), 0.7)
       lump(cx + d * Math.cos(a) * 1.6, cz + d * Math.sin(a) * 0.8, rng.range(1.2, 2.6), rng.range(0.12, 0.3), tTop * (0.55 + 0.4 * rng.next()), 0, S.farSoft)
     }
+  }
+  // Loose grains the landing throws out of the heap: each skids outward and stops, the far ones last.
+  const TH = L.slab.thrown
+  const tr = stream('frost-thrown')
+  for (let k = 0; k < TH.count; k++) {
+    const deg = tr.range(-180, 180)
+    const out = TH.outMm[0] + (TH.outMm[1] - TH.outMm[0]) * Math.pow(tr.next(), 1.4)
+    const r = footR + out
+    const size = TH.sizeMm[0] + (TH.sizeMm[1] - TH.sizeMm[0]) * Math.pow(tr.next(), 2)
+    const skid = Math.min(out + 2, tr.range(TH.skidMm[0], TH.skidMm[1]))
+    const share = clamp((out - TH.outMm[0]) / (TH.outMm[1] - TH.outMm[0]))
+    const t = tTop * (TH.when[0] + (TH.when[1] - TH.when[0]) * clamp(0.75 * share + 0.25 * tr.next()))
+    lump(r * Math.cos(deg * RAD), r * Math.sin(deg * RAD), size, tr.range(0.35, 0.7), t, 0, 1, skid)
+    count.thrown = (count.thrown ?? 0) + 1
   }
   const depth = (tri) => pos[tri[0] * 3 + 2] + pos[tri[1] * 3 + 2] + pos[tri[2] * 3 + 2]
   const far = (list) => list.map((tri) => ({ tri, z: depth(tri) })).sort((a, b) => a.z - b.z).flatMap((e) => e.tri)

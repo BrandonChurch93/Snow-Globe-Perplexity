@@ -26,8 +26,8 @@ export const glassDressing: Dressing = { tint: [0.86, 0.92, 1], amount: 0 }
 export const surfaceDressing: Dressing & { reachMm: number } = { tint: [0.86, 0.92, 1], amount: 0, reachMm: 132 }
 
 const look = {
-  glass: { cover: 1.5, haze: 0.5, slope: 0.55, micro: 1.1, glint: 1.6, light: 0.96, through: 2.4, thin: 0.6, thick: 0.8, blur: 0.012, bend: 0.012, scatter: 0.4, room: 0.5, soften: 0.2, rimMu: 0.3, front: 1.9, sugarMm: 0.3, gritty: 0.45, clear: [0.255, 0.28, 0.8] },
-  slab: { cover: 2.2, film: 1.7, slope: 1.6, micro: 1.2, glint: 1.6, pool: 0.5, poolBack: 0.12, poolThick: 0.9, skyCut: 0.55, gainFar: 0.9, gainKey: 1.5, gainFront: 0.24, grey: 0.85, light: 2.95, wrap: 0.3, broad: 1.4, shade: 0.35, edge: 0.6, ball: 0.3, rim: 0.55, sky: 1.3, sugarMm: 0.34, clotMm: 1.15, room: 0.1, lace: 0.3, gritty: 0.5, leftBack: 2.0, leftMid: 0.42, leftSkyCut: 0.7, leftWarm: 0.5, leftHeap: 1.6, leftHeapSky: 0.6, heapGlint: 0.4 },
+  glass: { cover: 1.5, haze: 0.5, slope: 0.55, micro: 1.1, glint: 1.6, light: 0.96, through: 2.4, thin: 0.6, thick: 0.8, blur: 0.012, bend: 0.012, scatter: 0.4, room: 0.5, soften: 0.2, rimMu: 0.3, faceOn: 0.65, front: 1.9, sugarMm: 0.3, gritty: 0.45, clear: [0.255, 0.28, 0.8] },
+  slab: { cover: 2.2, film: 1.7, slope: 1.6, micro: 1.2, glint: 1.6, pool: 0.5, poolBack: 0.12, poolThick: 0.9, skyCut: 0.55, gainFar: 0.9, gainKey: 1.5, gainFront: 0.24, grey: 0.85, light: 2.95, wrap: 0.3, broad: 1.4, shade: 0.35, edge: 0.6, ball: 0.3, rim: 0.55, sky: 1.3, sugarMm: 0.34, clotMm: 1.15, room: 0.1, lace: 0.3, gritty: 0.5, leftBack: 2.0, leftMid: 0.42, leftSkyCut: 0.7, leftWarm: 0.5, leftHeap: 0.8, leftHeapSky: 0.6, heapGlint: 0.4 },
 }
 const SNOW = { thin: [0.6, 0.68, 0.8], thick: [0.92, 0.955, 0.99], body: [0.9, 0.93, 0.98] }
 const vec = (v: number[]): string => `vec3(${v.map((x) => x.toFixed(3)).join(', ')})`
@@ -73,8 +73,17 @@ const float FROST_START = 0.07;
 float frostRnd(vec2 cell, float k) {
   return stageHash(vec3(cell + 8192.0, k));
 }
+// The leaving, inside the shake: the frost is torn up where it lies, thinnest first. keep runs from 1 to 0; a texel stays
+// while its own height and the grain under it are above the level that has been torn off so far, so fine needles and the
+// film go on the first frame, the spines and the heap on the last, and what is left of each breaks into crumbs.
+float frostStay(float keep, float h, float grain) {
+  return keep >= 1.0 ? 1.0 : smoothstep(0.0, 0.1, 0.62 * h + 0.38 * grain + 0.1 - (1.0 - keep) * 1.2);
+}
+float frostCrumb(float keep, float fine) {
+  return keep >= 1.0 ? 0.0 : smoothstep(0.0, 0.06, fine - mix(0.97, 0.7, keep)) * smoothstep(0.0, 0.15, keep);
+}
 bool frostHidden(float keep) {
-  return keep < 1.0 && stageHash(vec3(gl_FragCoord.xy + 17.0, uSeed + 0.37)) >= keep;
+  return keep <= 0.0;
 }
 float frostLattice(vec3 i, float k) {
   return stageHash(vec3(i.xz + 8192.0, (i.y + 64.0) * 0.015625 + k));
@@ -177,12 +186,13 @@ void main() {
   vec3 m2 = texture(uGlassMap, uv + t2 * e, -0.6).rgb;
   vec3 ms = texture(uGlassMap, uv, 1.4).rgb;
   vec3 mb = texture(uGlassMap, uv, 3.0).rgb;
-  float on = smoothstep(0.0, FROST_SOFT, lvl - m0.g);
+  float crumb = frostCrumb(uGrow.z, fine.r);
+  float on = smoothstep(0.0, FROST_SOFT, lvl - m0.g) * max(frostStay(uGrow.z, m0.r, grain.r), crumb);
   float h0 = m0.r * on;
-  float hs = ms.r * smoothstep(0.0, 1.5 * FROST_SOFT, lvl - ms.g + 0.02);
-  float h1 = m1.r * smoothstep(0.0, FROST_SOFT, lvl - m1.g);
-  float h2 = m2.r * smoothstep(0.0, FROST_SOFT, lvl - m2.g);
-  float haze = mb.r * smoothstep(0.0, 2.0 * FROST_SOFT, lvl - mb.g + 0.04);
+  float hs = ms.r * smoothstep(0.0, 1.5 * FROST_SOFT, lvl - ms.g + 0.02) * frostStay(uGrow.z, ms.r, grain.r);
+  float h1 = m1.r * smoothstep(0.0, FROST_SOFT, lvl - m1.g) * max(frostStay(uGrow.z, m1.r, grain.r), crumb);
+  float h2 = m2.r * smoothstep(0.0, FROST_SOFT, lvl - m2.g) * max(frostStay(uGrow.z, m2.r, grain.r), crumb);
+  float haze = mb.r * smoothstep(0.0, 2.0 * FROST_SOFT, lvl - mb.g + 0.04) * frostStay(uGrow.z, 0.5 * mb.r, grain.r);
   vec2 sxy = vStageLocal.xy;
   float pxS = max(sqrt(length(dFdx(sxy)) * length(dFdy(sxy))), 0.02);
   float sugar = smoothstep(0.28, 0.72, frostSugar(vec3(sxy.x, d.z > 0.0 ? 0.0 : 40.0, sxy.y), pxS, ${look.glass.sugarMm.toFixed(3)}, 0.71));
@@ -199,8 +209,10 @@ void main() {
   vec3 v = normalize(vStageWorld - cameraPosition);
   float mu = max(dot(ng, -v), 0.0);
   float tau = uGlassLook.x * body / max(mu, ${look.glass.rimMu.toFixed(3)}) + uGlassLook.y * haze / max(mu, 0.3);
+  // Frost seen square on is thinner than frost seen along the glass at the rim: from a camera to one side the band opens up.
+  tau *= 1.0 - ${look.glass.faceOn.toFixed(3)} * smoothstep(0.45, 0.8, mu);
   float alpha = 1.0 - exp(-tau);
-  alpha *= 1.0 - ${look.glass.clear[2]!.toFixed(3)} * (1.0 - smoothstep(${look.glass.clear[0]!.toFixed(3)}, ${look.glass.clear[1]!.toFixed(3)}, mu));
+  alpha *= 1.0 - ${look.glass.clear[2]!.toFixed(3)} * (1.0 - smoothstep(${look.glass.clear[0]!.toFixed(3)}, ${look.glass.clear[1]!.toFixed(3)}, mu)) * smoothstep(-0.22, -0.08, ng.y);
   float kd = dot(n, uKeyDir);
   float rd = dot(n, uRimDir);
   float keyLit = max(kd, 0.0) * ${look.glass.front.toFixed(3)} + smoothstep(-1.0, 0.6, kd) * 0.3 + max(-kd, 0.0) * uGlassThru.x;
@@ -251,11 +263,11 @@ vec3 frostSlabLight(vec3 n, vec3 P, vec3 albedo, float open, float piled) {
   float gain = mix(${look.slab.gainFar.toFixed(3)}, ${look.slab.gainKey.toFixed(3)}, smoothstep(-0.4, 0.5, dot(dir2, vec2(0.949, -0.316)))) * (1.0 - ${look.slab.gainFront.toFixed(3)} * smoothstep(0.5, 0.95, dir2.y));
   float back = smoothstep(-0.05, 0.45, -dir2.y);
   float frontLeft = side * smoothstep(0.05, 0.65, dir2.y);
-  float heapLeft = side * piled * smoothstep(-0.5, 0.0, dir2.y);
+  float heapLeft = side * smoothstep(0.1, 0.55, piled) * smoothstep(-0.5, 0.0, dir2.y);
   gain *= mix(1.0, mix(${look.slab.leftMid.toFixed(3)}, ${look.slab.leftBack.toFixed(3)}, back), side);
   float skyShare = (1.0 - ${look.slab.skyCut.toFixed(3)} * lean) * (1.0 - ${look.slab.leftSkyCut.toFixed(3)} * frontLeft) * (1.0 - ${look.slab.leftHeapSky.toFixed(3)} * heapLeft);
   float poolShare = mix(${look.slab.poolBack.toFixed(3)}, 1.0, lean) * (uSlabLook.y * (1.0 - ${look.slab.poolThick.toFixed(3)} * heaped)) + ${look.slab.leftWarm.toFixed(3)} * frontLeft;
-  return albedo * (0.3183 * ${look.slab.light.toFixed(3)} * gain) * (lit + (uSky * ((0.55 + 0.45 * n.y) * ${look.slab.sky.toFixed(3)} * skyShare) + warm * poolShare) * (occl * open) + warm * (${look.slab.leftHeap.toFixed(3)} * heapLeft * (0.5 + 0.5 * n.y)));
+  return albedo * (0.3183 * ${look.slab.light.toFixed(3)} * gain) * (lit + (uSky * ((0.55 + 0.45 * n.y) * ${look.slab.sky.toFixed(3)} * skyShare) + warm * poolShare) * (occl * open) + mix(uPool, vec3(dot(uPool, vec3(0.3333))), 0.45) * (${look.slab.leftHeap.toFixed(3)} * heapLeft * (0.5 + 0.5 * n.y)));
 }
 vec2 frostSlabUv(vec2 xz) {
   return vec2(xz.x + uField.x, uField.x - xz.y) / (2.0 * uField.x);
@@ -283,13 +295,14 @@ void main() {
   vec3 b0 = texture(uSlabMap, uv, 2.5).rgb;
   vec3 b1 = texture(uSlabMap, uv + vec2(eb, 0.0), 2.5).rgb;
   vec3 b2 = texture(uSlabMap, uv - vec2(0.0, eb), 2.5).rgb;
-  float on = smoothstep(0.0, FROST_SOFT, lvl - m0.g);
+  float crumb = frostCrumb(uGrow.w, fine.r);
+  float on = smoothstep(0.0, FROST_SOFT, lvl - m0.g) * max(frostStay(uGrow.w, m0.r, grain.r), crumb);
   float h0 = m0.r * on;
-  float h1 = m1.r * smoothstep(0.0, FROST_SOFT, lvl - m1.g);
-  float h2 = m2.r * smoothstep(0.0, FROST_SOFT, lvl - m2.g);
-  float s0 = b0.r * smoothstep(0.0, 2.0 * FROST_SOFT, lvl - b0.g + 0.03);
-  float s1 = b1.r * smoothstep(0.0, 2.0 * FROST_SOFT, lvl - b1.g + 0.03);
-  float s2 = b2.r * smoothstep(0.0, 2.0 * FROST_SOFT, lvl - b2.g + 0.03);
+  float h1 = m1.r * smoothstep(0.0, FROST_SOFT, lvl - m1.g) * max(frostStay(uGrow.w, m1.r, grain.r), crumb);
+  float h2 = m2.r * smoothstep(0.0, FROST_SOFT, lvl - m2.g) * max(frostStay(uGrow.w, m2.r, grain.r), crumb);
+  float s0 = b0.r * smoothstep(0.0, 2.0 * FROST_SOFT, lvl - b0.g + 0.03) * frostStay(uGrow.w, b0.r, grain.r);
+  float s1 = b1.r * smoothstep(0.0, 2.0 * FROST_SOFT, lvl - b1.g + 0.03) * frostStay(uGrow.w, b1.r, grain.r);
+  float s2 = b2.r * smoothstep(0.0, 2.0 * FROST_SOFT, lvl - b2.g + 0.03) * frostStay(uGrow.w, b2.r, grain.r);
   float pxMm = sqrt(length(dFdx(vStageWorld)) * length(dFdy(vStageWorld)));
   float sugar = smoothstep(0.26, 0.74, frostSugar(vStageWorld, pxMm, ${look.slab.sugarMm.toFixed(3)}, 0.31));
   float clot = smoothstep(0.3, 0.7, frostSugar(vStageWorld, pxMm, ${look.slab.clotMm.toFixed(3)}, 0.47));
@@ -336,6 +349,7 @@ void main() {
   float edge = vFrostOn.z * vFrostOn.x;
   float from = ${look.slab.edge.toFixed(3)} * (0.55 * sugar + 0.45 * clot) * (1.0 - 0.5 * leaf);
   float alpha = smoothstep(from, from + 0.42, edge);
+  alpha *= max(frostStay(uGrow.w, 0.45 + 0.55 * vFrostOn.y * vFrostOn.z, 0.5 * (sugar2 + clot)), frostCrumb(uGrow.w, grain.r));
   alpha *= mix(${look.slab.lace.toFixed(3)} + ${(1 - look.slab.lace).toFixed(3)} * (0.6 * sugar2 + 0.4 * clot), 1.0, smoothstep(0.35, 0.95, vFrostOn.y));
   if (alpha < 0.012) discard;
   vec2 micro = (vec2(sugar, sugar2) - 0.5) * 2.0 + (coarse.gb - 0.5) * 0.8;
@@ -449,8 +463,15 @@ function makeSurface(): THREE.Group {
       uniforms: shared,
       vertexPars: 'attribute vec2 uv1;\nuniform vec4 uGrow;\nvarying vec3 vFrostN;\nvarying vec4 vFrostOn;',
       vertexMain: `
-float frostOn = smoothstep(0.0, 0.14, uGrow.y - 0.07 - uv.x);
-vec4 frostW = modelMatrix * vec4(position.x, position.y * frostOn, position.z, 1.0);
+float frostLoose = step(1.5, uv1.y);
+float frostLvl = uGrow.y - 0.07 - uv.x;
+float frostLead = max(uv.x - 0.1, 0.05);
+float frostGo = clamp(frostLvl / frostLead + 1.0, 0.0, 1.0);
+float frostToGo = (1.0 - frostGo) * (1.0 - frostGo) * frostLoose;
+float frostOn = mix(smoothstep(0.0, 0.14, frostLvl), smoothstep(0.0, 0.06, frostGo), frostLoose) * (0.35 + 0.65 * smoothstep(0.0, 0.6, uGrow.w));
+vec3 frostAt = vec3(position.x, position.y * frostOn + 3.2 * frostToGo * frostGo, position.z);
+frostAt.xz -= normalize(position.xz) * ((uv1.y - 2.0) * 64.0 * frostToGo);
+vec4 frostW = modelMatrix * vec4(frostAt, 1.0);
 vec4 frostV = viewMatrix * frostW;
 gl_Position = projectionMatrix * frostV;
 vStageWorld = frostW.xyz;
@@ -458,7 +479,7 @@ vStageLocal = (uGlobeInv * frostW).xyz;
 vStageAux = vec3(0.0, -frostV.z, length(frostV.xyz));
 vStagePlaced = frostW.xyz;
 vFrostN = normalize(mat3(modelMatrix) * normal);
-vFrostOn = vec4(frostOn, uv.y, uv1.x, uv1.y);`,
+vFrostOn = vec4(frostOn, uv.y, uv1.x, mix(uv1.y, 0.9, frostLoose));`,
       fragment: SHAPES,
       params: { ...veil, depthWrite: true },
     }),
