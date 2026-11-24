@@ -95,22 +95,42 @@ const nextFrame = (): Promise<void> =>
     else requestAnimationFrame(() => resolve())
   })
 
+/** A page whose frames take longer than this is slow for other reasons, and gains nothing from spreading uploads over frames. */
+const SLOW_FRAME_MS = 100
+let frameAt = 0
+let frameMs = 0
+
+/**
+ * Waits for the turn of the next picture to go to the GPU: the next frame, so that no frame carries more than one upload.
+ * Where the page needed more than SLOW_FRAME_MS to give the last frame, every picture that is decoded within that time of
+ * it goes with it instead, so a slow device does not also wait a frame for each picture.
+ */
+async function turn(): Promise<void> {
+  if (frameMs > SLOW_FRAME_MS && performance.now() - frameAt < frameMs) return
+  const asked = performance.now()
+  await nextFrame()
+  frameAt = performance.now()
+  frameMs = frameAt - asked
+}
+
 /**
  * Fetches the whole file of every picture that was drawn from its `.first.` file, and puts it in place of the half one.
- * Fetching and decoding happen off the page's thread; a picture is handed to the GPU between two frames, one picture a frame,
- * so the picture never waits for more than one upload. Safe to call again: pictures of groups prepared later are taken up.
+ * Fetching and decoding happen off the page's thread; a picture is handed to the GPU between two frames, one picture a frame
+ * (see `turn`), so the picture never waits for more than one upload. Safe to call again: pictures of groups prepared later
+ * are taken up.
  */
 export function loadDetail(assets: Assets): Promise<void> {
   if (fetching) return fetching.then(() => (owed.length ? loadDetail(assets) : undefined))
   if (!owed.length) return Promise.resolve()
   let handing: Promise<void> = Promise.resolve()
+  const failed: Owed[] = []
   const lane = async (): Promise<void> => {
     for (let o = owed.shift(); o; o = owed.shift()) {
       const { name, file } = o
       try {
         const bitmap = await decode(await assets.fetchFile(file.path, true))
         assets.release(file.path)
-        handing = handing.then(nextFrame).then(() => {
+        handing = handing.then(turn).then(() => {
           const e = textures.get(name)
           if (!e) return bitmap.close()
           const old = e.texture.image as ImageBitmap
@@ -128,7 +148,6 @@ export function loadDetail(assets: Assets): Promise<void> {
       }
     }
   }
-  const failed: Owed[] = []
   fetching = Promise.all(Array.from({ length: DETAIL_LANES }, lane)).then(() => {
     fetching = null
     owed.push(...failed)
