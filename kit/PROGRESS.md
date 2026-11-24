@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 16 · 2026-11-24 06:49 UTC
+Status 17 · 2026-11-24 07:04 UTC
 
-- `out/stills/status/status-16-1.jpg`: Frame 0 of the film from the macro camera after its fit and focus: the lit cottage, the lamppost and the foot of the tree in falling snow, no edge of the glass. Stand-in shapes.
-- `out/stills/status/status-16-2.jpg`: The six cameras of the config on the winter stand-in stage at rest, review tier, each tile labelled with its numbers: hero, macro (new fit: distance 130, yaw -13, pitch 3, aim 67), interior, base, surface, low. Macro now shows the lit cottage, the lamppost and the foot of the tree with no edge of the glass. (by engine_builder)
-- `out/stills/status/status-16-3.jpg`: The four seasons at rest with the real particle engine at its full pool through the stage's drawing, hero camera, preview, draft: winter, spring, summer, fall. Summer's seeds are now 0.5 to 1.1 mm so the scene shows through; it is still the busiest of the four. Miniature, base and lights are stand-ins. (by particles_builder)
-- `out/stills/status/status-16-4.jpg`: Sheet: 12 frames across the shot shake-1, frames 576 to 719, preview, draft
+- `out/stills/status/status-17-1.jpg`: The live app through a shake at three sizes: rest, lifted, mid stroke. The camera stays locked and the lifted glass stays under the top edge
+- `out/stills/status/status-17-2.jpg`: What the first critic called severe: in the spring hold the camera sinks all the way to the base and the miniature leaves the frame for about 2.5 s
+- `out/stills/status/status-17-3.jpg`: Frame 0 of the film, the macro camera after the fit and the focus change: the lit cottage, the lamppost and the foot of the tree in falling snow, no edge of the glass. Stand-in shapes, review tier. (by engine_builder)
+- `out/stills/status/status-17-4.jpg`: Sheet: 12 frames across the shot shake-1, frames 576 to 719, preview, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 06:49 UTC
-clock: phase 2, tick of 4.2 minutes
-phase 2: 3.80 h used of its 6.00 h box
-allowance (before the review): 4.99 h used of 36.00 h allowed
-all time before the review: 4.99 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 07:04 UTC
+clock: phase 2, tick of 14.7 minutes
+phase 2: 4.04 h used of its 6.00 h box
+allowance (before the review): 5.23 h used of 36.00 h allowed
+all time before the review: 5.23 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
@@ -456,6 +456,9 @@ Numbered. What, why, and the date.
 
 34. 07:04. The spring move goes toward `base` and stops short of it. `kit/01-FILM.md` has the camera sink "toward the `base` camera, past the trickle of water and the mushrooms on the mossy stone", and the first blockout critic called it severe that the miniature leaves the frame for about 2.5 s. Both hold if the move stops where the whole base and the miniature's ground, the cottage to its ridge and the trunk are all in the frame; the canopy may leave the top. The `base` camera itself, its judged stills and its framing test do not change. The share of the way is computed, not picked (`film_app_engineer_2`). The critic's own fix, to centre the move on the miniature and keep the whole tree, is declined as far as it would turn the move away from the base, which the kit names as its subject. For the REVIEW block.
 
+
+35. 07:20. `shake.liftMm` is 13.5, not 18, and the hero camera's aim is 70.5 mm, not 75; the holds lower the aim to 66 mm (`MOVES.holdAimDropMm` 4.5). The second blockout critic marked the hero framing: the foot of the base 2.2 percent above the bottom edge, "grazing the bottom border and cutting off the foreground tabletop surface and reflection", against 10 percent of headroom, and asked for the foot of the app's globe to stand clear of the Shake control. The cause is decision 29's squeeze: the fill is at the lowest value the check allows (0.800), the camera is locked through a shake, and M1 wants the lifted glass inside the frame, so every millimetre of lift is a millimetre the foot sinks. The one lever the kit leaves is the lift, which `kit/05-ARCHITECTURE.md` lets the Builder tune by a quarter either way. At 13.5 mm, measured through the real poses over every frame of the four shakes: the lifted glass keeps the same 0.4 percent under the top edge as before, the foot at rest stands 4.2 percent above the bottom edge (it was 1.7) and the glass 7.8 percent under the top (it was 10.3). In a hold the globe sits about 5.3 percent from the top and 6.7 from the bottom; the approved winter image has 6 and 9. The approved shake image shows no lift at all, so a smaller lift moves toward it, not away. What it costs: the globe rises 79 pixels at 1080 lines instead of 105. Not met: the critic's 10 to 12 percent under the foot, which the fill check and a locked camera do not allow together. For the REVIEW block, with decisions 29 and 30.
+
 ## Notes from Brandon
 
 Numbered, in his words, with the date and how each was applied. Review round items carry their round's number.
@@ -570,7 +573,7 @@ Merged into `main`, each verified here with types clean and the tests green (126
 
 One line per round: its number, the unit, the commit it judged, each part ticked off as it finished, the scores, and what changed next.
 
-- Round 1 · blockout (Phase 2, the floor round) · judges commit `48afed3` · started 2026-11-24 06:36 UTC. Parts: [x] build · [x] machine checks (06:50: G1 to G12 and G14 green on the judged build `e4a8b9bdbc7a55ec`; D2 and D3 are red until step 14) · [x] measures (06:51: M1 and M6 on seven winter stills, 14 lines, 0 red) · [x] pack (06:55: 19 files in two parts, 0 parts missing; built at `b94e722`, which differs from `48afed3` only in `kit/` and `audio/` text) · [x] critic part 1 (06:57: 8, one severe issue on the spring hold) · [ ] critic part 2 · [ ] issues read · [ ] fixes · [ ] logged
+- Round 1 · blockout (Phase 2, the floor round) · judges commit `48afed3` · started 2026-11-24 06:36 UTC. Parts: [x] build · [x] machine checks (06:50: G1 to G12 and G14 green on the judged build `e4a8b9bdbc7a55ec`; D2 and D3 are red until step 14) · [x] measures (06:51: M1 and M6 on seven winter stills, 14 lines, 0 red) · [x] pack (06:55: 19 files in two parts, 0 parts missing; built at `b94e722`, which differs from `48afed3` only in `kit/` and `audio/` text) · [x] critic part 1 (06:57: 8, one severe issue on the spring hold) · [x] critic part 2 (07:08: 5, two severe and five major issues on five cameras and two screens) · [ ] issues read · [ ] fixes · [ ] logged
 
 ## Final scores
 
@@ -679,3 +682,5 @@ One entry per task: when it started, what it did, where it stopped.
 
 - 06:55 round 1: the pack is built (19 files in two parts). Critics asked at 06:56: part 1 (ten film sheets) on `gpt_6_2_sol` at reasoning max; part 2 (six camera pairs, three screens) on `gemini_4_carbon`, which the spawn reports at reasoning medium although max was asked. 06:57 part 1 answered: 8, one severe issue (open item 10).
 - 06:59 merged `agent/film-app2` `a8cb453` (live framing of decision 33, governor) and `agent/particles2` `a415b4e` (worker path) into main at `87fe501`: types clean, 284 tests, build, cut and parts clean. The pack of round 1 was built before the merge, so round 1 still judges `48afed3`. 07:02 worker path checked in headless Chrome (items 5 and 7 closed). 07:04 decision 34 sent to `film_app_engineer_2` as the first job of the fix pass.
+
+- 07:04 Status 17 posted with two pictures: the live app through a shake at three sizes (`film_app_engineer_2`) and the spring hold sheet the first critic marked. The pack tool now writes the camera move into a hold's line and the purpose into a camera pair's line, for round 2.

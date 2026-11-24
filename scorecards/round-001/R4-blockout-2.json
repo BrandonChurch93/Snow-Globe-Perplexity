@@ -1,0 +1,56 @@
+{
+  "critic": "R4",
+  "score": 5,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "severe",
+      "file": "set-B-05.jpg",
+      "where": "the framing of -b (camera surface)",
+      "what": "the surface camera fills 72% of the frame width and 67% of the height with the vertical wall of the brown base, nearly duplicating set-B-04.jpg (base) and cropping off the tabletop surface on the left, right and front where the surrounding frost skirt and reflection sit",
+      "fix": "pull back and re-aim surface onto the tabletop plane around and in front of the base so at least half a base-width of lateral surface on each side and generous foreground tabletop are the clear subject rather than the base wall"
+    },
+    {
+      "severity": "severe",
+      "file": "set-B-03.jpg",
+      "where": "the framing of -b (camera interior)",
+      "what": "the interior camera stands far outside the globe as an exterior full-sphere wide shot, showing the outer glass crown, the wooden base across the bottom 15% of the frame and external room background across 47% of the frame width while the miniature scene occupies only the central third",
+      "fix": "push interior in on the diorama from the snow floor up to just above the tree crown so the cottage, streetlamp and full tree fill the frame and exclude the wooden base and wide exterior background"
+    },
+    {
+      "severity": "major",
+      "file": "set-C-03.jpg",
+      "where": "the bottom of the base above the SHAKE button at 1024x1366",
+      "what": "on the 3:4 portrait screen the globe spans 87% of the width and reaches 91.9% of the height, leaving only a 1.7% (23 px) gap above the SHAKE pill so the base crowds the control with no clearance for a foreground surface skirt or downward shake travel",
+      "fix": "increase camera distance for the 3:4 portrait aspect ratio (as done on 390x844) so the globe and base sit smaller and higher with comfortable clearance above the SHAKE button"
+    },
+    {
+      "severity": "major",
+      "file": "set-C-01.jpg",
+      "where": "the gap between the bottom of the base and the SHAKE button at 1920x1080",
+      "what": "the base reaches 91.2% of viewport height while the SHAKE pill starts at 93.8%, leaving only 2.6% (28 px) of clearance where the foreground frost skirt around the front of the base and vertical shake motion will collide with the control",
+      "fix": "pull the 1920x1080 camera slightly back or raise the globe framing so at least 7 to 8% of viewport height separates the bottom of the base from the SHAKE pill"
+    },
+    {
+      "severity": "major",
+      "file": "set-B-01.jpg",
+      "where": "the bottom margin below the base in -b (camera hero)",
+      "what": "the bottom of the base drops to 97.8% of the frame height (leaving a 2.2% sliver at the bottom versus 10% empty headroom above the crown), grazing the bottom border and cutting off the foreground tabletop surface and reflection in front of the base",
+      "fix": "lower the hero camera look-at target slightly so the globe and base sit higher with balanced headroom (~6%) and a clear foreground tabletop margin (~10 to 12%) below the base"
+    },
+    {
+      "severity": "major",
+      "file": "set-B-06.jpg",
+      "where": "the top edge of the glass sphere and camera height in -b (camera low)",
+      "what": "the crown of the glass sits only 1.1% (6 px) from the top border in a near-tangent while the shot scale and angle remain nearly indistinguishable from hero",
+      "fix": "drop the low camera closer to tabletop height looking slightly upward and leave at least 5% headroom above the glass crown so it clears the top border and reads as a distinct low-angle shot"
+    },
+    {
+      "severity": "major",
+      "file": "set-B-02.jpg",
+      "where": "the left and right edges of -b (camera macro)",
+      "what": "while macro rightly hides all edges of the glass, aiming at the centre of the globe slices the left gable, chimney and fence of the cottage off the left border while giving the right third of the frame to a bare section of tree trunk",
+      "fix": "pan macro slightly left onto the cottage, chimney, fence and streetlamp (staying well inside the left glass wall so no glass edge enters the frame) so the cottage is framed intact"
+    }
+  ]
+}

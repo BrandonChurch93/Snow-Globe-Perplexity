@@ -3,7 +3,7 @@ import { config, shots } from '../src/config'
 import { barSeconds, beatSeconds, defaultGrid, filmTimeline, globePoseAt, prerollSeconds, seasonAt } from '../src/film/timeline'
 import { makeShake } from '../src/shake/table'
 import { buildCut } from '../src/film/cut'
-import { MOVES, aimDropAt, cameraKeys, cameraNumbers, filmPose, filmRig, loopDistanceMm, loopPose, loopRig, movesOf, rigOf, shotNotes } from '../src/film/moves'
+import { MOVES, aimDropAt, cameraKeys, cameraNumbers, detailReach, filmPose, filmRig, largestReach, loopDistanceMm, loopPose, loopRig, movesOf, nearestAimDropMm, nearestRig, nearestRoom, poseOfRig, rigOf, roomOf, shotNotes } from '../src/film/moves'
 import { sphereRadiusMm } from '../src/scene/framing'
 import { judgedList, loopPlan } from '../src/film/judged'
 import { openingPlan } from '../src/film/opening'
@@ -315,6 +315,88 @@ describe('the camera of the film', () => {
       expect(n.move.length).toBeGreaterThan(20)
       expect(n.keys[0]!.frame).toBe(cut.spans.find((s) => s.shot.id === n.shot)!.first)
     }
+  })
+})
+
+describe('a detail move that stops short of its camera (decision 34)', () => {
+  const cut = buildCut()
+  const fps = cut.fps
+  const details = movesOf(cut).filter((m) => m.role === 'detail')
+  const plateau = (m: (typeof details)[number]): [number, number] => {
+    const span = m.to - m.from
+    return [Math.ceil((m.from + span * MOVES.detailTravel) * fps), Math.floor((m.from + span * (1 - MOVES.detailTravel)) * fps)]
+  }
+
+  it('goes toward base as far as the grid allows with the room kept under the foot and over the ridge', () => {
+    expect(detailReach('base')).toBeLessThan(1)
+    expect(detailReach('base')).toBeCloseTo(largestReach('base'), 9)
+    const near = nearestRoom('base')
+    expect(near.foot).toBeGreaterThanOrEqual(MOVES.detailRoom)
+    expect(near.ridge).toBeGreaterThanOrEqual(MOVES.detailRoom)
+    expect(near.side).toBeGreaterThan(MOVES.detailRoom)
+    const next = nearestRoom('base', detailReach('base') + MOVES.detailGrid)
+    expect(Math.min(next.foot, next.ridge)).toBeLessThan(MOVES.detailRoom)
+    const whole = roomOf(poseOfRig(rigOf('base')))
+    expect(whole.ridge).toBeLessThan(0)
+  })
+
+  it('stands between hero and base at the nearest point, aimed so the foot and the ridge have the same room', () => {
+    const rig = nearestRig('base')
+    const hero = rigOf('hero')
+    const base = rigOf('base')
+    expect(rig.distanceMm).toBeLessThan(hero.distanceMm)
+    expect(rig.distanceMm).toBeGreaterThan(base.distanceMm)
+    expect(rig.aimHeightMm).toBeLessThan(hero.aimHeightMm)
+    expect(rig.aimHeightMm).toBeGreaterThan(base.aimHeightMm)
+    const room = roomOf(poseOfRig(rig))
+    expect(Math.abs(room.foot - room.ridge)).toBeLessThan(0.001)
+    expect(nearestAimDropMm('base')).toBeGreaterThan(0)
+    for (const id of ['interior', 'low']) {
+      expect(detailReach(id)).toBe(1)
+      expect(nearestAimDropMm(id)).toBe(0)
+      expect(nearestRig(id)).toEqual(rigOf(id))
+    }
+  })
+
+  it('keeps the base and the cottage in the frame on every frame of the film at the nearest point, and never loses the ridge on the way', () => {
+    const m = details.find((d) => d.camera === 'base')!
+    const [a, b] = plateau(m)
+    expect(b).toBeGreaterThan(a)
+    for (let i = a; i <= b; i++) {
+      const room = roomOf(filmPose(cut, i / fps))
+      expect(room.foot, `frame ${i}`).toBeGreaterThanOrEqual(MOVES.detailRoom)
+      expect(room.ridge, `frame ${i}`).toBeGreaterThanOrEqual(MOVES.detailRoom)
+      expect(filmRig(cut, i / fps).rig.distanceMm, `frame ${i}`).toBeCloseTo(nearestRig('base').distanceMm, 6)
+    }
+    for (let i = m.span.first; i <= m.span.last; i++) {
+      const room = roomOf(filmPose(cut, i / fps))
+      expect(room.foot, `frame ${i}`).toBeGreaterThan(0)
+      expect(room.ridge, `frame ${i}`).toBeGreaterThanOrEqual(MOVES.detailRoom)
+      expect(room.side, `frame ${i}`).toBeGreaterThan(MOVES.detailRoom)
+    }
+  })
+
+  it('keeps the miniature in the frame at interior, and the base and the top of the glass at low', () => {
+    const interior = nearestRoom('interior')
+    expect(interior.ridge).toBeGreaterThan(MOVES.detailRoom)
+    expect(interior.dome).toBeGreaterThan(0)
+    expect(interior.side).toBeGreaterThan(MOVES.detailRoom)
+    const low = nearestRoom('low')
+    expect(low.foot).toBeGreaterThan(MOVES.detailRoom)
+    expect(low.dome).toBeGreaterThan(0)
+    expect(low.ridge).toBeGreaterThan(MOVES.detailRoom)
+  })
+
+  it('says in the notes how far the move goes', () => {
+    const notes = shotNotes(cut)
+    const spring = notes[movesOf(cut).findIndex((m) => m.role === 'detail' && m.camera === 'base')]!
+    expect(spring.move).toContain(`one slow move toward the base camera and back, ${Math.round(detailReach('base') * 100)} percent of the way`)
+    expect(spring.keys.some((k) => k.what === 'the nearest point to the base camera')).toBe(true)
+    expect(spring.keys.some((k) => k.what === 'leaving the nearest point to base')).toBe(true)
+    const whole = notes[movesOf(cut).findIndex((m) => m.role === 'detail' && m.camera === 'interior')]!
+    expect(whole.move).toContain('one slow move to the interior camera and back')
+    expect(whole.keys.some((k) => k.what === 'the interior camera reached')).toBe(true)
+    expect(whole.keys.some((k) => k.what === 'leaving interior')).toBe(true)
   })
 })
 

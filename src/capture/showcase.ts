@@ -21,7 +21,7 @@ import { loopGlobe, type LoopParticles, type SourceSwitch } from '../film/loop'
 import { loopMoment, timelineMoment } from '../film/moments'
 import { flaggedStandIns } from '../core/standins'
 import { levelById, stageQuality, topLevel } from '../core/quality'
-import { livePose, roomUnder } from '../app/framing'
+import { framingOfRig, livePose, liveRig, roomUnder } from '../app/framing'
 import { Painter } from '../app/painter'
 import { Replay, scriptPlan, type ScriptFrame, type ScriptPlan } from '../app/replay'
 import parts from '../../parts/PARTS.json'
@@ -70,6 +70,7 @@ export interface Dev {
   parts(): { name: string; color: number }[]
   simulate(fromSeconds: number, seconds: number): Promise<{ ms: number; steps: number; floating: number }>
   framing(camera: string): Framing
+  stillFraming(): Framing
   pose(camera: string): number[]
   judged(): JudgedEntry[]
   testShake(): { frameCount: number; first: number; liftEnd: number; strokesEnd: number; landing: number; swap: { first: number; last: number } }
@@ -161,6 +162,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
   let tier = 'draft'
   let diag = ''
   let lastSeason: string = config.defaultSeason
+  let drawn: Framing | null = null
   let filmTl: Timeline | null = null
   const stills = new Map<string, Timeline>()
   const timing = { simMs: 0, drawMs: 0, samples: 0, steps: 0 }
@@ -329,6 +331,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
       await ready
       if (!config.seasons.includes(spec.season)) throw new Error(`no such season: ${spec.season}`)
       tier = spec.tier
+      drawn = framingOf(spec.change ? MOVES.wide : spec.camera, format.width, format.height)
       const samples = tierSamples(spec.tier)
       if (spec.change) {
         const g = getGrid()
@@ -346,6 +349,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
         under = roomUnder(format.height, overlay.controlsPx())
       }
       const pose = onScreen ? livePose(format.width / format.height, 0, 0, under) : poseById(spec.camera)
+      if (onScreen) drawn = framingOfRig(liveRig(format.width / format.height, 0, 0, under), format.width, format.height)
       if (spec.live) await livePicture(along(stillTl(spec.season)), stateSeconds(spec.state), pose, spec.live)
       else await picture(along(stillTl(spec.season)), stateSeconds(spec.state), 0, () => pose, samples, 0)
       if (spec.interface) await overlay.show(spec.season, spec.state)
@@ -391,6 +395,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
       timings: () => ({ ...timing }),
       parts: () => stage.parts(),
       framing: (camera) => framingOf(camera, format.width, format.height),
+      stillFraming: () => drawn ?? framingOf(MOVES.wide, format.width, format.height),
       pose: (camera) => cameraNumbers(poseById(camera)),
       flagged: () => flaggedStandIns(),
       cut: () => ({ list: cutList(getGrid(), cameraKeys(getGrid()), loopCamera()), shots: shotNotes(getGrid()) }),

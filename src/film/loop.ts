@@ -91,7 +91,7 @@ const smooth5 = (v: number): number => {
 }
 
 export function standInLoop(like: ParticleSource, innerR: number, groundY: number): LoopParticles {
-  flagStandIn('loop-particles')
+  flagStandIn('loop')
   const n = like.count
   const rng = stream('loop:stand-in')
   const pos = new Float32Array(n * 3)

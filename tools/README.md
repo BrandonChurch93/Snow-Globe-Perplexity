@@ -9,6 +9,7 @@ What the tools in this folder can rely on. The page is opened through `tools/lib
 | `parts()` | `{name, color}` for every part: the flat colour that part has in the `ids` and `standins` views, as `0xRRGGBB` |
 | `pose(camera)` | `[px, py, pz, ax, ay, az, fovDeg]` in millimetres: the same seven numbers `filmState(i).camera` holds |
 | `framing(camera)` | The framing numbers of `kit/02-SUBJECT.md` section 9 for the current format |
+| `stillFraming()` | The same numbers for the camera that drew the last `renderStill`. A screen still (`interface` or `live`, from `hero`) is drawn from the app's own framing, which stands back from `hero` to leave room for the controls and for a shake, so its numbers are not `framing('hero')`. `renderStill` in `tools/lib/page.mjs` writes these into the record |
 | `judged()` | The computed judged list: `{id, unit, kind, format, what, ...}`. `kind` is `key`, `still`, `change`, `live`, `film`, `opening` or `loop` |
 | `testShake()` | Frame numbers of the test shake, winter into winter, at `film.fps`: `{frameCount, first, liftEnd, strokesEnd, landing, swap: {first, last}}` |
 | `testShakeState(i)`, `loopState(i)` | The same object as `filmState(i)`, for the test shake and for the card loop |

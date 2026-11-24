@@ -218,7 +218,7 @@ export async function renderStill(session, spec, { file, noext = [], force = fal
     if (s.live) call.live = s.live
     await sc.renderStill(call)
     const after = sc.dev.timings()
-    return { info: sc.info(), caps: sc.dev.caps(), framing: sc.dev.framing(s.camera), timings: { simMs: after.simMs - before.simMs, drawMs: after.drawMs - before.drawMs, samples: after.samples - before.samples, steps: after.steps - before.steps } }
+    return { info: sc.info(), caps: sc.dev.caps(), framing: sc.dev.stillFraming(), timings: { simMs: after.simMs - before.simMs, drawMs: after.drawMs - before.drawMs, samples: after.samples - before.samples, steps: after.steps - before.steps } }
   }, spec)
   const png = await session.grab(page)
   const seconds = (Date.now() - t0) / 1000
