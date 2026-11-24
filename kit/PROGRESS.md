@@ -37,16 +37,16 @@ Status 30 · 2026-11-24 11:32 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 11:34 UTC
-clock: phase 3, tick of 2.1 minutes
-phase 3: 3.12 h used of its 11.00 h box
-allowance (before the review): 9.73 h used of 36.00 h allowed
-all time before the review: 9.73 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 11:45 UTC
+clock: phase 3, tick of 11.2 minutes
+phase 3: 3.30 h used of its 11.00 h box
+allowance (before the review): 9.92 h used of 36.00 h allowed
+all time before the review: 9.92 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 2
+minutes since the last status: 13
 ```
 
 ## Phases
@@ -586,6 +586,8 @@ Severe and major issues still open when a limit was reached: the unit, the still
 
 - Item 29, update 2026-11-24 10:42 UTC: decision 45 applies its fix (lift and tilt below the kit's quarter, 4.5 percent kept above the glass on every frame at `hero`, the rim kept 1 mm above the surface). Open until the real shake is merged and measured on every frame.
 
+30. Until Phase 3 step 9 a clean clone of `main` builds an app that does not open (11:40 UTC, Phase 3). The code on `main` asks for winter's built textures and models, and those files are committed once per round (`AGENTS.md`, "Commit built assets once per round"), so between the first merge of a real part and the round's commit the repo holds the index that names them and not the files. `npm run hostcheck` shows it as a fail. The published app is built from the working folder and opens (checked at each publish with `out/work/bin/distcheck.mjs`). Closes when step 9 commits the built assets and `npm run hostcheck` passes.
+
 ## Review items not done
 
 none
@@ -883,3 +885,10 @@ One entry per task: when it started, what it did, where it stopped.
 - 11:33 UTC. liquid_builder: `tests/sim.test.ts` is green with the real path (`agent/p3-liquid` at `8bfb5da`, 370 of 370 tests). Line 208 holds at 99.3 percent afloat at 0.7 of the bar with the number untouched; line 376 is now two cases, one on the real shake (peak turn 1.41 rad/s, floors a fifth under the measure) and one on a path that rocks 14 degrees. Its measures on the real path: M4 0.6325 against 0.85 (red; the veil's density, flake_builder's), M5 0.661 against 0.6 (green), M6 green in all seven winter stills. Afloat under 10 percent 10.2 s after the landing.
 - 11:33 UTC. village_builder tested the lens: the picture's focus follows the true depth of a point from the camera (each lens sample moves the eye and the glass is placed again for it), not the path-length depth the vertex is placed at. With the close camera's focus at 152 mm the door, wreath, stones and bulbs are sharp; at 171.5 mm all are soft. The same sum says `hero` leaves 7 to 10 px of blur on the miniature at its aperture of 9 mm. scene_builder owns the cameras and has the numbers; the `texels` view's blur in `src/core/materials.ts` is mine and is changed to the true depth.
 - 11:34 UTC. Status 30 posted with four pictures: the real test shake in 12 frames, the path's curves, the first real cottage under the approved image, the storm beside the approved storm.
+
+- 11:37 UTC. Merged into `main`: the real shake path (`agent/p3-shake` at `4639804`) and the engine's answer to it (`agent/p3-liquid` at `8bfb5da`), together, so no commit on `main` holds the path without the engine that floats on it. `config/showcase.json` now has `shake.liftMm` 7.25 and `shake.tiltDeg` 6 (decision 45). Part `shake` is `built` in the register. `npm run cut` rebuilt the cut. Types clean, 370 of 370 tests (4 skipped: the shake's picture makers, which run only when asked). Pushed as `aa8ed16`; every builder told to merge it.
+- 11:39 UTC. shake_builder corrected its own finding, measured on test frames 44 and 58: the hard dark ellipse under the lifted globe is the hole in the stand-in surface dressing (a ring built at the rest place), not a shadow; the mirror image does follow the foot but is as sharp 40 mm away as at contact; no soft shadow travels with the foot and the key's pool rides with the globe. Passed to scene_builder (the shadow, the mirror image's blur, the pool) and frost_builder (the dressing's hole).
+- 11:40 UTC. Published: https://snow-globe-seasons.pplx.app from `aa8ed16` (the real shake, the light engine, winter's real base and tree; the cottage, the flakes, the glass, the frost and the room are still stand-ins). Visibility: Organization. Opening the published build as built (`out/work/bin/distcheck.mjs`, the working folder's `dist/`): first picture after 8.1 s, 26 requests of which 15 are built assets, no page error.
+- 11:40 UTC. `npm run hostcheck` fails, and why: it builds from a copy of the tracked files only, as a host that builds from the repo would, and the built assets under `public/assets/shared/` and `public/assets/winter/` are held back from git until the round's commit (`AGENTS.md`: built assets are committed once per round, never per tuning look). The copy's app asks for `winter/base-wood.srgb.tile.w1024.png` and does not open. The published app is not affected: it is uploaded from the working folder, which has the files. Open item 30 holds this until Phase 3 step 9.
+- 11:42 UTC. `stageBlur()` in `src/core/materials.ts` (the blur channel of the `texels` view, which M2 reads as the sharp zone) now takes a point's true depth from the camera for parts inside the glass, not the depth the glass places it at, after village_builder's test of the lens (door sharp at 152 mm, placed at 171 mm). 370 of 370 tests.
+- 11:41 UTC. base_builder measured the approved base as cross lit: a warm source from the front left (left flank wood median 45, 28, 20 and brass 91, 61, 27 against 15, 10, 12 and 26, 20, 10 in the build) and a key that grazes the front from further right than the rig's. Passed to light_builder, who owns winter's rig.
