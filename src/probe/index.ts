@@ -109,7 +109,9 @@ export function mountProbe(root: HTMLElement, bridge: ProbeBridge): void {
   const after = [facts, text, button]
   for (const e of after) e.hidden = true
 
-  card.append(head, track, table, facts, text, foot)
+  const scroll = make('div', s.scroll)
+  scroll.append(head, track, table, facts, text, foot)
+  card.append(scroll)
   page.append(card)
   root.append(page)
   root.dataset.probe = 'running'

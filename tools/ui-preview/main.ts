@@ -136,7 +136,8 @@ function mockProbe(): ProbeBridge {
 }
 
 if (query.get('page') === 'probe') {
-  view.classList.add('blank')
+  if (flag('blank')) view.classList.add('blank')
+  else backdrop(query.get('season') ?? config.defaultSeason)
   mountProbe(root, mockProbe())
 } else {
   const bridge = mockApp()

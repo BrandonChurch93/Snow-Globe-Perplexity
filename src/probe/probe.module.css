@@ -22,19 +22,36 @@
 
 .card {
   --pad: 24px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
   width: min(468px, 100%);
   max-height: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  border-radius: 18px;
+  background: rgb(var(--glass));
+  box-shadow: 0 24px 60px -24px rgb(var(--shade) / 0.95);
+  pointer-events: auto;
+}
+
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 1px rgb(var(--line) / 0.13),
+    inset 0 1px 0 0 rgb(var(--line) / 0.08);
+  pointer-events: none;
+}
+
+.scroll {
+  min-height: 0;
   box-sizing: border-box;
   padding: 22px var(--pad) 0;
   overflow: auto;
   overscroll-behavior: contain;
-  border-radius: 18px;
-  background: rgb(var(--glass) / 0.94);
-  box-shadow:
-    inset 0 0 0 1px rgb(var(--line) / 0.13),
-    inset 0 1px 0 0 rgb(var(--line) / 0.08),
-    0 24px 60px -24px rgb(var(--shade) / 0.95);
-  pointer-events: auto;
 }
 
 .head {
@@ -321,8 +338,16 @@
     --pad: 18px;
     --foot: calc(20px + env(safe-area-inset-bottom, 0px));
     width: min(560px, 100%);
-    padding: 20px var(--pad) 0;
     border-radius: 20px 20px 0 0;
+  }
+
+  .card::after {
+    -webkit-mask-image: linear-gradient(to bottom, rgb(var(--glass)) 20px, rgb(var(--glass) / 0) 84px);
+    mask-image: linear-gradient(to bottom, rgb(var(--glass)) 20px, rgb(var(--glass) / 0) 84px);
+  }
+
+  .scroll {
+    padding-top: 20px;
   }
 }
 
@@ -335,6 +360,11 @@
     --pad: 24px;
     --foot: 24px;
     border-radius: 18px;
+  }
+
+  .card::after {
+    -webkit-mask-image: none;
+    mask-image: none;
   }
 }
 

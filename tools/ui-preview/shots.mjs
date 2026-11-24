@@ -13,7 +13,7 @@ const outDir = rel('out/work/ui-preview')
 const sizes = ['hd', 'phone', 'tablet'].map((id) => config.formats[id])
 const seasons = config.seasons
 const hash = engineHash()
-const previewHash = hashList(listFiles(rel('tools', 'ui-preview')))
+const previewHash = hashList(listFiles(rel('tools', 'ui-preview')).filter((f) => path.basename(f) !== 'check.mjs'))
 const scale = Number(args.scale ?? 1)
 const only = typeof args.only === 'string' ? args.only.split(',') : null
 const force = args.force === true
@@ -53,6 +53,17 @@ const selector = (control) => {
   return season ? `[data-control="${kind}"][data-season="${season}"]` : `[data-control="${kind}"]`
 }
 
+const backdropLoaded = () =>
+  Promise.all(
+    [...document.querySelectorAll('#view i')].map((i) => {
+      const url = /url\("?([^")]+)"?\)/.exec(getComputedStyle(i).backgroundImage)?.[1]
+      if (!url) return null
+      const image = new Image()
+      image.src = url
+      return image.decode().catch(() => null)
+    }),
+  )
+
 const server = await createServer({ root: rel('.'), server: { port: Number(args.port ?? 5199), host: '127.0.0.1', strictPort: false }, logLevel: 'warn' })
 await server.listen()
 const origin = server.resolvedUrls.local[0].replace(/\/$/, '')
@@ -87,11 +98,12 @@ try {
     if (shot.act?.startsWith('probe')) {
       await page.waitForSelector(shot.act === 'probe-done' ? '[data-probe="done"]' : 'html[data-parked]')
       await page.evaluate(() => document.fonts.ready)
+      await page.evaluate(backdropLoaded)
       await page.waitForTimeout(500)
     } else {
       await page.waitForSelector('#ui[data-interface="shown"]')
       await page.evaluate(() => document.fonts.ready)
-      await page.waitForFunction(() => [...document.querySelectorAll('#view i')].every((i) => getComputedStyle(i).backgroundImage !== 'none'))
+      await page.evaluate(backdropLoaded)
       await page.waitForTimeout(300)
       await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)))
       if (shot.act === 'dim') {
