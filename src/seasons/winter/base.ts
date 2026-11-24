@@ -111,6 +111,27 @@ const SHADE = `
 }
 `
 
+const OIL = `
+{
+  vec3 oilKey = vec3(0.0, 1.0, 0.0);
+  vec3 oilKeyC = vec3(0.0);
+  #ifdef STAGE_LIGHT_DONE
+  oilKey = stageKeyL;
+  oilKeyC = stageKeyC * stageKeyS;
+  #elif NUM_DIR_LIGHTS > 0
+  oilKey = directionalLights[0].direction;
+  oilKeyC = directionalLights[0].color;
+  #endif
+  float oilNv = clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0);
+  float oilF = 0.04 + 0.96 * pow(1.0 - oilNv, 5.0);
+  float oilNh = max(dot(geometryNormal, normalize(oilKey + geometryViewDir)), 0.0);
+  float oilNl = smoothstep(0.0, 0.12, dot(geometryNormal, oilKey));
+  vec3 oilAway = inverseTransformDirection(reflect(-geometryViewDir, geometryNormal), viewMatrix);
+  reflectedLight.directSpecular += oilKeyC * (7.2 * pow(oilNh, 180.0)) * oilF * oilNl * baseOil * baseAo;
+  reflectedLight.indirectSpecular += stageRoomLights(oilAway, 0.09) * min(oilF, 0.35) * 0.6 * baseOil * baseAo;
+}
+`
+
 type Shader = THREE.WebGLProgramParametersWithUniforms
 
 interface Stages {
@@ -160,11 +181,12 @@ vec2 baseTilt = baseSlope(baseDetail.rg) * 0.9 + baseSlope(baseCarve.rg) * (1.35
 const WOOD_BENT = `
 float baseSide = smoothstep(-0.2, 0.75, vBasePos.x / max(length(vBasePos.xz), 1.0));
 float baseUp = smoothstep(0.06, 0.5, baseObjectNormal.y);
-float baseFrost = baseUp * (0.25 + 0.75 * baseSide) * smoothstep(0.3, 0.75, baseNoise(vBasePos * 1.7) * 0.6 + baseNoise(vBasePos * 9.0) * 0.4 + 0.25 * baseSide);
-float baseDust = (0.1 + 0.9 * baseUp) * (0.35 + 0.65 * baseNoise(vBasePos * 3.1)) * 0.2 + 0.14 * baseCavity;
+float baseFrost = baseUp * baseSide * sqrt(baseSide) * (1.0 - 0.8 * smoothstep(10.0, 19.0, vBasePos.y)) * smoothstep(0.3, 0.8, baseNoise(vBasePos * 1.3) * 0.7 + baseNoise(vBasePos * 4.3) * 0.3 + 0.25 * baseSide);
+float baseDust = (0.1 + 0.9 * baseUp) * (0.35 + 0.65 * baseNoise(vBasePos * 3.1)) * 0.08 + 0.12 * baseCavity;
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.07, 0.07, 0.075), clamp(baseDust, 0.0, 0.5));
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.5, 0.56, 0.64), clamp(baseFrost * 0.7, 0.0, 0.7));
 roughnessFactor = mix(roughnessFactor, 0.92, clamp(baseDust * 1.6 + baseFrost, 0.0, 0.85));
+float baseOil = clamp(1.0 - 2.2 * baseDust - 1.4 * baseFrost, 0.0, 1.0) * (1.0 - 0.7 * baseCavity);
 `
 
 const BRASS_PAINT = `
@@ -330,7 +352,7 @@ void main() {
   float core = smoothstep(0.2, 0.95, nv);
   float streak = baseNoise(vec3(vIceUv.z * 11.0 + seed * 5.0, t * 2.2 + seed * 3.0, seed * 1.7));
   float grit = baseNoise(vIcePos * 11.0);
-  float cloud = 0.13 + (0.1 + 0.4 * core * core) * smoothstep(0.25, 0.75, streak) * mix(1.0, 0.3, smoothstep(0.45, 1.0, t));
+  float cloud = 0.24 + (0.1 + 0.36 * core * core) * smoothstep(0.25, 0.75, streak) * mix(1.0, 0.3, smoothstep(0.45, 1.0, t));
   cloud += 0.22 * smoothstep(0.6, 0.85, grit) * (0.4 + 0.6 * core) + 0.3 * (1.0 - smoothstep(0.0, 0.1, t));
   cloud = clamp(cloud, 0.0, 0.85);
   float wrap = clamp(dot(n, uIceKeyDir) * 0.5 + 0.5, 0.0, 1.0);
@@ -342,7 +364,7 @@ void main() {
   float hk = max(dot(n, normalize(v + uIceKeyDir)), 0.0);
   float hr = max(dot(n, normalize(v + uIceRimDir)), 0.0);
   col += uIceKeyCol * (pow(hk, 420.0) * 7.0 + pow(hk, 36.0) * 0.16);
-  col += uIceRimCol * (pow(hr, 240.0) * 4.0 + pow(hr, 30.0) * 0.12);
+  col += uIceRimCol * (pow(hr, 240.0) * 2.4 + pow(hr, 30.0) * 0.1);
   vec3 cell = floor(vIcePos * 4.5);
   vec3 jit = vec3(baseHash(cell + 1.3), baseHash(cell + 7.1), baseHash(cell + 13.7)) - 0.5;
   vec3 fn = normalize(n + turn * jit * 1.3);
@@ -391,7 +413,7 @@ export function base(): THREE.Object3D {
     key: `${PART}-wood`,
     physical: true,
     map: map('wood.srgb.tile.w1024'),
-    hook: hookOf({ uBaseDetail: { value: map('wood-detail.lin.tile.w1024') }, uBaseCarve: { value: map('carve.lin.w2048') } }, { pars: 'uniform sampler2D uBaseCarve;', paint: WOOD_PAINT, rough: WOOD_ROUGH, tilt: WOOD_TILT, bent: WOOD_BENT, after: SHADE }),
+    hook: hookOf({ uBaseDetail: { value: map('wood-detail.lin.tile.w1024') }, uBaseCarve: { value: map('carve.lin.w2048') } }, { pars: 'uniform sampler2D uBaseCarve;', paint: WOOD_PAINT, rough: WOOD_ROUGH, tilt: WOOD_TILT, bent: WOOD_BENT, after: SHADE + OIL }),
   })
   const brass = stageMaterial({
     ...lit,

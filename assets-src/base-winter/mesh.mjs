@@ -48,7 +48,7 @@ export function buildWood(f) {
     const sv = clamp((s - f.sLow) / (f.sHigh - f.sLow))
     const t = (az - strip.from) / (strip.to - strip.from)
     const weight = smooth(f.sLow, f.sLow + 0.6, s) * (1 - smooth(f.sHigh - 0.6, f.sHigh, s))
-    const ao = clamp(0.3 + 0.7 * smooth(0.5, 2.6, s)) * clamp(0.28 + 0.72 * smooth(0, 3.4, mer.total - s))
+    const ao = clamp(0.3 + 0.7 * smooth(0.5, 2.6, s)) * clamp(0.16 + 0.84 * Math.pow(smooth(0, 10.5, mer.total - s), 0.85))
     const wear = 0.65 * Math.exp(-(((m.h - 9.3) / 0.8) ** 2)) + 0.3 * Math.exp(-(((m.h - 31.2) / 0.5) ** 2))
     return {
       p: place(m.r + m.nr * d, m.h + m.nh * d, az),
@@ -311,8 +311,8 @@ export function buildBrass() {
 
 const MOUNDS = [
   { a0: -86, a1: -44, ea: 9, eb: 12, peak: 2.2, glass: 1, r1: 52.3 },
-  { a0: -41, a1: -7, ea: 9, eb: 9, peak: 1.5, glass: 0.4, r0: 45.5, r1: 52.7 },
-  { a0: -6, a1: 30, ea: 8, eb: 10, peak: 1.1, glass: 0.45, r0: 45, r1: 52.5 },
+  { a0: -41, a1: -7, ea: 9, eb: 9, peak: 1.5, glass: 0.12, r0: 46.5, r1: 52.7 },
+  { a0: -6, a1: 30, ea: 8, eb: 10, peak: 1.1, glass: 0.18, r0: 46, r1: 52.5 },
   { a0: 14, a1: 97, ea: 14, eb: 9, peak: 2.5, glass: 1, r1: 52.8, over: [27, 76] },
   { a0: 99, a1: 141, ea: 10, eb: 12, peak: 1.6, glass: 0.8, r1: 52.5, over: [112, 128] },
   { a0: -131, a1: -92, ea: 12, eb: 9, peak: 1.5, glass: 0.7, r1: 52.2, over: [-118, -104] },
@@ -355,7 +355,7 @@ function snowThickness(azIn, r) {
   }
   const lump = 0.62 + 0.76 * fbm(u * 46, r / 5.2, 46, 64, 91, 3)
   const crumb = smooth(0.7, 0.84, fbm(u * 150, r / 2.1, 150, 64, 97, 2)) * 0.55 * smooth(0.04, 0.5, t + 0.25 * fbm(u * 20, r / 9, 20, 64, 103, 2))
-  const dust = 0.34 * smooth(0.52, 0.74, fbm(u * 30, r / 6, 30, 64, 109, 3)) * (1 - smooth(45.5, 49.5, r))
+  const dust = 0.34 * smooth(0.6, 0.8, fbm(u * 30, r / 6, 30, 64, 109, 3)) * (1 - smooth(45.5, 49.5, r))
   const knob = 0.72 + 0.56 * fbm(u * 128, r / 2.4, 128, 64, 127, 2)
   return Math.max(t * lump * heap * knob, crumb, dust) - 0.1
 }
