@@ -1,0 +1,3 @@
+01-base0-pair.jpg: Baseline before any work. Approved image above, the stand-in build below, whole frame. Wrong: the build is far brighter and greyer, the slab is a grey gradient with no mirror image worth the name and no marks, the discs are flat hard circles all alike, no room, no grain.
+02-slab0-pair.jpg: Baseline, the slab (rows 1000 to 1584 of the approved image above, the build below). Wrong: no dark glossy slab, no mirror image of the base, no contact shadow that reads, a grey pool, no dust or marks.
+03-discs0-pair.jpg: Baseline, the upper left corner of the backdrop. Wrong: discs are uniform flat circles with a hard edge, no cat's-eye squeeze, no brighter rims, the room is a flat blue grey rather than near black blue.
