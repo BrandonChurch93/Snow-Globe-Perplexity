@@ -1,0 +1,105 @@
+{
+  "critic": "R3",
+  "score": 6,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "major",
+      "file": "set-D-02.jpg",
+      "where": "crops 1-4, the lower glass and the collar where it meets the base",
+      "what": "the bottom of the sphere reads as an opaque grey felt dome, not glass: the snow behind it has a matted, cloth-like texture (a woven pattern when zoomed), nothing of the set is reflected on it, it shows no wall thickness or inward curve at its foot, and it ends on a dead-straight line on top of the brass collar ring with no seat and no contact shadow; at the ring's left end (crop 1) a dark triangular facet opens like a hole in the model",
+      "fix": "give the lower glass a Fresnel reflection of the set and a visible wall that curves in and sits in a groove in the collar with a thin dark contact line; show the snow mound as fine flakes bent and enlarged by the water; close the dark facet at the ring's end"
+    },
+    {
+      "severity": "major",
+      "file": "set-D-02.jpg",
+      "where": "crops 1-4, the snow lying on the rim of the base",
+      "what": "the snow reads as grey felt or fondant icing: a matted fibrous surface, hard cut edges, a row of evenly spaced rounded drips all the same size (crop 4), and no sparkle or translucency",
+      "fix": "rebuild the rim snow as crumbly, irregular drifts with drips of varied length and spacing, a whiter body with a soft glow through thin edges, and fine glints"
+    },
+    {
+      "severity": "major",
+      "file": "set-E-02.jpg",
+      "where": "crops 2-3, the collar and the snow on the rim, seen from low",
+      "what": "the same faults as the close-up: the snow inside the lower glass is a grey felt texture that ends on a straight line at the collar ring with no seat, and the rim snow is a grey felt slab whose left end folds over like cloth and whose right edge is a row of identical scallops",
+      "fix": "apply the same glass seat and snow rebuild as for set D"
+    },
+    {
+      "severity": "major",
+      "file": "set-D-02.jpg",
+      "where": "crop 4, the top edge of the frame where the right side of the glass leaves it (about x 1265, y 0 in set-D-01.jpg)",
+      "what": "a cluster of broken pixels about 10 px across, in pure green, cyan and yellow, sits on the edge of the glass and shows as a green speck in the still",
+      "fix": "clamp the bad samples at that spot and re-render, or paint the frame clean"
+    },
+    {
+      "severity": "major",
+      "file": "set-F-03.jpg",
+      "where": "crop 11, the frost feathers on the surface in front of the base, left",
+      "what": "the nearest frost feathers are tan and beige while those beyond them and on the right are white, so they read as dried fern fronds or bronze leaf lying on the table, not ice; the same tan frost shows in set-E-02.jpg crops 1 and 5",
+      "fix": "keep the frost white to clear with a cool core, and let the warm light touch it only as glints and a thin rim"
+    },
+    {
+      "severity": "major",
+      "file": "set-F-01.jpg",
+      "where": "the far edge of the surface, left and right of the globe",
+      "what": "on the left the far edge shows as a soft light band that climbs from about y 520 at the frame edge to y 445 at the globe; on the right the edge sits level near y 480 and the band is absent, so the background does not line up behind the globe",
+      "fix": "make the surface edge one continuous line behind the globe, or let it fall into the dark on both sides"
+    },
+    {
+      "severity": "minor",
+      "file": "set-F-02.jpg",
+      "where": "crop 5, and set-F-03.jpg crop 9: the front of the snow inside the glass, at the collar",
+      "what": "the snow bank inside the glass sits straight on the collar ring with no curve of glass or seat between them, and it does not bend where it meets the glass",
+      "fix": "show the glass curving in under the snow bank and seat it in the collar, as for set D"
+    },
+    {
+      "severity": "minor",
+      "file": "set-F-02.jpg",
+      "where": "crops 1-2, the inside of the globe near its shoulder and rim",
+      "what": "the background seen through the globe is plain navy, with none of the lights behind it showing small and upside down, and nothing near the rim is stretched, so the globe reads as filled with air rather than water",
+      "fix": "render the inside as water within glass so the lights behind appear small and inverted through the sphere and the scene enlarges and bends near the rim"
+    },
+    {
+      "severity": "minor",
+      "file": "set-F-02.jpg",
+      "where": "crop 5, the pond",
+      "what": "the pond reflects only the lamp; the trunk, the lamp post and the string lights beside it do not appear in it",
+      "fix": "add a soft mirror image of the trunk, the lamp post and the nearest lights"
+    },
+    {
+      "severity": "minor",
+      "file": "set-D-02.jpg",
+      "where": "crops 2-3, the two brass rings at the top of the base",
+      "what": "in the close-up the rings are a flat matte orange with one soft highlight and fine streaks along their length, closer to painted plastic than brass",
+      "fix": "let the rings reflect the dark set and the white snow, with a sharper, broken highlight"
+    },
+    {
+      "severity": "minor",
+      "file": "set-D-02.jpg",
+      "where": "crops 1 and 4, the icicles under the rim",
+      "what": "zoomed in, the icicle outlines are crumpled and stepped like clear cellophane",
+      "fix": "smooth the outlines and add the fine ridges and melt beads real icicles carry"
+    },
+    {
+      "severity": "minor",
+      "file": "set-D-02.jpg",
+      "where": "crop 1, the left side of the lower glass",
+      "what": "short white streaks all at the same angle cross the glass like scratches rather than drifting flakes",
+      "fix": "shorten the blur and vary its angle and length, or remove the streaks"
+    },
+    {
+      "severity": "minor",
+      "file": "set-D-03.jpg",
+      "where": "crop 7, the carved pinecone",
+      "what": "the cone's scales are rows of round beads, so it reads as a berry cluster",
+      "fix": "carve overlapping pointed scales in a spiral"
+    },
+    {
+      "severity": "minor",
+      "file": "set-F-02.jpg",
+      "where": "crop 3, the chimney and the roof",
+      "what": "a wisp of gas smoke rises inside a water-filled globe, which no real globe can hold, and the roof snow is a smooth sheet that ends on a knife-cut edge at the eave",
+      "fix": "make the smoke a sculpted solid plume or remove it, and give the roof snow a rounded overhang with slight lumps"
+    }
+  ]
+}
