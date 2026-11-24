@@ -255,7 +255,7 @@
         0,
         16
       ],
-      "focusMm": 171.5,
+      "focusMm": 151.7,
       "apertureMm": 2.5
     },
     {
@@ -271,8 +271,8 @@
         0,
         16
       ],
-      "focusMm": 482.1,
-      "apertureMm": 8.17
+      "focusMm": 504,
+      "apertureMm": 2.06
     },
     {
       "frame": 180,
@@ -287,8 +287,8 @@
         0,
         16
       ],
-      "focusMm": 559,
-      "apertureMm": 8.86
+      "focusMm": 586,
+      "apertureMm": 2.01
     },
     {
       "frame": 270,
@@ -303,8 +303,8 @@
         0,
         16
       ],
-      "focusMm": 576,
-      "apertureMm": 9
+      "focusMm": 604,
+      "apertureMm": 2
     },
     {
       "frame": 405,
@@ -319,8 +319,8 @@
         0,
         16
       ],
-      "focusMm": 576,
-      "apertureMm": 9
+      "focusMm": 604,
+      "apertureMm": 2
     },
     {
       "frame": 540,
@@ -335,8 +335,8 @@
         0,
         16
       ],
-      "focusMm": 576,
-      "apertureMm": 9
+      "focusMm": 604,
+      "apertureMm": 2
     },
     {
       "frame": 575,
@@ -351,8 +351,8 @@
         0,
         16
       ],
-      "focusMm": 576,
-      "apertureMm": 9
+      "focusMm": 604,
+      "apertureMm": 2
     },
     {
       "frame": 576,
@@ -367,8 +367,8 @@
         0,
         16
       ],
-      "focusMm": 576,
-      "apertureMm": 9
+      "focusMm": 604,
+      "apertureMm": 2
     },
     {
       "frame": 719,
@@ -383,8 +383,8 @@
         0,
         16
       ],
-      "focusMm": 576,
-      "apertureMm": 9
+      "focusMm": 604,
+      "apertureMm": 2
     },
     {
       "frame": 720,
@@ -399,8 +399,8 @@
         0,
         16
       ],
-      "focusMm": 576,
-      "apertureMm": 9
+      "focusMm": 604,
+      "apertureMm": 2
     },
     {
       "frame": 828,
@@ -415,8 +415,8 @@
         0,
         16
       ],
-      "focusMm": 576,
-      "apertureMm": 9
+      "focusMm": 604,
+      "apertureMm": 2
     },
     {
       "frame": 1022,
@@ -424,15 +424,15 @@
       "what": "the nearest point to the base camera",
       "camera": [
         37.101,
-        64.768,
+        64.608,
         365.626,
         0,
-        33.65,
+        33.49,
         0,
         16
       ],
-      "focusMm": 322.8,
-      "apertureMm": 7.8
+      "focusMm": 345.4,
+      "apertureMm": 1.1
     },
     {
       "frame": 1066,
@@ -440,15 +440,15 @@
       "what": "leaving the nearest point to base",
       "camera": [
         38.556,
-        64.38,
+        64.22,
         365.508,
         0,
-        33.65,
+        33.49,
         0,
         16
       ],
-      "focusMm": 322.8,
-      "apertureMm": 7.8
+      "focusMm": 345.4,
+      "apertureMm": 1.1
     },
     {
       "frame": 1260,
@@ -463,8 +463,8 @@
         0,
         16
       ],
-      "focusMm": 576,
-      "apertureMm": 9
+      "focusMm": 604,
+      "apertureMm": 2
     },
     {
       "frame": 1295,
@@ -479,8 +479,8 @@
         0,
         16
       ],
-      "focusMm": 576,
-      "apertureMm": 9
+      "focusMm": 604,
+      "apertureMm": 2
     },
     {
       "frame": 1296,
@@ -495,8 +495,8 @@
         0,
         16
       ],
-      "focusMm": 576,
-      "apertureMm": 9
+      "focusMm": 604,
+      "apertureMm": 2
     },
     {
       "frame": 1439,
@@ -511,8 +511,8 @@
         0,
         16
       ],
-      "focusMm": 576,
-      "apertureMm": 9
+      "focusMm": 604,
+      "apertureMm": 2
     },
     {
       "frame": 1440,
@@ -527,8 +527,8 @@
         0,
         16
       ],
-      "focusMm": 576,
-      "apertureMm": 9
+      "focusMm": 604,
+      "apertureMm": 2
     },
     {
       "frame": 1548,
@@ -543,8 +543,8 @@
         0,
         16
       ],
-      "focusMm": 576,
-      "apertureMm": 9
+      "focusMm": 604,
+      "apertureMm": 2
     },
     {
       "frame": 1742,
@@ -559,8 +559,8 @@
         0,
         16
       ],
-      "focusMm": 300,
-      "apertureMm": 7
+      "focusMm": 298,
+      "apertureMm": 0.5
     },
     {
       "frame": 1786,
@@ -575,8 +575,8 @@
         0,
         16
       ],
-      "focusMm": 300,
-      "apertureMm": 7
+      "focusMm": 298,
+      "apertureMm": 0.5
     },
     {
       "frame": 1980,
@@ -591,8 +591,8 @@
         0,
         16
       ],
-      "focusMm": 576,
-      "apertureMm": 9
+      "focusMm": 604,
+      "apertureMm": 2
     },
     {
       "frame": 2015,
@@ -607,8 +607,8 @@
         0,
         16
       ],
-      "focusMm": 576,
-      "apertureMm": 9
+      "focusMm": 604,
+      "apertureMm": 2
     },
     {
       "frame": 2016,
@@ -623,8 +623,8 @@
         0,
         16
       ],
-      "focusMm": 576,
-      "apertureMm": 9
+      "focusMm": 604,
+      "apertureMm": 2
     },
     {
       "frame": 2159,
@@ -639,8 +639,8 @@
         0,
         16
       ],
-      "focusMm": 576,
-      "apertureMm": 9
+      "focusMm": 604,
+      "apertureMm": 2
     },
     {
       "frame": 2160,
@@ -655,8 +655,8 @@
         0,
         16
       ],
-      "focusMm": 576,
-      "apertureMm": 9
+      "focusMm": 604,
+      "apertureMm": 2
     },
     {
       "frame": 2268,
@@ -671,8 +671,8 @@
         0,
         16
       ],
-      "focusMm": 576,
-      "apertureMm": 9
+      "focusMm": 604,
+      "apertureMm": 2
     },
     {
       "frame": 2462,
@@ -687,8 +687,8 @@
         0,
         20
       ],
-      "focusMm": 460,
-      "apertureMm": 8
+      "focusMm": 488,
+      "apertureMm": 1.4
     },
     {
       "frame": 2506,
@@ -703,8 +703,8 @@
         0,
         20
       ],
-      "focusMm": 460,
-      "apertureMm": 8
+      "focusMm": 488,
+      "apertureMm": 1.4
     },
     {
       "frame": 2700,
@@ -719,8 +719,8 @@
         0,
         16
       ],
-      "focusMm": 576,
-      "apertureMm": 9
+      "focusMm": 604,
+      "apertureMm": 2
     },
     {
       "frame": 2735,
@@ -735,8 +735,8 @@
         0,
         16
       ],
-      "focusMm": 576,
-      "apertureMm": 9
+      "focusMm": 604,
+      "apertureMm": 2
     },
     {
       "frame": 2736,
@@ -751,8 +751,8 @@
         0,
         16
       ],
-      "focusMm": 576,
-      "apertureMm": 9
+      "focusMm": 604,
+      "apertureMm": 2
     },
     {
       "frame": 2879,
@@ -767,8 +767,8 @@
         0,
         16
       ],
-      "focusMm": 576,
-      "apertureMm": 9
+      "focusMm": 604,
+      "apertureMm": 2
     },
     {
       "frame": 2880,
@@ -783,8 +783,8 @@
         0,
         16
       ],
-      "focusMm": 576,
-      "apertureMm": 9
+      "focusMm": 604,
+      "apertureMm": 2
     },
     {
       "frame": 3024,
@@ -799,8 +799,8 @@
         0,
         16
       ],
-      "focusMm": 576,
-      "apertureMm": 9
+      "focusMm": 604,
+      "apertureMm": 2
     },
     {
       "frame": 3456,
@@ -815,7 +815,7 @@
         0,
         16
       ],
-      "focusMm": 171.5,
+      "focusMm": 151.7,
       "apertureMm": 2.5
     },
     {
@@ -831,7 +831,7 @@
         0,
         16
       ],
-      "focusMm": 171.5,
+      "focusMm": 151.7,
       "apertureMm": 2.5
     }
   ],

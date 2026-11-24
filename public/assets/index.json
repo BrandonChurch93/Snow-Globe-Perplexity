@@ -9,6 +9,16 @@
           "sha": "f8ad3ac3aaa043ca"
         },
         {
+          "path": "shared/scene-slab-detail.lin.tile.png",
+          "bytes": 4339349,
+          "sha": "919e685beca8bb51"
+        },
+        {
+          "path": "shared/scene-slab-stone.lin.tile.png",
+          "bytes": 1594214,
+          "sha": "019946313786b537"
+        },
+        {
           "path": "shared/trunk-bark-n.lin.tile.png",
           "bytes": 10492024,
           "sha": "74f6a1df6d71fc66"
@@ -143,6 +153,16 @@
           "sha": "f8ad3ac3aaa043ca"
         },
         {
+          "path": "shared/scene-slab-detail.lin.tile.png",
+          "bytes": 4339349,
+          "sha": "919e685beca8bb51"
+        },
+        {
+          "path": "shared/scene-slab-stone.lin.tile.png",
+          "bytes": 1594214,
+          "sha": "019946313786b537"
+        },
+        {
           "path": "shared/trunk-bark-n.lin.tile.png",
           "bytes": 10492024,
           "sha": "74f6a1df6d71fc66"
@@ -271,9 +291,9 @@
     }
   },
   "seasonHashes": {
-    "winter": "0ec00ff1a8bdae42",
-    "spring": "43939c0870bc73c2",
-    "summer": "43939c0870bc73c2",
-    "fall": "43939c0870bc73c2"
+    "winter": "6515372f0326c9c1",
+    "spring": "acd3abedab432b2d",
+    "summer": "acd3abedab432b2d",
+    "fall": "acd3abedab432b2d"
   }
 }
