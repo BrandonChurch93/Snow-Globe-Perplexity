@@ -405,13 +405,13 @@ function snowThickness(azIn, r) {
     const outer = Math.pow(1 - smooth(end - mix(3.4, 2.6, over), end, r), 0.45)
     const inner = m.r0 ? Math.sqrt(smooth(m.r0 - 0.8, m.r0 + 1.7, r)) : 1
     const bank = (m.bank ?? 0) * (1 - smooth(50, 56, r))
-    const t = Math.pow(a, m.p ?? 0.55) * (m.t * inner + bank) * outer
+    const t = Math.pow(a, m.p ?? 0.55) * (m.t * inner + bank) * outer * 0.7
     sum += t ** 4
   }
   const t = Math.pow(sum, 0.25)
   const lump = 0.7 + 0.6 * fbm(u * 46, r / 5.2, 46, 64, 91, 3)
   const heap = 0.86 + 0.28 * fbm(u * 19, r / 12, 19, 64, 119, 2)
-  const knob = (fbm(u * 96, r / 3.0, 96, 64, 127, 2) - 0.5) * 1.5 * Math.sqrt(Math.min(t, 4) / 4) + (fbm(u * 230, r / 1.3, 230, 64, 151, 2) - 0.5) * 0.4 * smooth(0.15, 1.1, t)
+  const knob = (fbm(u * 96, r / 3.0, 96, 64, 127, 2) - 0.5) * 1.1 * Math.sqrt(Math.min(t, 4) / 4) + (fbm(u * 230, r / 1.3, 230, 64, 151, 2) - 0.5) * 0.4 * smooth(0.15, 1.1, t)
   const crumb = smooth(0.7, 0.84, fbm(u * 150, r / 2.1, 150, 64, 97, 2)) * 0.55 * smooth(0.04, 0.5, t + 0.25 * fbm(u * 20, r / 9, 20, 64, 103, 2))
   const dust = 0.34 * smooth(0.6, 0.8, fbm(u * 30, r / 6, 30, 64, 109, 3)) * (1 - smooth(45.5, 49.5, r))
   const loose = r > collarEdge + 1.4 ? 1 : 0
@@ -455,7 +455,7 @@ export function buildSnow() {
     const tA = Math.max(snowThickness(az, noseFrom), 0)
     const hA = snowSupport(noseFrom) + tA
     const near = hangNear(az)
-    const hB = P.LIP.h - 0.55 - (0.35 + 1.5 * fbm(u * 53, 0.71, 53, 4, 137, 3)) - 0.8 * near
+    const hB = P.LIP.h - 0.25 - (0.25 + 1.1 * fbm(u * 53, 0.71, 53, 4, 137, 3)) - 0.9 * near
     const reachOut = lipOuter + 0.45 + 0.9 * fbm(u * 37, 0.13, 37, 4, 139, 3) + 0.8 * near - noseFrom
     const low = mix(Math.min(hA - 0.15, P.LIP.h + 0.62), hB, smooth(0.3, 1, w))
     const reach = Math.max(0.6, reachOut * w)
@@ -554,7 +554,7 @@ export function icicleList(f) {
   for (const [x, y0, y1, w] of MEASURED) {
     const foot = onCylinder(x, y1, P.ICE.r)
     const scale = 9.0 + 0.9 * clamp(foot.z / P.ICE.r, 0, 1)
-    list.push({ az: foot.az, length: clamp((y1 - y0) / scale + 0.6, 3, 19), radius: clamp((w / scale / 2) * 1.26, 0.8, 2.8), measured: true })
+    list.push({ az: foot.az, length: clamp((y1 - y0) / scale + 0.6, 3, 19), radius: clamp((w / scale / 2) * 1.05, 0.7, 2.4), measured: true })
   }
   const rng = mulberry(20261123)
   let az = 97
@@ -610,7 +610,7 @@ export function buildIce(list) {
       const body = it.radius * (0.985 * Math.pow(1 - t, taper) + 0.015) * (1 + swell * Math.exp(-(((t - belly) / 0.12) ** 2)))
       const ripple = 1 + wave * Math.sin(2 * Math.PI * ((t * total) / pitch + k1)) * smooth(0.02, 0.15, t) + 0.045 * Math.sin(2 * Math.PI * ((t * total) / 2.1 + k2)) + 0.02 * Math.sin(2 * Math.PI * ((t * total) / 1.1 + 3 * k1))
       const drop = bead * 0.1 * it.radius * Math.exp(-(((t - 0.955) / 0.03) ** 2))
-      const cap = t > 0.965 ? Math.sqrt(Math.max(1 - ((t - 0.965) / 0.035) ** 2, 0)) : 1
+      const cap = t > 0.985 ? Math.sqrt(Math.max(1 - ((t - 0.985) / 0.015) ** 2, 0)) : 1
       const shoulder = t < neck ? 1 + 0.16 * (1 - Math.sin((Math.PI / 2) * (t / neck))) : 1
       return (Math.max(body * ripple, 0) + drop) * cap * shoulder
     }
