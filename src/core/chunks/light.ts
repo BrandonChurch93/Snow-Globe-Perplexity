@@ -55,7 +55,7 @@ export const lightUniforms = {
   uRigLobe: { value: new THREE.Vector4(0.2, 1, 0.1, 1) },
   uRigRoom: { value: new THREE.Vector4(1, 1, 0.5, 0.6) },
   uRigGlow: { value: new THREE.Vector4(0.3, 1, 0.04, 0.3) },
-  uRigPoint: { value: new THREE.Vector4(0.14, 0.05, 0.32, 0) },
+  uRigPoint: { value: new THREE.Vector4(0.14, 0.05, 0.32, 1) },
   ...roomLit,
 }
 
@@ -309,6 +309,8 @@ vec3 stageLit = vec3(0.0);
     vec3 lgThin;
     stageGridRead(vStageLocal, lgCol, lgThin, lgToward, lgAir, lgShade);
     stageLit = lgCol;
+    vec3 lgFlood = stageFlood(vStageLocal);
+    lgCol = (lgCol - lgFlood) * uRigPoint.w + lgFlood;
     lgOpen = mix(uGridShade.w, 1.0, lgAir);
     float lgLen = length(lgToward);
     float lgSided = min(lgLen, 1.0);

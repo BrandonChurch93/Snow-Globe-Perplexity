@@ -46,7 +46,7 @@ describe('the flood of a change', () => {
   })
 
   it('rises far above the resting light in a shake of one season, inside and out', () => {
-    const top = lit(mid)
+    const top = lit(span.from)
     expect(top.gainA / rest.gainA).toBeCloseTo(1 + ROOM_RIG.bloomGain, 9)
     expect(top.gainA / rest.gainA).toBeGreaterThan(5)
     expect(top.flood).toBeCloseTo(lum({ r: glowOf(winter.innerLights)[0], g: glowOf(winter.innerLights)[1], b: glowOf(winter.innerLights)[2] }) * (top.gainB / (rest.gainB * (1 + ROOM_RIG.bloomGain))), 6)
@@ -82,26 +82,27 @@ describe('the flood of a change', () => {
       for (let c = phase * FRAME; c <= 1; c += FRAME) {
         const { whole, glow } = changeSwell(c)
         expect(glow).toBeLessThanOrEqual(whole)
-        if (c <= mid) {
+        if (c <= span.from) {
           expect(glow, `rise at ${c}`).toBeGreaterThanOrEqual(before)
           expect(glow - before, `step up at ${c}`).toBeLessThan(0.08)
           if (glow > 0 && glow < 1) rise++
         } else {
-          expect(glow, `fall at ${c}`).toBeLessThanOrEqual(before)
-          expect(before - glow, `step down at ${c}`).toBeLessThan(0.22)
+          if (c - FRAME > span.from) expect(glow, `fall at ${c}`).toBeLessThanOrEqual(before)
+          expect(Math.abs(before - glow), `step down at ${c}`).toBeLessThan(0.22)
           if (glow > 0 && glow < 1) fall++
         }
         if (c >= span.from && c <= span.to) expect(whole).toBe(1)
-        if (c >= span.from && c <= mid) expect(glow).toBe(1)
+        if (c >= span.from && c <= span.to) expect(((1 + ROOM_RIG.bloomGain) ** glow - 1) / ROOM_RIG.bloomGain, `the light through the base's change at ${c}`).toBeGreaterThan(0.4)
         before = glow
       }
       expect(rise).toBeGreaterThanOrEqual(19)
-      expect(fall).toBeGreaterThanOrEqual(6)
+      expect(fall).toBeGreaterThanOrEqual(10)
     }
   })
 
   it('swells onto the base with the lights inside, so no frame of it is a jump', () => {
-    const top = lit(mid).outside
+    const top = lit(span.from).outside
+    const tint = lit(span.from).tint
     for (let phase = 0; phase < 1; phase += 0.25) {
       let before = 0
       let rise = 0
@@ -110,29 +111,30 @@ describe('the flood of a change', () => {
         const at = lit(c)
         const v = at.outside / top
         expect(v, `the base follows the lights inside at ${c}`).toBeCloseTo((at.gainA / rest.gainA - 1) / ROOM_RIG.bloomGain, 9)
-        expect(at.tint / lit(mid).tint).toBeCloseTo(v, 9)
-        if (c <= mid) {
+        expect(at.tint / tint).toBeCloseTo(v, 9)
+        if (c <= span.from) {
           expect(v).toBeGreaterThanOrEqual(before)
           expect(v - before, `step up at ${c}`).toBeLessThan(0.1)
           if (v > 0.02 && v < 0.98) rise++
         } else {
-          expect(v).toBeLessThanOrEqual(before)
-          expect(before - v, `step down at ${c}`).toBeLessThan(0.3)
+          if (c - FRAME > span.from) expect(v).toBeLessThanOrEqual(before)
+          expect(Math.abs(before - v), `step down at ${c}`).toBeLessThan(0.16)
           if (v > 0.02 && v < 0.98) fall++
         }
         before = v
       }
       expect(before, 'the last frame of the window').toBeLessThan(0.001)
       expect(rise).toBeGreaterThanOrEqual(14)
-      expect(fall).toBeGreaterThanOrEqual(4)
+      expect(fall).toBeGreaterThanOrEqual(8)
     }
-    expect(lit(span.from).outside / top).toBeCloseTo(1, 9)
-    expect(lit(mid).outside / top).toBeCloseTo(1, 9)
+    expect(lit(span.from - 2 * FRAME).outside / top).toBeGreaterThan(0.9)
+    expect(lit(mid).outside / top).toBeGreaterThan(0.8)
+    expect(lit(span.to).outside / top).toBeGreaterThan(0.4)
   })
 
   it('lifts only the new season where two seasons meet', () => {
     const other = kitOf('spring')
-    const top = lit(mid, other)
+    const top = lit(span.from, other)
     const low = lit(0.02, other)
     expect(top.gainA).toBeCloseTo(low.gainA, 12)
     expect(top.gainB / low.gainB).toBeCloseTo(1 + ROOM_RIG.bloomGain, 9)

@@ -1,7 +1,7 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { blur, clamp, fbm, luminance, readRgb, sampleBilinear, smooth } from './lib.mjs'
-import { CARVING, meridian, sOfH } from './profile.mjs'
+import { CARVING, lift, meridian, sOfH } from './profile.mjs'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const RAD = Math.PI / 180
@@ -93,7 +93,7 @@ export async function buildField() {
   const field = new Float32Array(W * H)
   const motifs = await loadMotifs()
   const xOf = (az) => (az * RAD + Math.PI) * CARVING.rRef * PX_PER_MM
-  const yOf = (h) => (sOfH(mer, h) - sLow) * PX_PER_MM
+  const yOf = (h) => (sOfH(mer, lift(h)) - sLow) * PX_PER_MM
   for (const st of STAMPS) {
     const m = motifs[st.motif]
     const mmPerPx = st.mmPerPx ?? st.width / m.w

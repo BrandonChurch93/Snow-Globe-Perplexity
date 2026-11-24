@@ -7,7 +7,7 @@ import { blurWrap, loadSource, luma, normalsOf, readPicture, seamless, toBytes, 
 const TAU = Math.PI * 2
 const AROUND = 144
 const MAP_PX = 2048
-const PLATES = { across: 10, down: 6, tall: 0.6, crack: 0.09, dark: 0.14, sway: 0.1, hue: 0.72 }
+const STRANDS = { across: 9, fine: 23, crack: 0.1, dark: 0.2, sway: 0.22, bend: 0.3, hue: 0.72, streakPx: 110, streak: 0.7 }
 const lerp = (a, b, t) => a + (b - a) * t
 
 const [T] = await loadSource(['/src/miniature/trunk.ts'])
@@ -143,43 +143,69 @@ async function barkMaps() {
   const { w, h } = img
   const l = luma(img)
   const wide = blurWrap(l, w, h, Math.round(w / 14))
+  const streak = (src) => {
+    const n = STRANDS.streakPx
+    const k = 2 * n + 1
+    let a = src
+    for (let pass = 0; pass < 2; pass++) {
+      const out = new Float32Array(a.length)
+      for (let x = 0; x < w; x++) {
+        let s = 0
+        for (let i = -n; i <= n; i++) s += a[((i + h) % h) * w + x]
+        for (let y = 0; y < h; y++) {
+          out[y * w + x] = s / k
+          s += a[((y + n + 1) % h) * w + x] - a[((y - n + h) % h) * w + x]
+        }
+      }
+      a = out
+    }
+    return a
+  }
+  const lanes = [0, 1, 2].map((c) => streak(Float32Array.from({ length: w * h }, (_, i) => img.px[i * 3 + c])))
+  const long = streak(l)
   const colour = new Float32Array(img.px.length)
   const height = new Float32Array(w * h)
-  const seeds = []
-  for (let cy = 0; cy < PLATES.down; cy++) for (let cx = 0; cx < PLATES.across; cx++) seeds.push([cx + 0.15 + 0.7 * hash(cx * 7.3 + cy * 13.1 + 1), cy + 0.15 + 0.7 * hash(cx * 3.7 + cy * 5.9 + 2), hash(cx * 11.7 + cy * 2.3 + 3)])
-  for (let i = 0; i < w * h; i++) {
-    const grain = l[i] / Math.max(wide[i], 0.05)
-    const px = (((i % w) / w) * PLATES.across + PLATES.sway * (grain - 1) + PLATES.across) % PLATES.across
-    const py = (Math.floor(i / w) / h) * PLATES.down
+  const seedsOf = (n, salt) => Array.from({ length: n }, (_, cx) => [cx + 0.12 + 0.76 * hash(cx * 7.3 + salt), hash(cx * 11.7 + salt + 2)])
+  const coarse = seedsOf(STRANDS.across, 1)
+  const thin = seedsOf(STRANDS.fine, 5)
+  const strand = (px, list) => {
+    const n = list.length
     const cx = Math.floor(px)
-    const cy = Math.floor(py)
     let f1 = 9
     let f2 = 9
     let tone = 0
-    for (let oy = -1; oy <= 1; oy++) {
-      for (let ox = -1; ox <= 1; ox++) {
-        const sx = (((cx + ox) % PLATES.across) + PLATES.across) % PLATES.across
-        const sy = (((cy + oy) % PLATES.down) + PLATES.down) % PLATES.down
-        const seed = seeds[sy * PLATES.across + sx]
-        const d = Math.hypot(seed[0] - sx + cx + ox - px, (seed[1] - sy + cy + oy - py) * PLATES.tall)
-        if (d < f1) {
-          f2 = f1
-          f1 = d
-          tone = seed[2]
-        } else if (d < f2) f2 = d
-      }
+    for (let ox = -1; ox <= 1; ox++) {
+      const sx = (((cx + ox) % n) + n) % n
+      const d = Math.abs(list[sx][0] - sx + cx + ox - px)
+      if (d < f1) {
+        f2 = f1
+        f1 = d
+        tone = list[sx][1]
+      } else if (d < f2) f2 = d
     }
-    const whole = smooth(0.02, PLATES.crack, f2 - f1)
+    return [f2 - f1, tone]
+  }
+  const wrapTo = (v, n) => ((v % n) + n) % n
+  for (let i = 0; i < w * h; i++) {
+    const grain = lerp(l[i], long[i], STRANDS.streak) / Math.max(wide[i], 0.05)
+    const x = (i % w) / w
+    const y = Math.floor(i / w) / h
+    const bend = STRANDS.bend * (Math.sin(TAU * y + 1.3) + 0.5 * Math.sin(TAU * (2 * y + x) + 0.4) + 0.25 * Math.sin(TAU * (3 * y - 2 * x) + 2.2))
+    const [gap, tone] = strand(wrapTo(x * STRANDS.across + STRANDS.sway * (grain - 1) + bend, STRANDS.across), coarse)
+    const [gapFine] = strand(wrapTo(x * STRANDS.fine + 2 * STRANDS.sway * (grain - 1) + (bend * STRANDS.fine) / STRANDS.across, STRANDS.fine), thin)
+    const whole = smooth(0.02, STRANDS.crack, gap)
+    const round = 1 - Math.pow(1 - Math.min(1, gap / 0.7), 2)
+    const fibre = smooth(0.03, 0.22, gapFine)
     const flat = 0.3 / Math.max(wide[i], 0.05)
-    const k = (0.55 + 0.45 * flat) * Math.pow(grain, 0.2) * (PLATES.dark + (1 - PLATES.dark) * whole) * (0.84 + 0.3 * tone)
-    const r = Math.pow(img.px[i * 3] * k, 0.92) * 1.16
-    const g = Math.pow(img.px[i * 3 + 1] * k, 0.92) * 1.02
-    const b = Math.pow(img.px[i * 3 + 2] * k, 0.92) * 0.9
+    const k = (0.55 + 0.45 * flat) * Math.pow(grain, 0.2) * (STRANDS.dark + (1 - STRANDS.dark) * whole) * (0.84 + 0.3 * tone) * (0.86 + 0.14 * fibre)
+    const r = Math.pow(lerp(img.px[i * 3], lanes[0][i], STRANDS.streak) * k, 0.92) * 1.16
+    const g = Math.pow(lerp(img.px[i * 3 + 1], lanes[1][i], STRANDS.streak) * k, 0.92) * 1.02
+    const b = Math.pow(lerp(img.px[i * 3 + 2], lanes[2][i], STRANDS.streak) * k, 0.92) * 0.9
     const grey = 0.3 * r + 0.6 * g + 0.1 * b
-    colour[i * 3] = lerp(grey, r, PLATES.hue + 0.2 * tone)
-    colour[i * 3 + 1] = lerp(grey, g, PLATES.hue + 0.2 * tone)
-    colour[i * 3 + 2] = lerp(grey, b, PLATES.hue + 0.2 * tone)
-    height[i] = 0.45 * grain + 0.9 * whole + 0.3 * tone
+    colour[i * 3] = lerp(grey, r, STRANDS.hue + 0.2 * tone)
+    colour[i * 3 + 1] = lerp(grey, g, STRANDS.hue + 0.2 * tone)
+    colour[i * 3 + 2] = lerp(grey, b, STRANDS.hue + 0.2 * tone)
+    height[i] = 0.45 * grain + 0.6 * whole + 0.5 * round + 0.3 * tone + 0.25 * fibre
   }
   const soft = blurWrap(height, w, h, 2)
   const fine = blurWrap(height, w, h, 1)

@@ -27,8 +27,8 @@ const LEAVES = ['#22401f', '#2d5226', '#1b3319', '#3a5f2c', '#27481f'].map(lin)
 const MORTAR_C = lin('#85766a')
 const DIRT = lin('#4b4538')
 const IRON = lin('#15161a')
-const DOOR = lin('#643921')
-const FRAME = lin('#5a3d26')
+const DOOR = lin('#553c33')
+const FRAME = lin('#8a6a4c')
 const FENCE = lin('#a87a55')
 const PICKET_C = lin('#d8d2ca')
 const PICKET = { each: 7, clear: 0.95, thick: 0.15, wide: 0.24, over: 0.5 }
@@ -148,7 +148,7 @@ function bar(W, w, h, d, x, y, z, color, o = {}) {
 
 function windowAt(W, w, pane) {
   const fr = 0.34
-  const dep = 0.66
+  const dep = 0.45
   const z = MORTAR + dep / 2
   const cy = w.sill + w.height / 2
   bar(W, w.width + 2 * fr, fr, dep, w.x, w.sill + w.height + fr / 2, z, mul3(FRAME, 0.9 + 0.2 * R()), { along: 'x' })
@@ -293,6 +293,7 @@ const roofAt = RF.roofAt
 const roofDown = (sd) => add3(sc(V3, sd * cp), [0, -sp, 0])
 const roofUp = (sd) => add3(sc(V3, sd * sp), [0, cp, 0])
 const DECK = 0.42
+const FASCIA = { tall: 0.5, back: 0.1, tone: '#2c2018' }
 
 for (const sd of [-1, 1]) {
   const deck = slab(2 * roofLen - 0.1, DECK, SLOPE, { sx: 6, sz: 4 })
@@ -337,9 +338,9 @@ for (const sd of [-1, 1]) {
     shade(board, (x, y) => 0.8 + 0.3 * noise(x * 0.8, y * 5, end + sd))
     solid.add(board, { matrix: basis(roofAt(sd, SLOPE / 2 + 0.1, end * (roofLen + 0.12), -0.42), roofDown(sd), roofUp(sd)), color: mul3(lin('#4a3524'), 0.9 + 0.2 * R()), surf: woodSurf(0.7), uv: grainUv(roofDown(sd)), uvOffset: off() })
   }
-  const fascia = slab(2 * roofLen, 0.7, 0.26, { round: 0.05, sx: 10, warp: 0.03, seed: R() * 30 })
+  const fascia = slab(2 * roofLen, FASCIA.tall, 0.26, { round: 0.05, sx: 10, warp: 0.03, seed: R() * 30 })
   shade(fascia, (x, y) => 0.8 + 0.3 * noise(x * 0.8, y * 5, 3 + sd))
-  solid.add(fascia, { matrix: basis(add3(roofAt(sd, SLOPE + 0.08, 0, -0.1), [0, -0.3, 0]), U3, UP), color: mul3(lin('#4a3524'), 0.9 + 0.2 * R()), surf: woodSurf(0.7), uv: grainUv(U3), uvOffset: off() })
+  solid.add(fascia, { matrix: basis(add3(roofAt(sd, SLOPE - FASCIA.back, 0, -0.1), [0, -FASCIA.tall / 2 + 0.05, 0]), U3, UP), color: mul3(lin(FASCIA.tone), 0.9 + 0.2 * R()), surf: woodSurf(0.7), uv: grainUv(U3), uvOffset: off() })
 }
 const cap = new THREE.CylinderGeometry(0.34, 0.34, 2 * roofLen, 8, 10).applyMatrix4(new THREE.Matrix4().makeRotationX(Math.PI / 2))
 shade(cap, (x, y, z) => 0.8 + 0.3 * noise(z * 1.2, x * 4, 9))
@@ -374,7 +375,7 @@ solid.add(pot, { matrix: T(...P3(ch.across - 0.2, stackTop + 0.94, ch.along + 0.
 
 const lampM = new THREE.Matrix4().makeRotationY(RF.LAMP.yaw).setPosition(...RF.lampFoot())
 const post = new THREE.LatheGeometry(
-  [[0, 0], [1.12, 0], [1.14, 0.42], [0.98, 0.52], [0.9, 0.78], [1.0, 0.9], [0.86, 1.06], [0.62, 1.3], [0.52, 2.1], [0.6, 2.22], [0.6, 2.36], [0.46, 2.5], [0.4, 5.2], [0.5, 5.3], [0.5, 5.46], [0.37, 5.56], [0.33, 7.9], [0.46, 8.02], [0.42, 8.2], [0.72, 8.42], [0.8, 8.5], [0.8, 8.6], [0, 8.6]].map(([x, y]) => new THREE.Vector2(x, y)),
+  [[0, 0], [0.82, 0], [0.84, 0.4], [0.76, 0.55], [0.72, 0.8], [0.78, 0.92], [0.7, 1.1], [0.56, 1.7], [0.46, 2.7], [0.42, 3.4], [0.48, 3.5], [0.48, 3.62], [0.37, 3.75], [0.34, 6.4], [0.41, 6.5], [0.41, 6.64], [0.34, 6.74], [0.31, 9.2], [0.4, 9.32], [0.37, 9.5], [0.6, 9.72], [0.7, 9.8], [0.7, 9.9], [0, 9.9]].map(([x, y]) => new THREE.Vector2(x, y)),
   20,
 )
 {
@@ -383,7 +384,7 @@ const post = new THREE.LatheGeometry(
     const x = P.getX(i)
     const y = P.getY(i)
     const z = P.getZ(i)
-    const k = smooth(1.2, 1.5, y) * (1 - smooth(4.9, 5.2, y)) + smooth(5.6, 5.8, y) * (1 - smooth(7.6, 7.9, y)) * 0.6
+    const k = smooth(3.9, 4.2, y) * (1 - smooth(6.1, 6.4, y)) + smooth(6.8, 7, y) * (1 - smooth(8.9, 9.2, y)) * 0.6
     const f = 1 - 0.09 * k * (0.5 + 0.5 * Math.cos(8 * Math.atan2(z, x)))
     P.setXYZ(i, x * f, y, z * f)
   }
@@ -394,7 +395,7 @@ const ironPart = (g, m) => {
 }
 ironPart(post)
 const { cageLo, cageHi, loHalf, hiHalf } = RF.LAMP
-const CAP_MM = 1.15
+const CAP_MM = 1.1
 const Q = Math.PI / 4
 for (let k = 0; k < 4; k++) {
   const a = Q + (k * Math.PI) / 2
@@ -402,13 +403,13 @@ for (let k = 0; k < 4; k++) {
   const B = [Math.cos(a) * hiHalf * Math.SQRT2, cageHi, Math.sin(a) * hiHalf * Math.SQRT2]
   const mid = sc(add3(A, B), 0.5)
   const len = Math.hypot(...sub3(B, A))
-  ironPart(slab(0.22, len, 0.22, { round: 0.04, sy: 2 }), basis(mid, [Math.cos(a + Q * 2), 0, Math.sin(a + Q * 2)], norm3(sub3(B, A))))
+  ironPart(slab(0.18, len, 0.18, { round: 0.03, sy: 2 }), basis(mid, [Math.cos(a + Q * 2), 0, Math.sin(a + Q * 2)], norm3(sub3(B, A))))
 }
 ironPart(new THREE.CylinderGeometry(hiHalf * Math.SQRT2 + 0.12, hiHalf * Math.SQRT2 + 0.05, 0.16, 4, 1).applyMatrix4(new THREE.Matrix4().makeRotationY(Q).setPosition(0, cageHi + 0.06, 0)))
-ironPart(new THREE.CylinderGeometry(0.3, hiHalf * Math.SQRT2 + 0.38, CAP_MM, 4, 3).applyMatrix4(new THREE.Matrix4().makeRotationY(Q).setPosition(0, cageHi + 0.14 + CAP_MM / 2, 0)))
-ironPart(new THREE.CylinderGeometry(0.2, 0.34, 0.26, 10, 1).applyMatrix4(T(0, cageHi + 0.26 + CAP_MM, 0)))
-ironPart(new THREE.SphereGeometry(0.2, 10, 8).applyMatrix4(T(0, cageHi + 0.52 + CAP_MM, 0)))
-ironPart(new THREE.ConeGeometry(0.08, 0.34, 8).applyMatrix4(T(0, cageHi + 0.84 + CAP_MM, 0)))
+ironPart(new THREE.CylinderGeometry(0.1, hiHalf * Math.SQRT2 + 0.28, CAP_MM, 4, 3).applyMatrix4(new THREE.Matrix4().makeRotationY(Q).setPosition(0, cageHi + 0.14 + CAP_MM / 2, 0)))
+ironPart(new THREE.CylinderGeometry(0.08, 0.13, 0.12, 10, 1).applyMatrix4(T(0, cageHi + 0.14 + CAP_MM, 0)))
+ironPart(new THREE.SphereGeometry(0.14, 10, 8).applyMatrix4(T(0, cageHi + 0.22 + CAP_MM, 0)))
+ironPart(new THREE.ConeGeometry(0.05, 0.22, 8).applyMatrix4(T(0, cageHi + 0.43 + CAP_MM, 0)))
 {
   const g = new THREE.CylinderGeometry(hiHalf * Math.SQRT2 - 0.06, loHalf * Math.SQRT2 - 0.05, cageHi - cageLo - 0.04, 4, 1, true).applyMatrix4(new THREE.Matrix4().makeRotationY(Q).setPosition(0, (cageLo + cageHi) / 2, 0))
   lampGlass.add(g.toNonIndexed(), { matrix: lampM, keepUv: true, surf: [0, 0], renormal: true })
@@ -477,6 +478,7 @@ for (const [i, s] of pathShapes.entries()) {
   solid.add(g, { matrix: boxMatrix(s), color: mul3(step ? pick(ARCH) : SLATE, 0.8 + 0.25 * R()), surf: stoneSurf(), uvOffset: off(), renormal: true })
 }
 
+const IVY = ['#4f4a40', '#5c4b44', '#3d4238', '#665552', '#473f3a'].map(lin)
 const shrubs = RF.shrubs()
 const shrubList = []
 for (const sh of shrubs) {
@@ -493,11 +495,12 @@ for (const sh of shrubs) {
   const pos = []
   const nor = []
   const col = []
-  const leaves = 1100
+  const ivy = RF.isIvy(sh.r)
+  const leaves = ivy ? Math.round(52 * sh.r[1] * (sh.r[0] + sh.r[2])) : 1100
   for (let i = 0; i < leaves; i++) {
     const u = R() * 2 - 0.25
-    const yy = clamp(u, -0.25, 1)
-    const a = R() * Math.PI * 2
+    const yy = ivy ? 0.75 * u - 0.3125 : clamp(u, -0.25, 1)
+    const a = ivy ? RF.wallOutward() + (R() - 0.5) * Math.PI * 1.2 : R() * Math.PI * 2
     const rr = Math.sqrt(Math.max(0, 1 - yy * yy))
     const d = [Math.cos(a) * rr, yy, Math.sin(a) * rr]
     const k = 0.84 + 0.2 * R()
@@ -511,7 +514,7 @@ for (const sh of shrubs) {
     const B = add3(mid, sc(sideV, w))
     const Cc = add3(p, sc(tip, len))
     const D = add3(mid, sc(sideV, -w))
-    const tone = mul3(pick(LEAVES), 0.75 + 0.6 * R())
+    const tone = mul3(pick(ivy ? IVY : LEAVES), 0.75 + 0.6 * R())
     const nn = norm3(add3(sc(d, 0.75), [0, 0.35, 0]))
     for (const [q, s] of [[A, 0.55], [B, 0.9], [Cc, 1.15], [A, 0.55], [Cc, 1.15], [D, 0.9]]) {
       pos.push(...q)

@@ -32,6 +32,14 @@ vec3 villageSight() {
 vec3 villageInside(vec3 viewNormal) {
   return normalize(mat3(uGlobeInv) * inverseTransformDirection(viewNormal, viewMatrix));
 }
+float villagePost(vec3 n, vec3 sight, vec3 foot, float radius, float tall) {
+  vec3 r = reflect(-sight, n);
+  vec2 to = foot.xz - vStageLocal.xz;
+  float along = dot(to, r.xz) / max(dot(r.xz, r.xz), 1e-5);
+  float miss = length(vStageLocal.xz + r.xz * along - foot.xz);
+  float up = vStageLocal.y + r.y * along - foot.y;
+  return step(0.0, along) * (1.0 - smoothstep(radius * 0.6, radius * 1.4, miss)) * smoothstep(-1.0, 0.5, up) * (1.0 - smoothstep(tall * 0.7, tall, up));
+}
 float villageMirror(vec3 n, vec3 sight, float tight, float wide, float wideShare) {
   vec3 r = reflect(-sight, n);
   float sum = 0.0;
