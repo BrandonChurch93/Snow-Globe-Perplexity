@@ -25,23 +25,22 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 9 · 2026-11-24 04:20 UTC
+Status 11 · 2026-11-24 04:53 UTC
 
-- `out/stills/status/status-9-1.jpg`: The host check: the site built from a clean copy of the tracked files and opened live at 1920 x 1080. It draws and logs nothing, and it does not yet signal its first picture, so the load time check is red. (by gate_checks_builder)
-- `out/stills/status/status-9-2.jpg`: The compression test: frame 666, in the middle of the first shake, taken back out of a 5 Mbps encode (42.7 dB against the frame before encoding). Measuring scene. (by film_tools_builder)
-- `out/stills/status/status-9-3.jpg`: The first page of the blockout critic's pack: the approved winter image (a) above the hero camera (b). The build side is still the measuring scene with blocks for the cottage and the tree, so this shows how far there is to go. (by measure_pack_builder)
-- `out/stills/status/status-9-4.jpg`: The 2 kept sounds as waveforms, each with its name, length and loudness
+- `out/stills/status/status-11-1.jpg`: The first picture of the new stage, which replaces the measuring scene: winter at rest from the hero camera at draft. Stand-in shapes for the cottage, the tree, the base and the lights, with the lens and the mirror pass on. A blockout, not a look. (by engine_builder)
+- `out/stills/status/status-11-2.jpg`: The interface on a phone, over the approved spring image on a mock: the season marks above the Shake control, sound beside it. (by interface_builder)
+- `out/stills/status/status-11-3.jpg`: The 3 kept sounds as waveforms, each with its name, length and loudness
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 04:20 UTC
-clock: phase 2, tick of 19.2 minutes
-phase 2: 1.31 h used of its 6.00 h box
-allowance (before the review): 2.50 h used of 36.00 h allowed
-all time before the review: 2.50 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 04:53 UTC
+clock: phase 2, tick of 9.1 minutes
+phase 2: 1.86 h used of its 6.00 h box
+allowance (before the review): 3.05 h used of 36.00 h allowed
+all time before the review: 3.05 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
@@ -523,3 +522,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 03:37 to 03:51: two more compactions and readings. Decision 26: the engine and the film with the app handed to two more agents. The stage contract widened and pushed (`0ce1ad6`), both briefs written (`75f5936`), `engine_builder` started 03:48 and `film_app_builder` 03:50.
 
 - 03:52 to 04:16 UTC. Sound: eleven takes of seven cues made, measured and heard; `glass-clink` and `ui-sound-on` kept, `ui-tick` waits for the level fix, `amb-winter` out of takes and open (decision 27). Five tool branches merged (sheet, measure and pack, audio map, sound, gate checks). `tools/review.mjs` and `tools/keep.mjs` now read the review cuts where the film tool writes them. Status 8 at 04:01. Notes sent to the engine agent (the `standins`, `texels` and `cover` views, the framing that M1 wants) and to the film and app agent (the sound engine's wiring, the Space key, `dev.flagged()`, the first picture signal). Both were told at 04:17 to push work in progress.
+
+- 04:16 to 04:45 UTC. Statuses 9 (04:20) and 10 (04:40). Merged: the pack on the real sheet tool, the film tools, the short sound fix, the R7 pack. `ui-tick` take 1 kept (0.08 s, -26.07 LUFS). `Session.open` now closes its server when the browser cannot start. An archive of the three kept sounds was attached to the thread with Status 10. Published at 04:43 so the review page carries the three sounds: the publish call returned `published`, Visibility Organization. The host's picture check, which runs before it, refused the picture again and named four things, all of the measuring scene: a seam in the backdrop where the right side is a lighter navy than the black beside it, the snow as one flat white mass with jagged streaks along the glass, snow hiding the cottage and cutting the tree, and discs of light clipped by the top edge. The first three were passed to the engine agent as things the stand-in scene must not show. Waiting is done by polling the agents' branches for four minutes at a time (`out/work/watch.sh`), with a clock tick between.
