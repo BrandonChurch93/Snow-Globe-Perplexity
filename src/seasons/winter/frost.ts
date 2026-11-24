@@ -26,8 +26,8 @@ export const glassDressing: Dressing = { tint: [0.86, 0.92, 1], amount: 0 }
 export const surfaceDressing: Dressing & { reachMm: number } = { tint: [0.86, 0.92, 1], amount: 0, reachMm: 132 }
 
 const look = {
-  glass: { cover: 1.7, haze: 0.3, slope: 0.55, micro: 1.1, glint: 1.6, light: 0.85, through: 2.4, thin: 0.6, thick: 0.8, blur: 0.006, bend: 0.012 },
-  slab: { cover: 0.75, slope: 1.6, micro: 1.2, glint: 1.6, pool: 0.35, light: 1.75 },
+  glass: { cover: 1.7, haze: 0.3, slope: 0.55, micro: 1.1, glint: 1.6, light: 0.96, through: 2.4, thin: 0.6, thick: 0.8, blur: 0.006, bend: 0.012 },
+  slab: { cover: 0.75, slope: 1.6, micro: 1.2, glint: 1.6, pool: 0.35, light: 2.2 },
 }
 
 const frostUniforms = {
