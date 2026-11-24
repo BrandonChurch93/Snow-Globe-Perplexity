@@ -118,6 +118,17 @@ export function mountProbe(root: HTMLElement, bridge: ProbeBridge): void {
 
   let measured: ProbeLevelResult[] = []
   let copiedTimer = 0
+  let reached = 0
+  let seenDone = -1
+  let seenLevel = ''
+  let seenPhase = ''
+  let seenStep = -1
+  let seenLeft = -1
+
+  const more = (): void => {
+    card.toggleAttribute('data-above', scroll.scrollTop > 1)
+    card.toggleAttribute('data-more', scroll.scrollHeight - scroll.scrollTop - scroll.clientHeight > 1)
+  }
 
   const fillRows = (done: ProbeLevelResult[], running: Running, picked: string): void => {
     rows.forEach(({ tr, cells }, i) => {
@@ -135,14 +146,26 @@ export function mountProbe(root: HTMLElement, bridge: ProbeBridge): void {
 
   const onProgress = (done: ProbeLevelResult[], running: Running): void => {
     measured = done
-    fillRows(done, running, '')
-    const phases = levels.length * 2
-    const at = running ? Math.max(levels.indexOf(running.level), 0) * 2 + (running.phase === 'storm' ? 1 : 0) + Math.min(Math.max(running.fraction, 0), 1) : done.length * 2
-    const part = phases > 0 ? Math.min(at / phases, 1) : 1
-    fill.style.transform = `scaleX(${part})`
-    if (running) {
-      status.textContent = copy.probe.measuring(running.level, running.phase)
-      left.textContent = total > 0 ? copy.probe.left(Math.max(Math.ceil(total * (1 - part)), 1)) : ''
+    const level = running ? running.level : ''
+    const phase = running ? running.phase : ''
+    if (done.length !== seenDone || level !== seenLevel || phase !== seenPhase) {
+      seenDone = done.length
+      seenLevel = level
+      seenPhase = phase
+      fillRows(done, running, '')
+      if (running) status.textContent = copy.probe.measuring(running.level, running.phase)
+    }
+    const at = running ? Math.max(levels.indexOf(running.level), 0) + Math.min(Math.max(running.fraction, 0), 1) : done.length
+    reached = Math.max(reached, levels.length > 0 ? Math.min(at / levels.length, 1) : 1)
+    const step = Math.round(reached * timing.lineSteps)
+    if (step !== seenStep) {
+      seenStep = step
+      fill.style.transform = `scaleX(${step / timing.lineSteps})`
+    }
+    const seconds = running && total > 0 ? Math.max(Math.ceil(total * (1 - reached)), 1) : 0
+    if (seconds !== seenLeft) {
+      seenLeft = seconds
+      left.textContent = seconds > 0 ? copy.probe.left(seconds) : ''
     }
   }
 
@@ -163,6 +186,7 @@ export function mountProbe(root: HTMLElement, bridge: ProbeBridge): void {
     text.hidden = false
     button.hidden = false
     root.dataset.probe = result ? 'done' : 'failed'
+    more()
   }
 
   const selectText = (): void => {
@@ -198,6 +222,8 @@ export function mountProbe(root: HTMLElement, bridge: ProbeBridge): void {
     else fallback()
   })
 
+  scroll.addEventListener('scroll', more, { passive: true })
+  new ResizeObserver(more).observe(scroll)
   fillRows([], null, '')
   bridge.run(onProgress).then(finish, () => finish(null))
 }
