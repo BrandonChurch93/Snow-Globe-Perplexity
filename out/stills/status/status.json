@@ -1,42 +1,42 @@
 {
-  "number": 13,
-  "time": "2026-11-24 05:44 UTC",
+  "number": 14,
+  "time": "2026-11-24 06:06 UTC",
   "phase": "2",
   "unit": "",
   "lines": [
-    "Status 13 · 2026-11-24 05:44 UTC · Phase 2",
-    "The Phase 2 gate ran with the film and the app in: every machine check that can pass before the blockout film is green, and the judged list of 69 pictures is written.",
-    "The hero camera is refitted so the lifted globe stays in frame through a shake, and the interface is finished and merged.",
-    "Next: the new stage replaces the measuring scene, then the blockout round and the publish with a globe you can shake.",
-    "phase 2: 2.71 h used of its 6.00 h box",
-    "allowance (before the review): 3.90 h used of 36.00 h allowed",
+    "Status 14 · 2026-11-24 06:06 UTC · Phase 2",
+    "The new stage is on main in place of the measuring scene: a clear ball with simple refraction, the miniature as blocks, a base and lights per season, and the season change. The whole film now plays through all four seasons on it.",
+    "The particle engine is merged too and is being wired into the page in place of the test simulation. That is the last piece before the blockout round.",
+    "Next: the wiring, the machine checks, then the first blockout round and a publish with a globe you can shake.",
+    "phase 2: 3.08 h used of its 6.00 h box",
+    "allowance (before the review): 4.27 h used of 36.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-13-1.jpg",
-      "caption": "The controls at twice their size, on a mock: idle, dimmed, busy, hover, pressed, then keyboard focus on Shake, on a season mark and on sound, sound on, and the hint pulse at its middle. (by interface_builder)",
-      "w": 1200,
-      "h": 592
-    },
-    {
-      "file": "out/stills/status/status-13-2.jpg",
-      "caption": "Spring, summer and fall from the particle engine, same debug plot: the last stroke, landed, and settling to rest. Petals lie on the ground and the roof, summer's motes and fireflies float, fall's leaves settle with two ember columns and the bats. (by particles_builder)",
-      "w": 1200,
-      "h": 900
-    },
-    {
-      "file": "out/stills/status/status-13-3.jpg",
-      "caption": "The particle engine, winter, the full pool of 102000: a debug plot of positions with streaks along each velocity, from the start of a shake to the landed state (0.02 s, 0.6 s lift, 1.2 s and 1.8 s strokes, 2.4 s landing, 2.9 s). Not the app's drawing. (by particles_builder)",
-      "w": 1200,
-      "h": 1200
-    },
-    {
-      "file": "out/stills/status/status-13-4.jpg",
-      "caption": "The first shake from the hero camera after the fit, on the measuring scene, twelve frames from the lift to the landing. The camera is locked. It now stands a little further back with its aim raised, so the lifted globe stays inside the frame: before, the top of the glass left the picture.",
+      "file": "out/stills/status/status-14-1.jpg",
+      "caption": "The whole film on the new stage, twelve frames from start to end: the pull back from inside the glass, four shakes with the season changing in each, a different camera between them, and the push back in that closes the loop. Every shape is a stand-in. (by Builder)",
       "w": 1149,
       "h": 986
+    },
+    {
+      "file": "out/stills/status/status-14-2.jpg",
+      "caption": "The first shake on the new stage from the locked hero camera, twelve frames across the bar: the lift, six strokes, the set down. The storm hides the miniature, the base and the lights turn from winter to spring behind it, and the globe lands on the bar line. Everything is a stand-in. (by Builder)",
+      "w": 1149,
+      "h": 986
+    },
+    {
+      "file": "out/stills/status/status-14-3.jpg",
+      "caption": "Sheet: 12 frames across the shot shake-1, frames 576 to 719, preview, draft",
+      "w": 1149,
+      "h": 986
+    },
+    {
+      "file": "out/stills/status/status-14-4.jpg",
+      "caption": "The new stage on main, winter at rest from the hero camera, draft samples. Everything in it is a stand-in: a clear ball with simple refraction, the miniature as blocks, a turned base in one colour, sprite lights behind. The snow in this picture still comes from the old test simulation. (by Builder)",
+      "w": 1100,
+      "h": 619
     }
   ]
 }
