@@ -234,3 +234,33 @@ export function buildCollider(extra?: (x: number, y: number, z: number) => numbe
   }
   return { n, sizeMm, data }
 }
+
+function find<K extends Shape['kind']>(role: Role, kind: K): Extract<Shape, { kind: K }> {
+  const s = shapes.find((x) => x.role === role && x.kind === kind)
+  if (!s) throw new Error(`the layout has no ${role}`)
+  return s as Extract<Shape, { kind: K }>
+}
+
+export function onBox(b: Box, lx: number, ly: number, lz: number): [number, number, number] {
+  const a = boxAxes(b)
+  return [
+    b.centre[0] + lx * b.half[0] * a.x[0] + ly * b.half[1] * a.y[0] + lz * b.half[2] * a.z[0],
+    b.centre[1] + lx * b.half[0] * a.x[1] + ly * b.half[1] * a.y[1] + lz * b.half[2] * a.z[1],
+    b.centre[2] + lx * b.half[0] * a.x[2] + ly * b.half[1] * a.y[2] + lz * b.half[2] * a.z[2],
+  ]
+}
+
+const walls = find('cottage', 'box')
+const crown = find('crown', 'ball')
+const lamp = find('lamp', 'ball')
+const pond = find('pond', 'disc')
+
+export const anchors = {
+  lamp: lamp.centre,
+  window: onBox(walls, 0.45, 0.1, 1.06),
+  door: onBox(walls, -0.25, -0.45, 1.06),
+  crown: crown.centre,
+  crownTop: [crown.centre[0], crown.centre[1] + crown.radius, crown.centre[2]] as [number, number, number],
+  pond: pond.centre,
+  hearth: onBox(walls, 0, 0, 0),
+}
