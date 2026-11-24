@@ -1,14 +1,13 @@
-Village, winter. State: agent/p3-village at c56f5ee (merged with main 784f106). Hero, rest, hd, draft tier. Boxes in approved pixels (2816 by 1584). In every row the approved crop is on the left and the build on the right.
+Village, winter. State: agent/p3-village at e2e89c2 (merged with main 282616e). Hero, hd, draft tier. Boxes in approved pixels (2816 by 1584). In every row the approved crop is on the left and the build on the right. The hero camera looks from 3.4 mm above the reference, so the build sits about 48 px lower in these boxes; compare shapes.
 
-01-final-sheet.jpg
-  Row 1: box 780,520,2040,1220 (the whole miniature).
-  Row 2: box 1270,900,1680,1030 (the pond and its lip).
-  Row 3: box 1080,520,1260,720 (chimney and smoke).
+01-rest-miniature.jpg
+  Rest. Box 780,520,2040,1220 (the whole miniature).
 
-02-cottage-ground.jpg
-  Row 1: box 1020,560,1480,930 (cottage, bulbs, lamp, fence).
-  Row 2: box 1180,800,1680,1050 (door, steps, lamp foot, pond, tree foot).
+02-rest-cottage-chimney.jpg
+  Rest. Row 1: box 1000,540,1560,935 (cottage, lamp, bulbs). Row 2: box 1090,540,1330,740 (chimney and the smoke wisp, roof snow).
 
-03-interior-texels.jpg
-  Row 1: approved box 780,520,2040,1220 on the left; the interior camera still on the right (there is no approved picture from that camera).
-  Row 2: the texels view from the hero camera, whole frame on the left, box 780,520,2040,1220 on the right.
+03-rest-fence-ground.jpg
+  Rest. Row 1: box 1000,780,1330,960 (windows, shrubs, fence post caps). Row 2: box 1000,900,1900,1090 (front bank and pond).
+
+04-landed-miniature.jpg
+  Landed, half a second after the landing. Box 780,520,2040,1220.
