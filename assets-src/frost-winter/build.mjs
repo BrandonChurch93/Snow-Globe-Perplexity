@@ -19,6 +19,7 @@ const L = JSON.parse(fs.readFileSync(path.join(here, 'layout.json'), 'utf8'))
 const OUT = rel('assets-full', 'winter')
 const LOOK = rel('out', 'work', 'frost')
 const Rs = cfg.globe.sphereDiameterMm / 2
+const REF_PX_PER_MM = REF_GLASS.r / Rs
 const footR = cfg.globe.baseDiameterMm / 2
 const shrink = args.size && args.size !== true ? Number(args.size) / L.glass.mapPx : 1
 const RAD = Math.PI / 180
@@ -380,7 +381,7 @@ function plumeSpec(length, barbMm, rng, t0, k = 1, bold = 1, body = bold) {
     taper: 0.75,
     film: { w0: barbMm * Math.sin(angle) * 0.8, w1: 0.12, h0: L.glass.bodyFilm * k * body, h1: 0.05 * k, profile, kappa: 3, spark: 0.2 },
     kids: {
-      gap: rng.range(0.6, 0.82),
+      gap: rng.range(L.glass.barbGap[0], L.glass.barbGap[1]),
       len: barbMm,
       min: 0.3,
       lean: rng.next() < 0.5 ? lean : 1 / lean,
@@ -501,6 +502,29 @@ function buildGlass() {
       grow(ctx, at, toward(at, tip), o)
     }
   }
+  // Tufts: soft fans of fine fronds that rise out of the milk, laid out on screen so the fan opens as the picture's does.
+  for (const tf of L.glass.tufts) {
+    const T = L.glass.tuft
+    const ax = [tf.to[0] - tf.at[0], tf.to[1] - tf.at[1]]
+    const al = Math.hypot(ax[0], ax[1])
+    const across = [-ax[1] / al, ax[0] / al]
+    const basePx = tf.baseMm * REF_PX_PER_MM
+    for (let j = 0; j < tf.count; j++) {
+      const off = rng.range(-1, 1)
+      const a = (off * 0.7 + rng.gauss() * 0.3) * tf.spreadDeg * RAD
+      const l = (tf.len[0] + (tf.len[1] - tf.len[0]) * rng.next()) * (1 - 0.45 * Math.abs(off))
+      const from = [tf.at[0] + across[0] * off * basePx, tf.at[1] + across[1] * off * basePx]
+      const dir = [ax[0] * Math.cos(a) - ax[1] * Math.sin(a), ax[0] * Math.sin(a) + ax[1] * Math.cos(a)]
+      const at = pixelOnGlass(from[0], from[1])
+      const tip = pixelOnGlass(from[0] + dir[0] * l, from[1] + dir[1] * l)
+      const t0 = Math.max(0, Rs * Math.asin(clamp(at[2] / Rs, -1, 1))) * 0.9
+      const along = arc(at, tip)
+      const o = plumeSpec(along * 1.1, clamp(along * tf.barb, 0.5, 3), rng, t0 + rng.range(0, 2.5), T.k * rng.range(0.7, 1), T.bold, T.body)
+      o.to = [tip]
+      o.wobble = 0.03
+      grow(ctx, at, toward(at, tip), o)
+    }
+  }
   // Feathers seeded along the rim, front and back. The large ones root at the rim and their tips make the band's inner edge;
   // the small ones are thin and lie under them.
   const seeded = (count, front, kind) => {
@@ -512,7 +536,7 @@ function buildGlass() {
       const inMm = kind.inFrom + (reach * kind.inShare - kind.inFrom) * Math.pow(rng.next(), kind.inPow)
       const start = rimAt(deg, front ? inMm : -inMm)
       const screenMm = (kind.screenMm[0] + (kind.screenMm[1] - kind.screenMm[0]) * Math.pow(rng.next(), kind.lenPow)) * (0.45 + 0.55 * pr.density)
-      const phi = clamp(leanAt(deg) * kind.lean + rng.gauss() * kind.spread, -1.25, 1.25)
+      const phi = clamp(pr.lean + leanAt(deg) * kind.lean + rng.gauss() * kind.spread, -1.25, 1.25)
       const hd = heading(start, phi, screenMm)
       const length = Math.min(screenMm * hd.scale, Math.max(2, (reach - inMm) * kind.fill))
       const k = rng.range(kind.k[0], kind.k[1])
@@ -579,10 +603,10 @@ function buildGlass() {
       const sz = Rs * Math.cos(th)
       const big = fbm(sx * 0.11, sy * 0.11, sz * 0.11, 3)
       const mid = fbm(sx * 0.55 + 31, sy * 0.55, sz * 0.55, 3)
-      const edge = q + (big - 0.5) * 0.9 + (mid - 0.5) * 0.35
-      const body = 1 - smooth(0.45, 1.05, edge)
+      const edge = q + (big - 0.5) * L.glass.filmFray[0] + (mid - 0.5) * L.glass.filmFray[1]
+      const body = 1 - smooth(L.glass.filmEdge[0], L.glass.filmEdge[1], edge)
       if (body <= 0) continue
-      const h = pr.film * body * (0.1 + 0.13 * mid + 0.07 * (1 - clamp(q)))
+      const h = Math.min(1, pr.film * body * (0.1 + 0.13 * mid + 0.07 * (1 - clamp(q))) * L.glass.filmTall)
       const i = y * n + x
       if (h > H[i]) H[i] = h
       const s = 0.1 + 0.25 * mid
@@ -935,13 +959,11 @@ function slabShapes(lines, grains, tTop) {
         const off = 0.08 * body * Math.sin(id * 70 + i * 0.23)
         rowNow = [
           at(-body, 0, t + 2.5 * body, 0, 0.5),
-          at(-0.72 * body, 0.5 * high, t + 1.8 * body, S.bodyEdge, 0.7),
-          at(-0.42 * body, 0.86 * high, t + body, 1, 0.88),
-          at(off - 0.9 * core, high + 0.35 * crest, t, 1, 0.95),
+          at(-0.7 * body, 0.55 * high, t + 1.8 * body, S.bodyEdge, 0.72),
+          at(-0.36 * body, 0.9 * high, t + body, 1, 0.9),
           at(off, high + crest * rng.range(0.9, 1), t, 1, 1),
-          at(off + 0.9 * core, high + 0.35 * crest, t, 1, 0.95),
-          at(0.42 * body, 0.86 * high, t + body, 1, 0.88),
-          at(0.72 * body, 0.5 * high, t + 1.8 * body, S.bodyEdge, 0.7),
+          at(0.36 * body, 0.9 * high, t + body, 1, 0.9),
+          at(0.7 * body, 0.55 * high, t + 1.8 * body, S.bodyEdge, 0.72),
           at(body, 0, t + 2.5 * body, 0, 0.5),
         ]
       } else {
@@ -953,10 +975,9 @@ function slabShapes(lines, grains, tTop) {
         const crest = h * rng.range(0.9, 1)
         rowNow = [
           at(-w, 0, t + 2 * w, 0, 0.55),
-          at(off - 0.66 * w, 0.56 * h, t + w, S.leafEdge, 0.78),
-          at(off - 0.22 * w, crest, t, 1, 1),
-          at(off + 0.22 * w, crest * rng.range(0.94, 1), t, 1, 1),
-          at(off + 0.66 * w, 0.56 * h, t + w, S.leafEdge, 0.78),
+          at(off - 0.52 * w, 0.72 * h, t + w, S.leafEdge, 0.8),
+          at(off, crest, t, 1, 1),
+          at(off + 0.52 * w, 0.72 * h, t + w, S.leafEdge, 0.8),
           at(w, 0, t + 2 * w, 0, 0.55),
         ]
       }
