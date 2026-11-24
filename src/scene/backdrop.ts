@@ -7,6 +7,7 @@ import type { SeasonKit } from '../seasons/kit'
 import { FAR_GLSL, ROOM_RADIUS_MM, farApertureMm, farFromMm, lensUniforms, poseById, setLens } from './cameras'
 import type { StageFrame } from './frame'
 import { centreHeightMm } from './layout'
+import { ROOM_RIG, cardOf } from './lighting'
 import { ROOM_GLSL, ROOM_LIGHTS, ROOM_SEEN, roomUniforms } from './room'
 import { SLAB_SHAPE, SLAB_SHAPE_GLSL } from './surface'
 
@@ -26,62 +27,62 @@ export const PLACED = {
   sizeMm: 2.5,
   reachMm: [1100, 3200] as [number, number],
   discs: [
-    [2525, 368, 48, AMBER, 0.85, 0.14, 0.45, 1900],
-    [2640, 650, 45, WHITE, 1.5, 0.3, 0.1, 1600],
-    [2295, 510, 55, PALE, 0.47, 0.32, 0.1, 1557],
-    [2275, 212, 48, PALE, 0.24, 0.34, 0.15],
-    [2605, 333, 48, PALE, 0.2, 0.37, 0.1],
-    [2045, 108, 50, PALE, 0.19, 0.5, 0.1],
-    [2285, 585, 50, BLUE, 0.14, 0.55, 0],
+    [2525, 368, 48, AMBER, 1.3, 0.14, 0.45, 2150],
+    [2640, 650, 45, WHITE, 0.83, 0.3, 0.1, 1600],
+    [2295, 510, 55, PALE, 0.46, 0.32, 0.1, 1557],
+    [2275, 212, 48, PALE, 0.16, 0.34, 0.15],
+    [2605, 333, 48, PALE, 0.16, 0.37, 0.1],
+    [2045, 108, 50, PALE, 0.12, 0.5, 0.1],
+    [2285, 585, 50, BLUE, 0.11, 0.55, 0],
     [2620, 190, 47, BLUE, 0.11, 0.55, 0.05],
-    [2330, 455, 45, BLUE, 0.1, 0.6, 0],
+    [2330, 455, 45, BLUE, 0.091, 0.6, 0],
     [2560, 665, 45, BLUE, 0.07, 0.65, 0],
-    [2238, 275, 50, BLUE, 0.06, 0.65, 0],
-    [2200, 515, 40, BLUE, 0.05, 0.65, 0],
-    [2352, 632, 45, AMBER, 0.05, 0.6, 0.05],
-    [2098, 180, 45, AMBER, 0.045, 0.65, 0],
-    [2170, 410, 55, AMBER, 0.035, 0.7, 0],
-    [2655, 555, 42, COOL, 0.06, 0.65, 0],
-    [2780, 420, 42, COOL, 0.05, 0.6, 0],
-    [2270, 70, 58, COOL, 0.055, 0.65, 0],
-    [2020, 365, 55, COOL, 0.035, 0.7, 0],
-    [2330, 380, 50, COOL, 0.035, 0.7, 0],
-    [2000, 30, 45, COOL, 0.03, 0.7, 0],
-    [2604, 108, 50, COOL, 0.03, 0.7, 0],
-    [2788, 148, 42, COOL, 0.03, 0.7, 0],
-    [2330, 830, 60, COOL, 0.025, 0.7, 0],
-    [2788, 610, 40, WARM, 0.02, 0.7, 0],
-    [252, 478, 48, PALE, 0.42, 0.34, 0.1],
-    [300, 470, 48, PALE, 0.16, 0.5, 0.05],
-    [285, 740, 45, PALE, 0.14, 0.5, 0.05],
-    [455, 935, 45, BLUE, 0.06, 0.75, 0],
-    [250, 545, 48, BLUE, 0.12, 0.55, 0],
-    [650, 80, 55, BLUE, 0.12, 0.5, 0.05],
-    [400, 668, 55, BLUE, 0.08, 0.55, 0],
-    [285, 605, 50, BLUE, 0.07, 0.6, 0],
-    [640, 560, 60, BLUE, 0.05, 0.7, 0],
-    [215, 420, 45, BLUE, 0.05, 0.65, 0],
-    [700, 610, 55, BLUE, 0.045, 0.7, 0],
-    [472, 172, 50, WARM, 0.12, 0.37, 0.1],
-    [890, 320, 50, WARM, 0.125, 0.5, 0.05],
-    [465, 215, 48, AMBER, 0.05, 0.6, 0],
-    [285, 790, 45, AMBER, 0.05, 0.6, 0],
-    [75, 150, 45, AMBER, 0.02, 0.7, 0],
-    [690, 815, 58, COOL, 0.075, 0.6, 0],
-    [815, 250, 50, COOL, 0.04, 0.7, 0],
-    [650, 225, 50, COOL, 0.035, 0.7, 0],
-    [492, 345, 50, COOL, 0.035, 0.7, 0],
-    [295, 270, 50, COOL, 0.035, 0.7, 0],
-    [140, 820, 50, COOL, 0.025, 0.7, 0],
+    [2238, 275, 50, BLUE, 0.085, 0.65, 0],
+    [2200, 515, 40, BLUE, 0.045, 0.65, 0],
+    [2352, 632, 45, AMBER, 0.033, 0.6, 0.05],
+    [2098, 180, 45, WARM, 0.044, 0.65, 0],
+    [2170, 410, 55, WARM, 0.042, 0.7, 0],
+    [2655, 555, 42, COOL, 0.07, 0.65, 0],
+    [2780, 420, 42, COOL, 0.041, 0.6, 0],
+    [2270, 70, 58, COOL, 0.058, 0.65, 0],
+    [2020, 365, 55, COOL, 0.023, 0.7, 0],
+    [2330, 380, 50, COOL, 0.023, 0.7, 0],
+    [2000, 30, 45, COOL, 0.075, 0.7, 0],
+    [2604, 108, 50, COOL, 0.032, 0.7, 0],
+    [2788, 148, 42, COOL, 0.023, 0.7, 0],
+    [2330, 830, 60, COOL, 0.004, 0.7, 0],
+    [2788, 610, 40, WARM, 0.014, 0.7, 0],
+    [252, 478, 48, PALE, 0.25, 0.34, 0.1],
+    [300, 470, 48, PALE, 0.11, 0.5, 0.05],
+    [285, 740, 45, PALE, 0.094, 0.5, 0.05],
+    [455, 935, 45, BLUE, 0.077, 0.75, 0],
+    [250, 545, 48, BLUE, 0.16, 0.55, 0],
+    [650, 80, 55, BLUE, 0.11, 0.5, 0.05],
+    [400, 668, 55, BLUE, 0.069, 0.55, 0],
+    [285, 605, 50, COOL, 0.04, 0.6, 0],
+    [640, 560, 60, BLUE, 0.049, 0.7, 0],
+    [215, 420, 45, BLUE, 0.041, 0.65, 0],
+    [700, 610, 55, BLUE, 0.033, 0.7, 0],
+    [472, 172, 50, WARM, 0.097, 0.37, 0.1],
+    [890, 320, 50, WARM, 0.1, 0.5, 0.05],
+    [465, 215, 48, WARM, 0.066, 0.6, 0],
+    [285, 790, 45, WHITE, 0.06, 0.6, 0],
+    [75, 150, 45, AMBER, 0.015, 0.7, 0],
+    [690, 815, 58, COOL, 0.065, 0.6, 0],
+    [815, 250, 50, COOL, 0.022, 0.7, 0],
+    [650, 225, 50, COOL, 0.024, 0.7, 0],
+    [492, 345, 50, COOL, 0.02, 0.7, 0],
+    [295, 270, 50, COOL, 0.03, 0.7, 0],
+    [140, 820, 50, COOL, 0.017, 0.7, 0],
   ] as [number, number, number, number, number, number, number, number?][],
 }
 
 export const DISCS = {
   zones: [
-    { share: 0.12, azFrom: 5.6, azTo: 14.6, elFrom: -2.3, elTo: 4.8, sidePower: 0.8, rightShare: 1, levelFrom: 0, depthFrom: 0 },
-    { share: 0.12, azFrom: 5.8, azTo: 15, elFrom: -3.8, elTo: 4.6, sidePower: 0.8, rightShare: 0, levelFrom: 0, depthFrom: 0 },
-    { share: 0.08, azFrom: 5, azTo: 22, elFrom: 4.4, elTo: 11, sidePower: 1, rightShare: 0.75, levelFrom: 0.3, depthFrom: 0.45 },
-    { share: 0.68, azFrom: 15, azTo: 48, elFrom: -6.2, elTo: 12, sidePower: 1, rightShare: 0.5, levelFrom: 0, depthFrom: 0 },
+    { share: 0.03, azFrom: 5.6, azTo: 14.6, elFrom: -2.3, elTo: 4.8, sidePower: 0.8, rightShare: 1, levelFrom: 0, depthFrom: 0 },
+    { share: 0.03, azFrom: 5.8, azTo: 15, elFrom: -3.8, elTo: 4.6, sidePower: 0.8, rightShare: 0, levelFrom: 0, depthFrom: 0 },
+    { share: 0.04, azFrom: 5, azTo: 22, elFrom: 4.4, elTo: 11, sidePower: 1, rightShare: 0.75, levelFrom: 0.3, depthFrom: 0.45 },
+    { share: 0.9, azFrom: 15, azTo: 48, elFrom: -6.2, elTo: 12, sidePower: 1, rightShare: 0.5, levelFrom: 0, depthFrom: 0 },
   ],
   spread: [0.6180339887, 0.8191725134, 0.6710436067, 0.5497004779] as [number, number, number, number],
   rightLevel: 0.65,
@@ -105,16 +106,21 @@ export const DISCS = {
   edge: [0.1, 0.36] as [number, number],
   lean: [0.06, 0.3] as [number, number],
   quad: 2,
-  catEye: 0.52,
+  catEye: 0.15,
+  specks: 0.03,
+  mottle: 0.12,
   roomLightGain: 0.8,
 }
 
 export const WALL = {
   seen: ROOM_SEEN,
-  streaks: 0.16,
-  fine: 0.1,
-  folds: 0.2,
-  mottle: 0.22,
+  streaks: 0.05,
+  fine: 0.03,
+  folds: 0.45,
+  curtain: 0.8,
+  curtainPerRad: 46,
+  curtainLong: 3.5,
+  mottle: 0.32,
   base: 1,
   column: 2.8,
   columnDeg: 5.5,
@@ -177,7 +183,7 @@ void main() {
   float az = atan(d.x, -d.z);
   float el = asin(clamp(d.y, -1.0, 1.0));
   float bands = 0.5 * sin(az * 23.0 + 1.3 + 0.9 * el) + 0.3 * sin(az * 41.0 + 4.1 - 1.4 * el) + 0.2 * sin(az * 67.0 + 0.7 + 0.5 * el);
-  float folds = wallNoise(vec2(az * 11.0 + 3.0, el * 1.7 + 5.0)) - 0.5;
+  float folds = wallNoise(vec2(az * 11.0 + 3.0, el * 4.3 + 5.0)) + ${f4(WALL.curtain)} * wallNoise(vec2(az * ${f4(WALL.curtainPerRad)} + 1.0 + 6.0 * wallNoise(vec2(az * 9.0, el * 7.0)), el * ${f4(WALL.curtainPerRad / WALL.curtainLong)} + 2.0)) - ${f4(0.5 + 0.5 * WALL.curtain)};
   float mottle = wallNoise(vec2(az * 3.3 + 7.0, el * 4.1 + 2.0)) + 0.5 * wallNoise(vec2(az * 7.9 + 1.0, el * 9.3 + 8.0)) - 0.75;
   float fine = wallNoise(vec2(az * 260.0, el * 5.0 + 3.0)) + 0.6 * wallNoise(vec2(az * 610.0 + 9.0, el * 8.0 + 1.0)) - 0.8;
   float marks = 1.0 + ${f4(WALL.streaks)} * keep * bands + ${f4(WALL.fine)} * keep * fine + ${f4(WALL.folds)} * folds + ${f4(WALL.mottle)} * mottle;
@@ -274,7 +280,7 @@ void main() {
   if (r >= ${f4(DISCS.quad)}) discard;
   float body = 1.0 - smoothstep(1.0 - vLook.x, 1.0 + vLook.x, r);
   float edge = 1.0 + vLook.y * smoothstep(0.45, 0.93, r);
-  float dust = 1.0 - 0.1 * smoothstep(0.62, 0.85, discNoise(vDisc * 5.3 + 17.0 * vLook.w)) - 0.12 * (discNoise(vDisc * 2.1 + 3.0 * vLook.w) - 0.5);
+  float dust = 1.0 - ${f4(DISCS.specks)} * smoothstep(0.62, 0.85, discNoise(vDisc * 5.3 + 17.0 * vLook.w)) - ${f4(DISCS.mottle)} * (discNoise(vDisc * 2.1 + 3.0 * vLook.w) - 0.5);
   float seen = 1.0;
   if (vCat.w < 0.5 && vEmitter.y < 0.0 && vLensAt.y > 0.0) {
     float s = vLensAt.y / (vLensAt.y - vEmitter.y);
@@ -447,6 +453,16 @@ export class Backdrop {
     roomUniforms.uRoomKeyCol.value.copy(f.keyCol)
     roomUniforms.uRoomRim.value.copy(f.rimDir)
     roomUniforms.uRoomRimCol.value.copy(f.rimCol)
+    const ca = cardOf(f.from.rig)
+    const cb = cardOf(f.to.rig)
+    const t = f.mix.light
+    const at = ROOM_RIG.targetMm
+    roomUniforms.uRoomCard.value.set(ca.from[0] + (cb.from[0] - ca.from[0]) * t - at[0], ca.from[1] + (cb.from[1] - ca.from[1]) * t - at[1], ca.from[2] + (cb.from[2] - ca.from[2]) * t - at[2]).normalize()
+    roomUniforms.uRoomCardCol.value.setRGB(
+      ca.color[0] * ca.intensity + (cb.color[0] * cb.intensity - ca.color[0] * ca.intensity) * t,
+      ca.color[1] * ca.intensity + (cb.color[1] * cb.intensity - ca.color[1] * ca.intensity) * t,
+      ca.color[2] * ca.intensity + (cb.color[2] * cb.intensity - ca.color[2] * ca.intensity) * t,
+    )
     lensState.bloomTint.copy(f.bloomTint)
     this.set(f.from, f.to, f.mix.base)
     this.group.visible = f.view !== 'flow' && f.view !== 'lightgrid'
