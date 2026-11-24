@@ -166,7 +166,7 @@ float baseHigh = clamp(2.0 * baseCarve.b - 1.0, 0.0, 1.0) * baseCarved;
 float baseWear = clamp(vBasePaint.y + 0.6 * baseHigh, 0.0, 1.0);
 float baseAo = vBasePaint.x * (1.0 - 0.85 * baseCavity);
 float baseBlotch = baseNoise(vBasePos * 0.21) * 0.6 + baseNoise(vBasePos * 0.9) * 0.4;
-diffuseColor.rgb *= vec3(1.0, 1.4, 1.55) * mix(0.7, 1.2, baseBlotch);
+diffuseColor.rgb *= vec3(0.95, 1.45, 1.65) * mix(0.7, 1.2, baseBlotch);
 diffuseColor.rgb *= mix(1.0, 0.3, baseCavity);
 diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(1.9, 1.45, 1.05) + vec3(0.012, 0.006, 0.002), 0.75 * baseWear);
 `
