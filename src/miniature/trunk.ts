@@ -3,7 +3,7 @@ import { stageMaterial, type Rgb } from '../core/materials'
 import { geometry, prepareModel } from '../core/models'
 import { stream } from '../core/rng'
 import { texture } from '../core/textures'
-import { groundAt } from '../scene/layout'
+import { groundAt, tree } from '../scene/layout'
 import type { Vec3 } from '../seasons/kit'
 
 export interface Pad {
@@ -31,34 +31,36 @@ export interface GlowLight {
 type Table = readonly (readonly [number, number])[]
 
 const TAU = Math.PI * 2
-const FOOT_X = 12.5
-const FOOT_Z = -5
+const FOOT_X = tree.x
+const FOOT_Z = tree.z
 const FOOT_Y = -19.6
 const FLARE_H = 4
 const FORK_H = 13.6
 const TOP_H = 37.6
 const DEEP_H = -4.5
 const MIN_SHAFT = 5
-const TWIST_LOW = 0.13
+const LIMB = { share: 0.64, thin: 1.02, thick: 1.8, tip: 0.5, taper: 0.9 }
+const ROOT_RISE = 7
+const TWIST_LOW = 0.16
 const TWIST_HIGH = 0.055
 const BARK_MM = 6.5
 const BARK_AROUND = 3
 const MODEL = 'shared/trunk-wood.glb'
-const BARK = 'shared/trunk-bark.srgb.tile.png'
-const BARK_NORMAL = 'shared/trunk-bark-n.lin.tile.png'
+const BARK = 'shared/trunk-bark.srgb.tile.w1024.png'
+const BARK_NORMAL = 'shared/trunk-bark-n.lin.tile.w1024.png'
 
-const RADIUS: Table = [[-4.5, 5.3], [0, 4.6], [1.5, 3.9], [4, 3.05], [8.4, 2.5], [11.6, 2.62], [13.6, 2.9], [18, 2.3], [26.2, 1.8], [33, 1.15], [37.6, 0.5]]
+const RADIUS: Table = [[-4.5, 4.2], [0, 3.6], [1.2, 3.3], [3.2, 2.9], [5.2, 2.72], [8, 2.85], [10, 2.5], [11.6, 2.75], [13.6, 2.95], [16.5, 2.1], [20, 1.62], [26.2, 1.34], [33, 1.0], [37.6, 0.5]]
 const AXIS_X: Table = [[-4.5, -0.3], [0, -0.2], [8.4, 0.4], [11.6, 0.8], [13.6, 0.7], [26.2, 0.35], [37.6, 0.2]]
 const AXIS_Z: Table = [[-4.5, 0], [0, 0], [8, 0.35], [14, -0.1], [26, -0.4], [37.6, 0]]
 
 const ROOTS: readonly { angle: number; reach: number; width: number }[] = [
-  { angle: 3.07, reach: 7.5, width: 0.3 },
-  { angle: 2.23, reach: 6.8, width: 0.26 },
-  { angle: 1.43, reach: 6.3, width: 0.24 },
-  { angle: 0.24, reach: 7.1, width: 0.3 },
-  { angle: 5.67, reach: 6.5, width: 0.28 },
-  { angle: 4.85, reach: 6.0, width: 0.25 },
-  { angle: 3.98, reach: 6.6, width: 0.28 },
+  { angle: 3.07, reach: 8.3, width: 0.3 },
+  { angle: 2.23, reach: 7.2, width: 0.26 },
+  { angle: 1.43, reach: 7.0, width: 0.27 },
+  { angle: 0.24, reach: 7.9, width: 0.3 },
+  { angle: 5.67, reach: 6.9, width: 0.25 },
+  { angle: 4.85, reach: 6.4, width: 0.24 },
+  { angle: 3.98, reach: 7.1, width: 0.28 },
 ]
 
 const PADS: readonly { at: Vec3; size: Vec3; lean: number; tip: number; from: number }[] = [
@@ -70,6 +72,7 @@ const PADS: readonly { at: Vec3; size: Vec3; lean: number; tip: number; from: nu
   { at: [9.5, 20.2, 5], size: [8.5, 4.1, 5.6], lean: 0.44, tip: 0.12, from: 12.8 },
   { at: [3.5, 33.5, -8.5], size: [6, 3.2, 4.5], lean: 0.1, tip: -0.25, from: 24.5 },
   { at: [-7.5, 27.5, -6.5], size: [5.5, 3, 4.2], lean: -0.1, tip: -0.25, from: 18.5 },
+  { at: [1.3, 30.4, 3.3], size: [4.6, 2.6, 3.4], lean: 0.25, tip: 0.2, from: 28.5 },
 ]
 
 const lerp = (a: number, b: number, t: number): number => a + (b - a) * t
@@ -102,17 +105,17 @@ export const trunkGirth = (h: number): number => curve(RADIUS, h)
 export function trunkRidge(phi: number, h: number): number {
   const a = phi + trunkTwist(h)
   const wander = 0.5 * Math.sin(2 * a + 0.31 * h + 1.7) + 0.35 * Math.sin(3 * a - 0.23 * h + 0.4)
-  const r1 = Math.pow(Math.abs(Math.sin(5.5 * a + wander)), 0.6)
+  const r1 = Math.abs(Math.sin(5.5 * a + wander))
   const r2 = Math.pow(Math.abs(Math.sin(11.5 * a + 1.3 * wander + 0.9)), 0.6)
   return 0.68 * r1 + 0.32 * r2
 }
 
 export function trunkRadius(phi: number, h: number): number {
   const R = trunkGirth(h)
-  let r = R * (1 + 0.19 * (trunkRidge(phi, h) - 0.66))
-  if (h < 6) {
+  let r = R * (1 + 0.4 * (trunkRidge(phi, h) - 0.6))
+  if (h < ROOT_RISE) {
     const a = phi + trunkTwist(h)
-    const g = h <= 0 ? 1 - 0.1 * h : Math.pow(1 - h / 6, 2.4)
+    const g = h <= 0 ? 1 - 0.1 * h : Math.pow(1 - h / ROOT_RISE, 2.2)
     let sum = 0
     for (const root of ROOTS) {
       const d = wrap(a - root.angle)
@@ -179,15 +182,15 @@ function grow(): Limb[] {
     const pts: Vec3[] = []
     const rad: number[] = []
     const drift = rng.range(-0.22, 0.22)
-    const extra = rng.range(1.4, 2.6)
+    const extra = rng.range(0.2, 1.2)
     for (let i = 0; i <= 10; i++) {
       const t = i / 10
-      const h = lerp(2.6, -1.3, Math.pow(t, 0.75))
+      const h = 4 - 5 * Math.pow(t, 2.2)
       const phi = root.angle - trunkTwist(h) + drift * t * t
       const [ax, az] = trunkAxis(h)
-      const d = lerp(trunkGirth(2.6) * 0.72, root.reach + extra, Math.pow(t, 1.25))
+      const d = lerp(trunkGirth(4) * 0.7, root.reach + extra, Math.pow(t, 1.1))
       pts.push([ax + Math.cos(phi) * d, h, az + Math.sin(phi) * d])
-      rad.push(lerp(1.45, 0.3, Math.pow(t, 0.8)))
+      rad.push(lerp(1.3, 0.3, Math.pow(t, 0.8)))
     }
     chain('root', 0, pts, rad)
   }
@@ -235,13 +238,13 @@ function grow(): Limb[] {
     const w1 = rng.range(0, TAU)
     const w2 = rng.range(0, TAU)
     const amp = rng.range(0.25, 0.5)
-    const r0 = trunkGirth(P.from) * (P.from < 20 ? 0.6 : 0.5)
+    const r0 = Math.min(LIMB.thick, Math.max(LIMB.thin, trunkGirth(P.from) * LIMB.share))
     const at = (t: number): Vec3 => {
       const b = bezier(p0, p1, p2, end, t)
       const e = Math.sin(Math.PI * t) * amp
       return [b[0] - flat[2] * e * Math.sin(5.1 * t + w1), b[1] + e * 0.8 * Math.sin(6.3 * t + w2), b[2] + flat[0] * e * Math.sin(5.1 * t + w1)]
     }
-    const radius = (t: number): number => lerp(r0, 0.42, Math.pow(t, 0.75))
+    const radius = (t: number): number => lerp(r0, LIMB.tip, Math.pow(t, LIMB.taper))
     const steps = Math.max(12, Math.round(L / 0.6))
     const pts: Vec3[] = []
     const rad: number[] = []
@@ -280,7 +283,7 @@ export interface Cluster {
 
 const DOME = 0.5
 const BODY = { blend: 0.5, bias: 0.4 }
-const CAP = { lift: 1.15, puff: 0.3, blend: 0.62, bias: 0.62, depth: 0.5, lip: 0.35 }
+const CAP = { lift: 1.15, puff: 0.3, blend: 0.46, bias: 0.52, depth: 0.5, lip: 0.35 }
 const dome = (rim: number): number => 1 - DOME * Math.pow(rim, 1.5)
 
 function gather(): Cluster[] {
@@ -379,7 +382,8 @@ export function crownCap(x: number, h: number, z: number): number {
     const s = px * f.frame.side[0] + ph * f.frame.side[1] + pz * f.frame.side[2]
     const v = px * u[0] + ph * u[1] + pz * u[2]
     const d = px * f.frame.depth[0] + ph * f.frame.depth[1] + pz * f.frame.depth[2]
-    const body = ballField(f, x - u[0] * CAP.lift, h - u[1] * CAP.lift, z - u[2] * CAP.lift, CAP.blend) + CAP.bias - CAP.puff
+    const lumps = 0.26 * Math.sin(2.7 * x + 1.1 * h + f.n) * Math.sin(2.9 * z - 0.8 * x + 2 * f.n) + 0.12 * Math.sin(5.9 * x + 2.3 * z) * Math.sin(6.1 * z + 1.7 * h + 1)
+    const body = ballField(f, x - u[0] * CAP.lift, h - u[1] * CAP.lift, z - u[2] * CAP.lift, CAP.blend) + CAP.bias - CAP.puff - lumps
     const rim = (s * s) / (f.size[0] * f.size[0]) + (d * d) / (f.size[2] * f.size[2])
     const gully = Math.sin(0.62 * s + 2.1 * f.n + 0.5 * Math.sin(0.9 * d)) * Math.sin(0.7 * d + 1.3 * f.n)
     const lobes = 0.6 * Math.sin(0.93 * s + 1.7 * f.n) * Math.sin(0.81 * d + 2.3 * f.n) + 0.38 * Math.sin(1.73 * s - 1.12 * d + f.n) + 0.2 * Math.sin(3.1 * s + 2.7 * d + 0.6 * f.n) + 2.4 * clamp01((gully - 0.62) / 0.3)
@@ -463,7 +467,7 @@ export function chainSolid(chains: readonly { points: readonly Vec3[]; radii: re
 }
 
 const tubeSolid = chainSolid(limbs.filter((l) => l.kind !== 'stem').map((l) => ({ points: l.points, radii: l.radii })), 2)
-const COLUMN_REACH = 10
+const COLUMN_REACH = 13
 const COLUMN_SLOPE = 0.8
 
 function heightAt(x: number, y: number, z: number): number {
@@ -587,10 +591,10 @@ export function buildTrunk(part: string, lights: readonly GlowLight[] = []): THR
     miniature: true,
     change: 'miniature',
     map: texture(BARK),
-    color: new THREE.Color(0.56, 0.46, 0.4),
+    color: new THREE.Color(0.8, 1.5, 1.9),
     vertexColors: true,
     roughness: 0.86,
-    extra: { normalMap: normal, normalScale: new THREE.Vector2(2.3, 2.3) },
+    extra: { normalMap: normal, normalScale: new THREE.Vector2(2.8, 2.8) },
     hook: glowHook,
     key: 'trunk',
   })

@@ -10,9 +10,9 @@ const NEEDLE_CELL = 0.62
 const SNOW_CELL = 0.52
 const NEEDLE_TILE_MM = 9
 const SNOW_TILE_MM = 7
-const STAR_H = 45.2
-const STAR_R = 2.45
-const HALO_R = 0.85
+const STAR_H = 45.7
+const STAR_R = 2.25
+const HALO_R = 0.62
 
 const [T, R] = await loadSource(['/src/miniature/trunk.ts', '/src/core/rng.ts'])
 const rng = R.stream('tree-winter')
@@ -140,7 +140,7 @@ function needles() {
     const open = 0.6 * openness(needleField, x, h, z, n, 0.7) + 0.4 * openness(needleField, x, h, z, n, 1.8)
     const roof = smooth(0.1, 1.4, snowField(x, h + 0.9, z))
     const sky = 0.5 + 0.5 * n[1]
-    const shade = (0.25 + 0.75 * open) * (0.3 + 0.7 * Math.pow(sky, 1.3)) * (0.55 + 0.45 * roof)
+    const shade = (0.25 + 0.75 * open) * (0.16 + 0.84 * Math.pow(sky, 1.5)) * (0.5 + 0.5 * roof)
     const hue = 0.5 + 0.5 * Math.sin(0.7 * x + 1.3 * h + 0.9 * z) * Math.sin(1.1 * x - 0.6 * z + 2)
     return [shade * (0.86 + 0.3 * hue), shade * (0.98 + 0.06 * hue), shade * (0.9 - 0.16 * hue)]
   }
@@ -158,11 +158,11 @@ function needles() {
   const t = new THREE.Vector3()
   const b = new THREE.Vector3()
   for (let v = 0; v < count; v++) {
-    if (rng.next() > 0.2) continue
+    if (rng.next() > 0.3) continue
     p.fromArray(s.pos, v * 3)
     n.fromArray(s.nor, v * 3)
     if (snowField(p.x, p.y, p.z) < 0.25) continue
-    const size = rng.range(1.2, 2.1)
+    const size = rng.range(0.9, 1.7)
     t.set(rng.range(-1, 1), rng.range(-1, 1), rng.range(-1, 1))
     t.sub(n.clone().multiplyScalar(t.dot(n)))
     if (t.lengthSq() < 1e-4) continue
@@ -173,7 +173,7 @@ function needles() {
     const cell = rng.int(4)
     const u0 = (cell % 2) * 0.5
     const v0 = Math.floor(cell / 2) * 0.5
-    const c = shadeAt(v).map((k) => Math.min(1, k * 1.12 + 0.03))
+    const c = shadeAt(v).map((k) => Math.min(1, k * 1.05 + 0.02))
     const id = rng.int(64)
     for (const across of [t, b]) {
       const base = pos.length / 3
@@ -247,12 +247,12 @@ function frames(points) {
 function strings() {
   const bulbs = []
   const wires = []
-  const drop = (at, out, group) => bulbs.push({ at: at.clone(), out: out.clone().normalize(), phase: rng.int(64) / 64, warm: rng.next(), group })
+  const drop = (at, out, group) => bulbs.push({ at: at.clone(), out: out.clone().normalize(), phase: rng.int(64) / 64, warm: rng.next(), size: rng.range(0.7, 1.12), group })
 
   const helix = []
   const h0 = 4.6
   const h1 = 31
-  const turns = 4.3
+  const turns = 3.3
   let last = null
   let run = 0
   let next = 0.6
@@ -267,7 +267,7 @@ function strings() {
     last = p
     if (run >= next) {
       drop(p.clone().addScaledVector(out, 0.2), out, 'trunk')
-      next = run + rng.range(1.75, 2.5)
+      next = run + rng.range(3.1, 4.7)
     }
   }
   wires.push(helix)
@@ -294,7 +294,7 @@ function strings() {
         wire.push(p)
         if (along >= mark) {
           drop(p.clone().addScaledVector(out, 0.2), out, limb.pad)
-          mark = along + rng.range(1.5, 2.3)
+          mark = along + rng.range(2.1, 3.3)
         }
       }
     }
@@ -307,7 +307,7 @@ function strings() {
     const side = new THREE.Vector3(...ax.side)
     const depth = new THREE.Vector3(...ax.depth)
     const centre = new THREE.Vector3(...pad.at)
-    const n = Math.max(6, Math.round(pad.size[0] * pad.size[2] * 0.36))
+    const n = Math.max(6, Math.round(pad.size[0] * pad.size[2] * 0.28))
     const ring = []
     for (let k = 0; k < n; k++) {
       const even = (k / n) * TAU + rng.range(-0.25, 0.25)
@@ -412,15 +412,15 @@ function star() {
   const col = []
   const face = (a, b, c, glowShare) => {
     pos.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z)
-    for (let i = 0; i < 3; i++) col.push(1, 0.66, 0.2, glowShare)
+    for (let i = 0; i < 3; i++) col.push(1, 0.6, 0.17, glowShare)
   }
   const front = new THREE.Vector3(0, 0, 0.55)
   const back = new THREE.Vector3(0, 0, -0.55)
   for (let k = 0; k < 10; k++) {
     const a = pts[k]
     const b = pts[(k + 1) % 10]
-    face(front, a, b, k % 2 === 0 ? 0.075 : 0.04)
-    face(back, b, a, 0.035)
+    face(front, a, b, k % 2 === 0 ? 0.04 : 0.014)
+    face(back, b, a, 0.014)
   }
   const g = new THREE.BufferGeometry()
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
@@ -439,14 +439,14 @@ function lights() {
   const { bulbs, wires } = strings()
   const parts = []
   for (const b of bulbs) {
-    const g = new THREE.IcosahedronGeometry(0.29, 1)
+    const g = new THREE.IcosahedronGeometry(0.2 * b.size, 1)
     g.deleteAttribute('uv')
     g.applyMatrix4(new THREE.Matrix4().makeScale(1, 1.32, 1))
     g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.out))
     g.applyMatrix4(new THREE.Matrix4().makeTranslation(b.at.x, b.at.y, b.at.z))
     colourOf(g, 1, 0.5 + 0.1 * b.warm, 0.13 + 0.08 * b.warm, 1)
     parts.push(phaseOf(g, b.phase, 1))
-    const halo = new THREE.IcosahedronGeometry(HALO_R, 0)
+    const halo = new THREE.IcosahedronGeometry(HALO_R * b.size, 0)
     halo.deleteAttribute('uv')
     const hp = halo.getAttribute('position')
     const hn = halo.getAttribute('normal')
@@ -494,7 +494,7 @@ function arrival() {
       const flat = u.length()
       u.normalize()
       const side = new THREE.Vector3().crossVectors(tan, u)
-      const ends = smooth(0, 0.12, f[i].along / total) * smooth(0, 0.1, 1 - f[i].along / total)
+      const ends = smooth(limb.kind === 'root' ? 0.52 : 0, limb.kind === 'root' ? 0.74 : 0.12, f[i].along / total) * smooth(0, 0.1, 1 - f[i].along / total)
       const lump = 0.55 + 0.45 * Math.sin(f[i].along * 2.3 + n * 1.7) * Math.sin(f[i].along * 0.9 + n)
       const thick = most * smooth(0.55, 0.95, flat) * ends * smooth(0.5, 0.9, lump)
       const seed = clamp01(0.5 + 0.5 * Math.sin(f[i].along * 1.4 + n * 2.1))
@@ -555,7 +555,7 @@ async function needleMaps() {
   for (let i = 0; i < w * h; i++) mean += l[i] / (w * h)
   const colour = new Float32Array(img.px.length)
   for (let i = 0; i < w * h; i++) {
-    const k = 0.45 + 0.55 * (mean / Math.max(wide[i], 0.04))
+    const k = (0.45 + 0.55 * (mean / Math.max(wide[i], 0.04))) * Math.pow(Math.max(l[i], 0.01) / Math.max(wide[i], 0.04), 0.5)
     for (let c = 0; c < 3; c++) colour[i * 3 + c] = img.px[i * 3 + c] * k
   }
   await writePng(rel('assets-full', 'winter', 'tree-needles.srgb.tile.w1024.png'), toBytes(colour), w, h, 3, 2048)
