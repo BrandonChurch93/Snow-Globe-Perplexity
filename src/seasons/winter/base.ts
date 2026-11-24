@@ -270,7 +270,7 @@ vec2 baseWallUv = vec2(atan(vBasePos.x, vBasePos.z) * 55.0, vBasePos.y) * uBaseT
 vec4 baseDetail = mix(texture2D(uBaseDetail, baseFlatUv), texture2D(uBaseDetail, baseWallUv), baseSteep);
 diffuseColor.rgb = diffuse * mix(vec3(1.0), mix(texture2D(map, baseFlatUv).rgb, texture2D(map, baseWallUv).rgb, baseSteep), 0.55);
 float baseThick = vBasePaint.x;
-float baseAo = 0.55 + 0.45 * smoothstep(0.0, 0.5, baseThick);
+float baseAo = (0.55 + 0.45 * smoothstep(0.0, 0.5, baseThick)) * mix(0.5, 1.0, smoothstep(0.0, 3.0, length(vBasePos - vec3(0.0, 79.0, 0.0)) - 60.0));
 if (baseThick - 0.05 * baseNoise(vBasePos * 2.3) * baseNoise(vBasePos * 0.7 + 9.0) < 0.012) discard;
 diffuseColor.rgb *= mix(vec3(0.56, 0.66, 0.82), vec3(1.0), smoothstep(0.02, 0.6, baseThick));
 diffuseColor.rgb *= mix(vec3(0.6, 0.73, 0.95), vec3(1.0), smoothstep(-0.3, 0.7, normalize(vBaseNormal).y));
