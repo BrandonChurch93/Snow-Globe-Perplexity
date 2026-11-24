@@ -16,10 +16,12 @@ const own = frost as { arrival?: () => THREE.Object3D }
 // it reaches almost its rest pattern by `states.landedSeconds`, as in `references/approved/winter-shake.png`, and the last tips
 // creep on after that.
 // The slab: no kick. The spines of the arms hold the first sixth of the map's time, so a kick put every spine out at its full
-// length two frames after the landing. The growth now climbs at a near even pace through that sixth (`burst` over `burstSeconds`
-// with `power` 1.35): the spines run from the foot to their tips over some ten frames, fastest by the first rock of the foot,
-// the side branches fill in behind them, about 96 in 100 of the frost stands at `states.landedSeconds` (the approved image has
-// it nearly whole there), and the last needles creep in under the settling storm.
+// length two frames after the landing. The growth climbs at a near even pace (`burst` over `burstSeconds` with `power` 1.35)
+// and frost.ts holds the far places back behind the rim while the growth is young (`look.slab.frontLag`): a ring starts at the
+// contact line on the landing frame and runs outward, the spines reach their tips about 20 frames after the landing with the
+// side branches filling in behind the front, the nearest to the foot first; about 95 in 100 of the frost stands at
+// `states.landedSeconds` (the approved image has it nearly whole there, which is what bounds how slow this can be), and the
+// last needles creep in under the settling storm for a second and more.
 const GLASS = { start: 0.1, kick: 0.12, kickSeconds: 0.05, burst: 0.71, burstSeconds: 0.26, power: 2, creep: 0.27, creepSeconds: 1.2 }
 const SLAB = { start: 0.16, kick: 0, kickSeconds: 0.05, burst: 0.66, burstSeconds: 0.5, power: 1.35, creep: 0.39, creepSeconds: 1.4 }
 // The answer begins at the touch, before the foot is flat: from the frame the low edge of the rim meets the slab (the rim's gap
