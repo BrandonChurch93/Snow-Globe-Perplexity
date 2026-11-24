@@ -437,6 +437,65 @@ function fanNeedle(length, rng, t0) {
   }
 }
 
+// A needle of a spray: straight, hair-fine, tapering to nothing; a share of them carry a few short splinters low down.
+// A blade of a spray (`blade`): a stouter spear with a soft body and close fibres lying almost along it, like a brush stroke,
+// pointed at its tip. With `side` the fibres are fewer, stand further off and are small blades themselves: a stalk with side
+// blades, which is how the narrow sheaves beside the plume are built.
+function sprayNeedle(length, rng, t0, wide = 1, splinters = 0.35, blade = null) {
+  const o = {
+    len: length,
+    step: 0.5,
+    w0: rng.range(0.1, 0.19) * wide,
+    w1: 0.035,
+    h0: rng.range(0.82, 1),
+    h1: 0.45,
+    speed: 1.6,
+    t0,
+    wobble: 0.012,
+    curl: rng.gauss() * 0.006,
+    spark: 0.9,
+    kappa: 2.5,
+    reach: 0.1,
+    taper: 0.55,
+    power: 1.8,
+    film: { w0: 0.4, w1: 0.1, h0: 0.12, h1: 0.03, kappa: 3, spark: 0.2 },
+  }
+  const gap = rng.range(1.5, 2.6)
+  const reach = rng.range(0.6, 1.2)
+  const angle = rng.range(20, 30) * RAD
+  const share = rng.next()
+  if (blade) {
+    o.w0 = rng.range(blade.wide[0], blade.wide[1]) * wide
+    o.taper = blade.taper ?? 0.8
+    o.wobble = 0.008
+    o.film = { w0: blade.body[0], w1: 0.12, h0: blade.body[1], h1: 0.04, profile: feather(0.12, 0.8), kappa: 3, spark: 0.25 }
+    const lie = (blade.angle[0] + (blade.angle[1] - blade.angle[0]) * rng.next()) * RAD
+    const k = blade.k ?? 0.85
+    o.kids = {
+      gap: blade.gap[0] + (blade.gap[1] - blade.gap[0]) * rng.next(),
+      len: length * (blade.len[0] + (blade.len[1] - blade.len[0]) * rng.next()),
+      min: 0.3,
+      angle: lie,
+      angleTip: lie * 0.55,
+      spread: 0.035,
+      profile: feather(0.08, blade.fall ?? 0.9),
+      make: (l, u, r) => {
+        const f = fibre(r, k)
+        f.curl *= 0.4
+        // `side`: the fibres are themselves small blades, standing off a stalk (a narrow sheaf like a feather).
+        if (blade.side) {
+          f.w0 = blade.side[0]
+          f.h0 = blade.side[1]
+          f.taper = 0.8
+          f.spark = 0.9
+        }
+        return f
+      },
+    }
+  } else if (share < splinters) o.kids = { gap, len: reach, min: 0.3, angle, angleTip: 16 * RAD, spread: 0.06, profile: feather(0.08, 1.6), make: (l, u, r) => fibre(r, 0.8) }
+  return o
+}
+
 function buildGlass() {
   const n = Math.round(L.glass.mapPx * shrink)
   const maxPolar = L.glass.maxPolarDeg * RAD
@@ -540,7 +599,8 @@ function buildGlass() {
       const o = plumeSpec(along * 1.1, clamp(along * tf.barb, 0.5, 3), rng, t0 + rng.range(0, 2.5), (tf.k ?? T.k) * rng.range(0.7, 1), tf.bold ?? T.bold, tf.body ?? T.body)
       o.to = [tip]
       o.wobble = 0.03
-      grow(ctx, at, toward(at, tip), o)
+      // A tuft marked skip is grown into nothing: it takes its random numbers, so everything drawn after it keeps its shape.
+      grow(tf.skip ? { ...ctx, field: { stroke() {} }, keep: null } : ctx, at, toward(at, tip), o)
     }
   }
   }
@@ -606,6 +666,36 @@ function buildGlass() {
   // The packed bristles of the rim, last and from their own stream.
   const crustRng = stream('frost-glass-crust')
   tufts(L.glass.crust, crustRng, { ...ctx, rng: crustRng })
+  // Sprays: sheaves thrown from one root (the sharp needles low on the right of the glass), placed by pixel of the approved
+  // image and drawn from their own stream, so nothing else moves. A sheaf is of bare hair needles (a share with a few short
+  // splinters) or, with `blade`, of stout pointed blades with fibres lying along them. The large plume is several sheaves
+  // from one root (up, up and left, left, up and right) over a core of short needles that overlap into a white body.
+  const sprayRng = stream('frost-glass-spray')
+  const sprayCtx = { ...ctx, rng: sprayRng }
+  for (const sp of L.glass.sprays ?? []) {
+    const ax = [sp.to[0] - sp.at[0], sp.to[1] - sp.at[1]]
+    const al = Math.hypot(ax[0], ax[1])
+    const across = [-ax[1] / al, ax[0] / al]
+    const basePx = sp.baseMm * REF_PX_PER_MM
+    for (let j = 0; j < sp.count; j++) {
+      const off = sprayRng.range(-1, 1)
+      const a = (off * 0.85 + sprayRng.gauss() * 0.1) * sp.spreadDeg * RAD
+      const tall = sp.long && sprayRng.next() < sp.long[0] ? sp.long[1] : 1
+      const l = (sp.len[0] + (sp.len[1] - sp.len[0]) * sprayRng.next()) * (1 - (sp.round ?? 0.3) * Math.abs(off)) * tall
+      const back = (sprayRng.next() - 0.6) * (sp.fray ?? 0.12)
+      const from = [sp.at[0] + across[0] * off * basePx + ax[0] * back, sp.at[1] + across[1] * off * basePx + ax[1] * back]
+      const dir = [ax[0] * Math.cos(a) - ax[1] * Math.sin(a), ax[0] * Math.sin(a) + ax[1] * Math.cos(a)]
+      // `lift`: the needle begins this share of its length out from the root, so a sheaf does not close to one point.
+      const lift = sp.lift ? l * (sp.lift[0] + (sp.lift[1] - sp.lift[0]) * sprayRng.next()) : 0
+      const at = pixelOnGlass(from[0] + dir[0] * lift, from[1] + dir[1] * lift)
+      const tip = pixelOnGlass(from[0] + dir[0] * l, from[1] + dir[1] * l)
+      const t0 = Math.max(0, Rs * Math.asin(clamp(at[2] / Rs, -1, 1))) * 0.9
+      const o = sprayNeedle(arc(at, tip), sprayRng, t0 + sprayRng.range(0, 2.5), sp.wide ?? 1, sp.splinters ?? 0.5, sp.blade ?? null)
+      o.to = [tip]
+      o.steer = 0.5
+      grow(sprayCtx, at, toward(at, tip), o)
+    }
+  }
   // The milky film in the rim band, thick at the rim and broken toward its inner edge.
   const { H, T, S } = field
   for (let y = 0; y < n; y++) {
@@ -923,6 +1013,13 @@ function buildSlab() {
       }
     }
   }
+  // The strip of slab between the front of the foot and the mound is kept bare (the approved image shows the dark slab and the
+  // foot's reflection there): a loose grain or a clump that falls in it is left out. Its random numbers are still drawn, so
+  // the grains after it keep their places.
+  const inStrip = (x, z) => {
+    const r = Math.hypot(x, z)
+    return r < footR + L.slab.mound.outMm[0] - 1 && smooth(L.slab.front.clear[0], L.slab.front.clear[1], z / (r || 1)) > L.slab.front.bare
+  }
   for (let i = 0; i < L.slab.grains; i++) {
     const deg = rng.range(-180, 180)
     const r = footR + 0.5 + Math.min(70, -Math.log(1 - rng.next() * 0.985) * 15)
@@ -931,7 +1028,9 @@ function buildSlab() {
     const z = r * Math.sin(deg * RAD)
     const t = 3 + (r - footR) * 0.55 + rng.range(0, 12)
     const h = clamp(size * rng.range(0.9, 1.5), 0.1, 0.7)
-    bump(x, z, size, h, t, rng.range(0.4, 1))
+    const spark = rng.range(0.4, 1)
+    if (inStrip(x, z)) continue
+    bump(x, z, size, h, t, spark)
     grains.push({ x, z, r: size, h, t })
   }
   for (let i = 0; i < L.slab.clumps; i++) {
@@ -942,7 +1041,8 @@ function buildSlab() {
     const spread = rng.range(0.8, 3.6)
     const count = Math.round(rng.range(8, 16) * spread)
     const t0 = 3 + (r - footR) * 0.3 + rng.range(0, 26)
-    bump(cx, cz, spread * 0.9, 0.07 + 0.04 * spread, t0, 0.3)
+    const bare = inStrip(cx, cz)
+    if (!bare) bump(cx, cz, spread * 0.9, 0.07 + 0.04 * spread, t0, 0.3)
     for (let k = 0; k < count; k++) {
       const a = rng.range(0, 2 * Math.PI)
       const d = spread * Math.sqrt(rng.next())
@@ -951,7 +1051,9 @@ function buildSlab() {
       const z = cz + d * Math.sin(a)
       const h = clamp(0.2 + 0.1 * spread + size * rng.range(0.5, 1.1), 0.1, 0.85)
       const t = t0 + d * 1.5 + rng.range(0, 2)
-      bump(x, z, size, h, t, rng.range(0.4, 1))
+      const spark = rng.range(0.4, 1)
+      if (bare || inStrip(x, z)) continue
+      bump(x, z, size, h, t, spark)
       grains.push({ x, z, r: size, h, t, base: (0.12 + 0.07 * spread) * (1 - d / (spread * 1.1)) })
     }
   }

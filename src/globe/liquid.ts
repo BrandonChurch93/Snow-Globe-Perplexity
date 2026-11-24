@@ -54,6 +54,8 @@ const AMBIENT_TURN = 0.008
 const TURB_EPS = 0.2
 const SLAM = 8
 const SLAM_KNEE = 45
+const OVERTURN = 1.4
+const OVERTURN_KNEE = 40
 const ROLL_WAKES = 0.3
 const ROLL_WOKEN = 0.9
 
@@ -66,6 +68,7 @@ const ROLL_BODY = 0.1
 const ROLL_BODY_LEAN = 0.5
 export const ROLL_EDGE = 0.5
 const ARM_PACE = 0.84
+const ARM_START = TAU - 0.45
 const ROLL_SECONDS = config.shake.spinDownSeconds * 0.6
 const ROLL_FROM_STORM = 0.22
 const ROLL_DRAIN = 2
@@ -338,7 +341,7 @@ export class Liquid {
       const top = woke <= 0 ? 0 : woke >= 1 ? ROLL_MAX : ROLL_MAX * woke
       if (roll > top) roll = top > L[15]! ? top : L[15]!
     }
-    let swirl = L[16]! + roll * ARM_PACE * DT
+    let swirl = (L[15]! > 0 ? L[16]! : ARM_START) + roll * ARM_PACE * DT
     if (swirl >= TAU) swirl -= TAU
     if (roll <= 0) {
       roll = 0
@@ -434,10 +437,12 @@ export class Liquid {
     const s2 = Math.sin(2 * th)
     const c2 = Math.cos(2 * th)
     const own = 1 - L[15]! / ROLL_MAX
-    c[0] = L[0]! * own + AMBIENT_TURN * 0.3 * s1
+    const slosh = Math.sqrt(L[3]! * L[3]! + L[4]! * L[4]! + L[5]! * L[5]!)
+    const slam = SLAM / (1 + slosh / SLAM_KNEE)
+    const over = (OVERTURN * slam * own * slosh) / ((slosh + OVERTURN_KNEE) * LIQUID_R)
+    c[0] = L[0]! * own + AMBIENT_TURN * 0.3 * s1 - over * L[5]!
     c[1] = L[1]! * own + AMBIENT_TURN * Math.cos(th + 1.1) + ROLL_BODY * L[15]!
-    c[2] = L[2]! * own + AMBIENT_TURN * 0.3 * c2 + ROLL_BODY_LEAN * ROLL_BODY * L[15]! * ROLL_AXIS[2]
-    const slam = SLAM / (1 + Math.sqrt(L[3]! * L[3]! + L[4]! * L[4]! + L[5]! * L[5]!) / SLAM_KNEE)
+    c[2] = L[2]! * own + AMBIENT_TURN * 0.3 * c2 + ROLL_BODY_LEAN * ROLL_BODY * L[15]! * ROLL_AXIS[2] + over * L[3]!
     c[3] = slam * L[3]! + 1.5 * AMBIENT_FLOW * c1 + L[17]!
     c[4] = slam * L[4]! + 1.5 * AMBIENT_FLOW * 0.5 * s2 + (L[6]! * L[6]!) / TURBULENCE_MAX + L[18]! * ROLL_AXIS[2]
     c[5] = slam * L[5]! + 1.5 * AMBIENT_FLOW * s1 - L[18]! * ROLL_AXIS[1]

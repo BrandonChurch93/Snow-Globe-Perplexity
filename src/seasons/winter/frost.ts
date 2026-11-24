@@ -27,7 +27,7 @@ export const surfaceDressing: Dressing & { reachMm: number } = { tint: [0.86, 0.
 
 const look = {
   glass: { cover: 1.72, haze: 1.38, slope: 0.55, micro: 1.1, glint: 2.6, light: 0.96, through: 2.4, thin: 0.3, thick: 1.1, blur: 0.012, bend: 0.012, scatter: 0.06, room: 0.5, soften: 0.12, rimMu: 0.3, faceOn: 0.65, front: 1.9, sugarMm: 0.3, gritty: 0.45, clear: [0.255, 0.28, 0.8] },
-  slab: { cover: 2.2, film: 1.7, slope: 1.6, micro: 1.2, glint: 1.6, pool: 0.5, poolBack: 0.12, poolThick: 0.9, skyCut: 0.55, gainFar: 0.9, gainKey: 1.38, gainFront: 0.5, grey: 0.85, light: 2.95, wrap: 0.3, broad: 1.4, shade: 0.35, edge: 0.6, ball: 0.3, rim: 0.55, sky: 1.3, sugarMm: 0.34, clotMm: 1.15, room: 0.1, lace: 0.3, gritty: 0.5, leftBack: 2.0, leftMid: 0.42, leftSkyCut: 0.5, leftWarm: 0.22, leftFrontCut: 0.5, leftHeap: 0.62, leftHeapCut: 0.12, leftHeapSky: 0.6, heapGlint: 0.4, wet: 0.6 },
+  slab: { cover: 2.2, film: 1.7, slope: 1.6, micro: 1.2, glint: 1.1, pool: 0.5, poolBack: 0.12, poolThick: 0.9, skyCut: 0.55, gainFar: 0.9, gainKey: 1.38, gainFront: 0.5, grey: 0.85, light: 2.95, wrap: 0.3, broad: 1.4, shade: 0.35, edge: 0.6, ball: 0.3, rim: 0.55, sky: 1.3, sugarMm: 0.34, clotMm: 1.15, room: 0.1, lace: 0.3, gritty: 0.5, leftBack: 2.0, leftMid: 0.42, leftSkyCut: 0.5, leftWarm: 0.22, leftFrontCut: 0.5, leftHeap: 0.62, leftHeapCut: 0.12, leftHeapSky: 0.6, heapGlint: 0.4, wet: 0.6, focusMm: 35, far: [40, 110], near: [28, 75], farMips: 3.6, nearMips: 3.2, shadeGlint: 0.85 },
 }
 const SNOW = { thin: [0.6, 0.68, 0.8], thick: [0.92, 0.955, 0.99], body: [0.9, 0.93, 0.98] }
 const vec = (v: number[]): string => `vec3(${v.map((x) => x.toFixed(3)).join(', ')})`
@@ -37,6 +37,7 @@ const frostUniforms = {
   uSlabMap: { value: null as THREE.Texture | null },
   uGrain: { value: null as THREE.Texture | null },
   uGrow: { value: new THREE.Vector4(FULL, FULL, 1, 1) },
+  uTouch: { value: new THREE.Vector4(0, 0, 0, 0) },
   uShape: { value: new THREE.Vector4(1, 1, 1, 1) },
   uField: { value: new THREE.Vector4(1, 1, 1, 1) },
   uGlassLook: { value: new THREE.Vector4(look.glass.cover, look.glass.haze, look.glass.slope, look.glass.micro) },
@@ -243,6 +244,21 @@ void main() {
   } else if (alpha < 0.004) discard;
 }`
 
+// The slab's growth at a place. While the foot rolls flat after the touch (uTouch.x on) the rime begins under the edge that
+// touched first and runs round the foot to the far edge: uTouch.y is how far the foot has rolled flat, uTouch.z how far the
+// touching side leads. The side is read from the foot's own tilt (uLean), and when the foot is flat every side has the same
+// growth, so nothing depends on the side from then on.
+const SLAB_GROW_GLSL = `
+uniform vec4 uTouch;
+float frostSlabGrow(vec2 xz) {
+  if (uTouch.x <= 0.0) return uGrow.y;
+  vec2 d = xz - uFoot.xy - uLean.xy;
+  float tilt = length(uLean.zw);
+  float far = tilt > 1e-6 ? 0.5 - 0.5 * dot(d / max(length(d), 1.0), uLean.zw / tilt) : 0.0;
+  return uGrow.y * clamp(uTouch.y * (1.0 + uTouch.z) - uTouch.z * far, 0.0, 1.0);
+}
+`
+
 const SLAB_GLSL = `
 ${FROST_GLSL}
 uniform sampler2D uSlabMap;
@@ -282,6 +298,22 @@ vec3 frostSlabLight(vec3 n, vec3 P, vec3 albedo, float open, float piled) {
 vec2 frostSlabUv(vec2 xz) {
   return vec2(xz.x + uField.x, uField.x - xz.y) / (2.0 * uField.x);
 }
+${SLAB_GROW_GLSL}
+// How far out of the lens's focus a place on the slab lies, in mip levels of the frost's map. The approved image is sharp at
+// the front of the foot and on the arms beside it; the arms behind the foot and the mound in front of it are soft. The lens of
+// the stage is too small to do that to a layer this thin, so the frost softens itself by its distance from the plane of focus
+// (the foot's centre, focusMm toward the camera): its map is read from a coarser level, its sugar grain and its sparkle fade.
+// The share of the sparkle that the globe's own shade takes: the arms on the left in front of the foot lie in it (the approved
+// image has them dim and matt), so a glint there would be brighter than the frost it sits on.
+float frostShade(vec2 xz) {
+  vec2 out2 = xz - uFoot.xy - uLean.xy;
+  vec2 dir2 = out2 / max(length(out2), 1.0);
+  return ${look.slab.shadeGlint.toFixed(3)} * smoothstep(0.0, 0.8, dot(dir2, vec2(-1.0, 0.1))) * (1.0 - smoothstep(-0.05, 0.45, -dir2.y));
+}
+float frostBlur(vec3 P) {
+  float away = length(P - cameraPosition) - (length(vec3(uFoot.x, 0.0, uFoot.y) - cameraPosition) - ${look.slab.focusMm.toFixed(1)});
+  return max(${look.slab.farMips.toFixed(2)} * smoothstep(${look.slab.far[0].toFixed(1)}, ${look.slab.far[1].toFixed(1)}, away), ${look.slab.nearMips.toFixed(2)} * smoothstep(${look.slab.near[0].toFixed(1)}, ${look.slab.near[1].toFixed(1)}, -away));
+}
 `
 
 const SHEET = `
@@ -296,15 +328,17 @@ void main() {
   vec3 grain = texture(uGrain, guv).rgb;
   vec3 fine = texture(uGrain, guv * 3.0 + 0.37).rgb;
   float fw = max(length(dFdx(uv)), length(dFdy(uv)));
-  float e = max(min(length(dFdx(uv)), length(dFdy(uv))), uField.y) * 1.2;
+  float blur = frostBlur(vStageWorld);
+  float soft = clamp(blur * 0.5, 0.0, 1.0);
+  float e = max(min(length(dFdx(uv)), length(dFdy(uv))), uField.y) * 1.2 * exp2(blur);
   float eb = max(4.0 * e, 0.45 / uField.x);
-  float lvl = uGrow.y - FROST_START + (grain.r - 0.33) * 0.07 + (fine.r - 0.33) * 0.03;
-  vec3 m0 = texture(uSlabMap, uv).rgb;
-  vec3 m1 = texture(uSlabMap, uv + vec2(e, 0.0)).rgb;
-  vec3 m2 = texture(uSlabMap, uv - vec2(0.0, e)).rgb;
-  vec3 b0 = texture(uSlabMap, uv, 2.5).rgb;
-  vec3 b1 = texture(uSlabMap, uv + vec2(eb, 0.0), 2.5).rgb;
-  vec3 b2 = texture(uSlabMap, uv - vec2(0.0, eb), 2.5).rgb;
+  float lvl = frostSlabGrow(xz) - FROST_START + (grain.r - 0.33) * 0.07 + (fine.r - 0.33) * 0.03;
+  vec3 m0 = texture(uSlabMap, uv, blur).rgb;
+  vec3 m1 = texture(uSlabMap, uv + vec2(e, 0.0), blur).rgb;
+  vec3 m2 = texture(uSlabMap, uv - vec2(0.0, e), blur).rgb;
+  vec3 b0 = texture(uSlabMap, uv, 2.5 + 0.5 * blur).rgb;
+  vec3 b1 = texture(uSlabMap, uv + vec2(eb, 0.0), 2.5 + 0.5 * blur).rgb;
+  vec3 b2 = texture(uSlabMap, uv - vec2(0.0, eb), 2.5 + 0.5 * blur).rgb;
   float crumb = frostCrumb(uGrow.w, fine.r);
   float on = smoothstep(0.0, FROST_SOFT, lvl - m0.g) * max(frostStay(uGrow.w, m0.r, grain.r, m0.g), crumb);
   float h0 = m0.r * on;
@@ -314,12 +348,12 @@ void main() {
   float s1 = b1.r * smoothstep(0.0, 2.0 * FROST_SOFT, lvl - b1.g + 0.03) * frostStay(uGrow.w, b1.r, grain.r, b1.g);
   float s2 = b2.r * smoothstep(0.0, 2.0 * FROST_SOFT, lvl - b2.g + 0.03) * frostStay(uGrow.w, b2.r, grain.r, b2.g);
   float pxMm = sqrt(length(dFdx(vStageWorld)) * length(dFdy(vStageWorld)));
-  float sugar = smoothstep(0.26, 0.74, frostSugar(vStageWorld, pxMm, ${look.slab.sugarMm.toFixed(3)}, 0.31));
-  float clot = smoothstep(0.3, 0.7, frostSugar(vStageWorld, pxMm, ${look.slab.clotMm.toFixed(3)}, 0.47));
+  float sugar = mix(smoothstep(0.26, 0.74, frostSugar(vStageWorld, pxMm, ${look.slab.sugarMm.toFixed(3)}, 0.31)), 0.5, 0.9 * soft);
+  float clot = mix(smoothstep(0.3, 0.7, frostSugar(vStageWorld, pxMm, ${look.slab.clotMm.toFixed(3)}, 0.47)), 0.5, 0.6 * soft);
   float body = mix(s0, h0, 0.72) * (0.4 + 0.75 * sugar + 0.45 * clot);
   vec2 slope = uField.z * uSlabLook.z * vec2(h1 - h0, h2 - h0) / (e * 2.0 * uField.x);
   slope += uField.z * ${look.slab.broad.toFixed(3)} * vec2(s1 - s0, s2 - s0) / (eb * 2.0 * uField.x);
-  vec2 micro = ((grain.gb - 0.5) * 1.2 + (fine.gb - 0.5) * 0.8) * uSlabLook.w * (0.2 + 0.8 * smoothstep(0.0, 0.25, h0));
+  vec2 micro = ((grain.gb - 0.5) * 1.2 + (fine.gb - 0.5) * 0.8) * uSlabLook.w * (0.2 + 0.8 * smoothstep(0.0, 0.25, h0)) * (1.0 - 0.85 * soft);
   vec3 n = normalize(vec3(-slope.x - micro.x, 1.0, -slope.y + micro.y));
   vec3 v = normalize(vStageWorld - cameraPosition);
   float mu = max(-v.y, 0.0);
@@ -328,7 +362,7 @@ void main() {
   vec3 albedo = mix(${vec(SNOW.thin)}, ${vec(SNOW.thick)}, thick);
   float open = 0.55 + 0.45 * smoothstep(-0.12, 0.2, h0 - s0 + 0.35 * thick);
   vec3 col = frostSlabLight(n, vStageWorld, albedo, open, 0.0) * (0.7 + 0.6 * sugar);
-  vec3 spark = frostGlints(xz, pxMm, vec3(0.0, 1.0, 0.0), v, ${look.slab.room.toFixed(3)}) * uGlint.y * (0.05 + 1.5 * m0.b * on) * smoothstep(0.02, 0.25, alpha) * thick;
+  vec3 spark = frostGlints(xz, pxMm, vec3(0.0, 1.0, 0.0), v, ${look.slab.room.toFixed(3)}) * uGlint.y * (0.05 + 1.5 * m0.b * on) * smoothstep(0.02, 0.25, alpha) * thick * (1.0 - 0.9 * soft) * (1.0 - frostShade(xz));
   // Melt water round the frost: a few millimetres past its edge the slab is wet and darker, so the frost does not end on dry wood.
   vec3 w0 = texture(uSlabMap, uv, 4.6).rgb;
   float wet = smoothstep(0.012, 0.09, w0.r * smoothstep(0.0, 2.0 * FROST_SOFT, lvl - w0.g + 0.03) * frostStay(uGrow.w, w0.r, grain.r, w0.g)) * ${look.slab.wet.toFixed(3)};
@@ -355,15 +389,16 @@ void main() {
   vec3 grain = texture(uGrain, guv).rgb;
   vec3 coarse = texture(uGrain, guv * 0.31 + 0.61).rgb;
   vec3 fern = texture(uSlabMap, frostSlabUv(xz), 1.0).rgb;
-  float lvl = uGrow.y - FROST_START + (grain.r - 0.33) * 0.07;
+  float lvl = frostSlabGrow(xz) - FROST_START + (grain.r - 0.33) * 0.07;
   float leaf = fern.r * smoothstep(0.0, FROST_SOFT, lvl - fern.g);
   float pxMm = sqrt(length(dFdx(vStageWorld)) * length(dFdy(vStageWorld)));
-  float sugar = smoothstep(0.26, 0.74, frostSugar(vStageWorld, pxMm, ${look.slab.sugarMm.toFixed(3)}, 0.31));
-  float sugar2 = smoothstep(0.26, 0.74, frostSugar(vStageWorld, pxMm, ${look.slab.sugarMm.toFixed(3)}, 0.63));
-  float clot = smoothstep(0.3, 0.7, frostSugar(vStageWorld, pxMm, ${look.slab.clotMm.toFixed(3)}, 0.47));
+  float soft = clamp(frostBlur(vStageWorld) * 0.5, 0.0, 1.0);
+  float sugar = mix(smoothstep(0.26, 0.74, frostSugar(vStageWorld, pxMm, ${look.slab.sugarMm.toFixed(3)}, 0.31)), 0.5, 0.9 * soft);
+  float sugar2 = mix(smoothstep(0.26, 0.74, frostSugar(vStageWorld, pxMm, ${look.slab.sugarMm.toFixed(3)}, 0.63)), 0.5, 0.9 * soft);
+  float clot = mix(smoothstep(0.3, 0.7, frostSugar(vStageWorld, pxMm, ${look.slab.clotMm.toFixed(3)}, 0.47)), 0.5, 0.6 * soft);
   float edge = vFrostOn.z * vFrostOn.x;
-  float from = ${look.slab.edge.toFixed(3)} * (0.55 * sugar + 0.45 * clot) * (1.0 - 0.5 * leaf);
-  float alpha = smoothstep(from, from + 0.42, edge);
+  float from = ${look.slab.edge.toFixed(3)} * (0.55 * sugar + 0.45 * clot) * (1.0 - 0.5 * leaf) * (1.0 - 0.6 * soft);
+  float alpha = smoothstep(from, from + 0.42 + 0.5 * soft, edge);
   alpha *= max(frostStay(uGrow.w, 0.45 + 0.55 * vFrostOn.y * vFrostOn.z, 0.5 * (sugar2 + clot), vFrostT), frostCrumb(uGrow.w, grain.r));
   alpha *= mix(${look.slab.lace.toFixed(3)} + ${(1 - look.slab.lace).toFixed(3)} * (0.6 * sugar2 + 0.4 * clot), 1.0, smoothstep(0.35, 0.95, vFrostOn.y));
   if (alpha < 0.012) discard;
@@ -374,7 +409,7 @@ void main() {
   float deep = (0.22 + 0.78 * vFrostOn.y) * smoothstep(0.1, 0.75, alpha);
   vec3 albedo = mix(${vec(SNOW.thin)}, ${vec(SNOW.body)}, deep) * (0.9 + 0.16 * leaf);
   vec3 col = frostSlabLight(n, vStageWorld, albedo, open, deep) * (0.58 + 0.62 * sugar + 0.22 * clot);
-  vec3 spark = frostGlints(xz + vStageWorld.y * 3.1, pxMm, normalize(vFrostN), v, ${look.slab.room.toFixed(3)}) * uGlint.y * ${(1.3 * look.slab.heapGlint).toFixed(3)} * alpha * open;
+  vec3 spark = frostGlints(xz + vStageWorld.y * 3.1, pxMm, normalize(vFrostN), v, ${look.slab.room.toFixed(3)}) * uGlint.y * ${(1.3 * look.slab.heapGlint).toFixed(3)} * alpha * open * (1.0 - 0.9 * soft) * (1.0 - frostShade(xz));
   gl_FragColor = vec4(col * alpha + spark, alpha);
   if (uDiag != 0) {
     if (alpha < 0.3) discard;
@@ -461,7 +496,7 @@ function makeGlass(): THREE.Mesh {
 }
 
 function makeSurface(): THREE.Group {
-  const shared = { ...roomUniforms, ...lightUniforms, uSlabMap: frostUniforms.uSlabMap, uGrain: frostUniforms.uGrain, uGrow: frostUniforms.uGrow, uField: frostUniforms.uField, uSlabLook: frostUniforms.uSlabLook, uGlint: frostUniforms.uGlint, ...slabLightUniforms }
+  const shared = { ...roomUniforms, ...lightUniforms, uSlabMap: frostUniforms.uSlabMap, uGrain: frostUniforms.uGrain, uGrow: frostUniforms.uGrow, uTouch: frostUniforms.uTouch, uField: frostUniforms.uField, uSlabLook: frostUniforms.uSlabLook, uGlint: frostUniforms.uGlint, ...slabLightUniforms }
   const sheet = new THREE.Mesh(
     geometry(MODEL, 'sheet'),
     stageShader({ part: SLAB_PART, standIn: false, change: 'surface-dressing', textured: true, texels: 1 / frostUniforms.uField.value.y, uniforms: shared, fragment: SHEET, params: { ...veil } }),
@@ -476,10 +511,10 @@ function makeSurface(): THREE.Group {
       standIn: false,
       change: 'surface-dressing',
       uniforms: shared,
-      vertexPars: 'attribute vec2 uv1;\nuniform vec4 uGrow;\nvarying vec3 vFrostN;\nvarying vec4 vFrostOn;\nvarying float vFrostT;',
+      vertexPars: `attribute vec2 uv1;\nuniform vec4 uGrow;\nuniform vec4 uFoot;\nuniform vec4 uLean;\nvarying vec3 vFrostN;\nvarying vec4 vFrostOn;\nvarying float vFrostT;\n${SLAB_GROW_GLSL}`,
       vertexMain: `
 float frostLoose = step(1.5, uv1.y);
-float frostLvl = uGrow.y - 0.07 - uv.x;
+float frostLvl = frostSlabGrow((modelMatrix * vec4(position, 1.0)).xz) - 0.07 - uv.x;
 float frostLead = max(uv.x - 0.1, 0.05);
 float frostGo = clamp(frostLvl / frostLead + 1.0, 0.0, 1.0);
 float frostToGo = (1.0 - frostGo) * (1.0 - frostGo) * frostLoose;
@@ -512,8 +547,10 @@ export function dressing(): { glass: THREE.Object3D; surface: THREE.Object3D } {
   return { glass, surface }
 }
 
-export function setGrowth(glassLevel: number, slabLevel: number, keepGlass: number, keepSlab: number): void {
+/** `rolled` is given only while the foot rolls flat after the touch: how far it has (0 at the touch, 1 flat), and `lead` how far the touching side leads the far side. */
+export function setGrowth(glassLevel: number, slabLevel: number, keepGlass: number, keepSlab: number, rolled = -1, lead = 0): void {
   frostUniforms.uGrow.value.set(glassLevel, slabLevel, keepGlass, keepSlab)
+  frostUniforms.uTouch.value.set(rolled >= 0 ? 1 : 0, Math.max(0, rolled), lead, 0)
 }
 
 export function update(_moment: KitMoment): void {}
