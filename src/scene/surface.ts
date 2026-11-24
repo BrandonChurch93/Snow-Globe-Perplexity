@@ -40,21 +40,22 @@ export const SLAB = {
   dustAlbedo: 0.3,
   vein: 1.1,
   cloud: 0.7,
-  markFloor: 0.3,
-  markCloud: 8.3,
+  markFloor: 0.5,
+  markCloud: 5.5,
   markPower: 2.6,
-  markWipe: 0.95,
+  markWipe: 0.7,
   markMost: 2.6,
   filmAlbedo: 0.002,
   filmTint: [0.7, 1, 1.05],
-  hazeAlbedo: 0.012,
+  hazeAlbedo: 0.006,
   hazeMm: 50,
-  gloss: 0.65,
+  gloss: 0.76,
   f0: 0.05,
   fresnelPower: 4.2,
   mirrorShare: 0.5,
   mirrorMark: 0.35,
-  farGain: 1.6,
+  mirrorTint: [0.86, 1, 1.14],
+  farGain: 1.8,
   farFrom: 0.165,
   farTo: 0.125,
   roughSpread: 0.03,
@@ -321,7 +322,7 @@ void main() {
   vec3 room = stageRoomSeen(r, ${f(SLAB.roomRough)});
   float farGloss = fres * mark * ${f(SLAB.gloss)} * mix(1.0, ${f(SLAB.farGain)}, smoothstep(${f(SLAB.farFrom)}, ${f(SLAB.farTo)}, grazing));
   float nearGloss = max(fres, ${f(SLAB.mirrorShare)}) * fade * mix(1.0, mark, ${f(SLAB.mirrorMark)});
-  col += (seen * mix(farGloss, nearGloss, sil) + room * (1.0 - held) * farGloss) * (1.0 - 0.6 * dust);
+  col += (seen * mix(vec3(farGloss), vec3(${SLAB.mirrorTint.map(f).join(', ')}) * nearGloss, sil) + room * (1.0 - held) * farGloss) * (1.0 - 0.6 * dust);
 
   gl_FragColor = vec4(col * cover, 1.0 - cover);
   if (uDiag != 0) {
