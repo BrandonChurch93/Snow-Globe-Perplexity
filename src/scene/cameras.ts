@@ -51,11 +51,15 @@ const right = new THREE.Vector3()
 const up = new THREE.Vector3()
 const back = new THREE.Vector3()
 
+export const ROOM_RADIUS_MM = 5000
+const NEAR_MM = 20
+const FAR_MM = 2.4 * ROOM_RADIUS_MM
+
 export function applyPose(camera: THREE.PerspectiveCamera, pose: Pose, width: number, height: number, sample: Sample | null): void {
   camera.fov = pose.fovDeg
   camera.aspect = width / height
-  camera.near = 20
-  camera.far = 6000
+  camera.near = NEAR_MM
+  camera.far = FAR_MM
   camera.position.copy(pose.position)
   camera.up.set(0, 1, 0)
   camera.lookAt(pose.aim)
