@@ -43,11 +43,11 @@ const MIN_SHAFT = 5
 const ROOT_RISE = 7
 const ROOT_FALL = 1.6
 const ROOT_SKIRT = 1.8
-const TWIST_LOW = 0.06
+const TWIST_LOW = 0.1
 const TWIST_HIGH = 0.03
 const RIDGE_DEEP = 0.16
 const GNARL = 0.06
-const PLATE = { perMm: 0.85, width: 0.03, deep: 0.2 }
+const PLATE = { perMm: 0.85, width: 0.03, deep: 0.08 }
 const KNOTS: readonly { phi: number; h: number; r: number }[] = [
   { phi: 1.95, h: 8.4, r: 1.15 },
   { phi: 1.05, h: 5.3, r: 0.85 },
@@ -57,11 +57,12 @@ const KNOTS: readonly { phi: number; h: number; r: number }[] = [
 ]
 const BARK_MM = 6.5
 const BARK_AROUND = 3
+const BARK_RELIEF = 0.85
 const MODEL = 'shared/trunk-wood.glb'
 const BARK = 'shared/trunk-bark.srgb.tile.w1024.png'
 const BARK_NORMAL = 'shared/trunk-bark-n.lin.tile.w1024.png'
 
-const RADIUS: Table = [[-4.5, 4.9], [0, 4.3], [1.2, 3.9], [3.2, 3.5], [5.2, 3.3], [8, 3.0], [10, 2.6], [11.6, 2.3], [13.6, 1.95], [15.5, 1.7], [18, 1.45], [19.6, 1.25], [21, 1.05], [24, 0.95], [27.5, 0.88], [30, 0.78], [33, 0.6], [37.6, 0.4]]
+const RADIUS: Table = [[-4.5, 5.1], [0, 4.6], [1.2, 4.2], [3.2, 3.9], [5.2, 3.7], [8, 3.4], [10, 3.0], [11.6, 2.65], [13.6, 2.2], [15.5, 1.75], [18, 1.45], [19.6, 1.25], [21, 1.05], [24, 0.95], [27.5, 0.88], [30, 0.78], [33, 0.6], [37.6, 0.4]]
 const AXIS_X: Table = [[-4.5, -0.5], [0, -0.4], [5, 0.05], [10, 0.75], [13.6, 0.7], [16.5, 0.45], [19, 0.1], [22, -0.75], [25, -1.3], [27.5, -1.7], [30, -1.6], [33, -0.8], [35.5, 0.2], [37.6, 0.7]]
 const AXIS_Z: Table = [[-4.5, 0], [0, 0], [8, 0.35], [14, -0.1], [26, -0.4], [37.6, 0]]
 
@@ -77,13 +78,13 @@ const ROOTS: readonly { angle: number; reach: number; width: number }[] = [
 ]
 
 const PADS: readonly { at: Vec3; size: Vec3; lean: number; tip: number }[] = [
-  { at: [0.5, 39.2, 0], size: [6.4, 2.4, 4.6], lean: 0.03, tip: 0.12 },
-  { at: [-6.6, 36.9, 2.4], size: [6.6, 2.8, 4.8], lean: -0.16, tip: 0.15 },
-  { at: [3.8, 36, 3.2], size: [5.6, 2.7, 4.4], lean: 0.12, tip: 0.2 },
-  { at: [-8, 34, 1], size: [6, 2.5, 4.6], lean: -0.12, tip: 0.12 },
+  { at: [0.6, 39.3, 0], size: [6.6, 2.4, 4.4], lean: 0.03, tip: 0.12 },
+  { at: [-6.6, 35.6, 2.6], size: [6.8, 2.5, 4.8], lean: -0.16, tip: 0.15 },
+  { at: [3.9, 35.1, 3.3], size: [5.8, 2.5, 4.4], lean: 0.12, tip: 0.2 },
+  { at: [-8, 34.9, 0.4], size: [5.8, 2.1, 4.2], lean: -0.12, tip: 0.12 },
   { at: [7.8, 33.8, 3.6], size: [5.2, 2.8, 4.4], lean: 0.32, tip: 0.15 },
   { at: [11.6, 30.8, 1.2], size: [3.9, 2.9, 3.8], lean: 0.42, tip: 0.15 },
-  { at: [2.6, 33.6, 0], size: [6.2, 1.8, 4.4], lean: 0.12, tip: 0 },
+  { at: [2.6, 34.4, -0.4], size: [6, 1.6, 4.2], lean: 0.12, tip: 0 },
   { at: [-9.3, 27.2, 3.2], size: [8.3, 3.1, 5.2], lean: -0.14, tip: 0.18 },
   { at: [-13.6, 19.8, -0.6], size: [3.9, 2.8, 3.8], lean: -0.21, tip: 0.12 },
   { at: [9, 20.8, 3.6], size: [8, 3.9, 5.4], lean: 0.3, tip: 0.2 },
@@ -112,8 +113,8 @@ const BOUGHS: readonly Bough[] = [
   { kind: 'twig', pad: 9, r: [0.17, 0.06], via: [[10.4, 22.4, 3.5], [11.9, 24.2, 3.6], [13.3, 25.9, 3.6]], forks: [] },
   { kind: 'twig', pad: 5, r: [0.36, 0.12], via: [[4.2, 23.7, 1.2], [5.2, 24.9, 2.2], [6.6, 25.4, 3]], forks: [] },
 ]
-const LIMB_TAPER = 0.9
-const LIMB_SLIM: readonly [number, number] = [0.78, 0.9]
+const LIMB_TAPER = 0.75
+const LIMB_SLIM: readonly [number, number] = [0.68, 0.82]
 const LIMB_STEP = 0.42
 
 const lerp = (a: number, b: number, t: number): number => a + (b - a) * t
@@ -340,8 +341,8 @@ export interface Cluster {
 const DOME = 0.3
 const BODY = { blend: 0.5, bias: 0.4 }
 const TOP_DROP = 1.56
-const CAP = { lift: 1.05, thick: 0.25, cover: 1.08, fore: 0.12, lee: 0.12, skew: 0.45, rim: 0.98, brow: 0.5, swell: 0.42, ripple: 0.24, lump: 0.16, flat: 2.4, gap: 2.2, gapFrom: 0.24, gapTo: 0.8, sink: 0.1, slope: 0.75, depth: 0.25, lip: 0.4, droop: 0.3, hem: 1.3 }
-const LOADS: readonly (readonly [number, number])[] = [[1, 1], [1.25, 1], [1.2, 1], [0.9, 1], [1.1, 0.95], [0.95, 1.05], [0.35, 0.5], [0.95, 1.02], [0.8, 1], [0.95, 1.02]]
+const CAP = { lift: 1.05, thick: 0.25, cover: 1.08, fore: 0.12, lee: 0.12, skew: 0.45, rim: 0.98, brow: 0.5, swell: 0.42, ripple: 0.24, lump: 0.16, flat: 2.4, gap: 2.2, gapFrom: 0.24, gapTo: 0.8, sink: 0.1, slope: 0.75, depth: 0.25, lip: 0.4, droop: 0.7, hem: 1.3 }
+const LOADS: readonly (readonly [number, number])[] = [[1, 1], [1.25, 1.02], [1.2, 1.02], [0.9, 1], [1.1, 0.95], [0.95, 1.05], [0.35, 0.5], [0.95, 1.02], [0.8, 1], [0.95, 1.02]]
 const wobble = (x: number, h: number, z: number): number => 0.16 * Math.sin(1.9 * x + 0.3 * h) * Math.sin(2.3 * h + 1.1 * z) * Math.sin(1.7 * z + 0.5 * x) + 0.07 * Math.sin(4.3 * x + 1) * Math.sin(3.9 * h + 2) * Math.sin(4.7 * z)
 const dome = (rim: number): number => 1 - DOME * Math.pow(rim, 1.5)
 
@@ -614,7 +615,7 @@ export function bakeGlow(g: THREE.BufferGeometry, lights: readonly GlowLight[], 
   g.setAttribute('aGlow', new THREE.BufferAttribute(out, 4))
 }
 
-export function glowHook(shader: THREE.WebGLProgramParametersWithUniforms, albedo = 'material.diffuseContribution'): void {
+export function glowHook(shader: THREE.WebGLProgramParametersWithUniforms, albedo = 'material.diffuseContribution', relief = 0): void {
   shader.uniforms.uTwinkle = glow.uTwinkle
   shader.vertexShader = shader.vertexShader
     .replace('#include <common>', '#include <common>\nattribute vec4 aGlow;\nvarying vec4 vGlow;')
@@ -623,7 +624,7 @@ export function glowHook(shader: THREE.WebGLProgramParametersWithUniforms, albed
     .replace('#include <common>', '#include <common>\nuniform vec4 uTwinkle;\nvarying vec4 vGlow;')
     .replace(
       '#include <lights_fragment_end>',
-      `#include <lights_fragment_end>\nreflectedLight.indirectDiffuse += vGlow.rgb * uTwinkle.z * (1.0 + uTwinkle.y * sin(6.2831853 * (uTwinkle.x + vGlow.a))) * ${albedo};`,
+      `#include <lights_fragment_end>\nreflectedLight.indirectDiffuse += vGlow.rgb * uTwinkle.z * (1.0 + uTwinkle.y * sin(6.2831853 * (uTwinkle.x + vGlow.a))) * ${albedo}${relief > 0 ? ` * (1.0 - ${relief.toFixed(2)} * (1.0 - pow(max(dot(normal, nonPerturbedNormal), 0.0), 3.0)))` : ''};`,
     )
 }
 
@@ -669,7 +670,7 @@ export function buildTrunk(part: string, lights: readonly GlowLight[] = [], tint
     vertexColors: true,
     roughness: 0.86,
     extra: { normalMap: normal, normalScale: new THREE.Vector2(1.2, 1.2) },
-    hook: glowHook,
+    hook: (shader) => glowHook(shader, undefined, BARK_RELIEF),
     key: 'trunk',
   })
   const mesh = new THREE.Mesh(g, m)

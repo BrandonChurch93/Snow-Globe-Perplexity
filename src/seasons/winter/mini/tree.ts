@@ -22,22 +22,26 @@ const COVER_RISE = 0.12
 const WARM: [number, number, number] = [1, 0.56, 0.33]
 const GOLD: [number, number, number] = [1, 0.84, 0.52]
 const BULB_GAIN = 16
-const GLOW = { needles: { power: 46, reachMm: 0.9, star: 0.6 }, snow: { power: 1, reachMm: 1.4, star: 0.36 }, wood: { power: 14, reachMm: 1.7, star: 0.6 } }
+const GLOW = { needles: { power: 34, reachMm: 1.1, star: 0.6 }, snow: { power: 1, reachMm: 1.4, star: 0.36 }, wood: { power: 20, reachMm: 1.7, star: 0.6 } }
 const LAMP_ON_WOOD = { power: 125, reachMm: 12, wrap: -0.45 }
 const LAMP_ON_SNOW = { power: 1.5, reachMm: 14, wrap: 0.6 }
 const LAMP_SHIFT: Vec3 = [-3, 0, -5]
-const FILL_ON_WOOD = { power: 2.6, reachMm: 1000, wrap: 0.4 }
+const FILL_ON_WOOD = { power: 1.8, reachMm: 1000, wrap: 0.4 }
 const SKY_ON_SNOW = { power: 1.25, reachMm: 14, wrap: 0.15 }
 const SKY_FROM: Vec3 = [20, 42, 7]
 const FILL_FROM: Vec3 = [40, 20, 60]
-const BARK: [number, number, number] = [0.101, 0.12, 0.112]
+const BARK: [number, number, number] = [0.1, 0.106, 0.078]
 const SNOW_TINT: [number, number, number] = [1.26, 1.56, 1.95]
 const NEEDLE_TINT: [number, number, number] = [0.98, 1.16, 2.4]
-const NEEDLE_LIT = 'vec3(1.6, 0.94, 0.64)'
+const NEEDLE_LIT = 'vec3(1.35, 1.04, 0.7)'
 const LAMP_ON_NEEDLES = { power: 9, reachMm: 12, wrap: 0.1 }
-const FILL_ON_NEEDLES = { power: 1.9, reachMm: 1000, wrap: 0.25, color: GOLD }
+const FILL_ON_NEEDLES = { power: 1, reachMm: 1000, wrap: 0.25, color: GOLD }
 const FILL_ON_NEEDLES_FROM: Vec3 = [30, 80, 60]
-const HALO = { radiusMm: 0.6, strength: 0.75, hot: 9, pullMm: 0.6, flicker: FLICKER, cycles: CYCLES }
+const HALO = { radiusMm: 0.55, strength: 0.65, hot: 9, pullMm: 0.6, flicker: FLICKER, cycles: CYCLES }
+const POOL = { radiusMm: 1.15, strength: 0.12, hot: 0, pullMm: 0.9, flicker: FLICKER, cycles: CYCLES }
+const POOL_EDGE: [number, number, number] = [0.7, 0.3, 0.06]
+const POOL_CORE: [number, number, number] = [0.95, 0.56, 0.2]
+const CLUMP = { coarse: 1.2, fine: 3.1, dark: 0.58, bright: 1.22, from: 0.32, to: 0.68, height: 1.2 }
 const HALO_EDGE: [number, number, number] = [0.75, 0.36, 0.08]
 const HALO_CORE: [number, number, number] = [1, 0.74, 0.4]
 const AURA = { radiusMm: 2.6, strength: 0.2, flicker: 0.08, cycles: 3 }
@@ -47,7 +51,7 @@ const FOG_DIM = { from: 0.5, to: 0.9, cap: 0.6 }
 const STAR_LOCAL: Vec3 = [0.1, 45.75, 0.1]
 const SPARKLE = { share: 0.014, perMm: 8, gain: 1.4 }
 const EDGE_MM = 0.42
-const EDGE_PER_MM = 24
+const EDGE_PER_MM = 10
 const PORE_MM = 0.55
 const PORE_SHADE = 0.72
 const LUMP = { coarse: 0.42, fine: 1.2, height: 6, pit: 'vec3(0.8, 0.86, 0.94)', from: 0.25, to: 0.6 }
@@ -117,11 +121,12 @@ function needleHook(shader: Shader): void {
       vec4 treeSprig = texture2D(uSprigs, vMapUv);
       bool treeCard = vCard.x > 0.5;
       vec4 treeC = treeCard ? treeSprig : treeBody;
-      float treeH = dot(treeC.rgb, vec3(0.3, 0.6, 0.1));
+      float treeClump = 0.65 * treeNoise(vTreeP * ${CLUMP.coarse.toFixed(2)} + 11.0) + 0.35 * treeNoise(vTreeP * ${CLUMP.fine.toFixed(2)} + 23.0);
+      float treeH = dot(treeC.rgb, vec3(0.3, 0.6, 0.1)) + ${CLUMP.height.toFixed(2)} * treeClump;
       ${TREE_SLOPES}
-      if (treeCard && treeC.a < 0.04 + 0.96 * stageHash(vec3(gl_FragCoord.xy, uSeed + floor(vCard.y + 0.5) / 64.0))) discard;
+      if (treeCard && treeC.a < 0.34 + 0.3 * stageHash(vec3(gl_FragCoord.xy, uSeed + floor(vCard.y + 0.5) / 64.0))) discard;
       vec3 treeOwn = pow(treeC.rgb, vec3(1.9)) * 1.9;
-      diffuseColor.rgb *= mix(vec3(dot(treeOwn, vec3(0.3, 0.6, 0.1))), treeOwn, 0.38);`,
+      diffuseColor.rgb *= mix(vec3(dot(treeOwn, vec3(0.3, 0.6, 0.1))), treeOwn, 0.38) * mix(${CLUMP.dark.toFixed(2)}, ${CLUMP.bright.toFixed(2)}, smoothstep(${CLUMP.from.toFixed(2)}, ${CLUMP.to.toFixed(2)}, treeClump));`,
     )
     .replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\nif (vCard.x > 0.5) normal *= faceDirection;')
     .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>\n${TREE_BUMP}`)
@@ -272,11 +277,15 @@ export function lights(): THREE.Object3D {
   const mesh = new THREE.Mesh(placeGeometry(geometry(MODEL, 'lights')), m)
   mesh.castShadow = false
   mesh.receiveShadow = false
-  const halos = new THREE.Mesh(haloGeometry(bulbs(GLOW.wood).slice(0, -1).map((b) => b.at), HALO.radiusMm), haloMaterial(part, HALO_EDGE, HALO_CORE, HALO, clock))
+  const at = bulbs(GLOW.wood).slice(0, -1).map((b) => b.at)
+  const part01 = (v: number): number => v - Math.floor(v)
+  const pools = new THREE.Mesh(haloGeometry(at, POOL.radiusMm, at.map((_, i) => ({ size: 0.8 + 0.4 * part01(i * 0.7548 + 0.4), rest: 1, hot: 0, bloom: 1 }))), haloMaterial(part, POOL_EDGE, POOL_CORE, POOL, clock))
+  pools.renderOrder = 3
+  const halos = new THREE.Mesh(haloGeometry(at, HALO.radiusMm, at.map((_, i) => ({ size: 0.7 + 0.6 * part01(i * 0.618 + 0.17), rest: 1, hot: 0.5 + 0.5 * part01(i * 0.7548 + 0.4), bloom: 1 }))), haloMaterial(part, HALO_EDGE, HALO_CORE, HALO, clock))
   halos.renderOrder = 3
   const aura = new THREE.Mesh(haloGeometry([star], AURA.radiusMm), auraMaterial(part))
   aura.renderOrder = 3
-  return new THREE.Group().add(mesh, halos, aura)
+  return new THREE.Group().add(mesh, pools, halos, aura)
 }
 
 export function arrival(): THREE.Object3D {

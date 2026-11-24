@@ -13,11 +13,11 @@ const SNOW_TILE_MM = 7
 const STAR_AT = [0.1, 45.75, 0.1]
 const STAR_R = 2.6
 const STAR = { deep: 0.62, edge: 0.17, inset: 0.9, valley: 0.72, crest: 1.12, side: 0.62, glow: [0.1, 0.055, 0.03], stem: [0.12, 0.085], collar: 0.17 }
-const CORE_R = 0.155
+const CORE_R = 0.13
 const WIRE_R = 0.075
-const SNOW_KEY = [-0.42, 0.819, 0.39]
-const BULBS = { stem: [2.3, 3.4], limb: [2.2, 3.3], lead: 0.16, pad: 0.36, clear: 0.3, rim: 0.42 }
-const ARRIVAL = { root: 0.16, limb: 0.08, shade: [0.42, 0.14] }
+const SNOW_KEY = [-0.35, 0.72, 0.6]
+const BULBS = { stem: [2.3, 3.4], limb: [2.2, 3.3], lead: 0.16, pad: 0.36, clear: 0.3, rim: 0.25, face: 0.5 }
+const ARRIVAL = { root: 0, limb: 0.045, shade: [0.42, 0.14] }
 const SPRIGS = { band: 0.25, share: 0.5, size: [1.3, 2.2], rise: 0.8 }
 
 const [T, R] = await loadSource(['/src/miniature/trunk.ts', '/src/core/rng.ts'])
@@ -145,7 +145,7 @@ function needles() {
     const open = 0.6 * openness(needleField, x, h, z, n, 0.7) + 0.4 * openness(needleField, x, h, z, n, 1.8)
     const roof = smooth(0.1, 1.4, snowField(x, h + 0.9, z))
     const sky = 0.5 + 0.5 * n[1]
-    const shade = (0.4 + 0.6 * open) * (0.35 + 0.65 * Math.pow(sky, 1.5)) * (0.65 + 0.35 * roof)
+    const shade = (0.3 + 0.7 * Math.pow(open, 1.4)) * (0.35 + 0.65 * Math.pow(sky, 1.5)) * (0.65 + 0.35 * roof)
     const hue = 0.5 + 0.5 * Math.sin(0.7 * x + 1.3 * h + 0.9 * z) * Math.sin(1.1 * x - 0.6 * z + 2)
     return [shade * (0.72 + 0.2 * hue), shade * (1 + 0.04 * hue), shade * (1 - 0.14 * hue)]
   }
@@ -227,11 +227,11 @@ function snow() {
     const open = 0.45 * openness(both, x, h, z, n, 0.6) + 0.55 * openness(both, x, h, z, n, 1.8)
     const lit = 0.5 + 0.5 * (n[0] * SNOW_KEY[0] + n[1] * SNOW_KEY[1] + n[2] * SNOW_KEY[2])
     const deep = needleField(x, h, z)
-    const shade = (0.4 + 0.6 * Math.pow(open, 1.3)) * (0.42 + 0.72 * Math.pow(lit, 4)) * (0.6 + 0.4 * smooth(0.1, 1.7, deep))
+    const shade = (0.4 + 0.6 * Math.pow(open, 1.3)) * (0.3 + 0.95 * Math.pow(lit, 3)) * (0.6 + 0.4 * smooth(0.1, 1.7, deep))
     const cool = 1 - lit * lit
     uv.push(x / SNOW_TILE_MM, h / SNOW_TILE_MM)
     thin.push(deep, 0)
-    col.push(shade * (1 - 0.42 * cool), shade * (1 - 0.22 * cool), shade)
+    col.push(shade * (1 - 0.5 * cool), shade * (1 - 0.26 * cool), shade)
   }
   const g = new THREE.BufferGeometry()
   g.setAttribute('position', new THREE.Float32BufferAttribute(s.pos, 3))
@@ -332,14 +332,19 @@ function strings() {
     const ring = []
     for (let k = 0; k < n; k++) {
       const even = (k / n) * TAU + rng.range(-0.25, 0.25)
-      const th = even + 0.55 * Math.cos(even)
-      const rim = rng.next() < BULBS.rim
+      let th = even + 0.55 * Math.cos(even)
+      const pick = rng.next()
+      const rim = pick < BULBS.rim
+      const face = !rim && pick < BULBS.rim + BULBS.face
       const rho = rim ? 1.25 : rng.range(0.35, 0.8)
       const start = centre.clone().addScaledVector(side, Math.cos(th) * rho * pad.size[0]).addScaledVector(depth, Math.sin(th) * rho * pad.size[2])
       const dir = new THREE.Vector3()
       if (rim) {
-        start.addScaledVector(up, rng.range(-1.15, 0.2) * pad.size[1])
+        start.addScaledVector(up, rng.range(-0.9, 0.45) * pad.size[1])
         dir.copy(centre).addScaledVector(up, -0.45 * pad.size[1]).sub(start).normalize()
+      } else if (face) {
+        start.copy(centre).addScaledVector(side, rng.range(-0.85, 0.85) * pad.size[0]).addScaledVector(up, rng.range(-0.75, 0.35) * pad.size[1]).addScaledVector(depth, pad.size[2] + 2.5)
+        dir.copy(depth).negate()
       } else {
         start.addScaledVector(up, -pad.size[1] - 2.5)
         dir.copy(up)
@@ -355,6 +360,7 @@ function strings() {
       if (!hit || snowField(hit.x, hit.y, hit.z) < 0.3 || wood(hit.x, hit.y, hit.z) < 0.2) continue
       const out = gradient(needleField, hit.x, hit.y, hit.z)
       drop(hit, out, i)
+      if (face) th = Math.atan2(hit.clone().sub(centre).dot(depth), hit.clone().sub(centre).dot(side))
       ring.push({ th, p: hit })
     }
     ring.sort((a, b) => a.th - b.th)
