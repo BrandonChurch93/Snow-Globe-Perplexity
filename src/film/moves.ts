@@ -34,7 +34,7 @@ export const MOVES = {
   sweepYawDeg: 1.6,
   settleBars: 1,
   closeHoldBars: 1,
-  holdAimDropMm: 4.5,
+  holdAimDropMm: 3.4,
   holdAimBars: 1,
   breathYawDeg: 0.18,
   breathPitchDeg: 0.07,

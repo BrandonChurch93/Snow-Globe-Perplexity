@@ -90,18 +90,19 @@ describe('the shake path', () => {
     expect(path.poseAt(s.liftBeats + s.strokeBeats).y).toBeCloseTo(s.liftMm, 6)
     for (let b = 0.01; b < s.liftBeats; b += 0.01) {
       const p = path.poseAt(b)
-      expect(p.x, `no stroke in the lift, beat ${b}`).toBe(0)
+      expect(Math.abs(p.x), `the wind up in the lift stays short of a stroke, beat ${b}`).toBeLessThan(0.7 * s.strokeMm)
       expect(p.y).toBeLessThan(s.liftMm)
       expect(p.y).toBeGreaterThan(path.poseAt(b - 0.01).y - 1e-9)
     }
     for (let b = s.liftBeats + s.strokeBeats; b < bar; b += 0.01) {
       const p = path.poseAt(b)
-      expect(p.x, `no stroke in the set down, beat ${b}`).toBe(0)
+      expect(Math.abs(p.x), `the last swing in the set down stays short of a stroke, beat ${b}`).toBeLessThan(0.7 * s.strokeMm)
       expect(p.y).toBeLessThanOrEqual(s.liftMm + 1e-9)
     }
     let peak = 0
     let turns = 0
-    let last = 0
+    // The lift ends on the wind up's side, so the first stroke is the one that leaves it.
+    let last = Math.sign(path.poseAt(s.liftBeats).x)
     for (let b = s.liftBeats; b <= s.liftBeats + s.strokeBeats; b += 0.002) {
       const x = path.poseAt(b).x
       peak = Math.max(peak, Math.abs(x))

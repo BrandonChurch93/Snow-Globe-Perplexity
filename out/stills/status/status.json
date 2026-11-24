@@ -1,42 +1,44 @@
 {
-  "number": 41,
-  "time": "2026-11-24 16:01 UTC",
+  "number": 44,
+  "time": "2026-11-24 17:01 UTC",
   "phase": "3",
   "unit": "",
   "lines": [
-    "Status 41 · 2026-11-24 16:01 UTC · Phase 3",
-    "Round 4 is frozen on the finishers' work; its pack and motion sheets are being drawn by three render agents",
-    "The determinism fault is cured by one line on the glass ring and is being confirmed",
-    "Six of ten final reports are in; the next set of fix agents starts at 16:20 UTC",
-    "phase 3: 7.57 h used of its 11.00 h box",
-    "allowance (before the review): 14.18 h used of 36.00 h allowed",
+    "Status 44 · 2026-11-24 17:01 UTC · Phase 3",
+    "Round 4 judged the 16:06 build. The gate is all 15 green on a clean clone and the measures are 24 of 24 green: the four red checks and the red sharpness measure of Round 3 are cured",
+    "Critics so far: craft 4 (its three parts gave 4 and 6 and 7) and motion part 1 gave 6 where Round 3 had 3. The jury fails again with 4 of 15 against 7 of 10 on the approved images. Likeness and motion part 2 are still out",
+    "Worst findings: at the landing the storm reads as one milky spin blur that hides the cottage and the pond. The cover arrives as an opacity switch at frame 72. The globe still hangs before it sets down. The crown snow and the bark and the chimney smoke give the render away",
+    "Every finding went to the builder who owns it within minutes in the critic's own words. Ten builders push by 17:55 for the Round 5 freeze at 18:00",
+    "Mine: the lens sample pattern is replaced because a far ridge drew as five stacked copies of itself. A macro still is drawing now to check it",
+    "phase 3: 8.56 h used of its 11.00 h box",
+    "allowance (before the review): 15.18 h used of 36.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-41-1.jpg",
-      "caption": "At rest at the Round 4 freeze: the approved image (left) and the build at 16:00 UTC (right) at draft quality",
-      "w": 1200,
-      "h": 536
+      "file": "out/stills/status/status-44-1.jpg",
+      "caption": "Round 4 build at final tier: the hero still at rest as the jury saw it",
+      "w": 1084,
+      "h": 1050
     },
     {
-      "file": "out/stills/status/status-41-2.jpg",
+      "file": "out/stills/status/status-44-2.jpg",
+      "caption": "Round 4 build: strokes of the test shake at frames 84 to 106. The bloom of the swap window turns the base one flat orange for five frames (with the lights builder now)",
+      "w": 1149,
+      "h": 986
+    },
+    {
+      "file": "out/stills/status/status-44-3.jpg",
       "caption": "Still: winter rest hero, hd, draft",
       "w": 1200,
       "h": 675
     },
     {
-      "file": "out/stills/status/status-41-3.jpg",
-      "caption": "Still: winter landed hero, hd, draft",
+      "file": "out/stills/status/status-44-4.jpg",
+      "caption": "Round 1, what the second critic judged: the stand-in globe from the six cameras, each beside its target. Top row hero, macro, interior; bottom row base, surface, low. Four are being framed again: surface shows the wall of the base, interior stands too far back, low nearly repeats hero, macro cuts the cottage (by root)",
       "w": 1200,
-      "h": 675
-    },
-    {
-      "file": "out/stills/status/status-41-4.jpg",
-      "caption": "Still: winter rest surface, hd, draft",
-      "w": 1200,
-      "h": 675
+      "h": 476
     }
   ]
 }
