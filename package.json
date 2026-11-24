@@ -40,7 +40,10 @@
     "stress": "node tools/stress.mjs",
     "pack": "node tools/pack.mjs",
     "hostcheck": "node tools/hostcheck.mjs",
-    "render:local": "node tools/render-local.mjs"
+    "render:local": "node tools/render-local.mjs",
+    "make": "node tools/make.mjs",
+    "texpack": "node tools/texpack.mjs",
+    "fit": "node tools/fit.mjs"
   },
   "dependencies": {
     "gsap": "3.15.1",

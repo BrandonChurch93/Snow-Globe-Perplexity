@@ -16,6 +16,7 @@ const innerLights: InnerLight[] = [
 export const kit: SeasonKit = {
   season,
   main,
+  standIns: [`glass-dressing-${season}`, `veil-${season}`],
   base: () => blockBase(season, main, 0.7),
   miniature: () => blockMiniature(season, palette),
   arrival: () => blockArrival(season, arrivalTint),

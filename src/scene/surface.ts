@@ -3,6 +3,7 @@ import { config } from '../config'
 import { stageShader } from '../core/materials'
 import type { SeasonKit } from '../seasons/kit'
 import { roomUniforms } from './backdrop'
+import type { StageFrame } from './frame'
 
 const footRadius = config.globe.baseDiameterMm / 2
 export const SLAB_MM = 6000
@@ -119,4 +120,19 @@ export function makeDressing(kit: SeasonKit): THREE.Mesh {
   ring.userData.standIn = `surface-dressing-${kit.season}`
   ring.renderOrder = 2
   return ring
+}
+
+export function updateSurface(f: StageFrame): void {
+  const su = surfaceUniforms
+  const g = f.globe
+  const t = f.mix.base
+  su.uKeyDir.value.copy(f.keyDir)
+  su.uKeyCol.value.copy(f.keyCol)
+  su.uSky.value.copy(f.ambient)
+  su.uFoot.value.set(g.x, g.z, footRadius, g.y)
+  su.uPool.value.copy(f.pool)
+  su.uReflect.value.set(f.planar ? 1 : 0, f.planar ? 0 : 1, 0, 0)
+  const a = f.from.main
+  const b = f.to.main
+  su.uBaked.value.setRGB(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t)
 }

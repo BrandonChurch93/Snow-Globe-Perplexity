@@ -1,6 +1,7 @@
 import type * as THREE from 'three'
 import type { Rgb } from '../core/materials'
 import type { SdfGrid } from '../core/stage'
+import type { StageFrame } from '../scene/frame'
 
 export type Vec3 = readonly [number, number, number]
 
@@ -27,6 +28,7 @@ export interface KitMoment {
   arrived: number
   beat: number | null
   seed: number
+  frame: StageFrame
 }
 
 export interface Dressing {
@@ -45,6 +47,8 @@ export interface SeasonKit {
   lights(): THREE.Object3D
   collider?(): SdfGrid
   update?(moment: KitMoment): void
+  dressing?(): { glass?: THREE.Object3D; surface?: THREE.Object3D }
+  readonly standIns?: readonly string[]
   readonly glassDressing: Dressing
   readonly surfaceDressing: Dressing & { reachMm: number }
   readonly rig: { key: RoomLight; rim: RoomLight; sky: Rgb; ground: Rgb; fill: number }

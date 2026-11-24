@@ -4,6 +4,7 @@ import { stageShader } from '../core/materials'
 import { stream } from '../core/rng'
 import type { SeasonKit } from '../seasons/kit'
 import { ROOM_RADIUS_MM } from './cameras'
+import type { StageFrame } from './frame'
 import { centreHeightMm } from './layout'
 
 export const ROOM_LIGHTS = 12
@@ -155,6 +156,12 @@ void main() {
       a[i * 3 + 2] = c[2] * e.power
     })
     attr.needsUpdate = true
+  }
+
+  update(f: StageFrame): void {
+    const blur = f.blurMm
+    this.set(f.from, f.to, f.mix.base, blur, f.pose.focusMm, f.sample ? f.sample.lu * blur : 0, f.sample ? f.sample.lv * blur : 0)
+    this.group.visible = f.view !== 'flow' && f.view !== 'lightgrid'
   }
 
   set(from: SeasonKit, to: SeasonKit, mix: number, apertureMm: number, focusMm: number, shiftX: number, shiftY: number): void {

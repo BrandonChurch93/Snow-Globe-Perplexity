@@ -4,8 +4,10 @@ import { stageShader, type Rgb } from '../../core/materials'
 import { flagStandIn } from '../../core/standins'
 import type { ParticleSource } from '../../core/stage'
 import { partBytes, viewCode } from '../../diagnostics/views'
+import type { StageFrame } from '../../scene/frame'
 
 export const MAX_KINDS = 16
+const SHUTTER = (config.film.shutterDegrees / 360) * (config.sim.stepHz / config.film.fps)
 export const SIZE_TO_RADIUS = 0.5
 export const MIN_POINT_PX = 1.5
 
@@ -152,6 +154,23 @@ export class ParticleDraw {
       this.phases.set(count, p)
     }
     return p
+  }
+
+  frame(source: ParticleSource, f: StageFrame): void {
+    this.points.visible = f.view !== 'flow' && f.view !== 'lightgrid'
+    this.update(source, {
+      mix: f.moment.mix,
+      focalPx: f.focalPx,
+      streak: f.live ? SHUTTER : 0,
+      width: f.width,
+      height: f.height,
+      fraction: f.quality.particleFraction,
+      clock: f.clock,
+      colors: { from: f.from.particles, to: f.to.particles, all: f.kinds, mix: f.mix.particles },
+      light: [f.ambient.r * 0.8 + f.keyCol.r * 0.3, f.ambient.g * 0.8 + f.keyCol.g * 0.3, f.ambient.b * 0.8 + f.keyCol.b * 0.3],
+      change: f.mix.particles,
+      diagnostic: f.view === 'cover',
+    })
   }
 
   update(source: ParticleSource, opts: { mix: number; focalPx: number; streak: number; width: number; height: number; fraction: number; clock: number; colors: PointColors; light: Rgb; change: number; diagnostic: boolean }): void {

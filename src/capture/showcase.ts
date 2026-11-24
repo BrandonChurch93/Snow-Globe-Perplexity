@@ -7,7 +7,7 @@ import type { Moment, Stage } from '../core/stage'
 import { barSeconds, beatSeconds, filmTimeline, globePoseAt, prerollSeconds, seasonAt, stateSeconds, stillTimeline, type Timeline } from '../film/timeline'
 import type { SimDriver } from '../particles/driver'
 import { Post } from '../post/post'
-import { poseById, type Pose } from '../scene/cameras'
+import { poseById, poseWith, type Pose } from '../scene/cameras'
 import { framingOf, type Framing } from '../scene/framing'
 import { judgedList, loopPlan, type JudgedEntry } from '../film/judged'
 import { partChange, SEASONAL_PARTS } from '../shake/change'
@@ -34,6 +34,7 @@ export interface StillSpec {
   change?: { shot: string; at: 'swap' | 'landing' }
   interface?: boolean
   live?: string
+  rig?: { fovDeg: number; distanceMm: number; yawDeg: number; pitchDeg: number; aimHeightMm: number }
 }
 
 export interface Showcase {
@@ -348,7 +349,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
         await overlay.show(spec.season, spec.state)
         under = roomUnder(format.height, overlay.controlsPx(), format.width)
       }
-      const pose = onScreen ? livePose(format.width / format.height, 0, 0, under) : poseById(spec.camera)
+      const pose = onScreen ? livePose(format.width / format.height, 0, 0, under) : spec.rig ? poseWith(spec.camera, spec.rig) : poseById(spec.camera)
       if (onScreen) drawn = framingOfRig(liveRig(format.width / format.height, 0, 0, under), format.width, format.height)
       if (spec.live) await livePicture(along(stillTl(spec.season)), stateSeconds(spec.state), pose, spec.live)
       else await picture(along(stillTl(spec.season)), stateSeconds(spec.state), 0, () => pose, samples, 0)

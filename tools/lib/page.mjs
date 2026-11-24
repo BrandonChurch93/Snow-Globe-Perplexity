@@ -189,6 +189,7 @@ export function stillSpec(args) {
     interface: args.interface === true || base.interface === true,
     live: args.live && args.live !== true ? args.live : '',
   }
+  if (args.rig && args.rig !== true) spec.rig = typeof args.rig === 'string' ? JSON.parse(args.rig) : args.rig
   if (!cfg.seasons.includes(spec.season)) throw new Error(`no such season: ${spec.season}`)
   if (!(spec.camera in cfg.cameras)) throw new Error(`no such camera: ${spec.camera}`)
   if (!(spec.tier in cfg.tiers)) throw new Error(`no such tier: ${spec.tier}`)
@@ -199,7 +200,7 @@ export function stillSpec(args) {
 
 export function stillName(spec, suffix = '') {
   const head = spec.id || `${spec.season}-${spec.state}-${spec.camera}`
-  return [head, spec.format, spec.tier, spec.assets === 'full' ? '' : spec.assets, spec.diag, spec.live ? `live-${spec.live}` : '', spec.interface ? 'ui' : '', suffix].filter(Boolean).join('-') + '.png'
+  return [head, spec.format, spec.tier, spec.assets === 'full' ? '' : spec.assets, spec.diag, spec.live ? `live-${spec.live}` : '', spec.interface ? 'ui' : '', spec.rig ? 'rig' : '', suffix].filter(Boolean).join('-') + '.png'
 }
 
 export async function renderStill(session, spec, { file, noext = [], force = false, page: given = null } = {}) {
@@ -216,6 +217,7 @@ export async function renderStill(session, spec, { file, noext = [], force = fal
     const call = { season: s.season, state: s.state, camera: s.camera, tier: s.tier }
     if (s.interface) call.interface = true
     if (s.live) call.live = s.live
+    if (s.rig) call.rig = s.rig
     await sc.renderStill(call)
     const after = sc.dev.timings()
     return { info: sc.info(), caps: sc.dev.caps(), framing: sc.dev.stillFraming(), timings: { simMs: after.simMs - before.simMs, drawMs: after.drawMs - before.drawMs, samples: after.samples - before.samples, steps: after.steps - before.steps } }

@@ -1,8 +1,12 @@
 import * as THREE from 'three'
 import { stageShader } from '../core/materials'
-import { viewCode } from '../diagnostics/views'
+import { flagStandIn } from '../core/standins'
+import { partBytes, viewCode } from '../diagnostics/views'
+import type { StageFrame } from '../scene/frame'
 import { ROOM_GLSL, roomUniforms } from '../scene/backdrop'
 import { innerRadiusMm, lensRadiusMm } from './lens'
+
+flagStandIn('lens')
 
 export const shellUniforms = {
   uKeyDir: { value: new THREE.Vector3(0, 1, 0) },
@@ -127,6 +131,29 @@ export class Shell {
     this.stamp.scale.setScalar(0.998)
     this.stamp.userData.standIn = 'glass'
     this.stamp.renderOrder = 6
+  }
+
+  update(f: StageFrame): void {
+    const sh = shellUniforms
+    const a = f.from
+    const b = f.to
+    const t = f.mix.base
+    sh.uKeyDir.value.copy(f.keyDir)
+    sh.uKeyCol.value.copy(f.keyCol)
+    sh.uRimDir.value.copy(f.rimDir)
+    sh.uRimCol.value.copy(f.rimCol)
+    const da = a.glassDressing
+    const db = b.glassDressing
+    sh.uDress.value.set(da.tint[0] + (db.tint[0] - da.tint[0]) * t, da.tint[1] + (db.tint[1] - da.tint[1]) * t, da.tint[2] + (db.tint[2] - da.tint[2]) * t, da.amount + (db.amount - da.amount) * t)
+    sh.uBloom.value.copy(f.bloomTint).multiplyScalar(0.12)
+    const shown = t < 0.5 ? a.season : b.season
+    ;[partBytes('glass'), partBytes(`glass-dressing-${shown}`), partBytes(`veil-${f.mix.veil < 0.5 ? a.season : b.season}`)].forEach((c, i) => sh.uOverlay.value[i]!.set(c[0] / 255, c[1] / 255, c[2] / 255))
+    this.placeBubble(f.globeUp, new THREE.Vector3(f.liquid[3] ?? 0, f.liquid[4] ?? 0, f.liquid[5] ?? 0))
+    const on = f.view !== 'flow' && f.view !== 'lightgrid'
+    this.through.visible = on
+    this.shell.visible = on
+    this.bubble.visible = on
+    this.stamp.visible = on
   }
 
   placeBubble(up: THREE.Vector3, slosh: THREE.Vector3): void {

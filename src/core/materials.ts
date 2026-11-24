@@ -2,6 +2,8 @@ import * as THREE from 'three'
 import { DEPTH_RANGE_MM, partBytes, viewCode } from '../diagnostics/views'
 import { LENS_GLSL, innerRadiusMm, lensIor, lensRadiusMm } from '../globe/lens'
 import { changeRamp } from '../shake/change'
+import { LIGHT_FRAG, LIGHT_FRAG_PARS, lightUniforms } from './chunks/light'
+import { VEIL_FRAG, VEIL_FRAG_PARS, veilUniforms } from './chunks/veil'
 import { flagStandIn } from './standins'
 
 export type Rgb = readonly [number, number, number]
@@ -10,11 +12,8 @@ export const stageUniforms = {
   uLensCentre: { value: new THREE.Vector3() },
   uLens: { value: new THREE.Vector4(lensRadiusMm, lensIor, 1, innerRadiusMm) },
   uGlobeInv: { value: new THREE.Matrix4() },
-  uGridA: { value: null as THREE.Texture | null },
-  uGridB: { value: null as THREE.Texture | null },
-  uGrid: { value: new THREE.Vector4(0, 1, 1, innerRadiusMm) },
-  uVeil: { value: new THREE.Vector4(1, 1, 1, 0) },
-  uVeilLight: { value: new THREE.Vector3() },
+  ...lightUniforms,
+  ...veilUniforms,
   uDiag: { value: 0 },
   uSeed: { value: 0 },
   uChange: { value: 0 },
@@ -90,11 +89,6 @@ vStagePlaced = stagePlaced.xyz;
 `
 
 export const STAGE_FRAG_PARS = `
-uniform highp sampler3D uGridA;
-uniform highp sampler3D uGridB;
-uniform vec4 uGrid;
-uniform vec4 uVeil;
-uniform vec3 uVeilLight;
 uniform int uDiag;
 uniform float uSeed;
 uniform float uChange;
@@ -124,10 +118,7 @@ float stageHash(vec3 p) {
   v.z += v.x * v.y;
   return float(v.x >> 8u) / 16777216.0;
 }
-vec3 stageGrid(vec3 local) {
-  vec3 at = clamp(local / (2.0 * uGrid.w) + 0.5, 0.0, 1.0);
-  return mix(texture(uGridA, at).rgb * uGrid.y, texture(uGridB, at).rgb * uGrid.z, uGrid.x);
-}
+${LIGHT_FRAG_PARS}
 float stageChange() {
   if (uState.w < 0.5) return 0.0;
   float side = clamp(0.5 + vStageLocal.z / (2.0 * uGrid.w), 0.0, 1.0);
@@ -141,12 +132,7 @@ bool stageGone(float c) {
   if (uFlags.w < 1.0 && stageHash(vec3(gl_FragCoord.xy + 29.0, uSeed + 0.61)) >= uFlags.w) return true;
   return false;
 }
-float stageVeil(float path) {
-  return 1.0 - exp(-uVeil.a * path);
-}
-vec3 stageFogged(vec3 col, vec3 lit, float fog) {
-  return mix(col, uVeil.rgb * (uVeilLight + 0.35 * lit), fog);
-}
+${VEIL_FRAG_PARS}
 float stageBlur() {
   return clamp(uCoc.x * abs(1.0 / max(vStageAux.y, 1.0) - uCoc.y) / 8.0, 0.0, 1.0);
 }
@@ -175,20 +161,10 @@ if (stageOutside()) discard;
 #endif
 `
 
-const FRAG_LIGHT = `
-vec3 stageLit = vec3(0.0);
-#ifdef STAGE_INSIDE
-stageLit = stageGrid(vStageLocal);
-reflectedLight.indirectDiffuse += stageLit * material.diffuseContribution;
-#endif
-`
+const FRAG_LIGHT = LIGHT_FRAG
 
 const FRAG_TAIL = `
-float stageFog = 0.0;
-#ifdef STAGE_INSIDE
-stageFog = stageVeil(vStageAux.x);
-gl_FragColor.rgb = stageFogged(gl_FragColor.rgb, stageLit, stageFog);
-#endif
+${VEIL_FRAG}
 if (uDiag != 0) {
   float stageTexels = 0.0;
   #ifdef USE_MAP
@@ -209,6 +185,8 @@ export interface LitSpec extends PartSpec {
   side?: THREE.Side
   physical?: boolean
   extra?: THREE.MeshPhysicalMaterialParameters
+  hook?: (shader: THREE.WebGLProgramParametersWithUniforms) => void
+  key?: string
 }
 
 export function stageMaterial(spec: LitSpec): THREE.MeshStandardMaterial {
@@ -236,8 +214,10 @@ export function stageMaterial(spec: LitSpec): THREE.MeshStandardMaterial {
       .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${FRAG_HEAD}`)
       .replace('#include <lights_fragment_end>', `#include <lights_fragment_end>\n${FRAG_LIGHT}`)
       .replace('#include <dithering_fragment>', `#include <dithering_fragment>\n${FRAG_TAIL}`)
+    spec.hook?.(shader)
   }
-  m.customProgramCacheKey = () => `stage:${spec.inside ? 'in' : 'out'}`
+  const key = spec.key ?? (spec.hook ? spec.part : '')
+  m.customProgramCacheKey = () => `stage:${spec.inside ? 'in' : 'out'}:${key}`
   return m
 }
 

@@ -36,6 +36,7 @@ export function poseOf(spec: CameraSpec, lens = { apertureMm: 8, focusShiftMm: 0
 }
 
 export const poseById = (id: string): Pose => poseOf(cameraById(id), LENS[id])
+export const poseWith = (id: string, rig: CameraSpec): Pose => poseOf(rig, LENS[id])
 
 export function mixPose(a: Pose, b: Pose, t: number): Pose {
   return {
