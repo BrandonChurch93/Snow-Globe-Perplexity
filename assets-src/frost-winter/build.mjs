@@ -9,7 +9,7 @@ import { CENTRE, REF_GLASS, rayOf } from '../../tools/lib/refcam.mjs'
 
 // Grows the winter frost: fern arms on the glass (on the sphere) and on the slab (on the plane).
 // Every stroke carries the time it appears, so the maps hold a threshold the arrival can play back.
-// Outputs: assets-full/winter/frost-glass.lin.w1536.png, frost-slab.lin.w1536.png, frost-grain.lin.tile.png, frost-shapes.glb.
+// Outputs: assets-full/winter/frost-glass.lin.w2048.png, frost-slab.lin.w2048.png, frost-grain.lin.tile.png, frost-shapes.glb.
 // Map channels: R = the height, G = when it appears (0 first, 1 last), B = how much it sparkles.
 
 const cfg = loadConfig()
@@ -357,7 +357,8 @@ function profileAt(deg) {
 }
 
 function fibre(rng, k) {
-  return { step: 0.7, w0: rng.range(0.085, 0.125), w1: 0.035, h0: k * rng.range(0.55, 0.9), h1: k * L.glass.barbTip, speed: 0.6, curl: rng.range(0.003, 0.03), wobble: 0.008, spark: rng.range(0.45, 1), kappa: 3, reach: 0.1, taper: 0.62, power: 1.5 }
+  const W = L.glass.barbWide
+  return { step: 0.7, w0: rng.range(W[0], W[1]), w1: W[2], h0: k * rng.range(0.55, 0.9), h1: k * L.glass.barbTip, speed: 0.6, curl: rng.range(0.003, 0.03), wobble: 0.008, spark: rng.range(0.45, 1), kappa: 3, reach: 0.1, taper: 0.62, power: L.glass.barbPower }
 }
 // A feather: a spine, a low soft body in the feather's outline, and fine barbs set close enough to read as fibres.
 function plumeSpec(length, barbMm, rng, t0, k = 1, bold = 1, body = bold) {
@@ -368,7 +369,7 @@ function plumeSpec(length, barbMm, rng, t0, k = 1, bold = 1, body = bold) {
   return {
     len: length,
     step: 0.35,
-    w0: rng.range(0.13, 0.18) * bold,
+    w0: rng.range(G.spineWide[0], G.spineWide[1]) * bold,
     w1: 0.05,
     h0: k,
     h1: 0.6 * k,
@@ -491,6 +492,7 @@ function buildGlass() {
       o.h1 *= pl.spine
       o.w0 *= Math.sqrt(pl.spine)
     }
+    if (pl.gap) o.kids.gap *= pl.gap
     o.to = path.slice(1)
     o.steer = 0.5
     grow(ctx, root, toward(root, path[1]), o)
@@ -523,7 +525,7 @@ function buildGlass() {
       const tip = pixelOnGlass(from[0] + dir[0] * l, from[1] + dir[1] * l)
       const t0 = Math.max(0, Rs * Math.asin(clamp(at[2] / Rs, -1, 1))) * 0.9
       const along = arc(at, tip)
-      const o = plumeSpec(along * 1.1, clamp(along * tf.barb, 0.5, 3), rng, t0 + rng.range(0, 2.5), (tf.k ?? T.k) * rng.range(0.7, 1), T.bold, tf.body ?? T.body)
+      const o = plumeSpec(along * 1.1, clamp(along * tf.barb, 0.5, 3), rng, t0 + rng.range(0, 2.5), (tf.k ?? T.k) * rng.range(0.7, 1), tf.bold ?? T.bold, tf.body ?? T.body)
       o.to = [tip]
       o.wobble = 0.03
       grow(ctx, at, toward(at, tip), o)
@@ -1126,6 +1128,7 @@ async function look(buf, n, file, pick) {
 
 fs.mkdirSync(OUT, { recursive: true })
 fs.mkdirSync(LOOK, { recursive: true })
+for (const old of ['frost-glass.lin.w1536.png', 'frost-slab.lin.w1536.png']) fs.rmSync(path.join(OUT, old), { force: true })
 const t0 = process.hrtime.bigint()
 const only = args.only && args.only !== true ? String(args.only) : ''
 const report = []
@@ -1133,7 +1136,7 @@ const report = []
 if (!only || only === 'glass') {
   const glass = buildGlass()
   const bytes = glass.bytes()
-  await png(bytes, glass.n, path.join(OUT, 'frost-glass.lin.w1536.png'))
+  await png(bytes, glass.n, path.join(OUT, 'frost-glass.lin.w2048.png'))
   await look(bytes, glass.n, path.join(LOOK, 'glass-height.jpg'), (r) => r)
   await look(bytes, glass.n, path.join(LOOK, 'glass-when.jpg'), (r, g) => (r > 20 ? g : 0))
   report.push(`glass map ${glass.n} px, last stroke at ${glass.tMax.toFixed(1)}, threshold top ${glass.top.toFixed(1)}`)
@@ -1142,7 +1145,7 @@ let shapes = null
 if (!only || only === 'slab') {
   const slab = buildSlab()
   const bytes = slab.field.bytes()
-  await png(bytes, slab.field.n, path.join(OUT, 'frost-slab.lin.w1536.png'))
+  await png(bytes, slab.field.n, path.join(OUT, 'frost-slab.lin.w2048.png'))
   await look(bytes, slab.field.n, path.join(LOOK, 'slab-height.jpg'), (r) => r)
   await look(bytes, slab.field.n, path.join(LOOK, 'slab-when.jpg'), (r, g) => (r > 20 ? g : 0))
   shapes = slabShapes(slab.lines, slab.grains, slab.field.top)
