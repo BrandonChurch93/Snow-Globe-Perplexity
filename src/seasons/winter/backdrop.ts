@@ -1,3 +1,8 @@
 import type { SeasonKit } from '../kit'
 
-export const backdrop: SeasonKit['backdrop'] = { colors: [[0.45, 0.62, 1], [0.8, 0.88, 1], [0.55, 0.75, 1], [1, 0.72, 0.4]], room: [0.0045, 0.0058, 0.0105], floor: [0.0092, 0.0113, 0.019] }
+const teal: [number, number, number] = [0.2, 0.62, 1]
+const blue: [number, number, number] = [0.42, 0.68, 1]
+const white: [number, number, number] = [0.78, 0.88, 1]
+const amber: [number, number, number] = [1, 0.7, 0.4]
+
+export const backdrop: SeasonKit['backdrop'] = { colors: [teal, teal, teal, blue, blue, white, white, amber], room: [0.002, 0.0054, 0.0085], floor: [0.0092, 0.0113, 0.019] }

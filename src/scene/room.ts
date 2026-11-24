@@ -5,6 +5,7 @@ export const ROOM_LIGHTS = 12
 export const ROOM_WINDOW = { halfWidth: 0.3, halfHeight: 0.62, edge: 0.075, lean: 0.22 }
 export const ROOM_STRIP = { halfWidth: 0.055, halfHeight: 0.46, edge: 0.04, lean: -0.15 }
 export const ROOM_ROUGH_SPREAD = 1.4
+export const ROOM_SPILL = { spread: 0.373, floor: 0.42, gain: 0.9 }
 
 const WASH = 0.045
 const f = (v: number) => v.toFixed(4)
@@ -39,16 +40,20 @@ vec3 roomSource(vec3 d, vec3 axis, vec3 col, vec2 size, float s, float lean) {
   float slope = 1.0 + lean * clamp(p.y / size.y, -1.5, 1.5) + 0.4 * lean * clamp(p.x / size.x, -1.5, 1.5);
   return col * (shape * slope * smoothstep(0.02, 0.2, facing) / (4.0 * size.x * size.y));
 }
-vec3 stageRoomBlur(vec3 d, float s) {
+vec3 roomWall(vec3 d, float s) {
   float back = 0.5 - 0.5 * d.z / max(length(d.xz), 1e-4);
   float v = ${f(WASH)} + 2.0 * s * s;
   float wash = (0.35 + 0.65 * back * back) * exp(-d.y * d.y / v) * sqrt(${f(WASH)} / v);
-  vec3 wall = uRoomWall * (1.0 + 1.6 * wash);
+  float spill = exp(-(1.0 - dot(d, uRoomRim)) / (${f(ROOM_SPILL.spread)} + s));
+  return uRoomWall * ((1.0 + 1.6 * wash) * (${f(ROOM_SPILL.floor)} + ${f(ROOM_SPILL.gain)} * spill));
+}
+vec3 roomSources(vec3 d, float s) {
+  return roomSource(d, uRoomKey, uRoomKeyCol, vec2(${f(ROOM_WINDOW.halfWidth)}, ${f(ROOM_WINDOW.halfHeight)}), length(vec2(${f(ROOM_WINDOW.edge)}, s)), ${f(ROOM_WINDOW.lean)})
+    + roomSource(d, uRoomRim, uRoomRimCol, vec2(${f(ROOM_STRIP.halfWidth)}, ${f(ROOM_STRIP.halfHeight)}), length(vec2(${f(ROOM_STRIP.edge)}, s)), ${f(ROOM_STRIP.lean)});
+}
+vec3 stageRoomBlur(vec3 d, float s) {
   float above = 0.5 + 0.5 * roomErf((d.y + 0.005) * 0.70710678 / (0.018 + s));
-  vec3 col = mix(uRoomFloor, wall, above);
-  col += roomSource(d, uRoomKey, uRoomKeyCol, vec2(${f(ROOM_WINDOW.halfWidth)}, ${f(ROOM_WINDOW.halfHeight)}), length(vec2(${f(ROOM_WINDOW.edge)}, s)), ${f(ROOM_WINDOW.lean)});
-  col += roomSource(d, uRoomRim, uRoomRimCol, vec2(${f(ROOM_STRIP.halfWidth)}, ${f(ROOM_STRIP.halfHeight)}), length(vec2(${f(ROOM_STRIP.edge)}, s)), ${f(ROOM_STRIP.lean)});
-  return col;
+  return mix(uRoomFloor, roomWall(d, s), above) + roomSources(d, s);
 }
 vec3 stageRoom(vec3 d) {
   return stageRoomBlur(d, 0.0);
