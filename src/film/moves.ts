@@ -1,6 +1,7 @@
 import { cameraById, config } from '../config'
 import { poseById, poseOf, type Pose } from '../scene/cameras'
-import { globeTopMm } from '../scene/framing'
+import { globeTopMm, sphereCentreHeightMm, sphereRadiusMm } from '../scene/framing'
+import { REST_POSE, makeShake, type GlobePose } from '../shake/table'
 import type { CameraKey, Cut } from './cut'
 import { barSeconds, beatSeconds, type ShotSpan } from './timeline'
 
@@ -36,9 +37,11 @@ export const MOVES = {
   breathPitchSeconds: 5.1,
   loopYawDeg: 1.2,
   loopPitchDeg: 0.3,
+  loopCropMargin: 0.03,
 }
 
 const TAU = Math.PI * 2
+const RAD = Math.PI / 180
 const clamp01 = (v: number): number => (v <= 0 ? 0 : v >= 1 ? 1 : v)
 export const smoother = (v: number): number => {
   const u = clamp01(v)
@@ -185,11 +188,99 @@ export function filmRig(cut: Cut, t: number): { rig: Rig; move: Move } {
 
 export const filmPose = (cut: Cut, t: number): Pose => poseOfRig(filmRig(cut, t).rig)
 
+/** How far the glass and the base reach from the middle of the frame, in half heights of the frame: to either side, up and down.
+ * A centred square crop ends at 1 to the side, a centred 4:3 crop at 4/3. */
+export function reachOf(pose: Pose, g: GlobePose): { side: number; top: number; foot: number } {
+  const ex = pose.position.x
+  const ey = pose.position.y
+  const ez = pose.position.z
+  let fx = pose.aim.x - ex
+  let fy = pose.aim.y - ey
+  let fz = pose.aim.z - ez
+  const fl = Math.hypot(fx, fy, fz)
+  fx /= fl
+  fy /= fl
+  fz /= fl
+  const rl = Math.hypot(fz, fx)
+  const rx = -fz / rl
+  const rz = fx / rl
+  const ux = -rz * fy
+  const uy = rz * fx - rx * fz
+  const uz = rx * fy
+  const k = Math.tan((pose.fovDeg * RAD) / 2)
+  const cz = Math.cos(g.tiltZ)
+  const sz = Math.sin(g.tiltZ)
+  const cx = Math.cos(g.tiltX)
+  const sx = Math.sin(g.tiltX)
+  const seen = (x: number, y: number, z: number): [number, number, number] => {
+    const ax = x * cz - y * sz
+    const ay = x * sz + y * cz
+    const wx = ax + g.x - ex
+    const wy = ay * cx - z * sx + g.y - ey
+    const wz = ay * sx + z * cx + g.z - ez
+    return [wx * rx + wz * rz, wx * ux + wy * uy + wz * uz, wx * fx + wy * fy + wz * fz]
+  }
+  const c = seen(0, sphereCentreHeightMm, 0)
+  const round = (off: number, depth: number): number => Math.asin(Math.min(1, sphereRadiusMm / Math.hypot(off, depth)))
+  let side = Math.tan(Math.abs(Math.atan2(c[0], c[2])) + round(c[0], c[2])) / k
+  let top = Math.tan(Math.atan2(c[1], c[2]) + round(c[1], c[2])) / k
+  let foot = Math.tan(round(c[1], c[2]) - Math.atan2(c[1], c[2])) / k
+  const half = config.globe.baseDiameterMm / 2
+  for (let i = 0; i < 72; i++) {
+    const a = (i / 72) * TAU
+    for (const y of [0, config.globe.baseHeightMm]) {
+      const b = seen(Math.cos(a) * half, y, Math.sin(a) * half)
+      side = Math.max(side, Math.abs(b[0] / b[2]) / k)
+      top = Math.max(top, b[1] / b[2] / k)
+      foot = Math.max(foot, -b[1] / b[2] / k)
+    }
+  }
+  return { side, top, foot }
+}
+
+let cardDistance: number | null = null
+
+/** The card is cropped to a centred 4:3 or to a centred square, so the loop's camera is the config's camera moved back along its own axis,
+ * by the least that keeps the glass and the base inside the square, and inside the frame, on every frame of the loop's shake.
+ * It stands there for the whole loop: the first frame is the card's still. */
+export function loopDistanceMm(): number {
+  if (cardDistance !== null) return cardDistance
+  const rig = rigOf(config.deliver.cardLoop.camera)
+  const path = makeShake('loop')
+  const fps = config.film.fps
+  const shaken: GlobePose[] = []
+  for (let i = 0; i < Math.round(barSeconds * fps); i++) shaken.push(path.poseAt(i / fps / beatSeconds))
+  const drift = [-1, 1].flatMap((y) => [-1, 1].map((p) => [y * MOVES.loopYawDeg, p * MOVES.loopPitchDeg] as const))
+  const most = (distanceMm: number): number => {
+    const at = { ...rig, distanceMm }
+    const locked = poseOfRig(at)
+    let m = 0
+    const add = (pose: Pose, g: GlobePose): void => {
+      const r = reachOf(pose, g)
+      m = Math.max(m, r.side, r.top, r.foot)
+    }
+    add(locked, REST_POSE)
+    for (const g of shaken) add(locked, g)
+    for (const [y, p] of drift) add(poseOfRig({ ...at, yawDeg: at.yawDeg + y, pitchDeg: at.pitchDeg + p }), REST_POSE)
+    return m
+  }
+  const room = 1 - MOVES.loopCropMargin
+  let d = rig.distanceMm
+  for (let i = 0; i < 12; i++) {
+    const m = most(d)
+    if (m <= room) break
+    d *= m / room
+  }
+  cardDistance = d
+  return d
+}
+
 export function loopRig(t: number): Rig {
   const c = config.deliver.cardLoop
   const period = c.seconds
   const u = ((t % period) + period) % period
   const rig = rigOf(c.camera)
+  rig.distanceMm = loopDistanceMm()
   const s0 = c.shakeStartSeconds
   const s1 = s0 + barSeconds
   const env = u < s0 ? smoother((s0 - u) / Math.min(beatSeconds, s0)) : u < s1 ? 0 : smoother((u - s1) / Math.min(2 * beatSeconds, period - s1))

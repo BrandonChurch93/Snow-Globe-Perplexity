@@ -13,7 +13,7 @@ export function drawOpening(root: HTMLElement, frame: number): void {
   const i = config.intro
   const fps = plan.fps
   const f = Math.max(0, Math.min(plan.frameCount - 1, Math.round(frame)))
-  const page = 'position:absolute;inset:0;background:#101112;color:#e8e8e6;font:400 1.25cqw/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden'
+  const page = 'position:absolute;inset:0;background:#101112;color:#e8e8e6;font:400 1.25cqw/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden'
   const mark = '<svg viewBox="0 0 24 24" style="width:2.2cqw;height:2.2cqw;display:block"><path d="M12 2v20M3.3 7l17.4 10M3.3 17 20.7 7" fill="none" stroke="#2fb8c6" stroke-width="1.6" stroke-linecap="round"/></svg>'
   if (f < plan.build.first) {
     const typed = plan.keyTaps.filter((k) => k <= f).length
