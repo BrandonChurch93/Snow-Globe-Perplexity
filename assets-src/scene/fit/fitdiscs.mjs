@@ -4,7 +4,7 @@ import fs from 'node:fs'
 const still = process.argv[2]
 const src = fs.readFileSync('src/scene/backdrop.ts', 'utf8')
 const tones = { COOL: 0.05, BLUE: 0.35, PALE: 0.65, WARM: 0.75, WHITE: 0.85, AMBER: 0.95 }
-const rows = [...src.matchAll(/^\s*\[(\d+), (\d+), (\d+), ([A-Z]+), ([\d.]+), ([\d.]+), ([\d.]+)(?:, (\d+))?\],$/gm)].map((m) => ({ x: +m[1], y: +m[2], r: +m[3], tone: m[4], shown: +m[5], soft: +m[6], edge: +m[7] }))
+const rows = [...src.matchAll(/^\s*\[(\d+), (\d+), (\d+), ([A-Z]+), ([\d.]+), ([\d.]+), (-?[\d.]+)(?:, (\d+))?\],$/gm)].map((m) => ({ x: +m[1], y: +m[2], r: +m[3], tone: m[4], shown: +m[5], soft: +m[6], edge: +m[7] }))
 const aces = (x) => Math.min(1, Math.max(0, (x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14)))
 const enc = (v) => (v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055)
 const code = (x) => 255 * enc(aces(x))
