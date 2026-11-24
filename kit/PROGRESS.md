@@ -474,6 +474,205 @@ Written 21:30 UTC on 24 Nov, with Round 6's answers all in. Rounds 5 and 6 both 
 17. The miniature's surfaces (Round 5: the crown "flocked rather than built up from branches", the roof's snow "a nearly even gray sheet", the pond "a uniform blue insert"; Round 6: the crown's snow "hangs in sharp triangular teeth", the bark's "repeated glossy orange plates", the roof snow "stops in a ruler-straight seam above an exposed brown strip", the pond "a flat gray strip"; and measure M3 reads the miniature's fine detail at 0.719 of the approved image's, under its 0.75). Ladder "The miniature looks like a low detail model". Moves to rungs 2 and 3: every surface gets height and the crown is rebuilt with more and smaller pieces. With it goes the cure of M3 by the tree's, the village's and the flakes' closers.
 18. The bands in the macro still (Round 5: "bands across the far snow", "a comb of steps"; Round 6: "several parallel blue-gray bands trace the blurred ridge", "a faint horizontal band streaks across the dark background gradient"). Ladder "Slow gradients band". Rungs 1 and 2: the dither checked at the far snow line and in the backdrop, and the grain raised slightly; with the scene's closer.
 
+### Locked settings (after Round 7)
+
+Each value below was read in the file at HEAD `f4dd346`. Where a line is cut short for length, the rest stands in the file and in the builder's detail file under `out/work/reports4/`.
+
+- `config/showcase.json`, `shake`: `liftBeats` 1, `strokeBeats` 2, `setDownBeats` 1, `strokes` 6, `liftMm` 7.25, `strokeMm` 25, `tiltDeg` 6, `landSettleSeconds` 0.4, `swapWindow` beats 2 to 3, `minCoverAtSwap` 0.85, `settleCheckSeconds` 3, `spinDownSeconds` 3.5.
+- `config/showcase.json`, cameras and counts: `cameras.hero` fov 16, distance 615.3 mm, yaw 0, pitch 4.5, aim height 67.4 mm; winter `flake` 90000, `glitter` 12000; `scene.bokehLights` 112; `states` landed 0.5 s, rest 12 s, settled 40 s; `detail.minSharpnessRatio` 0.75; samples: draft 2, review 8, final 24.
+- Glass, `src/globe/shell.ts`, `glassLook`: `band.dim` 0.25; `seat` topMm 4, lineMm 0.8, shadeMm 4.5, shade 0.4, wideMm 9, wide 0.32, mirror 0.2, mirrorTaps 4; `bend` from 0.92, soft 0.2, shift 0.16, power 2, dark 0.5, taps 4; `edge` from 0.978, peak 0.994; `bubble` leanDeg 16, under 0.03. Draw calls 5.
+- Glass, `src/globe/lens.ts`: `lensPlace` returns `seen`; the placement did not move. `src/core/materials.ts` reads it in lines 72, 85, 87, 122, 124.
+- Liquid, `src/globe/liquid.ts`: LAG 0.35, LAG_UPRIGHT 0.9, SLOSH_GAIN 0.3, SLOSH_SECONDS 0.22, SWIRL_GAIN 0.8, HAND_SECONDS 1.6, HAND_KNEE 18, SLAM 8, SLAM_KNEE 45, OVERTURN 1.4, OVERTURN_KNEE 40, ROLL_MAX 15, ROLL_BODY 0.1, ROLL_DRAIN 2, ROLL_TILT 0.85, ROLL_CENTRE [-16, 10, 0], ARM_PACE 0.84, ARM_START TAU - 0.45.
+- Particle engine, `src/particles/engine/engine.ts`: ARMS 3, ARM_MM_S 150, ARM_WIND 4, BANK_GAIN 4.5, BANK_LIGHT 4, BANK_LOW 0.2, HOLD 0.6, LANDS_LEAST 0.75, FLOATS_LEAST 0.3, CALM_FALL_MM 48, the fine share rule in `assign()`. The start pin in `tests/sim.test.ts`: 2.5 to 6 % of the flakes in the liquid.
+- Kinds, `src/particles/engine/kinds.ts`: `flake` sinkMmS [0.9, 3], settleMmS [8, 16], floats 0.17, renew 0.08, hangSigma 0.6, liftMmS [40, 140], restSpeedMmS 22, dwellSeconds [6, 24], stormDwellSeconds [1, 4], renewMmS [2.5, 4], sizeMedianMm 0.27; `glitter` renew 0.04, floats 0.08.
+- Flakes, `src/particles/draw/looks.ts` (drawn in `shader.ts`): `REST_CLEAR` { from 0.72, to 0.92, near 0.3, size 1.6, mostPx 3.1 }; STORM_SMEAR_SHARE 0.36, STORM_SHARP_SHARE 0.13, STORM_FINE_SHARE 0.18, STORM_ALIGN 0.7, STORM_WARM 0.4, STORM_GOLD [1, 0.84, 0.58], `STORM_BIG.share` 0.008, `STORM_WINDOW` x -11, wide 20.
+- Veil, `src/core/chunks/veil.ts`, `VEIL_LOOK`: sheets 10, strand 3, fibreFine 4, fibreWarp 3, shearDeep 0.618034, shearLong 0.381966, calmFrom 0.4, calmTo 0.72, driftCalm 0.25, openFromBeats 0.05, openToBeats 0.55, openHoldSeconds 1, bankSoft 0.24, gridShare 4, bankGridShare 6, driftFront 0.85, driftDipAtMm -8.
+- Veil of the season, `src/seasons/winter/veil.ts`: tint [0.8, 0.87, 1], density 0.16, rest 0.
+- Lens, `src/core/accumulator.ts`, `LENS_FILL`: fromSamples 12, rangePx 96, startPx [4, 12], cells 1.75, maxShare 0.6, taps 48, the copy under 0.75 px. `drawBlur` in `src/scene/stage.ts` draws its map.
+- Surface, `src/scene/surface.ts`, `SLAB`: contactMm 4, contactLiftMm 1.2, girthMoreMm 6, girthSoftMm 4, girthSoftRise 0.3.
+- Post, `src/post/grade.ts`: `glowTint` 6. The grade was not fitted in Rounds 6 and 7.
+- Light, `src/scene/lighting.ts`, `ROOM_RIG`: `inside.through` 0.5; `grid` { flat 0.1, wrap 0.3, openFloor 0.35, air 0.62, surface 0.25 }; `bloomGain` 9; `flood` { inside 0.14, insideMm 20, outside 18, wrap 0.35, near 0.3, nearMm 10, floor 0.07, floorMm 50, pool 45, spill 30, lens 0.04, swellFrom 0.12, swellTo 0.975 }.
+- Light, `src/seasons/winter/rig.ts`: key 0.75 from [450, 455, 80], rim 0.35 from [-240, 230, -380], the warm card [1, 0.74, 0.48] from [-460, 190, -40] with `inside` 0.2. `src/core/chunks/light.ts`: `stageGrid` (knee), `stageGridWarm` (no knee), `stageFlood`. `src/scene/lightgrid.ts` not changed.
+- Base, `assets-src/base-winter/profile.mjs`: PLINTH { r 57.3, top 2.75 }, RIM top 5.5, ROPE { ringR 57.3, h 6.65, tube 1.2, lobes 124, strands 1.9, depth 0.36 }, BEAD { ringR 56.45, h 9.3, tube 1.1 }, COLLAR { foot [43.05, TOP + 2.95], crown [44.93, TOP + 5.6], bead 0.8, gap 0.12 }; `baseHeightMm` 33 untouched.
+- Base, `assets-src/base-winter/mesh.mjs`: `MEASURED` 18 icicles in front, 21 behind; `HEAPS`; the make printed "total 115284 triangles in 4 meshes, 4.10 MB". `src/seasons/winter/base.ts`: SHORT 0.72, SHED 0.4, the shaders `ICE_FRAG`, `SNOW_AFTER`, `WOOD_PAINT`, `BRASS_CARD` as in the file.
+- Village, `src/seasons/winter/mini/village.ts`: NEAR_WALL bulb { power 12, reachMm 1.7 }, lamp { power 3.4, reachMm 9 }, pane { power 1.7, reachMm 5 }; SPARK 2.6, SNOW_GRIT { scale 0.125, tone 0.22, glint 0.8 }, SNOW_FILL 1.6, LEAF_DUST 0.65, WALL_FILL 2.4; `MIRROR`, `HALO_KIND`, `POST`, `ICE_MARGIN` as in the file.
+- Village, `src/seasons/winter/mini/palette.ts`: iceDeep [0.65, 0.81, 0.92], icePale [0.88, 0.89, 0.92], bulbLight [1, 0.61, 0.36]. `src/miniature/surface.ts`: stone bump 0.17. `src/scene/layout.ts`: not changed.
+- Village, `assets-src/village/build.mjs`: MORTAR_C '#463d34', BLOCK { rowH 0.98, rowJ 0.4, wide 1.3, wideJ 0.8, gap 0.15 }. `assets-src/village-winter/build.mjs`: EAVE { scallopMm 0.4, pillowMm 0.32, fromMm 3.2 }, FENCE_SNOW { posts false, rails false }, BILLOW { cycles 6.5, deepMm 2.2, clumps 12 }.
+- Tree, `src/miniature/trunk.ts`: `PADS` (10 pads), `gather` (952 clusters), CAP { ripple 0.16, lump 0.08, depth -0.75, droop 0.7, hem 0.9, lip 0.7 }, LIMB_TAPER 0.6, BARK_RELIEF 0.95. `assets-src/trunk/build.mjs`: STRANDS { across 9, fine 23, crack 0.1, dark 0.2, hue 0.62, streak 0.7 }.
+- Tree, `assets-src/tree-winter/build.mjs`: BULBS { stem [1.9, 2.9], limb [1.5, 2.4] }, CORE_R 0.13, SPRIGS { band 0.25, share 0.75 }, STAR { deep 0.62, valley 0.62, side 0.5 }. `src/seasons/winter/mini/tree.ts`: HALO { radiusMm 0.58, strength 1.0, hot 12 }, POOL { radiusMm 1.15, strength 0.04 }, SPARKLE share 0.006.
+- Frost, `src/seasons/winter/frost.ts`, `look.slab`: frontLag 0.5, frontMm 80, frontEnd [0.3, 0.8], lumpMm 3.2, lump 0.5, lumpSheet 0.16, farMips 3.0; FROST_START 0.07, FULL 2. `assets-src/frost-winter/layout.json`: 37 sprays on the glass, `film` 0.65 at 75 and 100 degrees.
+- Arrival, `src/seasons/winter/arrival.ts`: GLASS { start 0.1, kick 0.12, burst 0.71 over 0.26 s, power 2, creep 0.27 over 1.2 s }; SLAB { start 0.16, burst 0.66 over 0.5 s, power 1.35, creep 0.39 over 1.4 s }; TOUCH { gapMm 0.1, riseMm 3, lead 1.5, ease 0.5 }; LEAVE { lead 0.5 }; `kept` follows `changeSwell`.
+- Shake path, `src/shake/table.ts`, `HAND`: awayMm [13.3, 14.3], whipTurns 3.2, whipReach 2.3, overshootDeg [1.15, 1.25], rockDecay 3.2, gripRockDeg [1.6, 2], gripBeats 0.36, liftOffBeats 0.14, planDeg [6, 10], lastReach [0.5, 0.6], padRad 0.003.
+- Shake path, `src/shake/change.ts`: OUTSIDE { from 0.69, to 0.85, lag 0 }, BLOOM_RAMP 0.12. The pins: `tests/shake-path.test.ts`, `tests/shake-clearance.test.ts`, `tests/shake-change.test.ts`, `tests/shake-looks.test.ts`.
+- Differences found: none in a value. Two in form: the liquid's report gives TURB_SECONDS 1.4 and ROLL_SECONDS 2.1, the file computes them as 0.4 and 0.6 of `shake.spinDownSeconds` (3.5); `kit/08-BUILD-ORDER.md` names `src/particles/kinds/`, which does not exist: the kinds are rows in `src/particles/engine/kinds.ts`.
+
+### What worked and what did not
+
+- Glass. Worked: the approved image and the fit still read as numbers along the same rays and columns before and after each change; M1 cured where the value is made; the copy of the inside as the source for the rim zone and the seat, with no draw call.
+- Glass. Did not: showing more of the copy than the approved image shows (a bent edge at the foot, a stronger fold); added light in place of form (the sheen, the bubble's lit band); moving the bubble's lean.
+- Liquid and engine. Worked: the overturn for the lift and the first stroke; the snowfall branch; faster sink with more renewers against hovering; the start drift by a chance per flake; fine arrivals last.
+- Liquid and engine. Did not: ROLL_TILT 0.92 and 0.97 (breaks the "flat" pin); a constant overturn; a longer roll after the landing; more SWIRL_GAIN; the feed trial for speed (M4 0.8986 against 0.9678).
+- Flakes and veil. Worked: strand samples sheared by the radial flow coordinate; haze and drift thinned by the liquid's turbulence after the landing; the flood opened by the beat; the lamp's colour as a tint; `REST_CLEAR`; a narrower `STORM_WINDOW`.
+- Flakes and veil. Did not: the globe's height as the set-down signal; shearing by the turn around the roll axis (a seam at the atan cut); a flood density in proportion with a hard edge; more fine strands against the silk look (the drift needs short tufts, not built).
+- Scene, surface and lens. Worked: the average blurred once by a map of the front surface, taps weighted by the neighbour's own radius; the guide that keeps discs and flakes; the slab fitted by column numbers; the contact line tied to the gap of the foot's rim.
+- Scene, surface and lens. Did not: the fill on the pond's glints (a glint far above white stays a dot); the contact line under the tabletop frost; the fits of the slab's mirror image and of the grade were not made.
+- Light. Worked: the bloom as one curve with the reshaped fall (largest step 0.019 a frame); the wide low flood (no ball on 33 draft frames); the surface's share of the grid (0.25); `stageGridWarm` for the veil and the flakes.
+- Light. Did not: a far term inside `stageGridWarm` (the veil multiplies it by 6); a glint line for the flakes; the flood as a ball about the lights' centre; the card's `inside` at 0; a pool for each small light (the grid's cells are 2.9 mm).
+- Base. Worked: the big forms placed by measured rows of the approved image (within 2 px at x 1420 and 1740); the icicles measured one by one; a row of pixels across an icicle to find why it read white; more and smaller grains at a third of the gain.
+- Base. Did not: the ledge snow's weight; the brass's top line (about 1.7 times the approved at x 1740); ambient times 9 on the wood; the mean difference of the fit box as a guide; one constant per look did not fit the time.
+- Village. Worked: medians of fixed boxes against the fit still, one constant at a time; a replica of M3 broken down by zone; the plume from a generated picture read as density; the roof load rounded past the eave.
+- Village. Did not: SNOW_FILL 1.35; wider bulb pools and a wash on the wall (up to 0.06 of M3); lighter mortar and a smaller tone spread (about 0.03 of M3 each); the stronger crest did not break the rim's slab reading.
+- Tree. Worked: bark drawn as long strands in place of plates; 952 smaller clusters and 3037 sprigs; hems rounded (`CAP.lip` 0.7); bulbs with small hot cores and a halo layer.
+- Tree. Did not: thicker limbs with more stem bulbs (review-tier M3 0.7398 to 0.7191 and 0.7157); brighter foliage overall; sparkle share 0.035 (stipple). Trunk and limbs still read as flat ribbons.
+- Frost and arrival. Worked: the radial lag inside the one growth function; the leaving tied to the light the slab receives; the frost's own depth of field; sprays on their own random stream.
+- Frost and arrival. Did not: the lip row as tall spikes (a picket fence); film 0.65 against the grey band; lump shading (the heap is still flat white); a slower growth curve (it breaks the landed image).
+- Shake path. Worked: a probe that prints every pin's margin over all 19 names before a knob is touched; a second worktree running the whole suite at `strokeMm` 22 and at 25.
+- Shake path. Did not: more lag, a faster meeting of foot and slab, any change to the lift (each red on a pin); `strokeMm` 24 in Round 6 (decision 65).
+- Round 7's verdict on all of the above (build `4f10d97`, the fifth and last round of the look lock). The gate is green on all 15 checks and every measure is green (M3 0.92 against 0.75; it was red in Round 6). Likeness rose from 5 to 7. No critic passes it: R1 7, R3 5, R4 4, the jury 4 of 15 against the control's 7 of 10. What still gives the picture away, in the critics' own words: the storm is "a tight circular vortex made of broad continuous white ribbons"; the inside is "not bent or enlarged by liquid at all"; the trunk and branches are "smooth tubes with a stretched, swirled painted grain and no bark relief"; the snow is "a smooth clay-like shell" on the roof and "grey sculpted clay blobs" on the tree; the tabletop "loses the readable mirror image of the gold foot"; around the lift and the landing "the large winter snow patches vanish, then the patches visibly grow back from the base after touchdown". A season made from the recipes below inherits each of these unless its builder works against it. All of them are open items for the polish rounds.
+
+### Recipes
+
+Every recipe starts from a clean merge of `origin/main`. Boxes are in pixels of the approved image (2816 wide); the hd render is 0.682 of them.
+
+Two rules hold for every recipe. `npm run make -- <folder>` runs `assets-src/<folder>/build.mjs` for any folder under `assets-src/` that has one, and passes on what follows the folder's name. A builder never edits `parts/PARTS.json`: it sends `/root` the line, and `/root` sets the part with `npm run parts -- --set <name>=built --note "<branch at commit: what it is>"`.
+
+**One more base** (model: `assets-src/base-winter/`, `src/seasons/winter/base.ts`)
+
+1. Copy `assets-src/base-winter/` to `assets-src/base-<season>/` and `src/seasons/winter/base.ts` to `src/seasons/<season>/base.ts`. In `build.mjs` change the folder it writes to (`rel('assets-full', 'winter')`) and the file names; in `base.ts` change `PART` and `MODEL`.
+2. Read the silhouette's edge points from the approved image into `SIDE` and `FRONT` at the top of `measure.mjs`, then `node assets-src/base-<season>/measure.mjs` (about 10 px per mm).
+3. Put the heights into `profile.mjs` (`PLINTH`, `RIM`, `ROPE`, `BEAD`, `BODY`, `LIP`, `LEDGE`, `COLLAR`) and check `lift()` so the rope and the lip land on the approved rows. `baseHeightMm` stays 33.
+4. Carving and wood: generated height sheets, at most 6 takes each (`assets.maxTakesPerAsset`), prompts in `prompts/`, stamped by `carve.mjs`. Write each take into `RECIPE.md` and send its `ASSETS.md` row to `/root`.
+5. What hangs on the ledge goes one by one into `MEASURED` in `mesh.mjs`; what lies on it into `HEAPS`.
+6. `npm run make -- base-<season>` (52 s; `npm run make -- base-<season> mesh` for the mesh alone), then `npm run texpack && npm run build`.
+7. Look: `npm run fit -- --season <season> --tier draft --format hd --box 820,960,2000,1480 --name <look> --wide 1180 --force`.
+8. Stills: `npm run still -- --season <season> --state rest --camera base --tier draft --format hd --force` (also `--state landed`, `--camera hero`, `--camera interior`).
+9. Measures of this part: `npm run measure -- --unit <season> --only M2,M3 --tier draft`, then "Checks before every push".
+- Mind: a GLSL reserved word or an undeclared name in `base.ts` breaks the shader without a message; look at a still after every edit.
+- Mind: `uIceSpan` must follow `ICE.h`; the snow shader holds the sphere's centre 79 and radius 60; what the base sheds in the shake rests on `partChange('base', ...)`, `SHORT` and `SHED`.
+- Mind: the base's motion (shedding, slumping) was not looked at on winter; draw `npm run sheet -- --motion landing --shot test --fit --tier draft` before the first round.
+
+**One more season of the miniature** (village dress, tree, `mini/` files, small lights, distance field)
+
+1. Places and sizes are shared and do not move for a season: `src/scene/layout.ts`, `src/miniature/roof.ts`. Shared shapes: `assets-src/village/build.mjs`, made with `npm run make -- village` (5 s).
+2. Copy `assets-src/village-winter/` to `assets-src/village-<season>/` and change what lies on the shapes. Send `/root` the line for `parts/PARTS.json`. Then `npm run make -- village-<season>` (25 s).
+3. The trunk is shared: `src/miniature/trunk.ts`, `assets-src/trunk/`. Edit `PADS` only if the crown's shape differs.
+4. Copy `assets-src/tree-winter/` to `assets-src/tree-<season>/` with its own seeded stream name and output names under `assets-full/<season>/`. Keep `needles` and `lights` if the season has them; replace `snow` by the season's cover or drop it.
+5. Make in this order, trunk before the tree: `npm run make -- trunk && npm run make -- tree-<season> && npm run texpack && npm run build`.
+6. Copy `src/seasons/winter/mini/village.ts`, `palette.ts` and `tree.ts` to `src/seasons/<season>/mini/`. Tones in `palette.ts`; pools in `NEAR` and `NEAR_WALL`; halos in `HALO_KIND`, `HALO`, `POOL`; baked bulb light in `GLOW`.
+7. Small lights: each file exports `innerLights`; `src/seasons/<season>/miniature.ts` joins them in `innerLights()`. The light grid bakes itself at load (`src/scene/lightgrid.ts`); nothing is made.
+8. Distance field: each file exports `solid(x, y, z)`; `collider()` in `miniature.ts` is the min of the village's and the tree's. Keep the tree's `solid()` the min of `trunkSolid`, `crownField` and the season's cover field.
+9. A generated picture only where code does not read as the thing (winter: the plume, take 4 of 6): a crop of the approved image as the reference, the thing alone on pure black, takes under `assets-src/village-<season>/gen/`, the prompt in `RECIPE.md`.
+10. Fit by numbers, one constant at a time: `npm run fit -- --season <season> --tier draft --box 900,440,1700,1280 --name <n> --force` (village), `--box 1300,240,1960,960` (tree); read medians of fixed boxes in `out/work/stills/<season>-rest-hero-hd-draft-rig.png`.
+11. Look: `npm run still -- --season <season> --state rest --camera macro --tier draft --format hd --force` (also `--camera hero`, `--camera interior`); `--diag ids` shows the mask.
+12. Measures of this part: `npm run measure -- --unit <season> --only M2,M3,M6 --tier draft`, and M3 as in "How a part is judged".
+- Mind: after any change to `src/miniature/trunk.ts` make both targets again, or flakes land on air (M6 shows it).
+- Mind: one seeded stream makes needles, string and maps; a moved pad moves every bulb and tuft. `STAR_AT` in the build script and `STAR_LOCAL` in `tree.ts` must be the same point.
+- Mind: tight pools of bulb light and dark, wide joints raise M3; a broad bright pool lowers it, because lit stones clip. No pixel of an approved image goes into the app.
+- Not in the repo: the replica of M3 by zone, used by the village builder for finding which constants move M3; `npm run measure -- --unit <season> --only M3 --tier final` gives the whole number.
+
+**One more particle kind** (`src/particles/engine/kinds.ts`, `src/particles/draw/`, `src/core/chunks/veil.ts`)
+
+1. The kind's count is in `config/showcase.json`, `particles.<season>` (a `/root` file). Its row is in `BEHAVIOUR` in `src/particles/engine/kinds.ts`; rows for `petal`, `mote`, `seed`, `firefly`, `leaf`, `ember` and `bat` stand there as first numbers.
+2. Tune the row. For a kind that falls and lies: `sinkMmS`, `settleMmS`, `floats`, `renew`, `dwellSeconds`, `stormDwellSeconds`, `renewMmS`, the sizes. A kind whose `renewMmS[1]` is over 0 takes part in the start drift and the fine share.
+3. Coming to rest: `rest` ('never', 'lies' or 'snags'), `slope`, `restSpeedMmS`, `gripPerSecond`, `layerMm`. The kind lands on the season's `collider()`; `tests/engine-cover.test.ts` pins it.
+4. The drawing: add the kind to `LOOKS` in `src/particles/draw/looks.ts` (`shape`, `size`, `body`, `flash`, `real: true`). A kind with no row is drawn as `PLAIN` and stays a stand-in.
+5. A new shape: a new entry in `SHAPE` and its branch in `src/particles/draw/shader.ts`. A table of shapes is made as the flakes' is: `npm run make -- flakes` writes `assets-full/shared/flake-lobes.lin.png`, read with `texelFetch`, never packed lossy.
+6. The veil: `src/seasons/<season>/veil.ts` gives `tint`, `density` and `rest` (winter: [0.8, 0.87, 1], 0.16, 0). `VEIL_LOOK` in `src/core/chunks/veil.ts` is shared; change it only with `/root`.
+7. The cover map: `heapCover` in `src/particles/engine/engine.ts` fills it from the kinds that lie; see it with `npm run still -- --season <season> --state settled --camera hero --tier draft --format hd --diag cover --force`.
+8. `npm run texpack && npm run build`, then `npx vitest run tests/engine-storm.test.ts tests/engine-cover.test.ts tests/sim.test.ts tests/liquid.test.ts` (about 2 minutes).
+9. Rest and storm against the approved pair: `npm run fit -- --season <season> --tier draft --format hd --state rest --box 858,99,1964,1205 --name <name> --force`, and the same with `--state landed`.
+10. The shake: `npm run sheet -- --shot test --cols 4 --format hd --tier draft --force`; single frames with `--first N --last N` (winter looked at 90, 120, 174 and 204; they lie under `out/work/seq/test-hd-draft/`).
+11. Tune in this order: the veil's tint and density, `STORM_PALE_TO` and `STORM_GOLD`, `STORM_GLOW.to`, `STORM_WINDOW` and `driftDipAtMm`, `REST_CLEAR.from`.
+12. Measures of this part: `npm run measure -- --unit <season> --only M3,M4,M5,M6 --tier draft`.
+- Mind: sprites of the storm must not put large soft flakes over the miniature at rest; `REST_CLEAR` keeps those in front of it small and sharp (at most 3.1 px at hd), and M3 falls without it.
+- Mind: the engine's pins hold for `shake.strokeMm` 22 to 25. Outside that, move `ARM_START` in `src/globe/liquid.ts` until "flat" at the landing sits in the middle of 1.25 to 2.2.
+- Mind: `stageGridWarm` has no knee; a caller gives it its own small share (`STORM_WARM` 0.4). Only the radial flow coordinate may shear the strands. The flood opens by `f.moment.beat`, never by the globe's height.
+- Mind: flakes coming to rest on roof, branches and pond were not built on winter (the liquid's state is needed).
+- Mind: `python3 assets-src/flakes/count.py` and `python3 assets-src/flakes/storm.py` count flakes and print the storm's colours; they read winter's approved pair by default and need Pillow, numpy and scipy.
+
+**One more dressing for the glass** (model: `assets-src/frost-winter/`, `src/seasons/winter/frost.ts`)
+
+1. Copy `assets-src/frost-winter/` to `assets-src/<dressing>-<season>/`. In `build.mjs` change `OUT` and the output file names; copy `src/seasons/winter/frost.ts` to the season and change its two map names (lines 13 and 14).
+2. Measure the approved images in their own pixels (glass circle centre (1411.5, 653.4), radius 553.9 px) and write `layout.json`: `glass.profile` every 25 to 35 degrees, `glass.plumes`, `glass.tufts`, `glass.crust`, `glass.sprays`, `slab.arms`, `slab.fern`, `slab.drift.profile`, `slab.thrown`.
+3. `npm run make -- <dressing>-<season>` (38 s), then `npm run texpack && npm run build`. Draw the maps at 4096 and tag them `.w2048.`.
+4. Fit by numbers first: `npm run still -- --season <season> --state rest --camera hero --tier draft --format hd --force`, luminance percentiles of fixed boxes against the approved crop, then one look.
+5. Shader constants: `look` at the top of `src/seasons/<season>/frost.ts` (glass: `cover`, `haze`, `thin`, `thick`, `scatter`, `glint`; slab: `light`, `gainKey`, `gainFar`, `gainFront`, `grey`, `wet`, `lumpMm`, `lump`, `far`, `farMips`, `focusMm`).
+6. For dust, pollen or leaves in place of ice: change the `SNOW` colours, bring `glint` and `wet` to 0, keep `copyBehind` only if the dressing is translucent.
+7. Look from `--camera low` and `--camera surface` as well as `hero`.
+8. Measures of this part: `npm run measure -- --unit <season> --only M1,M2,M3,M6 --tier draft`.
+- Mind: place lip rime only after the landform is final, from a still of the build. Append new sprays at the end of `glass.sprays`; they draw from their own stream and an insert changes every later one.
+- Mind: after every merge of main: `git checkout -- assets-full public/assets`, merge, make, texpack, build, in that order; a stale built file gives a still with the old dressing.
+- Mind: for the glass itself, `assets-src/glass/RECIPE.md`, "Making it again for another season", steps 1 to 13; its checks are `node assets-src/glass/sanity.mjs --season <season>` and `npm run measure -- --unit <season> --only M1 --tier draft`.
+- Not in the repo: `out/work/v/box.mjs`, used by the frost builder for luminance percentiles of a box in both pictures.
+
+**One more arrival** (model: `src/seasons/winter/arrival.ts`)
+
+1. Copy `src/seasons/winter/arrival.ts` to `src/seasons/<season>/arrival.ts`.
+2. Set `GLASS` and `SLAB`: `start` above `FROST_START` (0.07) so the first texels show at the touch. The growth at `states.landedSeconds` (0.5 s, frame 174) must give what the approved shake image shows (winter: 0.694 on the slab).
+3. Set the ring front in the season's `frost.ts`: `look.slab.frontLag`, `frontMm`, `frontEnd`. Keep `frontEnd[1]` a little past the growth at `landedSeconds`. A larger `frontLag` gives a clearer ring and less dressing on the landed still.
+4. `TOUCH`: the first sign comes with the foot rolling flat. Read the pose (`rimGapMm(pose)`, `pose.y`), never a frame number.
+5. The leaving needs no timing: `kept` follows `changeSwell(...).glow`. For a dressing that should not melt into the light, replace `kept` by `1 - partChange(part, through)`.
+6. `npm run build`, then the arrival on a sheet (12 frames across the range): `node tools/sheet.mjs --shot test --first 144 --last 204 --tier draft --look no`.
+7. The leaving on a sheet: `node tools/sheet.mjs --shot test --first 84 --last 106 --tier draft --look no`.
+8. Read both sheets frame by frame: no crystal appears whole at low opacity, no patch fades in place, the last frame before the span is not whole, nothing recedes. Winter: rime at the rim on 144, half way out on 154, nearly whole on 172.
+9. The motion as the critics see it: `npm run sheet -- --motion arrival --shot test --fit --tier review --look no`. The landed still: `npm run still -- --season <season> --state landed --camera hero --tier draft --format hd --force`.
+- Mind: the image wins over the ladder: winter's approved shake image shows the slab whole at 0.5 s, so a slower curve left the landed still short. Slower needs a later `states.landedSeconds`, which is `/root`'s.
+- Mind: base, glass dressing and surface dressing share one span (`OUTSIDE` in `src/shake/change.ts`). If the dressing's span is set later than the base's, `kept` rises again and the dressing comes back for a few frames.
+- Mind: after the landing the arrival reads `moment.sinceLanding`; it holds as long as the landing frame stays 144.
+
+**The light of one more season** (rig, grid, flood)
+
+1. Write `src/seasons/<season>/rig.ts`: key, rim, sky, ground, fill, card. Keep key 0.75 and rim 0.35 unless `/root` rules otherwise. The grid bakes itself from `innerLights`; no make target.
+2. `npm run build && npm run fit -- --season <season> --tier draft --state rest --name <name> --force`, then the same with `--state landed`.
+3. Fit at rest, one constant at a time, in this order: `inside.through`, `grid.surface`, `grid.flat`, `grid.air`. Then at landed ask the flakes' builder for the veil's shares.
+4. The change: fit `flood.inside` for the middle (warm, never white, no ball) and `flood.outside` for the base (not under 16.8). Twelve frames across it: `npm run sheet -- --shot test --first 80 --last 112 --tier draft --force`; consecutive frames: `npm run sheet -- --motion swap --shot test --stride 1 --tier draft`.
+5. Single frames at the review tier: `npm run sheet -- --shot test --first 97 --last 97 --format hd --tier review --force` (about two minutes a frame).
+6. Measures of this part: `npm run measure -- --unit <season> --only M4,M5 --tier draft`.
+- Mind: `ROOM_RIG` is shared by all seasons and the rig is frozen. `stageFlood` reads `uLightEye`: set `f.pose` before `Lighting.update`. A pool for each small light is not built (the grid's cells are 2.9 mm).
+- Not in the repo: `lk/trial.sh`, `lk/stats.py`, `lk/boxes.py`, `lk/wmap.py`, `lk/pair.py`, used by the light builder for median luma and the warm bright share of regions and boxes of the fit still beside the approved image.
+- Not in the repo: `lk/every.mjs`, `lk/env.py`, `lk/prio.mjs`, `lk/f.sh`, `lk/pre.sh`, used by the light builder for frames 80 to 112 in one page, the whole-frame luminance step of each frame (none above 0.02), single frames at hd, and the checks before a push.
+
+**The liquid's rows for a season**
+
+1. Add or tune the season's rows in `src/particles/engine/kinds.ts`; the liquid (`src/globe/liquid.ts`) and the engine are shared. Then `npm run texpack && npm run build`.
+2. `npx tsc --noEmit && npx vitest run` (pins: `tests/engine-storm.test.ts`, `tests/engine-cover.test.ts`, `tests/sim.test.ts`, `tests/liquid.test.ts`).
+3. Stills beside the approved pictures: `npm run still -- --season <season> --state landed --camera hero --tier draft --format hd --force` (also `--state rest` and `--state settled`).
+4. Motion: `npm run sheet -- --motion strokes --shot test --fit --tier draft` (also `lift`, `setdown`, `landing`, `arrival`).
+5. Measures of this part: `npm run measure -- --unit <season> --only M4,M5,M6 --tier draft`.
+
+**The shake path** (nothing is made)
+
+1. The path comes from `makeShake(name)` in `src/shake/table.ts`; the names of every season's shakes are already in the four pin files.
+2. `npx vitest run tests/shake-path.test.ts tests/shake-clearance.test.ts tests/shake-change.test.ts tests/shake-looks.test.ts`, then `npx vitest run tests/engine-storm.test.ts tests/engine-cover.test.ts tests/sim.test.ts`.
+3. `npm run build`, then `npm run sheet -- --motion lift --shot shake-1 --fit --tier review --look no`, and the same with `strokes`, `setdown`, `landing` (4.5 to 7 minutes each; exit 3 means run it again).
+4. The foot at hd: `npm run sheet -- --motion setdown --shot shake-1 --at 0.3 --seconds 0.6 --stride 2 --tier draft --format hd --look no`.
+5. A part that changes in the shake: one row in `SPANS` of `src/shake/change.ts` and its name in `SEASONAL_PARTS`; outside the glass it takes `OUTSIDE`.
+6. Tell the builders who read the pose (liquid, flakes, slab, dressing): read `moment.globe` and `rimGapMm(moment.globe)`, never a frame number.
+- Mind: any move of `shake.strokeMm` or of `whipTurns`, `whipReach`, `overshootDeg`, `rockDecay` needs the whole of `tests/shake-path.test.ts` again. `OUTSIDE` and `BLOOM_RAMP` are tied to the fastest stroke (frame 97.6).
+- Mind: the sheet tool refuses a stale `dist/`: `npm run build` after every edit, never while a render runs, one render at a time.
+- Not in the repo: the probe that prints every pin's margin over all 19 names, used by the shake builder before a knob is touched; the four pin files give pass or fail only.
+
+**Checks before every push**
+
+1. `npx tsc --noEmit`
+2. `npx vitest run` (winter's last state: 419 passed, 4 skipped)
+3. `npm run determinism` (4 to 5 minutes; its last line reads `determinism: pass`)
+4. The measures for the unit, at draft: `npm run measure -- --unit <season> --only <the part's measures> --tier draft` (0 red).
+5. The stand-ins still: `npm run still -- --season <season> --state rest --camera hero --tier draft --format hd --diag standins --force` (black: the largest pixel value is 0).
+6. Commit by path, `git checkout -- assets-full public/assets`, merge `origin/main` (merge, never rebase), make and build again, test again, push.
+- Mind: built files under `assets-full/` and `public/assets/` are committed only by `/root`; a builder reports its make targets and `/root` makes them again.
+- Mind: do not run the suite from a copy whose `kit` is a symlink; `tests/clock.test.ts` then writes the real `kit/CLOCK.json`.
+
+**How a part is judged**
+
+1. The fit: `npm run fit -- --season <season> --tier draft --box x0,y0,x1,y1 --name <n> --force` draws the build through the approved image's own camera beside the approved crop and prints the mean difference.
+2. The still: `npm run still -- --season <season> --state rest --camera hero --tier draft --format hd --force`, with the approved crop beside it.
+3. The tiers are `draft` (2 samples a frame), `review` (8) and `final` (24). Looks and fits are made at draft; critics see review; `npm run measure` defaults to final.
+4. Only the final tier counts for M3: `npm run measure -- --unit <season> --only M3 --tier final` (about 4 minutes), against `detail.minSharpnessRatio` 0.75.
+5. The draft tier reads about 0.10 higher on M3 (0.08 to 0.09 in the three reports that give both: 1.031 against 0.943, 0.9349 against 0.8473, 0.9312 against 0.8478); sample noise counts as detail there.
+- Mind: the lens fill runs at the final tier only, so a macro still at draft still shows the bands; judge the macro with `npm run still -- --season <season> --state rest --camera macro --tier final --format hd --force`.
+- Mind: final-tier M3 differed by 0.07 between two VMs on the same files (0.8478 against 0.9223) and is not explained; `/root`'s number is the one that counts.
+
 ## Sound
 
 Every cue with its state: kept, open, or not made yet. Takes used. Which candidate soundtracks exist. After the review: which soundtrack was approved and where it came from. Credits spent on sound in all.
