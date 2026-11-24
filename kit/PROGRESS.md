@@ -37,16 +37,16 @@ Status 19 · 2026-11-24 07:50 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 07:50 UTC
-clock: phase 2, tick of 11.9 minutes
-phase 2: 4.81 h used of its 6.00 h box
-allowance (before the review): 6.00 h used of 36.00 h allowed
-all time before the review: 6.00 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 07:57 UTC
+clock: phase 2, tick of 6.8 minutes
+phase 2: 4.92 h used of its 6.00 h box
+allowance (before the review): 6.11 h used of 36.00 h allowed
+all time before the review: 6.11 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 6
 ```
 
 ## Phases
@@ -516,6 +516,14 @@ Severe and major issues still open when a limit was reached: the unit, the still
 
 17. Found while reading round 1's answers (not a critic's line): in the spring hold at draft the petals fill the glass from 12 s to past 21 s, so the miniature is not seen through them; the kit thins each storm over the first bar after its landing. Fix under way: `particles_engineer_2` measures the cover of the miniature after each landing in all four seasons and tunes the stand-in kinds (under a quarter by 2.4 s, under a tenth by 5 s). Ties to item 6.
 
+18. Update to item 16 (camera `macro`), 2026-11-24 07:58 UTC, carried. By geometry no camera inside the kit's own check (every corner of the frame within 0.85 of the glass's radius, aim on the axis) can hold both gables of the cottage together with the floor: with the floor in the frame the frame's left edge reaches at most about 26 mm left of the axis inside the liquid, and the stand-in cottage's roof ends near 31 mm; a pan does not help, because the corner check bounds the frame and not the aim. Chosen: field of view 16, distance 134, yaw 6, pitch 6, aim 68, aperture 2.5, focus 144 mm on the front wall at the door (corner reach 50.63 mm of the 51.0 allowed). In the frame: chimney, window, door, right gable, floor, the lamppost clear of the roof, the trunk between 78 and 97 percent across. The roof's left end lies about 10 percent of the width outside. A frame at yaw 38 holds the whole cottage but puts the lamppost on the roof, and was rejected for that. Round 2 judges the chosen frame.
+
+19. For the look lock (Phase 3), 2026-11-24 07:58 UTC. Measured on the approved winter image, the cottage spans from about 29 mm to 1 mm left of the axis, the lamppost stands about 1 mm right of it and the trunk about 13 mm right. The stand-in layout in `src/scene/layout.ts` has the trunk at x 18 and no door (an anchor only). The layout is to be checked against the approved image when the real miniature is built, and `macro` framed again on it; a trunk at 13 mm leaves the opening frame more room on the left.
+
+20. Update to item 17 (storms hiding the miniature), 2026-11-24 07:58 UTC. Answered by the thinning in `203204a`: the share of the miniature covered at 0, 0.5, 2.4, 5 and 9 s after a landing is now spring 100, 92, 16, 5, 6; summer 38, 43, 21, 12, 11; fall 100, 96, 20, 9, 6; winter 78, 71, 17, 3, 1 percent (counted by a Node stand-in for the camera, not from rendered frames). Round 2 judges it in the holds. Known weak points, carried: summer at 5 s is still 12 percent; the fall embers rise as a dense column in front of the trunk near 41 and 45 s; the worker path was proven only in headless software WebGL; a worker that fails in mid storm lands the globe at rest; pictures at rest have fewer renewing flakes than before.
+
+21. Update to item 6 (engine speed), 2026-11-24 07:58 UTC, carried. The storm's worst second costs 2.3 s of work per simulated second on the engine engineer's VM; the goal of 0.6 was not reached. It needs the per-particle data repacked or a lower step rate, and is taken up again with the real particles in Phase 3.
+
 ## Review items not done
 
 none
@@ -718,3 +726,9 @@ One entry per task: when it started, what it did, where it stopped.
 - 07:47 merged `agent/film-app2` `6e790b4` with `agent/engine2` `ca7660b` as `fa4c686`: types clean, 303 tests, build, cut and parts clean. Cameras now (field of view, distance, yaw, pitch, aim): `surface` 16, 540, 24, 18, -34 (was 16, 330, 24, 14, 6); `interior` 16, 395, 0, 2, 86.5 (was 16, 460, 0, 6, 91); `low` 20, 500, -24, -5.5, 71.5 (was 20, 520, -18, 2, 60), its own height 23.6 mm above the surface. The engineer measured M1 and M6 green on the winter stills at draft. Looked at here, one draft still each: `surface` shows the foot of the base at the top and the surface with the globe's reflection under it; `interior` fills the height with the miniature, the top of the glass just outside, the base a thin strip; `low` looks up at the whole globe with room over the dome. The moves follow: the summer hold goes the whole way to `interior`, the fall hold the whole way to `low`, each keeping two named things in the frame (`ce10df6`). `macro` is still being chosen.
 
 - 07:51 Status 19 posted with four pictures: the three cameras framed again, the app at three sizes with the new room over the controls, the hero camera after decision 35, the summer and fall holds on the new cameras.
+
+- 07:53 `engine_engineer_2` reported and is done (`agent/engine2` `3d47198`, looks on `agent/engine2-looks` `5ac6d7b`): the `macro` camera framed again as far as the kit's corner check allows (open item 18), M1 and M6 for winter at draft green on all 14 lines.
+
+- 07:54 `particles_engineer_2` sent its final report and is done (`agent/particles2` `203204a`, looks on `agent/particles2-looks` `3a34a88`): every storm thins within its first bar; new numbers per kind `settleMmS` and `floats`; the cover numbers are in open item 20.
+
+- 07:57 merged `agent/film-app2` `dec56e1` (with `agent/engine2` `3d47198`) and `agent/particles2` `203204a` as `a9b5613`: types clean, 304 tests, build, cut and parts clean. The pack tool's line for `macro` now carries the kit's words for frame 0 and its corner check (`9ade96d`). The fix pass took 50 of its 90 minutes. Round 2 of the blockout review started 07:57 on `9ade96d`: build, the Phase 2 gate, the measures and the pack run first, then two fresh critics.
