@@ -37,16 +37,16 @@ Status 26 · 2026-11-24 10:01 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 10:01 UTC
-clock: phase 3, tick of 0.3 minutes
-phase 3: 1.58 h used of its 11.00 h box
-allowance (before the review): 8.19 h used of 36.00 h allowed
-all time before the review: 8.19 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 10:19 UTC
+clock: phase 3, tick of 2.9 minutes
+phase 3: 1.87 h used of its 11.00 h box
+allowance (before the review): 8.49 h used of 36.00 h allowed
+all time before the review: 8.49 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 18
 ```
 
 ## Phases
@@ -849,3 +849,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 2026-11-24 09:45 UTC. Status 25 posted: the Phase 3 scaffold and the fit tool (pictures `out/work/fit/winter-lines.jpg`, `winter-pair.jpg`). The winter miniature split in two owners (`src/seasons/winter/mini/village.ts`, `tree.ts`, `0ad117f`), the parts register's file lists follow the new layout and the `lens` flag moved to `src/post/post.ts`. 305 tests green. Next: the Phase 3 briefs and ten build agents.
 
 - 2026-11-24 10:01 UTC. Status 26 posted: ten build agents running (picture `out/work/status/plan-p3.jpg`, the approved image with each builder's region). Briefs committed in `578bc78`, agents logged in `5d84277`.
+
+- 2026-11-24 10:06 to 10:20 UTC. After a compaction: this file, the addenda folder and Phase 3's read first files read again. While the ten builders work: (1) `tree_builder` measured the tree on the approved image (foot at x 12.3, 8.4 mm above `islandLevel`; crown 34 by 27 mm in six pads; star tip 47.6 mm above the foot) and `village_builder` raised the ground in the layout to the picture: a mound raked toward the viewer, `groundAt(12.5, -5)` = -19.6. Two tests in `tests/framing.test.ts` pinned to the stand-in heights fail on its branch (`interior`'s top margin, `macro`'s chimney and the gap between the lamp and the eave); they and the two cameras are the Builder's to fit at integration. (2) `liquid_builder` asked for one line outside its files: `SourceSwitch` in `src/film/loop.ts` forwards `cover` (`26f5141`). (3) A dry run of winter's measures and pack on the stand-ins, to test the tools before round 1 is counted; no critic saw it. `node tools/measure.mjs --unit winter --tier draft`: 24 lines in 114 s, M1 and M6 green, M2 and M3 red as a stand-in must be (0.998 of textured pixels under one texel a pixel; sharpness 0.04 of the approved image on the base, 0.30 on the miniature), M4 0.72 against 0.85, M5 0.91 against 0.6. `node tools/pack.mjs --phase 3 --round 99 --unit winter --tier draft`: 46 files for R1, R2, R3 (three parts) and R4 (two parts), nothing missing, 302 s; the crops of the approved image and of the still land on the same regions. (4) `repo_courier` now also watches the builders' looks branches and wakes the Builder at least every 7 minutes, so waiting costs no reading.
