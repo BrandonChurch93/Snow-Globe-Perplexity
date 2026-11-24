@@ -24,8 +24,8 @@ function swapTimeline(from: string, to: string): Timeline {
 
 const idle = (season: string): Timeline => ({ id: `idle:${season}`, startSeason: season, events: [] })
 
-const TURN_PEAK_FLOOR = 1.1
-const TURN_AFTER_FLOOR = 0.45
+const TURN_PEAK_FLOOR = 2
+const TURN_AFTER_FLOOR = 0.75
 
 function rockingTimeline(season: string, degrees: number): Timeline {
   const s = config.shake
