@@ -25,6 +25,8 @@ const PUSHES = 3
 export const COVER_N = 96
 export const COVER_SPAN_MM = 2 * R
 export const COVER_CAP_MM = 4
+const COVER_KNEE_MM = COVER_CAP_MM * 0.75
+const COVER_ROOM_MM = COVER_CAP_MM - COVER_KNEE_MM
 const COVER_PASSES = 3
 const COVER_CELL_MM2 = (COVER_SPAN_MM / COVER_N) * (COVER_SPAN_MM / COVER_N)
 const INV_FADE_IN = 1 / 1.4
@@ -679,7 +681,8 @@ export class ParticleEngine {
     }
     for (let c = 0; c < out.length; c++) {
       const v = heap[c]!
-      out[c] = v > COVER_CAP_MM ? COVER_CAP_MM : v
+      const over = v - COVER_KNEE_MM
+      out[c] = over > 0 ? COVER_KNEE_MM + (COVER_ROOM_MM * over) / (over + COVER_ROOM_MM) : v
     }
     this.drifted = false
   }
