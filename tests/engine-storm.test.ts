@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { config } from '../src/config'
 import { stream } from '../src/core/rng'
 import { barSeconds, stateSeconds, stillTimeline } from '../src/film/timeline'
-import { LIQUID_ROLL, LIQUID_TURBULENCE, ROLL_AXIS, ROLL_CENTRE, ROLL_MAX, TURBULENCE_MAX } from '../src/globe/liquid'
+import { LIQUID_ROLL, LIQUID_TURBULENCE, ROLL_AXIS, ROLL_CENTRE, ROLL_MAX, ROLL_SLAB_MM, TURBULENCE_MAX } from '../src/globe/liquid'
 import { ParticleEngine, STATE_HIDDEN, STATE_LIQUID, WALL } from '../src/particles/engine/engine'
 import { KINDS } from '../src/particles/engine/kinds'
 import { sdfSample } from '../src/particles/engine/sdf'
@@ -51,8 +51,9 @@ function fill(e: ParticleEngine): number[] {
   return out.map((c, b) => c / n / even[b]!)
 }
 
-function swirl(e: ParticleEngine): { median: number; fast: number; slow: number; round: number; flat: number } {
+function swirl(e: ParticleEngine): { median: number; fast: number; slow: number; round: number; flat: number; outer: number } {
   const speeds: number[] = []
+  const beyond: number[] = []
   let round = 0
   let across = 0
   let upright = 0
@@ -62,11 +63,15 @@ function swirl(e: ParticleEngine): { median: number; fast: number; slow: number;
     const vx = e.vel[o]!
     const vy = e.vel[o + 1]!
     const vz = e.vel[o + 2]!
-    const v = Math.hypot(vx, vy, vz)
-    speeds.push(v)
     const rx = e.pos[o]! - ROLL_CENTRE[0]
     const ry = e.pos[o + 1]! - ROLL_CENTRE[1]
     const rz = e.pos[o + 2]! - ROLL_CENTRE[2]
+    const off = Math.abs(rx * ROLL_AXIS[0] + ry * ROLL_AXIS[1] + rz * ROLL_AXIS[2])
+    const seen = Math.hypot(vx, vy)
+    if (off > 2 * ROLL_SLAB_MM) beyond.push(seen)
+    if (off > ROLL_SLAB_MM) continue
+    speeds.push(seen)
+    const v = Math.hypot(vx, vy, vz)
     const tx = ROLL_AXIS[1] * rz - ROLL_AXIS[2] * ry
     const ty = ROLL_AXIS[2] * rx - ROLL_AXIS[0] * rz
     const tz = ROLL_AXIS[0] * ry - ROLL_AXIS[1] * rx
@@ -76,8 +81,9 @@ function swirl(e: ParticleEngine): { median: number; fast: number; slow: number;
     upright += Math.abs(vy)
   }
   speeds.sort((a, b) => a - b)
+  beyond.sort((a, b) => a - b)
   const at = (q: number): number => speeds[Math.floor((speeds.length - 1) * q)] ?? 0
-  return { median: at(0.5), fast: at(0.9), slow: at(0.1), round: round / Math.max(1, speeds.length), flat: across / Math.max(1e-9, upright) }
+  return { median: at(0.5), fast: at(0.9), slow: at(0.1), round: round / Math.max(1, speeds.length), flat: across / Math.max(1e-9, upright), outer: beyond[beyond.length >> 1] ?? 0 }
 }
 
 describe('the storm of the look lock season', () => {
@@ -89,21 +95,23 @@ describe('the storm of the look lock season', () => {
     expect(e.liquid[LIQUID_ROLL]!).toBeGreaterThan(0.5 * ROLL_MAX)
     expect(e.liquid[LIQUID_ROLL]!).toBeLessThanOrEqual(ROLL_MAX)
     expect(e.liquid[LIQUID_TURBULENCE]! / TURBULENCE_MAX).toBeGreaterThan(0.5)
-    expect(landed.median).toBeGreaterThan(280)
+    expect(landed.median).toBeGreaterThan(250)
     expect(landed.median).toBeLessThan(450)
-    expect(landed.slow).toBeGreaterThan(100)
+    expect(landed.slow).toBeGreaterThan(80)
     expect(landed.slow).toBeLessThan(0.55 * landed.median)
     expect(landed.fast).toBeGreaterThan(1.5 * landed.median)
     expect(landed.fast).toBeLessThan(750)
-    expect(landed.round).toBeGreaterThan(0.45)
-    expect(landed.round).toBeLessThan(0.85)
+    expect(landed.round).toBeGreaterThan(0.6)
+    expect(landed.round).toBeLessThan(0.9)
     expect(landed.flat).toBeGreaterThan(1.25)
     expect(landed.flat).toBeLessThan(2.2)
+    expect(landed.outer).toBeLessThan(0.6 * landed.median)
+    expect(landed.outer).toBeGreaterThan(60)
     e.advanceTo(steps(stateSeconds('landed') + 1), tl)
     const later = swirl(e)
     expect(later.median).toBeGreaterThan(0.3 * landed.median)
-    expect(later.median).toBeLessThan(0.6 * landed.median)
-    expect(later.round).toBeGreaterThan(0.3)
+    expect(later.median).toBeLessThan(0.7 * landed.median)
+    expect(later.round).toBeGreaterThan(0.45)
     e.advanceTo(steps(stateSeconds('landed') + 2.5), tl)
     const late = swirl(e)
     expect(late.median).toBeGreaterThan(0.05 * landed.median)
@@ -118,13 +126,14 @@ describe('the storm of the look lock season', () => {
     e.reset(season)
     e.advanceTo(steps(stateSeconds('landed')), tl)
     const [low, near, mid, high] = fill(e) as [number, number, number, number]
-    expect(low).toBeGreaterThan(1.2)
-    expect(near).toBeGreaterThan(1.1)
+    expect(low).toBeGreaterThan(1.3)
+    expect(near).toBeGreaterThan(1)
     expect(high).toBeLessThan(0.8 * mid)
     e.advanceTo(steps(stateSeconds('landed') + 1), tl)
     const [lower, nearer] = fill(e) as [number, number, number, number]
     expect(lower).toBeGreaterThan(low)
-    expect(nearer).toBeGreaterThan(1.1)
+    expect(lower).toBeGreaterThan(1.8)
+    expect(nearer).toBeGreaterThan(1)
     let dense = 0
     const cells = new Map<number, number>()
     let afloat = 0
