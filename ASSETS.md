@@ -50,8 +50,9 @@ The tool is ElevenLabs, on the Creator plan (measured from the account on 2026-1
 | Cue | File | Tool and model | Takes | Date |
 | --- | --- | --- | --- | --- |
 | `glass-clink` | `audio/kept/glass-clink.wav` | ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz | 2 | 2026-11-24 |
+| `lift` | `audio/kept/lift.wav` | ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz | 3 | 2026-11-24 |
 | `ui-sound-on` | `audio/kept/ui-sound-on.wav` | ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz | 1 | 2026-11-24 |
-| `ui-tick` | `audio/kept/ui-tick.wav` | ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz | 1 | 2026-11-24 |
+| `ui-tick` | `audio/kept/ui-tick.wav` | ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz | 2 | 2026-11-24 |
 
 ## Third-party files
 
