@@ -18,7 +18,7 @@ export const VEIL_LOOK = {
   arcTileMm: 8,
   arcDeepMm: 320,
   arcTurns: 5,
-  warp: 0.3,
+  warp: 0.45,
   blobDrift: 0.3,
   wisp: 3.3,
   cutLow: 0.55,
@@ -31,7 +31,7 @@ export const VEIL_LOOK = {
   uneven: 0.96,
   unevenAtPeak: 0.5,
   peakFrom: 0.7,
-  bank: 5.6,
+  bank: 8,
   bankPower: 3,
   bankRest: -1.1,
   bankRise: 1.2,
@@ -49,8 +49,8 @@ export const VEIL_LOOK = {
   bankShadow: 0.05,
   ambientShare: 1,
   gridShare: 0.75,
-  bankGridShare: 1.6,
-  bankShade: 0.62,
+  bankGridShare: 2.4,
+  bankShade: 0.75,
   bankShadeFrom: 0.25,
   bankShadeTo: 1.3,
 }
@@ -158,7 +158,7 @@ uniform vec4 uVeilUp;
 uniform vec4 uVeilBank;
 uniform mat3 uVeilTurn;
 uniform highp sampler3D uVeilNoise;
-vec3 veilField(vec3 p) {
+vec4 veilStir(vec3 p) {
   vec4 w = texture(uVeilNoise, p / ${n(L.blobTileMm)} + vec3(uVeilFlow.z, uVeilFlow.w, -uVeilFlow.z));
   vec3 c = p - ${vec(CENTRE)};
   float h = dot(c, ${vec(AXIS)});
@@ -168,11 +168,15 @@ vec3 veilField(vec3 p) {
   vec3 q = vec3(rad / ${n(L.arcTileMm)}, h / ${n(L.arcDeepMm)}, turn * ${n(L.arcTurns)} - uVeilFlow.x);
   float a = texture(uVeilNoise, q + vec3((w.rg - 0.5) * ${n(L.warp)}, uVeilFlow.y)).a;
   float d = ${n(L.wisp)} * smoothstep(${n(L.cutLow)}, ${n(L.cutHigh)}, a) * (${n(L.blobLow)} + ${n(L.blobGain)} * w.a);
-  vec3 out2 = p - dot(p, ${vec(AXIS)}) * ${vec(AXIS)};
-  float level = dot(p, uVeilUp.xyz) / uLens.w - ${n(L.bankRing)} * dot(out2, out2) / (uLens.w * uLens.w) + (w.a - 0.5) * ${n(L.bankWave)} + (a - 0.5) * ${n(L.bankWisp)};
-  float bank = smoothstep(uVeilBank.x + uVeilBank.y, uVeilBank.x - uVeilBank.y, level);
   float haze = mix(${n(L.hazeCore)}, 1.0, smoothstep(${n(L.hazeFrom)}, ${n(L.hazeTo)}, rad / uLens.w));
-  return vec3(uVeil.a * mix(1.0, d * haze, uVeilUp.w), uVeilBank.z * bank * mix(d, 1.0, uVeilBank.w * bank * bank), max(uVeilBank.x - level, 0.0) * uLens.w);
+  return vec4(d, haze, a, w.a);
+}
+vec3 veilField(vec3 p) {
+  vec4 s = veilStir(p);
+  vec3 out2 = p - dot(p, ${vec(AXIS)}) * ${vec(AXIS)};
+  float level = dot(p, uVeilUp.xyz) / uLens.w - ${n(L.bankRing)} * dot(out2, out2) / (uLens.w * uLens.w) + (s.w - 0.5) * ${n(L.bankWave)} + (s.z - 0.5) * ${n(L.bankWisp)};
+  float bank = smoothstep(uVeilBank.x + uVeilBank.y, uVeilBank.x - uVeilBank.y, level);
+  return vec3(uVeil.a * mix(1.0, s.x * s.y, uVeilUp.w), uVeilBank.z * bank * mix(s.x, 1.0, uVeilBank.w * bank * bank), max(uVeilBank.x - level, 0.0) * uLens.w);
 }
 vec3 veilLit(vec3 p, vec3 field) {
   float pk = dot(p, uVeilKey.xyz);

@@ -2,7 +2,7 @@ import { COVER_GLSL } from '../../core/chunks/cover'
 import { LIGHT_FRAG_PARS } from '../../core/chunks/light'
 import { VEIL_GLSL } from '../../core/chunks/veil'
 import { viewCode } from '../../diagnostics/views'
-import { BLUR_HOLD, BLUR_STRICT_FROM_PX, BLUR_STRICT_TO_PX, EDGE_DISC, EDGE_HIGH, EDGE_LOW, GLITTER_STREAK, GLINT_HIGH, GLINT_LOW, LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_CORE, LYING_LOOK, MAX_KINDS, PIXEL_SIGMA2, SIZE_HIGH, SIZE_LOW, SIZE_SKEW, STREAK_HOLD, STORM_SHARP_SHARE, STORM_SOFT, STREAK_REACH, STREAK_TAPER, STRETCH_HIGH, STRETCH_LOW } from './looks'
+import { BLUR_HOLD, BLUR_STRICT_FROM_PX, BLUR_STRICT_TO_PX, CLUMP, EDGE_DISC, EDGE_HIGH, EDGE_LOW, GLITTER_STREAK, GLINT_HIGH, GLINT_LOW, LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_CORE, LYING_LOOK, MAX_KINDS, PIXEL_SIGMA2, SIZE_HIGH, SIZE_LOW, SIZE_SKEW, STREAK_HOLD, STORM_SHARP_SHARE, STORM_SOFT, STREAK_REACH, STREAK_TAPER, STRETCH_HIGH, STRETCH_LOW } from './looks'
 
 const MEAN_LOBE = 0.42
 const n = (v: number) => (Number.isInteger(v) ? v.toFixed(1) : String(v))
@@ -141,7 +141,7 @@ export const VERT_MAIN = `
     streak = 2.0 * uPoint.y * (aheadV.xy / -aheadV.z - view.xy / -view.z);
     #endif
     float span = length(streak);
-    if (span > uLimit.x) streak *= uLimit.x / span;
+    streak *= uLimit.x / (uLimit.x + span);
   }
   float halfLong = 0.5 * length(streak);
   vec2 along = halfLong > 1e-4 ? streak / (2.0 * halfLong) : vec2(1.0, 0.0);
@@ -158,6 +158,10 @@ export const VERT_MAIN = `
   if (afloat > 0.5 && shape < 1.5) {
     float smear = uStorm.x * ${n(STORM_SOFT)} * rPx * (0.4 + 1.2 * fract(h.y * 53.0)) * step(${n(STORM_SHARP_SHARE)}, fract(h.x * 91.0));
     held = pow(c2 / (c2 + smear * smear), ${n(1 - BLUR_HOLD)});
+    if (uStorm.x > 0.0) {
+      vec4 stir = veilStir(nowL);
+      held *= mix(1.0, min(${n(CLUMP.floor)} + ${n(CLUMP.gain)} * stir.x * mix(${n(CLUMP.core)}, 1.0, stir.y), ${n(CLUMP.most)}), uStorm.x * ${n(1 / LENS_LOOK.stormSpanSteps)});
+    }
     s2x += smear * smear;
   }
   float amp = pow(c2 / (c2 + s2x), ${n(BLUR_HOLD)}) / pointSpread(halfLong, c2 + s2x);
@@ -268,7 +272,7 @@ void main() {
   float lit = clamp(max(flash.r, max(flash.g, flash.b)), 0.0, 1.0);
   float r0 = ${n(LOBE_CORE)} * vL0.z;
   float edge = mix(${n(EDGE_DISC)}, ${n(EDGE_HIGH)}, smoothstep(0.05, 0.4, r0 * r0 / (r0 * r0 + vStreak.w)));
-  float cover = amp * smoothstep(${n(EDGE_LOW)} * amp, edge * amp, f) * vCore.w * mix(look.z, 1.0, lit);
+  float cover = min(amp * smoothstep(${n(EDGE_LOW)} * amp, edge * amp, f) * vCore.w * mix(look.z, 1.0, lit), 1.0);
   if (uDiag == ${viewCode('cover')}) {
     gl_FragColor = vec4(cover, 0.0, cover, cover);
     return;
