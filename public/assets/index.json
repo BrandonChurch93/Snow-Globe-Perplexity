@@ -4,6 +4,21 @@
     "web": {
       "shared": [
         {
+          "path": "shared/trunk-bark-n.lin.tile.png",
+          "bytes": 10492024,
+          "sha": "74f6a1df6d71fc66"
+        },
+        {
+          "path": "shared/trunk-bark.srgb.tile.png",
+          "bytes": 10512267,
+          "sha": "38969949ad22b466"
+        },
+        {
+          "path": "shared/trunk-wood.glb",
+          "bytes": 533860,
+          "sha": "1c1d348b807adc12"
+        },
+        {
           "path": "shared/village-grain.lin.tile.png",
           "bytes": 867473,
           "sha": "459ea1e4d64e9f2e"
@@ -15,6 +30,66 @@
         }
       ],
       "winter": [
+        {
+          "path": "winter/base-brass-detail.lin.tile.w512.png",
+          "bytes": 433514,
+          "sha": "b63c6da1995e92a1"
+        },
+        {
+          "path": "winter/base-brass.srgb.tile.w512.png",
+          "bytes": 242267,
+          "sha": "0a8ee78af392a49e"
+        },
+        {
+          "path": "winter/base-carve.lin.w2048.png",
+          "bytes": 2277217,
+          "sha": "7660ca9bc0ddfaa2"
+        },
+        {
+          "path": "winter/base-snow.lin.tile.w256.png",
+          "bytes": 177612,
+          "sha": "6b69f8965317c34d"
+        },
+        {
+          "path": "winter/base-snow.srgb.tile.w256.png",
+          "bytes": 61235,
+          "sha": "4b6107e1b784d74f"
+        },
+        {
+          "path": "winter/base-winter.glb",
+          "bytes": 2222448,
+          "sha": "a7c02e95eb0477a0"
+        },
+        {
+          "path": "winter/base-wood-detail.lin.tile.w1024.png",
+          "bytes": 2760395,
+          "sha": "307d29e1b25e25b4"
+        },
+        {
+          "path": "winter/base-wood.srgb.tile.w1024.png",
+          "bytes": 1828693,
+          "sha": "0b50a86221b5288d"
+        },
+        {
+          "path": "winter/tree-crown.glb",
+          "bytes": 5032840,
+          "sha": "a52191392707a09a"
+        },
+        {
+          "path": "winter/tree-needles.srgb.tile.w1024.png",
+          "bytes": 2636268,
+          "sha": "89ac6057b0fb35c0"
+        },
+        {
+          "path": "winter/tree-snow.srgb.tile.w1024.png",
+          "bytes": 1440461,
+          "sha": "4fa9ca2ff5a61965"
+        },
+        {
+          "path": "winter/tree-sprigs.srgb.w512.png",
+          "bytes": 744349,
+          "sha": "df4d16f3ee65e1ad"
+        },
         {
           "path": "winter/village-ice.lin.tile.png",
           "bytes": 645078,
@@ -38,6 +113,21 @@
     "full": {
       "shared": [
         {
+          "path": "shared/trunk-bark-n.lin.tile.png",
+          "bytes": 10492024,
+          "sha": "74f6a1df6d71fc66"
+        },
+        {
+          "path": "shared/trunk-bark.srgb.tile.png",
+          "bytes": 10512267,
+          "sha": "38969949ad22b466"
+        },
+        {
+          "path": "shared/trunk-wood.glb",
+          "bytes": 533860,
+          "sha": "1c1d348b807adc12"
+        },
+        {
           "path": "shared/village-grain.lin.tile.png",
           "bytes": 867473,
           "sha": "459ea1e4d64e9f2e"
@@ -49,6 +139,66 @@
         }
       ],
       "winter": [
+        {
+          "path": "winter/base-brass-detail.lin.tile.w512.png",
+          "bytes": 750074,
+          "sha": "29883b6ac7c33bcf"
+        },
+        {
+          "path": "winter/base-brass.srgb.tile.w512.png",
+          "bytes": 546893,
+          "sha": "db0387e092579690"
+        },
+        {
+          "path": "winter/base-carve.lin.w2048.png",
+          "bytes": 5820382,
+          "sha": "4ce16851b65ef56d"
+        },
+        {
+          "path": "winter/base-snow.lin.tile.w256.png",
+          "bytes": 418611,
+          "sha": "e5bebf26abd4774c"
+        },
+        {
+          "path": "winter/base-snow.srgb.tile.w256.png",
+          "bytes": 159399,
+          "sha": "debbc3500668c953"
+        },
+        {
+          "path": "winter/base-winter.glb",
+          "bytes": 2222448,
+          "sha": "a7c02e95eb0477a0"
+        },
+        {
+          "path": "winter/base-wood-detail.lin.tile.w1024.png",
+          "bytes": 9011696,
+          "sha": "d3d90f02d4385367"
+        },
+        {
+          "path": "winter/base-wood.srgb.tile.w1024.png",
+          "bytes": 7878775,
+          "sha": "224ee454048a5e1c"
+        },
+        {
+          "path": "winter/tree-crown.glb",
+          "bytes": 5032840,
+          "sha": "a52191392707a09a"
+        },
+        {
+          "path": "winter/tree-needles.srgb.tile.w1024.png",
+          "bytes": 10748196,
+          "sha": "5e3440d954ba1152"
+        },
+        {
+          "path": "winter/tree-snow.srgb.tile.w1024.png",
+          "bytes": 1440461,
+          "sha": "4fa9ca2ff5a61965"
+        },
+        {
+          "path": "winter/tree-sprigs.srgb.w512.png",
+          "bytes": 3348898,
+          "sha": "467c638d3c1d148d"
+        },
         {
           "path": "winter/village-ice.lin.tile.png",
           "bytes": 645078,
@@ -71,9 +221,9 @@
     }
   },
   "seasonHashes": {
-    "winter": "3f83c49b376a5a73",
-    "spring": "05ecd2e0e5cd2da8",
-    "summer": "05ecd2e0e5cd2da8",
-    "fall": "05ecd2e0e5cd2da8"
+    "winter": "6687c23c8ec0bed4",
+    "spring": "355b6e11bff74800",
+    "summer": "355b6e11bff74800",
+    "fall": "355b6e11bff74800"
   }
 }
