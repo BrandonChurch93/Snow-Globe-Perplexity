@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitest/config'
 import type { Plugin } from 'vite'
 import raw from './config/showcase.json' with { type: 'json' }
+import { existsSync, readFileSync } from 'node:fs'
 import { configProblems } from './src/configCheck.ts'
 import { approvedPresent, engineHash, packageVersions, writeAssetIndex } from './tools/lib/hashes.mjs'
 
@@ -9,6 +10,16 @@ const problems = configProblems(raw, present)
 if (problems.length) throw new Error(`config/showcase.json is not valid:\n- ${problems.join('\n- ')}`)
 
 const versions = packageVersions() as Record<string, string>
+
+const audioIndex = (): unknown => {
+  const file = new URL('./public/audio/index.json', import.meta.url)
+  if (!existsSync(file)) return null
+  try {
+    return JSON.parse(readFileSync(file, 'utf8'))
+  } catch {
+    return null
+  }
+}
 
 const page = (): Plugin => ({
   name: 'showcase-page',
@@ -28,6 +39,7 @@ export default defineConfig({
     __ENGINE_HASH__: JSON.stringify(engineHash()),
     __APPROVED_PRESENT__: JSON.stringify(present),
     __VERSIONS__: JSON.stringify({ three: versions.three, gsap: versions.gsap, vite: versions.vite, typescript: versions.typescript }),
+    __AUDIO_INDEX__: JSON.stringify(audioIndex()),
   },
   build: {
     target: 'es2022',
