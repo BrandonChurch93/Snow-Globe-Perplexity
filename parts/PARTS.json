@@ -26,34 +26,37 @@
     {
       "name": "surface",
       "unit": "winter",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/scene/surface.ts"
       ],
       "standInHash": "754fa16b2da95235",
-      "commit": "2530677"
+      "commit": "a062468",
+      "note": "scene_builder's final report 12:46 UTC: built, no stand-in left in winter"
     },
     {
       "name": "backdrop",
       "unit": "winter",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/scene/backdrop.ts",
         "src/scene/room.ts"
       ],
       "standInHash": "35315ddf0c8bc086",
-      "commit": "2530677"
+      "commit": "a062468",
+      "note": "scene_builder's final report 12:46 UTC: built, no stand-in left in winter"
     },
     {
       "name": "lens",
       "unit": "winter",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/scene/cameras.ts",
         "src/post"
       ],
       "standInHash": "75038aadccf3d69a",
-      "commit": "2530677"
+      "commit": "a062468",
+      "note": "scene_builder's final report 12:46 UTC: built, no stand-in left in winter"
     },
     {
       "name": "shake",
