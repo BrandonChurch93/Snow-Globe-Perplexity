@@ -1,0 +1,436 @@
+{
+ "round": 5,
+ "phase": 3,
+ "unit": "winter",
+ "tier": "final",
+ "motionTier": "final",
+ "record": false,
+ "limits": {
+  "longEdge": 1400,
+  "maxPixels": 1140000,
+  "maxFiles": 10
+ },
+ "engineHash": "c5811ea1c5834970",
+ "roles": {
+  "R1": {
+   "parts": [
+    {
+     "folder": "out/work/packs/round-005/R1",
+     "message": "out/work/packs/round-005/R1.message.md",
+     "files": [
+      {
+       "name": "set-A-01-a.jpg",
+       "what": "the approved image references/approved/winter-rest.png, cropped to the globe, its base and the surface around them",
+       "sha256": "ae54e079e8ac8fe5109f003a1ace33949017287add5065d888385a1fcf7d33cf",
+       "width": 1078,
+       "height": 1051,
+       "sha256Source": "1cbc7f6c260402fd025a9c08d5fe1e945a8f704bbdef57ff298b96d531cb06e8"
+      },
+      {
+       "name": "set-A-01-b.jpg",
+       "what": "winter-rest: winter in the rest state from hero, hd, final tier, cropped the same way",
+       "sha256": "c3df599b5c39555bcd93ade3d1426bade5ef69daaced3ce53483eead8eba1c05",
+       "width": 1078,
+       "height": 1051
+      },
+      {
+       "name": "set-A-02-a.jpg",
+       "what": "crops of the approved image references/approved/winter-rest.png, resized to the size of the still: 1 the glass at its shoulder; 2 the cottage wall and roof; 3 the tree's crown; 4 the base from its rim to its foot; 5 the collar; 6 the line where the base meets the surface, and the mirror image",
+       "sha256": "8ebdb8fb3ebb50a7df67ef82ceb9395d29b3522e3f045ef05d0eceb80f07595b",
+       "width": 1398,
+       "height": 814
+      },
+      {
+       "name": "set-A-02-b.jpg",
+       "what": "native size crops of winter-rest: winter in the rest state from hero, hd, final tier: 1 the glass at its shoulder; 2 the cottage wall and roof; 3 the tree's crown; 4 the base from its rim to its foot; 5 the collar; 6 the line where the base meets the surface, and the mirror image",
+       "sha256": "105bc497f387f1b83553430abd29d83296e5ae51b7cf1bdca17787e58697ece3",
+       "width": 1398,
+       "height": 814
+      },
+      {
+       "name": "set-B-01-a.jpg",
+       "what": "the approved image references/approved/winter-shake.png, cropped to the globe, its base and the surface around them",
+       "sha256": "7537000c2599137df99b37eceb103e5c3f5b2544248aaab3faf8d1dacfaca06d",
+       "width": 1078,
+       "height": 1055,
+       "sha256Source": "0cf9572935aa3aeba0f84df70a45632b1107b95f8ed2166f7c5ce2ab7477fbc1"
+      },
+      {
+       "name": "set-B-01-b.jpg",
+       "what": "winter-shake: winter in the landed state from hero, hd, final tier, cropped the same way",
+       "sha256": "238056b9d19c695d5a3f1769d69bb3d33820e926f8ea04801e2234c4d332fb52",
+       "width": 1078,
+       "height": 1055
+      },
+      {
+       "name": "set-B-02-a.jpg",
+       "what": "crops of the approved image references/approved/winter-shake.png, resized to the size of the still: 1 the glass at its shoulder; 2 the cottage wall and roof; 3 the tree's crown; 4 the base from its rim to its foot; 5 the collar; 6 the line where the base meets the surface, and the mirror image",
+       "sha256": "61407717631ee99c76a398869b6df8d8ff36e9bd214e342754c79a975fa08432",
+       "width": 1398,
+       "height": 814
+      },
+      {
+       "name": "set-B-02-b.jpg",
+       "what": "native size crops of winter-shake: winter in the landed state from hero, hd, final tier: 1 the glass at its shoulder; 2 the cottage wall and roof; 3 the tree's crown; 4 the base from its rim to its foot; 5 the collar; 6 the line where the base meets the surface, and the mirror image",
+       "sha256": "4ff69007ef6c0a3dabfddbb933c606e4fc0d05f2fd0f198d7cbf091174d19bd8",
+       "width": 1398,
+       "height": 814
+      }
+     ]
+    }
+   ],
+   "missing": [],
+   "notes": []
+  },
+  "R2": {
+   "parts": [
+    {
+     "folder": "out/work/packs/round-005/R2",
+     "message": "out/work/packs/round-005/R2.message.md",
+     "files": [
+      {
+       "name": "set-A-01.jpg",
+       "what": "judged: winter-rest: winter in the rest state from hero, hd, final tier",
+       "sha256": "c3df599b5c39555bcd93ade3d1426bade5ef69daaced3ce53483eead8eba1c05",
+       "width": 1078,
+       "height": 1051,
+       "jury": "judged",
+       "id": "winter-rest"
+      },
+      {
+       "name": "set-A-02.jpg",
+       "what": "control: the approved image references/approved/winter-shake.png",
+       "sha256": "6edc5d90c832114afbaa59c029a3f49d492cfb59f6397d2d436a1cf33092ad4f",
+       "width": 1078,
+       "height": 1051,
+       "jury": "control",
+       "id": "approved winter-shake",
+       "sha256Source": "0cf9572935aa3aeba0f84df70a45632b1107b95f8ed2166f7c5ce2ab7477fbc1"
+      },
+      {
+       "name": "set-A-03.jpg",
+       "what": "judged: winter-shake: winter in the landed state from hero, hd, final tier",
+       "sha256": "348ebf2899d99a262b5f0f5d081cf6c93d02c4c46be773315798cebeffb38524",
+       "width": 1078,
+       "height": 1051,
+       "jury": "judged",
+       "id": "winter-shake"
+      },
+      {
+       "name": "set-A-04.jpg",
+       "what": "control: the approved image references/approved/winter-rest.png",
+       "sha256": "ae54e079e8ac8fe5109f003a1ace33949017287add5065d888385a1fcf7d33cf",
+       "width": 1078,
+       "height": 1051,
+       "jury": "control",
+       "id": "approved winter-rest",
+       "sha256Source": "1cbc7f6c260402fd025a9c08d5fe1e945a8f704bbdef57ff298b96d531cb06e8"
+      },
+      {
+       "name": "set-A-05.jpg",
+       "what": "judged: winter-settled: winter in the settled state from hero, hd, final tier",
+       "sha256": "f3c4c9a4deb8573b79eaf791f5013b7730ddfbb250209d38fb008299985c33aa",
+       "width": 1078,
+       "height": 1051,
+       "jury": "judged",
+       "id": "winter-settled"
+      }
+     ]
+    }
+   ],
+   "missing": [],
+   "notes": [
+    "left out of the jury: winter-interior. Its framing does not show the globe and its base whole, so it cannot be cropped to what a control shows",
+    "left out of the jury: winter-base. Its framing does not show the globe and its base whole, so it cannot be cropped to what a control shows",
+    "left out of the jury: winter-surface. Its framing does not show the globe and its base whole, so it cannot be cropped to what a control shows",
+    "left out of the jury: winter-macro. Its framing does not show the globe and its base whole, so it cannot be cropped to what a control shows",
+    "every image is cropped to 1.43 radii left, 1.43 right, 1.17 up and 1.62 down of the globe centre, at 1078 x 1051"
+   ]
+  },
+  "R3": {
+   "parts": [
+    {
+     "folder": "out/work/packs/round-005/R3-1",
+     "message": "out/work/packs/round-005/R3-1.message.md",
+     "files": [
+      {
+       "name": "set-A-01.jpg",
+       "what": "winter-rest: winter in the rest state from hero, hd, final tier, resized to fit",
+       "sha256": "c92a44de90dde057d4f73d2a38c0fc95add8824a89c80ddc6679c6926a9f09b3",
+       "width": 1400,
+       "height": 787
+      },
+      {
+       "name": "set-A-02.jpg",
+       "what": "native size crops of winter-rest: winter in the rest state from hero, hd, final tier: 1 the glass at its shoulder; 2 the glass at its rim; 3 the cottage wall and roof; 4 the tree's crown; 5 the pond and the ground around it; 6 particles near the glass; 7 particles far behind; 8 the base from its rim to its foot; 9 the collar; 10 the line where the base meets the surface, and the mirror image; 11 what lies on the surface, left; 12 what lies on the surface, right",
+       "sha256": "96e863f00430c666d21adfb19fd494a66bf33e44c80f6d035059606dfa2012ec",
+       "width": 1398,
+       "height": 814
+      },
+      {
+       "name": "set-A-03.jpg",
+       "what": "native size crops of winter-rest: winter in the rest state from hero, hd, final tier: 1 the glass at its shoulder; 2 the glass at its rim; 3 the cottage wall and roof; 4 the tree's crown; 5 the pond and the ground around it; 6 particles near the glass; 7 particles far behind; 8 the base from its rim to its foot; 9 the collar; 10 the line where the base meets the surface, and the mirror image; 11 what lies on the surface, left; 12 what lies on the surface, right",
+       "sha256": "ab90167f258ad0534567e76983b268b3982ef207c8a5815792d849b166d28ae7",
+       "width": 1398,
+       "height": 814
+      },
+      {
+       "name": "set-B-01.jpg",
+       "what": "winter-shake: winter in the landed state from hero, hd, final tier, resized to fit",
+       "sha256": "116bfab07331ae6c6fa34a084f8c57f7d9eb9e025efec29f28ac1a66bf963d47",
+       "width": 1400,
+       "height": 787
+      },
+      {
+       "name": "set-B-02.jpg",
+       "what": "native size crops of winter-shake: winter in the landed state from hero, hd, final tier: 1 the glass at its shoulder; 2 the glass at its rim; 3 the cottage wall and roof; 4 the tree's crown; 5 the pond and the ground around it; 6 particles near the glass; 7 particles far behind; 8 the base from its rim to its foot; 9 the collar; 10 the line where the base meets the surface, and the mirror image; 11 what lies on the surface, left; 12 what lies on the surface, right",
+       "sha256": "bd7f476e55f33ff62fa3da6a4f5389f01ae9d44b3bd4977439605c8a564599ec",
+       "width": 1398,
+       "height": 814
+      },
+      {
+       "name": "set-B-03.jpg",
+       "what": "native size crops of winter-shake: winter in the landed state from hero, hd, final tier: 1 the glass at its shoulder; 2 the glass at its rim; 3 the cottage wall and roof; 4 the tree's crown; 5 the pond and the ground around it; 6 particles near the glass; 7 particles far behind; 8 the base from its rim to its foot; 9 the collar; 10 the line where the base meets the surface, and the mirror image; 11 what lies on the surface, left; 12 what lies on the surface, right",
+       "sha256": "0632e5a88d558c65ac2b3915c56f30d1e6e01a157205b13472f506de82292d3a",
+       "width": 1398,
+       "height": 814
+      },
+      {
+       "name": "set-C-01.jpg",
+       "what": "winter-interior: winter in the rest state from interior, hd, final tier, resized to fit",
+       "sha256": "3038a832178f9c51b32ddfdae552ed8f3a29aae3cbe18d5801005f1e1c3b5ffb",
+       "width": 1400,
+       "height": 787
+      },
+      {
+       "name": "set-C-02.jpg",
+       "what": "native size crops of winter-interior: winter in the rest state from interior, hd, final tier: numbered left to right, top to bottom across the still, four to a row",
+       "sha256": "1a261f66724616d4aea3f743f55b05504ba75987c421e30b2ed07c0ac1a6007f",
+       "width": 1398,
+       "height": 814
+      },
+      {
+       "name": "set-C-03.jpg",
+       "what": "native size crops of winter-interior: winter in the rest state from interior, hd, final tier: numbered left to right, top to bottom across the still, four to a row",
+       "sha256": "e62906baf717f55b261c461e7f601470cf8d47fe9212ac76fd5a3590c71e749d",
+       "width": 1398,
+       "height": 814
+      }
+     ]
+    },
+    {
+     "folder": "out/work/packs/round-005/R3-2",
+     "message": "out/work/packs/round-005/R3-2.message.md",
+     "files": [
+      {
+       "name": "set-D-01.jpg",
+       "what": "winter-base: winter in the rest state from base, hd, final tier, resized to fit",
+       "sha256": "03400417e40df639b9f18a35f26cb7741b90a07f5999d120a6b313880d65938d",
+       "width": 1400,
+       "height": 787
+      },
+      {
+       "name": "set-D-02.jpg",
+       "what": "native size crops of winter-base: winter in the rest state from base, hd, final tier: numbered left to right, top to bottom across the still, four to a row",
+       "sha256": "9a602524a5e553199d025e43959a4f433eaa7ac4a59be44cf6d9e789db434eb9",
+       "width": 1398,
+       "height": 814
+      },
+      {
+       "name": "set-D-03.jpg",
+       "what": "native size crops of winter-base: winter in the rest state from base, hd, final tier: numbered left to right, top to bottom across the still, four to a row",
+       "sha256": "8a33d1ebc644532e39fcee8aad58c9d1289711e7cc52a1b21ce144b6d363ca0d",
+       "width": 1398,
+       "height": 814
+      },
+      {
+       "name": "set-E-01.jpg",
+       "what": "winter-surface: winter in the rest state from surface, hd, final tier, resized to fit",
+       "sha256": "f933b06ad6db5bb32a61113be5768fd814e155c9e6fcbe2f704afc7a3d7c6a63",
+       "width": 1400,
+       "height": 787
+      },
+      {
+       "name": "set-E-02.jpg",
+       "what": "native size crops of winter-surface: winter in the rest state from surface, hd, final tier: numbered left to right, top to bottom across the still, four to a row",
+       "sha256": "e57e4930049b748be8d11004b38c0d9a9868dbd46cf0e3477876cb9857c8f244",
+       "width": 1398,
+       "height": 814
+      },
+      {
+       "name": "set-E-03.jpg",
+       "what": "native size crops of winter-surface: winter in the rest state from surface, hd, final tier: numbered left to right, top to bottom across the still, four to a row",
+       "sha256": "89e58ba167605132abca16e5912799d14d853384cab0ced8a4ecc511b634999d",
+       "width": 1398,
+       "height": 814
+      },
+      {
+       "name": "set-F-01.jpg",
+       "what": "winter-settled: winter in the settled state from hero, hd, final tier, resized to fit",
+       "sha256": "23de2ca8408feeccccf5b2d97ef4e90a236262387b504371d10495b8d169ed4c",
+       "width": 1400,
+       "height": 787
+      },
+      {
+       "name": "set-F-02.jpg",
+       "what": "native size crops of winter-settled: winter in the settled state from hero, hd, final tier: 1 the glass at its shoulder; 2 the glass at its rim; 3 the cottage wall and roof; 4 the tree's crown; 5 the pond and the ground around it; 6 particles near the glass; 7 particles far behind; 8 the base from its rim to its foot; 9 the collar; 10 the line where the base meets the surface, and the mirror image; 11 what lies on the surface, left; 12 what lies on the surface, right",
+       "sha256": "f6420863a18947d75893ad9e58fbbd347f58a7930bd46e77c7e2796f2e56c59b",
+       "width": 1398,
+       "height": 814
+      },
+      {
+       "name": "set-F-03.jpg",
+       "what": "native size crops of winter-settled: winter in the settled state from hero, hd, final tier: 1 the glass at its shoulder; 2 the glass at its rim; 3 the cottage wall and roof; 4 the tree's crown; 5 the pond and the ground around it; 6 particles near the glass; 7 particles far behind; 8 the base from its rim to its foot; 9 the collar; 10 the line where the base meets the surface, and the mirror image; 11 what lies on the surface, left; 12 what lies on the surface, right",
+       "sha256": "7e7ecdf2c7ffa0ddaef4e077b92f616fd37d292b6cf66d431c293f7692138643",
+       "width": 1398,
+       "height": 814
+      }
+     ]
+    },
+    {
+     "folder": "out/work/packs/round-005/R3-3",
+     "message": "out/work/packs/round-005/R3-3.message.md",
+     "files": [
+      {
+       "name": "set-G-01.jpg",
+       "what": "winter-macro: winter in the rest state from macro, hd, final tier, resized to fit",
+       "sha256": "8e18975e42580252cc580ae12abfd73eeab04c77942e00111a5da193076d4447",
+       "width": 1400,
+       "height": 787
+      },
+      {
+       "name": "set-G-02.jpg",
+       "what": "native size crops of winter-macro: winter in the rest state from macro, hd, final tier: numbered left to right, top to bottom across the still, four to a row",
+       "sha256": "e2bf703dd743d13f7fcb9c7bc2a86db05c3b3edde4d58f6db4fbb39acf5e1deb",
+       "width": 1398,
+       "height": 814
+      },
+      {
+       "name": "set-G-03.jpg",
+       "what": "native size crops of winter-macro: winter in the rest state from macro, hd, final tier: numbered left to right, top to bottom across the still, four to a row",
+       "sha256": "d7686d7811a19d180478af74694060abddf853bf0530b996dcef0fc1c7620fe0",
+       "width": 1398,
+       "height": 814
+      }
+     ]
+    }
+   ],
+   "missing": [],
+   "notes": []
+  },
+  "R4": {
+   "parts": [
+    {
+     "folder": "out/work/packs/round-005/R4-1",
+     "message": "out/work/packs/round-005/R4-1.message.md",
+     "files": [
+      {
+       "name": "set-A-01.jpg",
+       "what": "the lift of the shake, from node tools/sheet.mjs --motion lift --shot test --tier review: out/work/sheets/motion-lift-test-preview-review-1.jpg",
+       "source": "out/work/sheets/motion-lift-test-preview-review-1.jpg",
+       "sha256": "1c72a1ad85471b6c3c0aa59632543d950728086cdaa5653ee482b2f38e340f8c",
+       "width": 1149,
+       "height": 986
+      },
+      {
+       "name": "set-A-02.jpg",
+       "what": "the lift of the shake, from node tools/sheet.mjs --motion lift --shot test --tier review: out/work/sheets/motion-lift-test-preview-review-2.jpg",
+       "source": "out/work/sheets/motion-lift-test-preview-review-2.jpg",
+       "sha256": "e698fca99380f4ce4cca6914ec4cdd66f5b582041e9f86926da40c0b16a39fac",
+       "width": 1149,
+       "height": 498
+      },
+      {
+       "name": "set-B-01.jpg",
+       "what": "the strokes of the shake, from node tools/sheet.mjs --motion strokes --shot test --tier review: out/work/sheets/motion-strokes-test-preview-review-1.jpg",
+       "source": "out/work/sheets/motion-strokes-test-preview-review-1.jpg",
+       "sha256": "9034a2c49ce9c40560147fa3b385b48bc4eea373e363a8b30a2080eb5bedbebe",
+       "width": 1149,
+       "height": 986
+      },
+      {
+       "name": "set-B-02.jpg",
+       "what": "the strokes of the shake, from node tools/sheet.mjs --motion strokes --shot test --tier review: out/work/sheets/motion-strokes-test-preview-review-2.jpg",
+       "source": "out/work/sheets/motion-strokes-test-preview-review-2.jpg",
+       "sha256": "642d360e0236ab54061424509daad83329892bccc8d8e428e61614fd8060b4fa",
+       "width": 1149,
+       "height": 986
+      },
+      {
+       "name": "set-B-03.jpg",
+       "what": "the strokes of the shake, from node tools/sheet.mjs --motion strokes --shot test --tier review: out/work/sheets/motion-strokes-test-preview-review-3.jpg",
+       "source": "out/work/sheets/motion-strokes-test-preview-review-3.jpg",
+       "sha256": "e0427ecab3899eacff5a244b5a01a847c9d1574a618ab25ddfdeb666413a1be9",
+       "width": 1149,
+       "height": 986
+      },
+      {
+       "name": "set-C-01.jpg",
+       "what": "the set down of the shake, from node tools/sheet.mjs --motion setdown --shot test --tier review: out/work/sheets/motion-setdown-test-preview-review-1.jpg",
+       "source": "out/work/sheets/motion-setdown-test-preview-review-1.jpg",
+       "sha256": "df1777941fc62c9d107e0311d7bc41cd777052fbc7270519363a48d4aa0c6dfb",
+       "width": 1149,
+       "height": 986
+      },
+      {
+       "name": "set-C-02.jpg",
+       "what": "the set down of the shake, from node tools/sheet.mjs --motion setdown --shot test --tier review: out/work/sheets/motion-setdown-test-preview-review-2.jpg",
+       "source": "out/work/sheets/motion-setdown-test-preview-review-2.jpg",
+       "sha256": "6d5cc300d40312547f4154e38b7dd9bbb26d45764de5918c79357a04e967b051",
+       "width": 1149,
+       "height": 498
+      },
+      {
+       "name": "set-D-01.jpg",
+       "what": "the first second after the landing of the shake, from node tools/sheet.mjs --motion landing --shot test --tier review: out/work/sheets/motion-landing-test-preview-review-1.jpg",
+       "source": "out/work/sheets/motion-landing-test-preview-review-1.jpg",
+       "sha256": "6e44ce47ea08d26d2ef1cc17138b7988397f8c041d611a47c4b6046214a6cb52",
+       "width": 1149,
+       "height": 986
+      },
+      {
+       "name": "set-D-02.jpg",
+       "what": "the first second after the landing of the shake, from node tools/sheet.mjs --motion landing --shot test --tier review: out/work/sheets/motion-landing-test-preview-review-2.jpg",
+       "source": "out/work/sheets/motion-landing-test-preview-review-2.jpg",
+       "sha256": "784ae03d134d8b390230b45ba3aa25eb0878f937bd21d624093624048f5d8fe1",
+       "width": 1149,
+       "height": 986
+      },
+      {
+       "name": "set-D-03.jpg",
+       "what": "the first second after the landing of the shake, from node tools/sheet.mjs --motion landing --shot test --tier review: out/work/sheets/motion-landing-test-preview-review-3.jpg",
+       "source": "out/work/sheets/motion-landing-test-preview-review-3.jpg",
+       "sha256": "87c2e2cfbfeed06bca205cfb4f479958d850d3940fa38f3e966898c5a37693b1",
+       "width": 1149,
+       "height": 498
+      }
+     ]
+    },
+    {
+     "folder": "out/work/packs/round-005/R4-2",
+     "message": "out/work/packs/round-005/R4-2.message.md",
+     "files": [
+      {
+       "name": "set-E-01.jpg",
+       "what": "one sheet across the whole shake and the clearing that follows, from node tools/sheet.mjs --shot test --tier review: out/work/sheets/shot-test-preview-review.jpg",
+       "source": "out/work/sheets/shot-test-preview-review.jpg",
+       "sha256": "20b590d9be04e16eb45f60c1c3db4424ccf370ffad9b8f56455cfc01fe1afb7b",
+       "width": 1149,
+       "height": 986
+      },
+      {
+       "name": "set-F-01.jpg",
+       "what": "the globe at rest across several seconds, from node tools/sheet.mjs --shot open --tier review: out/work/sheets/shot-open-preview-review.jpg",
+       "source": "out/work/sheets/shot-open-preview-review.jpg",
+       "sha256": "95af0e1d3e3a5426a5b323033b0f382e37578392de8f3a826b0b9fca78533c83",
+       "width": 1149,
+       "height": 986
+      }
+     ]
+    }
+   ],
+   "missing": [],
+   "notes": []
+  }
+ }
+}
