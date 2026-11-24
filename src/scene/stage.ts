@@ -3,7 +3,7 @@ import { config } from '../config'
 import type { Gfx } from '../core/gl'
 import { MODE, setPresence, stageShader, stageUniforms, type Rgb } from '../core/materials'
 import type { Sample } from '../core/sampler'
-import type { Moment, ParticleSource, SdfGrid, Stage, StageQuality } from '../core/stage'
+import type { Emitter, Moment, ParticleSource, SdfGrid, Stage, StageQuality } from '../core/stage'
 import { flagStandIn } from '../core/standins'
 import { FLOW_RANGE_MM_S, LIGHT_RANGE, allParts, partBytes, viewCode } from '../diagnostics/views'
 import { Shell, shellUniforms } from '../globe/shell'
@@ -13,7 +13,7 @@ import type { SeasonKit } from '../seasons/kit'
 import { changeBloom, partChange } from '../shake/change'
 import { Backdrop } from './backdrop'
 import { applyPose, type Pose } from './cameras'
-import { buildCollider, centreHeightMm, innerRadiusMm, outerRadiusMm } from './layout'
+import { buildCollider, centreHeightMm, emitters as layoutEmitters, innerRadiusMm, outerRadiusMm } from './layout'
 import { bakeGrid, flickerOf, gainOf, glowOf, gridBytes } from './lightgrid'
 import { makeDressing, makeSlab, surfaceUniforms } from './surface'
 
@@ -185,6 +185,15 @@ export class GlobeStage implements Stage {
       this.colliders.set(season, c)
     }
     return c
+  }
+
+  emitters(season: string): Record<string, Emitter[]> {
+    const out: Record<string, Emitter[]> = {}
+    for (const kind of Object.keys(kitOf(season).particles)) {
+      const list = layoutEmitters[kind]
+      if (list) out[kind] = list.map((e) => ({ ...e }))
+    }
+    return out
   }
 
   particleCount(): number {

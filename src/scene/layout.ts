@@ -1,5 +1,5 @@
 import { config } from '../config'
-import type { SdfGrid } from '../core/stage'
+import type { Emitter, SdfGrid } from '../core/stage'
 
 const G = config.globe
 export const outerRadiusMm = G.sphereDiameterMm / 2
@@ -264,3 +264,34 @@ export const anchors = {
   pond: pond.centre,
   hearth: onBox(walls, 0, 0, 0),
 }
+
+const CLEAR = 0.8
+const trunk = find('trunk', 'cone')
+
+function shell(c: readonly [number, number, number], radius: number, r: number, dirs: readonly (readonly [number, number, number])[]): Emitter[] {
+  return dirs.map((d) => {
+    const k = (radius + r + CLEAR) / Math.hypot(d[0], d[1], d[2])
+    return { x: c[0] + d[0] * k, y: c[1] + d[1] * k, z: c[2] + d[2] * k, r }
+  })
+}
+
+const canopy: readonly Emitter[] = shell(crown.centre, crown.radius, 4, [
+  [0, 1, 0],
+  [1, 1, 0], [-1, 1, 0], [0, 1, 1], [0, 1, -1],
+  [1, 0, 1], [-1, 0, 1], [1, 0, -1], [-1, 0, -1],
+  [1, -0.5, 0.4], [-1, -0.5, 0.4], [0, -0.5, 1],
+])
+
+function spot(at: readonly [number, number, number], r: number): Emitter {
+  return { x: at[0], y: at[1], z: at[2], r }
+}
+
+const sparks: readonly Emitter[] = [
+  spot([lamp.centre[0], lamp.centre[1] + lamp.radius + 2 + CLEAR, lamp.centre[2]], 2),
+  spot(onBox(walls, 0.45, 0.1, 1 + (2 + CLEAR) / walls.half[2]), 2),
+  spot(onBox(walls, -0.25, -0.3, 1 + (2 + CLEAR) / walls.half[2]), 2),
+  spot([trunk.foot[0] - 7, groundAt(trunk.foot[0] - 7, trunk.foot[2] + 7) + 2.2 + CLEAR, trunk.foot[2] + 7], 2.2),
+  ...shell(crown.centre, crown.radius, 2.5, [[-1, -0.35, 0.5], [0.4, -0.3, 1], [1, 0.1, 0.6]]),
+]
+
+export const emitters: Readonly<Record<string, readonly Emitter[]>> = { petal: canopy, leaf: canopy, ember: sparks }
