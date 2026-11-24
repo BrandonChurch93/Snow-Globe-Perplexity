@@ -3,6 +3,7 @@ import { copy, timing } from '../copy'
 import type { AppBridge, AppState, InterfaceHandle } from '../core/bridge'
 import { seasonGlyphs, shakeGlyph, soundGlyph } from './glyphs'
 import { mountMenu } from './menu'
+import './face.css'
 import s from './ui.module.css'
 
 function make<K extends keyof HTMLElementTagNameMap>(tag: K, className: string): HTMLElementTagNameMap[K] {

@@ -31,6 +31,7 @@ export const copy = {
     title: 'Frame rate probe',
     waiting: 'Starting',
     measuring: (level: string, phase: 'rest' | 'storm'): string => `Measuring ${level}, ${phase === 'rest' ? 'at rest' : 'in the storm'}`,
+    left: (seconds: number): string => `about ${seconds} s left`,
     done: 'Done',
     failed: 'The probe stopped before the end',
     level: 'Level',
@@ -41,13 +42,16 @@ export const copy = {
     unit: 'fps',
     graphics: 'Graphics',
     screen: 'Screen',
+    screenAt: (size: string, ratio: number): string => `${size} at ${ratio}x`,
     pick: 'Pick',
     browser: 'Browser',
-    pending: 'Measuring',
+    empty: '\u00b7',
     copy: 'Copy',
     copied: 'Copied',
     select: 'Select the text and copy it',
     textName: 'Results as plain text',
+    line: (level: string, rest: string, restSlow: string, storm: string, stormSlow: string): string =>
+      `${level}: rest ${rest} fps (slowest 1% ${restSlow}), storm ${storm} fps (slowest 1% ${stormSlow})`,
   },
 } as const
 
