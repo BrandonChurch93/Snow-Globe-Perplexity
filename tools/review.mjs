@@ -225,8 +225,10 @@ function gather() {
     videos.push({ part, src, to: `video/${to}`, title, bytes: sizeOf(src), ...extra })
   }
   const cut = files.reviewCut ?? 'review-cut.mp4'
-  for (const c of candidates) video('listen', rel('out', 'work', 'review-cuts', c, cut), `review-cut-${c}.mp4`, `Review cut, ${words(c)}`)
-  video('listen', rel('out', 'work', 'review-cuts', 'silent', cut), 'review-cut-silent.mp4', 'Review cut, no music')
+  // the film tool writes out/work/review-<candidate>.mp4. The older place, out/work/review-cuts/<candidate>/, is still read.
+  const reviewCut = (c) => [rel('out', 'work', `review-${c}.mp4`), rel('out', 'work', 'review-cuts', c, cut)].find((f) => exists(f))
+  for (const c of candidates) video('listen', reviewCut(c), `review-cut-${c}.mp4`, `Review cut, ${words(c)}`)
+  video('listen', reviewCut('silent'), 'review-cut-silent.mp4', 'Review cut, no music')
   video('films', rel('out', 'roughcut.mp4'), 'roughcut.mp4', 'Rough cut')
   if (files.previewB) video('films', rel('out', files.previewB), files.previewB, 'Film B, preview')
   if (files.previewA) video('films', rel('out', files.previewA), files.previewA, 'Film A, preview, with the prompt opening')
