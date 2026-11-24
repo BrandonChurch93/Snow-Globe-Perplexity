@@ -27,6 +27,8 @@ const LAMP_ON_WOOD = { power: 100, reachMm: 12, wrap: -0.3 }
 const LAMP_ON_SNOW = { power: 1.5, reachMm: 14, wrap: 0.6 }
 const LAMP_SHIFT: Vec3 = [-3, 0, -5]
 const FILL_ON_WOOD = { power: 3, reachMm: 1000, wrap: 0.4 }
+const SKY_ON_SNOW = { power: 0.9, reachMm: 14, wrap: 0.15 }
+const SKY_FROM: Vec3 = [20, 42, 7]
 const FILL_FROM: Vec3 = [40, 20, 60]
 const BARK: [number, number, number] = [0.09, 0.105, 0.1]
 const SNOW_TINT: [number, number, number] = [1.16, 1.18, 1.28]
@@ -217,7 +219,7 @@ function lampOn(on: { power: number; reachMm: number; wrap: number }): GlowLight
   return { at: [flame[0] + LAMP_SHIFT[0], flame[1] + LAMP_SHIFT[1], flame[2] + LAMP_SHIFT[2]], color: tones.lampLight, ...on, phase: 0.1 }
 }
 
-const onSnow = (): GlowLight[] => [...bulbs(GLOW.snow), lampOn(LAMP_ON_SNOW)]
+const onSnow = (): GlowLight[] => [...bulbs(GLOW.snow), lampOn(LAMP_ON_SNOW), { at: placePoint(SKY_FROM), color: tones.sheen, ...SKY_ON_SNOW, phase: 0.6 }]
 
 function placed(name: string, lit: readonly GlowLight[]): THREE.BufferGeometry {
   const g = placeGeometry(geometry(MODEL, name))
