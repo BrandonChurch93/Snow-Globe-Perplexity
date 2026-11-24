@@ -26,7 +26,7 @@ const cottageInv = cottageM.clone().invert()
 const local = (x, y, z) => new THREE.Vector3(x, y, z).applyMatrix4(cottageInv)
 
 const SNOW = lin('#edf1f8')
-const ROOF_TONE = [0.56, 0.48, 0.43]
+const ROOF_TONE = [0.6, 0.53, 0.48]
 const ICE_SHADE = { dark: 0.85, from: 0.45, to: 0.95 }
 const snow = new Bag('snow')
 const ice = new Bag('ice')
