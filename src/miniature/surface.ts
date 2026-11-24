@@ -7,6 +7,7 @@ export interface GlowSource {
   color: Rgb
   power: number
   reachMm: number
+  ends?: number
 }
 
 const WRAP = 0.22
@@ -33,10 +34,11 @@ export function withSurface(g: THREE.BufferGeometry, glow: readonly GlowSource[]
       const dz = l.at[2] - z
       const d2 = dx * dx + dy * dy + dz * dz
       const reach2 = l.reachMm * l.reachMm
-      if (d2 > reach2 * 180) continue
+      if (d2 > reach2 * (l.ends === undefined ? 180 : l.ends * l.ends)) continue
+      const shut = l.ends === undefined ? 1 : (1 - d2 / (reach2 * l.ends * l.ends)) ** 2
       const d = Math.sqrt(d2) || 1e-6
       const facing = Math.max(0, ((nx * dx + ny * dy + nz * dz) / d) * (1 - WRAP) + WRAP)
-      const f = (l.power * facing) / (1 + d2 / reach2)
+      const f = (l.power * facing * shut) / (1 + d2 / reach2)
       r += l.color[0] * f
       gg += l.color[1] * f
       b += l.color[2] * f
@@ -120,7 +122,7 @@ export interface Cover {
   uniforms: Record<string, THREE.IUniform>
 }
 
-export function surfaceMaterial(o: { part: string; map: THREE.Texture; gain: THREE.IUniform<number>; cover?: Cover; key: string; change?: string }): THREE.MeshStandardMaterial {
+export function surfaceMaterial(o: { part: string; map: THREE.Texture; gain: THREE.IUniform<number>; cover?: Cover; key: string; change?: string; fill?: number }): THREE.MeshStandardMaterial {
   return stageMaterial({
     part: o.part,
     standIn: false,
@@ -144,7 +146,7 @@ export function surfaceMaterial(o: { part: string; map: THREE.Texture; gain: THR
         .replace('#include <roughnessmap_fragment>', 'float roughnessFactor = villageRough;')
         .replace('#include <metalnessmap_fragment>', 'float metalnessFactor = villageMetal;')
         .replace('#include <normal_fragment_maps>', SURFACE_NORMAL)
-      afterLight(shader, NEAR_LIGHT)
+      afterLight(shader, o.fill ? `${NEAR_LIGHT}\nreflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${o.fill.toFixed(3)} * stageWrap(dot(geometryNormal, stageKeyL), 3.0)) * material.diffuseContribution;` : NEAR_LIGHT)
     },
   })
 }

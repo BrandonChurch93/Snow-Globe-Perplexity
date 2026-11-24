@@ -28,25 +28,30 @@ const LAMP = { power: 3, reachMm: 12, flicker: 0.05, cycles: 3, phase: 0.1 }
 const WINDOW = { power: 0.8, reachMm: 8, flicker: 0.1, cycles: 5, phase: 0.4 }
 const SIDE = { power: 0.8, reachMm: 7, flicker: 0.1, cycles: 4, phase: 0.75 }
 const BULB = { power: 0.6, reachMm: 4.5, flicker: 0.07, cycles: 2 }
-const NEAR = { bulb: { power: 1, reachMm: 2 }, lamp: { power: 2.2, reachMm: 7 }, pane: { power: 0.7, reachMm: 2.4 } }
-const MIRROR = { lamp: 9, pane: 1.2, bulb: 0.5, tight: 0.0007, wide: 0.02, wideShare: 0.012, bump: 0.8, lowMm: 3.4, sparkle: 1.1 }
-const HALO = { radiusMm: 1.25, strength: 0.7, hot: 4, pullMm: 1.6, flicker: 0.07, cycles: 2 }
+const NEAR = { bulb: { power: 2.4, reachMm: 1.2, ends: 3 }, lamp: { power: 2.2, reachMm: 7 }, pane: { power: 0.7, reachMm: 2.4 } }
+const NEAR_WALL = { bulb: { power: 6.5, reachMm: 1.3, ends: 3 }, lamp: { power: 0.75, reachMm: 7, ends: 3 }, pane: { power: 0.7, reachMm: 2.4, ends: 3 } }
+const MIRROR = { lamp: 9, pane: 1.2, bulb: 0.5, tight: 0.0007, wide: 0.02, wideShare: 0.007, bump: 0.8, lowMm: 3.4, sparkle: 1.1 }
+const HALO = { radiusMm: 0.8, strength: 0.95, hot: 1.4, pullMm: 1.6, flicker: 0.07, cycles: 2 }
 const COVER_GAIN = 0.12
 const FRESH_RISE_MM = 0.3
 const SNOW_GRAIN_MM = 0.05
 const SNOW_LUMP_MM = 0.3
 const SNOW_DRIFT_MM = 1.1
 const SPARK = 2.6
-const SNOW_WRAP = 0.7
+const SNOW_WRAP = 0.4
 const BANK_RELIEF = 2
 const BANK_TIP = 0.8
-const BANK_WRAP = 3
-const BANK_BODY = 4.6
+const BANK_WRAP = 2.4
+const BANK_BODY = 3.6
 const BANK_HOLLOW = 0.25
 const BANK_FOOT = 0.33
 const BANK_CREST = 0.35
 const BANK_AIR = 0.6
 const ICE_NEAR = 0.15
+const ICE_RIM = 0.9
+const SNOW_FILL = 1.6
+const WALL_FILL = 1.15
+const BANK_SIDES = { front: 0.85, side: 1.25 }
 
 const bulbs = hangPoints()
 const flame = lampFlame()
@@ -67,6 +72,13 @@ const near: GlowSource[] = [
   ...bulbs.map((at): GlowSource => ({ at, color: tones.bulbLight, ...NEAR.bulb })),
 ]
 
+const nearWall: GlowSource[] = [
+  { at: flame, color: tones.lampLight, ...NEAR_WALL.lamp },
+  { at: anchors.window, color: tones.roomLight, ...NEAR_WALL.pane },
+  { at: anchors.sideWindow, color: tones.roomLight, ...NEAR_WALL.pane },
+  ...bulbs.map((at): GlowSource => ({ at, color: tones.bulbLight, ...NEAR_WALL.bulb })),
+]
+
 const gain = { value: 1 }
 const clock = { value: 0 }
 const rise = { value: 1 }
@@ -84,7 +96,7 @@ const dusting: Cover = {
 {
   float winterLain = clamp(stageCover(vStageLocal.xz) * 0.5, 0.0, 1.0);
   float winterUp = normalize(vObjN).y + 0.5 * (villageMottle - 0.5) + 0.3 * (villageGrain.r - 0.5);
-  float winterDust = smoothstep(0.5 - 0.22 * winterLain, 0.93, winterUp) * (0.6 + 0.4 * winterLain);
+  float winterDust = smoothstep(0.86 - 0.36 * winterLain, 0.98, winterUp) * (0.3 + 0.7 * winterLain);
   diffuseColor.rgb = mix(diffuseColor.rgb, ${glsl(tones.dust)} * (0.86 + 0.2 * villageGrain.r), winterDust * 0.88);
   villageRough = mix(villageRough, 0.96, winterDust);
   villageMetal *= 1.0 - winterDust;
@@ -162,13 +174,14 @@ diffuseColor.rgb *= ${glsl(tones.snow)} * (0.92 + 0.16 * snowT.r + 0.12 * (snowW
         shader,
         `${NEAR_LIGHT}
 {
-  reflectedLight.directDiffuse += stageWrapped(geometryNormal, ${SNOW_WRAP.toFixed(2)}) * material.diffuseContribution;
+  reflectedLight.directDiffuse += (stageWrapped(geometryNormal, ${SNOW_WRAP.toFixed(2)}) + stageKeyC * (RECIPROCAL_PI * ${SNOW_FILL.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), 1.0))) * material.diffuseContribution;
   if (bankMask > 0.0) {
     float bankTop = smoothstep(-0.95, -0.15, dot(bankN, vPuff) / max(bankSpan, 1e-4));
     bankTop = mix(bankTop, 1.0, 0.85 * (1.0 - smoothstep(0.0, ${BANK_CREST.toFixed(2)}, bankDeep)));
     float bankSide = stageWrap(dot(geometryNormal, stageKeyL), ${BANK_WRAP.toFixed(2)});
     float bankFall = mix(1.0, ${BANK_FOOT.toFixed(2)}, smoothstep(0.0, 1.0, bankDeep));
-    vec3 bankBody = stageKeyC * (RECIPROCAL_PI * ${BANK_BODY.toFixed(2)} * bankSide * mix(${BANK_HOLLOW.toFixed(2)}, 1.0, bankTop) * bankFall) * material.diffuseContribution;
+    float bankAside = mix(${BANK_SIDES.front.toFixed(2)}, ${BANK_SIDES.side.toFixed(2)}, smoothstep(0.15, 0.75, abs(vStageLocal.x) / max(length(vStageLocal.xz), 1e-3)));
+    vec3 bankBody = stageKeyC * (RECIPROCAL_PI * ${BANK_BODY.toFixed(2)} * bankSide * bankAside * mix(${BANK_HOLLOW.toFixed(2)}, 1.0, bankTop) * bankFall) * material.diffuseContribution;
     reflectedLight.directDiffuse = mix(reflectedLight.directDiffuse, bankBody, bankMask);
     reflectedLight.indirectDiffuse *= mix(1.0, ${BANK_AIR.toFixed(2)} * bankFall, bankMask);
   }
@@ -214,7 +227,7 @@ float iceHeight(vec2 uv) {
           `
 vec3 iceT = texture2D(map, vMapUv).rgb;
 vec3 iceWide = texture2D(map, vMapUv * 0.37 + 0.21).rgb;
-float iceRim = smoothstep(0.42, 1.0, vSurf.x);
+float iceRim = smoothstep(${ICE_RIM.toFixed(2)}, 1.0, vSurf.x);
 float iceFrost = clamp(iceRim * iceRim * 0.9 + smoothstep(0.42, 0.8, iceWide.g) * (0.35 + 0.4 * iceRim) + (iceT.g - 0.5) * 0.24, 0.0, 1.0);
 iceFrost = max(iceFrost, iceT.r * 0.75);
 diffuseColor.rgb = mix(${glsl(tones.iceDeep)}, ${glsl(tones.icePale)}, iceFrost * 0.9) + ${glsl(tones.icePale)} * iceT.b * 0.07;
@@ -240,12 +253,13 @@ float iceRough = mix(0.09, 0.72, iceFrost);
   vec3 iceN = villageInside(normal);
   vec3 iceSight = villageSight();
   float iceFresnel = 0.03 + 0.97 * pow(1.0 - clamp(dot(iceN, iceSight), 0.0, 1.0), 5.0);
-  float iceGlint = villageMirror(villageInside(normalize(mix(iceFlat, normal, ${MIRROR.bump.toFixed(2)}))), iceSight, ${MIRROR.tight.toFixed(5)}, ${MIRROR.wide.toFixed(5)}, ${MIRROR.wideShare.toFixed(3)});
-  totalEmissiveRadiance += ${glsl(tones.lamp)} * iceGlint * iceFresnel * (1.0 - 0.55 * iceFrost) * (1.0 + ${MIRROR.sparkle.toFixed(2)} * (iceT.g - 0.5 + iceT.r)) * uGlowGain;
+  float iceGlitter = 0.3 + 2.4 * smoothstep(0.5, 0.85, texture2D(map, vMapUv * 5.3 + 0.37).g);
+  float iceGlint = iceGlitter * villageMirror(villageInside(normalize(mix(iceFlat, normal, ${MIRROR.bump.toFixed(2)}))), iceSight, ${MIRROR.tight.toFixed(5)}, ${MIRROR.wide.toFixed(5)}, ${MIRROR.wideShare.toFixed(3)});
+  totalEmissiveRadiance += ${glsl(tones.lamp)} * iceGlint * iceFresnel * (1.0 - 0.55 * iceFrost) * (1.0 + ${MIRROR.sparkle.toFixed(2)} * (iceT.g - 0.5 + iceT.r)) * uGlowGain * vColor.r;
 }
 `,
         )
-      afterLight(shader, `reflectedLight.indirectDiffuse += vGlow * (uGlowGain * ${ICE_NEAR.toFixed(2)}) * material.diffuseContribution;`)
+      afterLight(shader, `reflectedLight.indirectDiffuse += vGlow * (uGlowGain * ${ICE_NEAR.toFixed(2)}) * material.diffuseContribution;\nreflectedLight.directSpecular *= vColor.r;\nreflectedLight.indirectSpecular *= vColor.r;`)
     },
   })
 }
@@ -257,14 +271,14 @@ const shadowed = <T extends THREE.Mesh>(m: T, cast = true): T => {
 }
 
 const SWEPT = Math.hypot(potTop[0], potTop[2])
-const WISP: Wisp = { from: potTop, height: 12, lean: [-2.4, 0.4], sway: 0.8, curl: 0.7, thin: 0.5, wide: 1.9, rings: 40, sides: 10, swept: [-potTop[2] / SWEPT, potTop[0] / SWEPT], sweepMm: 12 }
-const WISP_STRENGTH = 0.8
+const WISP: Wisp = { from: potTop, height: 7.5, lean: [-2.4, 0.4], sway: 1.2, curl: 1.4, thin: 0.75, wide: 2, rings: 40, sides: 10, swept: [-potTop[2] / SWEPT, potTop[0] / SWEPT], sweepMm: 12 }
+const WISP_STRENGTH = 1.15
 const plume = wispGeometry(WISP)
 const storm = { value: 0 }
 
 export function build(): THREE.Object3D {
-  const solids = withSurface(mergeGeometries([villageGeometry('solid'), geometry(MODEL, 'decor')]), near)
-  const walls = shadowed(new THREE.Mesh(solids, surfaceMaterial({ part: PART, map: villageGrain(), gain, cover: dusting, key: 'village-solid-winter' })))
+  const solids = withSurface(mergeGeometries([villageGeometry('solid'), geometry(MODEL, 'decor')]), nearWall)
+  const walls = shadowed(new THREE.Mesh(solids, surfaceMaterial({ part: PART, map: villageGrain(), gain, cover: dusting, key: 'village-solid-winter', fill: WALL_FILL })))
   const snow = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'snow'), near), snowMaterial(PART, 'miniature', 'village-snow', '')))
   const ice = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'ice'), near), iceMaterial()), false)
   const smoke = new THREE.Mesh(plume, wispMaterial(PART, tones.smoke, WISP_STRENGTH, 2, clock, storm))
@@ -280,7 +294,7 @@ export function lights(): THREE.Object3D {
     glowPiece(villageGeometry('pane-gable'), (_i, w, h) => [GLOW.pane, w, h, 1]),
     glowPiece(villageGeometry('pane-side'), (_i, w, h) => [GLOW.pane, w, h, 2]),
   ]
-  const look = { bulb: 1.5, bulbCore: 4.5, glass: tones.lamp.map((v) => v * 1.3) as unknown as Rgb, flame: tones.flame.map((v) => v * 6) as unknown as Rgb, room: tones.room.map((v) => v * 1.25) as unknown as Rgb, curtain: tones.curtain.map((v) => v * 1.5) as unknown as Rgb, frost: tones.rime.map((v) => v * 0.55) as unknown as Rgb, frostAmount: 0.8, flicker: 0.08, cycles: 3 }
+  const look = { bulb: 1, bulbCore: 2.4, glass: tones.lamp.map((v) => v * 1) as unknown as Rgb, flame: tones.flame.map((v) => v * 6) as unknown as Rgb, room: tones.room.map((v) => v * 0.8) as unknown as Rgb, curtain: tones.curtain.map((v) => v * 1.5) as unknown as Rgb, frost: tones.rime.map((v) => v * 0.55) as unknown as Rgb, frostAmount: 0.3, flicker: 0.08, cycles: 3 }
   const halos = new THREE.Mesh(haloGeometry(bulbs, HALO.radiusMm), haloMaterial(LIGHT, tones.haloEdge, tones.haloCore, HALO, clock))
   halos.renderOrder = 3
   return new THREE.Group().add(new THREE.Mesh(glowGeometry(pieces), glowMaterial(LIGHT, look, clock)), halos)

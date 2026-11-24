@@ -7,8 +7,8 @@ import { fresh } from './miniature'
 
 const own = frost as { arrival?: () => THREE.Object3D }
 
-const GLASS = { burst: 0.78, burstSeconds: 0.22, creep: 0.34, creepSeconds: 1.4 }
-const SLAB = { burst: 0.8, burstSeconds: 0.2, creep: 0.32, creepSeconds: 1.4 }
+const GLASS = { burst: 0.78, burstSeconds: 0.22, creep: 0.41, creepSeconds: 1.4 }
+const SLAB = { burst: 0.8, burstSeconds: 0.2, creep: 0.39, creepSeconds: 1.4 }
 
 const rise = (t: number, seconds: number): number => 1 - Math.exp(-t / seconds)
 const burst = (t: number, seconds: number): number => 1 - Math.exp(-((t / seconds) ** 2))
