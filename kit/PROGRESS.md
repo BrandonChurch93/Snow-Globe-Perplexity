@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 38 · 2026-11-24 14:44 UTC
+Status 39 · 2026-11-24 15:14 UTC
 
-- `out/stills/status/status-38-1.jpg`: At rest: the approved image on the left and the build at 14:42 on the right (draft tier)
-- `out/stills/status/status-38-2.jpg`: Half a second after the landing: approved on the left and the build on the right. The water now rolls as one swirl
-- `out/stills/status/status-38-3.jpg`: The surface camera at 14:36: the mirror image of the globe is no longer clipped to a strip
-- `out/stills/status/status-38-4.jpg`: Still: winter landed hero, hd, draft
+- `out/stills/status/status-39-1.jpg`: At rest: the approved image on the left and the build at 15:00 on the right (draft tier)
+- `out/stills/status/status-39-2.jpg`: Still: winter rest hero, hd, draft
+- `out/stills/status/status-39-3.jpg`: Still: winter rest macro, hd, draft
+- `out/stills/status/status-39-4.jpg`: Still: winter rest surface, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 14:55 UTC
-clock: phase 3, tick of 6.1 minutes
-phase 3: 6.47 h used of its 11.00 h box
-allowance (before the review): 13.08 h used of 36.00 h allowed
-all time before the review: 13.08 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 15:25 UTC
+clock: phase 3, tick of 11.0 minutes
+phase 3: 6.97 h used of its 11.00 h box
+allowance (before the review): 13.58 h used of 36.00 h allowed
+all time before the review: 13.58 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
@@ -1022,3 +1022,8 @@ One entry per task: when it started, what it did, where it stopped.
 
 - 14:50 UTC: merged base `35eb439` (frost wash off the body, clear icicles with dark cores at full length in the landed still, collar a whole ring with a bead, wider gold lip, finer rope) and scene `a36f74e` (the mirror image across the whole slab, a warm card in the room, discs fit by numbers). Rebuilt `base-winter` and `scene`; types clean. Seen in the rest pair of 14:52 (`out/work/status/pair-rest-1453.jpg`): the icicles read as clear ice and the gold lip shows; new fault: a dark slot at the front of the collar where the ledge snow no longer reaches the glass. Told to `base_finisher`.
 - 14:54 UTC: published from that build (the roll of the water is in the app now). https://snow-globe-seasons.pplx.app : first picture in 11.7 s, 52 requests, no errors. Visibility: Organization.
+
+- 15:15 UTC: Status 39 posted with the rest pair of 15:00 (`out/work/status/pair-rest-1502.jpg`). Before it, 14:57 to 15:01: merged tree `e653846`, frost `32208e9` (slab frost at the picture's levels by side, no lilac; a crust band with plumes on the glass), glass `84d82cd`, light `a3ffcb2` (the peach wash at `landed` cured: the grid light on flakes, veil and shell falls to nothing away from a lamp), scene `905212c` (G10 cured: the mirror target takes the type of the frame's target; `--only G10` passes there). A still drawn after the tree merge showed the tree with no snow caps, because the code was new and the built mesh old: `out/work/bin/mergeall.sh` now rebuilds every part whose sources a merge changed.
+- 15:16 to 15:18 UTC: merged tree `8c72e19` (thick shaded caps, dark needles, small bulbs with halos, less rope in the wood, star glow), base `dcc850d` (ledge snow twice as thick and banked to the glass, the dark slot gone, translucent icicles, foot flared to the slab; M3 at draft 1.362 against 0.75), flakes `9b27212` (storm classes picked near the roll's plane: soft short smears that agree in direction), light `8a1d00f`, load `8e6befe` (lighter triangle lists for `medium` and `low` inside each .glb, made by meshoptimizer's simplifier over the same vertices, 0.03 and 0.1 mm; G15's own line there: high 1067148, medium 770411, low 362300 triangles; `assets-src/web-pack/RECIPE.md` covers the 41 files of the web pack), liquid `b0bc184` (G3's cause found and cured: the loop's source carried no cover map, so it kept the map of whatever was drawn before it, and a blank one on a fresh page; `LoopPaths` now heaps its own; `tools/determinism.mjs --film` passes there, 15 comparisons identical; a new checkpoint test; flakes keep their radius clear of solids), village `3f1f6c3` (cottage shorter along the ridge, brick chimney, small gold bulbs with halos, gold panes, warm grey roof snow, a short leaning wisp). The Builder added the guard the liquid finisher proposed in `src/core/chunks/cover.ts`: a source with no cover map puts the blank map back. 408 tests pass.
+- 15:20 UTC: two config values tuned on the scene finisher's evidence (`kit/05-ARCHITECTURE.md` gives both to the Builder). `scene.bokehLights` 60 to 112: 47 lights are placed from the approved frame and fill the hero field, so only 13 were left for the rest of the room and the `low` camera's wall held 3 discs; at 112 it holds 11, the hero frame keeps its 47, the cost is 208 triangles. `cameras.surface` `pitchDeg` 18 to 14 and `aimHeightMm` -34 to -30.5: the finisher asked for 13 and -20 to bring the whole base into the frame, which broke the framing test of 10:42 (pitch at least 14, the foot between 0.3 and 0.4 of the height from the top); 14 and -30.5 is the flattest and lowest view inside it. `cameras.low` unchanged.
+- 15:24 UTC: `motion_renderer` reported the R4 part of Round 3's pack complete after about 90 minutes (12 sheets at `review`, nothing missing; 15 to 78 s a frame). Fetched from `agent/p3-round3-motion` at `773c41e`, not merged; `roles.R4` put into the key. R4 is split in two as the pack tool cut it: part 1 (lift, strokes, set down, the first second after the landing; 10 files) asked of `reviewer_r3_e` on `claude_fable_5_2`, part 2 (the whole shake with its clearing, the globe at rest; 2 files) of `reviewer_r3_f` on `pplx_computer_glm_5_3_1009`. Five families see pictures and this round has six critic parts, so Anthropic holds two (R3 part 1 on `claude_opus_5_5`, R4 part 1 on `claude_fable_5_2`), as `kit/07-QUALITY-BAR.md` allows.
