@@ -297,7 +297,14 @@ export interface CameraKey {
   apertureMm: number
 }
 
-export function cutList(cut: Cut, cameraKeys: CameraKey[]): Record<string, unknown> {
+/** Where the loop's camera stands at its first frame, when that is not the config's camera as given. */
+export interface LoopCamera {
+  distanceMm: number
+  numbers: number[]
+  fit: string
+}
+
+export function cutList(cut: Cut, cameraKeys: CameraKey[], loopCamera?: LoopCamera): Record<string, unknown> {
   const fps = cut.fps
   const { cues, ambience } = cuesOf(cut)
   const plan = openingPlan(fps)
@@ -321,7 +328,7 @@ export function cutList(cut: Cut, cameraKeys: CameraKey[]): Record<string, unkno
     cues,
     ambience,
     opening: { ...plan, seconds: round(plan.seconds), cues: openingCues(fps) },
-    loop: { fps, frameCount: loop.frameCount, seconds: c.seconds, camera: c.camera, format: c.format, shake: loop.shake },
+    loop: { fps, frameCount: loop.frameCount, seconds: c.seconds, camera: c.camera, ...(loopCamera ? { distanceMm: loopCamera.distanceMm, cameraNumbers: loopCamera.numbers, fit: loopCamera.fit } : {}), format: c.format, shake: loop.shake },
     musicFade: cut.musicFade,
     notes: cut.notes,
   }

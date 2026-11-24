@@ -16,7 +16,7 @@ import { INNER_R } from '../particles/engine/sdf'
 import { openingPlan } from '../film/opening'
 import { drawOpening } from '../film/openingStandIn'
 import { cutList, filmCut, type Cut } from '../film/cut'
-import { cameraKeys, cameraNumbers, filmPose, loopPose, MOVES, shotNotes, type ShotNote } from '../film/moves'
+import { cameraKeys, cameraNumbers, filmPose, loopCamera, loopPose, MOVES, shotNotes, type ShotNote } from '../film/moves'
 import { loopGlobe, type LoopParticles, type SourceSwitch } from '../film/loop'
 import { loopMoment, timelineMoment } from '../film/moments'
 import { flaggedStandIns } from '../core/standins'
@@ -393,7 +393,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
       framing: (camera) => framingOf(camera, format.width, format.height),
       pose: (camera) => cameraNumbers(poseById(camera)),
       flagged: () => flaggedStandIns(),
-      cut: () => ({ list: cutList(getGrid(), cameraKeys(getGrid())), shots: shotNotes(getGrid()) }),
+      cut: () => ({ list: cutList(getGrid(), cameraKeys(getGrid()), loopCamera()), shots: shotNotes(getGrid()) }),
       judged: () => judgedList(getGrid(), openingPlan()),
       testShake: () => ({
         frameCount: Math.round((barSeconds + config.states.restSeconds) * fpsFilm),

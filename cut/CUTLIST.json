@@ -1516,6 +1516,17 @@
     "frameCount": 480,
     "seconds": 8,
     "camera": "hero",
+    "distanceMm": 783.5,
+    "cameraNumbers": [
+      9.144,
+      201.406,
+      773.224,
+      0,
+      75,
+      0,
+      16
+    ],
+    "fit": "moved back from 658 mm along its own axis, so the glass and the base stay inside the centred square crop of the card through the shake",
     "format": "hd",
     "shake": {
       "first": 48,
