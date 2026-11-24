@@ -1,0 +1,13 @@
+Looks of load_finisher: the lighter meshes for the `low` and `medium` quality levels. Hero, rest, hd, draft, web set, through the app's path (`npm run still ... --assets web --live <level>`).
+
+look-01-high-against-low-1280.jpg
+  Left `high` (1111400 triangles a sample), right `low` with the lighter lists (394647; 601727 without them). The middle of the frame at 1280 wide, content of 14:21 (main cb00707). What differs is the level's own: 30 % of the flakes, no mirror.
+
+look-02-low-full-meshes-against-lists-hd.jpg
+  Both `low`, same content: left the full meshes (601727), right the lists (394647). Two crops at hd, one to one. 36.5 dB over the whole frame, 6652 pixels over 32 of 255.
+
+look-03-low-pond-twice-hd.jpg
+  The same pair at twice hd around the pond: top the full meshes, bottom the lists. The shore line of the pond and the finest relief of the roof snow differ slightly.
+
+look-04-tip-high-against-low.jpg
+  The tip 0f9425c (main 784f106 merged): left `high` (1034693), right `low` (354722). Top the whole frame, bottom a crop at hd, one to one. The picture is whole at both levels.
