@@ -23,6 +23,15 @@ Every quote, with its URL and the page's own date, is in `references/terms/image
 - The model the build prefers for everything new that ships: Nano Banana Pro and GPT Image 2.6, whose terms allow both uses with conditions. Seedream 5 Pro is used only where a picture has to match the approved images closely, and that is logged in the part's recipe.
 - The account this build runs on has organization skills, so it belongs to an organization (measured). Which plan that organization is on was not measured.
 
+### Generated pictures that feed shipped files
+
+Each has its recipe, with the full prompt, beside it. None shows a person, a hand, text or a logo.
+
+| Picture | What it feeds | Model | Reference crop | Takes | Recipe | Date |
+| --- | --- | --- | --- | --- | --- | --- |
+| `assets-src/trunk/bark-take1.png` | The bark sheet of the tree's trunk and limbs (colour and the height the normal map is taken from) | Nano Banana Pro through the image tool of this product | `references/approved/winter-rest.png`, x 1490, y 700, 170 by 190 px | 1 made, take 1 kept | `assets-src/trunk/RECIPE.md` | 2026-11-24 |
+| `assets-src/tree-winter/needles-take1.png` | The foliage sheet of winter's tree | Nano Banana Pro through the image tool of this product | `references/approved/winter-rest.png`, x 1340, y 360, 440 by 340 px | 1 made, take 1 kept | `assets-src/tree-winter/RECIPE.md` | 2026-11-24 |
+
 ## Generated sounds
 
 The terms of the sound tool, read in Phase 0, each line marked as stated by the terms, measured, or unknown. Then one row for every kept sound.

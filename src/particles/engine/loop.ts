@@ -31,8 +31,8 @@ const EDDY: readonly (readonly number[])[] = [
 ]
 const EASE = 0.3
 const MARGIN = 0.15
-const SHALLOW = 0.5
-const DEEP = 2.5
+const SHALLOW = 0.4
+const DEEP = 1.4
 const PER = 6
 const MIN_COLUMN = 24
 
