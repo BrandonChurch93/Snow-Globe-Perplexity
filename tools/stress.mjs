@@ -5,6 +5,7 @@ import { parseArgs, rel, readJson, writeJson } from './lib/paths.mjs'
 import { Session, cfg, checkDisk, recordMatches } from './lib/page.mjs'
 import { fileSha } from './lib/hashes.mjs'
 import { psnr } from './lib/compose.mjs'
+import { addLook } from './lib/looks.mjs'
 import { Run, argText, makeTrack, short } from './lib/frames.mjs'
 import { encodeFrames, framePicture, haveFfmpeg, probe, stillJpeg } from './lib/encode.mjs'
 
@@ -95,7 +96,7 @@ async function measure(m, run, page) {
   record.tier = tier
   for (const f of [n.source, ...n.videos, ...n.stills]) writeJson(`${f}.json`, record)
   fs.rmSync(frames, { recursive: true, force: true })
-  if (run.looks) run.look(track, m.at, n.stills[rates.length - 1])
+  if (run.looks) addLook(n.stills[rates.length - 1], `Stress: ${m.kind} ${m.id}, frame ${m.at} of film B after encoding at ${rates[rates.length - 1]} Mbps, ${formatId}, ${tier}`, run.by, { copy: true })
   return record
 }
 

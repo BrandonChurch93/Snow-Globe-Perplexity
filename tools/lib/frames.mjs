@@ -243,12 +243,15 @@ export class Run {
     return png
   }
 
-  async renderChunks(track, chunks, total) {
+  async renderChunks(track, chunks, total, each = null) {
     const todo = chunks.filter((c) => !chunkRecord(chunkFile(track, c), track))
     for (const c of chunks) if (!todo.includes(c)) this.say(`chunk ${c.first}-${c.last} (${c.id}): reused ${short(chunkFile(track, c))}`)
     this.pending += todo.reduce((n, c) => n + c.frames.length, 0)
     const made = []
-    for (const c of todo) made.push(await this.renderChunk(track, c, total))
+    for (const c of todo) {
+      made.push(await this.renderChunk(track, c, total))
+      if (each) each(made[made.length - 1], todo.length - made.length)
+    }
     return made
   }
 
