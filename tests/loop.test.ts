@@ -46,7 +46,9 @@ function frame(loop: LoopPaths, t: number): Frame {
 describe('the card loop: closed paths', () => {
   it('gives the drawing the same arrays as the simulation', () => {
     const { rest, loop } = build(config.defaultSeason)
-    const source: ParticleSource = loop
+    const card: { readonly source: ParticleSource; setTime(seconds: number): void } = loop
+    const source: ParticleSource = card.source
+    expect(source).toBe(loop)
     expect(source.count).toBe(rest.count)
     expect(source.pos.length).toBe(rest.count * 3)
     expect(source.prev.length).toBe(rest.count * 3)
