@@ -285,7 +285,7 @@ function soundTag(s) {
   const facts = length(s.seconds)
   const line = s.line ? `<p class="cue-line">${text(s.line)}</p>` : ''
   const prompt = s.prompt ? `<p class="cue-prompt"><span>Prompt</span> ${text(s.prompt)}</p>` : ''
-  return `<li class="cue"><div><p class="cue-name"><span>${text(s.name)}</span>${facts ? `<span class="facts">${esc(facts)}</span>` : ''}</p>${line}${prompt}</div><audio controls preload="none" aria-label="${text(s.name)}" src="${url(s.to)}"></audio></li>`
+  return `<li class="cue"><div><p class="cue-name"><span>${text(s.name)}</span>${facts ? `<span class="facts">${esc(facts)}</span>` : ''}</p>${line}${prompt}</div><audio controls preload="metadata" aria-label="${text(s.name)}" src="${url(s.to)}"></audio></li>`
 }
 
 function page(d) {
@@ -341,6 +341,7 @@ function page(d) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <meta name="robots" content="noindex">
+<link rel="icon" href="data:,">
 <title>${esc(title)}</title>
 <style>
 :root{color-scheme:dark;--page:#0b0d10;--panel:#12151a;--line:#262a30;--text:#e6e3dc;--quiet:#a9a59b;--warm:#e0c39a}
@@ -352,7 +353,7 @@ h1{margin:0;font-size:clamp(28px,4.4vw,40px);font-weight:300;letter-spacing:.01e
 h2{margin:0 0 28px;font-size:clamp(22px,3vw,28px);font-weight:300;letter-spacing:.01em;line-height:1.2;color:var(--warm)}
 p{margin:0}
 .meta{margin-top:14px;color:var(--quiet);font-size:14px;line-height:1.7}
-.meta span:not(:last-child)::after{content:"\\00b7";margin:0 .6em;color:var(--line)}
+.meta span:not(:last-child)::after{content:"\\00b7";margin:0 .6em;color:#6d6a63}
 .left{margin-top:8px;color:var(--warm);font-size:14px}
 section{margin-top:clamp(56px,8vw,88px);padding-top:clamp(28px,4vw,40px);border-top:1px solid var(--line)}
 .none,.note,.when{color:var(--quiet)}
@@ -384,7 +385,7 @@ figcaption{margin-top:12px;color:var(--quiet);font-size:15px;line-height:1.5;ove
 .cue-prompt span{font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin-right:.4em}
 audio{display:block;width:100%;height:44px}
 a:focus-visible,video:focus-visible,audio:focus-visible{outline:2px solid var(--warm);outline-offset:3px}
-@media (max-width:720px){body{font-size:16px}.cue{grid-template-columns:minmax(0,1fr)}.links{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}
+@media (max-width:720px){body{font-size:16px}.cue{grid-template-columns:minmax(0,1fr)}.links{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}.links a{padding:12px 16px;font-size:17px}}
 </style>
 </head>
 <body>
