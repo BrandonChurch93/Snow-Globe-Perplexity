@@ -42,9 +42,9 @@ if (want('mesh') || only.length === 0) {
   const list = icicleList(field)
   const ice = buildIce(list)
   const body = []
-  for (let i = 0; i <= 26; i++) {
+  for (let i = 0; i <= 29; i++) {
     const h = 6 + i
-    body.push(Number((h < 8.4 ? P.BEAD.ringR + P.BEAD.tube : h > P.TOP - 1 ? P.LIP.ringR + P.LIP.tube : P.bodyRadiusAt(field.mer, h)).toFixed(3)))
+    body.push(Number((h < P.BODY[0][1] ? P.BEAD.ringR + P.BEAD.tube : h > P.LIP.h - 0.7 ? P.LIP.ringR + P.LIP.tube : P.bodyRadiusAt(field.mer, h)).toFixed(3)))
   }
   const extras = {
     wood: { repeats: Math.round((2 * Math.PI * P.CARVING.rRef) / WOOD.tileMm), tileMm: WOOD.tileMm },

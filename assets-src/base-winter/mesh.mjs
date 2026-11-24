@@ -30,8 +30,8 @@ const wander = (az) => 0.2 * Math.sin(2 * az * RAD + 0.4) + 0.07 * Math.sin(5 * 
 export function buildWood(f) {
   const soup = new Soup('wood')
   const mer = f.mer
-  const zoneA = P.sOfH(mer, 9.7)
-  const zoneB = P.sOfH(mer, 23.5)
+  const zoneA = P.sOfH(mer, P.lift(9.7))
+  const zoneB = P.sOfH(mer, P.lift(23.5))
   const rows = []
   const span = (a, b, step) => {
     const n = Math.max(1, Math.round((b - a) / step))
@@ -49,7 +49,7 @@ export function buildWood(f) {
     const t = (az - strip.from) / (strip.to - strip.from)
     const weight = smooth(f.sLow, f.sLow + 0.6, s) * (1 - smooth(f.sHigh - 0.6, f.sHigh, s))
     const ao = clamp(0.3 + 0.7 * smooth(0.5, 2.6, s)) * clamp(0.16 + 0.84 * Math.pow(smooth(0, 10.5, mer.total - s), 0.85))
-    const wear = 0.65 * Math.exp(-(((m.h - 9.3) / 0.8) ** 2)) + 0.3 * Math.exp(-(((m.h - 31.2) / 0.5) ** 2))
+    const wear = 0.65 * Math.exp(-(((m.h - P.lift(9.3)) / 0.8) ** 2)) + 0.3 * Math.exp(-(((m.h - P.lift(31.2)) / 0.5) ** 2))
     return {
       p: place(m.r + m.nr * d, m.h + m.nh * d, az),
       n: dir(m.nr, m.nh, az),
@@ -90,7 +90,7 @@ export function buildWood(f) {
 function addCone(soup, f, cone) {
   const mer = f.mer
   const rng = mulberry(Math.round(cone.az * 100) + 7)
-  const s0 = P.sOfH(mer, cone.h)
+  const s0 = P.sOfH(mer, P.lift(cone.h))
   const m = P.atS(mer, s0)
   const N = dir(m.nr, m.nh, cone.az)
   const T = [Math.cos(cone.az * RAD), 0, -Math.sin(cone.az * RAD)]
@@ -202,13 +202,15 @@ export function buildBrass() {
   lathe(
     soup,
     [
-      [59.2, 0.02, 0.2, 0.05, 0.6],
-      [59.3, 0.3, 0.45, 0.3, 0.3],
-      [59.3, 0.9, 0.85, 0.5, 0.18],
-      [59.15, 1.6, 1, 0.3, 0.15],
-      [58.95, 2.3, 1, 0.25, 0.18],
-      [58.7, 2.85, 1, 0.7, 0.12],
-      [58.35, 3.15, 0.85, 0.5, 0.2],
+      [P.PLINTH.r, 0.02, 0.02, 0, 1],
+      [P.PLINTH.r, P.PLINTH.top, 0.02, 0, 1],
+      [58.55, P.PLINTH.top + 0.12, 0.3, 0.1, 0.5],
+      [59.1, P.PLINTH.top + 0.42, 0.8, 0.45, 0.2],
+      [59.3, P.PLINTH.top + 0.95, 1, 0.3, 0.15],
+      [59.3, P.RIM.top - 1.35, 1, 0.25, 0.16],
+      [59.15, P.RIM.top - 0.8, 1, 0.3, 0.15],
+      [58.85, P.RIM.top - 0.38, 1, 0.7, 0.12],
+      [58.4, P.RIM.top - 0.12, 0.85, 0.5, 0.2],
       [57.85, P.RIM.top + 0.04, 0.42, 0.1, 0.62],
       [56.5, P.RIM.top + 0.1, 0.1, 0, 0.92],
     ],
@@ -219,8 +221,8 @@ export function buildBrass() {
   lathe(
     soup,
     [
-      [55.7, 4.3, 0.03, 0, 1],
-      [55.75, 7.7, 0.03, 0, 1],
+      [55.7, P.RIM.top + 1.0, 0.03, 0, 1],
+      [55.75, P.BEAD.h + 0.65, 0.03, 0, 1],
     ],
     even(64),
     0.9,
@@ -295,7 +297,9 @@ export function buildBrass() {
       [...bead(-15), 1, 0.8, 0.05],
       [...bead(35), 1, 0.9, 0.04],
       [...bead(80), 1, 0.7, 0.08],
-      [glass(cc[1] - 0.1) + 0.22, cc[1] - 0.1, 0.04, 0, 1],
+      [glass(cc[1] + 0.03) + 0.16, cc[1] + 0.03, 0.16, 0, 1],
+      [glass(cc[1] + 0.3) + 0.06, cc[1] + 0.3, 0.1, 0, 1],
+      [glass(cc[1] + 0.28) - 0.1, cc[1] + 0.28, 0.05, 0, 1],
       [glass(cc[1] - 0.28), cc[1] - 0.28, 0.02, 0, 1],
     ],
     facing,
@@ -313,16 +317,17 @@ export function buildBrass() {
   return { soup, rimTriangles, ropeTriangles, seatTriangles: soup.triangles - rimTriangles - ropeTriangles }
 }
 
+const SNOW_FULL = 1.0
 const HEAPS = [
-  { a0: -138, a1: -78, ea: 20, eb: 15, p: 0.75, t: 0.5, bank: 2.7, r1: 55.4, over: [[-132, -96, 0.8]] },
+  { a0: -138, a1: -78, ea: 20, eb: 15, p: 0.75, t: 0.5, bank: 3.4, r1: 55.4, over: [[-132, -96, 0.8]] },
   { a0: -100, a1: -60, ea: 10, eb: 12, t: 3.0, r0: 47.9, r1: 54.1 },
   { a0: -85, a1: -39, ea: 8, eb: 12, t: 3.0, r0: 47.7, r1: 53.9 },
-  { a0: -40, a1: -8, ea: 9, eb: 9, t: 3.3, r0: 46.6, r1: 54.3, skew: -0.5, over: [[-30.5, -24, 0.75], [-20.5, -13.5, 0.7]] },
-  { a0: -6, a1: 4, ea: 4, eb: 4, t: 1.0, r0: 49.6, r1: 54.4 },
-  { a0: 3, a1: 36, ea: 12, eb: 16, t: 1.8, r0: 47.4, r1: 54.6, skew: 0.9 },
-  { a0: 4, a1: 72, ea: 15, eb: 14, t: 1.8, bank: 1.0, r1: 55, skew: 1.0, over: [[27, 35.5, 0.9], [51, 72, 0.9]] },
-  { a0: 52, a1: 98, ea: 12, eb: 10, t: 1.9, bank: 0.9, r1: 55, over: [[52, 97, 0.9]] },
-  { a0: 84, a1: 138, ea: 15, eb: 20, p: 0.75, t: 0.5, bank: 2.5, r1: 55.4, over: [[80, 132, 1]] },
+  { a0: -40, a1: -12.5, ea: 9, eb: 12.5, p: 0.9, t: 3.3, r0: 46.6, r1: 54.3, skew: -0.5, over: [[-30.5, -24, 0.75], [-20.5, -13.5, 0.7]] },
+  { a0: -5, a1: 6, ea: 4, eb: 5, t: 1.9, r0: 47.6, r1: 52.7 },
+  { a0: -1, a1: 30, ea: 10, eb: 14, p: 1.0, t: 1.6, r0: 47.2, r1: 53.1, skew: -0.6 },
+  { a0: 6, a1: 72, ea: 14, eb: 14, p: 1.0, t: 1.8, bank: 2.2, r1: 55, lip: [17, 26, 53.2], skew: -1.2, over: [[27, 35.5, 0.9], [51, 72, 0.9]] },
+  { a0: 52, a1: 98, ea: 12, eb: 10, t: 1.9, bank: 2.4, r1: 55, over: [[52, 97, 0.9]] },
+  { a0: 84, a1: 138, ea: 15, eb: 20, p: 0.75, t: 0.5, bank: 3.0, r1: 55.4, over: [[80, 132, 1]] },
   { a0: 136, a1: 184, ea: 12, eb: 12, t: 1.6, bank: 0.6, r1: 54.8, over: [[144, 172, 0.9]] },
   { a0: 180, a1: 228, ea: 12, eb: 12, t: 1.5, bank: 0.4, r1: 54.3, over: [[196, 216, 0.6]] },
 ]
@@ -355,8 +360,8 @@ function scallop(azIn) {
     scallops = []
     let a = -180
     while (a < 180) {
-      const w = 4.2 + 4.6 * rng()
-      scallops.push({ a, w, k: 0.4 + 0.6 * Math.pow(rng(), 0.7) })
+      const w = 2.5 + 11 * rng() ** 2
+      scallops.push({ a, w, k: rng() < 0.3 ? 0.05 : 0.35 + 0.65 * rng() })
       a += w
     }
   }
@@ -404,16 +409,17 @@ function snowThickness(azIn, r) {
     const a = smooth(m.a0 + lead, m.a0 + lead + m.ea, ragged) * (1 - smooth(m.a1 - m.eb, m.a1, ragged))
     if (a <= 0) continue
     const over = overOf(m, az) * lobes
-    const end = mix(m.r1, snowEdge - 0.4, over)
+    const r1 = m.lip ? mix(m.lip[2], m.r1, smooth(m.lip[0], m.lip[1], az)) : m.r1
+    const end = mix(r1, snowEdge - 0.4, over)
     const outer = Math.pow(1 - smooth(end - mix(3.4, 2.6, over), end, r), 0.45)
     const inner = m.r0 ? Math.sqrt(smooth(m.r0 - 0.8, m.r0 + 1.7, r)) : 1
-    const bank = (m.bank ?? 0) * (1 - smooth(50, 56, r))
-    const t = Math.pow(a, m.p ?? 0.55) * (m.t * inner + bank) * outer * 0.7
+    const bank = (m.bank ?? 0) * (1 - smooth(46, 56, r))
+    const t = Math.pow(a, m.p ?? 0.55) * (m.t * inner + bank) * outer * SNOW_FULL
     sum += t ** 4
   }
   const t = Math.pow(sum, 0.25)
   const lump = 0.7 + 0.6 * fbm(u * 46, r / 5.2, 46, 64, 91, 3)
-  const heap = 0.86 + 0.28 * fbm(u * 19, r / 12, 19, 64, 119, 2)
+  const heap = 0.7 + 0.6 * fbm(u * 26, r / 7, 26, 64, 119, 2)
   const knob = (fbm(u * 96, r / 3.0, 96, 64, 127, 2) - 0.5) * 1.1 * Math.sqrt(Math.min(t, 4) / 4) + (fbm(u * 230, r / 1.3, 230, 64, 151, 2) - 0.5) * 0.4 * smooth(0.15, 1.1, t)
   const crumb = smooth(0.7, 0.84, fbm(u * 150, r / 2.1, 150, 64, 97, 2)) * 0.55 * smooth(0.04, 0.5, t + 0.25 * fbm(u * 20, r / 9, 20, 64, 103, 2))
   const dust = 0.34 * smooth(0.6, 0.8, fbm(u * 30, r / 6, 30, 64, 109, 3)) * (1 - smooth(45.5, 49.5, r))
