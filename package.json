@@ -24,7 +24,8 @@
     "budget": "node tools/budget.mjs",
     "keep": "node tools/keep.mjs",
     "crops": "node tools/crops.mjs",
-    "compare": "node tools/compare.mjs"
+    "compare": "node tools/compare.mjs",
+    "animatic": "node tools/animatic.mjs"
   },
   "dependencies": {
     "gsap": "3.15.1",

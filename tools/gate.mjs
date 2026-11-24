@@ -254,7 +254,35 @@ checks.G10 = {
   },
 }
 
-const wanted = Object.entries(checks).filter(([id, c]) => c.from <= phase && (!only || only.includes(id)))
+const probe = (file) => {
+  const r = run('ffprobe', ['-v', 'error', '-count_frames', '-show_entries', 'stream=codec_type,codec_name,width,height,r_frame_rate,nb_read_frames', '-of', 'json', file])
+  if (r.status !== 0) return null
+  const streams = JSON.parse(r.stdout).streams ?? []
+  const v = streams.find((x) => x.codec_type === 'video')
+  if (!v) return null
+  const [n, d] = String(v.r_frame_rate).split('/').map(Number)
+  return { width: v.width, height: v.height, fps: n / (d || 1), frames: Number(v.nb_read_frames), codec: v.codec_name, sound: streams.some((x) => x.codec_type === 'audio') }
+}
+const gridFrames = (fps) => Math.round(cfg.film.shots.reduce((n, x) => n + x.bars, 0) * cfg.film.beatsPerBar * (60 / cfg.film.defaultBpm) * fps)
+
+checks.D1 = {
+  at: [1],
+  name: 'the rough cut',
+  async run() {
+    const file = rel('out', 'roughcut.mp4')
+    if (!fs.existsSync(file)) return { pass: false, detail: 'out/roughcut.mp4 does not exist' }
+    const p = probe(file)
+    if (!p) return { pass: false, detail: 'ffprobe cannot read out/roughcut.mp4' }
+    const want = { width: cfg.formats.preview.width, height: cfg.formats.preview.height, fps: cfg.film.previewFps, frames: gridFrames(cfg.film.previewFps) }
+    const problems = Object.keys(want).filter((k) => p[k] !== want[k]).map((k) => `${k} is ${p[k]}, not ${want[k]}`)
+    const mb = fs.statSync(file).size / 1048576
+    if (mb > cfg.repo.maxFileMb) problems.push(`it is ${mb.toFixed(1)} MB, over repo.maxFileMb`)
+    return { pass: problems.length === 0, detail: problems.length ? problems.join('; ') : `out/roughcut.mp4 is ${p.width} x ${p.height} at ${p.fps} frames a second with ${p.frames} frames, the default grid at film.previewFps, ${mb.toFixed(1)} MB` }
+  },
+}
+
+const due = (c) => (c.at ? c.at.includes(phase) : c.from <= phase)
+const wanted = Object.entries(checks).filter(([id, c]) => due(c) && (!only || only.includes(id)))
 const results = []
 for (const [id, c] of wanted) {
   const t = Date.now()
@@ -270,7 +298,8 @@ for (const [id, c] of wanted) {
 }
 const file = path.join(dir, `phase-${phase}.json`)
 const before = fs.existsSync(file) && only ? readJson(file).results.filter((r) => !only.includes(r.id)) : []
-const all = [...before, ...results].sort((a, b) => Number(a.id.slice(1)) - Number(b.id.slice(1)))
+const rank = (id) => 'GD'.indexOf(id[0]) * 1000 + Number(id.slice(1))
+const all = [...before, ...results].sort((a, b) => rank(a.id) - rank(b.id))
 const { engineHash } = await import('./lib/hashes.mjs')
 writeJson(file, { phase, time: new Date().toISOString(), engineHash: engineHash(), commit: git('rev-parse', '--short', 'HEAD').trim(), results: all })
 fs.writeFileSync(path.join(dir, `phase-${phase}.md`), all.map((r) => `- ${r.id} ${r.pass ? 'pass' : 'FAIL'} · ${r.name}: ${r.detail}`).join('\n') + '\n')
