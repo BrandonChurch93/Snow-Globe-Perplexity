@@ -1,200 +1,200 @@
 {
- "familyLine": "close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
- "note": "Every sound effect prompt is the cue's text, a comma, then the family line, word for word. seconds is what the tool is asked for, never under its minimum of 0.5: the chain trims a take to its cue's length.",
- "cues": {
-  "lift": {
-   "text": "A heavy object with a wooden base dragged a short way across a stone table and lifted off it: a low dull gritty scrape and the weight leaving the stone, with a little water moving inside",
-   "seconds": 1.0,
-   "influence": 0.5,
-   "loop": false
+  "familyLine": "close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+  "note": "Every sound effect prompt is the cue's text, a comma, then the family line, word for word. seconds is what the tool is asked for, never under its minimum of 0.5: the chain trims a take to its cue's length.",
+  "cues": {
+    "lift": {
+      "text": "A heavy object with a wooden base dragged a short way across a stone table and lifted off it: a low dull gritty scrape and the weight leaving the stone, with a little water moving inside",
+      "seconds": 1.5,
+      "influence": 0.5,
+      "loop": false
+    },
+    "shake-winter": {
+      "text": "Water sloshing and churning back and forth inside a sealed glass jar that is being shaken, six fast sloshes, with the fine hiss of snow swirling in the water and tiny sleigh bells jingling inside",
+      "seconds": 2.6,
+      "influence": 0.4,
+      "loop": false
+    },
+    "land-winter": {
+      "text": "Two sounds in a row. First one deep heavy thud as a heavy glass object is set down on a stone table. Then at once ice crackling, cracking and creaking as frost spreads quickly outward across the stone, crisp and close",
+      "seconds": 3,
+      "influence": 0.6,
+      "loop": false,
+      "note": "asked longer than the cue so the crackle has room; the chain cuts and fades it to the cue's length"
+    },
+    "amb-winter": {
+      "text": "Winter wind blowing steadily across open snow: a full airy whoosh, gusts rising and falling, and sleigh bells ringing clearly somewhere in the distance",
+      "seconds": 20,
+      "influence": 0.5,
+      "loop": false
+    },
+    "glass-clink": {
+      "text": "One small clean ring of thick glass touched once: a single bright clear ping with a short natural decay",
+      "seconds": 1,
+      "influence": 0.6,
+      "loop": false
+    },
+    "ui-tick": {
+      "text": "One short dull tick, a small wooden bead tapped once on thick glass, muted and dry",
+      "seconds": 0.5,
+      "influence": 0.6,
+      "loop": false
+    },
+    "ui-sound-on": {
+      "text": "One small soft chime, a single tiny glass bell struck once and ringing briefly, gentle and warm",
+      "seconds": 1,
+      "influence": 0.6,
+      "loop": false
+    }
   },
-  "shake-winter": {
-   "text": "Water sloshing and churning back and forth inside a sealed glass jar that is being shaken, six fast sloshes, with the fine hiss of snow swirling in the water and tiny sleigh bells jingling inside",
-   "seconds": 2.6,
-   "influence": 0.4,
-   "loop": false
+  "takes": [
+    {
+      "cue": "lift",
+      "take": 1,
+      "text": "A heavy glass snow globe with a carved base lifted off a stone table: a soft low scrape, the weight leaving the stone, a faint slosh of water inside the glass as it rises, gentle and short",
+      "cost": 11,
+      "verdict": "does not fit",
+      "why": "Numbers: 0.75 s, peak -19 dBFS, almost nothing under 200 Hz, centred near 6.7 kHz. Listener: a sharp high clink or a squeak, not a heavy base leaving stone.",
+      "listener": {
+        "line": "Glass and a heavy base leaving a stone surface, soft",
+        "open": "1. I hear a sharp, high-pitched metallic clink or ding. It sounds like a small metal object, such as a coin or a glass, striking a hard surface and ringing out.\n2. There is one separate sound event.\n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or musical instrument.\n5. It starts abruptly and ends by fading out naturally.",
+        "fit": "1. No, because the audio features a very brief, high-pitched squeak or chirp rather than the scraping or lifting sound of heavy glass on stone. \n2. The abrupt, sharp squeaking noise does not fit the description of a heavy object or a stone surface. \n3. No, there is no human voice, spoken word, or singing present in the recording."
+      }
+    },
+    {
+      "cue": "shake-winter",
+      "take": 1,
+      "text": "A snow globe shaken hard by hand: water sloshing and churning inside thick glass in six quick strokes, a fine hiss of snow swirling in the water, tiny bells jingling faintly inside",
+      "cost": 29,
+      "verdict": "does not fit",
+      "why": "Numbers: six bursts in 2.25 s, peak -1.8 dBFS. Listener: a metal spoon stirring liquid and ice in a glass, no snow hiss and no bells.",
+      "listener": {
+        "line": "Liquid sloshing and churning inside glass, with a hiss of snow and tiny bells in it",
+        "open": "1. I hear liquid and ice being rapidly stirred in a glass or ceramic container, likely with a metal spoon. The sound consists of a continuous, rhythmic clinking and sloshing.\n2. There is one continuous sound event of stirring.\n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or musical instrument.\n5. It starts abruptly and ends abruptly, cutting off mid-sound.",
+        "fit": "1. No, because the sound is distinctly a metal spoon rapidly stirring and hitting the inside of a glass or mug, rather than the sound of sloshing liquid, hissing snow, or bells.\n2. The sharp, repetitive metallic clinking and scraping of the utensil against the hard glass does not belong to the description.\n3. No, there is no human voice, spoken word, or singing in it."
+      }
+    },
+    {
+      "cue": "land-winter",
+      "take": 1,
+      "text": "A heavy glass snow globe set down firmly on a stone table: one short weighty thud, then ice crackling and creeping outward as frost forms across the stone",
+      "cost": 17,
+      "verdict": "rejected by the numbers: peak -37 dBFS, sound only in the first 0.29 s of 1.5 s, 85 percent of its energy under 200 Hz: a faint thud with no ice after it"
+    },
+    {
+      "cue": "amb-winter",
+      "take": 1,
+      "text": "A very quiet winter night: soft steady wind and faint sleigh bells far in the distance, calm, even, with no single loud event",
+      "cost": 220,
+      "verdict": "rejected by the numbers: peak -38 dBFS and 99.7 percent of its energy under 200 Hz: a low rumble with no wind and no bells in it"
+    },
+    {
+      "cue": "glass-clink",
+      "take": 1,
+      "text": "the Phase 0 test call, 0.5 s asked",
+      "cost": 6,
+      "verdict": "rejected by the numbers: almost silent, peak -33 dBFS"
+    },
+    {
+      "cue": "glass-clink",
+      "take": 2,
+      "text": "One small clean ring of thick glass touched once: a single bright clear ping with a short natural decay",
+      "cost": 11,
+      "verdict": "fits",
+      "why": "Numbers: one ping, 0.47 s, peak -13 dBFS, almost all of its energy between 2 and 8 kHz. Listener: one high ring like a small bell or a struck glass, no voice, no music; fits the line.",
+      "listener": {
+        "line": "One small clean ring of glass",
+        "open": "1. I hear a single, high-pitched ringing sound, similar to a small bell, a triangle, or a glass being struck. It has a clear, bright, and resonant character.\n2. There is exactly one separate sound event.\n3. No, there is no human voice, spoken word, breath, or singing present.\n4. There is no continuous music or melody, but the sound may have been produced by a percussive musical instrument like a triangle or bell.\n5. It starts abruptly with a sharp, crisp strike. It ends by gradually decaying and fading out into silence.",
+        "fit": "1. Yes, because the audio delivers a single, crisp, high-pitched resonance that perfectly resembles a light tap on a small glass object like a wine glass.\n2. There is nothing in the sound that does not belong to the description.\n3. No, there is no human voice, spoken word, or singing in it."
+      }
+    },
+    {
+      "cue": "ui-tick",
+      "take": 1,
+      "text": "One single soft tick, a fingernail tapping a small glass bead once, very short and dry",
+      "cost": 6,
+      "verdict": "fits weakly",
+      "why": "Numbers: one tick, 0.11 s, peak -8 dBFS, three quarters of its energy above 8 kHz. Listener on the padded copy: a sharp high metallic clink like a coin on a hard surface, one event. With the line shown it said yes. It is sharper than the soft tick the line asks for. Two takes are left.",
+      "listener": {
+        "line": "A soft tick for a control",
+        "open": "1. I hear the rapid, rhythmic clicking of an old-fashioned mechanical film projector running. The sound is fast, clattering, and highly repetitive.\n2. There is one continuous sound event.\n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or musical instrument.\n5. It starts abruptly and cut off abruptly.",
+        "fit": "1. Yes, it fits the description because it is a very brief, subtle, and crisp click that sounds exactly like a user interface button or mechanical dial being engaged.\n2. There is nothing in the sound that does not belong to the description.\n3. No, there is no human voice, spoken word, or singing in this sound.",
+        "openAgain": [
+          "1. I hear a deep, heavy percussive boom followed by a long, resonant echo. It has the character of a large drum being struck or a heavy object dropping in a spacious room.\n2. There is exactly one separate sound event.\n3. There is no human voice, spoken word, breath, or singing present.\n4. There is no continuous music or melody, but it sounds like a single hit on a large percussion instrument like a bass drum.\n5. It starts with a sudden, loud impact and ends by gradually fading out into silence as the echo decays.",
+          "1. I cannot hear anything because no audio file was provided.\n2. Not sure.\n3. Not sure.\n4. Not sure.\n5. Not sure.",
+          "1. I hear a sharp, high-pitched metallic clink. It sounds like a small metal object, such as a coin, striking a hard surface.\n2. There is exactly one separate sound event.\n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or musical instrument present.\n5. It starts abruptly with a sharp metallic strike. It ends quickly as the brief ringing resonance fades into silence."
+        ]
+      }
+    },
+    {
+      "cue": "ui-sound-on",
+      "take": 1,
+      "text": "One small soft chime, a single tiny glass bell struck once and ringing briefly, gentle and warm",
+      "cost": 11,
+      "verdict": "fits",
+      "why": "Numbers: one chime, 0.57 s, peak -17 dBFS. Listener: a bright high chime of two rapid overlapping tones, called digital or synthesized; fits the line. Two takes are left if a more natural glass bell is wanted.",
+      "listener": {
+        "line": "A small chime when sound comes on",
+        "open": "1. I hear a digital notification sound or electronic alert. It has the character of a bright, high-pitched, synthesized chime or bell.\n2. There is one main sound event consisting of two rapid, overlapping tones.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. There is no full piece of music, but it features a very brief two-note melody played by a synthesized musical bell instrument.\n5. It starts abruptly and ends by fading out smoothly.",
+        "fit": "1. Yes, it perfectly fits the description because the audio consists of a single, bright, high-pitched ringing tone typical of a small electronic notification or activation chime.\n2. There is nothing in the sound that does not belong to the description.\n3. No, there is no human voice, spoken word, or singing in it."
+      }
+    },
+    {
+      "cue": "land-winter",
+      "take": 2,
+      "text": "A heavy glass snow globe set down hard on a stone table: one loud short weighty thud with a small ring of glass, followed at once by ice crackling and spreading outward for a full second as frost forms",
+      "cost": 17,
+      "verdict": "does not fit",
+      "why": "Numbers: a loud hit, then 30 dB down within 0.1 s and silent by 0.5 s. Listener: one light bright clink on glass, not heavy, and no crackling.",
+      "listener": {
+        "line": "A heavy glass globe set down on stone, heavy and short, then ice crackling outward",
+        "open": "1. I hear a sharp, bright clinking sound, likely made by a metal object striking glass or ceramic. It is high-pitched and rings cleanly for a brief moment.\n2. There is exactly one distinct sound event.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument present.\n5. The sound starts abruptly with a sudden, percussive impact. It ends by naturally ringing out and quickly fading into complete silence.",
+        "fit": "1. No, it does not fit the description because the sound is a light, sharp chime rather than a heavy impact, and it completely lacks any crackling noise.\n2. The high-pitched, ringing tone sounds like a light metallic tap against a glass, which contradicts the description of a heavy object and crackling ice. \n3. No, there is no human voice, spoken word, or singing in the audio."
+      }
+    },
+    {
+      "cue": "amb-winter",
+      "take": 2,
+      "text": "Winter night wind: a soft airy hush of wind rising and falling slowly, with faint sleigh bells far in the distance, calm and even, with no single loud event",
+      "cost": 220,
+      "verdict": "rejected by the numbers: after a 60 Hz cut its level is -69 dBFS: a rumble under 60 Hz and nothing else"
+    },
+    {
+      "cue": "amb-winter",
+      "take": 3,
+      "text": "Winter wind blowing steadily across open snow: a full airy whoosh, gusts rising and falling, and sleigh bells ringing clearly somewhere in the distance",
+      "cost": 220,
+      "verdict": "does not fit",
+      "why": "Numbers: level uneven, a gust at 2 to 3 s, bells from 6 to 16 s, quiet ends; 92 percent of its energy under 60 Hz before the low cut. Listener: a gust of wind, a magical whoosh, then sleigh bells jingling loud and close as if passing by; not distant, and the whoosh does not belong.",
+      "listener": {
+        "line": "Wind and distant bells, very quiet, an ambience that loops",
+        "open": "1. I hear a gust of wind blowing, followed by the rhythmic jingling of metallic bells. The sound has a festive, wintery character, strongly resembling sleigh bells passing by.\n2. There are roughly three distinct sound events: an initial rushing wind, a quick swooshing sound effect, and the continuous jingling of bells.\n3. No, there is no human voice, spoken word, breath, or singing present in the audio.\n4. There is no formal music or melody, but the sleigh bells function as a rhythmic percussion instrument.\n5. The audio starts with a low, rumbling sound of wind blowing. It ends with the jingling sleigh bells gradually fading out into silence.",
+        "fit": "1. No, because the bells are loud and upfront rather than distant, and the track has a clear beginning and end instead of a continuous loop. \n2. There is a distinct, magical-sounding \"whoosh\" or swoosh effect that does not fit the description. \n3. No, there is no human voice, spoken word, or singing in the audio."
+      }
+    }
+  ],
+  "learned": [
+    "Words such as quiet, soft, faint and gentle come back almost silent. Ask for the sound at full strength and let the chain set its level.",
+    "Measured with two 3 second test calls of the same rain prompt at 03:56 UTC: with loop true the take is 12 dB quieter and carries a quarter of its energy under 60 Hz, with loop false it has none there. Ambience is therefore asked for with loop false, and the chain makes the loop.",
+    "A cue of one second or less comes back as one event. Every first take that asked for two things in a row, a scrape then a slosh, a thud then crackling, came back as a single clink. A cue with two parts is asked for at 2.5 seconds or more and cut to its length by the chain.",
+    "The word glass at the head of a prompt gives a clink whatever else is asked. The next takes name the heavy thing and the stone first.",
+    "Hand, strokes and stir bring a spoon into the glass. The next shake take asks for a sealed jar.",
+    "An ambience prompt that names an instrument, bells, gets a passage of that instrument up close. The other seasons' ambience asks for one steady bed and names its distant detail as far away and sparse."
+  ],
+  "kept": {
+    "glass-clink": 2,
+    "ui-sound-on": 1,
+    "ui-tick": 1
   },
-  "land-winter": {
-   "text": "A heavy thud on a stone table, low and weighty, then ice cracking and crackling loudly as frost spreads across glass",
-   "seconds": 2.5,
-   "influence": 0.5,
-   "loop": false,
-   "note": "asked longer than the cue so the crackle has room; the chain cuts and fades it to the cue's length"
+  "open": {
+    "amb-winter": "three takes used, none fits: silent in the mixes and in the app until a review round buys new takes"
   },
-  "amb-winter": {
-   "text": "Winter wind blowing steadily across open snow: a full airy whoosh, gusts rising and falling, and sleigh bells ringing clearly somewhere in the distance",
-   "seconds": 20,
-   "influence": 0.5,
-   "loop": false
-  },
-  "glass-clink": {
-   "text": "One small clean ring of thick glass touched once: a single bright clear ping with a short natural decay",
-   "seconds": 1.0,
-   "influence": 0.6,
-   "loop": false
-  },
-  "ui-tick": {
-   "text": "One short dull tick, a small wooden bead tapped once on thick glass, muted and dry",
-   "seconds": 0.5,
-   "influence": 0.6,
-   "loop": false
-  },
-  "ui-sound-on": {
-   "text": "One small soft chime, a single tiny glass bell struck once and ringing briefly, gentle and warm",
-   "seconds": 1.0,
-   "influence": 0.6,
-   "loop": false
+  "takesLeft": {
+    "lift": 2,
+    "shake-winter": 2,
+    "land-winter": 1,
+    "amb-winter": 0,
+    "glass-clink": 1,
+    "ui-tick": 2,
+    "ui-sound-on": 2
   }
- },
- "takes": [
-  {
-   "cue": "lift",
-   "take": 1,
-   "text": "A heavy glass snow globe with a carved base lifted off a stone table: a soft low scrape, the weight leaving the stone, a faint slosh of water inside the glass as it rises, gentle and short",
-   "cost": 11,
-   "verdict": "does not fit",
-   "why": "Numbers: 0.75 s, peak -19 dBFS, almost nothing under 200 Hz, centred near 6.7 kHz. Listener: a sharp high clink or a squeak, not a heavy base leaving stone.",
-   "listener": {
-    "line": "Glass and a heavy base leaving a stone surface, soft",
-    "open": "1. I hear a sharp, high-pitched metallic clink or ding. It sounds like a small metal object, such as a coin or a glass, striking a hard surface and ringing out.\n2. There is one separate sound event.\n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or musical instrument.\n5. It starts abruptly and ends by fading out naturally.",
-    "fit": "1. No, because the audio features a very brief, high-pitched squeak or chirp rather than the scraping or lifting sound of heavy glass on stone. \n2. The abrupt, sharp squeaking noise does not fit the description of a heavy object or a stone surface. \n3. No, there is no human voice, spoken word, or singing present in the recording."
-   }
-  },
-  {
-   "cue": "shake-winter",
-   "take": 1,
-   "text": "A snow globe shaken hard by hand: water sloshing and churning inside thick glass in six quick strokes, a fine hiss of snow swirling in the water, tiny bells jingling faintly inside",
-   "cost": 29,
-   "verdict": "does not fit",
-   "why": "Numbers: six bursts in 2.25 s, peak -1.8 dBFS. Listener: a metal spoon stirring liquid and ice in a glass, no snow hiss and no bells.",
-   "listener": {
-    "line": "Liquid sloshing and churning inside glass, with a hiss of snow and tiny bells in it",
-    "open": "1. I hear liquid and ice being rapidly stirred in a glass or ceramic container, likely with a metal spoon. The sound consists of a continuous, rhythmic clinking and sloshing.\n2. There is one continuous sound event of stirring.\n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or musical instrument.\n5. It starts abruptly and ends abruptly, cutting off mid-sound.",
-    "fit": "1. No, because the sound is distinctly a metal spoon rapidly stirring and hitting the inside of a glass or mug, rather than the sound of sloshing liquid, hissing snow, or bells.\n2. The sharp, repetitive metallic clinking and scraping of the utensil against the hard glass does not belong to the description.\n3. No, there is no human voice, spoken word, or singing in it."
-   }
-  },
-  {
-   "cue": "land-winter",
-   "take": 1,
-   "text": "A heavy glass snow globe set down firmly on a stone table: one short weighty thud, then ice crackling and creeping outward as frost forms across the stone",
-   "cost": 17,
-   "verdict": "rejected by the numbers: peak -37 dBFS, sound only in the first 0.29 s of 1.5 s, 85 percent of its energy under 200 Hz: a faint thud with no ice after it"
-  },
-  {
-   "cue": "amb-winter",
-   "take": 1,
-   "text": "A very quiet winter night: soft steady wind and faint sleigh bells far in the distance, calm, even, with no single loud event",
-   "cost": 220,
-   "verdict": "rejected by the numbers: peak -38 dBFS and 99.7 percent of its energy under 200 Hz: a low rumble with no wind and no bells in it"
-  },
-  {
-   "cue": "glass-clink",
-   "take": 1,
-   "text": "the Phase 0 test call, 0.5 s asked",
-   "cost": 6,
-   "verdict": "rejected by the numbers: almost silent, peak -33 dBFS"
-  },
-  {
-   "cue": "glass-clink",
-   "take": 2,
-   "text": "One small clean ring of thick glass touched once: a single bright clear ping with a short natural decay",
-   "cost": 11,
-   "verdict": "fits",
-   "why": "Numbers: one ping, 0.47 s, peak -13 dBFS, almost all of its energy between 2 and 8 kHz. Listener: one high ring like a small bell or a struck glass, no voice, no music; fits the line.",
-   "listener": {
-    "line": "One small clean ring of glass",
-    "open": "1. I hear a single, high-pitched ringing sound, similar to a small bell, a triangle, or a glass being struck. It has a clear, bright, and resonant character.\n2. There is exactly one separate sound event.\n3. No, there is no human voice, spoken word, breath, or singing present.\n4. There is no continuous music or melody, but the sound may have been produced by a percussive musical instrument like a triangle or bell.\n5. It starts abruptly with a sharp, crisp strike. It ends by gradually decaying and fading out into silence.",
-    "fit": "1. Yes, because the audio delivers a single, crisp, high-pitched resonance that perfectly resembles a light tap on a small glass object like a wine glass.\n2. There is nothing in the sound that does not belong to the description.\n3. No, there is no human voice, spoken word, or singing in it."
-   }
-  },
-  {
-   "cue": "ui-tick",
-   "take": 1,
-   "text": "One single soft tick, a fingernail tapping a small glass bead once, very short and dry",
-   "cost": 6,
-   "verdict": "fits weakly",
-   "why": "Numbers: one tick, 0.11 s, peak -8 dBFS, three quarters of its energy above 8 kHz. Listener on the padded copy: a sharp high metallic clink like a coin on a hard surface, one event. With the line shown it said yes. It is sharper than the soft tick the line asks for. Two takes are left.",
-   "listener": {
-    "line": "A soft tick for a control",
-    "open": "1. I hear the rapid, rhythmic clicking of an old-fashioned mechanical film projector running. The sound is fast, clattering, and highly repetitive.\n2. There is one continuous sound event.\n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or musical instrument.\n5. It starts abruptly and cut off abruptly.",
-    "fit": "1. Yes, it fits the description because it is a very brief, subtle, and crisp click that sounds exactly like a user interface button or mechanical dial being engaged.\n2. There is nothing in the sound that does not belong to the description.\n3. No, there is no human voice, spoken word, or singing in this sound.",
-    "openAgain": [
-     "1. I hear a deep, heavy percussive boom followed by a long, resonant echo. It has the character of a large drum being struck or a heavy object dropping in a spacious room.\n2. There is exactly one separate sound event.\n3. There is no human voice, spoken word, breath, or singing present.\n4. There is no continuous music or melody, but it sounds like a single hit on a large percussion instrument like a bass drum.\n5. It starts with a sudden, loud impact and ends by gradually fading out into silence as the echo decays.",
-     "1. I cannot hear anything because no audio file was provided.\n2. Not sure.\n3. Not sure.\n4. Not sure.\n5. Not sure.",
-     "1. I hear a sharp, high-pitched metallic clink. It sounds like a small metal object, such as a coin, striking a hard surface.\n2. There is exactly one separate sound event.\n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or musical instrument present.\n5. It starts abruptly with a sharp metallic strike. It ends quickly as the brief ringing resonance fades into silence."
-    ]
-   }
-  },
-  {
-   "cue": "ui-sound-on",
-   "take": 1,
-   "text": "One small soft chime, a single tiny glass bell struck once and ringing briefly, gentle and warm",
-   "cost": 11,
-   "verdict": "fits",
-   "why": "Numbers: one chime, 0.57 s, peak -17 dBFS. Listener: a bright high chime of two rapid overlapping tones, called digital or synthesized; fits the line. Two takes are left if a more natural glass bell is wanted.",
-   "listener": {
-    "line": "A small chime when sound comes on",
-    "open": "1. I hear a digital notification sound or electronic alert. It has the character of a bright, high-pitched, synthesized chime or bell.\n2. There is one main sound event consisting of two rapid, overlapping tones.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. There is no full piece of music, but it features a very brief two-note melody played by a synthesized musical bell instrument.\n5. It starts abruptly and ends by fading out smoothly.",
-    "fit": "1. Yes, it perfectly fits the description because the audio consists of a single, bright, high-pitched ringing tone typical of a small electronic notification or activation chime.\n2. There is nothing in the sound that does not belong to the description.\n3. No, there is no human voice, spoken word, or singing in it."
-   }
-  },
-  {
-   "cue": "land-winter",
-   "take": 2,
-   "text": "A heavy glass snow globe set down hard on a stone table: one loud short weighty thud with a small ring of glass, followed at once by ice crackling and spreading outward for a full second as frost forms",
-   "cost": 17,
-   "verdict": "does not fit",
-   "why": "Numbers: a loud hit, then 30 dB down within 0.1 s and silent by 0.5 s. Listener: one light bright clink on glass, not heavy, and no crackling.",
-   "listener": {
-    "line": "A heavy glass globe set down on stone, heavy and short, then ice crackling outward",
-    "open": "1. I hear a sharp, bright clinking sound, likely made by a metal object striking glass or ceramic. It is high-pitched and rings cleanly for a brief moment.\n2. There is exactly one distinct sound event.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument present.\n5. The sound starts abruptly with a sudden, percussive impact. It ends by naturally ringing out and quickly fading into complete silence.",
-    "fit": "1. No, it does not fit the description because the sound is a light, sharp chime rather than a heavy impact, and it completely lacks any crackling noise.\n2. The high-pitched, ringing tone sounds like a light metallic tap against a glass, which contradicts the description of a heavy object and crackling ice. \n3. No, there is no human voice, spoken word, or singing in the audio."
-   }
-  },
-  {
-   "cue": "amb-winter",
-   "take": 2,
-   "text": "Winter night wind: a soft airy hush of wind rising and falling slowly, with faint sleigh bells far in the distance, calm and even, with no single loud event",
-   "cost": 220,
-   "verdict": "rejected by the numbers: after a 60 Hz cut its level is -69 dBFS: a rumble under 60 Hz and nothing else"
-  },
-  {
-   "cue": "amb-winter",
-   "take": 3,
-   "text": "Winter wind blowing steadily across open snow: a full airy whoosh, gusts rising and falling, and sleigh bells ringing clearly somewhere in the distance",
-   "cost": 220,
-   "verdict": "does not fit",
-   "why": "Numbers: level uneven, a gust at 2 to 3 s, bells from 6 to 16 s, quiet ends; 92 percent of its energy under 60 Hz before the low cut. Listener: a gust of wind, a magical whoosh, then sleigh bells jingling loud and close as if passing by; not distant, and the whoosh does not belong.",
-   "listener": {
-    "line": "Wind and distant bells, very quiet, an ambience that loops",
-    "open": "1. I hear a gust of wind blowing, followed by the rhythmic jingling of metallic bells. The sound has a festive, wintery character, strongly resembling sleigh bells passing by.\n2. There are roughly three distinct sound events: an initial rushing wind, a quick swooshing sound effect, and the continuous jingling of bells.\n3. No, there is no human voice, spoken word, breath, or singing present in the audio.\n4. There is no formal music or melody, but the sleigh bells function as a rhythmic percussion instrument.\n5. The audio starts with a low, rumbling sound of wind blowing. It ends with the jingling sleigh bells gradually fading out into silence.",
-    "fit": "1. No, because the bells are loud and upfront rather than distant, and the track has a clear beginning and end instead of a continuous loop. \n2. There is a distinct, magical-sounding \"whoosh\" or swoosh effect that does not fit the description. \n3. No, there is no human voice, spoken word, or singing in the audio."
-   }
-  }
- ],
- "learned": [
-  "Words such as quiet, soft, faint and gentle come back almost silent. Ask for the sound at full strength and let the chain set its level.",
-  "Measured with two 3 second test calls of the same rain prompt at 03:56 UTC: with loop true the take is 12 dB quieter and carries a quarter of its energy under 60 Hz, with loop false it has none there. Ambience is therefore asked for with loop false, and the chain makes the loop.",
-  "A cue of one second or less comes back as one event. Every first take that asked for two things in a row, a scrape then a slosh, a thud then crackling, came back as a single clink. A cue with two parts is asked for at 2.5 seconds or more and cut to its length by the chain.",
-  "The word glass at the head of a prompt gives a clink whatever else is asked. The next takes name the heavy thing and the stone first.",
-  "Hand, strokes and stir bring a spoon into the glass. The next shake take asks for a sealed jar.",
-  "An ambience prompt that names an instrument, bells, gets a passage of that instrument up close. The other seasons' ambience asks for one steady bed and names its distant detail as far away and sparse."
- ],
- "kept": {
-  "glass-clink": 2,
-  "ui-sound-on": 1,
-  "ui-tick": 1
- },
- "open": {
-  "amb-winter": "three takes used, none fits: silent in the mixes and in the app until a review round buys new takes"
- },
- "takesLeft": {
-  "lift": 2,
-  "shake-winter": 2,
-  "land-winter": 1,
-  "amb-winter": 0,
-  "glass-clink": 1,
-  "ui-tick": 2,
-  "ui-sound-on": 2
- }
 }

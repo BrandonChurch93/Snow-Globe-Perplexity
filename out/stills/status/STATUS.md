@@ -1,17 +1,18 @@
-# Status 15
+# Status 16
 
-2026-11-24 06:28 UTC
+2026-11-24 06:49 UTC
 
-- Summer no longer whites out: its seeds are smaller and the scene shows through. It is still the busiest season and its seeds do not yet come to rest.
-- The macro camera is fitted, so frame 0 of the film now opens inside the scene with no glass edge. All six cameras frame what they are for.
-- Merged and verified on main: types clean, 274 tests, build, the same picture twice, the local render proof.
-- Next: the first blockout round. Two critics from different families judge cameras, timing and layout on fresh packs.
-- phase 2: 3.45 h used of its 6.00 h box
-- allowance (before the review): 4.64 h used of 36.00 h allowed
+- Blockout round 1 has started on commit 48afed3. Machine checks are running: G1 to G4 are green so far. They take longer now that the real particle engine is behind every picture.
+- The macro camera's focus now sits on the cottage front, so the opening frame reads as a snowy night inside the scene.
+- Sound: three more takes were judged and none fits its line (lift, the winter shake, the winter landing). The winter landing is out of takes and plays silent for now. No new kept sounds.
+- Two replacement agents are at work: one moves the live simulation into a worker and speeds up the storm, one refits the live framing so the lifted globe stays inside the screen with a locked camera.
+- Next: the pack, then two critics from different families.
+- phase 2: 3.80 h used of its 6.00 h box
+- allowance (before the review): 4.99 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-15-1.jpg`: The four seasons at rest with the real particle engine at its full pool: winter, spring, summer, fall. Hero camera, draft tier. Miniature, base and lights are stand-ins.
-- `out/stills/status/status-15-2.jpg`: The six cameras on the winter stand-in stage. Macro (top middle) is newly fitted: the lit cottage, the lamppost and the foot of the tree, no edge of the glass.
-- `out/stills/status/status-15-3.jpg`: Film B, frame 749 at 60 frames a second, preview, draft
-- `out/stills/status/status-15-4.jpg`: Still: winter rest hero, hd, draft
+- `out/stills/status/status-16-1.jpg`: Frame 0 of the film from the macro camera after its fit and focus: the lit cottage, the lamppost and the foot of the tree in falling snow, no edge of the glass. Stand-in shapes.
+- `out/stills/status/status-16-2.jpg`: The six cameras of the config on the winter stand-in stage at rest, review tier, each tile labelled with its numbers: hero, macro (new fit: distance 130, yaw -13, pitch 3, aim 67), interior, base, surface, low. Macro now shows the lit cottage, the lamppost and the foot of the tree with no edge of the glass. (by engine_builder)
+- `out/stills/status/status-16-3.jpg`: The four seasons at rest with the real particle engine at its full pool through the stage's drawing, hero camera, preview, draft: winter, spring, summer, fall. Summer's seeds are now 0.5 to 1.1 mm so the scene shows through; it is still the busiest of the four. Miniature, base and lights are stand-ins. (by particles_builder)
+- `out/stills/status/status-16-4.jpg`: Sheet: 12 frames across the shot shake-1, frames 576 to 719, preview, draft

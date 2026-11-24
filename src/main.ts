@@ -10,15 +10,16 @@ import type { SdfGrid, Stage } from './core/stage'
 import { SourceSwitch, type LoopParticles } from './film/loop'
 import { httpStore, SimDriver } from './particles/driver'
 import { ParticleEngine } from './particles/engine/engine'
-import { LiveEngine, Padded } from './particles/engine/live'
+import { Padded } from './particles/engine/live'
 import { LoopPaths } from './particles/engine/loop'
+import { LiveRunner, spawnEngineWorker } from './particles/engine/remote'
 import { blockoutSdf, type Emitter } from './particles/engine/sdf'
 import { createStage } from './scene/createStage'
 
 declare global {
   interface Window {
     showcase: Showcase
-    liveSim?: LiveEngine
+    liveSim?: LiveRunner
   }
 }
 
@@ -67,7 +68,8 @@ if (capture) {
   window.showcase = showcase
 } else {
   const level = named ?? topLevel
-  const sim = new LiveEngine({ season: params.season, fraction: level.particleFraction })
+  const onWorker = params.mode === 'live' && new URLSearchParams(location.search).get('sim') !== 'main'
+  const sim = new LiveRunner({ season: params.season, fraction: level.particleFraction, spawn: onWorker ? spawnEngineWorker : null })
   const particles = new SourceSwitch(sim.source)
   const stage = createStage(gfx, particles, 16, 16)
   const collider = colliderOf(stage)

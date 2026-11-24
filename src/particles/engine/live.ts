@@ -114,6 +114,19 @@ export class LiveEngine {
   get active(): number {
     return this.engine.count
   }
+  get inner(): ParticleEngine {
+    return this.engine
+  }
+
+  snapshot(): EngineSnapshot {
+    return this.engine.snapshot()
+  }
+
+  restore(s: EngineSnapshot): void {
+    if (s.state.length !== this.engine.count) this.engine = new ParticleEngine({ ...this.options, season: this.engine.seasonNow, fraction: s.state.length / POOL })
+    this.engine.restore(s)
+    this.source.touch()
+  }
 
   reset(season?: string): void {
     this.engine.reset(season)
@@ -126,18 +139,18 @@ export class LiveEngine {
 
   advanceTo(target: number, tl: Timeline): void {
     const e = this.engine
-    if (e.step > 0 && tl.events.length === 0 && tl.startSeason !== e.seasonNow && SEASONS.includes(tl.startSeason)) this.rest(tl.startSeason)
+    if (e.step > 0 && tl.events.length === 0 && tl.startSeason !== e.seasonNow && SEASONS.includes(tl.startSeason)) this.restAt(tl.startSeason, e.step)
     this.engine.advanceTo(target, tl)
     this.source.touch()
   }
 
-  private rest(season: string): void {
+  restAt(season: string, step: number): void {
     const e = this.engine
-    const step = e.step
     e.reset(season)
     const s = e.snapshot()
     for (let i = 0; i < s.stamp.length; i++) s.stamp[i] = s.stamp[i]! + step
     e.restore({ ...s, step })
+    this.source.touch()
   }
 
   floating(): number {

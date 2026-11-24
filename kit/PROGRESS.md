@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 15 · 2026-11-24 06:28 UTC
+Status 16 · 2026-11-24 06:49 UTC
 
-- `out/stills/status/status-15-1.jpg`: The four seasons at rest with the real particle engine at its full pool: winter, spring, summer, fall. Hero camera, draft tier. Miniature, base and lights are stand-ins.
-- `out/stills/status/status-15-2.jpg`: The six cameras on the winter stand-in stage. Macro (top middle) is newly fitted: the lit cottage, the lamppost and the foot of the tree, no edge of the glass.
-- `out/stills/status/status-15-3.jpg`: Film B, frame 749 at 60 frames a second, preview, draft
-- `out/stills/status/status-15-4.jpg`: Still: winter rest hero, hd, draft
+- `out/stills/status/status-16-1.jpg`: Frame 0 of the film from the macro camera after its fit and focus: the lit cottage, the lamppost and the foot of the tree in falling snow, no edge of the glass. Stand-in shapes.
+- `out/stills/status/status-16-2.jpg`: The six cameras of the config on the winter stand-in stage at rest, review tier, each tile labelled with its numbers: hero, macro (new fit: distance 130, yaw -13, pitch 3, aim 67), interior, base, surface, low. Macro now shows the lit cottage, the lamppost and the foot of the tree with no edge of the glass. (by engine_builder)
+- `out/stills/status/status-16-3.jpg`: The four seasons at rest with the real particle engine at its full pool through the stage's drawing, hero camera, preview, draft: winter, spring, summer, fall. Summer's seeds are now 0.5 to 1.1 mm so the scene shows through; it is still the busiest of the four. Miniature, base and lights are stand-ins. (by particles_builder)
+- `out/stills/status/status-16-4.jpg`: Sheet: 12 frames across the shot shake-1, frames 576 to 719, preview, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-24 06:28 UTC
-clock: phase 2, tick of 0.2 minutes
-phase 2: 3.45 h used of its 6.00 h box
-allowance (before the review): 4.64 h used of 36.00 h allowed
-all time before the review: 4.64 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-24 06:49 UTC
+clock: phase 2, tick of 4.2 minutes
+phase 2: 3.80 h used of its 6.00 h box
+allowance (before the review): 4.99 h used of 36.00 h allowed
+all time before the review: 4.99 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
@@ -451,6 +451,11 @@ Numbered. What, why, and the date.
 31. 2026-11-24. The card loop is seen from the hero camera moved back along its own axis to 783.7 mm, the least distance that keeps the glass and the base inside the centred square crop with 3 percent to spare on every frame of the loop's shake (`film_app_builder`, with a test). At hero the glass reached 15.5 percent outside the square at the widest stroke. The crop rule of `kit/01-FILM.md` is explicit; the globe is a little smaller on the card for it.
 32. 2026-11-24. The live app runs the particle engine on the main thread for now, at the quality level's share of the pool. The worker client exists and gives the same arrays as the direct engine in Node, but was never run in a browser, so it is not wired. It is open item 5 and goes to the agent that replaces `particles_builder` at its limit.
 
+33. 2026-11-24. In the live app the camera stays locked through a shake, as in the film, and the framing at rest leaves the room the shake needs upward at every size: the top of the lifted glass stays inside the top edge and the foot stays clear of the controls. Measured by `film_app_builder` at 06:35 before the change: at hd the lifted glass passed the top edge by 55 px, at tablet by 71 px. Sideways the strokes stay inside the frame in landscape. In portrait the globe fills the width at rest, as `kit/02-SUBJECT.md` section 7 says for a phone, so the strokes carry the glass past the sides, about 97 px a side on a phone: the kit's two sentences (the globe fills the width, the camera never moves with the globe) leave no other reading. The other cures were a camera that stands back for the shake, which moves the camera in the shake, and a smaller globe on phones, which the kit rules out. The kit did not foresee this; it is settled by the reading closest to the approved images (the whole globe in frame, large, from a camera that does not move) and listed for the REVIEW block.
+
+
+34. 07:04. The spring move goes toward `base` and stops short of it. `kit/01-FILM.md` has the camera sink "toward the `base` camera, past the trickle of water and the mushrooms on the mossy stone", and the first blockout critic called it severe that the miniature leaves the frame for about 2.5 s. Both hold if the move stops where the whole base and the miniature's ground, the cottage to its ridge and the trunk are all in the frame; the canopy may leave the top. The `base` camera itself, its judged stills and its framing test do not change. The share of the way is computed, not picked (`film_app_engineer_2`). The critic's own fix, to centre the move on the miniature and keep the whole tree, is declined as far as it would turn the move away from the base, which the kit names as its subject. For the REVIEW block.
+
 ## Notes from Brandon
 
 Numbered, in his words, with the date and how each was applied. Review round items carry their round's number.
@@ -483,6 +488,15 @@ Severe and major issues still open when a limit was reached: the unit, the still
 8. With reduced motion, and on a jump from the menu, the particles change in one frame at the end of the dissolve. A cross-fade needs the dissolve's progress from the session. Carried to Phase 5 (`globe`).
 
    - 06:25 update to item 6: summer's seeds are now 0.5 to 1.1 mm and the scene shows through at rest. Reduced, not closed: all 9000 seeds and 40000 motes stay afloat, so summer is the busiest season at rest, and the winter storm still fills the glass white in the middle of a live shake. Carried to Phase 4 (`summer`) and Phase 3 (`winter`), where the particle looks are judged.
+
+
+9. Sound, `land-winter`: no take fits after the three the cue is allowed. Its line is "A heavy glass globe set down on stone, heavy and short, then ice crackling outward". Take 1: a faint thud and no ice (rejected by the numbers). Take 2: one light bright clink, no crackle. Take 3 (asked as two sounds in a row, 3 s): two hollow knocks like a small thing dropped on wood, nothing above 2 kHz, no ice. The tool gives one familiar event for a short prompt and does not put two events in a row. The winter landing plays without this cue in the film and in the app. What to try if a review round names it: one real event that holds both, such as a heavy glass jar set down hard onto crushed ice, asked at 3 s and cut by the chain.
+
+
+   - 07:02 update to item 5: closed. `agent/particles2` at `a415b4e` is merged (`87fe501`). Checked here in headless Chrome on the built page at 960 by 540: the live page runs one module worker with its client, 0 fallbacks, and `?sim=main` runs none (`out/work/workercheck.mjs`). The speed of the engine itself stays open under item 2.
+   - 07:02 update to item 7: closed. The governor steps down by time (`agent/film-app` `3076002`, merged through `agent/film-app2` in `87fe501`, covered by its unit tests; 284 tests on main).
+
+10. Blockout round 1, part 1 (score 8, severe, `set-A-04.jpg`, the spring hold): "The push-in drops the spring scene almost entirely out of frame and holds on the pedestal instead. The viewer loses the subject of the shot for several seconds." Cause: the move ran the whole way to `base`, where the frame is 74 mm tall and ends below the island. The critic was told only "a hold on spring", not what the move is for. Being fixed in the fix pass by decision 34; the pack's lines get the move and each camera's purpose for round 2.
 
 ## Review items not done
 
@@ -545,11 +559,18 @@ Merged into `main`, each verified here with types clean and the tests green (126
 
 - 05:04 `agent/ui` at `1252103` and `agent/particles` at `adb3a22` merged as work in progress, before their reports, so the film and app agent can wire the page against the real interface and the engine agent can see the particle engine: types clean, 151 tests green, the build runs. Their reports and the rows for `ASSETS.md` (the typeface in `public/fonts/`, with its licence file) are still due.
 
+
+- 06:27 to 06:41 final reports and last merges: `agent/engine` at `7a34724` (macro fit and focus; all of it merged; the agent has stopped), `agent/particles` at `3eb65fb` (merged; stopped at its limit), `agent/film-app` at `e602e2b` (the governor that steps down by time, `3076002`; reported 06:38, held back from `main` until round 1's pack is built, because the round judges `48afed3`). `film_tools_builder` stopped at its limit after a whole draft film on the old hash.
+- 06:37 started `particles_engineer_2`, the one replacement for the particle job: branch `agent/particles2`, looks `agent/particles2-looks`, sandbox VM, brief in its message (COMMON.md and particles.md plus three jobs: the worker path for the live app proven in headless Chrome with the main thread as fallback; speed of the storm at the full pool; a field that slides along the ground and the miniature). First push asked by 07:40 UTC, hard limit 08:15 UTC.
+- To do after round 1's answers: one replacement for the film and app job (`film_app_engineer_2`) with the round's issues, the live framing of decision 33, and the changes `film_app_builder` and `engine_builder` asked for outside their files (`tools/lib/hashes.mjs` should hash `cut/AUDIO-MAP.json`; the still record's `framing` for screen stills; `src/film/loop.ts:94` names the stand-in `loop-particles` where the register says `loop`; the governor's four numbers into `config.live`).
+
+- 06:44 started `film_app_engineer_2`, the one replacement for the film and app job: branch `agent/film-app2` cut from `agent/film-app` at `e602e2b`, looks `agent/film-app2-looks`, sandbox VM. Jobs: the live framing of decision 33, the small fixes listed above (the governor's numbers stay in `src/core/quality.ts`, since the config does not hold them), the 5 s pause seen once, then round 1's issues. First push asked by 07:25 UTC, hard limit 08:05 UTC.
+
 ## Rounds
 
 One line per round: its number, the unit, the commit it judged, each part ticked off as it finished, the scores, and what changed next.
 
-- Round 1 · blockout (Phase 2, the floor round) · judges commit `48afed3` · started 2026-11-24 06:36 UTC. Parts: [ ] build · [ ] machine checks · [ ] measures · [ ] pack · [ ] critic part 1 · [ ] critic part 2 · [ ] issues read · [ ] fixes · [ ] logged
+- Round 1 · blockout (Phase 2, the floor round) · judges commit `48afed3` · started 2026-11-24 06:36 UTC. Parts: [x] build · [x] machine checks (06:50: G1 to G12 and G14 green on the judged build `e4a8b9bdbc7a55ec`; D2 and D3 are red until step 14) · [x] measures (06:51: M1 and M6 on seven winter stills, 14 lines, 0 red) · [x] pack (06:55: 19 files in two parts, 0 parts missing; built at `b94e722`, which differs from `48afed3` only in `kit/` and `audio/` text) · [x] critic part 1 (06:57: 8, one severe issue on the spring hold) · [ ] critic part 2 · [ ] issues read · [ ] fixes · [ ] logged
 
 ## Final scores
 
@@ -649,3 +670,12 @@ One entry per task: when it started, what it did, where it stopped.
 - 06:27 `engine_builder`: macro fitted, fov 16, distance 130, yaw -13, pitch 3, aim 67 (corner reach 50.65 mm against 51.0). Frame 0 shows the cottage, the lamppost and the trunk with no edge of the glass and no base pixel. Merged `agent/engine` at `84b4fd3`; cut files written again. Asked for the macro focus on the cottage front, limit 06:38.
 - 06:28 Status 15 posted with two pictures: the four seasons with the particle engine, the six cameras. Main at `44d54fa`: types clean, 274 tests, build ok.
 - 06:30 `film_tools_builder` finished: a whole draft film B on the old hash `17895cb44206dea9`, 1800 frames at 0.70 s a frame in 22 minutes on one sandbox VM of 4 cores. It cannot join on the current build. It stands as the measure for step 14: about 22 minutes on one VM, less on five.
+
+- 06:36 round 1 (blockout) started on `48afed3`: build, gate, measures and pack run one after another in one detached chain (`out/work/round1.sh`). With the particle engine behind the page one page load of the determinism check takes about 110 s (25 s with the spike), so the gate is slower than before.
+- 06:38 sound: `lift` take 2 (1.5 s asked): the listener hears low wet grunts, not a base leaving stone. Does not fit. One take left. 06:40 `shake-winter` take 2: the listener hears ice cubes or dice shaken in a container with liquid sloshing in glass, no hiss of snow and no bells. Does not fit. One take left.
+- 06:38 `film_app_builder` final report: the governor steps down by time (2 frames a second reaches `low` in 5 s; 277 tests on its branch). It measured that in the live app the lifted globe leaves the frame: decision 33. 06:39 `engine_builder` final report; its gate subset G3, G4, G10, G11, G12, G14 is green on `7a34724` with the particle engine, M1 and M6 green on 7 winter stills.
+
+- 06:44 sound: `land-winter` take 3, its last: two hollow knocks, no ice. Does not fit. Open item 9: the winter landing plays without the cue. Takes left: `lift` 1, `shake-winter` 1, `ui-tick` 2, `ui-sound-on` 2, `glass-clink` 1. Lesson for the prompts still to write: ask for one real event that holds everything in the cue's line, never two events in a row.
+
+- 06:55 round 1: the pack is built (19 files in two parts). Critics asked at 06:56: part 1 (ten film sheets) on `gpt_6_2_sol` at reasoning max; part 2 (six camera pairs, three screens) on `gemini_4_carbon`, which the spawn reports at reasoning medium although max was asked. 06:57 part 1 answered: 8, one severe issue (open item 10).
+- 06:59 merged `agent/film-app2` `a8cb453` (live framing of decision 33, governor) and `agent/particles2` `a415b4e` (worker path) into main at `87fe501`: types clean, 284 tests, build, cut and parts clean. The pack of round 1 was built before the merge, so round 1 still judges `48afed3`. 07:02 worker path checked in headless Chrome (items 5 and 7 closed). 07:04 decision 34 sent to `film_app_engineer_2` as the first job of the fix pass.
