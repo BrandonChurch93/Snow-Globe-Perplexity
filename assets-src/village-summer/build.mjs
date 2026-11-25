@@ -276,8 +276,8 @@ const stoneList = []
       g.deleteAttribute('normal')
       g.deleteAttribute('uv')
     }
-    const tone = mul3(lin(pick(STONE.tones)), range(0.8, 1.15))
-    decor.add(g, { color: (p) => mul3(tone, 0.45 + 0.75 * clamp((p[1] - (y - h)) / (2 * h)) + 0.25 * (noise(p[0] * 3 + seed, p[1] * 3, p[2] * 3) - 0.5)), surf: [surf(KIND.stone, 0.85), 0], renormal: true })
+    const tone = mul3(lin(pick(STONE.tones)), range(1.3, 1.9))
+    decor.add(g, { color: (p) => mul3(tone, 0.22 + 1.35 * clamp((p[1] - (y - h)) / (2 * h)) ** 2 + 0.3 * (noise(p[0] * 3 + seed, p[1] * 3, p[2] * 3) - 0.5)), surf: [surf(KIND.stone, 0.85), 0], renormal: true })
     stoneList.push([x, z, rx, rz, yaw])
   }
 }
@@ -319,15 +319,18 @@ let tufts = 0
     if (hardGap(x, z) < 0.3 || trunkGap(x, z) < -1.4 || stoneGap(x, z) < 0.15) continue
     const sand = sandAt(x, z)
     if (R() < smooth(GRASS.sandFrom, GRASS.sandTo, sand)) continue
-    const lit = sunAt(x, z)
+    // Tuft by tuft the sun is caught or missed, and each tuft has its own depth of green: the lawn reads as blades, not as a wash.
+    const own = (k) => { const v = Math.sin(x * 12.9898 * k + z * 78.233 + k * 3.7) * 43758.5453; return v - Math.floor(v) }
+    const lit = sunAt(x, z) * (own(1) < 0.28 ? 0.2 : 0.75 + 0.6 * own(2))
+    const deep = own(3) < 0.3 ? 0.5 : 0.85 + 0.7 * own(4)
     const lush = clamp(0.55 + 0.9 * fbm(x * 0.16 + 7, z * 0.16 + 2, 1.1, 3))
     const worn = Math.exp(-Math.max(hardGap(x, z), 0) / 1.6)
     if (R() < 0.55 * worn) continue
     const y0 = topAt(x, z) - 0.05
     const tall = range(GRASS.tall[0], GRASS.tall[1]) * (0.6 + 0.6 * lush) * (1 - 0.45 * worn) * (1 + (GRASS.rimTall - 1) * smooth(1.035, 1.09, f) * (1 - smooth(1.09, 1.25, f)))
     const patch = 0.45 + 0.75 * clamp(0.5 + 1.4 * fbm(x * 0.09 + 3, z * 0.09 + 11, 2.3, 2))
-    const base = mul3(mix3(pick(TONES.grass), pick(TONES.straw), sand * 0.8), patch)
-    const top = mul3(mix3(pick(TONES.tip), pick(TONES.straw), clamp(sand * 0.9 + 0.08 * R())), patch)
+    const base = mul3(mix3(pick(TONES.grass), pick(TONES.straw), sand * 0.8), patch * deep)
+    const top = mul3(mix3(pick(TONES.tip), pick(TONES.straw), clamp(sand * 0.9 + 0.08 * R())), patch * deep)
     const cell = { key: morton(x, z), pos: [], nor: [], col: [], tip: [], sun: [] }
     list.push(cell)
     const up = norm3([(R() - 0.5) * 0.5, 1, (R() - 0.5) * 0.5])
@@ -408,16 +411,16 @@ const counts = { roses: 0, leaves: 0, sunflowers: 0, blooms: 0 }
 const wallOut = RF.wallOutward()
 for (const sh of RF.shrubs()) {
   const ivy = RF.isIvy(sh.r)
-  const n = ivy ? 7 : 16
+  const n = ivy ? 5 : 11
   for (let i = 0; i < n; i++) {
     const yy = ivy ? range(-0.7, 0.85) : range(-0.1, 0.9)
     const a = ivy ? wallOut + (R() - 0.5) * 2.2 : R() * TAU
     const rr = Math.sqrt(Math.max(0, 1 - yy * yy))
     const d = [Math.cos(a) * rr, yy, Math.sin(a) * rr]
     const p = [sh.centre[0] + d[0] * sh.r[0] * 1.02, sh.centre[1] + d[1] * sh.r[1] * 1.02, sh.centre[2] + d[2] * sh.r[2] * 1.02]
-    blossom(p, d, range(0.2, 0.36), pick(TONES.rose))
+    blossom(p, d, range(0.32, 0.52), pick(TONES.rose))
     counts.roses++
-    for (let k = 0; k < 5; k++) leaf(add3(p, [range(-0.5, 0.5), range(-0.5, 0.5), range(-0.5, 0.5)]), d, 0.5, mul3(pick(TONES.leaf), range(0.8, 1.4)))
+    for (let k = 0; k < 4; k++) leaf(add3(p, [range(-0.6, 0.6), range(-0.6, 0.6), range(-0.6, 0.6)]), d, 0.8, mul3(pick(TONES.leaf), range(0.7, 1.5)))
   }
 }
 
@@ -446,13 +449,14 @@ for (const sh of RF.shrubs()) {
   const outV = sc(L.cottagePoint(0, 0, 1).map((v, i) => v - L.cottagePoint(0, 0, 0)[i]), 1)
   const out = norm3([outV[0], 0.15, outV[2]])
   for (const c of climb) {
-    for (let k = 0; k < 12; k++) {
+    // Fewer, larger leaves and roses: from the hero lens each one is a shape of its own, not a speckle.
+    for (let k = 0; k < 7; k++) {
       const p = L.cottagePoint(c.at[0] + range(-c.w, c.w), c.at[1] + range(-c.w, c.w), wallZ + range(0, 0.5))
-      leaf(p, out, 0.85, mul3(pick(TONES.leaf), range(0.35, 0.95)))
+      leaf(p, out, 1.25, mul3(pick(TONES.leaf), range(0.35, 1.1)))
     }
-    if (R() < 0.42) {
+    if (R() < 0.3) {
       const p = L.cottagePoint(c.at[0] + range(-c.w, c.w), c.at[1] + range(-c.w, c.w), wallZ + 0.55)
-      blossom(p, out, range(0.24, 0.42), pick(TONES.rose))
+      blossom(p, out, range(0.42, 0.68), pick(TONES.rose))
       counts.roses++
     }
   }
