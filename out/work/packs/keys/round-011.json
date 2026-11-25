@@ -1,0 +1,108 @@
+{
+  "round": 11,
+  "phase": 4,
+  "unit": "spring",
+  "tier": "review",
+  "motionTier": "review",
+  "record": false,
+  "limits": {
+    "longEdge": 1400,
+    "maxPixels": 1140000,
+    "maxFiles": 10
+  },
+  "engineHash": "",
+  "roles": {
+    "R4": {
+      "parts": [
+        {
+          "folder": "out/work/packs/round-011/R4",
+          "message": "out/work/packs/round-011/R4.message.md",
+          "files": [
+            {
+              "name": "set-A-01.jpg",
+              "what": "one sheet across the whole shake and the clearing that follows, from node tools/sheet.mjs --shot shake-1 --tier review: out/work/sheets/shot-shake-1-preview-review.jpg",
+              "source": "out/work/sheets/shot-shake-1-preview-review.jpg",
+              "sha256": "f222d660af7a438572eef4c039eb02e05a2e4ab09315104472d9dd0b493e5d68",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-B-01.jpg",
+              "what": "the arrival, from node tools/sheet.mjs --motion arrival --shot shake-1 --tier review: out/work/sheets/motion-arrival-shake-1-preview-review-1.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-1-preview-review-1.jpg",
+              "sha256": "464b55c4060aae00b34b81a746f1f02b042ff10cc25ff60859edc59e940906a8",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-B-02.jpg",
+              "what": "the arrival, from node tools/sheet.mjs --motion arrival --shot shake-1 --tier review: out/work/sheets/motion-arrival-shake-1-preview-review-2.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-1-preview-review-2.jpg",
+              "sha256": "bf0231fae42346752a46c33a6c17b8faf39c704d1afbde2f04dce5d6d0dcdbfc",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-B-03.jpg",
+              "what": "the arrival, from node tools/sheet.mjs --motion arrival --shot shake-1 --tier review: out/work/sheets/motion-arrival-shake-1-preview-review-3.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-1-preview-review-3.jpg",
+              "sha256": "b0ff0a7247ecee39aa6bd1aadeac044851fa904b9166bded35a5ed1182dfc7b7",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-B-04.jpg",
+              "what": "the arrival, from node tools/sheet.mjs --motion arrival --shot shake-1 --tier review: out/work/sheets/motion-arrival-shake-1-preview-review-4.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-1-preview-review-4.jpg",
+              "sha256": "43ac0c08302f36d8c60dd6dddcfa609128dfa9433647c4394649af81775e901a",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-B-05.jpg",
+              "what": "the arrival, from node tools/sheet.mjs --motion arrival --shot shake-1 --tier review: out/work/sheets/motion-arrival-shake-1-preview-review-5.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-1-preview-review-5.jpg",
+              "sha256": "8df61787ff7d5f0d0c8dd4ca8cbf60354e86f9c879aa7d94affa56414946479e",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-B-06.jpg",
+              "what": "the arrival, from node tools/sheet.mjs --motion arrival --shot shake-1 --tier review: out/work/sheets/motion-arrival-shake-1-preview-review-6.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-1-preview-review-6.jpg",
+              "sha256": "79b53b16b75a64fa7479059f93311344064891824d67be41c6951f438d618ebf",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-B-07.jpg",
+              "what": "the arrival, from node tools/sheet.mjs --motion arrival --shot shake-1 --tier review: out/work/sheets/motion-arrival-shake-1-preview-review-7.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-1-preview-review-7.jpg",
+              "sha256": "bee5db086aae83c1c131c979296c943135883ed0c965c340a57ea0152da132d9",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-B-08.jpg",
+              "what": "the arrival, from node tools/sheet.mjs --motion arrival --shot shake-1 --tier review: out/work/sheets/motion-arrival-shake-1-preview-review-8.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-1-preview-review-8.jpg",
+              "sha256": "b10cfac3f171473b2fc8aac482a732e39867b0477bdd587f174761d48df88e00",
+              "width": 1149,
+              "height": 498
+            },
+            {
+              "name": "set-C-01.jpg",
+              "what": "the globe at rest across several seconds, from node tools/sheet.mjs --shot spring --tier review: out/work/sheets/shot-spring-preview-review.jpg",
+              "source": "out/work/sheets/shot-spring-preview-review.jpg",
+              "sha256": "b537b3a7270c98fadfcf9b14f7ec7ea6cf0f45ff025c58e6bd86b30895a655fc",
+              "width": 1149,
+              "height": 986
+            }
+          ]
+        }
+      ],
+      "missing": [],
+      "notes": []
+    }
+  }
+}
