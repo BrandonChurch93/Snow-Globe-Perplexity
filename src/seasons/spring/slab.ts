@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { stageShader } from '../../core/materials'
+import { GUST, STAGE_GUST_GLSL, stageShader } from '../../core/materials'
 import { stream } from '../../core/rng'
 import { texture } from '../../core/textures'
 import { ROOM_GLSL, roomUniforms } from '../../scene/room'
@@ -87,6 +87,7 @@ varying vec4 vPetalKind;
 varying float vPetalSoft;
 varying float vPetalBlur;
 ${BLUR}
+${STAGE_GUST_GLSL}
 mat3 petalTurn(vec3 axis, float a) {
   float s = sin(a);
   float c = cos(a);
@@ -117,6 +118,14 @@ float petalFlips = floor(aKind.z * 2.99) * step(0.25, petalKick);
 float petalRoll = 3.14159265 * petalFlips * (1.0 - petalEase) + 0.9 * petalKick * petalArc * (aKind.w - 0.5);
 float petalYaw = aRest.z + (aKind.w - 0.5) * 2.6 * petalKick * (1.0 - petalEase);
 vec2 petalAt = aRest.xy - (petalOut / max(petalFar, 1.0)) * (${JUMP.shiftMm.toFixed(1)} * petalKick * (0.4 + 0.6 * aKind.z) * (1.0 - petalEase));
+// Inside a change the petals are carried: blown out ahead of the front of light when spring leaves, flown out behind it when spring comes.
+if (uState.w > 0.5) {
+  vec3 petalGust = stageGust(aRest.xy, aKind.z, aKind.w);
+  petalAt += normalize(aRest.xy) * petalGust.x;
+  petalUp += ${GUST.heightMm.toFixed(1)} * (0.4 + 0.6 * aKind.w) * petalGust.y;
+  petalRoll += 3.14159265 * (1.0 + floor(aKind.z * 2.99)) * petalGust.z;
+  petalYaw += (aKind.w - 0.5) * 3.0 * petalGust.z;
+}
 float petalFlat = 1.0 - 0.6 * aKind.y;
 vec3 petalP = vec3(petalQ2.x, 0.0, petalQ2.y) * petalSize;
 float petalAcross = petalQ2.y * 2.0 * aShape.w;

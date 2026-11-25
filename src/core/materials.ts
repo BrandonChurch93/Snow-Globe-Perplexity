@@ -27,7 +27,7 @@ export const DRESSING_FRONT = { gain: 2, fromMm: 58, toMm: 230 } as const
 
 /**
  * How the parts outside the glass give way inside their span. The new season's light pours out of the globe: a front runs
- * down the base from the collar to the foot over the first `share` of the span, and on across the table from the foot
+ * down the base from the collar to the foot inside `cutLong` of the span from `cutFrom` on (less than a frame of the film), and on across the table from the foot
  * outward over the span from `tableFrom` on. Behind the front a part is the new season, ahead of it the old; the front's
  * edge is broken into patches (`cellMm`, in the part's own space, so it travels with the globe) and feathered across the
  * samples of a frame (`feather`), and it carries the new season's light (`glowBase`, `glowTable` wide, in shares of the
@@ -37,8 +37,39 @@ export const DRESSING_FRONT = { gain: 2, fromMm: 58, toMm: 230 } as const
  * and takes the whole span from `tableFrom` on to cross it. The code of a part's kind rides in `uState.z`: 0 and above is the lag
  * of a part inside the glass, under 0 the table's gain, under `-BASE_CODE` the base's.
  */
-export const OUTSIDE_FRONT = { share: 0.62, gain: 3, tableFrom: 0.26, rayMm: 110, streak: 3.4, cellMm: 6.5, fineMm: 2.3, fine: 0.36, contrast: 2.6, feather: 0.14, glowBase: 0.11, glowTable: 0.07, topMm: 33, footMm: 0 } as const
+export const OUTSIDE_FRONT = { cutFrom: 0.24, cutLong: 0.1, gain: 3, tableFrom: 0.26, rayMm: 110, streak: 3.4, cellMm: 6.5, fineMm: 2.3, fine: 0.36, contrast: 2.6, feather: 0.14, glowBase: 0.11, glowTable: 0.07, topMm: 33, footMm: 0 } as const
 const BASE_CODE = 10
+
+/**
+ * The scatter on the table is carried by the change, not swapped by it. What lies there lifts as the front of light comes near,
+ * is blown out ahead of it and is taken by it in the air; what the new season lays is born behind the front, flies out with it
+ * and comes down on its place. The clock is the outside span's own share, read past both of its ends: `leadOut` shares before
+ * the front stands over a piece's place it starts to lift, `leadIn` shares before it a new piece is under way, and every new
+ * piece is down before the window closes (0.877 - leadIn + 1.2 * longIn stays under 1.94, the share at which it does).
+ * Lengths in millimetres. With one season on the stage the mode is 0 and nothing here is read.
+ */
+export const GUST = { leadOut: 0.8, longOut: 1.3, reachOutMm: 90, leadIn: 0.25, longIn: 1, reachInMm: 70, clearMm: 64, heightMm: 14 } as const
+
+/** For a vertex shader of a part of the table's dressing: x the way a piece is moved along the line out from the stage's axis, y its height as a share, z how far it is from lying (1 to 0). */
+export const STAGE_GUST_GLSL = `
+uniform float uChange;
+uniform vec4 uState;
+vec3 stageGust(vec2 rest, float a, float b) {
+  if (uState.w < 0.5 || uState.z >= 0.0) return vec3(0.0);
+  float s = (uChange - uState.x) / uState.y;
+  float r = length(rest);
+  float far = clamp((r - ${DRESSING_FRONT.fromMm.toFixed(1)}) / ${(DRESSING_FRONT.toMm - DRESSING_FRONT.fromMm).toFixed(1)}, 0.0, 1.0);
+  float over = ${OUTSIDE_FRONT.tableFrom.toFixed(2)} + ${(1 - OUTSIDE_FRONT.tableFrom).toFixed(2)} * (0.5 - uState.z * far) / (1.0 - uState.z);
+  if (uState.w > 1.5) {
+    float q = clamp((s - over + ${GUST.leadIn.toFixed(2)}) / (${GUST.longIn.toFixed(2)} * (0.8 + 0.4 * b)), 0.0, 1.0);
+    float left = (1.0 - q) * (1.0 - q);
+    float reach = min(${GUST.reachInMm.toFixed(1)} * (0.5 + a), max(r - ${GUST.clearMm.toFixed(1)}, 0.0));
+    return vec3(-reach * left, q < 1.0 ? sin(3.14159265 * (0.2 + 0.8 * q)) : 0.0, left);
+  }
+  float q = clamp((s - over + ${GUST.leadOut.toFixed(2)}) / ${GUST.longOut.toFixed(2)}, 0.0, 1.0);
+  return vec3(${GUST.reachOutMm.toFixed(1)} * (0.5 + a) * q * q, sin(1.5707963 * q), q);
+}
+`
 
 export interface StageHandle {
   part: string
@@ -182,7 +213,9 @@ float stageChange() {
     if (uState.z < -${(BASE_CODE - 1).toFixed(1)}) {
       float gain = -uState.z - ${BASE_CODE.toFixed(1)};
       float way = clamp((${(OUTSIDE_FRONT.topMm).toFixed(1)} + uLightFloodFloor.x - vStageLocal.y) / ${(OUTSIDE_FRONT.topMm - OUTSIDE_FRONT.footMm).toFixed(1)}, 0.0, 1.0);
-      float run = through / ${OUTSIDE_FRONT.share.toFixed(2)};
+      // The base is cut, not crossed: the front runs down it between two frames of the film (the third and the fourth of its span),
+      // so no frame holds a base that is half one season and half the next.
+      float run = (through - ${OUTSIDE_FRONT.cutFrom.toFixed(2)}) / ${OUTSIDE_FRONT.cutLong.toFixed(2)};
       float reach = run * (1.0 + gain) - gain * way;
       stageEdge = stagePatch(vStageLocal);
       float at = (reach - clamp(stageEdge, 0.0, 1.0)) / (gain * ${OUTSIDE_FRONT.glowBase.toFixed(2)});
