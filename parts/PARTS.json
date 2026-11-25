@@ -613,12 +613,13 @@
     {
       "name": "interface",
       "unit": "globe",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/ui"
       ],
       "standInHash": "c2404116aeb75ba0",
-      "commit": "2530677"
+      "commit": "497630cb",
+      "note": "Built since the merge ffaa4a8 of agent/p5-interface (16:18 UTC Nov 25, pushed 16:40): the controls of section 7 of kit/02-SUBJECT.md by the method of section 15 of kit/03-METHOD.md: the Shake control, four season marks and the sound control along the bottom edge, quiet, dimming, one pulse, keyboard and names, reduced motion, the phone's row within reach of a thumb, the M menu out of the tab order, one quiet line where the browser cannot draw. Proofs on the merged tree: types clean, 460 tests passed and 4 skipped, build green, node tools/ui-preview/check.mjs 25 of 25, npm run hostcheck pass with all ten links open (16:40), a draft still byte equal before and after. Open beside it: item 172 (the walk's last steps on hd and tablet are with two agents), item 175 (what the tablet shows at the sound control in summer), items 176 and 177 (minor)."
     },
     {
       "name": "sound-engine",
