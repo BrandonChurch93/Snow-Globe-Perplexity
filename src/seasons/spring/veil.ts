@@ -155,8 +155,8 @@ const storm = {
   /** What is left in still liquid: the pink, lit air about the lamp and behind the tree of the approved rest, far too thin to hide anything. */
   calm: 0.0055,
   /** Where that rest hangs: its middle, and how far it reaches across, up and in depth, mm. Nothing of it stands in the upper left. */
-  calmAt: [18, -13, -12],
-  calmReach: [26, 17, 20],
+  calmAt: [18, -13, -21],
+  calmReach: [26, 17, 14],
   /** The air about the lamp at rest: a halo that is the lantern's own (thickest at it, thinning with the square of the distance, gone by `lampFar`), standing at and behind the lantern so its point stays sharp before it. */
   lampAt: [1.3, -18.2, 3.9],
   lamp: 5,
