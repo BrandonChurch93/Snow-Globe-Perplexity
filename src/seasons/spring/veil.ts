@@ -17,28 +17,28 @@ import type { KitMoment, SeasonKit } from '../kit'
 export const standIns: string[] = []
 
 export const veil: SeasonKit['veil'] = { tint: [1, 0.9, 0.93], density: 0.002, rest: 0 }
-export const particles: SeasonKit['particles'] = { petal: { color: [1, 0.66, 0.76], glow: 0 }, mote: { color: [0.3, 0.27, 0.27], glow: 0 } }
+export const particles: SeasonKit['particles'] = { petal: { color: [1, 0.66, 0.76], glow: 0 }, mote: { color: [0.2, 0.18, 0.18], glow: 0 } }
 
 const PART = 'veil-spring'
 const INNER = config.globe.sphereDiameterMm / 2 - config.globe.glassThicknessMm
 
 const look = {
   /** The sheets the volume is cut into, front to back, and how finely each is cut for the lens to bend it. */
-  sheets: 36,
-  cols: 28,
+  sheets: 26,
+  cols: 20,
   rows: 8,
   topMm: 46,
   /** How high the mist stands (the height at which it has thinned to a third) on the landing and at rest, and how long it takes to rise. */
   heightMm: [3.2, 7.5],
   riseSeconds: 5,
   /** How thick it is on the landing and at rest. */
-  density: [3.6, 1.1],
+  density: [3.2, 0.7],
   thinSeconds: 7,
   /** How much of it the storm blows off. */
   blown: 0.7,
   tint: [1, 0.8, 0.82],
   cold: 3.2,
-  warm: 2.6,
+  warm: 1.2,
   /** How far the banks drift round in one period, mm. */
   driftMm: 5,
 }
@@ -147,20 +147,22 @@ const storm = {
   sheets: 22,
   cells: 18,
   /** The mist's thickness per mm: closed over the miniature at the height of the storm, while the liquid is stirred, while it only rolls. */
-  flood: 0.2,
-  stirred: 0.03,
-  rolling: 0.011,
+  flood: 0.26,
+  stirred: 0.02,
+  rolling: 0.0065,
   rollPower: 1.4,
   /** The billows: two sizes, mm, and how much of the mist is even between them at the flood and after. */
   wideMm: 96,
   fineMm: 34,
   even: [0.75, 0],
+  /** How much of the mist is left at the top of the liquid once the flood is over. */
+  top: 0.3,
   /** Thinner in the eye of the roll than at its rim. */
   eye: 0.5,
   tint: [1, 0.76, 0.83],
   soft: 1.1,
   key: 3.0,
-  grid: 3.2,
+  grid: 1.8,
   /** How much of the key the mist's own depth takes away, per mm of the way to the glass at full thickness. */
   shadow: 0.35,
   keyFloor: 0.35,
@@ -202,7 +204,9 @@ void main() {
   float billow = smoothstep(0.46, 0.82, 0.62 * wide.a + 0.38 * fine.a);
   float eye = mix(${n(storm.eye)}, 1.0, smoothstep(5.0, 38.0, rad));
   float wall = 1.0 - smoothstep(0.9, 1.0, far);
-  float sigma = uStorm.x * wall * eye * mix(billow * 3.4, 1.0, uStorm.w);
+  // After the flood the mist hangs low, where the petals come down, and the top of the liquid clears first.
+  float low = mix(mix(${n(storm.top)}, 1.0, smoothstep(34.0, -12.0, p.y)), 1.0, uStorm.w / ${n(storm.even[0])});
+  float sigma = uStorm.x * wall * eye * low * mix(billow * 3.4, 1.0, uStorm.w);
   // One sheet's share of the way through the liquid, along the eye's ray.
   float slant = max(abs(normalize(vStageWorld - cameraPosition).z), 0.35);
   float a = 1.0 - exp(-sigma * ${n((2 * INNER * 0.97) / storm.sheets)} / slant);
