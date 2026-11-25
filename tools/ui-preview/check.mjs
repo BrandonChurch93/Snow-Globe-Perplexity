@@ -26,8 +26,8 @@ const sel = {
   menu: '[data-menu]',
 }
 
-async function open(query = {}, { reducedMotion = 'no-preference', width = 1280, height = 720, wait = true } = {}) {
-  const context = await browser.newContext({ viewport: { width, height }, reducedMotion })
+async function open(query = {}, { reducedMotion = 'no-preference', width = 1280, height = 720, wait = true, touch = false } = {}) {
+  const context = await browser.newContext({ viewport: { width, height }, reducedMotion, hasTouch: touch, isMobile: touch })
   await context.addInitScript(() => {
     const marks = { shown: null, pulses: [] }
     Object.assign(window, { marks })
@@ -130,7 +130,7 @@ try {
     const title = (id) => id.charAt(0).toUpperCase() + id.slice(1)
     return first(
       want(facts.words, ['Shake'], 'words on screen'),
-      want(facts.names, ['Shake the globe', ...seasons.map(title), 'Sound'], 'names'),
+      want(facts.names, [...seasons.map(title), 'Shake the globe', 'Sound'], 'names'),
       want(facts.group, 'Season', 'group name'),
       want(facts.titles, 0, 'title attributes'),
       want(facts.marks, true, 'glyphs hidden from assistive technology'),
@@ -138,7 +138,7 @@ try {
     )
   })
 
-  await check('Tab reaches Shake, each mark and sound, in that order, and never the menu', async () => {
+  await check('Tab reaches each mark, Shake and sound, as they stand on screen, and never the menu', async () => {
     const t = await open()
     const order = []
     for (let i = 0; i < seasons.length + 3; i++) {
@@ -159,7 +159,7 @@ try {
     await t.page.keyboard.press('m')
     const menuTabs = await t.page.evaluate(() => [...document.querySelectorAll('[data-menu] button')].filter((b) => b.tabIndex !== -1).length)
     await t.close()
-    return first(want(order, ['shake', ...seasons.map((s) => `season:${s}`), 'sound', 'out'], 'tab order'), want(ring, ring.map(() => 2), 'focus ring width in px'), want(menuTabs, 0, 'menu options in the tab order'))
+    return first(want(order, [...seasons.map((s) => `season:${s}`), 'shake', 'sound', 'out'], 'tab order'), want(ring, ring.map(() => 2), 'focus ring width in px'), want(menuTabs, 0, 'menu options in the tab order'))
   })
 
   await check('Space shakes once, shows busy, and lands in the next season', async () => {
@@ -337,11 +337,11 @@ try {
   })
 
   await check('at every size the controls stay in the frame and clear of each other, with Shake centred; only an upright phone stacks them', async () => {
-    const sizes = [...['hd', 'phone', 'tablet'].map((id) => ({ id, ...config.formats[id] })), { id: 'phone on its side', width: 667, height: 375 }, { id: 'small phone on its side', width: 568, height: 320 }]
+    const sizes = [...['hd', 'phone', 'tablet'].map((id) => ({ id, ...config.formats[id] })), { id: 'phone on its side', width: 667, height: 375 }, { id: 'small phone on its side', width: 568, height: 320 }, { id: 'the phone of the config on its side, by touch', width: config.formats.phone.height, height: config.formats.phone.width, touch: true, barPx: 60, hitPx: 44 }]
     const problems = []
     notes.layout = {}
     for (const size of sizes) {
-      const t = await open({}, { width: size.width, height: size.height })
+      const t = await open({}, { width: size.width, height: size.height, touch: size.touch === true })
       const boxes = await t.page.evaluate(() =>
         [...document.querySelectorAll('#ui [data-control]')].map((e) => {
           const b = e.getBoundingClientRect()
@@ -355,7 +355,10 @@ try {
       const touching = boxes.flatMap((a, i) => boxes.slice(i + 1).filter((b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom).map((b) => `${a.id} and ${b.id}`))
       const offCentre = Math.round(Math.abs((shake.left + shake.right) / 2 - size.width / 2) * 10) / 10
       const oneRow = Math.abs((mark.top + mark.bottom) / 2 - (shake.top + shake.bottom) / 2) < 2
-      notes.layout[size.id] = { controls: boxes.length, oneRow, offCentre }
+      const barPx = Math.round((size.height - Math.min(...boxes.map((b) => b.top))) * 10) / 10
+      const leastPx = Math.min(...boxes.map((b) => Math.min(b.right - b.left, b.bottom - b.top)))
+      notes.layout[size.id] = { controls: boxes.length, oneRow, offCentre, barPx, leastPx }
+      if (size.barPx) problems.push(barPx > size.barPx ? `${size.id}: the controls stand ${barPx} px high, more than the ${size.barPx} px the framing is drawn for` : '', leastPx < size.hitPx ? `${size.id}: a control is ${leastPx} px across, under ${size.hitPx}` : '')
       problems.push(
         want(boxes.length, seasons.length + 2, `${size.id}: controls`),
         want(outside, [], `${size.id}: controls outside the frame`),
