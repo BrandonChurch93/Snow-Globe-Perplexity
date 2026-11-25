@@ -27,7 +27,15 @@ declare global {
 const params = readParams(location.search)
 const canvas = document.getElementById('view') as HTMLCanvasElement
 const capture = params.mode === 'capture'
-const gfx = createGfx(canvas, { deny: params.deny, preserve: capture })
+const gfx = (() => {
+  try {
+    return createGfx(canvas, { deny: params.deny, preserve: capture })
+  } catch (e) {
+    const ui = document.getElementById('ui')
+    if (!capture && ui) void import('./ui/cannot').then((m) => m.showCannot(ui))
+    throw e
+  }
+})()
 const assets = new Assets()
 // The live page draws its first picture from what that picture needs and fetches the rest behind it (src/app/app.ts). Every other
 // page waits for the whole set. `detail=first` holds any page at the first files: `npm run firstlook` measures what they cost with it.
@@ -96,10 +104,12 @@ if (capture) {
   const emitters = emittersOf(stage)
   sim.setCollider(collider, emitters)
   // A season's collider may read that season's models (spring's boulders come with its village), so the engine takes the
-  // season the page opens on when the stage has prepared it. The app asks for the same preparation and draws nothing before it.
+  // season the page opens on when the stage has prepared it, and a reset asked before then (a film's player resets the
+  // engine as it starts) waits for it. The app asks for the same preparation and draws nothing before it.
+  sim.hold()
   void ready
     .then(() => stage.prepare?.(params.season))
-    .then(() => sim.reset(params.season))
+    .then(() => sim.release(params.season))
     .catch(() => undefined)
   const setQuality = stage.setQuality?.bind(stage)
   if (setQuality) {

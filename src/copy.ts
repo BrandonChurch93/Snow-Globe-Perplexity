@@ -14,6 +14,7 @@ export const copy = {
   sound: {
     name: 'Sound',
   },
+  cannot: 'This browser cannot draw the globe. A current Chrome, Safari, Firefox or Edge can.',
   menu: {
     name: 'Owner menu',
     quality: 'Quality',

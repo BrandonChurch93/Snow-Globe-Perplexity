@@ -10,7 +10,7 @@ import { engineHash, hashList, listFiles } from '../lib/hashes.mjs'
 const config = loadConfig()
 const args = parseArgs(process.argv.slice(2))
 const outDir = rel('out/work/ui-preview')
-const sizes = ['hd', 'phone', 'tablet'].map((id) => config.formats[id])
+const sizes = [...['hd', 'phone', 'tablet'].map((id) => config.formats[id]), { id: 'side', width: config.formats.phone.height, height: config.formats.phone.width, touch: true }]
 const seasons = config.seasons
 const hash = engineHash()
 const previewHash = hashList(listFiles(rel('tools', 'ui-preview')).filter((f) => path.basename(f) !== 'check.mjs'))
@@ -21,12 +21,12 @@ const force = args.force === true
 if (freeDiskGb() < config.sandbox.minFreeDiskGb) throw new Error(`free disk is under ${config.sandbox.minFreeDiskGb} GB`)
 ensureDir(outDir)
 
-const seasonOf = { hd: seasons[0], phone: seasons[1 % seasons.length], tablet: seasons[2 % seasons.length] }
+const seasonOf = { hd: seasons[0], phone: seasons[1 % seasons.length], tablet: seasons[2 % seasons.length], side: seasons[3 % seasons.length] }
 
 const shots = []
 for (const size of sizes) {
   const season = seasonOf[size.id]
-  const controls = ['shake', ...seasons.map((s) => `season:${s}`), 'sound']
+  const controls = [...seasons.map((s) => `season:${s}`), 'shake', 'sound']
   shots.push({ id: `${size.id}-idle`, size, query: { season } })
   shots.push({ id: `${size.id}-dimmed`, size, query: { season }, act: 'dim' })
   shots.push({ id: `${size.id}-busy`, size, query: { season, hold: 1 }, act: 'busy' })
@@ -86,7 +86,8 @@ try {
       viewport: { width: shot.size.width, height: shot.size.height },
       deviceScaleFactor: scale,
       reducedMotion: shot.act === 'reduced' ? 'reduce' : 'no-preference',
-      hasTouch: false,
+      hasTouch: shot.size.touch === true,
+      isMobile: shot.size.touch === true,
     })
     const page = await context.newPage()
     const problems = []
@@ -116,7 +117,7 @@ try {
         await page.waitForTimeout(400)
       }
       if (shot.act === 'focus') {
-        const order = ['shake', ...seasons.map((s) => `season:${s}`), 'sound']
+        const order = [...seasons.map((s) => `season:${s}`), 'shake', 'sound']
         for (let i = 0; i <= order.indexOf(shot.control); i++) await page.keyboard.press('Tab')
         const ok = await page.evaluate((sel) => document.activeElement === document.querySelector(sel), selector(shot.control))
         if (!ok) problems.push(`focus did not reach ${shot.control}`)
