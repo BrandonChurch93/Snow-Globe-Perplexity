@@ -403,12 +403,12 @@ const cobble = (x, z, w, l, h, yaw, lift, dark = 1) => {
 let flagCount = 0
 {
   const d = C.door
-  for (const [k, step] of [[1.35, 6.6], [3.5, 6.0], [5.6, 5.3]].entries()) {
+  for (const [k, step] of [[1.35, 7.4], [3.7, 6.8], [6.1, 6.0]].entries()) {
     const at = L.cottagePoint(d.across + 0.25 * k, 0, C.halfLength + step[0])
     const seed = R() * 40
-    const g = slab(step[1], 1.15, 2.25, { round: 0.2, sx: 6, sy: 2, sz: 3, warp: 0.1, seed })
+    const g = slab(step[1], 1.7, 2.6, { round: 0.24, sx: 6, sy: 2, sz: 3, warp: 0.1, seed })
     shade(g, (px, py, pz) => (0.45 + 0.55 * smooth(-0.2, 0.5, py)) * (0.78 + 0.5 * fbm(px * 1.4 + seed, pz * 1.4, py * 2, 3)))
-    const M = frame([at[0], L.groundAt(at[0], at[2]) + 0.2 + 0.12 * (2 - k), at[2]], V3, UP, U3)
+    const M = frame([at[0], L.groundAt(at[0], at[2]) + 0.3 + 0.42 * (2 - k), at[2]], V3, UP, U3)
     decor.add(g, { matrix: M, color: mul3(STONE_TONES[k % STONE_TONES.length], 0.95), surf: [surf(KIND.stone, 0.88), 0], renormal: true })
     flagCount++
   }
@@ -424,17 +424,17 @@ let flagCount = 0
     const yaw = Math.atan2(-dz, dx)
     let s = carry
     while (s < len) {
-      const along = between(2.1, 2.9)
+      const along = between(3.1, 4.3)
       const widen = 1 + 0.25 * smooth(0, PATH_LINE.length - 2, i)
       const split = between(-0.5, 0.5)
-      const span = 5.4 * widen
+      const span = 7.0 * widen
       const left = span / 2 + split
       const right = span - left
       const cx = ax + dx * (s + along / 2)
       const cz = az + dz * (s + along / 2)
       for (const [off, w] of [[-(left / 2) - 0.08, left - 0.16], [right / 2 + 0.08, right - 0.16]]) {
         const j = between(-0.25, 0.25)
-        cobble(cx - dz * off + dx * j, cz + dx * off + dz * j, along - 0.22, w, 1.1, yaw + between(-0.14, 0.14), 0.3 + between(0, 0.22))
+        cobble(cx - dz * off + dx * j, cz + dx * off + dz * j, along - 0.3, w, 1.7, yaw + between(-0.14, 0.14), 0.55 + between(0, 0.3))
         flagCount++
       }
       s += along
@@ -499,10 +499,10 @@ for (const r of PROPS.ROCKS) {
     const flat = y < -0.4 ? -0.4 + (y + 0.4) * 0.25 : y
     P.setXYZ(i, x * k, flat * k * (1 + 0.15 * smooth(0.2, 1, y)), z * k)
   }
-  shade(g, (x, y, z) => (0.4 + 0.6 * smooth(-0.4, 0.6, y)) * (0.72 + 0.6 * fbm(x * 2.2 + r.seed, y * 2.2, z * 2.2, 4)) * (1 - 0.7 * smooth(0.02, 0.12, 0.12 - Math.abs(noise(x * 2.7 + 5, y * 2.7 + r.seed, z * 2.7)))) * (1 - 0.55 * smooth(0.0, 0.08, 0.08 - Math.abs(noise(x * 6.1, y * 3.2, z * 6.1 + r.seed)))))
+  shade(g, (x, y, z) => (0.5 + 0.5 * smooth(-0.4, 0.6, y)) * (0.72 + 0.6 * fbm(x * 2.2 + r.seed, y * 2.2, z * 2.2, 4)) * (1 - 0.7 * smooth(0.02, 0.12, 0.12 - Math.abs(noise(x * 2.7 + 5, y * 2.7 + r.seed, z * 2.7)))) * (1 - 0.55 * smooth(0.0, 0.08, 0.08 - Math.abs(noise(x * 6.1, y * 3.2, z * 6.1 + r.seed)))))
   const c = PROPS.rockCentre(r)
   const M = new THREE.Matrix4().makeRotationY(r.yaw).multiply(new THREE.Matrix4().makeScale(r.r[0], r.r[1], r.r[2])).setPosition(c[0], c[1], c[2])
-  decor.add(g, { matrix: M, color: (p) => mix3(lin('#a9aba0'), lin('#4f5f34'), 0.7 * smooth(0.25, 0.7, fbm(p[0] * 0.6, p[1] * 0.6, p[2] * 0.6 + r.seed, 3) + 0.5) * smooth(c[1] + r.r[1] * 0.5, c[1] - r.r[1] * 0.3, p[1])), surf: [surf(KIND.stone, 0.92), 0], renormal: true })
+  decor.add(g, { matrix: M, color: (p) => mix3(lin('#dcdccf'), lin('#5f7040'), 0.6 * smooth(0.25, 0.7, fbm(p[0] * 0.6, p[1] * 0.6, p[2] * 0.6 + r.seed, 3) + 0.5) * smooth(c[1] + r.r[1] * 0.5, c[1] - r.r[1] * 0.3, p[1])), surf: [surf(KIND.stone, 0.92), 0], renormal: true })
 }
 
 {

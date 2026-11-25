@@ -10,8 +10,8 @@ import { loadLayout } from '../village/layout.mjs'
 const TAU = Math.PI * 2
 const LEVELS = { medium: { error: 0.12, worth: 1 }, low: { error: 0.3, worth: 1 } }
 const GLASS_CLEAR = 3.2
-const BOUGH = { perLimb: [1, 2], from: 0.3, length: [9, 15], seg: 1.05, radius: 1.0, minR: 0.5, turn: 0.3, kink: 0.9, kinkShare: 0.3, rise: 0.24, lift: 0.4, tip: [11, 17], tipLift: 0.45 }
-const TWIG = { each: [0.8, 1.5], length: [0.3, 0.52], seg: 0.8, radius: 0.86, turn: 0.3, kink: 1.0, kinkShare: 0.3 }
+const BOUGH = { perLimb: [1, 2], from: 0.3, length: [9, 15], seg: 1.05, radius: 1.0, minR: 0.5, turn: 0.3, kink: 0.9, kinkShare: 0.3, rise: 0.4, lift: 0.4, tip: [11, 17], tipLift: 0.6 }
+const TWIG = { each: [0.6, 1.2], length: [0.3, 0.52], seg: 0.8, radius: 0.86, turn: 0.3, kink: 1.0, kinkShare: 0.3 }
 const SPIKE = { each: [0.1, 0.7], length: [0.28, 0.5], seg: 0.6, radius: 0.78, turn: 0.2, kink: 0.6, kinkShare: 0.15 }
 const TIP_R = 0.11
 const THICK = { limb: 1.85, twig: 1.5, bough: 0.78, tip: 0.9 }

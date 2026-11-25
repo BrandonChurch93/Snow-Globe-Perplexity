@@ -44,17 +44,17 @@ export interface Board {
 
 const RAIL = { from: [-39.2, 10.6] as [number, number], to: [-16.4, 32.6] as [number, number], bow: 1.6 }
 const POSTS = [
-  { t: 0.0, tall: 8.3, along: 0.1, out: 0.08, wide: 2.28 },
-  { t: 0.17, tall: 9.1, along: -0.07, out: 0.14, wide: 2.11 },
-  { t: 0.335, tall: 8.1, along: 0.13, out: 0.05, wide: 2.38 },
-  { t: 0.5, tall: 9.0, along: -0.04, out: 0.16, wide: 2.19 },
-  { t: 0.665, tall: 8.4, along: 0.09, out: 0.1, wide: 2.28 },
-  { t: 0.835, tall: 9.3, along: -0.11, out: 0.18, wide: 2.11 },
-  { t: 1.0, tall: 7.8, along: 0.16, out: 0.12, wide: 2.46 },
+  { t: 0.0, tall: 10.2, along: 0.1, out: 0.08, wide: 2.28 },
+  { t: 0.17, tall: 11.2, along: -0.07, out: 0.14, wide: 2.11 },
+  { t: 0.335, tall: 10.0, along: 0.13, out: 0.05, wide: 2.38 },
+  { t: 0.5, tall: 11.0, along: -0.04, out: 0.16, wide: 2.19 },
+  { t: 0.665, tall: 10.4, along: 0.09, out: 0.1, wide: 2.28 },
+  { t: 0.835, tall: 11.4, along: -0.11, out: 0.18, wide: 2.11 },
+  { t: 1.0, tall: 9.6, along: 0.16, out: 0.12, wide: 2.46 },
 ]
 const RAILS = [
-  { at: 2.9, tilt: [0.2, -0.3, 0.25, -0.15, 0.3, -0.25], wide: 1.6 },
-  { at: 6.2, tilt: [-0.25, 0.3, -0.2, 0.35, -0.3, 0.2], wide: 1.5 },
+  { at: 3.5, tilt: [0.2, -0.3, 0.25, -0.15, 0.3, -0.25], wide: 1.6 },
+  { at: 7.6, tilt: [-0.25, 0.3, -0.2, 0.35, -0.3, 0.2], wide: 1.5 },
 ]
 
 export function fenceBoards(): Board[] {
@@ -114,9 +114,9 @@ export const fenceGapOf = (x: number, z: number): number => {
 }
 
 export const ROCKS = [
-  { at: [29.5, 22.5] as [number, number], r: [5.0, 3.6, 3.8] as Point, yaw: 0.5, seed: 3.1 },
-  { at: [34.2, 17.6] as [number, number], r: [2.6, 1.9, 2.2] as Point, yaw: -0.4, seed: 8.4 },
-  { at: [24.6, 27.8] as [number, number], r: [2.3, 1.4, 1.9] as Point, yaw: 1.2, seed: 5.7 },
+  { at: [31.0, 22.0] as [number, number], r: [7.4, 4.9, 5.2] as Point, yaw: 0.5, seed: 3.1 },
+  { at: [37.5, 13.4] as [number, number], r: [3.6, 2.6, 3.0] as Point, yaw: -0.4, seed: 8.4 },
+  { at: [23.6, 30.4] as [number, number], r: [3.4, 2.0, 2.7] as Point, yaw: 1.2, seed: 5.7 },
   { at: [-22.5, 31.5] as [number, number], r: [1.9, 1.2, 1.6] as Point, yaw: 0.2, seed: 1.9 },
 ]
 export const rockCentre = (r: (typeof ROCKS)[number]): Point => [r.at[0], groundAt(r.at[0], r.at[1]) + r.r[1] * 0.45, r.at[1]]
