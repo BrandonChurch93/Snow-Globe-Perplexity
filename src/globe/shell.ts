@@ -42,9 +42,7 @@ export const glassLook = {
   third: { face: 0.6, gain: 0.07, tint: [0.75, 0.85, 1] as V3, softDeg: 1.6, own: 0.15, fade: [0.78, 0.97] as const },
   shoulder: { from: 1.4, to: 3.6 },
   /** The width in pixels over which the glass fades out at its outline, so that the outline is soft in every sample before the samples are averaged. */
-  limbPx: 3,
-  /** How far outside the outline, in pixels, the room is read that the glass fades into over `limbPx`. */
-  limbBeyondPx: 1.5,
+  limbPx: 1.5,
   floor: 0.4,
   band: { from: 0.976, to: 0.99, wander: 0.004, dim: 0.25, shade: 0.3, side: [-0.2, 0.5] as const, low: [-0.5, -0.1] as const },
   edge: { from: 0.978, keyFrom: 0.988, peak: 0.994, keyLobe: [0.84, 0.97] as const, key: 0.5, keyOn: 0.35, keyLow: 0.45, keyLowDir: [0.5, 0.866, 0] as V3, keyLowLobe: [0.8, 0.93] as const, line: { from: 0.9955, peak: 0.998, gain: 1.3, dir: [0.978, 0.208, 0] as V3, lobe: [0.8, 0.97] as const, spanDir: [0.743, 0.669, 0] as V3, span: [0.8, 0.86] as const, rest: 0.35, wander: 0.5, glint: 1.8, glintDir: [0.326, 0.946, 0] as V3, glintLobe: [0.978, 0.998] as const }, keyTint: [0.75, 0.76, 0.585] as V3, tip: 0.5, tipTint: [0.6, 0.78, 1] as V3, tipDeg: [4.3, 2.5, 1.3] as const, tipShare: [0.984, 0.997] as const, rimLobe: [0.16, 0.5] as const, rim: 0.04, sky: 0.04, pool: 0 },
@@ -697,12 +695,6 @@ void main() {
   vec3 lit = col * limb;
   float bendAt = (s - ${num(glassLook.bend.from)}) / ${num(1 - glassLook.bend.from)};
   float bendPer = length(bendSlope);
-  if (uBehindSize.x > 0.0 && limb < 1.0 && bendPer > 1e-6) {
-    vec3 beyond = textureLod(uBehind, (gl_FragCoord.xy + bendSlope * (((1.0 - bendRaw) / bendPer + ${num(glassLook.limbBeyondPx)}) / bendPer)) / uBehindSize, 0.0).rgb;
-    if (any(isnan(beyond)) || any(isinf(beyond))) beyond = vec3(0.0);
-    lit += max(beyond, 0.0) * (1.0 - limb);
-    keep = alpha * limb;
-  }
   if (uBehindSize.x > 0.0 && uLens.z > 0.5 && bendAt > 0.0 && bendPer > 1e-6) {
     vec2 outward = bendSlope / bendPer;
     vec3 bent = vec3(0.0);
