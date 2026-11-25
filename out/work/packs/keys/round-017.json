@@ -1,0 +1,334 @@
+{
+  "round": 17,
+  "phase": 4,
+  "unit": "change",
+  "tier": "review",
+  "motionTier": "review",
+  "record": false,
+  "limits": {
+    "longEdge": 1400,
+    "maxPixels": 1140000,
+    "maxFiles": 10
+  },
+  "engineHash": "",
+  "roles": {
+    "R4": {
+      "parts": [
+        {
+          "folder": "out/work/packs/round-017/R4-1",
+          "message": "out/work/packs/round-017/R4-1.message.md",
+          "files": [
+            {
+              "name": "set-A-01.jpg",
+              "what": "the change winter to spring: across the swap window, from node tools/sheet.mjs --motion swap --fit --shot shake-1 --tier review: out/work/sheets/motion-swap-shake-1-preview-review-x2-1.jpg",
+              "source": "out/work/sheets/motion-swap-shake-1-preview-review-x2-1.jpg",
+              "sha256": "4af27e261e32dbeaac01b6d6306e4118a8d0268f0f054c531a8be03ac65df1ee",
+              "width": 1341,
+              "height": 850
+            },
+            {
+              "name": "set-B-01.jpg",
+              "what": "the change winter to spring: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-1 --tier review: out/work/sheets/motion-arrival-shake-1-preview-review-1.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-1-preview-review-1.jpg",
+              "sha256": "1b0085f3f77ce6cf209f72dd6b6110aad31b350fe157b37176b7ce53f628dc66",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-B-02.jpg",
+              "what": "the change winter to spring: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-1 --tier review: out/work/sheets/motion-arrival-shake-1-preview-review-2.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-1-preview-review-2.jpg",
+              "sha256": "ab46cc5f81becb07ac1d3b43fe0d0e5cf28255527b2decba71a4d1b6f56a7dec",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-B-03.jpg",
+              "what": "the change winter to spring: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-1 --tier review: out/work/sheets/motion-arrival-shake-1-preview-review-3.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-1-preview-review-3.jpg",
+              "sha256": "781836ac70704d7cbc34660e6cb7cfaf99010e90f845e8fbb2f88365b120e78b",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-B-04.jpg",
+              "what": "the change winter to spring: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-1 --tier review: out/work/sheets/motion-arrival-shake-1-preview-review-4.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-1-preview-review-4.jpg",
+              "sha256": "0c7289c21433503633a0bc4e76434fad43a8e5b5c13e6f49fa22241242a12c7f",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-B-05.jpg",
+              "what": "the change winter to spring: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-1 --tier review: out/work/sheets/motion-arrival-shake-1-preview-review-5.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-1-preview-review-5.jpg",
+              "sha256": "4bbb8dfe571fdf8243e2d2f06e611f869e843eb7cbe434503596a4f48a2474bd",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-B-06.jpg",
+              "what": "the change winter to spring: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-1 --tier review: out/work/sheets/motion-arrival-shake-1-preview-review-6.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-1-preview-review-6.jpg",
+              "sha256": "0847190980efbc01c670189fec6e042b2f0db2cdd411f7e71ae1632a23273e03",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-B-07.jpg",
+              "what": "the change winter to spring: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-1 --tier review: out/work/sheets/motion-arrival-shake-1-preview-review-7.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-1-preview-review-7.jpg",
+              "sha256": "37c7089a7cde4fb93a859d91678842a12affb8a4ba6aeb51129046df7adf55fb",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-B-08.jpg",
+              "what": "the change winter to spring: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-1 --tier review: out/work/sheets/motion-arrival-shake-1-preview-review-8.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-1-preview-review-8.jpg",
+              "sha256": "3452b287a680311720c65b7ea5daea4bdb6880445f1951bd876a2e945c7a2978",
+              "width": 1149,
+              "height": 498
+            },
+            {
+              "name": "set-C-01.jpg",
+              "what": "the change spring to summer: across the swap window, from node tools/sheet.mjs --motion swap --fit --shot shake-2 --tier review: out/work/sheets/motion-swap-shake-2-preview-review-x2-1.jpg",
+              "source": "out/work/sheets/motion-swap-shake-2-preview-review-x2-1.jpg",
+              "sha256": "692c548f1c8baff9b1e1ec1949e278a2e5a7a4eeec75ea500d0b0a09b351ecc2",
+              "width": 1341,
+              "height": 850
+            }
+          ]
+        },
+        {
+          "folder": "out/work/packs/round-017/R4-2",
+          "message": "out/work/packs/round-017/R4-2.message.md",
+          "files": [
+            {
+              "name": "set-D-01.jpg",
+              "what": "the change spring to summer: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-2 --tier review: out/work/sheets/motion-arrival-shake-2-preview-review-1.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-2-preview-review-1.jpg",
+              "sha256": "91aedeb01cbb1dc76aabde59251afa4a3ab5585da0a0959c2b25db438e45e8b6",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-D-02.jpg",
+              "what": "the change spring to summer: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-2 --tier review: out/work/sheets/motion-arrival-shake-2-preview-review-2.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-2-preview-review-2.jpg",
+              "sha256": "82920ea3918d955a86b715321befb362705292195609696aa8c56f61203435c0",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-D-03.jpg",
+              "what": "the change spring to summer: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-2 --tier review: out/work/sheets/motion-arrival-shake-2-preview-review-3.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-2-preview-review-3.jpg",
+              "sha256": "13081821e3717db91bdfcecba8cf8ef294b566a1c331884b1c20ba88c2a62ca8",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-D-04.jpg",
+              "what": "the change spring to summer: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-2 --tier review: out/work/sheets/motion-arrival-shake-2-preview-review-4.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-2-preview-review-4.jpg",
+              "sha256": "84e4dade86ffbbcce1972f9c82f2b43015c5a8b0363d313241ef416412c6502e",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-D-05.jpg",
+              "what": "the change spring to summer: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-2 --tier review: out/work/sheets/motion-arrival-shake-2-preview-review-5.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-2-preview-review-5.jpg",
+              "sha256": "b45e8e4ac8d1f039134d9613270539cdc039a2c8eba5a5e9ab188c2e5e14efae",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-D-06.jpg",
+              "what": "the change spring to summer: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-2 --tier review: out/work/sheets/motion-arrival-shake-2-preview-review-6.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-2-preview-review-6.jpg",
+              "sha256": "07252a7db7f97992af1bc2b9d0e955f9a75274822b33f361aea3ab40fdcacc03",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-D-07.jpg",
+              "what": "the change spring to summer: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-2 --tier review: out/work/sheets/motion-arrival-shake-2-preview-review-7.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-2-preview-review-7.jpg",
+              "sha256": "f4e66157f5f781b116b5bf78ba19346f874350ba64e0a8bc516696f632721d6c",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-D-08.jpg",
+              "what": "the change spring to summer: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-2 --tier review: out/work/sheets/motion-arrival-shake-2-preview-review-8.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-2-preview-review-8.jpg",
+              "sha256": "35fbf34f33fda752a012bf704e9e27904604e4f0b994af331c20eafa93e0c3c4",
+              "width": 1149,
+              "height": 498
+            },
+            {
+              "name": "set-E-01.jpg",
+              "what": "the change summer to fall: across the swap window, from node tools/sheet.mjs --motion swap --fit --shot shake-3 --tier review: out/work/sheets/motion-swap-shake-3-preview-review-x2-1.jpg",
+              "source": "out/work/sheets/motion-swap-shake-3-preview-review-x2-1.jpg",
+              "sha256": "4cda86c5f2cebf8c8ba08df2d9b48bd003499d99b41a55cc4d21d54b62d5157c",
+              "width": 1341,
+              "height": 850
+            }
+          ]
+        },
+        {
+          "folder": "out/work/packs/round-017/R4-3",
+          "message": "out/work/packs/round-017/R4-3.message.md",
+          "files": [
+            {
+              "name": "set-F-01.jpg",
+              "what": "the change summer to fall: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-3 --tier review: out/work/sheets/motion-arrival-shake-3-preview-review-1.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-3-preview-review-1.jpg",
+              "sha256": "722c23750e4116037732fcfe1668a56530727144275e27d7a42c1d509a6c0e76",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-F-02.jpg",
+              "what": "the change summer to fall: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-3 --tier review: out/work/sheets/motion-arrival-shake-3-preview-review-2.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-3-preview-review-2.jpg",
+              "sha256": "c279844e80b489e3dd1facd409fb4ce716ead73a775be398d8b06436a30d2f05",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-F-03.jpg",
+              "what": "the change summer to fall: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-3 --tier review: out/work/sheets/motion-arrival-shake-3-preview-review-3.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-3-preview-review-3.jpg",
+              "sha256": "25a0a72df6000213396fc4e88be86a286c8eae1b9aa7999eb3a70f15d6e5ea97",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-F-04.jpg",
+              "what": "the change summer to fall: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-3 --tier review: out/work/sheets/motion-arrival-shake-3-preview-review-4.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-3-preview-review-4.jpg",
+              "sha256": "b90f5d6937585ab866726df1a2965183b8b20756f098058d883d454c9bcc2d51",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-F-05.jpg",
+              "what": "the change summer to fall: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-3 --tier review: out/work/sheets/motion-arrival-shake-3-preview-review-5.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-3-preview-review-5.jpg",
+              "sha256": "b5208ff1b3da83538c36184dc54d8e1e1053e31e688f4b15d9f0432a7a09239f",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-F-06.jpg",
+              "what": "the change summer to fall: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-3 --tier review: out/work/sheets/motion-arrival-shake-3-preview-review-6.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-3-preview-review-6.jpg",
+              "sha256": "3fd2b6b140aa5f914916d11e431eabf336378a3a3baf97881c65720a4400f77a",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-F-07.jpg",
+              "what": "the change summer to fall: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-3 --tier review: out/work/sheets/motion-arrival-shake-3-preview-review-7.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-3-preview-review-7.jpg",
+              "sha256": "4793a6ffcef1de3a20819b435fae278466f20555d23e6aa92e05204fad6f37e9",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-F-08.jpg",
+              "what": "the change summer to fall: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-3 --tier review: out/work/sheets/motion-arrival-shake-3-preview-review-8.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-3-preview-review-8.jpg",
+              "sha256": "233fc90ef9123073f9c9561ecf6320f426962f3179c7602d049ea9828103b614",
+              "width": 1149,
+              "height": 498
+            },
+            {
+              "name": "set-G-01.jpg",
+              "what": "the change fall to winter: across the swap window, from node tools/sheet.mjs --motion swap --fit --shot shake-4 --tier review: out/work/sheets/motion-swap-shake-4-preview-review-x2-1.jpg",
+              "source": "out/work/sheets/motion-swap-shake-4-preview-review-x2-1.jpg",
+              "sha256": "daeb2230b3ab74a61482ee97a950aa581038cfe7c9f08e42e835fea0dd7cf4b4",
+              "width": 1341,
+              "height": 850
+            }
+          ]
+        },
+        {
+          "folder": "out/work/packs/round-017/R4-4",
+          "message": "out/work/packs/round-017/R4-4.message.md",
+          "files": [
+            {
+              "name": "set-H-01.jpg",
+              "what": "the change fall to winter: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-4 --tier review: out/work/sheets/motion-arrival-shake-4-preview-review-1.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-4-preview-review-1.jpg",
+              "sha256": "389a7d9c79d6698539780953f362bceb464d154bb2479c4a9bc93756ceb13b1e",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-H-02.jpg",
+              "what": "the change fall to winter: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-4 --tier review: out/work/sheets/motion-arrival-shake-4-preview-review-2.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-4-preview-review-2.jpg",
+              "sha256": "5d550ebaf26720f0a56befcc3e52c2e6c314f38570cd9af2a43ecfb9cb42c965",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-H-03.jpg",
+              "what": "the change fall to winter: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-4 --tier review: out/work/sheets/motion-arrival-shake-4-preview-review-3.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-4-preview-review-3.jpg",
+              "sha256": "f04e5bc1e32c25cd3431e74b207bdc694fc70ba3ce72b06529ec4e0e6dbefeba",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-H-04.jpg",
+              "what": "the change fall to winter: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-4 --tier review: out/work/sheets/motion-arrival-shake-4-preview-review-4.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-4-preview-review-4.jpg",
+              "sha256": "1afaa8438b783bb2ed1b2229eb18c08aa171136dc7bae527fbfbd9be2886fa9c",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-H-05.jpg",
+              "what": "the change fall to winter: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-4 --tier review: out/work/sheets/motion-arrival-shake-4-preview-review-5.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-4-preview-review-5.jpg",
+              "sha256": "1f267b81718e23eed113704a7f6089f0c8167cf92df807a5375b8b64afdbba9d",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-H-06.jpg",
+              "what": "the change fall to winter: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-4 --tier review: out/work/sheets/motion-arrival-shake-4-preview-review-6.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-4-preview-review-6.jpg",
+              "sha256": "b508bdf5e08e342b3ccc4aa61376850054364a5f5641189bccdb3877022dc858",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-H-07.jpg",
+              "what": "the change fall to winter: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-4 --tier review: out/work/sheets/motion-arrival-shake-4-preview-review-7.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-4-preview-review-7.jpg",
+              "sha256": "fb95e65d8186cca06b9950350e3454afacce9ca6974a31c6c6cf859b1813d89b",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-H-08.jpg",
+              "what": "the change fall to winter: from the landing through the arrival, from node tools/sheet.mjs --motion arrival --shot shake-4 --tier review: out/work/sheets/motion-arrival-shake-4-preview-review-8.jpg",
+              "source": "out/work/sheets/motion-arrival-shake-4-preview-review-8.jpg",
+              "sha256": "0f0b224ee084cfde2180b66f9ca87e908e77210b9c30acf73973f11ac0e5f16d",
+              "width": 1149,
+              "height": 498
+            }
+          ]
+        }
+      ],
+      "missing": [],
+      "notes": []
+    }
+  }
+}
