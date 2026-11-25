@@ -116,15 +116,15 @@ function addStrands() {
   const r = (a, b) => a + (b - a) * rng()
   const push = (s) => STRANDS.push({ seed: STRANDS.length * 31 + 7, slope: 0, reach: 0, bend: 0, ...s })
   // The foot: three vines that lie in a heap round it and sprawl out over the slab, so the base stands in a nest.
-  for (let i = 0; i < 3; i++) push({ a0: -180, span: 360, h0: 2.3 + i * 2.5, amp: 1.5 + 0.5 * i, k: 3 + 2 * i, ph: r(0, 6.28), rad: r(1.4, 1.9), lift: 1.6 + 1.1 * i, sprawl: 1.5 - i * 0.45, wander: 1.2, thorn: [7, 12], every: 46, layer: 0 })
+  for (let i = 0; i < 3; i++) push({ a0: -180, span: 360, h0: 3.0 + i * 2.3, amp: 3.0 + 0.4 * i, k: [5, 4, 6][i], ph: r(0, 6.28), rad: r(1.4, 1.9), lift: 1.6 + 1.1 * i, sprawl: 1.5 - i * 0.45, wander: 1.9, thorn: [7, 12], every: 46, layer: 0 })
   // The crown: two vines under the glass.
-  for (let i = 0; i < 2; i++) push({ a0: -180, span: 360, h0: 33.2 + i * 2.5, amp: 2.0 - 0.6 * i, k: 3 + 2 * i, ph: r(0, 6.28), rad: r(1.4, 1.9), lift: 1.5 + i, sprawl: 0, wander: 1.2, thorn: [7, 11], every: 54, layer: 2 })
+  for (let i = 0; i < 2; i++) push({ a0: -180, span: 360, h0: 33.0 + i * 2.5, amp: 2.6 - 0.6 * i, k: 4 + 2 * i, ph: r(0, 6.28), rad: r(1.4, 1.9), lift: 1.5 + i, sprawl: 0, wander: 1.2, thorn: [7, 11], every: 54, layer: 2 })
   // The vines: thin tapering lengths that wander round the ring, each on its own slant with its own swing, so they
   // cross one another at many angles and leave the dark drum in view between them. One in four is a short steep one.
   const count = 37
   for (let i = 0; i < count; i++) {
     const steep = i % 3 === 2
-    const turn = steep ? r(20, 46) : r(3, 21)
+    const turn = steep ? r(20, 46) : r(7, 24)
     const span = steep ? r(22, 46) : Math.min(r(52, 128), 30 / (Math.tan(turn * RAD) * RAD * 53))
     let a0 = -180 + (i * 360) / count + r(-9, 9) + ((i * 137.5) % 360)
     // Fewer vines cross the right flank, where the key lights the leather between them.

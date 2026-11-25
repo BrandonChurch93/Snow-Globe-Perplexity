@@ -234,7 +234,7 @@ roughnessFactor = clamp(mix(0.44, 0.62, baseDetail.b) + 0.04 * baseStrand + 0.14
 metalnessFactor = mix(0.85, 0.6, baseScale) * (1.0 - 0.6 * baseRust) * (1.0 - 0.35 * baseStrand);
 `
 const IRON_TILT = `
-vec2 baseTilt = baseSlope(baseDetail.rg) * mix(mix(0.12 + 0.3 * baseStrand, 0.14 * (1.0 - vBasePaint.z), baseThorn), 0.75, baseDrum) + vec2(0.0, (fibreNext - fibreHere) * 0.8 * baseStrand);
+vec2 baseTilt = baseSlope(baseDetail.rg) * mix(mix(0.12 + 0.42 * baseStrand, 0.14 * (1.0 - vBasePaint.z), baseThorn), 0.75, baseDrum) + vec2(0.0, (fibreNext - fibreHere) * 1.1 * baseStrand);
 `
 const IRON_AFTER = `
 #define IRON_WARM 1.5
@@ -255,7 +255,7 @@ const IRON_AFTER = `
   float ironKl = smoothstep(0.0, 0.2, dot(geometryNormal, ironKey));
   float ironCl = smoothstep(0.0, 0.25, dot(geometryNormal, ironCard));
   float ironSheen = (1.0 - 0.45 * baseScale) * baseAo * (1.0 - 0.4 * baseDrum);
-  float ironGlint = 0.55 + 2.2 * pow(baseDetail.b, 3.0);
+  float ironGlint = 0.45 + 3.0 * pow(baseDetail.b, 3.0);
   vec3 ironRim = normalize(mat3(viewMatrix) * uBaseRimDir);
   float ironRh = max(dot(geometryNormal, normalize(ironRim + geometryViewDir)), 0.0);
   float ironRl = smoothstep(0.0, 0.25, dot(geometryNormal, ironRim));
@@ -306,7 +306,9 @@ float faceNear = exp(-max(-faceD, 0.0) / 0.03);
 float faceSoft = exp(-max(-faceD, 0.0) / 0.2);
 vec3 faceCandle = uFaceCol * faceGlowing;
 float faceLow = smoothstep(0.75, 0.2, faceUv.y);
-float faceHot = exp(-dot(faceIn - vec2(0.5, 0.3), faceIn - vec2(0.5, 0.3)) / 0.16);
+// Each candle stands where it was set down: the hot place of a face is its own.
+vec2 faceWick = vec2(0.5 + 0.13 * sin(float(faceId) * 2.4 + 0.7), 0.3 + 0.09 * cos(float(faceId) * 1.7));
+float faceHot = exp(-dot(faceIn - faceWick, faceIn - faceWick) / 0.13);
 vec3 faceCave = mix(vec3(1.0, 0.4, 0.07), vec3(1.0, 0.66, 0.28), faceHot) * (1.1 + 1.3 * faceHot) * (0.75 + 0.5 * baseNoise(vec3(faceUv * 9.0, 3.0)));
 vec3 faceWall = vec3(1.0, 0.24, 0.02) * (0.5 + 0.6 * baseNoise(vec3(faceUv * 40.0, 7.0)));
 float faceBevel = smoothstep(0.0, 0.03, faceD);
@@ -547,6 +549,7 @@ export function setCandles(moment: KitMoment, seconds: number): void {
   for (let i = 0; i < glow.length; i++) {
     const k = flicker[i]!
     const candle = 1 + 0.1 * Math.sin(turn * 5 + k.a * 6.283) + 0.07 * Math.sin(turn * 11 + k.b * 6.283) + 0.05 * Math.sin(turn * 23 + k.c * 6.283) + 0.03 * Math.sin(turn * 37 + k.a * 17)
-    glow[i] = faceLevel(i, seconds) * candle
+    // No two candles are the same height: each face has its own share of light.
+    glow[i] = faceLevel(i, seconds) * candle * (0.74 + 0.36 * k.c)
   }
 }
