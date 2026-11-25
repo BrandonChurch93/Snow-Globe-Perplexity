@@ -1,0 +1,157 @@
+[
+ {
+  "name": "viewer_r8_01",
+  "model": "claude_sonnet_5_5",
+  "img": "set-A-01"
+ },
+ {
+  "name": "viewer_r8_02",
+  "model": "claude_sonnet_5_5",
+  "img": "set-A-02",
+  "control": "approved spring-rest",
+  "sha256": "5197917eb6815b3d80f5ff2377e9fd4521aa9b3dc209becff675eda69a08e5b6",
+  "sha256Source": "8e0fa5e6dd852b4d70dbdbb796ea49d349869930e2b5cabf335cdee211bcfea1"
+ },
+ {
+  "name": "viewer_r8_03",
+  "model": "claude_sonnet_5_5",
+  "img": "set-A-03",
+  "control": "approved spring-shake",
+  "sha256": "1ba824572c9bf489bc3c2980f437a26a05925be926313ebc36a04b7b28e5fd1b",
+  "sha256Source": "1402ef4e31019fa3e6e20f587e7283ae2f5fc8e1911f944a1d6cfe8540721f19"
+ },
+ {
+  "name": "viewer_r8_04",
+  "model": "claude_sonnet_5_5",
+  "img": "set-A-04"
+ },
+ {
+  "name": "viewer_r8_05",
+  "model": "claude_sonnet_5_5",
+  "img": "set-A-05"
+ },
+ {
+  "name": "viewer_r8_06",
+  "model": "gpt_6_2_astra",
+  "img": "set-A-01"
+ },
+ {
+  "name": "viewer_r8_07",
+  "model": "gpt_6_2_astra",
+  "img": "set-A-02",
+  "control": "approved spring-rest",
+  "sha256": "5197917eb6815b3d80f5ff2377e9fd4521aa9b3dc209becff675eda69a08e5b6",
+  "sha256Source": "8e0fa5e6dd852b4d70dbdbb796ea49d349869930e2b5cabf335cdee211bcfea1"
+ },
+ {
+  "name": "viewer_r8_08",
+  "model": "gpt_6_2_astra",
+  "img": "set-A-03",
+  "control": "approved spring-shake",
+  "sha256": "1ba824572c9bf489bc3c2980f437a26a05925be926313ebc36a04b7b28e5fd1b",
+  "sha256Source": "1402ef4e31019fa3e6e20f587e7283ae2f5fc8e1911f944a1d6cfe8540721f19"
+ },
+ {
+  "name": "viewer_r8_09",
+  "model": "gpt_6_2_astra",
+  "img": "set-A-04"
+ },
+ {
+  "name": "viewer_r8_10",
+  "model": "gpt_6_2_astra",
+  "img": "set-A-05"
+ },
+ {
+  "name": "viewer_r8_11",
+  "model": "gemini_neon",
+  "img": "set-A-01"
+ },
+ {
+  "name": "viewer_r8_12",
+  "model": "gemini_neon",
+  "img": "set-A-02",
+  "control": "approved spring-rest",
+  "sha256": "5197917eb6815b3d80f5ff2377e9fd4521aa9b3dc209becff675eda69a08e5b6",
+  "sha256Source": "8e0fa5e6dd852b4d70dbdbb796ea49d349869930e2b5cabf335cdee211bcfea1"
+ },
+ {
+  "name": "viewer_r8_13",
+  "model": "gemini_neon",
+  "img": "set-A-03",
+  "control": "approved spring-shake",
+  "sha256": "1ba824572c9bf489bc3c2980f437a26a05925be926313ebc36a04b7b28e5fd1b",
+  "sha256Source": "1402ef4e31019fa3e6e20f587e7283ae2f5fc8e1911f944a1d6cfe8540721f19"
+ },
+ {
+  "name": "viewer_r8_14",
+  "model": "gemini_neon",
+  "img": "set-A-04"
+ },
+ {
+  "name": "viewer_r8_15",
+  "model": "gemini_neon",
+  "img": "set-A-05"
+ },
+ {
+  "name": "viewer_r8_16",
+  "model": "pplx_computer_glm_5_3_1009",
+  "img": "set-A-01"
+ },
+ {
+  "name": "viewer_r8_17",
+  "model": "pplx_computer_glm_5_3_1009",
+  "img": "set-A-02",
+  "control": "approved spring-rest",
+  "sha256": "5197917eb6815b3d80f5ff2377e9fd4521aa9b3dc209becff675eda69a08e5b6",
+  "sha256Source": "8e0fa5e6dd852b4d70dbdbb796ea49d349869930e2b5cabf335cdee211bcfea1"
+ },
+ {
+  "name": "viewer_r8_18",
+  "model": "pplx_computer_glm_5_3_1009",
+  "img": "set-A-03",
+  "control": "approved spring-shake",
+  "sha256": "1ba824572c9bf489bc3c2980f437a26a05925be926313ebc36a04b7b28e5fd1b",
+  "sha256Source": "1402ef4e31019fa3e6e20f587e7283ae2f5fc8e1911f944a1d6cfe8540721f19"
+ },
+ {
+  "name": "viewer_r8_19",
+  "model": "pplx_computer_glm_5_3_1009",
+  "img": "set-A-04"
+ },
+ {
+  "name": "viewer_r8_20",
+  "model": "pplx_computer_glm_5_3_1009",
+  "img": "set-A-05"
+ },
+ {
+  "name": "viewer_r8_21",
+  "model": "kimi_k3",
+  "img": "set-A-01"
+ },
+ {
+  "name": "viewer_r8_22",
+  "model": "kimi_k3",
+  "img": "set-A-02",
+  "control": "approved spring-rest",
+  "sha256": "5197917eb6815b3d80f5ff2377e9fd4521aa9b3dc209becff675eda69a08e5b6",
+  "sha256Source": "8e0fa5e6dd852b4d70dbdbb796ea49d349869930e2b5cabf335cdee211bcfea1"
+ },
+ {
+  "name": "viewer_r8_23",
+  "model": "kimi_k3",
+  "img": "set-A-03",
+  "control": "approved spring-shake",
+  "sha256": "1ba824572c9bf489bc3c2980f437a26a05925be926313ebc36a04b7b28e5fd1b",
+  "sha256Source": "1402ef4e31019fa3e6e20f587e7283ae2f5fc8e1911f944a1d6cfe8540721f19"
+ },
+ {
+  "name": "viewer_r8_24",
+  "model": "kimi_k3",
+  "img": "set-A-04"
+ },
+ {
+  "name": "viewer_r8_25",
+  "model": "kimi_k3",
+  "img": "set-A-05"
+ }
+]

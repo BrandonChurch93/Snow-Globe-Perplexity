@@ -1,0 +1,157 @@
+[
+ {
+  "name": "viewer_r9_01",
+  "model": "claude_sonnet_5_5",
+  "img": "set-A-01"
+ },
+ {
+  "name": "viewer_r9_02",
+  "model": "claude_sonnet_5_5",
+  "img": "set-A-02"
+ },
+ {
+  "name": "viewer_r9_03",
+  "model": "claude_sonnet_5_5",
+  "img": "set-A-03",
+  "control": "approved summer-rest",
+  "sha256": "91146fc8bdc05c32e5140706a9fa8a83b23fa6db1396cbf8e6de88558c322842",
+  "sha256Source": "a417381d64998fba7916037888a924cf3c9f4b9cfa13cc746872cef938602b39"
+ },
+ {
+  "name": "viewer_r9_04",
+  "model": "claude_sonnet_5_5",
+  "img": "set-A-04"
+ },
+ {
+  "name": "viewer_r9_05",
+  "model": "claude_sonnet_5_5",
+  "img": "set-A-05",
+  "control": "approved summer-shake",
+  "sha256": "ee78e0b094e9bb73fa0f913cc2bb1e4d9f2b121e79ce3adf7e2e249938b916f4",
+  "sha256Source": "1f07b479ad0c39c4626e52c8540e5b597a77ac054b386ff5867cb93c5c929ced"
+ },
+ {
+  "name": "viewer_r9_06",
+  "model": "gpt_6_2_astra",
+  "img": "set-A-01"
+ },
+ {
+  "name": "viewer_r9_07",
+  "model": "gpt_6_2_astra",
+  "img": "set-A-02"
+ },
+ {
+  "name": "viewer_r9_08",
+  "model": "gpt_6_2_astra",
+  "img": "set-A-03",
+  "control": "approved summer-rest",
+  "sha256": "91146fc8bdc05c32e5140706a9fa8a83b23fa6db1396cbf8e6de88558c322842",
+  "sha256Source": "a417381d64998fba7916037888a924cf3c9f4b9cfa13cc746872cef938602b39"
+ },
+ {
+  "name": "viewer_r9_09",
+  "model": "gpt_6_2_astra",
+  "img": "set-A-04"
+ },
+ {
+  "name": "viewer_r9_10",
+  "model": "gpt_6_2_astra",
+  "img": "set-A-05",
+  "control": "approved summer-shake",
+  "sha256": "ee78e0b094e9bb73fa0f913cc2bb1e4d9f2b121e79ce3adf7e2e249938b916f4",
+  "sha256Source": "1f07b479ad0c39c4626e52c8540e5b597a77ac054b386ff5867cb93c5c929ced"
+ },
+ {
+  "name": "viewer_r9_11",
+  "model": "gemini_neon",
+  "img": "set-A-01"
+ },
+ {
+  "name": "viewer_r9_12",
+  "model": "gemini_neon",
+  "img": "set-A-02"
+ },
+ {
+  "name": "viewer_r9_13",
+  "model": "gemini_neon",
+  "img": "set-A-03",
+  "control": "approved summer-rest",
+  "sha256": "91146fc8bdc05c32e5140706a9fa8a83b23fa6db1396cbf8e6de88558c322842",
+  "sha256Source": "a417381d64998fba7916037888a924cf3c9f4b9cfa13cc746872cef938602b39"
+ },
+ {
+  "name": "viewer_r9_14",
+  "model": "gemini_neon",
+  "img": "set-A-04"
+ },
+ {
+  "name": "viewer_r9_15",
+  "model": "gemini_neon",
+  "img": "set-A-05",
+  "control": "approved summer-shake",
+  "sha256": "ee78e0b094e9bb73fa0f913cc2bb1e4d9f2b121e79ce3adf7e2e249938b916f4",
+  "sha256Source": "1f07b479ad0c39c4626e52c8540e5b597a77ac054b386ff5867cb93c5c929ced"
+ },
+ {
+  "name": "viewer_r9_16",
+  "model": "pplx_computer_glm_5_3_1009",
+  "img": "set-A-01"
+ },
+ {
+  "name": "viewer_r9_17",
+  "model": "pplx_computer_glm_5_3_1009",
+  "img": "set-A-02"
+ },
+ {
+  "name": "viewer_r9_18",
+  "model": "pplx_computer_glm_5_3_1009",
+  "img": "set-A-03",
+  "control": "approved summer-rest",
+  "sha256": "91146fc8bdc05c32e5140706a9fa8a83b23fa6db1396cbf8e6de88558c322842",
+  "sha256Source": "a417381d64998fba7916037888a924cf3c9f4b9cfa13cc746872cef938602b39"
+ },
+ {
+  "name": "viewer_r9_19",
+  "model": "pplx_computer_glm_5_3_1009",
+  "img": "set-A-04"
+ },
+ {
+  "name": "viewer_r9_20",
+  "model": "pplx_computer_glm_5_3_1009",
+  "img": "set-A-05",
+  "control": "approved summer-shake",
+  "sha256": "ee78e0b094e9bb73fa0f913cc2bb1e4d9f2b121e79ce3adf7e2e249938b916f4",
+  "sha256Source": "1f07b479ad0c39c4626e52c8540e5b597a77ac054b386ff5867cb93c5c929ced"
+ },
+ {
+  "name": "viewer_r9_21",
+  "model": "kimi_k3",
+  "img": "set-A-01"
+ },
+ {
+  "name": "viewer_r9_22",
+  "model": "kimi_k3",
+  "img": "set-A-02"
+ },
+ {
+  "name": "viewer_r9_23",
+  "model": "kimi_k3",
+  "img": "set-A-03",
+  "control": "approved summer-rest",
+  "sha256": "91146fc8bdc05c32e5140706a9fa8a83b23fa6db1396cbf8e6de88558c322842",
+  "sha256Source": "a417381d64998fba7916037888a924cf3c9f4b9cfa13cc746872cef938602b39"
+ },
+ {
+  "name": "viewer_r9_24",
+  "model": "kimi_k3",
+  "img": "set-A-04"
+ },
+ {
+  "name": "viewer_r9_25",
+  "model": "kimi_k3",
+  "img": "set-A-05",
+  "control": "approved summer-shake",
+  "sha256": "ee78e0b094e9bb73fa0f913cc2bb1e4d9f2b121e79ce3adf7e2e249938b916f4",
+  "sha256Source": "1f07b479ad0c39c4626e52c8540e5b597a77ac054b386ff5867cb93c5c929ced"
+ }
+]
