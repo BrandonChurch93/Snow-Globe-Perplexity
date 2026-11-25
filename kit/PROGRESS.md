@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 82 · 2026-11-25 07:28 UTC
+Status 83 · 2026-11-25 07:41 UTC
 
-- `out/stills/status/status-82-1.jpg`: Fall at the landing with 10000 leaves: approved left and a builder's draft right. The tree and the roof now read through the storm
-- `out/stills/status/status-82-2.jpg`: Fall's base: approved above and a builder's draft below. Grey leather on the right flank and a wax rim with thin runs
-- `out/stills/status/status-82-3.jpg`: Summer at rest: a builder's draft left and approved right. Fireflies are now small soft points. The oval at the top of the glass is an open item
-- `out/stills/status/status-82-4.jpg`: Still: summer rest hero, preview, draft, standins view
+- `out/stills/status/status-83-1.jpg`: Spring at rest on the fix pass: approved left and ours right. The oval under the crown is gone (decision 90). Draft tier
+- `out/stills/status/status-83-2.jpg`: The top of the glass at native size: approved left and ours right. Rivulets are still thinner and straighter than approved
+- `out/stills/status/status-83-3.jpg`: Fall's landing on the fix pass: the faces on the base light one after another (film frames 2158 to 2170). Draft tier
+- `out/stills/status/status-83-4.jpg`: Winter into spring on the fix pass: the whole swap window on even frames 648 to 680. Draft tier
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 07:38 UTC
-clock: phase 4, tick of 8.7 minutes
-phase 4: 7.51 h used of its 9.50 h box
-allowance (before the review): 29.80 h used of 36.00 h allowed
-all time before the review: 29.80 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 07:41 UTC
+clock: phase 4, tick of 3.1 minutes
+phase 4: 7.56 h used of its 9.50 h box
+allowance (before the review): 29.85 h used of 36.00 h allowed
+all time before the review: 29.85 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 9
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -1716,3 +1716,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 07:05 UTC. - Status 81 posted (all still critics of Rounds 11 and 12 answered: spring R1 5 and R3 6, summer R1 6 and R3 4; spring's gate all 15 green; four pictures of builders' fixes since the freeze at draft quality: spring's and fall's storms beside the approved images, summer's base half a second after landing with no streaks across the stone, spring's new base under the approved one). `bases3` was told at 06:57 to raise the collar of spring's and summer's base round the sphere to the height of the ground's front edge, as the approved images show: both R1 critics name the seat as severe and the ground level is the shared layout, which no season's builder may move. `summer_air3` took the grains that fall outside the bowl (`src/seasons/summer/arrival.ts`, after merging `agent/p4-change2`), `change_builder2` was told.
 
 - 07:29 UTC. Status 82 posted (the jury's cards of Rounds 11 and 12, Round 12's R4, decisions 88 and 89; three builders' drafts beside the approved images: fall at the landing with 10,000 leaves, fall's base, summer at rest). Round 11's motion pack arrived at 07:28 and its R4 critic (`claude_opus_5_5`) started; Round 12's R4 (`gpt_6_2_sol`) answered 7. All 30 jurors of Rounds 11 and 12 answered: spring 3 of 15 against 10 of 10, summer 7 of 15 against 8 of 10; both R2 fail. `change_builder2` takes the outside of the swap for all four changes and keeps `src/shake/table.ts` frozen: the weight of the shake stays open item 71 and goes to the change unit's fix pass after the third freeze. Running: ten builders, `round_renderer` (fall's stills), `gate_runner` (summer's gate, then fall's), one critic.
+
+- 07:41 UTC. Status 83 posted with four pictures from the builders' looks branches (spring at rest beside the approved with the oval gone, the top of the glass at native size, fall's faces lighting one after another on the landing, the whole swap window of winter into spring; all draft tier). Round 13 (fall) on `e39ec6c` so far: R1 6 (`kimi_k3`; Round 10 had 3), R3 part 2 6 (`claude_opus_5_5`), R4 6 (`glm`); R3 part 1 and the gate are still out; 18 of 20 jurors are in and all 18 chose the ordinary render. Rounds 11 and 12 have their issues read, their keys, manifests and summaries in their folders; "fixes" and "logged" follow the freeze. `spring_air3` delivered decision 90 (`b8f3da3`: the oval at the top of the glass is drawn in winter only; winter's rest and landed hero stills byte-identical before and after, sha256 `f6a5bfd6…` and `06ce7056…` as it states them); `summer_air3` delivered the pool of light after the lanterns (`1475b6c`). Sound is still missing (decision 78).

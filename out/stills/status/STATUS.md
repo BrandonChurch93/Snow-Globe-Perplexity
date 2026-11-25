@@ -1,17 +1,17 @@
-# Status 82
+# Status 83
 
-2026-11-25 07:28 UTC
+2026-11-25 07:41 UTC
 
-- Jury on the frozen build: spring gets 3 of 15 votes for photo or film against 10 of 10 on the controls and summer gets 7 of 15 against 8 of 10. Both fail
-- Summer's motion scores 7 (4 in its first round): the base still changes in plain sight during the shake and the shake lacks weight
-- Decisions 88 and 89: fall's leaf count goes from 16000 to 10000 and the background lights cross through the whole swap window
-- Next: fall's stills and the last two gates. Third freeze at 08:32 for each season's last round and the first round of the changes
-- phase 4: 7.35 h used of its 9.50 h box
-- allowance (before the review): 29.63 h used of 36.00 h allowed
+- Round 13 (fall) on e39ec6c so far: R1 6 (Round 10 had 3) and R3 part 2 6 and R4 6. R3 part 1 and the gate are still out. 17 of 20 jurors are in and all 17 chose the ordinary render
+- Rounds 11 (spring) and 12 (summer) have every answer and neither passes: spring R1 5 and R3 6 and R4 5 and summer R1 6 and R3 4 and R4 7. Both gates are all green. Both juries fail (3 of 15 and 7 of 15)
+- Ten builders work the fix pass until the freeze at about 08:35 for Rounds 14 to 16 and the change unit's floor round
+- Sound is still missing: the sound tool's account has no credits
+- phase 4: 7.56 h used of its 9.50 h box
+- allowance (before the review): 29.85 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-82-1.jpg`: Fall at the landing with 10000 leaves: approved left and a builder's draft right. The tree and the roof now read through the storm
-- `out/stills/status/status-82-2.jpg`: Fall's base: approved above and a builder's draft below. Grey leather on the right flank and a wax rim with thin runs
-- `out/stills/status/status-82-3.jpg`: Summer at rest: a builder's draft left and approved right. Fireflies are now small soft points. The oval at the top of the glass is an open item
-- `out/stills/status/status-82-4.jpg`: Still: summer rest hero, preview, draft, standins view
+- `out/stills/status/status-83-1.jpg`: Spring at rest on the fix pass: approved left and ours right. The oval under the crown is gone (decision 90). Draft tier
+- `out/stills/status/status-83-2.jpg`: The top of the glass at native size: approved left and ours right. Rivulets are still thinner and straighter than approved
+- `out/stills/status/status-83-3.jpg`: Fall's landing on the fix pass: the faces on the base light one after another (film frames 2158 to 2170). Draft tier
+- `out/stills/status/status-83-4.jpg`: Winter into spring on the fix pass: the whole swap window on even frames 648 to 680. Draft tier
