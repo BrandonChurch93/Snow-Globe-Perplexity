@@ -59,7 +59,7 @@ My files: 31,488 (46 sheets 17,664, lip shell 1,536, crack sphere 12,288), uncha
 
 ## Looks used
 
-42 numbered fall stills this session (hero, draft hd, a few macro), plus 2 for the key and sky, 3 diagnostics for the leaf count and the fog off, 4 winter stills for the emitter check, 3 M3 readings at draft and 2 at review. That is over the 40 a part allows if all are booked on the glass dressing, which the agents before me had already passed; by part it is about 32 on the fog and crack, 10 on the particle rows and emitters, 2 on the light.
+43 numbered fall stills this session (hero, draft hd, a few macro), plus 2 for the key and sky, 3 diagnostics for the leaf count and the fog off, 4 winter stills for the emitter check, 3 M3 readings at draft and 2 at review. That is over the 40 a part allows if all are booked on the glass dressing, which the agents before me had already passed; by part it is about 32 on the fog and crack, 11 on the particle rows and emitters, 2 on the light.
 
 ## Round 13 issues in my files and where they stand
 
