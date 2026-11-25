@@ -27,7 +27,7 @@ const ATTIC_LIGHT = { power: 0.6, reachMm: 6, flicker: 0.1, cycles: 4, phase: 0.
 const PUMPKIN = { power: 1.3, reachMm: 7, flicker: 0.16, cycles: 6 }
 const POND = { power: 0.3, reachMm: 20, flicker: 0.08, cycles: 2, phase: 0.8, liftMm: 2.5 }
 const NEAR = { lamp: { power: 6, reachMm: 7 }, pane: { power: 5, reachMm: 3.2 }, pumpkin: { power: 13, reachMm: 2.6, ends: 4 } }
-const NEAR_WALL = { lamp: { power: 2.4, reachMm: 9, ends: 3 }, pane: { power: 1.5, reachMm: 4.2, ends: 3 }, pumpkin: { power: 5, reachMm: 3.2, ends: 3 } }
+const NEAR_WALL = { lamp: { power: 3.4, reachMm: 9, ends: 3 }, pane: { power: 1.5, reachMm: 4.2, ends: 3 }, pumpkin: { power: 5, reachMm: 3.2, ends: 3 } }
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
 const HALO_KIND = { lamp: { size: 5.6, rest: 0.32, hot: 0, bloom: 0.3 }, pumpkin: { size: 4.2, rest: 0.26, hot: 0, bloom: 0.25 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
 const PANE_HALO = { radiusMm: 0.75, strength: 0.5, hot: 0, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 0.6 }
@@ -36,11 +36,15 @@ const THROUGH = 6
 const LAMP_GLASS: Rgb = [3.4, 1.25, 0.24]
 const WALL_FILL = 2.8
 const GROUND_FILL = 4.2
-const PATH = { tone: [1.2, 1.13, 1.0] as Rgb, nearMm: 2.6, highMm: 1.4 }
+const PATH = { tone: [0.8, 0.72, 0.62] as Rgb, nearMm: 2.6, highMm: 1.4 }
 const FENCE = { reachMm: 1.25, sinkMm: 5 }
-const MOSS = { low: [0.34, 0.44, 0.25] as Rgb, high: [0.5, 0.54, 0.45] as Rgb, tallMm: 9, soot: 0.68, bite: 0.8, bitePivot: 0.36, biteLow: 0.3, biteTop: 1.08 }
-const ROOF = { tone: [1.8, 1.52, 1.4] as Rgb, grey: 0.7 }
-const DOOR: Rgb = [0.5, 0.37, 0.25]
+const MOSS = { low: [0.68, 0.88, 0.5] as Rgb, high: [1, 1.08, 0.9] as Rgb, tallMm: 9, soot: 0.68 }
+// The shared stones run from 0.03 (a joint) over 0.12 (the middle stone) to 0.9 (a few white ones). The approved wall is one
+// olive grey with dark joints, so the tone is bent: joints stay near black, every stone from the middle up ends near `top`.
+const STONE = { top: 0.22, knee: 0.13, power: 2.2 }
+const ROOF = { tone: [1.9, 1.25, 0.85] as Rgb, grey: 0.55 }
+const DOOR: Rgb = [0.36, 0.29, 0.21]
+const TIMBER: Rgb = [0.4, 0.42, 0.34]
 const DRY: readonly Rgb[] = [[0.42, 0.16, 0.05], [0.5, 0.26, 0.07], [0.3, 0.12, 0.05], [0.4, 0.3, 0.1]]
 const GROUND = { soil: 1.45, leaf: 1.05, leafScale: 0.6, soilMm: 0.26, wideMm: 0.5, leafMm: 0.34 }
 const WATER = { rough: 0.07, rippleMm: 0.18, lamp: 8, pane: 1.6, pumpkin: 4.5, tight: 0.0008, wide: 0.006, wideShare: 0.004, lowMm: 3.4, fog: 0.13, trunkMm: 3.4, dim: 0.85, shore: [0.9, 0.99] as [number, number] }
@@ -197,7 +201,8 @@ function autumn(source: THREE.BufferGeometry): THREE.BufferGeometry {
         const m = (1 - smooth(0, MOSS.tallMm, up)) * (0.35 + 0.65 * n) + 0.35 * smooth(0.55, 0.8, n)
         const k = Math.min(1, Math.max(0, m))
         const soot = near ? 1 - MOSS.soot * smooth(cottage.wall + 1, cottage.wall + 7, up) : 1
-        const bite = Math.pow(Math.min(MOSS.biteTop, Math.max(MOSS.biteLow, (0.3 * r + 0.6 * gr + 0.1 * b) / MOSS.bitePivot)), MOSS.bite) * soot
+        const lum = 0.3 * r + 0.6 * gr + 0.1 * b
+        const bite = ((STONE.top * (1 - Math.exp(-Math.pow(lum / STONE.knee, STONE.power)))) / Math.max(lum, 1e-4)) * soot
         r *= (MOSS.high[0] + (MOSS.low[0] - MOSS.high[0]) * k) * bite
         gr *= (MOSS.high[1] + (MOSS.low[1] - MOSS.high[1]) * k) * bite
         b *= (MOSS.high[2] + (MOSS.low[2] - MOSS.high[2]) * k) * bite
@@ -213,6 +218,11 @@ function autumn(source: THREE.BufferGeometry): THREE.BufferGeometry {
         r = (lum * ROOF.grey + r * (1 - ROOF.grey)) * ROOF.tone[0]
         gr = (lum * ROOF.grey + gr * (1 - ROOF.grey)) * ROOF.tone[1]
         b = (lum * ROOF.grey + b * (1 - ROOF.grey)) * ROOF.tone[2]
+      } else {
+        const lum = 0.3 * r + 0.6 * gr + 0.1 * b
+        r = (0.5 * lum + 0.5 * r) * TIMBER[0]
+        gr = (0.5 * lum + 0.5 * gr) * TIMBER[1]
+        b = (0.5 * lum + 0.5 * b) * TIMBER[2]
       }
     }
     C.setXYZ(i, r, gr, b)

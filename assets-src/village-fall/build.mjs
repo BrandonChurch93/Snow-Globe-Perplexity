@@ -26,9 +26,9 @@ const STONES = PROPS.STONES
 const LEAF_TONES = ['#c8541a', '#d9812a', '#a8371a', '#e0a030', '#7a3a18', '#b5651d', '#c9451c', '#8f5a1e'].map(lin)
 const GRASS_TONES = ['#5a7a2a', '#7d9438', '#b0a548', '#4a6424', '#96893a'].map(lin)
 
-const LITTER = { base: 0.03, patch: 0.2, fence: 0.2, tree: 0.1, wall: 0.1, leaves: 230 }
+const LITTER = { base: 0.1, patch: 0.3, fence: 0.2, tree: 0.14, wall: 0.1, leaves: 230 }
 const LEVELS = { medium: { error: 0.08, worth: 1 }, low: { error: 0.2, worth: 1 } }
-const STONE_TONES = ['#d6d0bf', '#c4c0b2', '#e0d9c6', '#b3b0a4', '#cbc5b3'].map(lin).map((c) => mul3(c, 1.12))
+const STONE_TONES = ['#d6d0bf', '#c4c0b2', '#e0d9c6', '#b3b0a4', '#cbc5b3'].map(lin).map((c) => [c[0] * 0.6, c[1] * 0.55, c[2] * 0.5])
 const ground = new Bag('ground')
 const water = new Bag('water')
 const decor = new Bag('decor')
@@ -68,7 +68,7 @@ const litterAt = (x, z) => {
   return clamp((base + byFence + underTree + byWall) * (0.25 + 0.75 * shore), 0, 1)
 }
 const mossAt = (x, z) => {
-  const patch = 0.36 + 1.1 * fbm(x * 0.09 + 9.3, z * 0.09 + 2.2, 8, 3)
+  const patch = 0.26 + 1.1 * fbm(x * 0.09 + 9.3, z * 0.09 + 2.2, 8, 3)
   const bank = 0.2 * (1 - smooth(1.02, 1.3, L.pondField(x, z)))
   const wall = 0.3 * (1 - smooth(0.2, 2.2, cottageGap(x, z)))
   return clamp(patch + bank + wall - 0.35 * (1 - smooth(4, 12, treeGap(x, z))), 0, 1)

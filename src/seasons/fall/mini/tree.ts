@@ -25,17 +25,24 @@ const LAMP_ON_WOOD = { power: 8, reachMm: 15, wrap: -0.3 }
 const LAMP_SHIFT: Vec3 = [-3, 0, -5]
 const PUMPKIN_ON_WOOD = { power: 16, reachMm: 6, wrap: 0.1 }
 const POND_ON_WOOD = { power: 3, reachMm: 22, wrap: 0.2 }
-const FILL_ON_WOOD = { power: 3.5, reachMm: 1000, wrap: 0.4 }
+const FILL_ON_WOOD = { power: 2.2, reachMm: 1000, wrap: 0.4 }
 const FILL_FROM: Vec3 = [40, 20, 60]
 const SKY: [number, number, number] = [0.62, 0.8, 0.85]
 const GROUP = { power: 0.06, reachMm: 5.5, along: 0.72 }
 const HALO = { radiusMm: 0.4, strength: 1.0, hot: 3.2, pullMm: 0.6, flicker: FLICKER, cycles: CYCLES }
-const POOL = { radiusMm: 1.5, strength: 0.07, hot: 0, pullMm: 0.9, flicker: FLICKER, cycles: CYCLES }
+const POOL = { radiusMm: 1.0, strength: 0.04, hot: 0, pullMm: 0.9, flicker: FLICKER, cycles: CYCLES }
 const POOL_EDGE: [number, number, number] = [0.7, 0.26, 0.04]
 const POOL_CORE: [number, number, number] = [0.95, 0.5, 0.14]
 const HALO_EDGE: [number, number, number] = [0.8, 0.3, 0.05]
 const HALO_CORE: [number, number, number] = [1, 0.46, 0.13]
 const FOG_DIM = { from: 0.5, to: 0.9, cap: 0.6 }
+// Wet black bark: the lamp, the pumpkin at the foot and the green of the pond glance off the ridges as small sharp lights
+// and leave the grooves black. `shine` is the lobe's exponent, `ridge` how far a groove (dark vertex colour) is kept out.
+const GLINT = { shine: 36, ridge: [0.3, 0.8] as [number, number], rough: 0.86 }
+const GLINT_LAMP = { lift: 3.6, power: 0.7, reachMm: 16 }
+const GLINT_TONE: [number, number, number] = [1, 0.46, 0.14]
+const GLINT_PUMPKIN = { power: 0.45, reachMm: 7 }
+const GLINT_POND = { power: 0.05, reachMm: 24 }
 
 const clock = { value: 0 }
 const emberGain = { value: EMBER_GAIN }
@@ -65,6 +72,48 @@ function onWood(): GlowLight[] {
     { at: placePoint([4, 2, 26]), color: tones.pondLight, ...POND_ON_WOOD, phase: 0.8 },
     { at: placePoint(FILL_FROM), color: SKY, ...FILL_ON_WOOD, phase: 0.6 },
   ]
+}
+
+const vec3 = (p: readonly number[]): string => `vec3(${p[0]!.toFixed(3)}, ${p[1]!.toFixed(3)}, ${p[2]!.toFixed(3)})`
+
+function glints(): { at: Vec3; color: readonly number[]; power: number; reachMm: number }[] {
+  const flame = lampFlame()
+  const pumpkin = PUMPKINS.find((p) => p.name === 'tree')!
+  return [
+    { at: [flame[0], flame[1] + GLINT_LAMP.lift, flame[2]], color: GLINT_TONE, power: GLINT_LAMP.power, reachMm: GLINT_LAMP.reachMm },
+    { at: pumpkinFace(pumpkin, 0.4, 0.6), color: tones.pumpkinLight, power: GLINT_PUMPKIN.power, reachMm: GLINT_PUMPKIN.reachMm },
+    { at: placePoint([4, 2, 26]), color: tones.pondLight, power: GLINT_POND.power, reachMm: GLINT_POND.reachMm },
+  ]
+}
+
+function barkHook(shader: Shader): void {
+  glowHook(shader, undefined, BARK_RELIEF)
+  const lit = glints()
+  shader.vertexShader = shader.vertexShader
+    .replace('#include <common>', `#include <common>\n${lit.map((_, i) => `varying vec3 vGlint${i};`).join('\n')}`)
+    .replace('#include <project_vertex>', `#include <project_vertex>\n${lit.map((l, i) => `vGlint${i} = (modelViewMatrix * vec4(${vec3(l.at)}, 1.0)).xyz;`).join('\n')}`)
+  shader.fragmentShader = shader.fragmentShader
+    .replace('#include <common>', `#include <common>\n${lit.map((_, i) => `varying vec3 vGlint${i};`).join('\n')}`)
+    .replace(
+      '#include <lights_fragment_end>',
+      `#include <lights_fragment_end>
+{
+  vec3 glintV = normalize(vViewPosition);
+  vec3 glintSum = vec3(0.0);
+${lit
+  .map(
+    (l, i) => `  {
+    vec3 to = vGlint${i} + vViewPosition;
+    float d2 = dot(to, to);
+    vec3 l = to * inversesqrt(max(d2, 1e-6));
+    float s = pow(max(dot(normal, normalize(l + glintV)), 0.0), ${GLINT.shine.toFixed(1)}) * smoothstep(0.0, 0.25, dot(normal, l));
+    glintSum += ${vec3(l.color)} * (${l.power.toFixed(3)} * s / (1.0 + d2 / ${(l.reachMm * l.reachMm).toFixed(2)}));
+  }`,
+  )
+  .join('\n')}
+  reflectedLight.directSpecular += glintSum * uTwinkle.z * smoothstep(${GLINT.ridge[0].toFixed(2)}, ${GLINT.ridge[1].toFixed(2)}, dot(vColor.rgb, vec3(0.3333)));
+}`,
+    )
 }
 
 function lightHook(shader: Shader): void {
@@ -101,9 +150,9 @@ export function build(): THREE.Object3D {
     map: texture(BARK),
     color: new THREE.Color(TWIG_TINT[0], TWIG_TINT[1], TWIG_TINT[2]),
     vertexColors: true,
-    roughness: 0.86,
+    roughness: GLINT.rough,
     extra: { normalMap: texture(BARK_NORMAL), normalScale: new THREE.Vector2(1.4, 1.4) },
-    hook: (shader) => glowHook(shader, undefined, BARK_RELIEF),
+    hook: barkHook,
     key: 'twigs-fall',
   })
   const twigs = new THREE.Mesh(g, bark)
