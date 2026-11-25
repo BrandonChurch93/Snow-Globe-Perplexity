@@ -1,6 +1,7 @@
 import * as THREE from 'three'
+import { config } from '../../../config'
 import { afterLight } from '../../../core/chunks/light'
-import { stageMaterial, type Rgb } from '../../../core/materials'
+import { stageMaterial, stageShader, type Rgb } from '../../../core/materials'
 import { geometry, prepareModel } from '../../../core/models'
 import { texture } from '../../../core/textures'
 import { GLOW, glowGeometry, glowMaterial, glowPiece, haloGeometry, haloMaterial } from '../../../miniature/glow'
@@ -29,7 +30,7 @@ const MIRROR = { lamp: 3, pane: 1.4, tight: 0.0022, wide: 0.035, wideShare: 0.03
 const STREAK = { strength: 20, side: 0.045, along: 0.6, bump: 0.06, rings: 0.9 }
 const MOSS_FROM = [-16.8, -15]
 const SKIRT_FILL = 1.7
-const BANK = { wide: 0.21, wideMm: 0.9, cushion: 0.46, cushionMm: 0.7, tuft: 1.25, tuftMm: 0.26, grain: 4.2, grainMm: 0.05, deep: 0.16, lip: 1.05 }
+const BANK = { wide: 0.21, wideMm: 0.9, cushion: 0.46, cushionMm: 0.7, tuft: 1.25, tuftMm: 0.26, grain: 4.2, grainMm: 0.05, deep: 0.06, lip: 1.0, fall: [0.0, 0.42] }
 const BANK_SPAN = BANK.cushionMm + BANK.tuftMm
 const BANK_EARTH: Rgb = [0.03, 0.021, 0.012]
 const SLATE = { tint: [2.2, 3.1, 3.8] as Rgb, from: cottageFrame().floor + cottage.wall - 1.2 }
@@ -43,11 +44,14 @@ const HALO_KIND = { lamp: { size: 4.6, rest: 0.5, hot: 0.07, bloom: 0.3 }, pane:
 const SPARK = { radiusMm: 0.75, strength: 1.2, hot: 2.5, pullMm: 1.6, flicker: 0.05, cycles: 2, through: 80, wide: 1, bloom: 0 }
 const SPARK_KIND = { size: 1.5, rest: 0.9, hot: 1.2, bloom: 0 }
 const THROUGH = 6
+// The warm ball of lit haze around the lamp while the storm turns (approved mid-shake image): sizes in units of HALO.radiusMm.
+// rest: strength; hot: how far behind its centre the glow is drawn (mm, negative is in front); bloom: how much hotter its middle is.
+const STORM_GLOW = { tone: [1.4, 1.2, 0.98] as Rgb, lamp: { size: 17, rest: 0.62, hot: 11, bloom: 0.25 }, behind: { size: 13, rest: 0.45, hot: 11, bloom: 0.25 }, flame: { size: 2.3, rest: 1.4, hot: -2, bloom: 3.5 } }
 const LAMP_GLASS: Rgb = [9, 5.6, 2.3]
 const WALL_FILL = 2.6
 const STONE_LIFT: Rgb = [1.5, 1.36, 1.18]
 const SLATE_BASE: Rgb = [0.03, 0.036, 0.046]
-const BANK_TINT: Rgb = [0.62, 0.57, 0.6]
+const BANK_TINT: Rgb = [0.74, 0.52, 0.52]
 const TURF_LOOK = { wrap: 0.45, fill: 0.9, grainMm: 0.07, lumpMm: 0.26, wideMm: 0.5, fuzz: 0.5 }
 const GROWTH_LOOK = { wrap: 0.7, fill: 0.7, through: 1.6, thin: 0.5, tight: 3 }
 const RIPPLE = { waveMm: 4.0, heightMm: 0.3, reachMm: 22, laps: 5, chopMm: 0.016, drift: 2 }
@@ -204,7 +208,7 @@ if (turfBankA > 0.01) {
   vec3 bankMoss = diffuseColor.rgb * ${glsl(BANK_TINT)} * (0.36 + 1.2 * bankCrest) * (0.7 + 0.6 * bankPatch) * (0.8 + 0.4 * bankFine * bankSpeck);
   vec3 bankSoil = ${glsl(BANK_EARTH)} * (0.6 + 0.8 * bankPatch);
   vec3 bankTone = mix(bankSoil, bankMoss, smoothstep(0.04, 0.34, bankCrest) * (0.55 + 0.45 * smoothstep(0.25, 0.6, bankPatch + 0.3 * bankCrest)));
-  bankTone *= mix(${BANK.lip.toFixed(2)}, ${BANK.deep.toFixed(2)}, smoothstep(0.04, 0.8, vSurf.y));
+  bankTone *= mix(${BANK.lip.toFixed(2)}, ${BANK.deep.toFixed(2)}, smoothstep(${BANK.fall[0].toFixed(2)}, ${BANK.fall[1].toFixed(2)}, vSurf.y));
   diffuseColor.rgb = mix(diffuseColor.rgb, bankTone, turfBankA);
 }
 `,
@@ -233,7 +237,7 @@ if (turfBankA > 0.01) {
   float turfCatch = smoothstep(-0.15, 0.9, dot(geometryNormal, vec3(0.0, 0.76, 0.65)));
   float turfRock = smoothstep(2.5, 2.9, vSurf.x);
   float turfLift = normalize(vObjN).y;
-  reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${SKIRT_FILL.toFixed(2)} * turfBank * (0.04 + 0.96 * turfCatch * turfCatch) * (0.5 + 0.5 * smoothstep(-0.8, 0.0, turfLift)) * (1.0 - 0.85 * smoothstep(0.06, 0.85, vSurf.y)) + ${ROCK_FILL.toFixed(2)} * turfRock * (0.3 + 0.7 * smoothstep(-0.2, 0.7, turfLift)))) * material.diffuseContribution;
+  reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${SKIRT_FILL.toFixed(2)} * turfBank * (0.04 + 0.96 * turfCatch * turfCatch) * (0.5 + 0.5 * smoothstep(-0.8, 0.0, turfLift)) * (1.0 - 0.94 * smoothstep(${BANK.fall[0].toFixed(2)}, ${BANK.fall[1].toFixed(2)}, vSurf.y)) + ${ROCK_FILL.toFixed(2)} * turfRock * (0.3 + 0.7 * smoothstep(-0.2, 0.7, turfLift)))) * material.diffuseContribution;
   reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${TURF_LOOK.fuzz.toFixed(2)} * turfFuzz * stageWrap(dot(geometryNormal, stageKeyL), 1.0)) * material.diffuseContribution;
 }`,
       )
@@ -379,6 +383,57 @@ diffuseColor.rgb = mix(${glsl(tones.waterDeep)}, ${glsl(tones.bed)}, waterEdge *
   })
 }
 
+function stormGlowMaterial(): THREE.ShaderMaterial {
+  return stageShader({
+    part: LIGHT,
+    standIn: false,
+    inside: true,
+    change: 'light',
+    uniforms: { uHaloStorm: storm },
+    params: { side: THREE.FrontSide, transparent: false, blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.SrcAlphaFactor, blendDst: THREE.OneMinusSrcAlphaFactor, depthWrite: false },
+    vertexPars: `
+attribute vec4 aHalo;
+attribute vec4 aHaloSize;
+varying vec4 vHalo;
+varying vec4 vHaloSize;
+`,
+    vertexMain: `
+vHalo = vec4((modelMatrix * vec4(aHalo.xyz, 1.0)).xyz, aHalo.w);
+vHaloSize = aHaloSize;
+#ifdef STAGE_INSIDE
+float haloSeen;
+vec3 haloC = (viewMatrix * vec4(lensPlace(vHalo.xyz, cameraPosition, haloSeen).xyz, 1.0)).xyz;
+vec4 haloFar = projectionMatrix * vec4(haloC * (1.0 + aHaloSize.z / length(haloC)), 1.0);
+gl_Position.z = haloFar.z / haloFar.w * gl_Position.w;
+#endif
+`,
+    fragment: `
+uniform float uHaloStorm;
+varying vec4 vHalo;
+varying vec4 vHaloSize;
+void main() {
+  if (uDiag != 0) discard;
+  float c = stageChange();
+  if (stageGone(c)) discard;
+  #ifdef STAGE_INSIDE
+  if (stageOutside()) discard;
+  #endif
+  if (uHaloStorm < 0.002) discard;
+  vec3 d = normalize(vStagePlaced - cameraPosition);
+  vec3 oc = cameraPosition - uLensCentre;
+  float b = dot(oc, d);
+  float h = b * b - dot(oc, oc) + uLens.x * uLens.x;
+  vec3 sight = normalize(cameraPosition + d * (-b - sqrt(max(h, 0.0))) - vStageWorld);
+  vec3 off = cross(sight, vStageWorld - vHalo.xyz);
+  float far = max(0.0, 1.0 - dot(off, off) / (${(HALO.radiusMm * HALO.radiusMm).toFixed(4)} * vHaloSize.x * vHaloSize.x));
+  float fall = far * far * (3.0 - 2.0 * far);
+  float a = clamp(vHaloSize.y * uHaloStorm * fall * fall, 0.0, 0.96);
+  gl_FragColor = vec4(${glsl(STORM_GLOW.tone)} * (1.0 + vHaloSize.w * pow(far, 10.0)), a);
+}
+`,
+  })
+}
+
 const shadowed = <T extends THREE.Mesh>(m: T, cast = true): T => {
   m.castShadow = cast
   m.receiveShadow = true
@@ -411,7 +466,10 @@ export function lights(): THREE.Object3D {
   halos.renderOrder = 3
   const spark = new THREE.Mesh(haloGeometry([flame], SPARK.radiusMm, [SPARK_KIND], SPARK.wide), haloMaterial(LIGHT, tones.haloEdge, tones.haloCore, SPARK, clock))
   spark.renderOrder = 4
-  return new THREE.Group().add(new THREE.Mesh(glowGeometry(pieces), glowMaterial(LIGHT, look, clock)), halos, spark)
+  const behind: [number, number, number] = [tree.x + 7.5, groundAt(tree.x + 7.5, tree.z) + 7, tree.z - 2]
+  const stormGlow = new THREE.Mesh(haloGeometry([flame, behind, flame], HALO.radiusMm, [STORM_GLOW.lamp, STORM_GLOW.behind, STORM_GLOW.flame], 1), stormGlowMaterial())
+  stormGlow.renderOrder = 2
+  return new THREE.Group().add(new THREE.Mesh(glowGeometry(pieces), glowMaterial(LIGHT, look, clock)), stormGlow, halos, spark)
 }
 
 const keep = (role: string): boolean => !isTree(role) && role !== 'ground' && role !== 'pond'
@@ -447,4 +505,6 @@ export function solid(x: number, y: number, z: number): number {
 export function update(moment: KitMoment): void {
   clock.value = (((moment.time / moment.period) % 1) + 1) % 1
   gain.value = gainOf(innerLights, moment.time, moment.period)
+  const t = Number.isFinite(moment.sinceLanding) ? Math.min(1, Math.max(0, moment.sinceLanding / config.shake.settleCheckSeconds)) : 1
+  storm.value = 1 - t * t * (3 - 2 * t)
 }
