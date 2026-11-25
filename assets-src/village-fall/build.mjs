@@ -110,7 +110,9 @@ const mossAt = (x, z) => {
   g.computeVertexNormals()
   const under = (p) => smooth(1.2, 4.2, L.groundAt(p[0], p[2]) - p[1])
   const wet = (x, z) => 0.28 + 0.72 * smooth(0.99, 1.1, L.pondField(x, z))
-  const contact = (x, z) => 0.55 + 0.45 * smooth(0, 1.6, cottageGap(x, z))
+  // Contact shade: the soil is darker against the cottage's foot, under each pumpkin and along the fence line.
+  const pumpkinGap = (x, z) => Math.min(...PUMPKINS.map((o) => Math.hypot(x - o.at[0], z - o.at[2]) - o.r * 0.7))
+  const contact = (x, z) => (0.55 + 0.45 * smooth(0, 1.6, cottageGap(x, z))) * (0.42 + 0.58 * smooth(-0.3, 1.9, pumpkinGap(x, z))) * (0.6 + 0.4 * smooth(0.1, 1.3, fenceGap(x, z)))
   ground.add(g, {
     color: (p) => {
       const k = (0.86 + 0.24 * fbm(p[0] * 0.21, p[2] * 0.21, 1, 3)) * wet(p[0], p[2]) * contact(p[0], p[2]) * (0.62 + 0.38 * smooth(0.8, 5, treeGap(p[0], p[2]) - 4))
@@ -394,13 +396,27 @@ const conform = (g, x, z, yaw, lift) => {
 }
 // The approved path is warm, pinkish slate under the lamp; the cold key light greys a neutral stone, so the flags lean red.
 const FLAG_TONE = [1.3, 0.92, 0.66]
-const cobble = (x, z, w, l, h, yaw, lift, dark = 1, flat = false) => {
+// Where a stone stands in the pond it is wet: dark and smooth from the waterline up to a soak line, on the side toward the water.
+const WET = { soakMm: 0.85, dark: 0.34, rough: 0.22 }
+const wetAt = (p) => {
+  const level = L.moundAt(p[2]) - L.pond.level
+  return (1 - smooth(level + 0.1, level + WET.soakMm, p[1])) * (1 - smooth(1.05, 1.16, L.pondField(p[0], p[2])))
+}
+const cobble = (x, z, w, l, h, yaw, lift, dark = 1, flat = false, shore = false) => {
   const seed = R() * 40
   const g = slab(w, h, l, { round: Math.min(h * 0.48, flat ? 0.16 : 0.34), sx: 3, sy: 2, sz: 3, warp: 0.11, seed })
   const pick = mul3(STONE_TONES[Math.floor(R() * STONE_TONES.length)], between(flat ? 0.55 : 0.62, flat ? 1.5 : 1.3) * dark)
   const tone = flat ? [pick[0] * FLAG_TONE[0], pick[1] * FLAG_TONE[1], pick[2] * FLAG_TONE[2]] : pick
   const side = flat ? 0.1 : 0.2
   shade(g, (px, py, pz) => (side + (1 - side) * smooth(flat ? h * 0.1 : -h * 0.2, h * 0.45, py)) * (0.6 + 0.85 * fbm(px * 1.6 + seed, pz * 1.6, py * 2, 3)) * (0.85 + 0.15 * smooth(0, 0.5, Math.min(w / 2 - Math.abs(px), l / 2 - Math.abs(pz)))))
+  if (shore) {
+    decor.add(conform(g, x, z, yaw, lift), {
+      color: (p) => mul3(tone, 1 - (1 - WET.dark) * wetAt(p)),
+      surf: (p) => [surf(KIND.stone, 0.88 - (0.88 - WET.rough) * wetAt(p)), 0],
+      renormal: true,
+    })
+    return
+  }
   decor.add(conform(g, x, z, yaw, lift), { color: tone, surf: [surf(KIND.stone, 0.88), 0], renormal: true })
 }
 
@@ -481,7 +497,7 @@ let rimCount = 0
     const x = L.pond.x + dx * t
     const z = L.pond.z + dz * t
     if (R() < 0.3 + 0.7 * west && cottageGap(x, z) > 1 && rockGap(x, z) > 0.2) {
-      cobble(x, z, size, size * between(0.6, 0.9), size * between(0.55, 0.8), Math.atan2(-dx, dz) + between(-0.3, 0.3), size * 0.16, 0.85)
+      cobble(x, z, size, size * between(0.6, 0.9), size * between(0.55, 0.8), Math.atan2(-dx, dz) + between(-0.3, 0.3), size * 0.16, 0.85, false, true)
       rimCount++
     }
     deg += (size * 1.02 * 180) / Math.PI / (Math.hypot(dx * t, dz * t) || 1)
