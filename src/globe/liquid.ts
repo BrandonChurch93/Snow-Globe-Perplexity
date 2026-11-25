@@ -9,7 +9,7 @@ const TAU = Math.PI * 2
 
 export const LIQUID_R = G.sphereDiameterMm / 2 - G.glassThicknessMm
 export const LIQUID_PIVOT_MM = G.baseHeightMm - G.collarDepthMm + G.sphereDiameterMm / 2
-export const LIQUID_LENGTH = 22
+export const LIQUID_LENGTH = 25
 export const LIQUID_TURN = 0
 export const LIQUID_SLOSH = 3
 export const LIQUID_TURBULENCE = 6
@@ -22,6 +22,7 @@ export const LIQUID_ROLL = 15
 export const LIQUID_SWIRL = 16
 export const LIQUID_FOLD = 17
 export const LIQUID_LOAD = 19
+export const LIQUID_STIR = 22
 export const TURBULENCE_MAX = 260
 export const NOISE_N = 24
 export const NOISE_RMS = 0.33
@@ -64,6 +65,13 @@ const ROLL_WOKEN = 0.9
 export const CARRY = 2
 export const LOAD_MAX_MM = 30
 const LOAD_SECONDS = 0.5
+// A stir is a push the liquid still has to take up: it comes into the turn over a few tenths of a second, never in one step.
+export const STIR_SECONDS = 0.3
+const STIR_EPS = 1e-3
+const STIR_TAKEN = 1 - Math.exp(-DT / STIR_SECONDS)
+/** The most turn the liquid takes up in a second, rad/s: a harder push lasts longer, it does not start faster. */
+export const STIR_RAD_S2 = 8
+const STIR_MOST = STIR_RAD_S2 * DT
 
 export const ROLL_MAX = 15
 const EDDY_GAIN = 3
@@ -258,7 +266,6 @@ export class Liquid {
   maxSpeed = 0
   private readonly mixed = new Float64Array(3)
   private readonly work = new Float64Array(6)
-  private readonly pending = new Float64Array(3)
   private readonly scratch = new Float64Array(9)
   private readonly k: Constants
 
@@ -274,7 +281,6 @@ export class Liquid {
 
   reset(): void {
     this.state.fill(0)
-    this.pending.fill(0)
     this.motion.ax = 0
     this.motion.ay = 0
     this.motion.az = 0
@@ -285,14 +291,15 @@ export class Liquid {
   }
 
   stir(x: number, y: number, z: number): void {
-    this.pending[0] = this.pending[0]! + x
-    this.pending[1] = this.pending[1]! + y
-    this.pending[2] = this.pending[2]! + z
+    const L = this.state
+    L[LIQUID_STIR] = L[LIQUID_STIR]! + x
+    L[LIQUID_STIR + 1] = L[LIQUID_STIR + 1]! + y
+    L[LIQUID_STIR + 2] = L[LIQUID_STIR + 2]! + z
   }
 
   get atRest(): boolean {
     const L = this.state
-    return L[0] === 0 && L[1] === 0 && L[2] === 0 && L[3] === 0 && L[4] === 0 && L[5] === 0 && L[6] === 0 && L[15] === 0 && L[19] === 0 && L[20] === 0 && L[21] === 0
+    return L[0] === 0 && L[1] === 0 && L[2] === 0 && L[3] === 0 && L[4] === 0 && L[5] === 0 && L[6] === 0 && L[15] === 0 && L[19] === 0 && L[20] === 0 && L[21] === 0 && L[22] === 0 && L[23] === 0 && L[24] === 0
   }
 
   step(p0: GlobePose, p1: GlobePose, p2: GlobePose, time: number): void {
@@ -323,14 +330,18 @@ export class Liquid {
     m.gz = sa
     const dda = (p2.tiltX - 2 * p1.tiltX + p0.tiltX) * inv
     const ddb = (p2.tiltZ - 2 * p1.tiltZ + p0.tiltZ) * inv
-    const pend = this.pending
-    let wx = L[0]! - LAG * dda * cb * DT + pend[0]!
-    let wy = L[1]! + LAG_UPRIGHT * dda * sb * DT + pend[1]!
-    let wz = L[2]! - LAG * ddb * DT + pend[2]!
-    const stirred = pend[0] !== 0 || pend[1] !== 0 || pend[2] !== 0
-    pend[0] = 0
-    pend[1] = 0
-    pend[2] = 0
+    let px = L[LIQUID_STIR]!
+    let py = L[LIQUID_STIR + 1]!
+    let pz = L[LIQUID_STIR + 2]!
+    const stirred = px !== 0 || py !== 0 || pz !== 0
+    const pl = Math.sqrt(px * px + py * py + pz * pz)
+    const taken = pl < STIR_EPS ? 1 : pl * STIR_TAKEN > STIR_MOST ? STIR_MOST / pl : STIR_TAKEN
+    let wx = L[0]! - LAG * dda * cb * DT + px * taken
+    let wy = L[1]! + LAG_UPRIGHT * dda * sb * DT + py * taken
+    let wz = L[2]! - LAG * ddb * DT + pz * taken
+    px -= px * taken
+    py -= py * taken
+    pz -= pz * taken
 
     const sx0 = L[3]!
     const sy0 = L[4]!
@@ -459,6 +470,9 @@ export class Liquid {
     L[19] = lx
     L[20] = ly
     L[21] = lz
+    L[LIQUID_STIR] = px
+    L[LIQUID_STIR + 1] = py
+    L[LIQUID_STIR + 2] = pz
     if (Math.round(time * HZ) % MIX_STEPS === 0) {
       if (turb > TURB_EPS) {
         const sp = Math.sin(L[7]!)
@@ -702,6 +716,19 @@ export class Liquid {
     out[1] = uy
     out[2] = uz
   }
+}
+
+const WHIRL_SLOSH = 6
+
+/**
+ * How much the liquid is "landed, turning slowly": 0 while the hand strokes (the slosh is 20 to 90 mm/s then), near 1 from a
+ * third of a second after the glass stands, and down to 0 with the roll as the whirl dies.
+ */
+export function liquidWhirl(state: ArrayLike<number>): number {
+  const roll = (state[LIQUID_ROLL] ?? 0) / ROLL_MAX
+  const slosh = Math.hypot(state[LIQUID_SLOSH] ?? 0, state[LIQUID_SLOSH + 1] ?? 0, state[LIQUID_SLOSH + 2] ?? 0)
+  const whirl = roll / (1 + (slosh * slosh) / (WHIRL_SLOSH * WHIRL_SLOSH))
+  return whirl < 0 ? 0 : whirl > 1 ? 1 : whirl
 }
 
 export function liquidTurbulence(state: ArrayLike<number>): number {
