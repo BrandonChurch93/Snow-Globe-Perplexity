@@ -27,8 +27,8 @@ export const DRESSING_FRONT = { gain: 2, fromMm: 58, toMm: 230 } as const
 /**
  * How the parts outside the glass give way.
  * The base is cut, not crossed: it is the old season's up to `CHANGE_CUT.at` of the window and the new season's from there, with
- * no state between. The cut lies in the middle of one film frame's shutter, on the fastest frame of the last stroke, so that
- * frame is what a camera gives of it, the two bases one after the other inside one exposure, both drawn out by the stroke.
+ * no state between. The cut lies where the film's shutter is closed, between the two fastest frames of the last stroke, so
+ * no frame holds both bases: the last frame of the old one and the first of the new are each drawn out by the stroke.
  * The table's dressing never holds two seasons: the old season's is gone before the cut and the new season's comes after it
  * (`DRESSING_CHANGE`). Each goes and comes from the foot outward; the edge of that front is broken into patches (`cellMm`,
  * `fineMm`) drawn out along the way a gust runs (`streak` times as long as wide, `rayMm` to a radian across) and feathered

@@ -554,7 +554,7 @@ export function updateSurface(f: StageFrame): void {
   su.uLean.value.set(-Math.sin(g.tiltZ) * lean, Math.sin(g.tiltX) * lean, -Math.sin(g.tiltZ), Math.sin(g.tiltX) * Math.cos(g.tiltZ))
   su.uPool.value.copy(f.pool)
   const lumpsA = SLAB.lumpSeasons[f.from.season] ?? 0
-  su.uLumps.value = lumpsA + ((SLAB.lumpSeasons[f.to.season] ?? 0) - lumpsA) * partChange('surface-dressing', f.change)
+  su.uLumps.value = lumpsA * (1 - partChange('surface-leave', f.change)) + (SLAB.lumpSeasons[f.to.season] ?? 0) * partChange('surface-come', f.change)
   const mirror = f.view === '' && f.planar
   su.uReflect.value.set(mirror ? 1 : 0, mirror ? 0 : 1, 0, 0)
   const a = f.from.main

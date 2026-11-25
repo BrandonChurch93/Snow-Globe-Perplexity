@@ -476,7 +476,7 @@ export function update(moment: KitMoment): void {
   if (two) lit = shaking && moment.arrived < 1 ? 0 : 1 - smooth(f.change / 0.6)
   else if (shaking) {
     const through = (moment.beat! - swap.fromBeat) / (swap.toBeat - swap.fromBeat)
-    lit = through >= 1 ? 0 : 1 - partChange('glass-dressing', through)
+    lit = through >= 1 ? 0 : 1 - partChange('base', through)
   }
   // Leaving: the liquid floods before the window opens, and a ball of milk throws no sun. The flare, the hot patch and the pool
   // go out over most of a beat before the swap, so nothing of summer's light is left on the glass or the table when the outside
