@@ -1,16 +1,16 @@
-# Status 126
+# Status 127
 
-2026-11-25 22:39 UTC
+2026-11-25 22:50 UTC
 
-- Phase 5, Continuation 1. The frozen build passes the host check here and draws in a second browser engine. The phase gate runs on a clean clone (expected about 23:50 UTC) and a fresh reviewer for the project's showcase standard is at work on the same build
-- Since Status 125: Round 19's own gate is in: G1 to G15 green, G16 green after its host check, D4 red there because that clone holds neither the mix nor the cut. Fall's measures are in: 18 of 19, real sharpness 0.5189 against 0.75 (was 0.5348). The host check on the frozen build: 60.78 of 95 MB in 100 files, 13.83 of 16 MB before the first picture, all 10 links open. The Sound section of the log now lists all 25 cues: 14 kept, 11 out of takes
-- Next: the gate's result, the reviewer's score, the last tick of the clock, then the REVIEW block (about 00:30 to 01:45 UTC)
-- phase 5: 8.47 h used of its 12.00 h box
-- allowance (before the review, continuation 1): 8.47 h used of 12.00 h allowed
+- Phase 5, Continuation 1. The globe unit is finished at its limit (Round 19) and the build is frozen as 9f4d94a; the phase gate and the fresh reviewer are still at work on it.
+- Since Status 126: the probe ran to its end from the built files (Done after 217 s, no error); two small open items written, 212 (returning visitors on the portfolio host would keep old sound files) and 213 (the probe writes 0.0 where it counted no frame).
+- Next: the phase gate's result (about 23:50 UTC), the reviewer's score, the last tick of the clock, then the REVIEW block.
+- phase 5: 8.66 h used of its 12.00 h box
+- allowance (before the review, continuation 1): 8.66 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-126-1.jpg`: The frozen build in a second browser engine: Firefox 148.0.2 with software graphics, the page as a visitor opens it, first picture after 55.2 s (winter at rest with the Shake control)
-- `out/stills/status/status-126-2.jpg`: The probe page opened from the same built files (?mode=probe): its panel at the start of the run, measuring the high level at rest
-- `out/stills/status/status-126-3.jpg`: Polish round 2, fall at rest at the final tier: the approved picture (a) beside the frozen build (b); its likeness critic gave 5, and real sharpness is red at 0.5189 against 0.75
-- `out/stills/status/status-126-4.jpg`: The 14 kept sounds as waveforms, drawn again at 22:28 UTC from the kept files, each with its length and loudness
+- `out/stills/status/status-127-1.jpg`: The probe at its end, opened from the built files at 960 x 540: Done, the table filled, the graphics line, the pick and Copy. The numbers are this machine's software renderer, not a graphics card.
+- `out/stills/status/status-127-2.jpg`: The app as a visitor first sees it, 1920 x 1080, from the host check on the frozen build: winter at rest with the Shake control.
+- `out/stills/status/status-127-3.jpg`: Sheet: 12 frames across the shot shake-1, frames 576 to 719, preview, draft
+- `out/stills/status/status-127-4.jpg`: Sheet: the 4 at-rest keys, winter-rest, spring-rest, summer-rest, fall-rest, hd, final
