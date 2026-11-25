@@ -37,16 +37,16 @@ Status 69 · 2026-11-25 02:30 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 02:30 UTC
-clock: phase 4, tick of 0.5 minutes
-phase 4: 2.38 h used of its 9.50 h box
-allowance (before the review): 24.66 h used of 36.00 h allowed
-all time before the review: 24.66 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 02:39 UTC
+clock: phase 4, tick of 9.4 minutes
+phase 4: 2.53 h used of its 9.50 h box
+allowance (before the review): 24.82 h used of 36.00 h allowed
+all time before the review: 24.82 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 9
 ```
 
 ## Phases
@@ -861,6 +861,8 @@ Numbered. What, why, and the date.
 
 76. **Fall's first round starts now, one part at a time, as slots free up** (02:14 UTC, Phase 4; this replaces the waiting rule of decision 75). AGENTS.md's clock rule 3 sends a unit to its first round as soon as none of it is a stand-in, and fall's stand-in view was black all over at 01:39. At 02:01 and 02:04 the two motion agents reported that a season's arrival sheet is about 90 frames at 51 to 54 s a frame on their VMs (winter's frames were lighter), so a motion pack takes about 100 minutes, not 35: waiting for three free slots would have put fall's first answers after 05:00. Round 10 is therefore counted now on a freeze commit made from the newest merge, its motion pack goes to a new render agent in the one free slot, its still pack goes to the first pack agent that finishes and has no critic of Rounds 8 or 9 waiting behind it, and its gate goes to `gate_runner` after the gates of Rounds 8 and 9. The limits of Round 8's and Round 9's motion packs were moved from 02:46 to 03:35 (nothing is cut from a pack), and Round 9's gate was taken off `motion_renderer_b` and goes to `gate_runner` after Round 8's, on the same clean clone of the same commit. Never more than six critics, jurors and render agents work at once.
 
+77. **The second set of build agents, and the split it works in** (02:42 UTC, Phase 4). The ten builders of the first set reach `budget.buildAgentMaxHours` (3 h, started 00:11) at 03:11, so each hands over by 03:02 with a `REPORT.md` and a `HANDOVER.md` on its looks branch, and fresh agents take the files. A successor starts as soon as the agent before it has handed over (the first two, `spring_mini2` and `fall_mini2`, at 02:42), the rest at 03:03; none works past three hours. The split changes, as kit/08 allows ("Change the split if the work calls for it, and log it"), because two more agents have to fit inside the ten build slots (`sandbox.maxAgents` 16 less `sandbox.criticSlots` 6): the sound agent, which kit/08 wants working "while the seasons are built" and which could not start while all ten slots built seasons, and one agent on the changes. So: a miniature agent and an air agent for each season (`spring_mini2`, `spring_air2`, `summer_mini2`, `summer_air2`, `fall_mini2`, `fall_air2`), one agent for the three bases and slabs (`bases2`; the bases are the furthest along of the three kinds of part), one for the drawing of the new particle kinds (`kinds2`), `change_builder` and `sound_maker`. The three seasons' `arrival.ts` go from the base builders to `change_builder`, because kit/08 puts "Finish each season's arrival" in the `change` unit and one file has one owner. `change_builder` starts the code of the four changes now, beside the seasons' rounds, not after them: the clock leaves no room after the seasons' last rounds (they may start until about 09:15, the box ends about 09:38), and kit/08 gives the unit `src/shake/` and "one agent for each change if it helps". The unit `change` itself still goes to its rounds only once the three seasons are finished or at their limits, or at the end of the box on whatever the seasons are, as kit/08 says. What this costs: the base of each season has a third of an agent in place of a whole one.
+
 ## Notes from Brandon
 
 Numbered, in his words, with the date and how each was applied. Review round items carry their round's number.
@@ -1201,6 +1203,9 @@ Merged into `main`, each verified here with types clean and the tests green (126
 
 - Changes at 02:04 to 02:15 UTC (decision 76). The two motion agents reported that a season's arrival sheet is about 90 frames at 51 to 54 s a frame; `motion_renderer`'s and `motion_renderer_b`'s limits for the motion packs of Rounds 8 and 9 moved to 03:35. `motion_renderer`'s pushes fail (no sign-in left in its VM since about 02:06); it sends a bundle with its report if that stays so. Round 9's gate was taken off `motion_renderer_b` and goes to `gate_runner` as a second job after Round 8's gate, on the same clean clone of `fe1072c` (order sent 02:15, limit 04:40).
   - Round 10 (fall) on `216e427`: `motion_renderer_c`, a new render agent started 02:14 in its own VM with the motion runbook (the motion pack R4, branch `agent/p4-round10-motion`, limit 04:19). Its still pack goes to the first pack agent that is free with no critic of Rounds 8 or 9 waiting; its gate to `gate_runner` after Round 9's.
+
+- Phase 4's second set of build agents (decision 77; each in its own sandbox VM except the sound agent; brief `out/work/briefs/p4/common2.md`, the job message of the agent before it, that agent's `REPORT.md` and `HANDOVER.md`, the season's two approved images at half size, and the critics' issues of the season's first round as they arrive; heartbeat every 30 minutes to its branch `agent/p4-<name>` and its looks branch `agent/p4-<name>-looks`).
+  - `spring_mini2` (takes `spring_mini`'s files; started 02:42, limit 05:40; spring's second round freezes 04:45) and `fall_mini2` (takes `fall_mini`'s files; started 02:42, limit 05:40; fall's second round freezes 05:30). `spring_mini` and `fall_mini` sent their final reports at 02:42 and are done.
 
 ## Rounds
 
