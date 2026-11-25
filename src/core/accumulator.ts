@@ -279,15 +279,30 @@ export function resolveBehind(renderer: THREE.WebGLRenderer, target: THREE.WebGL
       generateMipmaps: false,
     })
     rt.texture.colorSpace = THREE.NoColorSpace
-    renderer.initRenderTarget(rt)
     resolves.set(key, rt)
   }
-  const to = (renderer.properties.get(rt) as { __webglFramebuffer?: WebGLFramebuffer }).__webglFramebuffer
+  type Made = { __webglFramebuffer?: WebGLFramebuffer }
+  let to = (renderer.properties.get(rt) as Made).__webglFramebuffer
+  if (!to) {
+    // Made here, in the middle of a frame, the first time and again after a lost context.
+    renderer.initRenderTarget(rt)
+    to = (renderer.properties.get(rt) as Made).__webglFramebuffer
+  }
   if (!to) return null
+  // three.js keeps a note of the framebuffers that are bound and skips a bind it believes is in place; making a target
+  // (above) rebinds without correcting the note for reading. So the bindings and the note are first brought to one known
+  // state, and every bind from there goes through the note: the blit then reads the multisampled frame whatever came before,
+  // and three.js goes on drawing into it.
   const state = renderer.state
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+  state.bindFramebuffer(gl.FRAMEBUFFER, null)
+  state.bindFramebuffer(gl.READ_FRAMEBUFFER, null)
   state.bindFramebuffer(gl.READ_FRAMEBUFFER, from)
   state.bindFramebuffer(gl.DRAW_FRAMEBUFFER, to)
+  const scissor = gl.isEnabled(gl.SCISSOR_TEST)
+  if (scissor) gl.disable(gl.SCISSOR_TEST)
   gl.blitFramebuffer(0, 0, target.width, target.height, 0, 0, target.width, target.height, gl.COLOR_BUFFER_BIT, gl.NEAREST)
+  if (scissor) gl.enable(gl.SCISSOR_TEST)
   state.bindFramebuffer(gl.FRAMEBUFFER, from)
   return rt.texture
 }
