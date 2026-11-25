@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 89 · 2026-11-25 10:05 UTC
+Status 90 · 2026-11-25 10:28 UTC
 
-- `out/stills/status/status-89-1.jpg`: The four landings that the jury saw: spring and summer above and fall and winter below (frozen build dcda6ca at the final tier)
-- `out/stills/status/status-89-2.jpg`: Spring and summer at rest at the final tier: the stills that Rounds 14 and 15 judge
-- `out/stills/status/status-89-3.jpg`: The first twelve frames after the third shake lands: fall arrives (one of 36 sheets for the motion critics)
-- `out/stills/status/status-89-4.jpg`: Still: fall rest hero, preview, draft
+- `out/stills/status/status-90-1.jpg`: Summer at rest: the approved image left and the build right (the final still Round 15 judged)
+- `out/stills/status/status-90-2.jpg`: Summer mid shake: the approved image left and the build right
+- `out/stills/status/status-90-3.jpg`: Shake 3 whole: summer to fall in twelve frames (Round 16 motion pack)
+- `out/stills/status/status-90-4.jpg`: Spring arriving: frames 816 to 838 after the landing (Round 14 motion pack)
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 10:05 UTC
-clock: phase 4, tick of 0.0 minutes
-phase 4: 9.96 h used of its 9.50 h box
-allowance (before the review): 32.24 h used of 36.00 h allowed
-all time before the review: 32.24 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 10:28 UTC
+clock: phase 4, tick of 0.3 minutes
+phase 4: 10.35 h used of its 9.50 h box
+allowance (before the review): 32.64 h used of 36.00 h allowed
+all time before the review: 32.64 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
@@ -1755,3 +1755,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 09:40 UTC. - 09:40 UTC: Status 88 posted with two draft looks of the reshaped shake from `change_builder3` (`agent/p4-change3-looks` ca970f6). Its tip `6d42039` (path, `fc13124`) is proven by the builder: tsc clean, vitest 436, G11 and G12 pass, four rest stills byte-identical, cycle 4 of M4 to M6 green at final (M4 0.9515 / 0.9638 / 0.9276 / 0.9718; M5 0.9835 / 1 / 0.9749 / 0.9998; M6 all under 0.0003). The builder's last push moved to 11:25 UTC so that the fix build can be checked on twelve machines before the budget report. Swap sheets of shake 1, 2 and 3 of Round 17 are on `agent/p4-round17-swaps` (ef012bc).
 
 - 10:05 UTC. - 10:05 UTC: Status 89 posted with the four landing stills of Round 17, spring and summer at rest (Rounds 14 and 15) and the first arrival sheet of shake 3. Round 17's jury fails (5 of 20 against 19 of 20) and its words went to `change_builder3` verbatim. Frame helpers 1, 3 and 4 finished (the arrival frames of shakes 1 to 4 are complete between the helpers and their partners). Clock: half point reached, box end reached, budget report not due.
+
+- 10:29 UTC. Status 90 posted with the two comparisons of summer (the approved image beside the final still Round 15 judged, at rest and mid shake), the whole of shake 3 from Round 16's motion pack and spring's arrival from Round 14's. Round 15 has every answer and does not pass: R1 4, R3 6, R4 3 (3 severe, 2 major, 1 minor), the jury 5 of 15 against 8 of 10, checks all 15 green, 1 of 19 measure lines red (M3 `summer-rest` 0.7055). Round 17's R4 is 4, the lowest of four parts (4, 7, 4, 5; 6 severe and 12 major in all); every answer went to `change_builder3` verbatim, with the three issues of Round 15's R4 that touch the change. Round 14: spring's gate is all 15 green on a fresh clone (88.8 min), R3 is 6 (parts 7 and 6), its motion pack came at 10:24 (`agent/p4-round14-motion` `34e1aa3`) and its R4 critic started at 10:24. Round 16: its motion pack came at 10:21 (`agent/p4-round16-motion` `082694f`) and its R4 critic started at 10:21. `summer_scribe`, `spring_scribe` and `fall_scribe` were started at 10:26 to draft the open items of the three seasons from the verbatim answers and the builders' reports (they write one file each under `out/work/scribe/` and change nothing else). The six comparison images of spring, summer and fall were made with `npm run compare -- --key <id> --tier final` from the final stills the rounds judged (each reused, none rendered again). The disk of this VM had fallen to 2.5 GB free, under `sandbox.minFreeDiskGb` 3, and `compare` refused to start: the finished sound agent's clone at `/home/user/workspace/sg-sound` held 2.5 GB of copies of the repo (`.git`, `node_modules`, `assets-full`, `references`, `dist`, `assets-src`, `public/assets`; its branch `agent/p4-sound` is pushed in full), which were deleted; its `audio/`, `out/` and `public/audio` stay; 5.0 GB free after. Clock: half point reached, box end reached, budget report not due, 32.63 h used.

@@ -1,18 +1,19 @@
-# Status 89
+# Status 90
 
-2026-11-25 10:05 UTC
+2026-11-25 10:28 UTC
 
-- Round 17 jury on the change: 5 of 20 against 19 of 20 for the controls. It fails and counts as one major
-- Round 15 summer so far: one measure red (sharpness of the base 0.7055 against 0.75) and critics at 4 and 7
-- Round 14 spring so far: one measure red (sharpness of the base 0.394 against 0.75) and one critic at 6
-- All arrival frames of shakes 1 to 3 are drawn. The motion packs and the gates are still running
-- The change builder holds one proven tip and is proving four more steps. Its last push is due 11:25 UTC
-- phase 4: 9.96 h used of its 9.50 h box
-- allowance (before the review): 32.24 h used of 36.00 h allowed
+- Round 15 (summer) has every answer: likeness 4 and craft 6 and motion 3 and the jury picks the build out 5 times of 15. It does not pass and it was the last round summer may have
+- Round 17 (the changes): all four motion critics are in and the round reads 4 as the lowest of 4 and 7 and 4 and 5. Six severe findings and all are with the builder for its fix pass
+- Spring's gate is all 15 green. The gates for fall and for the changes are still running
+- The motion packs of Rounds 14 and 16 came in and are with their critics
+- Three scribes are drafting the open items of the three seasons from the critics' own words
+- The disk here fell to 2.5 GB free. I cleared the finished sound clone's copies of the repo and it has 5 GB again
+- phase 4: 10.35 h used of its 9.50 h box
+- allowance (before the review): 32.64 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-89-1.jpg`: The four landings that the jury saw: spring and summer above and fall and winter below (frozen build dcda6ca at the final tier)
-- `out/stills/status/status-89-2.jpg`: Spring and summer at rest at the final tier: the stills that Rounds 14 and 15 judge
-- `out/stills/status/status-89-3.jpg`: The first twelve frames after the third shake lands: fall arrives (one of 36 sheets for the motion critics)
-- `out/stills/status/status-89-4.jpg`: Still: fall rest hero, preview, draft
+- `out/stills/status/status-90-1.jpg`: Summer at rest: the approved image left and the build right (the final still Round 15 judged)
+- `out/stills/status/status-90-2.jpg`: Summer mid shake: the approved image left and the build right
+- `out/stills/status/status-90-3.jpg`: Shake 3 whole: summer to fall in twelve frames (Round 16 motion pack)
+- `out/stills/status/status-90-4.jpg`: Spring arriving: frames 816 to 838 after the landing (Round 14 motion pack)
