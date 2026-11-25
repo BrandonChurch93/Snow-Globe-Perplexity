@@ -1,16 +1,17 @@
-# Status 108
+# Status 109
 
-2026-11-25 16:18 UTC
+2026-11-25 16:44 UTC
 
-- Interface: its build agent finished it and it is merged here at 16:18 (Tab follows the order on screen; the globe sits a little higher on the wide screens so the controls clear the base; the phone held sideways has its own row; a plain line shows when WebGL2 is missing; film links open on any season, which failed on spring until 16:04). Not pushed yet: the ten links of the hostcheck, the controls check and a still's hash are running on the merge first.
-- App sheets with plain labels landed at 16:05: a shake, a stir, a drag and a jump can now be drawn through the app's own path for the motion critic.
-- Next: the eight keys again on the merged commit, a publish, then Round 18, the first round on the whole globe. The six polish builders report between 17:10 and 17:15.
-- phase 5: 2.13 h used of its 12.00 h box
-- allowance (before the review, continuation 1): 2.13 h used of 12.00 h allowed
+- The interface's finish is on main (merge ffaa4a8, pushed 16:40) after four proofs on the merged tree: the build, the controls check 25 of 25, a draft still byte equal before and after, and hostcheck with all ten links open. Every part outside the film is built in the register (52 of 54).
+- Round 18, the whole globe's first round, started 16:42 on 3d01496: the gate, the measures and the packs for R2, R4, R5 and R8 are with four agents, the eight keys with four more.
+- Brandon's two notes on sound are answered and logged (notes 2 and 3, decision 108): 4 of 25 sounds kept, 18 never tried, about 9840 credits of the sound tool at the limit of three takes each; its account read 1 credit left at 16:24.
+- Found by the Builder's own look and not fixed yet: on the tablet in summer the sand on the table reaches the sound control (item 175).
+- phase 5: 2.55 h used of its 12.00 h box
+- allowance (before the review, continuation 1): 2.55 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-108-1.jpg`: The wide screen with its controls, winter (draft tier, the finished interface): season marks at the left, Shake in the middle, sound at the right, all clear of the globe and its base
-- `out/stills/status/status-108-2.jpg`: The wide screen, fall: the same row sits on the dark surface under the base, 8.4 percent of the screen's height clear of it
-- `out/stills/status/status-108-3.jpg`: The phone in spring and the tablet in summer: the marks in a row above Shake on the phone, the sound control on its own dark disc
-- `out/stills/status/status-108-4.jpg`: The sheet the critic of the whole gets in Round 18: the four seasons at rest, tiles numbered 1 to 4 with no season named
+- `out/stills/status/status-109-1.jpg`: The controls on the wide screen, winter, draft tier: season marks, Shake, sound
+- `out/stills/status/status-109-2.jpg`: The controls on the phone, spring, draft tier: the sound control on its dark disc
+- `out/stills/status/status-109-3.jpg`: The controls on the tablet, summer, draft tier
+- `out/stills/status/status-109-4.jpg`: Tablet, summer, enlarged: the sand on the table reaches the sound control (open item 175)

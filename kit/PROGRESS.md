@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 108 · 2026-11-25 16:18 UTC
+Status 109 · 2026-11-25 16:44 UTC
 
-- `out/stills/status/status-108-1.jpg`: The wide screen with its controls, winter (draft tier, the finished interface): season marks at the left, Shake in the middle, sound at the right, all clear of the globe and its base
-- `out/stills/status/status-108-2.jpg`: The wide screen, fall: the same row sits on the dark surface under the base, 8.4 percent of the screen's height clear of it
-- `out/stills/status/status-108-3.jpg`: The phone in spring and the tablet in summer: the marks in a row above Shake on the phone, the sound control on its own dark disc
-- `out/stills/status/status-108-4.jpg`: The sheet the critic of the whole gets in Round 18: the four seasons at rest, tiles numbered 1 to 4 with no season named
+- `out/stills/status/status-109-1.jpg`: The controls on the wide screen, winter, draft tier: season marks, Shake, sound
+- `out/stills/status/status-109-2.jpg`: The controls on the phone, spring, draft tier: the sound control on its dark disc
+- `out/stills/status/status-109-3.jpg`: The controls on the tablet, summer, draft tier
+- `out/stills/status/status-109-4.jpg`: Tablet, summer, enlarged: the sand on the table reaches the sound control (open item 175)
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 16:36 UTC
-clock: phase 5, tick of 9.2 minutes
-phase 5: 2.42 h used of its 12.00 h box
-allowance (before the review, continuation 1): 2.42 h used of 12.00 h allowed
-all time before the review: 38.61 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 16:44 UTC
+clock: phase 5, tick of 7.8 minutes
+phase 5: 2.55 h used of its 12.00 h box
+allowance (before the review, continuation 1): 2.55 h used of 12.00 h allowed
+all time before the review: 38.74 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 17
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -2138,3 +2138,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 15:51 UTC. Status 107 posted (Phase 5, Continuation 1), four pictures: a shake through the app's own path on the engine `35fd724569ae490f` (12 frames, winter to spring), a jump from winter to summer in the app (frames 102 to 168), a stir in the app, and crops of the glass from the live picture with multisampling. What happened since Status 106. (1) Check G3 alone passed on `agent/p5-msaa` at `725c01b` (`gate_runner_b`, 15:28:12 to 15:38:44); with the eight equal keys, G13 and the Builder's looks the branch is merged into `main` as `a8b224e` (types clean, 451 tests pass and 4 skipped, build green, engine `51dddfa700c4ddc5`), `quality-levels` is `built` in the register and open item 166 is closed by the build, with what is not checked said in it. (2) `app_sheet_maker` reported at 15:38 and 15:42: `tools/sheet.mjs --app shake|stir|drag|jump` draws the four scripts through the app's path, `tools/pack.mjs` fills R4 and R5 of `globe` with no part missing (R4 10 files in one message; R5 6 files), and the sheet across a shake was drawn again on the engine of `main` at that time. Seen by the Builder on its sheets: the real scene, labels right; the base and what lies on the table change in one step in clear view between frames 126 and 132 of the jump (open item 154, with `swap_builder`); no settle to be seen in the first second after the landing (items 81, 159, with `hand_builder`). Its branch is not landed yet: one change was asked at 15:50, plain labels for R5's two sheets (tiles 1 to 4 on the seasons sheet, frame and time alone on the app sheet, a legend that names no season), because R5 asks "Is each season unmistakable at a glance?" and the labelled sheets answer it for the critic; push by 16:05. (3) Decision 107: the register's recorded stand-in hashes of `interface`, `sound-engine`, `quality-levels` and `loop`, moved by a stray run of `tools/parts.mjs` at 14:29, are back at the record of 11:00, and the tool refuses arguments it does not know. Not published since 14:00: the next publish follows this status. Waiting for: `interface_finisher` (report 15:55), then Round 18 on `globe`; the six polish builders report between 17:10 and 17:15.
 
 - 16:19 UTC. Status 108 posted (Phase 5, Continuation 1), four pictures: the wide screen with its controls in winter and in fall, the phone in spring beside the tablet in summer (all four at the draft tier with the page's controls on, drawn here from `agent/p5-interface` at `99f6092` by the measure's own route, the stage of the page), and the seasons sheet with plain labels. What happened since Status 107. (1) `agent/p5-app-sheets` at `c96d050` merged at 16:05 (`2b3ca86`): `--plain` for the two sheets of the globe's R5, so the critic of the whole is not told which season is which. (2) `interface_finisher` reported at 15:52 and, after a second job, at 16:14: `agent/p5-interface` at `2797142`. The second job was the one failing line of its own hostcheck, `?mode=autopilot&season=spring`; the cause it traced from the page's stack is that the film's player resets the engine as it is made, before the stage has prepared the season the link names, and spring's collider reads spring's village model; the engine's runner now holds a reset until the stage has prepared the opening season (`src/particles/engine/remote.ts`, `src/main.ts` outside the capture branch, three tests). Its own proofs were not whole (seven of ten links seen, the still's hash and the controls check not repeated on its last tip), and it said so. (3) The Builder's own check: the four screen stills looked at with the controls on (above); the branch merged here at 16:18 with types clean, 460 tests passed and 4 skipped, the build made, engine hash `80483ec9ffb8348a`; not pushed until three proofs end on the merge: `node tools/ui-preview/check.mjs`, the draft still of winter at rest against sha256 `f6a5bfd6…`, and `npm run hostcheck` with all ten links. (4) Two render agents walk the steps of the visitor's pass that the build agent left (space bar, slow drag, the four marks, keyboard and menu) on the wide layout and the tablet; reports by 16:50. Next: the eight keys again on the merged commit, a publish, Round 18.
+
+- 16:44 UTC. Status 109 posted (Phase 5, Continuation 1, Round 18 running), four pictures: the controls close up on the wide screen in winter, on the phone in spring and on the tablet in summer, cut by the Builder from its own stills of the page's stage at the draft tier (`out/work/looks5/interface2/`), and the tablet's right corner enlarged, where summer's sand on the table reaches the sound control (item 175). What happened since Status 108. (1) Brandon wrote twice about sound, at about 16:24 and 16:33; both answered in the thread from the records and logged as notes 2 and 3 with decision 108: of 25 sounds 4 are kept, 18 have no take yet and 3 of winter are out of takes; the eighteen cost about 3280 credits of the sound tool at one take each and about 9840 at the limit of three; the account read 1 credit left at 16:24:47 UTC, so nothing can be made until he tops it up; the job then stops itself at 10000. (2) The last of the four proofs of the interface's merge came in at 16:40: `npm run hostcheck` pass, all ten links open with their first picture (each season with no level and with the lowest, and the two films with a season); with the build, the controls check (25 of 25) and a draft still byte equal before and after. `main` pushed at 16:40 with the merge `ffaa4a8`. (3) `interface` set to `built` at 16:41 with its evidence: 52 of 54 parts `built`, the two left are the film's. Items 170, 13, 24, 26 and 174 closed by the build with what was measured or seen for each; item 172 says what the walk still lacks; items 175 to 177 opened (175 from the Builder's own look, 176 and 177 as the finisher stated them). (4) Round 18 started at 16:42 on `3d01496`: the whole gate with `gate_runner`, the measures with the jury's stills and the interface pack with `round_renderer_b`, the motion pack with `frame_helper_2`, the pack for the critic of the whole with `frame_helper_3`, and the two keys of each season again with four agents, to see that today's merges moved none. Next: the publish of this build, the walk reports (16:50), the polish builders' reports (17:10 and 17:15).
