@@ -70,6 +70,10 @@ export const glassLook = {
     broken: 0.6,
     inner: 0.5,
     core: 1.6,
+    /** The least thickness of a lamp's arc, in pixels: a thinner one is drawn that wide and as much dimmer, so its line does not step. */
+    leastPx: 0.9,
+    /** The most the lamps add where they lie over one another: above it the sum rolls off, so no arc burns to white. */
+    most: 1.1,
     /** Where round the rim the lamps stand: from and to in degrees, how many, share of the radius, thickness and half length in degrees, level, coolness (each a range). */
     groups: [
       { deg: [-52, 50], count: 14, share: [0.9, 0.988], thick: [0.5, 1.2], half: [4, 15], level: [0.3, 1.5], cool: [0, 0.08] },
@@ -182,7 +186,7 @@ function arcLamps(): (readonly [number, number, number, number, number, number])
 }
 const ARC_LAMPS = arcLamps()
 const ARC_N = ARC_LAMPS.length
-const ARC_AT = `vec4[${ARC_N}](${ARC_LAMPS.map((l) => vec([2 * Math.acos(l[0]), l[1] * RAD, 1 / (l[2] * RAD), 1 / (l[3] * RAD)])).join(', ')})`
+const ARC_AT = `vec4[${ARC_N}](${ARC_LAMPS.map((l) => vec([2 * Math.acos(l[0]), l[1] * RAD, l[2] * RAD, 1 / (l[3] * RAD)])).join(', ')})`
 const ARC_LEVEL = `vec2[${ARC_N}](${ARC_LAMPS.map((l) => vec([l[4] * (1 - l[5]), l[4] * l[5]])).join(', ')})`
 const STRIP = (() => {
   const c = unit(glassLook.strip.centre)
@@ -370,19 +374,23 @@ vec3 glassPoints(vec3 d) {
 }
 vec3 glassArcs(vec3 d) {
   float along = dot(d, ${vec(ARC_AXIS)});
+  float beta = acos(clamp(along, -1.0, 1.0));
+  float least = min(${num(glassLook.arcs.leastPx)} * fwidth(beta), 0.05);
   if (along < 0.45) return vec3(0.0);
-  float beta = acos(min(along, 1.0));
   float phi = atan(dot(d, ${vec(ARC_UP)}), d.x);
   vec4 at[${ARC_N}] = ${ARC_AT};
   vec2 level[${ARC_N}] = ${ARC_LEVEL};
   vec2 sum = vec2(0.0);
   for (int i = 0; i < ${ARC_N}; i++) {
-    float across = (beta - at[i].x) * at[i].z;
+    float wide = max(at[i].z, least);
+    float across = (beta - at[i].x) / wide;
     float turnAt = abs(mod(phi - at[i].y + ${num(Math.PI)}, ${num(2 * Math.PI)}) - ${num(Math.PI)}) * at[i].w;
     if (abs(across) > 3.0 || turnAt > 1.0) continue;
     float whole = 1.0 - ${num(glassLook.arcs.broken)} * (1.0 - smoothstep(0.3, 0.62, glassNoise(vec3(phi * 9.0, beta * 23.0, float(i) * 3.7))));
-    sum += level[i] * (exp(-across * across) * (1.0 - smoothstep(0.3, 1.0, turnAt)) * (1.0 + ${num(glassLook.arcs.core)} * exp(-9.0 * turnAt * turnAt)) * (i == 0 ? 1.0 : whole));
+    sum += level[i] * (exp(-across * across) * (1.0 - smoothstep(0.3, 1.0, turnAt)) * (1.0 + ${num(glassLook.arcs.core)} * exp(-9.0 * turnAt * turnAt)) * (i == 0 ? 1.0 : whole) * at[i].z / wide);
   }
+  float all = sum.x + sum.y;
+  if (all > 0.0) sum *= ${num(glassLook.arcs.most)} * (1.0 - exp(-all / ${num(glassLook.arcs.most)})) / all;
   return uArc.rgb * sum.x + ${vec(glassLook.arcs.cool)} * (uArc.a * sum.y);
 }
 vec3 glassRoom(vec3 d, float soft, int k, float own) {
