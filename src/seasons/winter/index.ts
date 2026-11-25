@@ -25,9 +25,6 @@ export const kit: SeasonKit = {
     arrivalPart.update(moment)
     frostPart.update(moment)
   },
-  get glassDressing() {
-    return frostPart.glassDressing
-  },
   rig,
   get innerLights() {
     return miniaturePart.innerLights()

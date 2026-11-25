@@ -28,9 +28,6 @@ export const kit: SeasonKit = {
     glassPart.update(moment)
     slabPart.update(moment)
   },
-  get glassDressing() {
-    return glassPart.glassDressing
-  },
   rig,
   get innerLights() {
     return miniaturePart.innerLights()

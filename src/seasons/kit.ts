@@ -31,12 +31,6 @@ export interface KitMoment {
   frame: StageFrame
 }
 
-export interface Dressing {
-  tint: Rgb
-  amount: number
-  map?: THREE.Texture | null
-}
-
 export interface SeasonKit {
   readonly season: string
   readonly main: Rgb
@@ -48,7 +42,6 @@ export interface SeasonKit {
   collider(): SdfGrid
   update?(moment: KitMoment): void
   dressing(): { glass: THREE.Object3D; surface: THREE.Object3D }
-  readonly glassDressing: Dressing
   readonly rig: { key: RoomLight; rim: RoomLight; sky: Rgb; ground: Rgb; fill: number; card?: { color: Rgb; intensity: number; from: Vec3; wrap: number; specular: number; inside: number } }
   readonly innerLights: readonly InnerLight[]
   readonly veil: { tint: Rgb; density: number; rest: number }

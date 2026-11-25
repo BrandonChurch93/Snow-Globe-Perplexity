@@ -12,7 +12,6 @@ import { cobweb, FACE_COUNT, faceUniforms } from './base'
 // off, crumbs at the foot) and the light on the slab at the foot: a rim that parts the black base from the dark slab,
 // and the candle light each face throws in front of itself.
 
-
 const PART = 'surface-dressing-fall'
 const MODEL = 'fall/slab-fall.glb'
 const SHEET = 'fall/slab-leaves.srgb.w1024.png'

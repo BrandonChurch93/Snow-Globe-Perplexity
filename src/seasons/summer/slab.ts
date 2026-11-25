@@ -6,8 +6,6 @@ import * as glassPart from './glass'
 
 const PART = 'surface-dressing-summer'
 
-
-
 // Where the sand lies on the slab, in mm from the globe's axis (x to the right of the hero camera, z toward it), measured
 // from the approved image: the dune the spill builds against the foot on the right (a cone under the stream, on a low
 // mound, with loose grains sprayed out to its right), its shoulder round the front of the

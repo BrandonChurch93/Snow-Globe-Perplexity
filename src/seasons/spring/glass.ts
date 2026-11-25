@@ -4,7 +4,7 @@ import { stageShader, stageUniforms } from '../../core/materials'
 import { shellUniforms } from '../../globe/shell'
 import { ROOM_GLSL, roomUniforms } from '../../scene/room'
 import { lensUniforms } from '../../scene/cameras'
-import type { Dressing, KitMoment } from '../kit'
+import type { KitMoment } from '../kit'
 import { mist, updateMist } from './veil'
 
 /**
@@ -30,9 +30,6 @@ const RAD = Math.PI / 180
 const SLOTS = 26
 const SEGMENTS = 14
 const TAU = Math.PI * 2
-
-
-export const glassDressing: Dressing = { tint: [1, 1, 1], amount: 0 }
 
 const look = {
   /** The beats after the landing are staggered: the petals on the table jump and the first water runs on the landing itself; the glass stays bare of new beads for this long after it, seconds, and then they form and begin to slide. */

@@ -4,7 +4,7 @@ import type { SdfGrid } from '../../core/stage'
 import { globePoseAt, seasonAt, type Timeline } from '../../film/timeline'
 import { Liquid, LIQUID_LENGTH, LIQUID_R, LIQUID_SWIRL, NOISE_N, ROLL_AXIS, ROLL_CENTRE, ROLL_EDGE, ROLL_FLOOR_MM, ROLL_FLOOR_SLOPE, ROLL_FREE, ROLL_RISE_MM, ROLL_SLAB_MM, SOLID_REACH_MM, TURBULENCE_MAX } from '../../globe/liquid'
 import { BEHAVIOUR, KINDS, KIND_IN, NONE, POOL, SEASONS, type Behaviour } from './kinds'
-import { blockoutEmitters, blockoutSdf, GROUND_Y, sdfSample, sdfSlope, type Emitter } from './sdf'
+import { emptySdf, GROUND_Y, sdfSample, sdfSlope, type Emitter } from './sdf'
 
 const HZ = config.sim.stepHz
 export const DT = 1 / HZ
@@ -555,8 +555,8 @@ export class ParticleEngine {
     this.season = season
     this.startIx = ix
     this.nowIx = ix
-    this.collider = options.collider ?? blockoutSdf()
-    this.emitters = options.emitters ?? (options.collider ? {} : blockoutEmitters())
+    this.collider = options.collider ?? emptySdf()
+    this.emitters = options.emitters ?? {}
     const n = Math.max(1, Math.min(POOL, Math.round(POOL * (options.fraction ?? 1))))
     this.count = n
     this.xyz = new Float32Array(n * 3)

@@ -375,10 +375,9 @@ void main() {
 }`
 
 const SHELL = `
-uniform vec4 uDress;
 uniform vec3 uBloom;
-uniform vec3 uOverlay[3];
-uniform vec3 uOverlayOn;
+uniform vec3 uOverlay[2];
+uniform vec2 uOverlayOn;
 uniform sampler2D uBehind;
 uniform vec2 uBehindSize;
 uniform vec3 uBubbleAt;
@@ -391,8 +390,7 @@ void main() {
     if (uDiag != ${viewCode('ids')} && uDiag != ${viewCode('standins')}) discard;
     vec2 cell = mod(floor(gl_FragCoord.xy), 4.0);
     if (cell.x == 0.0 && cell.y == 0.0 && uOverlayOn.x > 0.5) gl_FragColor = vec4(uOverlay[0], 0.0);
-    else if (cell.x == 2.0 && cell.y == 0.0 && uOverlayOn.y > 0.5) gl_FragColor = vec4(uOverlay[1], 0.0);
-    else if (cell.x == 0.0 && cell.y == 2.0 && uOverlayOn.z > 0.5) gl_FragColor = vec4(uOverlay[2], 0.0);
+    else if (cell.x == 0.0 && cell.y == 2.0 && uOverlayOn.y > 0.5) gl_FragColor = vec4(uOverlay[1], 0.0);
     else discard;
     return;
   }
@@ -519,9 +517,7 @@ void main() {
 
   col = min(col, ${num(glassLook.shoulder.from)}) + ${num(glassLook.shoulder.to - glassLook.shoulder.from)} * (1.0 - exp(-max(col - ${num(glassLook.shoulder.from)}, 0.0) / ${num(glassLook.shoulder.to - glassLook.shoulder.from)}));
   float alpha = (1.0 - f1) * (1.0 - ${num(glassLook.band.shade)} * band) * seat * (1.0 - ${num(W.dark.shade)} * deep) * (1.0 - ${num(glassLook.rim.clear)} * rimZone * uOwn);
-  col += uDress.rgb * uDress.a * 0.05 * (0.4 + 0.6 * pow(1.0 - nv, 2.0));
   col += uBloom * (${num(glassLook.bloom.floor)} + ${num(1 - glassLook.bloom.floor)} * pow(nv, ${num(glassLook.bloom.power)})) + vec3(dot(uBloom, vec3(0.2126, 0.7152, 0.0722)) * ${num(glassLook.bloom.white)} * pow(nv, ${num(glassLook.bloom.whitePower)}));
-  alpha *= 1.0 - 0.5 * uDress.a;
 
   float limb = glassLimb(s);
 #ifdef GLASS_RING
@@ -662,10 +658,9 @@ export const shellUniforms = {
   uKeyCol: { value: new THREE.Color() },
   uRimDir: { value: new THREE.Vector3(0, 1, 0) },
   uRimCol: { value: new THREE.Color() },
-  uDress: { value: new THREE.Vector4(1, 1, 1, 0) },
   uBloom: { value: new THREE.Color() },
-  uOverlay: { value: [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()] },
-  uOverlayOn: { value: new THREE.Vector3(1, 1, 1) },
+  uOverlay: { value: [new THREE.Vector3(), new THREE.Vector3()] },
+  uOverlayOn: { value: new THREE.Vector2(1, 1) },
   uTurn: { value: new THREE.Matrix3() },
   uGlobeAt: { value: new THREE.Vector3() },
   uSky: { value: new THREE.Color() },
@@ -878,17 +873,13 @@ export class Shell {
     sh.uOwn.value = glassLook.ownSources ? 1 : 0
     sh.uTurn.value.setFromMatrix4(this.turn.makeRotationFromEuler(this.euler.set(f.globe.tiltX, 0, f.globe.tiltZ)))
     sh.uGlobeAt.value.set(f.globe.x, f.globe.y, f.globe.z)
-    const da = a.glassDressing
-    const db = b.glassDressing
-    sh.uDress.value.set(da.tint[0] + (db.tint[0] - da.tint[0]) * t, da.tint[1] + (db.tint[1] - da.tint[1]) * t, da.tint[2] + (db.tint[2] - da.tint[2]) * t, da.amount + (db.amount - da.amount) * t)
     sh.uBloom.value.copy(f.bloomTint).multiplyScalar(glassLook.bloom.gain)
     const shown = t < 0.5 ? a : b
     const veiled = f.mix.veil < 0.5 ? a : b
-    const dressing = `glass-dressing-${shown.season}`
     const veil = `veil-${veiled.season}`
-    ;[partBytes('glass'), partBytes(dressing), partBytes(veil)].forEach((c, i) => sh.uOverlay.value[i]!.set(c[0] / 255, c[1] / 255, c[2] / 255))
+    ;[partBytes('glass'), partBytes(veil)].forEach((c, i) => sh.uOverlay.value[i]!.set(c[0] / 255, c[1] / 255, c[2] / 255))
     const flagged = f.view === 'standins'
-    sh.uOverlayOn.value.set(flagged ? 0 : 1, flagged ? 0 : sh.uDress.value.w > 0 ? 1 : 0, flagged ? 0 : 1)
+    sh.uOverlayOn.value.set(flagged ? 0 : 1, flagged ? 0 : 1)
 
     const L = f.liquid
     const has = L.length > LIQUID_BUBBLE + 1

@@ -64,8 +64,8 @@ export interface Stage {
   setDiagnostic(view: string): void
   setQuality?(level: StageQuality): void
   prepare?(season: string): Promise<void>
-  collider?(season: string): SdfGrid
-  emitters?(season: string): Record<string, Emitter[]>
+  collider(season: string): SdfGrid
+  emitters(season: string): Record<string, Emitter[]>
   particleCount(): number
   textureBytes(): number
 }
