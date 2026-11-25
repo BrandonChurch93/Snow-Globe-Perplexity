@@ -1,17 +1,18 @@
-# Status 96
+# Status 98
 
-2026-11-25 11:55 UTC
+2026-11-25 12:44 UTC
 
-- The unit change is finished at its limit: the clock allows no second round and Round 17 did not pass (R4 4 and R2 5 of 20)
-- Kept build dcda6ca. The fix pass a6e09d6 joins only if its gate and all measures end green. Proof due about 12:40
-- Phase 4 gate closed at 11:49: checks 15 of 15 on ceee512. Every unit finished at a limit and none by a pass
-- Phase 5 started. Budget report is due about 13:50 UTC
-- phase 5: 0.09 h used of its 4.50 h box
-- allowance (before the review): 34.07 h used of 36.00 h allowed
+- The fix pass of the season change is proven and kept: its whole gate is 15 of 15 green and no measure line turned red
+- It is merged into main and published at 12:43 so the app now holds it
+- Step 1 is pushed on its branch with types tests and the build green and its proof is running on two machines
+- Step 2 sent the findings of its first walk: the phone's controls sit on a light band and the Tab order differs from the order on screen
+- The sound check's open line is the slow machine and not the control
+- phase 5: 0.91 h used of its 4.50 h box
+- allowance (before the review): 34.90 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-96-1.jpg`: Winter to spring: the swap of shake 1 on the kept build dcda6ca (frames 648 to 680)
-- `out/stills/status/status-96-2.jpg`: Spring to summer: the swap of shake 2 on the kept build
-- `out/stills/status/status-96-3.jpg`: Summer to fall: the swap of shake 3 on the kept build
-- `out/stills/status/status-96-4.jpg`: Fall to winter: the swap of shake 4 on the kept build
+- `out/stills/status/status-98-1.jpg`: Shake 1 on the fix build now in the app: winter's base on frame 672 and spring's on 676 with no half state between
+- `out/stills/status/status-98-2.jpg`: Shake 3 on the fix build: summer's base on frame 2112 and fall's on 2116
+- `out/stills/status/status-98-3.jpg`: First paint on the wide layout the phone and the tablet from the visitor's walk: on the phone the controls sit on a light band
+- `out/stills/status/status-98-4.jpg`: The published app's first picture in the local check at 12:42
