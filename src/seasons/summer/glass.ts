@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { config } from '../../config'
 import { stageShader } from '../../core/materials'
+import { setGlass } from '../../globe/shell'
 import { partChange } from '../../shake/change'
 import type { KitMoment } from '../kit'
 import { rig } from './rig'
@@ -23,6 +24,8 @@ import { holdStorm, veil } from './veil'
 const PART = 'glass-dressing-summer'
 const RS = config.globe.sphereDiameterMm / 2
 const TAU = Math.PI * 2
+
+setGlass('summer', { windowTint: [1, 0.85, 0.62], windowGain: [0.5, 0.2, 1, 1], windowSoftDeg: 5, windowGrain: 0.5, rimTint: [1.5, 1.05, 0.45], wallTint: [0.77, 0.71, 0.29], ringCover: 0.35, strip: 0, bend: 0, ringThin: 1, rimClear: 0.3, topLine: 0, ringMottle: 0.3, ceiling: 0.15, roomHue: [1.2, 0.95, 0.6], roomHueOn: 1 })
 
 export const look = {
   // leaving: the light goes out between these two counts of beats before the swap window opens
