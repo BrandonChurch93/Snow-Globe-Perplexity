@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 65 · 2026-11-25 01:02 UTC
+Status 66 · 2026-11-25 01:33 UTC
 
-- `out/stills/status/status-65-1.jpg`: Spring miniature after 40 minutes: the approved image left and the build right (draft tier; the green base in this picture is the old stand-in)
-- `out/stills/status/status-65-2.jpg`: Spring base and petals on the surface: the approved image above and the build below (the miniature in this picture is the old blockout)
-- `out/stills/status/status-65-3.jpg`: Summer base and sand: the approved image above and the build below (draft tier)
-- `out/stills/status/status-65-4.jpg`: Summer miniature: the approved image above and the build below (draft tier)
+- `out/stills/status/status-66-1.jpg`: Spring at rest as merged at 01:28 UTC: every part is now real and the stand-in view is black all over (draft tier)
+- `out/stills/status/status-66-2.jpg`: Spring half a second after a landing: the petal storm (draft tier)
+- `out/stills/status/status-66-3.jpg`: Still: spring landed hero, hd, draft
+- `out/stills/status/status-66-4.jpg`: Still: spring rest hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 01:02 UTC
-clock: phase 4, tick of 1.8 minutes
-phase 4: 0.92 h used of its 9.50 h box
-allowance (before the review): 23.20 h used of 36.00 h allowed
-all time before the review: 23.20 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 01:33 UTC
+clock: phase 4, tick of 11.2 minutes
+phase 4: 1.43 h used of its 9.50 h box
+allowance (before the review): 23.71 h used of 36.00 h allowed
+all time before the review: 23.71 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
