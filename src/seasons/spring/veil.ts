@@ -3,7 +3,7 @@ import { config } from '../../config'
 import { VEIL_LOOK } from '../../core/chunks/veil'
 import { stageShader, stageUniforms } from '../../core/materials'
 import { viewCode } from '../../diagnostics/views'
-import { LIQUID_ROLL, LIQUID_SWIRL, ROLL_AXIS, ROLL_CENTRE, ROLL_MAX } from '../../globe/liquid'
+import { LIQUID_ROLL, LIQUID_SWIRL, ROLL_AXIS, ROLL_MAX } from '../../globe/liquid'
 import { groundAt, groundY } from '../../scene/layout'
 import type { KitMoment, SeasonKit } from '../kit'
 
@@ -156,16 +156,16 @@ const storm = {
   calm: 0.0055,
   /** Where that rest hangs: its middle, and how far it reaches across, up and in depth, mm. Nothing of it stands in the upper left. */
   calmAt: [18, -13, -21],
-  calmReach: [26, 17, 14],
+  calmReach: [26, 13, 14],
   /** The air about the lamp at rest: a halo that is the lantern's own (thickest at it, thinning with the square of the distance, gone by `lampFar`), standing at and behind the lantern so its point stays sharp before it. */
   lampAt: [1.3, -18.2, 3.9],
-  lamp: 5,
+  lamp: 6.5,
   lampCoreMm: 6,
   lampFar: [8, 32],
   /** The back of the liquid at rest: a thin lit sheet of mist behind the miniature, low down, which the cottage, the trunk and the nearer petals stand before. */
-  back: 0.6,
+  back: 0.42,
   backZ: [-10, -26],
-  backY: [18, -22],
+  backY: [6, -20],
   rollPower: 1.4,
   /** The release of the flood: how long after the landing it is over (the landed state's moment), which share of the release the set down takes (0.6 s of set down before 0.5 s after), and by which share of it the flood has let go of the liquid's turbulence. */
   releaseSeconds: config.states.landedSeconds,
@@ -176,26 +176,30 @@ const storm = {
   fineMm: 34,
   even: [0.75, 0],
   /** How much of the mist is left at the top of the liquid once the flood is over. */
-  top: 0.22,
+  top: 0.6,
   /** From which height down to which (mm above the middle) the mist thickens from that share to the whole: above, the petals themselves draw the turn and its dark lanes. */
   topFrom: 22,
   topTo: -14,
   /** Thinner in the eye of the roll than at its rim. */
   eye: 0.75,
   /** After the flood the mist stands behind the miniature and thins toward the eye: the share left in front, and from where to where (mm toward the eye) it thins. */
-  near: 0.1,
+  near: 0.26,
   nearFrom: -6,
   nearTo: 18,
   /** The side of the tree: how much further toward the eye the mist stands there (it is the crown the storm whitens, and the cottage and the lamp it leaves to be read), and how much thicker it is there than on the cottage's side. */
   treeSideMm: 12,
   treeSide: 1.5,
-  cottageSide: 1,
+  cottageSide: 1.3,
   /** How much of the tree side's thickening is gone again right of the crown, toward the glass, where the lanes are to stay open. */
   treeFar: 0.7,
   /** The island's bank, below the lawn: how thick the mist stays there before the miniature (a share of its thickness behind), and up to how far above the lawn that reaches, mm. */
-  bank: 1,
+  bank: 0.45,
   bankTopMm: 4,
   /** The streaks: the mist is drawn out along the liquid's turn in fine dashes. The tile of their pattern across the turn (mm), how slowly it changes along the turn, and how much of the mist they carry. */
+  /** How far the axis the streaks are drawn about is raised from the liquid's roll axis to the vertical, the place it passes through, and how much finer the streaks are layered along it than across it. */
+  upright: 0.75,
+  axisAt: [-8, 6, 0],
+  layer: 0.55,
   streakMm: 16,
   streakLong: 0.4,
   streak: 0.45,
@@ -207,18 +211,33 @@ const storm = {
   lane: 0.92,
   tint: [1, 0.71, 0.78],
   /** While the liquid turns, the mist before the crown and about the lantern is the brightest and whitest of all: the blossom is a white ghost in it and the lantern a white core (the approved shake image). Where, how far it reaches (mm), how much brighter, how much whiter. */
-  crownAt: [16, 15, 2],
-  crownReach: [19, 15, 22],
-  crownGain: 1.9,
-  crownWhite: 0.6,
+  crownAt: [16, 12, 2],
+  crownReach: [19, 12, 22],
+  crownGain: 2.6,
+  crownWhite: 0.42,
   /** The mist before the crown is thicker than elsewhere and the lanes do not cut it: how many times thicker, and how much of the lanes it closes. */
-  crownThick: 1.0,
+  crownThick: 0.2,
   crownWhole: 0.85,
   /** How much of the dashes and streaks is evened out before the crown. */
-  crownEven: 0.8,
-  lampReach: 11,
-  lampGain: 1.1,
-  lampWhite: 0.6,
+  crownEven: 0.65,
+  lampReach: 19,
+  lampGain: 3.6,
+  /** How many times thicker the mist is in the glow (a soft lit cloud about the lantern and the foot of the tree, nowhere else). */
+  lampThick: 1.6,
+  /** The second warm glow, at the foot of the tree on the side away from the lantern: where, how far it reaches, its share of the lantern's. */
+  footAt: [25, -15, -2],
+  footReach: 9,
+  foot: 0.6,
+  lampWhite: 0.9,
+  /** The colour the glow about the lantern and the foot of the tree goes to: warm, not white. */
+  flareTint: [1, 0.87, 0.68],
+  /** The glow stands behind the lantern's post and the trunk, which are dark before it: where toward the eye it ends (mm, from whole to none). */
+  flareZ: [2, 6],
+  /** The trunk is kept clear of the mist before it while the liquid turns: where it is across the liquid, how wide the opening, below what height (mm, from none to whole), and how much of the mist is taken away. */
+  trunkAt: 15,
+  trunkMm: 6,
+  trunkY: [-3, -10],
+  trunk: 0.8,
   soft: 1.1,
   key: 3.4,
   grid: 1.2,
@@ -231,6 +250,15 @@ const storm = {
   washLowMm: -50,
   washFull: 0.03,
   wash: 0.88,
+  /** How much of the wash is even (the rest stands only in the streaks and dashes), how much of it is left in the lanes, and how much of it is taken away before the pond's glint, over how many mm to each side. */
+  washEven: 0.3,
+  washGap: 0.25,
+  /** The trunk is kept clear as the pond's glint is: where the wash is thin before it (mm across the glass, as the hero sees the trunk), how wide, how much. */
+  washTrunkAt: 17,
+  washTrunkMm: 6.5,
+  washTrunk: 0.75,
+  washPond: 0.75,
+  washPondMm: 9,
   washLight: 1.75,
 }
 
@@ -241,7 +269,9 @@ const stormUniforms = {
   uWash: { value: new THREE.Vector4(0, 0, 0, 0) },
 }
 
-const ROLL = new THREE.Vector3(ROLL_AXIS[0], ROLL_AXIS[1], ROLL_AXIS[2]).normalize()
+// The axis the mist's streaks and lanes are drawn about: between the liquid's roll axis and the vertical, so that from the
+// hero they are flat arcs lying one over another, as in the approved shake image, and not rings about the middle of the glass.
+const ROLL = new THREE.Vector3(ROLL_AXIS[0], ROLL_AXIS[1], ROLL_AXIS[2]).normalize().lerp(new THREE.Vector3(0, 1, 0), storm.upright).normalize()
 const SIDE = new THREE.Vector3(1, 0, 0).cross(ROLL).normalize()
 const OTHER = new THREE.Vector3().crossVectors(ROLL, SIDE).normalize()
 const v3 = (v: THREE.Vector3 | readonly number[]): string => (Array.isArray(v) ? `vec3(${(v as number[]).map(n).join(', ')})` : `vec3(${n((v as THREE.Vector3).x)}, ${n((v as THREE.Vector3).y)}, ${n((v as THREE.Vector3).z)})`)
@@ -253,7 +283,7 @@ uniform vec4 uStorm;
 uniform vec4 uWash;
 // The place as the turning liquid has it: across the axis of its roll (xy, turned back by the swirl) and along it (z).
 vec3 stormPlace(vec3 p, out float rad) {
-  vec3 d = p - ${v3(ROLL_CENTRE)};
+  vec3 d = p - ${v3(storm.axisAt)};
   float h = dot(d, ${v3(ROLL)});
   vec2 r = vec2(dot(d, ${v3(SIDE)}), dot(d, ${v3(OTHER)}));
   rad = length(r);
@@ -273,13 +303,13 @@ float stormBillow(vec3 q, out float grain) {
 // never by its angle, so there is no seam), so that each is a dash of its own length and none is a whole ring.
 void stormDrawn(vec3 q, float rad, out float streak, out float lane, out float dash) {
   vec2 dirn = q.xy / max(rad, 6.0);
-  vec3 sc = vec3(rad / ${n(storm.streakMm)} + ${n(storm.streakLong)} * dirn.x, q.z / ${n(storm.streakMm)} + ${n(storm.streakLong)} * dirn.y, 0.37 + ${n(storm.streakLong * 0.5)} * (dirn.x - dirn.y));
+  vec3 sc = vec3(rad / ${n(storm.streakMm)} + ${n(storm.streakLong)} * dirn.x, q.z / ${n(storm.streakMm * storm.layer)} + ${n(storm.streakLong)} * dirn.y, 0.37 + ${n(storm.streakLong * 0.5)} * (dirn.x - dirn.y));
   float s1 = texture(uVeilNoise, sc).a;
   float s2 = texture(uVeilNoise, sc * 2.3 + vec3(0.37, 0.11, 0.59)).a;
   streak = smoothstep(0.44, 0.74, 0.5 * s1 + 0.5 * s2);
   float s3 = texture(uVeilNoise, sc * 1.7 + vec3(0.63, 0.29, 0.13)).a;
   dash = smoothstep(0.58, 0.76, 0.5 * s2 + 0.5 * s3);
-  vec3 lc = vec3(rad / ${n(storm.laneMm)} + 0.22 * dirn.x, q.z / ${n(storm.laneMm)} + 0.22 * dirn.y, 0.71 + 0.11 * (dirn.y - dirn.x));
+  vec3 lc = vec3(rad / ${n(storm.laneMm)} + 0.22 * dirn.x, q.z / ${n(storm.laneMm * storm.layer)} + 0.22 * dirn.y, 0.71 + 0.11 * (dirn.y - dirn.x));
   lane = smoothstep(0.4, 0.68, texture(uVeilNoise, lc).g);
 }
 // Lit as a volume: the key reaches a place through the mist between it and the glass; the small lights warm what is near them.
@@ -340,13 +370,16 @@ void main() {
   float halo = ${n(storm.lamp)} * smoothstep(${n(storm.lampFar[1])}, ${n(storm.lampFar[0])}, ld) / (1.0 + ld * ld / ${n(storm.lampCoreMm * storm.lampCoreMm)}) * smoothstep(7.0, -3.0, l.z);
   float back = ${n(storm.back)} * smoothstep(${n(storm.backZ[0])}, ${n(storm.backZ[1])}, p.z) * smoothstep(${n(storm.backY[0])}, ${n(storm.backY[1])}, p.y);
   float rest = mix(1.0, 2.7 * exp(-dot(e, e)) + halo + back, still);
+  vec3 lf = p - ${v3(storm.footAt)};
+  float lantern = max(exp(-ld * ld / ${n(storm.lampReach * storm.lampReach)}), ${n(storm.foot)} * exp(-dot(lf, lf) / ${n(storm.footReach * storm.footReach)})) * stirred * smoothstep(${n(storm.flareZ[1])}, ${n(storm.flareZ[0])}, p.z);
+  float trunk = 1.0 - ${n(storm.trunk)} * stirred * exp(-(p.x - ${n(storm.trunkAt)}) * (p.x - ${n(storm.trunkAt)}) / ${n(storm.trunkMm * storm.trunkMm)}) * smoothstep(${n(storm.trunkY[0])}, ${n(storm.trunkY[1])}, p.y) * smoothstep(-6.0, 2.0, p.z);
   // While the liquid turns the mist is drawn out along the turn in fine dashes, with dark lanes between its bands.
   float drawn = mix(1.0, ${n(1 - storm.streak)} + ${n(storm.streak * 2.6)} * streak, stirred) * mix(1.0, 1.0 - ${n(storm.lane)} * (1.0 - lane), stirred * (1.0 - ${n(storm.crownWhole)} * crown)) * (1.0 + ${n(storm.crownThick)} * crown);
   // Before the crown the mist is an even veil, not dashes: the blossom is to be read through it, whitened.
-  drawn = mix(drawn, 1.0 + ${n(storm.crownThick)} * crown, ${n(storm.crownEven)} * crown);
+  drawn = mix(drawn, 1.0 + ${n(storm.crownThick)} * crown, ${n(storm.crownEven)} * crown) * (1.0 + ${n(storm.lampThick)} * lantern);
   float soft = drawn * mix(billow * 3.4, 1.0, max(uStorm.w, ${n(storm.crownEven)} * crown));
   float dashes = ${n(storm.dash)} * dash * stirred * (0.12 + 0.88 * lane) * (1.0 - ${n(storm.crownEven)} * crown);
-  float sigma = uStorm.x * wall * eye * low * front * rest * (soft + dashes);
+  float sigma = uStorm.x * wall * eye * low * front * rest * trunk * (soft + dashes);
   // One sheet's share of the way through the liquid, along the eye's ray.
   float slant = max(abs(normalize(vStageWorld - cameraPosition).z), 0.35);
   float a = 1.0 - exp(-sigma * ${n((2 * INNER * 0.97) / storm.sheets)} / slant);
@@ -357,9 +390,8 @@ void main() {
     return;
   }
   vec3 lit = stormLit(p, grain, ${n(storm.dashWhite)} * dashes / max(soft + dashes, 1e-4));
-  float lantern = exp(-ld * ld / ${n(storm.lampReach * storm.lampReach)}) * stirred;
   float most = max(lit.r, max(lit.g, lit.b));
-  lit = mix(lit, vec3(most), min(${n(storm.crownWhite)} * crown + ${n(storm.lampWhite)} * lantern, 1.0)) * (1.0 + ${n(storm.crownGain)} * crown + ${n(storm.lampGain)} * lantern);
+  lit = mix(mix(lit, vec3(most), min(${n(storm.crownWhite)} * crown, 1.0)), most * ${v3(storm.flareTint)}, min(${n(storm.lampWhite)} * lantern, 1.0)) * (1.0 + ${n(storm.crownGain)} * crown + ${n(storm.lampGain)} * lantern);
   gl_FragColor = vec4(lit, a);
 }
 `
@@ -389,7 +421,10 @@ void main() {
   // As the liquid stills the wash does not fade: less and less of it is left, the thin places first.
   float field = 0.45 * streak + 0.25 * lane + 0.3 * smoothstep(0.2, 0.8, billow + 0.35);
   float left = smoothstep(1.0 - uWash.x, 1.0 - uWash.x + 0.4, field + 0.25 * uWash.x);
-  float a = ${n(storm.wash)} * band * left * (0.4 + 0.3 * streak + 0.3 * dash);
+  // Not one ribbon: it is whole only in the dashes, the lanes are gaps through to the scene, and before the pond's glint it is thin.
+  float pond = 1.0 - ${n(storm.washPond)} * exp(-(p.x - ${n(storm.lampAt[0])}) * (p.x - ${n(storm.lampAt[0])}) / ${n(storm.washPondMm * storm.washPondMm)}) * smoothstep(0.0, 20.0, p.z);
+  pond *= 1.0 - ${n(storm.washTrunk)} * exp(-(p.x - ${n(storm.washTrunkAt)}) * (p.x - ${n(storm.washTrunkAt)}) / ${n(storm.washTrunkMm * storm.washTrunkMm)}) * smoothstep(0.0, 20.0, p.z) * smoothstep(-36.0, -24.0, p.y);
+  float a = ${n(storm.wash)} * band * left * pond * (${n(storm.washEven)} + ${n((1 - storm.washEven) * 0.45)} * streak + ${n((1 - storm.washEven) * 0.55)} * dash) * mix(${n(storm.washGap)}, 1.0, lane);
   if (a <= 0.004) discard;
   if (uDiag != 0) {
     if (uDiag != ${viewCode('cover')}) discard;
