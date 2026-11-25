@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 96 · 2026-11-25 11:55 UTC
+Status 97 · 2026-11-25 12:19 UTC
 
-- `out/stills/status/status-96-1.jpg`: Winter to spring: the swap of shake 1 on the kept build dcda6ca (frames 648 to 680)
-- `out/stills/status/status-96-2.jpg`: Spring to summer: the swap of shake 2 on the kept build
-- `out/stills/status/status-96-3.jpg`: Summer to fall: the swap of shake 3 on the kept build
-- `out/stills/status/status-96-4.jpg`: Fall to winter: the swap of shake 4 on the kept build
+- `out/stills/status/status-97-1.jpg`: The four seasons at rest in the kept build that is on the published app
+- `out/stills/status/status-97-2.jpg`: The live app's first picture in the host check at 12:02
+- `out/stills/status/status-97-3.jpg`: Winter mid shake on the fix build: byte for byte the kept still
+- `out/stills/status/status-97-4.jpg`: Summer mid shake on the fix build: byte for byte the kept still
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 11:55 UTC
-clock: phase 5, tick of 5.0 minutes
-phase 5: 0.09 h used of its 4.50 h box
-allowance (before the review): 34.07 h used of 36.00 h allowed
-all time before the review: 34.07 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 12:19 UTC
+clock: phase 5, tick of 4.8 minutes
+phase 5: 0.50 h used of its 4.50 h box
+allowance (before the review): 34.49 h used of 36.00 h allowed
+all time before the review: 34.49 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: not reached
 box end: not reached
@@ -70,7 +70,7 @@ minutes since the last status: 0
 | `summer` | finished (limit: `quality.maxRoundsPerUnit` 3, reached with Round 15; the pass bar did not hold) | 3 (Rounds 9, 12, 15, all judged) | 12 (R1 6, R3 4, R4 7, R2 failed at 7 of 15 against 8 of 10; checks 15 of 15 green, 18 of 19 measure lines green, M3 `summer-rest` 0.5806 against 0.75; decision 95) | `dcda6ca` (Round 12's build plus the fix pass after it; the build Round 15 judged) | The round count: `quality.maxRoundsPerUnit` 3. No round passed. Round 15 on the kept build: R1 4, R3 6, R4 3, R2 failed at 5 of 15 against 8 of 10; checks 15 of 15 green, 18 of 19 measure lines green, M3 `summer-rest` 0.7055 against 0.75. Its 9 severe and 25 major issues, the jury's failure and the red line are written as open items 84 to 108 and go to the polish rounds of Phase 5; Declined issues 18 to 23 |
 | `fall` | finished (limit: `quality.maxRoundsPerUnit` 3, reached with Round 16; the pass bar did not hold) | 3 (Rounds 10, 13, 16, all judged) | 13 (R1 6, R3 6, R4 6, R2 failed at 0 of 20 against 7 of 10; checks 15 of 15 green, 17 of 19 measure lines green, M3 `fall-rest` 0.279 against 0.75 and M1 `fall-interior` red; decision 97) | `dcda6ca` (Round 13's build plus the fix pass after it; the build Round 16 judged) | The round count: `quality.maxRoundsPerUnit` 3. No round passed. Round 16 on the kept build: R1 6, R3 4, R4 6, R2 failed at 1 of 20 against 7 of 10; checks 15 of 15 green, 18 of 19 measure lines green, M3 `fall-rest` 0.5518 against 0.75. Its 6 severe and 24 major issues, the jury's failure and the red line are written as open items 129 to 153 and go to the polish rounds of Phase 5; Declined issues 29 to 33 |
 | `change` | finished (limit: the clock, which prints `extra rounds: no`; reached after Round 17, the floor round; the pass bar did not hold) | 1 (Round 17, judged) | 17 (R4 4, the lowest of four parts at 4, 7, 4 and 5; R2 failed at 5 of 20 against 19 of 20; measures 24 of 24 green; checks 14 of 15 on `dcda6ca` with G13 red on the register's label alone, 15 of 15 on `ceee512` with the label set; decisions 98 and 99) | `dcda6ca` (the build Round 17 judged; the fix pass `a6e09d6` on `agent/p4-fix-f` joins it only if its proof ends green, decision 99) | The clock: no extra round may start. The round did not pass. Its 6 severe and 12 major issues and the jury's failure are written as open items 154 to 165 and go to the polish rounds of Phase 5; Declined issues 34 to 40 |
-| `globe` | not started | 0 | | | |
+| `globe` | in progress (being built since 11:49 UTC Nov 25: steps 1 and 2 of Phase 5 are in work; its parts `interface`, `sound-engine` and `quality-levels` are still stand-ins in the register; no round has started) | 0 | | | |
 | `film` | not started | 0 | | | |
 
 ### Parts
@@ -1521,6 +1521,8 @@ Merged into `main`, each verified here with types clean and the tests green (126
   - `frame_helper_4`, now a build agent: step 2, the visitor's pass on the wide layout, the phone and the tablet. Branch `agent/p5-visitor`, from `main` at `280c433`. Owns `src/ui/`, `src/copy.ts`, `src/app/`, the wiring in `src/main.ts` and a new `tools/visit.mjs` (the walk as a script). Brief `out/work/briefs/p5/job-visitor.md`. Findings of the first walk by 12:45, report by 13:25, stops at 13:35.
   - Still on the proof of `a6e09d6` (the fix pass of `change`): `gate_runner_b` (the whole gate, due about 12:40), `round_renderer_b` (the same gate again as a backup, started 11:43, limit 13:15), `round_renderer_c` (winter), `round_renderer_d` (spring), `motion_renderer_e` (fall), each due about 12:20. In and saved: `change` (24 of 24 green, `frame_helper_1`, 11:54) and `summer` (the same one red line as on `dcda6ca`, `motion_renderer_d`, 11:55). `frame_helper_1`, `frame_helper_2`, `frame_helper_3` and `motion_renderer_d` are idle.
 
+- 12:20 UTC, Nov 25. Five of the six proofs of `a6e09d6` are in and saved, all at the final tier on clean clones: `change` 24 of 24 green; winter 24 of 24 green; spring, summer and fall each equal line for line to the measures of `dcda6ca` (19 lines, the same one red M3 line each). The keys of all four seasons on `a6e09d6` have the same sha256 as the kept stills (`out/work/verify/kept-key-hashes.txt`; mails in `out/work/verify/`). `round_renderer_c`, `round_renderer_d`, `motion_renderer_d` and `motion_renderer_e` are done and idle. Still on the proof: `gate_runner_b` (the whole gate, due about 12:40) and `round_renderer_b` (the backup, limit 13:15). New at 12:14: `frame_helper_1`, read only, checks the parts `sound-engine` and `quality-levels` of `globe` against their methods in the kit (brief `out/work/briefs/p5/job-audit-globe-parts.md`; report by 13:15; it pushes nothing). Five agents at work, two of them build agents (`gate_runner` on step 1, `frame_helper_4` on step 2).
+
 ## Rounds
 
 One line per round: its number, the unit, the commit it judged, each part ticked off as it finished, the scores, and what changed next.
@@ -1996,3 +1998,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 11:49 UTC. Phase 4 gate, line by line (11:49 UTC). (1) "The machine checks are met, with G13 and G15 covering all five units": met. The whole gate with `--unit change` on `ceee512` is 15 of 15 green (`scorecards/phase-4/gate-phase-4-ceee512.json`): G1 build clean, G2 436 of 440 tests pass, G3 5 pictures pixel-identical across 4 fresh page loads, G4 sizes and counts, G5 no interface pixel in 25 stills and 7 frames, G6 all 69 judged ids listed, G7 lengths, G8 151 shipped files with sources and recipes, G9 the repo, G10 portable WebGL2, G11 every seasonal part 0 or 1 on the 3456 frames outside the 4 swap windows, G12 the four landings on bar lines, G13 covers 49 of 54 parts over change and the four finished seasons with none a stand-in, G14 the loop's seam, G15 memory and counts after all 4 seasons on one page. No file under `src`, `config`, `public`, `tools`, `parts` or `cut` differs between `ceee512` and this commit. (2) "Every unit is marked `finished`: its pass bar held, or its limit was reached": met, each at a limit and none by a pass: spring (Round 14), summer (Round 15), fall (Round 16) at `quality.maxRoundsPerUnit` 3, `change` on the clock after Round 17 (decision 99). (3) "A comparison image is committed for every key": met, eight keys, `out/stills/phase-3/` for winter's two and `out/stills/spring|summer|fall/` for the other six. (4) "Every cue has a kept take or an open item, and the music of each candidate exists or the log says why not": met. Kept: `glass-clink` take 2, `ui-sound-on` take 1, `ui-tick` take 2, `lift` take 3. Open: `amb-winter` (item 1), `land-winter` (item 9), `shake-winter` (item 37), the other thirteen (item 63). No music: the account has no credits (decision 78, item 63). Phase 4 is done at 11:49 UTC; it used 11.7 h of its 9.5 h box, and the overrun came out of the extra rounds of Phase 5, as the clock rules say. Phase 5 starts now. The fix pass of `change` (`a6e09d6`) is still under proof and is not part of this gate.
 
 - 11:55 UTC. Status 96 (unit `change` finished, and the gate of Phase 4), posted 11:55 UTC with four pictures: the swap sheet of each change from the kept build `dcda6ca` (`out/stills/change/change-swap-shake-1..4-round-017.jpg`). Published at 11:54 (the kept build with the logs of this hour; the local check of `dist/` drew its first picture in 18.1 s with 87 requests and no error). Proof of the fix pass `a6e09d6` so far, both read against the records of `dcda6ca` line by line (`out/work/bin/cmpmeasure.py`): `change` at the final tier is complete at 24 of 24 lines with 0 red (11:54, `scorecards/fix-pass/a6e09d6/change.json`; M4 0.983, 0.9647, 0.9658, 0.9721 against 0.85; M5 0.9851, 1, 0.9777, 0.9997 against 0.6; M6 at most 0.000245 against 0.002); `summer` is complete at 19 lines with 1 red, the same line with the same value as on `dcda6ca` (M3 `summer-rest` 0.7055 against 0.75), and all 19 values are identical (`scorecards/fix-pass/a6e09d6/summer.json`). Still to come: winter, spring, fall and the gate.
+
+- 12:20 UTC. Status 97 shown with four pictures: the four seasons at rest in the kept build (`out/work/p5/four-seasons-rest-kept.jpg`), the live app's first picture from the trial host check at 12:02, and winter and summer mid shake on the fix build `a6e09d6`. What it said: Phase 5 is under way with steps 1 and 2 at two build agents; the proof of the fix pass stands at 5 of 6 (fall came in at 12:19: 19 lines, all equal to `dcda6ca`'s, the same one red line M3 `fall-rest` 0.5518; saved under `scorecards/fix-pass/a6e09d6/`); the keys of all four seasons on `a6e09d6` are byte for byte the kept stills (fall's hashes came at 12:20: `13b65a62…` and `6d48280f…`, equal to the kept ones), so under Freshness (kit/07) nothing has to be drawn again for the seasons if the fix pass joins; trial readings of step 4's host check (pass: 60.75 of 95 MB shipped, largest file 4.42 of 20 MB, first load 13.80 of 16 MB) and of step 3's sound check (7 pass, 1 open: A2, the click on the sound control timed out); these are readings, not a closed step. Only the gate on `a6e09d6` is still to come; decision 101 follows it.

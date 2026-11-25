@@ -1,17 +1,18 @@
-# Status 96
+# Status 97
 
-2026-11-25 11:55 UTC
+2026-11-25 12:19 UTC
 
-- The unit change is finished at its limit: the clock allows no second round and Round 17 did not pass (R4 4 and R2 5 of 20)
-- Kept build dcda6ca. The fix pass a6e09d6 joins only if its gate and all measures end green. Proof due about 12:40
-- Phase 4 gate closed at 11:49: checks 15 of 15 on ceee512. Every unit finished at a limit and none by a pass
-- Phase 5 started. Budget report is due about 13:50 UTC
-- phase 5: 0.09 h used of its 4.50 h box
-- allowance (before the review): 34.07 h used of 36.00 h allowed
+- Phase 5 is under way: steps 1 and 2 are with two build agents side by side
+- The fix pass proof stands at 5 of 6: change and winter all green and spring summer and fall equal line for line to the judged build
+- The keys of winter spring and summer on the fix build are byte for byte the kept stills
+- Trial readings: host check pass at 60.75 of 95 MB and sound check 7 pass with 1 open
+- Still to come: the gate on the fix build at about 12:40 and then decision 101
+- phase 5: 0.50 h used of its 4.50 h box
+- allowance (before the review): 34.49 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-96-1.jpg`: Winter to spring: the swap of shake 1 on the kept build dcda6ca (frames 648 to 680)
-- `out/stills/status/status-96-2.jpg`: Spring to summer: the swap of shake 2 on the kept build
-- `out/stills/status/status-96-3.jpg`: Summer to fall: the swap of shake 3 on the kept build
-- `out/stills/status/status-96-4.jpg`: Fall to winter: the swap of shake 4 on the kept build
+- `out/stills/status/status-97-1.jpg`: The four seasons at rest in the kept build that is on the published app
+- `out/stills/status/status-97-2.jpg`: The live app's first picture in the host check at 12:02
+- `out/stills/status/status-97-3.jpg`: Winter mid shake on the fix build: byte for byte the kept still
+- `out/stills/status/status-97-4.jpg`: Summer mid shake on the fix build: byte for byte the kept still
