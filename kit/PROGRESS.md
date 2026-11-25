@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 85 · 2026-11-25 08:15 UTC
+Status 86 · 2026-11-25 08:55 UTC
 
-- `out/stills/status/status-85-1.jpg`: Summer at rest from the hero camera in a draft still: a scratch merge of this pass's air and miniature and particle work; what the next round should judge
-- `out/stills/status/status-85-2.jpg`: Fall at rest: approved image left and the build right in a draft still. The low fog is darker and uneven and the sparks stand through the dome
-- `out/stills/status/status-85-3.jpg`: Spring at rest: approved left and the build right. Slate-blue room and pinker discs; the right side still has fewer and whiter discs than the approved
-- `out/stills/status/status-85-4.jpg`: Fall's base: approved above and the build below in a draft still. The vines cross at angles and the wax is a rim with thin runs
+- `out/stills/status/status-86-1.jpg`: Spring at rest on the frozen build dcda6ca: a draft still from the hero camera
+- `out/stills/status/status-86-2.jpg`: Summer at rest on the frozen build dcda6ca: a draft still from the hero camera
+- `out/stills/status/status-86-3.jpg`: Fall at rest on the frozen build dcda6ca: a draft still from the hero camera; more leaves are afloat than before
+- `out/stills/status/status-86-4.jpg`: Still: fall rest hero, preview, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 08:49 UTC
-clock: phase 4, tick of 14.1 minutes
-phase 4: 8.70 h used of its 9.50 h box
-allowance (before the review): 30.99 h used of 36.00 h allowed
-all time before the review: 30.99 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 08:55 UTC
+clock: phase 4, tick of 5.4 minutes
+phase 4: 8.79 h used of its 9.50 h box
+allowance (before the review): 31.08 h used of 36.00 h allowed
+all time before the review: 31.08 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 33, status overdue
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -1743,3 +1743,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 08:16 UTC. 08:16 UTC: Status 85 posted with four pictures from the builders' looks branches (summer at rest from `summer_air3`'s scratch merge, fall at rest and fall's base against the approved image, spring's room against the approved image). Final reports are in from `spring_mini3` (`7bc93d5`) and `summer_mini3` (`24ae271`: M3 `summer-rest` 0.7645 at the final tier against 0.75, it was 0.5806 on the judged build). `bases3` and `spring_air3` both name `surface-dressing-spring` (the petals of `src/seasons/spring/slab.ts`) as the part behind spring's red M2; `bases3` reads M2 0 on every spring shot at draft since `4e8c188`. `fall_air3` turned fall's key light from blue to warm (`e0cd067`). The clock printed `extra rounds: yes` at 08:15.
 
 - 08:51 UTC. 08:51 UTC: the third freeze. All ten builders of the third set sent their final reports between 08:12 and 08:41. Their branches were merged at 08:18 and 08:32 (one conflict, in the rows of `src/particles/engine/kinds.ts`, settled by ownership), one row was changed here on fall's air builder's own lever (the leaf row's `floats` 0.08 to 0.12, `9f6c179`), every built file of spring, summer and fall was deleted and made again (08:33 to 08:44: texpack 59.107 MiB, vitest 436 passed, `uncovered 0 of 151`, tsc clean, the stand-in views of all three black, triangles at rest spring 1,422,446 / 810,833 / 364,511, summer 1,625,649 / 878,517 / 407,164, fall 1,570,243 / 900,141 / 399,002, at most 66 draw calls) and the three rest stills were looked at. The freeze commit is `dcda6ca`; the clock printed `extra rounds: yes` at 08:49 (30.99 h used; extra rounds close at 31.5 h). Rounds 14 (spring), 15 (summer), 16 (fall) and 17 (`change`, its floor round) were written and pushed at 08:50 (`356bdd7`) before anything else; the orders went out at 08:52 to eleven render agents and `change_builder3` (decision 92). Rounds 11, 12 and 13 are closed: "fixes" and "logged" ticked, none passes.
+
+- 08:55 UTC. 08:55 UTC: published at 08:55 from `dcda6ca` (`npm run -s build`, `npm run -s review`: `dist/` 100.7 MB, of it `dist/review/` 39.9 MB; the local check drew its first picture in 18.0 s with no page error; Visibility: Organization). Status 86 posted with the three rest stills of the frozen build. `motion_renderer_d` read in `tools/pack.mjs` that Round 17's pack reuses a sheet only when the frames of that sheet lie in `out/work/seq/film-preview-review/`, so the three seasons' motion agents and `motion_renderer_e` were told to commit their frames with their sheets (`git add -f out/work/seq out/work/sheets`); those five messages carry the stamp 08:57 and were sent at about 08:54, a time I wrote without reading the clock.
