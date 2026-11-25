@@ -18,8 +18,8 @@ const LOOK = {
   gravity: 3400,
   ledge: { r: [46.5, 52.0], h: 40.3 },
   jump: { count: 14000, liftMm: [1.5, 24], quick: 0.11, tail: 0.5, tailShare: [0.6, 0.12], skidMm: [0.4, 3.2], radiusMm: [0.12, 0.27] },
-  pour: { count: 64000, az: 81, spread: 5.5, r: 52.4, h: 38.8, reachMm: [1.5, 12.5], fanDeg: 9, rate: [1.3, 2.3], radiusMm: [0.1, 0.2] },
-  flow: { rest: 0.45, surge: 0.55, seconds: 1.3, gapMm: [0.3, 2.5] },
+  pour: { count: 64000, az: 82, spread: 4.5, r: 52.4, h: 38.8, reachMm: [4.6, 11], fanDeg: 7, rate: [1.3, 2.3], radiusMm: [0.1, 0.2] },
+  flow: { rest: 0.62, surge: 0.38, seconds: 1.3, gapMm: [0.3, 2.5] },
   shadow: { r: 57, top: [36, 41] },
 }
 
@@ -69,6 +69,7 @@ float grainShade(vec3 p, vec3 L) {
   float b = dot(p.xz, L.xz);
   float c = dot(p.xz, p.xz) - ${(LOOK.shadow.r * LOOK.shadow.r).toFixed(1)};
   float disc = b * b - a * c;
+  if (c < 0.0) return smoothstep(-8.0, 8.0, b);
   if (disc < 0.0) return 1.0;
   float s2 = (-b + sqrt(disc)) / a;
   if (s2 < 0.0) return 1.0;
@@ -131,7 +132,7 @@ void main() {
   float capY = sign(vGrainUv.y) * max(abs(vGrainUv.y) * L - (L - 1.0), 0.0);
   float d2 = vGrainUv.x * vGrainUv.x + capY * capY;
   if (d2 > 1.0) discard;
-  if (L > 1.05 && stageHash(vec3(gl_FragCoord.xy + 13.0, uSeed + 0.37)) > 1.0 / L + 0.04) discard;
+  if (L > 1.05 && stageHash(vec3(gl_FragCoord.xy + 13.0, uSeed + 0.37)) > 0.5 / sqrt(L) + 0.08) discard;
   vec3 nv = normalize(vec3(vGrainUv.x, capY, sqrt(1.0 - d2)));
   vec3 n = normalize(nv * mat3(viewMatrix));
   vec3 v = normalize(cameraPosition - vStageWorld);
@@ -145,7 +146,7 @@ void main() {
   float wrap = clamp((ndl + 0.45) / 1.45, 0.0, 1.0);
   float thru = pow(clamp(dot(-v, uGrainKey) * 0.5 + 0.5, 0.0, 1.0), 3.0);
   vec3 dome = mix(uGrainGround, uGrainSky, 0.5 + 0.5 * n.y);
-  vec3 col = albedo * RECIPROCAL_PI * (uGrainKeyCol * shade * (wrap + (0.5 + 1.6 * vGrainShape.y) * thru) + dome + uRigCardCol * 0.35 * clamp(dot(n, uRigCardDir) * 0.5 + 0.5, 0.0, 1.0));
+  vec3 col = albedo * RECIPROCAL_PI * (uGrainKeyCol * shade * (wrap + 1.8 + (0.6 + 3.2 * vGrainShape.y) * thru) + dome + uRigCardCol * 0.35 * clamp(dot(n, uRigCardDir) * 0.5 + 0.5, 0.0, 1.0));
   float hk = max(dot(n, normalize(v + uGrainKey)), 0.0);
   col += uGrainKeyCol * shade * step(0.7, fract(id * 17.9)) * pow(hk, 60.0) * 1.2;
   gl_FragColor = vec4(col, 1.0);
@@ -214,7 +215,7 @@ function grainGeometry(): THREE.BufferGeometry {
   const P = LOOK.pour
   for (let i = 0; i < P.count; i++) {
     const az0 = (P.az + rp.gauss() * P.spread) * RAD
-    const reach = P.reachMm[0] + (P.reachMm[1] - P.reachMm[0]) * rp.next() ** 1.6
+    const reach = P.reachMm[0] + (P.reachMm[1] - P.reachMm[0]) * rp.next() ** 1.3
     const az1 = az0 + rp.gauss() * P.fanDeg * RAD * (reach / P.reachMm[1])
     const fx = P.r * Math.sin(az0)
     const fz = P.r * Math.cos(az0)
