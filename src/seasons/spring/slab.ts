@@ -16,7 +16,7 @@ const FAR_HALF_MM = 520
 
 export const surfaceDressing: Dressing & { reachMm: number } = { tint: [1, 0.7, 0.8], amount: 0, reachMm: 240 }
 
-export const PETALS = { count: 300, nearMm: 63, farMm: 240, sizeMm: [4.4, 12.5], clumpMm: 46, wetShare: 0.2, focusMm: 60, far: [70, 330], near: [4, 80], farMips: 3.2, nearMips: 4.2 }
+export const PETALS = { count: 300, nearMm: 63, farMm: 240, sizeMm: [4.4, 12.5], clumpMm: 74, wetShare: 0.2, focusMm: 60, far: [70, 330], near: [4, 80], farMips: 3.2, nearMips: 4.2 }
 export const JUMP = { reachMm: 60, shockMmPerSecond: 1500, heightMm: 15, flight: [0.34, 0.8], shiftMm: 9, rise: 0.5, floor: 0.1 }
 export const POOL = { radiusMm: 15, outMm: 8.5, fillSeconds: 5 }
 
@@ -190,10 +190,13 @@ void main() {
   float wet = vPetalKind.y;
   vec3 albedo = pow(tex.rgb, vec3(1.0 + 0.5 * wet));
   albedo = min(mix(albedo, vec3(pow(dot(albedo, vec3(0.4, 0.4, 0.2)), 1.5) * 1.35) * vec3(0.97, 0.77, 1.0), 0.7) * 1.3, vec3(0.94));
-  albedo *= mix(vec3(1.0, 0.95, 0.96), vec3(1.0, 0.72, 0.78), vPetalKind.w * vPetalKind.w) * mix(0.78, 1.08, vPetalKind.z);
+  albedo *= mix(vec3(0.94, 0.97, 1.0), vec3(0.97, 0.8, 0.87), vPetalKind.w * vPetalKind.w) * mix(0.86, 1.16, vPetalKind.z);
   vec3 col = petalLight(n, vStageWorld, v, albedo, wet);
   float thin = pow(max(1.0 - abs(dot(n, v)), 0.0), 2.0);
   col += albedo * RECIPROCAL_PI * (uRimCol + uRigCardCol) * 0.25 * thin;
+  // A petal is thin: the light from behind comes through it, more through some than others, and most where it cups up.
+  float through = mix(0.25, 1.0, vPetalKind.z) * (1.0 - 0.6 * wet) * smoothstep(0.0, 0.5, 1.0 - n.y);
+  col += albedo * vec3(1.0, 0.82, 0.86) * RECIPROCAL_PI * (uRimCol + 0.5 * uKeyCol) * 0.55 * through;
   gl_FragColor = vec4(col * alpha, alpha);
   // The texels view takes what the picture really holds here: one cell of the sheet is 256 texels across, less what the soft window gives away.
   if (uDiag != 0) {
@@ -337,13 +340,13 @@ function petalGeometry(): THREE.InstancedBufferGeometry {
     const x = Math.sin(a) * r
     const z = Math.cos(a) * r
     if (z < -150 && rng.next() < 0.5) continue
-    if (rng.next() > (0.03 + 0.97 * clump(x, z)) * (z > 55 ? 0.3 : 1) * (Math.abs(z) < 95 && Math.abs(x) > 60 ? 1 : 0.55)) continue
+    if (rng.next() > (0.2 + 0.8 * clump(x, z)) * (z > 55 ? 0.3 : 1) * (Math.abs(z) < 95 && Math.abs(x) > 60 ? 1 : 0.55)) continue
     const soaked = rng.next() < PETALS.wetShare + 0.25 * Math.exp(-(r - PETALS.nearMm) / 30) ? 1 : 0
     const list = soaked ? wet : dry
     const id = list[Math.floor(rng.next() * list.length) % list.length]!
     rest.push(x, z, rng.range(0, Math.PI * 2), PETALS.sizeMm[0] + (PETALS.sizeMm[1] - PETALS.sizeMm[0]) * Math.pow(rng.next(), 1.6))
     kind.push(id, soaked, rng.next(), rng.next())
-    shape.push(rng.range(0.05, 0.3), rng.range(0.0, 0.16), rng.range(-0.12, 0.12), aspect[id]!)
+    shape.push(rng.range(0.12, 0.46), rng.range(0.04, 0.3), rng.range(-0.16, 0.16), aspect[id]!)
     placed++
   }
   g.setAttribute('aRest', new THREE.InstancedBufferAttribute(new Float32Array(rest), 4))

@@ -264,7 +264,7 @@ for (let y = 0; y < H; y++) {
     const c = moss[k]
     const mound = smooth(0, 2.6, tuft.f2[k] - tuft.f1[k])
     const cushion = 0.24 * mound + 0.4 * fbm((x / W) * 64, (y / H) * 10, 64, 10, 173, 3) + 0.36 * fbm((x / W) * 150, (y / H) * 22, 150, 22, 131, 3)
-    const thick = (0.3 + 1.9 * cushion + 1.5 * top * seat + 0.5 * (tuft.id[k] - 0.5)) * smooth(0.12, 0.95, c) * smooth(0.3, 0.92, mossSoft[k])
+    const thick = (0.3 + 1.35 * cushion + 0.55 * top * seat + 0.3 * (tuft.id[k] - 0.5)) * smooth(0.12, 0.95, c) * smooth(0.3, 0.92, mossSoft[k])
     height[k] = mix(rock[k], Math.max(rock[k], mix(rockWide[k], rockBroad[k] + 0.5, 0.8) + 0.15) + thick, smooth(0.12, 0.6, c))
   }
 }
@@ -274,7 +274,7 @@ const roots = []
 const rng = mulberry(4401)
 const pushRoot = (spec) => {
   const p = pathOf(spec.pts, 0.8, spec.keep ? 1.2 : 2.2, roots.length + 1)
-  spec = { ...spec, r: spec.r * (spec.keep ? 1.3 : 1.35) }
+  spec = { ...spec, r: spec.r * (spec.keep ? 1.08 : 1.12) }
   roots.push({ ...spec, ...p })
   return p
 }
@@ -515,12 +515,12 @@ function buildGrowth() {
     const knot = 6.283 * rng()
     const centres = root.samples.map((q) => {
       const rr = root.r * taper(root, q.t)
-      const g = surf(q.az, q.s, rockWide, 0.3 * rr)
+      const g = surf(q.az, q.s, rockWide, 0.45 * rr)
       return { p: g.p, n: g.n, rr }
     })
     const before = soup.triangles
-    const gnarl = (i) => 1 + 0.26 * Math.sin(i * 0.62 + knot) + 0.16 * Math.sin(i * 1.9 + 2.7 * knot) + 0.12 * Math.sin(i * 4.3 + 5.1 * knot)
-    tube(soup, centres, centres.map((c, i) => c.rr * gnarl(i)), (i) => { const v = tint * (0.86 + 0.2 * Math.sin(i * 0.33 + 1.7 * knot)); return [v, v, v] }, [1, 14], 0.9, root.r > 1.1 ? 8 : 6)
+    const gnarl = (i) => 1 + 0.13 * Math.sin(i * 0.31 + knot) + 0.07 * Math.sin(i * 0.9 + 2.7 * knot)
+    tube(soup, centres, centres.map((c, i) => c.rr * gnarl(i)), (i) => { const v = tint * (0.86 + 0.2 * Math.sin(i * 0.33 + 1.7 * knot)); return [v, v, v] }, [1, 14], 1.0, root.r > 1.1 ? 8 : 6)
     rootTriangles += soup.triangles - before
   }
   const caps = [...MUSHROOMS]
