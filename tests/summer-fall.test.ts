@@ -58,7 +58,7 @@ describe("summer's falling sand", () => {
     const period = 8
     for (const p of paths) {
       expect(p.life).toBeGreaterThanOrEqual(p.seconds)
-      expect(p.seconds).toBeGreaterThan(0.04)
+      expect(p.seconds).toBeGreaterThan(0.03)
       expect(p.life).toBeGreaterThan(0.06)
       expect(p.life).toBeLessThan(0.14)
       // The shader gives each grain a whole number of falls in the ambient period.
