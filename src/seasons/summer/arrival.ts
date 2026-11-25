@@ -19,7 +19,7 @@ const RAD = Math.PI / 180
 const LOOK = {
   gravity: 3400,
   ledge: { r: [46.5, 52.0], h: 40.3 },
-  jump: { count: 14000, reachMm: 26, ringShare: 0.3, ringMm: 5, liftMm: [0.5, 4.5], hopMm: [0.3, 2.6], quick: 0.11, tail: 0.5, tailShare: [0.6, 0.12], skidMm: [0.4, 3.2], radiusMm: [0.07, 0.15] },
+  jump: { count: 14000, reachMm: 26, ringShare: 0, ringMm: 5, edgeDeg: [62, 76], liftMm: [1.2, 8], hopMm: [0.6, 5], quick: 0.11, tail: 0.5, tailShare: [0.6, 0.12], skidMm: [0.4, 3.2], radiusMm: [0.07, 0.15] },
   pour: { count: 9000, az: 82, spread: 1.6, r: 52.4, h: 38.8, reachMm: [4.6, 9], fanDeg: 3, rate: [1.3, 2.3], radiusMm: [0.06, 0.12], fadeFrom: 0.5 },
   flow: { surge: 0.96, seconds: 1.6, endFrom: 3.5, endTo: 6, gapMm: [0.3, 2.5] },
   shadow: { r: 57, top: [36, 41] },
@@ -228,7 +228,10 @@ function grainGeometry(): THREE.BufferGeometry {
     const radius = J.radiusMm[0] + (J.radiusMm[1] - J.radiusMm[0]) * rj.next() ** 2
     const y = SLAB.liftMm + h + radius * 0.7
     const near = Math.min(1, Math.max(0, (r - 62) / J.reachMm))
-    const flies = rj.next() > near
+    // Only the grains bound for the right edge leave the ledge: a narrow shower against the light, as the approved image has it.
+    // The rest hop where they lie, so nothing falls across the front of the stone and no line of fresh grains rings the foot.
+    const edge = Math.min(1, Math.max(0, (Math.atan2(x, z) / RAD - J.edgeDeg[0]) / (J.edgeDeg[1] - J.edgeDeg[0])))
+    const flies = rj.next() > near && rj.next() < edge
     const late = rj.next() < J.tailShare[0] + (J.tailShare[1] - J.tailShare[0]) * near
     const delay = late ? J.quick + -Math.log(Math.max(rj.next(), 1e-6)) * J.tail : rj.next() ** 1.5 * J.quick
     if (flies) {

@@ -10,13 +10,15 @@ import { loadLayout } from '../village/layout.mjs'
 const TAU = Math.PI * 2
 const LEVELS = { medium: { error: 0.12, worth: 1 }, low: { error: 0.3, worth: 1 } }
 const GLASS_CLEAR = 3.2
-const BOUGH = { perLimb: [1, 2], from: 0.3, length: [9, 15], seg: 1.05, radius: 1.0, minR: 0.5, turn: 0.3, kink: 0.9, kinkShare: 0.3, rise: 0.4, lift: 0.4, tip: [11, 17], tipLift: 0.6 }
-const TWIG = { each: [0.6, 1.2], length: [0.3, 0.52], seg: 0.8, radius: 0.86, turn: 0.3, kink: 1.0, kinkShare: 0.3 }
-const SPIKE = { each: [0.1, 0.7], length: [0.28, 0.5], seg: 0.6, radius: 0.78, turn: 0.2, kink: 0.6, kinkShare: 0.15 }
+// The interior camera's frame ends below the top of the glass; nothing of the crown may reach its upper edge (M1).
+const CEIL = 24.5
+const BOUGH = { perLimb: [1, 2], from: 0.3, length: [9, 15], seg: 1.05, radius: 1.0, minR: 0.5, turn: 0.3, kink: 0.9, kinkShare: 0.3, rise: 0.22, lift: 0.4, tip: [11, 17], tipLift: 0.45 }
+const TWIG = { each: [0.3, 0.7], length: [0.3, 0.52], seg: 0.8, radius: 0.86, turn: 0.3, kink: 1.0, kinkShare: 0.3 }
+const SPIKE = { each: [0.05, 0.4], length: [0.28, 0.5], seg: 0.6, radius: 0.78, turn: 0.2, kink: 0.6, kinkShare: 0.15 }
 const TIP_R = 0.11
-const THICK = { limb: 1.85, twig: 1.5, bough: 0.78, tip: 0.9 }
-const SLEEVE = { from: -3.2, to: 36.5, split: 15.2, step: [0.45, 0.6], around: [96, 48], out: 0.05, deep: [0.95, 0.34], stem: 0.42, twist: 2.4 }
-const EMBER = { count: 36, apart: 3.6, r: [0.15, 0.26], drop: [0.02, 0.22], stalk: 0.045, cap: 0.6 }
+const THICK = { limb: 1.3, twig: 1.2, bough: 0.9, tip: 0.9 }
+const SLEEVE = { from: -3.2, to: 36.5, split: 15.2, step: [0.45, 0.6], around: [96, 48], out: 0.05, deep: [0.95, 0.34], stem: 0.12, twist: 2.4 }
+const EMBER = { count: 26, apart: 4.4, r: [0.15, 0.26], drop: [0.02, 0.22], stalk: 0.045, cap: 0.6 }
 
 const [T, RNG] = await loadSource(['/src/miniature/trunk.ts', '/src/core/rng.ts'])
 const L = await loadLayout()
@@ -25,7 +27,7 @@ const S = T.trunkShape
 const V = (p) => new THREE.Vector3(p[0], p[1], p[2])
 const inside = (p) => {
   const w = T.placePoint([p.x, p.y, p.z])
-  return Math.hypot(w[0], w[1], w[2]) < L.innerRadiusMm - GLASS_CLEAR && w[1] > L.groundAt(w[0], w[2]) + 5
+  return Math.hypot(w[0], w[1], w[2]) < L.innerRadiusMm - GLASS_CLEAR && w[1] > L.groundAt(w[0], w[2]) + 5 && w[1] < CEIL
 }
 const hash = (n) => {
   const s = Math.sin(n * 127.1 + 311.7) * 43758.5453

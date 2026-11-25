@@ -70,12 +70,12 @@ export function onSlab(px, py, h = 0.15) {
 // The carved faces. The three in front are read from the approved image (centre of each face in its pixels, and its size);
 // the four behind are placed to finish the ring. `rad` is the half width across the ring in mm, `tall` the half height.
 const SEEN = [
-  { x: 1112, y: 1268, rad: 6.6, tall: 6.5, cell: 0 },
+  { x: 1112, y: 1268, rad: 8.0, tall: 6.7, cell: 0 },
   { x: 1497, y: 1287, rad: 7.4, tall: 7.9, cell: 1 },
-  { x: 1722, y: 1262, rad: 7.0, tall: 7.2, cell: 2 },
+  { x: 1722, y: 1262, rad: 7.6, tall: 7.2, cell: 3 },
 ]
 const BEHIND = [
-  { az: 97, h: 20.2, rad: 6.8, tall: 7.0, cell: 3 },
+  { az: 97, h: 20.2, rad: 6.8, tall: 7.0, cell: 2 },
   { az: 148, h: 19.6, rad: 7.2, tall: 7.4, cell: 1 },
   { az: -158, h: 20.8, rad: 6.6, tall: 6.8, cell: 0 },
   { az: -101, h: 19.9, rad: 7.0, tall: 7.3, cell: 2 },
@@ -127,7 +127,7 @@ export const TWIGS = [
 // The thorns a viewer can count, read from the approved image by eye: where each stands on the ring, the way it points
 // (along the ring to the right, up, outward) and its length and root radius in mm.
 export const HERO_THORNS = [
-  { az: 19, h: 37.6, dir: [0.55, 0.8, 0.32], len: 11.5, rad: 1.55 },
+  { az: 19, h: 37.2, dir: [0.82, 0.5, 0.3], len: 12.5, rad: 1.55 },
   { az: 30, h: 36.4, dir: [-0.9, 0.28, 0.32], len: 9.5, rad: 0.95 },
   { az: -22, h: 36.2, dir: [-0.92, 0.3, 0.25], len: 10.5, rad: 1.2 },
   { az: -5, h: 37.2, dir: [0.85, 0.35, 0.3], len: 7.5, rad: 1.0 },

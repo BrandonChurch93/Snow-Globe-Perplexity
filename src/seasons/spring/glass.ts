@@ -36,7 +36,9 @@ export const standIns: string[] = []
 export const glassDressing: Dressing = { tint: [1, 1, 1], amount: 0 }
 
 const look = {
-  dew: { count: 9000, mm: [0.07, 0.34], skew: 2.2, bornBy: 0.3, growSeconds: 0.5 },
+  /** The beats after the landing are staggered: the petals on the table jump and the first water runs on the landing itself; the glass stays bare of new beads for this long after it, seconds, and then they form and begin to slide. */
+  afterLanding: 0.6,
+  dew: { count: 8600, mm: [0.07, 0.34], skew: 2.2, bornBy: 0.3, growSeconds: 0.5 },
   bead: { count: 420, mm: [0.38, 1.25], skew: 2.6, bornBy: 1.2, growSeconds: 1 },
   /** Lowest place of a still drop and the place a run leaves the glass, as polar angles from the top. */
   lowDeg: 118,
@@ -60,6 +62,48 @@ const look = {
   sharp: 0.0007,
   glint: 5,
   crescent: 0.55,
+  /**
+   * The breath of condensation on the glass: a thin pale film, thickest over the top of the glass and where the glass turns
+   * away from the eye, in patches, drawn out downward where water has run through it, with the finest dew standing in it as
+   * bright specks. It is one cap of the glass (its triangles are taken out of the dew's count) and all of it is worked out
+   * where the eye's ray meets the glass, so the cap's own facets are never seen.
+   */
+  breath: {
+    cols: 32,
+    rows: 12,
+    lowDeg: 112,
+    /** How far down the cap itself reaches (the caustic low on the left stands below the film). */
+    capDeg: 128,
+    offMm: 0.5,
+    /** How thick the film is (its share of the light at a square look, where it is thickest), and how much of that stands low on the glass. */
+    thick: 0.2,
+    lowShare: 0.07,
+    /** How much of it the patches and the runs take away. */
+    patch: 0.55,
+    streak: 0.3,
+    /** The light it scatters: of the key, of the rim, of the room. */
+    key: 0.5,
+    rim: 0.35,
+    room: 1.2,
+    tint: [1, 0.95, 0.97],
+    /** Seconds after the landing by which it has formed, patch by patch. */
+    formSeconds: 7,
+    /** The specks: the cell they stand in, their radius, and how bright they are against the film. */
+    speckMm: [0.55, 1.3],
+    speckR: [0.035, 0.13],
+    speck: 2.6,
+    /**
+     * The rivulets: where water has run down through the film it has left thin winding lines of clear water, each with a
+     * bright edge toward the key and a dark one away from it. One to a cell around the glass, in two sets: how many cells, the
+     * share of them that carry a run on the shoulder toward the key (which way round that is, and the share of that share left on the far side), where a run starts and how long it is (degrees down from the top), how far it winds (a
+     * share of its cell) and how often, its half width in mm, and how bright and how dark its edges are.
+     */
+    rill: { cells: [64, 41], share: 0.85, sideRad: 1.12, off: 0, fromDeg: [30, 48], lenDeg: [10, 22], wind: 0.75, windPer: 8, mm: [0.28, 0.5], bright: 1.4, key: 0.08, dark: 0.07, darkCover: 0.8 },
+    /** The shoulder toward the key: the film is thicker there and scatters the key's light cool, in the texture of the film. Its direction, how tight it is, how much thicker, how bright, its colour. */
+    sheen: { dir: [0.74, 0.48, 0.47], power: 6, thick: 1.4, gain: 0.4, tint: [0.66, 0.84, 1] },
+    /** The caustic: the key's light, gathered by the globe, falls on the inside of the glass low on the far side, a warm patch of bright curved threads. Its direction, how wide, how bright, its colour, how much it veils, and the seconds after the landing by which it stands. */
+    caustic: { dir: [-0.86, -0.3, 0.41], wide: 0.2, gain: 3.2, tint: [1, 0.7, 0.46], veil: 0.25, formSeconds: 0.8 },
+  },
 }
 
 const dewUniforms = {
@@ -91,6 +135,11 @@ const lightUniforms = {
 }
 
 const f = (n: number): string => n.toFixed(4)
+const vec = (v: readonly number[]): string => `vec3(${v.map(f).join(', ')})`
+const norm = (v: readonly number[]): number[] => {
+  const l = Math.hypot(...v)
+  return v.map((x) => x / l)
+}
 
 const PATH_GLSL = `
 uniform vec4 uDew;
@@ -378,6 +427,125 @@ void main() {
 }
 `
 
+const FILM_VERT_PARS = `
+varying vec3 vFilmCentre;
+`
+
+const FILM_VERT = `
+vFilmCentre = modelMatrix[3].xyz;
+`
+
+const FILM = `
+${SHADE_GLSL}
+uniform vec4 uDew;
+uniform vec4 uDewLens;
+varying vec3 vFilmCentre;
+float filmHash(vec3 c) {
+  return fract(sin(dot(c, vec3(127.1, 311.7, 74.7))) * 43758.5453);
+}
+float filmNoise(vec3 x) {
+  vec3 i = floor(x);
+  vec3 f = fract(x);
+  f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(mix(filmHash(i), filmHash(i + vec3(1.0, 0.0, 0.0)), f.x), mix(filmHash(i + vec3(0.0, 1.0, 0.0)), filmHash(i + vec3(1.0, 1.0, 0.0)), f.x), f.y),
+             mix(mix(filmHash(i + vec3(0.0, 0.0, 1.0)), filmHash(i + vec3(1.0, 0.0, 1.0)), f.x), mix(filmHash(i + vec3(0.0, 1.0, 1.0)), filmHash(i + vec3(1.0, 1.0, 1.0)), f.x), f.y), f.z);
+}
+// The specks of one size: one to a cell, each at its own place and of its own radius; x is how much of the pixel a speck
+// covers, y how brightly it glints. Out of focus (blur, mm) a speck is wider and fainter.
+vec2 filmSpecks(vec3 pm, float cell, float blur) {
+  vec3 id = floor(pm / cell);
+  vec3 h = vec3(filmHash(id + 0.13), filmHash(id + 17.31), filmHash(id + 41.77));
+  float r = mix(${f(look.breath.speckR[0])}, ${f(look.breath.speckR[1])}, pow(filmHash(id + 71.9), 2.2)) * cell / ${f(look.breath.speckMm[0])};
+  float d = length(pm - (id + 0.5 + (h - 0.5) * 0.5) * cell);
+  float wide = min(r + blur, 0.42 * cell);
+  float aa = max(fwidth(d), 1e-4);
+  float there = step(filmHash(id + 29.3), 0.55);
+  return vec2(there * (1.0 - smoothstep(wide - aa, wide + aa, d)) * (r * r) / (wide * wide), step(0.6, filmHash(id + 5.5)));
+}
+// The rivulets of one set: x is how much of the pixel a run covers, y where across the run the pixel is (-1 to 1).
+vec2 filmRill(float th, float ph, float cells, float seed, float grown, float blur) {
+  float u = ph * cells / 6.2831853;
+  float id = floor(u);
+  vec3 k = vec3(id, seed, 0.0);
+  float there = step(filmHash(k + 0.31), ${f(look.breath.rill.share)} * mix(${f(look.breath.rill.off)}, 1.0, smoothstep(0.62, 0.93, cos((id + 0.5) * 6.2831853 / cells - ${f(look.breath.rill.sideRad)}))));
+  float from = mix(${f(look.breath.rill.fromDeg[0] * RAD)}, ${f(look.breath.rill.fromDeg[1] * RAD)}, filmHash(k + 3.7));
+  float len = mix(${f(look.breath.rill.lenDeg[0] * RAD)}, ${f(look.breath.rill.lenDeg[1] * RAD)}, pow(filmHash(k + 9.1), 1.6)) * grown;
+  float t = (th - from) / max(len, 1e-3);
+  float c = 0.5 + ${f(look.breath.rill.wind)} * (filmNoise(vec3(th * ${f(look.breath.rill.windPer)}, id * 3.3, seed)) - 0.5) + ${f(look.breath.rill.wind * 0.12)} * (filmNoise(vec3(th * ${f(look.breath.rill.windPer * 3.1)}, id * 1.7, seed + 5.0)) - 0.5);
+  float mmPer = 6.2831853 / cells * sin(th) * uDew.z;
+  float d = (fract(u) - c) * mmPer;
+  // Thin where it starts, widest at its head.
+  float w = mix(${f(look.breath.rill.mm[0])}, ${f(look.breath.rill.mm[1])}, filmHash(k + 13.3)) * (0.45 + 0.55 * smoothstep(0.0, 0.5, t) + 1.5 * smoothstep(0.88, 0.985, t));
+  float wide = w + blur;
+  float aa = max(fwidth(u) * mmPer, 1e-4);
+  float along = smoothstep(0.0, 0.05, t) * (1.0 - smoothstep(0.985, 1.0, t));
+  return vec2(there * along * (1.0 - smoothstep(wide - aa, wide + aa, abs(d))) * w / wide, clamp(d / wide, -1.0, 1.0));
+}
+void main() {
+  if (uDew.x < 0.0) discard;
+  // Where the eye's ray meets the glass.
+  vec3 ro = cameraPosition - vFilmCentre;
+  vec3 rd = normalize(vStageWorld - cameraPosition);
+  float b = dot(ro, rd);
+  float disc = b * b - dot(ro, ro) + uDew.z * uDew.z;
+  if (disc <= 0.0) discard;
+  vec3 n = (ro + rd * (-b - sqrt(disc))) / uDew.z;
+  float nv = max(-dot(n, rd), 0.0);
+  vec3 pl = normalize(vStageLocal);
+  float blot = filmNoise(pl * 3.1 + 7.3);
+  float fine = filmNoise(pl * 11.0 + 2.9);
+  float keep = dewKeep(0.6 * blot + 0.4 * fine);
+  if (keep <= 0.0) discard;
+  // It forms blot by blot after the landing, from the places where it will be thickest.
+  float formed = smoothstep(0.0, 0.3, 1.4 * clamp(uDew.x / ${f(look.breath.formSeconds)}, 0.0, 1.0) - (1.0 - 0.6 * blot - 0.4 * fine)) * keep;
+  float th = acos(clamp(pl.y, -1.0, 1.0));
+  float ph = atan(pl.x, pl.z);
+  // Drawn out downward where water has run through it: fine across the glass, long down it.
+  float bend = filmNoise(vec3(th * 7.0, ph * 2.6, 1.7));
+  float run = filmNoise(vec3(ph * sin(th) * uDew.z / 2.6 + 5.0 * bend, th * uDew.z / 22.0 + 1.5 * bend, 3.1));
+  float streak = 1.0 - ${f(look.breath.streak)} * smoothstep(0.34, 0.2, run) * smoothstep(0.1, 0.5, pl.y);
+  float high = mix(${f(look.breath.lowShare)}, 1.0, smoothstep(0.1, 0.9, pl.y)) * smoothstep(${f(Math.cos(look.breath.lowDeg * RAD))}, ${f(Math.cos(look.breath.lowDeg * RAD) + 0.25)}, pl.y);
+  float shoulder = pow(max(dot(n, ${vec(norm(look.breath.sheen.dir))}), 0.0), ${f(look.breath.sheen.power)});
+  float m = ${f(look.breath.thick)} * high * (1.0 - ${f(look.breath.patch)} * smoothstep(0.62, 0.3, blot)) * (0.8 + 0.4 * fine) * streak * formed * (1.0 + ${f(look.breath.sheen.thick)} * shoulder);
+  float a = 1.0 - exp(-m / max(nv, 0.24));
+  // The specks: two sizes, standing where the film is.
+  float blur = max(uDewLens.z * abs(vStageAux.y * uDewLens.w - 1.0) - ${f(look.sharp)} * vStageAux.y, 0.0);
+  vec3 pm = pl * uDew.z;
+  vec2 s0 = filmSpecks(pm, ${f(look.breath.speckMm[0])}, blur);
+  vec2 s1 = filmSpecks(pm + 3.7, ${f(look.breath.speckMm[1])}, blur);
+  float speck = max(s0.x, s1.x) * smoothstep(0.02, 0.1, m) * formed;
+  float glint = max(s0.x * s0.y, s1.x * s1.y) * smoothstep(0.02, 0.1, m) * formed;
+  vec3 light = uKeyCol * (${f(look.breath.key)} * (0.25 + 0.75 * max(dot(n, uKeyDir), 0.0))) + uRimCol * (${f(look.breath.rim)} * max(dot(n, uRimDir), 0.0)) + stageRoomSoft(n, 1.0) * ${f(look.breath.room)};
+  light *= vec3(${look.breath.tint.map(f).join(', ')});
+  // The shoulder toward the key scatters it cool, in the film's own texture.
+  light += uKeyCol.b * ${vec(look.breath.sheen.tint)} * (${f(look.breath.sheen.gain)} * shoulder * (0.4 + 1.2 * fine) * (0.5 + blot));
+  float limb = smoothstep(${f(look.limb[0])}, ${f(look.limb[1])}, nv);
+  float cover = (a + (1.0 - a) * 0.6 * speck) * limb;
+  vec3 col = light * (a + (1.0 - a) * 0.6 * speck * (1.0 + ${f(look.breath.speck)} * glint)) * limb;
+  // The rivulets: clear water where the film was, a bright edge toward the key and a dark one away from it. They grow down the glass after the landing.
+  float grown = clamp(1.25 * uDew.x / ${f(look.breath.formSeconds)}, 0.0, 1.0);
+  vec2 r0 = filmRill(th, ph, ${f(look.breath.rill.cells[0])}, 1.0, grown, blur);
+  vec2 r1 = filmRill(th, ph, ${f(look.breath.rill.cells[1])}, 2.0, grown, blur);
+  vec2 rill = r0.x >= r1.x ? r0 : r1;
+  float ran = rill.x * formed * limb;
+  float toKey = rill.y * sign(dot(normalize(cross(vec3(0.0, 1.0, 0.0), n) + 1e-5), uKeyDir));
+  float lightEdge = smoothstep(0.0, 0.7, toKey);
+  float darkEdge = smoothstep(0.2, 0.9, -toKey);
+  col = col * (1.0 - ran) + (light * ${f(look.breath.rill.bright)} + uKeyCol * ${f(look.breath.rill.key)}) * (ran * lightEdge) + light * (${f(look.breath.rill.dark)} * ran * darkEdge);
+  cover = cover * (1.0 - ran) + ran * (lightEdge + ${f(look.breath.rill.darkCover)} * darkEdge * (1.0 - lightEdge));
+  // The caustic low on the far side from the key: warm threads of gathered light on the inside of the glass.
+  vec3 cd = n - ${vec(norm(look.breath.caustic.dir))};
+  float gathered = exp(-dot(cd, cd) / ${f(look.breath.caustic.wide * look.breath.caustic.wide)});
+  float threads = 0.3 + 1.5 * smoothstep(0.38, 0.72, filmNoise(pl * vec3(8.0, 2.6, 8.0) + 31.0 + 1.5 * fine));
+  float lit = gathered * threads * limb * keep * smoothstep(0.0, 0.3, 1.4 * clamp(uDew.x / ${f(look.breath.caustic.formSeconds)}, 0.0, 1.0) - (1.0 - 0.6 * blot - 0.4 * fine));
+  col += uKeyCol * ${vec(look.breath.caustic.tint)} * (${f(look.breath.caustic.gain)} * lit);
+  cover = min(cover + ${f(look.breath.caustic.veil)} * lit, 1.0);
+  if (cover <= 0.002) discard;
+  gl_FragColor = vec4(col, cover);
+  if (uDiag != 0) discard;
+}
+`
+
 const blend = {
   transparent: true,
   depthWrite: false,
@@ -468,6 +636,30 @@ function trailsGeometry(): THREE.BufferGeometry {
   return g
 }
 
+function filmGeometry(): THREE.BufferGeometry {
+  const F = look.breath
+  const at: number[] = []
+  const idx: number[] = []
+  const R = RS + F.offMm
+  for (let i = 0; i <= F.rows; i++) {
+    const th = (F.capDeg * RAD * i) / F.rows
+    for (let k = 0; k <= F.cols; k++) {
+      const ph = (TAU * k) / F.cols
+      at.push(R * Math.sin(th) * Math.sin(ph), R * Math.cos(th), R * Math.sin(th) * Math.cos(ph))
+    }
+  }
+  const row = F.cols + 1
+  for (let i = 0; i < F.rows; i++)
+    for (let k = 0; k < F.cols; k++) {
+      const a = i * row + k
+      idx.push(a, a + row, a + 1, a + 1, a + row, a + row + 1)
+    }
+  const g = new THREE.BufferGeometry()
+  g.setAttribute('position', new THREE.Float32BufferAttribute(at, 3))
+  g.setIndex(idx)
+  return g
+}
+
 const copies = new Map<string, THREE.FramebufferTexture>()
 let copied = -1
 
@@ -521,7 +713,22 @@ function make(): THREE.Group {
   beads.renderOrder = 11.1
   beads.frustumCulled = false
   beads.onBeforeRender = (renderer, _scene, _camera, _geometry, material) => copyBehind(renderer, material, false)
-  return new THREE.Group().add(trails, beads, mist())
+  const film = new THREE.Mesh(
+    filmGeometry(),
+    stageShader({
+      part: PART,
+      standIn: false,
+      change: 'glass-dressing',
+      uniforms,
+      vertexPars: FILM_VERT_PARS,
+      vertexMain: FILM_VERT,
+      fragment: FILM,
+      params: { ...blend, side: THREE.FrontSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -8 },
+    }),
+  )
+  film.renderOrder = 10.9
+  film.frustumCulled = false
+  return new THREE.Group().add(film, trails, beads, mist())
 }
 
 export async function prepare(): Promise<void> {}
@@ -582,7 +789,7 @@ export function update(moment: KitMoment): void {
   // glass carries into the swap does not depend on how long the season has stood.
   const lifted = beat === null ? 0 : Math.min(1, Math.max(0, (beat - 0.15) / (swap.fromBeat - 0.4)))
   const shed = !finite || two || shaking ? 1 : lifted * lifted * (3 - 2 * lifted)
-  const since = bare ? -1 : finite ? Math.max(0, moment.sinceLanding) : 1e4
+  const since = bare ? -1 : finite ? Math.max(0, moment.sinceLanding - look.afterLanding) : 1e4
   dewUniforms.uDew.value.set(since, shed, RS, 0)
   for (let j = 0; j < SLOTS; j++) {
     const s = runAt(j, Math.max(0, since), bare ? 1 : shed)

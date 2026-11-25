@@ -77,7 +77,7 @@ vec3 villageBump(vec3 pos, vec3 n, vec2 dH, float face) {
   vec3 r2 = cross(n, sx);
   float det = dot(sx, r1) * face;
   vec3 grad = sign(det) * (dH.x * r1 + dH.y * r2);
-  return normalize(abs(det) * n - grad);
+  vec3 v = abs(det) * n - grad; return dot(v, v) > 0.0 ? normalize(v) : n;
 }
 `
 

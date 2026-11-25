@@ -27,7 +27,7 @@ const ATTIC_LIGHT = { power: 0.6, reachMm: 6, flicker: 0.1, cycles: 4, phase: 0.
 const PUMPKIN = { power: 1.3, reachMm: 7, flicker: 0.16, cycles: 6 }
 const POND = { power: 0.3, reachMm: 20, flicker: 0.08, cycles: 2, phase: 0.8, liftMm: 2.5 }
 const NEAR = { lamp: { power: 6, reachMm: 7 }, pane: { power: 5, reachMm: 3.2 }, pumpkin: { power: 13, reachMm: 2.6, ends: 4 } }
-const NEAR_WALL = { lamp: { power: 2.4, reachMm: 9, ends: 3 }, pane: { power: 1.5, reachMm: 4.2, ends: 3 }, pumpkin: { power: 5, reachMm: 3.2, ends: 3 } }
+const NEAR_WALL = { lamp: { power: 3.4, reachMm: 9, ends: 3 }, pane: { power: 1.5, reachMm: 4.2, ends: 3 }, pumpkin: { power: 5, reachMm: 3.2, ends: 3 } }
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
 const HALO_KIND = { lamp: { size: 5.6, rest: 0.32, hot: 0, bloom: 0.3 }, pumpkin: { size: 4.2, rest: 0.26, hot: 0, bloom: 0.25 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
 const PANE_HALO = { radiusMm: 0.75, strength: 0.5, hot: 0, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 0.6 }
@@ -36,14 +36,20 @@ const THROUGH = 6
 const LAMP_GLASS: Rgb = [3.4, 1.25, 0.24]
 const WALL_FILL = 2.8
 const GROUND_FILL = 4.2
-const PATH = { tone: [1.2, 1.13, 1.0] as Rgb, nearMm: 2.6, highMm: 1.4 }
+const PATH = { tone: [0.96, 0.76, 0.58] as Rgb, nearMm: 2.6, highMm: 1.4 }
 const FENCE = { reachMm: 1.25, sinkMm: 5 }
-const MOSS = { low: [0.34, 0.44, 0.25] as Rgb, high: [0.5, 0.54, 0.45] as Rgb, tallMm: 9, soot: 0.68, bite: 0.8, bitePivot: 0.36, biteLow: 0.3, biteTop: 1.08 }
-const ROOF = { tone: [1.8, 1.52, 1.4] as Rgb, grey: 0.7 }
-const DOOR: Rgb = [0.5, 0.37, 0.25]
+const MOSS = { low: [0.68, 0.88, 0.5] as Rgb, high: [0.9, 1.06, 0.68] as Rgb, tallMm: 9, soot: 0.8 }
+// The shared stones run from 0.03 (a joint) over 0.12 (the middle stone) to 0.9 (a few white ones). The approved wall is one
+// olive grey with dark joints, so the tone is bent: joints stay near black, every stone from the middle up ends near `top`.
+const STONE = { top: 0.18, knee: 0.12, power: 2.2 }
+// The shared slates run from 0.02 (a slate's shadowed top edge) to 0.12 (its lit lower edge). The approved roof is big warm
+// slates with bright lower edges over black gaps, so the tone is bent about `mid` and weathered in patches a few slates wide.
+const ROOF = { tone: [1.65, 1.22, 0.95] as Rgb, grey: 0.55, mid: 0.045, bend: 1.6, patch: [0.6, 1.7] as [number, number] }
+const DOOR: Rgb = [0.24, 0.19, 0.13]
+const TIMBER: Rgb = [0.4, 0.42, 0.34]
 const DRY: readonly Rgb[] = [[0.42, 0.16, 0.05], [0.5, 0.26, 0.07], [0.3, 0.12, 0.05], [0.4, 0.3, 0.1]]
 const GROUND = { soil: 1.45, leaf: 1.05, leafScale: 0.6, soilMm: 0.26, wideMm: 0.5, leafMm: 0.34 }
-const WATER = { rough: 0.07, rippleMm: 0.18, lamp: 8, pane: 1.6, pumpkin: 4.5, tight: 0.0008, wide: 0.006, wideShare: 0.004, lowMm: 3.4, fog: 0.13, trunkMm: 3.4, dim: 0.85, shore: [0.9, 0.99] as [number, number] }
+const WATER = { rough: 0.07, rippleMm: 0.18, lamp: 8, pane: 1.6, pumpkin: 4.5, tight: 0.0008, wide: 0.006, wideShare: 0.004, lowMm: 3.4, fog: 0.3, trunkMm: 3.4, dim: 0.85, shore: [0.9, 0.99] as [number, number] }
 
 const TALL_LAMP = { reachMm: 2.6, neckMm: 9.5, post: [1.6, 1.2] as [number, number], head: [1.5, 1.5] as [number, number] }
 const foot = lampFoot()
@@ -101,12 +107,34 @@ const list: InnerLight[] = [
 export const innerLights = (): InnerLight[] => list
 
 const sources = (on: typeof NEAR | typeof NEAR_WALL, lampTone: Rgb): GlowSource[] => [
+  ...bounce(),
   { at: flame, color: lampTone, ...on.lamp },
   { at: anchors.window, color: tones.purpleLight, ...on.pane },
   { at: anchors.sideWindow, color: tones.greenLight, ...on.pane },
   { at: attic, color: tones.greenLight, ...on.pane },
   ...pumpkinPools.map((at): GlowSource => ({ at, color: tones.pumpkinLight, ...on.pumpkin })),
 ]
+
+// Light the glass and the lit fog throw back: on the faces of the fence the viewer sees and on the cottage's side wall,
+// which the key (upper right) and the lamp both miss. The approved shows both faces lit, grey-brown and olive.
+const BOUNCE = { fence: { color: [1, 0.76, 0.52] as Rgb, power: 1.5, reachMm: 9, ends: 2.6, outMm: 5, upMm: 6.5 }, side: { color: [0.86, 0.9, 0.66] as Rgb, power: 1.7, reachMm: 11, ends: 2.4, outMm: 9, upMm: 7, alongMm: 2 } }
+
+function bounce(): GlowSource[] {
+  const dx = fence.to[0] - fence.from[0]
+  const dz = fence.to[1] - fence.from[1]
+  const len = Math.hypot(dx, dz)
+  const out = dx / len > 0 ? [-dz / len, dx / len] : [dz / len, -dx / len]
+  const fx = (fence.from[0] + fence.to[0]) / 2 + out[0]! * BOUNCE.fence.outMm
+  const fz = (fence.from[1] + fence.to[1]) / 2 + out[1]! * BOUNCE.fence.outMm
+  const f = cottageFrame()
+  const across = -(cottage.halfWidth + BOUNCE.side.outMm)
+  const sx = cottage.x + across * f.v[0] + BOUNCE.side.alongMm * f.u[0]
+  const sz = cottage.z + across * f.v[1] + BOUNCE.side.alongMm * f.u[1]
+  return [
+    { at: [fx, groundAt(fx, fz) + BOUNCE.fence.upMm, fz], color: BOUNCE.fence.color, power: BOUNCE.fence.power, reachMm: BOUNCE.fence.reachMm, ends: BOUNCE.fence.ends },
+    { at: [sx, f.floor + BOUNCE.side.upMm, sz], color: BOUNCE.side.color, power: BOUNCE.side.power, reachMm: BOUNCE.side.reachMm, ends: BOUNCE.side.ends },
+  ]
+}
 
 const gain = { value: 1 }
 const clock = { value: 0 }
@@ -197,7 +225,8 @@ function autumn(source: THREE.BufferGeometry): THREE.BufferGeometry {
         const m = (1 - smooth(0, MOSS.tallMm, up)) * (0.35 + 0.65 * n) + 0.35 * smooth(0.55, 0.8, n)
         const k = Math.min(1, Math.max(0, m))
         const soot = near ? 1 - MOSS.soot * smooth(cottage.wall + 1, cottage.wall + 7, up) : 1
-        const bite = Math.pow(Math.min(MOSS.biteTop, Math.max(MOSS.biteLow, (0.3 * r + 0.6 * gr + 0.1 * b) / MOSS.bitePivot)), MOSS.bite) * soot
+        const lum = 0.3 * r + 0.6 * gr + 0.1 * b
+        const bite = ((STONE.top * (1 - Math.exp(-Math.pow(lum / STONE.knee, STONE.power)))) / Math.max(lum, 1e-4)) * soot
         r *= (MOSS.high[0] + (MOSS.low[0] - MOSS.high[0]) * k) * bite
         gr *= (MOSS.high[1] + (MOSS.low[1] - MOSS.high[1]) * k) * bite
         b *= (MOSS.high[2] + (MOSS.low[2] - MOSS.high[2]) * k) * bite
@@ -210,9 +239,15 @@ function autumn(source: THREE.BufferGeometry): THREE.BufferGeometry {
         b *= DOOR[2]
       } else if (Math.abs(c.across) < cottage.halfWidth + 3.5 && Math.abs(c.along) < cottage.halfLength + 3.5 && y - frame.floor > cottage.wall - 1.2 && N.getY(i) > 0.25) {
         const lum = 0.3 * r + 0.6 * gr + 0.1 * b
-        r = (lum * ROOF.grey + r * (1 - ROOF.grey)) * ROOF.tone[0]
-        gr = (lum * ROOF.grey + gr * (1 - ROOF.grey)) * ROOF.tone[1]
-        b = (lum * ROOF.grey + b * (1 - ROOF.grey)) * ROOF.tone[2]
+        const bend = (Math.pow(lum / ROOF.mid, ROOF.bend) * ROOF.mid) / Math.max(lum, 1e-4) * (ROOF.patch[0] + (ROOF.patch[1] - ROOF.patch[0]) * wave(x * 0.9, y * 0.9, z * 0.9))
+        r = (lum * ROOF.grey + r * (1 - ROOF.grey)) * ROOF.tone[0] * bend
+        gr = (lum * ROOF.grey + gr * (1 - ROOF.grey)) * ROOF.tone[1] * bend
+        b = (lum * ROOF.grey + b * (1 - ROOF.grey)) * ROOF.tone[2] * bend
+      } else {
+        const lum = 0.3 * r + 0.6 * gr + 0.1 * b
+        r = (0.5 * lum + 0.5 * r) * TIMBER[0]
+        gr = (0.5 * lum + 0.5 * gr) * TIMBER[1]
+        b = (0.5 * lum + 0.5 * b) * TIMBER[2]
       }
     }
     C.setXYZ(i, r, gr, b)
@@ -373,10 +408,12 @@ export function build(): THREE.Object3D {
 
 const scaled = (c: Rgb, k: number): Rgb => [c[0] * k, c[1] * k, c[2] * k]
 
-const PANE = { room: 0.8, drape: 0.6, hot: 0.8 }
+// The jury read the panes as flat lit colour. The shared pane gives a room, drapes, a hot centre and a frost at the
+// corners and the sill: fall dims the room, keeps the hot centre, and uses the frost slot as dark grime on the glass.
+const PANE = { room: 0.45, drape: 0.3, hot: 1.0, grime: [0.014, 0.013, 0.009] as Rgb, grimeAmount: 0.7 }
 
 function paneLook(room: Rgb, drape: Rgb): GlowLook {
-  return { bulb: 1, bulbCore: 1, glass: scaled(room, 2.4), flame: tones.flame, room: scaled(room, PANE.room), curtain: scaled(drape, PANE.drape), frost: [0, 0, 0], frostAmount: 0, flicker: 0.07, cycles: 3, through: THROUGH, paneHot: PANE.hot }
+  return { bulb: 1, bulbCore: 1, glass: scaled(room, 2.4), flame: tones.flame, room: scaled(room, PANE.room), curtain: scaled(drape, PANE.drape), frost: PANE.grime, frostAmount: PANE.grimeAmount, flicker: 0.07, cycles: 3, through: THROUGH, paneHot: PANE.hot }
 }
 
 export function lights(): THREE.Object3D {

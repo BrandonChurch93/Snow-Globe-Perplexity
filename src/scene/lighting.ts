@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { lightUniforms } from '../core/chunks/light'
-import type { Rgb } from '../core/materials'
+import { stageUniforms, type Rgb } from '../core/materials'
 import type { StageFrame } from './frame'
 import type { SeasonKit } from '../seasons/kit'
 import { centreHeightMm, groundY, innerRadiusMm, outerRadiusMm } from './layout'
@@ -33,7 +33,7 @@ export const ROOM_RIG = {
   glow: { outside: 0.8, islandMm: innerRadiusMm * 0.88, lobe: 0.3, specular: 1 },
 } as const
 
-export const CHANGE_BLOOM = { flood: 200, lens: 0.6, pool: 8, swellFrom: 0.46, fall: 0.6 } as const
+export const CHANGE_BLOOM = { flood: 200, lens: 0.6, pool: 8, swellFrom: 0.46, fall: 0.6, front: 14 } as const
 
 const SHADOW_OFF = 10
 
@@ -232,6 +232,9 @@ export class Lighting {
     f.pool.setRGB(pool[0] * spill + gb[0] * wash, pool[1] * spill + gb[1] * wash, pool[2] * spill + gb[2] * wash)
     const lens = ROOM_RIG.flood.lens * lift + (CHANGE_BLOOM.lens * cross) / peak
     f.bloomTint.setRGB(gb[0] * lens, gb[1] * lens, gb[2] * lens)
+    // The band of light on the front that runs down the base and out across the table (materials.ts, `OUTSIDE_FRONT`).
+    const front = a === b ? 0 : CHANGE_BLOOM.front / peak
+    stageUniforms.uFront.value.set(gb[0] * front, gb[1] * front, gb[2] * front)
     const flood = swell.whole * breath
     u.uLightFlood.value.setRGB(gb[0] * flood, gb[1] * flood, gb[2] * flood)
     u.uLightFloodFloor.value.w = swell.whole > 0 ? (ROOM_RIG.flood.outside * lift + (CHANGE_BLOOM.flood * cross) / peak) / swell.whole : 0

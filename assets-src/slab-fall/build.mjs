@@ -176,11 +176,11 @@ function leaves() {
   }
   let near = 0
   let tries = 0
-  while (near < 130 && tries++ < 12000) {
+  while (near < 96 && tries++ < 12000) {
     const az = r(-180, 180)
     if (rng() > density(az)) continue
-    const size = r(5.2, 9.6) * (rng() < 0.15 ? 1.3 : 1)
-    const dist = FOOT + 3 + size * 0.5 + 105 * rng() ** 3.1
+    const size = r(5.0, 8.6) * (rng() < 0.15 ? 1.2 : 1)
+    const dist = FOOT + 6 + size * 0.5 + 105 * rng() ** 2.6
     const cx = dist * Math.sin(az * RAD)
     const cz = dist * Math.cos(az * RAD)
     if (placed.some((p) => Math.hypot(p[0] - cx, p[1] - cz) < (p[2] + size) * 0.42)) continue
@@ -188,7 +188,7 @@ function leaves() {
     near++
   }
   let crumbs = 0
-  while (crumbs < 110) {
+  while (crumbs < 60) {
     const az = r(-180, 180)
     add(FOOT + 2 + 60 * rng() ** 2.4, az, r(0.9, 2.4), 0.6, 2, 0.5)
     crumbs++

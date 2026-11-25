@@ -24,11 +24,11 @@ const ATTIC = PROPS.ATTIC
 const PUMPKINS = PROPS.PUMPKINS
 const STONES = PROPS.STONES
 const LEAF_TONES = ['#c8541a', '#d9812a', '#a8371a', '#e0a030', '#7a3a18', '#b5651d', '#c9451c', '#8f5a1e'].map(lin)
-const GRASS_TONES = ['#5a7a2a', '#7d9438', '#b0a548', '#4a6424', '#96893a'].map(lin)
+const GRASS_TONES = ['#4f6a26', '#62782e', '#8f7a34', '#3f5620', '#86572a'].map(lin)
 
-const LITTER = { base: 0.03, patch: 0.2, fence: 0.2, tree: 0.1, wall: 0.1, leaves: 230 }
+const LITTER = { base: 0.1, patch: 0.3, fence: 0.2, tree: 0.14, wall: 0.1, leaves: 230 }
 const LEVELS = { medium: { error: 0.08, worth: 1 }, low: { error: 0.2, worth: 1 } }
-const STONE_TONES = ['#d6d0bf', '#c4c0b2', '#e0d9c6', '#b3b0a4', '#cbc5b3'].map(lin).map((c) => mul3(c, 1.12))
+const STONE_TONES = ['#d6d0bf', '#c4c0b2', '#e0d9c6', '#b3b0a4', '#cbc5b3'].map(lin).map((c) => [c[0] * 1.2, c[1] * 1.04, c[2] * 0.86])
 const ground = new Bag('ground')
 const water = new Bag('water')
 const decor = new Bag('decor')
@@ -68,7 +68,7 @@ const litterAt = (x, z) => {
   return clamp((base + byFence + underTree + byWall) * (0.25 + 0.75 * shore), 0, 1)
 }
 const mossAt = (x, z) => {
-  const patch = 0.36 + 1.1 * fbm(x * 0.09 + 9.3, z * 0.09 + 2.2, 8, 3)
+  const patch = 0.26 + 1.1 * fbm(x * 0.09 + 9.3, z * 0.09 + 2.2, 8, 3)
   const bank = 0.2 * (1 - smooth(1.02, 1.3, L.pondField(x, z)))
   const wall = 0.3 * (1 - smooth(0.2, 2.2, cottageGap(x, z)))
   return clamp(patch + bank + wall - 0.35 * (1 - smooth(4, 12, treeGap(x, z))), 0, 1)
@@ -225,8 +225,8 @@ function pumpkin(o) {
   const pos = []
   const col = []
   const inner = []
-  const tone = lin('#d9661a')
-  const deep = lin('#7a2a08')
+  const tone = lin('#cf5a12')
+  const deep = lin('#4a1604')
   for (let j = 0; j <= nv; j++)
     for (let i = 0; i <= nu; i++) {
       const th = (i / nu) * TAU - Math.PI
@@ -236,7 +236,7 @@ function pumpkin(o) {
       pos.push(p[0], p[1], p[2])
       inner.push(q[0], q[1], q[2])
       const low = smooth(-0.9, 0.2, p[1] / H)
-      const c = mul3(mix3(deep, tone, 0.25 + 0.75 * smooth(0.05, 0.7, p[3])), (0.5 + 0.5 * low) * (0.9 + 0.2 * noise(th * 5, ph * 7, 3 + o.r)))
+      const c = mul3(mix3(deep, tone, 0.06 + 0.94 * smooth(0.05, 0.7, p[3])), (0.5 + 0.5 * low) * (0.9 + 0.2 * noise(th * 5, ph * 7, 3 + o.r)))
       col.push(c[0], c[1], c[2])
       cut.push(Math.abs(th) < 1.2 && face(th, p[1] / H))
     }
@@ -392,11 +392,15 @@ const conform = (g, x, z, yaw, lift) => {
   }
   return g
 }
-const cobble = (x, z, w, l, h, yaw, lift, dark = 1) => {
+// The approved path is warm, pinkish slate under the lamp; the cold key light greys a neutral stone, so the flags lean red.
+const FLAG_TONE = [1.3, 0.92, 0.66]
+const cobble = (x, z, w, l, h, yaw, lift, dark = 1, flat = false) => {
   const seed = R() * 40
-  const g = slab(w, h, l, { round: Math.min(h * 0.48, 0.34), sx: 3, sy: 2, sz: 3, warp: 0.11, seed })
-  const tone = mul3(STONE_TONES[Math.floor(R() * STONE_TONES.length)], between(0.72, 1.1) * dark)
-  shade(g, (px, py, pz) => (0.42 + 0.58 * smooth(-h * 0.2, h * 0.45, py)) * (0.78 + 0.5 * fbm(px * 1.6 + seed, pz * 1.6, py * 2, 3)) * (0.85 + 0.15 * smooth(0, 0.5, Math.min(w / 2 - Math.abs(px), l / 2 - Math.abs(pz)))))
+  const g = slab(w, h, l, { round: Math.min(h * 0.48, flat ? 0.16 : 0.34), sx: 3, sy: 2, sz: 3, warp: 0.11, seed })
+  const pick = mul3(STONE_TONES[Math.floor(R() * STONE_TONES.length)], between(flat ? 0.55 : 0.62, flat ? 1.5 : 1.3) * dark)
+  const tone = flat ? [pick[0] * FLAG_TONE[0], pick[1] * FLAG_TONE[1], pick[2] * FLAG_TONE[2]] : pick
+  const side = flat ? 0.1 : 0.2
+  shade(g, (px, py, pz) => (side + (1 - side) * smooth(flat ? h * 0.1 : -h * 0.2, h * 0.45, py)) * (0.6 + 0.85 * fbm(px * 1.6 + seed, pz * 1.6, py * 2, 3)) * (0.85 + 0.15 * smooth(0, 0.5, Math.min(w / 2 - Math.abs(px), l / 2 - Math.abs(pz)))))
   decor.add(conform(g, x, z, yaw, lift), { color: tone, surf: [surf(KIND.stone, 0.88), 0], renormal: true })
 }
 
@@ -407,7 +411,7 @@ let flagCount = 0
     const at = L.cottagePoint(d.across + 0.25 * k, 0, C.halfLength + step[0])
     const seed = R() * 40
     const g = slab(step[1], 1.7, 2.6, { round: 0.24, sx: 6, sy: 2, sz: 3, warp: 0.1, seed })
-    shade(g, (px, py, pz) => (0.45 + 0.55 * smooth(-0.2, 0.5, py)) * (0.78 + 0.5 * fbm(px * 1.4 + seed, pz * 1.4, py * 2, 3)))
+    shade(g, (px, py, pz) => (0.22 + 0.78 * smooth(-0.2, 0.5, py)) * (0.6 + 0.85 * fbm(px * 1.4 + seed, pz * 1.4, py * 2, 3)))
     const M = frame([at[0], L.groundAt(at[0], at[2]) + 0.3 + 0.42 * (2 - k), at[2]], V3, UP, U3)
     decor.add(g, { matrix: M, color: mul3(STONE_TONES[k % STONE_TONES.length], 0.95), surf: [surf(KIND.stone, 0.88), 0], renormal: true })
     flagCount++
@@ -434,7 +438,7 @@ let flagCount = 0
       const cz = az + dz * (s + along / 2)
       for (const [off, w] of [[-(left / 2) - 0.08, left - 0.16], [right / 2 + 0.08, right - 0.16]]) {
         const j = between(-0.25, 0.25)
-        cobble(cx - dz * off + dx * j, cz + dx * off + dz * j, along - 0.3, w, 1.7, yaw + between(-0.14, 0.14), 0.55 + between(0, 0.3))
+        cobble(cx - dz * off + dx * j, cz + dx * off + dz * j, along - 0.3, w, 1.3, yaw + between(-0.14, 0.14), 0.45 + between(0, 0.45), 1, true)
         flagCount++
       }
       s += along
@@ -660,8 +664,10 @@ let tuftCount = 0
     const rim = 1 - smooth(1.5, 7, L.islandEdge(Math.atan2(z, x)) - Math.hypot(x, z))
     const patch = smooth(0.0, 0.5, fbm(x * 0.14 + 5, z * 0.14 + 1, 4, 2))
     const east = smooth(4, 16, x) * smooth(-4, 8, z)
-    if (R() > 0.02 + 0.3 * bank + 0.45 * post + 0.25 * rim + 0.12 * patch + 0.75 * east + 0.9 * rock) continue
-    tuft(x, z, 0.8 + 0.3 * bank + 0.2 * rim + 0.5 * east + 0.5 * rock)
+    // The front rim (toward the hero camera) carries tall grass that stands up through the low fog and breaks its level edge.
+    const front = rim * smooth(-0.2, 0.5, z / Math.max(1, Math.hypot(x, z)))
+    if (R() > 0.02 + 0.3 * bank + 0.45 * post + 0.2 * rim + 0.75 * front + 0.08 * patch + 0.6 * east + 0.9 * rock) continue
+    tuft(x, z, 0.8 + 0.3 * bank + 0.2 * rim + 1.1 * front + 0.5 * east + 0.5 * rock)
   }
   const g = new THREE.BufferGeometry()
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))

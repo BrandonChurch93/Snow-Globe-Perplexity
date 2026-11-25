@@ -26,12 +26,13 @@ const lin = (hex) => {
   return [c.r, c.g, c.b]
 }
 
-const CROWN = { centre: [1.2, 28.4, 1], r: [19.5, 14.8, 14.5], floor: 14.2, reach: 13 }
-const LOBES = { count: 36, spacing: 6.2, tall: 1.3, shell: [0.3, 0.96], r: [3.6, 2.5, 3.6], size: [0.7, 1.3], sprays: 4.6, gap: 2.4 }
-const TWIG = { from: 0.36, to: 0.06, sides: 5, steps: 7 }
-const CLUSTER = { step: 1.75, from: 0.3, size: [0.85, 1.3], tip: [1.15, 1.6], flowers: [5, 7.2], flower: [0.58, 0.92], side: 0.6, flat: 0.78, extra: 0.14, core: 0.36 }
+const CROWN = { centre: [0.8, 27.5, 1], r: [20.5, 15.6, 14.5], floor: 11.6, reach: 13 }
+const LOBES = { count: 44, spacing: 6.3, tall: 1.3, shell: [0.22, 1], r: [3.4, 2.3, 3.2], size: [0.6, 1.3], sprays: 3.8, gap: 3.0 }
+const BOUGH = { from: 0.62, to: 0.17, steps: 6, sag: 0.75, past: 0.5 }
+const TWIG = { from: 0.36, to: 0.085, sides: 5, steps: 5, bare: 0.13 }
+const CLUSTER = { step: 2.1, from: 0.42, size: [0.72, 1.15], tip: [1.05, 1.5], flowers: [5, 7.2], flower: [0.56, 0.9], side: 0.75, flat: 0.7, extra: 0.14, core: 0.36 }
 const TONES = ['#f6b3c9', '#f9c6d6', '#f2a7c0', '#fbd7e2', '#f0a2bc', '#f7bdd0', '#fde4ea'].map(lin)
-const LOBE_LOOK = { round: 0.7, under: 0.7 }
+const LOBE_LOOK = { round: 0.55, under: 0.72 }
 const SHADE = [0.75, 0.68, 0.7]
 const HEART = lin('#d86a8a')
 const WOOD = [lin('#7a5038'), lin('#8a5c40'), lin('#694430')]
@@ -55,7 +56,7 @@ const lobes = []
   let tries = 0
   while (lobes.length < LOBES.count && tries < 40000) {
     tries++
-    const d = norm([rng.gauss(), rng.gauss() * 0.8 + 0.2, rng.gauss()])
+    const d = norm([rng.gauss(), rng.gauss() * 0.9 + 0.1, rng.gauss()])
     const k = LOBES.shell[0] + (LOBES.shell[1] - LOBES.shell[0]) * Math.pow(rng.next(), 0.6)
     const c = [CROWN.centre[0] + d[0] * CROWN.r[0] * k, CROWN.centre[1] + d[1] * CROWN.r[1] * k, CROWN.centre[2] + d[2] * CROWN.r[2] * k]
     if (c[1] < CROWN.floor + LOBES.r[1]) continue
@@ -64,6 +65,70 @@ const lobes = []
     const size = rng.range(LOBES.size[0], LOBES.size[1])
     lobes.push({ c, r: mul(LOBES.r, size), n: Math.round(LOBES.sprays * size * size) })
   }
+}
+
+const wood = { p: [], n: [], c: [], i: [] }
+function tube(pts, radii, tone) {
+  const base = wood.p.length / 3
+  for (let i = 0; i < pts.length; i++) {
+    const dir = norm(sub(pts[Math.min(i + 1, pts.length - 1)], pts[Math.max(i - 1, 0)]))
+    const ref = Math.abs(dir[1]) > 0.9 ? [1, 0, 0] : [0, 1, 0]
+    const u = norm(cross(dir, ref))
+    const v = cross(dir, u)
+    for (let k = 0; k < TWIG.sides; k++) {
+      const a = (k / TWIG.sides) * Math.PI * 2
+      const o = add(mul(u, Math.cos(a)), mul(v, Math.sin(a)))
+      const q = add(pts[i], mul(o, radii[i]))
+      wood.p.push(q[0], q[1], q[2])
+      wood.n.push(o[0], o[1], o[2])
+      const k2 = 0.8 + 0.4 * ((i * 7 + k * 3) % 5) / 5
+      wood.c.push(tone[0] * k2, tone[1] * k2, tone[2] * k2)
+    }
+  }
+  for (let i = 0; i < pts.length - 1; i++)
+    for (let k = 0; k < TWIG.sides; k++) {
+      const a = base + i * TWIG.sides + k
+      const b = base + i * TWIG.sides + ((k + 1) % TWIG.sides)
+      wood.i.push(a, b, b + TWIG.sides, a, b + TWIG.sides, a + TWIG.sides)
+    }
+}
+
+// One bough of wood under each tier of blossom: it leaves the nearest limb, runs under the tier and ends past its middle,
+// so the crown reads as blossom carried on branches with air between the tiers.
+lobes.sort((a, b) => Math.hypot(a.c[0], a.c[2]) + 0.5 * a.c[1] - (Math.hypot(b.c[0], b.c[2]) + 0.5 * b.c[1]))
+for (const lobe of lobes) {
+  const under = [lobe.c[0], lobe.c[1] - BOUGH.sag * lobe.r[1], lobe.c[2]]
+  let best = null
+  let bestD = Infinity
+  for (const s of skeleton) {
+    const d = len(sub(under, s.p)) + 1.6 * Math.max(0, s.p[1] - under[1]) + 0.3 * Math.max(0, Math.hypot(s.p[0], s.p[2]) - Math.hypot(under[0], under[2]))
+    if (d < bestD) {
+      bestD = d
+      best = s
+    }
+  }
+  if (!best) continue
+  const away = norm([under[0] - best.p[0], 0, under[2] - best.p[2]])
+  const end = add(under, [away[0] * BOUGH.past * lobe.r[0], 0.25 * lobe.r[1], away[2] * BOUGH.past * lobe.r[2]])
+  const span = len(sub(end, best.p))
+  if (span < 1.5) continue
+  const k1 = add(mix(best.p, end, 0.36), [rng.range(-0.13, 0.13) * span, rng.range(0.02, 0.16) * span, rng.range(-0.13, 0.13) * span])
+  const k2 = add(mix(best.p, end, 0.72), [rng.range(-0.1, 0.1) * span, rng.range(-0.1, 0.02) * span, rng.range(-0.1, 0.1) * span])
+  const at = (t) => {
+    const a = mix(mix(best.p, k1, t), mix(k1, k2, t), t)
+    const b = mix(mix(k1, k2, t), mix(k2, end, t), t)
+    return mix(a, b, t)
+  }
+  const r0 = Math.min(BOUGH.from * (0.75 + 0.03 * span), best.r * 0.85)
+  const pts = []
+  const radii = []
+  for (let i = 0; i <= BOUGH.steps; i++) {
+    const t = i / BOUGH.steps
+    pts.push(at(t))
+    radii.push(r0 + (BOUGH.to - r0) * Math.pow(t, 0.7))
+  }
+  lobe.bough = { pts, radii }
+  for (let i = 1; i <= BOUGH.steps; i++) skeleton.push({ p: pts[i], r: radii[i] })
 }
 
 const targets = []
@@ -119,37 +184,12 @@ for (const target of targets) {
   for (let i = 2; i <= TWIG.steps; i++) skeleton.push({ p: pts[i], r: radii[i] })
 }
 
-const wood = { p: [], n: [], c: [], i: [] }
-function tube(pts, radii, tone) {
-  const base = wood.p.length / 3
-  for (let i = 0; i < pts.length; i++) {
-    const dir = norm(sub(pts[Math.min(i + 1, pts.length - 1)], pts[Math.max(i - 1, 0)]))
-    const ref = Math.abs(dir[1]) > 0.9 ? [1, 0, 0] : [0, 1, 0]
-    const u = norm(cross(dir, ref))
-    const v = cross(dir, u)
-    for (let k = 0; k < TWIG.sides; k++) {
-      const a = (k / TWIG.sides) * Math.PI * 2
-      const o = add(mul(u, Math.cos(a)), mul(v, Math.sin(a)))
-      const q = add(pts[i], mul(o, radii[i]))
-      wood.p.push(q[0], q[1], q[2])
-      wood.n.push(o[0], o[1], o[2])
-      const k2 = 0.8 + 0.4 * ((i * 7 + k * 3) % 5) / 5
-      wood.c.push(tone[0] * k2, tone[1] * k2, tone[2] * k2)
-    }
-  }
-  for (let i = 0; i < pts.length - 1; i++)
-    for (let k = 0; k < TWIG.sides; k++) {
-      const a = base + i * TWIG.sides + k
-      const b = base + i * TWIG.sides + ((k + 1) % TWIG.sides)
-      wood.i.push(a, b, b + TWIG.sides, a, b + TWIG.sides, a + TWIG.sides)
-    }
-}
-
 const clusters = []
 const plant = (p, r, tip, lobe) => {
   if (p[1] < FORK + 1.2) return
   clusters.push({ p, r, tip, lobe })
 }
+for (const lobe of lobes) if (lobe.bough) tube(lobe.bough.pts, lobe.bough.radii, WOOD[rng.int(WOOD.length)])
 for (const s of sprays) {
   tube(s.pts, s.radii, WOOD[rng.int(WOOD.length)])
   const count = Math.max(2, Math.round((s.span * (1 - CLUSTER.from)) / CLUSTER.step))
@@ -157,14 +197,14 @@ for (const s of sprays) {
     const t = CLUSTER.from + (1 - CLUSTER.from) * ((i + rng.next() * 0.6) / count)
     const p = s.at(Math.min(1, t))
     const r = rng.range(CLUSTER.size[0], CLUSTER.size[1]) * (0.7 + 0.5 * t)
-    const off = norm([rng.gauss(), rng.gauss() + 0.5, rng.gauss()])
+    const off = norm([rng.gauss(), 0.7 * rng.gauss() + 1, rng.gauss()])
     plant(add(p, mul(off, r * CLUSTER.side * rng.next())), r, false, s.lobe)
     if (rng.next() < CLUSTER.extra) {
       const off2 = norm([rng.gauss(), rng.gauss() * 0.6 + 0.2, rng.gauss()])
       plant(add(p, mul(off2, r * (0.9 + 0.8 * rng.next()))), r * rng.range(0.6, 0.85), false, s.lobe)
     }
   }
-  plant(s.at(1), rng.range(CLUSTER.tip[0], CLUSTER.tip[1]), true, s.lobe)
+  plant(s.at(1 - TWIG.bare * rng.next()), rng.range(CLUSTER.tip[0], CLUSTER.tip[1]), true, s.lobe)
 }
 for (const l of T.limbs) {
   if (l.kind !== 'twig' && l.kind !== 'limb') continue

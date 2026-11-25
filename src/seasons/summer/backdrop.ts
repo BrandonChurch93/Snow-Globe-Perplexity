@@ -10,6 +10,9 @@ const amber = tone(1.2, 1, 0.46, 0.16)
 const gold = tone(1.6, 1, 0.55, 0.24)
 const peach = tone(1.3, 1, 0.6, 0.3)
 const cream = tone(1.1, 1, 0.72, 0.46)
+// The dimmest lights are held far down: in the approved picture the left side is a few clear amber discs on blue-black, and a
+// crowd of half-lit ones there reads as brown haze.
+const dim = (c: [number, number, number]): [number, number, number] => [c[0] * 0.4, c[1] * 0.4, c[2] * 0.4]
 const low = tone(0.15, 1, 0.66, 0.38)
 const lowest = tone(0.25, 1, 0.72, 0.46)
 
@@ -25,7 +28,7 @@ const smooth = (a: number, b: number, x: number): number => {
 }
 
 /** The cluster: the lights high on the right burn several times brighter than they are placed. One smooth field over the room. */
-export const CLUSTER = { lift: 5, fromPx: [1500, 2000] as const, topPx: [210, 430] as const, left: 0.7, leftPx: [900, 1900] as const }
+export const CLUSTER = { lift: 8, fromPx: [1500, 2000] as const, topPx: [210, 430] as const, left: 0.7, leftPx: [900, 1900] as const }
 
 function gain(at: readonly [number, number, number]): number {
   const dx = at[0] - EYE[0]
@@ -40,8 +43,8 @@ function gain(at: readonly [number, number, number]): number {
 }
 
 export const backdrop: SeasonKit['backdrop'] = {
-  colors: [gold, ember, amber, peach, gold, amber, cream, gold, low, lowest],
-  room: [0.003, 0.0048, 0.0052],
-  floor: [0.0036, 0.0056, 0.0072],
+  colors: [dim(gold), dim(ember), dim(amber), dim(peach), gold, amber, cream, gold, low, lowest],
+  room: [0.0028, 0.0038, 0.0058],
+  floor: [0.0032, 0.0048, 0.0076],
   gain,
 }

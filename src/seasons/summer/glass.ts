@@ -15,7 +15,10 @@ import { holdStorm, veil } from './veil'
 //    shadow: a bright knot with a web of thin veins of light round it, as the approved image has them, long in the light's
 //    direction because the sun is low. The web moves when the globe moves and swings to rest after the landing.
 // 3. The wall: the sun, bent by the globe, burns a patch on the inside of the glass low on the far side; the same billboard
-//    carries the warm air at rest and the glow of the storm (by the liquid's turbulence).
+//    carries the warm haze of the liquid at rest and the glow of the storm (by the liquid's turbulence). It is drawn with the
+//    interior, straight after the view through the liquid and before the miniature, so all of it lies behind the cottage and
+//    the tree: the crown is a dark mass against bright air, as the approved image has it, and nothing is laid over the
+//    miniature's detail.
 // Nothing here is stepped: both are functions of the moment's pose, of the time and of the time since the landing.
 const PART = 'glass-dressing-summer'
 const RS = config.globe.sphereDiameterMm / 2
@@ -34,16 +37,16 @@ export const look = {
     coreAcross: 0.03,
     coreAlong: 0.062,
     // the bloom of the lens round the core: a soft ball a few millimetres wide
-    bloom: 5,
-    bloomWide: 0.085,
+    bloom: 3.2,
+    bloomWide: 0.06,
     halo: 0.7,
     haloWide: 0.24,
     veil: 0.22,
     // the star: many soft tapered rays, short, each with its own length, widest at the core, fanning away from the globe
-    rays: 0.8,
-    spikes: 13,
-    reach: [0.17, 0.16] as const,
-    rayWide: [0.016, 0.05] as const,
+    rays: 1.3,
+    spikes: 18,
+    reach: [0.2, 0.16] as const,
+    rayWide: [0.008, 0.024] as const,
     arc: 1.6,
     hot: [1, 0.9, 0.72] as const,
     warm: [1, 0.7, 0.38] as const,
@@ -77,9 +80,26 @@ export const look = {
     // the air: the low sun in the liquid, warm on the side the light falls toward and nothing on the side it comes from
     air: 0.022,
     airColor: [1, 0.66, 0.36] as const,
+    // the haze: the liquid behind the miniature holds the sun as a warm glow, fullest in a column up the middle of the globe
+    // (`hazeAt`, `hazeWide`, in globe radii across the picture) and `hazeRim` of that toward the sides
+    // It is gold and fullest low, behind the miniature (`hazeLow`, `hazeTall`, in globe radii up the picture); toward the top
+    // of the dome it thins to `hazeTop` of that, and to the sides of the column up there the liquid holds a paler, cooler light
+    // (`hazeSky`, `hazeSkyColor`), so the dome is not one flat tone
+    haze: 0.42,
+    hazeColor: [1, 0.6, 0.3] as const,
+    hazeRim: 0.15,
+    hazeAt: -0.1,
+    hazeWide: 0.45,
+    hazeLow: -0.2,
+    hazeTall: 0.5,
+    hazeTop: 0.6,
+    hazeSky: 0.06,
+    hazeSkyColor: [0.7, 0.8, 0.95] as const,
     // the storm: the seeds and the dust aloft take the sun and the whole dome glows white-gold; it goes with the liquid's
     // turbulence, in slow arms that turn with the time, and is thinner over the miniature so the lanterns stay
-    storm: 0.15,
+    storm: 0.03,
+    // and the still air's haze behind the miniature gives way to it by this much: the storm is in front, in the veil
+    stormClears: 0.45,
     stormFrom: 0.12,
     stormTo: 0.75,
     stormColor: [1, 0.68, 0.34] as const,
@@ -116,7 +136,14 @@ export const look = {
     swing: 1,
     swingSeconds: 1.1,
     swingHz: 1.7,
-    settleSeconds: 0.18,
+    // the arrival: the pool comes last, after the lanterns have come up one by one (kit, "The arrival": the flare kindles on
+    // the landing, the lanterns over the next seconds, then "the pool of light settles on the surface"): nothing of it until
+    // `afterSeconds` past the landing, whole `settleSeconds` later
+    // `early` of it kindles with the flare (the approved mid-shake image has the pool under a stormy globe), within `kindleSeconds`
+    afterSeconds: 2.0,
+    settleSeconds: 1.1,
+    early: 0.3,
+    kindleSeconds: 0.18,
     gold: [1, 0.6, 0.24] as const,
     pale: [1, 0.8, 0.5] as const,
     // the low sun on the table itself: a strip of dusty warm light past the far side of the globe's long shadow, which lies
@@ -217,8 +244,8 @@ void main() {
   hot += 0.7 * exp(-pow((r - 0.872) / 0.022, 2.0) - pow((a + 0.1) / 0.06, 2.0));
   hot *= lines;
   // the middle of it burns out
-  hot += 1.2 * exp(-pow((r - 0.908) / 0.028, 2.0) - pow((a + 0.01) / 0.065, 2.0));
-  float glow = exp(-pow((r - 0.9) / 0.06, 2.0) - a * a / 0.03);
+  hot += 0.8 * exp(-pow((r - 0.915) / 0.02, 2.0) - pow((a + 0.01) / 0.085, 2.0));
+  float glow = exp(-pow((r - 0.91) / 0.04, 2.0) - a * a / 0.05);
   float edge = exp(-pow((r - 0.972) / 0.012, 2.0)) * exp(-pow((a - 0.45) / 0.75, 2.0));
   // in the storm the liquid scatters the sun: the patch is a dull amber glow, not a burn
   float clear = 1.0 - ${n(W.stormDulls)} * storm;
@@ -228,6 +255,11 @@ void main() {
   vec3 spill = ${vec(W.color)} * (${n(W.spill)} * exp(-dot(off, off) / 0.022) * lit);
   float toward = 0.5 + 0.5 * dot(vWl, vWlDir);
   vec3 air = ${vec(W.airColor)} * (${n(W.air)} * smoothstep(0.45, 1.0, toward) * body);
+  float column = (vWl.x - ${n(W.hazeAt)}) / ${n(W.hazeWide)};
+  float still = 1.0 - ${n(W.stormClears)} * storm;
+  float low = exp(-pow((vWl.y - ${n(W.hazeLow)}) / ${n(W.hazeTall)}, 2.0));
+  air += ${vec(W.hazeColor)} * (${n(W.haze)} * still * body * (${n(W.hazeRim)} + ${n(1 - W.hazeRim)} * exp(-column * column)) * (${n(W.hazeTop)} + ${n(1 - W.hazeTop)} * low));
+  air += ${vec(W.hazeSkyColor)} * (${n(W.hazeSky)} * still * body * smoothstep(-0.1, 0.6, vWl.y) * (1.0 - 0.8 * exp(-column * column)));
   // the storm's light: slow broad arms about the middle, turning with the time
   float turn = atan(vWl.y, vWl.x);
   float arms = 1.0 - ${n(W.stormArms)} + ${n(W.stormArms)} * sin(2.0 * turn + 5.0 * r - 1.7 * uSummer.x) * smoothstep(0.05, 0.4, r);
@@ -380,10 +412,10 @@ vStageLocal = (uGlobeInv * vec4(uLensCentre, 1.0)).xyz;
 vStagePlaced = uLensCentre;
 vStageAux = vec3(0.0, -wlAt.z, length(wlAt.xyz));`,
     fragment: WALL,
-    params: { ...added, depthTest: false },
+    params: { ...added, transparent: false, depthTest: false },
   })
   const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), m)
-  mesh.renderOrder = 13
+  mesh.renderOrder = -0.25
   mesh.frustumCulled = false
   return mesh
 }
@@ -471,7 +503,7 @@ export function update(moment: KitMoment): void {
   uniforms.uPoolAt.value.set(g.x + wx * reach + wz * P.sideMm + leanX, g.z + wz * reach - wx * P.sideMm + leanZ, wx, wz)
   uniforms.uPoolFoot.value.set(g.x, g.z)
   const held = Math.min(1, Math.max(0, g.y / config.shake.liftMm))
-  const there = lit * (1 - 0.65 * smooth(held)) * (shaking || two ? 1 : smooth(t / P.settleSeconds) * 0.999 + 0.001)
+  const there = lit * (1 - 0.65 * smooth(held)) * (shaking || two ? 1 : P.early * smooth(t / P.kindleSeconds) + (1 - P.early) * smooth((t - P.afterSeconds) / P.settleSeconds))
   // the storm's glow goes with the liquid: none in still water, whole when it churns
   const kept = holdStorm(moment)
   // and it hands over with the veil: leaving, it thins as the next season's veil takes the liquid, never in a cut

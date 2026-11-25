@@ -20,6 +20,6 @@ export const tones: Record<'lamp' | 'flame' | 'lampLight' | 'purple' | 'purpleDr
   haloEdge: [0.85, 0.34, 0.05],
   haloCore: [1, 0.62, 0.2],
   moss: [0.075, 0.105, 0.03],
-  water: [0.006, 0.016, 0.014],
-  fogGlint: [0.06, 0.5, 0.22],
+  water: [0.014, 0.03, 0.027],
+  fogGlint: [0.2, 0.46, 0.34],
 }
