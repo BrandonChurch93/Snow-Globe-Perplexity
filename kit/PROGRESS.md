@@ -37,16 +37,16 @@ Status 74 · 2026-11-25 04:21 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 04:21 UTC
-clock: phase 4, tick of 12.1 minutes
-phase 4: 4.23 h used of its 9.50 h box
-allowance (before the review): 26.52 h used of 36.00 h allowed
-all time before the review: 26.52 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 04:32 UTC
+clock: phase 4, tick of 11.4 minutes
+phase 4: 4.42 h used of its 9.50 h box
+allowance (before the review): 26.71 h used of 36.00 h allowed
+all time before the review: 26.71 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 11
 ```
 
 ## Phases
@@ -875,6 +875,8 @@ Numbered. What, why, and the date.
 
 82. **The arrivals stay with the change builder in the third set of build agents** (03:56 UTC, Phase 4). The change builder offered to hand the three files `src/seasons/{spring,summer,fall}/arrival.ts` to the seasons' builders so that each arrival is drawn by the agent that owns the miniature it reveals. All ten build places are taken (`sandbox.maxAgents` less `sandbox.criticSlots`), so an eleventh builder cannot start, and giving the arrivals to the three air builders would split one staged event (the storm dying, then each row of the kit's arrival table in turn) across two owners per season while the air builders still carry the veil, the light and open measures. Chosen: one owner for all four changes and all three arrivals, as kit/08 writes the `change` unit; where a row of the arrival table needs a line in a season's `mini/**`, `veil.ts` or `slab.ts`, the change builder asks that file's owner by message and reports what was agreed. The three air builders were told at 03:55 that their veil must hold its storm density through the landing and thin over `shake.spinDownSeconds`, which is the part of the arrival that lives in their files. The change builder writes a `HANDOVER.md` on its looks branch before its limit so its successor starts from the newest sheets.
 
+83. **When `change` goes to its floor round: with the seasons' last rounds, on the same commit** (04:34 UTC, Phase 4). Two lines of the kit pull apart here. Clock rule 3 in `AGENTS.md` sends a unit to its first round "as soon as none of it is a stand-in", and after the half point of the phase (due at about 04:53 UTC) "at once"; the change builder took the stand-in flag down on all four changes at 04:27. `kit/08-BUILD-ORDER.md` starts `change` only "once the three seasons are finished or have reached their limits", and gives it its floor round at the box end "on whatever the seasons are". Read together: a unit cannot be sent to a round before its own start condition, and `change` was only built ahead of that condition because decision 71 put a builder on it in parallel. Chosen: `change` takes its floor round at the freeze of the seasons' third rounds (their count limit, `quality.maxRoundsPerUnit`), judging the same commit, and at the box end at the latest. Why this reading is the one closest to the approved images: a round on `change` judges four changes between seasons that are themselves still being rebuilt against their approved images, so an earlier round would be judged on scenery that is replaced an hour later; three of the four changes and all three new arrivals are already read by each season's motion critic in every season round and those answers go to the change builder as they arrive; and a round on the same commit as the seasons' last rounds draws the same frames for three of its four shakes, which leaves render places free for the seasons' own rounds. Until then the change builder carries on with steps 1 to 3 of the kit's list for `change` (the changes, the arrivals, the cycles on M4, M5 and M6 at final tier).
+
 ## Notes from Brandon
 
 Numbered, in his words, with the date and how each was applied. Review round items carry their round's number.
@@ -1652,3 +1654,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 03:56 UTC. - 03:56 UTC: Status 73 posted (three pictures inline: the change from spring to summer inside its bloom on the change builder's branch; fall's base and fall's air on their builders' branches beside the approved image). Round 10 so far: R1 3, R3 6, R2 fails (1 of 20 against 7 of 10), 6 of 19 measures red; motion pack and machine checks still rendering. Sound account unchanged (4 credits at 03:36).
 
 - 04:21 UTC. - 04:21 UTC: Status 74 posted (three pictures inline from the builders' branches beside the approved images: fall's miniature, summer's pond, spring's tree). Round 10's motion pack arrived at 04:02 (branch `agent/p4-round10-motion` `0ab9001`, fetched, never merged); its motion critic started at 04:02. Triangle counts on trial merges: summer 1,747,087 / 1,004,239 / 500,846 (inside the limit at all three levels); spring 1,782,159 / 1,342,186 / 560,027 before the base's lighter lists (pushed since as `e0ee86f`). Sound account unchanged (4 credits at 04:21).
+
+- 04:34 UTC. - 04:34 UTC: the push of `dcaffed` (Round 10's R4 answer) failed at 04:32; it is retried with the next commit. Round 10's R4 answer is in (3; three severe, three major, one minor) and went to the change builder, fall's air and base builders, summer's air builder, the bases builder and the kinds builder with the sheets it names and a line on whose issue is whose.
