@@ -34,8 +34,8 @@ const WALL_FILL = 1.1
 const SAND = { white: [0.86, 0.9, 0.98] as Rgb, whiten: 0.8, clumpPerMm: 1.1, grainPerMm: 4.2, heapPerMm: 0.16, heapLow: 0.6, heap: 0.6, body: 3.6, floor: 0.28, wrap: 0.5, foot: 0.7, lip: 1.5, lipTo: 0.3, shade: [1.0, 0.8, 0.58] as Rgb, bump: 0.6, grainLow: 0.62, grain: 0.5, spark: 1.5, topFrom: 0.22, topTo: 0.62 }
 const TURF_LOOK = { tone: 0.5, fineMm: 0.05, clumpMm: 0.22, fill: 0.25, wrap: 0.5, sun: 14 }
 // Where the low sun reaches the floor: the same four pools as `sunAt` in assets-src/village-summer/build.mjs, which the grass carries.
-const SUN_POOLS: readonly [number, number, number, number, number][] = [[1.2, 27, 3, 11, 9], [1.1, 3, -8, 9, 6], [0.4, -24, 21, 6, 5], [0.5, 24, 22, 9, 6]]
-const GRASS_LOOK = { fill: 0.1, wrap: 1.0, through: 0.36, near: 2.1, sun: 48, sunRoot: 0.35, shade: [0.26, 0.23, 0.62] as Rgb }
+const SUN_POOLS: readonly [number, number, number, number, number][] = [[1.2, 27, 3, 11, 9], [1.4, 3, -8, 9, 6], [0.4, -24, 21, 6, 5], [0.5, 24, 22, 9, 6]]
+const GRASS_LOOK = { fill: 0.1, wrap: 1.0, through: 0.36, near: 2.1, sun: 40, sunRoot: 0.35, shade: [0.26, 0.23, 0.62] as Rgb }
 const ROOF = { slate: [0.07, 0.11, 0.22] as Rgb, chimney: [0.4, 0.37, 0.35] as Rgb, stone: [0.6, 0.45, 0.37] as Rgb, stoneMid: 0.34, stoneFlat: 0.45, stoneHue: 0.5, plank: [0.5, 0.26, 0.15] as Rgb, plankMm: 2.2, plankTall: 3.8, pitch: 0.2, stoneMm: 1.4, picket: [0.5, 0.27, 0.14] as Rgb, picketMm: 1.6, pale: 0.25, railTop: [1.5, 1.2, 0.85] as Rgb, door: [0.27, 0.125, 0.08] as Rgb, doorMm: 2.4, reachMm: 0.4 }
 const DARK_PANE = 0.07
 const WATER = { spark: 1.1, mass: 0.975, houseMm: 9.5, houseTall: 17, flat: 0.14, wobble: 0.9, rough: 0.035, ripple: 0.0045, fine: 0.0012, shoreFrom: 0.9, shoreTo: 1.0, sky: 2.0, skyFrom: -0.75, skyTo: 0.35, skyAt: 1.5, skyWide: 11.5, skyLow: 0.1, bankMm: 0.7, bankVary: 1.1, bankEdge: 0.16, bankDark: 0.975, env: 0.1, glint: 0.5, squash: 0.14, paperGlint: 0.25, paperMm: 1.5, paperTall: 0.5, post: 0.93, postMm: 0.75, postTall: 11.5, trunk: 0.975, trunkMm: 5.2, trunkTall: 26, body: 0.4 }
@@ -106,7 +106,11 @@ float sandNoise(vec3 p) {
     mix(mix(sandHash(i + vec3(0.0, 0.0, 1.0)), sandHash(i + vec3(1.0, 0.0, 1.0)), f.x), mix(sandHash(i + vec3(0.0, 1.0, 1.0)), sandHash(i + vec3(1.0, 1.0, 1.0)), f.x), f.y), f.z);
 }
 float turfSunAt(vec2 p) {
-  return clamp(${SUN_POOLS.map(([k, x, z, rx, rz]) => `${k.toFixed(2)} * exp(-dot((p - vec2(${x.toFixed(1)}, ${z.toFixed(1)})) / vec2(${rx.toFixed(1)}, ${rz.toFixed(1)}), (p - vec2(${x.toFixed(1)}, ${z.toFixed(1)})) / vec2(${rx.toFixed(1)}, ${rz.toFixed(1)})))`).join(' + ')}, 0.0, 1.0);
+  // No pool of sun on the bank of the pond: it lies under the grass that hangs over the water.
+  vec2 turfPondD = p - vec2(${pond.x.toFixed(2)}, ${pond.z.toFixed(2)});
+  vec2 turfPondL = abs(vec2(${Math.cos(pond.yaw).toFixed(4)} * turfPondD.x - ${Math.sin(pond.yaw).toFixed(4)} * turfPondD.y, ${Math.sin(pond.yaw).toFixed(4)} * turfPondD.x + ${Math.cos(pond.yaw).toFixed(4)} * turfPondD.y) / vec2(${pond.rx.toFixed(2)}, ${pond.rz.toFixed(2)}));
+  float turfBank = smoothstep(1.06, 1.4, pow(pow(turfPondL.x, ${pond.power.toFixed(1)}) + pow(turfPondL.y, ${pond.power.toFixed(1)}), ${(1 / pond.power).toFixed(4)}));
+  return turfBank * clamp(${SUN_POOLS.map(([k, x, z, rx, rz]) => `${k.toFixed(2)} * exp(-dot((p - vec2(${x.toFixed(1)}, ${z.toFixed(1)})) / vec2(${rx.toFixed(1)}, ${rz.toFixed(1)}), (p - vec2(${x.toFixed(1)}, ${z.toFixed(1)})) / vec2(${rx.toFixed(1)}, ${rz.toFixed(1)})))`).join(' + ')}, 0.0, 1.0);
 }
 float turfHeight(vec2 uv) {
   vec3 t = texture2D(map, uv).rgb;
@@ -136,7 +140,7 @@ diffuseColor.rgb = mix(diffuseColor.rgb, mix(diffuseColor.rgb, ${glsl(SAND.white
 }
 `,
         )
-      afterLight(shader, `${NEAR_LIGHT}\n{\n  float sandBank = sandAmt;\n  vec3 sandBody = stageKeyC * (RECIPROCAL_PI * ${SAND.body.toFixed(2)} * mix(${SAND.floor.toFixed(2)}, 1.0, stageWrap(dot(geometryNormal, stageKeyL), ${SAND.wrap.toFixed(2)})) * mix(1.0, ${SAND.foot.toFixed(2)}, vSurf.y)) * material.diffuseContribution;\n  // The low sun whitens the lip of the sand where it meets the ground and leaves the face against the glass in warm shade.\n  float sandLip = 1.0 - smoothstep(0.0, ${SAND.lipTo.toFixed(2)}, vSurf.y);\n  sandBody *= mix(${glsl(SAND.shade)}, vec3(1.0 + ${SAND.lip.toFixed(2)}), sandLip);\n  reflectedLight.directDiffuse = mix(reflectedLight.directDiffuse, sandBody, sandBank);\n}\nreflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${TURF_LOOK.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), ${TURF_LOOK.wrap.toFixed(2)})) * material.diffuseContribution;\nreflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${TURF_LOOK.sun.toFixed(2)} * turfSunAt(vStageLocal.xz) * (1.0 - sandAmt)) * mix(material.diffuseContribution, vec3(0.2, 0.17, 0.08), 0.5);`)
+      afterLight(shader, `${NEAR_LIGHT}\n{\n  float sandBank = sandAmt;\n  vec3 sandBody = stageKeyC * (RECIPROCAL_PI * ${SAND.body.toFixed(2)} * mix(${SAND.floor.toFixed(2)}, 1.0, stageWrap(dot(geometryNormal, stageKeyL), ${SAND.wrap.toFixed(2)})) * mix(1.0, ${SAND.foot.toFixed(2)}, vSurf.y)) * material.diffuseContribution;\n  // The low sun whitens the lip of the sand where it meets the ground and leaves the face against the glass in warm shade.\n  float sandLip = 1.0 - smoothstep(0.0, ${SAND.lipTo.toFixed(2)}, vSurf.y);\n  sandBody *= mix(${glsl(SAND.shade)}, vec3(1.0 + ${SAND.lip.toFixed(2)}), sandLip);\n  reflectedLight.directDiffuse = mix(reflectedLight.directDiffuse, sandBody, sandBank);\n}\nreflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${TURF_LOOK.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), ${TURF_LOOK.wrap.toFixed(2)})) * material.diffuseContribution;\nreflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${TURF_LOOK.sun.toFixed(2)} * turfSunAt(vStageLocal.xz) * (1.0 - sandAmt)) * mix(material.diffuseContribution, vec3(0.22, 0.19, 0.095), 0.58);`)
     },
   })
 }
@@ -166,7 +170,7 @@ function grassMaterial(): THREE.MeshStandardMaterial {
         shader,
         `reflectedLight.indirectDiffuse += vGlow * (uGlowGain * ${GRASS_LOOK.near.toFixed(2)}) * material.diffuseContribution;
 reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${GRASS_LOOK.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), ${GRASS_LOOK.wrap.toFixed(2)}) + ${GRASS_LOOK.through.toFixed(2)} * vSurf.x * pow(clamp(dot(normalize(vViewPosition), -stageKeyL), 0.0, 1.0), 2.0))) * material.diffuseContribution;
-reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${GRASS_LOOK.sun.toFixed(2)} * vSurf.y * vSurf.y * mix(${GRASS_LOOK.sunRoot.toFixed(2)}, 1.0, vSurf.x)) * mix(material.diffuseContribution, vec3(0.2, 0.17, 0.08), 0.5);`,
+reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${GRASS_LOOK.sun.toFixed(2)} * vSurf.y * vSurf.y * mix(${GRASS_LOOK.sunRoot.toFixed(2)}, 1.0, vSurf.x)) * mix(material.diffuseContribution, vec3(0.22, 0.19, 0.095), 0.58);`,
       )
     },
   })

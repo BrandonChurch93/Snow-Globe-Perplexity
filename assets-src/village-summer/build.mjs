@@ -52,7 +52,7 @@ const sandAt = (x, z) => (1 - smooth(0.5, TURF.sandReach * (0.6 + 1.1 * clamp(0.
 const blob = (x, z, cx, cz, rx, rz) => Math.exp(-(((x - cx) / rx) ** 2 + ((z - cz) / rz) ** 2))
 // Where the low sun reaches the floor between the crown, the trunk and the cottage (read off the approved image): right of
 // the trunk out to the sunflowers, behind the lamp, a little by the fence and on the near right bank.
-const sunAt = (x, z) => clamp((1.2 * blob(x, z, 27, 3, 11, 9) + 1.1 * blob(x, z, 3, -8, 9, 6) + 0.4 * blob(x, z, -24, 21, 6, 5) + 0.5 * blob(x, z, 24, 22, 9, 6)) * (0.5 + 1.0 * clamp(0.5 + 1.4 * fbm(x * 0.3 + 9, z * 0.3 + 4, 6.1, 2))))
+const sunAt = (x, z) => clamp((1.2 * blob(x, z, 27, 3, 11, 9) + 1.4 * blob(x, z, 3, -8, 9, 6) + 0.4 * blob(x, z, -24, 21, 6, 5) + 0.5 * blob(x, z, 24, 22, 9, 6)) * (0.5 + 1.0 * clamp(0.5 + 1.4 * fbm(x * 0.3 + 9, z * 0.3 + 4, 6.1, 2))))
 const turfAt = (x, z) => TURF.lumpMm * fbm(x * 0.22 + 3.1, z * 0.22 + 1.7, 2.2, 3) + TURF.fineMm * fbm(x * 0.9, z * 0.9, 5.5, 2)
 const topAt = (x, z) => L.groundAt(x, z) + turfAt(x, z) * smooth(0.98, 1.1, L.pondField(x, z)) + TURF.sandMm * sandAt(x, z) * (0.6 + 0.4 * fbm(x * 0.5, z * 0.5, 9, 2))
 const keepHard = (role) => role === 'cottage' || role === 'chimney' || role === 'path' || role === 'post' || role === 'fence'
