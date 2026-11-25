@@ -38,10 +38,10 @@ Copied from the last tick of `npm run clock`.
 
 ```
 2026-11-25 03:56 UTC
-clock: phase 4, tick of 4.1 minutes
-phase 4: 3.81 h used of its 9.50 h box
-allowance (before the review): 26.09 h used of 36.00 h allowed
-all time before the review: 26.09 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+clock: phase 4, tick of 0.6 minutes
+phase 4: 3.82 h used of its 9.50 h box
+allowance (before the review): 26.10 h used of 36.00 h allowed
+all time before the review: 26.10 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
@@ -872,6 +872,8 @@ Numbered. What, why, and the date.
 80. **The sound agent's files reach `main` by copy, with the account's billing fields left out** (03:05 UTC, Phase 4). The sound agent ended at 03:03 with no sound made (decision 78) and left on `agent/p4-sound` (`523ee9d`): `audio/RECIPE.md` (for a fresh agent: every call, all 13 cue texts and 4 track prompts, the judging steps, the chain, the commands in order, a cost table of about 3300 credits for one take of everything and about 9900 for three), `audio/prompts.json` (every text, state "not made: no credits"), `audio/plans/one-piece.json` (the composition plan, five sections of 12000 ms; the plan call cost nothing), `audio/QUESTIONS.md`, `audio/lines.json`, `audio/run/*.mjs` (their path after an HTTP 200 is untested) and `audio/evidence/`. Its two saved answers of `GET /v1/user/subscription` hold the account's next invoice amount, which does not belong in a public repo. So the branch is not merged: its `audio/**` is copied onto `main` with those two files reduced to the counter fields, the merge helper leaves the branch out, and the branch is deleted at the remote once a push works again. Its mixes with no music in them were removed by the agent ("a file named after a candidate with no music in it is not a candidate"): until music exists the films are silent, and the app plays its four kept sounds. Its checks: `npm run soundcheck` 7 pass, 1 open (A2, the known item); `tests/audiomap` and `tests/mix` 38 passed.
 
 81. **A per-season gain on the background lights** (03:12 UTC, Phase 4). Round 9's R1 #7 has summer's out-of-focus lights wrong by place: the approved image has a bright warm cluster at the upper right and a mostly dark left, ours had two dim discs at the right and a column of large orange ones along the left. A season chooses only the discs' colours by level, and the same levels stand left and right, so no file of summer's can move brightness from one side to the other. On `summer_air2`'s exact lines I added one opening to two shared files: in `src/seasons/kit.ts` the kit's `backdrop` may carry `gain?: (at) => number`, and in `src/scene/backdrop.ts` `fill()` multiplies each light's energy by it. Where a season gives none the factor is 1, so winter, spring and fall draw the same numbers as before, and the room lights read the same arrays, so the reflections follow. I read this as a season's own data reaching the shared backdrop, the reading closest to the approved image, and not as a rework of the shared system inside a season's round: the places, sizes and look of the lights are untouched. `tsc` clean, vitest 432 passed.
+
+82. **The arrivals stay with the change builder in the third set of build agents** (03:56 UTC, Phase 4). The change builder offered to hand the three files `src/seasons/{spring,summer,fall}/arrival.ts` to the seasons' builders so that each arrival is drawn by the agent that owns the miniature it reveals. All ten build places are taken (`sandbox.maxAgents` less `sandbox.criticSlots`), so an eleventh builder cannot start, and giving the arrivals to the three air builders would split one staged event (the storm dying, then each row of the kit's arrival table in turn) across two owners per season while the air builders still carry the veil, the light and open measures. Chosen: one owner for all four changes and all three arrivals, as kit/08 writes the `change` unit; where a row of the arrival table needs a line in a season's `mini/**`, `veil.ts` or `slab.ts`, the change builder asks that file's owner by message and reports what was agreed. The three air builders were told at 03:55 that their veil must hold its storm density through the landing and thin over `shake.spinDownSeconds`, which is the part of the arrival that lives in their files. The change builder writes a `HANDOVER.md` on its looks branch before its limit so its successor starts from the newest sheets.
 
 ## Notes from Brandon
 
