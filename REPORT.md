@@ -3,7 +3,7 @@
 Branch `agent/p4-spring_mini3`, last commit `7bc93d5` (merge of `origin/main`; last work commit `20e7055`). Looks branch `agent/p4-spring_mini3-looks`. Measured numbers, constants, dead ends and the list of my files are in `HANDOVER.md` beside this file.
 
 ## Stand-ins and fallbacks
-None in my files. The stills' records say `standIns: 9` for the page as a whole; I did not trace which parts those are.
+None in my files (no stand-in, placeholder or fallback in `miniature.ts`, `mini/**` or either `build.mjs`). The stills' records say `standIns: 9`; those are the nine rows of `parts/PARTS.json` in state `stand-in` (the four changes, interface, sound-engine, quality-levels, opening, loop), none of them mine.
 
 ## What I built, by commit (each followed by a merge of main and a push)
 - `890edda`: crown as tufts on their own boughs, storm glow sprites, darker bank. Issue 8.
