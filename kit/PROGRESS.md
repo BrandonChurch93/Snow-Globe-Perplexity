@@ -37,16 +37,16 @@ Status 75 · 2026-11-25 04:54 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 04:54 UTC
-clock: phase 4, tick of 10.7 minutes
-phase 4: 4.78 h used of its 9.50 h box
-allowance (before the review): 27.06 h used of 36.00 h allowed
-all time before the review: 27.06 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 05:07 UTC
+clock: phase 4, tick of 13.5 minutes
+phase 4: 5.00 h used of its 9.50 h box
+allowance (before the review): 27.29 h used of 36.00 h allowed
+all time before the review: 27.29 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 13
 ```
 
 ## Phases
