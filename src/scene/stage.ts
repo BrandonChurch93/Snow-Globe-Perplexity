@@ -11,16 +11,17 @@ import type { Emitter, Moment, ParticleSource, SdfGrid, Stage, StageQuality } fr
 import { preparedBytes, prepareGroup, setAnisotropy } from '../core/textures'
 import { FLOW_RANGE_MM_S, LIGHT_RANGE, allParts, viewCode } from '../diagnostics/views'
 import { Shell } from '../globe/shell'
+import { lensState } from '../post/grade'
 import { ParticleDraw } from '../particles/draw/points'
 import { kitOf, kits } from '../seasons'
 import type { SeasonKit } from '../seasons/kit'
-import { changeBloom, partChange } from '../shake/change'
+import { CHANGE_CUT, changeBloom, partChange } from '../shake/change'
 import { Backdrop } from './backdrop'
 import { applyPose, type Pose } from './cameras'
 import { newFrame, type StageFrame } from './frame'
 import { centreHeightMm, emitters as layoutEmitters, innerRadiusMm, outerRadiusMm } from './layout'
 import { bakeGrid, flickerOf, gridBytes } from './lightgrid'
-import { Lighting } from './lighting'
+import { CHANGE_BLOOM, Lighting } from './lighting'
 import { drawPasses, type PassContext } from './passes'
 import { makeSlab, updateSurface } from './surface'
 
@@ -62,6 +63,7 @@ export class GlobeStage implements Stage {
   private readonly inside = new THREE.Group()
   private readonly slab = makeSlab()
   private readonly backdrop = new Backdrop()
+  private readonly centre = new THREE.Vector3()
   private readonly shell = new Shell()
   /** The glass as the lens fill's map takes it when the globe itself is in focus: one closed surface with no blur. */
   private readonly keep = new THREE.Mesh(this.shell.shell.geometry, new THREE.MeshBasicMaterial({ color: 0x000000 }))
@@ -256,7 +258,8 @@ export class GlobeStage implements Stage {
     // even, because there the veil that comes is part of the cover of the swap.
     const veil = partChange('veil', change)
     f.mix.veil = a.kit.veil.density >= b.kit.veil.density ? Math.pow(veil, VEIL_LATE) : veil
-    f.mix.base = partChange('base', change)
+    // What the glass and the table show of the base (its colour in the collar's refraction and in the baked mirror) steps with the base itself, on the cut.
+    f.mix.base = change <= 0 ? 0 : change >= 1 ? 1 : change < CHANGE_CUT.at ? 0 : 1
     f.mix.particles = partChange('particles', change)
     f.mix.bloom = changeBloom(change)
     f.grids[0] = a.grid
@@ -340,6 +343,10 @@ export class GlobeStage implements Stage {
       renderer.setRenderTarget(target)
     } else {
       applyPose(this.camera, pose, w, h, sample)
+      this.inside.getWorldPosition(this.centre)
+      const reach = (CHANGE_BLOOM.glareReach * f.focalPx * outerRadiusMm) / (this.centre.distanceTo(this.camera.position) * h)
+      this.centre.project(this.camera)
+      lensState.glareAt.set(0.5 + 0.5 * this.centre.x, 0.5 + 0.5 * this.centre.y, reach)
       drawPasses(this.pass, { shadows, mirror: view === '' && f.planar, sliceOnly, emitters: beauty }, f)
       const fill = view === '' && pose.apertureMm > 0 ? lensFillOf(target) : undefined
       if (fill?.wants(sample)) this.drawBlur(fill, target, pose, f, single ? [a] : [a, b])
