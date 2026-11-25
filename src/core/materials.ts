@@ -108,7 +108,7 @@ export function makeHandle(spec: PartSpec): StageHandle {
   const c = partBytes(spec.part)
   const standIn = spec.standIn !== false
   if (standIn) flagStandIn(spec.part)
-  const ramp = changeRamp(spec.change ?? 'none')
+  const ramp = spec.change === 'surface-dressing' ? OUTSIDE_RAMP : changeRamp(spec.change ?? 'none')
   return {
     part: spec.part,
     uPart: { value: new THREE.Vector4(c[0] / 255, c[1] / 255, c[2] / 255, standIn ? 1 : 0) },

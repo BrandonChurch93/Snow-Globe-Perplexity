@@ -30,6 +30,12 @@ export const DRESSING_CHANGE = { liftFrom: frames(12), leaveFrom: frames(16), le
 
 /** The bloom rises over this much of the window to the cut and falls over as much after it. */
 const BLOOM_HALF = frames(6)
+
+/**
+ * What the table carries as one number crossed straight from the old season to the new (the lumps of the slab) goes with the base:
+ * across the cut, inside the one frame that holds it.
+ */
+const ON_THE_CUT: ChangeSpan = { from: CHANGE_CUT.at - frames(0.125), to: CHANGE_CUT.at + frames(0.125), lag: 0 }
 const SPANS: Record<string, ChangeSpan> = {
   miniature: { from: 0.05, to: 0.95, lag: 0.5 },
   arrival: { from: 0.05, to: 0.95, lag: 0.5 },
@@ -38,7 +44,7 @@ const SPANS: Record<string, ChangeSpan> = {
   particles: { from: 0, to: 1, lag: 0 },
   base: OUTSIDE,
   'glass-dressing': OUTSIDE,
-  'surface-dressing': OUTSIDE,
+  'surface-dressing': ON_THE_CUT,
   backdrop: OUTSIDE,
 }
 
