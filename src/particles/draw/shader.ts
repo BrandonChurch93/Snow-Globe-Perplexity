@@ -148,7 +148,10 @@ export const VERT_MAIN = `
   float classed = 1.0 - (1.0 - smears) * (1.0 - sharps) * (1.0 - fines);
   float gusty = afloat * max(gust, (1.0 - glints) * (1.0 - classed) * (1.0 - shown));
   float soft = gusty * (smears + ${n(STORM_FINE_SOFT)} * fines);
-  rPx = mix(rPx, min(rPx, mix(${n(STORM_MOST_PX)}, ${n(STORM_GLITTER_PX)}, glints) * uPoint.w), gusty * (1.0 - smears));
+  float narrow = mix(rPx, min(rPx, mix(${n(STORM_MOST_PX)}, ${n(STORM_GLITTER_PX)}, glints) * uPoint.w), gusty * (1.0 - smears));
+  // in the storm a flake keeps its own width and is that much fainter: a soft stroke of its light, not a thin bright dash
+  float wider = storming && glints < 0.5 ? narrow / max(rPx, 1e-4) : 1.0;
+  if (wider == 1.0) rPx = narrow;
   float coc = uAperture.w * uPoint.y * (1.0 / zImg - uAperture.z);
   vec4 centreV = viewMatrix * vec4(uLensCentre, 1.0);
   float over = (1.0 - smoothstep(${n(REST_CLEAR.from)}, ${n(REST_CLEAR.to)}, length(view.xy * (centreV.z / view.z) - centreV.xy) / uLens.x)) * (1.0 - gusty) * afloat;
@@ -218,6 +221,7 @@ export const VERT_MAIN = `
     held = mix(1.0, glints > 0.5 ? ${n(STORM_GLITTER)} * full : clump * (want > 0.0 ? want * full : ${n(STORM_THIN)}), gusty);
   }
   held *= mix(1.0, mix(${n(STORM_PACE.unseen)}, 1.0, gust), afloat * classed * (1.0 - shown));
+  held *= wider;
   held *= 1.0 - ${n(STORM_WALL.dim)} * smoothstep(${n(STORM_WALL.from)}, ${n(STORM_WALL.to)}, nowL.x / uLens.w) * uStorm.x * afloat * (1.0 - uVeilRoll.y);
 
   vec3 axis = normalize(h.xyz * 2.0 - 1.0 + 1e-3);
