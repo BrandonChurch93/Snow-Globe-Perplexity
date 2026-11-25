@@ -15,7 +15,10 @@ import { holdStorm, veil } from './veil'
 //    shadow: a bright knot with a web of thin veins of light round it, as the approved image has them, long in the light's
 //    direction because the sun is low. The web moves when the globe moves and swings to rest after the landing.
 // 3. The wall: the sun, bent by the globe, burns a patch on the inside of the glass low on the far side; the same billboard
-//    carries the warm air at rest and the glow of the storm (by the liquid's turbulence).
+//    carries the warm haze of the liquid at rest and the glow of the storm (by the liquid's turbulence). It is drawn with the
+//    interior, straight after the view through the liquid and before the miniature, so all of it lies behind the cottage and
+//    the tree: the crown is a dark mass against bright air, as the approved image has it, and nothing is laid over the
+//    miniature's detail.
 // Nothing here is stepped: both are functions of the moment's pose, of the time and of the time since the landing.
 const PART = 'glass-dressing-summer'
 const RS = config.globe.sphereDiameterMm / 2
@@ -77,9 +80,16 @@ export const look = {
     // the air: the low sun in the liquid, warm on the side the light falls toward and nothing on the side it comes from
     air: 0.022,
     airColor: [1, 0.66, 0.36] as const,
+    // the haze: the liquid behind the miniature holds the sun as a warm glow, fullest in a column up the middle of the globe
+    // (`hazeAt`, `hazeWide`, in globe radii across the picture) and `hazeRim` of that toward the sides
+    haze: 0.27,
+    hazeColor: [1, 0.64, 0.36] as const,
+    hazeRim: 0.15,
+    hazeAt: -0.1,
+    hazeWide: 0.4,
     // the storm: the seeds and the dust aloft take the sun and the whole dome glows white-gold; it goes with the liquid's
     // turbulence, in slow arms that turn with the time, and is thinner over the miniature so the lanterns stay
-    storm: 0.15,
+    storm: 0.1,
     stormFrom: 0.12,
     stormTo: 0.75,
     stormColor: [1, 0.68, 0.34] as const,
@@ -228,6 +238,8 @@ void main() {
   vec3 spill = ${vec(W.color)} * (${n(W.spill)} * exp(-dot(off, off) / 0.022) * lit);
   float toward = 0.5 + 0.5 * dot(vWl, vWlDir);
   vec3 air = ${vec(W.airColor)} * (${n(W.air)} * smoothstep(0.45, 1.0, toward) * body);
+  float column = (vWl.x - ${n(W.hazeAt)}) / ${n(W.hazeWide)};
+  air += ${vec(W.hazeColor)} * (${n(W.haze)} * body * (${n(W.hazeRim)} + ${n(1 - W.hazeRim)} * exp(-column * column)));
   // the storm's light: slow broad arms about the middle, turning with the time
   float turn = atan(vWl.y, vWl.x);
   float arms = 1.0 - ${n(W.stormArms)} + ${n(W.stormArms)} * sin(2.0 * turn + 5.0 * r - 1.7 * uSummer.x) * smoothstep(0.05, 0.4, r);
@@ -380,10 +392,10 @@ vStageLocal = (uGlobeInv * vec4(uLensCentre, 1.0)).xyz;
 vStagePlaced = uLensCentre;
 vStageAux = vec3(0.0, -wlAt.z, length(wlAt.xyz));`,
     fragment: WALL,
-    params: { ...added, depthTest: false },
+    params: { ...added, transparent: false, depthTest: false },
   })
   const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), m)
-  mesh.renderOrder = 13
+  mesh.renderOrder = -0.25
   mesh.frustumCulled = false
   return mesh
 }
