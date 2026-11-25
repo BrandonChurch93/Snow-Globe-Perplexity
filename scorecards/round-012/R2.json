@@ -1,0 +1,149 @@
+{
+ "critic": "R2",
+ "round": 12,
+ "unit": "summer",
+ "judgedCommit": "e39ec6c",
+ "tier": "final",
+ "jurorsPerImage": 5,
+ "panel": [
+  "claude_sonnet_5_5",
+  "gemini_neon",
+  "gpt_6_2_astra",
+  "kimi_k3",
+  "pplx_computer_glm_5_3_1009"
+ ],
+ "controlShare": 0.8,
+ "controlVotes": "8 of 10",
+ "judgedShare": 0.4667,
+ "judgedVotes": "7 of 15",
+ "maxShareGap": 0.2,
+ "bar": 0.6,
+ "pass": false,
+ "missing": false,
+ "images": [
+  {
+   "file": "set-A-01.jpg",
+   "kind": "judged",
+   "id": "summer-shake",
+   "sha256": "2ca2a6e20d124d98b1c268c3d4b9c82a90dc1444853d98cb512aad2ec14229b7",
+   "votes": [
+    "b",
+    "b",
+    "d",
+    "b",
+    "a"
+   ],
+   "jurors": [
+    "viewer_r12_01",
+    "viewer_r12_04",
+    "viewer_r12_07",
+    "viewer_r12_10",
+    "viewer_r12_13"
+   ],
+   "models": [
+    "claude_sonnet_5_5",
+    "gpt_6_2_astra",
+    "gemini_neon",
+    "pplx_computer_glm_5_3_1009",
+    "kimi_k3"
+   ],
+   "aOrB": 4,
+   "answers": 5
+  },
+  {
+   "file": "set-A-02.jpg",
+   "kind": "control",
+   "id": "the approved image references/approved/summer-shake.png",
+   "sha256": "ee78e0b094e9bb73fa0f913cc2bb1e4d9f2b121e79ce3adf7e2e249938b916f4",
+   "votes": [
+    "b",
+    "b",
+    "b",
+    "b",
+    "c"
+   ],
+   "reusedFromRound": [
+    9
+   ],
+   "aOrB": 4,
+   "answers": 5
+  },
+  {
+   "file": "set-A-03.jpg",
+   "kind": "judged",
+   "id": "summer-settled",
+   "sha256": "ae734fec4dce2aa30090207ba815ad45b2a7f0f93e2303e37438afc4336c293a",
+   "votes": [
+    "b",
+    "c",
+    "c",
+    "c",
+    "c"
+   ],
+   "jurors": [
+    "viewer_r12_02",
+    "viewer_r12_05",
+    "viewer_r12_08",
+    "viewer_r12_11",
+    "viewer_r12_14"
+   ],
+   "models": [
+    "claude_sonnet_5_5",
+    "gpt_6_2_astra",
+    "gemini_neon",
+    "pplx_computer_glm_5_3_1009",
+    "kimi_k3"
+   ],
+   "aOrB": 1,
+   "answers": 5
+  },
+  {
+   "file": "set-A-04.jpg",
+   "kind": "judged",
+   "id": "summer-rest",
+   "sha256": "0e48e8ddffb6e63c7f489ec6637079273c84410e9137ee7ee078e85bc59694eb",
+   "votes": [
+    "b",
+    "c",
+    "c",
+    "c",
+    "b"
+   ],
+   "jurors": [
+    "viewer_r12_03",
+    "viewer_r12_06",
+    "viewer_r12_09",
+    "viewer_r12_12",
+    "viewer_r12_15"
+   ],
+   "models": [
+    "claude_sonnet_5_5",
+    "gpt_6_2_astra",
+    "gemini_neon",
+    "pplx_computer_glm_5_3_1009",
+    "kimi_k3"
+   ],
+   "aOrB": 2,
+   "answers": 5
+  },
+  {
+   "file": "set-A-05.jpg",
+   "kind": "control",
+   "id": "the approved image references/approved/summer-rest.png",
+   "sha256": "91146fc8bdc05c32e5140706a9fa8a83b23fa6db1396cbf8e6de88558c322842",
+   "votes": [
+    "b",
+    "b",
+    "b",
+    "c",
+    "b"
+   ],
+   "reusedFromRound": [
+    9
+   ],
+   "aOrB": 4,
+   "answers": 5
+  }
+ ],
+ "countsAs": "one major issue (kit/07-QUALITY-BAR.md, R2: \"A failed R2 counts as one major issue\")"
+}
