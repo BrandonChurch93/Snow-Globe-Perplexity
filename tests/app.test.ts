@@ -520,9 +520,11 @@ describe('the framing of the app', () => {
         side = Math.max(side, r.side)
       }
     }
-    const barPx = controls ?? Math.max(FRAME.barShare * h, FRAME.barPx)
+    const barPx = controls ?? Math.min(Math.max(FRAME.barShare * h, FRAME.barPx), FRAME.barMost * h)
     const clearPx = ((1 - rest.foot) / 2) * h - barPx
-    return { under, rig, rest, top, side, aspect: w / h, low: -1 + 2 * under, clearPx, clear: clearPx / h }
+    const heap = edges(rig).heap
+    const heapPx = ((1 + heap) / 2) * h - barPx
+    return { under, rig, rest, top, side, aspect: w / h, low: -1 + 2 * under, clearPx, clear: clearPx / h, heap, heapPx, heapClear: heapPx / h }
   }
 
   it('is the wide camera of the film moved back along its own axis, never nearer', () => {
@@ -609,31 +611,33 @@ describe('the framing of the app', () => {
       for (const under of [0.08, 0.0889, 0.12, 0.18, 0.25, 0.35]) {
         const m = measure(4000 * aspect, 4000, 4000 * (under - (aspect < FRAME.narrowAspect ? FRAME.thumbShare : FRAME.clearShare)))
         expect(m.under).toBeCloseTo(under, 9)
-        const upright = Math.abs(m.top - high) < 1e-4 && Math.abs(-m.rest.foot - m.low) < 1e-6
+        const upright = Math.abs(m.top - high) < 1e-4 && Math.abs(m.heap - m.low) < 1e-6
         const across = Math.abs((aspect >= 1 ? m.side : m.rest.side) / aspect - (1 - 2 * FRAME.edgeShare)) < 1.5e-3
         expect(upright || across || m.rig.distanceMm === hero.distanceMm, `${aspect} ${under}`).toBe(true)
         expect(m.top, `${aspect} ${under}`).toBeLessThanOrEqual(high + 1e-4)
         expect(-m.rest.foot, `${aspect} ${under}`).toBeGreaterThanOrEqual(m.low - 1e-9)
+        expect(m.heap, `${aspect} ${under}`).toBeGreaterThanOrEqual(m.low - 1e-9)
         expect((aspect >= 1 ? m.side : m.rest.side) / aspect, `${aspect} ${under}`).toBeLessThanOrEqual(1 - 2 * FRAME.edgeShare + 1e-4)
       }
     }
   })
 
-  it('stands the foot of the base at rest 7 percent of the height over the highest control on a wide screen and on a tablet, with the globe as large as that and the top edge allow', () => {
+  it('stands the foot at rest, with what the season heaps in front of the base, 7 percent of the height over the highest control on a wide screen and on a tablet, with the globe as large as that and the top edge allow', () => {
     const hero = rigOf('hero')
     for (const [w, h] of [[config.formats.hd.width, config.formats.hd.height], [config.formats.tablet.width, config.formats.tablet.height]] as const) {
       for (const controls of [60, 74, 86, 130]) {
         const m = measure(w, h, controls)
-        expect(m.clear, `${w} ${controls}`).toBeGreaterThanOrEqual(FRAME.clearShare - 1e-9)
-        expect(m.clear, `${w} ${controls}`).toBeCloseTo(FRAME.clearShare, 6)
-        expect(m.clearPx, `${w} ${controls}`).toBeCloseTo(FRAME.clearShare * h, 3)
+        expect(m.heapClear, `${w} ${controls}`).toBeGreaterThanOrEqual(FRAME.clearShare - 1e-9)
+        expect(m.heapClear, `${w} ${controls}`).toBeCloseTo(FRAME.clearShare, 6)
+        expect(m.heapPx, `${w} ${controls}`).toBeCloseTo(FRAME.clearShare * h, 3)
+        expect(m.clear, `${w} ${controls}`).toBeGreaterThan(FRAME.clearShare + 0.03)
         expect(m.top, `${w} ${controls}`).toBeCloseTo(high, 4)
         expect(m.rig.distanceMm, `${w} ${controls}`).toBeGreaterThan(hero.distanceMm)
         const nearer = { ...m.rig, distanceMm: m.rig.distanceMm * 0.995 }
         const pose = poseOfRig(nearer)
         let top = -Infinity
         for (let n = 0; n < FRAME.shakePaths; n++) for (let b = 0; b <= bar; b += 0.004) top = Math.max(top, reachOf(pose, livePath(n).poseAt(b)).top)
-        const span = top + reachOf(pose, REST_POSE).foot
+        const span = top - edges(nearer).heap
         expect(span, `${w} ${controls}`).toBeGreaterThan(high - m.low)
       }
     }
@@ -691,14 +695,17 @@ describe('the framing of the app', () => {
   it('takes the room from the height of the window and from the controls when they are measured', () => {
     expect(roomUnder(1080)).toBeCloseTo(Math.max(FRAME.barShare, FRAME.barPx / 1080) + FRAME.clearShare, 12)
     expect(roomUnder(4000)).toBeCloseTo(FRAME.barShare + FRAME.clearShare, 12)
+    expect(roomUnder(390)).toBeCloseTo(FRAME.barMost + FRAME.clearShare, 12)
+    expect(Math.abs(roomUnder(390) - roomUnder(390, 54)) * 390).toBeLessThan(1)
     expect(roomUnder(1080, 74)).toBeCloseTo(74 / 1080 + FRAME.clearShare, 12)
     expect(roomUnder(1080, 74, 1920)).toBe(roomUnder(1080, 74))
     expect(roomUnder(1366, 86, 1024)).toBeCloseTo(86 / 1366 + FRAME.clearShare, 12)
     expect(roomUnder(844, 130, 390)).toBeCloseTo(130 / 844 + FRAME.thumbShare, 12)
     expect(roomUnder(100, 500)).toBe(FRAME.mostUnder)
-    expect(roomUnder(0)).toBe(FRAME.mostUnder)
+    expect(roomUnder(0)).toBeCloseTo(FRAME.barMost + FRAME.clearShare, 12)
     const far = liveRig(16 / 9, 0, 0, 5)
-    expect(margins(far).under).toBeCloseTo(FRAME.mostUnder, 6)
+    expect((1 + edges(far).heap) / 2).toBeCloseTo(FRAME.mostUnder, 6)
+    expect(margins(far).under).toBeGreaterThan(FRAME.mostUnder)
   })
 
   it('keeps a turned view inside the orbit limits', () => {

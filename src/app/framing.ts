@@ -10,8 +10,10 @@ export const FRAME = {
   leastAspect: 0.2,
   barShare: 0.08,
   barPx: 96,
+  barMost: 0.14,
   clearShare: 0.07,
   thumbShare: 0.05,
+  heapMm: 46,
   narrowAspect: 0.6,
   mostUnder: 0.35,
   easeRate: 4,
@@ -27,18 +29,20 @@ export const FRAME = {
 const L = config.live
 const RAD = Math.PI / 180
 const BASE_R = config.globe.baseDiameterMm / 2
+/** The foot the eye reads: the base and what the season heaps on the surface in front of it (winter's snow reaches furthest). */
+const FOOT_R = BASE_R + FRAME.heapMm
 
 export const livePath = (n: number): ShakePath => makeShake(`live-${((n % FRAME.shakePaths) + FRAME.shakePaths) % FRAME.shakePaths}`)
 
-export function edges(rig: Rig): { top: number; foot: number } {
+export function edges(rig: Rig): { top: number; foot: number; heap: number } {
   const p = rig.pitchDeg * RAD
   const t = Math.tan((rig.fovDeg * RAD) / 2)
   const up = sphereCentreHeightMm - rig.aimHeightMm
   const depth = rig.distanceMm - up * Math.sin(p)
   const height = up * Math.cos(p)
   const top = Math.tan(Math.atan2(height, depth) + Math.asin(sphereRadiusMm / Math.hypot(depth, height))) / t
-  const foot = (-rig.aimHeightMm * Math.cos(p) - BASE_R * Math.sin(p)) / (rig.distanceMm + rig.aimHeightMm * Math.sin(p) - BASE_R * Math.cos(p)) / t
-  return { top, foot }
+  const at = (r: number): number => (-rig.aimHeightMm * Math.cos(p) - r * Math.sin(p)) / (rig.distanceMm + rig.aimHeightMm * Math.sin(p) - r * Math.cos(p)) / t
+  return { top, foot: at(BASE_R), heap: at(FOOT_R) }
 }
 
 export const margins = (rig: Rig): { over: number; under: number } => {
@@ -49,14 +53,15 @@ export const margins = (rig: Rig): { over: number; under: number } => {
 const aimForFoot = (rig: Rig, foot: number): number => {
   const p = rig.pitchDeg * RAD
   const y = foot * Math.tan((rig.fovDeg * RAD) / 2)
-  return -(y * (rig.distanceMm - BASE_R * Math.cos(p)) + BASE_R * Math.sin(p)) / (Math.cos(p) + y * Math.sin(p))
+  return -(y * (rig.distanceMm - FOOT_R * Math.cos(p)) + FOOT_R * Math.sin(p)) / (Math.cos(p) + y * Math.sin(p))
 }
 
-/** The share of the height the foot of the base keeps free under it: the controls, measured, or a bar of the usual height until they are,
+/** The share of the height the foot keeps free under it: the controls, measured, or a bar of the usual height until they are
+ * (on a short screen, a phone held sideways, a bar of `barMost` of the height, which is what its row measures),
  * and over them `clearShare` of the height, or `thumbShare` on a narrow upright screen, where the controls stay within reach of a thumb. */
 export const roomUnder = (heightPx: number, controlsPx: number | null = null, widthPx: number | null = null): number => {
   const h = Math.max(1, heightPx)
-  const bar = controlsPx === null ? Math.max(FRAME.barShare * h, FRAME.barPx) : controlsPx
+  const bar = controlsPx === null ? Math.min(Math.max(FRAME.barShare * h, FRAME.barPx), FRAME.barMost * h) : controlsPx
   const clear = widthPx !== null && widthPx / h < FRAME.narrowAspect ? FRAME.thumbShare : FRAME.clearShare
   return Math.min(FRAME.mostUnder, bar / h + clear)
 }
