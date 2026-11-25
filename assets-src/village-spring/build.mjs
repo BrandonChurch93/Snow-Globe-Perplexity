@@ -38,7 +38,7 @@ const TONE = {
   stem: lin('#5f8a2e'),
   leaf: lin('#4f7d2c'),
   leafPale: lin('#86a843'),
-  shrub: ['#3f6a26', '#55812c', '#2f5420', '#6a9434', '#487524'].map(lin),
+  shrub: ['#35591f', '#476d25', '#28471b', '#577a2b', '#3d621e'].map(lin),
   ivy: ['#3d6424', '#4f7a2a', '#2c4c1c', '#618a30'].map(lin),
   tulips: [
     [lin('#d8242c'), lin('#ff6a3c')],
@@ -66,10 +66,10 @@ const prism = (a, l) => {
 }
 const slopeOf = (sd, a, h) => [sd * a * cp - (h - ridgeY) * sp, sd * a * sp + (h - ridgeY) * cp]
 
-const MOSS = { ridgeMm: 0.7, ridgeReach: 2.6, patchMm: 0.46, eaveMm: 0.36, eaveFrom: 2.4, courseMm: 1.55, jointMm: 0.2, floor: 0.08, collarMm: 0.5, cell: 0.2 }
+const MOSS = { ridgeMm: 0.7, ridgeReach: 2.6, patchMm: 0.46, eaveMm: 0.36, eaveFrom: 2.4, courseMm: 1.55, jointMm: 0.13, floor: 0.09, collarMm: 0.5, cell: 0.2 }
 function mossDepth(sd, s, l) {
   const ridge = 1 - smooth(0.25, MOSS.ridgeReach + 1.3 * noise(l * 0.37, sd * 2.1, 3.3), s)
-  const patch = smooth(0.0, 0.34, fbm(s * 0.36 + 7.3 * sd, l * 0.36, 1.7, 3) - 0.07 + 0.2 * ridge)
+  const patch = smooth(0.0, 0.34, fbm(s * 0.36 + 7.3 * sd, l * 0.36, 1.7, 3) - 0.2 + 0.2 * ridge)
   const eave = smooth(SLOPE - MOSS.eaveFrom, SLOPE - 0.2, s) * smooth(-0.25, 0.3, noise(l * 0.62, sd * 4.1, 8.8))
   const course = Math.abs(((s / MOSS.courseMm) % 1) - 0.5) * 2
   const joint = smooth(0.72, 0.98, course) * smooth(-0.2, 0.35, noise(s * 0.9, l * 0.9, 12.4 + sd))
@@ -405,7 +405,7 @@ function blade(foot, lean, len, wide, n, c0, c1, c2, thin = 0.7) {
   growth.tri(ma, mb, tip, n, c1, c1, c2, KIND_OF.blade, thin)
 }
 
-const BLADES = { tufts: 8200, perTuft: [3, 6], lenMm: [0.55, 1.2], tallMm: 1.5, wideMm: 0.095 }
+const BLADES = { tufts: 8200, perTuft: [3, 6], lenMm: [0.5, 1.05], tallMm: 1.15, wideMm: 0.095 }
 {
   const before = growth.triangles
   const reach = Math.sqrt((L.innerRadiusMm - 0.6) ** 2 - L.groundY ** 2) + 2
@@ -423,11 +423,12 @@ const BLADES = { tufts: 8200, perTuft: [3, 6], lenMm: [0.55, 1.2], tallMm: 1.5, 
     if (pf < 1.0) continue
     if (wallGap(x, z) < 0.15) continue
     const sg = stoneGap(x, z)
-    if (sg < -0.1) continue
+    if (sg < 0.3) continue
+    if (sg < 1.6 && R() < 0.6) continue
     const tg = treeGap(x, z)
     if (tg < 2.6) continue
     const tall =
-      Math.exp(-Math.max(0, sg) / 0.7) +
+      0.3 * Math.exp(-Math.max(0, sg - 0.3) / 0.4) +
       0.8 * Math.exp(-Math.max(0, wallGap(x, z)) / 0.9) +
       Math.exp(-Math.abs(pf - 1.03) / 0.03) * 0.9 +
       0.7 * Math.exp(-Math.max(0, tg - 3) / 1.3) +
@@ -613,8 +614,8 @@ const fenceMid = [(L.fence.from[0] + L.fence.to[0]) / 2, (L.fence.from[1] + L.fe
 const fenceDir = norm3([L.fence.to[0] - L.fence.from[0], 0, L.fence.to[1] - L.fence.from[1]])
 const fenceIn = [fenceDir[2], 0, -fenceDir[0]]
 const BEDS = [
-  { at: [fenceMid[0] + fenceIn[0] * 2.4, fenceMid[1] + fenceIn[2] * 2.4], along: [fenceDir[0], fenceDir[2]], half: [6.2, 1.9], count: 30, tall: [4.2, 6.2], hues: [0, 1, 3, 0, 5, 2] },
-  { at: [L.tree.x + 9.2, L.tree.z + 9.6], along: [0.86, 0.5], half: [4.2, 2.2], count: 22, tall: [4.4, 6.6], hues: [3, 0, 2, 1, 4, 3] },
+  { at: [fenceMid[0] + fenceIn[0] * 2.4, fenceMid[1] + fenceIn[2] * 2.4], along: [fenceDir[0], fenceDir[2]], half: [6.2, 1.9], count: 17, tall: [4.4, 6.4], hues: [3, 1, 4, 0, 2, 1, 3] },
+  { at: [L.tree.x + 9.2, L.tree.z + 9.6], along: [0.86, 0.5], half: [4.2, 2.2], count: 15, tall: [4.6, 6.8], hues: [3, 0, 2, 1, 4, 3] },
   { at: [L.tree.x + 15.5, L.tree.z + 4], along: [0.5, -0.86], half: [2.6, 1.6], count: 8, tall: [3.6, 5.2], hues: [4, 3, 2] },
   { at: [fenceMid[0] - fenceIn[0] * 2.2 + fenceDir[0] * 3, fenceMid[1] - fenceIn[2] * 2.2 + fenceDir[2] * 3], along: [fenceDir[0], fenceDir[2]], half: [3.4, 1.1], count: 9, tall: [3.2, 4.6], hues: [4, 2, 3] },
 ]
@@ -631,7 +632,7 @@ const BEDS = [
       const x = bed.at[0] + bed.along[0] * u - bed.along[1] * v
       const z = bed.at[1] + bed.along[1] * u + bed.along[0] * v
       if (edgeOf(x, z) < 2 || L.pondField(x, z) < 1.04 || wallGap(x, z) < 0.8 || stoneGap(x, z) < 0.4 || treeGap(x, z) < 4) continue
-      if (placed.some((q) => Math.hypot(q[0] - x, q[1] - z) < 0.95)) continue
+      if (placed.some((q) => Math.hypot(q[0] - x, q[1] - z) < 1.25)) continue
       placed.push([x, z])
       tulip(x, z, bed.tall[0] + R() * (bed.tall[1] - bed.tall[0]), bed.hues[Math.floor(R() * bed.hues.length)], R() * Math.PI * 2)
     }

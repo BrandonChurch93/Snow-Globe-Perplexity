@@ -25,9 +25,9 @@ const lin = (hex) => {
   return [c.r, c.g, c.b]
 }
 
-const CROWN = { centre: [1.2, 29.5, 1], r: [22.5, 15.5, 15], floor: 14.2, sprays: 150, spacing: 3.8, reach: 13, inner: 0.42 }
+const CROWN = { centre: [1.2, 29.5, 1], r: [22.5, 15.5, 15], floor: 14.2, sprays: 132, spacing: 4.1, reach: 13, inner: 0.5, layer: 5.3, layerJitter: 0.9 }
 const TWIG = { from: 0.34, to: 0.08, sides: 5, steps: 7 }
-const CLUSTER = { step: 1.3, from: 0.22, size: [0.85, 1.55], tip: [1.5, 2.2], flowers: [12, 19], flower: [0.52, 0.9], side: 0.55 }
+const CLUSTER = { step: 1.05, from: 0.26, size: [0.8, 1.3], tip: [1.3, 1.9], flowers: [11, 17], flower: [0.45, 0.74], side: 0.55, flat: 0.6 }
 const TONES = ['#f7c3d1', '#fbd8e0', '#f2a8be', '#fde8ec', '#ee9ab4', '#f9cdd8', '#fff1f2'].map(lin)
 const SHADE = [0.5, 0.31, 0.37]
 const HEART = lin('#d86a8a')
@@ -55,6 +55,7 @@ const targets = []
     const d = norm([rng.gauss(), rng.gauss() * 0.9 + 0.25, rng.gauss()])
     const k = CROWN.inner + (1 - CROWN.inner) * Math.pow(rng.next(), 0.55)
     const p = [CROWN.centre[0] + d[0] * CROWN.r[0] * k, CROWN.centre[1] + d[1] * CROWN.r[1] * k, CROWN.centre[2] + d[2] * CROWN.r[2] * k]
+    p[1] = CROWN.floor + 1.4 + Math.round((p[1] - CROWN.floor - 1.4) / CROWN.layer) * CROWN.layer + rng.range(-CROWN.layerJitter, CROWN.layerJitter)
     if (p[1] < CROWN.floor) continue
     const side = Math.hypot(p[0], p[2])
     if (p[1] < 20 && side < 7) continue
@@ -148,7 +149,7 @@ for (const s of sprays) {
 for (const l of T.limbs) {
   if (l.kind !== 'twig' && l.kind !== 'limb') continue
   const n = l.local.length
-  const from = l.kind === 'twig' ? 0.35 : 0.72
+  const from = l.kind === 'twig' ? 0.6 : 0.86
   for (let i = Math.floor(n * from); i < n; i += l.kind === 'twig' ? 2 : 3) {
     const p = l.local[i]
     const r = rng.range(CLUSTER.size[0], CLUSTER.size[1])
@@ -211,7 +212,7 @@ for (const c of clusters) {
   const seed = rng.next() * 40
   for (const q of icoIndexed.pos) {
     const k = c.r * 0.56 * (0.82 + 0.3 * wob(q[0] * 1.6 + seed, q[1] * 1.6, q[2] * 1.6))
-    const p = [c.p[0] + q[0] * k, c.p[1] + q[1] * k * 0.86, c.p[2] + q[2] * k]
+    const p = [c.p[0] + q[0] * k, c.p[1] + q[1] * k * CLUSTER.flat, c.p[2] + q[2] * k]
     bloom.p.push(p[0], p[1], p[2])
     const n = norm(add(mul(q, 0.75), mul(crownOut, 0.45)))
     bloom.n.push(n[0], n[1], n[2])
@@ -223,7 +224,7 @@ for (const c of clusters) {
   for (let f = 0; f < count; f++) {
     const d = norm([rng.gauss(), rng.gauss() * 0.9 + 0.25, rng.gauss()])
     const k = c.r * (0.74 + 0.4 * rng.next())
-    const at = [c.p[0] + d[0] * k, c.p[1] + d[1] * k * 0.88, c.p[2] + d[2] * k]
+    const at = [c.p[0] + d[0] * k, c.p[1] + d[1] * k * CLUSTER.flat, c.p[2] + d[2] * k]
     const out = norm(add(add(d, mul(crownOut, 0.35)), [rng.range(-0.35, 0.35), rng.range(-0.2, 0.4), rng.range(-0.35, 0.35) + 0.25]))
     const ref = Math.abs(out[1]) > 0.9 ? [1, 0, 0] : [0, 1, 0]
     const u = norm(cross(out, ref))
