@@ -31,14 +31,14 @@ export const look = {
     // the bloom of the lens round the core: a soft ball a few millimetres wide
     bloom: 5,
     bloomWide: 0.085,
-    halo: 1.0,
-    haloWide: 0.27,
-    veil: 0.2,
-    // the star: a few soft tapered rays, short, each with its own length, widest at the core
-    rays: 1.15,
-    spikes: 7,
-    reach: [0.13, 0.33] as const,
-    rayWide: [0.011, 0.034] as const,
+    halo: 0.7,
+    haloWide: 0.24,
+    veil: 0.22,
+    // the star: many soft tapered rays, short, each with its own length, widest at the core, fanning away from the globe
+    rays: 0.8,
+    spikes: 13,
+    reach: [0.17, 0.16] as const,
+    rayWide: [0.016, 0.05] as const,
     arc: 1.6,
     hot: [1, 0.9, 0.72] as const,
     warm: [1, 0.7, 0.38] as const,
@@ -62,11 +62,22 @@ export const look = {
     color: [1, 0.74, 0.44] as const,
     // the hot patch: the sun, bent by the globe, lands on the inside of the glass low on the far side and burns out there
     hot: 11,
-    hotColor: [1, 0.86, 0.64] as const,
+    hotColor: [1, 0.8, 0.5] as const,
     // the amber glow of the liquid round the patch
     glow: 0.2,
     // the limb's own warm edge on the far side
     edge: 0.7,
+    // the air: the low sun in the liquid, warm on the side the light falls toward and nothing on the side it comes from
+    air: 0.045,
+    airColor: [1, 0.66, 0.36] as const,
+    // the storm: the seeds and the dust aloft take the sun and the whole dome glows white-gold; it goes with the liquid's
+    // turbulence, in slow arms that turn with the time, and is thinner over the miniature so the lanterns stay
+    storm: 0.15,
+    stormFrom: 0.12,
+    stormTo: 0.75,
+    stormColor: [1, 0.68, 0.34] as const,
+    stormArms: 0.22,
+    stormOpen: 0.35,
   },
   pool: {
     // where the hot middle of the pool lies from the foot's centre: down the light's way on the slab and a little across it
@@ -138,7 +149,7 @@ void main() {
   float star = 0.0;
   for (int i = 0; i < ${F.spikes}; i++) {
     float fi = float(i);
-    float a = (fi + 0.7 * flRnd(fi, 1.0)) * ${n(Math.PI / F.spikes)} + 0.35;
+    float a = (fi + 0.8 * flRnd(fi, 1.0)) * ${n(Math.PI / F.spikes)} + 0.35;
     vec2 d = vec2(cos(a), sin(a));
     float along = dot(p, d);
     float across = p.x * d.y - p.y * d.x;
@@ -146,7 +157,7 @@ void main() {
     float reach = (${n(F.reach[0])} + ${n(F.reach[1])} * side * side) * (0.7 + 0.6 * max(dot(d * sign(along), vFlOut), 0.0)) * (1.0 + ${n(F.breath)} * sin(uSummer.x * (0.9 + 1.3 * flRnd(fi, 4.0)) + 6.28 * flRnd(fi, 5.0)));
     float t = abs(along) / reach;
     float wide = ${n(F.rayWide[0])} + ${n(F.rayWide[1])} * (1.0 - min(t, 1.0)) * (1.0 - min(t, 1.0));
-    star += exp(-across * across / (wide * wide)) * exp(-2.3 * t) * (1.0 - smoothstep(0.75, 1.25, t)) * (0.45 + 0.55 * side);
+    star += exp(-across * across / (wide * wide)) * exp(-2.6 * t) * (1.0 - smoothstep(0.6, 1.2, t)) * (0.4 + 0.6 * side) * (0.3 + 0.7 * max(dot(d * sign(along), vFlOut), 0.0));
   }
   vec3 col = ${vec(F.hot)} * (${n(F.core)} * core + ${n(F.bloom)} * bloom) + ${vec(F.warm)} * (${n(F.rays)} * star + ${n(F.arc)} * arc) + ${vec(F.amber)} * (${n(F.halo)} * halo);
   gl_FragColor = vec4(col * (lit * edge), 0.0);
@@ -155,6 +166,7 @@ void main() {
 const W = look.wall
 const WALL = `
 uniform vec4 uFlareSun;
+uniform vec4 uSummer;
 varying vec2 vWl;
 varying vec2 vWlDir;
 void main() {
@@ -162,7 +174,8 @@ void main() {
   if (stageGone(c)) discard;
   if (uDiag != 0) discard;
   float lit = min(uFlareSun.w, 1.0);
-  if (lit <= 0.0) discard;
+  float storm = uSummer.w;
+  if (lit <= 0.0 && storm <= 0.0) discard;
   float r = length(vWl);
   if (r > 0.995) discard;
   vec2 e = vWl / max(r, 1e-4);
@@ -178,7 +191,15 @@ void main() {
   float glow = exp(-pow((r - 0.88) / 0.1, 2.0) - a * a / 0.07);
   float edge = exp(-pow((r - 0.972) / 0.012, 2.0)) * exp(-pow((a - 0.45) / 0.75, 2.0));
   vec3 col = ${vec(W.color)} * (${n(W.band)} * band + ${n(W.glow)} * glow * inside + ${n(W.edge)} * edge) + ${vec(W.hotColor)} * (${n(W.hot)} * hot * inside);
-  gl_FragColor = vec4(col * (${n(W.gain)} * lit), 0.0);
+  float body = 1.0 - smoothstep(0.86, 0.992, r);
+  float toward = 0.5 + 0.5 * dot(vWl, vWlDir);
+  vec3 air = ${vec(W.airColor)} * (${n(W.air)} * smoothstep(0.2, 0.95, toward) * body);
+  // the storm's light: slow broad arms about the middle, turning with the time
+  float turn = atan(vWl.y, vWl.x);
+  float arms = 1.0 - ${n(W.stormArms)} + ${n(W.stormArms)} * sin(2.0 * turn + 5.0 * r - 1.7 * uSummer.x) * smoothstep(0.05, 0.4, r);
+  float open = 1.0 - ${n(W.stormOpen)} * exp(-(vWl.x * vWl.x / 0.3 + (vWl.y + 0.42) * (vWl.y + 0.42) / 0.07));
+  vec3 gale = ${vec(W.stormColor)} * (${n(W.storm)} * storm * arms * open * body * (0.75 + 0.25 * toward));
+  gl_FragColor = vec4(col * (${n(W.gain)} * lit) + air * lit + gale, 0.0);
 }`
 
 const P = look.pool
@@ -293,7 +314,7 @@ function makeWall(): THREE.Mesh {
     part: PART,
     standIn: false,
     change: 'glass-dressing',
-    uniforms: { uFlareSun: uniforms.uFlareSun },
+    uniforms: { uFlareSun: uniforms.uFlareSun, uSummer: uniforms.uSummer },
     vertexPars: 'uniform vec4 uFlareSun;\nvarying vec2 vWl;\nvarying vec2 vWlDir;',
     vertexMain: `
 vec4 wlC = viewMatrix * vec4(uLensCentre, 1.0);
@@ -397,5 +418,7 @@ export function update(moment: KitMoment): void {
   uniforms.uPoolAt.value.set(g.x + wx * reach + wz * P.sideMm + leanX, g.z + wz * reach - wx * P.sideMm + leanZ, wx, wz)
   const held = Math.min(1, Math.max(0, g.y / config.shake.liftMm))
   const there = lit * (1 - 0.65 * smooth(held)) * (shaking || two ? 1 : smooth(t / P.settleSeconds) * 0.999 + 0.001)
-  uniforms.uSummer.value.set(moment.time, P.swing * swing + 8 * (Math.sin(g.tiltZ) - Math.sin(g.tiltX)), there, 0)
+  // the storm's glow goes with the liquid: none in still water, whole when it churns
+  const gale = smooth((f.turbulence - W.stormFrom) / (W.stormTo - W.stormFrom))
+  uniforms.uSummer.value.set(moment.time, P.swing * swing + 8 * (Math.sin(g.tiltZ) - Math.sin(g.tiltX)), there, gale)
 }
