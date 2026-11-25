@@ -22,3 +22,11 @@ Before the mend the first frame read 0 0 0 1 at all five points. Page errors: 0
 16  1100x640  err 0  0.011 0.013 0.018 1.000  0.896 0.585 0.489 0.958  0.222 0.131 0.129 0.673  0.288 0.226 0.277 0.949  0.010 0.012 0.017 1.000
 17  1100x640  err 0  0.011 0.013 0.018 1.000  0.895 0.583 0.487 0.958  0.221 0.130 0.129 0.673  0.288 0.226 0.277 0.947  0.010 0.012 0.017 1.000
 18  1100x640  err 0  0.011 0.013 0.018 1.000  0.893 0.582 0.487 0.958  0.221 0.130 0.129 0.673  0.288 0.226 0.277 0.947  0.010 0.012 0.017 1.000
+
+## Fall at low and medium, paired with main (added 15:31 UTC)
+
+`origin/main` at `a141deb` (the base of `725c01b`; main's tip is now `828dc32`, not drawn) against `725c01b`, fall at rest, hero, hd, live still. Files: `pair-fall-low.jpg`, `pair-fall-medium.jpg`, `crops-fall-streaks.jpg`.
+
+- low: 5.2% of pixels differ, 1.19% by more than 8/255 (by luma, as in the sheets; by the largest channel 7.5% and 1.63%).
+- medium: 5.2% and 1.17% (largest channel 7.6% and 1.61%).
+- The thin light streaks on the glass are on main too, at low and at medium, same place and shape.
