@@ -25,8 +25,8 @@ const INNER = config.globe.sphereDiameterMm / 2 - config.globe.glassThicknessMm
 const look = {
   /** The sheets the volume is cut into, front to back, and how finely each is cut for the lens to bend it. */
   sheets: 26,
-  cols: 20,
-  rows: 8,
+  cols: 10,
+  rows: 4,
   topMm: 46,
   /** How high the mist stands (the height at which it has thinned to a third) on the landing and at rest, and how long it takes to rise. */
   heightMm: [3.2, 7.5],
@@ -147,7 +147,7 @@ function sheetsGeometry(): THREE.BufferGeometry {
 const storm = {
   /** The sheets the liquid is cut into, back to front, and how finely each is cut for the lens to bend it. */
   sheets: 22,
-  cells: 18,
+  cells: 10,
   /** The mist's thickness per mm: closed over the miniature at the height of the storm, while the liquid is stirred, while it only rolls. */
   flood: 0.26,
   stirred: 0.04,
@@ -366,8 +366,8 @@ void main() {
 function washGeometry(): THREE.BufferGeometry {
   const at: number[] = []
   const idx: number[] = []
-  const cols = 120
-  const rows = 14
+  const cols = 72
+  const rows = 8
   const R = storm.washAtMm
   const yTop = storm.washTopMm
   const yLow = Math.max(storm.washLowMm, -R + 1)

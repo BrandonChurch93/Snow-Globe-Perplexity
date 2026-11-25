@@ -28,7 +28,7 @@ const PART = 'glass-dressing-spring'
 const RS = config.globe.sphereDiameterMm / 2
 const RAD = Math.PI / 180
 const SLOTS = 26
-const SEGMENTS = 72
+const SEGMENTS = 14
 const TAU = Math.PI * 2
 
 export const standIns: string[] = []
