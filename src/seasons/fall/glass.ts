@@ -64,7 +64,7 @@ export const look = {
     pale: [0.62, 1.0, 0.68],
     paleMm: 5,
     paleGain: 0.35,
-    air: 0.0008,
+    air: 0.0003,
     airStirred: 0.3,
     airTint: [0.3, 0.24, 0.1],
     airGrid: 0.6,
@@ -73,6 +73,8 @@ export const look = {
     flood: 0.1,
     floodFrom: 0.64,
     floodTo: 0.99,
+    floodHeld: 0.05,
+    floodGoneSeconds: 1.2,
     lumpMm: 3.5,
     lumpFineMm: 1.8,
     middle: 0.04,
@@ -662,8 +664,17 @@ export function update(moment: KitMoment): void {
   uniforms.uFog.value.set(fr.clock, lift, pour, fallen)
   // The stirred fog goes round with the liquid: at the shake's rate until the landing, then it spins down.
   const spun = Number.isFinite(since) ? moment.time - since + F.spinDownSeconds * (1 - Math.exp(-since / F.spinDownSeconds)) : moment.time
-  const flood = ease((fr.turbulence - F.floodFrom) / (F.floodTo - F.floodFrom))
-  uniforms.uFogTurn.value.set(F.spinRadS * spun, flood * flood)
+  // It floods the dome while the liquid is thrown about, and so through the swap. Over the set down it eases to the little
+  // that the landed picture holds, keeps that until the landed still, and then goes with the vortex. No step anywhere.
+  const stir = ease((fr.turbulence - F.floodFrom) / (F.floodTo - F.floodFrom))
+  const swap = config.shake.swapWindow
+  let flood = 0
+  if (shaken) {
+    const beats = config.shake.liftBeats + config.shake.strokeBeats + config.shake.setDownBeats
+    const thrown = Math.max(stir * stir, ease((moment.beat! - config.shake.liftBeats) / (swap.fromBeat - config.shake.liftBeats)))
+    flood = thrown + (F.floodHeld - thrown) * ease((moment.beat! - swap.toBeat) / (beats - swap.toBeat))
+  } else if (Number.isFinite(since)) flood = F.floodHeld * (1 - ease((since - config.states.landedSeconds) / F.floodGoneSeconds))
+  uniforms.uFogTurn.value.set(F.spinRadS * spun, flood)
   // The cover view counts what is hidden of the miniature only: there the fog is laid on where the miniature already is.
   const src = fr.view === 'cover' ? THREE.DstAlphaFactor : THREE.OneFactor
   for (const m of volumes) m.blendSrc = src
