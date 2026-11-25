@@ -7,7 +7,7 @@ import { shellUniforms } from '../../globe/shell'
 import { ROOM_GLSL, roomUniforms } from '../../scene/room'
 import { moundAt } from '../../scene/layout'
 import { surfaceUniforms } from '../../scene/surface'
-import type { Dressing, KitMoment } from '../kit'
+import type { KitMoment } from '../kit'
 
 // Part `glass-dressing-fall`: one fine crack on the outside of the glass and a green fog pooled inside at the bottom of the dome.
 //
@@ -23,10 +23,6 @@ const RS = config.globe.sphereDiameterMm / 2
 const RI = RS - config.globe.glassThicknessMm
 const GROUND = config.globe.islandLevelMm - (config.globe.baseHeightMm - config.globe.collarDepthMm + RS)
 const RAD = Math.PI / 180
-
-export const standIns: string[] = []
-
-export const glassDressing: Dressing = { tint: [0.5, 1, 0.58], amount: 0 }
 
 export const look = {
   fog: {

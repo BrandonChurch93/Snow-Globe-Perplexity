@@ -14,7 +14,7 @@ import { ParticleEngine } from './particles/engine/engine'
 import { Padded } from './particles/engine/live'
 import { LoopPaths } from './particles/engine/loop'
 import { LiveRunner, spawnEngineWorker } from './particles/engine/remote'
-import { blockoutSdf, type Emitter } from './particles/engine/sdf'
+import type { Emitter } from './particles/engine/sdf'
 import { createStage } from './scene/createStage'
 
 declare global {
@@ -50,8 +50,8 @@ function levelled(stage: Stage): Stage {
   return stage
 }
 
-const colliderOf = (stage: Stage) => (season: string): SdfGrid => stage.collider?.(season) ?? blockoutSdf()
-const emittersOf = (stage: Stage): Record<string, Emitter[]> => Object.assign({}, ...config.seasons.map((s) => stage.emitters?.(s) ?? {}))
+const colliderOf = (stage: Stage) => (season: string): SdfGrid => stage.collider(season)
+const emittersOf = (stage: Stage): Record<string, Emitter[]> => Object.assign({}, ...config.seasons.map((s) => stage.emitters(s)))
 
 function lazyLoop(make: () => LoopPaths, pad: boolean): LoopParticles {
   let paths: LoopPaths | null = null

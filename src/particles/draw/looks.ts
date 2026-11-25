@@ -2,7 +2,6 @@ export const MAX_KINDS = 16
 export const LOBES = 5
 export const LAMPS = 6
 export const LOBE_TABLE = 'shared/flake-lobes.lin.png'
-export const TABLE_COLUMNS = 8
 
 /** The most bats a picture hides the air behind. */
 export const BATS = 4
@@ -13,24 +12,25 @@ export interface KindLook {
   size: number
   body: number
   flash: number
-  real: boolean
 }
 
 const LOOKS: Record<string, KindLook> = {
-  flake: { shape: SHAPE.cluster, size: 0.95, body: 0.95, flash: 0, real: true },
-  glitter: { shape: SHAPE.mirror, size: 1.15, body: 0.3, flash: 5.5, real: true },
-  petal: { shape: SHAPE.petal, size: 1.25, body: 0.9, flash: 0.75, real: true },
-  mote: { shape: SHAPE.fleck, size: 1.2, body: 0.8, flash: 1, real: true },
-  leaf: { shape: SHAPE.leaf, size: 1.6, body: 1, flash: 0.35, real: true },
-  seed: { shape: SHAPE.seed, size: 3.6, body: 0.9, flash: 0, real: true },
-  firefly: { shape: SHAPE.light, size: 1, body: 1, flash: 0, real: true },
-  ember: { shape: SHAPE.spark, size: 1.35, body: 1, flash: 0, real: true },
-  bat: { shape: SHAPE.bat, size: 2.3, body: 1, flash: 0, real: true },
+  flake: { shape: SHAPE.cluster, size: 0.95, body: 0.95, flash: 0 },
+  glitter: { shape: SHAPE.mirror, size: 1.15, body: 0.3, flash: 5.5 },
+  petal: { shape: SHAPE.petal, size: 1.25, body: 0.9, flash: 0.75 },
+  mote: { shape: SHAPE.fleck, size: 1.2, body: 0.8, flash: 1 },
+  leaf: { shape: SHAPE.leaf, size: 1.6, body: 1, flash: 0.35 },
+  seed: { shape: SHAPE.seed, size: 3.6, body: 0.9, flash: 0 },
+  firefly: { shape: SHAPE.light, size: 1, body: 1, flash: 0 },
+  ember: { shape: SHAPE.spark, size: 1.35, body: 1, flash: 0 },
+  bat: { shape: SHAPE.bat, size: 2.3, body: 1, flash: 0 },
 }
 
-const PLAIN: KindLook = { shape: SHAPE.soft, size: 1, body: 1, flash: 0, real: false }
-
-export const lookOf = (kind: string): KindLook => LOOKS[kind] ?? PLAIN
+export const lookOf = (kind: string): KindLook => {
+  const look = LOOKS[kind]
+  if (!look) throw new Error(`no look for the particle kind ${kind}`)
+  return look
+}
 
 export const LENS_LOOK = {
   nearGain: 2.6,

@@ -79,7 +79,6 @@ describe('the shake path: a table in beats from the seed', () => {
     for (const name of NAMES) {
       const m = shakeMotion(name)
       const path = makeShake(name)
-      expect(path.standIn).toBe(false)
       expect(path.parts).toEqual({ liftEnd: s.liftBeats, strokesEnd: s.liftBeats + s.strokeBeats, landing: s.liftBeats + s.strokeBeats + s.setDownBeats })
       expect(m.parts).toEqual(path.parts)
       expect(m.endBeat).toBeCloseTo(path.parts.landing + s.landSettleSeconds / BEAT_S, 12)
