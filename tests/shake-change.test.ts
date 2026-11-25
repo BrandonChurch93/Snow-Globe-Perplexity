@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { config, shots } from '../src/config'
 import { FRAME } from '../src/app/framing'
-import { changeBloom, changeRamp, changeSpan, partChange, SEASONAL_PARTS } from '../src/shake/change'
+import { GUST_CLOSES, GUST_LAST_DOWN } from '../src/core/materials'
+import { CHANGE_CUT, DRESSING_CHANGE, changeBloom, changeRamp, changeSpan, partChange, SEASONAL_PARTS } from '../src/shake/change'
 import { shakeMotion } from '../src/shake/table'
 
 const s = config.shake
@@ -106,30 +107,55 @@ describe('the change number', () => {
     expect(frames).toBeLessThanOrEqual(9)
   })
 
-  it('raises the bloom round those frames and nowhere else', () => {
+  it('raises a short bloom with a rise and a fall the eye can follow, and puts the cut of the base at its top', () => {
     const span = changeSpan('base')
-    const mid = (span.from + span.to) / 2
-    expect(changeBloom(mid)).toBeCloseTo(1, 12)
+    const cut = CHANGE_CUT.at
+    const frame = FRAME_BEATS / WINDOW
+    expect(cut, 'the cut is inside the outside span').toBeGreaterThan(span.from)
+    expect(cut, 'the cut is inside the outside span').toBeLessThan(span.to)
+    expect(changeBloom(cut)).toBeCloseTo(1, 12)
     for (const c of [-1, 0, 1, 2, Number.NaN]) expect(changeBloom(c)).toBe(0)
-    let rising = true
     let before = 0
     let lit = 0
+    let first = Infinity
+    let last = -Infinity
     for (let c = 0; c <= 1; c += 0.001) {
       const v = changeBloom(c)
       expect(v).toBeGreaterThanOrEqual(0)
       expect(v).toBeLessThanOrEqual(1)
-      if (c > mid) rising = false
-      if (rising) expect(v).toBeGreaterThanOrEqual(before - 1e-12)
-      else if (c > mid + 0.001) expect(v).toBeLessThanOrEqual(before + 1e-12)
+      if (c <= cut) expect(v).toBeGreaterThanOrEqual(before - 1e-12)
+      else if (c > cut + 0.001) expect(v).toBeLessThanOrEqual(before + 1e-12)
       before = v
-      if (v > 0) lit += 0.001
-      if (c >= span.from && c <= span.to) expect(v, `bloom at ${c}`).toBeGreaterThan(0.5)
-      else if (partChange('base', c) > 0 && partChange('base', c) < 1) throw new Error('the base is changing outside its span')
+      if (v > 0) {
+        lit += 0.001
+        first = Math.min(first, c)
+        last = Math.max(last, c)
+      }
+      if (Math.abs(c - cut) <= 2 * frame) expect(v, `bloom at ${c}`).toBeGreaterThan(0.5)
+      if (partChange('base', c) > 0 && partChange('base', c) < 1 && (c < span.from || c > span.to)) throw new Error('the base is changing outside its span')
     }
+    // The rise and the fall each take five frames or more, so neither is a pop; the whole bloom is short.
+    expect((cut - first) / frame, 'frames of rise').toBeGreaterThanOrEqual(5)
+    expect((last - cut) / frame, 'frames of fall').toBeGreaterThanOrEqual(5)
     expect(changeBloom(0.02)).toBe(0)
     expect(changeBloom(0.98)).toBe(0)
-    expect((lit * WINDOW * BEAT_S) / (span.to - span.from) / (WINDOW * BEAT_S)).toBeGreaterThan(1.5)
+    expect(lit / (span.to - span.from)).toBeGreaterThan(1.5)
     expect(lit * WINDOW * BEAT_S).toBeLessThan(0.35)
+  })
+
+  it('cuts the base in the middle of one film frame\'s shutter, so every other frame holds one base whole', () => {
+    const frame = FRAME_BEATS / WINDOW
+    const shutter = SHUTTER_S / BEAT_S / WINDOW
+    const at = CHANGE_CUT.at / frame
+    expect(Math.floor(at)).toBe(CHANGE_CUT.frame)
+    expect(at - Math.floor(at)).toBeCloseTo(shutter / frame / 2, 9)
+    // The table is bare on the cut: what leaves is gone before the frame of the cut opens, what comes starts after it closes.
+    expect(DRESSING_CHANGE.liftFrom).toBeLessThan(DRESSING_CHANGE.leaveFrom)
+    expect(DRESSING_CHANGE.leaveTo).toBeLessThanOrEqual(CHANGE_CUT.frame * frame + 1e-12)
+    expect(DRESSING_CHANGE.comeFrom).toBeGreaterThanOrEqual(CHANGE_CUT.frame * frame + shutter - 1e-12)
+    expect(DRESSING_CHANGE.comeTo).toBeLessThan(1)
+    expect(DRESSING_CHANGE.liftFrom / frame, 'the first frames of the window show the table as it was').toBeGreaterThan(12 - 1e-9)
+    expect(GUST_LAST_DOWN, 'every new piece on the table is down before the window closes').toBeLessThan(GUST_CLOSES)
   })
 })
 
@@ -184,6 +210,10 @@ describe('the change against the motion', () => {
         const v = partChange('base', changeAt(b))
         if (v > 0 && v < 1) expect(b >= from && b <= to).toBe(true)
       }
+      // The cut falls where the stroke is at its fastest: the globe moves at nine tenths or more of its top speed on that instant.
+      const cutBeat = beatOf(CHANGE_CUT.at)
+      const atCut = Math.hypot(m.at('x', cutBeat, 1), m.at('y', cutBeat, 1), m.at('z', cutBeat, 1))
+      expect(atCut, `${name} speed at the cut`).toBeGreaterThan(0.9 * m.plan.fastest.mmPerBeat)
       let fastest = 0
       for (let k = 1; k < turns.length; k++) {
         let peak = 0
