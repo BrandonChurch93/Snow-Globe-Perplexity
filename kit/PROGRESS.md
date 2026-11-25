@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 76 · 2026-11-25 05:21 UTC
+Status 77 · 2026-11-25 05:36 UTC
 
-- `out/stills/status/status-76-1.jpg`: Spring at rest by its miniature builder: ours left and the approved crop right (draft tier). Still wrong: the crown is fuller and more even than the approved lace of blossom
-- `out/stills/status/status-76-2.jpg`: Summer at rest by its air builder after the seed fix: ours beside the approved image (draft tier). Still wrong: the air is darker and cooler than approved
-- `out/stills/status/status-76-3.jpg`: Fall at rest by its miniature builder: ours left and approved right (draft tier). Still wrong: haze and leaves veil the tree and the cottage
-- `out/stills/status/status-76-4.jpg`: Still: summer rest hero, preview, draft
+- `out/stills/status/status-77-1.jpg`: Spring at rest on the build Round 11 judges (left) beside the approved image (right). Draft tier.
+- `out/stills/status/status-77-2.jpg`: Summer at rest on the build Round 12 judges (left) beside the approved image (right). Draft tier.
+- `out/stills/status/status-77-3.jpg`: Fall at rest on the build Round 13 judges (left) beside the approved image (right). Draft tier.
+- `out/stills/status/status-77-4.jpg`: Still: fall rest hero, preview, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 05:31 UTC
-clock: phase 4, tick of 9.7 minutes
-phase 4: 5.39 h used of its 9.50 h box
-allowance (before the review): 27.68 h used of 36.00 h allowed
-all time before the review: 27.68 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 05:44 UTC
+clock: phase 4, tick of 8.7 minutes
+phase 4: 5.62 h used of its 9.50 h box
+allowance (before the review): 27.91 h used of 36.00 h allowed
+all time before the review: 27.91 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 9
+minutes since the last status: 8
 ```
 
 ## Phases
@@ -1260,6 +1260,8 @@ Merged into `main`, each verified here with types clean and the tests green (126
   - `bases3` (spring's and summer's base and slab) and `fall_base3`: start when `bases2` and `fall_base2` hand over.
   - Rounds 11, 12 and 13 on `e39ec6c`, orders sent 05:33: `round_renderer` (spring's measures and still packs, `agent/p4-round11-pack`, limit 06:47), `round_renderer_b` (summer's, `agent/p4-round12-pack`, limit 06:47), `motion_renderer` (spring's motion pack, `agent/p4-round11-motion`), `motion_renderer_b` (summer's, `agent/p4-round12-motion`; it expects about 07:15), `motion_renderer_c` (fall's, `agent/p4-round13-motion`), `gate_runner` (the whole gate for spring, then summer, then fall in one clean clone, limit 08:15). Fall's still pack goes to the first still renderer that is free.
 
+- 05:48 UTC, Nov 25. `bases2` and `fall_base2` handed over (final reports saved); `bases3` started 05:44 (limit 08:44) and `fall_base3` 05:48 (limit 08:47). All ten agents of the third set are at work. Triangles drawn at rest on the frozen build `e39ec6c` (high / medium / low; limits 1,800,000 / 1,100,000 / 600,000): spring 1,492,992 / 869,699 / 394,312; summer 1,660,058 / 916,170 / 438,632; fall 1,606,733 / 937,690 / 417,788; 65 to 68 draw calls of 140. The motion agents expect their packs at about 07:15 to 07:25 (the arrival line is again about 90 frames at 50-odd seconds each).
+
 ## Rounds
 
 One line per round: its number, the unit, the commit it judged, each part ticked off as it finished, the scores, and what changed next.
@@ -1679,3 +1681,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 04:54 UTC. - 04:55 UTC: Status 75 posted (spring and summer at rest on the build their second rounds judge; G15 green for both on the merged build by `tris.mjs`; the two missing recipes written, `g8list.mjs` prints `uncovered 0 of 151`; Round 10's gate 13 of 15 green, ticked). The freeze carries all ten builders, the last two merges being summer's air at `8e5323c` and the change at `c568e8a`.
 
 - 05:21 UTC. - Status 76 posted (three builders' looks beside the approved images; one freeze for the three seasons' second rounds, decision 84; the count of triangles on the first merged tree was wrong because a late merge step had restored the committed built files of two bases; four bats, decision 85). All ten builders merged at 05:20 with no conflict (local head `8961808`); every built file of spring, summer and fall is being made again. One more merge commit came in without the trailer (`15ecc57`, from fall's base builder, git's default message): not rewritten.
+
+- 05:36 UTC. - Status 77 posted (the build Rounds 11, 12 and 13 judge, each season at rest beside its approved image; the render orders; the third set of build agents, decision 86; spring's triangles inside the limit on all three levels on this build: 1,492,992 / 869,699 / 394,312 with 65, 65 and 49 draw calls).
