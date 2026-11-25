@@ -454,9 +454,10 @@ export class Backdrop {
     this.emitters.forEach((e, i) => {
       const list = kit.backdrop.colors
       const c = list[Math.min(list.length - 1, Math.floor(list.length * (DISCS.colourByLevel * e.level + (1 - DISCS.colourByLevel) * e.pick)))]!
-      a[i * 3] = c[0] * e.energy
-      a[i * 3 + 1] = c[1] * e.energy
-      a[i * 3 + 2] = c[2] * e.energy
+      const k = e.energy * (kit.backdrop.gain?.([e.at.x, e.at.y, e.at.z]) ?? 1)
+      a[i * 3] = c[0] * k
+      a[i * 3 + 1] = c[1] * k
+      a[i * 3 + 2] = c[2] * k
     })
     attr.needsUpdate = true
   }
