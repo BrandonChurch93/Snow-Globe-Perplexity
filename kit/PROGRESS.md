@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 80 · 2026-11-25 06:40 UTC
+Status 81 · 2026-11-25 07:05 UTC
 
-- `out/stills/status/status-80-1.jpg`: Spring at rest: the judged build (left) beside the approved image (right)
-- `out/stills/status/status-80-2.jpg`: Spring mid-shake: the judged build (left) beside the approved image (right)
-- `out/stills/status/status-80-3.jpg`: Summer at rest: the judged build (left) beside the approved image (right)
-- `out/stills/status/status-80-4.jpg`: Summer mid-shake: the judged build (left) beside the approved image (right)
+- `out/stills/status/status-81-1.jpg`: Spring's storm after the fix (left) beside the approved image (right): shorter trails that carry petal heads. Draft quality
+- `out/stills/status/status-81-2.jpg`: Fall's storm after the fix (left) beside the approved image (right): the tree and cottage read through it. Draft quality
+- `out/stills/status/status-81-3.jpg`: Summer half a second after landing: no streaks across the stone and a shower on the right edge only. Draft quality
+- `out/stills/status/status-81-4.jpg`: Spring's base: the approved image (above) and the new base (below) with a flared foot and rounder roots. Draft quality
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 07:03 UTC
-clock: phase 4, tick of 3.5 minutes
-phase 4: 6.94 h used of its 9.50 h box
-allowance (before the review): 29.22 h used of 36.00 h allowed
-all time before the review: 29.22 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 07:05 UTC
+clock: phase 4, tick of 1.3 minutes
+phase 4: 6.96 h used of its 9.50 h box
+allowance (before the review): 29.25 h used of 36.00 h allowed
+all time before the review: 29.25 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 23
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -1695,3 +1695,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 06:30 UTC. - Status 79 posted (the publish of 06:19; spring into summer across the swap with the base changing behind a line of light; fall's base beside the approved image; summer at rest through the reference camera; decision 87). `fall_air3` moved fall's ember emitters: the three crown rows of `sparks` in `src/scene/layout.ts` (lines 423 to 428) became a chimney spot and four wide spots in open liquid, as its job allowed; winter's rest and landed hero stills are byte-identical before and after (its `cmp`), `tests/layout.test.ts` passes.
 
 - 06:41 UTC. - Status 80 posted (the first answers of Rounds 11 and 12 on the frozen build `e39ec6c`, with four pictures: spring and summer, at rest and mid-shake, the judged build beside the approved image). Round 11: R1 5, R3 part 1 7, 5 measures red. Round 12: R1 6, R3 part 1 6 with no severe, 1 measure red. Both R1 critics and summer's R3 name the air bubble at the top of the glass as an oval ring or disc: it is the shared shell (`glassLook.bubble` in `src/globe/shell.ts`), already open items 44 and 64 for the polish rounds, and it is not reworked inside a season's round. `motion_renderer_c` reported at its limit (06:40): two of fall's three motion sheets are done, the arrival is at 42 of 90 frames and it carries on alone (pack about 07:24).
+
+- 07:05 UTC. - Status 81 posted (all still critics of Rounds 11 and 12 answered: spring R1 5 and R3 6, summer R1 6 and R3 4; spring's gate all 15 green; four pictures of builders' fixes since the freeze at draft quality: spring's and fall's storms beside the approved images, summer's base half a second after landing with no streaks across the stone, spring's new base under the approved one). `bases3` was told at 06:57 to raise the collar of spring's and summer's base round the sphere to the height of the ground's front edge, as the approved images show: both R1 critics name the seat as severe and the ground level is the shared layout, which no season's builder may move. `summer_air3` took the grains that fall outside the bowl (`src/seasons/summer/arrival.ts`, after merging `agent/p4-change2`), `change_builder2` was told.
