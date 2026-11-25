@@ -13,3 +13,5 @@
 13-landed-whole-storm.jpg — hero 0.5 s after landing, hd draft, my branch on main's drawing: storm share 1.3, dome tone held, no pool of light yet (ce1cf0d, 1475b6c)
 14-landed-approved-beside.jpg — fitted camera 0.5 s after landing, approved mid-shake left, ours right, scratch merge with kinds3 at storm share 1.1 (before 1.3)
 15-arrival-sheet.jpg — film frames 1440 to 1704 (shake-2 landing, 4.4 s), draft, before the pool's delay: the storm clears without a step
+16-final-rest-whole.jpg — hero at rest, hd draft, scratch merge of e3f8f53 with kinds3 e73852d, summer_mini3 3d8d0c4 and main: what main should hold at the freeze
+17-final-landed-whole.jpg — hero 0.5 s after landing, hd draft, my branch at ddd1944 on main's drawing: a third of the pool kindled with the flare, storm share 1.3
