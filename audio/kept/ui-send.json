@@ -1,0 +1,137 @@
+{
+  "id": "ui-send",
+  "file": "ui-send.wav",
+  "class": "interface",
+  "season": null,
+  "line": "One press of a button",
+  "seconds": 0.3,
+  "take": 1,
+  "takes": 1,
+  "round": "build",
+  "why": "first take that fits its line: heard in two calls of three as the click of a small button or switch; one call heard it as a ding like a triangle (a line at 1500 Hz); no voice",
+  "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+  "prompt": "One firm press of a single large rubber button: one short low rounded click with a small thump, dry, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+  "settings": {
+    "endpoint": "POST /v1/sound-generation",
+    "model": "default",
+    "duration_seconds": 0.5,
+    "prompt_influence": 0.6,
+    "loop": false,
+    "output_format": "pcm_48000",
+    "cost": 6
+  },
+  "chain": {
+    "settings": {
+      "trimDb": -48,
+      "padMs": 2,
+      "fadeInMs": 2,
+      "fadeOutMs": 30,
+      "lowCutHz": 120,
+      "loop": false,
+      "targetLufs": -26,
+      "capSeconds": 0.3
+    },
+    "steps": [
+      "took a constant offset of -79.53 dB out",
+      "low cut at 120 Hz, before the trim",
+      "trimmed 0.028 s in front and 0.127 s at the end",
+      "cut to 0.3 s",
+      "fade in 2 ms, fade out 30 ms",
+      "held 6.54 dB under -26 LUFS so the peak of this short sound stays within 16 dB of its class level",
+      "level: -3.69 dB to -32.54 LUFS, measured as K weighted mean square over the sound's own length (it is shorter than one 400 ms block), 0.3 s"
+    ],
+    "gainDb": -3.69,
+    "level": {
+      "measure": "own-length",
+      "measuredAs": "K weighted mean square over the sound's own length (it is shorter than one 400 ms block), 0.3 s",
+      "seconds": 0.3,
+      "beforeLufs": -28.84,
+      "afterLufs": -32.54,
+      "targetLufs": -26,
+      "truePeakDb": -10
+    }
+  },
+  "loop": null,
+  "measured": {
+    "seconds": 0.3,
+    "peakDb": -10.05,
+    "truePeakDb": -10,
+    "lufs": -32.54,
+    "lufsMeasure": "own-length",
+    "soundLufs": -32.16,
+    "offsetDb": null,
+    "rmsDb": -36.65,
+    "silenceFrontSeconds": 0,
+    "silenceEndSeconds": 0.025,
+    "soundSeconds": 0.275,
+    "tailDb": -69.98,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 1361,
+      "bands": {
+        "sub": 0.0011,
+        "low": 0.0517,
+        "lowMid": 0.2337,
+        "mid": 0.7099,
+        "high": 0.0035,
+        "air": 0.0001
+      }
+    }
+  },
+  "ffmpeg": {
+    "lufs": null,
+    "lra": 0,
+    "truePeakDb": -10,
+    "note": "the meter of ffmpeg gives no loudness under 400 ms, so the level stands on the measure named in chain.level"
+  },
+  "takeMeasured": {
+    "seconds": 0.48,
+    "peakDb": -6.59,
+    "truePeakDb": -6.56,
+    "lufs": -29.97,
+    "lufsMeasure": "gated",
+    "soundLufs": null,
+    "offsetDb": -79.53,
+    "rmsDb": -34.73,
+    "silenceFrontSeconds": 0,
+    "silenceEndSeconds": 0.065,
+    "soundSeconds": 0.415,
+    "tailDb": -67.73,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 1201,
+      "bands": {
+        "sub": 0.0278,
+        "low": 0.1357,
+        "lowMid": 0.2218,
+        "mid": 0.6104,
+        "high": 0.0041,
+        "air": 0.0002
+      }
+    }
+  },
+  "answers": {
+    "verdict": "fits",
+    "why": "Numbers: 0.48 s filed, sound 0.3 s in the cut, fits the length of its cue; one event, loudest in its first 0.04 s and 40 dB down by 0.1 s; 71 percent of the energy between 1 and 4 kHz, with the strongest lines at 185, 680 and 1500 Hz. Listener, on the copy that plays it four times: open, first call, a sharp high ding, hard and resonant, like a small metal bell, a triangle or a spoon on a glass, a clear musical note but no melody; open, second call, a sharp brief click or tick, high and hard, like a mechanical switch, a mouse click or a digital metronome, not musical; fit, yes, the sharp brief mechanical click of a small plastic button or a mouse being pressed, nothing outside the line. No voice. Two calls of three hear the press of a button; one hears a ding, which the line at 1500 Hz explains. Kept as the press of a button, with the ding written down.",
+    "listener": {
+      "line": "One press of a button",
+      "open": "1. The sound is a sharp, high-pitched \"ding\" with a hard, resonant character. It sounds like a small metal bell, a triangle, or a spoon tapping a glass.\n2. There is no human voice, spoken word, breath, or singing present.\n3. There is no melody, but the sound is a clear musical note that could be produced by a percussion instrument like a triangle.\n4. Yes, each of the four sounds is exactly the same.",
+      "fit": "1. Yes, the sound fits the description perfectly. It features the sharp, brief mechanical click characteristic of a small plastic device button or computer mouse being pressed. \n\n2. There is no element of the main sound that does not belong to the description. The only additional audio is a very faint background static or room noise that comes from the recording itself.\n\n3. No, there is no human voice, spoken word, or singing in this audio.",
+      "note": "the listening copy holds the cut sound four times, half a second apart and 12 dB louder, because one sound of a fraction of a second alone in silence is not heard by the listener; both questions say so; the open call heard a ding and the fit call a click, so the open questions were asked a second time (openSecond)",
+      "openSecond": "1. It is a sharp, brief clicking or ticking noise with a relatively high and hard character. It sounds like a mechanical switch, a computer mouse click, or a digital metronome.\n2. No, there are no human voices, spoken words, breathing, or singing present in the audio.\n3. No, there is no music, melody, or musical instrument, as it is just a simple non-musical click.\n4. Yes, each of the four sounds is exactly the same."
+    }
+  },
+  "source": {
+    "name": "ui-send-2026-11-25T17-44-31-595Z.wav",
+    "bytes": 92238,
+    "sha256": "7cb8115e3a79316b736126feaf964770c356d062d55eba86f214b32afb280319",
+    "codec": "pcm_s16le",
+    "sampleRate": 48000,
+    "channels": 2,
+    "seconds": 0.48,
+    "kbps": 1537
+  },
+  "takeSha256": "4c3d066a7ab3d6570420f69af7b533ddda0ef5c7bc9e2056ea47a0e83f47698f",
+  "sha256": "e7cb8c15334e581643d44fa0ca2d50dbee2718fadd6fd904d70d0ef8b84aa34a",
+  "time": "2026-11-25T17:46:08.213Z"
+}
