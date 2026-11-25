@@ -5,6 +5,8 @@ import { FLOW, trickle } from './base'
 import { poolFill, setJump, setPool } from './slab'
 
 export const HELD = 1e3
+/** The petals on the table start their jump on the landing's own frame: the jump's clock runs this far ahead of the landing, seconds, so that frame already shows the first small burst beside the base. */
+export const JUMP_LEAD = 0.05
 
 export async function prepare(): Promise<void> {}
 
@@ -24,7 +26,8 @@ export function landingClock(moment: KitMoment): number {
 
 export function update(moment: KitMoment): void {
   const since = landingClock(moment)
-  setJump(since)
+  const landed = moment.sinceLanding >= 0 && since >= Math.min(moment.sinceLanding, HELD)
+  setJump(landed ? since + JUMP_LEAD : since)
   const reached = since >= FLOW.startSeconds + 0.9 * FLOW.runSeconds ? 1 : 0
   setPool(trickle.foot, since >= HELD ? 1 : poolFill(since), moment.time, reached)
 }
