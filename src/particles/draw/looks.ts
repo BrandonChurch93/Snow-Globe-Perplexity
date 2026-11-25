@@ -151,7 +151,7 @@ export const STORM_GLINT = 0.05
 export const STORM_GLINT_REACH = { low: 0.3, high: 0.95 }
 export const STORM_GLINT_KEEP = 0.4
 export const REST_CLEAR = { from: 0.72, to: 0.92, near: 0.3, size: 1.6, mostPx: 3.1 }
-export const STORM_FLOOD = { fogPerMm: 0.022, gain: 1.4 }
+export const STORM_FLOOD = { fogPerMm: 0.022, gain: 1.4, frontMm: [6, 22] as const, frontClear: 0.8, frontGain: 1.5 }
 /** The storm's flecks near the lamp take its colour at their own brightness: the warm light spreads through the storm and the field gets no brighter. */
 export const STORM_GLOW = { to: [1.529, 0.894, 0.501] as const, most: 0.8, reachMm: 30 }
 /** The few very large near ones: a small share of the soft dabs, near the eye, far out of focus and bright enough to be seen. */

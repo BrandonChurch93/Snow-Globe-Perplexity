@@ -272,7 +272,10 @@ export const VERT_MAIN = `
   float sunk = 1.0 - exp(-${n(STORM_FLOOD.fogPerMm)} * placed.w);
   vFog.a = mix(vFog.a, sunk, flooded);
   flash *= 1.0 - sunk * flooded * glints;
-  float alpha = aData.z * rim * held * (1.0 - ${n(STORM_VEILED)} * vFog.a * gusty * (1.0 - glints)) * mix(1.0, mix(${n(THIN_LOW)}, 1.0, smoothstep(${n(THIN_FROM)}, ${n(THIN_TO)}, fract(h2.y * 211.0))), afloat * (1.0 - gusty) * (1.0 - glints) * (1.0 - byGlass * byGlass)) * mix(1.0, mix(${n(LENS_LOOK.farDim)}, 1.0, smoothstep(${n(LENS_LOOK.farDimFrom)}, ${n(LENS_LOOK.farDimTo)}, depth)), afloat * (1.0 - gusty)) * mix(1.0, ${n(LYING_LOOK.alpha)}, lying) * mix(1.0, max(1.0, ${n(LENS_LOOK.glassDiscCover)} / max(amp, 0.01)), byDisc) * mix(1.0, smoothstep(${n(STORM_GLITTER_FROM)}, ${n(STORM_GLITTER_TO)}, flashMost) * step(fract(h2.y * 157.0), ${n(STORM_GLINT_KEEP)}), glints * gusty) * pow(c2 / (c2 + sigma * sigma), ${n(1 - BLUR_HOLD)} * smoothstep(${n(BLUR_STRICT_FROM_PX)} * uPoint.w, ${n(BLUR_STRICT_TO_PX)} * uPoint.w, sigma));
+  // the ones just behind the front glass stand in front of the flood: clear of it and plainly seen
+  float front = flooded * (1.0 - smoothstep(${n(STORM_FLOOD.frontMm[0])}, ${n(STORM_FLOOD.frontMm[1])}, placed.w));
+  vFog.a *= 1.0 - ${n(STORM_FLOOD.frontClear)} * front;
+  float alpha = aData.z * rim * held * (1.0 + ${n(STORM_FLOOD.frontGain)} * front) * (1.0 - ${n(STORM_VEILED)} * vFog.a * gusty * (1.0 - glints)) * mix(1.0, mix(${n(THIN_LOW)}, 1.0, smoothstep(${n(THIN_FROM)}, ${n(THIN_TO)}, fract(h2.y * 211.0))), afloat * (1.0 - gusty) * (1.0 - glints) * (1.0 - byGlass * byGlass)) * mix(1.0, mix(${n(LENS_LOOK.farDim)}, 1.0, smoothstep(${n(LENS_LOOK.farDimFrom)}, ${n(LENS_LOOK.farDimTo)}, depth)), afloat * (1.0 - gusty)) * mix(1.0, ${n(LYING_LOOK.alpha)}, lying) * mix(1.0, max(1.0, ${n(LENS_LOOK.glassDiscCover)} / max(amp, 0.01)), byDisc) * mix(1.0, smoothstep(${n(STORM_GLITTER_FROM)}, ${n(STORM_GLITTER_TO)}, flashMost) * step(fract(h2.y * 157.0), ${n(STORM_GLINT_KEEP)}), glints * gusty) * pow(c2 / (c2 + sigma * sigma), ${n(1 - BLUR_HOLD)} * smoothstep(${n(BLUR_STRICT_FROM_PX)} * uPoint.w, ${n(BLUR_STRICT_TO_PX)} * uPoint.w, sigma));
   #ifdef POINT_SPRITES
   float side = 2.0 * max(ext.x, ext.y);
   gl_PointSize = side;

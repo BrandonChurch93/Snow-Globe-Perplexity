@@ -1,5 +1,5 @@
 import { viewCode } from '../../diagnostics/views'
-import { BATS, CARD, LENS_LOOK, LIGHT_LOOK, LIT_MOST, MAX_KINDS, PIXEL_SIGMA2, SHAPE, STORM_WINDOW, STREAK_ARC } from './looks'
+import { BATS, CARD, LENS_LOOK, LIGHT_LOOK, LIT_MOST, MAX_KINDS, PIXEL_SIGMA2, SHAPE, STORM_FLOOD, STORM_WINDOW, STREAK_ARC } from './looks'
 import { ROLL_CENTRE } from '../../globe/liquid'
 
 const n = (v: number) => (Number.isInteger(v) ? v.toFixed(1) : String(v))
@@ -219,7 +219,7 @@ export const CARD_VERT = `
       reachC = 2.6 * sqrt(s2C + wideC * wideC) + 2.0 + abs(bowC) * hlC + 1.3 * headC;
     }
     vec2 extC = min(vec2(reachC + 0.67 * abs(arcC) * hlC) + 1.05 * hlC * abs(alC), vec2(uLimit.y));
-    alpha = aData.z * (shape > ${n(SHAPE.bat - 0.5)} ? 1.0 : rim) * mix(1.0, mix(${n(LENS_LOOK.farDim)}, 1.0, smoothstep(${n(LENS_LOOK.farDimFrom)}, ${n(LENS_LOOK.farDimTo)}, depth)), afloat * (shape > ${n(SHAPE.bat - 0.5)} ? 0.0 : 1.0)) * keepC;
+    alpha = aData.z * (shape > ${n(SHAPE.bat - 0.5)} ? 1.0 : rim) * mix(1.0, mix(${n(LENS_LOOK.farDim)}, 1.0, smoothstep(${n(LENS_LOOK.farDimFrom)}, ${n(LENS_LOOK.farDimTo)}, depth)), afloat * (shape > ${n(SHAPE.bat - 0.5)} ? 0.0 : 1.0)) * keepC * (1.0 + ${n(STORM_FLOOD.frontGain)} * front);
     if (${at(SHAPE.light)}) alpha *= mix(1.0, mix(${n(CARD.glow.blinkLow)}, 1.0, pow(0.5 + 0.5 * sin(ph + 6.2831853 * h.y), 3.0)), smoothstep(${n(CARD.glow.unlit)}, 1.0, aData.z));
     if (shape < ${n(SHAPE.bat - 0.5)}) {
       for (int b = 0; b < ${BATS}; b++) {
