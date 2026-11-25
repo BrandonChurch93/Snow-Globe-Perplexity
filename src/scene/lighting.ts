@@ -36,13 +36,14 @@ export const ROOM_RIG = {
 
 /**
  * The bloom of a change between two seasons. `glare` is the cover of the cut: the light inside the glass, as the lens of the camera
- * spreads it, wide and soft over the glass, the collar, the base and the table beside it. It is the light the lens adds at the middle
- * of the glass, in the colour of the light inside, and falls off round it with the distance over `glareReach` radii of the glass
- * (post.ts adds it, the stage says where the glass is), so nothing else in the picture, no lamp of the room and no petal, feeds it.
+ * spreads it, soft over the seat of the glass, the collar and the base under it. It is the light the lens adds over the seat of the
+ * glass (`glareSeat`: 0 the middle of the glass, 1 the plane where the glass sits in the base), in the colour of the light inside,
+ * and falls off round it with the distance over `glareReach` radii of the glass (post.ts adds it, the stage says where the seat
+ * is), so nothing else in the picture, no lamp of the room and no petal, feeds it, and the room behind the glass keeps its dark.
  * It follows `changeBloom`: up over six frames, highest on the cut, down over six. Nothing is laid on the base itself beyond
  * `outside`, so the base keeps its own colours and its own shadow side under the glare.
  */
-export const CHANGE_BLOOM = { outside: 3, flood: 0, lens: 0.2, pool: 2, swellFrom: 0.56, fall: 0.6, glare: 0.22, glareReach: 1.5 } as const
+export const CHANGE_BLOOM = { outside: 3, flood: 0, lens: 0.2, pool: 2, swellFrom: 0.56, fall: 0.6, glare: 0.16, glareReach: 1.1, glareSeat: 1 } as const
 
 const SHADOW_OFF = 10
 

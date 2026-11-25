@@ -44,4 +44,16 @@ describe('the glare of a change in the lens', () => {
     expect(series[4]!).toBeGreaterThan(0)
     expect(series[10]!).toBeGreaterThan(0)
   })
+
+  it('lies over the seat of the glass and leaves the room behind the glass dark', () => {
+    expect(CHANGE_BLOOM.glareSeat).toBeGreaterThan(0.5)
+    expect(CHANGE_BLOOM.glareSeat).toBeLessThanOrEqual(1)
+    // post.ts: the glare falls off as (1 + d * d) to the power of -2.5, d the distance from the seat in reaches.
+    const share = (radii: number): number => Math.pow(1 + (radii / CHANGE_BLOOM.glareReach) ** 2, -2.5)
+    const r = config.globe.sphereDiameterMm / 2
+    const seat = (CHANGE_BLOOM.glareSeat * (r - config.globe.collarDepthMm)) / r
+    expect(share(config.globe.baseHeightMm / r), 'the foot of the base is still under it').toBeGreaterThan(0.4)
+    expect(share(seat + 1), 'the top of the glass has almost none').toBeLessThan(0.06)
+    expect(share(2), 'nor the room two radii to the side').toBeLessThan(0.03)
+  })
 })
