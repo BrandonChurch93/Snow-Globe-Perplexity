@@ -1,6 +1,6 @@
 # Measures · fall
 
-Not complete: 13 of 19 lines, 4 red. Tier final, asset set full, engine 6a40f6c83e3f1513, 2026-11-25T03:24:51.405Z.
+Complete: 19 of 19 lines, 6 red. Tier final, asset set full, engine 6a40f6c83e3f1513, 2026-11-25T03:41:36.226Z.
 
 | Measure | Still or shake | Result | Number | Threshold | Config key | What was measured |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -17,3 +17,9 @@ Not complete: 13 of 19 lines, 4 red. Tier final, asset set full, engine 6a40f6c8
 | M1 Sanity | `fall-base` | pass | 0 | 0 | none | 0 invalid values in 2073600 pixels; no framing rule for this camera |
 | M2 Texture detail | `fall-base` | fail | 0.1702 | 0.03 | `detail.maxSoftPixelFraction` | 15019 of 88269 textured pixels in the sharp zone are under detail.minTexelsPerPixel (417405 textured pixels in all) |
 | M6 Nothing inside | `fall-base` | pass | 0 | 0.002 | `sim.maxInsideFraction` | 0 of 102000 particles inside a solid, 0 outside the sphere |
+| M1 Sanity | `fall-surface` | pass | 0 | 0 | none | 0 invalid values in 2073600 pixels; no framing rule for this camera |
+| M2 Texture detail | `fall-surface` | fail | 0.3882 | 0.03 | `detail.maxSoftPixelFraction` | 36934 of 95147 textured pixels in the sharp zone are under detail.minTexelsPerPixel (1735763 textured pixels in all) |
+| M6 Nothing inside | `fall-surface` | pass | 0 | 0.002 | `sim.maxInsideFraction` | 0 of 102000 particles inside a solid, 0 outside the sphere |
+| M1 Sanity | `fall-settled` | pass | 0 | 0 | none | 0 invalid values in 2073600 pixels; the globe and base lie inside the 1920 x 1080 frame (glass top at 90.7 px, foot at 1029.8 px, base from 597.8 to 1322.2 px) |
+| M2 Texture detail | `fall-settled` | fail | 0.2352 | 0.03 | `detail.maxSoftPixelFraction` | 41035 of 174499 textured pixels in the sharp zone are under detail.minTexelsPerPixel (665594 textured pixels in all) |
+| M6 Nothing inside | `fall-settled` | pass | 0 | 0.002 | `sim.maxInsideFraction` | 0 of 102000 particles inside a solid, 0 outside the sphere |

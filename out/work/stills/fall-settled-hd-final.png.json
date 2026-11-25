@@ -1,0 +1,75 @@
+{
+  "engineHash": "6a40f6c83e3f1513",
+  "seasonHashes": {
+    "winter": "5c39d16f98d3d0be",
+    "spring": "3385ea1402697850",
+    "summer": "b115da8442d81aaf",
+    "fall": "ba42c0a8a2b4523f"
+  },
+  "format": "hd",
+  "tier": "final",
+  "assets": "full",
+  "diagnostic": "",
+  "browser": "Google Chrome for Testing 147.0.7727.15",
+  "graphics": "software",
+  "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB",
+  "time": "2026-11-25T03:41:06.076Z",
+  "diag": "",
+  "spec": {
+    "id": "fall-settled",
+    "season": "fall",
+    "state": "settled",
+    "camera": "hero",
+    "tier": "final",
+    "format": "hd",
+    "assets": "full",
+    "diag": "",
+    "interface": false,
+    "live": ""
+  },
+  "noext": [],
+  "method": 3,
+  "seconds": 434.741,
+  "timings": {
+    "simMs": 368.90000001341105,
+    "drawMs": 433292.799999997,
+    "samples": 24,
+    "steps": 96
+  },
+  "measured": {
+    "sanity": {
+      "invalid": 0,
+      "pixels": 2073600
+    },
+    "inside": {
+      "inside": 0,
+      "outside": 0,
+      "total": 102000
+    }
+  },
+  "framing": {
+    "globe": {
+      "cx": 960,
+      "cy": 467.67901740126274,
+      "r": 376.96554629536996
+    },
+    "base": {
+      "left": 597.8286732017048,
+      "right": 1322.171326798295,
+      "top": 709.1023468384356,
+      "foot": 1029.8254169683203
+    },
+    "frameHeightMm": 172.94955118476292,
+    "frameWidthMm": 307.46586877291185,
+    "heroFill": 0.8037025771261214,
+    "cornerReachMm": 182.0728848812925
+  },
+  "state": null,
+  "standIns": 9,
+  "counts": {
+    "triangles": 1059960,
+    "drawCalls": 50,
+    "particles": 102000
+  },
+  "errors": []
+}
