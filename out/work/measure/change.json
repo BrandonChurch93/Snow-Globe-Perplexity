@@ -1,0 +1,291 @@
+{
+  "unit": "change",
+  "tier": "final",
+  "assets": "full",
+  "method": 3,
+  "engineHash": "5a94146defd3d562",
+  "seasonHashes": {
+    "winter": "5c39d16f98d3d0be",
+    "spring": "e579a2c24f41ece7",
+    "summer": "364b4daf13dc8bb8",
+    "fall": "767926ecb026caa1"
+  },
+  "browser": "147.0.7727.15",
+  "time": "2026-11-25T10:41:09.996Z",
+  "complete": true,
+  "planned": 24,
+  "red": 0,
+  "measures": [
+    "M1",
+    "M4",
+    "M5",
+    "M6"
+  ],
+  "notes": [],
+  "lines": [
+    {
+      "measure": "M1",
+      "still": "change-shake-1-swap",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; the globe and base lie inside the 1920 x 1080 frame (glass top at 90.7 px, foot at 1029.8 px, base from 597.8 to 1322.2 px)",
+      "framed": true
+    },
+    {
+      "measure": "M6",
+      "still": "change-shake-1-swap",
+      "pass": true,
+      "value": 0.000127,
+      "threshold": 0.002,
+      "key": "sim.maxInsideFraction",
+      "detail": "13 of 102000 particles inside a solid, 0 outside the sphere",
+      "inside": 13,
+      "outside": 0,
+      "total": 102000
+    },
+    {
+      "measure": "M1",
+      "still": "change-shake-1-landing",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; the globe and base lie inside the 1920 x 1080 frame (glass top at 90.7 px, foot at 1029.8 px, base from 597.8 to 1322.2 px)",
+      "framed": true
+    },
+    {
+      "measure": "M6",
+      "still": "change-shake-1-landing",
+      "pass": true,
+      "value": 0.000137,
+      "threshold": 0.002,
+      "key": "sim.maxInsideFraction",
+      "detail": "14 of 102000 particles inside a solid, 0 outside the sphere",
+      "inside": 14,
+      "outside": 0,
+      "total": 102000
+    },
+    {
+      "measure": "M1",
+      "still": "change-shake-2-swap",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; the globe and base lie inside the 1920 x 1080 frame (glass top at 90.7 px, foot at 1029.8 px, base from 597.8 to 1322.2 px)",
+      "framed": true
+    },
+    {
+      "measure": "M6",
+      "still": "change-shake-2-swap",
+      "pass": true,
+      "value": 0.000245,
+      "threshold": 0.002,
+      "key": "sim.maxInsideFraction",
+      "detail": "25 of 102000 particles inside a solid, 0 outside the sphere",
+      "inside": 25,
+      "outside": 0,
+      "total": 102000
+    },
+    {
+      "measure": "M1",
+      "still": "change-shake-2-landing",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; the globe and base lie inside the 1920 x 1080 frame (glass top at 90.7 px, foot at 1029.8 px, base from 597.8 to 1322.2 px)",
+      "framed": true
+    },
+    {
+      "measure": "M6",
+      "still": "change-shake-2-landing",
+      "pass": true,
+      "value": 0.000049,
+      "threshold": 0.002,
+      "key": "sim.maxInsideFraction",
+      "detail": "5 of 102000 particles inside a solid, 0 outside the sphere",
+      "inside": 5,
+      "outside": 0,
+      "total": 102000
+    },
+    {
+      "measure": "M1",
+      "still": "change-shake-3-swap",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; the globe and base lie inside the 1920 x 1080 frame (glass top at 90.7 px, foot at 1029.8 px, base from 597.8 to 1322.2 px)",
+      "framed": true
+    },
+    {
+      "measure": "M6",
+      "still": "change-shake-3-swap",
+      "pass": true,
+      "value": 0.000039,
+      "threshold": 0.002,
+      "key": "sim.maxInsideFraction",
+      "detail": "4 of 102000 particles inside a solid, 0 outside the sphere",
+      "inside": 4,
+      "outside": 0,
+      "total": 102000
+    },
+    {
+      "measure": "M1",
+      "still": "change-shake-3-landing",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; the globe and base lie inside the 1920 x 1080 frame (glass top at 90.7 px, foot at 1029.8 px, base from 597.8 to 1322.2 px)",
+      "framed": true
+    },
+    {
+      "measure": "M6",
+      "still": "change-shake-3-landing",
+      "pass": true,
+      "value": 0.000029,
+      "threshold": 0.002,
+      "key": "sim.maxInsideFraction",
+      "detail": "3 of 102000 particles inside a solid, 0 outside the sphere",
+      "inside": 3,
+      "outside": 0,
+      "total": 102000
+    },
+    {
+      "measure": "M1",
+      "still": "change-shake-4-swap",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; the globe and base lie inside the 1920 x 1080 frame (glass top at 90.7 px, foot at 1029.8 px, base from 597.8 to 1322.2 px)",
+      "framed": true
+    },
+    {
+      "measure": "M6",
+      "still": "change-shake-4-swap",
+      "pass": true,
+      "value": 0.000088,
+      "threshold": 0.002,
+      "key": "sim.maxInsideFraction",
+      "detail": "9 of 102000 particles inside a solid, 0 outside the sphere",
+      "inside": 9,
+      "outside": 0,
+      "total": 102000
+    },
+    {
+      "measure": "M1",
+      "still": "change-shake-4-landing",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; the globe and base lie inside the 1920 x 1080 frame (glass top at 90.7 px, foot at 1029.8 px, base from 597.8 to 1322.2 px)",
+      "framed": true
+    },
+    {
+      "measure": "M6",
+      "still": "change-shake-4-landing",
+      "pass": true,
+      "value": 0.000039,
+      "threshold": 0.002,
+      "key": "sim.maxInsideFraction",
+      "detail": "4 of 102000 particles inside a solid, 0 outside the sphere",
+      "inside": 4,
+      "outside": 0,
+      "total": 102000
+    },
+    {
+      "measure": "M4",
+      "still": "shake-1",
+      "pass": true,
+      "value": 0.9446,
+      "threshold": 0.85,
+      "key": "shake.minCoverAtSwap",
+      "detail": "138514 of 146644 miniature pixels are hidden to at least shake.coverOpacity in the middle of the swap window",
+      "miniature": 146644,
+      "hidden": 138514
+    },
+    {
+      "measure": "M5",
+      "still": "shake-1",
+      "pass": true,
+      "value": 0.9854,
+      "threshold": 0.6,
+      "key": "shake.minVisibleAfterSettle",
+      "detail": "152351 of 154604 miniature pixels are hidden by less than shake.coverOpacity, shake.settleCheckSeconds after the landing",
+      "miniature": 154604,
+      "hidden": 2253
+    },
+    {
+      "measure": "M4",
+      "still": "shake-2",
+      "pass": true,
+      "value": 0.9643,
+      "threshold": 0.85,
+      "key": "shake.minCoverAtSwap",
+      "detail": "134555 of 139535 miniature pixels are hidden to at least shake.coverOpacity in the middle of the swap window",
+      "miniature": 139535,
+      "hidden": 134555
+    },
+    {
+      "measure": "M5",
+      "still": "shake-2",
+      "pass": true,
+      "value": 1,
+      "threshold": 0.6,
+      "key": "shake.minVisibleAfterSettle",
+      "detail": "154829 of 154829 miniature pixels are hidden by less than shake.coverOpacity, shake.settleCheckSeconds after the landing",
+      "miniature": 154829,
+      "hidden": 0
+    },
+    {
+      "measure": "M4",
+      "still": "shake-3",
+      "pass": true,
+      "value": 0.9205,
+      "threshold": 0.85,
+      "key": "shake.minCoverAtSwap",
+      "detail": "118567 of 128806 miniature pixels are hidden to at least shake.coverOpacity in the middle of the swap window",
+      "miniature": 128806,
+      "hidden": 118567
+    },
+    {
+      "measure": "M5",
+      "still": "shake-3",
+      "pass": true,
+      "value": 0.9758,
+      "threshold": 0.6,
+      "key": "shake.minVisibleAfterSettle",
+      "detail": "140808 of 144304 miniature pixels are hidden by less than shake.coverOpacity, shake.settleCheckSeconds after the landing",
+      "miniature": 144304,
+      "hidden": 3496
+    },
+    {
+      "measure": "M4",
+      "still": "shake-4",
+      "pass": true,
+      "value": 0.9666,
+      "threshold": 0.85,
+      "key": "shake.minCoverAtSwap",
+      "detail": "140741 of 145599 miniature pixels are hidden to at least shake.coverOpacity in the middle of the swap window",
+      "miniature": 145599,
+      "hidden": 140741
+    },
+    {
+      "measure": "M5",
+      "still": "shake-4",
+      "pass": true,
+      "value": 0.9996,
+      "threshold": 0.6,
+      "key": "shake.minVisibleAfterSettle",
+      "detail": "155912 of 155973 miniature pixels are hidden by less than shake.coverOpacity, shake.settleCheckSeconds after the landing",
+      "miniature": 155973,
+      "hidden": 61
+    }
+  ]
+}
