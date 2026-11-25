@@ -42,4 +42,4 @@ Start from `origin/main` plus `agent/p4-fall_base3` at **e59fc18**. Looks branch
 - The `surface` camera after c0ff90e (06:30); the `macro`, `interior`, `base` and `low` cameras at no commit of mine.
 - The candles as a playing clip: seven film frames (35.97 to 36.17 s) and the landed still only.
 - The season's triangle count after d553105: no mesh changed since (leaf pictures and shaders only), not recounted.
-- The draft measures' last lines (the run was still going at 08:39): M1, M2, M6 of fall-rest and fall-shake passed, M1 fall-interior red on the miniature touching the frame's edge (fall_mini3's), M3 red on the miniature.
+- The stills the draft measures rendered at the head (base, surface, settled, interior, shake): the measures passed on them, I did not open them.

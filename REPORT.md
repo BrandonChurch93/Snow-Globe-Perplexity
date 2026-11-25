@@ -45,7 +45,7 @@ Season drawn (high / medium / low): 1,587,581 / 918,771 / 408,738 at d553105, no
 ## Tests and measures at the head
 - `npx tsc --noEmit` clean; `npx vitest run` 436 passed, 4 skipped (on the merged tree, 08:19).
 - `npm run determinism`: `determinism: pass` (3 pictures, 4 page loads, 348 s; 08:32).
-- `npm run measure -- --unit fall --only M1,M2,M3,M6 --tier draft` (08:33 on): pass M1, M2, M6 fall-rest; pass M1, M2, M6 fall-shake (4 of 102,000 particles inside a solid, 0.000039 against 0.002); FAIL M3 fall-rest 0.329 on the miniature (base 1.182 at draft, which is noise); FAIL M1 fall-interior: the miniature touches the edge of the frame (not my part). The lines after these were not read before 08:39.
+- `npm run measure -- --unit fall --only M1,M2,M3,M6 --tier draft` (08:33 on): 19 lines, 17 pass, 2 red (run ended 08:40). Pass: M1, M2, M6 of fall-rest, fall-shake (4 of 102,000 particles inside a solid, 0.000039 against 0.002), fall-base, fall-surface, fall-settled; M2, M6 of fall-interior. FAIL M3 fall-rest 0.329 on the miniature (base 1.182 at draft, which is noise); FAIL M1 fall-interior: the miniature touches the edge of the frame (not my part).
 - M3 fall-rest at FINAL (08:19 to 08:26): base 0.752, miniature 0.277.
 
 ## Looks
