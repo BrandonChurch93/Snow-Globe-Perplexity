@@ -60,10 +60,12 @@ export const look = {
     pale: [0.62, 1.0, 0.68],
     paleMm: 5,
     paleGain: 0.35,
-    air: 0.0005,
+    air: 0.0008,
     airStirred: 0.3,
     airTint: [0.3, 0.24, 0.1],
     airGrid: 0.6,
+    dustGlow: 0.002,
+    dustTint: [1.0, 0.72, 0.42],
     flood: 0.1,
     floodFrom: 0.64,
     floodTo: 0.99,
@@ -312,7 +314,12 @@ void main() {
   // The liquid itself is not clear: fine dust in it takes the orange of the lights, most in the upper dome and near the wall.
   float air = ${f(F.air)} * (1.0 + ${f(F.airStirred)} * lift) * smoothstep(${f(GROUND + 14)}, ${f(GROUND + 46)}, p.y) * mix(0.35, 1.0, smoothstep(24.0, 50.0, r));
   bool fogHere = bound * ${f(FOG_STEP * 1.7)} >= 0.003;
-  if ((!fogHere && air * ${f(FOG_STEP)} < 0.0006) || p.y < under) discard;
+  if (p.y < under) discard;
+  // The same dust shows the light of the lamp, the windows and the lanterns as a glow in the liquid round them.
+  vec3 grid = stageGrid(p);
+  vec3 dust = ${vec(F.dustTint)} * grid * ${f(F.dustGlow * FOG_STEP)};
+  bool dustHere = dust.r + dust.g > 0.0012;
+  if (!fogHere && !dustHere && air * ${f(FOG_STEP)} < 0.0006) discard;
   // The roll comes round once a period: two takes of the billows half a turn of the clock apart, the one handed over to the other.
   float k = uFog.x;
   vec2 n = vec2(0.5);
@@ -364,15 +371,14 @@ void main() {
   if (!fogHere) rho = 0.0;
   float a = 1.0 - exp(-(rho + air) * ${f(FOG_STEP)});
   a *= seen;
-  if (a < 0.0006) discard;
+  if (a < 0.0006 && !dustHere) discard;
   float deep = exp(-max(h, 0.0) / ${f(F.glowDeepMm)});
-  vec3 grid = stageGrid(p);
   vec3 lit = stageCold(p) * ${f(F.cold)} + grid * ${f(F.warm)} + vec3(${f(F.glow)}) * mix(mix(0.3, 1.0, deep), 1.0, ${f(F.glowLifted)} * lift) * (0.75 + 0.5 * n.y);
   // Where it is thick it scatters more and goes pale: mint, not green.
   float thick = clamp(rho * ${f(F.paleMm)}, 0.0, 1.0);
   vec3 col = mix(${vec(F.tint)}, ${vec(F.pale)}, thick) * lit * (1.0 + ${f(F.paleGain)} * thick);
-  col = (col * rho + ${vec(F.airTint)} * (1.0 + ${f(F.airGrid)} * (grid.r + grid.g)) * air) / (rho + air);
-  gl_FragColor = vec4(col * a, a);
+  col = (col * rho + ${vec(F.airTint)} * (1.0 + ${f(F.airGrid)} * (grid.r + grid.g)) * air) / max(rho + air, 1e-6);
+  gl_FragColor = vec4(col * a + dust * seen, a);
   // In the cover view the fog says how much of the miniature it hides, as the particles do.
   if (uDiag == ${viewCode('cover')}) {
     gl_FragColor = vec4(a, 0.0, a, a);
