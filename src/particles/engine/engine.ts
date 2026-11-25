@@ -86,6 +86,7 @@ const BALL_ROOM_MM = 0.1
 const BANK_FROM = 6 / ROLL_RISE_MM
 const BANK_OVER = ROLL_RISE_MM / (48 - 6)
 const LEAP2 = 3 * 3
+const HEFT_SPREAD = 1 / 1024
 
 const TABLE = 4096
 const MASK = TABLE - 1
@@ -125,6 +126,7 @@ const K_BLEND = new Float64Array(NK)
 const K_GRIP = new Float64Array(NK)
 const K_LOFT = new Float64Array(NK)
 const K_GATHER = new Float64Array(NK)
+const K_HEFT = new Float64Array(NK)
 /** The kinds that lie as sheets (a petal, a leaf): one of these keeps, while it lies, the facing of what it lies on in its `phase`, which a lying particle has no other use for, so that it is drawn flat on a roof as on the ground. */
 const K_SHEET = new Uint8Array(NK)
 KINDS.forEach((name, k) => {
@@ -154,6 +156,7 @@ TABLE_OF.forEach((b, k) => {
   K_GRIP[k] = 1 / (1 + b.gripPerSecond * H)
   K_LOFT[k] = b.rest === 'lies' ? b.loft : 0
   K_GATHER[k] = b.mode === 'drift' ? b.gather : 0
+  K_HEFT[k] = b.heft
 })
 /**
  * The slowest stir that can lift anything, for each season: the lowest first number of `liftMmS` among that
@@ -1304,6 +1307,11 @@ export class ParticleEngine {
     const stiff = roll / (roll + ROLL_SOFT)
     const stirred = c[6]! > 0
     const loose = 1 - stiff
+    const kx = L.carry[0]!
+    const ky = L.carry[1]!
+    const kz = L.carry[2]!
+    const thrown = kx !== 0 || ky !== 0 || kz !== 0
+    const kInv = thrown ? 1 / (Math.sqrt(kx * kx + ky * ky + kz * kz) * R) : 0
     const m = L.motion
     const gux = m.gx
     const guy = m.gy
@@ -1511,6 +1519,13 @@ export class ParticleEngine {
             fz = arm * tz
           }
         }
+      }
+      if (thrown) {
+        const on = (x * kx + y * ky + z * kz) * kInv
+        const hw = K_HEFT[k]! * (0.5 + (Math.imul(i, 0x85ebca6b) >>> 22) * HEFT_SPREAD) * (on > 0 ? 1 - on * q : 1)
+        fx += kx * hw
+        fy += ky * hw
+        fz += kz * hw
       }
       const us2 = (ux + rx) * (ux + rx) + (uy + ry) * (uy + ry) + (uz + rz) * (uz + rz)
       if (walled) {
