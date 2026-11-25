@@ -29,7 +29,7 @@ const MIRROR = { lamp: 3, pane: 1.4, tight: 0.0022, wide: 0.035, wideShare: 0.03
 const STREAK = { strength: 20, side: 0.045, along: 0.6, bump: 0.06, rings: 0.9 }
 const MOSS_FROM = [-16.8, -15]
 const SKIRT_FILL = 1.7
-const BANK = { wide: 0.21, wideMm: 0.9, cushion: 0.46, cushionMm: 0.7, tuft: 1.25, tuftMm: 0.26, grain: 4.2, grainMm: 0.05, deep: 0.2 }
+const BANK = { wide: 0.21, wideMm: 0.9, cushion: 0.46, cushionMm: 0.7, tuft: 1.25, tuftMm: 0.26, grain: 4.2, grainMm: 0.05, deep: 0.13, lip: 1.3 }
 const BANK_SPAN = BANK.cushionMm + BANK.tuftMm
 const BANK_EARTH: Rgb = [0.03, 0.021, 0.012]
 const SLATE = { tint: [2.2, 3.1, 3.8] as Rgb, from: cottageFrame().floor + cottage.wall - 1.2 }
@@ -38,7 +38,7 @@ const POT: Rgb = [0.5, 0.2, 0.1]
 const FENCE_TINT: Rgb = [0.42, 0.33, 0.27]
 const RING_SHOW = 1.7
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
-const HALO_KIND = { lamp: { size: 4.6, rest: 0.42, hot: 0.07, bloom: 0.3 }, pane: { size: 2.6, rest: 0.2, hot: 0, bloom: 0.36 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
+const HALO_KIND = { lamp: { size: 4.6, rest: 0.5, hot: 0.07, bloom: 0.3 }, pane: { size: 2.6, rest: 0.28, hot: 0, bloom: 0.36 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
 const SPARK = { radiusMm: 0.75, strength: 1.2, hot: 2.5, pullMm: 1.6, flicker: 0.05, cycles: 2, through: 80, wide: 1, bloom: 0 }
 const SPARK_KIND = { size: 1.5, rest: 0.9, hot: 1.2, bloom: 0 }
 const THROUGH = 6
@@ -50,7 +50,7 @@ const BANK_TINT: Rgb = [0.62, 0.56, 0.34]
 const TURF_LOOK = { wrap: 0.45, fill: 0.9, grainMm: 0.07, lumpMm: 0.26, wideMm: 0.5, fuzz: 0.5 }
 const GROWTH_LOOK = { wrap: 0.7, fill: 0.7, through: 1.6, thin: 0.5, tight: 3 }
 const RIPPLE = { waveMm: 4.0, heightMm: 0.3, reachMm: 22, laps: 5, chopMm: 0.016, drift: 2 }
-const WATER_LOOK = { rough: 0.07, near: 0.12, sky: 0.36, crown: 0.6, post: 0.55, postMm: 0.5, postTall: 11.5, trunk: 0.5, trunkMm: 2.6, trunkTall: 16, body: 0.4 }
+const WATER_LOOK = { rough: 0.07, near: 0.12, sky: 0.36, crown: 0.6, post: 0.55, postMm: 0.5, postTall: 11.5, trunk: 0.5, trunkMm: 2.6, trunkTall: 16, body: 0.4, room: 0.45, far: [0.05, 0.06, 0.035] as Rgb, farFrom: 0.1, farTo: 0.42 }
 const CROWN_MIRROR = { centre: [tree.x + 1.2, 9.9, tree.z + 1] as Rgb, r: [22.5, 15.5, 15] as Rgb, tone: [0.95, 0.56, 0.66] as Rgb }
 
 const flame = lampFlame()
@@ -194,10 +194,10 @@ if (turfBankA > 0.01) {
   float bankCrest = smoothstep(${(0.12 * BANK_SPAN).toFixed(3)}, ${(0.8 * BANK_SPAN).toFixed(3)}, bankRelief(bankQ));
   float bankPatch = bankNoise(bankQ * 0.33 + 9.1);
   float bankSpeck = bankNoise(bankQ.yzx * ${BANK.grain.toFixed(2)} + 3.1);
-  vec3 bankMoss = diffuseColor.rgb * ${glsl(BANK_TINT)} * (0.5 + 0.95 * bankCrest) * (0.7 + 0.6 * bankPatch) * (0.8 + 0.4 * bankFine * bankSpeck);
+  vec3 bankMoss = diffuseColor.rgb * ${glsl(BANK_TINT)} * (0.36 + 1.2 * bankCrest) * (0.7 + 0.6 * bankPatch) * (0.8 + 0.4 * bankFine * bankSpeck);
   vec3 bankSoil = ${glsl(BANK_EARTH)} * (0.6 + 0.8 * bankPatch);
   vec3 bankTone = mix(bankSoil, bankMoss, smoothstep(0.04, 0.34, bankCrest) * (0.55 + 0.45 * smoothstep(0.25, 0.6, bankPatch + 0.3 * bankCrest)));
-  bankTone *= mix(1.0, ${BANK.deep.toFixed(2)}, smoothstep(0.12, 0.85, vSurf.y));
+  bankTone *= mix(${BANK.lip.toFixed(2)}, ${BANK.deep.toFixed(2)}, smoothstep(0.02, 0.42, vSurf.y));
   diffuseColor.rgb = mix(diffuseColor.rgb, bankTone, turfBankA);
 }
 `,
@@ -226,7 +226,7 @@ if (turfBankA > 0.01) {
   float turfCatch = smoothstep(-0.15, 0.9, dot(geometryNormal, vec3(0.0, 0.76, 0.65)));
   float turfRock = smoothstep(2.5, 2.9, vSurf.x);
   float turfLift = normalize(vObjN).y;
-  reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${SKIRT_FILL.toFixed(2)} * turfBank * (0.04 + 0.96 * turfCatch * turfCatch) * (0.5 + 0.5 * smoothstep(-0.8, 0.0, turfLift)) * (1.0 - 0.8 * smoothstep(0.1, 0.8, vSurf.y)) + ${ROCK_FILL.toFixed(2)} * turfRock * (0.3 + 0.7 * smoothstep(-0.2, 0.7, turfLift)))) * material.diffuseContribution;
+  reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${SKIRT_FILL.toFixed(2)} * turfBank * (0.04 + 0.96 * turfCatch * turfCatch) * (0.5 + 0.5 * smoothstep(-0.8, 0.0, turfLift)) * (1.0 - 0.85 * smoothstep(0.04, 0.5, vSurf.y)) + ${ROCK_FILL.toFixed(2)} * turfRock * (0.3 + 0.7 * smoothstep(-0.2, 0.7, turfLift)))) * material.diffuseContribution;
   reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${TURF_LOOK.fuzz.toFixed(2)} * turfFuzz * stageWrap(dot(geometryNormal, stageKeyL), 1.0)) * material.diffuseContribution;
 }`,
       )
@@ -267,7 +267,7 @@ function growthMaterial(): THREE.MeshStandardMaterial {
 
 function waterMaterial(): THREE.MeshStandardMaterial {
   const mirrors = [{ at: mirrored, strength: MIRROR.lamp }, { at: anchors.window, strength: MIRROR.pane }, { at: anchors.sideWindow, strength: MIRROR.pane }]
-  const rings = drops.map((d, i) => `waterRing(p, vec2(${d[0].toFixed(3)}, ${d[2].toFixed(3)}), ${d[1].toFixed(3)}, ${(1 - 0.22 * i).toFixed(2)})`).join(' + ')
+  const rings = drops.map((d, i) => `waterRing(p, vec2(${d[0].toFixed(3)}, ${d[2].toFixed(3)}), ${d[1].toFixed(3)}, ${(1 - 0.36 * i).toFixed(2)})`).join(' + ')
   return stageMaterial({
     part: PART,
     standIn: false,
@@ -360,14 +360,14 @@ diffuseColor.rgb = mix(${glsl(tones.waterDeep)}, ${glsl(tones.bed)}, waterEdge *
   waterShade = max(${WATER_LOOK.post.toFixed(2)} * villagePost(waterMirror, waterSight, ${glsl(postFoot)}, ${WATER_LOOK.postMm.toFixed(2)}, ${WATER_LOOK.postTall.toFixed(1)}), ${WATER_LOOK.trunk.toFixed(2)} * villagePost(waterMirror, waterSight, ${glsl(trunkFoot)}, ${WATER_LOOK.trunkMm.toFixed(2)}, ${WATER_LOOK.trunkTall.toFixed(1)}));
   float waterPink = waterCrown(vStageLocal, waterR) * (1.0 - waterShade);
   float waterBand = waterRings(vStageLocal.xz);
-  vec3 waterSky = clamp(1.0 + ${RING_SHOW.toFixed(2)} * waterBand, 0.12, 2.8) * ${glsl(tones.waterPale)} * (${WATER_LOOK.sky.toFixed(2)} * (0.3 + 1.3 * smoothstep(-0.05, 0.5, waterR.y))) * (1.0 - 0.8 * waterPink);
+  vec3 waterSky = clamp(1.0 + ${RING_SHOW.toFixed(2)} * waterBand, 0.12, 2.8) * mix(${glsl(WATER_LOOK.far)}, ${glsl(tones.waterPale)} * (${WATER_LOOK.sky.toFixed(2)} * (0.3 + 1.3 * smoothstep(-0.05, 0.5, waterR.y))), smoothstep(${WATER_LOOK.farFrom.toFixed(2)}, ${WATER_LOOK.farTo.toFixed(2)}, waterR.y)) * (1.0 - 0.8 * waterPink);
   totalEmissiveRadiance += (waterSky + ${glsl(CROWN_MIRROR.tone)} * (${WATER_LOOK.crown.toFixed(2)} * waterPink)) * (0.25 + 0.75 * waterFresnel) * (1.0 - 0.6 * waterShade) * (1.0 - 0.7 * waterEdge) * dot(stageKeyC + vec3(0.6), vec3(0.3333));
   float waterLine = ${STREAK.strength.toFixed(1)} * waterStreak(villageInside(normalize(mix(waterFlat, normal, ${STREAK.bump.toFixed(2)}))), waterSight) * (1.0 - waterEdge) * clamp(1.0 + ${STREAK.rings.toFixed(2)} * waterBand, 0.08, 2.0);
   totalEmissiveRadiance += ${glsl(tones.lamp)} * (waterGlint + waterLine) * (0.2 + 0.8 * waterFresnel) * uGlowGain;
 }
 `,
         )
-      afterLight(shader, `reflectedLight.indirectDiffuse += vGlow * (uGlowGain * ${WATER_LOOK.near.toFixed(2)}) * material.diffuseContribution;\nreflectedLight.indirectSpecular *= 1.0 - waterShade;\nreflectedLight.directDiffuse *= 1.0 - ${WATER_LOOK.body.toFixed(2)} * waterShade;`)
+      afterLight(shader, `reflectedLight.indirectDiffuse += vGlow * (uGlowGain * ${WATER_LOOK.near.toFixed(2)}) * material.diffuseContribution;\nreflectedLight.indirectSpecular *= ${WATER_LOOK.room.toFixed(2)} * (1.0 - waterShade);\nreflectedLight.directDiffuse *= 1.0 - ${WATER_LOOK.body.toFixed(2)} * waterShade;`)
     },
   })
 }
@@ -392,7 +392,7 @@ export function lights(): THREE.Object3D {
     glowPiece(villageGeometry('pane-gable'), (_i, w, h) => [GLOW.pane, w, h, 1]),
     glowPiece(villageGeometry('pane-side'), (_i, w, h) => [GLOW.pane, w, h, 2]),
   ]
-  const look = { bulb: 1.7, bulbCore: 3.4, glass: LAMP_GLASS, flame: tones.flame.map((v) => v * 6) as unknown as Rgb, room: tones.room.map((v) => v * 1.15) as unknown as Rgb, curtain: tones.curtain.map((v) => v * 1.6) as unknown as Rgb, frost: tones.pane.map((v) => v * 0.3) as unknown as Rgb, frostAmount: 0.06, flicker: 0.08, cycles: 3, through: THROUGH, paneHot: 0.14 }
+  const look = { bulb: 1.7, bulbCore: 3.4, glass: LAMP_GLASS, flame: tones.flame.map((v) => v * 6) as unknown as Rgb, room: tones.room.map((v) => v * 1.6) as unknown as Rgb, curtain: tones.curtain.map((v) => v * 2) as unknown as Rgb, frost: tones.pane.map((v) => v * 0.3) as unknown as Rgb, frostAmount: 0.06, flicker: 0.08, cycles: 3, through: THROUGH, paneHot: 0.14 }
   const lit = (x: number, z: number): [number, number, number] => [x, groundAt(x, z) + 1.5, z]
   const pools = [lit(flame[0] + 0.4, flame[2] + 1.6), lit(anchors.door[0] * 0.75 + flame[0] * 0.25, anchors.door[2] * 0.75 + flame[2] * 0.25)]
   const halos = new THREE.Mesh(

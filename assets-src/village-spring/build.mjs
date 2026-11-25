@@ -361,7 +361,7 @@ const boulders = []
 }
 const boulderGap = (x, z) => boulders.reduce((m, b) => Math.min(m, Math.hypot(x - b[0], z - b[2]) - b[3]), 1e9)
 
-const MOUNDS = { count: 70, sizeMm: [1.0, 2.6], seed: 9133 }
+const MOUNDS = { count: 110, sizeMm: [1.2, 3.3], seed: 9133 }
 {
   const before = turf.triangles
   const RM = rng(MOUNDS.seed)
