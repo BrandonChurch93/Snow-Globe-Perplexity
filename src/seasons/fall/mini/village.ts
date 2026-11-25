@@ -26,23 +26,24 @@ const WINDOW = { power: 1.1, reachMm: 8, flicker: 0.1, cycles: 5, phase: 0.4 }
 const SIDE = { power: 0.9, reachMm: 7, flicker: 0.1, cycles: 4, phase: 0.75 }
 const ATTIC_LIGHT = { power: 0.6, reachMm: 6, flicker: 0.1, cycles: 4, phase: 0.2 }
 const PUMPKIN = { power: 1.3, reachMm: 7, flicker: 0.16, cycles: 6 }
-const POND = { power: 0.45, reachMm: 20, flicker: 0.08, cycles: 2, phase: 0.8, liftMm: 2.5 }
-const NEAR = { lamp: { power: 11, reachMm: 7.5 }, pane: { power: 5, reachMm: 3.2 }, pumpkin: { power: 13, reachMm: 2.6, ends: 4 } }
+const POND = { power: 0.3, reachMm: 20, flicker: 0.08, cycles: 2, phase: 0.8, liftMm: 2.5 }
+const NEAR = { lamp: { power: 6, reachMm: 7 }, pane: { power: 5, reachMm: 3.2 }, pumpkin: { power: 13, reachMm: 2.6, ends: 4 } }
 const NEAR_WALL = { lamp: { power: 3.4, reachMm: 9, ends: 3 }, pane: { power: 2.4, reachMm: 4.5, ends: 3 }, pumpkin: { power: 5, reachMm: 3.2, ends: 3 } }
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
-const HALO_KIND = { lamp: { size: 5.6, rest: 0.32, hot: 0, bloom: 0.3 }, pumpkin: { size: 4.2, rest: 0.26, hot: 0, bloom: 0.25 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
+const HALO_KIND = { lamp: { size: 4.2, rest: 0.26, hot: 0, bloom: 0.25 }, pumpkin: { size: 4.2, rest: 0.26, hot: 0, bloom: 0.25 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
 const PANE_HALO = { radiusMm: 0.75, strength: 0.5, hot: 0, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 0.6 }
 const PANE_SIZE = { size: 3.2, rest: 0.3, hot: 0, bloom: 0.3 }
 const THROUGH = 6
-const LAMP_GLASS: Rgb = [7.5, 6.4, 4.6]
+const LAMP_GLASS: Rgb = [6.8, 4.4, 2.1]
 const WALL_FILL = 2.0
-const GROUND_FILL = 1.5
-const FENCE = { reachMm: 1.25, pastMm: 1.2, out: 0.3, outWave: 0.16, along: 0.13, alongWave: 0.14, sagMm: 0.5, tone: [0.3, 0.27, 0.25] as Rgb }
-const MOSS = { low: [0.56, 0.7, 0.4] as Rgb, high: [0.78, 0.8, 0.7] as Rgb, tallMm: 9 }
-const ROOF = { tone: [0.4, 0.4, 0.46] as Rgb, grey: 0.7 }
+const GROUND_FILL = 1.0
+const FENCE = { reachMm: 1.25, pastMm: 1.2, out: 0.1, outWave: 0.1, along: 0.02, alongWave: 0.24, sagMm: 0.5, tone: [0.17, 0.1, 0.06] as Rgb }
+const MOSS = { low: [0.56, 0.7, 0.4] as Rgb, high: [0.62, 0.66, 0.55] as Rgb, tallMm: 9 }
+const ROOF = { tone: [1.5, 1.2, 1.05] as Rgb, grey: 0.55 }
+const DOOR: Rgb = [0.34, 0.24, 0.17]
 const DRY: readonly Rgb[] = [[0.42, 0.16, 0.05], [0.5, 0.26, 0.07], [0.3, 0.12, 0.05], [0.4, 0.3, 0.1]]
-const GROUND = { soil: 1.25, leaf: 1.15, soilMm: 0.26, wideMm: 0.5, leafMm: 0.34 }
-const WATER = { rough: 0.07, rippleMm: 0.03, lamp: 3, pane: 0.8, pumpkin: 2.2, tight: 0.002, wide: 0.02, wideShare: 0.006, lowMm: 3.4, fog: 0.13, shore: [0.9, 0.99] as [number, number] }
+const GROUND = { soil: 0.9, leaf: 0.42, soilMm: 0.26, wideMm: 0.5, leafMm: 0.34 }
+const WATER = { rough: 0.07, rippleMm: 0.07, lamp: 12, pane: 0.8, pumpkin: 2.2, tight: 0.0005, wide: 0.006, wideShare: 0.004, lowMm: 3.4, fog: 0.13, shore: [0.9, 0.99] as [number, number] }
 
 const flame = lampFlame()
 const mirrored: Point = [flame[0], flame[1] - WATER.lowMm, flame[2]]
@@ -96,7 +97,7 @@ const fenceLength = Math.hypot(fence.to[0] - fence.from[0], fence.to[1] - fence.
 
 function fencePose(s: number): { out: number; along: number; sag: number } {
   const t = s / fenceLength
-  return { out: FENCE.out + FENCE.outWave * Math.sin(t * 5.3 + 1), along: FENCE.along + FENCE.alongWave * Math.sin(t * 3.1 + 0.5), sag: FENCE.sagMm * smooth(0.55, 1.1, t) }
+  return { out: FENCE.out + FENCE.outWave * Math.sin(t * 7.3 + 1), along: FENCE.along + FENCE.alongWave * Math.sin(t * 9.1 + 0.5), sag: FENCE.sagMm * smooth(0.55, 1.1, t) }
 }
 
 function fenceSpan(x: number, z: number): { s: number; side: number } {
@@ -165,7 +166,7 @@ function autumn(source: THREE.BufferGeometry): THREE.BufferGeometry {
       P.setXYZ(i, p[0], p[1], p[2])
       N.setXYZ(i, (q[0] - p[0]) / l, (q[1] - p[1]) / l, (q[2] - p[2]) / l)
       const lum = 0.3 * r + 0.6 * gr + 0.1 * b
-      const worn = Math.min(1, lum * 1.6) * (0.75 + 0.5 * n)
+      const worn = (0.55 + 0.3 * Math.min(1, lum * 1.6)) * (0.7 + 0.6 * n)
       r = FENCE.tone[0] * worn
       gr = FENCE.tone[1] * worn
       b = FENCE.tone[2] * worn
@@ -193,7 +194,11 @@ function autumn(source: THREE.BufferGeometry): THREE.BufferGeometry {
       }
     } else if (kind === 1) {
       const c = cottageLocal(x, z)
-      if (Math.abs(c.across) < cottage.halfWidth + 3.5 && Math.abs(c.along) < cottage.halfLength + 3.5 && y - frame.floor > cottage.wall - 1.2 && N.getY(i) > 0.25) {
+      if (Math.abs(c.across - cottage.door.across) < cottage.door.width / 2 + 0.6 && Math.abs(c.along - cottage.halfLength) < 1.4 && y - frame.floor < cottage.wall) {
+        r *= DOOR[0]
+        gr *= DOOR[1]
+        b *= DOOR[2]
+      } else if (Math.abs(c.across) < cottage.halfWidth + 3.5 && Math.abs(c.along) < cottage.halfLength + 3.5 && y - frame.floor > cottage.wall - 1.2 && N.getY(i) > 0.25) {
         const lum = 0.3 * r + 0.6 * gr + 0.1 * b
         r = (lum * ROOF.grey + r * (1 - ROOF.grey)) * ROOF.tone[0]
         gr = (lum * ROOF.grey + gr * (1 - ROOF.grey)) * ROOF.tone[1]
@@ -249,7 +254,7 @@ vec4 fallL = fallLeaf(vMapUv);
 float fallShow = step(0.03, fallL.a);
 float fallWide = texture2D(map, vMapUv * 0.19 + 0.37).a;
 float fallMoss = smoothstep(0.42, 0.62, vSurf.y + 0.55 * (fallE.a - 0.5) + 0.3 * (fallWide - 0.5));
-vec3 fallSoil = mix(fallE.rgb * ${GROUND.soil.toFixed(2)}, ${glsl(tones.moss)} * (0.45 + 1.1 * fallE.a), fallMoss);
+vec3 fallSoil = mix(fallE.rgb * ${GROUND.soil.toFixed(2)}, ${glsl(tones.moss)} * (0.3 + 0.7 * fallE.a), fallMoss);
 diffuseColor.rgb *= mix(fallSoil, fallL.rgb * ${GROUND.leaf.toFixed(2)}, fallShow);
 fallRough = mix(0.96, 0.8, fallShow);
 `,

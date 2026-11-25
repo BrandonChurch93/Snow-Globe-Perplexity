@@ -6,7 +6,7 @@ export const isTree = (role: string): boolean => role === 'trunk' || role === 'c
 export const tones: Record<'lamp' | 'flame' | 'room' | 'curtain' | 'pane' | 'lampLight' | 'roomLight' | 'haloEdge' | 'haloCore' | 'pool' | 'moss' | 'waterDeep' | 'waterPale' | 'bed' | 'bark' | 'blossom' | 'twig', Rgb> = {
   lamp: [1, 0.66, 0.3],
   flame: [1, 0.9, 0.68],
-  room: [1, 0.56, 0.17],
+  room: [1, 0.47, 0.11],
   curtain: [0.9, 0.42, 0.14],
   pane: [0.9, 0.8, 0.66],
   lampLight: [1, 0.6, 0.34],
@@ -18,7 +18,7 @@ export const tones: Record<'lamp' | 'flame' | 'room' | 'curtain' | 'pane' | 'lam
   waterDeep: [0.11, 0.115, 0.13],
   waterPale: [0.55, 0.46, 0.48],
   bed: [0.13, 0.14, 0.075],
-  bark: [0.2, 0.15, 0.118],
-  blossom: [1, 1, 1],
+  bark: [0.16, 0.122, 0.104],
+  blossom: [1.26, 1.15, 1.19],
   twig: [1, 1, 1],
 }

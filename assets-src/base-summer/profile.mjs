@@ -142,9 +142,12 @@ export const SET = JSON.parse(fs.readFileSync(new URL('./set.json', import.meta.
 // How far the stone stands out from the turned shape, in mm, at an azimuth and a place along the meridian.
 const hashK = (k, seed) => hashInt(k, 7, seed)
 export const BED_MM = 6.4
+const bedWarp = (w) => w + 1.9 * Math.sin(w / 5.1 + 0.7) + 1.1 * Math.sin(w / 2.3 + 1.0)
 export function strataCoord(az, h) {
   const A = az / 360
-  return h + 9.5 * (fbm(A * 5 + 4, h / 30 + 3, 5, 64, 21, 3) - 0.5) + 3.4 * Math.sin((az * 2 + 35) * RAD) + 2.2 * Math.sin((az * 5 - 80) * RAD + h * 0.1)
+  const a = az - 360 * Math.round(az / 360)
+  const sag = 8.5 * Math.exp(-(((a - 14) / 42) ** 2))
+  return bedWarp(h + sag + 8 * (fbm(A * 4 + 4, h / 34 + 3, 4, 64, 21, 3) - 0.5) + 2.0 * Math.sin((az * 2 + 35) * RAD) + 1.2 * Math.sin((az * 5 - 80) * RAD + h * 0.1))
 }
 export function relief(m, az, s) {
   const q = atS(m, s)
@@ -155,10 +158,12 @@ export function relief(m, az, s) {
   const t = w / BED_MM
   const k = Math.floor(t)
   const f = t - k
-  const amp = (hashK(k, 5) < 0.28 ? 0.12 : 0.55 + 1.25 * hashK(k, 6)) * smooth(0.28, 0.62, fbm(A * 6 + k * 3.1, 0.5, 6, 4, 31, 2)) * 1.5
-  const prof = f < 0.14 ? smooth(0, 0.14, f) : 1 - Math.pow((f - 0.14) / 0.86, 0.8)
-  const swell = 2.3 * (fbm(A * 5 + 1, h / 16, 5, 64, 11, 3) - 0.5) + 0.7 * (fbm(A * 15 + 7, h / 6.5, 15, 64, 13, 2) - 0.5)
-  const lam = 0.03 * Math.sin((w * 2 * Math.PI) / 1.05 + 5 * fbm(A * 40, h / 3, 40, 64, 41, 2)) * smooth(0.45, 0.7, fbm(A * 9 + 2, h / 9, 9, 64, 43, 2))
+  const amp = (hashK(k, 5) < 0.3 ? 0.1 : 0.35 + 0.8 * hashK(k, 6)) * smooth(0.25, 0.6, fbm(A * 6 + k * 3.1, 0.5, 6, 4, 31, 2))
+  const prof = f < 0.24 ? smooth(0, 0.24, f) : 1 - Math.pow((f - 0.24) / 0.76, 0.9)
+  const swell = 2.3 * (fbm(A * 5 + 1, h / 16, 5, 64, 11, 3) - 0.5) + 1.3 * (fbm(A * 9 + 3, h / 11, 9, 64, 15, 3) - 0.5) + 0.5 * (fbm(A * 19 + 7, h / 5.5, 19, 64, 13, 2) - 0.5)
+  const lw = w / 2.3 + 0.9 * fbm(A * 24, h / 5, 24, 64, 41, 2)
+  const lf = lw - Math.floor(lw)
+  const lam = 0.2 * ((lf < 0.3 ? smooth(0, 0.3, lf) : 1 - (lf - 0.3) / 0.7) - 0.5) * smooth(0.36, 0.6, fbm(A * 7 + 2, h / 12, 7, 64, 43, 2))
   const gh = 6.2 + 1.1 * Math.sin((az * 2 - 20) * RAD) + 1.8 * (fbm(A * 6, 0.3, 6, 4, 51, 2) - 0.5)
   const groove = -1.35 * Math.exp(-(((q.h - gh) / 1.15) ** 2)) * (1 - onTop)
   const lip = 0.12 * smooth(35.8, 37.2, q.h + 1.6 * (fbm(A * 9, 0.7, 9, 4, 61, 2) - 0.5)) * (1 - onTop)
@@ -169,8 +174,8 @@ export function relief(m, az, s) {
     const ci = Math.floor(cu) + di
     const cj = Math.floor(cv) + dj
     const wi = ((ci % 150) + 150) % 150
-    if (hashInt(wi, cj, 71) > 0.05) continue
-    const rr = 0.2 + 0.5 * hashInt(wi, cj, 73)
+    if (hashInt(wi, cj, 71) > 0.014) continue
+    const rr = 0.14 + 0.3 * hashInt(wi, cj, 73)
     const dx = (cu - (ci + 0.2 + 0.6 * hashInt(wi, cj, 75))) * 2.4
     const dy = (cv - (cj + 0.2 + 0.6 * hashInt(wi, cj, 77))) * 2.3
     const d = Math.hypot(dx, dy)
@@ -189,8 +194,8 @@ export function relief(m, az, s) {
     if (dist > R * 1.7) continue
     const inside = 1 - smooth(0.7 * R, 1.12 * R, dist)
     const rim = smooth(0.95 * R, 1.2 * R, dist) * (1 - smooth(1.25 * R, 1.7 * R, dist))
-    const deep = it.kind === 'pearl' ? 0.35 * it.r : it.kind === 'glass' ? 0.5 + 0.12 * it.r : 0.35 + 0.1 * it.r
-    d = d * (1 - 0.75 * inside) - deep * inside + 0.22 * rim
+    const deep = it.kind === 'pearl' ? 0.2 * it.r : it.kind === 'glass' ? 0.18 + 0.05 * it.r : 0.12 + 0.04 * it.r
+    d = d * (1 - 0.75 * inside) - deep * inside + 0.1 * rim
     seat = Math.max(seat, inside)
   }
   return { d, w, k, f, h: q.h, seat, onTop, gh }
