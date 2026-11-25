@@ -1,0 +1,63 @@
+{
+  "critic": "R3",
+  "score": 4,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "severe",
+      "file": "set-E-01.jpg",
+      "where": "the sand apron and mound lying on the surface, front and right (set-E-02 crops 4, 6; set-E-03 crops 7-8; also set-F-01.jpg and set-D-01.jpg)",
+      "what": "the sand spread in front of the base is a zero-thickness flat cloudy Perlin-noise decal with jagged alpha-cutout edges and no individual grains, while the mound on the right is a smooth blown-out white lump that ends on a pixelated cutout silhouette against the black mirror and casts no reflection in the glossy surface directly beneath it",
+      "fix": "replace the flat noise decal and smooth white lump with displaced granular 3D sand geometry and scattered boundary grains tapering onto the surface, clamp and roughen the blown-out white highlight with micro-grain shading, and include the right sand mound in the mirror reflection pass"
+    },
+    {
+      "severity": "severe",
+      "file": "set-D-01.jpg",
+      "where": "the sea-glass and pebble inlays around the base (set-D-02 crops 5-6; set-D-03 crops 7-8; also set-E-01.jpg and set-F-01.jpg)",
+      "what": "every piece of sea glass and smooth pebble has a bright vertex-pole pinch dot or ring dead-center on its face, and the green and blue pieces shade like flat, opaque gummy plastic blobs bridging across the carved grooves rather than frosted glass seated in stone",
+      "fix": "rebuild the sea-glass and pebble meshes with clean quad topology free of central poles, shade the sea glass with frosted internal refraction and subsurface scatter, and recess each piece into a carved socket with contact crevices"
+    },
+    {
+      "severity": "severe",
+      "file": "set-D-01.jpg",
+      "where": "the collar where the glass meets the base and the upper-right base shoulder (set-D-02 crops 1-4; also set-E-02 crops 2-3 and set-F-03 crops 8-9, 12)",
+      "what": "on the left and front collar a flat dark-brown band floats across the lower glass above a bright gap of cream noise instead of seating the sphere, while on the right shoulder the cream sand collar ends in a stair-stepped edge and the stone silhouette tears into vertical displacement spikes",
+      "fix": "remove the floating brown band, seat the glass sphere into a solid recessed collar rim with a dark contact shadow line, and fix the torn displacement geometry and jagged sand mask on the upper-right shoulder"
+    },
+    {
+      "severity": "major",
+      "file": "set-E-01.jpg",
+      "where": "the golden caustics and stray grains on the surface, left of the base (set-E-02 crops 1, 5-6; also set-D-03 crop 9 and set-F-03 crops 8, 11)",
+      "what": "the caustics form a flat 2D procedural Voronoi spiderweb radiating from a point on the floor beside the opaque stone base, running unshadowed beneath the base overhang with stair-stepped aliased lines, while two clusters of sharp 1-pixel yellow dots sit unblurred atop an out-of-focus region of the dark surface",
+      "fix": "render soft, anti-aliased refractive caustics projected from the glass globe and properly shadowed by the opaque base foot, and place loose left-side grains in 3D so they blur with the table surface depth of field"
+    },
+    {
+      "severity": "major",
+      "file": "set-F-01.jpg",
+      "where": "the glass rim, liquid interior, and lower frost band (set-F-02 crops 2-3, 5; set-F-03 crop 9)",
+      "what": "the interior miniature is not bent or magnified by liquid near the glass wall—sunflower stems, grass, and the fence run straight to the inner rim with zero optical distortion—and the sand/frost band coating the bottom of the sphere is a flat two-tone procedural blotch mask with no relief",
+      "fix": "model a continuous liquid volume with realistic index of refraction inside the double-walled glass shell so objects near the rim bend and enlarge, and replace the flat binary frost mask with three-dimensional granular buildup"
+    },
+    {
+      "severity": "major",
+      "file": "set-F-01.jpg",
+      "where": "particles inside the globe and the cottage roof and chimney (set-F-02 crops 1, 3-4, 6)",
+      "what": "most glowing particles are uniform flat circular green billboard discs with hard rims, a white fuzzy seed particle clips halfway into the upper-left corner of the stone chimney, and no particles have come to rest on the cottage roof, chimney, fence, or rocks",
+      "fix": "replace flat circular billboard sprites with varied 3D suspended motes blurred naturally by camera depth of field, cull particles from intersecting the chimney and branches, and add settled pollen or seeds resting on the roof slates, fence, and stones"
+    },
+    {
+      "severity": "major",
+      "file": "set-F-01.jpg",
+      "where": "the sunflowers, picket fence, hanging lanterns, and cottage windows inside the globe (set-F-02 crops 3, 5-6; set-F-03 crop 9)",
+      "what": "the sunflowers are flat unshaded radial cutouts on 1-pixel straight green stick stems, the wooden fence is a flat untextured brown block, the paper lanterns shade as opaque striped balls with no warm wrap glow (with the leftmost lantern completely unlit), the front window is a flat beige rectangle, and the side window is a pure black hole",
+      "fix": "give the sunflowers curved translucent petals and thicker stems, add wood grain and bevels to the fence, make all hanging lanterns emissive so they cast warm glow onto nearby walls and foliage, and add interior depth and soft bloom to both cottage windows"
+    },
+    {
+      "severity": "major",
+      "file": "set-D-01.jpg",
+      "where": "the large scallop shells and the center contact line where the base meets the surface (set-D-03 crops 7-8, 10)",
+      "what": "the large scallop shell is a smooth sinusoidal wave mesh whose ribs pinch to a sharp aliased mesh pole at the bottom tip with a plastic sheen and no hinge ears, and at the bottom-center contact line a flat grey strip wedges abruptly along a straight horizontal clip line beneath the base",
+      "fix": "sculpt natural shell geometry with hinge auricles, fine growth lines, matte calcareous texture, and recessed stone seating, and remove the intersecting grey strip so the base rests cleanly on the surface with continuous contact shadow"
+    }
+  ]
+}
