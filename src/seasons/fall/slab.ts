@@ -172,7 +172,7 @@ void main() {
   float tone = 0.6 + 0.6 * fract(vLeafOne.x * 7.3);
   // The leaves fell at different times: russet, a few still ochre, the oldest gone to dark brown.
   float leafAge = fract(vLeafOne.x * 11.9);
-  vec3 leafDye = mix(mix(vec3(1.0, 0.7, 0.4), vec3(1.0, 0.86, 0.46), smoothstep(0.78, 0.9, leafAge)), vec3(0.62, 0.3, 0.2), smoothstep(0.42, 0.18, leafAge));
+  vec3 leafDye = mix(mix(vec3(1.0, 0.7, 0.4), vec3(0.86, 0.66, 0.3), smoothstep(0.78, 0.9, leafAge)), vec3(0.62, 0.3, 0.2), smoothstep(0.42, 0.18, leafAge));
   vec3 albedo = mix(vec3(dot(leaf.rgb, vec3(0.3, 0.5, 0.2))) * leafDye * 1.2, leaf.rgb * 1.1, 0.18 + 0.42 * fract(vLeafOne.x * 3.7)) * tone * mix(1.0, 0.55, smoothstep(0.42, 0.1, leafAge)) * mix(1.0, 0.72, under);
   float key = clamp(dot(n, keyDir) * 0.75 + 0.25, 0.0, 1.0);
   float rim = clamp(dot(n, rimDir) * 0.6 + 0.4, 0.0, 1.0);
@@ -182,7 +182,7 @@ void main() {
   lit += candleOnSlab(vStageWorld, n, uFoot.w) * 3.2;
   vec3 col = albedo * lit * RECIPROCAL_PI;
   vec3 h = normalize(keyDir + view);
-  float waxy = pow(max(dot(n, h), 0.0), 26.0) * 0.3 * keyGain;
+  float waxy = pow(max(dot(n, h), 0.0), 60.0) * 0.16 * keyGain;
   vec3 hr = normalize(rimDir + view);
   waxy += pow(max(dot(n, hr), 0.0), 18.0) * 0.22 * rimGain * dot(uRimCol, vec3(0.333)) / max(dot(uKeyCol, vec3(0.333)), 1e-4);
   col += uKeyCol * waxy * (1.0 - under);

@@ -40,14 +40,14 @@ function inLeaf(k, x, y, seed) {
     const r = Math.hypot(cx, y)
     const a = Math.atan2(y, cx)
     const lobe = Math.abs(Math.cos((a * kind.lobes) / 2))
-    const reach = kind.wide * (1 - kind.deep + kind.deep * lobe ** 0.7) * (0.72 + 0.28 * Math.cos(a) ** 2) * (1 + kind.tooth * Math.sin(a * kind.lobes * 5 + seed))
+    const reach = kind.wide * (1 - kind.deep + kind.deep * lobe ** 0.7) * (0.72 + 0.28 * Math.cos(a) ** 2) * (1 + kind.tooth * (0.55 * Math.sin(a * kind.lobes * 3.7 + seed) + 0.45 * Math.sin(a * kind.lobes * 8.3 + seed * 1.7)) * (0.35 + 0.65 * Math.sin(a * 2.3 + seed * 0.9) ** 2))
     const notch = smooth(2.75, 3.14, Math.abs(a)) * 0.5
     return reach * (1 - notch) - r
   }
   const t = (x + 0.9) / 1.8
   if (t <= 0 || t >= 1) return -1
   const body = Math.sin(Math.PI * t ** (kind.name === 'birch' ? 0.62 : 0.8)) ** (kind.name === 'beech' ? 0.75 : 0.9)
-  const half = kind.wide * body * (1 + (kind.wave ? kind.deep * Math.sin(t * kind.wave * Math.PI + seed) * smooth(0.02, 0.2, t) * smooth(1, 0.85, t) : 0)) * (1 + kind.tooth * Math.sin(t * 60 + seed))
+  const half = kind.wide * body * (1 + (kind.wave ? kind.deep * Math.sin(t * kind.wave * Math.PI + seed) * smooth(0.02, 0.2, t) * smooth(1, 0.85, t) : 0)) * (1 + kind.tooth * (0.55 * Math.sin(t * 41 + seed) + 0.45 * Math.sin(t * 97 + seed * 1.7)) * (0.35 + 0.65 * Math.sin(t * 7 + seed * 0.9) ** 2))
   return half - Math.abs(y)
 }
 function leafSheet() {
