@@ -37,16 +37,16 @@ Status 63 · 2026-11-25 00:16 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 00:16 UTC
-clock: phase 4, tick of 4.5 minutes
-phase 4: 0.15 h used of its 9.50 h box
-allowance (before the review): 22.43 h used of 36.00 h allowed
-all time before the review: 22.43 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 00:31 UTC
+clock: phase 4, tick of 6.5 minutes
+phase 4: 0.41 h used of its 9.50 h box
+allowance (before the review): 22.69 h used of 36.00 h allowed
+all time before the review: 22.69 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 15
 ```
 
 ## Phases
@@ -1551,3 +1551,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 23:20 to 00:07 UTC. Phase 3's close. R3 part 2 answered 5 at 23:28, the last answer of Round 7 (R1 7, R3 5 as the lowest of 7, 5 and 5, R4 4 as the lower of 7 and 4, the jury 4 of 15 against 7 of 10): the round does not pass, and it was the fifth of `quality.lookLockMaxRounds` 5. `round_scribe` drafted the summary, the open items and the ladder moves from the verbatim answers (done 23:32); the Builder checked them against the answers and the approved image at native size, wrote "Look lock", `scorecards/round-007/SUMMARY.md`, open items 38 to 62, ladder moves 19 to 35, Declined issues 7 to 13 and decision 72, and marked `winter` `finished` at its round limit (pushed `1ee1285`, 23:34). Step 10: G13 with winter covered ran here from 23:21 to 23:41 and is green (17 of 54 parts, 69 of 69 judged stills in the stand-in view); G6, G9, G13 and G15 were then run again on the closing state (all four green at 00:02, G15 alone took 20 minutes here; G6 and G9 once more at 00:06 on the last state of the log, green); decision 73 says what ran where and why. `gate_runner` was asked at 23:35 for one more whole gate on a clean clone of `1ee1285` as a confirmation. Status 62 was posted at 23:49 with the two comparison images and the test shake's sheet. Published at 00:04 UTC (the same build as at 22:19 with the review page now holding the twelve kept comparison pictures; the published app showed its first picture in 23.3 s with 53 requests and no error). Phase 3 is `done, at the limit of its look lock rounds`: the four gate lines with their evidence are in the Phases table. Phase 3 took 15.67 h against a box of 11 h; all time used is 22.28 h of 36 h.
 
 - 00:08 to 00:16 UTC. Phase 4 started. `origin/main` fetched and merged (nothing new), then `prep/phase4` merged into `main` (each of spring, summer and fall split into one file per part; the fit tool reads a season's reference camera): `npx tsc --noEmit` clean, `npx vitest run` 419 passed and 4 skipped, pushed as `31c5c75`. The ten build agents of decision 71 were started at 00:11:46 UTC, each in its own sandbox VM with `out/work/briefs/p4/common.md`, its job message and its season's two approved images at half size: stage 1 (a first real version of every piece, no stand-in left) is due by 01:32, the limit is 03:02. `round_renderer` and `motion_renderer` each wrote down the commands of their Round 7 job as a runbook (`out/work/runbooks/`, in the workspace only), so a fresh render agent can make a season's packs; `out/work/bin/fetchpack.sh` now takes the phase for its branch names. Status 63 was posted at 00:17 with the three seasons' approved pairs above the build's stand-ins (three draft stills of the blockout, drawn here at 00:13 to 00:16). `gate_runner`'s confirmation run of Phase 3's gate on a clean clone of `1ee1285` is still out (limit 01:05).
+
+- 00:32 UTC. The confirmation of Phase 3's gate is in (decision 73): `gate_runner` ran the whole gate, with no check left out and no unit named, on a fresh clean clone of `1ee1285` from 23:36 to 00:30 UTC: all 15 green, G13 covering winter's 17 of 54 parts through the Units table, 69 of 69 judged stills in the stand-in view (`scorecards/round-007/gate-phase-3-confirm.json` and `.log`). A first attempt a minute earlier was red on 11 checks for one reason outside the repo, "only 2.9 GB of disk is free, under sandbox.minFreeDiskGb": the agent's VM was full of its own clones of Rounds 3 to 7; it deleted them, changed nothing in the new clone and ran again. Later gate orders tell the runner to check its disk first and carry the sound files as an attachment. At 00:25 the three `air` builders' first pushes (each season's reference camera and a first rig) were merged into `main` (`4c9ded5`, tsc clean, vitest 419 passed).
