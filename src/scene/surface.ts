@@ -113,6 +113,12 @@ export const SLAB = {
   dustTint: [0.55, 1, 1.5],
   shadowReach: 0.6,
   bakedGain: 0.5,
+  bakedFoot: 0.6,
+  bakedGlow: 0.2,
+  bakedGlowReach: 0.62,
+  bakedShell: 0.5,
+  bakedShellFrom: 0.55,
+  bakedThrough: 0.5,
   underSky: 0.6,
   underSoftMm: 2,
   underSpread: 0.1,
@@ -476,10 +482,14 @@ void main() {
     float body = sil * (1.0 - smoothstep(bodyTop - blurMm, bodyTop + blurMm, height)) * smoothstep(lift - blurMm, lift + blurMm, height);
     float domeTop = lift + ${f(centreHeight + globeRadius)};
     float glass = sil * smoothstep(bodyTop - blurMm, bodyTop + blurMm, height) * (1.0 - smoothstep(domeTop - 3.0 * blurMm, domeTop, height));
-    vec3 lit = uBaked * (uSky + uKeyCol * 0.22) * ${f(SLAB.bakedGain)};
-    image = lit * body + (uPool * 0.35 + uSky * 0.05) * glass;
+    float up = clamp((height - lift) / ${f(G.baseHeightMm)}, 0.0, 1.0);
+    vec3 lit = uBaked * (uSky + uKeyCol * 0.22) * (${f(SLAB.bakedGain)} * mix(${f(SLAB.bakedFoot)}, 1.0, up));
+    vec2 heart = vec2(side, height - lift - ${f(centreHeight)}) / ${f(globeRadius * SLAB.bakedGlowReach)};
+    float glow = exp(-dot(heart, heart));
+    float shell = smoothstep(${f(SLAB.bakedShellFrom)}, 1.0, side / girth);
+    image = lit * body + (uPool * (${f(SLAB.bakedGlow)} * glow) + uSky * (${f(SLAB.bakedShell)} * shell)) * glass;
     held = clamp(body + glass, 0.0, 1.0);
-    seen *= 1.0 - held;
+    seen *= 1.0 - body - ${f(1 - SLAB.bakedThrough)} * glass;
   }
   image = mix(image, underSeen, underHit);
   held = max(held, underHit);
