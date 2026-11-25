@@ -73,7 +73,7 @@ float pointGlint(vec3 face, vec3 l, vec3 v) {
 vec4 pointLobe(int k, uint id, int variant, float shape, vec3 axis, float c, float s, float lying, float rPx, mat3 toView) {
   vec3 o = vec3(0.0);
   float rho = k == 0 ? 1.0 : 0.0;
-  if (shape > 0.5 && shape < 1.5) {
+  if (shape < 1.5) {
     vec4 t = texelFetch(uLobes, ivec2(k, variant), 0);
     vec4 j = pointHash(id * 7u + uint(k) + 977u);
     o = (t.xyz * 2.0 - 1.0) * mix(${n(LOBE_REACH.low)}, ${n(LOBE_REACH.high)}, j.x);
@@ -121,7 +121,7 @@ export const VERT_MAIN = `
   float zImg = max(dist - mix(a, R - R * (R - a) / den, on), 1.0);
   float depth = clamp(a / uLens.w, -1.0, 1.0);
   float shrink = mix(1.0, mix(uBlur.w, 1.0, smoothstep(-1.0, 0.15, depth)), afloat);
-  float spread = shape > 0.5 && shape < 1.5 ? mix(${n(SIZE_LOW)}, ${n(SIZE_HIGH)}, pow(h2.w, ${n(SIZE_SKEW)})) : 1.0;
+  float spread = shape < 1.5 ? mix(${n(SIZE_LOW)}, ${n(SIZE_HIGH)}, pow(h2.w, ${n(SIZE_SKEW)})) : 1.0;
   float rPx = aData.x * look.y * spread * uPoint.y * mag / zImg * shrink * mix(1.0, ${n(LYING_LOOK.size)}, lying);
   float glints = shape > 1.5 ? 1.0 : 0.0;
   float pick = fract(h.x * 91.0);
@@ -180,7 +180,7 @@ export const VERT_MAIN = `
     float merge = uLimit.z * rPx * smoothstep(uLying.z, uLying.w, stageCover(nowL.xz));
     s2x += merge * merge;
   }
-  float core = ${n(LOBE_CORE)} * rPx * (shape > 0.5 && shape < 1.5 ? ${n(MEAN_LOBE)} : 1.0);
+  float core = ${n(LOBE_CORE)} * rPx * (shape < 1.5 ? ${n(MEAN_LOBE)} : 1.0);
   float c2 = core * core;
   float bright = pow(fract(h.w * 37.0), ${n(STORM_SMEAR_SKEW)});
   float big = smears * step(fract(h2.x * 389.0), ${n(STORM_BIG.share)}) * smoothstep(${n(STORM_BIG.from)}, ${n(STORM_BIG.to)}, depth);

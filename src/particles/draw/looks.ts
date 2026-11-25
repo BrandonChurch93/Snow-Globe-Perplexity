@@ -5,7 +5,7 @@ export const LOBE_TABLE = 'shared/flake-lobes.lin.png'
 
 /** The most bats a picture hides the air behind. */
 export const BATS = 4
-export const SHAPE = { soft: 0, cluster: 1, mirror: 2, petal: 3, fleck: 4, leaf: 5, seed: 6, light: 7, spark: 8, bat: 9 } as const
+export const SHAPE = { cluster: 1, mirror: 2, petal: 3, fleck: 4, leaf: 5, seed: 6, light: 7, spark: 8, bat: 9 } as const
 
 export interface KindLook {
   shape: number
