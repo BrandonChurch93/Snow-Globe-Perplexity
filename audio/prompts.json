@@ -848,7 +848,10 @@
     "A whoosh that swells and stops short at its loudest came back as a whoosh that swells to its middle and fades (riser take 1). A sound of about 1 s alone was four times answered with no file; played three times in a row it was heard at once.",
     "Air sucked into a pipe, cut off dead at its loudest, gave a flat hiss that starts at full level and ends in a pop, heard twice as a breath or a mouth (riser take 2): sucked is a mouth, and the tool does not make a sound that ends at its loudest. A rise has to be the first half of a longer swell, cut by the chain.",
     "A slow swell of wind asked at 2.4 s for a cue of 1.2 s: the chain kept the rising half, -60 to -20 dB over 0.95 s (riser take 3). It came wholly under 250 Hz: slow, soft and smooth push a wind sound down.",
-    "Music, pass 1: all five pieces came at 100 beats a minute on the grid, with no voice heard (music_v1, force_instrumental or a plan with vocals in the negative styles); price 13.75 credits a second, read from the account Music line, since the music endpoint sends no cost header. The composition plan with five sections of 12 s came back as one solo music box in one mood (music-one-piece take 1): the local styles did not change the instruments. Spring (harp, flute) and summer (nylon guitar, marimba) were both heard as gentle and wintry; the listener names a music box or celesta for most plucked or struck melodies."
+    "Music, pass 1: all five pieces came at 100 beats a minute on the grid, with no voice heard (music_v1, force_instrumental or a plan with vocals in the negative styles); price 13.75 credits a second, read from the account Music line, since the music endpoint sends no cost header. The composition plan with five sections of 12 s came back as one solo music box in one mood (music-one-piece take 1): the local styles did not change the instruments. Spring (harp, flute) and summer (nylon guitar, marimba) were both heard as gentle and wintry; the listener names a music box or celesta for most plucked or struck melodies.",
+    "Music, passes 2 and 3: a season track turns to its mood when the lead instrument is named first and placed (a flute high up, a guitar in front), with the key and mood words of the season; spring and summer were kept at their second takes. Three composition plans of five 12 s sections (music-one-piece takes 1 to 3) each came back as one festive arrangement in one mood, with strings coming and going: neither the section styles, nor the other sections' instruments in the negative styles, nor a global style asking for a medley of contrasting pieces turned the model at the section boundaries.",
+    "Layers of a cue's own takes (free): under a liquid, any small hard rattle is heard as ice cubes, whatever it was asked as (seeds, beads, bells); a sound mostly under 250 Hz is not heard beside anything in the middle of the range; a part that is in no take cannot be laid in. Ten layers were tried and none was heard as its whole line.",
+    "Judging music: the fit call agrees easily and the question which season is answered winter for almost anything. A blind choice of one mood phrase out of five, asked twice without the line, told the tracks apart."
   ],
   "kept": {
     "glass-clink": 2,
@@ -867,16 +870,16 @@
     "music-summer": 2
   },
   "open": {
-    "amb-winter": "three takes used, none fits: silent in the mixes and in the app until a review round buys new takes",
-    "land-winter": "three takes used, none fits (almost silent; one light clink; two hollow knocks): the winter landing plays glass-clink alone until a review round buys new takes",
-    "shake-winter": "three takes used, none fits (a spoon stirring a glass; ice cubes shaken in a container; sleigh bells in open air): the winter shake is silent until a review round buys new takes",
-    "land-spring": "three takes used, none fits (one sharp mechanical click; a brittle crunch or a wet splat; a splash into a bucket of water): the spring landing plays glass-clink alone until a review round buys new takes",
-    "shake-summer": "three takes used, none fits (open splashes as from a bucket, no seeds; a dry rattle of beads, no liquid; liquid shaken in a container, no seeds): the summer shake is silent until a review round. Take 3 is the water and take 2 is the seeds: laid together they hold the whole line, at no new cost",
-    "land-summer": "three takes used, none fits (a hiss like a match flaring; a rising hiss like a zipper; a short whoosh in two open calls): the summer landing plays glass-clink alone until a review round buys new takes",
-    "shake-fall": "three takes used, none is the whole line (three knocks on wood; a splash in a hollow vessel, heard once with a clatter; a dry rattle like dice in a cup): takes 2 and 3 each hold a part and may be laid together in the free work (decision 111)",
-    "land-fall": "three takes used, none is the whole line (one heavy impact like a hollow wooden object struck; a sub rumble the listener could not settle, twice no file heard; a door creaking and latching, once taken for a cat): take 1 holds the landing and take 3 the creak, the tone is in neither",
-    "amb-fall": "three takes used, none is the whole line (someone walking through dry leaves; a steady strong wind roar; four heavy breaths through a regulator): take 2 holds the wind and take 1 the leaves, the tone is in neither",
-    "key-tap": "three takes used, none is the whole line (a hard sharp click like a mouse button, low in the numbers; the same, brighter; a low dull thud like a knock on thick wood): takes 1 and 2 hold the key, take 3 the softness, so a layer may be tried in the free work (decision 111)",
+    "amb-winter": "three takes used, none fits: silent in the mixes and in the app until a review round buys new takes. Layer layer-3-2 of its takes, free, was heard as wind, then sleigh bells loud and close: not kept",
+    "land-winter": "three takes used, none fits (almost silent; one light clink; two hollow knocks): the winter landing plays glass-clink alone until a review round buys new takes. Layer layer-3-2 of its takes, free, was heard as a glass or mug set down on a hard surface, short; no ice crackling: not kept",
+    "shake-winter": "three takes used, none fits (a spoon stirring a glass; ice cubes shaken in a container; sleigh bells in open air): the winter shake is silent until a review round buys new takes. Layer layer-2-3 of its takes, free, was heard as liquid and ice in a cocktail shaker; the bells are heard as ice: not kept",
+    "land-spring": "three takes used, none fits (one sharp mechanical click; a brittle crunch or a wet splat; a splash into a bucket of water): the spring landing plays glass-clink alone until a review round buys new takes. Layer layer-2-3 of its takes, free, was heard as a splash into water: not kept",
+    "shake-summer": "three takes used, none fits (open splashes as from a bucket, no seeds; a dry rattle of beads, no liquid; liquid shaken in a container, no seeds): the summer shake is silent until a review round. Layer layer-3-2 of its takes, free, was heard as ice cubes clinking in a glass of liquid (the seeds are heard as ice), or dice with no liquid when the seeds are louder: not kept",
+    "land-summer": "three takes used, none fits (a hiss like a match flaring; a rising hiss like a zipper; a short whoosh in two open calls): the summer landing plays glass-clink alone until a review round buys new takes. Layer layer-3-1 of its takes, free, was heard as one bright chime, synthetic, like a video game coin; the hiss only in the fit call: not kept",
+    "shake-fall": "three takes used, none is the whole line (three knocks on wood; a splash in a hollow vessel, heard once with a clatter; a dry rattle like dice in a cup). Layer layer-2-3 of its takes, free, was heard as one call hears the liquid, the next the rattle, one in three hears both as liquid and ice in a container; dry leaves in none: not kept",
+    "land-fall": "three takes used, none is the whole line (one heavy impact like a hollow wooden object struck; a sub rumble the listener could not settle, twice no file heard; a door creaking and latching, once taken for a cat): take 1 holds the landing and take 3 the creak, the tone is in neither. Layer layer-1-3-2 of its takes, free, was heard as a door creaking and a latch or a knock on wood; never a glass globe on stone, never a tone: not kept",
+    "amb-fall": "three takes used, none is the whole line (someone walking through dry leaves; a steady strong wind roar; four heavy breaths through a regulator): take 2 holds the wind and take 1 the leaves, the tone is in neither. Layer layer-2-1 of its takes, free, was heard as wind and rustling dry leaves; no low eerie tone: not kept",
+    "key-tap": "three takes used, none is the whole line (a hard sharp click like a mouse button, low in the numbers; the same, brighter; a low dull thud like a knock on thick wood): takes 1 and 2 hold the key, take 3 the softness. Layer layer-3-1 of its takes, free, was heard as a sharp hard click, or an electronic boop: not kept",
     "music-one-piece": "three takes used, none fits (one solo music box in one mood; a music box with strings joining from 16 s to 47 s, one festive mood; sleigh bells, celesta and strings in one festive mood, every 12 s section heard alone called warm and unhurried): the one-piece candidate has no music and cannot be mixed until a review round buys new takes; the four-tracks candidate has all four of its tracks"
   },
   "takesLeft": {
@@ -1146,7 +1149,8 @@
       }
     ],
     "evidence": "audio/evidence/",
-    "howToGoOn": "audio/RECIPE.md"
+    "howToGoOn": "audio/RECIPE.md",
+    "lifted": "2026-11-25T16:59Z: Brandon topped the account up and set a limit of 10,000 credits for what was left. Phase 5 made 40 calls under the guard: 6,765 spent, 3,235 left. See audio/RECIPE.md."
   },
   "notMade": {},
   "familyChecks": [
@@ -1204,5 +1208,390 @@
       "time": "2026-11-25T17:54Z",
       "answer": "1. No, they do not belong together because they are an electronic beep, ice clinking in a glass, and wind blowing, which come from entirely different sources and environments. \n2. The first sound stands apart because it is a synthesized digital noise, whereas the second and third are recordings of natural, physical sounds."
     }
-  ]
+  ],
+  "layers": {
+    "note": "Decision 111 of /root: a cue that is out of takes may be laid together from its own takes at no cost, heard and judged exactly as a take is, and kept only if it is heard as the whole line. Tried at 18:15 to 18:25 UTC on 2026-11-25 for all ten cues that are out of takes. No layer was heard as its whole line, so none is kept and none is in audio/RECORDS.json. Each layer was put through the level chain of its class (audio/run/listen.mjs --file) before the listener heard it; the listener answered the open questions twice and the fit question once, as for a take. The files stay in out/work/audio/layers-tried/ of the sound clone (not committed).",
+    "list": [
+      {
+        "cue": "shake-summer",
+        "layer": "layer-3-2",
+        "ofTakes": [
+          3,
+          2
+        ],
+        "call": "none: laid together with ffmpeg from the cue's own filed takes (decision 111); not a take, no credits",
+        "tries": [
+          {
+            "try": 1,
+            "levels": "take 3 (liquid) +6 dB, take 2 (beads) -5 dB",
+            "filter": "[0:a]volume=6dB[a];[1:a]volume=-5dB[b];[a][b]amix=inputs=2:normalize=0[out]",
+            "listener": {
+              "line": "Liquid sloshing and churning inside glass, with a warm shimmer and dry seeds in it",
+              "open": "1. I hear liquid vigorously splashing and sloshing. The sound is wet and chaotic, similar to water being actively shaken or stirred in a container.\n2. It sounds like a single, continuous event of sloshing liquid.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument present.\n5. The audio starts abruptly with the active splashing of liquid. It ends suddenly when the splashing noise cuts off.",
+              "fit": "1. No, because while there is liquid sloshing inside a glass, the sharp clinking sounds are characteristic of heavy ice cubes rather than small dry seeds. The solid impact of the ice also contradicts the idea of a \"warm shimmer.\" \n2. The loud, hard clanking noises of solid ice hitting the glass do not belong to the description of dry seeds.\n3. No, there is no human voice, spoken word, or singing heard in the sound.",
+              "openSecond": "1. I hear the vigorous sloshing and splashing of a liquid, along with the clinking of hard objects like ice cubes in a glass or container. The sound has a crisp, wet, and energetic character.\n2. There is one continuous sound event made up of rapid, overlapping splashes and clinks.\n3. No, there is no human voice, spoken word, breath, or singing heard.\n4. No, there is no music, melody, or musical instrument present.\n5. The audio starts abruptly right in the middle of the splashing action. It ends just as suddenly, cutting off after a final slosh and clink."
+            },
+            "heardAs": "liquid splashing and sloshing; second call: liquid with clinking like ice cubes in a glass"
+          },
+          {
+            "try": 2,
+            "levels": "take 3 +6 dB, take 2 -12 dB",
+            "filter": "[0:a]volume=6dB[a];[1:a]volume=-12dB[b];[a][b]amix=inputs=2:normalize=0[out]",
+            "listener": {
+              "line": "Liquid sloshing and churning inside glass, with a warm shimmer and dry seeds in it",
+              "open": "1. I hear the sharp, wet sound of ice cubes clinking and rattling inside a glass filled with liquid. The sound is highly textured and active, like a beverage being vigorously swirled.\n2. There is one continuous sound event consisting of the ice and liquid being shaken together. \n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or musical instrument.\n5. The audio begins abruptly with the loud clinking of ice and splashing liquid. It ends just as suddenly, cutting off while the swirling action is still happening.",
+              "fit": "1. No, it does not fully fit the description because while there is liquid sloshing in a glass, the solid objects sound like ice cubes rather than dry seeds. \n2. The sharp, heavy clinking noises do not belong, as they are clearly ice cubes hitting the glass instead of small seeds. \n3. No, there is no human voice, spoken word, or singing in this recording.",
+              "openSecond": "1. I hear ice cubes splashing into a glass of liquid. The sound is crisp, wet, and features sharp clinking noises.\n2. There is one continuous sound event consisting of the splash and clinking ice. \n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument.\n5. It starts abruptly with a sharp splash and clink of ice. It ends quickly as the sound of the settling liquid and ice fades out."
+            },
+            "heardAs": "ice cubes clinking and rattling in a glass of liquid, in both calls"
+          },
+          {
+            "try": 3,
+            "levels": "take 3 +3 dB, take 2 0 dB",
+            "filter": "[0:a]volume=3dB[a];[1:a]volume=0dB[b];[a][b]amix=inputs=2:normalize=0[out]",
+            "listener": {
+              "line": "Liquid sloshing and churning inside glass, with a warm shimmer and dry seeds in it",
+              "open": "1. I hear the rapid clattering and rattling of small, hard objects, such as dice or plastic tiles, being shaken together. The sound is crisp, chaotic, and slightly hollow.\n2. There is one continuous shaking event composed of countless overlapping clicks and impacts.\n3. There is no human voice, spoken word, breath, or singing present.\n4. There is no music, melody, or musical instrument in this recording.\n5. The sound begins abruptly with the start of the shaking motion and ends suddenly when the movement stops.",
+              "fit": "1. No, it does not fit the description because there are no sounds of liquid sloshing or churning. Instead, the audio consists entirely of dry, hard objects being shaken in a container.\n2. The loud clacking and rattling noises of solid objects, similar to dice shaking in a cup, are present in the sound but do not belong to the description.\n3. No, there is no human voice, spoken word, or singing in the audio.",
+              "openSecond": "1. I hear a rapid, clattering rattle. It sounds like many small, hard objects, such as dice or pebbles, being vigorously shaken together.\n2. There is one continuous sound event consisting of the rapid, overlapping impacts.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument.\n5. The sound starts abruptly with the immediate onset of the shaking. It ends suddenly as soon as the movement stops."
+            },
+            "heardAs": "a dry clattering rattle like dice or pebbles, no liquid, in both calls"
+          }
+        ],
+        "heardAs": "ice cubes clinking in a glass of liquid (the seeds are heard as ice), or dice with no liquid when the seeds are louder",
+        "verdict": "does not fit",
+        "why": "The liquid in glass is heard, but the dry seeds are heard as ice cubes at every level where the liquid is still heard, and no warm shimmer is named. Nearest: try 2.",
+        "kept": false
+      },
+      {
+        "cue": "shake-fall",
+        "layer": "layer-2-3",
+        "ofTakes": [
+          2,
+          3
+        ],
+        "call": "none: laid together with ffmpeg from the cue's own filed takes (decision 111); not a take, no credits",
+        "tries": [
+          {
+            "try": 1,
+            "levels": "take 2 (splash) -6 dB, take 3 (rattle) +10 dB",
+            "filter": "[0:a]volume=-6dB[a];[1:a]volume=10dB[b];[a][b]amix=inputs=2:normalize=0[out]",
+            "listener": {
+              "line": "Liquid sloshing and churning inside glass, with dry leaves and a hollow rattle in it",
+              "open": "1. I hear liquid and possibly ice being vigorously shaken back and forth inside a hard container. The sound is wet, sloshing, and rattling with a rapid, rhythmic character.\n2. There is one continuous sound event consisting of a rapid series of shaking motions.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument.\n5. The sound starts abruptly with the vigorous shaking motion. It ends suddenly when the shaking action stops completely.",
+              "fit": "1. No, because the audio only contains a hollow rattling noise, lacking any sounds of liquid sloshing, glass, or dry leaves.\n2. The sound consists entirely of hard objects (like dice) shaking in a hollow cup, which does not match the described elements of liquid, glass, or leaves.\n3. No, there is no human voice, spoken word, or singing present in the audio.",
+              "openSecond": "1. I hear the rattling sound of small, hard objects being shaken inside a hollow container. It sounds very much like dice being shaken in a cup, characterized by rapid, clattering impacts.\n2. There is one continuous shaking event made up of many rapid, overlapping impacts.\n3. No, there is no human voice, spoken word, breath, or singing present.\n4. No, there is no music, melody, or musical instrument in this recording.\n5. The sound starts abruptly with the immediate clattering of the objects being shaken. It ends suddenly when the shaking motion stops, leaving silence."
+            },
+            "heardAs": "liquid and possibly ice shaken in a hard container, wet, sloshing and rattling; second call: dice in a cup"
+          },
+          {
+            "try": 2,
+            "levels": "take 2 -6 dB, take 3 +3 dB",
+            "filter": "[0:a]volume=-6dB[a];[1:a]volume=3dB[b];[a][b]amix=inputs=2:normalize=0[out]",
+            "listener": {
+              "line": "Liquid sloshing and churning inside glass, with dry leaves and a hollow rattle in it",
+              "open": "1. I hear the crisp, clattering sound of small, hard objects like dice being shaken and thrown onto a hard surface. The sound is highly percussive, brief, and rattling in character.\n2. There is one continuous sound event representing a single roll of the objects.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument.\n5. It starts with a short rattling noise as the objects are shaken together in a hand or cup. It ends quickly as the objects scatter across a surface, bounce, and come to a complete stop.",
+              "fit": "1. No, it does not fully fit the description because while there is a clear sound of liquid sloshing inside a container, there are no sounds of dry leaves or a hollow rattle. \n2. There is nothing in the sound itself that falls outside of the description, as the audio only contains the mentioned liquid sloshing.\n3. No, there is no human voice, spoken word, or singing in this audio.",
+              "openSecond": "1. I hear the sound of liquid, likely water, splashing and sloshing. It has a wet, bubbly character, as if water is being poured or shaken vigorously in a container.\n2. There is one main continuous event made up of a rapid burst of splashes.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument.\n5. It starts abruptly with a loud, sudden splash. It ends quickly a second later as the splashing subsides and the liquid settles."
+            },
+            "heardAs": "dice shaken and thrown; second call: water splashing"
+          },
+          {
+            "try": 3,
+            "levels": "take 2 -6 dB, take 3 +7 dB",
+            "filter": "[0:a]volume=-6dB[a];[1:a]volume=7dB[b];[a][b]amix=inputs=2:normalize=0[out]",
+            "listener": {
+              "line": "Liquid sloshing and churning inside glass, with dry leaves and a hollow rattle in it",
+              "open": "1. I hear the sharp, clattering sound of small, hard objects like dice being shaken and tossed onto a surface. It has a rapid, rattling, and percussive character.\n2. There is one continuous sound event made up of a shaking action followed immediately by the objects being dropped.\n3. No, there is no human voice, spoken word, breath, or singing present.\n4. No, there is no music, melody, or musical instrument.\n5. It starts abruptly with the rapid rattling of the objects being shaken together. It ends quickly as the objects hit a hard surface, scatter briefly, and come to a complete stop.",
+              "fit": "1. No, it does not fit the description because there are no sounds of liquid sloshing, glass, or dry leaves. Instead, the audio sounds like hard objects, such as dice, rattling in a cup and rolling out onto a hard surface.\n2. The clattering and bouncing sounds of solid objects rolling on a table do not belong to the description.\n3. No, there is no human voice, spoken word, or singing in the sound.",
+              "openSecond": "1. I hear the rapid, rhythmic sound of a closed container being vigorously shaken. The sound is characterized by the rattling and sloshing of hard objects, likely ice cubes, mixing with liquid against the container walls.\n2. There is one continuous sound event consisting of the rapid shaking.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument.\n5. The sound starts abruptly with the vigorous shaking action already underway. It ends just as suddenly when the shaking motion comes to a complete stop."
+            },
+            "heardAs": "dice shaken and tossed; second call: a closed container shaken, ice cubes and liquid"
+          }
+        ],
+        "heardAs": "one call hears the liquid, the next the rattle, one in three hears both as liquid and ice in a container; dry leaves in none",
+        "verdict": "does not fit",
+        "why": "Liquid and rattle are both in it but are seldom heard together, the rattle is heard as dice or ice, and no call hears dry leaves. Nearest: try 1.",
+        "kept": false
+      },
+      {
+        "cue": "land-fall",
+        "layer": "layer-1-3-2",
+        "ofTakes": [
+          1,
+          3,
+          2
+        ],
+        "call": "none: laid together with ffmpeg from the cue's own filed takes (decision 111); not a take, no credits",
+        "tries": [
+          {
+            "try": 1,
+            "levels": "take 1 (impact, first 1 s) -3 dB, take 3 (creak, 0.85 to 1.65 s) -11 dB from 0.45 s, take 2 (sub rumble) +7 dB from 0.3 s",
+            "filter": "[0:a]atrim=0:1.0,afade=t=out:st=0.9:d=0.1,volume=-3dB[a];[1:a]atrim=0.85:1.65,asetpts=PTS-STARTPTS,afade=t=in:st=0:d=0.05,volume=-11dB,adelay=450:all=1[b];[2:a]volume=7dB,adelay=300:all=1[c];[a][b][c]amix=inputs=3:normalize=0[out]",
+            "listener": {
+              "line": "A heavy glass globe set down on stone, heavy and short, then a wooden creak and a low eerie tone",
+              "open": "1. I hear a harsh, prolonged squeaking and groaning sound, which is characteristic of an old wooden door or a rusty hinge moving. The sound is grating and varies slightly in pitch as it plays.\n2. There is one continuous sound event. \n3. There is no human voice, spoken word, breath, or singing present.\n4. There is no music, melody, or musical instrument.\n5. It starts abruptly with a high-pitched squeak and ends suddenly when the movement causing the friction stops.",
+              "fit": "1. No, the sound does not fully fit the description because it only features a wooden creak and is completely missing the sounds of a glass globe on stone and a low eerie tone.\n2. There are no extraneous sounds present that fall outside the description, as the audio consists solely of the mentioned wooden creak. \n3. No, there is no human voice, spoken word, or singing in this audio.",
+              "openSecond": "1. I hear a door opening, characterized by a sharp latch click followed by a high-pitched, drawn-out squeak or creak from the hinges. \n2. There is one continuous sound event representing the single action of the door opening.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument present.\n5. It begins abruptly with the mechanical click of the door's latch and ends when the squeaking sound stops as the door ceases moving."
+            },
+            "heardAs": "a prolonged squeak of an old door or rusty hinge; second call: a latch click and a door creak"
+          },
+          {
+            "try": 2,
+            "levels": "take 1 -3 dB, take 3 -22 dB from 0.6 s, take 2 +9 dB",
+            "filter": "[0:a]atrim=0:1.0,afade=t=out:st=0.9:d=0.1,volume=-3dB[a];[1:a]atrim=0.95:1.65,asetpts=PTS-STARTPTS,afade=t=in:st=0:d=0.08,volume=-22dB,adelay=600:all=1[b];[2:a]volume=9dB,adelay=300:all=1[c];[a][b][c]amix=inputs=3:normalize=0[out]",
+            "listener": {
+              "line": "A heavy glass globe set down on stone, heavy and short, then a wooden creak and a low eerie tone",
+              "open": "1. I hear a high-pitched, prolonged creaking sound followed by a soft click. It sounds like a door with rusty hinges being opened.\n2. There are two distinct sound events: the continuous creak and the final click.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument.\n5. It starts abruptly with a loud, squeaky creak and ends with a short, mechanical click.",
+              "fit": "1. No, it does not fit the description because the initial sound is clearly a metallic door latch opening rather than a glass globe hitting stone. It does, however, feature the described wooden creak.\n2. The mechanical, metallic clicking of the door latch at the very beginning does not belong to the description.\n3. No, there is no human voice, spoken word, or singing in this clip.",
+              "openSecond": "1. I hear a high-pitched, squeaky creaking noise followed by a solid thud or click. It sounds like a door with rusty hinges swinging and then latching shut.\n2. There are two distinct sound events. The first is the prolonged creak, and the second is the sharp thud.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument.\n5. It starts immediately with a drawn-out, squeaky creak. It ends abruptly with a sharp, percussive thud."
+            },
+            "heardAs": "a creak and then a click or thud, a door with rusty hinges"
+          },
+          {
+            "try": 3,
+            "levels": "take 1 0 dB, take 3 (0.95 to 1.5 s, no latch) -26 dB from 0.65 s, no take 2",
+            "filter": "[0:a]atrim=0:1.0,afade=t=out:st=0.9:d=0.1,volume=0dB[a];[1:a]atrim=0.95:1.5,asetpts=PTS-STARTPTS,afade=t=in:st=0:d=0.08,afade=t=out:st=0.45:d=0.1,volume=-26dB,adelay=650:all=1[b];[a][b]amix=inputs=2:normalize=0[out]",
+            "listener": {
+              "line": "A heavy glass globe set down on stone, heavy and short, then a wooden creak and a low eerie tone",
+              "open": "1. I hear a strained, high-pitched creaking noise followed by a sharp, heavy slam. It strongly resembles a wooden door with squeaky hinges swinging and shutting forcefully. \n2. There are two distinct sound events: a prolonged creak and a sudden slam.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument present.\n5. The audio starts with a slow, squeaky creaking sound. It ends abruptly with a loud, percussive thud.",
+              "fit": "1. No, because the initial sound is a double knock on wood rather than glass hitting stone, and there is no low eerie tone at the end. \n2. The double knocking sound at the very beginning does not belong to the description.\n3. No, there is no human voice, spoken word, or singing in this clip.",
+              "openSecond": "1. I hear a short, percussive knocking sound. It has a dull, slightly hollow character, similar to someone knocking on a wooden door.\n2. There is one main sound event consisting of two rapid, successive impacts.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument.\n5. The sound begins abruptly with the first sharp impact and ends almost immediately as the brief resonance fades out."
+            },
+            "heardAs": "a creak then a heavy slam like a door; second call: two knocks on a wooden door; the fit call: a double knock on wood, no low tone"
+          }
+        ],
+        "heardAs": "a door creaking and a latch or a knock on wood; never a glass globe on stone, never a tone",
+        "verdict": "does not fit",
+        "why": "The impact of take 1 is mostly under 250 Hz and is heard as a knock on wood or not at all beside the creak; the low eerie tone is in no take (take 2 is under 60 Hz and is not heard).",
+        "kept": false
+      },
+      {
+        "cue": "amb-fall",
+        "layer": "layer-2-1",
+        "ofTakes": [
+          2,
+          1
+        ],
+        "call": "none: laid together with ffmpeg from the cue's own filed takes (decision 111); not a take, no credits",
+        "tries": [
+          {
+            "try": 1,
+            "levels": "take 2 (wind) 0 dB, take 1 (leaves) +6 dB",
+            "filter": "[0:a]volume=0dB[a];[1:a]volume=6dB[b];[a][b]amix=inputs=2:normalize=0[out]",
+            "listener": {
+              "line": "Wind, dry leaves and a low eerie tone, very quiet, an ambience that loops",
+              "open": "1. I hear a continuous dry, rustling and crunching sound. It resembles the noise of dry leaves, grass, or brush being moved around.\n2. There is one continuous sound event that fluctuates in intensity throughout the clip.\n3. No, there is no human voice, spoken word, breathing, or singing present.\n4. No, there is no music, melody, or musical instrument in the audio.\n5. The sound begins abruptly and ends with a sudden cut-off.",
+              "fit": "1. No, because although it includes the sound of wind and rustling dry leaves, it completely lacks the described low eerie tone. \n2. There are no elements in the audio that fall outside the description, as it consists entirely of wind and leaves. \n3. No, there is no human voice, spoken word, or singing in this recording.",
+              "openSecond": "1. I hear the continuous rustling, crunching, and crackling of dry leaves or vegetation. The character of the sound is natural and scratchy, resembling physical movement through dense brush or a strong wind blowing through dry foliage.\n2. It is a single, continuous sound event made up of many overlapping rustling noises.\n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or musical instrument.\n5. The rustling begins immediately at the start of the audio and ends abruptly when the recording cuts off."
+            },
+            "heardAs": "dry leaves or brush rustling and crunching, in both calls; the fit call: wind and rustling dry leaves, but no low eerie tone"
+          },
+          {
+            "try": 2,
+            "levels": "take 2 0 dB, take 1 -6 dB",
+            "filter": "[0:a]volume=0dB[a];[1:a]volume=-6dB[b];[a][b]amix=inputs=2:normalize=0[out]",
+            "listener": {
+              "line": "Wind, dry leaves and a low eerie tone, very quiet, an ambience that loops",
+              "open": "1. I hear the continuous rushing and whooshing sound of strong wind blowing. The sound is rough and fluctuating, sounding like wind blowing through trees or buffeting a microphone.\n2. There is one continuous, ongoing sound event throughout the entire recording.\n3. No, there is no human voice, spoken word, breath, or singing present.\n4. No, there is no music, melody, or musical instrument in this recording.\n5. The sound begins abruptly as if already in progress when the recording starts. It continues steadily and ends abruptly when the audio cuts off.",
+              "fit": "1. No, it does not fully fit the description because while it clearly contains the sound of wind and rustling dry leaves, it lacks a \"low eerie tone\" and is not \"very quiet.\"\n2. There are no additional audio elements in the sound that fall outside of the description, as it solely consists of wind and leaves. \n3. No, there is no human voice, spoken word, or singing in the sound.",
+              "openSecond": "1. I hear a continuous, turbulent rumbling and rustling sound, like strong wind blowing against a microphone or through dry foliage.\n2. There is one continuous sound event that lasts throughout the entire clip. \n3. No, there is no human voice, spoken word, breath, or singing present.\n4. No, there is no music, melody, or musical instrument heard in this recording.\n5. The sound begins abruptly with the loud wind already blowing and ends abruptly without fading out."
+            },
+            "heardAs": "strong wind rushing, through trees or dry foliage, in both calls; the fit call: wind and rustling dry leaves, no low eerie tone, and not very quiet"
+          }
+        ],
+        "heardAs": "wind and rustling dry leaves; no low eerie tone",
+        "verdict": "does not fit",
+        "why": "Two of the three parts of the line are heard (wind, dry leaves); the low eerie tone is in no take, so it is not the whole line. Nearest: try 2, which is an even bed (level per second within 4 dB).",
+        "kept": false
+      },
+      {
+        "cue": "key-tap",
+        "layer": "layer-3-1",
+        "ofTakes": [
+          3,
+          1
+        ],
+        "call": "none: laid together with ffmpeg from the cue's own filed takes (decision 111); not a take, no credits",
+        "tries": [
+          {
+            "try": 1,
+            "levels": "take 3 (thud) 0 dB, take 1 (click) -8 dB, onsets aligned",
+            "filter": "[0:a]atrim=0.015:0.235,asetpts=PTS-STARTPTS,afade=t=out:st=0.19:d=0.03[a];[1:a]atrim=0.115:0.195,asetpts=PTS-STARTPTS,afade=t=out:st=0.06:d=0.02,volume=-8dB[b];[a][b]amix=inputs=2:normalize=0[out]",
+            "listener": {
+              "line": "A soft key press",
+              "open": "1. The sound is a brief, sharp click or tap. It has a high, hard character, sounding like a digital user interface click, a computer mouse, or a small piece of plastic tapping a hard surface.\n2. No, there is no human voice, spoken word, breath, or singing.\n3. No, there is no music, melody, musical note, or instrument.\n4. Yes, each of the four sounds is exactly the same.",
+              "fit": "1. No, the sound does not fit the description because it is too loud, sharp, and clicky. A \"soft\" key press would have a much quieter and more muffled acoustic profile. \n2. The crisp, high-pitched, and slightly metallic snapping noise does not belong to the description of a \"soft\" press.\n3. No, there is no human voice, spoken word, or singing present in the audio.",
+              "note": "the listening copy holds the cut sound four times, half a second apart and 12 dB louder, because one sound of a fraction of a second alone in silence is not heard by the listener; both questions say so"
+            },
+            "heardAs": "a brief sharp click, high and hard, like a mouse or plastic on a hard surface; the fit call: too loud, sharp and clicky for a soft key press"
+          },
+          {
+            "try": 2,
+            "levels": "take 3 0 dB, take 1 -20 dB",
+            "filter": "[0:a]atrim=0.015:0.235,asetpts=PTS-STARTPTS,afade=t=out:st=0.19:d=0.03[a];[1:a]atrim=0.115:0.195,asetpts=PTS-STARTPTS,afade=t=out:st=0.06:d=0.02,volume=-20dB[b];[a][b]amix=inputs=2:normalize=0[out]",
+            "listener": {
+              "line": "A soft key press",
+              "open": "1. The sound is a sharp, high-pitched, and hard click or tick. It could be made by a digital metronome, a computer mouse, or two small pieces of hard plastic tapping together.\n2. No, there is no human voice, spoken word, breath, or singing in the audio.\n3. There is no music, melody, or sustained musical note. The sound is just a rhythmic click, though it resembles a metronome or a simple percussion instrument like a woodblock.\n4. Yes, each of the four sounds is exactly the same.",
+              "fit": "1. No, the sound does not fit the description. It sounds like a purely electronic digital \"boop\" or notification tone rather than the mechanical noise of a physical key being pushed. \n\n2. The clear, synthetic musical pitch does not belong, as a soft key press would typically feature a muted, unpitched clicking or tapping noise. \n\n3. No, there is no human voice, spoken word, or singing present in the audio.",
+              "note": "the listening copy holds the cut sound four times, half a second apart and 12 dB louder, because one sound of a fraction of a second alone in silence is not heard by the listener; both questions say so"
+            },
+            "heardAs": "a sharp hard click or tick like a metronome; the fit call: an electronic boop, not a key"
+          }
+        ],
+        "heardAs": "a sharp hard click, or an electronic boop",
+        "verdict": "does not fit",
+        "why": "Heard on the copy that plays the cut sound four times. Not soft, and in try 2 not a key.",
+        "kept": false
+      },
+      {
+        "cue": "shake-winter",
+        "layer": "layer-2-3",
+        "ofTakes": [
+          2,
+          3
+        ],
+        "call": "none: laid together with ffmpeg from the cue's own filed takes (decision 111); not a take, no credits",
+        "tries": [
+          {
+            "try": 1,
+            "levels": "take 2 (ice and liquid in a container) 0 dB, take 3 (sleigh bells) -10 dB",
+            "filter": "[0:a]volume=0dB[a];[1:a]volume=-10dB[b];[a][b]amix=inputs=2:normalize=0[out]",
+            "listener": {
+              "line": "Liquid sloshing and churning inside glass, with a hiss of snow and tiny bells in it",
+              "open": "1. I hear liquid and what sounds like ice being shaken vigorously inside a hard container, such as a cocktail shaker. The sound is rapid, wet, and has a clinking character. \n2. It is a single, continuous event of rapid shaking.\n3. No, there is no human voice, breathing, or singing present.\n4. No, there is no music, melody, or musical instrument.\n5. The sound begins abruptly right at the start of the clip with the vigorous shaking action. It ends suddenly when the shaking motion stops.",
+              "fit": "1. No, because while you can hear liquid sloshing inside a glass container, there is no hissing sound or tiny bells. The high-pitched, ringing sounds are actually ice cubes clinking against the glass.\n2. The distinct sound of hard ice cubes rattling and hitting the glass does not belong to the description.\n3. No, there is no human voice, spoken word, or singing in the audio.",
+              "openSecond": "1. I hear a rapid, rhythmic shaking sound. It has a dry, percussive, and slightly metallic or hard plastic character, resembling a rattle, a musical shaker, or a spray paint can being shaken.\n2. There is one continuous sound event consisting of the steady shaking action.\n3. No, there is no human voice, spoken word, breath, or singing heard in the clip.\n4. There is no melody or traditional music, but the sound resembles an unpitched percussion instrument like a maraca or shaker being played rhythmically.\n5. The sound begins abruptly right as the rapid shaking motion starts. It ends suddenly when the shaking action ceases at the end of the clip."
+            },
+            "heardAs": "liquid and ice shaken in a hard container like a cocktail shaker; second call: a dry shaker or maraca; the fit call: liquid in glass, but the ringing is ice cubes, no hiss and no tiny bells"
+          }
+        ],
+        "heardAs": "liquid and ice in a cocktail shaker; the bells are heard as ice",
+        "verdict": "does not fit",
+        "why": "No hiss of snow in any take, and the bells of take 3 under the liquid are heard as ice cubes.",
+        "kept": false
+      },
+      {
+        "cue": "land-winter",
+        "layer": "layer-3-2",
+        "ofTakes": [
+          3,
+          2
+        ],
+        "call": "none: laid together with ffmpeg from the cue's own filed takes (decision 111); not a take, no credits",
+        "tries": [
+          {
+            "try": 1,
+            "levels": "take 3 (first knock, 0 to 0.7 s) -3 dB, take 2 (clink) -9 dB, onsets together",
+            "filter": "[0:a]atrim=0:0.7,afade=t=out:st=0.6:d=0.1,volume=-3dB[a];[1:a]volume=-9dB[b];[a][b]amix=inputs=2:normalize=0[out]",
+            "listener": {
+              "line": "A heavy glass globe set down on stone, heavy and short, then ice crackling outward",
+              "open": "1. I hear a sharp, brief clinking sound, similar to a hard object like a glass or ceramic mug being placed on a solid surface.\n2. There is only one distinct sound event.\n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or musical instrument.\n5. The sound starts abruptly with a sharp impact and ends almost immediately as the brief resonance fades.",
+              "fit": "1. No, it does not fully fit because while there is a short, heavy sound of a glass object being set down on a hard surface, there is no sound of ice crackling afterward. \n2. There are no extra noises in the sound that do not belong to the description, as the audio only contains the initial impact. \n3. No, there is no human voice, spoken word, or singing in this recording.",
+              "openSecond": "1. I hear a short, abrupt impact sound. It has the dull, percussive character of a solid object being dropped or slammed onto a hard surface.\n2. There is only one separate sound event.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument.\n5. It starts instantly with a sharp physical impact and ends almost immediately as the sound quickly decays."
+            },
+            "heardAs": "a glass or ceramic mug placed on a solid surface, one event; second call: a solid object set or dropped on a hard surface; the fit call: a short, heavy sound of a glass object set down on a hard surface, but no ice crackling after it"
+          }
+        ],
+        "heardAs": "a glass or mug set down on a hard surface, short; no ice crackling",
+        "verdict": "does not fit",
+        "why": "The set-down is heard, and heard as glass, which no single take gave; the ice crackling outward is in no take, so it is not the whole line. Nearest of all ten layers to its line.",
+        "kept": false
+      },
+      {
+        "cue": "amb-winter",
+        "layer": "layer-3-2",
+        "ofTakes": [
+          3,
+          2
+        ],
+        "call": "none: laid together with ffmpeg from the cue's own filed takes (decision 111); not a take, no credits",
+        "tries": [
+          {
+            "try": 1,
+            "levels": "take 3 (gust and bells) -12 dB, take 2 (rumble) +14 dB",
+            "filter": "[0:a]volume=-12dB[a];[1:a]volume=14dB[b];[a][b]amix=inputs=2:normalize=0[out]",
+            "listener": {
+              "line": "Wind and distant bells",
+              "open": "1. I hear the continuous sound of howling wind, followed by the rhythmic jingling of sleigh bells. The wind sounds cold and airy, while the bells are bright and metallic.\n2. There are two main sound events: the blowing wind and the shaking bells.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. Sleigh bells are present and act as a percussion instrument. However, there is no structured music or melody.\n5. The recording starts with the ambient sound of howling wind. It ends abruptly when the sleigh bells suddenly stop shaking.",
+              "fit": "1. No, because although the sound of wind is clearly present, the bells sound very loud and close to the microphone rather than far away.\n2. The close, prominent jingling of the sleigh bells does not belong to the \"distant\" part of the description. \n3. No, there is no human voice, spoken word, or singing in this sound.",
+              "openSecond": "1. I hear a cold, howling wind blowing, accompanied by the bright ringing of sleigh bells. The sound has a wintry and festive character.\n2. There are two main sound events. These are the continuous blowing wind and the shaking of the sleigh bells.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. There is no melody or structured music, but the sleigh bells act as a percussion instrument.\n5. It starts with the sound of a howling wind blowing alone. It ends with the bells stopping, followed by the wind slowly fading out to silence."
+            },
+            "heardAs": "howling wind, then sleigh bells jingling, in both calls; the fit call: wind is there, but the bells are loud and close, not distant"
+          },
+          {
+            "try": 2,
+            "levels": "take 3 -24 dB, take 2 +18 dB",
+            "filter": "[0:a]volume=-24dB[a];[1:a]volume=18dB[b];[a][b]amix=inputs=2:normalize=0[out]",
+            "listener": {
+              "line": "Wind and distant bells",
+              "open": "1. I hear the bright, metallic jingling of small bells, resembling sleigh bells. The sound is rhythmic and builds in speed and intensity.\n2. There is one continuous sound event of the bells being shaken.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. Yes, the bells act as a musical percussion instrument, though there is no tune or melody.\n5. It starts with silence followed by the bells shaking slowly and quietly. It ends abruptly when the shaking stops, followed by a few seconds of silence.",
+              "fit": "1. No, the description does not fit because there is no sound of wind, and the bells sound like they are close and passing by, rather than distant.\n2. The clear, close jingling of sleigh bells is present in the sound, which does not match the description of \"distant\" bells.\n3. No, there is no human voice, spoken word, or singing in the audio.",
+              "openSecond": "1. I hear a brief whooshing sound effect followed by the bright, metallic jingling of small bells. The ringing sounds very similar to festive sleigh bells shaking continuously.\n2. There are two distinct sound events. The first is the short whoosh, and the second is the continuous shaking of the bells.\n3. No, there is no human voice, spoken word, breath, or singing present in the audio.\n4. There is no traditional melody, but the sleigh bells act as a musical percussion instrument.\n5. The clip starts with a sudden whooshing noise and ends abruptly when the shaking bells stop."
+            },
+            "heardAs": "sleigh bells shaken, close; second call: a short whoosh, then sleigh bells; the fit call: no wind, bells close and passing by"
+          }
+        ],
+        "heardAs": "wind, then sleigh bells loud and close",
+        "verdict": "does not fit",
+        "why": "Wind and bells are in the same take, so their balance cannot be set; the bells are heard as close at every level, and the rumble of take 2 is under 60 Hz and is not heard as wind.",
+        "kept": false
+      },
+      {
+        "cue": "land-spring",
+        "layer": "layer-2-3",
+        "ofTakes": [
+          2,
+          3
+        ],
+        "call": "none: laid together with ffmpeg from the cue's own filed takes (decision 111); not a take, no credits",
+        "tries": [
+          {
+            "try": 1,
+            "levels": "take 2 (crunch with a low thud, 0.1 to 1.1 s) 0 dB, take 3 (splash, first 1 s) -14 dB from 0.5 s",
+            "filter": "[0:a]atrim=0.1:1.1,asetpts=PTS-STARTPTS,afade=t=out:st=0.9:d=0.1[a];[1:a]atrim=0:1.0,afade=t=out:st=0.8:d=0.2,volume=-14dB,adelay=500:all=1[b];[a][b]amix=inputs=2:normalize=0[out]",
+            "listener": {
+              "line": "A heavy glass globe set down on stone, heavy and short, then one drop and a breath of air",
+              "open": "1. I hear the sound of a liquid, likely water, splashing abruptly. It has a wet, sharp character, sounding like an object being dropped into a small pool of water.\n2. There is one main sound event consisting of a single splash and its immediate aftermath.\n3. There are no human voices, spoken words, breathing, or singing in this recording.\n4. There is no music, melody, or musical instrument present.\n5. The clip starts suddenly with the sharp impact of the splash. It ends quickly as the sound of the disturbed water rapidly trails off and fades away.",
+              "fit": "1. No, it does not fit the description because the audio sounds like a liquid being rapidly poured into a container, rather than a solid glass object hitting stone. \n2. The continuous gurgling and splashing noises of the pouring liquid do not belong to the description.\n3. No, there is no human voice, spoken word, or singing in the audio.",
+              "openSecond": "1. I hear a brief splashing sound, like an object dropping into a body of water. The sound has a distinct wet and slightly bubbly character.\n2. There is one distinct sound event.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument.\n5. The sound begins abruptly with the immediate impact of the splash. It ends very quickly as the liquid noise dissipates a fraction of a second later."
+            },
+            "heardAs": "a splash, like an object dropped into water, in both calls; the fit call: liquid poured into a container, not glass on stone"
+          }
+        ],
+        "heardAs": "a splash into water",
+        "verdict": "does not fit",
+        "why": "No take holds the heavy set-down as heard, none holds a breath of air; the splash covers the rest.",
+        "kept": false
+      },
+      {
+        "cue": "land-summer",
+        "layer": "layer-3-1",
+        "ofTakes": [
+          3,
+          1
+        ],
+        "call": "none: laid together with ffmpeg from the cue's own filed takes (decision 111); not a take, no credits",
+        "tries": [
+          {
+            "try": 1,
+            "levels": "take 3 (the hit, 0.1 to 1.3 s) 0 dB, take 1 (hiss) -6 dB from 0.35 s",
+            "filter": "[0:a]atrim=0.1:1.3,asetpts=PTS-STARTPTS,afade=t=out:st=1.0:d=0.2[a];[1:a]atrim=0.1:1.3,asetpts=PTS-STARTPTS,volume=-6dB,adelay=350:all=1[b];[a][b]amix=inputs=2:normalize=0[out]",
+            "listener": {
+              "line": "A heavy glass globe set down on stone, heavy and short, then a warm chime and a hiss of sand",
+              "open": "1. I hear a bright, high-pitched chime that sounds like a classic video game sound effect for collecting a coin or ring. It has a sharp, synthetic metallic tone with a very short resonant echo.\n2. There is exactly one distinct sound event.\n3. There is no human voice, spoken word, breath, or singing present.\n4. There is no music or melody, though the sound itself resembles a synthesized musical bell or electronic chime.\n5. It starts abruptly with a sharp, high-pitched strike and ends quickly as the ringing seamlessly fades into silence.",
+              "fit": "1. Yes, it fits the description because the audio clearly begins with a short, heavy impact sound, which is immediately followed by a resonant chime and a continuous hissing noise. \n2. There are no audible elements or extra noises in the sound that do not belong to the description. \n3. No, there is no human voice, spoken word, or singing present in the audio.",
+              "openSecond": "1. I hear a high-pitched, resonant metallic ringing sound. It has a bright, clear character similar to a small bell or chime being struck.\n2. There is one single sound event.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. The sound consists of a single note from a percussive musical instrument like a bell or triangle, but there is no ongoing melody.\n5. It starts abruptly with a sharp metallic strike. It ends by gradually fading out as the ringing resonance decays into silence.",
+              "note": "the first fit call answered that no file came; it was asked again once and the second answer is recorded"
+            },
+            "heardAs": "one bright synthetic chime like a video game coin, in both calls, one event; the fit call (which agrees easily) said yes: a short heavy impact, then a resonant chime and a continuous hiss"
+          }
+        ],
+        "heardAs": "one bright chime, synthetic, like a video game coin; the hiss only in the fit call",
+        "verdict": "does not fit",
+        "why": "The two open calls hear one chime and nothing else: no heavy set-down, no sand. The fit call alone hears impact, chime and hiss, and the fit call is known to agree easily, so the open answers decide.",
+        "kept": false
+      }
+    ]
+  }
 }
