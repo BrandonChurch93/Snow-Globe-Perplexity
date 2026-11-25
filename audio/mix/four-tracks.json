@@ -138,7 +138,7 @@
         "id": "music-spring",
         "at": 12,
         "fromBar": 0,
-        "sourceAt": 0.307,
+        "sourceAt": 0.006,
         "seconds": 12,
         "barLines": "map",
         "thinned": true
@@ -147,7 +147,7 @@
         "id": "music-summer",
         "at": 24,
         "fromBar": 0,
-        "sourceAt": 0.31,
+        "sourceAt": 0.012,
         "seconds": 12,
         "barLines": "map",
         "thinned": true
@@ -175,9 +175,9 @@
   "master": {
     "targetLufs": -14,
     "ceilingDb": -1,
-    "gainDb": 2.442,
-    "limiterReductionDb": 3.08,
-    "lufs": -14.01,
+    "gainDb": 2.413,
+    "limiterReductionDb": 3.02,
+    "lufs": -14,
     "truePeakDb": -1.15,
     "passes": 3,
     "silent": false
@@ -196,14 +196,14 @@
   },
   "measuredByFfmpeg": {
     "lufs": -14,
-    "lra": 5.1,
+    "lra": 4.7,
     "truePeakDb": -1.1
   },
-  "sha256": "3cbe969d95dc3a75a4d1d833563de815b6e1f4c33f298e3416b748164a77fe3d",
+  "sha256": "64e4d84f7685b51f4be28f854633c7e667469e211130c15b9104b1bfef1a7368",
   "musicStem": {
     "file": "four-tracks-music.wav",
-    "sha256": "3b5114d865ed6aa216a9127474c9b3acbe845e8034b65ed2a8abc87fd8e1fddd"
+    "sha256": "39582597957e988f615fbf6a00e53fa666ef5499901b2254b51863f1d2c365c9"
   },
-  "engineHash": "7c2483208ad28124",
-  "time": "2026-11-25T18:24:57.340Z"
+  "engineHash": "71432fafa852fbd3",
+  "time": "2026-11-25T18:57:33.763Z"
 }

@@ -4616,7 +4616,7 @@
     }
   ],
   "pack": {
-    "time": "2026-11-25T18:25:09.200Z",
+    "time": "2026-11-25T18:57:56.046Z",
     "kbps": 192,
     "bytes": 3024000,
     "fits": true,
@@ -4644,12 +4644,12 @@
       {
         "file": "music-spring.mp3",
         "bytes": 471744,
-        "sha256": "03a935aeca0d03aa9d61c1f3b7d67866426988495c1aaf3f02afeea13a3feec0"
+        "sha256": "f6632b172a76dd83d3055117369d4fc6093113bf10548c4d3053f9022917c248"
       },
       {
         "file": "music-summer.mp3",
         "bytes": 471744,
-        "sha256": "809789d86972c5c9b11e06ee6d1e2e45bca08c80ba21bfd48a9e7a4227ce4fe2"
+        "sha256": "3be20683f19ac0de9b93c72cb417b8753a5c9be1f3a122233a28a049f3cd71af"
       },
       {
         "file": "music-winter.mp3",
@@ -4706,26 +4706,26 @@
       },
       {
         "id": "music-spring",
-        "decodedSeconds": 19.6008,
-        "expectedSeconds": 19.6008,
-        "seamErrorDb": -36.34,
+        "decodedSeconds": 19.6018,
+        "expectedSeconds": 19.6018,
+        "seamErrorDb": -38.47,
         "sourceSeam": {
-          "jump": 0.023863,
-          "typicalStep": 0.007247,
-          "ratio": 3.29,
-          "levelStepDb": 1.7
+          "jump": 0.005541,
+          "typicalStep": 0.007235,
+          "ratio": 0.77,
+          "levelStepDb": 10.62
         }
       },
       {
         "id": "music-summer",
-        "decodedSeconds": 19.5996,
-        "expectedSeconds": 19.5996,
-        "seamErrorDb": -33.9,
+        "decodedSeconds": 19.6004,
+        "expectedSeconds": 19.6004,
+        "seamErrorDb": -27.96,
         "sourceSeam": {
-          "jump": 0.007953,
-          "typicalStep": 0.010746,
-          "ratio": 0.74,
-          "levelStepDb": 15.33
+          "jump": 0.028136,
+          "typicalStep": 0.010703,
+          "ratio": 2.63,
+          "levelStepDb": 17.07
         }
       },
       {
@@ -4745,20 +4745,20 @@
   },
   "mixes": {
     "audio/mix/blockout.wav": {
-      "sha256": "0bea7fb6edbc17a43fa7710f0abcfb279b7de8043acf993ea445d120810388c7",
+      "sha256": "e74133383cbd3ff701a6ba56ad59310395a6867a2fa3546fcfa566a17702ea9c",
       "lufs": -14,
       "truePeakDb": -1.1,
       "candidate": "blockout",
       "which": "b",
-      "time": "2026-11-24T20:34:59.266Z"
+      "time": "2026-11-25T19:10:30.522Z"
     },
     "audio/mix/four-tracks.wav": {
-      "sha256": "3cbe969d95dc3a75a4d1d833563de815b6e1f4c33f298e3416b748164a77fe3d",
+      "sha256": "64e4d84f7685b51f4be28f854633c7e667469e211130c15b9104b1bfef1a7368",
       "lufs": -14,
       "truePeakDb": -1.1,
       "candidate": "four-tracks",
       "which": "b",
-      "time": "2026-11-25T18:24:57.340Z"
+      "time": "2026-11-25T18:57:33.763Z"
     }
   }
 }
