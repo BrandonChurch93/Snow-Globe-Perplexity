@@ -105,16 +105,16 @@ function addStrands() {
   const rng = mulberry(4107)
   const r = (a, b) => a + (b - a) * rng()
   const push = (s) => STRANDS.push({ seed: STRANDS.length * 31 + 7, slope: 0, reach: 0, ...s })
-  for (let i = 0; i < 2; i++) push({ a0: -180, span: 360, h0: 2.3 + i * 2.7, amp: 1.1 + 0.5 * i, k: 3 + i, ph: r(0, 6.28), rad: r(1.5, 1.9), lift: 1.6, sprawl: 3.2 - i * 1.4, thorn: [7, 12], every: 46, layer: 0 })
+  for (let i = 0; i < 2; i++) push({ a0: -180, span: 360, h0: 2.3 + i * 2.7, amp: 1.1 + 0.5 * i, k: 3 + i, ph: r(0, 6.28), rad: r(1.15, 1.5), lift: 1.6, sprawl: 3.2 - i * 1.4, thorn: [7, 12], every: 46, layer: 0 })
   for (let i = 0; i < 2; i++) push({ a0: -180, span: 360, h0: 30.8 + i * 3.4, amp: 1.2, k: 4 + i, ph: r(0, 6.28), rad: r(1.25, 1.6), lift: 1.5, sprawl: 0, thorn: [6, 10], every: 60, layer: 2 })
   for (let i = 0; i < 2; i++) push({ a0: -180, span: 360, h0: 11.5 + i * 15, amp: r(2.4, 3.4), k: 3 + i, ph: r(0, 6.28), rad: r(1.0, 1.3), lift: 1.8, sprawl: 0, thorn: [6, 10], every: 52, layer: 1 })
   // The branches: long tapering lengths that cross the ring on a slant, each ending in a point that stands off it.
   const count = 25
   for (let i = 0; i < count; i++) {
-    const steep = i % 6 === 5
+    const steep = i % 3 === 2
     const span = steep ? r(28, 46) : r(62, 150)
     const a0 = -180 + (i * 360) / count + r(-9, 9) + (i * 137.5) % 360
-    const slope = (rng() < 0.5 ? -1 : 1) * (steep ? r(16, 24) : r(4, 15))
+    const slope = (rng() < 0.5 ? -1 : 1) * (steep ? r(17, 26) : r(6, 19))
     push({ a0, span, h0: steep ? r(14, 24) : r(5, 33), slope, amp: steep ? r(0.6, 1.4) : r(1.6, 3.6), k: r(1.6, 3.0), ph: r(0, 6.28), rad: steep ? r(1.1, 1.5) : r(1.2, 2.05), lift: r(2.6, 4.6), sprawl: 0.8, thorn: [6, 11], every: 46, layer: 3, open: true, reach: r(3.5, 8.5) })
   }
 }
@@ -177,7 +177,7 @@ function thorn(soup, root, dir, len, rad, bend, sides, shade) {
   for (let i = 0; i < rings; i++) {
     const t = i / (rings - 1)
     pts.push(p)
-    radii.push(Math.max(rad * (1 - t) ** 0.9 * (1 + 0.85 * (1 - t) ** 5), 0.03))
+    radii.push(Math.max(rad * (1 - t) ** 0.9 * (1 + 0.4 * (1 - t) ** 5), 0.03))
     d = norm3(add3(d, bend, step * 0.05))
     p = add3(p, d, step)
   }
@@ -236,7 +236,7 @@ export function buildIron() {
         const depth = smooth(0, 5, Math.hypot(p[0], p[2]) - drumR(clamp(p[1], 0, 38)))
         return [(0.32 + 0.68 * open) * (0.5 + 0.5 * depth) * (0.75 + 0.25 * smooth(0, 5, p[1])), 0.5, fbm(i * 0.09, a, 64, 8, s.seed + 3, 2)]
       }
-      tube(soup, pick.map((i) => pts[i]), pick.map((i) => radii[i]), far ? 5 : s.rad > 1.2 ? 9 : 7, shade, 1, s.seed * 0.37, far ? 0 : 0.09, s.seed)
+      tube(soup, pick.map((i) => pts[i]), pick.map((i) => radii[i]), far ? 5 : s.rad > 1.2 ? 9 : 7, shade, 1, s.seed * 0.37, far ? 0 : 0.13, s.seed)
       from = to
     }
     let next = r(4, s.every)
@@ -387,7 +387,7 @@ export function buildWax() {
   }
   for (const run of L.RUNS) {
     const start = L.onCylinder(run.x, run.y0, 55)
-    const w = (run.w / 9.3) * 0.62
+    const w = (run.w / 9.3) * 0.4
     const foot = 59.6 + (run.pool > 0 ? 1.2 : 0.4)
     const n = Math.max(6, Math.ceil(start.h / 0.7))
     const pts = []
@@ -395,11 +395,11 @@ export function buildWax() {
     for (let i = 0; i <= n; i++) {
       const t = i / n
       const h = mix(start.h, run.pool > 0 ? 0.5 : 2.2, t)
-      const sway = (fbm(t * 2 + start.az, 0.9, 64, 4, 23, 2) - 0.5) * 2.0
-      pts.push(place(mix(drumR(h) + 2.6, foot, t ** 0.8), h, start.az + sway * Math.sin(Math.PI * t)))
+      const sway = Math.sin(run.x) * 2.2
+      pts.push(place(mix(drumR(h) + 2.6, foot, t ** 0.8), h, start.az + sway * Math.sin(2 * Math.PI * t) * (1 - t)))
       const cap = Math.sqrt(Math.max(1 - Math.max((0.1 - t) / 0.1, 0) ** 2, 0.0004))
-      const tail = run.pool > 0 ? 1 + 0.5 * smooth(0.7, 1, t) : Math.sqrt(Math.max(1 - Math.max((t - 0.9) / 0.1, 0) ** 2, 0.0004)) * (1 + 0.4 * Math.exp(-(((t - 0.86) / 0.1) ** 2)))
-      radii.push(w * (0.95 + 0.16 * Math.sin(t * 9 + run.x) + 0.14 * Math.sin(t * 23 + run.x * 0.3)) * cap * tail)
+      const tail = run.pool > 0 ? 1 + 0.35 * smooth(0.8, 1, t) : Math.sqrt(Math.max(1 - Math.max((t - 0.9) / 0.1, 0) ** 2, 0.0004)) * (1 + 0.4 * Math.exp(-(((t - 0.86) / 0.1) ** 2)))
+      radii.push(w * (0.8 + 0.45 * t * t + 0.1 * Math.sin(t * 9 + run.x)) * cap * tail)
     }
     tube(soup, pts, radii, 10, (j, a, p, nrm) => [(0.55 + 0.45 * (0.5 + 0.5 * dot3(nrm, norm3([p[0], 0, p[2]])))) * (0.5 + 0.5 * smooth(0, 16, p[1])), clamp(radii[j] * 0.55, 0, 1), j / n], 0.85)
     count++

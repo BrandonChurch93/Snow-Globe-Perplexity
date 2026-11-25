@@ -103,6 +103,8 @@ float baseNoise(vec3 p) {
 const FRAG_PARS = `
 uniform sampler2D uBaseDetail;
 uniform vec3 uBaseFloor;
+uniform vec3 uBaseRimDir;
+uniform vec3 uBaseRimCol;
 uniform vec3 uFaceAt[${FACE_COUNT}];
 uniform vec4 uFaceOut[${FACE_COUNT}];
 uniform float uFaceGlow[${FACE_COUNT}];
@@ -204,19 +206,19 @@ float baseKind = vBasePaint.y;
 float baseThorn = step(0.75, baseKind);
 float baseDrum = 1.0 - step(0.25, baseKind);
 float baseBlotch = baseNoise(vBasePos * 0.35) * 0.6 + baseNoise(vBasePos * 1.3) * 0.4;
-float baseScale = smoothstep(0.42, 0.7, baseNoise(vBasePos * 2.6) * 0.6 + baseDetail.b * 0.4);
-diffuseColor.rgb = mix(vec3(0.028, 0.03, 0.034), vec3(0.05, 0.046, 0.044), baseBlotch) * mix(1.0, 0.55, baseScale) * mix(1.0, 0.3, baseDrum);
+float baseScale = smoothstep(0.52, 0.8, baseNoise(vBasePos * 2.6) * 0.6 + baseDetail.b * 0.4);
+diffuseColor.rgb = mix(vec3(0.028, 0.03, 0.034), vec3(0.05, 0.046, 0.044), baseBlotch) * mix(1.0, 0.72, baseScale) * mix(1.0, 0.3, baseDrum);
 float baseRust = smoothstep(0.62, 0.85, baseNoise(vBasePos * 0.9 + 7.0)) * (1.0 - baseThorn) * 0.35;
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.1, 0.05, 0.028), baseRust);
 float baseWrap = 0.1;
 float baseCandle = 1.0;
 `
 const IRON_ROUGH = `
-roughnessFactor = clamp(mix(0.3, 0.54, baseDetail.b) + 0.25 * baseScale + 0.2 * baseRust - 0.1 * baseThorn * vBasePaint.z + 0.3 * baseDrum, 0.18, 1.0);
-metalnessFactor = mix(0.82, 0.45, baseScale) * (1.0 - 0.6 * baseRust);
+roughnessFactor = clamp(mix(0.3, 0.54, baseDetail.b) + 0.16 * baseScale + 0.2 * baseRust - 0.1 * baseThorn * vBasePaint.z + 0.3 * baseDrum, 0.18, 1.0);
+metalnessFactor = mix(0.85, 0.6, baseScale) * (1.0 - 0.6 * baseRust);
 `
 const IRON_TILT = `
-vec2 baseTilt = baseSlope(baseDetail.rg) * mix(mix(0.17, 0.12 * (1.0 - vBasePaint.z), baseThorn), 0.22, baseDrum);
+vec2 baseTilt = baseSlope(baseDetail.rg) * mix(mix(0.34, 0.14 * (1.0 - vBasePaint.z), baseThorn), 0.22, baseDrum);
 `
 const IRON_AFTER = `
 {
@@ -234,9 +236,13 @@ const IRON_AFTER = `
   float ironCh = max(dot(geometryNormal, normalize(ironCard + geometryViewDir)), 0.0);
   float ironKl = smoothstep(0.0, 0.2, dot(geometryNormal, ironKey));
   float ironCl = smoothstep(0.0, 0.25, dot(geometryNormal, ironCard));
-  float ironSheen = (1.0 - 0.7 * baseScale) * baseAo * (1.0 - 0.8 * baseDrum);
+  float ironSheen = (1.0 - 0.45 * baseScale) * baseAo * (1.0 - 0.8 * baseDrum);
+  vec3 ironRim = normalize(mat3(viewMatrix) * uBaseRimDir);
+  float ironRh = max(dot(geometryNormal, normalize(ironRim + geometryViewDir)), 0.0);
+  float ironRl = smoothstep(0.0, 0.25, dot(geometryNormal, ironRim));
+  reflectedLight.directSpecular += uBaseRimCol * (0.3 * pow(ironRh, 7.0) + 0.8 * pow(ironRh, 50.0)) * ironRl * ironSheen;
   vec3 ironCardC = mix(uRigCardCol, vec3(dot(uRigCardCol, vec3(0.3, 0.5, 0.2))), 0.65);
-  reflectedLight.directSpecular += (ironKeyC * vec3(0.8, 0.9, 1.0) * (0.2 * pow(ironKh, 8.0) + 0.3 * pow(ironKh, 60.0)) * ironKl + ironCardC * (0.04 * pow(ironCh, 10.0) + 0.14 * pow(ironCh, 50.0)) * ironCl) * ironSheen;
+  reflectedLight.directSpecular += (ironKeyC * vec3(0.8, 0.9, 1.0) * (0.13 * pow(ironKh, 9.0) + 0.85 * pow(ironKh, 90.0)) * ironKl + ironCardC * (0.04 * pow(ironCh, 10.0) + 0.14 * pow(ironCh, 50.0)) * ironCl) * ironSheen;
   float ironEdge = pow(1.0 - clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0), 3.0);
   vec3 ironUp = inverseTransformDirection(geometryNormal, viewMatrix);
   reflectedLight.indirectSpecular += (uRigSky * 0.6 * smoothstep(-0.2, 0.8, ironUp.y) + uBaseFloor * smoothstep(0.2, -0.8, ironUp.y)) * ironEdge * ironSheen;
@@ -294,16 +300,16 @@ const WAX_PAINT = `
 float baseAo = vBasePaint.x;
 float waxDeep = vBasePaint.y;
 float waxMottle = baseNoise(vBasePos * 0.9) * 0.6 + baseNoise(vBasePos * 3.7) * 0.4;
-diffuseColor.rgb = mix(vec3(0.8, 0.56, 0.26), vec3(0.96, 0.78, 0.44), smoothstep(0.1, 0.7, waxDeep) * (0.7 + 0.3 * waxMottle)) * mix(0.85, 1.05, waxMottle);
+diffuseColor.rgb = mix(vec3(0.95, 0.62, 0.26), vec3(1.0, 0.8, 0.44), smoothstep(0.1, 0.7, waxDeep) * (0.7 + 0.3 * waxMottle)) * mix(0.92, 1.05, waxMottle);
 float baseWrap = 0.55;
-float baseCandle = 0.8;
+float baseCandle = 0.5;
 `
 const WAX_ROUGH = `
 roughnessFactor = 0.22 + 0.16 * waxMottle;
 metalnessFactor = 0.0;
 `
 const WAX_TILT = `
-vec2 baseTilt = (vec2(baseNoise(vBasePos * 1.9 + 3.0), baseNoise(vBasePos * 1.9 + 31.0)) - 0.5) * 0.55 + (vec2(baseNoise(vBasePos * 6.0 + 13.0), baseNoise(vBasePos * 6.0 + 71.0)) - 0.5) * 0.18;
+vec2 baseTilt = (vec2(baseNoise(vBasePos * 1.9 + 3.0), baseNoise(vBasePos * 1.9 + 31.0)) - 0.5) * 0.22 + (vec2(baseNoise(vBasePos * 6.0 + 13.0), baseNoise(vBasePos * 6.0 + 71.0)) - 0.5) * 0.05;
 `
 const WAX_AFTER = `
 {
@@ -378,7 +384,7 @@ void main() {
   float fore = pow(max(dot(view, uBaseKeyDir) * 0.5 + 0.5, 0.0), 2.0);
   vec3 lit = uBaseKeyCol * (0.12 + 0.25 * fore) + uBaseRimCol * (0.2 + 1.2 * back) + uRigCardCol * 0.25 + uBaseSky * 0.6;
   float veil = (0.03 + 0.1 * pow(abs(sin(u * 9.0 + 3.0 * sin(vWebUv.y * 5.0 + sheet))), 6.0) * webHash(floor(u * 2.87) + sheet)) * smoothstep(0.0, 0.3, vWebUv.y);
-  float a = clamp(thread * 0.13 + veil * 0.5 + dew * 0.08, 0.0, 1.0);
+  float a = clamp(thread * 0.22 + veil * 0.7 + dew * 0.1, 0.0, 1.0);
   gl_FragColor = vec4(lit * vec3(0.85, 0.9, 0.92) * (0.6 + 1.2 * dew) * a, a);
   if (uDiag != 0) gl_FragColor = stageDiag(vec3(0.8, 0.82, 0.85), normalize(vWebNormal), 0.0, c, 0.0);
 }
