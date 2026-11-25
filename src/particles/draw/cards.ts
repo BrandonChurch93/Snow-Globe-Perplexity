@@ -1,5 +1,5 @@
 import { viewCode } from '../../diagnostics/views'
-import { BATS, CARD, LENS_LOOK, LIGHT_LOOK, LIT_MOST, MAX_KINDS, PIXEL_SIGMA2, SHAPE, STORM_FLOOD, STORM_WINDOW, STREAK_ARC } from './looks'
+import { BATS, CARD, LENS_LOOK, LIGHT_LOOK, LIT_MOST, MAX_KINDS, PIXEL_SIGMA2, SHAPE, STORM_FLOOD, STORM_OWN_PATH_FROM, STORM_WINDOW, STREAK_ARC } from './looks'
 import { ROLL_CENTRE } from '../../globe/liquid'
 
 const n = (v: number) => (Number.isInteger(v) ? v.toFixed(1) : String(v))
@@ -446,7 +446,7 @@ float cardCover(float shape, vec2 p, out vec2 q) {
   if (vStreak.z > 0.25) {
     vec2 q0 = vec2(p.x * b.y - p.y * b.x, a.x * p.y - a.y * p.x) * inv;
     vec2 dq = vec2(vStreak.x * b.y - vStreak.y * b.x, a.x * vStreak.y - a.y * vStreak.x) * inv;
-    float bound = ${n(CARD.bound)} + abs(vL4.x) + abs(vL4.y) + (wide + (uStorm.x > 0.0 ? 0.67 * abs(pointBend) * vStreak.z : 0.0)) * abs(inv) * max(length(a), length(b));
+    float bound = ${n(CARD.bound)} + abs(vL4.x) + abs(vL4.y) + (wide + (uStorm.x > 0.0 && shape > ${n(STORM_OWN_PATH_FROM)} ? 0.67 * abs(pointBend) * vStreak.z : 0.0)) * abs(inv) * max(length(a), length(b));
     float qa = dot(dq, dq);
     float qb = dot(q0, dq);
     float disc = qb * qb - qa * (dot(q0, q0) - bound * bound);
@@ -454,7 +454,7 @@ float cardCover(float shape, vec2 p, out vec2 q) {
       float root = sqrt(disc);
       float t0 = max((qb - root) / qa, -vStreak.z);
       float t1 = min((qb + root) / qa, vStreak.z);
-      if (t1 > t0 && uStorm.x > 0.0 && shape < ${n(SHAPE.bat - 0.5)}) {
+      if (t1 > t0 && uStorm.x > 0.0 && shape > ${n(STORM_OWN_PATH_FROM)} && shape < ${n(SHAPE.bat - 0.5)}) {
         // the storm: the card is seen for the whole shutter along its bent path, alike from end to end, with no sharp place
         float light = cardBlobRun(shape, a, b, inv, vStreak.w, vStreak.xy, (t1 - t0) / ${n(CARD.run.taps)});
         vec2 across = vec2(-vStreak.y, vStreak.x);
@@ -656,7 +656,7 @@ void cardStreak(vec2 p, int kind, vec4 k, vec4 look) {
   float v = vStreak.w + wide * wide;
   float line = min(1.0, ${n(CARD.hair.seen)} * wide / sqrt(v)) * exp(-0.5 * (off * off + past * past) / v);
   float sc = clamp(s, -1.0, 1.0);
-  float lit = line * (uStorm.x > 0.0 ? 1.0 : mix(${n(CARD.line.tail)}, 1.0, smoothstep(-1.0, 0.7, sc)));
+  float lit = line * (uStorm.x > 0.0 && look.x > ${n(STORM_OWN_PATH_FROM)} ? 1.0 : mix(${n(CARD.line.tail)}, 1.0, smoothstep(-1.0, 0.7, sc)));
   bool seedy = look.x > ${n(SHAPE.seed - 0.5)};
   float headW = 0.0;
   float seen = vCore.w * look.z;
@@ -702,7 +702,7 @@ void cardStreak(vec2 p, int kind, vec4 k, vec4 look) {
   vec3 light = vGrid.rgb + vDom.rgb * (${n(LIGHT_LOOK.keyFloor)} + ${n(LIGHT_LOOK.keySide * 0.45)});
   light *= min(1.0, ${n(CARD.litMost)} / max(max(light.r, max(light.g, light.b)), 1e-3));
   if (leafy) light = mix(vec3(max(light.r, max(light.g, light.b))), light, ${n(CARD.leafHue)});
-  vec3 body = leafy ? mix(k.rgb * vec3(${CARD.line.leafLow.map(n).join(', ')}), vec3(${CARD.line.leafHigh.map(n).join(', ')}), pow(vL4.y, uStorm.x > 0.0 ? ${n(CARD.line.shutPale)} : ${n(CARD.line.leafPale)})) : mix(k.rgb, vec3(1.0), mix(${n(CARD.line.pale[0])}, ${n(CARD.line.pale[1])}, uStorm.x > 0.0 ? pow(vL4.y, ${n(CARD.line.shutPale)}) : vL4.y));
+  vec3 body = leafy ? mix(k.rgb * vec3(${CARD.line.leafLow.map(n).join(', ')}), vec3(${CARD.line.leafHigh.map(n).join(', ')}), pow(vL4.y, uStorm.x > 0.0 ? ${n(CARD.line.shutPale)} : ${n(CARD.line.leafPale)})) : mix(k.rgb, vec3(1.0), mix(${n(CARD.line.pale[0])}, ${n(CARD.line.pale[1])}, vL4.y));
   vec3 col = body * light * (seedy ? ${n(CARD.line.seedGain)} : ${n(CARD.line.gain)});
   if (headW > 0.0) {
     vec3 own = look.x > ${n(SHAPE.leaf - 0.5)} ? mix(k.rgb * vec3(${CARD.line.leafHead[0].map(n).join(', ')}), vec3(${CARD.line.leafHead[1].map(n).join(', ')}), step(${n(CARD.line.leafWhite)}, vL3.w)) : k.rgb * mix(vec3(${CARD.line.petalHead[0].map(n).join(', ')}), vec3(${CARD.line.petalHead[1].map(n).join(', ')}), step(${n(CARD.line.petalWhite)}, vL3.w));

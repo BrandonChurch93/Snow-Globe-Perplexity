@@ -117,6 +117,9 @@ export const STORM_SIDE = 0.9
 export const STORM_WALL = { dim: 0.8, from: 0.3, to: 0.85 }
 /** The share of the film's shutter for which a thing in the storm is seen: its stroke is this share of the path of one exposure, so that a piece is blurred by about its own size and stays one piece. */
 export const STORM_SHUTTER = 0.3
+/** The kinds that are drawn along their own path in the storm: the leaf, the seed, the light and the spark (shapes above this). The flake, the glitter, the petal and the mote are turned to the veil's current and seen for this share of the shutter, as the approved winter and spring are. */
+export const STORM_OWN_PATH_FROM = 4.5
+export const STORM_SHUTTER_TURNED = 0.8
 export const STORM_ALIGN = 0.7
 export const STORM_TOP = { keep: 0.22, from: 0.15, to: 0.7 }
 export const STORM_SLOW = { keep: 0.35, fromPx: 2, toPx: 9 }
