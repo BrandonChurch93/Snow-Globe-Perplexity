@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 63 · 2026-11-25 00:16 UTC
+Status 64 · 2026-11-25 00:42 UTC
 
-- `out/stills/status/status-63-1.jpg`: Top: the approved images of spring and summer and fall at rest. Bottom: the build now with every part of these three seasons still a grey stand-in
-- `out/stills/status/status-63-2.jpg`: The approved mid-shake images the three storms are tuned against
-- `out/stills/status/status-63-3.jpg`: Still: fall rest hero, hd, draft
-- `out/stills/status/status-63-4.jpg`: Still: summer rest hero, hd, draft
+- `out/stills/status/status-64-1.jpg`: Fall base at rest after 27 minutes of building: the approved image above and the build below (draft tier)
+- `out/stills/status/status-64-2.jpg`: Fall base half a second after a landing: the approved image above and the build below (draft tier)
+- `out/stills/status/status-64-3.jpg`: Still: spring rest hero, hd, draft
+- `out/stills/status/status-64-4.jpg`: Comparison crops 1: winter-shake, approved image left, build right
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 00:31 UTC
-clock: phase 4, tick of 6.5 minutes
-phase 4: 0.41 h used of its 9.50 h box
-allowance (before the review): 22.69 h used of 36.00 h allowed
-all time before the review: 22.69 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 00:49 UTC
+clock: phase 4, tick of 6.8 minutes
+phase 4: 0.70 h used of its 9.50 h box
+allowance (before the review): 22.99 h used of 36.00 h allowed
+all time before the review: 22.99 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 15
+minutes since the last status: 6
 ```
 
 ## Phases
@@ -1553,3 +1553,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 00:08 to 00:16 UTC. Phase 4 started. `origin/main` fetched and merged (nothing new), then `prep/phase4` merged into `main` (each of spring, summer and fall split into one file per part; the fit tool reads a season's reference camera): `npx tsc --noEmit` clean, `npx vitest run` 419 passed and 4 skipped, pushed as `31c5c75`. The ten build agents of decision 71 were started at 00:11:46 UTC, each in its own sandbox VM with `out/work/briefs/p4/common.md`, its job message and its season's two approved images at half size: stage 1 (a first real version of every piece, no stand-in left) is due by 01:32, the limit is 03:02. `round_renderer` and `motion_renderer` each wrote down the commands of their Round 7 job as a runbook (`out/work/runbooks/`, in the workspace only), so a fresh render agent can make a season's packs; `out/work/bin/fetchpack.sh` now takes the phase for its branch names. Status 63 was posted at 00:17 with the three seasons' approved pairs above the build's stand-ins (three draft stills of the blockout, drawn here at 00:13 to 00:16). `gate_runner`'s confirmation run of Phase 3's gate on a clean clone of `1ee1285` is still out (limit 01:05).
 
 - 00:32 UTC. The confirmation of Phase 3's gate is in (decision 73): `gate_runner` ran the whole gate, with no check left out and no unit named, on a fresh clean clone of `1ee1285` from 23:36 to 00:30 UTC: all 15 green, G13 covering winter's 17 of 54 parts through the Units table, 69 of 69 judged stills in the stand-in view (`scorecards/round-007/gate-phase-3-confirm.json` and `.log`). A first attempt a minute earlier was red on 11 checks for one reason outside the repo, "only 2.9 GB of disk is free, under sandbox.minFreeDiskGb": the agent's VM was full of its own clones of Rounds 3 to 7; it deleted them, changed nothing in the new clone and ran again. Later gate orders tell the runner to check its disk first and carry the sound files as an attachment. At 00:25 the three `air` builders' first pushes (each season's reference camera and a first rig) were merged into `main` (`4c9ded5`, tsc clean, vitest 419 passed).
+
+- 00:50 UTC. Status 64 posted at 00:43 (the fall base's first real version beside the approved image). First versions with no stand-in left came in from four builders between 00:38 and 00:47 and are merged into `main`, each made here from its sources (tsc clean, vitest 419 passed on `a40cba1`): `fall_base` at `e4537fa` (base, surface dressing, arrival outside the glass), `fall_mini` at `7652718`, `summer_mini` at `3a9ce26`, `kinds_builder` at `58fdfb5` (all seven kinds draw as their own shapes; winter's rest and landed stills byte-identical). Register: `base-fall`, `surface-dressing-fall`, `arrival-fall`, `miniature-fall`, `miniature-summer` set to `built`; the particle parts wait for the motion rows of each season's `air` builder. Every builder keeps tuning until its limit at 03:02. The web pack stands at 48.8 MiB with two of the three new miniatures in (`host.maxShippedMb` is 95 for all of `dist/`), so each builder now gets a size and a triangle allowance in writing. The built files of the new seasons stay uncommitted until each season's round is frozen.

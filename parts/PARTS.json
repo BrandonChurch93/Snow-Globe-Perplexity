@@ -324,7 +324,7 @@
     {
       "name": "miniature-summer",
       "unit": "summer",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/summer",
         "public/assets/summer",
@@ -332,7 +332,8 @@
         "public/assets/shared"
       ],
       "standInHash": "8a7cb8f25c81dacc",
-      "commit": "2530677"
+      "commit": "9334939",
+      "note": "agent/p4-summer_mini at 3a9ce26: stage 1, village-summer and tree-summer, collider in"
     },
     {
       "name": "glass-dressing-summer",
@@ -417,18 +418,19 @@
     {
       "name": "base-fall",
       "unit": "fall",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/fall",
         "public/assets/fall"
       ],
       "standInHash": "80afa9ee5fdea3b2",
-      "commit": "2530677"
+      "commit": "9334939",
+      "note": "agent/p4-fall_base at e4537fa: stage 1, a first real version from assets-src/base-fall and slab-fall; arrival outside the glass in arrival.ts"
     },
     {
       "name": "miniature-fall",
       "unit": "fall",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/fall",
         "public/assets/fall",
@@ -436,7 +438,8 @@
         "public/assets/shared"
       ],
       "standInHash": "6db658625fa46aa6",
-      "commit": "2530677"
+      "commit": "9334939",
+      "note": "agent/p4-fall_mini at 7652718: stage 1, village-fall and tree-fall with distance field and lights"
     },
     {
       "name": "glass-dressing-fall",
@@ -452,13 +455,14 @@
     {
       "name": "surface-dressing-fall",
       "unit": "fall",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/fall",
         "public/assets/fall"
       ],
       "standInHash": "80afa9ee5fdea3b2",
-      "commit": "2530677"
+      "commit": "9334939",
+      "note": "agent/p4-fall_base at e4537fa: stage 1, a first real version from assets-src/base-fall and slab-fall; arrival outside the glass in arrival.ts"
     },
     {
       "name": "light-fall",
@@ -486,13 +490,14 @@
     {
       "name": "arrival-fall",
       "unit": "fall",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/fall",
         "public/assets/fall"
       ],
       "standInHash": "80afa9ee5fdea3b2",
-      "commit": "2530677"
+      "commit": "9334939",
+      "note": "agent/p4-fall_base at e4537fa: stage 1, a first real version from assets-src/base-fall and slab-fall; arrival outside the glass in arrival.ts"
     },
     {
       "name": "particle-leaf",
