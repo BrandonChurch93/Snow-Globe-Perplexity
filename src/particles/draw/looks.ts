@@ -151,6 +151,7 @@ export const STORM_GLINT = 0.05
 export const STORM_GLINT_REACH = { low: 0.3, high: 0.95 }
 export const STORM_GLINT_KEEP = 0.4
 export const REST_CLEAR = { from: 0.72, to: 0.92, near: 0.3, size: 1.6, mostPx: 3.1 }
+/** The flood of the swap: how fast a thing sinks into it with its depth behind the glass, its gain, and the ones just behind the front glass that stand in front of it: the depths (mm) they end between, how much of the flood is taken off them and how much more of them is seen. */
 export const STORM_FLOOD = { fogPerMm: 0.022, gain: 1.4, frontMm: [6, 22] as const, frontClear: 0.8, frontGain: 1.5 }
 /** The storm's flecks near the lamp take its colour at their own brightness: the warm light spreads through the storm and the field gets no brighter. */
 export const STORM_GLOW = { to: [1.529, 0.894, 0.501] as const, most: 0.8, reachMm: 30 }
@@ -177,7 +178,7 @@ export const CARD = {
   petalFootTo: 0.75,
   /** The spread of the sizes of the petals and the leaves: the least and the most as shares of the row's size, and the skew toward the small. */
   spread: [0.5, 1.35, 1.5] as const,
-  /** The few near the eye that are far out of focus: their share, the depths they start and are full at, how much larger they are drawn, their blur in pixels of a 1080 picture, and how much of them is kept off the middle of the picture. */
+  /** The few near the eye that are far out of focus: in the storm the share of the leaves and petals and the depths they come in between; at rest their share, the depths they start and are full at, how much larger they are drawn, their blur in pixels of a 1080 picture, and how much of them is kept off the middle of the picture. */
   near: { stormShare: 0.12, stormFrom: [0.45, 0.85] as const, share: 0.4, from: 0.05, to: 0.7, size: 1.7, petalSize: [1.2, 3.4] as const, petalSkew: 2.5, px: [2.5, 12] as const, clear: 0.55 },
   /** At rest nothing is drawn large or soft in front of the cottage and the tree (winter's REST_CLEAR for the cards): inside the middle of the picture, from this depth forward and up to this height above the globe's centre, a sheet and a seed head are held to these radii in pixels of a 1080 picture, keep this share of the lens's blur, and none is of the large soft class. */
   clear: { back: -0.25, front: 0.05, lowMm: 6, highMm: 26, blur: 0.25, sheetPx: 11, seedPx: 10, snagPx: [5, 14] as const, snagSkew: 3, snagLiftMm: 3, snagSeen: 0.25 },
@@ -187,7 +188,7 @@ export const CARD = {
   blob: [0.45, 1.3] as const,
   /** The most a card's bends may move its outline on the picture, as a share of what keeps the outline whole when the card is seen edge on. */
   bendFit: 0.55,
-  /** The storm's fine streaks, for the petals and for the leaves: their share of the ones not drawn whole, the least and most they are seen and its skew, how much longer than the shutter's path, their bow, width in pixels, the tail's share of the head's light, how pale (petals) and the tints (leaves). */
+  /** The storm's fine streaks, for the petals and for the leaves: their share of the ones not drawn whole, the least and most they are seen and its skew, how much longer than the shutter's path, their bow, width in pixels, the tail's share of the head's light, how pale (petals) and the tints (leaves). In the storm a streak is the true path of one exposure: the lengths in pixels it comes in between, the half length up to which it keeps its light (longer ones thin with their length), its width's share and the skew of its paleness. */
   line: { shutFromPx: [3, 14] as const, dwellPx: 7, shutWide: 0.6, shutPale: 2.2, deepMostMm: 14, seedKeep: [0.015, 0.75] as const, seedSkew: 3.5, seedStretch: [0.5, 1.6] as const, seedWidePx: [0.3, 0.6] as const, seedHeads: 0.3, fanPx: [9, 24] as const, fanHairs: 7, fanSpread: 1.2, fanShort: 0.55, fanWide: 0.7, fanCore: 0.06, fanOpen: [0.08, 0.4] as const, headSeen: 0.6, deep: [0.6, 1.2] as const, frontCut: 0.45, share: [0.2, 0.4] as const, leafStretch: [1, 2.8] as const, leafPale: 0.6, leafSkew: 1.8, petalHeads: 0.55, petalHeadPx: [4.5, 10] as const, leafHeads: 0.45, leafHeadPx: [3, 8] as const, leafWidePx: [0.9, 1.9] as const, headOval: [0.5, 0.85] as const, headLift: 3, headGain: 1.1, petalHead: [[1, 0.74, 0.86], [1.25, 1.25, 1.25]] as const, petalWhite: 0.72, leafHead: [[1, 0.52, 0.18], [1.25, 0.85, 0.4]] as const, leafWhite: 0.85, keep: [0.03, 0.9] as const, skew: 3.5, stretch: [0.8, 2.4] as const, align: 0.85, fromPx: [6, 30] as const, bow: [0.03, 0.16] as const, widePx: [0.8, 1.8] as const, tail: 0.1, pale: [0.2, 0.8] as const, gain: 1.15, seedGain: 1.9, leafLow: [1.5, 1.0, 0.6] as const, leafHigh: [1.7, 1.25, 0.75] as const },
   /** A card in the storm, seen for the whole shutter: the places along its path it is drawn at, from which length of a piece of the path (in the card's own thin width) the card is the soft blob of its outline, and for a seed's head from which length of path (in its own radius) the hairs give way to the smear of the tuft, how much of the tuft is seen and how fast it thins with the path. */
   run: { taps: 5, blob: [0.35, 1.1] as const, seedFrom: [0.35, 1.6] as const, seedTuft: 0.42, seedThin: 0.8 },
