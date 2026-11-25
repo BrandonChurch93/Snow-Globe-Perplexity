@@ -136,7 +136,7 @@ function addStrands() {
 addStrands()
 
 function strandPath(s) {
-  const n = Math.ceil((s.span * RAD * 54) / 1.25)
+  const n = Math.ceil((s.span * RAD * 54) / 1.5)
   const hs = []
   const azs = []
   const base = (az) => s.h0 + s.slope * ((az - s.a0) / s.span - 0.5) + s.amp * Math.sin(s.k * az * RAD + s.ph) + (fbm(((az + 180) / 360) * 14, 0.37, 14, 4, s.seed, 3) - 0.5) * s.amp * 1.2
@@ -202,7 +202,7 @@ function strandPath(s) {
 }
 
 function thorn(soup, root, dir, len, rad, bend, sides, shade, wide = [0, 1, 0]) {
-  const rings = 9
+  const rings = 7
   let d = norm3(dir)
   let u = add3(wide, d, -dot3(wide, d))
   if (Math.hypot(...u) < 0.2) u = add3([0, 1, 0], d, -d[1])
@@ -238,10 +238,10 @@ function thorn(soup, root, dir, len, rad, bend, sides, shade, wide = [0, 1, 0]) 
 
 export function buildIron() {
   const soup = new Soup('iron')
-  const cols = columns(1.5, 6)
+  const cols = columns(2.5, 7.5)
   const drum = []
-  for (let i = 0; i <= 30; i++) {
-    const h = 0.03 + (38.3 - 0.03) * (i / 30) ** 0.9
+  for (let i = 0; i <= 22; i++) {
+    const h = 0.03 + (38.3 - 0.03) * (i / 22) ** 0.9
     drum.push([drumR(h), h])
   }
   lathe(soup, drum, cols, (j, az, r, h) => [0.34 + 0.3 * smooth(26, 38, h) - 0.14 * smooth(6, 0, h), 0, 0], 0.5, 11)
@@ -287,7 +287,7 @@ export function buildIron() {
         const depth = smooth(0, 5, Math.hypot(p[0], p[2]) - drumR(clamp(p[1], 0, 38)))
         return [(0.32 + 0.68 * open) * (0.5 + 0.5 * depth) * (0.75 + 0.25 * smooth(0, 5, p[1])), 0.5, fbm(i * 0.09, a, 64, 8, s.seed + 3, 2)]
       }
-      tube(soup, pick.map((i) => pts[i]), pick.map((i) => radii[i]), far || s.rad < 0.85 ? 5 : s.rad > 1.2 ? 9 : 7, shade, 1, s.seed * 0.37, far ? 0 : 0.2, s.seed)
+      tube(soup, pick.map((i) => pts[i]), pick.map((i) => radii[i]), far || s.rad < 0.85 ? 5 : s.rad > 1.2 ? 8 : 6, shade, 1, s.seed * 0.37, far ? 0 : 0.2, s.seed)
       from = to
     }
     let next = r(4, s.every)
@@ -296,7 +296,7 @@ export function buildIron() {
       run += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1], pts[i][2] - pts[i - 1][2])
       if (run < next) continue
       run = 0
-      next = r(s.every * 0.45, s.every * 1.25)
+      next = r(s.every * 0.3, s.every * 0.85)
       const az = azs[i]
       if (radii[i] < 0.6 || sunk[i] > 0.02) continue
       const t = norm3([pts[i + 1][0] - pts[i - 1][0], pts[i + 1][1] - pts[i - 1][1], pts[i + 1][2] - pts[i - 1][2]])
@@ -310,7 +310,7 @@ export function buildIron() {
         refused++
         continue
       }
-      const line = thorn(soup, pts[i], dir, len * 0.92, rad * 1.12, add3([0, r(-1, 1), 0], t, -sgn * r(0.3, 1.6)), sidesAt(az, 8, 4), 0.85, t)
+      const line = thorn(soup, pts[i], dir, len * 0.92, rad * 1.12, add3([0, r(-1, 1), 0], t, -sgn * r(0.3, 1.6)), sidesAt(az, 7, 4), 0.85, t)
       tips.push(line[line.length - 1])
       thorns++
     }
@@ -344,8 +344,8 @@ export function buildPumpkins() {
     const out = radial(f.az)
     const tan = along(f.az)
     const near = L.front(f.az) <= 125
-    const colsN = near ? 56 : 28
-    const rowsN = near ? 40 : 20
+    const colsN = near ? 44 : 20
+    const rowsN = near ? 30 : 14
     soup.grid(colsN, rowsN, (i, j) => {
       const lon = mix(-104, 104, i / (colsN - 1)) * RAD
       const lat = mix(-86, 86, j / (rowsN - 1)) * RAD
@@ -400,7 +400,7 @@ function weaveOut(az, h, halfDeg) {
 // The wax: a lumpy ring where the glass meets the iron, the runs that hang from it, and the runs that reached the slab.
 export function buildWax() {
   const soup = new Soup('wax')
-  const cols = columns(1.2, 5)
+  const cols = columns(1.8, 6)
   const drips = L.DRIPS.map((d) => {
     const top = L.onCylinder(d.x, 1085, 48.5)
     const end = L.onCylinder(d.x, d.y1, 51.5)
@@ -417,9 +417,9 @@ export function buildWax() {
   }
   const prof = (az) => {
     const m = heavy(az)
-    const n = fbm(((az + 180) / 360) * 26, 0.3, 26, 4, 61, 3)
+    const n = fbm(((az + 180) / 360) * 10, 0.3, 10, 4, 61, 2)
     const side = 1.1 * smooth(48, 82, L.front(az)) * smooth(140, 100, L.front(az))
-    const thick = -0.4 + 1.0 * n * n + 1.5 * m + 0.4 * side
+    const thick = -0.5 + 1.5 * n * n + 1.5 * m + 0.4 * side
     const drop = 0.3 + 1.0 * n * n * n + 2.8 * m + 0.7 * side
     return { thick, drop }
   }
@@ -432,7 +432,7 @@ export function buildWax() {
     const h = top[1] - (drop + 0.9) * t
     const bulge = Math.sin(Math.PI * Math.min(t * 1.08, 1)) ** 0.6
     const inner = h > 38.75 ? L.sphereRadiusAt(h) + 0.1 : Math.max(drumR(Math.min(h, 38.3)), 45.1 + 0.9 * smooth(38.75, 38.3, h))
-    const rr = inner + thick * bulge + (thick > 0 ? 0.02 : -0.06)
+    const rr = inner + Math.max(thick, 0) * bulge + mix(-0.45, 0.02, smooth(-0.12, 0.04, thick))
     const nr = norm3([Math.sin(Math.PI * (0.25 + 0.5 * t)) + 0.2, Math.cos(Math.PI * (0.1 + 0.9 * t)) * 0.9, 0])
     const s = Math.sin(az * RAD)
     const c = Math.cos(az * RAD)
@@ -455,7 +455,7 @@ export function buildWax() {
       const cap = Math.sqrt(Math.max(1 - Math.max((t - 0.93) / 0.07, 0) ** 2, 0.0004))
       radii.push(d.w * neck * bulb * cap)
     }
-    tube(soup, pts, radii, L.front(d.az) <= 125 ? 10 : 6, (j, a, p, nrm) => [0.6 + 0.4 * (0.5 + 0.5 * dot3(nrm, norm3([p[0], 0, p[2]]))), clamp(radii[j] * 0.55, 0, 1), j / n], 0.72)
+    tube(soup, pts, radii, L.front(d.az) <= 125 ? 8 : 5, (j, a, p, nrm) => [0.6 + 0.4 * (0.5 + 0.5 * dot3(nrm, norm3([p[0], 0, p[2]]))), clamp(radii[j] * 0.55, 0, 1), j / n], 0.72)
     count++
   }
   for (const run of L.RUNS) {
@@ -517,8 +517,8 @@ export function buildWeb(heroTips) {
   // The big fan hangs from the crown ring where the ring is the base's right outline.
   const hub = place(drumR(33.6) + 3.4, 33.6, 80)
   const fans = [
-    { hub, a: L.onSlab(1962, 1428), b: L.onSlab(2204, 1452), sag: 4.5, n: 28 },
-    { hub: spike, a: L.onSlab(2000, 1412), b: L.onSlab(2090, 1428), sag: 1.0, n: 12 },
+    { hub, a: L.onSlab(1962, 1428), b: L.onSlab(2204, 1452), sag: 4.5, n: 18 },
+    { hub: spike, a: L.onSlab(2000, 1412), b: L.onSlab(2090, 1428), sag: 1.0, n: 8 },
     { hub: at(1838, 1060, 50), a: at(1872, 1118, 53), b: at(1915, 1082, 58), sag: 1.0, n: 12 },
   ]
   fans.forEach((s, k) => {

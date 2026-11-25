@@ -254,7 +254,11 @@ const IRON_AFTER = `
   vec3 ironUp = inverseTransformDirection(geometryNormal, viewMatrix);
   float ironWarm = clamp(dot(ironUp, normalize(vec3(uBaseRimDir.x, uBaseRimDir.y * 0.25, uBaseRimDir.z))) * 0.5 + 0.5, 0.0, 1.0);
   float ironLeft = clamp(dot(ironUp, normalize(vec3(-0.8, 0.25, 0.55))), 0.0, 1.0);
-  reflectedLight.directSpecular += uBaseRimCol * vec3(1.0, 0.72, 0.5) * (IRON_WARM * (0.3 * pow(ironWarm, 5.0) + 0.07 * ironLeft * ironLeft * ironLeft)) * mix(0.25, 1.0, baseAo) * (1.0 - 0.8 * baseDrum) * (0.4 + 1.2 * baseBlotch);
+  reflectedLight.directSpecular += uBaseRimCol * vec3(1.0, 0.72, 0.5) * (IRON_WARM * (0.3 * pow(ironWarm, 5.0) + 0.07 * pow(ironLeft, 5.0))) * mix(0.25, 1.0, baseAo) * (1.0 - 0.8 * baseDrum) * (0.4 + 1.2 * baseBlotch);
+  vec3 ironTop = normalize(mat3(viewMatrix) * vec3(0.0, 1.0, 0.0));
+  float ironTh = max(dot(geometryNormal, normalize(ironTop + geometryViewDir)), 0.0);
+  reflectedLight.directSpecular += (uRigSky * 2.2 + ironKeyC * 0.05) * pow(ironTh, 34.0) * smoothstep(0.0, 0.3, dot(geometryNormal, ironTop)) * (0.15 + 1.3 * fibreHere) * ironSheen * (1.0 - baseDrum);
+  ironEdge *= 1.0 + 3.0 * baseThorn;
   reflectedLight.indirectSpecular += (uRigSky * 0.35 * smoothstep(-0.2, 0.8, ironUp.y) + uBaseFloor * smoothstep(0.2, -0.8, ironUp.y)) * ironEdge * ironSheen;
 }
 `
@@ -338,9 +342,12 @@ const WAX_AFTER = `
   float waxC = clamp(dot(nonPerturbedNormal, waxCard) * 0.5 + 0.5, 0.0, 1.0);
   float waxThin = 1.0 - 0.6 * smoothstep(0.2, 0.9, waxDeep);
   vec3 waxThrough = vec3(1.0, 0.78, 0.5);
-  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * waxThrough * (waxKeyC * 1.5 * waxK * waxK + uRigCardCol * 0.12 * waxC * waxC) * waxThin * baseAo;
+  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * waxThrough * (waxKeyC * 2.2 * waxK * waxK + uRigCardCol * 0.12 * waxC * waxC) * waxThin * baseAo;
   float waxEdge = pow(1.0 - clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0), 2.0);
-  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * waxThrough * vec3(dot(waxKeyC * 0.5 + uRigCardCol * 0.15 + uRigSky * 3.2, vec3(0.3, 0.5, 0.2))) * mix(0.3, 1.25, waxEdge) * baseAo;
+  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * waxThrough * vec3(dot(waxKeyC * 0.5 + uRigCardCol * 0.15 + uRigSky * 3.2, vec3(0.3, 0.5, 0.2))) * mix(0.3, 1.9, waxEdge) * baseAo;
+  vec3 waxTop = normalize(mat3(viewMatrix) * vec3(0.25, 1.0, 0.35));
+  float waxTh = max(dot(geometryNormal, normalize(waxTop + geometryViewDir)), 0.0);
+  reflectedLight.directSpecular += (vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * 5.0 + waxKeyC * 0.1) * (pow(waxTh, 70.0) + 0.1 * pow(waxTh, 9.0)) * baseAo;
   float waxH = max(dot(geometryNormal, normalize(waxKey + geometryViewDir)), 0.0);
   float waxHc = max(dot(geometryNormal, normalize(waxCard + geometryViewDir)), 0.0);
   reflectedLight.directSpecular += (waxKeyC * (0.9 * pow(waxH, 40.0) + 0.14 * pow(waxH, 8.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, waxKey)) + uRigCardCol * (0.4 * pow(waxHc, 60.0) + 0.03 * pow(waxHc, 8.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, waxCard))) * baseAo;

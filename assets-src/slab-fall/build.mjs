@@ -184,7 +184,7 @@ function leaves() {
     const cx = dist * Math.sin(az * RAD)
     const cz = dist * Math.cos(az * RAD)
     if (placed.some((p) => Math.hypot(p[0] - cx, p[1] - cz) < (p[2] + size) * 0.42)) continue
-    add(dist, az, size, r(0.7, 1.35), 6, 0)
+    add(dist, az, size, r(0.7, 1.35), 5, 0)
     near++
   }
   let crumbs = 0
