@@ -72,6 +72,7 @@ export const glassLook = {
  * inside the rim's band hides. `topLine`: how much of the cool line the ring carries over the top. `ringMottle`: the depth of the
  * streaks and mottle in the ring. `ceiling`: the gain of the ceiling's reflection across the top of the glass.
  * `windowShade`: how much of the dark crescent beside the window's reflection, its shade and its cool glow, is drawn.
+ * `rimGlow`: how much of the room's even glow across the rim zone is drawn (its lines stay).
  * `roomHue`, `roomHueOn`: the colour the room's walls take in the glass's reflections and how far they take it, 0 to 1.
  */
 export interface GlassAmounts {
@@ -92,9 +93,10 @@ export interface GlassAmounts {
   roomHue: V3
   roomHueOn: number
   windowShade: number
+  rimGlow: number
 }
 
-const WINTER_GLASS: GlassAmounts = { windowTint: glassLook.window.tint, windowGain: [1, 1, 1, 1], windowSoftDeg: 0, windowGrain: 0, rimTint: [1, 1, 1], wallTint: [1, 1, 1], ringCover: 1, strip: 1, bend: 1, ringThin: 0, rimClear: 1, topLine: 1, ringMottle: 1, ceiling: 1, roomHue: [1, 1, 1], roomHueOn: 0, windowShade: 1 }
+const WINTER_GLASS: GlassAmounts = { windowTint: glassLook.window.tint, windowGain: [1, 1, 1, 1], windowSoftDeg: 0, windowGrain: 0, rimTint: [1, 1, 1], wallTint: [1, 1, 1], ringCover: 1, strip: 1, bend: 1, ringThin: 0, rimClear: 1, topLine: 1, ringMottle: 1, ceiling: 1, roomHue: [1, 1, 1], roomHueOn: 0, windowShade: 1, rimGlow: 1 }
 const glassAmounts = new Map<string, GlassAmounts>()
 
 export function setGlass(season: string, amounts: Partial<GlassAmounts>): void {
@@ -166,6 +168,7 @@ uniform vec3 uWallTint;
 uniform vec4 uRingAmt;
 uniform vec4 uRimAmt;
 uniform vec4 uRoomHue;
+uniform float uRimGlow;
 varying vec3 vEye;
 const float GLASS_IOR = ${num(G.glassIor)};
 const float SEAT_Y = ${num(collarY)};
@@ -517,7 +520,7 @@ void main() {
   rimAround /= max(length(rimAround), 1e-4);
   float rimStreak = 1.0 + ${num(glassLook.rim.streak)} * rimHigh * (glassNoise(rimAround * 9.0 + rimAxis * (s * 60.0) + 41.0) - 0.5);
   float rimOuter = exp(-pow((s - ${num(glassLook.rim.outer)}) / ${num(glassLook.rim.outerWide)}, 2.0)) * (0.3 + 0.7 * smoothstep(0.35, 0.75, glassNoise(rimAround * 5.0 + 31.0)));
-  if (uOwn > 0.5) col += uSky * uRimTint * mix(${vec(glassLook.rim.tint)}, ${vec(glassLook.rim.highTint)}, rimHigh) * (mix(${num(glassLook.rim.low)}, ${num(glassLook.rim.high)}, rimHigh) * rimZone * (0.75 + 0.5 * thick) * rimStreak + ${num(glassLook.rim.lineGain)} * rimLine * (0.3 + 0.7 * fine) * (1.0 - 0.7 * rimHigh) + ${num(glassLook.rim.outerGain)} * rimOuter * rimHigh);
+  if (uOwn > 0.5) col += uSky * uRimTint * mix(${vec(glassLook.rim.tint)}, ${vec(glassLook.rim.highTint)}, rimHigh) * (mix(${num(glassLook.rim.low)}, ${num(glassLook.rim.high)}, rimHigh) * uRimGlow * rimZone * (0.75 + 0.5 * thick) * rimStreak + ${num(glassLook.rim.lineGain)} * rimLine * (0.3 + 0.7 * fine) * (1.0 - 0.7 * rimHigh) + ${num(glassLook.rim.outerGain)} * rimOuter * rimHigh);
   float wallLeft = smoothstep(0.3, -0.3, nWorld.x);
   float wallLow = smoothstep(${num(glassLook.wall.lowY[0])}, ${num(glassLook.wall.lowY[1])}, nWorld.y + ${num(glassLook.wall.leftDrop)} * wallLeft) * uOwn;
   if (wallLow > 0.0) {
@@ -737,6 +740,7 @@ export const shellUniforms = {
   uRingAmt: { value: new THREE.Vector4(1, 1, 1, 0) },
   uRimAmt: { value: new THREE.Vector4(1, 1, 1, 1) },
   uRoomHue: { value: new THREE.Vector4(1, 1, 1, 0) },
+  uRimGlow: { value: 1 },
 }
 
 const blend: THREE.ShaderMaterialParameters = {
@@ -951,6 +955,7 @@ export class Shell {
     sh.uWinTint.value.set(mixed(ga.windowTint[0], gb.windowTint[0]), mixed(ga.windowTint[1], gb.windowTint[1]), mixed(ga.windowTint[2], gb.windowTint[2]))
     sh.uWinGain.value.set(mixed(ga.windowGain[0], gb.windowGain[0]), mixed(ga.windowGain[1], gb.windowGain[1]), mixed(ga.windowGain[2], gb.windowGain[2]), mixed(ga.windowGain[3], gb.windowGain[3]))
     sh.uWinSoft.value.set(mixed(ga.windowSoftDeg, gb.windowSoftDeg) * RAD, mixed(ga.windowGrain, gb.windowGrain), mixed(ga.windowShade, gb.windowShade))
+    sh.uRimGlow.value = mixed(ga.rimGlow, gb.rimGlow)
     sh.uRimTint.value.set(mixed(ga.rimTint[0], gb.rimTint[0]), mixed(ga.rimTint[1], gb.rimTint[1]), mixed(ga.rimTint[2], gb.rimTint[2]))
     sh.uWallTint.value.set(mixed(ga.wallTint[0], gb.wallTint[0]), mixed(ga.wallTint[1], gb.wallTint[1]), mixed(ga.wallTint[2], gb.wallTint[2]))
     sh.uRingAmt.value.set(mixed(ga.ringCover, gb.ringCover), mixed(ga.strip, gb.strip), mixed(ga.bend, gb.bend), mixed(ga.ringThin, gb.ringThin))
