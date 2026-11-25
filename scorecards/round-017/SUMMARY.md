@@ -29,9 +29,9 @@ Result: the round does not pass (the pass bar asks green checks and measures, R1
 - [x] pack (09:56: R2's part is in: 8 files at final (4 landing stills judged, 4 controls), 0 parts missing, branch `agent/p4-round17-pack` `6b3fa0d`, fetched, never merged; drawn before the rest of the measure (decision 93); 10:06: R4's part is in: 36 sheets in four parts (10, 9, 9 and 8), 0 parts missing, per shake one sheet across the swap window and eight across the 90 arrival frames, branch `agent/p4-round17-motion` `da683bc`, fetched, never merged)
 - [x] R2 (10:02: fails: judged share 5 of 20 (0.25) against the controls' 19 of 20 (0.95), bar 0.75; all 20 answers in, no juror replaced (`scorecards/round-017/R2.json`, `R2-jurors.jsonl`); counts as one major)
 - [x] R4 (10:26: 4, the lowest of four parts (part 1 claude_opus_5_5 4 with 2 severe, 4 major, 2 minor; part 2 gpt_6_2_sol 7 with 1 severe, 1 major; part 3 gemini_4_carbon 4 with 3 severe, 5 major, 1 minor; part 4 kimi_k3 5 with 2 major, 2 minor; `R4-1.json` to `R4-4.json`))
-- [ ] issues read
-- [ ] fixes
-- [ ] logged
+- [x] issues read (11:24: all 23 issues of the four parts' answers read (6 severe, 12 major, 5 minor), with the jury's card and the red G13 line (decision 98); written as open items 154 to 165; Declined issues 34 to 40)
+- [x] fixes (the floor fix pass, by `change_builder3` on `agent/p4-change3`: each answer went to the builder word for word as it came (10:09 to 10:36, with the issues on the change from Rounds 14, 15 and 16); last code 11:02 (`e70a11e`), final report 11:14; what it did and what it left stands under "Tried" in items 154 to 165; the fix build is `a6e09d6` on `agent/p4-fix-f`, not on `main`: it is kept only if the whole gate and the measures of all five units show no line red that was green on `dcda6ca`, and decision 99 has the result)
+- [x] logged (11:24: `SUMMARY.md`, `MANIFEST.md`, the keys and the digest of the issues written at 11:11; open items 154 to 165 and Declined issues 34 to 40 in; the unit's close, with decision 99 and `finished` in "Units", follows the proof of the fix build)
 
 ## What the critics found, severe first
 
