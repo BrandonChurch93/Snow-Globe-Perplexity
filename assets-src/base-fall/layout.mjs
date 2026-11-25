@@ -60,6 +60,13 @@ export function onCylinder(px, py, radius) {
   return { az: Math.atan2(p[0], p[2]) / RAD, h: p[1], p }
 }
 
+// A pixel of the approved image onto the slab (or a level `h` above it).
+export function onSlab(px, py, h = 0.15) {
+  const { origin: o, dir: d } = rayOf(px - SHIFT_X, py, undefined, RIG)
+  const t = (h - o[1]) / d[1]
+  return [o[0] + d[0] * t, h, o[2] + d[2] * t]
+}
+
 // The carved faces. The three in front are read from the approved image (centre of each face in its pixels, and its size);
 // the four behind are placed to finish the ring. `rad` is the half width across the ring in mm, `tall` the half height.
 const SEEN = [
@@ -100,6 +107,21 @@ export const RUNS = [
   { x: 1052, y0: 1332, w: 24, pool: 3.6 },
   { x: 1622, y0: 1392, w: 20, pool: 3.2 },
   { x: 1788, y0: 1345, w: 19, pool: 2.8 },
+]
+
+// Twigs that leave the ring, read from the approved image by eye: where each starts, the way it sets out and the way it
+// curls (along the ring to the right, up, outward), its length and root radius in mm, and where along it thorns stand.
+export const TWIGS = [
+  { az: -76, h: 34.5, dir: [-0.35, 0.8, 0.5], curl: [0.5, 0.8, -0.2], len: 15, rad: 0.95, thorns: [0.35, 0.6] },
+  { az: -68, h: 31, dir: [-0.7, 0.45, 0.55], curl: [-0.2, 0.9, 0.1], len: 11, rad: 0.7, thorns: [0.5] },
+  { az: -84, h: 27, dir: [-0.45, 0.3, 0.84], curl: [-0.6, 0.6, 0.0], len: 9, rad: 0.6 },
+  { az: 77, h: 35, dir: [0.3, 0.85, 0.42], curl: [-0.4, 0.85, -0.2], len: 13, rad: 0.95, thorns: [0.3, 0.65] },
+  { az: 84, h: 31.5, dir: [0.6, 0.6, 0.5], curl: [0.3, 0.9, 0.0], len: 10, rad: 0.7, thorns: [0.5] },
+  { az: -70, h: 7, dir: [-0.8, 0.1, 0.6], curl: [-0.3, 0.5, 0.2], len: 15, rad: 0.95, thorns: [0.4, 0.7] },
+  { az: -58, h: 13, dir: [-0.85, 0.2, 0.5], curl: [-0.5, -0.3, 0.4], len: 13, rad: 0.8, thorns: [0.55] },
+  { az: -80, h: 18, dir: [-0.5, 0.25, 0.83], curl: [-0.7, 0.5, 0.0], len: 11, rad: 0.7, thorns: [0.45] },
+  { az: -64, h: 22, dir: [-0.9, 0.3, 0.3], curl: [-0.3, 0.7, 0.3], len: 9, rad: 0.6 },
+  { az: 66, h: 9, dir: [0.8, 0.25, 0.55], curl: [0.4, 0.5, 0.2], len: 10, rad: 0.7, thorns: [0.5] },
 ]
 
 // The thorns a viewer can count, read from the approved image by eye: where each stands on the ring, the way it points
