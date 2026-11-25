@@ -1,44 +1,43 @@
 {
-  "number": 79,
-  "time": "2026-11-25 06:30 UTC",
+  "number": 81,
+  "time": "2026-11-25 07:05 UTC",
   "phase": "4",
   "unit": "",
   "lines": [
-    "Status 79 · 2026-11-25 06:30 UTC · Phase 4",
-    "The app is published again from the build Rounds 11 to 13 judge: https://snow-globe-seasons.pplx.app (06:19 UTC. Visibility: Organization)",
-    "The renders of the three rounds are still running. The first still packs are due within minutes",
-    "Found: the invalid values on spring's base still come from one shared bump function that has no answer where a face is seen edge on. A one-line guard is going in (decision 87)",
-    "Third pass so far: the base changes behind a line of light in all four changes. Fall's vines are black and crossing. Spring's bank is a ring of moss mounds. Summer's crown is darker with gold rims and about three dozen seed heads float at rest",
-    "Sound is still out: the account has no credits left",
-    "phase 4: 6.38 h used of its 9.50 h box",
-    "allowance (before the review): 28.66 h used of 36.00 h allowed",
+    "Status 81 · 2026-11-25 07:05 UTC · Phase 4",
+    "All still critics of Rounds 11 and 12 have answered. Spring: R1 5 and R3 6 (Round 8 had 4 and 3). Summer: R1 6 and R3 4 (Round 9 had 4 and 4). The bar is 9 so neither passes on stills",
+    "Spring's gate on the frozen build is all 15 green for the first time in Phase 4. Summer's and fall's gates are running",
+    "Summer's low R3 comes from the base and table: a flat sand decal and pole dots on the sea glass and a band that floats across the lower glass. These went to the base builder as its first jobs",
+    "Both seasons were told to sink the globe into a taller collar as the approved images show. The pictures are builders' fixes since the freeze. They are judged in the third round after the freeze at 08:32 UTC",
+    "phase 4: 6.96 h used of its 9.50 h box",
+    "allowance (before the review): 29.25 h used of 36.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-79-1.jpg",
-      "caption": "Spring into summer across the swap (film frames 1390 to 1400): the base now changes behind a line of light instead of a speckled dissolve. Draft tier.",
-      "w": 1149,
-      "h": 498
-    },
-    {
-      "file": "out/stills/status/status-79-2.jpg",
-      "caption": "Fall's base: the approved image (above) and the build (below). The vines are now black and thorned and cross each other. Draft tier.",
+      "file": "out/stills/status/status-81-1.jpg",
+      "caption": "Spring's storm after the fix (left) beside the approved image (right): shorter trails that carry petal heads. Draft quality",
       "w": 1200,
-      "h": 1080
+      "h": 649
     },
     {
-      "file": "out/stills/status/status-79-3.jpg",
-      "caption": "Summer at rest through the reference camera: the approved image (left) beside the build (right). The crown is darker with gold on its sunward rims. Draft tier.",
+      "file": "out/stills/status/status-81-2.jpg",
+      "caption": "Fall's storm after the fix (left) beside the approved image (right): the tree and cottage read through it. Draft quality",
       "w": 1200,
-      "h": 519
+      "h": 649
     },
     {
-      "file": "out/stills/status/status-79-4.jpg",
-      "caption": "Still: summer rest hero, preview, draft",
-      "w": 960,
-      "h": 540
+      "file": "out/stills/status/status-81-3.jpg",
+      "caption": "Summer half a second after landing: no streaks across the stone and a shower on the right edge only. Draft quality",
+      "w": 1100,
+      "h": 400
+    },
+    {
+      "file": "out/stills/status/status-81-4.jpg",
+      "caption": "Spring's base: the approved image (above) and the new base (below) with a flared foot and rounder roots. Draft quality",
+      "w": 1180,
+      "h": 956
     }
   ]
 }
