@@ -25,26 +25,26 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 87 · 2026-11-25 09:16 UTC
+Status 88 · 2026-11-25 09:40 UTC
 
-- `out/stills/status/status-87-1.jpg`: Shake 1 across the swap window on the build of Rounds 14 to 17: winter gives way to spring behind the flurry (frames 648 to 680)
-- `out/stills/status/status-87-2.jpg`: Still: fall rest hero, preview, draft, standins view
-- `out/stills/status/status-87-3.jpg`: Still: summer rest hero, preview, draft
-- `out/stills/status/status-87-4.jpg`: Still: summer rest hero, preview, draft, standins view
+- `out/stills/status/status-88-1.jpg`: Reshaped shake 1 across the swap window (draft look from the builder of the change): the lean now turns over once per stroke and is held
+- `out/stills/status/status-88-2.jpg`: Reshaped set down of shake 1 (frames 684 to 716): sideways travel ends early and the last millimetres come straight down
+- `out/stills/status/status-88-3.jpg`: Still: spring rest hero, preview, draft
+- `out/stills/status/status-88-4.jpg`: Still: spring rest hero, preview, draft, standins view
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 09:16 UTC
-clock: phase 4, tick of 4.6 minutes
-phase 4: 9.14 h used of its 9.50 h box
-allowance (before the review): 31.42 h used of 36.00 h allowed
-all time before the review: 31.42 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
-extra rounds: yes
+2026-11-25 09:40 UTC
+clock: phase 4, tick of 14.5 minutes
+phase 4: 9.54 h used of its 9.50 h box
+allowance (before the review): 31.83 h used of 36.00 h allowed
+all time before the review: 31.83 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+extra rounds: no
 half point: reached
-box end: not reached
+box end: reached
 budget report: not due
 minutes since the last status: 0
 ```
@@ -1749,3 +1749,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 08:55 UTC. 08:55 UTC: published at 08:55 from `dcda6ca` (`npm run -s build`, `npm run -s review`: `dist/` 100.7 MB, of it `dist/review/` 39.9 MB; the local check drew its first picture in 18.0 s with no page error; Visibility: Organization). Status 86 posted with the three rest stills of the frozen build. `motion_renderer_d` read in `tools/pack.mjs` that Round 17's pack reuses a sheet only when the frames of that sheet lie in `out/work/seq/film-preview-review/`, so the three seasons' motion agents and `motion_renderer_e` were told to commit their frames with their sheets (`git add -f out/work/seq out/work/sheets`); those five messages carry the stamp 08:57 and were sent at about 08:54, a time I wrote without reading the clock.
 
 - 09:16 UTC. - 09:16 UTC: Status 87 posted with the swap sheet of shake 1 (Round 17, `agent/p4-round17-swaps` 50f6c76). Decision 93: four frame helpers (`frame_helper_1` to `_4`, branches `agent/p4-frames-shake-N`) draw the arrival frames from the last frame backwards; `round_renderer_d` draws Round 17's four landing stills before the rest of its measure (limit moved to 11:30); M4 and M5 go to a second runner with `--only M4,M5`. 16 agents at work. Clock at 09:11: extra rounds yes, half point reached, box end not reached.
+
+- 09:40 UTC. - 09:40 UTC: Status 88 posted with two draft looks of the reshaped shake from `change_builder3` (`agent/p4-change3-looks` ca970f6). Its tip `6d42039` (path, `fc13124`) is proven by the builder: tsc clean, vitest 436, G11 and G12 pass, four rest stills byte-identical, cycle 4 of M4 to M6 green at final (M4 0.9515 / 0.9638 / 0.9276 / 0.9718; M5 0.9835 / 1 / 0.9749 / 0.9998; M6 all under 0.0003). The builder's last push moved to 11:25 UTC so that the fix build can be checked on twelve machines before the budget report. Swap sheets of shake 1, 2 and 3 of Round 17 are on `agent/p4-round17-swaps` (ef012bc).

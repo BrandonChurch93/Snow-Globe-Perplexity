@@ -1,16 +1,16 @@
-# Status 87
+# Status 88
 
-2026-11-25 09:16 UTC
+2026-11-25 09:40 UTC
 
-- Rounds 14 to 17 are drawing on the third freeze dcda6ca: three season rounds and the floor round of the change. 16 agents at work.
-- The first sheet of Round 17 is in: the swap window of shake 1. One arrival frame costs 66 to 95 s on this build so four helpers now draw the arrival frames from the far end and meet the motion agents in the middle (decision 93).
-- Round 17 draws its four landing stills for the jury before the rest of its measure. Gates and still packs are due from about 09:55 UTC. The builder of the change is reshaping the shake for open items 71 and 81.
-- phase 4: 9.14 h used of its 9.50 h box
-- allowance (before the review): 31.42 h used of 36.00 h allowed
+- The fix work on the change has its first proven step: the hand path is reshaped for open items 71 and 81 with the amounts untouched. On that tip the type check and 436 tests pass and G11 and G12 pass and the four rest stills are byte-identical.
+- Cycle 4 of the change measures at the final tier is green on the new path: cover at the swap 0.93 to 0.97 against 0.85 and M5 0.97 to 1 against 0.6 and M6 far under its bar.
+- Rounds 14 to 17 are still drawing on dcda6ca: three of the four swap sheets of Round 17 are in and four helpers share the arrival frames. Still packs and the first gates are due from about 09:55 UTC.
+- phase 4: 9.54 h used of its 9.50 h box
+- allowance (before the review): 31.83 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-87-1.jpg`: Shake 1 across the swap window on the build of Rounds 14 to 17: winter gives way to spring behind the flurry (frames 648 to 680)
-- `out/stills/status/status-87-2.jpg`: Still: fall rest hero, preview, draft, standins view
-- `out/stills/status/status-87-3.jpg`: Still: summer rest hero, preview, draft
-- `out/stills/status/status-87-4.jpg`: Still: summer rest hero, preview, draft, standins view
+- `out/stills/status/status-88-1.jpg`: Reshaped shake 1 across the swap window (draft look from the builder of the change): the lean now turns over once per stroke and is held
+- `out/stills/status/status-88-2.jpg`: Reshaped set down of shake 1 (frames 684 to 716): sideways travel ends early and the last millimetres come straight down
+- `out/stills/status/status-88-3.jpg`: Still: spring rest hero, preview, draft
+- `out/stills/status/status-88-4.jpg`: Still: spring rest hero, preview, draft, standins view
