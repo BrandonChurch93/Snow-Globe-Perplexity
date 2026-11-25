@@ -1,0 +1,45 @@
+{
+  "note": "The music endpoint, asked once at 02:58:33 UTC on 2026-11-25 with the first take of music-spring, to learn whether music is refused as well. It is. The counter read 130996 before and after. No take was filed or counted.",
+  "request": {
+    "method": "POST",
+    "url": "https://api.elevenlabs.io/v1/music?output_format=pcm_48000",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "prompt": "A light and airy piece at exactly 100 beats per minute in 4/4, twelve bars long: a harp in flowing arpeggios, a flute carrying one short simple melody, plucked strings marking the beat, fresh and bright. It starts on the first downbeat with no pickup and no lead-in and holds one even feel, instrumental, no vocals, no spoken words, clean ending",
+      "music_length_ms": 28800,
+      "force_instrumental": true
+    }
+  },
+  "response": {
+    "status": "HTTP/1.1 401 Unauthorized",
+    "seconds": 0.46,
+    "headers": [
+      "date: Wed, 25 Nov 2026 02:58:34 GMT",
+      "server: uvicorn",
+      "content-type: application/json",
+      "vary: Accept-Language",
+      "access-control-allow-origin: *",
+      "access-control-allow-headers: *",
+      "access-control-allow-methods: POST, PATCH, OPTIONS, DELETE, GET, PUT",
+      "access-control-max-age: 600",
+      "strict-transport-security: max-age=1800;",
+      "x-trace-id: 66d50ba634f72c42dd8c64e70304e299",
+      "x-region: us-central1",
+      "via: 1.1 google",
+      "alt-svc: h3=\":443\"; ma=2592000",
+      "content-length: 245",
+      "connection: keep-alive"
+    ],
+    "body": {
+      "detail": {
+        "type": "payment_required",
+        "code": "insufficient_credits",
+        "message": "You have insufficient credits to generate this song. Please upgrade your plan to continue.",
+        "status": "quota_exceeded",
+        "request_id": "66d50ba634f72c42dd8c64e70304e299"
+      }
+    }
+  }
+}

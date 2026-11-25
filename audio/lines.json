@@ -1,0 +1,20 @@
+{
+ "shake-spring": "Liquid sloshing and churning inside glass, with soft petals and water in it",
+ "shake-summer": "Liquid sloshing and churning inside glass, with a warm shimmer and dry seeds in it",
+ "shake-fall": "Liquid sloshing and churning inside glass, with dry leaves and a hollow rattle in it",
+ "land-spring": "A heavy glass globe set down on stone, heavy and short, then one drop and a breath of air",
+ "land-summer": "A heavy glass globe set down on stone, heavy and short, then a warm chime and a hiss of sand",
+ "land-fall": "A heavy glass globe set down on stone, heavy and short, then a wooden creak and a low eerie tone",
+ "amb-spring": "Birds and light rain, very quiet, an ambience that loops",
+ "amb-summer": "Crickets and warm air, very quiet, an ambience that loops",
+ "amb-fall": "Wind, dry leaves and a low eerie tone, very quiet, an ambience that loops",
+ "music-box": "A music box mechanism turning",
+ "key-tap": "A soft key press",
+ "ui-send": "One press of a button",
+ "riser": "A rising breath of air into frame 0",
+ "music-one-piece": "Five sections of 12 s: warm orchestral Christmas (sleigh bells, celesta, soft choir pads, low strings); light and airy (harp, flute, plucked strings); warm and unhurried (nylon guitar, soft marimba, a golden dusk); Halloween (a detuned music box and piano over low strings, with eerie sounds in the music itself); the winter music returning fuller, and resolving on its last bar",
+ "music-winter": "Warm orchestral Christmas: sleigh bells, celesta, soft choir pads, low strings",
+ "music-spring": "Light and airy: harp, flute, plucked strings",
+ "music-summer": "Warm and unhurried: nylon guitar, soft marimba, a golden dusk",
+ "music-fall": "Halloween: a detuned music box and piano over low strings, with eerie sounds in the music itself"
+}

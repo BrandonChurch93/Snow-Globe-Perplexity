@@ -869,6 +869,8 @@ Numbered. What, why, and the date.
 
 79. **The sound agent's place goes to a second base agent** (03:01 UTC, Phase 4). With no credits on the sound tool's account (decision 78) the sound agent has only its free work left (prompts, plan, recipe, mix and checks on what exists); it reports and ends, and the Builder reads the counter with every status (`out/work/bin/credits.sh`; the Builder's own read at 02:57:12 UTC: 130996 of 131000 used, 4 left). Its place among the ten build agents goes to the bases, which carry red measures in every season (M3 at rest: spring's base 0.648, summer's 0.604 against 0.75) and many of the critics' issues: `bases2` (started 03:00, limit 05:55) takes spring's and summer's bases and slabs, and `fall_base2` takes fall's base and slab as soon as the sound agent has ended (about 03:30; fall's first answers arrive at about 04:10 and fall freezes last, at 05:30). Until then nobody changes fall's base and slab. This changes decision 77 in that one point (there `bases2` held all three). A fresh sound agent starts from `audio/RECIPE.md` the moment the counter has room, in whatever place is free then.
 
+80. **The sound agent's files reach `main` by copy, with the account's billing fields left out** (03:05 UTC, Phase 4). The sound agent ended at 03:03 with no sound made (decision 78) and left on `agent/p4-sound` (`523ee9d`): `audio/RECIPE.md` (for a fresh agent: every call, all 13 cue texts and 4 track prompts, the judging steps, the chain, the commands in order, a cost table of about 3300 credits for one take of everything and about 9900 for three), `audio/prompts.json` (every text, state "not made: no credits"), `audio/plans/one-piece.json` (the composition plan, five sections of 12000 ms; the plan call cost nothing), `audio/QUESTIONS.md`, `audio/lines.json`, `audio/run/*.mjs` (their path after an HTTP 200 is untested) and `audio/evidence/`. Its two saved answers of `GET /v1/user/subscription` hold the account's next invoice amount, which does not belong in a public repo. So the branch is not merged: its `audio/**` is copied onto `main` with those two files reduced to the counter fields, the merge helper leaves the branch out, and the branch is deleted at the remote once a push works again. Its mixes with no music in them were removed by the agent ("a file named after a candidate with no music in it is not a candidate"): until music exists the films are silent, and the app plays its four kept sounds. Its checks: `npm run soundcheck` 7 pass, 1 open (A2, the known item); `tests/audiomap` and `tests/mix` 38 passed.
+
 ## Notes from Brandon
 
 Numbered, in his words, with the date and how each was applied. Review round items carry their round's number.
@@ -1222,6 +1224,8 @@ Merged into `main`, each verified here with types clean and the tests green (126
 
   - 02:56 to 03:01 UTC: `spring_base` sent its final report (no stand-in or fallback left; worst: at the hero the moss is one even bright green band with a clean hem and the trickle is thinner and darker than the image's). `bases2` started 03:00 (spring's and summer's bases and slabs, limit 05:55; decision 79). `fall_base2` starts when `sound_maker` ends. Critics: `reviewer_r8_c` (Round 8 R3 part 2) answered 03:00; `reviewer_r9_b` (Round 9 R3 part 1, `claude_opus_5_5`) started 03:01. Round 8's and Round 9's issues so far went to the season's builders by message with the digest attached (`out/work/issues/round-008.md`, `round-009.md`), and the notes on the two red machine checks of Round 8 (G8, G15) to the owners of meshes.
 
+  - 03:03 to 03:05 UTC: `sound_maker` sent its final report and ended (no sound made, nothing spent; decision 80; report in `out/work/reports-p4/sound_maker-final.md`). `fall_base2` started 03:04 in its place (fall's base and slab, limit 05:58). Critics: `reviewer_r9_b` (Round 9 R3 part 1) answered 03:02 with 4; `reviewer_r9_c` (Round 9 R3 part 2, `gpt_6_2_sol`) started 03:04. Build agents at work, ten: `spring_mini2`, `summer_mini2`, `fall_mini2`, `spring_air2`, `summer_air2`, `fall_air2`, `bases2`, `fall_base2`, `kinds2`, `change_builder`.
+
 ## Rounds
 
 One line per round: its number, the unit, the commit it judged, each part ticked off as it finished, the scores, and what changed next.
@@ -1281,6 +1285,8 @@ none
 - 2026-11-24 08:29 UTC: `9f84ed1` is on `main` at the remote (fast forward from `366a1c8`, two commits). Carried there by `repo_courier`, an agent on a sandbox VM whose git sign-in works: this workspace hands it a git bundle of its finished commits, the courier verifies the bundle, fast forwards and pushes, and changes nothing. This is how every push goes until the sign-in returns here; a direct push is still tried first at each commit.
 
 - 2026-11-24 08:40 UTC: the direct push works again (`701ffa0` on `main`). The sign-in was missing from about 08:20 to 08:40.
+
+- 03:02 UTC Nov 25: the push of `038878c` failed four times in a row ("fatal: could not read Username for 'https://github.com'"), the same failure that several agents' VMs show since 02:48 while reads keep working; the push of `82a13d2` a minute before went through. Retried at the next commit.
 
 ## Session log
 
