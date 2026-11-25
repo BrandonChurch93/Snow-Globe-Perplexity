@@ -91,7 +91,7 @@ export const look = {
     bigMm: 96,
     fineMm: 37,
   },
-  crack: { widthMm: 0.09, edgeMm: 0.05, shade: 0.3, bright: 3.6, sky: 0.5, key: 1.6, rim: 3.0, room: 2.4, jitterMm: 0.08, stepMm: 2.2, glintPerMm: 0.75, catchPerMm: 0.1, faint: 0.16, warm: [1.0, 0.8, 0.56] },
+  crack: { widthMm: 0.09, edgeMm: 0.05, shade: 0.3, bright: 3.6, sky: 0.5, key: 1.6, rim: 3.0, room: 2.4, jitterMm: 0.08, stepMm: 2.2, glintPerMm: 0.3, catchPerMm: 0.1, faint: 0.16, warm: [1.0, 0.8, 0.56] },
 }
 
 // The crack's path in the pixels of `references/approved/fall-rest.png` (glass circle centre (1417.1, 662.2), radius 564.3 px,
@@ -491,7 +491,8 @@ void main() {
   float run = uCrack.x * 1.03 - tau;
   if (run <= 0.0) discard;
   float mm = best * ${f(RS)};
-  float px = max(max(length(dFdx(vStageLocal)), length(dFdy(vStageLocal))), 1e-4);
+  // Thinner than a pixel, it is spread over nearly two with the same light, so that it does not break into dots that crawl.
+  float px = 1.8 * max(max(length(dFdx(vStageLocal)), length(dFdy(vStageLocal))), 1e-4);
   float taper = smoothstep(0.0, 0.07, run) * mix(1.0, 0.45, smoothstep(0.35, 1.0, tau));
   float w = ${f(C.widthMm)} * taper;
   float core = clamp((0.5 * (w + px) - mm) / px, 0.0, min(1.0, w / px));
