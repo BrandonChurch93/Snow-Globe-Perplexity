@@ -63,6 +63,7 @@ export const timing = {
   dimInSeconds: 0.18,
   hintSeconds: 1.9,
   latchSeconds: 0.5,
+  pressSeconds: 0.26,
   moveGapSeconds: 0.2,
   fontWaitSeconds: 1.2,
   copiedSeconds: 1.6,

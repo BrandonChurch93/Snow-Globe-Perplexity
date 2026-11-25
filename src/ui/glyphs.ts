@@ -48,8 +48,8 @@ export const seasonGlyphs: readonly string[] = [frame(snowflake(), 'snowflake'),
 
 export const shakeGlyph = (globe: string, arcs: string): string =>
   frame(
-    `<g class="${globe}"><circle cx="12" cy="10.1" r="6.3"/><path d="M9.2 15.75L7.9 19.2H16.1L14.8 15.75"/><path d="M8.7 8.5C9.2 7.3 10.1 6.5 11.3 6.2" stroke-width="1.1"/></g>` +
-      `<path class="${arcs}" d="M3.4 6.9C2.5 9 2.5 11.4 3.4 13.5M20.6 6.9C21.5 9 21.5 11.4 20.6 13.5"/>`,
+    `<g class="${globe}"><path d="M9.6 15.33A6.4 6.4 0 1 1 14.4 15.33"/><path d="M9.6 15.33L7 19.9H17L14.4 15.33Z" fill="currentColor"/></g>` +
+      `<path class="${arcs}" d="M2.7 7.2C1.9 8.8 1.9 10.6 2.7 12.2M21.3 7.2C22.1 8.8 22.1 10.6 21.3 12.2"/>`,
     'shake',
   )
 

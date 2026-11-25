@@ -55,6 +55,8 @@ The tool is ElevenLabs, on the Creator plan (measured from the account on 2026-1
 | `lift` | `audio/kept/lift.wav` | ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz | 3 | 2026-11-24 |
 | `music-box` | `audio/kept/music-box.wav` | ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz | 1 | 2026-11-25 |
 | `music-fall` | `audio/kept/music-fall.wav` | ElevenLabs music, POST /v1/music, the default model (music_v1), pcm_48000 | 1 | 2026-11-25 |
+| `music-spring` | `audio/kept/music-spring.wav` | ElevenLabs music, POST /v1/music, the default model (music_v1), pcm_48000 | 2 | 2026-11-25 |
+| `music-summer` | `audio/kept/music-summer.wav` | ElevenLabs music, POST /v1/music, the default model (music_v1), pcm_48000 | 2 | 2026-11-25 |
 | `music-winter` | `audio/kept/music-winter.wav` | ElevenLabs music, POST /v1/music, the default model (music_v1), pcm_48000 | 1 | 2026-11-25 |
 | `riser` | `audio/kept/riser.wav` | ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz | 3 | 2026-11-25 |
 | `shake-spring` | `audio/kept/shake-spring.wav` | ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz | 2 | 2026-11-25 |
