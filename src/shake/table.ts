@@ -170,6 +170,7 @@ const HELD: Hand = {
   heldReach: 0.6,
   heldJoin: [0.14, 0.09],
   heldLead: 0.07,
+  dipShare: 0.4,
   /** The rock after the landing: each rock lasts this share of the one before it, so the foot rocks over once, back, and once more, quicker each time. */
   overshootDeg: [1.74, 1.8],
   rockFirst: 0.56,
