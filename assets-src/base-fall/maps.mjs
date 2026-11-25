@@ -65,24 +65,50 @@ const tri = (cx, cy, w, h, lean, flip = 1) => [
   [cx + (w / 2) * flip, cy - h / 2 - lean],
   [cx + (w / 2) * flip * 0.2, cy + h / 2],
 ]
-function grin(w, top, bottom, lift, teeth, bite) {
+// A mouth: a crescent whose two edges meet at the corners, with teeth standing into it from above and from below
+// (pointed, or square with `square`).
+function grin(w, top, bottom, lift, teeth, bite, square = false) {
+  const n = 120
   const up = []
   const low = []
-  const n = teeth * 2
+  const wave = (x, shift) => {
+    const f = ((x / (2 * w) + 0.5) * teeth + shift) % 1
+    return square ? (f > 0.28 && f < 0.72 ? 1 : 0) : 1 - Math.abs(f * 2 - 1)
+  }
   for (let i = 0; i <= n; i++) {
     const x = -w + (2 * w * i) / n
     const q = (x / w) ** 2
-    const edge = i === 0 || i === n
-    up.push([x, top + lift * q - (i % 2 === 1 && !edge ? bite : 0)])
-    low.push([x + (edge ? 0 : w / n), bottom + (lift + (top - bottom) * 0.82) * q + (i % 2 === 0 && !edge ? bite * 1.1 : 0)])
+    const open = (top - bottom) * (1 - q)
+    const b = Math.min(bite, open * 0.42)
+    up.push([x, top + lift * q - b * wave(x, 0.5)])
+    low.push([x, top + lift * q - open + b * wave(x, 0)])
   }
   return [...up, ...low.reverse().slice(1, -1)]
 }
+// Four carvings that no one would take for copies of one: a sly one with slanted eyes, a brute with a brow and three big
+// teeth, a laughing one with crescent eyes and an open mouth, and a scowl.
+const arch = (cx, cy, w, h, thick) => {
+  const top = []
+  const low = []
+  for (let i = 0; i <= 10; i++) {
+    const a = Math.PI * (i / 10)
+    top.push([cx - (w / 2) * Math.cos(a), cy + h * Math.sin(a)])
+    low.push([cx - (w / 2 - thick * 0.4) * Math.cos(a), cy + (h - thick) * Math.sin(a) - thick * 0.1])
+  }
+  return [...top, ...low.reverse()]
+}
+const quad = (cx, cy, w, h, slant, flip) => [
+  [cx - (w / 2) * flip, cy + h / 2 + slant],
+  [cx + (w / 2) * flip, cy + h / 2 - slant],
+  [cx + (w / 2) * flip * 0.8, cy - h / 2],
+  [cx - (w / 2) * flip * 0.9, cy - h / 2 + slant * 0.3],
+]
+const round = (cx, cy, rx, ry, n = 14) => Array.from({ length: n }, (_, i) => [cx + rx * Math.cos((2 * Math.PI * i) / n), cy + ry * Math.sin((2 * Math.PI * i) / n)])
 const DESIGNS = [
-  [tri(-0.36, 0.3, 0.42, 0.34, 0.12, 1), tri(0.36, 0.3, 0.42, 0.34, 0.12, -1), [[-0.09, -0.06], [0.09, -0.06], [0, 0.12]], grin(0.66, -0.3, -0.62, 0.3, 5, 0.12)],
-  [tri(-0.38, 0.32, 0.48, 0.36, 0.16, 1), tri(0.38, 0.32, 0.48, 0.36, 0.16, -1), [[-0.1, -0.08], [0.1, -0.08], [0, 0.14]], grin(0.72, -0.28, -0.68, 0.34, 6, 0.13)],
-  [tri(-0.34, 0.34, 0.44, 0.3, 0.14, 1), tri(0.34, 0.34, 0.44, 0.3, 0.14, -1), [[-0.08, 0.0], [0.08, 0.0], [0, 0.15]], grin(0.6, -0.26, -0.7, 0.26, 4, 0.14)],
-  [tri(-0.36, 0.28, 0.4, 0.4, 0.05, 1), tri(0.36, 0.28, 0.4, 0.4, 0.05, -1), [[-0.07, -0.1], [0.07, -0.1], [0, 0.08]], grin(0.68, -0.34, -0.6, 0.22, 7, 0.1)],
+  [tri(-0.36, 0.3, 0.46, 0.34, 0.2, 1), tri(0.36, 0.3, 0.46, 0.34, 0.2, -1), [[-0.07, -0.04], [0.07, -0.04], [0, 0.1]], grin(0.68, -0.3, -0.6, 0.34, 5, 0.12)],
+  [quad(-0.36, 0.32, 0.5, 0.3, 0.13, 1), quad(0.36, 0.32, 0.5, 0.3, 0.13, -1), [[-0.12, -0.1], [0, -0.02], [0.12, -0.1], [0, 0.16]], grin(0.74, -0.26, -0.74, 0.24, 4, 0.17, true)],
+  [arch(-0.36, 0.2, 0.46, 0.3, 0.17), arch(0.36, 0.2, 0.46, 0.3, 0.17), round(0, -0.02, 0.07, 0.06, 8), grin(0.56, -0.2, -0.76, 0.42, 3, 0.15, true)],
+  [tri(-0.36, 0.34, 0.44, -0.3, -0.1, 1), tri(0.36, 0.34, 0.44, -0.3, -0.1, -1), [[-0.03, -0.12], [0.03, -0.12], [0.03, 0.1], [-0.03, 0.1]], grin(0.62, -0.36, -0.64, -0.22, 6, 0.1)],
 ]
 function inside(poly, x, y) {
   let c = false

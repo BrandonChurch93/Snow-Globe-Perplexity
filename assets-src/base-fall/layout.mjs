@@ -109,6 +109,21 @@ export const RUNS = [
   { x: 1788, y0: 1345, w: 19, pool: 2.8 },
 ]
 
+// Twigs that leave the ring, read from the approved image by eye: where each starts, the way it sets out and the way it
+// curls (along the ring to the right, up, outward), its length and root radius in mm, and where along it thorns stand.
+export const TWIGS = [
+  { az: -76, h: 34.5, dir: [-0.35, 0.8, 0.5], curl: [0.5, 0.8, -0.2], len: 15, rad: 0.95, thorns: [0.35, 0.6] },
+  { az: -68, h: 31, dir: [-0.7, 0.45, 0.55], curl: [-0.2, 0.9, 0.1], len: 11, rad: 0.7, thorns: [0.5] },
+  { az: -84, h: 27, dir: [-0.45, 0.3, 0.84], curl: [-0.6, 0.6, 0.0], len: 9, rad: 0.6 },
+  { az: 77, h: 35, dir: [0.3, 0.85, 0.42], curl: [-0.4, 0.85, -0.2], len: 13, rad: 0.95, thorns: [0.3, 0.65] },
+  { az: 84, h: 31.5, dir: [0.6, 0.6, 0.5], curl: [0.3, 0.9, 0.0], len: 10, rad: 0.7, thorns: [0.5] },
+  { az: -70, h: 7, dir: [-0.8, 0.1, 0.6], curl: [-0.3, 0.5, 0.2], len: 15, rad: 0.95, thorns: [0.4, 0.7] },
+  { az: -58, h: 13, dir: [-0.85, 0.2, 0.5], curl: [-0.5, -0.3, 0.4], len: 13, rad: 0.8, thorns: [0.55] },
+  { az: -80, h: 18, dir: [-0.5, 0.25, 0.83], curl: [-0.7, 0.5, 0.0], len: 11, rad: 0.7, thorns: [0.45] },
+  { az: -64, h: 22, dir: [-0.9, 0.3, 0.3], curl: [-0.3, 0.7, 0.3], len: 9, rad: 0.6 },
+  { az: 66, h: 9, dir: [0.8, 0.25, 0.55], curl: [0.4, 0.5, 0.2], len: 10, rad: 0.7, thorns: [0.5] },
+]
+
 // The thorns a viewer can count, read from the approved image by eye: where each stands on the ring, the way it points
 // (along the ring to the right, up, outward) and its length and root radius in mm.
 export const HERO_THORNS = [

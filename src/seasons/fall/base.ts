@@ -201,7 +201,7 @@ function hookOf(uniforms: Record<string, THREE.IUniform>, at: Stages): (shader: 
 // a half the strands, 1 the thorns) and how far along a thorn it is.
 const IRON_PAINT = `
 vec4 baseDetail = texture2D(uBaseDetail, vBaseUv1);
-float baseAo = vBasePaint.x;
+float baseAo = vBasePaint.x * mix(0.2, 1.0, smoothstep(39.6, 38.9, vBasePos.y));
 float baseKind = vBasePaint.y;
 float baseThorn = step(0.75, baseKind);
 float baseDrum = 1.0 - step(0.25, baseKind);
@@ -280,7 +280,7 @@ vec2 faceIn = faceUv - faceLine.xy / faceLine.z * uFaceRind;
 float faceInside = step(0.02, faceUv.x) * step(faceUv.x, 0.98) * step(0.02, faceUv.y) * step(faceUv.y, 0.98) * (1.0 - faceStem);
 float faceD = (texture2D(uFaceMap, vec2((faceOrigin.x + faceUv.x) * 0.5, 1.0 - (faceOrigin.y + 1.0 - faceUv.y) * 0.5)).r - 0.5) * 2.0 * uFaceRange;
 float faceD2 = (texture2D(uFaceMap, vec2((faceOrigin.x + clamp(faceIn.x, 0.02, 0.98)) * 0.5, 1.0 - (faceOrigin.y + 1.0 - clamp(faceIn.y, 0.02, 0.98)) * 0.5)).r - 0.5) * 2.0 * uFaceRange;
-float faceAa = max(fwidth(faceD), 0.004);
+float faceAa = max(fwidth(faceD), 0.005);
 float faceOpen = smoothstep(-faceAa, faceAa, faceD) * faceInside;
 float faceThrough = smoothstep(-faceAa, faceAa, faceD2) * faceInside;
 float faceGlowing = uFaceGlow[faceId];
@@ -288,15 +288,16 @@ float baseAo = vBasePaint.x;
 float faceRib = baseNoise(vBasePos * 1.7) * 0.6 + baseNoise(vBasePos * 5.0) * 0.4;
 diffuseColor.rgb = mix(vec3(0.03, 0.012, 0.005), vec3(0.075, 0.03, 0.009), faceRib) * mix(0.35, 1.0, smoothstep(0.1, 0.8, baseAo)) * mix(1.0, 0.5, faceStem);
 float faceNear = exp(-max(-faceD, 0.0) / 0.05);
-float faceSoft = exp(-max(-faceD, 0.0) / 0.3);
+float faceSoft = exp(-max(-faceD, 0.0) / 0.2);
 vec3 faceCandle = uFaceCol * faceGlowing;
 float faceLow = smoothstep(0.75, 0.2, faceUv.y);
 float faceHot = exp(-dot(faceIn - vec2(0.5, 0.3), faceIn - vec2(0.5, 0.3)) / 0.06);
-vec3 faceCave = mix(vec3(1.0, 0.2, 0.02), vec3(1.0, 0.54, 0.17), faceHot) * (0.42 + 1.2 * faceHot) * (0.75 + 0.5 * baseNoise(vec3(faceUv * 9.0, 3.0)));
+vec3 faceCave = mix(vec3(1.0, 0.3, 0.035), vec3(1.0, 0.62, 0.24), faceHot) * (0.7 + 1.5 * faceHot) * (0.75 + 0.5 * baseNoise(vec3(faceUv * 9.0, 3.0)));
 vec3 faceWall = vec3(1.0, 0.24, 0.02) * (0.5 + 0.6 * baseNoise(vec3(faceUv * 40.0, 7.0)));
-vec3 faceLight = mix(faceWall, faceCave, faceThrough) * faceGlowing * uFacePower;
+float faceBevel = smoothstep(0.0, 0.03, faceD);
+vec3 faceLight = mix(faceWall * mix(0.3, 1.0, faceBevel), faceCave, faceThrough * smoothstep(0.0, 0.018, faceD)) * faceGlowing * uFacePower;
 float faceRidge = smoothstep(0.25, 0.85, baseAo);
-vec3 faceSkin = faceGlowing * (vec3(1.0, 0.36, 0.05) * 0.34 * faceNear + vec3(1.0, 0.13, 0.012) * (0.14 * faceSoft * faceSoft + 0.006) * (0.1 + 0.9 * faceRidge) * (0.7 + 0.6 * faceRib)) * (1.0 - faceStem);
+vec3 faceSkin = faceGlowing * (vec3(1.0, 0.36, 0.05) * 0.34 * faceNear + vec3(1.0, 0.13, 0.012) * (0.24 * faceSoft * faceSoft + 0.028) * (0.1 + 0.9 * faceRidge) * (0.7 + 0.6 * faceRib)) * (1.0 - faceStem);
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.02, 0.006, 0.002), faceOpen);
 totalEmissiveRadiance += mix(faceSkin, faceLight, faceOpen);
 float baseWrap = 0.3;
@@ -312,15 +313,15 @@ vec2 baseTilt = (vec2(baseNoise(vBasePos * 3.3 + 11.0), baseNoise(vBasePos * 3.3
 
 // The wax: pale, soft, thick where it has gathered. Light enters it and comes out again round the edges.
 const WAX_PAINT = `
-float baseAo = vBasePaint.x;
+float baseAo = vBasePaint.x * mix(0.25, 1.0, smoothstep(39.55, 39.0, vBasePos.y));
 float waxDeep = vBasePaint.y;
 float waxMottle = baseNoise(vBasePos * 0.9) * 0.6 + baseNoise(vBasePos * 3.7) * 0.4;
-diffuseColor.rgb = mix(vec3(1.0, 0.86, 0.58), vec3(0.9, 0.6, 0.27), smoothstep(0.15, 0.8, waxDeep) * (0.55 + 0.45 * waxMottle)) * mix(0.88, 1.06, waxMottle);
+diffuseColor.rgb = mix(vec3(0.92, 0.8, 0.5), vec3(0.8, 0.52, 0.2), smoothstep(0.15, 0.8, waxDeep) * (0.5 + 0.5 * waxMottle)) * mix(0.9, 1.06, waxMottle);
 float baseWrap = 0.55;
 float baseCandle = 0.5;
 `
 const WAX_ROUGH = `
-roughnessFactor = 0.22 + 0.16 * waxMottle;
+roughnessFactor = 0.14 + 0.14 * waxMottle;
 metalnessFactor = 0.0;
 `
 const WAX_TILT = `
@@ -344,10 +345,13 @@ const WAX_AFTER = `
   vec3 waxThrough = vec3(1.0, 0.78, 0.5);
   reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * waxThrough * (waxKeyC * 2.2 * waxK * waxK + uRigCardCol * 0.12 * waxC * waxC) * waxThin * baseAo;
   float waxEdge = pow(1.0 - clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0), 2.0);
-  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * waxThrough * vec3(dot(waxKeyC * 0.5 + uRigCardCol * 0.15 + uRigSky * 3.2, vec3(0.3, 0.5, 0.2))) * mix(0.3, 1.9, waxEdge) * baseAo;
+  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * waxThrough * vec3(dot(waxKeyC * 0.5 + uRigCardCol * 0.15 + uRigSky * 3.2, vec3(0.3, 0.5, 0.2))) * mix(0.1, 1.0, waxEdge) * baseAo;
   vec3 waxTop = normalize(mat3(viewMatrix) * vec3(0.25, 1.0, 0.35));
   float waxTh = max(dot(geometryNormal, normalize(waxTop + geometryViewDir)), 0.0);
-  reflectedLight.directSpecular += (vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * 5.0 + waxKeyC * 0.1) * (pow(waxTh, 70.0) + 0.1 * pow(waxTh, 9.0)) * baseAo;
+  reflectedLight.directSpecular += (vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * 5.0 + waxKeyC * 0.1) * (1.6 * pow(waxTh, 90.0) + 0.12 * pow(waxTh, 9.0)) * baseAo;
+  vec3 waxSide = normalize(mat3(viewMatrix) * vec3(-0.7, 0.45, 0.55));
+  float waxSh = max(dot(geometryNormal, normalize(waxSide + geometryViewDir)), 0.0);
+  reflectedLight.directSpecular += (vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * 9.0 * pow(waxSh, 120.0) + waxKeyC * 0.5 * pow(max(dot(geometryNormal, normalize(waxKey + geometryViewDir)), 0.0), 80.0)) * baseAo;
   float waxH = max(dot(geometryNormal, normalize(waxKey + geometryViewDir)), 0.0);
   float waxHc = max(dot(geometryNormal, normalize(waxCard + geometryViewDir)), 0.0);
   reflectedLight.directSpecular += (waxKeyC * (0.9 * pow(waxH, 40.0) + 0.14 * pow(waxH, 8.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, waxKey)) + uRigCardCol * (0.4 * pow(waxHc, 60.0) + 0.03 * pow(waxHc, 8.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, waxCard))) * baseAo;
@@ -451,7 +455,7 @@ export function base(): THREE.Object3D {
     key: `${PART}-pumpkin`,
     physical: true,
     hook: hookOf(
-      { ...detail, uFaceMap: { value: map('faces.lin.w1024') }, uFaceRange: { value: extras.faceRange }, uFaceRind: { value: 0.12 }, uFacePower: { value: 2.3 } },
+      { ...detail, uFaceMap: { value: map('faces.lin.w1024') }, uFaceRange: { value: extras.faceRange }, uFaceRind: { value: 0.2 }, uFacePower: { value: 2.3 } },
       { pars: 'uniform sampler2D uFaceMap;\nuniform float uFaceRange;\nuniform float uFaceRind;\nuniform float uFacePower;', paint: PUMPKIN_PAINT, rough: PUMPKIN_ROUGH, tilt: PUMPKIN_TILT, after: SHADE },
     ),
   })

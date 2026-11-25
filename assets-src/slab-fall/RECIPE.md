@@ -15,5 +15,5 @@ Made by: assets-src/slab-fall/build.mjs (leaves), Node 20.20.2
 From: assets-src/slab-fall/lib.mjs, config/showcase.json (globe.baseDiameterMm)
 Prompt or command: npm run make -- slab-fall
 Takes: 1
-Why this one: one mesh `leaves`: 230 curled leaves heaped at the foot (most within 30 mm of it), 4.6 to 8.8 mm, more of them at the sides than in front (folded on the midrib, arched and cupped), 170 crumbs at the foot, 120 flatter leaves further off. Each vertex carries its leaf's centre on the slab (paint, red and green, over 1100 mm), its size (blue, over 32 mm), and in the second coordinates a number of its own and how far off it is, which is what slab.ts needs to move a leaf as one piece
+Why this one: one mesh `leaves`: 130 curled leaves heaped at the foot (most within 30 mm of it), 5.2 to 9.6 mm, more of them at the sides than in front (folded on the midrib, arched and cupped), 110 crumbs at the foot, 120 flatter leaves further off. Each vertex carries its leaf's centre on the slab (paint, red and green, over 1100 mm), its size (blue, over 32 mm), and in the second coordinates a number of its own and how far off it is, which is what slab.ts needs to move a leaf as one piece
 Date: 2026-11-25
