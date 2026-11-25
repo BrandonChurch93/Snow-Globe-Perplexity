@@ -69,7 +69,7 @@ export const glassLook = {
  * `bend`: how much of the mirrored band inside the outline is drawn over the lens's own picture there. `ringThin`: how far the
  * ring's inner edge is moved out toward the outline, 0 to 1, which thins the band round the glass. `rimClear`: how much of the
  * inside the rim's band hides. `topLine`: how much of the cool line the ring carries over the top. `ringMottle`: the depth of the
- * streaks and mottle in the ring.
+ * streaks and mottle in the ring. `ceiling`: the gain of the ceiling's reflection across the top of the glass.
  */
 export interface GlassAmounts {
   windowTint: V3
@@ -85,9 +85,10 @@ export interface GlassAmounts {
   rimClear: number
   topLine: number
   ringMottle: number
+  ceiling: number
 }
 
-const WINTER_GLASS: GlassAmounts = { windowTint: glassLook.window.tint, windowGain: [1, 1, 1, 1], windowSoftDeg: 0, windowGrain: 0, rimTint: [1, 1, 1], wallTint: [1, 1, 1], ringCover: 1, strip: 1, bend: 1, ringThin: 0, rimClear: 1, topLine: 1, ringMottle: 1 }
+const WINTER_GLASS: GlassAmounts = { windowTint: glassLook.window.tint, windowGain: [1, 1, 1, 1], windowSoftDeg: 0, windowGrain: 0, rimTint: [1, 1, 1], wallTint: [1, 1, 1], ringCover: 1, strip: 1, bend: 1, ringThin: 0, rimClear: 1, topLine: 1, ringMottle: 1, ceiling: 1 }
 const glassAmounts = new Map<string, GlassAmounts>()
 
 export function setGlass(season: string, amounts: Partial<GlassAmounts>): void {
@@ -157,7 +158,7 @@ uniform vec2 uWinSoft;
 uniform vec3 uRimTint;
 uniform vec3 uWallTint;
 uniform vec4 uRingAmt;
-uniform vec3 uRimAmt;
+uniform vec4 uRimAmt;
 varying vec3 vEye;
 const float GLASS_IOR = ${num(G.glassIor)};
 const float SEAT_Y = ${num(collarY)};
@@ -320,7 +321,7 @@ vec3 glassRoom(vec3 d, float soft, int k, float own) {
   vec3 dim = mix(uGround, uSky, smoothstep(-0.3, 0.45, d.y)) * ${num(glassLook.room.gain)} * own * side * blotch * smoothstep(-0.8, 0.2, d.z);
   float up = dot(d, ${vec(unit(glassLook.ceiling.dir))});
   float streak = 1.0 - ${num(glassLook.ceiling.depth)} * (0.5 + 0.5 * sin(up * ${num(glassLook.ceiling.rings)} + 6.0 * glassNoise(d * 2.3 + 29.0)));
-  if (k != 3) dim += uSky * ${vec(glassLook.ceiling.tint)} * ${num(glassLook.ceiling.gain)} * own * blotch * streak * smoothstep(${num(glassLook.ceiling.edge[0])}, ${num(glassLook.ceiling.edge[1])}, up) * smoothstep(${num(glassLook.ceiling.low[0])}, ${num(glassLook.ceiling.low[1])}, d.y);
+  if (k != 3) dim += uSky * ${vec(glassLook.ceiling.tint)} * (${num(glassLook.ceiling.gain)} * uRimAmt.w) * own * blotch * streak * smoothstep(${num(glassLook.ceiling.edge[0])}, ${num(glassLook.ceiling.edge[1])}, up) * smoothstep(${num(glassLook.ceiling.low[0])}, ${num(glassLook.ceiling.low[1])}, d.y);
   float rim = max(dot(d, uRimDir), 0.0);
   dim += uRimCol * ${vec(glassLook.rimCard.tint)} * own * (${num(glassLook.rimCard.wide)} * pow(rim, ${num(glassLook.rimCard.widePower)}) + ${num(glassLook.rimCard.core)} * pow(rim, ${num(glassLook.rimCard.corePower)}));
   float lit = k == 0 ? 1.0 - ${num(W.dark.depth)} * glassDark(d) : 1.0;
@@ -726,7 +727,7 @@ export const shellUniforms = {
   uRimTint: { value: new THREE.Vector3(1, 1, 1) },
   uWallTint: { value: new THREE.Vector3(1, 1, 1) },
   uRingAmt: { value: new THREE.Vector4(1, 1, 1, 0) },
-  uRimAmt: { value: new THREE.Vector3(1, 1, 1) },
+  uRimAmt: { value: new THREE.Vector4(1, 1, 1, 1) },
 }
 
 const blend: THREE.ShaderMaterialParameters = {
@@ -938,7 +939,7 @@ export class Shell {
     sh.uRimTint.value.set(mixed(ga.rimTint[0], gb.rimTint[0]), mixed(ga.rimTint[1], gb.rimTint[1]), mixed(ga.rimTint[2], gb.rimTint[2]))
     sh.uWallTint.value.set(mixed(ga.wallTint[0], gb.wallTint[0]), mixed(ga.wallTint[1], gb.wallTint[1]), mixed(ga.wallTint[2], gb.wallTint[2]))
     sh.uRingAmt.value.set(mixed(ga.ringCover, gb.ringCover), mixed(ga.strip, gb.strip), mixed(ga.bend, gb.bend), mixed(ga.ringThin, gb.ringThin))
-    sh.uRimAmt.value.set(mixed(ga.rimClear, gb.rimClear), mixed(ga.topLine, gb.topLine), mixed(ga.ringMottle, gb.ringMottle))
+    sh.uRimAmt.value.set(mixed(ga.rimClear, gb.rimClear), mixed(ga.topLine, gb.topLine), mixed(ga.ringMottle, gb.ringMottle), mixed(ga.ceiling, gb.ceiling))
     const shown = t < 0.5 ? a : b
     const veiled = f.mix.veil < 0.5 ? a : b
     const veil = `veil-${veiled.season}`
