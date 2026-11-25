@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 94 · 2026-11-25 11:25 UTC
+Status 95 · 2026-11-25 11:45 UTC
 
-- `out/stills/status/status-94-1.jpg`: Round 17 judged this: the change from winter to spring on the kept build. The base turns orange in plain sight at frame 672
-- `out/stills/status/status-94-2.jpg`: Fix pass: the same change. The base is winter's at 672 and spring's at 676 with nothing between; petals lift in a gust. Draft tier
-- `out/stills/status/status-94-3.jpg`: Fix pass: spring to summer. Draft tier
-- `out/stills/status/status-94-4.jpg`: Fix pass: summer to fall. The storm still turns green too early. Draft tier
+- `out/stills/status/status-95-1.jpg`: Fix build at the review tier: winter to spring. The base is winter's at 672 and spring's at 676
+- `out/stills/status/status-95-2.jpg`: Fix build at the review tier: spring to summer. Petals lift as the sand arrives at 1396
+- `out/stills/status/status-95-3.jpg`: Fix build at the review tier: summer to fall. The base changes between 2112 and 2116
+- `out/stills/status/status-95-4.jpg`: Fix build at the review tier: fall to winter. The base changes between 2832 and 2836
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 11:36 UTC
-clock: phase 4, tick of 8.0 minutes
-phase 4: 11.47 h used of its 9.50 h box
-allowance (before the review): 33.76 h used of 36.00 h allowed
-all time before the review: 33.76 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 11:45 UTC
+clock: phase 4, tick of 0.2 minutes
+phase 4: 11.63 h used of its 9.50 h box
+allowance (before the review): 33.91 h used of 36.00 h allowed
+all time before the review: 33.91 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
 budget report: not due
-minutes since the last status: 10
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -1980,4 +1980,6 @@ One entry per task: when it started, what it did, where it stopped.
 
 - 11:25 UTC. Status 94 posted at 11:25 UTC (its text in the thread says 11:27, written without reading the clock; the clock is right), the round-end status of Round 17: the sheet of the change from winter to spring that the round judged (`dcda6ca`), and three sheets of the fix pass at draft tier (`e70a11e`, from the builder's looks branch `agent/p4-change3-looks` at `aeba7dd`). Round 17 closed without a pass (R4 4, R2 fails 5 of 20; open items 154 to 165; Declined issues 34 to 40). The fix build `a6e09d6` on `agent/p4-fix-f` is not kept until its proof is in. Two lines reported red on it so far are not new: M3 `spring-rest` 0.394 and M3 `fall-rest` 0.5518, the same values as on `dcda6ca` (Rounds 14 and 16). The status tool shows four pictures at most, so the fifth (fall to winter) is not in it.
 
-- 11:42 UTC. - 11:42 UTC. The whole gate with `--unit change` on `ceee512` came back at 11:38: all 15 green (`scorecards/phase-4/gate-phase-4-ceee512.json` and `.log`; engine `5a94146defd3d562`; run 11:00:52 to 11:38:21 in the clone that held this engine's records, so G5 reused 36 pictures and G13 69 views "from records of this build"). `ceee512` is the code of `dcda6ca` with the register corrected and spring, summer and fall marked `finished`. G13: "covers 49 of 54 parts: the unit of this round, change; the units marked finished in kit/PROGRESS.md (winter, spring, summer, fall). None is stand-in in the register, the files of each differ from its stand-in hash, the standins view of 69 of 69 judged stills and frames shows no pixel within 2 of a covered part's colour, and dev.flagged() names none of them". G15 drew all four seasons on one page (web 241.4 of 500 MB, full 687.4 of 2000 MB). This closes decision 98: G13 is green on the hash and on the view of every part, so no fallback is called for. It is the machine proof of the Phase 4 gate for the kept build as it stands now; if the fix build `a6e09d6` is kept, its own gate replaces it. A second run of the gate on `a6e09d6` was ordered at 11:41 in a clone that already holds that build (`round_renderer_b`), as a backup for the run on the clean clone (`gate_runner_b`, due about 12:40). The four swap sheets of the fix build at the review tier are in (11:34 to 11:36, branches `agent/p4-fix-sheet-1` to `-4`, fetched, not merged): on each the base is the old season's on one tile and the new season's on the next, with nothing between and nothing covering it.
+- 11:42 UTC. The whole gate with `--unit change` on `ceee512` came back at 11:38: all 15 green (`scorecards/phase-4/gate-phase-4-ceee512.json` and `.log`; engine `5a94146defd3d562`; run 11:00:52 to 11:38:21 in the clone that held this engine's records, so G5 reused 36 pictures and G13 69 views "from records of this build"). `ceee512` is the code of `dcda6ca` with the register corrected and spring, summer and fall marked `finished`. G13: "covers 49 of 54 parts: the unit of this round, change; the units marked finished in kit/PROGRESS.md (winter, spring, summer, fall). None is stand-in in the register, the files of each differ from its stand-in hash, the standins view of 69 of 69 judged stills and frames shows no pixel within 2 of a covered part's colour, and dev.flagged() names none of them". G15 drew all four seasons on one page (web 241.4 of 500 MB, full 687.4 of 2000 MB). This closes decision 98: G13 is green on the hash and on the view of every part, so no fallback is called for. It is the machine proof of the Phase 4 gate for the kept build as it stands now; if the fix build `a6e09d6` is kept, its own gate replaces it. A second run of the gate on `a6e09d6` was ordered at 11:41 in a clone that already holds that build (`round_renderer_b`), as a backup for the run on the clean clone (`gate_runner_b`, due about 12:40). The four swap sheets of the fix build at the review tier are in (11:34 to 11:36, branches `agent/p4-fix-sheet-1` to `-4`, fetched, not merged): on each the base is the old season's on one tile and the new season's on the next, with nothing between and nothing covering it.
+
+- 11:45 UTC. Status 95 posted at 11:45 UTC with the four swap sheets of the fix build `a6e09d6` at the review tier, one across each change (`out/stills/status/status-95-1.jpg` to `-4.jpg`; sources on `agent/p4-fix-sheet-1` to `-4`). The backup gate started at 11:43:14 in `round_renderer_b`'s clone, detached at `a6e09d6`, with the sound pack of the Round 10 gate unpacked into the git-ignored `public/audio/`.

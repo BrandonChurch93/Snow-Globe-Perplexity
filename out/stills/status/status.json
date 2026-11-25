@@ -1,42 +1,41 @@
 {
-  "number": 94,
-  "time": "2026-11-25 11:25 UTC",
+  "number": 95,
+  "time": "2026-11-25 11:45 UTC",
   "phase": "4",
   "unit": "",
   "lines": [
-    "Status 94 · 2026-11-25 11:25 UTC · Phase 4",
-    "Round 17 is closed: the motion critics give 4 (parts 4 7 4 5) and the jury fails 5 of 20; no pass",
-    "Its 18 severe and major issues are open items 154 to 165; seven asks are declined on the kit",
-    "The fix pass ended 11:14: the base cuts between two frames; petals and leaves lift in a gust; the flood of light is down",
-    "The fix build is not kept yet: its whole gate and the measures of all five units are running; results near 12:40",
-    "Still wrong in the fix pass by the builder's own words: the cut is not covered; the landing reads static; the arrivals unveil",
-    "phase 4: 11.30 h used of its 9.50 h box",
-    "allowance (before the review): 33.58 h used of 36.00 h allowed",
+    "Status 95 · 2026-11-25 11:45 UTC · Phase 4",
+    "The gate on the kept build is all 15 green: the stand-in check now covers 49 of 54 parts over all five units",
+    "The four sheets of the fix build are in at the review tier: on each the base is one season's on one tile and the next season's on the next",
+    "Nothing covers that cut yet: it is open item 154",
+    "The fix build is kept only if its own gate and the measures of all five units show no new red line; due near 12:40",
+    "phase 4: 11.63 h used of its 9.50 h box",
+    "allowance (before the review): 33.91 h used of 36.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-94-1.jpg",
-      "caption": "Round 17 judged this: the change from winter to spring on the kept build. The base turns orange in plain sight at frame 672",
+      "file": "out/stills/status/status-95-1.jpg",
+      "caption": "Fix build at the review tier: winter to spring. The base is winter's at 672 and spring's at 676",
       "w": 1200,
       "h": 761
     },
     {
-      "file": "out/stills/status/status-94-2.jpg",
-      "caption": "Fix pass: the same change. The base is winter's at 672 and spring's at 676 with nothing between; petals lift in a gust. Draft tier",
+      "file": "out/stills/status/status-95-2.jpg",
+      "caption": "Fix build at the review tier: spring to summer. Petals lift as the sand arrives at 1396",
       "w": 1200,
       "h": 761
     },
     {
-      "file": "out/stills/status/status-94-3.jpg",
-      "caption": "Fix pass: spring to summer. Draft tier",
+      "file": "out/stills/status/status-95-3.jpg",
+      "caption": "Fix build at the review tier: summer to fall. The base changes between 2112 and 2116",
       "w": 1200,
       "h": 761
     },
     {
-      "file": "out/stills/status/status-94-4.jpg",
-      "caption": "Fix pass: summer to fall. The storm still turns green too early. Draft tier",
+      "file": "out/stills/status/status-95-4.jpg",
+      "caption": "Fix build at the review tier: fall to winter. The base changes between 2832 and 2836",
       "w": 1200,
       "h": 761
     }
