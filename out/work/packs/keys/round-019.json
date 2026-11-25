@@ -1,0 +1,108 @@
+{
+  "round": 19,
+  "phase": 5,
+  "unit": "globe",
+  "tier": "final",
+  "motionTier": "final",
+  "record": false,
+  "limits": {
+    "longEdge": 1400,
+    "maxPixels": 1140000,
+    "maxFiles": 10
+  },
+  "engineHash": "",
+  "roles": {
+    "R4": {
+      "parts": [
+        {
+          "folder": "out/work/packs/round-019/R4",
+          "message": "out/work/packs/round-019/R4.message.md",
+          "files": [
+            {
+              "name": "set-A-01.jpg",
+              "what": "a shake, drawn through the app's path, from node tools/sheet.mjs --app shake: out/work/sheets/app-shake-winter-spring-high-preview-whole-1.jpg",
+              "source": "out/work/sheets/app-shake-winter-spring-high-preview-whole-1.jpg",
+              "sha256": "c80b1fe368eb42047cc468382d4a3e679e9316da2ab0d2ca52df438845a7cd6f",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-A-02.jpg",
+              "what": "a shake, drawn through the app's path, from node tools/sheet.mjs --app shake: out/work/sheets/app-shake-winter-spring-high-preview-bar-1.jpg",
+              "source": "out/work/sheets/app-shake-winter-spring-high-preview-bar-1.jpg",
+              "sha256": "d4e70a0527093b6593c380bef1ca76d64d188088feaabeedc55f0218c51eebb9",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-A-03.jpg",
+              "what": "a shake, drawn through the app's path, from node tools/sheet.mjs --app shake: out/work/sheets/app-shake-winter-spring-high-preview-bar-2.jpg",
+              "source": "out/work/sheets/app-shake-winter-spring-high-preview-bar-2.jpg",
+              "sha256": "d433f4ded53c6b7a83b902e2dc43cfefcaf0bf4ab46ab433929cbb725c4ab357",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-A-04.jpg",
+              "what": "a shake, drawn through the app's path, from node tools/sheet.mjs --app shake: out/work/sheets/app-shake-winter-spring-high-preview-bar-3.jpg",
+              "source": "out/work/sheets/app-shake-winter-spring-high-preview-bar-3.jpg",
+              "sha256": "2cacdb6ecce83186cc8ee9c985c7331ae5c8296995e0213f3284d678c25ee0e6",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-A-05.jpg",
+              "what": "a shake, drawn through the app's path, from node tools/sheet.mjs --app shake: out/work/sheets/app-shake-winter-spring-high-preview-landing-1.jpg",
+              "source": "out/work/sheets/app-shake-winter-spring-high-preview-landing-1.jpg",
+              "sha256": "d8cf5be2071ceb467004b8a7ede339d60c1d2b78a30075b9f3727d2893b84166",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-B-01.jpg",
+              "what": "a stir, drawn through the app's path, from node tools/sheet.mjs --app stir: out/work/sheets/app-stir-winter-high-preview-turn-1.jpg",
+              "source": "out/work/sheets/app-stir-winter-high-preview-turn-1.jpg",
+              "sha256": "46fe7bf9bbcd1960a9b1039e53aa371fc0bec52213e2eef3ff095a0e25f95068",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-C-01.jpg",
+              "what": "a drag around the globe, drawn through the app's path, from node tools/sheet.mjs --app drag: out/work/sheets/app-drag-winter-high-preview-turn-1.jpg",
+              "source": "out/work/sheets/app-drag-winter-high-preview-turn-1.jpg",
+              "sha256": "ef1a5553c758d45e6b8d39747119863fce8a55831d466370abca1d70c341f046",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-D-01.jpg",
+              "what": "a jump to another season, drawn through the app's path, from node tools/sheet.mjs --app jump: out/work/sheets/app-jump-winter-summer-high-preview-bar-1.jpg",
+              "source": "out/work/sheets/app-jump-winter-summer-high-preview-bar-1.jpg",
+              "sha256": "c875826f6d1f54fde2092435fb7412b6eb3752df9294a4359fd45c8814381bcd",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-D-02.jpg",
+              "what": "a jump to another season, drawn through the app's path, from node tools/sheet.mjs --app jump: out/work/sheets/app-jump-winter-summer-high-preview-bar-2.jpg",
+              "source": "out/work/sheets/app-jump-winter-summer-high-preview-bar-2.jpg",
+              "sha256": "56e2e78c8344aaff3f8cc79a8685fd9331f6e51f2e242a86b568ded4e04fb5a5",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-D-03.jpg",
+              "what": "a jump to another season, drawn through the app's path, from node tools/sheet.mjs --app jump: out/work/sheets/app-jump-winter-summer-high-preview-landing-1.jpg",
+              "source": "out/work/sheets/app-jump-winter-summer-high-preview-landing-1.jpg",
+              "sha256": "e98d9d582faa54c6652b782ec6cc9b33d7e1b26ef36a0b527f7b93d5840a94dc",
+              "width": 1149,
+              "height": 986
+            }
+          ]
+        }
+      ],
+      "missing": [],
+      "notes": []
+    }
+  }
+}
