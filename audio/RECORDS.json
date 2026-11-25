@@ -3735,6 +3735,400 @@
       },
       "time": "2026-11-25T17:51:18.806Z",
       "answersTime": "2026-11-25T17:52:48.861Z"
+    },
+    {
+      "cue": "music-winter",
+      "take": 1,
+      "round": "build",
+      "class": "music",
+      "season": "winter",
+      "line": "Warm orchestral Christmas: sleigh bells, celesta, soft choir pads, low strings",
+      "tool": "ElevenLabs music, POST /v1/music, the default model (music_v1), pcm_48000",
+      "prompt": "A warm orchestral Christmas piece at exactly 100 beats per minute in 4/4, twelve bars long: sleigh bells keeping the beat, a celesta carrying one short simple melody, soft warm pads and low strings under it. It starts on the first downbeat with no pickup and no lead-in, grows fuller with full strings through its last five bars and resolves on its last bar, instrumental, no vocals, no spoken words, clean ending",
+      "settings": {
+        "endpoint": "POST /v1/music",
+        "model": "default",
+        "how": "prompt",
+        "music_length_ms": 28800,
+        "force_instrumental": true,
+        "output_format": "pcm_48000",
+        "cost": null,
+        "counterMovedBy": 0,
+        "counterNote": "the music endpoint sends no cost header; the counter also moves with other work on the account"
+      },
+      "source": {
+        "name": "music-winter-2026-11-25T17-54-37-447Z.wav",
+        "bytes": 5537202,
+        "sha256": "4629f6c89e4f14c4aa013c00d33fc9d3de36b55b87f0795e86b91a5f2cf3cfc8",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 28.839,
+        "kbps": 1536
+      },
+      "sha256": "e4a33faabed7fee4b37d5dfeb39af17d8e97a01ffb13d806b738d3e25c03bea5",
+      "measured": {
+        "seconds": 28.839,
+        "peakDb": -0.64,
+        "truePeakDb": -0.63,
+        "lufs": -12.08,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -15.69,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 1.704,
+        "soundSeconds": 27.135,
+        "tailDb": -81.84,
+        "events": 5,
+        "spectrum": {
+          "centroidHz": 941,
+          "bands": {
+            "sub": 0.0004,
+            "low": 0.302,
+            "lowMid": 0.5358,
+            "mid": 0.1329,
+            "high": 0.0039,
+            "air": 0.0249
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -12.1,
+        "lra": 5.2,
+        "truePeakDb": -0.6
+      },
+      "fits": {
+        "wantSeconds": null,
+        "note": "no length in audio.sfx for this cue"
+      },
+      "answers": {
+        "verdict": "fits",
+        "why": "Numbers: 28.84 s filed, sound 27.14 s, 1.7 s of silence at the end; -12.1 LUFS as made. Map: tracked at 100.008 beats a minute, 47 beats, 12 bars of 4, first bar line at 0.0135 s, spacing steady: on the grid of the film from the first bar to the last, so every bar line is where the plan puts it; by level it has three parts, 0 to 4.81 s, 4.81 to 24.01 s (the loudest) and 24.01 s to the end (the closing chord). Listener, open: a piano and sleigh bells; gentle, peaceful and festive, a magical holiday feeling, the same from start to end; no voice, no choir, no singing; no sound effects; starts with the sleigh bells, ends on a held chord that rings out; about 85 beats a minute by its guess, steady (the map measures 100). Fit: yes, a cosy festive holiday mood; sleigh bells and celesta heard, a warm synth pad under them; no choir pads and no low strings heard; no voice; ends cleanly. Kept: no voice or words, the mood of its line, on the grid. What it lacks of the line: the low strings, and the choir pads, which the prompt left out on purpose. The price: the call sent no cost header; the account's Music line rose by 396, 13.75 credits a second.",
+        "listener": {
+          "line": "Warm orchestral Christmas: sleigh bells, celesta, soft choir pads, low strings",
+          "open": "1. I hear a piano and sleigh bells. \n2. The mood is gentle, peaceful, and festive, evoking a magical holiday feeling. This gentle mood remains consistent throughout the entire track without any changes.\n3. There is no human voice, spoken word, choir, or singing anywhere in this piece. \n4. There are no non-musical sound effects, as the sleigh bells are being played as a musical percussion instrument. \n5. The piece starts directly with the rhythmic shaking of sleigh bells. It ends on a held final piano chord that naturally rings out and decays. \n6. It is approximately 85 beats per minute. The pulse holds steady from the beginning to the end.",
+          "fit": "1. Yes, the mood fits the description well because it has a cozy, festive holiday atmosphere driven by classic Christmas-associated sounds.\n2. I clearly hear the sleigh bells and the celesta playing the melody. However, I do not hear distinct soft choir pads or low strings, as the background relies on a simple, warm synth pad instead.\n3. No, there is no human voice, spoken word, or singing in this audio.\n4. Yes, it ends cleanly with a final chord that naturally decays into silence."
+        }
+      },
+      "time": "2026-11-25T17:54:50.645Z",
+      "answersTime": "2026-11-25T17:56:24.291Z"
+    },
+    {
+      "cue": "music-spring",
+      "take": 1,
+      "round": "build",
+      "class": "music",
+      "season": "spring",
+      "line": "Light and airy: harp, flute, plucked strings",
+      "tool": "ElevenLabs music, POST /v1/music, the default model (music_v1), pcm_48000",
+      "prompt": "A light and airy piece at exactly 100 beats per minute in 4/4, twelve bars long: a harp in flowing arpeggios, a flute carrying one short simple melody, plucked strings marking the beat, fresh and bright. It starts on the first downbeat with no pickup and no lead-in and holds one even feel, instrumental, no vocals, no spoken words, clean ending",
+      "settings": {
+        "endpoint": "POST /v1/music",
+        "model": "default",
+        "how": "prompt",
+        "music_length_ms": 28800,
+        "force_instrumental": true,
+        "output_format": "pcm_48000",
+        "cost": null,
+        "counterMovedBy": 0,
+        "counterNote": "the music endpoint sends no cost header; the counter also moves with other work on the account"
+      },
+      "source": {
+        "name": "music-spring-2026-11-25T17-57-36-693Z.wav",
+        "bytes": 5528286,
+        "sha256": "56222aaa6d063d0fd577228a6f3516f2cfde72c5f36f2bbd4f1f2851ee1534f0",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 28.793,
+        "kbps": 1536
+      },
+      "sha256": "c3b35c3822aef436d1468cb6bc55cd0f96f1eca596943d06c7ca2b21ee312c50",
+      "measured": {
+        "seconds": 28.793,
+        "peakDb": -0.97,
+        "truePeakDb": -0.97,
+        "lufs": -15.73,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -18.87,
+        "silenceFrontSeconds": 0.005,
+        "silenceEndSeconds": 0.553,
+        "soundSeconds": 28.235,
+        "tailDb": -80.99,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 324,
+          "bands": {
+            "sub": 0,
+            "low": 0.3209,
+            "lowMid": 0.6766,
+            "mid": 0.0019,
+            "high": 0.0006,
+            "air": 0.0001
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -15.7,
+        "lra": 8.2,
+        "truePeakDb": -1
+      },
+      "fits": {
+        "wantSeconds": null,
+        "note": "no length in audio.sfx for this cue"
+      },
+      "answers": {
+        "verdict": "fits weakly",
+        "why": "Numbers: 28.79 s filed, sound 28.24 s; -15.7 LUFS as made; all of its energy under 1 kHz (68 percent between 250 Hz and 1 kHz): a dark sound. Map: tracked at 99.998 beats a minute, 48 beats, first bar line at 0.31 s, spacing steady; three parts by level, 0 to 5.11 s, 5.11 to 24.31 s and 24.31 s to the end. Listener, open, asked twice: a piano and bowed strings, gentle, reflective and slightly melancholic; then a harp in a delicate repeating pattern over soft sustained chords, serene, peaceful and slightly dreamy, and the season it brings to mind is winter, the plucking like lightly falling snow. No voice in any call; ends on a fade. Fit: yes, gentle, ethereal and relaxing; it named harp, flute and plucked strings as heard; ends on a fade. The fit call agrees easily; a flute was heard in neither open call. Not kept: no voice and on the tempo, but heard without the line it is reflective or dreamy and wintry, where the line says light and airy, fresh and bright; beside the winter track it would not tell the two seasons apart. Price 396, from the account's Music line.",
+        "listener": {
+          "line": "Light and airy: harp, flute, plucked strings",
+          "open": "1. I hear a piano and bowed string instruments.\n2. The mood is gentle, reflective, and slightly melancholic. The mood remains consistent throughout the clip without any noticeable changes.\n3. There are no human voices, singing, humming, or spoken words in this recording.\n4. There are no sound effects or non-musical sounds present.\n5. The piece starts immediately with the instruments playing and ends on a held final note that gradually fades out.\n6. The tempo is approximately 70 beats per minute, and the pulse holds steady.",
+          "fit": "1. Yes, the mood fits the description well because the music has a very gentle, ethereal, and relaxing atmosphere.\n2. I hear the harp, the flute, and plucked strings, so none of the instruments named in the description are missing. \n3. No, there is no human voice, spoken word, or singing in this audio.\n4. No, it does not end cleanly, as the music gradually fades out to silence.",
+          "openSecond": "1. I hear a harp playing a delicate, repeating pattern, accompanied by soft, sustained synthesizer or string chords.\n2. The mood is serene, peaceful, and slightly dreamy, and it remains consistent throughout the entire piece without changing.\n3. There are no human voices, spoken words, choirs, humming, or singing in this audio.\n4. There are no sound effects or non-musical sounds present.\n5. The track starts immediately with the harp playing its melody, and it ends on a gradual fade out to silence.\n6. It brings winter to mind, because the gentle, repetitive plucking of the harp sounds like lightly falling snowflakes.",
+          "note": "the open call heard piano and bowed strings and a slightly melancholic mood and the fit call said yes to all of the line, so the open questions were asked a second time, with question 6 changed to: which season of the year does it bring to mind, if any, and why (openSecond)"
+        }
+      },
+      "time": "2026-11-25T17:57:49.343Z",
+      "answersTime": "2026-11-25T18:00:00.095Z"
+    },
+    {
+      "cue": "music-summer",
+      "take": 1,
+      "round": "build",
+      "class": "music",
+      "season": "summer",
+      "line": "Warm and unhurried: nylon guitar, soft marimba, a golden dusk",
+      "tool": "ElevenLabs music, POST /v1/music, the default model (music_v1), pcm_48000",
+      "prompt": "A warm and unhurried piece at exactly 100 beats per minute in 4/4, twelve bars long: a nylon string guitar carrying one short simple melody, a soft marimba marking the beat, a golden dusk. It starts on the first downbeat with no pickup and no lead-in and holds one even feel, instrumental, no vocals, no spoken words, clean ending",
+      "settings": {
+        "endpoint": "POST /v1/music",
+        "model": "default",
+        "how": "prompt",
+        "music_length_ms": 28800,
+        "force_instrumental": true,
+        "output_format": "pcm_48000",
+        "cost": null,
+        "counterMovedBy": null,
+        "counterNote": "the music endpoint sends no cost header; the counter also moves with other work on the account"
+      },
+      "source": {
+        "name": "music-summer-2026-11-25T17-58-05-525Z.wav",
+        "bytes": 5528286,
+        "sha256": "c7f927788de038a9d3509bdf0a3b687d6396f8fd9cc38ce2ccbf903fbb02e067",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 28.793,
+        "kbps": 1536
+      },
+      "sha256": "a5dbfc1ba9bc7f55ed4ab9d7e767c70668a8ebbd7704829403948b2d34ac7dd9",
+      "measured": {
+        "seconds": 28.793,
+        "peakDb": -0.31,
+        "truePeakDb": -0.31,
+        "lufs": -11.84,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": -65.47,
+        "rmsDb": -13.87,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0,
+        "soundSeconds": 28.793,
+        "tailDb": -15.94,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 238,
+          "bands": {
+            "sub": 0,
+            "low": 0.5708,
+            "lowMid": 0.4238,
+            "mid": 0.0053,
+            "high": 0,
+            "air": 0
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -11.8,
+        "lra": 1.4,
+        "truePeakDb": -0.3
+      },
+      "fits": {
+        "wantSeconds": null,
+        "note": "no length in audio.sfx for this cue"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: 28.79 s filed, sound to the last sample (tail -15.9 dB: it is cut while still sounding); -11.8 LUFS as made; 57 percent of the energy between 60 and 250 Hz. Map: tracked at 100.008 beats a minute, 48 beats, 12 bars of 4, first bar line at 0.0044 s, spacing steady, one even level from start to end. Listener, open, asked twice: a music box, or a glockenspiel or celesta; gentle, peaceful and innocent, like a children's lullaby; the season it brings to mind is winter, crisp delicate high notes like falling snow; no voice; about 100 beats a minute, steady. Fit: yes, slow, gentle and soothing like a golden dusk; it named guitar and marimba as heard; it does not end cleanly, it cuts off mid-phrase. The fit call agrees easily; a guitar was heard in neither open call. Not kept: no voice and on the grid, but heard without the line it is a music box lullaby that brings winter to mind, not a warm guitar at dusk. Price 396, from the account's Music line.",
+        "listener": {
+          "line": "Warm and unhurried: nylon guitar, soft marimba, a golden dusk",
+          "open": "1. I hear a music box or a very similar pitched percussion instrument like a glockenspiel.\n2. The mood is gentle, peaceful, and innocent, like a children's lullaby. The mood does not change throughout the track.\n3. There is no human voice, singing, or spoken word heard in this piece.\n4. There are no non-musical sound effects present.\n5. The music starts immediately with the first notes of the melody and ends on a held final note that rings out until the track stops.\n6. The tempo is about 100 beats per minute, and the pulse holds steady from start to finish.",
+          "fit": "1. Yes, the slow tempo and gentle, soothing tones create a peaceful atmosphere that perfectly matches the feeling of a golden dusk.\n2. I hear both the nylon guitar and the soft marimba playing throughout the track. There are no instruments named in the description that I do not hear.\n3. No, there is no human voice, spoken word, or singing in this piece.\n4. No, the music does not end cleanly and instead cuts off abruptly mid-phrase.",
+          "openSecond": "1. I hear a music box, though it could also be a glockenspiel or a celesta playing the melody.\n2. The mood is peaceful, gentle, and innocent, and it remains consistent throughout the entire piece without changing.\n3. There is no human voice, spoken word, choir, humming, or singing in this piece.\n4. There are no sound effects or non-musical sounds present.\n5. The piece starts immediately with the main melody and ends with a gradual fade-out.\n6. It brings winter to mind because the crisp, delicate, high-pitched notes sound like gently falling snowflakes.",
+          "note": "the open call heard a music box and the fit call said it heard guitar and marimba, so the open questions were asked a second time, with question 6 changed to: which season of the year does it bring to mind, if any, and why (openSecond)"
+        }
+      },
+      "time": "2026-11-25T17:58:19.013Z",
+      "answersTime": "2026-11-25T18:00:00.857Z"
+    },
+    {
+      "cue": "music-fall",
+      "take": 1,
+      "round": "build",
+      "class": "music",
+      "season": "fall",
+      "line": "Halloween: a detuned music box and piano over low strings, with eerie sounds in the music itself",
+      "tool": "ElevenLabs music, POST /v1/music, the default model (music_v1), pcm_48000",
+      "prompt": "A Halloween piece at exactly 100 beats per minute in 4/4, twelve bars long: a detuned music box and a piano carrying one short simple melody over low strings, with eerie sounds in the music itself, creaks, a far bell and wind across the strings. It starts on the first downbeat with no pickup and no lead-in and holds one even feel, instrumental, no vocals, no spoken words, clean ending",
+      "settings": {
+        "endpoint": "POST /v1/music",
+        "model": "default",
+        "how": "prompt",
+        "music_length_ms": 28800,
+        "force_instrumental": true,
+        "output_format": "pcm_48000",
+        "cost": null,
+        "counterMovedBy": 0,
+        "counterNote": "the music endpoint sends no cost header; the counter also moves with other work on the account"
+      },
+      "source": {
+        "name": "music-fall-2026-11-25T18-00-04-190Z.wav",
+        "bytes": 5528286,
+        "sha256": "14d56eb361b6860194150047047e37c7c90bb08b23e03e3c17e48370b73e809d",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 28.793,
+        "kbps": 1536
+      },
+      "sha256": "36b18a3aa56d20df7ff6dd8f68e7253e0393feca74c8d452ca16d050ac05b2f9",
+      "measured": {
+        "seconds": 28.793,
+        "peakDb": -1.18,
+        "truePeakDb": -1.18,
+        "lufs": -12.84,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -16.14,
+        "silenceFrontSeconds": 0.005,
+        "silenceEndSeconds": 1.853,
+        "soundSeconds": 26.935,
+        "tailDb": -84.61,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 842,
+          "bands": {
+            "sub": 0.26,
+            "low": 0.1693,
+            "lowMid": 0.1766,
+            "mid": 0.3877,
+            "high": 0.0018,
+            "air": 0.0046
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -12.8,
+        "lra": 4.2,
+        "truePeakDb": -1.2
+      },
+      "fits": {
+        "wantSeconds": null,
+        "note": "no length in audio.sfx for this cue"
+      },
+      "answers": {
+        "verdict": "fits",
+        "why": "Numbers: 28.79 s filed, sound 26.94 s, 1.85 s of silence at the end; -12.8 LUFS as made; 39 percent of the energy between 1 and 4 kHz and 26 percent under 60 Hz. Map: tracked at 100.006 beats a minute, 46 beats, 12 bars of 4, first bar line at 0.0033 s, spacing steady: on the grid of the film; two parts by level, 0 to 24.00 s and the closing notes from 24.00 s. Listener, open: a mechanical music box, or a synthesizer made to sound like one; eerie, childlike and haunting throughout, growing more sluggish and unsettling as the melody winds down; no voice, no choir, no singing; no sound effects; ends on a held note that fades. It heard the tempo slow down like a wind-up toy running out; the map measures steady spacing at 100. Fit: yes, the dark out-of-tune melody is a spooky, unsettling Halloween mood; the detuned music box heard clearly, no piano and no low strings heard; no voice; ends cleanly. Kept: no voice or words, the mood of its line in both calls, on the grid. What it lacks of the line: the piano and the low strings as heard (the numbers show a low part under 60 Hz). Price 396, from the account's Music line.",
+        "listener": {
+          "line": "Halloween: a detuned music box and piano over low strings, with eerie sounds in the music itself",
+          "open": "1. I hear a mechanical music box, or possibly a synthesizer designed to sound exactly like one.\n2. The mood is eerie, childlike, and haunting throughout. It does not change abruptly, but grows increasingly sluggish and unsettling as the melody winds down.\n3. There is no human voice, spoken word, choir, humming, or singing at any point.\n4. There are no sound effects or non-musical sounds present in the recording.\n5. The track starts immediately with the melody already playing. It ends on a held final note that slowly fades out to silence.\n6. It begins at approximately 110 beats per minute, but the pulse does not hold steady. The tempo gradually slows down over the course of the track, much like a wind-up toy running out of power.",
+          "fit": "1. Yes, the mood fits the description because the dark, out-of-tune melody creates a very spooky and unsettling Halloween atmosphere. \n2. I can clearly hear the detuned music box, but I do not hear a piano or any low strings.\n3. No, there is no human voice, spoken word, or singing in the track. \n4. Yes, it ends cleanly as the final note naturally rings out and fades to silence."
+        }
+      },
+      "time": "2026-11-25T18:00:16.397Z",
+      "answersTime": "2026-11-25T18:02:41.122Z"
+    },
+    {
+      "cue": "music-one-piece",
+      "take": 1,
+      "round": "build",
+      "class": "music",
+      "season": null,
+      "line": "Five sections of 12 s: warm orchestral Christmas (sleigh bells, celesta, soft choir pads, low strings); light and airy (harp, flute, plucked strings); warm and unhurried (nylon guitar, soft marimba, a golden dusk); Halloween (a detuned music box and piano over low strings, with eerie sounds in the music itself); the winter music returning fuller, and resolving on its last bar",
+      "tool": "ElevenLabs music, POST /v1/music, the default model (music_v1), pcm_48000",
+      "prompt": "composition plan audio/plans/one-piece.json: Winter 12000 ms, Spring 12000 ms, Summer 12000 ms, Fall 12000 ms, Winter Return 12000 ms; global: orchestral; cinematic; instrumental; seasonal suite; 100 bpm; 4/4 time; warm melody; clean transitions; snow globe imagery; thematic development; instrumental, no vocals, no spoken words, clean ending",
+      "settings": {
+        "endpoint": "POST /v1/music",
+        "model": "default",
+        "how": "composition_plan",
+        "plan": "audio/plans/one-piece.json",
+        "respect_sections_durations": true,
+        "output_format": "pcm_48000",
+        "cost": null,
+        "counterMovedBy": 0,
+        "counterNote": "the music endpoint sends no cost header; the counter also moves with other work on the account"
+      },
+      "source": {
+        "name": "music-one-piece-2026-11-25T18-00-31-357Z.wav",
+        "bytes": 11502314,
+        "sha256": "b7e4a7192f964870a8ae23e1cf46ae0d6fd9b7b271aa5d401887790af584cd17",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 59.907,
+        "kbps": 1536
+      },
+      "sha256": "f77710704e42cd33d5fd3d79dd003b8ab37e538ffe49f5d02bdf1c6b5e4b4b14",
+      "measured": {
+        "seconds": 59.907,
+        "peakDb": -0.75,
+        "truePeakDb": -0.75,
+        "lufs": -12.42,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -15.28,
+        "silenceFrontSeconds": 0.615,
+        "silenceEndSeconds": 0.477,
+        "soundSeconds": 58.815,
+        "tailDb": -82.45,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 712,
+          "bands": {
+            "sub": 0.0004,
+            "low": 0.2,
+            "lowMid": 0.7217,
+            "mid": 0.0709,
+            "high": 0.0019,
+            "air": 0.0052
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -12.4,
+        "lra": 4.1,
+        "truePeakDb": -0.7
+      },
+      "fits": {
+        "wantSeconds": null,
+        "note": "no length in audio.sfx for this cue"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: 59.91 s filed, sound 58.82 s, 0.6 s of silence in front; -12.4 LUFS as made; 72 percent of the energy between 250 Hz and 1 kHz. Map: tracked at 100.009 beats a minute, 100 beats, 25 bars of 4, first bar line at 0.0204 s, spacing steady; by level it finds four parts with boundaries at 4.81 s, 28.81 s and 55.21 s. The plan's boundaries are at 12, 24, 36 and 48 s: none at 12, 36 or 48 s, and the one at 28.81 s is two bars from 24 s; the level per bar is nearly flat from 5 s to the end. Listener, open: a single music box playing a melody; calm, peaceful and gentle like a lullaby, the same throughout, no change of mood; no voice; no sound effects; ends on a held note that rings out. Fit, section by section: section 1 fits a warm Christmas mood and section 5 resolves on its last bar, but sections 2, 3 and 4 do not fit, and section 5 does not return fuller: the whole piece is one gentle solo music box; none of the instruments named for sections 2 and 3 heard; the answer to the question on voice did not come back. Not kept: one mood and one instrument where five sections are asked for, and no section boundary where the plan puts it. Price 825, from the account's Music line, 13.75 credits a second.",
+        "listener": {
+          "line": "Five sections of 12 s: warm orchestral Christmas (sleigh bells, celesta, soft choir pads, low strings); light and airy (harp, flute, plucked strings); warm and unhurried (nylon guitar, soft marimba, a golden dusk); Halloween (a detuned music box and piano over low strings, with eerie sounds in the music itself); the winter music returning fuller, and resolving on its last bar",
+          "open": "1. I hear a single music box playing a melody.\n2. The mood is calm, peaceful, and gentle like a lullaby. The mood remains consistent throughout the recording and does not change.\n3. There is no human voice, spoken word, choir, humming, or singing.\n4. There are no sound effects or non-musical sounds in this piece.\n5. It starts immediately with the first notes of the melody, and it ends on a held final note that is allowed to ring out and naturally decay.\n6. It is about 90 beats a minute, and the pulse holds steady.",
+          "fit": "1. Section 1 fits the warm Christmas mood and section 5 resolves on its last bar as described, but sections 2, 3, and 4 do not fit their descriptions, nor does section 5 return \"fuller\". The mood never changes because the entire piece remains a continuous, gentle, solo music box melody throughout all five sections. \n\n2. In section 1 I hear a celesta (music box) but no sleigh bells, choir pads, or low strings, and in sections 2 and 3 I hear none of their named instruments. In section 4 I hear a regular music box but it is not detuned and lacks the described piano or low strings, while in section 5 no instruments are named but the same solo music box simply continues.\n\n3."
+        }
+      },
+      "time": "2026-11-25T18:00:47.710Z",
+      "answersTime": "2026-11-25T18:02:45.149Z"
     }
   ],
   "kept": [
@@ -3845,12 +4239,34 @@
       "lufs": -22,
       "lufsMeasure": "gated",
       "time": "2026-11-25T17:52:49.741Z"
+    },
+    {
+      "cue": "music-winter",
+      "take": 1,
+      "round": "build",
+      "file": "audio/kept/music-winter.wav",
+      "sha256": "f21f53156f8d47122176e61ad3c0207a85cdee83a04d87c6548535b5091cebb2",
+      "seconds": 27.865,
+      "lufs": -16,
+      "lufsMeasure": "gated",
+      "time": "2026-11-25T17:56:26.016Z"
+    },
+    {
+      "cue": "music-fall",
+      "take": 1,
+      "round": "build",
+      "file": "audio/kept/music-fall.wav",
+      "sha256": "dfa4603dd806ebf6d55ac4ad587e7b8edf5c157654a7581d2c07f7b0e0b623e3",
+      "seconds": 27.46,
+      "lufs": -16,
+      "lufsMeasure": "gated",
+      "time": "2026-11-25T18:02:42.946Z"
     }
   ],
   "pack": {
-    "time": "2026-11-25T17:53:41.348Z",
+    "time": "2026-11-25T18:02:58.444Z",
     "kbps": 192,
-    "bytes": 1137024,
+    "bytes": 2080512,
     "fits": true,
     "files": [
       {
@@ -3867,6 +4283,16 @@
         "file": "amb-summer.mp3",
         "bytes": 455040,
         "sha256": "5fd52d37313f1d30e1f4ed4f7cacc315e9c2fbd997d8479d188160477586c5eb"
+      },
+      {
+        "file": "music-fall.mp3",
+        "bytes": 471744,
+        "sha256": "acd2c7549bddde8e94c2c085e50d64fbe947ff95dff6f2d188a8d159599b90a8"
+      },
+      {
+        "file": "music-winter.mp3",
+        "bytes": 471744,
+        "sha256": "80aa325c1ea6fde52321ee073c9f54c76f16a0c9bb3e2f94fa2fd05f7cfef28e"
       }
     ],
     "sprites": [
@@ -3902,6 +4328,30 @@
           "typicalStep": 0.012568,
           "ratio": 0.59,
           "levelStepDb": -7.47
+        }
+      },
+      {
+        "id": "music-fall",
+        "decodedSeconds": 19.6006,
+        "expectedSeconds": 19.6006,
+        "seamErrorDb": -22.36,
+        "sourceSeam": {
+          "jump": 0.029174,
+          "typicalStep": 0.02129,
+          "ratio": 1.37,
+          "levelStepDb": -0.52
+        }
+      },
+      {
+        "id": "music-winter",
+        "decodedSeconds": 19.5962,
+        "expectedSeconds": 19.5962,
+        "seamErrorDb": -17.82,
+        "sourceSeam": {
+          "jump": 0.060834,
+          "typicalStep": 0.026386,
+          "ratio": 2.31,
+          "levelStepDb": -4.35
         }
       }
     ],
