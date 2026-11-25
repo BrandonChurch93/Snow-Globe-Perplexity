@@ -8,7 +8,7 @@ import { MIRROR_GLSL, mirrorUniforms } from '../../../miniature/mirror'
 import { prepareVillage, tileMm, villageGeometry, villageGrain } from '../../../miniature/model'
 import { lampFlame, lampFoot, shrubDistance } from '../../../miniature/roof'
 import { BUMP_GLSL, NEAR_LIGHT, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, withSurface, type Cover, type GlowSource } from '../../../miniature/surface'
-import { anchors, groundAt, moundAt, moundSlope, pond, pondField, solidDistance, tree } from '../../../scene/layout'
+import { anchors, cottage, cottageFrame, groundAt, moundAt, moundSlope, pond, pondField, solidDistance, tree } from '../../../scene/layout'
 import { gainOf } from '../../../scene/lightgrid'
 import type { InnerLight, KitMoment } from '../../kit'
 import { isTree, season, tones } from './palette'
@@ -25,16 +25,22 @@ const SIDE = { power: 0.9, reachMm: 7, flicker: 0.1, cycles: 4, phase: 0.75 }
 const NEAR = { lamp: { power: 4.4, reachMm: 7.5 }, pane: { power: 0.9, reachMm: 2.6 } }
 const NEAR_WALL = { lamp: { power: 3.4, reachMm: 9, ends: 3 }, pane: { power: 1.8, reachMm: 5, ends: 3 } }
 const NEAR_GROWTH = { lamp: { power: 5, reachMm: 8 }, pane: { power: 1.2, reachMm: 3 } }
-const MIRROR = { lamp: 18, pane: 1.4, tight: 0.0022, wide: 0.035, wideShare: 0.012, bump: 1, lowMm: 3.4 }
+const MIRROR = { lamp: 3, pane: 1.4, tight: 0.0022, wide: 0.035, wideShare: 0.03, bump: 1, lowMm: 3.4 }
+const STREAK = { strength: 9, side: 0.035, along: 0.6, bump: 0.06, rings: 0.9 }
+const MOSS_FROM = [-16.8, -15]
+const SKIRT_FILL = 1.7
+const SLATE = { tint: [1.5, 2.3, 2.9] as Rgb, from: cottageFrame().floor + cottage.wall - 1.2 }
+const ROCK_FILL = 2.4
+const RING_SHOW = 0.55
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
-const HALO_KIND = { lamp: { size: 6.4, rest: 0.46, hot: 0, bloom: 0.3 }, pane: { size: 2.4, rest: 0, hot: 0, bloom: 0.3 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
+const HALO_KIND = { lamp: { size: 3.8, rest: 0.34, hot: 0, bloom: 0.3 }, pane: { size: 2.4, rest: 0, hot: 0, bloom: 0.3 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
 const THROUGH = 6
 const LAMP_GLASS: Rgb = [9, 7, 4.2]
 const WALL_FILL = 1.6
 const TURF_LOOK = { wrap: 0.45, fill: 0.9, grainMm: 0.07, lumpMm: 0.26, wideMm: 0.5, fuzz: 0.5 }
 const GROWTH_LOOK = { wrap: 0.7, fill: 0.7, through: 1.6, thin: 0.5, tight: 3 }
-const RIPPLE = { waveMm: 2.3, heightMm: 0.13, reachMm: 15, laps: 9, chopMm: 0.02, drift: 2 }
-const WATER_LOOK = { rough: 0.07, near: 0.12, sky: 0.65, crown: 0.75, post: 0.55, postMm: 0.5, postTall: 11.5, trunk: 0.5, trunkMm: 2.6, trunkTall: 16, body: 0.4 }
+const RIPPLE = { waveMm: 4.4, heightMm: 0.21, reachMm: 13, laps: 5, chopMm: 0.016, drift: 2 }
+const WATER_LOOK = { rough: 0.07, near: 0.12, sky: 0.52, crown: 0.75, post: 0.55, postMm: 0.5, postTall: 11.5, trunk: 0.5, trunkMm: 2.6, trunkTall: 16, body: 0.4 }
 const CROWN_MIRROR = { centre: [tree.x + 1.2, 9.9, tree.z + 1] as Rgb, r: [22.5, 15.5, 15] as Rgb, tone: [0.95, 0.56, 0.66] as Rgb }
 
 const flame = lampFlame()
@@ -80,6 +86,9 @@ const mossy: Cover = {
   float springUp = normalize(vObjN).y + 0.6 * (villageMottle - 0.5) + 0.3 * (villageGrain.r - 0.5);
   float springMoss = 0.45 * smoothstep(0.62, 0.98, springUp) * smoothstep(0.5, 0.78, villageMottle + 0.25 * villageGrain.b) * (1.0 - villageIron) * (1.0 - villageLeaf);
   springMoss = max(springMoss, 0.5 * villageStone * smoothstep(0.52, 0.7, villageMottle) * smoothstep(0.55, 0.8, texture2D(map, vMapUv * 0.11 + 0.71).b));
+  float springSlate = smoothstep(0.55, 0.7, normalize(vObjN).y) * (1.0 - smoothstep(0.86, 0.93, normalize(vObjN).y)) * smoothstep(${SLATE.from.toFixed(2)}, ${(SLATE.from + 1).toFixed(2)}, vStageLocal.y) * (1.0 - villageLeaf);
+  diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * ${glsl(SLATE.tint)}, springSlate);
+  springMoss *= 0.2 + 0.8 * smoothstep(${MOSS_FROM[0].toFixed(1)}, ${MOSS_FROM[1].toFixed(1)}, vStageLocal.y);
   diffuseColor.rgb = mix(diffuseColor.rgb, ${glsl(tones.moss)} * (0.6 + 0.9 * villageGrain.r), springMoss * 0.8);
   diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.7, 1.9, 0.5) + vec3(0.004, 0.02, 0.0), villageLeaf);
   villageRough = mix(villageRough, 0.95, springMoss);
@@ -144,6 +153,10 @@ diffuseColor.rgb *= (0.5 + 0.62 * turfT.r + 0.34 * (turfT.b - 0.5)) * (0.74 + 0.
 {
   reflectedLight.directDiffuse += (stageWrapped(geometryNormal, ${TURF_LOOK.wrap.toFixed(2)}) + stageKeyC * (RECIPROCAL_PI * ${TURF_LOOK.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), 1.0))) * material.diffuseContribution;
   float turfFuzz = pow(1.0 - clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0), 3.0);
+  float turfBank = smoothstep(1.4, 1.9, vSurf.x) * (1.0 - smoothstep(2.2, 2.8, vSurf.x));
+  float turfRock = smoothstep(2.5, 2.9, vSurf.x);
+  float turfLift = normalize(vObjN).y;
+  reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${SKIRT_FILL.toFixed(2)} * turfBank * (0.1 + 0.9 * smoothstep(-0.8, 0.0, turfLift)) * (1.0 - 0.8 * smoothstep(0.1, 0.8, vSurf.y)) + ${ROCK_FILL.toFixed(2)} * turfRock * (0.3 + 0.7 * smoothstep(-0.2, 0.7, turfLift)))) * material.diffuseContribution;
   reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${TURF_LOOK.fuzz.toFixed(2)} * turfFuzz * stageWrap(dot(geometryNormal, stageKeyL), 1.0)) * material.diffuseContribution;
 }`,
       )
@@ -214,10 +227,22 @@ float waterRing(vec2 p, vec2 c, float phase, float amp) {
   float fade = exp(-d / ${RIPPLE.reachMm.toFixed(1)}) * smoothstep(0.0, 1.2, d);
   return amp * fade * sin(6.2831853 * front);
 }
+float waterRings(vec2 p) {
+  return ${rings};
+}
 float waterHeight(vec2 p) {
   vec2 uv = p * ${(1 / tileMm()).toFixed(6)};
   float chop = texture2D(map, uv * 1.7 + vec2(uWaterClock * ${RIPPLE.drift.toFixed(1)}, 0.0)).r + texture2D(map, uv * 2.3 - vec2(0.0, uWaterClock * ${RIPPLE.drift.toFixed(1)})).g;
-  return ${RIPPLE.heightMm.toFixed(3)} * (${rings}) + ${RIPPLE.chopMm.toFixed(3)} * chop;
+  return ${RIPPLE.heightMm.toFixed(3)} * waterRings(p) + ${RIPPLE.chopMm.toFixed(3)} * chop;
+}
+float waterStreak(vec3 n, vec3 sight) {
+  vec3 r = reflect(-sight, n);
+  vec3 to = normalize(${glsl(flame as Rgb)} - vStageLocal);
+  vec3 across = normalize(cross(vec3(0.0, 1.0, 0.0), to));
+  vec3 m = r - to;
+  float s = dot(m, across);
+  float q = max(dot(m, m) - s * s, 0.0);
+  return exp(-s * s / ${(STREAK.side * STREAK.side).toFixed(5)}) * exp(-q / ${(STREAK.along * STREAK.along).toFixed(5)});
 }
 float waterCrown(vec3 from, vec3 r) {
   vec3 o = (from - ${glsl(CROWN_MIRROR.centre)}) / ${glsl(CROWN_MIRROR.r)};
@@ -264,9 +289,11 @@ diffuseColor.rgb = mix(${glsl(tones.waterDeep)}, ${glsl(tones.bed)}, waterEdge *
   float waterGlint = villageMirror(waterMirror, waterSight, ${MIRROR.tight.toFixed(5)}, ${MIRROR.wide.toFixed(5)}, ${MIRROR.wideShare.toFixed(3)});
   waterShade = max(${WATER_LOOK.post.toFixed(2)} * villagePost(waterMirror, waterSight, ${glsl(postFoot)}, ${WATER_LOOK.postMm.toFixed(2)}, ${WATER_LOOK.postTall.toFixed(1)}), ${WATER_LOOK.trunk.toFixed(2)} * villagePost(waterMirror, waterSight, ${glsl(trunkFoot)}, ${WATER_LOOK.trunkMm.toFixed(2)}, ${WATER_LOOK.trunkTall.toFixed(1)}));
   float waterPink = waterCrown(vStageLocal, waterR) * (1.0 - waterShade);
-  vec3 waterSky = ${glsl(tones.waterPale)} * (${WATER_LOOK.sky.toFixed(2)} * (0.3 + 1.3 * smoothstep(-0.05, 0.5, waterR.y))) * (1.0 - 0.8 * waterPink);
+  float waterBand = waterRings(vStageLocal.xz);
+  vec3 waterSky = clamp(1.0 + ${RING_SHOW.toFixed(2)} * waterBand, 0.2, 2.0) * ${glsl(tones.waterPale)} * (${WATER_LOOK.sky.toFixed(2)} * (0.3 + 1.3 * smoothstep(-0.05, 0.5, waterR.y))) * (1.0 - 0.8 * waterPink);
   totalEmissiveRadiance += (waterSky + ${glsl(CROWN_MIRROR.tone)} * (${WATER_LOOK.crown.toFixed(2)} * waterPink)) * (0.25 + 0.75 * waterFresnel) * (1.0 - 0.6 * waterShade) * (1.0 - 0.7 * waterEdge) * dot(stageKeyC + vec3(0.6), vec3(0.3333));
-  totalEmissiveRadiance += ${glsl(tones.lamp)} * waterGlint * (0.2 + 0.8 * waterFresnel) * uGlowGain;
+  float waterLine = ${STREAK.strength.toFixed(1)} * waterStreak(villageInside(normalize(mix(waterFlat, normal, ${STREAK.bump.toFixed(2)}))), waterSight) * (1.0 - waterEdge) * clamp(1.0 + ${STREAK.rings.toFixed(2)} * waterBand, 0.08, 2.0);
+  totalEmissiveRadiance += ${glsl(tones.lamp)} * (waterGlint + waterLine) * (0.2 + 0.8 * waterFresnel) * uGlowGain;
 }
 `,
         )
@@ -295,7 +322,7 @@ export function lights(): THREE.Object3D {
     glowPiece(villageGeometry('pane-gable'), (_i, w, h) => [GLOW.pane, w, h, 1]),
     glowPiece(villageGeometry('pane-side'), (_i, w, h) => [GLOW.pane, w, h, 2]),
   ]
-  const look = { bulb: 1.7, bulbCore: 3.4, glass: LAMP_GLASS, flame: tones.flame.map((v) => v * 6) as unknown as Rgb, room: tones.room.map((v) => v * 1.5) as unknown as Rgb, curtain: tones.curtain.map((v) => v * 1.6) as unknown as Rgb, frost: tones.pane.map((v) => v * 0.3) as unknown as Rgb, frostAmount: 0.06, flicker: 0.08, cycles: 3, through: THROUGH, paneHot: 0.14 }
+  const look = { bulb: 1.7, bulbCore: 3.4, glass: LAMP_GLASS, flame: tones.flame.map((v) => v * 6) as unknown as Rgb, room: tones.room.map((v) => v * 1.15) as unknown as Rgb, curtain: tones.curtain.map((v) => v * 1.6) as unknown as Rgb, frost: tones.pane.map((v) => v * 0.3) as unknown as Rgb, frostAmount: 0.06, flicker: 0.08, cycles: 3, through: THROUGH, paneHot: 0.14 }
   const lit = (x: number, z: number): [number, number, number] => [x, groundAt(x, z) + 1.5, z]
   const pools = [lit(flame[0] + 0.4, flame[2] + 1.6), lit(anchors.door[0] * 0.75 + flame[0] * 0.25, anchors.door[2] * 0.75 + flame[2] * 0.25)]
   const halos = new THREE.Mesh(
@@ -319,8 +346,21 @@ function groundDistance(x: number, y: number, z: number): number {
   return (y - top) / Math.sqrt(1 + moundSlope(z) * moundSlope(z))
 }
 
+let rocks: number[][] | null = null
+
+function boulderDistance(x: number, y: number, z: number): number {
+  rocks ??= (geometry(MODEL, 'water').userData.extras as { boulders?: number[][] } | undefined)?.boulders ?? []
+  let d = 1e9
+  for (const b of rocks) {
+    const squash = Math.min(1, b[4]! / b[3]!)
+    const v = (Math.hypot(x - b[0]!, (y - b[1]!) / squash, z - b[2]!) - b[3]!) * squash
+    if (v < d) d = v
+  }
+  return d
+}
+
 export function solid(x: number, y: number, z: number): number {
-  return Math.min(solidDistance(x, y, z, keep), shrubDistance(x, y, z), groundDistance(x, y, z))
+  return Math.min(solidDistance(x, y, z, keep), shrubDistance(x, y, z), groundDistance(x, y, z), boulderDistance(x, y, z))
 }
 
 export function update(moment: KitMoment): void {

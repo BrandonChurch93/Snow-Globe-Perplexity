@@ -8,4 +8,4 @@ const gold: [number, number, number] = [1, 0.72, 0.36]
 const pale: [number, number, number] = [1, 0.8, 0.5]
 const cream: [number, number, number] = [1, 0.88, 0.68]
 
-export const backdrop: SeasonKit['backdrop'] = { colors: [ember, amber, ember, amber, gold, amber, gold, pale, cream, pale], room: [0.0034, 0.0058, 0.0062], floor: [0.005, 0.0078, 0.0095] }
+export const backdrop: SeasonKit['backdrop'] = { colors: [ember, amber, ember, amber, gold, amber, gold, pale, cream, pale], room: [0.003, 0.0048, 0.0052], floor: [0.0036, 0.0056, 0.0072] }
