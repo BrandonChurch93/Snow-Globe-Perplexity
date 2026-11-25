@@ -42,7 +42,9 @@ export const glassLook = {
   third: { face: 0.6, gain: 0.07, tint: [0.75, 0.85, 1] as V3, softDeg: 1.6, own: 0.15, fade: [0.78, 0.97] as const },
   shoulder: { from: 1.4, to: 3.6 },
   /** The width in pixels over which the glass fades out at its outline, so that the outline is soft in every sample before the samples are averaged. */
-  limbPx: 1.5,
+  limbPx: 3,
+  /** How far outside the outline, in pixels, the room is read that the glass fades into over `limbPx`. */
+  limbBeyondPx: 1.5,
   floor: 0.4,
   band: { from: 0.976, to: 0.99, wander: 0.004, dim: 0.25, shade: 0.3, side: [-0.2, 0.5] as const, low: [-0.5, -0.1] as const },
   edge: { from: 0.978, keyFrom: 0.988, peak: 0.994, keyLobe: [0.84, 0.97] as const, key: 0.5, keyOn: 0.35, keyLow: 0.45, keyLowDir: [0.5, 0.866, 0] as V3, keyLowLobe: [0.8, 0.93] as const, line: { from: 0.9955, peak: 0.998, gain: 1.3, dir: [0.978, 0.208, 0] as V3, lobe: [0.8, 0.97] as const, spanDir: [0.743, 0.669, 0] as V3, span: [0.8, 0.86] as const, rest: 0.35, wander: 0.5, glint: 1.8, glintDir: [0.326, 0.946, 0] as V3, glintLobe: [0.978, 0.998] as const }, keyTint: [0.75, 0.76, 0.585] as V3, tip: 0.5, tipTint: [0.6, 0.78, 1] as V3, tipDeg: [4.3, 2.5, 1.3] as const, tipShare: [0.984, 0.997] as const, rimLobe: [0.16, 0.5] as const, rim: 0.04, sky: 0.04, pool: 0 },
@@ -57,8 +59,33 @@ export const glassLook = {
   seat: { topMm: 4, lineMm: 0.8, lineDepth: 0.7, shadeMm: 4.5, shade: 0.4, gain: 1.5, wideMm: 9, wide: 0.32, footMm: 1.1, footWideMm: 0.14, foot: 0.1, footTint: [1.5, 1.15, 0.85] as V3, mirrorMm: 4, mirrorSpanMm: 2, mirror: 0.2, mirrorCap: 0.8, mirrorTaps: 4, limb: [0.9, 0.975] as const },
   bloom: { gain: 0.6, floor: 0.1, power: 3, white: 3, whitePower: 8 },
   through: { disc: 0.0009, point: 3, pointGain: 2.5, wall: [0.94, 0.975, 0.985] as V3, mirror: 0.06, steps: 5, own: 0.12, window: 0.018, softDeg: 3, lift: [0.056, 0.012, 2.5] as const, liftTint: [0.9, 1.25, 1] as V3, arcs: 0.4, arcRings: 13 },
+  /**
+   * The room's lamps that stand outside the frame, behind the globe and to its sides, as the glass shows them: each is a short strip
+   * round the axis from the hero camera through the globe, and the grazing glass squeezes it into a fine arc along the rim.
+   * A lamp: its share of the radius at which the outer face shows it from `hero`, its place round the rim in degrees (0 at the right, 90 at the top),
+   * its thickness and its half length in degrees, its level, and how cool it is (0 the season's warm lamps, 1 the room's cool ones). They are placed once, from the seed `glass:arcs`.
+   */
+  arcs: {
+    cool: [0.62, 0.8, 1] as V3,
+    broken: 0.6,
+    inner: 0.5,
+    core: 1.6,
+    /** The least thickness of a lamp's arc, in pixels: a thinner one is drawn that wide and as much dimmer, so its line does not step. */
+    leastPx: 0.9,
+    /** The most the lamps add where they lie over one another: above it the sum rolls off, so no arc burns to white. */
+    most: 1.1,
+    /** Where round the rim the lamps stand: from and to in degrees, how many, share of the radius, thickness and half length in degrees, level, coolness (each a range). */
+    groups: [
+      { deg: [-52, 50], count: 14, share: [0.9, 0.988], thick: [0.5, 1.2], half: [4, 15], level: [0.3, 1.5], cool: [0, 0.08] },
+      { deg: [132, 232], count: 12, share: [0.9, 0.988], thick: [0.5, 1.2], half: [4, 15], level: [0.3, 1.5], cool: [0, 0.1] },
+      { deg: [48, 134], count: 6, share: [0.93, 0.988], thick: [0.8, 2.2], half: [10, 26], level: [0.15, 0.4], cool: [0.7, 1] },
+      { deg: [234, 306], count: 4, share: [0.93, 0.985], thick: [0.6, 1.1], half: [4, 10], level: [0.3, 0.7], cool: [0, 0.1] },
+    ],
+    /** The ceiling's soft light over the top of the rim: share, place, thickness, half length, level, coolness. */
+    top: [0.957, 92, 9, 70, 0.06, 1] as const,
+  },
   /** The air bubble under the crown of the glass. `seasons`: the seasons whose approved images show it (winter's only); in the others it is not drawn. */
-  bubble: { seasons: ['winter'] as readonly string[], widthMm: 20.5, depthMm: 5.6, gapMm: 0.12, patch: 0.46, waist: 0.5, flat: 2.7, leanDeg: 16, under: 0.03, underTint: [1, 0.66, 0.36] as V3, slide: 0.0025, wobble: 0.09, line: 0.015, sky: 0.2, inner: 0.08, glint: 0.5, milk: 0.05, patchFill: 0.15, fill: [1.6, 1.25, 0.85] as V3, shade: 0.12, edge: 0.5, warm: 1, reach: 0.35, patchGain: 0.1, swirl: 0.12, streakDir: [-0.9, 0, 0.35] as V3, streakPower: 2.5, lip: 0.6, spark: 2.5, sparkTint: [1, 0.92, 0.75] as V3 },
+  bubble: { seasons: ['winter'] as readonly string[], widthMm: 20.5, depthMm: 5.6, gapMm: 0.12, patch: 0.46, waist: 0.5, flat: 2.7, leanDeg: 16, under: 0.03, underTint: [1, 0.66, 0.36] as V3, slide: 0.0025, wobble: 0.09, line: 0.015, sky: 0.2, inner: 0.08, glint: 0.5, milk: 0.05, patchFill: 0.11, outer: 0.5, fill: [1.6, 1.25, 0.85] as V3, shade: 0.12, edge: 0.5, warm: 1, reach: 0.35, patchGain: 0.1, swirl: 0.12, streakDir: [-0.9, 0, 0.35] as V3, streakPower: 2.5, lip: 0.6, spark: 2.5, sparkTint: [1, 0.92, 0.75] as V3 },
 }
 
 /**
@@ -74,6 +101,7 @@ export const glassLook = {
  * `windowShade`: how much of the dark crescent beside the window's reflection, its shade and its cool glow, is drawn.
  * `rimGlow`: how much of the room's even glow across the rim zone is drawn (its lines stay).
  * `roomHue`, `roomHueOn`: the colour the room's walls take in the glass's reflections and how far they take it, 0 to 1.
+ * `arcs`, `arcTint`, `arcCool`: the gain and the colour of the lamps outside the frame that the rim shows as fine arcs, and the gain of the cool ones among them.
  */
 export interface GlassAmounts {
   windowTint: V3
@@ -94,9 +122,12 @@ export interface GlassAmounts {
   roomHueOn: number
   windowShade: number
   rimGlow: number
+  arcs: number
+  arcTint: V3
+  arcCool: number
 }
 
-const WINTER_GLASS: GlassAmounts = { windowTint: glassLook.window.tint, windowGain: [1, 1, 1, 1], windowSoftDeg: 0, windowGrain: 0, rimTint: [1, 1, 1], wallTint: [1, 1, 1], ringCover: 1, strip: 1, bend: 1, ringThin: 0, rimClear: 1, topLine: 1, ringMottle: 1, ceiling: 1, roomHue: [1, 1, 1], roomHueOn: 0, windowShade: 1, rimGlow: 1 }
+const WINTER_GLASS: GlassAmounts = { windowTint: glassLook.window.tint, windowGain: [1, 1, 1, 1], windowSoftDeg: 0, windowGrain: 0, rimTint: [1, 1, 1], wallTint: [1, 1, 1], ringCover: 1, strip: 1, bend: 1, ringThin: 0, rimClear: 1, topLine: 1, ringMottle: 1, ceiling: 1, roomHue: [1, 1, 1], roomHueOn: 0, windowShade: 1, rimGlow: 1, arcs: 0, arcTint: [1, 1, 1], arcCool: 0 }
 const glassAmounts = new Map<string, GlassAmounts>()
 
 export function setGlass(season: string, amounts: Partial<GlassAmounts>): void {
@@ -138,6 +169,25 @@ function hairs(): { planes: string; spans: string } {
 }
 
 const W = glassLook.window
+const heroPitch = config.cameras.hero.pitchDeg * RAD
+const ARC_AXIS: V3 = [0, -Math.sin(heroPitch), -Math.cos(heroPitch)]
+const ARC_UP: V3 = [0, Math.cos(heroPitch), -Math.sin(heroPitch)]
+function arcLamps(): (readonly [number, number, number, number, number, number])[] {
+  const rng = stream('glass:arcs')
+  const out: (readonly [number, number, number, number, number, number])[] = [glassLook.arcs.top]
+  for (const g of glassLook.arcs.groups) {
+    for (let i = 0; i < g.count; i++) {
+      const at = g.deg[0] + ((i + rng.range(0.15, 0.85)) / g.count) * (g.deg[1] - g.deg[0])
+      const bright = Math.pow(rng.range(0, 1), 2.2)
+      out.push([rng.range(g.share[0], g.share[1]), at, rng.range(g.thick[0], g.thick[1]), rng.range(g.half[0], g.half[1]), g.level[0] + (g.level[1] - g.level[0]) * bright, rng.range(g.cool[0], g.cool[1])])
+    }
+  }
+  return out
+}
+const ARC_LAMPS = arcLamps()
+const ARC_N = ARC_LAMPS.length
+const ARC_AT = `vec4[${ARC_N}](${ARC_LAMPS.map((l) => vec([2 * Math.acos(l[0]), l[1] * RAD, l[2] * RAD, 1 / (l[3] * RAD)])).join(', ')})`
+const ARC_LEVEL = `vec2[${ARC_N}](${ARC_LAMPS.map((l) => vec([l[4] * (1 - l[5]), l[4] * l[5]])).join(', ')})`
 const STRIP = (() => {
   const c = unit(glassLook.strip.centre)
   const b = unit([-c[2], 0, c[0]])
@@ -169,6 +219,7 @@ uniform vec4 uRingAmt;
 uniform vec4 uRimAmt;
 uniform vec4 uRoomHue;
 uniform float uRimGlow;
+uniform vec4 uArc;
 varying vec3 vEye;
 const float GLASS_IOR = ${num(G.glassIor)};
 const float SEAT_Y = ${num(collarY)};
@@ -321,6 +372,27 @@ vec3 glassPoints(vec3 d) {
   }
   return sum * ${num(glassLook.through.pointGain)};
 }
+vec3 glassArcs(vec3 d) {
+  float along = dot(d, ${vec(ARC_AXIS)});
+  float beta = acos(clamp(along, -1.0, 1.0));
+  float least = min(${num(glassLook.arcs.leastPx)} * fwidth(beta), 0.05);
+  if (along < 0.45) return vec3(0.0);
+  float phi = atan(dot(d, ${vec(ARC_UP)}), d.x);
+  vec4 at[${ARC_N}] = ${ARC_AT};
+  vec2 level[${ARC_N}] = ${ARC_LEVEL};
+  vec2 sum = vec2(0.0);
+  for (int i = 0; i < ${ARC_N}; i++) {
+    float wide = max(at[i].z, least);
+    float across = (beta - at[i].x) / wide;
+    float turnAt = abs(mod(phi - at[i].y + ${num(Math.PI)}, ${num(2 * Math.PI)}) - ${num(Math.PI)}) * at[i].w;
+    if (abs(across) > 3.0 || turnAt > 1.0) continue;
+    float whole = 1.0 - ${num(glassLook.arcs.broken)} * (1.0 - smoothstep(0.3, 0.62, glassNoise(vec3(phi * 9.0, beta * 23.0, float(i) * 3.7))));
+    sum += level[i] * (exp(-across * across) * (1.0 - smoothstep(0.3, 1.0, turnAt)) * (1.0 + ${num(glassLook.arcs.core)} * exp(-9.0 * turnAt * turnAt)) * (i == 0 ? 1.0 : whole) * at[i].z / wide);
+  }
+  float all = sum.x + sum.y;
+  if (all > 0.0) sum *= ${num(glassLook.arcs.most)} * (1.0 - exp(-all / ${num(glassLook.arcs.most)})) / all;
+  return uArc.rgb * sum.x + ${vec(glassLook.arcs.cool)} * (uArc.a * sum.y);
+}
 vec3 glassRoom(vec3 d, float soft, int k, float own) {
   vec3 c = stageRoomSeen(d, k == 3 ? ${num(glassLook.room.throughRough)} : ${num(glassLook.room.innerRough)});
   if (k != 3) c = mix(c, uRoomHue.rgb * dot(c, vec3(0.2126, 0.7152, 0.0722)), uRoomHue.a);
@@ -337,6 +409,7 @@ vec3 glassRoom(vec3 d, float soft, int k, float own) {
   dim += uRimCol * ${vec(glassLook.rimCard.tint)} * own * (${num(glassLook.rimCard.wide)} * pow(rim, ${num(glassLook.rimCard.widePower)}) + ${num(glassLook.rimCard.core)} * pow(rim, ${num(glassLook.rimCard.corePower)}));
   float lit = k == 0 ? 1.0 - ${num(W.dark.depth)} * glassDark(d) : 1.0;
   c += dim * lit;
+  if (k < 2 && uArc.a + uArc.r + uArc.g + uArc.b > 0.0) c += glassArcs(d) * (k == 0 ? 1.0 : ${num(glassLook.arcs.inner)});
   c += uKeyCol * WIN_TINT * (WIN_GAIN[k] * uWinGain[k]) * glassWindow(d, (k == 3 ? ${num(glassLook.through.softDeg * RAD)} : soft) + uWinSoft.x, k);
   if (k == 0) c += uKeyCol * WIN_TINT * ${vec(W.halo.tint)} * (${num(W.halo.gain)} * uWinGain.x) * glassHalo(d) * lit;
   c += ${vec(glassLook.strip.tint)} * uKeyCol.b * (STRIP_GAIN[k] * uRingAmt.y) * glassStrip(d, soft);
@@ -624,6 +697,12 @@ void main() {
   vec3 lit = col * limb;
   float bendAt = (s - ${num(glassLook.bend.from)}) / ${num(1 - glassLook.bend.from)};
   float bendPer = length(bendSlope);
+  if (uBehindSize.x > 0.0 && limb < 1.0 && bendPer > 1e-6) {
+    vec3 beyond = textureLod(uBehind, (gl_FragCoord.xy + bendSlope * (((1.0 - bendRaw) / bendPer + ${num(glassLook.limbBeyondPx)}) / bendPer)) / uBehindSize, 0.0).rgb;
+    if (any(isnan(beyond)) || any(isinf(beyond))) beyond = vec3(0.0);
+    lit += max(beyond, 0.0) * (1.0 - limb);
+    keep = alpha * limb;
+  }
   if (uBehindSize.x > 0.0 && uLens.z > 0.5 && bendAt > 0.0 && bendPer > 1e-6) {
     vec2 outward = bendSlope / bendPer;
     vec3 bent = vec3(0.0);
@@ -700,7 +779,7 @@ void main() {
   vec3 warm = stageGrid(vStageLocal * ${num(glassLook.bubble.reach)}) * ${num(glassLook.bubble.warm)};
   vec3 streak = uKeyCol * WIN_TINT * side;
   float glints = smoothstep(0.5, 0.7, glassNoise(radial * 9.0 + 1.0));
-  vec3 col = outerRing * (pale * (0.25 + 0.45 * front) * (0.6 + 0.8 * fine) + warm * front * front + streak * ${num(glassLook.bubble.glint)} * smoothstep(0.3, 0.75, swirl));
+  vec3 col = outerRing * ${num(glassLook.bubble.outer)} * (pale * (0.25 + 0.45 * front) * (0.6 + 0.8 * fine) + warm * front * front + streak * ${num(glassLook.bubble.glint)} * smoothstep(0.3, 0.75, swirl));
   col += innerRing * (pale * (0.5 + 0.3 * front) + streak * ${num(glassLook.bubble.glint * 0.8)} + warm * 2.0 * front * front * glints);
   col += inPatch * (uSky * ${vec(glassLook.bubble.fill)} * ${num(glassLook.bubble.patchFill)} * (0.8 + 0.4 * fine) + streak * ${num(glassLook.bubble.patchGain)} * (0.6 + 0.4 * swirl));
   col += between * (uSky * ${num(glassLook.bubble.milk * 0.2)} + streak * ${num(glassLook.bubble.swirl)} * smoothstep(0.42, 0.8, swirl) * smoothstep(${num(glassLook.bubble.patch)}, 0.9, x));
@@ -741,6 +820,7 @@ export const shellUniforms = {
   uRimAmt: { value: new THREE.Vector4(1, 1, 1, 1) },
   uRoomHue: { value: new THREE.Vector4(1, 1, 1, 0) },
   uRimGlow: { value: 1 },
+  uArc: { value: new THREE.Vector4(0, 0, 0, 0) },
 }
 
 const blend: THREE.ShaderMaterialParameters = {
@@ -956,6 +1036,7 @@ export class Shell {
     sh.uWinGain.value.set(mixed(ga.windowGain[0], gb.windowGain[0]), mixed(ga.windowGain[1], gb.windowGain[1]), mixed(ga.windowGain[2], gb.windowGain[2]), mixed(ga.windowGain[3], gb.windowGain[3]))
     sh.uWinSoft.value.set(mixed(ga.windowSoftDeg, gb.windowSoftDeg) * RAD, mixed(ga.windowGrain, gb.windowGrain), mixed(ga.windowShade, gb.windowShade))
     sh.uRimGlow.value = mixed(ga.rimGlow, gb.rimGlow)
+    sh.uArc.value.set(mixed(ga.arcs * ga.arcTint[0], gb.arcs * gb.arcTint[0]), mixed(ga.arcs * ga.arcTint[1], gb.arcs * gb.arcTint[1]), mixed(ga.arcs * ga.arcTint[2], gb.arcs * gb.arcTint[2]), mixed(ga.arcs * ga.arcCool, gb.arcs * gb.arcCool))
     sh.uRimTint.value.set(mixed(ga.rimTint[0], gb.rimTint[0]), mixed(ga.rimTint[1], gb.rimTint[1]), mixed(ga.rimTint[2], gb.rimTint[2]))
     sh.uWallTint.value.set(mixed(ga.wallTint[0], gb.wallTint[0]), mixed(ga.wallTint[1], gb.wallTint[1]), mixed(ga.wallTint[2], gb.wallTint[2]))
     sh.uRingAmt.value.set(mixed(ga.ringCover, gb.ringCover), mixed(ga.strip, gb.strip), mixed(ga.bend, gb.bend), mixed(ga.ringThin, gb.ringThin))

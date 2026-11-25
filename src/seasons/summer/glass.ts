@@ -25,7 +25,7 @@ const PART = 'glass-dressing-summer'
 const RS = config.globe.sphereDiameterMm / 2
 const TAU = Math.PI * 2
 
-setGlass('summer', { windowTint: [1, 0.85, 0.62], windowGain: [0.5, 0.2, 1, 1], windowSoftDeg: 5, windowGrain: 0.5, rimTint: [1.5, 1.05, 0.45], wallTint: [0.77, 0.71, 0.29], ringCover: 0.35, strip: 0, bend: 0, ringThin: 1, rimClear: 0.3, topLine: 0, ringMottle: 0.3, ceiling: 0.15, roomHue: [1.2, 0.95, 0.6], roomHueOn: 1, windowShade: 0, rimGlow: 0 })
+setGlass('summer', { windowTint: [1, 0.85, 0.62], windowGain: [0.5, 0.2, 1, 1], windowSoftDeg: 5, windowGrain: 0.5, rimTint: [1.5, 1.05, 0.45], wallTint: [0.77, 0.71, 0.29], ringCover: 0.35, strip: 0, bend: 0, ringThin: 1, rimClear: 0.3, topLine: 0, ringMottle: 0.3, ceiling: 0.35, roomHue: [1.2, 0.95, 0.6], roomHueOn: 1, windowShade: 0, rimGlow: 0, arcs: 2.5, arcTint: [1, 0.72, 0.34], arcCool: 1 })
 
 export const look = {
   // leaving: the light goes out between these two counts of beats before the swap window opens
@@ -42,7 +42,7 @@ export const look = {
     haloWide: 0.24,
     veil: 0.22,
     // the star: many soft tapered rays, short, each with its own length, widest at the core, fanning away from the globe
-    rays: 1.3,
+    rays: 0.8,
     spikes: 18,
     reach: [0.2, 0.16] as const,
     rayWide: [0.008, 0.024] as const,
@@ -77,22 +77,22 @@ export const look = {
     // the limb's own warm edge on the far side
     edge: 0.7,
     // the air: the low sun in the liquid, warm on the side the light falls toward and nothing on the side it comes from
-    air: 0.022,
+    air: 0.012,
     airColor: [1, 0.66, 0.36] as const,
     // the haze: the liquid behind the miniature holds the sun as a warm glow, fullest in a column up the middle of the globe
     // (`hazeAt`, `hazeWide`, in globe radii across the picture) and `hazeRim` of that toward the sides
     // It is gold and fullest low, behind the miniature (`hazeLow`, `hazeTall`, in globe radii up the picture); toward the top
     // of the dome it thins to `hazeTop` of that, and to the sides of the column up there the liquid holds a paler, cooler light
     // (`hazeSky`, `hazeSkyColor`), so the dome is not one flat tone
-    haze: 0.42,
+    haze: 0.17,
     hazeColor: [1, 0.6, 0.3] as const,
-    hazeRim: 0.15,
+    hazeRim: 0.1,
     hazeAt: -0.1,
     hazeWide: 0.45,
-    hazeLow: -0.2,
-    hazeTall: 0.5,
-    hazeTop: 0.6,
-    hazeSky: 0.06,
+    hazeLow: -0.3,
+    hazeTall: 0.28,
+    hazeTop: 0.03,
+    hazeSky: 0,
     hazeSkyColor: [0.7, 0.8, 0.95] as const,
     // the storm: the seeds and the dust aloft take the sun and the whole dome glows white-gold; it goes with the liquid's
     // turbulence, in slow arms that turn with the time, and is thinner over the miniature so the lanterns stay
