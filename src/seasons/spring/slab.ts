@@ -309,7 +309,7 @@ function clump(x: number, z: number): number {
 }
 
 function petalGeometry(): THREE.InstancedBufferGeometry {
-  const plane = new THREE.PlaneGeometry(1, 1, 8, 6)
+  const plane = new THREE.PlaneGeometry(1, 1, 5, 4)
   const g = new THREE.InstancedBufferGeometry()
   g.setAttribute('position', plane.getAttribute('position'))
   g.setAttribute('normal', plane.getAttribute('normal'))
@@ -358,7 +358,13 @@ function makeSurface(): THREE.Group {
   petals.frustumCulled = false
   petals.renderOrder = 4
   // Under every petal the slab loses its shine: the petal's own soft outline, flat on the slab, taken out of what the slab shows.
-  const under = new THREE.Mesh(petalShape, petalLook(1))
+  const flat = new THREE.PlaneGeometry(1, 1, 1, 1)
+  const underShape = new THREE.InstancedBufferGeometry()
+  for (const name of ['position', 'normal', 'uv']) underShape.setAttribute(name, flat.getAttribute(name))
+  for (const name of ['aRest', 'aKind', 'aShape']) underShape.setAttribute(name, petalShape.getAttribute(name))
+  underShape.setIndex(flat.getIndex())
+  underShape.instanceCount = petalShape.instanceCount
+  const under = new THREE.Mesh(underShape, petalLook(1))
   under.frustumCulled = false
   under.renderOrder = 3.5
   const far = new THREE.Mesh(new THREE.PlaneGeometry(2 * FAR_HALF_MM, 2 * FAR_HALF_MM), stageShader({ ...lit, textured: true, texels: 2048, uniforms: shared, fragment: FAR_FRAG, params: { ...veil } }))
