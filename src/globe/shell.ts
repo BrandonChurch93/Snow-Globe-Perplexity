@@ -70,6 +70,7 @@ export const glassLook = {
  * ring's inner edge is moved out toward the outline, 0 to 1, which thins the band round the glass. `rimClear`: how much of the
  * inside the rim's band hides. `topLine`: how much of the cool line the ring carries over the top. `ringMottle`: the depth of the
  * streaks and mottle in the ring. `ceiling`: the gain of the ceiling's reflection across the top of the glass.
+ * `windowShade`: how much of the dark crescent beside the window's reflection, its shade and its cool glow, is drawn.
  * `roomHue`, `roomHueOn`: the colour the room's walls take in the glass's reflections and how far they take it, 0 to 1.
  */
 export interface GlassAmounts {
@@ -89,9 +90,10 @@ export interface GlassAmounts {
   ceiling: number
   roomHue: V3
   roomHueOn: number
+  windowShade: number
 }
 
-const WINTER_GLASS: GlassAmounts = { windowTint: glassLook.window.tint, windowGain: [1, 1, 1, 1], windowSoftDeg: 0, windowGrain: 0, rimTint: [1, 1, 1], wallTint: [1, 1, 1], ringCover: 1, strip: 1, bend: 1, ringThin: 0, rimClear: 1, topLine: 1, ringMottle: 1, ceiling: 1, roomHue: [1, 1, 1], roomHueOn: 0 }
+const WINTER_GLASS: GlassAmounts = { windowTint: glassLook.window.tint, windowGain: [1, 1, 1, 1], windowSoftDeg: 0, windowGrain: 0, rimTint: [1, 1, 1], wallTint: [1, 1, 1], ringCover: 1, strip: 1, bend: 1, ringThin: 0, rimClear: 1, topLine: 1, ringMottle: 1, ceiling: 1, roomHue: [1, 1, 1], roomHueOn: 0, windowShade: 1 }
 const glassAmounts = new Map<string, GlassAmounts>()
 
 export function setGlass(season: string, amounts: Partial<GlassAmounts>): void {
@@ -157,7 +159,7 @@ uniform vec3 uSlab;
 uniform float uOwn;
 uniform vec3 uWinTint;
 uniform vec4 uWinGain;
-uniform vec2 uWinSoft;
+uniform vec3 uWinSoft;
 uniform vec3 uRimTint;
 uniform vec3 uWallTint;
 uniform vec4 uRingAmt;
@@ -546,7 +548,7 @@ void main() {
   col += uKeyCol * WIN_TINT * ${vec(W.gap.tint)} * (${num(W.gap.gain)} * uWinGain.x * glassGap(seen) * f1 * marks * (1.0 - ${num(W.dark.depth)} * dark) * mix(1.0, ${num(W.gap.mid[2])}, smoothstep(${num(W.gap.mid[0])}, ${num(W.gap.mid[1])}, nWorld.y)) * (1.0 - smoothstep(${num(W.gap.top[0])}, ${num(W.gap.top[1])}, nWorld.y)) * (0.45 + 0.55 * smoothstep(${num(W.gap.low[0])}, ${num(W.gap.low[1])}, nWorld.y)) * uOwn);
   float deep = dark * smoothstep(${num(W.dark.share[0])}, ${num(W.dark.share[1])}, s);
   if (uOwn > 0.5) col += uSky * uRimTint * ${vec(glassLook.body.tint)} * ${num(glassLook.body.sky)} * wallZone * (0.6 + 0.4 * thick) * (1.0 - dark);
-  col += uKeyCol * WIN_TINT * ${vec(W.dark.glow)} * deep * (0.7 + 0.6 * thick);
+  col += uKeyCol * WIN_TINT * ${vec(W.dark.glow)} * (uWinSoft.z * deep) * (0.7 + 0.6 * thick);
   col += uKeyCol * WIN_TINT * ${vec(glassLook.edge.tipTint)} * (${num(glassLook.edge.tip)} * exp(-0.5 * tipAt * tipAt) * uOwn * smoothstep(${num(glassLook.edge.tipShare[0])}, ${num(glassLook.edge.tipShare[1])}, s) * (0.6 + 0.4 * fine));
 
   vec3 piped = uKeyCol * WIN_TINT * ${vec(glassLook.edge.keyTint)} * ${num(glassLook.edge.key)} * lobe * mix(${num(glassLook.edge.keyLow)}, 1.0, smoothstep(${num(glassLook.edge.keyLowLobe[0])}, ${num(glassLook.edge.keyLowLobe[1])}, dot(nWorld, ${vec(glassLook.edge.keyLowDir)}))) + uRimCol * ${num(glassLook.edge.rim)} * back;
@@ -569,7 +571,7 @@ void main() {
   if (uOwn > 0.5) col += uSky * ${vec(glassLook.seat.footTint)} * (${num(glassLook.seat.foot)} * exp(-pow((above - ${num(glassLook.seat.footMm)}) / ${num(glassLook.seat.footWideMm)}, 2.0)) * (0.5 + 0.5 * fine) * footLimb);
 
   col = min(col, ${num(glassLook.shoulder.from)}) + ${num(glassLook.shoulder.to - glassLook.shoulder.from)} * (1.0 - exp(-max(col - ${num(glassLook.shoulder.from)}, 0.0) / ${num(glassLook.shoulder.to - glassLook.shoulder.from)}));
-  float alpha = (1.0 - f1) * (1.0 - ${num(glassLook.band.shade)} * band) * seat * (1.0 - ${num(W.dark.shade)} * deep) * (1.0 - ${num(glassLook.rim.clear)} * uRimAmt.x * rimZone * uOwn);
+  float alpha = (1.0 - f1) * (1.0 - ${num(glassLook.band.shade)} * band) * seat * (1.0 - ${num(W.dark.shade)} * (uWinSoft.z * deep)) * (1.0 - ${num(glassLook.rim.clear)} * uRimAmt.x * rimZone * uOwn);
   col += uBloom * (${num(glassLook.bloom.floor)} + ${num(1 - glassLook.bloom.floor)} * pow(nv, ${num(glassLook.bloom.power)})) + vec3(dot(uBloom, vec3(0.2126, 0.7152, 0.0722)) * ${num(glassLook.bloom.white)} * pow(nv, ${num(glassLook.bloom.whitePower)}));
 
   float limb = glassLimb(s);
@@ -728,7 +730,7 @@ export const shellUniforms = {
   uBubbleAt: { value: new THREE.Vector3(0, 1, 0) },
   uWinTint: { value: new THREE.Vector3(...WINTER_GLASS.windowTint) },
   uWinGain: { value: new THREE.Vector4(1, 1, 1, 1) },
-  uWinSoft: { value: new THREE.Vector2(0, 0) },
+  uWinSoft: { value: new THREE.Vector3(0, 0, 1) },
   uRimTint: { value: new THREE.Vector3(1, 1, 1) },
   uWallTint: { value: new THREE.Vector3(1, 1, 1) },
   uRingAmt: { value: new THREE.Vector4(1, 1, 1, 0) },
@@ -941,7 +943,7 @@ export class Shell {
     const mixed = (x: number, y: number) => x + (y - x) * t
     sh.uWinTint.value.set(mixed(ga.windowTint[0], gb.windowTint[0]), mixed(ga.windowTint[1], gb.windowTint[1]), mixed(ga.windowTint[2], gb.windowTint[2]))
     sh.uWinGain.value.set(mixed(ga.windowGain[0], gb.windowGain[0]), mixed(ga.windowGain[1], gb.windowGain[1]), mixed(ga.windowGain[2], gb.windowGain[2]), mixed(ga.windowGain[3], gb.windowGain[3]))
-    sh.uWinSoft.value.set(mixed(ga.windowSoftDeg, gb.windowSoftDeg) * RAD, mixed(ga.windowGrain, gb.windowGrain))
+    sh.uWinSoft.value.set(mixed(ga.windowSoftDeg, gb.windowSoftDeg) * RAD, mixed(ga.windowGrain, gb.windowGrain), mixed(ga.windowShade, gb.windowShade))
     sh.uRimTint.value.set(mixed(ga.rimTint[0], gb.rimTint[0]), mixed(ga.rimTint[1], gb.rimTint[1]), mixed(ga.rimTint[2], gb.rimTint[2]))
     sh.uWallTint.value.set(mixed(ga.wallTint[0], gb.wallTint[0]), mixed(ga.wallTint[1], gb.wallTint[1]), mixed(ga.wallTint[2], gb.wallTint[2]))
     sh.uRingAmt.value.set(mixed(ga.ringCover, gb.ringCover), mixed(ga.strip, gb.strip), mixed(ga.bend, gb.bend), mixed(ga.ringThin, gb.ringThin))
