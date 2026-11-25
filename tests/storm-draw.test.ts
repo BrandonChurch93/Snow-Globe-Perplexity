@@ -2,7 +2,7 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { CARD_FRAG_PARS, CARD_VERT } from '../src/particles/draw/cards'
-import { CARD, STORM_FLOOD, STORM_SHUTTER, STREAK_ARC } from '../src/particles/draw/looks'
+import { CARD, SHAPE, STORM_FLOOD, STORM_OWN_PATH_FROM, STORM_SHUTTER, STORM_SHUTTER_TURNED, STREAK_ARC } from '../src/particles/draw/looks'
 import { VERT_MAIN } from '../src/particles/draw/shader'
 
 const DRAW = join(__dirname, '..', 'src', 'particles', 'draw')
@@ -14,13 +14,21 @@ describe('how the storm is drawn', () => {
     expect(CARD_FRAG_PARS).toContain(`i < ${CARD.run.taps};`)
   })
 
-  it('the drawn stroke is the whole exposure in a storm and the samples add none of it', () => {
+  it('a kind drawn along its own path is seen for its stroke alone and the samples add none of it', () => {
     expect(STORM_SHUTTER).toBeGreaterThan(0)
     expect(STORM_SHUTTER).toBeLessThanOrEqual(1)
-    expect(VERT_MAIN).toContain('uPoint.x + shut * uStorm.y * afloat * (1.0 - uStorm.x)')
+    expect(VERT_MAIN).toContain('uPoint.x + shut * uStorm.y * afloat * (storming ? 1.0 - uStorm.x : 1.0)')
   })
 
-  it('in a storm no kind is turned to the current or stretched by its class', () => {
+  it('the leaf, the seed, the light and the spark take their own path; the flake, the glitter, the petal and the mote are turned to the current', () => {
+    expect(STORM_OWN_PATH_FROM).toBeGreaterThan(SHAPE.fleck)
+    expect(STORM_OWN_PATH_FROM).toBeLessThan(SHAPE.leaf)
+    expect(STORM_SHUTTER_TURNED).toBeGreaterThan(STORM_SHUTTER)
+    expect(STORM_SHUTTER_TURNED).toBeLessThanOrEqual(1)
+    expect(VERT_MAIN).toContain(`bool storming = uStorm.x > 0.0 && shape > ${STORM_OWN_PATH_FROM.toFixed(1)};`)
+  })
+
+  it('a kind on its own path is not turned to the current or stretched by its class', () => {
     expect(VERT_MAIN).toContain('if (gusty > 0.0 && !storming) {')
     expect(CARD_VERT).toContain('if (!storming) mvC = mix(mvC, curC')
     expect(CARD_VERT).toContain('if (!storming) stC *= ')
