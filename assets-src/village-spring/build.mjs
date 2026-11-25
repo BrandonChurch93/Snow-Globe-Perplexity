@@ -41,10 +41,10 @@ const TONE = {
   shrub: ['#35591f', '#476d25', '#28471b', '#577a2b', '#3d621e'].map(lin),
   ivy: ['#3d6424', '#4f7a2a', '#2c4c1c', '#618a30'].map(lin),
   tulips: [
-    [lin('#d8242c'), lin('#ff6a3c')],
+    [lin('#e4463c'), lin('#ff8a5a')],
     [lin('#ef5a1c'), lin('#ffb03a')],
     [lin('#f4b21c'), lin('#ffe07a')],
-    [lin('#e8527c'), lin('#ffb0c4')],
+    [lin('#ee6a8e'), lin('#ffb8ca')],
     [lin('#f08aa8'), lin('#ffd9e2')],
     [lin('#c81e3c'), lin('#f0607a')],
   ],
@@ -669,7 +669,7 @@ const fenceIn = [fenceDir[2], 0, -fenceDir[0]]
 const TULIP_TALL = 0.74
 const BEDS = [
   { at: [fenceMid[0] + fenceIn[0] * 2.4, fenceMid[1] + fenceIn[2] * 2.4], along: [fenceDir[0], fenceDir[2]], half: [6.2, 1.9], count: 17, tall: [4.4, 6.4], hues: [3, 1, 4, 0, 2, 1, 3] },
-  { at: [L.tree.x + 9.2, L.tree.z + 9.6], along: [0.86, 0.5], half: [4.2, 2.2], count: 15, tall: [4.6, 6.8], hues: [3, 0, 2, 1, 4, 3] },
+  { at: [L.tree.x + 9.2, L.tree.z + 9.6], along: [0.86, 0.5], half: [4.2, 2.2], count: 15, tall: [4.6, 6.8], hues: [4, 2, 1, 4, 3, 2] },
   { at: [L.tree.x + 15.5, L.tree.z + 4], along: [0.5, -0.86], half: [2.6, 1.6], count: 8, tall: [3.6, 5.2], hues: [4, 3, 2] },
   { at: [fenceMid[0] - fenceIn[0] * 2.2 + fenceDir[0] * 3, fenceMid[1] - fenceIn[2] * 2.2 + fenceDir[2] * 3], along: [fenceDir[0], fenceDir[2]], half: [3.4, 1.1], count: 9, tall: [3.2, 4.6], hues: [4, 2, 3] },
 ]

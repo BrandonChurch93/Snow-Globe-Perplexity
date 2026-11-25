@@ -6,7 +6,7 @@ import type { SeasonKit } from '../kit'
 // (the thin arc from 8 to 10 o'clock).
 export const rig: SeasonKit['rig'] = {
   key: { color: [1, 0.9, 0.84], intensity: 0.75, from: [380, 430, 200] },
-  rim: { color: [1, 0.72, 0.78], intensity: 0.35, from: [430, 170, -330] },
+  rim: { color: [1, 0.66, 0.74], intensity: 0.75, from: [430, 170, -330] },
   sky: [0.2, 0.16, 0.2],
   ground: [0.06, 0.05, 0.055],
   fill: 0.7,

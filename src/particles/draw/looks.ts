@@ -19,10 +19,10 @@ const LOOKS: Record<string, KindLook> = {
   glitter: { shape: SHAPE.mirror, size: 1.15, body: 0.3, flash: 5.5, real: true },
   petal: { shape: SHAPE.petal, size: 1, body: 0.96, flash: 0.75, real: true },
   mote: { shape: SHAPE.fleck, size: 1.2, body: 0.8, flash: 1, real: true },
-  leaf: { shape: SHAPE.leaf, size: 1, body: 1, flash: 0.5, real: true },
+  leaf: { shape: SHAPE.leaf, size: 1.35, body: 1, flash: 0.5, real: true },
   seed: { shape: SHAPE.seed, size: 3.6, body: 0.9, flash: 0, real: true },
   firefly: { shape: SHAPE.light, size: 1, body: 1, flash: 0, real: true },
-  ember: { shape: SHAPE.spark, size: 1.1, body: 1, flash: 0, real: true },
+  ember: { shape: SHAPE.spark, size: 1.5, body: 1, flash: 0, real: true },
   bat: { shape: SHAPE.bat, size: 1.3, body: 1, flash: 0, real: true },
 }
 
@@ -172,18 +172,20 @@ export const CARD = {
   area: 1.3,
   hold: 0.6,
   lieTilt: 0.22,
-  lieShade: 0.85,
+  lieShade: 1,
   lieFlat: 0.45,
-  petalRock: 0.62,
+  petalRock: 1.1,
   fleckRock: 2.6,
   leafRock: 0.55,
   stormRock: 2.8,
   yawSway: 0.6,
   /** Of the ones that settle and stay down, the share drawn whole, in the storm and lying; the rest are the storm's small dabs and are gone once they are down. */
-  chosen: 0.012,
-  dabSize: 0.42,
+  chosen: [0.004, 0.012] as const,
+  dabSize: 0.36,
+  /** The size of a whole petal and of a whole leaf in the storm, as a share of its size at rest. */
+  stormSize: [0.45, 0.6] as const,
   /** Of the rest, the share that is a solid small dab in the storm, and how much the others and they are seen. */
-  dabShare: [0.2, 0.3, 0.25] as const,
+  dabShare: [0.2, 0.3, 0.6] as const,
   dabKeep: [0, 1] as const,
   /** How much of a moving card is drawn sharp at the head of its path; the rest is its trail through the shutter. */
   head: 0.85,
@@ -198,14 +200,16 @@ export const CARD = {
   seedRock: 0.35,
   seedTilt: 1.2,
   litMost: 1.25,
-  sparkKeep: [0.03, 1] as const,
-  sparkSkew: 5,
+  sparkKeep: [0.08, 1] as const,
+  sparkSkew: 2.5,
   batFlap: 0.55,
   batBank: 0.35,
   /** How far a bat's wings are turned to face the picture, so that it reads as a bat from the side. */
   batFace: 0.9,
+  /** How much lighter a bat's edge is than its body, so that its outline holds on dark air. */
+  batRim: 5,
   /** A light's core, its glow and its wide glow, as radii in the particle's radius and as shares of its light. */
   glow: { core: 0.34, halo: 1.5, wide: 4.5, haloShare: 0.06, wideShare: 0.006, hide: 0.6, blinkLow: 0.04 },
-  spark: { gain: 0.3, core: 0.42, halo: 1.5, haloShare: 0.05, tail: 1.6, hotCore: 0.3, hot: [1, 0.8, 0.5] as const, dying: [0.85, 0.17, 0.03] as const },
-  hair: { runHead: 0.5, runTrail: 0.6, runWide: 0.07, runLeast: 1.2, wide: 0.014, seen: 1.5, reach: 1.7, foot: 1.5, stem: 0.022, body: 0.06, hub: 0.3, ringA: [11, 1.45, 1] as const, ringB: [8, 0.8, 0.9] as const, ringC: [7, 2.1, 0.8] as const },
+  spark: { gain: 1.1, core: 0.42, halo: 1.5, haloShare: 0.05, tail: 1.6, hotCore: 0.3, hot: [1, 0.8, 0.5] as const, dying: [0.85, 0.17, 0.03] as const },
+  hair: { runHead: 0.5, runTrail: 0.6, runWide: 0.04, runLeast: 1.2, runSeen: 1.6, runStretch: 2, runKeep: 0.2, wide: 0.014, seen: 1.5, reach: 1.7, foot: 1.5, stem: 0.022, body: 0.06, hub: 0.3, ringA: [11, 1.45, 1] as const, ringB: [8, 0.8, 0.9] as const, ringC: [7, 2.1, 0.8] as const },
 }
