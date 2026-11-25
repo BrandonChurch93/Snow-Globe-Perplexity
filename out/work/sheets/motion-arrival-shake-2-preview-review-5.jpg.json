@@ -1,0 +1,193 @@
+{
+  "engineHash": "860c085c45f24b98",
+  "seasonHashes": {
+    "winter": "5c39d16f98d3d0be",
+    "spring": "38e0528c58d1f976",
+    "summer": "7b8427b9854282f6",
+    "fall": "1000395001129642"
+  },
+  "format": "preview",
+  "tier": "review",
+  "assets": "full",
+  "diagnostic": "",
+  "browser": "Google Chrome for Testing 147.0.7727.15",
+  "graphics": "software",
+  "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB",
+  "time": "2026-11-25T02:44:06.733Z",
+  "diag": "",
+  "layoutHash": "eaef1fec3b7393d1",
+  "spec": {
+    "kind": "motion",
+    "motion": "arrival",
+    "source": "film",
+    "shot": "shake-2",
+    "stride": 1,
+    "frames": [
+      1536,
+      1538,
+      1540,
+      1542,
+      1544,
+      1546,
+      1548,
+      1550,
+      1552,
+      1554,
+      1556,
+      1558
+    ]
+  },
+  "caption": "Motion sheet 5 of 8: the arrival of shake-2, frames 1536 to 1558, 2 frames apart at 60 frames a second, preview, review",
+  "width": 1149,
+  "height": 986,
+  "limits": {
+    "longEdge": 1400,
+    "maxPixels": 1140000
+  },
+  "layout": {
+    "cols": 3,
+    "rows": 4,
+    "cell": {
+      "width": 367,
+      "height": 206
+    },
+    "labelHeight": 24,
+    "gap": 12,
+    "rowGap": 14,
+    "margin": 12
+  },
+  "frames": [
+    {
+      "index": 1536,
+      "seconds": 25.6,
+      "file": "out/work/seq/film-preview-review/film-001536.png",
+      "at": {
+        "left": 12,
+        "top": 12,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 1538,
+      "seconds": 25.633333333333333,
+      "file": "out/work/seq/film-preview-review/film-001538.png",
+      "at": {
+        "left": 391,
+        "top": 12,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 1540,
+      "seconds": 25.666666666666668,
+      "file": "out/work/seq/film-preview-review/film-001540.png",
+      "at": {
+        "left": 770,
+        "top": 12,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 1542,
+      "seconds": 25.7,
+      "file": "out/work/seq/film-preview-review/film-001542.png",
+      "at": {
+        "left": 12,
+        "top": 256,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 1544,
+      "seconds": 25.733333333333334,
+      "file": "out/work/seq/film-preview-review/film-001544.png",
+      "at": {
+        "left": 391,
+        "top": 256,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 1546,
+      "seconds": 25.766666666666666,
+      "file": "out/work/seq/film-preview-review/film-001546.png",
+      "at": {
+        "left": 770,
+        "top": 256,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 1548,
+      "seconds": 25.8,
+      "file": "out/work/seq/film-preview-review/film-001548.png",
+      "at": {
+        "left": 12,
+        "top": 500,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 1550,
+      "seconds": 25.833333333333332,
+      "file": "out/work/seq/film-preview-review/film-001550.png",
+      "at": {
+        "left": 391,
+        "top": 500,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 1552,
+      "seconds": 25.866666666666667,
+      "file": "out/work/seq/film-preview-review/film-001552.png",
+      "at": {
+        "left": 770,
+        "top": 500,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 1554,
+      "seconds": 25.9,
+      "file": "out/work/seq/film-preview-review/film-001554.png",
+      "at": {
+        "left": 12,
+        "top": 744,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 1556,
+      "seconds": 25.933333333333334,
+      "file": "out/work/seq/film-preview-review/film-001556.png",
+      "at": {
+        "left": 391,
+        "top": 744,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 1558,
+      "seconds": 25.966666666666665,
+      "file": "out/work/seq/film-preview-review/film-001558.png",
+      "at": {
+        "left": 770,
+        "top": 744,
+        "width": 367,
+        "height": 206
+      }
+    }
+  ]
+}
