@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { fromThree, writeGlb } from '../../tools/lib/glb.mjs'
 import { rel, writeJson } from '../../tools/lib/paths.mjs'
 import { loadSource } from '../trunk/source.mjs'
+import { addLists } from '../village-spring/levels.mjs'
 
 const [T, R] = await loadSource(['/src/miniature/trunk.ts', '/src/core/rng.ts'])
 const rng = R.stream('tree-spring')
@@ -27,7 +28,7 @@ const lin = (hex) => {
 
 const CROWN = { centre: [1.2, 27.6, 1], r: [23, 13.4, 15.5], floor: 14.2, sprays: 132, spacing: 4.3, reach: 13, inner: 0.42, layer: 4.2, layerJitter: 1.9 }
 const TWIG = { from: 0.36, to: 0.06, sides: 5, steps: 7 }
-const CLUSTER = { step: 1.25, from: 0.3, size: [0.85, 1.3], tip: [1.15, 1.6], flowers: [11, 16], flower: [0.4, 0.64], side: 0.6, flat: 0.78, extra: 0.22, core: 0.46 }
+const CLUSTER = { step: 1.25, from: 0.3, size: [0.85, 1.3], tip: [1.15, 1.6], flowers: [9.5, 13.5], flower: [0.4, 0.64], side: 0.6, flat: 0.78, extra: 0.22, core: 0.46 }
 const TONES = ['#f6b3c9', '#f9c6d6', '#f2a7c0', '#fbd7e2', '#f0a2bc', '#f7bdd0', '#fde4ea'].map(lin)
 const SHADE = [0.72, 0.62, 0.65]
 const HEART = lin('#d86a8a')
@@ -202,6 +203,10 @@ const icoIndexed = (() => {
 const wob = (x, y, z) => Math.sin(x * 2.3 + y * 1.7) * Math.cos(z * 2.1 - x * 0.9) * 0.5 + Math.sin(y * 3.1 + z * 1.3) * 0.5
 
 let flowers = 0
+const cores = []
+const full = [[], [], []]
+const light = [[], [], []]
+const lighter = [[], [], []]
 for (const c of clusters) {
   const open = openness(c)
   const tone = mul(mix(TONES[rng.int(TONES.length)], TONES[rng.int(TONES.length)], rng.next()), 0.92 + 0.16 * rng.next())
@@ -219,7 +224,7 @@ for (const c of clusters) {
     const under = 0.62 + 0.38 * smooth(-0.8, 0.5, q[1])
     bloom.c.push(tone[0] * SHADE[0] * lit * under, tone[1] * SHADE[1] * lit * under, tone[2] * SHADE[2] * lit * under)
   }
-  for (const v of icoIndexed.idx) bloom.i.push(base + v)
+  for (const v of icoIndexed.idx) cores.push(base + v)
   const count = Math.round((CLUSTER.flowers[0] + rng.next() * (CLUSTER.flowers[1] - CLUSTER.flowers[0])) * (c.r / 1.1) ** 1.5)
   for (let f = 0; f < count; f++) {
     const d = norm([rng.gauss(), rng.gauss() * 0.9 + 0.25, rng.gauss()])
@@ -258,7 +263,9 @@ for (const c of clusters) {
       corner(1, -0.2, cup, 1.08)
       corner(0.56, -0.4, cup * 0.5, 0.86)
       const q0 = b0 + 1 + j * 4
-      bloom.i.push(b0, q0, q0 + 1, b0, q0 + 1, q0 + 2, b0, q0 + 2, q0 + 3)
+      full[flowers % 3].push(b0, q0, q0 + 1, b0, q0 + 1, q0 + 2, b0, q0 + 2, q0 + 3)
+      light[flowers % 3].push(b0, q0 + 1, q0 + 3)
+      if (flowers % 2 === 0) lighter[flowers % 3].push(b0, q0 + 1, q0 + 3)
     }
     flowers++
   }
@@ -291,10 +298,14 @@ for (const c of clusters)
     box[j + 3] = Math.max(box[j + 3], c.p[j] + c.r)
   }
 
-const counts = { blossom: bloom.i.length / 3, twigs: wood.i.length / 3 }
+bloom.i = [...cores, ...full.flat()]
+const lists = { medium: [...cores, ...light.flat()], low: [...cores, ...lighter.flat()] }
+const shadow = { high: cores.length + full[0].length, medium: cores.length + light[0].length, low: cores.length + lighter[0].length }
+const counts = { blossom: bloom.i.length / 3, twigs: wood.i.length / 3, medium: lists.medium.length / 3, low: lists.low.length / 3, shadow }
 const out = writeGlb(rel('assets-full', 'spring', 'tree-blossom.glb'), [
-  fromThree('blossom', geometryOf(bloom), { triangles: counts.blossom, clusters: clusters.length, flowers, balls, box: box.map((v) => Number(v.toFixed(2))) }),
+  fromThree('blossom', geometryOf(bloom), { triangles: counts.blossom, clusters: clusters.length, flowers, balls, shadow, box: box.map((v) => Number(v.toFixed(2))) }),
   fromThree('twigs', geometryOf(wood), { triangles: counts.twigs, sprays: sprays.length }),
 ])
+out.bytes = addLists(rel('assets-full', 'spring', 'tree-blossom.glb'), 'blossom', lists)
 writeJson(rel('out', 'work', 'tree', 'build-spring.json'), { made: 'assets-src/tree-spring/build.mjs', file: 'assets-full/spring/tree-blossom.glb', bytes: out.bytes, counts, clusters: clusters.length, flowers, sprays: sprays.length, balls: balls.length, box })
-console.log(`tree-spring: ${sprays.length} sprays, ${clusters.length} clusters, ${flowers} flowers, ${balls.length} collider balls; ${out.triangles} triangles, ${(out.bytes / 1e6).toFixed(2)} MB; box ${box.map((v) => v.toFixed(1)).join(' ')}`)
+console.log(`tree-spring: ${sprays.length} sprays, ${clusters.length} clusters, ${flowers} flowers, ${balls.length} collider balls; ${out.triangles} triangles (blossom ${counts.blossom}, medium ${counts.medium}, low ${counts.low}; in the shadow ${shadow.high / 3}, ${shadow.medium / 3}, ${shadow.low / 3}), ${(out.bytes / 1e6).toFixed(2)} MB; box ${box.map((v) => v.toFixed(1)).join(' ')}`)

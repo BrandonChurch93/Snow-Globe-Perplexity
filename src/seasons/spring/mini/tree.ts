@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { afterLight } from '../../../core/chunks/light'
 import { stageMaterial } from '../../../core/materials'
-import { geometry, prepareModel } from '../../../core/models'
+import { geometry, meshLevel, prepareModel } from '../../../core/models'
 import { lampFlame } from '../../../miniature/roof'
 import { bakeGlow, buildTrunk, crownOffset, glowHook, prepareTrunk, trunkSolid, type GlowLight } from '../../../miniature/trunk'
 import { emitters } from '../../../scene/layout'
@@ -150,6 +150,9 @@ export function build(): THREE.Object3D {
   const blossom = new THREE.Mesh(placed('blossom', lampOn(LAMP_ON_BLOSSOM)), blossomMaterial())
   blossom.castShadow = true
   blossom.receiveShadow = true
+  const inShadow = (geometry(MODEL, 'blossom').userData.extras as { shadow?: Record<string, number> } | undefined)?.shadow ?? {}
+  blossom.onBeforeShadow = (_r, _o, _c, _s, g) => g.setDrawRange(0, inShadow[meshLevel()] ?? Infinity)
+  blossom.onAfterShadow = (_r, _o, _c, _s, g) => g.setDrawRange(0, Infinity)
   const twigs = new THREE.Mesh(placed('twigs', lampOn(LAMP_ON_WOOD)), twigMaterial())
   twigs.castShadow = true
   twigs.receiveShadow = true
