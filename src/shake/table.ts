@@ -165,10 +165,11 @@ const HELD: Hand = {
   /** Beats before its edge meets the surface at which the globe is over its mark: it comes down the last of the way straight. */
   homeLead: 0.17,
   /** Beats one reversal of the lean takes. The fewest the limit on how hard a hand can turn a weight leaves. */
-  heldFlip: 0.27,
+  heldFlip: 0.255,
   heldTrace: 0.2,
   heldReach: 0.6,
-  heldJoin: [0.14, 0.03],
+  heldJoin: [0.14, 0.09],
+  heldLead: 0.07,
   /** The rock after the landing: each rock lasts this share of the one before it, so the foot rocks over once, back, and once more, quicker each time. */
   overshootDeg: [1.74, 1.8],
   rockFirst: 0.56,
