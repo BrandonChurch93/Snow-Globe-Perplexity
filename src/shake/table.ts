@@ -161,7 +161,7 @@ const HELD: Hand = {
   ...HAND,
   /** A lighter base lean and a lighter second axis leave the room under the cap to the lean of the strokes. */
   leanDeg: [1.2, 1.4],
-  rockGain: [0.07, 0.11],
+  rockGain: [0.11, 0.15],
   /** Beats before its edge meets the surface at which the globe is over its mark: it comes down the last of the way straight. */
   homeLead: 0.17,
   /** Beats one reversal of the lean takes. The fewest the limit on how hard a hand can turn a weight leaves. */
