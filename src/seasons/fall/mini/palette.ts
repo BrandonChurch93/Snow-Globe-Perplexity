@@ -14,7 +14,7 @@ export const tones: Record<'lamp' | 'flame' | 'lampLight' | 'purple' | 'purpleDr
   greenDrape: [0.06, 0.62, 0.08],
   greenLight: [0.3, 1, 0.28],
   pumpkinLight: [1, 0.5, 0.14],
-  ember: [1, 0.55, 0.18],
+  ember: [1, 0.43, 0.1],
   emberLight: [1, 0.5, 0.2],
   pondLight: [0.25, 1, 0.42],
   haloEdge: [0.85, 0.34, 0.05],
