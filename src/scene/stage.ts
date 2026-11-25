@@ -51,6 +51,8 @@ void main() {
 
 /** The power the veil's share of the swap window is raised to. */
 const VEIL_LATE = 2.5
+/** The power the light's share of the swap window is raised to. */
+const LIGHT_LATE = 2.5
 
 export class GlobeStage implements Stage {
   readonly standIn = true
@@ -255,7 +257,9 @@ export class GlobeStage implements Stage {
     f.from = a.kit
     f.to = b.kit
     f.change = change
-    f.mix.light = partChange('light', change)
+    // The light inside and the lights of the room cross through the whole window, late in the same way: at the middle of the window the
+    // storm is still lit by the season that leaves, and the new season's colour comes up with the flood that hides the base.
+    f.mix.light = Math.pow(partChange('light', change), LIGHT_LATE)
     // The veil crosses through the whole window. Where the season that leaves has the thicker veil it crosses late: a sixth of the way
     // at the middle of the window, four tenths where the base begins to change. Crossed evenly, that storm stood in the new season's
     // colour a dozen frames before the outside of the globe. Where the season that comes has the thicker veil the crossing stays
