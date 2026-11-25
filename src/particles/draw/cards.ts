@@ -56,7 +56,7 @@ export const CARD_VERT = `
     if (${at(SHAPE.spark)}) rC *= mix(${n(CARD.spark.small)}, ${n(CARD.spark.large)}, smoothstep(${n(CARD.spark.fromMm[0])}, ${n(CARD.spark.fromMm[1])}, aData.x));
     if (${at(SHAPE.light)}) rC *= mix(${n(CARD.glow.spread[0])}, ${n(CARD.glow.spread[1])}, pow(vary, ${n(CARD.glow.spread[2])}));
     if (shape > ${n(SHAPE.bat - 0.5)}) rC *= mix(${n(CARD.batSpread[0])}, ${n(CARD.batSpread[1])}, vary);
-    keepC = mix(keepC, afloat * gustC * (${at(SHAPE.seed)} ? mix(${n(CARD.line.seedKeep[0])}, ${n(CARD.line.seedKeep[1])}, pow(fract(own * 53.0), ${n(CARD.line.seedSkew)})) : mix(${n(CARD.line.keep[0])}, ${n(CARD.line.keep[1])}, pow(fract(own * 53.0), ${at(SHAPE.leaf)} ? ${n(CARD.line.leafSkew)} : ${n(CARD.line.skew)}))), lineC);
+    keepC = mix(keepC, afloat * gustC * (${at(SHAPE.seed)} ? mix(${n(CARD.line.seedKeep[0])}, ${n(CARD.line.seedKeep[1])}, pow(fract(own * 53.0), storming ? ${n(CARD.line.shutSeedSkew)} : ${n(CARD.line.seedSkew)})) : mix(${n(CARD.line.keep[0])}, ${n(CARD.line.keep[1])}, pow(fract(own * 53.0), ${at(SHAPE.leaf)} ? ${n(CARD.line.leafSkew)} : ${n(CARD.line.skew)}))), lineC);
     float windowC = (1.0 - smoothstep(${n(STORM_WINDOW.from)}, ${n(STORM_WINDOW.to)}, length((nowL.xy - vec2(${n(STORM_WINDOW.x)}, ${n(STORM_WINDOW.y)})) / vec2(${n(STORM_WINDOW.wide)}, ${n(STORM_WINDOW.high)})))) * smoothstep(${n(STORM_WINDOW.back)}, ${n(STORM_WINDOW.front)}, nowL.z);
     keepC *= 1.0 - ${n(CARD.window)} * windowC * gustC * (sheet + (${at(SHAPE.seed)} ? 1.0 : 0.0));
     float clearC = over * smoothstep(${n(CARD.clear.back)}, ${n(CARD.clear.front)}, depth) * (1.0 - smoothstep(${n(CARD.clear.lowMm)}, ${n(CARD.clear.highMm)}, nowL.y)) * (shape > ${n(SHAPE.bat - 0.5)} ? 0.0 : 1.0);
@@ -151,6 +151,7 @@ export const CARD_VERT = `
     }
     vec2 stC = (toView * ((aNow - aPrev) * shut)).xy * (uPoint.y * mag / zImg) * afloat;
     vec2 holdC = vec2(0.0);
+    vec3 pathC = (aNow - aPrev) * shut;
     if (${at(SHAPE.spark)} && !storming) {
       holdC = stC * uStorm.y * (1.0 - mix(${n(CARD.spark.calmStreak)}, 1.0, gustC));
       stC *= mix(${n(CARD.spark.calmStreak)}, 1.0, gustC);
@@ -164,10 +165,12 @@ export const CARD_VERT = `
       vec3 mvC = (aNow - aPrev) * shut;
       vec3 curC = veilCurrent(nowL);
       if (!storming) mvC = mix(mvC, curC * (length(mvC) * (dot(mvC, curC) < 0.0 ? -1.0 : 1.0)), ${n(CARD.line.align)} * uVeilRoll.x);
+      if (storming) mvC *= mix(${n(CARD.line.shutLong[0])}, ${n(CARD.line.shutLong[1])}, fract(own * 97.0));
       stC = (toView * mvC).xy * (uPoint.y * mag / zImg) * afloat;
       if (!storming) stC *= ${at(SHAPE.seed)} ? mix(${n(CARD.line.seedStretch[0])}, ${n(CARD.line.seedStretch[1])}, pow(fract(own * 97.0), 2.0)) : (${at(SHAPE.leaf)} ? mix(${n(CARD.line.leafStretch[0])}, ${n(CARD.line.leafStretch[1])}, pow(fract(own * 97.0), 2.0)) : mix(${n(CARD.line.stretch[0])}, ${n(CARD.line.stretch[1])}, pow(fract(own * 97.0), 2.0)));
       limC = uLimit.x / (uLimit.x + length(stC));
       stC *= limC;
+      pathC = mvC;
       // how far the trail runs toward or away from the eye, in millimetres over its drawn length
       dzC = clamp((toView * mvC).z * length(stC) / max(length((toView * mvC).xy) * (uPoint.y * mag / zImg), 1e-4), ${n(-CARD.line.deepMostMm)}, ${n(CARD.line.deepMostMm)}) * afloat;
       keepC *= storming && !(${at(SHAPE.seed)}) ? smoothstep(${n(CARD.line.shutFromPx[0])}, ${n(CARD.line.shutFromPx[1])}, length(stC) / uPoint.w) : smoothstep(${n(CARD.line.fromPx[0])}, ${n(CARD.line.fromPx[1])}, length(stC) / uPoint.w);
@@ -179,7 +182,7 @@ export const CARD_VERT = `
     float arcC = 0.0;
     if (storming && afloat > 0.5 && hlC > 1e-3 && shape < ${n(SHAPE.bat - 0.5)}) {
       // the trail of a thing that goes round with the liquid is an arc: the same arc for a leaf, a petal, a seed, a light and a spark
-      arcC = clamp(dot((toView * pointSag(nowL, (aNow - aPrev) * shut)).xy, vec2(-alC.y, alC.x)) * (uPoint.y * mag / zImg) * limC * limC / hlC, ${n(-STREAK_ARC.most)}, ${n(STREAK_ARC.most)});
+      arcC = clamp(dot((toView * pointSag(nowL, pathC)).xy, vec2(-alC.y, alC.x)) * (uPoint.y * mag / zImg) * limC * limC / hlC, ${n(-STREAK_ARC.most)}, ${n(STREAK_ARC.most)});
       if (lineC > 0.5) {
         bowC = -arcC;
         // a thing seen for the whole shutter leaves on each place of its path the share of the shutter it spent there: the faster, the longer and the fainter
@@ -211,7 +214,7 @@ export const CARD_VERT = `
       float deepC = mix(${n(CARD.line.deep[0])}, ${n(CARD.line.deep[1])}, smoothstep(-0.8, 0.8, depth));
       if (storming) {
         headC = 0.0;
-        wideC *= ${n(CARD.line.shutWide)};
+        wideC *= ${at(SHAPE.seed)} ? ${n(CARD.line.shutSeedWide)} : ${n(CARD.line.shutWide)};
       }
       headC *= uPoint.w * deepC;
       wideC *= uPoint.w * deepC;
