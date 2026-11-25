@@ -454,12 +454,12 @@ export function buildWax() {
   const drips = L.DRIPS.map((d) => {
     const top = L.onCylinder(d.x, 1085, 48.5)
     const end = L.onCylinder(d.x, d.y1, 51.5)
-    return { az: top.az, h1: end.h, w: (d.w / 9.3) * 0.62, wide: d.wide }
+    return { az: top.az, h1: end.h, w: (d.w / 9.3) * 0.53, wide: d.wide }
   })
   for (let az = 100; az < 260; az += 23 + 9 * Math.sin(az)) drips.push({ az: L.wrapDeg(az), h1: 35.5 - 9 * Math.abs(Math.sin(az * 1.7)), w: 0.85, wide: 1.4 })
   const wrng = mulberry(733)
   for (const d of drips.slice(0, L.DRIPS.length)) {
-    if (d.w < 1.0 || wrng() < 0.5) continue
+    if (d.w < 0.85 || d.h1 < 27 || wrng() < 0.5) continue
     const sgn = wrng() < 0.5 ? -1 : 1
     drips.push({ az: d.az + sgn * (1.3 + 1.2 * wrng()), h1: d.h1 + (wrng() - 0.35) * 6, w: d.w * (0.4 + 0.2 * wrng()), wide: 1.0, thin: true })
   }

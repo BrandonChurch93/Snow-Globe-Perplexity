@@ -234,7 +234,7 @@ roughnessFactor = clamp(mix(0.44, 0.62, baseDetail.b) + 0.04 * baseStrand + 0.14
 metalnessFactor = mix(0.85, 0.6, baseScale) * (1.0 - 0.6 * baseRust) * (1.0 - 0.35 * baseStrand);
 `
 const IRON_TILT = `
-vec2 baseTilt = baseSlope(baseDetail.rg) * mix(mix(0.12 + 0.42 * baseStrand, 0.14 * (1.0 - vBasePaint.z), baseThorn), 0.75, baseDrum) + vec2(0.0, (fibreNext - fibreHere) * 1.1 * baseStrand);
+vec2 baseTilt = baseSlope(baseDetail.rg) * mix(mix(0.12 + 0.42 * baseStrand, 0.14 * (1.0 - vBasePaint.z), baseThorn), 0.6, baseDrum) + (vec2(baseNoise(vBasePos * 0.42 + 3.0), baseNoise(vBasePos * 0.42 + 31.0)) - 0.5) * 0.9 * baseDrum + vec2(0.0, (fibreNext - fibreHere) * 1.1 * baseStrand);
 `
 const IRON_AFTER = `
 #define IRON_WARM 1.5
@@ -334,6 +334,8 @@ float baseAo = vBasePaint.x * mix(0.25, 1.0, smoothstep(39.7, 39.25, vBasePos.y)
 float waxDeep = vBasePaint.y;
 float waxMottle = baseNoise(vBasePos * 0.9) * 0.6 + baseNoise(vBasePos * 3.7) * 0.4;
 diffuseColor.rgb = mix(vec3(0.9, 0.83, 0.6), vec3(0.78, 0.6, 0.32), smoothstep(0.15, 0.8, waxDeep) * (0.5 + 0.5 * waxMottle)) * mix(0.9, 1.06, waxMottle);
+// A run thins toward its tip, and the thin wax is the warmer for the light in it.
+diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.97, 0.76, 0.46), 0.55 * smoothstep(0.5, 1.0, vBasePaint.z));
 float baseWrap = 0.55;
 float baseCandle = 0.5;
 `
