@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 110 · 2026-11-25 17:02 UTC
+Status 111 · 2026-11-25 17:23 UTC
 
-- `out/stills/status/status-110-1.jpg`: The visitor's walk, wide screen: winter from the front again after a look to the side
-- `out/stills/status/status-110-2.jpg`: The walk, wide screen: fall chosen with the keyboard, its mark ringed
-- `out/stills/status/status-110-3.jpg`: The walk, tablet: winter from the look's upper limit
-- `out/stills/status/status-110-4.jpg`: The walk, tablet: the row of controls in winter, spring, summer and fall (fall by keyboard)
+- `out/stills/status/status-111-1.jpg`: The base at the cut from winter to spring, film frame 674. Above, before: the winter base half dissolved in pale patches. Below, now: one frame blurred by the stroke under a glare, the spring base on the next frame. Still wrong: this one frame reads as both seasons.
+- `out/stills/status/status-111-2.jpg`: The landing in spring, frame 718, final tier. Above, before: a flat olive band under the lifted foot. Below, now: a thin dark gap, then the mirror image of the stones and roots.
+- `out/stills/status/status-111-3.jpg`: The table at the low level of quality (phones), summer, winter, spring, fall. Left, before: a flat tan band. Middle, now: a dark pool with a soft glow. Right: the high level, for comparison.
+- `out/stills/status/status-111-4.jpg`: The glass in spring, final tier: kept, new, and the approved image, at the left rim, the right rim, the top and the front edge of the ground. The violet ring is gone and the edge is thin; the approved image's bright layered arcs are still missing. Not merged yet.
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 17:12 UTC
-clock: phase 5, tick of 9.7 minutes
-phase 5: 3.02 h used of its 12.00 h box
-allowance (before the review, continuation 1): 3.02 h used of 12.00 h allowed
-all time before the review: 39.21 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 17:23 UTC
+clock: phase 5, tick of 1.8 minutes
+phase 5: 3.21 h used of its 12.00 h box
+allowance (before the review, continuation 1): 3.21 h used of 12.00 h allowed
+all time before the review: 39.40 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 9
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -2153,3 +2153,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 17:03 UTC. Status 110 posted (Phase 5, Continuation 1, Round 18 running), four pictures of the visitor's walk as the two walkers saved them on `99f6092`: the wide screen in winter after a look to the side, the wide screen in fall chosen with the keyboard, the tablet at the look's upper limit, and the tablet's row of controls in the four seasons. Said with it: sound has started (the account read 0 of 131000 used at 16:58:55 UTC; `sound_taker` makes the eighteen missing sounds; the guard of decision 109 had booked 0 of 10000 at 17:02:23); the walk on the wide screen ended at 17:01 with 17 lines, 15 ok, and the two that are not (`look-returned`, `tab-order`) are being checked before either is written as a fault; Round 18's packs and gate are rendering; six polish builders at work, the hand's report in. The app and review links were given.
 
 - 17:09 UTC. Round 18's eight keys are in: `round_renderer_c` (winter, 17:06), `round_renderer_d` (spring, 17:05), `motion_renderer_d` (summer, 17:02) and `motion_renderer_e` (fall, 17:08) each rendered the two keys of its season at the final tier on `3d01496` (engine `80483ec9ffb8348a`) and printed their sha256: all eight are equal to the kept stills (`out/work/verify/kept-key-hashes.txt`), so the round's judged stills are the kept files, byte for byte. Polish, first reports: `hand_builder` at 17:00 (`agent/p5-hand` `3027074`), `swap_builder` at 17:06 (`agent/p5-swap` `d91a949`), `liquid_polisher` at 17:07 (`agent/p5-liquid` `739c168`). Merged `agent/p5-hand` as `3973022a` after the Builder's own look at its four pictures (the held hand now leans 3.5 to 4.6 degrees through the centre of a stroke where it was 2.0 to 3.5; the landing touches on an edge, goes over 1.77 degrees and rocks back twice, each rock under 0.55 of the one before, still inside 0.4 s): types clean, 465 tests pass and 4 skipped, build ok on the merged tree, engine now `6a95a4ee0da8dab3`. Its own proofs were on `c9a975f`: determinism pass, G11 and G12 green, M4 and M5 pass at draft, `winter-shake` and `spring-shake` at final equal to kept (the stills keep the first hand; only the film's, the loop's and the app's shakes use the held hand). Not proven, in the builder's words: "consecutive final frames were not rendered"; laid next to main "the change is small". Items 159 and 160 stay open with that. Two test rules were restated by the builder, each in its own commit (`7a222b4`: the held hand may go over by up to 1.9 degrees, inside decision 106's 2.5; `a79c69b`: the held hand's lean dies past 0.85 of the settle, and each rock is under 0.55 of the one before).
+
+- 17:24 UTC. Status 111 posted (Phase 5, Continuation 1, Round 18 running), four pictures of polish round 1: the base at the cut from winter to spring on film frame 674, before over after (`out/work/p5/swap/cut-674-before-over-after.jpg`); the landing in spring on frame 718 at the final tier, kept over new (`out/work/p5/surface/`); the table at the low level of quality in four seasons, before, now and the high level; the glass in spring, kept, new and approved. Said with it: three of the six polish changes are merged (hand `3973022a`, swap `f03a4462`, surface `90b1b484`, and three lines of fall's slab in `9c31527b`), the liquid's is not (decision 110), the storm and the glass are being looked at; Round 18's R4 and R5 packs are in and their critics started at 17:22 and 17:23 (`reviewer_r18_a`, `reviewer_r18_b`); sound: 13 calls, the guard had booked 772 of 10000 and the account's counter read 739 of 131000 used at 17:22:21 UTC. The app and review links were given.
