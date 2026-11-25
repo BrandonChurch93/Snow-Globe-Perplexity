@@ -1,0 +1,142 @@
+{
+  "id": "music-summer",
+  "file": "music-summer.wav",
+  "class": "music",
+  "season": "summer",
+  "line": "Warm and unhurried: nylon guitar, soft marimba, a golden dusk",
+  "seconds": 28.793,
+  "take": 2,
+  "takes": 2,
+  "round": "build",
+  "why": "no voice heard; a fingerpicked acoustic guitar, calm, gentle, warm, chosen blind as warm and unhurried out of five moods; 100.001 beats a minute and 12 bars on the grid; no marimba heard",
+  "tool": "ElevenLabs music, POST /v1/music, the default model (music_v1), pcm_48000",
+  "prompt": "A warm, laid-back and unhurried piece at exactly 100 beats per minute in 4/4, twelve bars long, in a major key: a fingerpicked nylon string classical guitar in front carrying one short simple sunny melody with soft strummed chords, a mellow low marimba and a light shaker marking the beat, relaxed like a golden dusk at the end of a summer day. It starts on the first downbeat with no pickup and no lead-in and holds one even feel, instrumental, no vocals, no spoken words, clean ending",
+  "settings": {
+    "endpoint": "POST /v1/music",
+    "model": "default",
+    "how": "prompt",
+    "music_length_ms": 28800,
+    "force_instrumental": true,
+    "output_format": "pcm_48000",
+    "cost": null,
+    "counterMovedBy": 0,
+    "counterNote": "the music endpoint sends no cost header; the counter also moves with other work on the account"
+  },
+  "chain": {
+    "settings": {
+      "trimDb": -60,
+      "padMs": 5,
+      "fadeInMs": 2,
+      "fadeOutMs": 30,
+      "lowCutHz": 0,
+      "loop": false,
+      "targetLufs": -16,
+      "capSeconds": null
+    },
+    "steps": [
+      "took a constant offset of -78.26 dB out",
+      "trimmed 0 s in front and 0 s at the end",
+      "fade in 2 ms, fade out 30 ms",
+      "held 0.87 dB under -16 LUFS so the peak stays under -1 dB",
+      "level: 0.09 dB to -16.87 LUFS, measured as gated loudness over 400 ms blocks"
+    ],
+    "gainDb": 0.09,
+    "level": {
+      "measure": "gated",
+      "measuredAs": "gated loudness over 400 ms blocks",
+      "seconds": 28.7928,
+      "beforeLufs": -16.97,
+      "afterLufs": -16.87,
+      "targetLufs": -16,
+      "truePeakDb": -1.15
+    }
+  },
+  "loop": null,
+  "measured": {
+    "seconds": 28.793,
+    "peakDb": -1.29,
+    "truePeakDb": -1.15,
+    "lufs": -16.87,
+    "lufsMeasure": "gated",
+    "soundLufs": null,
+    "offsetDb": null,
+    "rmsDb": -18.85,
+    "silenceFrontSeconds": 0,
+    "silenceEndSeconds": 0.013,
+    "soundSeconds": 28.78,
+    "tailDb": -45.98,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 233,
+      "bands": {
+        "sub": 0,
+        "low": 0.8643,
+        "lowMid": 0.1325,
+        "mid": 0.0004,
+        "high": 0.0007,
+        "air": 0.0021
+      }
+    }
+  },
+  "ffmpeg": {
+    "lufs": -16.9,
+    "lra": 1.8,
+    "truePeakDb": -1.1
+  },
+  "takeMeasured": {
+    "seconds": 28.793,
+    "peakDb": -1.38,
+    "truePeakDb": -1.24,
+    "lufs": -16.97,
+    "lufsMeasure": "gated",
+    "soundLufs": null,
+    "offsetDb": -78.26,
+    "rmsDb": -18.94,
+    "silenceFrontSeconds": 0,
+    "silenceEndSeconds": 0,
+    "soundSeconds": 28.793,
+    "tailDb": -45.47,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 233,
+      "bands": {
+        "sub": 0,
+        "low": 0.8643,
+        "lowMid": 0.1325,
+        "mid": 0.0004,
+        "high": 0.0007,
+        "air": 0.0021
+      }
+    }
+  },
+  "answers": {
+    "verdict": "fits",
+    "why": "Numbers: 28.79 s filed, sound to the end (tail -45 dB); -17.0 LUFS as made; 86 percent of the energy between 60 and 250 Hz: a low, mellow sound. Map: tracked at 100.001 beats a minute, 48 beats, 12 bars of 4, first bar line at 0.0123 s, spacing steady: on the grid of the film; two parts by level, 0 to 24.01 s and the last two bars. Listener, open: one plucked string instrument, an acoustic guitar or a harp; calm, gentle and reflective, unchanged; no voice, no humming, no singing; no sound effects; ends on a fade. A third call heard only an acoustic guitar in a gentle fingerpicked melody, calm, peaceful and reflective, warm, cosy and introspective. Fit: yes, slow, gentle and mellow, relaxing and peaceful; the nylon guitar heard clearly throughout, no marimba heard; no voice; it cuts off at the end while the guitar still sounds. Blind choice of one mood out of five: warm and unhurried. Kept: no voice or words, the guitar and the mood of its line in every call, on the grid. What it lacks of the line: the marimba. Price 396, from the account's Music line.",
+    "listener": {
+      "line": "Warm and unhurried: nylon guitar, soft marimba, a golden dusk",
+      "open": "1. I hear a single plucked string instrument, which sounds like an acoustic guitar or a harp.\n2. The mood is calm, gentle, and reflective. The mood remains the same throughout the entire clip without changing.\n3. There is no human voice, spoken word, choir, humming, or singing at any time.\n4. There are no sound effects or non-musical sounds present in this track.\n5. The music starts immediately with the first note being played, and it ends on a gradual fade.\n6. It is about 70 beats a minute, and the pulse holds steady from start to finish.",
+      "fit": "1. Yes, the mood fits well because the slow tempo and gentle, mellow tone create a highly relaxing and peaceful atmosphere. \n2. I can clearly hear the nylon guitar playing throughout the piece, but I do not hear a soft marimba.\n3. No, there is no human voice, spoken word, or singing in this track.\n4. No, it does not end cleanly because the audio abruptly cuts off while the guitar is still playing.",
+      "season": "1. I hear only an acoustic guitar playing a gentle, fingerpicked melody.\n2. In three words, the mood is calm, peaceful, and reflective.\n3. It brings autumn to mind because the warm, solitary acoustic guitar feels cozy and introspective.",
+      "moodChoice": {
+        "question": "Listen to this piece of music. Answer in plain sentences, numbered 1 to 2.\n\n1. Choose the ONE phrase from this list that fits the mood of the music best, and say why in one sentence: (a) festive and grand; (b) light and airy; (c) warm and unhurried; (d) dark and eerie; (e) sad and heavy.\n2. Which phrase from the list fits second best?",
+        "answers": [
+          "summer-2: 1. The phrase \"warm and unhurried\" fits the mood best because the gentle, slow-paced piano playing and soft harmonies create a comforting, relaxing atmosphere. 2. The phrase \"light and airy\" fits second best."
+        ]
+      },
+      "note": "two more questions were asked, free: which season the piece brings to mind (season; not a fair witness, it answered winter for the Halloween piece too), and a blind choice of one mood phrase out of five (moodChoice)"
+    }
+  },
+  "source": {
+    "name": "music-summer-2026-11-25T18-04-31-681Z.wav",
+    "bytes": 5528286,
+    "sha256": "83bf7cd3431989d9c5847bf2d4ee9c77db074f9245c8fb90ac0d33c146e2cf83",
+    "codec": "pcm_s16le",
+    "sampleRate": 48000,
+    "channels": 2,
+    "seconds": 28.793,
+    "kbps": 1536
+  },
+  "takeSha256": "4e756b503251953dd63f2973c9b70886f165eda03a9c8f9ab41bb105723b30d5",
+  "sha256": "82e1b12920f1e5def907b8144639a04528e9f3d84275479b837273b55c7e2cee",
+  "time": "2026-11-25T18:06:58.283Z"
+}
