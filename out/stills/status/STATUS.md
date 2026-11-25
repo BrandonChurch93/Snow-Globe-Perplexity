@@ -1,19 +1,20 @@
-# Status 75
+# Status 76
 
-2026-11-25 04:54 UTC
+2026-11-25 05:21 UTC
 
-- Second rounds of spring and summer are frozen on one merged build of all ten builders: Round 11 judges spring and Round 12 judges summer
-- Triangle counts of spring and summer are inside the limits at all three quality levels on the merged build and the two missing recipes are written so both red checks of the last gates are answered
-- Round 10 on fall is in: stills 3 and the hero photo look 6 and motion 3 and the jury 1 of 20 against 7 of 10 and the gate 13 of 15 green
-- Fall freezes for its second round at 05:30 UTC
-- Decision 82 keeps the arrivals with the change builder and decision 83 gives the change its floor round on the same commit as the seasons' third rounds
-- Sound stays at four kept cues because the sound account is out of credits and the films stay silent
-- phase 4: 4.78 h used of its 9.50 h box
-- allowance (before the review): 27.06 h used of 36.00 h allowed
+- The second rounds of spring and summer and fall now judge one commit: all ten builders were merged at 05:20 UTC and every built file of the three seasons is being made again from its sources (decision 84)
+- Why the freeze moved: the first merged tree counted too many triangles and summer at rest showed a storm of large seed heads the approved image does not have
+- The triangle count was my own fault: a late merge step had restored older built files of two bases. The builders' own counts are inside the limits for all three seasons at all three quality levels
+- The pictures of Status 75 came from that tree and are not the build the rounds judge
+- Summer's seed heads at rest are fixed in the seed row and in the drawing of rested seeds
+- Fall carries four bats now and not seven (decision 85)
+- Round 10 is closed in the log apart from its fixes line. The sound account is still out of credits
+- phase 4: 5.23 h used of its 9.50 h box
+- allowance (before the review): 27.51 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-75-1.jpg`: Spring at rest on the build its second round judges (draft tier preview size)
-- `out/stills/status/status-75-2.jpg`: Summer at rest on the build its second round judges (draft tier preview size)
-- `out/stills/status/status-75-3.jpg`: Still: summer rest hero, preview, draft
-- `out/stills/status/status-75-4.jpg`: Still: summer rest hero, preview, draft, standins view
+- `out/stills/status/status-76-1.jpg`: Spring at rest by its miniature builder: ours left and the approved crop right (draft tier). Still wrong: the crown is fuller and more even than the approved lace of blossom
+- `out/stills/status/status-76-2.jpg`: Summer at rest by its air builder after the seed fix: ours beside the approved image (draft tier). Still wrong: the air is darker and cooler than approved
+- `out/stills/status/status-76-3.jpg`: Fall at rest by its miniature builder: ours left and approved right (draft tier). Still wrong: haze and leaves veil the tree and the cottage
+- `out/stills/status/status-76-4.jpg`: Still: summer rest hero, preview, draft
