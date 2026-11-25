@@ -1279,6 +1279,1106 @@
       },
       "time": "2026-11-24T20:31:24.932Z",
       "answersTime": "2026-11-24T20:31:25.354Z"
+    },
+    {
+      "cue": "shake-spring",
+      "take": 1,
+      "round": "build",
+      "class": "impact",
+      "season": "spring",
+      "line": "Liquid sloshing and churning inside glass, with soft petals and water in it",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "Water sloshing and churning hard back and forth inside a sealed half full bottle that is shaken six times: heavy wet sloshes and gulps of water slapping its walls, full and loud, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 2.6,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 29
+      },
+      "source": {
+        "name": "shake-spring-2026-11-25T17-05-14-662Z.wav",
+        "bytes": 491598,
+        "sha256": "1af655ccf0df1e16716d6caa375341e3e568a4506a49b20603089a33c1f42ecb",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 2.56,
+        "kbps": 1536
+      },
+      "sha256": "581f104ee0e124c1eb1e04939483abb52850419cfc5f1ccdb1cb30aad941b2c4",
+      "measured": {
+        "seconds": 2.56,
+        "peakDb": -1.11,
+        "truePeakDb": -1,
+        "lufs": -18.76,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -25.75,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0.16,
+        "soundSeconds": 2.4,
+        "tailDb": -74.36,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 1461,
+          "bands": {
+            "sub": 0.0009,
+            "low": 0.0294,
+            "lowMid": 0.4318,
+            "mid": 0.4836,
+            "high": 0.052,
+            "air": 0.0024
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -18.8,
+        "lra": 0,
+        "truePeakDb": -1
+      },
+      "fits": {
+        "wantSeconds": 2.6,
+        "soundSeconds": 2.4,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: 2.56 s filed, but the sound lives in its first 1.2 s (bursts at 0.1, 0.25, 0.5, 0.7 and 1.0 s) and is 40 dB down from 1.5 s on, so half the shake would be silent; 91 percent of the energy between 250 Hz and 4 kHz. Listener: one heavy splash, like something plunging into a body of water, then churning; the fit call says the liquid sloshes and churns but sounds like a large plastic bucket or basin, not glass, with dull thuds. No voice, no music. A plunge into open water is not a sealed vessel shaken back and forth.",
+        "listener": {
+          "line": "Liquid sloshing and churning inside glass, with soft petals and water in it",
+          "open": "1. I hear a sudden, heavy splash, like an object or person plunging into a body of water. The sound is wet, abrupt, and followed by the noise of churning liquid.\n2. There is one main sound event consisting of a single splash that quickly trails off.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument.\n5. It starts abruptly with a loud, forceful impact into water. It ends by gradually fading out as the splashing and water ripples subside.",
+          "fit": "1. No, because although liquid is vigorously sloshing and churning, soft petals are naturally silent and cannot be heard. \n2. The heavy, aggressive splashing and dull thudding noises do not fit the description, as they sound more like a large plastic bucket or basin rather than a glass container.\n3. No, there is no human voice, spoken word, or singing present in the clip.",
+          "note": "the first open call and the first fit call each returned no evaluation; each was asked again once and the second answer is recorded, as audio/QUESTIONS.md says"
+        }
+      },
+      "time": "2026-11-25T17:05:20.251Z",
+      "answersTime": "2026-11-25T17:07:39.445Z"
+    },
+    {
+      "cue": "shake-spring",
+      "take": 2,
+      "round": "build",
+      "class": "impact",
+      "season": "spring",
+      "line": "Liquid sloshing and churning inside glass, with soft petals and water in it",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "Water sloshing back and forth inside a small sealed jar, half full, that is shaken six times in a steady rhythm from the first moment to the last: six quick wet sloshes and gurgles of water slapping the inside of its walls, tight and enclosed, full and loud, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 2.6,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 29
+      },
+      "source": {
+        "name": "shake-spring-2026-11-25T17-08-06-252Z.wav",
+        "bytes": 491598,
+        "sha256": "5cd529b3f39683db68f7a953749fcd5008b614c55f00f3a3a29a576f74fb7d35",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 2.56,
+        "kbps": 1536
+      },
+      "sha256": "7d1306a6a232d658d56732fc371e2ceda4def8495d41b63a6605fc2b84833476",
+      "measured": {
+        "seconds": 2.56,
+        "peakDb": -7.71,
+        "truePeakDb": -7.71,
+        "lufs": -29.36,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -35.51,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0.185,
+        "soundSeconds": 2.375,
+        "tailDb": -80.04,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 1819,
+          "bands": {
+            "sub": 0.0011,
+            "low": 0.001,
+            "lowMid": 0.3455,
+            "mid": 0.5698,
+            "high": 0.0755,
+            "air": 0.0071
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -29.4,
+        "lra": 0,
+        "truePeakDb": -7.7
+      },
+      "fits": {
+        "wantSeconds": 2.6,
+        "soundSeconds": 2.375,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "fits",
+        "why": "Numbers: 2.56 s filed, sound from 0.1 to 1.7 s in about six bursts (0.1, 0.5, 0.75, 1.0, 1.15, 1.5 s), then quiet; 92 percent of the energy between 250 Hz and 4 kHz, nothing under 250 Hz; peaky, so the chain holds it at -22.9 LUFS to keep the peak under -1 dB. Listener, open: liquid poured and splashing, wet, bubbly and sloshing, one continuous event, no voice, no music. Fit: yes, water sloshing and churning hard inside a glass container, nothing that does not belong. The open call calls it a pour and a splash, not a shake; it is small and enclosed where take 1 was a plunge into open water. Petals are silent, so the water alone carries the line.",
+        "listener": {
+          "line": "Liquid sloshing and churning inside glass, with soft petals and water in it",
+          "open": "1. I hear the brief sound of liquid being poured and splashing. It has a wet, bubbly, and sloshing character.\n2. There is one continuous sound event consisting of a quick pour and splash.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument.\n5. It starts abruptly with a heavy liquid dropping or pouring sound and ends quickly as the splashing subsides.",
+          "fit": "1. Yes, because the audio clearly features the sounds of water vigorously sloshing and churning inside a glass container.\n2. There are no additional sounds in the recording that do not belong to the description.\n3. No, there is no human voice, spoken word, or singing in it."
+        }
+      },
+      "time": "2026-11-25T17:08:10.772Z",
+      "answersTime": "2026-11-25T17:09:10.921Z"
+    },
+    {
+      "cue": "land-spring",
+      "take": 1,
+      "round": "build",
+      "class": "impact",
+      "season": "spring",
+      "line": "A heavy glass globe set down on stone, heavy and short, then one drop and a breath of air",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "A heavy stone mortar set down hard into a shallow puddle on a marble countertop: one deep heavy thud with a wet splash of drops and a short rush of air pushed out from under it, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 2,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 22
+      },
+      "source": {
+        "name": "land-spring-2026-11-25T17-09-32-201Z.wav",
+        "bytes": 384078,
+        "sha256": "727d4ddc78cec739649cd73013e4456df9a851d5d952d8b651c90912b4edea47",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 2,
+        "kbps": 1536
+      },
+      "sha256": "941da2b63c6f3ddc686bdf70e7edbef5f356da1d0e09f6038ca8276a586d3fe4",
+      "measured": {
+        "seconds": 2,
+        "peakDb": 0,
+        "truePeakDb": 0.1,
+        "lufs": -22.41,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -30.71,
+        "silenceFrontSeconds": 0.26,
+        "silenceEndSeconds": 1,
+        "soundSeconds": 0.74,
+        "tailDb": -85.07,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 1013,
+          "bands": {
+            "sub": 0.0225,
+            "low": 0.059,
+            "lowMid": 0.5401,
+            "mid": 0.3667,
+            "high": 0.0105,
+            "air": 0.0012
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -22.4,
+        "lra": 0,
+        "truePeakDb": 0.1
+      },
+      "fits": {
+        "wantSeconds": 1.5,
+        "soundSeconds": 0.74,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: 2 s filed, sound only 0.74 s: one hit, 25 dB down within 0.1 s, a small second burst at 0.16 s, nothing after; 8 percent of the energy under 250 Hz, so no deep thud, and 1 percent above 4 kHz, so no splash or air. Listener, open: one sharp metallic click, like a small mechanism snapping shut or a heavy switch. Fit: no, a quick synthetic sound with a falling sweep, nothing of glass on stone, no drop, no air. No voice, no music.",
+        "listener": {
+          "line": "A heavy glass globe set down on stone, heavy and short, then one drop and a breath of air",
+          "open": "1. I hear a sharp, metallic clicking sound, like a small mechanism snapping shut or a heavy switch being flipped. It has a very crisp, abrupt, and slightly hollow character.\n2. There is exactly one separate sound event.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument.\n5. The audio starts abruptly with a sudden, sharp mechanical click. It ends almost immediately after as the brief sound decays entirely into silence.",
+          "fit": "1. No, it does not fit because the audio is a quick, synthetic electronic sound effect lacking the acoustic qualities of glass impacting stone or a breath of air. \n2. The descending, sci-fi-like electronic sweep or synthetic \"pew\" noise does not belong to the description of physical objects.\n3. No, there is no human voice, spoken word, or singing in the clip."
+        }
+      },
+      "time": "2026-11-25T17:09:35.911Z",
+      "answersTime": "2026-11-25T17:10:28.587Z"
+    },
+    {
+      "cue": "land-spring",
+      "take": 2,
+      "round": "build",
+      "class": "impact",
+      "season": "spring",
+      "line": "A heavy glass globe set down on stone, heavy and short, then one drop and a breath of air",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "A heavy stone mortar dropped into a shallow puddle of water on a marble countertop: one deep booming thud of stone on stone with a big wet splash of water thrown out around it, then a few drops pattering down, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 3,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 33
+      },
+      "source": {
+        "name": "land-spring-2026-11-25T17-10-31-281Z.wav",
+        "bytes": 576078,
+        "sha256": "9a821408b872afec2c02886a2462a657df50e4e8566120243f557aaee325193b",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 3,
+        "kbps": 1536
+      },
+      "sha256": "25d29ad7702b477634d22192919d575dceb656eb54240b673857428168a7dedc",
+      "measured": {
+        "seconds": 3,
+        "peakDb": 0,
+        "truePeakDb": 0.34,
+        "lufs": -19.11,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -26.14,
+        "silenceFrontSeconds": 0.14,
+        "silenceEndSeconds": 1.295,
+        "soundSeconds": 1.565,
+        "tailDb": -75.22,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 752,
+          "bands": {
+            "sub": 0.0034,
+            "low": 0.6821,
+            "lowMid": 0.1139,
+            "mid": 0.1592,
+            "high": 0.0377,
+            "air": 0.0036
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -19.1,
+        "lra": 20,
+        "truePeakDb": 0.3
+      },
+      "fits": {
+        "wantSeconds": 1.5,
+        "soundSeconds": 1.565,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: 3 s filed, sound 1.57 s, cut to 1.5 s: a hit at 0.1 s, a second burst at 0.25 to 0.35 s, small sounds to 0.8 s; 74 percent of the energy between 60 and 250 Hz, so the low thud is there by number. Listener, open: one short sharp crunch or snap, brittle, like an eggshell or thin plastic crushed. Fit: no, a wet squishy splat, not a hard heavy object on stone, no drop and no air. The two calls do not agree with each other (dry and brittle, wet and squelching) and neither hears a heavy thing set down. No voice, no music.",
+        "listener": {
+          "line": "A heavy glass globe set down on stone, heavy and short, then one drop and a breath of air",
+          "open": "1. I hear a short, sharp crunching or snapping sound. It has a brittle character, similar to an eggshell, dry leaf, or thin piece of plastic being crushed.\n2. There is one single, brief sound event.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument.\n5. The sound starts suddenly with a sharp crack and ends abruptly just a fraction of a second later.",
+          "fit": "1. No, because the audio sounds like a wet, squishy splat instead of the hard, resonant impact of glass on stone. It also completely lacks any dripping sound or audible breath of air.\n2. The distinct wet, squelching noise in the audio does not belong to the description at all. \n3. No, there is no human voice, spoken word, or singing in the recording."
+        }
+      },
+      "time": "2026-11-25T17:10:36.346Z",
+      "answersTime": "2026-11-25T17:11:36.640Z"
+    },
+    {
+      "cue": "land-spring",
+      "take": 3,
+      "round": "build",
+      "class": "impact",
+      "season": "spring",
+      "line": "A heavy glass globe set down on stone, heavy and short, then one drop and a breath of air",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "A heavy stone crock full of water set down firmly on a stone floor: one deep heavy thump of its weight landing, and the water inside it slapping once against its walls and dripping, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 3,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 33
+      },
+      "source": {
+        "name": "land-spring-2026-11-25T17-11-39-717Z.wav",
+        "bytes": 576078,
+        "sha256": "eba9689f172cb582d6f70d8e07241122d44c7f953a3d112dd98fb6dec1931ba3",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 3,
+        "kbps": 1536
+      },
+      "sha256": "e361ea9255e7c0e6482ab017d2a890dcc419d61dba4fcb740bcb093c55af0f6a",
+      "measured": {
+        "seconds": 3,
+        "peakDb": 0,
+        "truePeakDb": 0.26,
+        "lufs": -24.81,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -28.12,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 1.135,
+        "soundSeconds": 1.865,
+        "tailDb": -81.5,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 837,
+          "bands": {
+            "sub": 0.1829,
+            "low": 0.2267,
+            "lowMid": 0.1785,
+            "mid": 0.3932,
+            "high": 0.0172,
+            "air": 0.0014
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -24.8,
+        "lra": 20,
+        "truePeakDb": 0.3
+      },
+      "fits": {
+        "wantSeconds": 1.5,
+        "soundSeconds": 1.865,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: 3 s filed, sound 1.87 s, cut to 1.5 s: a hit at the start, then wet movement to 1 s; 36 percent of the energy under 250 Hz, 43 percent between 1 and 4 kHz. Listener, open: one sudden splash, like a solid object dropped into a pool or a bucket of water, wet and slightly hollow. Fit: no, an object splashing heavily into water, not a hard object on stone. No voice, no music. The water is all the listener hears; the set down is not heard.",
+        "listener": {
+          "line": "A heavy glass globe set down on stone, heavy and short, then one drop and a breath of air",
+          "open": "1. I hear a sudden splash, like a solid object dropping into a pool or bucket of water. The sound is wet, distinct, and slightly hollow.\n2. There is one main sound event consisting of a single splash.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument.\n5. It starts abruptly with the sharp impact of something hitting the liquid. It ends quickly as the splashing noise dissipates into silence.",
+          "fit": "1. No, because the audio is clearly the sound of an object splashing heavily into water, rather than the hard impact of glass on stone. \n2. The loud, wet splashing and sloshing of water do not belong to the description. \n3. No, there is no human voice, spoken word, or singing in the clip.",
+          "note": "the first fit call answered that no file came; it was asked again once and the second answer is recorded"
+        }
+      },
+      "time": "2026-11-25T17:11:44.428Z",
+      "answersTime": "2026-11-25T17:13:15.362Z"
+    },
+    {
+      "cue": "amb-spring",
+      "take": 1,
+      "round": "build",
+      "class": "ambience",
+      "season": "spring",
+      "line": "Birds and light rain, very quiet, an ambience that loops",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "Steady light rain falling on leaves and wet ground in a garden: one even full patter with no gusts and no thunder, and a few small songbirds chirping far away now and then, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 20,
+        "prompt_influence": 0.5,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 220
+      },
+      "source": {
+        "name": "amb-spring-2026-11-25T17-13-18-465Z.wav",
+        "bytes": 3840078,
+        "sha256": "a0c43dfd93b177d1e7af12cec59b001e41408f9d886ff1d6266bf9d823fe837b",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 20,
+        "kbps": 1536
+      },
+      "sha256": "a372db91a3210bcef4506f21fb9361475bee73c25b64d64c5290e25e1f5ce3ce",
+      "measured": {
+        "seconds": 20,
+        "peakDb": -10.94,
+        "truePeakDb": -10.89,
+        "lufs": -32.04,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -42.08,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0.235,
+        "soundSeconds": 19.765,
+        "tailDb": -84.67,
+        "events": 2,
+        "spectrum": {
+          "centroidHz": 5036,
+          "bands": {
+            "sub": 0.0003,
+            "low": 0.0014,
+            "lowMid": 0.0012,
+            "mid": 0.2276,
+            "high": 0.7455,
+            "air": 0.024
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -32,
+        "lra": 22.9,
+        "truePeakDb": -10.9
+      },
+      "fits": {
+        "wantSeconds": 20,
+        "soundSeconds": 19.765,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: 20 s filed, 18.3 s as a loop, but the level is not even: seconds 1 to 3 are 16 dB above the rest, and the rest falls slowly by another 9 dB to the end; 75 percent of the energy between 4 and 10 kHz and nothing under 1 kHz, so the rain has no body. Listener, open: food sizzling in a hot pan, continuous and crackling, with a bright bird chirping in the background. Fit: no, the main sound is a loud sizzling or frying, not light rain. No voice, no music. Rejected on both: an uneven bed, and rain heard as frying.",
+        "listener": {
+          "line": "Birds and light rain, very quiet, an ambience that loops",
+          "open": "1. I hear the continuous, crackling sound of food sizzling in a hot pan. There is also the bright, clear chirping of a bird in the background.\n2. There are two main sound sources: the continuous sizzling and the intermittent bird chirps.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument.\n5. The recording starts abruptly with the sizzling sound already in progress. It ends with the same sizzling sound quickly fading out.",
+          "fit": "1. No, it does not fit the description because the dominant sound is a loud sizzling or frying noise rather than quiet, light rain. \n2. The loud crackling and sizzling sound of something frying in a pan does not belong to the description.\n3. No, there is no human voice, spoken word, or singing in the audio."
+        }
+      },
+      "time": "2026-11-25T17:13:25.731Z",
+      "answersTime": "2026-11-25T17:14:19.622Z"
+    },
+    {
+      "cue": "amb-spring",
+      "take": 2,
+      "round": "build",
+      "class": "ambience",
+      "season": "spring",
+      "line": "Birds and light rain, very quiet, an ambience that loops",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "Steady rain falling in a garden at dawn, drumming on broad leaves and on wet ground, with many small songbirds singing in the trees all the time: one even full bed of rain and birdsong that stays the same from the first moment to the last, with no gusts and no thunder, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 20,
+        "prompt_influence": 0.5,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 220
+      },
+      "source": {
+        "name": "amb-spring-2026-11-25T17-14-22-652Z.wav",
+        "bytes": 3840078,
+        "sha256": "9e9f0d24a6c3a2cb9259140725400b3d574db43d312aee220f5b69547b972cd0",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 20,
+        "kbps": 1536
+      },
+      "sha256": "9a046d871d6d254616e2bf630d9b601dcf844220c32d9b89a8e00bce8c030ad9",
+      "measured": {
+        "seconds": 20,
+        "peakDb": -10.91,
+        "truePeakDb": -10.84,
+        "lufs": -33.77,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -40.07,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0,
+        "soundSeconds": 20,
+        "tailDb": -42.92,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 7468,
+          "bands": {
+            "sub": 0.0003,
+            "low": 0.0008,
+            "lowMid": 0.0035,
+            "mid": 0.1425,
+            "high": 0.6356,
+            "air": 0.2173
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -33.8,
+        "lra": 2.2,
+        "truePeakDb": -10.8
+      },
+      "fits": {
+        "wantSeconds": 20,
+        "soundSeconds": 20,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "fits",
+        "why": "Numbers: 20 s filed, 18.5 s as a loop, one event, level even within 5 dB from second to second; bright: 64 percent of the energy between 4 and 10 kHz, 22 percent above 10 kHz, nothing under 1 kHz; the seam's jump is 0.27 of a typical step, the level steps 3.7 dB across it. Listener, open: continuous water flowing or splashing, like a small stream or a fountain, with a bird chirping clearly and repeatedly over it; no voice, no music; starts and ends in mid sound. Fit: yes, bird calls and a continuous patter of light rain, nothing that does not belong. The open call hears the water as a stream, not as rain; the spring miniature has a trickle of water in it.",
+        "listener": {
+          "line": "Birds and light rain, very quiet, an ambience that loops",
+          "open": "1. I hear the continuous sound of water flowing or splashing, like a small stream or fountain. Overlaid on this water sound is the clear, repetitive chirping of a bird.\n2. There are too many individual sound events to count because the water flows continuously and the bird chirps repeatedly.\n3. No, there is no human voice, spoken word, breath, or singing in this recording.\n4. No, there is no music, melody, or musical instrument present.\n5. The audio starts abruptly with the water and bird sounds already in progress. It ends suddenly while these natural sounds are still ongoing.",
+          "fit": "1. Yes, it fits the description because the audio consists entirely of gentle bird calls and the soft, continuous patter of light rain. It creates a quiet, steady ambient atmosphere that serves as a seamless background loop.\n2. There is nothing in the sound that does not belong to the description. \n3. No, there is no human voice, spoken word, or singing in the audio."
+        }
+      },
+      "time": "2026-11-25T17:14:29.115Z",
+      "answersTime": "2026-11-25T17:15:14.310Z"
+    },
+    {
+      "cue": "shake-summer",
+      "take": 1,
+      "round": "build",
+      "class": "impact",
+      "season": "summer",
+      "line": "Liquid sloshing and churning inside glass, with a warm shimmer and dry seeds in it",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "Water, sand and dry seeds sloshing and churning hard inside a sealed jar that is shaken back and forth six times: heavy wet sloshes with the seeds rattling and the sand hissing against its walls, full and loud, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 2.6,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 29
+      },
+      "source": {
+        "name": "shake-summer-2026-11-25T17-15-21-716Z.wav",
+        "bytes": 491598,
+        "sha256": "e3213596b18ba5a0760779ff364a185ed7b4e94908c12b5b568280a5bbabe746",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 2.56,
+        "kbps": 1536
+      },
+      "sha256": "1534f9a9ff5f29836f84fa8b4f6cd27d0fef56770501915ba06a194afc0e0f8f",
+      "measured": {
+        "seconds": 2.56,
+        "peakDb": -7.38,
+        "truePeakDb": -7.1,
+        "lufs": -20.91,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -29.61,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0.175,
+        "soundSeconds": 2.385,
+        "tailDb": -80.28,
+        "events": 2,
+        "spectrum": {
+          "centroidHz": 7103,
+          "bands": {
+            "sub": 0.0003,
+            "low": 0.0009,
+            "lowMid": 0.0213,
+            "mid": 0.2677,
+            "high": 0.4695,
+            "air": 0.2402
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -20.9,
+        "lra": 0,
+        "truePeakDb": -7.1
+      },
+      "fits": {
+        "wantSeconds": 2.6,
+        "soundSeconds": 2.385,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: 2.56 s filed, two main bursts (0.6 and 1.25 s) after a weak start, each decaying over half a second; bright: 71 percent of the energy above 4 kHz and nothing under 1 kHz. Listener, open: water splashing and sloshing hard, three splashes, like liquid thrown from a bucket or feet in deep puddles. Fit: no, liquid sloshing but no seeds, no shimmer, and large open splashes as in a sink or basin, not confined. No voice, no music. The seeds and the vessel are not heard.",
+        "listener": {
+          "line": "Liquid sloshing and churning inside glass, with a warm shimmer and dry seeds in it",
+          "open": "1. I hear the sound of water aggressively splashing and sloshing. The sound is wet and forceful, resembling liquid being thrown from a bucket or someone stomping in deep puddles. \n2. There are three distinct splashing events. \n3. No, there are no human voices, spoken words, breaths, or singing. \n4. No, there is no music, melody, or musical instrument. \n5. It starts with a smaller, brief sloshing noise. It ends with the decaying sound of a final, forceful splash and its settling droplets.",
+          "fit": "1. No, because while there is liquid sloshing, there are no sounds of glass, shimmering tones, or rattling dry seeds. \n2. The heavy pouring and large, open splashes sound like they are in a sink or basin, which does not fit the description of being confined inside a glass.\n3. No, there is no human voice, spoken word, or singing in this audio."
+        }
+      },
+      "time": "2026-11-25T17:15:26.348Z",
+      "answersTime": "2026-11-25T17:16:32.284Z"
+    },
+    {
+      "cue": "shake-summer",
+      "take": 2,
+      "round": "build",
+      "class": "impact",
+      "season": "summer",
+      "line": "Liquid sloshing and churning inside glass, with a warm shimmer and dry seeds in it",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "Water and a handful of dry seeds sloshing and rattling back and forth inside a small sealed glass jar that is being shaken, six fast shakes from the first moment to the last: quick wet sloshes with the seeds clicking and rattling brightly against the glass, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 2.6,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 29
+      },
+      "source": {
+        "name": "shake-summer-2026-11-25T17-16-35-372Z.wav",
+        "bytes": 491598,
+        "sha256": "538d5452e3ab6d652b888678d28c1a1673e349844be2472b8da943d3d912828c",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 2.56,
+        "kbps": 1536
+      },
+      "sha256": "fc06f504d7dd2cf1192bc770147c441e04820c3219752b8eba03a6c08f0d0021",
+      "measured": {
+        "seconds": 2.56,
+        "peakDb": -3.04,
+        "truePeakDb": -3.04,
+        "lufs": -24.41,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -31.25,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0.11,
+        "soundSeconds": 2.45,
+        "tailDb": -73.6,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 5024,
+          "bands": {
+            "sub": 0.0001,
+            "low": 0.0005,
+            "lowMid": 0.0017,
+            "mid": 0.3317,
+            "high": 0.6415,
+            "air": 0.0245
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -24.4,
+        "lra": 0,
+        "truePeakDb": -3
+      },
+      "fits": {
+        "wantSeconds": 2.6,
+        "soundSeconds": 2.45,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: 2.56 s filed, sound from start to 1.9 s in many short bursts, then a decay; 64 percent of the energy between 4 and 10 kHz, nothing under 1 kHz. Listener, open: a fast clattering rattle of small hard objects, like dice or beads shaken in a container, dry, sharp and percussive, in several bursts. Fit: no, only dry objects shaken, no wet sloshing or churning at all. No voice, no music. The seeds are heard and the liquid is not: the reverse of take 1.",
+        "listener": {
+          "line": "Liquid sloshing and churning inside glass, with a warm shimmer and dry seeds in it",
+          "open": "1. I hear a rapid, clattering rattle, resembling small hard objects like dice or beads being vigorously shaken in a container. The sound is dry, sharp, and highly percussive.\n2. There are multiple distinct bursts of shaking, each made up of many rapid, overlapping impacts.\n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or recognizable musical instrument.\n5. The sound begins abruptly with the immediate onset of the rattling. It ends suddenly when the shaking motion stops.",
+          "fit": "1. No, because the audio only contains the sound of dry objects being rapidly shaken, with absolutely no wet, liquid sloshing or churning noises.\n2. The entirely dry, percussive rattling effect contradicts the description, as there are no liquid sounds present at all.\n3. No, there is no human voice, spoken word, or singing in this audio."
+        }
+      },
+      "time": "2026-11-25T17:16:40.210Z",
+      "answersTime": "2026-11-25T17:17:34.479Z"
+    },
+    {
+      "cue": "shake-summer",
+      "take": 3,
+      "round": "build",
+      "class": "impact",
+      "season": "summer",
+      "line": "Liquid sloshing and churning inside glass, with a warm shimmer and dry seeds in it",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "Water sloshing and churning back and forth inside a sealed glass jar that is being shaken, six fast sloshes, with a handful of small dry seeds rattling inside it in the water, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 2.6,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 29
+      },
+      "source": {
+        "name": "shake-summer-2026-11-25T17-17-37-162Z.wav",
+        "bytes": 491598,
+        "sha256": "1ad99022cd38cb291a442a429245ee8503d777a16f822e93989c08ca8586e4d8",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 2.56,
+        "kbps": 1536
+      },
+      "sha256": "9dc08c779480e96b7cb210f710c8b7d90eb65e97cb4ebac07970204363704849",
+      "measured": {
+        "seconds": 2.56,
+        "peakDb": -9.43,
+        "truePeakDb": -9.43,
+        "lufs": -27.67,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": -75.88,
+        "rmsDb": -36.23,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0.085,
+        "soundSeconds": 2.475,
+        "tailDb": -73.33,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 4207,
+          "bands": {
+            "sub": 0.0004,
+            "low": 0.001,
+            "lowMid": 0.0211,
+            "mid": 0.5363,
+            "high": 0.4087,
+            "air": 0.0325
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -27.7,
+        "lra": 0,
+        "truePeakDb": -9.4
+      },
+      "fits": {
+        "wantSeconds": 2.6,
+        "soundSeconds": 2.475,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: 2.56 s filed, sound from 0.15 to 1.5 s in about six close bursts, then quiet; 54 percent of the energy between 1 and 4 kHz, 41 percent between 4 and 10 kHz. Listener, open: liquid sloshing or splashing hard, likely shaken inside a container, wet and bubbly, one continuous fast back and forth shaking, no voice, no music. Fit: no, the liquid sloshing is clear but there is no shimmer and there are no dry seeds, and the container sounds like plastic. It is the nearest of the three, a liquid shaken in a vessel, but it is water alone: nothing of summer is in it.",
+        "listener": {
+          "line": "Liquid sloshing and churning inside glass, with a warm shimmer and dry seeds in it",
+          "open": "1. I hear the sound of liquid sloshing or splashing vigorously, likely being shaken inside a container. It has a wet, bubbly, and agitated character.\n2. There is one continuous sound event consisting of a rapid, back-and-forth shaking motion.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument present.\n5. The sound starts abruptly with the immediate splashing of liquid and ends quickly as the motion stops.",
+          "fit": "1. No, because while it contains the clear sound of liquid sloshing, it lacks any auditory elements resembling a warm shimmer or dry seeds. \n2. The dull, muffled resonance of the container sounds more like plastic rather than the glass specified in the description. \n3. No, there is no human voice, spoken word, or singing in this audio clip."
+        }
+      },
+      "time": "2026-11-25T17:17:41.160Z",
+      "answersTime": "2026-11-25T17:18:55.196Z"
+    },
+    {
+      "cue": "land-summer",
+      "take": 1,
+      "round": "build",
+      "class": "impact",
+      "season": "summer",
+      "line": "A heavy glass globe set down on stone, heavy and short, then a warm chime and a hiss of sand",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "A heavy brass bowl full of dry sand set down hard on a marble countertop: one deep booming thud with the brass ringing warm and long after it and the sand hissing as it settles, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 3,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 33
+      },
+      "source": {
+        "name": "land-summer-2026-11-25T17-18-57-872Z.wav",
+        "bytes": 576078,
+        "sha256": "372e8d0e542e3ad1bf3414ea5db52c2b7b958703d36195d7d524b0cdb01546ca",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 3,
+        "kbps": 1536
+      },
+      "sha256": "2fad5b35ec9e8639ccf30cf7613b7ebabd5ef0c453efda4d568f03479ca142be",
+      "measured": {
+        "seconds": 3,
+        "peakDb": -11.26,
+        "truePeakDb": -11.26,
+        "lufs": -23.01,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -32.72,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0.06,
+        "soundSeconds": 2.94,
+        "tailDb": -74.12,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 8144,
+          "bands": {
+            "sub": 0.0064,
+            "low": 0.0039,
+            "lowMid": 0.044,
+            "mid": 0.0667,
+            "high": 0.6527,
+            "air": 0.2263
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -23,
+        "lra": 20,
+        "truePeakDb": -11.3
+      },
+      "fits": {
+        "wantSeconds": 1.5,
+        "soundSeconds": 2.94,
+        "ok": false,
+        "note": "the sound is 2.94 s, long for a cue of 1.5 s: the chain cuts it to length"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: 3 s filed, 2.94 s of sound, cut to 1.5 s: a hiss that swells over the first half second and holds; 88 percent of the energy above 4 kHz and under half a percent below 250 Hz, so there is no thud in it at all. Listener, open: a short abrasive scrape and at once a fast whoosh, like a match struck and flaring, one event. Fit: no; that call heard a bouncy twang like a jaw harp, which the numbers do not bear out. No voice, no music. The sand is all that came: no set down and no chime.",
+        "listener": {
+          "line": "A heavy glass globe set down on stone, heavy and short, then a warm chime and a hiss of sand",
+          "open": "1. I hear a brief, abrasive scraping noise followed instantly by a fast whooshing sound. It closely resembles a match being struck and flaring up.\n2. There is one continuous sound event made up of the strike and the resulting flare.\n3. There is no human voice, spoken word, breath, or singing heard in the audio.\n4. There is no music, melody, or musical instrument present.\n5. It starts abruptly with a sharp, frictional scrape. It ends quickly as the explosive flare sound naturally fades into silence.",
+          "fit": "1. No, it does not fit the description because the audio consists of a bouncy, cartoonish \"boing\" rather than a heavy physical impact, a chime, or a hissing noise.\n2. The vibrant, spring-like twang or jaw harp sound completely contradicts the provided description. \n3. No, there is no human voice, spoken word, or singing in this audio.",
+          "note": "the first open call answered that no file came; it was asked again once and the second answer is recorded"
+        }
+      },
+      "time": "2026-11-25T17:19:01.709Z",
+      "answersTime": "2026-11-25T17:20:36.168Z"
+    },
+    {
+      "cue": "land-summer",
+      "take": 2,
+      "round": "build",
+      "class": "impact",
+      "season": "summer",
+      "line": "A heavy glass globe set down on stone, heavy and short, then a warm chime and a hiss of sand",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "A heavy brass bowl of dry sand set down hard on a thick stone slab, the brass ringing warm and the sand hissing inside it: one deep booming thud of its weight landing on the stone, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 3,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 33
+      },
+      "source": {
+        "name": "land-summer-2026-11-25T17-20-38-667Z.wav",
+        "bytes": 576078,
+        "sha256": "f778a961dcd781832d478e16c20270b54c3c9ed08618443202ad9751db5c6092",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 3,
+        "kbps": 1536
+      },
+      "sha256": "d4c3e69e899dd7bc36bf50f210579cb64d46405d9c07529cc927fddae1e99427",
+      "measured": {
+        "seconds": 3,
+        "peakDb": -7.01,
+        "truePeakDb": -7.01,
+        "lufs": -17.84,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -26.95,
+        "silenceFrontSeconds": 0.005,
+        "silenceEndSeconds": 0.08,
+        "soundSeconds": 2.915,
+        "tailDb": -74.6,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 6623,
+          "bands": {
+            "sub": 0.0117,
+            "low": 0.0234,
+            "lowMid": 0.0374,
+            "mid": 0.1102,
+            "high": 0.7163,
+            "air": 0.101
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -17.8,
+        "lra": 20,
+        "truePeakDb": -7
+      },
+      "fits": {
+        "wantSeconds": 1.5,
+        "soundSeconds": 2.915,
+        "ok": false,
+        "note": "the sound is 2.915 s, long for a cue of 1.5 s: the chain cuts it to length"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: 3 s filed, 2.9 s of sound: a hiss that rises for 1.1 s, holds and falls away, with no hit anywhere in the 3 s; 82 percent of the energy above 4 kHz, 3 percent under 250 Hz. Listener, open: a zipper pulled open or shut, raspy and fast, one event. Fit: no, all of it is a zipper, no stone, no chime, no sand. No voice, no music. Ending the text on the thud did not bring the thud: the words sand and hissing gave a hiss again.",
+        "listener": {
+          "line": "A heavy glass globe set down on stone, heavy and short, then a warm chime and a hiss of sand",
+          "open": "1. I hear the sharp, quick sound of a zipper being opened or closed. It has a raspy, metallic, and fast-paced character.\n2. There is one single sound event.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument.\n5. It starts abruptly with the sharp pull of the zipper and ends suddenly as the movement stops.",
+          "fit": "1. No, it does not fit the description because the audio consists entirely of a zipper being pulled. There are no sounds of glass, stone, chimes, or sand.\n2. The mechanical zipping sound does not belong to the description at all. \n3. No, there is no human voice, spoken word, or singing in it.",
+          "note": "the first open call returned no evaluation; it was asked again once and the second answer is recorded"
+        }
+      },
+      "time": "2026-11-25T17:20:42.590Z",
+      "answersTime": "2026-11-25T17:21:39.936Z"
+    },
+    {
+      "cue": "land-summer",
+      "take": 3,
+      "round": "build",
+      "class": "impact",
+      "season": "summer",
+      "line": "A heavy glass globe set down on stone, heavy and short, then a warm chime and a hiss of sand",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "A heavy cloth sack full of dry sand dropped onto a stone floor: one deep booming thud of its weight landing, short and sandy, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 3,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 33
+      },
+      "source": {
+        "name": "land-summer-2026-11-25T17-21-42-666Z.wav",
+        "bytes": 576078,
+        "sha256": "c9f08609485890a241e4eae12fa54b81ac9d2c9675bf3af4c1edbea0ec046395",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 3,
+        "kbps": 1536
+      },
+      "sha256": "0a41a82885a96c9c244f65682c5c962e073e6341d0a691d8d1df8703c4552c4a",
+      "measured": {
+        "seconds": 3,
+        "peakDb": -0.76,
+        "truePeakDb": -0.35,
+        "lufs": -13.61,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -24.97,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0.035,
+        "soundSeconds": 2.965,
+        "tailDb": -60.41,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 3299,
+          "bands": {
+            "sub": 0.0408,
+            "low": 0.08,
+            "lowMid": 0.1561,
+            "mid": 0.391,
+            "high": 0.3027,
+            "air": 0.0294
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -13.6,
+        "lra": 20,
+        "truePeakDb": -0.3
+      },
+      "fits": {
+        "wantSeconds": 1.5,
+        "soundSeconds": 2.965,
+        "ok": false,
+        "note": "the sound is 2.965 s, long for a cue of 1.5 s: the chain cuts it to length"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: 3 s filed, cut to 1.5 s: one hit at 0.3 s that decays in half a second, after 0.2 s of weak lead-in; broad: 10 percent of the energy under 250 Hz, 40 percent between 1 and 4 kHz, 31 percent between 4 and 10 kHz. Listener, open, asked twice: a short synthesized swoosh or sweep; a quick sharp whoosh, airy, like a thin object swung through the air; one event both times. Fit: yes, a short heavy impact, then a chime and a hiss; this call agrees easily with a line it is shown, and neither open call heard an impact or a chime. No voice, no music. Not kept: two open calls hear air moving, not a heavy thing set down.",
+        "listener": {
+          "line": "A heavy glass globe set down on stone, heavy and short, then a warm chime and a hiss of sand",
+          "open": "1. I hear a short, synthesized swoosh or sweeping sound effect. It has a fast, digital character often used for video transitions or interface alerts.\n2. There is only one continuous sound event.\n3. There is no human voice, spoken word, breath, or singing present.\n4. There is no music, melody, or traditional musical instrument.\n5. The sound starts abruptly with a sharp attack and ends quickly with a brief fade-out.",
+          "fit": "1. Yes, the audio fits the description because it begins with a short, heavy impact followed immediately by a resonant chime and a continuous hissing noise. \n2. There is nothing in the audio that falls outside of the provided description.\n3. No, there is no human voice, spoken word, or singing in this clip.",
+          "openSecond": "1. I hear a quick, sharp whooshing or swishing noise. It has an airy, sweeping character, similar to a thin object being swung rapidly through the air.\n2. There is one single sound event.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument.\n5. It starts abruptly with a sudden, sharp rush of air. It ends almost immediately as the sound quickly fades out into silence.",
+          "note": "the open and the fit call disagreed outright, so the open questions were asked a second time (openSecond)"
+        }
+      },
+      "time": "2026-11-25T17:21:46.887Z",
+      "answersTime": "2026-11-25T17:23:02.410Z"
+    },
+    {
+      "cue": "amb-summer",
+      "take": 1,
+      "round": "build",
+      "class": "ambience",
+      "season": "summer",
+      "line": "Crickets and warm air, very quiet, an ambience that loops",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "A field of crickets chirping steadily on a warm summer night: one even full chorus of many crickets that stays the same from the first moment to the last, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 20,
+        "prompt_influence": 0.5,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 220
+      },
+      "source": {
+        "name": "amb-summer-2026-11-25T17-23-04-788Z.wav",
+        "bytes": 3840078,
+        "sha256": "62e973a72888b83e113489a5ace134f038492151f466046e7309e06531ddbb24",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 20,
+        "kbps": 1536
+      },
+      "sha256": "ece9ce5c154537c2b8606ded52b65535897c5328479dbdcb2f04a6b96132250f",
+      "measured": {
+        "seconds": 20,
+        "peakDb": -2.59,
+        "truePeakDb": -2.44,
+        "lufs": -14.83,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": -78.33,
+        "rmsDb": -21.21,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0,
+        "soundSeconds": 20,
+        "tailDb": -26.71,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 6487,
+          "bands": {
+            "sub": 0,
+            "low": 0.0001,
+            "lowMid": 0.0001,
+            "mid": 0.0003,
+            "high": 0.9989,
+            "air": 0.0006
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -14.8,
+        "lra": 1.8,
+        "truePeakDb": -2.4
+      },
+      "fits": {
+        "wantSeconds": 20,
+        "soundSeconds": 20,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "fits",
+        "why": "Numbers: 20 s filed, 18.5 s as a loop, one event, level even within 3 dB from second to second; all of its energy between 4 and 10 kHz, centred at 6.5 kHz, and the same in both channels: one bright pulsing chirp, not a wide chorus; the seam's jump is 0.59 of a typical step and the level steps 7.5 dB across it, which is the chirp's own pulse. Listener, open, asked twice: a high repetitive squeak, rhythmic and metallic, like a rusty swing or a dry wheel; then a fast high rhythmic chirping, the continuous stridulation of an insect such as a cricket. Fit: yes, the steady chirping of crickets and nothing else. No voice, no music. Kept as a steady cricket chirp; one of three calls heard a squeak, and it is one voice of crickets, not a field.",
+        "listener": {
+          "line": "Crickets and warm air, very quiet, an ambience that loops",
+          "open": "1. I hear a high-pitched, repetitive squeaking sound. It has a rhythmic, metallic character, similar to a rusty swing set or an unlubricated wheel.\n2. There is one continuous sound event consisting of a steady series of squeaks.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument.\n5. The sound starts abruptly with the squeaking already in progress. It ends suddenly by cutting off while the squeaking is still happening.",
+          "fit": "1. Yes, it fits the description because the audio consists entirely of the steady, quiet chirping of crickets, creating a peaceful, looping nighttime ambience.\n2. There is nothing in the sound that does not belong to the description.\n3. No, there is no human voice, spoken word, or singing in the audio.",
+          "openSecond": "1. I hear a rapid, high-pitched, rhythmic chirping sound. It sounds like the continuous stridulation of an insect, such as a cricket.\n2. There is only one continuous sound event throughout the clip.\n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or musical instrument present.\n5. The sound starts abruptly at full volume and ends just as abruptly.",
+          "note": "the first open call heard a squeak where the fit call heard crickets, so the open questions were asked a second time (openSecond)"
+        }
+      },
+      "time": "2026-11-25T17:23:09.617Z",
+      "answersTime": "2026-11-25T17:24:23.073Z"
     }
   ],
   "kept": [
@@ -1323,6 +2423,39 @@
       "lufs": -26,
       "lufsMeasure": "own-length",
       "time": "2026-11-24T20:31:26.778Z"
+    },
+    {
+      "cue": "shake-spring",
+      "take": 2,
+      "round": "build",
+      "file": "audio/kept/shake-spring.wav",
+      "sha256": "e6abd21dd21a3ebf8d1e5b5a120cbc919c28d72c3ec23ecc1cb636f0f50c2f9c",
+      "seconds": 2.177,
+      "lufs": -22.85,
+      "lufsMeasure": "gated",
+      "time": "2026-11-25T17:09:12.495Z"
+    },
+    {
+      "cue": "amb-spring",
+      "take": 2,
+      "round": "build",
+      "file": "audio/kept/amb-spring.wav",
+      "sha256": "8201e37f095b1644d48d18c13a2bdc63622f7880ed2a6cc79406ce1b38dbd35c",
+      "seconds": 18.5,
+      "lufs": -30,
+      "lufsMeasure": "gated",
+      "time": "2026-11-25T17:15:18.053Z"
+    },
+    {
+      "cue": "amb-summer",
+      "take": 1,
+      "round": "build",
+      "file": "audio/kept/amb-summer.wav",
+      "sha256": "692f4040c43aa832b9fdcaa17e2c762312807c1e83894f1c62dc57aaa3167bda",
+      "seconds": 18.5,
+      "lufs": -30,
+      "lufsMeasure": "gated",
+      "time": "2026-11-25T17:24:24.693Z"
     }
   ],
   "pack": {
