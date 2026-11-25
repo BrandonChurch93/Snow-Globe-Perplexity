@@ -218,16 +218,16 @@ float baseCandle = 3.6;
 // Bark on the strands: fibres that run along them.
 float baseStrand = (1.0 - baseThorn) * (1.0 - baseDrum);
 vec2 fibreAt = vec2(vBaseUv1.x * 1.3, vBaseUv1.y * 7.0);
-float fibreHere = baseNoise(vec3(fibreAt, 5.0)) * 0.5 + baseNoise(vec3(fibreAt * vec2(2.3, 3.1), 9.0)) * 0.3 + baseNoise(vec3(fibreAt * vec2(4.1, 6.3), 3.0)) * 0.2;
-float fibreNext = baseNoise(vec3(fibreAt + vec2(0.0, 0.3), 5.0)) * 0.5 + baseNoise(vec3((fibreAt + vec2(0.0, 0.3)) * vec2(2.3, 3.1), 9.0)) * 0.3 + baseNoise(vec3((fibreAt + vec2(0.0, 0.3)) * vec2(4.1, 6.3), 3.0)) * 0.2;
-diffuseColor.rgb *= mix(1.0, (0.3 + 1.4 * fibreHere) * 1.2, baseStrand);
+float fibreHere = baseNoise(vec3(fibreAt, 5.0)) * 0.42 + baseNoise(vec3(fibreAt * vec2(2.3, 3.1), 9.0)) * 0.3 + baseNoise(vec3(fibreAt * vec2(4.1, 6.3), 3.0)) * 0.28;
+float fibreNext = baseNoise(vec3(fibreAt + vec2(0.0, 0.3), 5.0)) * 0.42 + baseNoise(vec3((fibreAt + vec2(0.0, 0.3)) * vec2(2.3, 3.1), 9.0)) * 0.3 + baseNoise(vec3((fibreAt + vec2(0.0, 0.3)) * vec2(4.1, 6.3), 3.0)) * 0.28;
+diffuseColor.rgb *= mix(1.0, (0.12 + 1.5 * fibreHere) * 0.9, baseStrand);
 `
 const IRON_ROUGH = `
 roughnessFactor = clamp(mix(0.44, 0.62, baseDetail.b) + 0.2 * baseStrand + 0.14 * baseScale + 0.2 * baseRust - 0.08 * baseThorn * vBasePaint.z + 0.12 * baseDrum, 0.18, 1.0);
 metalnessFactor = mix(0.85, 0.6, baseScale) * (1.0 - 0.6 * baseRust) * (1.0 - 0.6 * baseStrand);
 `
 const IRON_TILT = `
-vec2 baseTilt = baseSlope(baseDetail.rg) * mix(mix(0.12, 0.14 * (1.0 - vBasePaint.z), baseThorn), 0.75, baseDrum) + vec2(0.0, (fibreNext - fibreHere) * 3.0 * baseStrand);
+vec2 baseTilt = baseSlope(baseDetail.rg) * mix(mix(0.12, 0.14 * (1.0 - vBasePaint.z), baseThorn), 0.75, baseDrum) + vec2(0.0, (fibreNext - fibreHere) * 4.2 * baseStrand);
 `
 const IRON_AFTER = `
 #define IRON_WARM 1.5
@@ -252,7 +252,7 @@ const IRON_AFTER = `
   float ironRl = smoothstep(0.0, 0.25, dot(geometryNormal, ironRim));
   reflectedLight.directSpecular += uBaseRimCol * (0.08 * pow(ironRh, 7.0) + mix(0.4 * pow(ironRh, 50.0), 0.12 * pow(ironRh, 16.0), baseStrand)) * ironRl * ironSheen;
   vec3 ironCardC = mix(uRigCardCol, vec3(dot(uRigCardCol, vec3(0.3, 0.5, 0.2))), 0.65);
-  reflectedLight.directSpecular += (ironKeyC * vec3(0.8, 0.9, 1.0) * (mix(0.05, 0.16, baseDrum) * pow(ironKh, mix(8.0, 3.0, baseDrum)) + mix(0.2 * pow(ironKh, 16.0) * (0.3 + 1.0 * fibreHere), 0.6 * pow(ironKh, 44.0) * (0.35 + 0.65 * baseDetail.b), 1.0 - baseStrand)) * ironKl + ironCardC * (0.05 * pow(ironCh, 10.0) + mix(0.26 * pow(ironCh, 50.0), 0.08 * pow(ironCh, 14.0), baseStrand)) * ironCl) * ironSheen;
+  reflectedLight.directSpecular += (ironKeyC * vec3(0.8, 0.9, 1.0) * (mix(0.05, 0.16, baseDrum) * pow(ironKh, mix(8.0, 3.0, baseDrum)) + mix((0.2 * pow(ironKh, 16.0) + 0.5 * pow(ironKh, 60.0)) * (0.2 + 1.3 * fibreHere), 0.6 * pow(ironKh, 44.0) * (0.35 + 0.65 * baseDetail.b), 1.0 - baseStrand)) * ironKl + ironCardC * (0.05 * pow(ironCh, 10.0) + mix(0.26 * pow(ironCh, 50.0), 0.08 * pow(ironCh, 14.0), baseStrand)) * ironCl) * ironSheen;
   float ironEdge = pow(1.0 - clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0), 3.0);
   vec3 ironUp = inverseTransformDirection(geometryNormal, viewMatrix);
   float ironWarm = clamp(dot(ironUp, normalize(vec3(uBaseRimDir.x, uBaseRimDir.y * 0.25, uBaseRimDir.z))) * 0.5 + 0.5, 0.0, 1.0);
