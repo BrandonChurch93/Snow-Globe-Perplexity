@@ -19,7 +19,7 @@ const SPANS: Record<string, ChangeSpan> = {
   'surface-dressing': OUTSIDE,
   backdrop: OUTSIDE,
 }
-export const BUILT_CHANGES: ReadonlySet<string> = new Set<string>([])
+export const BUILT_CHANGES: ReadonlySet<string> = new Set<string>(['winter-spring', 'spring-summer'])
 
 const WHOLE: ChangeSpan = { from: 0, to: 1, lag: 0 }
 
