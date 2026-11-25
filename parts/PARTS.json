@@ -461,13 +461,14 @@
     {
       "name": "glass-dressing-fall",
       "unit": "fall",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/fall",
         "public/assets/fall"
       ],
       "standInHash": "80afa9ee5fdea3b2",
-      "commit": "2530677"
+      "commit": "73c4019",
+      "note": "fall_air b0fa4e2: stage 1 merged at b50558b; the stand-in view of rest from hero (fall-rest-hero-preview-draft-standins.png, 01:39 UTC) is black all over, max pixel 0"
     },
     {
       "name": "surface-dressing-fall",
@@ -484,25 +485,27 @@
     {
       "name": "light-fall",
       "unit": "fall",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/fall",
         "public/assets/fall"
       ],
       "standInHash": "80afa9ee5fdea3b2",
-      "commit": "2530677"
+      "commit": "73c4019",
+      "note": "fall_air b0fa4e2: stage 1 merged at b50558b; the stand-in view of rest from hero (fall-rest-hero-preview-draft-standins.png, 01:39 UTC) is black all over, max pixel 0"
     },
     {
       "name": "veil-fall",
       "unit": "fall",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/fall",
         "public/assets/fall",
         "src/core/chunks/veil.ts"
       ],
       "standInHash": "3fc2d0ad1740e842",
-      "commit": "2530677"
+      "commit": "73c4019",
+      "note": "fall_air b0fa4e2: stage 1 merged at b50558b; the stand-in view of rest from hero (fall-rest-hero-preview-draft-standins.png, 01:39 UTC) is black all over, max pixel 0"
     },
     {
       "name": "arrival-fall",
@@ -519,38 +522,41 @@
     {
       "name": "particle-leaf",
       "unit": "fall",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/particles/draw",
         "src/particles/engine",
         "src/seasons/fall"
       ],
       "standInHash": "81397ddc17976474",
-      "commit": "2530677"
+      "commit": "73c4019",
+      "note": "kinds_builder b97f86e with fall_air's rows in kinds.ts: stage 1 merged at b50558b; the stand-in view of rest from hero (fall-rest-hero-preview-draft-standins.png, 01:39 UTC) is black all over, max pixel 0"
     },
     {
       "name": "particle-ember",
       "unit": "fall",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/particles/draw",
         "src/particles/engine",
         "src/seasons/fall"
       ],
       "standInHash": "81397ddc17976474",
-      "commit": "2530677"
+      "commit": "73c4019",
+      "note": "kinds_builder b97f86e with fall_air's rows in kinds.ts: stage 1 merged at b50558b; the stand-in view of rest from hero (fall-rest-hero-preview-draft-standins.png, 01:39 UTC) is black all over, max pixel 0"
     },
     {
       "name": "particle-bat",
       "unit": "fall",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/particles/draw",
         "src/particles/engine",
         "src/seasons/fall"
       ],
       "standInHash": "81397ddc17976474",
-      "commit": "2530677"
+      "commit": "73c4019",
+      "note": "kinds_builder b97f86e with fall_air's rows in kinds.ts: stage 1 merged at b50558b; the stand-in view of rest from hero (fall-rest-hero-preview-draft-standins.png, 01:39 UTC) is black all over, max pixel 0"
     },
     {
       "name": "change-winter-spring",

@@ -17,9 +17,9 @@ const HEAP = {
   dune: { x: 61, z: 10, sx: 11.5, sz: 21, mm: 11 },
   skirt: { x: 72, z: 36, sx: 11, sz: 24, mm: 2.8 },
   shoulder: { x: 44, z: 60, sx: 27, sz: 20, mm: 4.2 },
-  fan: { x: 52, z: 120, sx: 25, sz: 60, mm: 2.4 },
-  sheet: { x: -76, z: -58, sx: 15, sz: 30, mm: 0.5 },
-  stray: { x: 62, z: 80, sx: 34, sz: 80, mm: 0.25 },
+  fan: { x: 54, z: 118, sx: 23, sz: 58, mm: 2.0 },
+  sheet: { x: -80, z: -50, sx: 15, sz: 28, mm: 0.7 },
+  stray: { x: 56, z: 80, sx: 28, sz: 70, mm: 0.25 },
   ring: { r: 61.5, w: 4.5, mm: 0.55 },
 }
 export const SLAB = { liftMm: 0.5, footMm: 54, stepMm: 0.8, x: [-150, 142], z: [-232, 216] } as const
@@ -53,7 +53,9 @@ export function sandHeight(x: number, z: number): number {
   const heap = bump(x, z, HEAP.dune) * (0.86 + 0.28 * broad) + bump(x, z, HEAP.skirt) * (0.5 + mid) + bump(x, z, HEAP.shoulder) * (0.6 + 0.8 * broad) + bump(x, z, HEAP.fan) * (0.25 + 1.5 * broad * mid)
   const sheet = bump(x, z, HEAP.sheet) * (0.2 + 1.6 * broad * mid)
   const stray = bump(x, z, HEAP.stray) * mid * mid * (0.4 + 1.2 * fine)
-  const ring = HEAP.ring.mm * Math.exp(-(((r - HEAP.ring.r) / HEAP.ring.w) ** 2)) * (0.15 + 1.7 * broad * mid)
+  const az = Math.atan2(x, z) * (180 / Math.PI)
+  const clear = az > -150 && az < -8 ? 0.06 : 1
+  const ring = HEAP.ring.mm * Math.exp(-(((r - HEAP.ring.r) / HEAP.ring.w) ** 2)) * (0.15 + 1.7 * broad * mid) * clear
   const lumps = (fine - 0.5) * 0.22 * Math.min(1, heap / 0.8) + (mid - 0.5) * 0.5 * Math.min(1, heap / 3)
   return Math.max(0, heap + sheet + stray + ring + lumps)
 }

@@ -20,8 +20,8 @@ export const PUMPKINS: readonly Pumpkin[] = [
 ]
 
 export const STONES = [
-  { at: [3.3, -11.2] as [number, number], w: 1.25, h: 3.9, d: 0.5, yaw: 0.2, lean: 0.07 },
-  { at: [5.6, -12.6] as [number, number], w: 1.1, h: 2.9, d: 0.45, yaw: -0.25, lean: -0.1 },
+  { at: [5.2, -9.5] as [number, number], w: 1.45, h: 5.3, d: 0.55, yaw: 0.2, lean: 0.07 },
+  { at: [7.7, -10.6] as [number, number], w: 1.25, h: 3.8, d: 0.5, yaw: -0.25, lean: -0.1 },
 ]
 
 export const pumpkinTall = (p: Pumpkin): number => p.r * p.tall
