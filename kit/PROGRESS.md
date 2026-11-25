@@ -37,16 +37,16 @@ Status 67 · 2026-11-25 01:52 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 01:52 UTC
-clock: phase 4, tick of 13.5 minutes
-phase 4: 1.75 h used of its 9.50 h box
-allowance (before the review): 24.03 h used of 36.00 h allowed
-all time before the review: 24.03 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 01:58 UTC
+clock: phase 4, tick of 5.3 minutes
+phase 4: 1.85 h used of its 9.50 h box
+allowance (before the review): 24.13 h used of 36.00 h allowed
+all time before the review: 24.13 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 5
 ```
 
 ## Phases
@@ -1575,4 +1575,6 @@ One entry per task: when it started, what it did, where it stopped.
 
 - 01:52 UTC. Merged at 01:43 and made again in full by 01:48 (`8d3cf3a`): `fall_air` `b39b7b4`, `fall_mini` `26bdd2b`, `kinds_builder` `0434c9f`, `spring_air` `171346c`, `spring_base` `f284614`, `spring_mini` `dea4ca7`, `summer_air` `5d1b494`, `summer_base` `2169605`, `summer_mini` `66dace1`; tsc clean, vitest 432 passed, 4 skipped, 0 failed (01:51). `spring_base` reported 18 spring base tiles of its first version that nothing loads any more (9.05 MiB in the web set); they were removed from the working tree here at 01:48 and leave the repo with the next freeze commit; the web set went from 76.775 to 67.727 MiB. Published at 01:49 from `8d3cf3a` with the first real spring, summer and fall in the app: first picture in 21.4 s, 89 requests, no error; Visibility: Organization.
 
-- 01:52 UTC. Status 67 posted at 01:53 (summer and fall at rest beside their approved images, and each just after a shake has landed; drafts).
+- 01:53 UTC. Status 67 posted at 01:53 (summer and fall at rest beside their approved images, and each just after a shake has landed; drafts).
+
+- 01:58 UTC. `npm run hostcheck` on a clean copy of the tracked files at 01:54 to 01:56: pass. `dist/` is 69.23 MB in 102 files (`host.maxShippedMb` 95); the largest file is `assets/spring/village-spring.glb` at 5.46 MB (`host.maxFileMb` 20); 13.67 MB in 32 requests were fetched before the first complete picture of the default season, 15.7 s after the page was opened (`host.firstLoadMaxMb` 16); the clean install and build took 0.15 minutes. This is the measurement decision 74 left open. `kinds_builder` reported at 01:55 that winter's rest still on `fe1072c` and after differs from its baseline in 3787 pixels of flakes (landed is identical): `engine.ts` took its lowest lift speed over the kinds of every season, and `summer_air`'s row of the seed lowered it from 18 to 10 mm/s. It was told at 01:56 to make that number depend on the running season's kinds only, with winter's two stills byte-identical with its baseline again. Rounds 8 and 9 judge spring and summer on `fe1072c`, where winter's flakes at rest sit a little differently from the kept build; winter itself is not judged in them. A third merge at 01:56 (`5cad7dc`: `fall_air` `a641a57`, `fall_base` `8c68fce`, `spring_air` `257a36b`, `spring_base` `cc6fe80`, `spring_mini` `5be7305`, `summer_air` `9dfc19f`) merged clean.
