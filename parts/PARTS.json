@@ -209,18 +209,19 @@
     {
       "name": "base-spring",
       "unit": "spring",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/spring",
         "public/assets/spring"
       ],
       "standInHash": "cc932466df558d97",
-      "commit": "2530677"
+      "commit": "592501f",
+      "note": "agent/p4-spring_base at b598adf: stage 1, a first real version from assets-src/base-spring and slab-spring; arrival outside the glass in arrival.ts"
     },
     {
       "name": "miniature-spring",
       "unit": "spring",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/spring",
         "public/assets/spring",
@@ -228,7 +229,8 @@
         "public/assets/shared"
       ],
       "standInHash": "dd7782876842b8c2",
-      "commit": "2530677"
+      "commit": "592501f",
+      "note": "agent/p4-spring_mini at 15be14d: grass skin, roof moss, growth, tulips, thawed pond, blossom crown on the shared trunk, lamp and panes lit, distance field with ground, pond and crown"
     },
     {
       "name": "glass-dressing-spring",
@@ -244,13 +246,14 @@
     {
       "name": "surface-dressing-spring",
       "unit": "spring",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/spring",
         "public/assets/spring"
       ],
       "standInHash": "cc932466df558d97",
-      "commit": "2530677"
+      "commit": "592501f",
+      "note": "agent/p4-spring_base at b598adf: stage 1, a first real version from assets-src/base-spring and slab-spring; arrival outside the glass in arrival.ts"
     },
     {
       "name": "light-spring",
@@ -278,13 +281,14 @@
     {
       "name": "arrival-spring",
       "unit": "spring",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/spring",
         "public/assets/spring"
       ],
       "standInHash": "cc932466df558d97",
-      "commit": "2530677"
+      "commit": "592501f",
+      "note": "agent/p4-spring_base at b598adf: stage 1, a first real version from assets-src/base-spring and slab-spring; arrival outside the glass in arrival.ts"
     },
     {
       "name": "particle-petal",
@@ -313,13 +317,14 @@
     {
       "name": "base-summer",
       "unit": "summer",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/summer",
         "public/assets/summer"
       ],
       "standInHash": "823d191bcc66aa2a",
-      "commit": "2530677"
+      "commit": "592501f",
+      "note": "agent/p4-summer_base at 44a7a28: stage 1, a first real version from assets-src/base-summer; sand on the slab and the arrival outside the glass in code"
     },
     {
       "name": "miniature-summer",
@@ -349,13 +354,14 @@
     {
       "name": "surface-dressing-summer",
       "unit": "summer",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/summer",
         "public/assets/summer"
       ],
       "standInHash": "823d191bcc66aa2a",
-      "commit": "2530677"
+      "commit": "592501f",
+      "note": "agent/p4-summer_base at 44a7a28: stage 1, a first real version from assets-src/base-summer; sand on the slab and the arrival outside the glass in code"
     },
     {
       "name": "light-summer",
@@ -383,13 +389,14 @@
     {
       "name": "arrival-summer",
       "unit": "summer",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/summer",
         "public/assets/summer"
       ],
       "standInHash": "823d191bcc66aa2a",
-      "commit": "2530677"
+      "commit": "592501f",
+      "note": "agent/p4-summer_base at 44a7a28: stage 1, a first real version from assets-src/base-summer; sand on the slab and the arrival outside the glass in code"
     },
     {
       "name": "particle-firefly",
