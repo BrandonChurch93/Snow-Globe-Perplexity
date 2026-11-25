@@ -23,7 +23,7 @@ const LOOKS: Record<string, KindLook> = {
   seed: { shape: SHAPE.seed, size: 3.6, body: 0.9, flash: 0, real: true },
   firefly: { shape: SHAPE.light, size: 1, body: 1, flash: 0, real: true },
   ember: { shape: SHAPE.spark, size: 1.25, body: 1, flash: 0, real: true },
-  bat: { shape: SHAPE.bat, size: 1.2, body: 1, flash: 0, real: true },
+  bat: { shape: SHAPE.bat, size: 1.6, body: 1, flash: 0, real: true },
 }
 
 const PLAIN: KindLook = { shape: SHAPE.soft, size: 1, body: 1, flash: 0, real: false }
