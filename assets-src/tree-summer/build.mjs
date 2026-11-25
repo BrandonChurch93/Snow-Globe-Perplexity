@@ -8,10 +8,10 @@ import { rel } from '../../tools/lib/paths.mjs'
 import { blurWrap, loadSource, luma, readPicture, seamless, toBytes, writePng } from '../trunk/source.mjs'
 
 const TAU = Math.PI * 2
-const LEAF_CELL = 0.56
+const LEAF_CELL = 0.65
 const LEVEL_SPRIGS = { medium: 0.45, low: 0.3 }
 const LEAF_TILE_MM = 11
-const SPRIGS = { share: 0.6, size: [1.3, 2.3], rise: 0.35, out: 0.34 }
+const SPRIGS = { share: 0.8, size: [1.5, 2.6], rise: 0.35, out: 0.34 }
 const TONE = { deep: [0.3, 0.54, 0.3], mid: [0.56, 0.86, 0.44], tip: [0.95, 1.3, 0.62] }
 const SUN = [0.5, 0.32, -0.8]
 const PAPER = { orange: [1, 0.19, 0.045], peach: [1, 0.27, 0.07], cream: [1, 0.52, 0.11] }

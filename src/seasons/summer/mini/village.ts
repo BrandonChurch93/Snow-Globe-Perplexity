@@ -31,7 +31,7 @@ const HALO_KIND = { lamp: { size: 3.6, rest: 0.08, hot: 0, bloom: 0.2 }, pane: {
 const THROUGH = 6
 const LAMP_GLASS: Rgb = [1.7, 0.82, 0.22]
 const WALL_FILL = 2.8
-const SAND = { clumpPerMm: 1.1, grainPerMm: 4.2, heapPerMm: 0.16, heapLow: 0.6, heap: 0.6, body: 3.6, floor: 0.8, wrap: 1.5, foot: 0.85, bump: 0.6, grainLow: 0.62, grain: 0.5, spark: 1.5, topFrom: 0.22, topTo: 0.62 }
+const SAND = { white: [0.86, 0.9, 0.98] as Rgb, whiten: 0.8, clumpPerMm: 1.1, grainPerMm: 4.2, heapPerMm: 0.16, heapLow: 0.6, heap: 0.6, body: 3.6, floor: 0.8, wrap: 1.5, foot: 0.85, bump: 0.6, grainLow: 0.62, grain: 0.5, spark: 1.5, topFrom: 0.22, topTo: 0.62 }
 const TURF_LOOK = { tone: 0.5, fineMm: 0.05, clumpMm: 0.22, fill: 0.45, wrap: 0.5 }
 const GRASS_LOOK = { fill: 0.1, wrap: 1.0, through: 0.36, near: 2.1, sun: 30, sunRoot: 0.35, shade: 0.6 }
 const ROOF = { slate: [0.3, 0.34, 0.42] as Rgb, chimney: [0.56, 0.5, 0.43] as Rgb, stone: [1.34, 1.06, 0.76] as Rgb, stoneMm: 0.7, picket: [0.5, 0.27, 0.14] as Rgb, picketMm: 1.6, pale: 0.25, railTop: [1.5, 1.2, 0.85] as Rgb, door: [0.4, 0.2, 0.13] as Rgb, doorMm: 2.4, reachMm: 0.4 }
@@ -118,7 +118,7 @@ float sandAmt = max(smoothstep(0.0, 0.2, vSurf.y), smoothstep(${SAND.topFrom.toF
 float sandFineB = sandNoise(vStageLocal * ${SAND.clumpPerMm.toFixed(2)});
 float sandFineC = sandNoise(vStageLocal * ${SAND.grainPerMm.toFixed(2)} + 7.3);
 float sandGrain = 0.5 * turfT.g + 0.6 * sandFineB + 0.5 * sandFineC;
-diffuseColor.rgb *= mix(1.0, (${SAND.heapLow.toFixed(2)} + ${SAND.heap.toFixed(2)} * smoothstep(0.3, 0.7, sandNoise(vStageLocal * ${SAND.heapPerMm.toFixed(2)} + 3.1))) * (${SAND.grainLow.toFixed(2)} + ${SAND.grain.toFixed(2)} * sandGrain + ${SAND.spark.toFixed(2)} * smoothstep(0.5, 0.72, sandFineC * (0.45 + 0.9 * sandFineB))), sandAmt);
+diffuseColor.rgb = mix(diffuseColor.rgb, mix(diffuseColor.rgb, ${glsl(SAND.white)}, ${SAND.whiten.toFixed(2)}) * (${SAND.heapLow.toFixed(2)} + ${SAND.heap.toFixed(2)} * smoothstep(0.3, 0.7, sandNoise(vStageLocal * ${SAND.heapPerMm.toFixed(2)} + 3.1))) * (${SAND.grainLow.toFixed(2)} + ${SAND.grain.toFixed(2)} * sandGrain + ${SAND.spark.toFixed(2)} * smoothstep(0.5, 0.72, sandFineC * (0.45 + 0.9 * sandFineB))), sandAmt);
 `,
         )
         .replace(
