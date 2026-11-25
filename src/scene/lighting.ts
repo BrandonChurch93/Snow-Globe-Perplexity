@@ -33,7 +33,7 @@ export const ROOM_RIG = {
   glow: { outside: 0.8, islandMm: innerRadiusMm * 0.88, lobe: 0.3, specular: 1 },
 } as const
 
-export const CHANGE_BLOOM = { flood: 320, lens: 5, pool: 6 } as const
+export const CHANGE_BLOOM = { flood: 800, lens: 3.5, pool: 8 } as const
 
 const SHADOW_OFF = 10
 
