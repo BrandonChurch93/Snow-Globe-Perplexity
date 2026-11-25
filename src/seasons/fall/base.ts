@@ -29,18 +29,21 @@ interface FaceExtras {
   faceRange: number
 }
 
-// The candles. On the landing each wick catches (`catchSeconds`): a spit of flame that all but dies, then holds low at
-// `ember` of its light with a tremble that fades; then each face takes (`takeSeconds`): a flare of `flare` of what is
-// left inside `flareSeconds`, and a creep to the whole of it over `creepSeconds`. The three a viewer faces never light
-// in the order they stand: the middle one, then the right, then the left, at uneven gaps. All three are alight half a
-// second after the landing, because that is the moment of the approved shake image, which shows them lit; the four
-// behind follow over the next three seconds in a shuffled order (the arrival's spread).
+// The candles. On the landing each wick catches (`catchSeconds`): its light eases up to `ember` of the whole, a little
+// over it at first, and from then on never falls under `floor` of that ember (a lit face does not go out again; the
+// tremble that fades is small). Then each face takes (`takeSeconds`): it eases up by `flare` of what is left over a
+// few `flareSeconds`, and creeps to the whole of it over `creepSeconds`. Both rises start with no slope, so no frame
+// jumps. The three a viewer faces never light in the order they stand: the middle one, then the right, then the left,
+// at uneven gaps. All three are alight half a second after the landing, because that is the moment of the approved
+// shake image, which shows them lit; the four behind follow over the next three seconds in a shuffled order (the
+// arrival's spread). The slab's reflections and pools read the same levels (`faceUniforms.uFaceGlow`).
 const LIGHT = {
-  catchSeconds: [0.2, 0.04, 0.1, 0.6, 1.9, 0.3, 1.0],
-  takeSeconds: [0.44, 0.2, 0.34, 1.1, 2.5, 0.8, 1.6],
+  catchSeconds: [0.16, 0.04, 0.09, 0.6, 1.9, 0.3, 1.0],
+  takeSeconds: [0.36, 0.18, 0.27, 1.1, 2.5, 0.8, 1.6],
   ember: 0.42,
+  floor: 0.92,
   flare: 0.7,
-  flareSeconds: 0.07,
+  flareSeconds: 0.06,
   creepSeconds: 0.9,
 }
 const CANDLE: Rgb = [1, 0.36, 0.045]
@@ -507,18 +510,21 @@ export function cobweb(): THREE.Object3D {
   return threads
 }
 
-// How lit a face is `seconds` after the landing: nothing before its turn, then a flare, then the creep to its whole light.
+// A rise from 0 to 1 that starts and ends with no slope (a critically damped step): 0.26 at `tau`, 0.8 at three of them.
+const ease = (t: number, tau: number): number => (t > 0 ? 1 - (1 + t / tau) * Math.exp(-t / tau) : 0)
+
+// How lit a face is `seconds` after the landing: nothing before its turn, then the ember it never falls under again,
+// then the rise to its whole light.
 export function faceLevel(index: number, seconds: number): number {
   const lit = seconds - (LIGHT.catchSeconds[index] ?? 1)
   if (!(lit > 0)) return 0
   if (!(lit < Infinity)) return 1
-  const spit = 0.8 * Math.exp(-(((lit - 0.06) / 0.035) ** 2))
-  const hold = 1 - Math.exp(-Math.max(lit - 0.13, 0) / 0.12)
-  const tremble = 1 + 0.4 * Math.exp(-lit / 0.7) * Math.sin(lit * 43 + index * 2.3) * Math.sin(lit * 17 + index * 5.1)
-  const ember = LIGHT.ember * Math.min(lit / 0.03, 1) * (spit + (1 - spit) * hold * tremble)
+  const over = 0.08 * Math.exp(-(((lit - 0.14) / 0.08) ** 2))
+  const tremble = (1 - LIGHT.floor) * Math.exp(-lit / 0.7) * Math.sin(lit * 19 + index * 2.3) * Math.sin(lit * 7 + index * 5.1)
+  const ember = LIGHT.ember * ease(lit, 0.03) * (1 + over + tremble)
   const t = seconds - (LIGHT.takeSeconds[index] ?? 4)
   if (!(t > 0)) return ember
-  return ember + (1 - LIGHT.ember) * (LIGHT.flare * (1 - Math.exp(-t / LIGHT.flareSeconds)) + (1 - LIGHT.flare) * (1 - Math.exp(-t / LIGHT.creepSeconds)))
+  return ember + (1 - LIGHT.ember) * (LIGHT.flare * ease(t, LIGHT.flareSeconds) + (1 - LIGHT.flare) * (1 - Math.exp(-t / LIGHT.creepSeconds)))
 }
 
 export function update(moment: KitMoment): void {
