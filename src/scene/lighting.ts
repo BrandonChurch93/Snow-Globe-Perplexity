@@ -33,6 +33,8 @@ export const ROOM_RIG = {
   glow: { outside: 0.8, islandMm: innerRadiusMm * 0.88, lobe: 0.3, specular: 1 },
 } as const
 
+export const CHANGE_BLOOM = { flood: 150, lens: 0.5, pool: 3 } as const
+
 const SHADOW_OFF = 10
 
 const smooth = (v: number) => (v <= 0 ? 0 : v >= 1 ? 1 : v * v * (3 - 2 * v))
@@ -223,13 +225,16 @@ export class Lighting {
     u.uLightGlowAt.value.set(this.at.x, this.at.y, this.at.z, ROOM_RIG.glow.islandMm)
     this.glow.position.set(this.at.x, centreHeightMm + this.at.y, this.at.z)
 
+    const cross = a === b ? 0 : f.mix.bloom
+    const peak = Math.max(gb[0], gb[1], gb[2], 1e-4)
     const spill = 1 + (ROOM_RIG.flood.pool * lift) / bloom
-    f.pool.setRGB(pool[0] * spill, pool[1] * spill, pool[2] * spill)
-    const lens = ROOM_RIG.flood.lens * lift
+    const wash = (CHANGE_BLOOM.pool * cross) / peak
+    f.pool.setRGB(pool[0] * spill + gb[0] * wash, pool[1] * spill + gb[1] * wash, pool[2] * spill + gb[2] * wash)
+    const lens = ROOM_RIG.flood.lens * lift + (CHANGE_BLOOM.lens * cross) / peak
     f.bloomTint.setRGB(gb[0] * lens, gb[1] * lens, gb[2] * lens)
     const flood = swell.whole * breath
     u.uLightFlood.value.setRGB(gb[0] * flood, gb[1] * flood, gb[2] * flood)
-    u.uLightFloodFloor.value.w = swell.whole > 0 ? (ROOM_RIG.flood.outside * lift) / swell.whole : 0
+    u.uLightFloodFloor.value.w = swell.whole > 0 ? (ROOM_RIG.flood.outside * lift + (CHANGE_BLOOM.flood * cross) / peak) / swell.whole : 0
     u.uLightFloodAt.value.z = swell.whole > 0 ? (ROOM_RIG.flood.inside * lift) / swell.whole : 0
     if (f.pose) {
       u.uLightEye.value.set(f.pose.position.x - f.globe.x, f.pose.position.y - f.globe.y, f.pose.position.z - f.globe.z).applyMatrix3(u.uLightFrame.value)

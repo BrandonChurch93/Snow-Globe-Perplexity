@@ -15,7 +15,7 @@ import { Shell } from '../globe/shell'
 import { ParticleDraw } from '../particles/draw/points'
 import { kitOf, kits } from '../seasons'
 import type { SeasonKit } from '../seasons/kit'
-import { changeBloom, partChange } from '../shake/change'
+import { BUILT_CHANGES, changeBloom, partChange } from '../shake/change'
 import { Backdrop } from './backdrop'
 import { applyPose, type Pose } from './cameras'
 import { newFrame, type StageFrame } from './frame'
@@ -226,7 +226,7 @@ export class GlobeStage implements Stage {
     const a = this.set(single ? moment.season : moment.from)
     const b = single ? a : this.set(moment.to)
     const change = single ? 0 : moment.change
-    if (!single) flagStandIn(`change-${moment.from}-${moment.to}`)
+    if (!single && !BUILT_CHANGES.has(`${moment.from}-${moment.to}`)) flagStandIn(`change-${moment.from}-${moment.to}`)
     const u = stageUniforms
     const liquid = this.source.liquid
     const period = moment.period ?? config.scene.ambientPeriodSeconds
