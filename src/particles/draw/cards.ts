@@ -158,6 +158,7 @@ export const CARD_VERT = `
     if (whole < 0.5 && lineC < 0.5) stC *= ${n(CARD.dabStreak)};
     stC *= uLimit.x / (uLimit.x + length(stC));
     float bowC = 0.0;
+    float dzC = 0.0;
     if (lineC > 0.5) {
       vec3 mvC = (aNow - aPrev) * shut;
       vec3 curC = veilCurrent(nowL);
@@ -165,6 +166,8 @@ export const CARD_VERT = `
       stC = (toView * mvC).xy * (uPoint.y * mag / zImg) * afloat;
       stC *= ${at(SHAPE.seed)} ? mix(${n(CARD.line.seedStretch[0])}, ${n(CARD.line.seedStretch[1])}, pow(fract(own * 97.0), 2.0)) : (${at(SHAPE.leaf)} ? mix(${n(CARD.line.leafStretch[0])}, ${n(CARD.line.leafStretch[1])}, pow(fract(own * 97.0), 2.0)) : mix(${n(CARD.line.stretch[0])}, ${n(CARD.line.stretch[1])}, pow(fract(own * 97.0), 2.0)));
       stC *= uLimit.x / (uLimit.x + length(stC));
+      // how far the trail runs toward or away from the eye, in millimetres over its drawn length
+      dzC = clamp((toView * mvC).z * length(stC) / max(length((toView * mvC).xy) * (uPoint.y * mag / zImg), 1e-4), ${n(-CARD.line.deepMostMm)}, ${n(CARD.line.deepMostMm)}) * afloat;
       keepC *= smoothstep(${n(CARD.line.fromPx[0])}, ${n(CARD.line.fromPx[1])}, length(stC) / uPoint.w);
       vec2 inC = (toView * (vec3(${ROLL_CENTRE.map(n).join(', ')}) - nowL)).xy;
       bowC = mix(${n(CARD.line.bow[0])}, ${n(CARD.line.bow[1])}, fract(h2.z * 131.0)) * (dot(vec2(-stC.y, stC.x), inC) < 0.0 ? -1.0 : 1.0) * (fract(h2.z * 17.0) < 0.25 ? -1.0 : 1.0);
@@ -252,6 +255,11 @@ export const CARD_VERT = `
     #else
     vec2 offC = position.xy * extC;
     vCore = vec4(offC, 1.0, alpha);
+    if (lineC > 0.5 && hlC > 1e-3) {
+      // a trail keeps its own depth along its whole length, so a wall or a trunk hides the part of it that runs behind
+      vec4 alongC = projectionMatrix * vec4(view.xy, view.z + dzC * clamp(dot(offC, alC) / (2.0 * hlC), -0.5, 0.5), 1.0);
+      clip.z = alongC.z / alongC.w * clip.w;
+    }
     clip.xy += offC * vec2(projectionMatrix[0][0], projectionMatrix[1][1]) * (clip.w / uPoint.y);
     #endif
     vec4 liftC = projectionMatrix * vec4(view.xy, view.z + min(1.2 * rC * zImg / (uPoint.y * mag), ${n(LENS_LOOK.liftMostMm)}), 1.0);
