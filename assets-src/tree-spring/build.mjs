@@ -26,10 +26,10 @@ const lin = (hex) => {
   return [c.r, c.g, c.b]
 }
 
-const CROWN = { centre: [1.2, 27.6, 1], r: [21, 13.4, 15], floor: 14.2, reach: 13 }
-const LOBES = { count: 23, spacing: 8.2, tall: 1.6, shell: [0.42, 0.95], r: [4.9, 2.9, 4.9], size: [0.7, 1.3], sprays: 7, gap: 2.6 }
+const CROWN = { centre: [1.2, 28.4, 1], r: [19.5, 14.8, 14.5], floor: 14.2, reach: 13 }
+const LOBES = { count: 24, spacing: 8.2, tall: 1.3, shell: [0.42, 0.95], r: [4.5, 3.0, 4.5], size: [0.7, 1.3], sprays: 7, gap: 2.6 }
 const TWIG = { from: 0.36, to: 0.06, sides: 5, steps: 7 }
-const CLUSTER = { step: 1.75, from: 0.3, size: [0.85, 1.3], tip: [1.15, 1.6], flowers: [5.6, 8], flower: [0.58, 0.92], side: 0.6, flat: 0.78, extra: 0.14, core: 0.36 }
+const CLUSTER = { step: 1.75, from: 0.3, size: [0.85, 1.3], tip: [1.15, 1.6], flowers: [5, 7.2], flower: [0.58, 0.92], side: 0.6, flat: 0.78, extra: 0.14, core: 0.36 }
 const TONES = ['#f6b3c9', '#f9c6d6', '#f2a7c0', '#fbd7e2', '#f0a2bc', '#f7bdd0', '#fde4ea'].map(lin)
 const LOBE_LOOK = { round: 0.7, under: 0.7 }
 const SHADE = [0.72, 0.62, 0.65]
@@ -320,6 +320,7 @@ for (const c of clusters)
     box[j + 3] = Math.max(box[j + 3], c.p[j] + c.r)
   }
 
+const far = clusters.reduce((m, c) => Math.max(m, len(add(c.p, T.crownOffset())) + c.r), 0)
 bloom.i = [...cores, ...full.flat()]
 const lists = { medium: [...cores, ...light.flat()], low: [...cores, ...lighter.flat()] }
 const shadow = { high: cores.length + full[0].length, medium: cores.length + light[0].length, low: cores.length + lighter[0].length }
@@ -330,4 +331,4 @@ const out = writeGlb(rel('assets-full', 'spring', 'tree-blossom.glb'), [
 ])
 out.bytes = addLists(rel('assets-full', 'spring', 'tree-blossom.glb'), 'blossom', lists)
 writeJson(rel('out', 'work', 'tree', 'build-spring.json'), { made: 'assets-src/tree-spring/build.mjs', file: 'assets-full/spring/tree-blossom.glb', bytes: out.bytes, counts, clusters: clusters.length, flowers, sprays: sprays.length, balls: balls.length, box })
-console.log(`tree-spring: ${sprays.length} sprays, ${clusters.length} clusters, ${flowers} flowers, ${balls.length} collider balls; ${out.triangles} triangles (blossom ${counts.blossom}, medium ${counts.medium}, low ${counts.low}; in the shadow ${shadow.high / 3}, ${shadow.medium / 3}, ${shadow.low / 3}), ${(out.bytes / 1e6).toFixed(2)} MB; box ${box.map((v) => v.toFixed(1)).join(' ')}`)
+console.log(`tree-spring: ${sprays.length} sprays, ${clusters.length} clusters, ${flowers} flowers, ${balls.length} collider balls; ${out.triangles} triangles (blossom ${counts.blossom}, medium ${counts.medium}, low ${counts.low}; in the shadow ${shadow.high / 3}, ${shadow.medium / 3}, ${shadow.low / 3}), ${(out.bytes / 1e6).toFixed(2)} MB; box ${box.map((v) => v.toFixed(1)).join(' ')}; farthest from the globe's centre ${far.toFixed(1)} mm`)
