@@ -8,7 +8,7 @@ import { MIRROR_GLSL, mirrorUniforms } from '../../../miniature/mirror'
 import { prepareVillage, tileMm, villageGeometry, villageGrain } from '../../../miniature/model'
 import { lampFlame, lampFoot, shrubDistance } from '../../../miniature/roof'
 import { BUMP_GLSL, NEAR_LIGHT, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, withSurface, type Cover, type GlowSource } from '../../../miniature/surface'
-import { anchors, cottage, cottageFrame, fence, groundAt, moundAt, moundSlope, pond, pondField, solidDistance, tree } from '../../../scene/layout'
+import { anchors, cottage, cottageFrame, fence, groundAt, moundAt, moundSlope, pond, pondField, solidDistance, steps, stones, tree } from '../../../scene/layout'
 import { gainOf } from '../../../scene/lightgrid'
 import type { InnerLight, KitMoment } from '../../kit'
 import { isTree, season, tones } from './palette'
@@ -35,7 +35,8 @@ const BANK_EARTH: Rgb = [0.03, 0.021, 0.012]
 const SLATE = { tint: [2.2, 3.1, 3.8] as Rgb, from: cottageFrame().floor + cottage.wall - 1.2 }
 const ROCK_FILL = 2.4
 const POT: Rgb = [0.5, 0.2, 0.1]
-const FENCE_TINT: Rgb = [0.42, 0.33, 0.27]
+const FENCE_TINT: Rgb = [0.64, 0.5, 0.39]
+const PATH = { tint: [1.75, 1.58, 1.3] as Rgb, reachMm: [1.5, 2.1], tallMm: 1 }
 const RING_SHOW = 1.7
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
 const HALO_KIND = { lamp: { size: 4.6, rest: 0.5, hot: 0.07, bloom: 0.3 }, pane: { size: 2.6, rest: 0.28, hot: 0, bloom: 0.36 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
@@ -88,6 +89,10 @@ export async function prepare(): Promise<void> {
   await Promise.all([prepareVillage(), prepareModel(MODEL)])
 }
 
+const pathMask = [...steps, ...stones]
+  .map(([x, z]) => `step(vStageLocal.y, ${(groundAt(x, z) + PATH.tallMm).toFixed(3)}) * (1.0 - smoothstep(${PATH.reachMm[0].toFixed(2)}, ${PATH.reachMm[1].toFixed(2)}, length(vStageLocal.xz - vec2(${x.toFixed(3)}, ${z.toFixed(3)}))))`)
+  .join(' + ')
+
 const mossy: Cover = {
   uniforms: {},
   pars: '',
@@ -106,6 +111,8 @@ const mossy: Cover = {
   vec2 springOff = vStageLocal.xz - vec2(${fence.from[0].toFixed(3)}, ${fence.from[1].toFixed(3)});
   float springFence = villageWood * (1.0 - smoothstep(1.6, 2.4, length(springOff - springRail * clamp(dot(springOff, springRail) / dot(springRail, springRail), -0.1, 1.1))));
   diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * ${glsl(FENCE_TINT)}, springFence);
+  float springPath = clamp(${pathMask}, 0.0, 1.0) * (1.0 - villageLeaf) * (1.0 - villageWood) * (1.0 - villageIron);
+  diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * ${glsl(PATH.tint)}, springPath * (1.0 - 0.7 * springMoss));
   float springPot = villageIron * smoothstep(${(SLATE.from + 3.2).toFixed(2)}, ${(SLATE.from + 3.6).toFixed(2)}, vStageLocal.y);
   diffuseColor.rgb = mix(diffuseColor.rgb, ${glsl(POT)} * (0.55 + 0.9 * villageGrain.r) * (0.7 + 0.6 * villageMottle), springPot);
   villageRough = mix(villageRough, 0.95, max(springMoss, springPot));
@@ -380,7 +387,7 @@ const shadowed = <T extends THREE.Mesh>(m: T, cast = true): T => {
 
 export function build(): THREE.Object3D {
   const walls = shadowed(new THREE.Mesh(withSurface(villageGeometry('solid').clone(), nearWall), surfaceMaterial({ part: PART, map: villageGrain(), gain, cover: mossy, key: 'village-solid-spring', fill: WALL_FILL })))
-  const turf = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'turf'), near), turfMaterial()))
+  const turf = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'turf'), near), turfMaterial()), false)
   const growth = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'growth'), nearGrowth), growthMaterial()), false)
   const water = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'water'), near), waterMaterial()), false)
   return new THREE.Group().add(walls, turf, growth, water)

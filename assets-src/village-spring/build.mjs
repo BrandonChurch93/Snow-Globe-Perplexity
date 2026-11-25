@@ -505,7 +505,7 @@ class Sprigs {
     return merged
   }
 }
-const LEVEL = { medium: 0.5, low: 0.25 }
+const LEVEL = { medium: 0.4, low: 0.25 }
 const growth = new Sprigs()
 const KIND_OF = { blade: 0, leaf: 1, petal: 2 }
 const pick = (list) => list[Math.floor(R() * list.length)]
