@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 72 · 2026-11-25 03:36 UTC
+Status 73 · 2026-11-25 03:56 UTC
 
-- `out/stills/status/status-72-1.jpg`: Summer's miniature on its builder's branch (top) beside the approved image (bottom): the mirror pond and the sand rim are new
-- `out/stills/status/status-72-2.jpg`: Summer's air on its builder's branch: the approved image left and the build right
-- `out/stills/status/status-72-3.jpg`: Round 9's judged film sheet across the change from spring to summer: the season cuts between frames 1386 and 1400
-- `out/stills/status/status-72-4.jpg`: Still: summer rest hero, hd, draft
+- `out/stills/status/status-73-1.jpg`: The change from spring to summer on the change builder's branch: the base now gives way inside a flood of the new season's light (film frames 1392 to 1400)
+- `out/stills/status/status-73-2.jpg`: Fall's base on its builder's branch: the approved image above and the build below
+- `out/stills/status/status-73-3.jpg`: Fall's air on its builder's branch: the approved image left and the build right
+- `out/stills/status/status-73-4.jpg`: Still: summer rest hero, preview, draft, standins view
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 03:52 UTC
-clock: phase 4, tick of 15.3 minutes
-phase 4: 3.74 h used of its 9.50 h box
-allowance (before the review): 26.02 h used of 36.00 h allowed
-all time before the review: 26.02 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 03:56 UTC
+clock: phase 4, tick of 4.1 minutes
+phase 4: 3.81 h used of its 9.50 h box
+allowance (before the review): 26.09 h used of 36.00 h allowed
+all time before the review: 26.09 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 15
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -1646,3 +1646,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 03:14 UTC. Status 71 posted (three pictures: spring at rest and after landing from `spring_air2`'s looks, fall at rest from `fall_mini2`'s, each beside the approved image). Since Status 70: Round 9's second half of R3 saved (6; R3 counts 4) and sent to summer's builders; ownership of summer's sand settled on `summer_air2`'s word (the mound, sheet and spill are `slab.ts`, `bases2`; the flying grains are `arrival.ts`, `change_builder`) and the issues sent on; decision 81 (an optional per-season gain on the background lights, pushed as `8d2af6e` after one failed push at 03:12); Round 8's jurors run one at a time in the free critic slot, 20 of 25 in. Sound account read at 03:13:32: 130996 of 131000 used.
 
 - 03:37 UTC. - 03:37 UTC: Status 72 posted (three pictures inline: summer's miniature and summer's air on their builders' branches beside the approved image; Round 9's judged film sheet across the change from spring to summer). Round 9 has every answer (R1 4, R3 4, R4 4, R2 fails, 2 checks red, 5 measures red); Round 8 likewise (R1 4, R3 3, R4 3, R2 fails, 2 checks red, 7 measures red); neither passes. Round 10's still pack is late (fall renders slower; new limit 04:00). Sound account read at 03:36:05: 4 credits left, nothing can be made.
+
+- 03:56 UTC. - 03:56 UTC: Status 73 posted (three pictures inline: the change from spring to summer inside its bloom on the change builder's branch; fall's base and fall's air on their builders' branches beside the approved image). Round 10 so far: R1 3, R3 6, R2 fails (1 of 20 against 7 of 10), 6 of 19 measures red; motion pack and machine checks still rendering. Sound account unchanged (4 credits at 03:36).
