@@ -1,32 +1,22 @@
 {
   "version": 1,
   "bootId": "ff5d1bae-befd-4c1b-b74f-d269fb040d4b",
-  "last": 1795615327639,
-  "sinceStatus": 419.42500000000007,
+  "last": 1795615924015,
+  "sinceStatus": 469.7030000000001,
   "segment": {
     "kind": "run",
-    "allowedHours": 36,
+    "allowedHours": 12,
     "boxes": {
-      "0": 4,
-      "1": 1,
-      "2": 6,
-      "3": 11,
-      "4": 9.5,
-      "5": 4.5
+      "5": 12
     },
-    "used": 130292.47500000008,
+    "used": 50.278000000000006,
     "phaseUsed": {
-      "0": 3800.603,
-      "1": 478.91,
-      "2": 19530.188000000002,
-      "3": 56414.852,
-      "4": 42127.68700000002,
-      "5": 7940.2350000000015
+      "5": 50.278000000000006
     },
-    "continuation": 0
+    "continuation": 1
   },
   "totals": {
-    "run": 130292.47500000008,
+    "run": 130342.75300000007,
     "afterReview": 0,
     "reviewRounds": 0,
     "extensions": 0
@@ -37,23 +27,23 @@
     "2": 19530.188000000002,
     "3": 56414.852,
     "4": 42127.68700000002,
-    "5": 7940.2350000000015
+    "5": 7990.513000000002
   },
   "reviewApproved": false,
-  "continuations": 0,
+  "continuations": 1,
   "reviewRounds": {},
   "extensions": {},
-  "ticks": 364,
+  "ticks": 366,
   "lastReport": [
-    "2026-11-25 14:02 UTC",
-    "clock: phase 5, tick of 0.4 minutes",
-    "phase 5: 2.21 h used of its 4.50 h box",
-    "allowance (before the review): 36.19 h used of 36.00 h allowed",
-    "all time before the review: 36.19 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h",
-    "extra rounds: no",
+    "2026-11-25 14:12 UTC",
+    "clock: phase 5, tick of 0.8 minutes",
+    "phase 5: 0.01 h used of its 12.00 h box",
+    "allowance (before the review, continuation 1): 0.01 h used of 12.00 h allowed",
+    "all time before the review: 36.21 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h",
+    "extra rounds: yes",
     "half point: not reached",
     "box end: not reached",
-    "budget report: due",
-    "minutes since the last status: 6"
+    "budget report: not due",
+    "minutes since the last status: 7"
   ]
 }
