@@ -1,78 +1,120 @@
 # The sound of the Snow Globe: the log of every cue, and how to make what is not made
 
-Written by the sound agent of Phase 4 on 2026-11-25 (UTC), on the branch `agent/p4-sound`.
+Written by the sound agent of Phase 5 on 2026-11-25 (UTC), on the branch `agent/p5-sound-takes`. It replaces the Phase 4 text, which described a build with no credits.
 
 ## Where it stands
 
-**Phase 4 made no sound. The sound tool is out of credits.**
+**14 sounds are kept. 10 effect cues and the one-piece music are open, each out of its three takes. No further call that makes sound may be made without a review round.**
 
-- `GET /v1/user/subscription` at 02:51:42 UTC and again at 02:55:12 UTC: tier `creator`, 130996 of 131000 credits used, 4 left, `can_extend_character_limit` false. The period resets on 2026-12-23 at 20:08 UTC.
-- The first take of the phase, `shake-spring`, at 02:52:33 UTC: HTTP 401, `quota_exceeded`, "You have 4 credits remaining, while 29 credits are required for this request".
-- The music endpoint, asked once at 02:58:33 UTC with the first take of `music-spring`: HTTP 401, `insufficient_credits`.
-- No take was filed or counted, and the counter did not move. The shortest sound effect the endpoint makes, 0.5 s, costs 6.
-- The raw answers are in `audio/evidence/`.
-- `AGENTS.md`, "Sound": a sound that cannot be made is an open item, its moment plays without it, and the build goes on. Nothing here blocks a gate.
+- Kept in Phase 5: `shake-spring` (take 2), `amb-spring` (take 2), `amb-summer` (take 1), `music-box` (take 1), `ui-send` (take 1), `riser` (take 3), `music-winter` (take 1), `music-spring` (take 2), `music-summer` (take 2), `music-fall` (take 1). Kept before: `lift`, `glass-clink`, `ui-tick`, `ui-sound-on`.
+- Open: `shake-winter`, `land-winter`, `amb-winter` (from Phase 2 and 3), `land-spring`, `shake-summer`, `land-summer`, `shake-fall`, `land-fall`, `amb-fall`, `key-tap`, `music-one-piece`.
+- The `four-tracks` candidate has all four of its tracks and is mixed. The `one-piece` candidate has no music and cannot be mixed.
+- Credits: Brandon's limit for this phase was 10,000. The guard's count at the end: **6,765 spent, 3,235 left** (effects 1,914 by their cost headers over 31 calls; music 4,851 by the account's Music usage line over 9 calls). 40 calls, none refused, none without a guard line before and after it.
+- Free work done after the paid passes: layers of each open cue's own takes (none was heard as its whole line, none kept), the `four-tracks` mix, the pack, the sound checks.
 
-What Phase 4 did instead, at no cost: every remaining cue's text, written from the list `learned` in `audio/prompts.json`; the plan of the `one-piece` candidate, made by the plan endpoint; the four track prompts; the questions for music; three small scripts that make, file and prepare a take; the mixes and the checks on the four sounds that exist.
+## The credit guard
 
-To go on, the account needs credits. Section "What it will cost" gives the sum.
+Every call that makes sound went between `node out/work/bin/soundguard.mjs begin <cue> <sfx|music> <seconds>` and `... end <cost header or 0> <note>` (the guard and its ledger `out/work/audio/ledger.jsonl` live in the workspace of the main build and are not in the repo). An effect is booked at its `character-cost` header. The music endpoint sends no cost header, so the guard reads the account's usage report, product Music, before and after the call and books the rise. `sum` prints what is spent and left.
+
+The last line of `sum`, 18:26 UTC: `{"limit":10000,"spent":6765,"left":3235,"calls":40,"open":null,"counter":{"used":13750,"limit":131000},"effects":1914,"music":4851,"accountMusicLine":4851,"othersInsideMyCalls":220,"ratesSeen":{"sfx":12,"music":13.8}}`.
+
+**Someone else used the same account during this phase.** The account's usage report at 18:26 UTC: API 13,491, Website 350; by product Music 4,851, Sound Effects 7,294, TTS 1,346, Voice Generation 350. This agent made no speech and no voice call, and its effects sum to 1,914: so 5,380 credits of Sound Effects, all of TTS and Voice Generation are not this build's. One of those foreign effect calls (220 credits, a 20 s effect) fell inside the guard window of `riser` take 2 (header 13, counter rise 233); the guard books 13. This was reported to `/root` at 17:40, 17:47, 17:51, 18:10, 18:13 and 18:26 UTC and is for Brandon to look into; it is why the account counter (13,750 used) is far above this build's 6,765.
 
 ## If you are the next sound agent
 
 You have never seen this build. This is what you need, in order.
 
-1. Read: `AGENTS.md`, the part "Sound"; `kit/03-METHOD.md` section 12; `kit/01-FILM.md`, "The soundtrack"; `audio/QUESTIONS.md`; in `audio/prompts.json` every line of `learned`, then `takes`; `node tools/sound.mjs --help`.
+1. Read: `AGENTS.md`, the part "Sound"; `kit/03-METHOD.md` section 12; `kit/01-FILM.md`, "The soundtrack"; `audio/QUESTIONS.md`; in `audio/prompts.json` every line of `learned`, then `takes`, `music.takes` and `layers`; `node tools/sound.mjs --help`.
 2. What the build is: one glass snow globe with a miniature inside that goes through four seasons; a shake changes the season. The app plays effects and ambience, and a film of it, 60 s, is cut to music. A shake is the liquid and what floats in it thrown about inside sealed glass. A landing is the globe set down on stone and the season arriving. An ambience is one steady bed for the season.
 3. Nobody here has ears. A take is judged by its numbers and by a listener's answers, and Brandon, the owner, decides at the review. Never report something unheard as heard.
 4. The rules that bind every take:
-   - At most 3 takes for a cue and for a piece of music (`audio.maxTakesPerCue`), one at a time, each judged before the next is asked for. The harness refuses a fourth.
-   - `shake-winter`, `land-winter`, `amb-winter` and `lift` are out of takes. Do not make takes for them. `glass-clink`, `ui-tick` and `ui-sound-on` are kept: leave them.
-   - Every sound effect prompt is the cue's text, a comma, then the family line, word for word. Every music prompt ends with the music family line, word for word. The scripts below do this and refuse a music prompt that does not.
+   - At most 3 takes for a cue and for a piece of music (`audio.maxTakesPerCue`), one at a time, each judged before the next is asked for. The harness refuses a fourth in the same round. **Every open cue is out of takes in the round `build`**: a new take needs a review round and Brandon's word on credits.
+   - Every sound effect prompt is the cue's text, a comma, then the family line, word for word. Every music prompt ends with the music family line, word for word.
    - The default model of each endpoint, never one marked preview or beta.
    - A take that does not fit its line is not kept. Its moment stays silent and the cue is an open item.
    - No sound file is ever committed. Commit the text records by naming their paths.
-5. The order: spring's three cues, summer's, fall's, then `music-box`, `key-tap`, `ui-send`, `riser`, then the music of `one-piece`, then the four tracks, then the mixes and the checks. After each batch that is kept: the sheet, the pack, a push, and the kept files to whoever builds the app.
-6. Start with "Before the first take" below. Every command in this file is run from the root of the repo.
+5. Start with "What a review round should try first" below. Every command in this file is run from the root of the repo.
 
 ## Every cue
 
-| Cue | Class | Length | State | Takes used | Note |
+| Cue | Class | Length | State | Takes | What each take was heard as |
 | --- | --- | --- | --- | --- | --- |
-| `lift` | touch | 0.5 s | kept, take 3 | 3 of 3 | Phase 3. One brief harsh scrape of a heavy thing leaving stone |
-| `glass-clink` | touch | 0.3 s | kept, take 2 | 2 of 3 | Phase 2. One high clean ring |
-| `ui-tick` | interface | 0.08 s | kept, take 2 | 2 of 3 | Phase 3. One dull dry click, all under 1 kHz |
-| `ui-sound-on` | interface | 0.4 s | kept, take 1 | 1 of 3 | Phase 2. A bright chime of two quick tones, a little synthetic |
-| `shake-winter` | impact | 2.6 s | open, out of takes | 3 of 3 | A spoon in a glass; ice cubes in a container; sleigh bells in open air |
-| `land-winter` | impact | 1.5 s | open, out of takes | 3 of 3 | Almost silent; one light clink; two hollow knocks |
-| `amb-winter` | ambience | 20 s | open, out of takes | 3 of 3 | Two rumbles under 60 Hz; a gust, a whoosh and bells up close |
-| `shake-spring` | impact | 2.6 s | not made: no credits | 0 | |
-| `land-spring` | impact | 1.5 s | not made: no credits | 0 | |
-| `amb-spring` | ambience | 20 s | not made: no credits | 0 | |
-| `shake-summer` | impact | 2.6 s | not made: no credits | 0 | |
-| `land-summer` | impact | 1.5 s | not made: no credits | 0 | |
-| `amb-summer` | ambience | 20 s | not made: no credits | 0 | |
-| `shake-fall` | impact | 2.6 s | not made: no credits | 0 | |
-| `land-fall` | impact | 1.5 s | not made: no credits | 0 | |
-| `amb-fall` | ambience | 20 s | not made: no credits | 0 | |
-| `music-box` | interface | 2 s | not made: no credits | 0 | |
-| `key-tap` | interface | 0.1 s | not made: no credits | 0 | |
-| `ui-send` | interface | 0.3 s | not made: no credits | 0 | |
-| `riser` | touch | 1.2 s | not made: no credits | 0 | |
-| `music-one-piece` | music | 60 s | not made: no credits | 0 | The candidate `one-piece` |
-| `music-winter`, `music-spring`, `music-summer`, `music-fall` | music | 28.8 s each | not made: no credits | 0 | The candidate `four-tracks` |
+| `lift` | touch | 0.5 s | kept, take 3 | 3 | Phase 3. One brief harsh scrape of a heavy thing leaving stone |
+| `glass-clink` | touch | 0.3 s | kept, take 2 | 2 | Phase 2. One high clean ring; the family checks call it synthetic |
+| `ui-tick` | interface | 0.08 s | kept, take 2 | 2 | Phase 3. One dull dry click |
+| `ui-sound-on` | interface | 0.4 s | kept, take 1 | 1 | Phase 2. A bright chime of two quick tones |
+| `shake-winter` | impact | 2.6 s | open | 3 | 1 a spoon stirring liquid and ice in a glass; 2 ice cubes or dice shaken in a container with liquid; 3 small sleigh bells in open air |
+| `land-winter` | impact | 1.5 s | open | 3 | 1 a faint thud, almost silent (numbers; not heard); 2 one light bright clink on glass; 3 a small hollow thing dropped on wood that bounces |
+| `amb-winter` | ambience | 20 s | open | 3 | 1 and 2 a rumble under 200 Hz and nothing else (numbers; not heard); 3 a gust, a whoosh, then sleigh bells loud and close |
+| `shake-spring` | impact | 2.6 s | **kept, take 2** | 2 | 1 one plunge into open water, a bucket or basin; 2 open call: liquid poured and splashing, wet and sloshing, one event; fit call: water sloshing and churning hard inside a glass container. Small and enclosed; heard as a pour more than a shake |
+| `land-spring` | impact | 1.5 s | open | 3 | 1 one sharp mechanical click; 2 a brittle crunch or a wet splat; 3 a splash into a bucket of water |
+| `amb-spring` | ambience | 20 s | **kept, take 2** | 2 | 1 food sizzling in a pan with a bird; 2 open call: water flowing like a small stream or fountain with a bird chirping over it; fit call: bird calls and a patter of light rain. Even within 5 dB. The water is heard as a stream, not as rain |
+| `shake-summer` | impact | 2.6 s | open | 3 | 1 open splashes as from a bucket, no seeds; 2 a dry rattle of beads, no liquid; 3 liquid shaken in a container, no seeds |
+| `land-summer` | impact | 1.5 s | open | 3 | 1 a hiss like a match flaring; 2 a rising hiss like a zipper; 3 a short whoosh |
+| `amb-summer` | ambience | 20 s | **kept, take 1** | 1 | a fast high chirping of a cricket, steady; one of three calls heard a squeak like a rusty swing first. One voice of crickets, not a field |
+| `shake-fall` | impact | 2.6 s | open | 3 | 1 three knocks on wood (0.9 s); 2 a splash in a hollow vessel, once with a clatter (fits weakly); 3 a dry rattle like dice in a cup |
+| `land-fall` | impact | 1.5 s | open | 3 | 1 one heavy low impact like hollow wood struck; 2 a sub rumble, 93 percent under 60 Hz, twice answered "no file"; 3 a door creaking and latching, once taken for a cat |
+| `amb-fall` | ambience | 20 s | open | 3 | 1 someone walking through dry leaves; 2 a steady strong wind roar, very even (fits weakly); 3 four heavy breaths through a regulator |
+| `music-box` | interface | 2 s | **kept, take 1** | 1 | a mechanical ratchet, "winding a music box" |
+| `key-tap` | interface | 0.1 s | open | 3 | 1 a hard sharp click like a mouse button; 2 the same, brighter; 3 a low dull thud like a knock on wood |
+| `ui-send` | interface | 0.3 s | **kept, take 1** | 1 | a click in two of three calls, a "ding" in one (a line at 1500 Hz) |
+| `riser` | touch | 1.2 s | **kept, take 3** | 3 | 1 a whoosh loudest in its middle; 2 a flat hiss ending in a pop, heard as a mouth; 3 rising air, -60 to -20 dB over 0.95 s. All its energy is under 250 Hz: check it on a small speaker at the review. The fit call said no ("not a human inhalation"); the open calls and the numbers decided |
+| `music-winter` | music | 28.8 s | **kept, take 1** | 1 | sleigh bells, celesta or piano, a warm pad; festive; no voice; 100.008 bpm, first bar at 0.0135 s. No low strings were named by the listener |
+| `music-spring` | music | 28.8 s | **kept, take 2** | 2 | 1 reflective, dreamy, blind choice "warm and unhurried" twice (fits weakly); 2 harp and a soft melody, calm, blind choice "light and airy" twice; no voice; 99.999 bpm, first bar at 0.0053 s; ends on a cut |
+| `music-summer` | music | 28.8 s | **kept, take 2** | 2 | 1 a music-box lullaby; 2 fingerpicked acoustic guitar, warm, calm, blind choice "warm and unhurried"; no voice; 100.001 bpm, first bar at 0.0123 s. No marimba was heard |
+| `music-fall` | music | 28.8 s | **kept, take 1** | 1 | a detuned music box, eerie, haunting, blind choice "dark and eerie"; no voice; 100.006 bpm, first bar at 0.0033 s |
+| `music-one-piece` | music | 60 s | open | 3 | 1 one solo music box in one mood, level boundaries 4.81 / 28.81 / 55.21 s; 2 a music box, strings joining 16 to 47 s, one festive mood, boundaries 3.61 / 20.41 / 39.61 / 56.41 s; 3 sleigh bells, celesta, strings, one festive mood, every 12 s section heard alone called "warm and unhurried", boundaries 4.81 / 31.21 / 55.21 s. No voice in any |
 
-The text, the settings, the verdict and the listener's words of every take that exists are in `audio/prompts.json` under `takes`; the measurements are in `audio/RECORDS.json`.
+The text, the settings, the cost, the verdict and the listener's words of every take are in `audio/prompts.json` under `takes` and `music.takes`; the measurements are in `audio/RECORDS.json`.
 
-Credits spent on sound by the cost headers, all before Phase 4: 820 on the seventeen takes whose headers are in `audio/RECORDS.json`, 79 on the three takes of 06:37 to 06:44 UTC on November 24, and two test calls whose headers were not kept (about 66). Phase 4: 0.
+## What is left, for Brandon
 
-Family checks: none was run in Phase 4, because no take was made.
+Every cue and piece without a kept take. All have had 3 takes. Prices as recorded in this phase: effects 11 credits a second by the cost header (0.5 s = 6, 1.2 s = 13, 2 s = 22, 2.4 s = 26, 2.6 s = 29, 3 s = 33, 20 s = 220); music 13.75 a second by the account's Music line (28.8 s = 396, 60 s = 825).
 
-## What the app and the films do while these are missing
+| id | Takes | Why not kept | One more take | The 3 takes of a review round |
+| --- | --- | --- | --- | --- |
+| `shake-winter` | 3 | no take holds liquid, snow hiss and bells together | 29 | 87 |
+| `land-winter` | 3 | none is heavy, none has ice crackling | 33 | 99 |
+| `amb-winter` | 3 | no even bed of wind; bells loud and close | 220 | 660 |
+| `land-spring` | 3 | no heavy set-down followed by one drop and a breath of air | 33 | 99 |
+| `shake-summer` | 3 | each take holds one part of the line only | 29 | 87 |
+| `land-summer` | 3 | no set-down and no chime in any take | 33 | 99 |
+| `shake-fall` | 3 | each take holds one part; leaves in none | 29 | 87 |
+| `land-fall` | 3 | impact and creak in different takes; the low eerie tone in none | 33 (at 3 s) | 99 |
+| `amb-fall` | 3 | wind and leaves in different takes; the low eerie tone in none | 220 | 660 |
+| `key-tap` | 3 | two hard clicks and one thud that is no key; the line is a soft key press | 6 | 18 |
+| `music-one-piece` | 3 | no voice, but one mood for 60 s in three different plans | 825 | 2,475 |
 
-- The mix lays what is kept and names the rest. `npm run mix -- --candidate one-piece` at 02:56 UTC: 8 cues placed (four times `lift`, four times `glass-clink`), music none, and skipped with "no kept file": `music-box`, every `shake-`, `land-` and `amb-` cue, `music-one-piece`. `--candidate four-tracks` gives the same bytes, because neither has music.
-- **Those two mixes are not soundtracks and were not kept** (see the last section). The master brings whatever it is given to -14 LUFS. With eight short sounds and nothing else it added 10.6 dB of gain, so each scrape and each clink is that much louder than its class level, in silence. Until music exists, the films are silent, as `AGENTS.md` says: "build everything silent".
-- The app plays a sound only if `public/audio/index.json` names it. The pack of 02:56 UTC holds four sounds in one file (`lift`, `glass-clink`, `ui-tick`, `ui-sound-on`, 0.06 MB) and no loop. So in the app a shake plays the lift and the clink, the controls tick, and there is no ambience and no music. This is read from `src/audio/index.ts` (a sound without an entry returns before anything plays) and from the pack; it was not heard in a browser by this agent.
-- In film A the prompt opening is silent: `key-tap`, `ui-send` and `riser` do not exist.
+One more take of each: 1,490 credits (effects 665, music 825). Three of each: 4,470 (effects 1,995, music 2,475). The advice two sections down splits several cues into two layers, which doubles their takes: with that, plan for about 2,000 for the effects.
+
+## The layers (free, decision 111 of `/root`)
+
+A cue out of takes may be laid together from its own takes at no cost, heard and judged exactly as a take, and kept only if it is heard as the whole line. Done with ffmpeg (`volume`, `atrim`, `adelay`, `amix`) on the filed takes; each result went through the level chain of its class (`node audio/run/listen.mjs <cue> --file <layer>`) and to the listener: the open questions twice, the fit question once. Tried at 18:15 to 18:25 UTC for all ten open cues. **None was heard as its whole line. None is kept.** Levels, filters and every answer are in `audio/prompts.json` under `layers`.
+
+| Cue | Layer of takes | Heard as | Missing |
+| --- | --- | --- | --- |
+| `shake-winter` | 2 + 3 | liquid and ice in a cocktail shaker; the bells are heard as ice | hiss of snow, bells |
+| `land-winter` | 3 + 2 | a glass or mug set down on a hard surface, short | ice crackling (in no take). The nearest of the ten |
+| `amb-winter` | 3 + 2, two levels | wind, then sleigh bells loud and close | distance: wind and bells are in one take |
+| `land-spring` | 2 + 3 | a splash into water | set-down, breath of air |
+| `shake-summer` | 3 + 2, three levels | ice cubes clinking in a glass of liquid; with the seeds louder, dice and no liquid | seeds are heard as ice |
+| `land-summer` | 3 + 1 | one bright synthetic chime "like a video game coin" in both open calls | set-down, sand (only the fit call heard them) |
+| `shake-fall` | 2 + 3, three levels | liquid in one call, dice in the next; once liquid and ice together | leaves; both parts at once |
+| `land-fall` | 1 + 3 (+ 2), three ways | a door creak and a latch, or a knock on wood | glass on stone, the tone |
+| `amb-fall` | 2 + 1, two levels | wind and rustling dry leaves, an even bed | the low eerie tone (in no take) |
+| `key-tap` | 3 + 1, two levels | a sharp hard click, or an electronic boop | softness |
+
+What this taught: under a liquid, any small hard rattle is heard as ice cubes; a sound mostly under 250 Hz is not heard beside anything in the middle of the range; a part that is in no take cannot be laid in.
+
+## What a review round should try first on each open cue
+
+- `shake-winter`, `shake-summer`, `shake-fall`: nine shakes with two or three materials gave one material each. The one shake that was kept, `shake-spring`, is water alone. First try: reuse the kept `shake-spring` water as the bed of all four shakes and buy only the season's dry layer as its own cue, at a level well under the water, asked as a soft, fine sound so that it is not heard as ice: winter "a fine hiss of dry powder snow blown against glass with a few tiny high bells far off", summer "fine dry sand and a few small seeds trickling inside a paper envelope", fall "dry leaves crumpled and rustled in a hand". One take of 2.6 s is 29.
+- `land-winter`, `land-spring`, `land-summer`, `land-fall`: twelve landings; a second material in the text (water, sand, ice) took the whole take every time. The set-down itself was heard twice: `land-fall` take 1 (a glass ball dropped on a thick wooden floor: heavy, low) and the free layer of `land-winter` takes 3 + 2 (a glass or mug set down on a hard surface). First try: one dry set-down for all four seasons, with its body between 100 and 400 Hz so a phone plays it (not "deep", "dark" or "low", which gave a sub rumble), then the season's tail as a second short cue laid after it: ice crackling; one water drop; one small warm chime (the hit of `land-summer` take 3 already is a chime); one short wooden creak (the second half of `land-fall` take 3).
+- `amb-winter`: one steady bed with no instrument named, as the two kept ambiences were asked: "wind blowing steadily across open snow: one even full hiss of blown snow that stays the same from the first moment to the last". No bells in the text: an instrument named in an ambience comes up close. 220.
+- `amb-fall`: wind (take 2) and leaves (take 1) laid together are already heard as wind and rustling dry leaves, an even bed. Only the tone is missing. Either Brandon accepts the line without the tone and that layer is kept at no cost (out/work/audio/layers-tried/amb-fall-layer-2-1-try2.wav in the sound clone), or one take buys the tone alone: name a thing that sounds by itself ("one low note of a bowed metal bowl held and wavering, far away"), not air that someone blows, which gave breathing. 220.
+- `key-tap`: the object decides the sound: a key gives a hard click whatever the adjectives say, a rubber pad gives no key. Try a soft object that is still a key: "one key of a laptop with flat silent keys pressed gently once: a small low padded tap". 6.
+- `music-one-piece`: three composition plans with five sections of 12 s each gave one arrangement in one mood, with only strings coming and going. The plan's local styles do not turn this model inside 60 s. Do not buy a fourth plan of the same kind (825). If one piece is still wanted, the nearest thing at no cost is the `four-tracks` mix with its cuts smoothed, since the four kept tracks share 100 beats a minute and a grid; or one take with sections of 24 s or more, outside this film's grid.
+- The `four-tracks` mix: the listener hears "abrupt cuts that instantly jump from one track to another" at each change. The first thing a review should hear is whether those cuts on the bar line work under the shakes, or want a short crossfade.
 
 ## Before the first take
 
@@ -80,7 +122,7 @@ Family checks: none was run in Phase 4, because no take was made.
 git clone https://github.com/BrandonChurch93/Snow-Globe-Perplexity && cd Snow-Globe-Perplexity && npm ci
 ```
 
-- The four kept files (`audio/kept/lift.wav`, `glass-clink.wav`, `ui-tick.wav`, `ui-sound-on.wav`) are not in the repo: copy them into `audio/kept/` from the workspace or from the archive attached to the thread. Without them `--pack`, `--sheet` and the family check have nothing to work with.
+- The 14 kept files `audio/kept/*.wav` are not in the repo: copy them into `audio/kept/` from the workspace. Without them `--pack`, `--sheet`, the mix and the family check have nothing to work with.
 - The calls go through the credential proxy. The handle is the one `list_credentials` shows for `api.elevenlabs.io`; the scripts read it from `ELEVENLABS_HANDLE` and fall back to the handle this build used.
 - Read the counter first: `pplx credentials run $ELEVENLABS_HANDLE -- curl -sS https://api.elevenlabs.io/v1/user/subscription`. `character_limit` minus `character_count` is what is left.
 - Read every line of `learned` in `audio/prompts.json`.
@@ -103,41 +145,28 @@ node audio/run/take.mjs shake-spring
 
 It prints the status, the cost, and the numbers of the take: its length, the silence in front and at the end, peak, loudness, tail, the count of separate events, and how the energy is spread from low to high. A refused call files nothing and counts nothing.
 
-## The texts, in the order they are made
+## The texts of the kept effects
 
-Each is sent as: the text, a comma, the family line.
+Each was sent as: the text, a comma, the family line; `prompt_influence` 0.6 (ambience 0.5), `loop` false. The texts of every take that was not kept, and what each change of text was for, are in `audio/prompts.json` (`takes`, `cues.<id>.note`, `learned`).
 
-| # | Cue | Asked | Influence | Text |
-| --- | --- | --- | --- | --- |
-| 1 | `shake-spring` | 2.6 s | 0.6 | Water sloshing and churning hard back and forth inside a sealed half full bottle that is shaken six times: heavy wet sloshes and gulps of water slapping its walls, full and loud |
-| 2 | `land-spring` | 2 s | 0.6 | A heavy stone mortar set down hard into a shallow puddle on a marble countertop: one deep heavy thud with a wet splash of drops and a short rush of air pushed out from under it |
-| 3 | `amb-spring` | 20 s | 0.5 | Steady light rain falling on leaves and wet ground in a garden: one even full patter with no gusts and no thunder, and a few small songbirds chirping far away now and then |
-| 4 | `shake-summer` | 2.6 s | 0.6 | Water, sand and dry seeds sloshing and churning hard inside a sealed jar that is shaken back and forth six times: heavy wet sloshes with the seeds rattling and the sand hissing against its walls, full and loud |
-| 5 | `land-summer` | 2 s | 0.6 | A heavy brass bowl full of dry sand set down hard on a marble countertop: one deep heavy thud with a warm ringing of the brass and the sand hissing as it settles |
-| 6 | `amb-summer` | 20 s | 0.5 | A field of crickets chirping steadily on a warm summer night: one even full chorus, with a slow warm breeze moving through dry grass far away |
-| 7 | `shake-fall` | 2.6 s | 0.6 | Water and small dry wooden beads sloshing and rattling hard inside a sealed hollow wooden flask that is shaken back and forth six times: heavy wet sloshes, a hollow knocking rattle and a dry papery rustle of leaves, full and loud |
-| 8 | `land-fall` | 2 s | 0.6 | A heavy iron cauldron set down hard on an old wooden table: one deep heavy thud, the wood creaking long under the weight, and a low dark hum ringing on in the iron |
-| 9 | `amb-fall` | 20 s | 0.5 | Autumn wind blowing steadily through bare trees with dry leaves rustling and skittering along the ground the whole time, and a low hollow drone of wind in a chimney far away |
-| 10 | `music-box` | 2 s | 0.6 | The clockwork mechanism of a small wind-up toy turning with no tune: a steady fine ticking and whirring of tiny brass gears, even and dry |
-| 11 | `key-tap` | 0.5 s | 0.6 | One single key of a computer keyboard pressed once: one short muted low plastic clack, dull and dry |
-| 12 | `ui-send` | 0.5 s | 0.6 | One firm press of a single large rubber button: one short low rounded click with a small thump, dry |
-| 13 | `riser` | 1.2 s | 0.6 | A rush of air rising quickly: one whoosh of wind that swells from nothing to full and stops short at its loudest |
+| Cue | Take | Asked | Text |
+| --- | --- | --- | --- |
+| `shake-spring` | 2 | 2.6 s | Water sloshing back and forth inside a small sealed jar, half full, that is shaken six times in a steady rhythm from the first moment to the last: six quick wet sloshes and gurgles of water slapping the inside of its walls, tight and enclosed, full and loud |
+| `amb-spring` | 2 | 20 s | Steady rain falling in a garden at dawn, drumming on broad leaves and on wet ground, with many small songbirds singing in the trees all the time: one even full bed of rain and birdsong that stays the same from the first moment to the last, with no gusts and no thunder |
+| `amb-summer` | 1 | 20 s | A field of crickets chirping steadily on a warm summer night: one even full chorus of many crickets that stays the same from the first moment to the last |
+| `music-box` | 1 | 2 s | The clockwork mechanism of a small wind-up toy turning with no tune: a steady fine ticking and whirring of tiny brass gears, even and dry |
+| `ui-send` | 1 | 0.5 s | One firm press of a single large rubber button: one short low rounded click with a small thump, dry |
+| `riser` | 3 | 2.4 s | A slow soft rush of wind passing by: one long smooth whoosh of air that swells slowly and evenly from nothing to full and then dies away as slowly |
 
-`loop` is false for every one: the chain makes the loops (the measured reason is in `learned`).
+What the 31 effect takes taught, in short (the full list is `learned`):
 
-Why each text is as it is. None of these has been tried: they are first texts, built on what the winter takes taught.
-
-- No word for quiet, soft, faint or gentle anywhere: those came back almost silent. The chain sets the level.
-- No text opens with glass, and none names a hand, strokes or stirring: those gave a clink and a spoon.
-- Each text is one real event that holds everything in the cue's line, never two events in a row.
-- The shakes: one sealed vessel with the season's material in it. Spring is water alone, because petals make no sound. Summer puts sand and seeds in the jar: the second winter shake, asked that way, came back as liquid with small hard things rattling in it, which was wrong for snow and is right for seeds. Fall is a hollow wooden flask, for the hollow rattle.
-- The landings: one heavy thing named by its material, set down on a named surface, as the kept `lift` was. Each object carries its season: a mortar set into a puddle (the drop and the air), a brass bowl of sand (the warm chime and the hiss), an iron cauldron on old wood (the creak and the low tone). They are asked at 2 s so the tail has room; the chain cuts each to 1.5 s. In the film `glass-clink` plays under each landing and brings the glass.
-- The landing of fall has no moan, groan or howl in its text, and the ambience of fall names its low tone as wind in a chimney: such words can bring a voice or music.
-- The ambiences: one steady bed, with the far detail named as far away and sparse, and no instrument named.
-- `music-box` asks for the mechanism only. The words music box would bring a tune, and the family line forbids one.
-- `riser` is asked at the cue's own length, so the swell ends where the cue ends, and leaves out the word breath, because the listener is asked about breath.
-
-If a first take fails, change the text by what the listener heard, write the new text into `audio/prompts.json` (`cues.<id>.text`), add a line to `learned`, and only then ask again. Three takes at most.
+- A prompt with two or three parts gives one of them. Shakes, landings and the fall ambience all did this. Ask for one thing, and lay a second thing in as its own cue.
+- The named object decides the sound; the adjectives do not. A keyboard key is a hard click however soft it is asked.
+- "Low", "dark" and "deep" together give a rumble under 60 Hz that small speakers do not play.
+- "Sucked", "blowing across a bottle" and a long creak come back close to a mouth or a voice.
+- Leaves named first and close are footsteps in leaves.
+- "One even ... bed that stays the same from the first moment to the last" gives an even ambience.
+- The tool does not make a sound that ends at its loudest. A rise is the first half of a longer swell, asked at twice the cue's length and cut by the chain.
 
 ## How a take is judged
 
@@ -150,7 +179,7 @@ node audio/run/listen.mjs shake-spring          # the newest take; add a number 
 
 It writes `out/work/audio/listen/<cue>-take-<n>.wav`. A copy under a quarter of a second gets silence around it.
 
-3. The listener, the audio evaluation tool (`evaluate_audio`), with the fixed questions of `audio/QUESTIONS.md`: first the open questions, in a call that does not show the cue's line; then the fit questions in a second call, with the cue's line from `audio/lines.json`. About one call in five answers that no file came: ask that one again, once. A voice heard in a sound effect counts only if a second call hears it too. The listener invents things on a very quiet clip and agrees easily with a line it is shown, which is why the order matters.
+3. The listener, the audio evaluation tool (`evaluate_audio`), with the fixed questions of `audio/QUESTIONS.md`: first the open questions, in a call that does not show the cue's line; then the fit questions in a second call, with the cue's line from `audio/lines.json`. About one call in four answers nothing or that no file came: ask that one again, once. A voice heard in a sound effect counts only if a second call hears it too. The listener invents things on a very quiet clip and agrees easily with a line it is shown, which is why the order matters.
 4. File what was heard: write a JSON file with `verdict`, `why` and `listener` (`line`, `open`, `fit`), as the takes in `audio/prompts.json` have it, and
 
 ```
@@ -189,126 +218,71 @@ Run by `npm run sound -- --keep`, the same for every sound of a class (`tools/li
 
 ## The music: the calls
 
-`POST https://api.elevenlabs.io/v1/music?output_format=pcm_48000`, the default model (no `model_id`). The music endpoint sends no cost header, so the script reads the account's counter before and after and records the difference. In Phase 0 ten seconds cost 138.
+`POST https://api.elevenlabs.io/v1/music?output_format=pcm_48000`, the default model (`music_v1`, no `model_id`). `pcm_48000` works: the answer is raw 16 bit stereo PCM. The endpoint sends no cost header; the price was read from the account's usage report, product Music: **13.75 credits a second** (396 for 28.8 s, 825 for 60 s), the same in all nine calls.
 
 The music family line, word for word: `instrumental, no vocals, no spoken words, clean ending`.
 
-The grid: a bar is 4 beats at 100 beats a minute, 2.4 s. The film is 25 bars, 60 s, in five sections of 5 bars, 12 s each: a hold of 4 bars and its shake, and the close of 5 bars. Section boundaries at 12, 24, 36 and 48 s.
+The grid: a bar is 4 beats at 100 beats a minute, 2.4 s. The film is 25 bars, 60 s, in five sections of 5 bars, 12 s each. Section boundaries at 12, 24, 36 and 48 s.
 
-### `one-piece`: one composition from a plan of timed sections
+### `four-tracks`: one track for each season (all four kept)
 
-The body is `{ "composition_plan": <the plan>, "respect_sections_durations": true }`. The plan is `audio/plans/one-piece.json`. It was made at 02:54 UTC by `POST /v1/music/plan` from the prompt recorded in that file with `music_length_ms` 60000; the call cost nothing (the counter read 130996 before and after). The five sections came back at 12000 ms each: Winter, Spring, Summer, Fall, Winter Return. One change was made to it: the music family line is the last of its `positive_global_styles`.
+The body is `{ "prompt": "<the prompt>", "music_length_ms": 28800, "force_instrumental": true }`, sent by `node audio/run/music.mjs music-<season>`. The prompts of the kept takes:
 
-```
-node audio/run/music.mjs music-one-piece
-```
+| Piece | Take | Prompt |
+| --- | --- | --- |
+| `music-winter` | 1 | A warm orchestral Christmas piece at exactly 100 beats per minute in 4/4, twelve bars long: sleigh bells keeping the beat, a celesta carrying one short simple melody, soft warm pads and low strings under it. It starts on the first downbeat with no pickup and no lead-in, grows fuller with full strings through its last five bars and resolves on its last bar, instrumental, no vocals, no spoken words, clean ending |
+| `music-spring` | 2 | A bright, cheerful and lively spring piece at exactly 100 beats per minute in 4/4, twelve bars long, in a major key: a flute high up carrying one short lilting, playful melody, a harp in quick flowing arpeggios, pizzicato strings bouncing on every beat, light and airy, fresh and sunny like a spring morning. It starts on the first downbeat with no pickup and no lead-in and holds one even feel, instrumental, no vocals, no spoken words, clean ending |
+| `music-summer` | 2 | A warm, laid-back and unhurried piece at exactly 100 beats per minute in 4/4, twelve bars long, in a major key: a fingerpicked nylon string classical guitar in front carrying one short simple sunny melody with soft strummed chords, a mellow low marimba and a light shaker marking the beat, relaxed like a golden dusk at the end of a summer day. It starts on the first downbeat with no pickup and no lead-in and holds one even feel, instrumental, no vocals, no spoken words, clean ending |
+| `music-fall` | 1 | A Halloween piece at exactly 100 beats per minute in 4/4, twelve bars long: a detuned music box and a piano carrying one short simple melody over low strings, with eerie sounds in the music itself, creaks, a far bell and wind across the strings. It starts on the first downbeat with no pickup and no lead-in and holds one even feel, instrumental, no vocals, no spoken words, clean ending |
 
-### `four-tracks`: one track for each season
+- Winter: the kit's "soft choir pads" was changed to "soft warm pads" before the first take, because a piece is kept only if no voice is heard. No voice was heard in any of the nine music takes.
+- Every piece came at 100 beats a minute (99.995 to 100.008) with its first bar line within 0.02 s of the start. "exactly 100 beats per minute in 4/4" and "starts on the first downbeat with no pickup" hold.
+- The first takes of spring and summer were both heard as gentle and wintry. What turned them: the lead instrument named first and placed ("a flute high up", "a guitar in front"), the key, and mood words of the season.
 
-The body is `{ "prompt": "<the prompt>", "music_length_ms": 28800, "force_instrumental": true }`. A track is 12 bars: the mix takes its first 5 bars for the season's section, the second winter section takes the last 5 bars of the winter track (so the winter track is asked to grow fuller and resolve there), and the app's loop takes 8 bars.
+### `one-piece`: one composition from a plan of timed sections (open)
 
-| Piece | Prompt |
-| --- | --- |
-| `music-winter` | A warm orchestral Christmas piece at exactly 100 beats per minute in 4/4, twelve bars long: sleigh bells keeping the beat, a celesta carrying one short simple melody, soft choir pads and low strings under it. It starts on the first downbeat with no pickup and no lead-in, grows fuller with full strings through its last five bars and resolves on its last bar, instrumental, no vocals, no spoken words, clean ending |
-| `music-spring` | A light and airy piece at exactly 100 beats per minute in 4/4, twelve bars long: a harp in flowing arpeggios, a flute carrying one short simple melody, plucked strings marking the beat, fresh and bright. It starts on the first downbeat with no pickup and no lead-in and holds one even feel, instrumental, no vocals, no spoken words, clean ending |
-| `music-summer` | A warm and unhurried piece at exactly 100 beats per minute in 4/4, twelve bars long: a nylon string guitar carrying one short simple melody, a soft marimba marking the beat, a golden dusk. It starts on the first downbeat with no pickup and no lead-in and holds one even feel, instrumental, no vocals, no spoken words, clean ending |
-| `music-fall` | A Halloween piece at exactly 100 beats per minute in 4/4, twelve bars long: a detuned music box and a piano carrying one short simple melody over low strings, with eerie sounds in the music itself, creaks, a far bell and wind across the strings. It starts on the first downbeat with no pickup and no lead-in and holds one even feel, instrumental, no vocals, no spoken words, clean ending |
-
-```
-node audio/run/music.mjs music-winter        # then music-spring, music-summer, music-fall
-```
-
-Two things in these calls are not tested, because every call was refused:
-
-- `pcm_48000` on the music endpoint. The Phase 0 test call used `mp3_44100_192`. If the format is refused, run with `MUSIC_FORMAT=mp3_44100_192`.
-- The winter direction of the kit names soft choir pads. If the listener hears a voice in a winter take, the next take leaves the choir out and names a warm string pad.
+The body is `{ "composition_plan": <the plan>, "respect_sections_durations": true }`; the plan is `audio/plans/one-piece.json`, whose `note` records its four versions. All three takes came back as one festive arrangement; see the table and the advice above.
 
 ### How a piece of music is judged
 
 1. The numbers when it is filed: its length, its loudness, silence in front (a track must start at once).
-2. The map of the take:
+2. The map of the take: `npm run audiomap -- --file out/work/audio/takes/<piece>/take-<n>.wav --name <piece>-take-<n>`: tempo, bars, first bar line, sections by level. For `one-piece`, each boundary must lie within one bar, 2.4 s, of 12, 24, 36 and 48 s. For a track, the tempo near 100 and the first bar line near 0.
+3. The listener on the copy from `node audio/run/listen.mjs <piece>`: the open questions, then the fit call with the line of `audio/lines.json`.
+4. **The blind mood choice**, added in this phase because the fit call agrees easily and the question "which season" is answered "winter" for almost anything (it said winter for the Halloween piece): "Choose the ONE phrase that fits the mood best: (a) festive and grand; (b) light and airy; (c) warm and unhurried; (d) dark and eerie; (e) sad and heavy". Asked twice, without the line. A season track is kept only when the choice is its own mood.
+5. Kept when the listener hears no voice or words, the right mood, and the map fits. Then `npm run audiomap -- --file audio/kept/<piece>.wav --name <piece>`: the mix and the pack read the map named after the piece.
 
-```
-npm run audiomap -- --file out/work/audio/takes/music-one-piece/take-1.wav --name music-one-piece-take-1
-```
+**A fault in the maps of the kept files, not mended by this agent.** `npm run audiomap` on `audio/kept/music-spring.wav` and `audio/kept/music-summer.wav` put the first bar line at 0.3065 s (confidence 0.14) and 0.3102 s, half a beat late, while the same takes before keeping mapped at 0.0053 s and 0.0123 s. Winter and fall map at 0.0134 and 0.0033 s. `/root` measured the true beats at 0.005 s (spring) and 0.012 s (summer) and mends the tool (decision 116). Until those two maps are made again, the mix places spring and summer half a beat off, and the pack cuts their loops on those lines.
 
-It prints the tempo, the bars, the first bar line and the sections it finds. For `one-piece`, each section boundary of the map must lie within one bar, 2.4 s, of 12, 24, 36 and 48 s. For a track, the tempo should be near 100 and the first bar line near 0. A map marked `grid` found no clear pulse: its beats cannot be trusted.
+## Ways of listening that this phase added
 
-3. The listener, with the music questions of `audio/QUESTIONS.md`, on the copy from `node audio/run/listen.mjs music-one-piece`: open first, then the fit call with the lines of `audio/lines.json`.
-4. It is kept when the listener hears no voice or words, hears the right mood in each section, and the map puts each boundary within one bar of the plan:
+- **Very short sounds.** A sound of 0.1 to 0.3 s alone in silence is not heard: the listener answers that no file came. The listening copy for `key-tap` and `ui-send` plays the cut sound four times, half a second apart, 12 dB louder, and both questions say so. For a sound of about 1 s (`riser`) a copy with the sound three times was used.
+- **Sub-heavy sounds.** A sound with most of its energy under 60 Hz is answered with "no file" or invented things. Judge it by its numbers and say so.
+- About one listener call in four returns nothing or "no file"; it is asked again once. A voice in a sound effect counts only if a second call hears it.
+- The fit call agrees easily with the line it is shown. The open answers decide.
 
-```
-npm run sound -- --answers <file> --cue music-one-piece --take 1
-npm run sound -- --cue music-one-piece --keep --take 1 --why "<one sentence>"
-npm run audiomap -- --file audio/kept/music-one-piece.wav --name music-one-piece
-```
+## The family checks
 
-The last line matters: the mix and the pack read the map named after the piece, made from the kept file.
+Each kept effect after the second was put in one file with `glass-clink` and `lift`, one second apart, and the two family questions were asked (`node audio/run/family.mjs`). Six checks: `shake-spring`, `amb-spring`, `amb-summer`, `music-box`, `ui-send`, `riser`. **All six answered "no, they do not belong together".** What stood apart: in three of them `glass-clink`, called a synthesized, electronic chime or beep beside recordings of physical things; in two the ambience, as a long outdoor recording beside short effects, which is what an ambience is; in one `music-box`, as dry and mechanical beside liquid. The answers are in `audio/prompts.json` under `familyChecks`. No kept take was dropped for it: the question compares unlike classes, and the one sound it names again and again is `glass-clink` from Phase 2. A review round should hear `glass-clink` first: it plays at every landing. No family check was run for the music (the check is built for effects).
 
-## After each batch, and at the end
+## What the app and the films do while cues are missing
 
-```
-npm run sound -- --sheet        # out/work/audio/sheet.jpg: every kept sound as a waveform
-npm run sound -- --pack         # public/audio/: the short sounds in one file, the ambience loops, the music loops of the season tracks
-npm run sound -- --list         # every cue, its takes, what is kept
-npm run mix -- --candidate one-piece
-npm run mix -- --candidate four-tracks
-npm run build && npm run soundcheck
-```
+- The mix lays what is kept and names the rest: in `four-tracks` the shakes of summer, fall and winter and every landing's season part are silent; each landing plays `glass-clink` alone; there is no ambience in fall and winter.
+- The app plays a sound only if `public/audio/index.json` names it. The pack holds a sprite of 8 short sounds, the loops of `amb-spring` and `amb-summer`, and four music loops. This was read from the pack, not heard in a browser by this agent.
+- For film A's prompt opening `ui-send` and `riser` now exist and `key-tap` does not: the typing is silent. Film A was not mixed by this agent.
 
-Commit the text records by name (`audio/prompts.json`, `audio/RECORDS.json`, `audio/RECIPE.md`, `audio/kept/<id>.json`, `audio/kept/<id>.wav.json`, `audio/mix/<candidate>.json`). No sound file is committed: the repo is public. Each kept sound gets its row in `ASSETS.md`; the keep command prints it.
+## Commands run in Phase 5 and what they printed
 
-## What it will cost
+- 31 effect calls and 9 music calls through `out/work/bin/take.sh` (guard begin, `node audio/run/take.mjs <cue>` or `node audio/run/music.mjs <piece>`, guard end): all HTTP 200. The numbers each printed are in `audio/RECORDS.json`.
+- `npm run audiomap` on each music take and each kept piece: tempo 99.995 to 100.008, see the cue table and the fault above.
+- `npm run mix -- --candidate four-tracks`, 18:24 UTC: "audio/mix/four-tracks.wav · film B, 60 s"; placed 13 cues and ambience beds, music four tracks; skipped, no kept file: `land-spring`, `shake-summer`, `land-summer`, `shake-fall`, `land-fall`, `shake-winter`, `land-winter`, `amb-winter`, `amb-fall`; 2.442 dB of gain, the limiter took off at most 3.08 dB, 3 passes; -14 LUFS, true peak -1.1 dB, range 5.1 LU; sha256 `3cbe969d95dc…fe3d`. Made with the maps described above, so it must be made again after the maps of spring and summer are mended.
+- The listener on that mix (free): music alone changes at 15, 30, 41 and 51 s; in the full mix at 15, 30 and 45 s; a festive music box, playful plucked strings, a calm guitar, a dark piano with low strings, the music box again; no voice; every change "an abrupt cut"; effects heard: winding at 0 to 4 s and 56 to 60 s, water at 15 to 30 s, wind at 30 to 45 s. The times it names are loose (the cuts are at 12, 24, 36 and 48 s by the cut list).
+- `npm run mix -- --candidate one-piece`: not run, the candidate has no music.
+- `npm run sound -- --pack`, 18:25 UTC: 7 files at 192 kbps, 2.88 MB, under 8 MB; sprite of 8 sounds (`lift`, `shake-spring`, `glass-clink`, `music-box`, `ui-tick`, `ui-sound-on`, `ui-send`, `riser`); loops: `amb-spring` 18.9 s, seam -9.8 dB of the signal; `amb-summer` 18.9 s, -26.89 dB; `music-fall` 19.6006 s, -22.36 dB; `music-spring` 19.6008 s, -36.34 dB; `music-summer` 19.5996 s, -33.9 dB; `music-winter` 19.5962 s, -17.82 dB. The seams of `amb-spring` and `music-winter` are the weakest: hear them at the review.
+- `npm run sound -- --sheet`: 14 sounds, 1200 x 810.
+- `npm run soundcheck`, 18:25 UTC: 4 pass, 0 open, 4 not run. A1 to A4 not run: "dist/ does not match the source. Run npm run build." (the app was not built in the sound clone). A5 pass: all 14 kept sounds have take, prompt, measurements, answers and a row. A6 pass: `four-tracks.wav` -14 LUFS, peak -1.1 dB. A7 pass: 1 mix made twice more, each byte equal to the file. A8 pass: 57 takes over 25 cues, at most 3 for one cue in one round, limit 3.
+- A harness matter, not mended: `audio/lines.json` holds no line for the three winter cues (their lines are on their takes in `audio/RECORDS.json`), so the listening helper was given the line by hand for the winter layers.
 
-By the cost headers so far: a sound effect costs about 11 credits a second (6 for 0.5 s, 11 for 1 s, 17 for 1.5 s, 29 for 2.6 s, 33 for 3 s, 220 for 20 s). Music cost 13.8 a second in the one call measured.
+## Where things are
 
-| What | One take | Three takes |
-| --- | --- | --- |
-| Three shakes | 87 | 261 |
-| Three landings at 2 s | about 66 | about 200 |
-| Three ambiences | 660 | 1980 |
-| `music-box`, `key-tap`, `ui-send`, `riser` | about 48 | about 145 |
-| `one-piece`, 60 s | about 830 | about 2500 |
-| Four tracks of 28.8 s | about 1600 | about 4800 |
-| Together | about 3300 | about 9900 |
-
-A review round for the three open winter cues would add up to about 800.
-
-## What a review round should try first on each open cue
-
-- `shake-winter`: two layers, as `learned` says. Ask for the water alone with the text of `shake-spring`, and for the bells as a second cue (a strap of small sleigh bells shaken six times), and let the chain lay them together. One prompt did not give both in three takes.
-- `land-winter`: the pattern of the new landings: one heavy thing named by its material that carries the ice. For example a heavy stone mortar set down hard on a sheet of thin ice over marble: one deep heavy thud with the ice cracking and crackling outward under it.
-- `amb-winter`: one steady bed with no instrument named: wind blowing steadily across open snow, an even full hiss of blown snow, and no bells in the text. If bells are wanted, they are a second cue laid far under it.
-- The thirteen cues and five pieces not made: their first texts are above; none has a take to learn from yet.
-
-## Commands run in Phase 4 and what they printed
-
-- `npm ci`: found 0 vulnerabilities.
-- `node audio/run/take.mjs shake-spring` (then named `out/work/audio/gen.mjs`), 02:52:33 UTC: HTTP 401 `quota_exceeded`; nothing filed.
-- `POST /v1/music/plan`, 02:54 UTC: HTTP 200 in 2.96 s; five sections of 12000 ms.
-- `node audio/run/music.mjs music-spring`, 02:58:33 UTC: HTTP 401 `insufficient_credits`; the counter moved by 0; nothing filed.
-- `npm run mix -- --candidate one-piece`, 02:56 UTC: film B, 60 s, 8 cues placed, music none, 10.568 dB of gain, the limiter took off at most 1.66 dB, measured -14 LUFS, true peak -1.1 dB, range 3.8 LU, sha256 `0bea7fb6edbc…88c7`. `--candidate four-tracks`: the same numbers and the same sha256.
-- `npm run sound -- --pack`: `public/audio/sprite.mp3`, 0.06 MB, 4 sounds, 192 kbps, under 8 MB. `--sheet`: 4 sounds, 1200 x 650.
-- `npm run soundcheck`: see the last section.
-- `npx vitest run tests/audiomap.test.ts tests/mix.test.ts`, 03:02 UTC: 2 files, 38 tests passed. The whole test suite was not run by this agent: nothing outside `audio/` was changed.
-- `node audio/run/listen.mjs lift --file audio/kept/lift.wav`, `node audio/run/listen.mjs ui-tick --file audio/kept/ui-tick.wav` and `node audio/run/family.mjs` on three kept files: each wrote its file (the tick copy is 1.58 s with its silence, the family file 4.20 s). These scripts were tested on kept files only; `take.mjs` and `music.mjs` have run only into the refusals above, so their path after an HTTP 200 has not run.
-
-## The sound checks
-
-`npm run soundcheck` at 02:56 UTC, before the app was built in this clone: 4 pass, 0 open, 4 not run.
-
-- A1 to A4 not run: "dist/ does not match the source. Run npm run build."
-- A5 pass: all 4 kept sounds have take, prompt, measurements, answers and a row.
-- A6 pass: `four-tracks.wav` -14 LUFS, peak -1.1 dB; `one-piece.wav` -14 LUFS, peak -1.1 dB.
-- A7 pass: 2 mixes made twice more, each byte equal to the file.
-- A8 pass: 17 takes over 7 cues, at most 3 for one cue in one round, limit 3.
-
-`npm run build` (built in 1.79 s), then `npm run soundcheck` again, finished 03:01 UTC: 7 pass, 1 open, 0 not run.
-
-- A1 pass: before any interaction no audio context was made and nothing played.
-- A2 open: "the control could not be used: locator.click: Timeout 5000ms exceeded." This is the open item already in `kit/PROGRESS.md` under "Sound": on this VM the live app draws too slowly for the test's click on the sound control. It is not about the sounds.
-- A3 pass: `winter-rest` at draft is byte equal with the audio code loaded and without it (`f6a5bfd6b05a`), and capture loads no audio by itself.
-- A4 pass: 1 file, 0.06 MB, under 8 MB, not asked for before the first picture.
-- A5 to A8 pass, as in the first run.
-
-The two mixes were made to be measured and were then removed from this clone, with their records and their lines in `audio/RECORDS.json`: a file named after a candidate that holds no music is not a candidate. So `audio/mix/` holds what it held before Phase 4, and A6 and A7 above were measured on files that no longer exist. The pack and the sheet were written in this clone only (`public/audio/` and `out/work/` are not committed) and hold the same four sounds as before.
+- Committed: `audio/prompts.json` (texts, takes, costs, verdicts, the listener's words, `learned`, `familyChecks`, `layers`), `audio/RECORDS.json`, `audio/plans/one-piece.json`, `audio/kept/<id>.json` and `<id>.wav.json`, `audio/mix/four-tracks.json`, this file.
+- Not committed (the repo is public): the kept sounds `audio/kept/*.wav`, the takes `out/work/audio/takes/`, the listening copies `out/work/audio/listen/`, the layers `out/work/audio/layers-tried/`, the maps `out/work/audio/maps/`, the mix `audio/mix/four-tracks.wav`, the pack `public/audio/`. They are in the sound clone `/home/user/workspace/sg-sound`; the kept sounds and the packs were copied to the main workspace after each batch.

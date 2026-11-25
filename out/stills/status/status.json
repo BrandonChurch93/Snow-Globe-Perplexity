@@ -1,41 +1,44 @@
 {
-  "number": 115,
-  "time": "2026-11-25 18:42 UTC",
+  "number": 117,
+  "time": "2026-11-25 19:30 UTC",
   "phase": "5",
   "unit": "",
   "lines": [
-    "Status 115 · 2026-11-25 18:42 UTC · Phase 5",
-    "Polish round 1's four checks are in: winter 6 (was 7), spring 5, summer 4, fall 6 (all three as before); none reaches 9. Their lines went to round 2's builders; an eighth builder took summer's sand.",
-    "Round 18's machine checks are read (G1 to G15 green; D4 waits for the review cut and the two mixes). The audio map put two kept tracks half a beat late; mended, the four tracks are mapped again next.",
-    "phase 5: 4.53 h used of its 12.00 h box",
-    "allowance (before the review, continuation 1): 4.53 h used of 12.00 h allowed",
+    "Status 117 · 2026-11-25 19:30 UTC · Phase 5",
+    "Published at 19:18 UTC from commit 82f1eaa5: the interface merge (framing on phone and tablet, the controls) and the sound pack cut on the mended bar lines. Visibility: Organization. Settings: https://www.perplexity.ai/computer/a/4c4f15d3-07df-421c-941e-77528b5e889f?open-publish=true",
+    "The eight sound checks pass on this build, over three runs: A7 after the blockout was mixed again, A4 after the check's own wait was mended (it asked once a frame and saw a mark set at 19.5 s only at 70.6 s; decision 119, no threshold moved).",
+    "All four seasons are measured at the final tier on polish round 1's merge: 81 lines, 3 red, each of them M3 (fine detail against the approved picture) on a rest still: spring 0.3941, fall 0.5348, summer 0.7057, bar 0.75. Winter has no red line.",
+    "Winter's mirror line (severe: the right half of the foot barely reflects) had no owner: the surface builder found its cause outside its file. A ninth builder holds it since 19:29 (decision 120). Nine builders work until 20:50 UTC.",
+    "The archive of kept sounds is shared again: 14 kept sounds, the film mix with the four season tracks, and the table of what is left.",
+    "phase 5: 5.33 h used of its 12.00 h box",
+    "allowance (before the review, continuation 1): 5.33 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-115-1.jpg",
-      "caption": "Summer, half a second after the landing (film frame 1470), final tier, round 2's storm branch, not merged: cottage, lanterns and tree stand plain; every seed is still a soft pale blob.",
-      "w": 800,
-      "h": 800
-    },
-    {
-      "file": "out/stills/status/status-115-2.jpg",
-      "caption": "Fall at rest, final tier: main, round 2's glass branch, the approved picture; rows top, left, right, seat. The dark band under the top outline is gone; the arcs are fewer and paler than approved. Not merged.",
+      "file": "out/stills/status/status-117-1.jpg",
+      "caption": "Not merged: the right flank of summer's base at rest, final tier, each pixel doubled: the approved picture, main, the sand branch 5f8e3e0. A fall of single grains now runs down the flank where main has none. Still wrong: thinner than the approved picture in its lower third, the grains too even in size and a little too yellow, no bright haze where it lands.",
       "w": 1200,
-      "h": 919
+      "h": 594
     },
     {
-      "file": "out/stills/status/status-115-3.jpg",
-      "caption": "Winter's foot on the table, final tier: the approved picture over main's key over round 2's surface branch. Not mended: the mirror image under the base is still a dim smear.",
+      "file": "out/stills/status/status-117-2.jpg",
+      "caption": "Not merged: spring's foot on the table at rest, final tier, native size: the approved picture, main, the surface branch 5431bc6. The mirror is as dark as the approved picture's and the lit root at the right stays. Still wrong: the image is a plain flipped copy with straight sides, and the approved picture's brighter scatter of petals is not answered.",
       "w": 1200,
       "h": 721
     },
     {
-      "file": "out/stills/status/status-115-4.jpg",
-      "caption": "The lift, film frames 576 to 587, final tier, round 2's hand branch: the glass tips and rises from the third frame, no wait after the press. Not merged.",
+      "file": "out/stills/status/status-117-3.jpg",
+      "caption": "Not merged: spring mid-shake, final tier, three crops: the approved picture, main, the storm branch fb96e74. Gable, roof, trunk and lower crown read through a thinner cloud where main is a pale mass. Still wrong: door and lamp are washed by a warm pale haze, the lower band of the glass is an even opaque pink.",
       "w": 1200,
-      "h": 508
+      "h": 1200
+    },
+    {
+      "file": "out/stills/status/status-117-4.jpg",
+      "caption": "Not merged: the set down of the fourth shake in the film, frames 2874 to 2880 at the final tier, the left end of the foot over the right end, twice native size, the hand branch 1902fba. The left end is down first and holds, the right end comes down a like step on every frame. Still wrong: a rim of snow on the table fades in at the right end over the last four frames and reads as a thing that appears; the rock after the landing is not yet seen at the final tier.",
+      "w": 1200,
+      "h": 341
     }
   ]
 }
