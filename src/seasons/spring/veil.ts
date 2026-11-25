@@ -38,7 +38,7 @@ const look = {
   blown: 0.7,
   tint: [1, 0.8, 0.82],
   cold: 3.2,
-  warm: 1.2,
+  warm: 0.6,
   /** How far the banks drift round in one period, mm. */
   driftMm: 5,
 }
@@ -162,7 +162,7 @@ const storm = {
   tint: [1, 0.76, 0.83],
   soft: 1.1,
   key: 3.0,
-  grid: 1.8,
+  grid: 0.8,
   /** How much of the key the mist's own depth takes away, per mm of the way to the glass at full thickness. */
   shadow: 0.35,
   keyFloor: 0.35,
