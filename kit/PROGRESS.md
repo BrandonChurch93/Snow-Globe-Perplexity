@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 66 · 2026-11-25 01:33 UTC
+Status 67 · 2026-11-25 01:52 UTC
 
-- `out/stills/status/status-66-1.jpg`: Spring at rest as merged at 01:28 UTC: every part is now real and the stand-in view is black all over (draft tier)
-- `out/stills/status/status-66-2.jpg`: Spring half a second after a landing: the petal storm (draft tier)
-- `out/stills/status/status-66-3.jpg`: Still: spring landed hero, hd, draft
-- `out/stills/status/status-66-4.jpg`: Still: spring rest hero, hd, draft
+- `out/stills/status/status-67-1.jpg`: Summer at rest. Left: the build that Round 9 judges (draft tier). Right: the approved image
+- `out/stills/status/status-67-2.jpg`: Summer just after a shake has landed (draft tier)
+- `out/stills/status/status-67-3.jpg`: Fall at rest. Left: the newest fall build (draft tier; not in a round yet). Right: the approved image
+- `out/stills/status/status-67-4.jpg`: Fall just after a shake has landed (draft tier)
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 01:35 UTC
-clock: phase 4, tick of 2.1 minutes
-phase 4: 1.46 h used of its 9.50 h box
-allowance (before the review): 23.75 h used of 36.00 h allowed
-all time before the review: 23.75 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 01:52 UTC
+clock: phase 4, tick of 13.5 minutes
+phase 4: 1.75 h used of its 9.50 h box
+allowance (before the review): 24.03 h used of 36.00 h allowed
+all time before the review: 24.03 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 2
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -1570,3 +1570,9 @@ One entry per task: when it started, what it did, where it stopped.
 - 00:50 UTC. Status 64 posted at 00:43 (the fall base's first real version beside the approved image). First versions with no stand-in left came in from four builders between 00:38 and 00:47 and are merged into `main`, each made here from its sources (tsc clean, vitest 419 passed on `a40cba1`): `fall_base` at `e4537fa` (base, surface dressing, arrival outside the glass), `fall_mini` at `7652718`, `summer_mini` at `3a9ce26`, `kinds_builder` at `58fdfb5` (all seven kinds draw as their own shapes; winter's rest and landed stills byte-identical). Register: `base-fall`, `surface-dressing-fall`, `arrival-fall`, `miniature-fall`, `miniature-summer` set to `built`; the particle parts wait for the motion rows of each season's `air` builder. Every builder keeps tuning until its limit at 03:02. The web pack stands at 48.8 MiB with two of the three new miniatures in (`host.maxShippedMb` is 95 for all of `dist/`), so each builder now gets a size and a triangle allowance in writing. The built files of the new seasons stay uncommitted until each season's round is frozen.
 
 - 01:03 UTC. Status 65 posted at 01:03 (spring's and summer's first real versions beside the approved images). Published at 00:52 from `9334939` with the fall base, the fall and summer miniatures and the seven kinds in: first picture in 16.6 s, 67 requests, no error; Visibility: Organization. Between 00:53 and 00:57 the first versions of `summer_base` (`44a7a28`), `spring_mini` (`15be14d`), `spring_base` (`b598adf`) and the first rows of `spring_air` (`d8260ae`) were merged and made here (`592501f`; tsc clean, vitest 425 passed, 4 skipped, the builders' own new tests included). `summer_air` reported its first version at `aa30671` (firefly 700, seed 9000, mote 40000 kept; the pool of light waits for a line in `summer_base`'s slab). Register: `base-`, `surface-dressing-`, `arrival-` and `miniature-` of spring and of summer set to `built` (`miniature-summer` at 00:49). Still stand-ins in the three seasons: the glass dressing, the light, the veil and the particle parts, until each `air` builder's first version is merged and the stand-in view is black. The web pack reached 83.8 MiB, so decision 74 gives each season 18 MiB; G15 is being measured on the merged build (started 00:57). Not yet merged at this note: `fall_base` 2 commits, `kinds` 1, `summer_air` 2; they wait for G15 to end, since a make during a check would change the files under it.
+
+- 01:43 UTC. Status 66 posted at 01:33 (spring at rest and landed as drafts; every spring and summer part `built`). All ten builders had reported a first version by 01:15; the merge at 01:22 hit a conflict in `src/particles/engine/kinds.ts`, resolved by file ownership (seed and firefly as `summer_air` has them; leaf, ember and bat as `fall_air` has them), every folder made again, `b50558b` (tsc clean, vitest 425 passed, 4 skipped). A local run of G15 alone blocked this machine for 25 minutes and was stopped at 01:22 without a result; the triangle and draw call counts of the new seasons come from the rounds' gate reports. `summer_air`'s pushes failed with HTTP 401 between 01:01 and about 01:25 (every builder was told to send a bundle if its push fails for ten minutes); its branch moved again at 01:26. Freeze commit `fe1072c` (built assets of spring, summer and fall included) pushed 01:34. Rounds 8 (spring) and 9 (summer) counted at 01:35 on `fe1072c` and pushed (`2ac4ec2`) before their orders went out at 01:36 (decision 75; five render agents). The stand-in view of fall at rest from `hero` was black all over at 01:39: `glass-dressing-fall`, `light-fall`, `veil-fall`, `particle-leaf`, `particle-ember` and `particle-bat` set to `built` at 01:41; the register now holds 45 of 54 parts `built`, the nine left being the four changes, the globe's three and the film's two. A second merge at 01:42 (nine branches moved since 01:22) hit the same three rows of `kinds.ts` and was resolved the same way (`ca85af8`).
+
+- 01:52 UTC. Merged at 01:43 and made again in full by 01:48 (`8d3cf3a`): `fall_air` `b39b7b4`, `fall_mini` `26bdd2b`, `kinds_builder` `0434c9f`, `spring_air` `171346c`, `spring_base` `f284614`, `spring_mini` `dea4ca7`, `summer_air` `5d1b494`, `summer_base` `2169605`, `summer_mini` `66dace1`; tsc clean, vitest 432 passed, 4 skipped, 0 failed (01:51). `spring_base` reported 18 spring base tiles of its first version that nothing loads any more (9.05 MiB in the web set); they were removed from the working tree here at 01:48 and leave the repo with the next freeze commit; the web set went from 76.775 to 67.727 MiB. Published at 01:49 from `8d3cf3a` with the first real spring, summer and fall in the app: first picture in 21.4 s, 89 requests, no error; Visibility: Organization.
+
+- 01:52 UTC. Status 67 posted at 01:53 (summer and fall at rest beside their approved images, and each just after a shake has landed; drafts).
