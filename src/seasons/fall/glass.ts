@@ -39,6 +39,9 @@ export const look = {
     back: 0.08,
     front: 0.3,
     swirl: 15,
+    // Half the width of a ribbon, in the weave's own measure, and how much of the broad body stays under the ribbons.
+    ribbon: 0.045,
+    ribbonBody: 0.25,
     swirlThin: 0.0,
     spinRadS: 2.2,
     spinDownSeconds: 2.6,
@@ -50,8 +53,11 @@ export const look = {
     lip: 1.1,
     lipLifted: 0.9,
     lipLiftedGlow: 0.9,
-    lipGlow: 1.35,
-    lipDeepGlow: 3.2,
+    lipGlow: 1.1,
+    lipDeepGlow: 2.6,
+    // Tufts of it stand a little over the ground's edge before the scene, so the edge is no hard line.
+    lipFrontMm: 3,
+    lipSides: 0.6,
     lipDeepMm: 8,
     lipRiseMm: 11,
     lipDeep: [0.26, 1.0, 0.32],
@@ -106,7 +112,7 @@ export const look = {
     bigMm: 96,
     fineMm: 37,
   },
-  crack: { widthMm: 0.09, edgeMm: 0.055, shade: 0.3, bright: 4.6, sky: 0.3, key: 1.6, rim: 3.0, room: 2.4, jitterMm: 0.14, bowMm: 0.5, stepMm: 1.6, glintPerMm: 0.3, catchPerMm: 0.1, faint: 0.15, warm: [1.0, 0.74, 0.46] },
+  crack: { widthMm: 0.09, edgeMm: 0.055, shade: 0.3, bright: 3.6, sky: 0.3, key: 1.6, rim: 3.0, room: 2.4, jitterMm: 0.14, bowMm: 0.5, stepMm: 1.6, glintPerMm: 0.3, catchPerMm: 0.1, faint: 0.07, warm: [1.0, 0.74, 0.46] },
 }
 
 // The crack's path in the pixels of `references/approved/fall-rest.png` (glass circle centre (1417.1, 662.2), radius 564.3 px,
@@ -383,7 +389,11 @@ void main() {
     // A finer run of wisps lies over the broad ones, and each depth of the wall has its own.
     float s3 = texture(uFogNoise, vec3(4.0 * turn + 0.77, 11.3 * lat + 0.21, r / 45.0 + 0.19)).r;
     float weave = 0.46 * s1 + 0.34 * s2 + 0.2 * s3 + 0.08 * (n.y - 0.5);
-    float strand = smoothstep(0.55, 0.61, weave);
+    // A strand is a thin ribbon: the line where the weave crosses a level, not the whole of what lies above it. Two levels,
+    // the second fainter, and a little of the body between them.
+    float ribbon = 1.0 - smoothstep(${f(F.ribbon * 0.3)}, ${f(F.ribbon)}, abs(weave - 0.585));
+    float second = 1.0 - smoothstep(${f(F.ribbon * 0.3)}, ${f(F.ribbon)}, abs(weave - 0.45));
+    float strand = max(max(ribbon, 0.5 * second), ${f(F.ribbonBody)} * smoothstep(0.55, 0.61, weave));
     // At the flood the strands are as broad as they were, so the cover of the change is what it was.
     float broad = smoothstep(0.52, 0.6, weave);
     strands = mix(1.0, mix(${f(F.swirlThin)} + ${f(F.swirl)} * strand * strand, 0.55 + 0.9 * broad, uFogTurn.y), lift);
@@ -457,19 +467,21 @@ void main() {
   vec2 n = 0.5 + (mix(n0, n1, k) - 0.5) / sqrt(k * k + (1.0 - k) * (1.0 - k));
   // Behind the scene and beside it the mist stands up the wall in tufts, each to its own height; before the scene it stays
   // under the ground's edge.
-  float rise = ${f(F.lipRiseMm)} * smoothstep(14.0, -8.0, p.z) * (0.3 + n.x);
+  float rise = ${f(F.lipRiseMm)} * smoothstep(14.0, -8.0, p.z) * (0.3 + n.x) + ${f(F.lipFrontMm)} * n.x * n.x * 2.0;
+  // It is brightest low in the middle of the front and thins and darkens toward the sides of the dome: no even band.
+  float side = 1.0 - ${f(F.lipSides)} * smoothstep(16.0, 50.0, abs(p.x));
   float top = 1.0 - smoothstep(edge - 3.0, edge + 1.5 + rise, p.y);
   if (top <= 0.0) discard;
   float lift = uFog.y;
   float deep = clamp((edge - p.y) / 12.0, 0.0, 1.0);
-  float rho = ${f(F.lip)} * mix(1.0, ${f(F.lipLifted)}, lift) * top * (0.24 + 1.4 * smoothstep(0.3, 0.75, n.y) * (0.3 + n.x)) * mix(0.6, 1.0, deep);
+  float rho = ${f(F.lip)} * mix(1.0, ${f(F.lipLifted)}, lift) * top * (0.24 + 1.4 * smoothstep(0.3, 0.75, n.y) * (0.3 + n.x)) * mix(0.6, 1.0, deep) * side;
   float a = 1.0 - exp(-rho);
   a *= seen;
   if (a < 0.003) discard;
   // It glows from below: brightest at the collar, where it is deepest, and fading up to the ground's edge.
   float low = clamp((edge - p.y) / ${f(F.lipDeepMm)}, 0.0, 1.0);
   low *= low;
-  vec3 lit = stageCold(p) * ${f(F.cold)} + stageGrid(p) * ${f(F.warm)} + vec3(${f(F.glow * F.lipGlow)}) * (0.45 + 1.1 * n.y) * (1.0 + ${f(F.lipDeepGlow)} * low * mix(1.0, ${f(F.lipLiftedGlow)}, lift));
+  vec3 lit = stageCold(p) * ${f(F.cold)} + stageGrid(p) * ${f(F.warm)} + vec3(${f(F.glow * F.lipGlow)}) * side * (0.2 + 1.6 * n.y * n.y * 1.5) * (1.0 + ${f(F.lipDeepGlow)} * low * mix(1.0, ${f(F.lipLiftedGlow)}, lift));
   vec3 col = mix(${vec(F.tint)}, ${vec(F.lipDeep)}, low) * lit;
   gl_FragColor = vec4(col * a, a);
   // In the cover view the fog says how much of the miniature it hides, as the particles do.
