@@ -3,6 +3,7 @@ import { config } from '../../config'
 import { stageShader, stageUniforms } from '../../core/materials'
 import { shellUniforms } from '../../globe/shell'
 import { ROOM_GLSL, roomUniforms } from '../../scene/room'
+import { lensUniforms } from '../../scene/cameras'
 import type { Dressing, KitMoment } from '../kit'
 import { mist, updateMist } from './veil'
 
@@ -27,7 +28,7 @@ const PART = 'glass-dressing-spring'
 const RS = config.globe.sphereDiameterMm / 2
 const RAD = Math.PI / 180
 const SLOTS = 26
-const SEGMENTS = 72
+const SEGMENTS = 14
 const TAU = Math.PI * 2
 
 export const standIns: string[] = []
@@ -40,16 +41,23 @@ const look = {
   /** Lowest place of a still drop and the place a run leaves the glass, as polar angles from the top. */
   lowDeg: 118,
   offDeg: 131,
-  run: { headMm: [0.8, 1.35], track: 0.42, fromDeg: [9, 50], goDeg: [22, 52], trailDeg: [9, 24], wander: [0.012, 0.04], waves: [4.5, 10], slideSeconds: [9, 17], hangSeconds: [3, 8], offSeconds: 1.3, drySeconds: 3, firstBy: 9 },
+  run: { headMm: [0.8, 1.35], track: 0.42, fromDeg: [9, 50], goDeg: [22, 52], trailDeg: [3, 8], wander: [0, 0.004], waves: [2, 4], slideSeconds: [9, 17], hangSeconds: [3, 8], offSeconds: 1.3, drySeconds: 3, firstBy: 9 },
   /** How far toward the camera a drop is drawn, so that the glass under it never cuts it at the limb. */
   liftMm: 14,
   /** How much of the frame a drop gathers, as a share of the frame's height, and how dark its edge is. */
   field: 0.2,
-  trailField: 0.05,
-  film: 0.74,
-  body: 0.9,
-  edge: 0.1,
-  mirror: 0.55,
+  trailField: 0.008,
+  film: 0.98,
+  /** How much of what a film gathers is lost at its edge, and how much of the film is seen at its head and where it is oldest. */
+  filmEdge: 0.9,
+  filmShown: [0.5, 0.18],
+  body: 0.96,
+  edge: 0.5,
+  mirror: 0.35,
+  /** Toward the limb a drop is seen edge on and would be a burr on the outline of the glass: how square to the eye the glass must be for a drop to be drawn at all, and to be drawn whole. */
+  limb: [0.02, 0.2],
+  /** Out of focus a drop is a soft disc: how much blur, as an angle (its radius over its distance; 0.0007 is under 3 pixels of the hd frame at the hero), the lens gives away before a drop is drawn soft at all. From the hero the glass is within it and the dew is sharp; from the macro it is far outside it. */
+  sharp: 0.0007,
   glint: 5,
   crescent: 0.55,
 }
@@ -70,6 +78,11 @@ const behindUniforms = {
   uBehindSize: { value: new THREE.Vector2(0, 0) },
 }
 
+// The lens as the stage has it this frame: its aperture and the distance it is focused at.
+const lensOwn = {
+  uDewLens: lensUniforms.uFar,
+}
+
 const lightUniforms = {
   uKeyDir: shellUniforms.uKeyDir,
   uKeyCol: shellUniforms.uKeyCol,
@@ -84,6 +97,12 @@ uniform vec4 uDew;
 uniform vec4 uPathA[${SLOTS}];
 uniform vec4 uPathB[${SLOTS}];
 uniform vec4 uPathC[${SLOTS}];
+uniform vec4 uDewLens;
+// How far out of focus a thing of this size (millimetres) at this depth is: the radius of its blur over its own radius.
+float dewSoft(float size, float depth) {
+  float blur = max(uDewLens.z * abs(depth * uDewLens.w - 1.0) - ${f(look.sharp)} * depth, 0.0);
+  return blur / max(size, 0.0001 * depth);
+}
 float dewPhi(vec4 a, float phase, float th) {
   float s = th - a.y;
   return a.x + a.z * (sin(a.w * s + phase) + 0.4 * sin(2.3 * a.w * s + 1.7 * phase)) / max(sin(th), 0.35);
@@ -119,6 +138,7 @@ varying vec3 vDewN;
 varying vec3 vDewA0;
 varying vec3 vDewA1;
 varying vec2 vDewInfo;
+varying float vDewSoft;
 ${PATH_GLSL}
 ${FRAME_GLSL}
 `
@@ -158,8 +178,10 @@ vec3 dA0;
 vec3 dA1;
 vec2 dSq;
 dewFrame(dDir, dDir * dDir.y - vec3(0.0, 1.0, 0.0) + vec3(1e-4, 0.0, 0.0), dC, dEye, dA0, dA1, dSq);
-if (dot(normalize(mat3(modelMatrix) * dDir), dEye) < -0.03) dOn = 0.0;
+dOn *= smoothstep(${f(look.limb[0])}, ${f(look.limb[1])}, dot(normalize(mat3(modelMatrix) * dDir), dEye));
 vec2 dQ = vec2(position.x, position.y > 0.0 ? position.y * (1.0 + dTail) : position.y);
+float dSoft = dewSoft(dR * dOn, max(dot(cameraPosition - dC, vec3(viewMatrix[0][2], viewMatrix[1][2], viewMatrix[2][2])), 1.0));
+dQ *= 1.0 + dSoft;
 vec3 dP = dC + dR * dOn * (dA0 * dQ.x * dSq.x - dA1 * dQ.y * dSq.y) + dEye * ${f(look.liftMm)};
 vec4 dView = viewMatrix * vec4(dP, 1.0);
 gl_Position = projectionMatrix * dView;
@@ -173,6 +195,7 @@ vDewN = normalize(mat3(modelMatrix) * dDir);
 vDewA0 = dA0;
 vDewA1 = dA1;
 vDewInfo = vec2(aLife.y, dR * dOn);
+vDewSoft = dSoft;
 `
 
 const SHADE_GLSL = `
@@ -199,7 +222,7 @@ float dewKeep(float own) {
 // its skin; the glints of the two lights; and the crescent the key throws through the drop onto its far side.
 vec3 dewWater(vec3 body, vec3 n, vec3 eye, float d2, float crescent, float skin) {
   float edge = smoothstep(0.3, 1.0, d2);
-  vec3 col = body * mix(${f(look.body)}, ${f(look.edge)}, edge * edge);
+  vec3 col = body * mix(${f(look.body)}, ${f(look.edge)}, edge * edge * skin);
   float nv = max(dot(n, eye), 0.0);
   col += stageRoomSeen(reflect(-eye, n), 0.12) * (0.03 + ${f(look.mirror)} * pow(1.0 - nv, 3.0)) * skin;
   vec3 hk = normalize(uKeyDir + eye);
@@ -217,6 +240,7 @@ varying vec3 vDewN;
 varying vec3 vDewA0;
 varying vec3 vDewA1;
 varying vec2 vDewInfo;
+varying float vDewSoft;
 void main() {
   float keep = dewKeep(vDewInfo.x);
   if (keep <= 0.0 || vDewInfo.y <= 0.0) discard;
@@ -224,10 +248,15 @@ void main() {
   // A run is a pear: round below, drawn out and narrowing above.
   float up = q.y > 0.0 ? q.y / (1.0 + vDewQ.z) : 0.0;
   vec2 e = vec2(q.x * (1.0 + 2.2 * vDewQ.z * up * up), q.y > 0.0 ? up : q.y);
+  // Out of focus the drop is a wider, fainter, softer disc with the same light in it, and what is sharp in it goes first.
+  float wide = 1.0 + vDewSoft;
+  float rr = length(e);
+  float soft = max(fwidth(rr), 1e-4) * 1.2;
+  float a = (1.0 - smoothstep(max(1.0 - vDewSoft, 0.0) - soft, wide, rr)) / (wide * wide);
+  if (a <= 0.002) discard;
+  if (rr > 0.999) e *= 0.999 / rr;
   float d2 = dot(e, e);
-  float soft = max(fwidth(d2), 1e-4) * 1.2;
-  float a = 1.0 - smoothstep(1.0 - soft, 1.0, d2);
-  if (a <= 0.004) discard;
+  float sharp = 1.0 / (1.0 + 3.0 * vDewSoft);
   float h = sqrt(max(1.0 - d2, 0.0));
   vec3 eye = normalize(cameraPosition - vStageWorld);
   vec3 face = normalize(mix(eye, vDewN, 0.5));
@@ -245,7 +274,7 @@ void main() {
   }
   vec2 kq = vec2(dot(uKeyDir, vDewA0), -dot(uKeyDir, vDewA1));
   float crescent = smoothstep(0.2, 0.75, d2) * (1.0 - smoothstep(0.8, 1.0, d2)) * pow(max(dot(normalize(e + 1e-5), -normalize(kq + 1e-5)), 0.0), 2.5);
-  vec3 col = dewWater(body, n, eye, d2, crescent, 1.0);
+  vec3 col = dewWater(body, n, eye, d2, crescent, sharp);
   gl_FragColor = vec4(col * a, a);
   if (uDiag != 0) {
     if (a < 0.5) discard;
@@ -259,6 +288,7 @@ attribute vec3 aTrail;
 varying vec4 vTrail;
 varying vec3 vTrailN;
 varying vec3 vTrailA;
+varying float vTrailSoft;
 ${PATH_GLSL}
 `
 
@@ -277,8 +307,10 @@ vec3 tNw = normalize(mat3(modelMatrix) * tDir);
 vec3 tAcross = normalize(cross(tEye, normalize(mat3(modelMatrix) * (tNext - tDir))));
 // Wide where it joins the head, thin behind, and drawn to a point where it has dried.
 float tWide = uPathC[tj].x * (0.72 + 0.28 * smoothstep(1.0 - min(0.12 / max(tLong, 1e-3), 1.0), 1.0, aTrail.y)) * smoothstep(0.0, min(0.05 / max(tLong, 1e-3), 0.5), aTrail.y);
-if (uDew.x < 0.0 || tLong <= 0.0 || dot(tNw, tEye) < -0.03) tWide = 0.0;
-vec3 tP = tC + tAcross * aTrail.z * tWide + tEye * ${f(look.liftMm)};
+if (uDew.x < 0.0 || tLong <= 0.0) tWide = 0.0;
+tWide *= smoothstep(${f(look.limb[0])}, ${f(look.limb[1])}, dot(tNw, tEye));
+float tSoft = dewSoft(tWide, max(dot(cameraPosition - tC, vec3(viewMatrix[0][2], viewMatrix[1][2], viewMatrix[2][2])), 1.0));
+vec3 tP = tC + tAcross * aTrail.z * tWide * (1.0 + tSoft) + tEye * ${f(look.liftMm)};
 vec4 tView = viewMatrix * vec4(tP, 1.0);
 gl_Position = projectionMatrix * tView;
 vStageWorld = tP;
@@ -286,7 +318,8 @@ vStageLocal = (uGlobeInv * vec4(tC, 1.0)).xyz;
 vStageAux = vec3(0.0, -tView.z, length(tView.xyz));
 vStagePlaced = tP;
 vStageSeen = 1.0;
-vTrail = vec4(aTrail.z, tTh, tLong > 0.0 ? (tB.y - tTh) : 0.0, uPathC[tj].y);
+vTrailSoft = tSoft;
+vTrail = vec4(aTrail.z * (1.0 + tSoft), tTh, tLong > 0.0 ? (tB.y - tTh) : 0.0, uPathC[tj].y);
 vTrailN = tNw;
 vTrailA = tAcross;
 `
@@ -296,6 +329,7 @@ ${SHADE_GLSL}
 varying vec4 vTrail;
 varying vec3 vTrailN;
 varying vec3 vTrailA;
+varying float vTrailSoft;
 void main() {
   float keep = dewKeep(fract(vTrail.w * 7.31));
   if (keep <= 0.0) discard;
@@ -312,8 +346,10 @@ void main() {
   if (w <= 0.02) discard;
   float e = abs(x) / w;
   float soft = max(fwidth(e), 1e-4) * 1.2;
-  float a = 1.0 - smoothstep(1.0 - soft, 1.0, e);
-  if (a <= 0.004) discard;
+  float a = (1.0 - smoothstep(max(1.0 - vTrailSoft, 0.0) - soft, 1.0 + vTrailSoft, e)) / (1.0 + vTrailSoft);
+  if (a <= 0.002) discard;
+  e = min(e, 0.999);
+  x = clamp(x, -0.999 * w, 0.999 * w);
   float d2 = e * e;
   float h = sqrt(max(1.0 - d2, 0.0));
   vec3 eye = normalize(cameraPosition - vStageWorld);
@@ -324,16 +360,16 @@ void main() {
     vec2 grad = vec2(dFdx(vTrail.x), dFdy(vTrail.x));
     float g2 = max(dot(grad, grad), 1e-9);
     vec2 off = grad * vTrail.x / g2;
-    body = dewTap(gl_FragCoord.xy - off - normalize(grad) * (x / w) * uBehindSize.y * ${f(look.trailField)});
+    body = dewTap(gl_FragCoord.xy - off - grad * inversesqrt(g2) * (x / w) * uBehindSize.y * ${f(look.trailField)});
   } else {
     body = stageRoomSoft(reflect(eye, n), 0.4);
   }
   float crescent = smoothstep(0.15, 0.7, d2) * (1.0 - smoothstep(0.8, 1.0, d2)) * max(-sign(x) * dot(uKeyDir, vTrailA), 0.0);
-  // A film is thin: it darkens what is behind it more than it mirrors the room.
+  // A film is thin and clear: it shifts what is behind it a little and has no dark core and no dark edge.
   float rim = smoothstep(0.3, 1.0, d2);
-  vec3 col = body * ${f(look.film)} * mix(0.97, 0.5, rim * rim) + uKeyCol * (${f(look.crescent)} * 0.14 * crescent);
+  vec3 col = body * ${f(look.film)} * mix(1.0, ${f(look.filmEdge)}, rim * rim) + uKeyCol * (${f(look.crescent)} * 0.14 * crescent);
   // Older film is thinner: it shows less the further behind the head it lies.
-  a *= mix(0.9, 0.5, old);
+  a *= mix(${f(look.filmShown[0])}, ${f(look.filmShown[1])}, old);
   gl_FragColor = vec4(col * a, a);
   if (uDiag != 0) {
     if (a < 0.5) discard;
@@ -470,7 +506,7 @@ function copyBehind(renderer: THREE.WebGLRenderer, material: THREE.Material, fir
 let group: THREE.Group | null = null
 
 function make(): THREE.Group {
-  const uniforms = { ...roomUniforms, ...lightUniforms, ...dewUniforms, ...behindUniforms }
+  const uniforms = { ...roomUniforms, ...lightUniforms, ...dewUniforms, ...behindUniforms, ...lensOwn }
   const trails = new THREE.Mesh(
     trailsGeometry(),
     stageShader({ part: PART, standIn: false, change: 'glass-dressing', uniforms, vertexPars: TRAIL_VERT_PARS, vertexMain: TRAIL_VERT, fragment: TRAIL, params: { ...blend } }),

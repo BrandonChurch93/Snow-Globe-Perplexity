@@ -172,32 +172,32 @@ function leaves() {
   const density = (az) => {
     const f = Math.abs(((az + 540) % 360) - 180)
     const sides = Math.exp(-(((f - 78) / 34) ** 2))
-    return (f < 28 ? 0.25 : f < 50 ? 0.55 : 0.8) * (0.45 + 0.55 * sides) + 0.25 * sides
+    return (f < 28 ? 0.2 : f < 50 ? 0.4 : 0.6) * (0.25 + 0.75 * sides) + 0.4 * sides
   }
   let near = 0
   let tries = 0
-  while (near < 300 && tries++ < 12000) {
+  while (near < 130 && tries++ < 12000) {
     const az = r(-180, 180)
     if (rng() > density(az)) continue
-    const size = r(4.6, 8.8) * (rng() < 0.15 ? 1.3 : 1)
-    const dist = FOOT + 4 + size * 0.6 + 115 * rng() ** 2.3
+    const size = r(5.2, 9.6) * (rng() < 0.15 ? 1.3 : 1)
+    const dist = FOOT + 3 + size * 0.5 + 105 * rng() ** 3.1
     const cx = dist * Math.sin(az * RAD)
     const cz = dist * Math.cos(az * RAD)
     if (placed.some((p) => Math.hypot(p[0] - cx, p[1] - cz) < (p[2] + size) * 0.42)) continue
-    add(dist, az, size, r(0.7, 1.35), 6, 0)
+    add(dist, az, size, r(0.7, 1.35), 5, 0)
     near++
   }
   let crumbs = 0
-  while (crumbs < 170) {
+  while (crumbs < 110) {
     const az = r(-180, 180)
-    add(FOOT + 3 + 70 * rng() ** 1.8, az, r(0.9, 2.4), 0.6, 2, 0.5)
+    add(FOOT + 2 + 60 * rng() ** 2.4, az, r(0.9, 2.4), 0.6, 2, 0.5)
     crumbs++
   }
   let far = 0
-  while (far < 330) {
+  while (far < 120) {
     const az = r(-180, 180)
     const dist = FOOT + 110 + 420 * rng() ** 1.2
-    add(dist, az, r(5, 10), 0.45, far < 120 ? 4 : 2, 1)
+    add(dist, az, r(5, 10), 0.45, far < 60 ? 4 : 2, 1)
     far++
   }
   return { soup, near, crumbs, far }
