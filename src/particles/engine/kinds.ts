@@ -88,9 +88,9 @@ export const BEHAVIOUR: Record<string, Behaviour> = {
   mote: { ...base, sinkMmS: [-0.15, 0.2], followSeconds: 0.02, swayMmS: 0.35, crossMmS: 0.3, turnRadS: [0.15, 0.5], spinPerMm: 0.02, sizeMm: [0.1, 0.38], sizeSkew: 2 },
   seed: { ...base, sinkMmS: [-0.1, 0.5], settleMmS: [12, 26], floats: 0.12, followSeconds: 0.035, swayMmS: 0.6, crossMmS: 0.5, dip: 0.2, turnRadS: [0.2, 0.6], spinPerMm: 0.03, rest: 'snags', slope: -2, restSpeedMmS: 60, gripPerSecond: 14, liftMmS: [18, 110], kick: 0.45, layerMm: [0.3, 1.2], sizeMm: [0.5, 1.1], sizeSkew: 1.2 },
   firefly: { ...base, mode: 'steer', followSeconds: 0.12, turnRadS: [0.6, 1.3], sizeMm: [0.7, 1], cruiseMmS: 16, reachMm: 9, clearanceMm: 5 },
-  leaf: { ...base, sinkMmS: [16, 26], settleMmS: [35, 65], followSeconds: 0.08, swayMmS: 13, crossMmS: 6, dip: 0.5, turnRadS: [3.5, 5.5], spinPerMm: 0.05, rest: 'lies', slope: 0.72, restSpeedMmS: 18, gripPerSecond: 5, liftMmS: [50, 160], kick: 0.5, layerMm: [0.15, 1], renew: 0.02, dwellSeconds: [6, 24], sizeMm: [2.6, 4.4], sizeSkew: 1.3 },
-  ember: { ...base, mode: 'cycle', sinkMmS: [-13, -7], followSeconds: 0.05, swayMmS: 5, crossMmS: 3.5, turnRadS: [3, 6], sizeMm: [0.3, 0.75], sizeSkew: 1.6, lifeSeconds: [2.4, 5] },
-  bat: { ...base, mode: 'steer', followSeconds: 0.25, turnRadS: [7, 10], sizeMm: [5, 7], cruiseMmS: 55, reachMm: 24, clearanceMm: 7, orbit: true },
+  leaf: { ...base, sinkMmS: [16, 26], settleMmS: [35, 65], followSeconds: 0.08, swayMmS: 13, crossMmS: 6, dip: 0.5, turnRadS: [3.5, 5.5], spinPerMm: 0.05, rest: 'lies', slope: 0.72, restSpeedMmS: 18, gripPerSecond: 5, liftMmS: [50, 160], kick: 0.5, layerMm: [0.15, 1], renew: 0.045, dwellSeconds: [6, 24], sizeMm: [2.6, 4.4], sizeSkew: 1.3 },
+  ember: { ...base, mode: 'cycle', sinkMmS: [-8, -3.5], followSeconds: 0.05, swayMmS: 20, crossMmS: 5, turnRadS: [3, 6], sizeMm: [0.3, 0.75], sizeSkew: 1.6, lifeSeconds: [5, 11] },
+  bat: { ...base, mode: 'steer', followSeconds: 0.25, turnRadS: [40, 55], sizeMm: [5, 7], cruiseMmS: 55, reachMm: 24, clearanceMm: 7, orbit: true },
 }
 
 export const SEASONS: readonly string[] = config.seasons
