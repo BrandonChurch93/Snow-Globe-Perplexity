@@ -1,4 +1,4 @@
-# Handover of the surface job (`agent/p5-surface`), written 17:30 UTC, 2026-11-25
+# Handover of the surface job (`agent/p5-surface`), written 17:28 UTC, 2026-11-25
 
 For the agent that takes `src/scene/surface.ts` and `src/miniature/mirror.ts` in the next polish round. The report of this round is `REPORT.md` beside this file. Line numbers are those of the tip `5ba8eaf`. Nothing here was rendered after 17:08 UTC.
 
