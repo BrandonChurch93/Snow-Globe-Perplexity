@@ -15,7 +15,7 @@ export interface Pumpkin {
 export const ATTIC = { across: 0.2, sill: 11.5, width: 2.1, height: 2.7, frame: 0.3, out: 0.5 }
 
 export const PUMPKINS: readonly Pumpkin[] = [
-  { name: 'door', at: cottagePoint(-1.2, 0, cottage.halfLength + 4.4), r: 2.9, tall: 0.8, yaw: 0.38, ribs: 10, lean: 0.05 },
+  { name: 'door', at: cottagePoint(-2.7, 0, cottage.halfLength + 3.7), r: 2.9, tall: 0.8, yaw: 0.38, ribs: 10, lean: 0.05 },
   { name: 'tree', at: [21.4, 0, 3.4], r: 2.6, tall: 0.84, yaw: -0.18, ribs: 9, lean: -0.07 },
 ]
 

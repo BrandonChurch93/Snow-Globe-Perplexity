@@ -10,7 +10,7 @@ import { season, tones } from './palette'
 
 const MODEL = 'spring/tree-blossom.glb'
 const PART = `miniature-${season}`
-const LAMP_ON_WOOD = { power: 90, reachMm: 13, wrap: -0.3 }
+const LAMP_ON_WOOD = { power: 22, reachMm: 13, wrap: -0.3 }
 const LAMP_ON_BLOSSOM = { power: 5, reachMm: 13, wrap: 0.3 }
 const BLOSSOM = { wrap: 0.85, fill: 1.1, through: 1.3, thin: 0.6, tight: 2.5, rough: 0.78 }
 const TWIG = { wrap: 0.3, fill: 0.5 }
