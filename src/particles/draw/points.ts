@@ -11,6 +11,7 @@ import type { StageFrame } from '../../scene/frame'
 import { flickerOf } from '../../scene/lightgrid'
 import type { InnerLight } from '../../seasons/kit'
 import { LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_TABLE, LYING_LOOK, MAX_KINDS, SETTLE_SHOWN, SHAPE, TABLE_COLUMNS, lookOf } from './looks'
+import { BEHAVIOUR } from '../engine/kinds'
 import { FRAG, VERT_MAIN, VERT_PARS } from './shader'
 
 export { MAX_KINDS } from './looks'
@@ -75,6 +76,7 @@ export class ParticleDraw {
       uKindColor: { value: Array.from({ length: MAX_KINDS }, () => new THREE.Vector4()) },
       uKindPart: { value: Array.from({ length: MAX_KINDS }, () => new THREE.Vector4()) },
       uKindLook: { value: Array.from({ length: MAX_KINDS }, () => new THREE.Vector4()) },
+      uKindWay: { value: Array.from({ length: MAX_KINDS }, () => new THREE.Vector4()) },
     }
     this.bounds = new THREE.Sphere(new THREE.Vector3(), radiusMm)
     this.sprites = new THREE.Points(new THREE.BufferGeometry(), this.material(true))
@@ -256,6 +258,7 @@ export class ParticleDraw {
     const colors = u.uKindColor!.value as THREE.Vector4[]
     const parts = u.uKindPart!.value as THREE.Vector4[]
     const looks = u.uKindLook!.value as THREE.Vector4[]
+    const ways = u.uKindWay!.value as THREE.Vector4[]
     const flagged: string[] = []
     source.kinds.forEach((kind, i) => {
       if (i >= MAX_KINDS) return
@@ -267,6 +270,8 @@ export class ParticleDraw {
       const real = look.real && (look.shape !== SHAPE.cluster || table !== null)
       const shape = look.shape === SHAPE.cluster && !table ? SHAPE.soft : look.shape
       looks[i]!.set(shape, look.size, look.body, look.flash)
+      const way = BEHAVIOUR[kind]
+      ways[i]!.set(way ? way.renew : 0, way ? way.floats : 0, way && way.rest !== 'never' && way.settleMmS[1] > 0 ? 1 : 0, 0)
       const name = `particle-${kind}`
       const bytes = partBytes(name)
       parts[i]!.set(bytes[0] / 255, bytes[1] / 255, bytes[2] / 255, real ? 0 : 1)
