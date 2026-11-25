@@ -34,11 +34,11 @@ const BARK_BUMP = 3.4
 const WOOD = { relief: 0.95, ridges: 5, warp: 2.6, fine: 0.4, low: 0.42, high: 1.3, from: 0.15, to: 0.85, depthMm: 1.5, rim: 5.5, rimTight: 2.2, side: 0.9, wrap: 0.95, mossTo: 7.5, moss: 0.8 }
 const MOSS: Rgb3 = [0.3, 0.52, 0.12]
 const ROOT_MM = 4.5
-const LEAF_TINT: Rgb3 = [0.31, 0.62, 0.43]
+const LEAF_TINT: Rgb3 = [0.24, 0.55, 0.45]
 const LEAF_LIT = 'vec3(1.25, 1.05, 0.6)'
 const glsl3 = (c: Rgb3): string => `vec3(${c.map((v) => v.toFixed(3)).join(', ')})`
 const LEAF_VARY = { big: 0.36, mid: 1.15, scaleLow: 0.78, scale: 0.5, cool: [0.5, 0.74, 0.95] as Rgb3, warm: [1.3, 1.22, 0.8] as Rgb3 }
-const LEAF = { rim: 9, rimTight: 3.2, through: 0.7, tight: 3.0, fill: 0.75, wrap: 0.8, bump: 1.0, clumpDark: 0.5, clumpBright: 1.7, top: 4, card: 1.6, topEdge: 1.6, topFrom: 0.06, topTo: 0.2 }
+const LEAF = { rim: 9, rimTight: 3.2, through: 0.7, tight: 3.0, fill: 0.75, wrap: 0.8, bump: 1.0, clumpDark: 0.5, clumpBright: 1.3, top: 4, card: 1.6, topEdge: 1.6, topFrom: 0.06, topTo: 0.2 }
 const LANTERN = { rib: 0.6, gores: 12, ring: 0.18, ribs: 26, gain: 0.7, body: 0.55, core: 2.6, tight: 3.0, paper: 0.06, dim: 0.1, stepS: 0.04, rampS: 0.18, swayRad: 0.045, sway2: 0.6, kickRad: 0.16, kickFade: 1.2, kickHz: 1.3, cycles: 2 }
 const HALO = { radius: 2.9, strength: 0.11, hot: 0.0 }
 const HALO_EDGE: Rgb3 = [0.9, 0.36, 0.08]
@@ -106,7 +106,7 @@ function leafHook(shader: Shader): void {
     )
     .replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\nif (vCard.x > 0.5) normal *= faceDirection;')
     .replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\nnormal = treeBump(treeSx, treeSy, treeDh, normal, faceDirection);')
-  afterLight(shader, `reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${LEAF.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), ${LEAF.wrap.toFixed(2)}) + ${LEAF.through.toFixed(2)} * pow(clamp(dot(normalize(vViewPosition), -stageKeyL), 0.0, 1.0), ${LEAF.tight.toFixed(1)}) + ${LEAF.rim.toFixed(2)} * pow(1.0 - abs(dot(normal, normalize(vViewPosition))), ${LEAF.rimTight.toFixed(1)}) * smoothstep(-0.3, 0.7, dot(normal, stageKeyL)))) * material.diffuseContribution;\n{\n  float goldSpeck = smoothstep(${LEAF.topFrom.toFixed(2)}, ${LEAF.topTo.toFixed(2)}, treeLum);\n  float goldUp = smoothstep(-0.15, 0.65, normalize(vTreeN).y);\n  float goldEdge = treeCard ? ${LEAF.card.toFixed(2)} : ${LEAF.top.toFixed(2)} * pow(1.0 - abs(dot(nonPerturbedNormal, normalize(vViewPosition))), ${LEAF.topEdge.toFixed(1)});\n  reflectedLight.directDiffuse += stageKeyC * vec3(1.3, 0.95, 0.42) * (goldEdge * goldUp * goldSpeck);\n}`)
+  afterLight(shader, `reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${LEAF.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), ${LEAF.wrap.toFixed(2)}) + ${LEAF.through.toFixed(2)} * pow(clamp(dot(normalize(vViewPosition), -stageKeyL), 0.0, 1.0), ${LEAF.tight.toFixed(1)}) + ${LEAF.rim.toFixed(2)} * pow(1.0 - abs(dot(normal, normalize(vViewPosition))), ${LEAF.rimTight.toFixed(1)}) * smoothstep(-0.3, 0.7, dot(normal, stageKeyL)))) * material.diffuseContribution;\n{\n  float goldSpeck = smoothstep(${LEAF.topFrom.toFixed(2)}, ${LEAF.topTo.toFixed(2)}, treeLum);\n  float goldUp = smoothstep(0.2, 0.8, normalize(vTreeN).y);\n  float goldEdge = treeCard ? ${LEAF.card.toFixed(2)} : ${LEAF.top.toFixed(2)} * pow(1.0 - abs(dot(nonPerturbedNormal, normalize(vViewPosition))), ${LEAF.topEdge.toFixed(1)});\n  reflectedLight.directDiffuse += stageKeyC * vec3(1.3, 0.95, 0.42) * (goldEdge * goldUp * goldSpeck);\n}`)
 }
 
 function woodHook(shader: Shader, groundY: number): void {
