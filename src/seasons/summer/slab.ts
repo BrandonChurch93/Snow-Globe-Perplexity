@@ -14,12 +14,12 @@ export const surfaceDressing: Dressing & { reachMm: number } = { tint: [0.86, 0.
 // from the approved image: the dune the spill builds against the foot on the right, its shoulder round the front of the
 // foot, the fan toward the camera, a thin sheet behind the foot on the left, and a few grains everywhere near the foot.
 const HEAP = {
-  dune: { x: 66, z: 6, sx: 19, sz: 24, mm: 9.5 },
-  skirt: { x: 72, z: 36, sx: 11, sz: 24, mm: 2.8 },
-  shoulder: { x: 44, z: 60, sx: 27, sz: 20, mm: 4.2 },
-  fan: { x: 54, z: 118, sx: 23, sz: 58, mm: 2.0 },
+  dune: { x: 67, z: 2, sx: 15, sz: 19, mm: 12.5 },
+  skirt: { x: 71, z: 30, sx: 10, sz: 20, mm: 2.2 },
+  shoulder: { x: 47, z: 58, sx: 21, sz: 14, mm: 2.4 },
+  fan: { x: 50, z: 98, sx: 23, sz: 44, mm: 1.5 },
   sheet: { x: -80, z: -50, sx: 15, sz: 28, mm: 0.7 },
-  stray: { x: 56, z: 80, sx: 28, sz: 70, mm: 0.25 },
+  stray: { x: 56, z: 66, sx: 26, sz: 52, mm: 0.2 },
   ring: { r: 61.5, w: 4.5, mm: 0.55 },
 }
 export const SLAB = { liftMm: 0.5, footMm: 54, stepMm: 0.8, x: [-150, 142], z: [-232, 216] } as const
@@ -61,7 +61,7 @@ export function sandHeight(x: number, z: number): number {
 }
 
 export function sandSpread(x: number, z: number): number {
-  return Math.min(1, bump(x, z, HEAP.stray) / HEAP.stray.mm + 0.6 * (bump(x, z, HEAP.fan) / HEAP.fan.mm) + 0.5 * (bump(x, z, HEAP.sheet) / HEAP.sheet.mm))
+  return Math.min(1, 0.5 * (bump(x, z, HEAP.stray) / HEAP.stray.mm) + 0.6 * (bump(x, z, HEAP.fan) / HEAP.fan.mm) + 0.5 * (bump(x, z, HEAP.sheet) / HEAP.sheet.mm))
 }
 
 function heapGeometry(): THREE.BufferGeometry {
