@@ -32,10 +32,10 @@ const HALO_KIND = { lamp: { size: 3.6, rest: 0.14, hot: 0, bloom: 0.2 }, pane: {
 const THROUGH = 6
 const LAMP_GLASS: Rgb = [4.2, 3.3, 2.0]
 const WALL_FILL = 1.3
-const SAND = { body: 5, floor: 0.8, wrap: 1.5, foot: 0.85, bump: 0.12 }
-const TURF_LOOK = { tone: 0.5, fineMm: 0.05, clumpMm: 0.22, fill: 0.6, wrap: 0.5 }
-const GRASS_LOOK = { fill: 0.42, wrap: 1.0, through: 0.75, near: 2.1 }
-const WATER = { mass: 0.88, crownMm: 11, crownTall: 38, houseMm: 8.5, houseTall: 17, rough: 0.05, ripple: 0.006, shoreFrom: 0.9, shoreTo: 1.0, sky: 0.62, skyFrom: -0.7, skyTo: 0.5, post: 0.85, postMm: 0.55, postTall: 11.5, trunk: 0.55, trunkMm: 3, trunkTall: 26, body: 0.4 }
+const SAND = { body: 5, floor: 0.8, wrap: 1.5, foot: 0.85, bump: 0.3, grainLow: 0.55, grain: 1.8 }
+const TURF_LOOK = { tone: 0.5, fineMm: 0.05, clumpMm: 0.22, fill: 0.45, wrap: 0.5 }
+const GRASS_LOOK = { fill: 0.3, wrap: 1.0, through: 0.6, near: 2.1 }
+const WATER = { spark: 1.4, mass: 0.88, crownMm: 11, crownTall: 38, houseMm: 8.5, houseTall: 17, rough: 0.05, ripple: 0.006, shoreFrom: 0.9, shoreTo: 1.0, sky: 0.62, skyFrom: -0.7, skyTo: 0.5, post: 0.85, postMm: 0.55, postTall: 11.5, trunk: 0.55, trunkMm: 3, trunkTall: 26, body: 0.4 }
 
 const flame = lampFlame()
 const mirrored: [number, number, number] = [flame[0], flame[1] - MIRROR.lowMm, flame[2]]
@@ -105,6 +105,8 @@ float turfHeight(vec2 uv) {
 vec3 turfT = texture2D(map, vMapUv).rgb;
 float turfFine = texture2D(map, vMapUv * 4.7 + 0.31).r;
 diffuseColor.rgb *= 1.0 + ${TURF_LOOK.tone.toFixed(2)} * (0.5 * (turfT.g - 0.5) + 0.3 * (turfT.b - 0.5) + 0.45 * (turfFine - 0.5) + 0.25 * (turfT.r - 0.5));
+float sandGrain = texture2D(map, vMapUv * 3.3 + 0.17).r * texture2D(map, vMapUv * 7.1 + 0.53).r;
+diffuseColor.rgb *= mix(1.0, ${SAND.grainLow.toFixed(2)} + ${SAND.grain.toFixed(2)} * sandGrain, smoothstep(0.0, 0.2, vSurf.y));
 `,
         )
         .replace(
@@ -211,7 +213,8 @@ diffuseColor.rgb = mix(${glsl(tones.waterDeep)}, ${glsl(tones.waterDeep)} * 2.4 
   waterShade = max(${WATER.post.toFixed(2)} * villagePost(waterN, waterSight, ${glsl(postFoot)}, ${WATER.postMm.toFixed(2)}, ${WATER.postTall.toFixed(1)}), ${WATER.trunk.toFixed(2)} * villagePost(waterN, waterSight, ${glsl(trunkFoot)}, ${WATER.trunkMm.toFixed(2)}, ${WATER.trunkTall.toFixed(1)}));
   waterShade = max(waterShade, ${WATER.mass.toFixed(2)} * max(villagePost(waterN, waterSight, ${glsl(trunkFoot)}, ${WATER.crownMm.toFixed(2)}, ${WATER.crownTall.toFixed(1)}), villagePost(waterN, waterSight, ${glsl(houseFoot)}, ${WATER.houseMm.toFixed(2)}, ${WATER.houseTall.toFixed(1)})));
   float waterSky = smoothstep(${WATER.skyFrom.toFixed(2)}, ${WATER.skyTo.toFixed(2)}, waterR.x * 0.75 - waterR.z * 0.5 + 0.2);
-  totalEmissiveRadiance += (${glsl(tones.lamp)} * waterGlint * uGlowGain * waterFresnel + ${glsl(tones.waterSky)} * (${WATER.sky.toFixed(2)} * waterSky * (0.25 + 0.75 * waterFresnel))) * (1.0 - waterShade) * (1.0 - 0.7 * waterShore);
+  float waterSpark = pow(texture2D(map, vMapUv * 2.3 + 0.41).r * texture2D(map, vMapUv * 5.9 + 0.13).r * 2.2, 5.0);
+  totalEmissiveRadiance += (${glsl(tones.lamp)} * waterGlint * uGlowGain * waterFresnel + ${glsl(tones.waterSky)} * (${WATER.sky.toFixed(2)} * waterSky * (0.25 + 0.75 * waterFresnel) * (0.55 + 0.45 * texture2D(map, vMapUv * vec2(0.7, 2.6)).b + ${WATER.spark.toFixed(2)} * waterSpark))) * (1.0 - waterShade) * (1.0 - 0.7 * waterShore);
 }
 `,
         )
