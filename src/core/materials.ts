@@ -32,10 +32,12 @@ export const DRESSING_FRONT = { gain: 2, fromMm: 58, toMm: 230 } as const
  * edge is broken into patches (`cellMm`, in the part's own space, so it travels with the globe) and feathered across the
  * samples of a frame (`feather`), and it carries the new season's light (`glowBase`, `glowTable` wide, in shares of the
  * way): the light sits on the broken edge itself, brightest where a patch is just turning, so the edge is never seen
- * clean and never reads as a level line. The code of a part's kind rides in `uState.z`: 0 and above is the lag
+ * clean and never reads as a level line. On the table the patches are drawn out along the way the light runs (`streak`
+ * times as long as wide, `rayMm` to a radian across): the new season reaches over the table in fingers, as a gust does,
+ * and takes the whole span from `tableFrom` on to cross it. The code of a part's kind rides in `uState.z`: 0 and above is the lag
  * of a part inside the glass, under 0 the table's gain, under `-BASE_CODE` the base's.
  */
-export const OUTSIDE_FRONT = { share: 0.62, gain: 3, tableFrom: 0.38, cellMm: 6.5, fineMm: 2.3, fine: 0.36, contrast: 2.6, feather: 0.14, glowBase: 0.11, glowTable: 0.07, topMm: 33, footMm: 0 } as const
+export const OUTSIDE_FRONT = { share: 0.62, gain: 3, tableFrom: 0.26, rayMm: 110, streak: 3.4, cellMm: 6.5, fineMm: 2.3, fine: 0.36, contrast: 2.6, feather: 0.14, glowBase: 0.11, glowTable: 0.07, topMm: 33, footMm: 0 } as const
 const BASE_CODE = 10
 
 export interface StageHandle {
@@ -190,7 +192,7 @@ float stageChange() {
     float far = clamp((length(vStageWorld.xz) - ${DRESSING_FRONT.fromMm.toFixed(1)}) / ${(DRESSING_FRONT.toMm - DRESSING_FRONT.fromMm).toFixed(1)}, 0.0, 1.0);
     float run = clamp((through - ${OUTSIDE_FRONT.tableFrom.toFixed(2)}) / ${(1 - OUTSIDE_FRONT.tableFrom).toFixed(2)}, 0.0, 1.0);
     float reach = run * (1.0 - uState.z) + uState.z * far;
-    stageEdge = stagePatch(vec3(vStageWorld.x, 0.0, vStageWorld.z));
+    stageEdge = stagePatch(vec3(atan(vStageWorld.x, vStageWorld.z) * ${OUTSIDE_FRONT.rayMm.toFixed(1)}, 0.0, length(vStageWorld.xz) / ${OUTSIDE_FRONT.streak.toFixed(1)}));
     float at = (reach - clamp(stageEdge, 0.0, 1.0)) / (-uState.z * ${OUTSIDE_FRONT.glowTable.toFixed(2)});
     stageFront = live * step(0.0001, run) * exp(-at * at);
     return clamp(reach, 0.0, 1.0);
