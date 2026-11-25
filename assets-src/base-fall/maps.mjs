@@ -86,7 +86,7 @@ function grin(w, top, bottom, lift, teeth, bite, square = false) {
   return [...up, ...low.reverse().slice(1, -1)]
 }
 // Four carvings that no one would take for copies of one: a sly one with slanted eyes, a brute with a brow and three big
-// teeth, a laughing one with crescent eyes and an open mouth, and a scowl.
+// teeth, a startled one with round eyes of two sizes, and a scowl.
 const arch = (cx, cy, w, h, thick) => {
   const top = []
   const low = []
@@ -107,7 +107,7 @@ const round = (cx, cy, rx, ry, n = 14) => Array.from({ length: n }, (_, i) => [c
 const DESIGNS = [
   [tri(-0.36, 0.3, 0.46, 0.34, 0.2, 1), tri(0.36, 0.3, 0.46, 0.34, 0.2, -1), [[-0.07, -0.04], [0.07, -0.04], [0, 0.1]], grin(0.68, -0.3, -0.6, 0.34, 5, 0.12)],
   [quad(-0.36, 0.32, 0.5, 0.3, 0.13, 1), quad(0.36, 0.32, 0.5, 0.3, 0.13, -1), [[-0.12, -0.1], [0, -0.02], [0.12, -0.1], [0, 0.16]], grin(0.74, -0.26, -0.74, 0.24, 4, 0.17, true)],
-  [arch(-0.36, 0.2, 0.46, 0.3, 0.17), arch(0.36, 0.2, 0.46, 0.3, 0.17), round(0, -0.02, 0.07, 0.06, 8), grin(0.56, -0.2, -0.76, 0.42, 3, 0.15, true)],
+  [round(-0.36, 0.3, 0.2, 0.17, 12), round(0.34, 0.33, 0.16, 0.2, 12), [[-0.08, -0.06], [0.08, -0.06], [0, 0.1]], grin(0.62, -0.24, -0.66, 0.3, 4, 0.14)],
   [tri(-0.36, 0.34, 0.44, -0.3, -0.1, 1), tri(0.36, 0.34, 0.44, -0.3, -0.1, -1), [[-0.03, -0.12], [0.03, -0.12], [0.03, 0.1], [-0.03, 0.1]], grin(0.62, -0.36, -0.64, -0.22, 6, 0.1)],
 ]
 function inside(poly, x, y) {

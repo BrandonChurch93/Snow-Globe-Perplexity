@@ -38,12 +38,12 @@ function tube(soup, pts, radii, sides, paint, flat = 1, vAt = 0, gnarl = 0, seed
     let lump = 1
     if (gnarl) {
       const around = ((i % sides) / sides) * 6
-      const flute = fbm(around + seed, arc[j] * 0.05, 6, 4096, seed + 2, 2) - 0.5
+      const flute = fbm(around + seed, arc[j] * 0.11, 6, 4096, seed + 2, 2) - 0.5
       const knot = fbm(arc[j] * 0.16 + seed, around * 0.5, 4096, 3, seed, 3) - 0.5
       lump = 1 + gnarl * (2.2 * flute + 1.6 * knot + 2.4 * Math.max(knot - 0.12, 0))
-      const fluteNext = fbm(around + 0.35 + seed, arc[j] * 0.05, 6, 4096, seed + 2, 2) - 0.5
+      const fluteNext = fbm(around + 0.35 + seed, arc[j] * 0.11, 6, 4096, seed + 2, 2) - 0.5
       const round = add3([-f.n[0] * Math.sin(a), -f.n[1] * Math.sin(a), -f.n[2] * Math.sin(a)], f.b, Math.cos(a))
-      nrm = norm3(add3(nrm, round, -gnarl * 6 * (fluteNext - flute)))
+      nrm = norm3(add3(nrm, round, -gnarl * 3.5 * (fluteNext - flute)))
     }
     const p = add3(pts[j], d, radii[j] * lump)
     const c = paint(j, a, p, nrm)
@@ -117,19 +117,19 @@ function addStrands() {
   const push = (s) => STRANDS.push({ seed: STRANDS.length * 31 + 7, slope: 0, reach: 0, ...s })
   for (let i = 0; i < 2; i++) push({ a0: -180, span: 360, h0: 2.6 + i * 2.4, amp: 2.0 + 0.6 * i, k: 3 + 2 * i, ph: r(0, 6.28), rad: r(1.3, 1.7), lift: 1.6, sprawl: 1.1 - i * 0.7, thorn: [7, 12], every: 46, layer: 0 })
   for (let i = 0; i < 2; i++) push({ a0: -180, span: 360, h0: 33.0 + i * 2.6, amp: 2.3 - 0.7 * i, k: 3 + 2 * i, ph: r(0, 6.28), rad: r(1.45, 1.9), lift: 1.5 + i, sprawl: 0, thorn: [7, 11], every: 54, layer: 2 })
-  for (let i = 0; i < 2; i++) push({ a0: -180, span: 360, h0: 11.5 + i * 15, amp: r(3.4, 4.6), k: 3 + i, ph: r(0, 6.28), rad: r(1.1, 1.5), lift: 1.8, sprawl: 0, thorn: [6, 10], every: 52, layer: 1 })
+  for (let i = 0; i < 2; i++) push({ a0: -180, span: 360, h0: 11.5 + i * 15, amp: r(1.6, 2.6), k: 3 + i, ph: r(0, 6.28), rad: r(1.1, 1.5), lift: 1.8, sprawl: 0, thorn: [6, 10], every: 52, layer: 1 })
   // The branches: long tapering lengths that cross the ring on a slant, each ending in a point that stands off it.
-  const count = 25
+  const count = 30
   for (let i = 0; i < count; i++) {
     const steep = i % 3 === 2
     const span = steep ? r(26, 42) : r(62, 150)
     const a0 = -180 + (i * 360) / count + r(-9, 9) + (i * 137.5) % 360
-    const slope = (rng() < 0.5 ? -1 : 1) * (steep ? r(20, 30) : r(11, 25))
-    push({ a0, span, h0: steep ? r(12, 22) : r(4, 27), slope, amp: steep ? r(0.5, 1.1) : r(0.9, 2.2), k: r(1.2, 2.2), ph: r(0, 6.28), rad: steep ? r(1.2, 1.7) : r(1.5, 2.5), lift: r(2.6, 4.6), sprawl: 0.8, thorn: [7, 13], every: 42, layer: 3, open: true, reach: r(3.5, 8.5) })
+    const slope = (rng() < 0.5 ? -1 : 1) * (steep ? r(20, 30) : r(5, 19))
+    push({ a0, span, h0: steep ? r(12, 22) : r(6, 31), slope, amp: steep ? r(0.5, 1.1) : r(0.9, 2.2), k: r(1.2, 2.2), ph: r(0, 6.28), rad: steep ? r(1.2, 1.7) : r(1.5, 2.5), lift: r(2.6, 4.6), sprawl: 0.8, thorn: [7, 13], every: 42, layer: 3, open: true, reach: r(3.5, 8.5) })
   }
   // The wires: thin lengths that fill the weave between the branches.
-  for (let i = 0; i < 12; i++) {
-    const a0 = -180 + i * 30 + r(-8, 8)
+  for (let i = 0; i < 8; i++) {
+    const a0 = -180 + i * 45 + r(-8, 8)
     push({ a0, span: r(50, 110), h0: r(4, 21), slope: (rng() < 0.5 ? -1 : 1) * r(5, 22), amp: r(1.2, 3.2), k: r(2, 4), ph: r(0, 6.28), rad: r(0.5, 0.8), lift: r(1.2, 5.2), sprawl: 0.5, thorn: [3.5, 6.5], every: 40, layer: 3, open: true, reach: r(2, 6) })
   }
 }
@@ -140,9 +140,16 @@ function strandPath(s) {
   const hs = []
   const azs = []
   const base = (az) => s.h0 + s.slope * ((az - s.a0) / s.span - 0.5) + s.amp * Math.sin(s.k * az * RAD + s.ph) + (fbm(((az + 180) / 360) * 14, 0.37, 14, 4, s.seed, 3) - 0.5) * s.amp * (s.layer === 3 && s.rad > 1 ? 0.6 : 1.2)
-  const side = FACES.map((f) => (base(f.az) >= f.h ? 1 : -1))
+  // Where this strand is level with a face: its own turn round the ring, not the face's (a strand may start at 170
+  // degrees and run on past 180), and its nearer end where it does not reach the face.
+  const level = (f) => {
+    let d = (((f.az - s.a0) % 360) + 360) % 360
+    if (d > s.span) d = d - s.span < 360 - d ? s.span : 0
+    return base(s.a0 + d)
+  }
+  const side = FACES.map((f) => (level(f) >= f.h ? 1 : -1))
   // Half the strands that meet a pumpkin do not go round it: they pass behind it, sunk into the ring there.
-  const under = FACES.map((f, q) => s.layer !== 0 && s.layer !== 2 && Math.abs(base(f.az) - f.h) < f.tall * 0.8 && mulberry(s.seed * 97 + q * 13 + 5)() < 0.55)
+  const under = FACES.map((f, q) => s.layer !== 0 && s.layer !== 2 && Math.abs(level(f) - f.h) < f.tall + 1.2 + s.rad)
   for (let i = 0; i <= n; i++) {
     const az = s.a0 + (s.span * i) / n
     let h = base(az)
@@ -155,9 +162,9 @@ function strandPath(s) {
       // so the strands round a face do not draw one eye.
       const rx = f.rad + 0.9 + s.rad
       const clear = Math.abs(d) < rx ? (f.tall + 0.7 + s.rad) * Math.sqrt(1 - (d / rx) ** 2) : 0
-      const ex = rx * (1.05 + 1.5 * u)
+      const ex = rx * (1.05 + 0.7 * u)
       const lean = (v - 0.5) * 1.1 * ex
-      const bow = Math.abs(d - lean) < ex ? (f.tall + 0.7 + s.rad) * (0.75 + 0.8 * v) * Math.cos(((Math.PI / 2) * (d - lean)) / ex) ** (0.7 + 1.2 * u) : 0
+      const bow = s.layer === 3 || s.layer === 1 ? 0 : Math.abs(d - lean) < ex ? (f.tall + 0.7 + s.rad) * (0.7 + 0.45 * v) * Math.cos(((Math.PI / 2) * (d - lean)) / ex) ** (0.7 + 1.2 * u) : 0
       const need = Math.max(clear, bow)
       if (need <= 0) return
       const dy = (h - f.h) * side[q]
@@ -192,7 +199,7 @@ function strandPath(s) {
     FACES.forEach((f, q) => {
       if (!under[q]) return
       const d = L.wrapDeg(az - f.az) * RAD * FACE_R
-      sink = Math.max(sink, smooth(1.5, 1.0, Math.hypot(d / (f.rad + 0.5), (h - f.h) / (f.tall + 0.4))))
+      sink = Math.max(sink, smooth(1.12, 0.82, Math.hypot(d / (f.rad + 0.5), (h - f.h) / (f.tall + 0.4))))
     })
     pts.push(place(mix(drumR(h) + rr * 0.55 + (s.lift * weave + off) * hug + low, drumR(h) - rr - 0.3, sink), h, az))
     radii.push(rr)
@@ -463,8 +470,8 @@ export function buildWax() {
     const m = heavy(az)
     const n = fbm(((az + 180) / 360) * 10, 0.3, 10, 4, 61, 2)
     const side = 1.1 * smooth(48, 82, L.front(az)) * smooth(140, 100, L.front(az))
-    const thick = -0.5 + 1.5 * n * n + 1.5 * m + 0.4 * side
-    const drop = 0.3 + 1.0 * n * n * n + 2.8 * m + 0.7 * side
+    const thick = -0.5 + 1.5 * n * n + 1.0 * m + 0.4 * side
+    const drop = 0.3 + 1.0 * n * n * n + 3.3 * m + 0.7 * side
     return { thick, drop }
   }
   const rows = 12
@@ -476,7 +483,7 @@ export function buildWax() {
     const h = top[1] - (drop + 0.9) * t
     const bulge = Math.sin(Math.PI * Math.min(t * 1.08, 1)) ** 0.6
     const inner = h > 38.75 ? L.sphereRadiusAt(h) + 0.1 : Math.max(drumR(Math.min(h, 38.3)), 45.1 + 0.9 * smooth(38.75, 38.3, h))
-    const rr = inner + Math.max(thick, 0) * bulge + mix(-0.45, 0.02, smooth(-0.12, 0.04, thick))
+    const rr = inner + Math.max(thick, 0) * bulge + mix(mix(0.02, -1.6, smooth(0.08, 0.3, t)), 0.02, smooth(-0.3, 0.04, thick))
     const nr = norm3([Math.sin(Math.PI * (0.25 + 0.5 * t)) + 0.2, Math.cos(Math.PI * (0.1 + 0.9 * t)) * 0.9, 0])
     const s = Math.sin(az * RAD)
     const c = Math.cos(az * RAD)
@@ -491,11 +498,11 @@ export function buildWax() {
     for (let i = 0; i <= n; i++) {
       const t = i / n
       const h = mix(h0, d.h1, t)
-      const sway = (fbm(t * 3 + d.az, 0.4, 64, 4, 17, 2) - 0.5) * 1.4 * t
-      const ride = 1.4 + (d.h1 < 26 ? 1.6 : 3.6) * smooth(0, 0.3, t) * (0.75 + 0.25 * Math.sin(t * 5 + d.az))
+      const sway = (fbm(t * 3 + d.az, 0.4, 64, 4, 17, 2) - 0.5) * (d.h1 < 26 ? 3.2 : 1.4) * t
+      const ride = 2.0 + (d.h1 < 26 ? 1.2 : 3.0) * smooth(0, 0.3, t) * (0.75 + 0.25 * Math.sin(t * 5 + d.az))
       pts.push(place(drumR(clamp(h, 0, 38.3)) + ride, h, d.az + sway))
-      const neck = mix(d.wide * 1.25, 0.82, smooth(0, 0.3, t))
-      const bulb = 1 + 0.5 * Math.exp(-(((t - 0.9) / 0.09) ** 2))
+      const neck = mix(d.wide * 1.5, 0.58, smooth(0, 0.5, t))
+      const bulb = 1 + 0.95 * Math.exp(-(((t - 0.88) / 0.1) ** 2))
       const cap = Math.sqrt(Math.max(1 - Math.max((t - 0.93) / 0.07, 0) ** 2, 0.0004))
       radii.push(d.w * neck * bulb * cap * (0.84 + 0.34 * fbm(t * 2.2 + d.az * 1.7, 0.2, 64, 4, 47, 1)))
     }
