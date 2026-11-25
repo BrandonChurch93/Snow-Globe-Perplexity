@@ -183,7 +183,7 @@ export const CARD_VERT = `
       if (lineC > 0.5) {
         bowC = -arcC;
         // a thing seen for the whole shutter leaves on each place of its path the share of the shutter it spent there: the faster, the longer and the fainter
-        keepC *= min(1.0, ${n(CARD.line.dwell)} * rC / (hlC + ${n(CARD.line.dwell)} * rC));
+        keepC *= min(1.0, ${n(CARD.line.dwellPx)} * uPoint.w / hlC);
       }
     }
     float sgC = 0.5 * uBlur.z * (1.0 - exp(-(coc > 0.0 ? coc * uBlur.x : -coc * uBlur.y) / uBlur.z)) * afloat * mix(1.0, ${n(CARD.clear.blur)}, clearC);
