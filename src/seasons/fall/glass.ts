@@ -101,7 +101,7 @@ export const look = {
     bigMm: 96,
     fineMm: 37,
   },
-  crack: { widthMm: 0.09, edgeMm: 0.055, shade: 0.3, bright: 4.6, sky: 0.3, key: 1.6, rim: 3.0, room: 2.4, jitterMm: 0.14, stepMm: 1.6, glintPerMm: 0.3, catchPerMm: 0.1, faint: 0.22, warm: [1.0, 0.8, 0.56] },
+  crack: { widthMm: 0.09, edgeMm: 0.055, shade: 0.3, bright: 4.6, sky: 0.3, key: 1.6, rim: 3.0, room: 2.4, jitterMm: 0.14, bowMm: 0.5, stepMm: 1.6, glintPerMm: 0.3, catchPerMm: 0.1, faint: 0.15, warm: [1.0, 0.74, 0.46] },
 }
 
 // The crack's path in the pixels of `references/approved/fall-rest.png` (glass circle centre (1417.1, 662.2), radius 564.3 px,
@@ -160,10 +160,12 @@ function crackPieces(): Piece[] {
       const dy = to[1] - from.p[1]
       const len = Math.hypot(dx, dy)
       const n = Math.max(1, Math.round(len / (L.stepMm * pxPerMm)))
+      // Glass does not break along a ruler: between two traced points the line bows a little to one side.
+      const bow = (unit(salt++ * 13 + k + 500) - 0.5) * 2 * L.bowMm * pxPerMm * Math.min(1, len / (10 * pxPerMm))
       let prev = from
       for (let i = 1; i <= n; i++) {
         const t = i / n
-        const j = i < n ? (unit(salt++ * 7 + k) - 0.5) * 2 * L.jitterMm * pxPerMm : 0
+        const j = i < n ? (unit(salt++ * 7 + k) - 0.5) * 2 * L.jitterMm * pxPerMm + bow * Math.sin(Math.PI * t) : 0
         const p: [number, number] = [from.p[0] + dx * t - (dy / len) * j, from.p[1] + dy * t + (dx / len) * j]
         const d = prev.d + Math.hypot(p[0] - prev.p[0], p[1] - prev.p[1])
         out.push({ a: prev.p, b: p, da: prev.d, db: d })
@@ -547,7 +549,7 @@ void main() {
   vec3 face = normalize(n + acrossW * (lit * (0.5 + 0.9 * g2)) + cross(n, acrossW) * (g - 0.5));
   vec3 r = reflect(v, face);
   vec3 light = uSky * ${f(C.sky)} + uKeyCol * (0.2 + ${f(C.key)} * pow(max(dot(r, uKeyDir), 0.0), 6.0)) + uRimCol * (0.15 + ${f(C.rim)} * pow(max(dot(r, uRimDir), 0.0), 4.0)) + stageRoomLights(r, 0.08) * ${f(C.room)};
-  float flash = 0.3 + 2.4 * g * g * g + 1.5 * (1.0 - smoothstep(0.0, 0.05, run)) * step(uCrack.x, 0.999);
+  float flash = 0.22 + 3.2 * g * g * g + 1.5 * (1.0 - smoothstep(0.0, 0.05, run)) * step(uCrack.x, 0.999);
   // It catches the light in stretches and is a faint hair between them, fainter still toward its tips.
   float stretch = crackGlint(tau * ${f(CRACK_LENGTH_MM * C.catchPerMm)} + 9.0 * floor(4.0 * atan(d.y - CRACK_A[0].y, d.x - CRACK_A[0].x) / 6.2831853 + 0.5) + 40.0);
   float caught = mix(${f(C.faint)}, 1.0, smoothstep(0.38, 0.72, stretch)) * mix(1.0, 0.35, smoothstep(0.6, 1.0, tau));
