@@ -36,12 +36,13 @@ export const ROOM_RIG = {
 
 /**
  * The bloom of a change between two seasons. `glare` is the cover of the cut: the light inside the glass, as the lens of the camera
- * spreads it, wide and soft over the seat of the glass, the collar and the table beside it (post.ts adds it from the widest level of
- * its glow, so it starts in the sphere, is strongest at its edge and falls off down the base). It follows `changeBloom`: up over six
- * frames, highest on the cut, down over six. Nothing is laid on the base itself beyond `outside`, so the base keeps its own colours
- * and its own shadow side under the glare.
+ * spreads it, wide and soft over the glass, the collar, the base and the table beside it. It is the light the lens adds at the middle
+ * of the glass, in the colour of the light inside, and falls off round it with the distance over `glareReach` radii of the glass
+ * (post.ts adds it, the stage says where the glass is), so nothing else in the picture, no lamp of the room and no petal, feeds it.
+ * It follows `changeBloom`: up over six frames, highest on the cut, down over six. Nothing is laid on the base itself beyond
+ * `outside`, so the base keeps its own colours and its own shadow side under the glare.
  */
-export const CHANGE_BLOOM = { outside: 3, flood: 0, lens: 0.2, pool: 2, swellFrom: 0.56, fall: 0.6, glare: 2.4 } as const
+export const CHANGE_BLOOM = { outside: 3, flood: 0, lens: 0.2, pool: 2, swellFrom: 0.56, fall: 0.6, glare: 0.22, glareReach: 1.5 } as const
 
 const SHADOW_OFF = 10
 
@@ -240,7 +241,8 @@ export class Lighting {
     f.pool.setRGB(pool[0] * spill + gb[0] * wash, pool[1] * spill + gb[1] * wash, pool[2] * spill + gb[2] * wash)
     const lens = ROOM_RIG.flood.lens * lift + (CHANGE_BLOOM.lens * cross) / peak
     f.bloomTint.setRGB(gb[0] * lens, gb[1] * lens, gb[2] * lens)
-    lensState.glare = a === b ? 0 : CHANGE_BLOOM.glare * f.mix.bloom
+    const glare = a === b ? 0 : (CHANGE_BLOOM.glare * f.mix.bloom) / peak
+    lensState.glare.setRGB(gb[0] * glare, gb[1] * glare, gb[2] * glare)
     const flood = swell.whole * breath
     u.uLightFlood.value.setRGB(gb[0] * flood, gb[1] * flood, gb[2] * flood)
     // Between two seasons the base is cut between two frames of the film, so the swell lays a sixth of a shake's light on it and on the

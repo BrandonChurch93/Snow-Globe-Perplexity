@@ -71,9 +71,8 @@ uniform int uRaw;
 uniform vec2 uInv;
 uniform vec2 uGlowTexel;
 uniform vec3 uGlowGain;
-uniform sampler2D uWide;
-uniform vec2 uWideTexel;
-uniform float uGlare;
+uniform vec3 uGlare;
+uniform vec3 uGlareAt;
 uniform vec4 uCurve;
 uniform float uCurveBlack;
 uniform vec4 uHold;
@@ -156,10 +155,9 @@ void main() {
   vec2 g = uGlowTexel * 0.5;
   vec3 glow = texture(uGlow, uv + g).rgb + texture(uGlow, uv - g).rgb + texture(uGlow, uv + vec2(g.x, -g.y)).rgb + texture(uGlow, uv + vec2(-g.x, g.y)).rgb;
   c += glow * 0.25 * uGlowGain;
-  if (uGlare > 0.0) {
-    vec2 w = uWideTexel * 0.5;
-    vec3 wide = texture(uWide, uv + w).rgb + texture(uWide, uv - w).rgb + texture(uWide, uv + vec2(w.x, -w.y)).rgb + texture(uWide, uv + vec2(-w.x, w.y)).rgb;
-    c += wide * (0.25 * uGlare);
+  if (uGlare.r + uGlare.g + uGlare.b > 0.0) {
+    vec2 off = (uv - uGlareAt.xy) * vec2(uInv.y / uInv.x, 1.0) / uGlareAt.z;
+    c += uGlare * pow(1.0 + dot(off, off), -2.5);
   }
   c *= 1.0 - uLens.z * pow(r2, uLens.w);
   c = film(c);
@@ -195,9 +193,8 @@ export class Post {
       uInv: { value: new THREE.Vector2(1, 1) },
       uGlowTexel: { value: new THREE.Vector2(1, 1) },
       uGlowGain: { value: new THREE.Vector3() },
-      uWide: { value: null },
-      uWideTexel: { value: new THREE.Vector2(1, 1) },
-      uGlare: { value: 0 },
+      uGlare: { value: new THREE.Color(0, 0, 0) },
+      uGlareAt: { value: new THREE.Vector3(0.5, 0.5, 1) },
       uCurve: { value: new THREE.Vector4() },
       uCurveBlack: { value: 1 },
       uHold: { value: new THREE.Vector4(0, 0, 1, 1) },
@@ -311,10 +308,8 @@ export class Post {
       u.uGlow!.value = glow.texture
       ;(u.uGlowTexel!.value as THREE.Vector2).set(1 / glow.width, 1 / glow.height)
       ;(u.uGlowGain!.value as THREE.Vector3).set(k * (1 + g.glowTint * t.r), k * (1 + g.glowTint * t.g), k * (1 + g.glowTint * t.b))
-      const wide = this.chain[this.chain.length - 2]!
-      u.uWide!.value = wide.texture
-      ;(u.uWideTexel!.value as THREE.Vector2).set(1 / wide.width, 1 / wide.height)
-      u.uGlare!.value = lensState.glare
+      ;(u.uGlare!.value as THREE.Color).copy(lensState.glare)
+      ;(u.uGlareAt!.value as THREE.Vector3).copy(lensState.glareAt)
       ;(u.uCurve!.value as THREE.Vector4).set(g.curveGain, g.curveToe, g.curveShoulder, g.curveMid)
       u.uCurveBlack!.value = g.curveBlack
       ;(u.uHold!.value as THREE.Vector4).set(g.colourHold, g.colourHoldFrom, g.colourHoldFull, g.whiteFrom)
