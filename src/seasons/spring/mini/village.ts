@@ -29,13 +29,13 @@ const MIRROR = { lamp: 3, pane: 1.4, tight: 0.0022, wide: 0.035, wideShare: 0.03
 const STREAK = { strength: 20, side: 0.045, along: 0.6, bump: 0.06, rings: 0.9 }
 const MOSS_FROM = [-16.8, -15]
 const SKIRT_FILL = 1.7
-const BANK = { wide: 0.21, wideMm: 0.9, cushion: 0.46, cushionMm: 0.7, tuft: 1.25, tuftMm: 0.26, grain: 4.2, grainMm: 0.05, deep: 0.13, lip: 1.3 }
+const BANK = { wide: 0.21, wideMm: 0.9, cushion: 0.46, cushionMm: 0.7, tuft: 1.25, tuftMm: 0.26, grain: 4.2, grainMm: 0.05, deep: 0.16, lip: 1.05 }
 const BANK_SPAN = BANK.cushionMm + BANK.tuftMm
 const BANK_EARTH: Rgb = [0.03, 0.021, 0.012]
 const SLATE = { tint: [2.2, 3.1, 3.8] as Rgb, from: cottageFrame().floor + cottage.wall - 1.2 }
 const ROCK_FILL = 2.4
 const POT: Rgb = [0.5, 0.2, 0.1]
-const FENCE_TINT: Rgb = [0.64, 0.5, 0.39]
+const FENCE_TINT: Rgb = [0.96, 0.8, 0.62]
 const PATH = { tint: [1.75, 1.58, 1.3] as Rgb, reachMm: [1.5, 2.1], tallMm: 1 }
 const RING_SHOW = 1.7
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
@@ -204,7 +204,7 @@ if (turfBankA > 0.01) {
   vec3 bankMoss = diffuseColor.rgb * ${glsl(BANK_TINT)} * (0.36 + 1.2 * bankCrest) * (0.7 + 0.6 * bankPatch) * (0.8 + 0.4 * bankFine * bankSpeck);
   vec3 bankSoil = ${glsl(BANK_EARTH)} * (0.6 + 0.8 * bankPatch);
   vec3 bankTone = mix(bankSoil, bankMoss, smoothstep(0.04, 0.34, bankCrest) * (0.55 + 0.45 * smoothstep(0.25, 0.6, bankPatch + 0.3 * bankCrest)));
-  bankTone *= mix(${BANK.lip.toFixed(2)}, ${BANK.deep.toFixed(2)}, smoothstep(0.02, 0.42, vSurf.y));
+  bankTone *= mix(${BANK.lip.toFixed(2)}, ${BANK.deep.toFixed(2)}, smoothstep(0.04, 0.8, vSurf.y));
   diffuseColor.rgb = mix(diffuseColor.rgb, bankTone, turfBankA);
 }
 `,
@@ -233,7 +233,7 @@ if (turfBankA > 0.01) {
   float turfCatch = smoothstep(-0.15, 0.9, dot(geometryNormal, vec3(0.0, 0.76, 0.65)));
   float turfRock = smoothstep(2.5, 2.9, vSurf.x);
   float turfLift = normalize(vObjN).y;
-  reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${SKIRT_FILL.toFixed(2)} * turfBank * (0.04 + 0.96 * turfCatch * turfCatch) * (0.5 + 0.5 * smoothstep(-0.8, 0.0, turfLift)) * (1.0 - 0.85 * smoothstep(0.04, 0.5, vSurf.y)) + ${ROCK_FILL.toFixed(2)} * turfRock * (0.3 + 0.7 * smoothstep(-0.2, 0.7, turfLift)))) * material.diffuseContribution;
+  reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${SKIRT_FILL.toFixed(2)} * turfBank * (0.04 + 0.96 * turfCatch * turfCatch) * (0.5 + 0.5 * smoothstep(-0.8, 0.0, turfLift)) * (1.0 - 0.85 * smoothstep(0.06, 0.85, vSurf.y)) + ${ROCK_FILL.toFixed(2)} * turfRock * (0.3 + 0.7 * smoothstep(-0.2, 0.7, turfLift)))) * material.diffuseContribution;
   reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${TURF_LOOK.fuzz.toFixed(2)} * turfFuzz * stageWrap(dot(geometryNormal, stageKeyL), 1.0)) * material.diffuseContribution;
 }`,
       )

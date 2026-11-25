@@ -519,7 +519,7 @@ function sunflower(x, z, tall, face) {
     const at = curve.getPoint(t).toArray()
     const a = i * 2.4 + range(-0.4, 0.4)
     const d = [Math.cos(a), range(-0.35, 0.2), Math.sin(a)]
-    const size = tall * 0.27 * range(0.75, 1.2) * (1 - 0.35 * t)
+    const size = tall * 0.36 * range(0.75, 1.2) * (1 - 0.35 * t)
     const before = leafBits.pos.length
     leaf(at, d, size, mul3(pick(TONES.leaf), range(1, 1.5)))
     void before
