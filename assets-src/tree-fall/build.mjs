@@ -7,11 +7,11 @@ import { loadLayout } from '../village/layout.mjs'
 
 const TAU = Math.PI * 2
 const GLASS_CLEAR = 3.2
-const BOUGH = { perLimb: [2, 4], from: 0.3, length: [6.5, 12], seg: 1.05, radius: 0.92, minR: 0.36, turn: 0.3, kink: 0.95, kinkShare: 0.3, rise: 0.1 }
-const TWIG = { each: [2, 4], length: [0.3, 0.55], seg: 0.8, radius: 0.8, turn: 0.3, kink: 1.0, kinkShare: 0.3 }
+const BOUGH = { perLimb: [2, 4], from: 0.3, length: [6.5, 12], seg: 1.05, radius: 1.0, minR: 0.42, turn: 0.3, kink: 0.95, kinkShare: 0.3, rise: 0.1 }
+const TWIG = { each: [2, 4], length: [0.3, 0.55], seg: 0.8, radius: 0.86, turn: 0.3, kink: 1.0, kinkShare: 0.3 }
 const SPIKE = { each: [1, 2], length: [0.28, 0.5], seg: 0.6, radius: 0.78, turn: 0.2, kink: 0.6, kinkShare: 0.15 }
 const TIP_R = 0.075
-const EMBER = { count: 74, apart: 2.3, r: [0.2, 0.3], drop: [0.3, 0.75], stalk: 0.045, cap: 0.6 }
+const EMBER = { count: 74, apart: 2.3, r: [0.12, 0.24], drop: [0.02, 0.22], stalk: 0.045, cap: 0.6 }
 
 const [T, RNG] = await loadSource(['/src/miniature/trunk.ts', '/src/core/rng.ts'])
 const L = await loadLayout()
@@ -177,7 +177,7 @@ const embers = []
     if (embers.some((e) => e.hang.distanceTo(s.at) < EMBER.apart)) continue
     const r = rng.range(EMBER.r[0], EMBER.r[1])
     const drop = s.r + rng.range(EMBER.drop[0], EMBER.drop[1])
-    const sway = new THREE.Vector3(rng.range(-0.25, 0.25), -1, rng.range(-0.25, 0.25)).normalize()
+    const sway = new THREE.Vector3(rng.range(-1, 1), rng.range(-1, 0.5), rng.range(-1, 1)).normalize()
     const at = s.at.clone().addScaledVector(sway, drop + r)
     if (!inside(at)) continue
     embers.push({ hang: s.at.clone(), at, r, sway, drop, phase: rng.next(), warm: rng.next() })
@@ -188,11 +188,11 @@ const parts = []
 for (const e of embers) {
   const g = new THREE.IcosahedronGeometry(e.r, 2)
   g.deleteAttribute('uv')
-  g.applyMatrix4(new THREE.Matrix4().makeScale(1, 1.25, 1))
+  g.applyMatrix4(new THREE.Matrix4().makeScale(1, 1.1, 1))
   g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, -1, 0), e.sway))
   g.applyMatrix4(new THREE.Matrix4().makeTranslation(e.at.x, e.at.y, e.at.z))
   g.computeVertexNormals()
-  colourOf(g, 1, 0.5 + 0.14 * e.warm, 0.14 + 0.1 * e.warm, 1)
+  colourOf(g, 1, 0.34 + 0.16 * e.warm, 0.05 + 0.07 * e.warm, 1)
   parts.push(phaseOf(g, e.phase, 1))
   const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, -1, 0), e.sway)
   const capAt = e.at.clone().addScaledVector(e.sway, -e.r * 1.05)
