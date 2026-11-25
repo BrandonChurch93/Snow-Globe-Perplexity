@@ -23,7 +23,7 @@ const LOOKS: Record<string, KindLook> = {
   seed: { shape: SHAPE.seed, size: 3.6, body: 0.9, flash: 0, real: true },
   firefly: { shape: SHAPE.light, size: 1, body: 1, flash: 0, real: true },
   ember: { shape: SHAPE.spark, size: 1.5, body: 1, flash: 0, real: true },
-  bat: { shape: SHAPE.bat, size: 1.3, body: 1, flash: 0, real: true },
+  bat: { shape: SHAPE.bat, size: 1.15, body: 1, flash: 0, real: true },
 }
 
 const PLAIN: KindLook = { shape: SHAPE.soft, size: 1, body: 1, flash: 0, real: false }
@@ -193,8 +193,8 @@ export const CARD = {
   fleckSkew: 8,
   fleckStorm: 3,
   /** How much of the veil lies over a card in the air, and over a bat. */
-  fog: 0.6,
-  batFog: 0.25,
+  fog: 0.3,
+  batFog: 0.08,
   petalCup: [0.2, 0.42] as const,
   leafCurl: [0.34, 0.5, 0.3] as const,
   seedRock: 0.35,
@@ -202,14 +202,14 @@ export const CARD = {
   litMost: 1.25,
   sparkKeep: [0.08, 1] as const,
   sparkSkew: 2.5,
-  batFlap: 0.55,
-  batBank: 0.35,
-  /** How far a bat's wings are turned to face the picture, so that it reads as a bat from the side. */
-  batFace: 0.9,
+  batFlap: 0.45,
+  batBank: 0.3,
+  /** How far a bat leans its head the way it is going across the picture. */
+  batLean: 0.5,
   /** How much lighter a bat's edge is than its body, so that its outline holds on dark air. */
-  batRim: 5,
+  batRim: 1.5,
   /** A light's core, its glow and its wide glow, as radii in the particle's radius and as shares of its light. */
-  glow: { core: 0.34, halo: 1.5, wide: 4.5, haloShare: 0.06, wideShare: 0.006, hide: 0.6, blinkLow: 0.04 },
+  glow: { core: 0.34, halo: 1.5, wide: 4.5, haloShare: 0.1, wideShare: 0.01, hide: 0.6, blinkLow: 0.04 },
   spark: { gain: 1.1, core: 0.42, halo: 1.5, haloShare: 0.05, tail: 1.6, hotCore: 0.3, hot: [1, 0.8, 0.5] as const, dying: [0.85, 0.17, 0.03] as const },
-  hair: { runHead: 0.5, runTrail: 0.6, runWide: 0.04, runLeast: 1.2, runSeen: 1.6, runStretch: 2, runKeep: 0.2, wide: 0.014, seen: 1.5, reach: 1.7, foot: 1.5, stem: 0.022, body: 0.06, hub: 0.3, ringA: [11, 1.45, 1] as const, ringB: [8, 0.8, 0.9] as const, ringC: [7, 2.1, 0.8] as const },
+  hair: { runHead: 0.5, runTrail: 0.6, runWide: 0.04, runLeast: 1.2, runSeen: 1.6, runStretch: 2, runKeep: 0.2, wide: 0.011, seen: 1.25, reach: 1.7, foot: 1.5, stem: 0.022, body: 0.06, hub: 0.3, ringA: [15, 1.45, 1] as const, ringB: [10, 0.8, 0.9] as const, ringC: [9, 2.1, 0.8] as const },
 }
