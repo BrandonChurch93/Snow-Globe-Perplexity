@@ -22,7 +22,7 @@ const BARK = { wrap: 0.4, fill: 1.1, normal: 2.6, rough: 0.9, ridgeMm: 0.22, rid
 const WARM: [number, number, number] = [1, 0.6, 0.34]
 const CLEAR_MM = 1
 // While the storm turns, the crown is a pale glowing cloud in the approved mid-shake image and no dark branch shows in it.
-const STORM = { blossom: [0.5, 0.39, 0.43] as const, pale: 0.4, wood: [0.5, 0.38, 0.38] as const, woodPale: 0.8 }
+const STORM = { blossom: [0.42, 0.32, 0.36] as const, pale: 0.4, wood: [0.5, 0.38, 0.38] as const, woodPale: 0.8 }
 const storm = { value: 0 }
 
 const offset = crownOffset()

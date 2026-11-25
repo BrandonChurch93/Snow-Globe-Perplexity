@@ -151,7 +151,7 @@ function grassAt(x, z) {
 }
 // The moss mounds of the bank (approved rest image: a lip of round cushions under the pond, lit on top, dark below).
 // One mound to each cell around the rim; moundAt gives 0 in the gap between two and up to 1 on a mound's middle line.
-const MOUND = { count: 30, low: 0.5, lipMm: 1.25, lipReach: 3.2, from: 0.13, deep: 0.3, underMm: 2.4 }
+const MOUND = { count: 30, low: 0.5, lipMm: 1.25, lipReach: 3.2, fromMm: 1.4, deepMm: 2.6, underMm: 2.4, soilMm: [0.6, 6.5] }
 const moundCells = Array.from({ length: MOUND.count }, (_, i) => ({ tall: MOUND.low + (1 - MOUND.low) * clamp(0.5 + 0.9 * noise(i * 1.7, 4.2, 9.9 + i * 0.37)), shift: 0.3 * clamp(0.5 + 0.9 * noise(i * 2.3, 1.1, 3.3)) - 0.15 }))
 function moundAt(th) {
   const u = ((th / (Math.PI * 2)) % 1 + 1) % 1 * MOUND.count
@@ -209,6 +209,7 @@ const SKIRT = { cycles: 6.5, deepMm: 2.8, clumps: 17, clumpMm: 0.85 }
   const pos = []
   const idx = []
   const depth = []
+  const soilShade = []
   const rows = shore.length + outer + skirt
   for (let j = 0; j <= around; j++) {
     const a = (j / around) * Math.PI * 2
@@ -235,6 +236,7 @@ const SKIRT = { cycles: 6.5, deepMm: 2.8, clumps: 17, clumpMm: 0.85 }
       let y
       let z
       let q = 0
+      let shade = 1
       if (k < shore.length) {
         const t = Math.min(shore[k] / unit, t1 * (0.9 + 0.1 * (k / (shore.length - 1))))
         x = L.pond.x + dx * t
@@ -270,7 +272,9 @@ const SKIRT = { cycles: 6.5, deepMm: 2.8, clumps: 17, clumpMm: 0.85 }
         const warp = [fbm(wx * 9.3 + 1.7, wy * 9.3, wz * 9.3, 2), fbm(wx * 9.3, wy * 9.3 + 4.4, wz * 9.3 + 2.1, 2), fbm(wx * 9.3 + 8.8, wy * 9.3 + 3.2, wz * 9.3, 2)]
         const lump = clamp(0.5 + 0.75 * fbm(wx * SKIRT.cycles + 3.1 + 0.5 * warp[0], wy * SKIRT.cycles + 0.5 * warp[1], wz * SKIRT.cycles + 7.7 + 0.5 * warp[2], 4))
         const clump = clamp(0.5 + 0.8 * fbm(wx * SKIRT.clumps + 1.3 + 0.9 * warp[1], wy * SKIRT.clumps + 5.9 + 0.9 * warp[2], wz * SKIRT.clumps + 2.2 + 0.9 * warp[0], 4))
-        const foot = MOUND.from + MOUND.deep * moundAt(th)
+        const arc = (phi0 - Math.min(phi1, phi0 - 0.12)) * r
+        const foot = (MOUND.fromMm + MOUND.deepMm * moundAt(th)) / arc
+        shade = 1 - 0.92 * smooth(MOUND.soilMm[0], MOUND.soilMm[1], (q - foot) * arc)
         const rr = r - 0.15 - SKIRT.deepMm * Math.pow(lump, 1.5) * smooth(foot, foot + 0.35, q) - SKIRT.clumpMm * clump * clump * smooth(0.0, 0.2, q) - MOUND.underMm * smooth(foot - 0.05, foot + 0.1, q)
         q = Math.max(1e-3, clamp(0.5 * q / foot))
         x = ux * rr
@@ -279,6 +283,7 @@ const SKIRT = { cycles: 6.5, deepMm: 2.8, clumps: 17, clumpMm: 0.85 }
       }
       pos.push(x, y, z)
       depth.push(q)
+      soilShade.push(shade)
     }
   }
   for (let j = 0; j < around; j++)
@@ -320,6 +325,7 @@ const SKIRT = { cycles: 6.5, deepMm: 2.8, clumps: 17, clumpMm: 0.85 }
     color: (p, n, i) => {
       const q = depth[i]
       if (q <= 0) return grassTone(p[0], p[2])
+      if (q > 0.5) return [soilShade[i], soilShade[i], soilShade[i]]
       const top = mix3(TONE.grass, TONE.moss, clamp(0.5 + noise(p[0] * 0.45, p[1] * 0.45, p[2] * 0.45)))
       const patch = smooth(-0.1, 0.35, fbm(p[0] * 0.3, p[1] * 0.3, p[2] * 0.3, 3))
       return mul3(mix3(mix3(top, TONE.mossDeep, smooth(0.2, 0.55, q) * (1 - 0.5 * patch)), TONE.sun, (0.35 + 0.45 * patch) * (1 - smooth(0.02, 0.3, q))), (1 - 0.25 * smooth(0.3, 0.6, q)) * (1.25 + 0.6 * smooth(-0.3, 0.6, n[1])))
@@ -390,14 +396,14 @@ const MOUNDS = { count: 110, sizeMm: [1.2, 3.3], seed: 9133 }
     tries++
     const a = RM() * Math.PI * 2
     const size = MOUNDS.sizeMm[0] + (MOUNDS.sizeMm[1] - MOUNDS.sizeMm[0]) * RM() ** 1.6
-    const inset = size * 0.8 + 0.2 + 1.6 * RM() * RM()
+    const inset = size * 1.45 + 0.3 + 1.6 * RM() * RM()
     const back = RM()
     if (Math.sin(a) < -0.1 && back < 0.8) continue
     let rr = 20
     while (rr < 70 && edgeOf(Math.cos(a) * (rr + 0.1), Math.sin(a) * (rr + 0.1)) > inset) rr += 0.1
     const x = Math.cos(a) * rr
     const z = Math.sin(a) * rr
-    if (edgeOf(x, z) < size * 0.7) continue
+    if (edgeOf(x, z) < size * 1.3) continue
     if (L.pondField(x, z) < 1.1 || stoneGap(x, z) < size + 0.4 || wallGap(x, z) < size + 0.6 || treeGap(x, z) < size + 4.5 || boulderGap(x, z) < size * 0.5) continue
     if (fposts.some((f) => Math.hypot(x - f[0], z - f[1]) < size + 0.7)) continue
     const rx = size * (0.95 + 0.35 * RM())
@@ -763,10 +769,10 @@ const fenceDir = norm3([L.fence.to[0] - L.fence.from[0], 0, L.fence.to[1] - L.fe
 const fenceIn = [fenceDir[2], 0, -fenceDir[0]]
 const TULIP_TALL = 0.64
 const BEDS = [
-  { at: [fenceMid[0] + fenceIn[0] * 2.4, fenceMid[1] + fenceIn[2] * 2.4], along: [fenceDir[0], fenceDir[2]], half: [6.2, 1.9], count: 17, tall: [4.4, 6.4], hues: [3, 1, 4, 0, 2, 1, 3] },
+  { at: [fenceMid[0] + fenceIn[0] * 2.4, fenceMid[1] + fenceIn[2] * 2.4], along: [fenceDir[0], fenceDir[2]], half: [6.2, 1.9], count: 11, tall: [4.4, 6.4], hues: [3, 1, 4, 0, 2, 1, 3] },
   { at: [L.tree.x + 9.2, L.tree.z + 9.6], along: [0.86, 0.5], half: [4.2, 2.2], count: 15, tall: [4.6, 6.8], hues: [4, 2, 1, 4, 3, 2] },
-  { at: [L.tree.x + 15.5, L.tree.z + 4], along: [0.5, -0.86], half: [2.6, 1.6], count: 8, tall: [3.6, 5.2], hues: [4, 3, 2] },
-  { at: [fenceMid[0] - fenceIn[0] * 2.2 + fenceDir[0] * 3, fenceMid[1] - fenceIn[2] * 2.2 + fenceDir[2] * 3], along: [fenceDir[0], fenceDir[2]], half: [3.4, 1.1], count: 9, tall: [3.2, 4.6], hues: [4, 2, 3] },
+  { at: [L.tree.x + 15.5, L.tree.z + 4], along: [0.5, -0.86], half: [2.6, 1.6], count: 5, tall: [3.6, 5.2], hues: [4, 3, 2] },
+  { at: [fenceMid[0] - fenceIn[0] * 2.2 + fenceDir[0] * 3, fenceMid[1] - fenceIn[2] * 2.2 + fenceDir[2] * 3], along: [fenceDir[0], fenceDir[2]], half: [3.4, 1.1], count: 4, tall: [2.2, 3.1], hues: [4, 2, 3] },
 ]
 {
   const before = growth.triangles

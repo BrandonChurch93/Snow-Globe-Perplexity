@@ -9,7 +9,7 @@ import { MIRROR_GLSL, mirrorUniforms } from '../../../miniature/mirror'
 import { prepareVillage, tileMm, villageGeometry, villageGrain } from '../../../miniature/model'
 import { lampFlame, lampFoot, shrubDistance } from '../../../miniature/roof'
 import { BUMP_GLSL, NEAR_LIGHT, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, withSurface, type Cover, type GlowSource } from '../../../miniature/surface'
-import { anchors, cottage, cottageFrame, fence, groundAt, moundAt, moundSlope, pond, pondField, solidDistance, steps, stones, tree } from '../../../scene/layout'
+import { anchors, collarY, cottage, cottageFrame, fence, groundAt, moundAt, moundSlope, pond, pondField, solidDistance, steps, stones, tree } from '../../../scene/layout'
 import { gainOf } from '../../../scene/lightgrid'
 import type { InnerLight, KitMoment } from '../../kit'
 import { isTree, season, tones } from './palette'
@@ -33,31 +33,35 @@ const SKIRT_FILL = 1.7
 const BANK = { wide: 0.21, wideMm: 0.9, cushion: 0.46, cushionMm: 0.7, tuft: 1.25, tuftMm: 0.26, grain: 4.2, grainMm: 0.05, deep: 0.05, lip: 0.95, fall: [0.05, 0.5], sun: [0.0, 0.24] }
 const BANK_SPAN = BANK.cushionMm + BANK.tuftMm
 const BANK_EARTH: Rgb = [0.03, 0.021, 0.012]
-const SLATE = { tint: [2.2, 3.1, 3.8] as Rgb, from: cottageFrame().floor + cottage.wall - 1.2 }
+// Under the mounds the bank is a cut of soil: bands of earth, pebbles and fine roots that hang from the mounds' feet, and at the
+// glass foot a narrow dark seam where the bank meets the collar (roots: one place in 1.7 mm around the rim, a share of them filled).
+// Below a mound's foot the mesh's colour is grey: how much light the soil keeps at that depth.
+const SOIL = { tone: [0.36, 0.22, 0.12] as Rgb, pebble: [0.6, 0.54, 0.46] as Rgb, root: [0.75, 0.55, 0.36] as Rgb, fill: 2.6, roots: 26, share: 0.5, seam: [collarY + 4.4, collarY + 6.0] }
+const SLATE = { tint: [1.7, 2.4, 3.0] as Rgb, from: cottageFrame().floor + cottage.wall - 1.2 }
 const ROCK_FILL = 2.4
 const POT: Rgb = [0.5, 0.2, 0.1]
-const FENCE_TINT: Rgb = [0.96, 0.8, 0.62]
+const FENCE_TINT: Rgb = [1.3, 1.06, 0.8]
 const PATH = { tint: [1.75, 1.58, 1.3] as Rgb, reachMm: [1.5, 2.1], tallMm: 1 }
 const RING_SHOW = 1.7
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
-const HALO_KIND = { lamp: { size: 4.6, rest: 0.5, hot: 0.07, bloom: 0.3 }, pane: { size: 2.6, rest: 0.28, hot: 0, bloom: 0.36 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
+const HALO_KIND = { lamp: { size: 3.8, rest: 0.5, hot: 0.07, bloom: 0.3 }, pane: { size: 2.2, rest: 0.18, hot: 0, bloom: 0.36 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
 const SPARK = { radiusMm: 0.75, strength: 1.2, hot: 2.5, pullMm: 1.6, flicker: 0.05, cycles: 2, through: 80, wide: 1, bloom: 0 }
 const SPARK_KIND = { size: 1.5, rest: 0.9, hot: 1.2, bloom: 0 }
 const THROUGH = 6
 // The warm ball of lit haze around the lamp while the storm turns (approved mid-shake image): sizes in units of HALO.radiusMm.
 // rest: strength; hot: how far behind its centre the glow is drawn (mm, negative is in front); bloom: how much hotter its middle is.
-const STORM_GLOW = { tone: [1.4, 1.2, 0.98] as Rgb, lamp: { size: 17, rest: 0.62, hot: 11, bloom: 0.25 }, behind: { size: 13, rest: 0.45, hot: 11, bloom: 0.25 }, flame: { size: 2.3, rest: 1.4, hot: -2, bloom: 3.5 } }
-const LAMP_GLASS: Rgb = [9, 5.6, 2.3]
-const WALL_FILL = 2.6
-const STONE_LIFT: Rgb = [1.5, 1.36, 1.18]
-const SLATE_BASE: Rgb = [0.03, 0.036, 0.046]
+const STORM_GLOW = { tone: [1.4, 1.2, 0.98] as Rgb, lamp: { size: 17, rest: 0.62, hot: 11, bloom: 0.25 }, behind: { size: 13, rest: 0.45, hot: 11, bloom: 0.25 }, flame: { size: 3, rest: 1.7, hot: -2, bloom: 3.5 } }
+const LAMP_GLASS: Rgb = [7.5, 4.6, 1.9]
+const WALL_FILL = 2.2
+const STONE_LIFT: Rgb = [1.22, 1.07, 0.9]
+const SLATE_BASE: Rgb = [0.018, 0.022, 0.03]
 const BANK_TINT: Rgb = [0.74, 0.52, 0.52]
 // The top of each bank mound goes warm and pale, as the approved's moss lip does. The mesh's second surf number is the
 // depth down a mound: 0 at the lawn's edge, 0.5 at the mound's foot, 1 well under it (BANK.fall and BANK.sun read it).
 const BANK_SUN: Rgb = [1.45, 1.3, 0.85]
 const TURF_LOOK = { wrap: 0.45, fill: 0.9, grainMm: 0.07, lumpMm: 0.26, wideMm: 0.5, fuzz: 0.5 }
 const GROWTH_LOOK = { wrap: 0.7, fill: 0.7, through: 1.6, thin: 0.5, tight: 3 }
-const RIPPLE = { waveMm: 4.0, heightMm: 0.3, reachMm: 22, laps: 5, chopMm: 0.016, drift: 2 }
+const RIPPLE = { waveMm: 2.5, heightMm: 0.15, reachMm: 22, laps: 5, chopMm: 0.034, drift: 2, shore: 0.75 }
 const WATER_LOOK = { rough: 0.07, near: 0.12, sky: 0.36, crown: 0.6, post: 0.55, postMm: 0.5, postTall: 11.5, trunk: 0.5, trunkMm: 2.6, trunkTall: 16, body: 0.4, room: 0.45, far: [0.05, 0.06, 0.035] as Rgb, farFrom: 0.1, farTo: 0.42 }
 const CROWN_MIRROR = { centre: [tree.x + 1.2, 9.9, tree.z + 1] as Rgb, r: [22.5, 15.5, 15] as Rgb, tone: [0.95, 0.56, 0.66] as Rgb }
 
@@ -109,7 +113,8 @@ const mossy: Cover = {
   float springMoss = 0.45 * smoothstep(0.62, 0.98, springUp) * smoothstep(0.5, 0.78, villageMottle + 0.25 * villageGrain.b) * (1.0 - villageIron) * (1.0 - villageLeaf);
   springMoss = max(springMoss, 0.5 * villageStone * smoothstep(0.52, 0.7, villageMottle) * smoothstep(0.55, 0.8, texture2D(map, vMapUv * 0.11 + 0.71).b));
   float springSlate = smoothstep(0.55, 0.7, normalize(vObjN).y) * (1.0 - smoothstep(0.86, 0.93, normalize(vObjN).y)) * smoothstep(${SLATE.from.toFixed(2)}, ${(SLATE.from + 1).toFixed(2)}, vStageLocal.y) * (1.0 - villageLeaf);
-  diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * ${glsl(STONE_LIFT)}, villageStone * (1.0 - springSlate));
+  diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * ${glsl(STONE_LIFT)} * (0.62 + 0.76 * villageMottle), villageStone * (1.0 - springSlate));
+  springMoss = max(springMoss, 0.75 * springSlate * smoothstep(0.5, 0.72, villageMottle + 0.3 * villageGrain.b));
   diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * ${glsl(SLATE.tint)} + ${glsl(SLATE_BASE)} * (0.5 + villageGrain.r), springSlate);
   springMoss *= 0.2 + 0.8 * smoothstep(${MOSS_FROM[0].toFixed(1)}, ${MOSS_FROM[1].toFixed(1)}, vStageLocal.y);
   diffuseColor.rgb = mix(diffuseColor.rgb, ${glsl(tones.moss)} * (0.6 + 0.9 * villageGrain.r), springMoss * 0.8);
@@ -151,6 +156,8 @@ function turfMaterial(): THREE.MeshStandardMaterial {
 ${BUMP_GLSL}
 vec3 turfWeights;
 float turfBankH = 0.0;
+float turfSoil = 0.0;
+float turfSeam = 1.0;
 float bankHash(vec3 p) {
   p = fract(p * 0.3183099 + 0.1) * 17.0;
   return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
@@ -213,6 +220,21 @@ if (turfBankA > 0.01) {
   vec3 bankTone = mix(bankSoil, bankMoss, smoothstep(0.04, 0.34, bankCrest) * (0.55 + 0.45 * smoothstep(0.25, 0.6, bankPatch + 0.3 * bankCrest)));
   bankTone *= mix(${BANK.lip.toFixed(2)}, ${BANK.deep.toFixed(2)}, smoothstep(${BANK.fall[0].toFixed(2)}, ${BANK.fall[1].toFixed(2)}, vSurf.y));
   bankTone = mix(bankTone, bankTone * ${glsl(BANK_SUN)}, (1.0 - smoothstep(${BANK.sun[0].toFixed(2)}, ${BANK.sun[1].toFixed(2)}, vSurf.y)) * (0.35 + 0.65 * bankCrest));
+  turfSoil = smoothstep(0.42, 0.56, vSurf.y);
+  float bankAround = atan(vStageLocal.z, vStageLocal.x) * ${SOIL.roots.toFixed(1)};
+  float bankBand = bankNoise(vec3(bankAround * 0.12, vStageLocal.y * 1.5, 2.0));
+  vec3 soilTone = ${glsl(SOIL.tone)} * (0.55 + 0.9 * bankPatch) * (0.6 + 0.8 * bankBand) * (0.75 + 0.5 * bankFine * bankSpeck);
+  float soilPebble = smoothstep(0.74, 0.9, bankCells(bankQ * 0.34 + 2.7)) * smoothstep(0.5, 0.66, bankNoise(bankQ * 0.19 + 4.0));
+  soilTone = mix(soilTone, ${glsl(SOIL.pebble)} * (0.6 + 0.8 * bankSpeck), soilPebble);
+  float rootU = bankAround + 0.55 * bankNoise(vec3(bankAround * 0.35, vStageLocal.y * 0.75, 6.1));
+  float rootId = floor(rootU);
+  float rootHas = step(${(1 - SOIL.share).toFixed(2)}, bankHash(vec3(rootId, 3.7, 1.3)));
+  float rootLong = 0.62 + 0.36 * bankHash(vec3(rootId, 9.2, 4.4));
+  float rootLine = (1.0 - smoothstep(0.05, 0.16, abs(fract(rootU) - 0.5))) * rootHas * (1.0 - smoothstep(rootLong - 0.12, rootLong, vSurf.y));
+  soilTone = mix(soilTone, ${glsl(SOIL.root)}, rootLine * bankFine);
+  bankTone = mix(bankTone, soilTone * diffuseColor.g, turfSoil);
+  turfSeam = smoothstep(${SOIL.seam[0].toFixed(2)}, ${SOIL.seam[1].toFixed(2)}, vStageLocal.y);
+  bankTone *= 0.08 + 0.92 * turfSeam;
   diffuseColor.rgb = mix(diffuseColor.rgb, bankTone, turfBankA);
 }
 `,
@@ -244,6 +266,7 @@ if (turfBankA > 0.01) {
   float turfRock = smoothstep(2.5, 2.9, vSurf.x);
   float turfLift = normalize(vObjN).y;
   reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${SKIRT_FILL.toFixed(2)} * turfBank * (0.04 + 0.96 * turfCatch * turfCatch) * (0.5 + 0.5 * smoothstep(-0.8, 0.0, turfLift)) * (1.0 - 0.94 * smoothstep(${BANK.fall[0].toFixed(2)}, ${BANK.fall[1].toFixed(2)}, vSurf.y)) + ${ROCK_FILL.toFixed(2)} * turfRock * (0.3 + 0.7 * smoothstep(-0.2, 0.7, turfLift)))) * material.diffuseContribution;
+  reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${SOIL.fill.toFixed(2)} * turfBank * turfSoil * turfSeam) * material.diffuseContribution;
   reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${TURF_LOOK.fuzz.toFixed(2)} * turfFuzz * stageWrap(dot(geometryNormal, stageKeyL), 1.0)) * material.diffuseContribution;
 }`,
       )
@@ -320,7 +343,7 @@ float waterRings(vec2 p) {
 float waterHeight(vec2 p) {
   vec2 uv = p * ${(1 / tileMm()).toFixed(6)};
   float chop = texture2D(map, uv * 1.7 + vec2(uWaterClock * ${RIPPLE.drift.toFixed(1)}, 0.0)).r + texture2D(map, uv * 2.3 - vec2(0.0, uWaterClock * ${RIPPLE.drift.toFixed(1)})).g;
-  return ${RIPPLE.heightMm.toFixed(3)} * waterRings(p) + ${RIPPLE.chopMm.toFixed(3)} * chop;
+  return ${RIPPLE.heightMm.toFixed(3)} * waterRings(p) * (1.0 - ${RIPPLE.shore.toFixed(2)} * smoothstep(0.55, 0.95, vSurf.x)) + ${RIPPLE.chopMm.toFixed(3)} * chop;
 }
 float waterStreak(vec3 n, vec3 sight) {
   vec3 r = reflect(-sight, n);
@@ -463,7 +486,7 @@ export function lights(): THREE.Object3D {
     glowPiece(villageGeometry('pane-gable'), (_i, w, h) => [GLOW.pane, w, h, 1]),
     glowPiece(villageGeometry('pane-side'), (_i, w, h) => [GLOW.pane, w, h, 2]),
   ]
-  const look = { bulb: 1.7, bulbCore: 3.4, glass: LAMP_GLASS, flame: tones.flame.map((v) => v * 6) as unknown as Rgb, room: tones.room.map((v) => v * 1.6) as unknown as Rgb, curtain: tones.curtain.map((v) => v * 2) as unknown as Rgb, frost: tones.pane.map((v) => v * 0.3) as unknown as Rgb, frostAmount: 0.06, flicker: 0.08, cycles: 3, through: THROUGH, paneHot: 0.14 }
+  const look = { bulb: 1.7, bulbCore: 6, glass: LAMP_GLASS, flame: tones.flame.map((v) => v * 6) as unknown as Rgb, room: tones.room.map((v) => v * 1.6) as unknown as Rgb, curtain: tones.curtain.map((v) => v * 2) as unknown as Rgb, frost: tones.pane.map((v) => v * 0.3) as unknown as Rgb, frostAmount: 0.06, flicker: 0.08, cycles: 3, through: THROUGH, paneHot: 0.14 }
   const lit = (x: number, z: number): [number, number, number] => [x, groundAt(x, z) + 1.5, z]
   const pools = [lit(flame[0] + 0.4, flame[2] + 1.6), lit(anchors.door[0] * 0.75 + flame[0] * 0.25, anchors.door[2] * 0.75 + flame[2] * 0.25)]
   const halos = new THREE.Mesh(
