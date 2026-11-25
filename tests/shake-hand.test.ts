@@ -73,12 +73,37 @@ describe('the hand: the landing', () => {
         }
         if (tiltOf(p) > 0.02) still = f
       }
-      expect(over, `${name} over`).toBeGreaterThan(1.7)
+      expect(over, `${name} over`).toBeGreaterThan(2.2)
       expect(over, `${name} over`).toBeLessThan(2.5)
-      expect(back, `${name} back`).toBeGreaterThan(0.5)
+      // The one rock over takes three quarters of the settle; what is left of it holds a rock back of under half a degree and the stillness.
+      expect(back, `${name} back`).toBeGreaterThan(0.4)
       expect(back, `${name} back`).toBeLessThan(0.55 * over)
       expect(backFrame, `${name} back after over`).toBeGreaterThan(overFrame + 5)
       expect((still + 1) * FRAME_BEATS * BEAT_S, `${name} still`).toBeLessThanOrEqual(s.landSettleSeconds + 1e-9)
+    }
+  })
+})
+
+describe('the hand: the set down', () => {
+  it('does not stop on the edge: from the last of the fall to the bar the height falls on every frame, and fastest as the foot goes flat', () => {
+    for (const name of HELD) {
+      const m = shakeMotion(name)
+      const path = makeShake(name)
+      const landing = path.parts.landing
+      const touchFrames = Math.ceil((landing - m.plan.touch) / FRAME_BEATS)
+      let slowest = Infinity
+      let fastest = 0
+      let fall = 0
+      for (let f = -touchFrames - 3; f < 0; f++) {
+        const drop = path.poseAt(landing + f * FRAME_BEATS).y - path.poseAt(landing + (f + 1) * FRAME_BEATS).y
+        slowest = Math.min(slowest, drop)
+        if (f >= -touchFrames) fastest = Math.max(fastest, drop)
+        else fall = Math.max(fall, drop)
+      }
+      // A foot that sticks on its edge shows as two frames with next to no fall between the way down and the roll.
+      expect(slowest, `${name} slowest frame`).toBeGreaterThan(0.3)
+      // Weight: it goes flat faster than it came down.
+      expect(fastest, `${name} roll`).toBeGreaterThan(1.15 * fall)
     }
   })
 })
