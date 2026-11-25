@@ -37,16 +37,16 @@ Status 77 · 2026-11-25 05:36 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 05:36 UTC
-clock: phase 4, tick of 5.2 minutes
-phase 4: 5.48 h used of its 9.50 h box
-allowance (before the review): 27.76 h used of 36.00 h allowed
-all time before the review: 27.76 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 05:44 UTC
+clock: phase 4, tick of 8.7 minutes
+phase 4: 5.62 h used of its 9.50 h box
+allowance (before the review): 27.91 h used of 36.00 h allowed
+all time before the review: 27.91 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 8
 ```
 
 ## Phases
@@ -1259,6 +1259,8 @@ Merged into `main`, each verified here with types clean and the tests green (126
   - `spring_mini3` (`agent/p4-spring_mini3`), `spring_air3`, `summer_mini3`, `summer_air3`, `fall_mini3`, `fall_air3`, `kinds3`, `change_builder2` (`agent/p4-change2`): started 05:35, limit 08:38, push for the third rounds by 08:32.
   - `bases3` (spring's and summer's base and slab) and `fall_base3`: start when `bases2` and `fall_base2` hand over.
   - Rounds 11, 12 and 13 on `e39ec6c`, orders sent 05:33: `round_renderer` (spring's measures and still packs, `agent/p4-round11-pack`, limit 06:47), `round_renderer_b` (summer's, `agent/p4-round12-pack`, limit 06:47), `motion_renderer` (spring's motion pack, `agent/p4-round11-motion`), `motion_renderer_b` (summer's, `agent/p4-round12-motion`; it expects about 07:15), `motion_renderer_c` (fall's, `agent/p4-round13-motion`), `gate_runner` (the whole gate for spring, then summer, then fall in one clean clone, limit 08:15). Fall's still pack goes to the first still renderer that is free.
+
+- 05:48 UTC, Nov 25. `bases2` and `fall_base2` handed over (final reports saved); `bases3` started 05:44 (limit 08:44) and `fall_base3` 05:48 (limit 08:47). All ten agents of the third set are at work. Triangles drawn at rest on the frozen build `e39ec6c` (high / medium / low; limits 1,800,000 / 1,100,000 / 600,000): spring 1,492,992 / 869,699 / 394,312; summer 1,660,058 / 916,170 / 438,632; fall 1,606,733 / 937,690 / 417,788; 65 to 68 draw calls of 140. The motion agents expect their packs at about 07:15 to 07:25 (the arrival line is again about 90 frames at 50-odd seconds each).
 
 ## Rounds
 
