@@ -1472,6 +1472,13 @@ Merged into `main`, each verified here with types clean and the tests green (126
   - Motion packs: `motion_renderer` (Round 14), `motion_renderer_b` (Round 15), `motion_renderer_c` (Round 16), `motion_renderer_d` (new; Round 17: the arrival of `shake-4`, and the pack put together from the other three and the swap sheets), `motion_renderer_e` (new; the four swap sheets).
   - Twelve agents in all, one of them a build agent; critics and jurors are added as the packs arrive, never past sixteen at work.
 
+- 11:17 UTC, Nov 25. Rounds 14 to 17 are closed and the three seasons are `finished`. `change_builder3` sent its final report at 11:14 (last proven tip `e7c7bdd` on `agent/p4-change3`; no code after 11:02; `REPORT.md` and `HANDOVER.md` on `agent/p4-change3-looks` at `aeba7dd`, copies in `out/work/scribe/reports/`). The fix pass is one commit, `a6e09d6` on the branch `agent/p4-fix-f` (main `270df7e` plus `e7c7bdd`; engine `a3f6d8084017227f`); it is not on `main` until it is proven. At work, all with the limit 13:05 unless said:
+  - The proof of `a6e09d6`: `gate_runner_b` (the whole gate of `change` in a clean clone, started 11:08, about 87 minutes); the measures at the final tier of winter (`round_renderer_c`), spring (`round_renderer_d`), summer (`motion_renderer_d`) and fall (`motion_renderer_e`), each about 65 minutes from 11:12; the measures of `change` shared by `frame_helper_1` (forward, writes the complete file), `frame_helper_2` (reverse) and `frame_helper_3` (M4 and M5: all eight lines in and green at 11:15; then the fourth and fifth stills).
+  - `gate_runner`: the whole gate of `change` on main `ceee512` (the code of `dcda6ca` with the corrected register), in its clone that holds this engine's records; started 11:00, limit 11:50. It is the Phase 4 gate proof if the fix pass is not kept.
+  - One sheet across each swap on `a6e09d6` at the review tier, limit 12:15: `frame_helper_4` (`shake-1`, `agent/p4-fix-sheet-1`), `motion_renderer_c` (`shake-2`), `motion_renderer_b` (`shake-3`), `round_renderer_b` (`shake-4`).
+  - `fall_scribe`: the draft of Round 17's open items (`out/work/scribe/open-items-change.md`), limit 11:45.
+  - Fifteen agents at work, none of them a build agent.
+
 ## Rounds
 
 One line per round: its number, the unit, the commit it judged, each part ticked off as it finished, the scores, and what changed next.
