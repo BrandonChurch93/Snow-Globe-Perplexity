@@ -31,7 +31,7 @@ const HALO_KIND = { lamp: { size: 3.6, rest: 0.08, hot: 0, bloom: 0.2 }, pane: {
 const THROUGH = 6
 const LAMP_GLASS: Rgb = [1.7, 0.82, 0.22]
 const WALL_FILL = 2.8
-const SAND = { heapLow: 0.5, heap: 0.75, body: 3.6, floor: 0.8, wrap: 1.5, foot: 0.85, bump: 0.6, grainLow: 0.62, grain: 0.5, spark: 1.5, topFrom: 0.22, topTo: 0.62 }
+const SAND = { clumpPerMm: 1.1, grainPerMm: 4.2, heapPerMm: 0.16, heapLow: 0.6, heap: 0.6, body: 3.6, floor: 0.8, wrap: 1.5, foot: 0.85, bump: 0.6, grainLow: 0.62, grain: 0.5, spark: 1.5, topFrom: 0.22, topTo: 0.62 }
 const TURF_LOOK = { tone: 0.5, fineMm: 0.05, clumpMm: 0.22, fill: 0.45, wrap: 0.5 }
 const GRASS_LOOK = { fill: 0.1, wrap: 1.0, through: 0.36, near: 2.1, sun: 30, sunRoot: 0.35, shade: 0.6 }
 const ROOF = { slate: [0.3, 0.34, 0.42] as Rgb, chimney: [0.56, 0.5, 0.43] as Rgb, stone: [1.34, 1.06, 0.76] as Rgb, stoneMm: 0.7, picket: [0.5, 0.27, 0.14] as Rgb, picketMm: 1.6, pale: 0.25, railTop: [1.5, 1.2, 0.85] as Rgb, door: [0.4, 0.2, 0.13] as Rgb, doorMm: 2.4, reachMm: 0.4 }
@@ -92,6 +92,17 @@ function turfMaterial(): THREE.MeshStandardMaterial {
           '#include <map_pars_fragment>',
           `#include <map_pars_fragment>
 ${BUMP_GLSL}
+// Grains of sand have no tile: they are counted off in the globe's own millimetres, so no weave shows where the map repeats.
+float sandHash(vec3 p) {
+  return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453);
+}
+float sandNoise(vec3 p) {
+  vec3 i = floor(p);
+  vec3 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(mix(sandHash(i), sandHash(i + vec3(1.0, 0.0, 0.0)), f.x), mix(sandHash(i + vec3(0.0, 1.0, 0.0)), sandHash(i + vec3(1.0, 1.0, 0.0)), f.x), f.y),
+    mix(mix(sandHash(i + vec3(0.0, 0.0, 1.0)), sandHash(i + vec3(1.0, 0.0, 1.0)), f.x), mix(sandHash(i + vec3(0.0, 1.0, 1.0)), sandHash(i + vec3(1.0, 1.0, 1.0)), f.x), f.y), f.z);
+}
 float turfHeight(vec2 uv) {
   vec3 t = texture2D(map, uv).rgb;
   return t.r * ${TURF_LOOK.fineMm.toFixed(3)} + t.g * ${TURF_LOOK.clumpMm.toFixed(3)} + texture2D(map, uv * 4.7 + 0.31).r * ${TURF_LOOK.fineMm.toFixed(3)};
@@ -104,10 +115,10 @@ vec3 turfT = texture2D(map, vMapUv).rgb;
 float turfFine = texture2D(map, vMapUv * 4.7 + 0.31).r;
 diffuseColor.rgb *= 1.0 + ${TURF_LOOK.tone.toFixed(2)} * (0.5 * (turfT.g - 0.5) + 0.3 * (turfT.b - 0.5) + 0.45 * (turfFine - 0.5) + 0.25 * (turfT.r - 0.5));
 float sandAmt = max(smoothstep(0.0, 0.2, vSurf.y), smoothstep(${SAND.topFrom.toFixed(2)}, ${SAND.topTo.toFixed(2)}, vSurf.x + 0.25 * (turfT.g - 0.5)));
-float sandFineB = texture2D(map, vMapUv * 5.3 + 0.17).r;
-float sandFineC = texture2D(map, vMapUv * 13.7 + 0.41).g;
+float sandFineB = sandNoise(vStageLocal * ${SAND.clumpPerMm.toFixed(2)});
+float sandFineC = sandNoise(vStageLocal * ${SAND.grainPerMm.toFixed(2)} + 7.3);
 float sandGrain = 0.5 * turfT.g + 0.6 * sandFineB + 0.5 * sandFineC;
-diffuseColor.rgb *= mix(1.0, (${SAND.heapLow.toFixed(2)} + ${SAND.heap.toFixed(2)} * smoothstep(0.25, 0.75, texture2D(map, vMapUv * 0.23 + 0.61).b)) * (${SAND.grainLow.toFixed(2)} + ${SAND.grain.toFixed(2)} * sandGrain + ${SAND.spark.toFixed(2)} * smoothstep(0.42, 0.6, sandFineC * (0.45 + 0.9 * sandFineB))), sandAmt);
+diffuseColor.rgb *= mix(1.0, (${SAND.heapLow.toFixed(2)} + ${SAND.heap.toFixed(2)} * smoothstep(0.3, 0.7, sandNoise(vStageLocal * ${SAND.heapPerMm.toFixed(2)} + 3.1))) * (${SAND.grainLow.toFixed(2)} + ${SAND.grain.toFixed(2)} * sandGrain + ${SAND.spark.toFixed(2)} * smoothstep(0.5, 0.72, sandFineC * (0.45 + 0.9 * sandFineB))), sandAmt);
 `,
         )
         .replace(
