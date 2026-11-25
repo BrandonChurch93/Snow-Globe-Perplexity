@@ -51,7 +51,18 @@ Make targets: none. No stand-ins, no fallbacks, no assets (`assets-src/kinds/` e
 2 triangles an instance at every level. Pass cost 204,000 / 122,400 / 61,200 (high / medium / low); drawn in the view pass and the planar mirror pass at high and medium (408,000 / 244,800), once at low; not in the shadow pass. Unchanged since 04:05.
 
 ## Tests on the tip
-See the lines at the end of this file (filled in after the runs).
+All on `agent/p4-kinds2` `49c91ad` (origin/main merged 05:15 UTC), read 05:22 to 05:30 UTC.
+- `npx tsc --noEmit`: clean (no output).
+- `npx vitest run`: `Test Files 32 passed | 1 skipped (33)`, `Tests 432 passed | 4 skipped (436)`.
+- `npm run determinism`: last line `determinism: pass · 3 pictures, 4 page loads, preview, draft, 318 s`.
+- Winter rest and landed hero, draft hd: byte-identical with the baseline (`cmp`), after every push.
+- `npm run measure -- --unit fall --only M3,M4,M5,M6 --tier draft`: `measure fall: not complete · 7 of 19 lines, 1 red · draft · 181 s`.
+  - RED `FAIL M3 fall-rest: 0.3726 (threshold 0.75)`: base 0.542 over 175151 px, miniature 0.373 over 90685 px. It was red in Round 10 too (final tier 0.3938: base 0.394, miniature 0.447). In the measure's own crop (`out/work/measure/m3-fall-rest-draft-crops-1.png`) the cottage and tree are dark and soft behind the fog, and my leaves and soft ember discs lie over them where the approved has small sharp ones. How much of the miniature's 0.373 is the particles and how much the miniature and fog I did not separate (no run without particles). Not fixed.
+  - M6 fall: rest 0, shake 0.000049 (5 of 102000 inside a solid), interior 0, base 0, surface 0, settled 0; all pass against 0.002; 0 outside the sphere.
+  - `M4 is not measured for the unit fall.` `M5 is not measured for the unit fall.`
+- `... --unit summer ...`: `measure summer: not complete · 7 of 19 lines, 0 red · draft · 143 s`. M3 summer-rest pass 0.9154 (base 2.171, miniature 0.915). M6 rest 0, shake 0.000088 (9 of 102000), the other four 0; all pass. M4, M5 not measured for the unit.
+- `... --unit spring ...`: `measure spring: not complete · 7 of 19 lines, 0 red · draft · 162 s`. M3 spring-rest pass 0.7977 (base 1.429, miniature 0.798; 0.05 above the bar). M6 rest 0, shake 0.000196 (20 of 102000), the other four 0; all pass. M4, M5 not measured for the unit.
+- "not complete" is the tool's word for a run with `--only`: 7 of the 19 lines were asked for.
 
 ## Looks used (limit 40 a part)
 Spring 15, summer 17, fall 23 stills, all draft hd beside the approved crop; plus 2 film frames (2128, 2147) of the change into fall and 4 diagnostic renders of spring's base (M1 check), not counted as looks.
