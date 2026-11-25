@@ -27,15 +27,17 @@ const LAMP_SHIFT: Vec3 = [-3, 0, -5]
 const FILL_ON_WOOD = { power: 0.3, reachMm: 1000, wrap: 0.4 }
 const FILL_ON_LEAVES = { power: 0.5, reachMm: 1000, wrap: 0.3 }
 const FILL_FROM: Vec3 = [30, 60, 60]
-const BARK: Rgb3 = [0.72, 0.33, 0.16]
+const BARK: Rgb3 = [0.62, 0.35, 0.19]
 const BARK_BUMP = 3.4
 // The bark: long flutes down the wood (the bark map drawn out along the grain), dark in their grooves, with the low sun
 // on the edge of the wood that faces it and moss on what faces up near the ground.
 const WOOD = { relief: 0.95, ridges: 5, warp: 2.6, fine: 0.4, low: 0.42, high: 1.3, from: 0.15, to: 0.85, depthMm: 1.5, rim: 5.5, rimTight: 2.2, side: 0.9, wrap: 0.95, mossTo: 7.5, moss: 0.8 }
 const MOSS: Rgb3 = [0.3, 0.52, 0.12]
 const ROOT_MM = 4.5
-const LEAF_TINT: Rgb3 = [0.36, 0.62, 0.36]
+const LEAF_TINT: Rgb3 = [0.31, 0.62, 0.43]
 const LEAF_LIT = 'vec3(1.25, 1.05, 0.6)'
+const glsl3 = (c: Rgb3): string => `vec3(${c.map((v) => v.toFixed(3)).join(', ')})`
+const LEAF_VARY = { big: 0.36, mid: 1.15, scaleLow: 0.78, scale: 0.5, cool: [0.5, 0.74, 0.95] as Rgb3, warm: [1.3, 1.22, 0.8] as Rgb3 }
 const LEAF = { rim: 9, rimTight: 3.2, through: 0.7, tight: 3.0, fill: 0.75, wrap: 0.8, bump: 1.0, clumpDark: 0.5, clumpBright: 1.7, top: 4, card: 1.6, topEdge: 1.6, topFrom: 0.06, topTo: 0.2 }
 const LANTERN = { rib: 0.6, gores: 12, ring: 0.18, ribs: 26, gain: 0.7, body: 0.55, core: 2.6, tight: 3.0, paper: 0.06, dim: 0.1, stepS: 0.04, rampS: 0.18, swayRad: 0.045, sway2: 0.6, kickRad: 0.16, kickFade: 1.2, kickHz: 1.3, cycles: 2 }
 const HALO = { radius: 2.9, strength: 0.11, hot: 0.0 }
@@ -87,7 +89,10 @@ function leafHook(shader: Shader): void {
     .replace('#include <common>', `#include <common>\n${TREE_GLSL}\nuniform sampler2D uSprigs;\nvarying vec2 vCard;`)
     .replace(
       '#include <map_fragment>',
-      `vec4 treeBody = treeTri(map, vTreeP * uTile, normalize(vTreeN));
+      `// Two slow waves through the crown: each spray of leaves gets its own scale of leaf and its own tone, so that no two pads read as copies.
+      float treeBig = 0.5 + 0.5 * sin(vTreeP.x * ${LEAF_VARY.big.toFixed(2)} + 1.7 * sin(vTreeP.y * ${(LEAF_VARY.big * 0.8).toFixed(3)} + 0.6)) * sin(vTreeP.z * ${(LEAF_VARY.big * 0.9).toFixed(3)} + 1.3 * sin(vTreeP.x * ${(LEAF_VARY.big * 0.7).toFixed(3)}) + 2.1);
+      float treeMid = 0.5 + 0.5 * sin(vTreeP.x * ${LEAF_VARY.mid.toFixed(2)} + vTreeP.y * ${(LEAF_VARY.mid * 0.7).toFixed(3)} + 0.4) * sin(vTreeP.z * ${(LEAF_VARY.mid * 0.85).toFixed(3)} - vTreeP.y * ${(LEAF_VARY.mid * 0.55).toFixed(3)} + 1.9);
+      vec4 treeBody = treeTri(map, vTreeP * (uTile * (${LEAF_VARY.scaleLow.toFixed(2)} + ${LEAF_VARY.scale.toFixed(2)} * treeBig)), normalize(vTreeN));
       vec4 treeSprig = texture2D(uSprigs, vMapUv);
       bool treeCard = vCard.x > 0.5;
       vec4 treeC = treeCard ? treeSprig : treeBody;
@@ -97,7 +102,7 @@ function leafHook(shader: Shader): void {
       vec2 treeDh = vec2(dFdx(treeH), dFdy(treeH));
       if (treeCard && treeC.a < 0.5) discard;
       float treeLum = dot(treeC.rgb, vec3(0.3, 0.6, 0.1));
-      diffuseColor.rgb *= treeC.rgb * mix(${LEAF.clumpDark.toFixed(2)}, ${LEAF.clumpBright.toFixed(2)}, smoothstep(0.03, 0.28, treeLum));`,
+      diffuseColor.rgb *= treeC.rgb * mix(${LEAF.clumpDark.toFixed(2)}, ${LEAF.clumpBright.toFixed(2)}, smoothstep(0.03, 0.28, treeLum)) * mix(${glsl3(LEAF_VARY.cool)}, ${glsl3(LEAF_VARY.warm)}, 0.6 * treeBig + 0.4 * treeMid);`,
     )
     .replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\nif (vCard.x > 0.5) normal *= faceDirection;')
     .replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\nnormal = treeBump(treeSx, treeSy, treeDh, normal, faceDirection);')

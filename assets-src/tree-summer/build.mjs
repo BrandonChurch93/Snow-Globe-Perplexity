@@ -1,15 +1,18 @@
+import fs from 'node:fs'
 import * as THREE from 'three'
 import { edgeTable, triTable } from 'three/examples/jsm/objects/MarchingCubes.js'
 import { mergeGeometries, mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import { fromThree, writeGlb } from '../../tools/lib/glb.mjs'
+import { readGlb, writeGlb as packedGlb } from '../../tools/lib/glbpack.mjs'
 import { rel } from '../../tools/lib/paths.mjs'
 import { blurWrap, loadSource, luma, readPicture, seamless, toBytes, writePng } from '../trunk/source.mjs'
 
 const TAU = Math.PI * 2
 const LEAF_CELL = 0.56
+const LEVEL_SPRIGS = 0.6
 const LEAF_TILE_MM = 11
 const SPRIGS = { share: 0.6, size: [1.3, 2.3], rise: 0.35, out: 0.34 }
-const TONE = { deep: [0.3, 0.54, 0.3], mid: [0.56, 0.86, 0.44], tip: [1.25, 1.35, 0.5] }
+const TONE = { deep: [0.3, 0.54, 0.3], mid: [0.56, 0.86, 0.44], tip: [0.95, 1.3, 0.62] }
 const SUN = [0.5, 0.32, -0.8]
 const PAPER = { orange: [1, 0.19, 0.045], peach: [1, 0.27, 0.07], cream: [1, 0.52, 0.11] }
 const CAP = [0.035, 0.028, 0.022]
@@ -243,7 +246,7 @@ function leaves() {
   g.setAttribute('uv1', new THREE.Float32BufferAttribute(flag, 2))
   g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3))
   g.setIndex(index)
-  return { g, tufts }
+  return { g, tufts, surface: s.index.length }
 }
 
 function dress(g, colour, pivot, phase, order, kind) {
@@ -271,8 +274,8 @@ function dress(g, colour, pivot, phase, order, kind) {
 
 function lanternBody(l) {
   const S = LN.SHAPE
-  const lat = 18
-  const lon = S.gores * 4
+  const lat = 12
+  const lon = S.gores * 3
   const pos = []
   const index = []
   const half = l.tall / 2
@@ -395,5 +398,42 @@ function snap(mesh) {
   return mesh
 }
 writeGlb(rel('assets-full', 'summer', 'tree-summer.glb'), [snap(fromThree('leaves', N.g, { triangles: counts.leaves, tufts: N.tufts, tileMm: LEAF_TILE_MM })), snap(fromThree('lanterns', LM, { triangles: counts.lanterns, count: LN.lanterns.length }))])
+
+// Lighter list for the lower quality levels of the live page (src/core/models.ts reads `extras.levels`, and
+// tools/lib/glblevels.mjs leaves a mesh alone that names its own). The simplifier cannot thin leaf cards, so the crown names
+// its own list: the whole leaf surface and an even share of the sprigs that stand on it.
+function addLists(file, lists) {
+  const { json, bin } = readGlb(fs.readFileSync(file))
+  const parts = [bin]
+  let length = bin.length
+  for (const mesh of json.meshes) {
+    const want = lists[mesh.name]
+    if (!want) continue
+    const prim = mesh.primitives[0]
+    const type = json.accessors[prim.indices].componentType
+    const levels = {}
+    for (const [level, list] of Object.entries(want)) {
+      const data = type === 5123 ? Uint16Array.from(list) : Uint32Array.from(list)
+      const padding = (4 - (length % 4)) % 4
+      if (padding) parts.push(Buffer.alloc(padding))
+      length += padding
+      json.bufferViews.push({ buffer: 0, byteOffset: length, byteLength: data.byteLength })
+      json.accessors.push({ bufferView: json.bufferViews.length - 1, componentType: type, count: data.length, type: 'SCALAR' })
+      parts.push(Buffer.from(data.buffer, data.byteOffset, data.byteLength))
+      length += data.byteLength
+      levels[level] = json.accessors.length - 1
+    }
+    prim.extras = { ...(prim.extras ?? {}), levels }
+  }
+  json.buffers[0].byteLength = length
+  fs.writeFileSync(file, packedGlb(json, Buffer.concat(parts, length)))
+}
+const leafMedium = []
+{
+  const I = N.g.index.array
+  for (let i = 0; i < N.surface; i++) leafMedium.push(I[i])
+  for (let i = N.surface, k = 0; i < I.length; i += 12, k++) if ((k * 0.6180339887) % 1 < LEVEL_SPRIGS) for (let j = 0; j < 12; j++) leafMedium.push(I[i + j])
+}
+addLists(rel('assets-full', 'summer', 'tree-summer.glb'), { leaves: { medium: leafMedium } })
 await leafMaps()
-console.log(`tree-summer: leaves ${counts.leaves} triangles (${N.tufts} tufts), lanterns ${counts.lanterns} (${LN.lanterns.length} lanterns); ${C.lumps.length / 4} lumps on ${T.localPads.length} pads`)
+console.log(`tree-summer: leaves ${counts.leaves} triangles (${N.tufts} tufts, ${leafMedium.length / 3} triangles at medium and low), lanterns ${counts.lanterns} (${LN.lanterns.length} lanterns); ${C.lumps.length / 4} lumps on ${T.localPads.length} pads`)

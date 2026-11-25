@@ -1,5 +1,7 @@
+import fs from 'node:fs'
 import * as THREE from 'three'
 import { fromThree, writeGlb } from '../../tools/lib/glb.mjs'
+import { readGlb, writeGlb as packedGlb } from '../../tools/lib/glbpack.mjs'
 import { rel } from '../../tools/lib/paths.mjs'
 import { loadLayout, loadRoof } from '../village/layout.mjs'
 import { Bag, KIND, TILE_MM, add3, clamp, fbm, lin, mix3, mul3, noise, norm3, rng, smooth, surf, writePng } from '../village/kit.mjs'
@@ -14,8 +16,9 @@ const pick = (list) => list[Math.floor(R() * list.length) % list.length]
 const range = (a, b) => a + (b - a) * R()
 
 const TURF = { lumpMm: 0.35, fineMm: 0.12, sandMm: 0.7, sandReach: 6.5, sandSides: 0.35 }
-const GRASS = { tufts: 23000, blades: 3, tall: [0.55, 1.6], wide: [0.11, 0.2], rimTall: 1.5, sandFrom: 0.12, sandTo: 0.55 }
-const STONE = { sink: 0.45, lumps: 0.22, tones: ['#8f887a', '#a39a88', '#7b7568', '#b0a692'] }
+const GRASS = { tufts: 21000, blades: 3, tall: [0.55, 1.6], wide: [0.11, 0.2], rimTall: 1.5, sandFrom: 0.12, sandTo: 0.55 }
+const LEVEL = { seed: 4107, back: 0.55, front: 0.88, zFrom: -12, zTo: 6 }
+const STONE = { buried: 0.25, sink: 0.45, lumps: 0.22, tones: ['#8f887a', '#a39a88', '#7b7568', '#b0a692'] }
 const TONES = {
   grass: ['#1c3413', '#274616', '#30531a', '#213c15'].map(lin),
   tip: ['#566f27', '#6b8230', '#465f20'].map(lin),
@@ -69,10 +72,11 @@ function groundTone(x, z) {
 }
 
 {
-  const around = 320
-  const shore = [0.3, 0.6, 0.8, 0.9, 0.94, 0.97, 0.99, 1.0, 1.012, 1.028, 1.05, 1.08]
-  const outer = 44
-  const skirt = 30
+  // The bed under the dark water and the skirt against the glass carry little: they are the rows the mesh can spare.
+  const around = 280
+  const shore = [0.6, 0.9, 0.97, 1.0, 1.012, 1.028, 1.05, 1.08]
+  const outer = 34
+  const skirt = 16
   const r = L.innerRadiusMm - 0.6
   const footY = L.collarY - 1.5
   const pc = Math.cos(L.pond.yaw)
@@ -258,6 +262,19 @@ const stoneList = []
     g.rotateY(yaw)
     const y = L.groundAt(x, z) + h * (1 - 2 * STONE.sink) + 0.1
     g.translate(x, y, z)
+    {
+      // The sunk half of a stone is never seen: its triangles are left out.
+      const Q = g.getAttribute('position').array
+      const kept = []
+      for (let i = 0; i < Q.length; i += 9) {
+        let hidden = true
+        for (let j = 0; j < 9; j += 3) if (Q[i + j + 1] > L.groundAt(Q[i + j], Q[i + j + 2]) - STONE.buried) hidden = false
+        if (!hidden) for (let j = 0; j < 9; j++) kept.push(Q[i + j])
+      }
+      g.setAttribute('position', new THREE.Float32BufferAttribute(kept, 3))
+      g.deleteAttribute('normal')
+      g.deleteAttribute('uv')
+    }
     const tone = mul3(lin(pick(STONE.tones)), range(0.8, 1.15))
     decor.add(g, { color: (p) => mul3(tone, 0.45 + 0.75 * clamp((p[1] - (y - h)) / (2 * h)) + 0.25 * (noise(p[0] * 3 + seed, p[1] * 3, p[2] * 3) - 0.5)), surf: [surf(KIND.stone, 0.85), 0], renormal: true })
     stoneList.push([x, z, rx, rz, yaw])
@@ -583,4 +600,45 @@ function snap(mesh) {
 }
 const meshes = [ground, water, grass, decor].map((b) => snap(fromThree(b.name, b.geometry(), b === decor ? { sunflowers: sunList.flatMap((s) => [+s.x.toFixed(3), +s.y0.toFixed(3), +s.z.toFixed(3), +s.tall.toFixed(3)]) } : undefined)))
 writeGlb(rel('assets-full', 'summer', 'village-summer.glb'), meshes)
-console.log(`village-summer: ground ${ground.triangles}, water ${water.triangles}, grass ${grass.triangles} (${tufts} tufts), decor ${decor.triangles} (${counts.roses} roses, ${counts.leaves} leaves, ${counts.sunflowers} sunflowers, ${counts.blooms} blooms)`)
+
+// Lighter lists for the lower quality levels of the live page (src/core/models.ts reads `extras.levels`, and
+// tools/lib/glblevels.mjs leaves a mesh alone that names its own). The simplifier cannot thin a field of single blades, so the
+// grass names its own list: whole tufts are left out, more of them behind the cottage and the tree than in front.
+function addLists(file, lists) {
+  const { json, bin } = readGlb(fs.readFileSync(file))
+  const parts = [bin]
+  let length = bin.length
+  for (const mesh of json.meshes) {
+    const want = lists[mesh.name]
+    if (!want) continue
+    const prim = mesh.primitives[0]
+    const type = json.accessors[prim.indices].componentType
+    const levels = {}
+    for (const [level, list] of Object.entries(want)) {
+      const data = type === 5123 ? Uint16Array.from(list) : Uint32Array.from(list)
+      const padding = (4 - (length % 4)) % 4
+      if (padding) parts.push(Buffer.alloc(padding))
+      length += padding
+      json.bufferViews.push({ buffer: 0, byteOffset: length, byteLength: data.byteLength })
+      json.accessors.push({ bufferView: json.bufferViews.length - 1, componentType: type, count: data.length, type: 'SCALAR' })
+      parts.push(Buffer.from(data.buffer, data.byteOffset, data.byteLength))
+      length += data.byteLength
+      levels[level] = json.accessors.length - 1
+    }
+    prim.extras = { ...(prim.extras ?? {}), levels }
+  }
+  json.buffers[0].byteLength = length
+  fs.writeFileSync(file, packedGlb(json, Buffer.concat(parts, length)))
+}
+const grassMedium = []
+{
+  const m = meshes[2]
+  const per = GRASS.blades * 3
+  const pick01 = rng(LEVEL.seed)
+  for (let i = 0; i < m.index.length; i += per) {
+    const z = m.position[m.index[i] * 3 + 2]
+    if (pick01() < LEVEL.back + (LEVEL.front - LEVEL.back) * smooth(LEVEL.zFrom, LEVEL.zTo, z)) for (let j = 0; j < per; j++) grassMedium.push(m.index[i + j])
+  }
+}
+addLists(rel('assets-full', 'summer', 'village-summer.glb'), { grass: { medium: grassMedium } })
+console.log(`village-summer: ground ${ground.triangles}, water ${water.triangles}, grass ${grass.triangles} (${tufts} tufts, ${grassMedium.length / 3} at medium and low), decor ${decor.triangles} (${counts.roses} roses, ${counts.leaves} leaves, ${counts.sunflowers} sunflowers, ${counts.blooms} blooms)`)
