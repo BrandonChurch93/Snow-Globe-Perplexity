@@ -130,6 +130,8 @@ export const STORM_DAB_TIGHT = 0.35
 export const STORM_DAB_REACH = { low: 0.5, high: 2, skew: 1.8 }
 export const STORM_DAB_SLOW = 0.12
 export const STORM_VEILED = 0.5
+/** After a landing the large soft dabs thin with the veil's pocket: the share of them taken off where the pocket is fully open, so that the cottage and the tree stand plain while the sharp flakes still go round in front of them. */
+export const STORM_POCKET_SMEARS = 0.8
 export const STORM_WINDOW = { x: -11, y: -12, wide: 20, high: 18, from: 0.75, to: 1.5, floor: 0.03, small: 0.5, back: -20, front: 0 }
 export const STORM_PACE = { fromPx: 0.5, toPx: 2, unseen: 0.1 }
 export const STORM_SHARP = 0.9
