@@ -11,7 +11,7 @@ const BOUGH = { perLimb: [2, 4], from: 0.3, length: [6.5, 12], seg: 1.05, radius
 const TWIG = { each: [2, 3], length: [0.3, 0.55], seg: 0.8, radius: 0.86, turn: 0.3, kink: 1.0, kinkShare: 0.3 }
 const SPIKE = { each: [0.4, 1.8], length: [0.28, 0.5], seg: 0.6, radius: 0.78, turn: 0.2, kink: 0.6, kinkShare: 0.15 }
 const TIP_R = 0.095
-const EMBER = { count: 58, apart: 2.6, r: [0.12, 0.24], drop: [0.02, 0.22], stalk: 0.045, cap: 0.6 }
+const EMBER = { count: 58, apart: 2.6, r: [0.17, 0.3], drop: [0.02, 0.22], stalk: 0.045, cap: 0.6 }
 
 const [T, RNG] = await loadSource(['/src/miniature/trunk.ts', '/src/core/rng.ts'])
 const L = await loadLayout()

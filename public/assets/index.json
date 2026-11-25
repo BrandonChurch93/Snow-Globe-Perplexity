@@ -218,29 +218,9 @@
       ],
       "spring": [
         {
-          "path": "spring/base-bark-detail.lin.tile.w1024.first.webp",
-          "bytes": 429130,
-          "sha": "ec4179cb0f69b9d1"
-        },
-        {
-          "path": "spring/base-bark-detail.lin.tile.w1024.webp",
-          "bytes": 1752360,
-          "sha": "c8f5665051decb22"
-        },
-        {
           "path": "spring/base-bark-detail.lin.tile.w512.webp",
           "bytes": 408970,
           "sha": "6b853acc4e9be689"
-        },
-        {
-          "path": "spring/base-bark.srgb.tile.w1024.first.webp",
-          "bytes": 216320,
-          "sha": "6d051e7fb29e9773"
-        },
-        {
-          "path": "spring/base-bark.srgb.tile.w1024.webp",
-          "bytes": 905782,
-          "sha": "bf948534d0766028"
         },
         {
           "path": "spring/base-bark.srgb.tile.w512.webp",
@@ -249,38 +229,18 @@
         },
         {
           "path": "spring/base-cover.lin.w2048.first.webp",
-          "bytes": 45468,
-          "sha": "2620ce0fcafaa02a"
+          "bytes": 44912,
+          "sha": "e9f3c8d329ba88b4"
         },
         {
           "path": "spring/base-cover.lin.w2048.webp",
-          "bytes": 134444,
-          "sha": "2a4a73d8f9fe6d8c"
-        },
-        {
-          "path": "spring/base-moss-detail.lin.tile.w1024.first.webp",
-          "bytes": 499028,
-          "sha": "dd39d59c25954cc2"
-        },
-        {
-          "path": "spring/base-moss-detail.lin.tile.w1024.webp",
-          "bytes": 1774312,
-          "sha": "42e4da70c3bfa9c4"
+          "bytes": 133234,
+          "sha": "f4c27fd41cf67add"
         },
         {
           "path": "spring/base-moss-detail.lin.tile.w512.webp",
           "bytes": 501742,
           "sha": "60a25295e3efaf55"
-        },
-        {
-          "path": "spring/base-moss.srgb.tile.w1024.first.webp",
-          "bytes": 329062,
-          "sha": "638b33d19911294f"
-        },
-        {
-          "path": "spring/base-moss.srgb.tile.w1024.webp",
-          "bytes": 1139684,
-          "sha": "d9539e8fc967c88f"
         },
         {
           "path": "spring/base-moss.srgb.tile.w512.webp",
@@ -289,43 +249,23 @@
         },
         {
           "path": "spring/base-relief.lin.w2048.first.webp",
-          "bytes": 278058,
-          "sha": "313890d2f69f172d"
+          "bytes": 286288,
+          "sha": "026659c1801355ff"
         },
         {
           "path": "spring/base-relief.lin.w2048.webp",
-          "bytes": 948078,
-          "sha": "772d4f8cdb8144e2"
+          "bytes": 971662,
+          "sha": "7336271f50586e3c"
         },
         {
           "path": "spring/base-spring.glb",
-          "bytes": 2016612,
-          "sha": "edf68855066cc582"
-        },
-        {
-          "path": "spring/base-stone-detail.lin.tile.w1024.first.webp",
-          "bytes": 318704,
-          "sha": "8338edd098f94e3a"
-        },
-        {
-          "path": "spring/base-stone-detail.lin.tile.w1024.webp",
-          "bytes": 1298628,
-          "sha": "f6d5533cb3da07e0"
+          "bytes": 2022572,
+          "sha": "2e278f0f85cdde48"
         },
         {
           "path": "spring/base-stone-detail.lin.tile.w512.webp",
           "bytes": 317514,
           "sha": "e19237b3c293ac29"
-        },
-        {
-          "path": "spring/base-stone.srgb.tile.w1024.first.webp",
-          "bytes": 163206,
-          "sha": "bb685be36bebd317"
-        },
-        {
-          "path": "spring/base-stone.srgb.tile.w1024.webp",
-          "bytes": 661480,
-          "sha": "1fc5107208ae2590"
         },
         {
           "path": "spring/base-stone.srgb.tile.w512.webp",
@@ -334,8 +274,8 @@
         },
         {
           "path": "spring/slab-far.srgb.w2048.png",
-          "bytes": 374434,
-          "sha": "c45730a64a8a22a0"
+          "bytes": 297084,
+          "sha": "e59910aa8a0824fe"
         },
         {
           "path": "spring/slab-petals.srgb.w1024.png",
@@ -344,13 +284,13 @@
         },
         {
           "path": "spring/tree-blossom.glb",
-          "bytes": 3066232,
-          "sha": "5a123b1bda4f99fd"
+          "bytes": 3061816,
+          "sha": "54cf80ef7fd996c3"
         },
         {
           "path": "spring/village-spring.glb",
-          "bytes": 5792940,
-          "sha": "5290e8028ea3a4af"
+          "bytes": 5721500,
+          "sha": "269c289eb657a662"
         },
         {
           "path": "spring/village-turf.lin.tile.first.webp",
@@ -371,38 +311,18 @@
       "summer": [
         {
           "path": "summer/base-carve.lin.w2048.first.webp",
-          "bytes": 86260,
-          "sha": "8da2dba8b89007bb"
+          "bytes": 86498,
+          "sha": "01495b192e8b4a41"
         },
         {
           "path": "summer/base-carve.lin.w2048.webp",
-          "bytes": 299874,
-          "sha": "f27d97a8e1448860"
-        },
-        {
-          "path": "summer/base-grain.lin.tile.w1024.first.webp",
-          "bytes": 458482,
-          "sha": "5c2cff74c6fe6187"
-        },
-        {
-          "path": "summer/base-grain.lin.tile.w1024.webp",
-          "bytes": 1331410,
-          "sha": "8b32bbb56dcaa96c"
+          "bytes": 301134,
+          "sha": "6d968295d6723d62"
         },
         {
           "path": "summer/base-grain.lin.tile.w512.webp",
           "bytes": 558980,
           "sha": "ce99924bb9c58088"
-        },
-        {
-          "path": "summer/base-sand.lin.tile.w1024.first.webp",
-          "bytes": 256680,
-          "sha": "c1ad8d3f9f596543"
-        },
-        {
-          "path": "summer/base-sand.lin.tile.w1024.webp",
-          "bytes": 650928,
-          "sha": "655e942ef1e94d76"
         },
         {
           "path": "summer/base-sand.lin.tile.w512.webp",
@@ -411,18 +331,18 @@
         },
         {
           "path": "summer/base-stone.srgb.w2048.first.webp",
-          "bytes": 108756,
-          "sha": "165280fbd23ac634"
+          "bytes": 108814,
+          "sha": "291818ec6775238c"
         },
         {
           "path": "summer/base-stone.srgb.w2048.webp",
-          "bytes": 399014,
-          "sha": "92250c40be3b2af1"
+          "bytes": 398910,
+          "sha": "c33e5bf3a804ab96"
         },
         {
           "path": "summer/base-summer.glb",
-          "bytes": 3724468,
-          "sha": "01b72a5a0b715c6a"
+          "bytes": 3733272,
+          "sha": "31ebf8a36ae6af86"
         },
         {
           "path": "summer/tree-leaves.srgb.tile.w1024.first.webp",
@@ -441,13 +361,13 @@
         },
         {
           "path": "summer/tree-summer.glb",
-          "bytes": 1479288,
-          "sha": "49a1e544b54276b4"
+          "bytes": 1479164,
+          "sha": "75a42a38254cae25"
         },
         {
           "path": "summer/village-summer.glb",
-          "bytes": 5351172,
-          "sha": "4984d5d8b07bcc7f"
+          "bytes": 5814972,
+          "sha": "f45c2336bdeaf3c4"
         },
         {
           "path": "summer/village-turf.lin.tile.webp",
@@ -468,8 +388,8 @@
         },
         {
           "path": "fall/base-fall.glb",
-          "bytes": 1497996,
-          "sha": "24c8dcef781c5bc1"
+          "bytes": 1651748,
+          "sha": "4642a4c325fbf419"
         },
         {
           "path": "fall/base-iron-detail.lin.tile.w1024.first.webp",
@@ -483,8 +403,8 @@
         },
         {
           "path": "fall/slab-fall.glb",
-          "bytes": 342112,
-          "sha": "4f49e40458b2356f"
+          "bytes": 344336,
+          "sha": "f530e92f441c1381"
         },
         {
           "path": "fall/slab-leaves.srgb.w1024.png",
@@ -493,8 +413,8 @@
         },
         {
           "path": "fall/tree-fall.glb",
-          "bytes": 1120852,
-          "sha": "5ab87d945aa5230e"
+          "bytes": 920020,
+          "sha": "91ca77591969dae1"
         },
         {
           "path": "fall/village-earth.srgb.tile.w1024.webp",
@@ -503,8 +423,8 @@
         },
         {
           "path": "fall/village-fall.glb",
-          "bytes": 5319556,
-          "sha": "be3c096114de601c"
+          "bytes": 5306512,
+          "sha": "9b3b6ce355a3c75a"
         },
         {
           "path": "fall/village-litter.srgb.tile.w1024.png",
@@ -660,19 +580,9 @@
       ],
       "spring": [
         {
-          "path": "spring/base-bark-detail.lin.tile.w1024.png",
-          "bytes": 8932519,
-          "sha": "11c39c3716e26b24"
-        },
-        {
           "path": "spring/base-bark-detail.lin.tile.w512.png",
           "bytes": 8932519,
           "sha": "11c39c3716e26b24"
-        },
-        {
-          "path": "spring/base-bark.srgb.tile.w1024.png",
-          "bytes": 10108466,
-          "sha": "11bcb78f8ff02513"
         },
         {
           "path": "spring/base-bark.srgb.tile.w512.png",
@@ -681,23 +591,13 @@
         },
         {
           "path": "spring/base-cover.lin.w2048.png",
-          "bytes": 752637,
-          "sha": "10540cbe60bf6cf8"
-        },
-        {
-          "path": "spring/base-moss-detail.lin.tile.w1024.png",
-          "bytes": 8889808,
-          "sha": "a1ba544691edf493"
+          "bytes": 747841,
+          "sha": "392563d38d4102ef"
         },
         {
           "path": "spring/base-moss-detail.lin.tile.w512.png",
           "bytes": 8889808,
           "sha": "a1ba544691edf493"
-        },
-        {
-          "path": "spring/base-moss.srgb.tile.w1024.png",
-          "bytes": 8762947,
-          "sha": "5a2ef76d0a11bdee"
         },
         {
           "path": "spring/base-moss.srgb.tile.w512.png",
@@ -706,28 +606,18 @@
         },
         {
           "path": "spring/base-relief.lin.w2048.png",
-          "bytes": 4740255,
-          "sha": "dadaaec9d251c04c"
+          "bytes": 4942429,
+          "sha": "fa0c5e946be7ae61"
         },
         {
           "path": "spring/base-spring.glb",
           "bytes": 5284160,
-          "sha": "ac178e8dd2db1860"
-        },
-        {
-          "path": "spring/base-stone-detail.lin.tile.w1024.png",
-          "bytes": 7090493,
-          "sha": "0efb37c344f2716c"
+          "sha": "e93bd35e76b0e1f1"
         },
         {
           "path": "spring/base-stone-detail.lin.tile.w512.png",
           "bytes": 7090493,
           "sha": "0efb37c344f2716c"
-        },
-        {
-          "path": "spring/base-stone.srgb.tile.w1024.png",
-          "bytes": 8629879,
-          "sha": "d831b3e390a7fc90"
         },
         {
           "path": "spring/base-stone.srgb.tile.w512.png",
@@ -736,8 +626,8 @@
         },
         {
           "path": "spring/slab-far.srgb.w2048.png",
-          "bytes": 374434,
-          "sha": "c45730a64a8a22a0"
+          "bytes": 297084,
+          "sha": "e59910aa8a0824fe"
         },
         {
           "path": "spring/slab-petals.srgb.w1024.png",
@@ -747,12 +637,12 @@
         {
           "path": "spring/tree-blossom.glb",
           "bytes": 7354572,
-          "sha": "a08d887b3fa21800"
+          "sha": "6b22fdbf61c4164d"
         },
         {
           "path": "spring/village-spring.glb",
-          "bytes": 15040276,
-          "sha": "be191eeba70ae844"
+          "bytes": 14836564,
+          "sha": "6a98045bd9dabec9"
         },
         {
           "path": "spring/village-turf.lin.tile.png",
@@ -768,23 +658,13 @@
       "summer": [
         {
           "path": "summer/base-carve.lin.w2048.png",
-          "bytes": 1173600,
-          "sha": "bbc1615151d0930e"
-        },
-        {
-          "path": "summer/base-grain.lin.tile.w1024.png",
-          "bytes": 2236910,
-          "sha": "14a8b2263f332bff"
+          "bytes": 1180719,
+          "sha": "f7837c5d14f58d58"
         },
         {
           "path": "summer/base-grain.lin.tile.w512.png",
           "bytes": 756142,
           "sha": "c80cbb8513f54fe5"
-        },
-        {
-          "path": "summer/base-sand.lin.tile.w1024.png",
-          "bytes": 983652,
-          "sha": "71995e1b6518eb7d"
         },
         {
           "path": "summer/base-sand.lin.tile.w512.png",
@@ -793,13 +673,13 @@
         },
         {
           "path": "summer/base-stone.srgb.w2048.png",
-          "bytes": 4393715,
-          "sha": "d560f933f5619c8c"
+          "bytes": 4392454,
+          "sha": "ff538867761b76c8"
         },
         {
           "path": "summer/base-summer.glb",
-          "bytes": 10396816,
-          "sha": "65b5d06c838b2fb4"
+          "bytes": 10396808,
+          "sha": "6c8b4389f7afa487"
         },
         {
           "path": "summer/tree-leaves.srgb.tile.w1024.png",
@@ -814,12 +694,12 @@
         {
           "path": "summer/tree-summer.glb",
           "bytes": 5242668,
-          "sha": "00d65bd8aff0996a"
+          "sha": "fc699a911d1660a3"
         },
         {
           "path": "summer/village-summer.glb",
           "bytes": 19748048,
-          "sha": "10be883fcd5e3842"
+          "sha": "ec5c1fb1c02d2fab"
         },
         {
           "path": "summer/village-turf.lin.tile.png",
@@ -835,8 +715,8 @@
         },
         {
           "path": "fall/base-fall.glb",
-          "bytes": 3519936,
-          "sha": "8dd9797c39976147"
+          "bytes": 3847596,
+          "sha": "9d880207566f4b0d"
         },
         {
           "path": "fall/base-iron-detail.lin.tile.w1024.png",
@@ -846,7 +726,7 @@
         {
           "path": "fall/slab-fall.glb",
           "bytes": 849432,
-          "sha": "a9ec896b83befd56"
+          "sha": "5bd42c0511a3d48e"
         },
         {
           "path": "fall/slab-leaves.srgb.w1024.png",
@@ -855,8 +735,8 @@
         },
         {
           "path": "fall/tree-fall.glb",
-          "bytes": 3613228,
-          "sha": "59d4170728cfae74"
+          "bytes": 2888720,
+          "sha": "88b08fb08e7f169c"
         },
         {
           "path": "fall/village-earth.srgb.tile.w1024.png",
@@ -865,8 +745,8 @@
         },
         {
           "path": "fall/village-fall.glb",
-          "bytes": 15661920,
-          "sha": "efdcb6fec82bdb8d"
+          "bytes": 15661916,
+          "sha": "732cf5a4e5ba74a8"
         },
         {
           "path": "fall/village-litter.srgb.tile.w1024.png",
@@ -878,8 +758,8 @@
   },
   "seasonHashes": {
     "winter": "5c39d16f98d3d0be",
-    "spring": "38e0528c58d1f976",
-    "summer": "7b8427b9854282f6",
-    "fall": "1000395001129642"
+    "spring": "3385ea1402697850",
+    "summer": "b115da8442d81aaf",
+    "fall": "ba42c0a8a2b4523f"
   }
 }

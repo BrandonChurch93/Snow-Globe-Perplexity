@@ -17,7 +17,7 @@ import type { KitMoment, SeasonKit } from '../kit'
 export const standIns: string[] = []
 
 export const veil: SeasonKit['veil'] = { tint: [1, 0.9, 0.93], density: 0.002, rest: 0 }
-export const particles: SeasonKit['particles'] = { petal: { color: [1, 0.66, 0.76], glow: 0 }, mote: { color: [0.2, 0.18, 0.18], glow: 0 } }
+export const particles: SeasonKit['particles'] = { petal: { color: [1, 0.74, 0.82], glow: 0 }, mote: { color: [0.2, 0.18, 0.18], glow: 0 } }
 
 const PART = 'veil-spring'
 const INNER = config.globe.sphereDiameterMm / 2 - config.globe.glassThicknessMm
@@ -38,7 +38,7 @@ const look = {
   blown: 0.7,
   tint: [1, 0.8, 0.82],
   cold: 3.2,
-  warm: 1.2,
+  warm: 0.6,
   /** How far the banks drift round in one period, mm. */
   driftMm: 5,
 }
@@ -148,21 +148,23 @@ const storm = {
   cells: 18,
   /** The mist's thickness per mm: closed over the miniature at the height of the storm, while the liquid is stirred, while it only rolls. */
   flood: 0.26,
-  stirred: 0.02,
-  rolling: 0.0065,
+  stirred: 0.03,
+  rolling: 0.008,
+  /** What is left in still liquid: the pink in the air of the approved rest, far too thin to hide anything. */
+  calm: 0.003,
   rollPower: 1.4,
   /** The billows: two sizes, mm, and how much of the mist is even between them at the flood and after. */
   wideMm: 96,
   fineMm: 34,
   even: [0.75, 0],
   /** How much of the mist is left at the top of the liquid once the flood is over. */
-  top: 0.3,
+  top: 0.7,
   /** Thinner in the eye of the roll than at its rim. */
-  eye: 0.5,
-  tint: [1, 0.76, 0.83],
+  eye: 0.75,
+  tint: [1, 0.83, 0.88],
   soft: 1.1,
   key: 3.0,
-  grid: 1.8,
+  grid: 0.8,
   /** How much of the key the mist's own depth takes away, per mm of the way to the glass at full thickness. */
   shadow: 0.35,
   keyFloor: 0.35,
@@ -321,7 +323,7 @@ export function stormAt(moment: KitMoment): { thick: number; even: number } {
   const flood = Math.max(Math.pow(w, L.whitePower), held * Math.pow(up, L.shakenPower)) * (1 - open)
   const rolling = Math.min(1, Math.max(0, (f.liquid[LIQUID_ROLL] ?? 0) / ROLL_MAX))
   const after = Math.max(storm.stirred * Math.pow(turb, L.hazePower), storm.rolling * Math.pow(rolling, storm.rollPower))
-  return { thick: Math.max(storm.flood * flood, after), even: storm.even[1]! + (storm.even[0]! - storm.even[1]!) * flood }
+  return { thick: Math.max(storm.flood * flood, after, storm.calm), even: storm.even[1]! + (storm.even[0]! - storm.even[1]!) * flood }
 }
 
 /** The mist at a moment: on the ground and thick at the landing, risen and thin at rest; `bare` between the swap and the landing. */
