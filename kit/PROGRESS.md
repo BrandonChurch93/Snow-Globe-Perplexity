@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 68 · 2026-11-25 02:17 UTC
+Status 69 · 2026-11-25 02:30 UTC
 
-- `out/stills/status/status-68-1.jpg`: Fall at rest. Left: the build that Round 10 judges (draft tier). Right: the approved image
-- `out/stills/status/status-68-2.jpg`: Spring at rest from the spring base builder at 02:11. Top: the approved image. Bottom: the build (draft tier)
-- `out/stills/status/status-68-3.jpg`: Spring arriving after the shake from winter: twelve frames over three seconds from the landing (preview size; draft tier)
-- `out/stills/status/status-68-4.jpg`: Still: fall rest hero, hd, draft
+- `out/stills/status/status-69-1.jpg`: Spring at rest as Round 8 judges it at final tier (left) beside its approved image (right)
+- `out/stills/status/status-69-2.jpg`: Spring half a second after a landing as Round 8 judges it (left) beside its approved image (right)
+- `out/stills/status/status-69-3.jpg`: Still: fall rest hero, preview, draft, standins view
+- `out/stills/status/status-69-4.jpg`: Still: fall landed hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 02:21 UTC
-clock: phase 4, tick of 4.2 minutes
-phase 4: 2.24 h used of its 9.50 h box
-allowance (before the review): 24.52 h used of 36.00 h allowed
-all time before the review: 24.52 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 02:30 UTC
+clock: phase 4, tick of 0.5 minutes
+phase 4: 2.38 h used of its 9.50 h box
+allowance (before the review): 24.66 h used of 36.00 h allowed
+all time before the review: 24.66 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 4
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -1220,7 +1220,7 @@ One line per round: its number, the unit, the commit it judged, each part ticked
 
 - Round 7 · winter (Phase 3, the look lock; winter's fifth round, the last `quality.lookLockMaxRounds` allows, an extra round: the clock printed `extra rounds: yes` at 22:11 with 20.33 h of the 36 h allowance used and 13.71 h of the phase's 11 h box) · judges commit `4f10d97` · started 2026-11-24 22:16 UTC. Parts: [x] build (the judged build is `4f10d97`: the last pushes of all ten closers merged (tree `ef99abc`, village `c592dab`, base `a807a2f`, frost `988374e`, flakes `eae5220`, liquid `78e60ec`, scene `df43cf5`, glass `41d0707`, light `4a0a414`, shake `acbf066`), every part made again, texpack, tsc clean, G8 green with 75 shipped files, vitest 419 passed, 4 skipped and 0 failed; high 1490555 of 1800000 triangles, medium 999606 of 1100000, low 429594 of 600000; `shake.strokeMm` 25 by decision 66; M3 at the final tier read 0.8806 on the merge before the last two branches (base and shake); a final still of `rest` and a draft still of `landed` were looked at before the freeze) · [x] machine checks (23:07: the Phase 3 gate on a clean clone of `4f10d97`, run once by `gate_runner` in 43.9 minutes: all 15 green; the repeat test before it: 0 of 9 repeats differ in both runs; G13 covers no part yet, because no unit is marked finished) · [x] measures (23:06: 24 of 24 lines at `final`, 0 red, by `round_renderer`; M3 0.9203 against 0.75 (base 0.920, miniature 0.931)) · [x] pack (23:06: 34 files for R1, R2 and R3 at `final` in five parts and 12 sheets for R4 at `review` in two parts, none missing; the controls' bytes equal Round 6's) · [x] R1 (`gpt_6_2_sol`, answered 23:09: 7, 2 severe, 7 major, 1 minor) · [x] R2 (15 jurors, five per judged image, across five model families, all in by 23:10: 4 of 15 answered (a) or (b) (rest 1 of 5, shake 2 of 5, settled 1 of 5) against the control's 7 of 10; the bar is a share of 0.5; failed, which counts as one major issue. Eleven answered (c), most of them naming the centred product framing) · [x] R3 (part 1 (hero at rest, landed, interior), `grok_4_7`, answered 23:17: 7, 2 major, 2 minor; part 2 (base, surface, settled), `gemini_4_carbon`, answered 23:28: 5, 7 major, 1 minor; part 3 (macro), `claude_opus_5_5`, answered 23:09: 5, 6 major, 5 minor; the pack takes the lowest: 5, with no severe, 15 major and 8 minor issues) · [x] R4 (part 1, ten sheets, `pplx_computer_glm_5_3_1009`, answered 23:06: 7, 1 severe, 2 major; part 2, two sheets, `kimi_k3`, answered 23:06: 4, 1 severe, 2 major, 2 minor; the pack takes the lowest: 4) · [x] issues read (23:34: every issue of the six answers and the jury's card read; 31 severe and major issues written as open items 38 to 62; ladder moves 19 to 35; Declined issues 7 to 13) · [x] fixes (none: Round 7 is the last round `quality.lookLockMaxRounds` allows, so no fix pass follows inside the look lock; the open items go to the polish rounds of Phase 5) · [x] logged (23:34: `scorecards/round-007/` holds the manifest, the keys, the measures, the gate's log, each critic's JSON, the jurors' answers, the jury's card and `SUMMARY.md`. Result: does not pass. R1 7, R2 failed at 4 of 15 against 7 of 10, R3 5, R4 4; checks 15 of 15 green; measures 24 of 24 green)
 
-- Round 8 · spring (Phase 4; spring's first round, the floor round) · judges commit `fe1072c` · started 2026-11-25 01:35 UTC. Parts: [x] build (the judged build is `fe1072c`: the first versions of spring's three builders and of the kinds builder merged (base `586b0c0`, miniature `0c761fc`, air `cb08977`, kinds `b97f86e`), every part of every season made again here, texpack with 76.962 MiB in the web set, tsc clean, vitest 425 passed, 4 skipped and 0 failed; the stand-in view of `rest` from `hero` is black all over; a draft still of `rest` and one of `landed` were looked at before the freeze: a real scene with its base, miniature, dressing and petals) · [ ] machine checks · [ ] measures · [ ] pack · [ ] R1 · [ ] R2 · [ ] R3 · [ ] R4 · [ ] issues read · [ ] fixes · [ ] logged
+- Round 8 · spring (Phase 4; spring's first round, the floor round) · judges commit `fe1072c` · started 2026-11-25 01:35 UTC. Parts: [x] build (the judged build is `fe1072c`: the first versions of spring's three builders and of the kinds builder merged (base `586b0c0`, miniature `0c761fc`, air `cb08977`, kinds `b97f86e`), every part of every season made again here, texpack with 76.962 MiB in the web set, tsc clean, vitest 425 passed, 4 skipped and 0 failed; the stand-in view of `rest` from `hero` is black all over; a draft still of `rest` and one of `landed` were looked at before the freeze: a real scene with its base, miniature, dressing and petals) · [ ] machine checks · [x] measures (02:27, final tier: 19 lines, 7 red. M1 spring-base 3 invalid values of 2073600; M1 spring-interior the miniature touches the edge of the frame; M2 spring-rest 0.0531, spring-settled 0.0531, spring-shake 0.055, spring-surface 0.0346 against 0.03; M3 spring-rest 0.3942 against 0.75 (base 0.394, miniature 0.557). The red lines go to the builders with the critics' issues) · [x] pack (02:27: 31 files for R1 (8), R2 (5), R3-1 (9), R3-2 (9), 0 parts missing, all at final tier, engine hash 860c085c45f24b98; branch agent/p4-round8-pack c578f23, fetched, not merged; spring has no macro still, so there is no third R3 part) · [ ] R1 · [ ] R2 · [ ] R3 · [ ] R4 · [ ] issues read · [ ] fixes · [ ] logged
 
 - Round 9 · summer (Phase 4; summer's first round, the floor round) · judges commit `fe1072c` · started 2026-11-25 01:35 UTC. Parts: [x] build (the judged build is `fe1072c`, the same commit as Round 8: the first versions of summer's three builders and of the kinds builder merged (base `84edb99`, miniature `9fbb0f5`, air `aa30671` with the rows of seed and firefly, kinds `b97f86e`), every part of every season made again here, texpack with 76.962 MiB in the web set, tsc clean, vitest 425 passed, 4 skipped and 0 failed; the stand-in view of `rest` from `hero` is black all over; a draft still of `rest` was looked at before the freeze: a real scene with its base, miniature, lanterns, fireflies and sand) · [ ] machine checks · [ ] measures · [ ] pack · [ ] R1 · [ ] R2 · [ ] R3 · [ ] R4 · [ ] issues read · [ ] fixes · [ ] logged
 
@@ -1589,3 +1589,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 02:14 UTC. Fall's first round counted: Round 10 judges `216e427` (pushed 02:13; round line and decision 76 pushed 02:14 as `9c8a51d`, before its first order went out at 02:14). The freeze was made from a fourth merge (`97e9caa`: `fall_mini` `d6f8d14`, `kinds_builder` `fc18a80`, `summer_base` `4da5501`, `summer_mini` `f517c9a`), with every built file of spring, summer and fall deleted and made again from its sources, because two builders had reported stale tiles of their first versions in the tracked built files (18 of spring's base, 6 of summer's base); the web set is 65.626 MiB in 84 files; tsc clean, vitest 432 passed, 4 skipped; the stand-in view of fall at rest is black all over. `kinds_builder`'s fix (`ac677c5`) is in it: winter's rest and landed stills are byte-identical with its baseline again. Round 9's gate moved to `gate_runner` (second job, same clone); the motion packs of Rounds 8 and 9 are expected about 03:20 to 03:35, not 02:46. Every builder was asked at 01:59 to leave `REPORT.md` and `HANDOVER.md` on its looks branch by 02:54 for the agent that takes over its files.
 
 - 02:18 UTC. Status 68 posted at 02:18 (fall at rest on Round 10's judged build beside the approved image; spring at rest and spring's arrival sheet from the builders' looks). Published at 02:16 from `216e427`'s build: first picture in 17.4 s, 87 requests, no error; Visibility: Organization.
+
+- 02:30 UTC. Status 69 posted: spring's two judged stills of Round 8 (final tier) beside their approved images. Round 8's pack arrived at 02:27 from `round_renderer` (branch `agent/p4-round8-pack` `c578f23`, 31 files, no part missing; spring has no macro still, so R3 has two parts), its measures at final tier have 7 of 19 lines red (M1 spring-base 3 invalid values, M1 spring-interior the miniature touches the frame's edge, M2 on four stills between 0.0346 and 0.055 against 0.03, M3 spring-rest 0.3942 against 0.75). R1 of Round 8 (`reviewer_r8_a`, Grok) started 02:28 on the one free slot; the other critics follow one at a time while five render agents work. Third merge of the builders' branches at 02:21 (`kinds.ts` by ownership again, a helper now does it: `out/work/bin/kindsresolve.py`), 432 tests pass, pushed as `e442e41`.
