@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 64 · 2026-11-25 00:42 UTC
+Status 65 · 2026-11-25 01:02 UTC
 
-- `out/stills/status/status-64-1.jpg`: Fall base at rest after 27 minutes of building: the approved image above and the build below (draft tier)
-- `out/stills/status/status-64-2.jpg`: Fall base half a second after a landing: the approved image above and the build below (draft tier)
-- `out/stills/status/status-64-3.jpg`: Still: spring rest hero, hd, draft
-- `out/stills/status/status-64-4.jpg`: Comparison crops 1: winter-shake, approved image left, build right
+- `out/stills/status/status-65-1.jpg`: Spring miniature after 40 minutes: the approved image left and the build right (draft tier; the green base in this picture is the old stand-in)
+- `out/stills/status/status-65-2.jpg`: Spring base and petals on the surface: the approved image above and the build below (the miniature in this picture is the old blockout)
+- `out/stills/status/status-65-3.jpg`: Summer base and sand: the approved image above and the build below (draft tier)
+- `out/stills/status/status-65-4.jpg`: Summer miniature: the approved image above and the build below (draft tier)
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 00:49 UTC
-clock: phase 4, tick of 6.8 minutes
-phase 4: 0.70 h used of its 9.50 h box
-allowance (before the review): 22.99 h used of 36.00 h allowed
-all time before the review: 22.99 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 01:02 UTC
+clock: phase 4, tick of 1.8 minutes
+phase 4: 0.92 h used of its 9.50 h box
+allowance (before the review): 23.20 h used of 36.00 h allowed
+all time before the review: 23.20 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 6
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -854,6 +854,8 @@ Numbered. What, why, and the date.
 
 73. **Phase 3's gate was closed in two parts: the whole gate on a clean clone of the judged build, then the checks that read the log and the stand-ins after winter was marked finished** (23:58 UTC, Phase 3, the close). Step 10 of Phase 3 in `kit/08-BUILD-ORDER.md` asks for the gate after the unit is marked `finished`. Round 7's gate ran before that, on a clean clone of `4f10d97` by `gate_runner`: 15 of 15 green (`scorecards/round-007/gate-phase-3.json`), but without the unit named and with no unit finished, so its G13 covered no part. After winter was marked `finished` (`1ee1285`), G13 was run in this workspace with the unit named: green, it covers winter's 17 of 54 parts, and the stand-in view of 69 of 69 judged stills and frames shows no pixel of a covered part (23:21 to 23:41 UTC). Then G6, G9, G13 and G15 were run again on the closing state of the log and the tracked files: all green (`scorecards/round-007/gate-phase-3-close.json` holds the merged 15 lines). The other eleven lines are those of the clean clone: no file under `src/`, `public/`, `config/`, `tools/`, `tests/`, `assets-src/` or `package.json` differs between `4f10d97` and the closing commit (`git diff --stat` is empty), so they were not run a second time here. Why not the whole gate again before closing: it takes about 70 minutes with G13 covering a unit, and Phase 3 is four hours past its box. As a confirmation, `gate_runner` was asked at 23:35 UTC to run the whole gate once more on a fresh clean clone of `1ee1285`; its result is logged in the session log when it arrives, and a red line there reopens the check as an open item at once.
 
+74. **Each new season gets an allowance of 18 MiB in the web pack, split by part, and the builders were told in writing** (01:03 UTC, Phase 4). `host.maxShippedMb` holds all of `dist/` to 95 MB (G16, Phase 5). Winter's web set is 18.0 MiB and the shared set 7.3 MiB; with every first version merged at 00:56 the pack stood at 83.8 MiB (spring 25.5, summer 22.3, fall 10.9), which with the code and the sound pack would be over the limit before any tuning. So: base and slab files together 6.5 MiB, miniature (village and tree files) 9.5 MiB, glass dressing and veil files 2 MiB, per season, as winter has. Sent to the nine season builders at 00:57 with where each stood; they cut what the judged cameras cannot see first. The limit itself is not touched. The triangle and draw call limits of G15 are measured on the merged build and sent the same way.
+
 ## Notes from Brandon
 
 Numbered, in his words, with the date and how each was applied. Review round items carry their round's number.
@@ -1555,3 +1557,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 00:32 UTC. The confirmation of Phase 3's gate is in (decision 73): `gate_runner` ran the whole gate, with no check left out and no unit named, on a fresh clean clone of `1ee1285` from 23:36 to 00:30 UTC: all 15 green, G13 covering winter's 17 of 54 parts through the Units table, 69 of 69 judged stills in the stand-in view (`scorecards/round-007/gate-phase-3-confirm.json` and `.log`). A first attempt a minute earlier was red on 11 checks for one reason outside the repo, "only 2.9 GB of disk is free, under sandbox.minFreeDiskGb": the agent's VM was full of its own clones of Rounds 3 to 7; it deleted them, changed nothing in the new clone and ran again. Later gate orders tell the runner to check its disk first and carry the sound files as an attachment. At 00:25 the three `air` builders' first pushes (each season's reference camera and a first rig) were merged into `main` (`4c9ded5`, tsc clean, vitest 419 passed).
 
 - 00:50 UTC. Status 64 posted at 00:43 (the fall base's first real version beside the approved image). First versions with no stand-in left came in from four builders between 00:38 and 00:47 and are merged into `main`, each made here from its sources (tsc clean, vitest 419 passed on `a40cba1`): `fall_base` at `e4537fa` (base, surface dressing, arrival outside the glass), `fall_mini` at `7652718`, `summer_mini` at `3a9ce26`, `kinds_builder` at `58fdfb5` (all seven kinds draw as their own shapes; winter's rest and landed stills byte-identical). Register: `base-fall`, `surface-dressing-fall`, `arrival-fall`, `miniature-fall`, `miniature-summer` set to `built`; the particle parts wait for the motion rows of each season's `air` builder. Every builder keeps tuning until its limit at 03:02. The web pack stands at 48.8 MiB with two of the three new miniatures in (`host.maxShippedMb` is 95 for all of `dist/`), so each builder now gets a size and a triangle allowance in writing. The built files of the new seasons stay uncommitted until each season's round is frozen.
+
+- 01:03 UTC. Status 65 posted at 01:03 (spring's and summer's first real versions beside the approved images). Published at 00:52 from `9334939` with the fall base, the fall and summer miniatures and the seven kinds in: first picture in 16.6 s, 67 requests, no error; Visibility: Organization. Between 00:53 and 00:57 the first versions of `summer_base` (`44a7a28`), `spring_mini` (`15be14d`), `spring_base` (`b598adf`) and the first rows of `spring_air` (`d8260ae`) were merged and made here (`592501f`; tsc clean, vitest 425 passed, 4 skipped, the builders' own new tests included). `summer_air` reported its first version at `aa30671` (firefly 700, seed 9000, mote 40000 kept; the pool of light waits for a line in `summer_base`'s slab). Register: `base-`, `surface-dressing-`, `arrival-` and `miniature-` of spring and of summer set to `built` (`miniature-summer` at 00:49). Still stand-ins in the three seasons: the glass dressing, the light, the veil and the particle parts, until each `air` builder's first version is merged and the stand-in view is black. The web pack reached 83.8 MiB, so decision 74 gives each season 18 MiB; G15 is being measured on the merged build (started 00:57). Not yet merged at this note: `fall_base` 2 commits, `kinds` 1, `summer_air` 2; they wait for G15 to end, since a make during a check would change the files under it.
