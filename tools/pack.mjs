@@ -7,6 +7,7 @@ import { Session, cfg, formatById, recordMatches } from './lib/page.mjs'
 import { limits } from './lib/compose.mjs'
 import { fileSha, sha256 } from './lib/hashes.mjs'
 import { Pages, approvedFor, drawJudged, framingFromPose } from './lib/measures.mjs'
+import { controlSheets, controlsCached, drawMark } from './lib/controls.mjs'
 
 const GAP = 6
 const STRIP = 20
@@ -741,15 +742,61 @@ async function buildR7(role) {
 
 async function buildR8(role) {
   const missing = []
+  const notes = []
   await open()
   const scr = { title: 'the screen stills', files: [] }
+  const close = { title: 'the controls close up', files: [] }
+  const pulse = { title: "the Shake control's hint", files: [] }
+  const cropsWhat = 'close crops of each control at rest, focused and pressed'
+  const hintWhat = "one sheet of the Shake control's hint"
+  const layouts = new Set()
+  const list = (names) => (names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}` : names[0])
   for (const e of screens()) {
+    const wanted = !layouts.has(e.format)
+    const withHint = !pulse.files.length
+    const cached = wanted && controlsCached(e, tier, withHint)
+    const page = wanted && !cached ? await pages.get(e.format) : null
+    const mark = page ? await drawMark(page) : 0
     const still = await tryDraw(e, missing)
     if (still) scr.files.push(one(await fitted(still.file, tmp(role, `${e.id}.jpg`)), still.what, `a still of the app, ${still.width} by ${still.height}`))
+    if (!still || !wanted) continue
+    try {
+      const drawn = !!page && (await drawMark(page)) !== mark
+      if (page && !drawn) budget(`the picture under the controls of ${e.id}`)
+      const got = await controlSheets(session, page, e, tier, { drawn, hint: withHint })
+      const size = `the ${still.width} by ${still.height} screen`
+      const c = got.crops.record
+      const marks = c.rows.filter((r) => cfg.seasons.includes(r.control))
+      const rows = c.rows.map((r) => (r.control === 'shake' ? 'the Shake control' : r.control === 'sound' ? 'the sound control' : `the mark of ${r.control}${r.current ? ' (the season shown)' : ''}`))
+      const press = c.spec.pointer === 'mouse' ? 'pressed with a mouse, held down with the pointer on it' : 'pressed with a finger, held down'
+      close.files.push(
+        one(
+          got.crops.file,
+          `${e.id}: ${cropsWhat}, ${tier} tier, cut from the page that holds the still, tiles ${c.tile.join(' by ')}: ${c.labels.join('; ')}. Focused is the interface state focus of the capture page (focus with the keyboard's ring); pressed is the browser's own :active${c.spec.pointer === 'mouse' ? ' and :hover' : ''} on the control`,
+          `close crops of the controls on ${size}, at the size they are shown, each with the picture around it. Rows from the top: ${list(rows)}. Columns from the left: at rest, focused from the keyboard, ${press}. ${marks.length} season marks; the one named current is the season shown. Each tile has its number and name above it`,
+        ),
+      )
+      for (const h of c.hidden) notes.push(`${e.id}: the page shows no ${h} control, so the crops have no row for it`)
+      layouts.add(e.format)
+      if (got.hint) {
+        const h = got.hint.record
+        pulse.files.push(
+          one(
+            got.hint.file,
+            `${e.id}: ${hintWhat}, ${tier} tier: the interface state hint of the capture page held at ${h.times.length} even steps across its ${h.seconds} s, ${h.animations} animations each set to the time under the tile: ${h.labels.join('; ')}`,
+            `the hint of the Shake control on ${size}: after ${cfg.live.hintAfterSeconds} s with nothing pressed it pulses once. ${h.times.length} frames across the whole pulse at even steps of time, read left to right, top to bottom, at the size it is shown. Under each tile: its number and the time since the pulse began`,
+          ),
+        )
+      }
+    } catch (err) {
+      if (err instanceof Stop) throw err
+      const why = String(err?.message ?? err).split('\n')[0]
+      missing.push(`${cropsWhat} and the hint, on ${e.id}: ${why}`)
+    }
   }
-  missing.push('close crops of each control at rest, focused and pressed: no tool makes these yet, so this part is empty')
-  missing.push("one sheet of the Shake control's hint: no tool makes this yet, so this part is empty")
-  return { groups: scr.files.length ? [scr] : [], missing }
+  if (!close.files.length) missing.push(`${cropsWhat}: no screen still could be drawn to cut them from, so this part is empty`)
+  if (!pulse.files.length) missing.push(`${hintWhat}: it could not be made, so this part is empty`)
+  return { groups: [scr, close, pulse].filter((g) => g.files.length), missing, notes }
 }
 
 const BUILD = { [BLOCKOUT]: buildBlockout, R1: buildR1, R2: buildR2, R3: buildR3, R4: buildR4, R5: buildR5, R6: buildR6, R7: buildR7, R8: buildR8 }
