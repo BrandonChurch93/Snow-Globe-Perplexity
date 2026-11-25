@@ -61,7 +61,7 @@ export function sandHeight(x: number, z: number): number {
 }
 
 export function sandSpread(x: number, z: number): number {
-  return Math.min(1, 0.5 * (bump(x, z, HEAP.stray) / HEAP.stray.mm) + 0.6 * (bump(x, z, HEAP.fan) / HEAP.fan.mm) + 0.5 * (bump(x, z, HEAP.sheet) / HEAP.sheet.mm))
+  return 0.16 * Math.min(1, 0.5 * (bump(x, z, HEAP.stray) / HEAP.stray.mm) + 0.6 * (bump(x, z, HEAP.fan) / HEAP.fan.mm) + 0.5 * (bump(x, z, HEAP.sheet) / HEAP.sheet.mm))
 }
 
 function heapGeometry(): THREE.BufferGeometry {
@@ -87,7 +87,7 @@ function heapGeometry(): THREE.BufferGeometry {
     const r = Math.hypot(x, z)
     position.push(x, SLAB.liftMm + h[o]!, z)
     normal.push(-gx / l, 1 / l, -gz / l)
-    color.push(Math.min(1, h[o]! / 1.2), 0.45 + 0.55 * Math.min(1, Math.max(0, (r - 57) / 14)), 0)
+    color.push(Math.min(1, h[o]! / 0.5), 0.45 + 0.55 * Math.min(1, Math.max(0, (r - 57) / 14)), 0)
     slot[o] = position.length / 3 - 1
     return slot[o]!
   }
