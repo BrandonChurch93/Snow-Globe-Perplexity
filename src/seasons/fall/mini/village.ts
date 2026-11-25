@@ -37,12 +37,12 @@ const THROUGH = 6
 const LAMP_GLASS: Rgb = [7.5, 6.4, 4.6]
 const WALL_FILL = 2.0
 const GROUND_FILL = 1.5
-const FENCE = { reachMm: 1.25, pastMm: 1.2, out: 0.2, outWave: 0.13, along: 0.07, alongWave: 0.1, sagMm: 0.5, tone: [0.3, 0.27, 0.25] as Rgb }
+const FENCE = { reachMm: 1.25, pastMm: 1.2, out: 0.3, outWave: 0.16, along: 0.13, alongWave: 0.14, sagMm: 0.5, tone: [0.3, 0.27, 0.25] as Rgb }
 const MOSS = { low: [0.56, 0.7, 0.4] as Rgb, high: [0.78, 0.8, 0.7] as Rgb, tallMm: 9 }
 const ROOF = { tone: [0.4, 0.4, 0.46] as Rgb, grey: 0.7 }
 const DRY: readonly Rgb[] = [[0.42, 0.16, 0.05], [0.5, 0.26, 0.07], [0.3, 0.12, 0.05], [0.4, 0.3, 0.1]]
 const GROUND = { soil: 1.25, leaf: 1.15, soilMm: 0.26, wideMm: 0.5, leafMm: 0.34 }
-const WATER = { rough: 0.07, rippleMm: 0.03, lamp: 5, pane: 0.8, pumpkin: 1.6, tight: 0.002, wide: 0.03, wideShare: 0.01, lowMm: 3.4, fog: 0.5, shore: [0.9, 0.99] as [number, number] }
+const WATER = { rough: 0.07, rippleMm: 0.03, lamp: 3, pane: 0.8, pumpkin: 2.2, tight: 0.002, wide: 0.02, wideShare: 0.006, lowMm: 3.4, fog: 0.13, shore: [0.9, 0.99] as [number, number] }
 
 const flame = lampFlame()
 const mirrored: Point = [flame[0], flame[1] - WATER.lowMm, flame[2]]

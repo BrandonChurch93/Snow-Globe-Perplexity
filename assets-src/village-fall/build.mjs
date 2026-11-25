@@ -50,10 +50,10 @@ const pathGap = (x, z) => Math.min(...[...L.steps, ...L.stones].map(([sx, sz]) =
 const reliefAt = (x, z) => 0.22 * fbm(x * 0.33 + 3.1, z * 0.33 + 7.7, 2, 3) * smooth(1.2, 3.2, pathGap(x, z)) * smooth(1.0, 1.12, L.pondField(x, z)) * smooth(0.5, 2.5, cottageGap(x, z))
 const earthAt = (x, z) => L.groundAt(x, z) + reliefAt(x, z)
 const litterAt = (x, z) => {
-  const base = 0.34 + 0.3 * fbm(x * 0.12 + 1.7, z * 0.12 + 4.2, 5, 3)
-  const byFence = 0.5 * (1 - smooth(0.5, 5.5, fenceGap(x, z)))
-  const underTree = 0.34 * (1 - smooth(5, 19, treeGap(x, z)))
-  const byWall = 0.22 * (1 - smooth(0.3, 3, cottageGap(x, z)))
+  const base = 0.13 + 0.26 * fbm(x * 0.12 + 1.7, z * 0.12 + 4.2, 5, 3)
+  const byFence = 0.42 * (1 - smooth(0.5, 5.5, fenceGap(x, z)))
+  const underTree = 0.2 * (1 - smooth(5, 19, treeGap(x, z)))
+  const byWall = 0.14 * (1 - smooth(0.3, 3, cottageGap(x, z)))
   const shore = smooth(1.0, 1.16, L.pondField(x, z))
   return clamp((base + byFence + underTree + byWall) * (0.25 + 0.75 * shore), 0, 1)
 }
@@ -371,7 +371,7 @@ let leafCount = 0
 {
   const pos = []
   const col = []
-  const want = 3400
+  const want = 1700
   let tries = 0
   while (leafCount < want && tries++ < want * 60) {
     const a = R() * TAU
@@ -382,7 +382,7 @@ let leafCount = 0
     const lit = litterAt(x, z)
     if (R() > lit * lit * 1.5 + 0.04) continue
     if (treeGap(x, z) < 3.2) continue
-    const len = between(1.1, 2.3)
+    const len = between(0.8, 1.7)
     const wide = len * between(0.5, 0.75)
     const yaw = R() * TAU
     const curl = between(0.06, 0.3) * len
@@ -449,8 +449,8 @@ let tuftCount = 0
     for (let b = 0; b < blades; b++) {
       const a = R() * TAU
       const out = between(0.15, 1.0)
-      const tall = scale * between(1.6, 3.6)
-      const w = between(0.16, 0.26)
+      const tall = scale * between(0.9, 2.2)
+      const w = between(0.09, 0.16)
       const ox = x + Math.cos(a) * between(0, 0.45)
       const oz = z + Math.sin(a) * between(0, 0.45)
       const sx = -Math.sin(a) * w
@@ -477,7 +477,7 @@ let tuftCount = 0
     tuftCount++
   }
   let tries = 0
-  while (tuftCount < 330 && tries++ < 40000) {
+  while (tuftCount < 190 && tries++ < 40000) {
     const a = R() * TAU
     const rr = 54 * Math.sqrt(R())
     const x = rr * Math.cos(a)
@@ -487,8 +487,9 @@ let tuftCount = 0
     const post = 1 - smooth(0.4, 1.6, fenceGap(x, z))
     const rim = 1 - smooth(1.5, 7, L.islandEdge(Math.atan2(z, x)) - Math.hypot(x, z))
     const patch = smooth(0.0, 0.5, fbm(x * 0.14 + 5, z * 0.14 + 1, 4, 2))
-    if (R() > 0.06 + 0.75 * bank + 0.6 * post + 0.5 * rim + 0.4 * patch) continue
-    tuft(x, z, 0.8 + 0.5 * bank + 0.3 * rim)
+    const east = smooth(4, 16, x) * smooth(-4, 8, z)
+    if (R() > 0.02 + 0.3 * bank + 0.45 * post + 0.25 * rim + 0.12 * patch + 0.75 * east) continue
+    tuft(x, z, 0.8 + 0.3 * bank + 0.2 * rim + 0.5 * east)
   }
   const g = new THREE.BufferGeometry()
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
