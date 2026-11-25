@@ -58,8 +58,8 @@ const litterAt = (x, z) => {
   return clamp((base + byFence + underTree + byWall) * (0.25 + 0.75 * shore), 0, 1)
 }
 const mossAt = (x, z) => {
-  const patch = 0.5 + 1.1 * fbm(x * 0.09 + 9.3, z * 0.09 + 2.2, 8, 3)
-  const bank = 0.45 * (1 - smooth(1.02, 1.5, L.pondField(x, z)))
+  const patch = 0.36 + 1.1 * fbm(x * 0.09 + 9.3, z * 0.09 + 2.2, 8, 3)
+  const bank = 0.2 * (1 - smooth(1.02, 1.3, L.pondField(x, z)))
   const wall = 0.3 * (1 - smooth(0.2, 2.2, cottageGap(x, z)))
   return clamp(patch + bank + wall - 0.35 * (1 - smooth(4, 12, treeGap(x, z))), 0, 1)
 }
@@ -337,7 +337,7 @@ for (const s of STONES) {
   shade(g, (x, y, z) => (0.6 + 0.4 * smooth(-s.h / 2, -s.h / 2 + 1.5, y)) * (0.8 + 0.4 * fbm(x * 2 + seed, y * 2, z * 2, 3)))
   const gy = PROPS.stoneBase(s)
   const M = new THREE.Matrix4().makeRotationZ(s.lean).premultiply(new THREE.Matrix4().makeRotationY(s.yaw)).setPosition(s.at[0], gy, s.at[1])
-  decor.add(g, { matrix: M, color: lin('#5d5e58'), surf: [surf(KIND.stone, 0.9), 0], renormal: true })
+  decor.add(g, { matrix: M, color: lin('#3e403a'), surf: [surf(KIND.stone, 0.9), 0], renormal: true })
   stoneList.push(s.at[0], +gy.toFixed(3), s.at[1], s.w / 2, s.h / 2, s.d / 2, s.yaw, s.lean)
 }
 
@@ -387,7 +387,7 @@ let leafCount = 0
     const len = between(0.8, 1.7)
     const wide = len * between(0.5, 0.75)
     const yaw = R() * TAU
-    const curl = between(0.06, 0.3) * len
+    const curl = between(0.02, 0.13) * len
     const tilt = between(-0.35, 0.35)
     const lift = between(0.05, 0.22) + (pathGap(x, z) < 1.6 ? 0.55 : 0)
     const tone = mul3(LEAF_TONES[Math.floor(R() * LEAF_TONES.length)], between(0.22, 0.6))
@@ -410,14 +410,14 @@ let leafCount = 0
       col.push(tone[0] * k, tone[1] * k, tone[2] * k)
     }
     for (let k = 0; k < ring.length - 1; k++) {
-      push(mid, 0.6)
+      push(mid, 0.82)
       push(ring[k], 1)
       push(ring[k + 1], 1)
     }
-    push(mid, 0.6)
+    push(mid, 0.82)
     push(base, 0.8)
     push(ring[0], 1)
-    push(mid, 0.6)
+    push(mid, 0.82)
     push(ring[ring.length - 1], 1)
     push(base, 0.8)
     leafCount++
