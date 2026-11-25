@@ -6,5 +6,7 @@ import type { SeasonKit } from '../kit'
 // dust, dim enough that tens of thousands of them read as air and never as snow.
 export const standIns: string[] = []
 
-export const veil: SeasonKit['veil'] = { tint: [1, 0.77, 0.5], density: 0.11, rest: 0 }
-export const particles: SeasonKit['particles'] = { firefly: { color: [0.72, 1, 0.22], glow: 3 }, seed: { color: [0.98, 0.95, 0.86], glow: 0 }, mote: { color: [0.5, 0.39, 0.2], glow: 0.15 } }
+// The shared veil keeps a fifth of its storm haze for as long as most of the pool is afloat, and summer's motes never land:
+// `rest` takes most of that share back, so the storm can be thick and the air at rest stays clear (0.04 x 0.2 x density is the share).
+export const veil: SeasonKit['veil'] = { tint: [1, 0.77, 0.5], density: 0.2, rest: -0.0011 }
+export const particles: SeasonKit['particles'] = { firefly: { color: [0.72, 1, 0.22], glow: 3 }, seed: { color: [1, 0.96, 0.86], glow: 0.2 }, mote: { color: [0.6, 0.47, 0.25], glow: 0.2 } }
