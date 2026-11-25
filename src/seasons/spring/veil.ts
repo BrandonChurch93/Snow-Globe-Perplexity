@@ -186,13 +186,13 @@ const storm = {
   /** The side of the tree: how much further toward the eye the mist stands there (it is the crown the storm whitens, and the cottage and the lamp it leaves to be read), and how much thicker it is there than on the cottage's side. */
   treeSideMm: 18,
   treeSide: 2,
-  cottageSide: 0.5,
+  cottageSide: 0.75,
   /** The island's bank, below the lawn: how thick the mist stays there before the miniature (a share of its thickness behind), and up to how far above the lawn that reaches, mm. */
   bank: 1,
   bankTopMm: 4,
   /** The streaks: the mist is drawn out along the liquid's turn in fine dashes. The tile of their pattern across the turn (mm), how slowly it changes along the turn, and how much of the mist they carry. */
   streakMm: 16,
-  streakLong: 0.15,
+  streakLong: 0.4,
   streak: 0.45,
   /** The dashes: the few places where the streaks are thick enough to be seen one by one, how many times the mist's thickness they have, and how white they are. */
   dash: 4.5,
@@ -201,6 +201,14 @@ const storm = {
   laneMm: 110,
   lane: 0.92,
   tint: [1, 0.71, 0.78],
+  /** While the liquid turns, the mist before the crown and about the lantern is the brightest and whitest of all: the blossom is a white ghost in it and the lantern a white core (the approved shake image). Where, how far it reaches (mm), how much brighter, how much whiter. */
+  crownAt: [12.5, 10, 2],
+  crownReach: [19, 15, 22],
+  crownGain: 1.0,
+  crownWhite: 0.85,
+  lampReach: 11,
+  lampGain: 1.1,
+  lampWhite: 0.6,
   soft: 1.1,
   key: 3.4,
   grid: 1.2,
@@ -334,7 +342,13 @@ void main() {
     gl_FragColor = vec4(a, 0.0, a, a);
     return;
   }
-  gl_FragColor = vec4(stormLit(p, grain, ${n(storm.dashWhite)} * dashes / max(soft + dashes, 1e-4)), a);
+  vec3 lit = stormLit(p, grain, ${n(storm.dashWhite)} * dashes / max(soft + dashes, 1e-4));
+  vec3 ec = (p - ${v3(storm.crownAt)}) / ${v3(storm.crownReach)};
+  float crown = exp(-dot(ec, ec)) * stirred;
+  float lantern = exp(-ld * ld / ${n(storm.lampReach * storm.lampReach)}) * stirred;
+  float most = max(lit.r, max(lit.g, lit.b));
+  lit = mix(lit, vec3(most), min(${n(storm.crownWhite)} * crown + ${n(storm.lampWhite)} * lantern, 1.0)) * (1.0 + ${n(storm.crownGain)} * crown + ${n(storm.lampGain)} * lantern);
+  gl_FragColor = vec4(lit, a);
 }
 `
 

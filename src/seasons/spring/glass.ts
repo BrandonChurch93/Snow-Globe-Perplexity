@@ -36,7 +36,7 @@ export const standIns: string[] = []
 export const glassDressing: Dressing = { tint: [1, 1, 1], amount: 0 }
 
 const look = {
-  dew: { count: 9000, mm: [0.07, 0.34], skew: 2.2, bornBy: 0.3, growSeconds: 0.5 },
+  dew: { count: 8600, mm: [0.07, 0.34], skew: 2.2, bornBy: 0.3, growSeconds: 0.5 },
   bead: { count: 420, mm: [0.38, 1.25], skew: 2.6, bornBy: 1.2, growSeconds: 1 },
   /** Lowest place of a still drop and the place a run leaves the glass, as polar angles from the top. */
   lowDeg: 118,
@@ -60,6 +60,35 @@ const look = {
   sharp: 0.0007,
   glint: 5,
   crescent: 0.55,
+  /**
+   * The breath of condensation on the glass: a thin pale film, thickest over the top of the glass and where the glass turns
+   * away from the eye, in patches, drawn out downward where water has run through it, with the finest dew standing in it as
+   * bright specks. It is one cap of the glass (its triangles are taken out of the dew's count) and all of it is worked out
+   * where the eye's ray meets the glass, so the cap's own facets are never seen.
+   */
+  breath: {
+    cols: 32,
+    rows: 12,
+    lowDeg: 112,
+    offMm: 0.5,
+    /** How thick the film is (its share of the light at a square look, where it is thickest), and how much of that stands low on the glass. */
+    thick: 0.2,
+    lowShare: 0.07,
+    /** How much of it the patches and the runs take away. */
+    patch: 0.55,
+    streak: 0.3,
+    /** The light it scatters: of the key, of the rim, of the room. */
+    key: 0.5,
+    rim: 0.35,
+    room: 1.2,
+    tint: [1, 0.95, 0.97],
+    /** Seconds after the landing by which it has formed, patch by patch. */
+    formSeconds: 7,
+    /** The specks: the cell they stand in, their radius, and how bright they are against the film. */
+    speckMm: [0.55, 1.3],
+    speckR: [0.035, 0.13],
+    speck: 2.6,
+  },
 }
 
 const dewUniforms = {
@@ -378,6 +407,86 @@ void main() {
 }
 `
 
+const FILM_VERT_PARS = `
+varying vec3 vFilmCentre;
+`
+
+const FILM_VERT = `
+vFilmCentre = modelMatrix[3].xyz;
+`
+
+const FILM = `
+${SHADE_GLSL}
+uniform vec4 uDew;
+uniform vec4 uDewLens;
+varying vec3 vFilmCentre;
+float filmHash(vec3 c) {
+  return fract(sin(dot(c, vec3(127.1, 311.7, 74.7))) * 43758.5453);
+}
+float filmNoise(vec3 x) {
+  vec3 i = floor(x);
+  vec3 f = fract(x);
+  f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(mix(filmHash(i), filmHash(i + vec3(1.0, 0.0, 0.0)), f.x), mix(filmHash(i + vec3(0.0, 1.0, 0.0)), filmHash(i + vec3(1.0, 1.0, 0.0)), f.x), f.y),
+             mix(mix(filmHash(i + vec3(0.0, 0.0, 1.0)), filmHash(i + vec3(1.0, 0.0, 1.0)), f.x), mix(filmHash(i + vec3(0.0, 1.0, 1.0)), filmHash(i + vec3(1.0, 1.0, 1.0)), f.x), f.y), f.z);
+}
+// The specks of one size: one to a cell, each at its own place and of its own radius; x is how much of the pixel a speck
+// covers, y how brightly it glints. Out of focus (blur, mm) a speck is wider and fainter.
+vec2 filmSpecks(vec3 pm, float cell, float blur) {
+  vec3 id = floor(pm / cell);
+  vec3 h = vec3(filmHash(id + 0.13), filmHash(id + 17.31), filmHash(id + 41.77));
+  float r = mix(${f(look.breath.speckR[0])}, ${f(look.breath.speckR[1])}, pow(filmHash(id + 71.9), 2.2)) * cell / ${f(look.breath.speckMm[0])};
+  float d = length(pm - (id + 0.5 + (h - 0.5) * 0.5) * cell);
+  float wide = min(r + blur, 0.42 * cell);
+  float aa = max(fwidth(d), 1e-4);
+  float there = step(filmHash(id + 29.3), 0.55);
+  return vec2(there * (1.0 - smoothstep(wide - aa, wide + aa, d)) * (r * r) / (wide * wide), step(0.6, filmHash(id + 5.5)));
+}
+void main() {
+  if (uDew.x < 0.0) discard;
+  // Where the eye's ray meets the glass.
+  vec3 ro = cameraPosition - vFilmCentre;
+  vec3 rd = normalize(vStageWorld - cameraPosition);
+  float b = dot(ro, rd);
+  float disc = b * b - dot(ro, ro) + uDew.z * uDew.z;
+  if (disc <= 0.0) discard;
+  vec3 n = (ro + rd * (-b - sqrt(disc))) / uDew.z;
+  float nv = max(-dot(n, rd), 0.0);
+  vec3 pl = normalize(vStageLocal);
+  float blot = filmNoise(pl * 3.1 + 7.3);
+  float fine = filmNoise(pl * 11.0 + 2.9);
+  float keep = dewKeep(0.6 * blot + 0.4 * fine);
+  if (keep <= 0.0) discard;
+  // It forms blot by blot after the landing, from the places where it will be thickest.
+  float formed = smoothstep(0.0, 0.3, 1.4 * clamp(uDew.x / ${f(look.breath.formSeconds)}, 0.0, 1.0) - (1.0 - 0.6 * blot - 0.4 * fine)) * keep;
+  if (formed <= 0.0) discard;
+  float th = acos(clamp(pl.y, -1.0, 1.0));
+  float ph = atan(pl.x, pl.z);
+  // Drawn out downward where water has run through it: fine across the glass, long down it.
+  float bend = filmNoise(vec3(th * 7.0, ph * 2.6, 1.7));
+  float run = filmNoise(vec3(ph * sin(th) * uDew.z / 2.6 + 5.0 * bend, th * uDew.z / 22.0 + 1.5 * bend, 3.1));
+  float streak = 1.0 - ${f(look.breath.streak)} * smoothstep(0.34, 0.2, run) * smoothstep(0.1, 0.5, pl.y);
+  float high = mix(${f(look.breath.lowShare)}, 1.0, smoothstep(0.1, 0.9, pl.y)) * smoothstep(${f(Math.cos(look.breath.lowDeg * RAD))}, ${f(Math.cos(look.breath.lowDeg * RAD) + 0.25)}, pl.y);
+  float m = ${f(look.breath.thick)} * high * (1.0 - ${f(look.breath.patch)} * smoothstep(0.62, 0.3, blot)) * (0.8 + 0.4 * fine) * streak * formed;
+  float a = 1.0 - exp(-m / max(nv, 0.24));
+  // The specks: two sizes, standing where the film is.
+  float blur = max(uDewLens.z * abs(vStageAux.y * uDewLens.w - 1.0) - ${f(look.sharp)} * vStageAux.y, 0.0);
+  vec3 pm = pl * uDew.z;
+  vec2 s0 = filmSpecks(pm, ${f(look.breath.speckMm[0])}, blur);
+  vec2 s1 = filmSpecks(pm + 3.7, ${f(look.breath.speckMm[1])}, blur);
+  float speck = max(s0.x, s1.x) * smoothstep(0.02, 0.1, m) * formed;
+  float glint = max(s0.x * s0.y, s1.x * s1.y) * smoothstep(0.02, 0.1, m) * formed;
+  vec3 light = uKeyCol * (${f(look.breath.key)} * (0.25 + 0.75 * max(dot(n, uKeyDir), 0.0))) + uRimCol * (${f(look.breath.rim)} * max(dot(n, uRimDir), 0.0)) + stageRoomSoft(n, 1.0) * ${f(look.breath.room)};
+  light *= vec3(${look.breath.tint.map(f).join(', ')});
+  float limb = smoothstep(${f(look.limb[0])}, ${f(look.limb[1])}, nv);
+  float cover = (a + (1.0 - a) * 0.6 * speck) * limb;
+  if (cover <= 0.002) discard;
+  vec3 col = light * (a + (1.0 - a) * 0.6 * speck * (1.0 + ${f(look.breath.speck)} * glint)) * limb;
+  gl_FragColor = vec4(col, cover);
+  if (uDiag != 0) discard;
+}
+`
+
 const blend = {
   transparent: true,
   depthWrite: false,
@@ -468,6 +577,30 @@ function trailsGeometry(): THREE.BufferGeometry {
   return g
 }
 
+function filmGeometry(): THREE.BufferGeometry {
+  const F = look.breath
+  const at: number[] = []
+  const idx: number[] = []
+  const R = RS + F.offMm
+  for (let i = 0; i <= F.rows; i++) {
+    const th = (F.lowDeg * RAD * i) / F.rows
+    for (let k = 0; k <= F.cols; k++) {
+      const ph = (TAU * k) / F.cols
+      at.push(R * Math.sin(th) * Math.sin(ph), R * Math.cos(th), R * Math.sin(th) * Math.cos(ph))
+    }
+  }
+  const row = F.cols + 1
+  for (let i = 0; i < F.rows; i++)
+    for (let k = 0; k < F.cols; k++) {
+      const a = i * row + k
+      idx.push(a, a + row, a + 1, a + 1, a + row, a + row + 1)
+    }
+  const g = new THREE.BufferGeometry()
+  g.setAttribute('position', new THREE.Float32BufferAttribute(at, 3))
+  g.setIndex(idx)
+  return g
+}
+
 const copies = new Map<string, THREE.FramebufferTexture>()
 let copied = -1
 
@@ -521,7 +654,22 @@ function make(): THREE.Group {
   beads.renderOrder = 11.1
   beads.frustumCulled = false
   beads.onBeforeRender = (renderer, _scene, _camera, _geometry, material) => copyBehind(renderer, material, false)
-  return new THREE.Group().add(trails, beads, mist())
+  const film = new THREE.Mesh(
+    filmGeometry(),
+    stageShader({
+      part: PART,
+      standIn: false,
+      change: 'glass-dressing',
+      uniforms,
+      vertexPars: FILM_VERT_PARS,
+      vertexMain: FILM_VERT,
+      fragment: FILM,
+      params: { ...blend, side: THREE.FrontSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -8 },
+    }),
+  )
+  film.renderOrder = 10.9
+  film.frustumCulled = false
+  return new THREE.Group().add(film, trails, beads, mist())
 }
 
 export async function prepare(): Promise<void> {}
