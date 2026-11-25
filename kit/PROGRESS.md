@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 70 · 2026-11-25 02:55 UTC
+Status 71 · 2026-11-25 03:13 UTC
 
-- `out/stills/status/status-70-1.jpg`: Summer at rest as Round 9 judges it (left) beside the approved image (right)
-- `out/stills/status/status-70-2.jpg`: Summer mid-shake as Round 9 judges it (left) beside the approved image (right)
-- `out/stills/status/status-70-3.jpg`: Still: fall rest hero, hd, draft
-- `out/stills/status/status-70-4.jpg`: Still: fall rest hero, preview, draft, standins view
+- `out/stills/status/status-71-1.jpg`: Spring at rest: the approved image left and the build right (draft tier; 03:12). More floating petals; the runs on the glass are now short clear streaks
+- `out/stills/status/status-71-2.jpg`: Spring half a second after landing: approved left and build right (draft tier). The mist now stands behind the miniature so the cottage and the lamp read
+- `out/stills/status/status-71-3.jpg`: Fall at rest: the build left and the approved image right (draft tier; 03:05). New trunk and limbs and fence and stones; the pale ember puffs still bury the tree
+- `out/stills/status/status-71-4.jpg`: Still: summer landed hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 03:12 UTC
-clock: phase 4, tick of 4.2 minutes
-phase 4: 3.08 h used of its 9.50 h box
-allowance (before the review): 25.36 h used of 36.00 h allowed
-all time before the review: 25.36 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 03:13 UTC
+clock: phase 4, tick of 1.5 minutes
+phase 4: 3.10 h used of its 9.50 h box
+allowance (before the review): 25.39 h used of 36.00 h allowed
+all time before the review: 25.39 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 16
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -1625,3 +1625,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 02:38 UTC. 02:32: the merge helper took the branch `agent/p4-round8-pack` for a builder's branch (its name starts with `agent/p4-`) and merged it into the local `main`. A branch that carries render files is fetched, never merged, and the pack's key must not sit in the tree before every answer is in. Nothing had been pushed: `main` was put back to the merge before it (`git reset --hard 766b51b`), the helper now leaves out every `agent/p4-round<N>-` branch, the two builders' merges after it were made again, every folder changed since the freeze `216e427` was made again, and the pack's files were fetched again into the ignored work folder. Round 9's pack arrived 02:35 from `round_renderer_b` (branch `agent/p4-round9-pack` `f8e416e`, 31 files, no part missing; measures at final tier 5 of 19 red: M2 on four stills between 0.0847 and 0.164 against 0.03, M3 summer-rest 0.3649 against 0.75). Round 10's still pack went to `round_renderer` at 02:36 (limit 03:35).
 
 - 02:55 UTC. - 02:56 UTC: Status 70 posted (summer's judged stills of Round 9 beside the approved images; Round 8's first scores; the hand-over; the sound tool's account out of credits, decision 78, open item 63). Sixth merge of the builders' work made (`summer_air` `d76d2bd`, `spring_mini2` `84c8bb9`).
+
+- 03:14 UTC. Status 71 posted (three pictures: spring at rest and after landing from `spring_air2`'s looks, fall at rest from `fall_mini2`'s, each beside the approved image). Since Status 70: Round 9's second half of R3 saved (6; R3 counts 4) and sent to summer's builders; ownership of summer's sand settled on `summer_air2`'s word (the mound, sheet and spill are `slab.ts`, `bases2`; the flying grains are `arrival.ts`, `change_builder`) and the issues sent on; decision 81 (an optional per-season gain on the background lights, pushed as `8d2af6e` after one failed push at 03:12); Round 8's jurors run one at a time in the free critic slot, 20 of 25 in. Sound account read at 03:13:32: 130996 of 131000 used.
