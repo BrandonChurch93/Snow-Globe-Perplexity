@@ -147,7 +147,7 @@ void main() {
   float rimGain;
   float occl;
   slabLight(vec3(vStageWorld.x, 0.0, vStageWorld.z), keyDir, keyGain, rimDir, rimGain, occl, warm);
-  float tone = 0.3 + 0.4 * fract(vLeafOne.x * 7.3);
+  float tone = 0.5 + 0.5 * fract(vLeafOne.x * 7.3);
   vec3 albedo = mix(vec3(dot(leaf.rgb, vec3(0.3, 0.5, 0.2))) * vec3(1.0, 0.72, 0.5), leaf.rgb, 0.45 + 0.4 * fract(vLeafOne.x * 3.7)) * tone * mix(1.0, 0.72, under);
   float key = clamp(dot(n, keyDir) * 0.75 + 0.25, 0.0, 1.0);
   float rim = clamp(dot(n, rimDir) * 0.6 + 0.4, 0.0, 1.0);
@@ -202,7 +202,7 @@ void main() {
   vec3 cold = uKeyCol * (0.35 + 0.65 * toKey) + uSky * 2.0;
   vec3 hot = uRimCol * (0.3 + 0.7 * toRim);
   vec3 col = (cold * 0.05 + hot * 0.06) * (line * 1.0 + skirt * 0.22) * dust * down;
-  col += candleOnSlab(P, vec3(0.0, 1.0, 0.0), lift) * (0.03 * dust) * smoothstep(-2.0, 3.0, gap);
+  col += candleOnSlab(P, vec3(0.0, 1.0, 0.0), lift) * (0.085 * dust) * smoothstep(-2.0, 3.0, gap);
   gl_FragColor = vec4(col, 0.0);
   if (uDiag != 0) gl_FragColor = stageDiag(vec3(0.02), vec3(0.0, 1.0, 0.0), 0.0, c, 0.0);
 }

@@ -91,17 +91,15 @@ export const DRIPS = [
   { x: 1367, y1: 1178, w: 17, wide: 3.4 },
   { x: 1512, y1: 1142, w: 14, wide: 1.3 },
   { x: 1622, y1: 1166, w: 17, wide: 2.0 },
-  { x: 1668, y1: 1282, w: 17, wide: 1.6 },
+  { x: 1630, y1: 1282, w: 17, wide: 1.6 },
   { x: 1785, y1: 1132, w: 16, wide: 1.8 },
   { x: 1842, y1: 1110, w: 20, wide: 2.4 },
 ]
 // Wax that has run to the slab and pooled: x of the run, y where it starts, the half width of its pool in mm.
 export const RUNS = [
-  { x: 1052, y0: 1338, w: 22, pool: 6.5 },
-  { x: 1182, y0: 1372, w: 16, pool: 3.2 },
-  { x: 1396, y0: 1330, w: 15, pool: 0 },
-  { x: 1622, y0: 1392, w: 18, pool: 5.2 },
-  { x: 1788, y0: 1345, w: 17, pool: 4.4 },
+  { x: 1052, y0: 1332, w: 24, pool: 6.5 },
+  { x: 1622, y0: 1392, w: 20, pool: 5.2 },
+  { x: 1788, y0: 1345, w: 19, pool: 4.4 },
 ]
 
 // The thorns a viewer can count, read from the approved image by eye: where each stands on the ring, the way it points
