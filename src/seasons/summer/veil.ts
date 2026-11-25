@@ -9,4 +9,4 @@ export const standIns: string[] = []
 // The shared veil keeps a fifth of its storm haze for as long as most of the pool is afloat, and summer's motes never land:
 // `rest` takes most of that share back, so the storm can be thick and the air at rest stays clear (0.04 x 0.2 x density is the share).
 export const veil: SeasonKit['veil'] = { tint: [1, 0.77, 0.5], density: 0.2, rest: -0.0011 }
-export const particles: SeasonKit['particles'] = { firefly: { color: [0.85, 1, 0.26], glow: 5 }, seed: { color: [1.15, 1.08, 0.94], glow: 0 }, mote: { color: [0.7, 0.54, 0.3], glow: 0.25 } }
+export const particles: SeasonKit['particles'] = { firefly: { color: [0.95, 1, 0.3], glow: 5 }, seed: { color: [1.15, 1.08, 0.94], glow: 0 }, mote: { color: [0.78, 0.55, 0.26], glow: 0.25 } }
