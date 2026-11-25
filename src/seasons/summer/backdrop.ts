@@ -1,3 +1,11 @@
 import type { SeasonKit } from '../kit'
 
-export const backdrop: SeasonKit['backdrop'] = { colors: [[1, 0.7, 0.3], [1, 0.85, 0.5], [0.4, 0.75, 0.8], [0.8, 1, 0.4]], room: [0.0062, 0.0056, 0.0086], floor: [0.012, 0.0108, 0.0158] }
+// The lights behind the globe: amber and gold, the dim ones deep orange, the brightest a pale warm white. The list runs from
+// the dimmest level to the brightest (`DISCS.colourByLevel` in `src/scene/backdrop.ts`).
+const ember: [number, number, number] = [1, 0.46, 0.15]
+const amber: [number, number, number] = [1, 0.6, 0.25]
+const gold: [number, number, number] = [1, 0.72, 0.36]
+const pale: [number, number, number] = [1, 0.8, 0.5]
+const cream: [number, number, number] = [1, 0.88, 0.68]
+
+export const backdrop: SeasonKit['backdrop'] = { colors: [ember, amber, ember, amber, gold, amber, gold, pale, cream, pale], room: [0.0034, 0.0058, 0.0062], floor: [0.005, 0.0078, 0.0095] }
