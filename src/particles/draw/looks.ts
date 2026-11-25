@@ -178,7 +178,7 @@ export const CARD = {
   /** The few near the eye that are far out of focus: their share, the depths they start and are full at, how much larger they are drawn, their blur in pixels of a 1080 picture, and how much of them is kept off the middle of the picture. */
   near: { share: 0.4, from: 0.05, to: 0.7, size: 1.7, petalSize: [1.2, 3.4] as const, petalSkew: 2.5, px: [2.5, 12] as const, clear: 0.55 },
   /** At rest nothing is drawn large or soft in front of the cottage and the tree (winter's REST_CLEAR for the cards): inside the middle of the picture, from this depth forward and up to this height above the globe's centre, a sheet and a seed head are held to these radii in pixels of a 1080 picture, keep this share of the lens's blur, and none is of the large soft class. */
-  clear: { back: -0.25, front: 0.05, lowMm: 6, highMm: 26, blur: 0.25, sheetPx: 11, seedPx: 10 },
+  clear: { back: -0.25, front: 0.05, lowMm: 6, highMm: 26, blur: 0.25, sheetPx: 11, seedPx: 10, snagPx: 6 },
   /** The ones far behind are a little out of focus too. */
   far: { from: -0.25, to: -0.9, px: [0.6, 2.2] as const },
   /** From this blur on (as a share of the card's own width on the picture) a card is drawn as the soft blob of its outline. */
@@ -186,7 +186,7 @@ export const CARD = {
   /** The most a card's bends may move its outline on the picture, as a share of what keeps the outline whole when the card is seen edge on. */
   bendFit: 0.55,
   /** The storm's fine streaks, for the petals and for the leaves: their share of the ones not drawn whole, the least and most they are seen and its skew, how much longer than the shutter's path, their bow, width in pixels, the tail's share of the head's light, how pale (petals) and the tints (leaves). */
-  line: { seedKeep: [0.015, 0.75] as const, seedSkew: 3.5, seedStretch: [0.5, 1.6] as const, seedWidePx: [0.3, 0.6] as const, seedHeads: 0.3, fanPx: [9, 24] as const, fanHairs: 7, fanSpread: 1.2, fanShort: 0.55, fanWide: 0.7, fanCore: 0.06, fanOpen: [0.08, 0.4] as const, headSeen: 0.6, deep: [0.6, 1.2] as const, frontCut: 0.45, share: [0.24, 0.32] as const, leafStretch: [0.6, 1.5] as const, leafPale: 0.6, leafSkew: 2.5, petalHeads: 0.7, petalHeadPx: [2.4, 5.5] as const, leafHeads: 0.45, leafHeadPx: [2.4, 6] as const, leafWidePx: [0.9, 1.9] as const, headOval: [0.5, 0.85] as const, headLift: 3, headGain: 1.1, petalHead: [[1, 0.74, 0.86], [1.25, 1.25, 1.25]] as const, petalWhite: 0.72, leafHead: [[1.1, 0.95, 0.7], [1.7, 1.5, 1.15]] as const, leafWhite: 0.45, keep: [0.03, 0.9] as const, skew: 3.5, stretch: [0.8, 2.4] as const, align: 0.85, fromPx: [6, 30] as const, bow: [0.03, 0.16] as const, widePx: [0.8, 1.8] as const, tail: 0.1, pale: [0.2, 0.8] as const, gain: 1.15, seedGain: 1.9, leafLow: [1.5, 1.0, 0.6] as const, leafHigh: [1.9, 1.6, 1.2] as const },
+  line: { seedKeep: [0.015, 0.75] as const, seedSkew: 3.5, seedStretch: [0.5, 1.6] as const, seedWidePx: [0.3, 0.6] as const, seedHeads: 0.3, fanPx: [9, 24] as const, fanHairs: 7, fanSpread: 1.2, fanShort: 0.55, fanWide: 0.7, fanCore: 0.06, fanOpen: [0.08, 0.4] as const, headSeen: 0.6, deep: [0.6, 1.2] as const, frontCut: 0.45, share: [0.2, 0.32] as const, leafStretch: [0.6, 1.5] as const, leafPale: 0.6, leafSkew: 2.5, petalHeads: 0.7, petalHeadPx: [3, 7] as const, leafHeads: 0.45, leafHeadPx: [2.4, 6] as const, leafWidePx: [0.9, 1.9] as const, headOval: [0.5, 0.85] as const, headLift: 3, headGain: 1.1, petalHead: [[1, 0.74, 0.86], [1.25, 1.25, 1.25]] as const, petalWhite: 0.72, leafHead: [[1.1, 0.95, 0.7], [1.5, 1.2, 0.85]] as const, leafWhite: 0.7, keep: [0.03, 0.9] as const, skew: 3.5, stretch: [0.8, 2.4] as const, align: 0.85, fromPx: [6, 30] as const, bow: [0.03, 0.16] as const, widePx: [0.8, 1.8] as const, tail: 0.1, pale: [0.2, 0.8] as const, gain: 1.15, seedGain: 1.9, leafLow: [1.5, 1.0, 0.6] as const, leafHigh: [1.9, 1.6, 1.2] as const },
   /** How much of the storm's sheets is taken away in front of the cottage, so that it still reads. */
   window: 0.75,
   /** How much a lying sheet is lit as one in the air, how much of the veil lies over it, and how much of its own colour the light takes on its way through a sheet. */
@@ -256,9 +256,9 @@ export const CARD = {
   fog: 0.3,
   batFog: 0.01,
   /** The warm glow a bat's edge takes from the light around it, over a body that stays black. */
-  batGlow: [0.1, 0.055, 0.022] as const,
+  batGlow: [0.06, 0.033, 0.013] as const,
   /** How dark a bat's body is drawn against the row's colour: black on the dark air, a silhouette. */
-  batBody: 0.2,
+  batBody: 0.1,
   /** How much of the lens's blur a bat keeps: the approved bats are crisp black shapes wherever they fly. */
   batSoft: 0.1,
   /** A bat is a solid black shape: nothing of the air is drawn over it. A card or a light fades out from this far to this far from a bat's middle, as shares of the bat's half span on the picture. */
