@@ -2459,24 +2459,60 @@
     }
   ],
   "pack": {
-    "time": "2026-11-24T20:31:35.696Z",
+    "time": "2026-11-25T17:24:44.452Z",
     "kbps": 192,
-    "bytes": 63360,
+    "bytes": 1032768,
     "fits": true,
     "files": [
       {
         "file": "sprite.mp3",
-        "bytes": 63360,
-        "sha256": "d3386a561bf88bc721dd7a4177a01527af17c3012c3fe1047968ea9c40204054"
+        "bytes": 122688,
+        "sha256": "4b758135805263f199aaaacdbb69549a1c9f4fb81489d5be9571f83fe7090924"
+      },
+      {
+        "file": "amb-spring.mp3",
+        "bytes": 455040,
+        "sha256": "25da46098ae5b51d8f0dc2f1c2a19161d493f7d67c522bdd74221a1adab4cc96"
+      },
+      {
+        "file": "amb-summer.mp3",
+        "bytes": 455040,
+        "sha256": "5fd52d37313f1d30e1f4ed4f7cacc315e9c2fbd997d8479d188160477586c5eb"
       }
     ],
     "sprites": [
       "lift",
+      "shake-spring",
       "glass-clink",
       "ui-tick",
       "ui-sound-on"
     ],
-    "loops": [],
+    "loops": [
+      {
+        "id": "amb-spring",
+        "decodedSeconds": 18.9,
+        "expectedSeconds": 18.9,
+        "seamErrorDb": -9.8,
+        "sourceSeam": {
+          "jump": 0.004078,
+          "typicalStep": 0.015358,
+          "ratio": 0.27,
+          "levelStepDb": 3.71
+        }
+      },
+      {
+        "id": "amb-summer",
+        "decodedSeconds": 18.9,
+        "expectedSeconds": 18.9,
+        "seamErrorDb": -26.89,
+        "sourceSeam": {
+          "jump": 0.007444,
+          "typicalStep": 0.012568,
+          "ratio": 0.59,
+          "levelStepDb": -7.47
+        }
+      }
+    ],
     "notes": []
   },
   "mixes": {
