@@ -561,50 +561,54 @@
     {
       "name": "change-winter-spring",
       "unit": "change",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/shake/change.ts",
         "src/seasons/winter",
         "src/seasons/spring"
       ],
       "standInHash": "559bcccc61d2209a",
-      "commit": "2530677"
+      "commit": "6066ae4",
+      "note": "Made by the method of kit/03 section 11 on the change builders' branches (agent/p4-change, agent/p4-change2): every seasonal part reads the one change number (partChange in src/shake/change.ts), the far side of the miniature switches before the near side (side, lag 0.5), each particle turns to the new kind in place by its index (follow in src/particles/engine/engine.ts), and the base, the dressing and the backdrop change across the bloom (changeBloom, 0.69 to 0.85 of the window). All four changes have been in BUILT_CHANGES since fc047e8, so no code path flags them; the label here stayed at stand-in until G13 of Round 17 named it (10:56 UTC, Nov 25) and found no stand-in hash, no flagged code path and no flagged pixel. Round 17's measure on dcda6ca: M4 0.9446 against 0.85, M5 0.9854 against 0.6, M6 green"
     },
     {
       "name": "change-spring-summer",
       "unit": "change",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/shake/change.ts",
         "src/seasons/spring",
         "src/seasons/summer"
       ],
       "standInHash": "e94e0e6537e827e8",
-      "commit": "2530677"
+      "commit": "6066ae4",
+      "note": "Made by the method of kit/03 section 11 on the change builders' branches (agent/p4-change, agent/p4-change2): every seasonal part reads the one change number (partChange in src/shake/change.ts), the far side of the miniature switches before the near side (side, lag 0.5), each particle turns to the new kind in place by its index (follow in src/particles/engine/engine.ts), and the base, the dressing and the backdrop change across the bloom (changeBloom, 0.69 to 0.85 of the window). All four changes have been in BUILT_CHANGES since fc047e8, so no code path flags them; the label here stayed at stand-in until G13 of Round 17 named it (10:56 UTC, Nov 25) and found no stand-in hash, no flagged code path and no flagged pixel. Round 17's measure on dcda6ca: M4 0.9643 against 0.85, M5 1 against 0.6, M6 green"
     },
     {
       "name": "change-summer-fall",
       "unit": "change",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/shake/change.ts",
         "src/seasons/summer",
         "src/seasons/fall"
       ],
       "standInHash": "2afe0a593e46d564",
-      "commit": "2530677"
+      "commit": "6066ae4",
+      "note": "Made by the method of kit/03 section 11 on the change builders' branches (agent/p4-change, agent/p4-change2): every seasonal part reads the one change number (partChange in src/shake/change.ts), the far side of the miniature switches before the near side (side, lag 0.5), each particle turns to the new kind in place by its index (follow in src/particles/engine/engine.ts), and the base, the dressing and the backdrop change across the bloom (changeBloom, 0.69 to 0.85 of the window). All four changes have been in BUILT_CHANGES since fc047e8, so no code path flags them; the label here stayed at stand-in until G13 of Round 17 named it (10:56 UTC, Nov 25) and found no stand-in hash, no flagged code path and no flagged pixel. Round 17's measure on dcda6ca: M4 0.9205 against 0.85, M5 0.9758 against 0.6, M6 green"
     },
     {
       "name": "change-fall-winter",
       "unit": "change",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/shake/change.ts",
         "src/seasons/fall",
         "src/seasons/winter"
       ],
       "standInHash": "ac0049eb3bfbf62f",
-      "commit": "2530677"
+      "commit": "6066ae4",
+      "note": "Made by the method of kit/03 section 11 on the change builders' branches (agent/p4-change, agent/p4-change2): every seasonal part reads the one change number (partChange in src/shake/change.ts), the far side of the miniature switches before the near side (side, lag 0.5), each particle turns to the new kind in place by its index (follow in src/particles/engine/engine.ts), and the base, the dressing and the backdrop change across the bloom (changeBloom, 0.69 to 0.85 of the window). All four changes have been in BUILT_CHANGES since fc047e8, so no code path flags them; the label here stayed at stand-in until G13 of Round 17 named it (10:56 UTC, Nov 25) and found no stand-in hash, no flagged code path and no flagged pixel. Round 17's measure on dcda6ca: M4 0.9666 against 0.85, M5 0.9996 against 0.6, M6 green"
     },
     {
       "name": "interface",
