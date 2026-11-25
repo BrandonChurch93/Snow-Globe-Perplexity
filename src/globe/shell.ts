@@ -70,6 +70,7 @@ export const glassLook = {
  * ring's inner edge is moved out toward the outline, 0 to 1, which thins the band round the glass. `rimClear`: how much of the
  * inside the rim's band hides. `topLine`: how much of the cool line the ring carries over the top. `ringMottle`: the depth of the
  * streaks and mottle in the ring. `ceiling`: the gain of the ceiling's reflection across the top of the glass.
+ * `roomHue`, `roomHueOn`: the colour the room's walls take in the glass's reflections and how far they take it, 0 to 1.
  */
 export interface GlassAmounts {
   windowTint: V3
@@ -86,9 +87,11 @@ export interface GlassAmounts {
   topLine: number
   ringMottle: number
   ceiling: number
+  roomHue: V3
+  roomHueOn: number
 }
 
-const WINTER_GLASS: GlassAmounts = { windowTint: glassLook.window.tint, windowGain: [1, 1, 1, 1], windowSoftDeg: 0, windowGrain: 0, rimTint: [1, 1, 1], wallTint: [1, 1, 1], ringCover: 1, strip: 1, bend: 1, ringThin: 0, rimClear: 1, topLine: 1, ringMottle: 1, ceiling: 1 }
+const WINTER_GLASS: GlassAmounts = { windowTint: glassLook.window.tint, windowGain: [1, 1, 1, 1], windowSoftDeg: 0, windowGrain: 0, rimTint: [1, 1, 1], wallTint: [1, 1, 1], ringCover: 1, strip: 1, bend: 1, ringThin: 0, rimClear: 1, topLine: 1, ringMottle: 1, ceiling: 1, roomHue: [1, 1, 1], roomHueOn: 0 }
 const glassAmounts = new Map<string, GlassAmounts>()
 
 export function setGlass(season: string, amounts: Partial<GlassAmounts>): void {
@@ -159,6 +162,7 @@ uniform vec3 uRimTint;
 uniform vec3 uWallTint;
 uniform vec4 uRingAmt;
 uniform vec4 uRimAmt;
+uniform vec4 uRoomHue;
 varying vec3 vEye;
 const float GLASS_IOR = ${num(G.glassIor)};
 const float SEAT_Y = ${num(collarY)};
@@ -313,6 +317,7 @@ vec3 glassPoints(vec3 d) {
 }
 vec3 glassRoom(vec3 d, float soft, int k, float own) {
   vec3 c = stageRoomSeen(d, k == 3 ? ${num(glassLook.room.throughRough)} : ${num(glassLook.room.innerRough)});
+  if (k != 3) c = mix(c, uRoomHue.rgb * dot(c, vec3(0.2126, 0.7152, 0.0722)), uRoomHue.a);
   c += soft < 0.0 ? glassPoints(d) : stageRoomLights(d, ${num(glassLook.through.disc)} + soft * 0.05);
   if (uOwn < 0.5) return c;
   soft = max(soft, 0.0);
@@ -728,6 +733,7 @@ export const shellUniforms = {
   uWallTint: { value: new THREE.Vector3(1, 1, 1) },
   uRingAmt: { value: new THREE.Vector4(1, 1, 1, 0) },
   uRimAmt: { value: new THREE.Vector4(1, 1, 1, 1) },
+  uRoomHue: { value: new THREE.Vector4(1, 1, 1, 0) },
 }
 
 const blend: THREE.ShaderMaterialParameters = {
@@ -940,6 +946,7 @@ export class Shell {
     sh.uWallTint.value.set(mixed(ga.wallTint[0], gb.wallTint[0]), mixed(ga.wallTint[1], gb.wallTint[1]), mixed(ga.wallTint[2], gb.wallTint[2]))
     sh.uRingAmt.value.set(mixed(ga.ringCover, gb.ringCover), mixed(ga.strip, gb.strip), mixed(ga.bend, gb.bend), mixed(ga.ringThin, gb.ringThin))
     sh.uRimAmt.value.set(mixed(ga.rimClear, gb.rimClear), mixed(ga.topLine, gb.topLine), mixed(ga.ringMottle, gb.ringMottle), mixed(ga.ceiling, gb.ceiling))
+    sh.uRoomHue.value.set(mixed(ga.roomHue[0], gb.roomHue[0]), mixed(ga.roomHue[1], gb.roomHue[1]), mixed(ga.roomHue[2], gb.roomHue[2]), mixed(ga.roomHueOn, gb.roomHueOn))
     const shown = t < 0.5 ? a : b
     const veiled = f.mix.veil < 0.5 ? a : b
     const veil = `veil-${veiled.season}`
