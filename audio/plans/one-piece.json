@@ -1,5 +1,5 @@
 {
-  "note": "The plan of the one-piece candidate. Made at 02:54 UTC on 2026-11-25 by POST /v1/music/plan (no credits; no cost header came back) from planPrompt and music_length_ms 60000; the five sections came back at 12000 ms each, which is the default grid. The one change: the music family line is added, word for word, as the last of positive_global_styles. The music call sends composition_plan with respect_sections_durations true.",
+  "note": "The plan of the one-piece candidate. Made at 02:54 UTC on 2026-11-25 by POST /v1/music/plan (no credits; no cost header came back) from planPrompt and music_length_ms 60000; the five sections came back at 12000 ms each, which is the default grid. The one change: the music family line is added, word for word, as the last of positive_global_styles. The music call sends composition_plan with respect_sections_durations true. A second change, at 17:56 UTC on 2026-11-25: in the Winter section soft wordless choir pads is replaced by soft warm string pads, because a piece is kept only if the listener hears no voice.",
   "planPrompt": "A 60 second orchestral piece at exactly 100 beats per minute in 4/4 for a film of a snow globe that passes through four seasons, in five sections of exactly 12 seconds (five bars) each, with one short simple melody that passes through all five sections in each season's own instruments. Section 1, winter: warm orchestral Christmas, sleigh bells, celesta, soft wordless choir pads, low strings. Section 2, spring: light and airy, harp, flute, plucked strings. Section 3, summer: warm and unhurried, nylon guitar, soft marimba, a golden dusk. Section 4, fall: Halloween, a detuned music box and piano over low strings, with eerie sounds in the music itself. Section 5, winter again: the winter music returning fuller, sleigh bells, celesta, full strings, resolving on its last bar. The last bar of each of the first four sections thins out and builds into the downbeat of the next, instrumental, no vocals, no spoken words, clean ending",
   "music_length_ms": 60000,
   "composition_plan": {
@@ -34,7 +34,7 @@
           "warm orchestral christmas feel",
           "sleigh bells",
           "celesta",
-          "soft wordless choir pads",
+          "soft warm string pads",
           "low strings",
           "gentle melodic statement",
           "subtle harmonic shimmer",
