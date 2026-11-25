@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 75 · 2026-11-25 04:54 UTC
+Status 76 · 2026-11-25 05:21 UTC
 
-- `out/stills/status/status-75-1.jpg`: Spring at rest on the build its second round judges (draft tier preview size)
-- `out/stills/status/status-75-2.jpg`: Summer at rest on the build its second round judges (draft tier preview size)
-- `out/stills/status/status-75-3.jpg`: Still: summer rest hero, preview, draft
-- `out/stills/status/status-75-4.jpg`: Still: summer rest hero, preview, draft, standins view
+- `out/stills/status/status-76-1.jpg`: Spring at rest by its miniature builder: ours left and the approved crop right (draft tier). Still wrong: the crown is fuller and more even than the approved lace of blossom
+- `out/stills/status/status-76-2.jpg`: Summer at rest by its air builder after the seed fix: ours beside the approved image (draft tier). Still wrong: the air is darker and cooler than approved
+- `out/stills/status/status-76-3.jpg`: Fall at rest by its miniature builder: ours left and approved right (draft tier). Still wrong: haze and leaves veil the tree and the cottage
+- `out/stills/status/status-76-4.jpg`: Still: summer rest hero, preview, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 05:07 UTC
-clock: phase 4, tick of 13.5 minutes
-phase 4: 5.00 h used of its 9.50 h box
-allowance (before the review): 27.29 h used of 36.00 h allowed
-all time before the review: 27.29 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 05:21 UTC
+clock: phase 4, tick of 8.1 minutes
+phase 4: 5.23 h used of its 9.50 h box
+allowance (before the review): 27.51 h used of 36.00 h allowed
+all time before the review: 27.51 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 13
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -1664,3 +1664,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 04:34 UTC. - 04:34 UTC: the push of `dcaffed` (Round 10's R4 answer) failed at 04:32; it is retried with the next commit. Round 10's R4 answer is in (3; three severe, three major, one minor) and went to the change builder, fall's air and base builders, summer's air builder, the bases builder and the kinds builder with the sheets it names and a line on whose issue is whose.
 
 - 04:54 UTC. - 04:55 UTC: Status 75 posted (spring and summer at rest on the build their second rounds judge; G15 green for both on the merged build by `tris.mjs`; the two missing recipes written, `g8list.mjs` prints `uncovered 0 of 151`; Round 10's gate 13 of 15 green, ticked). The freeze carries all ten builders, the last two merges being summer's air at `8e5323c` and the change at `c568e8a`.
+
+- 05:21 UTC. - Status 76 posted (three builders' looks beside the approved images; one freeze for the three seasons' second rounds, decision 84; the count of triangles on the first merged tree was wrong because a late merge step had restored the committed built files of two bases; four bats, decision 85). All ten builders merged at 05:20 with no conflict (local head `8961808`); every built file of spring, summer and fall is being made again. One more merge commit came in without the trailer (`15ecc57`, from fall's base builder, git's default message): not rewritten.
