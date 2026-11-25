@@ -1,0 +1,356 @@
+{
+  "caption": "fall-rest: matching regions for M3",
+  "a": {
+    "file": "references/approved/fall-rest.png",
+    "sha256": "42729ddc87a6d9c8d4a2bb899b9217cee8c57e12beab539b821130464e43c1b0",
+    "width": 2816,
+    "height": 1584,
+    "globe": {
+      "cx": 1418.8,
+      "cy": 659.6,
+      "r": 564.1
+    },
+    "base": {
+      "left": 883,
+      "right": 1938,
+      "top": 1083,
+      "foot": 1442
+    },
+    "frame": {
+      "x": 600.85,
+      "y": -45.52,
+      "w": 1635.89,
+      "h": 1861.53
+    },
+    "edgeFillPx": {
+      "left": 0,
+      "top": 19,
+      "right": 0,
+      "bottom": 99
+    }
+  },
+  "b": {
+    "file": "out/work/stills/fall-rest-hd-final.png",
+    "sha256": "ae57b38bf494a180e8e901c16688f0d9d177406d278189e70458d791957d9d94",
+    "width": 1920,
+    "height": 1080,
+    "globe": {
+      "cx": 960,
+      "cy": 467.67901740126274,
+      "r": 376.96554629536996
+    },
+    "base": {
+      "left": 597.8286732017048,
+      "right": 1322.171326798295,
+      "top": 709.1023468384356,
+      "foot": 1029.8254169683203
+    },
+    "frame": {
+      "x": 413.4,
+      "y": -3.53,
+      "w": 1093.2,
+      "h": 1243.99
+    },
+    "edgeFillPx": {
+      "left": 0,
+      "top": 2,
+      "right": 0,
+      "bottom": 102
+    }
+  },
+  "limits": {
+    "longEdge": 1400,
+    "maxPixels": 1140000
+  },
+  "frameInRadii": {
+    "left": 1.45,
+    "right": 1.45,
+    "up": 1.25,
+    "down": 2.05
+  },
+  "panels": {
+    "file": "out/work/measure/m3-fall-rest-final.png",
+    "stripHeight": 22,
+    "globeRadiusPx": 240,
+    "a": {
+      "left": 0,
+      "top": 22,
+      "width": 696,
+      "height": 792
+    },
+    "b": {
+      "left": 704,
+      "top": 22,
+      "width": 696,
+      "height": 792
+    }
+  },
+  "cropScale": {
+    "a": 0.67,
+    "b": 1
+  },
+  "crops": [
+    {
+      "name": "miniature",
+      "centreInRadii": {
+        "x": 0,
+        "y": 0.15
+      },
+      "file": "out/work/measure/m3-fall-rest-final-crops-1.png",
+      "a": {
+        "source": {
+          "x": 898.04,
+          "y": 450.92,
+          "w": 1041.51,
+          "h": 586.6
+        },
+        "at": {
+          "left": 0,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      },
+      "b": {
+        "source": {
+          "x": 612,
+          "y": 328.22,
+          "w": 696,
+          "h": 392
+        },
+        "at": {
+          "left": 704,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      }
+    },
+    {
+      "name": "crown",
+      "centreInRadii": {
+        "x": -0.45,
+        "y": -0.72
+      },
+      "file": "out/work/measure/m3-fall-rest-final-crops-1.png",
+      "a": {
+        "source": {
+          "x": 644.2,
+          "y": -39.85,
+          "w": 1041.51,
+          "h": 586.6
+        },
+        "at": {
+          "left": 0,
+          "top": 400,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 27,
+          "right": 0,
+          "bottom": 0
+        }
+      },
+      "b": {
+        "source": {
+          "x": 442.37,
+          "y": 0.26,
+          "w": 696,
+          "h": 392
+        },
+        "at": {
+          "left": 704,
+          "top": 400,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      }
+    },
+    {
+      "name": "collar",
+      "centreInRadii": {
+        "x": 0,
+        "y": 0.93
+      },
+      "file": "out/work/measure/m3-fall-rest-final-crops-2.png",
+      "a": {
+        "source": {
+          "x": 898.04,
+          "y": 890.91,
+          "w": 1041.51,
+          "h": 586.6
+        },
+        "at": {
+          "left": 0,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      },
+      "b": {
+        "source": {
+          "x": 612,
+          "y": 622.26,
+          "w": 696,
+          "h": 392
+        },
+        "at": {
+          "left": 704,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      }
+    },
+    {
+      "name": "base-front",
+      "centreInRadii": {
+        "x": 0,
+        "y": 1.3
+      },
+      "file": "out/work/measure/m3-fall-rest-final-crops-2.png",
+      "a": {
+        "source": {
+          "x": 898.04,
+          "y": 1099.63,
+          "w": 1041.51,
+          "h": 586.6
+        },
+        "at": {
+          "left": 0,
+          "top": 400,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 68
+        }
+      },
+      "b": {
+        "source": {
+          "x": 612,
+          "y": 761.73,
+          "w": 696,
+          "h": 392
+        },
+        "at": {
+          "left": 704,
+          "top": 400,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 74
+        }
+      }
+    },
+    {
+      "name": "foot",
+      "centreInRadii": {
+        "x": 0,
+        "y": 1.75
+      },
+      "file": "out/work/measure/m3-fall-rest-final-crops-3.png",
+      "a": {
+        "source": {
+          "x": 898.04,
+          "y": 1353.48,
+          "w": 1041.51,
+          "h": 586.6
+        },
+        "at": {
+          "left": 0,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 238
+        }
+      },
+      "b": {
+        "source": {
+          "x": 612,
+          "y": 931.37,
+          "w": 696,
+          "h": 392
+        },
+        "at": {
+          "left": 704,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 243
+        }
+      }
+    }
+  ],
+  "files": [
+    {
+      "file": "out/work/measure/m3-fall-rest-final.png",
+      "width": 1400,
+      "height": 814
+    },
+    {
+      "file": "out/work/measure/m3-fall-rest-final-crops-1.png",
+      "width": 1400,
+      "height": 792
+    },
+    {
+      "file": "out/work/measure/m3-fall-rest-final-crops-2.png",
+      "width": 1400,
+      "height": 792
+    },
+    {
+      "file": "out/work/measure/m3-fall-rest-final-crops-3.png",
+      "width": 1400,
+      "height": 392
+    }
+  ]
+}

@@ -1,0 +1,302 @@
+{
+  "round": 13,
+  "phase": 4,
+  "unit": "fall",
+  "tier": "final",
+  "motionTier": "final",
+  "record": false,
+  "limits": {
+    "longEdge": 1400,
+    "maxPixels": 1140000,
+    "maxFiles": 10
+  },
+  "engineHash": "ef5ff56337adb0bb",
+  "roles": {
+    "R1": {
+      "parts": [
+        {
+          "folder": "out/work/packs/round-013/R1",
+          "message": "out/work/packs/round-013/R1.message.md",
+          "files": [
+            {
+              "name": "set-A-01-a.jpg",
+              "what": "the approved image references/approved/fall-rest.png, cropped to the globe, its base and the surface around them",
+              "sha256": "07ebcd95d9f0c528de378c8f5d3faac94c24f6ea5adc3331e4c1a682ff210678",
+              "width": 1085,
+              "height": 1047,
+              "sha256Source": "42729ddc87a6d9c8d4a2bb899b9217cee8c57e12beab539b821130464e43c1b0"
+            },
+            {
+              "name": "set-A-01-b.jpg",
+              "what": "fall-rest: fall in the rest state from hero, hd, final tier, cropped the same way",
+              "sha256": "3738dda0ae1b278945bf8fc759ab48fa8761a8b19c5c1f3ef0aca4f2ac5bc234",
+              "width": 1085,
+              "height": 1047
+            },
+            {
+              "name": "set-A-02-a.jpg",
+              "what": "crops of the approved image references/approved/fall-rest.png, resized to the size of the still: 1 the glass at its shoulder; 2 the cottage wall and roof; 3 the tree's crown; 4 the base from its rim to its foot; 5 the collar; 6 the line where the base meets the surface, and the mirror image",
+              "sha256": "df1bee0471d74b5472389b8399d4866431632164f2c7f1a06175356af353f414",
+              "width": 1398,
+              "height": 814
+            },
+            {
+              "name": "set-A-02-b.jpg",
+              "what": "native size crops of fall-rest: fall in the rest state from hero, hd, final tier: 1 the glass at its shoulder; 2 the cottage wall and roof; 3 the tree's crown; 4 the base from its rim to its foot; 5 the collar; 6 the line where the base meets the surface, and the mirror image",
+              "sha256": "b907a7d4d68151e643291ecf2851a68235dec7600aa99e3485a604baa763c16e",
+              "width": 1398,
+              "height": 814
+            },
+            {
+              "name": "set-B-01-a.jpg",
+              "what": "the approved image references/approved/fall-shake.png, cropped to the globe, its base and the surface around them",
+              "sha256": "a6230797a6fe3469bcefa16aa4393929d66def2849733613e8af07e51b0fc840",
+              "width": 1078,
+              "height": 1051,
+              "sha256Source": "f124676cc4f5ad2356c891cda1b3fc950c9a40da8d07919ebed147bf01a65099"
+            },
+            {
+              "name": "set-B-01-b.jpg",
+              "what": "fall-shake: fall in the landed state from hero, hd, final tier, cropped the same way",
+              "sha256": "0123a48e3b1afe2750494826756714fd26e82edf6ef58d1a8ba4f9c546d932fc",
+              "width": 1078,
+              "height": 1051
+            },
+            {
+              "name": "set-B-02-a.jpg",
+              "what": "crops of the approved image references/approved/fall-shake.png, resized to the size of the still: 1 the glass at its shoulder; 2 the cottage wall and roof; 3 the tree's crown; 4 the base from its rim to its foot; 5 the collar; 6 the line where the base meets the surface, and the mirror image",
+              "sha256": "75acf7a78109faa4d7cacd3c1cd5695b600132c99b653d1cba485c3351ddea8c",
+              "width": 1398,
+              "height": 814
+            },
+            {
+              "name": "set-B-02-b.jpg",
+              "what": "native size crops of fall-shake: fall in the landed state from hero, hd, final tier: 1 the glass at its shoulder; 2 the cottage wall and roof; 3 the tree's crown; 4 the base from its rim to its foot; 5 the collar; 6 the line where the base meets the surface, and the mirror image",
+              "sha256": "b7e49530c1a4cd8370ed3431f501d13d82262ebb1d588830008aabca557cda41",
+              "width": 1398,
+              "height": 814
+            }
+          ]
+        }
+      ],
+      "missing": [],
+      "notes": []
+    },
+    "R2": {
+      "parts": [
+        {
+          "folder": "out/work/packs/round-013/R2",
+          "message": "out/work/packs/round-013/R2.message.md",
+          "files": [
+            {
+              "name": "set-A-01.jpg",
+              "what": "judged: fall-rest: fall in the rest state from hero, hd, final tier",
+              "sha256": "d0b6286a6418902db3b1a793840d5c66074a9264fc34041cb5afd7753c64e0d1",
+              "width": 1069,
+              "height": 1025,
+              "jury": "judged",
+              "id": "fall-rest"
+            },
+            {
+              "name": "set-A-02.jpg",
+              "what": "judged: fall-settled: fall in the settled state from hero, hd, final tier",
+              "sha256": "ffe9c1838d19149d48a5159ff191b3dabb68ded4e001d17778047c3db3e72129",
+              "width": 1069,
+              "height": 1025,
+              "jury": "judged",
+              "id": "fall-settled"
+            },
+            {
+              "name": "set-A-03.jpg",
+              "what": "control: the approved image references/approved/fall-rest.png",
+              "sha256": "dac8c7db14b2742387dda3ef6ea6dacc1ac9392ece255e8590677d406de16797",
+              "width": 1069,
+              "height": 1025,
+              "jury": "control",
+              "id": "approved fall-rest",
+              "sha256Source": "42729ddc87a6d9c8d4a2bb899b9217cee8c57e12beab539b821130464e43c1b0"
+            },
+            {
+              "name": "set-A-04.jpg",
+              "what": "control: the approved image references/approved/fall-shake.png",
+              "sha256": "5050d6ae08ba4d8ba76343554096881c55dd29a98026048e84a508cc573a6d0b",
+              "width": 1069,
+              "height": 1025,
+              "jury": "control",
+              "id": "approved fall-shake",
+              "sha256Source": "f124676cc4f5ad2356c891cda1b3fc950c9a40da8d07919ebed147bf01a65099"
+            },
+            {
+              "name": "set-A-05.jpg",
+              "what": "judged: fall-shake: fall in the landed state from hero, hd, final tier",
+              "sha256": "ba68cc536e0c2c4c9b34498f89f591d95f3cce77384aaa9a6835e722a27d96de",
+              "width": 1069,
+              "height": 1025,
+              "jury": "judged",
+              "id": "fall-shake"
+            },
+            {
+              "name": "set-A-06.jpg",
+              "what": "judged: fall-base: fall in the rest state from low, hd, final tier",
+              "sha256": "6b67eaaa120590d74c1e2d009d3f22e218119331d0520aa610acf21d2f05ff32",
+              "width": 1069,
+              "height": 1025,
+              "jury": "judged",
+              "id": "fall-base"
+            }
+          ]
+        }
+      ],
+      "missing": [],
+      "notes": [
+        "left out of the jury: fall-interior. Its framing does not show the globe and its base whole, so it cannot be cropped to what a control shows",
+        "left out of the jury: fall-surface. Its framing does not show the globe and its base whole, so it cannot be cropped to what a control shows",
+        "every image is cropped to 1.45 radii left, 1.45 right, 1.16 up and 1.62 down of the globe centre, at 1069 x 1025"
+      ]
+    },
+    "R3": {
+      "parts": [
+        {
+          "folder": "out/work/packs/round-013/R3-1",
+          "message": "out/work/packs/round-013/R3-1.message.md",
+          "files": [
+            {
+              "name": "set-A-01.jpg",
+              "what": "fall-rest: fall in the rest state from hero, hd, final tier, resized to fit",
+              "sha256": "ce6ffd3c2c345d84383c0958e2d4b6292d0e2f1b3b5c49346d1baadd37f0d5d5",
+              "width": 1400,
+              "height": 787
+            },
+            {
+              "name": "set-A-02.jpg",
+              "what": "native size crops of fall-rest: fall in the rest state from hero, hd, final tier: 1 the glass at its shoulder; 2 the glass at its rim; 3 the cottage wall and roof; 4 the tree's crown; 5 the pond and the ground around it; 6 particles near the glass; 7 particles far behind; 8 the base from its rim to its foot; 9 the collar; 10 the line where the base meets the surface, and the mirror image; 11 what lies on the surface, left; 12 what lies on the surface, right",
+              "sha256": "17b485e4016e9f8761d572f51b9ce027d95a0440c0feb3413481a7ad6ed6bcc8",
+              "width": 1398,
+              "height": 814
+            },
+            {
+              "name": "set-A-03.jpg",
+              "what": "native size crops of fall-rest: fall in the rest state from hero, hd, final tier: 1 the glass at its shoulder; 2 the glass at its rim; 3 the cottage wall and roof; 4 the tree's crown; 5 the pond and the ground around it; 6 particles near the glass; 7 particles far behind; 8 the base from its rim to its foot; 9 the collar; 10 the line where the base meets the surface, and the mirror image; 11 what lies on the surface, left; 12 what lies on the surface, right",
+              "sha256": "f02eb808a2044fcd087e139b2095286f9906fb3151d13ca4b293ad630ea9a4a9",
+              "width": 1398,
+              "height": 814
+            },
+            {
+              "name": "set-B-01.jpg",
+              "what": "fall-shake: fall in the landed state from hero, hd, final tier, resized to fit",
+              "sha256": "0285fd9092ce0baac7c891b87f7834a3abc24452898d14d672c608271a87e757",
+              "width": 1400,
+              "height": 787
+            },
+            {
+              "name": "set-B-02.jpg",
+              "what": "native size crops of fall-shake: fall in the landed state from hero, hd, final tier: 1 the glass at its shoulder; 2 the glass at its rim; 3 the cottage wall and roof; 4 the tree's crown; 5 the pond and the ground around it; 6 particles near the glass; 7 particles far behind; 8 the base from its rim to its foot; 9 the collar; 10 the line where the base meets the surface, and the mirror image; 11 what lies on the surface, left; 12 what lies on the surface, right",
+              "sha256": "c0fa09ae7dbf2b51534061cd7928b05500de307378fb285cbff1a057d1c2d0c6",
+              "width": 1398,
+              "height": 814
+            },
+            {
+              "name": "set-B-03.jpg",
+              "what": "native size crops of fall-shake: fall in the landed state from hero, hd, final tier: 1 the glass at its shoulder; 2 the glass at its rim; 3 the cottage wall and roof; 4 the tree's crown; 5 the pond and the ground around it; 6 particles near the glass; 7 particles far behind; 8 the base from its rim to its foot; 9 the collar; 10 the line where the base meets the surface, and the mirror image; 11 what lies on the surface, left; 12 what lies on the surface, right",
+              "sha256": "ca3723bc93ed202e45b247f7acdf1881b207630d2f435f051dc98c0ded4ce51a",
+              "width": 1398,
+              "height": 814
+            },
+            {
+              "name": "set-C-01.jpg",
+              "what": "fall-interior: fall in the rest state from interior, hd, final tier, resized to fit",
+              "sha256": "520b816ad29c541ca7b6bb7fe134a7fce9606a2db795527e65467bed5f14ae77",
+              "width": 1400,
+              "height": 787
+            },
+            {
+              "name": "set-C-02.jpg",
+              "what": "native size crops of fall-interior: fall in the rest state from interior, hd, final tier: numbered left to right, top to bottom across the still, four to a row",
+              "sha256": "c49d8312db69f3e389144573fcffd95918d1cbf437e68e6d8e50265875a5dd56",
+              "width": 1398,
+              "height": 814
+            },
+            {
+              "name": "set-C-03.jpg",
+              "what": "native size crops of fall-interior: fall in the rest state from interior, hd, final tier: numbered left to right, top to bottom across the still, four to a row",
+              "sha256": "11e1296762ba3bf2a890f6be8732f33f93d907c86da6f928c9cfe78a99332c44",
+              "width": 1398,
+              "height": 814
+            }
+          ]
+        },
+        {
+          "folder": "out/work/packs/round-013/R3-2",
+          "message": "out/work/packs/round-013/R3-2.message.md",
+          "files": [
+            {
+              "name": "set-D-01.jpg",
+              "what": "fall-base: fall in the rest state from low, hd, final tier, resized to fit",
+              "sha256": "8ffc0dbbae036780c0cf4f5886ab1f5e2e8807f0a2c7a54ecbe98d5ee2fff865",
+              "width": 1400,
+              "height": 787
+            },
+            {
+              "name": "set-D-02.jpg",
+              "what": "native size crops of fall-base: fall in the rest state from low, hd, final tier: 1 the glass at its shoulder; 2 the glass at its rim; 3 the cottage wall and roof; 4 the tree's crown; 5 the pond and the ground around it; 6 particles near the glass; 7 particles far behind; 8 the base from its rim to its foot; 9 the collar; 10 the line where the base meets the surface, and the mirror image; 11 what lies on the surface, left; 12 what lies on the surface, right",
+              "sha256": "ecf6a52b0d6a3e9efc2db6c1683ca1a17a600944daf6d7005e2a03b04485d9d6",
+              "width": 1398,
+              "height": 814
+            },
+            {
+              "name": "set-D-03.jpg",
+              "what": "native size crops of fall-base: fall in the rest state from low, hd, final tier: 1 the glass at its shoulder; 2 the glass at its rim; 3 the cottage wall and roof; 4 the tree's crown; 5 the pond and the ground around it; 6 particles near the glass; 7 particles far behind; 8 the base from its rim to its foot; 9 the collar; 10 the line where the base meets the surface, and the mirror image; 11 what lies on the surface, left; 12 what lies on the surface, right",
+              "sha256": "97c8b700162c561ba6263db399dbf94c0aec83962b5defc0165bde6c1f7495fb",
+              "width": 1398,
+              "height": 814
+            },
+            {
+              "name": "set-E-01.jpg",
+              "what": "fall-surface: fall in the rest state from surface, hd, final tier, resized to fit",
+              "sha256": "36f1a70b32d9b7500d6caa8b1a54ff376e75c5519fba1d4548e5a91d92048ea9",
+              "width": 1400,
+              "height": 787
+            },
+            {
+              "name": "set-E-02.jpg",
+              "what": "native size crops of fall-surface: fall in the rest state from surface, hd, final tier: numbered left to right, top to bottom across the still, four to a row",
+              "sha256": "5f2b72d681794baa6ce671f8caad7edfb0af2f15bd01b6909868febe8f32e5dc",
+              "width": 1398,
+              "height": 814
+            },
+            {
+              "name": "set-E-03.jpg",
+              "what": "native size crops of fall-surface: fall in the rest state from surface, hd, final tier: numbered left to right, top to bottom across the still, four to a row",
+              "sha256": "561153e414e3cf47d3494b96c14d4f5378ba9ce12ad96e50d62ca3fc913ef07a",
+              "width": 1398,
+              "height": 814
+            },
+            {
+              "name": "set-F-01.jpg",
+              "what": "fall-settled: fall in the settled state from hero, hd, final tier, resized to fit",
+              "sha256": "2e1ba6d1bfd2c68cb380109397bd113f25f631ceb418d3eed31b28f02d4196d4",
+              "width": 1400,
+              "height": 787
+            },
+            {
+              "name": "set-F-02.jpg",
+              "what": "native size crops of fall-settled: fall in the settled state from hero, hd, final tier: 1 the glass at its shoulder; 2 the glass at its rim; 3 the cottage wall and roof; 4 the tree's crown; 5 the pond and the ground around it; 6 particles near the glass; 7 particles far behind; 8 the base from its rim to its foot; 9 the collar; 10 the line where the base meets the surface, and the mirror image; 11 what lies on the surface, left; 12 what lies on the surface, right",
+              "sha256": "efc83bc9ff923a445710132a12a0b1fc36868e9f4e8d9e79145e6fdeb79100b2",
+              "width": 1398,
+              "height": 814
+            },
+            {
+              "name": "set-F-03.jpg",
+              "what": "native size crops of fall-settled: fall in the settled state from hero, hd, final tier: 1 the glass at its shoulder; 2 the glass at its rim; 3 the cottage wall and roof; 4 the tree's crown; 5 the pond and the ground around it; 6 particles near the glass; 7 particles far behind; 8 the base from its rim to its foot; 9 the collar; 10 the line where the base meets the surface, and the mirror image; 11 what lies on the surface, left; 12 what lies on the surface, right",
+              "sha256": "725ef3779f06e1111eb20afb23f705cdd046d84c57ed8fc05302eb3ef4d5c86c",
+              "width": 1398,
+              "height": 814
+            }
+          ]
+        }
+      ],
+      "missing": [],
+      "notes": []
+    }
+  }
+}
