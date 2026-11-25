@@ -1207,6 +1207,9 @@ Merged into `main`, each verified here with types clean and the tests green (126
 - Phase 4's second set of build agents (decision 77; each in its own sandbox VM except the sound agent; brief `out/work/briefs/p4/common2.md`, the job message of the agent before it, that agent's `REPORT.md` and `HANDOVER.md`, the season's two approved images at half size, and the critics' issues of the season's first round as they arrive; heartbeat every 30 minutes to its branch `agent/p4-<name>` and its looks branch `agent/p4-<name>-looks`).
   - `spring_mini2` (takes `spring_mini`'s files; started 02:42, limit 05:40; spring's second round freezes 04:45) and `fall_mini2` (takes `fall_mini`'s files; started 02:42, limit 05:40; fall's second round freezes 05:30). `spring_mini` and `fall_mini` sent their final reports at 02:42 and are done.
 
+  - `summer_mini2` (takes `summer_mini`'s files; started 02:45, limit 05:42; summer's second round freezes 04:45), `spring_air2` (takes `spring_air`'s files; started 02:48, limit 05:45), and the sound agent `sound_maker` (branch `agent/p4-sound`, its own clone on this machine, `audio/`; started 02:49, effects by 04:10, music by 05:15, limit 05:35). `summer_mini` (02:44), `fall_base` (02:46) and `spring_air` (02:48) sent their final reports and are done. Still to start at 03:03: `summer_air2`, `fall_air2`, `bases2`, `kinds2`, `change_builder`.
+  - Round 8's critics so far, one at a time on the one free slot: `reviewer_r8_a` (R1, `grok_4_7`, 02:28 to 02:38, score 4), `reviewer_r8_b` (R3 part 1, `gemini_4_carbon`, 02:38 to 02:48, score 3). Round 9's `reviewer_r9_a` (R1, `gemini_4_carbon`) started 02:48. Round 10's still pack is with `round_renderer` since 02:36 (limit 03:35).
+
 ## Rounds
 
 One line per round: its number, the unit, the commit it judged, each part ticked off as it finished, the scores, and what changed next.
