@@ -27,9 +27,9 @@ const lin = (hex) => {
 }
 
 const CROWN = { centre: [1.2, 27.6, 1], r: [21, 13.4, 15], floor: 14.2, reach: 13 }
-const LOBES = { count: 17, spacing: 9.6, tall: 1.5, shell: [0.5, 0.94], r: [6, 3.5, 6], size: [0.75, 1.25], sprays: 9, gap: 2.7 }
+const LOBES = { count: 23, spacing: 8.2, tall: 1.6, shell: [0.42, 0.95], r: [4.9, 2.9, 4.9], size: [0.7, 1.3], sprays: 7, gap: 2.6 }
 const TWIG = { from: 0.36, to: 0.06, sides: 5, steps: 7 }
-const CLUSTER = { step: 1.75, from: 0.3, size: [0.85, 1.3], tip: [1.15, 1.6], flowers: [5.6, 8], flower: [0.58, 0.92], side: 0.6, flat: 0.78, extra: 0.14, core: 0.46 }
+const CLUSTER = { step: 1.75, from: 0.3, size: [0.85, 1.3], tip: [1.15, 1.6], flowers: [5.6, 8], flower: [0.58, 0.92], side: 0.6, flat: 0.78, extra: 0.14, core: 0.36 }
 const TONES = ['#f6b3c9', '#f9c6d6', '#f2a7c0', '#fbd7e2', '#f0a2bc', '#f7bdd0', '#fde4ea'].map(lin)
 const LOBE_LOOK = { round: 0.7, under: 0.7 }
 const SHADE = [0.72, 0.62, 0.65]
