@@ -32,6 +32,11 @@ const SEEN_LENGTH = 1.25
 const SEEN_MOMENT = 1.5
 const SEEN_PUMP = 9 / 1080
 
+/** The shakes that keep the first hand: every still of a season and the film's opening stand on them. */
+const FIRST_HAND = (name: string): boolean => name === 'test' || name.startsWith('test:') || name === 'preroll'
+/** The most the foot of the held hand rocks over after the landing, in degrees. */
+const OVERSHOOT_HELD_DEG = 1.9
+
 const film = shots.filter((shot) => shot.kind === 'shake').map((shot) => shot.id)
 const NAMES = ['test', ...config.seasons.map((season) => `test:${season}`), 'preroll', ...film, 'loop', ...Array.from({ length: FRAME.shakePaths }, (_, i) => `live-${i}`)]
 const LINEAR: ShakeChannel[] = ['x', 'y', 'z']
@@ -537,9 +542,10 @@ describe('the shake path: a heavy thing in a hand', () => {
       const peak = lean(overBeat)
       expect(peak.x * into.x + peak.z * into.z, `${name} rocks over to the other side`).toBeLessThan(0)
       expect(over, `${name} overshoot`).toBeGreaterThan(0.3)
-      // Decision 59 caps the rock at 1.3 degrees; it is kept close under the cap, so that it is as large on screen as the rule allows.
+      // Decision 59 caps the rock of the first hand at 1.3 degrees; it is kept close under the cap. The hand of the film, the loop and the app
+      // rocks further, so that the frame shows it: under OVERSHOOT_HELD_DEG, and never over the 2.5 degrees the ruling of 14:40 UTC on 2026-11-25 allows.
       expect(over, `${name} overshoot`).toBeGreaterThan(1.1)
-      expect(over, `${name} overshoot`).toBeLessThan(1.3)
+      expect(over, `${name} overshoot`).toBeLessThan(FIRST_HAND(name) ? 1.3 : OVERSHOOT_HELD_DEG)
       expect(m.plan.overshoot * DEG).toBeCloseTo(over, 1)
       expect(overBeat - landing).toBeLessThan(0.3 * settle)
       expect(late / over, `${name} dies`).toBeLessThan(0.12)
