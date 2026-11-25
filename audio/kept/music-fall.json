@@ -1,0 +1,132 @@
+{
+  "id": "music-fall",
+  "file": "music-fall.wav",
+  "class": "music",
+  "season": "fall",
+  "line": "Halloween: a detuned music box and piano over low strings, with eerie sounds in the music itself",
+  "seconds": 27.46,
+  "take": 1,
+  "takes": 1,
+  "round": "build",
+  "why": "first take that fits: no voice heard, eerie, childlike and haunting in the open call and a spooky Halloween mood in the fit call, 100.006 beats a minute and 12 bars on the grid, ends on a held note; piano and low strings not heard",
+  "tool": "ElevenLabs music, POST /v1/music, the default model (music_v1), pcm_48000",
+  "prompt": "A Halloween piece at exactly 100 beats per minute in 4/4, twelve bars long: a detuned music box and a piano carrying one short simple melody over low strings, with eerie sounds in the music itself, creaks, a far bell and wind across the strings. It starts on the first downbeat with no pickup and no lead-in and holds one even feel, instrumental, no vocals, no spoken words, clean ending",
+  "settings": {
+    "endpoint": "POST /v1/music",
+    "model": "default",
+    "how": "prompt",
+    "music_length_ms": 28800,
+    "force_instrumental": true,
+    "output_format": "pcm_48000",
+    "cost": null,
+    "counterMovedBy": 0,
+    "counterNote": "the music endpoint sends no cost header; the counter also moves with other work on the account"
+  },
+  "chain": {
+    "settings": {
+      "trimDb": -60,
+      "padMs": 5,
+      "fadeInMs": 2,
+      "fadeOutMs": 30,
+      "lowCutHz": 0,
+      "loop": false,
+      "targetLufs": -16,
+      "capSeconds": null
+    },
+    "steps": [
+      "trimmed 0 s in front and 1.333 s at the end",
+      "fade in 2 ms, fade out 30 ms",
+      "level: -3.16 dB to -16 LUFS, measured as gated loudness over 400 ms blocks"
+    ],
+    "gainDb": -3.16,
+    "level": {
+      "measure": "gated",
+      "measuredAs": "gated loudness over 400 ms blocks",
+      "seconds": 27.46,
+      "beforeLufs": -12.84,
+      "afterLufs": -16,
+      "targetLufs": -16,
+      "truePeakDb": -4.34
+    }
+  },
+  "loop": null,
+  "measured": {
+    "seconds": 27.46,
+    "peakDb": -4.34,
+    "truePeakDb": -4.34,
+    "lufs": -16,
+    "lufsMeasure": "gated",
+    "soundLufs": null,
+    "offsetDb": null,
+    "rmsDb": -19.09,
+    "silenceFrontSeconds": 0.005,
+    "silenceEndSeconds": 0.52,
+    "soundSeconds": 26.935,
+    "tailDb": -72.89,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 842,
+      "bands": {
+        "sub": 0.26,
+        "low": 0.1693,
+        "lowMid": 0.1766,
+        "mid": 0.3877,
+        "high": 0.0018,
+        "air": 0.0046
+      }
+    }
+  },
+  "ffmpeg": {
+    "lufs": -16,
+    "lra": 3.8,
+    "truePeakDb": -4.3
+  },
+  "takeMeasured": {
+    "seconds": 28.793,
+    "peakDb": -1.18,
+    "truePeakDb": -1.18,
+    "lufs": -12.84,
+    "lufsMeasure": "gated",
+    "soundLufs": null,
+    "offsetDb": null,
+    "rmsDb": -16.14,
+    "silenceFrontSeconds": 0.005,
+    "silenceEndSeconds": 1.853,
+    "soundSeconds": 26.935,
+    "tailDb": -84.61,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 842,
+      "bands": {
+        "sub": 0.26,
+        "low": 0.1693,
+        "lowMid": 0.1766,
+        "mid": 0.3877,
+        "high": 0.0018,
+        "air": 0.0046
+      }
+    }
+  },
+  "answers": {
+    "verdict": "fits",
+    "why": "Numbers: 28.79 s filed, sound 26.94 s, 1.85 s of silence at the end; -12.8 LUFS as made; 39 percent of the energy between 1 and 4 kHz and 26 percent under 60 Hz. Map: tracked at 100.006 beats a minute, 46 beats, 12 bars of 4, first bar line at 0.0033 s, spacing steady: on the grid of the film; two parts by level, 0 to 24.00 s and the closing notes from 24.00 s. Listener, open: a mechanical music box, or a synthesizer made to sound like one; eerie, childlike and haunting throughout, growing more sluggish and unsettling as the melody winds down; no voice, no choir, no singing; no sound effects; ends on a held note that fades. It heard the tempo slow down like a wind-up toy running out; the map measures steady spacing at 100. Fit: yes, the dark out-of-tune melody is a spooky, unsettling Halloween mood; the detuned music box heard clearly, no piano and no low strings heard; no voice; ends cleanly. Kept: no voice or words, the mood of its line in both calls, on the grid. What it lacks of the line: the piano and the low strings as heard (the numbers show a low part under 60 Hz). Price 396, from the account's Music line.",
+    "listener": {
+      "line": "Halloween: a detuned music box and piano over low strings, with eerie sounds in the music itself",
+      "open": "1. I hear a mechanical music box, or possibly a synthesizer designed to sound exactly like one.\n2. The mood is eerie, childlike, and haunting throughout. It does not change abruptly, but grows increasingly sluggish and unsettling as the melody winds down.\n3. There is no human voice, spoken word, choir, humming, or singing at any point.\n4. There are no sound effects or non-musical sounds present in the recording.\n5. The track starts immediately with the melody already playing. It ends on a held final note that slowly fades out to silence.\n6. It begins at approximately 110 beats per minute, but the pulse does not hold steady. The tempo gradually slows down over the course of the track, much like a wind-up toy running out of power.",
+      "fit": "1. Yes, the mood fits the description because the dark, out-of-tune melody creates a very spooky and unsettling Halloween atmosphere. \n2. I can clearly hear the detuned music box, but I do not hear a piano or any low strings.\n3. No, there is no human voice, spoken word, or singing in the track. \n4. Yes, it ends cleanly as the final note naturally rings out and fades to silence."
+    }
+  },
+  "source": {
+    "name": "music-fall-2026-11-25T18-00-04-190Z.wav",
+    "bytes": 5528286,
+    "sha256": "14d56eb361b6860194150047047e37c7c90bb08b23e03e3c17e48370b73e809d",
+    "codec": "pcm_s16le",
+    "sampleRate": 48000,
+    "channels": 2,
+    "seconds": 28.793,
+    "kbps": 1536
+  },
+  "takeSha256": "36b18a3aa56d20df7ff6dd8f68e7253e0393feca74c8d452ca16d050ac05b2f9",
+  "sha256": "dfa4603dd806ebf6d55ac4ad587e7b8edf5c157654a7581d2c07f7b0e0b623e3",
+  "time": "2026-11-25T18:02:42.946Z"
+}
