@@ -29,7 +29,7 @@ Branch `agent/p5-liquid`, tip `739c168`; my code ends at `ff71d2e`; kept commit 
 ### 164, 128: after landing the storm churns at one density
 
 - Cause: `src/globe/liquid.ts:40` `TURB_SECONDS = spinDownSeconds * 0.4`, and `src/particles/engine/engine.ts:812`: the spread of sink speeds (`sinkSigma`, `hangSigma`) is narrow, so a kind thins all at once. Fall's embers (`kinds.ts:98`, mode `cycle`) never land by design, 6000 of them.
-- Next change: widen the sink spread by heft at `engine.ts:812` (multiply `spread` by `1 + 0.6 * heft`), and scale ember count afloat by the roll so they thin as the whirl dies. `TURB_SECONDS` at 0.3 of `spinDownSeconds` broke tests in `tests/liquid.test.ts`; I reverted it. If the rule must change, it is a test change in its own commit.
+- Next change: widen the sink spread by heft at `engine.ts:812` (multiply `spread` by `1 + 0.6 * heft`), and scale ember count afloat by the roll so they thin as the whirl dies. `TURB_SECONDS` at 0.3 of `spinDownSeconds` broke existing tests (I did not note which); I reverted it. If the rule must change, it is a test change in its own commit.
 - Proof: afloat share per kind by second after landing. Now: winter 0.96 at 1.6 s, 0.64 at 3.6, 0.21 at 7.6, 0.12 at 11.6; spring 0.54 at 3.6, 0.07 from 7.6; summer 0.40 at 3.6, 0.02 from 6.6; fall leaves 0.50 at 2.6, 0.08 from 6.6. Picture: `npm run seq -- --first 2160 --last 2340 --step 15 --tier draft --look no`. M5 must stay over 0.6.
 
 ### 57, 162: the haze is an even fog, no whirl
@@ -40,7 +40,7 @@ Branch `agent/p5-liquid`, tip `739c168`; my code ends at `ff71d2e`; kept commit 
 
 ### 74, 130: tilted roll
 
-- `src/globe/liquid.ts:82`. 1.15 is 24 degrees off upright. 1.25 fails two tests in `tests/liquid.test.ts`. Not seen in motion: view `node tools/sheet.mjs --motion landing --shot shake-3 --tier draft` if there is time (90 frames, slow).
+- `src/globe/liquid.ts:82`. 1.15 is 24 degrees off upright. 1.25 fails two existing tests (I did not note which). Not seen in motion: view `node tools/sheet.mjs --motion landing --shot shake-3 --tier draft` if there is time (90 frames, slow).
 
 ### New fault of mine: rays in fall's haze
 
