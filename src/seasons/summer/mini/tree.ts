@@ -20,19 +20,24 @@ const SPRIGS = 'summer/tree-sprigs.srgb.w512.png'
 const CYCLES = 3
 const FLICKER = 0.06
 const PAPER = { power: 0.26, reachMm: 2.5 }
-const GLOW = { leaves: { power: 2.2, reachMm: 2.3 }, wood: { power: 0.38, reachMm: 2.2 } }
+const GLOW = { leaves: { power: 2.2, reachMm: 2.3 }, wood: { power: 0.7, reachMm: 2.6 } }
 const LAMP_ON_WOOD = { power: 0.5, reachMm: 14, wrap: -0.2 }
 const LAMP_ON_LEAVES = { power: 3, reachMm: 12, wrap: 0.1 }
 const LAMP_SHIFT: Vec3 = [-3, 0, -5]
-const FILL_ON_WOOD = { power: 0.22, reachMm: 1000, wrap: 0.4 }
+const FILL_ON_WOOD = { power: 0.3, reachMm: 1000, wrap: 0.4 }
 const FILL_ON_LEAVES = { power: 0.5, reachMm: 1000, wrap: 0.3 }
 const FILL_FROM: Vec3 = [30, 60, 60]
-const BARK: Rgb3 = [0.4, 0.19, 0.1]
+const BARK: Rgb3 = [0.56, 0.25, 0.12]
 const BARK_BUMP = 3.4
+// The bark: long flutes down the wood (the bark map drawn out along the grain), dark in their grooves, with the low sun
+// on the edge of the wood that faces it and moss on what faces up near the ground.
+const WOOD = { relief: 0.95, ridges: 6, warp: 2.2, fine: 0.25, low: 0.2, high: 1.5, from: 0.2, to: 0.8, depthMm: 1.5, rim: 5.5, rimTight: 2.2, side: 0.9, wrap: 0.95, mossTo: 7.5, moss: 0.8 }
+const MOSS: Rgb3 = [0.3, 0.52, 0.12]
+const ROOT_MM = 4.5
 const LEAF_TINT: Rgb3 = [0.55, 0.95, 0.34]
 const LEAF_LIT = 'vec3(1.25, 1.05, 0.6)'
 const LEAF = { rim: 6, rimTight: 2.5, through: 1.5, tight: 3.0, fill: 1.2, wrap: 0.8, bump: 1.0, clumpDark: 0.16, clumpBright: 3.4, top: 23 }
-const LANTERN = { rib: 0.55, ribs: 26, gain: 0.68, body: 0.8, core: 1.35, tight: 6.0, paper: 0.06, dim: 0.1, stepS: 0.04, rampS: 0.18, swayRad: 0.045, sway2: 0.6, kickRad: 0.16, kickFade: 1.2, kickHz: 1.3, cycles: 2 }
+const LANTERN = { rib: 0.68, ribs: 26, gain: 0.62, body: 0.66, core: 1.75, tight: 4.5, paper: 0.06, dim: 0.1, stepS: 0.04, rampS: 0.18, swayRad: 0.045, sway2: 0.6, kickRad: 0.16, kickFade: 1.2, kickHz: 1.3, cycles: 2 }
 const HALO = { radius: 2.6, strength: 0.075, hot: 0.0 }
 const HALO_EDGE: Rgb3 = [0.9, 0.36, 0.08]
 const HALO_CORE: Rgb3 = [1, 0.7, 0.34]
@@ -99,6 +104,31 @@ function leafHook(shader: Shader): void {
   afterLight(shader, `reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${LEAF.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), ${LEAF.wrap.toFixed(2)}) + ${LEAF.through.toFixed(2)} * pow(clamp(dot(normalize(vViewPosition), -stageKeyL), 0.0, 1.0), ${LEAF.tight.toFixed(1)}) + ${LEAF.rim.toFixed(2)} * pow(1.0 - abs(dot(normal, normalize(vViewPosition))), ${LEAF.rimTight.toFixed(1)}) * smoothstep(-0.3, 0.7, dot(normal, stageKeyL)))) * material.diffuseContribution;\nreflectedLight.directDiffuse += stageKeyC * vec3(1.35, 1.0, 0.4) * (RECIPROCAL_PI * ${LEAF.top.toFixed(2)} * pow(smoothstep(-0.1, 0.9, normalize(vTreeN).y), 2.0) * smoothstep(0.02, 0.22, treeLum)) * material.diffuseContribution;`)
 }
 
+function woodHook(shader: Shader, groundY: number): void {
+  glowHook(shader, undefined, WOOD.relief)
+  Object.assign(shader.uniforms, { uTile: { value: 1 }, uBump: { value: WOOD.depthMm } })
+  shader.vertexShader = shader.vertexShader
+    .replace('#include <common>', '#include <common>\nvarying vec3 vTreeP;\nvarying vec3 vTreeN;')
+    .replace('#include <begin_vertex>', '#include <begin_vertex>\nvTreeP = position;\nvTreeN = normal;')
+  shader.fragmentShader = shader.fragmentShader
+    .replace('#include <common>', `#include <common>\n${TREE_GLSL}\nfloat woodH = 0.0;`)
+    .replace(
+      '#include <map_fragment>',
+      `#include <map_fragment>
+{
+  float woodA = dot(texture2D(map, vMapUv * vec2(0.3333, 0.07)).rgb, vec3(0.3, 0.6, 0.1));
+  float woodB = dot(texture2D(map, vMapUv * vec2(1.0, 0.35) + 0.31).rgb, vec3(0.3, 0.6, 0.1));
+  float woodWave = 0.5 + 0.5 * sin(6.2831853 * (vMapUv.x * ${WOOD.ridges.toFixed(1)} + ${WOOD.warp.toFixed(2)} * woodA + 0.5 * sin(vMapUv.y * 1.3) + 0.25 * sin(vMapUv.y * 3.1 + 1.0)));
+  woodH = smoothstep(${WOOD.from.toFixed(2)}, ${WOOD.to.toFixed(2)}, mix(woodWave, woodB * 2.2, ${WOOD.fine.toFixed(2)}));
+  diffuseColor.rgb *= mix(${WOOD.low.toFixed(2)}, ${WOOD.high.toFixed(2)}, woodH);
+  float woodMoss = ${WOOD.moss.toFixed(2)} * (1.0 - smoothstep(${(groundY + 1).toFixed(2)}, ${(groundY + WOOD.mossTo).toFixed(2)}, vTreeP.y + 2.5 * woodB)) * smoothstep(-0.25, 0.45, normalize(vTreeN).y + 0.5 * (woodA - 0.3));
+  diffuseColor.rgb = mix(diffuseColor.rgb, ${v3(MOSS)} * (0.25 + 1.5 * woodB), woodMoss);
+}`,
+    )
+    .replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\nnormal = treeBump(dFdx(-vViewPosition), dFdy(-vViewPosition), vec2(dFdx(woodH), dFdy(woodH)), normal, faceDirection);')
+  afterLight(shader, `reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${WOOD.side.toFixed(2)} * stageWrap(dot(normal, stageKeyL), ${WOOD.wrap.toFixed(2)}) + ${WOOD.rim.toFixed(2)} * pow(1.0 - abs(dot(normal, normalize(vViewPosition))), ${WOOD.rimTight.toFixed(1)}) * smoothstep(-0.35, 0.5, dot(normal, stageKeyL)))) * material.diffuseContribution;`)
+}
+
 function lanternHook(shader: Shader): void {
   Object.assign(shader.uniforms, { uTwinkle: glow.uTwinkle, uSway: sway })
   shader.vertexShader = shader.vertexShader
@@ -128,7 +158,7 @@ vLamp = uv;
   float lampBeat = 1.0 + ${FLICKER.toFixed(3)} * sin(6.2831853 * (uTwinkle.x + vLamp.x * 0.381966));
   float lampLat = asin(clamp((vec4(normalize(normal), 0.0) * viewMatrix).y, -1.0, 1.0));
   float lampRib = 1.0 - ${LANTERN.rib.toFixed(2)} * pow(0.5 + 0.5 * cos(lampLat * ${LANTERN.ribs.toFixed(1)}), 3.0);
-  vec3 lampHot = mix(lampTint, lampTint * vec3(1.0, 1.55, 1.6) + vec3(0.0, 0.04, 0.0), lampCore * lampCore);
+  vec3 lampHot = mix(lampTint * vec3(1.0, 0.9, 0.8), vec3(1.0, 0.74, 0.27) * max(lampTint.r, lampTint.g), lampCore * lampCore);
   totalEmissiveRadiance = lampHot * lampLit * (${LANTERN.gain.toFixed(2)} * (${LANTERN.body.toFixed(2)} + ${LANTERN.core.toFixed(2)} * lampCore)) * lanternLevel(vLamp.x) * lampBeat * lampRib;
 }`,
     )
@@ -194,7 +224,9 @@ export function build(): THREE.Object3D {
   crown.castShadow = true
   crown.receiveShadow = true
   const trunk = buildTrunk(part, [...paperOn(GLOW.wood), lampOn(LAMP_ON_WOOD), { at: fill, color: tones.sun, ...FILL_ON_WOOD, phase: 0.6 }], BARK)
-  ;(trunk.material as THREE.MeshStandardMaterial).normalScale.set(BARK_BUMP, BARK_BUMP)
+  const shared = trunk.material as THREE.MeshStandardMaterial
+  const box = new THREE.Box3().setFromBufferAttribute(trunk.geometry.getAttribute('position') as THREE.BufferAttribute)
+  trunk.material = stageMaterial({ part, standIn: false, inside: true, miniature: true, change: 'miniature', map: shared.map ?? undefined, color: new THREE.Color(BARK[0], BARK[1], BARK[2]), vertexColors: true, roughness: 0.86, extra: { normalMap: shared.normalMap, normalScale: new THREE.Vector2(BARK_BUMP, BARK_BUMP) }, hook: (shader) => woodHook(shader, box.min.y + ROOT_MM), key: 'tree-wood-summer' })
   return new THREE.Group().add(trunk, crown)
 }
 

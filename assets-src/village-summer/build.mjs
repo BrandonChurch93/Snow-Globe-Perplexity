@@ -13,19 +13,20 @@ const sc = (a, k) => [a[0] * k, a[1] * k, a[2] * k]
 const pick = (list) => list[Math.floor(R() * list.length) % list.length]
 const range = (a, b) => a + (b - a) * R()
 
-const TURF = { lumpMm: 0.35, fineMm: 0.12, sandMm: 0.55, sandReach: 4.2 }
-const GRASS = { tufts: 30000, blades: 3, tall: [0.9, 2.3], wide: [0.11, 0.2], rimTall: 1.5 }
+const TURF = { lumpMm: 0.35, fineMm: 0.12, sandMm: 0.7, sandReach: 6.5, sandSides: 0.35 }
+const GRASS = { tufts: 23000, blades: 3, tall: [0.55, 1.6], wide: [0.11, 0.2], rimTall: 1.5, sandFrom: 0.12, sandTo: 0.55 }
+const STONE = { sink: 0.45, lumps: 0.22, tones: ['#8f887a', '#a39a88', '#7b7568', '#b0a692'] }
 const TONES = {
   grass: ['#1c3413', '#274616', '#30531a', '#213c15'].map(lin),
   tip: ['#566f27', '#6b8230', '#465f20'].map(lin),
   straw: ['#c9b674', '#d8c88c', '#b9a460'].map(lin),
   earth: lin('#3b2c1c'),
   mud: lin('#231c12'),
-  sand: lin('#d6c6a0'),
+  sand: lin('#efe5ca'),
   bed: lin('#16201c'),
   leaf: ['#2b4a1c', '#3a5f22', '#24401a', '#47702a'].map(lin),
   rose: ['#e9a0a8', '#f2c3bd', '#f4e3cf', '#d97f8e', '#f0d2c0'].map(lin),
-  petal: ['#ffc526', '#ffd648', '#f6b21a'].map((c) => mul3(lin(c), 1.5)),
+  petal: ['#f2a516', '#f7b82a', '#e3930f', '#f9c33a'].map((c) => mul3(lin(c), 1.15)),
   seed: lin('#2c1a0c'),
   stem: lin('#3d5a22'),
   bloom: ['#f5efe0', '#f2c9d2', '#f6dc74', '#e7a4b4', '#ffffff'].map(lin),
@@ -41,7 +42,11 @@ function wallGap(x, z) {
   return Math.sqrt(Math.max(0, L.innerRadiusMm * L.innerRadiusMm - y * y)) - Math.hypot(x, z)
 }
 const front = (x, z) => smooth(-0.2, 0.55, z / (Math.hypot(x, z) || 1))
-const sandAt = (x, z) => (1 - smooth(0.6, TURF.sandReach, wallGap(x, z))) * front(x, z)
+const sandAt = (x, z) => (1 - smooth(0.5, TURF.sandReach * (0.6 + 1.1 * clamp(0.5 + 1.3 * fbm(x * 0.13 + 1.7, z * 0.13 + 5.3, 3.3, 3))), wallGap(x, z))) * (TURF.sandSides + (1 - TURF.sandSides) * front(x, z))
+const blob = (x, z, cx, cz, rx, rz) => Math.exp(-(((x - cx) / rx) ** 2 + ((z - cz) / rz) ** 2))
+// Where the low sun reaches the floor between the crown, the trunk and the cottage (read off the approved image): right of
+// the trunk out to the sunflowers, behind the lamp, a little by the fence and on the near right bank.
+const sunAt = (x, z) => clamp((1.0 * blob(x, z, 27, 3, 9, 8) + 0.85 * blob(x, z, 3, -8, 7, 6) + 0.4 * blob(x, z, -24, 21, 6, 5) + 0.5 * blob(x, z, 24, 22, 9, 6)) * (0.5 + 1.0 * clamp(0.5 + 1.4 * fbm(x * 0.3 + 9, z * 0.3 + 4, 6.1, 2))))
 const turfAt = (x, z) => TURF.lumpMm * fbm(x * 0.22 + 3.1, z * 0.22 + 1.7, 2.2, 3) + TURF.fineMm * fbm(x * 0.9, z * 0.9, 5.5, 2)
 const topAt = (x, z) => L.groundAt(x, z) + turfAt(x, z) * smooth(0.98, 1.1, L.pondField(x, z)) + TURF.sandMm * sandAt(x, z) * (0.6 + 0.4 * fbm(x * 0.5, z * 0.5, 9, 2))
 const keepHard = (role) => role === 'cottage' || role === 'chimney' || role === 'path' || role === 'post' || role === 'fence'
@@ -62,7 +67,7 @@ function groundTone(x, z) {
 }
 
 {
-  const around = 420
+  const around = 320
   const shore = [0.3, 0.6, 0.8, 0.9, 0.94, 0.97, 0.99, 1.0, 1.012, 1.028, 1.05, 1.08]
   const outer = 44
   const skirt = 30
@@ -168,7 +173,7 @@ function groundTone(x, z) {
     NN.setXYZ(b, nx / l, ny / l, nz / l)
     P.setXYZ(b, P.getX(a), P.getY(a), P.getZ(a))
   }
-  ground.add(g, { color: (p, _n, i) => mix3(groundTone(p[0], p[2]), mix3(TONES.earth, TONES.sand, 0.55 + 0.45 * front(p[0], p[2])), smooth(0, 0.25, below[i])), surf: (p, _n, i) => [sandAt(p[0], p[2]), below[i]], uv: (p, n) => (Math.abs(n[1]) > 0.55 ? [p[0], p[2]] : [Math.atan2(p[2], p[0]) * 56, p[1] * 1.3]) })
+  ground.add(g, { color: (p, _n, i) => mix3(groundTone(p[0], p[2]), mix3(TONES.earth, TONES.sand, 0.8 + 0.2 * front(p[0], p[2])), smooth(0, 0.25, below[i])), surf: (p, _n, i) => [sandAt(p[0], p[2]), below[i]], uv: (p, n) => (Math.abs(n[1]) > 0.55 ? [p[0], p[2]] : [Math.atan2(p[2], p[0]) * 56, p[1] * 1.3]) })
 }
 
 {
@@ -227,12 +232,54 @@ function soup(bag, pos, nor, col, surfOf) {
   bag.add(g, { surf: surfOf, uv: (p) => [p[0] + p[1] * 0.37, p[2] + p[1] * 0.61] })
 }
 
+// Rounded stepping stones from the door down to the pond's left shore and along it, over the shared path's small slabs.
+const stoneList = []
+{
+  const edgeAt = (deg, field) => {
+    const a = (deg / 180) * Math.PI
+    let t = 0
+    while (t < 60 && L.pondField(L.pond.x + Math.cos(a) * t, L.pond.z + Math.sin(a) * t) < field) t += 0.05
+    return [L.pond.x + Math.cos(a) * t, L.pond.z + Math.sin(a) * t]
+  }
+  const along = [...L.stones.map(([x, z], i) => [x, z, 2.3 + 0.22 * i, 1.7 + 0.12 * i]), ...[[262, 1.1, 1.7], [246, 1.09, 2.1], [230, 1.085, 2.5], [214, 1.08, 2.2], [199, 1.08, 2.7], [150, 1.07, 2.4], [133, 1.065, 1.9], [118, 1.065, 2.3], [38, 1.07, 2.0], [4, 1.075, 2.4], [318, 1.08, 1.8]].map(([deg, f, w]) => [...edgeAt(deg, f), w, w * range(0.62, 0.8)])]
+  for (const [x, z, rx, rz] of along) {
+    const yaw = range(0, TAU)
+    const h = rx * range(0.34, 0.46)
+    const g = new THREE.IcosahedronGeometry(1, 2)
+    const P = g.getAttribute('position')
+    const seed = R() * 50
+    for (let i = 0; i < P.count; i++) {
+      const k = 1 + STONE.lumps * (noise(P.getX(i) * 1.6 + seed, P.getY(i) * 1.6, P.getZ(i) * 1.6) - 0.5) * 2
+      const sy = P.getY(i)
+      P.setXYZ(i, P.getX(i) * rx * k, (sy > 0 ? Math.pow(sy, 0.6) : sy) * h * k, P.getZ(i) * rz * k)
+    }
+    g.rotateY(yaw)
+    const y = L.groundAt(x, z) + h * (1 - 2 * STONE.sink) + 0.1
+    g.translate(x, y, z)
+    const tone = mul3(lin(pick(STONE.tones)), range(0.8, 1.15))
+    decor.add(g, { color: (p) => mul3(tone, 0.45 + 0.75 * clamp((p[1] - (y - h)) / (2 * h)) + 0.25 * (noise(p[0] * 3 + seed, p[1] * 3, p[2] * 3) - 0.5)), surf: [surf(KIND.stone, 0.85), 0], renormal: true })
+    stoneList.push([x, z, rx, rz, yaw])
+  }
+}
+const stoneGap = (x, z) => {
+  let d = Infinity
+  for (const [sx, sz, rx, rz, yaw] of stoneList) {
+    const c = Math.cos(yaw)
+    const s = Math.sin(yaw)
+    const lx = (x - sx) * c - (z - sz) * s
+    const lz = (x - sx) * s + (z - sz) * c
+    d = Math.min(d, (Math.hypot(lx / rx, lz / rz) - 1) * Math.min(rx, rz))
+  }
+  return d
+}
+
 let tufts = 0
 {
   const pos = []
   const nor = []
   const col = []
   const tip = []
+  const sun = []
   const list = []
   const spread = (v) => {
     let r = 0
@@ -249,8 +296,10 @@ let tufts = 0
     if (wallGap(x, z) < 0.7) continue
     const f = L.pondField(x, z)
     if (f < 1.035) continue
-    if (hardGap(x, z) < 0.3 || trunkGap(x, z) < -1.4) continue
+    if (hardGap(x, z) < 0.3 || trunkGap(x, z) < -1.4 || stoneGap(x, z) < 0.15) continue
     const sand = sandAt(x, z)
+    if (R() < smooth(GRASS.sandFrom, GRASS.sandTo, sand)) continue
+    const lit = sunAt(x, z)
     const lush = clamp(0.55 + 0.9 * fbm(x * 0.16 + 7, z * 0.16 + 2, 1.1, 3))
     const worn = Math.exp(-Math.max(hardGap(x, z), 0) / 1.6)
     if (R() < 0.55 * worn) continue
@@ -259,7 +308,7 @@ let tufts = 0
     const patch = 0.45 + 0.75 * clamp(0.5 + 1.4 * fbm(x * 0.09 + 3, z * 0.09 + 11, 2.3, 2))
     const base = mul3(mix3(pick(TONES.grass), pick(TONES.straw), sand * 0.8), patch)
     const top = mul3(mix3(pick(TONES.tip), pick(TONES.straw), clamp(sand * 0.9 + 0.08 * R())), patch)
-    const cell = { key: morton(x, z), pos: [], nor: [], col: [], tip: [] }
+    const cell = { key: morton(x, z), pos: [], nor: [], col: [], tip: [], sun: [] }
     list.push(cell)
     const up = norm3([(R() - 0.5) * 0.5, 1, (R() - 0.5) * 0.5])
     for (let b = 0; b < GRASS.blades; b++) {
@@ -279,6 +328,7 @@ let tufts = 0
         cell.nor.push(...up)
         cell.col.push(c[0] * (0.32 + 0.95 * t), c[1] * (0.32 + 0.95 * t), c[2] * (0.32 + 0.95 * t))
         cell.tip.push(t)
+        cell.sun.push(lit)
       }
     }
     tufts++
@@ -289,9 +339,14 @@ let tufts = 0
     for (const v of c.nor) nor.push(v)
     for (const v of c.col) col.push(v)
     for (const v of c.tip) tip.push(v)
+    for (const v of c.sun) sun.push(v)
   }
   let vi = 0
-  soup(grass, pos, nor, col, () => [tip[vi++], 0])
+  soup(grass, pos, nor, col, () => {
+    const o = [tip[vi], sun[vi]]
+    vi++
+    return o
+  })
 }
 
 const leafSurf = [surf(KIND.leaf, 0.8), 0]
@@ -340,7 +395,7 @@ for (const sh of RF.shrubs()) {
     const rr = Math.sqrt(Math.max(0, 1 - yy * yy))
     const d = [Math.cos(a) * rr, yy, Math.sin(a) * rr]
     const p = [sh.centre[0] + d[0] * sh.r[0] * 1.02, sh.centre[1] + d[1] * sh.r[1] * 1.02, sh.centre[2] + d[2] * sh.r[2] * 1.02]
-    blossom(p, d, range(0.3, 0.52), pick(TONES.rose))
+    blossom(p, d, range(0.2, 0.36), pick(TONES.rose))
     counts.roses++
     for (let k = 0; k < 5; k++) leaf(add3(p, [range(-0.5, 0.5), range(-0.5, 0.5), range(-0.5, 0.5)]), d, 0.5, mul3(pick(TONES.leaf), range(0.8, 1.4)))
   }
@@ -371,13 +426,13 @@ for (const sh of RF.shrubs()) {
   const outV = sc(L.cottagePoint(0, 0, 1).map((v, i) => v - L.cottagePoint(0, 0, 0)[i]), 1)
   const out = norm3([outV[0], 0.15, outV[2]])
   for (const c of climb) {
-    for (let k = 0; k < 9; k++) {
+    for (let k = 0; k < 12; k++) {
       const p = L.cottagePoint(c.at[0] + range(-c.w, c.w), c.at[1] + range(-c.w, c.w), wallZ + range(0, 0.5))
-      leaf(p, out, 0.55, mul3(pick(TONES.leaf), range(0.75, 1.5)))
+      leaf(p, out, 0.5, mul3(pick(TONES.leaf), range(0.55, 1.25)))
     }
     if (R() < 0.42) {
       const p = L.cottagePoint(c.at[0] + range(-c.w, c.w), c.at[1] + range(-c.w, c.w), wallZ + 0.55)
-      blossom(p, out, range(0.3, 0.5), pick(TONES.rose))
+      blossom(p, out, range(0.18, 0.32), pick(TONES.rose))
       counts.roses++
     }
   }
@@ -397,7 +452,7 @@ function sunflower(x, z, tall, face) {
   const head = pts[pts.length - 1].toArray()
   const f = norm3(face)
   const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), new THREE.Vector3(...f))
-  const hr = tall * 0.1 + 0.75
+  const hr = 0.72 * (tall * 0.1 + 0.75)
   const disc = new THREE.SphereGeometry(hr * 0.66, 14, 8, 0, TAU, 0, Math.PI / 2)
   disc.rotateX(Math.PI / 2)
   disc.scale(1, 1, 0.45)
@@ -449,12 +504,12 @@ function sunflower(x, z, tall, face) {
 const fenceDir = norm3([L.fence.to[0] - L.fence.from[0], 0, L.fence.to[1] - L.fence.from[1]])
 const behind = [fenceDir[2], 0, -fenceDir[0]]
 const sunList = []
-for (const [t, off, tall] of [[-0.08, 2.6, 11.2], [0.22, 1.3, 6.4]]) {
+for (const [t, off, tall, turn, nod] of [[-0.08, 2.6, 9.4, -0.1, 0.02], [0.22, 1.3, 5.6, 0.5, -0.12]]) {
   const x = L.fence.from[0] + (L.fence.to[0] - L.fence.from[0]) * t + behind[0] * off
   const z = L.fence.from[1] + (L.fence.to[1] - L.fence.from[1]) * t + behind[2] * off
-  sunList.push(sunflower(x, z, tall, norm3([0.25 + range(-0.2, 0.2), 0.18, 1])))
+  sunList.push(sunflower(x, z, tall, norm3([turn + range(-0.1, 0.1), nod, 1])))
 }
-for (const [x, z, tall] of [[27.5, 7.5, 8.6], [22.6, 11.2, 5.6], [32.6, 10.4, 4.6]]) sunList.push(sunflower(x, z, tall, norm3([-0.2 + range(-0.2, 0.2), 0.2, 1])))
+for (const [x, z, tall, turn, nod] of [[27.5, 7.5, 7.4, -0.45, 0.25], [22.6, 11.2, 4.8, 0.35, -0.1], [32.6, 10.4, 4.0, 0.75, -0.3]]) sunList.push(sunflower(x, z, tall, norm3([turn + range(-0.1, 0.1), nod, 1])))
 
 {
   const spots = []
