@@ -23,7 +23,8 @@ interface SwapOptions {
 interface Backend {
   start(): void
   ready(files: string[]): Promise<void>
-  play(entry: AudioIndexEntry, o: PlayOptions): void
+  /** Plays or schedules one cue. The answer takes it back: a cue not yet heard is never heard. */
+  play(entry: AudioIndexEntry, o: PlayOptions): () => void
   swap(kind: Kind, id: string, entry: LoopEntry | undefined, o: SwapOptions): void
   setMuted(muted: boolean): void
   setHidden(hidden: boolean): void
@@ -64,6 +65,8 @@ const STIR_GAP = 0.18
 const STIR_FLOOR = 0.05
 const TICK_CENTS = [0, 200, 500, 200, 700, 500, 0, -300]
 const CURVE_POINTS = 24
+
+const NOTHING = (): void => undefined
 
 const clamp01 = (v: number): number => (v < 0 ? 0 : v > 1 ? 1 : v)
 const withSlash = (url: string): string => (url.endsWith('/') ? url : `${url}/`)
@@ -176,10 +179,10 @@ class WebBackend implements Backend {
     await Promise.all(files.map((f) => this.load(f)))
   }
 
-  play(entry: AudioIndexEntry, o: PlayOptions): void {
+  play(entry: AudioIndexEntry, o: PlayOptions): () => void {
     const ctx = this.ctx
     const buffer = this.buffers.get(entry.file)
-    if (!ctx || !this.master || !buffer || this.dead) return
+    if (!ctx || !this.master || !buffer || this.dead) return NOTHING
     const at = ctx.currentTime + LEAD + (o.delay ?? 0)
     const level = entry.gain * (o.gain ?? 1)
     const length = Math.min(o.seconds ?? entry.seconds, entry.seconds)
@@ -206,6 +209,14 @@ class WebBackend implements Backend {
     }
     src.onended = () => gain.disconnect()
     src.start(at, Math.max(0, entry.start), length + (o.fadeOut ? 0 : TAIL))
+    return () => {
+      try {
+        src.stop()
+      } catch {
+        // it never started or has ended
+      }
+      gain.disconnect()
+    }
   }
 
   swap(kind: Kind, id: string, entry: LoopEntry | undefined, o: SwapOptions): void {
@@ -395,8 +406,8 @@ class ElementBackend implements Backend {
     }
   }
 
-  play(entry: AudioIndexEntry, o: PlayOptions): void {
-    if (!this.open || this.dead) return
+  play(entry: AudioIndexEntry, o: PlayOptions): () => void {
+    if (!this.open || this.dead) return NOTHING
     const length = Math.min(o.seconds ?? entry.seconds, entry.seconds)
     const rate = o.rate ?? 1
     const run = () => {
@@ -405,9 +416,18 @@ class ElementBackend implements Backend {
       item.el.playbackRate = rate
       this.seekAndPlay(item, Math.max(0, entry.start))
       item.timers.push(window.setTimeout(() => this.drop(item), ((length + TAIL) / rate) * 1000 + 250))
+      made = item
     }
-    if (o.delay) window.setTimeout(run, o.delay * 1000)
-    else run()
+    let made: Item | null = null
+    let off = false
+    const timer = o.delay ? window.setTimeout(run, o.delay * 1000) : null
+    if (timer === null) run()
+    return () => {
+      if (off) return
+      off = true
+      if (timer !== null) window.clearTimeout(timer)
+      if (made && this.live.has(made)) this.drop(made)
+    }
   }
 
   swap(kind: Kind, id: string, entry: LoopEntry | undefined, o: SwapOptions): void {
@@ -470,6 +490,8 @@ export function createSoundEngine(opts: SoundEngineOptions): SoundEngine {
   let disposed = false
   let stirOpen = true
   let ticks = 0
+  /** The shake whose landing has not been confirmed by the picture: its cues can still be taken back. */
+  let pending: { to: string; held: boolean; cancel: Array<() => void> } | null = null
 
   if (root && root.dataset.audio === undefined) root.dataset.audio = 'none'
 
@@ -502,9 +524,13 @@ export function createSoundEngine(opts: SoundEngineOptions): SoundEngine {
   const spriteFiles = index ? [...new Set(Object.values(index.sprites).map((e) => e.file))] : []
   const loopFiles = (s: string): string[] => [CUE.amb(s), CUE.music(s)].map((id) => loopOf(id)?.file).filter((f): f is string => typeof f === 'string')
 
-  const play = (id: string, o: PlayOptions = {}): void => {
+  const play = (id: string, o: PlayOptions = {}): (() => void) => {
     const entry = sprite(id)
-    if (entry && backend && unlocked && !disposed) backend.play(entry, o)
+    return entry && backend && unlocked && !disposed ? backend.play(entry, o) : NOTHING
+  }
+
+  const music = (to: string, o: SwapOptions): void => {
+    if (backend && unlocked && !disposed) backend.swap('music', CUE.music(to), loopOf(CUE.music(to)), o)
   }
 
   const beds = (to: string, amb: SwapOptions, music: SwapOptions): void => {
@@ -547,20 +573,45 @@ export function createSoundEngine(opts: SoundEngineOptions): SoundEngine {
       backend?.setMuted(muted)
     },
 
+    /**
+     * The picture is in this season now. After a shake whose landing was held this is the landing: the land cue and
+     * the music change happen here, and if the shake fell back to the season it left the music does not change.
+     */
     setSeason(to: string, immediate = false): void {
+      const p = pending
+      pending = null
       season = to
+      if (p && p.held && p.to === to) {
+        play(CUE.land(to))
+        play(CUE.clink)
+        music(to, { delay: 0, fadeOut: CUT_FADE, fadeIn: CUT_FADE, thin: false })
+      }
       const fade = immediate ? CUT_FADE : SEASON_FADE
       const o = { delay: 0, fadeOut: fade, fadeIn: fade, thin: false }
       beds(to, o, o)
     },
 
+    /**
+     * A shake has started: the lift and the storm now, the land cue and the music change one bar later on the audio clock.
+     * Called again for the same season with a bar that is not finite, it says the landing is held (the season is still
+     * loading): the land cue and the new music are taken back and wait for setSeason, which the app calls when the
+     * picture really lands.
+     */
     shake(to: string, barSeconds: number): void {
+      if (!Number.isFinite(barSeconds)) {
+        const p = pending
+        if (!p || p.to !== to || p.held) return
+        p.held = true
+        for (const off of p.cancel) off()
+        p.cancel.length = 0
+        if (backend && unlocked && !disposed) backend.swap('music', '', undefined, { delay: 0, fadeOut: CUT_FADE, fadeIn: 0, thin: false })
+        return
+      }
       const bar = Math.max(0, barSeconds)
       season = to
       play(CUE.lift)
       play(CUE.shake(to))
-      play(CUE.land(to), { delay: bar })
-      play(CUE.clink, { delay: bar })
+      pending = { to, held: false, cancel: [play(CUE.land(to), { delay: bar }), play(CUE.clink, { delay: bar })] }
       beds(to, { delay: 0, fadeOut: bar, fadeIn: bar, thin: false }, { delay: bar, fadeOut: bar, fadeIn: CUT_FADE, thin: true })
     },
 
