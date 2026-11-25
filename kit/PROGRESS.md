@@ -37,16 +37,16 @@ Status 130 · 2026-11-25 23:36 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 23:36 UTC
-clock: phase 5, tick of 3.2 minutes
-phase 5: 9.43 h used of its 12.00 h box
-allowance (before the review, continuation 1): 9.43 h used of 12.00 h allowed
-all time before the review: 45.62 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
-extra rounds: yes
+2026-11-25 23:45 UTC
+clock: phase 5, tick of 8.4 minutes
+phase 5: 9.57 h used of its 12.00 h box
+allowance (before the review, continuation 1): 9.57 h used of 12.00 h allowed
+all time before the review: 45.76 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+extra rounds: no
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 8
 ```
 
 ## Phases
@@ -2407,3 +2407,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 23:36 UTC. Open item 218 followed up here, as a check and not a change (nothing under `src/`, `config/` or `public/` was touched; the script is `out/work/bin/reduced.mjs`, git-ignored). The local `dist/` of the frozen build `9f4d94ae` was opened at 390 x 844 with reduced motion set (the page reports `prefers-reduced-motion: reduce` true and the interface carries its reduced mark), winter at rest; the space bar was pressed once at 23:29. What was seen, in the script's own lines (`out/work/hostcheck/reduced-phone.log`): "102.6 s (+0.0): pressed winter, disabled true"; "328.9 s (+226.3): pressed spring, disabled false, status Spring"; "the season changed and the controls are on again; 226.3 s after the press"; no console error and no failed request. So with reduced motion a press does finish in this build: no lift and no shake, the controls go off, the season changes from winter to spring, the season mark moves to spring, the status line reads "Spring" and the Shake control answers again. The 226 seconds are this machine, not the app: the dissolve lasts 1.8 s of the app's own clock, which moves at most 0.25 s a frame (`LIVE.maxFrameSeconds` in `src/app/session.ts`), and software GL here draws a frame in many seconds; the reviewer's nine frames were short of the end for the same reason. Three pictures kept and looked at, joined as `out/stills/phase-5/reduced-motion-phone.jpg`: before the press (winter, the controls bright), 20 s after it (winter still, the controls dim) and at the end (spring at rest; the controls are still drawn dim in the picture taken the moment they answered again, which may be the fade back or open item 214; not decided here). Not shown by this: how the dissolve itself looks frame by frame, the timing on a real device, and the other three changes. Item 218 stays open for the real device; its worry that the press never ends is answered for the phone size. The same check at 1280 x 720 was started at 23:36.
 
 - 23:37 UTC. Status 130 posted in the thread at 23:36 UTC (Phase 5, Continuation 1), four pictures, each looked at first: the reduced-motion check of this hour at phone size (`out/stills/phase-5/reduced-motion-phone.jpg`: before the press, 20 s after it, at the end with spring at rest); two more of the fresh reviewer's pictures (`out/stills/phase-5/final-pass/cmp_summer_rest.jpg`, summer at rest in the approved picture, the review cut and the live app; `film_sound_spectrograms.jpg`, the review cut's sound around the four landings and at both ends); and the comparison crop the status tool adds on its own (fall-shake, the approved picture left, the build right). What it said: the final gate still runs (G1 to G12 passed and G13 running at 23:21, limit 00:25); open item 218 was followed up as a check and not a change, and a press with reduced motion does finish at phone size on the frozen build, 226 s after the press on this machine's software drawing, with the same check at 1280 x 720 running; the fresh review stands at 6 of 10 with nine must-fixes and nothing is mended before the stop (decision 127); sound read at 23:36: 6,765 of 10,000 credits in 40 paid calls, 3,235 left, none planned; the clock stood at 9.43 h of Phase 5's 12 and 45.62 h all time before the review; next come the gate's result, the last tick, the review page rebuilt and published, and the REVIEW block.
+
+- 23:46 UTC. Open item 218, the second half of the check (again no change to the build): the same script on the local `dist/` of the frozen build at 1280 x 720 with reduced motion set, started 23:36. Its lines (`out/work/hostcheck/reduced-wide.log`): "116.9 s (+0.0): pressed winter, disabled true"; "401.7 s (+284.7): pressed spring, disabled false, status Spring"; "the season changed and the controls are on again; 284.7 s after the press"; no console error and no failed request. So the press with reduced motion finishes on the wide layout too, winter to spring, with no lift and no shake. Three pictures kept and looked at, joined as `out/stills/phase-5/reduced-motion-wide.jpg` (winter at rest with the controls bright; 20 s after the press, winter with the controls dim; spring at rest at the end, the controls still drawn dim at the moment they answered again, as at phone size). The wall time is this machine's software drawing, as the note of 23:36 says. Item 218 stays open only for what a machine without a graphics card cannot show: the look of the dissolve in motion, its timing on a real device, and the other three changes.
