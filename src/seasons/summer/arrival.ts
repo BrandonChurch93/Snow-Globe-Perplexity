@@ -19,9 +19,9 @@ const LOOK = {
   ledge: { r: [46.5, 52.0], h: 40.3 },
   jump: { count: 14000, reachMm: 26, ringShare: 0.3, ringMm: 5, liftMm: [0.8, 11], hopMm: [0.3, 2.6], quick: 0.11, tail: 0.5, tailShare: [0.6, 0.12], skidMm: [0.4, 3.2], radiusMm: [0.12, 0.27] },
   pour: { count: 16000, az: 82, spread: 4.5, r: 52.4, h: 38.8, reachMm: [4.6, 11], fanDeg: 7, rate: [1.3, 2.3], radiusMm: [0.1, 0.2] },
-  flow: { rest: 0.36, surge: 0.6, seconds: 1.3, gapMm: [0.3, 2.5] },
+  flow: { rest: 0.46, surge: 0.5, seconds: 1.3, gapMm: [0.3, 2.5] },
   shadow: { r: 57, top: [36, 41] },
-  streak: 1.7,
+  streak: 2.1,
 }
 
 const vec = (v: readonly number[]): string => `vec3(${v.map((x) => x.toFixed(3)).join(', ')})`
@@ -148,7 +148,7 @@ void main() {
   vec3 albedo = mix(${vec(SAND_COLOUR.deep)}, ${vec(SAND_COLOUR.pale)}, smoothstep(0.1, 0.75, id));
   albedo = mix(albedo, ${vec(SAND_COLOUR.dark)}, step(0.93, id2));
   albedo = mix(albedo, ${vec(SAND_COLOUR.white)}, step(id2, 0.12));
-  float shade = vGrainLook.z;
+  float shade = mix(0.35, 1.0, vGrainLook.z);
   float ndl = dot(n, uGrainKey);
   float wrap = clamp((ndl + 0.45) / 1.45, 0.0, 1.0);
   float thru = pow(clamp(dot(-v, uGrainKey) * 0.5 + 0.5, 0.0, 1.0), 3.0);
@@ -198,6 +198,8 @@ function grainGeometry(): THREE.BufferGeometry {
   }
 
   const rj = stream(`${PART}/jump`)
+  const rx = stream(`${PART}/jump-x`)
+  const rz = stream(`${PART}/jump-z`)
   const J = LOOK.jump
   let made = 0
   let tries = 0
@@ -208,8 +210,8 @@ function grainGeometry(): THREE.BufferGeometry {
     const wide = !ringed && pick < J.ringShare + 0.12
     const ringAz = rj.range(-Math.PI, Math.PI)
     const ringR = 61.5 + -Math.log(Math.max(rj.next(), 1e-6)) * J.ringMm
-    const x = ringed ? ringR * Math.sin(ringAz) : wide ? rj.range(SLAB.x[0], SLAB.x[1]) : rj.range(-6, 132)
-    const z = ringed ? ringR * Math.cos(ringAz) : wide ? rj.range(SLAB.z[0], SLAB.z[1]) : rj.range(-70, 214)
+    const x = ringed ? ringR * Math.sin(ringAz) : wide ? rx.range(SLAB.x[0], SLAB.x[1]) : rx.range(-6, 132)
+    const z = ringed ? ringR * Math.cos(ringAz) : wide ? rz.range(SLAB.z[0], SLAB.z[1]) : rz.range(-70, 214)
     const r = Math.hypot(x, z)
     if (r < 61.5) continue
     const h = sandHeight(x, z)
