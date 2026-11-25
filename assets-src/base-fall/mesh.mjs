@@ -389,7 +389,7 @@ export function buildPumpkins() {
     const a = f.rad + 0.5
     const b = f.tall + 0.4
     const c = 5.0
-    const centre = place(drumR(f.h) - 1.6, f.h, f.az)
+    const centre = place(drumR(f.h) - 2.3, f.h, f.az)
     const out = radial(f.az)
     const tan = along(f.az)
     const near = L.front(f.az) <= 125
@@ -532,7 +532,7 @@ export function buildWax() {
   for (const run of L.RUNS) {
     const start = L.onCylinder(run.x, run.y0, 55)
     const w = (run.w / 9.3) * 0.8
-    const top = Math.min(start.h, 9)
+    const top = Math.min(start.h, 15)
     const n = Math.max(6, Math.ceil(top / 0.7))
     const outs = []
     for (let i = 0; i <= n; i++) outs.push(weaveOut(start.az, mix(top, run.pool > 0 ? 0.5 : 2.2, i / n), 2.0))
@@ -541,9 +541,9 @@ export function buildWax() {
       if (outs[i] === null) outs[i] = last - 0.25
       last = outs[i]
     }
-    for (let pass = 0; pass < 10; pass++) {
+    for (let pass = 0; pass < 3; pass++) {
       const prev = outs.slice()
-      for (let i = 0; i <= n; i++) outs[i] = Math.max(0.25 * prev[Math.max(i - 1, 0)] + 0.5 * prev[i] + 0.25 * prev[Math.min(i + 1, n)], prev[i] - 0.25)
+      for (let i = 0; i <= n; i++) outs[i] = Math.max(0.25 * prev[Math.max(i - 1, 0)] + 0.5 * prev[i] + 0.25 * prev[Math.min(i + 1, n)], prev[i] - 0.35)
     }
     const foot = outs[n] - 0.6
     const pts = []
@@ -552,10 +552,11 @@ export function buildWax() {
       const t = i / n
       const h = mix(top, run.pool > 0 ? 0.5 : 2.2, t)
       const sway = Math.sin(run.x) * 0.35
-      pts.push(place(outs[i] - w * 0.2, h, start.az + sway * Math.sin(2 * Math.PI * t) * (1 - t)))
       const cap = Math.sqrt(Math.max(1 - Math.max((0.1 - t) / 0.1, 0) ** 2, 0.0004))
-      const tail = run.pool > 0 ? 1 + 1.1 * smooth(0.72, 1, t) ** 2 : Math.sqrt(Math.max(1 - Math.max((t - 0.9) / 0.1, 0) ** 2, 0.0004)) * (1 + 0.4 * Math.exp(-(((t - 0.86) / 0.1) ** 2)))
-      radii.push(w * (run.pool > 0 ? 0.72 - 0.16 * smooth(0.1, 0.7, t) + 0.04 * Math.sin(t * 5 + run.x) : 0.3 + 0.8 * smooth(0, 0.55, t) + 0.1 * Math.sin(t * 9 + run.x)) * cap * tail)
+      const tail = run.pool > 0 ? 1 + 0.9 * smooth(0.72, 1, t) ** 2 : Math.sqrt(Math.max(1 - Math.max((t - 0.9) / 0.1, 0) ** 2, 0.0004)) * (1 + 0.4 * Math.exp(-(((t - 0.86) / 0.1) ** 2)))
+      const rad = w * (run.pool > 0 ? 0.16 + 0.5 * smooth(0, 0.5, t) - 0.1 * smooth(0.55, 0.85, t) + 0.04 * Math.sin(t * 5 + run.x) : 0.3 + 0.8 * smooth(0, 0.55, t) + 0.1 * Math.sin(t * 9 + run.x)) * cap * tail
+      pts.push(place(outs[i] + rad * mix(-1.2, 0.45, smooth(0, 0.22, t)), h, start.az + sway * 2.2 * Math.sin(2 * Math.PI * t) * (1 - t) + 0.9 * (fbm(t * 2.5 + run.x, 0.4, 64, 4, 23, 2) - 0.5) * (1 - t)))
+      radii.push(rad)
     }
     tube(soup, pts, radii, 12, (j, a, p, nrm) => [(0.55 + 0.45 * (0.5 + 0.5 * dot3(nrm, norm3([p[0], 0, p[2]])))) * (0.5 + 0.5 * smooth(0, 16, p[1])), clamp(radii[j] * 0.55, 0, 1), j / n], 0.85)
     count++
