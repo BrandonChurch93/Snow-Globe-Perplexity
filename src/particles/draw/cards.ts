@@ -40,7 +40,7 @@ export const CARD_VERT = `
     float dabShare = ${at(SHAPE.leaf)} ? ${n(CARD.dabShare[1])} : (${at(SHAPE.seed)} ? ${n(CARD.dabShare[2])} : ${n(CARD.dabShare[0])});
     float whole = way.z < 0.5 || u5 < max(way.x, way.y) || own > 1.0 - chosen ? 1.0 : 0.0;
     float keepC = mix(afloat * max(gustC, ${n(CARD.dabCalm)} * uStorm.x * uStorm.w) * mix(${n(CARD.dabKeep[0])}, ${n(CARD.dabKeep[1])}, smoothstep(1.0 - chosen - dabShare - 0.02, 1.0 - chosen - dabShare, own)), 1.0, whole);
-    if (${at(SHAPE.seed)} && whole > 0.5 && way.z > 0.5 && u5 >= max(way.x, way.y)) keepC *= max(afloat * gustC, uStorm.x * uStorm.w);
+    if (${at(SHAPE.seed)} && whole > 0.5 && way.z > 0.5 && u5 >= max(way.x, way.y)) keepC *= max(max(afloat * gustC, uStorm.x * uStorm.w), lying * step(fract(own * 977.0), ${n(CARD.clear.snagSeen)}));
     if (${at(SHAPE.spark)}) keepC = max(mix(${n(CARD.sparkKeep[0])}, ${n(CARD.sparkKeep[1])}, pow(own, ${n(CARD.sparkSkew)})), smoothstep(${n(CARD.sparkClear[0])}, ${n(CARD.sparkClear[1])}, own));
     if (${at(SHAPE.fleck)}) keepC = mix(${n(CARD.fleckKeep[0])}, ${n(CARD.fleckKeep[1])}, pow(own, mix(${n(CARD.fleckSkew)}, ${n(CARD.fleckStorm)}, gustC)));
     float stormSize = ${at(SHAPE.petal)} ? ${n(CARD.stormSize[0])} : (${at(SHAPE.leaf)} ? ${n(CARD.stormSize[1])} : 1.0);
@@ -64,13 +64,13 @@ export const CARD_VERT = `
     if (${at(SHAPE.seed)}) {
       nearC = 0.0;
       rC *= mix(${n(CARD.hair.restSize)}, 1.0, max(gustC, 1.0 - whole));
-      keepC *= 1.0 - over * (1.0 - smoothstep(${n(CARD.clear.lowMm)}, ${n(CARD.clear.highMm)}, nowL.y)) * whole * (1.0 - gustC);
+      keepC *= 1.0 - over * (1.0 - smoothstep(${n(CARD.clear.lowMm)}, ${n(CARD.clear.highMm)}, nowL.y)) * whole * (1.0 - gustC) * afloat;
     }
     if (${at(SHAPE.spark)}) keepC = mix(keepC, 1.0, nearC);
     float farC = afloat * (1.0 - gustC) * whole * (shape > ${n(SHAPE.bat - 0.5)} ? 0.0 : 1.0) * smoothstep(${n(CARD.far.from)}, ${n(CARD.far.to)}, depth);
     rC *= 1.0 + (${at(SHAPE.petal)} ? mix(${n(CARD.near.petalSize[0] - 1)}, ${n(CARD.near.petalSize[1] - 1)}, pow(fract(h.y * 173.0), ${n(CARD.near.petalSkew)})) : ${n(CARD.near.size - 1)}) * nearC * (sheet + (${at(SHAPE.seed)} ? 0.6 : 0.0));
     rC = mix(rC, min(rC, uPoint.w * (${at(SHAPE.seed)} ? ${n(CARD.clear.seedPx)} : (sheet > 0.5 ? ${n(CARD.clear.sheetPx)} : 1e4))), clearC);
-    if (${at(SHAPE.seed)} && aState > 0.5) rC = min(rC, uPoint.w * ${n(CARD.clear.snagPx)});
+    if (${at(SHAPE.seed)} && aState > 0.5) rC = min(rC, uPoint.w * mix(${n(CARD.clear.snagPx[0])}, ${n(CARD.clear.snagPx[1])}, pow(fract(h.w * 113.0), ${n(CARD.clear.snagSkew)})));
     if (shape > ${n(SHAPE.bat - 0.5)}) rC /= shrink;
     float ph = aData.w;
     float yaw = 6.2831853 * h.x + ${n(CARD.yawSway)} * sin(ph + 6.2831853 * h2.x) * afloat;
@@ -233,6 +233,11 @@ export const CARD_VERT = `
     vGrid = vec4(base0 * min(1.0, ${n(LIT_MOST)} / max(max(base0.r, max(base0.g, base0.b)), 1e-3)), bendFit);
     vDom = vec4(keyIn * uRigPoint.x, lineC);
     clip = clipC;
+    if (${at(SHAPE.seed)} && aState > 0.5) {
+      // a head that has come to rest on a roof or a stone stands on it: its card is drawn that far nearer, so the thing it lies on does not cut it
+      vec4 nearerC = projectionMatrix * vec4(view.xy, view.z + min(reachC * zImg / (uPoint.y * mag), ${n(CARD.clear.snagLiftMm)}), 1.0);
+      clip.z = nearerC.z / nearerC.w * clip.w;
+    }
     if (shape > ${n(SHAPE.bat - 0.5)} && on > 0.5) {
       vec2 fromC = (view.xy / -view.z - centreV.xy / -centreV.z) * uPoint.y;
       float mostC = max(R * uPoint.y / sqrt(max(dist * dist - R * R, 1.0)) - ${n(CARD.batInside)} * rC, 1.0);
