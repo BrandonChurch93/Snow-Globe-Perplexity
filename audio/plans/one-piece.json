@@ -1,5 +1,5 @@
 {
-  "note": "The plan of the one-piece candidate. Made at 02:54 UTC on 2026-11-25 by POST /v1/music/plan (no credits; no cost header came back) from planPrompt and music_length_ms 60000; the five sections came back at 12000 ms each, which is the default grid. The one change: the music family line is added, word for word, as the last of positive_global_styles. The music call sends composition_plan with respect_sections_durations true. A second change, at 17:56 UTC on 2026-11-25: in the Winter section soft wordless choir pads is replaced by soft warm string pads, because a piece is kept only if the listener hears no voice.",
+  "note": "The plan of the one-piece candidate. Made at 02:54 UTC on 2026-11-25 by POST /v1/music/plan (no credits; no cost header came back) from planPrompt and music_length_ms 60000; the five sections came back at 12000 ms each, which is the default grid. The one change: the music family line is added, word for word, as the last of positive_global_styles. The music call sends composition_plan with respect_sections_durations true. A second change, at 17:56 UTC on 2026-11-25: in the Winter section soft wordless choir pads is replaced by soft warm string pads, because a piece is kept only if the listener hears no voice. A third change, at 18:05 UTC on 2026-11-25, for take 2: take 1 came back as one solo music box in one mood for 60 s. The global styles lose seasonal suite, warm melody, clean transitions, snow globe imagery and thematic development (a snow globe is a music box) and gain five clearly different sections and a clear change of instruments and mood at the start of each section; the negative global styles gain choir, one instrument throughout and solo music box throughout. In each section the styles that asked for the same melody carried on and for a thinning last bar are taken out, the instruments of the section are named first, and the instruments of the other sections are put into its negative styles. The section lengths are unchanged, five of 12000 ms.",
   "planPrompt": "A 60 second orchestral piece at exactly 100 beats per minute in 4/4 for a film of a snow globe that passes through four seasons, in five sections of exactly 12 seconds (five bars) each, with one short simple melody that passes through all five sections in each season's own instruments. Section 1, winter: warm orchestral Christmas, sleigh bells, celesta, soft wordless choir pads, low strings. Section 2, spring: light and airy, harp, flute, plucked strings. Section 3, summer: warm and unhurried, nylon guitar, soft marimba, a golden dusk. Section 4, fall: Halloween, a detuned music box and piano over low strings, with eerie sounds in the music itself. Section 5, winter again: the winter music returning fuller, sleigh bells, celesta, full strings, resolving on its last bar. The last bar of each of the first four sections thins out and builds into the downbeat of the next, instrumental, no vocals, no spoken words, clean ending",
   "music_length_ms": 60000,
   "composition_plan": {
@@ -7,42 +7,38 @@
       "orchestral",
       "cinematic",
       "instrumental",
-      "seasonal suite",
       "100 bpm",
       "4/4 time",
-      "warm melody",
-      "clean transitions",
-      "snow globe imagery",
-      "thematic development",
+      "five clearly different sections",
+      "a clear change of instruments and mood at the start of each section",
       "instrumental, no vocals, no spoken words, clean ending"
     ],
     "negative_global_styles": [
       "vocals",
       "spoken words",
       "lyrics",
+      "choir",
       "dense percussion",
       "modern pop",
       "heavy brass",
-      "aggressive",
-      "chaotic",
+      "one instrument throughout",
+      "solo music box throughout",
       "abrupt ending"
     ],
     "sections": [
       {
         "section_name": "Winter",
         "positive_local_styles": [
-          "warm orchestral christmas feel",
-          "sleigh bells",
-          "celesta",
+          "warm orchestral christmas",
+          "sleigh bells keeping the beat",
+          "celesta melody",
           "soft warm string pads",
           "low strings",
-          "gentle melodic statement",
-          "subtle harmonic shimmer",
-          "transition thinning in the final bar"
+          "gentle and festive"
         ],
         "negative_local_styles": [
           "vocals",
-          "solo spotlight",
+          "choir",
           "harsh brass",
           "fast rhythm",
           "sudden cutoff"
@@ -53,19 +49,20 @@
       {
         "section_name": "Spring",
         "positive_local_styles": [
-          "light and airy orchestration",
-          "harp",
-          "flute",
-          "plucked strings",
-          "fresh and delicate tone",
-          "same melody carried forward",
-          "final bar narrows and lifts into the next downbeat"
+          "light and airy",
+          "bright flute melody",
+          "harp arpeggios",
+          "pizzicato strings",
+          "fresh, sunny, major key",
+          "lively and playful"
         ],
         "negative_local_styles": [
-          "heavy low end",
+          "sleigh bells",
+          "celesta",
+          "music box",
           "choir",
           "dark timbre",
-          "dense percussion",
+          "heavy low end",
           "vocal textures"
         ],
         "duration_ms": 12000,
@@ -75,18 +72,18 @@
         "section_name": "Summer",
         "positive_local_styles": [
           "warm and unhurried",
-          "nylon guitar",
+          "fingerpicked nylon string guitar in front",
           "soft marimba",
-          "golden dusk atmosphere",
-          "gentle legato strings",
-          "same melody in a sunlit color",
-          "last bar thins and prepares the transition"
+          "light shaker",
+          "golden dusk, relaxed and mellow"
         ],
         "negative_local_styles": [
+          "sleigh bells",
+          "celesta",
+          "music box",
+          "harp",
+          "flute",
           "icy textures",
-          "march-like rhythm",
-          "sharp brass",
-          "busy counterpoint",
           "vocal elements"
         ],
         "duration_ms": 12000,
@@ -95,20 +92,20 @@
       {
         "section_name": "Fall",
         "positive_local_styles": [
-          "halloween atmosphere",
-          "detuned music box",
-          "piano",
-          "low strings",
-          "eerie in-the-music sounds",
-          "slightly uncanny harmonies",
-          "same melody made fragile and uncanny",
-          "last bar fades thinner into the final section"
+          "halloween, eerie and spooky",
+          "detuned music box melody",
+          "dark piano",
+          "low tremolo strings",
+          "eerie creaks and a far bell in the music",
+          "minor key, uncanny"
         ],
         "negative_local_styles": [
           "bright cheerful tone",
+          "nylon guitar",
+          "marimba",
+          "sleigh bells",
           "vocal sounds",
           "full brass fanfare",
-          "percussive clutter",
           "abrupt ending"
         ],
         "duration_ms": 12000,
@@ -117,18 +114,17 @@
       {
         "section_name": "Winter Return",
         "positive_local_styles": [
-          "winter music returning fuller",
+          "warm orchestral christmas returning fuller",
           "sleigh bells",
-          "celesta",
-          "full strings",
-          "resolved melody",
-          "expanded orchestral warmth",
-          "final bar resolving cleanly",
-          "satisfying closed ending"
+          "celesta melody",
+          "full lush strings",
+          "grand, warm and resolved",
+          "final bar resolving on a held chord"
         ],
         "negative_local_styles": [
           "voices",
           "spoken words",
+          "music box alone",
           "unexpected genre shifts",
           "fade out",
           "unfinished cadence"

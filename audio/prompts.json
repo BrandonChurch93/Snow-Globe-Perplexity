@@ -862,7 +862,9 @@
     "ui-send": 1,
     "riser": 3,
     "music-winter": 1,
-    "music-fall": 1
+    "music-fall": 1,
+    "music-spring": 2,
+    "music-summer": 2
   },
   "open": {
     "amb-winter": "three takes used, none fits: silent in the mixes and in the app until a review round buys new takes",
@@ -897,10 +899,10 @@
     "key-tap": 0,
     "ui-send": 2,
     "riser": 0,
-    "music-one-piece": 2,
+    "music-one-piece": 1,
     "music-winter": 2,
-    "music-spring": 2,
-    "music-summer": 2,
+    "music-spring": 1,
+    "music-summer": 1,
     "music-fall": 2
   },
   "music": {
@@ -919,8 +921,8 @@
           12000,
           12000
         ],
-        "state": "take 1: does not fit",
-        "takesUsed": 1
+        "state": "take 2: does not fit",
+        "takesUsed": 2
       },
       "music-winter": {
         "endpoint": "POST /v1/music",
@@ -937,18 +939,20 @@
         "how": "prompt",
         "music_length_ms": 28800,
         "force_instrumental": true,
-        "prompt": "A light and airy piece at exactly 100 beats per minute in 4/4, twelve bars long: a harp in flowing arpeggios, a flute carrying one short simple melody, plucked strings marking the beat, fresh and bright. It starts on the first downbeat with no pickup and no lead-in and holds one even feel, instrumental, no vocals, no spoken words, clean ending",
-        "state": "take 1: fits weakly",
-        "takesUsed": 1
+        "prompt": "A bright, cheerful and lively spring piece at exactly 100 beats per minute in 4/4, twelve bars long, in a major key: a flute high up carrying one short lilting, playful melody, a harp in quick flowing arpeggios, pizzicato strings bouncing on every beat, light and airy, fresh and sunny like a spring morning. It starts on the first downbeat with no pickup and no lead-in and holds one even feel, instrumental, no vocals, no spoken words, clean ending",
+        "state": "kept, take 2",
+        "takesUsed": 2,
+        "note": "take 2: bright, cheerful, lively, major key, the flute high up and named first, pizzicato bouncing on every beat, because take 1 was heard as reflective or dreamy and brought winter to mind, with no flute heard"
       },
       "music-summer": {
         "endpoint": "POST /v1/music",
         "how": "prompt",
         "music_length_ms": 28800,
         "force_instrumental": true,
-        "prompt": "A warm and unhurried piece at exactly 100 beats per minute in 4/4, twelve bars long: a nylon string guitar carrying one short simple melody, a soft marimba marking the beat, a golden dusk. It starts on the first downbeat with no pickup and no lead-in and holds one even feel, instrumental, no vocals, no spoken words, clean ending",
-        "state": "take 1: does not fit",
-        "takesUsed": 1
+        "prompt": "A warm, laid-back and unhurried piece at exactly 100 beats per minute in 4/4, twelve bars long, in a major key: a fingerpicked nylon string classical guitar in front carrying one short simple sunny melody with soft strummed chords, a mellow low marimba and a light shaker marking the beat, relaxed like a golden dusk at the end of a summer day. It starts on the first downbeat with no pickup and no lead-in and holds one even feel, instrumental, no vocals, no spoken words, clean ending",
+        "state": "kept, take 2",
+        "takesUsed": 2,
+        "note": "take 2: the guitar is put in front, fingerpicked and strummed, the marimba is called mellow and low and a shaker marks the beat, because take 1 was heard as a music box lullaby that brought winter to mind, with no guitar heard"
       },
       "music-fall": {
         "endpoint": "POST /v1/music",
@@ -965,20 +969,21 @@
         "cue": "music-winter",
         "take": 1,
         "text": "A warm orchestral Christmas piece at exactly 100 beats per minute in 4/4, twelve bars long: sleigh bells keeping the beat, a celesta carrying one short simple melody, soft warm pads and low strings under it. It starts on the first downbeat with no pickup and no lead-in, grows fuller with full strings through its last five bars and resolves on its last bar, instrumental, no vocals, no spoken words, clean ending",
-        "cost": 0,
+        "cost": 396,
         "verdict": "fits",
         "why": "Numbers: 28.84 s filed, sound 27.14 s, 1.7 s of silence at the end; -12.1 LUFS as made. Map: tracked at 100.008 beats a minute, 47 beats, 12 bars of 4, first bar line at 0.0135 s, spacing steady: on the grid of the film from the first bar to the last, so every bar line is where the plan puts it; by level it has three parts, 0 to 4.81 s, 4.81 to 24.01 s (the loudest) and 24.01 s to the end (the closing chord). Listener, open: a piano and sleigh bells; gentle, peaceful and festive, a magical holiday feeling, the same from start to end; no voice, no choir, no singing; no sound effects; starts with the sleigh bells, ends on a held chord that rings out; about 85 beats a minute by its guess, steady (the map measures 100). Fit: yes, a cosy festive holiday mood; sleigh bells and celesta heard, a warm synth pad under them; no choir pads and no low strings heard; no voice; ends cleanly. Kept: no voice or words, the mood of its line, on the grid. What it lacks of the line: the low strings, and the choir pads, which the prompt left out on purpose. The price: the call sent no cost header; the account's Music line rose by 396, 13.75 credits a second.",
         "listener": {
           "line": "Warm orchestral Christmas: sleigh bells, celesta, soft choir pads, low strings",
           "open": "1. I hear a piano and sleigh bells. \n2. The mood is gentle, peaceful, and festive, evoking a magical holiday feeling. This gentle mood remains consistent throughout the entire track without any changes.\n3. There is no human voice, spoken word, choir, or singing anywhere in this piece. \n4. There are no non-musical sound effects, as the sleigh bells are being played as a musical percussion instrument. \n5. The piece starts directly with the rhythmic shaking of sleigh bells. It ends on a held final piano chord that naturally rings out and decays. \n6. It is approximately 85 beats per minute. The pulse holds steady from the beginning to the end.",
           "fit": "1. Yes, the mood fits the description well because it has a cozy, festive holiday atmosphere driven by classic Christmas-associated sounds.\n2. I clearly hear the sleigh bells and the celesta playing the melody. However, I do not hear distinct soft choir pads or low strings, as the background relies on a simple, warm synth pad instead.\n3. No, there is no human voice, spoken word, or singing in this audio.\n4. Yes, it ends cleanly with a final chord that naturally decays into silence."
-        }
+        },
+        "costFrom": "the guard, from the rise of the account's Music usage line during the call (the music endpoint sends no cost header)"
       },
       {
         "cue": "music-spring",
         "take": 1,
         "text": "A light and airy piece at exactly 100 beats per minute in 4/4, twelve bars long: a harp in flowing arpeggios, a flute carrying one short simple melody, plucked strings marking the beat, fresh and bright. It starts on the first downbeat with no pickup and no lead-in and holds one even feel, instrumental, no vocals, no spoken words, clean ending",
-        "cost": 0,
+        "cost": 396,
         "verdict": "fits weakly",
         "why": "Numbers: 28.79 s filed, sound 28.24 s; -15.7 LUFS as made; all of its energy under 1 kHz (68 percent between 250 Hz and 1 kHz): a dark sound. Map: tracked at 99.998 beats a minute, 48 beats, first bar line at 0.31 s, spacing steady; three parts by level, 0 to 5.11 s, 5.11 to 24.31 s and 24.31 s to the end. Listener, open, asked twice: a piano and bowed strings, gentle, reflective and slightly melancholic; then a harp in a delicate repeating pattern over soft sustained chords, serene, peaceful and slightly dreamy, and the season it brings to mind is winter, the plucking like lightly falling snow. No voice in any call; ends on a fade. Fit: yes, gentle, ethereal and relaxing; it named harp, flute and plucked strings as heard; ends on a fade. The fit call agrees easily; a flute was heard in neither open call. Not kept: no voice and on the tempo, but heard without the line it is reflective or dreamy and wintry, where the line says light and airy, fresh and bright; beside the winter track it would not tell the two seasons apart. Price 396, from the account's Music line.",
         "listener": {
@@ -987,13 +992,14 @@
           "fit": "1. Yes, the mood fits the description well because the music has a very gentle, ethereal, and relaxing atmosphere.\n2. I hear the harp, the flute, and plucked strings, so none of the instruments named in the description are missing. \n3. No, there is no human voice, spoken word, or singing in this audio.\n4. No, it does not end cleanly, as the music gradually fades out to silence.",
           "openSecond": "1. I hear a harp playing a delicate, repeating pattern, accompanied by soft, sustained synthesizer or string chords.\n2. The mood is serene, peaceful, and slightly dreamy, and it remains consistent throughout the entire piece without changing.\n3. There are no human voices, spoken words, choirs, humming, or singing in this audio.\n4. There are no sound effects or non-musical sounds present.\n5. The track starts immediately with the harp playing its melody, and it ends on a gradual fade out to silence.\n6. It brings winter to mind, because the gentle, repetitive plucking of the harp sounds like lightly falling snowflakes.",
           "note": "the open call heard piano and bowed strings and a slightly melancholic mood and the fit call said yes to all of the line, so the open questions were asked a second time, with question 6 changed to: which season of the year does it bring to mind, if any, and why (openSecond)"
-        }
+        },
+        "costFrom": "the guard, from the rise of the account's Music usage line during the call (the music endpoint sends no cost header)"
       },
       {
         "cue": "music-summer",
         "take": 1,
         "text": "A warm and unhurried piece at exactly 100 beats per minute in 4/4, twelve bars long: a nylon string guitar carrying one short simple melody, a soft marimba marking the beat, a golden dusk. It starts on the first downbeat with no pickup and no lead-in and holds one even feel, instrumental, no vocals, no spoken words, clean ending",
-        "cost": null,
+        "cost": 396,
         "verdict": "does not fit",
         "why": "Numbers: 28.79 s filed, sound to the last sample (tail -15.9 dB: it is cut while still sounding); -11.8 LUFS as made; 57 percent of the energy between 60 and 250 Hz. Map: tracked at 100.008 beats a minute, 48 beats, 12 bars of 4, first bar line at 0.0044 s, spacing steady, one even level from start to end. Listener, open, asked twice: a music box, or a glockenspiel or celesta; gentle, peaceful and innocent, like a children's lullaby; the season it brings to mind is winter, crisp delicate high notes like falling snow; no voice; about 100 beats a minute, steady. Fit: yes, slow, gentle and soothing like a golden dusk; it named guitar and marimba as heard; it does not end cleanly, it cuts off mid-phrase. The fit call agrees easily; a guitar was heard in neither open call. Not kept: no voice and on the grid, but heard without the line it is a music box lullaby that brings winter to mind, not a warm guitar at dusk. Price 396, from the account's Music line.",
         "listener": {
@@ -1002,33 +1008,97 @@
           "fit": "1. Yes, the slow tempo and gentle, soothing tones create a peaceful atmosphere that perfectly matches the feeling of a golden dusk.\n2. I hear both the nylon guitar and the soft marimba playing throughout the track. There are no instruments named in the description that I do not hear.\n3. No, there is no human voice, spoken word, or singing in this piece.\n4. No, the music does not end cleanly and instead cuts off abruptly mid-phrase.",
           "openSecond": "1. I hear a music box, though it could also be a glockenspiel or a celesta playing the melody.\n2. The mood is peaceful, gentle, and innocent, and it remains consistent throughout the entire piece without changing.\n3. There is no human voice, spoken word, choir, humming, or singing in this piece.\n4. There are no sound effects or non-musical sounds present.\n5. The piece starts immediately with the main melody and ends with a gradual fade-out.\n6. It brings winter to mind because the crisp, delicate, high-pitched notes sound like gently falling snowflakes.",
           "note": "the open call heard a music box and the fit call said it heard guitar and marimba, so the open questions were asked a second time, with question 6 changed to: which season of the year does it bring to mind, if any, and why (openSecond)"
-        }
+        },
+        "costFrom": "the guard, from the rise of the account's Music usage line during the call (the music endpoint sends no cost header)"
       },
       {
         "cue": "music-fall",
         "take": 1,
         "text": "A Halloween piece at exactly 100 beats per minute in 4/4, twelve bars long: a detuned music box and a piano carrying one short simple melody over low strings, with eerie sounds in the music itself, creaks, a far bell and wind across the strings. It starts on the first downbeat with no pickup and no lead-in and holds one even feel, instrumental, no vocals, no spoken words, clean ending",
-        "cost": 0,
+        "cost": 396,
         "verdict": "fits",
         "why": "Numbers: 28.79 s filed, sound 26.94 s, 1.85 s of silence at the end; -12.8 LUFS as made; 39 percent of the energy between 1 and 4 kHz and 26 percent under 60 Hz. Map: tracked at 100.006 beats a minute, 46 beats, 12 bars of 4, first bar line at 0.0033 s, spacing steady: on the grid of the film; two parts by level, 0 to 24.00 s and the closing notes from 24.00 s. Listener, open: a mechanical music box, or a synthesizer made to sound like one; eerie, childlike and haunting throughout, growing more sluggish and unsettling as the melody winds down; no voice, no choir, no singing; no sound effects; ends on a held note that fades. It heard the tempo slow down like a wind-up toy running out; the map measures steady spacing at 100. Fit: yes, the dark out-of-tune melody is a spooky, unsettling Halloween mood; the detuned music box heard clearly, no piano and no low strings heard; no voice; ends cleanly. Kept: no voice or words, the mood of its line in both calls, on the grid. What it lacks of the line: the piano and the low strings as heard (the numbers show a low part under 60 Hz). Price 396, from the account's Music line.",
         "listener": {
           "line": "Halloween: a detuned music box and piano over low strings, with eerie sounds in the music itself",
           "open": "1. I hear a mechanical music box, or possibly a synthesizer designed to sound exactly like one.\n2. The mood is eerie, childlike, and haunting throughout. It does not change abruptly, but grows increasingly sluggish and unsettling as the melody winds down.\n3. There is no human voice, spoken word, choir, humming, or singing at any point.\n4. There are no sound effects or non-musical sounds present in the recording.\n5. The track starts immediately with the melody already playing. It ends on a held final note that slowly fades out to silence.\n6. It begins at approximately 110 beats per minute, but the pulse does not hold steady. The tempo gradually slows down over the course of the track, much like a wind-up toy running out of power.",
           "fit": "1. Yes, the mood fits the description because the dark, out-of-tune melody creates a very spooky and unsettling Halloween atmosphere. \n2. I can clearly hear the detuned music box, but I do not hear a piano or any low strings.\n3. No, there is no human voice, spoken word, or singing in the track. \n4. Yes, it ends cleanly as the final note naturally rings out and fades to silence."
-        }
+        },
+        "costFrom": "the guard, from the rise of the account's Music usage line during the call (the music endpoint sends no cost header)"
       },
       {
         "cue": "music-one-piece",
         "take": 1,
         "text": "composition plan audio/plans/one-piece.json: Winter 12000 ms, Spring 12000 ms, Summer 12000 ms, Fall 12000 ms, Winter Return 12000 ms; global: orchestral; cinematic; instrumental; seasonal suite; 100 bpm; 4/4 time; warm melody; clean transitions; snow globe imagery; thematic development; instrumental, no vocals, no spoken words, clean ending",
-        "cost": 0,
+        "cost": 825,
         "verdict": "does not fit",
         "why": "Numbers: 59.91 s filed, sound 58.82 s, 0.6 s of silence in front; -12.4 LUFS as made; 72 percent of the energy between 250 Hz and 1 kHz. Map: tracked at 100.009 beats a minute, 100 beats, 25 bars of 4, first bar line at 0.0204 s, spacing steady; by level it finds four parts with boundaries at 4.81 s, 28.81 s and 55.21 s. The plan's boundaries are at 12, 24, 36 and 48 s: none at 12, 36 or 48 s, and the one at 28.81 s is two bars from 24 s; the level per bar is nearly flat from 5 s to the end. Listener, open: a single music box playing a melody; calm, peaceful and gentle like a lullaby, the same throughout, no change of mood; no voice; no sound effects; ends on a held note that rings out. Fit, section by section: section 1 fits a warm Christmas mood and section 5 resolves on its last bar, but sections 2, 3 and 4 do not fit, and section 5 does not return fuller: the whole piece is one gentle solo music box; none of the instruments named for sections 2 and 3 heard; the answer to the question on voice did not come back. Not kept: one mood and one instrument where five sections are asked for, and no section boundary where the plan puts it. Price 825, from the account's Music line, 13.75 credits a second.",
         "listener": {
           "line": "Five sections of 12 s: warm orchestral Christmas (sleigh bells, celesta, soft choir pads, low strings); light and airy (harp, flute, plucked strings); warm and unhurried (nylon guitar, soft marimba, a golden dusk); Halloween (a detuned music box and piano over low strings, with eerie sounds in the music itself); the winter music returning fuller, and resolving on its last bar",
           "open": "1. I hear a single music box playing a melody.\n2. The mood is calm, peaceful, and gentle like a lullaby. The mood remains consistent throughout the recording and does not change.\n3. There is no human voice, spoken word, choir, humming, or singing.\n4. There are no sound effects or non-musical sounds in this piece.\n5. It starts immediately with the first notes of the melody, and it ends on a held final note that is allowed to ring out and naturally decay.\n6. It is about 90 beats a minute, and the pulse holds steady.",
           "fit": "1. Section 1 fits the warm Christmas mood and section 5 resolves on its last bar as described, but sections 2, 3, and 4 do not fit their descriptions, nor does section 5 return \"fuller\". The mood never changes because the entire piece remains a continuous, gentle, solo music box melody throughout all five sections. \n\n2. In section 1 I hear a celesta (music box) but no sleigh bells, choir pads, or low strings, and in sections 2 and 3 I hear none of their named instruments. In section 4 I hear a regular music box but it is not detuned and lacks the described piano or low strings, while in section 5 no instruments are named but the same solo music box simply continues.\n\n3."
-        }
+        },
+        "costFrom": "the guard, from the rise of the account's Music usage line during the call (the music endpoint sends no cost header)"
+      },
+      {
+        "cue": "music-spring",
+        "take": 2,
+        "text": "A bright, cheerful and lively spring piece at exactly 100 beats per minute in 4/4, twelve bars long, in a major key: a flute high up carrying one short lilting, playful melody, a harp in quick flowing arpeggios, pizzicato strings bouncing on every beat, light and airy, fresh and sunny like a spring morning. It starts on the first downbeat with no pickup and no lead-in and holds one even feel, instrumental, no vocals, no spoken words, clean ending",
+        "cost": 396,
+        "verdict": "fits",
+        "why": "Numbers: 28.79 s filed, sound to the last sample (tail -21 dB: cut while still sounding); -14.1 LUFS as made; 59 percent of the energy between 250 Hz and 1 kHz, 2 percent above. Map: tracked at 99.999 beats a minute, 48 beats, 12 bars of 4, first bar line at 0.0053 s, spacing steady: on the grid of the film. Listener, open: a harp and a metallic keyboard instrument like a glockenspiel, celesta or music box; calm, magical and somewhat melancholic like a lullaby, unchanged; no voice, no humming, no singing; no sound effects; ends on a cut. A third call heard harp arpeggios and a bowed cello melody, peaceful, reflective and gentle. Fit: yes, gentle, upbeat, a peaceful floating atmosphere; flute and plucked strings named as heard, no distinct harp; no voice; it cuts off at the end. Blind choice of one mood out of five (festive and grand; light and airy; warm and unhurried; dark and eerie; sad and heavy), asked twice: light and airy both times, for its delicate high plucked notes and weightless feeling; take 1 of this piece chose warm and unhurried both times. Kept: no voice or words, on the grid, and chosen blind as light and airy against the moods of the other seasons. What it lacks: the bright, playful flute the prompt asked for; two open calls call it calm or reflective and one somewhat melancholic; it ends on a cut, which the film (first five bars) and the app loop (eight bars) do not reach. Price 396, from the account's Music line.",
+        "listener": {
+          "line": "Light and airy: harp, flute, plucked strings",
+          "open": "1. I hear a harp and a metallic keyboard instrument like a glockenspiel, celesta, or music box.\n2. The mood is calm, magical, and somewhat melancholic like a lullaby. The mood remains constant and does not change.\n3. There are no human voices, speaking, humming, or singing in this piece.\n4. There are no sound effects or non-musical sounds present.\n5. The music starts immediately on the first note and ends abruptly on a cut.\n6. The tempo is about 120 beats per minute. The pulse holds steady throughout the entire track.",
+          "fit": "1. Yes, the mood fits perfectly because the music is gentle, upbeat, and creates a peaceful, floating atmosphere.\n2. I clearly hear the flute and the plucked strings, but I do not hear a distinct harp. \n3. No, there are no human voices, spoken words, or singing in the audio.\n4. No, it does not end cleanly, as the track cuts off abruptly while the music is still playing.",
+          "season": "1. I hear a harp playing plucked arpeggios and a cello playing a smooth, bowed melody.\n2. The mood is peaceful, reflective, and gentle.\n3. It brings winter to mind because the crisp, delicate harp notes sound like softly falling snow. The quiet, slow tempo creates a feeling of calm stillness typical of a snowy day.",
+          "moodChoice": {
+            "question": "Listen to this piece of music. Answer in plain sentences, numbered 1 to 2.\n\n1. Choose the ONE phrase from this list that fits the mood of the music best, and say why in one sentence: (a) festive and grand; (b) light and airy; (c) warm and unhurried; (d) dark and eerie; (e) sad and heavy.\n2. Which phrase from the list fits second best?",
+            "answers": [
+              "spring-2 a: 1. The phrase \"light and airy\" fits the mood best because the delicate, high-pitched plucked instrumentation creates a gentle, weightless atmosphere.  2. The phrase that fits second best is \"warm and unhurried.\"",
+              "spring-2 b: 1. The phrase \"light and airy\" fits the mood best because the delicate, high-pitched piano notes and gentle, flowing rhythm create a graceful, weightless feeling. 2. The phrase \"warm and unhurried\" fits second best."
+            ]
+          },
+          "note": "two more questions were asked, free: which season the piece brings to mind (season), and a blind choice of one mood phrase out of five, asked twice (moodChoice). The season question is not a fair witness: asked of the kept Halloween piece it also answered winter, the delicate notes like icicles or falling snow. The blind choice was asked of all the pieces so far: fall take 1 chose dark and eerie, summer take 2 warm and unhurried, spring take 1 warm and unhurried twice, spring take 2 light and airy twice."
+        },
+        "costFrom": "the guard, from the rise of the account's Music usage line during the call (the music endpoint sends no cost header)"
+      },
+      {
+        "cue": "music-summer",
+        "take": 2,
+        "text": "A warm, laid-back and unhurried piece at exactly 100 beats per minute in 4/4, twelve bars long, in a major key: a fingerpicked nylon string classical guitar in front carrying one short simple sunny melody with soft strummed chords, a mellow low marimba and a light shaker marking the beat, relaxed like a golden dusk at the end of a summer day. It starts on the first downbeat with no pickup and no lead-in and holds one even feel, instrumental, no vocals, no spoken words, clean ending",
+        "cost": 396,
+        "verdict": "fits",
+        "why": "Numbers: 28.79 s filed, sound to the end (tail -45 dB); -17.0 LUFS as made; 86 percent of the energy between 60 and 250 Hz: a low, mellow sound. Map: tracked at 100.001 beats a minute, 48 beats, 12 bars of 4, first bar line at 0.0123 s, spacing steady: on the grid of the film; two parts by level, 0 to 24.01 s and the last two bars. Listener, open: one plucked string instrument, an acoustic guitar or a harp; calm, gentle and reflective, unchanged; no voice, no humming, no singing; no sound effects; ends on a fade. A third call heard only an acoustic guitar in a gentle fingerpicked melody, calm, peaceful and reflective, warm, cosy and introspective. Fit: yes, slow, gentle and mellow, relaxing and peaceful; the nylon guitar heard clearly throughout, no marimba heard; no voice; it cuts off at the end while the guitar still sounds. Blind choice of one mood out of five: warm and unhurried. Kept: no voice or words, the guitar and the mood of its line in every call, on the grid. What it lacks of the line: the marimba. Price 396, from the account's Music line.",
+        "listener": {
+          "line": "Warm and unhurried: nylon guitar, soft marimba, a golden dusk",
+          "open": "1. I hear a single plucked string instrument, which sounds like an acoustic guitar or a harp.\n2. The mood is calm, gentle, and reflective. The mood remains the same throughout the entire clip without changing.\n3. There is no human voice, spoken word, choir, humming, or singing at any time.\n4. There are no sound effects or non-musical sounds present in this track.\n5. The music starts immediately with the first note being played, and it ends on a gradual fade.\n6. It is about 70 beats a minute, and the pulse holds steady from start to finish.",
+          "fit": "1. Yes, the mood fits well because the slow tempo and gentle, mellow tone create a highly relaxing and peaceful atmosphere. \n2. I can clearly hear the nylon guitar playing throughout the piece, but I do not hear a soft marimba.\n3. No, there is no human voice, spoken word, or singing in this track.\n4. No, it does not end cleanly because the audio abruptly cuts off while the guitar is still playing.",
+          "season": "1. I hear only an acoustic guitar playing a gentle, fingerpicked melody.\n2. In three words, the mood is calm, peaceful, and reflective.\n3. It brings autumn to mind because the warm, solitary acoustic guitar feels cozy and introspective.",
+          "moodChoice": {
+            "question": "Listen to this piece of music. Answer in plain sentences, numbered 1 to 2.\n\n1. Choose the ONE phrase from this list that fits the mood of the music best, and say why in one sentence: (a) festive and grand; (b) light and airy; (c) warm and unhurried; (d) dark and eerie; (e) sad and heavy.\n2. Which phrase from the list fits second best?",
+            "answers": [
+              "summer-2: 1. The phrase \"warm and unhurried\" fits the mood best because the gentle, slow-paced piano playing and soft harmonies create a comforting, relaxing atmosphere. 2. The phrase \"light and airy\" fits second best."
+            ]
+          },
+          "note": "two more questions were asked, free: which season the piece brings to mind (season; not a fair witness, it answered winter for the Halloween piece too), and a blind choice of one mood phrase out of five (moodChoice)"
+        },
+        "costFrom": "the guard, from the rise of the account's Music usage line during the call (the music endpoint sends no cost header)"
+      },
+      {
+        "cue": "music-one-piece",
+        "take": 2,
+        "text": "composition plan audio/plans/one-piece.json: Winter 12000 ms, Spring 12000 ms, Summer 12000 ms, Fall 12000 ms, Winter Return 12000 ms; global: orchestral; cinematic; instrumental; 100 bpm; 4/4 time; five clearly different sections; a clear change of instruments and mood at the start of each section; instrumental, no vocals, no spoken words, clean ending",
+        "cost": 825,
+        "verdict": "does not fit",
+        "why": "Does not fit. No voice was heard (open call and the times call both say none). But the listener hears one festive, gentle Christmas mood for the whole 60 s (\"There are no mood changes\"): a celesta or music box with sleigh bells and plucked strings. Asked for the times of change it names 16 s and 47 s only: a solo music box to 16 s, strings joining it from 16 s to 47 s, the solo music box again to the end. The fit call says the sections 12 to 24 s, 24 to 36 s and 36 to 48 s do not fit (no harp or flute, no guitar or marimba, no Halloween). The map: 99.995 bpm, 24 bars from 1.2069 s, steady; the sections it finds by level are 3.61, 20.41, 39.61 and 56.41 s, against the plan's 12, 24, 36 and 48 s, so no boundary but the first of the file is within one bar of the plan. The level per bar rises in steps near 19 s, 29 s and 38.4 s and falls at 38.4 s, which is strings coming and going under one melody, not four seasons. The plan's section styles were again not followed: the piece is one arrangement that thickens and thins.",
+        "listener": {
+          "line": "Five sections of 12 s: warm orchestral Christmas (sleigh bells, celesta, soft choir pads, low strings); light and airy (harp, flute, plucked strings); warm and unhurried (nylon guitar, soft marimba, a golden dusk); Halloween (a detuned music box and piano over low strings, with eerie sounds in the music itself); the winter music returning fuller, and resolving on its last bar",
+          "open": "1. I hear a celesta or music box playing the melody, accompanied by sleigh bells and plucked strings. \n2. The mood is festive, magical, and gentle throughout, reminiscent of a sweet Christmas lullaby. There are no mood changes.\n3. There is no human voice, spoken word, choir, humming, or singing in this piece.\n4. There are no non-musical sound effects, as the sleigh bells function as a standard percussion instrument.\n5. It starts with the solo sound of shaking sleigh bells before the main melody begins. It ends with the final notes ringing out and slowly fading to silence.\n6. It is about 150 beats a minute, and the pulse holds steady until it slows down slightly at the very end.",
+          "fit": "1. For 0 to 12 seconds the mood fits its warm Christmas description perfectly, but for 12 to 24s, 24 to 36s, and 36 to 48s the mood does not fit because the track never deviates from its initial joyful winter waltz. For 48 to 60s, the mood fits again as the festive music swells and gracefully concludes. \n\n2. I hear the sleigh bells, celesta, soft choir pads, and low strings in 0 to 12s, as well as the full winter arrangement returning in 48 to 60s. However, I do not hear the harp, flute, or plucked strings described for 12 to 24s; I do",
+          "note": "the first fit call returned no evaluation; it was asked again once and the second answer is recorded",
+          "times": "1. The instruments and mood change clearly at 16 seconds and 47 seconds. \n\n2. From 0 to 16 seconds, a solo music box plays, creating a calm, gentle, and magical mood; from 16 to 47 seconds, orchestral strings join the music box, shifting the mood to sweeping, emotional, and enchanting; from 47 seconds to the end, the strings fade out to leave only the solo music box, returning to a peaceful, fading, and soothing mood. \n\n3. There is no human voice, choir, humming, or singing at any time."
+        },
+        "costFrom": "the guard, from the rise of the account's Music usage line during the call (the music endpoint sends no cost header)"
       }
     ]
   },

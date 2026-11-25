@@ -4129,6 +4129,258 @@
       },
       "time": "2026-11-25T18:00:47.710Z",
       "answersTime": "2026-11-25T18:02:45.149Z"
+    },
+    {
+      "cue": "music-spring",
+      "take": 2,
+      "round": "build",
+      "class": "music",
+      "season": "spring",
+      "line": "Light and airy: harp, flute, plucked strings",
+      "tool": "ElevenLabs music, POST /v1/music, the default model (music_v1), pcm_48000",
+      "prompt": "A bright, cheerful and lively spring piece at exactly 100 beats per minute in 4/4, twelve bars long, in a major key: a flute high up carrying one short lilting, playful melody, a harp in quick flowing arpeggios, pizzicato strings bouncing on every beat, light and airy, fresh and sunny like a spring morning. It starts on the first downbeat with no pickup and no lead-in and holds one even feel, instrumental, no vocals, no spoken words, clean ending",
+      "settings": {
+        "endpoint": "POST /v1/music",
+        "model": "default",
+        "how": "prompt",
+        "music_length_ms": 28800,
+        "force_instrumental": true,
+        "output_format": "pcm_48000",
+        "cost": null,
+        "counterMovedBy": 0,
+        "counterNote": "the music endpoint sends no cost header; the counter also moves with other work on the account"
+      },
+      "source": {
+        "name": "music-spring-2026-11-25T18-04-02-250Z.wav",
+        "bytes": 5528286,
+        "sha256": "bcf10f0dac3a557624cb6507a2dfbce6372be1216d1eec039742d8cb1b309859",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 28.793,
+        "kbps": 1536
+      },
+      "sha256": "6daa952d1cb5116378819b0b5b32448f18e93c7ceb3750b7de90dfbeb29d57a9",
+      "measured": {
+        "seconds": 28.793,
+        "peakDb": -1.01,
+        "truePeakDb": -1.01,
+        "lufs": -14.13,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -16.45,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0,
+        "soundSeconds": 28.793,
+        "tailDb": -21.16,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 368,
+          "bands": {
+            "sub": 0,
+            "low": 0.3873,
+            "lowMid": 0.588,
+            "mid": 0.0245,
+            "high": 0.0001,
+            "air": 0
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -14.1,
+        "lra": 4,
+        "truePeakDb": -1
+      },
+      "fits": {
+        "wantSeconds": null,
+        "note": "no length in audio.sfx for this cue"
+      },
+      "answers": {
+        "verdict": "fits",
+        "why": "Numbers: 28.79 s filed, sound to the last sample (tail -21 dB: cut while still sounding); -14.1 LUFS as made; 59 percent of the energy between 250 Hz and 1 kHz, 2 percent above. Map: tracked at 99.999 beats a minute, 48 beats, 12 bars of 4, first bar line at 0.0053 s, spacing steady: on the grid of the film. Listener, open: a harp and a metallic keyboard instrument like a glockenspiel, celesta or music box; calm, magical and somewhat melancholic like a lullaby, unchanged; no voice, no humming, no singing; no sound effects; ends on a cut. A third call heard harp arpeggios and a bowed cello melody, peaceful, reflective and gentle. Fit: yes, gentle, upbeat, a peaceful floating atmosphere; flute and plucked strings named as heard, no distinct harp; no voice; it cuts off at the end. Blind choice of one mood out of five (festive and grand; light and airy; warm and unhurried; dark and eerie; sad and heavy), asked twice: light and airy both times, for its delicate high plucked notes and weightless feeling; take 1 of this piece chose warm and unhurried both times. Kept: no voice or words, on the grid, and chosen blind as light and airy against the moods of the other seasons. What it lacks: the bright, playful flute the prompt asked for; two open calls call it calm or reflective and one somewhat melancholic; it ends on a cut, which the film (first five bars) and the app loop (eight bars) do not reach. Price 396, from the account's Music line.",
+        "listener": {
+          "line": "Light and airy: harp, flute, plucked strings",
+          "open": "1. I hear a harp and a metallic keyboard instrument like a glockenspiel, celesta, or music box.\n2. The mood is calm, magical, and somewhat melancholic like a lullaby. The mood remains constant and does not change.\n3. There are no human voices, speaking, humming, or singing in this piece.\n4. There are no sound effects or non-musical sounds present.\n5. The music starts immediately on the first note and ends abruptly on a cut.\n6. The tempo is about 120 beats per minute. The pulse holds steady throughout the entire track.",
+          "fit": "1. Yes, the mood fits perfectly because the music is gentle, upbeat, and creates a peaceful, floating atmosphere.\n2. I clearly hear the flute and the plucked strings, but I do not hear a distinct harp. \n3. No, there are no human voices, spoken words, or singing in the audio.\n4. No, it does not end cleanly, as the track cuts off abruptly while the music is still playing.",
+          "season": "1. I hear a harp playing plucked arpeggios and a cello playing a smooth, bowed melody.\n2. The mood is peaceful, reflective, and gentle.\n3. It brings winter to mind because the crisp, delicate harp notes sound like softly falling snow. The quiet, slow tempo creates a feeling of calm stillness typical of a snowy day.",
+          "moodChoice": {
+            "question": "Listen to this piece of music. Answer in plain sentences, numbered 1 to 2.\n\n1. Choose the ONE phrase from this list that fits the mood of the music best, and say why in one sentence: (a) festive and grand; (b) light and airy; (c) warm and unhurried; (d) dark and eerie; (e) sad and heavy.\n2. Which phrase from the list fits second best?",
+            "answers": [
+              "spring-2 a: 1. The phrase \"light and airy\" fits the mood best because the delicate, high-pitched plucked instrumentation creates a gentle, weightless atmosphere.  2. The phrase that fits second best is \"warm and unhurried.\"",
+              "spring-2 b: 1. The phrase \"light and airy\" fits the mood best because the delicate, high-pitched piano notes and gentle, flowing rhythm create a graceful, weightless feeling. 2. The phrase \"warm and unhurried\" fits second best."
+            ]
+          },
+          "note": "two more questions were asked, free: which season the piece brings to mind (season), and a blind choice of one mood phrase out of five, asked twice (moodChoice). The season question is not a fair witness: asked of the kept Halloween piece it also answered winter, the delicate notes like icicles or falling snow. The blind choice was asked of all the pieces so far: fall take 1 chose dark and eerie, summer take 2 warm and unhurried, spring take 1 warm and unhurried twice, spring take 2 light and airy twice."
+        }
+      },
+      "time": "2026-11-25T18:04:13.153Z",
+      "answersTime": "2026-11-25T18:06:52.438Z"
+    },
+    {
+      "cue": "music-summer",
+      "take": 2,
+      "round": "build",
+      "class": "music",
+      "season": "summer",
+      "line": "Warm and unhurried: nylon guitar, soft marimba, a golden dusk",
+      "tool": "ElevenLabs music, POST /v1/music, the default model (music_v1), pcm_48000",
+      "prompt": "A warm, laid-back and unhurried piece at exactly 100 beats per minute in 4/4, twelve bars long, in a major key: a fingerpicked nylon string classical guitar in front carrying one short simple sunny melody with soft strummed chords, a mellow low marimba and a light shaker marking the beat, relaxed like a golden dusk at the end of a summer day. It starts on the first downbeat with no pickup and no lead-in and holds one even feel, instrumental, no vocals, no spoken words, clean ending",
+      "settings": {
+        "endpoint": "POST /v1/music",
+        "model": "default",
+        "how": "prompt",
+        "music_length_ms": 28800,
+        "force_instrumental": true,
+        "output_format": "pcm_48000",
+        "cost": null,
+        "counterMovedBy": 0,
+        "counterNote": "the music endpoint sends no cost header; the counter also moves with other work on the account"
+      },
+      "source": {
+        "name": "music-summer-2026-11-25T18-04-31-681Z.wav",
+        "bytes": 5528286,
+        "sha256": "83bf7cd3431989d9c5847bf2d4ee9c77db074f9245c8fb90ac0d33c146e2cf83",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 28.793,
+        "kbps": 1536
+      },
+      "sha256": "4e756b503251953dd63f2973c9b70886f165eda03a9c8f9ab41bb105723b30d5",
+      "measured": {
+        "seconds": 28.793,
+        "peakDb": -1.38,
+        "truePeakDb": -1.24,
+        "lufs": -16.97,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": -78.26,
+        "rmsDb": -18.94,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0,
+        "soundSeconds": 28.793,
+        "tailDb": -45.47,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 233,
+          "bands": {
+            "sub": 0,
+            "low": 0.8643,
+            "lowMid": 0.1325,
+            "mid": 0.0004,
+            "high": 0.0007,
+            "air": 0.0021
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -17,
+        "lra": 1.8,
+        "truePeakDb": -1.2
+      },
+      "fits": {
+        "wantSeconds": null,
+        "note": "no length in audio.sfx for this cue"
+      },
+      "answers": {
+        "verdict": "fits",
+        "why": "Numbers: 28.79 s filed, sound to the end (tail -45 dB); -17.0 LUFS as made; 86 percent of the energy between 60 and 250 Hz: a low, mellow sound. Map: tracked at 100.001 beats a minute, 48 beats, 12 bars of 4, first bar line at 0.0123 s, spacing steady: on the grid of the film; two parts by level, 0 to 24.01 s and the last two bars. Listener, open: one plucked string instrument, an acoustic guitar or a harp; calm, gentle and reflective, unchanged; no voice, no humming, no singing; no sound effects; ends on a fade. A third call heard only an acoustic guitar in a gentle fingerpicked melody, calm, peaceful and reflective, warm, cosy and introspective. Fit: yes, slow, gentle and mellow, relaxing and peaceful; the nylon guitar heard clearly throughout, no marimba heard; no voice; it cuts off at the end while the guitar still sounds. Blind choice of one mood out of five: warm and unhurried. Kept: no voice or words, the guitar and the mood of its line in every call, on the grid. What it lacks of the line: the marimba. Price 396, from the account's Music line.",
+        "listener": {
+          "line": "Warm and unhurried: nylon guitar, soft marimba, a golden dusk",
+          "open": "1. I hear a single plucked string instrument, which sounds like an acoustic guitar or a harp.\n2. The mood is calm, gentle, and reflective. The mood remains the same throughout the entire clip without changing.\n3. There is no human voice, spoken word, choir, humming, or singing at any time.\n4. There are no sound effects or non-musical sounds present in this track.\n5. The music starts immediately with the first note being played, and it ends on a gradual fade.\n6. It is about 70 beats a minute, and the pulse holds steady from start to finish.",
+          "fit": "1. Yes, the mood fits well because the slow tempo and gentle, mellow tone create a highly relaxing and peaceful atmosphere. \n2. I can clearly hear the nylon guitar playing throughout the piece, but I do not hear a soft marimba.\n3. No, there is no human voice, spoken word, or singing in this track.\n4. No, it does not end cleanly because the audio abruptly cuts off while the guitar is still playing.",
+          "season": "1. I hear only an acoustic guitar playing a gentle, fingerpicked melody.\n2. In three words, the mood is calm, peaceful, and reflective.\n3. It brings autumn to mind because the warm, solitary acoustic guitar feels cozy and introspective.",
+          "moodChoice": {
+            "question": "Listen to this piece of music. Answer in plain sentences, numbered 1 to 2.\n\n1. Choose the ONE phrase from this list that fits the mood of the music best, and say why in one sentence: (a) festive and grand; (b) light and airy; (c) warm and unhurried; (d) dark and eerie; (e) sad and heavy.\n2. Which phrase from the list fits second best?",
+            "answers": [
+              "summer-2: 1. The phrase \"warm and unhurried\" fits the mood best because the gentle, slow-paced piano playing and soft harmonies create a comforting, relaxing atmosphere. 2. The phrase \"light and airy\" fits second best."
+            ]
+          },
+          "note": "two more questions were asked, free: which season the piece brings to mind (season; not a fair witness, it answered winter for the Halloween piece too), and a blind choice of one mood phrase out of five (moodChoice)"
+        }
+      },
+      "time": "2026-11-25T18:04:44.843Z",
+      "answersTime": "2026-11-25T18:06:56.429Z"
+    },
+    {
+      "cue": "music-one-piece",
+      "take": 2,
+      "round": "build",
+      "class": "music",
+      "season": null,
+      "line": "Five sections of 12 s: warm orchestral Christmas (sleigh bells, celesta, soft choir pads, low strings); light and airy (harp, flute, plucked strings); warm and unhurried (nylon guitar, soft marimba, a golden dusk); Halloween (a detuned music box and piano over low strings, with eerie sounds in the music itself); the winter music returning fuller, and resolving on its last bar",
+      "tool": "ElevenLabs music, POST /v1/music, the default model (music_v1), pcm_48000",
+      "prompt": "composition plan audio/plans/one-piece.json: Winter 12000 ms, Spring 12000 ms, Summer 12000 ms, Fall 12000 ms, Winter Return 12000 ms; global: orchestral; cinematic; instrumental; 100 bpm; 4/4 time; five clearly different sections; a clear change of instruments and mood at the start of each section; instrumental, no vocals, no spoken words, clean ending",
+      "settings": {
+        "endpoint": "POST /v1/music",
+        "model": "default",
+        "how": "composition_plan",
+        "plan": "audio/plans/one-piece.json",
+        "respect_sections_durations": true,
+        "output_format": "pcm_48000",
+        "cost": null,
+        "counterMovedBy": 0,
+        "counterNote": "the music endpoint sends no cost header; the counter also moves with other work on the account"
+      },
+      "source": {
+        "name": "music-one-piece-2026-11-25T18-07-04-465Z.wav",
+        "bytes": 11502314,
+        "sha256": "ad0b00c7c35f6de972b41ee88f2013fdd5b1afbcabcaf45f67c197572a6bee33",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 59.907,
+        "kbps": 1536
+      },
+      "sha256": "d528cea99d57981f5440d073d79d28563aa1e8563c83c70c266f141a594d3ba1",
+      "measured": {
+        "seconds": 59.907,
+        "peakDb": -0.59,
+        "truePeakDb": -0.56,
+        "lufs": -13.34,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": -78.65,
+        "rmsDb": -16.2,
+        "silenceFrontSeconds": 0.595,
+        "silenceEndSeconds": 1.072,
+        "soundSeconds": 58.24,
+        "tailDb": -85.73,
+        "events": 2,
+        "spectrum": {
+          "centroidHz": 867,
+          "bands": {
+            "sub": 0.0018,
+            "low": 0.2557,
+            "lowMid": 0.5934,
+            "mid": 0.126,
+            "high": 0.0088,
+            "air": 0.0143
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -13.3,
+        "lra": 5.5,
+        "truePeakDb": -0.6
+      },
+      "fits": {
+        "wantSeconds": null,
+        "note": "no length in audio.sfx for this cue"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Does not fit. No voice was heard (open call and the times call both say none). But the listener hears one festive, gentle Christmas mood for the whole 60 s (\"There are no mood changes\"): a celesta or music box with sleigh bells and plucked strings. Asked for the times of change it names 16 s and 47 s only: a solo music box to 16 s, strings joining it from 16 s to 47 s, the solo music box again to the end. The fit call says the sections 12 to 24 s, 24 to 36 s and 36 to 48 s do not fit (no harp or flute, no guitar or marimba, no Halloween). The map: 99.995 bpm, 24 bars from 1.2069 s, steady; the sections it finds by level are 3.61, 20.41, 39.61 and 56.41 s, against the plan's 12, 24, 36 and 48 s, so no boundary but the first of the file is within one bar of the plan. The level per bar rises in steps near 19 s, 29 s and 38.4 s and falls at 38.4 s, which is strings coming and going under one melody, not four seasons. The plan's section styles were again not followed: the piece is one arrangement that thickens and thins.",
+        "listener": {
+          "line": "Five sections of 12 s: warm orchestral Christmas (sleigh bells, celesta, soft choir pads, low strings); light and airy (harp, flute, plucked strings); warm and unhurried (nylon guitar, soft marimba, a golden dusk); Halloween (a detuned music box and piano over low strings, with eerie sounds in the music itself); the winter music returning fuller, and resolving on its last bar",
+          "open": "1. I hear a celesta or music box playing the melody, accompanied by sleigh bells and plucked strings. \n2. The mood is festive, magical, and gentle throughout, reminiscent of a sweet Christmas lullaby. There are no mood changes.\n3. There is no human voice, spoken word, choir, humming, or singing in this piece.\n4. There are no non-musical sound effects, as the sleigh bells function as a standard percussion instrument.\n5. It starts with the solo sound of shaking sleigh bells before the main melody begins. It ends with the final notes ringing out and slowly fading to silence.\n6. It is about 150 beats a minute, and the pulse holds steady until it slows down slightly at the very end.",
+          "fit": "1. For 0 to 12 seconds the mood fits its warm Christmas description perfectly, but for 12 to 24s, 24 to 36s, and 36 to 48s the mood does not fit because the track never deviates from its initial joyful winter waltz. For 48 to 60s, the mood fits again as the festive music swells and gracefully concludes. \n\n2. I hear the sleigh bells, celesta, soft choir pads, and low strings in 0 to 12s, as well as the full winter arrangement returning in 48 to 60s. However, I do not hear the harp, flute, or plucked strings described for 12 to 24s; I do",
+          "note": "the first fit call returned no evaluation; it was asked again once and the second answer is recorded"
+        }
+      },
+      "time": "2026-11-25T18:07:21.537Z",
+      "answersTime": "2026-11-25T18:09:45.552Z"
     }
   ],
   "kept": [
@@ -4261,12 +4513,34 @@
       "lufs": -16,
       "lufsMeasure": "gated",
       "time": "2026-11-25T18:02:42.946Z"
+    },
+    {
+      "cue": "music-spring",
+      "take": 2,
+      "round": "build",
+      "file": "audio/kept/music-spring.wav",
+      "sha256": "1a82c5957c58a4c66255310434f5e75f461204452ce9747e6772dad305993ea1",
+      "seconds": 28.793,
+      "lufs": -16,
+      "lufsMeasure": "gated",
+      "time": "2026-11-25T18:06:54.227Z"
+    },
+    {
+      "cue": "music-summer",
+      "take": 2,
+      "round": "build",
+      "file": "audio/kept/music-summer.wav",
+      "sha256": "82e1b12920f1e5def907b8144639a04528e9f3d84275479b837273b55c7e2cee",
+      "seconds": 28.793,
+      "lufs": -16.87,
+      "lufsMeasure": "gated",
+      "time": "2026-11-25T18:06:58.283Z"
     }
   ],
   "pack": {
-    "time": "2026-11-25T18:02:58.444Z",
+    "time": "2026-11-25T18:10:17.010Z",
     "kbps": 192,
-    "bytes": 2080512,
+    "bytes": 3024000,
     "fits": true,
     "files": [
       {
@@ -4288,6 +4562,16 @@
         "file": "music-fall.mp3",
         "bytes": 471744,
         "sha256": "acd2c7549bddde8e94c2c085e50d64fbe947ff95dff6f2d188a8d159599b90a8"
+      },
+      {
+        "file": "music-spring.mp3",
+        "bytes": 471744,
+        "sha256": "03a935aeca0d03aa9d61c1f3b7d67866426988495c1aaf3f02afeea13a3feec0"
+      },
+      {
+        "file": "music-summer.mp3",
+        "bytes": 471744,
+        "sha256": "809789d86972c5c9b11e06ee6d1e2e45bca08c80ba21bfd48a9e7a4227ce4fe2"
       },
       {
         "file": "music-winter.mp3",
@@ -4340,6 +4624,30 @@
           "typicalStep": 0.02129,
           "ratio": 1.37,
           "levelStepDb": -0.52
+        }
+      },
+      {
+        "id": "music-spring",
+        "decodedSeconds": 19.6008,
+        "expectedSeconds": 19.6008,
+        "seamErrorDb": -36.34,
+        "sourceSeam": {
+          "jump": 0.023863,
+          "typicalStep": 0.007247,
+          "ratio": 3.29,
+          "levelStepDb": 1.7
+        }
+      },
+      {
+        "id": "music-summer",
+        "decodedSeconds": 19.5996,
+        "expectedSeconds": 19.5996,
+        "seamErrorDb": -33.9,
+        "sourceSeam": {
+          "jump": 0.007953,
+          "typicalStep": 0.010746,
+          "ratio": 0.74,
+          "levelStepDb": 15.33
         }
       },
       {
