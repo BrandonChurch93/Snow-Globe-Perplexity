@@ -1311,7 +1311,6 @@ export class ParticleEngine {
     const ky = L.carry[1]!
     const kz = L.carry[2]!
     const thrown = kx !== 0 || ky !== 0 || kz !== 0
-    const kInv = thrown ? 1 / (Math.sqrt(kx * kx + ky * ky + kz * kz) * R) : 0
     const m = L.motion
     const gux = m.gx
     const guy = m.gy
@@ -1521,8 +1520,7 @@ export class ParticleEngine {
         }
       }
       if (thrown) {
-        const on = (x * kx + y * ky + z * kz) * kInv
-        const hw = K_HEFT[k]! * (0.5 + (Math.imul(i, 0x85ebca6b) >>> 22) * HEFT_SPREAD) * (on > 0 ? 1 - on * q : 1)
+        const hw = K_HEFT[k]! * (0.5 + (Math.imul(i, 0x85ebca6b) >>> 22) * HEFT_SPREAD) * (q < 1 ? 1 - q * q : 0)
         fx += kx * hw
         fy += ky * hw
         fz += kz * hw

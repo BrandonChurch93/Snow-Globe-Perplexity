@@ -467,6 +467,10 @@ export class Liquid {
     L[16] = swirl
     L[17] = fa
     L[18] = fb
+    const k = this.carry
+    k[0] = (lx - L[19]!) * HZ
+    k[1] = (ly - L[20]!) * HZ
+    k[2] = (lz - L[21]!) * HZ
     L[19] = lx
     L[20] = ly
     L[21] = lz
@@ -511,10 +515,6 @@ export class Liquid {
     c[3] = slam * L[3]! + 1.5 * AMBIENT_FLOW * c1 + L[17]!
     c[4] = slam * L[4]! + 1.5 * AMBIENT_FLOW * 0.5 * s2 + (L[6]! * L[6]!) / TURBULENCE_MAX + L[18]! * ROLL_AXIS[2]
     c[5] = slam * L[5]! + 1.5 * AMBIENT_FLOW * s1 - L[18]! * ROLL_AXIS[1]
-    const k = this.carry
-    k[0] = CARRY * L[3]!
-    k[1] = CARRY * L[4]!
-    k[2] = CARRY * L[5]!
     const turb = L[6]!
     c[6] = turb
     c[7] = L[15]!
@@ -540,7 +540,7 @@ export class Liquid {
     const h = Math.sqrt(c[3]! * c[3]! + c[4]! * c[4]! + c[5]! * c[5]!)
     const mix = Math.sqrt(wa * wa + wb * wb + wc * wc)
     const loud = mix > turb ? mix : turb
-    this.maxSpeed = w * LIQUID_R + h * 1.05 + loud * 1.6 + c[7]! * ROLL_REACH + CARRY * slosh * 1.5
+    this.maxSpeed = w * LIQUID_R + h * 1.05 + loud * 1.6 + c[7]! * ROLL_REACH + Math.sqrt(this.carry[0]! * this.carry[0]! + this.carry[1]! * this.carry[1]! + this.carry[2]! * this.carry[2]!) * 1.5
   }
 
   potentialAt(x: number, y: number, z: number, ring: number, out: Float64Array | number[]): void {
