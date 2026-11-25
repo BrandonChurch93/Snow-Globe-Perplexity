@@ -85,6 +85,7 @@ export const look = {
     stormColor: [1, 0.68, 0.34] as const,
     stormArms: 0.22,
     stormOpen: 0.55,
+    stormDulls: 0.8,
   },
   pool: {
     // where the hot middle of the pool lies from the foot's centre: down the light's way on the slab and a little across it
@@ -103,12 +104,13 @@ export const look = {
     webCells: 19,
     webRings: 1.25,
     webMm: 15,
+    webEndMm: [20, 46] as const,
     veinMm: 0.42,
     veinGlowMm: 1.5,
     veinGlow: 0.16,
     // the short bright rays round the hot knot, as the approved image has them: their strength and their reach
-    rays: 0.9,
-    raysMm: 7,
+    rays: 1.5,
+    raysMm: 9,
     liftPerMm: 2.2,
     tiltMm: 160,
     swing: 1,
@@ -207,7 +209,9 @@ void main() {
   hot += 1.2 * exp(-pow((r - 0.908) / 0.028, 2.0) - pow((a + 0.01) / 0.065, 2.0));
   float glow = exp(-pow((r - 0.9) / 0.06, 2.0) - a * a / 0.03);
   float edge = exp(-pow((r - 0.972) / 0.012, 2.0)) * exp(-pow((a - 0.45) / 0.75, 2.0));
-  vec3 col = ${vec(W.color)} * (${n(W.band)} * band + ${n(W.glow)} * glow * inside + ${n(W.edge)} * edge) + ${vec(W.hotColor)} * (${n(W.hot)} * hot * inside);
+  // in the storm the liquid scatters the sun: the patch is a dull amber glow, not a burn
+  float clear = 1.0 - ${n(W.stormDulls)} * storm;
+  vec3 col = ${vec(W.color)} * (${n(W.band)} * band + ${n(W.glow)} * glow * inside * clear + ${n(W.edge)} * edge) + ${vec(W.hotColor)} * (${n(W.hot)} * hot * inside * clear * clear);
   float body = 1.0 - smoothstep(0.86, 0.992, r);
   vec2 off = vWl - vWlDir * 0.93;
   vec3 spill = ${vec(W.color)} * (${n(W.spill)} * exp(-dot(off, off) / 0.022) * lit);
@@ -278,7 +282,7 @@ void main() {
   vec2 web = poolWeb(h, s);
   float side = 0.3 + 0.7 * smoothstep(-0.5, 0.5, -h.x / max(lenW, 1.0));
   float bead = 0.55 + 0.45 * sin(h.x * 1.3 + 2.0 * sin(h.y * 0.9)) * sin(h.y * 1.7 + 1.0 + 1.5 * sin(h.x * 0.6));
-  float folds = (web.x * bead + ${n(P.veinGlow)} * web.y) * exp(-lenW / ${n(P.webMm)}) * side * smoothstep(1.0, 4.0, lenW);
+  float folds = (web.x * bead + ${n(P.veinGlow)} * web.y) * exp(-lenW / ${n(P.webMm)}) * (1.0 - smoothstep(${n(P.webEndMm[0])}, ${n(P.webEndMm[1])}, lenW)) * side * smoothstep(1.0, 4.0, lenW);
   // the knot's short rays: two uneven fans of them, turning a little with the swing, gone a few millimetres out
   float ang = atan(h.y, h.x) + 0.04 * s;
   float len = sqrt(rr);
