@@ -1,44 +1,42 @@
 {
-  "number": 97,
-  "time": "2026-11-25 12:19 UTC",
+  "number": 99,
+  "time": "2026-11-25 12:57 UTC",
   "phase": "5",
   "unit": "",
   "lines": [
-    "Status 97 · 2026-11-25 12:19 UTC · Phase 5",
-    "Phase 5 is under way: steps 1 and 2 are with two build agents side by side",
-    "The fix pass proof stands at 5 of 6: change and winter all green and spring summer and fall equal line for line to the judged build",
-    "The keys of winter spring and summer on the fix build are byte for byte the kept stills",
-    "Trial readings: host check pass at 60.75 of 95 MB and sound check 7 pass with 1 open",
-    "Still to come: the gate on the fix build at about 12:40 and then decision 101",
-    "phase 5: 0.50 h used of its 4.50 h box",
-    "allowance (before the review): 34.49 h used of 36.00 h allowed",
+    "Status 99 · 2026-11-25 12:57 UTC · Phase 5",
+    "Step 1 is proven on its branch so far: seven stills byte-equal before and after and two of the eight final keys equal; check G13 and six keys are still drawing",
+    "The check of the levels of quality and the sound engine is in: both are made by their methods except multisampling in the live picture and the landing cue when a storm is held; two agents are on those now",
+    "Next: land steps 1 and 2 on main each with its proof; then the budget report which the clock puts at about 13:50 UTC",
+    "phase 5: 1.12 h used of its 4.50 h box",
+    "allowance (before the review): 35.11 h used of 36.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-97-1.jpg",
-      "caption": "The four seasons at rest in the kept build that is on the published app",
+      "file": "out/stills/status/status-99-1.jpg",
+      "caption": "The three levels of quality read from the running app: high and medium and low (winter)",
       "w": 1200,
-      "h": 681
+      "h": 498
     },
     {
-      "file": "out/stills/status/status-97-2.jpg",
-      "caption": "The live app's first picture in the host check at 12:02",
+      "file": "out/stills/status/status-99-2.jpg",
+      "caption": "The visitor's first walk at first paint: the wide layout and the phone and the tablet",
       "w": 1200,
-      "h": 675
+      "h": 396
     },
     {
-      "file": "out/stills/status/status-97-3.jpg",
-      "caption": "Winter mid shake on the fix build: byte for byte the kept still",
-      "w": 1200,
-      "h": 675
+      "file": "out/stills/status/status-99-3.jpg",
+      "caption": "Finding of the walk: at the low level the phone's controls sit on a light tan band",
+      "w": 1185,
+      "h": 450
     },
     {
-      "file": "out/stills/status/status-97-4.jpg",
-      "caption": "Summer mid shake on the fix build: byte for byte the kept still",
+      "file": "out/stills/status/status-99-4.jpg",
+      "caption": "The sound control with the four kept sounds (left) and with no sound files (right)",
       "w": 1200,
-      "h": 675
+      "h": 363
     }
   ]
 }
