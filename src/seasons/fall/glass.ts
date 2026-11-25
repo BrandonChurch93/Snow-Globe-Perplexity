@@ -348,11 +348,12 @@ void main() {
   float air = ${f(F.air)} * (1.0 + ${f(F.airStirred)} * lift) * smoothstep(${f(GROUND + 14)}, ${f(GROUND + 46)}, p.y) * mix(0.35, 1.0, smoothstep(24.0, 50.0, r));
   float thrown = ${leanGlsl('p', 'uFogLean', f(RI))};
   bound *= max(thrown, 1.0);
+  air *= thrown;
   bool fogHere = bound * ${f(FOG_STEP * 1.7)} >= 0.003;
   if (p.y < under) discard;
   // The same dust shows the light of the lamp, the windows and the lanterns as a glow in the liquid round them.
   vec3 grid = stageGrid(p);
-  vec3 dust = ${vec(F.dustTint)} * grid * ${f(F.dustGlow * FOG_STEP)} * (1.0 + ${f(F.dustStirred)} * lift);
+  vec3 dust = ${vec(F.dustTint)} * grid * ${f(F.dustGlow * FOG_STEP)} * (1.0 + ${f(F.dustStirred)} * lift) * thrown;
   bool dustHere = dust.r + dust.g > 0.0012;
   if (!fogHere && !dustHere && air * ${f(FOG_STEP)} < 0.0006) discard;
   // The roll comes round once a period: two takes of the billows half a turn of the clock apart, the one handed over to the other.
