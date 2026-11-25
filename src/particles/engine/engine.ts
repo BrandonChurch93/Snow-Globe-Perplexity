@@ -863,7 +863,7 @@ export class ParticleEngine {
     const b = TABLE_OF[k]!
     if (b.orbit) {
       this.home[o] = 0
-      this.home[o + 1] = R * 0.6 + 8 * (unit(hash2(i, 71)) - 0.5)
+      this.home[o + 1] = R * (0.34 + 0.22 * unit(hash2(i, 71)))
       this.home[o + 2] = 0
       return
     }

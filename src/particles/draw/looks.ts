@@ -183,7 +183,7 @@ export const CARD = {
   /** The most a card's bends may move its outline on the picture, as a share of what keeps the outline whole when the card is seen edge on. */
   bendFit: 0.55,
   /** The storm's fine streaks, for the petals and for the leaves: their share of the ones not drawn whole, the least and most they are seen and its skew, how much longer than the shutter's path, their bow, width in pixels, the tail's share of the head's light, how pale (petals) and the tints (leaves). */
-  line: { seedKeep: [0.015, 0.75] as const, seedSkew: 3.5, seedStretch: [0.7, 2.2] as const, seedWidePx: [0.3, 0.6] as const, headPx: [0.8, 2.6] as const, headSeen: 0.8, share: [0.3, 0.5] as const, keep: [0.03, 0.9] as const, skew: 3.5, stretch: [1.5, 4.5] as const, align: 0.85, fromPx: [6, 30] as const, bow: [0.03, 0.16] as const, widePx: [0.4, 0.95] as const, tail: 0.1, pale: [0.2, 0.8] as const, gain: 1.15, seedGain: 1.9, leafLow: [1.3, 0.7, 0.4] as const, leafHigh: [1.9, 1.3, 0.6] as const },
+  line: { seedKeep: [0.015, 0.75] as const, seedSkew: 3.5, seedStretch: [0.7, 2.2] as const, seedWidePx: [0.3, 0.6] as const, headPx: [0.8, 2.6] as const, headSeen: 0.8, share: [0.3, 0.32] as const, leafStretch: [1.1, 3] as const, leafPale: 1, leafSkew: 6, keep: [0.03, 0.9] as const, skew: 3.5, stretch: [1.5, 4.5] as const, align: 0.85, fromPx: [6, 30] as const, bow: [0.03, 0.16] as const, widePx: [0.4, 0.95] as const, tail: 0.1, pale: [0.2, 0.8] as const, gain: 1.15, seedGain: 1.9, leafLow: [1.3, 0.7, 0.4] as const, leafHigh: [1.9, 1.3, 0.6] as const },
   /** How much of the storm's sheets is taken away in front of the cottage, so that it still reads. */
   window: 0.75,
   /** How much a lying sheet is lit as one in the air, how much of the veil lies over it, and how much of its own colour the light takes on its way through a sheet. */
@@ -208,6 +208,7 @@ export const CARD = {
   /** Of the ones that settle and stay down, the share drawn whole, in the storm and lying; the rest are the storm's small dabs and are gone once they are down. */
   chosen: [0.004, 0.012, 0.035] as const,
   dabSize: 0.36,
+  leafDab: 0.55,
   /** How much of a dab is drawn where the storm's water is slow for a moment: the storm of a change holds its leaves from the window on, not only where they race. */
   dabCalm: 0.8,
   /** A dab of the storm: how much of the veil lies over it, how much of its streak it keeps, and the deeper pink of a petal's dab, so that the storm holds distinct small petals among its pale streaks. */
@@ -215,7 +216,7 @@ export const CARD = {
   dabStreak: 0.5,
   dabTint: [1, 0.74, 0.86] as const,
   /** The size of a whole petal and of a whole leaf in the storm, as a share of its size at rest. */
-  stormSize: [0.45, 0.6] as const,
+  stormSize: [0.45, 1] as const,
   /** The most of the veil that lies over a leaf in the storm: the flood of a change is thick, and its leaves are seen in it from the window on. */
   leafFogMost: 0.4,
   /** How much of the colour of the light a leaf takes; the rest it takes as white light, so that it stays orange in the green of fall. */
@@ -237,7 +238,7 @@ export const CARD = {
   leafLie: 0.7,
   leafSheen: 0.22,
   /** Of the rest, the share that is a solid small dab in the storm, and how much the others and they are seen. */
-  dabShare: [0.2, 0.22, 0.6] as const,
+  dabShare: [0.2, 0.38, 0.6] as const,
   dabKeep: [0, 1] as const,
   /** How much of a moving card is drawn sharp at the head of its path; the rest is its trail through the shutter. */
   head: 0.85,
@@ -279,6 +280,6 @@ export const CARD = {
   batRim: 1.5,
   /** A light's core, its glow and its wide glow, as radii in the particle's radius and as shares of its light. */
   glow: { spread: [0.55, 2, 3] as const, discFrom: [1.3, 3.2] as const, discWide: 1.55, discRim: 0.3, discHold: 0.42, core: 0.34, halo: 1.5, wide: 4.5, haloShare: 0.1, wideShare: 0.01, hide: 0.6, blinkLow: 0.04 },
-  spark: { gain: 1.9, core: 0.3, halo: 1.3, haloShare: 0.07, tail: 1.6, hotCore: 0.8, hotWide: 0.3, hotFrom: [0.8, 2.2] as const, discHold: 0.25, discRim: 0.08, soft: 0.12, nearShare: 0.022, nearFrom: [0.05, 0.45] as const, nearPx: [9, 20] as const, calmStreak: 0.08, small: 1.8, large: 0.75, fromMm: [0.12, 0.7] as const, hot: [1, 0.74, 0.26] as const, dying: [0.85, 0.17, 0.03] as const },
-  hair: { gain: 1.5, soft: 0.3, runHead: 0.5, runTrail: 0.6, runWide: 0.04, wide: 0.012, seen: 1.25, hairSeen: 1.5, stemSeen: 0.8, reach: 1.7, foot: 1.15, stem: 0.012, body: 0.04, hub: 0.3, spread: [0.55, 1.3, 1.3] as const, count: 52, open: [0.4, 2.25] as const, long: [0.7, 1.08] as const, droop: 0.16, thin: 0.55, lean: 0.25, tipFade: 0.35, ballAt: 0.5, ballWide: 0.55, ball: [0.1, 0.42] as const, ballFrom: [0.06, 0.45] as const, stemTint: [0.62, 0.48, 0.32] as const, },
+  spark: { gain: 1.9, core: 0.3, halo: 1.3, haloShare: 0.07, tail: 1.6, calmTail: 0.1, hotCore: 0.8, hotWide: 0.3, hotFrom: [0.8, 2.2] as const, discHold: 0.25, discRim: 0.08, soft: 0.12, nearShare: 0.022, nearFrom: [0.05, 0.45] as const, nearPx: [9, 20] as const, calmStreak: 0.08, small: 1.8, large: 0.75, fromMm: [0.12, 0.7] as const, hot: [1, 0.74, 0.26] as const, dying: [0.85, 0.17, 0.03] as const },
+  hair: { gain: 1.5, soft: 0.3, restSize: 1.5, restWide: 0.55, restBall: 0.25, restOdd: 0.6, restSeen: 0.62, runHead: 0.5, runTrail: 0.6, runWide: 0.04, wide: 0.012, seen: 1.25, hairSeen: 1.5, stemSeen: 0.8, reach: 1.7, foot: 1.15, stem: 0.012, body: 0.04, hub: 0.3, spread: [0.55, 1.3, 1.3] as const, count: 52, open: [0.4, 2.25] as const, long: [0.7, 1.08] as const, droop: 0.16, thin: 0.55, lean: 0.25, tipFade: 0.35, ballAt: 0.5, ballWide: 0.55, ball: [0.1, 0.42] as const, ballFrom: [0.06, 0.45] as const, stemTint: [0.62, 0.48, 0.32] as const, },
 }
