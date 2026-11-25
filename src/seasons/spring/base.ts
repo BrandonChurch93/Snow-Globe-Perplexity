@@ -129,7 +129,8 @@ const LIGHTS = `
   float liveRim = clamp((dot(geometryNormal, normalize(mat3(viewMatrix) * vec3(0.76, 0.3, -0.58))) + 0.25) / 1.25, 0.0, 1.0);
   float liveUp = max(inverseTransformDirection(geometryNormal, viewMatrix).y, 0.0);
   // How open a place is to the light behind is the base's own shape there, not each tuft's: a wall that faces the camera stays in shade however rough it is.
-  vec3 liveMacro = normalize(normalMatrix * vBaseNormal);
+  // A thinned mesh can hold a corner with no normal of its own: such a place takes the bent normal, never a division by nothing.
+  vec3 liveMacro = dot(vBaseNormal, vBaseNormal) > 1e-8 ? normalize(normalMatrix * vBaseNormal) : geometryNormal;
   float liveRimM = clamp((dot(liveMacro, normalize(mat3(viewMatrix) * vec3(0.76, 0.3, -0.58))) + 0.25) / 1.25, 0.0, 1.0);
   float liveUpM = max(inverseTransformDirection(liveMacro, viewMatrix).y, 0.0);
   float liveOpen = smoothstep(0.05, 0.7, mix(liveRim + 0.3 * liveUp, liveRimM + 0.3 * liveUpM, 0.75));

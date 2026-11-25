@@ -195,7 +195,11 @@ void main() {
   float thin = pow(max(1.0 - abs(dot(n, v)), 0.0), 2.0);
   col += albedo * RECIPROCAL_PI * (uRimCol + uRigCardCol) * 0.25 * thin;
   gl_FragColor = vec4(col * alpha, alpha);
-  if (uDiag != 0) gl_FragColor = stageDiag(albedo, n, 0.0, c, 0.0);
+  // The texels view takes what the picture really holds here: one cell of the sheet is 256 texels across, less what the soft window gives away.
+  if (uDiag != 0) {
+    vec2 petalTexel = vPetalUv * 256.0;
+    gl_FragColor = stageDiag(albedo, n, 0.0, c, max(length(dFdx(petalTexel)), length(dFdy(petalTexel))) / exp2(bias));
+  }
 }
 `
 
@@ -216,7 +220,10 @@ void main() {
   vec3 albedo = min(mix(tex.rgb, vec3(pow(dot(tex.rgb, vec3(0.4, 0.4, 0.2)), 1.5) * 1.35) * vec3(0.97, 0.77, 1.0), 0.7) * 1.3, vec3(0.94));
   vec3 col = petalLight(vec3(0.0, 1.0, 0.0), vStageWorld, v, albedo, 0.0);
   gl_FragColor = vec4(col * alpha, alpha);
-  if (uDiag != 0) gl_FragColor = stageDiag(albedo, vec3(0.0, 1.0, 0.0), 0.0, c, 0.0);
+  if (uDiag != 0) {
+    vec2 farTexel = uv * 2048.0;
+    gl_FragColor = stageDiag(albedo, vec3(0.0, 1.0, 0.0), 0.0, c, max(length(dFdx(farTexel)), length(dFdy(farTexel))) / exp2(0.6 * soft));
+  }
 }
 `
 
