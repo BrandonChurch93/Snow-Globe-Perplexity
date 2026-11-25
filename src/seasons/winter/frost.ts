@@ -327,8 +327,8 @@ float frostBlur(vec3 P) {
 // Where the foot's image lies on the slab (see SHEET): how far in front of the foot it fades out (mm), how much of the thin
 // film gives way there, and how thick the rime must be to stay.
 const IMAGE_REACH_MM = [22, 36]
-const IMAGE_CLEAR = 0.85
-const IMAGE_LUMP = [0.4, 0.75]
+const IMAGE_CLEAR = 0.9
+const IMAGE_LUMP = [0.5, 0.85]
 
 const SHEET = `
 ${SLAB_GLSL}

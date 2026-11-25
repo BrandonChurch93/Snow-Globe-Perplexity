@@ -51,6 +51,7 @@ const IMAGE_FOOT_MM = 0.15
 // The slab dims what it mirrors with height and blurs it (src/scene/surface.ts); the brass is drawn that much brighter in the
 // image, and its key highlight is placed as the eye sees it on the foot itself (BRASS_CARD), as the card's already is.
 const IMAGE_GAIN = 1.5
+const IMAGE_COOL = [0.8, 1.15, 2.2]
 
 const VERT_MAIN = `
 vBasePos = position;
@@ -302,7 +303,9 @@ const BRASS_CARD = `
   reflectedLight.indirectSpecular *= brassPlinth;
   reflectedLight.directDiffuse *= brassPlinth;
   reflectedLight.indirectDiffuse *= brassPlinth;
-  float brassImage = mix(1.0, ${IMAGE_GAIN.toFixed(2)}, vBaseImage);
+  // The image alone: brighter by IMAGE_GAIN, and on the side the frost lies on the gilt pales to a cool metal (the approved
+  // table shows the foot "bright cool-edged" at the right, warm at the left).
+  vec3 brassImage = mix(vec3(1.0), ${IMAGE_GAIN.toFixed(2)} * mix(vec3(1.0), vec3(${IMAGE_COOL.map((v) => v.toFixed(2)).join(', ')}), smoothstep(0.1, 0.8, vBasePos.x / max(length(vBasePos.xz), 1.0))), vBaseImage);
   reflectedLight.directSpecular *= brassImage;
   reflectedLight.indirectSpecular *= brassImage;
   reflectedLight.directDiffuse *= brassImage;
