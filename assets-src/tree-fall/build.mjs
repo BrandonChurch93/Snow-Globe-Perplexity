@@ -7,9 +7,9 @@ import { loadLayout } from '../village/layout.mjs'
 
 const TAU = Math.PI * 2
 const GLASS_CLEAR = 3.2
-const BOUGH = { perLimb: [1, 3], from: 0.3, length: [7, 13], seg: 1.05, radius: 1.0, minR: 0.5, turn: 0.36, kink: 0.95, kinkShare: 0.36, rise: 0.12 }
-const TWIG = { each: [1.4, 2.4], length: [0.3, 0.55], seg: 0.8, radius: 0.86, turn: 0.3, kink: 1.0, kinkShare: 0.3 }
-const SPIKE = { each: [0.2, 0.9], length: [0.28, 0.5], seg: 0.6, radius: 0.78, turn: 0.2, kink: 0.6, kinkShare: 0.15 }
+const BOUGH = { perLimb: [1, 2], from: 0.3, length: [9, 15], seg: 1.05, radius: 1.0, minR: 0.5, turn: 0.3, kink: 0.9, kinkShare: 0.3, rise: 0.22, lift: 0.35, tip: [9, 14] }
+const TWIG = { each: [0.9, 1.8], length: [0.3, 0.52], seg: 0.8, radius: 0.86, turn: 0.3, kink: 1.0, kinkShare: 0.3 }
+const SPIKE = { each: [0.2, 0.8], length: [0.28, 0.5], seg: 0.6, radius: 0.78, turn: 0.2, kink: 0.6, kinkShare: 0.15 }
 const TIP_R = 0.11
 const THICK = { limb: 1.85, twig: 1.5, bough: 0.78, tip: 0.9 }
 const SLEEVE = { from: -3.2, to: 36.5, split: 15.2, step: [0.45, 0.6], around: [96, 48], out: 0.05, deep: [0.95, 0.34], stem: 0.42, twist: 2.4 }
@@ -75,10 +75,10 @@ for (const limb of T.limbs) {
       const t = BOUGH.from + (1 - BOUGH.from) * ((k + rng.range(0.1, 0.9)) / n)
       const i = Math.min(pts.length - 1, Math.round(t * (pts.length - 1)))
       const d = turned(tan(i), rng.range(0.5, 1.1))
-      d.y = Math.abs(d.y) * 0.8 + 0.15
+      d.y = Math.abs(d.y) * 0.8 + BOUGH.lift
       grow(pts[i], d.normalize(), rng.range(BOUGH.length[0], BOUGH.length[1]) * (0.75 + 0.5 * (1 - t)), Math.max(BOUGH.minR, limb.radii[i] * BOUGH.radius * THICK.limb * THICK.bough), 0, BOUGH)
     }
-    grow(pts[pts.length - 1], tan(pts.length - 1), rng.range(7, 11), Math.max(BOUGH.minR, limb.radii[limb.radii.length - 1] * THICK.limb * THICK.tip), 0, BOUGH)
+    grow(pts[pts.length - 1], tan(pts.length - 1), rng.range(BOUGH.tip[0], BOUGH.tip[1]), Math.max(BOUGH.minR, limb.radii[limb.radii.length - 1] * THICK.limb * THICK.tip), 0, BOUGH)
     chains.push({ pts, radii: limb.radii.map((r) => r * THICK.limb), depth: 0, sleeve: true })
   } else if (limb.kind === 'twig') {
     const last = pts.length - 1

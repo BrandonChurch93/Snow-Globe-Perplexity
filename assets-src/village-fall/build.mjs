@@ -490,16 +490,16 @@ for (const r of PROPS.ROCKS) {
     const z = P.getZ(i)
     const lump = 0.3 * fbm(x * 1.1 + r.seed, y * 1.1, z * 1.1 + 3, 3)
     const bed = y * 3.2 + 0.5 * noise(x * 1.5 + r.seed, z * 1.5, 2.2)
-    const ledge = 0.11 * (smooth(0.35, 0.5, bed - Math.floor(bed)) - 0.5)
-    const crag = 0.16 * Math.abs(noise(x * 2.7 + 5, y * 2.7 + r.seed, z * 2.7)) + 0.05 * noise(x * 7, y * 7, z * 7 + r.seed)
+    const ledge = 0.2 * (smooth(0.38, 0.46, bed - Math.floor(bed)) - 0.5)
+    const crag = 0.3 * Math.abs(noise(x * 2.7 + 5, y * 2.7 + r.seed, z * 2.7)) + 0.12 * Math.abs(noise(x * 6.1, y * 3.2, z * 6.1 + r.seed)) + 0.05 * noise(x * 11, y * 11, z * 11 + r.seed)
     const k = 1 + lump - crag + ledge
     const flat = y < -0.4 ? -0.4 + (y + 0.4) * 0.25 : y
     P.setXYZ(i, x * k, flat * k * (1 + 0.15 * smooth(0.2, 1, y)), z * k)
   }
-  shade(g, (x, y, z) => (0.4 + 0.6 * smooth(-0.4, 0.6, y)) * (0.72 + 0.6 * fbm(x * 2.2 + r.seed, y * 2.2, z * 2.2, 4)) * (1 - 0.35 * smooth(0.02, 0.16, Math.abs(noise(x * 2.7 + 5, y * 2.7 + r.seed, z * 2.7)) * -1 + 0.12)))
+  shade(g, (x, y, z) => (0.4 + 0.6 * smooth(-0.4, 0.6, y)) * (0.72 + 0.6 * fbm(x * 2.2 + r.seed, y * 2.2, z * 2.2, 4)) * (1 - 0.7 * smooth(0.02, 0.12, 0.12 - Math.abs(noise(x * 2.7 + 5, y * 2.7 + r.seed, z * 2.7)))) * (1 - 0.55 * smooth(0.0, 0.08, 0.08 - Math.abs(noise(x * 6.1, y * 3.2, z * 6.1 + r.seed)))))
   const c = PROPS.rockCentre(r)
   const M = new THREE.Matrix4().makeRotationY(r.yaw).multiply(new THREE.Matrix4().makeScale(r.r[0], r.r[1], r.r[2])).setPosition(c[0], c[1], c[2])
-  decor.add(g, { matrix: M, color: (p) => mix3(lin('#c2c4ba'), lin('#62723f'), 0.55 * smooth(0.25, 0.7, fbm(p[0] * 0.6, p[1] * 0.6, p[2] * 0.6 + r.seed, 3) + 0.5) * smooth(c[1] + r.r[1] * 0.5, c[1] - r.r[1] * 0.3, p[1])), surf: [surf(KIND.stone, 0.92), 0], renormal: true })
+  decor.add(g, { matrix: M, color: (p) => mix3(lin('#a9aba0'), lin('#4f5f34'), 0.7 * smooth(0.25, 0.7, fbm(p[0] * 0.6, p[1] * 0.6, p[2] * 0.6 + r.seed, 3) + 0.5) * smooth(c[1] + r.r[1] * 0.5, c[1] - r.r[1] * 0.3, p[1])), surf: [surf(KIND.stone, 0.92), 0], renormal: true })
 }
 
 {

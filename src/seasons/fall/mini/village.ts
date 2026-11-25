@@ -30,11 +30,11 @@ const POND = { power: 0.3, reachMm: 20, flicker: 0.08, cycles: 2, phase: 0.8, li
 const NEAR = { lamp: { power: 6, reachMm: 7 }, pane: { power: 5, reachMm: 3.2 }, pumpkin: { power: 13, reachMm: 2.6, ends: 4 } }
 const NEAR_WALL = { lamp: { power: 2.4, reachMm: 9, ends: 3 }, pane: { power: 2.4, reachMm: 4.5, ends: 3 }, pumpkin: { power: 5, reachMm: 3.2, ends: 3 } }
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
-const HALO_KIND = { lamp: { size: 5.6, rest: 0.42, hot: 0, bloom: 0.3 }, pumpkin: { size: 4.2, rest: 0.26, hot: 0, bloom: 0.25 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
+const HALO_KIND = { lamp: { size: 5.6, rest: 0.32, hot: 0, bloom: 0.3 }, pumpkin: { size: 4.2, rest: 0.26, hot: 0, bloom: 0.25 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
 const PANE_HALO = { radiusMm: 0.75, strength: 0.5, hot: 0, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 0.6 }
 const PANE_SIZE = { size: 3.2, rest: 0.3, hot: 0, bloom: 0.3 }
 const THROUGH = 6
-const LAMP_GLASS: Rgb = [5.6, 2.5, 0.6]
+const LAMP_GLASS: Rgb = [3.4, 1.25, 0.24]
 const WALL_FILL = 2.1
 const GROUND_FILL = 3.4
 const PATH = { tone: [1.2, 1.13, 1.0] as Rgb, nearMm: 2.6, highMm: 1.4 }
@@ -46,7 +46,28 @@ const DRY: readonly Rgb[] = [[0.42, 0.16, 0.05], [0.5, 0.26, 0.07], [0.3, 0.12, 
 const GROUND = { soil: 1.1, leaf: 0.85, leafScale: 0.6, soilMm: 0.26, wideMm: 0.5, leafMm: 0.34 }
 const WATER = { rough: 0.07, rippleMm: 0.12, lamp: 12, pane: 0.8, pumpkin: 2.2, tight: 0.0005, wide: 0.006, wideShare: 0.004, lowMm: 3.4, fog: 0.26, shore: [0.9, 0.99] as [number, number] }
 
-const flame = lampFlame()
+const TALL_LAMP = { reachMm: 2.6, neckMm: 9.5, post: [1.6, 1.2] as [number, number], head: [1.5, 1.5] as [number, number] }
+const foot = lampFoot()
+
+function tallLamp(p: Point): Point {
+  const h = p[1] - foot[1]
+  const head = h > TALL_LAMP.neckMm
+  const wide = head ? TALL_LAMP.head[0] : TALL_LAMP.post[0]
+  const up = head ? TALL_LAMP.neckMm * TALL_LAMP.post[1] + (h - TALL_LAMP.neckMm) * TALL_LAMP.head[1] : h * TALL_LAMP.post[1]
+  return [foot[0] + (p[0] - foot[0]) * wide, foot[1] + up, foot[2] + (p[2] - foot[2]) * wide]
+}
+
+function stretched(source: THREE.BufferGeometry): THREE.BufferGeometry {
+  const g = source.clone()
+  const P = g.getAttribute('position')
+  for (let i = 0; i < P.count; i++) {
+    const q = tallLamp([P.getX(i), P.getY(i), P.getZ(i)])
+    P.setXYZ(i, q[0], q[1], q[2])
+  }
+  return g
+}
+
+const flame = tallLamp(lampFlame())
 const mirrored: Point = [flame[0], flame[1] - WATER.lowMm, flame[2]]
 const attic = atticAt()
 const pumpkinLights = PUMPKINS.map((p) => pumpkinFace(p, 0.55, 0.05))
@@ -125,6 +146,10 @@ function autumn(source: THREE.BufferGeometry): THREE.BufferGeometry {
     let gr = C.getY(i)
     let b = C.getZ(i)
     const n = wave(x, y, z)
+    if (kind === 2 && Math.hypot(x - foot[0], z - foot[2]) < TALL_LAMP.reachMm && y > foot[1] - 0.5) {
+      const q = tallLamp([x, y, z])
+      P.setXYZ(i, q[0], q[1], q[2])
+    }
     if (inFence(x, y, z) && kind === 1) {
       P.setXYZ(i, fence.from[0], groundAt(fence.from[0], fence.from[1]) - FENCE.sinkMm, fence.from[1])
     } else if (kind === 3) {
@@ -296,8 +321,8 @@ diffuseColor.rgb = mix(${glsl(tones.water)}, ${glsl(tones.moss)} * 0.5, pondShor
   vec3 pondSight = villageSight();
   float pondFresnel = 0.03 + 0.97 * pow(1.0 - clamp(dot(pondN, pondSight), 0.0, 1.0), 5.0);
   float pondGlint = villageMirror(pondN, pondSight, ${WATER.tight.toFixed(5)}, ${WATER.wide.toFixed(5)}, ${WATER.wideShare.toFixed(3)});
-  float pondLap = texture2D(map, vMapUv * 0.41 + 0.2).a;
-  totalEmissiveRadiance += (${glsl(tones.lamp)} * pondGlint * pondFresnel + ${glsl(tones.fogGlint)} * (${WATER.fog.toFixed(2)} * pondFresnel * (0.25 + 1.6 * smoothstep(0.5, 0.66, pondLap)))) * uGlowGain * (1.0 - pondShore);
+  float pondLap = 0.5 * (texture2D(map, vMapUv * 0.11 + 0.2).a + texture2D(map, vMapUv * 0.07 + 0.6).a);
+  totalEmissiveRadiance += (${glsl(tones.lamp)} * pondGlint * pondFresnel + ${glsl(tones.fogGlint)} * (${WATER.fog.toFixed(2)} * pondFresnel * (0.55 + 0.9 * smoothstep(0.3, 0.75, pondLap)))) * uGlowGain * (1.0 - pondShore);
 }
 `,
         )
@@ -329,7 +354,7 @@ function paneLook(room: Rgb, drape: Rgb): GlowLook {
 export function lights(): THREE.Object3D {
   const warm: GlowLook = { bulb: 1.5, bulbCore: 3.2, glass: LAMP_GLASS, flame: scaled(tones.flame, 6), room: tones.lamp, curtain: tones.lamp, frost: [0, 0, 0], frostAmount: 0, flicker: 0.1, cycles: 5, through: THROUGH, paneHot: 0 }
   const warmPieces = [
-    glowPiece(villageGeometry('lamp-glass'), (_i, isFlame) => [isFlame > 0.5 ? GLOW.flame : GLOW.glass, LAMP.phase, 0, 0]),
+    glowPiece(stretched(villageGeometry('lamp-glass')), (_i, isFlame) => [isFlame > 0.5 ? GLOW.flame : GLOW.glass, LAMP.phase, 0, 0]),
     glowPiece(geometry(MODEL, 'glow'), (_i, _inner, index) => [GLOW.bulb, 0.27 + 0.41 * index, index, 0]),
   ]
   const purple = new THREE.Mesh(glowGeometry([glowPiece(villageGeometry('pane-gable'), (_i, w, h) => [GLOW.pane, w, h, 1])]), glowMaterial(LIGHT, paneLook(tones.purple, tones.purpleDrape), clock))
@@ -373,6 +398,12 @@ function propDistance(x: number, y: number, z: number): number {
     const tall = pumpkinTall(p)
     const k = Math.hypot((x - c[0]) / p.r, (y - c[1]) / tall, (z - c[2]) / p.r)
     d = Math.min(d, (k - 1) * Math.min(p.r, tall))
+  }
+  {
+    const top = flame[1] + 1.2
+    const dy = y - Math.min(top, Math.max(foot[1], y))
+    const r = y > flame[1] - 2.4 ? 1.7 : 1.1
+    d = Math.min(d, Math.hypot(x - foot[0], dy, z - foot[2]) - r)
   }
   for (const r of ROCKS) {
     const c = rockCentre(r)
