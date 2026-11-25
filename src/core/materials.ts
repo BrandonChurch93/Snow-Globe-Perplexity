@@ -55,11 +55,12 @@ const TABLE = {
 /**
  * The scatter on the table is carried by the strokes, not swapped. What lies there lifts `leadOut` shares of the outside span
  * before its place is cleared (never before `DRESSING_CHANGE.liftFrom`), is blown out from the foot, faster and faster, and is
- * gone in the air; what the new season lays starts `leadIn` shares before its place fills, from nearer the foot, flies out and
- * comes down on its place, and every new piece is down before the window closes (`GUST_LAST_DOWN` stays under `TABLE.closes`).
+ * gone in the air; what the new season lays starts `leadIn` shares before its place fills, from further out, flies in and
+ * comes down on its place, the far places first and the foot last, when the light of the change has fallen, and every new piece
+ * is down before the window closes (`GUST_LAST_DOWN` stays under `TABLE.closes`).
  * Lengths in millimetres. With one season on the stage the mode is 0 and nothing here is read.
  */
-export const GUST = { leadOut: 1, longOut: 1.25, reachOutMm: 170, leadIn: 0.45, longIn: 0.65, reachInMm: 70, clearMm: 64, heightMm: 14 } as const
+export const GUST = { leadOut: 1, longOut: 1.25, reachOutMm: 170, leadIn: 0.45, longIn: 0.65, reachInMm: 70, heightMm: 14 } as const
 /** The share of the outside span at which the last new piece on the table is down. */
 export const GUST_LAST_DOWN = TABLE.comeFrom + (TABLE.comeLong * (0.5 + DRESSING_FRONT.gain)) / (1 + DRESSING_FRONT.gain) - GUST.leadIn + 1.2 * GUST.longIn
 export const GUST_CLOSES = TABLE.closes
@@ -73,14 +74,14 @@ vec3 stageGust(vec2 rest, float a, float b) {
   float s = (uChange - uState.x) / uState.y;
   float r = length(rest);
   float far = clamp((r - ${DRESSING_FRONT.fromMm.toFixed(1)}) / ${(DRESSING_FRONT.toMm - DRESSING_FRONT.fromMm).toFixed(1)}, 0.0, 1.0);
-  float at = (0.5 - uState.z * far) / (1.0 - uState.z);
   if (uState.w < 1.5) {
+    float at = (0.5 - uState.z * (1.0 - far)) / (1.0 - uState.z);
     float over = ${TABLE.comeFrom.toFixed(4)} + ${TABLE.comeLong.toFixed(4)} * at;
     float q = clamp((s - over + ${GUST.leadIn.toFixed(2)}) / (${GUST.longIn.toFixed(2)} * (0.8 + 0.4 * b)), 0.0, 1.0);
     float left = (1.0 - q) * (1.0 - q);
-    float reach = min(${GUST.reachInMm.toFixed(1)} * (0.5 + a), max(r - ${GUST.clearMm.toFixed(1)}, 0.0));
-    return vec3(-reach * left, q < 1.0 ? sin(3.14159265 * (0.2 + 0.8 * q)) : 0.0, left);
+    return vec3(${GUST.reachInMm.toFixed(1)} * (0.5 + a) * left, q < 1.0 ? sin(3.14159265 * (0.2 + 0.8 * q)) : 0.0, left);
   }
+  float at = (0.5 - uState.z * far) / (1.0 - uState.z);
   float over = ${TABLE.leaveFrom.toFixed(4)} + ${TABLE.leaveLong.toFixed(4)} * at;
   float q = clamp((s - max(over - ${GUST.leadOut.toFixed(2)}, ${TABLE.liftFrom.toFixed(4)})) / ${GUST.longOut.toFixed(2)}, 0.0, 1.0);
   return vec3(${GUST.reachOutMm.toFixed(1)} * (0.5 + a) * q * q, sin(1.5707963 * q), q);
@@ -224,11 +225,11 @@ float stageChange() {
   if (uState.z < 0.0) {
     // The base: one base before the cut, the other after it, nothing between.
     if (uState.z < -${(BASE_CODE - 1).toFixed(1)}) return uChange < ${CHANGE_CUT.at.toFixed(6)} ? 0.0 : 1.0;
-    // The table: what leaves is gone before the cut, what comes comes after it, each from the foot outward.
+    // The table: what leaves is gone before the cut, from the foot outward; what comes comes after it, the foot last.
     float s = (uChange - uState.x) / uState.y;
     float far = clamp((length(vStageWorld.xz) - ${DRESSING_FRONT.fromMm.toFixed(1)}) / ${(DRESSING_FRONT.toMm - DRESSING_FRONT.fromMm).toFixed(1)}, 0.0, 1.0);
     float run = uState.w > 1.5 ? (s - ${TABLE.leaveFrom.toFixed(4)}) / ${TABLE.leaveLong.toFixed(4)} : (s - ${TABLE.comeFrom.toFixed(4)}) / ${TABLE.comeLong.toFixed(4)};
-    float reach = clamp(run, 0.0, 1.0) * (1.0 - uState.z) + uState.z * far;
+    float reach = clamp(run, 0.0, 1.0) * (1.0 - uState.z) + uState.z * (uState.w > 1.5 ? far : 1.0 - far);
     stageEdge = stagePatch(vec3(atan(vStageWorld.x, vStageWorld.z) * ${OUTSIDE_FRONT.rayMm.toFixed(1)}, 0.0, length(vStageWorld.xz) / ${OUTSIDE_FRONT.streak.toFixed(1)}));
     return clamp(reach, 0.0, 1.0);
   }
