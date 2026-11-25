@@ -389,8 +389,9 @@ vec4 veilField(vec3 p, vec3 f, float sheet) {
   vec3 flat2 = p - dot(p, ${vec(AXIS)}) * ${vec(AXIS)};
   float ring = mix(${n(L.arcCore)}, 1.0, smoothstep(${n(L.hazeFrom)}, ${n(L.hazeTo)}, (length(flat2) - ${n(L.hazeLift)} * dot(p, uVeilUp.xyz) - ${n(L.hazeSide)} * p.x) / uLens.w));
   float even = smoothstep(uVeilBank.x + uVeilBank.y, uVeilBank.x - uVeilBank.y, level + ${n(L.bankWave)} * (f.x - 0.5));
-  float thin = (uVeil.a * mix(1.0, ring * arc * sheet, uVeilUp.w) + uVeilRoll.z * mix(1.0, fold, uVeilRoll.w)) * ${leanGlsl('p', 'uVeilLean', 'uLens.w')};
-  float bank = uVeilBank.z * even * even * even * mix(fold, 1.0, uVeilBank.w) + uVeilDrift.x * streak * sheet;
+  float thrown = ${leanGlsl('p', 'uVeilLean', 'uLens.w')};
+  float thin = (uVeil.a * mix(1.0, ring * arc * sheet, uVeilUp.w) + uVeilRoll.z * mix(1.0, fold, uVeilRoll.w)) * thrown;
+  float bank = uVeilBank.z * even * even * even * mix(fold, 1.0, uVeilBank.w) * thrown + uVeilDrift.x * streak * sheet;
   return vec4(thin, bank, max(mix(deep, uVeilBank.x - level, uVeilRoll.y), 0.0) * uLens.w, f.z);
 }
 vec3 veilLit(vec3 p, vec4 field) {
