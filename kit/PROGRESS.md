@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 93 · 2026-11-25 11:09 UTC
+Status 94 · 2026-11-25 11:25 UTC
 
-- `out/stills/status/status-93-1.jpg`: Fall at rest: the approved image on the left and the kept build on the right
-- `out/stills/status/status-93-2.jpg`: Fall mid-shake: the approved image on the left and the kept build on the right
-- `out/stills/status/status-93-3.jpg`: Still: spring rest hero, preview, draft, standins view
-- `out/stills/status/status-93-4.jpg`: Still: spring rest hero, preview, draft
+- `out/stills/status/status-94-1.jpg`: Round 17 judged this: the change from winter to spring on the kept build. The base turns orange in plain sight at frame 672
+- `out/stills/status/status-94-2.jpg`: Fix pass: the same change. The base is winter's at 672 and spring's at 676 with nothing between; petals lift in a gust. Draft tier
+- `out/stills/status/status-94-3.jpg`: Fix pass: spring to summer. Draft tier
+- `out/stills/status/status-94-4.jpg`: Fix pass: summer to fall. The storm still turns green too early. Draft tier
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 11:24 UTC
-clock: phase 4, tick of 7.2 minutes
-phase 4: 11.29 h used of its 9.50 h box
-allowance (before the review): 33.57 h used of 36.00 h allowed
-all time before the review: 33.57 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 11:25 UTC
+clock: phase 4, tick of 0.6 minutes
+phase 4: 11.30 h used of its 9.50 h box
+allowance (before the review): 33.58 h used of 36.00 h allowed
+all time before the review: 33.58 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
 budget report: not due
-minutes since the last status: 15
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -1977,3 +1977,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 10:46 UTC. 10:46 UTC, Nov 25. Status 91 posted (the unit status for summer) with its two comparison images (`out/work/compare/compare-summer-rest.jpg`, `compare-summer-shake.jpg`). Summer is `finished` at `quality.maxRoundsPerUnit` 3: open items 84 to 108, Declined issues 18 to 23, decision 95. Published from the kept build `dcda6ca` with the review page rebuilt (36 comparison pictures); Visibility: Organization. Round 17's measure arrived complete: 24 of 24 lines, 0 red (`scorecards/round-017/measures-change.json`, branch `agent/p4-round17-pack` `7db9d0b`, fetched and not merged). Round 14's last answer arrived (R4 5); the scribes for spring, summer and fall have delivered their drafts and each was machine-checked (every `what` and `fix` of a severe or major issue is in its file word for word). Clock at 10:46: 32.93 h of 36 h used, budget report not due.
 
 - 11:10 UTC. Status 93 posted at 11:10 UTC with the two comparison images of fall (`out/stills/fall/`), after the publish of 11:09 (code of `dcda6ca`, review page rebuilt; the local check drew the first picture after 17.9 s with no page error). Clock at 11:09: 33.32 h of 36 h, `budget report: not due`. The fix build of `change` is commit `a6e09d6` on the branch `agent/p4-fix-f` (main `270df7e` plus `agent/p4-change3` at `e7c7bdd`, seven files under `src/`); it is not on `main`, so that everything published stays the kept build until the fix is proven. Its proof was ordered at 11:07 with the limit 13:05: the whole gate of `change` on a clean clone (`gate_runner_b`), the measures of winter, spring, summer and fall (`round_renderer_c`, `round_renderer_d`, `motion_renderer_d`, `motion_renderer_e`) and the measures of `change` in three parts (`frame_helper_1`, `frame_helper_2`, `frame_helper_3`).
+
+- 11:25 UTC. - 11:25 UTC. Status 94 posted at 11:27 UTC, the round-end status of Round 17: the sheet of the change from winter to spring that the round judged (`dcda6ca`), and three sheets of the fix pass at draft tier (`e70a11e`, from the builder's looks branch `agent/p4-change3-looks` at `aeba7dd`). Round 17 closed without a pass (R4 4, R2 fails 5 of 20; open items 154 to 165; Declined issues 34 to 40). The fix build `a6e09d6` on `agent/p4-fix-f` is not kept until its proof is in. Two lines reported red on it so far are not new: M3 `spring-rest` 0.394 and M3 `fall-rest` 0.5518, the same values as on `dcda6ca` (Rounds 14 and 16). The status tool shows four pictures at most, so the fifth (fall to winter) is not in it.

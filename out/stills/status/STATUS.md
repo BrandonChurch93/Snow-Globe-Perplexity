@@ -1,19 +1,18 @@
-# Status 93
+# Status 94
 
-2026-11-25 11:09 UTC
+2026-11-25 11:25 UTC
 
-- Fall is finished at its round limit after three judged rounds without a pass
-- Last round: likeness 6 and craft 4 and motion 6. The blind jury 1 of 20 against 7 of 10 for the controls
-- Machine checks 15 of 15 green. One of 19 measure lines red: M3 on the at-rest still 0.5518 against 0.75
-- 6 severe and 24 major issues are written up as open items 129 to 153
-- The register still called the four changes stand-ins though they are built: corrected and logged as decision 98
-- The fix build of the changes sits on a side branch while eight agents prove its checks and measures
-- phase 4: 11.04 h used of its 9.50 h box
-- allowance (before the review): 33.32 h used of 36.00 h allowed
+- Round 17 is closed: the motion critics give 4 (parts 4 7 4 5) and the jury fails 5 of 20; no pass
+- Its 18 severe and major issues are open items 154 to 165; seven asks are declined on the kit
+- The fix pass ended 11:14: the base cuts between two frames; petals and leaves lift in a gust; the flood of light is down
+- The fix build is not kept yet: its whole gate and the measures of all five units are running; results near 12:40
+- Still wrong in the fix pass by the builder's own words: the cut is not covered; the landing reads static; the arrivals unveil
+- phase 4: 11.30 h used of its 9.50 h box
+- allowance (before the review): 33.58 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-93-1.jpg`: Fall at rest: the approved image on the left and the kept build on the right
-- `out/stills/status/status-93-2.jpg`: Fall mid-shake: the approved image on the left and the kept build on the right
-- `out/stills/status/status-93-3.jpg`: Still: spring rest hero, preview, draft, standins view
-- `out/stills/status/status-93-4.jpg`: Still: spring rest hero, preview, draft
+- `out/stills/status/status-94-1.jpg`: Round 17 judged this: the change from winter to spring on the kept build. The base turns orange in plain sight at frame 672
+- `out/stills/status/status-94-2.jpg`: Fix pass: the same change. The base is winter's at 672 and spring's at 676 with nothing between; petals lift in a gust. Draft tier
+- `out/stills/status/status-94-3.jpg`: Fix pass: spring to summer. Draft tier
+- `out/stills/status/status-94-4.jpg`: Fix pass: summer to fall. The storm still turns green too early. Draft tier
