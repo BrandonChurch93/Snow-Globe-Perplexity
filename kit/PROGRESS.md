@@ -37,16 +37,16 @@ Status 98 · 2026-11-25 12:44 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 12:44 UTC
-clock: phase 5, tick of 3.5 minutes
-phase 5: 0.91 h used of its 4.50 h box
-allowance (before the review): 34.90 h used of 36.00 h allowed
-all time before the review: 34.90 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 12:45 UTC
+clock: phase 5, tick of 1.3 minutes
+phase 5: 0.93 h used of its 4.50 h box
+allowance (before the review): 34.92 h used of 36.00 h allowed
+all time before the review: 34.92 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 1
 ```
 
 ## Phases
@@ -1531,6 +1531,8 @@ Merged into `main`, each verified here with types clean and the tests green (126
   - `frame_helper_4` (build agent, step 2): findings of its first walk came at 12:41 (`out/work/p5/mail-1241-visitor-findings.md`); the walk is not complete (three walks side by side starved each other, so the phone runs alone first); it fixes, merges `main`, and walks all three layouts again; report by 13:25, stop at 13:35.
   - `frame_helper_1`: the read-only check of `sound-engine` and `quality-levels` against their methods, report by 13:15.
   - Four agents at work, two of them build agents. Idle: `round_renderer_b`, `round_renderer_c`, `round_renderer_d`, `motion_renderer_b` to `motion_renderer_e`, `frame_helper_2`, `frame_helper_3`, `change_builder3`, the scribes.
+
+- 12:46 UTC, Nov 25. Freshness for step 1, started so that the branch cannot land without it: the two keys of each season at the final tier on `agent/p5-standins` at `964b782`, each on a clean clone, the sha256 of each compared with the kept stills (`out/work/verify/kept-key-hashes.txt`). `round_renderer_c` (winter), `round_renderer_d` (spring), `motion_renderer_d` (summer), `motion_renderer_e` (fall). Answers by 13:28, stop at 13:35. Eight agents at work, two of them build agents (`gate_runner`, `frame_helper_4`), with `gate_runner_b` on G13 alone and `frame_helper_1` on the read-only check. Idle: `round_renderer_b`, `motion_renderer_b`, `motion_renderer_c`, `frame_helper_2`, `frame_helper_3`, `change_builder3`, the scribes.
 
 ## Rounds
 
