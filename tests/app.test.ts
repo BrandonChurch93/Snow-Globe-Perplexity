@@ -520,7 +520,7 @@ describe('the framing of the app', () => {
         side = Math.max(side, r.side)
       }
     }
-    const barPx = controls ?? Math.max(FRAME.barShare * h, FRAME.barPx)
+    const barPx = controls ?? Math.min(Math.max(FRAME.barShare * h, FRAME.barPx), FRAME.barMost * h)
     const clearPx = ((1 - rest.foot) / 2) * h - barPx
     const heap = edges(rig).heap
     const heapPx = ((1 + heap) / 2) * h - barPx
@@ -695,12 +695,14 @@ describe('the framing of the app', () => {
   it('takes the room from the height of the window and from the controls when they are measured', () => {
     expect(roomUnder(1080)).toBeCloseTo(Math.max(FRAME.barShare, FRAME.barPx / 1080) + FRAME.clearShare, 12)
     expect(roomUnder(4000)).toBeCloseTo(FRAME.barShare + FRAME.clearShare, 12)
+    expect(roomUnder(390)).toBeCloseTo(FRAME.barMost + FRAME.clearShare, 12)
+    expect(Math.abs(roomUnder(390) - roomUnder(390, 54)) * 390).toBeLessThan(1)
     expect(roomUnder(1080, 74)).toBeCloseTo(74 / 1080 + FRAME.clearShare, 12)
     expect(roomUnder(1080, 74, 1920)).toBe(roomUnder(1080, 74))
     expect(roomUnder(1366, 86, 1024)).toBeCloseTo(86 / 1366 + FRAME.clearShare, 12)
     expect(roomUnder(844, 130, 390)).toBeCloseTo(130 / 844 + FRAME.thumbShare, 12)
     expect(roomUnder(100, 500)).toBe(FRAME.mostUnder)
-    expect(roomUnder(0)).toBe(FRAME.mostUnder)
+    expect(roomUnder(0)).toBeCloseTo(FRAME.barMost + FRAME.clearShare, 12)
     const far = liveRig(16 / 9, 0, 0, 5)
     expect((1 + edges(far).heap) / 2).toBeCloseTo(FRAME.mostUnder, 6)
     expect(margins(far).under).toBeGreaterThan(FRAME.mostUnder)

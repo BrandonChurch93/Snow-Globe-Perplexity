@@ -10,6 +10,7 @@ export const FRAME = {
   leastAspect: 0.2,
   barShare: 0.08,
   barPx: 96,
+  barMost: 0.14,
   clearShare: 0.07,
   thumbShare: 0.05,
   heapMm: 46,
@@ -55,11 +56,12 @@ const aimForFoot = (rig: Rig, foot: number): number => {
   return -(y * (rig.distanceMm - FOOT_R * Math.cos(p)) + FOOT_R * Math.sin(p)) / (Math.cos(p) + y * Math.sin(p))
 }
 
-/** The share of the height the foot keeps free under it: the controls, measured, or a bar of the usual height until they are,
+/** The share of the height the foot keeps free under it: the controls, measured, or a bar of the usual height until they are
+ * (on a short screen, a phone held sideways, a bar of `barMost` of the height, which is what its row measures),
  * and over them `clearShare` of the height, or `thumbShare` on a narrow upright screen, where the controls stay within reach of a thumb. */
 export const roomUnder = (heightPx: number, controlsPx: number | null = null, widthPx: number | null = null): number => {
   const h = Math.max(1, heightPx)
-  const bar = controlsPx === null ? Math.max(FRAME.barShare * h, FRAME.barPx) : controlsPx
+  const bar = controlsPx === null ? Math.min(Math.max(FRAME.barShare * h, FRAME.barPx), FRAME.barMost * h) : controlsPx
   const clear = widthPx !== null && widthPx / h < FRAME.narrowAspect ? FRAME.thumbShare : FRAME.clearShare
   return Math.min(FRAME.mostUnder, bar / h + clear)
 }
