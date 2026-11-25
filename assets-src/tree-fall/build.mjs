@@ -7,13 +7,13 @@ import { loadLayout } from '../village/layout.mjs'
 
 const TAU = Math.PI * 2
 const GLASS_CLEAR = 3.2
-const BOUGH = { perLimb: [2, 4], from: 0.3, length: [6.5, 12], seg: 1.05, radius: 1.0, minR: 0.42, turn: 0.3, kink: 0.95, kinkShare: 0.3, rise: 0.1 }
-const TWIG = { each: [2, 3], length: [0.3, 0.55], seg: 0.8, radius: 0.86, turn: 0.3, kink: 1.0, kinkShare: 0.3 }
-const SPIKE = { each: [0.3, 1.2], length: [0.28, 0.5], seg: 0.6, radius: 0.78, turn: 0.2, kink: 0.6, kinkShare: 0.15 }
+const BOUGH = { perLimb: [1, 3], from: 0.3, length: [7, 13], seg: 1.05, radius: 1.0, minR: 0.5, turn: 0.36, kink: 0.95, kinkShare: 0.36, rise: 0.12 }
+const TWIG = { each: [1.4, 2.4], length: [0.3, 0.55], seg: 0.8, radius: 0.86, turn: 0.3, kink: 1.0, kinkShare: 0.3 }
+const SPIKE = { each: [0.2, 0.9], length: [0.28, 0.5], seg: 0.6, radius: 0.78, turn: 0.2, kink: 0.6, kinkShare: 0.15 }
 const TIP_R = 0.11
 const THICK = { limb: 1.85, twig: 1.5, bough: 0.78, tip: 0.9 }
 const SLEEVE = { from: -3.2, to: 36.5, split: 15.2, step: [0.45, 0.6], around: [96, 48], out: 0.05, deep: [0.95, 0.34], stem: 0.42, twist: 2.4 }
-const EMBER = { count: 58, apart: 2.6, r: [0.17, 0.3], drop: [0.02, 0.22], stalk: 0.045, cap: 0.6 }
+const EMBER = { count: 46, apart: 2.9, r: [0.15, 0.26], drop: [0.02, 0.22], stalk: 0.045, cap: 0.6 }
 
 const [T, RNG] = await loadSource(['/src/miniature/trunk.ts', '/src/core/rng.ts'])
 const L = await loadLayout()

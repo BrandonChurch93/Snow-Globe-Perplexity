@@ -28,18 +28,18 @@ const ATTIC_LIGHT = { power: 0.6, reachMm: 6, flicker: 0.1, cycles: 4, phase: 0.
 const PUMPKIN = { power: 1.3, reachMm: 7, flicker: 0.16, cycles: 6 }
 const POND = { power: 0.3, reachMm: 20, flicker: 0.08, cycles: 2, phase: 0.8, liftMm: 2.5 }
 const NEAR = { lamp: { power: 6, reachMm: 7 }, pane: { power: 5, reachMm: 3.2 }, pumpkin: { power: 13, reachMm: 2.6, ends: 4 } }
-const NEAR_WALL = { lamp: { power: 3.4, reachMm: 9, ends: 3 }, pane: { power: 2.4, reachMm: 4.5, ends: 3 }, pumpkin: { power: 5, reachMm: 3.2, ends: 3 } }
+const NEAR_WALL = { lamp: { power: 2.4, reachMm: 9, ends: 3 }, pane: { power: 2.4, reachMm: 4.5, ends: 3 }, pumpkin: { power: 5, reachMm: 3.2, ends: 3 } }
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
-const HALO_KIND = { lamp: { size: 4.2, rest: 0.26, hot: 0, bloom: 0.25 }, pumpkin: { size: 4.2, rest: 0.26, hot: 0, bloom: 0.25 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
+const HALO_KIND = { lamp: { size: 5.6, rest: 0.42, hot: 0, bloom: 0.3 }, pumpkin: { size: 4.2, rest: 0.26, hot: 0, bloom: 0.25 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
 const PANE_HALO = { radiusMm: 0.75, strength: 0.5, hot: 0, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 0.6 }
 const PANE_SIZE = { size: 3.2, rest: 0.3, hot: 0, bloom: 0.3 }
 const THROUGH = 6
-const LAMP_GLASS: Rgb = [6.4, 3.5, 1.3]
-const WALL_FILL = 3.0
+const LAMP_GLASS: Rgb = [5.6, 2.5, 0.6]
+const WALL_FILL = 1.9
 const GROUND_FILL = 3.4
 const PATH = { tone: [1.2, 1.13, 1.0] as Rgb, nearMm: 2.6, highMm: 1.4 }
 const FENCE = { reachMm: 1.25, sinkMm: 5 }
-const MOSS = { low: [0.62, 0.76, 0.44] as Rgb, high: [0.95, 0.96, 0.88] as Rgb, tallMm: 9 }
+const MOSS = { low: [0.46, 0.6, 0.33] as Rgb, high: [0.68, 0.72, 0.6] as Rgb, tallMm: 9, soot: 0.5 }
 const ROOF = { tone: [2.2, 1.7, 1.45] as Rgb, grey: 0.55 }
 const DOOR: Rgb = [0.34, 0.24, 0.17]
 const DRY: readonly Rgb[] = [[0.42, 0.16, 0.05], [0.5, 0.26, 0.07], [0.3, 0.12, 0.05], [0.4, 0.3, 0.1]]
@@ -150,9 +150,10 @@ function autumn(source: THREE.BufferGeometry): THREE.BufferGeometry {
       } else {
         const m = (1 - smooth(0, MOSS.tallMm, up)) * (0.35 + 0.65 * n) + 0.35 * smooth(0.55, 0.8, n)
         const k = Math.min(1, Math.max(0, m))
-        r *= MOSS.high[0] + (MOSS.low[0] - MOSS.high[0]) * k
-        gr *= MOSS.high[1] + (MOSS.low[1] - MOSS.high[1]) * k
-        b *= MOSS.high[2] + (MOSS.low[2] - MOSS.high[2]) * k
+        const soot = near ? 1 - MOSS.soot * smooth(cottage.wall + 1, cottage.wall + 7, up) : 1
+        r *= (MOSS.high[0] + (MOSS.low[0] - MOSS.high[0]) * k) * soot
+        gr *= (MOSS.high[1] + (MOSS.low[1] - MOSS.high[1]) * k) * soot
+        b *= (MOSS.high[2] + (MOSS.low[2] - MOSS.high[2]) * k) * soot
       }
     } else if (kind === 1) {
       const c = cottageLocal(x, z)

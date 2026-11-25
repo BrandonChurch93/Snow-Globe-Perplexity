@@ -24,8 +24,8 @@ const STONES = PROPS.STONES
 const LEAF_TONES = ['#c8541a', '#d9812a', '#a8371a', '#e0a030', '#7a3a18', '#b5651d', '#c9451c', '#8f5a1e'].map(lin)
 const GRASS_TONES = ['#5a7a2a', '#7d9438', '#b0a548', '#4a6424', '#96893a'].map(lin)
 
-const LITTER = { base: 0.08, patch: 0.26, fence: 0.22, tree: 0.26, wall: 0.12, leaves: 1150 }
-const STONE_TONES = ['#d6d0bf', '#c4c0b2', '#e0d9c6', '#b3b0a4', '#cbc5b3'].map(lin)
+const LITTER = { base: 0.03, patch: 0.2, fence: 0.2, tree: 0.1, wall: 0.1, leaves: 480 }
+const STONE_TONES = ['#d6d0bf', '#c4c0b2', '#e0d9c6', '#b3b0a4', '#cbc5b3'].map(lin).map((c) => mul3(c, 1.3))
 const ground = new Bag('ground')
 const water = new Bag('water')
 const decor = new Bag('decor')
@@ -391,6 +391,18 @@ const cobble = (x, z, w, l, h, yaw, lift, dark = 1) => {
 
 let flagCount = 0
 {
+  const d = C.door
+  for (const [k, step] of [[1.35, 6.6], [3.5, 6.0], [5.6, 5.3]].entries()) {
+    const at = L.cottagePoint(d.across + 0.25 * k, 0, C.halfLength + step[0])
+    const seed = R() * 40
+    const g = slab(step[1], 1.15, 2.25, { round: 0.2, sx: 6, sy: 2, sz: 3, warp: 0.1, seed })
+    shade(g, (px, py, pz) => (0.45 + 0.55 * smooth(-0.2, 0.5, py)) * (0.78 + 0.5 * fbm(px * 1.4 + seed, pz * 1.4, py * 2, 3)))
+    const M = frame([at[0], L.groundAt(at[0], at[2]) + 0.2 + 0.12 * (2 - k), at[2]], V3, UP, U3)
+    decor.add(g, { matrix: M, color: mul3(STONE_TONES[k % STONE_TONES.length], 0.95), surf: [surf(KIND.stone, 0.88), 0], renormal: true })
+    flagCount++
+  }
+}
+{
   let carry = 0
   for (let i = 0; i < PATH_LINE.length - 1; i++) {
     const [ax, az] = PATH_LINE[i]
@@ -404,14 +416,14 @@ let flagCount = 0
       const along = between(2.1, 2.9)
       const widen = 1 + 0.25 * smooth(0, PATH_LINE.length - 2, i)
       const split = between(-0.5, 0.5)
-      const span = 4.6 * widen
+      const span = 5.4 * widen
       const left = span / 2 + split
       const right = span - left
       const cx = ax + dx * (s + along / 2)
       const cz = az + dz * (s + along / 2)
       for (const [off, w] of [[-(left / 2) - 0.08, left - 0.16], [right / 2 + 0.08, right - 0.16]]) {
         const j = between(-0.25, 0.25)
-        cobble(cx - dz * off + dx * j, cz + dx * off + dz * j, along - 0.22, w, 0.8, yaw + between(-0.14, 0.14), 0.05 + between(0, 0.14))
+        cobble(cx - dz * off + dx * j, cz + dx * off + dz * j, along - 0.22, w, 1.1, yaw + between(-0.14, 0.14), 0.3 + between(0, 0.22))
         flagCount++
       }
       s += along
@@ -434,7 +446,7 @@ let rimCount = 0
     const x = L.pond.x + dx * t
     const z = L.pond.z + dz * t
     if (R() < 0.3 + 0.7 * west && cottageGap(x, z) > 1 && rockGap(x, z) > 0.2) {
-      cobble(x, z, size, size * between(0.6, 0.9), size * between(0.4, 0.6), Math.atan2(-dx, dz) + between(-0.3, 0.3), size * 0.06, 0.8)
+      cobble(x, z, size, size * between(0.6, 0.9), size * between(0.55, 0.8), Math.atan2(-dx, dz) + between(-0.3, 0.3), size * 0.16, 0.85)
       rimCount++
     }
     deg += (size * 1.02 * 180) / Math.PI / (Math.hypot(dx * t, dz * t) || 1)
@@ -448,20 +460,22 @@ for (const r of PROPS.ROCKS) {
     const x = P.getX(i)
     const y = P.getY(i)
     const z = P.getZ(i)
-    const lump = 0.26 * fbm(x * 1.1 + r.seed, y * 1.1, z * 1.1 + 3, 3)
-    const crag = 0.13 * Math.abs(noise(x * 2.7 + 5, y * 2.7 + r.seed, z * 2.7)) + 0.05 * noise(x * 7, y * 7, z * 7 + r.seed)
-    const k = 1 + lump - crag
+    const lump = 0.3 * fbm(x * 1.1 + r.seed, y * 1.1, z * 1.1 + 3, 3)
+    const bed = y * 3.2 + 0.5 * noise(x * 1.5 + r.seed, z * 1.5, 2.2)
+    const ledge = 0.11 * (smooth(0.35, 0.5, bed - Math.floor(bed)) - 0.5)
+    const crag = 0.16 * Math.abs(noise(x * 2.7 + 5, y * 2.7 + r.seed, z * 2.7)) + 0.05 * noise(x * 7, y * 7, z * 7 + r.seed)
+    const k = 1 + lump - crag + ledge
     const flat = y < -0.4 ? -0.4 + (y + 0.4) * 0.25 : y
     P.setXYZ(i, x * k, flat * k * (1 + 0.15 * smooth(0.2, 1, y)), z * k)
   }
   shade(g, (x, y, z) => (0.4 + 0.6 * smooth(-0.4, 0.6, y)) * (0.72 + 0.6 * fbm(x * 2.2 + r.seed, y * 2.2, z * 2.2, 4)) * (1 - 0.35 * smooth(0.02, 0.16, Math.abs(noise(x * 2.7 + 5, y * 2.7 + r.seed, z * 2.7)) * -1 + 0.12)))
   const c = PROPS.rockCentre(r)
   const M = new THREE.Matrix4().makeRotationY(r.yaw).multiply(new THREE.Matrix4().makeScale(r.r[0], r.r[1], r.r[2])).setPosition(c[0], c[1], c[2])
-  decor.add(g, { matrix: M, color: (p) => mix3(lin('#a9aba2'), lin('#55633a'), 0.55 * smooth(0.25, 0.7, fbm(p[0] * 0.6, p[1] * 0.6, p[2] * 0.6 + r.seed, 3) + 0.5) * smooth(c[1] + r.r[1] * 0.5, c[1] - r.r[1] * 0.3, p[1])), surf: [surf(KIND.stone, 0.92), 0], renormal: true })
+  decor.add(g, { matrix: M, color: (p) => mix3(lin('#c2c4ba'), lin('#62723f'), 0.55 * smooth(0.25, 0.7, fbm(p[0] * 0.6, p[1] * 0.6, p[2] * 0.6 + r.seed, 3) + 0.5) * smooth(c[1] + r.r[1] * 0.5, c[1] - r.r[1] * 0.3, p[1])), surf: [surf(KIND.stone, 0.92), 0], renormal: true })
 }
 
 {
-  const WOOD = ['#6e5a45', '#5f4d3c', '#7a6550', '#54463a'].map(lin)
+  const WOOD = ['#806a52', '#6f5b47', '#8c755c', '#625244'].map(lin)
   for (const b of PROPS.fenceBoards()) {
     const e = [b.b[0] - b.a[0], b.b[1] - b.a[1], b.b[2] - b.a[2]]
     const len = Math.hypot(e[0], e[1], e[2])
