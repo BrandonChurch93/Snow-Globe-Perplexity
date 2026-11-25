@@ -38,6 +38,11 @@ const BLOOM_HALF = frames(6)
 
 /** What the table carries as one number crossed straight from the old season to the new goes with the base, where the shutter is closed. */
 const ON_THE_CUT: ChangeSpan = { from: CHANGE_CUT.at - frames(0.125), to: CHANGE_CUT.at + frames(0.125), lag: 0 }
+/**
+ * What is on the glass goes before the cut and is gone on it: no frame shows the old season's dressing on the glass over the new base.
+ * The heaps of the slab (`surface-leave`, `surface-come`) sink with the old dressing before the cut and rise with the new after it.
+ * A shake of one season reads the base's span and none of these.
+ */
 const SPANS: Record<string, ChangeSpan> = {
   miniature: { from: 0.05, to: 0.95, lag: 0.5 },
   arrival: { from: 0.05, to: 0.95, lag: 0.5 },
@@ -45,8 +50,10 @@ const SPANS: Record<string, ChangeSpan> = {
   veil: { from: 0, to: 1, lag: 0 },
   particles: { from: 0, to: 1, lag: 0 },
   base: OUTSIDE,
-  'glass-dressing': OUTSIDE,
+  'glass-dressing': { from: OUTSIDE.from, to: CHANGE_CUT.at, lag: 0 },
   'surface-dressing': ON_THE_CUT,
+  'surface-leave': { from: DRESSING_CHANGE.leaveFrom, to: DRESSING_CHANGE.leaveTo, lag: 0 },
+  'surface-come': { from: DRESSING_CHANGE.comeFrom, to: DRESSING_CHANGE.comeTo, lag: 0 },
   backdrop: OUTSIDE,
 }
 
