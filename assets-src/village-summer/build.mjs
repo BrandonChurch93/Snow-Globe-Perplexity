@@ -28,6 +28,8 @@ const TONES = {
   rose: ['#e9a0a8', '#f2c3bd', '#f4e3cf', '#d97f8e', '#f0d2c0'].map(lin),
   petal: ['#f2a516', '#f7b82a', '#e3930f', '#f9c33a'].map((c) => mul3(lin(c), 1.15)),
   seed: lin('#2c1a0c'),
+  seedHeart: lin('#4a3a14'),
+  seedRim: lin('#8a4a12'),
   stem: lin('#3d5a22'),
   bloom: ['#f5efe0', '#f2c9d2', '#f6dc74', '#e7a4b4', '#ffffff'].map(lin),
 }
@@ -441,34 +443,40 @@ for (const sh of RF.shrubs()) {
 function sunflower(x, z, tall, face) {
   const y0 = topAt(x, z) - 0.1
   const bend = [face[0] * 0.9, 0, face[2] * 0.9]
+  const lean = [range(-0.5, 0.5), range(-0.4, 0.4)]
   const pts = []
   for (let i = 0; i <= 8; i++) {
     const t = i / 8
-    pts.push(new THREE.Vector3(x + bend[0] * t * t, y0 + tall * t, z + bend[2] * t * t))
+    const s = Math.sin(t * Math.PI) * tall * 0.07
+    pts.push(new THREE.Vector3(x + bend[0] * t * t + lean[0] * s, y0 + tall * t - 0.35 * t * t * t, z + bend[2] * t * t + lean[1] * s))
   }
   const curve = new THREE.CatmullRomCurve3(pts)
-  const stem = new THREE.TubeGeometry(curve, 14, 0.24, 6, false)
+  const stem = new THREE.TubeGeometry(curve, 14, 0.15, 6, false)
   decor.add(stem, { color: (p) => mul3(TONES.stem, 0.7 + 0.5 * ((p[1] - y0) / tall)), surf: leafSurf, renormal: true })
   const head = pts[pts.length - 1].toArray()
   const f = norm3(face)
   const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), new THREE.Vector3(...f))
-  const hr = 0.72 * (tall * 0.1 + 0.75)
+  const hr = 0.86 * (tall * 0.1 + 0.75)
   const disc = new THREE.SphereGeometry(hr * 0.66, 14, 8, 0, TAU, 0, Math.PI / 2)
   disc.rotateX(Math.PI / 2)
   disc.scale(1, 1, 0.45)
   const place = new THREE.Matrix4().makeRotationFromQuaternion(q).setPosition(head[0] + f[0] * 0.12, head[1] + f[1] * 0.12, head[2] + f[2] * 0.12)
-  decor.add(disc, { matrix: place, color: (p) => mul3(TONES.seed, 0.7 + 1.2 * noise(p[0] * 6, p[1] * 6, p[2] * 6)), surf: [surf(KIND.leaf, 0.9), 0], renormal: true })
+  decor.add(disc, { matrix: place, color: (p) => {
+      const ring = clamp(Math.hypot(p[0] - head[0] - f[0] * 0.12, p[1] - head[1] - f[1] * 0.12, p[2] - head[2] - f[2] * 0.12) / (hr * 0.66))
+      return mul3(mix3(TONES.seedHeart, mix3(TONES.seed, TONES.seedRim, smooth(0.55, 1, ring)), smooth(0.15, 0.5, ring)), 0.7 + 1.1 * noise(p[0] * 9, p[1] * 9, p[2] * 9))
+    }, surf: [surf(KIND.leaf, 0.9), 0], renormal: true })
   const back = new THREE.CircleGeometry(hr * 1.05, 14)
   back.rotateY(Math.PI)
   decor.add(back, { matrix: place, color: mul3(TONES.stem, 0.8), surf: leafSurf, renormal: true })
   const pos = []
   const nor = []
   const col = []
-  for (const [count, len, turn, tilt] of [[15, 1.05, 0, 0.22], [13, 0.82, 0.21, 0.45]]) {
+  for (const [count, len, turn, tilt] of [[19, 1.05, 0, 0.14], [17, 0.9, 0.17, 0.34], [13, 0.62, 0.3, 0.6]]) {
     for (let i = 0; i < count; i++) {
       const a = (i / count) * TAU + turn + range(-0.06, 0.06)
       const pl = hr * len * range(1.05, 1.3)
-      const pw = hr * 0.27
+      const pw = hr * 0.2
+      const curl = range(-0.35, 0.1)
       const dirv = new THREE.Vector3(Math.cos(a), Math.sin(a), tilt * range(0.5, 1.3)).normalize()
       const sidev = new THREE.Vector3(-Math.sin(a), Math.cos(a), 0)
       const o = new THREE.Vector3(Math.cos(a) * hr * 0.5, Math.sin(a) * hr * 0.5, 0.02)
@@ -477,22 +485,24 @@ function sunflower(x, z, tall, face) {
       const M1 = o.clone().addScaledVector(dirv, pl * 0.55).addScaledVector(sidev, -pw)
       const M2 = o.clone().addScaledVector(dirv, pl * 0.55).addScaledVector(sidev, pw)
       const T = o.clone().addScaledVector(dirv, pl)
+      T.z += curl * pl
+      const pn = new THREE.Vector3(0.45 * Math.cos(a), 0.45 * Math.sin(a) + 0.2, 1).normalize().applyQuaternion(q)
       const tone = pick(TONES.petal)
-      for (const [v, s] of [[A, 0.62], [B, 0.62], [M2, 1], [A, 0.62], [M2, 1], [M1, 1], [M1, 1], [M2, 1], [T, 1.12]]) {
+      for (const [v, s] of [[A, 0.5], [B, 0.5], [M2, 0.95], [A, 0.5], [M2, 0.95], [M1, 0.95], [M1, 0.95], [M2, 0.95], [T, 1.2]]) {
         const w = v.clone().applyMatrix4(place)
         pos.push(w.x, w.y, w.z)
-        nor.push(f[0], f[1] + 0.3, f[2])
+        nor.push(pn.x, pn.y, pn.z)
         col.push(tone[0] * s, tone[1] * s, tone[2] * s)
       }
     }
   }
   soup(decor, pos, nor, col, () => [surf(KIND.leaf, 0.6), 0])
-  for (let i = 0; i < 4; i++) {
-    const t = 0.22 + 0.17 * i + range(-0.04, 0.04)
+  for (let i = 0; i < 7; i++) {
+    const t = 0.14 + 0.115 * i + range(-0.03, 0.03)
     const at = curve.getPoint(t).toArray()
     const a = i * 2.4 + range(-0.4, 0.4)
-    const d = [Math.cos(a), 0.25, Math.sin(a)]
-    const size = tall * 0.2 * range(0.8, 1.15)
+    const d = [Math.cos(a), range(-0.35, 0.2), Math.sin(a)]
+    const size = tall * 0.27 * range(0.75, 1.2) * (1 - 0.35 * t)
     const before = leafBits.pos.length
     leaf(at, d, size, mul3(pick(TONES.leaf), range(1, 1.5)))
     void before

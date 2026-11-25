@@ -24,19 +24,19 @@ const LIGHT = `light-${season}`
 const LAMP = { power: 3, reachMm: 12, flicker: 0.05, cycles: 3, phase: 0.1 }
 const WINDOW = { power: 0.9, reachMm: 8, flicker: 0.1, cycles: 5, phase: 0.4 }
 const NEAR = { lamp: { power: 1.8, reachMm: 7 }, pane: { power: 0.9, reachMm: 3 }, paper: { power: 0.5, reachMm: 2.2 } }
-const NEAR_WALL = { lamp: { power: 1.3, reachMm: 8, ends: 3 }, pane: { power: 1.2, reachMm: 4.5, ends: 3 }, paper: { power: 1.5, reachMm: 2.9, ends: 3 } }
+const NEAR_WALL = { lamp: { power: 1.8, reachMm: 8, ends: 3 }, pane: { power: 1.6, reachMm: 4.5, ends: 3 }, paper: { power: 2.6, reachMm: 3.6, ends: 3 } }
 const MIRROR = { lamp: 9, pane: 1.2, paper: 1.6, tight: 0.002, wide: 0.03, wideShare: 0.01, lowMm: 3.4 }
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
-const HALO_KIND = { lamp: { size: 3.6, rest: 0.14, hot: 0, bloom: 0.2 }, pane: { size: 2.2, rest: 0, hot: 0, bloom: 0.2 }, pool: { size: 5, rest: 0, hot: 0, bloom: 0.06 } }
+const HALO_KIND = { lamp: { size: 3.6, rest: 0.08, hot: 0, bloom: 0.2 }, pane: { size: 2.2, rest: 0, hot: 0, bloom: 0.2 }, pool: { size: 5, rest: 0, hot: 0, bloom: 0.06 } }
 const THROUGH = 6
-const LAMP_GLASS: Rgb = [1.5, 0.95, 0.42]
-const WALL_FILL = 2.0
-const SAND = { body: 4.2, floor: 0.8, wrap: 1.5, foot: 0.85, bump: 0.6, grainLow: 0.42, grain: 0.85, spark: 0.75, topFrom: 0.22, topTo: 0.62 }
+const LAMP_GLASS: Rgb = [1.9, 1.1, 0.38]
+const WALL_FILL = 2.8
+const SAND = { body: 4.2, floor: 0.8, wrap: 1.5, foot: 0.85, bump: 0.6, grainLow: 0.3, grain: 1.0, spark: 2.6, topFrom: 0.22, topTo: 0.62 }
 const TURF_LOOK = { tone: 0.5, fineMm: 0.05, clumpMm: 0.22, fill: 0.45, wrap: 0.5 }
-const GRASS_LOOK = { fill: 0.1, wrap: 1.0, through: 0.36, near: 2.1, sun: 13, sunRoot: 0.3 }
-const ROOF = { slate: [0.3, 0.34, 0.42] as Rgb, chimney: [0.5, 0.49, 0.46] as Rgb, railTop: [2.1, 1.6, 1.0] as Rgb, reachMm: 0.4 }
+const GRASS_LOOK = { fill: 0.1, wrap: 1.0, through: 0.36, near: 2.1, sun: 30, sunRoot: 0.35, shade: 0.6 }
+const ROOF = { slate: [0.3, 0.34, 0.42] as Rgb, chimney: [0.5, 0.49, 0.46] as Rgb, railTop: [1.5, 1.2, 0.85] as Rgb, door: [0.4, 0.2, 0.13] as Rgb, doorMm: 2.4, reachMm: 0.4 }
 const DARK_PANE = 0.07
-const WATER = { spark: 1.1, mass: 0.975, houseMm: 9.5, houseTall: 17, flat: 0.2, wobble: 0.8, rough: 0.035, ripple: 0.0045, fine: 0.0012, shoreFrom: 0.86, shoreTo: 1.0, sky: 1.6, skyFrom: -0.75, skyTo: 0.35, bankMm: 1.5, bankVary: 1.9, bankEdge: 0.35, bankDark: 0.975, env: 0.1, glint: 0.4, squash: 0.14, paperGlint: 2.4, post: 0.93, postMm: 0.6, postTall: 11.5, trunk: 0.975, trunkMm: 3.7, trunkTall: 26, body: 0.4 }
+const WATER = { spark: 1.1, mass: 0.975, houseMm: 9.5, houseTall: 17, flat: 0.2, wobble: 0.8, rough: 0.035, ripple: 0.0045, fine: 0.0012, shoreFrom: 0.9, shoreTo: 1.0, sky: 1.6, skyFrom: -0.75, skyTo: 0.35, bankMm: 1.5, bankVary: 1.9, bankEdge: 0.35, bankDark: 0.975, env: 0.1, glint: 0.4, squash: 0.14, paperGlint: 2.4, post: 0.93, postMm: 0.6, postTall: 11.5, trunk: 0.975, trunkMm: 3.7, trunkTall: 26, body: 0.4 }
 
 const flame = lampFlame()
 const mirrored: [number, number, number] = [flame[0], flame[1] - MIRROR.lowMm, flame[2]]
@@ -106,7 +106,7 @@ diffuseColor.rgb *= 1.0 + ${TURF_LOOK.tone.toFixed(2)} * (0.5 * (turfT.g - 0.5) 
 float sandAmt = max(smoothstep(0.0, 0.2, vSurf.y), smoothstep(${SAND.topFrom.toFixed(2)}, ${SAND.topTo.toFixed(2)}, vSurf.x + 0.25 * (turfT.g - 0.5)));
 float sandFineB = texture2D(map, vMapUv * 2.3 + 0.17).r;
 float sandGrain = turfT.r + 0.6 * sandFineB;
-diffuseColor.rgb *= mix(1.0, ${SAND.grainLow.toFixed(2)} + ${SAND.grain.toFixed(2)} * sandGrain + ${SAND.spark.toFixed(2)} * smoothstep(0.62, 0.8, turfT.r * (0.6 + 0.8 * sandFineB)), sandAmt);
+diffuseColor.rgb *= mix(1.0, ${SAND.grainLow.toFixed(2)} + ${SAND.grain.toFixed(2)} * sandGrain + ${SAND.spark.toFixed(2)} * smoothstep(0.5, 0.66, turfT.r * (0.6 + 0.8 * sandFineB)), sandAmt);
 `,
         )
         .replace(
@@ -143,13 +143,13 @@ function grassMaterial(): THREE.MeshStandardMaterial {
       shader.vertexShader = shader.vertexShader.replace('#include <uv_pars_vertex>', `#include <uv_pars_vertex>\n${SURFACE_VERT_PARS}`).replace('#include <uv_vertex>', `#include <uv_vertex>\n${SURFACE_VERT_MAIN}`)
       shader.fragmentShader = shader.fragmentShader
         .replace('#include <map_pars_fragment>', `#include <map_pars_fragment>\n${BUMP_GLSL}`)
-        .replace('#include <map_fragment>', 'diffuseColor.rgb *= 0.85 + 0.3 * texture2D(map, vMapUv * 3.0).g;')
+        .replace('#include <map_fragment>', `diffuseColor.rgb *= (0.85 + 0.3 * texture2D(map, vMapUv * 3.0).g) * mix(${GRASS_LOOK.shade.toFixed(2)}, 1.0, vSurf.y);`)
         .replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\nnormal *= faceDirection;')
       afterLight(
         shader,
         `reflectedLight.indirectDiffuse += vGlow * (uGlowGain * ${GRASS_LOOK.near.toFixed(2)}) * material.diffuseContribution;
 reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${GRASS_LOOK.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), ${GRASS_LOOK.wrap.toFixed(2)}) + ${GRASS_LOOK.through.toFixed(2)} * vSurf.x * pow(clamp(dot(normalize(vViewPosition), -stageKeyL), 0.0, 1.0), 2.0))) * material.diffuseContribution;
-reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${GRASS_LOOK.sun.toFixed(2)} * vSurf.y * vSurf.y * mix(${GRASS_LOOK.sunRoot.toFixed(2)}, 1.0, vSurf.x)) * mix(material.diffuseContribution, vec3(0.16, 0.14, 0.05), 0.4);`,
+reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${GRASS_LOOK.sun.toFixed(2)} * vSurf.y * vSurf.y * mix(${GRASS_LOOK.sunRoot.toFixed(2)}, 1.0, vSurf.x)) * mix(material.diffuseContribution, vec3(0.2, 0.17, 0.08), 0.5);`,
       )
     },
   })
@@ -233,7 +233,7 @@ vec3 waterLights(vec3 r) {
           '#include <map_fragment>',
           `
 float waterShore = smoothstep(${WATER.shoreFrom.toFixed(2)}, ${WATER.shoreTo.toFixed(2)}, vSurf.x + 0.03 * (texture2D(map, vMapUv * 0.8).g - 0.5));
-diffuseColor.rgb = mix(${glsl(tones.waterDeep)}, vec3(0.06, 0.047, 0.025), waterShore * waterShore);
+diffuseColor.rgb = mix(${glsl(tones.waterDeep)}, vec3(0.03, 0.025, 0.014), waterShore * waterShore);
 `,
         )
         .replace('#include <roughnessmap_fragment>', `float roughnessFactor = mix(${WATER.rough.toFixed(3)}, 0.22, waterShore * waterShore);`)
@@ -299,6 +299,7 @@ function dressed(g: THREE.BufferGeometry, sharedCount: number): THREE.BufferGeom
     const lum = 0.3 * C.getX(i) + 0.6 * C.getY(i) + 0.1 * C.getZ(i)
     if (solidDistance(x, y, z, chimney) < ROOF.reachMm) C.setXYZ(i, lum * ROOF.chimney[0] * 2, lum * ROOF.chimney[1] * 2, lum * ROOF.chimney[2] * 2)
     else if (solidDistance(x, y, z, roof) < ROOF.reachMm) C.setXYZ(i, lum * ROOF.slate[0] * 2, lum * ROOF.slate[1] * 2, lum * ROOF.slate[2] * 2)
+    else if (Math.hypot(x - anchors.door[0], z - anchors.door[2]) < ROOF.doorMm && C.getX(i) > 1.2 * C.getZ(i) && Math.abs(y - anchors.door[1]) < ROOF.doorMm * 1.6) C.setXYZ(i, C.getX(i) * ROOF.door[0], C.getY(i) * ROOF.door[1], C.getZ(i) * ROOF.door[2])
     else if (N.getY(i) > 0.6 && solidDistance(x, y, z, fence) < ROOF.reachMm) C.setXYZ(i, C.getX(i) * ROOF.railTop[0], C.getY(i) * ROOF.railTop[1], C.getZ(i) * ROOF.railTop[2])
   }
   C.needsUpdate = true
@@ -321,7 +322,7 @@ export function lights(): THREE.Object3D {
     glowPiece(villageGeometry('pane-gable'), (_i, w, h) => [GLOW.pane, w, h, 1]),
   ]
   const unlit = [glowPiece(villageGeometry('pane-side'), (_i, w, h) => [GLOW.pane, w, h, 2])]
-  const look = { bulb: 1.2, bulbCore: 2.2, glass: LAMP_GLASS, flame: tones.flame.map((v) => v * 6) as unknown as Rgb, room: tones.room.map((v) => v * 0.9) as unknown as Rgb, curtain: tones.curtain.map((v) => v * 1.5) as unknown as Rgb, frost: tones.haze.map((v) => v * 0.4) as unknown as Rgb, frostAmount: 0, flicker: 0.08, cycles: 3, through: THROUGH, paneHot: 0.14 }
+  const look = { bulb: 0.75, bulbCore: 1.7, glass: LAMP_GLASS, flame: tones.flame.map((v) => v * 6) as unknown as Rgb, room: tones.room.map((v) => v * 0.9) as unknown as Rgb, curtain: tones.curtain.map((v) => v * 1.5) as unknown as Rgb, frost: tones.haze.map((v) => v * 0.4) as unknown as Rgb, frostAmount: 0, flicker: 0.08, cycles: 3, through: THROUGH, paneHot: 0.14 }
   const lit = (x: number, z: number): [number, number, number] => [x, groundAt(x, z) + 1.5, z]
   const pools = [lit(flame[0] + 0.4, flame[2] + 1.6), lit(anchors.door[0] * 0.75 + flame[0] * 0.25, anchors.door[2] * 0.75 + flame[2] * 0.25)]
   const halos = new THREE.Mesh(haloGeometry([flame, anchors.window, ...pools], HALO.radiusMm, [HALO_KIND.lamp, HALO_KIND.pane, ...pools.map(() => HALO_KIND.pool)], HALO.wide), haloMaterial(LIGHT, tones.haloEdge, tones.haloCore, HALO, clock, storm))
