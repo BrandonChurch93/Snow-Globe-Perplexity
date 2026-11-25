@@ -47,15 +47,15 @@ export const look = {
     liftMm: 42,
     rest: 0.1,
     lip: 1.1,
-    lipLifted: 0.9,
+    lipLifted: 1.7,
     lipGlow: 1.35,
     lifted: 0.03,
     liftedMiddle: 0.02,
     liftedFromMm: 45,
     liftedToMm: 54,
-    liftedFront: 0.3,
+    liftedFront: 0.12,
     lean: 0.22,
-    bank: 1.6,
+    bank: 0.7,
     bankMm: 9,
     pale: [0.62, 1.0, 0.68],
     paleMm: 5,
@@ -78,6 +78,7 @@ export const look = {
     warm: 1.0,
     glow: 0.11,
     glowDeepMm: 8,
+    glowLifted: 0.8,
     rollRad: 0.55,
     bigMm: 96,
     fineMm: 37,
@@ -345,7 +346,7 @@ void main() {
     float turn = atan(dot(e, ${vec([0, ROLL_AXIS[2], -ROLL_AXIS[1]])}), e.x) / 6.2831853 - uFogTurn.x * mix(1.04, 0.96, r / ${f(RI)}) / 6.2831853 + ${f(F.lean)} * lat;
     float s1 = texture(uFogNoise, vec3(turn, 2.3 * lat + 0.17, r / 240.0 + 0.4)).r;
     float s2 = texture(uFogNoise, vec3(2.0 * turn + 0.31, 5.1 * lat + 0.5, r / 150.0 + 0.63)).r;
-    float strand = smoothstep(0.47, 0.62, 0.56 * s1 + 0.44 * s2 + 0.08 * (n.y - 0.5));
+    float strand = smoothstep(0.49, 0.6, 0.56 * s1 + 0.44 * s2 + 0.08 * (n.y - 0.5));
     strands = mix(1.0, mix(${f(F.swirlThin)} + ${f(F.swirl)} * strand * strand, 0.55 + 0.9 * strand, uFogTurn.y), lift);
     // The turning liquid throws it to the wall: thick round the scene and behind it, thin in the middle and before it, so
     // the house and the tree stand dark against the green. Only at the hardest of the shake does it fill the dome.
@@ -366,7 +367,7 @@ void main() {
   if (a < 0.0006) discard;
   float deep = exp(-max(h, 0.0) / ${f(F.glowDeepMm)});
   vec3 grid = stageGrid(p);
-  vec3 lit = stageCold(p) * ${f(F.cold)} + grid * ${f(F.warm)} + vec3(${f(F.glow)}) * mix(0.3, 1.0, deep) * (0.75 + 0.5 * n.y);
+  vec3 lit = stageCold(p) * ${f(F.cold)} + grid * ${f(F.warm)} + vec3(${f(F.glow)}) * mix(mix(0.3, 1.0, deep), 1.0, ${f(F.glowLifted)} * lift) * (0.75 + 0.5 * n.y);
   // Where it is thick it scatters more and goes pale: mint, not green.
   float thick = clamp(rho * ${f(F.paleMm)}, 0.0, 1.0);
   vec3 col = mix(${vec(F.tint)}, ${vec(F.pale)}, thick) * lit * (1.0 + ${f(F.paleGain)} * thick);
