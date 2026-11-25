@@ -55,11 +55,14 @@ export const look = {
     wave: 0.9,
     softMm: 22,
     gain: 0.14,
-    core: 2,
-    coreMm: 2.2,
-    glow: 0.45,
-    glowMm: 4.5,
-    bands: 1.5,
+    core: 3,
+    coreMm: 2.4,
+    glow: 0.7,
+    glowMm: 5,
+    bands: 2.2,
+    // the short bright rays round the hot knot, as the approved image has them: their strength and their reach
+    rays: 0.9,
+    raysMm: 7,
     liftPerMm: 2.2,
     tiltMm: 160,
     swing: 1,
@@ -205,7 +208,12 @@ void main() {
   folds += 0.65 * poolFold(h, o, 1.9 - 0.05 * s, 28.0, 8.0, 0.58, 0.2);
   folds += 0.6 * poolFold(h, o, 4.5 + 0.05 * s, 36.0, 6.0, 0.58, 4.4);
   folds += 0.55 * poolFold(h, o, 5.2 - 0.06 * s, -30.0, 6.0, 0.54, 1.8);
-  vec3 col = ${vec(P.gold)} * (${n(P.gain)} * soft + ${n(P.bands)} * folds) + ${vec(P.pale)} * (${n(P.core)} * core + ${n(P.glow)} * glow);
+  // the knot's short rays: two uneven fans of them, turning a little with the swing, gone a few millimetres out
+  float ang = atan(h.y, h.x) + 0.04 * s;
+  float len = sqrt(rr);
+  float fan = pow(abs(sin(ang * 6.5 + 1.3)), 26.0) * (0.55 + 0.45 * sin(ang * 3.0 + 0.7)) + 0.6 * pow(abs(sin(ang * 10.5 + 0.4)), 34.0) * (0.5 + 0.5 * sin(ang * 5.0 + 2.1));
+  float rays = fan * exp(-len / ${n(P.raysMm)}) * smoothstep(0.8, 3.0, len);
+  vec3 col = ${vec(P.gold)} * (${n(P.gain)} * soft + ${n(P.bands)} * folds + ${n(P.rays)} * rays) + ${vec(P.pale)} * (${n(P.core)} * core + ${n(P.glow)} * glow);
   gl_FragColor = vec4(col * there, 0.0);
 }`
 
