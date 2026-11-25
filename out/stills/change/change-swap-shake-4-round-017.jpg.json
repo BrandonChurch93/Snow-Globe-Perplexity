@@ -1,0 +1,160 @@
+{
+  "engineHash": "5a94146defd3d562",
+  "seasonHashes": {
+    "winter": "5c39d16f98d3d0be",
+    "spring": "e579a2c24f41ece7",
+    "summer": "364b4daf13dc8bb8",
+    "fall": "767926ecb026caa1"
+  },
+  "format": "preview",
+  "tier": "review",
+  "assets": "full",
+  "diagnostic": "",
+  "browser": "Google Chrome for Testing 147.0.7727.15",
+  "graphics": "software",
+  "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB",
+  "time": "2026-11-25T09:55:55.317Z",
+  "diag": "",
+  "layoutHash": "eaef1fec3b7393d1",
+  "spec": {
+    "kind": "motion",
+    "motion": "swap",
+    "source": "film",
+    "shot": "shake-4",
+    "stride": 2,
+    "frames": [
+      2808,
+      2812,
+      2816,
+      2820,
+      2824,
+      2828,
+      2832,
+      2836,
+      2840
+    ]
+  },
+  "caption": "Motion sheet 1 of 1: the swap of shake-4, frames 2808 to 2840, 4 frames apart at 60 frames a second, preview, review",
+  "width": 1341,
+  "height": 850,
+  "limits": {
+    "longEdge": 1400,
+    "maxPixels": 1140000
+  },
+  "layout": {
+    "cols": 3,
+    "rows": 3,
+    "cell": {
+      "width": 431,
+      "height": 242
+    },
+    "labelHeight": 24,
+    "gap": 12,
+    "rowGap": 14,
+    "margin": 12
+  },
+  "frames": [
+    {
+      "index": 2808,
+      "seconds": 46.8,
+      "file": "out/work/seq/film-preview-review/film-002808.png",
+      "at": {
+        "left": 12,
+        "top": 12,
+        "width": 431,
+        "height": 242
+      }
+    },
+    {
+      "index": 2812,
+      "seconds": 46.86666666666667,
+      "file": "out/work/seq/film-preview-review/film-002812.png",
+      "at": {
+        "left": 455,
+        "top": 12,
+        "width": 431,
+        "height": 242
+      }
+    },
+    {
+      "index": 2816,
+      "seconds": 46.93333333333333,
+      "file": "out/work/seq/film-preview-review/film-002816.png",
+      "at": {
+        "left": 898,
+        "top": 12,
+        "width": 431,
+        "height": 242
+      }
+    },
+    {
+      "index": 2820,
+      "seconds": 47,
+      "file": "out/work/seq/film-preview-review/film-002820.png",
+      "at": {
+        "left": 12,
+        "top": 292,
+        "width": 431,
+        "height": 242
+      }
+    },
+    {
+      "index": 2824,
+      "seconds": 47.06666666666667,
+      "file": "out/work/seq/film-preview-review/film-002824.png",
+      "at": {
+        "left": 455,
+        "top": 292,
+        "width": 431,
+        "height": 242
+      }
+    },
+    {
+      "index": 2828,
+      "seconds": 47.13333333333333,
+      "file": "out/work/seq/film-preview-review/film-002828.png",
+      "at": {
+        "left": 898,
+        "top": 292,
+        "width": 431,
+        "height": 242
+      }
+    },
+    {
+      "index": 2832,
+      "seconds": 47.2,
+      "file": "out/work/seq/film-preview-review/film-002832.png",
+      "at": {
+        "left": 12,
+        "top": 572,
+        "width": 431,
+        "height": 242
+      }
+    },
+    {
+      "index": 2836,
+      "seconds": 47.266666666666666,
+      "file": "out/work/seq/film-preview-review/film-002836.png",
+      "at": {
+        "left": 455,
+        "top": 572,
+        "width": 431,
+        "height": 242
+      }
+    },
+    {
+      "index": 2840,
+      "seconds": 47.333333333333336,
+      "file": "out/work/seq/film-preview-review/film-002840.png",
+      "at": {
+        "left": 898,
+        "top": 572,
+        "width": 431,
+        "height": 242
+      }
+    }
+  ],
+  "keptFrom": "out/work/sheets/change-swap-shake-4-round-017.jpg",
+  "sourceSha256": "daeb2230b3ab74a61482ee97a950aa581038cfe7c9f08e42e835fea0dd7cf4b4",
+  "keptAt": "2026-11-25T11:49:00.519Z"
+}
