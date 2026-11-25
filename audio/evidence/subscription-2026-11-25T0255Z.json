@@ -1,0 +1,12 @@
+{
+ "subscription": {
+  "tier": "creator",
+  "character_count": 130996,
+  "character_limit": 131000,
+  "can_extend_character_limit": false,
+  "allowed_to_extend_character_limit": false,
+  "next_character_count_reset_unix": 1798056524,
+  "status": "active"
+ },
+ "note": "Reduced by the Builder before this file reached main: only the counter fields of GET /v1/user/subscription are kept; billing fields are left out."
+}

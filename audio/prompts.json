@@ -44,6 +44,121 @@
       "seconds": 1,
       "influence": 0.6,
       "loop": false
+    },
+    "shake-spring": {
+      "text": "Water sloshing and churning hard back and forth inside a sealed half full bottle that is shaken six times: heavy wet sloshes and gulps of water slapping its walls, full and loud",
+      "seconds": 2.6,
+      "influence": 0.6,
+      "loop": false,
+      "note": "petals make no sound of their own, so spring is the water alone: one material, one event",
+      "state": "not made: no credits",
+      "takesUsed": 0
+    },
+    "shake-summer": {
+      "text": "Water, sand and dry seeds sloshing and churning hard inside a sealed jar that is shaken back and forth six times: heavy wet sloshes with the seeds rattling and the sand hissing against its walls, full and loud",
+      "seconds": 2.6,
+      "influence": 0.6,
+      "loop": false,
+      "note": "one jar that holds everything; the second winter shake, asked this way, came back as liquid with small hard things rattling in it, which is wrong for snow and right for seeds",
+      "state": "not made: no credits",
+      "takesUsed": 0
+    },
+    "shake-fall": {
+      "text": "Water and small dry wooden beads sloshing and rattling hard inside a sealed hollow wooden flask that is shaken back and forth six times: heavy wet sloshes, a hollow knocking rattle and a dry papery rustle of leaves, full and loud",
+      "seconds": 2.6,
+      "influence": 0.6,
+      "loop": false,
+      "note": "one hollow vessel that holds everything",
+      "state": "not made: no credits",
+      "takesUsed": 0
+    },
+    "land-spring": {
+      "text": "A heavy stone mortar set down hard into a shallow puddle on a marble countertop: one deep heavy thud with a wet splash of drops and a short rush of air pushed out from under it",
+      "seconds": 2,
+      "influence": 0.6,
+      "loop": false,
+      "note": "one real event that holds the set down, the water and the air; asked at 2 s and cut to the cue by the chain",
+      "state": "not made: no credits",
+      "takesUsed": 0
+    },
+    "land-summer": {
+      "text": "A heavy brass bowl full of dry sand set down hard on a marble countertop: one deep heavy thud with a warm ringing of the brass and the sand hissing as it settles",
+      "seconds": 2,
+      "influence": 0.6,
+      "loop": false,
+      "note": "one real object that holds the set down, the warm chime and the sand",
+      "state": "not made: no credits",
+      "takesUsed": 0
+    },
+    "land-fall": {
+      "text": "A heavy iron cauldron set down hard on an old wooden table: one deep heavy thud, the wood creaking long under the weight, and a low dark hum ringing on in the iron",
+      "seconds": 2,
+      "influence": 0.6,
+      "loop": false,
+      "note": "one real object that holds the set down, the creak and the low tone; no moan, groan or howl in the text, which could bring a voice",
+      "state": "not made: no credits",
+      "takesUsed": 0
+    },
+    "amb-spring": {
+      "text": "Steady light rain falling on leaves and wet ground in a garden: one even full patter with no gusts and no thunder, and a few small songbirds chirping far away now and then",
+      "seconds": 20,
+      "influence": 0.5,
+      "loop": false,
+      "note": "one steady bed, the detail far away and sparse, loop false, no word for quiet",
+      "state": "not made: no credits",
+      "takesUsed": 0
+    },
+    "amb-summer": {
+      "text": "A field of crickets chirping steadily on a warm summer night: one even full chorus, with a slow warm breeze moving through dry grass far away",
+      "seconds": 20,
+      "influence": 0.5,
+      "loop": false,
+      "state": "not made: no credits",
+      "takesUsed": 0
+    },
+    "amb-fall": {
+      "text": "Autumn wind blowing steadily through bare trees with dry leaves rustling and skittering along the ground the whole time, and a low hollow drone of wind in a chimney far away",
+      "seconds": 20,
+      "influence": 0.5,
+      "loop": false,
+      "note": "the eerie tone is asked for as wind in a chimney: the word eerie alone could bring music or a voice",
+      "state": "not made: no credits",
+      "takesUsed": 0
+    },
+    "music-box": {
+      "text": "The clockwork mechanism of a small wind-up toy turning with no tune: a steady fine ticking and whirring of tiny brass gears, even and dry",
+      "seconds": 2,
+      "influence": 0.6,
+      "loop": false,
+      "note": "the mechanism only; the words music box would bring a tune, which the family line forbids",
+      "state": "not made: no credits",
+      "takesUsed": 0
+    },
+    "key-tap": {
+      "text": "One single key of a computer keyboard pressed once: one short muted low plastic clack, dull and dry",
+      "seconds": 0.5,
+      "influence": 0.6,
+      "loop": false,
+      "note": "asked at the minimum of 0.5 s; the chain cuts it to 0.1 s; heard with silence around it",
+      "state": "not made: no credits",
+      "takesUsed": 0
+    },
+    "ui-send": {
+      "text": "One firm press of a single large rubber button: one short low rounded click with a small thump, dry",
+      "seconds": 0.5,
+      "influence": 0.6,
+      "loop": false,
+      "state": "not made: no credits",
+      "takesUsed": 0
+    },
+    "riser": {
+      "text": "A rush of air rising quickly: one whoosh of wind that swells from nothing to full and stops short at its loudest",
+      "seconds": 1.2,
+      "influence": 0.6,
+      "loop": false,
+      "note": "asked at the length of the cue so the swell ends where the cue ends; the word breath is left out because the listener is asked about breath",
+      "state": "not made: no credits",
+      "takesUsed": 0
     }
   },
   "takes": [
@@ -262,7 +377,9 @@
     "Ask for one real event that holds everything in the cue's line, never two events in a row: every take that named two things gave one of them. The third shake take named water in a bottle and a strap of sleigh bells and came back as bells alone.",
     "A heavy thing named by its material and the surface it leaves, a stone mortar on a marble countertop, gave the first scrape that was heard as a heavy object leaving stone. Dragged and gritty, without the materials, gave animal grunts.",
     "A tick asked for on wood, with no glass and no metal in the text, came back dull and under 1 kHz. The listener must hear a file under half a second with silence around it: the bare file was heard as a bell, the padded copy as a dry click.",
-    "A cue whose line holds two materials at once, liquid in glass and bells, did not come from one prompt in three takes. In a review round ask for the two layers as two cues and let the chain lay them together."
+    "A cue whose line holds two materials at once, liquid in glass and bells, did not come from one prompt in three takes. In a review round ask for the two layers as two cues and let the chain lay them together.",
+    "The composition plan endpoint, POST /v1/music/plan, costs nothing (the counter read 130996 before and after the call of 02:54 UTC on November 25) and gave five sections of exactly 12000 ms when the prompt named five sections of exactly 12 seconds. Its answer is positive_global_styles, negative_global_styles and sections, each with section_name, positive_local_styles, negative_local_styles, duration_ms and lines.",
+    "When the account is out of credits the two endpoints answer HTTP 401, not 402: sound effects with code quota_exceeded and the credits left and wanted in the message, music with code insufficient_credits. A refused call costs nothing and is not a take."
   ],
   "kept": {
     "glass-clink": 2,
@@ -282,6 +399,125 @@
     "amb-winter": 0,
     "glass-clink": 1,
     "ui-tick": 1,
-    "ui-sound-on": 2
+    "ui-sound-on": 2,
+    "shake-spring": 3,
+    "land-spring": 3,
+    "amb-spring": 3,
+    "shake-summer": 3,
+    "land-summer": 3,
+    "amb-summer": 3,
+    "shake-fall": 3,
+    "land-fall": 3,
+    "amb-fall": 3,
+    "music-box": 3,
+    "key-tap": 3,
+    "ui-send": 3,
+    "riser": 3,
+    "music-one-piece": 3,
+    "music-winter": 3,
+    "music-spring": 3,
+    "music-summer": 3,
+    "music-fall": 3
+  },
+  "music": {
+    "familyLine": "instrumental, no vocals, no spoken words, clean ending",
+    "note": "Every music prompt ends with the family line, word for word. Lengths come from the default grid: a bar is 4 beats at 100 beats a minute, 2.4 s. The film is 25 bars, 60 s, in five sections of 5 bars, 12 s each (a hold of 4 bars and its shake; the close is 5 bars). A season track is 12 bars, 28.8 s: the mix takes its first 5 bars, the second winter section takes the last 5 bars of the winter track, and the app loop takes 8 bars.",
+    "pieces": {
+      "music-one-piece": {
+        "endpoint": "POST /v1/music",
+        "how": "composition_plan",
+        "plan": "audio/plans/one-piece.json",
+        "music_length_ms": 60000,
+        "sections_ms": [
+          12000,
+          12000,
+          12000,
+          12000,
+          12000
+        ],
+        "state": "not made: no credits",
+        "takesUsed": 0
+      },
+      "music-winter": {
+        "endpoint": "POST /v1/music",
+        "how": "prompt",
+        "music_length_ms": 28800,
+        "force_instrumental": true,
+        "prompt": "A warm orchestral Christmas piece at exactly 100 beats per minute in 4/4, twelve bars long: sleigh bells keeping the beat, a celesta carrying one short simple melody, soft choir pads and low strings under it. It starts on the first downbeat with no pickup and no lead-in, grows fuller with full strings through its last five bars and resolves on its last bar, instrumental, no vocals, no spoken words, clean ending",
+        "state": "not made: no credits",
+        "takesUsed": 0
+      },
+      "music-spring": {
+        "endpoint": "POST /v1/music",
+        "how": "prompt",
+        "music_length_ms": 28800,
+        "force_instrumental": true,
+        "prompt": "A light and airy piece at exactly 100 beats per minute in 4/4, twelve bars long: a harp in flowing arpeggios, a flute carrying one short simple melody, plucked strings marking the beat, fresh and bright. It starts on the first downbeat with no pickup and no lead-in and holds one even feel, instrumental, no vocals, no spoken words, clean ending",
+        "state": "not made: no credits",
+        "takesUsed": 0
+      },
+      "music-summer": {
+        "endpoint": "POST /v1/music",
+        "how": "prompt",
+        "music_length_ms": 28800,
+        "force_instrumental": true,
+        "prompt": "A warm and unhurried piece at exactly 100 beats per minute in 4/4, twelve bars long: a nylon string guitar carrying one short simple melody, a soft marimba marking the beat, a golden dusk. It starts on the first downbeat with no pickup and no lead-in and holds one even feel, instrumental, no vocals, no spoken words, clean ending",
+        "state": "not made: no credits",
+        "takesUsed": 0
+      },
+      "music-fall": {
+        "endpoint": "POST /v1/music",
+        "how": "prompt",
+        "music_length_ms": 28800,
+        "force_instrumental": true,
+        "prompt": "A Halloween piece at exactly 100 beats per minute in 4/4, twelve bars long: a detuned music box and a piano carrying one short simple melody over low strings, with eerie sounds in the music itself, creaks, a far bell and wind across the strings. It starts on the first downbeat with no pickup and no lead-in and holds one even feel, instrumental, no vocals, no spoken words, clean ending",
+        "state": "not made: no credits",
+        "takesUsed": 0
+      }
+    },
+    "takes": []
+  },
+  "blocked": {
+    "since": "2026-11-25T02:52Z",
+    "what": "The ElevenLabs account has 4 of 131000 credits left (GET /v1/user/subscription, 02:51 UTC) and may not be extended; it resets 2026-12-23 20:08 UTC. The first take of Phase 4, shake-spring, was refused: HTTP 401 quota_exceeded, 29 credits wanted. No take was counted. Every text below is written and waits for credits. The music endpoint, asked once at 02:58:33 UTC with the first take of music-spring, answered HTTP 401 insufficient_credits; nothing was filed.",
+    "counter": [
+      {
+        "time": "2026-11-25T02:51:42Z",
+        "used": 130996,
+        "limit": 131000
+      },
+      {
+        "time": "2026-11-25T02:55:12Z",
+        "used": 130996,
+        "limit": 131000
+      },
+      {
+        "time": "2026-11-25T02:58:38Z",
+        "used": 130996,
+        "limit": 131000
+      }
+    ],
+    "evidence": "audio/evidence/",
+    "howToGoOn": "audio/RECIPE.md"
+  },
+  "notMade": {
+    "shake-spring": "not made: no credits; 0 takes used, 3 left",
+    "land-spring": "not made: no credits; 0 takes used, 3 left",
+    "amb-spring": "not made: no credits; 0 takes used, 3 left",
+    "shake-summer": "not made: no credits; 0 takes used, 3 left",
+    "land-summer": "not made: no credits; 0 takes used, 3 left",
+    "amb-summer": "not made: no credits; 0 takes used, 3 left",
+    "shake-fall": "not made: no credits; 0 takes used, 3 left",
+    "land-fall": "not made: no credits; 0 takes used, 3 left",
+    "amb-fall": "not made: no credits; 0 takes used, 3 left",
+    "music-box": "not made: no credits; 0 takes used, 3 left",
+    "key-tap": "not made: no credits; 0 takes used, 3 left",
+    "ui-send": "not made: no credits; 0 takes used, 3 left",
+    "riser": "not made: no credits; 0 takes used, 3 left",
+    "music-one-piece": "not made: no credits; 0 takes used, 3 left",
+    "music-winter": "not made: no credits; 0 takes used, 3 left",
+    "music-spring": "not made: no credits; 0 takes used, 3 left",
+    "music-summer": "not made: no credits; 0 takes used, 3 left",
+    "music-fall": "not made: no credits; 0 takes used, 3 left"
   }
 }
