@@ -1292,6 +1292,8 @@ none
 
 - 03:05 UTC Nov 25: `0fa0c59` pushed; the direct push works again (it failed from 03:02 to 03:04). The remote branch `agent/p4-sound` deleted (decision 80).
 
+- 03:12 to 03:16 UTC Nov 25: the same failure again ("could not read Username for 'https://github.com'"): the push of `8d2af6e` failed once and went through 12 seconds later; the push of `bdccac1` failed twice in a row. Retried at the next commit, as the rule says.
+
 ## Session log
 
 One entry per task: when it started, what it did, where it stopped.
