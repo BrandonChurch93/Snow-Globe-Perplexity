@@ -1,10 +1,10 @@
-# Report: fall miniature (`miniature-fall`), by `fall_mini`, 25 Nov 2026, 02:45 UTC
+# Report: fall miniature (`miniature-fall`), by `fall_mini`, 25 Nov 2026, 02:42 UTC
 
 - Branch `agent/p4-fall_mini`, last commit `5e12700` (merge of `origin/main` at `192ccf3`), pushed 02:33. Looks branch `agent/p4-fall_mini-looks`; its tip holds this file and `HANDOVER.md`.
 - Stand-ins and fallbacks: none left. `standIns` is empty, nothing carries `userData.standIn`, the stand-in view is black over the part (0 of 94,111 pixels). No generated picture, no photograph.
 
 ## Still wrong, worst first, as a viewer would rank it
-1. Pale, soft ember puffs lie over the miniature: they hide the cottage front and trunk in the macro and sit as a cloud in the crown in the hero (pictures 09, 07). Not my files: they came with `main` at `5d9b6fe` (particle drawing and kinds).
+1. Pale, soft ember puffs lie over the miniature: they hide the cottage front and trunk in the macro and sit as a cloud in the crown in the hero (pictures 09, 07). Not my files (particle drawing and kinds): first seen after I merged `main` at `5d9b6fe`; my hero look of 02:14 did not show them.
 2. Ground and pond are dim and soft; the approved ground is crisp with a pale stone path, a tall dark fence and rock (picture 07). Most of the M3 gap.
 3. Trunk reads as a smooth dark cone; the approved trunk has deep lit ridges. Shared trunk, shared bark map.
 4. Limbs thinner and straighter than approved (shared limbs under my boughs and twigs).
