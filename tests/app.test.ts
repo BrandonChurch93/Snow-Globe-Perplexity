@@ -404,10 +404,10 @@ describe('touch', () => {
       const s = d.move(x, 300, t)
       if (s) stirs.push(s)
     }
-    const end = d.up()
-    if (end) stirs.push(end)
+    d.up()
     return { look, stirs, drag: d }
   }
+  const total = (stirs: { strength: number }[]): number => stirs.reduce((a, s) => a + s.strength, 0)
 
   it('a slow drag turns the view and stirs nothing', () => {
     const { look, stirs } = drag(0.4 * ref, 120)
@@ -421,26 +421,53 @@ describe('touch', () => {
     const slow = drag(0.4 * ref, 300).look
     const { look, stirs } = drag(6 * ref, 300)
     expect(stirs.length).toBeGreaterThan(0)
-    const s = stirs[0]!
-    expect(s.x).toBeGreaterThan(0.95)
-    expect(Math.abs(s.y)).toBeLessThan(0.2)
-    expect(s.strength).toBeGreaterThanOrEqual(TOUCH.leastStrength)
-    expect(s.strength).toBeLessThanOrEqual(1)
+    for (const s of stirs) {
+      expect(s.x).toBeGreaterThan(0.95)
+      expect(Math.abs(s.y)).toBeLessThan(0.2)
+    }
     expect(Math.abs(look.yaw)).toBeLessThan(Math.abs(slow.yaw) * 0.35)
   })
 
-  it('a faster drag stirs harder', () => {
-    const a = drag(2.6 * ref, 300).stirs[0]!
-    const b = drag(8 * ref, 300).stirs[0]!
-    expect(b.strength).toBeGreaterThan(a.strength)
-    expect(b.strength).toBeCloseTo(1, 6)
+  it('a fast drag feeds the liquid while the pointer is down: many small pushes from the moment it is quick, and none at the release', () => {
+    const d = new Drag(new Look())
+    d.down(100, 300, 0, ref)
+    const dt = 1 / 120
+    const at: number[] = []
+    const got = []
+    for (let i = 1; i <= 36; i++) {
+      const s = d.move(100 + 3.3 * ref * dt * i, 300, dt * i)
+      if (s) {
+        at.push(i)
+        got.push(s)
+      }
+    }
+    expect(d.up()).toBeUndefined()
+    expect(at[0]! * dt).toBeLessThan(0.12)
+    expect(got.length).toBeGreaterThan(20)
+    expect(got.map((s) => s.begins)).toEqual([true, ...got.slice(1).map(() => false)])
+    for (const s of got.slice(1)) expect(s.strength).toBeLessThan(0.08)
+    expect(got[0]!.strength).toBeLessThan(0.25)
+    expect(total(got)).toBeGreaterThan(TOUCH.leastStrength)
+    expect(total(got)).toBeLessThanOrEqual(TOUCH.stirMost * (1 + (36 * dt) / TOUCH.stirRestSeconds))
+  })
+
+  it('a faster drag stirs harder, and a hold never gives more than its most and what it earns back meanwhile', () => {
+    const a = drag(2.6 * ref, 150)
+    const b = drag(8 * ref, 150)
+    expect(total(b.stirs)).toBeGreaterThan(total(a.stirs) * 1.5)
+    expect(b.stirs.at(-1)!.force).toBeCloseTo(1, 6)
+    expect(a.stirs.at(-1)!.force).toBeLessThan(0.7)
+    const long = total(drag(8 * ref, 4 * ref).stirs)
+    expect(long).toBeLessThanOrEqual(TOUCH.stirMost * (1 + 0.5 / TOUCH.stirRestSeconds) + 1e-9)
+    expect(long).toBeGreaterThan(TOUCH.stirMost)
   })
 
   it('a tap or a twitch does nothing', () => {
     const look = new Look()
     const d = new Drag(look)
     d.down(10, 10, 0, ref)
-    expect(d.up()).toBeNull()
+    d.up()
+    expect(d.move(400, 10, 0.01)).toBeNull()
     expect(look.yaw).toBe(0)
     expect(drag(6 * ref, 12).stirs).toEqual([])
   })
@@ -1355,14 +1382,23 @@ describe('the scripted replays of the app', () => {
     expect(s.run.session.shakes).toBe(0)
   })
 
-  it('stirs once with a quick drag and leaves the season and the camera where they were', () => {
+  it('stirs once with a quick drag, in small pushes while the pointer is down, and leaves the season and the camera where they were', () => {
     const s = play('stir')
+    const down = s.plan.events[0]!.frame
+    const up = s.plan.events[1]!.frame
+    s.run.advanceTo(down + 4)
+    expect(s.sim.stirred.length).toBeGreaterThan(0)
+    s.run.advanceTo(up)
+    const fed = s.sim.stirred.length
+    expect(fed).toBeGreaterThan(4)
+    const rates = s.sim.stirred.map((p) => Math.hypot(...p))
+    expect(Math.max(...rates)).toBeLessThan(TOUCH.stirRate * 0.25)
     s.run.advanceTo(s.plan.frameCount - 1)
     const r = s.run.record()
     expect(r.stirs).toBe(1)
-    expect(s.sim.stirred).toHaveLength(1)
-    expect(Math.hypot(...s.sim.stirred[0]!)).toBeGreaterThan(0)
+    expect(s.sim.stirred).toHaveLength(fed)
     expect(r.stirStrength).toBeGreaterThanOrEqual(TOUCH.leastStrength)
+    expect(r.stirStrength).toBeLessThanOrEqual(1)
     expect(r).toMatchObject({ season: first, busy: false })
     expect(s.run.session.shakes).toBe(0)
     expect(Math.abs(r.yawDeg)).toBeLessThan(0.5)
