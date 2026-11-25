@@ -1,0 +1,132 @@
+{
+  "id": "shake-spring",
+  "file": "shake-spring.wav",
+  "class": "impact",
+  "season": "spring",
+  "line": "Liquid sloshing and churning inside glass, with soft petals and water in it",
+  "seconds": 2.177,
+  "take": 2,
+  "takes": 2,
+  "round": "build",
+  "why": "The first take heard as liquid sloshing in a small vessel (open: a pour and a splash, wet and sloshing; fit: yes, inside a glass container), about six bursts in 1.7 s, no voice, no music",
+  "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+  "prompt": "Water sloshing back and forth inside a small sealed jar, half full, that is shaken six times in a steady rhythm from the first moment to the last: six quick wet sloshes and gurgles of water slapping the inside of its walls, tight and enclosed, full and loud, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+  "settings": {
+    "endpoint": "POST /v1/sound-generation",
+    "model": "default",
+    "duration_seconds": 2.6,
+    "prompt_influence": 0.6,
+    "loop": false,
+    "output_format": "pcm_48000",
+    "cost": 29
+  },
+  "chain": {
+    "settings": {
+      "trimDb": -50,
+      "padMs": 3,
+      "fadeInMs": 3,
+      "fadeOutMs": 180,
+      "lowCutHz": 30,
+      "loop": false,
+      "targetLufs": -18,
+      "capSeconds": 2.6
+    },
+    "steps": [
+      "low cut at 30 Hz, before the trim",
+      "trimmed 0 s in front and 0.383 s at the end",
+      "fade in 3 ms, fade out 180 ms",
+      "held 4.85 dB under -18 LUFS so the peak stays under -1 dB",
+      "level: 6.52 dB to -22.85 LUFS, measured as gated loudness over 400 ms blocks"
+    ],
+    "gainDb": 6.52,
+    "level": {
+      "measure": "gated",
+      "measuredAs": "gated loudness over 400 ms blocks",
+      "seconds": 2.177,
+      "beforeLufs": -29.36,
+      "afterLufs": -22.85,
+      "targetLufs": -18,
+      "truePeakDb": -1.15
+    }
+  },
+  "loop": null,
+  "measured": {
+    "seconds": 2.177,
+    "peakDb": -1.15,
+    "truePeakDb": -1.15,
+    "lufs": -22.85,
+    "lufsMeasure": "gated",
+    "soundLufs": null,
+    "offsetDb": null,
+    "rmsDb": -28.3,
+    "silenceFrontSeconds": 0,
+    "silenceEndSeconds": 0.122,
+    "soundSeconds": 2.055,
+    "tailDb": -72.54,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 1820,
+      "bands": {
+        "sub": 0.0003,
+        "low": 0.0009,
+        "lowMid": 0.3458,
+        "mid": 0.5703,
+        "high": 0.0756,
+        "air": 0.007
+      }
+    }
+  },
+  "ffmpeg": {
+    "lufs": -22.9,
+    "lra": 0,
+    "truePeakDb": -1.2
+  },
+  "takeMeasured": {
+    "seconds": 2.56,
+    "peakDb": -7.71,
+    "truePeakDb": -7.71,
+    "lufs": -29.36,
+    "lufsMeasure": "gated",
+    "soundLufs": null,
+    "offsetDb": null,
+    "rmsDb": -35.51,
+    "silenceFrontSeconds": 0,
+    "silenceEndSeconds": 0.185,
+    "soundSeconds": 2.375,
+    "tailDb": -80.04,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 1819,
+      "bands": {
+        "sub": 0.0011,
+        "low": 0.001,
+        "lowMid": 0.3455,
+        "mid": 0.5698,
+        "high": 0.0755,
+        "air": 0.0071
+      }
+    }
+  },
+  "answers": {
+    "verdict": "fits",
+    "why": "Numbers: 2.56 s filed, sound from 0.1 to 1.7 s in about six bursts (0.1, 0.5, 0.75, 1.0, 1.15, 1.5 s), then quiet; 92 percent of the energy between 250 Hz and 4 kHz, nothing under 250 Hz; peaky, so the chain holds it at -22.9 LUFS to keep the peak under -1 dB. Listener, open: liquid poured and splashing, wet, bubbly and sloshing, one continuous event, no voice, no music. Fit: yes, water sloshing and churning hard inside a glass container, nothing that does not belong. The open call calls it a pour and a splash, not a shake; it is small and enclosed where take 1 was a plunge into open water. Petals are silent, so the water alone carries the line.",
+    "listener": {
+      "line": "Liquid sloshing and churning inside glass, with soft petals and water in it",
+      "open": "1. I hear the brief sound of liquid being poured and splashing. It has a wet, bubbly, and sloshing character.\n2. There is one continuous sound event consisting of a quick pour and splash.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument.\n5. It starts abruptly with a heavy liquid dropping or pouring sound and ends quickly as the splashing subsides.",
+      "fit": "1. Yes, because the audio clearly features the sounds of water vigorously sloshing and churning inside a glass container.\n2. There are no additional sounds in the recording that do not belong to the description.\n3. No, there is no human voice, spoken word, or singing in it."
+    }
+  },
+  "source": {
+    "name": "shake-spring-2026-11-25T17-08-06-252Z.wav",
+    "bytes": 491598,
+    "sha256": "5cd529b3f39683db68f7a953749fcd5008b614c55f00f3a3a29a576f74fb7d35",
+    "codec": "pcm_s16le",
+    "sampleRate": 48000,
+    "channels": 2,
+    "seconds": 2.56,
+    "kbps": 1536
+  },
+  "takeSha256": "7d1306a6a232d658d56732fc371e2ceda4def8495d41b63a6605fc2b84833476",
+  "sha256": "e6abd21dd21a3ebf8d1e5b5a120cbc919c28d72c3ec23ecc1cb636f0f50c2f9c",
+  "time": "2026-11-25T17:09:12.495Z"
+}

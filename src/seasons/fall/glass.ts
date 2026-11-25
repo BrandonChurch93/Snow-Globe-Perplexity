@@ -4,7 +4,7 @@ import { viewCode } from '../../diagnostics/views'
 import { stageShader } from '../../core/materials'
 import { leanGlsl, loadLean } from '../../core/chunks/veil'
 import { ROLL_AXIS } from '../../globe/liquid'
-import { shellUniforms } from '../../globe/shell'
+import { setGlass, shellUniforms } from '../../globe/shell'
 import { ROOM_GLSL, roomUniforms } from '../../scene/room'
 import { moundAt } from '../../scene/layout'
 import { surfaceUniforms } from '../../scene/surface'
@@ -24,6 +24,8 @@ const RS = config.globe.sphereDiameterMm / 2
 const RI = RS - config.globe.glassThicknessMm
 const GROUND = config.globe.islandLevelMm - (config.globe.baseHeightMm - config.globe.collarDepthMm + RS)
 const RAD = Math.PI / 180
+
+setGlass('fall', { windowTint: [0.8, 0.88, 1], windowGain: [0.15, 0.05, 1, 1], windowSoftDeg: 4, windowGrain: 0.5, rimTint: [0.5, 0.6, 0.55], wallTint: [0.44, 0.55, 0.48], ringCover: 0.35, strip: 0, bend: 0, ringThin: 1, rimClear: 0.3, topLine: 0, ringMottle: 0.3, ceiling: 0.15, roomHue: [0.85, 0.95, 1.1], roomHueOn: 1, windowShade: 0, rimGlow: 0 })
 
 export const look = {
   fog: {

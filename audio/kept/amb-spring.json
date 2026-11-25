@@ -1,0 +1,141 @@
+{
+  "id": "amb-spring",
+  "file": "amb-spring.wav",
+  "class": "ambience",
+  "season": "spring",
+  "line": "Birds and light rain, very quiet, an ambience that loops",
+  "seconds": 18.5,
+  "take": 2,
+  "takes": 2,
+  "round": "build",
+  "why": "An even bed of birds over continuous water (open: a small stream or fountain with a bird chirping; fit: yes, birds and light rain), level even within 5 dB, no voice, no music",
+  "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+  "prompt": "Steady rain falling in a garden at dawn, drumming on broad leaves and on wet ground, with many small songbirds singing in the trees all the time: one even full bed of rain and birdsong that stays the same from the first moment to the last, with no gusts and no thunder, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+  "settings": {
+    "endpoint": "POST /v1/sound-generation",
+    "model": "default",
+    "duration_seconds": 20,
+    "prompt_influence": 0.5,
+    "loop": false,
+    "output_format": "pcm_48000",
+    "cost": 220
+  },
+  "chain": {
+    "settings": {
+      "trimDb": -60,
+      "padMs": 0,
+      "fadeInMs": 0,
+      "fadeOutMs": 0,
+      "lowCutHz": 70,
+      "loop": true,
+      "crossSeconds": 1.5,
+      "targetLufs": -30,
+      "capSeconds": 20
+    },
+    "steps": [
+      "low cut at 70 Hz, before the trim",
+      "trimmed 0 s in front and 0 s at the end",
+      "looped: 18.5 s with 1.5 s of its end crossfaded into its start",
+      "level: 3.68 dB to -30 LUFS, measured as gated loudness over 400 ms blocks"
+    ],
+    "gainDb": 3.68,
+    "level": {
+      "measure": "gated",
+      "measuredAs": "gated loudness over 400 ms blocks",
+      "seconds": 18.5,
+      "beforeLufs": -33.68,
+      "afterLufs": -30,
+      "targetLufs": -30,
+      "truePeakDb": -7.12
+    }
+  },
+  "loop": {
+    "seconds": 18.5,
+    "crossSeconds": 1.5,
+    "seam": {
+      "jump": 0.00267,
+      "typicalStep": 0.010054,
+      "ratio": 0.27,
+      "levelStepDb": 3.71
+    }
+  },
+  "measured": {
+    "seconds": 18.5,
+    "peakDb": -7.21,
+    "truePeakDb": -7.12,
+    "lufs": -30,
+    "lufsMeasure": "gated",
+    "soundLufs": null,
+    "offsetDb": null,
+    "rmsDb": -36.31,
+    "silenceFrontSeconds": 0,
+    "silenceEndSeconds": 0,
+    "soundSeconds": 18.5,
+    "tailDb": -41.08,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 7420,
+      "bands": {
+        "sub": 0,
+        "low": 0.0007,
+        "lowMid": 0.0035,
+        "mid": 0.1447,
+        "high": 0.6354,
+        "air": 0.2157
+      }
+    }
+  },
+  "ffmpeg": {
+    "lufs": -30,
+    "lra": 2,
+    "truePeakDb": -7.1
+  },
+  "takeMeasured": {
+    "seconds": 20,
+    "peakDb": -10.91,
+    "truePeakDb": -10.84,
+    "lufs": -33.77,
+    "lufsMeasure": "gated",
+    "soundLufs": null,
+    "offsetDb": null,
+    "rmsDb": -40.07,
+    "silenceFrontSeconds": 0,
+    "silenceEndSeconds": 0,
+    "soundSeconds": 20,
+    "tailDb": -42.92,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 7468,
+      "bands": {
+        "sub": 0.0003,
+        "low": 0.0008,
+        "lowMid": 0.0035,
+        "mid": 0.1425,
+        "high": 0.6356,
+        "air": 0.2173
+      }
+    }
+  },
+  "answers": {
+    "verdict": "fits",
+    "why": "Numbers: 20 s filed, 18.5 s as a loop, one event, level even within 5 dB from second to second; bright: 64 percent of the energy between 4 and 10 kHz, 22 percent above 10 kHz, nothing under 1 kHz; the seam's jump is 0.27 of a typical step, the level steps 3.7 dB across it. Listener, open: continuous water flowing or splashing, like a small stream or a fountain, with a bird chirping clearly and repeatedly over it; no voice, no music; starts and ends in mid sound. Fit: yes, bird calls and a continuous patter of light rain, nothing that does not belong. The open call hears the water as a stream, not as rain; the spring miniature has a trickle of water in it.",
+    "listener": {
+      "line": "Birds and light rain, very quiet, an ambience that loops",
+      "open": "1. I hear the continuous sound of water flowing or splashing, like a small stream or fountain. Overlaid on this water sound is the clear, repetitive chirping of a bird.\n2. There are too many individual sound events to count because the water flows continuously and the bird chirps repeatedly.\n3. No, there is no human voice, spoken word, breath, or singing in this recording.\n4. No, there is no music, melody, or musical instrument present.\n5. The audio starts abruptly with the water and bird sounds already in progress. It ends suddenly while these natural sounds are still ongoing.",
+      "fit": "1. Yes, it fits the description because the audio consists entirely of gentle bird calls and the soft, continuous patter of light rain. It creates a quiet, steady ambient atmosphere that serves as a seamless background loop.\n2. There is nothing in the sound that does not belong to the description. \n3. No, there is no human voice, spoken word, or singing in the audio."
+    }
+  },
+  "source": {
+    "name": "amb-spring-2026-11-25T17-14-22-652Z.wav",
+    "bytes": 3840078,
+    "sha256": "9e9f0d24a6c3a2cb9259140725400b3d574db43d312aee220f5b69547b972cd0",
+    "codec": "pcm_s16le",
+    "sampleRate": 48000,
+    "channels": 2,
+    "seconds": 20,
+    "kbps": 1536
+  },
+  "takeSha256": "9a046d871d6d254616e2bf630d9b601dcf844220c32d9b89a8e00bce8c030ad9",
+  "sha256": "8201e37f095b1644d48d18c13a2bdc63622f7880ed2a6cc79406ce1b38dbd35c",
+  "time": "2026-11-25T17:15:18.053Z"
+}
