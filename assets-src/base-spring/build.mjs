@@ -199,7 +199,7 @@ for (const p of trickle.samples) p.w = widthAt(p.t)
 console.log(`profile ${mer.total.toFixed(1)} mm long, the shoulder at ${S_TOP.toFixed(1)}; field ${W} by ${H}; trickle ${trickle.length.toFixed(1)} mm`)
 
 const cob = voronoi(15, 10.5, 11, 0.95)
-const tuft = voronoi(3.6, 3.6, 57, 0.95, 0)
+const tuft = voronoi(4.6, 4.2, 57, 1.0, 1.6)
 const rock = new Float32Array(W * H)
 const moss = new Float32Array(W * H)
 for (let y = 0; y < H; y++) {
@@ -252,6 +252,7 @@ for (let k = 0; k < W * H; k++) {
 
 const rockWide = blur(rock, W, H, 2.2 / MM_X, true, false)
 const mossSoft = blur(moss, W, H, 1.3 / MM_X, true, false)
+const rockBroad = blur(rockWide, W, H, 4 / MM_X, true, false)
 const height = new Float32Array(W * H)
 for (let y = 0; y < H; y++) {
   const s = y * MM_Y
@@ -260,10 +261,10 @@ for (let y = 0; y < H; y++) {
   for (let x = 0; x < W; x++) {
     const k = y * W + x
     const c = moss[k]
-    const mound = 1 - clamp(tuft.f1[k] / 3.1) ** 2
-    const cushion = 0.5 * mound + 0.5 * fbm((x / W) * 150, (y / H) * 22, 150, 22, 131, 3)
-    const thick = (0.5 + 1.5 * cushion + 1.5 * top * seat + 0.5 * (tuft.id[k] - 0.5)) * smooth(0.12, 0.95, c) * smooth(0.3, 0.92, mossSoft[k])
-    height[k] = mix(rock[k], Math.max(rock[k], rockWide[k] + 0.15) + thick, smooth(0.12, 0.6, c))
+    const mound = smooth(0, 2.6, tuft.f2[k] - tuft.f1[k])
+    const cushion = 0.24 * mound + 0.4 * fbm((x / W) * 64, (y / H) * 10, 64, 10, 173, 3) + 0.36 * fbm((x / W) * 150, (y / H) * 22, 150, 22, 131, 3)
+    const thick = (0.3 + 1.9 * cushion + 1.5 * top * seat + 0.5 * (tuft.id[k] - 0.5)) * smooth(0.12, 0.95, c) * smooth(0.3, 0.92, mossSoft[k])
+    height[k] = mix(rock[k], Math.max(rock[k], mix(rockWide[k], rockBroad[k] + 0.5, 0.8) + 0.15) + thick, smooth(0.12, 0.6, c))
   }
 }
 

@@ -38,6 +38,7 @@ function blossomMaterial(): THREE.MeshStandardMaterial {
     inside: true,
     miniature: true,
     vertexColors: true,
+    color: new THREE.Color(tones.blossom[0], tones.blossom[1], tones.blossom[2]),
     roughness: BLOSSOM.rough,
     metalness: 0,
     side: THREE.DoubleSide,
