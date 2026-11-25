@@ -35,6 +35,9 @@ export const LIMITS = {
   edgeGuardSeconds: 0.05,
   combWindowSeconds: 12,
   combStepBpm: 0.25,
+  halfBeatShare: 0.5,
+  halfBeatTie: 0.1,
+  halfBeatEdge: 0.1,
 }
 
 const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v)
@@ -796,6 +799,81 @@ function countBars(barLines, beats, beatsPerBar, seconds) {
   return barLines.length - (lastEnd <= seconds + beat * 0.25 ? 0 : 1)
 }
 
+// Which of two pulses half a beat apart is the beat. The tracker follows the onsets, and where the notes run in
+// eighths both pulses carry onsets: which of the two its path ends on can then turn on the last half second of
+// the file. Asked only when the other pulse carries at least limits.halfBeatShare of the tracked one's onsets.
+// Then, in this order: the pulse on which the bass strikes and the harmony changes (the two as one statistic,
+// held to limits.barConfidence); the pulse with the stronger onsets, when the two differ by more than
+// limits.halfBeatTie; the pulse on which the first sound of the file lies, which moves the beat only where bass
+// and harmony do not lean the other way.
+export function beatPhase(frames, spec, onset, sums, seconds, limits = LIMITS, tones = null) {
+  const { env, frameRate, latency } = onset
+  const report = { share: 0, limit: limits.halfBeatShare, tested: false, method: 'onsets', moved: false, confidence: 0 }
+  if (frames.length < 6) return { report }
+  const period = median(frames.slice(1).map((f, i) => f - frames[i]))
+  const half = Math.round(period / 2)
+  let head = 0
+  while (head < frames.length - 2 && Math.abs(frames[head + 1] - frames[head] - period) > 0.25 * period) head++
+  const own = frames.slice(head)
+  const reach = Math.max(1, Math.round(limits.peakReachSeconds * frameRate))
+  const top = (f) => {
+    let v = 0
+    for (let j = Math.max(0, f - reach); j <= Math.min(env.length - 1, f + reach); j++) if (env[j] > v) v = env[j]
+    return v
+  }
+  const mean = (list) => list.reduce((acc, v) => acc + v, 0) / (list.length || 1)
+  const tops = own.map(top)
+  const strength = mean(tops)
+  const between = own.slice(1).map((f) => f - half)
+  report.share = round(strength > 0 ? mean(between.map(top)) / strength : 0, 3)
+  if (!(report.share >= limits.halfBeatShare)) return { report }
+  report.tested = true
+  const floor = limits.peakShare * median(tops)
+  const lead = own[0] - half
+  const other = lead >= -reach && top(lead) >= floor ? [Math.max(0, lead), ...between] : between
+  const a = measureBeats(own, onset, limits)
+  const b = measureBeats(other, onset, limits)
+  const grid = [...a.map((m) => ({ time: m.time, tracked: true })), ...b.map((m) => ({ time: m.time, tracked: false }))].sort((x, y) => x.time - y.time)
+  for (let i = 1; i < grid.length; i++) if (!(grid[i].time > grid[i - 1].time) || grid[i].tracked === grid[i - 1].tracked) return { report }
+  const features = beatFeatures(spec, onset, sums, grid.map((g) => g.time), seconds, limits, tones)
+  const lean = (values) => {
+    const d = []
+    for (let i = 2; i < grid.length; i++) if (grid[i].tracked) d.push(values[i] - values[i - 1])
+    if (d.length < 4) return 0
+    const m = mean(d)
+    const sd = Math.sqrt(d.reduce((acc, v) => acc + (v - m) ** 2, 0) / (d.length - 1))
+    return sd > 1e-12 ? (m / sd) * Math.sqrt(d.length) : 0
+  }
+  const bass = lean(features.bass)
+  const chords = features.chordChange.length === grid.length ? lean(features.chordChange) : null
+  const both = chords === null ? bass : (bass + chords) / Math.SQRT2
+  report.bass = round(bass, 2)
+  report.harmony = chords === null ? null : round(chords, 2)
+  report.confidence = round(Math.abs(both), 2)
+  let first = -1
+  for (let f = 1; f < env.length - 1 && first < 0; f++) if (env[f] >= floor && env[f] >= env[f - 1] && env[f] >= env[f + 1]) first = f
+  let away = 0.25
+  if (first >= 0) {
+    const off = (((first - own[0]) % period) + period) % period
+    away = Math.min(off, period - off) / period
+    report.firstSound = round(Math.max(0, peakAt(env, first) / frameRate - latency))
+  }
+  let move
+  if (Math.abs(both) >= limits.barConfidence) {
+    move = both < 0
+    report.method = 'bass and harmony'
+  } else if (Math.abs(report.share - 1) > limits.halfBeatTie) {
+    move = report.share > 1
+    report.method = 'stronger onsets'
+  } else if (Math.abs(away - 0.25) > limits.halfBeatEdge && !(away > 0.25 && both > 0)) {
+    move = away > 0.25
+    report.method = 'first sound'
+  } else return { report }
+  if (!move) return { report }
+  report.moved = true
+  return { report, measured: b }
+}
+
 function attempt(samples, sampleRate, setting, opts, limits) {
   const spec = spectra(samples, sampleRate, setting)
   const onset = onsetEnvelope(spec, setting)
@@ -814,7 +892,7 @@ function attempt(samples, sampleRate, setting, opts, limits) {
   const frames = trackBeats(onset.env, onset.frameRate, (a.bpm + c.bpm) / 2, setting.tightness)
   if (frames.length < 2 * opts.beatsPerBar) return { spec, onset, row }
   const measured = measureBeats(frames, onset, limits)
-  return { spec, onset, row, measured }
+  return { spec, onset, row, measured, frames }
 }
 
 export function analyse(samples, sampleRate, opts, limits = LIMITS, settings = SETTINGS) {
@@ -831,6 +909,8 @@ export function analyse(samples, sampleRate, opts, limits = LIMITS, settings = S
       const t = attempt(samples, sampleRate, setting, opts, limits)
       base ??= t
       if (t.measured) {
+        const half = beatPhase(t.frames, t.spec, t.onset, sums, seconds, limits, tones)
+        if (half.measured) t.measured = half.measured
         const smooth = smoothBeats(t.measured, beatsPerBar, limits)
         const end = Math.min(seconds, bounds.end)
         const times = extendBeats(smooth, bounds.start, end).filter((v) => v >= 0 && v < end - limits.peakReachSeconds)
@@ -844,7 +924,7 @@ export function analyse(samples, sampleRate, opts, limits = LIMITS, settings = S
         t.row.worst = Math.max(...steady.sections.map((r) => r.worst))
         tries.push(t.row)
         if (steady.pass) {
-          kept = { t, times, bar, found, steady }
+          kept = { t, times, bar, found, steady, half: half.report }
           break
         }
       } else tries.push(t.row)
@@ -853,7 +933,7 @@ export function analyse(samples, sampleRate, opts, limits = LIMITS, settings = S
   const head = { version: MAP_VERSION, seconds: round(seconds), beatsPerBar }
   const loudest = (sections) => sections.reduce((best, s) => (s.loudness > best.loudness ? s : best), sections[0]).start
   if (kept) {
-    const { t, times, bar, found, steady } = kept
+    const { t, times, bar, found, steady, half } = kept
     const beats = times.map((v) => round(v))
     const barLines = beats.filter((_, i) => i % beatsPerBar === bar.phase)
     return {
@@ -871,6 +951,7 @@ export function analyse(samples, sampleRate, opts, limits = LIMITS, settings = S
         tries,
         settings: t.row.settings,
         barPhase: bar,
+        beatPhase: half,
         beatsMeasured: t.measured.filter((m) => m.found).length,
         beatsTracked: t.measured.length,
         boundaries: found.boundaries,
@@ -907,6 +988,7 @@ export function analyse(samples, sampleRate, opts, limits = LIMITS, settings = S
       tries,
       settings: 'grid',
       barPhase: { phase: 0, method: 'grid', confidence: 0, scores: [] },
+      beatPhase: { share: 0, limit: limits.halfBeatShare, tested: false, method: 'grid', moved: false, confidence: 0 },
       beatsMeasured: 0,
       beatsTracked: 0,
       boundaries,
