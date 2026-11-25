@@ -37,16 +37,16 @@ Status 81 · 2026-11-25 07:05 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 07:18 UTC
-clock: phase 4, tick of 0.6 minutes
-phase 4: 7.17 h used of its 9.50 h box
-allowance (before the review): 29.46 h used of 36.00 h allowed
-all time before the review: 29.46 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 07:19 UTC
+clock: phase 4, tick of 1.0 minutes
+phase 4: 7.19 h used of its 9.50 h box
+allowance (before the review): 29.47 h used of 36.00 h allowed
+all time before the review: 29.47 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 12
+minutes since the last status: 13
 ```
 
 ## Phases
@@ -884,6 +884,8 @@ Numbered. What, why, and the date.
 86. **A third set of build agents for the fix pass after the second rounds** (05:35 UTC, Phase 4). The second set reached its three hour limit between 05:40 and 05:58, with Rounds 11, 12 and 13 just frozen on `e39ec6c` and one more round allowed for each season by the count and, so far, by the clock. Each of the ten jobs is handed to a fresh agent that reads its predecessor's `REPORT.md` and `HANDOVER.md`, the job messages before it and the digest of the first rounds' issues: `spring_mini3`, `spring_air3`, `summer_mini3`, `summer_air3`, `fall_mini3`, `fall_air3`, `kinds3` and `change_builder2` started at 05:35; `bases3` and `fall_base3` start when `bases2` and `fall_base2` hand over (limits 05:55 and 05:58). Same ownership of files as the second set, same rules, branches `agent/p4-<name>` (`agent/p4-change2` for the changes). They work the open lists first and the second rounds' issues as those arrive, and push what they would show by 08:32: the third rounds (14, 15, 16) and the floor round of `change` (17) are frozen on one commit at about 08:40, so that they start while the clock still prints `extra rounds: yes` (it stops at about 09:15). Ten build agents and six render agents are the sixteen that may work at once, so critics and jurors of the second rounds start only as render agents finish; fall's still pack waits for the first still renderer that is free (about 06:35). Not chosen: fewer build agents to free slots for critics sooner (it would bring the answers about half an hour earlier and cost two builders for three hours).
 
 87. **A one-line guard in the shared bump of the miniature, inside the seasons' rounds** (06:30 UTC, Phase 4). `spring_mini3` traced M1 `spring-base`'s 6 invalid values to `villageBump` in `src/miniature/surface.ts`: where a face is seen edge on it returns the normalised zero vector, which is not a number. The file is shared by all four miniatures and is not a builder's; a shared system is not reworked inside another unit's round. This is not a rework: the guard `dot(v, v) > 0.0 ? normalize(v) : n` answers only where the old line had no answer, so it changes no valid pixel. `spring_mini3` makes that one line as its own commit and proves it by winter's rest and landed hero stills staying byte-identical and spring's count of invalid values staying 0. Not chosen: a guard at each caller in each season's own files (three agents doing the same thing, and winter's caller left open), or leaving it for the polish rounds (spring's M1 would stay red through Round 14 for a known cause).
+
+88. **Fall's leaf count goes from 16,000 to 10,000** (07:19 UTC, Phase 4). `config/showcase.json`, `particles.fall`, the `leaf` row: 10,000 in place of the kit's 16,000, which is 0.625 times and inside the 0.5 to 2 times the Builder may tune. Why: at the landing the approved shake image shows the tree's trunk and crown and the cottage's roof through the leaves; at 16,000 ours hides the tree wholly, also with `fall_air3`'s fog sheets switched off and with `kinds3`'s shorter trails merged, so it is the count. `fall_air3` showed one landed hero still at 10,000 beside the approved image (kept as `out/work/reports-p4/fall_air3-l29-pair.jpg`), which I looked at: tree, crown and roof read and the density is close to the approved. At 06:57 it had asked for 9,000 and I had held the count until `kinds3`'s fix was merged and looked at. M4 and M5 were green at 9,000 before that merge (shake-3 0.918, shake-4 0.963): `change_builder2` measures all twelve lines again at final tier on the count of 10,000 before the third freeze. `fall_air3` raises the leaf row's share afloat so that the rest state keeps the approved's 60 to 70 leaves in the liquid. Not chosen: 9,000 (thinner than the approved shake once the trails are short); keeping 16,000 and thinning the leaves' opacity (the approved leaves are opaque shapes).
 
 ## Notes from Brandon
 
