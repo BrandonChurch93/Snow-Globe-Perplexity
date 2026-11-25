@@ -16,7 +16,7 @@ const pick = (list) => list[Math.floor(R() * list.length) % list.length]
 const range = (a, b) => a + (b - a) * R()
 
 const IVY = { leaves: 760, roses: 14, low: 4.5, size: 0.85 }
-const TURF = { lumpMm: 0.35, fineMm: 0.12, sandMm: 0.7, sandReach: 6.5, sandSides: 0.35 }
+const TURF = { lumpMm: 0.35, fineMm: 0.12, sandMm: 1.3, sandReach: 6.5, sandSides: 0.35 }
 const GRASS = { tufts: 21000, blades: 3, tall: [0.55, 1.6], wide: [0.11, 0.2], rimTall: 1.5, sandFrom: 0.12, sandTo: 0.55 }
 const LEVEL = { seed: 4107, medium: { back: 0.4, front: 0.72 }, low: { back: 0.25, front: 0.5 }, zFrom: -12, zTo: 6 }
 const STONE = { buried: 0.25, sink: 0.45, lumps: 0.22, tones: ['#8f887a', '#a39a88', '#7b7568', '#b0a692'] }
@@ -54,7 +54,7 @@ const blob = (x, z, cx, cz, rx, rz) => Math.exp(-(((x - cx) / rx) ** 2 + ((z - c
 // the trunk out to the sunflowers, behind the lamp, a little by the fence and on the near right bank.
 const sunAt = (x, z) => clamp((1.2 * blob(x, z, 27, 3, 11, 9) + 1.4 * blob(x, z, 3, -8, 9, 6) + 0.4 * blob(x, z, -24, 21, 6, 5) + 0.5 * blob(x, z, 24, 22, 9, 6)) * (0.5 + 1.0 * clamp(0.5 + 1.4 * fbm(x * 0.3 + 9, z * 0.3 + 4, 6.1, 2))))
 const turfAt = (x, z) => TURF.lumpMm * fbm(x * 0.22 + 3.1, z * 0.22 + 1.7, 2.2, 3) + TURF.fineMm * fbm(x * 0.9, z * 0.9, 5.5, 2)
-const topAt = (x, z) => L.groundAt(x, z) + turfAt(x, z) * smooth(0.98, 1.1, L.pondField(x, z)) + TURF.sandMm * sandAt(x, z) * (0.6 + 0.4 * fbm(x * 0.5, z * 0.5, 9, 2))
+const topAt = (x, z) => L.groundAt(x, z) + turfAt(x, z) * smooth(0.98, 1.1, L.pondField(x, z)) + TURF.sandMm * sandAt(x, z) * (0.38 + 1.1 * fbm(x * 0.26, z * 0.26, 9, 3))
 const keepHard = (role) => role === 'cottage' || role === 'chimney' || role === 'path' || role === 'post' || role === 'fence'
 const hardGap = (x, z) => L.solidDistance(x, L.groundAt(x, z) + 0.6, z, keepHard)
 const trunkGap = (x, z) => Math.hypot(x - L.tree.x, z - L.tree.z) - 5.2
@@ -248,7 +248,7 @@ const stoneList = []
     while (t < 60 && L.pondField(L.pond.x + Math.cos(a) * t, L.pond.z + Math.sin(a) * t) < field) t += 0.05
     return [L.pond.x + Math.cos(a) * t, L.pond.z + Math.sin(a) * t]
   }
-  const along = [...L.stones.map(([x, z], i) => [x, z, 2.3 + 0.22 * i, 1.7 + 0.12 * i]), ...[[262, 1.1, 1.7], [246, 1.09, 2.1], [230, 1.085, 2.5], [214, 1.08, 2.2], [199, 1.08, 2.7], [150, 1.07, 2.4], [133, 1.065, 1.9], [118, 1.065, 2.3], [38, 1.07, 2.0], [4, 1.075, 2.4], [318, 1.08, 1.8]].map(([deg, f, w]) => [...edgeAt(deg, f), w, w * range(0.62, 0.8)])]
+  const along = [...L.stones.map(([x, z], i) => [x, z, 2.3 + 0.22 * i, 1.7 + 0.12 * i]), ...[[262, 1.1, 1.7], [246, 1.09, 2.1], [230, 1.085, 2.5], [214, 1.08, 2.2], [199, 1.08, 2.7], [150, 1.07, 2.4], [133, 1.065, 1.9], [38, 1.07, 2.0], [4, 1.075, 2.4], [318, 1.08, 1.8]].map(([deg, f, w]) => [...edgeAt(deg, f), w, w * range(0.62, 0.8)])]
   for (const [x, z, rx, rz] of along) {
     const yaw = range(0, TAU)
     const h = rx * range(0.34, 0.46)
@@ -277,7 +277,7 @@ const stoneList = []
       g.deleteAttribute('uv')
     }
     const tone = mul3(lin(pick(STONE.tones)), range(1.3, 1.9))
-    decor.add(g, { color: (p) => mul3(tone, 0.22 + 1.35 * clamp((p[1] - (y - h)) / (2 * h)) ** 2 + 0.3 * (noise(p[0] * 3 + seed, p[1] * 3, p[2] * 3) - 0.5)), surf: [surf(KIND.stone, 0.85), 0], renormal: true })
+    decor.add(g, { color: (p) => mul3(tone, 0.4 + 1.2 * clamp((p[1] - (y - h)) / (2 * h)) ** 2 + 0.3 * (noise(p[0] * 3 + seed, p[1] * 3, p[2] * 3) - 0.5)), surf: [surf(KIND.stone, 0.85), 0], renormal: true })
     stoneList.push([x, z, rx, rz, yaw])
   }
 }
@@ -492,7 +492,7 @@ function sunflower(x, z, tall, face) {
     pts.push(new THREE.Vector3(x + bend[0] * t * t + lean[0] * s, y0 + tall * t - 0.35 * t * t * t, z + bend[2] * t * t + lean[1] * s))
   }
   const curve = new THREE.CatmullRomCurve3(pts)
-  const stem = new THREE.TubeGeometry(curve, 14, 0.15, 6, false)
+  const stem = new THREE.TubeGeometry(curve, 14, 0.27, 6, false)
   decor.add(stem, { color: (p) => mul3(TONES.stem, 0.7 + 0.5 * ((p[1] - y0) / tall)), surf: leafSurf, renormal: true })
   const head = pts[pts.length - 1].toArray()
   const f = norm3(face)
@@ -529,10 +529,18 @@ function sunflower(x, z, tall, face) {
       T.z += curl * pl
       const pn = new THREE.Vector3(0.45 * Math.cos(a), 0.45 * Math.sin(a) + 0.2, 1).normalize().applyQuaternion(q)
       const tone = pick(TONES.petal)
-      for (const [v, s] of [[A, 0.5], [B, 0.5], [M2, 0.95], [A, 0.5], [M2, 0.95], [M1, 0.95], [M1, 0.95], [M2, 0.95], [T, 1.2]]) {
+      // A petal is cupped: its two edges and its tip turn away from its middle, so the light models it and it is no flat cutout.
+      const cup = (side, along) => new THREE.Vector3(0.45 * Math.cos(a), 0.45 * Math.sin(a) + 0.2, 1).addScaledVector(sidev, 0.7 * side).addScaledVector(dirv, 0.6 * along).normalize().applyQuaternion(q)
+      const nA = cup(-0.5, -0.4)
+      const nB = cup(0.5, -0.4)
+      const n1 = cup(-1, 0.1)
+      const n2 = cup(1, 0.1)
+      const nT = cup(0, 0.9)
+      void pn
+      for (const [v, s, pv] of [[A, 0.42, nA], [B, 0.42, nB], [M2, 0.95, n2], [A, 0.42, nA], [M2, 0.95, n2], [M1, 0.8, n1], [M1, 0.8, n1], [M2, 0.95, n2], [T, 1.25, nT]]) {
         const w = v.clone().applyMatrix4(place)
         pos.push(w.x, w.y, w.z)
-        nor.push(pn.x, pn.y, pn.z)
+        nor.push(pv.x, pv.y, pv.z)
         col.push(tone[0] * s, tone[1] * s, tone[2] * s)
       }
     }

@@ -39,7 +39,7 @@ const LEAF_LIT = 'vec3(1.25, 1.05, 0.6)'
 const glsl3 = (c: Rgb3): string => `vec3(${c.map((v) => v.toFixed(3)).join(', ')})`
 const LEAF_VARY = { big: 0.36, mid: 1.15, scaleLow: 0.56, scale: 0.4, cool: [0.5, 0.74, 0.95] as Rgb3, warm: [1.15, 1.16, 0.86] as Rgb3 }
 const LEAF = { rim: 9, rimTight: 3.2, through: 0.7, tight: 3.0, fill: 1.0, wrap: 0.8, bump: 1.0, clumpDark: 0.3, clumpBright: 1.45, top: 30, card: 26, topEdge: 12.0, sky: 1.5, sunFrom: -0.7, sunTo: 0.3, goldMax: 1.7, topFrom: 0.06, topTo: 0.2, under: 0.3, side: 0.35, speck: 0.0 }
-const LANTERN = { rib: 0.34, gores: 12, ring: 0.22, ribs: 26, gain: 0.95, body: 0.52, core: 1.6, tight: 2.2, paper: 0.06, dim: 0.1, stepS: 0.04, rampS: 0.18, swayRad: 0.045, sway2: 0.6, kickRad: 0.16, kickFade: 1.2, kickHz: 1.3, cycles: 2 }
+const LANTERN = { rib: 0.13, gores: 12, ring: 0.1, ribs: 26, gain: 0.95, body: 0.62, core: 2.5, tight: 1.8, paper: 0.06, dim: 0.1, stepS: 0.04, rampS: 0.18, swayRad: 0.045, sway2: 0.6, kickRad: 0.16, kickFade: 1.2, kickHz: 1.3, cycles: 2 }
 const HALO = { radius: 2.9, strength: 0.11, hot: 0.0 }
 const HALO_EDGE: Rgb3 = [0.9, 0.36, 0.08]
 const HALO_CORE: Rgb3 = [1, 0.7, 0.34]
