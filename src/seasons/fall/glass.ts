@@ -49,6 +49,9 @@ export const look = {
     lip: 1.1,
     lipLifted: 1.7,
     lipGlow: 1.35,
+    lipDeepGlow: 10,
+    lipDeepMm: 8,
+    lipDeep: [0.5, 1.0, 0.42],
     lifted: 0.03,
     liftedMiddle: 0.02,
     liftedFromMm: 45,
@@ -72,7 +75,7 @@ export const look = {
     lumpMm: 3.5,
     lumpFineMm: 1.8,
     middle: 0.04,
-    haze: 0.001,
+    haze: 0.0016,
     hazeMm: 15,
     pour: 0.006,
     pourFallMm: 36,
@@ -85,7 +88,7 @@ export const look = {
     bigMm: 96,
     fineMm: 37,
   },
-  crack: { widthMm: 0.11, edgeMm: 0.055, shade: 0.4, bright: 2.6, sky: 1.4, key: 2.2, rim: 2.0, room: 1.6, jitterMm: 0.2, stepMm: 1.3, glintPerMm: 0.75 },
+  crack: { widthMm: 0.09, edgeMm: 0.05, shade: 0.3, bright: 3.6, sky: 0.5, key: 1.6, rim: 3.0, room: 2.4, jitterMm: 0.08, stepMm: 2.2, glintPerMm: 0.75, catchPerMm: 0.1, faint: 0.16, warm: [1.0, 0.8, 0.56] },
 }
 
 // The crack's path in the pixels of `references/approved/fall-rest.png` (glass circle centre (1417.1, 662.2), radius 564.3 px,
@@ -414,8 +417,11 @@ void main() {
   float a = 1.0 - exp(-rho);
   a *= seen;
   if (a < 0.003) discard;
-  vec3 lit = stageCold(p) * ${f(F.cold)} + stageGrid(p) * ${f(F.warm)} + vec3(${f(F.glow * F.lipGlow)}) * (0.75 + 0.5 * n.y);
-  vec3 col = ${vec(F.tint)} * lit;
+  // It glows from below: brightest at the collar, where it is deepest, and fading up to the ground's edge.
+  float low = clamp((edge - p.y) / ${f(F.lipDeepMm)}, 0.0, 1.0);
+  low *= low;
+  vec3 lit = stageCold(p) * ${f(F.cold)} + stageGrid(p) * ${f(F.warm)} + vec3(${f(F.glow * F.lipGlow)}) * (0.75 + 0.5 * n.y) * (1.0 + ${f(F.lipDeepGlow)} * low);
+  vec3 col = mix(${vec(F.tint)}, ${vec(F.lipDeep)}, low) * lit;
   gl_FragColor = vec4(col * a, a);
   // In the cover view the fog says how much of the miniature it hides, as the particles do.
   if (uDiag == ${viewCode('cover')}) {
@@ -502,8 +508,11 @@ void main() {
   vec3 r = reflect(v, face);
   vec3 light = uSky * ${f(C.sky)} + uKeyCol * (0.2 + ${f(C.key)} * pow(max(dot(r, uKeyDir), 0.0), 6.0)) + uRimCol * (0.15 + ${f(C.rim)} * pow(max(dot(r, uRimDir), 0.0), 4.0)) + stageRoomLights(r, 0.08) * ${f(C.room)};
   float flash = 0.3 + 2.4 * g * g * g + 1.5 * (1.0 - smoothstep(0.0, 0.05, run)) * step(uCrack.x, 0.999);
-  vec3 col = light * (${f(C.bright)} * flash) * edge + uSky * (0.3 * ${f(C.shade)} * core);
-  float alpha = max(${f(C.shade)} * core, 0.85 * edge);
+  // It catches the light in stretches and is a faint hair between them, fainter still toward its tips.
+  float stretch = crackGlint(tau * ${f(CRACK_LENGTH_MM * C.catchPerMm)} + 9.0 * floor(4.0 * atan(d.y - CRACK_A[0].y, d.x - CRACK_A[0].x) / 6.2831853 + 0.5) + 40.0);
+  float caught = mix(${f(C.faint)}, 1.0, smoothstep(0.38, 0.72, stretch)) * mix(1.0, 0.35, smoothstep(0.6, 1.0, tau));
+  vec3 col = light * ${vec(C.warm)} * (${f(C.bright)} * flash) * edge * caught + uSky * (0.3 * ${f(C.shade)} * core);
+  float alpha = max(${f(C.shade)} * core, 0.85 * edge * caught);
   if (alpha < 0.004) discard;
   gl_FragColor = vec4(col, alpha);
   if (uDiag != 0) {
@@ -530,8 +539,8 @@ function sheets(): THREE.BufferGeometry {
   const idx: number[] = []
   const reach = RI - 1.5
   // The liquid bends what is inside at every corner of a sheet, and most near the wall: the corners crowd there.
-  const cols = 18
-  const rows = 14
+  const cols = 16
+  const rows = 12
   const crowd = (t: number): number => Math.sin((t - 0.5) * Math.PI)
   for (let s = 0; s < F.sheets; s++) {
     const z = -reach + s * FOG_STEP
