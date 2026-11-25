@@ -470,6 +470,7 @@ function buildRock() {
     const c = pos[Math.max(j - 1, 0)][i]
     const d = pos[Math.min(j + 1, rows.length - 1)][i]
     let n = norm3(cross3(sub(b, a), sub(d, c)))
+    if (!(Math.hypot(n[0], n[1], n[2]) > 0.5)) n = [0, 1, 0]
     const out = turn(1, 0.3, az)
     if (n[0] * out[0] + n[1] * out[1] + n[2] * out[2] < 0) n = [-n[0], -n[1], -n[2]]
     const s = rows[j].s

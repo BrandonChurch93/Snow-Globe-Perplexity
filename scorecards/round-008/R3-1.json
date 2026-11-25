@@ -1,0 +1,112 @@
+{
+  "critic": "R3",
+  "score": 3,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "severe",
+      "file": "set-C-01.jpg",
+      "where": "the cherry tree crown, branches, and trunk inside the globe (also set-C-02.jpg crop 3, set-C-03.jpg crop 7, set-A-02.jpg crop 4)",
+      "what": "the blossom canopy is built from flat, sawtooth-edged pink polygon cards with no flower relief, pierced by pitch-black unshaded branch tubes that end in blunt chopped stumps above a smooth cylinder trunk with stretched painted strokes",
+      "fix": "replace the flat cutout cards and smooth trunk cylinder with 3D blossom clusters having subsurface translucency on tapered, bark-displaced branches and trunk"
+    },
+    {
+      "severity": "severe",
+      "file": "set-C-01.jpg",
+      "where": "the miniature cottage, chimney pot, tulips, and pond (also set-C-02.jpg crop 6, set-C-03.jpg crops 7, 10, 11)",
+      "what": "the cottage stone wall is a flat bump-mapped plane that slices off with zero relief at the gable trim, topped by an unlit pure-black primitive cylinder on the chimney, alongside striped low-poly cup tulips and opaque grey putty-like pond water",
+      "fix": "add real masonry and shingle displacement with beveled edges, shade and weather the chimney pot, replace low-poly tulips with thin translucent petals, and make the pond clear refractive water with depth and shoreline wetting"
+    },
+    {
+      "severity": "major",
+      "file": "set-C-02.jpg",
+      "where": "crops 3 and 6, floating and resting cherry petals (also set-C-03.jpg crops 7, 11, set-A-02.jpg crop 6, set-A-03.jpg crops 9, 10, set-B-03.jpg crops 9, 10)",
+      "what": "many petals have open holes or slots punched through their centers so they read as pink rings or C-loops, and shaded backfaces turn opaque dark maroon-black with no translucency",
+      "fix": "fix the petal geometry so every petal is a continuous notched sheet without central holes, and add two-sided thin-surface translucency so shaded petals stay pale warm pink"
+    },
+    {
+      "severity": "major",
+      "file": "set-C-02.jpg",
+      "where": "crop 6, petals on the cottage roof and gable (also fence, rocks, and tabletop in set-C-03.jpg crops 10, 11 and set-A-03.jpg crops 8, 10, 11, 12)",
+      "what": "petals pass straight through roof shingles, wooden gable trim, fence rails, stepping stones, base boulders, and the mirror surface along hard straight polygon intersection lines",
+      "fix": "place and simulate resting petals with surface collision and conform offsets so none clip into roofs, wood, stone, or the tabletop"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01.jpg",
+      "where": "the interior scene viewed through the glass sphere (also set-B-01.jpg and set-C-01.jpg)",
+      "what": "refraction occurs only inside a thin outer glass shell as if the sphere were filled with air, leaving the cottage, tree, and ground unbent and unmagnified by liquid",
+      "fix": "fill the interior volume with a continuous liquid medium (IOR ~1.33-1.38) coupled to the inner glass wall so the miniature bends and magnifies toward the perimeter"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-02.jpg",
+      "where": "crops 1 and 4, the glass apex and surface water rivulets (also set-A-03.jpg crop 7, set-B-02.jpg crop 1, set-C-02.jpg crop 2)",
+      "what": "a concentric circular polar ring sits at the top pole of the sphere, and the rivulet trails radiating down from it render as dark charcoal-black twisted 3D tubes rather than clear water wetting the glass",
+      "fix": "eliminate the polar ring pinch at the apex and model condensation trails as shallow, clear refractive water films with soft wet menisci fused to the glass surface"
+    },
+    {
+      "severity": "major",
+      "file": "set-C-03.jpg",
+      "where": "crops 10 and 11, the dark green earth cutaway beneath the grass inside the globe (also set-A-02.jpg crop 5)",
+      "what": "the green cross-section band below the interior lawn shows a regular vertical-and-horizontal screen-door grid pattern, and smears into horizontal bands in set-B-02.jpg crop 5",
+      "fix": "replace the gridded green cutaway slab with organic soil and moss micro-displacement recessed down into the collar rim"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-03.jpg",
+      "where": "crop 8, the small waterfall stream on the left side of the base (and set-B-03.jpg crop 8)",
+      "what": "the stream reads as a shiny chrome or clear plastic ribbon sitting over bone-dry matte grey stone with no wet darkening or splash, and in set-B-03.jpg crop 8 it clips abruptly into the middle of the dry boulder and vanishes",
+      "fix": "keep the water mesh continuous to the surface, shade it as clear refractive water with fine ripples, darken and gloss the wetted stone border around it, and add a meniscus where it meets the tabletop"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-03.jpg",
+      "where": "crops 8, 9, and 10, the roots, mushrooms, moss, and stones of the base (also set-B-03.jpg crops 8, 9, 10)",
+      "what": "roots are smooth plastic spline tubes with rounded sausage end-caps clipping into blurry low-detail rocks, mushrooms are untextured smooth clay cones, and the moss is covered in single-pixel neon yellow-green specular fireflies",
+      "fix": "add fibrous bark displacement and tapered root junctions, gill and cap micro-detail with translucency on the mushrooms, crisp mineral grain on the rocks, and true moss frond geometry with roughness clamping to remove fireflies"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-03.jpg",
+      "where": "crops 8 and 9, the collar where the glass meets the mossy base (also set-B-03.jpg crops 8, 9 and set-C-03.jpg crops 9, 12)",
+      "what": "the bright glass sphere intersects directly into the lumpy moss mesh on a raw clipping line with no recessed socket seat and no contact shadow crease",
+      "fix": "seat the sphere inside a recessed collar lip, tuck moss fronds naturally against the glass, and add a thin dark ambient-occlusion shadow line in the joint"
+    },
+    {
+      "severity": "major",
+      "file": "set-C-02.jpg",
+      "where": "crops 2, 3, and 6, suspended bubbles and micro-particles inside the globe (also set-C-03.jpg crops 7, 10)",
+      "what": "floating bubbles look like sharp dark-rimmed chrome marbles reflecting a black studio environment even in front of bright peach glow, and tiny suspended specks repeat an identical 3-pixel triangle cluster",
+      "fix": "shade internal bubbles with inverted water-to-air IOR refraction that transmits the warm interior light behind them, apply depth-of-field blur by distance, and randomize sub-pixel suspended particles"
+    },
+    {
+      "severity": "major",
+      "file": "set-B-02.jpg",
+      "where": "crops 1, 2, and 4, the outer glass silhouette and swirled interior petals (also set-B-03.jpg crop 7, set-C-02.jpg crop 4)",
+      "what": "tiny droplets along the grazing rim break the glass silhouette into jagged single-pixel white burrs, and the swirled petals and tree crown in set-B have heavy Monte Carlo sample grain",
+      "fix": "supersample and smooth grazing-angle condensation droplets on the rim and raise motion-blur and depth-of-field sample counts to eliminate noise in swirled petals"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-03.jpg",
+      "where": "crops 8, 10, 11, and 12, the line where the base meets the surface and the fallen petals around it (also set-B-03.jpg crops 8, 10, 11, 12)",
+      "what": "bottom boulders slice straight through the glossy plane with bright specular leaks in the undercuts instead of dark contact shadow, and tabletop petals hover on points without contact shadows or local contact reflections",
+      "fix": "settle the base foot cleanly onto the surface with tight contact occlusion and ground fallen petals flush against the tabletop with soft contact shadows and matching close reflections"
+    },
+    {
+      "severity": "major",
+      "file": "set-C-02.jpg",
+      "where": "crop 6, the cottage windows, and set-C-03.jpg crop 7, the garden lantern (also set-B-02.jpg crop 5)",
+      "what": "window and lantern panes are flat uniform yellow-tan shapes with no interior depth or local light glow around the fixtures, replaced by a detached uniform peach fog ball between the cottage and tree",
+      "fix": "place actual warm light sources inside the cottage rooms and lantern head with visible interior structure, glass reflections, and localized warm bloom and light spill on frames and nearby foliage"
+    },
+    {
+      "severity": "minor",
+      "file": "set-C-03.jpg",
+      "where": "crop 8, the bright bokeh disc in the upper-right background, and dark tabletop surface in set-A-03.jpg crops 11, 12",
+      "what": "the bright out-of-focus background light disc has a hard concentric double-ring outline around a flat core, and isolated single-pixel cyan-white fireflies sit on the dark mirror surface",
+      "fix": "use a softer aperture falloff kernel so background bokeh discs feather smoothly without hard outer rings, and filter stray single-pixel specular fireflies on the tabletop"
+    }
+  ]
+}

@@ -162,7 +162,8 @@ void main() {
   waxy += pow(max(dot(n, hr), 0.0), 18.0) * 0.1 * rimGain * dot(uRimCol, vec3(0.333)) / max(dot(uKeyCol, vec3(0.333)), 1e-4);
   col += uKeyCol * waxy * (1.0 - under);
   gl_FragColor = vec4(col, 1.0);
-  if (uDiag != 0) gl_FragColor = stageDiag(albedo, n, 0.0, c, 0.0);
+  vec2 leafTexel = vLeafUv * 1024.0;
+  if (uDiag != 0) gl_FragColor = stageDiag(albedo, n, 0.0, c, max(length(dFdx(leafTexel)), length(dFdy(leafTexel))));
 }
 `
 

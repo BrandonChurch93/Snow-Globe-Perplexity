@@ -50,7 +50,7 @@ const pathGap = (x, z) => Math.min(...[...L.steps, ...L.stones].map(([sx, sz]) =
 const reliefAt = (x, z) => 0.22 * fbm(x * 0.33 + 3.1, z * 0.33 + 7.7, 2, 3) * smooth(1.2, 3.2, pathGap(x, z)) * smooth(1.0, 1.12, L.pondField(x, z)) * smooth(0.5, 2.5, cottageGap(x, z))
 const earthAt = (x, z) => L.groundAt(x, z) + reliefAt(x, z)
 const litterAt = (x, z) => {
-  const base = 0.13 + 0.26 * fbm(x * 0.12 + 1.7, z * 0.12 + 4.2, 5, 3)
+  const base = 0.2 + 0.3 * fbm(x * 0.12 + 1.7, z * 0.12 + 4.2, 5, 3)
   const byFence = 0.42 * (1 - smooth(0.5, 5.5, fenceGap(x, z)))
   const underTree = 0.2 * (1 - smooth(5, 19, treeGap(x, z)))
   const byWall = 0.14 * (1 - smooth(0.3, 3, cottageGap(x, z)))
@@ -98,7 +98,7 @@ const mossAt = (x, z) => {
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
   g.setIndex(idx)
   g.computeVertexNormals()
-  const under = (p) => smooth(0.25, 2.2, L.groundAt(p[0], p[2]) - p[1])
+  const under = (p) => smooth(1.2, 4.2, L.groundAt(p[0], p[2]) - p[1])
   const wet = (x, z) => 0.5 + 0.5 * smooth(0.95, 1.12, L.pondField(x, z))
   const contact = (x, z) => 0.55 + 0.45 * smooth(0, 1.6, cottageGap(x, z))
   ground.add(g, {

@@ -273,8 +273,8 @@ vec4 cardTint(float shape, vec2 q, vec2 own) {
   if (shape > ${n(SHAPE.bat - 0.5)}) return vec4(vec3(1.0 + ${n(CARD.batRim)} * smoothstep(-0.14, 0.0, cardEdge(shape, q, own).x)), 0.15 * smoothstep(0.12, 0.5, abs(q.y)));
   float stem = 0.16;
   float v = clamp((u - stem) / (1.0 - stem), 0.0, 1.0);
-  vec3 t = mix(vec3(1.15, 1.25, 0.9), vec3(1.0, 1.0, 1.0), smoothstep(0.0, 0.3, own.y));
-  t = mix(t, vec3(0.78, 0.5, 0.6), smoothstep(0.55, 1.0, own.y + 0.25 * (own.x - 0.5)));
+  vec3 t = mix(vec3(1.18, 1.9, 1.3), vec3(1.0, 1.0, 1.0), smoothstep(0.0, 0.35, own.y));
+  t = mix(t, vec3(0.8, 0.36, 0.5), smoothstep(0.5, 1.0, own.y + 0.25 * (own.x - 0.5)));
   float w = max(cardLeafHalf(v, own), 1e-3);
   float out1 = abs(q.y) / w;
   t *= mix(1.05, 0.72, smoothstep(0.35, 1.0, out1) * mix(0.4, 1.0, own.x));
@@ -424,6 +424,7 @@ void cardMain(vec2 p, int kind, vec4 k, vec4 look, float lying) {
   float keyShare = mix(${n(LIGHT_LOOK.keyFloor)} + ${n(LIGHT_LOOK.keySide)} * front * front, stageWrap(nk, uRigInside.z) * 0.31831 / max(uRigPoint.x, 1e-3), lying);
   vec3 light = vGrid.rgb * (1.0 + ${n(LIGHT_LOOK.skyTilt)} * dot(nv, upV)) + vDom.rgb * keyShare;
   light *= min(1.0, ${n(CARD.litMost)} / max(max(light.r, max(light.g, light.b)), 1e-3));
+  if (shape > ${n(SHAPE.leaf - 0.5)} && shape < ${n(SHAPE.leaf + 0.5)}) light = mix(vec3(max(light.r, max(light.g, light.b))), light, ${n(CARD.leafHue)});
   vec3 body = k.rgb * tint.rgb;
   vec3 col = body * light * mix(1.0, ${n(CARD.lieShade)}, lying);
   col += body * body * vDom.rgb * (${n(LIGHT_LOOK.keySide)} * back * back * (1.0 - lying));
