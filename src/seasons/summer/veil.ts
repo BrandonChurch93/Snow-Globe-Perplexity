@@ -22,7 +22,7 @@ export const particles: SeasonKit['particles'] = { firefly: { color: [0.95, 1, 0
 // `calms` of the shared drift bank taken off. That bank is winter's snow going to the wall; in summer it stood as a cream slab
 // over the ground and a white crescent inside the left limb, where the approved image has seeds over a ghosted miniature.
 // All of it is weighted by summer's share of the change, so the other seasons see nothing of it.
-export const STORM = { share: 0.8, holdSeconds: 0.3, fallSeconds: 3, uneven: 0.8, calms: 0.97 }
+export const STORM = { share: 1.3, holdSeconds: 0.3, fallSeconds: 3, uneven: 0.8, calms: 0.97 }
 
 const ramp = (v: number, from: number, to: number): number => {
   const t = Math.min(1, Math.max(0, (v - from) / (to - from)))

@@ -97,7 +97,9 @@ export const look = {
     hazeSkyColor: [0.7, 0.8, 0.95] as const,
     // the storm: the seeds and the dust aloft take the sun and the whole dome glows white-gold; it goes with the liquid's
     // turbulence, in slow arms that turn with the time, and is thinner over the miniature so the lanterns stay
-    storm: 0.1,
+    storm: 0.03,
+    // and the still air's haze behind the miniature gives way to it by this much: the storm is in front, in the veil
+    stormClears: 0.45,
     stormFrom: 0.12,
     stormTo: 0.75,
     stormColor: [1, 0.68, 0.34] as const,
@@ -247,9 +249,10 @@ void main() {
   float toward = 0.5 + 0.5 * dot(vWl, vWlDir);
   vec3 air = ${vec(W.airColor)} * (${n(W.air)} * smoothstep(0.45, 1.0, toward) * body);
   float column = (vWl.x - ${n(W.hazeAt)}) / ${n(W.hazeWide)};
+  float still = 1.0 - ${n(W.stormClears)} * storm;
   float low = exp(-pow((vWl.y - ${n(W.hazeLow)}) / ${n(W.hazeTall)}, 2.0));
-  air += ${vec(W.hazeColor)} * (${n(W.haze)} * body * (${n(W.hazeRim)} + ${n(1 - W.hazeRim)} * exp(-column * column)) * (${n(W.hazeTop)} + ${n(1 - W.hazeTop)} * low));
-  air += ${vec(W.hazeSkyColor)} * (${n(W.hazeSky)} * body * smoothstep(-0.1, 0.6, vWl.y) * (1.0 - 0.8 * exp(-column * column)));
+  air += ${vec(W.hazeColor)} * (${n(W.haze)} * still * body * (${n(W.hazeRim)} + ${n(1 - W.hazeRim)} * exp(-column * column)) * (${n(W.hazeTop)} + ${n(1 - W.hazeTop)} * low));
+  air += ${vec(W.hazeSkyColor)} * (${n(W.hazeSky)} * still * body * smoothstep(-0.1, 0.6, vWl.y) * (1.0 - 0.8 * exp(-column * column)));
   // the storm's light: slow broad arms about the middle, turning with the time
   float turn = atan(vWl.y, vWl.x);
   float arms = 1.0 - ${n(W.stormArms)} + ${n(W.stormArms)} * sin(2.0 * turn + 5.0 * r - 1.7 * uSummer.x) * smoothstep(0.05, 0.4, r);
