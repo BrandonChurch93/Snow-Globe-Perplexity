@@ -50,4 +50,6 @@ export type Grade = typeof grade
 
 export const lensState = {
   bloomTint: new THREE.Color(0, 0, 0),
+  /** How much of the widest level of the glow is added over the whole picture: the glare of a change between two seasons, 0 at every other time. */
+  glare: 0,
 }
