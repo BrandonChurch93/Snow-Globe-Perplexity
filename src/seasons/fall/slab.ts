@@ -5,15 +5,12 @@ import { geometry, prepareModel } from '../../core/models'
 import { texture } from '../../core/textures'
 import { ROOM_GLSL, roomUniforms } from '../../scene/room'
 import { SLAB_LIGHT_GLSL, slabLightUniforms, surfaceUniforms } from '../../scene/surface'
-import type { Dressing, KitMoment } from '../kit'
+import type { KitMoment } from '../kit'
 import { cobweb, FACE_COUNT, faceUniforms } from './base'
 
 // Part `surface-dressing-fall`: the dry leaves that lie round the foot (curled ones near the camera, flat ones further
 // off, crumbs at the foot) and the light on the slab at the foot: a rim that parts the black base from the dark slab,
 // and the candle light each face throws in front of itself.
-export const standIns: string[] = []
-
-export const surfaceDressing: Dressing & { reachMm: number } = { tint: [1, 0.6, 0.3], amount: 0, reachMm: 150 }
 
 const PART = 'surface-dressing-fall'
 const MODEL = 'fall/slab-fall.glb'
@@ -256,7 +253,6 @@ function makeSurface(): THREE.Group {
   const mesh = geometry(MODEL, 'leaves')
   const extras = mesh.userData.extras as LeafExtras
   leafUniforms.uLeafSpan.value.set(extras.centreSpanMm, extras.sizeSpanMm, extras.footMm, 0)
-  surfaceDressing.reachMm = extras.footMm + 110
   const shared = { ...roomUniforms, ...lightUniforms, ...slabLightUniforms, ...faceUniforms, uKeyCol: surfaceUniforms.uKeyCol, uRimCol: surfaceUniforms.uRimCol, uSky: surfaceUniforms.uSky }
   const leaves = new THREE.Mesh(
     mesh,

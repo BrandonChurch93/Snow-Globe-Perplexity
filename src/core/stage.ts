@@ -58,15 +58,14 @@ export interface StageQuality {
 }
 
 export interface Stage {
-  readonly standIn: boolean
   parts(): { name: string; color: number }[]
   resize(width: number, height: number): void
   drawSample(target: THREE.WebGLRenderTarget, pose: Pose, sample: Sample | null, moment: Moment, shadows: boolean): void
   setDiagnostic(view: string): void
   setQuality?(level: StageQuality): void
   prepare?(season: string): Promise<void>
-  collider?(season: string): SdfGrid
-  emitters?(season: string): Record<string, Emitter[]>
+  collider(season: string): SdfGrid
+  emitters(season: string): Record<string, Emitter[]>
   particleCount(): number
   textureBytes(): number
 }

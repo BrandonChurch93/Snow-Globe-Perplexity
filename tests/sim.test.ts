@@ -7,7 +7,8 @@ import { LIQUID_LENGTH, LIQUID_TURBULENCE, LIQUID_TURN } from '../src/globe/liqu
 import { makeShake, REST_POSE, type GlobePose, type ShakePath } from '../src/shake/table'
 import { COVER_N, packSnapshot, ParticleEngine, STATE_HIDDEN, STATE_LIQUID, STATE_REST, STATE_SNAG, unpackSnapshot, WALL } from '../src/particles/engine/engine'
 import { countsIn, KINDS, POOL, SEASONS } from '../src/particles/engine/kinds'
-import { blockoutSdf, buildSdf, GROUND_Y, INNER_R, sdfSample } from '../src/particles/engine/sdf'
+import { buildSdf, GROUND_Y, INNER_R, sdfSample } from '../src/particles/engine/sdf'
+import { blockoutEmitters, blockoutSdf } from './blockout'
 import { EngineClient, type EnginePort } from '../src/particles/engine/client'
 import { builtTimeline, EngineHost, frameBytes, plainTimeline } from '../src/particles/engine/host'
 import { LiveEngine } from '../src/particles/engine/live'
@@ -17,6 +18,7 @@ import { SimDriver, type SimStore } from '../src/particles/driver'
 const HZ = config.sim.stepHz
 const steps = (seconds: number): number => Math.round(seconds * HZ)
 const grid = blockoutSdf()
+const BLOCK = { collider: grid, emitters: blockoutEmitters() }
 
 function swapTimeline(from: string, to: string): Timeline {
   return { id: `test:${from}:${to}`, startSeason: from, events: [{ id: 'shake-1', startSec: 0, from, to, path: makeShake('shake-1') }] }
@@ -42,7 +44,6 @@ function rockingTimeline(season: string, degrees: number): Timeline {
     return (i % 2 === 0 ? 1 : -1) * s.strokeMm * Math.sin(Math.PI * (f - i)) * smooth(u / 0.08) * smooth((1 - u) / 0.1)
   }
   const path: ShakePath = {
-    standIn: true,
     parts: { liftEnd, strokesEnd, landing: bar },
     poseAt(beat: number): GlobePose {
       if (beat <= 0 || beat >= bar) return REST_POSE
@@ -117,7 +118,7 @@ describe('the pool and its kinds', () => {
   })
 
   it('gives the drawing what the particle source contract asks', () => {
-    const e = new ParticleEngine({ season: 'fall', fraction: 0.02 })
+    const e = new ParticleEngine({ ...BLOCK, season: 'fall', fraction: 0.02 })
     const source: ParticleSource = e
     e.reset()
     expect(source.count).toBe(Math.round(POOL * 0.02))
@@ -178,8 +179,8 @@ describe('the simulation', () => {
 
   it('starts each season the same way every time, with what rests already lying', () => {
     for (const season of SEASONS) {
-      const a = new ParticleEngine({ season, fraction: 0.03 })
-      const b = new ParticleEngine({ season: 'winter', fraction: 0.03 })
+      const a = new ParticleEngine({ ...BLOCK, season, fraction: 0.03 })
+      const b = new ParticleEngine({ ...BLOCK, season: 'winter', fraction: 0.03 })
       a.reset()
       b.reset(season)
       expect(b.seasonNow).toBe(season)
@@ -189,7 +190,7 @@ describe('the simulation', () => {
       expect(c.inside).toBe(0)
       expect(c.hidden).toBe(a.count - Object.values(countsIn(season, a.count)).reduce((x, y) => x + y, 0))
     }
-    const winter = new ParticleEngine({ season: 'winter', fraction: 0.03 })
+    const winter = new ParticleEngine({ ...BLOCK, season: 'winter', fraction: 0.03 })
     winter.reset()
     const start = census(winter)
     expect(start.rest + start.liquid).toBe(winter.count)
@@ -199,7 +200,7 @@ describe('the simulation', () => {
 
   for (const season of SEASONS) {
     it(`keeps every ${season} particle in the sphere and out of solids through a shake and a settle`, () => {
-      const e = new ParticleEngine({ season, fraction: 0.05 })
+      const e = new ParticleEngine({ ...BLOCK, season, fraction: 0.05 })
       const tl = stillTimeline(season)
       const end = steps(barSeconds + config.states.restSeconds)
       let most = 0
@@ -222,7 +223,7 @@ describe('the simulation', () => {
 
   it('starts the whole pool inside the glass in every season', () => {
     for (const season of SEASONS) {
-      const e = new ParticleEngine({ season })
+      const e = new ParticleEngine({ ...BLOCK, season })
       e.reset()
       expect(e.count).toBe(POOL)
       let outside = 0
@@ -235,7 +236,7 @@ describe('the simulation', () => {
   })
 
   it('throws what rests back into the liquid and lets it settle again, not stacked in a grid', () => {
-    const e = new ParticleEngine({ season: 'winter', fraction: 0.08 })
+    const e = new ParticleEngine({ ...BLOCK, season: 'winter', fraction: 0.08 })
     const tl = stillTimeline('winter')
     e.reset()
     const before = e.pos.slice()
@@ -285,7 +286,7 @@ describe('the simulation', () => {
 
   it('changes season inside the shake, kind for kind by index, with nothing popping', () => {
     const tl = swapTimeline('winter', 'spring')
-    const e = new ParticleEngine({ season: 'winter', fraction: 0.05 })
+    const e = new ParticleEngine({ ...BLOCK, season: 'winter', fraction: 0.05 })
     const w = config.shake.swapWindow
     const from = steps(w.fromBeat * beatSeconds)
     const to = steps(w.toBeat * beatSeconds)
@@ -335,7 +336,7 @@ describe('the simulation', () => {
   }, 120000)
 
   it('stays at rest until it is stirred, and a stir lifts what was lying', () => {
-    const e = new ParticleEngine({ season: 'winter', fraction: 0.05 })
+    const e = new ParticleEngine({ ...BLOCK, season: 'winter', fraction: 0.05 })
     const tl = idle('winter')
     e.advanceTo(steps(1), tl)
     for (let j = 0; j <= LIQUID_TURBULENCE; j++) expect(e.liquid[j]).toBe(0)
@@ -353,13 +354,13 @@ describe('the simulation', () => {
   }, 120000)
 
   it('lets some of what rests go round again, and snags seeds where they touch', () => {
-    const winter = new ParticleEngine({ season: 'winter', fraction: 0.05 })
+    const winter = new ParticleEngine({ ...BLOCK, season: 'winter', fraction: 0.05 })
     winter.advanceTo(steps(14), idle('winter'))
     const falling = winter.floating()
     expect(falling).toBeGreaterThan(winter.count * 0.004)
     expect(falling).toBeLessThan(winter.count * 0.08)
 
-    const summer = new ParticleEngine({ season: 'summer', fraction: 0.05 })
+    const summer = new ParticleEngine({ ...BLOCK, season: 'summer', fraction: 0.05 })
     summer.advanceTo(steps(barSeconds + 4), stillTimeline('summer'))
     let snagged = 0
     let seeds = 0
@@ -400,7 +401,7 @@ describe('the simulation', () => {
     }
     const turn = (e: ParticleEngine): number => Math.hypot(e.liquid[LIQUID_TURN]!, e.liquid[LIQUID_TURN + 1]!, e.liquid[LIQUID_TURN + 2]!)
     const run = (tl: Timeline): { peak: number; after: number; upright: number } => {
-      const e = new ParticleEngine({ season: 'summer', fraction: 0.2 })
+      const e = new ParticleEngine({ ...BLOCK, season: 'summer', fraction: 0.2 })
       e.reset()
       let peak = 0
       for (let quarter = 8; quarter <= 16; quarter++) {

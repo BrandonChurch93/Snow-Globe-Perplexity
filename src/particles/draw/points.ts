@@ -3,14 +3,13 @@ import { config } from '../../config'
 import { coverUniforms } from '../../core/chunks/cover'
 import { veilSettle } from '../../core/chunks/veil'
 import { handleOf, stageShader, type Rgb } from '../../core/materials'
-import { clearStandIn, flagStandIn } from '../../core/standins'
 import type { ParticleSource } from '../../core/stage'
-import { hasTexture, texture } from '../../core/textures'
+import { texture } from '../../core/textures'
 import { partBytes } from '../../diagnostics/views'
 import type { StageFrame } from '../../scene/frame'
 import { flickerOf } from '../../scene/lightgrid'
 import type { InnerLight } from '../../seasons/kit'
-import { BATS, CARD, LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_TABLE, LYING_LOOK, MAX_KINDS, SETTLE_SHOWN, SHAPE, TABLE_COLUMNS, lookOf } from './looks'
+import { BATS, CARD, LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_TABLE, LYING_LOOK, MAX_KINDS, SETTLE_SHOWN, SHAPE, lookOf } from './looks'
 import { BEHAVIOUR } from '../engine/kinds'
 import { FRAG, VERT_MAIN, VERT_PARS } from './shader'
 
@@ -20,16 +19,6 @@ const SHUTTER = (config.film.shutterDegrees / 360) * (config.sim.stepHz / config
 const TAU = 2 * Math.PI
 
 type KindColors = Readonly<Record<string, { color: Rgb; glow: number }>>
-
-function plainTable(): THREE.DataTexture {
-  const data = new Uint8Array(TABLE_COLUMNS * 4)
-  for (let k = 0; k < TABLE_COLUMNS; k++) data.set([128, 128, 128, k === 0 ? 255 : 0], k * 4)
-  const t = new THREE.DataTexture(data, TABLE_COLUMNS, 1, THREE.RGBAFormat, THREE.UnsignedByteType)
-  t.minFilter = THREE.NearestFilter
-  t.magFilter = THREE.NearestFilter
-  t.needsUpdate = true
-  return t
-}
 
 export class ParticleDraw {
   readonly points = new THREE.Group()
@@ -44,7 +33,6 @@ export class ParticleDraw {
   private capacity = 0
   private readonly bounds: THREE.Sphere
   private readonly phases = new Map<number, Float32Array>()
-  private readonly plain = plainTable()
   private readonly back = new THREE.Vector3()
   private readonly right = new THREE.Vector3()
   private readonly up = new THREE.Vector3()
@@ -70,7 +58,7 @@ export class ParticleDraw {
       uUpLocal: { value: new THREE.Vector3(0, 1, 0) },
       uLamp: { value: Array.from({ length: LAMPS }, () => new THREE.Vector4()) },
       uLampCol: { value: Array.from({ length: LAMPS }, () => new THREE.Vector4(0, 0, 0, 1)) },
-      uLobes: { value: this.plain as THREE.Texture },
+      uLobes: { value: null as THREE.Texture | null },
       uLobeRows: { value: 1 },
       uPointChange: { value: 0 },
       uKindColor: { value: Array.from({ length: MAX_KINDS }, () => new THREE.Vector4()) },
@@ -267,14 +255,13 @@ export class ParticleDraw {
 
   private kinds(source: ParticleSource, from: KindColors, to: KindColors, all: KindColors, t: number): void {
     const u = this.uniforms
-    const table = hasTexture(LOBE_TABLE) ? texture(LOBE_TABLE) : null
-    u.uLobes!.value = table ?? this.plain
-    u.uLobeRows!.value = table ? (table.image as { height: number }).height : 1
+    const table = texture(LOBE_TABLE)
+    u.uLobes!.value = table
+    u.uLobeRows!.value = (table.image as { height: number }).height
     const colors = u.uKindColor!.value as THREE.Vector4[]
     const parts = u.uKindPart!.value as THREE.Vector4[]
     const looks = u.uKindLook!.value as THREE.Vector4[]
     const ways = u.uKindWay!.value as THREE.Vector4[]
-    const flagged: string[] = []
     source.kinds.forEach((kind, i) => {
       if (i >= MAX_KINDS) return
       const a = from[kind] ?? to[kind] ?? all[kind]
@@ -282,21 +269,11 @@ export class ParticleDraw {
       if (!a || !b) throw new Error(`no season gives a colour to the particle kind ${kind}`)
       colors[i]!.set(a.color[0] + (b.color[0] - a.color[0]) * t, a.color[1] + (b.color[1] - a.color[1]) * t, a.color[2] + (b.color[2] - a.color[2]) * t, a.glow + (b.glow - a.glow) * t)
       const look = lookOf(kind)
-      const real = look.real && (look.shape !== SHAPE.cluster || table !== null)
-      const shape = look.shape === SHAPE.cluster && !table ? SHAPE.soft : look.shape
-      looks[i]!.set(shape, look.size, look.body, look.flash)
+      looks[i]!.set(look.shape, look.size, look.body, look.flash)
       const way = BEHAVIOUR[kind]
       ways[i]!.set(way ? way.renew : 0, way ? way.floats : 0, way && way.rest !== 'never' && way.settleMmS[1] > 0 ? 1 : 0, 0)
-      const name = `particle-${kind}`
-      const bytes = partBytes(name)
-      parts[i]!.set(bytes[0] / 255, bytes[1] / 255, bytes[2] / 255, real ? 0 : 1)
-      if (real) clearStandIn(name)
-      else {
-        flagStandIn(name)
-        flagged.push(name)
-      }
+      const bytes = partBytes(`particle-${kind}`)
+      parts[i]!.set(bytes[0] / 255, bytes[1] / 255, bytes[2] / 255, 0)
     })
-    this.points.userData.standIn = flagged[0]
-    this.points.userData.standIns = flagged
   }
 }

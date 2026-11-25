@@ -442,7 +442,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
       sanity: () => acc.invalid(),
       inside: () => {
         const sim = particles
-        const grid = stage.collider ? stage.collider(lastSeason) : null
+        const grid = stage.collider(lastSeason)
         let inside = 0
         let outside = 0
         const lim = (INNER_R + 0.05) * (INNER_R + 0.05)
@@ -451,7 +451,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
           const y = sim.pos[i * 3 + 1]!
           const z = sim.pos[i * 3 + 2]!
           if (x * x + y * y + z * z > lim) outside++
-          else if (grid && sampleSdf(grid, x, y, z) < -0.05) inside++
+          else if (sampleSdf(grid, x, y, z) < -0.05) inside++
         }
         return { inside, outside, total: sim.count }
       },
