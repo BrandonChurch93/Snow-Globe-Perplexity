@@ -3,6 +3,8 @@ import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import { fromThree, writeGlb } from '../../tools/lib/glb.mjs'
 import { rel, writeJson } from '../../tools/lib/paths.mjs'
 import { loadLayout, loadRoof } from '../village/layout.mjs'
+import { MeshoptSimplifier } from 'meshoptimizer'
+import { addLists } from './levels.mjs'
 import { Bag, STACK_LIFT, TILE_MM, add3, basis, clamp, fbm, lin, mix3, mul3, netGeometry, noise, norm3, rng, smin, smooth, sub3, writePng } from '../village/kit.mjs'
 
 const L = await loadLayout()
@@ -182,8 +184,8 @@ const SKIRT = { cycles: 6.5, deepMm: 2.8, clumps: 17, clumpMm: 0.85 }
   const before = turf.triangles
   const around = 400
   const shore = [0.9, 0.93, 0.95, 0.962, 0.972, 0.981, 0.99, 1.0, 1.012, 1.028, 1.05, 1.08]
-  const outer = 40
-  const skirt = 30
+  const outer = 32
+  const skirt = 18
   const r = L.innerRadiusMm - 0.6
   const footY = L.collarY - 1.5
   const pc = Math.cos(L.pond.yaw)
@@ -360,6 +362,59 @@ const boulders = []
 }
 const boulderGap = (x, z) => boulders.reduce((m, b) => Math.min(m, Math.hypot(x - b[0], z - b[2]) - b[3]), 1e9)
 
+const MOUNDS = { count: 110, sizeMm: [1.2, 3.3], seed: 9133 }
+{
+  const before = turf.triangles
+  const RM = rng(MOUNDS.seed)
+  let made = 0
+  let tries = 0
+  while (made < MOUNDS.count && tries < MOUNDS.count * 14) {
+    tries++
+    const a = RM() * Math.PI * 2
+    const size = MOUNDS.sizeMm[0] + (MOUNDS.sizeMm[1] - MOUNDS.sizeMm[0]) * RM() ** 1.6
+    const inset = size * 0.8 + 0.2 + 1.6 * RM() * RM()
+    const back = RM()
+    if (Math.sin(a) < -0.1 && back < 0.8) continue
+    let rr = 20
+    while (rr < 70 && edgeOf(Math.cos(a) * (rr + 0.1), Math.sin(a) * (rr + 0.1)) > inset) rr += 0.1
+    const x = Math.cos(a) * rr
+    const z = Math.sin(a) * rr
+    if (edgeOf(x, z) < size * 0.7) continue
+    if (L.pondField(x, z) < 1.1 || stoneGap(x, z) < size + 0.4 || wallGap(x, z) < size + 0.6 || treeGap(x, z) < size + 4.5 || boulderGap(x, z) < size * 0.5) continue
+    if (fposts.some((f) => Math.hypot(x - f[0], z - f[1]) < size + 0.7)) continue
+    const rx = size * (0.95 + 0.35 * RM())
+    const rz = size * (0.7 + 0.25 * RM())
+    const ry = size * (0.46 + 0.16 * RM())
+    const yaw = a + Math.PI / 2 + (RM() - 0.5) * 0.9
+    const y = topAt(x, z) - ry * 0.3
+    const seed = RM() * 50
+    const g = new THREE.IcosahedronGeometry(1, size > 1.5 ? 2 : 1)
+    g.deleteAttribute('normal')
+    g.deleteAttribute('uv')
+    const P = g.getAttribute('position')
+    for (let i = 0; i < P.count; i++) {
+      const q = [P.getX(i), P.getY(i), P.getZ(i)]
+      const lump = 1 + 0.22 * fbm(q[0] * 1.5 + seed, q[1] * 1.5, q[2] * 1.5 + seed, 3) + 0.07 * fbm(q[0] * 5.5 + seed, q[1] * 5.5, q[2] * 5.5, 2)
+      const lx = q[0] * rx * lump
+      const lz = q[2] * rz * lump
+      P.setXYZ(i, x + lx * Math.cos(yaw) - lz * Math.sin(yaw), y + q[1] * ry * lump, z + lx * Math.sin(yaw) + lz * Math.cos(yaw))
+    }
+    const warm = RM()
+    turf.add(mergeVertices(g, 1e-4), {
+      renormal: true,
+      color: (p, n) => {
+        const patch = clamp(0.5 + fbm(p[0] * 1.3 + seed, p[1] * 1.3, p[2] * 1.3, 2))
+        const top = mix3(TONE.moss, TONE.sun, 0.25 + 0.5 * patch * warm)
+        const low = smooth(0.75, 0.0, (p[1] - (y - ry * 0.3)) / ry)
+        return mul3(mix3(top, TONE.mossDeep, 0.75 * smooth(0.55, -0.35, n[1])), (1 - 0.45 * low) * (0.85 + 0.35 * patch))
+      },
+      surf: [0, 0],
+    })
+    made++
+  }
+  tally.mounds = turf.triangles - before
+}
+
 {
   const rings = [0, 0.14, 0.28, 0.42, 0.55, 0.66, 0.76, 0.85, 0.92, 0.965, 0.995]
   const around = 120
@@ -403,6 +458,8 @@ const boulderGap = (x, z) => boulders.reduce((m, b) => Math.min(m, Math.hypot(x 
     }
     g.computeVertexNormals()
   }
+  const nrm = g.getAttribute('normal')
+  for (let i = 0; i < nrm.count; i++) if (Math.hypot(nrm.getX(i), nrm.getY(i), nrm.getZ(i)) < 0.5) nrm.setXYZ(i, nrm.getX(0), nrm.getY(0), nrm.getZ(0))
   let vi = 0
   water.add(g, { keepUv: true, color: [1, 1, 1], surf: () => [st[2 * vi++], 0] })
 }
@@ -413,11 +470,16 @@ class Sprigs {
     this.n = []
     this.c = []
     this.s = []
+    this.keep = []
+    this.rank = 0
   }
   tri(a, b, c, n, ca, cb, cc, kind, thin = 0.5) {
-    for (const [q, col, nn] of [[a, ca, n], [b, cb, n], [c, cc, n]]) {
+    this.keep.push(this.rank)
+    const corners = [[a, ca], [b, cb], [c, cc]]
+    for (let k = 0; k < 3; k++) {
+      const [q, col] = corners[k]
       this.p.push(q[0], q[1], q[2])
-      const m = Array.isArray(nn[0]) ? nn[this.p.length % 3] : nn
+      const m = Array.isArray(n[0]) ? n[k] : n
       this.n.push(m[0], m[1], m[2])
       this.c.push(col[0], col[1], col[2])
       this.s.push(kind, thin)
@@ -432,9 +494,20 @@ class Sprigs {
     g.setAttribute('normal', new THREE.Float32BufferAttribute(this.n, 3))
     g.setAttribute('color', new THREE.Float32BufferAttribute(this.c, 3))
     g.setAttribute('uv1', new THREE.Float32BufferAttribute(this.s, 2))
-    return mergeVertices(g, 1e-5)
+    const merged = mergeVertices(g, 1e-5)
+    const index = merged.index.array
+    if (index.length !== this.keep.length * 3) throw new Error('the merged growth lost triangles')
+    const list = (most) => {
+      const out = []
+      for (let t = 0; t < this.keep.length; t++) if (this.keep[t] < most) out.push(index[3 * t], index[3 * t + 1], index[3 * t + 2])
+      return out
+    }
+    this.lists = { medium: list(LEVEL.medium), low: list(LEVEL.low) }
+    return merged
   }
 }
+const LEVEL = { medium: 0.3, low: 0.25 }
+const TURF_LEVEL = { medium: 0.1, low: 0.22 }
 const growth = new Sprigs()
 const KIND_OF = { blade: 0, leaf: 1, petal: 2 }
 const pick = (list) => list[Math.floor(R() * list.length)]
@@ -456,7 +529,7 @@ function blade(foot, lean, len, wide, n, c0, c1, c2, thin = 0.7) {
   growth.tri(ma, mb, tip, n, c1, c1, c2, KIND_OF.blade, thin)
 }
 
-const BLADES = { tufts: 8200, perTuft: [3, 6], lenMm: [0.5, 1.05], tallMm: 1.15, wideMm: 0.095 }
+const BLADES = { tufts: 5450, perTuft: [3, 6], lenMm: [0.5, 1.05], tallMm: 1.15, wideMm: 0.095 }
 {
   const before = growth.triangles
   const reach = Math.sqrt((L.innerRadiusMm - 0.6) ** 2 - L.groundY ** 2) + 2
@@ -470,7 +543,7 @@ const BLADES = { tufts: 8200, perTuft: [3, 6], lenMm: [0.5, 1.05], tallMm: 1.15,
     const z = Math.sin(a) * rr
     const e = edgeOf(x, z)
     if (e < 0.5) continue
-    if (z < -20 && R() < 0.6) continue
+    if (z < -8 && R() < 0.75) continue
     const pf = L.pondField(x, z)
     if (pf < 1.0) continue
     if (wallGap(x, z) < 0.15) continue
@@ -502,10 +575,12 @@ const BLADES = { tufts: 8200, perTuft: [3, 6], lenMm: [0.5, 1.05], tallMm: 1.15,
       const foot = [x + Math.cos(th) * 0.12 * R(), y - 0.05, z + Math.sin(th) * 0.12 * R()]
       const k = 0.8 + 0.45 * R()
       const n = norm3([gn[0] + lean[0] * 0.35, gn[1] + 0.4, gn[2] + lean[2] * 0.35])
+      growth.rank = ((made * 7 + i * 5) % 16) / 16
       blade(foot, lean, len, BLADES.wideMm * (0.7 + 0.6 * R()), n, mul3(mix3(base, TONE.bladeFoot, 0.5), 0.8), mul3(mix3(base, TONE.blade, 0.6), k), mul3(mix3(base, TONE.bladeTip, 0.7), k * 1.1))
     }
     made++
   }
+  growth.rank = 0
   tally.blades = growth.triangles - before
 }
 
@@ -556,8 +631,10 @@ const SHRUB = { leaves: 1500, blooms: 150, ivyBlooms: 0 }
       const tip = norm3([d[0] + (R() - 0.5) * 0.9, d[1] * 0.6 + 0.45 + (R() - 0.5) * 0.6, d[2] + (R() - 0.5) * 0.9])
       const sideV = norm3([tip[1] * d[2] - tip[2] * d[1] + (R() - 0.5) * 0.4, tip[2] * d[0] - tip[0] * d[2], tip[0] * d[1] - tip[1] * d[0] + (R() - 0.5) * 0.4])
       const tone = mul3(pick(ivy ? TONE.ivy : TONE.shrub), (0.7 + 0.6 * R()) * (0.55 + 0.45 * smooth(-0.3, 0.7, d[1])))
+      growth.rank = ((i * 11) % 16) / 24
       leafCard(p, tip, sideV, 0.34 + 0.26 * R(), 0.11 + 0.07 * R(), norm3(add3(sc(d, 0.75), [0, 0.35, 0])), tone, KIND_OF.leaf, 0.6)
     }
+    growth.rank = 0
     const blooms = ivy ? SHRUB.ivyBlooms : SHRUB.blooms
     for (let i = 0; i < blooms; i++) {
       const d = place()
@@ -631,33 +708,33 @@ function tulip(x, z, tall, hue, turn) {
   const ref = norm3(cross(tilt, [0.2, 0.1, 1]))
   const ref2 = cross(tilt, ref)
   const petals = 6
-  const rows = 4
+  const rows = 5
+  const cols = 4
   for (let k = 0; k < petals; k++) {
     const mid = (k / petals) * Math.PI * 2 + (k % 2) * 0.12
     const inner = k % 2 === 1
     const span = (Math.PI * 2) / petals * 0.78
     const shape = (u, v) => {
-      const a = mid + (u - 0.5) * span * (1 - 0.75 * v * v)
+      const a = mid + (u - 0.5) * span * (1 - 0.9 * Math.pow(v, 2.4))
       const belly = Math.sin(Math.PI * Math.pow(v, 0.62)) * 0.95 + 0.1 * v
       const rr = cupR * (inner ? 0.86 : 1) * (0.16 + belly * (0.6 + 0.4 * open * v)) * (1 - 0.1 * Math.abs(u - 0.5))
       const h = cupH * (v * (inner ? 0.94 : 1) - 0.06 * Math.abs(u - 0.5) * v)
       const dir = add3(sc(ref, Math.cos(a)), sc(ref2, Math.sin(a)))
       return { p: add3(add3(top, sc(tilt, h - 0.05)), sc(dir, rr)), n: norm3(add3(dir, sc(tilt, 0.25 - 0.5 * v))) }
     }
-    const tone = (v, u) => mul3(mix3(mix3(pale, deep, smooth(0.0, 0.55, v)), pale, 0.35 * smooth(0.7, 1, v)), (inner ? 0.78 : 1) * (0.86 + 0.28 * Math.abs(u - 0.5)) * (0.62 + 0.5 * v))
+    const tone = (v, u) => mul3(mix3(mix3(pale, deep, smooth(0.0, 0.55, v)), pale, 0.35 * smooth(0.7, 1, v)), (inner ? 0.9 : 1) * (0.97 + 0.06 * Math.abs(u - 0.5)) * (0.66 + 0.46 * v))
     for (let j = 0; j < rows; j++) {
       const v0 = j / rows
       const v1 = (j + 1) / rows
-      for (let i = 0; i < 2; i++) {
-        const u0 = i / 2
-        const u1 = (i + 1) / 2
+      for (let i = 0; i < cols; i++) {
+        const u0 = i / cols
+        const u1 = (i + 1) / cols
         const A = shape(u0, v0)
         const B = shape(u1, v0)
         const Cc = shape(u1, v1)
         const D = shape(u0, v1)
-        growth.tri(A.p, B.p, Cc.p, [A.n, B.n, Cc.n], tone(v0, u0), tone(v0, u1), tone(v1, u1), KIND_OF.petal, 0.45)
-        if (j < rows - 1) growth.tri(A.p, Cc.p, D.p, [A.n, Cc.n, D.n], tone(v0, u0), tone(v1, u1), tone(v1, u0), KIND_OF.petal, 0.45)
-        else if (i === 0) growth.tri(A.p, Cc.p, D.p, [A.n, Cc.n, D.n], tone(v0, u0), tone(v1, u1), tone(v1, u0), KIND_OF.petal, 0.45)
+        growth.tri(A.p, B.p, Cc.p, [A.n, B.n, Cc.n], tone(v0, u0), tone(v0, u1), tone(v1, u1), KIND_OF.petal, 0.8)
+        growth.tri(A.p, Cc.p, D.p, [A.n, Cc.n, D.n], tone(v0, u0), tone(v1, u1), tone(v1, u0), KIND_OF.petal, 0.8)
       }
     }
   }
@@ -718,7 +795,7 @@ const DAISIES = { count: 260, sizeMm: [0.3, 0.5] }
   tally.daisies = growth.triangles - before
 }
 
-const FALLEN = { ground: 420, pond: 46, sizeMm: [0.5, 0.95] }
+const FALLEN = { ground: 420, pond: 12, sizeMm: [0.5, 0.95] }
 function petalDown(x, y, z, n, size, tone, yaw) {
   const ref = norm3(cross(n, [Math.cos(yaw), 0, Math.sin(yaw)]))
   const fwd = cross(ref, n)
@@ -770,11 +847,27 @@ for (let z = -50; z <= 50; z += 1)
     }
   }
 
-const meshes = [fromThree('turf', turf.geometry()), fromThree('growth', growth.geometry()), fromThree('water', water.geometry(), { level: L.pond.level, boulders })]
+const turfGeometry = turf.geometry()
+const meshes = [fromThree('turf', turfGeometry), fromThree('growth', growth.geometry()), fromThree('water', water.geometry(), { level: L.pond.level, boulders })]
 const out = writeGlb(rel('assets-full', 'spring', 'village-spring.glb'), meshes)
+addLists(rel('assets-full', 'spring', 'village-spring.glb'), 'growth', growth.lists)
+await MeshoptSimplifier.ready
+const turfLists = {}
+for (const [level, error] of Object.entries(TURF_LEVEL)) {
+  const [list] = MeshoptSimplifier.simplifyWithAttributes(new Uint32Array(turfGeometry.index.array), new Float32Array(turfGeometry.getAttribute('position').array), 3, new Float32Array(turfGeometry.getAttribute('normal').array), 3, [0.5, 0.5, 0.5], null, 0, error, ['ErrorAbsolute'])
+  turfLists[level] = Array.from(list)
+  tally[`turf${level[0].toUpperCase()}${level.slice(1)}`] = list.length / 3
+}
+out.bytes = addLists(rel('assets-full', 'spring', 'village-spring.glb'), 'turf', turfLists)
+tally.growthMedium = growth.lists.medium.length / 3
+tally.growthLow = growth.lists.low.length / 3
 
 const SIZE = 1024
 const WATER_SIZE = 512
+const hashed = (a, b, c) => {
+  const v = Math.sin(a * 127.1 + b * 311.7 + c * 74.7) * 43758.5453
+  return v - Math.floor(v)
+}
 const cell = (u, v, n, seed) => {
   const x = u * n
   const y = v * n
@@ -786,12 +879,12 @@ const cell = (u, v, n, seed) => {
     for (let i = -1; i <= 1; i++) {
       const cx = (((xi + i) % n) + n) % n
       const cy = (((yi + j) % n) + n) % n
-      const hx = (noise(cx + 0.5, cy + 0.5, seed) + 1) / 2
-      const hy = (noise(cx + 0.5, cy + 0.5, seed + 11) + 1) / 2
+      const hx = hashed(cx, cy, seed)
+      const hy = hashed(cx, cy, seed + 11)
       const d = Math.hypot(xi + i + hx - x, yi + j + hy - y)
       if (d < best) {
         best = d
-        id = (noise(cx + 0.5, cy + 0.5, seed + 23) + 1) / 2
+        id = hashed(cx, cy, seed + 23)
       }
     }
   return [best, id]

@@ -21,5 +21,5 @@ export const tones: Record<'lamp' | 'flame' | 'lampLight' | 'purple' | 'purpleDr
   haloCore: [1, 0.62, 0.2],
   moss: [0.075, 0.105, 0.03],
   water: [0.006, 0.016, 0.014],
-  fogGlint: [0.12, 0.62, 0.3],
+  fogGlint: [0.06, 0.5, 0.22],
 }

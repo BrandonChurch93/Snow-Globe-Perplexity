@@ -16,7 +16,7 @@ const FAR_HALF_MM = 520
 
 export const surfaceDressing: Dressing & { reachMm: number } = { tint: [1, 0.7, 0.8], amount: 0, reachMm: 240 }
 
-export const PETALS = { count: 300, nearMm: 63, farMm: 240, sizeMm: [4.8, 8.6], clumpMm: 46, wetShare: 0.2, focusMm: 60, far: [70, 330], near: [4, 80], farMips: 3.2, nearMips: 4.2 }
+export const PETALS = { count: 300, nearMm: 63, farMm: 240, sizeMm: [4.4, 12.5], clumpMm: 46, wetShare: 0.2, focusMm: 60, far: [70, 330], near: [4, 80], farMips: 3.2, nearMips: 4.2 }
 export const JUMP = { reachMm: 60, shockMmPerSecond: 1500, heightMm: 15, flight: [0.34, 0.8], shiftMm: 9, rise: 0.5, floor: 0.1 }
 export const POOL = { radiusMm: 15, outMm: 8.5, fillSeconds: 5 }
 
@@ -84,6 +84,7 @@ attribute vec4 aKind;
 attribute vec4 aShape;
 uniform vec4 uJump;
 uniform vec4 uFoot;
+uniform float uPetalMode;
 varying vec3 vPetalN;
 varying vec2 vPetalUv;
 varying vec4 vPetalKind;
@@ -103,9 +104,9 @@ mat3 petalTurn(vec3 axis, float a) {
 
 const PETAL_VERT_MAIN = `
 float petalSize = aRest.w;
-float petalHaze = petalBlur(vec3(aRest.x, 0.0, aRest.y));
+float petalHaze = petalBlur(vec3(aRest.x, 0.0, aRest.y)) + 1.2 * uPetalMode;
 float petalPad = 1.0 + ${(2 * 0.045).toFixed(3)} * petalHaze;
-vec2 petalQ2 = position.xy * petalPad;
+vec2 petalQ2 = position.xy * petalPad * (1.0 + 0.12 * uPetalMode);
 vec2 petalOut = aRest.xy - uFoot.xy;
 float petalFar = length(petalOut);
 float petalGap = max(petalFar - uFoot.z, 0.0);
@@ -129,6 +130,7 @@ mat3 petalSpin = petalTurn(vec3(0.0, 1.0, 0.0), petalYaw) * petalTurn(normalize(
 vec3 petalLow = vec3(0.0, petalSize * petalFlat * aShape.y * 0.35, 0.0);
 petalP = petalSpin * (petalP - petalLow) + petalLow;
 petalP += vec3(petalAt.x, petalUp + 0.45 * petalSize * abs(sin(petalRoll)), petalAt.y);
+if (uPetalMode > 0.5) petalP.y = 0.07;
 vec4 petalW = modelMatrix * vec4(petalP, 1.0);
 vec4 petalV = viewMatrix * petalW;
 gl_Position = projectionMatrix * petalV;
@@ -146,6 +148,7 @@ vPetalSoft = petalArc * petalKick;
 const PETAL_FRAG = `
 ${ROOM_GLSL}
 uniform sampler2D uPetals;
+uniform float uPetalMode;
 varying vec3 vPetalN;
 varying vec2 vPetalUv;
 varying vec4 vPetalKind;
@@ -154,7 +157,7 @@ varying float vPetalBlur;
 ${LIGHT}
 ${BLUR}
 vec4 petalTap(vec2 cell, vec2 at, float bias) {
-  float inside = step(0.0, at.x) * step(at.x, 1.0) * step(0.0, at.y) * step(at.y, 1.0);
+  float inside = smoothstep(0.0, 0.07, at.x) * smoothstep(1.0, 0.93, at.x) * smoothstep(0.0, 0.07, at.y) * smoothstep(1.0, 0.93, at.y);
   vec4 t = texture2D(uPetals, (cell + clamp(at, 0.02, 0.98)) / vec2(4.0, 3.0), bias);
   return vec4(t.rgb, 1.0) * (t.a * inside);
 }
@@ -176,12 +179,18 @@ void main() {
   vec4 tex = vec4(sum.rgb / max(sum.a, 1e-4), sum.a / 17.0);
   float alpha = mix(smoothstep(0.26, 0.74, tex.a), tex.a, clamp(soft * 1.5, 0.0, 1.0));
   if (alpha <= 0.004) discard;
+  if (uPetalMode > 0.5) {
+    if (uDiag != 0) discard;
+    gl_FragColor = vec4(0.0, 0.0, 0.0, 0.55 * tex.a * (1.0 - 0.8 * clamp(vPetalSoft, 0.0, 1.0)));
+    return;
+  }
   vec3 n = normalize(vPetalN);
   if (!gl_FrontFacing) n = -n;
   vec3 v = normalize(cameraPosition - vStageWorld);
   float wet = vPetalKind.y;
   vec3 albedo = pow(tex.rgb, vec3(1.0 + 0.5 * wet));
   albedo = min(mix(albedo, vec3(pow(dot(albedo, vec3(0.4, 0.4, 0.2)), 1.5) * 1.35) * vec3(0.97, 0.77, 1.0), 0.7) * 1.3, vec3(0.94));
+  albedo *= mix(vec3(1.0, 0.95, 0.96), vec3(1.0, 0.72, 0.78), vPetalKind.w * vPetalKind.w) * mix(0.78, 1.08, vPetalKind.z);
   vec3 col = petalLight(n, vStageWorld, v, albedo, wet);
   float thin = pow(max(1.0 - abs(dot(n, v)), 0.0), 2.0);
   col += albedo * RECIPROCAL_PI * (uRimCol + uRigCardCol) * 0.25 * thin;
@@ -201,7 +210,7 @@ void main() {
   vec2 uv = vStageWorld.xz / ${(2 * FAR_HALF_MM).toFixed(1)} + 0.5;
   float soft = petalBlur(vStageWorld);
   vec4 tex = texture2D(uFar, uv, 0.6 * soft);
-  float alpha = tex.a * 0.95;
+  float alpha = tex.a * 0.5;
   if (alpha <= 0.004) discard;
   vec3 v = normalize(cameraPosition - vStageWorld);
   vec3 albedo = min(mix(tex.rgb, vec3(pow(dot(tex.rgb, vec3(0.4, 0.4, 0.2)), 1.5) * 1.35) * vec3(0.97, 0.77, 1.0), 0.7) * 1.3, vec3(0.94));
@@ -300,7 +309,7 @@ function clump(x: number, z: number): number {
 }
 
 function petalGeometry(): THREE.InstancedBufferGeometry {
-  const plane = new THREE.PlaneGeometry(1, 1, 8, 6)
+  const plane = new THREE.PlaneGeometry(1, 1, 5, 4)
   const g = new THREE.InstancedBufferGeometry()
   g.setAttribute('position', plane.getAttribute('position'))
   g.setAttribute('normal', plane.getAttribute('normal'))
@@ -317,15 +326,15 @@ function petalGeometry(): THREE.InstancedBufferGeometry {
   let guard = 0
   while (placed < PETALS.count && guard++ < 20000) {
     const a = rng.range(0, Math.PI * 2)
-    const r = PETALS.nearMm + (PETALS.farMm - PETALS.nearMm) * Math.pow(rng.next(), 1.7)
+    const r = PETALS.nearMm + (PETALS.farMm - PETALS.nearMm) * Math.pow(rng.next(), 2.3)
     const x = Math.sin(a) * r
     const z = Math.cos(a) * r
     if (z < -150 && rng.next() < 0.5) continue
-    if (rng.next() > (0.1 + 0.9 * clump(x, z)) * (z > 55 ? 0.3 : 1) * (Math.abs(z) < 95 && Math.abs(x) > 60 ? 1 : 0.55)) continue
+    if (rng.next() > (0.03 + 0.97 * clump(x, z)) * (z > 55 ? 0.3 : 1) * (Math.abs(z) < 95 && Math.abs(x) > 60 ? 1 : 0.55)) continue
     const soaked = rng.next() < PETALS.wetShare + 0.25 * Math.exp(-(r - PETALS.nearMm) / 30) ? 1 : 0
     const list = soaked ? wet : dry
     const id = list[Math.floor(rng.next() * list.length) % list.length]!
-    rest.push(x, z, rng.range(0, Math.PI * 2), rng.range(PETALS.sizeMm[0], PETALS.sizeMm[1]))
+    rest.push(x, z, rng.range(0, Math.PI * 2), PETALS.sizeMm[0] + (PETALS.sizeMm[1] - PETALS.sizeMm[0]) * Math.pow(rng.next(), 1.6))
     kind.push(id, soaked, rng.next(), rng.next())
     shape.push(rng.range(0.05, 0.3), rng.range(0.0, 0.16), rng.range(-0.12, 0.12), aspect[id]!)
     placed++
@@ -342,12 +351,22 @@ function makeSurface(): THREE.Group {
   uniforms.uFar.value = texture(FAR)
   const shared = { ...roomUniforms, ...uniforms, uWater: waterUniforms.uWater }
   const lit = { part: PART, standIn: false, change: 'surface-dressing' }
-  const petals = new THREE.Mesh(
-    petalGeometry(),
-    stageShader({ ...lit, textured: true, texels: 512, uniforms: shared, vertexPars: PETAL_VERT_PARS, vertexMain: PETAL_VERT_MAIN, fragment: PETAL_FRAG, params: { ...veil, side: THREE.DoubleSide } }),
-  )
+  const petalShape = petalGeometry()
+  const petalLook = (mode: number): THREE.Material =>
+    stageShader({ ...lit, textured: true, texels: 512, uniforms: { ...shared, uPetalMode: { value: mode } }, vertexPars: PETAL_VERT_PARS, vertexMain: PETAL_VERT_MAIN, fragment: PETAL_FRAG, params: { ...veil, side: THREE.DoubleSide } })
+  const petals = new THREE.Mesh(petalShape, petalLook(0))
   petals.frustumCulled = false
   petals.renderOrder = 4
+  // Under every petal the slab loses its shine: the petal's own soft outline, flat on the slab, taken out of what the slab shows.
+  const flat = new THREE.PlaneGeometry(1, 1, 1, 1)
+  const underShape = new THREE.InstancedBufferGeometry()
+  for (const name of ['position', 'normal', 'uv']) underShape.setAttribute(name, flat.getAttribute(name))
+  for (const name of ['aRest', 'aKind', 'aShape']) underShape.setAttribute(name, petalShape.getAttribute(name))
+  underShape.setIndex(flat.getIndex())
+  underShape.instanceCount = petalShape.instanceCount
+  const under = new THREE.Mesh(underShape, petalLook(1))
+  under.frustumCulled = false
+  under.renderOrder = 3.5
   const far = new THREE.Mesh(new THREE.PlaneGeometry(2 * FAR_HALF_MM, 2 * FAR_HALF_MM), stageShader({ ...lit, textured: true, texels: 2048, uniforms: shared, fragment: FAR_FRAG, params: { ...veil } }))
   far.rotation.x = -Math.PI / 2
   far.position.y = 0.05
@@ -359,7 +378,7 @@ function makeSurface(): THREE.Group {
   pool.renderOrder = 3
   pool.position.y = 0.06
   puddle = pool
-  return new THREE.Group().add(far, pool, petals)
+  return new THREE.Group().add(far, pool, under, petals)
 }
 
 export function dressing(): THREE.Object3D {

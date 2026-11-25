@@ -229,7 +229,7 @@ function seaGlass(soup, fr, it, rnd) {
       const phi = u * 2 * Math.PI
       const out = R * (1 + two * Math.cos(2 * phi + p2) + tri * Math.cos(3 * phi + p3) + 0.03 * Math.cos(5 * phi + p2 * 2))
       const rho = Math.sin((v * Math.PI) / 2)
-      const lump = 1 + 0.1 * (fbm(u * 5 + rnd.a * 9, v * 2 + rnd.b * 5, 5, 64, 91, 2) - 0.5)
+      const lump = 1 + 0.1 * (fbm(u * 5 + rnd.a * 9, v * 2 + rnd.b * 5, 5, 64, 91, 2) - 0.5) * smooth(0.05, 0.4, rho)
       return [out * rho * Math.cos(phi), out * rho * Math.sin(phi) * long, T * Math.pow(Math.max(1 - Math.pow(rho, 2.6), 0), 0.5) * lump - 0.22 * T]
     },
     (u, v, p) => ({ uv: [p[0] / 3, p[1] / 3], uv2: [1 - Math.sin((v * Math.PI) / 2), it.frost ? 1 : 0.25 + 0.3 * rnd.a], c: it.c }),
@@ -307,7 +307,8 @@ export function buildSand(f) {
     const s = top - down * 15
     const A = (az + 360) / 360
     const across = spillAt(az)
-    const tongue = across * (1.15 - down * (0.9 + 0.9 * fbm(A * 40, 0.4, 400, 4, 209, 2)))
+    const stream = smooth(0.42, 0.62, fbm(A * 260, down * 1.5, 2600, 64, 213, 2)) * (1 - 0.5 * smooth(0.2, 1, down))
+    const tongue = across * stream * (1.15 - down * (0.9 + 0.9 * fbm(A * 40, 0.4, 400, 4, 209, 2)))
     const thick = Math.max(tongue, 0) * 0.9 * (0.6 + 0.8 * fbm(A * 90, down * 6, 900, 64, 211, 2)) * smooth(0, 0.06, down + 0.02)
     const q = P.atS(f.mer, s)
     const d = f.dAt(az, s) + 0.05 + thick
