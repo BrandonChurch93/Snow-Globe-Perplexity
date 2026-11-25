@@ -132,34 +132,34 @@
       "influence": 0.6,
       "loop": false,
       "note": "the mechanism only; the words music box would bring a tune, which the family line forbids",
-      "state": "not made: no credits",
-      "takesUsed": 0
+      "state": "kept, take 1",
+      "takesUsed": 1
     },
     "key-tap": {
-      "text": "One single key of a computer keyboard pressed once: one short muted low plastic clack, dull and dry",
+      "text": "A fingertip tapping once on a thick soft rubber pad: one soft dull low thump, round and muffled",
       "seconds": 0.5,
       "influence": 0.6,
       "loop": false,
-      "note": "asked at the minimum of 0.5 s; the chain cuts it to 0.1 s; heard with silence around it",
-      "state": "not made: no credits",
-      "takesUsed": 0
+      "note": "take 3: no key, no keyboard and no plastic in the text, since both gave a hard bright click however soft the words around them; a soft thing is named, a rubber pad under a fingertip; asked at the minimum of 0.5 s; the chain cuts it to 0.1 s",
+      "state": "open, out of takes",
+      "takesUsed": 3
     },
     "ui-send": {
       "text": "One firm press of a single large rubber button: one short low rounded click with a small thump, dry",
       "seconds": 0.5,
       "influence": 0.6,
       "loop": false,
-      "state": "not made: no credits",
-      "takesUsed": 0
+      "state": "kept, take 1",
+      "takesUsed": 1
     },
     "riser": {
-      "text": "A rush of air rising quickly: one whoosh of wind that swells from nothing to full and stops short at its loudest",
-      "seconds": 1.2,
+      "text": "A slow soft rush of wind passing by: one long smooth whoosh of air that swells slowly and evenly from nothing to full and then dies away as slowly",
+      "seconds": 2.4,
       "influence": 0.6,
       "loop": false,
-      "note": "asked at the length of the cue so the swell ends where the cue ends; the word breath is left out because the listener is asked about breath",
-      "state": "not made: no credits",
-      "takesUsed": 0
+      "note": "take 3: the swell that take 1 gave, loudest in its middle, asked at twice the length of the cue, 2.4 s, so that its rising half fills the 1.2 s the chain keeps and the cut falls at its loudest; no word for sucking or a pipe, which came back as a mouth (take 2)",
+      "state": "kept, take 3",
+      "takesUsed": 3
     }
   },
   "takes": [
@@ -685,6 +685,128 @@
         "open": "1. I hear deep, rhythmic breathing with a hollow, mechanical character. It sounds like someone breathing heavily through a scuba diving regulator or a gas mask.\n2. There are four separate sound events, each consisting of a complete inhale and exhale cycle. \n3. The entire recording consists of amplified human breathing, but there are no spoken words, humming, or singing.\n4. No, there is no music, melody, or musical instrument present in this audio.\n5. It starts abruptly with a loud inhalation sound. It ends as the final exhalation breath gradually fades into silence.",
         "fit": "1. No, it does not fit because the audio lacks the sound of wind or dry leaves and is instead dominated by a distinct rhythmic pulsing. \n2. The rhythmic thumping and whooshing, which strongly resemble a heartbeat or heavy breathing through a respirator, do not belong to the description.\n3. No, there is no human voice, spoken word, or singing in this sound."
       }
+    },
+    {
+      "cue": "music-box",
+      "take": 1,
+      "text": "The clockwork mechanism of a small wind-up toy turning with no tune: a steady fine ticking and whirring of tiny brass gears, even and dry",
+      "cost": 22,
+      "verdict": "fits",
+      "why": "Numbers: 2.00 s filed, sound 1.95 s, fits the length of its cue; a run of fine clicks in three groups, level per 0.1 s between -44 and -26 dB; 95 percent of the energy over 4 kHz. Listener, open: a sharp mechanical ratcheting or clicking, rhythmic and slightly metallic, like turning a socket wrench or a dial, three runs of clicks. Fit: yes, the rhythmic mechanical ratcheting typical of winding up a music box; nothing outside the line. No voice, no music, no tune. The open answer names a small mechanism being turned without being told the line: it fits.",
+      "listener": {
+        "line": "A music box mechanism turning",
+        "open": "1. I hear a sharp, mechanical ratcheting or clicking sound. It has a rhythmic, slightly metallic character, similar to turning a socket wrench or a dial.\n2. There are three separate ratcheting sound events. \n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or musical instrument present.\n5. It starts abruptly with the first ratcheting noise. It ends abruptly right after the third series of clicks finishes.",
+        "fit": "1. Yes, it fits the description because the audio consists of the rhythmic, mechanical ratcheting sound typical of winding up a music box.\n2. There is nothing in the sound that does not belong to the description. \n3. No, there are no human voices, spoken words, or singing in the audio."
+      }
+    },
+    {
+      "cue": "key-tap",
+      "take": 1,
+      "text": "One single key of a computer keyboard pressed once: one short muted low plastic clack, dull and dry",
+      "cost": 6,
+      "verdict": "fits weakly",
+      "why": "Numbers: 0.48 s filed, cut by the chain to 0.1 s; one event; in the cut 57 percent of the energy between 60 and 250 Hz and 13 percent under 60 Hz. Listener: on the plain listening copy (0.1 s in 1.6 s of silence) two of three open calls answered that no file came and one heard a high electronic chime, which the numbers rule out; the fit call said yes, a single brief quiet click of a keyboard key. On a second copy, the same 0.1 s played four times and 12 dB louder, both open calls heard a sharp, short, hard and rather high click, like a computer mouse, a retractable pen or a small plastic switch. No voice, no music. It is a press of a small switch, and it is heard as hard and sharp where the line says soft: half of the line.",
+      "listener": {
+        "line": "A soft key press",
+        "open": "1. Not sure.\n2. Not sure. \n3. Not sure.\n4. Not sure.\n5. Not sure.\n\n*(Note: It appears an actual audio file was not provided or successfully attached for me to listen to. If you can upload the audio file, I would be happy to analyze it for you!)*",
+        "fit": "1. Yes, it fits the description because the audio consists of a single, brief, and quiet clicking sound characteristic of pressing a computer keyboard key.\n2. There are no additional noises or background sounds in the recording that do not belong to this description.\n3. No, there is no human voice, spoken word, or singing present in the audio.",
+        "note": "the first open call answered that no file came; it was asked again once and the second answer is recorded; a sound of 0.1 s in 1.6 s of silence was answered three times out of four with no file or with a chime the numbers rule out, so a second listening copy was made, the same 0.1 s played four times half a second apart and 12 dB louder (key-tap-take-1-x4.wav), and the open questions were asked on it twice (openFourTimes)",
+        "openMore": [
+          "1. I hear a single, high-pitched electronic chime or \"ding\". It has a bright, synthetic character similar to a digital notification alert.\n2. There is exactly one separate sound event.\n3. There is no human voice, spoken word, breath, or singing present.\n4. There is no continuous music or melody, but the sound is a single musical pitch likely produced by an electronic synthesizer.\n5. The sound begins abruptly with a sharp attack. It ends with a quick, smooth fade-out into silence.",
+          "1. Not sure, because no audio file was provided or attached for me to listen to.\n2. Not sure.\n3. Not sure.\n4. Not sure.\n5. Not sure."
+        ],
+        "openFourTimes": [
+          "1. The sound is a sharp, short click, likely made by pressing a computer mouse or a retractable pen. It has a relatively high, hard, and distinctly mechanical character.\n2. No, there is no human voice, spoken word, breath, or singing.\n3. No, there is no music, melody, musical note, or instrument involved.\n4. Yes, all four sounds are exactly the same.",
+          "1. It is a short, high-pitched, and hard clicking noise. An object like a computer mouse, a retractable pen, or a small plastic switch could make this sound.\n2. No, there is no human voice, spoken word, breath, or singing.\n3. No, there is no music, melody, musical note, or instrument.\n4. Yes, each of the four sounds is exactly the same."
+        ]
+      }
+    },
+    {
+      "cue": "key-tap",
+      "take": 2,
+      "text": "One single key of a laptop keyboard pressed gently once by a fingertip: one soft muffled low thud of the key going down, quiet, dull and padded",
+      "cost": 6,
+      "verdict": "fits weakly",
+      "why": "Numbers: 0.48 s filed, cut by the chain to 0.1 s; one event; in the cut 53 percent of the energy between 4 and 10 kHz and 26 percent between 250 Hz and 1 kHz: brighter than take 1. Listener, on the copy that plays it four times: open, a sharp, hard, high click, like a computer mouse, a retractable pen or a small mechanical switch; fit, yes, a short gentle mechanical click of a plastic keyboard key. No voice, no music. As take 1: a press of a small switch, heard without the line as hard and sharp where the line says soft; the fit call agrees easily.",
+      "listener": {
+        "line": "A soft key press",
+        "open": "1. The sound is a sharp, hard, high-pitched click. It could easily be made by clicking a computer mouse, pressing a retractable pen, or flipping a small mechanical switch.\n2. No, there is no human voice, spoken word, breath, or singing present in the audio.\n3. No, there is no music, melody, musical note, or musical instrument in this recording.\n4. Yes, each of the four sounds played is exactly the same.",
+        "fit": "1. Yes, the sound fits the description because it features a short, gentle mechanical click that is characteristic of tapping a plastic keyboard key.\n2. There is nothing in the audio that contradicts or does not belong to the description of a soft key press.\n3. No, there is no human voice, spoken word, or singing present in the sound.",
+        "note": "the listening copy holds the cut sound four times, half a second apart and 12 dB louder, because one sound of a fraction of a second alone in silence is not heard by the listener; both questions say so"
+      }
+    },
+    {
+      "cue": "key-tap",
+      "take": 3,
+      "text": "A fingertip tapping once on a thick soft rubber pad: one soft dull low thump, round and muffled",
+      "cost": 6,
+      "verdict": "does not fit",
+      "why": "Numbers: 0.48 s filed, cut by the chain to 0.1 s; one event; in the cut 91 percent of the energy between 60 and 250 Hz, nothing over 1 kHz. Listener, on the copy that plays it four times: open, a short, low, slightly muffled thud, dull but hard, like a heavy footstep, a knock on thick wood or a finger tapping a microphone; fit, no, a low thump or heartbeat without the click or plastic tap of a key. No voice, no music. It is soft and low and is not a key. The cue is out of takes and stays open as a take; takes 1 and 2 hold the press of a key, take 3 the softness.",
+      "listener": {
+        "line": "A soft key press",
+        "open": "1. The sound is a short, low-pitched, and slightly muffled thud. It has a dull but hard character, sounding like a heavy footstep, someone knocking on thick wood, or a finger tapping a microphone. \n2. There is no human voice, spoken word, breathing, or singing present in the audio.\n3. There is no music, melody, or pitched musical note. It could potentially be an unpitched percussion instrument like a muffled bass drum, but it acts more like a simple impact noise.\n4. Yes, each of the four sounds appears to be exactly the same.",
+        "fit": "1. No, the sound does not fit the description because it sounds like a low-pitched thump or heartbeat. A soft key press typically produces a sharper, mechanical click or plastic tap, which is missing here.\n2. The deep, bass-heavy resonance present in the audio does not belong to the sound of a standard key press.\n3. No, there is no human voice, spoken word, or singing heard in the audio.",
+        "note": "the listening copy holds the cut sound four times, half a second apart and 12 dB louder, because one sound of a fraction of a second alone in silence is not heard by the listener; both questions say so"
+      }
+    },
+    {
+      "cue": "ui-send",
+      "take": 1,
+      "text": "One firm press of a single large rubber button: one short low rounded click with a small thump, dry",
+      "cost": 6,
+      "verdict": "fits",
+      "why": "Numbers: 0.48 s filed, sound 0.3 s in the cut, fits the length of its cue; one event, loudest in its first 0.04 s and 40 dB down by 0.1 s; 71 percent of the energy between 1 and 4 kHz, with the strongest lines at 185, 680 and 1500 Hz. Listener, on the copy that plays it four times: open, first call, a sharp high ding, hard and resonant, like a small metal bell, a triangle or a spoon on a glass, a clear musical note but no melody; open, second call, a sharp brief click or tick, high and hard, like a mechanical switch, a mouse click or a digital metronome, not musical; fit, yes, the sharp brief mechanical click of a small plastic button or a mouse being pressed, nothing outside the line. No voice. Two calls of three hear the press of a button; one hears a ding, which the line at 1500 Hz explains. Kept as the press of a button, with the ding written down.",
+      "listener": {
+        "line": "One press of a button",
+        "open": "1. The sound is a sharp, high-pitched \"ding\" with a hard, resonant character. It sounds like a small metal bell, a triangle, or a spoon tapping a glass.\n2. There is no human voice, spoken word, breath, or singing present.\n3. There is no melody, but the sound is a clear musical note that could be produced by a percussion instrument like a triangle.\n4. Yes, each of the four sounds is exactly the same.",
+        "fit": "1. Yes, the sound fits the description perfectly. It features the sharp, brief mechanical click characteristic of a small plastic device button or computer mouse being pressed. \n\n2. There is no element of the main sound that does not belong to the description. The only additional audio is a very faint background static or room noise that comes from the recording itself.\n\n3. No, there is no human voice, spoken word, or singing in this audio.",
+        "note": "the listening copy holds the cut sound four times, half a second apart and 12 dB louder, because one sound of a fraction of a second alone in silence is not heard by the listener; both questions say so; the open call heard a ding and the fit call a click, so the open questions were asked a second time (openSecond)",
+        "openSecond": "1. It is a sharp, brief clicking or ticking noise with a relatively high and hard character. It sounds like a mechanical switch, a computer mouse click, or a digital metronome.\n2. No, there are no human voices, spoken words, breathing, or singing present in the audio.\n3. No, there is no music, melody, or musical instrument, as it is just a simple non-musical click.\n4. Yes, each of the four sounds is exactly the same."
+      }
+    },
+    {
+      "cue": "riser",
+      "take": 1,
+      "text": "A rush of air rising quickly: one whoosh of wind that swells from nothing to full and stops short at its loudest",
+      "cost": 13,
+      "verdict": "fits weakly",
+      "why": "Numbers: 1.20 s filed, sound 1.03 s, fits the length of its cue; level per 0.1 s rises from -51 to -24 dB at 0.45 s and falls again to -61 dB at the end; 54 percent of the energy between 1 and 4 kHz. Listener, open, on the copy that plays it three times: a quick airy whoosh or sweep, smooth and rushing, like wind or an interface transition; it gets louder and then quieter and is loudest in its middle; it starts with a rapid swell and ends with a quick fade. Fit: yes, a quick sharp whoosh or inhaling noise that escalates in volume. No voice, no music. It is air and it rises, but it falls away again over its second half, where the line rises into frame 0: a pass, not a rise.",
+      "listener": {
+        "line": "A rising breath of air into frame 0",
+        "open": "1. Not sure, because there is no audio file attached to your message for me to listen to.\n2. Not sure.\n3. Not sure.\n4. Not sure.\n5. Not sure.",
+        "fit": "1. Yes, the audio features a quick, sharp inhaling noise or whoosh that escalates in volume, which fits the description of a rising breath.\n2. There are no additional noises or elements in the audio that do not belong to the description.\n3. No, there is no human voice, spoken word, or singing present in the clip.",
+        "note": "the first open call answered that no file came; it was asked again once and the second answer is recorded; on the plain copy and on a copy with silence around it the open call answered four times that no file came; a third copy plays the sound three times in a row (riser-take-1-x3.wav) and the open questions on it, with a question on where it is loudest, were answered at once (openThreeTimes); the fit answer recorded is from the copy with silence around it",
+        "openThreeTimes": "1. I hear a quick, airy \"whoosh\" or sweeping sound effect. It has a smooth, rushing character similar to wind or a digital interface transition.\n2. The sound gets both louder and quieter. It is loudest in its middle before quickly tapering off.\n3. There is no human voice, spoken word, breath, or singing present.\n4. There is no music, melody, or musical instrument.\n5. The sound starts with a rapid swell and ends with a quick fade out."
+      }
+    },
+    {
+      "cue": "riser",
+      "take": 2,
+      "text": "Air sucked fast into a narrowing pipe: one rush of air that starts from silence, grows louder and higher the whole time and is cut off dead at its loudest point, with no tail and no fall",
+      "cost": 13,
+      "verdict": "does not fit",
+      "why": "Numbers: 1.20 s filed, sound 0.85 s; level per 0.1 s flat between -29 and -24 dB from the first moment to 0.8 s, then silence: no rise at all; 58 percent of the energy between 4 and 10 kHz. Listener, on the copy that plays it three times: open, a sharp airy hiss or whoosh that ends in a brief hollow pop or gulp, like an aerosol spray, a pressurised can opened or an exaggerated slurp; loudest right at its start and getting quieter; no words, but it could be an exaggerated human breath or slurping mouth sound. Fit: no; a sharp inhalation of air that ends in a very noticeable pop; no voiced sound, only a human breath and mouth noise. A breath or mouth was named in both calls. Not kept: it does not rise, and it is heard as a mouth.",
+      "listener": {
+        "line": "A rising breath of air into frame 0",
+        "note": "the listening copy plays the sound three times in a row, because a sound of about 1 s alone was not heard by the listener; both questions say so; the open questions ask where the sound is loudest",
+        "open": "1. I hear a sharp, airy hissing or whooshing noise that concludes with a brief, hollow popping or gulping sound. It resembles the sound of an aerosol spray, opening a pressurized can, or an exaggerated slurp.\n\n2. The sound gets quieter overall, as it is loudest right at its start. The initial intense hiss steadily drops in volume before finishing with the final, slightly softer pop.\n\n3. There are no spoken words, singing, or clear human voices present. However, it is possible that the noise is an exaggerated human breath or slurping mouth sound.\n\n4. No, there is no music, melody, or musical instrument present in the recording.\n\n5. The sound starts very abruptly with a sudden, forceful burst of hissing air. It ends just as abruptly with a quick, distinct popping or clicking noise.",
+        "fit": "1. No, the sound does not fully fit the description because while it begins with a sharp inhalation of air, it ends with a very noticeable popping noise. \n2. The distinct popping, clicking, or smacking sound at the very end of the audio clip does not belong to the description of a breath.\n3. No, there is no vocalized human voice, spoken word, or singing present, only a human breath and mouth noise."
+      }
+    },
+    {
+      "cue": "riser",
+      "take": 3,
+      "text": "A slow soft rush of wind passing by: one long smooth whoosh of air that swells slowly and evenly from nothing to full and then dies away as slowly",
+      "cost": 26,
+      "verdict": "fits",
+      "why": "Numbers: 2.40 s filed, sound 2.05 s, cut by the chain to 1.2 s; in the cut the level per 0.1 s rises from -60 dB to -20 dB at 0.95 s and falls 14 dB over the last 0.2 s, where the chain fades it: it rises for four fifths of its length and ends near its loudest. All of its energy is under 250 Hz (33 percent under 60 Hz, 67 percent between 60 and 250 Hz). Listener, on the copy that plays it three times, open, asked twice: a quick sharp whoosh or swish of air, like a stick or a whip cutting through the air or a transition effect; a fast buildup of rushing air that trails off quickly; the first call placed the loudest point near the start, the second in the middle. Fit: no, for this reason: it is a synthetic whoosh and not an actual human inhalation. No voice, no breath, no music in any call. The fit call read the line's breath as a person breathing in, which the family line forbids; what the line asks of the sound, air that rises into frame 0, is what the numbers show and what both open calls name as air. Kept, with one thing for the review round: it lies wholly under 250 Hz, so a phone speaker will play little of it.",
+      "listener": {
+        "line": "A rising breath of air into frame 0",
+        "note": "the listening copy plays the cut sound three times in a row, because a sound of about 1 s alone was not heard by the listener; both questions say so; the open questions ask where the sound is loudest; the first open call placed the loudest point near the start, against the numbers, so the open questions were asked a second time (openSecond)",
+        "open": "1. I hear a quick, sharp whooshing or swishing sound. It resembles a fast-moving object slicing through the air, like a swinging stick or a cinematic transition effect.\n2. The sound gets rapidly louder and then quickly gets quieter. It is loudest near its start, right after the initial attack.\n3. No, there is no human voice, spoken word, breath, or singing present.\n4. No, there is no music, melody, or musical instrument heard in the clip.\n5. The sound starts abruptly with a sudden, energetic burst. It ends by rapidly fading out into complete silence.",
+        "fit": "1. No, the sound does not fit the description because it sounds like a synthetic, electronic \"whoosh\" transition effect rather than an actual human inhalation. \n2. The artificial, digital sweeping tone and highly processed noise do not belong to the description of a natural breath of air.\n3. No, there is no human voice, spoken word, or singing in this audio.",
+        "openSecond": "1. I hear a quick, sharp swooshing or swishing sound. It has an airy, fast character, similar to a stick or whip rapidly cutting through the air.\n2. The sound gets both louder and then quieter during its short duration. It is loudest right in its middle at the peak of the swoosh.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument present.\n5. The sound starts rapidly with a sudden, fast buildup of rushing air. It ends by quickly trailing off and fading out into silence."
+      }
     }
   ],
   "learned": [
@@ -719,7 +841,13 @@
     "A door creaking, then one drone note, gave the door and its latch and no drone (land-fall take 3); one of three listener calls took the creak for a cat. A creak is close to a voice: keep it short and low in a layer.",
     "Dry leaves rustling softly in a light breeze came back as footsteps crunching through leaves (amb-fall take 1), with no wind and no hum: leaves named first and close are leaves on the ground under feet. The bed was even and the seam clean.",
     "Wind named first, leaves high in the treetops, hum under it, gave a steady wind roar heard as strong wind, perfectly even (amb-fall take 2), with no leaves and no hum heard. An ambience of three parts gives one part, as the shakes do; spring gave two, rain and birds.",
-    "Air blowing across the mouth of a bottle, asked as one steady note, came back as four separate blows heard twice as heavy breathing through a regulator (amb-fall take 3): blowing is a mouth. For a tone, name a thing that sounds by itself, not air that someone blows."
+    "Air blowing across the mouth of a bottle, asked as one steady note, came back as four separate blows heard twice as heavy breathing through a regulator (amb-fall take 3): blowing is a mouth. For a tone, name a thing that sounds by itself, not air that someone blows.",
+    "A sound of 0.1 s alone in silence is not heard by the listener: two of three calls answered that no file came. The same sound played four times, half a second apart and 12 dB louder, was heard the same way twice. Short interface sounds are judged on such a copy.",
+    "Keyboard key gave a hard, sharp click twice, with clack and with soft muffled thud alike (key-tap takes 1 and 2): the object decides the sound, the adjectives do not.",
+    "A fingertip on a rubber pad gave a low thud with no click at all (key-tap take 3), heard as a knock or a heartbeat: without the key there is no key.",
+    "A whoosh that swells and stops short at its loudest came back as a whoosh that swells to its middle and fades (riser take 1). A sound of about 1 s alone was four times answered with no file; played three times in a row it was heard at once.",
+    "Air sucked into a pipe, cut off dead at its loudest, gave a flat hiss that starts at full level and ends in a pop, heard twice as a breath or a mouth (riser take 2): sucked is a mouth, and the tool does not make a sound that ends at its loudest. A rise has to be the first half of a longer swell, cut by the chain.",
+    "A slow swell of wind asked at 2.4 s for a cue of 1.2 s: the chain kept the rising half, -60 to -20 dB over 0.95 s (riser take 3). It came wholly under 250 Hz: slow, soft and smooth push a wind sound down."
   ],
   "kept": {
     "glass-clink": 2,
@@ -728,7 +856,10 @@
     "lift": 3,
     "shake-spring": 2,
     "amb-spring": 2,
-    "amb-summer": 1
+    "amb-summer": 1,
+    "music-box": 1,
+    "ui-send": 1,
+    "riser": 3
   },
   "open": {
     "amb-winter": "three takes used, none fits: silent in the mixes and in the app until a review round buys new takes",
@@ -739,7 +870,8 @@
     "land-summer": "three takes used, none fits (a hiss like a match flaring; a rising hiss like a zipper; a short whoosh in two open calls): the summer landing plays glass-clink alone until a review round buys new takes",
     "shake-fall": "three takes used, none is the whole line (three knocks on wood; a splash in a hollow vessel, heard once with a clatter; a dry rattle like dice in a cup): takes 2 and 3 each hold a part and may be laid together in the free work (decision 111)",
     "land-fall": "three takes used, none is the whole line (one heavy impact like a hollow wooden object struck; a sub rumble the listener could not settle, twice no file heard; a door creaking and latching, once taken for a cat): take 1 holds the landing and take 3 the creak, the tone is in neither",
-    "amb-fall": "three takes used, none is the whole line (someone walking through dry leaves; a steady strong wind roar; four heavy breaths through a regulator): take 2 holds the wind and take 1 the leaves, the tone is in neither"
+    "amb-fall": "three takes used, none is the whole line (someone walking through dry leaves; a steady strong wind roar; four heavy breaths through a regulator): take 2 holds the wind and take 1 the leaves, the tone is in neither",
+    "key-tap": "three takes used, none is the whole line (a hard sharp click like a mouse button, low in the numbers; the same, brighter; a low dull thud like a knock on thick wood): takes 1 and 2 hold the key, take 3 the softness, so a layer may be tried in the free work (decision 111)"
   },
   "takesLeft": {
     "lift": 0,
@@ -758,10 +890,10 @@
     "shake-fall": 0,
     "land-fall": 0,
     "amb-fall": 0,
-    "music-box": 3,
-    "key-tap": 3,
-    "ui-send": 3,
-    "riser": 3,
+    "music-box": 2,
+    "key-tap": 0,
+    "ui-send": 2,
+    "riser": 0,
     "music-one-piece": 3,
     "music-winter": 3,
     "music-spring": 3,
@@ -850,10 +982,6 @@
     "howToGoOn": "audio/RECIPE.md"
   },
   "notMade": {
-    "music-box": "not made: no credits; 0 takes used, 3 left",
-    "key-tap": "not made: no credits; 0 takes used, 3 left",
-    "ui-send": "not made: no credits; 0 takes used, 3 left",
-    "riser": "not made: no credits; 0 takes used, 3 left",
     "music-one-piece": "not made: no credits; 0 takes used, 3 left",
     "music-winter": "not made: no credits; 0 takes used, 3 left",
     "music-spring": "not made: no credits; 0 takes used, 3 left",
@@ -887,6 +1015,33 @@
       ],
       "time": "2026-11-25T17:25Z",
       "answer": "1. No, they do not belong together because the first two sounds are artificial sound effects, while the third is an outdoor, environmental recording of insects. \n2. The third sound stands apart because it is a continuous, natural acoustic recording, unlike the short, synthetic, and mechanical sounds of the first two."
+    },
+    {
+      "files": [
+        "glass-clink",
+        "lift",
+        "music-box"
+      ],
+      "time": "2026-11-25T17:39Z",
+      "answer": "1. No, they do not belong together because the first two sounds involve liquid, while the third is a dry, mechanical noise. \n2. The third sound stands apart because it features the rapid clicking of a mechanical tool like a ratchet, contrasting with the water drop and clinking ice heard in the first two."
+    },
+    {
+      "files": [
+        "glass-clink",
+        "lift",
+        "ui-send"
+      ],
+      "time": "2026-11-25T17:46Z",
+      "answer": "1. No, they do not belong together because they are an unrelated mix of a digital beep, ice clinking in a glass, and a mechanical click, lacking any shared room acoustics. \n2. The first sound stands apart because it is a purely synthetic, computer-generated audio effect, whereas the second and third sounds are acoustic recordings of real physical objects."
+    },
+    {
+      "files": [
+        "glass-clink",
+        "lift",
+        "riser"
+      ],
+      "time": "2026-11-25T17:54Z",
+      "answer": "1. No, they do not belong together because they are an electronic beep, ice clinking in a glass, and wind blowing, which come from entirely different sources and environments. \n2. The first sound stands apart because it is a synthesized digital noise, whereas the second and third are recordings of natural, physical sounds."
     }
   ]
 }

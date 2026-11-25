@@ -3093,6 +3093,648 @@
       },
       "time": "2026-11-25T17:36:37.872Z",
       "answersTime": "2026-11-25T17:37:21.038Z"
+    },
+    {
+      "cue": "music-box",
+      "take": 1,
+      "round": "build",
+      "class": "interface",
+      "season": null,
+      "line": "A music box mechanism turning",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "The clockwork mechanism of a small wind-up toy turning with no tune: a steady fine ticking and whirring of tiny brass gears, even and dry, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 2,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 22
+      },
+      "source": {
+        "name": "music-box-2026-11-25T17-38-14-743Z.wav",
+        "bytes": 384078,
+        "sha256": "753d1f36f22240c370fde2ad10b4886220bd2a146e6ed4709fc4b63664f9e9b1",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 2,
+        "kbps": 1536
+      },
+      "sha256": "6fe7ce562a701e6e7dade9b4dafa756f13da2fbc1d651b808f34188808a82d4a",
+      "measured": {
+        "seconds": 2,
+        "peakDb": -6.24,
+        "truePeakDb": -6.24,
+        "lufs": -23.28,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -29.95,
+        "silenceFrontSeconds": 0.01,
+        "silenceEndSeconds": 0.045,
+        "soundSeconds": 1.945,
+        "tailDb": -51.33,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 10133,
+          "bands": {
+            "sub": 0.0003,
+            "low": 0.0004,
+            "lowMid": 0.0007,
+            "mid": 0.0527,
+            "high": 0.4167,
+            "air": 0.5291
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -23.3,
+        "lra": 0,
+        "truePeakDb": -6.2
+      },
+      "fits": {
+        "wantSeconds": 2,
+        "soundSeconds": 1.945,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "fits",
+        "why": "Numbers: 2.00 s filed, sound 1.95 s, fits the length of its cue; a run of fine clicks in three groups, level per 0.1 s between -44 and -26 dB; 95 percent of the energy over 4 kHz. Listener, open: a sharp mechanical ratcheting or clicking, rhythmic and slightly metallic, like turning a socket wrench or a dial, three runs of clicks. Fit: yes, the rhythmic mechanical ratcheting typical of winding up a music box; nothing outside the line. No voice, no music, no tune. The open answer names a small mechanism being turned without being told the line: it fits.",
+        "listener": {
+          "line": "A music box mechanism turning",
+          "open": "1. I hear a sharp, mechanical ratcheting or clicking sound. It has a rhythmic, slightly metallic character, similar to turning a socket wrench or a dial.\n2. There are three separate ratcheting sound events. \n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or musical instrument present.\n5. It starts abruptly with the first ratcheting noise. It ends abruptly right after the third series of clicks finishes.",
+          "fit": "1. Yes, it fits the description because the audio consists of the rhythmic, mechanical ratcheting sound typical of winding up a music box.\n2. There is nothing in the sound that does not belong to the description. \n3. No, there are no human voices, spoken words, or singing in the audio."
+        }
+      },
+      "time": "2026-11-25T17:38:18.731Z",
+      "answersTime": "2026-11-25T17:38:51.514Z"
+    },
+    {
+      "cue": "key-tap",
+      "take": 1,
+      "round": "build",
+      "class": "interface",
+      "season": null,
+      "line": "A soft key press",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "One single key of a computer keyboard pressed once: one short muted low plastic clack, dull and dry, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 0.5,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 6
+      },
+      "source": {
+        "name": "key-tap-2026-11-25T17-39-00-493Z.wav",
+        "bytes": 92238,
+        "sha256": "f460a27dd30571b6479a33ac5faceb53048d53d65d572475ff7d984e64f6bf8a",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 0.48,
+        "kbps": 1537
+      },
+      "sha256": "1cf46bdb92c2ab81c60a073b29c9db2b4755628ca40235e2720f970e0bd2b8eb",
+      "measured": {
+        "seconds": 0.48,
+        "peakDb": -9.78,
+        "truePeakDb": -9.78,
+        "lufs": -29.65,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": -60.48,
+        "rmsDb": -32.89,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0.03,
+        "soundSeconds": 0.45,
+        "tailDb": -63.74,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 1996,
+          "bands": {
+            "sub": 0.2919,
+            "low": 0.3526,
+            "lowMid": 0.0616,
+            "mid": 0.0858,
+            "high": 0.1537,
+            "air": 0.0545
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -29.6,
+        "lra": 0,
+        "truePeakDb": -9.8
+      },
+      "fits": {
+        "wantSeconds": 0.1,
+        "soundSeconds": 0.45,
+        "ok": false,
+        "note": "the sound is 0.45 s, long for a cue of 0.1 s: the chain cuts it to length"
+      },
+      "answers": {
+        "verdict": "fits weakly",
+        "why": "Numbers: 0.48 s filed, cut by the chain to 0.1 s; one event; in the cut 57 percent of the energy between 60 and 250 Hz and 13 percent under 60 Hz. Listener: on the plain listening copy (0.1 s in 1.6 s of silence) two of three open calls answered that no file came and one heard a high electronic chime, which the numbers rule out; the fit call said yes, a single brief quiet click of a keyboard key. On a second copy, the same 0.1 s played four times and 12 dB louder, both open calls heard a sharp, short, hard and rather high click, like a computer mouse, a retractable pen or a small plastic switch. No voice, no music. It is a press of a small switch, and it is heard as hard and sharp where the line says soft: half of the line.",
+        "listener": {
+          "line": "A soft key press",
+          "open": "1. Not sure.\n2. Not sure. \n3. Not sure.\n4. Not sure.\n5. Not sure.\n\n*(Note: It appears an actual audio file was not provided or successfully attached for me to listen to. If you can upload the audio file, I would be happy to analyze it for you!)*",
+          "fit": "1. Yes, it fits the description because the audio consists of a single, brief, and quiet clicking sound characteristic of pressing a computer keyboard key.\n2. There are no additional noises or background sounds in the recording that do not belong to this description.\n3. No, there is no human voice, spoken word, or singing present in the audio.",
+          "note": "the first open call answered that no file came; it was asked again once and the second answer is recorded; a sound of 0.1 s in 1.6 s of silence was answered three times out of four with no file or with a chime the numbers rule out, so a second listening copy was made, the same 0.1 s played four times half a second apart and 12 dB louder (key-tap-take-1-x4.wav), and the open questions were asked on it twice (openFourTimes)",
+          "openMore": [
+            "1. I hear a single, high-pitched electronic chime or \"ding\". It has a bright, synthetic character similar to a digital notification alert.\n2. There is exactly one separate sound event.\n3. There is no human voice, spoken word, breath, or singing present.\n4. There is no continuous music or melody, but the sound is a single musical pitch likely produced by an electronic synthesizer.\n5. The sound begins abruptly with a sharp attack. It ends with a quick, smooth fade-out into silence.",
+            "1. Not sure, because no audio file was provided or attached for me to listen to.\n2. Not sure.\n3. Not sure.\n4. Not sure.\n5. Not sure."
+          ],
+          "openFourTimes": [
+            "1. The sound is a sharp, short click, likely made by pressing a computer mouse or a retractable pen. It has a relatively high, hard, and distinctly mechanical character.\n2. No, there is no human voice, spoken word, breath, or singing.\n3. No, there is no music, melody, musical note, or instrument involved.\n4. Yes, all four sounds are exactly the same.",
+            "1. It is a short, high-pitched, and hard clicking noise. An object like a computer mouse, a retractable pen, or a small plastic switch could make this sound.\n2. No, there is no human voice, spoken word, breath, or singing.\n3. No, there is no music, melody, musical note, or instrument.\n4. Yes, each of the four sounds is exactly the same."
+          ]
+        }
+      },
+      "time": "2026-11-25T17:39:03.677Z",
+      "answersTime": "2026-11-25T17:42:23.732Z"
+    },
+    {
+      "cue": "key-tap",
+      "take": 2,
+      "round": "build",
+      "class": "interface",
+      "season": null,
+      "line": "A soft key press",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "One single key of a laptop keyboard pressed gently once by a fingertip: one soft muffled low thud of the key going down, quiet, dull and padded, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 0.5,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 6
+      },
+      "source": {
+        "name": "key-tap-2026-11-25T17-42-25-885Z.wav",
+        "bytes": 92238,
+        "sha256": "f4a088fbb7354096755b78d4b4acf9974c0ab7bfdb881f7047d66de3ea607b84",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 0.48,
+        "kbps": 1537
+      },
+      "sha256": "ae0f6b596b1820940ea551608ada898cc4cd9caf76b7dd5bfb84efafd440808c",
+      "measured": {
+        "seconds": 0.48,
+        "peakDb": -9.49,
+        "truePeakDb": -9.18,
+        "lufs": -28.74,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -30.84,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0.035,
+        "soundSeconds": 0.445,
+        "tailDb": -54.45,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 4257,
+          "bands": {
+            "sub": 0.087,
+            "low": 0.0475,
+            "lowMid": 0.2783,
+            "mid": 0.1039,
+            "high": 0.4445,
+            "air": 0.0388
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -28.7,
+        "lra": 0,
+        "truePeakDb": -9.2
+      },
+      "fits": {
+        "wantSeconds": 0.1,
+        "soundSeconds": 0.445,
+        "ok": false,
+        "note": "the sound is 0.445 s, long for a cue of 0.1 s: the chain cuts it to length"
+      },
+      "answers": {
+        "verdict": "fits weakly",
+        "why": "Numbers: 0.48 s filed, cut by the chain to 0.1 s; one event; in the cut 53 percent of the energy between 4 and 10 kHz and 26 percent between 250 Hz and 1 kHz: brighter than take 1. Listener, on the copy that plays it four times: open, a sharp, hard, high click, like a computer mouse, a retractable pen or a small mechanical switch; fit, yes, a short gentle mechanical click of a plastic keyboard key. No voice, no music. As take 1: a press of a small switch, heard without the line as hard and sharp where the line says soft; the fit call agrees easily.",
+        "listener": {
+          "line": "A soft key press",
+          "open": "1. The sound is a sharp, hard, high-pitched click. It could easily be made by clicking a computer mouse, pressing a retractable pen, or flipping a small mechanical switch.\n2. No, there is no human voice, spoken word, breath, or singing present in the audio.\n3. No, there is no music, melody, musical note, or musical instrument in this recording.\n4. Yes, each of the four sounds played is exactly the same.",
+          "fit": "1. Yes, the sound fits the description because it features a short, gentle mechanical click that is characteristic of tapping a plastic keyboard key.\n2. There is nothing in the audio that contradicts or does not belong to the description of a soft key press.\n3. No, there is no human voice, spoken word, or singing present in the sound.",
+          "note": "the listening copy holds the cut sound four times, half a second apart and 12 dB louder, because one sound of a fraction of a second alone in silence is not heard by the listener; both questions say so"
+        }
+      },
+      "time": "2026-11-25T17:42:29.248Z",
+      "answersTime": "2026-11-25T17:43:39.243Z"
+    },
+    {
+      "cue": "key-tap",
+      "take": 3,
+      "round": "build",
+      "class": "interface",
+      "season": null,
+      "line": "A soft key press",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "A fingertip tapping once on a thick soft rubber pad: one soft dull low thump, round and muffled, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 0.5,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 6
+      },
+      "source": {
+        "name": "key-tap-2026-11-25T17-43-41-593Z.wav",
+        "bytes": 92238,
+        "sha256": "0e59e51f1d15e52becf22f3c60b9f3d60b7d73b56e6686e6c2dfeb35b300dd71",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 0.48,
+        "kbps": 1537
+      },
+      "sha256": "23fc7810a250b74f41dfdb7e7b9c570372f9a930025b9dc93f890356b644ad4a",
+      "measured": {
+        "seconds": 0.48,
+        "peakDb": -13.66,
+        "truePeakDb": -13.66,
+        "lufs": -28.95,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -30.73,
+        "silenceFrontSeconds": 0.01,
+        "silenceEndSeconds": 0.035,
+        "soundSeconds": 0.435,
+        "tailDb": -55.4,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 117,
+          "bands": {
+            "sub": 0.1414,
+            "low": 0.8211,
+            "lowMid": 0.0375,
+            "mid": 0,
+            "high": 0,
+            "air": 0
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -29,
+        "lra": 0,
+        "truePeakDb": -13.7
+      },
+      "fits": {
+        "wantSeconds": 0.1,
+        "soundSeconds": 0.435,
+        "ok": false,
+        "note": "the sound is 0.435 s, long for a cue of 0.1 s: the chain cuts it to length"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: 0.48 s filed, cut by the chain to 0.1 s; one event; in the cut 91 percent of the energy between 60 and 250 Hz, nothing over 1 kHz. Listener, on the copy that plays it four times: open, a short, low, slightly muffled thud, dull but hard, like a heavy footstep, a knock on thick wood or a finger tapping a microphone; fit, no, a low thump or heartbeat without the click or plastic tap of a key. No voice, no music. It is soft and low and is not a key. The cue is out of takes and stays open as a take; takes 1 and 2 hold the press of a key, take 3 the softness.",
+        "listener": {
+          "line": "A soft key press",
+          "open": "1. The sound is a short, low-pitched, and slightly muffled thud. It has a dull but hard character, sounding like a heavy footstep, someone knocking on thick wood, or a finger tapping a microphone. \n2. There is no human voice, spoken word, breathing, or singing present in the audio.\n3. There is no music, melody, or pitched musical note. It could potentially be an unpitched percussion instrument like a muffled bass drum, but it acts more like a simple impact noise.\n4. Yes, each of the four sounds appears to be exactly the same.",
+          "fit": "1. No, the sound does not fit the description because it sounds like a low-pitched thump or heartbeat. A soft key press typically produces a sharper, mechanical click or plastic tap, which is missing here.\n2. The deep, bass-heavy resonance present in the audio does not belong to the sound of a standard key press.\n3. No, there is no human voice, spoken word, or singing heard in the audio.",
+          "note": "the listening copy holds the cut sound four times, half a second apart and 12 dB louder, because one sound of a fraction of a second alone in silence is not heard by the listener; both questions say so"
+        }
+      },
+      "time": "2026-11-25T17:43:44.627Z",
+      "answersTime": "2026-11-25T17:44:28.984Z"
+    },
+    {
+      "cue": "ui-send",
+      "take": 1,
+      "round": "build",
+      "class": "interface",
+      "season": null,
+      "line": "One press of a button",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "One firm press of a single large rubber button: one short low rounded click with a small thump, dry, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 0.5,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 6
+      },
+      "source": {
+        "name": "ui-send-2026-11-25T17-44-31-595Z.wav",
+        "bytes": 92238,
+        "sha256": "7cb8115e3a79316b736126feaf964770c356d062d55eba86f214b32afb280319",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 0.48,
+        "kbps": 1537
+      },
+      "sha256": "4c3d066a7ab3d6570420f69af7b533ddda0ef5c7bc9e2056ea47a0e83f47698f",
+      "measured": {
+        "seconds": 0.48,
+        "peakDb": -6.59,
+        "truePeakDb": -6.56,
+        "lufs": -29.97,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": -79.53,
+        "rmsDb": -34.73,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0.065,
+        "soundSeconds": 0.415,
+        "tailDb": -67.73,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 1201,
+          "bands": {
+            "sub": 0.0278,
+            "low": 0.1357,
+            "lowMid": 0.2218,
+            "mid": 0.6104,
+            "high": 0.0041,
+            "air": 0.0002
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -30,
+        "lra": 0,
+        "truePeakDb": -6.6
+      },
+      "fits": {
+        "wantSeconds": 0.3,
+        "soundSeconds": 0.415,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "fits",
+        "why": "Numbers: 0.48 s filed, sound 0.3 s in the cut, fits the length of its cue; one event, loudest in its first 0.04 s and 40 dB down by 0.1 s; 71 percent of the energy between 1 and 4 kHz, with the strongest lines at 185, 680 and 1500 Hz. Listener, on the copy that plays it four times: open, first call, a sharp high ding, hard and resonant, like a small metal bell, a triangle or a spoon on a glass, a clear musical note but no melody; open, second call, a sharp brief click or tick, high and hard, like a mechanical switch, a mouse click or a digital metronome, not musical; fit, yes, the sharp brief mechanical click of a small plastic button or a mouse being pressed, nothing outside the line. No voice. Two calls of three hear the press of a button; one hears a ding, which the line at 1500 Hz explains. Kept as the press of a button, with the ding written down.",
+        "listener": {
+          "line": "One press of a button",
+          "open": "1. The sound is a sharp, high-pitched \"ding\" with a hard, resonant character. It sounds like a small metal bell, a triangle, or a spoon tapping a glass.\n2. There is no human voice, spoken word, breath, or singing present.\n3. There is no melody, but the sound is a clear musical note that could be produced by a percussion instrument like a triangle.\n4. Yes, each of the four sounds is exactly the same.",
+          "fit": "1. Yes, the sound fits the description perfectly. It features the sharp, brief mechanical click characteristic of a small plastic device button or computer mouse being pressed. \n\n2. There is no element of the main sound that does not belong to the description. The only additional audio is a very faint background static or room noise that comes from the recording itself.\n\n3. No, there is no human voice, spoken word, or singing in this audio.",
+          "note": "the listening copy holds the cut sound four times, half a second apart and 12 dB louder, because one sound of a fraction of a second alone in silence is not heard by the listener; both questions say so; the open call heard a ding and the fit call a click, so the open questions were asked a second time (openSecond)",
+          "openSecond": "1. It is a sharp, brief clicking or ticking noise with a relatively high and hard character. It sounds like a mechanical switch, a computer mouse click, or a digital metronome.\n2. No, there are no human voices, spoken words, breathing, or singing present in the audio.\n3. No, there is no music, melody, or musical instrument, as it is just a simple non-musical click.\n4. Yes, each of the four sounds is exactly the same."
+        }
+      },
+      "time": "2026-11-25T17:44:34.828Z",
+      "answersTime": "2026-11-25T17:46:07.263Z"
+    },
+    {
+      "cue": "riser",
+      "take": 1,
+      "round": "build",
+      "class": "touch",
+      "season": null,
+      "line": "A rising breath of air into frame 0",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "A rush of air rising quickly: one whoosh of wind that swells from nothing to full and stops short at its loudest, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 1.2,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 13
+      },
+      "source": {
+        "name": "riser-2026-11-25T17-46-16-328Z.wav",
+        "bytes": 230478,
+        "sha256": "735149db27c899df80a554330371824695c435c65a5ee9a5651928010befd263",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 1.2,
+        "kbps": 1537
+      },
+      "sha256": "e7cddf63f39443c1aca1e6a8bd3925aa4e8b483524422c016746276a9b01a0fa",
+      "measured": {
+        "seconds": 1.2,
+        "peakDb": 0,
+        "truePeakDb": 1.45,
+        "lufs": -5.84,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -12.92,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0.165,
+        "soundSeconds": 1.035,
+        "tailDb": -73.14,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 2646,
+          "bands": {
+            "sub": 0.0656,
+            "low": 0.0842,
+            "lowMid": 0.1479,
+            "mid": 0.5213,
+            "high": 0.1337,
+            "air": 0.0474
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -5.8,
+        "lra": 0,
+        "truePeakDb": 1.5
+      },
+      "fits": {
+        "wantSeconds": 1.2,
+        "soundSeconds": 1.035,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "fits weakly",
+        "why": "Numbers: 1.20 s filed, sound 1.03 s, fits the length of its cue; level per 0.1 s rises from -51 to -24 dB at 0.45 s and falls again to -61 dB at the end; 54 percent of the energy between 1 and 4 kHz. Listener, open, on the copy that plays it three times: a quick airy whoosh or sweep, smooth and rushing, like wind or an interface transition; it gets louder and then quieter and is loudest in its middle; it starts with a rapid swell and ends with a quick fade. Fit: yes, a quick sharp whoosh or inhaling noise that escalates in volume. No voice, no music. It is air and it rises, but it falls away again over its second half, where the line rises into frame 0: a pass, not a rise.",
+        "listener": {
+          "line": "A rising breath of air into frame 0",
+          "open": "1. Not sure, because there is no audio file attached to your message for me to listen to.\n2. Not sure.\n3. Not sure.\n4. Not sure.\n5. Not sure.",
+          "fit": "1. Yes, the audio features a quick, sharp inhaling noise or whoosh that escalates in volume, which fits the description of a rising breath.\n2. There are no additional noises or elements in the audio that do not belong to the description.\n3. No, there is no human voice, spoken word, or singing present in the clip.",
+          "note": "the first open call answered that no file came; it was asked again once and the second answer is recorded; on the plain copy and on a copy with silence around it the open call answered four times that no file came; a third copy plays the sound three times in a row (riser-take-1-x3.wav) and the open questions on it, with a question on where it is loudest, were answered at once (openThreeTimes); the fit answer recorded is from the copy with silence around it",
+          "openThreeTimes": "1. I hear a quick, airy \"whoosh\" or sweeping sound effect. It has a smooth, rushing character similar to wind or a digital interface transition.\n2. The sound gets both louder and quieter. It is loudest in its middle before quickly tapering off.\n3. There is no human voice, spoken word, breath, or singing present.\n4. There is no music, melody, or musical instrument.\n5. The sound starts with a rapid swell and ends with a quick fade out."
+        }
+      },
+      "time": "2026-11-25T17:46:20.185Z",
+      "answersTime": "2026-11-25T17:49:36.894Z"
+    },
+    {
+      "cue": "riser",
+      "take": 2,
+      "round": "build",
+      "class": "touch",
+      "season": null,
+      "line": "A rising breath of air into frame 0",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "Air sucked fast into a narrowing pipe: one rush of air that starts from silence, grows louder and higher the whole time and is cut off dead at its loudest point, with no tail and no fall, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 1.2,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 13
+      },
+      "source": {
+        "name": "riser-2026-11-25T17-49-39-604Z.wav",
+        "bytes": 230478,
+        "sha256": "6dad72b281a9ddf1be6b9bc4d72657e4844eb3c7c2d3c0348887fd45bb444023",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 1.2,
+        "kbps": 1537
+      },
+      "sha256": "5dca897b8559632b49a21348f081c45021a6e769b50545ba2086ca4e8ba4bc9d",
+      "measured": {
+        "seconds": 1.2,
+        "peakDb": -2.66,
+        "truePeakDb": -2.66,
+        "lufs": -12.19,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -18.13,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0,
+        "soundSeconds": 1.2,
+        "tailDb": -64.72,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 6197,
+          "bands": {
+            "sub": 0.0001,
+            "low": 0.0013,
+            "lowMid": 0.2358,
+            "mid": 0.0445,
+            "high": 0.5828,
+            "air": 0.1355
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -12.2,
+        "lra": 0,
+        "truePeakDb": -2.7
+      },
+      "fits": {
+        "wantSeconds": 1.2,
+        "soundSeconds": 1.2,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: 1.20 s filed, sound 0.85 s; level per 0.1 s flat between -29 and -24 dB from the first moment to 0.8 s, then silence: no rise at all; 58 percent of the energy between 4 and 10 kHz. Listener, on the copy that plays it three times: open, a sharp airy hiss or whoosh that ends in a brief hollow pop or gulp, like an aerosol spray, a pressurised can opened or an exaggerated slurp; loudest right at its start and getting quieter; no words, but it could be an exaggerated human breath or slurping mouth sound. Fit: no; a sharp inhalation of air that ends in a very noticeable pop; no voiced sound, only a human breath and mouth noise. A breath or mouth was named in both calls. Not kept: it does not rise, and it is heard as a mouth.",
+        "listener": {
+          "line": "A rising breath of air into frame 0",
+          "note": "the listening copy plays the sound three times in a row, because a sound of about 1 s alone was not heard by the listener; both questions say so; the open questions ask where the sound is loudest",
+          "open": "1. I hear a sharp, airy hissing or whooshing noise that concludes with a brief, hollow popping or gulping sound. It resembles the sound of an aerosol spray, opening a pressurized can, or an exaggerated slurp.\n\n2. The sound gets quieter overall, as it is loudest right at its start. The initial intense hiss steadily drops in volume before finishing with the final, slightly softer pop.\n\n3. There are no spoken words, singing, or clear human voices present. However, it is possible that the noise is an exaggerated human breath or slurping mouth sound.\n\n4. No, there is no music, melody, or musical instrument present in the recording.\n\n5. The sound starts very abruptly with a sudden, forceful burst of hissing air. It ends just as abruptly with a quick, distinct popping or clicking noise.",
+          "fit": "1. No, the sound does not fully fit the description because while it begins with a sharp inhalation of air, it ends with a very noticeable popping noise. \n2. The distinct popping, clicking, or smacking sound at the very end of the audio clip does not belong to the description of a breath.\n3. No, there is no vocalized human voice, spoken word, or singing present, only a human breath and mouth noise."
+        }
+      },
+      "time": "2026-11-25T17:49:44.492Z",
+      "answersTime": "2026-11-25T17:51:12.766Z"
+    },
+    {
+      "cue": "riser",
+      "take": 3,
+      "round": "build",
+      "class": "touch",
+      "season": null,
+      "line": "A rising breath of air into frame 0",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "A slow soft rush of wind passing by: one long smooth whoosh of air that swells slowly and evenly from nothing to full and then dies away as slowly, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 2.4,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 26
+      },
+      "source": {
+        "name": "riser-2026-11-25T17-51-15-125Z.wav",
+        "bytes": 460878,
+        "sha256": "05727edeee499529ec7683486347f439c6f4caf05390415188e4380fc8743536",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 2.4,
+        "kbps": 1536
+      },
+      "sha256": "b257e49e3a170249c412da5b0e690338b93189407c430a3bd81ff3550c57356a",
+      "measured": {
+        "seconds": 2.4,
+        "peakDb": -2.86,
+        "truePeakDb": -2.86,
+        "lufs": -17.75,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -20.57,
+        "silenceFrontSeconds": 0.015,
+        "silenceEndSeconds": 0.34,
+        "soundSeconds": 2.045,
+        "tailDb": -84.98,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 64,
+          "bands": {
+            "sub": 0.5475,
+            "low": 0.4515,
+            "lowMid": 0.001,
+            "mid": 0,
+            "high": 0,
+            "air": 0
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -17.8,
+        "lra": 0,
+        "truePeakDb": -2.9
+      },
+      "fits": {
+        "wantSeconds": 1.2,
+        "soundSeconds": 2.045,
+        "ok": false,
+        "note": "the sound is 2.045 s, long for a cue of 1.2 s: the chain cuts it to length"
+      },
+      "answers": {
+        "verdict": "fits",
+        "why": "Numbers: 2.40 s filed, sound 2.05 s, cut by the chain to 1.2 s; in the cut the level per 0.1 s rises from -60 dB to -20 dB at 0.95 s and falls 14 dB over the last 0.2 s, where the chain fades it: it rises for four fifths of its length and ends near its loudest. All of its energy is under 250 Hz (33 percent under 60 Hz, 67 percent between 60 and 250 Hz). Listener, on the copy that plays it three times, open, asked twice: a quick sharp whoosh or swish of air, like a stick or a whip cutting through the air or a transition effect; a fast buildup of rushing air that trails off quickly; the first call placed the loudest point near the start, the second in the middle. Fit: no, for this reason: it is a synthetic whoosh and not an actual human inhalation. No voice, no breath, no music in any call. The fit call read the line's breath as a person breathing in, which the family line forbids; what the line asks of the sound, air that rises into frame 0, is what the numbers show and what both open calls name as air. Kept, with one thing for the review round: it lies wholly under 250 Hz, so a phone speaker will play little of it.",
+        "listener": {
+          "line": "A rising breath of air into frame 0",
+          "note": "the listening copy plays the cut sound three times in a row, because a sound of about 1 s alone was not heard by the listener; both questions say so; the open questions ask where the sound is loudest; the first open call placed the loudest point near the start, against the numbers, so the open questions were asked a second time (openSecond)",
+          "open": "1. I hear a quick, sharp whooshing or swishing sound. It resembles a fast-moving object slicing through the air, like a swinging stick or a cinematic transition effect.\n2. The sound gets rapidly louder and then quickly gets quieter. It is loudest near its start, right after the initial attack.\n3. No, there is no human voice, spoken word, breath, or singing present.\n4. No, there is no music, melody, or musical instrument heard in the clip.\n5. The sound starts abruptly with a sudden, energetic burst. It ends by rapidly fading out into complete silence.",
+          "fit": "1. No, the sound does not fit the description because it sounds like a synthetic, electronic \"whoosh\" transition effect rather than an actual human inhalation. \n2. The artificial, digital sweeping tone and highly processed noise do not belong to the description of a natural breath of air.\n3. No, there is no human voice, spoken word, or singing in this audio.",
+          "openSecond": "1. I hear a quick, sharp swooshing or swishing sound. It has an airy, fast character, similar to a stick or whip rapidly cutting through the air.\n2. The sound gets both louder and then quieter during its short duration. It is loudest right in its middle at the peak of the swoosh.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument present.\n5. The sound starts rapidly with a sudden, fast buildup of rushing air. It ends by quickly trailing off and fading out into silence."
+        }
+      },
+      "time": "2026-11-25T17:51:18.806Z",
+      "answersTime": "2026-11-25T17:52:48.861Z"
     }
   ],
   "kept": [
@@ -3170,18 +3812,51 @@
       "lufs": -30,
       "lufsMeasure": "gated",
       "time": "2026-11-25T17:24:24.693Z"
+    },
+    {
+      "cue": "music-box",
+      "take": 1,
+      "round": "build",
+      "file": "audio/kept/music-box.wav",
+      "sha256": "72151df063e96e705b89f33748f908f0c03530a75cfac77da7719a3c6a5c9a82",
+      "seconds": 1.95,
+      "lufs": -26,
+      "lufsMeasure": "gated",
+      "time": "2026-11-25T17:38:52.334Z"
+    },
+    {
+      "cue": "ui-send",
+      "take": 1,
+      "round": "build",
+      "file": "audio/kept/ui-send.wav",
+      "sha256": "e7cb8c15334e581643d44fa0ca2d50dbee2718fadd6fd904d70d0ef8b84aa34a",
+      "seconds": 0.3,
+      "lufs": -32.54,
+      "lufsMeasure": "own-length",
+      "time": "2026-11-25T17:46:08.213Z"
+    },
+    {
+      "cue": "riser",
+      "take": 3,
+      "round": "build",
+      "file": "audio/kept/riser.wav",
+      "sha256": "3a9aa41c40237b23ad846e32e0e239d7f11415a9bed99992f4647b3bfcde19ab",
+      "seconds": 1.2,
+      "lufs": -22,
+      "lufsMeasure": "gated",
+      "time": "2026-11-25T17:52:49.741Z"
     }
   ],
   "pack": {
-    "time": "2026-11-25T17:37:33.106Z",
+    "time": "2026-11-25T17:53:41.348Z",
     "kbps": 192,
-    "bytes": 1032768,
+    "bytes": 1137024,
     "fits": true,
     "files": [
       {
         "file": "sprite.mp3",
-        "bytes": 122688,
-        "sha256": "4b758135805263f199aaaacdbb69549a1c9f4fb81489d5be9571f83fe7090924"
+        "bytes": 226944,
+        "sha256": "18a5ae72f4a3e093a2dc2fd1c9ce5e799e3e8bdfb6ede0b145af94e325a8da07"
       },
       {
         "file": "amb-spring.mp3",
@@ -3198,8 +3873,11 @@
       "lift",
       "shake-spring",
       "glass-clink",
+      "music-box",
       "ui-tick",
-      "ui-sound-on"
+      "ui-sound-on",
+      "ui-send",
+      "riser"
     ],
     "loops": [
       {
