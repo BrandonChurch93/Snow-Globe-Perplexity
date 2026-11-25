@@ -1,6 +1,6 @@
 # Handover: fall's base, surface dressing and arrival
 
-Written by `fall_base` for whoever takes these files next. Parts in the register: `base-fall`, `surface-dressing-fall`, `arrival-fall`. Code branch `agent/p4-fall_base`, tip 5e0a82e (merges of `main` 192ccf3 and 20710cc on top of b5accbf, the last change of these files); this branch (`agent/p4-fall_base-looks`) holds only pictures and these two files and is never merged.
+Written by `fall_base` for whoever takes these files next. Parts in the register: `base-fall`, `surface-dressing-fall`, `arrival-fall`. Code branch `agent/p4-fall_base`, tip aebc876 (merges of `main` 192ccf3, 20710cc and c35f1e4 on top of b5accbf, the last change of these files); this branch (`agent/p4-fall_base-looks`) holds only pictures and these two files and is never merged.
 
 ## Your files
 
@@ -37,7 +37,7 @@ After a merge of `main` the other builders' folders that changed need their own 
 
 None left. Nothing in these files carries `userData.standIn`, `slab.ts` exports an empty `standIns`, and the stand-ins view at rest is black in every pixel. No fallback of `kit/03-METHOD.md` "The fallback chain" is in use: every form is geometry made by script, every map is made by script. The cobweb is the built part at a smaller size than the approved fan (see fault 3), not a stand-in.
 
-## Measured (draft tier, commit b5accbf, before the last two merges of `main`; not run again on the tip)
+## Measured (draft tier, commit b5accbf, before the last three merges of `main`; not run again on the tip)
 
 - `npm run measure -- --unit fall --only M1,M2,M3,M6 --tier draft`: 19 lines, 1 red. M1, M2, M6 pass on every still (rest, shake, interior, base, surface, settled). M3 fall-rest is red at 0.3007 because of the miniature (0.301, `fall_mini`'s part); the base reads 0.892 against the 0.75 threshold.
 - Before the last iron change M3 base was 0.635 (red). Before the leaves reported their texel density M2 was red on five stills (0.19 to 0.46): the leaf shader passed 0 texels to `stageDiag` while flagged as textured. It now passes the true density (`vLeafUv * 1024`).
@@ -45,7 +45,7 @@ None left. Nothing in these files carries `userData.standIn`, `slab.ts` exports 
 - Size after texpack in `public/assets/fall/`: my seven files are 3,266,609 bytes (3.12 MiB): `base-fall.glb` 1,669,532, iron detail 658,102 + 252,208 (first), faces 61,198 + 18,576 (first), `slab-fall.glb` 315,792, `slab-leaves` 291,201.
 - Fit against the approved crop (box 620,900,2260,1560, rest): mean difference per channel 31.9, 26.0, 22.3; mean colour approved 38.0, 36.6, 32.3, render 40.6, 39.6, 31.4.
 
-- `npm run determinism` on f2407a8 (after the merge of `main` 192ccf3): "determinism: pass · 3 pictures, 4 page loads, preview, draft, 339 s". Not run again on the tip. On the tip 5e0a82e: `npx tsc --noEmit` clean, `npx vitest run` 432 passed, 4 skipped, and the rest pair rendered and viewed (`01-rest-base-pair.jpg`).
+- `npm run determinism` on f2407a8 (after the merge of `main` 192ccf3): "determinism: pass · 3 pictures, 4 page loads, preview, draft, 339 s". Not run again on the tip. On the tip aebc876: `npx tsc --noEmit` clean, `npx vitest run` 432 passed, 4 skipped. On 5e0a82e (the tip less two kit files): the rest pair rendered and viewed (`01-rest-base-pair.jpg`).
 
 ## Constants a successor should know
 
