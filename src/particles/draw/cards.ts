@@ -138,6 +138,7 @@ export const CARD_VERT = `
     }
     vec2 stC = (toView * ((aNow - aPrev) * shut)).xy * (uPoint.y * mag / zImg) * afloat;
     if (${at(SHAPE.spark)}) stC *= mix(${n(CARD.spark.calmStreak)}, 1.0, gustC);
+    if (whole < 0.5 && lineC < 0.5) stC *= ${n(CARD.dabStreak)};
     stC *= uLimit.x / (uLimit.x + length(stC));
     float bowC = 0.0;
     if (lineC > 0.5) {
@@ -176,7 +177,7 @@ export const CARD_VERT = `
     if (lineC > 0.5) vL4 = vec4(bowC, fract(h2.x * 83.0), ${at(SHAPE.seed)} ? uPoint.w * mix(${n(CARD.line.headPx[0])}, ${n(CARD.line.headPx[1])}, pow(fract(h2.x * 29.0), 2.0)) : 0.0, uPoint.w * (${at(SHAPE.seed)} ? mix(${n(CARD.line.seedWidePx[0])}, ${n(CARD.line.seedWidePx[1])}, fract(h2.w * 41.0)) : mix(${n(CARD.line.widePx[0])}, ${n(CARD.line.widePx[1])}, fract(h2.w * 41.0))));
     vStreak = vec4(alC, hlC, s2C);
     vKind = vec4(aData.y, 2.0 * lying + 0.5, float(pid & 4095u) + 0.01 + 0.98 * gustC, whole);
-    vFog.a *= shape > ${n(SHAPE.bat - 0.5)} ? ${n(CARD.batFog)} : mix(${n(CARD.fog)}, 1.0, lying);
+    vFog.a *= shape > ${n(SHAPE.bat - 0.5)} ? ${n(CARD.batFog)} : mix(${n(CARD.fog)}, 1.0, lying) * mix(${n(CARD.dabFog)}, 1.0, max(whole, lineC));
     vGrid = vec4(base0 * min(1.0, ${n(LIT_MOST)} / max(max(base0.r, max(base0.g, base0.b)), 1e-3)), bendFit);
     vDom = vec4(keyIn * uRigPoint.x, lineC);
     clip = clipC;
@@ -560,6 +561,7 @@ void cardMain(vec2 p, int kind, vec4 k, vec4 look, float lying) {
   light *= min(1.0, ${n(CARD.litMost)} / max(max(light.r, max(light.g, light.b)), 1e-3));
   if (shape > ${n(SHAPE.leaf - 0.5)} && shape < ${n(SHAPE.leaf + 0.5)}) light = mix(vec3(max(light.r, max(light.g, light.b))), light, ${n(CARD.leafHue)});
   vec3 body = k.rgb * tint.rgb;
+  if (vKind.w < 0.5 && shape < ${n(SHAPE.petal + 0.5)}) body *= vec3(${CARD.dabTint.map(n).join(', ')});
   if (shape > ${n(SHAPE.bat - 0.5)}) body *= ${n(CARD.batBody)};
   bool leafC = shape > ${n(SHAPE.leaf - 0.5)} && shape < ${n(SHAPE.leaf + 0.5)};
   vec3 col = body * light * mix(1.0, ${n(CARD.lieShade)}, lying);

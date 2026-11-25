@@ -204,6 +204,10 @@ export const CARD = {
   /** Of the ones that settle and stay down, the share drawn whole, in the storm and lying; the rest are the storm's small dabs and are gone once they are down. */
   chosen: [0.004, 0.012, 0.035] as const,
   dabSize: 0.36,
+  /** A dab of the storm: how much of the veil lies over it, how much of its streak it keeps, and the deeper pink of a petal's dab, so that the storm holds distinct small petals among its pale streaks. */
+  dabFog: 0.45,
+  dabStreak: 0.5,
+  dabTint: [1, 0.74, 0.86] as const,
   /** The size of a whole petal and of a whole leaf in the storm, as a share of its size at rest. */
   stormSize: [0.45, 0.45] as const,
   /** How much of the colour of the light a leaf takes; the rest it takes as white light, so that it stays orange in the green of fall. */
