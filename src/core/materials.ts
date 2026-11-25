@@ -22,6 +22,8 @@ export const stageUniforms = {
 
 export const MODE = { always: 0, incoming: 1, outgoing: 2 } as const
 
+export const DRESSING_FRONT = { gain: 2, fromMm: 58, toMm: 230 } as const
+
 export interface StageHandle {
   part: string
   uPart: { value: THREE.Vector4 }
@@ -47,7 +49,7 @@ export function makeHandle(spec: PartSpec): StageHandle {
   return {
     part: spec.part,
     uPart: { value: new THREE.Vector4(c[0] / 255, c[1] / 255, c[2] / 255, standIn ? 1 : 0) },
-    uState: { value: new THREE.Vector4(ramp.start, ramp.length, ramp.lag, MODE.always) },
+    uState: { value: new THREE.Vector4(ramp.start, ramp.length, spec.change === 'surface-dressing' ? -DRESSING_FRONT.gain : ramp.lag, MODE.always) },
     uFlags: { value: new THREE.Vector4(spec.miniature ? 1 : 0, spec.textured ? (spec.texels ?? 0) : 0, spec.inside ? 1 : 0, 1) },
   }
 }
@@ -140,6 +142,10 @@ float stageHash(vec3 p) {
 ${LIGHT_FRAG_PARS}
 float stageChange() {
   if (uState.w < 0.5) return 0.0;
+  if (uState.z < 0.0) {
+    float far = clamp((length(vStageWorld.xz) - ${DRESSING_FRONT.fromMm.toFixed(1)}) / ${(DRESSING_FRONT.toMm - DRESSING_FRONT.fromMm).toFixed(1)}, 0.0, 1.0);
+    return clamp((uChange - uState.x) / uState.y * (1.0 - uState.z) + uState.z * far, 0.0, 1.0);
+  }
   float side = clamp(0.5 + vStageLocal.z / (2.0 * uGrid.w), 0.0, 1.0);
   return clamp((uChange - uState.x - uState.z * side) / uState.y, 0.0, 1.0);
 }

@@ -6,7 +6,7 @@ import { texture } from '../../core/textures'
 import { ROOM_GLSL, roomUniforms } from '../../scene/room'
 import { SLAB_LIGHT_GLSL, slabLightUniforms, surfaceUniforms } from '../../scene/surface'
 import type { Dressing, KitMoment } from '../kit'
-import { FACE_COUNT, faceUniforms } from './base'
+import { cobweb, FACE_COUNT, faceUniforms } from './base'
 
 // Part `surface-dressing-fall`: the dry leaves that lie round the foot (curled ones near the camera, flat ones further
 // off, crumbs at the foot) and the light on the slab at the foot: a rim that parts the black base from the dark slab,
@@ -118,6 +118,27 @@ vec3 candleOnSlab(vec3 P, vec3 n, float lift) {
   }
   return sum;
 }
+// The faces seen in the wet slab: each is mirrored below it, and the roughness of the slab draws the mirror image out
+// along the line of sight, so a streak of it reaches up to the foot.
+#define MIRROR_DEPTH 0.42
+vec3 candleInSlab(vec3 P, float lift) {
+  vec3 look = normalize(P - cameraPosition);
+  vec3 side = normalize(cross(vec3(0.0, 1.0, 0.0), look));
+  vec3 rise = cross(look, side);
+  vec3 sum = vec3(0.0);
+  for (int i = 0; i < ${FACE_COUNT}; i++) {
+    vec3 at = vec3(uFaceAt[i].x + uFoot.x, -(MIRROR_DEPTH * uFaceAt[i].y + lift), uFaceAt[i].z + uFoot.y);
+    vec3 to = at - cameraPosition;
+    float far = length(to);
+    vec3 off = to / far - look;
+    float size = uFaceOut[i].z / far;
+    float across = dot(off, side) / (size * 0.55);
+    float along = dot(off, rise) / (size * 1.5);
+    float seen = smoothstep(0.1, 0.6, dot(vec3(uFaceOut[i].x, 0.0, uFaceOut[i].y), normalize(vec3(-to.x, 0.0, -to.z))));
+    sum += uFaceCol * (uFaceGlow[i] * seen * exp(-across * across - along * along));
+  }
+  return sum;
+}
 `
 
 const LEAF_FRAG = `
@@ -148,7 +169,7 @@ void main() {
   float occl;
   slabLight(vec3(vStageWorld.x, 0.0, vStageWorld.z), keyDir, keyGain, rimDir, rimGain, occl, warm);
   float tone = 0.6 + 0.6 * fract(vLeafOne.x * 7.3);
-  vec3 albedo = mix(vec3(dot(leaf.rgb, vec3(0.3, 0.5, 0.2))) * vec3(1.0, 0.76, 0.56), leaf.rgb, 0.18 + 0.42 * fract(vLeafOne.x * 3.7)) * tone * mix(1.0, 0.72, under);
+  vec3 albedo = mix(vec3(dot(leaf.rgb, vec3(0.3, 0.5, 0.2))) * vec3(1.0, 0.72, 0.4) * 1.5, leaf.rgb * 1.35, 0.18 + 0.42 * fract(vLeafOne.x * 3.7)) * tone * mix(1.0, 0.72, under);
   float key = clamp(dot(n, keyDir) * 0.75 + 0.25, 0.0, 1.0);
   float rim = clamp(dot(n, rimDir) * 0.6 + 0.4, 0.0, 1.0);
   float thru = clamp(-dot(n, keyDir), 0.0, 1.0) * 0.35;
@@ -157,9 +178,9 @@ void main() {
   lit += candleOnSlab(vStageWorld, n, uFoot.w) * 3.2;
   vec3 col = albedo * lit * RECIPROCAL_PI;
   vec3 h = normalize(keyDir + view);
-  float waxy = pow(max(dot(n, h), 0.0), 26.0) * 0.12 * keyGain;
+  float waxy = pow(max(dot(n, h), 0.0), 26.0) * 0.3 * keyGain;
   vec3 hr = normalize(rimDir + view);
-  waxy += pow(max(dot(n, hr), 0.0), 18.0) * 0.1 * rimGain * dot(uRimCol, vec3(0.333)) / max(dot(uKeyCol, vec3(0.333)), 1e-4);
+  waxy += pow(max(dot(n, hr), 0.0), 18.0) * 0.22 * rimGain * dot(uRimCol, vec3(0.333)) / max(dot(uKeyCol, vec3(0.333)), 1e-4);
   col += uKeyCol * waxy * (1.0 - under);
   gl_FragColor = vec4(col, 1.0);
   vec2 leafTexel = vLeafUv * 1024.0;
@@ -203,7 +224,9 @@ void main() {
   vec3 cold = uKeyCol * (0.35 + 0.65 * toKey) + uSky * 2.0;
   vec3 hot = uRimCol * (0.3 + 0.7 * toRim);
   vec3 col = (cold * 0.05 + hot * 0.06) * (line * 1.0 + skirt * 0.22) * dust * down;
-  col += candleOnSlab(P, vec3(0.0, 1.0, 0.0), lift) * (0.5 * dust) * smoothstep(-2.0, 3.0, gap);
+  col += candleOnSlab(P, vec3(0.0, 1.0, 0.0), lift) * (0.14 * dust) * smoothstep(-2.0, 3.0, gap);
+  float ripple = 0.35 + 0.65 * rimNoise(vec2(P.x * 1.7, P.z * 0.35)) + 0.5 * pow(rimNoise(P.xz * vec2(3.1, 0.8) + 11.0), 3.0);
+  col += candleInSlab(P, lift) * (0.3 * ripple) * smoothstep(-1.0, 2.0, gap) * down;
   gl_FragColor = vec4(col, 0.0);
   if (uDiag != 0) gl_FragColor = stageDiag(vec3(0.02), vec3(0.0, 1.0, 0.0), 0.0, c, 0.0);
 }
@@ -255,7 +278,7 @@ function makeSurface(): THREE.Group {
   sheet.position.y = 0.04
   sheet.renderOrder = 2
   sheet.frustumCulled = false
-  return new THREE.Group().add(leaves, sheet)
+  return new THREE.Group().add(leaves, sheet, cobweb())
 }
 
 export function dressing(): THREE.Object3D {
