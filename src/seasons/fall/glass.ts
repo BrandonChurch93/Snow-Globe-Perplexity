@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { config } from '../../config'
 import { viewCode } from '../../diagnostics/views'
 import { stageShader } from '../../core/materials'
+import { leanGlsl, loadLean } from '../../core/chunks/veil'
 import { ROLL_AXIS } from '../../globe/liquid'
 import { shellUniforms } from '../../globe/shell'
 import { ROOM_GLSL, roomUniforms } from '../../scene/room'
@@ -215,6 +216,8 @@ const uniforms = {
   uFogNoise: { value: null as THREE.Data3DTexture | null },
   /** x: how far the stirred fog has gone round the upright axis, radians; y: how much the hardest of the shake has it fill the dome, 0 to 1. */
   uFogTurn: { value: new THREE.Vector2(0, 0) },
+  /** Which way and how far the liquid's load is thrown: the fog is thick on that side and thin on the other. */
+  uFogLean: { value: new THREE.Vector3(0, 0, 0) },
   /** x: how far the crack has spread, 0 to 1 of the way from the hub to the furthest tip. */
   uCrack: { value: new THREE.Vector4(1, 0, 0, 0) },
 }
@@ -291,6 +294,7 @@ const FOG_HEAD = `
 uniform highp sampler3D uFogNoise;
 uniform vec4 uFog;
 uniform vec2 uFogTurn;
+uniform vec3 uFogLean;
 vec3 fogTurn(vec3 p, float a) {
   float c = cos(a);
   float s = sin(a);
@@ -342,6 +346,8 @@ void main() {
   float bound = amp * exp(-max(h - ${f((F.lumpMm + F.lumpFineMm) * F.backTall)}, 0.0) / (deepMm * ${f(F.backTall)})) + hazeAmp * hazeBack * 3.0 * exp(-max(h - ${f(F.hazeLumpMm)}, 0.0) / ${f(F.hazeMm)}) + uFog.z * ${f(F.pour)} * span;
   // The liquid itself is not clear: fine dust in it takes the orange of the lights, most in the upper dome and near the wall.
   float air = ${f(F.air)} * (1.0 + ${f(F.airStirred)} * lift) * smoothstep(${f(GROUND + 14)}, ${f(GROUND + 46)}, p.y) * mix(0.35, 1.0, smoothstep(24.0, 50.0, r));
+  float thrown = ${leanGlsl('p', 'uFogLean', f(RI))};
+  bound *= max(thrown, 1.0);
   bool fogHere = bound * ${f(FOG_STEP * 1.7)} >= 0.003;
   if (p.y < under) discard;
   // The same dust shows the light of the lamp, the windows and the lanterns as a glow in the liquid round them.
@@ -399,7 +405,7 @@ void main() {
     // What is left of the pool is a low bright bank behind the scene.
     bank = lift * ${f(F.bank)} * exp(-max(h, 0.0) / ${f(F.bankMm)}) * smoothstep(-2.0, -22.0, p.z) * mix(1.0, strands, 0.75);
   }
-  float rho = amp * wisp * open * (body * mix(wall, mix(around, 1.0, uFogTurn.y), lift) * strands + bank);
+  float rho = amp * wisp * open * (body * mix(wall, mix(around, 1.0, uFogTurn.y), lift) * strands + bank) * thrown;
   // The haze is a glow at the back of the dome: it stands behind the house and the tree, which are dark and clear before it.
   float hazeRho = 0.0;
   if (hazeAmp * hazeBack > 0.0) {
@@ -730,6 +736,7 @@ export function update(moment: KitMoment): void {
     flood = thrown + (F.floodHeld - thrown) * ease((moment.beat! - swap.toBeat) / (beats - swap.toBeat))
   } else if (Number.isFinite(since)) flood = F.floodHeld * (1 - ease((since - config.states.landedSeconds) / F.floodGoneSeconds))
   uniforms.uFogTurn.value.set(F.spinRadS * spun, flood)
+  loadLean(fr.liquid, uniforms.uFogLean.value)
   // The cover view counts what is hidden of the miniature only: there the fog is laid on where the miniature already is.
   const src = fr.view === 'cover' ? THREE.DstAlphaFactor : THREE.OneFactor
   for (const m of volumes) m.blendSrc = src
