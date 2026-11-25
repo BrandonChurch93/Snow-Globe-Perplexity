@@ -36,13 +36,15 @@ const THROUGH = 6
 const LAMP_GLASS: Rgb = [3.4, 1.25, 0.24]
 const WALL_FILL = 2.8
 const GROUND_FILL = 4.2
-const PATH = { tone: [0.8, 0.72, 0.62] as Rgb, nearMm: 2.6, highMm: 1.4 }
+const PATH = { tone: [0.96, 0.76, 0.58] as Rgb, nearMm: 2.6, highMm: 1.4 }
 const FENCE = { reachMm: 1.25, sinkMm: 5 }
 const MOSS = { low: [0.68, 0.88, 0.5] as Rgb, high: [0.9, 1.06, 0.68] as Rgb, tallMm: 9, soot: 0.8 }
 // The shared stones run from 0.03 (a joint) over 0.12 (the middle stone) to 0.9 (a few white ones). The approved wall is one
 // olive grey with dark joints, so the tone is bent: joints stay near black, every stone from the middle up ends near `top`.
 const STONE = { top: 0.18, knee: 0.12, power: 2.2 }
-const ROOF = { tone: [1.9, 1.25, 0.85] as Rgb, grey: 0.55 }
+// The shared slates run from 0.02 (a slate's shadowed top edge) to 0.12 (its lit lower edge). The approved roof is big warm
+// slates with bright lower edges over black gaps, so the tone is bent about `mid` and weathered in patches a few slates wide.
+const ROOF = { tone: [1.9, 1.25, 0.85] as Rgb, grey: 0.55, mid: 0.045, bend: 1.6, patch: [0.6, 1.7] as [number, number] }
 const DOOR: Rgb = [0.24, 0.19, 0.13]
 const TIMBER: Rgb = [0.4, 0.42, 0.34]
 const DRY: readonly Rgb[] = [[0.42, 0.16, 0.05], [0.5, 0.26, 0.07], [0.3, 0.12, 0.05], [0.4, 0.3, 0.1]]
@@ -115,7 +117,7 @@ const sources = (on: typeof NEAR | typeof NEAR_WALL, lampTone: Rgb): GlowSource[
 
 // Light the glass and the lit fog throw back: on the faces of the fence the viewer sees and on the cottage's side wall,
 // which the key (upper right) and the lamp both miss. The approved shows both faces lit, grey-brown and olive.
-const BOUNCE = { fence: { color: [1, 0.76, 0.52] as Rgb, power: 1.5, reachMm: 9, ends: 2.6, outMm: 5, upMm: 6.5 }, side: { color: [0.78, 0.9, 0.7] as Rgb, power: 1.1, reachMm: 11, ends: 2.4, outMm: 9, upMm: 7, alongMm: 2 } }
+const BOUNCE = { fence: { color: [1, 0.76, 0.52] as Rgb, power: 1.5, reachMm: 9, ends: 2.6, outMm: 5, upMm: 6.5 }, side: { color: [0.86, 0.9, 0.66] as Rgb, power: 1.7, reachMm: 11, ends: 2.4, outMm: 9, upMm: 7, alongMm: 2 } }
 
 function bounce(): GlowSource[] {
   const dx = fence.to[0] - fence.from[0]
@@ -237,9 +239,10 @@ function autumn(source: THREE.BufferGeometry): THREE.BufferGeometry {
         b *= DOOR[2]
       } else if (Math.abs(c.across) < cottage.halfWidth + 3.5 && Math.abs(c.along) < cottage.halfLength + 3.5 && y - frame.floor > cottage.wall - 1.2 && N.getY(i) > 0.25) {
         const lum = 0.3 * r + 0.6 * gr + 0.1 * b
-        r = (lum * ROOF.grey + r * (1 - ROOF.grey)) * ROOF.tone[0]
-        gr = (lum * ROOF.grey + gr * (1 - ROOF.grey)) * ROOF.tone[1]
-        b = (lum * ROOF.grey + b * (1 - ROOF.grey)) * ROOF.tone[2]
+        const bend = (Math.pow(lum / ROOF.mid, ROOF.bend) * ROOF.mid) / Math.max(lum, 1e-4) * (ROOF.patch[0] + (ROOF.patch[1] - ROOF.patch[0]) * wave(x * 0.9, y * 0.9, z * 0.9))
+        r = (lum * ROOF.grey + r * (1 - ROOF.grey)) * ROOF.tone[0] * bend
+        gr = (lum * ROOF.grey + gr * (1 - ROOF.grey)) * ROOF.tone[1] * bend
+        b = (lum * ROOF.grey + b * (1 - ROOF.grey)) * ROOF.tone[2] * bend
       } else {
         const lum = 0.3 * r + 0.6 * gr + 0.1 * b
         r = (0.5 * lum + 0.5 * r) * TIMBER[0]

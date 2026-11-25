@@ -392,11 +392,15 @@ const conform = (g, x, z, yaw, lift) => {
   }
   return g
 }
-const cobble = (x, z, w, l, h, yaw, lift, dark = 1) => {
+// The approved path is warm, pinkish slate under the lamp; the cold key light greys a neutral stone, so the flags lean red.
+const FLAG_TONE = [1.3, 0.92, 0.66]
+const cobble = (x, z, w, l, h, yaw, lift, dark = 1, flat = false) => {
   const seed = R() * 40
-  const g = slab(w, h, l, { round: Math.min(h * 0.48, 0.34), sx: 3, sy: 2, sz: 3, warp: 0.11, seed })
-  const tone = mul3(STONE_TONES[Math.floor(R() * STONE_TONES.length)], between(0.62, 1.3) * dark)
-  shade(g, (px, py, pz) => (0.2 + 0.8 * smooth(-h * 0.2, h * 0.45, py)) * (0.6 + 0.85 * fbm(px * 1.6 + seed, pz * 1.6, py * 2, 3)) * (0.85 + 0.15 * smooth(0, 0.5, Math.min(w / 2 - Math.abs(px), l / 2 - Math.abs(pz)))))
+  const g = slab(w, h, l, { round: Math.min(h * 0.48, flat ? 0.16 : 0.34), sx: 3, sy: 2, sz: 3, warp: 0.11, seed })
+  const pick = mul3(STONE_TONES[Math.floor(R() * STONE_TONES.length)], between(flat ? 0.55 : 0.62, flat ? 1.5 : 1.3) * dark)
+  const tone = flat ? [pick[0] * FLAG_TONE[0], pick[1] * FLAG_TONE[1], pick[2] * FLAG_TONE[2]] : pick
+  const side = flat ? 0.1 : 0.2
+  shade(g, (px, py, pz) => (side + (1 - side) * smooth(flat ? h * 0.1 : -h * 0.2, h * 0.45, py)) * (0.6 + 0.85 * fbm(px * 1.6 + seed, pz * 1.6, py * 2, 3)) * (0.85 + 0.15 * smooth(0, 0.5, Math.min(w / 2 - Math.abs(px), l / 2 - Math.abs(pz)))))
   decor.add(conform(g, x, z, yaw, lift), { color: tone, surf: [surf(KIND.stone, 0.88), 0], renormal: true })
 }
 
@@ -434,7 +438,7 @@ let flagCount = 0
       const cz = az + dz * (s + along / 2)
       for (const [off, w] of [[-(left / 2) - 0.08, left - 0.16], [right / 2 + 0.08, right - 0.16]]) {
         const j = between(-0.25, 0.25)
-        cobble(cx - dz * off + dx * j, cz + dx * off + dz * j, along - 0.3, w, 1.7, yaw + between(-0.14, 0.14), 0.55 + between(0, 0.3))
+        cobble(cx - dz * off + dx * j, cz + dx * off + dz * j, along - 0.3, w, 1.3, yaw + between(-0.14, 0.14), 0.45 + between(0, 0.45), 1, true)
         flagCount++
       }
       s += along
