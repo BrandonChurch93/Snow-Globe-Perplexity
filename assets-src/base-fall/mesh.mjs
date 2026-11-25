@@ -10,7 +10,7 @@ const azOf = (p) => Math.atan2(p[0], p[2]) / RAD
 const sidesAt = (az, near, far) => (L.front(az) <= 125 ? near : far)
 
 // A tube along a path. `radii` per point; `flat` squeezes it toward the ring. Paint: shade, kind, how far along a thorn.
-function tube(soup, pts, radii, sides, paint, flat = 1, vAt = 0) {
+function tube(soup, pts, radii, sides, paint, flat = 1, vAt = 0, gnarl = 0, seed = 1) {
   const n = pts.length
   const frames = []
   let len = 0
@@ -34,7 +34,8 @@ function tube(soup, pts, radii, sides, paint, flat = 1, vAt = 0) {
     const f = frames[j]
     const d = add3([f.n[0] * Math.cos(a) * flat, f.n[1] * Math.cos(a) * flat, f.n[2] * Math.cos(a) * flat], f.b, Math.sin(a))
     const nrm = norm3(add3([f.n[0] * Math.cos(a), f.n[1] * Math.cos(a), f.n[2] * Math.cos(a)], f.b, Math.sin(a) * flat))
-    const p = add3(pts[j], d, radii[j])
+    const lump = gnarl ? 1 + gnarl * 2 * (fbm(arc[j] * 0.3 + seed, ((i % sides) / sides) * 4, 4096, 4, seed, 2) - 0.5) : 1
+    const p = add3(pts[j], d, radii[j] * lump)
     const c = paint(j, a, p, nrm)
     return { p, n: nrm, uv: [arc[j] / TILE + vAt, i / sides], uv2: [arc[j] / TILE + vAt, (i / sides) * ((2 * Math.PI * Math.max(radii[j], 0.4)) / TILE) * 2], c }
   })
@@ -103,13 +104,18 @@ const STRANDS = []
 function addStrands() {
   const rng = mulberry(4107)
   const r = (a, b) => a + (b - a) * rng()
-  const push = (s) => STRANDS.push({ seed: STRANDS.length * 31 + 7, ...s })
-  for (let i = 0; i < 3; i++) push({ a0: -180, span: 360, h0: 2.2 + i * 2.0, amp: 1.2 + 0.6 * i, k: 3 + i, ph: r(0, 6.28), rad: r(1.7, 2.2), lift: 2.0, sprawl: 3.4 - i * 1.1, thorn: [7, 13], every: 34, layer: 0 })
-  for (let i = 0; i < 3; i++) push({ a0: -180, span: 360, h0: 29.6 + i * 2.1, amp: 1.3, k: 4 + i, ph: r(0, 6.28), rad: r(1.4, 1.9), lift: 1.8, sprawl: 0, thorn: [6, 11], every: 30, layer: 2 })
-  for (let i = 0; i < 4; i++) push({ a0: -180, span: 360, h0: 10.5 + i * 4.6, amp: r(3.2, 5.2), k: 3 + (i % 3), ph: r(0, 6.28), rad: r(1.1, 1.5), lift: 2.4, sprawl: 0, thorn: [6, 10], every: 40, layer: 1 })
-  for (let i = 0; i < 7; i++) {
-    const a0 = -175 + i * 51 + r(-12, 12)
-    push({ a0, span: r(70, 130), h0: r(6, 30), amp: r(5, 9), k: r(2.2, 3.4), ph: r(0, 6.28), rad: r(0.7, 1.0), lift: 3.4, sprawl: 0.6, thorn: [4, 8], every: 30, layer: 3, open: true })
+  const push = (s) => STRANDS.push({ seed: STRANDS.length * 31 + 7, slope: 0, reach: 0, ...s })
+  for (let i = 0; i < 2; i++) push({ a0: -180, span: 360, h0: 2.3 + i * 2.7, amp: 1.1 + 0.5 * i, k: 3 + i, ph: r(0, 6.28), rad: r(1.15, 1.5), lift: 1.6, sprawl: 3.2 - i * 1.4, thorn: [7, 12], every: 46, layer: 0 })
+  for (let i = 0; i < 2; i++) push({ a0: -180, span: 360, h0: 30.8 + i * 3.4, amp: 1.2, k: 4 + i, ph: r(0, 6.28), rad: r(1.25, 1.6), lift: 1.5, sprawl: 0, thorn: [6, 10], every: 60, layer: 2 })
+  for (let i = 0; i < 2; i++) push({ a0: -180, span: 360, h0: 11.5 + i * 15, amp: r(2.4, 3.4), k: 3 + i, ph: r(0, 6.28), rad: r(1.0, 1.3), lift: 1.8, sprawl: 0, thorn: [6, 10], every: 52, layer: 1 })
+  // The branches: long tapering lengths that cross the ring on a slant, each ending in a point that stands off it.
+  const count = 25
+  for (let i = 0; i < count; i++) {
+    const steep = i % 3 === 2
+    const span = steep ? r(28, 46) : r(62, 150)
+    const a0 = -180 + (i * 360) / count + r(-9, 9) + (i * 137.5) % 360
+    const slope = (rng() < 0.5 ? -1 : 1) * (steep ? r(17, 26) : r(6, 19))
+    push({ a0, span, h0: steep ? r(14, 24) : r(5, 33), slope, amp: steep ? r(0.6, 1.4) : r(1.6, 3.6), k: r(1.6, 3.0), ph: r(0, 6.28), rad: steep ? r(1.1, 1.5) : r(1.2, 2.05), lift: r(2.6, 4.6), sprawl: 0.8, thorn: [6, 11], every: 46, layer: 3, open: true, reach: r(3.5, 8.5) })
   }
 }
 addStrands()
@@ -118,16 +124,16 @@ function strandPath(s) {
   const n = Math.ceil((s.span * RAD * 54) / 1.25)
   const hs = []
   const azs = []
-  const base = (az) => s.h0 + s.amp * Math.sin(s.k * az * RAD + s.ph) + (fbm(((az + 180) / 360) * 14, 0.37, 14, 4, s.seed, 3) - 0.5) * s.amp * 1.2
+  const base = (az) => s.h0 + s.slope * ((az - s.a0) / s.span - 0.5) + s.amp * Math.sin(s.k * az * RAD + s.ph) + (fbm(((az + 180) / 360) * 14, 0.37, 14, 4, s.seed, 3) - 0.5) * s.amp * 1.2
   const side = FACES.map((f) => (base(f.az) >= f.h ? 1 : -1))
   for (let i = 0; i <= n; i++) {
     const az = s.a0 + (s.span * i) / n
     let h = base(az)
     FACES.forEach((f, q) => {
       const d = L.wrapDeg(az - f.az) * RAD * FACE_R
-      const ex = (f.rad + 2.6 + s.rad) * 1.5
+      const ex = (f.rad + 1.2 + s.rad) * (1.3 + 0.5 * fbm(q * 3.1 + s.seed, 0.5, 64, 4, 5, 1))
       if (Math.abs(d) >= ex) return
-      const need = (f.tall + 2.9 + s.rad) * 1.07 * Math.cos(((Math.PI / 2) * d) / ex)
+      const need = (f.tall * 0.93 + s.rad) * 1.07 * Math.cos(((Math.PI / 2) * d) / ex)
       const dy = (h - f.h) * side[q]
       if (dy < need) h = f.h + side[q] * need
     })
@@ -148,13 +154,14 @@ function strandPath(s) {
   for (let i = 0; i <= n; i++) {
     const az = azs[i]
     const t = i / n
-    const end = s.open ? smooth(0, 0.16, t) * smooth(0, 0.2, 1 - t) : 1
-    const rr = s.rad * (0.82 + 0.4 * fbm(((az + 180) / 360) * 60, 0.7, 60, 4, s.seed + 5, 2)) * (s.open ? 0.12 + 0.88 * end : 1)
+    const end = s.open ? smooth(0, 0.3, t) ** 0.7 * smooth(0, 0.34, 1 - t) ** 0.7 : 1
+    const rr = s.rad * (0.82 + 0.4 * fbm(((az + 180) / 360) * 60, 0.7, 60, 4, s.seed + 5, 2)) * (s.open ? 0.07 + 0.93 * end : 1)
     const h = clamp(hs[i], rr * 0.85 + 0.15, 36.6 - rr * 0.2)
     const weave = 0.5 + 0.5 * Math.sin(az * RAD * (9 + (s.seed % 5)) + s.seed)
     const low = s.sprawl * smooth(11, 1.5, h) * (0.7 + 0.6 * fbm(((az + 180) / 360) * 9, 0.2, 9, 4, s.seed + 9, 2))
-    const off = s.open ? (1 - end) * 5.5 : 0
-    pts.push(place(drumR(h) + rr * 0.55 + s.lift * weave + low + off, h, az))
+    const off = s.open ? (1 - end) ** 2 * s.reach : 0
+    const hug = 0.25 + 0.75 * smooth(1.15, 2.3, faceGap(az, h, 0))
+    pts.push(place(drumR(h) + rr * 0.55 + (s.lift * weave + off) * hug + low, h, az))
     radii.push(rr)
   }
   return { pts, radii, azs }
@@ -170,8 +177,8 @@ function thorn(soup, root, dir, len, rad, bend, sides, shade) {
   for (let i = 0; i < rings; i++) {
     const t = i / (rings - 1)
     pts.push(p)
-    radii.push(Math.max(rad * (1 - t) ** 0.85 * (1 + 0.35 * (1 - t) ** 6), 0.03))
-    d = norm3(add3(d, bend, step * 0.035))
+    radii.push(Math.max(rad * (1 - t) ** 0.9 * (1 + 0.4 * (1 - t) ** 5), 0.03))
+    d = norm3(add3(d, bend, step * 0.05))
     p = add3(p, d, step)
   }
   tube(soup, pts, radii, sides, (j) => [shade * (0.75 + 0.25 * (j / (rings - 1))), 1, j / (rings - 1)], 1)
@@ -229,7 +236,7 @@ export function buildIron() {
         const depth = smooth(0, 5, Math.hypot(p[0], p[2]) - drumR(clamp(p[1], 0, 38)))
         return [(0.32 + 0.68 * open) * (0.5 + 0.5 * depth) * (0.75 + 0.25 * smooth(0, 5, p[1])), 0.5, fbm(i * 0.09, a, 64, 8, s.seed + 3, 2)]
       }
-      tube(soup, pick.map((i) => pts[i]), pick.map((i) => radii[i]), far ? 5 : s.rad > 1.2 ? 9 : 7, shade, 1, s.seed * 0.37)
+      tube(soup, pick.map((i) => pts[i]), pick.map((i) => radii[i]), far ? 5 : s.rad > 1.2 ? 9 : 7, shade, 1, s.seed * 0.37, far ? 0 : 0.13, s.seed)
       from = to
     }
     let next = r(4, s.every)
@@ -247,8 +254,8 @@ export function buildIron() {
       const dir = norm3(add3(add3([t[0] * sgn * r(0.5, 1.1), t[1] * sgn, t[2] * sgn * r(0.5, 1.1)], radial(az), r(0.35, 0.9)), [0, 1, 0], up))
       const len = r(s.thorn[0], s.thorn[1]) * (L.front(az) > 125 ? 0.9 : 1)
       const rad = radii[i] * r(0.7, 0.9)
-      const probe = [0.3, 0.55, 0.8, 1].map((q) => add3(pts[i], dir, len * q))
-      if (probe.some((p) => crossesFace(p)) || probe.some((p) => p[1] < 0.5) || (s.layer !== 2 && probe[3][1] > 37)) {
+      const probe = [0.1, 0.25, 0.4, 0.55, 0.7, 0.85, 1].map((q) => add3(pts[i], dir, len * q))
+      if (probe.some((p) => crossesFace(p)) || probe.some((p) => p[1] < 0.5) || (s.layer !== 2 && probe[6][1] > 37)) {
         refused++
         continue
       }
@@ -261,7 +268,7 @@ export function buildIron() {
   for (const t of L.HERO_THORNS) {
     const root = place(drumR(clamp(t.h, 0, 38)) + 2.2, t.h, t.az)
     const dir = norm3(add3(add3([along(t.az)[0] * t.dir[0], 0, along(t.az)[2] * t.dir[0]], [0, 1, 0], t.dir[1]), radial(t.az), t.dir[2]))
-    const probe = [0.3, 0.55, 0.8, 1].map((q) => add3(root, dir, t.len * q))
+    const probe = [0.1, 0.25, 0.4, 0.55, 0.7, 0.85, 1].map((q) => add3(root, dir, t.len * q))
     if (probe.some((p) => crossesFace(p))) {
       refused++
       continue
@@ -277,10 +284,10 @@ export function buildIron() {
 export function buildPumpkins() {
   const soup = new Soup('pumpkin')
   FACES.forEach((f, index) => {
-    const a = f.rad + 2.3
-    const b = f.tall + 1.9
-    const c = 5.6
-    const centre = place(drumR(f.h) - 1.4, f.h, f.az)
+    const a = f.rad + 0.5
+    const b = f.tall + 0.4
+    const c = 5.0
+    const centre = place(drumR(f.h) - 1.6, f.h, f.az)
     const out = radial(f.az)
     const tan = along(f.az)
     const near = L.front(f.az) <= 125
@@ -289,21 +296,21 @@ export function buildPumpkins() {
     soup.grid(colsN, rowsN, (i, j) => {
       const lon = mix(-104, 104, i / (colsN - 1)) * RAD
       const lat = mix(-86, 86, j / (rowsN - 1)) * RAD
-      const groove = Math.abs(Math.sin(lon * 4.5)) ** 10
-      const squash = 1 - 0.085 * groove * Math.cos(lat) ** 0.5 + 0.02 * fbm(lon * 2 + 9, lat * 2 + 5, 64, 64, 77 + index, 2)
+      const groove = Math.abs(Math.sin(lon * 4.5 + 0.3 * index)) ** 6
+      const squash = 1 - 0.15 * groove * Math.cos(lat) ** 0.5 + 0.02 * fbm(lon * 2 + 9, lat * 2 + 5, 64, 64, 77 + index, 2)
       const dimple = 1 - 0.12 * smooth(62 * RAD, 86 * RAD, Math.abs(lat))
       const x = a * Math.cos(lat) * Math.sin(lon) * squash
       const y = b * Math.sin(lat) * dimple
       const z = c * Math.cos(lat) * Math.cos(lon) * squash
       const p = add3(add3(add3(centre, tan, x), [0, 1, 0], y), out, z)
       const n = norm3(add3(add3([tan[0] * (x / (a * a)), 0, tan[2] * (x / (a * a))], [0, 1, 0], y / (b * b)), out, z / (c * c)))
-      const span = 1.3 * Math.max(f.rad, f.tall)
+      const span = 1.06 * Math.max(f.rad, f.tall)
       return {
         p,
         n,
         uv: [x / (2 * span) + 0.5, y / (2 * span) + 0.5],
         uv2: [x / (2 * span) + 0.5, y / (2 * span) + 0.5],
-        c: [0.55 + 0.45 * smooth(0.2, 0.9, Math.cos(lat) * Math.cos(lon)) - 0.3 * groove, (index + 0.5) / 8, (f.cell + 0.5) / 4],
+        c: [0.55 + 0.45 * smooth(0.2, 0.9, Math.cos(lat) * Math.cos(lon)) - 0.5 * groove, (index + 0.5) / 8, (f.cell + 0.5) / 4],
       }
     })
     const stem = []
@@ -338,8 +345,9 @@ export function buildWax() {
   const prof = (az) => {
     const m = heavy(az)
     const n = fbm(((az + 180) / 360) * 26, 0.3, 26, 4, 61, 3)
-    const thick = 1.3 + 1.3 * n + 1.5 * m
-    const drop = 1.3 + 2.4 * n * n + 2.6 * m
+    const side = 1.1 * smooth(48, 82, L.front(az)) * smooth(140, 100, L.front(az))
+    const thick = 0.45 + 1.5 * n * n + 1.6 * m + side
+    const drop = 0.7 + 2.2 * n * n * n + 2.8 * m + 1.4 * side
     return { thick, drop }
   }
   const rows = 12
@@ -367,7 +375,7 @@ export function buildWax() {
       const t = i / n
       const h = mix(h0, d.h1, t)
       const sway = (fbm(t * 3 + d.az, 0.4, 64, 4, 17, 2) - 0.5) * 1.4 * t
-      const ride = 1.4 + 3.6 * smooth(0, 0.3, t) * (0.75 + 0.25 * Math.sin(t * 5 + d.az))
+      const ride = 1.4 + (d.h1 < 26 ? 1.6 : 3.6) * smooth(0, 0.3, t) * (0.75 + 0.25 * Math.sin(t * 5 + d.az))
       pts.push(place(drumR(clamp(h, 0, 38.3)) + ride, h, d.az + sway))
       const neck = mix(d.wide * 1.25, 0.82, smooth(0, 0.3, t))
       const bulb = 1 + 0.5 * Math.exp(-(((t - 0.9) / 0.09) ** 2))
@@ -379,21 +387,21 @@ export function buildWax() {
   }
   for (const run of L.RUNS) {
     const start = L.onCylinder(run.x, run.y0, 55)
-    const w = (run.w / 9.3) * 0.5
-    const foot = 56.6 + (run.pool > 0 ? 1.2 : 0.4)
+    const w = (run.w / 9.3) * 0.4
+    const foot = 59.6 + (run.pool > 0 ? 1.2 : 0.4)
     const n = Math.max(6, Math.ceil(start.h / 0.7))
     const pts = []
     const radii = []
     for (let i = 0; i <= n; i++) {
       const t = i / n
       const h = mix(start.h, run.pool > 0 ? 0.5 : 2.2, t)
-      const sway = (fbm(t * 2 + start.az, 0.9, 64, 4, 23, 2) - 0.5) * 2.2
-      pts.push(place(mix(drumR(h) + 3.4, foot, t * t), h, start.az + sway * t))
+      const sway = Math.sin(run.x) * 2.2
+      pts.push(place(mix(drumR(h) + 2.6, foot, t ** 0.8), h, start.az + sway * Math.sin(2 * Math.PI * t) * (1 - t)))
       const cap = Math.sqrt(Math.max(1 - Math.max((0.1 - t) / 0.1, 0) ** 2, 0.0004))
-      const tail = run.pool > 0 ? 1 + 0.5 * smooth(0.7, 1, t) : Math.sqrt(Math.max(1 - Math.max((t - 0.9) / 0.1, 0) ** 2, 0.0004)) * (1 + 0.4 * Math.exp(-(((t - 0.86) / 0.1) ** 2)))
-      radii.push(w * (0.8 + 0.25 * Math.sin(t * 7 + run.x)) * cap * tail)
+      const tail = run.pool > 0 ? 1 + 0.35 * smooth(0.8, 1, t) : Math.sqrt(Math.max(1 - Math.max((t - 0.9) / 0.1, 0) ** 2, 0.0004)) * (1 + 0.4 * Math.exp(-(((t - 0.86) / 0.1) ** 2)))
+      radii.push(w * (0.8 + 0.45 * t * t + 0.1 * Math.sin(t * 9 + run.x)) * cap * tail)
     }
-    tube(soup, pts, radii, 10, (j, a, p, nrm) => [0.55 + 0.45 * (0.5 + 0.5 * dot3(nrm, norm3([p[0], 0, p[2]]))), clamp(radii[j] * 0.55, 0, 1), j / n], 0.75)
+    tube(soup, pts, radii, 10, (j, a, p, nrm) => [(0.55 + 0.45 * (0.5 + 0.5 * dot3(nrm, norm3([p[0], 0, p[2]])))) * (0.5 + 0.5 * smooth(0, 16, p[1])), clamp(radii[j] * 0.55, 0, 1), j / n], 0.85)
     count++
     if (run.pool <= 0) continue
     const centre = place(foot + run.pool * 0.55, 0, start.az + (run.x < 1400 ? -3 : 2))
@@ -402,14 +410,14 @@ export function buildWax() {
     soup.grid(seg + 1, rings, (i, j) => {
       const a = (i / seg) * 2 * Math.PI
       const q = j / (rings - 1)
-      const lobes = run.pool * (0.62 + 0.55 * fbm((i % seg) / seg * 5, 0.5, 5, 4, Math.round(run.x), 3)) * (1 + 0.45 * Math.cos(a - 1.2))
+      const lobes = run.pool * (0.42 + 0.95 * fbm((i % seg) / seg * 5, 0.5, 5, 4, Math.round(run.x), 3)) * (1 + 0.45 * Math.cos(a - 1.2))
       const rho = Math.sin((q * Math.PI) / 2)
-      const y = 0.06 + 1.25 * Math.cos((q * Math.PI) / 2) ** 0.55 * (0.6 + 0.4 * rho)
+      const y = 0.06 + 0.85 * Math.cos((q * Math.PI) / 2) ** 0.55 * (0.6 + 0.4 * rho)
       const dirx = Math.cos(a)
       const dirz = Math.sin(a) * 0.62
       const p = [centre[0] + dirx * lobes * rho, q >= 1 ? 0.04 : y * (1 - q ** 5), centre[2] + dirz * lobes * rho]
       const n = norm3([dirx * rho ** 3, 1 - 0.75 * rho ** 3, dirz * rho ** 3])
-      return { p, n, uv: [i / seg, q], uv2: [i / seg, q], c: [0.7 + 0.3 * (1 - rho), clamp(0.9 * (1 - rho ** 4), 0, 1), 1] }
+      return { p, n, uv: [i / seg, q], uv2: [i / seg, q], c: [0.5 + 0.2 * (1 - rho), clamp(0.9 * (1 - rho ** 4), 0, 1), 1] }
     })
   }
   return { soup, drips: count }
