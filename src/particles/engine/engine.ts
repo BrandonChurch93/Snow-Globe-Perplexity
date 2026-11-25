@@ -499,6 +499,7 @@ export class ParticleEngine {
 
   private readonly base: Int32Array
   private readonly feel: Float32Array
+  private readonly unions = new Map<number, Grid>()
   readonly sink: Float32Array
   readonly lift: Float32Array
   private readonly layer: Float32Array
@@ -590,6 +591,7 @@ export class ParticleEngine {
     this.collider = collider
     if (emitters) this.emitters = emitters
     this.grids.fill(null)
+    this.unions.clear()
     this.starts.fill(null)
     this.pending = true
   }
@@ -742,6 +744,21 @@ export class ParticleEngine {
       const c = this.collider
       g = gridOf(typeof c === 'function' ? c(SEASONS[ix]!) : c)
       this.grids[ix] = g
+    }
+    return g
+  }
+
+  private both(a: number, b: number): Grid {
+    const A = this.grid(a)
+    const B = this.grid(b)
+    if (A.n !== B.n || A.source.sizeMm !== B.source.sizeMm) return B
+    const key = a * SEASONS.length + b
+    let g = this.unions.get(key)
+    if (!g) {
+      const data = new Float32Array(A.data.length)
+      for (let j = 0; j < data.length; j++) data[j] = Math.min(A.data[j]!, B.data[j]!)
+      g = gridOf({ n: A.n, sizeMm: A.source.sizeMm, data })
+      this.unions.set(key, g)
     }
     return g
   }
@@ -1054,6 +1071,7 @@ export class ParticleEngine {
       if (to < 0) return
       const c = s.change
       const at = this.swapAt
+      if (this.window !== 1) for (let i = 0; i < count; i++) this.feel[i * 4] = NaN
       this.window = 1
       this.swapTo = to
       this.change = c
@@ -1064,6 +1082,7 @@ export class ParticleEngine {
     if (now < 0) return
     if (now !== this.nowIx || this.window === 1) {
       for (let i = 0; i < count; i++) if (era[i] !== now) this.turn(i, now, n)
+      if (this.window === 1) for (let i = 0; i < count; i++) this.feel[i * 4] = NaN
       this.nowIx = now
       this.window = 2
     }
@@ -1222,8 +1241,8 @@ export class ParticleEngine {
     const lively = bound > (this.window === 1 ? Math.min(MIN_LIFT_IN[this.nowIx]!, MIN_LIFT_IN[this.swapTo]!) : MIN_LIFT_IN[this.nowIx]!)
     const mask = m.ax !== 0 || m.ay !== 0 || m.az !== 0 ? 3 : lively ? 15 : 63
     const eA = this.nowIx
-    const A = this.grid(eA)
-    const B = this.window === 1 ? this.grid(this.swapTo) : A
+    const A = this.window === 1 ? this.both(eA, this.swapTo) : this.grid(eA)
+    const B = A
     const count = this.count
     const xyz = this.xyz
     const old = this.old
