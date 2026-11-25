@@ -13,7 +13,7 @@ import { anchors, cottage, cottageFrame, fence, groundAt, moundSlope, pond, pond
 import { gainOf } from '../../../scene/lightgrid'
 import type { InnerLight, KitMoment } from '../../kit'
 import { isTree, season, tones } from './palette'
-import { PUMPKINS, STONES, atticAt, pumpkinCentre, pumpkinFace, pumpkinTall, stoneBase, type Point } from './props'
+import { PUMPKINS, ROCKS, STONES, atticAt, boardDistance, fenceBoards, pumpkinCentre, pumpkinFace, pumpkinTall, rockCentre, stoneBase, type Point } from './props'
 
 const MODEL = 'fall/village-fall.glb'
 const EARTH = 'fall/village-earth.srgb.tile.w1024.png'
@@ -38,7 +38,7 @@ const LAMP_GLASS: Rgb = [6.4, 3.5, 1.3]
 const WALL_FILL = 3.0
 const GROUND_FILL = 3.4
 const PATH = { tone: [1.2, 1.13, 1.0] as Rgb, nearMm: 2.6, highMm: 1.4 }
-const FENCE = { reachMm: 1.25, pastMm: 1.2, out: 0.1, outWave: 0.1, along: 0.02, alongWave: 0.24, sagMm: 0.5, tone: [0.17, 0.1, 0.06] as Rgb }
+const FENCE = { reachMm: 1.25, sinkMm: 5 }
 const MOSS = { low: [0.62, 0.76, 0.44] as Rgb, high: [0.95, 0.96, 0.88] as Rgb, tallMm: 9 }
 const ROOF = { tone: [2.2, 1.7, 1.45] as Rgb, grey: 0.55 }
 const DOOR: Rgb = [0.34, 0.24, 0.17]
@@ -88,52 +88,17 @@ export async function prepare(): Promise<void> {
   await Promise.all([prepareVillage(), prepareModel(MODEL)])
 }
 
-const fenceDir: [number, number] = (() => {
-  const dx = fence.to[0] - fence.from[0]
-  const dz = fence.to[1] - fence.from[1]
-  const l = Math.hypot(dx, dz)
-  return [dx / l, dz / l]
-})()
-const fenceLength = Math.hypot(fence.to[0] - fence.from[0], fence.to[1] - fence.from[1])
-
-function fencePose(s: number): { out: number; along: number; sag: number } {
-  const t = s / fenceLength
-  return { out: FENCE.out + FENCE.outWave * Math.sin(t * 7.3 + 1), along: FENCE.along + FENCE.alongWave * Math.sin(t * 9.1 + 0.5), sag: FENCE.sagMm * smooth(0.55, 1.1, t) }
-}
-
-function fenceSpan(x: number, z: number): { s: number; side: number } {
-  const dx = x - fence.from[0]
-  const dz = z - fence.from[1]
-  return { s: dx * fenceDir[0] + dz * fenceDir[1], side: -dx * fenceDir[1] + dz * fenceDir[0] }
-}
-
-const turn = (u: number, v: number, angle: number): [number, number] => [u * Math.cos(angle) - v * Math.sin(angle), u * Math.sin(angle) + v * Math.cos(angle)]
-const fenceAt = (s: number, a: number, h: number, o: number): Point => {
-  const fx = fence.from[0] + fenceDir[0] * s
-  const fz = fence.from[1] + fenceDir[1] * s
-  return [fx + fenceDir[0] * a - fenceDir[1] * o, groundAt(fx, fz) + h, fz + fenceDir[1] * a + fenceDir[0] * o]
-}
-const fenceFoot = (s: number): number => groundAt(fence.from[0] + fenceDir[0] * s, fence.from[1] + fenceDir[1] * s)
-
-function leanOut(x: number, y: number, z: number): Point {
-  const { s, side } = fenceSpan(x, z)
-  const pose = fencePose(s)
-  const [h1, a] = turn(y - fenceFoot(s), 0, pose.along)
-  const [h2, o] = turn(h1, side, pose.out)
-  return fenceAt(s, a, h2 - pose.sag, o)
-}
-
-function leanBack(x: number, y: number, z: number): Point {
-  const { s, side } = fenceSpan(x, z)
-  const pose = fencePose(s)
-  const [h1, o] = turn(y - fenceFoot(s) + pose.sag, side, -pose.out)
-  const shift = h1 * Math.tan(pose.along)
-  return fenceAt(s - shift, 0, h1 / Math.cos(pose.along), o)
-}
+const BOARDS = fenceBoards()
+const fenceBox = BOARDS.reduce(
+  (m, b) => ({ x0: Math.min(m.x0, b.a[0], b.b[0]), x1: Math.max(m.x1, b.a[0], b.b[0]), z0: Math.min(m.z0, b.a[2], b.b[2]), z1: Math.max(m.z1, b.a[2], b.b[2]) }),
+  { x0: Infinity, x1: -Infinity, z0: Infinity, z1: -Infinity },
+)
 
 const inFence = (x: number, y: number, z: number): boolean => {
-  const { s, side } = fenceSpan(x, z)
-  if (s < -FENCE.pastMm || s > fenceLength + FENCE.pastMm || Math.abs(side) > FENCE.reachMm) return false
+  const dx = fence.to[0] - fence.from[0]
+  const dz = fence.to[1] - fence.from[1]
+  const t = Math.min(1.1, Math.max(-0.1, ((x - fence.from[0]) * dx + (z - fence.from[1]) * dz) / (dx * dx + dz * dz)))
+  if (Math.hypot(x - fence.from[0] - dx * t, z - fence.from[1] - dz * t) > FENCE.reachMm) return false
   const up = y - groundAt(x, z)
   return up > -1.5 && up < fence.height + 2
 }
@@ -161,16 +126,7 @@ function autumn(source: THREE.BufferGeometry): THREE.BufferGeometry {
     let b = C.getZ(i)
     const n = wave(x, y, z)
     if (inFence(x, y, z) && kind === 1) {
-      const p = leanOut(x, y, z)
-      const q = leanOut(x + N.getX(i) * 0.05, y + N.getY(i) * 0.05, z + N.getZ(i) * 0.05)
-      const l = Math.hypot(q[0] - p[0], q[1] - p[1], q[2] - p[2]) || 1
-      P.setXYZ(i, p[0], p[1], p[2])
-      N.setXYZ(i, (q[0] - p[0]) / l, (q[1] - p[1]) / l, (q[2] - p[2]) / l)
-      const lum = 0.3 * r + 0.6 * gr + 0.1 * b
-      const worn = (0.55 + 0.3 * Math.min(1, lum * 1.6)) * (0.7 + 0.6 * n)
-      r = FENCE.tone[0] * worn
-      gr = FENCE.tone[1] * worn
-      b = FENCE.tone[2] * worn
+      P.setXYZ(i, fence.from[0], groundAt(fence.from[0], fence.from[1]) - FENCE.sinkMm, fence.from[1])
     } else if (kind === 3) {
       const lum = Math.min(1.4, (0.3 * r + 0.6 * gr + 0.1 * b) * 3.2)
       const tone = DRY[Math.floor(wave(x * 3.1, y * 2.7, z * 3.3) * 3.999)]!
@@ -395,7 +351,6 @@ export function lights(): THREE.Object3D {
 }
 
 const keep = (role: string): boolean => !isTree(role) && role !== 'ground' && role !== 'pond' && role !== 'fence'
-const onlyFence = (role: string): boolean => role === 'fence'
 const SINK = { depthMm: 3.2, from: 0.74, to: 0.97 }
 
 function groundDistance(x: number, y: number, z: number): number {
@@ -405,10 +360,8 @@ function groundDistance(x: number, y: number, z: number): number {
 }
 
 function fenceDistance(x: number, y: number, z: number): number {
-  const { s, side } = fenceSpan(x, z)
-  if (s < -8 || s > fenceLength + 8 || Math.abs(side) > 10) return Math.hypot(Math.max(-8 - s, 0, s - fenceLength - 8), Math.max(Math.abs(side) - 10, 0)) + 6
-  const p = leanBack(x, y, z)
-  return solidDistance(p[0], p[1], p[2], onlyFence)
+  const far = Math.hypot(Math.max(fenceBox.x0 - x, 0, x - fenceBox.x1), Math.max(fenceBox.z0 - z, 0, z - fenceBox.z1))
+  return far > 6 ? far - 1 : boardDistance(x, y, z, BOARDS)
 }
 
 function propDistance(x: number, y: number, z: number): number {
@@ -418,6 +371,15 @@ function propDistance(x: number, y: number, z: number): number {
     const tall = pumpkinTall(p)
     const k = Math.hypot((x - c[0]) / p.r, (y - c[1]) / tall, (z - c[2]) / p.r)
     d = Math.min(d, (k - 1) * Math.min(p.r, tall))
+  }
+  for (const r of ROCKS) {
+    const c = rockCentre(r)
+    const cs = Math.cos(r.yaw)
+    const sn = Math.sin(r.yaw)
+    const dx = x - c[0]
+    const dz = z - c[2]
+    const k = Math.hypot((dx * cs - dz * sn) / r.r[0], (y - c[1]) / r.r[1], (dx * sn + dz * cs) / r.r[2])
+    d = Math.min(d, (k - 1) * Math.min(r.r[0], r.r[1], r.r[2]))
   }
   for (const s of STONES) {
     const cy = stoneBase(s)

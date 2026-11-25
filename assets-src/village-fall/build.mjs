@@ -24,20 +24,15 @@ const STONES = PROPS.STONES
 const LEAF_TONES = ['#c8541a', '#d9812a', '#a8371a', '#e0a030', '#7a3a18', '#b5651d', '#c9451c', '#8f5a1e'].map(lin)
 const GRASS_TONES = ['#5a7a2a', '#7d9438', '#b0a548', '#4a6424', '#96893a'].map(lin)
 
+const LITTER = { base: 0.08, patch: 0.26, fence: 0.22, tree: 0.26, wall: 0.12, leaves: 1150 }
+const STONE_TONES = ['#d6d0bf', '#c4c0b2', '#e0d9c6', '#b3b0a4', '#cbc5b3'].map(lin)
 const ground = new Bag('ground')
 const water = new Bag('water')
 const decor = new Bag('decor')
 const glow = new Bag('glow')
 const attic = new Bag('pane-attic')
 
-const fenceA = L.fence.from
-const fenceB = L.fence.to
-function fenceGap(x, z) {
-  const dx = fenceB[0] - fenceA[0]
-  const dz = fenceB[1] - fenceA[1]
-  const t = clamp(((x - fenceA[0]) * dx + (z - fenceA[1]) * dz) / (dx * dx + dz * dz), -0.15, 1.15)
-  return Math.hypot(x - fenceA[0] - dx * t, z - fenceA[1] - dz * t)
-}
+const fenceGap = PROPS.fenceGapOf
 function cottageGap(x, z) {
   const dx = x - C.x
   const dz = z - C.z
@@ -46,14 +41,26 @@ function cottageGap(x, z) {
   return Math.hypot(Math.max(across, 0), Math.max(along, 0)) + Math.min(Math.max(across, along), 0)
 }
 const treeGap = (x, z) => Math.hypot(x - L.tree.x, z - L.tree.z)
-const pathGap = (x, z) => Math.min(...[...L.steps, ...L.stones].map(([sx, sz]) => Math.hypot(x - sx, z - sz)))
+const PATH_LINE = PROPS.PATH_LINE
+const lineGap = (x, z) => {
+  let d = Infinity
+  for (let i = 0; i < PATH_LINE.length - 1; i++) {
+    const [ax, az] = PATH_LINE[i]
+    const [bx, bz] = PATH_LINE[i + 1]
+    const t = clamp(((x - ax) * (bx - ax) + (z - az) * (bz - az)) / ((bx - ax) ** 2 + (bz - az) ** 2))
+    d = Math.min(d, Math.hypot(x - ax - (bx - ax) * t, z - az - (bz - az) * t))
+  }
+  return d
+}
+const pathGap = (x, z) => Math.min(lineGap(x, z) - 2.2, ...[...L.steps, ...L.stones].map(([sx, sz]) => Math.hypot(x - sx, z - sz)))
+const rockGap = (x, z) => Math.min(...PROPS.ROCKS.map((r) => Math.hypot(x - r.at[0], z - r.at[1]) - Math.max(r.r[0], r.r[2])))
 const reliefAt = (x, z) => 0.22 * fbm(x * 0.33 + 3.1, z * 0.33 + 7.7, 2, 3) * smooth(1.2, 3.2, pathGap(x, z)) * smooth(1.0, 1.12, L.pondField(x, z)) * smooth(0.5, 2.5, cottageGap(x, z))
 const earthAt = (x, z) => L.groundAt(x, z) + reliefAt(x, z)
 const litterAt = (x, z) => {
-  const base = 0.2 + 0.3 * fbm(x * 0.12 + 1.7, z * 0.12 + 4.2, 5, 3)
-  const byFence = 0.42 * (1 - smooth(0.5, 5.5, fenceGap(x, z)))
-  const underTree = 0.2 * (1 - smooth(5, 19, treeGap(x, z)))
-  const byWall = 0.14 * (1 - smooth(0.3, 3, cottageGap(x, z)))
+  const base = LITTER.base + LITTER.patch * fbm(x * 0.12 + 1.7, z * 0.12 + 4.2, 5, 3)
+  const byFence = LITTER.fence * (1 - smooth(0.5, 4.5, fenceGap(x, z)))
+  const underTree = LITTER.tree * (1 - smooth(5, 17, treeGap(x, z)))
+  const byWall = LITTER.wall * (1 - smooth(0.3, 3, cottageGap(x, z)))
   const shore = smooth(1.0, 1.16, L.pondField(x, z))
   return clamp((base + byFence + underTree + byWall) * (0.25 + 0.75 * shore), 0, 1)
 }
@@ -361,6 +368,130 @@ for (const s of STONES) {
   attic.add(g, { matrix: W, keepUv: true, surf: [a.width, a.height] })
 }
 
+const conform = (g, x, z, yaw, lift) => {
+  const c = Math.cos(yaw)
+  const sn = Math.sin(yaw)
+  const P = g.getAttribute('position')
+  for (let i = 0; i < P.count; i++) {
+    const px = P.getX(i)
+    const pz = P.getZ(i)
+    const wx = x + px * c + pz * sn
+    const wz = z - px * sn + pz * c
+    P.setXYZ(i, wx, L.groundAt(wx, wz) + lift + P.getY(i), wz)
+  }
+  return g
+}
+const cobble = (x, z, w, l, h, yaw, lift, dark = 1) => {
+  const seed = R() * 40
+  const g = slab(w, h, l, { round: Math.min(h * 0.48, 0.34), sx: 3, sy: 2, sz: 3, warp: 0.11, seed })
+  const tone = mul3(STONE_TONES[Math.floor(R() * STONE_TONES.length)], between(0.72, 1.1) * dark)
+  shade(g, (px, py, pz) => (0.42 + 0.58 * smooth(-h * 0.2, h * 0.45, py)) * (0.78 + 0.5 * fbm(px * 1.6 + seed, pz * 1.6, py * 2, 3)) * (0.85 + 0.15 * smooth(0, 0.5, Math.min(w / 2 - Math.abs(px), l / 2 - Math.abs(pz)))))
+  decor.add(conform(g, x, z, yaw, lift), { color: tone, surf: [surf(KIND.stone, 0.88), 0], renormal: true })
+}
+
+let flagCount = 0
+{
+  let carry = 0
+  for (let i = 0; i < PATH_LINE.length - 1; i++) {
+    const [ax, az] = PATH_LINE[i]
+    const [bx, bz] = PATH_LINE[i + 1]
+    const len = Math.hypot(bx - ax, bz - az)
+    const dx = (bx - ax) / len
+    const dz = (bz - az) / len
+    const yaw = Math.atan2(-dz, dx)
+    let s = carry
+    while (s < len) {
+      const along = between(2.1, 2.9)
+      const widen = 1 + 0.25 * smooth(0, PATH_LINE.length - 2, i)
+      const split = between(-0.5, 0.5)
+      const span = 4.6 * widen
+      const left = span / 2 + split
+      const right = span - left
+      const cx = ax + dx * (s + along / 2)
+      const cz = az + dz * (s + along / 2)
+      for (const [off, w] of [[-(left / 2) - 0.08, left - 0.16], [right / 2 + 0.08, right - 0.16]]) {
+        const j = between(-0.25, 0.25)
+        cobble(cx - dz * off + dx * j, cz + dx * off + dz * j, along - 0.22, w, 0.8, yaw + between(-0.14, 0.14), 0.05 + between(0, 0.14))
+        flagCount++
+      }
+      s += along
+    }
+    carry = s - len
+  }
+}
+
+let rimCount = 0
+{
+  const pc = Math.cos(L.pond.yaw)
+  const ps = Math.sin(L.pond.yaw)
+  for (let deg = 0; deg < 360; ) {
+    const a = (deg / 180) * Math.PI
+    const dx = Math.cos(a) * pc + Math.sin(a) * ps
+    const dz = -Math.cos(a) * ps + Math.sin(a) * pc
+    const west = smooth(95, 125, deg) * (1 - smooth(255, 285, deg))
+    const size = between(1.5, 2.7) * (0.75 + 0.35 * west)
+    const t = between(1.035, 1.075) / L.pondField(L.pond.x + dx, L.pond.z + dz)
+    const x = L.pond.x + dx * t
+    const z = L.pond.z + dz * t
+    if (R() < 0.3 + 0.7 * west && cottageGap(x, z) > 1 && rockGap(x, z) > 0.2) {
+      cobble(x, z, size, size * between(0.6, 0.9), size * between(0.4, 0.6), Math.atan2(-dx, dz) + between(-0.3, 0.3), size * 0.06, 0.8)
+      rimCount++
+    }
+    deg += (size * 1.02 * 180) / Math.PI / (Math.hypot(dx * t, dz * t) || 1)
+  }
+}
+
+for (const r of PROPS.ROCKS) {
+  const g = new THREE.IcosahedronGeometry(1, 5)
+  const P = g.getAttribute('position')
+  for (let i = 0; i < P.count; i++) {
+    const x = P.getX(i)
+    const y = P.getY(i)
+    const z = P.getZ(i)
+    const lump = 0.26 * fbm(x * 1.1 + r.seed, y * 1.1, z * 1.1 + 3, 3)
+    const crag = 0.13 * Math.abs(noise(x * 2.7 + 5, y * 2.7 + r.seed, z * 2.7)) + 0.05 * noise(x * 7, y * 7, z * 7 + r.seed)
+    const k = 1 + lump - crag
+    const flat = y < -0.4 ? -0.4 + (y + 0.4) * 0.25 : y
+    P.setXYZ(i, x * k, flat * k * (1 + 0.15 * smooth(0.2, 1, y)), z * k)
+  }
+  shade(g, (x, y, z) => (0.4 + 0.6 * smooth(-0.4, 0.6, y)) * (0.72 + 0.6 * fbm(x * 2.2 + r.seed, y * 2.2, z * 2.2, 4)) * (1 - 0.35 * smooth(0.02, 0.16, Math.abs(noise(x * 2.7 + 5, y * 2.7 + r.seed, z * 2.7)) * -1 + 0.12)))
+  const c = PROPS.rockCentre(r)
+  const M = new THREE.Matrix4().makeRotationY(r.yaw).multiply(new THREE.Matrix4().makeScale(r.r[0], r.r[1], r.r[2])).setPosition(c[0], c[1], c[2])
+  decor.add(g, { matrix: M, color: (p) => mix3(lin('#a9aba2'), lin('#55633a'), 0.55 * smooth(0.25, 0.7, fbm(p[0] * 0.6, p[1] * 0.6, p[2] * 0.6 + r.seed, 3) + 0.5) * smooth(c[1] + r.r[1] * 0.5, c[1] - r.r[1] * 0.3, p[1])), surf: [surf(KIND.stone, 0.92), 0], renormal: true })
+}
+
+{
+  const WOOD = ['#6e5a45', '#5f4d3c', '#7a6550', '#54463a'].map(lin)
+  for (const b of PROPS.fenceBoards()) {
+    const e = [b.b[0] - b.a[0], b.b[1] - b.a[1], b.b[2] - b.a[2]]
+    const len = Math.hypot(e[0], e[1], e[2])
+    const Y = new THREE.Vector3(e[0] / len, e[1] / len, e[2] / len)
+    const Z = new THREE.Vector3(b.out[0], 0, b.out[1])
+    Z.addScaledVector(Y, -Z.dot(Y)).normalize()
+    const X = new THREE.Vector3().crossVectors(Y, Z)
+    const seed = R() * 50
+    const g = slab(b.wide, len, b.thick, { round: 0.1, sx: 3, sy: Math.max(4, Math.round(len * 0.9)), sz: 1, warp: 0.07, seed })
+    const P = g.getAttribute('position')
+    for (let i = 0; i < P.count; i++) {
+      const x = P.getX(i)
+      const y = P.getY(i)
+      const top = b.post ? smooth(len / 2 - b.wide * 0.9, len / 2, y) : 0
+      const bite = 0.09 * noise(y * 1.3 + seed, x * 3, 0) * Math.sign(x)
+      P.setXYZ(i, (x + bite) * (1 - 0.55 * top * top) + (b.post ? 0.12 * top : 0), y - 0.25 * top * Math.abs(x), P.getZ(i) * (1 - 0.3 * top))
+    }
+    shade(g, (x, y, z) => {
+      const grain = 0.62 + 0.55 * noise(x * 6.5 + seed, y * 0.7, z * 6.5)
+      const split = 1 - 0.5 * smooth(0.55, 0.75, noise(x * 9 + 3, y * 0.35 + seed, 1.7))
+      const end = 0.75 + 0.45 * smooth(len / 2 - 0.7, len / 2, Math.abs(y))
+      const foot = b.post ? 0.5 + 0.5 * smooth(-len / 2 + 0.4, -len / 2 + 2.2, y) : 1
+      return grain * split * end * foot
+    })
+    const mid = [(b.a[0] + b.b[0]) / 2, (b.a[1] + b.b[1]) / 2, (b.a[2] + b.b[2]) / 2]
+    const M = new THREE.Matrix4().makeBasis(X, Y, Z).setPosition(mid[0], mid[1], mid[2])
+    decor.add(g, { matrix: M, color: mul3(WOOD[Math.floor(R() * WOOD.length)], between(0.8, 1.15)), surf: [surf(KIND.wood, 0.84), 0], renormal: true })
+  }
+}
+
 const blocked = (x, z, margin = 0) => {
   if (L.pondField(x, z) < 1.03) return true
   if (cottageGap(x, z) < 0.25 + margin) return true
@@ -373,7 +504,7 @@ let leafCount = 0
 {
   const pos = []
   const col = []
-  const want = 1700
+  const want = LITTER.leaves
   let tries = 0
   while (leafCount < want && tries++ < want * 60) {
     const a = R() * TAU
@@ -383,13 +514,13 @@ let leafCount = 0
     if (blocked(x, z)) continue
     const lit = litterAt(x, z)
     if (R() > lit * lit * 1.5 + 0.04) continue
-    if (treeGap(x, z) < 3.2) continue
+    if (treeGap(x, z) < 3.2 || rockGap(x, z) < 0.2) continue
     const len = between(0.8, 1.7)
     const wide = len * between(0.5, 0.75)
     const yaw = R() * TAU
     const curl = between(0.02, 0.13) * len
     const tilt = between(-0.35, 0.35)
-    const lift = between(0.05, 0.22) + (pathGap(x, z) < 1.6 ? 0.55 : 0)
+    const lift = between(0.05, 0.22) + (pathGap(x, z) < 1.2 ? 0.75 : 0)
     const tone = mul3(LEAF_TONES[Math.floor(R() * LEAF_TONES.length)], between(0.45, 1.0))
     const y = earthAt(x, z) + lift
     const M = new THREE.Matrix4().makeRotationX(tilt).premultiply(new THREE.Matrix4().makeRotationY(yaw)).setPosition(x, y, z)
@@ -463,7 +594,7 @@ let tuftCount = 0
         const ww = (1 - t) * side
         return [ox + Math.cos(a) * bend + sx * ww, gy + tall * t * (1 - 0.18 * out * t), oz + Math.sin(a) * bend + sz * ww]
       }
-      const seg = 4
+      const seg = 3
       for (let s = 0; s < seg; s++) {
         const t0 = s / seg
         const t1 = (s + 1) / seg
@@ -479,19 +610,20 @@ let tuftCount = 0
     tuftCount++
   }
   let tries = 0
-  while (tuftCount < 190 && tries++ < 40000) {
+  while (tuftCount < 300 && tries++ < 40000) {
     const a = R() * TAU
     const rr = 54 * Math.sqrt(R())
     const x = rr * Math.cos(a)
     const z = rr * Math.sin(a)
-    if (blocked(x, z, 0.3) || pathGap(x, z) < 1.9 || treeGap(x, z) < 4) continue
+    if (blocked(x, z, 0.3) || pathGap(x, z) < 1.2 || treeGap(x, z) < 4 || rockGap(x, z) < -0.3) continue
     const bank = 1 - smooth(1.05, 1.6, L.pondField(x, z))
     const post = 1 - smooth(0.4, 1.6, fenceGap(x, z))
+    const rock = 1 - smooth(0, 1.6, rockGap(x, z))
     const rim = 1 - smooth(1.5, 7, L.islandEdge(Math.atan2(z, x)) - Math.hypot(x, z))
     const patch = smooth(0.0, 0.5, fbm(x * 0.14 + 5, z * 0.14 + 1, 4, 2))
     const east = smooth(4, 16, x) * smooth(-4, 8, z)
-    if (R() > 0.02 + 0.3 * bank + 0.45 * post + 0.25 * rim + 0.12 * patch + 0.75 * east) continue
-    tuft(x, z, 0.8 + 0.3 * bank + 0.2 * rim + 0.5 * east)
+    if (R() > 0.02 + 0.3 * bank + 0.45 * post + 0.25 * rim + 0.12 * patch + 0.75 * east + 0.9 * rock) continue
+    tuft(x, z, 0.8 + 0.3 * bank + 0.2 * rim + 0.5 * east + 0.5 * rock)
   }
   const g = new THREE.BufferGeometry()
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
@@ -602,4 +734,4 @@ const record = {
   },
 }
 writeJson(rel('out', 'work', 'village', 'build-fall.json'), record)
-console.log(`village-fall: ${out.triangles} triangles in ${out.meshes} meshes (${Object.entries(record.model.meshes).map(([k, v]) => `${k} ${v}`).join(', ')}), ${(out.bytes / 1e6).toFixed(2)} MB; ${leafCount} leaves, ${tuftCount} tufts; maps ${((earthBytes + litterBytes) / 1e6).toFixed(2)} MB`)
+console.log(`village-fall: ${out.triangles} triangles in ${out.meshes} meshes (${Object.entries(record.model.meshes).map(([k, v]) => `${k} ${v}`).join(', ')}), ${(out.bytes / 1e6).toFixed(2)} MB; ${leafCount} leaves, ${tuftCount} tufts, ${flagCount} flagstones, ${rimCount} rim stones; maps ${((earthBytes + litterBytes) / 1e6).toFixed(2)} MB`)
