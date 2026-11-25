@@ -37,16 +37,16 @@ Status 102 · 2026-11-25 13:55 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 13:56 UTC
-clock: phase 5, tick of 1.4 minutes
-phase 5: 2.11 h used of its 4.50 h box
-allowance (before the review): 36.10 h used of 36.00 h allowed
-all time before the review: 36.10 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 14:01 UTC
+clock: phase 5, tick of 5.1 minutes
+phase 5: 2.20 h used of its 4.50 h box
+allowance (before the review): 36.18 h used of 36.00 h allowed
+all time before the review: 36.18 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: not reached
 box end: not reached
 budget report: due
-minutes since the last status: 1
+minutes since the last status: 6
 ```
 
 ## Phases
@@ -2072,3 +2072,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 13:43 UTC. Status 101 shown in the thread with four pictures (the eight season links opening, the drops on spring's glass on `main` and on the multisampling branch, the phone's controls before and after the shade, the first paint on three layouts). Decision 102 and open items 166 to 173 are written; the "Running agents" entry of 13:43 says where every branch stands. `main` holds step 1 (`69c2175`), step 2 (`5a27fd5`), the sound branch (`9da092d`) and the season links (`730034f`); types clean, 443 tests pass and 4 skipped, the build green, engine `ccf86f27ae34a82c`. The host check is running on that code.
 
 - 13:57 UTC. BUDGET REPORT. The clock printed `budget report: due` at 13:50:42 UTC at 36.00 h of 36.00 h allowed (stop condition 2). Nothing was started after it: no round, no numbered step, no agent, no job; the one thing run was a read of where the season links stand on the build of `main` (item 171, its correction), which changed no code. Where each piece of work stands. Code: `main` is the season-links merge `730034f` and log commits after it; types clean, 443 tests pass and 4 skipped, the build green, engine `ccf86f27ae34a82c` (the checks of 13:39 to 13:43 on this code, no code changed since); the host check passed on it at 13:43 (60.74 of 95 MB shipped in 98 files, the largest file 4.42 of 20 MB, the first load 13.80 of 16 MB). Phase 5, in progress. Step 1 is on `main` but for the soft-point shape, which stays on `agent/p5-standins-2` at `2bdd226` (item 173). Step 2 is on `main` and not whole: the walk was whole on the phone only (items 170 and 172); the four season links open on the build of `main`, each with its own season's mark pressed, the first picture at 14 to 16 s and no page error (item 171). Step 3: the code is on `main` and the whole sound check passes, 8 of 8; the sounds themselves are not made (item 63). Step 4 is met. Steps 5 to 14 are not started: no round on `globe` was run. Multisampling stays on `agent/p5-msaa` at `ae7bd60`, because it draws the drops on spring's glass black (item 166); `agent/p5-candidate` at `2109711` is the record of the keys, G13 and the sound check proven with it. Units: `winter`, `spring`, `summer`, `fall` and `change` finished at their limits with no pass; `globe` in progress with its three parts still `stand-in`; `film` not started. Status 102 was written at 13:55 with `--no-render` from four pictures that already existed. "Budget" says `reported` and the block is under "Last report block". The block gives the count of open items, 173, and no split by severity: two ways of reading the items' headers gave 46, 82 and 45 and then 51, 79 and 43, so neither is a number to report. In the workspace and not in the repo: the proofs of Phase 5 under `out/work/p5/`, the kept sounds (`out/work/audio/kept-sounds.zip`), and a worktree `/tmp/liq` of an earlier phase that was left alone. Clock 36.10 h at 13:56.
+
+- 14:01 UTC. Published at 14:00 for the budget report: the build of `main` at `83634de` (the code of `730034f`, engine `ccf86f27ae34a82c`) with the review page made from the log of 13:57. Before the upload the built site was opened once in live mode: first picture at 18.1 s, 87 requests, no page error (`out/work/p5/dist-live-1359.jpg`, winter with no control drawn, which is the interface's idle state, not a fault). Visibility: Organization. Status 102 was shown in the thread at 14:02 with its four pictures, above the `BUDGET REPORT` block that ends this task. Nothing is running: no agent at work, no job, no browser left open by a check.
