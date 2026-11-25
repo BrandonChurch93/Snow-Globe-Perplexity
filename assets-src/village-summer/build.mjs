@@ -15,7 +15,7 @@ const sc = (a, k) => [a[0] * k, a[1] * k, a[2] * k]
 const pick = (list) => list[Math.floor(R() * list.length) % list.length]
 const range = (a, b) => a + (b - a) * R()
 
-const IVY = { leaves: 760, roses: 14, low: 4.5, size: 0.62 }
+const IVY = { leaves: 760, roses: 14, low: 4.5, size: 0.85 }
 const TURF = { lumpMm: 0.35, fineMm: 0.12, sandMm: 0.7, sandReach: 6.5, sandSides: 0.35 }
 const GRASS = { tufts: 21000, blades: 3, tall: [0.55, 1.6], wide: [0.11, 0.2], rimTall: 1.5, sandFrom: 0.12, sandTo: 0.55 }
 const LEVEL = { seed: 4107, medium: { back: 0.4, front: 0.72 }, low: { back: 0.25, front: 0.5 }, zFrom: -12, zTo: 6 }
@@ -430,29 +430,29 @@ for (const sh of RF.shrubs()) {
     const a = Math.PI * t
     return [door.across - Math.cos(a) * (door.width / 2 + 0.9), sill + (door.height - 1.2) * Math.min(1, 1.5 * Math.sin(a)) + 2.2 * Math.sin(a)]
   }
-  for (let i = 0; i <= 60; i++) climb.push({ at: arch(i / 60), w: 0.9 })
+  for (let i = 0; i <= 60; i++) climb.push({ at: arch(i / 60), w: 1.1 })
   for (let i = 0; i <= 40; i++) {
     const t = i / 40
-    climb.push({ at: [-C.halfWidth + 0.4 + t * 3.2, 0.5 + t * (C.wall + 2.5) + 0.8 * Math.sin(t * 9)], w: 1.1 })
+    climb.push({ at: [-C.halfWidth + 0.4 + t * 3.2, 0.5 + t * (C.wall + 2.5) + 0.8 * Math.sin(t * 9)], w: 1.7 })
   }
   for (let i = 0; i <= 30; i++) {
     const t = i / 30
-    climb.push({ at: [-C.halfWidth + 2.2 + t * (door.across - door.width / 2 + C.halfWidth - 2), C.wall - 0.6 + 1.1 * Math.sin(t * 7) + 1.4 * t], w: 0.8 })
+    climb.push({ at: [-C.halfWidth + 2.2 + t * (door.across - door.width / 2 + C.halfWidth - 2), C.wall - 0.6 + 1.1 * Math.sin(t * 7) + 1.4 * t], w: 1.0 })
   }
   for (let i = 0; i <= 24; i++) {
     const t = i / 24
-    climb.push({ at: [C.halfWidth - 0.5 - t * 1.2, 0.4 + t * (C.wall - 1) + 0.5 * Math.sin(t * 8)], w: 0.9 })
+    climb.push({ at: [C.halfWidth - 0.5 - t * 1.2, 0.4 + t * (C.wall - 1) + 0.5 * Math.sin(t * 8)], w: 1.2 })
   }
   const outV = sc(L.cottagePoint(0, 0, 1).map((v, i) => v - L.cottagePoint(0, 0, 0)[i]), 1)
   const out = norm3([outV[0], 0.15, outV[2]])
   for (const c of climb) {
     for (let k = 0; k < 12; k++) {
       const p = L.cottagePoint(c.at[0] + range(-c.w, c.w), c.at[1] + range(-c.w, c.w), wallZ + range(0, 0.5))
-      leaf(p, out, 0.5, mul3(pick(TONES.leaf), range(0.55, 1.25)))
+      leaf(p, out, 0.85, mul3(pick(TONES.leaf), range(0.35, 0.95)))
     }
     if (R() < 0.42) {
       const p = L.cottagePoint(c.at[0] + range(-c.w, c.w), c.at[1] + range(-c.w, c.w), wallZ + 0.55)
-      blossom(p, out, range(0.18, 0.32), pick(TONES.rose))
+      blossom(p, out, range(0.24, 0.42), pick(TONES.rose))
       counts.roses++
     }
   }

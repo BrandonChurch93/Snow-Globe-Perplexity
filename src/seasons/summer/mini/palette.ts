@@ -16,6 +16,6 @@ export const tones: Record<'lamp' | 'flame' | 'room' | 'curtain' | 'haze' | 'lam
   haloEdge: [0.9, 0.4, 0.07],
   haloCore: [1, 0.68, 0.26],
   waterDeep: [0.016, 0.03, 0.03],
-  waterSky: [0.92, 0.95, 0.92],
+  waterSky: [1, 0.96, 0.86],
   sun: [1, 0.86, 0.6],
 }
