@@ -1,42 +1,42 @@
 {
-  "number": 104,
-  "time": "2026-11-25 14:44 UTC",
+  "number": 106,
+  "time": "2026-11-25 15:27 UTC",
   "phase": "5",
   "unit": "",
   "lines": [
-    "Status 104 · 2026-11-25 14:44 UTC · Phase 5",
-    "Six fresh builders are on the polish fixes, worst first: the change outside the glass, the weight in the hand and at the landing, the table's mirror and shadow, the shared glass, the liquid, the storm's drawing.",
-    "The multisampling fault is found (a stale read binding copies a black canvas on a first frame) and is being mended; the stand-in cleanup's four rest keys came back byte-identical, its shake keys are drawing.",
-    "Round 18, the first on the globe as a whole, starts when the interface and the judges' sheets land, about 16:00 UTC.",
-    "phase 5: 0.55 h used of its 12.00 h box",
-    "allowance (before the review, continuation 1): 0.55 h used of 12.00 h allowed",
+    "Status 106 · 2026-11-25 15:27 UTC · Phase 5",
+    "Six polish builders are an hour in: the hand's weight, the base changing in the open, the mirror, the glass, the liquid's lag, the storm's drawing. First looks are in from five; nothing is landed yet, and I land nothing without its proofs and my own look.",
+    "The liquid builder found the engine's cloud now swings 20 mm inside the glass, yet the picture still shows one even green disc at the swap; it is tracing what paints that disc.",
+    "Next: land the multisampled levels and the finished interface, then Round 18, the first round on the whole globe.",
+    "phase 5: 1.28 h used of its 12.00 h box",
+    "allowance (before the review, continuation 1): 1.28 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-104-1.jpg",
-      "caption": "Draft tier, first look at the cut of shake 1 frame by frame (670 to 680, two apart): winter's base and table give way to spring's in the open between 674 and 676, with a glare over the base on 674. Open item 154, now with the swap builder.",
-      "w": 1149,
-      "h": 498
-    },
-    {
-      "file": "out/stills/status/status-104-2.jpg",
-      "caption": "The same change as the last builder left it, for comparison: the light floods the glass while the scene inside is exchanged.",
+      "file": "out/stills/status/status-106-1.jpg",
+      "caption": "The strokes today, every film frame 2829 to 2838 of the fall to winter shake (review tier): the lean peaks on the turn and is level again by 2836, and the base cuts hard at 2834. This is what the hand and swap builders are changing.",
       "w": 1200,
-      "h": 761
+      "h": 924
     },
     {
-      "file": "out/stills/status/status-104-3.jpg",
-      "caption": "Still: spring rest hero, preview, draft",
-      "w": 960,
-      "h": 540
+      "file": "out/stills/status/status-106-2.jpg",
+      "caption": "Smoother edges in the live app, native size: top the published build, bottom the build with multisampling (frost, rim, branches). Six of its eight proof keys are back byte-identical; fall and the gate checks are still out.",
+      "w": 1200,
+      "h": 549
     },
     {
-      "file": "out/stills/status/status-104-4.jpg",
-      "caption": "Still: spring rest hero, preview, draft, standins view",
-      "w": 960,
-      "h": 540
+      "file": "out/stills/status/status-106-3.jpg",
+      "caption": "New for the interface critic: every control at rest, focused and pressed, cut from the wide screen at its real size.",
+      "w": 936,
+      "h": 1194
+    },
+    {
+      "file": "out/stills/status/status-106-4.jpg",
+      "caption": "New for the interface critic: the Shake control's hint, twelve steps across its 1.9 second pulse.",
+      "w": 1200,
+      "h": 584
     }
   ]
 }
