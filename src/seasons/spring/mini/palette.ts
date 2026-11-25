@@ -18,7 +18,7 @@ export const tones: Record<'lamp' | 'flame' | 'room' | 'curtain' | 'pane' | 'lam
   waterDeep: [0.11, 0.115, 0.13],
   waterPale: [0.55, 0.46, 0.48],
   bed: [0.13, 0.14, 0.075],
-  bark: [0.16, 0.122, 0.104],
-  blossom: [1.17, 0.98, 1.07],
+  bark: [2.0, 1.7, 1.55],
+  blossom: [1.15, 1.02, 1.17],
   twig: [1, 1, 1],
 }

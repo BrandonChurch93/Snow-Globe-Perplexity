@@ -25,13 +25,13 @@ const lin = (hex) => {
   return [c.r, c.g, c.b]
 }
 
-const CROWN = { centre: [1.2, 29.5, 1], r: [22.5, 15.5, 15], floor: 14.2, sprays: 114, spacing: 4.9, reach: 13, inner: 0.5, layer: 5.0, layerJitter: 2.5 }
-const TWIG = { from: 0.34, to: 0.08, sides: 5, steps: 7 }
-const CLUSTER = { step: 1.35, from: 0.26, size: [0.95, 1.5], tip: [1.4, 2.0], flowers: [8, 12], flower: [0.62, 0.98], side: 0.55, flat: 0.72 }
+const CROWN = { centre: [1.2, 27.6, 1], r: [23, 13.4, 15.5], floor: 14.2, sprays: 132, spacing: 4.3, reach: 13, inner: 0.42, layer: 4.2, layerJitter: 1.9 }
+const TWIG = { from: 0.36, to: 0.06, sides: 5, steps: 7 }
+const CLUSTER = { step: 1.25, from: 0.3, size: [0.85, 1.3], tip: [1.15, 1.6], flowers: [11, 16], flower: [0.4, 0.64], side: 0.6, flat: 0.78, extra: 0.22, core: 0.46 }
 const TONES = ['#f6b3c9', '#f9c6d6', '#f2a7c0', '#fbd7e2', '#f0a2bc', '#f7bdd0', '#fde4ea'].map(lin)
 const SHADE = [0.72, 0.62, 0.65]
 const HEART = lin('#d86a8a')
-const WOOD = [lin('#2a1a12'), lin('#3a2418'), lin('#22150f')]
+const WOOD = [lin('#7a5038'), lin('#8a5c40'), lin('#694430')]
 const FORK = T.trunkShape.fork
 
 const within = (p) => Math.hypot((p[0] - CROWN.centre[0]) / CROWN.r[0], (p[1] - CROWN.centre[1]) / CROWN.r[1], (p[2] - CROWN.centre[2]) / CROWN.r[2])
@@ -139,7 +139,7 @@ for (const s of sprays) {
     const r = rng.range(CLUSTER.size[0], CLUSTER.size[1]) * (0.7 + 0.5 * t)
     const off = norm([rng.gauss(), rng.gauss() + 0.5, rng.gauss()])
     plant(add(p, mul(off, r * CLUSTER.side * rng.next())), r, false)
-    if (rng.next() < 0.3) {
+    if (rng.next() < CLUSTER.extra) {
       const off2 = norm([rng.gauss(), rng.gauss() * 0.6 + 0.2, rng.gauss()])
       plant(add(p, mul(off2, r * (0.9 + 0.8 * rng.next()))), r * rng.range(0.6, 0.85), false)
     }
@@ -181,7 +181,7 @@ const openness = (c) => {
 }
 
 const bloom = { p: [], n: [], c: [], i: [] }
-const ico = new THREE.IcosahedronGeometry(1, 1)
+const ico = new THREE.IcosahedronGeometry(1, 0)
 const icoIndexed = (() => {
   const P = ico.getAttribute('position')
   const map = new Map()
@@ -206,12 +206,12 @@ for (const c of clusters) {
   const open = openness(c)
   const tone = mul(mix(TONES[rng.int(TONES.length)], TONES[rng.int(TONES.length)], rng.next()), 0.92 + 0.16 * rng.next())
   const depth = within(c.p)
-  const lit = (0.6 + 0.4 * open) * (0.76 + 0.24 * smooth(0.3, 0.95, depth))
+  const lit = (0.52 + 0.48 * open) * (0.72 + 0.28 * smooth(0.3, 0.95, depth))
   const crownOut = norm([c.p[0] - CROWN.centre[0], (c.p[1] - CROWN.centre[1]) * 1.3 + 3, c.p[2] - CROWN.centre[2]])
   const base = bloom.p.length / 3
   const seed = rng.next() * 40
   for (const q of icoIndexed.pos) {
-    const k = c.r * 0.56 * (0.82 + 0.3 * wob(q[0] * 1.6 + seed, q[1] * 1.6, q[2] * 1.6))
+    const k = c.r * CLUSTER.core * (0.82 + 0.3 * wob(q[0] * 1.6 + seed, q[1] * 1.6, q[2] * 1.6))
     const p = [c.p[0] + q[0] * k, c.p[1] + q[1] * k * CLUSTER.flat, c.p[2] + q[2] * k]
     bloom.p.push(p[0], p[1], p[2])
     const n = norm(add(mul(q, 0.75), mul(crownOut, 0.45)))
@@ -220,7 +220,7 @@ for (const c of clusters) {
     bloom.c.push(tone[0] * SHADE[0] * lit * under, tone[1] * SHADE[1] * lit * under, tone[2] * SHADE[2] * lit * under)
   }
   for (const v of icoIndexed.idx) bloom.i.push(base + v)
-  const count = Math.round((CLUSTER.flowers[0] + rng.next() * (CLUSTER.flowers[1] - CLUSTER.flowers[0])) * (c.r / 1.2) ** 1.6)
+  const count = Math.round((CLUSTER.flowers[0] + rng.next() * (CLUSTER.flowers[1] - CLUSTER.flowers[0])) * (c.r / 1.1) ** 1.5)
   for (let f = 0; f < count; f++) {
     const d = norm([rng.gauss(), rng.gauss() * 0.9 + 0.25, rng.gauss()])
     const k = c.r * (0.74 + 0.4 * rng.next())
@@ -231,25 +231,35 @@ for (const c of clusters) {
     const v = cross(out, u)
     const size = rng.range(CLUSTER.flower[0], CLUSTER.flower[1])
     const spin = rng.next() * Math.PI * 2
-    const pale = mul(mix(tone, [1, 0.97, 0.97], 0.25 + 0.45 * rng.next()), lit * (0.8 + 0.2 * smooth(-0.9, 0.3, d[1])) * (0.82 + 0.3 * rng.next()))
-    const n = norm(add(add(mul(d, 0.5), mul(crownOut, 0.6)), [0, 0.25, 0]))
+    const cup = rng.range(0.12, 0.5)
+    const top = 0.74 + 0.26 * smooth(-0.9, 0.45, d[1])
+    const pale = mul(mix(tone, [1, 0.965, 0.97], 0.3 + 0.45 * rng.next()), lit * top * (0.84 + 0.3 * rng.next()))
     const b0 = bloom.p.length / 3
+    const heart = mul(mix(HEART, pale, 0.5), 0.92)
+    const nc = norm(add(out, mul(crownOut, 0.35)))
     bloom.p.push(at[0], at[1], at[2])
-    bloom.n.push(n[0], n[1], n[2])
-    const heart = mix(HEART, pale, 0.64)
-    bloom.c.push(heart[0] * lit, heart[1] * lit, heart[2] * lit)
-    for (let j = 0; j < 10; j++) {
-      const a = spin + (j / 10) * Math.PI * 2
-      const tipV = j % 2 === 0
-      const rr = size * (tipV ? 1 : 0.7)
-      const lift = size * (tipV ? 0.3 : 0.12)
-      const q = add(add(at, add(mul(u, Math.cos(a) * rr), mul(v, Math.sin(a) * rr))), mul(out, lift))
-      bloom.p.push(q[0], q[1], q[2])
-      bloom.n.push(n[0], n[1], n[2])
-      const kk = tipV ? 1.06 : 0.82
-      bloom.c.push(pale[0] * kk, pale[1] * kk, pale[2] * kk)
+    bloom.n.push(nc[0], nc[1], nc[2])
+    bloom.c.push(heart[0], heart[1], heart[2])
+    for (let j = 0; j < 5; j++) {
+      const a = spin + (j / 5) * Math.PI * 2 + rng.range(-0.12, 0.12)
+      const dir = add(mul(u, Math.cos(a)), mul(v, Math.sin(a)))
+      const side = add(mul(u, -Math.sin(a)), mul(v, Math.cos(a)))
+      const long = size * rng.range(0.86, 1.1)
+      const kk = 0.9 + 0.2 * rng.next()
+      const corner = (along, across, lift, bright) => {
+        const q = add(add(add(at, mul(dir, along * long)), mul(side, across * long)), mul(out, lift * long))
+        const n = norm(add(add(mul(out, 1 - 0.5 * along), mul(dir, 0.75 * along - 0.5 * cup)), add(mul(side, 0.9 * across), mul(crownOut, 0.3))))
+        bloom.p.push(q[0], q[1], q[2])
+        bloom.n.push(n[0], n[1], n[2])
+        bloom.c.push(pale[0] * bright * kk, pale[1] * bright * kk, pale[2] * bright * kk)
+      }
+      corner(0.56, 0.4, cup * 0.5, 0.86)
+      corner(1, 0.2, cup, 1.08)
+      corner(1, -0.2, cup, 1.08)
+      corner(0.56, -0.4, cup * 0.5, 0.86)
+      const q0 = b0 + 1 + j * 4
+      bloom.i.push(b0, q0, q0 + 1, b0, q0 + 1, q0 + 2, b0, q0 + 2, q0 + 3)
     }
-    for (let j = 0; j < 10; j++) bloom.i.push(b0, b0 + 1 + j, b0 + 1 + ((j + 1) % 10))
     flowers++
   }
 }
