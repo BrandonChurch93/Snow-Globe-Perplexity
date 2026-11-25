@@ -1,42 +1,42 @@
 {
-  "number": 100,
-  "time": "2026-11-25 13:16 UTC",
+  "number": 101,
+  "time": "2026-11-25 13:43 UTC",
   "phase": "5",
   "unit": "",
   "lines": [
-    "Status 100 · 2026-11-25 13:16 UTC · Phase 5",
-    "Step 1 is on main: the stand-in paths of the five finished units are removed; proven by seven stills equal before and after and check G13 and all eight final keys equal to the kept stills",
-    "Three more branches are pushed and being proven together: multisampling in the live picture and the sound engine's landing and tests and the last soft-point branch of the particle shader",
-    "Next: step 2's report then what is proven lands; the budget report is due at about 13:50 UTC",
-    "phase 5: 1.45 h used of its 4.50 h box",
-    "allowance (before the review): 35.44 h used of 36.00 h allowed",
+    "Status 101 · 2026-11-25 13:43 UTC · Phase 5",
+    "Steps 1 and 2 of Phase 5 and the sound engine's fix and the season links are on main",
+    "The multisampling branch and the soft-point branch stay on their branches with their proof logged",
+    "No agent is at work and the budget is nearly used",
+    "phase 5: 1.90 h used of its 4.50 h box",
+    "allowance (before the review): 35.88 h used of 36.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-100-1.jpg",
-      "caption": "The four seasons at rest (kept stills): the eight keys drawn again on step 1's commit are byte-equal to these",
+      "file": "out/stills/status/status-101-1.jpg",
+      "caption": "Every season now opens by its own link: the four seasons at the low level above and with no level below",
       "w": 1200,
-      "h": 681
+      "h": 374
     },
     {
-      "file": "out/stills/status/status-100-2.jpg",
-      "caption": "The live picture at the high level: no multisampling (left) and four samples (right); on its branch and not on main yet",
+      "file": "out/stills/status/status-101-2.jpg",
+      "caption": "Why multisampling stayed off main: left main draws the drops on spring's glass clear and right the branch draws them black",
+      "w": 1048,
+      "h": 356
+    },
+    {
+      "file": "out/stills/status/status-101-3.jpg",
+      "caption": "The phone's controls before and after the soft shade under them",
+      "w": 790,
+      "h": 844
+    },
+    {
+      "file": "out/stills/status/status-101-4.jpg",
+      "caption": "First paint on the wide layout and the tablet and the phone",
       "w": 1200,
-      "h": 522
-    },
-    {
-      "file": "out/stills/status/status-100-3.jpg",
-      "caption": "Still: spring rest hero, preview, draft, standins view",
-      "w": 960,
-      "h": 540
-    },
-    {
-      "file": "out/stills/status/status-100-4.jpg",
-      "caption": "Still: summer rest hero, preview, draft, standins view",
-      "w": 960,
-      "h": 540
+      "h": 399
     }
   ]
 }
