@@ -8,10 +8,10 @@ import { loadLayout } from '../village/layout.mjs'
 const TAU = Math.PI * 2
 const GLASS_CLEAR = 3.2
 const BOUGH = { perLimb: [2, 4], from: 0.3, length: [6.5, 12], seg: 1.05, radius: 1.0, minR: 0.42, turn: 0.3, kink: 0.95, kinkShare: 0.3, rise: 0.1 }
-const TWIG = { each: [2, 4], length: [0.3, 0.55], seg: 0.8, radius: 0.86, turn: 0.3, kink: 1.0, kinkShare: 0.3 }
-const SPIKE = { each: [1, 2], length: [0.28, 0.5], seg: 0.6, radius: 0.78, turn: 0.2, kink: 0.6, kinkShare: 0.15 }
-const TIP_R = 0.075
-const EMBER = { count: 74, apart: 2.3, r: [0.12, 0.24], drop: [0.02, 0.22], stalk: 0.045, cap: 0.6 }
+const TWIG = { each: [2, 3], length: [0.3, 0.55], seg: 0.8, radius: 0.86, turn: 0.3, kink: 1.0, kinkShare: 0.3 }
+const SPIKE = { each: [0.4, 1.8], length: [0.28, 0.5], seg: 0.6, radius: 0.78, turn: 0.2, kink: 0.6, kinkShare: 0.15 }
+const TIP_R = 0.095
+const EMBER = { count: 58, apart: 2.6, r: [0.12, 0.24], drop: [0.02, 0.22], stalk: 0.045, cap: 0.6 }
 
 const [T, RNG] = await loadSource(['/src/miniature/trunk.ts', '/src/core/rng.ts'])
 const L = await loadLayout()

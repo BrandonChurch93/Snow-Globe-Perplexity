@@ -28,8 +28,8 @@ const lin = (hex) => {
 const CROWN = { centre: [1.2, 29.5, 1], r: [22.5, 15.5, 15], floor: 14.2, sprays: 132, spacing: 4.1, reach: 13, inner: 0.5, layer: 5.0, layerJitter: 2.5 }
 const TWIG = { from: 0.34, to: 0.08, sides: 5, steps: 7 }
 const CLUSTER = { step: 1.05, from: 0.26, size: [0.8, 1.3], tip: [1.3, 1.9], flowers: [11, 17], flower: [0.45, 0.74], side: 0.55, flat: 0.72 }
-const TONES = ['#f6b3c9', '#f9c6d6', '#ee94b3', '#fbd7e2', '#e986a8', '#f7bdd0', '#fde4ea'].map(lin)
-const SHADE = [0.66, 0.52, 0.56]
+const TONES = ['#f6b3c9', '#f9c6d6', '#f2a7c0', '#fbd7e2', '#f0a2bc', '#f7bdd0', '#fde4ea'].map(lin)
+const SHADE = [0.72, 0.62, 0.65]
 const HEART = lin('#d86a8a')
 const WOOD = [lin('#2a1a12'), lin('#3a2418'), lin('#22150f')]
 const FORK = T.trunkShape.fork
@@ -206,7 +206,7 @@ for (const c of clusters) {
   const open = openness(c)
   const tone = mul(mix(TONES[rng.int(TONES.length)], TONES[rng.int(TONES.length)], rng.next()), 0.92 + 0.16 * rng.next())
   const depth = within(c.p)
-  const lit = (0.62 + 0.38 * open) * (0.78 + 0.22 * smooth(0.3, 0.95, depth))
+  const lit = (0.7 + 0.3 * open) * (0.82 + 0.18 * smooth(0.3, 0.95, depth))
   const crownOut = norm([c.p[0] - CROWN.centre[0], (c.p[1] - CROWN.centre[1]) * 1.3 + 3, c.p[2] - CROWN.centre[2]])
   const base = bloom.p.length / 3
   const seed = rng.next() * 40
