@@ -42,7 +42,7 @@ export const look = {
     haloWide: 0.24,
     veil: 0.22,
     // the star: many soft tapered rays, short, each with its own length, widest at the core, fanning away from the globe
-    rays: 1.3,
+    rays: 0.8,
     spikes: 18,
     reach: [0.2, 0.16] as const,
     rayWide: [0.008, 0.024] as const,
