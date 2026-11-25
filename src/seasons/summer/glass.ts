@@ -119,6 +119,15 @@ export const look = {
     settleSeconds: 0.18,
     gold: [1, 0.6, 0.24] as const,
     pale: [1, 0.8, 0.5] as const,
+    // the low sun on the table itself: a strip of dusty warm light past the far side of the globe's long shadow, which lies
+    // down the light's way (the pool lies inside that shadow); its strength, how far it reaches along and across, the shadow's
+    // half width and softness
+    sun: 0.18,
+    sunMm: 130,
+    stripMm: 45,
+    shadeMm: 52,
+    shadeSoftMm: 9,
+    sunColor: [1, 0.72, 0.42] as const,
   },
 }
 
@@ -132,6 +141,8 @@ const uniforms = {
   uSummer: { value: new THREE.Vector4(0, 0, 1, 0) },
   // xy: the pool's middle on the slab, zw: the light's way on the slab (unit)
   uPoolAt: { value: new THREE.Vector4(0, 0, 0, 1) },
+  // xy: the globe's foot on the slab
+  uPoolFoot: { value: new THREE.Vector2(0, 0) },
 }
 
 const F = look.flare
@@ -229,6 +240,7 @@ const P = look.pool
 const POOL = `
 uniform vec4 uSummer;
 uniform vec4 uPoolAt;
+uniform vec2 uPoolFoot;
 // The web: what a ball of water does with a low sun. The light leaves the knot in thin veins that part and join again, fine
 // near the knot and wider apart further out; where two veins meet the light gathers. It is one net, drawn in the pool's plane:
 // cells in the angle round the knot and in the logarithm of the distance from it, so that every vein has the same width in
@@ -289,6 +301,14 @@ void main() {
   float fan = pow(abs(sin(ang * 6.5 + 1.3)), 26.0) * (0.55 + 0.45 * sin(ang * 3.0 + 0.7)) + 0.6 * pow(abs(sin(ang * 10.5 + 0.4)), 34.0) * (0.5 + 0.5 * sin(ang * 5.0 + 2.1));
   float rays = fan * exp(-len / ${n(P.raysMm)}) * smoothstep(0.8, 3.0, len);
   vec3 col = ${vec(P.gold)} * (${n(P.gain)} * soft + ${n(P.bands)} * folds + ${n(P.rays)} * rays) + ${vec(P.pale)} * (${n(P.core)} * core + ${n(P.glow)} * glow);
+  // the sun on the table: a strip of it gets past the globe on the far side of its shadow, which runs down the light's way
+  // and softens as it goes; the strip is brightest by the foot and gone a hand's width out
+  vec2 f = vStageWorld.xz - uPoolFoot;
+  float along = dot(f, way);
+  float beside = dot(f, vec2(-way.y, way.x));
+  float soften = ${n(P.shadeSoftMm)} + 0.12 * max(along, 0.0);
+  float strip = smoothstep(${n(P.shadeMm)} - soften, ${n(P.shadeMm)} + soften, beside) * exp(-max(beside - ${n(P.shadeMm)}, 0.0) / ${n(P.stripMm)});
+  col += ${vec(P.sunColor)} * (${n(P.sun)} * strip * exp(-length(f) / ${n(P.sunMm)}));
   gl_FragColor = vec4(col * there, 0.0);
 }`
 
@@ -373,7 +393,7 @@ function makePool(): THREE.Mesh {
     part: PART,
     standIn: false,
     change: 'glass-dressing',
-    uniforms: { uSummer: uniforms.uSummer, uPoolAt: uniforms.uPoolAt },
+    uniforms: { uSummer: uniforms.uSummer, uPoolAt: uniforms.uPoolAt, uPoolFoot: uniforms.uPoolFoot },
     fragment: POOL,
     params: { ...added },
   })
@@ -449,6 +469,7 @@ export function update(moment: KitMoment): void {
   const leanX = -Math.sin(g.tiltZ) * P.tiltMm
   const leanZ = Math.sin(g.tiltX) * P.tiltMm
   uniforms.uPoolAt.value.set(g.x + wx * reach + wz * P.sideMm + leanX, g.z + wz * reach - wx * P.sideMm + leanZ, wx, wz)
+  uniforms.uPoolFoot.value.set(g.x, g.z)
   const held = Math.min(1, Math.max(0, g.y / config.shake.liftMm))
   const there = lit * (1 - 0.65 * smooth(held)) * (shaking || two ? 1 : smooth(t / P.settleSeconds) * 0.999 + 0.001)
   // the storm's glow goes with the liquid: none in still water, whole when it churns
