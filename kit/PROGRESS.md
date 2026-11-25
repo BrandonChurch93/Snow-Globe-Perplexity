@@ -37,16 +37,16 @@ Status 67 · 2026-11-25 01:52 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 01:52 UTC
-clock: phase 4, tick of 13.5 minutes
-phase 4: 1.75 h used of its 9.50 h box
-allowance (before the review): 24.03 h used of 36.00 h allowed
-all time before the review: 24.03 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 01:58 UTC
+clock: phase 4, tick of 5.3 minutes
+phase 4: 1.85 h used of its 9.50 h box
+allowance (before the review): 24.13 h used of 36.00 h allowed
+all time before the review: 24.13 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 5
 ```
 
 ## Phases
@@ -68,7 +68,7 @@ minutes since the last status: 0
 | `winter` | finished (limit: `quality.lookLockMaxRounds` 5, reached with Round 7; the pass bar did not hold) | 5 (Rounds 3 to 7, all judged) | 7 (R1 7, R3 5, R4 4, R2 failed at 4 of 15 against 7 of 10; checks 15 of 15 green, measures 24 of 24 green; decision 72) | `4f10d97` | The round count: `quality.lookLockMaxRounds` 5. No round passed. 4 severe and 27 major issues are written as open items 38 to 62 and go to the polish rounds of Phase 5 |
 | `spring` | in its rounds (Round 8 running, the floor round) | 1 (Round 8) | | | |
 | `summer` | in its rounds (Round 9 running, the floor round) | 1 (Round 9) | | | |
-| `fall` | not started | 0 | | | |
+| `fall` | in its rounds (Round 10 running, the floor round) | 1 (Round 10) | | | |
 | `change` | not started | 0 | | | |
 | `globe` | not started | 0 | | | |
 | `film` | not started | 0 | | | |
@@ -859,6 +859,8 @@ Numbered. What, why, and the date.
 
 75. **The first rounds of spring and summer start together on one judged commit; fall's first round waits for free critic slots** (01:35 UTC, Phase 4). kit/08 sends a season to its first round "as soon as nothing its stills show is a stand-in". At 01:28 that held for spring and for summer (the stand-in view of each is black all over), 77 minutes into the phase and 90 minutes before the builders' limit, so both rounds were counted at once on `fe1072c`: Round 8 on spring, Round 9 on summer. Critics, jurors and render agents share `sandbox.criticSlots` 6. Round 8's renders take three (the gate, the pack, the motion pack); Round 9's take two (one new render agent for the pack, and one that draws the motion pack and then runs the gate), which leaves one slot for the first critics. Fall's stand-in view is checked the same way; its first round (Round 10) is frozen as soon as three slots are free with no critic of a running round waiting, and at the latest at the builders' limit of 03:02 UTC, on the newest merged build. The builders go on to their limit; what the critics say reaches fresh fix agents after it, and a season's second round follows while the count and the clock allow.
 
+76. **Fall's first round starts now, one part at a time, as slots free up** (02:14 UTC, Phase 4; this replaces the waiting rule of decision 75). AGENTS.md's clock rule 3 sends a unit to its first round as soon as none of it is a stand-in, and fall's stand-in view was black all over at 01:39. At 02:01 and 02:04 the two motion agents reported that a season's arrival sheet is about 90 frames at 51 to 54 s a frame on their VMs (winter's frames were lighter), so a motion pack takes about 100 minutes, not 35: waiting for three free slots would have put fall's first answers after 05:00. Round 10 is therefore counted now on a freeze commit made from the newest merge, its motion pack goes to a new render agent in the one free slot, its still pack goes to the first pack agent that finishes and has no critic of Rounds 8 or 9 waiting behind it, and its gate goes to `gate_runner` after the gates of Rounds 8 and 9. The limits of Round 8's and Round 9's motion packs were moved from 02:46 to 03:35 (nothing is cut from a pack), and Round 9's gate was taken off `motion_renderer_b` and goes to `gate_runner` after Round 8's, on the same clean clone of the same commit. Never more than six critics, jurors and render agents work at once.
+
 ## Notes from Brandon
 
 Numbered, in his words, with the date and how each was applied. Review round items carry their round's number.
@@ -1219,6 +1221,8 @@ One line per round: its number, the unit, the commit it judged, each part ticked
 
 - Round 9 · summer (Phase 4; summer's first round, the floor round) · judges commit `fe1072c` · started 2026-11-25 01:35 UTC. Parts: [x] build (the judged build is `fe1072c`, the same commit as Round 8: the first versions of summer's three builders and of the kinds builder merged (base `84edb99`, miniature `9fbb0f5`, air `aa30671` with the rows of seed and firefly, kinds `b97f86e`), every part of every season made again here, texpack with 76.962 MiB in the web set, tsc clean, vitest 425 passed, 4 skipped and 0 failed; the stand-in view of `rest` from `hero` is black all over; a draft still of `rest` was looked at before the freeze: a real scene with its base, miniature, lanterns, fireflies and sand) · [ ] machine checks · [ ] measures · [ ] pack · [ ] R1 · [ ] R2 · [ ] R3 · [ ] R4 · [ ] issues read · [ ] fixes · [ ] logged
 
+- Round 10 · fall (Phase 4; fall's first round, the floor round) · judges commit `216e427` · started 2026-11-25 02:14 UTC. Parts: [x] build (the judged build is `216e427`: the newest work of fall's three builders and of the kinds builder merged (base `8c68fce`, miniature `d6f8d14`, air `a641a57`, kinds `fc18a80`, which makes the slowest stir that lifts a particle depend on the running season's own kinds, so that winter's stills at rest and landed are byte-identical with the kept build's again), every built file of spring, summer and fall deleted and made again from its sources here, texpack with 65.626 MiB in the web set, tsc clean, vitest 432 passed, 4 skipped and 0 failed; the stand-in view of `rest` from `hero` is black all over; a draft still of `rest` was looked at before the freeze: a real scene with its thorn base and lit faces, the cottage with its coloured windows, the bare tree with its lights, fog low over the ground, leaves in the air and on the surface, and the bats under the crown) · [ ] machine checks · [ ] measures · [ ] pack · [ ] R1 · [ ] R2 · [ ] R3 · [ ] R4 · [ ] issues read · [ ] fixes · [ ] logged
+
 ## Final scores
 
 From the record round.
@@ -1575,4 +1579,6 @@ One entry per task: when it started, what it did, where it stopped.
 
 - 01:52 UTC. Merged at 01:43 and made again in full by 01:48 (`8d3cf3a`): `fall_air` `b39b7b4`, `fall_mini` `26bdd2b`, `kinds_builder` `0434c9f`, `spring_air` `171346c`, `spring_base` `f284614`, `spring_mini` `dea4ca7`, `summer_air` `5d1b494`, `summer_base` `2169605`, `summer_mini` `66dace1`; tsc clean, vitest 432 passed, 4 skipped, 0 failed (01:51). `spring_base` reported 18 spring base tiles of its first version that nothing loads any more (9.05 MiB in the web set); they were removed from the working tree here at 01:48 and leave the repo with the next freeze commit; the web set went from 76.775 to 67.727 MiB. Published at 01:49 from `8d3cf3a` with the first real spring, summer and fall in the app: first picture in 21.4 s, 89 requests, no error; Visibility: Organization.
 
-- 01:52 UTC. Status 67 posted at 01:53 (summer and fall at rest beside their approved images, and each just after a shake has landed; drafts).
+- 01:53 UTC. Status 67 posted at 01:53 (summer and fall at rest beside their approved images, and each just after a shake has landed; drafts).
+
+- 01:58 UTC. `npm run hostcheck` on a clean copy of the tracked files at 01:54 to 01:56: pass. `dist/` is 69.23 MB in 102 files (`host.maxShippedMb` 95); the largest file is `assets/spring/village-spring.glb` at 5.46 MB (`host.maxFileMb` 20); 13.67 MB in 32 requests were fetched before the first complete picture of the default season, 15.7 s after the page was opened (`host.firstLoadMaxMb` 16); the clean install and build took 0.15 minutes. This is the measurement decision 74 left open. `kinds_builder` reported at 01:55 that winter's rest still on `fe1072c` and after differs from its baseline in 3787 pixels of flakes (landed is identical): `engine.ts` took its lowest lift speed over the kinds of every season, and `summer_air`'s row of the seed lowered it from 18 to 10 mm/s. It was told at 01:56 to make that number depend on the running season's kinds only, with winter's two stills byte-identical with its baseline again. Rounds 8 and 9 judge spring and summer on `fe1072c`, where winter's flakes at rest sit a little differently from the kept build; winter itself is not judged in them. A third merge at 01:56 (`5cad7dc`: `fall_air` `a641a57`, `fall_base` `8c68fce`, `spring_air` `257a36b`, `spring_base` `cc6fe80`, `spring_mini` `5be7305`, `summer_air` `9dfc19f`) merged clean.

@@ -5,7 +5,7 @@ import { stream } from '../../core/rng'
 import { rimGapMm } from '../../shake/table'
 import type { KitMoment } from '../kit'
 import { SAND_COLOUR, sinceLoose } from './base'
-import { SLAB, sandHeight } from './slab'
+import { SLAB, sandHeight, sandSpread } from './slab'
 
 const PART = 'arrival-summer'
 const RAD = Math.PI / 180
@@ -17,10 +17,11 @@ const RAD = Math.PI / 180
 const LOOK = {
   gravity: 3400,
   ledge: { r: [46.5, 52.0], h: 40.3 },
-  jump: { count: 14000, reachMm: 26, ringShare: 0.2, ringMm: 5, liftMm: [0.6, 8], hopMm: [0.3, 2.6], quick: 0.11, tail: 0.5, tailShare: [0.6, 0.12], skidMm: [0.4, 3.2], radiusMm: [0.12, 0.27] },
-  pour: { count: 9000, az: 82, spread: 4.5, r: 52.4, h: 38.8, reachMm: [4.6, 11], fanDeg: 7, rate: [1.3, 2.3], radiusMm: [0.1, 0.2] },
-  flow: { rest: 0.3, surge: 0.6, seconds: 1.3, gapMm: [0.3, 2.5] },
+  jump: { count: 14000, reachMm: 26, ringShare: 0.3, ringMm: 5, liftMm: [0.8, 11], hopMm: [0.3, 2.6], quick: 0.11, tail: 0.5, tailShare: [0.6, 0.12], skidMm: [0.4, 3.2], radiusMm: [0.12, 0.27] },
+  pour: { count: 16000, az: 82, spread: 4.5, r: 52.4, h: 38.8, reachMm: [4.6, 11], fanDeg: 7, rate: [1.3, 2.3], radiusMm: [0.1, 0.2] },
+  flow: { rest: 0.36, surge: 0.6, seconds: 1.3, gapMm: [0.3, 2.5] },
   shadow: { r: 57, top: [36, 41] },
+  streak: 1.7,
 }
 
 const vec = (v: readonly number[]): string => `vec3(${v.map((x) => x.toFixed(3)).join(', ')})`
@@ -45,6 +46,7 @@ uniform vec3 uGrainKey;
 varying vec2 vGrainUv;
 varying vec4 vGrainLook;
 varying vec2 vGrainShape;
+varying float vGrainCover;
 const float GRAVITY = ${LOOK.gravity.toFixed(1)};
 vec3 grainPath(float tau) {
   float T = aFlight.y;
@@ -106,8 +108,8 @@ vec2 axis = len > 1e-4 ? along / len : vec2(0.0, 1.0);
 vec2 across = vec2(-axis.y, axis.x);
 vec4 grainV = mix(thenV, nowV, aCorner.y * 0.5 + 0.5);
 float streak = 1.0 + len / max(2.0 * aFlight.w, 1e-4);
-float thin = max(1.0 / streak, 0.3);
-grainV.xy += (axis * aCorner.y + across * aCorner.x * thin) * size;
+float wide = 1.0 + 0.6 * airborne;
+grainV.xy += (axis * aCorner.y + across * aCorner.x * wide) * size;
 gl_Position = projectionMatrix * grainV;
 vec4 grainW = modelMatrix * vec4(nowAt, 1.0);
 vStageWorld = grainW.xyz;
@@ -116,7 +118,8 @@ vStageAux = vec3(0.0, -grainV.z, length(grainV.xyz));
 vStagePlaced = grainW.xyz;
 vStageSeen = 1.0;
 vGrainUv = aCorner;
-vGrainShape = vec2(streak / thin, airborne);
+vGrainShape = vec2(streak / wide, airborne);
+vGrainCover = min(1.0, ${LOOK.streak.toFixed(2)} / streak) / wide;
 vGrainLook = vec4(aSeed.x, fract(aSeed.x * 91.7 + aSeed.z * 13.1), grainShade(grainW.xyz, uGrainKey), alive);
 `
 
@@ -128,6 +131,7 @@ uniform vec3 uGrainGround;
 varying vec2 vGrainUv;
 varying vec4 vGrainLook;
 varying vec2 vGrainShape;
+varying float vGrainCover;
 void main() {
   float c = stageChange();
   if (stageGone(c)) discard;
@@ -153,7 +157,8 @@ void main() {
   vec3 col = albedo * RECIPROCAL_PI * (uGrainKeyCol * shade * (wrap + 1.8 + (0.6 + 5.0 * vGrainShape.y) * thru) + dome + uRigCardCol * 0.35 * clamp(dot(n, uRigCardDir) * 0.5 + 0.5, 0.0, 1.0));
   float hk = max(dot(n, normalize(v + uGrainKey)), 0.0);
   col += uGrainKeyCol * shade * step(0.7, fract(id * 17.9)) * pow(hk, 60.0) * 1.2;
-  gl_FragColor = vec4(col, 1.0);
+  float cover = vGrainCover * (1.0 - smoothstep(mix(0.55, 0.0, vGrainShape.y), 1.0, d2));
+  gl_FragColor = vec4(col * cover, cover);
   if (uDiag != 0) gl_FragColor = stageDiag(albedo, n, 0.0, c, 0.0);
 }
 `
@@ -209,7 +214,7 @@ function grainGeometry(): THREE.BufferGeometry {
     if (r < 61.5) continue
     const h = sandHeight(x, z)
     const far = Math.exp(-(r - 60) / 55)
-    const want = ringed ? frontLeft(x, z) : h < 0.02 ? 0.035 * far : h < 0.9 ? 0.35 + 0.65 * far : 0.22
+    const want = ringed ? frontLeft(x, z) : h < 0.9 ? Math.min(1, 0.03 * far + 0.8 * sandSpread(x, z)) : 0.22
     if (rj.next() > want) continue
     const radius = J.radiusMm[0] + (J.radiusMm[1] - J.radiusMm[0]) * rj.next() ** 2
     const y = SLAB.liftMm + h + radius * 0.7
@@ -265,7 +270,7 @@ export async function prepare(): Promise<void> {}
 // The grains lie on the slab and fall past the foot, outside the glass, so they are drawn with the surface dressing (slab.ts
 // adds them to its group); nothing of this arrival is inside the globe.
 export function grains(): THREE.Mesh {
-  const m = stageShader({ part: PART, standIn: false, change: 'surface-dressing', vertexPars: VERT_PARS, vertexMain: VERT_MAIN, fragment: FRAG, uniforms: grainUniforms, params: { side: THREE.DoubleSide } })
+  const m = stageShader({ part: PART, standIn: false, change: 'surface-dressing', vertexPars: VERT_PARS, vertexMain: VERT_MAIN, fragment: FRAG, uniforms: grainUniforms, params: { side: THREE.DoubleSide, transparent: true, depthWrite: false, blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor, blendSrcAlpha: THREE.ZeroFactor, blendDstAlpha: THREE.OneFactor } })
   const mesh = new THREE.Mesh(grainGeometry(), m)
   mesh.frustumCulled = false
   return mesh
