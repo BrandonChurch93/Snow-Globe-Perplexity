@@ -169,6 +169,8 @@ export const VERT_MAIN = `
     moved = mix(moved, current * (length(moved) * (dot(moved, current) < 0.0 ? -1.0 : 1.0)), ${n(STORM_ALIGN)} * gusty * uVeilRoll.x);
     moved *= mix(1.0, mix(${n(STORM_DAB_REACH.low)}, ${n(STORM_DAB_REACH.high)}, pow(fract(h2.z * 71.0), ${n(STORM_DAB_REACH.skew)})), gusty * smears) * mix(1.0, ${n(STORM_SHARP_REACH)}, gusty * sharps) * mix(1.0, mix(${n(STORM_GLINT_REACH.low)}, ${n(STORM_GLINT_REACH.high)}, fract(h2.z * 71.0)), gusty * glints);
   }
+  // a glint is a flash far shorter than the shutter: its stroke is a share of its path
+  if (storming && glints > 0.5) moved *= mix(1.0, mix(${n(STORM_GLINT_REACH.low)}, ${n(STORM_GLINT_REACH.high)}, fract(h2.z * 71.0)), gusty);
   mat3 toView = mat3(modelViewMatrix);
   if (afloat > 0.5 && dot(moved, moved) > 1e-8) {
     #ifdef POINT_SPRITES
