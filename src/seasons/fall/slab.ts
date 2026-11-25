@@ -147,8 +147,8 @@ void main() {
   float rimGain;
   float occl;
   slabLight(vec3(vStageWorld.x, 0.0, vStageWorld.z), keyDir, keyGain, rimDir, rimGain, occl, warm);
-  float tone = 0.5 + 0.55 * fract(vLeafOne.x * 7.3);
-  vec3 albedo = mix(vec3(dot(leaf.rgb, vec3(0.3, 0.5, 0.2))) * vec3(1.0, 0.72, 0.5), leaf.rgb, 0.3 + 0.45 * fract(vLeafOne.x * 3.7)) * tone * mix(1.0, 0.72, under);
+  float tone = 0.6 + 0.6 * fract(vLeafOne.x * 7.3);
+  vec3 albedo = mix(vec3(dot(leaf.rgb, vec3(0.3, 0.5, 0.2))) * vec3(1.0, 0.76, 0.56), leaf.rgb, 0.18 + 0.42 * fract(vLeafOne.x * 3.7)) * tone * mix(1.0, 0.72, under);
   float key = clamp(dot(n, keyDir) * 0.75 + 0.25, 0.0, 1.0);
   float rim = clamp(dot(n, rimDir) * 0.6 + 0.4, 0.0, 1.0);
   float thru = clamp(-dot(n, keyDir), 0.0, 1.0) * 0.35;

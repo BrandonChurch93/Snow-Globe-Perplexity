@@ -167,23 +167,23 @@ float baseSun = baseNoise(vBasePos * 0.45 + 7.3);
 float baseSpeck = baseNoise(vBasePos * 6.5);
 vec3 baseStone = baseStoneC * vec3(2.3, 1.75, 1.3) * mix(0.55, 1.3, baseBlotch) * mix(0.45, 1.25, baseStoneD.b) * mix(0.6, 1.2, baseStoneF.b) * mix(0.8, 1.15, baseSpeck);
 baseStone = mix(baseStone, vec3(0.3, 0.27, 0.23), 0.5 * smoothstep(0.68, 0.8, baseSpeck) * baseStoneF.b);
-baseStone = mix(baseStone, baseStone * vec3(0.6, 0.62, 0.66), baseWet);
+baseStone = mix(baseStone, baseStone * vec3(0.36, 0.38, 0.42), baseWet);
 vec3 baseGreen = diffuseColor.rgb * mix(vec3(0.2, 0.22, 0.15), vec3(0.56, 0.6, 0.18), smoothstep(0.3, 0.75, baseSun) * (0.35 + 0.65 * baseMossD.b));
 baseGreen *= mix(0.1, 1.15, smoothstep(0.2, 0.9, baseMossD.b)) * mix(0.5, 1.1, baseBlotch);
 baseGreen = mix(baseGreen, vec3(0.03, 0.035, 0.012), 0.45 * (1.0 - smoothstep(0.1, 0.6, baseRelief.b)));
 float baseFilm = max(smoothstep(0.3, 0.7, 0.6 * baseNoise(vBasePos * 0.31 + 3.1) + 0.3 * baseMossD.b + 0.3 * (1.0 - smoothstep(0.1, 0.7, baseRelief.b))), smoothstep(0.03, 0.28, baseCover.r)) * (1.0 - baseWet) * baseSeat;
-vec3 baseOlive = vec3(0.085, 0.105, 0.04) * mix(0.45, 1.6, baseMossD.b) * mix(0.7, 1.2, baseBlotch);
-baseStone = mix(baseStone, baseOlive, 0.68 * baseFilm);
+vec3 baseOlive = vec3(0.085, 0.13, 0.04) * mix(0.45, 1.6, baseMossD.b) * mix(0.7, 1.2, baseBlotch);
+baseStone = mix(baseStone, baseOlive, 0.8 * baseFilm);
 diffuseColor.rgb = mix(baseStone, baseGreen, baseMoss);
 `
 
 const ROCK_ROUGH = `
-roughnessFactor = mix(mix(mix(0.84, 0.97, baseStoneD.b), 0.42, baseWet), 0.96, max(baseMoss, 0.8 * baseFilm));
+roughnessFactor = mix(mix(mix(0.84, 0.97, baseStoneD.b), 0.78, baseWet), 0.96, max(baseMoss, 0.8 * baseFilm));
 metalnessFactor = 0.0;
 `
 
 const ROCK_TILT = `
-vec2 baseTilt = baseSlope(baseRelief.rg) * (1.15 * baseSeat) + mix((baseSlope(baseStoneD.rg) * 2.0 + baseSlope(baseStoneF.rg).yx * 1.3) * mix(1.0, 0.2, baseWet), baseSlope(baseMossD.rg) * 2.3, baseMoss);
+vec2 baseTilt = baseSlope(baseRelief.rg) * (1.15 * baseSeat) + mix((baseSlope(baseStoneD.rg) * 2.0 + baseSlope(baseStoneF.rg).yx * 1.3) * mix(1.0, 0.75, baseWet), baseSlope(baseMossD.rg) * 2.3, baseMoss);
 `
 
 const ROCK_AFTER = `
@@ -206,8 +206,8 @@ ${SHADE}
   float liveF = 0.03 + 0.97 * pow(1.0 - liveNv, 5.0);
   vec3 liveAway = inverseTransformDirection(reflect(-geometryViewDir, geometryNormal), viewMatrix);
   float liveSheet = baseWet * baseAo;
-  reflectedLight.directSpecular += (liveKeyC * (4.0 * pow(liveNh, 260.0) + 0.08 * pow(liveNh, 30.0)) + uRigCardCol * (2.4 * pow(liveCh, 200.0) + 0.06 * pow(liveCh, 24.0))) * liveSheet;
-  reflectedLight.indirectSpecular += (stageRoomLights(liveAway, 0.05) * 0.5 + stageRoomSoft(liveAway, 0.2) * 0.2) * min(liveF, 0.4) * liveSheet;
+  reflectedLight.directSpecular += (liveKeyC * (1.2 * pow(liveNh, 260.0) + 0.08 * pow(liveNh, 30.0)) + uRigCardCol * (0.8 * pow(liveCh, 200.0) + 0.06 * pow(liveCh, 24.0))) * liveSheet;
+  reflectedLight.indirectSpecular += (stageRoomLights(liveAway, 0.05) * 0.06 + stageRoomSoft(liveAway, 0.2) * 0.05) * min(liveF, 0.4) * liveSheet;
 }
 `
 
@@ -216,7 +216,7 @@ vec4 baseDetail = texture2D(uBaseDetail, vMapUv);
 float baseBark = vBaseUv1.x;
 float baseAo = vBaseUv1.y;
 vec3 baseWood = diffuseColor.rgb * vec3(0.7, 0.57, 0.46) * vBasePaint * mix(0.7, 1.15, baseDetail.b);
-baseWood = mix(vec3(dot(baseWood, vec3(0.3, 0.5, 0.2))), baseWood, 0.5) * vec3(1.5, 1.32, 1.14);
+baseWood = mix(vec3(dot(baseWood, vec3(0.3, 0.5, 0.2))), baseWood, 0.38) * vec3(1.8, 1.62, 1.44);
 diffuseColor.rgb = mix(vBasePaint, baseWood, baseBark);
 `
 
@@ -226,7 +226,7 @@ metalnessFactor = 0.0;
 `
 
 const GROWTH_TILT = `
-vec2 baseTilt = baseSlope(baseDetail.rg) * (0.7 * baseBark);
+vec2 baseTilt = baseSlope(baseDetail.rg) * (1.0 * baseBark);
 `
 
 const GROWTH_AFTER = `
@@ -330,7 +330,7 @@ void main() {
   float hk = max(dot(n, normalize(v + uWaterKeyDir)), 0.0);
   float hr = max(dot(n, normalize(v + uWaterRimDir)), 0.0);
   float hc = max(dot(n, normalize(v + uRigCardDir)), 0.0);
-  vec3 col = mirror * min(fres, 0.3) * 0.45;
+  vec3 col = mirror * min(fres, 0.3) * 0.18;
   col += uWaterKeyCol * (pow(hk, 380.0) * 3.2 + pow(hk, 40.0) * 0.03);
   col += uWaterRimCol * (pow(hr, 260.0) * 2.0 + pow(hr, 30.0) * 0.03);
   col += uRigCardCol * (pow(hc, 300.0) * 2.0 + pow(hc, 26.0) * 0.03);
@@ -338,14 +338,15 @@ void main() {
   float streak = smoothstep(0.52, 0.86, baseNoise(vec3(u * 2.6, (mm - run) * 0.3, 7.0)));
   float core = body * body;
   vec3 glow = (uWaterKeyCol * 0.5 + uRigCardCol * 0.3 + uWaterSky * 1.2) * RECIPROCAL_PI;
-  float rimline = smoothstep(0.34, 0.1, body) * smoothstep(0.0, 0.1, body);
-  col += glow * (body * 0.03 + core * (0.22 * streak + 3.0 * head) + 0.28 * rimline * (0.4 + 0.6 * h0));
+  float rimline = smoothstep(0.26, 0.1, body) * smoothstep(0.0, 0.1, body);
+  float fine = smoothstep(0.58, 0.9, baseNoise(vec3(u * 9.0, (mm - run) * 0.14, 3.0))) * smoothstep(0.35, 0.7, baseNoise(vec3(u * 3.0, (mm - run) * 0.9, 11.0)));
+  col += glow * vec3(0.86, 0.94, 1.0) * (body * 0.07 + core * (0.1 * streak + 0.8 * fine + 3.0 * head) + 0.32 * rimline * (0.4 + 0.6 * h0));
   vec3 cell = floor(vec3(u * 3.0, (mm - run) * 0.9, 1.0));
-  float spark = step(0.84, baseHash(cell + 5.0)) * smoothstep(0.32, 0.06, length(fract(vec2(u * 3.0, (mm - run) * 0.9)) - 0.5));
+  float spark = step(0.78, baseHash(cell + 5.0)) * smoothstep(0.32, 0.06, length(fract(vec2(u * 3.0, (mm - run) * 0.9)) - 0.5));
   col += (uWaterKeyCol * vec3(1.0, 0.8, 0.55) + 0.4 * uRigCardCol) * 2.4 * spark * sqrt(body);
   float edge = smoothstep(0.0, 0.3, body);
   col *= edge * uWater.w;
-  gl_FragColor = vec4(col, 0.18 * edge * uWater.w);
+  gl_FragColor = vec4(col, 0.07 * edge * uWater.w);
   if (uDiag != 0) gl_FragColor = stageDiag(vec3(0.7, 0.8, 0.9), n, 0.0, c, 0.0);
 }
 `
