@@ -20,7 +20,7 @@ Branch `agent/p4-spring_air3`, last commit `7e17e45` (merge of `origin/main` 790
 | R1 11 major, backdrop | fixed except right mass | slate-blue falloff and left oval back; right side sparser and whiter than the approved peach mass (shared disc layout) |
 | R3 part 1 severe, peak swirl bands | not re-seen | my storm changes apply; no still at the set-B-01 camera rendered after them: unseen |
 | R4 oval | fixed | b8f3da3 |
-| R4 #4 major, flood flat fill | part | frames 688/704/720: 688 streaked but nearly closed, 704 scene visible, 720 scene and gaps. Frames 628–683 (inside and before the swap window) not re-rendered: unseen; the cover there is unchanged in alpha, colour now streaked |
+| R4 #4 major, flood flat fill | part | frames 688/704/720: 688 streaked but nearly closed, 704 scene visible, 720 scene and gaps. Frame 648 seen after the push: it is still winter's storm (a white swirl with streaks, winter frozen), so the white part of the fill is not spring's. Frames 660–683 (spring's side of the swap) not re-rendered: unseen; spring's cover there is unchanged in alpha, colour now streaked |
 | R4 #5 major, beats | timing done | 0 s jump and first water; 0.6 s beads form; ~0.7 s first runs; 1 s mist rises. Seen at 720, 738, 756 only; later beats (bead growth, mist) not looked at in the film: unseen. Rest hero unchanged by it (boxes equal to before) |
 | R4 #6 major, waterfall | not done | shape and `FLOW` timing are in base.ts (bases3); arrival.ts only passes the clock. Nothing changed |
 | R4 #8 minor, floor-petal ring | done in timing | `JUMP_LEAD 0.05`: petals beside the base are off the surface on 720. Size of the jump is bases3's `setJump` |
