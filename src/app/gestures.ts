@@ -11,7 +11,9 @@ export const TOUCH = {
   fullAt: 4.5,
   stirLeastShare: 0.07,
   stirLeastPx: 28,
-  runSeconds: 0.35,
+  stirSpan: 0.3,
+  stirMost: 1,
+  stirRestSeconds: 1.2,
   smoothSeconds: 0.05,
   returnRate: 3.2,
   stirRate: 9,
@@ -73,15 +75,23 @@ export interface Stir {
   x: number
   y: number
   strength: number
+  force: number
+  begins: boolean
 }
 
+const noRun = (): { len: number; dx: number; dy: number; peak: number; begun: boolean } => ({ len: 0, dx: 0, dy: 0, peak: 0, begun: false })
+
+/** A quick drag feeds the liquid while the pointer is down: each move gives a small push along the way the pointer went,
+ * as large as the share of the short side it crossed. A full stir (`stirRate`) is a drag across `stirSpan` of the short side
+ * at full speed; a hold has `stirMost` stirs to give and earns one back in `stirRestSeconds`. */
 export class Drag {
   private x = 0
   private y = 0
   private t = 0
   private ref = 1
   private speed = 0
-  private run = { len: 0, dx: 0, dy: 0, peak: 0, from: 0 }
+  private fed = 0
+  private run = noRun()
   active = false
   travelled = 0
 
@@ -93,8 +103,9 @@ export class Drag {
     this.t = t
     this.ref = Math.max(1, ref)
     this.speed = 0
+    this.fed = 0
     this.travelled = 0
-    this.run = { len: 0, dx: 0, dy: 0, peak: 0, from: t }
+    this.run = noRun()
     this.active = true
     this.look.held = true
   }
@@ -111,45 +122,41 @@ export class Drag {
     this.travelled += d
     const now = d / dt / this.ref
     this.speed += (now - this.speed) * Math.min(1, dt / TOUCH.smoothSeconds)
+    this.fed = Math.max(0, this.fed - (dt * TOUCH.stirMost) / TOUCH.stirRestSeconds)
     const slow = 1 - step(TOUCH.lookBelow, TOUCH.stirAbove, this.speed)
     const perPx = (2 * L.orbitYawDeg * TOUCH.turnShare) / this.ref
     this.look.turn(-dx * perPx * slow, dy * perPx * slow, dt)
-    if (this.speed >= TOUCH.stirAbove) {
-      if (this.run.len === 0) this.run.from = t - dt
-      this.run.len += d
-      this.run.dx += dx
-      this.run.dy += dy
-      this.run.peak = Math.max(this.run.peak, this.speed)
-      return t - this.run.from >= TOUCH.runSeconds ? this.end(dx, dy) : null
+    if (this.speed < TOUCH.stirAbove) {
+      if (this.speed < TOUCH.lookBelow) this.run = noRun()
+      return null
     }
-    return this.speed < TOUCH.lookBelow ? this.end(dx, dy) : null
+    const r = this.run
+    r.len += d
+    r.dx += dx
+    r.dy += dy
+    r.peak = Math.max(r.peak, now, this.speed)
+    if (!r.begun && r.len < Math.max(TOUCH.stirLeastPx, TOUCH.stirLeastShare * this.ref)) return null
+    const l = Math.hypot(r.dx, r.dy)
+    if (!(l > 0)) return null
+    const hard = (v: number): number => TOUCH.leastStrength + (1 - TOUCH.leastStrength) * clamp((v - TOUCH.stirAbove) / (TOUCH.fullAt - TOUCH.stirAbove), 0, 1)
+    const strength = Math.min((hard(this.speed) * l) / this.ref / TOUCH.stirSpan, TOUCH.stirMost - this.fed)
+    const push: Stir = { x: r.dx / l, y: r.dy / l, strength, force: hard(r.peak), begins: !r.begun }
+    r.begun = true
+    r.dx = 0
+    r.dy = 0
+    if (!(strength > 0)) return null
+    this.fed += strength
+    return push
   }
 
-  up(): Stir | null {
-    if (!this.active) return null
+  up(): void {
     this.active = false
     this.look.held = false
-    return this.end(0, 0)
-  }
-
-  private end(lastX: number, lastY: number): Stir | null {
-    const r = this.run
-    this.run = { len: 0, dx: 0, dy: 0, peak: 0, from: this.t }
-    if (r.len < Math.max(TOUCH.stirLeastPx, TOUCH.stirLeastShare * this.ref)) return null
-    let x = r.dx
-    let y = r.dy
-    if (Math.hypot(x, y) < r.len * 0.25) {
-      x = lastX
-      y = lastY
-    }
-    const l = Math.hypot(x, y)
-    if (!(l > 0)) return null
-    const strength = TOUCH.leastStrength + (1 - TOUCH.leastStrength) * clamp((r.peak - TOUCH.stirAbove) / (TOUCH.fullAt - TOUCH.stirAbove), 0, 1)
-    return { x: x / l, y: y / l, strength }
+    this.run = noRun()
   }
 }
 
-export function stirAxis(s: Stir, yawDeg: number): [number, number, number] {
+export function stirAxis(s: Pick<Stir, 'x' | 'y' | 'strength'>, yawDeg: number): [number, number, number] {
   const yaw = (yawDeg * Math.PI) / 180
   const rate = s.strength * TOUCH.stirRate
   return [s.y * Math.cos(yaw) * rate, s.x * rate, -s.y * Math.sin(yaw) * rate]

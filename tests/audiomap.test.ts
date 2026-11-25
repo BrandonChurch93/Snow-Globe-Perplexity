@@ -155,6 +155,48 @@ function piece({ bpm, sectionBars, offset = 0, jitter = 0.006, seed = 11 }: Piec
   return { samples: x, seconds, beat, beats, barLines: beats.filter((_, i) => i % beatsPerBar === 0), boundaries: boundaries.slice(0, -1) }
 }
 
+type Offbeat = { bpm: number; bars: number; trim?: number }
+
+// Bells in eighth notes whose off-beats ring louder than the beats, over a bass that strikes on every beat and a
+// chord that changes on every bar. Both pulses carry onsets, so the tracker can end on either; the bass says which
+// one is the beat. trim cuts the end short, which is what used to decide the pulse the tracker ended on.
+function offbeatPiece({ bpm, bars, trim = 0 }: Offbeat) {
+  const beat = 60 / bpm
+  const seconds = bars * beatsPerBar * beat - trim
+  const x = new Float32Array(Math.round(seconds * sampleRate))
+  const note = (at: number, hz: number, amp: number, attack: number, decay: number, partials: number[][]) => {
+    const start = Math.round(at * sampleRate)
+    const count = Math.round((6 / decay) * sampleRate)
+    for (let i = 0; i < count && start + i < x.length; i++) {
+      const t = i / sampleRate
+      const e = Math.min(1, t / attack) * Math.exp(-t * decay)
+      let v = 0
+      for (const [ratio, level] of partials) v += level * Math.sin(TAU * hz * ratio * t)
+      x[start + i] += amp * e * v
+    }
+  }
+  const BELL = [[1, 1], [2.76, 0.5], [5.4, 0.25]]
+  const PLUCK = [[1, 1], [2, 0.4], [3, 0.2]]
+  const SOFT = [[1, 1], [2, 0.15]]
+  const chords = [[261.63, 329.63, 392.0, 65.41], [220.0, 261.63, 329.63, 55.0], [174.61, 220.0, 261.63, 87.31], [196.0, 246.94, 293.66, 98.0]]
+  for (let bar = 0; bar < bars; bar++) {
+    const chord = chords[bar % 4]
+    for (let b = 0; b < beatsPerBar; b++) {
+      const at = (bar * beatsPerBar + b) * beat
+      note(at, chord[3] * (b % 2 ? 1.5 : 1), b ? 0.4 : 0.55, 0.008, 4, SOFT)
+      for (let k = 0; k < 3; k++) note(at, chord[k], 0.07, 0.01, 2.5, SOFT)
+      note(at, chord[b % 3] * 2, 0.1, 0.004, 5, PLUCK)
+      note(at, chord[b % 3] * 4, 0.3, 0.002, 5, BELL)
+      note(at + beat / 2, chord[(b + 1) % 3] * 4, 0.45, 0.002, 5, BELL)
+    }
+  }
+  let peak = 0
+  for (let i = 0; i < x.length; i++) peak = Math.max(peak, Math.abs(x[i]))
+  for (let i = 0; i < x.length; i++) x[i] *= 0.8 / peak
+  const beats = Array.from({ length: bars * beatsPerBar }, (_, i) => i * beat).filter((t) => t < seconds - LIMITS.peakReachSeconds)
+  return { samples: x, seconds, beat, beats, barLines: beats.filter((_, i) => i % beatsPerBar === 0) }
+}
+
 describe('the pieces of the audio map', () => {
   it('finds a sine in the right bin of the transform', () => {
     const n = 256
@@ -324,6 +366,10 @@ describe('a piece of music in five sections', () => {
     expect(worstError(map.beats, music.beats)).toBeLessThan(BEAT_TOLERANCE)
   })
 
+  it('leaves the beat where the tracker put it', () => {
+    expect(map.checks.beatPhase.moved).toBe(false)
+  })
+
   it('puts the bar lines on the downbeats', () => {
     expect(map.checks.barPhase.method).toBe('accents')
     expect(map.barLines.length).toBe(music.barLines.length)
@@ -335,6 +381,38 @@ describe('a piece of music in five sections', () => {
     for (const planned of music.boundaries) expect(worstError([planned], found)).toBeLessThanOrEqual(bar + BEAT_TOLERANCE)
     expect(found.length).toBeLessThanOrEqual(music.boundaries.length + 1)
     expect(Math.abs(map.loudestSectionStart - music.boundaries[3])).toBeLessThanOrEqual(bar + BEAT_TOLERANCE)
+  })
+})
+
+describe('a piece whose off-beats are louder than its beats', () => {
+  const half = 30 / defaultBpm
+  const cuts = [0, half * 0.5, half, half * 1.5]
+  const made = cuts.map((trim) => offbeatPiece({ bpm: defaultBpm, bars: 12, trim }))
+  let maps: ReturnType<typeof analyse>[]
+  beforeAll(() => {
+    maps = made.map((music) => analyse(music.samples, sampleRate, opts))
+  }, LONG)
+
+  it.each(cuts.map((_, i) => i))('puts the beats on the bass, not on the louder off-beats, with end %d', (i) => {
+    const map = maps[i]
+    const music = made[i]
+    expect(map.method).toBe('tracked')
+    expect(Math.abs(map.bpm - defaultBpm)).toBeLessThan(TEMPO_TOLERANCE)
+    expect(map.checks.beatPhase.tested).toBe(true)
+    expect(map.checks.beatPhase.method).toBe('bass and harmony')
+    expect(map.checks.beatPhase.confidence).toBeGreaterThanOrEqual(LIMITS.barConfidence)
+    expect(map.beats.length).toBe(music.beats.length)
+    expect(worstError(map.beats, music.beats)).toBeLessThan(BEAT_TOLERANCE)
+  })
+
+  it.each(cuts.map((_, i) => i))('starts the first bar on the first beat with end %d', (i) => {
+    const map = maps[i]
+    expect(Math.abs(map.barLines[0] - made[i].barLines[0])).toBeLessThan(BEAT_TOLERANCE)
+    expect(worstError(map.barLines, made[i].barLines)).toBeLessThan(BEAT_TOLERANCE)
+  })
+
+  it('had to move the beat for at least one of the ends', () => {
+    expect(maps.some((map) => map.checks.beatPhase.moved)).toBe(true)
   })
 })
 
