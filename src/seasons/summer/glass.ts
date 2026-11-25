@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { config } from '../../config'
 import { stageShader } from '../../core/materials'
 import { partChange } from '../../shake/change'
-import type { Dressing, KitMoment } from '../kit'
+import type { KitMoment } from '../kit'
 import { rig } from './rig'
 import { holdStorm, veil } from './veil'
 
@@ -23,10 +23,6 @@ import { holdStorm, veil } from './veil'
 const PART = 'glass-dressing-summer'
 const RS = config.globe.sphereDiameterMm / 2
 const TAU = Math.PI * 2
-
-export const standIns: string[] = []
-
-export const glassDressing: Dressing = { tint: [1, 0.9, 0.6], amount: 0 }
 
 export const look = {
   // leaving: the light goes out between these two counts of beats before the swap window opens

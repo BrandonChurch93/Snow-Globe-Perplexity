@@ -14,7 +14,6 @@ import type { KitMoment, SeasonKit } from '../kit'
 // and are gone when the water is still. The dawn mist lies low on the island at the landing and rises and thins as the water
 // stills. The liquid's own veil (the shared chunk, read only) is kept thin: its drift is drawn as long white ribbons, which
 // is snow, not petals.
-export const standIns: string[] = []
 
 export const veil: SeasonKit['veil'] = { tint: [1, 0.9, 0.93], density: 0.002, rest: 0 }
 export const particles: SeasonKit['particles'] = { petal: { color: [1, 0.74, 0.82], glow: 0 }, mote: { color: [0.2, 0.18, 0.18], glow: 0 } }

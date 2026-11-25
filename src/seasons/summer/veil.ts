@@ -6,7 +6,6 @@ import type { KitMoment, SeasonKit } from '../kit'
 // storm, and at rest only the faint warmth of dusty air in low sun. The fireflies are yellow-green lights, far brighter than
 // anything they pass; the seeds are the cream white of dandelion down and take the light they hang in; the motes are fine gold
 // dust, dim enough that tens of thousands of them read as air and never as snow.
-export const standIns: string[] = []
 
 // The shared veil keeps a fifth of its storm haze for as long as most of the pool is afloat, and summer's motes never land:
 // `rest` takes nearly all of that share back (0.04 x 0.2 x density is the share). The shared haze fogs what stands in the liquid
