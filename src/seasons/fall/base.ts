@@ -215,19 +215,19 @@ float baseRust = smoothstep(0.62, 0.85, baseNoise(vBasePos * 0.9 + 7.0)) * (1.0 
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.1, 0.05, 0.028), baseRust);
 float baseWrap = 0.1;
 float baseCandle = 3.6;
-// Bark on the strands: fibres that run along them.
+// Bark on the vines: near black, a faint grain that runs along them and a fine pebbled skin that glints.
 float baseStrand = (1.0 - baseThorn) * (1.0 - baseDrum);
 vec2 fibreAt = vec2(vBaseUv1.x * 1.3, vBaseUv1.y * 7.0);
 float fibreHere = baseNoise(vec3(fibreAt, 5.0)) * 0.42 + baseNoise(vec3(fibreAt * vec2(2.3, 3.1), 9.0)) * 0.3 + baseNoise(vec3(fibreAt * vec2(4.1, 6.3), 3.0)) * 0.28;
 float fibreNext = baseNoise(vec3(fibreAt + vec2(0.0, 0.3), 5.0)) * 0.42 + baseNoise(vec3((fibreAt + vec2(0.0, 0.3)) * vec2(2.3, 3.1), 9.0)) * 0.3 + baseNoise(vec3((fibreAt + vec2(0.0, 0.3)) * vec2(4.1, 6.3), 3.0)) * 0.28;
-diffuseColor.rgb *= mix(1.0, (0.12 + 1.5 * fibreHere) * 0.9, baseStrand);
+diffuseColor.rgb *= mix(1.0, 0.45 + 0.6 * fibreHere, baseStrand);
 `
 const IRON_ROUGH = `
-roughnessFactor = clamp(mix(0.44, 0.62, baseDetail.b) + 0.2 * baseStrand + 0.14 * baseScale + 0.2 * baseRust - 0.08 * baseThorn * vBasePaint.z + 0.12 * baseDrum, 0.18, 1.0);
-metalnessFactor = mix(0.85, 0.6, baseScale) * (1.0 - 0.6 * baseRust) * (1.0 - 0.6 * baseStrand);
+roughnessFactor = clamp(mix(0.44, 0.62, baseDetail.b) + 0.04 * baseStrand + 0.14 * baseScale + 0.2 * baseRust - 0.08 * baseThorn * vBasePaint.z + 0.12 * baseDrum, 0.18, 1.0);
+metalnessFactor = mix(0.85, 0.6, baseScale) * (1.0 - 0.6 * baseRust) * (1.0 - 0.35 * baseStrand);
 `
 const IRON_TILT = `
-vec2 baseTilt = baseSlope(baseDetail.rg) * mix(mix(0.12, 0.14 * (1.0 - vBasePaint.z), baseThorn), 0.75, baseDrum) + vec2(0.0, (fibreNext - fibreHere) * 4.2 * baseStrand);
+vec2 baseTilt = baseSlope(baseDetail.rg) * mix(mix(0.12 + 0.3 * baseStrand, 0.14 * (1.0 - vBasePaint.z), baseThorn), 0.75, baseDrum) + vec2(0.0, (fibreNext - fibreHere) * 1.3 * baseStrand);
 `
 const IRON_AFTER = `
 #define IRON_WARM 1.5
@@ -247,20 +247,21 @@ const IRON_AFTER = `
   float ironKl = smoothstep(0.0, 0.2, dot(geometryNormal, ironKey));
   float ironCl = smoothstep(0.0, 0.25, dot(geometryNormal, ironCard));
   float ironSheen = (1.0 - 0.45 * baseScale) * baseAo * (1.0 - 0.4 * baseDrum);
+  float ironGlint = 0.55 + 2.2 * pow(baseDetail.b, 3.0);
   vec3 ironRim = normalize(mat3(viewMatrix) * uBaseRimDir);
   float ironRh = max(dot(geometryNormal, normalize(ironRim + geometryViewDir)), 0.0);
   float ironRl = smoothstep(0.0, 0.25, dot(geometryNormal, ironRim));
-  reflectedLight.directSpecular += uBaseRimCol * (0.08 * pow(ironRh, 7.0) + mix(0.4 * pow(ironRh, 50.0), 0.12 * pow(ironRh, 16.0), baseStrand)) * ironRl * ironSheen;
+  reflectedLight.directSpecular += uBaseRimCol * (0.08 * pow(ironRh, 7.0) + mix(0.4 * pow(ironRh, 50.0), 0.3 * pow(ironRh, 36.0), baseStrand)) * ironRl * ironSheen;
   vec3 ironCardC = mix(uRigCardCol, vec3(dot(uRigCardCol, vec3(0.3, 0.5, 0.2))), 0.65);
-  reflectedLight.directSpecular += (ironKeyC * vec3(0.8, 0.9, 1.0) * (mix(0.05, 0.16, baseDrum) * pow(ironKh, mix(8.0, 3.0, baseDrum)) + mix((0.2 * pow(ironKh, 16.0) + 0.5 * pow(ironKh, 60.0)) * (0.2 + 1.3 * fibreHere), 0.6 * pow(ironKh, 44.0) * (0.35 + 0.65 * baseDetail.b), 1.0 - baseStrand)) * ironKl + ironCardC * (0.05 * pow(ironCh, 10.0) + mix(0.26 * pow(ironCh, 50.0), 0.08 * pow(ironCh, 14.0), baseStrand)) * ironCl) * ironSheen;
+  reflectedLight.directSpecular += (ironKeyC * vec3(0.8, 0.9, 1.0) * (mix(0.05, 0.5, baseDrum) * pow(ironKh, mix(8.0, 5.0, baseDrum)) + mix((0.14 * pow(ironKh, 10.0) + 1.3 * pow(ironKh, 50.0)) * (0.55 + 0.7 * fibreHere) * ironGlint, 0.6 * pow(ironKh, 44.0) * (0.35 + 0.65 * baseDetail.b), 1.0 - baseStrand)) * ironKl + ironCardC * (0.05 * pow(ironCh, 10.0) + mix(0.26 * pow(ironCh, 50.0), 0.45 * pow(ironCh, 40.0) * ironGlint, baseStrand)) * ironCl) * ironSheen;
   float ironEdge = pow(1.0 - clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0), 3.0);
   vec3 ironUp = inverseTransformDirection(geometryNormal, viewMatrix);
   float ironWarm = clamp(dot(ironUp, normalize(vec3(uBaseRimDir.x, uBaseRimDir.y * 0.25, uBaseRimDir.z))) * 0.5 + 0.5, 0.0, 1.0);
   float ironLeft = clamp(dot(ironUp, normalize(vec3(-0.8, 0.25, 0.55))), 0.0, 1.0);
-  reflectedLight.directSpecular += uBaseRimCol * vec3(1.0, 0.72, 0.5) * (IRON_WARM * (0.3 * pow(ironWarm, 5.0) + 0.07 * pow(ironLeft, 5.0))) * mix(0.25, 1.0, baseAo) * (1.0 - 0.8 * baseDrum) * (0.4 + 1.2 * baseBlotch);
+  reflectedLight.directSpecular += uBaseRimCol * vec3(1.0, 0.72, 0.5) * (IRON_WARM * (mix(0.3, 0.6 * ironGlint, baseStrand) * pow(ironWarm, mix(5.0, 9.0, baseStrand)) + mix(0.07, 0.16 * ironGlint, baseStrand) * pow(ironLeft, mix(5.0, 9.0, baseStrand)))) * mix(0.25, 1.0, baseAo) * (1.0 - 0.8 * baseDrum) * (0.4 + 1.2 * baseBlotch);
   vec3 ironTop = normalize(mat3(viewMatrix) * vec3(0.0, 1.0, 0.0));
   float ironTh = max(dot(geometryNormal, normalize(ironTop + geometryViewDir)), 0.0);
-  reflectedLight.directSpecular += (uRigSky * 1.1 + ironKeyC * 0.03) * pow(ironTh, 9.0) * smoothstep(0.0, 0.3, dot(geometryNormal, ironTop)) * (0.3 + 1.0 * fibreHere) * ironSheen * (1.0 - baseDrum);
+  reflectedLight.directSpecular += (uRigSky * 1.1 + ironKeyC * 0.03) * pow(ironTh, mix(9.0, 18.0, baseStrand)) * smoothstep(0.0, 0.3, dot(geometryNormal, ironTop)) * (0.5 + 0.7 * fibreHere) * ironSheen * (1.0 - baseDrum);
   ironEdge *= 1.0 + 3.0 * baseThorn;
   reflectedLight.indirectSpecular += (uRigSky * 0.35 * smoothstep(-0.2, 0.8, ironUp.y) + uBaseFloor * smoothstep(0.2, -0.8, ironUp.y)) * ironEdge * ironSheen;
 }
@@ -459,7 +460,7 @@ export function base(): THREE.Object3D {
     key: `${PART}-pumpkin`,
     physical: true,
     hook: hookOf(
-      { ...detail, uFaceMap: { value: map('faces.lin.w1024') }, uFaceRange: { value: extras.faceRange }, uFaceRind: { value: 0.2 }, uFacePower: { value: 2.3 } },
+      { ...detail, uFaceMap: { value: map('faces.lin.w1024') }, uFaceRange: { value: extras.faceRange }, uFaceRind: { value: 0.2 }, uFacePower: { value: 3.1 } },
       { pars: 'uniform sampler2D uFaceMap;\nuniform float uFaceRange;\nuniform float uFaceRind;\nuniform float uFacePower;', paint: PUMPKIN_PAINT, rough: PUMPKIN_ROUGH, tilt: PUMPKIN_TILT, after: SHADE },
     ),
   })

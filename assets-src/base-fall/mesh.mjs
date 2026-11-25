@@ -40,10 +40,10 @@ function tube(soup, pts, radii, sides, paint, flat = 1, vAt = 0, gnarl = 0, seed
       const around = ((i % sides) / sides) * 6
       const flute = fbm(around + seed, arc[j] * 0.11, 6, 4096, seed + 2, 2) - 0.5
       const knot = fbm(arc[j] * 0.16 + seed, around * 0.5, 4096, 3, seed, 3) - 0.5
-      lump = 1 + gnarl * (2.2 * flute + 1.6 * knot + 2.4 * Math.max(knot - 0.12, 0))
+      lump = 1 + gnarl * (0.7 * flute + 1.8 * knot + 2.6 * Math.max(knot - 0.12, 0))
       const fluteNext = fbm(around + 0.35 + seed, arc[j] * 0.11, 6, 4096, seed + 2, 2) - 0.5
       const round = add3([-f.n[0] * Math.sin(a), -f.n[1] * Math.sin(a), -f.n[2] * Math.sin(a)], f.b, Math.cos(a))
-      nrm = norm3(add3(nrm, round, -gnarl * 3.5 * (fluteNext - flute)))
+      nrm = norm3(add3(nrm, round, -gnarl * 1.1 * (fluteNext - flute)))
     }
     const p = add3(pts[j], d, radii[j] * lump)
     const c = paint(j, a, p, nrm)
@@ -114,28 +114,28 @@ const STRANDS = []
 function addStrands() {
   const rng = mulberry(4107)
   const r = (a, b) => a + (b - a) * rng()
-  const push = (s) => STRANDS.push({ seed: STRANDS.length * 31 + 7, slope: 0, reach: 0, ...s })
-  for (let i = 0; i < 2; i++) push({ a0: -180, span: 360, h0: 2.6 + i * 2.4, amp: 2.0 + 0.6 * i, k: 3 + 2 * i, ph: r(0, 6.28), rad: r(1.3, 1.7), lift: 1.6, sprawl: 1.1 - i * 0.7, thorn: [7, 12], every: 46, layer: 0 })
-  for (let i = 0; i < 2; i++) push({ a0: -180, span: 360, h0: 33.0 + i * 2.6, amp: 2.3 - 0.7 * i, k: 3 + 2 * i, ph: r(0, 6.28), rad: r(1.45, 1.9), lift: 1.5 + i, sprawl: 0, thorn: [7, 11], every: 54, layer: 2 })
-  for (let i = 0; i < 2; i++) push({ a0: -180, span: 360, h0: 11.5 + i * 15, amp: r(1.6, 2.6), k: 3 + i, ph: r(0, 6.28), rad: r(1.1, 1.5), lift: 1.8, sprawl: 0, thorn: [6, 10], every: 52, layer: 1 })
-  // The branches: long tapering lengths that cross the ring on a slant, each ending in a point that stands off it.
-  const count = 30
+  const push = (s) => STRANDS.push({ seed: STRANDS.length * 31 + 7, slope: 0, reach: 0, bend: 0, ...s })
+  // The foot: three vines that lie in a heap round it and sprawl out over the slab, so the base stands in a nest.
+  for (let i = 0; i < 3; i++) push({ a0: -180, span: 360, h0: 2.3 + i * 2.5, amp: 1.5 + 0.5 * i, k: 3 + 2 * i, ph: r(0, 6.28), rad: r(1.4, 1.9), lift: 1.6 + 1.1 * i, sprawl: 1.5 - i * 0.45, wander: 1.2, thorn: [7, 12], every: 46, layer: 0 })
+  // The crown: two vines under the glass.
+  for (let i = 0; i < 2; i++) push({ a0: -180, span: 360, h0: 33.2 + i * 2.5, amp: 2.0 - 0.6 * i, k: 3 + 2 * i, ph: r(0, 6.28), rad: r(1.4, 1.9), lift: 1.5 + i, sprawl: 0, wander: 1.2, thorn: [7, 11], every: 54, layer: 2 })
+  // The vines: thin tapering lengths that wander round the ring, each on its own slant with its own swing, so they
+  // cross one another at many angles and leave the dark drum in view between them. One in four is a short steep one.
+  const count = 40
   for (let i = 0; i < count; i++) {
-    const steep = i % 3 === 2
-    const span = steep ? r(26, 42) : r(62, 150)
-    const a0 = -180 + (i * 360) / count + r(-9, 9) + (i * 137.5) % 360
-    const slope = (rng() < 0.5 ? -1 : 1) * (steep ? r(20, 30) : r(5, 19))
-    push({ a0, span, h0: steep ? r(12, 22) : r(6, 31), slope, amp: steep ? r(0.5, 1.1) : r(0.9, 2.2), k: r(1.2, 2.2), ph: r(0, 6.28), rad: steep ? r(1.2, 1.7) : r(1.5, 2.5), lift: r(2.6, 4.6), sprawl: 0.8, thorn: [7, 13], every: 42, layer: 3, open: true, reach: r(3.5, 8.5) })
+    const steep = i % 4 === 3
+    const span = steep ? r(22, 46) : r(48, 128)
+    const a0 = -180 + (i * 360) / count + r(-9, 9) + ((i * 137.5) % 360)
+    const angle = (rng() < 0.5 ? -1 : 1) * (steep ? r(20, 44) : r(1, 15))
+    const slope = Math.tan(angle * RAD) * span * RAD * 53
+    const rad = steep ? r(1.0, 1.5) : i % 4 === 0 ? r(1.7, 2.3) : r(1.1, 1.8)
+    push({ a0, span, h0: steep ? r(11, 26) : 5.5 + 27 * ((i * 0.618034) % 1) + r(-1.5, 1.5), slope, bend: steep ? r(-3, 3) : r(-5, 5), amp: steep ? r(0.6, 1.4) : r(1.2, 3.4), k: r(2.4, 6.5), ph: r(0, 6.28), rad, lift: r(1.2, 7.2), sprawl: 1.1, wander: r(1.2, 2.6), thorn: [7, 14], every: 36, layer: 3, open: true, reach: r(3.5, 9.5) })
   }
-  // Three more across the front at the height of the faces, where the thicket is thickest in the approved image: they
-  // run level and pass behind the pumpkins.
-  for (let i = 0; i < 3; i++) {
-    push({ a0: -118 + i * 52 + r(-6, 6), span: r(84, 120), h0: [15, 24, 19][i] + r(-1.5, 1.5), slope: [9, -7, 4][i], amp: r(0.8, 1.6), k: r(1.2, 2.2), ph: r(0, 6.28), rad: r(1.5, 2.3), lift: r(2.6, 4.2), sprawl: 0.8, thorn: [7, 13], every: 42, layer: 3, open: true, reach: r(3.5, 7) })
-  }
-  // The wires: thin lengths that fill the weave between the branches.
-  for (let i = 0; i < 5; i++) {
-    const a0 = -180 + i * 72 + r(-8, 8)
-    push({ a0, span: r(50, 110), h0: r(4, 21), slope: (rng() < 0.5 ? -1 : 1) * r(5, 22), amp: r(1.2, 3.2), k: r(2, 4), ph: r(0, 6.28), rad: r(0.5, 0.8), lift: r(1.2, 5.2), sprawl: 0.5, thorn: [3.5, 6.5], every: 40, layer: 3, open: true, reach: r(2, 6) })
+  // The wires: thin lengths that fill the tangle between the vines.
+  for (let i = 0; i < 9; i++) {
+    const a0 = -180 + i * 40 + r(-8, 8)
+    const span = r(40, 100)
+    push({ a0, span, h0: r(4, 32), slope: Math.tan((rng() < 0.5 ? -1 : 1) * r(4, 30) * RAD) * span * RAD * 53, bend: r(-4, 4), amp: r(1.2, 3.2), k: r(2, 5), ph: r(0, 6.28), rad: r(0.45, 0.7), lift: r(1.2, 6.5), sprawl: 0.6, wander: 2.2, thorn: [3.5, 6.5], every: 40, layer: 3, open: true, reach: r(2, 6) })
   }
 }
 addStrands()
@@ -144,7 +144,10 @@ function strandPath(s) {
   const n = Math.ceil((s.span * RAD * 54) / 1.5)
   const hs = []
   const azs = []
-  const base = (az) => s.h0 + s.slope * ((az - s.a0) / s.span - 0.5) + s.amp * Math.sin(s.k * az * RAD + s.ph) + (fbm(((az + 180) / 360) * 14, 0.37, 14, 4, s.seed, 3) - 0.5) * s.amp * (s.layer === 3 && s.rad > 1 ? 0.6 : 1.2)
+  const base = (az) => {
+    const u = (az - s.a0) / s.span
+    return s.h0 + s.slope * (u - 0.5) + s.bend * (4 * u * (1 - u) - 0.6) + s.amp * Math.sin(s.k * az * RAD + s.ph) + (fbm(((az + 180) / 360) * 14, 0.37, 14, 4, s.seed, 3) - 0.5) * s.amp * (s.wander ?? 1.2)
+  }
   // Where this strand is level with a face: its own turn round the ring, not the face's (a strand may start at 170
   // degrees and run on past 180), and its nearer end where it does not reach the face.
   const level = (f) => {
@@ -193,7 +196,7 @@ function strandPath(s) {
   for (let i = 0; i <= n; i++) {
     const az = azs[i]
     const t = i / n
-    const end = s.open ? smooth(0, 0.3, t) ** 0.7 * smooth(0, 0.34, 1 - t) ** 0.7 : 1
+    const end = s.open ? smooth(0, 0.16, t) ** 0.7 * smooth(0, 0.2, 1 - t) ** 0.7 : 1
     const rr = s.rad * (0.56 + 0.62 * fbm(((az + 180) / 360) * 9, 0.3, 9, 4, s.seed + 3, 2) + 0.3 * fbm(((az + 180) / 360) * 60, 0.7, 60, 4, s.seed + 5, 2)) * (s.open ? 0.07 + 0.93 * end : 1)
     const h = clamp(hs[i], rr * 0.85 + 0.15, 36.6 - rr * 0.2)
     const weave = 0.5 + 0.5 * Math.sin(az * RAD * (9 + (s.seed % 5)) + s.seed)
@@ -299,7 +302,7 @@ export function buildIron() {
         const depth = smooth(0, 5, Math.hypot(p[0], p[2]) - drumR(clamp(p[1], 0, 38)))
         return [(0.32 + 0.68 * open) * (0.5 + 0.5 * depth) * (0.75 + 0.25 * smooth(0, 5, p[1])), 0.5, fbm(i * 0.09, a, 64, 8, s.seed + 3, 2)]
       }
-      tube(soup, pick.map((i) => pts[i]), pick.map((i) => radii[i]), far || s.rad < 0.85 ? 5 : s.rad > 1.2 ? 8 : 6, shade, 1, s.seed * 0.37, far ? 0 : 0.2, s.seed)
+      tube(soup, pick.map((i) => pts[i]), pick.map((i) => radii[i]), far || s.rad < 0.85 ? 5 : s.rad > 1.65 ? 8 : s.rad > 1.25 ? 7 : 6, shade, 1, s.seed * 0.37, far ? 0 : 0.2, s.seed)
       from = to
     }
     let next = r(4, s.every)
@@ -416,13 +419,6 @@ export function buildPumpkins() {
         c: [0.55 + 0.45 * smooth(0.2, 0.9, Math.cos(lat) * Math.cos(lon)) - 0.5 * groove, (index + 0.5) / 8, (f.cell + 0.5) / 4],
       }
     })
-    const stem = []
-    const stemR = []
-    for (let i = 0; i < 5; i++) {
-      stem.push(add3(add3(centre, [0, 1, 0], b * 0.86 + i * 0.75), out, 1.2 + i * 0.5))
-      stemR.push(1.1 - i * 0.16)
-    }
-    tube(soup, stem, stemR, 6, () => [0.5, (index + 0.5) / 8, 0.99], 1)
   })
   return { soup }
 }
