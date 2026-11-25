@@ -1,0 +1,93 @@
+diff --git a/src/seasons/spring/mini/tree.ts b/src/seasons/spring/mini/tree.ts
+index 63fb29e..e5789d5 100644
+--- a/src/seasons/spring/mini/tree.ts
++++ b/src/seasons/spring/mini/tree.ts
+@@ -6,6 +6,7 @@ import { lampFlame } from '../../../miniature/roof'
+ import { bakeGlow, buildTrunk, crownOffset, glowHook, prepareTrunk, trunkSolid, type GlowLight } from '../../../miniature/trunk'
+ import { emitters } from '../../../scene/layout'
+ import type { InnerLight, KitMoment, Vec3 } from '../../kit'
++import { landingClock } from '../arrival'
+ import { season, tones } from './palette'
+ 
+ const MODEL = 'spring/tree-blossom.glb'
+@@ -16,6 +17,8 @@ const BLOSSOM = { wrap: 0.85, fill: 1.1, through: 1.3, thin: 0.6, tight: 2.5, ro
+ const TWIG = { wrap: 0.3, fill: 0.5 }
+ const WARM: [number, number, number] = [1, 0.6, 0.34]
+ const CLEAR_MM = 1
++const BUD = { closed: 0.34, openSeconds: 1.2, spreadSeconds: 1.5, startSeconds: 0.15 }
++const budUniforms = { uBud: { value: 1e3 } }
+ 
+ const offset = crownOffset()
+ const lamp = lampFlame()
+@@ -31,6 +34,40 @@ function placed(name: string, lights: readonly GlowLight[]): THREE.BufferGeometr
+   return g
+ }
+ 
++function budded(g: THREE.BufferGeometry): THREE.BufferGeometry {
++  const list = (geometry(MODEL, 'blossom').userData.extras as { balls?: number[][] } | undefined)?.balls ?? []
++  const pos = g.getAttribute('position')
++  const bud = new Float32Array(pos.count * 4)
++  let low = Infinity
++  let far = 1e-3
++  let cx = 0
++  let cz = 0
++  for (const b of list) {
++    low = Math.min(low, b[1]! + offset[1])
++    cx += (b[0]! + offset[0]) / list.length
++    cz += (b[2]! + offset[2]) / list.length
++  }
++  for (const b of list) far = Math.max(far, Math.hypot(b[0]! + offset[0] - cx, b[1]! + offset[1] - low, b[2]! + offset[2] - cz))
++  for (let i = 0; i < pos.count; i++) {
++    const x = pos.getX(i)
++    const y = pos.getY(i)
++    const z = pos.getZ(i)
++    let best = Infinity
++    let at: [number, number, number] = [x, y, z]
++    for (const b of list) {
++      const c: [number, number, number] = [b[0]! + offset[0], b[1]! + offset[1], b[2]! + offset[2]]
++      const d = Math.hypot(x - c[0], y - c[1], z - c[2]) - b[3]!
++      if (d < best) {
++        best = d
++        at = c
++      }
++    }
++    bud.set([at[0], at[1], at[2], list.length ? Math.hypot(at[0] - cx, at[1] - low, at[2] - cz) / far : 0], i * 4)
++  }
++  g.setAttribute('aBud', new THREE.BufferAttribute(bud, 4))
++  return g
++}
++
+ function blossomMaterial(): THREE.MeshStandardMaterial {
+   return stageMaterial({
+     part: PART,
+@@ -46,6 +83,13 @@ function blossomMaterial(): THREE.MeshStandardMaterial {
+     key: 'tree-blossom-spring',
+     hook: (shader) => {
+       glowHook(shader)
++      shader.uniforms.uBud = budUniforms.uBud
++      shader.vertexShader = shader.vertexShader
++        .replace('#include <common>', '#include <common>\nattribute vec4 aBud;\nuniform float uBud;')
++        .replace(
++          '#include <begin_vertex>',
++          `#include <begin_vertex>\n{ float budT = clamp((uBud - ${BUD.startSeconds.toFixed(2)} - aBud.w * ${BUD.spreadSeconds.toFixed(2)}) / ${BUD.openSeconds.toFixed(2)}, 0.0, 1.0); transformed = mix(aBud.xyz, transformed, mix(${BUD.closed.toFixed(2)}, 1.0, budT * budT * (3.0 - 2.0 * budT))); }`,
++        )
+       shader.fragmentShader = shader.fragmentShader.replace('#include <normal_fragment_maps>', 'normal = normalize(vNormal);')
+       afterLight(
+         shader,
+@@ -84,7 +128,7 @@ export async function prepare(): Promise<void> {
+ 
+ export function build(): THREE.Object3D {
+   const trunk = buildTrunk(PART, lampOn(LAMP_ON_WOOD), tones.bark)
+-  const blossom = new THREE.Mesh(placed('blossom', lampOn(LAMP_ON_BLOSSOM)), blossomMaterial())
++  const blossom = new THREE.Mesh(budded(placed('blossom', lampOn(LAMP_ON_BLOSSOM))), blossomMaterial())
+   blossom.castShadow = true
+   blossom.receiveShadow = true
+   const twigs = new THREE.Mesh(placed('twigs', lampOn(LAMP_ON_WOOD)), twigMaterial())
+@@ -120,4 +164,6 @@ export function solid(x: number, y: number, z: number): number {
+ 
+ export const crownTop = (): Vec3 => [offset[0] + 1.2, offset[1] + 45, offset[2] + 1]
+ 
+-export function update(_moment: KitMoment): void {}
++export function update(moment: KitMoment): void {
++  budUniforms.uBud.value = landingClock(moment)
++}
