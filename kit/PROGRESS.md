@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 77 · 2026-11-25 05:36 UTC
+Status 78 · 2026-11-25 06:04 UTC
 
-- `out/stills/status/status-77-1.jpg`: Spring at rest on the build Round 11 judges (left) beside the approved image (right). Draft tier.
-- `out/stills/status/status-77-2.jpg`: Summer at rest on the build Round 12 judges (left) beside the approved image (right). Draft tier.
-- `out/stills/status/status-77-3.jpg`: Fall at rest on the build Round 13 judges (left) beside the approved image (right). Draft tier.
-- `out/stills/status/status-77-4.jpg`: Still: fall rest hero, preview, draft
+- `out/stills/status/status-78-1.jpg`: Spring at rest half an hour into the third fix pass (left) beside the approved image (right): the crown is now tiers of blossom on boughs with air between. Draft tier.
+- `out/stills/status/status-78-2.jpg`: Summer: the approved image (left) beside the build (right): about twenty fine seed heads float again at rest. Draft tier.
+- `out/stills/status/status-78-3.jpg`: Fall: the approved image (left) beside the build (right): the mist now stands behind the cottage and the tree instead of over them. Draft tier.
+- `out/stills/status/status-78-4.jpg`: Still: fall rest hero, preview, draft, standins view
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 05:44 UTC
-clock: phase 4, tick of 8.7 minutes
-phase 4: 5.62 h used of its 9.50 h box
-allowance (before the review): 27.91 h used of 36.00 h allowed
-all time before the review: 27.91 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 06:16 UTC
+clock: phase 4, tick of 7.7 minutes
+phase 4: 6.15 h used of its 9.50 h box
+allowance (before the review): 28.43 h used of 36.00 h allowed
+all time before the review: 28.43 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 8
+minutes since the last status: 11
 ```
 
 ## Phases
@@ -1683,3 +1683,9 @@ One entry per task: when it started, what it did, where it stopped.
 - 05:21 UTC. - Status 76 posted (three builders' looks beside the approved images; one freeze for the three seasons' second rounds, decision 84; the count of triangles on the first merged tree was wrong because a late merge step had restored the committed built files of two bases; four bats, decision 85). All ten builders merged at 05:20 with no conflict (local head `8961808`); every built file of spring, summer and fall is being made again. One more merge commit came in without the trailer (`15ecc57`, from fall's base builder, git's default message): not rewritten.
 
 - 05:36 UTC. - Status 77 posted (the build Rounds 11, 12 and 13 judge, each season at rest beside its approved image; the render orders; the third set of build agents, decision 86; spring's triangles inside the limit on all three levels on this build: 1,492,992 / 869,699 / 394,312 with 65, 65 and 49 draw calls).
+
+- 06:05 UTC. - Status 78 posted (first fixes of the third pass beside the approved images: spring's crown in tiers, summer's seed heads afloat at rest, fall's mist behind the scene). Heartbeats saved to `out/work/notes/now.md`. `bases3` found the cause of spring's red M2: the petals on the table (the surface dressing in `slab.ts`) handed the measure a texel density of 0 while marked textured; fixed in `4e8c188`, to be confirmed by the measure of Round 14. M1 `spring-base` (6 invalid values) is not the base's shaders; the miniature's and the veil's owners are looking. `fall_mini3` split fall's red M3 at rest: 0.333 as frozen, the fog costs 0.14, the particles nothing, the miniature alone reads 0.462 because it is too dark; `fall_air3` moved the mist behind the scene (0.454 now). Summer's seeds: the approved image shows several dozen fine heads at rest, so the count afloat goes up from about twenty to that (my "a few" of 05:07 is withdrawn). The motion agents say an arrival frame costs about 65 seconds now, so the motion packs come at about 07:30 to 07:45; no slot is free for a second agent on a pack.
+
+- 06:22 UTC. - Published at 06:19 UTC from the build Rounds 11, 12 and 13 judge (`e39ec6c`): https://snow-globe-seasons.pplx.app (spring, summer and fall after the second fix pass, with the four changes of season built), review page rebuilt (`dist/` 101.7 MB with the review pictures, 39.8 MB of it). Visibility unchanged: Organization. The check of the live page after the publish is in the next line of this log.
+
+- 06:22 UTC. - 06:22: the live page after the publish: first picture in 16.4 s, 87 requests, 42 of them assets, no errors (`distcheck.mjs`).
