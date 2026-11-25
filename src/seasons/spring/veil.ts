@@ -211,6 +211,7 @@ const storm = {
   /** The dashes: the few places where the streaks are thick enough to be seen one by one, how many times the mist's thickness they have, and how white they are. */
   dash: 4.5,
   dashWhite: 0.55,
+  lean: 0.6,
   /** The long dark lanes between the bands of the turn, through which the room behind is seen. */
   laneMm: 110,
   lane: 0.92,
@@ -622,6 +623,7 @@ export function mistAt(sinceLanding: number): { heightMm: number; density: numbe
 }
 
 const thrown = new THREE.Vector3()
+const leanShare = storm.lean
 
 export function updateMist(moment: KitMoment, bare: boolean): void {
   const m = mistAt(moment.sinceLanding)
@@ -629,7 +631,7 @@ export function updateMist(moment: KitMoment, bare: boolean): void {
   mistUniforms.uMist.value.set(m.heightMm, bare ? 0 : m.density / look.sheets, (moment.time / moment.period) % 1, storm)
   const air = stormAt(moment)
   stormUniforms.uStorm.value.set(air.thick, moment.frame.liquid[LIQUID_SWIRL] ?? 0, (moment.time / moment.period) % 1, air.even)
-  const lean = loadLean(moment.frame.liquid, thrown)
+  const lean = loadLean(moment.frame.liquid, thrown).multiplyScalar(leanShare)
   stormUniforms.uWash.value.set(air.wash, lean.x, lean.y, lean.z)
   if (billows) billows.visible = air.thick > 1e-4
   if (washed) washed.visible = air.wash > 1e-3
