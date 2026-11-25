@@ -25,5 +25,5 @@ Made by: `assets-src/village-spring/build.mjs`, the same run
 From: seeded noise only
 Prompt or command: `npm run make -- village-spring`
 Takes: no generated picture
-Why this one: three seamless noise fields in one tile of 1024 px over 12 mm; the pond's shader slides two of them against each other for the small chop under the spreading rings
+Why this one: three seamless noise fields in one tile of 512 px over 12 mm; the pond's shader slides two of them against each other for the small chop under the spreading rings
 Date: 2026-11-25

@@ -34,7 +34,7 @@ Takes: 1 made of 6 allowed, take 1 kept
 Why this one: long fibres running left to right, which is the way the root tubes are unwrapped
 Date: 2026-11-25
 
-## assets-full/spring/base-moss.srgb.tile.w1024.png, base-stone.srgb.tile.w1024.png, base-bark.srgb.tile.w1024.png, base-moss-detail.lin.tile.w1024.png, base-stone-detail.lin.tile.w1024.png, base-bark-detail.lin.tile.w1024.png
+## assets-full/spring/base-moss.srgb.tile.w512.png, base-stone.srgb.tile.w512.png, base-bark.srgb.tile.w512.png, base-moss-detail.lin.tile.w512.png, base-stone-detail.lin.tile.w512.png, base-bark-detail.lin.tile.w512.png
 Made by: assets-src/base-spring/build.mjs (sheet), Node 20.20.2 with sharp, helpers from assets-src/base-winter/lib.mjs
 From: assets-src/base-spring/gen/moss-take1.png, stone-take1.png, bark-take1.png
 Prompt or command: npm run make -- base-spring

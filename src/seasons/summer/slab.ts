@@ -14,12 +14,12 @@ export const surfaceDressing: Dressing & { reachMm: number } = { tint: [0.86, 0.
 // from the approved image: the dune the spill builds against the foot on the right, its shoulder round the front of the
 // foot, the fan toward the camera, a thin sheet behind the foot on the left, and a few grains everywhere near the foot.
 const HEAP = {
-  dune: { x: 62.5, z: 8, sx: 15, sz: 21, mm: 14 },
-  skirt: { x: 80, z: 22, sx: 18, sz: 30, mm: 2.6 },
-  shoulder: { x: 47, z: 55, sx: 23, sz: 17, mm: 4.6 },
-  fan: { x: 46, z: 118, sx: 30, sz: 58, mm: 1.5 },
-  sheet: { x: -88, z: -125, sx: 36, sz: 72, mm: 0.75 },
-  stray: { x: 62, z: 62, sx: 80, sz: 115, mm: 0.3 },
+  dune: { x: 61, z: 10, sx: 11.5, sz: 21, mm: 11 },
+  skirt: { x: 72, z: 36, sx: 11, sz: 24, mm: 2.8 },
+  shoulder: { x: 44, z: 60, sx: 27, sz: 20, mm: 4.2 },
+  fan: { x: 52, z: 120, sx: 25, sz: 60, mm: 2.4 },
+  sheet: { x: -76, z: -58, sx: 15, sz: 30, mm: 0.5 },
+  stray: { x: 62, z: 80, sx: 34, sz: 80, mm: 0.25 },
   ring: { r: 61.5, w: 4.5, mm: 0.55 },
 }
 export const SLAB = { liftMm: 0.5, footMm: 54, stepMm: 0.8, x: [-150, 142], z: [-232, 216] } as const

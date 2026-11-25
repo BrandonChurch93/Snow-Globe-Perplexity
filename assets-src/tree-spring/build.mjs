@@ -25,11 +25,11 @@ const lin = (hex) => {
   return [c.r, c.g, c.b]
 }
 
-const CROWN = { centre: [1.2, 29.5, 1], r: [22.5, 15.5, 15], floor: 14.2, sprays: 132, spacing: 4.1, reach: 13, inner: 0.5, layer: 5.3, layerJitter: 0.9 }
+const CROWN = { centre: [1.2, 29.5, 1], r: [22.5, 15.5, 15], floor: 14.2, sprays: 132, spacing: 4.1, reach: 13, inner: 0.5, layer: 5.0, layerJitter: 2.5 }
 const TWIG = { from: 0.34, to: 0.08, sides: 5, steps: 7 }
-const CLUSTER = { step: 1.05, from: 0.26, size: [0.8, 1.3], tip: [1.3, 1.9], flowers: [11, 17], flower: [0.45, 0.74], side: 0.55, flat: 0.6 }
-const TONES = ['#f7c3d1', '#fbd8e0', '#f2a8be', '#fde8ec', '#ee9ab4', '#f9cdd8', '#fff1f2'].map(lin)
-const SHADE = [0.5, 0.31, 0.37]
+const CLUSTER = { step: 1.05, from: 0.26, size: [0.8, 1.3], tip: [1.3, 1.9], flowers: [11, 17], flower: [0.45, 0.74], side: 0.55, flat: 0.72 }
+const TONES = ['#f6b3c9', '#f9c6d6', '#ee94b3', '#fbd7e2', '#e986a8', '#f7bdd0', '#fde4ea'].map(lin)
+const SHADE = [0.66, 0.52, 0.56]
 const HEART = lin('#d86a8a')
 const WOOD = [lin('#2a1a12'), lin('#3a2418'), lin('#22150f')]
 const FORK = T.trunkShape.fork
@@ -206,7 +206,7 @@ for (const c of clusters) {
   const open = openness(c)
   const tone = mul(mix(TONES[rng.int(TONES.length)], TONES[rng.int(TONES.length)], rng.next()), 0.92 + 0.16 * rng.next())
   const depth = within(c.p)
-  const lit = (0.5 + 0.5 * open) * (0.72 + 0.28 * smooth(0.3, 0.95, depth))
+  const lit = (0.62 + 0.38 * open) * (0.78 + 0.22 * smooth(0.3, 0.95, depth))
   const crownOut = norm([c.p[0] - CROWN.centre[0], (c.p[1] - CROWN.centre[1]) * 1.3 + 3, c.p[2] - CROWN.centre[2]])
   const base = bloom.p.length / 3
   const seed = rng.next() * 40
@@ -236,7 +236,7 @@ for (const c of clusters) {
     const b0 = bloom.p.length / 3
     bloom.p.push(at[0], at[1], at[2])
     bloom.n.push(n[0], n[1], n[2])
-    const heart = mix(HEART, pale, 0.35)
+    const heart = mix(HEART, pale, 0.78)
     bloom.c.push(heart[0] * lit, heart[1] * lit, heart[2] * lit)
     for (let j = 0; j < 10; j++) {
       const a = spin + (j / 10) * Math.PI * 2
