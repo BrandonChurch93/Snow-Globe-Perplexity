@@ -1,0 +1,106 @@
+{
+  "round": 17,
+  "phase": 4,
+  "unit": "change",
+  "tier": "final",
+  "motionTier": "final",
+  "record": false,
+  "limits": {
+    "longEdge": 1400,
+    "maxPixels": 1140000,
+    "maxFiles": 10
+  },
+  "engineHash": "5a94146defd3d562",
+  "roles": {
+    "R2": {
+      "parts": [
+        {
+          "folder": "out/work/packs/round-017/R2",
+          "message": "out/work/packs/round-017/R2.message.md",
+          "files": [
+            {
+              "name": "set-A-01.jpg",
+              "what": "judged: change-shake-1-landing: the landing frame of shake-1, hd, final tier",
+              "sha256": "04c1b285128d4707542f156217a8875e44f0195dc80255fc3352926d36dc5b23",
+              "width": 1078,
+              "height": 1051,
+              "jury": "judged",
+              "id": "change-shake-1-landing"
+            },
+            {
+              "name": "set-A-02.jpg",
+              "what": "control: the approved image references/approved/fall-shake.png",
+              "sha256": "a6230797a6fe3469bcefa16aa4393929d66def2849733613e8af07e51b0fc840",
+              "width": 1078,
+              "height": 1051,
+              "jury": "control",
+              "id": "approved fall-shake",
+              "sha256Source": "f124676cc4f5ad2356c891cda1b3fc950c9a40da8d07919ebed147bf01a65099"
+            },
+            {
+              "name": "set-A-03.jpg",
+              "what": "control: the approved image references/approved/winter-shake.png",
+              "sha256": "6edc5d90c832114afbaa59c029a3f49d492cfb59f6397d2d436a1cf33092ad4f",
+              "width": 1078,
+              "height": 1051,
+              "jury": "control",
+              "id": "approved winter-shake",
+              "sha256Source": "0cf9572935aa3aeba0f84df70a45632b1107b95f8ed2166f7c5ce2ab7477fbc1"
+            },
+            {
+              "name": "set-A-04.jpg",
+              "what": "control: the approved image references/approved/summer-shake.png",
+              "sha256": "600e1593d2a0826fdf3f0ced60e473e8c6910d9a61ecc783e453c94c5d0d3a7a",
+              "width": 1078,
+              "height": 1051,
+              "jury": "control",
+              "id": "approved summer-shake",
+              "sha256Source": "1f07b479ad0c39c4626e52c8540e5b597a77ac054b386ff5867cb93c5c929ced"
+            },
+            {
+              "name": "set-A-05.jpg",
+              "what": "judged: change-shake-3-landing: the landing frame of shake-3, hd, final tier",
+              "sha256": "4aafcaec8330d6c4300d9095ed56d8a9e025d1befd40d8244c8dbd83ccbde167",
+              "width": 1078,
+              "height": 1051,
+              "jury": "judged",
+              "id": "change-shake-3-landing"
+            },
+            {
+              "name": "set-A-06.jpg",
+              "what": "judged: change-shake-2-landing: the landing frame of shake-2, hd, final tier",
+              "sha256": "8e39490817aaf422842eafbbcf2abfcadb09a8f564a59826a178a187f53d4913",
+              "width": 1078,
+              "height": 1051,
+              "jury": "judged",
+              "id": "change-shake-2-landing"
+            },
+            {
+              "name": "set-A-07.jpg",
+              "what": "judged: change-shake-4-landing: the landing frame of shake-4, hd, final tier",
+              "sha256": "df2c85cbb5658e3cae24a3675afcbefff6bb173c629e5de928eaa4670fd036a7",
+              "width": 1078,
+              "height": 1051,
+              "jury": "judged",
+              "id": "change-shake-4-landing"
+            },
+            {
+              "name": "set-A-08.jpg",
+              "what": "control: the approved image references/approved/spring-shake.png",
+              "sha256": "eca1019badc7f3592dbacf13c1cab0a31a2955b6c9487d12af0d45d2e86a87e3",
+              "width": 1078,
+              "height": 1051,
+              "jury": "control",
+              "id": "approved spring-shake",
+              "sha256Source": "1402ef4e31019fa3e6e20f587e7283ae2f5fc8e1911f944a1d6cfe8540721f19"
+            }
+          ]
+        }
+      ],
+      "missing": [],
+      "notes": [
+        "every image is cropped to 1.43 radii left, 1.43 right, 1.17 up and 1.62 down of the globe centre, at 1078 x 1051"
+      ]
+    }
+  }
+}
