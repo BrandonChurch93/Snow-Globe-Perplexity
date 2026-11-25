@@ -303,9 +303,11 @@ const shadowed = <T extends THREE.Mesh>(m: T, cast = true): T => {
 // -1 in height then). Single blades of grass cannot be told apart in that picture, the turf under them can: the grass gives
 // the mirror none of its triangles. The ground casts no shadow either: nothing lies under it, and its own slopes are shaded
 // by the light that leaves them.
-const unmirrored = <T extends THREE.Mesh>(m: T): T => {
+// `keep` is how much of the mesh the mirror still gets, counted from its start: the cottage keeps its walls and loses the
+// roses, leaves and blooms that stand on them.
+const unmirrored = <T extends THREE.Mesh>(m: T, keep = 0): T => {
   m.onBeforeRender = () => {
-    if (m.matrixWorld.determinant() < 0) m.geometry.setDrawRange(0, 0)
+    if (m.matrixWorld.determinant() < 0) m.geometry.setDrawRange(0, keep)
   }
   m.onAfterRender = () => {
     m.geometry.setDrawRange(0, Infinity)
@@ -346,7 +348,7 @@ function dressed(g: THREE.BufferGeometry, sharedCount: number): THREE.BufferGeom
 export function build(): THREE.Object3D {
   const shared = villageGeometry('solid')
   const solids = withSurface(dressed(mergeGeometries([shared, geometry(MODEL, 'decor')]), shared.getAttribute('position').count), nearWall)
-  const walls = shadowed(new THREE.Mesh(solids, surfaceMaterial({ part: PART, map: villageGrain(), gain, key: 'village-solid-summer', fill: WALL_FILL })))
+  const walls = unmirrored(shadowed(new THREE.Mesh(solids, surfaceMaterial({ part: PART, map: villageGrain(), gain, key: 'village-solid-summer', fill: WALL_FILL }))), shared.index ? shared.index.count : shared.getAttribute('position').count)
   const ground = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'ground'), near), turfMaterial()), false)
   const grass = unmirrored(shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'grass'), near), grassMaterial()), false))
   const water = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'water'), near), waterMaterial()), false)
