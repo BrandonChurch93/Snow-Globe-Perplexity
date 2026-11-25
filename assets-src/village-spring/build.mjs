@@ -151,7 +151,7 @@ function grassAt(x, z) {
 }
 // The moss mounds of the bank (approved rest image: a lip of round cushions under the pond, lit on top, dark below).
 // One mound to each cell around the rim; moundAt gives 0 in the gap between two and up to 1 on a mound's middle line.
-const MOUND = { count: 30, low: 0.5, lipMm: 1.25, lipReach: 3.2, fromMm: 1.4, deepMm: 2.6, underMm: 2.4, soilMm: [0.6, 6.5] }
+const MOUND = { count: 30, low: 0.5, lipMm: 1.25, lipReach: 3.2, fromMm: 5.0, deepMm: 6.5, raggedMm: 3.0, underMm: 2.4, soilMm: [0.4, 4.5] }
 const moundCells = Array.from({ length: MOUND.count }, (_, i) => ({ tall: MOUND.low + (1 - MOUND.low) * clamp(0.5 + 0.9 * noise(i * 1.7, 4.2, 9.9 + i * 0.37)), shift: 0.3 * clamp(0.5 + 0.9 * noise(i * 2.3, 1.1, 3.3)) - 0.15 }))
 function moundAt(th) {
   const u = ((th / (Math.PI * 2)) % 1 + 1) % 1 * MOUND.count
@@ -273,7 +273,7 @@ const SKIRT = { cycles: 6.5, deepMm: 2.8, clumps: 17, clumpMm: 0.85 }
         const lump = clamp(0.5 + 0.75 * fbm(wx * SKIRT.cycles + 3.1 + 0.5 * warp[0], wy * SKIRT.cycles + 0.5 * warp[1], wz * SKIRT.cycles + 7.7 + 0.5 * warp[2], 4))
         const clump = clamp(0.5 + 0.8 * fbm(wx * SKIRT.clumps + 1.3 + 0.9 * warp[1], wy * SKIRT.clumps + 5.9 + 0.9 * warp[2], wz * SKIRT.clumps + 2.2 + 0.9 * warp[0], 4))
         const arc = (phi0 - Math.min(phi1, phi0 - 0.12)) * r
-        const foot = (MOUND.fromMm + MOUND.deepMm * moundAt(th)) / arc
+        const foot = Math.max(1.2, MOUND.fromMm + MOUND.deepMm * moundAt(th) + MOUND.raggedMm * (clump - 0.5)) / arc
         shade = 1 - 0.92 * smooth(MOUND.soilMm[0], MOUND.soilMm[1], (q - foot) * arc)
         const rr = r - 0.15 - SKIRT.deepMm * Math.pow(lump, 1.5) * smooth(foot, foot + 0.35, q) - SKIRT.clumpMm * clump * clump * smooth(0.0, 0.2, q) - MOUND.underMm * smooth(foot - 0.05, foot + 0.1, q)
         q = Math.max(1e-3, clamp(0.5 * q / foot))

@@ -53,7 +53,10 @@ const THROUGH = 6
 const STORM_GLOW = { tone: [1.4, 1.2, 0.98] as Rgb, lamp: { size: 17, rest: 0.62, hot: 11, bloom: 0.25 }, behind: { size: 13, rest: 0.45, hot: 11, bloom: 0.25 }, flame: { size: 3, rest: 1.7, hot: -2, bloom: 3.5 } }
 const LAMP_GLASS: Rgb = [7.5, 4.6, 1.9]
 const WALL_FILL = 2.2
-const STONE_LIFT: Rgb = [1.22, 1.07, 0.9]
+const STONE_LIFT: Rgb = [1.15, 1.05, 0.93]
+// The approved cottage's chimney is the same weathered grey stone as its walls, not brick: this season's own copy of the
+// shared mesh takes that tone on the chimney stack (colours only; the shape is the shared one).
+const STACK = { tone: [0.58, 0.54, 0.5] as Rgb, reachMm: 0.4 }
 const SLATE_BASE: Rgb = [0.018, 0.022, 0.03]
 const BANK_TINT: Rgb = [0.74, 0.52, 0.52]
 // The top of each bank mound goes warm and pale, as the approved's moss lip does. The mesh's second surf number is the
@@ -104,9 +107,12 @@ const pathMask = [...steps, ...stones]
   .map(([x, z]) => `step(vStageLocal.y, ${(groundAt(x, z) + PATH.tallMm).toFixed(3)}) * (1.0 - smoothstep(${PATH.reachMm[0].toFixed(2)}, ${PATH.reachMm[1].toFixed(2)}, length(vStageLocal.xz - vec2(${x.toFixed(3)}, ${z.toFixed(3)}))))`)
   .join(' + ')
 
+// While the storm turns the approved mid-shake image shows the cottage as a pale shape in the haze: roof moss gone grey,
+// stone and slate washed toward the petals' pink. Iron keeps its own tone so the lamp post stays a dark line.
+const STORM_COVER = { tone: [0.86, 0.68, 0.66] as Rgb, pale: 0.42, moss: 0.8 }
 const mossy: Cover = {
-  uniforms: {},
-  pars: '',
+  uniforms: { uVillageStorm: storm },
+  pars: 'uniform float uVillageStorm;',
   apply: `
 {
   float springUp = normalize(vObjN).y + 0.6 * (villageMottle - 0.5) + 0.3 * (villageGrain.r - 0.5);
@@ -114,9 +120,10 @@ const mossy: Cover = {
   springMoss = max(springMoss, 0.5 * villageStone * smoothstep(0.52, 0.7, villageMottle) * smoothstep(0.55, 0.8, texture2D(map, vMapUv * 0.11 + 0.71).b));
   float springSlate = smoothstep(0.55, 0.7, normalize(vObjN).y) * (1.0 - smoothstep(0.86, 0.93, normalize(vObjN).y)) * smoothstep(${SLATE.from.toFixed(2)}, ${(SLATE.from + 1).toFixed(2)}, vStageLocal.y) * (1.0 - villageLeaf);
   diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * ${glsl(STONE_LIFT)} * (0.62 + 0.76 * villageMottle), villageStone * (1.0 - springSlate));
-  springMoss = max(springMoss, 0.75 * springSlate * smoothstep(0.5, 0.72, villageMottle + 0.3 * villageGrain.b));
+  springMoss = max(springMoss, 0.6 * springSlate * smoothstep(0.56, 0.78, villageMottle + 0.3 * villageGrain.b));
   diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * ${glsl(SLATE.tint)} + ${glsl(SLATE_BASE)} * (0.5 + villageGrain.r), springSlate);
   springMoss *= 0.2 + 0.8 * smoothstep(${MOSS_FROM[0].toFixed(1)}, ${MOSS_FROM[1].toFixed(1)}, vStageLocal.y);
+  springMoss *= 1.0 - ${STORM_COVER.moss.toFixed(2)} * uVillageStorm;
   diffuseColor.rgb = mix(diffuseColor.rgb, ${glsl(tones.moss)} * (0.6 + 0.9 * villageGrain.r), springMoss * 0.8);
   diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.7, 1.9, 0.5) + vec3(0.004, 0.02, 0.0), villageLeaf);
   vec2 springRail = vec2(${(fence.to[0] - fence.from[0]).toFixed(3)}, ${(fence.to[1] - fence.from[1]).toFixed(3)});
@@ -127,6 +134,7 @@ const mossy: Cover = {
   diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * ${glsl(PATH.tint)}, springPath * (1.0 - 0.7 * springMoss));
   float springPot = villageIron * smoothstep(${(SLATE.from + 3.2).toFixed(2)}, ${(SLATE.from + 3.6).toFixed(2)}, vStageLocal.y);
   diffuseColor.rgb = mix(diffuseColor.rgb, ${glsl(POT)} * (0.55 + 0.9 * villageGrain.r) * (0.7 + 0.6 * villageMottle), springPot);
+  diffuseColor.rgb = mix(diffuseColor.rgb, ${glsl(STORM_COVER.tone)}, ${STORM_COVER.pale.toFixed(2)} * uVillageStorm * (1.0 - villageIron) * (1.0 - villageLeaf));
   villageRough = mix(villageRough, 0.95, max(springMoss, springPot));
   villageMetal *= 1.0 - springPot;
 }
@@ -464,6 +472,19 @@ void main() {
   })
 }
 
+function dressed(g: THREE.BufferGeometry): THREE.BufferGeometry {
+  const P = g.getAttribute('position')
+  const C = g.getAttribute('color')
+  const chimney = (r: string): boolean => r === 'chimney'
+  for (let i = 0; i < P.count; i++) {
+    if (solidDistance(P.getX(i), P.getY(i), P.getZ(i), chimney) > STACK.reachMm) continue
+    const lum = 0.3 * C.getX(i) + 0.6 * C.getY(i) + 0.1 * C.getZ(i)
+    C.setXYZ(i, lum * STACK.tone[0] * 2, lum * STACK.tone[1] * 2, lum * STACK.tone[2] * 2)
+  }
+  C.needsUpdate = true
+  return g
+}
+
 const shadowed = <T extends THREE.Mesh>(m: T, cast = true): T => {
   m.castShadow = cast
   m.receiveShadow = true
@@ -471,7 +492,7 @@ const shadowed = <T extends THREE.Mesh>(m: T, cast = true): T => {
 }
 
 export function build(): THREE.Object3D {
-  const walls = shadowed(new THREE.Mesh(withSurface(villageGeometry('solid').clone(), nearWall), surfaceMaterial({ part: PART, map: villageGrain(), gain, cover: mossy, key: 'village-solid-spring', fill: WALL_FILL })))
+  const walls = shadowed(new THREE.Mesh(withSurface(dressed(villageGeometry('solid').clone()), nearWall), surfaceMaterial({ part: PART, map: villageGrain(), gain, cover: mossy, key: 'village-solid-spring', fill: WALL_FILL })))
   const turf = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'turf'), near), turfMaterial()), false)
   const growth = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'growth'), nearGrowth), growthMaterial()), false)
   const water = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'water'), near), waterMaterial()), false)
