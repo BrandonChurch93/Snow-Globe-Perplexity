@@ -2,7 +2,7 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { CARD_FRAG_PARS, CARD_VERT } from '../src/particles/draw/cards'
-import { CARD, SHAPE, STORM_FLOOD, STORM_OWN_PATH_FROM, STORM_SHUTTER, STORM_SHUTTER_TURNED, STREAK_ARC } from '../src/particles/draw/looks'
+import { CARD, SHAPE, STORM_FLOOD, STORM_LOOSE, STORM_OWN_PATH_FROM, STORM_SHUTTER, STORM_SHUTTER_TURNED, STREAK_ARC } from '../src/particles/draw/looks'
 import { VERT_MAIN } from '../src/particles/draw/shader'
 
 const DRAW = join(__dirname, '..', 'src', 'particles', 'draw')
@@ -28,11 +28,24 @@ describe('how the storm is drawn', () => {
     expect(VERT_MAIN).toContain(`bool storming = uStorm.x > 0.0 && shape > ${STORM_OWN_PATH_FROM.toFixed(1)};`)
   })
 
-  it('a kind on its own path is not turned to the current or stretched by its class', () => {
+  it('a kind on its own path is not turned to the current; its line runs longer along that same path, each by its own share', () => {
     expect(VERT_MAIN).toContain('if (gusty > 0.0 && !storming) {')
     expect(CARD_VERT).toContain('if (!storming) mvC = mix(mvC, curC')
     expect(CARD_VERT).toContain('if (!storming) stC *= ')
     expect(CARD_VERT).toContain('if (storming) {\n        headC = 0.0;')
+    expect(CARD_VERT).toContain('if (storming) mvC *= mix(')
+    expect(CARD_VERT).toContain('pointSag(nowL, pathC)')
+    expect(CARD.line.shutLong[0]).toBeGreaterThanOrEqual(1)
+    expect(CARD.line.shutLong[1] * STORM_SHUTTER).toBeLessThanOrEqual(1)
+  })
+
+  it('the whirl of the dabs is loosened only while the storm is drawn, so a still liquid is drawn as before', () => {
+    expect(STORM_LOOSE.alignLow).toBeGreaterThan(0)
+    expect(STORM_LOOSE.alignLow).toBeLessThan(1)
+    expect(STORM_LOOSE.farLong).toBeLessThan(STORM_LOOSE.nearLong)
+    expect(STORM_LOOSE.farSeen).toBeLessThanOrEqual(1)
+    expect(VERT_MAIN).toContain(`clump = mix(clump, ${STORM_LOOSE.even}, ${STORM_LOOSE.spread} * uStorm.x);`)
+    expect(VERT_MAIN).toContain('uStorm.x * gusty * (1.0 - glints));')
   })
 
   it('the arc of a trail and the front of the flood stay within their bounds', () => {
