@@ -11,7 +11,7 @@ const LEAF_TILE_MM = 11
 const SPRIGS = { share: 0.6, size: [1.3, 2.3], rise: 0.35, out: 0.34 }
 const TONE = { deep: [0.3, 0.54, 0.26], mid: [0.66, 0.95, 0.4], tip: [2.3, 2.3, 0.55] }
 const SUN = [0.5, 0.32, -0.8]
-const PAPER = { orange: [1, 0.27, 0.06], peach: [1, 0.37, 0.11], cream: [1, 0.62, 0.26] }
+const PAPER = { orange: [1, 0.27, 0.06], peach: [1, 0.37, 0.11], cream: [1, 0.55, 0.19] }
 const CAP = [0.035, 0.028, 0.022]
 const WIRE = [0.05, 0.04, 0.03]
 
