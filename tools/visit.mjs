@@ -11,7 +11,7 @@ import { parseArgs, rel, loadConfig } from './lib/paths.mjs'
  * real controls with pointer, touch and key events. After every action it saves a screenshot and a line of facts read from the
  * page (the lit season mark, the controls' attributes, where they sit, what was fetched).
  *
- *   node tools/visit.mjs --url http://localhost:4173/ --layout hd|phone|tablet
+ *   node tools/visit.mjs --url http://localhost:4173/ --layout hd|phone|tablet|side   (side: the phone held sideways)
  *     --quality low     the level of quality asked for by parameter (low: most frames on a machine without a GPU). `--quality none`
  *                       opens the app with no parameter, as a visitor gets it.
  *     --only 1,2,7      runs only these steps of the walk (1 first paint, 2 Shake control, 3 space bar, 4 stir, 5 look around,
@@ -35,10 +35,11 @@ const only = args.only && args.only !== true ? String(args.only).split(',').map(
 const WAIT = Number(str('wait', '300')) * 1000
 const dir = rel('out', 'work', 'visit', str('name', layout))
 const seasons = cfg.seasons
-const fmt = cfg.formats[layout]
-if (!fmt) throw new Error(`no layout ${layout}: hd, phone or tablet`)
+// `side` is the phone held sideways: the phone's format with its sides changed over.
+const fmt = layout === 'side' ? { width: cfg.formats.phone.height, height: cfg.formats.phone.width } : cfg.formats[layout]
+if (!fmt) throw new Error(`no layout ${layout}: hd, phone, tablet or side`)
 const touch = layout !== 'hd'
-const ratio = layout === 'phone' ? 3 : layout === 'tablet' ? 2 : 1
+const ratio = layout === 'phone' || layout === 'side' ? 3 : layout === 'tablet' ? 2 : 1
 const want = (n) => !only || only.includes(n)
 
 fs.rmSync(dir, { recursive: true, force: true })
@@ -353,8 +354,14 @@ if (want(11)) {
   if (!touch) await page.mouse.move(fmt.width * 0.31, fmt.height * 0.31)
   const dimmed = await until('the controls to dim', (x) => x.dim, 40000)
   const op = () => page.evaluate(() => getComputedStyle(document.querySelector('[data-control="shake"]')).opacity)
-  const settle = async (test) => {
-    for (let i = 0; i < 40 && !test(Number(await op())); i++) await sleep(500)
+  // `awake` keeps the pointer moving while the value is read: a frame can take seconds here, and a pointer that is still for
+  // `idleSeconds` dims the controls again before the fade back has been drawn.
+  const settle = async (test, awake = false) => {
+    for (let i = 0; i < 40 && !test(Number(await op())); i++) {
+      if (awake && !touch) await page.mouse.move(fmt.width * (0.4 + 0.004 * (i % 2)), fmt.height * 0.4)
+      else if (awake && i % 8 === 7) await press(fmt.width * 0.5, fmt.height * 0.06)
+      await sleep(500)
+    }
     return op()
   }
   const low = await settle((v) => v < 0.6)
@@ -362,7 +369,7 @@ if (want(11)) {
   if (!touch) await page.mouse.move(fmt.width * 0.4, fmt.height * 0.4)
   else await press(fmt.width * 0.5, fmt.height * 0.06)
   const back = await until('the controls to return', (x) => !x.dim, 20000)
-  const high = await settle((v) => v > 0.9)
+  const high = await settle((v) => v > 0.9, true)
   await note(11, 'returned', { returned: back.ok, opacity: high }, back.ok && Number(high) > 0.9)
 }
 
@@ -509,13 +516,13 @@ if (want(8)) {
     if (stops.length === 2) await note(8, 'focus-on-control', { ...f })
   }
   s = await read()
-  const expected = ['shake', ...seasons, ...(s.sound?.shown ? ['sound'] : [])]
+  const expected = [...seasons, 'shake', ...(s.sound?.shown ? ['sound'] : [])]
   const reading = inOrder(Object.entries(s.boxes).filter(([, b]) => b))
   const names = stops.every((x) => x.name.length > 0 && x.tag === 'button')
   const rings = stops.every((x) => x.ring !== '')
-  // The order asked for is the one tools/ui-preview/check.mjs holds the interface to: the Shake control first, then the marks, then
-  // sound. Whether that is also the order on screen is written down, not judged.
-  await note(8, 'tab-order', { stops: stops.map((x) => `${x.control}="${x.name}"`), rings: stops.map((x) => x.ring), onScreenOrder: reading, sameAsOnScreen: stops.map((x) => x.control).join() === reading.join() }, stops.map((x) => x.control).join() === expected.join() && names && rings)
+  // The order asked for is the one tools/ui-preview/check.mjs holds the interface to, and the one on screen in every layout: the
+  // marks, then the Shake control, then sound. The focus ring must walk the controls as the eye meets them.
+  await note(8, 'tab-order', { stops: stops.map((x) => `${x.control}="${x.name}"`), rings: stops.map((x) => x.ring), onScreenOrder: reading, sameAsOnScreen: stops.map((x) => x.control).join() === reading.join() }, stops.map((x) => x.control).join() === expected.join() && stops.map((x) => x.control).join() === reading.join() && names && rings)
 
   // Enter and Space on the Shake control and on the sound control.
   const focus = (sel) => page.evaluate((x) => document.querySelector(x).focus({ focusVisible: true }), sel)
