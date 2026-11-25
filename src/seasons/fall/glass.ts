@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { config } from '../../config'
+import { viewCode } from '../../diagnostics/views'
 import { stageShader } from '../../core/materials'
 import { shellUniforms } from '../../globe/shell'
 import { ROOM_GLSL, roomUniforms } from '../../scene/room'
@@ -303,6 +304,11 @@ void main() {
   vec3 lit = stageCold(p) * ${f(F.cold)} + stageGrid(p) * ${f(F.warm)} + vec3(${f(F.glow)}) * mix(0.3, 1.0, deep) * (0.75 + 0.5 * n.y);
   vec3 col = ${vec(F.tint)} * lit;
   gl_FragColor = vec4(col * a, a);
+  // In the cover view the fog says how much of the miniature it hides, as the particles do.
+  if (uDiag == ${viewCode('cover')}) {
+    gl_FragColor = vec4(a, 0.0, a, a);
+    return;
+  }
   if (uDiag != 0) {
     if (a < 0.35) discard;
     gl_FragColor = stageDiag(${vec(F.tint)}, vec3(0.0, 0.0, 1.0), 0.0, c, 0.0);
@@ -333,6 +339,11 @@ void main() {
   vec3 lit = stageCold(p) * ${f(F.cold)} + stageGrid(p) * ${f(F.warm)} + vec3(${f(F.glow * F.lipGlow)}) * (0.75 + 0.5 * n.y);
   vec3 col = ${vec(F.tint)} * lit;
   gl_FragColor = vec4(col * a, a);
+  // In the cover view the fog says how much of the miniature it hides, as the particles do.
+  if (uDiag == ${viewCode('cover')}) {
+    gl_FragColor = vec4(a, 0.0, a, a);
+    return;
+  }
   if (uDiag != 0) {
     if (a < 0.35) discard;
     gl_FragColor = stageDiag(${vec(F.tint)}, vec3(0.0, 0.0, 1.0), 0.0, c, 0.0);
@@ -440,15 +451,17 @@ function sheets(): THREE.BufferGeometry {
   const pos: number[] = []
   const idx: number[] = []
   const reach = RI - 1.5
-  const cols = 28
-  const rows = 22
+  // The liquid bends what is inside at every corner of a sheet, and most near the wall: the corners crowd there.
+  const cols = 18
+  const rows = 14
+  const crowd = (t: number): number => Math.sin((t - 0.5) * Math.PI)
   for (let s = 0; s < F.sheets; s++) {
     const z = -reach + s * FOG_STEP
     const half = Math.sqrt(Math.max(0, RI * RI - z * z))
     if (half < 2) continue
     const base = pos.length / 3
     for (let j = 0; j <= rows; j++)
-      for (let i = 0; i <= cols; i++) pos.push((i / cols - 0.5) * 2 * half, (j / rows - 0.5) * 2 * half, z)
+      for (let i = 0; i <= cols; i++) pos.push(crowd(i / cols) * half, crowd(j / rows) * half, z)
     for (let j = 0; j < rows; j++)
       for (let i = 0; i < cols; i++) {
         const a = base + j * (cols + 1) + i
@@ -475,11 +488,14 @@ function makeFog(): THREE.Mesh {
     // closed by that stamp to everything drawn later.
     params: { ...blend, transparent: false, side: THREE.DoubleSide },
   })
+  volumes.push(m)
   const mesh = new THREE.Mesh(sheets(), m)
   mesh.renderOrder = 5.5
   mesh.frustumCulled = false
   return mesh
 }
+
+const volumes: THREE.ShaderMaterial[] = []
 
 function makeLip(): THREE.Mesh {
   const r = RI - 0.3
@@ -494,7 +510,8 @@ function makeLip(): THREE.Mesh {
     fragment: LIP,
     params: { ...blend, transparent: false, side: THREE.DoubleSide },
   })
-  const mesh = new THREE.Mesh(new THREE.SphereGeometry(r, 128, 24, 0, Math.PI * 2, from, to - from), m)
+  volumes.push(m)
+  const mesh = new THREE.Mesh(new THREE.SphereGeometry(r, 64, 12, 0, Math.PI * 2, from, to - from), m)
   mesh.renderOrder = 5.4
   mesh.frustumCulled = false
   return mesh
@@ -555,6 +572,9 @@ export function update(moment: KitMoment): void {
   const pour = shaken || !Number.isFinite(since) ? 0 : ease(since / 0.6) * (1 - ease((since - 2.6) / 4.2))
   const fallen = Number.isFinite(since) ? look.fog.pourFallMm * (1 - Math.exp(-since / 2.4)) : look.fog.pourFallMm
   uniforms.uFog.value.set(fr.clock, lift, pour, fallen)
+  // The cover view counts what is hidden of the miniature only: there the fog is laid on where the miniature already is.
+  const src = fr.view === 'cover' ? THREE.DstAlphaFactor : THREE.OneFactor
+  for (const m of volumes) m.blendSrc = src
   uniforms.uCrack.value.x = Number.isFinite(since) ? crackSpread(since) : 1
 }
 
