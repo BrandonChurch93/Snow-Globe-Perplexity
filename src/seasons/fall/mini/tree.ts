@@ -41,7 +41,7 @@ const FOG_DIM = { from: 0.5, to: 0.9, cap: 0.6 }
 const GLINT = { shine: 80, ridge: [0.3, 0.8] as [number, number], rough: 0.86 }
 const GLINT_LAMP = { lift: 3.6, power: 1.3, reachMm: 11 }
 const GLINT_TONE: [number, number, number] = [1, 0.46, 0.14]
-const GLINT_PUMPKIN = { power: 0.45, reachMm: 7 }
+const GLINT_PUMPKIN = { power: 0.9, reachMm: 8 }
 const GLINT_POND = { power: 0.05, reachMm: 24 }
 
 const clock = { value: 0 }

@@ -47,7 +47,7 @@ const DOOR: Rgb = [0.24, 0.19, 0.13]
 const TIMBER: Rgb = [0.4, 0.42, 0.34]
 const DRY: readonly Rgb[] = [[0.42, 0.16, 0.05], [0.5, 0.26, 0.07], [0.3, 0.12, 0.05], [0.4, 0.3, 0.1]]
 const GROUND = { soil: 1.45, leaf: 1.05, leafScale: 0.6, soilMm: 0.26, wideMm: 0.5, leafMm: 0.34 }
-const WATER = { rough: 0.07, rippleMm: 0.18, lamp: 8, pane: 1.6, pumpkin: 4.5, tight: 0.0008, wide: 0.006, wideShare: 0.004, lowMm: 3.4, fog: 0.13, trunkMm: 3.4, dim: 0.85, shore: [0.9, 0.99] as [number, number] }
+const WATER = { rough: 0.07, rippleMm: 0.18, lamp: 8, pane: 1.6, pumpkin: 4.5, tight: 0.0008, wide: 0.006, wideShare: 0.004, lowMm: 3.4, fog: 0.2, trunkMm: 3.4, dim: 0.85, shore: [0.9, 0.99] as [number, number] }
 
 const TALL_LAMP = { reachMm: 2.6, neckMm: 9.5, post: [1.6, 1.2] as [number, number], head: [1.5, 1.5] as [number, number] }
 const foot = lampFoot()

@@ -24,11 +24,11 @@ const ATTIC = PROPS.ATTIC
 const PUMPKINS = PROPS.PUMPKINS
 const STONES = PROPS.STONES
 const LEAF_TONES = ['#c8541a', '#d9812a', '#a8371a', '#e0a030', '#7a3a18', '#b5651d', '#c9451c', '#8f5a1e'].map(lin)
-const GRASS_TONES = ['#5a7a2a', '#7d9438', '#b0a548', '#4a6424', '#96893a'].map(lin)
+const GRASS_TONES = ['#4f6a26', '#62782e', '#8f7a34', '#3f5620', '#86572a'].map(lin)
 
 const LITTER = { base: 0.1, patch: 0.3, fence: 0.2, tree: 0.14, wall: 0.1, leaves: 230 }
 const LEVELS = { medium: { error: 0.08, worth: 1 }, low: { error: 0.2, worth: 1 } }
-const STONE_TONES = ['#d6d0bf', '#c4c0b2', '#e0d9c6', '#b3b0a4', '#cbc5b3'].map(lin).map((c) => [c[0] * 0.66, c[1] * 0.57, c[2] * 0.48])
+const STONE_TONES = ['#d6d0bf', '#c4c0b2', '#e0d9c6', '#b3b0a4', '#cbc5b3'].map(lin).map((c) => [c[0] * 0.86, c[1] * 0.74, c[2] * 0.62])
 const ground = new Bag('ground')
 const water = new Bag('water')
 const decor = new Bag('decor')
