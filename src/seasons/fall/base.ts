@@ -407,26 +407,32 @@ void main() {
   if (stageGone(c)) discard;
   float sheet = floor(vWebPaint.y * 4.0);
   float big = 1.0 - step(0.5, sheet);
-  float spokes = mix(5.0, 9.0, big);
+  float spokes = mix(5.0, 11.0, big);
   float u = vWebUv.x * spokes + 0.42 * sin(vWebUv.x * 17.0 + sheet) + 0.12 * sin(vWebUv.y * 6.0 + vWebUv.x * 31.0);
   float cell = floor(u);
   float between = sin(fract(u) * 3.14159265);
-  float rings = mix(7.0, 14.0, big);
+  float rings = mix(7.0, 6.0, big);
   float v = pow(vWebUv.y, 0.8) * rings - 1.1 * between * between + 1.0 * webHash(cell + sheet * 17.0) + 0.5 * fract(u) * (webHash(cell * 3.0 + sheet) - 0.5);
-  float gapped = step(0.62, webHash(floor(v) * 13.0 + cell * 7.0 + sheet * 3.0));
-  float spoke = webLine(u, 0.0) * (0.3 + 0.5 * webHash(floor(u + 0.5) + sheet * 5.0));
+  float gapped = step(0.5, webHash(floor(v) * 13.0 + cell * 7.0 + sheet * 3.0));
+  // No two threads alike: each its own weight, a third of them broken part of the way down, the loose end gone.
+  float strand = floor(u + 0.5) + sheet * 5.0;
+  float broken = step(0.66, webHash(strand * 3.3)) * step(0.3 + 0.5 * webHash(strand * 5.9), vWebUv.y);
+  float spoke = webLine(u, 0.7 * webHash(strand * 7.7) * webHash(strand * 2.1)) * (0.25 + 0.75 * webHash(strand) * webHash(strand * 1.9 + 4.0)) * (1.0 - broken);
+  // Beads of dew strung along a thread, far apart.
+  float beadAt = vWebUv.y * 46.0 + 9.0 * webHash(strand * 4.3);
+  float bead = step(0.9, webHash(floor(beadAt) + strand * 13.0)) * (1.0 - smoothstep(0.6, 1.6, abs(fract(beadAt) - 0.5) / max(fwidth(beadAt), 1e-4))) * webLine(u, 0.5) * (1.0 - broken);
   float ring = webLine(v, 0.0) * gapped * smoothstep(0.06, 0.16, vWebUv.y);
   float edge = max(webLine(vWebUv.x * 0.999 + 0.0005, 0.3), 0.0);
   float glint = 0.45 + 1.3 * pow(abs(sin(vWebUv.y * 8.0 + cell * 2.1 + vWebUv.x * 5.0)), 5.0);
   float thread = max(max(spoke, ring * 0.7), edge * 0.6) * glint;
-  float dew = smoothstep(0.8, 1.0, webHash(floor(v * 3.0) + cell * 5.0)) * ring;
+  float dew = max(smoothstep(0.8, 1.0, webHash(floor(v * 3.0) + cell * 5.0)) * ring, bead * 0.9);
   vec3 view = normalize(cameraPosition - vStageWorld);
   float back = pow(max(dot(-view, uBaseRimDir) * 0.5 + 0.5, 0.0), 2.0);
   float fore = pow(max(dot(view, uBaseKeyDir) * 0.5 + 0.5, 0.0), 2.0);
   vec3 lit = uBaseKeyCol * (0.35 + 0.5 * fore) + uBaseRimCol * (0.1 + 0.5 * back) + uBaseSky * 0.8;
   float tear = smoothstep(0.25, 0.6, webHash(floor(u * 0.5) + sheet * 9.0) + 0.5 * sin(vWebUv.y * 7.0 + cell));
   float veil = (0.03 + 0.045 * pow(abs(sin(u * 9.0 + 3.0 * sin(vWebUv.y * 5.0 + sheet))), 6.0) * webHash(floor(u * 2.87) + sheet)) * smoothstep(0.0, 0.3, vWebUv.y) * tear;
-  float a = clamp(thread * 0.26 + veil * 1.1 + dew * 0.12, 0.0, 1.0) * smoothstep(0.0, 0.03, vWebUv.y);
+  float a = clamp(thread * 0.26 + veil * 1.1 + dew * 0.2, 0.0, 1.0) * smoothstep(0.0, 0.03, vWebUv.y);
   gl_FragColor = vec4(lit * vec3(0.85, 0.9, 0.95) * (0.7 + 1.3 * dew) * a, a);
   if (uDiag != 0) {
     if (a < 0.2) discard;
