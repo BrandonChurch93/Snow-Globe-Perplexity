@@ -40,7 +40,7 @@ function tube(soup, pts, radii, sides, paint, flat = 1, vAt = 0, gnarl = 0, seed
       const around = ((i % sides) / sides) * 6
       const flute = fbm(around + seed, arc[j] * 0.11, 6, 4096, seed + 2, 2) - 0.5
       const knot = fbm(arc[j] * 0.16 + seed, around * 0.5, 4096, 3, seed, 3) - 0.5
-      lump = 1 + gnarl * (0.7 * flute + 1.8 * knot + 2.6 * Math.max(knot - 0.12, 0))
+      lump = 1 + gnarl * (0.5 * flute + 1.1 * knot + 1.5 * Math.max(knot - 0.12, 0))
       const fluteNext = fbm(around + 0.35 + seed, arc[j] * 0.11, 6, 4096, seed + 2, 2) - 0.5
       const round = add3([-f.n[0] * Math.sin(a), -f.n[1] * Math.sin(a), -f.n[2] * Math.sin(a)], f.b, Math.cos(a))
       nrm = norm3(add3(nrm, round, -gnarl * 1.1 * (fluteNext - flute)))
@@ -121,15 +121,16 @@ function addStrands() {
   for (let i = 0; i < 2; i++) push({ a0: -180, span: 360, h0: 33.2 + i * 2.5, amp: 2.0 - 0.6 * i, k: 3 + 2 * i, ph: r(0, 6.28), rad: r(1.4, 1.9), lift: 1.5 + i, sprawl: 0, wander: 1.2, thorn: [7, 11], every: 54, layer: 2 })
   // The vines: thin tapering lengths that wander round the ring, each on its own slant with its own swing, so they
   // cross one another at many angles and leave the dark drum in view between them. One in four is a short steep one.
-  const count = 40
+  const count = 37
   for (let i = 0; i < count; i++) {
-    const steep = i % 4 === 3
-    const span = steep ? r(22, 46) : r(48, 128)
+    const steep = i % 3 === 2
+    const turn = steep ? r(20, 46) : r(3, 21)
+    const span = steep ? r(22, 46) : Math.min(r(52, 128), 30 / (Math.tan(turn * RAD) * RAD * 53))
     const a0 = -180 + (i * 360) / count + r(-9, 9) + ((i * 137.5) % 360)
-    const angle = (rng() < 0.5 ? -1 : 1) * (steep ? r(20, 44) : r(1, 15))
+    const angle = (rng() < 0.5 ? -1 : 1) * turn
     const slope = Math.tan(angle * RAD) * span * RAD * 53
-    const rad = steep ? r(1.0, 1.5) : i % 4 === 0 ? r(1.7, 2.3) : r(1.1, 1.8)
-    push({ a0, span, h0: steep ? r(11, 26) : 5.5 + 27 * ((i * 0.618034) % 1) + r(-1.5, 1.5), slope, bend: steep ? r(-3, 3) : r(-5, 5), amp: steep ? r(0.6, 1.4) : r(1.2, 3.4), k: r(2.4, 6.5), ph: r(0, 6.28), rad, lift: r(1.2, 7.2), sprawl: 1.1, wander: r(1.2, 2.6), thorn: [7, 14], every: 36, layer: 3, open: true, reach: r(3.5, 9.5) })
+    const rad = steep ? r(1.0, 1.45) : i % 4 === 0 ? r(1.6, 2.05) : r(1.15, 1.7)
+    push({ a0, span, h0: steep ? r(11, 26) : 5.5 + 27 * ((i * 0.618034) % 1) + r(-1.5, 1.5), slope, bend: steep ? r(-3, 3) : r(-7, 7), amp: steep ? r(0.6, 1.4) : r(1.5, 3.8), k: r(2.4, 6.5), ph: r(0, 6.28), rad, lift: r(1.2, 7.2), sprawl: 1.1, wander: r(1.2, 2.6), thorn: [7, 14], every: 36, layer: 3, open: true, reach: r(3.5, 9.5) })
   }
   // The wires: thin lengths that fill the tangle between the vines.
   for (let i = 0; i < 9; i++) {
@@ -238,8 +239,8 @@ function thorn(soup, root, dir, len, rad, bend, sides, shade, wide = [0, 1, 0]) 
     p = add3(p, d, step)
     arc += step
   }
-  const A = 1.5
-  const B = 0.78
+  const A = 1.25
+  const B = 0.85
   soup.grid(sides + 1, rings, (i, j) => {
     const a = (i / sides) * 2 * Math.PI
     const t = j / (rings - 1)
@@ -374,7 +375,7 @@ export function buildIron() {
       continue
     }
     // The counted thorns are blades seen broadside from the front.
-    const line = thorn(soup, root, dir, t.len, t.rad * 1.25, add3([0, t.dir[1] > 0.3 ? 0.9 : -0.3, 0], along(t.az), t.dir[0] > 0 ? -0.7 : 0.7), 10, 0.95, cross3(dir, [0, 0, 1]))
+    const line = thorn(soup, root, dir, t.len * 1.08, t.rad * 0.8, add3([0, t.dir[1] > 0.3 ? 0.9 : -0.3, 0], along(t.az), t.dir[0] > 0 ? -0.7 : 0.7), 10, 0.95, cross3(dir, [0, 0, 1]))
     heroTips.push(line[line.length - 1])
     thorns++
   }
@@ -499,16 +500,31 @@ export function buildWax() {
     const n = Math.max(6, Math.ceil((h0 - d.h1) / 0.7))
     const pts = []
     const radii = []
+    // A run lies on what is under it: on the vines where one passes, on the leather between them.
+    const outs = []
+    for (let i = 0; i <= n; i++) {
+      const h = mix(h0, d.h1, i / n)
+      outs.push(weaveOut(d.az, h, 3.2))
+    }
+    let held = outs.find((o) => o !== null) ?? drumR(30) + 2.4
+    for (let i = 0; i <= n; i++) {
+      if (outs[i] === null) outs[i] = held - 0.2
+      held = outs[i]
+    }
+    for (let pass = 0; pass < 3; pass++) {
+      const prev = outs.slice()
+      for (let i = 0; i <= n; i++) outs[i] = Math.max(0.25 * prev[Math.max(i - 1, 0)] + 0.5 * prev[i] + 0.25 * prev[Math.min(i + 1, n)], prev[i] - 0.3)
+    }
     for (let i = 0; i <= n; i++) {
       const t = i / n
       const h = mix(h0, d.h1, t)
       const sway = (fbm(t * 3 + d.az, 0.4, 64, 4, 17, 2) - 0.5) * (d.h1 < 26 ? 3.2 : 1.4) * t
-      const ride = 2.0 + 4.6 * smooth(38.0, 35.0, h) * (0.85 + 0.15 * Math.sin(t * 5 + d.az))
-      pts.push(place(drumR(clamp(h, 0, 38.3)) + ride, h, d.az + sway))
-      const neck = mix(d.wide * 1.25, 0.58, smooth(0, 0.5, t))
-      const bulb = 1 + 0.95 * Math.exp(-(((t - 0.88) / 0.1) ** 2))
+      const neck = mix(d.wide * 1.05, 0.62, smooth(0, 0.38, t))
+      const bulb = 1 + 0.5 * Math.exp(-(((t - 0.9) / 0.08) ** 2))
       const cap = Math.sqrt(Math.max(1 - Math.max((t - 0.93) / 0.07, 0) ** 2, 0.0004))
-      radii.push(d.w * neck * bulb * cap * (0.84 + 0.34 * fbm(t * 2.2 + d.az * 1.7, 0.2, 64, 4, 47, 1)))
+      const rad = d.w * neck * bulb * cap * (0.84 + 0.34 * fbm(t * 2.2 + d.az * 1.7, 0.2, 64, 4, 47, 1))
+      pts.push(place(mix(drumR(clamp(h, 0, 38.3)) + 1.2, outs[i] + rad * 0.55, smooth(0, 0.18, t)), h, d.az + sway))
+      radii.push(rad)
     }
     tube(soup, pts, radii, L.front(d.az) <= 125 ? (d.thin ? 8 : 12) : 5, (j, a, p, nrm) => [0.6 + 0.4 * (0.5 + 0.5 * dot3(nrm, norm3([p[0], 0, p[2]]))), clamp(radii[j] * 0.55, 0, 1), j / n], 0.72)
     count++
@@ -525,9 +541,9 @@ export function buildWax() {
       if (outs[i] === null) outs[i] = last - 0.25
       last = outs[i]
     }
-    for (let pass = 0; pass < 4; pass++) {
+    for (let pass = 0; pass < 10; pass++) {
       const prev = outs.slice()
-      for (let i = 0; i <= n; i++) outs[i] = 0.25 * prev[Math.max(i - 1, 0)] + 0.5 * prev[i] + 0.25 * prev[Math.min(i + 1, n)]
+      for (let i = 0; i <= n; i++) outs[i] = Math.max(0.25 * prev[Math.max(i - 1, 0)] + 0.5 * prev[i] + 0.25 * prev[Math.min(i + 1, n)], prev[i] - 0.25)
     }
     const foot = outs[n] - 0.6
     const pts = []
@@ -536,23 +552,23 @@ export function buildWax() {
       const t = i / n
       const h = mix(top, run.pool > 0 ? 0.5 : 2.2, t)
       const sway = Math.sin(run.x) * 0.35
-      pts.push(place(outs[i] - w * 0.45, h, start.az + sway * Math.sin(2 * Math.PI * t) * (1 - t)))
+      pts.push(place(outs[i] - w * 0.2, h, start.az + sway * Math.sin(2 * Math.PI * t) * (1 - t)))
       const cap = Math.sqrt(Math.max(1 - Math.max((0.1 - t) / 0.1, 0) ** 2, 0.0004))
       const tail = run.pool > 0 ? 1 + 1.1 * smooth(0.72, 1, t) ** 2 : Math.sqrt(Math.max(1 - Math.max((t - 0.9) / 0.1, 0) ** 2, 0.0004)) * (1 + 0.4 * Math.exp(-(((t - 0.86) / 0.1) ** 2)))
-      radii.push(w * (run.pool > 0 ? 0.5 - 0.14 * smooth(0.1, 0.7, t) + 0.07 * Math.sin(t * 9 + run.x) : 0.3 + 0.8 * smooth(0, 0.55, t) + 0.1 * Math.sin(t * 9 + run.x)) * cap * tail)
+      radii.push(w * (run.pool > 0 ? 0.72 - 0.16 * smooth(0.1, 0.7, t) + 0.04 * Math.sin(t * 5 + run.x) : 0.3 + 0.8 * smooth(0, 0.55, t) + 0.1 * Math.sin(t * 9 + run.x)) * cap * tail)
     }
     tube(soup, pts, radii, 12, (j, a, p, nrm) => [(0.55 + 0.45 * (0.5 + 0.5 * dot3(nrm, norm3([p[0], 0, p[2]])))) * (0.5 + 0.5 * smooth(0, 16, p[1])), clamp(radii[j] * 0.55, 0, 1), j / n], 0.85)
     count++
     if (run.pool <= 0) continue
-    const centre = place(foot + run.pool * 0.3, 0, start.az + (run.x < 1400 ? -1 : 1))
+    const centre = place(foot + run.pool * 0.12, 0, start.az + (run.x < 1400 ? -1 : 1))
     const seg = 28
     const rings = 7
     soup.grid(seg + 1, rings, (i, j) => {
       const a = (i / seg) * 2 * Math.PI
       const q = j / (rings - 1)
-      const lobes = run.pool * 1.5 * (0.42 + 0.95 * fbm((i % seg) / seg * 5, 0.5, 5, 4, Math.round(run.x), 3)) * (1 + 0.45 * Math.cos(a - 1.2))
+      const lobes = run.pool * 0.95 * (0.5 + 0.8 * fbm((i % seg) / seg * 5, 0.5, 5, 4, Math.round(run.x), 3)) * (1 + 0.45 * Math.cos(a - 1.2))
       const rho = Math.sin((q * Math.PI) / 2)
-      const y = 0.06 + 0.6 * Math.cos((q * Math.PI) / 2) ** 0.55 * (0.6 + 0.4 * rho)
+      const y = 0.06 + 1.25 * Math.cos((q * Math.PI) / 2) ** 0.55 * (0.6 + 0.4 * rho)
       const dirx = Math.cos(a)
       const dirz = Math.sin(a) * 0.62
       const p = [centre[0] + dirx * lobes * rho, q >= 1 ? 0.04 : y * (1 - q ** 5), centre[2] + dirz * lobes * rho]

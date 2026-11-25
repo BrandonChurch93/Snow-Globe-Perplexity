@@ -127,7 +127,7 @@ export const TWIGS = [
 // The thorns a viewer can count, read from the approved image by eye: where each stands on the ring, the way it points
 // (along the ring to the right, up, outward) and its length and root radius in mm.
 export const HERO_THORNS = [
-  { az: 19, h: 37.6, dir: [0.55, 0.8, 0.32], len: 11.5, rad: 1.55 },
+  { az: 19, h: 37.2, dir: [0.82, 0.5, 0.3], len: 12.5, rad: 1.55 },
   { az: 30, h: 36.4, dir: [-0.9, 0.28, 0.32], len: 9.5, rad: 0.95 },
   { az: -22, h: 36.2, dir: [-0.92, 0.3, 0.25], len: 10.5, rad: 1.2 },
   { az: -5, h: 37.2, dir: [0.85, 0.35, 0.3], len: 7.5, rad: 1.0 },

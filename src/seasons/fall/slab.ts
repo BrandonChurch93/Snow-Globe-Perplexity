@@ -120,7 +120,7 @@ vec3 candleOnSlab(vec3 P, vec3 n, float lift) {
 }
 // The faces seen in the wet slab: each is mirrored below it, and the roughness of the slab draws the mirror image out
 // along the line of sight, so a streak of it reaches up to the foot.
-#define MIRROR_DEPTH 0.42
+#define MIRROR_DEPTH 0.5
 vec3 candleInSlab(vec3 P, float lift) {
   vec3 look = normalize(P - cameraPosition);
   vec3 side = normalize(cross(vec3(0.0, 1.0, 0.0), look));
@@ -132,10 +132,11 @@ vec3 candleInSlab(vec3 P, float lift) {
     float far = length(to);
     vec3 off = to / far - look;
     float size = uFaceOut[i].z / far;
-    float across = dot(off, side) / (size * 0.55);
-    float along = dot(off, rise) / (size * 1.5);
+    float across = dot(off, side) / (size * 0.36);
+    float along = dot(off, rise) / (size * 1.25);
     float seen = smoothstep(0.1, 0.6, dot(vec3(uFaceOut[i].x, 0.0, uFaceOut[i].y), normalize(vec3(-to.x, 0.0, -to.z))));
-    sum += uFaceCol * (uFaceGlow[i] * seen * exp(-across * across - along * along));
+    float core = exp(-across * across - along * along);
+    sum += uFaceCol * mix(vec3(1.0, 0.42, 0.12), vec3(1.0, 0.8, 0.5), core * core) * (uFaceGlow[i] * seen * core);
   }
   return sum;
 }
@@ -169,7 +170,7 @@ void main() {
   float occl;
   slabLight(vec3(vStageWorld.x, 0.0, vStageWorld.z), keyDir, keyGain, rimDir, rimGain, occl, warm);
   float tone = 0.6 + 0.6 * fract(vLeafOne.x * 7.3);
-  vec3 albedo = mix(vec3(dot(leaf.rgb, vec3(0.3, 0.5, 0.2))) * vec3(1.0, 0.72, 0.4) * 1.5, leaf.rgb * 1.35, 0.18 + 0.42 * fract(vLeafOne.x * 3.7)) * tone * mix(1.0, 0.72, under);
+  vec3 albedo = mix(vec3(dot(leaf.rgb, vec3(0.3, 0.5, 0.2))) * vec3(1.0, 0.7, 0.4) * 1.2, leaf.rgb * 1.1, 0.18 + 0.42 * fract(vLeafOne.x * 3.7)) * tone * mix(1.0, 0.72, under);
   float key = clamp(dot(n, keyDir) * 0.75 + 0.25, 0.0, 1.0);
   float rim = clamp(dot(n, rimDir) * 0.6 + 0.4, 0.0, 1.0);
   float thru = clamp(-dot(n, keyDir), 0.0, 1.0) * 0.35;
@@ -224,9 +225,9 @@ void main() {
   vec3 cold = uKeyCol * (0.35 + 0.65 * toKey) + uSky * 2.0;
   vec3 hot = uRimCol * (0.3 + 0.7 * toRim);
   vec3 col = (cold * 0.05 + hot * 0.06) * (line * 1.0 + skirt * 0.22) * dust * down;
-  col += candleOnSlab(P, vec3(0.0, 1.0, 0.0), lift) * (0.14 * dust) * smoothstep(-2.0, 3.0, gap);
-  float ripple = 0.35 + 0.65 * rimNoise(vec2(P.x * 1.7, P.z * 0.35)) + 0.5 * pow(rimNoise(P.xz * vec2(3.1, 0.8) + 11.0), 3.0);
-  col += candleInSlab(P, lift) * (0.3 * ripple) * smoothstep(-1.0, 2.0, gap) * down;
+  col += candleOnSlab(P, vec3(0.0, 1.0, 0.0), lift) * vec3(1.0, 0.6, 0.3) * (0.07 * dust) * smoothstep(-2.0, 3.0, gap);
+  float ripple = 0.2 + 0.8 * rimNoise(vec2(P.x * 1.7, P.z * 0.3)) + 0.9 * pow(rimNoise(P.xz * vec2(3.1, 0.6) + 11.0), 3.0);
+  col += candleInSlab(P, lift) * (0.55 * ripple) * smoothstep(-1.0, 2.0, gap) * down;
   gl_FragColor = vec4(col, 0.0);
   if (uDiag != 0) gl_FragColor = stageDiag(vec3(0.02), vec3(0.0, 1.0, 0.0), 0.0, c, 0.0);
 }
