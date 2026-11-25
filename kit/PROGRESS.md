@@ -37,16 +37,16 @@ Status 108 · 2026-11-25 16:18 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 16:18 UTC
-clock: phase 5, tick of 11.0 minutes
-phase 5: 2.13 h used of its 12.00 h box
-allowance (before the review, continuation 1): 2.13 h used of 12.00 h allowed
-all time before the review: 38.32 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 16:27 UTC
+clock: phase 5, tick of 8.4 minutes
+phase 5: 2.27 h used of its 12.00 h box
+allowance (before the review, continuation 1): 2.27 h used of 12.00 h allowed
+all time before the review: 38.46 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 8
 ```
 
 ## Phases
@@ -925,11 +925,15 @@ Numbered. What, why, and the date.
 
 107. **The register's stand-in hashes of four parts are put back to what was recorded at 11:00 UTC, and the register tool no longer takes an argument it does not know** (15:49 UTC, Phase 5, Continuation 1). Found while closing item 166: `sound-engine` read `built` in the register with a recorded stand-in hash equal to the hash of its files today, which the second test of check G13 would have failed in the globe's round, rightly as the register stood. The cause is the Builder's own: `tools/parts.mjs` run with no `--set` and no `--list` writes the register again and takes a new hash for every part still labelled `stand-in`, and it took any other argument for a bare run. A run of it at 14:29 UTC, just before `sound-engine` was set to `built` (commit `8e5798b`), moved four recorded hashes without a word: `interface` `c2404116aeb75ba0` to `15a32b089e7563e3`, `sound-engine` `b4ada90389e2cf63` to `f73ff1ff132085d1`, `quality-levels` `cb48d66aff65dbb2` to `fc9e860401172a7c`, `loop` `7d33ff1c40639830` to `f8aa6e74d9478da4`. Those new values were the hashes of the files after Phase 5's finishing work on them had landed (the visitor's pass, the sound branch, step 1), so they recorded finished files as stand-ins. A second such run at 15:45 UTC (`--help`) was seen in the diff and undone before any commit. Decided: the four hashes go back to the values of the register at `ceee512` (11:00 UTC Nov 25, the end of Phase 4, before any of Phase 5's work on these parts), which is what `kit/03-METHOD.md` asks the register to hold: "the hash of those files as they were when the part was recorded as a stand-in". No label changes by this: `interface`, `opening` and `loop` stay `stand-in`, `sound-engine` (14:29, decision 105) and `quality-levels` (15:45, item 166) stay `built`. Read afterwards: of the 54 parts, one has files equal to its recorded stand-in hash, `opening`, which is a stand-in. The tool now stops with exit code 1 and writes nothing when it is given an argument it does not know, and a bare run prints every recorded hash it moves. This turns no check green by itself: check G13 tests each part's label, its files against this hash and the `standins` view in the globe's round, on a render agent, as it did for the other units.
 
+108. **Sound, once the account has credits again: the order, the ceiling and what stays closed** (16:25 UTC, Phase 5, Continuation 1). Brandon wrote at about 16:24 that he will top the sound tool's account up and does not want a month's allowance spent on what is left (note 2 under "Notes from Brandon"). The account read 130999 of 131000 used at 16:24:47 UTC (`out/work/bin/credits.sh`), so nothing can be made yet; it is read again at each status. When it shows credits: one sound agent takes the job by `audio/RECIPE.md`, under the kit's limit of three takes for a cue and for a piece of music, one take at a time, each judged before the next, a cue ended at its first take that fits. The order puts what the app needs and what costs least first: the nine season effects (shake, landing and ambience of spring, summer and fall) and the four small ones (`music-box`, `key-tap`, `ui-send`, `riser`); then the four season tracks, which the app's music and the `four-tracks` candidate both use; then the 60 s piece of `one-piece`, which only the second candidate uses. The ceiling by the recorded prices (`audio/RECIPE.md`, "What it will cost": effects about 11 credits a second, music 13.8 a second in the one call measured) is about 9900 credits for the eighteen at three takes each, about 3300 at one take each; the Builder adds a stop of its own in the spirit of his note: the job reads the counter before its first take and after every batch, and ends, with what is left written under "Open items", if this build's spending since the top-up passes 10000 credits or the balance cannot cover the next take. `shake-winter`, `land-winter` and `amb-winter` are out of takes and stay closed: the kit gives a cue new takes only in a review round that names it, or by a note from Brandon that names it. Until credits appear decision 78 stands as it is and the first line of the `REVIEW` block says so.
+
 ## Notes from Brandon
 
 Numbered, in his words, with the date and how each was applied. Review round items carry their round's number.
 
 1. 2026-11-25, 14:09 UTC, written in the thread after the `BUDGET REPORT` block of 14:02: "You may continue with you work until you are finished." Applied at 14:11 as the line `Continue past the budget.`: Continuation 1 is registered with the clock, "Budget" says `running`, and the build carries on where it stopped. How "until you are finished" is read, and what stays a stop, is decision 103.
+2. 2026-11-25, about 16:24 UTC, written in the thread while the interface's proofs ran: "Can you give me an update on what's left to do audio wise? It seems I've ran out of tokens on 11 laps. I'm going to top it off, but I definitely don't wanna burn through an entire months worth of usage on what's left here so I just wanna get an idea of a percentage amount of how many more sounds you need to generate?" ("11 laps" is read as ElevenLabs, the sound tool.) Applied at 16:25: answered in the thread from the records (`audio/prompts.json`, `audio/RECIPE.md`): of 25 sounds, 20 effects and 5 pieces of music, 4 are kept, 18 have no take yet and 3 of winter are out of takes; by the recorded prices the eighteen cost about 3300 credits at one take each and about 9900 at the limit of three, which is about 2.5 and 7.6 percent of the account's 131000 a month, most of it music; this build has spent about 965. The account read 1 credit left at 16:24:47 UTC. What follows from the note is decision 108: the order of the work, a stop at 10000 credits, the counter read at each status.
+3. 2026-11-25, about 16:33 UTC, written in the thread while the interface's last proof ran: "Is 10,000 credits enough for you to finish this project's audio?" Applied at 16:33: answered in the thread from the table in `audio/RECIPE.md` ("What it will cost"), summed again here from the lengths in `audio/prompts.json`: the eighteen sounds with no take yet cost about 3280 credits at one take each and about 9840 at the kit's limit of three takes each, so 10000 covers them with about 160 to spare, and the job's own stop of decision 108 is the same 10000. Said with it, in plain words: the price of music (13.8 credits a second) comes from one short call and music is about 7250 of that ceiling, so the 60 s piece of `one-piece`, last in the order, is what would be cut short; the three winter cues that are out of takes are not in the sum (about 850 more at three takes each, about 10700 for all twenty-one) and stay closed until he names them; and credits buy takes, not takes that fit. Nothing in decision 108 changes.
 
 ## Probe results
 
