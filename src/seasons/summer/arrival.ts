@@ -12,22 +12,23 @@ const RAD = Math.PI / 180
 
 // The landing shakes the sand on the ledge loose. `jump` grains leave the ledge on the thump, fly, skid and come to rest on
 // the slab, where they stay: at rest they are the single grains of the scatter. `pour` grains are the run of sand over the
-// lip on the right, which the landing starts and which thins to a trickle that never quite stops. Every grain's place is a
+// lip on the right, which the landing starts and which thins and stops: at rest no grain is in the air. Every grain's place is a
 // function of the time since the landing and of the clock, nothing is kept from frame to frame.
 const LOOK = {
   gravity: 3400,
   ledge: { r: [46.5, 52.0], h: 40.3 },
-  jump: { count: 14000, reachMm: 26, ringShare: 0.3, ringMm: 5, liftMm: [0.8, 11], hopMm: [0.3, 2.6], quick: 0.11, tail: 0.5, tailShare: [0.6, 0.12], skidMm: [0.4, 3.2], radiusMm: [0.12, 0.27] },
+  jump: { count: 14000, reachMm: 26, ringShare: 0.3, ringMm: 5, liftMm: [0.5, 4.5], hopMm: [0.3, 2.6], quick: 0.11, tail: 0.5, tailShare: [0.6, 0.12], skidMm: [0.4, 3.2], radiusMm: [0.12, 0.27] },
   pour: { count: 16000, az: 82, spread: 4.5, r: 52.4, h: 38.8, reachMm: [4.6, 11], fanDeg: 7, rate: [1.3, 2.3], radiusMm: [0.1, 0.2] },
-  flow: { rest: 0.46, surge: 0.5, seconds: 1.3, gapMm: [0.3, 2.5] },
+  flow: { surge: 0.96, seconds: 1.6, endFrom: 3.5, endTo: 6, gapMm: [0.3, 2.5] },
   shadow: { r: 57, top: [36, 41] },
   streak: 2.1,
+  blurRadii: 3,
 }
 
 const vec = (v: readonly number[]): string => `vec3(${v.map((x) => x.toFixed(3)).join(', ')})`
 
 const grainUniforms = {
-  uGrain: { value: new THREE.Vector4(50, 0, LOOK.flow.rest, 1 / 120) },
+  uGrain: { value: new THREE.Vector4(50, 0, 0, 1 / 120) },
   uGrainLoop: { value: new THREE.Vector2(0, 12) },
   uGrainKey: { value: new THREE.Vector3(0, 1, 0) },
   uGrainKeyCol: { value: new THREE.Color() },
@@ -106,8 +107,10 @@ vec2 along = nowV.xy - thenV.xy;
 float len = length(along);
 vec2 axis = len > 1e-4 ? along / len : vec2(0.0, 1.0);
 vec2 across = vec2(-axis.y, axis.x);
-vec4 grainV = mix(thenV, nowV, aCorner.y * 0.5 + 0.5);
-float streak = 1.0 + len / max(2.0 * aFlight.w, 1e-4);
+float blur = min(len, ${LOOK.blurRadii.toFixed(2)} * aFlight.w);
+vec4 grainV = nowV;
+grainV.xy -= axis * (blur * (0.5 - 0.5 * aCorner.y));
+float streak = 1.0 + blur / max(2.0 * aFlight.w, 1e-4);
 float wide = 1.0 + 0.6 * airborne;
 grainV.xy += (axis * aCorner.y + across * aCorner.x * wide) * size;
 gl_Position = projectionMatrix * grainV;
@@ -215,8 +218,7 @@ function grainGeometry(): THREE.BufferGeometry {
     const r = Math.hypot(x, z)
     if (r < 61.5) continue
     const h = sandHeight(x, z)
-    const far = Math.exp(-(r - 60) / 55)
-    const want = ringed ? frontLeft(x, z) : h < 0.9 ? Math.min(1, 0.03 * far + 0.8 * sandSpread(x, z)) : 0.22
+    const want = ringed ? frontLeft(x, z) : h < 0.9 ? Math.min(1, 0.8 * sandSpread(x, z)) : 0.22
     if (rj.next() > want) continue
     const radius = J.radiusMm[0] + (J.radiusMm[1] - J.radiusMm[0]) * rj.next() ** 2
     const y = SLAB.liftMm + h + radius * 0.7
@@ -267,6 +269,14 @@ function grainGeometry(): THREE.BufferGeometry {
   return g
 }
 
+export function pourShare(sinceLanding: number): number {
+  if (!(sinceLanding < Infinity)) return 0
+  const F = LOOK.flow
+  const t = Math.max(0, sinceLanding)
+  const end = Math.min(1, Math.max(0, (t - F.endFrom) / (F.endTo - F.endFrom)))
+  return F.surge * Math.exp(-t / F.seconds) * (1 - end * end * (3 - 2 * end))
+}
+
 export async function prepare(): Promise<void> {}
 
 // The grains lie on the slab and fall past the foot, outside the glass, so they are drawn with the surface dressing (slab.ts
@@ -289,8 +299,7 @@ export function update(moment: KitMoment): void {
   const film = config.film as { fps: number; shutterDegrees: number }
   const shutter = film.shutterDegrees / 360 / film.fps
   const down = 1 - Math.min(1, Math.max(0, (rimGapMm(f.globe) - LOOK.flow.gapMm[0]) / (LOOK.flow.gapMm[1] - LOOK.flow.gapMm[0])))
-  const surge = t < Infinity ? LOOK.flow.surge * Math.exp(-Math.max(t, 0) / LOOK.flow.seconds) : 0
-  u.uGrain.value.set(t < 0 ? -1 : Math.min(t, 50), 0, t < 0 ? 0 : (LOOK.flow.rest + surge) * down, shutter)
+  u.uGrain.value.set(t < 0 ? -1 : Math.min(t, 50), 0, t < 0 ? 0 : pourShare(t) * down, shutter)
   u.uGrainLoop.value.set((((moment.time / moment.period) % 1) + 1) % 1, moment.period)
   u.uGrainKey.value.copy(f.keyDir)
   u.uGrainKeyCol.value.copy(f.keyCol)
