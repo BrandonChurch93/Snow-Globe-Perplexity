@@ -2,7 +2,7 @@ import { config } from '../../config'
 import { hash2, unit } from '../../core/rng'
 import type { SdfGrid } from '../../core/stage'
 import { globePoseAt, seasonAt, type Timeline } from '../../film/timeline'
-import { Liquid, LIQUID_LENGTH, LIQUID_R, LIQUID_SWIRL, NOISE_N, ROLL_AXIS, ROLL_CENTRE, ROLL_EDGE, ROLL_FLOOR_MM, ROLL_FLOOR_SLOPE, ROLL_FREE, ROLL_RISE_MM, ROLL_SLAB_MM, SOLID_REACH_MM, TURBULENCE_MAX } from '../../globe/liquid'
+import { Liquid, LIQUID_CURL, LIQUID_LENGTH, LIQUID_R, LIQUID_SWIRL, NOISE_N, ROLL_AXIS, ROLL_CENTRE, ROLL_EDGE, ROLL_FLOOR_MM, ROLL_FLOOR_SLOPE, ROLL_FREE, ROLL_RISE_MM, ROLL_SLAB_MM, SOLID_REACH_MM, TURBULENCE_MAX } from '../../globe/liquid'
 import { BEHAVIOUR, KINDS, KIND_IN, NONE, POOL, SEASONS, type Behaviour } from './kinds'
 import { emptySdf, GROUND_Y, sdfSample, sdfSlope, type Emitter } from './sdf'
 
@@ -51,7 +51,7 @@ const HOME_CARRIED = 3
 const HOME_STILL = 0.5
 const HOME_LIGHTS_SECONDS = 0.7
 const HOME_DIMS_SECONDS = 0.3
-const CURL = 2.5 / (R * R)
+const CURL = LIQUID_CURL
 const NOISE_INV_CELL = (NOISE_N - 1) / (2 * R)
 const NOISE_TOP = NOISE_N - 1.0001
 const NOISE_DY = NOISE_N * 3

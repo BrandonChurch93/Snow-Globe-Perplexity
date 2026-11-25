@@ -219,6 +219,34 @@ function centreOf(p: GlobePose, out: Float64Array, o: number): void {
   out[o + 2] = p.z + LIQUID_PIVOT_MM * cb * Math.sin(p.tiltX)
 }
 
+export const LIQUID_CURL = 2.5 / (LIQUID_R * LIQUID_R)
+
+/**
+ * How the liquid turns what it carries, from its state alone (the ambient drift left out). `out[0..2]` is the turn of the whole
+ * body in rad/s and `out[3..5]` the flow in mm/s; at `p` mm from the middle the liquid turns at
+ * `turn + LIQUID_CURL * cross(flow, p)`, to which the roll adds its own spin about `ROLL_AXIS`. A particle of velocity `v`
+ * is bent by `cross(that, v)`: its place `s` seconds on is `p + v * s + 0.5 * cross(that, v) * s * s`.
+ */
+export function liquidBend(L: ArrayLike<number>, out: Float64Array | number[]): void {
+  const roll = L[LIQUID_ROLL] ?? 0
+  const own = 1 - roll / ROLL_MAX
+  const sx = L[LIQUID_SLOSH] ?? 0
+  const sy = L[LIQUID_SLOSH + 1] ?? 0
+  const sz = L[LIQUID_SLOSH + 2] ?? 0
+  const slosh = Math.sqrt(sx * sx + sy * sy + sz * sz)
+  const slam = SLAM / (1 + slosh / SLAM_KNEE)
+  const over = (OVERTURN * slam * own * slosh) / ((slosh + OVERTURN_KNEE) * LIQUID_R)
+  const turb = L[LIQUID_TURBULENCE] ?? 0
+  const fa = L[LIQUID_FOLD] ?? 0
+  const fb = L[LIQUID_FOLD + 1] ?? 0
+  out[0] = (L[LIQUID_TURN] ?? 0) * own - over * sz
+  out[1] = (L[LIQUID_TURN + 1] ?? 0) * own + ROLL_BODY * roll
+  out[2] = (L[LIQUID_TURN + 2] ?? 0) * own + ROLL_BODY_LEAN * ROLL_BODY * roll * ROLL_AXIS[2] + over * sx
+  out[3] = slam * sx + fa
+  out[4] = slam * sy + (turb * turb) / TURBULENCE_MAX + fb * ROLL_AXIS[2]
+  out[5] = slam * sz - fb * ROLL_AXIS[1]
+}
+
 export class Liquid {
   readonly state = new Float64Array(LIQUID_LENGTH)
   readonly coef = new Float64Array(8)
