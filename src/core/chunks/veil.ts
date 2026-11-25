@@ -108,6 +108,7 @@ export const VEIL_LOOK = {
   driftRisePower: 0.5,
   lean: 0.057,
   leanMost: 0.8,
+  leanKneeMm: 14,
   leanBank: 0.5,
   leanDrift: 0.5,
   leanFlood: 4.5,
@@ -534,7 +535,7 @@ export function loadLean(liquid: ArrayLike<number>, out: THREE.Vector3): THREE.V
   const sy = liquid[LIQUID_LOAD + 1] ?? 0
   const sz = liquid[LIQUID_LOAD + 2] ?? 0
   const pace = Math.hypot(sx, sy, sz)
-  const lean = pace > 0 ? Math.min(VEIL_LOOK.lean, VEIL_LOOK.leanMost / pace) : 0
+  const lean = pace > 0 ? Math.min((VEIL_LOOK.lean * pace) / VEIL_LOOK.leanKneeMm, VEIL_LOOK.leanMost / pace) : 0
   return out.set(sx * lean, sy * lean, sz * lean)
 }
 
