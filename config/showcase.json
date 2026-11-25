@@ -193,7 +193,7 @@
       { "kind": "leaf", "count": 16000 },
       { "kind": "ember", "count": 6000 },
       { "kind": "mote", "count": 20000 },
-      { "kind": "bat", "count": 7 }
+      { "kind": "bat", "count": 4 }
     ]
   },
   "scene": {
