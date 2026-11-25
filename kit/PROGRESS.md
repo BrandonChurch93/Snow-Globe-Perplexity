@@ -37,16 +37,16 @@ Status 106 · 2026-11-25 15:27 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 15:27 UTC
-clock: phase 5, tick of 4.2 minutes
-phase 5: 1.28 h used of its 12.00 h box
-allowance (before the review, continuation 1): 1.28 h used of 12.00 h allowed
-all time before the review: 37.47 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 15:36 UTC
+clock: phase 5, tick of 8.8 minutes
+phase 5: 1.42 h used of its 12.00 h box
+allowance (before the review, continuation 1): 1.42 h used of 12.00 h allowed
+all time before the review: 37.62 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 8
 ```
 
 ## Phases
@@ -1596,6 +1596,8 @@ Merged into `main`, each verified here with types clean and the tests green (126
   - `liquid_polisher` (started 14:42, limit 17:42): the liquid's lag, slam and whirl, on `agent/p5-liquid`. First push 15:35, report 17:15, stop 17:35.
   - `storm_polisher` (started 14:42, limit 17:42): how the storm is drawn, on `agent/p5-storm`. First push 15:35, report 17:15, stop 17:35.
   - Build agents at work: 10 of at most 10. Agents at work in all: 15 of at most 16.
+
+- 15:37 UTC, Nov 25 (Phase 5, Continuation 1): `controls_sheet_maker` has finished: reported at 15:19, sent back once for neutral tile labels, reported again at 15:31; `agent/p5-controls-sheets` at `ec5ddd6` is merged into `main` as `f3382c1` (tools only; types clean, 443 tests pass and 4 skipped, build green, engine `35fd724569ae490f` unchanged). The four key renderers of the multisampling proof (`round_renderer_c`, `round_renderer_d`, `motion_renderer_d`, `motion_renderer_e`) have reported and are idle with their clones. Build agents at work: 9 of at most 10 (`frame_helper_1` until 15:45, `interface_finisher`, `app_sheet_maker`, and the six polish builders). Agents at work in all: 10 of at most 16 (`gate_runner_b` on G3).
 
 ## Rounds
 
