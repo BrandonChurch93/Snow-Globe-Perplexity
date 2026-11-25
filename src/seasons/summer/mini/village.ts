@@ -34,13 +34,14 @@ const LAMP_GLASS: Rgb = [4.2, 3.3, 2.0]
 const WALL_FILL = 1.3
 const SAND = { body: 5, floor: 0.8, wrap: 1.5, foot: 0.85, bump: 0.12 }
 const TURF_LOOK = { tone: 0.5, fineMm: 0.05, clumpMm: 0.22, fill: 0.6, wrap: 0.5 }
-const GRASS_LOOK = { fill: 0.55, wrap: 1.0, through: 1.0, near: 2.8 }
-const WATER = { rough: 0.05, ripple: 0.006, shoreFrom: 0.9, shoreTo: 1.0, sky: 0.85, skyFrom: -0.7, skyTo: 0.5, post: 0.85, postMm: 0.55, postTall: 11.5, trunk: 0.55, trunkMm: 3, trunkTall: 26, body: 0.4 }
+const GRASS_LOOK = { fill: 0.42, wrap: 1.0, through: 0.75, near: 2.1 }
+const WATER = { mass: 0.88, crownMm: 11, crownTall: 38, houseMm: 8.5, houseTall: 17, rough: 0.05, ripple: 0.006, shoreFrom: 0.9, shoreTo: 1.0, sky: 0.62, skyFrom: -0.7, skyTo: 0.5, post: 0.85, postMm: 0.55, postTall: 11.5, trunk: 0.55, trunkMm: 3, trunkTall: 26, body: 0.4 }
 
 const flame = lampFlame()
 const mirrored: [number, number, number] = [flame[0], flame[1] - MIRROR.lowMm, flame[2]]
 const postFoot = lampFoot() as Rgb
 const trunkFoot: Rgb = [tree.x, groundAt(tree.x, tree.z), tree.z]
+const houseFoot: Rgb = [-9.6, groundAt(-9.6, -3), -3]
 const paperOf = (tone: string): Rgb => (tone === 'cream' ? tones.creamLight : tones.paperLight)
 
 export const innerLights: InnerLight[] = [
@@ -208,6 +209,7 @@ diffuseColor.rgb = mix(${glsl(tones.waterDeep)}, ${glsl(tones.waterDeep)} * 2.4 
   vec3 waterR = reflect(-waterSight, waterN);
   float waterGlint = villageMirror(waterN, waterSight, ${MIRROR.tight.toFixed(5)}, ${MIRROR.wide.toFixed(5)}, ${MIRROR.wideShare.toFixed(3)});
   waterShade = max(${WATER.post.toFixed(2)} * villagePost(waterN, waterSight, ${glsl(postFoot)}, ${WATER.postMm.toFixed(2)}, ${WATER.postTall.toFixed(1)}), ${WATER.trunk.toFixed(2)} * villagePost(waterN, waterSight, ${glsl(trunkFoot)}, ${WATER.trunkMm.toFixed(2)}, ${WATER.trunkTall.toFixed(1)}));
+  waterShade = max(waterShade, ${WATER.mass.toFixed(2)} * max(villagePost(waterN, waterSight, ${glsl(trunkFoot)}, ${WATER.crownMm.toFixed(2)}, ${WATER.crownTall.toFixed(1)}), villagePost(waterN, waterSight, ${glsl(houseFoot)}, ${WATER.houseMm.toFixed(2)}, ${WATER.houseTall.toFixed(1)})));
   float waterSky = smoothstep(${WATER.skyFrom.toFixed(2)}, ${WATER.skyTo.toFixed(2)}, waterR.x * 0.75 - waterR.z * 0.5 + 0.2);
   totalEmissiveRadiance += (${glsl(tones.lamp)} * waterGlint * uGlowGain * waterFresnel + ${glsl(tones.waterSky)} * (${WATER.sky.toFixed(2)} * waterSky * (0.25 + 0.75 * waterFresnel))) * (1.0 - waterShade) * (1.0 - 0.7 * waterShore);
 }
