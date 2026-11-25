@@ -100,7 +100,13 @@ describe('the change number', () => {
 
   it('changes what is outside the glass together, across a few frames', () => {
     const span = changeSpan('base')
-    for (const part of OUTSIDE.filter((p) => p !== 'surface-dressing')) expect(changeSpan(part)).toEqual(span)
+    for (const part of ['base', 'backdrop']) expect(changeSpan(part)).toEqual(span)
+    // What is on the glass begins with the base's span and is gone on the cut, so the old season's dressing is never seen over the new base.
+    expect(changeSpan('glass-dressing')).toEqual({ from: span.from, to: CHANGE_CUT.at, lag: 0 })
+    // The heaps of the slab sink with the old dressing before the cut and rise with the new after it.
+    expect(changeSpan('surface-leave')).toEqual({ from: DRESSING_CHANGE.leaveFrom, to: DRESSING_CHANGE.leaveTo, lag: 0 })
+    expect(changeSpan('surface-come')).toEqual({ from: DRESSING_CHANGE.comeFrom, to: DRESSING_CHANGE.comeTo, lag: 0 })
+    for (let c = 0; c <= 1; c += 0.001) expect(partChange('surface-leave', c) < 1 && partChange('surface-come', c) > 0, `a heap of both seasons at ${c}`).toBe(false)
     expect(span.lag).toBe(0)
     const table = changeSpan('surface-dressing')
     const frame = FRAME_BEATS / WINDOW
