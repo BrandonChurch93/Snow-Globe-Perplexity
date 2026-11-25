@@ -1,20 +1,18 @@
-# Status 76
+# Status 78
 
-2026-11-25 05:21 UTC
+2026-11-25 06:04 UTC
 
-- The second rounds of spring and summer and fall now judge one commit: all ten builders were merged at 05:20 UTC and every built file of the three seasons is being made again from its sources (decision 84)
-- Why the freeze moved: the first merged tree counted too many triangles and summer at rest showed a storm of large seed heads the approved image does not have
-- The triangle count was my own fault: a late merge step had restored older built files of two bases. The builders' own counts are inside the limits for all three seasons at all three quality levels
-- The pictures of Status 75 came from that tree and are not the build the rounds judge
-- Summer's seed heads at rest are fixed in the seed row and in the drawing of rested seeds
-- Fall carries four bats now and not seven (decision 85)
-- Round 10 is closed in the log apart from its fixes line. The sound account is still out of credits
-- phase 4: 5.23 h used of its 9.50 h box
-- allowance (before the review): 27.51 h used of 36.00 h allowed
+- Rounds 11 12 and 13 are being rendered: still packs of spring and summer due about 06:45 UTC and the three motion packs about 07:30 to 07:45 (an arrival frame costs about a minute)
+- All ten build agents of the third set are at work on the open lists. First fixes are in: spring's crown in tiers. Summer's seed heads afloat at rest. Fall's mist behind the scene
+- Found and fixed: the soft pixels that kept spring's sharpness measure red were the petals on the table reporting no texture density
+- Fall's likeness measure at rest is red because the miniature alone is too dark and the fog cost 0.14 of it. Both are being worked
+- Triangles on the judged build are inside the limits for all three seasons on all three levels
+- phase 4: 5.95 h used of its 9.50 h box
+- allowance (before the review): 28.24 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-76-1.jpg`: Spring at rest by its miniature builder: ours left and the approved crop right (draft tier). Still wrong: the crown is fuller and more even than the approved lace of blossom
-- `out/stills/status/status-76-2.jpg`: Summer at rest by its air builder after the seed fix: ours beside the approved image (draft tier). Still wrong: the air is darker and cooler than approved
-- `out/stills/status/status-76-3.jpg`: Fall at rest by its miniature builder: ours left and approved right (draft tier). Still wrong: haze and leaves veil the tree and the cottage
-- `out/stills/status/status-76-4.jpg`: Still: summer rest hero, preview, draft
+- `out/stills/status/status-78-1.jpg`: Spring at rest half an hour into the third fix pass (left) beside the approved image (right): the crown is now tiers of blossom on boughs with air between. Draft tier.
+- `out/stills/status/status-78-2.jpg`: Summer: the approved image (left) beside the build (right): about twenty fine seed heads float again at rest. Draft tier.
+- `out/stills/status/status-78-3.jpg`: Fall: the approved image (left) beside the build (right): the mist now stands behind the cottage and the tree instead of over them. Draft tier.
+- `out/stills/status/status-78-4.jpg`: Still: fall rest hero, preview, draft, standins view
