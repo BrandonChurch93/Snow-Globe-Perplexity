@@ -1,18 +1,17 @@
-# Status 79
+# Status 80
 
-2026-11-25 06:30 UTC
+2026-11-25 06:40 UTC
 
-- The app is published again from the build Rounds 11 to 13 judge: https://snow-globe-seasons.pplx.app (06:19 UTC. Visibility: Organization)
-- The renders of the three rounds are still running. The first still packs are due within minutes
-- Found: the invalid values on spring's base still come from one shared bump function that has no answer where a face is seen edge on. A one-line guard is going in (decision 87)
-- Third pass so far: the base changes behind a line of light in all four changes. Fall's vines are black and crossing. Spring's bank is a ring of moss mounds. Summer's crown is darker with gold rims and about three dozen seed heads float at rest
-- Sound is still out: the account has no credits left
-- phase 4: 6.38 h used of its 9.50 h box
-- allowance (before the review): 28.66 h used of 36.00 h allowed
+- Rounds 11 and 12 judge the frozen build e39ec6c. The first critic scores spring 5 (it was 4) and summer 6 (it was 4). Part 1 of spring's realism critic scores 7 (it was 3). No pass yet: the bar is 9
+- Measures at final tier: summer has 1 red line of 19 (the miniature holds 0.58 of the approved image's fine detail against 0.75). Spring has 5 red and the causes of four of them were fixed after the freeze
+- Named by two critics each: the storm's trails merge into bands or a milky sheet. A tall cut bank makes the miniature a raised disk. The air bubble at the top of the glass reads as an oval ring (shared glass: kept for the polish rounds)
+- Ten build agents are fixing these for the third freeze at 08:32 UTC. Fall's stills and the three motion packs and the gate are still rendering
+- phase 4: 6.55 h used of its 9.50 h box
+- allowance (before the review): 28.83 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-79-1.jpg`: Spring into summer across the swap (film frames 1390 to 1400): the base now changes behind a line of light instead of a speckled dissolve. Draft tier.
-- `out/stills/status/status-79-2.jpg`: Fall's base: the approved image (above) and the build (below). The vines are now black and thorned and cross each other. Draft tier.
-- `out/stills/status/status-79-3.jpg`: Summer at rest through the reference camera: the approved image (left) beside the build (right). The crown is darker with gold on its sunward rims. Draft tier.
-- `out/stills/status/status-79-4.jpg`: Still: summer rest hero, preview, draft
+- `out/stills/status/status-80-1.jpg`: Spring at rest: the judged build (left) beside the approved image (right)
+- `out/stills/status/status-80-2.jpg`: Spring mid-shake: the judged build (left) beside the approved image (right)
+- `out/stills/status/status-80-3.jpg`: Summer at rest: the judged build (left) beside the approved image (right)
+- `out/stills/status/status-80-4.jpg`: Summer mid-shake: the judged build (left) beside the approved image (right)
