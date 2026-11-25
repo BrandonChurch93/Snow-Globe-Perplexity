@@ -8,7 +8,7 @@ import * as P from './profile.mjs'
 import { lighter, thin } from '../base-spring/thin.mjs'
 
 // G15: how much of each full list stays (the surface moves by at most `error` mm), and the error of the two lighter lists.
-const THIN = { stone: { share: 0.68, error: 0.06 }, shells: { share: 0.72, error: 0.05 }, glass: { share: 0.75, error: 0.05 }, sand: { share: 0.66, error: 0.08 }, levels: { medium: { error: 0.09, worth: 1 }, low: { error: 0.22, worth: 1 } } }
+const THIN = { stone: { share: 0.68, error: 0.06 }, shells: { share: 0.72, error: 0.05 }, sand: { share: 0.66, error: 0.08 }, levels: { medium: { error: 0.09, worth: 1 }, low: { error: 0.22, worth: 1 } } }
 
 const cfg = loadConfig()
 const dir = rel('assets-full', 'summer')
@@ -33,7 +33,7 @@ if (want('mesh')) {
   const meshes = [
     await thin(stone.soup.mesh({ repeats: stone.repeats, tileMm: TILE_MM }), THIN.stone),
     await thin(set.shells.mesh({}), THIN.shells),
-    await thin(set.glass.mesh({}), THIN.glass),
+    set.glass.mesh({}),
     await thin(sand.soup.mesh({ tileMm: SAND_TILE_MM, spill: SPILL, ledgeH: P.LEDGE_H }), THIN.sand),
   ]
   const file = rel('assets-full', 'summer', 'base-summer.glb')

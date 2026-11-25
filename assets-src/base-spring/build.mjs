@@ -269,7 +269,7 @@ for (let y = 0; y < H; y++) {
   }
 }
 
-const THIN = { rock: { share: 0.74, error: 0.06 }, growth: { share: 0.74, error: 0.06 }, levels: { medium: { error: 0.13, worth: 1 }, low: { error: 0.25, worth: 1 } } }
+const THIN = { rock: { share: 0.74, error: 0.06 }, growth: { share: 0.74, error: 0.06 }, levels: { medium: { error: 0.18, worth: 1 }, low: { error: 0.3, worth: 1 } } }
 const roots = []
 const rng = mulberry(4401)
 const pushRoot = (spec) => {
@@ -481,8 +481,7 @@ function buildRock() {
   return soup
 }
 
-function tube(soup, centres, radii, colour, uvScale, flat = 0.9) {
-  const sides = 8
+function tube(soup, centres, radii, colour, uvScale, flat = 0.9, sides = 8) {
   const first = soup.count
   let run = 0
   for (let i = 0; i < centres.length; i++) {
@@ -521,7 +520,7 @@ function buildGrowth() {
     })
     const before = soup.triangles
     const gnarl = (i) => 1 + 0.26 * Math.sin(i * 0.62 + knot) + 0.16 * Math.sin(i * 1.9 + 2.7 * knot) + 0.12 * Math.sin(i * 4.3 + 5.1 * knot)
-    tube(soup, centres, centres.map((c, i) => c.rr * gnarl(i)), (i) => { const v = tint * (0.86 + 0.2 * Math.sin(i * 0.33 + 1.7 * knot)); return [v, v, v] }, [1, 14])
+    tube(soup, centres, centres.map((c, i) => c.rr * gnarl(i)), (i) => { const v = tint * (0.86 + 0.2 * Math.sin(i * 0.33 + 1.7 * knot)); return [v, v, v] }, [1, 14], 0.9, root.r > 1.1 ? 8 : 6)
     rootTriangles += soup.triangles - before
   }
   const caps = [...MUSHROOMS]
