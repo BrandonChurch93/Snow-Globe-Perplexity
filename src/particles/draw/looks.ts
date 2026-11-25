@@ -121,6 +121,8 @@ export const STORM_SHUTTER = 0.3
 export const STORM_OWN_PATH_FROM = 4.5
 export const STORM_SHUTTER_TURNED = 0.8
 export const STORM_ALIGN = 0.7
+/** The whirl loosened in the storm: the least share of the turn to the current that a flake takes (each its own, up to the whole), the level the clumps of the dabs are evened toward and by how much, how much of a far dab is seen, and how long a far and a near stroke are beside the stroke of the middle. */
+export const STORM_LOOSE = { alignLow: 0.25, even: 0.5, spread: 0.5, farSeen: 0.6, farLong: 0.65, nearLong: 1.35 }
 export const STORM_TOP = { keep: 0.22, from: 0.15, to: 0.7 }
 export const STORM_SLOW = { keep: 0.35, fromPx: 2, toPx: 9 }
 export const STORM_SMEAR_FAINT = 0.1

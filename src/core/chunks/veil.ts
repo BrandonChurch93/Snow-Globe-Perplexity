@@ -143,7 +143,7 @@ export const VEIL_LOOK = {
   driftCutCrest: 0.58,
   driftEdgeDeep: 0.4,
   driftEdgeCrest: 0.1,
-  driftMist: 0.45,
+  driftMist: 0.2,
   driftShadow: 0.05,
   driftKeyFloor: 0.42,
   driftShadeWhite: 0.5,
