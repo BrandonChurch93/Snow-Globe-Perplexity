@@ -1,5 +1,6 @@
-// Radius and height in mm, foot to collar: a rounded toe that flares past the body, a body that leans in as it rises, and
-// one shoulder that runs without a step into the lip the glass sits in.
+// Radius and height in mm, foot to collar: a rounded toe that flares past the body, a body that leans in as it rises, and a
+// collar that stands up round the glass as a nest does, so the sphere sits in the moss and not on it (references/approved/spring-rest.png:
+// the moss meets the glass's outline where the sphere is about 100 mm wide, and its shoulder is round).
 export const PROFILE = [
   [58.8, 0],
   [60.9, 2.0],
@@ -7,14 +8,14 @@ export const PROFILE = [
   [60.9, 9.5],
   [59.6, 14.5],
   [58.0, 19.5],
-  [56.3, 24],
-  [54.5, 27.8],
-  [52.5, 30.6],
-  [50.4, 32.8],
-  [48.4, 34.7],
-  [46.6, 36.3],
-  [45.0, 37.2],
-  [43.4, 37.3],
+  [56.4, 24],
+  [55.2, 28.5],
+  [54.6, 32.5],
+  [54.2, 36],
+  [53.4, 39],
+  [52.0, 41.2],
+  [50.4, 42.4],
+  [48.6, 42.6],
 ]
 
 export const DRIPS = [
@@ -42,8 +43,9 @@ export const PATCHES = [
 ]
 
 export const TRICKLE = [
-  [-41.5, 36, 8.5],
-  [-41.8, 36, 4.5],
+  [-41.5, 36, 13.5],
+  [-41.8, 36, 9],
+  [-41.7, 36, 4.5],
   [-41.4, 34.2],
   [-40.7, 29.8],
   [-40.2, 21.8],

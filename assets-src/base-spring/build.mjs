@@ -190,7 +190,7 @@ function pathOf(points, step, wiggle = 0, seed = 0) {
   return { samples: out, length }
 }
 
-const trickle = pathOf(TRICKLE, 0.25)
+const trickle = pathOf(TRICKLE, 0.28)
 const widthAt = (t) => {
   for (let i = 1; i < TRICKLE_WIDTH.length; i++) if (t <= TRICKLE_WIDTH[i][0]) return mix(TRICKLE_WIDTH[i - 1][1], TRICKLE_WIDTH[i][1], smooth(TRICKLE_WIDTH[i - 1][0], TRICKLE_WIDTH[i][0], t))
   return TRICKLE_WIDTH[TRICKLE_WIDTH.length - 1][1]
@@ -453,7 +453,7 @@ function buildRock() {
   const soup = new Soup('rock')
   const cols = 541
   const rows = []
-  for (let s = 0; s < S_MAP; s += 0.46) rows.push({ s })
+  for (let s = 0; s < S_MAP; s += 0.52) rows.push({ s })
   rows.push({ s: S_MAP })
   const end = PROFILE[PROFILE.length - 1]
   for (const t of [0.12, 0.3, 0.5, 0.7, 0.88, 1]) rows.push({ s: S_MAP, cup: [end[0] * (1 - t), mix(end[1] - 2, CENTRE_H - CUP_R, t)] })
@@ -520,7 +520,7 @@ function buildGrowth() {
     })
     const before = soup.triangles
     const gnarl = (i) => 1 + 0.13 * Math.sin(i * 0.31 + knot) + 0.07 * Math.sin(i * 0.9 + 2.7 * knot)
-    tube(soup, centres, centres.map((c, i) => c.rr * gnarl(i)), (i) => { const v = tint * (0.86 + 0.2 * Math.sin(i * 0.33 + 1.7 * knot)); return [v, v, v] }, [1, 14], 1.0, root.r > 1.1 ? 8 : 6)
+    tube(soup, centres, centres.map((c, i) => c.rr * gnarl(i)), (i) => { const v = tint * (0.86 + 0.2 * Math.sin(i * 0.33 + 1.7 * knot)); return [v, v, v] }, [1, 14], 1.0, root.r > 1.1 ? 10 : 6)
     rootTriangles += soup.triangles - before
   }
   const caps = [...MUSHROOMS]
