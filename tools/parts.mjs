@@ -53,6 +53,13 @@ export function filesHash(files) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = parseArgs(process.argv.slice(2))
+  // A run with no argument writes the register again and takes a new hash for every part that is still a stand-in.
+  // So an argument this tool does not know stops it here: nothing but a bare run may move a recorded hash.
+  const unknown = [...Object.keys(args).filter((k) => !['_', 'set', 'note', 'list'].includes(k)).map((k) => `--${k}`), ...args._]
+  if (unknown.length) {
+    console.error(`parts: unknown argument ${unknown.join(' ')}. Use: npm run parts (write the register again), npm run parts -- --list, npm run parts -- --set NAME=STATE [--note "TEXT"]. Nothing was written.`)
+    process.exit(1)
+  }
   const existing = fs.existsSync(FILE) ? readJson(FILE) : { parts: [] }
   const byName = new Map(existing.parts.map((p) => [p.name, p]))
   if (args.set) {
@@ -77,6 +84,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     })
     writeJson(FILE, { parts })
     const n = parts.filter((p) => p.state === 'stand-in').length
+    const moved = parts.filter((p) => byName.has(p.name) && byName.get(p.name).standInHash !== p.standInHash)
     console.log(`parts register: ${parts.length} parts, ${n} stand-ins`)
+    for (const p of moved) console.log(`  the hash recorded for the stand-in ${p.name} moved: ${byName.get(p.name).standInHash} to ${p.standInHash}`)
   }
 }
