@@ -259,6 +259,8 @@ const IRON_AFTER = `
   reflectedLight.directSpecular += uBaseRimCol * (0.08 * pow(ironRh, 7.0) + mix(0.4 * pow(ironRh, 50.0), 0.3 * pow(ironRh, 36.0), baseStrand)) * ironRl * ironSheen;
   vec3 ironCardC = mix(uRigCardCol, vec3(dot(uRigCardCol, vec3(0.3, 0.5, 0.2))), 0.65);
   reflectedLight.directSpecular += (ironKeyC * vec3(0.8, 0.9, 1.0) * (mix(0.05, 0.4 * baseDim, baseDrum) * pow(ironKh, mix(8.0, 9.0, baseDrum)) + mix((0.14 * pow(ironKh, 10.0) + 1.3 * pow(ironKh, 50.0)) * (0.55 + 0.7 * fibreHere) * ironGlint, 0.6 * pow(ironKh, 44.0) * (0.35 + 0.65 * baseDetail.b), 1.0 - baseStrand)) * ironKl + ironCardC * (0.05 * pow(ironCh, 10.0) + mix(0.26 * pow(ironCh, 50.0), 0.45 * pow(ironCh, 40.0) * ironGlint, baseStrand)) * ironCl) * ironSheen;
+  // The key rakes the bare leather of the right flank: a broad grey sheen, grained by the hide.
+  reflectedLight.directSpecular += ironKeyC * vec3(0.8, 0.9, 1.0) * 0.3 * pow(ironKh, 3.0) * ironKl * baseDrum * smoothstep(8.0, 46.0, vBasePos.x) * (0.5 + 0.9 * baseDetail.b) * baseAo;
   float ironEdge = pow(1.0 - clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0), 3.0);
   vec3 ironUp = inverseTransformDirection(geometryNormal, viewMatrix);
   float ironWarm = clamp(dot(ironUp, normalize(vec3(uBaseRimDir.x, uBaseRimDir.y * 0.25, uBaseRimDir.z))) * 0.5 + 0.5, 0.0, 1.0);
