@@ -75,11 +75,14 @@ None. `standIns` of `veil.ts` and `glass.ts` are empty.
   Final-tier M3 was not measured by me.
 - Triangles (G15), on the build of my branch: summer 1,660,058 / 916,170 / 438,632 (high / medium / low); my files 6.
 - Make targets: none.
-- Looks: 17 pictures on the looks branch; about 45 renders looked at in all across my parts (veil-summer,
+- Looks: 18 pictures on the looks branch; about 45 renders looked at in all across my parts (veil-summer,
   glass-dressing-summer, backdrop, the seed and firefly rows, the arrival's grains), under 40 for each part.
 - Seen with my own eyes: hero at rest and 0.5 s after the landing at hd draft after every change; the fitted camera beside
   the approved pair for the haze and the storm; one landing sheet (12 frames, before the pool's delay); a scratch merge
   with kinds3 and summer_mini3 at rest and at the landing.
-- Not seen: the arrival in motion with the new lantern and pool timing; anything at final tier; the film.
+- Seen at 08:18: the landing sheet again (12 frames, 24.0 to 28.4 s) on a scratch merge with kinds3 and summer_mini3
+  24ae271: the storm clears without a step and the lanterns glow through it. At that size and spacing I cannot tell the
+  lanterns coming up one by one, and the pool's place is out of frame from 27.2 s.
+- Not seen: the pool arriving in motion; anything at final tier; the film.
 
-Last commit of `agent/p4-summer_air3` when this was written (08:14 UTC): `d962787` (merge of main c5577c6; last own commit `ddd1944`).
+Last commit of `agent/p4-summer_air3` (08:19 UTC): `f43fec9` (merge of main de1c404; last own commit `ddd1944`).
