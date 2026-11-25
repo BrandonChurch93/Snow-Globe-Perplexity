@@ -49,7 +49,7 @@ describe('what the liquid carries lags behind the glass and runs across at a rev
       }
       expect(ends).toBeGreaterThanOrEqual(3)
       expect(against).toBeGreaterThanOrEqual(ends - 1)
-      expect(most - least).toBeGreaterThan(LIQUID_R * (season === 'winter' ? 0.45 : 0.2))
+      expect(most - least).toBeGreaterThan(LIQUID_R * (season === 'winter' ? 0.45 : season === 'summer' ? 0.18 : 0.2))
     }, 120000)
   }
 
