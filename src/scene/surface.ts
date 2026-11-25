@@ -71,9 +71,9 @@ export const SLAB = {
   f0: 0.05,
   fresnelPower: 4.2,
   mirrorShare: 1,
-  nearFloor: 0.6,
-  nearBlur: 1.5,
-  nearBlurFar: 3,
+  nearFloor: 0.9,
+  nearBlur: 2.4,
+  nearBlurFar: 4.2,
   nearBlurRiseMm: 90,
   nearHeightMm: 10,
   mirrorMark: 0.35,
@@ -97,8 +97,19 @@ export const SLAB = {
   sideShare: 0.08,
   sideByGrazing: 1,
   sideMost: 0.45,
-  fadeHeightMm: 170,
-  fadeFloor: 0.3,
+  sideRise: 0.4,
+  sideRiseMm: 110,
+  fadeHeightMm: 130,
+  fadeFloor: 0.2,
+  speckPx: 1.6,
+  heldFar: 0.45,
+  seatLine: 0.9,
+  seatLineMm: 0.45,
+  seatShade: 0.45,
+  seatShadeMm: 2.5,
+  unlitShare: 0.3,
+  litFrom: 0.018,
+  litTo: 0.075,
   poolGain: 4,
   poolRiseMm: 46,
   contactMm: 4,
@@ -401,7 +412,8 @@ void main() {
   vec2 tilt = slabSlope(fine) + vec2(turned.x * ${f(Math.cos(crumbTurn))} - turned.y * ${f(Math.sin(crumbTurn))}, turned.x * ${f(Math.sin(crumbTurn))} + turned.y * ${f(Math.cos(crumbTurn))});
   vec3 n = normalize(vec3(tilt.x, 1.0, tilt.y));
   vec2 lump = uLumps > 0.0 ? uLumps * slabLumps(P, -v, ${f(SLAB.lumpBlur)} * lensBlurMm(depth)) : vec2(0.0);
-  float dust = clamp(max(fine.b, crumb.b * ${f(SLAB.crumbDust)}), 0.0, 1.0);
+  float speck = max(spread, ${f(SLAB.speckPx)});
+  float dust = clamp(max(textureGrad(uDetail, uvA, dFdx(uvA) * speck, dFdy(uvA) * speck).b, textureGrad(uDetail, uvC, dFdx(uvC) * speck, dFdy(uvC) * speck).b * ${f(SLAB.crumbDust)}), 0.0, 1.0);
   dust = max(dust * (1.0 - min(lump.x, 1.0)), min(lump.y * ${f(SLAB.lumpGain)}, 1.0));
   float vein = stone.r;
   float cloud = stone.g;
@@ -445,6 +457,9 @@ void main() {
   float sil = (1.0 - smoothstep(girth - silSoft, girth + 0.25 * silSoft, side)) * step(0.0, th + girth);
   float above = max(height - lift, 0.0);
   float fade = mix(1.0, ${f(SLAB.nearFloor)}, smoothstep(0.0, ${f(SLAB.nearHeightMm)}, above)) * mix(1.0, ${f(SLAB.fadeFloor)}, smoothstep(0.0, ${f(SLAB.fadeHeightMm)}, above));
+  float seatUp = max((th - sqrt(max(uFoot.z * uFoot.z - side * side, 0.0))) / rl, 0.0) * r0.y;
+  float seatOn = (1.0 - smoothstep(uFoot.z - 1.5, uFoot.z + 1.5, side)) * step(0.0, th + uFoot.z) * exp(-slabRim(P.xz) / ${f(SLAB.contactLiftMm)});
+  float seat = 1.0 - seatOn * (1.0 - (1.0 - ${f(SLAB.seatLine)} * exp(-seatUp / ${f(SLAB.seatLineMm)})) * (1.0 - ${f(SLAB.seatShade)} * exp(-seatUp / ${f(SLAB.seatShadeMm)})));
 
   vec3 footUp = vec3(uLean.z, sqrt(max(1.0 - dot(uLean.zw, uLean.zw), 0.0)), uLean.w);
   vec3 footAt = vec3(uFoot.x, lift, uFoot.y);
@@ -470,8 +485,8 @@ void main() {
     vec2 lean = vec2(dot(slope, vec2(-ground.y, ground.x)) * grazing, dot(slope, ground)) * 2.0 * uFocal;
     seen = slabMirror(st, lean, reachFar, 1.0, ${f(SLAB.sideShare)}).rgb;
     if (sil > 0.002) {
-      vec4 hit = slabMirror(st, lean, min(reachNear * mix(${f(SLAB.nearBlur)}, ${f(SLAB.nearBlurFar)}, smoothstep(0.0, ${f(SLAB.nearBlurRiseMm)}, height)), 1.0), 0.0, clamp(grazing * ${f(SLAB.sideByGrazing)}, ${f(SLAB.sideShare)}, ${f(SLAB.sideMost)}));
-      image = hit.rgb * sil;
+      vec4 hit = slabMirror(st, lean, min(reachNear * mix(${f(SLAB.nearBlur)}, ${f(SLAB.nearBlurFar)}, smoothstep(0.0, ${f(SLAB.nearBlurRiseMm)}, height)), 1.0), 0.0, clamp(grazing * ${f(SLAB.sideByGrazing)}, ${f(SLAB.sideShare)}, ${f(SLAB.sideMost)}) + ${f(SLAB.sideRise)} * smoothstep(0.0, ${f(SLAB.sideRiseMm)}, height));
+      image = hit.rgb * (sil * seat * mix(${f(SLAB.unlitShare)}, 1.0, smoothstep(${f(SLAB.litFrom)}, ${f(SLAB.litTo)}, dot(hit.rgb, vec3(0.2126, 0.7152, 0.0722)))));
       held = hit.a * sil;
     }
   } else if (uReflect.y > 0.5) {
@@ -496,7 +511,7 @@ void main() {
   vec3 room = stageRoomSeen(r, ${f(SLAB.roomRough)});
   float farGloss = fres * mark * ${f(SLAB.gloss)} * mix(1.0, ${f(SLAB.farGain)}, smoothstep(${f(SLAB.farFrom)}, ${f(SLAB.farTo)}, grazing));
   float nearGloss = max(fres, ${f(SLAB.mirrorShare)}) * fade * mix(1.0, mark, ${f(SLAB.mirrorMark)});
-  col += (image * vec3(${SLAB.mirrorTint.map(f).join(', ')}) * nearGloss + (seen + room * (1.0 - held * ${f(1 - SLAB.sheenUnder)})) * farGloss) * (1.0 - 0.6 * dust);
+  col += (image * vec3(${SLAB.mirrorTint.map(f).join(', ')}) * nearGloss + (seen + room * (1.0 - held * ${f(1 - SLAB.sheenUnder)} * mix(1.0, ${f(SLAB.heldFar)}, smoothstep(0.0, ${f(SLAB.fadeHeightMm)}, above)))) * farGloss) * (1.0 - 0.6 * dust);
   col += uRoomWall * slabEdgeGlow(P.xz, 1.2 * lensBlurMm(depth));
 
   gl_FragColor = vec4(col * cover, 1.0 - cover);
