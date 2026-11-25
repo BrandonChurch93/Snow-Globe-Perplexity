@@ -1,6 +1,10 @@
 # REPORT — fall air (fall_air3), Phase 4, third set
 
-Branch `agent/p4-fall_air3`, last commit **c1977fa** (pushed 08:05 UTC; a merge of main over e0cd067, my last own commit). Looks branch `agent/p4-fall_air3-looks`. Session 05:38 to 08:38 UTC.
+Branch `agent/p4-fall_air3`, tip **5998056** (pushed 08:25 UTC: a fast-forward to main, which already held my c1977fa; my last own commit is e0cd067, and c1977fa is what every test below ran on unless said). Looks branch `agent/p4-fall_air3-looks`. Session 05:38 to 08:38 UTC.
+
+## On 5998056 (main's tip at 08:24, with kinds3 b329515, fall_mini3 and fall_base3 merged)
+
+`npx tsc --noEmit` clean, `npx vitest run` 436 passed, 4 skipped. One look only, rest hero draft hd (`a3-rest-on-main.jpg`): the ring on top of the glass is gone, the crown is thinner; the leaves afloat read fewer and smaller than on c1977fa (about 30 to 35 against about 55), with kinds3's newer drawing and engine lines, my row unchanged. If the count afloat matters at the freeze, raise `floats` in the leaf row (0.08 to about 0.12) and look. Landed, settled, determinism and the measures were NOT rerun on 5998056.
 
 ## Stand-ins and fallbacks
 
