@@ -1,5 +1,4 @@
 import * as THREE from 'three'
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import { afterLight } from '../../../core/chunks/light'
 import { stageMaterial, type Rgb } from '../../../core/materials'
 import { geometry, prepareModel } from '../../../core/models'
@@ -360,11 +359,12 @@ const shadowed = <T extends THREE.Mesh>(m: T, cast = true): T => {
 }
 
 export function build(): THREE.Object3D {
-  const solids = withSurface(mergeGeometries([autumn(villageGeometry('solid')), geometry(MODEL, 'decor')]), sources(NEAR_WALL, tones.lampLight))
-  const walls = shadowed(new THREE.Mesh(solids, surfaceMaterial({ part: PART, map: villageGrain(), gain, key: 'village-solid-fall', fill: WALL_FILL })))
+  const stone = surfaceMaterial({ part: PART, map: villageGrain(), gain, key: 'village-solid-fall', fill: WALL_FILL })
+  const walls = shadowed(new THREE.Mesh(withSurface(autumn(villageGeometry('solid')), sources(NEAR_WALL, tones.lampLight)), stone))
+  const decor = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'decor').clone(), sources(NEAR_WALL, tones.lampLight)), stone))
   const earth = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'ground').clone(), sources(NEAR, tones.lampLight)), groundMaterial()), false)
   const water = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'water').clone(), sources(NEAR, tones.lampLight)), waterMaterial()), false)
-  return new THREE.Group().add(walls, earth, water)
+  return new THREE.Group().add(walls, decor, earth, water)
 }
 
 const scaled = (c: Rgb, k: number): Rgb => [c[0] * k, c[1] * k, c[2] * k]
