@@ -100,8 +100,15 @@ describe('the change number', () => {
 
   it('changes what is outside the glass together, across a few frames', () => {
     const span = changeSpan('base')
-    for (const part of OUTSIDE) expect(changeSpan(part)).toEqual(span)
+    for (const part of OUTSIDE.filter((p) => p !== 'surface-dressing')) expect(changeSpan(part)).toEqual(span)
     expect(span.lag).toBe(0)
+    const table = changeSpan('surface-dressing')
+    const frame = FRAME_BEATS / WINDOW
+    expect(table.from, 'what the table carries crosses inside the outside span').toBeGreaterThan(span.from)
+    expect(table.to).toBeLessThan(span.to)
+    expect(table.from, 'and inside the shutter of the frame of the cut').toBeGreaterThanOrEqual(CHANGE_CUT.frame * frame)
+    expect(table.to).toBeLessThanOrEqual((CHANGE_CUT.frame + 0.5) * frame)
+    expect((table.from + table.to) / 2).toBeCloseTo(CHANGE_CUT.at, 12)
     const frames = ((span.to - span.from) * WINDOW) / FRAME_BEATS
     expect(frames).toBeGreaterThanOrEqual(4)
     expect(frames).toBeLessThanOrEqual(9)
