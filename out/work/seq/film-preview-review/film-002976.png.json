@@ -13,7 +13,7 @@
   "browser": "Google Chrome for Testing 147.0.7727.15",
   "graphics": "software",
   "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB",
-  "time": "2026-11-25T10:01:26.382Z",
+  "time": "2026-11-25T09:55:26.046Z",
   "diag": "",
   "spec": {
     "source": "film",
@@ -22,12 +22,12 @@
   "frameSeconds": 49.6,
   "shot": "close",
   "season": "winter",
-  "seconds": 52.994,
+  "seconds": 74.55,
   "timings": {
-    "simMs": 88.89999999850988,
-    "drawMs": 52730.00000000186,
+    "simMs": 197.59999999776483,
+    "drawMs": 73963.9000000013,
     "samples": 8,
-    "steps": 8
+    "steps": 2
   },
   "precision": "float32",
   "errors": []
