@@ -211,14 +211,20 @@ diffuseColor.rgb = mix(vec3(0.028, 0.03, 0.034), vec3(0.05, 0.046, 0.044), baseB
 float baseRust = smoothstep(0.62, 0.85, baseNoise(vBasePos * 0.9 + 7.0)) * (1.0 - baseThorn) * 0.35;
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.1, 0.05, 0.028), baseRust);
 float baseWrap = 0.1;
-float baseCandle = 1.0;
+float baseCandle = 2.0;
+// Bark on the strands: fibres that run along them.
+float baseStrand = (1.0 - baseThorn) * (1.0 - baseDrum);
+vec2 fibreAt = vec2(vBaseUv1.x * 1.3, vBaseUv1.y * 7.0);
+float fibreHere = baseNoise(vec3(fibreAt, 5.0)) * 0.65 + baseNoise(vec3(fibreAt * vec2(2.3, 3.1), 9.0)) * 0.35;
+float fibreNext = baseNoise(vec3(fibreAt + vec2(0.0, 0.3), 5.0)) * 0.65 + baseNoise(vec3((fibreAt + vec2(0.0, 0.3)) * vec2(2.3, 3.1), 9.0)) * 0.35;
+diffuseColor.rgb *= mix(1.0, 0.55 + 0.9 * fibreHere, baseStrand);
 `
 const IRON_ROUGH = `
 roughnessFactor = clamp(mix(0.44, 0.62, baseDetail.b) + 0.14 * baseScale + 0.2 * baseRust - 0.08 * baseThorn * vBasePaint.z + 0.12 * baseDrum, 0.18, 1.0);
 metalnessFactor = mix(0.85, 0.6, baseScale) * (1.0 - 0.6 * baseRust);
 `
 const IRON_TILT = `
-vec2 baseTilt = baseSlope(baseDetail.rg) * mix(mix(0.24, 0.14 * (1.0 - vBasePaint.z), baseThorn), 0.75, baseDrum);
+vec2 baseTilt = baseSlope(baseDetail.rg) * mix(mix(0.12, 0.14 * (1.0 - vBasePaint.z), baseThorn), 0.75, baseDrum) + vec2(0.0, (fibreNext - fibreHere) * 2.6 * baseStrand);
 `
 const IRON_AFTER = `
 #define IRON_WARM 1.5
@@ -243,7 +249,7 @@ const IRON_AFTER = `
   float ironRl = smoothstep(0.0, 0.25, dot(geometryNormal, ironRim));
   reflectedLight.directSpecular += uBaseRimCol * (0.08 * pow(ironRh, 7.0) + 0.4 * pow(ironRh, 50.0)) * ironRl * ironSheen;
   vec3 ironCardC = mix(uRigCardCol, vec3(dot(uRigCardCol, vec3(0.3, 0.5, 0.2))), 0.65);
-  reflectedLight.directSpecular += (ironKeyC * vec3(0.8, 0.9, 1.0) * (0.1 * pow(ironKh, 8.0) + 0.5 * pow(ironKh, 44.0) * (0.35 + 0.65 * baseDetail.b)) * ironKl + ironCardC * (0.05 * pow(ironCh, 10.0) + 0.26 * pow(ironCh, 50.0)) * ironCl) * ironSheen;
+  reflectedLight.directSpecular += (ironKeyC * vec3(0.8, 0.9, 1.0) * (mix(0.05, 0.16, baseDrum) * pow(ironKh, mix(8.0, 3.0, baseDrum)) + 0.6 * pow(ironKh, 44.0) * mix(0.2 + 1.1 * fibreHere, 0.35 + 0.65 * baseDetail.b, 1.0 - baseStrand)) * ironKl + ironCardC * (0.05 * pow(ironCh, 10.0) + 0.26 * pow(ironCh, 50.0)) * ironCl) * ironSheen;
   float ironEdge = pow(1.0 - clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0), 3.0);
   vec3 ironUp = inverseTransformDirection(geometryNormal, viewMatrix);
   float ironWarm = clamp(dot(ironUp, normalize(vec3(uBaseRimDir.x, uBaseRimDir.y * 0.25, uBaseRimDir.z))) * 0.5 + 0.5, 0.0, 1.0);
@@ -286,7 +292,7 @@ vec3 faceCave = mix(vec3(1.0, 0.2, 0.02), vec3(1.0, 0.54, 0.17), faceHot) * (0.4
 vec3 faceWall = vec3(1.0, 0.24, 0.02) * (0.5 + 0.6 * baseNoise(vec3(faceUv * 40.0, 7.0)));
 vec3 faceLight = mix(faceWall, faceCave, faceThrough) * faceGlowing * uFacePower;
 float faceRidge = smoothstep(0.25, 0.85, baseAo);
-vec3 faceSkin = faceGlowing * (vec3(1.0, 0.36, 0.05) * 0.34 * faceNear + vec3(1.0, 0.13, 0.012) * (0.2 * faceSoft * faceSoft + 0.012) * (0.25 + 0.75 * faceRidge) * (0.7 + 0.6 * faceRib)) * (1.0 - faceStem);
+vec3 faceSkin = faceGlowing * (vec3(1.0, 0.36, 0.05) * 0.34 * faceNear + vec3(1.0, 0.13, 0.012) * (0.14 * faceSoft * faceSoft + 0.006) * (0.1 + 0.9 * faceRidge) * (0.7 + 0.6 * faceRib)) * (1.0 - faceStem);
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.02, 0.006, 0.002), faceOpen);
 totalEmissiveRadiance += mix(faceSkin, faceLight, faceOpen);
 float baseWrap = 0.3;
@@ -305,7 +311,7 @@ const WAX_PAINT = `
 float baseAo = vBasePaint.x;
 float waxDeep = vBasePaint.y;
 float waxMottle = baseNoise(vBasePos * 0.9) * 0.6 + baseNoise(vBasePos * 3.7) * 0.4;
-diffuseColor.rgb = mix(vec3(0.94, 0.66, 0.32), vec3(1.0, 0.84, 0.54), smoothstep(0.1, 0.7, waxDeep) * (0.7 + 0.3 * waxMottle)) * mix(0.92, 1.05, waxMottle);
+diffuseColor.rgb = mix(vec3(1.0, 0.86, 0.58), vec3(0.9, 0.6, 0.27), smoothstep(0.15, 0.8, waxDeep) * (0.55 + 0.45 * waxMottle)) * mix(0.88, 1.06, waxMottle);
 float baseWrap = 0.55;
 float baseCandle = 0.5;
 `
@@ -334,10 +340,10 @@ const WAX_AFTER = `
   vec3 waxThrough = vec3(1.0, 0.78, 0.5);
   reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * waxThrough * (waxKeyC * 1.5 * waxK * waxK + uRigCardCol * 0.12 * waxC * waxC) * waxThin * baseAo;
   float waxEdge = pow(1.0 - clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0), 2.0);
-  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * waxThrough * vec3(dot(waxKeyC * 0.5 + uRigCardCol * 0.15 + uRigSky * 3.2, vec3(0.3, 0.5, 0.2))) * mix(0.45, 1.0, waxEdge) * baseAo;
+  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * waxThrough * vec3(dot(waxKeyC * 0.5 + uRigCardCol * 0.15 + uRigSky * 3.2, vec3(0.3, 0.5, 0.2))) * mix(0.3, 1.25, waxEdge) * baseAo;
   float waxH = max(dot(geometryNormal, normalize(waxKey + geometryViewDir)), 0.0);
   float waxHc = max(dot(geometryNormal, normalize(waxCard + geometryViewDir)), 0.0);
-  reflectedLight.directSpecular += (waxKeyC * (0.6 * pow(waxH, 90.0) + 0.04 * pow(waxH, 9.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, waxKey)) + uRigCardCol * (0.4 * pow(waxHc, 60.0) + 0.03 * pow(waxHc, 8.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, waxCard))) * baseAo;
+  reflectedLight.directSpecular += (waxKeyC * (0.9 * pow(waxH, 40.0) + 0.14 * pow(waxH, 8.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, waxKey)) + uRigCardCol * (0.4 * pow(waxHc, 60.0) + 0.03 * pow(waxHc, 8.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, waxCard))) * baseAo;
 }
 `
 

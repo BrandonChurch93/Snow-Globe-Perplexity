@@ -30,7 +30,8 @@ function tube(soup, pts, radii, sides, paint, flat = 1, vAt = 0, gnarl = 0, seed
     }
   }
   soup.grid(sides + 1, n, (i, j) => {
-    const a = (i / sides) * 2 * Math.PI
+    // The seam of a tube is on the side that faces the ring.
+    const a = (i / sides) * 2 * Math.PI + Math.PI
     const f = frames[j]
     const d = add3([f.n[0] * Math.cos(a) * flat, f.n[1] * Math.cos(a) * flat, f.n[2] * Math.cos(a) * flat], f.b, Math.sin(a))
     let nrm = norm3(add3([f.n[0] * Math.cos(a), f.n[1] * Math.cos(a), f.n[2] * Math.cos(a)], f.b, Math.sin(a) * flat))
@@ -39,7 +40,7 @@ function tube(soup, pts, radii, sides, paint, flat = 1, vAt = 0, gnarl = 0, seed
       const around = ((i % sides) / sides) * 6
       const flute = fbm(around + seed, arc[j] * 0.05, 6, 4096, seed + 2, 2) - 0.5
       const knot = fbm(arc[j] * 0.16 + seed, around * 0.5, 4096, 3, seed, 3) - 0.5
-      lump = 1 + gnarl * (2.2 * flute + 1.6 * knot)
+      lump = 1 + gnarl * (2.2 * flute + 1.6 * knot + 2.4 * Math.max(knot - 0.12, 0))
       const fluteNext = fbm(around + 0.35 + seed, arc[j] * 0.05, 6, 4096, seed + 2, 2) - 0.5
       const round = add3([-f.n[0] * Math.sin(a), -f.n[1] * Math.sin(a), -f.n[2] * Math.sin(a)], f.b, Math.cos(a))
       nrm = norm3(add3(nrm, round, -gnarl * 6 * (fluteNext - flute)))
@@ -286,7 +287,7 @@ export function buildIron() {
         const depth = smooth(0, 5, Math.hypot(p[0], p[2]) - drumR(clamp(p[1], 0, 38)))
         return [(0.32 + 0.68 * open) * (0.5 + 0.5 * depth) * (0.75 + 0.25 * smooth(0, 5, p[1])), 0.5, fbm(i * 0.09, a, 64, 8, s.seed + 3, 2)]
       }
-      tube(soup, pick.map((i) => pts[i]), pick.map((i) => radii[i]), far || s.rad < 0.85 ? 5 : s.rad > 1.2 ? 9 : 7, shade, 1, s.seed * 0.37, far ? 0 : 0.13, s.seed)
+      tube(soup, pick.map((i) => pts[i]), pick.map((i) => radii[i]), far || s.rad < 0.85 ? 5 : s.rad > 1.2 ? 9 : 7, shade, 1, s.seed * 0.37, far ? 0 : 0.2, s.seed)
       from = to
     }
     let next = r(4, s.every)
@@ -418,7 +419,7 @@ export function buildWax() {
     const m = heavy(az)
     const n = fbm(((az + 180) / 360) * 26, 0.3, 26, 4, 61, 3)
     const side = 1.1 * smooth(48, 82, L.front(az)) * smooth(140, 100, L.front(az))
-    const thick = 0.2 + 0.7 * n * n + 1.5 * m + 0.5 * side
+    const thick = -0.4 + 1.0 * n * n + 1.5 * m + 0.4 * side
     const drop = 0.3 + 1.0 * n * n * n + 2.8 * m + 0.7 * side
     return { thick, drop }
   }
@@ -431,7 +432,7 @@ export function buildWax() {
     const h = top[1] - (drop + 0.9) * t
     const bulge = Math.sin(Math.PI * Math.min(t * 1.08, 1)) ** 0.6
     const inner = h > 38.75 ? L.sphereRadiusAt(h) + 0.1 : Math.max(drumR(Math.min(h, 38.3)), 45.1 + 0.9 * smooth(38.75, 38.3, h))
-    const rr = inner + thick * bulge + 0.02
+    const rr = inner + thick * bulge + (thick > 0 ? 0.02 : -0.06)
     const nr = norm3([Math.sin(Math.PI * (0.25 + 0.5 * t)) + 0.2, Math.cos(Math.PI * (0.1 + 0.9 * t)) * 0.9, 0])
     const s = Math.sin(az * RAD)
     const c = Math.cos(az * RAD)
