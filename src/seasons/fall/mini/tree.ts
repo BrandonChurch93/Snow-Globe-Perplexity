@@ -20,8 +20,8 @@ const BARK_TINT: [number, number, number] = [0.06, 0.055, 0.052]
 const TWIG_TINT: [number, number, number] = [0.05, 0.047, 0.045]
 const BARK_RELIEF = 0.95
 const EMBER_GAIN = 6.5
-const EMBER_ON_WOOD = { power: 20, reachMm: 0.9 }
-const LAMP_ON_WOOD = { power: 8, reachMm: 15, wrap: -0.3 }
+const EMBER_ON_WOOD = { power: 14, reachMm: 0.9 }
+const LAMP_ON_WOOD = { power: 5.5, reachMm: 15, wrap: -0.3 }
 const LAMP_SHIFT: Vec3 = [-3, 0, -5]
 const PUMPKIN_ON_WOOD = { power: 16, reachMm: 6, wrap: 0.1 }
 const POND_ON_WOOD = { power: 3, reachMm: 22, wrap: 0.2 }
@@ -38,8 +38,8 @@ const HALO_CORE: [number, number, number] = [1, 0.46, 0.13]
 const FOG_DIM = { from: 0.5, to: 0.9, cap: 0.6 }
 // Wet black bark: the lamp, the pumpkin at the foot and the green of the pond glance off the ridges as small sharp lights
 // and leave the grooves black. `shine` is the lobe's exponent, `ridge` how far a groove (dark vertex colour) is kept out.
-const GLINT = { shine: 36, ridge: [0.3, 0.8] as [number, number], rough: 0.86 }
-const GLINT_LAMP = { lift: 3.6, power: 0.7, reachMm: 16 }
+const GLINT = { shine: 80, ridge: [0.3, 0.8] as [number, number], rough: 0.86 }
+const GLINT_LAMP = { lift: 3.6, power: 1.3, reachMm: 11 }
 const GLINT_TONE: [number, number, number] = [1, 0.46, 0.14]
 const GLINT_PUMPKIN = { power: 0.45, reachMm: 7 }
 const GLINT_POND = { power: 0.05, reachMm: 24 }

@@ -43,7 +43,7 @@ const MOSS = { low: [0.68, 0.88, 0.5] as Rgb, high: [1, 1.08, 0.9] as Rgb, tallM
 // olive grey with dark joints, so the tone is bent: joints stay near black, every stone from the middle up ends near `top`.
 const STONE = { top: 0.22, knee: 0.13, power: 2.2 }
 const ROOF = { tone: [1.9, 1.25, 0.85] as Rgb, grey: 0.55 }
-const DOOR: Rgb = [0.36, 0.29, 0.21]
+const DOOR: Rgb = [0.24, 0.19, 0.13]
 const TIMBER: Rgb = [0.4, 0.42, 0.34]
 const DRY: readonly Rgb[] = [[0.42, 0.16, 0.05], [0.5, 0.26, 0.07], [0.3, 0.12, 0.05], [0.4, 0.3, 0.1]]
 const GROUND = { soil: 1.45, leaf: 1.05, leafScale: 0.6, soilMm: 0.26, wideMm: 0.5, leafMm: 0.34 }
@@ -105,12 +105,34 @@ const list: InnerLight[] = [
 export const innerLights = (): InnerLight[] => list
 
 const sources = (on: typeof NEAR | typeof NEAR_WALL, lampTone: Rgb): GlowSource[] => [
+  ...bounce(),
   { at: flame, color: lampTone, ...on.lamp },
   { at: anchors.window, color: tones.purpleLight, ...on.pane },
   { at: anchors.sideWindow, color: tones.greenLight, ...on.pane },
   { at: attic, color: tones.greenLight, ...on.pane },
   ...pumpkinPools.map((at): GlowSource => ({ at, color: tones.pumpkinLight, ...on.pumpkin })),
 ]
+
+// Light the glass and the lit fog throw back: on the faces of the fence the viewer sees and on the cottage's side wall,
+// which the key (upper right) and the lamp both miss. The approved shows both faces lit, grey-brown and olive.
+const BOUNCE = { fence: { color: [1, 0.76, 0.52] as Rgb, power: 1.5, reachMm: 9, ends: 2.6, outMm: 5, upMm: 6.5 }, side: { color: [0.78, 0.9, 0.7] as Rgb, power: 1.1, reachMm: 11, ends: 2.4, outMm: 9, upMm: 7, alongMm: 2 } }
+
+function bounce(): GlowSource[] {
+  const dx = fence.to[0] - fence.from[0]
+  const dz = fence.to[1] - fence.from[1]
+  const len = Math.hypot(dx, dz)
+  const out = dx / len > 0 ? [-dz / len, dx / len] : [dz / len, -dx / len]
+  const fx = (fence.from[0] + fence.to[0]) / 2 + out[0]! * BOUNCE.fence.outMm
+  const fz = (fence.from[1] + fence.to[1]) / 2 + out[1]! * BOUNCE.fence.outMm
+  const f = cottageFrame()
+  const across = -(cottage.halfWidth + BOUNCE.side.outMm)
+  const sx = cottage.x + across * f.v[0] + BOUNCE.side.alongMm * f.u[0]
+  const sz = cottage.z + across * f.v[1] + BOUNCE.side.alongMm * f.u[1]
+  return [
+    { at: [fx, groundAt(fx, fz) + BOUNCE.fence.upMm, fz], color: BOUNCE.fence.color, power: BOUNCE.fence.power, reachMm: BOUNCE.fence.reachMm, ends: BOUNCE.fence.ends },
+    { at: [sx, f.floor + BOUNCE.side.upMm, sz], color: BOUNCE.side.color, power: BOUNCE.side.power, reachMm: BOUNCE.side.reachMm, ends: BOUNCE.side.ends },
+  ]
+}
 
 const gain = { value: 1 }
 const clock = { value: 0 }

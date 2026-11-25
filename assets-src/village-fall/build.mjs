@@ -28,7 +28,7 @@ const GRASS_TONES = ['#5a7a2a', '#7d9438', '#b0a548', '#4a6424', '#96893a'].map(
 
 const LITTER = { base: 0.1, patch: 0.3, fence: 0.2, tree: 0.14, wall: 0.1, leaves: 230 }
 const LEVELS = { medium: { error: 0.08, worth: 1 }, low: { error: 0.2, worth: 1 } }
-const STONE_TONES = ['#d6d0bf', '#c4c0b2', '#e0d9c6', '#b3b0a4', '#cbc5b3'].map(lin).map((c) => [c[0] * 0.6, c[1] * 0.55, c[2] * 0.5])
+const STONE_TONES = ['#d6d0bf', '#c4c0b2', '#e0d9c6', '#b3b0a4', '#cbc5b3'].map(lin).map((c) => [c[0] * 0.66, c[1] * 0.57, c[2] * 0.48])
 const ground = new Bag('ground')
 const water = new Bag('water')
 const decor = new Bag('decor')
@@ -395,8 +395,8 @@ const conform = (g, x, z, yaw, lift) => {
 const cobble = (x, z, w, l, h, yaw, lift, dark = 1) => {
   const seed = R() * 40
   const g = slab(w, h, l, { round: Math.min(h * 0.48, 0.34), sx: 3, sy: 2, sz: 3, warp: 0.11, seed })
-  const tone = mul3(STONE_TONES[Math.floor(R() * STONE_TONES.length)], between(0.72, 1.1) * dark)
-  shade(g, (px, py, pz) => (0.42 + 0.58 * smooth(-h * 0.2, h * 0.45, py)) * (0.78 + 0.5 * fbm(px * 1.6 + seed, pz * 1.6, py * 2, 3)) * (0.85 + 0.15 * smooth(0, 0.5, Math.min(w / 2 - Math.abs(px), l / 2 - Math.abs(pz)))))
+  const tone = mul3(STONE_TONES[Math.floor(R() * STONE_TONES.length)], between(0.62, 1.3) * dark)
+  shade(g, (px, py, pz) => (0.2 + 0.8 * smooth(-h * 0.2, h * 0.45, py)) * (0.6 + 0.85 * fbm(px * 1.6 + seed, pz * 1.6, py * 2, 3)) * (0.85 + 0.15 * smooth(0, 0.5, Math.min(w / 2 - Math.abs(px), l / 2 - Math.abs(pz)))))
   decor.add(conform(g, x, z, yaw, lift), { color: tone, surf: [surf(KIND.stone, 0.88), 0], renormal: true })
 }
 
@@ -407,7 +407,7 @@ let flagCount = 0
     const at = L.cottagePoint(d.across + 0.25 * k, 0, C.halfLength + step[0])
     const seed = R() * 40
     const g = slab(step[1], 1.7, 2.6, { round: 0.24, sx: 6, sy: 2, sz: 3, warp: 0.1, seed })
-    shade(g, (px, py, pz) => (0.45 + 0.55 * smooth(-0.2, 0.5, py)) * (0.78 + 0.5 * fbm(px * 1.4 + seed, pz * 1.4, py * 2, 3)))
+    shade(g, (px, py, pz) => (0.22 + 0.78 * smooth(-0.2, 0.5, py)) * (0.6 + 0.85 * fbm(px * 1.4 + seed, pz * 1.4, py * 2, 3)))
     const M = frame([at[0], L.groundAt(at[0], at[2]) + 0.3 + 0.42 * (2 - k), at[2]], V3, UP, U3)
     decor.add(g, { matrix: M, color: mul3(STONE_TONES[k % STONE_TONES.length], 0.95), surf: [surf(KIND.stone, 0.88), 0], renormal: true })
     flagCount++
