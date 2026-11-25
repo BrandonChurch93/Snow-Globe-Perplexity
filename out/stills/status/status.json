@@ -1,42 +1,42 @@
 {
-  "number": 106,
-  "time": "2026-11-25 15:27 UTC",
+  "number": 107,
+  "time": "2026-11-25 15:51 UTC",
   "phase": "5",
   "unit": "",
   "lines": [
-    "Status 106 · 2026-11-25 15:27 UTC · Phase 5",
-    "Six polish builders are an hour in: the hand's weight, the base changing in the open, the mirror, the glass, the liquid's lag, the storm's drawing. First looks are in from five; nothing is landed yet, and I land nothing without its proofs and my own look.",
-    "The liquid builder found the engine's cloud now swings 20 mm inside the glass, yet the picture still shows one even green disc at the swap; it is tracing what paints that disc.",
-    "Next: land the multisampled levels and the finished interface, then Round 18, the first round on the whole globe.",
-    "phase 5: 1.28 h used of its 12.00 h box",
-    "allowance (before the review, continuation 1): 1.28 h used of 12.00 h allowed",
+    "Status 107 · 2026-11-25 15:51 UTC · Phase 5",
+    "Multisampling of the live picture is on main (merge a8b224e): all eight final keys byte-identical to the kept ones, checks G13 and G3 each passed alone, every season looked at at three levels. The part quality-levels is built; open item 166 is closed by the build.",
+    "The globe's packs have no holes left: sheets of a shake, a stir, a drag and a jump are drawn through the app's path and proven on the new engine. One change is still out: sheets with plain labels for R5, so that the critic has to name the seasons from the pictures.",
+    "Decision 107: a stray run of the register tool at 14:29 had moved four recorded stand-in hashes; they are back at the 11:00 record and the tool now refuses arguments it does not know. Next: the interface finisher's report, then Round 18, the globe's first round.",
+    "phase 5: 1.66 h used of its 12.00 h box",
+    "allowance (before the review, continuation 1): 1.66 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-106-1.jpg",
-      "caption": "The strokes today, every film frame 2829 to 2838 of the fall to winter shake (review tier): the lean peaks on the turn and is level again by 2836, and the base cuts hard at 2834. This is what the hand and swap builders are changing.",
-      "w": 1200,
-      "h": 924
+      "file": "out/stills/status/status-107-1.jpg",
+      "caption": "A shake through the app's own path, winter to spring, 12 frames across 5.9 s (level high, engine 35fd7245): press at 0.5 s, storm at 1.6 s, landed at 2.9 s, clearing to the end",
+      "w": 1149,
+      "h": 986
     },
     {
-      "file": "out/stills/status/status-106-2.jpg",
-      "caption": "Smoother edges in the live app, native size: top the published build, bottom the build with multisampling (frost, rim, branches). Six of its eight proof keys are back byte-identical; fall and the gate checks are still out.",
+      "file": "out/stills/status/status-107-2.jpg",
+      "caption": "A jump from winter to summer in the app, frames 102 to 168 every 6: the base and the table still change in the open between 2.1 s and 2.2 s (open item 154, with the swap builder)",
+      "w": 1149,
+      "h": 986
+    },
+    {
+      "file": "out/stills/status/status-107-3.jpg",
+      "caption": "A stir in the app: close frames while the liquid starts to turn, wider as it dies away",
+      "w": 1149,
+      "h": 986
+    },
+    {
+      "file": "out/stills/status/status-107-4.jpg",
+      "caption": "Multisampling, now on main: crops of the glass at native size from the live picture, checked at high, medium and low",
       "w": 1200,
       "h": 549
-    },
-    {
-      "file": "out/stills/status/status-106-3.jpg",
-      "caption": "New for the interface critic: every control at rest, focused and pressed, cut from the wide screen at its real size.",
-      "w": 936,
-      "h": 1194
-    },
-    {
-      "file": "out/stills/status/status-106-4.jpg",
-      "caption": "New for the interface critic: the Shake control's hint, twelve steps across its 1.9 second pulse.",
-      "w": 1200,
-      "h": 584
     }
   ]
 }
