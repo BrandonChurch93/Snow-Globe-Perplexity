@@ -28,7 +28,8 @@ const NEAR_GROWTH = { lamp: { power: 5, reachMm: 8 }, pane: { power: 1.2, reachM
 const MIRROR = { lamp: 3, pane: 1.4, tight: 0.0022, wide: 0.035, wideShare: 0.03, bump: 1, lowMm: 3.4 }
 const STREAK = { strength: 9, side: 0.035, along: 0.6, bump: 0.06, rings: 0.9 }
 const MOSS_FROM = [-16.8, -15]
-const SKIRT_FILL = 0.5
+const SKIRT_FILL = 2.6
+const ROCK_FILL = 2.4
 const RING_SHOW = 0.55
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
 const HALO_KIND = { lamp: { size: 3.8, rest: 0.34, hot: 0, bloom: 0.3 }, pane: { size: 2.4, rest: 0, hot: 0, bloom: 0.3 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
@@ -149,7 +150,10 @@ diffuseColor.rgb *= (0.5 + 0.62 * turfT.r + 0.34 * (turfT.b - 0.5)) * (0.74 + 0.
 {
   reflectedLight.directDiffuse += (stageWrapped(geometryNormal, ${TURF_LOOK.wrap.toFixed(2)}) + stageKeyC * (RECIPROCAL_PI * ${TURF_LOOK.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), 1.0))) * material.diffuseContribution;
   float turfFuzz = pow(1.0 - clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0), 3.0);
-  reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${SKIRT_FILL.toFixed(2)} * smoothstep(0.5, 1.5, vSurf.x) * (1.0 - smoothstep(2.2, 2.8, vSurf.x))) * material.diffuseContribution;
+  float turfBank = smoothstep(1.4, 1.9, vSurf.x) * (1.0 - smoothstep(2.2, 2.8, vSurf.x));
+  float turfRock = smoothstep(2.5, 2.9, vSurf.x);
+  float turfLift = normalize(vObjN).y;
+  reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${SKIRT_FILL.toFixed(2)} * turfBank * (0.1 + 0.9 * smoothstep(-0.8, 0.0, turfLift)) * (1.0 - 0.8 * smoothstep(0.1, 0.8, vSurf.y)) + ${ROCK_FILL.toFixed(2)} * turfRock * (0.3 + 0.7 * smoothstep(-0.2, 0.7, turfLift)))) * material.diffuseContribution;
   reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${TURF_LOOK.fuzz.toFixed(2)} * turfFuzz * stageWrap(dot(geometryNormal, stageKeyL), 1.0)) * material.diffuseContribution;
 }`,
       )

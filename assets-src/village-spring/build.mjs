@@ -300,9 +300,9 @@ const SKIRT = { cycles: 6.5, deepMm: 2.8, clumps: 17, clumpMm: 0.85 }
     color: (p, n, i) => {
       const q = depth[i]
       if (q <= 0) return grassTone(p[0], p[2])
-      const top = mix3(TONE.moss, TONE.mossDeep, clamp(0.5 + noise(p[0] * 0.45, p[1] * 0.45, p[2] * 0.45)))
+      const top = mix3(TONE.grass, TONE.moss, clamp(0.5 + noise(p[0] * 0.45, p[1] * 0.45, p[2] * 0.45)))
       const patch = smooth(-0.1, 0.35, fbm(p[0] * 0.3, p[1] * 0.3, p[2] * 0.3, 3))
-      return mul3(mix3(mix3(top, TONE.earth, smooth(0.3, 0.85, q) * (1 - 0.7 * patch)), TONE.sun, 0.6 * patch * (1 - 0.7 * q) * smooth(-0.5, 0.4, n[1])), (1 - 0.25 * smooth(0.4, 1, q)) * (1.25 + 0.6 * smooth(-0.3, 0.6, n[1])))
+      return mul3(mix3(mix3(top, TONE.mossDeep, smooth(0.3, 0.85, q) * (1 - 0.7 * patch)), TONE.sun, 0.6 * patch * (1 - 0.7 * q) * smooth(-0.5, 0.4, n[1])), (1 - 0.25 * smooth(0.4, 1, q)) * (1.25 + 0.6 * smooth(-0.3, 0.6, n[1])))
     },
     surf: (_p, _n, i) => [depth[i] > 0 ? 2 : 0, depth[i]],
   })
