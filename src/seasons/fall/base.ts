@@ -201,26 +201,33 @@ function hookOf(uniforms: Record<string, THREE.IUniform>, at: Stages): (shader: 
 // a half the strands, 1 the thorns) and how far along a thorn it is.
 const IRON_PAINT = `
 vec4 baseDetail = texture2D(uBaseDetail, vBaseUv1);
-float baseAo = vBasePaint.x;
+float baseAo = vBasePaint.x * mix(0.2, 1.0, smoothstep(39.6, 38.9, vBasePos.y));
 float baseKind = vBasePaint.y;
 float baseThorn = step(0.75, baseKind);
 float baseDrum = 1.0 - step(0.25, baseKind);
 float baseBlotch = baseNoise(vBasePos * 0.35) * 0.6 + baseNoise(vBasePos * 1.3) * 0.4;
 float baseScale = smoothstep(0.52, 0.8, baseNoise(vBasePos * 2.6) * 0.6 + baseDetail.b * 0.4);
-diffuseColor.rgb = mix(vec3(0.028, 0.03, 0.034), vec3(0.05, 0.046, 0.044), baseBlotch) * mix(1.0, 0.72, baseScale) * mix(1.0, 0.3, baseDrum);
+diffuseColor.rgb = mix(vec3(0.028, 0.03, 0.034), vec3(0.05, 0.046, 0.044), baseBlotch) * mix(1.0, 0.72, baseScale) * mix(1.0, 0.6, baseDrum);
 float baseRust = smoothstep(0.62, 0.85, baseNoise(vBasePos * 0.9 + 7.0)) * (1.0 - baseThorn) * 0.35;
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.1, 0.05, 0.028), baseRust);
 float baseWrap = 0.1;
-float baseCandle = 1.0;
+float baseCandle = 2.0;
+// Bark on the strands: fibres that run along them.
+float baseStrand = (1.0 - baseThorn) * (1.0 - baseDrum);
+vec2 fibreAt = vec2(vBaseUv1.x * 1.3, vBaseUv1.y * 7.0);
+float fibreHere = baseNoise(vec3(fibreAt, 5.0)) * 0.65 + baseNoise(vec3(fibreAt * vec2(2.3, 3.1), 9.0)) * 0.35;
+float fibreNext = baseNoise(vec3(fibreAt + vec2(0.0, 0.3), 5.0)) * 0.65 + baseNoise(vec3((fibreAt + vec2(0.0, 0.3)) * vec2(2.3, 3.1), 9.0)) * 0.35;
+diffuseColor.rgb *= mix(1.0, (0.55 + 0.9 * fibreHere) * 1.2, baseStrand);
 `
 const IRON_ROUGH = `
-roughnessFactor = clamp(mix(0.3, 0.54, baseDetail.b) + 0.16 * baseScale + 0.2 * baseRust - 0.1 * baseThorn * vBasePaint.z + 0.3 * baseDrum, 0.18, 1.0);
-metalnessFactor = mix(0.85, 0.6, baseScale) * (1.0 - 0.6 * baseRust);
+roughnessFactor = clamp(mix(0.44, 0.62, baseDetail.b) + 0.2 * baseStrand + 0.14 * baseScale + 0.2 * baseRust - 0.08 * baseThorn * vBasePaint.z + 0.12 * baseDrum, 0.18, 1.0);
+metalnessFactor = mix(0.85, 0.6, baseScale) * (1.0 - 0.6 * baseRust) * (1.0 - 0.6 * baseStrand);
 `
 const IRON_TILT = `
-vec2 baseTilt = baseSlope(baseDetail.rg) * mix(mix(0.5, 0.16 * (1.0 - vBasePaint.z), baseThorn), 0.3, baseDrum);
+vec2 baseTilt = baseSlope(baseDetail.rg) * mix(mix(0.12, 0.14 * (1.0 - vBasePaint.z), baseThorn), 0.75, baseDrum) + vec2(0.0, (fibreNext - fibreHere) * 1.8 * baseStrand);
 `
 const IRON_AFTER = `
+#define IRON_WARM 1.5
 {
   vec3 ironKey = vec3(0.0, 1.0, 0.0);
   vec3 ironKeyC = vec3(0.0);
@@ -236,18 +243,23 @@ const IRON_AFTER = `
   float ironCh = max(dot(geometryNormal, normalize(ironCard + geometryViewDir)), 0.0);
   float ironKl = smoothstep(0.0, 0.2, dot(geometryNormal, ironKey));
   float ironCl = smoothstep(0.0, 0.25, dot(geometryNormal, ironCard));
-  float ironSheen = (1.0 - 0.45 * baseScale) * baseAo * (1.0 - 0.8 * baseDrum);
+  float ironSheen = (1.0 - 0.45 * baseScale) * baseAo * (1.0 - 0.4 * baseDrum);
   vec3 ironRim = normalize(mat3(viewMatrix) * uBaseRimDir);
   float ironRh = max(dot(geometryNormal, normalize(ironRim + geometryViewDir)), 0.0);
   float ironRl = smoothstep(0.0, 0.25, dot(geometryNormal, ironRim));
-  reflectedLight.directSpecular += uBaseRimCol * (0.08 * pow(ironRh, 7.0) + 0.4 * pow(ironRh, 50.0)) * ironRl * ironSheen;
+  reflectedLight.directSpecular += uBaseRimCol * (0.08 * pow(ironRh, 7.0) + mix(0.4 * pow(ironRh, 50.0), 0.12 * pow(ironRh, 16.0), baseStrand)) * ironRl * ironSheen;
   vec3 ironCardC = mix(uRigCardCol, vec3(dot(uRigCardCol, vec3(0.3, 0.5, 0.2))), 0.65);
-  reflectedLight.directSpecular += (ironKeyC * vec3(0.8, 0.9, 1.0) * (0.2 * pow(ironKh, 9.0) + 1.5 * pow(ironKh, 90.0)) * ironKl + ironCardC * (0.05 * pow(ironCh, 10.0) + 0.26 * pow(ironCh, 50.0)) * ironCl) * ironSheen;
+  reflectedLight.directSpecular += (ironKeyC * vec3(0.8, 0.9, 1.0) * (mix(0.05, 0.16, baseDrum) * pow(ironKh, mix(8.0, 3.0, baseDrum)) + mix(0.2 * pow(ironKh, 16.0) * (0.3 + 1.0 * fibreHere), 0.6 * pow(ironKh, 44.0) * (0.35 + 0.65 * baseDetail.b), 1.0 - baseStrand)) * ironKl + ironCardC * (0.05 * pow(ironCh, 10.0) + mix(0.26 * pow(ironCh, 50.0), 0.08 * pow(ironCh, 14.0), baseStrand)) * ironCl) * ironSheen;
   float ironEdge = pow(1.0 - clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0), 3.0);
   vec3 ironUp = inverseTransformDirection(geometryNormal, viewMatrix);
   float ironWarm = clamp(dot(ironUp, normalize(vec3(uBaseRimDir.x, uBaseRimDir.y * 0.25, uBaseRimDir.z))) * 0.5 + 0.5, 0.0, 1.0);
-  reflectedLight.directSpecular += uBaseRimCol * (0.3 * ironWarm * ironWarm) * ironSheen;
-  reflectedLight.indirectSpecular += (uRigSky * 0.6 * smoothstep(-0.2, 0.8, ironUp.y) + uBaseFloor * smoothstep(0.2, -0.8, ironUp.y)) * ironEdge * ironSheen;
+  float ironLeft = clamp(dot(ironUp, normalize(vec3(-0.8, 0.25, 0.55))), 0.0, 1.0);
+  reflectedLight.directSpecular += uBaseRimCol * vec3(1.0, 0.72, 0.5) * (IRON_WARM * (0.3 * pow(ironWarm, 5.0) + 0.07 * pow(ironLeft, 5.0))) * mix(0.25, 1.0, baseAo) * (1.0 - 0.8 * baseDrum) * (0.4 + 1.2 * baseBlotch);
+  vec3 ironTop = normalize(mat3(viewMatrix) * vec3(0.0, 1.0, 0.0));
+  float ironTh = max(dot(geometryNormal, normalize(ironTop + geometryViewDir)), 0.0);
+  reflectedLight.directSpecular += (uRigSky * 1.1 + ironKeyC * 0.03) * pow(ironTh, 9.0) * smoothstep(0.0, 0.3, dot(geometryNormal, ironTop)) * (0.3 + 1.0 * fibreHere) * ironSheen * (1.0 - baseDrum);
+  ironEdge *= 1.0 + 3.0 * baseThorn;
+  reflectedLight.indirectSpecular += (uRigSky * 0.35 * smoothstep(-0.2, 0.8, ironUp.y) + uBaseFloor * smoothstep(0.2, -0.8, ironUp.y)) * ironEdge * ironSheen;
 }
 `
 
@@ -268,22 +280,24 @@ vec2 faceIn = faceUv - faceLine.xy / faceLine.z * uFaceRind;
 float faceInside = step(0.02, faceUv.x) * step(faceUv.x, 0.98) * step(0.02, faceUv.y) * step(faceUv.y, 0.98) * (1.0 - faceStem);
 float faceD = (texture2D(uFaceMap, vec2((faceOrigin.x + faceUv.x) * 0.5, 1.0 - (faceOrigin.y + 1.0 - faceUv.y) * 0.5)).r - 0.5) * 2.0 * uFaceRange;
 float faceD2 = (texture2D(uFaceMap, vec2((faceOrigin.x + clamp(faceIn.x, 0.02, 0.98)) * 0.5, 1.0 - (faceOrigin.y + 1.0 - clamp(faceIn.y, 0.02, 0.98)) * 0.5)).r - 0.5) * 2.0 * uFaceRange;
-float faceAa = max(fwidth(faceD), 0.004);
+float faceAa = max(fwidth(faceD), 0.005);
 float faceOpen = smoothstep(-faceAa, faceAa, faceD) * faceInside;
 float faceThrough = smoothstep(-faceAa, faceAa, faceD2) * faceInside;
 float faceGlowing = uFaceGlow[faceId];
 float baseAo = vBasePaint.x;
 float faceRib = baseNoise(vBasePos * 1.7) * 0.6 + baseNoise(vBasePos * 5.0) * 0.4;
-diffuseColor.rgb = mix(vec3(0.1, 0.036, 0.01), vec3(0.2, 0.075, 0.018), faceRib) * mix(0.35, 1.0, smoothstep(0.1, 0.8, baseAo)) * mix(1.0, 0.25, faceStem);
-float faceNear = exp(-max(-faceD, 0.0) / 0.05);
-float faceSoft = exp(-max(-faceD, 0.0) / 0.3);
+diffuseColor.rgb = mix(vec3(0.03, 0.012, 0.005), vec3(0.075, 0.03, 0.009), faceRib) * mix(0.35, 1.0, smoothstep(0.1, 0.8, baseAo)) * mix(1.0, 0.5, faceStem);
+float faceNear = exp(-max(-faceD, 0.0) / 0.03);
+float faceSoft = exp(-max(-faceD, 0.0) / 0.2);
 vec3 faceCandle = uFaceCol * faceGlowing;
 float faceLow = smoothstep(0.75, 0.2, faceUv.y);
-float faceHot = exp(-dot(faceIn - vec2(0.5, 0.3), faceIn - vec2(0.5, 0.3)) / 0.06);
-vec3 faceCave = mix(vec3(1.0, 0.17, 0.01), vec3(1.0, 0.44, 0.08), faceHot) * (0.36 + 1.15 * faceHot) * (0.75 + 0.5 * baseNoise(vec3(faceUv * 9.0, 3.0)));
+float faceHot = exp(-dot(faceIn - vec2(0.5, 0.3), faceIn - vec2(0.5, 0.3)) / 0.16);
+vec3 faceCave = mix(vec3(1.0, 0.4, 0.07), vec3(1.0, 0.66, 0.28), faceHot) * (1.1 + 1.3 * faceHot) * (0.75 + 0.5 * baseNoise(vec3(faceUv * 9.0, 3.0)));
 vec3 faceWall = vec3(1.0, 0.24, 0.02) * (0.5 + 0.6 * baseNoise(vec3(faceUv * 40.0, 7.0)));
-vec3 faceLight = mix(faceWall, faceCave, faceThrough) * faceGlowing * uFacePower;
-vec3 faceSkin = faceCandle * (0.24 * faceNear + 0.022 * faceSoft + 0.003 * (0.4 + faceRib)) * (1.0 - faceStem) * (0.5 + 0.5 * baseAo);
+float faceBevel = smoothstep(0.0, 0.03, faceD);
+vec3 faceLight = mix(faceWall * mix(0.3, 1.0, faceBevel), faceCave, faceThrough * smoothstep(0.0, 0.018, faceD)) * faceGlowing * uFacePower;
+float faceRidge = smoothstep(0.25, 0.85, baseAo);
+vec3 faceSkin = faceGlowing * (vec3(1.0, 0.3, 0.04) * 0.2 * faceNear + vec3(1.0, 0.13, 0.012) * (0.1 * faceSoft * faceSoft + 0.014) * (0.1 + 0.9 * faceRidge) * (0.7 + 0.6 * faceRib)) * (1.0 - faceStem);
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.02, 0.006, 0.002), faceOpen);
 totalEmissiveRadiance += mix(faceSkin, faceLight, faceOpen);
 float baseWrap = 0.3;
@@ -299,15 +313,15 @@ vec2 baseTilt = (vec2(baseNoise(vBasePos * 3.3 + 11.0), baseNoise(vBasePos * 3.3
 
 // The wax: pale, soft, thick where it has gathered. Light enters it and comes out again round the edges.
 const WAX_PAINT = `
-float baseAo = vBasePaint.x;
+float baseAo = vBasePaint.x * mix(0.25, 1.0, smoothstep(39.55, 39.0, vBasePos.y));
 float waxDeep = vBasePaint.y;
 float waxMottle = baseNoise(vBasePos * 0.9) * 0.6 + baseNoise(vBasePos * 3.7) * 0.4;
-diffuseColor.rgb = mix(vec3(0.95, 0.55, 0.24), vec3(1.0, 0.72, 0.42), smoothstep(0.1, 0.7, waxDeep) * (0.7 + 0.3 * waxMottle)) * mix(0.92, 1.05, waxMottle);
+diffuseColor.rgb = mix(vec3(0.92, 0.8, 0.5), vec3(0.8, 0.52, 0.2), smoothstep(0.15, 0.8, waxDeep) * (0.5 + 0.5 * waxMottle)) * mix(0.9, 1.06, waxMottle);
 float baseWrap = 0.55;
 float baseCandle = 0.5;
 `
 const WAX_ROUGH = `
-roughnessFactor = 0.22 + 0.16 * waxMottle;
+roughnessFactor = 0.14 + 0.14 * waxMottle;
 metalnessFactor = 0.0;
 `
 const WAX_TILT = `
@@ -329,12 +343,18 @@ const WAX_AFTER = `
   float waxC = clamp(dot(nonPerturbedNormal, waxCard) * 0.5 + 0.5, 0.0, 1.0);
   float waxThin = 1.0 - 0.6 * smoothstep(0.2, 0.9, waxDeep);
   vec3 waxThrough = vec3(1.0, 0.78, 0.5);
-  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * waxThrough * (waxKeyC * 0.6 * waxK * waxK + uRigCardCol * 0.22 * waxC * waxC) * waxThin * baseAo;
+  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * waxThrough * (waxKeyC * 2.2 * waxK * waxK + uRigCardCol * 0.12 * waxC * waxC) * waxThin * baseAo;
   float waxEdge = pow(1.0 - clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0), 2.0);
-  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * waxThrough * (waxKeyC * 0.25 + uRigCardCol * 0.12 + uRigSky * 1.2) * waxEdge * baseAo;
+  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * waxThrough * vec3(dot(waxKeyC * 0.5 + uRigCardCol * 0.15 + uRigSky * 3.2, vec3(0.3, 0.5, 0.2))) * mix(0.1, 1.0, waxEdge) * baseAo;
+  vec3 waxTop = normalize(mat3(viewMatrix) * vec3(0.25, 1.0, 0.35));
+  float waxTh = max(dot(geometryNormal, normalize(waxTop + geometryViewDir)), 0.0);
+  reflectedLight.directSpecular += (vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * 5.0 + waxKeyC * 0.1) * (1.6 * pow(waxTh, 90.0) + 0.12 * pow(waxTh, 9.0)) * baseAo;
+  vec3 waxSide = normalize(mat3(viewMatrix) * vec3(-0.7, 0.45, 0.55));
+  float waxSh = max(dot(geometryNormal, normalize(waxSide + geometryViewDir)), 0.0);
+  reflectedLight.directSpecular += (vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * 9.0 * pow(waxSh, 120.0) + waxKeyC * 0.5 * pow(max(dot(geometryNormal, normalize(waxKey + geometryViewDir)), 0.0), 80.0)) * baseAo;
   float waxH = max(dot(geometryNormal, normalize(waxKey + geometryViewDir)), 0.0);
   float waxHc = max(dot(geometryNormal, normalize(waxCard + geometryViewDir)), 0.0);
-  reflectedLight.directSpecular += (waxKeyC * (0.6 * pow(waxH, 90.0) + 0.04 * pow(waxH, 9.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, waxKey)) + uRigCardCol * (0.4 * pow(waxHc, 60.0) + 0.03 * pow(waxHc, 8.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, waxCard))) * baseAo;
+  reflectedLight.directSpecular += (waxKeyC * (0.9 * pow(waxH, 40.0) + 0.14 * pow(waxH, 8.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, waxKey)) + uRigCardCol * (0.4 * pow(waxHc, 60.0) + 0.03 * pow(waxHc, 8.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, waxCard))) * baseAo;
 }
 `
 
@@ -369,26 +389,32 @@ void main() {
   float c = stageChange();
   if (stageGone(c)) discard;
   float sheet = floor(vWebPaint.y * 4.0);
-  float spokes = 5.0 + 2.0 * sheet;
-  float u = vWebUv.x * spokes;
+  float big = 1.0 - step(0.5, sheet);
+  float spokes = mix(5.0, 9.0, big);
+  float u = vWebUv.x * spokes + 0.42 * sin(vWebUv.x * 17.0 + sheet) + 0.12 * sin(vWebUv.y * 6.0 + vWebUv.x * 31.0);
   float cell = floor(u);
   float between = sin(fract(u) * 3.14159265);
-  float rings = 5.0 - sheet;
-  float v = vWebUv.y * rings + 0.5 * between * between + 0.9 * webHash(cell + sheet * 17.0);
-  float gapped = step(0.42, webHash(floor(v) * 13.0 + cell * 7.0 + sheet * 3.0));
-  float spoke = webLine(u + 0.05 * sin(vWebUv.y * 9.0 + cell), 0.0);
-  float ring = webLine(v, 0.0) * gapped * smoothstep(0.08, 0.2, vWebUv.y);
-  float edge = max(webLine(vWebUv.y * 1.0 - 0.999, 0.6), 0.0);
-  float thread = max(max(spoke, ring * 0.75), edge);
-  float dew = smoothstep(0.75, 1.0, webHash(floor(v * 3.0) + cell * 5.0)) * ring;
+  float rings = mix(7.0, 14.0, big);
+  float v = pow(vWebUv.y, 0.8) * rings - 1.1 * between * between + 1.0 * webHash(cell + sheet * 17.0) + 0.5 * fract(u) * (webHash(cell * 3.0 + sheet) - 0.5);
+  float gapped = step(0.62, webHash(floor(v) * 13.0 + cell * 7.0 + sheet * 3.0));
+  float spoke = webLine(u, 0.0) * (0.3 + 0.5 * webHash(floor(u + 0.5) + sheet * 5.0));
+  float ring = webLine(v, 0.0) * gapped * smoothstep(0.06, 0.16, vWebUv.y);
+  float edge = max(webLine(vWebUv.x * 0.999 + 0.0005, 0.3), 0.0);
+  float glint = 0.45 + 1.3 * pow(abs(sin(vWebUv.y * 8.0 + cell * 2.1 + vWebUv.x * 5.0)), 5.0);
+  float thread = max(max(spoke, ring * 0.7), edge * 0.6) * glint;
+  float dew = smoothstep(0.8, 1.0, webHash(floor(v * 3.0) + cell * 5.0)) * ring;
   vec3 view = normalize(cameraPosition - vStageWorld);
   float back = pow(max(dot(-view, uBaseRimDir) * 0.5 + 0.5, 0.0), 2.0);
   float fore = pow(max(dot(view, uBaseKeyDir) * 0.5 + 0.5, 0.0), 2.0);
-  vec3 lit = uBaseKeyCol * (0.3 + 0.5 * fore) + uBaseRimCol * (0.1 + 0.5 * back) + uBaseSky * 0.6;
-  float veil = (0.03 + 0.1 * pow(abs(sin(u * 9.0 + 3.0 * sin(vWebUv.y * 5.0 + sheet))), 6.0) * webHash(floor(u * 2.87) + sheet)) * smoothstep(0.0, 0.3, vWebUv.y) * 0.5;
-  float a = clamp(thread * 0.34 + veil * 0.7 + dew * 0.14, 0.0, 1.0);
-  gl_FragColor = vec4(lit * vec3(0.85, 0.9, 0.92) * (0.6 + 1.2 * dew) * a, a);
-  if (uDiag != 0) gl_FragColor = stageDiag(vec3(0.8, 0.82, 0.85), normalize(vWebNormal), 0.0, c, 0.0);
+  vec3 lit = uBaseKeyCol * (0.35 + 0.5 * fore) + uBaseRimCol * (0.1 + 0.5 * back) + uBaseSky * 0.8;
+  float tear = smoothstep(0.25, 0.6, webHash(floor(u * 0.5) + sheet * 9.0) + 0.5 * sin(vWebUv.y * 7.0 + cell));
+  float veil = (0.03 + 0.045 * pow(abs(sin(u * 9.0 + 3.0 * sin(vWebUv.y * 5.0 + sheet))), 6.0) * webHash(floor(u * 2.87) + sheet)) * smoothstep(0.0, 0.3, vWebUv.y) * tear;
+  float a = clamp(thread * 0.26 + veil * 1.1 + dew * 0.12, 0.0, 1.0) * smoothstep(0.0, 0.03, vWebUv.y);
+  gl_FragColor = vec4(lit * vec3(0.85, 0.9, 0.95) * (0.7 + 1.3 * dew) * a, a);
+  if (uDiag != 0) {
+    if (a < 0.2) discard;
+    gl_FragColor = stageDiag(vec3(0.8, 0.82, 0.85), normalize(vWebNormal), 0.0, c, 0.0);
+  }
 }
 `
 
@@ -430,7 +456,7 @@ export function base(): THREE.Object3D {
     key: `${PART}-pumpkin`,
     physical: true,
     hook: hookOf(
-      { ...detail, uFaceMap: { value: map('faces.lin.w1024') }, uFaceRange: { value: extras.faceRange }, uFaceRind: { value: 0.12 }, uFacePower: { value: 2.3 } },
+      { ...detail, uFaceMap: { value: map('faces.lin.w1024') }, uFaceRange: { value: extras.faceRange }, uFaceRind: { value: 0.2 }, uFacePower: { value: 2.3 } },
       { pars: 'uniform sampler2D uFaceMap;\nuniform float uFaceRange;\nuniform float uFaceRind;\nuniform float uFacePower;', paint: PUMPKIN_PAINT, rough: PUMPKIN_ROUGH, tilt: PUMPKIN_TILT, after: SHADE },
     ),
   })
@@ -445,13 +471,28 @@ export function base(): THREE.Object3D {
     vertexPars: WEB_VERT_PARS,
     vertexMain: WEB_VERT_MAIN,
     fragment: WEB_FRAG,
-    params: { transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor },
+    params: { transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor, blendSrcAlpha: THREE.ZeroFactor, blendDstAlpha: THREE.OneFactor },
     uniforms: { ...baseUniforms },
   })
-  const threads = new THREE.Mesh(geometry(MODEL, 'web'), web)
+  // The slab is drawn after the globe, so threads strung over the slab are drawn with the floor (slab.ts adds them
+  // there) and follow the base by its matrix.
+  threads = new THREE.Mesh(geometry(MODEL, 'web'), web)
   threads.renderOrder = 4
-  group.add(solid('iron', iron), solid('pumpkin', pumpkin), solid('wax', wax), threads)
+  threads.frustumCulled = false
+  threads.matrixAutoUpdate = false
+  threads.matrixWorldAutoUpdate = false
+  threads.onBeforeRender = () => {
+    threads!.matrixWorld.copy(group.matrixWorld)
+  }
+  group.add(solid('iron', iron), solid('pumpkin', pumpkin), solid('wax', wax))
   return group
+}
+
+let threads: THREE.Mesh | null = null
+/** The cobweb, for the floor's group: it hangs from the base and is drawn after the slab it is seen against. */
+export function cobweb(): THREE.Object3D {
+  if (!threads) throw new Error(`${PART}: the cobweb is asked for before the base`)
+  return threads
 }
 
 // How lit a face is `seconds` after the landing: nothing before its turn, then a flare, then the creep to its whole light.
