@@ -71,7 +71,7 @@ export const SLAB = {
   f0: 0.05,
   fresnelPower: 4.2,
   mirrorShare: 1,
-  nearFloor: 0.6,
+  nearFloor: 0.9,
   nearBlur: 2.4,
   nearBlurFar: 4.2,
   nearBlurRiseMm: 90,
@@ -106,7 +106,10 @@ export const SLAB = {
   seatLine: 0.9,
   seatLineMm: 0.45,
   seatShade: 0.45,
-  seatShadeMm: 3.5,
+  seatShadeMm: 2.5,
+  unlitShare: 0.3,
+  litFrom: 0.02,
+  litTo: 0.09,
   poolGain: 4,
   poolRiseMm: 46,
   contactMm: 4,
@@ -483,7 +486,7 @@ void main() {
     seen = slabMirror(st, lean, reachFar, 1.0, ${f(SLAB.sideShare)}).rgb;
     if (sil > 0.002) {
       vec4 hit = slabMirror(st, lean, min(reachNear * mix(${f(SLAB.nearBlur)}, ${f(SLAB.nearBlurFar)}, smoothstep(0.0, ${f(SLAB.nearBlurRiseMm)}, height)), 1.0), 0.0, clamp(grazing * ${f(SLAB.sideByGrazing)}, ${f(SLAB.sideShare)}, ${f(SLAB.sideMost)}) + ${f(SLAB.sideRise)} * smoothstep(0.0, ${f(SLAB.sideRiseMm)}, height));
-      image = hit.rgb * (sil * seat);
+      image = hit.rgb * (sil * seat * mix(${f(SLAB.unlitShare)}, 1.0, smoothstep(${f(SLAB.litFrom)}, ${f(SLAB.litTo)}, dot(hit.rgb, vec3(0.2126, 0.7152, 0.0722)))));
       held = hit.a * sil;
     }
   } else if (uReflect.y > 0.5) {
