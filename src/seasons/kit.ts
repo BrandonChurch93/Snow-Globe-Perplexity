@@ -54,6 +54,7 @@ export interface SeasonKit {
   readonly rig: { key: RoomLight; rim: RoomLight; sky: Rgb; ground: Rgb; fill: number; card?: { color: Rgb; intensity: number; from: Vec3; wrap: number; specular: number; inside: number } }
   readonly innerLights: readonly InnerLight[]
   readonly veil: { tint: Rgb; density: number; rest: number }
-  readonly backdrop: { colors: readonly Rgb[]; room: Rgb; floor: Rgb }
+  /** `gain`, when a season gives one, scales each background light by where it stands (1 leaves it as placed). */
+  readonly backdrop: { colors: readonly Rgb[]; room: Rgb; floor: Rgb; gain?: (at: Vec3) => number }
   readonly particles: Readonly<Record<string, { color: Rgb; glow: number }>>
 }
