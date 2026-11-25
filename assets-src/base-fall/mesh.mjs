@@ -112,7 +112,7 @@ function addStrands() {
   const rng = mulberry(4107)
   const r = (a, b) => a + (b - a) * rng()
   const push = (s) => STRANDS.push({ seed: STRANDS.length * 31 + 7, slope: 0, reach: 0, ...s })
-  for (let i = 0; i < 2; i++) push({ a0: -180, span: 360, h0: 2.3 + i * 2.7, amp: 1.1 + 0.5 * i, k: 3 + i, ph: r(0, 6.28), rad: r(1.15, 1.5), lift: 1.6, sprawl: 3.2 - i * 1.4, thorn: [7, 12], every: 46, layer: 0 })
+  for (let i = 0; i < 2; i++) push({ a0: -180, span: 360, h0: 2.3 + i * 2.7, amp: 1.1 + 0.5 * i, k: 3 + i, ph: r(0, 6.28), rad: r(1.15, 1.5), lift: 1.6, sprawl: 1.1 - i * 0.7, thorn: [7, 12], every: 46, layer: 0 })
   for (let i = 0; i < 2; i++) push({ a0: -180, span: 360, h0: 30.8 + i * 3.4, amp: 1.2, k: 4 + i, ph: r(0, 6.28), rad: r(1.25, 1.6), lift: 1.5, sprawl: 0, thorn: [6, 10], every: 60, layer: 2 })
   for (let i = 0; i < 2; i++) push({ a0: -180, span: 360, h0: 11.5 + i * 15, amp: r(2.4, 3.4), k: 3 + i, ph: r(0, 6.28), rad: r(1.0, 1.3), lift: 1.8, sprawl: 0, thorn: [6, 10], every: 52, layer: 1 })
   // The branches: long tapering lengths that cross the ring on a slant, each ending in a point that stands off it.
@@ -336,6 +336,26 @@ export function buildPumpkins() {
   return { soup }
 }
 
+// How far out the weave reaches at a place on the ring, or null where no strand passes.
+let WEAVE = null
+function weaveOut(az, h, halfDeg) {
+  if (!WEAVE) {
+    WEAVE = []
+    for (const s of STRANDS) {
+      const { pts, radii } = strandPath(s)
+      pts.forEach((p, i) => WEAVE.push([azOf(p), p[1], Math.hypot(p[0], p[2]), radii[i]]))
+    }
+  }
+  let best = null
+  for (const q of WEAVE) {
+    const dh = Math.abs(q[1] - h)
+    if (dh >= q[3] || Math.abs(L.wrapDeg(q[0] - az)) > halfDeg) continue
+    const out = q[2] + Math.sqrt(q[3] * q[3] - dh * dh)
+    if (best === null || out > best) best = out
+  }
+  return best
+}
+
 // The wax: a lumpy ring where the glass meets the iron, the runs that hang from it, and the runs that reached the slab.
 export function buildWax() {
   const soup = new Soup('wax')
@@ -399,20 +419,31 @@ export function buildWax() {
   }
   for (const run of L.RUNS) {
     const start = L.onCylinder(run.x, run.y0, 55)
-    const w = (run.w / 9.3) * 0.5
-    const foot = 59.6 + (run.pool > 0 ? 1.2 : 0.4)
-    const top = Math.min(start.h, 9.5)
+    const w = (run.w / 9.3) * 0.8
+    const top = Math.min(start.h, 13)
     const n = Math.max(6, Math.ceil(top / 0.7))
+    const outs = []
+    for (let i = 0; i <= n; i++) outs.push(weaveOut(start.az, mix(top, run.pool > 0 ? 0.5 : 2.2, i / n), 2.0))
+    let last = outs.find((o) => o !== null) ?? 59.4
+    for (let i = 0; i <= n; i++) {
+      if (outs[i] === null) outs[i] = last - 0.25
+      last = outs[i]
+    }
+    for (let pass = 0; pass < 4; pass++) {
+      const prev = outs.slice()
+      for (let i = 0; i <= n; i++) outs[i] = 0.25 * prev[Math.max(i - 1, 0)] + 0.5 * prev[i] + 0.25 * prev[Math.min(i + 1, n)]
+    }
+    const foot = outs[n] - 0.6
     const pts = []
     const radii = []
     for (let i = 0; i <= n; i++) {
       const t = i / n
       const h = mix(top, run.pool > 0 ? 0.5 : 2.2, t)
       const sway = Math.sin(run.x) * 0.35
-      pts.push(place(mix(59.4, foot + 0.4, t * t), h, start.az + sway * Math.sin(2 * Math.PI * t) * (1 - t)))
+      pts.push(place(outs[i] - w * 0.45, h, start.az + sway * Math.sin(2 * Math.PI * t) * (1 - t)))
       const cap = Math.sqrt(Math.max(1 - Math.max((0.1 - t) / 0.1, 0) ** 2, 0.0004))
       const tail = run.pool > 0 ? 1 + 0.35 * smooth(0.8, 1, t) : Math.sqrt(Math.max(1 - Math.max((t - 0.9) / 0.1, 0) ** 2, 0.0004)) * (1 + 0.4 * Math.exp(-(((t - 0.86) / 0.1) ** 2)))
-      radii.push(w * (0.75 + 0.55 * t * t + 0.14 * Math.sin(t * 9 + run.x)) * cap * tail)
+      radii.push(w * (0.3 + 0.8 * smooth(0, 0.55, t) + 0.1 * Math.sin(t * 9 + run.x)) * cap * tail)
     }
     tube(soup, pts, radii, 10, (j, a, p, nrm) => [(0.55 + 0.45 * (0.5 + 0.5 * dot3(nrm, norm3([p[0], 0, p[2]])))) * (0.5 + 0.5 * smooth(0, 16, p[1])), clamp(radii[j] * 0.55, 0, 1), j / n], 0.85)
     count++
