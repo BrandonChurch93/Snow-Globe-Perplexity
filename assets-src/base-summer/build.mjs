@@ -8,7 +8,7 @@ import * as P from './profile.mjs'
 import { lighter, thin } from '../base-spring/thin.mjs'
 
 // G15: how much of each full list stays (the surface moves by at most `error` mm), and the error of the two lighter lists.
-const THIN = { stone: { share: 0.68, error: 0.06 }, shells: { share: 0.72, error: 0.05 }, sand: { share: 0.66, error: 0.08 }, levels: { medium: { error: 0.09, worth: 1 }, low: { error: 0.22, worth: 1 } } }
+const THIN = { stone: { share: 0.68, error: 0.06 }, shells: { share: 0.72, error: 0.05 }, sand: { share: 0.66, error: 0.08 }, levels: { medium: { error: 0.1, worth: 1 }, low: { error: 0.25, worth: 1 } } }
 
 const cfg = loadConfig()
 const dir = rel('assets-full', 'summer')
