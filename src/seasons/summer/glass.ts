@@ -82,11 +82,19 @@ export const look = {
     airColor: [1, 0.66, 0.36] as const,
     // the haze: the liquid behind the miniature holds the sun as a warm glow, fullest in a column up the middle of the globe
     // (`hazeAt`, `hazeWide`, in globe radii across the picture) and `hazeRim` of that toward the sides
-    haze: 0.27,
-    hazeColor: [1, 0.64, 0.36] as const,
+    // It is gold and fullest low, behind the miniature (`hazeLow`, `hazeTall`, in globe radii up the picture); toward the top
+    // of the dome it thins to `hazeTop` of that, and to the sides of the column up there the liquid holds a paler, cooler light
+    // (`hazeSky`, `hazeSkyColor`), so the dome is not one flat tone
+    haze: 0.42,
+    hazeColor: [1, 0.6, 0.3] as const,
     hazeRim: 0.15,
     hazeAt: -0.1,
-    hazeWide: 0.4,
+    hazeWide: 0.45,
+    hazeLow: -0.2,
+    hazeTall: 0.5,
+    hazeTop: 0.6,
+    hazeSky: 0.06,
+    hazeSkyColor: [0.7, 0.8, 0.95] as const,
     // the storm: the seeds and the dust aloft take the sun and the whole dome glows white-gold; it goes with the liquid's
     // turbulence, in slow arms that turn with the time, and is thinner over the miniature so the lanterns stay
     storm: 0.1,
@@ -239,7 +247,9 @@ void main() {
   float toward = 0.5 + 0.5 * dot(vWl, vWlDir);
   vec3 air = ${vec(W.airColor)} * (${n(W.air)} * smoothstep(0.45, 1.0, toward) * body);
   float column = (vWl.x - ${n(W.hazeAt)}) / ${n(W.hazeWide)};
-  air += ${vec(W.hazeColor)} * (${n(W.haze)} * body * (${n(W.hazeRim)} + ${n(1 - W.hazeRim)} * exp(-column * column)));
+  float low = exp(-pow((vWl.y - ${n(W.hazeLow)}) / ${n(W.hazeTall)}, 2.0));
+  air += ${vec(W.hazeColor)} * (${n(W.haze)} * body * (${n(W.hazeRim)} + ${n(1 - W.hazeRim)} * exp(-column * column)) * (${n(W.hazeTop)} + ${n(1 - W.hazeTop)} * low));
+  air += ${vec(W.hazeSkyColor)} * (${n(W.hazeSky)} * body * smoothstep(-0.1, 0.6, vWl.y) * (1.0 - 0.8 * exp(-column * column)));
   // the storm's light: slow broad arms about the middle, turning with the time
   float turn = atan(vWl.y, vWl.x);
   float arms = 1.0 - ${n(W.stormArms)} + ${n(W.stormArms)} * sin(2.0 * turn + 5.0 * r - 1.7 * uSummer.x) * smoothstep(0.05, 0.4, r);
