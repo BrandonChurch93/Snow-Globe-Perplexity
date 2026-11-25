@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 73 · 2026-11-25 03:56 UTC
+Status 74 · 2026-11-25 04:21 UTC
 
-- `out/stills/status/status-73-1.jpg`: The change from spring to summer on the change builder's branch: the base now gives way inside a flood of the new season's light (film frames 1392 to 1400)
-- `out/stills/status/status-73-2.jpg`: Fall's base on its builder's branch: the approved image above and the build below
-- `out/stills/status/status-73-3.jpg`: Fall's air on its builder's branch: the approved image left and the build right
-- `out/stills/status/status-73-4.jpg`: Still: summer rest hero, preview, draft, standins view
+- `out/stills/status/status-74-1.jpg`: Fall's miniature on its builder's branch (left) beside the approved image (right): the tree is black and bare now with small lights and reaches the top of the glass
+- `out/stills/status/status-74-2.jpg`: Summer's pond on its builder's branch (top) beside the approved image (bottom): dark water that mirrors the bank and the lanterns
+- `out/stills/status/status-74-3.jpg`: Spring's tree on its builder's branch (left) beside the approved tree (right): single blossoms on boughs with shade under them
+- `out/stills/status/status-74-4.jpg`: Still: spring rest hero, preview, draft, standins view
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 03:56 UTC
-clock: phase 4, tick of 0.6 minutes
-phase 4: 3.82 h used of its 9.50 h box
-allowance (before the review): 26.10 h used of 36.00 h allowed
-all time before the review: 26.10 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 04:21 UTC
+clock: phase 4, tick of 12.1 minutes
+phase 4: 4.23 h used of its 9.50 h box
+allowance (before the review): 26.52 h used of 36.00 h allowed
+all time before the review: 26.52 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
@@ -1650,3 +1650,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 03:37 UTC. - 03:37 UTC: Status 72 posted (three pictures inline: summer's miniature and summer's air on their builders' branches beside the approved image; Round 9's judged film sheet across the change from spring to summer). Round 9 has every answer (R1 4, R3 4, R4 4, R2 fails, 2 checks red, 5 measures red); Round 8 likewise (R1 4, R3 3, R4 3, R2 fails, 2 checks red, 7 measures red); neither passes. Round 10's still pack is late (fall renders slower; new limit 04:00). Sound account read at 03:36:05: 4 credits left, nothing can be made.
 
 - 03:56 UTC. - 03:56 UTC: Status 73 posted (three pictures inline: the change from spring to summer inside its bloom on the change builder's branch; fall's base and fall's air on their builders' branches beside the approved image). Round 10 so far: R1 3, R3 6, R2 fails (1 of 20 against 7 of 10), 6 of 19 measures red; motion pack and machine checks still rendering. Sound account unchanged (4 credits at 03:36).
+
+- 04:21 UTC. - 04:21 UTC: Status 74 posted (three pictures inline from the builders' branches beside the approved images: fall's miniature, summer's pond, spring's tree). Round 10's motion pack arrived at 04:02 (branch `agent/p4-round10-motion` `0ab9001`, fetched, never merged); its motion critic started at 04:02. Triangle counts on trial merges: summer 1,747,087 / 1,004,239 / 500,846 (inside the limit at all three levels); spring 1,782,159 / 1,342,186 / 560,027 before the base's lighter lists (pushed since as `e0ee86f`). Sound account unchanged (4 credits at 04:21).
