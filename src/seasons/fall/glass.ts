@@ -54,7 +54,7 @@ export const look = {
     liftedToMm: 50,
     liftedFront: 0.22,
     flood: 0.1,
-    floodFrom: 0.82,
+    floodFrom: 0.64,
     floodTo: 0.99,
     lumpMm: 3.5,
     lumpFineMm: 1.8,
@@ -609,7 +609,8 @@ export function update(moment: KitMoment): void {
   uniforms.uFog.value.set(fr.clock, lift, pour, fallen)
   // The stirred fog goes round with the liquid: at the shake's rate until the landing, then it spins down.
   const spun = Number.isFinite(since) ? moment.time - since + F.spinDownSeconds * (1 - Math.exp(-since / F.spinDownSeconds)) : moment.time
-  uniforms.uFogTurn.value.set(F.spinRadS * spun, ease((fr.turbulence - F.floodFrom) / (F.floodTo - F.floodFrom)))
+  const flood = ease((fr.turbulence - F.floodFrom) / (F.floodTo - F.floodFrom))
+  uniforms.uFogTurn.value.set(F.spinRadS * spun, flood * flood)
   // The cover view counts what is hidden of the miniature only: there the fog is laid on where the miniature already is.
   const src = fr.view === 'cover' ? THREE.DstAlphaFactor : THREE.OneFactor
   for (const m of volumes) m.blendSrc = src
