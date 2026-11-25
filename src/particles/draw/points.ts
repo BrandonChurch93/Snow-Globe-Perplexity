@@ -10,7 +10,7 @@ import { partBytes } from '../../diagnostics/views'
 import type { StageFrame } from '../../scene/frame'
 import { flickerOf } from '../../scene/lightgrid'
 import type { InnerLight } from '../../seasons/kit'
-import { LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_TABLE, LYING_LOOK, MAX_KINDS, SETTLE_SHOWN, SHAPE, TABLE_COLUMNS, lookOf } from './looks'
+import { BATS, CARD, LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_TABLE, LYING_LOOK, MAX_KINDS, SETTLE_SHOWN, SHAPE, TABLE_COLUMNS, lookOf } from './looks'
 import { BEHAVIOUR } from '../engine/kinds'
 import { FRAG, VERT_MAIN, VERT_PARS } from './shader'
 
@@ -77,6 +77,7 @@ export class ParticleDraw {
       uKindPart: { value: Array.from({ length: MAX_KINDS }, () => new THREE.Vector4()) },
       uKindLook: { value: Array.from({ length: MAX_KINDS }, () => new THREE.Vector4()) },
       uKindWay: { value: Array.from({ length: MAX_KINDS }, () => new THREE.Vector4()) },
+      uBat: { value: Array.from({ length: BATS }, () => new THREE.Vector4()) },
     }
     this.bounds = new THREE.Sphere(new THREE.Vector3(), radiusMm)
     this.sprites = new THREE.Points(new THREE.BufferGeometry(), this.material(true))
@@ -150,7 +151,7 @@ export class ParticleDraw {
     const gate = Math.min(1, Math.max(0, (f.turbulence - LENS_LOOK.stormFrom) / (LENS_LOOK.stormTo - LENS_LOOK.stormFrom)))
     const stormy = f.live || f.view === 'cover' || (f.sample !== null && f.view === '')
     this.storm = stormy ? gate * gate * (3 - 2 * gate) : 0
-    this.fill(source, f.quality.particleFraction, f.live)
+    this.fill(source, f.quality.particleFraction, f.live, f.moment.mix)
     this.shown = stormy ? Math.min(1, SETTLE_SHOWN / Math.max(this.afloat, 1e-3)) : 1
     this.paced = stormy ? 1 : 0
     veilSettle(this.afloat)
@@ -171,7 +172,7 @@ export class ParticleDraw {
     }
   }
 
-  private fill(source: ParticleSource, fraction: number, live: boolean): void {
+  private fill(source: ParticleSource, fraction: number, live: boolean, mix: number): void {
     const n = source.count
     if (n !== this.capacity) this.allocate(Math.max(1, n))
     this.arrays[0]!.set(source.pos.subarray(0, n * 3))
@@ -199,6 +200,20 @@ export class ParticleDraw {
     for (const a of live ? this.instanced : this.single) a.needsUpdate = true
     this.drawn = Math.max(0, Math.min(n, Math.floor(n * fraction)))
     this.sprites.geometry.setDrawRange(0, this.drawn)
+    const bats = this.uniforms.uBat!.value as THREE.Vector4[]
+    const batKind = source.kinds.findIndex((kind) => lookOf(kind).shape === SHAPE.bat)
+    let found = 0
+    if (batKind >= 0) {
+      const pos = source.pos
+      const prev = source.prev
+      const half = lookOf(source.kinds[batKind]!).size * 0.5 * (CARD.batSpread[0] + CARD.batSpread[1])
+      for (let i = 0; i < this.drawn && found < BATS; i++) {
+        if (kindOf[i] !== batKind || state[i]! > 2.5) continue
+        const o = i * 3
+        bats[found++]!.set(prev[o]! + (pos[o]! - prev[o]!) * mix, prev[o + 1]! + (pos[o + 1]! - prev[o + 1]!) * mix, prev[o + 2]! + (pos[o + 2]! - prev[o + 2]!) * mix, sizes[i]! * SIZE_TO_RADIUS * half * (opacity ? opacity[i]! : 1))
+      }
+    }
+    for (; found < BATS; found++) bats[found]!.set(0, 0, 0, 0)
     ;(this.quads.geometry as THREE.InstancedBufferGeometry).instanceCount = this.drawn
   }
 
