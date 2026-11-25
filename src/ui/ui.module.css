@@ -364,11 +364,13 @@
 .shake[data-press] {
   transform: scale(0.97);
   background: rgb(var(--glass) / 0.62);
+  color: rgb(var(--lit));
 }
 
 .shake:active:not([aria-disabled='true'])::before,
 .shake[data-press]::before {
-  opacity: 0.8;
+  opacity: 1;
+  background: rgb(var(--glow) / 0.13);
   transition-duration: 0.08s;
 }
 
