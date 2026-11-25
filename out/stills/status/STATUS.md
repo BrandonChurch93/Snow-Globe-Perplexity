@@ -1,19 +1,19 @@
-# Status 72
+# Status 73
 
-2026-11-25 03:36 UTC
+2026-11-25 03:56 UTC
 
-- Round 9 (summer) has all its answers: R1 4; R3 4; R4 4; the jury fails it; 2 machine checks red; 5 of 19 measures red. It does not pass
-- Round 8 (spring) has all its answers: R1 4; R3 3; R4 3; the jury fails it; 2 machine checks red; 7 of 19 measures red. It does not pass
-- Round 10 (fall): the still pack runs late because fall renders slower and is due by 04:00; its motion pack and its machine checks are rendering
-- Both motion critics name the same three faults in the change: the season cuts in one frame; the globe stays level in the hand; the new season is wiped on rather than grown. The change builder has both answers and the sheets
-- Second rounds: spring and summer freeze at 04:45 UTC and fall at 05:30
-- Sound: the account is still out of credits (4 left); the films stay silent
-- phase 4: 3.49 h used of its 9.50 h box
-- allowance (before the review): 25.77 h used of 36.00 h allowed
+- Round 10 (fall) so far: R1 3; R3 6; the jury fails it with 1 of 20 against 7 of 10; 6 of 19 measures red. Its motion pack and its machine checks are still rendering
+- Every issue of Round 10 and the jurors' own words went to fall's four builders by owner
+- The change builder has a bloom on all four changes: no frame shows a base that is half one season and half another any more. Still wrong: the globe burns to white inside the flood and the table dressing comes on in one step
+- The hand's small lift and tilt were set for winter's rounds and stay as they are: open item 71 for the polish rounds
+- Triangle counts are over the limit in all three seasons (check G15): every builder has its cut per quality level and a tool that prints the counts
+- Next: the freeze for the second rounds of spring and summer at 04:45 UTC
+- phase 4: 3.81 h used of its 9.50 h box
+- allowance (before the review): 26.09 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-72-1.jpg`: Summer's miniature on its builder's branch (top) beside the approved image (bottom): the mirror pond and the sand rim are new
-- `out/stills/status/status-72-2.jpg`: Summer's air on its builder's branch: the approved image left and the build right
-- `out/stills/status/status-72-3.jpg`: Round 9's judged film sheet across the change from spring to summer: the season cuts between frames 1386 and 1400
-- `out/stills/status/status-72-4.jpg`: Still: summer rest hero, hd, draft
+- `out/stills/status/status-73-1.jpg`: The change from spring to summer on the change builder's branch: the base now gives way inside a flood of the new season's light (film frames 1392 to 1400)
+- `out/stills/status/status-73-2.jpg`: Fall's base on its builder's branch: the approved image above and the build below
+- `out/stills/status/status-73-3.jpg`: Fall's air on its builder's branch: the approved image left and the build right
+- `out/stills/status/status-73-4.jpg`: Still: summer rest hero, preview, draft, standins view
