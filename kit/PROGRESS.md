@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 102 · 2026-11-25 13:55 UTC
+Status 103 · 2026-11-25 14:15 UTC
 
-- `out/stills/status/status-102-1.jpg`: The four seasons at rest in the build: kept stills at final quality
-- `out/stills/status/status-102-2.jpg`: The four seasons half a second after a landing: kept stills at final quality
-- `out/stills/status/status-102-3.jpg`: Comparison at rest for each season: a is the approved image and b is the build
-- `out/stills/status/status-102-4.jpg`: The swap from winter into spring across the storm: the fix pass of the change unit
+- `out/stills/status/status-103-1.jpg`: The published build at first paint: winter in the app with the controls dimmed
+- `out/stills/status/status-103-2.jpg`: Spring opened by its own link on the build of main
+- `out/stills/status/status-103-3.jpg`: What is mended first: drops on spring's glass in the live picture without samples on the left and black under samples on the right
+- `out/stills/status/status-103-4.jpg`: Still: spring rest hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 14:12 UTC
-clock: phase 5, tick of 0.8 minutes
-phase 5: 0.01 h used of its 12.00 h box
-allowance (before the review, continuation 1): 0.01 h used of 12.00 h allowed
-all time before the review: 36.21 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 14:15 UTC
+clock: phase 5, tick of 0.1 minutes
+phase 5: 0.08 h used of its 12.00 h box
+allowance (before the review, continuation 1): 0.08 h used of 12.00 h allowed
+all time before the review: 36.27 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 7
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -2080,3 +2080,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 14:01 UTC. Published at 14:00 for the budget report: the build of `main` at `83634de` (the code of `730034f`, engine `ccf86f27ae34a82c`) with the review page made from the log of 13:57. Before the upload the built site was opened once in live mode: first picture at 18.1 s, 87 requests, no page error (`out/work/p5/dist-live-1359.jpg`, winter with no control drawn, which is the interface's idle state, not a fault). Visibility: Organization. Status 102 was shown in the thread at 14:01 with its four pictures, above the `BUDGET REPORT` block that ends this task. Nothing is running: no agent at work, no job, no browser left open by a check.
 
 - 14:12 UTC. CONTINUATION 1. Brandon wrote in the thread at 14:09: "You may continue with you work until you are finished." (Notes from Brandon, 1; decision 103). `npm run clock -- --start` and `npm run clock -- --continue 1` at 14:11: 12.00 h more before the review, all of it Phase 5's box after the correction of decision 104. "Budget" says `running`, "Continuations" says 1. The build carries on exactly where it stopped: Phase 5, with the list under "Still to do" of the last report block. First: the log, the addenda and the "Read first" files of Phase 5 are read again from disk, then the opening status.
+
+- 14:16 UTC. Status 103 shown in the thread at 14:16 UTC with its pictures (the published build's first picture, spring by its own link on `main`, the drops on spring's glass without and with samples). It opens Continuation 1. Read again from disk before it: `AGENTS.md`, `kit/addenda/README.md` (no addenda), Phase 5 of `kit/08-BUILD-ORDER.md` with its "Read first" list (sections 12, 14 and 15 of `kit/03-METHOD.md`, section 7 of `kit/02-SUBJECT.md`, "The soundtrack" in `kit/01-FILM.md`, the probe, hosting and review page sections of `kit/05-ARCHITECTURE.md`, `kit/07-QUALITY-BAR.md`), and of this file the status, the units, decisions 100 to 104, the 173 open items by title, "For Brandon to decide", the agents' last entries, the rounds and the last report block. Clock 0.08 h of 12.00 h.

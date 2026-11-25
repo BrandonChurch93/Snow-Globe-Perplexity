@@ -1,16 +1,16 @@
-# Status 102
+# Status 103
 
-2026-11-25 13:55 UTC
+2026-11-25 14:15 UTC
 
-- The clock printed budget report: due at 13:50 UTC with 36.00 h of 36.00 h used. Nothing new was started after it
-- Phase 5 stands at its first four steps as far as they went. The first round on the whole globe was not started and three parts are still stand-ins
-- Each season opens by its own link on the build of main: first picture in 14 to 16 s with that season's mark pressed and no page errors
-- phase 5: 2.09 h used of its 4.50 h box
-- allowance (before the review): 36.08 h used of 36.00 h allowed
+- Phase 5 and the unit globe with no round yet. Continuation 1 began at 14:11 UTC on Brandon's word in the thread
+- Since the last status: 12 more hours are on the clock for Phase 5 and the log and the kit's Phase 5 files are read again from disk
+- Next: mend spring's drops under multisampling and finish the three stand-in parts and then run the first round on the whole globe
+- phase 5: 0.08 h used of its 12.00 h box
+- allowance (before the review, continuation 1): 0.08 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-102-1.jpg`: The four seasons at rest in the build: kept stills at final quality
-- `out/stills/status/status-102-2.jpg`: The four seasons half a second after a landing: kept stills at final quality
-- `out/stills/status/status-102-3.jpg`: Comparison at rest for each season: a is the approved image and b is the build
-- `out/stills/status/status-102-4.jpg`: The swap from winter into spring across the storm: the fix pass of the change unit
+- `out/stills/status/status-103-1.jpg`: The published build at first paint: winter in the app with the controls dimmed
+- `out/stills/status/status-103-2.jpg`: Spring opened by its own link on the build of main
+- `out/stills/status/status-103-3.jpg`: What is mended first: drops on spring's glass in the live picture without samples on the left and black under samples on the right
+- `out/stills/status/status-103-4.jpg`: Still: spring rest hero, hd, draft

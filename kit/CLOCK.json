@@ -1,22 +1,22 @@
 {
   "version": 1,
   "bootId": "ff5d1bae-befd-4c1b-b74f-d269fb040d4b",
-  "last": 1795615924015,
-  "sinceStatus": 469.7030000000001,
+  "last": 1795616158123,
+  "sinceStatus": 0,
   "segment": {
     "kind": "run",
     "allowedHours": 12,
     "boxes": {
       "5": 12
     },
-    "used": 50.278000000000006,
+    "used": 284.38599999999997,
     "phaseUsed": {
-      "5": 50.278000000000006
+      "5": 284.38599999999997
     },
     "continuation": 1
   },
   "totals": {
-    "run": 130342.75300000007,
+    "run": 130576.86100000006,
     "afterReview": 0,
     "reviewRounds": 0,
     "extensions": 0
@@ -27,23 +27,23 @@
     "2": 19530.188000000002,
     "3": 56414.852,
     "4": 42127.68700000002,
-    "5": 7990.513000000002
+    "5": 8224.621000000001
   },
   "reviewApproved": false,
   "continuations": 1,
   "reviewRounds": {},
   "extensions": {},
-  "ticks": 366,
+  "ticks": 368,
   "lastReport": [
-    "2026-11-25 14:12 UTC",
-    "clock: phase 5, tick of 0.8 minutes",
-    "phase 5: 0.01 h used of its 12.00 h box",
-    "allowance (before the review, continuation 1): 0.01 h used of 12.00 h allowed",
-    "all time before the review: 36.21 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h",
+    "2026-11-25 14:15 UTC",
+    "clock: phase 5, tick of 0.1 minutes",
+    "phase 5: 0.08 h used of its 12.00 h box",
+    "allowance (before the review, continuation 1): 0.08 h used of 12.00 h allowed",
+    "all time before the review: 36.27 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h",
     "extra rounds: yes",
     "half point: not reached",
     "box end: not reached",
     "budget report: not due",
-    "minutes since the last status: 7"
+    "minutes since the last status: 0"
   ]
 }
