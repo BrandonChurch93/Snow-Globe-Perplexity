@@ -183,7 +183,7 @@ export const CARD = {
   /** The most a card's bends may move its outline on the picture, as a share of what keeps the outline whole when the card is seen edge on. */
   bendFit: 0.55,
   /** The storm's fine streaks, for the petals and for the leaves: their share of the ones not drawn whole, the least and most they are seen and its skew, how much longer than the shutter's path, their bow, width in pixels, the tail's share of the head's light, how pale (petals) and the tints (leaves). */
-  line: { seedKeep: [0.015, 0.75] as const, seedSkew: 3.5, seedStretch: [0.7, 2.2] as const, seedWidePx: [0.3, 0.6] as const, headPx: [0.8, 2.6] as const, headSeen: 0.8, share: [0.3, 0.32] as const, leafStretch: [1.1, 3] as const, leafPale: 1, leafSkew: 6, keep: [0.03, 0.9] as const, skew: 3.5, stretch: [1.5, 4.5] as const, align: 0.85, fromPx: [6, 30] as const, bow: [0.03, 0.16] as const, widePx: [0.4, 0.95] as const, tail: 0.1, pale: [0.2, 0.8] as const, gain: 1.15, seedGain: 1.9, leafLow: [1.3, 0.7, 0.4] as const, leafHigh: [1.9, 1.3, 0.6] as const },
+  line: { seedKeep: [0.015, 0.75] as const, seedSkew: 3.5, seedStretch: [0.5, 1.6] as const, seedWidePx: [0.3, 0.6] as const, seedHeads: 0.3, fanPx: [9, 24] as const, fanHairs: 7, fanSpread: 1.2, fanShort: 0.55, fanWide: 0.7, fanCore: 0.06, fanOpen: [0.08, 0.4] as const, headSeen: 0.6, deep: [0.6, 1.2] as const, frontCut: 0.45, share: [0.24, 0.32] as const, leafStretch: [0.6, 1.5] as const, leafPale: 0.6, leafSkew: 2.5, petalHeads: 0.7, petalHeadPx: [2.4, 5.5] as const, leafHeads: 0.45, leafHeadPx: [2.4, 6] as const, leafWidePx: [0.9, 1.9] as const, headOval: [0.5, 0.85] as const, headLift: 3, headGain: 1.1, petalHead: [[1, 0.74, 0.86], [1.25, 1.25, 1.25]] as const, petalWhite: 0.72, leafHead: [[1.1, 0.95, 0.7], [1.7, 1.5, 1.15]] as const, leafWhite: 0.45, keep: [0.03, 0.9] as const, skew: 3.5, stretch: [0.8, 2.4] as const, align: 0.85, fromPx: [6, 30] as const, bow: [0.03, 0.16] as const, widePx: [0.8, 1.8] as const, tail: 0.1, pale: [0.2, 0.8] as const, gain: 1.15, seedGain: 1.9, leafLow: [1.5, 1.0, 0.6] as const, leafHigh: [1.9, 1.6, 1.2] as const },
   /** How much of the storm's sheets is taken away in front of the cottage, so that it still reads. */
   window: 0.75,
   /** How much a lying sheet is lit as one in the air, how much of the veil lies over it, and how much of its own colour the light takes on its way through a sheet. */
@@ -209,6 +209,8 @@ export const CARD = {
   chosen: [0.004, 0.012, 0.035] as const,
   dabSize: 0.36,
   leafDab: 0.55,
+  /** How far inside the glass's outline a bat's middle stays, in its own radius: no wing is drawn outside the globe. */
+  batInside: 1.05,
   /** How much of a dab is drawn where the storm's water is slow for a moment: the storm of a change holds its leaves from the window on, not only where they race. */
   dabCalm: 0.8,
   /** A dab of the storm: how much of the veil lies over it, how much of its streak it keeps, and the deeper pink of a petal's dab, so that the storm holds distinct small petals among its pale streaks. */
@@ -238,7 +240,7 @@ export const CARD = {
   leafLie: 0.7,
   leafSheen: 0.22,
   /** Of the rest, the share that is a solid small dab in the storm, and how much the others and they are seen. */
-  dabShare: [0.2, 0.38, 0.6] as const,
+  dabShare: [0.2, 0.12, 0.6] as const,
   dabKeep: [0, 1] as const,
   /** How much of a moving card is drawn sharp at the head of its path; the rest is its trail through the shutter. */
   head: 0.85,
