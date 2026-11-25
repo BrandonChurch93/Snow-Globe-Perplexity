@@ -1,43 +1,44 @@
 {
-  "number": 64,
-  "time": "2026-11-25 00:42 UTC",
+  "number": 65,
+  "time": "2026-11-25 01:02 UTC",
   "phase": "4",
   "unit": "",
   "lines": [
-    "Status 64 · 2026-11-25 00:42 UTC · Phase 4",
-    "Phase 4 is 37 minutes old and ten build agents are working on spring and summer and fall and the seven new particle kinds",
-    "The first finished first versions are in: the fall base with its surface dressing and all seven particle kinds drawing as their own shapes",
-    "The fall base agent names its own faults: iron strands too thick and glossy and wax runs too few and pumpkin skins too plain and no mirror image on the slab yet",
-    "Phase 3's whole gate ran green again on a clean clone of its closing commit: 15 of 15",
-    "phase 4: 0.59 h used of its 9.50 h box",
-    "allowance (before the review): 22.87 h used of 36.00 h allowed",
+    "Status 65 · 2026-11-25 01:02 UTC · Phase 4",
+    "Phase 4 is 55 minutes old. Eight of the ten build agents have pushed a first real version of their parts and all of it is merged: 425 tests pass",
+    "Merged so far: all three bases with their surface dressing and all three miniatures and the seven particle kinds and summer's air. Still to come in a first version: spring's and fall's glass dressing with veil and light",
+    "The app is published with the first new parts (00:52 UTC; first picture in 16.6 s; no error). It changes from hour to hour now",
+    "Every builder lists what is still wrong in its own captions and keeps working until 03:02. Spring goes to its first critic round as soon as its last stand-in is gone",
+    "The web pack grew to 83.8 MiB with everything merged. The hosting limit is 95 MB for the whole app so each season now has an 18 MiB allowance in writing",
+    "phase 4: 0.92 h used of its 9.50 h box",
+    "allowance (before the review): 23.20 h used of 36.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-64-1.jpg",
-      "caption": "Fall base at rest after 27 minutes of building: the approved image above and the build below (draft tier)",
-      "w": 1180,
-      "h": 956
-    },
-    {
-      "file": "out/stills/status/status-64-2.jpg",
-      "caption": "Fall base half a second after a landing: the approved image above and the build below (draft tier)",
-      "w": 1180,
-      "h": 956
-    },
-    {
-      "file": "out/stills/status/status-64-3.jpg",
-      "caption": "Still: spring rest hero, hd, draft",
+      "file": "out/stills/status/status-65-1.jpg",
+      "caption": "Spring miniature after 40 minutes: the approved image left and the build right (draft tier; the green base in this picture is the old stand-in)",
       "w": 1200,
-      "h": 675
+      "h": 629
     },
     {
-      "file": "out/stills/status/status-64-4.jpg",
-      "caption": "Comparison crops 1: winter-shake, approved image left, build right",
+      "file": "out/stills/status/status-65-2.jpg",
+      "caption": "Spring base and petals on the surface: the approved image above and the build below (the miniature in this picture is the old blockout)",
+      "w": 1000,
+      "h": 1130
+    },
+    {
+      "file": "out/stills/status/status-65-3.jpg",
+      "caption": "Summer base and sand: the approved image above and the build below (draft tier)",
       "w": 1200,
-      "h": 679
+      "h": 724
+    },
+    {
+      "file": "out/stills/status/status-65-4.jpg",
+      "caption": "Summer miniature: the approved image above and the build below (draft tier)",
+      "w": 610,
+      "h": 1200
     }
   ]
 }
