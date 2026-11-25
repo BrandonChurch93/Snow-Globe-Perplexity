@@ -52,7 +52,7 @@ How to run it: `npm run measure -- --unit change --only M4,M5 --tier final` took
 
 ## Pushes
 
-Branch: da3d387 (first, about 03:40), b95a98c 04:18, fc047e8 04:27, c568e8a 04:50. Nothing changed in the code after 04:50, so nothing was pushed to the branch after it. Looks: fb98d5f 03:20, d9ea952 03:47, 8584704 04:08, bbb91f6 04:27, c27d7d9 04:55, 13093cf 05:01, and the last one with this file. Each branch push after a merge of `origin/main`, tsc and vitest; never forced, never to main.
+Branch: da3d387 (first, about 03:40), b95a98c 04:18, fc047e8 04:27, c568e8a 04:50. Nothing changed in the code after 04:50, so nothing was pushed to the branch after it. Looks: fb98d5f 03:20, d9ea952 03:47, 8584704 04:08, bbb91f6 04:27, c27d7d9 04:55, 13093cf 05:01, 9a08c57 05:30 and the one with this file. Each branch push after a merge of `origin/main`, tsc and vitest; never forced, never to main.
 
 ## Constants a successor should know
 
@@ -74,7 +74,7 @@ None.
 
 ## Looks used (limit 40 a part)
 
-Counted from my notes, sheets and stills I rendered and looked at: change-winter-spring 10; change-spring-summer 3; change-summer-fall 6 (one of them the final-tier frame 2116); change-fall-winter 4; arrival-spring 2; arrival-summer 3; arrival-fall 2. All under 40. Not looks of a part but checks: the winter into winter test shake 4 sheets, winter's two stills 8 times (2 kept before the first change, 6 to compare). On the looks branch now: `flood-shake-1.jpg` to `flood-shake-4.jpg`, `arrival-spring.jpg`, `arrival-summer.jpg`, `arrival-fall.jpg`, `summer-grains.jpg`, `final-2116.jpg`, with `captions.txt`.
+Counted from my notes, sheets and stills I rendered and looked at: change-winter-spring 10; change-spring-summer 4; change-summer-fall 6 (one of them the final-tier frame 2116); change-fall-winter 4; arrival-spring 2; arrival-summer 4; arrival-fall 2. All under 40. Not looks of a part but checks: the winter into winter test shake 4 sheets, winter's two stills 8 times (2 kept before the first change, 6 to compare). On the looks branch now: `flood-shake-1.jpg` to `flood-shake-4.jpg`, `arrival-spring.jpg`, `arrival-summer.jpg`, `arrival-fall.jpg`, `summer-grains.jpg`, `final-2116.jpg`, with `captions.txt`.
 
 ## Handover
 
