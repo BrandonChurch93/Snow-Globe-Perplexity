@@ -848,7 +848,10 @@
     "A whoosh that swells and stops short at its loudest came back as a whoosh that swells to its middle and fades (riser take 1). A sound of about 1 s alone was four times answered with no file; played three times in a row it was heard at once.",
     "Air sucked into a pipe, cut off dead at its loudest, gave a flat hiss that starts at full level and ends in a pop, heard twice as a breath or a mouth (riser take 2): sucked is a mouth, and the tool does not make a sound that ends at its loudest. A rise has to be the first half of a longer swell, cut by the chain.",
     "A slow swell of wind asked at 2.4 s for a cue of 1.2 s: the chain kept the rising half, -60 to -20 dB over 0.95 s (riser take 3). It came wholly under 250 Hz: slow, soft and smooth push a wind sound down.",
-    "Music, pass 1: all five pieces came at 100 beats a minute on the grid, with no voice heard (music_v1, force_instrumental or a plan with vocals in the negative styles); price 13.75 credits a second, read from the account Music line, since the music endpoint sends no cost header. The composition plan with five sections of 12 s came back as one solo music box in one mood (music-one-piece take 1): the local styles did not change the instruments. Spring (harp, flute) and summer (nylon guitar, marimba) were both heard as gentle and wintry; the listener names a music box or celesta for most plucked or struck melodies."
+    "Music, pass 1: all five pieces came at 100 beats a minute on the grid, with no voice heard (music_v1, force_instrumental or a plan with vocals in the negative styles); price 13.75 credits a second, read from the account Music line, since the music endpoint sends no cost header. The composition plan with five sections of 12 s came back as one solo music box in one mood (music-one-piece take 1): the local styles did not change the instruments. Spring (harp, flute) and summer (nylon guitar, marimba) were both heard as gentle and wintry; the listener names a music box or celesta for most plucked or struck melodies.",
+    "Music, passes 2 and 3: a season track turns to its mood when the lead instrument is named first and placed (a flute high up, a guitar in front), with the key and mood words of the season; spring and summer were kept at their second takes. Three composition plans of five 12 s sections (music-one-piece takes 1 to 3) each came back as one festive arrangement in one mood, with strings coming and going: neither the section styles, nor the other sections' instruments in the negative styles, nor a global style asking for a medley of contrasting pieces turned the model at the section boundaries.",
+    "Layers of a cue's own takes (free): under a liquid, any small hard rattle is heard as ice cubes, whatever it was asked as (seeds, beads, bells); a sound mostly under 250 Hz is not heard beside anything in the middle of the range; a part that is in no take cannot be laid in. Ten layers were tried and none was heard as its whole line.",
+    "Judging music: the fit call agrees easily and the question which season is answered winter for almost anything. A blind choice of one mood phrase out of five, asked twice without the line, told the tracks apart."
   ],
   "kept": {
     "glass-clink": 2,
@@ -1146,7 +1149,8 @@
       }
     ],
     "evidence": "audio/evidence/",
-    "howToGoOn": "audio/RECIPE.md"
+    "howToGoOn": "audio/RECIPE.md",
+    "lifted": "2026-11-25T16:59Z: Brandon topped the account up and set a limit of 10,000 credits for what was left. Phase 5 made 40 calls under the guard: 6,765 spent, 3,235 left. See audio/RECIPE.md."
   },
   "notMade": {},
   "familyChecks": [
