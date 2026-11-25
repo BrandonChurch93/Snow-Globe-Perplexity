@@ -191,12 +191,12 @@ ${SHADE}
 {
   ${LIGHTS}
   float liveFuzz = pow(1.0 - liveNv, 2.2);
-  float liveShade = mix(0.4, 1.2, smoothstep(0.12, 0.78, liveWrap));
+  float liveShade = mix(0.24, 1.2, smoothstep(0.3, 0.8, liveWrap));
   reflectedLight.indirectDiffuse *= mix(1.0, 0.42, baseMoss) * liveShade;
-  reflectedLight.directDiffuse *= mix(1.0, liveShade, 0.6);
+  reflectedLight.directDiffuse *= mix(1.0, liveShade, 0.8);
   float liveTuft = smoothstep(0.35, 0.8, baseMossD.b);
   vec3 liveTip = vec3(0.5, 0.6, 0.08) * RECIPROCAL_PI * baseMoss * baseAo;
-  reflectedLight.directDiffuse += liveTip * (liveKeyC * (0.1 * liveWrap * liveWrap + 1.1 * liveTuft * pow(liveWrap, 4.0) + 0.6 * liveFuzz * liveWrap) + uRigCardCol * (0.03 * liveCardWrap * liveCardWrap + 0.14 * liveFuzz * liveCardWrap));
+  reflectedLight.directDiffuse += liveTip * (liveKeyC * (0.1 * liveWrap * liveWrap + 1.1 * liveTuft * pow(liveWrap, 4.0) + 0.6 * liveFuzz * liveWrap * liveWrap) + uRigCardCol * (0.03 * liveCardWrap * liveCardWrap + 0.14 * liveFuzz * liveCardWrap));
   vec3 liveCell = floor(vBasePos * 7.5);
   vec3 liveFacet = normalize(normalMatrix * normalize(baseObjectNormal + 1.3 * (vec3(baseHash(liveCell + 3.7), baseHash(liveCell + 11.3), baseHash(liveCell + 23.9)) - 0.5)));
   float liveGrit = smoothstep(0.34, 0.08, length(fract(vBasePos * 7.5) - 0.5)) * step(0.66, baseHash(liveCell));
@@ -338,9 +338,9 @@ void main() {
   float streak = smoothstep(0.52, 0.86, baseNoise(vec3(u * 2.6, (mm - run) * 0.3, 7.0)));
   float core = body * body;
   vec3 glow = (uWaterKeyCol * 0.5 + uRigCardCol * 0.3 + uWaterSky * 1.2) * RECIPROCAL_PI;
-  float rimline = smoothstep(0.26, 0.1, body) * smoothstep(0.0, 0.1, body);
+  float rimline = smoothstep(0.17, 0.07, body) * smoothstep(0.0, 0.07, body);
   float fine = smoothstep(0.58, 0.9, baseNoise(vec3(u * 9.0, (mm - run) * 0.14, 3.0))) * smoothstep(0.35, 0.7, baseNoise(vec3(u * 3.0, (mm - run) * 0.9, 11.0)));
-  col += glow * vec3(0.86, 0.94, 1.0) * (body * 0.07 + core * (0.1 * streak + 0.8 * fine + 3.0 * head) + 0.32 * rimline * (0.4 + 0.6 * h0));
+  col += glow * vec3(0.86, 0.94, 1.0) * (body * 0.13 + core * (0.1 * streak + 1.3 * fine + 3.0 * head) + mix(0.16, 0.5, smoothstep(0.97, 0.86, t)) * rimline * (0.4 + 0.6 * h0));
   vec3 cell = floor(vec3(u * 3.0, (mm - run) * 0.9, 1.0));
   float spark = step(0.78, baseHash(cell + 5.0)) * smoothstep(0.32, 0.06, length(fract(vec2(u * 3.0, (mm - run) * 0.9)) - 0.5));
   col += (uWaterKeyCol * vec3(1.0, 0.8, 0.55) + 0.4 * uRigCardCol) * 2.4 * spark * sqrt(body);
