@@ -1,42 +1,43 @@
 {
-  "number": 61,
-  "time": "2026-11-24 23:19 UTC",
+  "number": 62,
+  "time": "2026-11-24 23:48 UTC",
   "phase": "3",
   "unit": "",
   "lines": [
-    "Status 61 · 2026-11-24 23:19 UTC · Phase 3",
-    "Round 7 is the last round of the look lock. Its checks are all green and so are its measures. The critics do not pass it",
-    "Scores so far: match to the approved images 7 of 10. Motion 4 of 10. The jury 4 of 15 against the control's 7 of 10. Realism 7 and 5 with one part still out",
-    "Next: the last answer then winter is closed at its limit with its open issues written down and the other three seasons start",
-    "phase 3: 14.87 h used of its 11.00 h box",
-    "allowance (before the review): 21.49 h used of 36.00 h allowed",
+    "Status 62 · 2026-11-24 23:48 UTC · Phase 3",
+    "Round 7 of 5 allowed look lock rounds is judged and does not pass: likeness 7 and craft 5 and motion 4 and the jury 4 of 15",
+    "Winter is marked finished at its round limit with 25 new open items for the polish rounds",
+    "The stand-in check now covers winter and is green: 69 of 69 judged stills show no stand-in pixel",
+    "Closing the Phase 3 gate now and then starting the three other seasons with ten builders",
+    "phase 3: 15.35 h used of its 11.00 h box",
+    "allowance (before the review): 21.97 h used of 36.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-61-1.jpg",
-      "caption": "Mid shake: the approved image (a) beside the build (b) at the final tier",
+      "file": "out/stills/status/status-62-1.jpg",
+      "caption": "Winter at rest: the approved image on the left and the build on the right at the final tier",
       "w": 1200,
       "h": 698
     },
     {
-      "file": "out/stills/status/status-61-2.jpg",
-      "caption": "After the storm has settled: the judged still at the final tier",
+      "file": "out/stills/status/status-62-2.jpg",
+      "caption": "Winter half a second after the shake lands: approved left and build right",
       "w": 1200,
-      "h": 675
+      "h": 698
     },
     {
-      "file": "out/stills/status/status-61-3.jpg",
-      "caption": "The macro camera: the judged still at the final tier",
-      "w": 1200,
-      "h": 675
+      "file": "out/stills/status/status-62-3.jpg",
+      "caption": "Twelve frames across the test shake at the review tier",
+      "w": 1149,
+      "h": 986
     },
     {
-      "file": "out/stills/status/status-61-4.jpg",
-      "caption": "Comparison crops 3: winter-shake, approved image left, build right",
+      "file": "out/stills/status/status-62-4.jpg",
+      "caption": "Comparison crops 2: winter-shake, approved image left, build right",
       "w": 1200,
-      "h": 336
+      "h": 679
     }
   ]
 }
