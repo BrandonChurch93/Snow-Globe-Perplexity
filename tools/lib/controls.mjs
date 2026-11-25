@@ -3,7 +3,7 @@ import { readJson, rel } from './paths.mjs'
 import { cfg, formatById, recordMatches, writeWithRecord } from './page.mjs'
 import { limits } from './compose.mjs'
 
-const METHOD = 2
+const METHOD = 3
 const GAP = 6
 const STRIP = 20
 const GROUND = [20, 20, 23]
@@ -16,6 +16,7 @@ const HINT_MARGIN = { x: 100, y: 70 }
 const HINT_COLS = 4
 const STATES = ['rest', 'focused', 'pressed']
 const FRAME_MS = 150
+const SHOTS = 5
 const GLYPHS = {
   0: ['.###.', '#...#', '#..##', '#.#.#', '##..#', '#...#', '.###.'],
   1: ['..#..', '.##..', '..#..', '..#..', '..#..', '..#..', '.###.'],
@@ -66,7 +67,7 @@ const selector = (control) => (cfg.seasons.includes(control) ? `[data-control="s
 function specs(entry, tier) {
   const base = { method: METHOD, id: entry.id, season: entry.season, state: entry.state, camera: entry.camera, format: entry.format, tier }
   return {
-    crops: { ...base, kind: 'control-crops', states: STATES, margin: CROP_MARGIN, pointer: touchFormats.includes(entry.format) ? 'touch' : 'mouse' },
+    crops: { ...base, kind: 'control-crops', states: STATES, margin: CROP_MARGIN, motion: 'reduced', pointer: touchFormats.includes(entry.format) ? 'touch' : 'mouse' },
     hint: { ...base, kind: 'hint-sheet', frames: cfg.critics.contactSheetFrames, cols: HINT_COLS, margin: HINT_MARGIN },
   }
 }
@@ -136,8 +137,16 @@ function clipOf(rect, tile, stage) {
   return { x: Math.min(Math.max(x, 0), stage.width - tile.w), y: Math.min(Math.max(y, 0), stage.height - tile.h), width: tile.w, height: tile.h }
 }
 
+/** A crop is kept only when two shots in a row are the same picture, so a frame the browser had not finished is never kept. */
 async function shoot(page, clip) {
-  const png = await page.screenshot({ type: 'png', clip, animations: 'disabled', caret: 'hide' })
+  let png = null
+  for (let i = 0; i <= SHOTS; i++) {
+    const next = await page.screenshot({ type: 'png', clip, animations: 'disabled', caret: 'hide' })
+    const same = png !== null && next.equals(png)
+    png = next
+    if (same) break
+    if (i === SHOTS) throw new Error(`a crop did not hold still across ${SHOTS + 1} shots`)
+  }
   const { data, info } = await sharp(png).removeAlpha().toColourspace('srgb').raw().toBuffer({ resolveWithObject: true })
   if (info.width !== clip.width || info.height !== clip.height) throw new Error(`a crop came out ${info.width} x ${info.height}, not ${clip.width} x ${clip.height}`)
   return { data, width: info.width, height: info.height }
@@ -145,7 +154,10 @@ async function shoot(page, clip) {
 
 const ask = (page, state, a) => page.evaluate(([s, q]) => window.showcase.dev.interfaceState(s, q), [state, a])
 
-/** Runs every transition to its end, so a state is shot as it settles and never part of the way there. */
+/**
+ * The crops are cut with the page told that the visitor asked for reduced motion: the interface's own style sheet then runs no
+ * transition, so each state is drawn as it settles and no frame part of the way there can be shot. Whatever still moves is run to its end.
+ */
 const settle = (page, sel, ms) =>
   page.evaluate(
     async ([q, wait]) => {
@@ -204,6 +216,7 @@ async function crops(page, entry, spec, stage) {
   const cells = []
   const pressed = []
   try {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
     await cdp.send('DOM.enable')
     await cdp.send('CSS.enable')
     for (const row of rows) {
@@ -230,6 +243,7 @@ async function crops(page, entry, spec, stage) {
     }
     await ask(page, 'rest', { season })
   } finally {
+    await page.emulateMedia({ reducedMotion: null }).catch(() => {})
     await cdp.detach().catch(() => {})
   }
   return { png: await sheet(cells, STATES.length, false), facts: { rows, hidden, tile: [tile.w, tile.h], pressed, labels: cells.map((c) => c.label) } }
