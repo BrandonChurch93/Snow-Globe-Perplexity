@@ -1,0 +1,227 @@
+{
+  "engineHash": "80483ec9ffb8348a",
+  "seasonHashes": {
+    "winter": "5c39d16f98d3d0be",
+    "spring": "e579a2c24f41ece7",
+    "summer": "364b4daf13dc8bb8",
+    "fall": "767926ecb026caa1"
+  },
+  "format": "preview",
+  "tier": "",
+  "assets": "full",
+  "diagnostic": "",
+  "browser": "Google Chrome for Testing 147.0.7727.15",
+  "graphics": "software",
+  "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB",
+  "time": "2026-11-25T17:06:21.221Z",
+  "diag": "",
+  "layoutHash": "94f221794c579a83",
+  "spec": {
+    "kind": "app",
+    "script": "stir",
+    "part": "turn",
+    "what": "the liquid starting to turn and dying away, from the pointer going down to the end of the script",
+    "level": "high",
+    "source": "app-stir-winter-high",
+    "stride": 0,
+    "spacing": "3 frames apart for the first 6, then further and further apart, at 60 frames a second",
+    "sheet": 1,
+    "sheets": 1,
+    "label": "",
+    "frames": [
+      30,
+      33,
+      36,
+      39,
+      42,
+      45,
+      47,
+      51,
+      58,
+      76,
+      118,
+      218
+    ],
+    "plan": {
+      "name": "stir",
+      "fps": 60,
+      "frameCount": 219,
+      "from": "winter",
+      "to": "winter",
+      "events": [
+        {
+          "frame": 30,
+          "what": "the pointer goes down"
+        },
+        {
+          "frame": 39,
+          "what": "the pointer is let go: the stir"
+        }
+      ]
+    },
+    "marks": [
+      {
+        "frame": 30,
+        "what": "the pointer goes down"
+      },
+      {
+        "frame": 39,
+        "what": "the pointer is let go: the stir"
+      }
+    ]
+  },
+  "caption": "App sheet 1 of 1: a stir in winter, the liquid starting to turn and dying away, from the pointer going down to the end of the script, frames 30 to 218, 3 frames apart for the first 6, then further and further apart, at 60 frames a second, preview, level high",
+  "legend": "a stir of the liquid in winter in the app, the liquid starting to turn and dying away, from the pointer going down to the end of the script: frames 30 to 218 of the script's 219, 3 frames apart for the first 6, then further and further apart, at 60 frames a second. Each tile is labelled with its frame and its time. In the script: frame 30 (0.50 s) the pointer goes down; frame 39 (0.65 s) the pointer is let go: the stir",
+  "width": 1149,
+  "height": 986,
+  "limits": {
+    "longEdge": 1400,
+    "maxPixels": 1140000
+  },
+  "layout": {
+    "cols": 3,
+    "rows": 4,
+    "cell": {
+      "width": 367,
+      "height": 206
+    },
+    "labelHeight": 24,
+    "gap": 12,
+    "rowGap": 14,
+    "margin": 12
+  },
+  "frames": [
+    {
+      "index": 30,
+      "seconds": 0.5,
+      "file": "out/work/seq/app-stir-winter-high-preview/app-stir-winter-high-000030.png",
+      "at": {
+        "left": 12,
+        "top": 12,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 33,
+      "seconds": 0.55,
+      "file": "out/work/seq/app-stir-winter-high-preview/app-stir-winter-high-000033.png",
+      "at": {
+        "left": 391,
+        "top": 12,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 36,
+      "seconds": 0.6,
+      "file": "out/work/seq/app-stir-winter-high-preview/app-stir-winter-high-000036.png",
+      "at": {
+        "left": 770,
+        "top": 12,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 39,
+      "seconds": 0.65,
+      "file": "out/work/seq/app-stir-winter-high-preview/app-stir-winter-high-000039.png",
+      "at": {
+        "left": 12,
+        "top": 256,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 42,
+      "seconds": 0.7,
+      "file": "out/work/seq/app-stir-winter-high-preview/app-stir-winter-high-000042.png",
+      "at": {
+        "left": 391,
+        "top": 256,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 45,
+      "seconds": 0.75,
+      "file": "out/work/seq/app-stir-winter-high-preview/app-stir-winter-high-000045.png",
+      "at": {
+        "left": 770,
+        "top": 256,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 47,
+      "seconds": 0.7833333333333333,
+      "file": "out/work/seq/app-stir-winter-high-preview/app-stir-winter-high-000047.png",
+      "at": {
+        "left": 12,
+        "top": 500,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 51,
+      "seconds": 0.85,
+      "file": "out/work/seq/app-stir-winter-high-preview/app-stir-winter-high-000051.png",
+      "at": {
+        "left": 391,
+        "top": 500,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 58,
+      "seconds": 0.9666666666666667,
+      "file": "out/work/seq/app-stir-winter-high-preview/app-stir-winter-high-000058.png",
+      "at": {
+        "left": 770,
+        "top": 500,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 76,
+      "seconds": 1.2666666666666666,
+      "file": "out/work/seq/app-stir-winter-high-preview/app-stir-winter-high-000076.png",
+      "at": {
+        "left": 12,
+        "top": 744,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 118,
+      "seconds": 1.9666666666666666,
+      "file": "out/work/seq/app-stir-winter-high-preview/app-stir-winter-high-000118.png",
+      "at": {
+        "left": 391,
+        "top": 744,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 218,
+      "seconds": 3.6333333333333333,
+      "file": "out/work/seq/app-stir-winter-high-preview/app-stir-winter-high-000218.png",
+      "at": {
+        "left": 770,
+        "top": 744,
+        "width": 367,
+        "height": 206
+      }
+    }
+  ]
+}

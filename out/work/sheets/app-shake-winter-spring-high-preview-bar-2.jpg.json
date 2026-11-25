@@ -1,0 +1,243 @@
+{
+  "engineHash": "80483ec9ffb8348a",
+  "seasonHashes": {
+    "winter": "5c39d16f98d3d0be",
+    "spring": "e579a2c24f41ece7",
+    "summer": "364b4daf13dc8bb8",
+    "fall": "767926ecb026caa1"
+  },
+  "format": "preview",
+  "tier": "",
+  "assets": "full",
+  "diagnostic": "",
+  "browser": "Google Chrome for Testing 147.0.7727.15",
+  "graphics": "software",
+  "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB",
+  "time": "2026-11-25T16:55:06.804Z",
+  "diag": "",
+  "layoutHash": "94f221794c579a83",
+  "spec": {
+    "kind": "app",
+    "script": "shake",
+    "part": "bar",
+    "what": "the lift, the strokes and the set down, from the press to the landing",
+    "level": "high",
+    "source": "app-shake-winter-spring-high",
+    "stride": 4,
+    "spacing": "4 frames apart at 60 frames a second",
+    "sheet": 2,
+    "sheets": 3,
+    "label": "season",
+    "frames": [
+      78,
+      82,
+      86,
+      90,
+      94,
+      98,
+      102,
+      106,
+      110,
+      114,
+      118,
+      122
+    ],
+    "plan": {
+      "name": "shake",
+      "fps": 60,
+      "frameCount": 354,
+      "from": "winter",
+      "to": "spring",
+      "events": [
+        {
+          "frame": 30,
+          "what": "the Shake control is pressed"
+        },
+        {
+          "frame": 174,
+          "what": "the landing in spring"
+        }
+      ]
+    },
+    "marks": [
+      {
+        "frame": 30,
+        "what": "the Shake control is pressed"
+      },
+      {
+        "frame": 66,
+        "what": "the lift ends and the strokes begin"
+      },
+      {
+        "frame": 102,
+        "what": "the swap window opens"
+      },
+      {
+        "frame": 138,
+        "what": "the swap window closes"
+      },
+      {
+        "frame": 138,
+        "what": "the strokes end and the set down begins"
+      },
+      {
+        "frame": 174,
+        "what": "the landing in spring"
+      }
+    ]
+  },
+  "caption": "App sheet 2 of 3: the shake from winter to spring, the lift, the strokes and the set down, from the press to the landing, frames 78 to 122, 4 frames apart at 60 frames a second, preview, level high",
+  "legend": "a shake from winter to spring in the app, the lift, the strokes and the set down, from the press to the landing, sheet 2 of 3: frames 78 to 122 of the script's 354, 4 frames apart at 60 frames a second. Each tile is labelled with its frame, its time and the season the app holds, written as the old season to the new one from the press to the landing. In the script: frame 30 (0.50 s) the Shake control is pressed; frame 66 (1.10 s) the lift ends and the strokes begin; frame 102 (1.70 s) the swap window opens; frame 138 (2.30 s) the swap window closes; frame 138 (2.30 s) the strokes end and the set down begins; frame 174 (2.90 s) the landing in spring",
+  "width": 1149,
+  "height": 986,
+  "limits": {
+    "longEdge": 1400,
+    "maxPixels": 1140000
+  },
+  "layout": {
+    "cols": 3,
+    "rows": 4,
+    "cell": {
+      "width": 367,
+      "height": 206
+    },
+    "labelHeight": 24,
+    "gap": 12,
+    "rowGap": 14,
+    "margin": 12
+  },
+  "frames": [
+    {
+      "index": 78,
+      "seconds": 1.3,
+      "file": "out/work/seq/app-shake-winter-spring-high-preview/app-shake-winter-spring-high-000078.png",
+      "at": {
+        "left": 12,
+        "top": 12,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 82,
+      "seconds": 1.3666666666666667,
+      "file": "out/work/seq/app-shake-winter-spring-high-preview/app-shake-winter-spring-high-000082.png",
+      "at": {
+        "left": 391,
+        "top": 12,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 86,
+      "seconds": 1.4333333333333333,
+      "file": "out/work/seq/app-shake-winter-spring-high-preview/app-shake-winter-spring-high-000086.png",
+      "at": {
+        "left": 770,
+        "top": 12,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 90,
+      "seconds": 1.5,
+      "file": "out/work/seq/app-shake-winter-spring-high-preview/app-shake-winter-spring-high-000090.png",
+      "at": {
+        "left": 12,
+        "top": 256,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 94,
+      "seconds": 1.5666666666666667,
+      "file": "out/work/seq/app-shake-winter-spring-high-preview/app-shake-winter-spring-high-000094.png",
+      "at": {
+        "left": 391,
+        "top": 256,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 98,
+      "seconds": 1.6333333333333333,
+      "file": "out/work/seq/app-shake-winter-spring-high-preview/app-shake-winter-spring-high-000098.png",
+      "at": {
+        "left": 770,
+        "top": 256,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 102,
+      "seconds": 1.7,
+      "file": "out/work/seq/app-shake-winter-spring-high-preview/app-shake-winter-spring-high-000102.png",
+      "at": {
+        "left": 12,
+        "top": 500,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 106,
+      "seconds": 1.7666666666666666,
+      "file": "out/work/seq/app-shake-winter-spring-high-preview/app-shake-winter-spring-high-000106.png",
+      "at": {
+        "left": 391,
+        "top": 500,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 110,
+      "seconds": 1.8333333333333333,
+      "file": "out/work/seq/app-shake-winter-spring-high-preview/app-shake-winter-spring-high-000110.png",
+      "at": {
+        "left": 770,
+        "top": 500,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 114,
+      "seconds": 1.9,
+      "file": "out/work/seq/app-shake-winter-spring-high-preview/app-shake-winter-spring-high-000114.png",
+      "at": {
+        "left": 12,
+        "top": 744,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 118,
+      "seconds": 1.9666666666666666,
+      "file": "out/work/seq/app-shake-winter-spring-high-preview/app-shake-winter-spring-high-000118.png",
+      "at": {
+        "left": 391,
+        "top": 744,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 122,
+      "seconds": 2.033333333333333,
+      "file": "out/work/seq/app-shake-winter-spring-high-preview/app-shake-winter-spring-high-000122.png",
+      "at": {
+        "left": 770,
+        "top": 744,
+        "width": 367,
+        "height": 206
+      }
+    }
+  ]
+}
