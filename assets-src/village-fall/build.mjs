@@ -28,7 +28,7 @@ const GRASS_TONES = ['#5a7a2a', '#7d9438', '#b0a548', '#4a6424', '#96893a'].map(
 
 const LITTER = { base: 0.03, patch: 0.2, fence: 0.2, tree: 0.1, wall: 0.1, leaves: 230 }
 const LEVELS = { medium: { error: 0.08, worth: 1 }, low: { error: 0.2, worth: 1 } }
-const STONE_TONES = ['#d6d0bf', '#c4c0b2', '#e0d9c6', '#b3b0a4', '#cbc5b3'].map(lin).map((c) => mul3(c, 0.95))
+const STONE_TONES = ['#d6d0bf', '#c4c0b2', '#e0d9c6', '#b3b0a4', '#cbc5b3'].map(lin).map((c) => mul3(c, 1.12))
 const ground = new Bag('ground')
 const water = new Bag('water')
 const decor = new Bag('decor')
