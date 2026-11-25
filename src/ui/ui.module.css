@@ -14,7 +14,7 @@
   --label: 12px;
   --pair: 10px;
   --step: 2px;
-  --gap: clamp(10px, 2.4vw, 26px);
+  --gap: clamp(10px, 2.6vw, 26px);
   --disc: 3px;
   --dot: 3px;
   --dim: 1;
