@@ -40,7 +40,9 @@ const SOIL = { tone: [0.36, 0.22, 0.12] as Rgb, pebble: [0.6, 0.54, 0.46] as Rgb
 const SLATE = { tint: [1.7, 2.4, 3.0] as Rgb, from: cottageFrame().floor + cottage.wall - 1.2 }
 const ROCK_FILL = 2.4
 const POT: Rgb = [0.5, 0.2, 0.1]
-const FENCE_TINT: Rgb = [1.3, 1.06, 0.8]
+// The stepping stones (rock whose second surface number is 1) are worn pale by feet: this much more fill than a boulder.
+const STEP_FILL = 1.5
+const FENCE_TINT: Rgb = [1.08, 1, 0.92]
 const PATH = { tint: [1.75, 1.58, 1.3] as Rgb, reachMm: [1.5, 2.1], tallMm: 1 }
 const RING_SHOW = 1.7
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
@@ -50,13 +52,16 @@ const SPARK_KIND = { size: 1.5, rest: 0.9, hot: 1.2, bloom: 0 }
 const THROUGH = 6
 // The warm ball of lit haze around the lamp while the storm turns (approved mid-shake image): sizes in units of HALO.radiusMm.
 // rest: strength; hot: how far behind its centre the glow is drawn (mm, negative is in front); bloom: how much hotter its middle is.
-const STORM_GLOW = { tone: [1.4, 1.2, 0.98] as Rgb, lamp: { size: 17, rest: 0.62, hot: 11, bloom: 0.25 }, behind: { size: 13, rest: 0.45, hot: 11, bloom: 0.25 }, flame: { size: 3, rest: 1.7, hot: -2, bloom: 3.5 } }
+const STORM_GLOW = { tone: [1.4, 1.2, 0.98] as Rgb, lamp: { size: 17, rest: 0.62, hot: 11, bloom: 0.25 }, behind: { size: 13, rest: 0.45, hot: 11, bloom: 0.25 }, flame: { size: 2.3, rest: 1.7, hot: -2, bloom: 3.5 } }
 const LAMP_GLASS: Rgb = [7.5, 4.6, 1.9]
 const WALL_FILL = 2.2
 const STONE_LIFT: Rgb = [1.15, 1.05, 0.93]
 // The approved cottage's chimney is the same weathered grey stone as its walls, not brick: this season's own copy of the
 // shared mesh takes that tone on the chimney stack (colours only; the shape is the shared one).
 const STACK = { tone: [0.58, 0.54, 0.5] as Rgb, reachMm: 0.4 }
+// The approved fence is bare weathered wood, posts and rails alike: the shared mesh's pale pickets and dark red rails both
+// take that tone here (pale: how light a vertex must be to count as a picket).
+const FENCE_WOOD = { rail: [0.36, 0.225, 0.135] as Rgb, picket: [0.29, 0.185, 0.115] as Rgb, reachMm: 1.6, pale: 0.25 }
 const SLATE_BASE: Rgb = [0.018, 0.022, 0.03]
 const BANK_TINT: Rgb = [0.74, 0.52, 0.52]
 // The top of each bank mound goes warm and pale, as the approved's moss lip does. The mesh's second surf number is the
@@ -110,7 +115,7 @@ const pathMask = [...steps, ...stones]
 // While the storm turns the approved mid-shake image shows the cottage as a pale shape in the haze: roof moss gone grey,
 // stone and slate washed toward the petals' pink. Iron keeps its own tone so the lamp post stays a dark line, and wood
 // (the door, the fence) takes a quarter of the wash so the door stays the dark warm shape it is there.
-const STORM_COVER = { tone: [0.86, 0.68, 0.66] as Rgb, pale: 0.34, slate: 0, wood: 0.25, moss: 0.8 }
+const STORM_COVER = { tone: [0.86, 0.68, 0.66] as Rgb, pale: 0.34, slate: 0.9, wood: 0.25, moss: 0.8 }
 const mossy: Cover = {
   uniforms: { uVillageStorm: storm },
   pars: 'uniform float uVillageStorm;',
@@ -274,7 +279,7 @@ if (turfBankA > 0.01) {
   float turfCatch = smoothstep(-0.15, 0.9, dot(geometryNormal, vec3(0.0, 0.76, 0.65)));
   float turfRock = smoothstep(2.5, 2.9, vSurf.x);
   float turfLift = normalize(vObjN).y;
-  reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${SKIRT_FILL.toFixed(2)} * turfBank * (0.04 + 0.96 * turfCatch * turfCatch) * (0.5 + 0.5 * smoothstep(-0.8, 0.0, turfLift)) * (1.0 - 0.94 * smoothstep(${BANK.fall[0].toFixed(2)}, ${BANK.fall[1].toFixed(2)}, vSurf.y)) + ${ROCK_FILL.toFixed(2)} * turfRock * (0.3 + 0.7 * smoothstep(-0.2, 0.7, turfLift)))) * material.diffuseContribution;
+  reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${SKIRT_FILL.toFixed(2)} * turfBank * (0.04 + 0.96 * turfCatch * turfCatch) * (0.5 + 0.5 * smoothstep(-0.8, 0.0, turfLift)) * (1.0 - 0.94 * smoothstep(${BANK.fall[0].toFixed(2)}, ${BANK.fall[1].toFixed(2)}, vSurf.y)) + ${ROCK_FILL.toFixed(2)} * (1.0 + ${STEP_FILL.toFixed(2)} * vSurf.y) * turfRock * (0.3 + 0.7 * smoothstep(-0.2, 0.7, turfLift)))) * material.diffuseContribution;
   reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${SOIL.fill.toFixed(2)} * turfBank * turfSoil * turfSeam) * material.diffuseContribution;
   reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${TURF_LOOK.fuzz.toFixed(2)} * turfFuzz * stageWrap(dot(geometryNormal, stageKeyL), 1.0)) * material.diffuseContribution;
 }`,
@@ -477,10 +482,16 @@ function dressed(g: THREE.BufferGeometry): THREE.BufferGeometry {
   const P = g.getAttribute('position')
   const C = g.getAttribute('color')
   const chimney = (r: string): boolean => r === 'chimney'
+  const fenceOnly = (r: string): boolean => r === 'fence'
   for (let i = 0; i < P.count; i++) {
-    if (solidDistance(P.getX(i), P.getY(i), P.getZ(i), chimney) > STACK.reachMm) continue
     const lum = 0.3 * C.getX(i) + 0.6 * C.getY(i) + 0.1 * C.getZ(i)
-    C.setXYZ(i, lum * STACK.tone[0] * 2, lum * STACK.tone[1] * 2, lum * STACK.tone[2] * 2)
+    if (solidDistance(P.getX(i), P.getY(i), P.getZ(i), chimney) < STACK.reachMm) C.setXYZ(i, lum * STACK.tone[0] * 2, lum * STACK.tone[1] * 2, lum * STACK.tone[2] * 2)
+    else if (solidDistance(P.getX(i), P.getY(i), P.getZ(i), fenceOnly) < FENCE_WOOD.reachMm) {
+      const picket = Math.min(C.getX(i), C.getY(i), C.getZ(i)) > 0.45 * Math.max(C.getX(i), C.getY(i), C.getZ(i)) && lum > FENCE_WOOD.pale
+      const tone = picket ? FENCE_WOOD.picket : FENCE_WOOD.rail
+      const k = picket ? 0.8 + 0.4 * lum : Math.min(1.3, Math.max(0.7, 0.55 + 4 * lum))
+      C.setXYZ(i, tone[0] * k, tone[1] * k, tone[2] * k)
+    }
   }
   C.needsUpdate = true
   return g

@@ -356,7 +356,7 @@ const boulders = []
     const yaw = R() * Math.PI
     const y = topAt(x, z) + ry * 0.28
     const seed = R() * 50
-    const g = new THREE.IcosahedronGeometry(1, 4)
+    const g = new THREE.IcosahedronGeometry(1, 3)
     g.deleteAttribute('normal')
     g.deleteAttribute('uv')
     const P = g.getAttribute('position')
@@ -383,6 +383,45 @@ const boulders = []
     boulders.push([Number(x.toFixed(2)), Number(y.toFixed(2)), Number(z.toFixed(2)), Number((Math.min(rx, rz) * 0.9).toFixed(2)), Number(ry.toFixed(2))])
   }
   tally.boulders = turf.triangles - before
+}
+// The stepping stones from the door to the pond: the shared path gives their places and turns as thin slabs; here each
+// is a worn, flat topped stone thick enough to read from the hero camera's low angle, as the approved image shows them.
+const STEPPING = { halfMm: [2.25, 0.8, 1.6], sinkMm: 0.3, flat: 0.5, tones: ['#d8c6b8', '#e2d3c6', '#cbb9ab', '#dccbbd'].map(lin), moss: 0.12, seed: 7719 }
+{
+  const RS = rng(STEPPING.seed)
+  const before = turf.triangles
+  L.stones.forEach(([x, z], i) => {
+    const rx = STEPPING.halfMm[0] * (0.9 + 0.25 * RS())
+    const rz = STEPPING.halfMm[2] * (0.9 + 0.25 * RS())
+    const ry = STEPPING.halfMm[1] * (0.9 + 0.2 * RS())
+    const yaw = ((20 - 28 * i) * Math.PI) / 180
+    const y = topAt(x, z) + ry - STEPPING.sinkMm
+    const seed = RS() * 50
+    const g = new THREE.IcosahedronGeometry(1, 3)
+    g.deleteAttribute('normal')
+    g.deleteAttribute('uv')
+    const P = g.getAttribute('position')
+    for (let k = 0; k < P.count; k++) {
+      const q = [P.getX(k), P.getY(k), P.getZ(k)]
+      const lump = 1 + 0.16 * fbm(q[0] * 1.4 + seed, q[1] * 1.4, q[2] * 1.4 + seed, 3)
+      const flat = q[1] > 0 ? 1 - STEPPING.flat * q[1] * q[1] : 1
+      const lx = q[0] * rx * lump
+      const lz = q[2] * rz * lump
+      P.setXYZ(k, x + lx * Math.cos(yaw) + lz * Math.sin(yaw), y + q[1] * ry * flat, z - lx * Math.sin(yaw) + lz * Math.cos(yaw))
+    }
+    const tone = STEPPING.tones[i % STEPPING.tones.length]
+    turf.add(g, {
+      renormal: true,
+      color: (p, n) => {
+        const up = n[1] + 0.5 * fbm(p[0] * 0.9 + seed, p[1] * 0.9, p[2] * 0.9, 3)
+        const low = smooth(0.8, 0.0, (p[1] - (y - ry)) / ry)
+        const stone = mul3(tone, (0.82 + 0.36 * clamp(0.5 + fbm(p[0] * 2.2, p[1] * 2.2 + seed, p[2] * 2.2, 2))) * (1 - 0.35 * low))
+        return mix3(stone, mix3(TONE.mossDeep, TONE.moss, clamp(0.5 + noise(p[0] * 1.7, p[1] * 1.7, p[2] * 1.7))), STEPPING.moss * smooth(0.9, 1.3, up) + 0.25 * low * smooth(0.45, 0.7, noise(p[0] * 1.1 + seed, p[1] * 1.1, p[2] * 1.1) + 0.5))
+      },
+      surf: [3, 1],
+    })
+  })
+  tally.stepping = turf.triangles - before
 }
 const boulderGap = (x, z) => boulders.reduce((m, b) => Math.min(m, Math.hypot(x - b[0], z - b[2]) - b[3]), 1e9)
 
