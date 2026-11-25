@@ -156,10 +156,10 @@ const storm = {
   calm: 0.0055,
   /** Where that rest hangs: its middle, and how far it reaches across, up and in depth, mm. Nothing of it stands in the upper left. */
   calmAt: [18, -13, -21],
-  calmReach: [26, 13, 14],
+  calmReach: [21, 10, 14],
   /** The air about the lamp at rest: a halo that is the lantern's own (thickest at it, thinning with the square of the distance, gone by `lampFar`), standing at and behind the lantern so its point stays sharp before it. */
   lampAt: [1.3, -18.2, 3.9],
-  lamp: 6.5,
+  lamp: 8,
   lampCoreMm: 6,
   lampFar: [8, 32],
   /** The back of the liquid at rest: a thin lit sheet of mist behind the miniature, low down, which the cottage, the trunk and the nearer petals stand before. */
@@ -183,13 +183,13 @@ const storm = {
   /** Thinner in the eye of the roll than at its rim. */
   eye: 0.75,
   /** After the flood the mist stands behind the miniature and thins toward the eye: the share left in front, and from where to where (mm toward the eye) it thins. */
-  near: 0.26,
+  near: 0.34,
   nearFrom: -6,
   nearTo: 18,
   /** The side of the tree: how much further toward the eye the mist stands there (it is the crown the storm whitens, and the cottage and the lamp it leaves to be read), and how much thicker it is there than on the cottage's side. */
   treeSideMm: 12,
   treeSide: 1.5,
-  cottageSide: 1.3,
+  cottageSide: 1.6,
   /** How much of the tree side's thickening is gone again right of the crown, toward the glass, where the lanes are to stay open. */
   treeFar: 0.7,
   /** The island's bank, below the lawn: how thick the mist stays there before the miniature (a share of its thickness behind), and up to how far above the lawn that reaches, mm. */
@@ -213,21 +213,21 @@ const storm = {
   /** While the liquid turns, the mist before the crown and about the lantern is the brightest and whitest of all: the blossom is a white ghost in it and the lantern a white core (the approved shake image). Where, how far it reaches (mm), how much brighter, how much whiter. */
   crownAt: [16, 12, 2],
   crownReach: [19, 12, 22],
-  crownGain: 2.6,
+  crownGain: 1.9,
   crownWhite: 0.42,
   /** The mist before the crown is thicker than elsewhere and the lanes do not cut it: how many times thicker, and how much of the lanes it closes. */
-  crownThick: 0.2,
-  crownWhole: 0.85,
+  crownThick: 0.1,
+  crownWhole: 0.7,
   /** How much of the dashes and streaks is evened out before the crown. */
-  crownEven: 0.65,
+  crownEven: 0.5,
   lampReach: 19,
-  lampGain: 3.6,
+  lampGain: 5,
   /** How many times thicker the mist is in the glow (a soft lit cloud about the lantern and the foot of the tree, nowhere else). */
-  lampThick: 1.6,
+  lampThick: 2.3,
   /** The second warm glow, at the foot of the tree on the side away from the lantern: where, how far it reaches, its share of the lantern's. */
   footAt: [25, -15, -2],
-  footReach: 9,
-  foot: 0.6,
+  footReach: 11,
+  foot: 0.85,
   lampWhite: 0.9,
   /** The colour the glow about the lantern and the foot of the tree goes to: warm, not white. */
   flareTint: [1, 0.87, 0.68],
@@ -237,7 +237,11 @@ const storm = {
   trunkAt: 15,
   trunkMm: 6,
   trunkY: [-3, -10],
-  trunk: 0.8,
+  trunk: 0.85,
+  /** The darker pocket above the crown, where the turning liquid has thrown the mist outward and the room shows through: where, how far it reaches (mm), how much of the mist is gone there. */
+  pocketAt: [2, 31, 0],
+  pocketReach: [17, 9, 45],
+  pocket: 0.85,
   soft: 1.1,
   key: 3.4,
   grid: 1.2,
@@ -379,7 +383,9 @@ void main() {
   drawn = mix(drawn, 1.0 + ${n(storm.crownThick)} * crown, ${n(storm.crownEven)} * crown) * (1.0 + ${n(storm.lampThick)} * lantern);
   float soft = drawn * mix(billow * 3.4, 1.0, max(uStorm.w, ${n(storm.crownEven)} * crown));
   float dashes = ${n(storm.dash)} * dash * stirred * (0.12 + 0.88 * lane) * (1.0 - ${n(storm.crownEven)} * crown);
-  float sigma = uStorm.x * wall * eye * low * front * rest * trunk * (soft + dashes);
+  vec3 pc = (p - ${v3(storm.pocketAt)}) / ${v3(storm.pocketReach)};
+  float pocket = 1.0 - ${n(storm.pocket)} * stirred * exp(-dot(pc, pc));
+  float sigma = uStorm.x * wall * eye * low * front * rest * trunk * pocket * (soft + dashes);
   // One sheet's share of the way through the liquid, along the eye's ray.
   float slant = max(abs(normalize(vStageWorld - cameraPosition).z), 0.35);
   float a = 1.0 - exp(-sigma * ${n((2 * INNER * 0.97) / storm.sheets)} / slant);

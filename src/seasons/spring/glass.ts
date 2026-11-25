@@ -96,7 +96,7 @@ const look = {
      * share of them that carry a run on the shoulder toward the key (which way round that is, and the share of that share left on the far side), where a run starts and how long it is (degrees down from the top), how far it winds (a
      * share of its cell) and how often, its half width in mm, and how bright and how dark its edges are.
      */
-    rill: { cells: [46, 29], share: 0.8, sideRad: 1.08, off: 0.04, fromDeg: [31, 49], lenDeg: [9, 24], wind: 0.65, windPer: 8, mm: [0.24, 0.46], bright: 1.3, key: 0.08, dark: 0.07, darkCover: 0.55 },
+    rill: { cells: [64, 41], share: 0.85, sideRad: 1.12, off: 0, fromDeg: [30, 48], lenDeg: [10, 22], wind: 0.75, windPer: 8, mm: [0.28, 0.5], bright: 1.4, key: 0.08, dark: 0.07, darkCover: 0.8 },
     /** The shoulder toward the key: the film is thicker there and scatters the key's light cool, in the texture of the film. Its direction, how tight it is, how much thicker, how bright, its colour. */
     sheen: { dir: [0.74, 0.48, 0.47], power: 6, thick: 1.4, gain: 0.4, tint: [0.66, 0.84, 1] },
     /** The caustic: the key's light, gathered by the globe, falls on the inside of the glass low on the far side, a warm patch of bright curved threads. Its direction, how wide, how bright, its colour, how much it veils, and the seconds after the landing by which it stands. */
@@ -465,7 +465,7 @@ vec2 filmRill(float th, float ph, float cells, float seed, float grown, float bl
   float u = ph * cells / 6.2831853;
   float id = floor(u);
   vec3 k = vec3(id, seed, 0.0);
-  float there = step(filmHash(k + 0.31), ${f(look.breath.rill.share)} * mix(${f(look.breath.rill.off)}, 1.0, smoothstep(0.5, 0.9, cos((id + 0.5) * 6.2831853 / cells - ${f(look.breath.rill.sideRad)}))));
+  float there = step(filmHash(k + 0.31), ${f(look.breath.rill.share)} * mix(${f(look.breath.rill.off)}, 1.0, smoothstep(0.62, 0.93, cos((id + 0.5) * 6.2831853 / cells - ${f(look.breath.rill.sideRad)}))));
   float from = mix(${f(look.breath.rill.fromDeg[0] * RAD)}, ${f(look.breath.rill.fromDeg[1] * RAD)}, filmHash(k + 3.7));
   float len = mix(${f(look.breath.rill.lenDeg[0] * RAD)}, ${f(look.breath.rill.lenDeg[1] * RAD)}, pow(filmHash(k + 9.1), 1.6)) * grown;
   float t = (th - from) / max(len, 1e-3);
