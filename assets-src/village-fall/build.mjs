@@ -98,14 +98,16 @@ const mossAt = (x, z) => {
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
   g.setIndex(idx)
   g.computeVertexNormals()
+  const under = (p) => smooth(0.25, 2.2, L.groundAt(p[0], p[2]) - p[1])
   const wet = (x, z) => 0.5 + 0.5 * smooth(0.95, 1.12, L.pondField(x, z))
   const contact = (x, z) => 0.55 + 0.45 * smooth(0, 1.6, cottageGap(x, z))
   ground.add(g, {
     color: (p) => {
       const k = (0.86 + 0.24 * fbm(p[0] * 0.21, p[2] * 0.21, 1, 3)) * wet(p[0], p[2]) * contact(p[0], p[2]) * (0.62 + 0.38 * smooth(0.8, 5, treeGap(p[0], p[2]) - 4))
-      return [k, k, k]
+      const d = 1 - 0.72 * under(p)
+      return [k * d, k * d, k * d]
     },
-    surf: (p) => [litterAt(p[0], p[2]), mossAt(p[0], p[2])],
+    surf: (p) => [litterAt(p[0], p[2]) * (1 - under(p)), mossAt(p[0], p[2]) * (1 - 0.6 * under(p))],
     uv: (p) => [p[0], p[2]],
   })
 }
@@ -388,7 +390,7 @@ let leafCount = 0
     const curl = between(0.06, 0.3) * len
     const tilt = between(-0.35, 0.35)
     const lift = between(0.05, 0.22) + (pathGap(x, z) < 1.6 ? 0.55 : 0)
-    const tone = mul3(LEAF_TONES[Math.floor(R() * LEAF_TONES.length)], between(0.55, 1.15))
+    const tone = mul3(LEAF_TONES[Math.floor(R() * LEAF_TONES.length)], between(0.22, 0.6))
     const y = earthAt(x, z) + lift
     const M = new THREE.Matrix4().makeRotationX(tilt).premultiply(new THREE.Matrix4().makeRotationY(yaw)).setPosition(x, y, z)
     const lobes = 5
