@@ -37,16 +37,16 @@ Status 94 · 2026-11-25 11:25 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 11:25 UTC
-clock: phase 4, tick of 0.6 minutes
-phase 4: 11.30 h used of its 9.50 h box
-allowance (before the review): 33.58 h used of 36.00 h allowed
-all time before the review: 33.58 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 11:28 UTC
+clock: phase 4, tick of 2.5 minutes
+phase 4: 11.34 h used of its 9.50 h box
+allowance (before the review): 33.63 h used of 36.00 h allowed
+all time before the review: 33.63 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 2
 ```
 
 ## Phases
@@ -69,7 +69,7 @@ minutes since the last status: 0
 | `spring` | finished (limit: `quality.maxRoundsPerUnit` 3, reached with Round 14; the pass bar did not hold) | 3 (Rounds 8, 11, 14, all judged) | 14 (R1 5, R3 6, R4 5, R2 failed at 5 of 15 against 10 of 10; checks 15 of 15 green, 18 of 19 measure lines green, M3 `spring-rest` 0.394 against 0.75; decision 96) | `dcda6ca` (the build Round 14 judged) | The round count: `quality.maxRoundsPerUnit` 3. No round passed. Its 3 severe and 22 major issues, the jury's failure and the red line are written as open items 109 to 128 and go to the polish rounds of Phase 5; Declined issues 24 to 28 |
 | `summer` | finished (limit: `quality.maxRoundsPerUnit` 3, reached with Round 15; the pass bar did not hold) | 3 (Rounds 9, 12, 15, all judged) | 12 (R1 6, R3 4, R4 7, R2 failed at 7 of 15 against 8 of 10; checks 15 of 15 green, 18 of 19 measure lines green, M3 `summer-rest` 0.5806 against 0.75; decision 95) | `dcda6ca` (Round 12's build plus the fix pass after it; the build Round 15 judged) | The round count: `quality.maxRoundsPerUnit` 3. No round passed. Round 15 on the kept build: R1 4, R3 6, R4 3, R2 failed at 5 of 15 against 8 of 10; checks 15 of 15 green, 18 of 19 measure lines green, M3 `summer-rest` 0.7055 against 0.75. Its 9 severe and 25 major issues, the jury's failure and the red line are written as open items 84 to 108 and go to the polish rounds of Phase 5; Declined issues 18 to 23 |
 | `fall` | finished (limit: `quality.maxRoundsPerUnit` 3, reached with Round 16; the pass bar did not hold) | 3 (Rounds 10, 13, 16, all judged) | 13 (R1 6, R3 6, R4 6, R2 failed at 0 of 20 against 7 of 10; checks 15 of 15 green, 17 of 19 measure lines green, M3 `fall-rest` 0.279 against 0.75 and M1 `fall-interior` red; decision 97) | `dcda6ca` (Round 13's build plus the fix pass after it; the build Round 16 judged) | The round count: `quality.maxRoundsPerUnit` 3. No round passed. Round 16 on the kept build: R1 6, R3 4, R4 6, R2 failed at 1 of 20 against 7 of 10; checks 15 of 15 green, 18 of 19 measure lines green, M3 `fall-rest` 0.5518 against 0.75. Its 6 severe and 24 major issues, the jury's failure and the red line are written as open items 129 to 153 and go to the polish rounds of Phase 5; Declined issues 29 to 33 |
-| `change` | in its rounds (Round 17 running, the floor round) | 1 (Round 17) | | | |
+| `change` | in its rounds (Round 17, the floor round, is judged and closed without a pass; its one fix pass ended at 11:14 and its build `a6e09d6` is being proven before it may be kept, decision 99) | 1 (Round 17) | | | |
 | `globe` | not started | 0 | | | |
 | `film` | not started | 0 | | | |
 
