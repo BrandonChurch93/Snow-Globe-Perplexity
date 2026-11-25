@@ -37,16 +37,16 @@ Status 107 · 2026-11-25 15:51 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 15:51 UTC
-clock: phase 5, tick of 1.7 minutes
-phase 5: 1.66 h used of its 12.00 h box
-allowance (before the review, continuation 1): 1.66 h used of 12.00 h allowed
-all time before the review: 37.86 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 15:59 UTC
+clock: phase 5, tick of 8.4 minutes
+phase 5: 1.80 h used of its 12.00 h box
+allowance (before the review, continuation 1): 1.80 h used of 12.00 h allowed
+all time before the review: 38.00 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 8
 ```
 
 ## Phases
@@ -1605,6 +1605,8 @@ Merged into `main`, each verified here with types clean and the tests green (126
   - Jobs given, each inside its agent's window: `app_sheet_maker` (build agent, started 14:28, limit 17:28), at 15:50: plain labels for R5's two sheets (`--plain` in `tools/sheet.mjs`, the `globe` branch of `buildR5`); push by 16:05, report by 16:08. `interface_finisher` (build agent, started 14:27, limit 17:27), at 15:54: the page error of `?mode=autopilot&season=spring`, traced and mended at its cause in the pages that are not capture (`src/main.ts`), with the hostcheck's ten links, four more links by hand, the draft still's sha256 and the tests as proof; push by 16:12, report by 16:15.
   - Check jobs on render agents used again as they stand, at 15:55 (the orders are stamped 15:56): `motion_renderer_b` walks steps 3, 5, 6 and 8 of the visitor's pass (the space bar, the slow drag, the four marks, the keyboard and the menu) on the wide layout, `motion_renderer_c` the same on the tablet, both on `99f6092` with `node tools/visit.mjs --only 3,5,6,8`; report by 16:50, stop 17:05.
   - Still at work on the open items: `swap_builder`, `hand_builder` (report 17:10, stop 17:30), `surface_builder`, `glass_polisher`, `liquid_polisher`, `storm_polisher` (report 17:15, stop 17:35). `frame_helper_1`'s window ended at 15:56 with the multisampling merged; it gets no more build work.
+
+- 16:06 UTC, Nov 25 (Phase 5, Continuation 1): `app_sheet_maker` reported at 16:02 (`agent/p5-app-sheets` at `c96d050`, tools and one test only: `--plain` in `tools/sheet.mjs`, plain legends in `tools/lib/appsheets.mjs`, the `globe` branch of `buildR5` in `tools/pack.mjs` asks the seasons sheet and the sheet across a shake with plain labels and writes the truth into the key file alone). Its two pictures were opened here at full size: the seasons sheet's tiles are labelled 1, 2, 3, 4 and nothing else; the sheet across a shake is labelled with frame and time alone. Merged at 16:05 with `npx tsc --noEmit` clean, 457 tests passed and 4 skipped, the build made, engine hash `51dddfa700c4ddc5` as before (no file under `src` or `config` changed). Not checked by anyone yet: the text of a real `R5.message.md` (the pack draws at the final tier; it is read at Round 18's pack before any critic gets it). Its timing note: a frame of an app sheet costs about 18 s on the present engine against 13 s before multisampling, so its minutes for R4 and R5 grow by about a third. The agent has stopped; its build work is done.
 
 ## Rounds
 
