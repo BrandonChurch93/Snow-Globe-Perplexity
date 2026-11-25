@@ -33,7 +33,7 @@ export const ROOM_RIG = {
   glow: { outside: 0.8, islandMm: innerRadiusMm * 0.88, lobe: 0.3, specular: 1 },
 } as const
 
-export const CHANGE_BLOOM = { flood: 800, lens: 3.5, pool: 8 } as const
+export const CHANGE_BLOOM = { flood: 800, lens: 3.5, pool: 8, swellFrom: 0.46 } as const
 
 const SHADOW_OFF = 10
 
@@ -46,11 +46,11 @@ const smooth = (v: number) => (v <= 0 ? 0 : v >= 1 ? 1 : v * v * (3 - 2 * v))
  * falls smoothly over every frame the window leaves, so the fall is as easy to follow as the rise, and through the base's change
  * it is still above four tenths of its top.
  */
-export function changeSwell(change: number): { whole: number; glow: number } {
+export function changeSwell(change: number, from: number = ROOM_RIG.flood.swellFrom): { whole: number; glow: number } {
   if (!(change > 0) || change >= 1) return { whole: 0, glow: 0 }
   const f = ROOM_RIG.flood
   const span = changeSpan('base')
-  const rise = (change - f.swellFrom) / (span.from - f.swellFrom)
+  const rise = (change - from) / (span.from - from)
   const lift = smooth((f.swellTo - change) / (f.swellTo - span.from))
   return {
     whole: smooth(Math.min(1, rise, (f.swellTo - change) / (f.swellTo - span.to))),
@@ -200,7 +200,7 @@ export class Lighting {
     u.uLightFrame.value.setFromMatrix4(this.turn).transpose()
 
     const breath = breathOf(f.time, f.period)
-    const swell = changeSwell(f.moment ? f.moment.change : 0)
+    const swell = changeSwell(f.moment ? f.moment.change : 0, a === b ? ROOM_RIG.flood.swellFrom : CHANGE_BLOOM.swellFrom)
     const bloom = Math.pow(1 + ROOM_RIG.bloomGain, swell.glow)
     const lift = (bloom - 1) / ROOM_RIG.bloomGain
     const bloomA = a === b ? bloom : 1

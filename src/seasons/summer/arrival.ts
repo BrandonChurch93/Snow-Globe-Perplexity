@@ -17,8 +17,8 @@ const RAD = Math.PI / 180
 const LOOK = {
   gravity: 3400,
   ledge: { r: [46.5, 52.0], h: 40.3 },
-  jump: { count: 14000, reachMm: 26, ringShare: 0.3, ringMm: 5, liftMm: [0.5, 4.5], hopMm: [0.3, 2.6], quick: 0.11, tail: 0.5, tailShare: [0.6, 0.12], skidMm: [0.4, 3.2], radiusMm: [0.12, 0.27] },
-  pour: { count: 16000, az: 82, spread: 4.5, r: 52.4, h: 38.8, reachMm: [4.6, 11], fanDeg: 7, rate: [1.3, 2.3], radiusMm: [0.1, 0.2] },
+  jump: { count: 14000, reachMm: 26, ringShare: 0.3, ringMm: 5, liftMm: [0.5, 4.5], hopMm: [0.3, 2.6], quick: 0.11, tail: 0.5, tailShare: [0.6, 0.12], skidMm: [0.4, 3.2], radiusMm: [0.07, 0.15] },
+  pour: { count: 9000, az: 82, spread: 1.6, r: 52.4, h: 38.8, reachMm: [4.6, 9], fanDeg: 3, rate: [1.3, 2.3], radiusMm: [0.06, 0.12], fadeFrom: 0.5 },
   flow: { surge: 0.96, seconds: 1.6, endFrom: 3.5, endTo: 6, gapMm: [0.3, 2.5] },
   shadow: { r: 57, top: [36, 41] },
   streak: 2.1,
@@ -123,6 +123,7 @@ vStageSeen = 1.0;
 vGrainUv = aCorner;
 vGrainShape = vec2(streak / wide, airborne);
 vGrainCover = min(1.0, ${LOOK.streak.toFixed(2)} / streak) / wide;
+if (aSeed.y > 0.5) vGrainCover *= 1.0 - smoothstep(${LOOK.pour.fadeFrom.toFixed(2)}, 1.0, tau / max(aFlight.y, 1e-4));
 vGrainLook = vec4(aSeed.x, fract(aSeed.x * 91.7 + aSeed.z * 13.1), grainShade(grainW.xyz, uGrainKey), alive);
 `
 
@@ -151,7 +152,7 @@ void main() {
   vec3 albedo = mix(${vec(SAND_COLOUR.deep)}, ${vec(SAND_COLOUR.pale)}, smoothstep(0.1, 0.75, id));
   albedo = mix(albedo, ${vec(SAND_COLOUR.dark)}, step(0.93, id2));
   albedo = mix(albedo, ${vec(SAND_COLOUR.white)}, step(id2, 0.12));
-  float shade = mix(0.35, 1.0, vGrainLook.z);
+  float shade = mix(0.25, 1.0, vGrainLook.z);
   float ndl = dot(n, uGrainKey);
   float wrap = clamp((ndl + 0.45) / 1.45, 0.0, 1.0);
   float thru = pow(clamp(dot(-v, uGrainKey) * 0.5 + 0.5, 0.0, 1.0), 3.0);
