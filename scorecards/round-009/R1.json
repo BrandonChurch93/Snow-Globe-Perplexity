@@ -1,0 +1,105 @@
+{
+  "critic": "R1",
+  "score": 4,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "severe",
+      "file": "set-B-01-b.jpg",
+      "where": "the swirling storm inside the liquid",
+      "what": "instead of a dense, sunlit golden-white vortex filling the whole sphere and partially veiling the cottage and tree, -b has a dull, opaque tan smudge along only the lower-left wall and floor while the middle and upper dome stay mostly clear and dark",
+      "fix": "fill the entire sphere volume—in front of and behind the cottage and tree up to the crown—with dense, luminous, backlit golden-white curved streamlines of fine dandelion filaments and motion-streaked seeds"
+    },
+    {
+      "severity": "severe",
+      "file": "set-A-01-b.jpg",
+      "where": "the globe interior lighting and liquid clarity (also set-B-01-b.jpg)",
+      "what": "the liquid is filled with a flat, murky olive-brown haze that kills dark contrast, whereas -a has crystal-clear liquid against deep dark shadow backlit by warm golden-hour sun",
+      "fix": "remove the muddy interior fog so the upper background reads deep near-black through clear glass, and drive strong warm golden-hour backlighting from the upper right so glowing elements pop with high contrast"
+    },
+    {
+      "severity": "severe",
+      "file": "set-A-01-b.jpg",
+      "where": "the falling sand on the right of the base and the tabletop surface (also set-B-01-b.jpg)",
+      "what": "a solid brown ramp sticks to the right edge of the base and a flat beige sand sheet buries the entire right third of the tabletop, hiding the dark glossy slate surface and its warm reflections seen in -a, while the reflection under the front of the base is bright tan with no dark contact shadow",
+      "fix": "replace the solid side wedge with delicate backlit streams of loose sparkling sand grains falling onto a compact conical drift at the right foot, expose the dark glossy wet-slate tabletop across the front and far right with warm specular highlights, and ground the base foot with a dark shadow and low-key reflection"
+    },
+    {
+      "severity": "severe",
+      "file": "set-A-01-b.jpg",
+      "where": "the base lighting, volume and stone shading (also set-B-01-b.jpg)",
+      "what": "the base is flatly front-lit in uniform pale bleached beige with almost no cylindrical shadow or warm mineral banding, whereas -a has a hot golden raking-sun highlight on the upper-left rim, rich ochre-terracotta sandstone strata, and deep shadow across the front and lower belly",
+      "fix": "light the base directionally from the upper-left and back-right golden sun, add deep core shadow across the front-center and lower curve, warm up the ochre sedimentary bands, and restore porous sandstone grain"
+    },
+    {
+      "severity": "major",
+      "file": "set-B-01-b.jpg",
+      "where": "the air outside the left and right edges of the base (and left background in set-A-01-b.jpg)",
+      "what": "curved brown-gold dash streaks shoot out into mid-air off both sides of the base in set-B-01-b.jpg, and stray tan sand dots float in mid-air above the left surface in both -b images",
+      "fix": "remove all stray airborne streaks and floating sand dots outside the base silhouette so loose sand only trickles downward from the right shoulder onto the right-hand drift"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the top apex and rim reflections of the glass sphere (also set-B-01-b.jpg)",
+      "what": "the glass has an unintended circular double-ringed plug or meniscus artifact at the 12 o'clock pole, a sharp needle-spiked 2D starburst and thick opaque milky-white band on the upper-right wall, a cold cyan tint on the left rim, and lacks the warm golden refraction flare at the lower-left inner curve",
+      "fix": "remove the top-pole ring artifact, soften the upper-right sun hit into a natural optical bloom with thin crisp glass-wall reflections, warm the left rim, and add the bright golden-white refracted sun flare along the lower-left glass curve behind the left sunflower"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the out-of-focus lights in the dark background (also set-B-01-b.jpg)",
+      "what": "the bright, creamy warm-gold cluster of overlapping bokeh orbs at the upper right of -a is reduced to two dim flat tan circles, while a column of large muddy-orange circles appears along the left edge where -a is mostly dark",
+      "fix": "build a bright, warm golden-white cluster of overlapping bokeh highlights at the upper right matching the backlight source, and darken the left background to just two small subtle warm bokeh spots near mid-left"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the dandelion seeds and particle bokeh in the liquid",
+      "what": "the dandelion seeds look like stiff, thick-spoked 6- and 8-pointed asterisk stamps clustered mostly on the left with a gap above the tree, and the glowing dots all share one small uniform blur size instead of varied optical bokeh",
+      "fix": "render asymmetric gossamer pappus tufts of hair-fine translucent filaments on slender hanging stems distributed across the whole dome including above the tree, and vary particle depth-of-field from crisp pinpoints to large soft out-of-focus bokeh discs"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the ground rim and pond inside the globe",
+      "what": "tall spiky bright-green grass covers the floor edge-to-edge with no sandy shoreline or stepping stones, and the pond is an opaque milky-grey polygonal shape with a hard dark border instead of dark glossy water",
+      "fix": "add the sunlit pale coastal sand rim around the outer floor edge, replace the tall uniform grass blades with low dark moss and rounded stepping stones from the cottage door, and make the pond dark mirror-like water reflecting the lanterns and dark tree"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the collar where the glass meets the base (also set-B-01-b.jpg)",
+      "what": "the bottom of the glass meets a flat band of noisy tan speckles with no recessed stone lip and no dark shadow crease seating the sphere",
+      "fix": "carve a concave stone lip around the top of the base, seat the curved glass down into it, and add the dark contact-shadow crease under the rim"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the shells and sea glass on the base (also set-B-01-b.jpg)",
+      "what": "the shells and sea glass read as flat, matte or opaque painted shapes—especially the opaque purple-blue piece with a white center dot and chalky green blobs—rather than sculptural ribbed shells and translucent frosted glass",
+      "fix": "give the shells crisp 3D radial ribs with raking highlights and recessed crevice shadows, and make the emerald, seafoam and deep cobalt sea glass translucent with internal subsurface glow where light hits them"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the cottage roof, chimney, walls, sunflowers and fence (also set-B-01-b.jpg)",
+      "what": "the cottage has a brown brick-textured roof, an oversized red-brown brick chimney, two bright grid windows, pale pink blobs for ivy, and oversized flat cartoon-yellow front-facing sunflowers, whereas -a has a dark slate roof, compact grey stone chimney, one warm front window in dark weathered stone, delicate rose-studded ivy, and small natural backlit sunflowers",
+      "fix": "change the roof to dark charcoal slate and shrink the chimney to weathered grey stone, darken the stone facade with one cozy front window and recessed dark wood door, refine the climbing ivy and tiny pink buds, scale down and naturally angle the backlit sunflowers, and add warm top-edge sunlight on the fence rails"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the hanging paper lanterns and path lamp (also set-B-01-b.jpg)",
+      "what": "the paper lanterns look pale peach or chalky white—especially the left cottage lantern and large trunk lantern—with weak warm bounce light, and the path lamp head is an opaque white block",
+      "fix": "give all hanging lanterns rich amber-orange glowing ribs around a warm yellow core casting warm light onto the eaves and bark, and give the black iron streetlamp clear glass panes around a bright warm filament bulb"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the tree trunk and crown",
+      "what": "the trunk is a thick, smooth conical cylinder and the crown is a dense, opaque dark-green mass, whereas in -a the trunk is slender and gnarled with deep bark flutes and twisting mossy roots under an airy, layered canopy with sunlit gaps",
+      "fix": "narrow and gnarl the trunk with sculpted bark ridges, flaring roots and warm lantern rim light, and open airy gaps between layered boughs with warm golden rim-lighting along the upper-right leaves and lower branches"
+    }
+  ]
+}
