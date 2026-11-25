@@ -9,7 +9,7 @@ import { MIRROR_GLSL, mirrorUniforms } from '../../../miniature/mirror'
 import { prepareVillage, villageGeometry, villageGrain } from '../../../miniature/model'
 import { lampFlame, lampFoot, shrubDistance } from '../../../miniature/roof'
 import { BUMP_GLSL, NEAR_LIGHT, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, withSurface, type GlowSource } from '../../../miniature/surface'
-import { anchors, cottage, cottageFrame, fence, groundAt, moundSlope, pond, pondField, solidDistance, tree } from '../../../scene/layout'
+import { anchors, cottage, cottageFrame, fence, groundAt, moundSlope, pond, pondField, solidDistance, steps, stones, tree } from '../../../scene/layout'
 import { gainOf } from '../../../scene/lightgrid'
 import type { InnerLight, KitMoment } from '../../kit'
 import { isTree, season, tones } from './palette'
@@ -36,14 +36,15 @@ const PANE_SIZE = { size: 3.2, rest: 0.3, hot: 0, bloom: 0.3 }
 const THROUGH = 6
 const LAMP_GLASS: Rgb = [6.4, 3.5, 1.3]
 const WALL_FILL = 3.0
-const GROUND_FILL = 1.5
+const GROUND_FILL = 3.4
+const PATH = { tone: [1.2, 1.13, 1.0] as Rgb, nearMm: 2.6, highMm: 1.4 }
 const FENCE = { reachMm: 1.25, pastMm: 1.2, out: 0.1, outWave: 0.1, along: 0.02, alongWave: 0.24, sagMm: 0.5, tone: [0.17, 0.1, 0.06] as Rgb }
 const MOSS = { low: [0.62, 0.76, 0.44] as Rgb, high: [0.95, 0.96, 0.88] as Rgb, tallMm: 9 }
 const ROOF = { tone: [2.2, 1.7, 1.45] as Rgb, grey: 0.55 }
 const DOOR: Rgb = [0.34, 0.24, 0.17]
 const DRY: readonly Rgb[] = [[0.42, 0.16, 0.05], [0.5, 0.26, 0.07], [0.3, 0.12, 0.05], [0.4, 0.3, 0.1]]
-const GROUND = { soil: 0.8, leaf: 0.85, soilMm: 0.26, wideMm: 0.5, leafMm: 0.34 }
-const WATER = { rough: 0.07, rippleMm: 0.07, lamp: 12, pane: 0.8, pumpkin: 2.2, tight: 0.0005, wide: 0.006, wideShare: 0.004, lowMm: 3.4, fog: 0.13, shore: [0.9, 0.99] as [number, number] }
+const GROUND = { soil: 0.8, leaf: 0.85, leafScale: 0.6, soilMm: 0.26, wideMm: 0.5, leafMm: 0.34 }
+const WATER = { rough: 0.07, rippleMm: 0.12, lamp: 12, pane: 0.8, pumpkin: 2.2, tight: 0.0005, wide: 0.006, wideShare: 0.004, lowMm: 3.4, fog: 0.13, shore: [0.9, 0.99] as [number, number] }
 
 const flame = lampFlame()
 const mirrored: Point = [flame[0], flame[1] - WATER.lowMm, flame[2]]
@@ -180,7 +181,12 @@ function autumn(source: THREE.BufferGeometry): THREE.BufferGeometry {
       const c = cottageLocal(x, z)
       const up = y - frame.floor
       const near = Math.abs(c.across) < cottage.halfWidth + 3.5 && Math.abs(c.along) < cottage.halfLength + 3.5
-      if (near && up > cottage.wall - 1.2 && Math.abs(c.across) > 0.01 && N.getY(i) > 0.25) {
+      const onPath = y - groundAt(x, z) < PATH.highMm && [...steps, ...stones].some(([sx, sz]) => Math.hypot(x - sx, z - sz) < PATH.nearMm)
+      if (onPath) {
+        r *= PATH.tone[0] * (0.8 + 0.4 * n)
+        gr *= PATH.tone[1] * (0.8 + 0.4 * n)
+        b *= PATH.tone[2] * (0.8 + 0.4 * n)
+      } else if (near && up > cottage.wall - 1.2 && Math.abs(c.across) > 0.01 && N.getY(i) > 0.25) {
         const lum = 0.3 * r + 0.6 * gr + 0.1 * b
         r = (lum * ROOF.grey + r * (1 - ROOF.grey)) * ROOF.tone[0]
         gr = (lum * ROOF.grey + gr * (1 - ROOF.grey)) * ROOF.tone[1]
@@ -232,7 +238,8 @@ function groundMaterial(): THREE.MeshStandardMaterial {
 ${BUMP_GLSL}
 uniform sampler2D uLitter;
 float fallRough = 0.95;
-vec4 fallLeaf(vec2 uv) {
+vec4 fallLeaf(vec2 at) {
+  vec2 uv = at * ${GROUND.leafScale.toFixed(2)};
   vec4 a = texture2D(uLitter, uv);
   vec4 b = texture2D(uLitter, vec2(0.7071 * (uv.x - uv.y), 0.7071 * (uv.x + uv.y)) * 0.77 + vec2(0.31, 0.57));
   a.a *= step(1.0 - vSurf.x, a.a);
