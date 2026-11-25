@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
-// @ts-expect-error a plain module of the tools, without types
 import { framingSource, m1 } from '../tools/lib/measures.mjs'
+
+type Line = { pass: boolean; framed?: boolean }
 
 // Check M1 asks whether the globe and its base lie inside the frame. A screen still (the app's view, with the controls) is
 // drawn from the app's own framing, which stands further back than the film's camera of the same name, so it has to be
@@ -20,14 +21,14 @@ describe('the framing a judged still is measured with', () => {
 
   it('still fails a screen still whose base is wider than the screen', () => {
     const wide = { globe: { cx: 195, cy: 400, r: 180 }, base: { left: -12, right: 402, top: 560, foot: 700 } }
-    const line = m1(entry, record(wide), size, null)
+    const line = m1(entry, record(wide), size, null) as Line
     expect(line.pass).toBe(false)
     expect(line.framed).toBe(false)
   })
 
   it('passes a screen still whose globe and base lie inside the screen', () => {
     const inside = { globe: { cx: 195, cy: 400, r: 150 }, base: { left: 20, right: 370, top: 530, foot: 650 } }
-    const line = m1(entry, record(inside), size, null)
+    const line = m1(entry, record(inside), size, null) as Line
     expect(line.pass).toBe(true)
     expect(line.framed).toBe(true)
   })
