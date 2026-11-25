@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { config } from '../src/config'
 import { barSeconds, globePoseAt, stillTimeline } from '../src/film/timeline'
-import { LIQUID_LOAD, LIQUID_R } from '../src/globe/liquid'
+import { Liquid, LIQUID_LOAD, LIQUID_R, LOAD_MAX_MM } from '../src/globe/liquid'
 import { ParticleEngine, STATE_LIQUID } from '../src/particles/engine/engine'
 import { buildCollider } from '../src/scene/layout'
 
@@ -52,6 +52,34 @@ describe('what the liquid carries lags behind the glass and runs across at a rev
       expect(most - least).toBeGreaterThan(LIQUID_R * (season === 'winter' ? 0.45 : 0.2))
     }, 120000)
   }
+
+  it('throws at the pace the load moves, so that what a stroke threw has come back when the load has died', () => {
+    const tl = stillTimeline('winter')
+    const liquid = new Liquid()
+    const DT = 1 / HZ
+    const gone = [0, 0, 0]
+    let far = 0
+    let fastest = 0
+    const end = Math.round((barSeconds + 6) * HZ)
+    const landed = Math.round((barSeconds + config.states.landedSeconds) * HZ)
+    let atLanded = 0
+    for (let n = 0; n < end; n++) {
+      const t = n * DT
+      liquid.step(globePoseAt(tl, t - DT), globePoseAt(tl, t), globePoseAt(tl, t + DT), t)
+      for (let a = 0; a < 3; a++) gone[a] = gone[a]! + liquid.carry[a]! * DT
+      const out = Math.hypot(gone[0]!, gone[1]!, gone[2]!)
+      if (out > far) far = out
+      const pace = Math.hypot(liquid.carry[0]!, liquid.carry[1]!, liquid.carry[2]!)
+      if (pace > fastest) fastest = pace
+      for (let a = 0; a < 3; a++) expect(Math.abs(gone[a]! - liquid.state[LIQUID_LOAD + a]!)).toBeLessThan(1e-6)
+      if (n === landed) atLanded = out
+    }
+    expect(far).toBeGreaterThan(LOAD_MAX_MM * 0.5)
+    expect(far).toBeLessThanOrEqual(LOAD_MAX_MM + 1e-6)
+    expect(fastest).toBeGreaterThan(60)
+    expect(atLanded).toBeLessThan(LOAD_MAX_MM * 0.1)
+    expect(Math.hypot(gone[0]!, gone[1]!, gone[2]!)).toBeLessThan(1e-3)
+  })
 
   it('has thrown nothing by the time the globe has stood for the rest', () => {
     const tl = stillTimeline('winter')
