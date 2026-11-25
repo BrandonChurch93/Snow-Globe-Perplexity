@@ -85,12 +85,11 @@ export const CARD_VERT = `
     vec3 vV = toView * cV;
     vec3 nV = toView * cN;
     if (shape > ${n(SHAPE.bat - 0.5)}) {
-      uV = normalize(uV);
-      vec3 flatV = cross(vec3(0.0, 0.0, 1.0), uV);
-      flatV = dot(flatV, flatV) > 1e-6 ? normalize(flatV) : normalize(vV);
-      vV = normalize(mix(normalize(vV), dot(flatV, vV) < 0.0 ? -flatV : flatV, ${n(CARD.batFace)}));
-      nV = normalize(cross(uV, vV));
-      vV = cross(nV, uV);
+      vec2 goes = (toView * (aNow - aPrev)).xy;
+      float lean = ${n(CARD.batLean)} * goes.x / max(length(goes), 1e-5) + ${n(CARD.batBank)} * (h.y * 2.0 - 1.0);
+      uV = vec3(sin(lean), cos(lean), 0.0);
+      vV = vec3(cos(lean), -sin(lean), 0.0);
+      nV = vec3(0.0, 0.0, 1.0);
     }
     vec2 ca = uV.xy * rC;
     vec2 cb = vV.xy * rC;
@@ -181,6 +180,7 @@ vec3 cardEdge(float shape, vec2 q, vec2 own) {
   }
   if (shape > ${n(SHAPE.bat - 0.5)}) {
     float tt = abs(q.y);
+    q.x -= vL4.y * tt * tt;
     float lead = 0.16 + 0.34 * smoothstep(0.0, 0.42, tt) - 0.75 * pow(smoothstep(0.42, 1.0, tt), 1.3);
     float trail = -0.5 + 0.25 * tt + 0.2 * abs(sin(9.42478 * tt));
     vec3 e = q.x - lead > trail - q.x ? vec3(q.x - lead, 1.0, side * (0.05 + 0.9 * tt * tt)) : vec3(trail - q.x, -1.0, side * 0.25);
@@ -273,7 +273,7 @@ vec4 cardTint(float shape, vec2 q, vec2 own) {
   if (shape > ${n(SHAPE.bat - 0.5)}) return vec4(vec3(1.0 + ${n(CARD.batRim)} * smoothstep(-0.14, 0.0, cardEdge(shape, q, own).x)), 0.15 * smoothstep(0.12, 0.5, abs(q.y)));
   float stem = 0.16;
   float v = clamp((u - stem) / (1.0 - stem), 0.0, 1.0);
-  vec3 t = mix(vec3(1.18, 1.5, 1.2), vec3(1.0, 1.0, 1.0), smoothstep(0.0, 0.3, own.y));
+  vec3 t = mix(vec3(1.15, 1.25, 0.9), vec3(1.0, 1.0, 1.0), smoothstep(0.0, 0.3, own.y));
   t = mix(t, vec3(0.78, 0.5, 0.6), smoothstep(0.55, 1.0, own.y + 0.25 * (own.x - 0.5)));
   float w = max(cardLeafHalf(v, own), 1e-3);
   float out1 = abs(q.y) / w;
