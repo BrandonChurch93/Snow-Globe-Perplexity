@@ -33,7 +33,7 @@ export const ROOM_RIG = {
   glow: { outside: 0.8, islandMm: innerRadiusMm * 0.88, lobe: 0.3, specular: 1 },
 } as const
 
-export const CHANGE_BLOOM = { flood: 800, lens: 3.5, pool: 8, swellFrom: 0.46 } as const
+export const CHANGE_BLOOM = { flood: 800, lens: 3.5, pool: 8, swellFrom: 0.46, fall: 0.2 } as const
 
 const SHADOW_OFF = 10
 
@@ -225,7 +225,7 @@ export class Lighting {
     u.uLightGlowAt.value.set(this.at.x, this.at.y, this.at.z, ROOM_RIG.glow.islandMm)
     this.glow.position.set(this.at.x, centreHeightMm + this.at.y, this.at.z)
 
-    const cross = a === b ? 0 : f.mix.bloom
+    const cross = a === b ? 0 : f.mix.bloom * smooth(Math.min(1, lift / CHANGE_BLOOM.fall))
     const peak = Math.max(gb[0], gb[1], gb[2], 1e-4)
     const spill = 1 + (ROOM_RIG.flood.pool * lift) / bloom
     const wash = (CHANGE_BLOOM.pool * cross) / peak
