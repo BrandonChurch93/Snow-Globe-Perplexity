@@ -31,5 +31,5 @@ Made by: assets-src/slab-spring/build.mjs
 From: assets-src/slab-spring/gen/petals-take1.png
 Prompt or command: npm run make -- slab-spring
 Takes: built, not generated
-Why this one: the picture further off: the same petals stamped flat over 1040 mm of surface from 232 mm out, where the real ones end
+Why this one: the picture further off: the same petals, 440 of them, stamped flat over 1040 mm of surface from 232 mm out, where the real ones end, and thinned to three in ten in front of the globe so the near strip is not crowded
 Date: 2026-11-25
