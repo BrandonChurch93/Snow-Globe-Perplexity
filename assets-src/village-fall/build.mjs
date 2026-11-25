@@ -28,7 +28,7 @@ const GRASS_TONES = ['#5a7a2a', '#7d9438', '#b0a548', '#4a6424', '#96893a'].map(
 
 const LITTER = { base: 0.03, patch: 0.2, fence: 0.2, tree: 0.1, wall: 0.1, leaves: 230 }
 const LEVELS = { medium: { error: 0.08, worth: 1 }, low: { error: 0.2, worth: 1 } }
-const STONE_TONES = ['#d6d0bf', '#c4c0b2', '#e0d9c6', '#b3b0a4', '#cbc5b3'].map(lin).map((c) => mul3(c, 1.3))
+const STONE_TONES = ['#d6d0bf', '#c4c0b2', '#e0d9c6', '#b3b0a4', '#cbc5b3'].map(lin).map((c) => mul3(c, 0.95))
 const ground = new Bag('ground')
 const water = new Bag('water')
 const decor = new Bag('decor')
@@ -502,7 +502,7 @@ for (const r of PROPS.ROCKS) {
   shade(g, (x, y, z) => (0.5 + 0.5 * smooth(-0.4, 0.6, y)) * (0.72 + 0.6 * fbm(x * 2.2 + r.seed, y * 2.2, z * 2.2, 4)) * (1 - 0.7 * smooth(0.02, 0.12, 0.12 - Math.abs(noise(x * 2.7 + 5, y * 2.7 + r.seed, z * 2.7)))) * (1 - 0.55 * smooth(0.0, 0.08, 0.08 - Math.abs(noise(x * 6.1, y * 3.2, z * 6.1 + r.seed)))))
   const c = PROPS.rockCentre(r)
   const M = new THREE.Matrix4().makeRotationY(r.yaw).multiply(new THREE.Matrix4().makeScale(r.r[0], r.r[1], r.r[2])).setPosition(c[0], c[1], c[2])
-  decor.add(g, { matrix: M, color: (p) => mix3(lin('#dcdccf'), lin('#5f7040'), 0.6 * smooth(0.25, 0.7, fbm(p[0] * 0.6, p[1] * 0.6, p[2] * 0.6 + r.seed, 3) + 0.5) * smooth(c[1] + r.r[1] * 0.5, c[1] - r.r[1] * 0.3, p[1])), surf: [surf(KIND.stone, 0.92), 0], renormal: true })
+  decor.add(g, { matrix: M, color: (p) => mix3(mul3(lin('#c6c6ba'), 0.8 + 0.4 * fbm(p[0] * 1.9 + r.seed, p[1] * 1.9, p[2] * 1.9, 3)), lin('#4c6030'), 0.85 * smooth(0.42, 0.62, fbm(p[0] * 0.45, p[1] * 0.45, p[2] * 0.45 + r.seed, 3) + 0.5)), surf: [surf(KIND.stone, 0.92), 0], renormal: true })
 }
 
 {
