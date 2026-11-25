@@ -56,10 +56,10 @@ export const look = {
     lipRiseMm: 11,
     lipDeep: [0.26, 1.0, 0.32],
     lifted: 0.03,
-    liftedMiddle: 0.02,
+    liftedMiddle: 0.007,
     liftedFromMm: 45,
     liftedToMm: 54,
-    liftedFront: 0.07,
+    liftedFront: 0.025,
     // Above the roof and the crown the strands go round the front of the dome too: there is nothing there for them to hide.
     liftedFrontHigh: 0.45,
     lean: 0.22,
@@ -74,7 +74,7 @@ export const look = {
     airGrid: 0.6,
     dustGlow: 0.0004,
     // Stirred, the liquid is full of fine stuff, and the lamp and the windows stand in a wide warm glow.
-    dustStirred: 3,
+    dustStirred: 1.5,
     dustTint: [1.0, 0.72, 0.42],
     flood: 0.1,
     floodFrom: 0.64,
@@ -96,6 +96,9 @@ export const look = {
     pourFallMm: 36,
     cold: 0.9,
     warm: 1.0,
+    // Thrown up by the shake it is thin strands on the wall: the lamp and the windows no longer light it, or the thin fog
+    // before the house would stand as a pale veil over it.
+    warmLifted: 0.9,
     glow: 0.11,
     glowDeepMm: 8,
     glowLifted: 1.6,
@@ -418,7 +421,7 @@ void main() {
   a *= seen;
   if (a < 0.0006 && !dustHere) discard;
   float deep = exp(-max(h, 0.0) / ${f(F.glowDeepMm)});
-  vec3 lit = stageCold(p) * ${f(F.cold)} + grid * ${f(F.warm)} + vec3(${f(F.glow)}) * mix(mix(0.3, 1.0, deep), 1.0, ${f(F.glowLifted)} * lift) * (0.75 + 0.5 * n.y);
+  vec3 lit = stageCold(p) * ${f(F.cold)} + grid * ${f(F.warm)} * (1.0 - ${f(F.warmLifted)} * lift) + vec3(${f(F.glow)}) * mix(mix(0.3, 1.0, deep), 1.0, ${f(F.glowLifted)} * lift) * (0.75 + 0.5 * n.y);
   // Where it is thick it scatters more and goes pale: mint, not green.
   float thick = clamp(rho * ${f(F.paleMm)}, 0.0, 1.0);
   vec3 col = mix(mix(${vec(F.tint)}, ${vec(F.pale)}, thick), ${vec(F.hazeTint)}, hazeRho / max(rho, 1e-6)) * lit * (1.0 + ${f(F.paleGain)} * thick);
