@@ -24,13 +24,13 @@ const LAMP_ON_WOOD = { power: 0.5, reachMm: 14, wrap: -0.2 }
 const LAMP_ON_LEAVES = { power: 3, reachMm: 12, wrap: 0.1 }
 const LAMP_SHIFT: Vec3 = [-3, 0, -5]
 const FILL_ON_WOOD = { power: 0.22, reachMm: 1000, wrap: 0.4 }
-const FILL_ON_LEAVES = { power: 0.32, reachMm: 1000, wrap: 0.3 }
+const FILL_ON_LEAVES = { power: 0.5, reachMm: 1000, wrap: 0.3 }
 const FILL_FROM: Vec3 = [30, 60, 60]
 const BARK: Rgb3 = [0.3, 0.15, 0.085]
 const LEAF_TINT: Rgb3 = [0.55, 0.95, 0.34]
 const LEAF_LIT = 'vec3(1.25, 1.05, 0.6)'
-const LEAF = { rim: 5, rimTight: 2.5, through: 1.3, tight: 3.0, fill: 0.5, wrap: 0.8, bump: 0.7, clumpDark: 0.35, clumpBright: 1.5 }
-const LANTERN = { gain: 0.8, body: 0.8, core: 1.6, tight: 6.0, paper: 0.06, dim: 0.1, stepS: 0.04, rampS: 0.18, swayRad: 0.045, sway2: 0.6, kickRad: 0.16, kickFade: 1.2, kickHz: 1.3, cycles: 2 }
+const LEAF = { rim: 5, rimTight: 2.5, through: 1.3, tight: 3.0, fill: 0.85, wrap: 0.8, bump: 1.0, clumpDark: 0.22, clumpBright: 2.7 }
+const LANTERN = { rib: 0.5, ribs: 26, gain: 0.8, body: 0.8, core: 1.6, tight: 6.0, paper: 0.06, dim: 0.1, stepS: 0.04, rampS: 0.18, swayRad: 0.045, sway2: 0.6, kickRad: 0.16, kickFade: 1.2, kickHz: 1.3, cycles: 2 }
 const HALO = { radius: 2.6, strength: 0.075, hot: 0.0 }
 const HALO_EDGE: Rgb3 = [0.9, 0.36, 0.08]
 const HALO_CORE: Rgb3 = [1, 0.7, 0.34]
@@ -127,8 +127,10 @@ vLamp = uv;
   float lampFace = clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0);
   float lampCore = pow(lampFace, ${LANTERN.tight.toFixed(1)});
   float lampBeat = 1.0 + ${FLICKER.toFixed(3)} * sin(6.2831853 * (uTwinkle.x + vLamp.x * 0.381966));
+  float lampLat = asin(clamp((vec4(normalize(normal), 0.0) * viewMatrix).y, -1.0, 1.0));
+  float lampRib = 1.0 - ${LANTERN.rib.toFixed(2)} * pow(0.5 + 0.5 * cos(lampLat * ${LANTERN.ribs.toFixed(1)}), 3.0);
   vec3 lampHot = mix(lampTint, lampTint * vec3(1.0, 1.75, 2.0) + vec3(0.0, 0.05, 0.01), lampCore * lampCore);
-  totalEmissiveRadiance = lampHot * lampLit * (${LANTERN.gain.toFixed(2)} * (${LANTERN.body.toFixed(2)} + ${LANTERN.core.toFixed(2)} * lampCore)) * lanternLevel(vLamp.x) * lampBeat;
+  totalEmissiveRadiance = lampHot * lampLit * (${LANTERN.gain.toFixed(2)} * (${LANTERN.body.toFixed(2)} + ${LANTERN.core.toFixed(2)} * lampCore)) * lanternLevel(vLamp.x) * lampBeat * lampRib;
 }`,
     )
 }

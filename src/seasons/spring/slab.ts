@@ -16,7 +16,7 @@ const FAR_HALF_MM = 520
 
 export const surfaceDressing: Dressing & { reachMm: number } = { tint: [1, 0.7, 0.8], amount: 0, reachMm: 240 }
 
-export const PETALS = { count: 300, nearMm: 63, farMm: 240, sizeMm: [5, 9.4], clumpMm: 46, wetShare: 0.2, focusMm: 60, far: [70, 330], near: [4, 80], farMips: 3.2, nearMips: 4.2 }
+export const PETALS = { count: 300, nearMm: 63, farMm: 240, sizeMm: [4.4, 8], clumpMm: 46, wetShare: 0.2, focusMm: 60, far: [70, 330], near: [4, 80], farMips: 3.2, nearMips: 4.2 }
 export const JUMP = { reachMm: 60, shockMmPerSecond: 1500, heightMm: 15, flight: [0.34, 0.8], shiftMm: 9, rise: 0.5, floor: 0.1 }
 export const POOL = { radiusMm: 15, outMm: 8.5, fillSeconds: 5 }
 
@@ -181,7 +181,7 @@ void main() {
   vec3 v = normalize(cameraPosition - vStageWorld);
   float wet = vPetalKind.y;
   vec3 albedo = pow(tex.rgb, vec3(1.0 + 0.5 * wet));
-  albedo = min(mix(albedo, vec3(dot(albedo, vec3(0.4, 0.4, 0.2))) * vec3(0.96, 0.9, 0.97), 0.72) * 1.25, vec3(0.92));
+  albedo = min(mix(albedo, vec3(dot(albedo, vec3(0.4, 0.4, 0.2))) * vec3(1.0, 0.8, 0.98), 0.85) * 1.3, vec3(0.92));
   vec3 col = petalLight(n, vStageWorld, v, albedo, wet);
   float thin = pow(1.0 - abs(dot(n, v)), 2.0);
   col += albedo * RECIPROCAL_PI * (uRimCol + uRigCardCol) * 0.25 * thin;
@@ -204,7 +204,7 @@ void main() {
   float alpha = tex.a * 0.95;
   if (alpha <= 0.004) discard;
   vec3 v = normalize(cameraPosition - vStageWorld);
-  vec3 albedo = min(mix(tex.rgb, vec3(dot(tex.rgb, vec3(0.4, 0.4, 0.2))) * vec3(0.96, 0.9, 0.97), 0.72) * 1.25, vec3(0.92));
+  vec3 albedo = min(mix(tex.rgb, vec3(dot(tex.rgb, vec3(0.4, 0.4, 0.2))) * vec3(1.0, 0.8, 0.98), 0.85) * 1.3, vec3(0.92));
   vec3 col = petalLight(vec3(0.0, 1.0, 0.0), vStageWorld, v, albedo, 0.0);
   gl_FragColor = vec4(col * alpha, alpha);
   if (uDiag != 0) gl_FragColor = stageDiag(albedo, vec3(0.0, 1.0, 0.0), 0.0, c, 0.0);
@@ -247,7 +247,7 @@ void main() {
   float live = uPoolIn.w;
   float wave = live * exp(-re / 13.0) * 0.8;
   float phase = re * 1.9 - uPoolIn.z * 8.5;
-  vec2 grad = dir * (0.9 * lip) + (e / max(re, 1e-3)) * (wave * cos(phase)) + 0.1 * live * vec2(poolNoise(p * 1.1 + uPoolIn.z * 0.6) - 0.5, poolNoise(p * 1.1 + 7.0 - uPoolIn.z * 0.5) - 0.5);
+  vec2 grad = dir * (0.3 * lip) + (e / max(re, 1e-3)) * (wave * cos(phase)) + 0.1 * live * vec2(poolNoise(p * 1.1 + uPoolIn.z * 0.6) - 0.5, poolNoise(p * 1.1 + 7.0 - uPoolIn.z * 0.5) - 0.5);
   vec3 n = normalize(vec3(-grad.x, 1.0, -grad.y));
   vec3 v = normalize(cameraPosition - vStageWorld);
   vec3 keyDir;
@@ -267,7 +267,7 @@ void main() {
   col += uKeyCol * keyGain * (5.0 * pow(hk, 300.0) + 0.1 * pow(hk, 30.0) * tilt);
   col += uRimCol * rimGain * (6.0 * pow(hr, 220.0) + 0.25 * pow(hr, 24.0) * tilt);
   col += uRigCardCol * (4.0 * pow(hc, 220.0) + 0.2 * pow(hc, 24.0) * tilt);
-  col += (uSky + warm) * RECIPROCAL_PI * 0.5 * lip * occl;
+  col += (uSky + warm) * RECIPROCAL_PI * 0.12 * lip * occl;
   col *= body * uWater.w;
   gl_FragColor = vec4(col, 0.22 * body * uWater.w);
   if (uDiag != 0) gl_FragColor = stageDiag(vec3(0.6, 0.7, 0.8), n, 0.0, c, 0.0);
@@ -321,7 +321,7 @@ function petalGeometry(): THREE.InstancedBufferGeometry {
     const x = Math.sin(a) * r
     const z = Math.cos(a) * r
     if (z < -150 && rng.next() < 0.5) continue
-    if (rng.next() > (0.14 + 0.86 * clump(x, z)) * (z > 0 && Math.abs(x) < 45 ? 0.45 : 1)) continue
+    if (rng.next() > (0.1 + 0.9 * clump(x, z)) * (z > 55 ? 0.3 : 1) * (Math.abs(z) < 95 && Math.abs(x) > 60 ? 1 : 0.55)) continue
     const soaked = rng.next() < PETALS.wetShare + 0.25 * Math.exp(-(r - PETALS.nearMm) / 30) ? 1 : 0
     const list = soaked ? wet : dry
     const id = list[Math.floor(rng.next() * list.length) % list.length]!

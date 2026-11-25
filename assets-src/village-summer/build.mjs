@@ -277,7 +277,7 @@ let tufts = 0
       for (const [q, c, t] of [[A, base, 0], [B, base, 0], [T, top, 1]]) {
         cell.pos.push(...q)
         cell.nor.push(...up)
-        cell.col.push(c[0] * (0.45 + 0.75 * t), c[1] * (0.45 + 0.75 * t), c[2] * (0.45 + 0.75 * t))
+        cell.col.push(c[0] * (0.32 + 0.95 * t), c[1] * (0.32 + 0.95 * t), c[2] * (0.32 + 0.95 * t))
         cell.tip.push(t)
       }
     }
@@ -500,13 +500,14 @@ writePng(rel('assets-full', 'summer', 'village-turf.lin.tile.png'), size, (px, p
 })
 
 const SNAP = { position: 128, normal: 32, color: 128, uv: 2048 }
-const GRASS_SNAP = { position: 64, normal: 16, uv: 64 }
+const GRASS_SNAP = { position: 64, normal: 16, uv: 512 }
+const TONE_BITS = 6
 function snap(mesh) {
   const by = mesh.name === grass.name ? GRASS_SNAP : SNAP
-  if (by === GRASS_SNAP) for (let v = 0; v < mesh.uv.length / 2; v++) {
-    const first = v - (v % (GRASS.blades * 3))
-    mesh.uv[v * 2] = mesh.uv[first * 2]
-    mesh.uv[v * 2 + 1] = mesh.uv[first * 2 + 1]
+  if (by === GRASS_SNAP) for (let v = 0; v < mesh.color.length / 3; v++) {
+    const top = Math.max(mesh.color[v * 3], mesh.color[v * 3 + 1], mesh.color[v * 3 + 2], 1e-6)
+    const step = 2 ** (Math.floor(Math.log2(top)) + 1 - TONE_BITS)
+    for (let j = 0; j < 3; j++) mesh.color[v * 3 + j] = Math.round(mesh.color[v * 3 + j] / step) * step
   }
   for (const k of Object.keys(by)) {
     const a = mesh[k]

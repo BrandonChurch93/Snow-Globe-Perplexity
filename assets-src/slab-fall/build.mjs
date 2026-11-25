@@ -179,11 +179,11 @@ function leaves() {
   while (near < 300 && tries++ < 12000) {
     const az = r(-180, 180)
     if (rng() > density(az)) continue
-    const size = r(3.8, 7.0) * (rng() < 0.15 ? 1.3 : 1)
-    const dist = FOOT + 5 + size * 0.7 + 115 * rng() ** 1.9
+    const size = r(4.0, 7.6) * (rng() < 0.15 ? 1.3 : 1)
+    const dist = FOOT + 4 + size * 0.6 + 115 * rng() ** 2.3
     const cx = dist * Math.sin(az * RAD)
     const cz = dist * Math.cos(az * RAD)
-    if (placed.some((p) => Math.hypot(p[0] - cx, p[1] - cz) < (p[2] + size) * 0.55)) continue
+    if (placed.some((p) => Math.hypot(p[0] - cx, p[1] - cz) < (p[2] + size) * 0.42)) continue
     add(dist, az, size, r(0.7, 1.35), 6, 0)
     near++
   }

@@ -33,8 +33,15 @@ function tube(soup, pts, radii, sides, paint, flat = 1, vAt = 0, gnarl = 0, seed
     const a = (i / sides) * 2 * Math.PI
     const f = frames[j]
     const d = add3([f.n[0] * Math.cos(a) * flat, f.n[1] * Math.cos(a) * flat, f.n[2] * Math.cos(a) * flat], f.b, Math.sin(a))
-    const nrm = norm3(add3([f.n[0] * Math.cos(a), f.n[1] * Math.cos(a), f.n[2] * Math.cos(a)], f.b, Math.sin(a) * flat))
-    const lump = gnarl ? 1 + gnarl * 2 * (fbm(arc[j] * 0.3 + seed, ((i % sides) / sides) * 4, 4096, 4, seed, 2) - 0.5) : 1
+    let nrm = norm3(add3([f.n[0] * Math.cos(a), f.n[1] * Math.cos(a), f.n[2] * Math.cos(a)], f.b, Math.sin(a) * flat))
+    let lump = 1
+    if (gnarl) {
+      const turn = 2 * a + arc[j] * 0.22 + seed
+      const ridge = 0.85 * gnarl
+      lump = 1 + gnarl * 2 * (fbm(arc[j] * 0.3 + seed, ((i % sides) / sides) * 4, 4096, 4, seed, 2) - 0.5) + ridge * Math.cos(turn)
+      const round = add3([-f.n[0] * Math.sin(a), -f.n[1] * Math.sin(a), -f.n[2] * Math.sin(a)], f.b, Math.cos(a))
+      nrm = norm3(add3(nrm, round, 2 * ridge * Math.sin(turn)))
+    }
     const p = add3(pts[j], d, radii[j] * lump)
     const c = paint(j, a, p, nrm)
     return { p, n: nrm, uv: [arc[j] / TILE + vAt, i / sides], uv2: [arc[j] / TILE + vAt, (i / sides) * ((2 * Math.PI * Math.max(radii[j], 0.4)) / TILE) * 2], c }
@@ -112,10 +119,15 @@ function addStrands() {
   const count = 25
   for (let i = 0; i < count; i++) {
     const steep = i % 3 === 2
-    const span = steep ? r(28, 46) : r(62, 150)
+    const span = steep ? r(26, 42) : r(62, 150)
     const a0 = -180 + (i * 360) / count + r(-9, 9) + (i * 137.5) % 360
-    const slope = (rng() < 0.5 ? -1 : 1) * (steep ? r(17, 26) : r(6, 19))
+    const slope = (rng() < 0.5 ? -1 : 1) * (steep ? r(20, 30) : r(11, 25))
     push({ a0, span, h0: steep ? r(14, 24) : r(5, 33), slope, amp: steep ? r(0.6, 1.4) : r(1.6, 3.6), k: r(1.6, 3.0), ph: r(0, 6.28), rad: steep ? r(1.1, 1.5) : r(1.2, 2.05), lift: r(2.6, 4.6), sprawl: 0.8, thorn: [6, 11], every: 46, layer: 3, open: true, reach: r(3.5, 8.5) })
+  }
+  // The wires: thin lengths that fill the weave between the branches.
+  for (let i = 0; i < 18; i++) {
+    const a0 = -180 + i * 20 + r(-8, 8)
+    push({ a0, span: r(50, 110), h0: r(6, 32), slope: (rng() < 0.5 ? -1 : 1) * r(5, 22), amp: r(1.2, 3.2), k: r(2, 4), ph: r(0, 6.28), rad: r(0.5, 0.8), lift: r(1.2, 5.2), sprawl: 0.5, thorn: [3.5, 6.5], every: 40, layer: 3, open: true, reach: r(2, 6) })
   }
 }
 addStrands()
@@ -236,7 +248,7 @@ export function buildIron() {
         const depth = smooth(0, 5, Math.hypot(p[0], p[2]) - drumR(clamp(p[1], 0, 38)))
         return [(0.32 + 0.68 * open) * (0.5 + 0.5 * depth) * (0.75 + 0.25 * smooth(0, 5, p[1])), 0.5, fbm(i * 0.09, a, 64, 8, s.seed + 3, 2)]
       }
-      tube(soup, pick.map((i) => pts[i]), pick.map((i) => radii[i]), far ? 5 : s.rad > 1.2 ? 9 : 7, shade, 1, s.seed * 0.37, far ? 0 : 0.13, s.seed)
+      tube(soup, pick.map((i) => pts[i]), pick.map((i) => radii[i]), far || s.rad < 0.85 ? 5 : s.rad > 1.2 ? 9 : 7, shade, 1, s.seed * 0.37, far ? 0 : 0.13, s.seed)
       from = to
     }
     let next = r(4, s.every)
@@ -387,24 +399,25 @@ export function buildWax() {
   }
   for (const run of L.RUNS) {
     const start = L.onCylinder(run.x, run.y0, 55)
-    const w = (run.w / 9.3) * 0.4
+    const w = (run.w / 9.3) * 0.5
     const foot = 59.6 + (run.pool > 0 ? 1.2 : 0.4)
-    const n = Math.max(6, Math.ceil(start.h / 0.7))
+    const top = Math.min(start.h, 9.5)
+    const n = Math.max(6, Math.ceil(top / 0.7))
     const pts = []
     const radii = []
     for (let i = 0; i <= n; i++) {
       const t = i / n
-      const h = mix(start.h, run.pool > 0 ? 0.5 : 2.2, t)
-      const sway = Math.sin(run.x) * 2.2
-      pts.push(place(mix(drumR(h) + 2.6, foot, t ** 0.8), h, start.az + sway * Math.sin(2 * Math.PI * t) * (1 - t)))
+      const h = mix(top, run.pool > 0 ? 0.5 : 2.2, t)
+      const sway = Math.sin(run.x) * 0.35
+      pts.push(place(mix(59.4, foot + 0.4, t * t), h, start.az + sway * Math.sin(2 * Math.PI * t) * (1 - t)))
       const cap = Math.sqrt(Math.max(1 - Math.max((0.1 - t) / 0.1, 0) ** 2, 0.0004))
       const tail = run.pool > 0 ? 1 + 0.35 * smooth(0.8, 1, t) : Math.sqrt(Math.max(1 - Math.max((t - 0.9) / 0.1, 0) ** 2, 0.0004)) * (1 + 0.4 * Math.exp(-(((t - 0.86) / 0.1) ** 2)))
-      radii.push(w * (0.8 + 0.45 * t * t + 0.1 * Math.sin(t * 9 + run.x)) * cap * tail)
+      radii.push(w * (0.75 + 0.55 * t * t + 0.14 * Math.sin(t * 9 + run.x)) * cap * tail)
     }
     tube(soup, pts, radii, 10, (j, a, p, nrm) => [(0.55 + 0.45 * (0.5 + 0.5 * dot3(nrm, norm3([p[0], 0, p[2]])))) * (0.5 + 0.5 * smooth(0, 16, p[1])), clamp(radii[j] * 0.55, 0, 1), j / n], 0.85)
     count++
     if (run.pool <= 0) continue
-    const centre = place(foot + run.pool * 0.55, 0, start.az + (run.x < 1400 ? -3 : 2))
+    const centre = place(foot + run.pool * 0.3, 0, start.az + (run.x < 1400 ? -1 : 1))
     const seg = 28
     const rings = 7
     soup.grid(seg + 1, rings, (i, j) => {
