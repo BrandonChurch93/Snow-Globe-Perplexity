@@ -1,4 +1,4 @@
-# REPORT: fall base and slab (fall_base2), 05:36 UTC
+# REPORT: fall base and slab (fall_base2), 05:33 UTC
 
 Branch `agent/p4-fall_base2`, last commit **a0e301d** (pushed 05:21). In the freeze of 05:20: **15ecc57**. Looks branch `agent/p4-fall_base2-looks`.
 Make targets, in order: `npm run make -- base-fall`, `npm run make -- slab-fall`, `npm run texpack`, `npm run build`.
@@ -20,7 +20,7 @@ One fault: merge commit 15ecc57 carries git's default message without the `Co-au
 | R1 #13 leaves sparse, lighter, glinting | fixed | 2b9d7f0 |
 | R1 #21 pumpkin reflections under the foot | part: `candleInSlab`; cut by the hero frame | 2b9d7f0 |
 | R4 issue 4 order and manner of lighting | fixed: uneven order (middle, right, left), spit, near death, tremble | a5e19a4 |
-| G15 triangles | inside all three limits | c5b1d8e and after |
+| G15 triangles | inside all three limits, see Measured | 2b9d7f0 to 838c64f |
 
 ## Measured
 - My triangles at a0e301d (texpack report): high 89,572 (base 83,992 + slab 5,580), medium 83,822 (78,242 + 5,580), low 58,558 (52,978 + 5,580). G15 limits 120,449 / 86,644 / 59,953. At 216e427 they were 126,788 / 111,082 / 71,373.
@@ -34,7 +34,7 @@ One fault: merge commit 15ecc57 carries git's default message without the `Co-au
 - Fit, box 620,860,2220,1584, mean difference per channel at a0e301d: 36.0, 28.7, 22.8.
 
 ## Looks
-base-fall 35 of 40 (predecessor 39 in its own count), slab-fall 8 of 40. All `--tier draft --format hd`.
+base-fall 35 of 40 (the predecessor reported 39 and 32 of its own), slab-fall 8 of 40. All `--tier draft --format hd`.
 
 ## Still wrong, worst first
 See `HANDOVER.md`, "Open, worst first": level brown-grey branches; wax shorter and less glossy; side pumpkins a little small; no modelled channel at the seat; right pumpkin half hidden by wax from the low camera; reflections cut by the frame; no grey leather; base about 5% tall in frame.

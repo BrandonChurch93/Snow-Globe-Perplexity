@@ -1,4 +1,4 @@
-# HANDOVER: fall base and slab (fall_base2), 05:35 UTC
+# HANDOVER: fall base and slab (fall_base2), 05:33 UTC
 
 Start from `origin/main` plus `agent/p4-fall_base2` at **a0e301d**. The freeze of 05:20 took **15ecc57**; a0e301d (pushed 05:21) is one shader commit later and is NOT in Rounds 11 to 13.
 
