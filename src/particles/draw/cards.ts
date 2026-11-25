@@ -38,6 +38,7 @@ export const CARD_VERT = `
     float dabShare = ${at(SHAPE.leaf)} ? ${n(CARD.dabShare[1])} : (${at(SHAPE.seed)} ? ${n(CARD.dabShare[2])} : ${n(CARD.dabShare[0])});
     float whole = way.z < 0.5 || u5 < max(way.x, way.y) || own > 1.0 - chosen ? 1.0 : 0.0;
     float keepC = mix(afloat * max(gustC, ${n(CARD.dabCalm)} * uStorm.x * uStorm.w) * mix(${n(CARD.dabKeep[0])}, ${n(CARD.dabKeep[1])}, smoothstep(1.0 - chosen - dabShare - 0.02, 1.0 - chosen - dabShare, own)), 1.0, whole);
+    if (${at(SHAPE.seed)} && whole > 0.5 && way.z > 0.5 && u5 >= max(way.x, way.y)) keepC *= max(afloat * gustC, uStorm.x * uStorm.w);
     if (${at(SHAPE.spark)}) keepC = mix(${n(CARD.sparkKeep[0])}, ${n(CARD.sparkKeep[1])}, pow(own, ${n(CARD.sparkSkew)}));
     if (${at(SHAPE.fleck)}) keepC = mix(${n(CARD.fleckKeep[0])}, ${n(CARD.fleckKeep[1])}, pow(own, mix(${n(CARD.fleckSkew)}, ${n(CARD.fleckStorm)}, gustC)));
     float stormSize = ${at(SHAPE.petal)} ? ${n(CARD.stormSize[0])} : (${at(SHAPE.leaf)} ? ${n(CARD.stormSize[1])} : 1.0);
