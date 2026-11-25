@@ -9,7 +9,11 @@ import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
-const HANDLE = process.env.ELEVENLABS_HANDLE ?? 'custom-cred:08b44ea8-85c9-4afc-a770-5985ca606785@api.elevenlabs.io'
+const HANDLE = process.env.ELEVENLABS_HANDLE
+if (!HANDLE) {
+  console.error('Set ELEVENLABS_HANDLE to the handle of the saved ElevenLabs credential (it has the form custom-cred:<id>@api.elevenlabs.io). No handle is kept in this repo.')
+  process.exit(2)
+}
 const FORMAT = process.env.MUSIC_FORMAT ?? 'pcm_48000'
 const TOOL = `ElevenLabs music, POST /v1/music, the default model (music_v1), ${FORMAT}`
 const piece = process.argv[2]
