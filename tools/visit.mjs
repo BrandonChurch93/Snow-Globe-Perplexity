@@ -412,10 +412,19 @@ if (want(5)) {
   await note(5, 'look-held', { restApart: rest, turnedApart: await apart(a, held), ...brief(await read()) }, (await apart(a, held)) > rest + 1)
   await up()
   const turned = await apart(a, held)
-  await frames(9)
-  const back = await grab()
+  // The camera eases back over a few seconds: the picture is compared once it has stopped changing, not nine frames after the release.
+  const still = Math.max(rest * 2, rest + 0.6)
+  const t0 = Date.now()
+  let back = await grab()
+  let settled = false
+  while (!settled && Date.now() - t0 < WAIT) {
+    await frames(6)
+    const next = await grab()
+    settled = (await apart(back, next)) < still
+    back = next
+  }
   const returned = await apart(a, back)
-  await note(5, 'look-returned', { restApart: rest, turnedApart: turned, returnedApart: returned, ...brief(await read()) }, returned < Math.max(rest * 2, rest + 0.6))
+  await note(5, 'look-returned', { restApart: rest, turnedApart: turned, returnedApart: returned, cameAtRest: settled, restAfterSeconds: Math.round((Date.now() - t0) / 100) / 10, ...brief(await read()) }, settled && returned < still)
   // The limits: two drags of different lengths, both past the limit, must end on the same picture.
   const lim = {}
   for (const [name, dx, dy] of [['yaw', 1, 0], ['pitch-up', 0, 1], ['pitch-down', 0, -1]]) {
@@ -499,7 +508,17 @@ if (want(7)) {
 }
 
 if (want(8)) {
-  await page.evaluate(() => document.activeElement instanceof HTMLElement && document.activeElement.blur())
+  // A visitor's first Tab on a fresh page starts from the top. Taking the focus off leaves the browser's starting point where the
+  // focus last was, so it is set to the start of the page: an empty element is focused there and taken out again.
+  await page.evaluate(() => {
+    const top = document.createElement('span')
+    top.tabIndex = -1
+    top.style.cssText = 'position:fixed;width:0;height:0;outline:0'
+    document.body.prepend(top)
+    top.focus({ preventScroll: true })
+    top.blur()
+    top.remove()
+  })
   const stops = []
   for (let i = 0; i < 9; i++) {
     await page.keyboard.press('Tab')
@@ -547,6 +566,9 @@ if (want(8)) {
   // The owner's menu.
   await page.keyboard.press('m')
   const openMenu = await until('the menu', (x) => x.menu, 20000)
+  // The panel fades in: it is read and grabbed after its opening has ended.
+  await page.evaluate(() => Promise.all((document.querySelector('#ui [data-menu]')?.getAnimations({ subtree: true }) ?? []).map((a) => a.finished.catch(() => null))))
+  await frames(2)
   const menu = await page.evaluate(() => {
     const m = document.querySelector('#ui [data-menu]')
     const r = m.getBoundingClientRect()
