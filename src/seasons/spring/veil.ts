@@ -155,8 +155,8 @@ const storm = {
   /** What is left in still liquid: the pink, lit air about the lamp and behind the tree of the approved rest, far too thin to hide anything. */
   calm: 0.0055,
   /** Where that rest hangs: its middle, and how far it reaches across, up and in depth, mm. Nothing of it stands in the upper left. */
-  calmAt: [13, -7, -12],
-  calmReach: [25, 27, 20],
+  calmAt: [18, -13, -12],
+  calmReach: [26, 17, 20],
   /** The air about the lamp at rest: a halo that is the lantern's own (thickest at it, thinning with the square of the distance, gone by `lampFar`), standing at and behind the lantern so its point stays sharp before it. */
   lampAt: [1.3, -18.2, 3.9],
   lamp: 5,
@@ -319,7 +319,7 @@ void main() {
   float ld = length(l);
   float halo = ${n(storm.lamp)} * smoothstep(${n(storm.lampFar[1])}, ${n(storm.lampFar[0])}, ld) / (1.0 + ld * ld / ${n(storm.lampCoreMm * storm.lampCoreMm)}) * smoothstep(7.0, -3.0, l.z);
   float back = ${n(storm.back)} * smoothstep(${n(storm.backZ[0])}, ${n(storm.backZ[1])}, p.z) * smoothstep(${n(storm.backY[0])}, ${n(storm.backY[1])}, p.y);
-  float rest = mix(1.0, 2.2 * exp(-dot(e, e)) + halo + back, still);
+  float rest = mix(1.0, 2.7 * exp(-dot(e, e)) + halo + back, still);
   // While the liquid turns the mist is drawn out along the turn in fine dashes, with dark lanes between its bands.
   float drawn = mix(1.0, ${n(1 - storm.streak)} + ${n(storm.streak * 2.6)} * streak, stirred) * mix(1.0, 1.0 - ${n(storm.lane)} * (1.0 - lane), stirred);
   float soft = drawn * mix(billow * 3.4, 1.0, uStorm.w);
