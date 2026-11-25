@@ -60,6 +60,13 @@ export function onCylinder(px, py, radius) {
   return { az: Math.atan2(p[0], p[2]) / RAD, h: p[1], p }
 }
 
+// A pixel of the approved image onto the slab (or a level `h` above it).
+export function onSlab(px, py, h = 0.15) {
+  const { origin: o, dir: d } = rayOf(px - SHIFT_X, py, undefined, RIG)
+  const t = (h - o[1]) / d[1]
+  return [o[0] + d[0] * t, h, o[2] + d[2] * t]
+}
+
 // The carved faces. The three in front are read from the approved image (centre of each face in its pixels, and its size);
 // the four behind are placed to finish the ring. `rad` is the half width across the ring in mm, `tall` the half height.
 const SEEN = [

@@ -6,7 +6,7 @@ import { texture } from '../../core/textures'
 import { ROOM_GLSL, roomUniforms } from '../../scene/room'
 import { SLAB_LIGHT_GLSL, slabLightUniforms, surfaceUniforms } from '../../scene/surface'
 import type { Dressing, KitMoment } from '../kit'
-import { FACE_COUNT, faceUniforms } from './base'
+import { cobweb, FACE_COUNT, faceUniforms } from './base'
 
 // Part `surface-dressing-fall`: the dry leaves that lie round the foot (curled ones near the camera, flat ones further
 // off, crumbs at the foot) and the light on the slab at the foot: a rim that parts the black base from the dark slab,
@@ -255,7 +255,7 @@ function makeSurface(): THREE.Group {
   sheet.position.y = 0.04
   sheet.renderOrder = 2
   sheet.frustumCulled = false
-  return new THREE.Group().add(leaves, sheet)
+  return new THREE.Group().add(leaves, sheet, cobweb())
 }
 
 export function dressing(): THREE.Object3D {
