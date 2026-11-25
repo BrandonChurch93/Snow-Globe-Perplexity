@@ -1,43 +1,44 @@
 {
-  "number": 116,
-  "time": "2026-11-25 19:05 UTC",
+  "number": 117,
+  "time": "2026-11-25 19:30 UTC",
   "phase": "5",
   "unit": "",
   "lines": [
-    "Status 116 · 2026-11-25 19:05 UTC · Phase 5",
-    "The interface branch is merged: framing on phone and tablet, and the controls (tsc clean, 485 tests passed, build ok). It is published when the sound check on the fresh build ends; that check runs now.",
-    "The four kept music tracks are cut on the mended bar lines: spring from 0.006 s (was 0.307), summer from 0.012 s (was 0.31). The film mix measures -14 LUFS, true peak -1.1 dB; the app's sound pack is 7 files, 2.88 MB.",
-    "Measures on polish round 1's merge, final tier: winter 24 lines, 0 red; spring 19 lines, 1 red (M3 on the rest still 0.3941, bar 0.75); summer 19 lines, 1 red (M3 on the rest still 0.7057, bar 0.75); fall is being measured.",
-    "Three builders lost their push after a resume of their sessions; two came back by themselves, one bundle was pushed for its builder. Eight builders work until 20:50 UTC.",
-    "phase 5: 4.90 h used of its 12.00 h box",
-    "allowance (before the review, continuation 1): 4.90 h used of 12.00 h allowed",
+    "Status 117 · 2026-11-25 19:30 UTC · Phase 5",
+    "Published at 19:18 UTC from commit 82f1eaa5: the interface merge (framing on phone and tablet, the controls) and the sound pack cut on the mended bar lines. Visibility: Organization. Settings: https://www.perplexity.ai/computer/a/4c4f15d3-07df-421c-941e-77528b5e889f?open-publish=true",
+    "The eight sound checks pass on this build, over three runs: A7 after the blockout was mixed again, A4 after the check's own wait was mended (it asked once a frame and saw a mark set at 19.5 s only at 70.6 s; decision 119, no threshold moved).",
+    "All four seasons are measured at the final tier on polish round 1's merge: 81 lines, 3 red, each of them M3 (fine detail against the approved picture) on a rest still: spring 0.3941, fall 0.5348, summer 0.7057, bar 0.75. Winter has no red line.",
+    "Winter's mirror line (severe: the right half of the foot barely reflects) had no owner: the surface builder found its cause outside its file. A ninth builder holds it since 19:29 (decision 120). Nine builders work until 20:50 UTC.",
+    "The archive of kept sounds is shared again: 14 kept sounds, the film mix with the four season tracks, and the table of what is left.",
+    "phase 5: 5.33 h used of its 12.00 h box",
+    "allowance (before the review, continuation 1): 5.33 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-116-1.jpg",
-      "caption": "On main now, not yet published: the phone screen, 390 x 844, spring, final tier, native size. Globe and base lie inside the frame (measure M1 passes at final). Still wrong: the globe is 80 percent of the width, smaller than before, the price of fall's wide base on a camera that holds through a shake; about 120 px of bare table lie between the foot and the marks.",
-      "w": 390,
-      "h": 844
+      "file": "out/stills/status/status-117-1.jpg",
+      "caption": "Not merged: the right flank of summer's base at rest, final tier, each pixel doubled: the approved picture, main, the sand branch 5f8e3e0. A fall of single grains now runs down the flank where main has none. Still wrong: thinner than the approved picture in its lower third, the grains too even in size and a little too yellow, no bright haze where it lands.",
+      "w": 1200,
+      "h": 594
     },
     {
-      "file": "out/stills/status/status-116-2.jpg",
-      "caption": "On main now, not yet published: the tablet screen, 1024 x 1366, summer, final tier. Marks, Shake and sound sit together, clear of the sand. Still wrong: the globe is 4.8 percent smaller than before; the marks' shade is faint over the caustic's mirror image.",
-      "w": 900,
+      "file": "out/stills/status/status-117-2.jpg",
+      "caption": "Not merged: spring's foot on the table at rest, final tier, native size: the approved picture, main, the surface branch 5431bc6. The mirror is as dark as the approved picture's and the lit root at the right stays. Still wrong: the image is a plain flipped copy with straight sides, and the approved picture's brighter scatter of petals is not answered.",
+      "w": 1200,
+      "h": 721
+    },
+    {
+      "file": "out/stills/status/status-117-3.jpg",
+      "caption": "Not merged: spring mid-shake, final tier, three crops: the approved picture, main, the storm branch fb96e74. Gable, roof, trunk and lower crown read through a thinner cloud where main is a pale mass. Still wrong: door and lamp are washed by a warm pale haze, the lower band of the glass is an even opaque pink.",
+      "w": 1200,
       "h": 1200
     },
     {
-      "file": "out/stills/status/status-116-3.jpg",
-      "caption": "On main now, not yet published: the controls at the size they are shown, before over after, on the wide screen, the tablet and the phone: at rest, under keyboard focus, pressed, the hint at its peak. A press lights a warm disc at once, the lit season carries a dot, sound is the same dark disc on all three sizes. Still wrong in this sheet: the hint's outer ring is a hairline and touches the dot on the phone (mended one commit later, not yet seen in a picture).",
+      "file": "out/stills/status/status-117-4.jpg",
+      "caption": "Not merged: the set down of the fourth shake in the film, frames 2874 to 2880 at the final tier, the left end of the foot over the right end, twice native size, the hand branch 1902fba. The left end is down first and holds, the right end comes down a like step on every frame. Still wrong: a rim of snow on the table fades in at the right end over the last four frames and reads as a thing that appears; the rock after the landing is not yet seen at the final tier.",
       "w": 1200,
-      "h": 697
-    },
-    {
-      "file": "out/stills/status/status-116-4.jpg",
-      "caption": "Not merged: summer at rest, final tier, main, then the glass branch d14553d, then the approved picture. The tan haze is out of the upper dome and the night reads behind the seeds. Still wrong: far fewer cool curved reflections than the approved picture; on the right outline one arc burned to a stepped white line two pixels wide, worse than main there (its mend is seen at the draft tier only); the ground meets the wall as a flat shelf.",
-      "w": 1200,
-      "h": 400
+      "h": 341
     }
   ]
 }
