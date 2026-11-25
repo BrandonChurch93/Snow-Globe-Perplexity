@@ -1,0 +1,277 @@
+{
+  "unit": "fall",
+  "tier": "final",
+  "assets": "full",
+  "method": 3,
+  "engineHash": "ef5ff56337adb0bb",
+  "seasonHashes": {
+    "winter": "5c39d16f98d3d0be",
+    "spring": "5def80f64975ec66",
+    "summer": "9a10aefc1e706deb",
+    "fall": "326db8d13d178707"
+  },
+  "browser": "147.0.7727.15",
+  "time": "2026-11-25T07:32:40.837Z",
+  "complete": true,
+  "planned": 19,
+  "red": 2,
+  "measures": [
+    "M1",
+    "M2",
+    "M3",
+    "M6"
+  ],
+  "notes": [],
+  "lines": [
+    {
+      "measure": "M1",
+      "still": "fall-rest",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; the globe and base lie inside the 1920 x 1080 frame (glass top at 90.7 px, foot at 1029.8 px, base from 597.8 to 1322.2 px)",
+      "framed": true
+    },
+    {
+      "measure": "M2",
+      "still": "fall-rest",
+      "pass": true,
+      "value": 0,
+      "threshold": 0.03,
+      "key": "detail.maxSoftPixelFraction",
+      "detail": "0 of 189808 textured pixels in the sharp zone are under detail.minTexelsPerPixel (685305 textured pixels in all)",
+      "textured": 685305,
+      "sharpZone": 189808,
+      "soft": 0,
+      "shownInIds": 300398
+    },
+    {
+      "measure": "M3",
+      "still": "fall-rest",
+      "pass": false,
+      "value": 0.279,
+      "threshold": 0.75,
+      "key": "detail.minSharpnessRatio",
+      "detail": "high frequency energy of the still over the approved image at the same size: base 0.407 over 172715 pixels of the part in the ids view; miniature 0.279 over 102062 pixels of the part in the ids view",
+      "regions": [
+        {
+          "name": "base",
+          "ratio": 0.4069725918280044,
+          "energy": {
+            "approved": 0.0035599320073239444,
+            "still": 0.0014487947557520959
+          },
+          "pixels": 172715,
+          "masked": "the part in the ids view",
+          "box": {
+            "width": 696,
+            "height": 318
+          }
+        },
+        {
+          "name": "miniature",
+          "ratio": 0.27897867210962934,
+          "energy": {
+            "approved": 0.004442214658209356,
+            "still": 0.001239283146573177
+          },
+          "pixels": 102062,
+          "masked": "the part in the ids view",
+          "box": {
+            "width": 696,
+            "height": 392
+          }
+        }
+      ],
+      "sigmaPx": 1.5
+    },
+    {
+      "measure": "M6",
+      "still": "fall-rest",
+      "pass": true,
+      "value": 0,
+      "threshold": 0.002,
+      "key": "sim.maxInsideFraction",
+      "detail": "0 of 102000 particles inside a solid, 0 outside the sphere",
+      "inside": 0,
+      "outside": 0,
+      "total": 102000
+    },
+    {
+      "measure": "M1",
+      "still": "fall-shake",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; the globe and base lie inside the 1920 x 1080 frame (glass top at 90.7 px, foot at 1029.8 px, base from 597.8 to 1322.2 px)",
+      "framed": true
+    },
+    {
+      "measure": "M2",
+      "still": "fall-shake",
+      "pass": true,
+      "value": 0,
+      "threshold": 0.03,
+      "key": "detail.maxSoftPixelFraction",
+      "detail": "0 of 187642 textured pixels in the sharp zone are under detail.minTexelsPerPixel (684159 textured pixels in all)",
+      "textured": 684159,
+      "sharpZone": 187642,
+      "soft": 0,
+      "shownInIds": 293980
+    },
+    {
+      "measure": "M6",
+      "still": "fall-shake",
+      "pass": true,
+      "value": 0.000039,
+      "threshold": 0.002,
+      "key": "sim.maxInsideFraction",
+      "detail": "4 of 102000 particles inside a solid, 0 outside the sphere",
+      "inside": 4,
+      "outside": 0,
+      "total": 102000
+    },
+    {
+      "measure": "M1",
+      "still": "fall-interior",
+      "pass": false,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; the miniature, 426741 pixels in the ids view, touches the edge of the frame",
+      "framed": false
+    },
+    {
+      "measure": "M2",
+      "still": "fall-interior",
+      "pass": true,
+      "value": 0,
+      "threshold": 0.03,
+      "key": "detail.maxSoftPixelFraction",
+      "detail": "0 of 473465 textured pixels in the sharp zone are under detail.minTexelsPerPixel (652558 textured pixels in all)",
+      "textured": 652558,
+      "sharpZone": 473465,
+      "soft": 0,
+      "shownInIds": 534214
+    },
+    {
+      "measure": "M6",
+      "still": "fall-interior",
+      "pass": true,
+      "value": 0,
+      "threshold": 0.002,
+      "key": "sim.maxInsideFraction",
+      "detail": "0 of 102000 particles inside a solid, 0 outside the sphere",
+      "inside": 0,
+      "outside": 0,
+      "total": 102000
+    },
+    {
+      "measure": "M1",
+      "still": "fall-base",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M2",
+      "still": "fall-base",
+      "pass": true,
+      "value": 0,
+      "threshold": 0.03,
+      "key": "detail.maxSoftPixelFraction",
+      "detail": "0 of 107251 textured pixels in the sharp zone are under detail.minTexelsPerPixel (434393 textured pixels in all)",
+      "textured": 434393,
+      "sharpZone": 107251,
+      "soft": 0,
+      "shownInIds": 253980
+    },
+    {
+      "measure": "M6",
+      "still": "fall-base",
+      "pass": true,
+      "value": 0,
+      "threshold": 0.002,
+      "key": "sim.maxInsideFraction",
+      "detail": "0 of 102000 particles inside a solid, 0 outside the sphere",
+      "inside": 0,
+      "outside": 0,
+      "total": 102000
+    },
+    {
+      "measure": "M1",
+      "still": "fall-surface",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M2",
+      "still": "fall-surface",
+      "pass": true,
+      "value": 0,
+      "threshold": 0.03,
+      "key": "detail.maxSoftPixelFraction",
+      "detail": "0 of 97867 textured pixels in the sharp zone are under detail.minTexelsPerPixel (1737641 textured pixels in all)",
+      "textured": 1737641,
+      "sharpZone": 97867,
+      "soft": 0,
+      "shownInIds": 284569
+    },
+    {
+      "measure": "M6",
+      "still": "fall-surface",
+      "pass": true,
+      "value": 0,
+      "threshold": 0.002,
+      "key": "sim.maxInsideFraction",
+      "detail": "0 of 102000 particles inside a solid, 0 outside the sphere",
+      "inside": 0,
+      "outside": 0,
+      "total": 102000
+    },
+    {
+      "measure": "M1",
+      "still": "fall-settled",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; the globe and base lie inside the 1920 x 1080 frame (glass top at 90.7 px, foot at 1029.8 px, base from 597.8 to 1322.2 px)",
+      "framed": true
+    },
+    {
+      "measure": "M2",
+      "still": "fall-settled",
+      "pass": true,
+      "value": 0,
+      "threshold": 0.03,
+      "key": "detail.maxSoftPixelFraction",
+      "detail": "0 of 189331 textured pixels in the sharp zone are under detail.minTexelsPerPixel (684740 textured pixels in all)",
+      "textured": 684740,
+      "sharpZone": 189331,
+      "soft": 0,
+      "shownInIds": 299912
+    },
+    {
+      "measure": "M6",
+      "still": "fall-settled",
+      "pass": true,
+      "value": 0,
+      "threshold": 0.002,
+      "key": "sim.maxInsideFraction",
+      "detail": "0 of 102000 particles inside a solid, 0 outside the sphere",
+      "inside": 0,
+      "outside": 0,
+      "total": 102000
+    }
+  ]
+}
