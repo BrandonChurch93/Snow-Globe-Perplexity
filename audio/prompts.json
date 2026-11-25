@@ -876,7 +876,8 @@
     "shake-fall": "three takes used, none is the whole line (three knocks on wood; a splash in a hollow vessel, heard once with a clatter; a dry rattle like dice in a cup): takes 2 and 3 each hold a part and may be laid together in the free work (decision 111)",
     "land-fall": "three takes used, none is the whole line (one heavy impact like a hollow wooden object struck; a sub rumble the listener could not settle, twice no file heard; a door creaking and latching, once taken for a cat): take 1 holds the landing and take 3 the creak, the tone is in neither",
     "amb-fall": "three takes used, none is the whole line (someone walking through dry leaves; a steady strong wind roar; four heavy breaths through a regulator): take 2 holds the wind and take 1 the leaves, the tone is in neither",
-    "key-tap": "three takes used, none is the whole line (a hard sharp click like a mouse button, low in the numbers; the same, brighter; a low dull thud like a knock on thick wood): takes 1 and 2 hold the key, take 3 the softness, so a layer may be tried in the free work (decision 111)"
+    "key-tap": "three takes used, none is the whole line (a hard sharp click like a mouse button, low in the numbers; the same, brighter; a low dull thud like a knock on thick wood): takes 1 and 2 hold the key, take 3 the softness, so a layer may be tried in the free work (decision 111)",
+    "music-one-piece": "three takes used, none fits (one solo music box in one mood; a music box with strings joining from 16 s to 47 s, one festive mood; sleigh bells, celesta and strings in one festive mood, every 12 s section heard alone called warm and unhurried): the one-piece candidate has no music and cannot be mixed until a review round buys new takes; the four-tracks candidate has all four of its tracks"
   },
   "takesLeft": {
     "lift": 0,
@@ -899,7 +900,7 @@
     "key-tap": 0,
     "ui-send": 2,
     "riser": 0,
-    "music-one-piece": 1,
+    "music-one-piece": 0,
     "music-winter": 2,
     "music-spring": 1,
     "music-summer": 1,
@@ -921,8 +922,8 @@
           12000,
           12000
         ],
-        "state": "take 2: does not fit",
-        "takesUsed": 2
+        "state": "open, out of takes: take 1, 2 and 3 do not fit",
+        "takesUsed": 3
       },
       "music-winter": {
         "endpoint": "POST /v1/music",
@@ -1099,6 +1100,28 @@
           "times": "1. The instruments and mood change clearly at 16 seconds and 47 seconds. \n\n2. From 0 to 16 seconds, a solo music box plays, creating a calm, gentle, and magical mood; from 16 to 47 seconds, orchestral strings join the music box, shifting the mood to sweeping, emotional, and enchanting; from 47 seconds to the end, the strings fade out to leave only the solo music box, returning to a peaceful, fading, and soothing mood. \n\n3. There is no human voice, choir, humming, or singing at any time."
         },
         "costFrom": "the guard, from the rise of the account's Music usage line during the call (the music endpoint sends no cost header)"
+      },
+      {
+        "cue": "music-one-piece",
+        "take": 3,
+        "text": "composition plan audio/plans/one-piece.json: Winter 12000 ms, Spring 12000 ms, Summer 12000 ms, Fall 12000 ms, Winter Return 12000 ms; global: instrumental; 100 bpm; 4/4 time; a medley of five short contrasting pieces; each section has its own lead instrument and its own mood; the instruments of one section stop when the next section starts; instrumental, no vocals, no spoken words, clean ending",
+        "cost": 825,
+        "verdict": "does not fit",
+        "why": "Does not fit. No voice was heard (open call, times call and the five section calls all say none). The listener hears one magical, joyful, festive holiday mood that \"does not change\": sleigh bells, a celesta or glockenspiel, woodwinds, strings. Asked for the times of change it names 4, 19 and 41 s: sleigh bells alone, a music box or celesta joining, orchestral strings from 19 s to 41 s, a solo music box to the end. Each 12 s section, cut out and heard alone with the blind choice of five moods, was called \"warm and unhurried\" (all five), with a music box or glockenspiel named in every section; a harp is heard in 12 to 24 s and an acoustic guitar in 48 to 60 s, so some of the plan's instruments are there but not where the plan puts them, and no section is heard as Halloween. The fit call says sections 2, 3 and 4 do not fit. The map: 100.008 bpm, 25 bars from 0.0204 s, steady; sections by level at 4.81, 31.21 and 55.21 s against the plan's 12, 24, 36 and 48 s, so no boundary is within one bar of the plan. Three plans, three single-mood Christmas pieces: the composition plan's section styles do not turn this model at 12 s boundaries.",
+        "listener": {
+          "line": "Five sections of 12 s: warm orchestral Christmas (sleigh bells, celesta, soft choir pads, low strings); light and airy (harp, flute, plucked strings); warm and unhurried (nylon guitar, soft marimba, a golden dusk); Halloween (a detuned music box and piano over low strings, with eerie sounds in the music itself); the winter music returning fuller, and resolving on its last bar",
+          "open": "1. I hear sleigh bells, a celesta or glockenspiel, woodwinds, and strings playing both bowed and plucked notes.\n2. The mood is magical, joyful, and festive, resembling classic holiday music, and it does not change. \n3. There is no human voice, spoken word, choir, humming, or singing in this piece.\n4. There are no non-musical sound effects; the sleigh bells act as standard musical percussion.\n5. The piece starts immediately with the main melody and ends on a held final note.\n6. It is about 115 beats a minute, and the pulse holds steady until it slows down for the final cadence.",
+          "fit": "1. Section 1 fits its festive description, but sections 2, 3, and 4 do not fit because the cheerful Christmas music never shifts to the light, unhurried, or eerie moods described. Finally, section 5 fits because the original winter theme builds slightly and cleanly resolves.\n\n2. I hear all the described instruments for section 1, but I hear none of the instruments specifically named in the descriptions for sections 2 and 3. In section 4 I only hear the low strings but not the detuned elements or piano, and in section 5 I hear all the returning winter instruments.\n\n3. There is no human voice, spoken word, or singing present in this piece. \n\n4. Yes, the music ends cleanly by resolving on",
+          "times": "1. The instruments and mood change clearly at 4, 19, and 41 seconds. \n2. From 0 to 4 seconds, sleigh bells play, creating a festive and anticipating mood; from 4 to 19 seconds, a music box or celesta joins the bells, establishing a sweet and magical mood; from 19 to 41 seconds, sweeping orchestral strings are added, shifting the mood to heartwarming and nostalgic; from 41 to 60 seconds, the arrangement strips back to a solo music box, leaving a peaceful and gentle mood.\n3. There is no human voice, choir, humming, or singing heard at any time in the audio.",
+          "sectionsHeardAlone": {
+            "0-12": "1. I hear sleigh bells (jingle bells) and a music box (or celesta/glockenspiel).\n2. (c) warm and unhurried\n3. No, there are no human voices, choirs, humming, or singing in this clip.",
+            "12-24": "1. I hear a harp, string instruments (such as violins and cellos), and subtle chimes or a glockenspiel.\n2. (c) warm and unhurried\n3. No, there is no human voice, choir, humming, or singing in this clip.",
+            "24-36": "1. I hear a music box (or celesta/glockenspiel) and soft plucked strings or a harp.\n2. (c) warm and unhurried\n3. No, there is no human voice, choir, humming, or singing.",
+            "36-48": "1. Music box\n2. (c) warm and unhurried\n3. No, there is no human voice, choir, humming, or singing in this clip.",
+            "48-60": "1. Acoustic guitar and glockenspiel (bells/music box).\n2. (c) warm and unhurried\n3. No, there is no human voice, choir, humming, or singing in this clip."
+          }
+        },
+        "costFrom": "the guard, from the rise of the account's Music usage line during the call (4026 to 4851; the music endpoint sends no cost header)"
       }
     ]
   },

@@ -4381,6 +4381,84 @@
       },
       "time": "2026-11-25T18:07:21.537Z",
       "answersTime": "2026-11-25T18:09:45.552Z"
+    },
+    {
+      "cue": "music-one-piece",
+      "take": 3,
+      "round": "build",
+      "class": "music",
+      "season": null,
+      "line": "Five sections of 12 s: warm orchestral Christmas (sleigh bells, celesta, soft choir pads, low strings); light and airy (harp, flute, plucked strings); warm and unhurried (nylon guitar, soft marimba, a golden dusk); Halloween (a detuned music box and piano over low strings, with eerie sounds in the music itself); the winter music returning fuller, and resolving on its last bar",
+      "tool": "ElevenLabs music, POST /v1/music, the default model (music_v1), pcm_48000",
+      "prompt": "composition plan audio/plans/one-piece.json: Winter 12000 ms, Spring 12000 ms, Summer 12000 ms, Fall 12000 ms, Winter Return 12000 ms; global: instrumental; 100 bpm; 4/4 time; a medley of five short contrasting pieces; each section has its own lead instrument and its own mood; the instruments of one section stop when the next section starts; instrumental, no vocals, no spoken words, clean ending",
+      "settings": {
+        "endpoint": "POST /v1/music",
+        "model": "default",
+        "how": "composition_plan",
+        "plan": "audio/plans/one-piece.json",
+        "respect_sections_durations": true,
+        "output_format": "pcm_48000",
+        "cost": null,
+        "counterMovedBy": 0,
+        "counterNote": "the music endpoint sends no cost header; the counter also moves with other work on the account"
+      },
+      "source": {
+        "name": "music-one-piece-2026-11-25T18-11-07-588Z.wav",
+        "bytes": 11502314,
+        "sha256": "fb74c7c8db4aa79c0bb15c115bb71c4efd36b8779faf581b7b0d52d7c62e4f46",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 59.907,
+        "kbps": 1536
+      },
+      "sha256": "4a83b609a128214033074cf2ba9eff0ba8a88ff5d4be12b55937519560a73dfe",
+      "measured": {
+        "seconds": 59.907,
+        "peakDb": 0,
+        "truePeakDb": 0.03,
+        "lufs": -11.09,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -14.19,
+        "silenceFrontSeconds": 0.03,
+        "silenceEndSeconds": 2.137,
+        "soundSeconds": 57.74,
+        "tailDb": -80.92,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 757,
+          "bands": {
+            "sub": 0.0003,
+            "low": 0.2317,
+            "lowMid": 0.6364,
+            "mid": 0.1196,
+            "high": 0.0029,
+            "air": 0.0091
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -11.1,
+        "lra": 8,
+        "truePeakDb": 0
+      },
+      "fits": {
+        "wantSeconds": null,
+        "note": "no length in audio.sfx for this cue"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Does not fit. No voice was heard (open call, times call and the five section calls all say none). The listener hears one magical, joyful, festive holiday mood that \"does not change\": sleigh bells, a celesta or glockenspiel, woodwinds, strings. Asked for the times of change it names 4, 19 and 41 s: sleigh bells alone, a music box or celesta joining, orchestral strings from 19 s to 41 s, a solo music box to the end. Each 12 s section, cut out and heard alone with the blind choice of five moods, was called \"warm and unhurried\" (all five), with a music box or glockenspiel named in every section; a harp is heard in 12 to 24 s and an acoustic guitar in 48 to 60 s, so some of the plan's instruments are there but not where the plan puts them, and no section is heard as Halloween. The fit call says sections 2, 3 and 4 do not fit. The map: 100.008 bpm, 25 bars from 0.0204 s, steady; sections by level at 4.81, 31.21 and 55.21 s against the plan's 12, 24, 36 and 48 s, so no boundary is within one bar of the plan. Three plans, three single-mood Christmas pieces: the composition plan's section styles do not turn this model at 12 s boundaries.",
+        "listener": {
+          "line": "Five sections of 12 s: warm orchestral Christmas (sleigh bells, celesta, soft choir pads, low strings); light and airy (harp, flute, plucked strings); warm and unhurried (nylon guitar, soft marimba, a golden dusk); Halloween (a detuned music box and piano over low strings, with eerie sounds in the music itself); the winter music returning fuller, and resolving on its last bar",
+          "open": "1. I hear sleigh bells, a celesta or glockenspiel, woodwinds, and strings playing both bowed and plucked notes.\n2. The mood is magical, joyful, and festive, resembling classic holiday music, and it does not change. \n3. There is no human voice, spoken word, choir, humming, or singing in this piece.\n4. There are no non-musical sound effects; the sleigh bells act as standard musical percussion.\n5. The piece starts immediately with the main melody and ends on a held final note.\n6. It is about 115 beats a minute, and the pulse holds steady until it slows down for the final cadence.",
+          "fit": "1. Section 1 fits its festive description, but sections 2, 3, and 4 do not fit because the cheerful Christmas music never shifts to the light, unhurried, or eerie moods described. Finally, section 5 fits because the original winter theme builds slightly and cleanly resolves.\n\n2. I hear all the described instruments for section 1, but I hear none of the instruments specifically named in the descriptions for sections 2 and 3. In section 4 I only hear the low strings but not the detuned elements or piano, and in section 5 I hear all the returning winter instruments.\n\n3. There is no human voice, spoken word, or singing present in this piece. \n\n4. Yes, the music ends cleanly by resolving on"
+        }
+      },
+      "time": "2026-11-25T18:11:23.886Z",
+      "answersTime": "2026-11-25T18:13:07.900Z"
     }
   ],
   "kept": [
@@ -4538,7 +4616,7 @@
     }
   ],
   "pack": {
-    "time": "2026-11-25T18:10:17.010Z",
+    "time": "2026-11-25T18:13:37.372Z",
     "kbps": 192,
     "bytes": 3024000,
     "fits": true,
