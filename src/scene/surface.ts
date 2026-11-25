@@ -196,8 +196,9 @@ vec2 slabCast(vec2 at, vec2 foot, float lift, vec2 along) {
   float rise = ${f(G.baseHeightMm)};
   float baseFar = length(along) * (lift + rise);
   float baseSoft = 2.5 + 0.11 * baseFar + 0.5 * lift;
-  float baseShade = 1.0 - smoothstep(-baseSoft, baseSoft, slabCapsule(at, foot - along * lift, foot - along * (lift + rise)) - uFoot.z);
-  vec2 ball = at - (foot - along * (lift + ${f(centreHeight)}));
+  vec2 sole = foot - uLean.xy;
+  float baseShade = 1.0 - smoothstep(-baseSoft, baseSoft, slabCapsule(at, sole - along * lift, sole + uLean.zw * rise - along * (lift + rise)) - uFoot.z);
+  vec2 ball = at - (sole + uLean.zw * ${f(centreHeight)} - along * (lift + ${f(centreHeight)}));
   vec2 dirL = along / max(length(along), 1e-3);
   float stretch = sqrt(1.0 + dot(along, along));
   float ballAt = length(vec2(dot(ball, dirL) / stretch, dot(ball, vec2(-dirL.y, dirL.x)))) / ${f(globeRadius)};
@@ -217,7 +218,9 @@ float slabShade(vec2 at) {
   float under = (1.0 - smoothstep(-5.0 - lift, 1.0 + 0.6 * lift, gap)) / (1.0 + 0.05 * lift);
   if (uFoot.w > 0.0 || dot(uLean.zw, uLean.zw) > 0.0) {
     float raised = smoothstep(0.0, ${f(SLAB.shadeBlendMm)}, lift);
-    float in2 = gap + ${f(SLAB.shadeInMm)};
+    float rim = length(at - uFoot.xy) - uFoot.z;
+    tight = exp(-max(rim, 0.0) / (${f(SLAB.contactMm)} + 0.9 * lift) - lift / ${f(SLAB.contactLiftMm)});
+    float in2 = rim + ${f(SLAB.shadeInMm)};
     float open = 0.5 + 0.5 * in2 / length(vec2(in2, ${f(SLAB.shadeSoftMm)} + ${f(SLAB.shadeOpen)} * lift));
     under = mix(under, 1.0 - open, raised);
   }
