@@ -633,12 +633,13 @@
     {
       "name": "quality-levels",
       "unit": "globe",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/core"
       ],
       "standInHash": "fc9e860401172a7c",
-      "commit": "2530677"
+      "commit": "a8b224ee",
+      "note": "Made by its method (kit/03-METHOD.md section 14): three levels chosen by measurement, stepping down, the quality parameter, the M menu, the --live LEVEL still, the probe page (read-only check of 12:53 UTC Nov 25), and since the merge a8b224ee of agent/p5-msaa at 725c01b multisampling of the live picture, 4 samples clamped to what the device reports. Proof on 725c01b: the eight final keys byte-identical to the kept ones, G13 and G3 each passed alone, the live picture of every season looked at at high, medium and low. Not checked: the cost in frame rate on a real GPU; a device that reports no samples (a unit test of the clamp only). Open item 166."
     },
     {
       "name": "opening",
