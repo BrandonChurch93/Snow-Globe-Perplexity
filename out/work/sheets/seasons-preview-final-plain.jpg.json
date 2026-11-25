@@ -1,0 +1,91 @@
+{
+  "engineHash": "a103ddd4fdecc107",
+  "seasonHashes": {
+    "winter": "5c39d16f98d3d0be",
+    "spring": "e579a2c24f41ece7",
+    "summer": "364b4daf13dc8bb8",
+    "fall": "767926ecb026caa1"
+  },
+  "format": "preview",
+  "tier": "final",
+  "assets": "full",
+  "diagnostic": "",
+  "browser": "Google Chrome for Testing 147.0.7727.15",
+  "graphics": "software",
+  "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB",
+  "time": "2026-11-25T20:49:16.308Z",
+  "diag": "",
+  "layoutHash": "94f221794c579a83",
+  "spec": {
+    "kind": "seasons",
+    "plain": true,
+    "stills": [
+      "winter-rest",
+      "spring-rest",
+      "summer-rest",
+      "fall-rest"
+    ]
+  },
+  "caption": "Sheet: the 4 at-rest keys, winter-rest, spring-rest, summer-rest, fall-rest, preview, final",
+  "legend": "the at-rest stills on one sheet; each tile is labelled only with its place on the sheet, 1 to 4",
+  "width": 1366,
+  "height": 834,
+  "limits": {
+    "longEdge": 1400,
+    "maxPixels": 1140000
+  },
+  "layout": {
+    "cols": 2,
+    "rows": 2,
+    "cell": {
+      "width": 665,
+      "height": 374
+    },
+    "labelHeight": 24,
+    "gap": 12,
+    "rowGap": 14,
+    "margin": 12
+  },
+  "frames": [
+    {
+      "id": "winter-rest",
+      "file": "out/work/stills/winter-rest-preview-final.png",
+      "at": {
+        "left": 12,
+        "top": 12,
+        "width": 665,
+        "height": 374
+      }
+    },
+    {
+      "id": "spring-rest",
+      "file": "out/work/stills/spring-rest-preview-final.png",
+      "at": {
+        "left": 689,
+        "top": 12,
+        "width": 665,
+        "height": 374
+      }
+    },
+    {
+      "id": "summer-rest",
+      "file": "out/work/stills/summer-rest-preview-final.png",
+      "at": {
+        "left": 12,
+        "top": 424,
+        "width": 665,
+        "height": 374
+      }
+    },
+    {
+      "id": "fall-rest",
+      "file": "out/work/stills/fall-rest-preview-final.png",
+      "at": {
+        "left": 689,
+        "top": 424,
+        "width": 665,
+        "height": 374
+      }
+    }
+  ]
+}

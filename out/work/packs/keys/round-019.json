@@ -1,0 +1,72 @@
+{
+  "round": 19,
+  "phase": 5,
+  "unit": "globe",
+  "tier": "final",
+  "motionTier": "final",
+  "record": false,
+  "limits": {
+    "longEdge": 1400,
+    "maxPixels": 1140000,
+    "maxFiles": 10
+  },
+  "engineHash": "a103ddd4fdecc107",
+  "roles": {
+    "R5": {
+      "parts": [
+        {
+          "folder": "out/work/packs/round-019/R5",
+          "message": "out/work/packs/round-019/R5.message.md",
+          "files": [
+            {
+              "name": "set-A-01.jpg",
+              "what": "the four seasons at rest, from node tools/sheet.mjs --seasons --plain --tier final: out/work/sheets/seasons-preview-final-plain.jpg. The tiles: 1 is winter-rest, 2 is spring-rest, 3 is summer-rest, 4 is fall-rest",
+              "source": "out/work/sheets/seasons-preview-final-plain.jpg",
+              "sha256": "5d8857f76a19f890c5b4506e88eaca4446eddd2db102edf5e8c045f25748ffaf",
+              "width": 1366,
+              "height": 834
+            },
+            {
+              "name": "set-B-01.jpg",
+              "what": "screen-wide: winter in the rest state from hero, with the controls on, hd, final tier",
+              "sha256": "13a42dd11ca910ab005b5b5080f86bdb6eb3e97f791a72d1c3e96b7ae799fdf6",
+              "width": 1400,
+              "height": 787
+            },
+            {
+              "name": "set-B-02.jpg",
+              "what": "screen-wide-fall: fall in the rest state from hero, with the controls on, hd, final tier",
+              "sha256": "03e8280827950ffe06d268f4088b649401d7383f779b2512ca8eb018da028c2f",
+              "width": 1400,
+              "height": 787
+            },
+            {
+              "name": "set-B-03.jpg",
+              "what": "screen-phone: spring in the rest state from hero, with the controls on, phone, final tier",
+              "sha256": "8d4778cec12b0a32ff320547a561726920d3c7070657982681804772cdcc0111",
+              "width": 390,
+              "height": 844
+            },
+            {
+              "name": "set-B-04.jpg",
+              "what": "screen-tablet: summer in the rest state from hero, with the controls on, tablet, final tier",
+              "sha256": "b8dab4ef1295e0738ff92ada17f76c224dee40a1dfb3dcd4ed60ccdb277fb40f",
+              "width": 924,
+              "height": 1233
+            },
+            {
+              "name": "set-C-01.jpg",
+              "what": "one sheet across a shake in the app, from node tools/sheet.mjs --app shake --part whole --plain: out/work/sheets/app-shake-winter-spring-high-preview-whole-plain-1.jpg. The script: shake from winter to spring",
+              "source": "out/work/sheets/app-shake-winter-spring-high-preview-whole-plain-1.jpg",
+              "sha256": "797a762b662b848193bfb118f13c86a945787bc8d6b2be03747fbe7d2f10bf63",
+              "width": 1149,
+              "height": 986
+            }
+          ]
+        }
+      ],
+      "missing": [],
+      "notes": []
+    }
+  }
+}
