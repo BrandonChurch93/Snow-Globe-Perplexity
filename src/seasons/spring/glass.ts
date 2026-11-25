@@ -55,7 +55,7 @@ const look = {
   edge: 0.5,
   mirror: 0.35,
   /** Toward the limb a drop is seen edge on and would be a burr on the outline of the glass: how square to the eye the glass must be for a drop to be drawn at all, and to be drawn whole. */
-  limb: [0.02, 0.2],
+  limb: [0.08, 0.3],
   /** Out of focus a drop is a soft disc: how much blur, as an angle (its radius over its distance; 0.0007 is under 3 pixels of the hd frame at the hero), the lens gives away before a drop is drawn soft at all. From the hero the glass is within it and the dew is sharp; from the macro it is far outside it. */
   sharp: 0.0007,
   glint: 5,
