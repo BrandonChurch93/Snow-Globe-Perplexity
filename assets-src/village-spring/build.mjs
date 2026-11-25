@@ -623,8 +623,8 @@ function tulip(x, z, tall, hue, turn) {
     }
   }
   const top = at(1)
-  const cupH = 1.25 + 0.5 * R()
-  const cupR = 0.52 + 0.14 * R()
+  const cupH = 1.9 + 0.6 * R()
+  const cupR = 0.82 + 0.2 * R()
   const open = 0.72 + 0.3 * R()
   const [deep, pale] = TONE.tulips[hue]
   const tilt = norm3([bend[0] * 2, 1, bend[1] * 2])
@@ -666,6 +666,7 @@ function tulip(x, z, tall, hue, turn) {
 const fenceMid = [(L.fence.from[0] + L.fence.to[0]) / 2, (L.fence.from[1] + L.fence.to[1]) / 2]
 const fenceDir = norm3([L.fence.to[0] - L.fence.from[0], 0, L.fence.to[1] - L.fence.from[1]])
 const fenceIn = [fenceDir[2], 0, -fenceDir[0]]
+const TULIP_TALL = 0.74
 const BEDS = [
   { at: [fenceMid[0] + fenceIn[0] * 2.4, fenceMid[1] + fenceIn[2] * 2.4], along: [fenceDir[0], fenceDir[2]], half: [6.2, 1.9], count: 17, tall: [4.4, 6.4], hues: [3, 1, 4, 0, 2, 1, 3] },
   { at: [L.tree.x + 9.2, L.tree.z + 9.6], along: [0.86, 0.5], half: [4.2, 2.2], count: 15, tall: [4.6, 6.8], hues: [3, 0, 2, 1, 4, 3] },
@@ -685,9 +686,9 @@ const BEDS = [
       const x = bed.at[0] + bed.along[0] * u - bed.along[1] * v
       const z = bed.at[1] + bed.along[1] * u + bed.along[0] * v
       if (edgeOf(x, z) < 2 || L.pondField(x, z) < 1.04 || wallGap(x, z) < 0.8 || stoneGap(x, z) < 0.4 || treeGap(x, z) < 4) continue
-      if (placed.some((q) => Math.hypot(q[0] - x, q[1] - z) < 1.25)) continue
+      if (placed.some((q) => Math.hypot(q[0] - x, q[1] - z) < 1.7)) continue
       placed.push([x, z])
-      tulip(x, z, bed.tall[0] + R() * (bed.tall[1] - bed.tall[0]), bed.hues[Math.floor(R() * bed.hues.length)], R() * Math.PI * 2)
+      tulip(x, z, TULIP_TALL * (bed.tall[0] + R() * (bed.tall[1] - bed.tall[0])), bed.hues[Math.floor(R() * bed.hues.length)], R() * Math.PI * 2)
     }
   }
   tally.tulips = growth.triangles - before

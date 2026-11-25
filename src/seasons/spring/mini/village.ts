@@ -8,7 +8,7 @@ import { MIRROR_GLSL, mirrorUniforms } from '../../../miniature/mirror'
 import { prepareVillage, tileMm, villageGeometry, villageGrain } from '../../../miniature/model'
 import { lampFlame, lampFoot, shrubDistance } from '../../../miniature/roof'
 import { BUMP_GLSL, NEAR_LIGHT, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, withSurface, type Cover, type GlowSource } from '../../../miniature/surface'
-import { anchors, groundAt, moundAt, moundSlope, pond, pondField, solidDistance, tree } from '../../../scene/layout'
+import { anchors, cottage, cottageFrame, groundAt, moundAt, moundSlope, pond, pondField, solidDistance, tree } from '../../../scene/layout'
 import { gainOf } from '../../../scene/lightgrid'
 import type { InnerLight, KitMoment } from '../../kit'
 import { isTree, season, tones } from './palette'
@@ -28,7 +28,8 @@ const NEAR_GROWTH = { lamp: { power: 5, reachMm: 8 }, pane: { power: 1.2, reachM
 const MIRROR = { lamp: 3, pane: 1.4, tight: 0.0022, wide: 0.035, wideShare: 0.03, bump: 1, lowMm: 3.4 }
 const STREAK = { strength: 9, side: 0.035, along: 0.6, bump: 0.06, rings: 0.9 }
 const MOSS_FROM = [-16.8, -15]
-const SKIRT_FILL = 2.6
+const SKIRT_FILL = 1.7
+const SLATE = { tint: [1.5, 2.3, 2.9] as Rgb, from: cottageFrame().floor + cottage.wall - 1.2 }
 const ROCK_FILL = 2.4
 const RING_SHOW = 0.55
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
@@ -85,6 +86,8 @@ const mossy: Cover = {
   float springUp = normalize(vObjN).y + 0.6 * (villageMottle - 0.5) + 0.3 * (villageGrain.r - 0.5);
   float springMoss = 0.45 * smoothstep(0.62, 0.98, springUp) * smoothstep(0.5, 0.78, villageMottle + 0.25 * villageGrain.b) * (1.0 - villageIron) * (1.0 - villageLeaf);
   springMoss = max(springMoss, 0.5 * villageStone * smoothstep(0.52, 0.7, villageMottle) * smoothstep(0.55, 0.8, texture2D(map, vMapUv * 0.11 + 0.71).b));
+  float springSlate = smoothstep(0.55, 0.7, normalize(vObjN).y) * (1.0 - smoothstep(0.86, 0.93, normalize(vObjN).y)) * smoothstep(${SLATE.from.toFixed(2)}, ${(SLATE.from + 1).toFixed(2)}, vStageLocal.y) * (1.0 - villageLeaf);
+  diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * ${glsl(SLATE.tint)}, springSlate);
   springMoss *= 0.2 + 0.8 * smoothstep(${MOSS_FROM[0].toFixed(1)}, ${MOSS_FROM[1].toFixed(1)}, vStageLocal.y);
   diffuseColor.rgb = mix(diffuseColor.rgb, ${glsl(tones.moss)} * (0.6 + 0.9 * villageGrain.r), springMoss * 0.8);
   diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.7, 1.9, 0.5) + vec3(0.004, 0.02, 0.0), villageLeaf);
