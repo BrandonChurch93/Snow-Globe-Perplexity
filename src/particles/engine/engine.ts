@@ -34,7 +34,12 @@ const COVER_PASSES = 3
 const COVER_CELL_MM2 = (COVER_SPAN_MM / COVER_N) * (COVER_SPAN_MM / COVER_N)
 const INV_FADE_IN = 1 / 1.4
 const INV_FADE_OUT = 1 / 0.7
-export const SWAP_HALF = 0.22
+// The share of the swap window at which a particle turns into the new season's kind lies between `SWAP_FROM` and `SWAP_TO`, and it
+// fades out and in over `SWAP_HALF` to either side. The middle of the turns is where the base begins to change (0.69), so the
+// storm does not take the new season's colour before the outside of the globe does.
+export const SWAP_HALF = 0.14
+const SWAP_FROM = 0.5
+const SWAP_TO = 0.86
 const HOLD = 0.6
 const GRAVITY_MM = 9810
 const STEER_GAIN = 1.5
@@ -582,7 +587,7 @@ export class ParticleEngine {
     this.renews = new Uint8Array(n)
     this.stamp = new Int32Array(n)
     this.liquid = this.model.state
-    for (let i = 0; i < n; i++) this.swapAt[i] = SWAP_HALF + (1 - 2 * SWAP_HALF) * unit(hash2(i, 5))
+    for (let i = 0; i < n; i++) this.swapAt[i] = SWAP_FROM + (SWAP_TO - SWAP_FROM) * unit(hash2(i, 5))
   }
 
   get seasonNow(): string {

@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { lightUniforms } from '../../core/chunks/light'
-import { stageShader } from '../../core/materials'
+import { GUST, STAGE_GUST_GLSL, stageShader } from '../../core/materials'
 import { geometry, prepareModel } from '../../core/models'
 import { texture } from '../../core/textures'
 import { ROOM_GLSL, roomUniforms } from '../../scene/room'
@@ -51,6 +51,7 @@ varying vec4 vLeafOne;
 float leafHash(float n) {
   return fract(sin(n * 127.1) * 43758.5453);
 }
+${STAGE_GUST_GLSL}
 `
 const LEAF_VERT_MAIN = `
 vec2 leafRest = (color.xy - 0.5) * uLeafSpan.x;
@@ -74,6 +75,14 @@ float leafHop = abs(sin(leafEase * 3.14159265 * leafHops)) * leafLive * uLeafTur
 float leafYaw = (leafHash(leafId * 6.7) - 0.5) * 2.0 * uLeafTurn.y * leafLeft * leafStir;
 float leafOver = step(leafHash(leafId * 8.3), uLeafTurn.z) * leafStir;
 float leafRoll = leafOver * leafLeft * 6.2831853 * (leafHash(leafId * 1.7) < 0.5 ? 1.0 : 2.0) + (1.0 - leafOver) * 0.5 * sin(leafEase * 9.0 + leafId * 40.0) * leafLive * leafStir;
+// Inside a change the leaves are carried: blown out ahead of the front of light when fall leaves, flown out behind it when fall comes.
+if (uState.w > 0.5) {
+  vec3 leafGust = stageGust(leafRest, leafHash(leafId * 11.3), leafHash(leafId * 12.7));
+  leafAt += normalize(leafRest) * leafGust.x;
+  leafHop += ${GUST.heightMm.toFixed(1)} * (0.4 + 0.6 * leafHash(leafId * 12.7)) * leafGust.y;
+  leafRoll += 3.14159265 * (1.0 + floor(leafHash(leafId * 11.3) * 2.99)) * leafGust.z;
+  leafYaw += (leafHash(leafId * 12.7) - 0.5) * 3.0 * leafGust.z;
+}
 vec3 leafOff = vec3(position.x - leafRest.x, position.y, position.z - leafRest.y);
 float leafCy = cos(leafYaw);
 float leafSy = sin(leafYaw);
