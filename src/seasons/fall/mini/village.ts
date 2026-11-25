@@ -22,12 +22,12 @@ const LIGHT = `light-${season}`
 
 const LAMP = { power: 3.8, reachMm: 14, flicker: 0.06, cycles: 3, phase: 0.1 }
 const WINDOW = { power: 1.5, reachMm: 8, flicker: 0.1, cycles: 5, phase: 0.4 }
-const SIDE = { power: 0.9, reachMm: 7, flicker: 0.1, cycles: 4, phase: 0.75 }
+const SIDE = { power: 0.6, reachMm: 7, flicker: 0.1, cycles: 4, phase: 0.75 }
 const ATTIC_LIGHT = { power: 0.6, reachMm: 6, flicker: 0.1, cycles: 4, phase: 0.2 }
 const PUMPKIN = { power: 1.3, reachMm: 7, flicker: 0.16, cycles: 6 }
 const POND = { power: 0.3, reachMm: 20, flicker: 0.08, cycles: 2, phase: 0.8, liftMm: 2.5 }
 const NEAR = { lamp: { power: 6, reachMm: 7 }, pane: { power: 5, reachMm: 3.2 }, pumpkin: { power: 13, reachMm: 2.6, ends: 4 } }
-const NEAR_WALL = { lamp: { power: 2.4, reachMm: 9, ends: 3 }, pane: { power: 2.4, reachMm: 4.5, ends: 3 }, pumpkin: { power: 5, reachMm: 3.2, ends: 3 } }
+const NEAR_WALL = { lamp: { power: 2.4, reachMm: 9, ends: 3 }, pane: { power: 1.5, reachMm: 4.2, ends: 3 }, pumpkin: { power: 5, reachMm: 3.2, ends: 3 } }
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
 const HALO_KIND = { lamp: { size: 5.6, rest: 0.32, hot: 0, bloom: 0.3 }, pumpkin: { size: 4.2, rest: 0.26, hot: 0, bloom: 0.25 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
 const PANE_HALO = { radiusMm: 0.75, strength: 0.5, hot: 0, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 0.6 }
@@ -38,7 +38,7 @@ const WALL_FILL = 2.1
 const GROUND_FILL = 3.4
 const PATH = { tone: [1.2, 1.13, 1.0] as Rgb, nearMm: 2.6, highMm: 1.4 }
 const FENCE = { reachMm: 1.25, sinkMm: 5 }
-const MOSS = { low: [0.46, 0.6, 0.33] as Rgb, high: [0.68, 0.72, 0.6] as Rgb, tallMm: 9, soot: 0.68, bite: 0.8, bitePivot: 0.36, biteLow: 0.3, biteTop: 1.08 }
+const MOSS = { low: [0.34, 0.44, 0.25] as Rgb, high: [0.5, 0.54, 0.45] as Rgb, tallMm: 9, soot: 0.68, bite: 0.8, bitePivot: 0.36, biteLow: 0.3, biteTop: 1.08 }
 const ROOF = { tone: [2.2, 1.7, 1.45] as Rgb, grey: 0.55 }
 const DOOR: Rgb = [0.34, 0.24, 0.17]
 const DRY: readonly Rgb[] = [[0.42, 0.16, 0.05], [0.5, 0.26, 0.07], [0.3, 0.12, 0.05], [0.4, 0.3, 0.1]]
@@ -369,8 +369,10 @@ export function build(): THREE.Object3D {
 
 const scaled = (c: Rgb, k: number): Rgb => [c[0] * k, c[1] * k, c[2] * k]
 
+const PANE = { room: 0.8, drape: 0.6, hot: 0.8 }
+
 function paneLook(room: Rgb, drape: Rgb): GlowLook {
-  return { bulb: 1, bulbCore: 1, glass: scaled(room, 2.2), flame: tones.flame, room: scaled(room, 1.25), curtain: scaled(drape, 1.5), frost: [0, 0, 0], frostAmount: 0, flicker: 0.07, cycles: 3, through: THROUGH, paneHot: 0.35 }
+  return { bulb: 1, bulbCore: 1, glass: scaled(room, 2.4), flame: tones.flame, room: scaled(room, PANE.room), curtain: scaled(drape, PANE.drape), frost: [0, 0, 0], frostAmount: 0, flicker: 0.07, cycles: 3, through: THROUGH, paneHot: PANE.hot }
 }
 
 export function lights(): THREE.Object3D {

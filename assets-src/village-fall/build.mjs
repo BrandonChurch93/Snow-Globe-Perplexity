@@ -506,7 +506,7 @@ for (const r of PROPS.ROCKS) {
 }
 
 {
-  const WOOD = ['#806a52', '#6f5b47', '#8c755c', '#625244'].map(lin)
+  const WOOD = ['#8f7658', '#7c654d', '#9c8263', '#6e5b49'].map(lin)
   for (const b of PROPS.fenceBoards()) {
     const e = [b.b[0] - b.a[0], b.b[1] - b.a[1], b.b[2] - b.a[2]]
     const len = Math.hypot(e[0], e[1], e[2])
