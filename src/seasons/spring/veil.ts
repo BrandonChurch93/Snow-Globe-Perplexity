@@ -31,6 +31,8 @@ const look = {
   /** How high the mist stands (the height at which it has thinned to a third) on the landing and at rest, and how long it takes to rise. */
   heightMm: [3.2, 7.5],
   riseSeconds: 5,
+  /** The mist begins to rise this long after the landing, seconds: after the petals' jump and the first water, and after the first beads on the glass. */
+  riseAfter: 1,
   /** How thick it is on the landing and at rest. */
   density: [3.2, 0.7],
   thinSeconds: 7,
@@ -167,10 +169,14 @@ const storm = {
   backZ: [-10, -26],
   backY: [6, -20],
   rollPower: 1.4,
-  /** The release of the flood: how long after the landing it is over (the landed state's moment), which share of the release the set down takes (0.6 s of set down before 0.5 s after), and by which share of it the flood has let go of the liquid's turbulence. */
+  /** The release of the flood: how long after the landing it is over (the landed state's moment), which share of the release the set down takes (nearly all of it: at the landing the scene and the dark gaps show between the streaks), and by which share of it the flood has let go of the liquid's turbulence. */
   releaseSeconds: config.states.landedSeconds,
-  releaseLanding: 0.545,
+  releaseLanding: 0.88,
   releaseOwn: 0.3,
+  /** The release is quick at first: the power its place in time is raised to before it is eased (below 1, the flood has thinned to streaks by the middle of the set down). */
+  releaseEarly: 0.6,
+  /** While the flood closes the liquid it is not one flat colour: how far its light follows the streaks, the dashes and the lanes of the turning liquid (its thickness, and so what it hides, is not changed by this). */
+  floodDrawn: 0.8,
   /** The billows: two sizes, mm, and how much of the mist is even between them at the flood and after. */
   wideMm: 96,
   fineMm: 34,
@@ -396,6 +402,8 @@ void main() {
     return;
   }
   vec3 lit = stormLit(p, grain, ${n(storm.dashWhite)} * dashes / max(soft + dashes, 1e-4));
+  // The flood is read as petals in turning liquid, not as a fill: lighter along the streaks and dashes, darker in the lanes.
+  lit *= mix(1.0, (0.5 + 0.55 * streak + 0.4 * dash) * (0.7 + 0.3 * lane), ${n(storm.floodDrawn)} * (1.0 - after));
   float most = max(lit.r, max(lit.g, lit.b));
   lit = mix(mix(lit, vec3(most), min(${n(storm.crownWhite)} * crown, 1.0)), most * ${v3(storm.flareTint)}, min(${n(storm.lampWhite)} * lantern, 1.0)) * (1.0 + ${n(storm.crownGain)} * crown + ${n(storm.lampGain)} * lantern);
   gl_FragColor = vec4(lit, a);
@@ -595,7 +603,8 @@ export function stormAt(moment: KitMoment): { thick: number; even: number; wash:
       : since >= 0 && since < L.openHoldSeconds
         ? storm.releaseLanding + (1 - storm.releaseLanding) * Math.min(1, since / storm.releaseSeconds)
         : 0
-  const e = u * u * (3 - 2 * u)
+  const v = Math.pow(u, storm.releaseEarly)
+  const e = v * v * (3 - 2 * v)
   const raw = Math.max(Math.pow(w, L.whitePower), held * Math.pow(up, L.shakenPower))
   // Once the release is under way the flood no longer hangs on the turbulence of that instant, only on the release.
   const flood = u > 0 ? raw + (1 - raw) * ramp(u, 0, storm.releaseOwn) : raw
@@ -607,7 +616,7 @@ export function stormAt(moment: KitMoment): { thick: number; even: number; wash:
 
 /** The mist at a moment: on the ground and thick at the landing, risen and thin at rest; `bare` between the swap and the landing. */
 export function mistAt(sinceLanding: number): { heightMm: number; density: number } {
-  const t = sinceLanding < Infinity ? Math.max(0, sinceLanding) : 1e4
+  const t = sinceLanding < Infinity ? Math.max(0, sinceLanding - look.riseAfter) : 1e4
   const risen = 1 - Math.exp(-t / look.riseSeconds)
   const thinned = 1 - Math.exp(-t / look.thinSeconds)
   return { heightMm: look.heightMm[0]! + (look.heightMm[1]! - look.heightMm[0]!) * risen, density: look.density[0]! + (look.density[1]! - look.density[0]!) * thinned }

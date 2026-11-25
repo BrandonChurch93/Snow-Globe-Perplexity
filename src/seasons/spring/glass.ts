@@ -36,6 +36,8 @@ export const standIns: string[] = []
 export const glassDressing: Dressing = { tint: [1, 1, 1], amount: 0 }
 
 const look = {
+  /** The beats after the landing are staggered: the petals on the table jump and the first water runs on the landing itself; the glass stays bare of new beads for this long after it, seconds, and then they form and begin to slide. */
+  afterLanding: 0.6,
   dew: { count: 8600, mm: [0.07, 0.34], skew: 2.2, bornBy: 0.3, growSeconds: 0.5 },
   bead: { count: 420, mm: [0.38, 1.25], skew: 2.6, bornBy: 1.2, growSeconds: 1 },
   /** Lowest place of a still drop and the place a run leaves the glass, as polar angles from the top. */
@@ -787,7 +789,7 @@ export function update(moment: KitMoment): void {
   // glass carries into the swap does not depend on how long the season has stood.
   const lifted = beat === null ? 0 : Math.min(1, Math.max(0, (beat - 0.15) / (swap.fromBeat - 0.4)))
   const shed = !finite || two || shaking ? 1 : lifted * lifted * (3 - 2 * lifted)
-  const since = bare ? -1 : finite ? Math.max(0, moment.sinceLanding) : 1e4
+  const since = bare ? -1 : finite ? Math.max(0, moment.sinceLanding - look.afterLanding) : 1e4
   dewUniforms.uDew.value.set(since, shed, RS, 0)
   for (let j = 0; j < SLOTS; j++) {
     const s = runAt(j, Math.max(0, since), bare ? 1 : shed)
