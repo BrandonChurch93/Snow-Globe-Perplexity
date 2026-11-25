@@ -1,0 +1,17 @@
+diff --git a/src/seasons/winter/frost.ts b/src/seasons/winter/frost.ts
+index e0c4734..2a450b7 100644
+--- a/src/seasons/winter/frost.ts
++++ b/src/seasons/winter/frost.ts
+@@ -258,9 +258,9 @@ float frostSlabGrow(vec2 xz) {
+   vec2 d = xz - uFoot.xy - uLean.xy;
+   float g = uGrow.y;
+   if (uTouch.x > 0.0) {
+-    float tilt = length(uLean.zw);
+-    float far = tilt > 1e-6 ? 0.5 - 0.5 * dot(d / max(length(d), 1.0), uLean.zw / tilt) : 0.0;
+-    g *= clamp(uTouch.y * (1.0 + uTouch.z) - uTouch.z * far, 0.0, 1.0);
++    vec2 rim = (xz - uFoot.xy) * min(1.0, uFoot.z / max(length(xz - uFoot.xy), 1e-3));
++    float gap = max(uFoot.w - dot(uLean.zw, rim) / max(sqrt(max(1.0 - dot(uLean.zw, uLean.zw), 0.0)), 0.2), 0.0);
++    g *= 1.0 - smoothstep(0.0, 0.4, gap);
+   }
+   float out1 = clamp((length(d) - uFoot.z) / ${look.slab.frontMm.toFixed(1)}, 0.0, 1.0);
+   return g - ${look.slab.frontLag.toFixed(3)} * out1 * (1.0 - smoothstep(${look.slab.frontEnd[0].toFixed(3)}, ${look.slab.frontEnd[1].toFixed(3)}, g));
