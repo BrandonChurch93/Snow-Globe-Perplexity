@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { writeGlb } from '../../tools/lib/glb.mjs'
 import { loadConfig, rel } from '../../tools/lib/paths.mjs'
 import { Soup, blur, clamp, cross3, fbm, hashInt, mix, mulberry, norm3, readRgb, smooth, toLinear, toSrgb, writePng } from '../base-winter/lib.mjs'
+import { lighter, thin } from './thin.mjs'
 import { FLOWERS, LEDGE_PETALS, MUSHROOMS, PATCHES, PROFILE, ROOTS, TRICKLE, TRICKLE_WIDTH, DRIPS } from './layout.mjs'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
@@ -268,11 +269,12 @@ for (let y = 0; y < H; y++) {
   }
 }
 
+const THIN = { rock: { share: 0.74, error: 0.06 }, growth: { share: 0.74, error: 0.06 }, levels: { medium: { error: 0.18, worth: 1 }, low: { error: 0.3, worth: 1 } } }
 const roots = []
 const rng = mulberry(4401)
 const pushRoot = (spec) => {
   const p = pathOf(spec.pts, 0.8, spec.keep ? 1.2 : 2.2, roots.length + 1)
-  spec = { ...spec, r: spec.r * (spec.keep ? 0.9 : 0.85) }
+  spec = { ...spec, r: spec.r * (spec.keep ? 1.3 : 1.35) }
   roots.push({ ...spec, ...p })
   return p
 }
@@ -318,7 +320,7 @@ for (const root of roots) {
   })
 }
 function taper(root, t) {
-  return root.keep ? 1 : mix(1.22, 0.26, Math.pow(t, 1.1))
+  return root.keep ? 1 : mix(1.25, 0.32, Math.pow(t, 1.1))
 }
 
 const low = blur(height, W, H, 3.2, true, false)
@@ -479,8 +481,7 @@ function buildRock() {
   return soup
 }
 
-function tube(soup, centres, radii, colour, uvScale, flat = 0.9) {
-  const sides = 8
+function tube(soup, centres, radii, colour, uvScale, flat = 0.9, sides = 8) {
   const first = soup.count
   let run = 0
   for (let i = 0; i < centres.length; i++) {
@@ -514,12 +515,12 @@ function buildGrowth() {
     const knot = 6.283 * rng()
     const centres = root.samples.map((q) => {
       const rr = root.r * taper(root, q.t)
-      const g = surf(q.az, q.s, rockWide, 0.3 * rr + 0.15)
+      const g = surf(q.az, q.s, rockWide, 0.3 * rr)
       return { p: g.p, n: g.n, rr }
     })
     const before = soup.triangles
-    const gnarl = (i) => 1 + 0.2 * Math.sin(i * 0.62 + knot) + 0.11 * Math.sin(i * 1.9 + 2.7 * knot)
-    tube(soup, centres, centres.map((c, i) => c.rr * gnarl(i)), (i) => { const v = tint * (0.86 + 0.2 * Math.sin(i * 0.33 + 1.7 * knot)); return [v, v, v] }, [1, 14])
+    const gnarl = (i) => 1 + 0.26 * Math.sin(i * 0.62 + knot) + 0.16 * Math.sin(i * 1.9 + 2.7 * knot) + 0.12 * Math.sin(i * 4.3 + 5.1 * knot)
+    tube(soup, centres, centres.map((c, i) => c.rr * gnarl(i)), (i) => { const v = tint * (0.86 + 0.2 * Math.sin(i * 0.33 + 1.7 * knot)); return [v, v, v] }, [1, 14], 0.9, root.r > 1.1 ? 8 : 6)
     rootTriangles += soup.triangles - before
   }
   const caps = [...MUSHROOMS]
@@ -643,10 +644,13 @@ const extras = {
   growth: { tileMm: 9 },
   water: { lengthMm: Number(trickle.length.toFixed(2)), foot: [Number(foot[0].toFixed(2)), Number(foot[2].toFixed(2))] },
 }
-const meshes = [rockSoup.mesh(extras.rock), growth.soup.mesh(extras.growth), water.mesh(extras.water)]
+// G15: the full lists lose a quarter of their triangles where the surface moves by less than a twentieth of a millimetre.
+const meshes = [await thin(rockSoup.mesh(extras.rock), THIN.rock), await thin(growth.soup.mesh(extras.growth), THIN.growth), water.mesh(extras.water)]
 const file = rel('assets-full', 'spring', 'base-spring.glb')
 writeGlb(file, meshes, { part: 'base-spring' })
+const lists = await lighter(file, THIN.levels)
 const tri = meshes.map((m) => m.index.length / 3)
+console.log(`quality levels: ${lists.map((m) => `${m.name} ${m.triangles}/${m.medium ?? '-'}/${m.low ?? '-'}`).join('; ')}`)
 console.log(`rock ${tri[0]} triangles, growth ${tri[1]} (roots ${growth.rootTriangles} in ${roots.length} roots), water ${tri[2]}; total ${tri.reduce((a, b) => a + b, 0)}, ${(fs.statSync(file).size / 1e6).toFixed(2)} MB`)
 console.log(`trickle foot at x ${foot[0].toFixed(1)}, z ${foot[2].toFixed(1)}`)
 const over = fs.readdirSync(dir).filter((n) => n.startsWith('base-') && fs.statSync(path.join(dir, n)).size > cfg.repo.maxFileMb * 1e6)

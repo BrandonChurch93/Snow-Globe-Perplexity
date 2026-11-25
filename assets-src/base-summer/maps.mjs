@@ -68,9 +68,9 @@ export async function toneMap(dir, f) {
       const top = smooth(30, 37, h) * 0.5
       let c = [0, 1, 2].map((q) => mix(cream[q], ochre[q], clamp(0.5 * soft + low + 0.45 * (blotch - 0.5))))
       c = c.map((v, q) => mix(v, pale[q], top * (1 - soft)))
-      c = c.map((v, q) => mix(v, rust[q], clamp(0.7 * stain + 0.22 * thin * smooth(0.7, 0.9, hashInt(k, 11, 317)))))
+      c = c.map((v, q) => mix(v, rust[q], clamp(0.55 * stain + 0.07 * thin * smooth(0.7, 0.9, hashInt(k, 11, 317)))))
       const speck = 0.94 + 0.12 * hashInt(i, j, 311) * hashInt(i >> 1, j >> 1, 313) + 0.05 * (fbm(A * 400, h * 2.2, 400, 512, 315, 2) - 0.5)
-      const dark = 1 - 0.3 * clamp(-(f.d[o] - f.wide[o]) * 0.9)
+      const dark = 1 - 0.2 * clamp(-(f.d[o] - f.wide[o]) * 0.9)
       for (let q = 0; q < 3; q++) out[o * 3 + q] = Math.round(clamp(c[q] * speck * dark) * 255)
     }
   }
