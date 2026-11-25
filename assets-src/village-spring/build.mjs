@@ -529,7 +529,7 @@ function blade(foot, lean, len, wide, n, c0, c1, c2, thin = 0.7) {
   growth.tri(ma, mb, tip, n, c1, c1, c2, KIND_OF.blade, thin)
 }
 
-const BLADES = { tufts: 5900, perTuft: [3, 6], lenMm: [0.5, 1.05], tallMm: 1.15, wideMm: 0.095 }
+const BLADES = { tufts: 5450, perTuft: [3, 6], lenMm: [0.5, 1.05], tallMm: 1.15, wideMm: 0.095 }
 {
   const before = growth.triangles
   const reach = Math.sqrt((L.innerRadiusMm - 0.6) ** 2 - L.groundY ** 2) + 2
