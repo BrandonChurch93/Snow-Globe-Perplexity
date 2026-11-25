@@ -176,7 +176,10 @@ const storm = {
   fineMm: 34,
   even: [0.75, 0],
   /** How much of the mist is left at the top of the liquid once the flood is over. */
-  top: 0.7,
+  top: 0.22,
+  /** From which height down to which (mm above the middle) the mist thickens from that share to the whole: above, the petals themselves draw the turn and its dark lanes. */
+  topFrom: 22,
+  topTo: -14,
   /** Thinner in the eye of the roll than at its rim. */
   eye: 0.75,
   /** After the flood the mist stands behind the miniature and thins toward the eye: the share left in front, and from where to where (mm toward the eye) it thins. */
@@ -184,9 +187,11 @@ const storm = {
   nearFrom: -6,
   nearTo: 18,
   /** The side of the tree: how much further toward the eye the mist stands there (it is the crown the storm whitens, and the cottage and the lamp it leaves to be read), and how much thicker it is there than on the cottage's side. */
-  treeSideMm: 18,
-  treeSide: 2,
-  cottageSide: 0.75,
+  treeSideMm: 12,
+  treeSide: 1.5,
+  cottageSide: 1,
+  /** How much of the tree side's thickening is gone again right of the crown, toward the glass, where the lanes are to stay open. */
+  treeFar: 0.7,
   /** The island's bank, below the lawn: how thick the mist stays there before the miniature (a share of its thickness behind), and up to how far above the lawn that reaches, mm. */
   bank: 1,
   bankTopMm: 4,
@@ -202,10 +207,15 @@ const storm = {
   lane: 0.92,
   tint: [1, 0.71, 0.78],
   /** While the liquid turns, the mist before the crown and about the lantern is the brightest and whitest of all: the blossom is a white ghost in it and the lantern a white core (the approved shake image). Where, how far it reaches (mm), how much brighter, how much whiter. */
-  crownAt: [12.5, 10, 2],
+  crownAt: [16, 15, 2],
   crownReach: [19, 15, 22],
-  crownGain: 1.0,
-  crownWhite: 0.85,
+  crownGain: 1.9,
+  crownWhite: 0.6,
+  /** The mist before the crown is thicker than elsewhere and the lanes do not cut it: how many times thicker, and how much of the lanes it closes. */
+  crownThick: 1.0,
+  crownWhole: 0.85,
+  /** How much of the dashes and streaks is evened out before the crown. */
+  crownEven: 0.8,
   lampReach: 11,
   lampGain: 1.1,
   lampWhite: 0.6,
@@ -270,7 +280,7 @@ void stormDrawn(vec3 q, float rad, out float streak, out float lane, out float d
   float s3 = texture(uVeilNoise, sc * 1.7 + vec3(0.63, 0.29, 0.13)).a;
   dash = smoothstep(0.58, 0.76, 0.5 * s2 + 0.5 * s3);
   vec3 lc = vec3(rad / ${n(storm.laneMm)} + 0.22 * dirn.x, q.z / ${n(storm.laneMm)} + 0.22 * dirn.y, 0.71 + 0.11 * (dirn.y - dirn.x));
-  lane = smoothstep(0.3, 0.62, texture(uVeilNoise, lc).g);
+  lane = smoothstep(0.4, 0.68, texture(uVeilNoise, lc).g);
 }
 // Lit as a volume: the key reaches a place through the mist between it and the glass; the small lights warm what is near them.
 vec3 stormLit(vec3 p, float grain, float white) {
@@ -308,14 +318,16 @@ void main() {
   float eye = mix(${n(storm.eye)}, 1.0, smoothstep(5.0, 38.0, rad));
   float wall = 1.0 - smoothstep(0.94, 1.0, far);
   // After the flood the mist hangs low, where the petals come down, and the top of the liquid clears first.
-  float low = mix(mix(${n(storm.top)}, 1.0, smoothstep(34.0, -12.0, p.y)), 1.0, uStorm.w / ${n(storm.even[0])});
+  float low = mix(mix(${n(storm.top)}, 1.0, smoothstep(${n(storm.topFrom)}, ${n(storm.topTo)}, p.y)), 1.0, uStorm.w / ${n(storm.even[0])});
   // 0 while the flood closes the liquid, 1 once it is over; and 1 where only what still liquid keeps is left.
   float after = 1.0 - uStorm.w / ${n(storm.even[0])};
   float still = smoothstep(0.5, 1.0, ${n(storm.calm)} / uStorm.x);
   float stirred = after * (1.0 - still);
   // After the flood the mist stands behind the miniature and thins toward the eye, so the cottage, the lamp and the trunk
   // stand before a bright veil and are not blotted out by it.
-  float tree = smoothstep(-6.0, 16.0, p.x);
+  float tree = smoothstep(-6.0, 16.0, p.x) * (1.0 - ${n(storm.treeFar)} * smoothstep(26.0, 42.0, p.x));
+  vec3 ec = (p - ${v3(storm.crownAt)}) / ${v3(storm.crownReach)};
+  float crown = exp(-dot(ec, ec)) * stirred;
   float thin = mix(1.0, ${n(storm.near)}, smoothstep(${n(storm.nearFrom)}, ${n(storm.nearTo)}, p.z - ${n(storm.treeSideMm)} * tree)) * mix(${n(storm.cottageSide)}, ${n(storm.treeSide)}, tree);
   // Below the lawn the mist is not thinned toward the eye: it lies on the island's bank down to the collar while the liquid turns.
   thin = mix(thin, max(thin, ${n(storm.bank)}), smoothstep(${n(groundY + storm.bankTopMm)}, ${n(groundY)}, p.y));
@@ -329,9 +341,11 @@ void main() {
   float back = ${n(storm.back)} * smoothstep(${n(storm.backZ[0])}, ${n(storm.backZ[1])}, p.z) * smoothstep(${n(storm.backY[0])}, ${n(storm.backY[1])}, p.y);
   float rest = mix(1.0, 2.7 * exp(-dot(e, e)) + halo + back, still);
   // While the liquid turns the mist is drawn out along the turn in fine dashes, with dark lanes between its bands.
-  float drawn = mix(1.0, ${n(1 - storm.streak)} + ${n(storm.streak * 2.6)} * streak, stirred) * mix(1.0, 1.0 - ${n(storm.lane)} * (1.0 - lane), stirred);
-  float soft = drawn * mix(billow * 3.4, 1.0, uStorm.w);
-  float dashes = ${n(storm.dash)} * dash * stirred * (0.35 + 0.65 * lane);
+  float drawn = mix(1.0, ${n(1 - storm.streak)} + ${n(storm.streak * 2.6)} * streak, stirred) * mix(1.0, 1.0 - ${n(storm.lane)} * (1.0 - lane), stirred * (1.0 - ${n(storm.crownWhole)} * crown)) * (1.0 + ${n(storm.crownThick)} * crown);
+  // Before the crown the mist is an even veil, not dashes: the blossom is to be read through it, whitened.
+  drawn = mix(drawn, 1.0 + ${n(storm.crownThick)} * crown, ${n(storm.crownEven)} * crown);
+  float soft = drawn * mix(billow * 3.4, 1.0, max(uStorm.w, ${n(storm.crownEven)} * crown));
+  float dashes = ${n(storm.dash)} * dash * stirred * (0.12 + 0.88 * lane) * (1.0 - ${n(storm.crownEven)} * crown);
   float sigma = uStorm.x * wall * eye * low * front * rest * (soft + dashes);
   // One sheet's share of the way through the liquid, along the eye's ray.
   float slant = max(abs(normalize(vStageWorld - cameraPosition).z), 0.35);
@@ -343,8 +357,6 @@ void main() {
     return;
   }
   vec3 lit = stormLit(p, grain, ${n(storm.dashWhite)} * dashes / max(soft + dashes, 1e-4));
-  vec3 ec = (p - ${v3(storm.crownAt)}) / ${v3(storm.crownReach)};
-  float crown = exp(-dot(ec, ec)) * stirred;
   float lantern = exp(-ld * ld / ${n(storm.lampReach * storm.lampReach)}) * stirred;
   float most = max(lit.r, max(lit.g, lit.b));
   lit = mix(lit, vec3(most), min(${n(storm.crownWhite)} * crown + ${n(storm.lampWhite)} * lantern, 1.0)) * (1.0 + ${n(storm.crownGain)} * crown + ${n(storm.lampGain)} * lantern);
