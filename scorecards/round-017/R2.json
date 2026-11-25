@@ -1,0 +1,214 @@
+{
+ "critic": "R2",
+ "round": 17,
+ "unit": "change",
+ "judgedCommit": "dcda6ca",
+ "tier": "final",
+ "jurorsPerImage": 5,
+ "panel": [
+  "claude_sonnet_5_5",
+  "gemini_neon",
+  "gpt_6_2_astra",
+  "kimi_k3",
+  "pplx_computer_glm_5_3_1009"
+ ],
+ "controlShare": 0.95,
+ "controlVotes": "19 of 20",
+ "judgedShare": 0.25,
+ "judgedVotes": "5 of 20",
+ "maxShareGap": 0.2,
+ "bar": 0.75,
+ "pass": false,
+ "missing": false,
+ "images": [
+  {
+   "file": "set-A-01.jpg",
+   "kind": "judged",
+   "id": "change-shake-1-landing",
+   "sha256": "04c1b285128d4707542f156217a8875e44f0195dc80255fc3352926d36dc5b23",
+   "votes": [
+    "b",
+    "c",
+    "c",
+    "c",
+    "c"
+   ],
+   "jurors": [
+    "viewer_r17_01",
+    "viewer_r17_05",
+    "viewer_r17_09",
+    "viewer_r17_13",
+    "viewer_r17_17"
+   ],
+   "models": [
+    "claude_sonnet_5_5",
+    "gpt_6_2_astra",
+    "gemini_neon",
+    "pplx_computer_glm_5_3_1009",
+    "kimi_k3"
+   ],
+   "aOrB": 1,
+   "answers": 5
+  },
+  {
+   "file": "set-A-02.jpg",
+   "kind": "control",
+   "id": "the approved image references/approved/fall-shake.png",
+   "sha256": "a6230797a6fe3469bcefa16aa4393929d66def2849733613e8af07e51b0fc840",
+   "votes": [
+    "b",
+    "a",
+    "b",
+    "b",
+    "b"
+   ],
+   "reusedFromRound": [
+    10
+   ],
+   "aOrB": 5,
+   "answers": 5
+  },
+  {
+   "file": "set-A-03.jpg",
+   "kind": "control",
+   "id": "the approved image references/approved/winter-shake.png",
+   "sha256": "6edc5d90c832114afbaa59c029a3f49d492cfb59f6397d2d436a1cf33092ad4f",
+   "votes": [
+    "a",
+    "a",
+    "b",
+    "b",
+    "b"
+   ],
+   "reusedFromRound": [
+    3
+   ],
+   "aOrB": 5,
+   "answers": 5
+  },
+  {
+   "file": "set-A-04.jpg",
+   "kind": "control",
+   "id": "the approved image references/approved/summer-shake.png",
+   "sha256": "600e1593d2a0826fdf3f0ced60e473e8c6910d9a61ecc783e453c94c5d0d3a7a",
+   "votes": [
+    "b",
+    "b",
+    "b",
+    "b",
+    "c"
+   ],
+   "reusedFromRound": [
+    9
+   ],
+   "aOrB": 4,
+   "answers": 5
+  },
+  {
+   "file": "set-A-05.jpg",
+   "kind": "judged",
+   "id": "change-shake-3-landing",
+   "sha256": "4aafcaec8330d6c4300d9095ed56d8a9e025d1befd40d8244c8dbd83ccbde167",
+   "votes": [
+    "c",
+    "c",
+    "c",
+    "c",
+    "b"
+   ],
+   "jurors": [
+    "viewer_r17_02",
+    "viewer_r17_06",
+    "viewer_r17_10",
+    "viewer_r17_14",
+    "viewer_r17_18"
+   ],
+   "models": [
+    "claude_sonnet_5_5",
+    "gpt_6_2_astra",
+    "gemini_neon",
+    "pplx_computer_glm_5_3_1009",
+    "kimi_k3"
+   ],
+   "aOrB": 1,
+   "answers": 5
+  },
+  {
+   "file": "set-A-06.jpg",
+   "kind": "judged",
+   "id": "change-shake-2-landing",
+   "sha256": "8e39490817aaf422842eafbbcf2abfcadb09a8f564a59826a178a187f53d4913",
+   "votes": [
+    "b",
+    "c",
+    "c",
+    "c",
+    "b"
+   ],
+   "jurors": [
+    "viewer_r17_03",
+    "viewer_r17_07",
+    "viewer_r17_11",
+    "viewer_r17_15",
+    "viewer_r17_19"
+   ],
+   "models": [
+    "claude_sonnet_5_5",
+    "gpt_6_2_astra",
+    "gemini_neon",
+    "pplx_computer_glm_5_3_1009",
+    "kimi_k3"
+   ],
+   "aOrB": 2,
+   "answers": 5
+  },
+  {
+   "file": "set-A-07.jpg",
+   "kind": "judged",
+   "id": "change-shake-4-landing",
+   "sha256": "df2c85cbb5658e3cae24a3675afcbefff6bb173c629e5de928eaa4670fd036a7",
+   "votes": [
+    "c",
+    "c",
+    "c",
+    "b",
+    "c"
+   ],
+   "jurors": [
+    "viewer_r17_04",
+    "viewer_r17_08",
+    "viewer_r17_12",
+    "viewer_r17_16",
+    "viewer_r17_20"
+   ],
+   "models": [
+    "claude_sonnet_5_5",
+    "gpt_6_2_astra",
+    "gemini_neon",
+    "pplx_computer_glm_5_3_1009",
+    "kimi_k3"
+   ],
+   "aOrB": 1,
+   "answers": 5
+  },
+  {
+   "file": "set-A-08.jpg",
+   "kind": "control",
+   "id": "the approved image references/approved/spring-shake.png",
+   "sha256": "eca1019badc7f3592dbacf13c1cab0a31a2955b6c9487d12af0d45d2e86a87e3",
+   "votes": [
+    "b",
+    "b",
+    "b",
+    "b",
+    "b"
+   ],
+   "reusedFromRound": [
+    8
+   ],
+   "aOrB": 5,
+   "answers": 5
+  }
+ ],
+ "countsAs": "one major issue (kit/07-QUALITY-BAR.md, R2: \"A failed R2 counts as one major issue\")"
+}
