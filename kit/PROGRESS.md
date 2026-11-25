@@ -37,16 +37,16 @@ Status 70 · 2026-11-25 02:55 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 02:55 UTC
-clock: phase 4, tick of 2.8 minutes
-phase 4: 2.80 h used of its 9.50 h box
-allowance (before the review): 25.08 h used of 36.00 h allowed
-all time before the review: 25.08 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 03:01 UTC
+clock: phase 4, tick of 6.0 minutes
+phase 4: 2.90 h used of its 9.50 h box
+allowance (before the review): 25.18 h used of 36.00 h allowed
+all time before the review: 25.18 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 5
 ```
 
 ## Phases
@@ -867,6 +867,8 @@ Numbered. What, why, and the date.
 
 78. **Sound: the tool's account has no credits left, so what is not made yet stays silent** (02:54 UTC, Phase 4). At 02:52 the sound agent reported from the account's own API (`GET /v1/user/subscription`, its read of 02:51; stated by the agent, not read again by the Builder): tier `creator`, 130996 of 131000 credits used, 4 left, no extension allowed, reset 2026-12-23 20:08 UTC. Its first take (`shake-spring`, 2.6 s) came back HTTP 401 `quota_exceeded` ("You have 4 credits remaining, while 29 credits are required"). No take was counted and nothing was spent. The counter stood at 48421 at 04:02 UTC on Nov 24 and this build's sound calls cost about 1100 in all, so about 82500 went on other work on the account since. The cheapest effect costs 6 and music about 13.8 a second: nothing fits. No other tool here makes sound effects or music (tool record, Phase 0) and there is no other credential. AGENTS.md: "If no sound tool can be called at all, log it, build everything silent, and say so in the first line of the `REVIEW` block: Brandon then supplies the audio himself." So: the four kept sounds stay in the app (`glass-clink`, `ui-sound-on`, `ui-tick`, `lift`); the thirteen cues with no take yet and both candidate soundtracks are not made (open item 63) and their moments are silent; the sound agent writes every prompt, the composition plan for `one-piece` if that call costs nothing, the four track prompts and a recipe that a fresh agent or Brandon can run the moment there are credits, runs the mix and the sound checks on what exists, then reads the counter every 30 minutes until its limit and starts the takes in the order of its brief if it has room; after that the counter is read again at each hand-over of the build agents and before the `REVIEW` block. About 10000 credits cover what is left (about 1500 for 13 effects at 3 takes; about 2500 for `one-piece` at 3 takes of 60 s; 4000 to 6000 for `four-tracks`). No picture, round or gate waits on this.
 
+79. **The sound agent's place goes to a second base agent** (03:01 UTC, Phase 4). With no credits on the sound tool's account (decision 78) the sound agent has only its free work left (prompts, plan, recipe, mix and checks on what exists); it reports and ends, and the Builder reads the counter with every status (`out/work/bin/credits.sh`; the Builder's own read at 02:57:12 UTC: 130996 of 131000 used, 4 left). Its place among the ten build agents goes to the bases, which carry red measures in every season (M3 at rest: spring's base 0.648, summer's 0.604 against 0.75) and many of the critics' issues: `bases2` (started 03:00, limit 05:55) takes spring's and summer's bases and slabs, and `fall_base2` takes fall's base and slab as soon as the sound agent has ended (about 03:30; fall's first answers arrive at about 04:10 and fall freezes last, at 05:30). Until then nobody changes fall's base and slab. This changes decision 77 in that one point (there `bases2` held all three). A fresh sound agent starts from `audio/RECIPE.md` the moment the counter has room, in whatever place is free then.
+
 ## Notes from Brandon
 
 Numbered, in his words, with the date and how each was applied. Review round items carry their round's number.
@@ -1217,6 +1219,8 @@ Merged into `main`, each verified here with types clean and the tests green (126
   - Round 8's critics so far, one at a time on the one free slot: `reviewer_r8_a` (R1, `grok_4_7`, 02:28 to 02:38, score 4), `reviewer_r8_b` (R3 part 1, `gemini_4_carbon`, 02:38 to 02:48, score 3). Round 9's `reviewer_r9_a` (R1, `gemini_4_carbon`) started 02:48. Round 10's still pack is with `round_renderer` since 02:36 (limit 03:35).
 
   - 02:52 to 02:55 UTC: `kinds_builder`, `summer_base`, `fall_air` and `summer_air` sent their final reports (none leaves a stand-in or a fallback; each names its worst open thing: `kinds_builder` the ember look against the brighter ember row and fall's storm leaves with no thin bright streaks; `summer_base` stone that reads as folded cloth and sea glass as glazed ceramic; `fall_air` the storm's leaves bunched in the upper middle and a bottom pool of fog dimmer than the approved mint; `summer_air` a storm dimmer than approved at the landing with a flat pale bank lower left). Reports and hand-over notes: `out/work/reports-p4/`. Started in their place: `kinds2`, `fall_air2` and `change_builder` (02:52, limit 05:50; `change_builder` writes the four changes and the three arrivals beside the seasons' rounds, decision 77) and `summer_air2` (02:55, limit 05:52). `bases2` starts when `spring_base` hands over (03:02). Pushes from several agents' VMs fail since 02:48 ("could not read Username"); such an agent sends a bundle and the Builder pushes it (`out/work/bin/takebundle.sh`), as happened for `summer_base` and `summer_air`.
+
+  - 02:56 to 03:01 UTC: `spring_base` sent its final report (no stand-in or fallback left; worst: at the hero the moss is one even bright green band with a clean hem and the trickle is thinner and darker than the image's). `bases2` started 03:00 (spring's and summer's bases and slabs, limit 05:55; decision 79). `fall_base2` starts when `sound_maker` ends. Critics: `reviewer_r8_c` (Round 8 R3 part 2) answered 03:00; `reviewer_r9_b` (Round 9 R3 part 1, `claude_opus_5_5`) started 03:01. Round 8's and Round 9's issues so far went to the season's builders by message with the digest attached (`out/work/issues/round-008.md`, `round-009.md`), and the notes on the two red machine checks of Round 8 (G8, G15) to the owners of meshes.
 
 ## Rounds
 
