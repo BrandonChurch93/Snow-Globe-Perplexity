@@ -15,4 +15,13 @@ export const backdrop: SeasonKit['backdrop'] = {
   colors: [rose, blush, rose, blush, rose, salmon, blush, salmon, rose, salmon, peach, salmon, peach, salmon, pearl, peach, green, pearl, peach, pearl],
   room: [0.0088, 0.0084, 0.0098],
   floor: [0.0082, 0.007, 0.0076],
+  // By place: the approved image has its lights massed to the right of the globe, a warm peach cloud of them, and a sparser,
+  // dimmer left. The same levels stand left and right, so the right is lifted (its dim discs become part of the mass) and the
+  // left is held back a little.
+  gain: (at) => {
+    const side = at[0] / Math.hypot(at[0], at[1], at[2])
+    const t = Math.min(1, Math.abs(side) / 0.12)
+    const s = t * t * (3 - 2 * t)
+    return side > 0 ? 1 + 1.1 * s : 1 - 0.25 * s
+  },
 }

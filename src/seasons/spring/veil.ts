@@ -163,7 +163,7 @@ const storm = {
   lampCoreMm: 6,
   lampFar: [8, 32],
   /** The back of the liquid at rest: a thin lit sheet of mist behind the miniature, low down, which the cottage, the trunk and the nearer petals stand before. */
-  back: 0.9,
+  back: 0.6,
   backZ: [-10, -26],
   backY: [18, -22],
   rollPower: 1.4,
@@ -176,13 +176,13 @@ const storm = {
   /** Thinner in the eye of the roll than at its rim. */
   eye: 0.75,
   /** After the flood the mist stands behind the miniature and thins toward the eye: the share left in front, and from where to where (mm toward the eye) it thins. */
-  near: 0.2,
-  nearFrom: 2,
-  nearTo: 30,
+  near: 0.1,
+  nearFrom: -6,
+  nearTo: 18,
   /** The side of the tree: how much further toward the eye the mist stands there (it is the crown the storm whitens, and the cottage and the lamp it leaves to be read), and how much thicker it is there than on the cottage's side. */
   treeSideMm: 18,
   treeSide: 2,
-  cottageSide: 0.75,
+  cottageSide: 0.5,
   /** The streaks: the mist is drawn out along the liquid's turn in fine dashes. The tile of their pattern across the turn (mm), how slowly it changes along the turn, and how much of the mist they carry. */
   streakMm: 16,
   streakLong: 0.15,
@@ -192,10 +192,10 @@ const storm = {
   dashWhite: 0.55,
   /** The long dark lanes between the bands of the turn, through which the room behind is seen. */
   laneMm: 110,
-  lane: 0.85,
-  tint: [1, 0.75, 0.81],
+  lane: 0.92,
+  tint: [1, 0.71, 0.78],
   soft: 1.1,
-  key: 3.8,
+  key: 3.4,
   grid: 1.2,
   /** How much of the key the mist's own depth takes away, per mm of the way to the glass at full thickness. */
   shadow: 0.3,
