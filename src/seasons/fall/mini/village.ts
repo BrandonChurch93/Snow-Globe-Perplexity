@@ -21,8 +21,8 @@ const LITTER = 'fall/village-litter.srgb.tile.w1024.png'
 const PART = `miniature-${season}`
 const LIGHT = `light-${season}`
 
-const LAMP = { power: 3, reachMm: 12, flicker: 0.06, cycles: 3, phase: 0.1 }
-const WINDOW = { power: 1.1, reachMm: 8, flicker: 0.1, cycles: 5, phase: 0.4 }
+const LAMP = { power: 3.8, reachMm: 14, flicker: 0.06, cycles: 3, phase: 0.1 }
+const WINDOW = { power: 1.5, reachMm: 8, flicker: 0.1, cycles: 5, phase: 0.4 }
 const SIDE = { power: 0.9, reachMm: 7, flicker: 0.1, cycles: 4, phase: 0.75 }
 const ATTIC_LIGHT = { power: 0.6, reachMm: 6, flicker: 0.1, cycles: 4, phase: 0.2 }
 const PUMPKIN = { power: 1.3, reachMm: 7, flicker: 0.16, cycles: 6 }
@@ -35,16 +35,16 @@ const PANE_HALO = { radiusMm: 0.75, strength: 0.5, hot: 0, pullMm: 1.6, flicker:
 const PANE_SIZE = { size: 3.2, rest: 0.3, hot: 0, bloom: 0.3 }
 const THROUGH = 6
 const LAMP_GLASS: Rgb = [5.6, 2.5, 0.6]
-const WALL_FILL = 1.9
+const WALL_FILL = 2.1
 const GROUND_FILL = 3.4
 const PATH = { tone: [1.2, 1.13, 1.0] as Rgb, nearMm: 2.6, highMm: 1.4 }
 const FENCE = { reachMm: 1.25, sinkMm: 5 }
-const MOSS = { low: [0.46, 0.6, 0.33] as Rgb, high: [0.68, 0.72, 0.6] as Rgb, tallMm: 9, soot: 0.5 }
+const MOSS = { low: [0.46, 0.6, 0.33] as Rgb, high: [0.68, 0.72, 0.6] as Rgb, tallMm: 9, soot: 0.68, bite: 0.8, bitePivot: 0.36, biteLow: 0.3, biteTop: 1.08 }
 const ROOF = { tone: [2.2, 1.7, 1.45] as Rgb, grey: 0.55 }
 const DOOR: Rgb = [0.34, 0.24, 0.17]
 const DRY: readonly Rgb[] = [[0.42, 0.16, 0.05], [0.5, 0.26, 0.07], [0.3, 0.12, 0.05], [0.4, 0.3, 0.1]]
-const GROUND = { soil: 0.8, leaf: 0.85, leafScale: 0.6, soilMm: 0.26, wideMm: 0.5, leafMm: 0.34 }
-const WATER = { rough: 0.07, rippleMm: 0.12, lamp: 12, pane: 0.8, pumpkin: 2.2, tight: 0.0005, wide: 0.006, wideShare: 0.004, lowMm: 3.4, fog: 0.13, shore: [0.9, 0.99] as [number, number] }
+const GROUND = { soil: 1.1, leaf: 0.85, leafScale: 0.6, soilMm: 0.26, wideMm: 0.5, leafMm: 0.34 }
+const WATER = { rough: 0.07, rippleMm: 0.12, lamp: 12, pane: 0.8, pumpkin: 2.2, tight: 0.0005, wide: 0.006, wideShare: 0.004, lowMm: 3.4, fog: 0.26, shore: [0.9, 0.99] as [number, number] }
 
 const flame = lampFlame()
 const mirrored: Point = [flame[0], flame[1] - WATER.lowMm, flame[2]]
@@ -151,9 +151,10 @@ function autumn(source: THREE.BufferGeometry): THREE.BufferGeometry {
         const m = (1 - smooth(0, MOSS.tallMm, up)) * (0.35 + 0.65 * n) + 0.35 * smooth(0.55, 0.8, n)
         const k = Math.min(1, Math.max(0, m))
         const soot = near ? 1 - MOSS.soot * smooth(cottage.wall + 1, cottage.wall + 7, up) : 1
-        r *= (MOSS.high[0] + (MOSS.low[0] - MOSS.high[0]) * k) * soot
-        gr *= (MOSS.high[1] + (MOSS.low[1] - MOSS.high[1]) * k) * soot
-        b *= (MOSS.high[2] + (MOSS.low[2] - MOSS.high[2]) * k) * soot
+        const bite = Math.pow(Math.min(MOSS.biteTop, Math.max(MOSS.biteLow, (0.3 * r + 0.6 * gr + 0.1 * b) / MOSS.bitePivot)), MOSS.bite) * soot
+        r *= (MOSS.high[0] + (MOSS.low[0] - MOSS.high[0]) * k) * bite
+        gr *= (MOSS.high[1] + (MOSS.low[1] - MOSS.high[1]) * k) * bite
+        b *= (MOSS.high[2] + (MOSS.low[2] - MOSS.high[2]) * k) * bite
       }
     } else if (kind === 1) {
       const c = cottageLocal(x, z)
@@ -296,7 +297,7 @@ diffuseColor.rgb = mix(${glsl(tones.water)}, ${glsl(tones.moss)} * 0.5, pondShor
   float pondFresnel = 0.03 + 0.97 * pow(1.0 - clamp(dot(pondN, pondSight), 0.0, 1.0), 5.0);
   float pondGlint = villageMirror(pondN, pondSight, ${WATER.tight.toFixed(5)}, ${WATER.wide.toFixed(5)}, ${WATER.wideShare.toFixed(3)});
   float pondLap = texture2D(map, vMapUv * 0.41 + 0.2).a;
-  totalEmissiveRadiance += (${glsl(tones.lamp)} * pondGlint * pondFresnel + ${glsl(tones.fogGlint)} * (${WATER.fog.toFixed(2)} * pondFresnel * (0.35 + 1.3 * smoothstep(0.45, 0.75, pondLap)))) * uGlowGain * (1.0 - pondShore);
+  totalEmissiveRadiance += (${glsl(tones.lamp)} * pondGlint * pondFresnel + ${glsl(tones.fogGlint)} * (${WATER.fog.toFixed(2)} * pondFresnel * (0.25 + 1.6 * smoothstep(0.5, 0.66, pondLap)))) * uGlowGain * (1.0 - pondShore);
 }
 `,
         )

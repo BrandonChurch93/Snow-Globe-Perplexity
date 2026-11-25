@@ -368,6 +368,14 @@ for (const s of STONES) {
   attic.add(g, { matrix: W, keepUv: true, surf: [a.width, a.height] })
 }
 
+const blocked = (x, z, margin = 0) => {
+  if (L.pondField(x, z) < 1.03) return true
+  if (cottageGap(x, z) < 0.25 + margin) return true
+  if (Math.hypot(x, z) > L.islandEdge(Math.atan2(z, x)) - 1.2) return true
+  for (let i = 0; i < pumpkinList.length; i += 6) if (Math.hypot(x - pumpkinList[i], z - pumpkinList[i + 2]) < pumpkinList[i + 3] * 0.8 + margin) return true
+  return false
+}
+
 const conform = (g, x, z, yaw, lift) => {
   const c = Math.cos(yaw)
   const sn = Math.sin(yaw)
@@ -429,6 +437,26 @@ let flagCount = 0
       s += along
     }
     carry = s - len
+  }
+}
+
+let pebbleCount = 0
+{
+  let tries = 0
+  while (pebbleCount < 260 && tries++ < 20000) {
+    const a = R() * TAU
+    const rr = 52 * Math.sqrt(R())
+    const x = rr * Math.cos(a)
+    const z = rr * Math.sin(a)
+    if (blocked(x, z, 0.2) || pathGap(x, z) < 0.3 || treeGap(x, z) < 5 || rockGap(x, z) < 0.2) continue
+    const near = 1 - smooth(0.5, 5, Math.min(pathGap(x, z), rockGap(x, z), L.pondField(x, z) * 18 - 18.5))
+    if (R() > 0.12 + 0.88 * near) continue
+    const size = between(0.45, 1.0) * (0.8 + 0.5 * near)
+    const seed = R() * 40
+    const g = slab(size, size * between(0.5, 0.75), size * between(0.65, 0.95), { round: size * 0.2, sx: 1, sy: 1, sz: 1, warp: 0.08, seed })
+    shade(g, (px, py) => 0.5 + 0.6 * smooth(-size * 0.3, size * 0.3, py))
+    decor.add(conform(g, x, z, R() * TAU, size * 0.12), { color: mul3(STONE_TONES[Math.floor(R() * STONE_TONES.length)], between(0.6, 1.05)), surf: [surf(KIND.stone, 0.9), 0], renormal: true })
+    pebbleCount++
   }
 }
 
@@ -506,13 +534,6 @@ for (const r of PROPS.ROCKS) {
   }
 }
 
-const blocked = (x, z, margin = 0) => {
-  if (L.pondField(x, z) < 1.03) return true
-  if (cottageGap(x, z) < 0.25 + margin) return true
-  if (Math.hypot(x, z) > L.islandEdge(Math.atan2(z, x)) - 1.2) return true
-  for (let i = 0; i < pumpkinList.length; i += 6) if (Math.hypot(x - pumpkinList[i], z - pumpkinList[i + 2]) < pumpkinList[i + 3] * 0.8 + margin) return true
-  return false
-}
 
 let leafCount = 0
 {
@@ -616,7 +637,7 @@ let tuftCount = 0
         for (const [qi, q] of quad.entries()) {
           pos.push(q[0], q[1], q[2])
           const t = qi === 2 || qi >= 4 ? t1 : t0
-          const sh = 0.45 + 0.75 * t
+          const sh = 0.32 + 1.15 * t * t
           col.push(k[0] * sh, k[1] * sh, k[2] * sh)
         }
       }
@@ -624,7 +645,7 @@ let tuftCount = 0
     tuftCount++
   }
   let tries = 0
-  while (tuftCount < 300 && tries++ < 40000) {
+  while (tuftCount < 360 && tries++ < 40000) {
     const a = R() * TAU
     const rr = 54 * Math.sqrt(R())
     const x = rr * Math.cos(a)
@@ -672,10 +693,10 @@ const earthBytes = writePng(
     const clod = 0.5 + fbm(u, v, 1.5, 5, 16)
     const fine = 0.5 + 0.5 * noise(u * 8, v * 8, 4.2, 128)
     const grit = 0.5 + 0.5 * noise(u * 20, v * 20, 9.1, 320)
-    const pebble = smooth(0.78, 0.9, 0.5 + 0.5 * noise(u * 3.5 + 11, v * 3.5 + 3, 6.6, 56)) * smooth(0.3, 0.7, grit + 0.2)
+    const pebble = Math.max(smooth(0.78, 0.9, 0.5 + 0.5 * noise(u * 3.5 + 11, v * 3.5 + 3, 6.6, 56)) * smooth(0.3, 0.7, grit + 0.2), smooth(0.74, 0.8, 0.5 + 0.5 * noise(u * 1.5 + 4, v * 1.5 + 9, 2.4, 24)))
     const h = clamp(0.55 * clod + 0.25 * fine + 0.2 * grit + 0.35 * pebble)
-    const soil = mix3(hexRgb('#1d140d'), hexRgb('#4a3523'), clamp(0.15 + 0.9 * clod * (0.6 + 0.6 * fine)))
-    const c = mix3(soil, hexRgb('#6f6a60'), pebble * 0.8)
+    const soil = mix3(hexRgb('#150e09'), hexRgb('#5a4129'), clamp(0.05 + 1.05 * clod * (0.5 + 0.75 * fine)))
+    const c = mix3(soil, hexRgb('#a39d8c'), pebble * 0.85)
     const fibre = smooth(0.62, 0.8, 0.5 + 0.5 * noise(u * 14 + 2, v * 2.2 + 8, 1.3, [224, 0])) * 0.5
     const out = mix3(c, hexRgb('#6a5230'), fibre * (1 - pebble))
     return [out[0], out[1], out[2], h]
@@ -748,4 +769,4 @@ const record = {
   },
 }
 writeJson(rel('out', 'work', 'village', 'build-fall.json'), record)
-console.log(`village-fall: ${out.triangles} triangles in ${out.meshes} meshes (${Object.entries(record.model.meshes).map(([k, v]) => `${k} ${v}`).join(', ')}), ${(out.bytes / 1e6).toFixed(2)} MB; ${leafCount} leaves, ${tuftCount} tufts, ${flagCount} flagstones, ${rimCount} rim stones; maps ${((earthBytes + litterBytes) / 1e6).toFixed(2)} MB`)
+console.log(`village-fall: ${out.triangles} triangles in ${out.meshes} meshes (${Object.entries(record.model.meshes).map(([k, v]) => `${k} ${v}`).join(', ')}), ${(out.bytes / 1e6).toFixed(2)} MB; ${leafCount} leaves, ${tuftCount} tufts, ${flagCount} flagstones, ${rimCount} rim stones, ${pebbleCount} pebbles; maps ${((earthBytes + litterBytes) / 1e6).toFixed(2)} MB`)
