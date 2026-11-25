@@ -14,8 +14,8 @@ const BOUGH = { perLimb: [1, 2], from: 0.3, length: [9, 15], seg: 1.05, radius: 
 const TWIG = { each: [0.45, 0.9], length: [0.3, 0.52], seg: 0.8, radius: 0.86, turn: 0.3, kink: 1.0, kinkShare: 0.3 }
 const SPIKE = { each: [0.05, 0.4], length: [0.28, 0.5], seg: 0.6, radius: 0.78, turn: 0.2, kink: 0.6, kinkShare: 0.15 }
 const TIP_R = 0.11
-const THICK = { limb: 1.85, twig: 1.5, bough: 0.78, tip: 0.9 }
-const SLEEVE = { from: -3.2, to: 36.5, split: 15.2, step: [0.45, 0.6], around: [96, 48], out: 0.05, deep: [0.95, 0.34], stem: 0.42, twist: 2.4 }
+const THICK = { limb: 1.3, twig: 1.2, bough: 0.9, tip: 0.9 }
+const SLEEVE = { from: -3.2, to: 36.5, split: 15.2, step: [0.45, 0.6], around: [96, 48], out: 0.05, deep: [0.95, 0.34], stem: 0.12, twist: 2.4 }
 const EMBER = { count: 36, apart: 3.6, r: [0.15, 0.26], drop: [0.02, 0.22], stalk: 0.045, cap: 0.6 }
 
 const [T, RNG] = await loadSource(['/src/miniature/trunk.ts', '/src/core/rng.ts'])
