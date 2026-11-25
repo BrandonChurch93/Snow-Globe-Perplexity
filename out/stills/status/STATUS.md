@@ -1,16 +1,15 @@
-# Status 112
+# Status 113
 
-2026-11-25 17:47 UTC
+2026-11-25 18:05 UTC
 
-- Round 18 so far: motion 4, the app 8, the interface 7; one machine check red (the phone screen); the jury and the gate are still open
-- Polish round 1 is closed on main with the hand, the cut, the table and the glass in; the liquid and the storm were not merged because their stills were worse than the kept ones
-- Polish round 2, the last, started 17:46 with seven fresh build agents; they stop at 20:50
-- phase 5: 3.61 h used of its 12.00 h box
-- allowance (before the review, continuation 1): 3.61 h used of 12.00 h allowed
+- Round 18 is judged but for the gate: jury 4 of 20 (9 needed), R4 4, R5 8, R8 7. Every finding is with the seven builders of polish round 2, who stop at 20:50 UTC
+- Sound: 12 of 25 kept. The guard now books each call at its own price, because somebody else is using the same account
+- phase 5: 3.90 h used of its 12.00 h box
+- allowance (before the review, continuation 1): 3.90 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-112-1.jpg`: Round 18, the phone screen as judged (390 by 844, the build before polish round 1): the base runs off both sides. Machine check M1 is red for it and the app critic called it major. It is the first job of the interface agent in round 2.
-- `out/stills/status/status-112-2.jpg`: Polish round 1's glass, now on main: summer at rest at the final tier, native crops where it changed most, this morning's kept still left, main right. The thick blue-white ring and the hard white blade gave way to a thin edge and a soft reflection; a thin dark outline is left and is on round 2's list.
-- `out/stills/status/status-112-3.jpg`: Round 18, the app's own shake from winter to spring, frames 126 to 170, four apart, on the build before polish round 1: the base and the table cut to spring in one step while the globe is still in the air. The motion critic called it severe (score 4).
-- `out/stills/status/status-112-4.jpg`: The sounds kept so far: 7 of 25 (glass clink, sound-on, tick, lift, spring's shake and air, summer's air). Fall's three cues ran out of takes at 17:37 with none kept.
+- `out/stills/status/status-113-1.jpg`: Summer mid-shake at final tier: this morning's kept still (left) and main now, with the mended glass rim (right)
+- `out/stills/status/status-113-2.jpg`: Fall mid-shake: kept (left) and main now (right); the hard white blade on the glass is gone
+- `out/stills/status/status-113-3.jpg`: Spring mid-shake: kept (left) and main now (right); the thick pale ring round the glass is gone
+- `out/stills/status/status-113-4.jpg`: The twelve sounds kept so far, as the sound sheet shows them
