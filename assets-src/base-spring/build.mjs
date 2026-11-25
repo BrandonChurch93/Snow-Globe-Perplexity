@@ -251,6 +251,7 @@ for (let k = 0; k < W * H; k++) {
 }
 
 const rockWide = blur(rock, W, H, 2.2 / MM_X, true, false)
+const mossSoft = blur(moss, W, H, 1.3 / MM_X, true, false)
 const height = new Float32Array(W * H)
 for (let y = 0; y < H; y++) {
   const s = y * MM_Y
@@ -261,7 +262,7 @@ for (let y = 0; y < H; y++) {
     const c = moss[k]
     const mound = 1 - clamp(tuft.f1[k] / 3.1) ** 2
     const cushion = 0.5 * mound + 0.5 * fbm((x / W) * 150, (y / H) * 22, 150, 22, 131, 3)
-    const thick = (0.5 + 1.5 * cushion + 1.5 * top * seat + 0.5 * (tuft.id[k] - 0.5)) * smooth(0.12, 0.95, c)
+    const thick = (0.5 + 1.5 * cushion + 1.5 * top * seat + 0.5 * (tuft.id[k] - 0.5)) * smooth(0.12, 0.95, c) * smooth(0.3, 0.92, mossSoft[k])
     height[k] = mix(rock[k], Math.max(rock[k], rockWide[k] + 0.15) + thick, smooth(0.12, 0.6, c))
   }
 }
@@ -269,7 +270,7 @@ for (let y = 0; y < H; y++) {
 const roots = []
 const rng = mulberry(4401)
 const pushRoot = (spec) => {
-  const p = pathOf(spec.pts, 0.45, spec.keep ? 1.2 : 2.2, roots.length + 1)
+  const p = pathOf(spec.pts, 0.8, spec.keep ? 1.2 : 2.2, roots.length + 1)
   spec = { ...spec, r: spec.r * (spec.keep ? 0.9 : 0.85) }
   roots.push({ ...spec, ...p })
   return p
@@ -397,8 +398,8 @@ async function sheet(name) {
       detail[i * 3 + 2] = byte(0.5 + 2.2 * (soft[i] - body[i]))
     }
   }
-  const a = await writePng(path.join(dir, `base-${name}.srgb.tile.w1024.png`), n, n, 3, flipRows(colour, n, n, 3))
-  const b = await writePng(path.join(dir, `base-${name}-detail.lin.tile.w1024.png`), n, n, 3, flipRows(detail, n, n, 3))
+  const a = await writePng(path.join(dir, `base-${name}.srgb.tile.w512.png`), n, n, 3, flipRows(colour, n, n, 3))
+  const b = await writePng(path.join(dir, `base-${name}-detail.lin.tile.w512.png`), n, n, 3, flipRows(detail, n, n, 3))
   console.log(`${name} sheet ${n} px, mean linear colour ${sum.map((v) => (v / (n * n)).toFixed(4)).join(', ')}, ${((a + b) / 1e6).toFixed(2)} MB`)
   return { mean: sum.map((v) => v / (n * n)) }
 }
@@ -422,7 +423,7 @@ for (let y = 0; y < H; y++) {
     relief[k * 3 + 1] = byte(0.5 - (0.5 * dy) / l)
     relief[k * 3 + 2] = byte(cavity)
     const wet = Math.max(smooth(2.6, 0.9, band[k]), 0.55 * smooth(5, 0.5, m.h) * smooth(0.3, 0.8, fbm((x / W) * 50, (y / H) * 8, 50, 8, 211, 3) + 0.25 * smooth(3, 0, m.h)))
-    cover[k * 3] = byte(smooth(0.25, 0.8, moss[k]))
+    cover[k * 3] = byte(0.3 * smooth(0.04, 0.6, mossSoft[k]) + 0.7 * smooth(0.25, 0.8, moss[k]))
     cover[k * 3 + 1] = byte(wet)
     cover[k * 3 + 2] = byte(band[k] < 4 ? along[k] : 1)
   }
@@ -447,9 +448,9 @@ function seatOf(s) {
 
 function buildRock() {
   const soup = new Soup('rock')
-  const cols = 721
+  const cols = 541
   const rows = []
-  for (let s = 0; s < S_MAP; s += 0.34) rows.push({ s })
+  for (let s = 0; s < S_MAP; s += 0.46) rows.push({ s })
   rows.push({ s: S_MAP })
   const end = PROFILE[PROFILE.length - 1]
   for (const t of [0.12, 0.3, 0.5, 0.7, 0.88, 1]) rows.push({ s: S_MAP, cup: [end[0] * (1 - t), mix(end[1] - 2, CENTRE_H - CUP_R, t)] })
@@ -490,7 +491,7 @@ function tube(soup, centres, radii, colour, uvScale, flat = 0.9) {
       const a = (k / sides) * 2 * Math.PI
       const n = norm3(add([side[0] * Math.cos(a), side[1] * Math.cos(a), side[2] * Math.cos(a)], up, Math.sin(a)))
       const p = add(add(c.p, side, Math.cos(a) * radii[i]), up, Math.sin(a) * radii[i] * flat)
-      soup.vert(p, n, [(k / sides) * uvScale[0], run / uvScale[1]], [c.mark ?? 1, mix(0.45, 1, 0.5 + 0.5 * Math.sin(a))], colour(i, k))
+      soup.vert(p, n, [run / uvScale[1], (k / sides) * uvScale[0]], [c.mark ?? 1, mix(0.45, 1, 0.5 + 0.5 * Math.sin(a))], colour(i, k))
     }
   }
   for (let i = 0; i + 1 < centres.length; i++) {
@@ -510,11 +511,11 @@ function buildGrowth() {
     const tint = 0.75 + 0.5 * rng()
     const centres = root.samples.map((q) => {
       const rr = root.r * taper(root, q.t)
-      const g = surf(q.az, q.s, rockWide, 0.35 * rr + 0.3)
+      const g = surf(q.az, q.s, rockWide, 0.3 * rr + 0.15)
       return { p: g.p, n: g.n, rr }
     })
     const before = soup.triangles
-    tube(soup, centres, centres.map((c) => c.rr), () => [tint, tint, tint], [2, 9])
+    tube(soup, centres, centres.map((c) => c.rr), () => [tint, tint, tint], [1, 14])
     rootTriangles += soup.triangles - before
   }
   const caps = [...MUSHROOMS]

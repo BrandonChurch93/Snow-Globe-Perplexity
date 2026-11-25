@@ -156,27 +156,30 @@ vec2 baseStoneUv = vMapUv * 0.5;
 vec3 baseStoneC = texture2D(uBaseStone, baseStoneUv).rgb;
 vec4 baseStoneD = texture2D(uBaseStoneDetail, baseStoneUv);
 float baseSeat = vBasePaint.x;
-float baseMoss = mix(1.0, smoothstep(0.3, 0.62, baseCover.r + 0.3 * (baseMossD.b - 0.5)), baseSeat);
+float baseMoss = mix(1.0, smoothstep(0.44, 0.72, baseCover.r + 0.3 * (baseMossD.b - 0.5)), baseSeat);
 float baseRun = smoothstep(uWater.x + 0.015, uWater.x - 0.015, baseCover.b);
 float baseWet = baseCover.g * mix(1.0, baseRun * uWater.w, step(baseCover.b, 0.99)) * (1.0 - baseMoss);
 float baseAo = mix(0.3, mix(smoothstep(-0.25, 0.5, baseRelief.b), smoothstep(0.08, 0.72, baseRelief.b), baseMoss), baseSeat);
 float baseBlotch = baseNoise(vBasePos * 0.19) * 0.6 + baseNoise(vBasePos * 0.8) * 0.4;
 float baseSun = baseNoise(vBasePos * 0.45 + 7.3);
-vec3 baseStone = baseStoneC * vec3(1.25, 0.9, 0.66) * mix(0.55, 1.3, baseBlotch) * mix(0.7, 1.15, baseStoneD.b);
+vec3 baseStone = baseStoneC * vec3(2.5, 1.95, 1.5) * mix(0.55, 1.3, baseBlotch) * mix(0.7, 1.15, baseStoneD.b);
 baseStone = mix(baseStone, baseStone * vec3(0.6, 0.62, 0.66), baseWet);
-vec3 baseGreen = diffuseColor.rgb * mix(vec3(0.36, 0.38, 0.36), vec3(1.2, 0.86, 0.3), smoothstep(0.3, 0.75, baseSun) * (0.35 + 0.65 * baseMossD.b));
+vec3 baseGreen = diffuseColor.rgb * mix(vec3(0.27, 0.31, 0.29), vec3(1.1, 0.84, 0.3), smoothstep(0.3, 0.75, baseSun) * (0.35 + 0.65 * baseMossD.b));
 baseGreen *= mix(0.22, 1.7, smoothstep(0.15, 0.85, baseMossD.b)) * mix(0.6, 1.1, baseBlotch);
 baseGreen = mix(baseGreen, vec3(0.03, 0.035, 0.012), 0.45 * (1.0 - smoothstep(0.1, 0.6, baseRelief.b)));
+float baseFilm = max(smoothstep(0.3, 0.7, 0.6 * baseNoise(vBasePos * 0.31 + 3.1) + 0.3 * baseMossD.b + 0.3 * (1.0 - smoothstep(0.1, 0.7, baseRelief.b))), smoothstep(0.03, 0.28, baseCover.r)) * (1.0 - baseWet) * baseSeat;
+vec3 baseOlive = vec3(0.085, 0.105, 0.04) * mix(0.45, 1.6, baseMossD.b) * mix(0.7, 1.2, baseBlotch);
+baseStone = mix(baseStone, baseOlive, 0.8 * baseFilm);
 diffuseColor.rgb = mix(baseStone, baseGreen, baseMoss);
 `
 
 const ROCK_ROUGH = `
-roughnessFactor = mix(mix(mix(0.7, 0.93, baseStoneD.b), 0.3, baseWet), 0.96, baseMoss);
+roughnessFactor = mix(mix(mix(0.7, 0.93, baseStoneD.b), 0.3, baseWet), 0.96, max(baseMoss, 0.8 * baseFilm));
 metalnessFactor = 0.0;
 `
 
 const ROCK_TILT = `
-vec2 baseTilt = baseSlope(baseRelief.rg) * (1.15 * baseSeat) + mix(baseSlope(baseStoneD.rg) * mix(0.75, 0.25, baseWet), baseSlope(baseMossD.rg) * 1.5, baseMoss);
+vec2 baseTilt = baseSlope(baseRelief.rg) * (1.15 * baseSeat) + mix(baseSlope(baseStoneD.rg) * mix(1.3, 0.3, baseWet), baseSlope(baseMossD.rg) * 1.5, baseMoss);
 `
 
 const ROCK_AFTER = `
@@ -185,13 +188,13 @@ ${SHADE}
   ${LIGHTS}
   float liveFuzz = pow(1.0 - liveNv, 2.2);
   vec3 liveTip = vec3(0.5, 0.55, 0.08) * RECIPROCAL_PI * baseMoss * baseAo;
-  reflectedLight.directDiffuse += liveTip * (liveKeyC * (0.22 * liveWrap * liveWrap + 0.55 * liveFuzz * liveWrap) + uRigCardCol * (0.1 * liveCardWrap * liveCardWrap + 0.5 * liveFuzz * liveCardWrap));
-  vec3 liveCell = floor(vBasePos * 5.5);
+  reflectedLight.directDiffuse += liveTip * (liveKeyC * (0.1 * liveWrap * liveWrap + 0.6 * liveFuzz * liveWrap) + uRigCardCol * (0.04 * liveCardWrap * liveCardWrap + 0.5 * liveFuzz * liveCardWrap));
+  vec3 liveCell = floor(vBasePos * 7.5);
   vec3 liveFacet = normalize(normalMatrix * normalize(baseObjectNormal + 1.3 * (vec3(baseHash(liveCell + 3.7), baseHash(liveCell + 11.3), baseHash(liveCell + 23.9)) - 0.5)));
-  float liveGrit = smoothstep(0.42, 0.08, length(fract(vBasePos * 5.5) - 0.5)) * step(0.62, baseHash(liveCell));
+  float liveGrit = smoothstep(0.46, 0.1, length(fract(vBasePos * 7.5) - 0.5)) * step(0.4, baseHash(liveCell));
   float liveDew = pow(max(dot(liveFacet, normalize(liveKey + geometryViewDir)), 0.0), 120.0);
   float liveDewCard = pow(max(dot(liveFacet, normalize(liveCard + geometryViewDir)), 0.0), 120.0);
-  reflectedLight.directSpecular += (liveKeyC * liveDew * 2.2 + uRigCardCol * liveDewCard * 1.6) * liveGrit * baseAo * mix(0.25 * baseWet, 1.0, baseMoss);
+  reflectedLight.directSpecular += mix(vec3(1.0), vec3(0.62, 0.8, 0.2), baseMoss) * (liveKeyC * (liveDew * 2.2 + 0.5 * pow(liveDew, 0.2) * baseMoss) + uRigCardCol * (liveDewCard * 1.6 + 0.35 * pow(liveDewCard, 0.2) * baseMoss)) * liveGrit * baseAo * mix(0.25 * baseWet, 1.0, max(baseMoss, 0.5 * baseFilm));
   float liveF = 0.03 + 0.97 * pow(1.0 - liveNv, 5.0);
   vec3 liveAway = inverseTransformDirection(reflect(-geometryViewDir, geometryNormal), viewMatrix);
   float liveSheet = baseWet * baseAo;
@@ -204,7 +207,7 @@ const GROWTH_PAINT = `
 vec4 baseDetail = texture2D(uBaseDetail, vMapUv);
 float baseBark = vBaseUv1.x;
 float baseAo = vBaseUv1.y;
-vec3 baseWood = diffuseColor.rgb * vec3(1.05, 0.9, 0.76) * vBasePaint * mix(0.55, 1.25, baseDetail.b);
+vec3 baseWood = diffuseColor.rgb * vec3(0.7, 0.57, 0.46) * vBasePaint * mix(0.55, 1.25, baseDetail.b);
 diffuseColor.rgb = mix(vBasePaint, baseWood, baseBark);
 `
 
@@ -360,12 +363,12 @@ export function base(): THREE.Object3D {
   const rock = stageMaterial({
     ...lit,
     key: `${PART}-rock`,
-    map: map('moss.srgb.tile.w1024'),
+    map: map('moss.srgb.tile.w512'),
     hook: hookOf(
       {
-        uBaseDetail: { value: map('moss-detail.lin.tile.w1024') },
-        uBaseStone: { value: map('stone.srgb.tile.w1024') },
-        uBaseStoneDetail: { value: map('stone-detail.lin.tile.w1024') },
+        uBaseDetail: { value: map('moss-detail.lin.tile.w512') },
+        uBaseStone: { value: map('stone.srgb.tile.w512') },
+        uBaseStoneDetail: { value: map('stone-detail.lin.tile.w512') },
         uBaseRelief: { value: map('relief.lin.w2048') },
         uBaseCover: { value: map('cover.lin.w2048') },
       },
@@ -375,9 +378,9 @@ export function base(): THREE.Object3D {
   const growth = stageMaterial({
     ...lit,
     key: `${PART}-growth`,
-    map: map('bark.srgb.tile.w1024'),
+    map: map('bark.srgb.tile.w512'),
     side: THREE.DoubleSide,
-    hook: hookOf({ uBaseDetail: { value: map('bark-detail.lin.tile.w1024') } }, { paint: GROWTH_PAINT, rough: GROWTH_ROUGH, tilt: GROWTH_TILT, after: GROWTH_AFTER }),
+    hook: hookOf({ uBaseDetail: { value: map('bark-detail.lin.tile.w512') } }, { paint: GROWTH_PAINT, rough: GROWTH_ROUGH, tilt: GROWTH_TILT, after: GROWTH_AFTER }),
   })
   const waterGeometry = geometry(MODEL, 'water')
   const extras = waterGeometry.userData.extras as WaterExtras

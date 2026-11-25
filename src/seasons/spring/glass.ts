@@ -35,8 +35,8 @@ export const standIns: string[] = []
 export const glassDressing: Dressing = { tint: [1, 1, 1], amount: 0 }
 
 const look = {
-  dew: { count: 9000, mm: [0.07, 0.34], skew: 3, bornBy: 0.75, growSeconds: 1.1 },
-  bead: { count: 420, mm: [0.38, 1.25], skew: 2.6, bornBy: 3.2, growSeconds: 3.4 },
+  dew: { count: 9000, mm: [0.07, 0.34], skew: 3, bornBy: 0.3, growSeconds: 0.5 },
+  bead: { count: 420, mm: [0.38, 1.25], skew: 2.6, bornBy: 2.4, growSeconds: 2.6 },
   /** Lowest place of a still drop and the place a run leaves the glass, as polar angles from the top. */
   lowDeg: 118,
   offDeg: 131,

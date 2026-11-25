@@ -167,6 +167,7 @@ export const GLINT_HIGH = 0.9994
 /** The kinds drawn as cards (shapes from 3 on): a thin curved sheet with its own outline, turned by the particle's turn. For these `flash` is the share of light let through from behind. */
 export const CARD = {
   thick: 0.1,
+  petalThick: 0.3,
   bound: 1.12,
   area: 1.3,
   hold: 0.6,
@@ -179,12 +180,15 @@ export const CARD = {
   stormRock: 2.8,
   yawSway: 0.6,
   /** Of the ones that settle and stay down, the share drawn whole, in the storm and lying; the rest are the storm's small dabs and are gone once they are down. */
-  chosen: 0.025,
-  dabSize: 0.45,
-  dabKeep: [0.02, 1] as const,
-  dabSkew: 4,
-  fleckKeep: [0.04, 1] as const,
-  fleckSkew: 5,
+  chosen: 0.012,
+  dabSize: 0.5,
+  /** Of the rest, the share that is a solid small dab in the storm, and how much the others and they are seen. */
+  dabShare: 0.12,
+  dabKeep: [0, 1] as const,
+  /** How much of a moving card is drawn sharp at the head of its path; the rest is its trail through the shutter. */
+  head: 0.85,
+  fleckKeep: [0.01, 0.5] as const,
+  fleckSkew: 8,
   petalCup: [0.2, 0.42] as const,
   leafCurl: [0.34, 0.5, 0.3] as const,
   seedRock: 0.35,
@@ -197,5 +201,5 @@ export const CARD = {
   /** A light's core, its glow and its wide glow, as radii in the particle's radius and as shares of its light. */
   glow: { core: 0.42, halo: 1.6, wide: 4.5, haloShare: 0.1, wideShare: 0.012, hide: 0.6, blinkLow: 0.04 },
   spark: { core: 0.5, halo: 2, haloShare: 0.07, tail: 1.6, hot: [1, 0.93, 0.72] as const, dying: [0.85, 0.17, 0.03] as const },
-  hair: { wide: 0.022, stem: 0.03, body: 0.075, hub: 0.3, ringA: [7, 1.5, 0.95] as const, ringB: [5, 0.8, 0.85] as const, ringC: [4, 2.15, 0.7] as const },
+  hair: { runHead: 0.5, runTrail: 0.6, runWide: 0.1, wide: 0.022, stem: 0.03, body: 0.075, hub: 0.3, ringA: [7, 1.5, 0.95] as const, ringB: [5, 0.8, 0.85] as const, ringC: [4, 2.15, 0.7] as const },
 }
