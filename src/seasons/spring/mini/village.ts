@@ -30,7 +30,7 @@ const MIRROR = { lamp: 3, pane: 1.4, tight: 0.0022, wide: 0.035, wideShare: 0.03
 const STREAK = { strength: 20, side: 0.045, along: 0.6, bump: 0.06, rings: 0.9 }
 const MOSS_FROM = [-16.8, -15]
 const SKIRT_FILL = 1.7
-const BANK = { wide: 0.21, wideMm: 0.9, cushion: 0.46, cushionMm: 0.7, tuft: 1.25, tuftMm: 0.26, grain: 4.2, grainMm: 0.05, deep: 0.06, lip: 1.0, fall: [0.0, 0.42] }
+const BANK = { wide: 0.21, wideMm: 0.9, cushion: 0.46, cushionMm: 0.7, tuft: 1.25, tuftMm: 0.26, grain: 4.2, grainMm: 0.05, deep: 0.05, lip: 0.95, fall: [0.05, 0.5], sun: [0.0, 0.24] }
 const BANK_SPAN = BANK.cushionMm + BANK.tuftMm
 const BANK_EARTH: Rgb = [0.03, 0.021, 0.012]
 const SLATE = { tint: [2.2, 3.1, 3.8] as Rgb, from: cottageFrame().floor + cottage.wall - 1.2 }
@@ -52,6 +52,9 @@ const WALL_FILL = 2.6
 const STONE_LIFT: Rgb = [1.5, 1.36, 1.18]
 const SLATE_BASE: Rgb = [0.03, 0.036, 0.046]
 const BANK_TINT: Rgb = [0.74, 0.52, 0.52]
+// The top of each bank mound goes warm and pale, as the approved's moss lip does. The mesh's second surf number is the
+// depth down a mound: 0 at the lawn's edge, 0.5 at the mound's foot, 1 well under it (BANK.fall and BANK.sun read it).
+const BANK_SUN: Rgb = [1.45, 1.3, 0.85]
 const TURF_LOOK = { wrap: 0.45, fill: 0.9, grainMm: 0.07, lumpMm: 0.26, wideMm: 0.5, fuzz: 0.5 }
 const GROWTH_LOOK = { wrap: 0.7, fill: 0.7, through: 1.6, thin: 0.5, tight: 3 }
 const RIPPLE = { waveMm: 4.0, heightMm: 0.3, reachMm: 22, laps: 5, chopMm: 0.016, drift: 2 }
@@ -209,6 +212,7 @@ if (turfBankA > 0.01) {
   vec3 bankSoil = ${glsl(BANK_EARTH)} * (0.6 + 0.8 * bankPatch);
   vec3 bankTone = mix(bankSoil, bankMoss, smoothstep(0.04, 0.34, bankCrest) * (0.55 + 0.45 * smoothstep(0.25, 0.6, bankPatch + 0.3 * bankCrest)));
   bankTone *= mix(${BANK.lip.toFixed(2)}, ${BANK.deep.toFixed(2)}, smoothstep(${BANK.fall[0].toFixed(2)}, ${BANK.fall[1].toFixed(2)}, vSurf.y));
+  bankTone = mix(bankTone, bankTone * ${glsl(BANK_SUN)}, (1.0 - smoothstep(${BANK.sun[0].toFixed(2)}, ${BANK.sun[1].toFixed(2)}, vSurf.y)) * (0.35 + 0.65 * bankCrest));
   diffuseColor.rgb = mix(diffuseColor.rgb, bankTone, turfBankA);
 }
 `,
@@ -223,7 +227,9 @@ if (turfBankA > 0.01) {
     vec2 bankDh = vec2(bankHeight(vStageLocal + dFdx(vStageLocal)) - turfBankH, bankHeight(vStageLocal + dFdy(vStageLocal)) - turfBankH);
     turfDh = mix(turfDh, bankDh, turfBankA);
   }
-  normal = villageBump(-vViewPosition, normal, turfDh, faceDirection);
+  // A face seen edge on gives the bump no slope to turn and its answer is not a number (M1, spring base): keep the plain normal there.
+  vec3 turfBumped = villageBump(-vViewPosition, normal, turfDh, faceDirection);
+  if (dot(turfBumped, turfBumped) > 0.5) normal = turfBumped;
 }
 `,
         )
@@ -354,7 +360,8 @@ diffuseColor.rgb = mix(${glsl(tones.waterDeep)}, ${glsl(tones.bed)}, waterEdge *
   float waterH = waterHeight(waterP);
   vec2 waterDh = vec2(waterHeight(waterP + dFdx(waterP)) - waterH, waterHeight(waterP + dFdy(waterP)) - waterH);
   waterFlat = normal;
-  normal = villageBump(-vViewPosition, normal, waterDh, faceDirection);
+  vec3 waterBumped = villageBump(-vViewPosition, normal, waterDh, faceDirection);
+  if (dot(waterBumped, waterBumped) > 0.5) normal = waterBumped;
 }
 `,
         )

@@ -152,7 +152,8 @@ diffuseColor.rgb *= 0.5 + 0.85 * smoothstep(0.02, ${(BARK.ridgeMm + BARK.grainMm
   vec3 barkR1 = cross(barkSy, normal);
   vec3 barkR2 = cross(normal, barkSx);
   float barkDet = dot(barkSx, barkR1);
-  normal = normalize(abs(barkDet) * normal - sign(barkDet) * (barkDh.x * barkR1 + barkDh.y * barkR2));
+  vec3 barkBumped = abs(barkDet) * normal - sign(barkDet) * (barkDh.x * barkR1 + barkDh.y * barkR2);
+  if (dot(barkBumped, barkBumped) > 0.0) normal = normalize(barkBumped);
 }`,
         )
       afterLight(shader, `reflectedLight.directDiffuse += (stageWrapped(geometryNormal, ${BARK.wrap.toFixed(2)}) + stageKeyC * (RECIPROCAL_PI * ${BARK.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), 1.0))) * material.diffuseContribution;`)

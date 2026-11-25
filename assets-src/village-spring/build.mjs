@@ -149,10 +149,26 @@ function grassAt(x, z) {
   const bank = 0.4 * smooth(0.99, 1.05, pf) * (1 - smooth(1.08, 1.3, pf)) * (0.6 + 0.8 * noise(x * 0.4, z * 0.4, 7.7))
   return L.moundAt(z) - (L.pond.level + GROUND.underMm) * (1 - lip) + (extra + bank) * lip
 }
+// The moss mounds of the bank (approved rest image: a lip of round cushions under the pond, lit on top, dark below).
+// One mound to each cell around the rim; moundAt gives 0 in the gap between two and up to 1 on a mound's middle line.
+const MOUND = { count: 30, low: 0.5, lipMm: 1.25, lipReach: 3.2, from: 0.13, deep: 0.3, underMm: 2.4 }
+const moundCells = Array.from({ length: MOUND.count }, (_, i) => ({ tall: MOUND.low + (1 - MOUND.low) * clamp(0.5 + 0.9 * noise(i * 1.7, 4.2, 9.9 + i * 0.37)), shift: 0.3 * clamp(0.5 + 0.9 * noise(i * 2.3, 1.1, 3.3)) - 0.15 }))
+function moundAt(th) {
+  const u = ((th / (Math.PI * 2)) % 1 + 1) % 1 * MOUND.count
+  let m = 0
+  for (const o of [-1, 0, 1]) {
+    const i = (Math.floor(u) + o + MOUND.count) % MOUND.count
+    const c = Math.floor(u) + o + 0.5 + moundCells[i].shift
+    const d = Math.abs(u - c) / 0.62
+    if (d < 1) m = Math.max(m, moundCells[i].tall * Math.sqrt(1 - d * d))
+  }
+  return m
+}
 const rimLift = (x, z) => {
   const e = edgeOf(x, z)
   const near = 1 - smooth(0, GROUND.rimReach, e)
-  return GROUND.rimMm * near * (0.45 + 0.9 * clamp(0.5 + fbm(x * 0.21 + 2.2, z * 0.21 + 8.1, 1.1, 3)))
+  const lip = 1 - smooth(0, MOUND.lipReach, e)
+  return GROUND.rimMm * near * (0.45 + 0.9 * clamp(0.5 + fbm(x * 0.21 + 2.2, z * 0.21 + 8.1, 1.1, 3))) + MOUND.lipMm * lip * lip * (moundAt(Math.atan2(z, x)) - 0.35)
 }
 const topAt = (x, z) => grassAt(x, z) + rimLift(x, z)
 function contact(x, z) {
@@ -254,7 +270,9 @@ const SKIRT = { cycles: 6.5, deepMm: 2.8, clumps: 17, clumpMm: 0.85 }
         const warp = [fbm(wx * 9.3 + 1.7, wy * 9.3, wz * 9.3, 2), fbm(wx * 9.3, wy * 9.3 + 4.4, wz * 9.3 + 2.1, 2), fbm(wx * 9.3 + 8.8, wy * 9.3 + 3.2, wz * 9.3, 2)]
         const lump = clamp(0.5 + 0.75 * fbm(wx * SKIRT.cycles + 3.1 + 0.5 * warp[0], wy * SKIRT.cycles + 0.5 * warp[1], wz * SKIRT.cycles + 7.7 + 0.5 * warp[2], 4))
         const clump = clamp(0.5 + 0.8 * fbm(wx * SKIRT.clumps + 1.3 + 0.9 * warp[1], wy * SKIRT.clumps + 5.9 + 0.9 * warp[2], wz * SKIRT.clumps + 2.2 + 0.9 * warp[0], 4))
-        const rr = r - 0.15 - SKIRT.deepMm * Math.pow(lump, 1.5) * smooth(0.06, 0.5, q) - SKIRT.clumpMm * clump * clump * smooth(0.0, 0.2, q)
+        const foot = MOUND.from + MOUND.deep * moundAt(th)
+        const rr = r - 0.15 - SKIRT.deepMm * Math.pow(lump, 1.5) * smooth(foot, foot + 0.35, q) - SKIRT.clumpMm * clump * clump * smooth(0.0, 0.2, q) - MOUND.underMm * smooth(foot - 0.05, foot + 0.1, q)
+        q = Math.max(1e-3, clamp(0.5 * q / foot))
         x = ux * rr
         y = uy * rr
         z = uz * rr
@@ -304,7 +322,7 @@ const SKIRT = { cycles: 6.5, deepMm: 2.8, clumps: 17, clumpMm: 0.85 }
       if (q <= 0) return grassTone(p[0], p[2])
       const top = mix3(TONE.grass, TONE.moss, clamp(0.5 + noise(p[0] * 0.45, p[1] * 0.45, p[2] * 0.45)))
       const patch = smooth(-0.1, 0.35, fbm(p[0] * 0.3, p[1] * 0.3, p[2] * 0.3, 3))
-      return mul3(mix3(mix3(top, TONE.mossDeep, smooth(0.3, 0.85, q) * (1 - 0.7 * patch)), TONE.sun, 0.6 * patch * (1 - 0.7 * q) * smooth(-0.5, 0.4, n[1])), (1 - 0.25 * smooth(0.4, 1, q)) * (1.25 + 0.6 * smooth(-0.3, 0.6, n[1])))
+      return mul3(mix3(mix3(top, TONE.mossDeep, smooth(0.2, 0.55, q) * (1 - 0.5 * patch)), TONE.sun, (0.35 + 0.45 * patch) * (1 - smooth(0.02, 0.3, q))), (1 - 0.25 * smooth(0.3, 0.6, q)) * (1.25 + 0.6 * smooth(-0.3, 0.6, n[1])))
     },
     surf: (_p, _n, i) => [depth[i] > 0 ? 2 : 0, depth[i]],
   })
@@ -848,6 +866,10 @@ for (let z = -50; z <= 50; z += 1)
   }
 
 const turfGeometry = turf.geometry()
+for (const name of ['position', 'normal', 'color']) {
+  const at = turfGeometry.getAttribute(name)
+  if (at) for (let i = 0; i < at.array.length; i++) if (!Number.isFinite(at.array[i])) throw new Error(`village-spring: turf ${name} holds a value that is not a number at ${i}`)
+}
 const meshes = [fromThree('turf', turfGeometry), fromThree('growth', growth.geometry()), fromThree('water', water.geometry(), { level: L.pond.level, boulders })]
 const out = writeGlb(rel('assets-full', 'spring', 'village-spring.glb'), meshes)
 addLists(rel('assets-full', 'spring', 'village-spring.glb'), 'growth', growth.lists)
