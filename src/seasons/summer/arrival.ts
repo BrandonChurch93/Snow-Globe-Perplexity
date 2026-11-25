@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { config } from '../../config'
 import { stageShader } from '../../core/materials'
+import { meshLevel } from '../../core/models'
 import { stream } from '../../core/rng'
 import { rimGapMm } from '../../shake/table'
 import type { KitMoment } from '../kit'
@@ -11,9 +12,10 @@ const PART = 'arrival-summer'
 const RAD = Math.PI / 180
 
 // The landing shakes the sand on the ledge loose. `jump` grains leave the ledge on the thump, fly, skid and come to rest on
-// the slab, where they stay: at rest they are the single grains of the scatter. `pour` grains are the run of sand over the
-// lip on the right, which the landing starts and which thins and stops: at rest no grain is in the air. Every grain's place is a
-// function of the time since the landing and of the clock, nothing is kept from frame to frame.
+// the slab. `pour` grains are the run of sand over the lip on the right, which the landing starts and which thins and
+// stops. Once every grain lies still the field fades and is no longer drawn: at rest this arrival draws nothing, and the
+// slab's own sand is what lies there. Every grain's place is a function of the time since the landing and of the clock,
+// nothing is kept from frame to frame. The mirror of the slab gets none of the grains; medium and low draw a share.
 const LOOK = {
   gravity: 3400,
   ledge: { r: [46.5, 52.0], h: 40.3 },
@@ -23,6 +25,9 @@ const LOOK = {
   shadow: { r: 57, top: [36, 41] },
   streak: 2.1,
   blurRadii: 3,
+  gone: [6.5, 8],
+  share: { medium: 0.6, low: 0.3 } as Record<string, number>,
+  stride: 7919,
 }
 
 const vec = (v: readonly number[]): string => `vec3(${v.map((x) => x.toFixed(3)).join(', ')})`
@@ -122,7 +127,7 @@ vStagePlaced = grainW.xyz;
 vStageSeen = 1.0;
 vGrainUv = aCorner;
 vGrainShape = vec2(streak / wide, airborne);
-vGrainCover = min(1.0, ${LOOK.streak.toFixed(2)} / streak) / wide;
+vGrainCover = (1.0 - uGrain.y) * min(1.0, ${LOOK.streak.toFixed(2)} / streak) / wide;
 if (aSeed.y > 0.5) vGrainCover *= 1.0 - smoothstep(${LOOK.pour.fadeFrom.toFixed(2)}, 1.0, tau / max(aFlight.y, 1e-4));
 vGrainLook = vec4(aSeed.x, fract(aSeed.x * 91.7 + aSeed.z * 13.1), grainShade(grainW.xyz, uGrainKey), alive);
 `
@@ -197,7 +202,6 @@ function grainGeometry(): THREE.BufferGeometry {
       corner[o * 2] = k % 2 === 0 ? -1 : 1
       corner[o * 2 + 1] = k < 2 ? -1 : 1
     }
-    index.set([n * 4, n * 4 + 1, n * 4 + 2, n * 4 + 2, n * 4 + 1, n * 4 + 3], n * 6)
     n++
   }
 
@@ -260,6 +264,10 @@ function grainGeometry(): THREE.BufferGeometry {
     put([tx, ty, tz], [fx, P.h + rp.range(-0.4, 0.4), fz], [rp.range(P.rate[0], P.rate[1]), f.T, f.vy, radius], [rp.next(), 1, rp.next(), 0])
   }
 
+  for (let k = 0; k < n; k++) {
+    const q = (k * LOOK.stride) % n
+    index.set([q * 4, q * 4 + 1, q * 4 + 2, q * 4 + 2, q * 4 + 1, q * 4 + 3], k * 6)
+  }
   const g = new THREE.BufferGeometry()
   g.setAttribute('position', new THREE.BufferAttribute(to.subarray(0, n * 12), 3))
   g.setAttribute('aFrom', new THREE.BufferAttribute(from.subarray(0, n * 12), 3))
@@ -269,6 +277,8 @@ function grainGeometry(): THREE.BufferGeometry {
   g.setIndex(new THREE.BufferAttribute(index.subarray(0, n * 6), 1))
   return g
 }
+
+let field: THREE.Mesh | undefined
 
 export function pourShare(sinceLanding: number): number {
   if (!(sinceLanding < Infinity)) return 0
@@ -286,6 +296,15 @@ export function grains(): THREE.Mesh {
   const m = stageShader({ part: PART, standIn: false, change: 'surface-dressing', vertexPars: VERT_PARS, vertexMain: VERT_MAIN, fragment: FRAG, uniforms: grainUniforms, params: { side: THREE.DoubleSide, transparent: true, depthWrite: false, blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor, blendSrcAlpha: THREE.ZeroFactor, blendDstAlpha: THREE.OneFactor } })
   const mesh = new THREE.Mesh(grainGeometry(), m)
   mesh.frustumCulled = false
+  const whole = mesh.geometry.index!.count / 6
+  mesh.onBeforeRender = () => {
+    const share = mesh.matrixWorld.determinant() < 0 ? 0 : (LOOK.share[meshLevel()] ?? 1)
+    mesh.geometry.setDrawRange(0, 6 * Math.floor(whole * share))
+  }
+  mesh.onAfterRender = () => {
+    mesh.geometry.setDrawRange(0, Infinity)
+  }
+  field = mesh
   return mesh
 }
 
@@ -300,7 +319,10 @@ export function update(moment: KitMoment): void {
   const film = config.film as { fps: number; shutterDegrees: number }
   const shutter = film.shutterDegrees / 360 / film.fps
   const down = 1 - Math.min(1, Math.max(0, (rimGapMm(f.globe) - LOOK.flow.gapMm[0]) / (LOOK.flow.gapMm[1] - LOOK.flow.gapMm[0])))
-  u.uGrain.value.set(t < 0 ? -1 : Math.min(t, 50), 0, t < 0 ? 0 : pourShare(t) * down, shutter)
+  const out = Math.min(1, Math.max(0, (t - LOOK.gone[0]!) / (LOOK.gone[1]! - LOOK.gone[0]!)))
+  const gone = t < 0 || !(t < Infinity) ? 1 : out * out * (3 - 2 * out)
+  if (field) field.visible = gone < 1
+  u.uGrain.value.set(t < 0 ? -1 : Math.min(t, 50), gone, t < 0 ? 0 : pourShare(t) * down, shutter)
   u.uGrainLoop.value.set((((moment.time / moment.period) % 1) + 1) % 1, moment.period)
   u.uGrainKey.value.copy(f.keyDir)
   u.uGrainKeyCol.value.copy(f.keyCol)
