@@ -18,7 +18,7 @@ const HEAP = {
   skirt: { x: 71, z: 30, sx: 10, sz: 20, mm: 2.2 },
   shoulder: { x: 47, z: 58, sx: 21, sz: 14, mm: 2.4 },
   fan: { x: 50, z: 98, sx: 23, sz: 44, mm: 1.5 },
-  sheet: { x: -80, z: -50, sx: 15, sz: 28, mm: 0.7 },
+  sheet: { x: -96, z: -18, sx: 36, sz: 24, mm: 0.19 },
   stray: { x: 56, z: 66, sx: 26, sz: 52, mm: 0.2 },
   ring: { r: 61.5, w: 4.5, mm: 0.55 },
 }
@@ -51,7 +51,7 @@ export function sandHeight(x: number, z: number): number {
   const mid = noise(x / 7.3 + 1.7, z / 7.3 + 9.2, 13)
   const fine = noise(x / 2.1 + 5.3, z / 2.1 + 2.9, 17)
   const heap = bump(x, z, HEAP.dune) * (0.86 + 0.28 * broad) + bump(x, z, HEAP.skirt) * (0.5 + mid) + bump(x, z, HEAP.shoulder) * (0.6 + 0.8 * broad) + bump(x, z, HEAP.fan) * (0.25 + 1.5 * broad * mid)
-  const sheet = bump(x, z, HEAP.sheet) * (0.2 + 1.6 * broad * mid)
+  const sheet = bump(x, z, HEAP.sheet) * (0.55 + 0.75 * broad * mid)
   const stray = bump(x, z, HEAP.stray) * mid * mid * (0.4 + 1.2 * fine)
   const az = Math.atan2(x, z) * (180 / Math.PI)
   const clear = az > -150 && az < -8 ? 0.06 : 1
