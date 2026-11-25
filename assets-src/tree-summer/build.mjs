@@ -6,7 +6,7 @@ import { rel } from '../../tools/lib/paths.mjs'
 import { blurWrap, loadSource, luma, readPicture, seamless, toBytes, writePng } from '../trunk/source.mjs'
 
 const TAU = Math.PI * 2
-const LEAF_CELL = 0.5
+const LEAF_CELL = 0.56
 const LEAF_TILE_MM = 11
 const SPRIGS = { share: 0.6, size: [1.3, 2.3], rise: 0.35, out: 0.34 }
 const TONE = { deep: [0.3, 0.54, 0.26], mid: [0.66, 0.95, 0.4], tip: [2.3, 2.3, 0.55] }
@@ -181,7 +181,7 @@ function leaves() {
     const n = [s.nor[v * 3], s.nor[v * 3 + 1], s.nor[v * 3 + 2]]
     const open = 0.45 * openness(C.leafBody, x, h, z, n, 0.7) + 0.55 * openness(C.leafBody, x, h, z, n, 2.4)
     const sky = 0.5 + 0.5 * n[1]
-    const shade = (0.22 + 0.78 * Math.pow(open, 1.5)) * (0.4 + 0.6 * Math.pow(sky, 1.3))
+    const shade = (0.1 + 0.9 * Math.pow(open, 1.7)) * (0.3 + 0.7 * Math.pow(sky, 1.5))
     const hue = 0.5 + 0.5 * Math.sin(0.7 * x + 1.3 * h + 0.9 * z) * Math.sin(1.1 * x - 0.6 * z + 2)
     const sun = 0.5 + 0.5 * (n[0] * SUN[0] + n[1] * SUN[1] + n[2] * SUN[2])
     const tip = smooth(0.5, 1, open) * smooth(0.35, 0.85, Math.max(sky, sun)) * (0.6 + 0.4 * hue)

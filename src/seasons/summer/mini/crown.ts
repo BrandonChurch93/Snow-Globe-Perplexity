@@ -1,7 +1,7 @@
 import { stream } from '../../../core/rng'
 import { crownField, localPads, padAxes } from '../../../miniature/trunk'
 
-export const FULL = { swell: 0.15, perMm2: 0.5, radius: [1.0, 1.8] as const, dome: 0.7, reach: 1.12, blend: 0.35, knob: 0.24, knobMm: 1.15 }
+export const FULL = { swell: -0.9, perMm2: 0.5, radius: [0.8, 2.1] as const, dome: 0.75, reach: 1.22, blend: 0.16, knob: 0.3, knobMm: 1.15, wave: 0.45, waveMm: 4.3 }
 
 function gather(): Float64Array {
   const rng = stream('crown-summer')
@@ -55,7 +55,8 @@ function lumpField(x: number, h: number, z: number): number {
 
 const knobs = (x: number, h: number, z: number): number => {
   const k = (2 * Math.PI) / FULL.knobMm
-  return FULL.knob * (Math.sin(k * x + 1.3 * Math.sin(0.9 * h)) * Math.sin(k * h + 1.1 * Math.sin(1.2 * z)) * Math.sin(k * z + 1.7 * Math.sin(0.8 * x)) + 0.5 * Math.sin(1.9 * k * x + 2) * Math.sin(2.1 * k * h + 1) * Math.sin(1.7 * k * z))
+  const w = (2 * Math.PI) / FULL.waveMm
+  return FULL.knob * (Math.sin(k * x + 1.3 * Math.sin(0.9 * h)) * Math.sin(k * h + 1.1 * Math.sin(1.2 * z)) * Math.sin(k * z + 1.7 * Math.sin(0.8 * x)) + 0.5 * Math.sin(1.9 * k * x + 2) * Math.sin(2.1 * k * h + 1) * Math.sin(1.7 * k * z)) + FULL.wave * Math.sin(w * x + 0.7) * Math.sin(w * h + 2.1) * Math.sin(w * z + 4.2)
 }
 
 export function leafBody(x: number, h: number, z: number): number {

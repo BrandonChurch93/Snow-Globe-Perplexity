@@ -17,7 +17,7 @@ const TURF = { lumpMm: 0.35, fineMm: 0.12, sandMm: 0.55, sandReach: 4.2 }
 const GRASS = { tufts: 30000, blades: 3, tall: [0.9, 2.3], wide: [0.11, 0.2], rimTall: 1.5 }
 const TONES = {
   grass: ['#1c3413', '#274616', '#30531a', '#213c15'].map(lin),
-  tip: ['#7f9a36', '#9aad44', '#6c8a2e'].map(lin),
+  tip: ['#566f27', '#6b8230', '#465f20'].map(lin),
   straw: ['#c9b674', '#d8c88c', '#b9a460'].map(lin),
   earth: lin('#3b2c1c'),
   mud: lin('#231c12'),
@@ -25,7 +25,7 @@ const TONES = {
   bed: lin('#16201c'),
   leaf: ['#2b4a1c', '#3a5f22', '#24401a', '#47702a'].map(lin),
   rose: ['#e9a0a8', '#f2c3bd', '#f4e3cf', '#d97f8e', '#f0d2c0'].map(lin),
-  petal: ['#f2b322', '#f7c53a', '#e9a016'].map(lin),
+  petal: ['#ffc526', '#ffd648', '#f6b21a'].map((c) => mul3(lin(c), 1.5)),
   seed: lin('#2c1a0c'),
   stem: lin('#3d5a22'),
   bloom: ['#f5efe0', '#f2c9d2', '#f6dc74', '#e7a4b4', '#ffffff'].map(lin),
@@ -256,8 +256,9 @@ let tufts = 0
     if (R() < 0.55 * worn) continue
     const y0 = topAt(x, z) - 0.05
     const tall = range(GRASS.tall[0], GRASS.tall[1]) * (0.6 + 0.6 * lush) * (1 - 0.45 * worn) * (1 + (GRASS.rimTall - 1) * smooth(1.035, 1.09, f) * (1 - smooth(1.09, 1.25, f)))
-    const base = mix3(pick(TONES.grass), pick(TONES.straw), sand * 0.8)
-    const top = mix3(pick(TONES.tip), pick(TONES.straw), clamp(sand * 0.9 + 0.12 * R()))
+    const patch = 0.45 + 0.75 * clamp(0.5 + 1.4 * fbm(x * 0.09 + 3, z * 0.09 + 11, 2.3, 2))
+    const base = mul3(mix3(pick(TONES.grass), pick(TONES.straw), sand * 0.8), patch)
+    const top = mul3(mix3(pick(TONES.tip), pick(TONES.straw), clamp(sand * 0.9 + 0.08 * R())), patch)
     const cell = { key: morton(x, z), pos: [], nor: [], col: [], tip: [] }
     list.push(cell)
     const up = norm3([(R() - 0.5) * 0.5, 1, (R() - 0.5) * 0.5])
@@ -397,7 +398,7 @@ function sunflower(x, z, tall, face) {
   const f = norm3(face)
   const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), new THREE.Vector3(...f))
   const hr = tall * 0.1 + 0.75
-  const disc = new THREE.SphereGeometry(hr, 14, 8, 0, TAU, 0, Math.PI / 2)
+  const disc = new THREE.SphereGeometry(hr * 0.66, 14, 8, 0, TAU, 0, Math.PI / 2)
   disc.rotateX(Math.PI / 2)
   disc.scale(1, 1, 0.45)
   const place = new THREE.Matrix4().makeRotationFromQuaternion(q).setPosition(head[0] + f[0] * 0.12, head[1] + f[1] * 0.12, head[2] + f[2] * 0.12)
@@ -411,11 +412,11 @@ function sunflower(x, z, tall, face) {
   for (const [count, len, turn, tilt] of [[15, 1.05, 0, 0.22], [13, 0.82, 0.21, 0.45]]) {
     for (let i = 0; i < count; i++) {
       const a = (i / count) * TAU + turn + range(-0.06, 0.06)
-      const pl = hr * len * range(0.9, 1.12)
-      const pw = hr * 0.2
+      const pl = hr * len * range(1.05, 1.3)
+      const pw = hr * 0.27
       const dirv = new THREE.Vector3(Math.cos(a), Math.sin(a), tilt * range(0.5, 1.3)).normalize()
       const sidev = new THREE.Vector3(-Math.sin(a), Math.cos(a), 0)
-      const o = new THREE.Vector3(Math.cos(a) * hr * 0.82, Math.sin(a) * hr * 0.82, 0.02)
+      const o = new THREE.Vector3(Math.cos(a) * hr * 0.5, Math.sin(a) * hr * 0.5, 0.02)
       const A = o.clone().addScaledVector(sidev, -pw * 0.6)
       const B = o.clone().addScaledVector(sidev, pw * 0.6)
       const M1 = o.clone().addScaledVector(dirv, pl * 0.55).addScaledVector(sidev, -pw)

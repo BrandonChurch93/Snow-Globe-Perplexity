@@ -18,20 +18,20 @@ const LEAVES = 'summer/tree-leaves.srgb.tile.w1024.png'
 const SPRIGS = 'summer/tree-sprigs.srgb.w512.png'
 const CYCLES = 3
 const FLICKER = 0.06
-const PAPER = { power: 0.24, reachMm: 3.4 }
-const GLOW = { leaves: { power: 2.2, reachMm: 2.3 }, wood: { power: 1.0, reachMm: 2.4 } }
-const LAMP_ON_WOOD = { power: 0.9, reachMm: 14, wrap: -0.2 }
+const PAPER = { power: 0.26, reachMm: 2.5 }
+const GLOW = { leaves: { power: 2.2, reachMm: 2.3 }, wood: { power: 0.55, reachMm: 2.2 } }
+const LAMP_ON_WOOD = { power: 0.5, reachMm: 14, wrap: -0.2 }
 const LAMP_ON_LEAVES = { power: 3, reachMm: 12, wrap: 0.1 }
 const LAMP_SHIFT: Vec3 = [-3, 0, -5]
 const FILL_ON_WOOD = { power: 0.22, reachMm: 1000, wrap: 0.4 }
 const FILL_ON_LEAVES = { power: 0.32, reachMm: 1000, wrap: 0.3 }
 const FILL_FROM: Vec3 = [30, 60, 60]
-const BARK: Rgb3 = [0.33, 0.185, 0.11]
+const BARK: Rgb3 = [0.3, 0.15, 0.085]
 const LEAF_TINT: Rgb3 = [0.55, 0.95, 0.34]
 const LEAF_LIT = 'vec3(1.25, 1.05, 0.6)'
-const LEAF = { rim: 5, rimTight: 2.5, through: 1.3, tight: 3.0, fill: 0.5, wrap: 0.8, bump: 0.7, clumpDark: 0.55, clumpBright: 1.35 }
-const LANTERN = { gain: 1.25, core: 2.0, tight: 3.0, paper: 0.55, dim: 0.1, stepS: 0.035, rampS: 0.16, swayRad: 0.045, sway2: 0.6, kickRad: 0.16, kickFade: 1.2, kickHz: 1.3, cycles: 2 }
-const HALO = { radius: 2.0, strength: 0.13, hot: 0.1 }
+const LEAF = { rim: 5, rimTight: 2.5, through: 1.3, tight: 3.0, fill: 0.5, wrap: 0.8, bump: 0.7, clumpDark: 0.35, clumpBright: 1.5 }
+const LANTERN = { gain: 1.0, core: 1.9, tight: 3.0, paper: 0.06, dim: 0.1, stepS: 0.035, rampS: 0.16, swayRad: 0.045, sway2: 0.6, kickRad: 0.16, kickFade: 1.2, kickHz: 1.3, cycles: 2 }
+const HALO = { radius: 2.1, strength: 0.12, hot: 0.03 }
 const HALO_EDGE: Rgb3 = [0.9, 0.36, 0.08]
 const HALO_CORE: Rgb3 = [1, 0.7, 0.34]
 
@@ -127,8 +127,8 @@ vLamp = uv;
   float lampFace = clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0);
   float lampCore = pow(lampFace, ${LANTERN.tight.toFixed(1)});
   float lampBeat = 1.0 + ${FLICKER.toFixed(3)} * sin(6.2831853 * (uTwinkle.x + vLamp.x * 0.381966));
-  vec3 lampHot = mix(lampTint, lampTint * vec3(1.0, 1.9, 2.6) + vec3(0.0, 0.06, 0.02), lampCore * lampCore);
-  totalEmissiveRadiance = lampHot * lampLit * (${LANTERN.gain.toFixed(2)} * (0.45 + ${LANTERN.core.toFixed(2)} * lampCore)) * lanternLevel(vLamp.x) * lampBeat;
+  vec3 lampHot = mix(lampTint, lampTint * vec3(1.0, 1.75, 2.0) + vec3(0.0, 0.05, 0.01), lampCore * lampCore);
+  totalEmissiveRadiance = lampHot * lampLit * (${LANTERN.gain.toFixed(2)} * (0.4 + ${LANTERN.core.toFixed(2)} * lampCore)) * lanternLevel(vLamp.x) * lampBeat;
 }`,
     )
 }
