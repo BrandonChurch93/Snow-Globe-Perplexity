@@ -54,6 +54,8 @@ export class LiveRunner {
   private line = ''
   private since = 0
   private waitingSince = -1
+  private held = false
+  private heldSeason: string | undefined = undefined
 
   constructor(options: RunnerOptions = {}) {
     this.fraction = options.fraction ?? 1
@@ -101,7 +103,24 @@ export class LiveRunner {
     return this.away && c && c.frames > 0 ? c : this.local.inner
   }
 
+  /** Holds every reset until `release`: a season's collider may read models the stage has not prepared yet. */
+  hold(): void {
+    this.held = true
+  }
+
+  /** Ends the hold and resets once, on `season` or on the last season a held reset named. */
+  release(season?: string): void {
+    const to = season ?? this.heldSeason
+    this.held = false
+    this.heldSeason = undefined
+    this.reset(to)
+  }
+
   reset(season?: string): void {
+    if (this.held) {
+      this.heldSeason = season ?? this.heldSeason
+      return
+    }
     if (this.away) this.client!.reset(season)
     else this.local.reset(season)
     this.source.touch()

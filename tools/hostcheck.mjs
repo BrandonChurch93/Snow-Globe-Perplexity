@@ -21,6 +21,8 @@ const tail = (text, n = 8) => String(text ?? '').trim().split('\n').slice(-n).jo
 const NEVER = ['assets-full', 'audio', 'references', 'out', 'pipeline', 'scorecards']
 const OUTSIDE = ['assets-full/', '__simcache']
 const LOCK = rel('out', 'work', 'render.lock')
+const MANY_COLOURS = 256
+const SOUND = 'audio/'
 
 checkDisk()
 const tracked = sh('git', ['ls-files', '-z'], rel()).stdout.split('\0').filter(Boolean).filter((f) => fs.existsSync(rel(f)))
@@ -38,6 +40,7 @@ const result = {
   dist: { mb: 0, files: 0, largest: { file: '', mb: 0 }, never: [] },
   firstLoad: { bytes: 0, mb: 0, requests: 0, files: [], sizes: 'bytes of each response body as this server sent it, with no compression' },
   live: { opened: false, firstPicture: false, seconds: 0, waitSeconds, mode: 'live', picture: null, errors: [], error: '' },
+  links: { asked: 0, opened: 0, size: '', failed: [], each: [] },
   inside: {},
   pass: false,
 }
@@ -146,6 +149,70 @@ try {
   const bytes = mine.reduce((n, x) => n + x.bytes, 0)
   result.firstLoad = { ...result.firstLoad, bytes, mb: mb(bytes), requests: mine.length, files: [...mine].sort((x, y) => y.bytes - x.bytes).slice(0, 40) }
   await context.close()
+
+  // Every season by its own link, with no level and with the lowest one, and the films by link with a season. A link passes when
+  // its first complete picture comes, nothing breaks on the way, the picture is not one flat colour and, on the live page, the
+  // controls arrive with that season's mark lit.
+  const small = cfg.formats.preview
+  const lowest = Object.keys(cfg.live.quality).at(-1)
+  const films = ['autopilot', 'loop']
+  const links = [
+    ...cfg.seasons.flatMap((season) => [{ season }, { season, quality: lowest }]),
+    ...films.map((mode, i) => ({ mode, season: cfg.seasons[(cfg.seasons.indexOf(cfg.defaultSeason) + 1 + i) % cfg.seasons.length] })),
+  ]
+  result.links.asked = links.length
+  result.links.size = `${small.width} by ${small.height}`
+  for (const query of links) {
+    const link = `?${new URLSearchParams(query)}`
+    const one = await browser.newContext({ viewport: { width: small.width, height: small.height }, deviceScaleFactor: 1 })
+    const tab = await one.newPage()
+    tab.setDefaultTimeout(0)
+    const said = watchPage(tab)
+    // The sound files do not ship with a clean copy: the app is silent without them, and that is not a broken link.
+    const counts = (url) => !url.replace(server.url, '').startsWith(SOUND)
+    tab.on('requestfailed', (request) => counts(request.url()) && said.push(`request failed: ${request.url().replace(server.url, '')}`))
+    tab.on('response', (response) => {
+      if (response.status() >= 400 && counts(response.url())) said.push(`status ${response.status()}: ${response.url().replace(server.url, '')}`)
+    })
+    const t0 = Date.now()
+    const entry = { link, firstPicture: false, seconds: 0, colours: 0, lit: '', error: '' }
+    try {
+      await tab.goto(server.url + link)
+      const read = () =>
+        tab.evaluate(() => ({
+          first: document.documentElement.dataset.firstPicture === '1',
+          shown: document.getElementById('ui')?.dataset.interface === 'shown',
+          lit: [...document.querySelectorAll('#ui [data-season][aria-pressed="true"]')].map((m) => m.dataset.season).join(),
+        }))
+      const live = !query.mode
+      let now = await read()
+      while (!(now.first && (!live || now.shown)) && Date.now() < t0 + waitSeconds * 1000 && !said.some((l) => l.startsWith('pageerror'))) {
+        await new Promise((r) => setTimeout(r, 200))
+        now = await read()
+        if (now.first && !entry.firstPicture) entry.seconds = (Date.now() - t0) / 1000
+        entry.firstPicture = now.first
+      }
+      entry.firstPicture = now.first
+      entry.lit = now.lit
+      if (!entry.seconds) entry.seconds = (Date.now() - t0) / 1000
+      const seenLink = await pixels(await tab.screenshot())
+      const set = new Set()
+      for (let o = 0; o < seenLink.data.length; o += 4) set.add((seenLink.data[o] << 16) | (seenLink.data[o + 1] << 8) | seenLink.data[o + 2])
+      entry.colours = set.size
+      const broke = said.find((l) => l.startsWith('pageerror') || l.startsWith('status ') || l.startsWith('request failed'))
+      if (broke) entry.error = broke
+      else if (!entry.firstPicture) entry.error = `no first picture within ${waitSeconds} s`
+      else if (entry.colours < MANY_COLOURS) entry.error = `blank: the picture holds ${entry.colours} colours`
+      else if (live && entry.lit !== query.season) entry.error = now.shown ? `the lit mark is ${entry.lit || 'none'}, not ${query.season}` : `the controls did not arrive within ${waitSeconds} s`
+    } catch (e) {
+      entry.error = e.message.split('\n')[0]
+    }
+    await one.close()
+    result.links.each.push(entry)
+    if (entry.error) result.links.failed.push(`${link}: ${entry.error}`)
+    else result.links.opened++
+    console.log(`${entry.error ? 'FAIL' : 'ok  '} · ${link} · first picture ${entry.firstPicture ? `after ${entry.seconds.toFixed(1)} s` : 'never'}${entry.lit ? `, ${entry.lit} lit` : ''}, ${entry.colours} colours${entry.error ? ` · ${entry.error}` : ''}`)
+  }
 } catch (e) {
   result.build.error ||= result.build.ok ? '' : e.message
   if (result.build.ok) result.live.error ||= e.message
@@ -166,7 +233,8 @@ result.inside = {
   firstLoadMaxMb: result.live.firstPicture && result.firstLoad.mb <= host.firstLoadMaxMb,
   maxBuildMinutes: result.build.ok && result.build.minutes <= host.maxBuildMinutes,
 }
-result.pass = Object.values(result.inside).every(Boolean) && result.live.opened && result.live.errors.length === 0 && result.dist.never.length === 0
+const linksOk = result.links.asked > 0 && result.links.opened === result.links.asked
+result.pass = Object.values(result.inside).every(Boolean) && result.live.opened && result.live.errors.length === 0 && result.dist.never.length === 0 && linksOk
 writeJson(out, result)
 
 const line = (ok, text, words = ['inside', 'OUTSIDE']) => console.log(`${words[ok ? 0 : 1]} · ${text}`)
@@ -178,6 +246,7 @@ if (result.build.ok) {
   line(result.inside.maxBuildMinutes, `the clean install and build took ${result.build.minutes.toFixed(2)} minutes (npm ci ${result.build.installSeconds.toFixed(1)} s, npm run build ${result.build.buildSeconds.toFixed(1)} s), host.maxBuildMinutes is ${host.maxBuildMinutes}`)
   line(result.dist.never.length === 0, result.dist.never.length ? `dist/ holds ${result.dist.never.join(', ')}, which never ship` : `dist/ holds none of ${NEVER.join(', ')}`, PASS)
   line(result.live.opened && result.live.errors.length === 0, result.live.opened ? `the built site opens in ${result.live.mode} mode${result.live.errors.length ? ` and logs: ${result.live.errors[0]}` : ' with nothing logged'}, and ${result.live.picture.file} holds ${result.live.picture.colours} colours` : `the built site does not open: ${result.live.error}`, PASS)
+  line(linksOk, linksOk ? `all ${result.links.asked} links open with their first picture at ${result.links.size}: each season with no level and with ${Object.keys(cfg.live.quality).at(-1)}, and the films with a season` : result.links.asked ? `${result.links.failed.length} of ${result.links.asked} links do not open: ${result.links.failed.join(' · ')}` : 'the links were not opened', PASS)
 }
 console.log(`hostcheck: ${result.pass ? 'pass' : 'FAIL'} · ${path.relative(rel(), out)}`)
 process.exit(result.pass ? 0 : 1)
