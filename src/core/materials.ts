@@ -40,6 +40,37 @@ export const DRESSING_FRONT = { gain: 2, fromMm: 58, toMm: 230 } as const
 export const OUTSIDE_FRONT = { share: 0.62, gain: 3, tableFrom: 0.26, rayMm: 110, streak: 3.4, cellMm: 6.5, fineMm: 2.3, fine: 0.36, contrast: 2.6, feather: 0.14, glowBase: 0.11, glowTable: 0.07, topMm: 33, footMm: 0 } as const
 const BASE_CODE = 10
 
+/**
+ * The scatter on the table is carried by the change, not swapped by it. What lies there lifts as the front of light comes near,
+ * is blown out ahead of it and is taken by it in the air; what the new season lays is born behind the front, flies out with it
+ * and comes down on its place. The clock is the outside span's own share, read past both of its ends: `leadOut` shares before
+ * the front stands over a piece's place it starts to lift, `leadIn` shares before it a new piece is under way, and every new
+ * piece is down before the window closes (0.877 - leadIn + 1.2 * longIn stays under 1.94, the share at which it does).
+ * Lengths in millimetres. With one season on the stage the mode is 0 and nothing here is read.
+ */
+export const GUST = { leadOut: 0.8, longOut: 1.3, reachOutMm: 90, leadIn: 0.25, longIn: 1, reachInMm: 70, clearMm: 64, heightMm: 14 } as const
+
+/** For a vertex shader of a part of the table's dressing: x the way a piece is moved along the line out from the stage's axis, y its height as a share, z how far it is from lying (1 to 0). */
+export const STAGE_GUST_GLSL = `
+uniform float uChange;
+uniform vec4 uState;
+vec3 stageGust(vec2 rest, float a, float b) {
+  if (uState.w < 0.5 || uState.z >= 0.0) return vec3(0.0);
+  float s = (uChange - uState.x) / uState.y;
+  float r = length(rest);
+  float far = clamp((r - ${DRESSING_FRONT.fromMm.toFixed(1)}) / ${(DRESSING_FRONT.toMm - DRESSING_FRONT.fromMm).toFixed(1)}, 0.0, 1.0);
+  float over = ${OUTSIDE_FRONT.tableFrom.toFixed(2)} + ${(1 - OUTSIDE_FRONT.tableFrom).toFixed(2)} * (0.5 - uState.z * far) / (1.0 - uState.z);
+  if (uState.w > 1.5) {
+    float q = clamp((s - over + ${GUST.leadIn.toFixed(2)}) / (${GUST.longIn.toFixed(2)} * (0.8 + 0.4 * b)), 0.0, 1.0);
+    float left = (1.0 - q) * (1.0 - q);
+    float reach = min(${GUST.reachInMm.toFixed(1)} * (0.5 + a), max(r - ${GUST.clearMm.toFixed(1)}, 0.0));
+    return vec3(-reach * left, q < 1.0 ? sin(3.14159265 * (0.2 + 0.8 * q)) : 0.0, left);
+  }
+  float q = clamp((s - over + ${GUST.leadOut.toFixed(2)}) / ${GUST.longOut.toFixed(2)}, 0.0, 1.0);
+  return vec3(${GUST.reachOutMm.toFixed(1)} * (0.5 + a) * q * q, sin(1.5707963 * q), q);
+}
+`
+
 export interface StageHandle {
   part: string
   uPart: { value: THREE.Vector4 }
