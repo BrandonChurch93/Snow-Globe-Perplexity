@@ -206,7 +206,7 @@ for (const c of clusters) {
   const open = openness(c)
   const tone = mul(mix(TONES[rng.int(TONES.length)], TONES[rng.int(TONES.length)], rng.next()), 0.92 + 0.16 * rng.next())
   const depth = within(c.p)
-  const lit = (0.7 + 0.3 * open) * (0.82 + 0.18 * smooth(0.3, 0.95, depth))
+  const lit = (0.6 + 0.4 * open) * (0.76 + 0.24 * smooth(0.3, 0.95, depth))
   const crownOut = norm([c.p[0] - CROWN.centre[0], (c.p[1] - CROWN.centre[1]) * 1.3 + 3, c.p[2] - CROWN.centre[2]])
   const base = bloom.p.length / 3
   const seed = rng.next() * 40
@@ -231,12 +231,12 @@ for (const c of clusters) {
     const v = cross(out, u)
     const size = rng.range(CLUSTER.flower[0], CLUSTER.flower[1])
     const spin = rng.next() * Math.PI * 2
-    const pale = mul(mix(tone, [1, 0.97, 0.97], 0.25 + 0.45 * rng.next()), lit * (0.8 + 0.2 * smooth(-0.9, 0.3, d[1])) * (0.92 + 0.16 * rng.next()))
+    const pale = mul(mix(tone, [1, 0.97, 0.97], 0.25 + 0.45 * rng.next()), lit * (0.8 + 0.2 * smooth(-0.9, 0.3, d[1])) * (0.82 + 0.3 * rng.next()))
     const n = norm(add(add(mul(d, 0.5), mul(crownOut, 0.6)), [0, 0.25, 0]))
     const b0 = bloom.p.length / 3
     bloom.p.push(at[0], at[1], at[2])
     bloom.n.push(n[0], n[1], n[2])
-    const heart = mix(HEART, pale, 0.78)
+    const heart = mix(HEART, pale, 0.64)
     bloom.c.push(heart[0] * lit, heart[1] * lit, heart[2] * lit)
     for (let j = 0; j < 10; j++) {
       const a = spin + (j / 10) * Math.PI * 2
@@ -246,7 +246,7 @@ for (const c of clusters) {
       const q = add(add(at, add(mul(u, Math.cos(a) * rr), mul(v, Math.sin(a) * rr))), mul(out, lift))
       bloom.p.push(q[0], q[1], q[2])
       bloom.n.push(n[0], n[1], n[2])
-      const kk = tipV ? 1.04 : 0.9
+      const kk = tipV ? 1.06 : 0.82
       bloom.c.push(pale[0] * kk, pale[1] * kk, pale[2] * kk)
     }
     for (let j = 0; j < 10; j++) bloom.i.push(b0, b0 + 1 + j, b0 + 1 + ((j + 1) % 10))
