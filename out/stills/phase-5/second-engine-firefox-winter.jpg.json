@@ -1,0 +1,8 @@
+{
+  "still": "the app's own page in a second browser engine: Firefox 148.0.2 (Gecko, Playwright's build for ubuntu24.04), headed under a virtual display with software GL (llvmpipe), WebGL 2.0, hd window, winter at rest with the controls; first picture 34.6 s after the page opened",
+  "build": "dist/ as published 13:57 UTC Nov 25 (the code of 730034f)",
+  "keptFrom": "out/work/p5c/engine2/firefox-try3.png",
+  "sha256": "1e650f67b9398afdc0472bf41e618bc75f1df3fdd662ac16953a6c9c214039fd",
+  "keptAt": "2026-11-25T15:07:42.411538Z",
+  "tries": 3
+}
