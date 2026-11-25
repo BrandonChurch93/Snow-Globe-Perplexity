@@ -1,0 +1,56 @@
+{
+  "critic": "R4",
+  "score": 3,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "severe",
+      "file": "set-A-01.jpg",
+      "where": "frames 2106 to 2120 (35.10 s to 35.33 s), the base, tabletop props, background bokeh, and globe interior",
+      "what": "the season change is an exposed cut in plain sight: frame 2106 mixes Halloween green underglow and orange flecks inside the glass with the summer cream seashell base and beach sand mound outside, and by frame 2120 the cream base pops directly into the black thorny jack-o'-lantern base, the sand mound pops into scattered autumn leaves, the background bokeh pattern jumps, and the upper-right rim starburst disappears",
+      "fix": "complete the interior swap strictly behind peak storm opacity so no frame shows half summer and half autumn, keep the background camera and bokeh continuous, and never hard-swap the base or tabletop props in unobstructed view"
+    },
+    {
+      "severity": "severe",
+      "file": "set-A-01.jpg",
+      "where": "frames 2016 to 2158 (33.60 s to 35.97 s), the globe lift, strokes, and set-down",
+      "what": "the globe lifts only 7 to 8 px before pinning to a flat vertical ceiling near the top frame edge across 2042-2106, rocks in small mechanical strokes whose tilt leans in-phase with displacement rather than lagging reversals, then after nearly stopping at 2106 lurches 44 px right at 2120 and snaps back to center at 2132 without a weighted drop or landing settle",
+      "fix": "give the lift real vertical effort and headroom, drive unequal hand strokes with sharp reversals and trailing inertial tilt lag, maintain a single continuous motion curve across the swap without the frame-2120 jump, and land with downward weight and a damped settle"
+    },
+    {
+      "severity": "severe",
+      "file": "set-A-01.jpg",
+      "where": "frames 2028 to 2158 (33.80 s to 35.97 s) continuing into set-B-01.jpg frames 2160 to 2182 (36.00 s to 36.37 s), the liquid and particles inside the sphere",
+      "what": "the interior stays nearly still during the initial rightward swing (2028-2042) with no inertial lag or wall slam, jumps abruptly to an opaque beige cloud wall (2068-2106) that cuts out at 2120 into sparse green haze, and then spawns a new dense storm of orange leaves in mid-water (2146-2182) nearly a full second after the globe has already landed on the table",
+      "fix": "make the particles lag the glass on the first stroke, slam the trailing wall, and fold into one continuous 3D storm that carries unbroken across the swap at peak density and decays monotonically as one slow whirl after landing without respawning particles at rest"
+    },
+    {
+      "severity": "major",
+      "file": "set-B-01.jpg",
+      "where": "frames 2160 to 2338 across set-B-01.jpg through set-B-08.jpg (36.00 s to 38.97 s), the interior scene and base jack-o'-lanterns",
+      "what": "the new season is revealed rather than grown: the crooked tree, cobwebs, and cottage are already at full final scale from frame 2120 onward and simply emerge top-to-bottom and right-to-left as the green fog fades, while the three base pumpkins switch on sequentially in a left-to-right wipe (2164-2188)",
+      "fix": "animate true seasonal growth during the arrival, with branches extending, autumn foliage budding, cobwebs spanning, and cottage details emerging organically rather than fading fog off a static full-grown model"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01.jpg",
+      "where": "frames 2042 to 2132 (34.03 s to 35.53 s), the sand, leaves, and lighting on the tabletop around and beneath the base",
+      "what": "when the lifted summer base shifts left (2054, 2080) the beach sand mound on the right remains a rigid cast with a sharp vertical cutout notch while loose sand specks on the left hover in mid-air with the base (2042, 2068), and at frame 2120 a bright light patch illuminates far-left tabletop leaves while the globe is far to the right before snapping dark at 2132",
+      "fix": "keep tabletop grains grounded so the sand slumps naturally when the base lifts clear, and tie surface shadows, reflections, and bounce illumination continuously to the globe's actual 3D position"
+    },
+    {
+      "severity": "major",
+      "file": "set-C-01.jpg",
+      "where": "frames 2474 to 2734 (41.23 s to 45.57 s), falling orange leaves around the cottage roof and doorway",
+      "what": "drifting leaves fall past the pitched cottage roof without catching or accumulating on it, and even ten seconds after landing (44.70 s to 45.57 s) a thick curtain of large orange leaves remains churning in mid-water directly obscuring the cottage facade",
+      "fix": "collide settling leaves with the cottage roof, eaves, and ground so they come to rest on the surfaces they meet, and let the mid-water swarm thin out to a gentle sparse drift within several seconds of landing"
+    },
+    {
+      "severity": "minor",
+      "file": "set-B-08.jpg",
+      "where": "frames 2328 to 2338 (38.80 s to 38.97 s), thin diagonal cobweb filaments in the upper-left dome",
+      "what": "when zoomed past delivery size, single-pixel bright cobweb strands break into stair-stepped dots that crawl slightly across pixels as the camera orbits",
+      "fix": "supersample or slightly thicken sub-pixel cobweb filaments with temporal filtering so they translate smoothly during camera motion"
+    }
+  ]
+}
