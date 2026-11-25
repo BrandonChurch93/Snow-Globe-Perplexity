@@ -1,40 +1,40 @@
 {
-  "number": 67,
-  "time": "2026-11-25 01:52 UTC",
+  "number": 69,
+  "time": "2026-11-25 02:30 UTC",
   "phase": "4",
   "unit": "",
   "lines": [
-    "Status 67 · 2026-11-25 01:52 UTC · Phase 4",
-    "Rounds 8 on spring and 9 on summer started at 01:35 on one judged commit; five render agents are drawing their packs and running the machine checks",
-    "Fall has no stand-in left; its first round starts when render slots free up and at the latest at 03:02",
-    "The ten builders keep working to 03:02; the app was published again at 01:49 with real spring summer and fall in it",
-    "phase 4: 1.75 h used of its 9.50 h box",
-    "allowance (before the review): 24.03 h used of 36.00 h allowed",
+    "Status 69 · 2026-11-25 02:30 UTC · Phase 4",
+    "Round 8 (spring): the still pack is in and its first critic is reading it. Its measures at final tier: 7 of 19 lines red (texture detail on four stills and sharpness against the approved image at 0.39 of 0.75 needed)",
+    "Rounds 9 (summer) and 10 (fall) are rendering. Ten builders keep working until 03:02 UTC and then hand over to a second set with the critics' issues",
+    "Third merge of the builders' work is on main (432 tests pass)",
+    "phase 4: 2.38 h used of its 9.50 h box",
+    "allowance (before the review): 24.66 h used of 36.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-67-1.jpg",
-      "caption": "Summer at rest. Left: the build that Round 9 judges (draft tier). Right: the approved image",
+      "file": "out/stills/status/status-69-1.jpg",
+      "caption": "Spring at rest as Round 8 judges it at final tier (left) beside its approved image (right)",
       "w": 1200,
       "h": 536
     },
     {
-      "file": "out/stills/status/status-67-2.jpg",
-      "caption": "Summer just after a shake has landed (draft tier)",
-      "w": 1200,
-      "h": 675
-    },
-    {
-      "file": "out/stills/status/status-67-3.jpg",
-      "caption": "Fall at rest. Left: the newest fall build (draft tier; not in a round yet). Right: the approved image",
+      "file": "out/stills/status/status-69-2.jpg",
+      "caption": "Spring half a second after a landing as Round 8 judges it (left) beside its approved image (right)",
       "w": 1200,
       "h": 536
     },
     {
-      "file": "out/stills/status/status-67-4.jpg",
-      "caption": "Fall just after a shake has landed (draft tier)",
+      "file": "out/stills/status/status-69-3.jpg",
+      "caption": "Still: fall rest hero, preview, draft, standins view",
+      "w": 960,
+      "h": 540
+    },
+    {
+      "file": "out/stills/status/status-69-4.jpg",
+      "caption": "Still: fall landed hero, hd, draft",
       "w": 1200,
       "h": 675
     }
