@@ -1,0 +1,209 @@
+{
+  "name": "four-tracks",
+  "file": "four-tracks.wav",
+  "which": "b",
+  "candidate": "four-tracks",
+  "args": {
+    "skip": [],
+    "gains": {},
+    "music": null
+  },
+  "cutlist": {
+    "sha256": "7848ed0f5283823ae155435377ed3e294cefed7df448b2126e2cd10b085de36a",
+    "source": "default-grid",
+    "seconds": 60,
+    "frameCount": 3600
+  },
+  "seconds": 60,
+  "openingSeconds": 0,
+  "placed": [
+    {
+      "cue": "music-box",
+      "at": 0,
+      "cents": 0
+    },
+    {
+      "cue": "lift",
+      "at": 9.6,
+      "cents": 0
+    },
+    {
+      "cue": "shake-spring",
+      "at": 9.6,
+      "cents": 0
+    },
+    {
+      "cue": "glass-clink",
+      "at": 12,
+      "cents": 0
+    },
+    {
+      "cue": "lift",
+      "at": 21.6,
+      "cents": 0
+    },
+    {
+      "cue": "glass-clink",
+      "at": 24,
+      "cents": 0
+    },
+    {
+      "cue": "lift",
+      "at": 33.6,
+      "cents": 0
+    },
+    {
+      "cue": "glass-clink",
+      "at": 36,
+      "cents": 0
+    },
+    {
+      "cue": "lift",
+      "at": 45.6,
+      "cents": 0
+    },
+    {
+      "cue": "glass-clink",
+      "at": 48,
+      "cents": 0
+    },
+    {
+      "cue": "music-box",
+      "at": 57.6,
+      "cents": 0
+    },
+    {
+      "cue": "amb-spring",
+      "from": 9.6,
+      "to": 24
+    },
+    {
+      "cue": "amb-summer",
+      "from": 21.6,
+      "to": 36
+    }
+  ],
+  "skipped": [
+    {
+      "cue": "land-spring",
+      "why": "no kept file"
+    },
+    {
+      "cue": "shake-summer",
+      "why": "no kept file"
+    },
+    {
+      "cue": "land-summer",
+      "why": "no kept file"
+    },
+    {
+      "cue": "shake-fall",
+      "why": "no kept file"
+    },
+    {
+      "cue": "land-fall",
+      "why": "no kept file"
+    },
+    {
+      "cue": "shake-winter",
+      "why": "no kept file"
+    },
+    {
+      "cue": "land-winter",
+      "why": "no kept file"
+    },
+    {
+      "cue": "amb-winter",
+      "why": "no kept file"
+    },
+    {
+      "cue": "amb-fall",
+      "why": "no kept file"
+    }
+  ],
+  "music": {
+    "candidate": "four-tracks",
+    "source": "four tracks",
+    "parts": [
+      {
+        "id": "music-winter",
+        "at": 0,
+        "fromBar": 0,
+        "sourceAt": 0.013,
+        "seconds": 12,
+        "barLines": "map",
+        "thinned": true
+      },
+      {
+        "id": "music-spring",
+        "at": 12,
+        "fromBar": 0,
+        "sourceAt": 0.307,
+        "seconds": 12,
+        "barLines": "map",
+        "thinned": true
+      },
+      {
+        "id": "music-summer",
+        "at": 24,
+        "fromBar": 0,
+        "sourceAt": 0.31,
+        "seconds": 12,
+        "barLines": "map",
+        "thinned": true
+      },
+      {
+        "id": "music-fall",
+        "at": 36,
+        "fromBar": 0,
+        "sourceAt": 0.003,
+        "seconds": 12,
+        "barLines": "map",
+        "thinned": true
+      },
+      {
+        "id": "music-winter",
+        "at": 48,
+        "fromBar": 7,
+        "sourceAt": 16.808,
+        "seconds": 11.057,
+        "barLines": "map",
+        "thinned": false
+      }
+    ]
+  },
+  "master": {
+    "targetLufs": -14,
+    "ceilingDb": -1,
+    "gainDb": 2.442,
+    "limiterReductionDb": 3.08,
+    "lufs": -14.01,
+    "truePeakDb": -1.15,
+    "passes": 3,
+    "silent": false
+  },
+  "inputs": {
+    "music-box": "72151df063e96e705b89f33748f908f0c03530a75cfac77da7719a3c6a5c9a82",
+    "lift": "3def1da6008ad9f0cb4e3435664c84e5bc123b468ffa00a1872b2ae509ee85c6",
+    "shake-spring": "e6abd21dd21a3ebf8d1e5b5a120cbc919c28d72c3ec23ecc1cb636f0f50c2f9c",
+    "glass-clink": "a62138e2781a5f480ec29a3cbe16cabf876f0f466600e4e9223fa2e54c2f984e",
+    "amb-spring": "8201e37f095b1644d48d18c13a2bdc63622f7880ed2a6cc79406ce1b38dbd35c",
+    "amb-summer": "692f4040c43aa832b9fdcaa17e2c762312807c1e83894f1c62dc57aaa3167bda",
+    "music-winter": "f21f53156f8d47122176e61ad3c0207a85cdee83a04d87c6548535b5091cebb2",
+    "music-spring": "1a82c5957c58a4c66255310434f5e75f461204452ce9747e6772dad305993ea1",
+    "music-summer": "82e1b12920f1e5def907b8144639a04528e9f3d84275479b837273b55c7e2cee",
+    "music-fall": "dfa4603dd806ebf6d55ac4ad587e7b8edf5c157654a7581d2c07f7b0e0b623e3"
+  },
+  "measuredByFfmpeg": {
+    "lufs": -14,
+    "lra": 5.1,
+    "truePeakDb": -1.1
+  },
+  "sha256": "3cbe969d95dc3a75a4d1d833563de815b6e1f4c33f298e3416b748164a77fe3d",
+  "musicStem": {
+    "file": "four-tracks-music.wav",
+    "sha256": "3b5114d865ed6aa216a9127474c9b3acbe845e8034b65ed2a8abc87fd8e1fddd"
+  },
+  "engineHash": "7c2483208ad28124",
+  "time": "2026-11-25T18:24:57.340Z"
+}

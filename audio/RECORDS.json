@@ -4616,7 +4616,7 @@
     }
   ],
   "pack": {
-    "time": "2026-11-25T18:13:37.372Z",
+    "time": "2026-11-25T18:25:09.200Z",
     "kbps": 192,
     "bytes": 3024000,
     "fits": true,
@@ -4751,6 +4751,14 @@
       "candidate": "blockout",
       "which": "b",
       "time": "2026-11-24T20:34:59.266Z"
+    },
+    "audio/mix/four-tracks.wav": {
+      "sha256": "3cbe969d95dc3a75a4d1d833563de815b6e1f4c33f298e3416b748164a77fe3d",
+      "lufs": -14,
+      "truePeakDb": -1.1,
+      "candidate": "four-tracks",
+      "which": "b",
+      "time": "2026-11-25T18:24:57.340Z"
     }
   }
 }
