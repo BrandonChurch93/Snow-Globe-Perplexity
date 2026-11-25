@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 65 · 2026-11-25 01:02 UTC
+Status 66 · 2026-11-25 01:33 UTC
 
-- `out/stills/status/status-65-1.jpg`: Spring miniature after 40 minutes: the approved image left and the build right (draft tier; the green base in this picture is the old stand-in)
-- `out/stills/status/status-65-2.jpg`: Spring base and petals on the surface: the approved image above and the build below (the miniature in this picture is the old blockout)
-- `out/stills/status/status-65-3.jpg`: Summer base and sand: the approved image above and the build below (draft tier)
-- `out/stills/status/status-65-4.jpg`: Summer miniature: the approved image above and the build below (draft tier)
+- `out/stills/status/status-66-1.jpg`: Spring at rest as merged at 01:28 UTC: every part is now real and the stand-in view is black all over (draft tier)
+- `out/stills/status/status-66-2.jpg`: Spring half a second after a landing: the petal storm (draft tier)
+- `out/stills/status/status-66-3.jpg`: Still: spring landed hero, hd, draft
+- `out/stills/status/status-66-4.jpg`: Still: spring rest hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 01:02 UTC
-clock: phase 4, tick of 1.8 minutes
-phase 4: 0.92 h used of its 9.50 h box
-allowance (before the review): 23.20 h used of 36.00 h allowed
-all time before the review: 23.20 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 01:35 UTC
+clock: phase 4, tick of 2.1 minutes
+phase 4: 1.46 h used of its 9.50 h box
+allowance (before the review): 23.75 h used of 36.00 h allowed
+all time before the review: 23.75 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 2
 ```
 
 ## Phases
@@ -66,8 +66,8 @@ minutes since the last status: 0
 | Unit | State | Rounds run | Best round | Commit | What ended its loop |
 | --- | --- | --- | --- | --- | --- |
 | `winter` | finished (limit: `quality.lookLockMaxRounds` 5, reached with Round 7; the pass bar did not hold) | 5 (Rounds 3 to 7, all judged) | 7 (R1 7, R3 5, R4 4, R2 failed at 4 of 15 against 7 of 10; checks 15 of 15 green, measures 24 of 24 green; decision 72) | `4f10d97` | The round count: `quality.lookLockMaxRounds` 5. No round passed. 4 severe and 27 major issues are written as open items 38 to 62 and go to the polish rounds of Phase 5 |
-| `spring` | not started | 0 | | | |
-| `summer` | not started | 0 | | | |
+| `spring` | in its rounds (Round 8 running, the floor round) | 1 (Round 8) | | | |
+| `summer` | in its rounds (Round 9 running, the floor round) | 1 (Round 9) | | | |
 | `fall` | not started | 0 | | | |
 | `change` | not started | 0 | | | |
 | `globe` | not started | 0 | | | |
@@ -77,14 +77,15 @@ minutes since the last status: 0
 
 A summary of `parts/PARTS.json`: every part that is not `built`, with its state and why.
 
-Read from the register at 23:14 UTC on 2026-11-24: 54 parts, 17 `built` (all of `winter`), 37 stand-ins. Until this entry the section said "none", which was wrong from Phase 2 on: the register itself was right throughout.
+Read from the register at 01:35 UTC on 2026-11-25: 54 parts, 39 `built`, 15 stand-ins.
 
-- `spring`, 9 stand-ins from the blockout: `base-spring`, `miniature-spring`, `glass-dressing-spring`, `surface-dressing-spring`, `light-spring`, `veil-spring`, `arrival-spring`, `particle-petal`, `particle-mote`. Phase 4 builds them.
-- `summer`, 9 stand-ins from the blockout: `base-summer`, `miniature-summer`, `glass-dressing-summer`, `surface-dressing-summer`, `light-summer`, `veil-summer`, `arrival-summer`, `particle-firefly`, `particle-seed`. Phase 4 builds them.
-- `fall`, 10 stand-ins from the blockout: `base-fall`, `miniature-fall`, `glass-dressing-fall`, `surface-dressing-fall`, `light-fall`, `veil-fall`, `arrival-fall`, `particle-leaf`, `particle-ember`, `particle-bat`. Phase 4 builds them.
-- `change`, 4 stand-ins: `change-winter-spring`, `change-spring-summer`, `change-summer-fall`, `change-fall-winter`. Phase 4, after the seasons.
-- `globe`, 3 stand-ins: `interface`, `sound-engine`, `quality-levels`. Phase 5.
-- `film`, 2 stand-ins: `opening`, `loop`. Phase 5 and the phases after the review.
+- `winter`: all 17 parts `built`.
+- `spring`: all 9 parts `built`.
+- `summer`: all 9 parts `built`.
+- `fall`, 6 of 10 still stand-ins: `glass-dressing-fall`, `light-fall`, `veil-fall`, `particle-leaf`, `particle-ember`, `particle-bat`.
+- `change`, 4 of 4 still stand-ins: `change-winter-spring`, `change-spring-summer`, `change-summer-fall`, `change-fall-winter`.
+- `globe`, 3 of 3 still stand-ins: `interface`, `sound-engine`, `quality-levels`.
+- `film`, 2 of 2 still stand-ins: `opening`, `loop`.
 
 ## Workspace record
 
@@ -856,6 +857,8 @@ Numbered. What, why, and the date.
 
 74. **Each new season gets an allowance of 18 MiB in the web pack, split by part, and the builders were told in writing** (01:03 UTC, Phase 4). `host.maxShippedMb` holds all of `dist/` to 95 MB (G16, Phase 5). Winter's web set is 18.0 MiB and the shared set 7.3 MiB; with every first version merged at 00:56 the pack stood at 83.8 MiB (spring 25.5, summer 22.3, fall 10.9), which with the code and the sound pack would be over the limit before any tuning. So: base and slab files together 6.5 MiB, miniature (village and tree files) 9.5 MiB, glass dressing and veil files 2 MiB, per season, as winter has. Sent to the nine season builders at 00:57 with where each stood; they cut what the judged cameras cannot see first. The limit itself is not touched. The triangle and draw call limits of G15 are measured on the merged build and sent the same way.
 
+75. **The first rounds of spring and summer start together on one judged commit; fall's first round waits for free critic slots** (01:35 UTC, Phase 4). kit/08 sends a season to its first round "as soon as nothing its stills show is a stand-in". At 01:28 that held for spring and for summer (the stand-in view of each is black all over), 77 minutes into the phase and 90 minutes before the builders' limit, so both rounds were counted at once on `fe1072c`: Round 8 on spring, Round 9 on summer. Critics, jurors and render agents share `sandbox.criticSlots` 6. Round 8's renders take three (the gate, the pack, the motion pack); Round 9's take two (one new render agent for the pack, and one that draws the motion pack and then runs the gate), which leaves one slot for the first critics. Fall's stand-in view is checked the same way; its first round (Round 10) is frozen as soon as three slots are free with no critic of a running round waiting, and at the latest at the builders' limit of 03:02 UTC, on the newest merged build. The builders go on to their limit; what the critics say reaches fresh fix agents after it, and a season's second round follows while the count and the clock allow.
+
 ## Notes from Brandon
 
 Numbered, in his words, with the date and how each was applied. Review round items carry their round's number.
@@ -1190,6 +1193,10 @@ Merged into `main`, each verified here with types clean and the tests green (126
   - The sound agent `sound_maker` (branch `agent/p4-sound`; `audio/`) starts when the first of the ten is done.
   - Phase 3's agents are all done and idle: the ten closers, `looklock_scribe`, the four render agents (used again for Phase 4's rounds), Round 7's critics and jurors.
 
+- Rounds 8 (spring) and 9 (summer), both on `fe1072c`, orders sent 01:36 UTC (decision 75). Never more than six critics, jurors and render agents at once.
+  - Round 8: `gate_runner` (the whole gate with `--unit spring` on a clean clone, limit 03:16), `round_renderer` (measures and the packs of R1, R2, R3, branch `agent/p4-round8-pack`, limit 02:51), `motion_renderer` (the motion pack R4, branch `agent/p4-round8-motion`, limit 02:46).
+  - Round 9: `round_renderer_b`, a new render agent started 01:36 in its own VM with the pack runbook (measures and the packs of R1, R2, R3, branch `agent/p4-round9-pack`, limit 03:06); `motion_renderer_b` (the motion pack R4, branch `agent/p4-round9-motion`, limit 02:46, then the whole gate with `--unit summer` on a clean clone, limit 04:06).
+
 ## Rounds
 
 One line per round: its number, the unit, the commit it judged, each part ticked off as it finished, the scores, and what changed next.
@@ -1207,6 +1214,10 @@ One line per round: its number, the unit, the commit it judged, each part ticked
 - Round 6 · winter (Phase 3, the look lock; winter's fourth round, an extra round: the clock printed `extra rounds: yes` at 20:20 with 18.50 h of the 36 h allowance used and 11.89 h of the phase's 11 h box) · judges commit `2569976` · started 2026-11-24 20:20 UTC. Parts: [x] build (the judged build is `2569976`: the first pushes of all ten closers merged (tree `c04dab8`, village `b939db8`, base `0eb22eb`, frost `8e25585`, flakes `1ec4f91`, liquid `d38e0c2`, scene `21bea60`, glass `f6fc045`, light `b465e56`, shake `ebddaba`), every part made again, texpack, tsc clean, G8 green with 75 shipped files, vitest 418 passed, 4 skipped and 0 failed; `shake.strokeMm` 22 by decision 65; draft stills of `rest` and `landed` on it were looked at before the freeze) · [x] machine checks (21:10: all 15 green on a clean clone of `2569976` by `gate_runner` (43 minutes; 418 of 422 tests, 4 skipped); the 12 still repeat test is clean in both runs. Round 5's red test passes) · [x] measures (21:06: 24 of 24 lines at the final tier by `round_renderer`, 1 red: M3 on `winter-rest`, 0.7186 against 0.75: the miniature reads 0.719 of the approved image's fine detail and the base 0.943 (the miniature read 1.017, 0.832 and 0.787 in Rounds 3, 4 and 5). M1 on `winter-base`, red in Round 5, is green. M4 0.9372, M5 0.9992. So Round 6's measures are red) · [x] pack (21:06: 46 files, 0 parts missing: R1 8, R2 5, R3 in three parts (9, 9, 3) at the final tier by `round_renderer` (`agent/p3-round6-pack` `8d9261a`); R4 in two parts (10, 2) at the review tier by `motion_renderer` with `motion_renderer_b`'s half (`agent/p3-round6-motion` `c80b160`, `agent/p3-round6-motion-b` `8a09bfc`); the one frame both drew is byte-identical. The two R2 controls have the same bytes as in Round 5; their votes of Round 3 are reused (decision 62)) · [x] R1 (21:09 (`reviewer_r6_a`, `claude_opus_5_5`): 5, with one severe, four major and five minor) · [x] R2 (21:12: fails: 5 of 15 votes for (a) or (b), a share of 0.33 against the controls' 7 of 10 and a bar of 0.5 (Round 5: 3 of 15; Round 4: 4 of 15). By image: rest b b c c c, settled b c c c c, one second after the landing b b c c c; no vote for (a) and none for (d). 15 fresh jurors from five model families, one image each; the controls' votes of Round 3 are reused (decision 62). It counts as one major issue) · [x] R3 (21:09: 5, the lowest of three fresh critics, with all their issues: part 1 (`reviewer_r6_b`, `kimi_k3`) 5 with three major and four minor; part 2 (`reviewer_r6_c`, `pplx_computer_glm_5_3_1009`) 8 with three major; part 3 (`reviewer_r6_d`, `gpt_6_2_sol`) 7 with six major) · [x] R4 (21:24: 5, the lower of two fresh critics, with all their issues: part 1 (`reviewer_r6_e`, `grok_4_7`) 5 with one severe, three major and one minor; part 2 (`reviewer_r6_f`, `gemini_4_carbon`) 6 with one severe, two major and one minor) · [x] issues read (21:14: R1, R2 and R3 read and sent by owner to the ten builders in the critics' own words (R4 follows when it answers); the red M3 went to the tree, village and flake builders at 21:07) · [x] fixes (21:30: sent by owner to the ten closers, who push for Round 7 by 22:10: the red M3 first (tree, village, flakes), then the severe and the majors; decisions 66 and 67; Declined issues 5 and 6; ladder moves 11 to 18) · [x] logged (21:30: `scorecards/round-006/` holds the manifest, the keys, the measures, the gate's record, each critic's JSON, the jurors' answers and `SUMMARY.md`. Round 6 does not pass: R1 5, R2 fails (5 of 15), R3 5, R4 5; gate 15 of 15 green; measures 1 red (M3))
 
 - Round 7 · winter (Phase 3, the look lock; winter's fifth round, the last `quality.lookLockMaxRounds` allows, an extra round: the clock printed `extra rounds: yes` at 22:11 with 20.33 h of the 36 h allowance used and 13.71 h of the phase's 11 h box) · judges commit `4f10d97` · started 2026-11-24 22:16 UTC. Parts: [x] build (the judged build is `4f10d97`: the last pushes of all ten closers merged (tree `ef99abc`, village `c592dab`, base `a807a2f`, frost `988374e`, flakes `eae5220`, liquid `78e60ec`, scene `df43cf5`, glass `41d0707`, light `4a0a414`, shake `acbf066`), every part made again, texpack, tsc clean, G8 green with 75 shipped files, vitest 419 passed, 4 skipped and 0 failed; high 1490555 of 1800000 triangles, medium 999606 of 1100000, low 429594 of 600000; `shake.strokeMm` 25 by decision 66; M3 at the final tier read 0.8806 on the merge before the last two branches (base and shake); a final still of `rest` and a draft still of `landed` were looked at before the freeze) · [x] machine checks (23:07: the Phase 3 gate on a clean clone of `4f10d97`, run once by `gate_runner` in 43.9 minutes: all 15 green; the repeat test before it: 0 of 9 repeats differ in both runs; G13 covers no part yet, because no unit is marked finished) · [x] measures (23:06: 24 of 24 lines at `final`, 0 red, by `round_renderer`; M3 0.9203 against 0.75 (base 0.920, miniature 0.931)) · [x] pack (23:06: 34 files for R1, R2 and R3 at `final` in five parts and 12 sheets for R4 at `review` in two parts, none missing; the controls' bytes equal Round 6's) · [x] R1 (`gpt_6_2_sol`, answered 23:09: 7, 2 severe, 7 major, 1 minor) · [x] R2 (15 jurors, five per judged image, across five model families, all in by 23:10: 4 of 15 answered (a) or (b) (rest 1 of 5, shake 2 of 5, settled 1 of 5) against the control's 7 of 10; the bar is a share of 0.5; failed, which counts as one major issue. Eleven answered (c), most of them naming the centred product framing) · [x] R3 (part 1 (hero at rest, landed, interior), `grok_4_7`, answered 23:17: 7, 2 major, 2 minor; part 2 (base, surface, settled), `gemini_4_carbon`, answered 23:28: 5, 7 major, 1 minor; part 3 (macro), `claude_opus_5_5`, answered 23:09: 5, 6 major, 5 minor; the pack takes the lowest: 5, with no severe, 15 major and 8 minor issues) · [x] R4 (part 1, ten sheets, `pplx_computer_glm_5_3_1009`, answered 23:06: 7, 1 severe, 2 major; part 2, two sheets, `kimi_k3`, answered 23:06: 4, 1 severe, 2 major, 2 minor; the pack takes the lowest: 4) · [x] issues read (23:34: every issue of the six answers and the jury's card read; 31 severe and major issues written as open items 38 to 62; ladder moves 19 to 35; Declined issues 7 to 13) · [x] fixes (none: Round 7 is the last round `quality.lookLockMaxRounds` allows, so no fix pass follows inside the look lock; the open items go to the polish rounds of Phase 5) · [x] logged (23:34: `scorecards/round-007/` holds the manifest, the keys, the measures, the gate's log, each critic's JSON, the jurors' answers, the jury's card and `SUMMARY.md`. Result: does not pass. R1 7, R2 failed at 4 of 15 against 7 of 10, R3 5, R4 4; checks 15 of 15 green; measures 24 of 24 green)
+
+- Round 8 · spring (Phase 4; spring's first round, the floor round) · judges commit `fe1072c` · started 2026-11-25 01:35 UTC. Parts: [x] build (the judged build is `fe1072c`: the first versions of spring's three builders and of the kinds builder merged (base `586b0c0`, miniature `0c761fc`, air `cb08977`, kinds `b97f86e`), every part of every season made again here, texpack with 76.962 MiB in the web set, tsc clean, vitest 425 passed, 4 skipped and 0 failed; the stand-in view of `rest` from `hero` is black all over; a draft still of `rest` and one of `landed` were looked at before the freeze: a real scene with its base, miniature, dressing and petals) · [ ] machine checks · [ ] measures · [ ] pack · [ ] R1 · [ ] R2 · [ ] R3 · [ ] R4 · [ ] issues read · [ ] fixes · [ ] logged
+
+- Round 9 · summer (Phase 4; summer's first round, the floor round) · judges commit `fe1072c` · started 2026-11-25 01:35 UTC. Parts: [x] build (the judged build is `fe1072c`, the same commit as Round 8: the first versions of summer's three builders and of the kinds builder merged (base `84edb99`, miniature `9fbb0f5`, air `aa30671` with the rows of seed and firefly, kinds `b97f86e`), every part of every season made again here, texpack with 76.962 MiB in the web set, tsc clean, vitest 425 passed, 4 skipped and 0 failed; the stand-in view of `rest` from `hero` is black all over; a draft still of `rest` was looked at before the freeze: a real scene with its base, miniature, lanterns, fireflies and sand) · [ ] machine checks · [ ] measures · [ ] pack · [ ] R1 · [ ] R2 · [ ] R3 · [ ] R4 · [ ] issues read · [ ] fixes · [ ] logged
 
 ## Final scores
 

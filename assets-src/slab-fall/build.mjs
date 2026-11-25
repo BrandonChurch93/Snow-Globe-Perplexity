@@ -14,24 +14,24 @@ const FOOT = cfg.globe.baseDiameterMm / 2
 
 // A leaf in its own square: x along the midrib (-1 the stalk, 1 the tip), y across. Each kind gives the half width at x.
 const KINDS = [
-  { name: 'maple', lobes: 5, deep: 0.5, wide: 0.92, tooth: 0.08 },
+  { name: 'maple', lobes: 5, deep: 0.34, wide: 0.9, tooth: 0.08 },
   { name: 'oak', lobes: 0, wide: 0.46, wave: 7, deep: 0.2, tooth: 0 },
   { name: 'beech', lobes: 0, wide: 0.5, wave: 0, deep: 0, tooth: 0.05 },
-  { name: 'maple', lobes: 3, deep: 0.42, wide: 0.8, tooth: 0.1 },
+  { name: 'beech', lobes: 0, wide: 0.44, wave: 0, deep: 0, tooth: 0.07 },
   { name: 'birch', lobes: 0, wide: 0.6, wave: 0, deep: 0, tooth: 0.09 },
   { name: 'oak', lobes: 0, wide: 0.4, wave: 9, deep: 0.26, tooth: 0 },
-  { name: 'maple', lobes: 5, deep: 0.36, wide: 0.86, tooth: 0.05 },
+  { name: 'maple', lobes: 5, deep: 0.26, wide: 0.84, tooth: 0.05 },
   { name: 'beech', lobes: 0, wide: 0.36, wave: 0, deep: 0, tooth: 0.03 },
 ]
 const PALETTE = [
-  [0.86, 0.36, 0.07],
-  [0.6, 0.17, 0.04],
-  [0.42, 0.2, 0.07],
-  [0.9, 0.56, 0.1],
-  [0.74, 0.25, 0.05],
-  [0.36, 0.14, 0.05],
-  [0.95, 0.45, 0.08],
-  [0.55, 0.3, 0.1],
+  [0.8, 0.42, 0.14],
+  [0.55, 0.24, 0.08],
+  [0.45, 0.26, 0.12],
+  [0.85, 0.58, 0.2],
+  [0.7, 0.34, 0.1],
+  [0.38, 0.2, 0.09],
+  [0.88, 0.5, 0.15],
+  [0.6, 0.38, 0.16],
 ]
 function inLeaf(k, x, y, seed) {
   const kind = KINDS[k]
@@ -171,19 +171,20 @@ function leaves() {
   }
   const density = (az) => {
     const f = Math.abs(((az + 540) % 360) - 180)
-    return f < 28 ? 0.3 : f < 50 ? 0.6 : 1
+    const sides = Math.exp(-(((f - 78) / 34) ** 2))
+    return (f < 28 ? 0.25 : f < 50 ? 0.55 : 0.8) * (0.45 + 0.55 * sides) + 0.25 * sides
   }
   let near = 0
   let tries = 0
-  while (near < 150 && tries++ < 5000) {
+  while (near < 300 && tries++ < 12000) {
     const az = r(-180, 180)
     if (rng() > density(az)) continue
-    const dist = FOOT + 6 + 110 * rng() ** 1.5
-    const size = r(4.2, 8.5) * (rng() < 0.12 ? 1.35 : 1)
+    const size = r(3.8, 7.0) * (rng() < 0.15 ? 1.3 : 1)
+    const dist = FOOT + 5 + size * 0.7 + 115 * rng() ** 1.9
     const cx = dist * Math.sin(az * RAD)
     const cz = dist * Math.cos(az * RAD)
     if (placed.some((p) => Math.hypot(p[0] - cx, p[1] - cz) < (p[2] + size) * 0.55)) continue
-    add(dist, az, size, 1, 6, 0)
+    add(dist, az, size, r(0.7, 1.35), 6, 0)
     near++
   }
   let crumbs = 0
