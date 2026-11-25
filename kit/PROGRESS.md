@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 128 · 2026-11-25 23:15 UTC
+Status 129 · 2026-11-25 23:25 UTC
 
-- `out/stills/status/status-128-1.jpg`: Spring mid-shake, hd, final tier: the approved picture (a) beside the frozen build (b).
-- `out/stills/status/status-128-2.jpg`: Summer mid-shake, the same way: approved (a), build (b).
-- `out/stills/status/status-128-3.jpg`: Fall mid-shake, the same way: approved (a), build (b).
-- `out/stills/status/status-128-4.jpg`: Fall on the wide layout as the app draws it, with the season marks, the Shake control and the sound control.
+- `out/stills/status/status-129-1.jpg`: The fresh reviewer's picture of the review cut, frames 332 to 339 and 1052 to 1059: the old base is whole in one frame and gone in the next.
+- `out/stills/status/status-129-2.jpg`: Its picture of the app on a phone (390 x 844): the lift, the middle of a stroke with the glass and the base cut by the right edge, and a second shake.
+- `out/stills/status/status-129-3.jpg`: Its picture of the bottom bar on a phone at twice its size: focus on Winter, focus on Shake with the control not drawn, and after a landing with the control not drawn.
+- `out/stills/status/status-129-4.jpg`: Its picture of the page while loading, as shown and brightened twelve times: blank, with the unsized canvas as a black box.
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 23:15 UTC
-clock: phase 5, tick of 7.7 minutes
-phase 5: 9.07 h used of its 12.00 h box
-allowance (before the review, continuation 1): 9.07 h used of 12.00 h allowed
-all time before the review: 45.26 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 23:25 UTC
+clock: phase 5, tick of 1.1 minutes
+phase 5: 9.23 h used of its 12.00 h box
+allowance (before the review, continuation 1): 9.23 h used of 12.00 h allowed
+all time before the review: 45.43 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
@@ -2401,3 +2401,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 23:15 UTC. Status 128 posted in the thread at 23:15 UTC (Phase 5, Continuation 1), four pictures, each looked at first: spring, summer and fall mid-shake at hd and the final tier, the approved picture (a) beside the frozen build (b) (`out/stills/spring/compare-spring-shake.jpg`, `out/stills/summer/compare-summer-shake.jpg`, `out/stills/fall/compare-fall-shake.jpg`), and fall on the wide layout as the app draws it (`out/stills/globe/screen-wide-fall.jpg`, Round 19's picture). What it said: the build waits on three checks of the frozen build, none of them a round (the phase gate, G1 to G4 pass and G5 running at 22:53; the fresh reviewer; a read-only security check before the publish at the gate); since Status 127, check D4 passes here on the review cut, the REVIEW block is drafted from the log and no file of the app has changed; the clock stood at 9.07 h of Phase 5's 12 and 45.26 h of the 48 before the review; next come the gate's result (about 23:50), the reviewer's score, the last tick, the publish and the REVIEW block.
 
 - 23:23 UTC. The fresh review of the delivered output answered at 23:15 UTC: 6 of 10, nine must-fixes (the project standard asks for 9 with none, or the blocker named). Its message is kept word for word in `scorecards/phase-5/final-pass-review.md`, its six pictures in `out/stills/phase-5/final-pass/`; all six were opened here. It judged the built app of `0f167f9` in live mode at 1920 x 1080 and 390 x 844, every frame of `out/review-four-tracks.mp4` and all 240 frames of the card loop; it could not hear, had no graphics card and got 401 from the published link. What it found right: no marketing chrome anywhere (the only word on screen is "SHAKE"), every control did its job, no console error and no failed request in any run, the four seasons at rest "striking, one focal point, readable at 400 px", the arrivals "a real payoff". What it found wrong went to open items 214 to 221 and to decision 127, which also says why nothing is mended before the stop. Checked here against the files before writing: the mix's numbers with ffmpeg (they agree: the silent 0.456 s at the end, the first 2.6 s at -28.7 dB against -14.9 to -17.7 dB in the holds, the last 0.2 s before the four landings at -33.7, -39.7, -52.7, -69.7 dB, left 1.4 dB over right, true peak -1.1 dB in the WAV and -0.8 dB in the cut's AAC stream); the cause of the Shake control's fade in `src/ui/ui.module.css`; the cut's colour tags with ffprobe. Two of its nine are the state the kit sets for this stop and no fault of the build: the film as a preview (must-fix 1) and the card loop in the preview format (must-fix 9). Also since 23:13: the read-only check before the publish at the gate reported nothing that blocks and one warning, mended (decision 128, "For Brandon to decide" 13): the handle of the saved ElevenLabs credential is out of the two tracked scripts. The sentence in "For Brandon to decide" 1 that said both soundtrack candidates were made is set right: one is. The gate's line of 23:21 from `gate_runner_b`: "gate at 0f167f99671c, 58 minutes in. G1 to G12 all pass; G13 is running."
+
+- 23:25 UTC. Status 129 posted in the thread at 23:25 UTC (Phase 5, Continuation 1), four pictures, each looked at first, all from the fresh reviewer (`out/stills/phase-5/final-pass/`): the review cut's frames 332 to 339 and 1052 to 1059, the app on a phone through a shake, the bottom bar on a phone with the Shake control not drawn, and the page while loading. What it said: the fresh review gave 6 of 10 with nine must-fixes where the project standard asks for 9 with none; nothing is mended before the stop, since the kit's round counts are used and the build is frozen for its gate (decision 127); the findings are open items 214 to 221 and two of the nine are the state the kit sets for this stop (the film and the loop are previews); the gate at 23:21 had G1 to G12 passed and G13 running; the check before the publish found nothing that blocks and the credential's handle is out of two scripts (decision 128); the clock stood at 9.23 h of Phase 5's 12; next come the gate's result, the last tick, the publish and the REVIEW block.
