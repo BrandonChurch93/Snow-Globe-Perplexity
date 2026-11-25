@@ -96,6 +96,9 @@ const K_CROSS = new Float64Array(NK)
 const K_DIP = new Float64Array(NK)
 const K_SPIN = new Float64Array(NK)
 const K_SLOPE = new Float64Array(NK)
+/** The share of a kind that is born away from its emitters, anywhere under the dome: fall's leaves and embers fill the whole volume to the top (the approved pair), not only the air round the tree that sheds them. */
+const BORN_WIDE: Readonly<Record<string, number>> = { leaf: 0.5, ember: 0.55 }
+const K_WIDE = new Float64Array(NK)
 const K_REST2 = new Float64Array(NK)
 const K_KICK = new Float64Array(NK)
 const K_CRUISE = new Float64Array(NK)
@@ -122,6 +125,7 @@ export const facingPhase = (nx: number, nz: number): number => {
 }
 TABLE_OF.forEach((b, k) => {
   K_MODE[k] = b.mode === 'steer' ? 1 : b.mode === 'cycle' ? 2 : 0
+  K_WIDE[k] = BORN_WIDE[KINDS[k]!] ?? 0
   K_REST[k] = b.rest === 'lies' ? STATE_REST : b.rest === 'snags' ? STATE_SNAG : 0
   K_SWAY[k] = b.swayMmS
   K_CROSS[k] = b.crossMmS
@@ -900,7 +904,23 @@ export class ParticleEngine {
     let x: number
     let y: number
     let z: number
-    if (list && list.length > 0) {
+    const wide = unit(hash2(i, 977)) < K_WIDE[k]!
+    if (wide && K_MODE[k] === 2) {
+      const G = this.grid(ix)
+      x = 0
+      y = 0
+      z = 0
+      for (let tries = 0; tries < 8; tries++) {
+        const s = salt + 400 + tries * 3
+        const az = unit(hash2(i, s + 2)) * TAU
+        const rr = Math.sqrt(unit(hash2(i, s + 3))) * WALL * 0.94
+        x = rr * Math.cos(az)
+        z = rr * Math.sin(az)
+        const top = Math.sqrt(WALL2 - rr * rr) - 2
+        y = GROUND_Y + 3 + Math.max(0, top - GROUND_Y - 3) * unit(hash2(i, s + 1))
+        if (sdfSample(G.source, x, y, z, g) > 1.5) break
+      }
+    } else if (list && list.length > 0 && !wide) {
       const e = list[Math.min(list.length - 1, Math.floor(unit(hash2(i, salt)) * list.length))]!
       const cz = unit(hash2(i, salt + 1)) * 2 - 1
       const az = unit(hash2(i, salt + 2)) * TAU
@@ -1025,7 +1045,21 @@ export class ParticleEngine {
       else if (mode === 2) {
         const age = Math.floor(unit(hash2(i, 9)) * this.life[i]! * HZ)
         this.spring(i, k, 41, ix)
-        this.xyz[i * 3 + 1] = this.xyz[i * 3 + 1]! - this.sink[i]! * age * DT * 0.8
+        if (unit(hash2(i, 977)) < K_WIDE[k]!) {
+          // born anywhere under the dome: it has risen since only as far as the glass and the miniature let it
+          const o = i * 3
+          const y0 = this.xyz[o + 1]!
+          const rise = -this.sink[i]! * age * DT * 0.8
+          const lim = WALL - 1
+          let y = y0
+          for (let part = 1; part <= 6; part++) {
+            const cy = y0 + (rise * part) / 6
+            if (this.xyz[o]! * this.xyz[o]! + cy * cy + this.xyz[o + 2]! * this.xyz[o + 2]! > lim * lim) break
+            if (sdfSample(G.source, this.xyz[o]!, cy, this.xyz[o + 2]!, this.g) < 1) break
+            y = cy
+          }
+          this.xyz[o + 1] = y
+        } else this.xyz[i * 3 + 1] = this.xyz[i * 3 + 1]! - this.sink[i]! * age * DT * 0.8
         this.stamp[i] = -age
         const a = age / (this.life[i]! * HZ)
         this.fade[i] = emberGlow(a)

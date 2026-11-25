@@ -34,7 +34,7 @@ const WALL_FILL = 2.3
 const SAND = { white: [0.86, 0.9, 0.98] as Rgb, whiten: 0.8, clumpPerMm: 1.1, grainPerMm: 4.2, heapPerMm: 0.16, heapLow: 0.6, heap: 0.6, body: 3.6, floor: 0.8, wrap: 1.5, foot: 0.85, bump: 0.6, grainLow: 0.62, grain: 0.5, spark: 1.5, topFrom: 0.22, topTo: 0.62 }
 const TURF_LOOK = { tone: 0.5, fineMm: 0.05, clumpMm: 0.22, fill: 0.45, wrap: 0.5 }
 const GRASS_LOOK = { fill: 0.1, wrap: 1.0, through: 0.36, near: 2.1, sun: 30, sunRoot: 0.35, shade: 0.6 }
-const ROOF = { slate: [0.33, 0.41, 0.56] as Rgb, chimney: [0.56, 0.5, 0.43] as Rgb, stone: [1.22, 0.9, 0.68] as Rgb, stoneMid: 0.36, stoneFlat: 0.45, stoneHue: 0.5, plank: [0.5, 0.26, 0.15] as Rgb, plankMm: 2.2, plankTall: 3.8, pitch: 0.2, stoneMm: 1.4, picket: [0.5, 0.27, 0.14] as Rgb, picketMm: 1.6, pale: 0.25, railTop: [1.5, 1.2, 0.85] as Rgb, door: [0.27, 0.125, 0.08] as Rgb, doorMm: 2.4, reachMm: 0.4 }
+const ROOF = { slate: [0.33, 0.41, 0.56] as Rgb, chimney: [0.4, 0.37, 0.35] as Rgb, stone: [1.12, 0.84, 0.66] as Rgb, stoneMid: 0.34, stoneFlat: 0.45, stoneHue: 0.5, plank: [0.5, 0.26, 0.15] as Rgb, plankMm: 2.2, plankTall: 3.8, pitch: 0.2, stoneMm: 1.4, picket: [0.5, 0.27, 0.14] as Rgb, picketMm: 1.6, pale: 0.25, railTop: [1.5, 1.2, 0.85] as Rgb, door: [0.27, 0.125, 0.08] as Rgb, doorMm: 2.4, reachMm: 0.4 }
 const DARK_PANE = 0.07
 const WATER = { spark: 1.1, mass: 0.975, houseMm: 9.5, houseTall: 17, flat: 0.14, wobble: 0.9, rough: 0.035, ripple: 0.0045, fine: 0.0012, shoreFrom: 0.9, shoreTo: 1.0, sky: 2.6, skyFrom: -0.75, skyTo: 0.35, skyAt: 1.5, skyWide: 9.5, skyLow: 0.1, bankMm: 1.6, bankVary: 2.2, bankEdge: 0.16, bankDark: 0.975, env: 0.1, glint: 0.5, squash: 0.14, paperGlint: 2.4, paperMm: 1.5, paperTall: 0.5, post: 0.93, postMm: 0.75, postTall: 11.5, trunk: 0.975, trunkMm: 5.2, trunkTall: 26, body: 0.4 }
 
@@ -303,9 +303,11 @@ const shadowed = <T extends THREE.Mesh>(m: T, cast = true): T => {
 // -1 in height then). Single blades of grass cannot be told apart in that picture, the turf under them can: the grass gives
 // the mirror none of its triangles. The ground casts no shadow either: nothing lies under it, and its own slopes are shaded
 // by the light that leaves them.
-const unmirrored = <T extends THREE.Mesh>(m: T): T => {
+// `keep` is how much of the mesh the mirror still gets, counted from its start: the cottage keeps its walls and loses the
+// roses, leaves and blooms that stand on them.
+const unmirrored = <T extends THREE.Mesh>(m: T, keep = 0): T => {
   m.onBeforeRender = () => {
-    if (m.matrixWorld.determinant() < 0) m.geometry.setDrawRange(0, 0)
+    if (m.matrixWorld.determinant() < 0) m.geometry.setDrawRange(0, keep)
   }
   m.onAfterRender = () => {
     m.geometry.setDrawRange(0, Infinity)
@@ -346,7 +348,7 @@ function dressed(g: THREE.BufferGeometry, sharedCount: number): THREE.BufferGeom
 export function build(): THREE.Object3D {
   const shared = villageGeometry('solid')
   const solids = withSurface(dressed(mergeGeometries([shared, geometry(MODEL, 'decor')]), shared.getAttribute('position').count), nearWall)
-  const walls = shadowed(new THREE.Mesh(solids, surfaceMaterial({ part: PART, map: villageGrain(), gain, key: 'village-solid-summer', fill: WALL_FILL })))
+  const walls = unmirrored(shadowed(new THREE.Mesh(solids, surfaceMaterial({ part: PART, map: villageGrain(), gain, key: 'village-solid-summer', fill: WALL_FILL }))), shared.index ? shared.index.count : shared.getAttribute('position').count)
   const ground = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'ground'), near), turfMaterial()), false)
   const grass = unmirrored(shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'grass'), near), grassMaterial()), false))
   const water = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'water'), near), waterMaterial()), false)

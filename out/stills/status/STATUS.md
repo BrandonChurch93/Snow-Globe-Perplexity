@@ -1,19 +1,18 @@
-# Status 75
+# Status 77
 
-2026-11-25 04:54 UTC
+2026-11-25 05:36 UTC
 
-- Second rounds of spring and summer are frozen on one merged build of all ten builders: Round 11 judges spring and Round 12 judges summer
-- Triangle counts of spring and summer are inside the limits at all three quality levels on the merged build and the two missing recipes are written so both red checks of the last gates are answered
-- Round 10 on fall is in: stills 3 and the hero photo look 6 and motion 3 and the jury 1 of 20 against 7 of 10 and the gate 13 of 15 green
-- Fall freezes for its second round at 05:30 UTC
-- Decision 82 keeps the arrivals with the change builder and decision 83 gives the change its floor round on the same commit as the seasons' third rounds
-- Sound stays at four kept cues because the sound account is out of credits and the films stay silent
-- phase 4: 4.78 h used of its 9.50 h box
-- allowance (before the review): 27.06 h used of 36.00 h allowed
+- Rounds 11 12 and 13 started at 05:31 UTC on one build (e39ec6c): spring summer and fall after the fix pass of all ten builders
+- Render agents have the three motion packs the still packs of spring and summer and the machine checks. Fall's stills follow when a renderer is free
+- A third set of ten build agents takes over from the second set's notes (decision 86). Eight started at 05:35
+- Spring's triangles on this build are inside the limit on all three levels. Summer and fall are being counted
+- Sound is still out: the account has no credits left
+- phase 4: 5.48 h used of its 9.50 h box
+- allowance (before the review): 27.76 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-75-1.jpg`: Spring at rest on the build its second round judges (draft tier preview size)
-- `out/stills/status/status-75-2.jpg`: Summer at rest on the build its second round judges (draft tier preview size)
-- `out/stills/status/status-75-3.jpg`: Still: summer rest hero, preview, draft
-- `out/stills/status/status-75-4.jpg`: Still: summer rest hero, preview, draft, standins view
+- `out/stills/status/status-77-1.jpg`: Spring at rest on the build Round 11 judges (left) beside the approved image (right). Draft tier.
+- `out/stills/status/status-77-2.jpg`: Summer at rest on the build Round 12 judges (left) beside the approved image (right). Draft tier.
+- `out/stills/status/status-77-3.jpg`: Fall at rest on the build Round 13 judges (left) beside the approved image (right). Draft tier.
+- `out/stills/status/status-77-4.jpg`: Still: fall rest hero, preview, draft

@@ -110,12 +110,15 @@ normal *= faceDirection;
 const LIGHTS = `
   vec3 liveKey = vec3(0.0, 1.0, 0.0);
   vec3 liveKeyC = vec3(0.0);
+  vec3 liveSunC = vec3(0.0);
   #ifdef STAGE_LIGHT_DONE
   liveKey = stageKeyL;
   liveKeyC = stageKeyC * stageKeyS;
+  liveSunC = stageKeyC;
   #elif NUM_DIR_LIGHTS > 0
   liveKey = directionalLights[0].direction;
   liveKeyC = directionalLights[0].color;
+  liveSunC = liveKeyC;
   #endif
   vec3 liveCard = normalize(mat3(viewMatrix) * uRigCardDir);
   float liveNv = clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0);
@@ -125,7 +128,11 @@ const LIGHTS = `
   float liveCardWrap = clamp(dot(geometryNormal, liveCard) * 0.5 + 0.5, 0.0, 1.0);
   float liveRim = clamp((dot(geometryNormal, normalize(mat3(viewMatrix) * vec3(0.76, 0.3, -0.58))) + 0.25) / 1.25, 0.0, 1.0);
   float liveUp = max(inverseTransformDirection(geometryNormal, viewMatrix).y, 0.0);
-  float liveOpen = smoothstep(0.05, 0.7, liveRim + 0.3 * liveUp);
+  // How open a place is to the light behind is the base's own shape there, not each tuft's: a wall that faces the camera stays in shade however rough it is.
+  vec3 liveMacro = normalize(normalMatrix * vBaseNormal);
+  float liveRimM = clamp((dot(liveMacro, normalize(mat3(viewMatrix) * vec3(0.76, 0.3, -0.58))) + 0.25) / 1.25, 0.0, 1.0);
+  float liveUpM = max(inverseTransformDirection(liveMacro, viewMatrix).y, 0.0);
+  float liveOpen = smoothstep(0.05, 0.7, mix(liveRim + 0.3 * liveUp, liveRimM + 0.3 * liveUpM, 0.75));
 `
 
 const SHADE = `
@@ -175,9 +182,9 @@ float baseSpeck = baseNoise(vBasePos * 6.5);
 vec3 baseStone = baseStoneC * vec3(1.7, 1.65, 1.4) * mix(0.55, 1.3, baseBlotch) * mix(0.45, 1.25, baseStoneD.b) * mix(0.6, 1.2, baseStoneF.b) * mix(0.8, 1.15, baseSpeck);
 baseStone = mix(baseStone, vec3(0.3, 0.27, 0.23), 0.5 * smoothstep(0.68, 0.8, baseSpeck) * baseStoneF.b);
 baseStone = mix(baseStone, baseStone * vec3(0.36, 0.38, 0.42), baseWet);
-vec3 baseGreen = diffuseColor.rgb * mix(vec3(0.2, 0.22, 0.15), vec3(0.56, 0.6, 0.18), smoothstep(0.3, 0.75, baseSun) * (0.35 + 0.65 * baseMossD.b));
+vec3 baseGreen = diffuseColor.rgb * mix(vec3(0.12, 0.2, 0.08), vec3(0.36, 0.56, 0.12), smoothstep(0.3, 0.75, baseSun) * (0.35 + 0.65 * baseMossD.b));
 baseGreen *= mix(0.1, 1.15, smoothstep(0.2, 0.9, baseMossD.b)) * mix(0.5, 1.1, baseBlotch);
-baseGreen = mix(vec3(dot(baseGreen, vec3(0.3, 0.6, 0.1))) * vec3(0.95, 1.02, 0.72), baseGreen, 0.62);
+baseGreen = mix(vec3(dot(baseGreen, vec3(0.3, 0.6, 0.1))) * vec3(0.8, 1.05, 0.7), baseGreen, 0.8);
 float baseClump = smoothstep(0.3, 0.68, 0.55 * baseNoise(vBasePos * 0.62 + 3.0) + 0.45 * baseNoise(vBasePos * 1.45 + 9.0));
 baseGreen *= mix(0.2, 1.3, baseClump);
 baseGreen = mix(baseGreen, vec3(0.03, 0.035, 0.012), 0.45 * (1.0 - smoothstep(0.1, 0.6, baseRelief.b)));
@@ -201,16 +208,16 @@ ${SHADE}
 {
   ${LIGHTS}
   float liveFuzz = pow(1.0 - liveNv, 2.2);
-  float liveHigh = smoothstep(17.0, 30.0, vBasePos.y);
-  float liveShade = mix(0.1, 1.25, liveOpen * mix(0.3, 1.0, max(liveHigh, smoothstep(0.1, 0.5, liveRim))));
+  float liveHigh = smoothstep(24.0, 33.0, vBasePos.y);
+  float liveShade = mix(0.17, 1.25, liveOpen * mix(0.3, 1.0, max(liveHigh, smoothstep(0.1, 0.5, liveRimM))));
   vec3 liveKickDir = normalize(mat3(viewMatrix) * vec3(-0.85, 0.3, -0.3));
   float liveKick = clamp((dot(geometryNormal, liveKickDir) + 0.2) / 1.2, 0.0, 1.0);
   reflectedLight.indirectDiffuse *= mix(1.0, 0.42, baseMoss) * liveShade;
-  reflectedLight.directDiffuse *= mix(1.0, liveShade, 0.8);
-  reflectedLight.directDiffuse += diffuseColor.rgb * RECIPROCAL_PI * liveKeyC * vec3(1.0, 0.82, 0.76) * (2.6 * liveKick * liveKick * baseAo);
-  float liveTuft = smoothstep(0.35, 0.8, baseMossD.b);
-  vec3 liveTip = vec3(0.66, 0.64, 0.25) * RECIPROCAL_PI * baseMoss * baseAo;
-  reflectedLight.directDiffuse += liveTip * (liveKeyC * ((1.6 + 7.0 * liveTuft + 3.0 * liveFuzz) * mix(0.35, 2.0, baseClump) * (liveRim * liveRim + 0.3 * liveUp * liveUp * liveHigh) * liveOpen) + uRigCardCol * (0.01 * liveCardWrap * liveCardWrap + 0.04 * liveFuzz * liveCardWrap));
+  reflectedLight.directDiffuse *= mix(1.0, liveShade, 0.92);
+  reflectedLight.directDiffuse += diffuseColor.rgb * RECIPROCAL_PI * liveSunC * vec3(1.0, 0.82, 0.76) * (2.6 * (1.0 + 2.5 * baseMoss) * liveKick * liveKick * baseAo);
+  float liveTuft = smoothstep(0.55, 0.85, baseMossD.b);
+  vec3 liveTip = vec3(0.6, 0.68, 0.2) * RECIPROCAL_PI * baseMoss * baseAo;
+  reflectedLight.directDiffuse += liveTip * (liveKeyC * ((1.6 + 18.0 * liveTuft + 2.0 * liveFuzz) * mix(0.35, 2.0, baseClump) * (liveRim * liveRim + 0.8 * liveUp * liveUp * liveHigh) * liveOpen * smoothstep(0.02, 0.4, liveRimM + 0.6 * liveUpM * liveHigh)) + uRigCardCol * (0.01 * liveCardWrap * liveCardWrap + 0.04 * liveFuzz * liveCardWrap));
   vec3 liveCell = floor(vBasePos * 7.5);
   vec3 liveFacet = normalize(normalMatrix * normalize(baseObjectNormal + 1.3 * (vec3(baseHash(liveCell + 3.7), baseHash(liveCell + 11.3), baseHash(liveCell + 23.9)) - 0.5)));
   float liveGrit = smoothstep(0.34, 0.08, length(fract(vBasePos * 7.5) - 0.5)) * step(0.66, baseHash(liveCell));
