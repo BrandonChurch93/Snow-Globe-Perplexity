@@ -324,6 +324,12 @@ float frostBlur(vec3 P) {
 }
 `
 
+// Where the foot's image lies on the slab (see SHEET): how far in front of the foot it fades out (mm), how much of the thin
+// film gives way there, and how thick the rime must be to stay.
+const IMAGE_REACH_MM = [22, 36]
+const IMAGE_CLEAR = 0.85
+const IMAGE_LUMP = [0.4, 0.75]
+
 const SHEET = `
 ${SLAB_GLSL}
 void main() {
@@ -358,7 +364,13 @@ void main() {
   float pxMm = sqrt(length(dFdx(vStageWorld)) * length(dFdy(vStageWorld)));
   float sugar = mix(smoothstep(0.26, 0.74, frostSugar(vStageWorld, pxMm, ${look.slab.sugarMm.toFixed(3)}, 0.31)), 0.5, 0.9 * soft);
   float clot = mix(smoothstep(0.3, 0.7, frostSugar(vStageWorld, pxMm, ${look.slab.clotMm.toFixed(3)}, 0.47)), 0.5, 0.6 * soft);
-  float body = mix(s0, h0, 0.72) * (0.4 + 0.75 * sugar + 0.45 * clot);
+  // The foot's image lies on the slab in front of the foot (the hero camera looks down at 12 degrees: a thing 1 mm up the foot
+  // is mirrored 5 mm nearer the eye). There the thin film of rime gives way and the lumps stay, so the image of the gilt band
+  // and the rope is broken by snow and not buried under it.
+  float imageAhead = xz.y - sqrt(max(uFoot.z * uFoot.z - xz.x * xz.x, 0.0));
+  float imageZone = (1.0 - smoothstep(${IMAGE_REACH_MM[0].toFixed(1)}, ${IMAGE_REACH_MM[1].toFixed(1)}, imageAhead)) * smoothstep(uFoot.z + 3.0, uFoot.z - 3.0, abs(xz.x)) * step(0.0, xz.y);
+  float imageKeep = mix(1.0, smoothstep(${IMAGE_LUMP[0].toFixed(2)}, ${IMAGE_LUMP[1].toFixed(2)}, max(h0, s0)), ${IMAGE_CLEAR.toFixed(2)} * imageZone);
+  float body = mix(s0, h0, 0.72) * (0.4 + 0.75 * sugar + 0.45 * clot) * imageKeep;
   vec2 slope = uField.z * uSlabLook.z * vec2(h1 - h0, h2 - h0) / (e * 2.0 * uField.x);
   slope += uField.z * ${look.slab.broad.toFixed(3)} * vec2(s1 - s0, s2 - s0) / (eb * 2.0 * uField.x);
   vec2 micro = ((grain.gb - 0.5) * 1.2 + (fine.gb - 0.5) * 0.8) * uSlabLook.w * (0.2 + 0.8 * smoothstep(0.0, 0.25, h0)) * (1.0 - 0.85 * soft);
@@ -377,7 +389,7 @@ void main() {
   // Melt water round the frost: a few millimetres past its edge the slab is wet and darker, so the frost does not end on dry wood.
   vec3 w0 = texture(uSlabMap, uv, 4.6).rgb;
   float wet = smoothstep(0.012, 0.09, w0.r * smoothstep(0.0, 2.0 * FROST_SOFT, lvl - w0.g + 0.03) * frostStay(uGrow.w, w0.r, grain.r, w0.g)) * ${look.slab.wet.toFixed(3)};
-  float cover = alpha + wet * (1.0 - alpha);
+  float cover = alpha + wet * (1.0 - ${IMAGE_CLEAR.toFixed(2)} * imageZone) * (1.0 - alpha);
   gl_FragColor = vec4(col * alpha + spark, cover);
   if (uDiag != 0) {
     if (alpha < 0.3) discard;

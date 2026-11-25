@@ -39,13 +39,26 @@ varying vec3 vBasePos;
 varying vec3 vBaseNormal;
 varying vec3 vBasePaint;
 varying vec2 vBaseUv1;
+varying float vBaseImage;
 `
+
+// The slab's mirror draws the stage turned over (src/scene/passes.ts), and there this foot stands on its own image: the plinth
+// is 1.6 mm taller than the approved one and painted dark to hide it, so a true image doubles it into 5.5 mm of black between
+// the gilt band and its reflection. In that pass alone the plinth is drawn pressed flat (it keeps its foot on the table, so
+// the image still meets the foot where the foot touches), and the band's image begins where the dark line ends.
+const IMAGE_SINK_MM = 2.6
+const IMAGE_FOOT_MM = 0.15
+// The slab dims what it mirrors with height and blurs it (src/scene/surface.ts); the brass is drawn that much brighter in the
+// image, and its key highlight is placed as the eye sees it on the foot itself (BRASS_CARD), as the card's already is.
+const IMAGE_GAIN = 1.5
 
 const VERT_MAIN = `
 vBasePos = position;
 vBaseNormal = normal;
 vBasePaint = color;
 vBaseUv1 = uv1;
+vBaseImage = determinant(mat3(modelMatrix)) < 0.0 ? 1.0 : 0.0;
+transformed.y = mix(transformed.y, max(transformed.y - ${IMAGE_SINK_MM.toFixed(2)}, min(transformed.y, ${IMAGE_FOOT_MM.toFixed(2)})), vBaseImage);
 `
 
 const NOISE = `
@@ -74,6 +87,7 @@ varying vec3 vBasePos;
 varying vec3 vBaseNormal;
 varying vec3 vBasePaint;
 varying vec2 vBaseUv1;
+varying float vBaseImage;
 ${ROOM_GLSL}
 ${NOISE}
 vec2 baseSlope(vec2 rg) {
@@ -272,12 +286,13 @@ const BRASS_CARD = `
   float brassCs = exp(-(pow(dot(brassHc, brassT) / 0.5, 2.0) + pow(dot(brassHc, brassB) / 0.12, 2.0)) / (brassCh * brassCh));
   reflectedLight.directSpecular += uRigCardCol * material.specularColorBlended * (0.02 * pow(brassCh, 4.0) + mix(0.25 * pow(brassCh, 48.0) + 2.5 * brassCs, 1.4 * pow(brassCh, 90.0), brassRope)) * smoothstep(0.0, 0.25, dot(geometryNormal, brassCard)) * baseAo * (1.0 - baseFrost);
   #ifdef STAGE_LIGHT_DONE
-  vec3 brassHk = normalize(stageKeyL + geometryViewDir);
+  vec3 brassKeyL = normalize(mat3(viewMatrix) * (inverseTransformDirection(stageKeyL, viewMatrix) * vec3(1.0, 1.0 - 2.0 * vBaseImage, 1.0)));
+  vec3 brassHk = normalize(brassKeyL + geometryViewDir);
   float brassKh0 = max(dot(geometryNormal, brassHk), 1e-3);
   float brassKs = exp(-(pow(dot(brassHk, brassT) / 0.5, 2.0) + pow(dot(brassHk, brassB) / 0.12, 2.0)) / (brassKh0 * brassKh0));
-  reflectedLight.directSpecular += stageKeyC * stageKeyS * material.specularColorBlended * (0.02 * pow(brassKh0, 4.0) + mix(0.14 * pow(brassKh0, 60.0) + 1.0 * brassKs, 1.8 * pow(brassKh0, 90.0), brassRope)) * smoothstep(0.0, 0.25, dot(geometryNormal, stageKeyL)) * baseAo * (1.0 - baseFrost);
+  reflectedLight.directSpecular += stageKeyC * stageKeyS * material.specularColorBlended * (0.02 * pow(brassKh0, 4.0) + mix(0.14 * pow(brassKh0, 60.0) + 1.0 * brassKs, 1.8 * pow(brassKh0, 90.0), brassRope)) * smoothstep(0.0, 0.25, dot(geometryNormal, brassKeyL)) * baseAo * (1.0 - baseFrost);
   float brassDish = smoothstep(34.1, 34.5, vBasePos.y) * (1.0 - 0.75 * smoothstep(52.0, 52.8, length(vBasePos.xz))) * smoothstep(0.3, 0.8, baseObjectNormal.y) * baseAo * (1.0 - baseFrost);
-  float brassKh = max(dot(geometryNormal, normalize(stageKeyL + geometryViewDir)), 0.0);
+  float brassKh = max(dot(geometryNormal, normalize(brassKeyL + geometryViewDir)), 0.0);
   reflectedLight.directSpecular += material.specularColorBlended * brassDish * (0.5 + 0.7 * baseGrain) * (stageKeyC * stageKeyS * 0.04 * pow(brassKh, 5.0) + uRigCardCol * 0.07 * pow(brassCh, 5.0));
   #endif
   reflectedLight.indirectSpecular += uRigCardCol * material.specularColorBlended * (0.018 * smoothstep(0.5, -0.4, baseObjectNormal.y) * smoothstep(31.5, 32.5, vBasePos.y) * (1.0 - baseFrost));
@@ -287,6 +302,11 @@ const BRASS_CARD = `
   reflectedLight.indirectSpecular *= brassPlinth;
   reflectedLight.directDiffuse *= brassPlinth;
   reflectedLight.indirectDiffuse *= brassPlinth;
+  float brassImage = mix(1.0, ${IMAGE_GAIN.toFixed(2)}, vBaseImage);
+  reflectedLight.directSpecular *= brassImage;
+  reflectedLight.indirectSpecular *= brassImage;
+  reflectedLight.directDiffuse *= brassImage;
+  reflectedLight.indirectDiffuse *= brassImage;
 }
 `
 
