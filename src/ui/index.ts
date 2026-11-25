@@ -61,7 +61,7 @@ export function mountInterface(root: HTMLElement, bridge: AppBridge): InterfaceH
   const live = make('div', s.hidden)
   live.setAttribute('role', 'status')
 
-  bar.append(shake, marks, sound)
+  bar.append(marks, shake, sound)
   ui.append(bar, live)
   const menu = mountMenu(ui, s.hidden, bridge)
   root.append(ui)
