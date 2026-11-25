@@ -42,7 +42,7 @@ export const glassLook = {
   third: { face: 0.6, gain: 0.07, tint: [0.75, 0.85, 1] as V3, softDeg: 1.6, own: 0.15, fade: [0.78, 0.97] as const },
   shoulder: { from: 1.4, to: 3.6 },
   /** The width in pixels over which the glass fades out at its outline, so that the outline is soft in every sample before the samples are averaged. */
-  limbPx: 2.2,
+  limbPx: 3,
   /** How far outside the outline, in pixels, the room is read that the glass fades into over `limbPx`. */
   limbBeyondPx: 1.5,
   floor: 0.4,
