@@ -1,7 +1,7 @@
 import { stream } from '../../../core/rng'
 import { crownField, localPads, padAxes } from '../../../miniature/trunk'
 
-export const FULL = { swell: 0.5, perMm2: 0.42, radius: [1.25, 2.3] as const, dome: 1.25, reach: 0.96, blend: 0.4, knob: 0.22, knobMm: 1.15 }
+export const FULL = { swell: 0.15, perMm2: 0.5, radius: [1.0, 1.8] as const, dome: 0.7, reach: 1.12, blend: 0.35, knob: 0.24, knobMm: 1.15 }
 
 function gather(): Float64Array {
   const rng = stream('crown-summer')

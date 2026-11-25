@@ -25,13 +25,14 @@ const LAMP = { power: 3, reachMm: 12, flicker: 0.05, cycles: 3, phase: 0.1 }
 const WINDOW = { power: 0.9, reachMm: 8, flicker: 0.1, cycles: 5, phase: 0.4 }
 const SIDE = { power: 0.8, reachMm: 7, flicker: 0.1, cycles: 4, phase: 0.75 }
 const NEAR = { lamp: { power: 1.8, reachMm: 7 }, pane: { power: 0.9, reachMm: 3 }, paper: { power: 0.5, reachMm: 2.2 } }
-const NEAR_WALL = { lamp: { power: 1.3, reachMm: 8, ends: 3 }, pane: { power: 1.2, reachMm: 4.5, ends: 3 }, paper: { power: 0.9, reachMm: 2.2, ends: 3 } }
+const NEAR_WALL = { lamp: { power: 1.3, reachMm: 8, ends: 3 }, pane: { power: 1.2, reachMm: 4.5, ends: 3 }, paper: { power: 1.5, reachMm: 2.7, ends: 3 } }
 const MIRROR = { lamp: 9, pane: 1.2, paper: 1.6, tight: 0.002, wide: 0.03, wideShare: 0.01, lowMm: 3.4 }
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
 const HALO_KIND = { lamp: { size: 3.6, rest: 0.14, hot: 0, bloom: 0.2 }, pane: { size: 2.2, rest: 0, hot: 0, bloom: 0.2 }, pool: { size: 5, rest: 0, hot: 0, bloom: 0.06 } }
 const THROUGH = 6
 const LAMP_GLASS: Rgb = [4.2, 3.3, 2.0]
 const WALL_FILL = 0.8
+const SAND = { body: 1.15, floor: 0.6, wrap: 1.5, foot: 0.75, bump: 0.35 }
 const TURF_LOOK = { tone: 0.5, fineMm: 0.05, clumpMm: 0.22, fill: 0.6, wrap: 0.5 }
 const GRASS_LOOK = { fill: 0.9, wrap: 1.0, through: 1.2, near: 1.6 }
 const WATER = { rough: 0.05, ripple: 0.006, shoreFrom: 0.9, shoreTo: 1.0, sky: 0.85, skyFrom: -0.7, skyTo: 0.5, post: 0.85, postMm: 0.55, postTall: 11.5, trunk: 0.55, trunkMm: 3, trunkTall: 26, body: 0.4 }
@@ -111,11 +112,11 @@ diffuseColor.rgb *= 1.0 + ${TURF_LOOK.tone.toFixed(2)} * (0.5 * (turfT.g - 0.5) 
 {
   float turfH = turfHeight(vMapUv);
   vec2 turfDh = vec2(turfHeight(vMapUv + dFdx(vMapUv)) - turfH, turfHeight(vMapUv + dFdy(vMapUv)) - turfH);
-  normal = villageBump(-vViewPosition, normal, turfDh * ${tileMm().toFixed(2)}, faceDirection);
+  normal = villageBump(-vViewPosition, normal, turfDh * (${tileMm().toFixed(2)} * mix(1.0, ${SAND.bump.toFixed(2)}, smoothstep(0.0, 0.2, vSurf.y))), faceDirection);
 }
 `,
         )
-      afterLight(shader, `${NEAR_LIGHT}\nreflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${TURF_LOOK.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), ${TURF_LOOK.wrap.toFixed(2)})) * material.diffuseContribution;`)
+      afterLight(shader, `${NEAR_LIGHT}\n{\n  float sandBank = smoothstep(0.0, 0.2, vSurf.y);\n  vec3 sandBody = stageKeyC * (RECIPROCAL_PI * ${SAND.body.toFixed(2)} * mix(${SAND.floor.toFixed(2)}, 1.0, stageWrap(dot(geometryNormal, stageKeyL), ${SAND.wrap.toFixed(2)})) * mix(1.0, ${SAND.foot.toFixed(2)}, vSurf.y)) * material.diffuseContribution;\n  reflectedLight.directDiffuse = mix(reflectedLight.directDiffuse, sandBody, sandBank);\n}\nreflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${TURF_LOOK.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), ${TURF_LOOK.wrap.toFixed(2)})) * material.diffuseContribution;`)
     },
   })
 }

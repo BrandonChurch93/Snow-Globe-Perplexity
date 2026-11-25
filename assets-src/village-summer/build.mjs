@@ -233,6 +233,13 @@ let tufts = 0
   const nor = []
   const col = []
   const tip = []
+  const list = []
+  const spread = (v) => {
+    let r = 0
+    for (let k = 0; k < 10; k++) r |= ((v >> k) & 1) << (2 * k)
+    return r
+  }
+  const morton = (x, z) => spread(Math.floor((x + 64) * 4)) | (spread(Math.floor((z + 64) * 4)) << 1)
   const edge = L.innerRadiusMm - 1.2
   for (let i = 0; i < GRASS.tufts * 6 && tufts < GRASS.tufts; i++) {
     const a = R() * TAU
@@ -251,6 +258,9 @@ let tufts = 0
     const tall = range(GRASS.tall[0], GRASS.tall[1]) * (0.6 + 0.6 * lush) * (1 - 0.45 * worn) * (1 + (GRASS.rimTall - 1) * smooth(1.035, 1.09, f) * (1 - smooth(1.09, 1.25, f)))
     const base = mix3(pick(TONES.grass), pick(TONES.straw), sand * 0.8)
     const top = mix3(pick(TONES.tip), pick(TONES.straw), clamp(sand * 0.9 + 0.12 * R()))
+    const cell = { key: morton(x, z), pos: [], nor: [], col: [], tip: [] }
+    list.push(cell)
+    const up = norm3([(R() - 0.5) * 0.5, 1, (R() - 0.5) * 0.5])
     for (let b = 0; b < GRASS.blades; b++) {
       const yaw = R() * TAU
       const lean = range(0.15, 0.75)
@@ -263,15 +273,21 @@ let tufts = 0
       const A = [ox - side[0] * w, y0, oz - side[2] * w]
       const B = [ox + side[0] * w, y0, oz + side[2] * w]
       const T = [ox + dir[0] * h * lean, y0 + h, oz + dir[2] * h * lean]
-      const n = norm3([dir[0] * 0.25 + (R() - 0.5) * 0.3, 1, dir[2] * 0.25 + (R() - 0.5) * 0.3])
       for (const [q, c, t] of [[A, base, 0], [B, base, 0], [T, top, 1]]) {
-        pos.push(...q)
-        nor.push(...n)
-        col.push(c[0] * (0.45 + 0.75 * t), c[1] * (0.45 + 0.75 * t), c[2] * (0.45 + 0.75 * t))
-        tip.push(t)
+        cell.pos.push(...q)
+        cell.nor.push(...up)
+        cell.col.push(c[0] * (0.45 + 0.75 * t), c[1] * (0.45 + 0.75 * t), c[2] * (0.45 + 0.75 * t))
+        cell.tip.push(t)
       }
     }
     tufts++
+  }
+  list.sort((p, q) => p.key - q.key)
+  for (const c of list) {
+    for (const v of c.pos) pos.push(v)
+    for (const v of c.nor) nor.push(v)
+    for (const v of c.col) col.push(v)
+    for (const v of c.tip) tip.push(v)
   }
   let vi = 0
   soup(grass, pos, nor, col, () => [tip[vi++], 0])
@@ -482,6 +498,22 @@ writePng(rel('assets-full', 'summer', 'village-turf.lin.tile.png'), size, (px, p
   return [fine, clump, wide]
 })
 
-const meshes = [ground, water, grass, decor].map((b) => fromThree(b.name, b.geometry(), b === decor ? { sunflowers: sunList.flatMap((s) => [+s.x.toFixed(3), +s.y0.toFixed(3), +s.z.toFixed(3), +s.tall.toFixed(3)]) } : undefined))
+const SNAP = { position: 128, normal: 32, color: 128, uv: 2048 }
+const GRASS_SNAP = { position: 64, normal: 16, uv: 64 }
+function snap(mesh) {
+  const by = mesh.name === grass.name ? GRASS_SNAP : SNAP
+  if (by === GRASS_SNAP) for (let v = 0; v < mesh.uv.length / 2; v++) {
+    const first = v - (v % (GRASS.blades * 3))
+    mesh.uv[v * 2] = mesh.uv[first * 2]
+    mesh.uv[v * 2 + 1] = mesh.uv[first * 2 + 1]
+  }
+  for (const k of Object.keys(by)) {
+    const a = mesh[k]
+    if (!a) continue
+    for (let i = 0; i < a.length; i++) a[i] = Math.round(a[i] * by[k]) / by[k]
+  }
+  return mesh
+}
+const meshes = [ground, water, grass, decor].map((b) => snap(fromThree(b.name, b.geometry(), b === decor ? { sunflowers: sunList.flatMap((s) => [+s.x.toFixed(3), +s.y0.toFixed(3), +s.z.toFixed(3), +s.tall.toFixed(3)]) } : undefined)))
 writeGlb(rel('assets-full', 'summer', 'village-summer.glb'), meshes)
 console.log(`village-summer: ground ${ground.triangles}, water ${water.triangles}, grass ${grass.triangles} (${tufts} tufts), decor ${decor.triangles} (${counts.roses} roses, ${counts.leaves} leaves, ${counts.sunflowers} sunflowers, ${counts.blooms} blooms)`)
