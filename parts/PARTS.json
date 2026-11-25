@@ -617,18 +617,18 @@
       "files": [
         "src/ui"
       ],
-      "standInHash": "c2404116aeb75ba0",
+      "standInHash": "15a32b089e7563e3",
       "commit": "2530677"
     },
     {
       "name": "sound-engine",
       "unit": "globe",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/audio"
       ],
-      "standInHash": "b4ada90389e2cf63",
-      "commit": "2530677"
+      "standInHash": "f73ff1ff132085d1",
+      "commit": "86538125"
     },
     {
       "name": "quality-levels",
@@ -637,7 +637,7 @@
       "files": [
         "src/core"
       ],
-      "standInHash": "cb48d66aff65dbb2",
+      "standInHash": "fc9e860401172a7c",
       "commit": "2530677"
     },
     {
@@ -658,7 +658,7 @@
         "src/film",
         "src/particles"
       ],
-      "standInHash": "7d33ff1c40639830",
+      "standInHash": "f8aa6e74d9478da4",
       "commit": "2530677"
     }
   ]
