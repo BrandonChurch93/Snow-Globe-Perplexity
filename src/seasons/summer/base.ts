@@ -270,7 +270,7 @@ float glassCloud = baseNoise(vBasePos * 2.7 + 40.0 * glassOne) * 0.65 + baseNois
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(glassLum) * vec3(0.72, 1.04, 1.06), 0.3) * vec3(0.86, 0.84, 0.94) * mix(0.85, 1.2, glassCloud);
 float glassFleck = smoothstep(0.74, 0.86, baseNoise(vBasePos * 27.0 + 3.0)) * (0.4 + 0.6 * baseNoise(vBasePos * 4.0 + 13.0));
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.3, 0.6, 0.1))) * 1.5 + 0.07, 0.55 * glassFleck);
-diffuseColor.rgb = mix(diffuseColor.rgb, vec3(glassLum) * vec3(0.96, 1.02, 1.0) + 0.16, 0.3 + 0.16 * baseFrost + 0.14 * glassOne);
+diffuseColor.rgb = mix(diffuseColor.rgb, vec3(glassLum) * vec3(0.96, 1.02, 1.0) + 0.14, 0.16 + 0.14 * baseFrost + 0.12 * glassOne);
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(glassLum) + 0.12, 0.4 * smoothstep(0.4, 0.0, baseThin));
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.3, 0.6, 0.1))) * 1.25 + 0.1, 0.08 * baseFrost * glassPit);
 `

@@ -19,7 +19,7 @@ const HEAP = {
   cone: { x: 60, z: 0, mm: 9.5, run: 0.44, deep: 1.3 },
   spray: { x: 80, z: 10, sx: 24, sz: 27 },
   apron: { wide: 1.1, core: [0.3, 1.0], tail: 0.16, least: 0.02 },
-  streak: { x: -74, z: -13, sx: 14, sz: 7, share: 0.45 },
+  streak: { x: -84, z: 0, sx: 18, sz: 30, share: 0.5 },
   skirt: { x: 71, z: 30, sx: 10, sz: 20, mm: 2.2 },
   shoulder: { x: 53, z: 56, sx: 18, sz: 14, mm: 2.4 },
   fan: { x: 58, z: 98, sx: 20, sz: 44, mm: 1.5 },
@@ -30,7 +30,7 @@ const HEAP = {
 // What the sand's shader does with a thin layer (base.ts, SAND): none of it below `none` mm, all of it from `all` mm, a
 // smooth step between, and a grain is drawn where that step is over `cover` times the grain's own number.
 const GRAIN = { none: 0.11, all: 0.35, cover: 0.62 }
-export const SLAB = { liftMm: 0.5, footMm: 52.4, repose: 0.62, stepMm: 1.46, x: [-150, 142], z: [-232, 216] } as const
+export const SLAB = { liftMm: 0.5, footMm: 52.4, repose: 0.62, stepMm: 1.65, x: [-150, 142], z: [-232, 216] } as const
 
 const hash = (x: number, y: number, s: number): number => {
   let h = (Math.imul(x | 0, 374761393) + Math.imul(y | 0, 668265263) + Math.imul(s | 0, 1274126177)) | 0
