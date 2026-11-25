@@ -33,19 +33,22 @@ export const look = {
     sheets: 46,
     skinMm: 1.2,
     poolMm: 2.0,
-    backThin: 0.4,
-    restMm: 6,
+    ringFromMm: 46,
+    ringToMm: 56,
+    back: 0.3,
+    backTall: 2.4,
+    restMm: 3.2,
     liftMm: 42,
-    rest: 0.06,
+    rest: 0.1,
     underMm: 2.2,
     lip: 1.1,
     lipLifted: 0.3,
     lipGlow: 1.35,
     lifted: 0.011,
-    lumpMm: 8.5,
-    lumpFineMm: 3,
-    middle: 0.5,
-    haze: 0.004,
+    lumpMm: 3.5,
+    lumpFineMm: 1.8,
+    middle: 0.04,
+    haze: 0.001,
     hazeMm: 15,
     pour: 0.05,
     pourFallMm: 36,
@@ -276,7 +279,7 @@ void main() {
   float h = p.y - base;
   float hazeAmp = ${f(F.haze)} * (1.0 - lift);
   float span = smoothstep(-2.0, 7.0, h) * (1.0 - smoothstep(34.0, 76.0, h));
-  float bound = amp * exp(-max(h - ${f(F.lumpMm + F.lumpFineMm)}, 0.0) / deepMm) + hazeAmp * exp(-max(h, 0.0) / ${f(F.hazeMm)}) + uFog.z * ${f(F.pour)} * span;
+  float bound = amp * exp(-max(h - ${f((F.lumpMm + F.lumpFineMm) * F.backTall)}, 0.0) / (deepMm * ${f(F.backTall)})) + hazeAmp * exp(-max(h, 0.0) / ${f(F.hazeMm)}) + uFog.z * ${f(F.pour)} * span;
   if (bound * ${f(FOG_STEP * 1.7)} < 0.003 || p.y < under) discard;
   // The roll comes round once a period: two takes of the billows half a turn of the clock apart, the one handed over to the other.
   float k = uFog.x;
@@ -284,10 +287,12 @@ void main() {
   vec2 n1 = fogBillows(p, k - 1.0);
   vec2 n = 0.5 + (mix(n0, n1, k) - 0.5) / sqrt(k * k + (1.0 - k) * (1.0 - k));
   float lump = ${f(F.lumpMm)} * (n.x - 0.5) * 2.0 + ${f(F.lumpFineMm)} * (n.y - 0.5) * 2.0;
-  float wall = mix(${f(F.middle)}, 1.0, smoothstep(14.0, 44.0, length(p.xz)));
-  // Thinner on the mound at the back than in the low front, where it has pooled.
-  float thin = mix(1.0, mix(${f(F.backThin)}, 1.0, smoothstep(-6.0, 30.0, p.z)), 1.0 - lift);
-  float body = exp(-max(h - lump * thin * (1.0 + 2.0 * lift), 0.0) / (deepMm * thin));
+  // Pooled, it lies against the wall, where the ground is lowest, and leaves the ground of the scene clear; behind the scene
+  // it stands taller and thinner, a glow at the back of the dome.
+  float behind = smoothstep(4.0, -22.0, p.z) * (1.0 - lift);
+  float wall = max(mix(${f(F.middle)}, 1.0, smoothstep(${f(F.ringFromMm)}, ${f(F.ringToMm)}, length(p.xz))), ${f(F.back)} * behind);
+  float tall = mix(1.0, ${f(F.backTall)}, behind);
+  float body = exp(-max(h - lump * tall * (1.0 + 2.0 * lift), 0.0) / (deepMm * tall));
   float wisp = 0.12 + 1.9 * smoothstep(0.3, 0.8, n.y) * (0.25 + n.x);
   // Nothing of it lies under the ground.
   float open = smoothstep(under, under + 2.0, p.y);
