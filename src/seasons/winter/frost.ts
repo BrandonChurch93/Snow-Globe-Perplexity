@@ -4,7 +4,7 @@ import { stageShader, stageUniforms } from '../../core/materials'
 import { resolveBehind } from '../../core/accumulator'
 import { geometry, prepareModel } from '../../core/models'
 import { texture } from '../../core/textures'
-import { shellUniforms } from '../../globe/shell'
+import { setGlass, shellUniforms } from '../../globe/shell'
 import { ROOM_GLSL, roomUniforms } from '../../scene/room'
 import { SLAB_LIGHT_GLSL, slabLightUniforms, surfaceUniforms } from '../../scene/surface'
 import type { KitMoment } from '../kit'
@@ -20,6 +20,8 @@ const RS = config.globe.sphereDiameterMm / 2
 const RAD = Math.PI / 180
 
 export const FULL = 2
+
+setGlass(season, { ringThin: 0.5, topLine: 0.4, windowSoftDeg: 1, windowGrain: 0.3 })
 
 const look = {
   glass: { cover: 1.72, haze: 1.38, slope: 0.55, micro: 1.1, glint: 2.6, light: 0.96, through: 2.4, thin: 0.3, thick: 1.1, blur: 0.012, bend: 0.012, scatter: 0.06, room: 0.5, soften: 0.12, rimMu: 0.3, faceOn: 0.65, front: 1.9, sugarMm: 0.3, gritty: 0.45, clear: [0.255, 0.28, 0.8] },
