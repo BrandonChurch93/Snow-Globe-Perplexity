@@ -59,7 +59,7 @@ export function buildStone(f) {
   lathe(
     soup,
     [
-      [44.8, cc[1], 0.5],
+      [cc[0] - 0.13, cc[1], 0.5],
       [glass(cc[1] + 0.03) + 0.16, cc[1] + 0.05, 0.16],
       [glass(cc[1] + 0.3) + 0.06, cc[1] + 0.3, 0.1],
       [glass(cc[1] + 0.28) - 0.1, cc[1] + 0.28, 0.05],
@@ -108,12 +108,18 @@ function surf(soup, fr, nu, nv, local, attr, wrapU = false) {
     const d = at(i, j + 1)
     let n = cross3([b[0] - a[0], b[1] - a[1], b[2] - a[2]], [d[0] - c[0], d[1] - c[1], d[2] - c[2]])
     const l = Math.hypot(n[0], n[1], n[2])
-    n = l > 1e-9 ? [n[0] / l, n[1] / l, n[2] / l] : [0, 0, 1]
     const p = at(i, j)
+    // Where a whole row is one point (the middle of a dome, the hinge of a shell) there is no slope to read: the normal there is the frame's own, set after the others have chosen their side.
+    if (!(l > 1e-9)) {
+      normals.push(null)
+      continue
+    }
+    n = [n[0] / l, n[1] / l, n[2] / l]
     sign += n[0] * p[0] + n[1] * p[1] + n[2] * (p[2] + 0.5)
     normals.push(n)
   }
   const k = sign < 0 ? -1 : 1
+  for (let q = 0; q < normals.length; q++) if (!normals[q]) normals[q] = [0, 0, k]
   soup.grid(nu, nv, (i, j) => {
     const p = pts[j * nu + i]
     const n = normals[j * nu + i]
@@ -257,7 +263,7 @@ export function buildSet(f) {
 }
 
 // The sand on the ledge: a bank against the glass that thins to single grains toward the lip, and at SPILL runs over it.
-export const SPILL = { az: 80, half: 17, lipR: 52.3, lipH: 38.8 }
+export const SPILL = { az: 80, half: 17, lipR: 52.5, lipH: 38.8 + P.RISE }
 export const spillAt = (az) => {
   let d = az - SPILL.az
   d -= 360 * Math.round(d / 360)
@@ -268,9 +274,9 @@ export function ledgeSand(az, t) {
   const sp = spillAt(az)
   const hg = P.LEDGE_H + 1.9 + 1.5 * (fbm(A * 11, 0.3, 11, 4, 201, 3) - 0.35) + 1.2 * sp
   const rg = P.sphereRadiusAt(hg) + 0.06
-  const ro = Math.min(48.5 + 2.5 * fbm(A * 17, 0.7, 17, 4, 203, 3) + 3.4 * sp, 52.3)
+  const ro = Math.min(49.9 + 1.8 * fbm(A * 17, 0.7, 17, 4, 203, 3) + 3.0 * sp, 52.5)
   const r = mix(rg, ro, t)
-  const floor = r > 50.0 ? P.LEDGE_H - 1.9 * smooth(50.0, 52.4, r) + 0.02 : P.LEDGE_H + 0.02
+  const floor = r > 50.6 ? P.LEDGE_H - 1.9 * smooth(50.6, 52.6, r) + 0.02 : P.LEDGE_H + 0.02
   const fall = Math.pow(1 - t, 1.25)
   const lumps = (0.5 * (fbm(A * 60, t * 3, 60, 64, 205, 3) - 0.5) + 0.22 * (fbm(A * 170, t * 7, 170, 64, 207, 2) - 0.5)) * Math.sin(Math.PI * Math.min(t * 1.15, 1))
   const thick = Math.max((hg - floor) * fall + lumps * (0.3 + sp), 0) + 0.04
@@ -300,7 +306,7 @@ export function buildSand(f) {
   // The drape: sand running down the wall under the spill.
   const dc = 96
   const dr = 40
-  const top = P.sOfH(f.mer, 39.3)
+  const top = P.sOfH(f.mer, 39.3 + P.RISE)
   const drape = (i, j) => {
     const az = SPILL.az - 30 + (60 * i) / (dc - 1)
     const down = j / (dr - 1)
