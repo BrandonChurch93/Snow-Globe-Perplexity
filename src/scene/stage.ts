@@ -256,9 +256,12 @@ export class GlobeStage implements Stage {
     f.to = b.kit
     f.change = change
     f.mix.light = partChange('light', change)
-    // The veil crosses through the whole window, but late: a sixth of the way at the middle of the window, four tenths where the base
-    // begins to change. Crossed evenly, the storm stood in the new season's colour a dozen frames before the outside of the globe.
-    f.mix.veil = Math.pow(partChange('veil', change), VEIL_LATE)
+    // The veil crosses through the whole window. Where the season that leaves has the thicker veil it crosses late: a sixth of the way
+    // at the middle of the window, four tenths where the base begins to change. Crossed evenly, that storm stood in the new season's
+    // colour a dozen frames before the outside of the globe. Where the season that comes has the thicker veil the crossing stays
+    // even, because there the veil that comes is part of the cover of the swap.
+    const veil = partChange('veil', change)
+    f.mix.veil = a.kit.veil.density >= b.kit.veil.density ? Math.pow(veil, VEIL_LATE) : veil
     f.mix.base = partChange('base', change)
     f.mix.particles = partChange('particles', change)
     f.mix.bloom = changeBloom(change)
