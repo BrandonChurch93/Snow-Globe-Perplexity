@@ -36,21 +36,32 @@ export const look = {
     ringFromMm: 46,
     ringToMm: 56,
     back: 0.3,
+    front: 0.3,
+    swirl: 3.4,
+    swirlThin: 0.1,
+    spinRadS: 2.2,
+    spinDownSeconds: 2.6,
     backTall: 2.4,
     restMm: 3.2,
     liftMm: 42,
     rest: 0.1,
-    underMm: 2.2,
     lip: 1.1,
-    lipLifted: 0.3,
+    lipLifted: 0.9,
     lipGlow: 1.35,
-    lifted: 0.011,
+    lifted: 0.03,
+    liftedMiddle: 0.1,
+    liftedFromMm: 20,
+    liftedToMm: 50,
+    liftedFront: 0.22,
+    flood: 0.1,
+    floodFrom: 0.82,
+    floodTo: 0.99,
     lumpMm: 3.5,
     lumpFineMm: 1.8,
     middle: 0.04,
     haze: 0.001,
     hazeMm: 15,
-    pour: 0.05,
+    pour: 0.016,
     pourFallMm: 36,
     cold: 0.9,
     warm: 1.0,
@@ -160,6 +171,8 @@ const uniforms = {
   /** x: the ambient clock, 0 to 1; y: how far the fog is lifted, 0 pooled to 1 through the whole dome; z: how much pours down the wall; w: how far the pouring fog has fallen, mm. */
   uFog: { value: new THREE.Vector4(0, 0, 0, 0) },
   uFogNoise: { value: null as THREE.Data3DTexture | null },
+  /** x: how far the stirred fog has gone round the upright axis, radians; y: how much the hardest of the shake has it fill the dome, 0 to 1. */
+  uFogTurn: { value: new THREE.Vector2(0, 0) },
   /** x: how far the crack has spread, 0 to 1 of the way from the hub to the furthest tip. */
   uCrack: { value: new THREE.Vector4(1, 0, 0, 0) },
 }
@@ -235,6 +248,7 @@ const FOG_STEP = (2 * (RI - 1.5)) / (F.sheets - 1)
 const FOG_HEAD = `
 uniform highp sampler3D uFogNoise;
 uniform vec4 uFog;
+uniform vec2 uFogTurn;
 vec3 fogTurn(vec3 p, float a) {
   float c = cos(a);
   float s = sin(a);
@@ -273,9 +287,10 @@ void main() {
   if (r > ${f(RI - 0.25)}) discard;
   float lift = uFog.y;
   float deepMm = mix(${f(F.restMm)}, ${f(F.liftMm)}, lift);
-  float amp = mix(${f(F.rest)}, ${f(F.lifted)}, lift);
+  float amp = mix(${f(F.rest)}, mix(${f(F.lifted)}, ${f(F.flood)}, uFogTurn.y), lift);
   float base = fogFloor(p);
-  float under = fogMound(p.z) - ${f(F.underMm)};
+  float ground = fogMound(p.z);
+  float under = ground - 0.4;
   float h = p.y - base;
   float hazeAmp = ${f(F.haze)} * (1.0 - lift);
   float span = smoothstep(-2.0, 7.0, h) * (1.0 - smoothstep(34.0, 76.0, h));
@@ -291,17 +306,32 @@ void main() {
   // it stands taller and thinner, a glow at the back of the dome.
   float behind = smoothstep(4.0, -22.0, p.z) * (1.0 - lift);
   float wall = max(mix(${f(F.middle)}, 1.0, smoothstep(${f(F.ringFromMm)}, ${f(F.ringToMm)}, length(p.xz))), ${f(F.back)} * behind);
+  // In front of the scene it stays low, under the ground's edge, so the fence and the path stand dark before it.
+  wall *= mix(1.0, ${f(F.front)}, smoothstep(6.0, 34.0, p.z) * smoothstep(${f(GROUND - 5)}, ${f(GROUND - 1)}, p.y));
   float tall = mix(1.0, ${f(F.backTall)}, behind);
   float body = exp(-max(h - lump * tall * (1.0 + 2.0 * lift), 0.0) / (deepMm * tall));
   float wisp = 0.12 + 1.9 * smoothstep(0.3, 0.8, n.y) * (0.25 + n.x);
   // Nothing of it lies under the ground.
-  float open = smoothstep(under, under + 2.0, p.y);
-  float rho = amp * body * mix(wall, 1.0, lift) * wisp * open;
+  float open = smoothstep(ground - 0.4, ground + 2.4, p.y);
+  // Stirred, it is drawn out into long strands that go round the axis with the liquid, with clear water between them.
+  float strands = 1.0;
+  if (lift > 0.0) {
+    float rr = length(p.xz);
+    float turn = atan(p.z, p.x) / 6.2831853 + uFogTurn.x * mix(1.25, 0.8, rr / ${f(RI)}) / 6.2831853;
+    float s1 = texture(uFogNoise, vec3(turn + p.y / 150.0, rr / 62.0 + 0.17, p.y / 58.0 + 0.4 * rr / ${f(RI)})).r;
+    float s2 = texture(uFogNoise, vec3(2.0 * turn - p.y / 90.0 + 0.31, rr / 33.0, p.y / 31.0 + 0.63)).r;
+    float strand = smoothstep(0.4, 0.72, 0.62 * s1 + 0.38 * s2 + 0.1 * (n.y - 0.5));
+    strands = mix(1.0, mix(${f(F.swirlThin)} + ${f(F.swirl)} * strand * strand, 0.55 + 0.9 * strand, uFogTurn.y), lift);
+  }
+  // Stirred, the turning liquid throws it to the wall: thick round the scene and behind it, thin in the middle and before it,
+  // so the house and the tree stand dark against the green. Only at the hardest of the shake does it fill the dome.
+  float around = mix(${f(F.liftedMiddle)}, 1.0, smoothstep(${f(F.liftedFromMm)}, ${f(F.liftedToMm)}, length(p.xz))) * mix(1.0, ${f(F.liftedFront)}, smoothstep(-8.0, 24.0, p.z));
+  float rho = amp * body * mix(wall, mix(around, 1.0, uFogTurn.y), lift) * wisp * open * strands;
   rho += hazeAmp * exp(-max(h, 0.0) / ${f(F.hazeMm)}) * (0.35 + 1.3 * n.x);
   if (uFog.z > 0.0) {
     float run = texture(uFogNoise, vec3(p.x / 31.0, (p.y + uFog.w) / 110.0, p.z / 31.0) + vec3(0.3, 0.0, 0.6)).r;
     float fall = texture(uFogNoise, vec3(p.x / 13.0, (p.y + 1.6 * uFog.w) / 64.0, p.z / 13.0)).r;
-    rho += uFog.z * ${f(F.pour)} * span * smoothstep(0.42, 0.7, run) * (0.4 + 1.2 * fall) * mix(0.35, 1.0, smoothstep(20.0, 50.0, r));
+    rho += uFog.z * ${f(F.pour)} * span * smoothstep(0.46, 0.72, run) * (0.4 + 1.2 * fall) * mix(0.08, 1.0, smoothstep(28.0, 54.0, r)) * mix(1.0, ${f(F.liftedFront)}, smoothstep(-8.0, 24.0, p.z)) * mix(1.0, strands, 0.6);
   }
   float a = 1.0 - exp(-rho * ${f(FOG_STEP)});
   if (a < 0.003) discard;
@@ -487,7 +517,7 @@ function makeFog(): THREE.Mesh {
     standIn: false,
     inside: true,
     change: 'glass-dressing',
-    uniforms: { uFog: uniforms.uFog, uFogNoise: uniforms.uFogNoise },
+    uniforms: { uFog: uniforms.uFog, uFogNoise: uniforms.uFogNoise, uFogTurn: uniforms.uFogTurn },
     fragment: FOG,
     // Drawn with the solid things, after the particles and before the glass stamps its depth: what is inside the liquid is
     // closed by that stamp to everything drawn later.
@@ -511,7 +541,7 @@ function makeLip(): THREE.Mesh {
     standIn: false,
     inside: true,
     change: 'glass-dressing',
-    uniforms: { uFog: uniforms.uFog, uFogNoise: uniforms.uFogNoise },
+    uniforms: { uFog: uniforms.uFog, uFogNoise: uniforms.uFogNoise, uFogTurn: uniforms.uFogTurn },
     fragment: LIP,
     params: { ...blend, transparent: false, side: THREE.DoubleSide },
   })
@@ -577,6 +607,9 @@ export function update(moment: KitMoment): void {
   const pour = shaken || !Number.isFinite(since) ? 0 : ease(since / 0.6) * (1 - ease((since - 2.6) / 4.2))
   const fallen = Number.isFinite(since) ? look.fog.pourFallMm * (1 - Math.exp(-since / 2.4)) : look.fog.pourFallMm
   uniforms.uFog.value.set(fr.clock, lift, pour, fallen)
+  // The stirred fog goes round with the liquid: at the shake's rate until the landing, then it spins down.
+  const spun = Number.isFinite(since) ? moment.time - since + F.spinDownSeconds * (1 - Math.exp(-since / F.spinDownSeconds)) : moment.time
+  uniforms.uFogTurn.value.set(F.spinRadS * spun, ease((fr.turbulence - F.floodFrom) / (F.floodTo - F.floodFrom)))
   // The cover view counts what is hidden of the miniature only: there the fog is laid on where the miniature already is.
   const src = fr.view === 'cover' ? THREE.DstAlphaFactor : THREE.OneFactor
   for (const m of volumes) m.blendSrc = src
