@@ -87,10 +87,10 @@ export const BEHAVIOUR: Record<string, Behaviour> = {
   petal: { ...base, sinkMmS: [0.6, 2.6], settleMmS: [14, 30], floats: 0.05, followSeconds: 0.07, swayMmS: 7.5, crossMmS: 5, dip: 0.6, turnRadS: [1.1, 1.9], spinPerMm: 0.04, rest: 'lies', slope: 0.78, restSpeedMmS: 14, gripPerSecond: 5, liftMmS: [45, 150], kick: 0.5, layerMm: [0.08, 0.6], renew: 0.014, renewMmS: [5, 9], dwellSeconds: [2, 7], stormDwellSeconds: [1, 9], sizeMm: [1.6, 3], sizeSkew: 1.3 },
   mote: { ...base, sinkMmS: [-0.15, 0.2], followSeconds: 0.02, swayMmS: 0.35, crossMmS: 0.3, turnRadS: [0.15, 0.5], spinPerMm: 0.02, sizeMm: [0.1, 0.38], sizeSkew: 2 },
   seed: { ...base, sinkMmS: [-0.12, 0.3], settleMmS: [6, 14], floats: 0.006, followSeconds: 0.03, swayMmS: 0.9, crossMmS: 0.7, dip: 0.2, turnRadS: [0.15, 0.5], spinPerMm: 0.03, rest: 'snags', slope: -2, restSpeedMmS: 30, gripPerSecond: 9, liftMmS: [18, 60], kick: 0.5, layerMm: [0.3, 1.2], sizeMm: [0.69, 1.39], sizeSkew: 1.6 },
-  firefly: { ...base, mode: 'steer', followSeconds: 0.1, turnRadS: [0.6, 1.3], sizeMm: [0.22, 0.5], sizeSkew: 1.4, cruiseMmS: 9, reachMm: 9, clearanceMm: 4 },
-  leaf: { ...base, sinkMmS: [16, 26], settleMmS: [35, 65], followSeconds: 0.08, swayMmS: 13, crossMmS: 6, dip: 0.5, turnRadS: [3.5, 5.5], spinPerMm: 0.05, rest: 'lies', slope: 0.72, restSpeedMmS: 18, gripPerSecond: 5, liftMmS: [50, 160], kick: 0.5, layerMm: [0.15, 1], renew: 0.05, dwellSeconds: [6, 24], renewMmS: [4, 8], sizeMm: [2.6, 4.4], sizeSkew: 1.3 },
+  firefly: { ...base, mode: 'steer', followSeconds: 0.1, turnRadS: [0.6, 1.3], sizeMm: [0.3, 0.7], sizeSkew: 1.4, cruiseMmS: 9, reachMm: 9, clearanceMm: 4 },
+  leaf: { ...base, sinkMmS: [16, 26], settleMmS: [35, 65], followSeconds: 0.08, swayMmS: 13, crossMmS: 6, dip: 0.5, turnRadS: [3.5, 5.5], spinPerMm: 0.05, rest: 'lies', slope: 0.72, restSpeedMmS: 18, gripPerSecond: 5, liftMmS: [50, 160], kick: 0.5, layerMm: [0.15, 1], renew: 0.09, dwellSeconds: [4, 16], renewMmS: [4, 8], sizeMm: [1.2, 4.2], sizeSkew: 2.2 },
   ember: { ...base, mode: 'cycle', sinkMmS: [-5.5, -2.2], followSeconds: 0.05, swayMmS: 20, crossMmS: 5, turnRadS: [3, 6], sizeMm: [0.12, 0.7], sizeSkew: 4, lifeSeconds: [4, 8] },
-  bat: { ...base, mode: 'steer', followSeconds: 0.25, turnRadS: [40, 55], sizeMm: [5, 7], cruiseMmS: 26, reachMm: 24, clearanceMm: 7, orbit: true },
+  bat: { ...base, mode: 'steer', followSeconds: 0.25, turnRadS: [40, 55], sizeMm: [5, 7], cruiseMmS: 26, reachMm: 32, clearanceMm: 7, orbit: true },
 }
 
 export const SEASONS: readonly string[] = config.seasons

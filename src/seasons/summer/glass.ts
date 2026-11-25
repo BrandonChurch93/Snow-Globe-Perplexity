@@ -45,7 +45,7 @@ export const look = {
   },
   // the far wall: the light that crosses the globe gathers on the inside of the glass opposite the sun, a warm crescent
   // along the limb
-  wall: { gain: 0.42, low: 0.42, wide: 0.42, from: 0.8, peak: 0.94, color: [1, 0.74, 0.44] as const },
+  wall: { gain: 0.42, low: 0.42, wide: 0.42, from: 0.8, peak: 0.94, color: [1, 0.74, 0.44] as const, top: 0.15, topWide: 0.7, topLean: 0.35 },
   pool: {
     // where the hot middle of the pool lies from the foot's centre: down the light's way on the slab and a little across it
     reachMm: 76,
@@ -55,11 +55,14 @@ export const look = {
     wave: 0.9,
     softMm: 22,
     gain: 0.14,
-    core: 2,
-    coreMm: 2.2,
-    glow: 0.45,
-    glowMm: 4.5,
-    bands: 1.5,
+    core: 3,
+    coreMm: 2.4,
+    glow: 0.7,
+    glowMm: 5,
+    bands: 2.2,
+    // the short bright rays round the hot knot, as the approved image has them: their strength and their reach
+    rays: 0.9,
+    raysMm: 7,
     liftPerMm: 2.2,
     tiltMm: 160,
     swing: 1,
@@ -145,7 +148,11 @@ void main() {
   float band = pow(smoothstep(${n(W.from)}, ${n(W.peak)}, r), 2.2) * (1.0 - smoothstep(0.955, 0.992, r));
   float along = exp(-a * a / ${n(W.wide * W.wide)});
   float hot = exp(-pow((r - 0.945) / 0.022, 2.0)) * exp(-a * a / ${n(W.wide * W.wide * 0.3)});
-  gl_FragColor = vec4(${vec(W.color)} * (${n(W.gain)} * (band * along + 1.4 * hot) * lit), 0.0);
+  // the crown of the glass takes the same light as a broad soft sheen under the top, leaning away from the sun
+  vec2 up = normalize(vec2(vWlDir.x * ${n(W.topLean)}, 1.0));
+  float b = atan(e.x * up.y - e.y * up.x, dot(e, up));
+  float sheen = ${n(W.top)} * exp(-b * b / ${n(W.topWide * W.topWide)}) * smoothstep(0.5, 0.78, r) * (1.0 - smoothstep(0.82, 0.96, r));
+  gl_FragColor = vec4(${vec(W.color)} * (${n(W.gain)} * (band * along + 1.4 * hot + sheen) * lit), 0.0);
 }`
 
 const P = look.pool
@@ -201,7 +208,12 @@ void main() {
   folds += 0.65 * poolFold(h, o, 1.9 - 0.05 * s, 28.0, 8.0, 0.58, 0.2);
   folds += 0.6 * poolFold(h, o, 4.5 + 0.05 * s, 36.0, 6.0, 0.58, 4.4);
   folds += 0.55 * poolFold(h, o, 5.2 - 0.06 * s, -30.0, 6.0, 0.54, 1.8);
-  vec3 col = ${vec(P.gold)} * (${n(P.gain)} * soft + ${n(P.bands)} * folds) + ${vec(P.pale)} * (${n(P.core)} * core + ${n(P.glow)} * glow);
+  // the knot's short rays: two uneven fans of them, turning a little with the swing, gone a few millimetres out
+  float ang = atan(h.y, h.x) + 0.04 * s;
+  float len = sqrt(rr);
+  float fan = pow(abs(sin(ang * 6.5 + 1.3)), 26.0) * (0.55 + 0.45 * sin(ang * 3.0 + 0.7)) + 0.6 * pow(abs(sin(ang * 10.5 + 0.4)), 34.0) * (0.5 + 0.5 * sin(ang * 5.0 + 2.1));
+  float rays = fan * exp(-len / ${n(P.raysMm)}) * smoothstep(0.8, 3.0, len);
+  vec3 col = ${vec(P.gold)} * (${n(P.gain)} * soft + ${n(P.bands)} * folds + ${n(P.rays)} * rays) + ${vec(P.pale)} * (${n(P.core)} * core + ${n(P.glow)} * glow);
   gl_FragColor = vec4(col * there, 0.0);
 }`
 

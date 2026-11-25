@@ -1,0 +1,112 @@
+{
+  "critic": "R1",
+  "score": 4,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "severe",
+      "file": "set-A-01-b.jpg",
+      "where": "the air inside the globe, especially the upper half",
+      "what": "the petal storm is much thinner and the warm pink glow is gone, so the top of the globe reads dark and empty instead of filled and luminous",
+      "fix": "fill the volume with the same dense, softly lit petal haze, brighter toward the cottage and the tree"
+    },
+    {
+      "severity": "severe",
+      "file": "set-B-01-b.jpg",
+      "where": "the liquid just after the shake",
+      "what": "the petals hang as separate soft flakes with little streak, the cottage is blotted out, and the tree's dark branches show through, instead of a fine fast pink-white swirl that still lets the cottage read",
+      "fix": "streak the petals into the same fine horizontal swirl, thin the near flakes so the cottage stays readable, and wash the tree back into that bright veil"
+    },
+    {
+      "severity": "severe",
+      "file": "set-B-01-b.jpg",
+      "where": "the floor inside the globe and the lamp",
+      "what": "green grass and a still pond show at the bottom, and the lamp's sharp point is lost in a warm orange wash, while -a is a bright churning veil with a crisp lantern",
+      "fix": "cover the grass edge in the same bright streaked wash and bring the lamp's sharp point back"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the cottage chimney, windows and fence",
+      "what": "the chimney is taller, narrower and brick with a dark cap, the windows are sharp grids, and the fence is lighter pickets, not the short stone chimney and softer openings in -a",
+      "fix": "restore the short stone chimney, the soft stone window openings and the darker rustic fence"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the pond and the path",
+      "what": "the water is flat and covered in petals, with no ripple rings, no warm lamp reflection and no pale stepping-stone path",
+      "fix": "open the water, put the concentric ripples and the lamp reflection back, and restore the stepping stones"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the tree crown",
+      "what": "the trunk and branches are darker and sharply silhouetted, and the blossoms break into separate clumps instead of one soft bright cloud",
+      "fix": "lighten the branches and rebuild the crown as one dense, backlit blossom cloud"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the glass at the apex and the shoulder",
+      "what": "a long drip runs down the front and the rim highlight is a hard double line, while -a has only fine condensation and a soft rim",
+      "fix": "remove the long trail and soften the rim highlight to the broad glow in -a"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the collar and the ground at the glass edge",
+      "what": "the warm light on the moss seat is gone, and the interior at the rim is a darker grass band instead of the lit pond edge",
+      "fix": "bring the warm light back onto the seat and carry the lit pond edge to the rim"
+    },
+    {
+      "severity": "major",
+      "file": "set-B-01-b.jpg",
+      "where": "the glass at its shoulder",
+      "what": "the rim reads thicker, with a hard double highlight, than the softer single rim in -a",
+      "fix": "thin the shoulder highlight back to the single soft rim in -a"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the base roots, stones and moss",
+      "what": "the roots read as smooth tubes over smoother darker stones, and white blossoms and pink petals sit on the moss that -a does not show",
+      "fix": "roughen the roots into the stacked cobbles and clear the blossoms and petals off the moss"
+    },
+    {
+      "severity": "major",
+      "file": "set-B-01-b.jpg",
+      "where": "the base roots, stones and moss collar",
+      "what": "the stones are darker and glossier, the roots are thicker and shinier, and large petals sit on the moss collar",
+      "fix": "match the lighter matte cobbles and finer roots, and clear the settled petals off the collar"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the surface and its mirror",
+      "what": "the reflection is a sharp dark mirror with fewer soft glowing petals",
+      "fix": "soften the reflection and restore the warm scattered petal glow on the surface"
+    },
+    {
+      "severity": "major",
+      "file": "set-B-01-b.jpg",
+      "where": "the surface and its mirror",
+      "what": "the mirror is sharper and darker, with fewer bright wet glints under the base",
+      "fix": "soften the reflection and restore the luminous glints and petal glow on the surface"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the lights behind",
+      "what": "the lights are several smaller cooler round orbs, not the warm peach bokeh mass in -a",
+      "fix": "match the warmer, larger, softer lights behind the globe"
+    },
+    {
+      "severity": "major",
+      "file": "set-B-01-b.jpg",
+      "where": "the lights behind",
+      "what": "the lights are several smaller cooler round orbs, not the warm peach bokeh mass in -a",
+      "fix": "match the warmer, larger, softer lights behind the globe"
+    }
+  ]
+}
