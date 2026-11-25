@@ -38,10 +38,10 @@ const WALL_FILL = 2.8
 const GROUND_FILL = 4.2
 const PATH = { tone: [0.8, 0.72, 0.62] as Rgb, nearMm: 2.6, highMm: 1.4 }
 const FENCE = { reachMm: 1.25, sinkMm: 5 }
-const MOSS = { low: [0.68, 0.88, 0.5] as Rgb, high: [1, 1.08, 0.9] as Rgb, tallMm: 9, soot: 0.68 }
+const MOSS = { low: [0.68, 0.88, 0.5] as Rgb, high: [0.9, 1.06, 0.68] as Rgb, tallMm: 9, soot: 0.8 }
 // The shared stones run from 0.03 (a joint) over 0.12 (the middle stone) to 0.9 (a few white ones). The approved wall is one
 // olive grey with dark joints, so the tone is bent: joints stay near black, every stone from the middle up ends near `top`.
-const STONE = { top: 0.22, knee: 0.13, power: 2.2 }
+const STONE = { top: 0.18, knee: 0.12, power: 2.2 }
 const ROOF = { tone: [1.9, 1.25, 0.85] as Rgb, grey: 0.55 }
 const DOOR: Rgb = [0.24, 0.19, 0.13]
 const TIMBER: Rgb = [0.4, 0.42, 0.34]

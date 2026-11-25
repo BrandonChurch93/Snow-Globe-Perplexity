@@ -44,17 +44,17 @@ export interface Board {
 
 const RAIL = { from: [-39.2, 10.6] as [number, number], to: [-16.4, 32.6] as [number, number], bow: 1.6 }
 const POSTS = [
-  { t: 0.0, tall: 10.2, along: 0.1, out: 0.08, wide: 2.28 },
-  { t: 0.17, tall: 11.2, along: -0.07, out: 0.14, wide: 2.11 },
-  { t: 0.335, tall: 10.0, along: 0.13, out: 0.05, wide: 2.38 },
-  { t: 0.5, tall: 11.0, along: -0.04, out: 0.16, wide: 2.19 },
-  { t: 0.665, tall: 10.4, along: 0.09, out: 0.1, wide: 2.28 },
-  { t: 0.835, tall: 11.4, along: -0.11, out: 0.18, wide: 2.11 },
-  { t: 1.0, tall: 9.6, along: 0.16, out: 0.12, wide: 2.46 },
+  { t: 0.0, tall: 10.2, along: 0.1, out: 0.08, wide: 1.78 },
+  { t: 0.17, tall: 11.2, along: -0.07, out: 0.14, wide: 1.65 },
+  { t: 0.335, tall: 10.0, along: 0.13, out: 0.05, wide: 1.86 },
+  { t: 0.5, tall: 11.0, along: -0.04, out: 0.16, wide: 1.71 },
+  { t: 0.665, tall: 10.4, along: 0.09, out: 0.1, wide: 1.78 },
+  { t: 0.835, tall: 11.4, along: -0.11, out: 0.18, wide: 1.65 },
+  { t: 1.0, tall: 9.6, along: 0.16, out: 0.12, wide: 1.92 },
 ]
 const RAILS = [
-  { at: 3.5, tilt: [0.2, -0.3, 0.25, -0.15, 0.3, -0.25], wide: 1.6 },
-  { at: 7.6, tilt: [-0.25, 0.3, -0.2, 0.35, -0.3, 0.2], wide: 1.5 },
+  { at: 3.5, tilt: [0.2, -0.3, 0.25, -0.15, 0.3, -0.25], wide: 1.25 },
+  { at: 7.6, tilt: [-0.25, 0.3, -0.2, 0.35, -0.3, 0.2], wide: 1.17 },
 ]
 
 export function fenceBoards(): Board[] {
