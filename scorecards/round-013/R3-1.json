@@ -1,0 +1,42 @@
+{
+  "critic": "R3",
+  "score": 6,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "major",
+      "file": "set-B-02.jpg",
+      "where": "the cottage and the tree under the swirling leaves",
+      "what": "the streaks cross the windows, the walls, and the trunk instead of going behind them",
+      "fix": "hold each streak to its depth in the liquid so a wall or a branch hides what is behind it"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-02.jpg",
+      "where": "the glass at its rim",
+      "what": "the fence, the branches, and the leaves are not bent or enlarged where they meet the glass",
+      "fix": "bend and enlarge the interior through the curved glass and the liquid"
+    },
+    {
+      "severity": "minor",
+      "file": "set-C-02.jpg",
+      "where": "the outer edge of the glass against the black",
+      "what": "a blue fringe sits on the silhouette; the same cool edge is on the rims in set-A-02.jpg and set-B-02.jpg",
+      "fix": "take the blue fringe off so the rim falls off into the black as neutral glass"
+    },
+    {
+      "severity": "minor",
+      "file": "set-A-02.jpg",
+      "where": "the pond where it meets the stones",
+      "what": "the water stops in a clean line and does not wet the stone",
+      "fix": "darken and shine the stone along the waterline"
+    },
+    {
+      "severity": "minor",
+      "file": "set-A-02.jpg",
+      "where": "the glass at its shoulder",
+      "what": "the top catchlight is a hard-edged ring",
+      "fix": "soften it into the reflection of a real source"
+    }
+  ]
+}
