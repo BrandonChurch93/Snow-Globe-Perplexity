@@ -509,14 +509,14 @@ function densities(): void {
   const density = rest + haze
   const u = veilUniforms
   u.uVeil.value.w = density
-  u.uVeilUp.value.w = density > 0 ? Math.min(L.uneven, storm / density) : L.uneven
+  const rolling = Math.min(1, Math.max(0, roll / ROLL_MAX))
+  u.uVeilUp.value.w = density > 0 ? Math.min(L.uneven, Math.max(storm, haze * rolling) / density) : L.uneven
   u.uVeilRoll.value.y = flood
   u.uVeilKey.value.w = lerp(L.keyFloor, L.keyFloorFlood, flood)
   u.uVeilRoll.value.z = white
   u.uVeilRoll.value.w = lerp(L.foldEarly, L.foldPeak, flood)
   const rise = Math.pow(turb, L.bankRisePower)
   u.uVeilBank.value.set(L.bankRest + L.bankRise * rise + L.bankFlood * flood, L.bankSoft, most * L.bank * L.bankFloodGain * flood * flood, ramp(flood, L.floodEvenFrom, L.floodEvenTo))
-  const rolling = Math.min(1, Math.max(0, roll / ROLL_MAX))
   u.uVeilDrift.value.x = most * L.drift * Math.pow(rolling, L.driftPower) * lerp(L.driftCalm, 1, calm)
   u.uVeilDrift.value.z = L.driftRest + L.driftRise * Math.pow(rolling, L.driftRisePower)
 }
