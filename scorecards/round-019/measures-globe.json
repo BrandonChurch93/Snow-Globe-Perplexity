@@ -1,0 +1,104 @@
+{
+  "unit": "globe",
+  "tier": "final",
+  "assets": "full",
+  "method": 3,
+  "engineHash": "a103ddd4fdecc107",
+  "seasonHashes": {
+    "winter": "5c39d16f98d3d0be",
+    "spring": "e579a2c24f41ece7",
+    "summer": "364b4daf13dc8bb8",
+    "fall": "767926ecb026caa1"
+  },
+  "browser": "147.0.7727.15",
+  "time": "2026-11-25T21:08:39.746Z",
+  "complete": true,
+  "planned": 8,
+  "red": 0,
+  "measures": [
+    "M1"
+  ],
+  "notes": [],
+  "lines": [
+    {
+      "measure": "M1",
+      "still": "screen-wide",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; the globe and base lie inside the 1920 x 1080 frame (glass top at 48.7 px, foot at 880.2 px, base from 634.9 to 1285.1 px)",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "screen-wide-fall",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; the globe and base lie inside the 1920 x 1080 frame (glass top at 48.7 px, foot at 880.2 px, base from 634.9 to 1285.1 px)",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "screen-phone",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 329160 pixels; the globe and base lie inside the 390 x 844 frame (glass top at 192.1 px, foot at 570.1 px, base from 45 to 345 px)",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "screen-tablet",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 1398784 pixels; the globe and base lie inside the 1024 x 1366 frame (glass top at 113.4 px, foot at 1123.1 px, base from 117.5 to 906.5 px)",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "live-winter",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; the globe and base lie inside the 1920 x 1080 frame (glass top at 73.5 px, foot at 1011.3 px, base from 597.7 to 1322.3 px)",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "live-spring",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; the globe and base lie inside the 1920 x 1080 frame (glass top at 73.5 px, foot at 1011.3 px, base from 597.7 to 1322.3 px)",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "live-summer",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; the globe and base lie inside the 1920 x 1080 frame (glass top at 73.5 px, foot at 1011.3 px, base from 597.7 to 1322.3 px)",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "live-fall",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; the globe and base lie inside the 1920 x 1080 frame (glass top at 73.5 px, foot at 1011.3 px, base from 597.7 to 1322.3 px)",
+      "framed": true
+    }
+  ]
+}
