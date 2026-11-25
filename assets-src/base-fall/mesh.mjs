@@ -459,7 +459,7 @@ export function buildWax() {
   for (let az = 100; az < 260; az += 23 + 9 * Math.sin(az)) drips.push({ az: L.wrapDeg(az), h1: 35.5 - 9 * Math.abs(Math.sin(az * 1.7)), w: 0.85, wide: 1.4 })
   const wrng = mulberry(733)
   for (const d of drips.slice(0, L.DRIPS.length)) {
-    if (d.w < 1.0) continue
+    if (d.w < 1.0 || wrng() < 0.5) continue
     const sgn = wrng() < 0.5 ? -1 : 1
     drips.push({ az: d.az + sgn * (1.3 + 1.2 * wrng()), h1: d.h1 + (wrng() - 0.35) * 6, w: d.w * (0.4 + 0.2 * wrng()), wide: 1.0, thin: true })
   }
@@ -475,7 +475,7 @@ export function buildWax() {
     const m = heavy(az)
     const n = fbm(((az + 180) / 360) * 10, 0.3, 10, 4, 61, 2)
     const side = 1.1 * smooth(48, 82, L.front(az)) * smooth(140, 100, L.front(az))
-    const thick = -0.5 + 1.5 * n * n + 1.0 * m + 0.4 * side
+    const thick = -0.5 + 1.5 * n * n + 0.9 * m + 0.4 * side
     const drop = 0.3 + 1.0 * n * n * n + 3.3 * m + 0.7 * side
     return { thick, drop }
   }
@@ -522,8 +522,8 @@ export function buildWax() {
       const t = i / n
       const h = mix(h0, d.h1, t)
       const sway = (fbm(t * 3 + d.az, 0.4, 64, 4, 17, 2) - 0.5) * (d.h1 < 26 ? 3.2 : 1.4) * t
-      const neck = mix(d.wide * 1.05, 0.62, smooth(0, 0.38, t))
-      const bulb = 1 + 0.5 * Math.exp(-(((t - 0.9) / 0.08) ** 2))
+      const neck = mix(Math.min(d.wide, 1.45), 0.66, smooth(0, 0.6, t) ** 0.7)
+      const bulb = 1 + 0.32 * Math.exp(-(((t - 0.9) / 0.08) ** 2))
       const cap = Math.sqrt(Math.max(1 - Math.max((t - 0.93) / 0.07, 0) ** 2, 0.0004))
       const rad = d.w * neck * bulb * cap * (0.84 + 0.34 * fbm(t * 2.2 + d.az * 1.7, 0.2, 64, 4, 47, 1))
       pts.push(place(mix(drumR(clamp(h, 0, 38.3)) + 1.2, outs[i] + rad * 0.55, smooth(0, 0.18, t)), h, d.az + sway))
