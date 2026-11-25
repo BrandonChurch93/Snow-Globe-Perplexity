@@ -1,5 +1,4 @@
 import * as THREE from 'three'
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import { afterLight } from '../../../core/chunks/light'
 import { stageMaterial, type Rgb } from '../../../core/materials'
 import { geometry, prepareModel } from '../../../core/models'
@@ -7,13 +6,13 @@ import { texture } from '../../../core/textures'
 import { GLOW, glowGeometry, glowMaterial, glowPiece, haloGeometry, haloMaterial, type GlowLook } from '../../../miniature/glow'
 import { MIRROR_GLSL, mirrorUniforms } from '../../../miniature/mirror'
 import { prepareVillage, villageGeometry, villageGrain } from '../../../miniature/model'
-import { lampFlame, lampFoot, shrubDistance } from '../../../miniature/roof'
+import { isIvy, lampFlame, lampFoot, shrubs } from '../../../miniature/roof'
 import { BUMP_GLSL, NEAR_LIGHT, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, withSurface, type GlowSource } from '../../../miniature/surface'
 import { anchors, cottage, cottageFrame, fence, groundAt, moundSlope, pond, pondField, solidDistance, steps, stones, tree } from '../../../scene/layout'
 import { gainOf } from '../../../scene/lightgrid'
 import type { InnerLight, KitMoment } from '../../kit'
 import { isTree, season, tones } from './palette'
-import { PUMPKINS, STONES, atticAt, pumpkinCentre, pumpkinFace, pumpkinTall, stoneBase, type Point } from './props'
+import { PUMPKINS, ROCKS, STONES, atticAt, boardDistance, fenceBoards, pumpkinCentre, pumpkinFace, pumpkinTall, rockCentre, stoneBase, type Point } from './props'
 
 const MODEL = 'fall/village-fall.glb'
 const EARTH = 'fall/village-earth.srgb.tile.w1024.png'
@@ -21,32 +20,66 @@ const LITTER = 'fall/village-litter.srgb.tile.w1024.png'
 const PART = `miniature-${season}`
 const LIGHT = `light-${season}`
 
-const LAMP = { power: 3, reachMm: 12, flicker: 0.06, cycles: 3, phase: 0.1 }
-const WINDOW = { power: 1.1, reachMm: 8, flicker: 0.1, cycles: 5, phase: 0.4 }
-const SIDE = { power: 0.9, reachMm: 7, flicker: 0.1, cycles: 4, phase: 0.75 }
+const LAMP = { power: 3.8, reachMm: 14, flicker: 0.06, cycles: 3, phase: 0.1 }
+const WINDOW = { power: 1.5, reachMm: 8, flicker: 0.1, cycles: 5, phase: 0.4 }
+const SIDE = { power: 0.75, reachMm: 7, flicker: 0.1, cycles: 4, phase: 0.75 }
 const ATTIC_LIGHT = { power: 0.6, reachMm: 6, flicker: 0.1, cycles: 4, phase: 0.2 }
 const PUMPKIN = { power: 1.3, reachMm: 7, flicker: 0.16, cycles: 6 }
 const POND = { power: 0.3, reachMm: 20, flicker: 0.08, cycles: 2, phase: 0.8, liftMm: 2.5 }
 const NEAR = { lamp: { power: 6, reachMm: 7 }, pane: { power: 5, reachMm: 3.2 }, pumpkin: { power: 13, reachMm: 2.6, ends: 4 } }
-const NEAR_WALL = { lamp: { power: 3.4, reachMm: 9, ends: 3 }, pane: { power: 2.4, reachMm: 4.5, ends: 3 }, pumpkin: { power: 5, reachMm: 3.2, ends: 3 } }
+const NEAR_WALL = { lamp: { power: 2.4, reachMm: 9, ends: 3 }, pane: { power: 1.5, reachMm: 4.2, ends: 3 }, pumpkin: { power: 5, reachMm: 3.2, ends: 3 } }
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
-const HALO_KIND = { lamp: { size: 4.2, rest: 0.26, hot: 0, bloom: 0.25 }, pumpkin: { size: 4.2, rest: 0.26, hot: 0, bloom: 0.25 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
+const HALO_KIND = { lamp: { size: 5.6, rest: 0.32, hot: 0, bloom: 0.3 }, pumpkin: { size: 4.2, rest: 0.26, hot: 0, bloom: 0.25 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
 const PANE_HALO = { radiusMm: 0.75, strength: 0.5, hot: 0, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 0.6 }
 const PANE_SIZE = { size: 3.2, rest: 0.3, hot: 0, bloom: 0.3 }
 const THROUGH = 6
-const LAMP_GLASS: Rgb = [6.4, 3.5, 1.3]
-const WALL_FILL = 3.0
+const LAMP_GLASS: Rgb = [3.4, 1.25, 0.24]
+const WALL_FILL = 2.8
 const GROUND_FILL = 3.4
 const PATH = { tone: [1.2, 1.13, 1.0] as Rgb, nearMm: 2.6, highMm: 1.4 }
-const FENCE = { reachMm: 1.25, pastMm: 1.2, out: 0.1, outWave: 0.1, along: 0.02, alongWave: 0.24, sagMm: 0.5, tone: [0.17, 0.1, 0.06] as Rgb }
-const MOSS = { low: [0.62, 0.76, 0.44] as Rgb, high: [0.95, 0.96, 0.88] as Rgb, tallMm: 9 }
-const ROOF = { tone: [2.2, 1.7, 1.45] as Rgb, grey: 0.55 }
-const DOOR: Rgb = [0.34, 0.24, 0.17]
+const FENCE = { reachMm: 1.25, sinkMm: 5 }
+const MOSS = { low: [0.34, 0.44, 0.25] as Rgb, high: [0.5, 0.54, 0.45] as Rgb, tallMm: 9, soot: 0.68, bite: 0.8, bitePivot: 0.36, biteLow: 0.3, biteTop: 1.08 }
+const ROOF = { tone: [1.8, 1.52, 1.4] as Rgb, grey: 0.7 }
+const DOOR: Rgb = [0.5, 0.37, 0.25]
 const DRY: readonly Rgb[] = [[0.42, 0.16, 0.05], [0.5, 0.26, 0.07], [0.3, 0.12, 0.05], [0.4, 0.3, 0.1]]
-const GROUND = { soil: 0.8, leaf: 0.85, leafScale: 0.6, soilMm: 0.26, wideMm: 0.5, leafMm: 0.34 }
-const WATER = { rough: 0.07, rippleMm: 0.12, lamp: 12, pane: 0.8, pumpkin: 2.2, tight: 0.0005, wide: 0.006, wideShare: 0.004, lowMm: 3.4, fog: 0.13, shore: [0.9, 0.99] as [number, number] }
+const GROUND = { soil: 1.1, leaf: 0.85, leafScale: 0.6, soilMm: 0.26, wideMm: 0.5, leafMm: 0.34 }
+const WATER = { rough: 0.07, rippleMm: 0.12, lamp: 6, pane: 0.8, pumpkin: 2.2, tight: 0.0011, wide: 0.006, wideShare: 0.004, lowMm: 3.4, fog: 0.13, trunkMm: 3.4, dim: 0.85, shore: [0.9, 0.99] as [number, number] }
 
-const flame = lampFlame()
+const TALL_LAMP = { reachMm: 2.6, neckMm: 9.5, post: [1.6, 1.2] as [number, number], head: [1.5, 1.5] as [number, number] }
+const foot = lampFoot()
+
+function tallLamp(p: Point): Point {
+  const h = p[1] - foot[1]
+  const head = h > TALL_LAMP.neckMm
+  const wide = head ? TALL_LAMP.head[0] : TALL_LAMP.post[0]
+  const up = head ? TALL_LAMP.neckMm * TALL_LAMP.post[1] + (h - TALL_LAMP.neckMm) * TALL_LAMP.head[1] : h * TALL_LAMP.post[1]
+  return [foot[0] + (p[0] - foot[0]) * wide, foot[1] + up, foot[2] + (p[2] - foot[2]) * wide]
+}
+
+function stretched(source: THREE.BufferGeometry): THREE.BufferGeometry {
+  const g = source.clone()
+  const P = g.getAttribute('position')
+  for (let i = 0; i < P.count; i++) {
+    const q = tallLamp([P.getX(i), P.getY(i), P.getZ(i)])
+    P.setXYZ(i, q[0], q[1], q[2])
+  }
+  return g
+}
+
+const flame = tallLamp(lampFlame())
+const STACK = { fromMm: 17.6, keep: 0.7, reachMm: 0.5 }
+const BUSHES = shrubs().filter((s) => !isIvy(s.r))
+const IVY = shrubs().filter((s) => isIvy(s.r))
+const inIvy = (x: number, y: number, z: number): boolean => IVY.some((s) => Math.hypot((x - s.centre[0]) / s.r[0], (y - s.centre[1]) / s.r[1], (z - s.centre[2]) / s.r[2]) < 1.5)
+
+function bushDistance(x: number, y: number, z: number): number {
+  let d = Infinity
+  for (const s of BUSHES) {
+    const k = Math.hypot((x - s.centre[0]) / s.r[0], (y - s.centre[1]) / s.r[1], (z - s.centre[2]) / s.r[2])
+    d = Math.min(d, (k - 1) * Math.min(s.r[0], s.r[1], s.r[2]))
+  }
+  return d
+}
 const mirrored: Point = [flame[0], flame[1] - WATER.lowMm, flame[2]]
 const attic = atticAt()
 const pumpkinLights = PUMPKINS.map((p) => pumpkinFace(p, 0.55, 0.05))
@@ -88,52 +121,17 @@ export async function prepare(): Promise<void> {
   await Promise.all([prepareVillage(), prepareModel(MODEL)])
 }
 
-const fenceDir: [number, number] = (() => {
-  const dx = fence.to[0] - fence.from[0]
-  const dz = fence.to[1] - fence.from[1]
-  const l = Math.hypot(dx, dz)
-  return [dx / l, dz / l]
-})()
-const fenceLength = Math.hypot(fence.to[0] - fence.from[0], fence.to[1] - fence.from[1])
-
-function fencePose(s: number): { out: number; along: number; sag: number } {
-  const t = s / fenceLength
-  return { out: FENCE.out + FENCE.outWave * Math.sin(t * 7.3 + 1), along: FENCE.along + FENCE.alongWave * Math.sin(t * 9.1 + 0.5), sag: FENCE.sagMm * smooth(0.55, 1.1, t) }
-}
-
-function fenceSpan(x: number, z: number): { s: number; side: number } {
-  const dx = x - fence.from[0]
-  const dz = z - fence.from[1]
-  return { s: dx * fenceDir[0] + dz * fenceDir[1], side: -dx * fenceDir[1] + dz * fenceDir[0] }
-}
-
-const turn = (u: number, v: number, angle: number): [number, number] => [u * Math.cos(angle) - v * Math.sin(angle), u * Math.sin(angle) + v * Math.cos(angle)]
-const fenceAt = (s: number, a: number, h: number, o: number): Point => {
-  const fx = fence.from[0] + fenceDir[0] * s
-  const fz = fence.from[1] + fenceDir[1] * s
-  return [fx + fenceDir[0] * a - fenceDir[1] * o, groundAt(fx, fz) + h, fz + fenceDir[1] * a + fenceDir[0] * o]
-}
-const fenceFoot = (s: number): number => groundAt(fence.from[0] + fenceDir[0] * s, fence.from[1] + fenceDir[1] * s)
-
-function leanOut(x: number, y: number, z: number): Point {
-  const { s, side } = fenceSpan(x, z)
-  const pose = fencePose(s)
-  const [h1, a] = turn(y - fenceFoot(s), 0, pose.along)
-  const [h2, o] = turn(h1, side, pose.out)
-  return fenceAt(s, a, h2 - pose.sag, o)
-}
-
-function leanBack(x: number, y: number, z: number): Point {
-  const { s, side } = fenceSpan(x, z)
-  const pose = fencePose(s)
-  const [h1, o] = turn(y - fenceFoot(s) + pose.sag, side, -pose.out)
-  const shift = h1 * Math.tan(pose.along)
-  return fenceAt(s - shift, 0, h1 / Math.cos(pose.along), o)
-}
+const BOARDS = fenceBoards()
+const fenceBox = BOARDS.reduce(
+  (m, b) => ({ x0: Math.min(m.x0, b.a[0], b.b[0]), x1: Math.max(m.x1, b.a[0], b.b[0]), z0: Math.min(m.z0, b.a[2], b.b[2]), z1: Math.max(m.z1, b.a[2], b.b[2]) }),
+  { x0: Infinity, x1: -Infinity, z0: Infinity, z1: -Infinity },
+)
 
 const inFence = (x: number, y: number, z: number): boolean => {
-  const { s, side } = fenceSpan(x, z)
-  if (s < -FENCE.pastMm || s > fenceLength + FENCE.pastMm || Math.abs(side) > FENCE.reachMm) return false
+  const dx = fence.to[0] - fence.from[0]
+  const dz = fence.to[1] - fence.from[1]
+  const t = Math.min(1.1, Math.max(-0.1, ((x - fence.from[0]) * dx + (z - fence.from[1]) * dz) / (dx * dx + dz * dz)))
+  if (Math.hypot(x - fence.from[0] - dx * t, z - fence.from[1] - dz * t) > FENCE.reachMm) return false
   const up = y - groundAt(x, z)
   return up > -1.5 && up < fence.height + 2
 }
@@ -160,17 +158,21 @@ function autumn(source: THREE.BufferGeometry): THREE.BufferGeometry {
     let gr = C.getY(i)
     let b = C.getZ(i)
     const n = wave(x, y, z)
-    if (inFence(x, y, z) && kind === 1) {
-      const p = leanOut(x, y, z)
-      const q = leanOut(x + N.getX(i) * 0.05, y + N.getY(i) * 0.05, z + N.getZ(i) * 0.05)
-      const l = Math.hypot(q[0] - p[0], q[1] - p[1], q[2] - p[2]) || 1
-      P.setXYZ(i, p[0], p[1], p[2])
-      N.setXYZ(i, (q[0] - p[0]) / l, (q[1] - p[1]) / l, (q[2] - p[2]) / l)
-      const lum = 0.3 * r + 0.6 * gr + 0.1 * b
-      const worn = (0.55 + 0.3 * Math.min(1, lum * 1.6)) * (0.7 + 0.6 * n)
-      r = FENCE.tone[0] * worn
-      gr = FENCE.tone[1] * worn
-      b = FENCE.tone[2] * worn
+    if (kind === 2 && Math.hypot(x - foot[0], z - foot[2]) < TALL_LAMP.reachMm && y > foot[1] - 0.5) {
+      const q = tallLamp([x, y, z])
+      P.setXYZ(i, q[0], q[1], q[2])
+    }
+    const cl = cottageLocal(x, z)
+    const inStack = Math.abs(cl.across - cottage.chimney.across) < cottage.chimney.half + STACK.reachMm && Math.abs(cl.along - cottage.chimney.along) < cottage.chimney.halfAlong + STACK.reachMm && y - frame.floor > STACK.fromMm
+    if (inStack) {
+      const top = frame.floor + STACK.fromMm + (y - frame.floor - STACK.fromMm) * STACK.keep
+      if (kind === 2) P.setXYZ(i, x, Math.min(top, frame.floor + STACK.fromMm + (cottage.chimney.top - STACK.fromMm) * STACK.keep - 0.6), z)
+      else P.setY(i, top)
+    }
+    if (kind === 3 && inIvy(x, y, z)) {
+      P.setXYZ(i, IVY[0]!.centre[0], groundAt(IVY[0]!.centre[0], IVY[0]!.centre[2]) - FENCE.sinkMm, IVY[0]!.centre[2])
+    } else if (inFence(x, y, z) && kind === 1) {
+      P.setXYZ(i, fence.from[0], groundAt(fence.from[0], fence.from[1]) - FENCE.sinkMm, fence.from[1])
     } else if (kind === 3) {
       const lum = Math.min(1.4, (0.3 * r + 0.6 * gr + 0.1 * b) * 3.2)
       const tone = DRY[Math.floor(wave(x * 3.1, y * 2.7, z * 3.3) * 3.999)]!
@@ -194,9 +196,11 @@ function autumn(source: THREE.BufferGeometry): THREE.BufferGeometry {
       } else {
         const m = (1 - smooth(0, MOSS.tallMm, up)) * (0.35 + 0.65 * n) + 0.35 * smooth(0.55, 0.8, n)
         const k = Math.min(1, Math.max(0, m))
-        r *= MOSS.high[0] + (MOSS.low[0] - MOSS.high[0]) * k
-        gr *= MOSS.high[1] + (MOSS.low[1] - MOSS.high[1]) * k
-        b *= MOSS.high[2] + (MOSS.low[2] - MOSS.high[2]) * k
+        const soot = near ? 1 - MOSS.soot * smooth(cottage.wall + 1, cottage.wall + 7, up) : 1
+        const bite = Math.pow(Math.min(MOSS.biteTop, Math.max(MOSS.biteLow, (0.3 * r + 0.6 * gr + 0.1 * b) / MOSS.bitePivot)), MOSS.bite) * soot
+        r *= (MOSS.high[0] + (MOSS.low[0] - MOSS.high[0]) * k) * bite
+        gr *= (MOSS.high[1] + (MOSS.low[1] - MOSS.high[1]) * k) * bite
+        b *= (MOSS.high[2] + (MOSS.low[2] - MOSS.high[2]) * k) * bite
       }
     } else if (kind === 1) {
       const c = cottageLocal(x, z)
@@ -282,6 +286,9 @@ fallRough = mix(0.96, 0.8, fallShow);
   })
 }
 
+const trunkFoot: Point = [tree.x, groundAt(tree.x, tree.z), tree.z]
+const vec = (p: Point): string => `vec3(${p[0].toFixed(3)}, ${p[1].toFixed(3)}, ${p[2].toFixed(3)})`
+
 function waterMaterial(): THREE.MeshStandardMaterial {
   const lit = [{ at: mirrored, strength: WATER.lamp }, { at: anchors.window, strength: WATER.pane }, ...PUMPKINS.map((p) => ({ at: pumpkinFace(p, 0.9, -0.9), strength: WATER.pumpkin }))]
   return stageMaterial({
@@ -338,8 +345,9 @@ diffuseColor.rgb = mix(${glsl(tones.water)}, ${glsl(tones.moss)} * 0.5, pondShor
   vec3 pondSight = villageSight();
   float pondFresnel = 0.03 + 0.97 * pow(1.0 - clamp(dot(pondN, pondSight), 0.0, 1.0), 5.0);
   float pondGlint = villageMirror(pondN, pondSight, ${WATER.tight.toFixed(5)}, ${WATER.wide.toFixed(5)}, ${WATER.wideShare.toFixed(3)});
-  float pondLap = texture2D(map, vMapUv * 0.41 + 0.2).a;
-  totalEmissiveRadiance += (${glsl(tones.lamp)} * pondGlint * pondFresnel + ${glsl(tones.fogGlint)} * (${WATER.fog.toFixed(2)} * pondFresnel * (0.35 + 1.3 * smoothstep(0.45, 0.75, pondLap)))) * uGlowGain * (1.0 - pondShore);
+  float pondLap = 0.5 * (texture2D(map, vMapUv * 0.11 + 0.2).a + texture2D(map, vMapUv * 0.07 + 0.6).a);
+  float pondPosts = max(villagePost(pondN, pondSight, ${vec(trunkFoot)}, ${WATER.trunkMm.toFixed(1)}, 80.0), villagePost(pondN, pondSight, ${vec(foot)}, 0.8, ${(flame[1] - foot[1] + 2).toFixed(1)}));
+  totalEmissiveRadiance += (${glsl(tones.lamp)} * pondGlint * pondFresnel + ${glsl(tones.fogGlint)} * (${WATER.fog.toFixed(2)} * pondFresnel * (0.55 + 0.9 * smoothstep(0.3, 0.75, pondLap)) * (1.0 - ${WATER.dim.toFixed(2)} * pondPosts))) * uGlowGain * (1.0 - pondShore);
 }
 `,
         )
@@ -355,23 +363,26 @@ const shadowed = <T extends THREE.Mesh>(m: T, cast = true): T => {
 }
 
 export function build(): THREE.Object3D {
-  const solids = withSurface(mergeGeometries([autumn(villageGeometry('solid')), geometry(MODEL, 'decor')]), sources(NEAR_WALL, tones.lampLight))
-  const walls = shadowed(new THREE.Mesh(solids, surfaceMaterial({ part: PART, map: villageGrain(), gain, key: 'village-solid-fall', fill: WALL_FILL })))
+  const stone = surfaceMaterial({ part: PART, map: villageGrain(), gain, key: 'village-solid-fall', fill: WALL_FILL })
+  const walls = shadowed(new THREE.Mesh(withSurface(autumn(villageGeometry('solid')), sources(NEAR_WALL, tones.lampLight)), stone))
+  const decor = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'decor').clone(), sources(NEAR_WALL, tones.lampLight)), stone))
   const earth = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'ground').clone(), sources(NEAR, tones.lampLight)), groundMaterial()), false)
   const water = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'water').clone(), sources(NEAR, tones.lampLight)), waterMaterial()), false)
-  return new THREE.Group().add(walls, earth, water)
+  return new THREE.Group().add(walls, decor, earth, water)
 }
 
 const scaled = (c: Rgb, k: number): Rgb => [c[0] * k, c[1] * k, c[2] * k]
 
+const PANE = { room: 0.8, drape: 0.6, hot: 0.8 }
+
 function paneLook(room: Rgb, drape: Rgb): GlowLook {
-  return { bulb: 1, bulbCore: 1, glass: scaled(room, 2.2), flame: tones.flame, room: scaled(room, 1.25), curtain: scaled(drape, 1.5), frost: [0, 0, 0], frostAmount: 0, flicker: 0.07, cycles: 3, through: THROUGH, paneHot: 0.35 }
+  return { bulb: 1, bulbCore: 1, glass: scaled(room, 2.4), flame: tones.flame, room: scaled(room, PANE.room), curtain: scaled(drape, PANE.drape), frost: [0, 0, 0], frostAmount: 0, flicker: 0.07, cycles: 3, through: THROUGH, paneHot: PANE.hot }
 }
 
 export function lights(): THREE.Object3D {
   const warm: GlowLook = { bulb: 1.5, bulbCore: 3.2, glass: LAMP_GLASS, flame: scaled(tones.flame, 6), room: tones.lamp, curtain: tones.lamp, frost: [0, 0, 0], frostAmount: 0, flicker: 0.1, cycles: 5, through: THROUGH, paneHot: 0 }
   const warmPieces = [
-    glowPiece(villageGeometry('lamp-glass'), (_i, isFlame) => [isFlame > 0.5 ? GLOW.flame : GLOW.glass, LAMP.phase, 0, 0]),
+    glowPiece(stretched(villageGeometry('lamp-glass')), (_i, isFlame) => [isFlame > 0.5 ? GLOW.flame : GLOW.glass, LAMP.phase, 0, 0]),
     glowPiece(geometry(MODEL, 'glow'), (_i, _inner, index) => [GLOW.bulb, 0.27 + 0.41 * index, index, 0]),
   ]
   const purple = new THREE.Mesh(glowGeometry([glowPiece(villageGeometry('pane-gable'), (_i, w, h) => [GLOW.pane, w, h, 1])]), glowMaterial(LIGHT, paneLook(tones.purple, tones.purpleDrape), clock))
@@ -395,7 +406,6 @@ export function lights(): THREE.Object3D {
 }
 
 const keep = (role: string): boolean => !isTree(role) && role !== 'ground' && role !== 'pond' && role !== 'fence'
-const onlyFence = (role: string): boolean => role === 'fence'
 const SINK = { depthMm: 3.2, from: 0.74, to: 0.97 }
 
 function groundDistance(x: number, y: number, z: number): number {
@@ -405,10 +415,8 @@ function groundDistance(x: number, y: number, z: number): number {
 }
 
 function fenceDistance(x: number, y: number, z: number): number {
-  const { s, side } = fenceSpan(x, z)
-  if (s < -8 || s > fenceLength + 8 || Math.abs(side) > 10) return Math.hypot(Math.max(-8 - s, 0, s - fenceLength - 8), Math.max(Math.abs(side) - 10, 0)) + 6
-  const p = leanBack(x, y, z)
-  return solidDistance(p[0], p[1], p[2], onlyFence)
+  const far = Math.hypot(Math.max(fenceBox.x0 - x, 0, x - fenceBox.x1), Math.max(fenceBox.z0 - z, 0, z - fenceBox.z1))
+  return far > 6 ? far - 1 : boardDistance(x, y, z, BOARDS)
 }
 
 function propDistance(x: number, y: number, z: number): number {
@@ -418,6 +426,21 @@ function propDistance(x: number, y: number, z: number): number {
     const tall = pumpkinTall(p)
     const k = Math.hypot((x - c[0]) / p.r, (y - c[1]) / tall, (z - c[2]) / p.r)
     d = Math.min(d, (k - 1) * Math.min(p.r, tall))
+  }
+  {
+    const top = flame[1] + 1.2
+    const dy = y - Math.min(top, Math.max(foot[1], y))
+    const r = y > flame[1] - 2.4 ? 1.7 : 1.1
+    d = Math.min(d, Math.hypot(x - foot[0], dy, z - foot[2]) - r)
+  }
+  for (const r of ROCKS) {
+    const c = rockCentre(r)
+    const cs = Math.cos(r.yaw)
+    const sn = Math.sin(r.yaw)
+    const dx = x - c[0]
+    const dz = z - c[2]
+    const k = Math.hypot((dx * cs - dz * sn) / r.r[0], (y - c[1]) / r.r[1], (dx * sn + dz * cs) / r.r[2])
+    d = Math.min(d, (k - 1) * Math.min(r.r[0], r.r[1], r.r[2]))
   }
   for (const s of STONES) {
     const cy = stoneBase(s)
@@ -434,7 +457,7 @@ function propDistance(x: number, y: number, z: number): number {
 }
 
 export function solid(x: number, y: number, z: number): number {
-  return Math.min(solidDistance(x, y, z, keep), shrubDistance(x, y, z), groundDistance(x, y, z), fenceDistance(x, y, z), propDistance(x, y, z))
+  return Math.min(solidDistance(x, y, z, keep), bushDistance(x, y, z), groundDistance(x, y, z), fenceDistance(x, y, z), propDistance(x, y, z))
 }
 
 export const places = { pond: { x: pond.x, z: pond.z, rx: pond.rx, rz: pond.rz, yaw: pond.yaw }, tree: { x: tree.x, z: tree.z }, lampFoot: lampFoot() }

@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { fromThree, writeGlb } from '../../tools/lib/glb.mjs'
 import { rel, writeJson } from '../../tools/lib/paths.mjs'
 import { loadSource } from '../trunk/source.mjs'
+import { addLists } from '../village-spring/levels.mjs'
 
 const [T, R] = await loadSource(['/src/miniature/trunk.ts', '/src/core/rng.ts'])
 const rng = R.stream('tree-spring')
@@ -25,13 +26,15 @@ const lin = (hex) => {
   return [c.r, c.g, c.b]
 }
 
-const CROWN = { centre: [1.2, 29.5, 1], r: [22.5, 15.5, 15], floor: 14.2, sprays: 114, spacing: 4.9, reach: 13, inner: 0.5, layer: 5.0, layerJitter: 2.5 }
-const TWIG = { from: 0.34, to: 0.08, sides: 5, steps: 7 }
-const CLUSTER = { step: 1.35, from: 0.26, size: [0.95, 1.5], tip: [1.4, 2.0], flowers: [8, 12], flower: [0.62, 0.98], side: 0.55, flat: 0.72 }
+const CROWN = { centre: [1.2, 28.4, 1], r: [19.5, 14.8, 14.5], floor: 14.2, reach: 13 }
+const LOBES = { count: 24, spacing: 8.2, tall: 1.3, shell: [0.42, 0.95], r: [4.5, 3.0, 4.5], size: [0.7, 1.3], sprays: 7, gap: 2.6 }
+const TWIG = { from: 0.36, to: 0.06, sides: 5, steps: 7 }
+const CLUSTER = { step: 1.75, from: 0.3, size: [0.85, 1.3], tip: [1.15, 1.6], flowers: [5, 7.2], flower: [0.58, 0.92], side: 0.6, flat: 0.78, extra: 0.14, core: 0.36 }
 const TONES = ['#f6b3c9', '#f9c6d6', '#f2a7c0', '#fbd7e2', '#f0a2bc', '#f7bdd0', '#fde4ea'].map(lin)
+const LOBE_LOOK = { round: 0.7, under: 0.7 }
 const SHADE = [0.72, 0.62, 0.65]
 const HEART = lin('#d86a8a')
-const WOOD = [lin('#2a1a12'), lin('#3a2418'), lin('#22150f')]
+const WOOD = [lin('#7a5038'), lin('#8a5c40'), lin('#694430')]
 const FORK = T.trunkShape.fork
 
 const within = (p) => Math.hypot((p[0] - CROWN.centre[0]) / CROWN.r[0], (p[1] - CROWN.centre[1]) / CROWN.r[1], (p[2] - CROWN.centre[2]) / CROWN.r[2])
@@ -47,23 +50,40 @@ for (const l of T.limbs) {
   }
 }
 
-const targets = []
+const lobes = []
 {
   let tries = 0
-  while (targets.length < CROWN.sprays && tries < 60000) {
+  while (lobes.length < LOBES.count && tries < 40000) {
     tries++
-    const d = norm([rng.gauss(), rng.gauss() * 0.9 + 0.25, rng.gauss()])
-    const k = CROWN.inner + (1 - CROWN.inner) * Math.pow(rng.next(), 0.55)
-    const p = [CROWN.centre[0] + d[0] * CROWN.r[0] * k, CROWN.centre[1] + d[1] * CROWN.r[1] * k, CROWN.centre[2] + d[2] * CROWN.r[2] * k]
-    p[1] = CROWN.floor + 1.4 + Math.round((p[1] - CROWN.floor - 1.4) / CROWN.layer) * CROWN.layer + rng.range(-CROWN.layerJitter, CROWN.layerJitter)
-    if (p[1] < CROWN.floor) continue
-    const side = Math.hypot(p[0], p[2])
-    if (p[1] < 20 && side < 7) continue
-    if (targets.some((q) => len(sub(q, p)) < CROWN.spacing)) continue
-    targets.push(p)
+    const d = norm([rng.gauss(), rng.gauss() * 0.8 + 0.2, rng.gauss()])
+    const k = LOBES.shell[0] + (LOBES.shell[1] - LOBES.shell[0]) * Math.pow(rng.next(), 0.6)
+    const c = [CROWN.centre[0] + d[0] * CROWN.r[0] * k, CROWN.centre[1] + d[1] * CROWN.r[1] * k, CROWN.centre[2] + d[2] * CROWN.r[2] * k]
+    if (c[1] < CROWN.floor + LOBES.r[1]) continue
+    if (c[1] < 21 && Math.hypot(c[0], c[2]) < 9) continue
+    if (lobes.some((q) => Math.hypot(q.c[0] - c[0], (q.c[1] - c[1]) * LOBES.tall, q.c[2] - c[2]) < LOBES.spacing)) continue
+    const size = rng.range(LOBES.size[0], LOBES.size[1])
+    lobes.push({ c, r: mul(LOBES.r, size), n: Math.round(LOBES.sprays * size * size) })
   }
-  targets.sort((a, b) => Math.hypot(a[0], a[2]) + 0.4 * Math.abs(a[1] - 26) - (Math.hypot(b[0], b[2]) + 0.4 * Math.abs(b[1] - 26)))
 }
+
+const targets = []
+for (const lobe of lobes) {
+  let made = 0
+  let tries = 0
+  while (made < lobe.n && tries < 4000) {
+    tries++
+    const d = [rng.gauss() * 0.55, rng.gauss() * 0.5 + 0.1, rng.gauss() * 0.55]
+    if (len(d) > 1.15) continue
+    const p = [lobe.c[0] + d[0] * lobe.r[0], lobe.c[1] + d[1] * lobe.r[1], lobe.c[2] + d[2] * lobe.r[2]]
+    if (p[1] < CROWN.floor || within(p) > 1) continue
+    if (p[1] < 20 && Math.hypot(p[0], p[2]) < 7) continue
+    if (targets.some((q) => len(sub(q, p)) < LOBES.gap)) continue
+    p.lobe = lobe
+    targets.push(p)
+    made++
+  }
+}
+targets.sort((a, b) => Math.hypot(a[0], a[2]) + 0.4 * Math.abs(a[1] - 26) - (Math.hypot(b[0], b[2]) + 0.4 * Math.abs(b[1] - 26)))
 
 const sprays = []
 for (const target of targets) {
@@ -95,7 +115,7 @@ for (const target of targets) {
     pts.push(at(t))
     radii.push(r0 + (TWIG.to - r0) * Math.pow(t, 0.8))
   }
-  sprays.push({ pts, radii, span, at })
+  sprays.push({ pts, radii, span, at, lobe: target.lobe })
   for (let i = 2; i <= TWIG.steps; i++) skeleton.push({ p: pts[i], r: radii[i] })
 }
 
@@ -126,9 +146,9 @@ function tube(pts, radii, tone) {
 }
 
 const clusters = []
-const plant = (p, r, tip) => {
+const plant = (p, r, tip, lobe) => {
   if (p[1] < FORK + 1.2) return
-  clusters.push({ p, r, tip })
+  clusters.push({ p, r, tip, lobe })
 }
 for (const s of sprays) {
   tube(s.pts, s.radii, WOOD[rng.int(WOOD.length)])
@@ -138,13 +158,13 @@ for (const s of sprays) {
     const p = s.at(Math.min(1, t))
     const r = rng.range(CLUSTER.size[0], CLUSTER.size[1]) * (0.7 + 0.5 * t)
     const off = norm([rng.gauss(), rng.gauss() + 0.5, rng.gauss()])
-    plant(add(p, mul(off, r * CLUSTER.side * rng.next())), r, false)
-    if (rng.next() < 0.3) {
+    plant(add(p, mul(off, r * CLUSTER.side * rng.next())), r, false, s.lobe)
+    if (rng.next() < CLUSTER.extra) {
       const off2 = norm([rng.gauss(), rng.gauss() * 0.6 + 0.2, rng.gauss()])
-      plant(add(p, mul(off2, r * (0.9 + 0.8 * rng.next()))), r * rng.range(0.6, 0.85), false)
+      plant(add(p, mul(off2, r * (0.9 + 0.8 * rng.next()))), r * rng.range(0.6, 0.85), false, s.lobe)
     }
   }
-  plant(s.at(1), rng.range(CLUSTER.tip[0], CLUSTER.tip[1]), true)
+  plant(s.at(1), rng.range(CLUSTER.tip[0], CLUSTER.tip[1]), true, s.lobe)
 }
 for (const l of T.limbs) {
   if (l.kind !== 'twig' && l.kind !== 'limb') continue
@@ -181,7 +201,7 @@ const openness = (c) => {
 }
 
 const bloom = { p: [], n: [], c: [], i: [] }
-const ico = new THREE.IcosahedronGeometry(1, 1)
+const ico = new THREE.IcosahedronGeometry(1, 0)
 const icoIndexed = (() => {
   const P = ico.getAttribute('position')
   const map = new Map()
@@ -202,16 +222,23 @@ const icoIndexed = (() => {
 const wob = (x, y, z) => Math.sin(x * 2.3 + y * 1.7) * Math.cos(z * 2.1 - x * 0.9) * 0.5 + Math.sin(y * 3.1 + z * 1.3) * 0.5
 
 let flowers = 0
+const cores = []
+const full = [[], [], []]
+const light = [[], [], []]
+const lighter = [[], [], []]
 for (const c of clusters) {
   const open = openness(c)
   const tone = mul(mix(TONES[rng.int(TONES.length)], TONES[rng.int(TONES.length)], rng.next()), 0.92 + 0.16 * rng.next())
   const depth = within(c.p)
-  const lit = (0.6 + 0.4 * open) * (0.76 + 0.24 * smooth(0.3, 0.95, depth))
-  const crownOut = norm([c.p[0] - CROWN.centre[0], (c.p[1] - CROWN.centre[1]) * 1.3 + 3, c.p[2] - CROWN.centre[2]])
+  const crownWard = norm([c.p[0] - CROWN.centre[0], (c.p[1] - CROWN.centre[1]) * 1.3 + 3, c.p[2] - CROWN.centre[2]])
+  const lobe = c.lobe
+  const rise = lobe ? (c.p[1] - lobe.c[1]) / lobe.r[1] : 0.3
+  const crownOut = lobe ? norm(add(mul(norm([(c.p[0] - lobe.c[0]) / lobe.r[0], (c.p[1] - lobe.c[1]) / lobe.r[1] + 0.35, (c.p[2] - lobe.c[2]) / lobe.r[2]]), LOBE_LOOK.round), mul(crownWard, 1 - LOBE_LOOK.round))) : crownWard
+  const lit = (0.52 + 0.48 * open) * (0.72 + 0.28 * smooth(0.3, 0.95, depth)) * (LOBE_LOOK.under + (1 - LOBE_LOOK.under) * smooth(-0.9, 0.5, rise))
   const base = bloom.p.length / 3
   const seed = rng.next() * 40
   for (const q of icoIndexed.pos) {
-    const k = c.r * 0.56 * (0.82 + 0.3 * wob(q[0] * 1.6 + seed, q[1] * 1.6, q[2] * 1.6))
+    const k = c.r * CLUSTER.core * (0.82 + 0.3 * wob(q[0] * 1.6 + seed, q[1] * 1.6, q[2] * 1.6))
     const p = [c.p[0] + q[0] * k, c.p[1] + q[1] * k * CLUSTER.flat, c.p[2] + q[2] * k]
     bloom.p.push(p[0], p[1], p[2])
     const n = norm(add(mul(q, 0.75), mul(crownOut, 0.45)))
@@ -219,8 +246,8 @@ for (const c of clusters) {
     const under = 0.62 + 0.38 * smooth(-0.8, 0.5, q[1])
     bloom.c.push(tone[0] * SHADE[0] * lit * under, tone[1] * SHADE[1] * lit * under, tone[2] * SHADE[2] * lit * under)
   }
-  for (const v of icoIndexed.idx) bloom.i.push(base + v)
-  const count = Math.round((CLUSTER.flowers[0] + rng.next() * (CLUSTER.flowers[1] - CLUSTER.flowers[0])) * (c.r / 1.2) ** 1.6)
+  for (const v of icoIndexed.idx) cores.push(base + v)
+  const count = Math.round((CLUSTER.flowers[0] + rng.next() * (CLUSTER.flowers[1] - CLUSTER.flowers[0])) * (c.r / 1.1) ** 1.5)
   for (let f = 0; f < count; f++) {
     const d = norm([rng.gauss(), rng.gauss() * 0.9 + 0.25, rng.gauss()])
     const k = c.r * (0.74 + 0.4 * rng.next())
@@ -231,25 +258,37 @@ for (const c of clusters) {
     const v = cross(out, u)
     const size = rng.range(CLUSTER.flower[0], CLUSTER.flower[1])
     const spin = rng.next() * Math.PI * 2
-    const pale = mul(mix(tone, [1, 0.97, 0.97], 0.25 + 0.45 * rng.next()), lit * (0.8 + 0.2 * smooth(-0.9, 0.3, d[1])) * (0.82 + 0.3 * rng.next()))
-    const n = norm(add(add(mul(d, 0.5), mul(crownOut, 0.6)), [0, 0.25, 0]))
+    const cup = rng.range(0.12, 0.5)
+    const top = 0.74 + 0.26 * smooth(-0.9, 0.45, d[1])
+    const pale = mul(mix(tone, [1, 0.965, 0.97], 0.25 + 0.5 * rng.next() * smooth(-0.6, 0.6, rise + d[1])), lit * top * (0.8 + 0.36 * rng.next()))
     const b0 = bloom.p.length / 3
+    const heart = mul(mix(HEART, pale, 0.5), 0.92)
+    const nc = norm(add(out, mul(crownOut, 0.35)))
     bloom.p.push(at[0], at[1], at[2])
-    bloom.n.push(n[0], n[1], n[2])
-    const heart = mix(HEART, pale, 0.64)
-    bloom.c.push(heart[0] * lit, heart[1] * lit, heart[2] * lit)
-    for (let j = 0; j < 10; j++) {
-      const a = spin + (j / 10) * Math.PI * 2
-      const tipV = j % 2 === 0
-      const rr = size * (tipV ? 1 : 0.7)
-      const lift = size * (tipV ? 0.3 : 0.12)
-      const q = add(add(at, add(mul(u, Math.cos(a) * rr), mul(v, Math.sin(a) * rr))), mul(out, lift))
-      bloom.p.push(q[0], q[1], q[2])
-      bloom.n.push(n[0], n[1], n[2])
-      const kk = tipV ? 1.06 : 0.82
-      bloom.c.push(pale[0] * kk, pale[1] * kk, pale[2] * kk)
+    bloom.n.push(nc[0], nc[1], nc[2])
+    bloom.c.push(heart[0], heart[1], heart[2])
+    for (let j = 0; j < 5; j++) {
+      const a = spin + (j / 5) * Math.PI * 2 + rng.range(-0.12, 0.12)
+      const dir = add(mul(u, Math.cos(a)), mul(v, Math.sin(a)))
+      const side = add(mul(u, -Math.sin(a)), mul(v, Math.cos(a)))
+      const long = size * rng.range(0.86, 1.1)
+      const kk = 0.9 + 0.2 * rng.next()
+      const corner = (along, across, lift, bright) => {
+        const q = add(add(add(at, mul(dir, along * long)), mul(side, across * long)), mul(out, lift * long))
+        const n = norm(add(add(mul(out, 1 - 0.5 * along), mul(dir, 0.75 * along - 0.5 * cup)), add(mul(side, 0.9 * across), mul(crownOut, 0.3))))
+        bloom.p.push(q[0], q[1], q[2])
+        bloom.n.push(n[0], n[1], n[2])
+        bloom.c.push(pale[0] * bright * kk, pale[1] * bright * kk, pale[2] * bright * kk)
+      }
+      corner(0.56, 0.4, cup * 0.5, 0.86)
+      corner(1, 0.2, cup, 1.08)
+      corner(1, -0.2, cup, 1.08)
+      corner(0.56, -0.4, cup * 0.5, 0.86)
+      const q0 = b0 + 1 + j * 4
+      full[flowers % 3].push(b0, q0, q0 + 1, b0, q0 + 1, q0 + 2, b0, q0 + 2, q0 + 3)
+      light[flowers % 3].push(b0, q0 + 1, q0 + 3)
+      if (flowers % 2 === 0) lighter[flowers % 3].push(b0, q0 + 1, q0 + 3)
     }
-    for (let j = 0; j < 10; j++) bloom.i.push(b0, b0 + 1 + j, b0 + 1 + ((j + 1) % 10))
     flowers++
   }
 }
@@ -281,10 +320,15 @@ for (const c of clusters)
     box[j + 3] = Math.max(box[j + 3], c.p[j] + c.r)
   }
 
-const counts = { blossom: bloom.i.length / 3, twigs: wood.i.length / 3 }
+const far = clusters.reduce((m, c) => Math.max(m, len(add(c.p, T.crownOffset())) + c.r), 0)
+bloom.i = [...cores, ...full.flat()]
+const lists = { medium: [...cores, ...light.flat()], low: [...cores, ...lighter.flat()] }
+const shadow = { high: cores.length + full[0].length, medium: cores.length + light[0].length, low: cores.length + lighter[0].length }
+const counts = { blossom: bloom.i.length / 3, twigs: wood.i.length / 3, medium: lists.medium.length / 3, low: lists.low.length / 3, shadow }
 const out = writeGlb(rel('assets-full', 'spring', 'tree-blossom.glb'), [
-  fromThree('blossom', geometryOf(bloom), { triangles: counts.blossom, clusters: clusters.length, flowers, balls, box: box.map((v) => Number(v.toFixed(2))) }),
+  fromThree('blossom', geometryOf(bloom), { triangles: counts.blossom, clusters: clusters.length, flowers, balls, shadow, box: box.map((v) => Number(v.toFixed(2))) }),
   fromThree('twigs', geometryOf(wood), { triangles: counts.twigs, sprays: sprays.length }),
 ])
+out.bytes = addLists(rel('assets-full', 'spring', 'tree-blossom.glb'), 'blossom', lists)
 writeJson(rel('out', 'work', 'tree', 'build-spring.json'), { made: 'assets-src/tree-spring/build.mjs', file: 'assets-full/spring/tree-blossom.glb', bytes: out.bytes, counts, clusters: clusters.length, flowers, sprays: sprays.length, balls: balls.length, box })
-console.log(`tree-spring: ${sprays.length} sprays, ${clusters.length} clusters, ${flowers} flowers, ${balls.length} collider balls; ${out.triangles} triangles, ${(out.bytes / 1e6).toFixed(2)} MB; box ${box.map((v) => v.toFixed(1)).join(' ')}`)
+console.log(`tree-spring: ${sprays.length} sprays, ${clusters.length} clusters, ${flowers} flowers, ${balls.length} collider balls; ${out.triangles} triangles (blossom ${counts.blossom}, medium ${counts.medium}, low ${counts.low}; in the shadow ${shadow.high / 3}, ${shadow.medium / 3}, ${shadow.low / 3}), ${(out.bytes / 1e6).toFixed(2)} MB; box ${box.map((v) => v.toFixed(1)).join(' ')}; farthest from the globe's centre ${far.toFixed(1)} mm`)
