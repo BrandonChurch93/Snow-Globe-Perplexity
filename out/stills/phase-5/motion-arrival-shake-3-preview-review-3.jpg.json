@@ -1,0 +1,196 @@
+{
+  "engineHash": "5a94146defd3d562",
+  "seasonHashes": {
+    "winter": "5c39d16f98d3d0be",
+    "spring": "e579a2c24f41ece7",
+    "summer": "364b4daf13dc8bb8",
+    "fall": "767926ecb026caa1"
+  },
+  "format": "preview",
+  "tier": "review",
+  "assets": "full",
+  "diagnostic": "",
+  "browser": "Google Chrome for Testing 147.0.7727.15",
+  "graphics": "software",
+  "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB",
+  "time": "2026-11-25T09:39:11.865Z",
+  "diag": "",
+  "layoutHash": "eaef1fec3b7393d1",
+  "spec": {
+    "kind": "motion",
+    "motion": "arrival",
+    "source": "film",
+    "shot": "shake-3",
+    "stride": 1,
+    "frames": [
+      2208,
+      2210,
+      2212,
+      2214,
+      2216,
+      2218,
+      2220,
+      2222,
+      2224,
+      2226,
+      2228,
+      2230
+    ]
+  },
+  "caption": "Motion sheet 3 of 8: the arrival of shake-3, frames 2208 to 2230, 2 frames apart at 60 frames a second, preview, review",
+  "width": 1149,
+  "height": 986,
+  "limits": {
+    "longEdge": 1400,
+    "maxPixels": 1140000
+  },
+  "layout": {
+    "cols": 3,
+    "rows": 4,
+    "cell": {
+      "width": 367,
+      "height": 206
+    },
+    "labelHeight": 24,
+    "gap": 12,
+    "rowGap": 14,
+    "margin": 12
+  },
+  "frames": [
+    {
+      "index": 2208,
+      "seconds": 36.8,
+      "file": "out/work/seq/film-preview-review/film-002208.png",
+      "at": {
+        "left": 12,
+        "top": 12,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 2210,
+      "seconds": 36.833333333333336,
+      "file": "out/work/seq/film-preview-review/film-002210.png",
+      "at": {
+        "left": 391,
+        "top": 12,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 2212,
+      "seconds": 36.86666666666667,
+      "file": "out/work/seq/film-preview-review/film-002212.png",
+      "at": {
+        "left": 770,
+        "top": 12,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 2214,
+      "seconds": 36.9,
+      "file": "out/work/seq/film-preview-review/film-002214.png",
+      "at": {
+        "left": 12,
+        "top": 256,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 2216,
+      "seconds": 36.93333333333333,
+      "file": "out/work/seq/film-preview-review/film-002216.png",
+      "at": {
+        "left": 391,
+        "top": 256,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 2218,
+      "seconds": 36.96666666666667,
+      "file": "out/work/seq/film-preview-review/film-002218.png",
+      "at": {
+        "left": 770,
+        "top": 256,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 2220,
+      "seconds": 37,
+      "file": "out/work/seq/film-preview-review/film-002220.png",
+      "at": {
+        "left": 12,
+        "top": 500,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 2222,
+      "seconds": 37.03333333333333,
+      "file": "out/work/seq/film-preview-review/film-002222.png",
+      "at": {
+        "left": 391,
+        "top": 500,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 2224,
+      "seconds": 37.06666666666667,
+      "file": "out/work/seq/film-preview-review/film-002224.png",
+      "at": {
+        "left": 770,
+        "top": 500,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 2226,
+      "seconds": 37.1,
+      "file": "out/work/seq/film-preview-review/film-002226.png",
+      "at": {
+        "left": 12,
+        "top": 744,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 2228,
+      "seconds": 37.13333333333333,
+      "file": "out/work/seq/film-preview-review/film-002228.png",
+      "at": {
+        "left": 391,
+        "top": 744,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 2230,
+      "seconds": 37.166666666666664,
+      "file": "out/work/seq/film-preview-review/film-002230.png",
+      "at": {
+        "left": 770,
+        "top": 744,
+        "width": 367,
+        "height": 206
+      }
+    }
+  ],
+  "keptFrom": "out/work/sheets/round-017/motion-arrival-shake-3-preview-review-3.jpg",
+  "sourceSha256": "25a0a72df6000213396fc4e88be86a286c8eae1b9aa7999eb3a70f15d6e5ea97",
+  "keptAt": "2026-11-25T21:49:27.785Z"
+}

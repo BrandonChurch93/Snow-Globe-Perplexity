@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { ROOT, rel, readJson, loadConfig, parseArgs, readSection } from './lib/paths.mjs'
+import { engineHash } from './lib/hashes.mjs'
 
 const args = parseArgs(process.argv.slice(2))
 const maxMb = Number(args['max-mb']) > 0 ? Number(args['max-mb']) : 450
@@ -444,18 +445,45 @@ function build() {
 
   const stillsDir = rel('out', 'stills')
   const pictures = walk(stillsDir, path.join(stillsDir, 'status')).filter((p) => IMAGE.test(p))
-  const shown = (prefix) =>
-    pictures
-      .filter((p) => path.basename(p).startsWith(prefix))
-      .map((src) => {
-        const name = path.basename(src, path.extname(src))
-        const record = tryJson(path.join(path.dirname(src), `${name}.json`))
-        const caption = typeof record?.caption === 'string' && record.caption.trim() ? record.caption.trim() : name
-        const dims = probe(src)
-        return { to: put(src, `stills/${path.relative(stillsDir, src).split(path.sep).join('/')}`), caption, w: dims.w, h: dims.h }
-      })
-  const compares = shown('compare-')
-  const sheets = shown('sheet-')
+  // A kept picture's record lies beside it as <file>.json; older ones as <name>.json. A sheet is a picture whose
+  // record holds a layout and a list of frames, whatever the tool named the file. The same picture kept in two
+  // folders, or under two names, is shown once. The folders come newest first, so the current build's pictures lead.
+  const recordOf = (src) => tryJson(`${src}.json`) ?? tryJson(path.join(path.dirname(src), `${path.basename(src, path.extname(src))}.json`))
+  const isSheet = (record) => Array.isArray(record?.frames) && record?.layout !== null && typeof record?.layout === 'object'
+  const stampOf = (record) => Date.parse(record?.keptAt ?? record?.time ?? '') || 0
+  // A picture whose record names another engine was drawn by an earlier build, and its caption says so.
+  let engineNow = ''
+  try {
+    engineNow = engineHash()
+  } catch {
+    engineNow = ''
+  }
+  const earlier = (record) => (engineNow && typeof record?.engineHash === 'string' && record.engineHash && record.engineHash !== engineNow ? 'an earlier build' : '')
+  const day = (ms) => (ms ? `${new Date(ms).toISOString().slice(0, 16).replace('T', ' ')} UTC` : '')
+  const entries = pictures.map((src) => {
+    const record = recordOf(src)
+    return { src, record, name: path.basename(src, path.extname(src)), folder: path.relative(stillsDir, path.dirname(src)).split(path.sep).join('/'), at: stampOf(record) }
+  })
+  const folderAt = new Map()
+  for (const e of entries) folderAt.set(e.folder, Math.max(folderAt.get(e.folder) ?? 0, e.at))
+  entries.sort((a, b) => folderAt.get(b.folder) - folderAt.get(a.folder) || a.folder.localeCompare(b.folder) || a.name.localeCompare(b.name, undefined, { numeric: true }))
+  const shown = (want) => {
+    const seen = new Set()
+    const out = []
+    for (const e of entries) {
+      if (!want(e)) continue
+      const same = e.record?.sourceSha256 ?? `${e.name}:${sizeOf(e.src)}`
+      if (seen.has(same)) continue
+      seen.add(same)
+      const said = [e.record?.caption, e.record?.comparison].find((c) => typeof c === 'string' && c.trim())
+      const caption = [said ? said.trim() : e.name, said && e.name.includes('-crops-') ? `crops ${e.name.split('-crops-')[1]}` : '', e.folder, day(e.at), earlier(e.record)].filter(Boolean).join(' \u00b7 ')
+      const dims = probe(e.src)
+      out.push({ to: put(e.src, `stills/${path.relative(stillsDir, e.src).split(path.sep).join('/')}`), caption, w: dims.w, h: dims.h })
+    }
+    return out
+  }
+  const compares = shown((e) => e.name.startsWith('compare-'))
+  const sheets = shown((e) => !e.name.startsWith('compare-') && isSheet(e.record))
 
   const all = gather()
   const { kept, dropped } = fit(all, dirSize(DIST))

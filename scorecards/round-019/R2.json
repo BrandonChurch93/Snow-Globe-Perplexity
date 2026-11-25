@@ -1,0 +1,214 @@
+{
+ "critic": "R2",
+ "round": 19,
+ "unit": "globe",
+ "judgedCommit": "9f4d94a",
+ "tier": "final",
+ "jurorsPerImage": 5,
+ "panel": [
+  "claude_sonnet_5_5",
+  "gemini_neon",
+  "gpt_6_2_astra",
+  "kimi_k3",
+  "pplx_computer_glm_5_3_1009"
+ ],
+ "controlShare": 0.65,
+ "controlVotes": "13 of 20",
+ "judgedShare": 0.2,
+ "judgedVotes": "4 of 20",
+ "maxShareGap": 0.2,
+ "bar": 0.45,
+ "pass": false,
+ "missing": false,
+ "images": [
+  {
+   "file": "set-A-01.jpg",
+   "kind": "judged",
+   "id": "live-fall",
+   "sha256": "2741c63e96fdddb1fc009a395f1225623b0308eea2104177e5b7707cb51de5c6",
+   "votes": [
+    "b",
+    "c",
+    "c",
+    "c",
+    "b"
+   ],
+   "jurors": [
+    "viewer_r19_01",
+    "viewer_r19_05",
+    "viewer_r19_09",
+    "viewer_r19_13",
+    "viewer_r19_17"
+   ],
+   "models": [
+    "claude_sonnet_5_5",
+    "gpt_6_2_astra",
+    "gemini_neon",
+    "pplx_computer_glm_5_3_1009",
+    "kimi_k3"
+   ],
+   "aOrB": 2,
+   "answers": 5
+  },
+  {
+   "file": "set-A-02.jpg",
+   "kind": "control",
+   "id": "the approved image references/approved/summer-rest.png",
+   "sha256": "51a02cf5d823fa76c41ffd663ccf753d8b4336fda02bf5a94922d1568a0a145e",
+   "votes": [
+    "b",
+    "b",
+    "b",
+    "c",
+    "b"
+   ],
+   "reusedFromRound": [
+    9
+   ],
+   "aOrB": 4,
+   "answers": 5
+  },
+  {
+   "file": "set-A-03.jpg",
+   "kind": "control",
+   "id": "the approved image references/approved/fall-rest.png",
+   "sha256": "824202257f9eead865a69164db685bb337ef05d9bbcb1e5e010814584bfc0f00",
+   "votes": [
+    "b",
+    "c",
+    "b",
+    "c",
+    "c"
+   ],
+   "reusedFromRound": [
+    10
+   ],
+   "aOrB": 2,
+   "answers": 5
+  },
+  {
+   "file": "set-A-04.jpg",
+   "kind": "judged",
+   "id": "live-spring",
+   "sha256": "89d155c5309703a37ef0bb4cd710fb5a540029d5efe02d8d69e7087024b0a11e",
+   "votes": [
+    "b",
+    "c",
+    "c",
+    "c",
+    "c"
+   ],
+   "jurors": [
+    "viewer_r19_02",
+    "viewer_r19_06",
+    "viewer_r19_10",
+    "viewer_r19_14",
+    "viewer_r19_18"
+   ],
+   "models": [
+    "claude_sonnet_5_5",
+    "gpt_6_2_astra",
+    "gemini_neon",
+    "pplx_computer_glm_5_3_1009",
+    "kimi_k3"
+   ],
+   "aOrB": 1,
+   "answers": 5
+  },
+  {
+   "file": "set-A-05.jpg",
+   "kind": "control",
+   "id": "the approved image references/approved/winter-rest.png",
+   "sha256": "487f20f9cae58c4fc1f963ff12b8bd05d4a104645654b9fdfe5f4292a1f4b20a",
+   "votes": [
+    "b",
+    "a",
+    "c",
+    "c",
+    "c"
+   ],
+   "reusedFromRound": [
+    3
+   ],
+   "aOrB": 2,
+   "answers": 5
+  },
+  {
+   "file": "set-A-06.jpg",
+   "kind": "control",
+   "id": "the approved image references/approved/spring-rest.png",
+   "sha256": "2df74641bc16ffd6a193782a7ea8f90f4288acf81921e2d0afdec460534b3721",
+   "votes": [
+    "b",
+    "b",
+    "b",
+    "b",
+    "b"
+   ],
+   "reusedFromRound": [
+    8
+   ],
+   "aOrB": 5,
+   "answers": 5
+  },
+  {
+   "file": "set-A-07.jpg",
+   "kind": "judged",
+   "id": "live-winter",
+   "sha256": "b5cc867dd84d5303326ca29462c4911927b9100e76f4498419c13df6c015f83a",
+   "votes": [
+    "b",
+    "c",
+    "c",
+    "c",
+    "c"
+   ],
+   "jurors": [
+    "viewer_r19_03",
+    "viewer_r19_07",
+    "viewer_r19_11",
+    "viewer_r19_15",
+    "viewer_r19_19"
+   ],
+   "models": [
+    "claude_sonnet_5_5",
+    "gpt_6_2_astra",
+    "gemini_neon",
+    "pplx_computer_glm_5_3_1009",
+    "kimi_k3"
+   ],
+   "aOrB": 1,
+   "answers": 5
+  },
+  {
+   "file": "set-A-08.jpg",
+   "kind": "judged",
+   "id": "live-summer",
+   "sha256": "f50e0e8d0147fbef98903a9e5d69dd8552704ad3d5625b5713890ae8e5ff26fa",
+   "votes": [
+    "c",
+    "c",
+    "d",
+    "c",
+    "c"
+   ],
+   "jurors": [
+    "viewer_r19_04",
+    "viewer_r19_08",
+    "viewer_r19_12",
+    "viewer_r19_16",
+    "viewer_r19_20"
+   ],
+   "models": [
+    "claude_sonnet_5_5",
+    "gpt_6_2_astra",
+    "gemini_neon",
+    "pplx_computer_glm_5_3_1009",
+    "kimi_k3"
+   ],
+   "aOrB": 0,
+   "answers": 5
+  }
+ ],
+ "countsAs": "one major issue (kit/07-QUALITY-BAR.md, R2: \"A failed R2 counts as one major issue\")"
+}
