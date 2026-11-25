@@ -1,0 +1,360 @@
+{
+  "caption": "fall-shake: the approved image (a) beside the build (b), hd, final",
+  "a": {
+    "file": "references/approved/fall-shake.png",
+    "sha256": "f124676cc4f5ad2356c891cda1b3fc950c9a40da8d07919ebed147bf01a65099",
+    "width": 2816,
+    "height": 1584,
+    "globe": {
+      "cx": 1420.3,
+      "cy": 661.7,
+      "r": 563.2
+    },
+    "base": {
+      "left": 883,
+      "right": 1938,
+      "top": 1080,
+      "foot": 1442
+    },
+    "frame": {
+      "x": 603.66,
+      "y": -42.3,
+      "w": 1633.28,
+      "h": 1858.56
+    },
+    "edgeFillPx": {
+      "left": 0,
+      "top": 18,
+      "right": 0,
+      "bottom": 99
+    }
+  },
+  "b": {
+    "file": "out/work/stills/fall-shake-hd-final.png",
+    "sha256": "6d48280f594f7502995a42f8a25bd0b044919cccb596cb00306046d4b33eeed4",
+    "width": 1920,
+    "height": 1080,
+    "globe": {
+      "cx": 960,
+      "cy": 467.67901740126274,
+      "r": 376.96554629536996
+    },
+    "base": {
+      "left": 597.8286732017048,
+      "right": 1322.171326798295,
+      "top": 709.1023468384356,
+      "foot": 1029.8254169683203
+    },
+    "frame": {
+      "x": 413.4,
+      "y": -3.53,
+      "w": 1093.2,
+      "h": 1243.99
+    },
+    "edgeFillPx": {
+      "left": 0,
+      "top": 2,
+      "right": 0,
+      "bottom": 102
+    }
+  },
+  "limits": {
+    "longEdge": 1400,
+    "maxPixels": 1140000
+  },
+  "frameInRadii": {
+    "left": 1.45,
+    "right": 1.45,
+    "up": 1.25,
+    "down": 2.05
+  },
+  "panels": {
+    "file": "out/work/compare/compare-fall-shake.jpg",
+    "stripHeight": 22,
+    "globeRadiusPx": 240,
+    "a": {
+      "left": 0,
+      "top": 22,
+      "width": 696,
+      "height": 792
+    },
+    "b": {
+      "left": 704,
+      "top": 22,
+      "width": 696,
+      "height": 792
+    }
+  },
+  "cropScale": {
+    "a": 0.67,
+    "b": 1
+  },
+  "crops": [
+    {
+      "name": "miniature",
+      "centreInRadii": {
+        "x": 0,
+        "y": 0.15
+      },
+      "file": "out/work/compare/compare-fall-shake-crops-1.jpg",
+      "a": {
+        "source": {
+          "x": 900.38,
+          "y": 453.35,
+          "w": 1039.85,
+          "h": 585.66
+        },
+        "at": {
+          "left": 0,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      },
+      "b": {
+        "source": {
+          "x": 612,
+          "y": 328.22,
+          "w": 696,
+          "h": 392
+        },
+        "at": {
+          "left": 704,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      }
+    },
+    {
+      "name": "crown",
+      "centreInRadii": {
+        "x": -0.45,
+        "y": -0.72
+      },
+      "file": "out/work/compare/compare-fall-shake-crops-1.jpg",
+      "a": {
+        "source": {
+          "x": 646.94,
+          "y": -36.64,
+          "w": 1039.85,
+          "h": 585.66
+        },
+        "at": {
+          "left": 0,
+          "top": 400,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 25,
+          "right": 0,
+          "bottom": 0
+        }
+      },
+      "b": {
+        "source": {
+          "x": 442.37,
+          "y": 0.26,
+          "w": 696,
+          "h": 392
+        },
+        "at": {
+          "left": 704,
+          "top": 400,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      }
+    },
+    {
+      "name": "collar",
+      "centreInRadii": {
+        "x": 0,
+        "y": 0.93
+      },
+      "file": "out/work/compare/compare-fall-shake-crops-2.jpg",
+      "a": {
+        "source": {
+          "x": 900.38,
+          "y": 892.64,
+          "w": 1039.85,
+          "h": 585.66
+        },
+        "at": {
+          "left": 0,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      },
+      "b": {
+        "source": {
+          "x": 612,
+          "y": 622.26,
+          "w": 696,
+          "h": 392
+        },
+        "at": {
+          "left": 704,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      }
+    },
+    {
+      "name": "base-front",
+      "centreInRadii": {
+        "x": 0,
+        "y": 1.3
+      },
+      "file": "out/work/compare/compare-fall-shake-crops-2.jpg",
+      "a": {
+        "source": {
+          "x": 900.38,
+          "y": 1101.03,
+          "w": 1039.85,
+          "h": 585.66
+        },
+        "at": {
+          "left": 0,
+          "top": 400,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 69
+        }
+      },
+      "b": {
+        "source": {
+          "x": 612,
+          "y": 761.73,
+          "w": 696,
+          "h": 392
+        },
+        "at": {
+          "left": 704,
+          "top": 400,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 74
+        }
+      }
+    },
+    {
+      "name": "foot",
+      "centreInRadii": {
+        "x": 0,
+        "y": 1.75
+      },
+      "file": "out/work/compare/compare-fall-shake-crops-3.jpg",
+      "a": {
+        "source": {
+          "x": 900.38,
+          "y": 1354.47,
+          "w": 1039.85,
+          "h": 585.66
+        },
+        "at": {
+          "left": 0,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 238
+        }
+      },
+      "b": {
+        "source": {
+          "x": 612,
+          "y": 931.37,
+          "w": 696,
+          "h": 392
+        },
+        "at": {
+          "left": 704,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 243
+        }
+      }
+    }
+  ],
+  "files": [
+    {
+      "file": "out/work/compare/compare-fall-shake.jpg",
+      "width": 1400,
+      "height": 814
+    },
+    {
+      "file": "out/work/compare/compare-fall-shake-crops-1.jpg",
+      "width": 1400,
+      "height": 792
+    },
+    {
+      "file": "out/work/compare/compare-fall-shake-crops-2.jpg",
+      "width": 1400,
+      "height": 792
+    },
+    {
+      "file": "out/work/compare/compare-fall-shake-crops-3.jpg",
+      "width": 1400,
+      "height": 392
+    }
+  ],
+  "comparison": "fall-shake: the approved image (a) beside the build (b), hd, final",
+  "keptFrom": "out/work/compare/compare-fall-shake.jpg",
+  "sourceSha256": "d3c9fc589fd5fd4be94d75190a6fdad042028910563a1f6a0b8ab0a62aed48ed",
+  "keptAt": "2026-11-25T10:31:24.772Z"
+}

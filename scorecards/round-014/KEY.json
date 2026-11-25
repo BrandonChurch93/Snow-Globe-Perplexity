@@ -1,0 +1,386 @@
+{
+ "round": 14,
+ "phase": 4,
+ "unit": "spring",
+ "tier": "final",
+ "motionTier": "review",
+ "record": false,
+ "limits": {
+  "longEdge": 1400,
+  "maxPixels": 1140000,
+  "maxFiles": 10
+ },
+ "engineHash": "5a94146defd3d562",
+ "roles": {
+  "R1": {
+   "parts": [
+    {
+     "folder": "out/work/packs/round-014/R1",
+     "message": "out/work/packs/round-014/R1.message.md",
+     "files": [
+      {
+       "name": "set-A-01-a.jpg",
+       "what": "the approved image references/approved/spring-rest.png, cropped to the globe, its base and the surface around them",
+       "sha256": "5197917eb6815b3d80f5ff2377e9fd4521aa9b3dc209becff675eda69a08e5b6",
+       "width": 1070,
+       "height": 1059,
+       "sha256Source": "8e0fa5e6dd852b4d70dbdbb796ea49d349869930e2b5cabf335cdee211bcfea1"
+      },
+      {
+       "name": "set-A-01-b.jpg",
+       "what": "spring-rest: spring in the rest state from hero, hd, final tier, cropped the same way",
+       "sha256": "1575b1aabb493dcf04d167d5ba633b7f5629453b49c6d0741e757ad8e27d240b",
+       "width": 1070,
+       "height": 1059
+      },
+      {
+       "name": "set-A-02-a.jpg",
+       "what": "crops of the approved image references/approved/spring-rest.png, resized to the size of the still: 1 the glass at its shoulder; 2 the cottage wall and roof; 3 the tree's crown; 4 the base from its rim to its foot; 5 the collar; 6 the line where the base meets the surface, and the mirror image",
+       "sha256": "05b393637db3497df3b11f292db632d6cd4fd380fc3e7c765a40b07213ff281b",
+       "width": 1398,
+       "height": 814
+      },
+      {
+       "name": "set-A-02-b.jpg",
+       "what": "native size crops of spring-rest: spring in the rest state from hero, hd, final tier: 1 the glass at its shoulder; 2 the cottage wall and roof; 3 the tree's crown; 4 the base from its rim to its foot; 5 the collar; 6 the line where the base meets the surface, and the mirror image",
+       "sha256": "c81342a8b5f79ab2c79665eb25c59f37fba23fddbad16450d7676da2d171f6c4",
+       "width": 1398,
+       "height": 814
+      },
+      {
+       "name": "set-B-01-a.jpg",
+       "what": "the approved image references/approved/spring-shake.png, cropped to the globe, its base and the surface around them",
+       "sha256": "1ba824572c9bf489bc3c2980f437a26a05925be926313ebc36a04b7b28e5fd1b",
+       "width": 1070,
+       "height": 1059,
+       "sha256Source": "1402ef4e31019fa3e6e20f587e7283ae2f5fc8e1911f944a1d6cfe8540721f19"
+      },
+      {
+       "name": "set-B-01-b.jpg",
+       "what": "spring-shake: spring in the landed state from hero, hd, final tier, cropped the same way",
+       "sha256": "6304b971b27abb2debd1f0d1b4e1e632c720bc298315014878e5ad215221adca",
+       "width": 1070,
+       "height": 1059
+      },
+      {
+       "name": "set-B-02-a.jpg",
+       "what": "crops of the approved image references/approved/spring-shake.png, resized to the size of the still: 1 the glass at its shoulder; 2 the cottage wall and roof; 3 the tree's crown; 4 the base from its rim to its foot; 5 the collar; 6 the line where the base meets the surface, and the mirror image",
+       "sha256": "4d75eea9d1f94b07ac1789efb8faa187dfcd8ccd5ee0bc5bce4a4602499ee787",
+       "width": 1398,
+       "height": 814
+      },
+      {
+       "name": "set-B-02-b.jpg",
+       "what": "native size crops of spring-shake: spring in the landed state from hero, hd, final tier: 1 the glass at its shoulder; 2 the cottage wall and roof; 3 the tree's crown; 4 the base from its rim to its foot; 5 the collar; 6 the line where the base meets the surface, and the mirror image",
+       "sha256": "88af09fa37d242f89e862e5870b421f000a91b6655d345a8a479bd10e6ba3062",
+       "width": 1398,
+       "height": 814
+      }
+     ]
+    }
+   ],
+   "missing": [],
+   "notes": []
+  },
+  "R2": {
+   "parts": [
+    {
+     "folder": "out/work/packs/round-014/R2",
+     "message": "out/work/packs/round-014/R2.message.md",
+     "files": [
+      {
+       "name": "set-A-01.jpg",
+       "what": "judged: spring-settled: spring in the settled state from hero, hd, final tier",
+       "sha256": "5acd019c0d892194ed5cb34b0c4e16ebb04c8226e1260eb9b0a1672b6e4f1382",
+       "width": 1070,
+       "height": 1059,
+       "jury": "judged",
+       "id": "spring-settled"
+      },
+      {
+       "name": "set-A-02.jpg",
+       "what": "judged: spring-shake: spring in the landed state from hero, hd, final tier",
+       "sha256": "6304b971b27abb2debd1f0d1b4e1e632c720bc298315014878e5ad215221adca",
+       "width": 1070,
+       "height": 1059,
+       "jury": "judged",
+       "id": "spring-shake"
+      },
+      {
+       "name": "set-A-03.jpg",
+       "what": "control: the approved image references/approved/spring-rest.png",
+       "sha256": "5197917eb6815b3d80f5ff2377e9fd4521aa9b3dc209becff675eda69a08e5b6",
+       "width": 1070,
+       "height": 1059,
+       "jury": "control",
+       "id": "approved spring-rest",
+       "sha256Source": "8e0fa5e6dd852b4d70dbdbb796ea49d349869930e2b5cabf335cdee211bcfea1"
+      },
+      {
+       "name": "set-A-04.jpg",
+       "what": "control: the approved image references/approved/spring-shake.png",
+       "sha256": "1ba824572c9bf489bc3c2980f437a26a05925be926313ebc36a04b7b28e5fd1b",
+       "width": 1070,
+       "height": 1059,
+       "jury": "control",
+       "id": "approved spring-shake",
+       "sha256Source": "1402ef4e31019fa3e6e20f587e7283ae2f5fc8e1911f944a1d6cfe8540721f19"
+      },
+      {
+       "name": "set-A-05.jpg",
+       "what": "judged: spring-rest: spring in the rest state from hero, hd, final tier",
+       "sha256": "1575b1aabb493dcf04d167d5ba633b7f5629453b49c6d0741e757ad8e27d240b",
+       "width": 1070,
+       "height": 1059,
+       "jury": "judged",
+       "id": "spring-rest"
+      }
+     ]
+    }
+   ],
+   "missing": [],
+   "notes": [
+    "left out of the jury: spring-interior. Its framing does not show the globe and its base whole, so it cannot be cropped to what a control shows",
+    "left out of the jury: spring-base. Its framing does not show the globe and its base whole, so it cannot be cropped to what a control shows",
+    "left out of the jury: spring-surface. Its framing does not show the globe and its base whole, so it cannot be cropped to what a control shows",
+    "every image is cropped to 1.42 radii left, 1.42 right, 1.19 up and 1.62 down of the globe centre, at 1070 x 1059"
+   ]
+  },
+  "R3": {
+   "parts": [
+    {
+     "folder": "out/work/packs/round-014/R3-1",
+     "message": "out/work/packs/round-014/R3-1.message.md",
+     "files": [
+      {
+       "name": "set-A-01.jpg",
+       "what": "spring-rest: spring in the rest state from hero, hd, final tier, resized to fit",
+       "sha256": "16dc22cab14073fe268218fafacbd7908bdffae8b4506bf0cb92a8bfc659da28",
+       "width": 1400,
+       "height": 787
+      },
+      {
+       "name": "set-A-02.jpg",
+       "what": "native size crops of spring-rest: spring in the rest state from hero, hd, final tier: 1 the glass at its shoulder; 2 the glass at its rim; 3 the cottage wall and roof; 4 the tree's crown; 5 the pond and the ground around it; 6 particles near the glass; 7 particles far behind; 8 the base from its rim to its foot; 9 the collar; 10 the line where the base meets the surface, and the mirror image; 11 what lies on the surface, left; 12 what lies on the surface, right",
+       "sha256": "d911939d6d06cb61869afb1c6a0b5b5db0983af4f1f460328d662013f695deac",
+       "width": 1398,
+       "height": 814
+      },
+      {
+       "name": "set-A-03.jpg",
+       "what": "native size crops of spring-rest: spring in the rest state from hero, hd, final tier: 1 the glass at its shoulder; 2 the glass at its rim; 3 the cottage wall and roof; 4 the tree's crown; 5 the pond and the ground around it; 6 particles near the glass; 7 particles far behind; 8 the base from its rim to its foot; 9 the collar; 10 the line where the base meets the surface, and the mirror image; 11 what lies on the surface, left; 12 what lies on the surface, right",
+       "sha256": "435e821ed328dead2d3d75609ff04ae490c6cb2fc7af327a8ab5a774a654fb16",
+       "width": 1398,
+       "height": 814
+      },
+      {
+       "name": "set-B-01.jpg",
+       "what": "spring-shake: spring in the landed state from hero, hd, final tier, resized to fit",
+       "sha256": "4a9bc7cf4047a1052feee875a0ed42c5e7aef09c2a3dce8ef119cb708e8617ab",
+       "width": 1400,
+       "height": 787
+      },
+      {
+       "name": "set-B-02.jpg",
+       "what": "native size crops of spring-shake: spring in the landed state from hero, hd, final tier: 1 the glass at its shoulder; 2 the glass at its rim; 3 the cottage wall and roof; 4 the tree's crown; 5 the pond and the ground around it; 6 particles near the glass; 7 particles far behind; 8 the base from its rim to its foot; 9 the collar; 10 the line where the base meets the surface, and the mirror image; 11 what lies on the surface, left; 12 what lies on the surface, right",
+       "sha256": "a392cee71aba33b6ac5c391931289915f41b2c48767789490d1bb9e1e2d15b4f",
+       "width": 1398,
+       "height": 814
+      },
+      {
+       "name": "set-B-03.jpg",
+       "what": "native size crops of spring-shake: spring in the landed state from hero, hd, final tier: 1 the glass at its shoulder; 2 the glass at its rim; 3 the cottage wall and roof; 4 the tree's crown; 5 the pond and the ground around it; 6 particles near the glass; 7 particles far behind; 8 the base from its rim to its foot; 9 the collar; 10 the line where the base meets the surface, and the mirror image; 11 what lies on the surface, left; 12 what lies on the surface, right",
+       "sha256": "a03cf8bf6d6bcf6d4404498cd88e2ddfdc99ca4467c0300f79f7bc88a7be035e",
+       "width": 1398,
+       "height": 814
+      },
+      {
+       "name": "set-C-01.jpg",
+       "what": "spring-interior: spring in the rest state from interior, hd, final tier, resized to fit",
+       "sha256": "ec4cfe85e757a512599fb2c00e648097b47e3ee7cf62a1fe36bdf7cb4a8cbdf6",
+       "width": 1400,
+       "height": 787
+      },
+      {
+       "name": "set-C-02.jpg",
+       "what": "native size crops of spring-interior: spring in the rest state from interior, hd, final tier: numbered left to right, top to bottom across the still, four to a row",
+       "sha256": "f4370a601731d21eaa94e47c846bc25c64a6d509b018ab5657b3aafa91446e37",
+       "width": 1398,
+       "height": 814
+      },
+      {
+       "name": "set-C-03.jpg",
+       "what": "native size crops of spring-interior: spring in the rest state from interior, hd, final tier: numbered left to right, top to bottom across the still, four to a row",
+       "sha256": "97cbeee1a9fffb521f41ec11ed534ab5e281327c549882aebde23ed46423930c",
+       "width": 1398,
+       "height": 814
+      }
+     ]
+    },
+    {
+     "folder": "out/work/packs/round-014/R3-2",
+     "message": "out/work/packs/round-014/R3-2.message.md",
+     "files": [
+      {
+       "name": "set-D-01.jpg",
+       "what": "spring-base: spring in the rest state from base, hd, final tier, resized to fit",
+       "sha256": "94cdb406d7888b41ff95293f0657a194a53003767493d5069e16a18e9732a94b",
+       "width": 1400,
+       "height": 787
+      },
+      {
+       "name": "set-D-02.jpg",
+       "what": "native size crops of spring-base: spring in the rest state from base, hd, final tier: numbered left to right, top to bottom across the still, four to a row",
+       "sha256": "967d08a181c94ec88e25aa425b04688f239650a50992c9001c16c3b828f598ed",
+       "width": 1398,
+       "height": 814
+      },
+      {
+       "name": "set-D-03.jpg",
+       "what": "native size crops of spring-base: spring in the rest state from base, hd, final tier: numbered left to right, top to bottom across the still, four to a row",
+       "sha256": "6232a33ca1e2587317717e4603ae84953f54e523b1df3b75e979d6606247b282",
+       "width": 1398,
+       "height": 814
+      },
+      {
+       "name": "set-E-01.jpg",
+       "what": "spring-surface: spring in the rest state from surface, hd, final tier, resized to fit",
+       "sha256": "8fcfe4752eb80310a8ea971a63944ec5e0f1f9df1445ffd6e33dafc3e84acb46",
+       "width": 1400,
+       "height": 787
+      },
+      {
+       "name": "set-E-02.jpg",
+       "what": "native size crops of spring-surface: spring in the rest state from surface, hd, final tier: numbered left to right, top to bottom across the still, four to a row",
+       "sha256": "44891f99cffb90f38bf2b95e3884c44df83423084b4439657852274b39f38c6d",
+       "width": 1398,
+       "height": 814
+      },
+      {
+       "name": "set-E-03.jpg",
+       "what": "native size crops of spring-surface: spring in the rest state from surface, hd, final tier: numbered left to right, top to bottom across the still, four to a row",
+       "sha256": "d89ba3872553e4859eb9bf1203bf15af784954c490872ceefb9a738b977adada",
+       "width": 1398,
+       "height": 814
+      },
+      {
+       "name": "set-F-01.jpg",
+       "what": "spring-settled: spring in the settled state from hero, hd, final tier, resized to fit",
+       "sha256": "aee67d91ebca47b52972dbe7eb33bd531d10776a36a04d56c0017736b0dc9faf",
+       "width": 1400,
+       "height": 787
+      },
+      {
+       "name": "set-F-02.jpg",
+       "what": "native size crops of spring-settled: spring in the settled state from hero, hd, final tier: 1 the glass at its shoulder; 2 the glass at its rim; 3 the cottage wall and roof; 4 the tree's crown; 5 the pond and the ground around it; 6 particles near the glass; 7 particles far behind; 8 the base from its rim to its foot; 9 the collar; 10 the line where the base meets the surface, and the mirror image; 11 what lies on the surface, left; 12 what lies on the surface, right",
+       "sha256": "b0c87499a4efa1f19e463fcc3f459085d0ef6453c1d8712377f51b82fe7b6151",
+       "width": 1398,
+       "height": 814
+      },
+      {
+       "name": "set-F-03.jpg",
+       "what": "native size crops of spring-settled: spring in the settled state from hero, hd, final tier: 1 the glass at its shoulder; 2 the glass at its rim; 3 the cottage wall and roof; 4 the tree's crown; 5 the pond and the ground around it; 6 particles near the glass; 7 particles far behind; 8 the base from its rim to its foot; 9 the collar; 10 the line where the base meets the surface, and the mirror image; 11 what lies on the surface, left; 12 what lies on the surface, right",
+       "sha256": "cf2bcff61d80ed088a8753c9e53c539cc19634f8f4677e558186d41139c901fc",
+       "width": 1398,
+       "height": 814
+      }
+     ]
+    }
+   ],
+   "missing": [],
+   "notes": []
+  },
+  "R4": {
+   "parts": [
+    {
+     "folder": "out/work/packs/round-014/R4",
+     "message": "out/work/packs/round-014/R4.message.md",
+     "files": [
+      {
+       "name": "set-A-01.jpg",
+       "what": "one sheet across the whole shake and the clearing that follows, from node tools/sheet.mjs --shot shake-1 --tier review: out/work/sheets/shot-shake-1-preview-review.jpg",
+       "source": "out/work/sheets/shot-shake-1-preview-review.jpg",
+       "sha256": "44a3eee2958f07d554361fc19f205e3d50a245a938f5054dbe6e2fbefb3a8ba0",
+       "width": 1149,
+       "height": 986
+      },
+      {
+       "name": "set-B-01.jpg",
+       "what": "the arrival, from node tools/sheet.mjs --motion arrival --shot shake-1 --tier review: out/work/sheets/motion-arrival-shake-1-preview-review-1.jpg",
+       "source": "out/work/sheets/motion-arrival-shake-1-preview-review-1.jpg",
+       "sha256": "1b0085f3f77ce6cf209f72dd6b6110aad31b350fe157b37176b7ce53f628dc66",
+       "width": 1149,
+       "height": 986
+      },
+      {
+       "name": "set-B-02.jpg",
+       "what": "the arrival, from node tools/sheet.mjs --motion arrival --shot shake-1 --tier review: out/work/sheets/motion-arrival-shake-1-preview-review-2.jpg",
+       "source": "out/work/sheets/motion-arrival-shake-1-preview-review-2.jpg",
+       "sha256": "ab46cc5f81becb07ac1d3b43fe0d0e5cf28255527b2decba71a4d1b6f56a7dec",
+       "width": 1149,
+       "height": 986
+      },
+      {
+       "name": "set-B-03.jpg",
+       "what": "the arrival, from node tools/sheet.mjs --motion arrival --shot shake-1 --tier review: out/work/sheets/motion-arrival-shake-1-preview-review-3.jpg",
+       "source": "out/work/sheets/motion-arrival-shake-1-preview-review-3.jpg",
+       "sha256": "781836ac70704d7cbc34660e6cb7cfaf99010e90f845e8fbb2f88365b120e78b",
+       "width": 1149,
+       "height": 986
+      },
+      {
+       "name": "set-B-04.jpg",
+       "what": "the arrival, from node tools/sheet.mjs --motion arrival --shot shake-1 --tier review: out/work/sheets/motion-arrival-shake-1-preview-review-4.jpg",
+       "source": "out/work/sheets/motion-arrival-shake-1-preview-review-4.jpg",
+       "sha256": "0c7289c21433503633a0bc4e76434fad43a8e5b5c13e6f49fa22241242a12c7f",
+       "width": 1149,
+       "height": 986
+      },
+      {
+       "name": "set-B-05.jpg",
+       "what": "the arrival, from node tools/sheet.mjs --motion arrival --shot shake-1 --tier review: out/work/sheets/motion-arrival-shake-1-preview-review-5.jpg",
+       "source": "out/work/sheets/motion-arrival-shake-1-preview-review-5.jpg",
+       "sha256": "4bbb8dfe571fdf8243e2d2f06e611f869e843eb7cbe434503596a4f48a2474bd",
+       "width": 1149,
+       "height": 986
+      },
+      {
+       "name": "set-B-06.jpg",
+       "what": "the arrival, from node tools/sheet.mjs --motion arrival --shot shake-1 --tier review: out/work/sheets/motion-arrival-shake-1-preview-review-6.jpg",
+       "source": "out/work/sheets/motion-arrival-shake-1-preview-review-6.jpg",
+       "sha256": "0847190980efbc01c670189fec6e042b2f0db2cdd411f7e71ae1632a23273e03",
+       "width": 1149,
+       "height": 986
+      },
+      {
+       "name": "set-B-07.jpg",
+       "what": "the arrival, from node tools/sheet.mjs --motion arrival --shot shake-1 --tier review: out/work/sheets/motion-arrival-shake-1-preview-review-7.jpg",
+       "source": "out/work/sheets/motion-arrival-shake-1-preview-review-7.jpg",
+       "sha256": "37c7089a7cde4fb93a859d91678842a12affb8a4ba6aeb51129046df7adf55fb",
+       "width": 1149,
+       "height": 986
+      },
+      {
+       "name": "set-B-08.jpg",
+       "what": "the arrival, from node tools/sheet.mjs --motion arrival --shot shake-1 --tier review: out/work/sheets/motion-arrival-shake-1-preview-review-8.jpg",
+       "source": "out/work/sheets/motion-arrival-shake-1-preview-review-8.jpg",
+       "sha256": "3452b287a680311720c65b7ea5daea4bdb6880445f1951bd876a2e945c7a2978",
+       "width": 1149,
+       "height": 498
+      },
+      {
+       "name": "set-C-01.jpg",
+       "what": "the globe at rest across several seconds, from node tools/sheet.mjs --shot spring --tier review: out/work/sheets/shot-spring-preview-review.jpg",
+       "source": "out/work/sheets/shot-spring-preview-review.jpg",
+       "sha256": "76012953f815718ca20bc2abfb4d5eb449c0712fe28874e8c7762e2720ab348f",
+       "width": 1149,
+       "height": 986
+      }
+     ]
+    }
+   ],
+   "missing": [],
+   "notes": []
+  }
+ }
+}

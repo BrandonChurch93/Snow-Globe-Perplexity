@@ -1,0 +1,360 @@
+{
+  "caption": "summer-shake: the approved image (a) beside the build (b), hd, final",
+  "a": {
+    "file": "references/approved/summer-shake.png",
+    "sha256": "1f07b479ad0c39c4626e52c8540e5b597a77ac054b386ff5867cb93c5c929ced",
+    "width": 2816,
+    "height": 1584,
+    "globe": {
+      "cx": 1405.6,
+      "cy": 652.1,
+      "r": 544.7
+    },
+    "base": {
+      "left": 866,
+      "right": 1940,
+      "top": 1085,
+      "foot": 1441
+    },
+    "frame": {
+      "x": 615.78,
+      "y": -28.77,
+      "w": 1579.63,
+      "h": 1797.51
+    },
+    "edgeFillPx": {
+      "left": 0,
+      "top": 13,
+      "right": 0,
+      "bottom": 81
+    }
+  },
+  "b": {
+    "file": "out/work/stills/summer-shake-hd-final.png",
+    "sha256": "de4d2af96d126e6b972ac498c2af3797a8fa013684b55b629f47115446b5a7f7",
+    "width": 1920,
+    "height": 1080,
+    "globe": {
+      "cx": 960,
+      "cy": 467.67901740126274,
+      "r": 376.96554629536996
+    },
+    "base": {
+      "left": 597.8286732017048,
+      "right": 1322.171326798295,
+      "top": 709.1023468384356,
+      "foot": 1029.8254169683203
+    },
+    "frame": {
+      "x": 413.4,
+      "y": -3.53,
+      "w": 1093.2,
+      "h": 1243.99
+    },
+    "edgeFillPx": {
+      "left": 0,
+      "top": 2,
+      "right": 0,
+      "bottom": 102
+    }
+  },
+  "limits": {
+    "longEdge": 1400,
+    "maxPixels": 1140000
+  },
+  "frameInRadii": {
+    "left": 1.45,
+    "right": 1.45,
+    "up": 1.25,
+    "down": 2.05
+  },
+  "panels": {
+    "file": "out/work/compare/compare-summer-shake.jpg",
+    "stripHeight": 22,
+    "globeRadiusPx": 240,
+    "a": {
+      "left": 0,
+      "top": 22,
+      "width": 696,
+      "height": 792
+    },
+    "b": {
+      "left": 704,
+      "top": 22,
+      "width": 696,
+      "height": 792
+    }
+  },
+  "cropScale": {
+    "a": 0.69,
+    "b": 1
+  },
+  "crops": [
+    {
+      "name": "miniature",
+      "centreInRadii": {
+        "x": 0,
+        "y": 0.15
+      },
+      "file": "out/work/compare/compare-summer-shake-crops-1.jpg",
+      "a": {
+        "source": {
+          "x": 902.75,
+          "y": 450.59,
+          "w": 1005.69,
+          "h": 566.42
+        },
+        "at": {
+          "left": 0,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      },
+      "b": {
+        "source": {
+          "x": 612,
+          "y": 328.22,
+          "w": 696,
+          "h": 392
+        },
+        "at": {
+          "left": 704,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      }
+    },
+    {
+      "name": "crown",
+      "centreInRadii": {
+        "x": -0.45,
+        "y": -0.72
+      },
+      "file": "out/work/compare/compare-summer-shake-crops-1.jpg",
+      "a": {
+        "source": {
+          "x": 657.64,
+          "y": -23.3,
+          "w": 1005.69,
+          "h": 566.42
+        },
+        "at": {
+          "left": 0,
+          "top": 400,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 16,
+          "right": 0,
+          "bottom": 0
+        }
+      },
+      "b": {
+        "source": {
+          "x": 442.37,
+          "y": 0.26,
+          "w": 696,
+          "h": 392
+        },
+        "at": {
+          "left": 704,
+          "top": 400,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      }
+    },
+    {
+      "name": "collar",
+      "centreInRadii": {
+        "x": 0,
+        "y": 0.93
+      },
+      "file": "out/work/compare/compare-summer-shake-crops-2.jpg",
+      "a": {
+        "source": {
+          "x": 902.75,
+          "y": 875.46,
+          "w": 1005.69,
+          "h": 566.42
+        },
+        "at": {
+          "left": 0,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      },
+      "b": {
+        "source": {
+          "x": 612,
+          "y": 622.26,
+          "w": 696,
+          "h": 392
+        },
+        "at": {
+          "left": 704,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0
+        }
+      }
+    },
+    {
+      "name": "base-front",
+      "centreInRadii": {
+        "x": 0,
+        "y": 1.3
+      },
+      "file": "out/work/compare/compare-summer-shake-crops-2.jpg",
+      "a": {
+        "source": {
+          "x": 902.75,
+          "y": 1077,
+          "w": 1005.69,
+          "h": 566.42
+        },
+        "at": {
+          "left": 0,
+          "top": 400,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 41
+        }
+      },
+      "b": {
+        "source": {
+          "x": 612,
+          "y": 761.73,
+          "w": 696,
+          "h": 392
+        },
+        "at": {
+          "left": 704,
+          "top": 400,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 74
+        }
+      }
+    },
+    {
+      "name": "foot",
+      "centreInRadii": {
+        "x": 0,
+        "y": 1.75
+      },
+      "file": "out/work/compare/compare-summer-shake-crops-3.jpg",
+      "a": {
+        "source": {
+          "x": 902.75,
+          "y": 1322.11,
+          "w": 1005.69,
+          "h": 566.42
+        },
+        "at": {
+          "left": 0,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 211
+        }
+      },
+      "b": {
+        "source": {
+          "x": 612,
+          "y": 931.37,
+          "w": 696,
+          "h": 392
+        },
+        "at": {
+          "left": 704,
+          "top": 0,
+          "width": 696,
+          "height": 392
+        },
+        "edgeFillPx": {
+          "left": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 243
+        }
+      }
+    }
+  ],
+  "files": [
+    {
+      "file": "out/work/compare/compare-summer-shake.jpg",
+      "width": 1400,
+      "height": 814
+    },
+    {
+      "file": "out/work/compare/compare-summer-shake-crops-1.jpg",
+      "width": 1400,
+      "height": 792
+    },
+    {
+      "file": "out/work/compare/compare-summer-shake-crops-2.jpg",
+      "width": 1400,
+      "height": 792
+    },
+    {
+      "file": "out/work/compare/compare-summer-shake-crops-3.jpg",
+      "width": 1400,
+      "height": 392
+    }
+  ],
+  "comparison": "summer-shake: the approved image (a) beside the build (b), hd, final",
+  "keptFrom": "out/work/compare/compare-summer-shake.jpg",
+  "sourceSha256": "2eeaea23a8f3add328eb9847761abdb588121b6587b21737363d75150668a9ea",
+  "keptAt": "2026-11-25T10:29:47.320Z"
+}
