@@ -1,0 +1,5 @@
+Looks of agent/p5-controls-sheets at c10800e, draft tier, round 18, 25 Nov 2026 15:19 UTC.
+wide-crops.jpg: R8 set-B-01, the wide layout (winter shown). Rows Shake, the four season marks, sound; columns rest, focused, pressed. Native size in the pack (936 x 1194).
+phone-crops.jpg: R8 set-B-02, the phone (spring shown), the same grid, pressed as a touch.
+tablet-crops.jpg: R8 set-B-03, the tablet (summer shown), the same grid, pressed as a touch. Shrunk here from 945 x 1206.
+hint.jpg: R8 set-C-01, the Shake control's hint on the wide layout, twelve tiles at even steps from 0.00 s to 1.90 s, time under each tile. Shrunk here from 1294 x 630.
