@@ -9,7 +9,7 @@ import { blurWrap, loadSource, luma, readPicture, seamless, toBytes, writePng } 
 
 const TAU = Math.PI * 2
 const LEAF_CELL = 0.56
-const LEVEL_SPRIGS = 0.6
+const LEVEL_SPRIGS = { medium: 0.45, low: 0.3 }
 const LEAF_TILE_MM = 11
 const SPRIGS = { share: 0.6, size: [1.3, 2.3], rise: 0.35, out: 0.34 }
 const TONE = { deep: [0.3, 0.54, 0.3], mid: [0.56, 0.86, 0.44], tip: [0.95, 1.3, 0.62] }
@@ -429,11 +429,19 @@ function addLists(file, lists) {
   fs.writeFileSync(file, packedGlb(json, Buffer.concat(parts, length)))
 }
 const leafMedium = []
+const leafLow = []
 {
   const I = N.g.index.array
-  for (let i = 0; i < N.surface; i++) leafMedium.push(I[i])
-  for (let i = N.surface, k = 0; i < I.length; i += 12, k++) if ((k * 0.6180339887) % 1 < LEVEL_SPRIGS) for (let j = 0; j < 12; j++) leafMedium.push(I[i + j])
+  for (let i = 0; i < N.surface; i++) {
+    leafMedium.push(I[i])
+    leafLow.push(I[i])
+  }
+  for (let i = N.surface, k = 0; i < I.length; i += 12, k++) {
+    const u = (k * 0.6180339887) % 1
+    if (u < LEVEL_SPRIGS.medium) for (let j = 0; j < 12; j++) leafMedium.push(I[i + j])
+    if (u < LEVEL_SPRIGS.low) for (let j = 0; j < 12; j++) leafLow.push(I[i + j])
+  }
 }
-addLists(rel('assets-full', 'summer', 'tree-summer.glb'), { leaves: { medium: leafMedium } })
+addLists(rel('assets-full', 'summer', 'tree-summer.glb'), { leaves: { medium: leafMedium, low: leafLow } })
 await leafMaps()
-console.log(`tree-summer: leaves ${counts.leaves} triangles (${N.tufts} tufts, ${leafMedium.length / 3} triangles at medium and low), lanterns ${counts.lanterns} (${LN.lanterns.length} lanterns); ${C.lumps.length / 4} lumps on ${T.localPads.length} pads`)
+console.log(`tree-summer: leaves ${counts.leaves} triangles (${N.tufts} tufts, ${leafMedium.length / 3} triangles at medium, ${leafLow.length / 3} at low), lanterns ${counts.lanterns} (${LN.lanterns.length} lanterns); ${C.lumps.length / 4} lumps on ${T.localPads.length} pads`)

@@ -288,6 +288,20 @@ const shadowed = <T extends THREE.Mesh>(m: T, cast = true): T => {
   return m
 }
 
+// The planar mirror of the slab (src/scene/passes.ts) draws the whole stage a second time, turned over (the world's scale is
+// -1 in height then). Single blades of grass cannot be told apart in that picture, the turf under them can: the grass gives
+// the mirror none of its triangles. The ground casts no shadow either: nothing lies under it, and its own slopes are shaded
+// by the light that leaves them.
+const unmirrored = <T extends THREE.Mesh>(m: T): T => {
+  m.onBeforeRender = () => {
+    if (m.matrixWorld.determinant() < 0) m.geometry.setDrawRange(0, 0)
+  }
+  m.onAfterRender = () => {
+    m.geometry.setDrawRange(0, Infinity)
+  }
+  return m
+}
+
 // Summer's tones on the shared cottage: the roof as dark slate, the chimney as weathered grey stone, the last sun on the tops
 // of the fence. Only the colours of this season's own copy of the mesh change; the shapes are the shared ones.
 function dressed(g: THREE.BufferGeometry, sharedCount: number): THREE.BufferGeometry {
@@ -319,8 +333,8 @@ export function build(): THREE.Object3D {
   const shared = villageGeometry('solid')
   const solids = withSurface(dressed(mergeGeometries([shared, geometry(MODEL, 'decor')]), shared.getAttribute('position').count), nearWall)
   const walls = shadowed(new THREE.Mesh(solids, surfaceMaterial({ part: PART, map: villageGrain(), gain, key: 'village-solid-summer', fill: WALL_FILL })))
-  const ground = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'ground'), near), turfMaterial()))
-  const grass = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'grass'), near), grassMaterial()), false)
+  const ground = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'ground'), near), turfMaterial()), false)
+  const grass = unmirrored(shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'grass'), near), grassMaterial()), false))
   const water = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'water'), near), waterMaterial()), false)
   return new THREE.Group().add(walls, ground, grass, water)
 }

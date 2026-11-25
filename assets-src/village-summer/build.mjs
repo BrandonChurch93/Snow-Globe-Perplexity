@@ -17,7 +17,7 @@ const range = (a, b) => a + (b - a) * R()
 
 const TURF = { lumpMm: 0.35, fineMm: 0.12, sandMm: 0.7, sandReach: 6.5, sandSides: 0.35 }
 const GRASS = { tufts: 21000, blades: 3, tall: [0.55, 1.6], wide: [0.11, 0.2], rimTall: 1.5, sandFrom: 0.12, sandTo: 0.55 }
-const LEVEL = { seed: 4107, back: 0.55, front: 0.88, zFrom: -12, zTo: 6 }
+const LEVEL = { seed: 4107, medium: { back: 0.4, front: 0.72 }, low: { back: 0.25, front: 0.5 }, zFrom: -12, zTo: 6 }
 const STONE = { buried: 0.25, sink: 0.45, lumps: 0.22, tones: ['#8f887a', '#a39a88', '#7b7568', '#b0a692'] }
 const TONES = {
   grass: ['#1c3413', '#274616', '#30531a', '#213c15'].map(lin),
@@ -631,14 +631,18 @@ function addLists(file, lists) {
   fs.writeFileSync(file, packedGlb(json, Buffer.concat(parts, length)))
 }
 const grassMedium = []
+const grassLow = []
 {
   const m = meshes[2]
   const per = GRASS.blades * 3
   const pick01 = rng(LEVEL.seed)
   for (let i = 0; i < m.index.length; i += per) {
     const z = m.position[m.index[i] * 3 + 2]
-    if (pick01() < LEVEL.back + (LEVEL.front - LEVEL.back) * smooth(LEVEL.zFrom, LEVEL.zTo, z)) for (let j = 0; j < per; j++) grassMedium.push(m.index[i + j])
+    const u = pick01()
+    const near = smooth(LEVEL.zFrom, LEVEL.zTo, z)
+    if (u < LEVEL.medium.back + (LEVEL.medium.front - LEVEL.medium.back) * near) for (let j = 0; j < per; j++) grassMedium.push(m.index[i + j])
+    if (u < LEVEL.low.back + (LEVEL.low.front - LEVEL.low.back) * near) for (let j = 0; j < per; j++) grassLow.push(m.index[i + j])
   }
 }
-addLists(rel('assets-full', 'summer', 'village-summer.glb'), { grass: { medium: grassMedium } })
-console.log(`village-summer: ground ${ground.triangles}, water ${water.triangles}, grass ${grass.triangles} (${tufts} tufts, ${grassMedium.length / 3} at medium and low), decor ${decor.triangles} (${counts.roses} roses, ${counts.leaves} leaves, ${counts.sunflowers} sunflowers, ${counts.blooms} blooms)`)
+addLists(rel('assets-full', 'summer', 'village-summer.glb'), { grass: { medium: grassMedium, low: grassLow } })
+console.log(`village-summer: ground ${ground.triangles}, water ${water.triangles}, grass ${grass.triangles} (${tufts} tufts, ${grassMedium.length / 3} at medium, ${grassLow.length / 3} at low), decor ${decor.triangles} (${counts.roses} roses, ${counts.leaves} leaves, ${counts.sunflowers} sunflowers, ${counts.blooms} blooms)`)
