@@ -532,7 +532,11 @@ export function buildWax() {
   for (const run of L.RUNS) {
     const start = L.onCylinder(run.x, run.y0, 55)
     const w = (run.w / 9.3) * 0.8
-    const top = Math.min(start.h, 15)
+    weaveOut(start.az, 5, 2)
+    // A run at the foot fell on the outermost vine that passes above it, and lies over it and down to the slab.
+    let over = null
+    for (const q of WEAVE) if (Math.abs(L.wrapDeg(q[0] - start.az)) < 1.6 && q[1] > 7.5 && q[1] < 17 && (over === null || q[2] + q[3] > over[2] + over[3])) over = q
+    const top = over && over[2] > drumR(over[1]) ? over[1] + over[3] * 0.8 : Math.min(start.h, 12)
     const n = Math.max(6, Math.ceil(top / 0.7))
     const outs = []
     for (let i = 0; i <= n; i++) outs.push(weaveOut(start.az, mix(top, run.pool > 0 ? 0.5 : 2.2, i / n), 2.0))
@@ -554,8 +558,8 @@ export function buildWax() {
       const sway = Math.sin(run.x) * 0.35
       const cap = Math.sqrt(Math.max(1 - Math.max((0.1 - t) / 0.1, 0) ** 2, 0.0004))
       const tail = run.pool > 0 ? 1 + 0.9 * smooth(0.72, 1, t) ** 2 : Math.sqrt(Math.max(1 - Math.max((t - 0.9) / 0.1, 0) ** 2, 0.0004)) * (1 + 0.4 * Math.exp(-(((t - 0.86) / 0.1) ** 2)))
-      const rad = w * (run.pool > 0 ? 0.16 + 0.5 * smooth(0, 0.5, t) - 0.1 * smooth(0.55, 0.85, t) + 0.04 * Math.sin(t * 5 + run.x) : 0.3 + 0.8 * smooth(0, 0.55, t) + 0.1 * Math.sin(t * 9 + run.x)) * cap * tail
-      pts.push(place(outs[i] + rad * mix(-1.2, 0.45, smooth(0, 0.22, t)), h, start.az + sway * 2.2 * Math.sin(2 * Math.PI * t) * (1 - t) + 0.9 * (fbm(t * 2.5 + run.x, 0.4, 64, 4, 23, 2) - 0.5) * (1 - t)))
+      const rad = w * (run.pool > 0 ? 0.58 + 0.26 * Math.exp(-((t / 0.14) ** 2)) + 0.04 * Math.sin(t * 5 + run.x) : 0.3 + 0.8 * smooth(0, 0.55, t) + 0.1 * Math.sin(t * 9 + run.x)) * cap * tail
+      pts.push(place(outs[i] + rad * 0.3, h, start.az + sway * 2.2 * Math.sin(2 * Math.PI * t) * (1 - t) + 0.9 * (fbm(t * 2.5 + run.x, 0.4, 64, 4, 23, 2) - 0.5) * (1 - t)))
       radii.push(rad)
     }
     tube(soup, pts, radii, 12, (j, a, p, nrm) => [(0.55 + 0.45 * (0.5 + 0.5 * dot3(nrm, norm3([p[0], 0, p[2]])))) * (0.5 + 0.5 * smooth(0, 16, p[1])), clamp(radii[j] * 0.55, 0, 1), j / n], 0.85)
