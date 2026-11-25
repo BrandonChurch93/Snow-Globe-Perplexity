@@ -108,8 +108,9 @@ const pathMask = [...steps, ...stones]
   .join(' + ')
 
 // While the storm turns the approved mid-shake image shows the cottage as a pale shape in the haze: roof moss gone grey,
-// stone and slate washed toward the petals' pink. Iron keeps its own tone so the lamp post stays a dark line.
-const STORM_COVER = { tone: [0.86, 0.68, 0.66] as Rgb, pale: 0.42, moss: 0.8 }
+// stone and slate washed toward the petals' pink. Iron keeps its own tone so the lamp post stays a dark line, and wood
+// (the door, the fence) takes a quarter of the wash so the door stays the dark warm shape it is there.
+const STORM_COVER = { tone: [0.86, 0.68, 0.66] as Rgb, pale: 0.34, slate: 0, wood: 0.25, moss: 0.8 }
 const mossy: Cover = {
   uniforms: { uVillageStorm: storm },
   pars: 'uniform float uVillageStorm;',
@@ -134,7 +135,7 @@ const mossy: Cover = {
   diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * ${glsl(PATH.tint)}, springPath * (1.0 - 0.7 * springMoss));
   float springPot = villageIron * smoothstep(${(SLATE.from + 3.2).toFixed(2)}, ${(SLATE.from + 3.6).toFixed(2)}, vStageLocal.y);
   diffuseColor.rgb = mix(diffuseColor.rgb, ${glsl(POT)} * (0.55 + 0.9 * villageGrain.r) * (0.7 + 0.6 * villageMottle), springPot);
-  diffuseColor.rgb = mix(diffuseColor.rgb, ${glsl(STORM_COVER.tone)}, ${STORM_COVER.pale.toFixed(2)} * uVillageStorm * (1.0 - villageIron) * (1.0 - villageLeaf));
+  diffuseColor.rgb = mix(diffuseColor.rgb, ${glsl(STORM_COVER.tone)}, ${STORM_COVER.pale.toFixed(2)} * (1.0 + ${STORM_COVER.slate.toFixed(2)} * springSlate) * uVillageStorm * (1.0 - villageIron) * (1.0 - villageLeaf) * (1.0 - ${(1 - STORM_COVER.wood).toFixed(2)} * villageWood));
   villageRough = mix(villageRough, 0.95, max(springMoss, springPot));
   villageMetal *= 1.0 - springPot;
 }

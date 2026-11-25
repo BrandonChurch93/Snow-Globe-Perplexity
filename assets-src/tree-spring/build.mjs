@@ -26,13 +26,13 @@ const lin = (hex) => {
   return [c.r, c.g, c.b]
 }
 
-const CROWN = { centre: [0.8, 27.6, 1], r: [22, 15.6, 14.5], floor: 12.6, reach: 13 }
-const LOBES = { count: 44, spacing: 6.3, tall: 1.55, shell: [0.22, 1], r: [3.7, 1.9, 3.4], size: [0.6, 1.3], sprays: 4.4, gap: 2.7 }
+const CROWN = { centre: [0.8, 27.5, 1], r: [20.5, 15.6, 14.5], floor: 11.6, reach: 13 }
+const LOBES = { count: 44, spacing: 6.3, tall: 1.3, shell: [0.22, 1], r: [3.4, 2.3, 3.2], size: [0.6, 1.3], sprays: 3.8, gap: 3.0 }
 const BOUGH = { from: 0.62, to: 0.17, steps: 6, sag: 0.75, past: 0.5 }
-const TWIG = { from: 0.36, to: 0.06, sides: 5, steps: 5 }
+const TWIG = { from: 0.36, to: 0.085, sides: 5, steps: 5, bare: 0.13 }
 const CLUSTER = { step: 2.1, from: 0.42, size: [0.72, 1.15], tip: [1.05, 1.5], flowers: [5, 7.2], flower: [0.56, 0.9], side: 0.75, flat: 0.7, extra: 0.14, core: 0.36 }
 const TONES = ['#f6b3c9', '#f9c6d6', '#f2a7c0', '#fbd7e2', '#f0a2bc', '#f7bdd0', '#fde4ea'].map(lin)
-const LOBE_LOOK = { round: 0.7, under: 0.6 }
+const LOBE_LOOK = { round: 0.55, under: 0.72 }
 const SHADE = [0.75, 0.68, 0.7]
 const HEART = lin('#d86a8a')
 const WOOD = [lin('#7a5038'), lin('#8a5c40'), lin('#694430')]
@@ -56,7 +56,7 @@ const lobes = []
   let tries = 0
   while (lobes.length < LOBES.count && tries < 40000) {
     tries++
-    const d = norm([rng.gauss(), rng.gauss() * 0.8 + 0.2, rng.gauss()])
+    const d = norm([rng.gauss(), rng.gauss() * 0.9 + 0.1, rng.gauss()])
     const k = LOBES.shell[0] + (LOBES.shell[1] - LOBES.shell[0]) * Math.pow(rng.next(), 0.6)
     const c = [CROWN.centre[0] + d[0] * CROWN.r[0] * k, CROWN.centre[1] + d[1] * CROWN.r[1] * k, CROWN.centre[2] + d[2] * CROWN.r[2] * k]
     if (c[1] < CROWN.floor + LOBES.r[1]) continue
@@ -204,7 +204,7 @@ for (const s of sprays) {
       plant(add(p, mul(off2, r * (0.9 + 0.8 * rng.next()))), r * rng.range(0.6, 0.85), false, s.lobe)
     }
   }
-  plant(s.at(1), rng.range(CLUSTER.tip[0], CLUSTER.tip[1]), true, s.lobe)
+  plant(s.at(1 - TWIG.bare * rng.next()), rng.range(CLUSTER.tip[0], CLUSTER.tip[1]), true, s.lobe)
 }
 for (const l of T.limbs) {
   if (l.kind !== 'twig' && l.kind !== 'limb') continue
