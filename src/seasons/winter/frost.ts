@@ -21,7 +21,7 @@ const RAD = Math.PI / 180
 
 export const FULL = 2
 
-setGlass(season, { ringThin: 0.5, topLine: 0.4, windowSoftDeg: 1, windowGrain: 0.3 })
+setGlass(season, { ringThin: 0.5, topLine: 0.4, windowSoftDeg: 0, windowGrain: 0, arcs: 1.2, arcTint: [1, 0.8, 0.58], arcCool: 2, strip: 0.6 })
 
 const look = {
   glass: { cover: 1.72, haze: 1.38, slope: 0.55, micro: 1.1, glint: 2.6, light: 0.96, through: 2.4, thin: 0.3, thick: 1.1, blur: 0.012, bend: 0.012, scatter: 0.06, room: 0.5, soften: 0.12, rimMu: 0.3, faceOn: 0.65, front: 1.9, sugarMm: 0.3, gritty: 0.45, clear: [0.255, 0.28, 0.8] },
