@@ -16,11 +16,11 @@ const RAD = Math.PI / 180
 // function of the time since the landing and of the clock, nothing is kept from frame to frame.
 const LOOK = {
   gravity: 3400,
-  ledge: { r: [45.5, 52.4], h: 37.7 },
+  ledge: { r: [46.5, 52.0], h: 40.3 },
   jump: { count: 14000, liftMm: [1.5, 24], quick: 0.11, tail: 0.5, tailShare: [0.6, 0.12], skidMm: [0.4, 3.2], radiusMm: [0.12, 0.27] },
-  pour: { count: 64000, az: 81, spread: 5.5, r: 52.7, h: 36.2, reachMm: [1.5, 12.5], fanDeg: 9, rate: [1.3, 2.3], radiusMm: [0.1, 0.2] },
+  pour: { count: 64000, az: 81, spread: 5.5, r: 52.4, h: 38.8, reachMm: [1.5, 12.5], fanDeg: 9, rate: [1.3, 2.3], radiusMm: [0.1, 0.2] },
   flow: { rest: 0.45, surge: 0.55, seconds: 1.3, gapMm: [0.3, 2.5] },
-  shadow: { r: 57, top: [34, 39] },
+  shadow: { r: 57, top: [36, 41] },
 }
 
 const vec = (v: readonly number[]): string => `vec3(${v.map((x) => x.toFixed(3)).join(', ')})`

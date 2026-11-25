@@ -5,6 +5,14 @@ import { FIELD } from './field.mjs'
 export const GRAIN = { px: 1024 }
 export const SAND = { px: 1024, grains: 2600 }
 
+// Row 0 of a picture is its top; the maps are worked out from the foot up.
+const up = (bytes, w, h, ch) => {
+  const out = new Uint8Array(bytes.length)
+  const row = w * ch
+  for (let y = 0; y < h; y++) out.set(bytes.subarray(y * row, y * row + row), (h - 1 - y) * row)
+  return out
+}
+
 const slopeByte = (gx, gy) => {
   const l = Math.hypot(gx, gy, 1)
   return [Math.round(clamp(0.5 - (0.5 * gx) / l) * 255), Math.round(clamp(0.5 - (0.5 * gy) / l) * 255)]
@@ -33,7 +41,7 @@ export async function carveMap(dir, f) {
       out[o * 3 + 2] = Math.round(clamp(0.5 + 0.55 * (f.d[o] - f.wide[o])) * 255)
     }
   }
-  return [await writePng(`${dir}/base-carve.lin.w2048.png`, W, H, 3, out)]
+  return [await writePng(`${dir}/base-carve.lin.w2048.png`, W, H, 3, up(out, W, H, 3))]
 }
 
 // The stone's colour, bed by bed: pale cream, ochre where the bed is soft, and rust in the groove above the foot.
@@ -66,7 +74,7 @@ export async function toneMap(dir, f) {
       for (let q = 0; q < 3; q++) out[o * 3 + q] = Math.round(clamp(c[q] * speck * dark) * 255)
     }
   }
-  return [await writePng(`${dir}/base-stone.srgb.w2048.png`, W, H, 3, out)]
+  return [await writePng(`${dir}/base-stone.srgb.w2048.png`, W, H, 3, up(out, W, H, 3))]
 }
 
 function normalFromHeight(h, n, gain) {
@@ -97,7 +105,7 @@ export async function grainMap(dir) {
   for (let i = 0; i < n * n; i++) h[i] = (fine[i] - 0.5) * 5 + (coarse[i] - 0.5) * 9
   const out = normalFromHeight(h, n, 1.4)
   for (let i = 0; i < n * n; i++) out[i * 3 + 2] = Math.round(clamp(0.5 + (fine[i] - 0.5) * 4 - (coarse[i] - 0.5) * 3) * 255)
-  return [await writePng(`${dir}/base-grain.lin.tile.w1024.png`, n, n, 3, out)]
+  return [await writePng(`${dir}/base-grain.lin.tile.w1024.png`, n, n, 3, up(out, n, n, 3))]
 }
 
 // Loose sand: single grains as small domes, each with its own number in blue (0 where no grain lies), so a thin layer can
@@ -131,5 +139,5 @@ export async function sandMap(dir) {
   }
   const out = normalFromHeight(h, n, 9)
   for (let i = 0; i < n * n; i++) out[i * 3 + 2] = Math.round(id[i] * 255)
-  return [await writePng(`${dir}/base-sand.lin.tile.w1024.png`, n, n, 3, out)]
+  return [await writePng(`${dir}/base-sand.lin.tile.w1024.png`, n, n, 3, up(out, n, n, 3))]
 }

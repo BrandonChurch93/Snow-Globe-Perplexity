@@ -257,7 +257,7 @@ export function buildSet(f) {
 }
 
 // The sand on the ledge: a bank against the glass that thins to single grains toward the lip, and at SPILL runs over it.
-export const SPILL = { az: 80, half: 17, lipR: 52.5, lipH: 36.4 }
+export const SPILL = { az: 80, half: 17, lipR: 52.3, lipH: 38.8 }
 export const spillAt = (az) => {
   let d = az - SPILL.az
   d -= 360 * Math.round(d / 360)
@@ -266,11 +266,11 @@ export const spillAt = (az) => {
 export function ledgeSand(az, t) {
   const A = (((az % 360) + 360) % 360) / 360
   const sp = spillAt(az)
-  const hg = P.LEDGE_H + 1.7 + 1.5 * (fbm(A * 11, 0.3, 11, 4, 201, 3) - 0.35) + 1.2 * sp
+  const hg = P.LEDGE_H + 1.9 + 1.5 * (fbm(A * 11, 0.3, 11, 4, 201, 3) - 0.35) + 1.2 * sp
   const rg = P.sphereRadiusAt(hg) + 0.06
-  const ro = Math.min(49.2 + 2.6 * fbm(A * 17, 0.7, 17, 4, 203, 3) + 3.2 * sp, 52.6)
+  const ro = Math.min(48.5 + 2.5 * fbm(A * 17, 0.7, 17, 4, 203, 3) + 3.4 * sp, 52.3)
   const r = mix(rg, ro, t)
-  const floor = r > 51.7 ? P.LEDGE_H - 1.6 * smooth(51.7, 52.9, r) : P.LEDGE_H + 0.02
+  const floor = r > 50.0 ? P.LEDGE_H - 1.9 * smooth(50.0, 52.4, r) + 0.02 : P.LEDGE_H + 0.02
   const fall = Math.pow(1 - t, 1.25)
   const lumps = (0.5 * (fbm(A * 60, t * 3, 60, 64, 205, 3) - 0.5) + 0.22 * (fbm(A * 170, t * 7, 170, 64, 207, 2) - 0.5)) * Math.sin(Math.PI * Math.min(t * 1.15, 1))
   const thick = Math.max((hg - floor) * fall + lumps * (0.3 + sp), 0) + 0.04
@@ -300,7 +300,7 @@ export function buildSand(f) {
   // The drape: sand running down the wall under the spill.
   const dc = 96
   const dr = 40
-  const top = P.sOfH(f.mer, 36.9)
+  const top = P.sOfH(f.mer, 39.3)
   const drape = (i, j) => {
     const az = SPILL.az - 30 + (60 * i) / (dc - 1)
     const down = j / (dr - 1)
