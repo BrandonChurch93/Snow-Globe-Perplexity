@@ -28,7 +28,7 @@ const GRASS_TONES = ['#4f6a26', '#62782e', '#8f7a34', '#3f5620', '#86572a'].map(
 
 const LITTER = { base: 0.1, patch: 0.3, fence: 0.2, tree: 0.14, wall: 0.1, leaves: 230 }
 const LEVELS = { medium: { error: 0.08, worth: 1 }, low: { error: 0.2, worth: 1 } }
-const STONE_TONES = ['#d6d0bf', '#c4c0b2', '#e0d9c6', '#b3b0a4', '#cbc5b3'].map(lin).map((c) => [c[0] * 0.86, c[1] * 0.74, c[2] * 0.62])
+const STONE_TONES = ['#d6d0bf', '#c4c0b2', '#e0d9c6', '#b3b0a4', '#cbc5b3'].map(lin).map((c) => [c[0] * 1.2, c[1] * 1.04, c[2] * 0.86])
 const ground = new Bag('ground')
 const water = new Bag('water')
 const decor = new Bag('decor')
@@ -225,8 +225,8 @@ function pumpkin(o) {
   const pos = []
   const col = []
   const inner = []
-  const tone = lin('#d9661a')
-  const deep = lin('#7a2a08')
+  const tone = lin('#cf5a12')
+  const deep = lin('#4a1604')
   for (let j = 0; j <= nv; j++)
     for (let i = 0; i <= nu; i++) {
       const th = (i / nu) * TAU - Math.PI
@@ -236,7 +236,7 @@ function pumpkin(o) {
       pos.push(p[0], p[1], p[2])
       inner.push(q[0], q[1], q[2])
       const low = smooth(-0.9, 0.2, p[1] / H)
-      const c = mul3(mix3(deep, tone, 0.25 + 0.75 * smooth(0.05, 0.7, p[3])), (0.5 + 0.5 * low) * (0.9 + 0.2 * noise(th * 5, ph * 7, 3 + o.r)))
+      const c = mul3(mix3(deep, tone, 0.06 + 0.94 * smooth(0.05, 0.7, p[3])), (0.5 + 0.5 * low) * (0.9 + 0.2 * noise(th * 5, ph * 7, 3 + o.r)))
       col.push(c[0], c[1], c[2])
       cut.push(Math.abs(th) < 1.2 && face(th, p[1] / H))
     }
