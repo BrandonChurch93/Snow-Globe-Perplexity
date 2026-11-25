@@ -316,7 +316,7 @@ vec2 baseTilt = (vec2(baseNoise(vBasePos * 3.3 + 11.0), baseNoise(vBasePos * 3.3
 
 // The wax: pale, soft, thick where it has gathered. Light enters it and comes out again round the edges.
 const WAX_PAINT = `
-float baseAo = vBasePaint.x * mix(0.25, 1.0, smoothstep(39.55, 39.0, vBasePos.y));
+float baseAo = vBasePaint.x * mix(0.25, 1.0, smoothstep(39.7, 39.25, vBasePos.y));
 float waxDeep = vBasePaint.y;
 float waxMottle = baseNoise(vBasePos * 0.9) * 0.6 + baseNoise(vBasePos * 3.7) * 0.4;
 diffuseColor.rgb = mix(vec3(0.92, 0.8, 0.5), vec3(0.8, 0.52, 0.2), smoothstep(0.15, 0.8, waxDeep) * (0.5 + 0.5 * waxMottle)) * mix(0.9, 1.06, waxMottle);
