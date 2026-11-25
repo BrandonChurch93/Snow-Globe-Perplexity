@@ -38,8 +38,8 @@ const TURF_LOOK = { tone: 0.5, fineMm: 0.05, clumpMm: 0.22, fill: 0.25, wrap: 0.
 const SUN_POOLS: readonly [number, number, number, number, number][] = [[1.2, 27, 3, 11, 9], [1.4, 3, -8, 9, 6], [0.4, -24, 21, 6, 5], [0.5, 24, 22, 9, 6]]
 const GRASS_LOOK = { fill: 0.1, wrap: 1.0, through: 0.36, near: 2.1, sun: 40, sunRoot: 0.12, shade: [0.26, 0.23, 0.62] as Rgb }
 const ROOF = { slate: [0.07, 0.11, 0.22] as Rgb, chimney: [0.2, 0.185, 0.18] as Rgb, vary: 0.75, varyMm: 1.3, stone: [0.6, 0.45, 0.37] as Rgb, stoneMid: 0.34, stoneFlat: 0.45, stoneHue: 0.5, plank: [0.5, 0.26, 0.15] as Rgb, plankMm: 2.2, plankTall: 3.8, pitch: 0.2, stoneMm: 1.4, picket: [0.5, 0.27, 0.14] as Rgb, picketMm: 1.6, boardMm: 0.9, boardVary: 0.9, grainMm: 0.22, grainVary: 0.5, boardFoot: 0.45, boardTall: 3.2, pale: 0.25, railTop: [1.5, 1.2, 0.85] as Rgb, door: [0.27, 0.125, 0.08] as Rgb, doorMm: 2.4, reachMm: 0.4 }
-const DARK_PANE = 0.55
-const WATER = { spark: 1.1, mass: 0.975, houseMm: 9.5, houseTall: 17, flat: 0.14, wobble: 0.9, rough: 0.035, ripple: 0.0045, fine: 0.0012, shoreFrom: 0.9, shoreTo: 1.0, sky: 2.0, skyFrom: -0.75, skyTo: 0.35, skyAt: 1.5, skyWide: 11.5, skyLow: 0.1, bankMm: 0.7, bankVary: 1.1, bankEdge: 0.16, bankDark: 0.975, env: 0.1, glint: 0.5, squash: 0.14, paperGlint: 0.25, paperMm: 1.5, paperTall: 0.5, post: 0.93, postMm: 0.75, postTall: 11.5, trunk: 0.975, trunkMm: 5.2, trunkTall: 26, body: 0.4 }
+const DARK_PANE = 0.8
+const WATER = { spark: 1.1, mass: 0.975, houseMm: 9.5, houseTall: 17, flat: 0.14, wobble: 0.9, rough: 0.035, ripple: 0.0045, fine: 0.0012, shoreFrom: 0.84, shoreTo: 1.0, sky: 2.0, skyFrom: -0.75, skyTo: 0.35, skyAt: 1.5, skyWide: 11.5, skyLow: 0.1, bankMm: 0.7, bankVary: 1.1, bankEdge: 0.16, bankDark: 0.975, env: 0.1, glint: 0.5, squash: 0.14, paperGlint: 0.25, paperMm: 1.5, paperTall: 0.5, post: 0.93, postMm: 0.75, postTall: 11.5, trunk: 0.975, trunkMm: 5.2, trunkTall: 26, body: 0.4 }
 
 const flame = lampFlame()
 const mirrored: [number, number, number] = [flame[0], flame[1] - MIRROR.lowMm, flame[2]]
@@ -293,7 +293,7 @@ vec3 waterLights(vec3 r) {
         .replace(
           '#include <map_fragment>',
           `
-float waterShore = smoothstep(${WATER.shoreFrom.toFixed(2)}, ${WATER.shoreTo.toFixed(2)}, vSurf.x + 0.03 * (texture2D(map, vMapUv * 0.8).g - 0.5));
+float waterShore = smoothstep(${WATER.shoreFrom.toFixed(2)}, ${WATER.shoreTo.toFixed(2)}, vSurf.x + 0.09 * (texture2D(map, vMapUv * 0.8).g - 0.5) + 0.05 * (texture2D(map, vMapUv * 2.7).g - 0.5));
 // At its rim the water is a thin film over damp sand and stones, not a black line.
 diffuseColor.rgb = mix(${glsl(tones.waterDeep)}, vec3(0.3, 0.22, 0.13), waterShore * waterShore);
 `,

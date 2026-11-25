@@ -493,7 +493,7 @@ function sunflower(x, z, tall, face) {
   }
   const curve = new THREE.CatmullRomCurve3(pts)
   const stem = new THREE.TubeGeometry(curve, 14, 0.27, 6, false)
-  decor.add(stem, { color: (p) => mul3(TONES.stem, 0.7 + 0.5 * ((p[1] - y0) / tall)), surf: leafSurf, renormal: true })
+  decor.add(stem, { color: (p) => mul3(TONES.stem, 1.5 + 1.0 * ((p[1] - y0) / tall)), surf: leafSurf, renormal: true })
   const head = pts[pts.length - 1].toArray()
   const f = norm3(face)
   const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), new THREE.Vector3(...f))
@@ -551,9 +551,9 @@ function sunflower(x, z, tall, face) {
     const at = curve.getPoint(t).toArray()
     const a = i * 2.4 + range(-0.4, 0.4)
     const d = [Math.cos(a), range(-0.35, 0.2), Math.sin(a)]
-    const size = tall * 0.36 * range(0.75, 1.2) * (1 - 0.35 * t)
+    const size = tall * 0.27 * range(0.75, 1.2) * (1 - 0.35 * t)
     const before = leafBits.pos.length
-    leaf(at, d, size, mul3(pick(TONES.leaf), range(1, 1.5)))
+    leaf(at, d, size, mul3(pick(TONES.leaf), range(2.2, 3.2)))
     void before
   }
   counts.sunflowers++
