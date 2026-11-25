@@ -28,7 +28,7 @@ interface LeafExtras {
 // The skitter. A leaf lies `pushMm` nearer the foot than its place before the landing (less the further off it lies,
 // by `reachMm`); the thump's air reaches it at `waveMmPerSecond` and it slides out to its place over `slideSeconds`
 // (a longer slide for some), hopping `hopMm` and turning `spin` radians as it goes; one in `tumble` turns over.
-const SKITTER = { pushMm: 34, reachMm: 85, waveMmPerSecond: 520, slideSeconds: 0.75, hopMm: 3.2, spin: 2.6, tumble: 0.28 }
+const SKITTER = { pushMm: 34, reachMm: 85, waveMmPerSecond: 520, slideSeconds: 0.75, hopMm: 3.2, spin: 2.6, tumble: 0.1 }
 const leafUniforms = {
   uLeafMap: { value: null as THREE.Texture | null },
   uLeafTime: { value: new THREE.Vector4(99, 0, 0, 0) },
@@ -85,7 +85,7 @@ float leafSr = sin(leafRoll);
 leafOff = leafOff * leafCr + cross(leafAxis, leafOff) * leafSr + leafAxis * dot(leafAxis, leafOff) * (1.0 - leafCr);
 leafNo = leafNo * leafCr + cross(leafAxis, leafNo) * leafSr + leafAxis * dot(leafAxis, leafNo) * (1.0 - leafCr);
 float leafSize = color.z * uLeafSpan.y;
-float leafUp = leafHop + leafSize * 0.8 * abs(sin(leafRoll)) + 0.06;
+float leafUp = leafHop + leafSize * 0.55 * abs(sin(leafRoll)) + 0.06;
 vec3 leafPlace = vec3(leafAt.x + leafOff.x, max(leafOff.y + leafUp, 0.03), leafAt.y + leafOff.z);
 vec4 leafW = modelMatrix * vec4(leafPlace, 1.0);
 vec4 leafV = viewMatrix * leafW;
@@ -147,8 +147,8 @@ void main() {
   float rimGain;
   float occl;
   slabLight(vec3(vStageWorld.x, 0.0, vStageWorld.z), keyDir, keyGain, rimDir, rimGain, occl, warm);
-  float tone = 0.42 + 0.5 * fract(vLeafOne.x * 7.3);
-  vec3 albedo = mix(vec3(dot(leaf.rgb, vec3(0.3, 0.5, 0.2))) * vec3(1.0, 0.72, 0.5), leaf.rgb, 0.3 + 0.45 * fract(vLeafOne.x * 3.7)) * tone * mix(1.0, 0.72, under);
+  float tone = 0.6 + 0.6 * fract(vLeafOne.x * 7.3);
+  vec3 albedo = mix(vec3(dot(leaf.rgb, vec3(0.3, 0.5, 0.2))) * vec3(1.0, 0.76, 0.56), leaf.rgb, 0.18 + 0.42 * fract(vLeafOne.x * 3.7)) * tone * mix(1.0, 0.72, under);
   float key = clamp(dot(n, keyDir) * 0.75 + 0.25, 0.0, 1.0);
   float rim = clamp(dot(n, rimDir) * 0.6 + 0.4, 0.0, 1.0);
   float thru = clamp(-dot(n, keyDir), 0.0, 1.0) * 0.35;

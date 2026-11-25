@@ -43,6 +43,9 @@ export const look = {
     flashSeconds: 0.3,
     breath: 0.05,
   },
+  // the far wall: the light that crosses the globe gathers on the inside of the glass opposite the sun, a warm crescent
+  // along the limb
+  wall: { gain: 0.42, low: 0.42, wide: 0.42, from: 0.8, peak: 0.94, color: [1, 0.74, 0.44] as const, top: 0.15, topWide: 0.7, topLean: 0.35 },
   pool: {
     // where the hot middle of the pool lies from the foot's centre: down the light's way on the slab and a little across it
     reachMm: 76,
@@ -121,6 +124,32 @@ void main() {
   }
   vec3 col = ${vec(F.hot)} * (${n(F.core)} * core) + ${vec(F.warm)} * (${n(F.rays)} * star + ${n(F.arc)} * arc) + ${vec(F.amber)} * (${n(F.halo)} * halo);
   gl_FragColor = vec4(col * (lit * edge), 0.0);
+}`
+
+const W = look.wall
+const WALL = `
+uniform vec4 uFlareSun;
+varying vec2 vWl;
+varying vec2 vWlDir;
+void main() {
+  float c = stageChange();
+  if (stageGone(c)) discard;
+  if (uDiag != 0) discard;
+  float lit = min(uFlareSun.w, 1.0);
+  if (lit <= 0.0) discard;
+  float r = length(vWl);
+  if (r > 0.995) discard;
+  vec2 e = vWl / max(r, 1e-4);
+  float a = atan(e.x * vWlDir.y - e.y * vWlDir.x, dot(e, vWlDir));
+  // thin toward the middle of the globe, full just inside the limb, gone at the limb itself
+  float band = pow(smoothstep(${n(W.from)}, ${n(W.peak)}, r), 2.2) * (1.0 - smoothstep(0.955, 0.992, r));
+  float along = exp(-a * a / ${n(W.wide * W.wide)});
+  float hot = exp(-pow((r - 0.945) / 0.022, 2.0)) * exp(-a * a / ${n(W.wide * W.wide * 0.3)});
+  // the crown of the glass takes the same light as a broad soft sheen under the top, leaning away from the sun
+  vec2 up = normalize(vec2(vWlDir.x * ${n(W.topLean)}, 1.0));
+  float b = atan(e.x * up.y - e.y * up.x, dot(e, up));
+  float sheen = ${n(W.top)} * exp(-b * b / ${n(W.topWide * W.topWide)}) * smoothstep(0.5, 0.78, r) * (1.0 - smoothstep(0.82, 0.96, r));
+  gl_FragColor = vec4(${vec(W.color)} * (${n(W.gain)} * (band * along + 1.4 * hot + sheen) * lit), 0.0);
 }`
 
 const P = look.pool
@@ -225,6 +254,37 @@ vStageAux = vec3(0.0, -flAt.z, length(flAt.xyz));`,
   return mesh
 }
 
+function makeWall(): THREE.Mesh {
+  const m = stageShader({
+    part: PART,
+    standIn: false,
+    change: 'glass-dressing',
+    uniforms: { uFlareSun: uniforms.uFlareSun },
+    vertexPars: 'uniform vec4 uFlareSun;\nvarying vec2 vWl;\nvarying vec2 vWlDir;',
+    vertexMain: `
+vec4 wlC = viewMatrix * vec4(uLensCentre, 1.0);
+vec3 wlSun = (viewMatrix * vec4(uFlareSun.xyz, 0.0)).xyz;
+// the side of the limb away from the sun, a little below the middle
+vWlDir = normalize(vec2(wlSun.x < 0.0 ? 1.0 : -1.0, -${n(W.low)}));
+// the limb of a sphere seen from near is a little wider than its radius
+float wlR = ${n(RS)} / sqrt(max(1.0 - ${n(RS * RS)} / dot(wlC.xyz, wlC.xyz), 0.5));
+vWl = position.xy * 1.02;
+vec4 wlAt = wlC;
+wlAt.xy += vWl * wlR;
+gl_Position = projectionMatrix * wlAt;
+vStageWorld = uLensCentre;
+vStageLocal = (uGlobeInv * vec4(uLensCentre, 1.0)).xyz;
+vStagePlaced = uLensCentre;
+vStageAux = vec3(0.0, -wlAt.z, length(wlAt.xyz));`,
+    fragment: WALL,
+    params: { ...added, depthTest: false },
+  })
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), m)
+  mesh.renderOrder = 13
+  mesh.frustumCulled = false
+  return mesh
+}
+
 function makePool(): THREE.Mesh {
   const m = stageShader({
     part: PART,
@@ -242,12 +302,15 @@ function makePool(): THREE.Mesh {
   return mesh
 }
 
-let flare: THREE.Mesh | undefined
+let flare: THREE.Object3D | undefined
 let pool: THREE.Mesh | undefined
 
-/** What the season puts on the glass: the flare. It rides in the globe's group and places itself from the eye and the light. */
+/** What the season puts on the glass: the flare and the light on the far wall. It rides in the globe's group and places itself from the eye and the light. */
 export function dressing(): THREE.Object3D {
-  flare ??= makeFlare()
+  if (!flare) {
+    flare = new THREE.Group()
+    flare.add(makeWall(), makeFlare())
+  }
   return flare
 }
 
