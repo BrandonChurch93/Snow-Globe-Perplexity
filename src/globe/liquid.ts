@@ -9,7 +9,7 @@ const TAU = Math.PI * 2
 
 export const LIQUID_R = G.sphereDiameterMm / 2 - G.glassThicknessMm
 export const LIQUID_PIVOT_MM = G.baseHeightMm - G.collarDepthMm + G.sphereDiameterMm / 2
-export const LIQUID_LENGTH = 19
+export const LIQUID_LENGTH = 22
 export const LIQUID_TURN = 0
 export const LIQUID_SLOSH = 3
 export const LIQUID_TURBULENCE = 6
@@ -21,6 +21,7 @@ export const LIQUID_MIX = 12
 export const LIQUID_ROLL = 15
 export const LIQUID_SWIRL = 16
 export const LIQUID_FOLD = 17
+export const LIQUID_LOAD = 19
 export const TURBULENCE_MAX = 260
 export const NOISE_N = 24
 export const NOISE_RMS = 0.33
@@ -58,6 +59,11 @@ const OVERTURN = 1.4
 const OVERTURN_KNEE = 40
 const ROLL_WAKES = 0.3
 const ROLL_WOKEN = 0.9
+// What the liquid carries is heavier than the liquid: a stroke leaves it behind against the trailing wall, and at a reversal it
+// runs across the glass. `CARRY` is its pace through the liquid for each mm/s of slosh; the load is how far it has been thrown.
+export const CARRY = 2
+export const LOAD_MAX_MM = 30
+const LOAD_SECONDS = 0.5
 
 export const ROLL_MAX = 15
 const EDDY_GAIN = 3
@@ -216,6 +222,7 @@ function centreOf(p: GlobePose, out: Float64Array, o: number): void {
 export class Liquid {
   readonly state = new Float64Array(LIQUID_LENGTH)
   readonly coef = new Float64Array(8)
+  readonly carry = new Float64Array(3)
   readonly grid = new Float32Array(NOISE_LEN)
   readonly pot = new Float32Array(NOISE_LEN)
   readonly motion: LiquidMotion = { ax: 0, ay: 0, az: 0, gx: 0, gy: -1, gz: 0 }
@@ -257,7 +264,7 @@ export class Liquid {
 
   get atRest(): boolean {
     const L = this.state
-    return L[0] === 0 && L[1] === 0 && L[2] === 0 && L[3] === 0 && L[4] === 0 && L[5] === 0 && L[6] === 0 && L[15] === 0
+    return L[0] === 0 && L[1] === 0 && L[2] === 0 && L[3] === 0 && L[4] === 0 && L[5] === 0 && L[6] === 0 && L[15] === 0 && L[19] === 0 && L[20] === 0 && L[21] === 0
   }
 
   step(p0: GlobePose, p1: GlobePose, p2: GlobePose, time: number): void {
@@ -368,8 +375,21 @@ export class Liquid {
       fa = na
     }
 
+    const settle = Math.exp(-DT / LOAD_SECONDS)
+    let lx = (L[19]! + CARRY * sx * DT) * settle
+    let ly = (L[20]! + CARRY * sy * DT) * settle
+    let lz = (L[21]! + CARRY * sz * DT) * settle
+    const thrown = lx * lx + ly * ly + lz * lz
+    if (thrown > LOAD_MAX_MM * LOAD_MAX_MM) {
+      const back = LOAD_MAX_MM / Math.sqrt(thrown)
+      lx *= back
+      ly *= back
+      lz *= back
+    }
+
     const still = ax === 0 && ay === 0 && az === 0 && dda === 0 && ddb === 0 && !stirred
     if (still) {
+      if (lx * lx + ly * ly + lz * lz < 1e-8) lx = ly = lz = 0
       if (wx * wx + wy * wy + wz * wz < 1e-10) wx = wy = wz = 0
       if (sx * sx + sy * sy + sz * sz < 1e-8) sx = sy = sz = 0
       if (turb < TURB_EPS) turb = 0
@@ -408,6 +428,9 @@ export class Liquid {
     L[16] = swirl
     L[17] = fa
     L[18] = fb
+    L[19] = lx
+    L[20] = ly
+    L[21] = lz
     if (Math.round(time * HZ) % MIX_STEPS === 0) {
       if (turb > TURB_EPS) {
         const sp = Math.sin(L[7]!)
@@ -446,6 +469,10 @@ export class Liquid {
     c[3] = slam * L[3]! + 1.5 * AMBIENT_FLOW * c1 + L[17]!
     c[4] = slam * L[4]! + 1.5 * AMBIENT_FLOW * 0.5 * s2 + (L[6]! * L[6]!) / TURBULENCE_MAX + L[18]! * ROLL_AXIS[2]
     c[5] = slam * L[5]! + 1.5 * AMBIENT_FLOW * s1 - L[18]! * ROLL_AXIS[1]
+    const k = this.carry
+    k[0] = CARRY * L[3]!
+    k[1] = CARRY * L[4]!
+    k[2] = CARRY * L[5]!
     const turb = L[6]!
     c[6] = turb
     c[7] = L[15]!
@@ -471,7 +498,7 @@ export class Liquid {
     const h = Math.sqrt(c[3]! * c[3]! + c[4]! * c[4]! + c[5]! * c[5]!)
     const mix = Math.sqrt(wa * wa + wb * wb + wc * wc)
     const loud = mix > turb ? mix : turb
-    this.maxSpeed = w * LIQUID_R + h * 1.05 + loud * 1.6 + c[7]! * ROLL_REACH
+    this.maxSpeed = w * LIQUID_R + h * 1.05 + loud * 1.6 + c[7]! * ROLL_REACH + CARRY * slosh * 1.5
   }
 
   potentialAt(x: number, y: number, z: number, ring: number, out: Float64Array | number[]): void {
