@@ -16,7 +16,9 @@ describe("spring's glass: the runs", () => {
     for (let j = 0; j < SLOTS; j++) {
       if (runAt(j, 0, 0).b[3] > 0) atLanding++
       const r = runAt(j, 12, 0)
-      if (r.b[3] > 0 && r.b[1] - Math.max(r.b[2], r.a[1]) > 15 / DEG) atRest++
+      // On its way: the head has left its start, and a short wet trail lies behind it.
+      const trail = r.b[1] - Math.max(r.b[2], r.a[1])
+      if (r.b[3] > 0 && r.b[1] - r.a[1] > 6 / DEG && trail > 1 / DEG && trail < 25 / DEG) atRest++
     }
     expect(atLanding).toBe(0)
     expect(atRest).toBeGreaterThanOrEqual(10)

@@ -97,9 +97,9 @@ export const DRIPS = [
 ]
 // Wax that has run to the slab and pooled: x of the run, y where it starts, the half width of its pool in mm.
 export const RUNS = [
-  { x: 1052, y0: 1332, w: 24, pool: 6.5 },
-  { x: 1622, y0: 1392, w: 20, pool: 5.2 },
-  { x: 1788, y0: 1345, w: 19, pool: 4.4 },
+  { x: 1052, y0: 1332, w: 24, pool: 3.6 },
+  { x: 1622, y0: 1392, w: 20, pool: 3.2 },
+  { x: 1788, y0: 1345, w: 19, pool: 2.8 },
 ]
 
 // The thorns a viewer can count, read from the approved image by eye: where each stands on the ring, the way it points

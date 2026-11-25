@@ -14,7 +14,7 @@ export const surfaceDressing: Dressing & { reachMm: number } = { tint: [0.86, 0.
 // from the approved image: the dune the spill builds against the foot on the right, its shoulder round the front of the
 // foot, the fan toward the camera, a thin sheet behind the foot on the left, and a few grains everywhere near the foot.
 const HEAP = {
-  dune: { x: 61, z: 10, sx: 11.5, sz: 21, mm: 11 },
+  dune: { x: 66, z: 6, sx: 19, sz: 24, mm: 9.5 },
   skirt: { x: 72, z: 36, sx: 11, sz: 24, mm: 2.8 },
   shoulder: { x: 44, z: 60, sx: 27, sz: 20, mm: 4.2 },
   fan: { x: 54, z: 118, sx: 23, sz: 58, mm: 2.0 },
@@ -58,6 +58,10 @@ export function sandHeight(x: number, z: number): number {
   const ring = HEAP.ring.mm * Math.exp(-(((r - HEAP.ring.r) / HEAP.ring.w) ** 2)) * (0.15 + 1.7 * broad * mid) * clear
   const lumps = (fine - 0.5) * 0.22 * Math.min(1, heap / 0.8) + (mid - 0.5) * 0.5 * Math.min(1, heap / 3)
   return Math.max(0, heap + sheet + stray + ring + lumps)
+}
+
+export function sandSpread(x: number, z: number): number {
+  return Math.min(1, bump(x, z, HEAP.stray) / HEAP.stray.mm + 0.6 * (bump(x, z, HEAP.fan) / HEAP.fan.mm) + 0.5 * (bump(x, z, HEAP.sheet) / HEAP.sheet.mm))
 }
 
 function heapGeometry(): THREE.BufferGeometry {

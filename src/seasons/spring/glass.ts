@@ -35,18 +35,18 @@ export const standIns: string[] = []
 export const glassDressing: Dressing = { tint: [1, 1, 1], amount: 0 }
 
 const look = {
-  dew: { count: 9000, mm: [0.07, 0.34], skew: 3, bornBy: 0.3, growSeconds: 0.5 },
+  dew: { count: 9000, mm: [0.07, 0.34], skew: 2.2, bornBy: 0.3, growSeconds: 0.5 },
   bead: { count: 420, mm: [0.38, 1.25], skew: 2.6, bornBy: 1.2, growSeconds: 1 },
   /** Lowest place of a still drop and the place a run leaves the glass, as polar angles from the top. */
   lowDeg: 118,
   offDeg: 131,
-  run: { headMm: [0.95, 1.5], track: 0.5, fromDeg: [3, 17], toDeg: [46, 96], wander: [0.018, 0.06], waves: [4.5, 10], slideSeconds: [10, 19], hangSeconds: [3, 8], offSeconds: 1.3, drySeconds: 5, firstBy: 9 },
+  run: { headMm: [0.8, 1.35], track: 0.42, fromDeg: [9, 50], goDeg: [22, 52], trailDeg: [9, 24], wander: [0.012, 0.04], waves: [4.5, 10], slideSeconds: [9, 17], hangSeconds: [3, 8], offSeconds: 1.3, drySeconds: 3, firstBy: 9 },
   /** How far toward the camera a drop is drawn, so that the glass under it never cuts it at the limb. */
   liftMm: 14,
   /** How much of the frame a drop gathers, as a share of the frame's height, and how dark its edge is. */
   field: 0.2,
   trailField: 0.05,
-  film: 0.62,
+  film: 0.74,
   body: 0.9,
   edge: 0.1,
   mirror: 0.55,
@@ -330,7 +330,10 @@ void main() {
   }
   float crescent = smoothstep(0.15, 0.7, d2) * (1.0 - smoothstep(0.8, 1.0, d2)) * max(-sign(x) * dot(uKeyDir, vTrailA), 0.0);
   // A film is thin: it darkens what is behind it more than it mirrors the room.
-  vec3 col = dewWater(body * ${f(look.film)}, n, eye, d2, crescent, 0.45);
+  float rim = smoothstep(0.3, 1.0, d2);
+  vec3 col = body * ${f(look.film)} * mix(0.97, 0.5, rim * rim) + uKeyCol * (${f(look.crescent)} * 0.14 * crescent);
+  // Older film is thinner: it shows less the further behind the head it lies.
+  a *= mix(0.9, 0.5, old);
   gl_FragColor = vec4(col * a, a);
   if (uDiag != 0) {
     if (a < 0.5) discard;
@@ -368,7 +371,9 @@ const mixOf = (r: readonly number[], t: number): number => r[0]! + (r[1]! - r[0]
 function dewThick(x: number, y: number, z: number): number {
   const patch = 0.5 + 0.5 * Math.sin(5.1 * x + 1.3 + 2.2 * Math.sin(3.3 * y + 0.4)) * Math.sin(4.3 * y + 0.7 + 1.9 * Math.sin(2.9 * z + 2.0)) * Math.sin(3.7 * z + 2.1 + 1.6 * Math.sin(4.1 * x))
   const limb = 1 - Math.max(z, 0)
-  return Math.min(1, (0.1 + 0.9 * patch * patch) * (0.14 + 0.86 * limb * limb * limb) * (0.55 + 0.45 * Math.max(y, 0)) * 1.6)
+  // Along the limbs, and as a fine dusting over the top of the glass.
+  const top = Math.min(1, Math.max(0, (y - 0.42) / 0.45))
+  return Math.min(1, (0.1 + 0.9 * patch * patch) * Math.max(0.14 + 0.86 * limb * limb * limb, 0.95 * top * top * (3 - 2 * top)) * (0.55 + 0.45 * Math.max(y, 0)) * 1.6)
 }
 
 function beadsGeometry(): THREE.InstancedBufferGeometry {
@@ -500,7 +505,7 @@ export function runAt(slot: number, since: number, shed: number): { a: [number, 
   const went = since - start
   const round = went >= 0 ? Math.floor(went / period) : 0
   const from = mixOf(R.fromDeg, rnd(slot, 4, round)) * RAD
-  const to = mixOf(R.toDeg, rnd(slot, 5, round)) * RAD
+  const to = Math.min(from + mixOf(R.goDeg, rnd(slot, 5, round)) * RAD, 100 * RAD)
   const off = look.offDeg * RAD
   const phi = (rnd(slot, 6, round) - 0.45) * 0.86 * Math.PI
   const head = mixOf(R.headMm, rnd(slot, 7, round))
@@ -521,7 +526,10 @@ export function runAt(slot: number, since: number, shed: number): { a: [number, 
   const dryFrom = slide + 0.6 * hang
   const dryTo = slide + hang + R.offSeconds + R.drySeconds
   const dried = Math.min(1, Math.max(0, (local - dryFrom) / (dryTo - dryFrom)))
-  const tail = from + (off + 0.45 - from) * dried
+  // The wet trail is short: it dries behind the head as the head goes, shortens while the head hangs, and is gone after it.
+  const hung = Math.min(1, Math.max(0, (local - slide) / hang))
+  const wet = mixOf(R.trailDeg, rnd(slot, 13, round)) * RAD * (1 - 0.8 * hung)
+  const tail = Math.max(from, at - wet, from + (off + 0.45 - from) * dried)
   return { a, b: [phase, at, tail, radius], c }
 }
 

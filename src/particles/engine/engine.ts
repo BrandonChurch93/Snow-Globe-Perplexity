@@ -109,7 +109,6 @@ const K_BLEND = new Float64Array(NK)
 const K_GRIP = new Float64Array(NK)
 const K_LOFT = new Float64Array(NK)
 const K_GATHER = new Float64Array(NK)
-let lowest = Infinity
 TABLE_OF.forEach((b, k) => {
   K_MODE[k] = b.mode === 'steer' ? 1 : b.mode === 'cycle' ? 2 : 0
   K_REST[k] = b.rest === 'lies' ? STATE_REST : b.rest === 'snags' ? STATE_SNAG : 0
@@ -127,9 +126,26 @@ TABLE_OF.forEach((b, k) => {
   K_GRIP[k] = 1 / (1 + b.gripPerSecond * H)
   K_LOFT[k] = b.rest === 'lies' ? b.loft : 0
   K_GATHER[k] = b.mode === 'drift' ? b.gather : 0
-  if (b.rest !== 'never') lowest = Math.min(lowest, b.liftMmS[0])
 })
-const MIN_LIFT = lowest
+/**
+ * The slowest stir that can lift anything, for each season: the lowest first number of `liftMmS` among that
+ * season's own kinds, and never above `LIFT_FLOOR`. It was once the lowest of every kind of every season, so
+ * that one season's row moved another season's particles; the floor is the number winter has always run with.
+ */
+const LIFT_FLOOR = 18
+const MIN_LIFT_IN: readonly number[] = SEASONS.map((_, ix) => {
+  const table = KIND_IN[ix]!
+  const seen = new Uint8Array(NK)
+  let lowest = LIFT_FLOOR
+  for (let i = 0; i < table.length; i++) {
+    const k = table[i]!
+    if (k === NONE || seen[k]) continue
+    seen[k] = 1
+    const b = TABLE_OF[k]!
+    if (b.rest !== 'never') lowest = Math.min(lowest, b.liftMmS[0])
+  }
+  return lowest
+})
 
 const bell = (u: number, v: number): number => Math.sqrt(-2 * Math.log(u > 1e-9 ? u : 1e-9)) * Math.cos(TAU * v)
 
@@ -1203,7 +1219,7 @@ export class ParticleEngine {
       gez *= s
     }
     const bound = L.maxSpeed
-    const lively = bound > MIN_LIFT
+    const lively = bound > (this.window === 1 ? Math.min(MIN_LIFT_IN[this.nowIx]!, MIN_LIFT_IN[this.swapTo]!) : MIN_LIFT_IN[this.nowIx]!)
     const mask = m.ax !== 0 || m.ay !== 0 || m.az !== 0 ? 3 : lively ? 15 : 63
     const eA = this.nowIx
     const A = this.grid(eA)
