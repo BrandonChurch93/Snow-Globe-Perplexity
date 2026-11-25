@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { config } from '../src/config'
 import { scriptPlan } from '../src/app/replay'
-import { APP_SCRIPTS, appLegend, appMarks, appParts, appSpacing } from '../tools/lib/appsheets.mjs'
+import { APP_SCRIPTS, appLabelKind, appLegend, namesSeason, plainSeasonsLegend, appMarks, appParts, appSpacing } from '../tools/lib/appsheets.mjs'
 
 const per = config.critics.contactSheetFrames
 const sheetsOf = (name: string): number => {
@@ -78,5 +78,33 @@ describe('the sheets of the app scripts', () => {
       for (const e of plan.events) expect(legend).toContain(`frame ${e.frame} (${(e.frame / plan.fps).toFixed(2)} s) ${e.what}`)
       expect(legend).not.toMatch(/[\u2014\u0021]/)
     }
+  })
+
+  it('names no season on a plain sheet and leaves the labelled sheet as it was', () => {
+    const seasons = [...config.seasons] as string[]
+    for (const name of APP_SCRIPTS) {
+      const plan = scriptPlan(name)
+      const marks = appMarks(plan, config.shake, config.film.beatsPerBar)
+      const part = appParts(plan, per).all[0]!
+      const spec = { what: part.what, sheet: 1, sheets: 1, frames: part.frames, spacing: appSpacing(part, plan.fps), plan, marks }
+      const plain = appLegend({ ...spec, plain: true, label: appLabelKind(name, true) }, seasons)
+      expect(namesSeason(plain, seasons)).toBe('')
+      expect(plain).toContain(`frames ${part.frames[0]} to ${part.frames.at(-1)} of the script's ${plan.frameCount}`)
+      expect(appLabelKind(name, true)).not.toBe('season')
+      const labelled = appLegend({ ...spec, label: appLabelKind(name) }, seasons)
+      expect(labelled).toBe(appLegend({ ...spec, label: appLabelKind(name) }))
+      expect(namesSeason(labelled, seasons)).not.toBe('')
+      for (const e of plan.events) expect(labelled).toContain(e.what)
+    }
+    expect(appLabelKind('shake')).toBe('season')
+    expect(appLabelKind('jump')).toBe('season')
+    expect(appLabelKind('drag', true)).toBe('yaw')
+    const shake = scriptPlan('shake')
+    const whole = appParts(shake, per).all[0]!
+    const said = appLegend({ what: whole.what, sheet: 1, sheets: 1, label: 'season', frames: whole.frames, spacing: appSpacing(whole, shake.fps), plan: shake, marks: [] })
+    expect(said.startsWith(`a shake from ${shake.from} to ${shake.to} in the app, across the whole script: frames 0 to ${shake.frameCount - 1}`)).toBe(true)
+    expect(said).toContain('the season the app holds, written as the old season to the new one from the press to the landing')
+    expect(namesSeason(plainSeasonsLegend(seasons.length), seasons)).toBe('')
+    expect(() => appLegend({ what: `across ${seasons[0]}`, plain: true, sheet: 1, sheets: 1, label: '', frames: [0, 1], spacing: '', plan: shake, marks: [] }, seasons)).toThrow()
   })
 })

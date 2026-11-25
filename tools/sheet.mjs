@@ -4,7 +4,7 @@ import sharp from 'sharp'
 import { parseArgs, rel, readJson, writeJson } from './lib/paths.mjs'
 import { Session, cfg, formatById, stillSpec, stillName, renderStill } from './lib/page.mjs'
 import { addLook } from './lib/looks.mjs'
-import { appLegend, appMarks, appParts, appSpacing, APP_SCRIPTS } from './lib/appsheets.mjs'
+import { appLabelKind, appLegend, appMarks, appParts, appSpacing, APP_SCRIPTS, plainSeasonsLegend } from './lib/appsheets.mjs'
 import { SHEETS, across, appSource, around, composeSheet, gridLayout, labelUnits, layoutHashFor, matches, nameParts, overview, pageInfo, pages, readPlan, renderFrames, run, secondsText, shown, snapUp, sourceOf } from './lib/sheetlayout.mjs'
 
 const USAGE = `npm run sheet -- <what> [--tier T] [--format F] [--assets A] [--diag V] [--cols N] [--force] [--look no] [--by NAME]
@@ -14,6 +14,7 @@ const USAGE = `npm run sheet -- <what> [--tier T] [--format F] [--assets A] [--d
   --loop [--seam]           across the card loop, or its last frames then its first
   --opening                 across the opening of film A
   --seasons                 the four at-rest keys
+  --plain                   with --seasons or --app: no label names a season, for a critic who has to name the seasons from the pictures
   --first N --last M        across a range of the film, or of the test shake with --shot test, or of the loop with --loop
   --motion NAME [--shot ID] consecutive frames at film.previewFps: lift, strokes, setdown, landing, swap, arrival (ID a shake, the hold after it, or test), move (ID a shot)
                             with --at S and --seconds S to choose a part, --stride K to show every Kth frame, --fit to choose the stride that fills one sheet
@@ -50,6 +51,8 @@ const ranged = str('first') !== '' && str('last') !== ''
 if (!motion && (str('first') !== '') !== (str('last') !== '')) fail('give --first and --last together', 2)
 const mode = app ? 'app' : motion ? 'motion' : args.film === true ? 'film' : args.seasons === true ? 'seasons' : args.opening === true ? 'opening' : ranged ? 'range' : args.loop === true ? 'loop' : shotArg ? 'shot' : ''
 if (!mode) fail(USAGE, 2)
+const plainAsk = args.plain === true
+if (plainAsk && mode !== 'seasons' && mode !== 'app') fail('--plain goes with --seasons or --app', 2)
 const MOTIONS = ['lift', 'strokes', 'setdown', 'landing', 'swap', 'arrival', 'move']
 if (motion && !MOTIONS.includes(motion)) fail(`no such motion: ${motion}. One of ${MOTIONS.join(', ')}`, 2)
 const marks = new Map()
@@ -179,11 +182,12 @@ try {
     }
     frameCounts = { total: keys.length, rendered: stills.filter((s) => !s.reused).length, reused: stills.filter((s) => s.reused).length }
     if (complete) {
-      const file = sheetFile('seasons', tag)
-      const spec = { kind: 'seasons', stills: stills.map((s) => s.id) }
-      const layout = gridLayout({ count: stills.length, frameWidth: format.width, frameHeight: format.height, labelUnits: Math.max(...stills.map((s) => labelUnits([s.id]))), cols })
+      const file = sheetFile('seasons', tag, plainAsk ? 'plain' : '')
+      const spec = { kind: 'seasons', ...(plainAsk ? { plain: true } : {}), stills: stills.map((s) => s.id) }
+      const labels = stills.map((s, k) => [plainAsk ? String(k + 1) : s.id])
+      const layout = gridLayout({ count: stills.length, frameWidth: format.width, frameHeight: format.height, labelUnits: Math.max(...labels.map((l) => labelUnits(l))), cols })
       const caption = `Sheet: the ${stills.length} at-rest keys, ${stills.map((s) => s.id).join(', ')}, ${tail}`
-      await write({ file, spec, caption, layout, fresh, tiles: stills.map((s) => ({ file: s.file, label: [s.id] })), frames: stills.map((s, k) => ({ id: s.id, file: shown(s.file), at: layout.cells[k] })), info: await pageInfo(page) })
+      await write({ file, spec, caption, ...(plainAsk ? { legend: plainSeasonsLegend(stills.length) } : {}), layout, fresh, tiles: stills.map((s, k) => ({ file: s.file, label: labels[k] })), frames: stills.map((s, k) => ({ id: s.id, file: shown(s.file), at: layout.cells[k] })), info: await pageInfo(page) })
     }
   } else {
     const jobs = []
@@ -248,7 +252,7 @@ try {
       src = appSource(sp, level)
       const parts = appParts(sp, per)
       const marksOf = appMarks(sp, cfg.shake, cfg.film.beatsPerBar)
-      const labelKind = sp.name === 'drag' ? 'yaw' : sp.name === 'stir' ? '' : 'season'
+      const labelKind = appLabelKind(sp.name, plainAsk)
       let chosen
       if (args.fit === true || str('stride')) {
         const stride = args.fit === true ? Math.ceil(sp.frameCount / per) : Math.max(1, Math.floor(Number(str('stride')) || 1))
@@ -264,11 +268,11 @@ try {
       }
       for (const part of chosen) {
         const sets = pages(part.frames, per)
-        const stem = ['app', sp.name, sp.from, sp.to === sp.from ? '' : sp.to, level, nameParts(o, false).join('-'), part.id].filter(Boolean).join('-')
+        const stem = ['app', sp.name, sp.from, sp.to === sp.from ? '' : sp.to, level, nameParts(o, false).join('-'), part.id, plainAsk ? 'plain' : ''].filter(Boolean).join('-')
         const spacing = appSpacing(part, sp.fps)
         sets.forEach((frames, n) => {
-          const spec = { kind: 'app', script: sp.name, part: part.id, what: part.what, level, source: src.id, stride: part.stride, spacing, sheet: n + 1, sheets: sets.length, label: labelKind, frames, plan: sp, marks: marksOf }
-          jobs.push({ file: sheetFile(stem, String(n + 1)), frames, ordered: true, perSheet: Math.min(per, part.frames.length), step: part.stride || 1, name: appLabel, spec, caption: `App sheet ${n + 1} of ${sets.length}: ${said}, ${part.what}, frames ${frames[0]} to ${frames[frames.length - 1]}, ${spacing}, ${nameParts(o, false).join(', ')}, level ${level}`, legend: appLegend(spec) })
+          const spec = { kind: 'app', ...(plainAsk ? { plain: true } : {}), script: sp.name, part: part.id, what: part.what, level, source: src.id, stride: part.stride, spacing, sheet: n + 1, sheets: sets.length, label: labelKind, frames, plan: sp, marks: marksOf }
+          jobs.push({ file: sheetFile(stem, String(n + 1)), frames, ordered: true, perSheet: Math.min(per, part.frames.length), step: part.stride || 1, name: appLabel, spec, caption: `App sheet ${n + 1} of ${sets.length}: ${said}, ${part.what}, frames ${frames[0]} to ${frames[frames.length - 1]}, ${spacing}, ${nameParts(o, false).join(', ')}, level ${level}`, legend: appLegend(spec, cfg.seasons) })
         })
         for (const f of fs.existsSync(SHEETS) ? fs.readdirSync(SHEETS) : []) {
           const m = f.startsWith(`${stem}-`) ? /^(\d+)\.jpg(\.json)?$/.exec(f.slice(stem.length + 1)) : null

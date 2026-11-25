@@ -70,12 +70,23 @@ export function appSpacing(part, fps) {
   return gaps.length ? `${lo === hi ? n(lo) : `${lo} or ${hi} frames`} apart at ${fps} frames a second` : `one frame`
 }
 
-export function appLegend(spec) {
+// What a critic reads beside a sheet made with --plain: it may name no season, the truth stays in the record's spec.
+export const namesSeason = (text, seasons) => seasons.find((s) => new RegExp(`\\b${s}\\b`, 'i').test(text)) ?? ''
+// What a tile's label says after its frame and its time. A plain sheet never says the season.
+export const appLabelKind = (name, plain = false) => (name === 'drag' ? 'yaw' : name === 'stir' || plain ? '' : 'season')
+export const plainSeasonsLegend = (count) => `the at-rest stills on one sheet; each tile is labelled only with its place on the sheet, 1 to ${count}`
+
+export function appLegend(spec, seasons = []) {
   const p = spec.plan
   const secs = (i) => `${(i / p.fps).toFixed(2)} s`
-  const name = { shake: `a shake from ${p.from} to ${p.to}`, jump: `a jump from ${p.from} to ${p.to}`, stir: `a stir of the liquid in ${p.from}`, drag: `a drag around the globe in ${p.from}` }[p.name] ?? p.name
+  const name = (spec.plain ? { shake: 'a shake', jump: 'a jump to another season', stir: 'a stir of the liquid', drag: 'a drag around the globe' } : { shake: `a shake from ${p.from} to ${p.to}`, jump: `a jump from ${p.from} to ${p.to}`, stir: `a stir of the liquid in ${p.from}`, drag: `a drag around the globe in ${p.from}` })[p.name] ?? p.name
   const f = spec.frames
-  const marks = (spec.marks ?? []).map((m) => `frame ${m.frame} (${secs(m.frame)}) ${m.what}`).join('; ')
+  // The script's own words name its seasons ("the landing in spring"): a plain legend says the new season, the old season.
+  const unnamed = (what) => seasons.reduce((t, s) => t.replace(new RegExp(`\\b${s}\\b`, 'gi'), s === p.to && p.to !== p.from ? 'the new season' : s === p.from ? 'the old season' : 'another season'), what)
+  const marks = (spec.marks ?? []).map((m) => `frame ${m.frame} (${secs(m.frame)}) ${spec.plain ? unnamed(m.what) : m.what}`).join('; ')
   const label = { season: ', its time and the season the app holds, written as the old season to the new one from the press to the landing', yaw: ", its time and the camera's turn around the globe in degrees" }[spec.label] ?? ' and its time'
-  return `${name} in the app, ${spec.what}${spec.sheets > 1 ? `, sheet ${spec.sheet} of ${spec.sheets}` : ''}: frames ${f[0]} to ${f[f.length - 1]} of the script's ${p.frameCount}, ${spec.spacing}. Each tile is labelled with its frame${label}. In the script: ${marks}`
+  const text = `${name} in the app, ${spec.what}${spec.sheets > 1 ? `, sheet ${spec.sheet} of ${spec.sheets}` : ''}: frames ${f[0]} to ${f[f.length - 1]} of the script's ${p.frameCount}, ${spec.spacing}. Each tile is labelled with its frame${label}. In the script: ${marks}`
+  const named = spec.plain ? namesSeason(text, seasons) : ''
+  if (named) throw new Error(`the plain legend of the ${p.name} script names a season, ${named}: ${text}`)
+  return text
 }

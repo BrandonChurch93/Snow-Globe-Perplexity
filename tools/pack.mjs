@@ -315,7 +315,7 @@ function sheetLegend(file, fallback) {
   const record = fs.existsSync(`${file}.json`) ? readJson(`${file}.json`) : null
   const spec = record?.spec ?? {}
   const shot = shots.find((x) => x.id === spec.shot)
-  if (spec.kind === 'app' && record.legend) return record.legend
+  if ((spec.kind === 'app' || spec.plain) && record.legend) return record.legend
   if (spec.kind === 'film-overview') return `the whole film in ${spec.frames?.length ?? 'a few'} frames, every shot at least once`
   if (spec.kind === 'shot' && shot) {
     const moved = shotMoves[shot.id] ? `. The camera: ${shotMoves[shot.id].replace(/\.$/, '')}` : ''
@@ -325,6 +325,14 @@ function sheetLegend(file, fallback) {
     return `${plain}. ${spec.frames?.[0] === 0 ? 'The first frame of the film is the one labelled 0 0.00 s, and ' : ''}${said.join(', and ')}`
   }
   return fallback
+}
+
+// The truth of a sheet made with --plain, for the key file only: the critic's text names no season.
+function plainTruth(file) {
+  const spec = fs.existsSync(`${file}.json`) ? (readJson(`${file}.json`).spec ?? {}) : {}
+  if (!spec.plain) return ''
+  if (spec.kind === 'seasons') return `. The tiles: ${spec.stills.map((id, k) => `${k + 1} is ${id}`).join(', ')}`
+  return spec.kind === 'app' ? `. The script: ${spec.script} from ${spec.plan.from} to ${spec.plan.to}` : ''
 }
 
 let session = null
@@ -582,7 +590,8 @@ async function buildR5(role) {
   const missing = []
   let groups
   if (unit === 'globe') {
-    groups = sheetGroups(role, [{ what: 'the four seasons at rest', flags: sheetFlags('--seasons') }, { what: 'one sheet across a shake in the app', flags: ['--app', 'shake', '--part', 'whole'], byRecord: true }], missing)
+    groups = sheetGroups(role, [{ what: 'the four seasons at rest', flags: sheetFlags('--seasons', '--plain'), byRecord: true }, { what: 'one sheet across a shake in the app', flags: ['--app', 'shake', '--part', 'whole', '--plain'], byRecord: true }], missing)
+    for (const item of groups.flatMap((g) => g.files)) item.what += plainTruth(item.file)
     await open()
     const scr = { title: 'the screen stills', files: [] }
     for (const e of screens()) {
