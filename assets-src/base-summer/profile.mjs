@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import { loadConfig } from '../../tools/lib/paths.mjs'
-import { clamp, fbm, hashInt, smooth } from './lib.mjs'
+import { clamp, fbm, hashInt, mix, smooth } from './lib.mjs'
 
 const G = loadConfig().globe
 export const RAD = Math.PI / 180
@@ -16,11 +16,11 @@ export const LEDGE_H = TOP + 7.0
 
 // Radius and height in mm, foot to collar, read from the silhouette of references/approved/summer-rest.png (measure.mjs).
 export const BODY = [
-  [57.7, 0.0],
-  [59.1, 0.55],
-  [60.0, 1.9],
-  [60.45, 4.1],
-  [60.35, 6.6],
+  [55.4, 0.0],
+  [57.9, 0.7],
+  [59.6, 2.2],
+  [60.45, 4.4],
+  [60.4, 6.8],
   [59.8, 9.6],
   [58.9, 13.0],
   [57.8, 16.6],
@@ -125,7 +125,7 @@ export const SET = JSON.parse(fs.readFileSync(new URL('./set.json', import.meta.
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296
   }
-  const tints = [[0.03, 0.34, 0.12], [0.012, 0.11, 0.12], [0.72, 0.36, 0.035], [0.012, 0.06, 0.36], [0.36, 0.62, 0.42], [0.08, 0.42, 0.3]]
+  const tints = [[0.07, 0.3, 0.15], [0.05, 0.2, 0.2], [0.6, 0.36, 0.1], [0.03, 0.14, 0.27], [0.3, 0.5, 0.38], [0.1, 0.36, 0.28]]
   let az = 76
   while (az < 268) {
     const k = rnd()
@@ -159,13 +159,13 @@ export function relief(m, az, s) {
   const k = Math.floor(t)
   const f = t - k
   const amp = (hashK(k, 5) < 0.3 ? 0.1 : 0.35 + 0.8 * hashK(k, 6)) * smooth(0.25, 0.6, fbm(A * 6 + k * 3.1, 0.5, 6, 4, 31, 2))
-  const prof = f < 0.4 ? smooth(0, 0.4, f) : 1 - Math.pow((f - 0.4) / 0.6, 0.9)
+  const prof = f < 0.4 ? smooth(0, 0.4, f) : 1 - mix(Math.pow((f - 0.4) / 0.6, 0.9), smooth(0.4, 1, f), 0.6)
   const swell = 2.3 * (fbm(A * 5 + 1, h / 16, 5, 64, 11, 3) - 0.5) + 2.0 * (fbm(A * 9 + 3, h / 11, 9, 64, 15, 3) - 0.5) + 1.0 * (fbm(A * 19 + 7, h / 5.5, 19, 64, 13, 2) - 0.5)
   const lw = w / 2.3 + 0.9 * fbm(A * 24, h / 5, 24, 64, 41, 2)
   const lf = lw - Math.floor(lw)
-  const lam = 0.17 * ((lf < 0.42 ? smooth(0, 0.42, lf) : 1 - smooth(0.42, 1, lf)) - 0.5) * smooth(0.36, 0.6, fbm(A * 7 + 2, h / 12, 7, 64, 43, 2))
+  const lam = 0.08 * ((lf < 0.42 ? smooth(0, 0.42, lf) : 1 - smooth(0.42, 1, lf)) - 0.5) * smooth(0.36, 0.6, fbm(A * 7 + 2, h / 12, 7, 64, 43, 2))
   const gh = 6.2 + 1.1 * Math.sin((az * 2 - 20) * RAD) + 1.8 * (fbm(A * 6, 0.3, 6, 4, 51, 2) - 0.5)
-  const groove = -1.35 * Math.exp(-(((q.h - gh) / 1.15) ** 2)) * (1 - onTop)
+  const groove = -0.55 * Math.exp(-(((q.h - gh) / 1.3) ** 2)) * (1 - onTop) * (1 - 0.8 * smooth(-25, 40, az - 360 * Math.round(az / 360)))
   const lip = 0.12 * smooth(35.8, 37.2, q.h + 1.6 * (fbm(A * 9, 0.7, 9, 4, 61, 2) - 0.5)) * (1 - onTop)
   let pit = 0
   const cu = A * 150
