@@ -30,11 +30,12 @@ export const DRESSING_FRONT = { gain: 2, fromMm: 58, toMm: 230 } as const
  * down the base from the collar to the foot over the first `share` of the span, and on across the table from the foot
  * outward over the span from `tableFrom` on. Behind the front a part is the new season, ahead of it the old; the front's
  * edge is broken into patches (`cellMm`, in the part's own space, so it travels with the globe) and feathered across the
- * samples of a frame (`feather`), and it carries a band of the new season's light (`glowBase`, `glowTable` wide, in shares
- * of the way) so the edge itself is never seen clean. The code of a part's kind rides in `uState.z`: 0 and above is the lag
+ * samples of a frame (`feather`), and it carries the new season's light (`glowBase`, `glowTable` wide, in shares of the
+ * way): the light sits on the broken edge itself, brightest where a patch is just turning, so the edge is never seen
+ * clean and never reads as a level line. The code of a part's kind rides in `uState.z`: 0 and above is the lag
  * of a part inside the glass, under 0 the table's gain, under `-BASE_CODE` the base's.
  */
-export const OUTSIDE_FRONT = { share: 0.62, gain: 3, tableFrom: 0.38, cellMm: 6.5, fineMm: 2.3, fine: 0.36, contrast: 2.6, feather: 0.14, glowBase: 0.17, glowTable: 0.1, topMm: 33, footMm: 0 } as const
+export const OUTSIDE_FRONT = { share: 0.62, gain: 3, tableFrom: 0.38, cellMm: 6.5, fineMm: 2.3, fine: 0.36, contrast: 2.6, feather: 0.14, glowBase: 0.11, glowTable: 0.07, topMm: 33, footMm: 0 } as const
 const BASE_CODE = 10
 
 export interface StageHandle {
@@ -180,17 +181,19 @@ float stageChange() {
       float gain = -uState.z - ${BASE_CODE.toFixed(1)};
       float way = clamp((${(OUTSIDE_FRONT.topMm).toFixed(1)} + uLightFloodFloor.x - vStageLocal.y) / ${(OUTSIDE_FRONT.topMm - OUTSIDE_FRONT.footMm).toFixed(1)}, 0.0, 1.0);
       float run = through / ${OUTSIDE_FRONT.share.toFixed(2)};
-      float at = (way - (run * (1.0 + gain) - 0.5) / gain) / ${OUTSIDE_FRONT.glowBase.toFixed(2)};
-      stageFront = live * exp(-at * at);
+      float reach = run * (1.0 + gain) - gain * way;
       stageEdge = stagePatch(vStageLocal);
-      return clamp(run * (1.0 + gain) - gain * way, 0.0, 1.0);
+      float at = (reach - clamp(stageEdge, 0.0, 1.0)) / (gain * ${OUTSIDE_FRONT.glowBase.toFixed(2)});
+      stageFront = live * exp(-at * at);
+      return clamp(reach, 0.0, 1.0);
     }
     float far = clamp((length(vStageWorld.xz) - ${DRESSING_FRONT.fromMm.toFixed(1)}) / ${(DRESSING_FRONT.toMm - DRESSING_FRONT.fromMm).toFixed(1)}, 0.0, 1.0);
     float run = clamp((through - ${OUTSIDE_FRONT.tableFrom.toFixed(2)}) / ${(1 - OUTSIDE_FRONT.tableFrom).toFixed(2)}, 0.0, 1.0);
-    float at = (far - (run * (1.0 - uState.z) - 0.5) / -uState.z) / ${OUTSIDE_FRONT.glowTable.toFixed(2)};
-    stageFront = live * step(0.0001, run) * exp(-at * at);
+    float reach = run * (1.0 - uState.z) + uState.z * far;
     stageEdge = stagePatch(vec3(vStageWorld.x, 0.0, vStageWorld.z));
-    return clamp(run * (1.0 - uState.z) + uState.z * far, 0.0, 1.0);
+    float at = (reach - clamp(stageEdge, 0.0, 1.0)) / (-uState.z * ${OUTSIDE_FRONT.glowTable.toFixed(2)});
+    stageFront = live * step(0.0001, run) * exp(-at * at);
+    return clamp(reach, 0.0, 1.0);
   }
   float side = clamp(0.5 + vStageLocal.z / (2.0 * uGrid.w), 0.0, 1.0);
   return clamp((uChange - uState.x - uState.z * side) / uState.y, 0.0, 1.0);
