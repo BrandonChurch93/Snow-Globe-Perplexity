@@ -1,0 +1,178 @@
+{
+  "round": 18,
+  "phase": 5,
+  "unit": "globe",
+  "tier": "final",
+  "motionTier": "final",
+  "record": false,
+  "limits": {
+    "longEdge": 1400,
+    "maxPixels": 1140000,
+    "maxFiles": 10
+  },
+  "engineHash": "80483ec9ffb8348a",
+  "roles": {
+    "R2": {
+      "parts": [
+        {
+          "folder": "out/work/packs/round-018/R2",
+          "message": "out/work/packs/round-018/R2.message.md",
+          "files": [
+            {
+              "name": "set-A-01.jpg",
+              "what": "control: the approved image references/approved/winter-rest.png",
+              "sha256": "ab54704680ad0ddb6ddde56b45c8a0de2a548c34ac197d37f368acd3edbf5652",
+              "width": 1085,
+              "height": 1047,
+              "jury": "control",
+              "id": "approved winter-rest",
+              "sha256Source": "1cbc7f6c260402fd025a9c08d5fe1e945a8f704bbdef57ff298b96d531cb06e8"
+            },
+            {
+              "name": "set-A-02.jpg",
+              "what": "judged: live-fall: fall at rest through the app's own path at the high level, hd, final tier",
+              "sha256": "e614cac450cfbde4c242735124901b6262dfded0e696403149fdd4a2f9709f4e",
+              "width": 1085,
+              "height": 1047,
+              "jury": "judged",
+              "id": "live-fall"
+            },
+            {
+              "name": "set-A-03.jpg",
+              "what": "judged: live-summer: summer at rest through the app's own path at the high level, hd, final tier",
+              "sha256": "f03ba0021cc1417c87f05944d01947b377d0e9eecd25c36fdb3d52f4ea913d14",
+              "width": 1085,
+              "height": 1047,
+              "jury": "judged",
+              "id": "live-summer"
+            },
+            {
+              "name": "set-A-04.jpg",
+              "what": "judged: live-spring: spring at rest through the app's own path at the high level, hd, final tier",
+              "sha256": "c8432e992073b1cb154ecdf4001cd1df7d040d87365097318f3355152e8902b8",
+              "width": 1085,
+              "height": 1047,
+              "jury": "judged",
+              "id": "live-spring"
+            },
+            {
+              "name": "set-A-05.jpg",
+              "what": "control: the approved image references/approved/fall-rest.png",
+              "sha256": "07ebcd95d9f0c528de378c8f5d3faac94c24f6ea5adc3331e4c1a682ff210678",
+              "width": 1085,
+              "height": 1047,
+              "jury": "control",
+              "id": "approved fall-rest",
+              "sha256Source": "42729ddc87a6d9c8d4a2bb899b9217cee8c57e12beab539b821130464e43c1b0"
+            },
+            {
+              "name": "set-A-06.jpg",
+              "what": "control: the approved image references/approved/spring-rest.png",
+              "sha256": "17c8c36f158806a23a05176d9c0cbde2ad0dc9fdea071b168f292ed740a154a8",
+              "width": 1085,
+              "height": 1047,
+              "jury": "control",
+              "id": "approved spring-rest",
+              "sha256Source": "8e0fa5e6dd852b4d70dbdbb796ea49d349869930e2b5cabf335cdee211bcfea1"
+            },
+            {
+              "name": "set-A-07.jpg",
+              "what": "control: the approved image references/approved/summer-rest.png",
+              "sha256": "06c33fa4f067bd89c2067b3786e09f0be51084f9cdf8b3be5f15210739fd1d52",
+              "width": 1085,
+              "height": 1047,
+              "jury": "control",
+              "id": "approved summer-rest",
+              "sha256Source": "a417381d64998fba7916037888a924cf3c9f4b9cfa13cc746872cef938602b39"
+            },
+            {
+              "name": "set-A-08.jpg",
+              "what": "judged: live-winter: winter at rest through the app's own path at the high level, hd, final tier",
+              "sha256": "441aefd3fd5ca3e88c481d47fcf5d051b1ded0936399a97cb864b25dfc77d21b",
+              "width": 1085,
+              "height": 1047,
+              "jury": "judged",
+              "id": "live-winter"
+            }
+          ]
+        }
+      ],
+      "missing": [],
+      "notes": [
+        "every image is cropped to 1.44 radii left, 1.44 right, 1.16 up and 1.62 down of the globe centre, at 1085 x 1047"
+      ]
+    },
+    "R8": {
+      "parts": [
+        {
+          "folder": "out/work/packs/round-018/R8",
+          "message": "out/work/packs/round-018/R8.message.md",
+          "files": [
+            {
+              "name": "set-A-01.jpg",
+              "what": "screen-wide: winter in the rest state from hero, with the controls on, hd, final tier",
+              "sha256": "0b09071afa07daae5d213f2ab29eb21268fdd2655cafb04413340f1b95416457",
+              "width": 1400,
+              "height": 787
+            },
+            {
+              "name": "set-A-02.jpg",
+              "what": "screen-wide-fall: fall in the rest state from hero, with the controls on, hd, final tier",
+              "sha256": "5328aeaa8c753cebb9e39b90c646c22162d4e72f401a38a75ec37ae584a2f82e",
+              "width": 1400,
+              "height": 787
+            },
+            {
+              "name": "set-A-03.jpg",
+              "what": "screen-phone: spring in the rest state from hero, with the controls on, phone, final tier",
+              "sha256": "c896d7b943fe2429b3cddfd2bc08f9223746c543fd09af5a046079d24b3187df",
+              "width": 390,
+              "height": 844
+            },
+            {
+              "name": "set-A-04.jpg",
+              "what": "screen-tablet: summer in the rest state from hero, with the controls on, tablet, final tier",
+              "sha256": "fcb9ebc328c25be6c81369cbe551963033122c96879a00e3248e9748a8b838f3",
+              "width": 924,
+              "height": 1233
+            },
+            {
+              "name": "set-B-01.jpg",
+              "what": "screen-wide: close crops of each control at rest, focused and pressed, final tier, cut from the page that holds the still, tiles 299 by 174: 1 shake rest; 2 shake focused; 3 shake pressed; 4 mark 1 rest; 5 mark 1 focused; 6 mark 1 pressed; 7 mark 2 rest; 8 mark 2 focused; 9 mark 2 pressed; 10 mark 3 rest; 11 mark 3 focused; 12 mark 3 pressed; 13 mark 4 rest; 14 mark 4 focused; 15 mark 4 pressed; 16 sound rest; 17 sound focused; 18 sound pressed. The marks are the season marks: mark 1 is winter, the current season, the one shown; mark 2 is spring; mark 3 is summer; mark 4 is fall; the labels and the critic's text do not say so. Focused is the interface state focus of the capture page (focus with the keyboard's ring); pressed is the browser's own :active and :hover on the control",
+              "source": "out/work/controls/screen-wide-final-crops.png",
+              "sha256": "0afab822e30731d5e56c431d6b54db9844d06f2365a5e12cd3f50cc9ffc51d62",
+              "width": 909,
+              "height": 1194
+            },
+            {
+              "name": "set-B-02.jpg",
+              "what": "screen-phone: close crops of each control at rest, focused and pressed, final tier, cut from the page that holds the still, tiles 305 by 178: 1 shake rest; 2 shake focused; 3 shake pressed; 4 mark 1 rest; 5 mark 1 focused; 6 mark 1 pressed; 7 mark 2 rest; 8 mark 2 focused; 9 mark 2 pressed; 10 mark 3 rest; 11 mark 3 focused; 12 mark 3 pressed; 13 mark 4 rest; 14 mark 4 focused; 15 mark 4 pressed; 16 sound rest; 17 sound focused; 18 sound pressed. The marks are the season marks: mark 1 is winter; mark 2 is spring, the current season, the one shown; mark 3 is summer; mark 4 is fall; the labels and the critic's text do not say so. Focused is the interface state focus of the capture page (focus with the keyboard's ring); pressed is the browser's own :active on the control",
+              "source": "out/work/controls/screen-phone-final-crops.png",
+              "sha256": "c76d5da013f5e114cd570dd5bb033b638e5cb9c1117e7969686bf8b815baea6f",
+              "width": 927,
+              "height": 1218
+            },
+            {
+              "name": "set-B-03.jpg",
+              "what": "screen-tablet: close crops of each control at rest, focused and pressed, final tier, cut from the page that holds the still, tiles 311 by 176: 1 shake rest; 2 shake focused; 3 shake pressed; 4 mark 1 rest; 5 mark 1 focused; 6 mark 1 pressed; 7 mark 2 rest; 8 mark 2 focused; 9 mark 2 pressed; 10 mark 3 rest; 11 mark 3 focused; 12 mark 3 pressed; 13 mark 4 rest; 14 mark 4 focused; 15 mark 4 pressed; 16 sound rest; 17 sound focused; 18 sound pressed. The marks are the season marks: mark 1 is winter; mark 2 is spring; mark 3 is summer, the current season, the one shown; mark 4 is fall; the labels and the critic's text do not say so. Focused is the interface state focus of the capture page (focus with the keyboard's ring); pressed is the browser's own :active on the control",
+              "source": "out/work/controls/screen-tablet-final-crops.png",
+              "sha256": "e4669635ca0857ac226847f24f7a2badff46ead1c0d35778b9988d2e89b09af3",
+              "width": 945,
+              "height": 1206
+            },
+            {
+              "name": "set-C-01.jpg",
+              "what": "screen-wide: one sheet of the Shake control's hint, final tier: the interface state hint of the capture page held at 12 even steps across its 1.9 s, 4 animations each set to the time under the tile: 1 0.00 s; 2 0.17 s; 3 0.35 s; 4 0.52 s; 5 0.69 s; 6 0.86 s; 7 1.04 s; 8 1.21 s; 9 1.38 s; 10 1.55 s; 11 1.73 s; 12 1.90 s",
+              "source": "out/work/controls/screen-wide-final-hint.png",
+              "sha256": "b411dec99b856b84655a46cb1b985e8bb3ab0d4446200a0fbee70af2aaee7e03",
+              "width": 1294,
+              "height": 630
+            }
+          ]
+        }
+      ],
+      "missing": [],
+      "notes": []
+    }
+  }
+}

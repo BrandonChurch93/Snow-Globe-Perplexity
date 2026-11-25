@@ -1,0 +1,75 @@
+{
+  "engineHash": "80483ec9ffb8348a",
+  "seasonHashes": {
+    "winter": "5c39d16f98d3d0be",
+    "spring": "e579a2c24f41ece7",
+    "summer": "364b4daf13dc8bb8",
+    "fall": "767926ecb026caa1"
+  },
+  "format": "tablet",
+  "tier": "final",
+  "assets": "full",
+  "diagnostic": "",
+  "browser": "Google Chrome for Testing 147.0.7727.15",
+  "graphics": "software",
+  "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB",
+  "time": "2026-11-25T17:11:19.218Z",
+  "diag": "",
+  "spec": {
+    "id": "screen-tablet",
+    "season": "summer",
+    "state": "rest",
+    "camera": "hero",
+    "tier": "final",
+    "format": "tablet",
+    "assets": "full",
+    "diag": "",
+    "interface": true,
+    "live": ""
+  },
+  "noext": [],
+  "method": 3,
+  "seconds": 342.836,
+  "timings": {
+    "simMs": 441.19999999552965,
+    "drawMs": 340847.5,
+    "samples": 24,
+    "steps": 96
+  },
+  "measured": {
+    "sanity": {
+      "invalid": 0,
+      "pixels": 1398784
+    },
+    "inside": {
+      "inside": 0,
+      "outside": 0,
+      "total": 102000
+    }
+  },
+  "framing": {
+    "globe": {
+      "cx": 512,
+      "cy": 591.5273497871526,
+      "r": 476.79160762914387
+    },
+    "base": {
+      "left": 53.92034036437849,
+      "right": 970.0796596356215,
+      "top": 896.8831535012064,
+      "foot": 1302.5384440543753
+    },
+    "frameHeightMm": 172.94955118476292,
+    "frameWidthMm": 129.6488582819892,
+    "heroFill": 0.8037025771261214,
+    "cornerReachMm": 117.37277880953795
+  },
+  "state": null,
+  "standIns": 2,
+  "counts": {
+    "triangles": 872569,
+    "drawCalls": 48,
+    "particles": 102000
+  },
+  "errors": []
+}
