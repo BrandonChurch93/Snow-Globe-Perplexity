@@ -179,7 +179,7 @@ function leaves() {
   while (near < 300 && tries++ < 12000) {
     const az = r(-180, 180)
     if (rng() > density(az)) continue
-    const size = r(4.0, 7.6) * (rng() < 0.15 ? 1.3 : 1)
+    const size = r(4.6, 8.8) * (rng() < 0.15 ? 1.3 : 1)
     const dist = FOOT + 4 + size * 0.6 + 115 * rng() ** 2.3
     const cx = dist * Math.sin(az * RAD)
     const cz = dist * Math.cos(az * RAD)
