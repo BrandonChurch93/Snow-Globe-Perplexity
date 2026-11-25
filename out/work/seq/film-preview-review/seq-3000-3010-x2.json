@@ -1,0 +1,60 @@
+{
+  "engineHash": "5a94146defd3d562",
+  "seasonHashes": {
+    "winter": "5c39d16f98d3d0be",
+    "spring": "e579a2c24f41ece7",
+    "summer": "364b4daf13dc8bb8",
+    "fall": "767926ecb026caa1"
+  },
+  "format": "preview",
+  "tier": "review",
+  "assets": "full",
+  "diagnostic": "",
+  "browser": "Google Chrome for Testing 147.0.7727.15",
+  "graphics": "software",
+  "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB",
+  "time": "2026-11-25T09:47:55.680Z",
+  "diag": "",
+  "spec": {
+    "kind": "seq",
+    "source": "film",
+    "first": 3000,
+    "last": 3010,
+    "step": 2
+  },
+  "complete": true,
+  "count": 6,
+  "written": 6,
+  "frames": [
+    {
+      "index": 3000,
+      "seconds": 50,
+      "file": "out/work/seq/film-preview-review/film-003000.png"
+    },
+    {
+      "index": 3002,
+      "seconds": 50.03333333333333,
+      "file": "out/work/seq/film-preview-review/film-003002.png"
+    },
+    {
+      "index": 3004,
+      "seconds": 50.06666666666667,
+      "file": "out/work/seq/film-preview-review/film-003004.png"
+    },
+    {
+      "index": 3006,
+      "seconds": 50.1,
+      "file": "out/work/seq/film-preview-review/film-003006.png"
+    },
+    {
+      "index": 3008,
+      "seconds": 50.13333333333333,
+      "file": "out/work/seq/film-preview-review/film-003008.png"
+    },
+    {
+      "index": 3010,
+      "seconds": 50.166666666666664,
+      "file": "out/work/seq/film-preview-review/film-003010.png"
+    }
+  ]
+}
