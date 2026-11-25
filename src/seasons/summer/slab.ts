@@ -1,14 +1,12 @@
 import * as THREE from 'three'
-import type { Dressing, KitMoment } from '../kit'
+import type { KitMoment } from '../kit'
 import * as arrivalPart from './arrival'
 import { sandMaterial } from './base'
 import * as glassPart from './glass'
 
 const PART = 'surface-dressing-summer'
 
-export const standIns: string[] = []
 
-export const surfaceDressing: Dressing & { reachMm: number } = { tint: [0.86, 0.74, 0.55], amount: 0, reachMm: 150 }
 
 // Where the sand lies on the slab, in mm from the globe's axis (x to the right of the hero camera, z toward it), measured
 // from the approved image: the dune the spill builds against the foot on the right (a cone under the stream, on a low

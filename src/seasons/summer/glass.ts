@@ -24,7 +24,6 @@ const PART = 'glass-dressing-summer'
 const RS = config.globe.sphereDiameterMm / 2
 const TAU = Math.PI * 2
 
-export const standIns: string[] = []
 
 export const glassDressing: Dressing = { tint: [1, 0.9, 0.6], amount: 0 }
 

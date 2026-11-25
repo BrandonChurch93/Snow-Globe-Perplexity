@@ -13,7 +13,6 @@ export interface GlobePose {
 export const REST_POSE: GlobePose = { x: 0, y: 0, z: 0, tiltX: 0, tiltZ: 0 }
 
 export interface ShakePath {
-  readonly standIn: boolean
   readonly parts: { liftEnd: number; strokesEnd: number; landing: number }
   poseAt(beat: number): GlobePose
 }
@@ -695,7 +694,6 @@ export function makeShake(name: string): ShakePath {
   const m = shakeMotion(name)
   const landing = m.parts.landing
   const path: ShakePath = {
-    standIn: false,
     parts: { ...m.parts },
     poseAt(beat: number): GlobePose {
       if (!(beat > 0) || beat >= m.endBeat || beat === landing) return REST_POSE

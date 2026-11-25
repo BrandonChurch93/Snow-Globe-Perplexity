@@ -2,7 +2,6 @@ import * as THREE from 'three'
 import { config } from '../config'
 import { stageShader } from '../core/materials'
 import { hasTexture, texture } from '../core/textures'
-import type { SeasonKit } from '../seasons/kit'
 import { FAR_GLSL, lensUniforms } from './cameras'
 import type { StageFrame } from './frame'
 import { ROOM_GLSL, roomUniforms } from './room'
@@ -476,24 +475,6 @@ void main() {
   }
 }`
 
-const DRESSING = `
-uniform vec3 uTint;
-uniform vec3 uShape;
-uniform vec4 uFoot;
-uniform vec3 uSky;
-uniform vec3 uKeyCol;
-uniform vec3 uKeyDir;
-void main() {
-  float c = stageChange();
-  if (stageGone(c)) discard;
-  float d = length(vStageWorld.xz);
-  float a = uShape.x * (1.0 - smoothstep(uFoot.z, uShape.y, d));
-  vec3 col = uTint * (uSky + uKeyCol * max(uKeyDir.y, 0.0)) * 0.22;
-  gl_FragColor = vec4(col, a);
-  if (uDiag != 0) gl_FragColor = stageDiag(uTint, vec3(0.0, 1.0, 0.0), 0.0, c, 0.0);
-  else if (a < 0.004) discard;
-}`
-
 export function makeSlab(): THREE.Mesh {
   const m = stageShader({
     part: 'surface',
@@ -517,30 +498,6 @@ export function makeSlab(): THREE.Mesh {
   slab.frustumCulled = false
   slab.renderOrder = -3
   return slab
-}
-
-export function makeDressing(kit: SeasonKit): THREE.Mesh {
-  const d = kit.surfaceDressing
-  const m = stageShader({
-    part: `surface-dressing-${kit.season}`,
-    change: 'surface-dressing',
-    uniforms: {
-      uTint: { value: new THREE.Color(d.tint[0], d.tint[1], d.tint[2]) },
-      uShape: { value: new THREE.Vector3(d.amount, d.reachMm, 0) },
-      uFoot: surfaceUniforms.uFoot,
-      uSky: surfaceUniforms.uSky,
-      uKeyCol: surfaceUniforms.uKeyCol,
-      uKeyDir: surfaceUniforms.uKeyDir,
-    },
-    fragment: DRESSING,
-    params: { transparent: true, depthWrite: false },
-  })
-  const ring = new THREE.Mesh(new THREE.CircleGeometry(d.reachMm, 96), m)
-  ring.rotation.x = -Math.PI / 2
-  ring.position.y = 0.08
-  ring.userData.standIn = `surface-dressing-${kit.season}`
-  ring.renderOrder = 2
-  return ring
 }
 
 export function updateSurface(f: StageFrame): void {

@@ -31,7 +31,6 @@ const SLOTS = 26
 const SEGMENTS = 14
 const TAU = Math.PI * 2
 
-export const standIns: string[] = []
 
 export const glassDressing: Dressing = { tint: [1, 1, 1], amount: 0 }
 

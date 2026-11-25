@@ -8,22 +8,21 @@ import type { Gfx } from '../core/gl'
 import { MODE, setPresence, stageShader, stageUniforms, type Rgb } from '../core/materials'
 import type { Sample } from '../core/sampler'
 import type { Emitter, Moment, ParticleSource, SdfGrid, Stage, StageQuality } from '../core/stage'
-import { flagStandIn } from '../core/standins'
 import { preparedBytes, prepareGroup, setAnisotropy } from '../core/textures'
 import { FLOW_RANGE_MM_S, LIGHT_RANGE, allParts, viewCode } from '../diagnostics/views'
 import { Shell } from '../globe/shell'
 import { ParticleDraw } from '../particles/draw/points'
 import { kitOf, kits } from '../seasons'
 import type { SeasonKit } from '../seasons/kit'
-import { BUILT_CHANGES, changeBloom, partChange } from '../shake/change'
+import { changeBloom, partChange } from '../shake/change'
 import { Backdrop } from './backdrop'
 import { applyPose, type Pose } from './cameras'
 import { newFrame, type StageFrame } from './frame'
-import { buildCollider, centreHeightMm, emitters as layoutEmitters, innerRadiusMm, outerRadiusMm } from './layout'
+import { centreHeightMm, emitters as layoutEmitters, innerRadiusMm, outerRadiusMm } from './layout'
 import { bakeGrid, flickerOf, gridBytes } from './lightgrid'
 import { Lighting } from './lighting'
 import { drawPasses, type PassContext } from './passes'
-import { makeDressing, makeSlab, updateSurface } from './surface'
+import { makeSlab, updateSurface } from './surface'
 
 interface SeasonSet {
   kit: SeasonKit
@@ -50,7 +49,6 @@ void main() {
 }`
 
 export class GlobeStage implements Stage {
-  readonly standIn = true
   readonly scene = new THREE.Scene()
   readonly camera = new THREE.PerspectiveCamera()
   private readonly world = new THREE.Group()
@@ -68,7 +66,6 @@ export class GlobeStage implements Stage {
   private readonly sets = new Map<string, SeasonSet>()
   private readonly colliders = new Map<string, SdfGrid>()
   private readonly prepared = new Map<string, Promise<void>>()
-  private solid: SdfGrid | null = null
   private diag = ''
   private quality: StageQuality = { particleFraction: 1, shadowMapPx: config.live.quality.high.shadowMapPx, surfaceReflection: 'planar' }
   private readonly clear = new THREE.Color()
@@ -133,13 +130,12 @@ export class GlobeStage implements Stage {
     const miniature = kit.miniature()
     const arrival = kit.arrival()
     const lights = kit.lights()
-    const own = kit.dressing?.() ?? {}
-    const dressing = own.surface ?? makeDressing(kit)
-    const glass = own.glass ? [own.glass] : []
+    const own = kit.dressing()
+    const dressing = own.surface
+    const glass = [own.glass]
     this.globe.add(base)
     this.inside.add(miniature, arrival, lights, ...glass)
     this.floor.add(dressing)
-    for (const part of kit.standIns ?? []) flagStandIn(part)
     const collect = (roots: THREE.Object3D[]): THREE.Material[] => {
       const out: THREE.Material[] = []
       for (const r of roots) r.traverse((o) => {
@@ -180,12 +176,7 @@ export class GlobeStage implements Stage {
     kitOf(season)
     let c = this.colliders.get(season)
     if (!c) {
-      const own = kitOf(season).collider
-      if (own) c = own()
-      else {
-        this.solid ??= buildCollider()
-        c = this.solid
-      }
+      c = kitOf(season).collider()
       this.colliders.set(season, c)
     }
     return c
@@ -226,7 +217,6 @@ export class GlobeStage implements Stage {
     const a = this.set(single ? moment.season : moment.from)
     const b = single ? a : this.set(moment.to)
     const change = single ? 0 : moment.change
-    if (!single && !BUILT_CHANGES.has(`${moment.from}-${moment.to}`)) flagStandIn(`change-${moment.from}-${moment.to}`)
     const u = stageUniforms
     const liquid = this.source.liquid
     const period = moment.period ?? config.scene.ambientPeriodSeconds

@@ -888,7 +888,7 @@ export class Shell {
     const veil = `veil-${veiled.season}`
     ;[partBytes('glass'), partBytes(dressing), partBytes(veil)].forEach((c, i) => sh.uOverlay.value[i]!.set(c[0] / 255, c[1] / 255, c[2] / 255))
     const flagged = f.view === 'standins'
-    sh.uOverlayOn.value.set(flagged ? 0 : 1, flagged ? (shown.standIns?.includes(dressing) ? 1 : 0) : sh.uDress.value.w > 0 ? 1 : 0, flagged && !veiled.standIns?.includes(veil) ? 0 : 1)
+    sh.uOverlayOn.value.set(flagged ? 0 : 1, flagged ? 0 : sh.uDress.value.w > 0 ? 1 : 0, flagged ? 0 : 1)
 
     const L = f.liquid
     const has = L.length > LIQUID_BUBBLE + 1

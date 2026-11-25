@@ -42,7 +42,6 @@ function rockingTimeline(season: string, degrees: number): Timeline {
     return (i % 2 === 0 ? 1 : -1) * s.strokeMm * Math.sin(Math.PI * (f - i)) * smooth(u / 0.08) * smooth((1 - u) / 0.1)
   }
   const path: ShakePath = {
-    standIn: true,
     parts: { liftEnd, strokesEnd, landing: bar },
     poseAt(beat: number): GlobePose {
       if (beat <= 0 || beat >= bar) return REST_POSE

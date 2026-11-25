@@ -4,17 +4,15 @@ import { stream } from '../../core/rng'
 import { texture } from '../../core/textures'
 import { ROOM_GLSL, roomUniforms } from '../../scene/room'
 import { SLAB_LIGHT_GLSL, slabLightUniforms, surfaceUniforms } from '../../scene/surface'
-import type { Dressing, KitMoment } from '../kit'
+import type { KitMoment } from '../kit'
 import { FLOW, waterUniforms } from './base'
 
-export const standIns: string[] = []
 
 const PART = 'surface-dressing-spring'
 const ATLAS = 'spring/slab-petals.srgb.w1024.png'
 const FAR = 'spring/slab-far.srgb.w2048.png'
 const FAR_HALF_MM = 520
 
-export const surfaceDressing: Dressing & { reachMm: number } = { tint: [1, 0.7, 0.8], amount: 0, reachMm: 240 }
 
 export const PETALS = { count: 300, nearMm: 63, farMm: 240, sizeMm: [4.4, 12.5], clumpMm: 74, wetShare: 0.2, focusMm: 60, far: [70, 330], near: [4, 80], farMips: 3.2, nearMips: 4.2 }
 export const JUMP = { reachMm: 60, shockMmPerSecond: 1500, heightMm: 15, flight: [0.34, 0.8], shiftMm: 9, rise: 0.5, floor: 0.1 }

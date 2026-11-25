@@ -20,10 +20,8 @@ const RAD = Math.PI / 180
 
 export const FULL = 2
 
-export const standIns: string[] = []
 
 export const glassDressing: Dressing = { tint: [0.86, 0.92, 1], amount: 0 }
-export const surfaceDressing: Dressing & { reachMm: number } = { tint: [0.86, 0.92, 1], amount: 0, reachMm: 132 }
 
 const look = {
   glass: { cover: 1.72, haze: 1.38, slope: 0.55, micro: 1.1, glint: 2.6, light: 0.96, through: 2.4, thin: 0.3, thick: 1.1, blur: 0.012, bend: 0.012, scatter: 0.06, room: 0.5, soften: 0.12, rimMu: 0.3, faceOn: 0.65, front: 1.9, sugarMm: 0.3, gritty: 0.45, clear: [0.255, 0.28, 0.8] },
@@ -445,7 +443,6 @@ export async function prepare(): Promise<void> {
   const tiles = Math.max(1, Math.round((2 * Math.PI * RS) / extras.grainTileMm!))
   u.uShape.value.set(extras.glassMaxPolarDeg! * RAD, 1 / sizeOf(u.uGlassMap.value), extras.glassHeightMm!, tiles)
   u.uField.value.set(extras.slabHalfMm!, 1 / sizeOf(u.uSlabMap.value), extras.slabHeightMm!, 1 / extras.grainTileMm!)
-  surfaceDressing.reachMm = extras.slabHalfMm!
 }
 
 const veil = {

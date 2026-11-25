@@ -58,7 +58,6 @@ export interface StageQuality {
 }
 
 export interface Stage {
-  readonly standIn: boolean
   parts(): { name: string; color: number }[]
   resize(width: number, height: number): void
   drawSample(target: THREE.WebGLRenderTarget, pose: Pose, sample: Sample | null, moment: Moment, shadows: boolean): void

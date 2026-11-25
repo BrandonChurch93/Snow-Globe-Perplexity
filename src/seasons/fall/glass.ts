@@ -24,7 +24,6 @@ const RI = RS - config.globe.glassThicknessMm
 const GROUND = config.globe.islandLevelMm - (config.globe.baseHeightMm - config.globe.collarDepthMm + RS)
 const RAD = Math.PI / 180
 
-export const standIns: string[] = []
 
 export const glassDressing: Dressing = { tint: [0.5, 1, 0.58], amount: 0 }
 

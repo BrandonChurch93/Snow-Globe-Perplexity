@@ -5,9 +5,7 @@ import * as frostPart from './frost'
 import * as miniaturePart from './miniature'
 import { backdrop } from './backdrop'
 import { rig } from './rig'
-import { particles, standIns as veilStandIns, veil } from './veil'
-
-const frost = frostPart as { dressing?: SeasonKit['dressing'] }
+import { particles, veil } from './veil'
 
 export const kit: SeasonKit = {
   season: basePart.season,
@@ -20,8 +18,7 @@ export const kit: SeasonKit = {
   arrival: arrivalPart.arrival,
   lights: miniaturePart.lights,
   collider: miniaturePart.collider,
-  ...(frost.dressing ? { dressing: frost.dressing } : {}),
-  standIns: [...frostPart.standIns, ...veilStandIns],
+  dressing: frostPart.dressing,
   update: (moment) => {
     basePart.update(moment)
     miniaturePart.update(moment)
@@ -30,9 +27,6 @@ export const kit: SeasonKit = {
   },
   get glassDressing() {
     return frostPart.glassDressing
-  },
-  get surfaceDressing() {
-    return frostPart.surfaceDressing
   },
   rig,
   get innerLights() {
