@@ -110,7 +110,7 @@ export const VEIL_LOOK = {
   leanMost: 0.8,
   leanBank: 0.5,
   leanDrift: 0.5,
-  leanFlood: 2.6,
+  leanFlood: 4.5,
   driftWallLeft: 1.3,
   driftWallLeftPower: 2.5,
   driftWallRight: 0.4,
