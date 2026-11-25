@@ -264,6 +264,7 @@ export class Liquid {
   readonly motion: LiquidMotion = { ax: 0, ay: 0, az: 0, gx: 0, gy: -1, gz: 0 }
   noise = false
   maxSpeed = 0
+  clearing = 0
   private readonly mixed = new Float64Array(3)
   private readonly work = new Float64Array(6)
   private readonly scratch = new Float64Array(9)
@@ -540,7 +541,9 @@ export class Liquid {
     const h = Math.sqrt(c[3]! * c[3]! + c[4]! * c[4]! + c[5]! * c[5]!)
     const mix = Math.sqrt(wa * wa + wb * wb + wc * wc)
     const loud = mix > turb ? mix : turb
-    this.maxSpeed = w * LIQUID_R + h * 1.05 + loud * 1.6 + c[7]! * ROLL_REACH + Math.sqrt(this.carry[0]! * this.carry[0]! + this.carry[1]! * this.carry[1]! + this.carry[2]! * this.carry[2]!) * 1.5
+    const mo = this.motion
+    this.clearing = mo.ax === 0 && mo.ay === 0 && mo.az === 0 ? CLEAR_PER_S * liquidClearing(L) : 0
+    this.maxSpeed = w * LIQUID_R + h * 1.05 + loud * 1.6 + c[7]! * ROLL_REACH + Math.sqrt(this.carry[0]! * this.carry[0]! + this.carry[1]! * this.carry[1]! + this.carry[2]! * this.carry[2]!) * 1.5 + this.clearing * CLEAR_REACH
   }
 
   potentialAt(x: number, y: number, z: number, ring: number, out: Float64Array | number[]): void {
@@ -729,6 +732,21 @@ export function liquidWhirl(state: ArrayLike<number>): number {
   const slosh = Math.hypot(state[LIQUID_SLOSH] ?? 0, state[LIQUID_SLOSH + 1] ?? 0, state[LIQUID_SLOSH + 2] ?? 0)
   const whirl = roll / (1 + (slosh * slosh) / (WHIRL_SLOSH * WHIRL_SLOSH))
   return whirl < 0 ? 0 : whirl > 1 ? 1 : whirl
+}
+
+const CLEAR_FROM = 0.88
+const CLEAR_OVER = 0.25
+export const CLEAR_PER_S = 1.5
+const CLEAR_REACH = LIQUID_R * 0.5
+
+/** How hard the landed whirl sweeps what it carries out of the middle, 0 to 1: nothing through the strokes and the first half second after the landing, most as the roll dies, nothing when it has died. */
+export function liquidClearing(state: ArrayLike<number>): number {
+  const roll = (state[LIQUID_ROLL] ?? 0) / ROLL_MAX
+  const late = (CLEAR_FROM - roll) / CLEAR_OVER
+  if (late <= 0 || roll <= 0) return 0
+  const slosh = Math.hypot(state[LIQUID_SLOSH] ?? 0, state[LIQUID_SLOSH + 1] ?? 0, state[LIQUID_SLOSH + 2] ?? 0)
+  const l = late > 1 ? 1 : late
+  return (l * l * (3 - 2 * l) * roll) / (1 + (slosh * slosh) / (WHIRL_SLOSH * WHIRL_SLOSH))
 }
 
 export function liquidTurbulence(state: ArrayLike<number>): number {

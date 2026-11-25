@@ -127,6 +127,8 @@ const K_GRIP = new Float64Array(NK)
 const K_LOFT = new Float64Array(NK)
 const K_GATHER = new Float64Array(NK)
 const K_HEFT = new Float64Array(NK)
+const OUT_RING = 0.85
+const OUT_RING2 = 1 / (OUT_RING * OUT_RING)
 /** The kinds that lie as sheets (a petal, a leaf): one of these keeps, while it lies, the facing of what it lies on in its `phase`, which a lying particle has no other use for, so that it is drawn flat on a roof as on the ground. */
 const K_SHEET = new Uint8Array(NK)
 KINDS.forEach((name, k) => {
@@ -1311,6 +1313,7 @@ export class ParticleEngine {
     const ky = L.carry[1]!
     const kz = L.carry[2]!
     const thrown = kx !== 0 || ky !== 0 || kz !== 0
+    const out = L.clearing
     const m = L.motion
     const gux = m.gx
     const guy = m.gy
@@ -1517,6 +1520,15 @@ export class ParticleEngine {
             fy = sk > BANK_LIGHT ? arm * ty - bankK * gk * fall * sk : arm * ty
             fz = arm * tz
           }
+        }
+      }
+      if (out > 0) {
+        const room = R2 - y * y
+        const far = room > 1 ? ((x * x + z * z) * OUT_RING2) / room : 1
+        if (far < 1) {
+          const push = out * K_HEFT[k]! * (1 - far)
+          fx += x * push
+          fz += z * push
         }
       }
       if (thrown) {
