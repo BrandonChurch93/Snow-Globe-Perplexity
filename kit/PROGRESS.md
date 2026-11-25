@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 86 · 2026-11-25 08:55 UTC
+Status 87 · 2026-11-25 09:16 UTC
 
-- `out/stills/status/status-86-1.jpg`: Spring at rest on the frozen build dcda6ca: a draft still from the hero camera
-- `out/stills/status/status-86-2.jpg`: Summer at rest on the frozen build dcda6ca: a draft still from the hero camera
-- `out/stills/status/status-86-3.jpg`: Fall at rest on the frozen build dcda6ca: a draft still from the hero camera; more leaves are afloat than before
-- `out/stills/status/status-86-4.jpg`: Still: fall rest hero, preview, draft
+- `out/stills/status/status-87-1.jpg`: Shake 1 across the swap window on the build of Rounds 14 to 17: winter gives way to spring behind the flurry (frames 648 to 680)
+- `out/stills/status/status-87-2.jpg`: Still: fall rest hero, preview, draft, standins view
+- `out/stills/status/status-87-3.jpg`: Still: summer rest hero, preview, draft
+- `out/stills/status/status-87-4.jpg`: Still: summer rest hero, preview, draft, standins view
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 08:55 UTC
-clock: phase 4, tick of 5.4 minutes
-phase 4: 8.79 h used of its 9.50 h box
-allowance (before the review): 31.08 h used of 36.00 h allowed
-all time before the review: 31.08 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 09:16 UTC
+clock: phase 4, tick of 4.6 minutes
+phase 4: 9.14 h used of its 9.50 h box
+allowance (before the review): 31.42 h used of 36.00 h allowed
+all time before the review: 31.42 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
@@ -895,6 +895,8 @@ Numbered. What, why, and the date.
 
 92. **The unit `change` goes to its floor round on the third freeze, and what its fix work is** (08:50 UTC, Phase 4). No part of a change or of an arrival is a stand-in and its twelve lines of M4, M5 and M6 stood green at the final tier on the builder's branch (cycle 3 of 5), so by the clock's third rule (`half point: reached`, no polishing before the first round) `change` goes to its first round now: Round 17 judges the same commit as Rounds 14, 15 and 16 (decision 83). `change_builder2` reached its three hour limit and is replaced by `change_builder3`. The clock closes fix work between rounds at about 09:20 with "the one fix in hand" finished, and gives a floor round "one fix pass of at most `budget.floorFixMinutes`" after it. The fix in hand at the freeze is open items 71 and 81, the weight of the globe in the hand: the motion critics of Rounds 8, 9, 11, 12 and 13 raised it, it was held out of the seasons' rounds because the shake is a shared system, and `src/shake/` is this unit's folder. The new builder starts on it at the freeze, as shape only: the amounts of decision 45 (lift 7.25 mm, tilt 6 degrees) stay, the landings, the swap windows and the camera stay. Round 17's own issues go into the floor fix pass when its answers are in. Guards: the `rest` stills of all four seasons from `hero` stay byte-identical; M4, M5 and M6 stay green at the final tier inside the two cycles left; winter's and the three seasons' measures are run again on the fix build; a fix that turns a check or a measure red is not kept. The budget report falls due at about 13:50 UTC, so the fix build is frozen by about 12:15 to leave the gate on all five units its time.
 
+93. Round 17's order of work and four frame helpers (09:16 UTC). The R4 pack of `change` is 36 sheets, not eight: per shake one sheet across the swap window and the 90 frames from the landing through the arrival (`tools/pack.mjs` `buildR4`), and on the frozen build one arrival frame costs 66 to 95 s on a render machine, so the arrivals would end between 10:40 and 11:18 and the answers of the floor round would come too late for its fix pass. The measure of `change` plans 24 lines (M1 and M6 on eight judged stills at about 14 min a still, then M4 and M5 for the four shakes) and would end near 12:00 on one machine. Decided: (1) four helpers (`frame_helper_1` to `_4`) draw the same arrival frames from the last frame backwards at the same commit and engine and hand them to the motion agents by branch (`agent/p4-frames-shake-N`, fetched, never merged); 16 agents at work, the cap; (2) `round_renderer_d` draws the four landing stills of the R2 pack before the rest of the measure, since the pack is deterministic at a commit and the measure reuses the stills; the kit's order of a round's parts (measures, then pack) is kept in the ticks, not in the drawing order; (3) M4 and M5 go to a second runner with `--only M4,M5` as soon as a still-pack agent is free, and the tool writes the complete file from both sets of lines. Nothing is lowered: same tier, same frames, same stills.
+
 ## Notes from Brandon
 
 Numbered, in his words, with the date and how each was applied. Review round items carry their round's number.
@@ -1745,3 +1747,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 08:51 UTC. 08:51 UTC: the third freeze. All ten builders of the third set sent their final reports between 08:12 and 08:41. Their branches were merged at 08:18 and 08:32 (one conflict, in the rows of `src/particles/engine/kinds.ts`, settled by ownership), one row was changed here on fall's air builder's own lever (the leaf row's `floats` 0.08 to 0.12, `9f6c179`), every built file of spring, summer and fall was deleted and made again (08:33 to 08:44: texpack 59.107 MiB, vitest 436 passed, `uncovered 0 of 151`, tsc clean, the stand-in views of all three black, triangles at rest spring 1,422,446 / 810,833 / 364,511, summer 1,625,649 / 878,517 / 407,164, fall 1,570,243 / 900,141 / 399,002, at most 66 draw calls) and the three rest stills were looked at. The freeze commit is `dcda6ca`; the clock printed `extra rounds: yes` at 08:49 (30.99 h used; extra rounds close at 31.5 h). Rounds 14 (spring), 15 (summer), 16 (fall) and 17 (`change`, its floor round) were written and pushed at 08:50 (`356bdd7`) before anything else; the orders went out at 08:52 to eleven render agents and `change_builder3` (decision 92). Rounds 11, 12 and 13 are closed: "fixes" and "logged" ticked, none passes.
 
 - 08:55 UTC. 08:55 UTC: published at 08:55 from `dcda6ca` (`npm run -s build`, `npm run -s review`: `dist/` 100.7 MB, of it `dist/review/` 39.9 MB; the local check drew its first picture in 18.0 s with no page error; Visibility: Organization). Status 86 posted with the three rest stills of the frozen build. `motion_renderer_d` read in `tools/pack.mjs` that Round 17's pack reuses a sheet only when the frames of that sheet lie in `out/work/seq/film-preview-review/`, so the three seasons' motion agents and `motion_renderer_e` were told to commit their frames with their sheets (`git add -f out/work/seq out/work/sheets`); those five messages carry the stamp 08:57 and were sent at about 08:54, a time I wrote without reading the clock.
+
+- 09:16 UTC. - 09:16 UTC: Status 87 posted with the swap sheet of shake 1 (Round 17, `agent/p4-round17-swaps` 50f6c76). Decision 93: four frame helpers (`frame_helper_1` to `_4`, branches `agent/p4-frames-shake-N`) draw the arrival frames from the last frame backwards; `round_renderer_d` draws Round 17's four landing stills before the rest of its measure (limit moved to 11:30); M4 and M5 go to a second runner with `--only M4,M5`. 16 agents at work. Clock at 09:11: extra rounds yes, half point reached, box end not reached.
