@@ -1,0 +1,131 @@
+{
+  "id": "music-box",
+  "file": "music-box.wav",
+  "class": "interface",
+  "season": null,
+  "line": "A music box mechanism turning",
+  "seconds": 1.95,
+  "take": 1,
+  "takes": 1,
+  "round": "build",
+  "why": "first take that fits its line: heard without the line as a mechanical ratchet being turned, with the line as a music box being wound; no tune, no voice",
+  "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+  "prompt": "The clockwork mechanism of a small wind-up toy turning with no tune: a steady fine ticking and whirring of tiny brass gears, even and dry, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+  "settings": {
+    "endpoint": "POST /v1/sound-generation",
+    "model": "default",
+    "duration_seconds": 2,
+    "prompt_influence": 0.6,
+    "loop": false,
+    "output_format": "pcm_48000",
+    "cost": 22
+  },
+  "chain": {
+    "settings": {
+      "trimDb": -48,
+      "padMs": 2,
+      "fadeInMs": 2,
+      "fadeOutMs": 30,
+      "lowCutHz": 120,
+      "loop": false,
+      "targetLufs": -26,
+      "capSeconds": 2
+    },
+    "steps": [
+      "low cut at 120 Hz, before the trim",
+      "trimmed 0.013 s in front and 0.037 s at the end",
+      "fade in 2 ms, fade out 30 ms",
+      "level: -2.68 dB to -26 LUFS, measured as gated loudness over 400 ms blocks"
+    ],
+    "gainDb": -2.68,
+    "level": {
+      "measure": "gated",
+      "measuredAs": "gated loudness over 400 ms blocks",
+      "seconds": 1.95,
+      "beforeLufs": -23.32,
+      "afterLufs": -26,
+      "targetLufs": -26,
+      "truePeakDb": -8.94
+    }
+  },
+  "loop": null,
+  "measured": {
+    "seconds": 1.95,
+    "peakDb": -8.94,
+    "truePeakDb": -8.94,
+    "lufs": -26,
+    "lufsMeasure": "gated",
+    "soundLufs": null,
+    "offsetDb": null,
+    "rmsDb": -32.53,
+    "silenceFrontSeconds": 0,
+    "silenceEndSeconds": 0.015,
+    "soundSeconds": 1.935,
+    "tailDb": -37.61,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 10167,
+      "bands": {
+        "sub": 0,
+        "low": 0.0003,
+        "lowMid": 0.0007,
+        "mid": 0.0515,
+        "high": 0.4121,
+        "air": 0.5354
+      }
+    }
+  },
+  "ffmpeg": {
+    "lufs": -26,
+    "lra": 0,
+    "truePeakDb": -8.9
+  },
+  "takeMeasured": {
+    "seconds": 2,
+    "peakDb": -6.24,
+    "truePeakDb": -6.24,
+    "lufs": -23.28,
+    "lufsMeasure": "gated",
+    "soundLufs": null,
+    "offsetDb": null,
+    "rmsDb": -29.95,
+    "silenceFrontSeconds": 0.01,
+    "silenceEndSeconds": 0.045,
+    "soundSeconds": 1.945,
+    "tailDb": -51.33,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 10133,
+      "bands": {
+        "sub": 0.0003,
+        "low": 0.0004,
+        "lowMid": 0.0007,
+        "mid": 0.0527,
+        "high": 0.4167,
+        "air": 0.5291
+      }
+    }
+  },
+  "answers": {
+    "verdict": "fits",
+    "why": "Numbers: 2.00 s filed, sound 1.95 s, fits the length of its cue; a run of fine clicks in three groups, level per 0.1 s between -44 and -26 dB; 95 percent of the energy over 4 kHz. Listener, open: a sharp mechanical ratcheting or clicking, rhythmic and slightly metallic, like turning a socket wrench or a dial, three runs of clicks. Fit: yes, the rhythmic mechanical ratcheting typical of winding up a music box; nothing outside the line. No voice, no music, no tune. The open answer names a small mechanism being turned without being told the line: it fits.",
+    "listener": {
+      "line": "A music box mechanism turning",
+      "open": "1. I hear a sharp, mechanical ratcheting or clicking sound. It has a rhythmic, slightly metallic character, similar to turning a socket wrench or a dial.\n2. There are three separate ratcheting sound events. \n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or musical instrument present.\n5. It starts abruptly with the first ratcheting noise. It ends abruptly right after the third series of clicks finishes.",
+      "fit": "1. Yes, it fits the description because the audio consists of the rhythmic, mechanical ratcheting sound typical of winding up a music box.\n2. There is nothing in the sound that does not belong to the description. \n3. No, there are no human voices, spoken words, or singing in the audio."
+    }
+  },
+  "source": {
+    "name": "music-box-2026-11-25T17-38-14-743Z.wav",
+    "bytes": 384078,
+    "sha256": "753d1f36f22240c370fde2ad10b4886220bd2a146e6ed4709fc4b63664f9e9b1",
+    "codec": "pcm_s16le",
+    "sampleRate": 48000,
+    "channels": 2,
+    "seconds": 2,
+    "kbps": 1536
+  },
+  "takeSha256": "6fe7ce562a701e6e7dade9b4dafa756f13da2fbc1d651b808f34188808a82d4a",
+  "sha256": "72151df063e96e705b89f33748f908f0c03530a75cfac77da7719a3c6a5c9a82",
+  "time": "2026-11-25T17:38:52.334Z"
+}

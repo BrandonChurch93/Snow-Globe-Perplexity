@@ -1,0 +1,132 @@
+{
+  "id": "music-winter",
+  "file": "music-winter.wav",
+  "class": "music",
+  "season": "winter",
+  "line": "Warm orchestral Christmas: sleigh bells, celesta, soft choir pads, low strings",
+  "seconds": 27.865,
+  "take": 1,
+  "takes": 1,
+  "round": "build",
+  "why": "first take that fits: no voice heard, a gentle festive holiday mood with sleigh bells and celesta, 100.008 beats a minute and 12 bars on the grid, ends on a held chord; the low strings of the line were not heard",
+  "tool": "ElevenLabs music, POST /v1/music, the default model (music_v1), pcm_48000",
+  "prompt": "A warm orchestral Christmas piece at exactly 100 beats per minute in 4/4, twelve bars long: sleigh bells keeping the beat, a celesta carrying one short simple melody, soft warm pads and low strings under it. It starts on the first downbeat with no pickup and no lead-in, grows fuller with full strings through its last five bars and resolves on its last bar, instrumental, no vocals, no spoken words, clean ending",
+  "settings": {
+    "endpoint": "POST /v1/music",
+    "model": "default",
+    "how": "prompt",
+    "music_length_ms": 28800,
+    "force_instrumental": true,
+    "output_format": "pcm_48000",
+    "cost": null,
+    "counterMovedBy": 0,
+    "counterNote": "the music endpoint sends no cost header; the counter also moves with other work on the account"
+  },
+  "chain": {
+    "settings": {
+      "trimDb": -60,
+      "padMs": 5,
+      "fadeInMs": 2,
+      "fadeOutMs": 30,
+      "lowCutHz": 0,
+      "loop": false,
+      "targetLufs": -16,
+      "capSeconds": null
+    },
+    "steps": [
+      "trimmed 0 s in front and 0.974 s at the end",
+      "fade in 2 ms, fade out 30 ms",
+      "level: -3.92 dB to -16 LUFS, measured as gated loudness over 400 ms blocks"
+    ],
+    "gainDb": -3.92,
+    "level": {
+      "measure": "gated",
+      "measuredAs": "gated loudness over 400 ms blocks",
+      "seconds": 27.865,
+      "beforeLufs": -12.08,
+      "afterLufs": -16,
+      "targetLufs": -16,
+      "truePeakDb": -4.55
+    }
+  },
+  "loop": null,
+  "measured": {
+    "seconds": 27.865,
+    "peakDb": -4.56,
+    "truePeakDb": -4.55,
+    "lufs": -16,
+    "lufsMeasure": "gated",
+    "soundLufs": null,
+    "offsetDb": null,
+    "rmsDb": -19.46,
+    "silenceFrontSeconds": 0,
+    "silenceEndSeconds": 0.73,
+    "soundSeconds": 27.135,
+    "tailDb": -74.69,
+    "events": 5,
+    "spectrum": {
+      "centroidHz": 941,
+      "bands": {
+        "sub": 0.0004,
+        "low": 0.302,
+        "lowMid": 0.5358,
+        "mid": 0.1329,
+        "high": 0.0039,
+        "air": 0.0249
+      }
+    }
+  },
+  "ffmpeg": {
+    "lufs": -16,
+    "lra": 4.2,
+    "truePeakDb": -4.6
+  },
+  "takeMeasured": {
+    "seconds": 28.839,
+    "peakDb": -0.64,
+    "truePeakDb": -0.63,
+    "lufs": -12.08,
+    "lufsMeasure": "gated",
+    "soundLufs": null,
+    "offsetDb": null,
+    "rmsDb": -15.69,
+    "silenceFrontSeconds": 0,
+    "silenceEndSeconds": 1.704,
+    "soundSeconds": 27.135,
+    "tailDb": -81.84,
+    "events": 5,
+    "spectrum": {
+      "centroidHz": 941,
+      "bands": {
+        "sub": 0.0004,
+        "low": 0.302,
+        "lowMid": 0.5358,
+        "mid": 0.1329,
+        "high": 0.0039,
+        "air": 0.0249
+      }
+    }
+  },
+  "answers": {
+    "verdict": "fits",
+    "why": "Numbers: 28.84 s filed, sound 27.14 s, 1.7 s of silence at the end; -12.1 LUFS as made. Map: tracked at 100.008 beats a minute, 47 beats, 12 bars of 4, first bar line at 0.0135 s, spacing steady: on the grid of the film from the first bar to the last, so every bar line is where the plan puts it; by level it has three parts, 0 to 4.81 s, 4.81 to 24.01 s (the loudest) and 24.01 s to the end (the closing chord). Listener, open: a piano and sleigh bells; gentle, peaceful and festive, a magical holiday feeling, the same from start to end; no voice, no choir, no singing; no sound effects; starts with the sleigh bells, ends on a held chord that rings out; about 85 beats a minute by its guess, steady (the map measures 100). Fit: yes, a cosy festive holiday mood; sleigh bells and celesta heard, a warm synth pad under them; no choir pads and no low strings heard; no voice; ends cleanly. Kept: no voice or words, the mood of its line, on the grid. What it lacks of the line: the low strings, and the choir pads, which the prompt left out on purpose. The price: the call sent no cost header; the account's Music line rose by 396, 13.75 credits a second.",
+    "listener": {
+      "line": "Warm orchestral Christmas: sleigh bells, celesta, soft choir pads, low strings",
+      "open": "1. I hear a piano and sleigh bells. \n2. The mood is gentle, peaceful, and festive, evoking a magical holiday feeling. This gentle mood remains consistent throughout the entire track without any changes.\n3. There is no human voice, spoken word, choir, or singing anywhere in this piece. \n4. There are no non-musical sound effects, as the sleigh bells are being played as a musical percussion instrument. \n5. The piece starts directly with the rhythmic shaking of sleigh bells. It ends on a held final piano chord that naturally rings out and decays. \n6. It is approximately 85 beats per minute. The pulse holds steady from the beginning to the end.",
+      "fit": "1. Yes, the mood fits the description well because it has a cozy, festive holiday atmosphere driven by classic Christmas-associated sounds.\n2. I clearly hear the sleigh bells and the celesta playing the melody. However, I do not hear distinct soft choir pads or low strings, as the background relies on a simple, warm synth pad instead.\n3. No, there is no human voice, spoken word, or singing in this audio.\n4. Yes, it ends cleanly with a final chord that naturally decays into silence."
+    }
+  },
+  "source": {
+    "name": "music-winter-2026-11-25T17-54-37-447Z.wav",
+    "bytes": 5537202,
+    "sha256": "4629f6c89e4f14c4aa013c00d33fc9d3de36b55b87f0795e86b91a5f2cf3cfc8",
+    "codec": "pcm_s16le",
+    "sampleRate": 48000,
+    "channels": 2,
+    "seconds": 28.839,
+    "kbps": 1536
+  },
+  "takeSha256": "e4a33faabed7fee4b37d5dfeb39af17d8e97a01ffb13d806b738d3e25c03bea5",
+  "sha256": "f21f53156f8d47122176e61ad3c0207a85cdee83a04d87c6548535b5091cebb2",
+  "time": "2026-11-25T17:56:26.016Z"
+}
