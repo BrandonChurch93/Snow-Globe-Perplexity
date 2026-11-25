@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 62 · 2026-11-24 23:48 UTC
+Status 63 · 2026-11-25 00:16 UTC
 
-- `out/stills/status/status-62-1.jpg`: Winter at rest: the approved image on the left and the build on the right at the final tier
-- `out/stills/status/status-62-2.jpg`: Winter half a second after the shake lands: approved left and build right
-- `out/stills/status/status-62-3.jpg`: Twelve frames across the test shake at the review tier
-- `out/stills/status/status-62-4.jpg`: Comparison crops 2: winter-shake, approved image left, build right
+- `out/stills/status/status-63-1.jpg`: Top: the approved images of spring and summer and fall at rest. Bottom: the build now with every part of these three seasons still a grey stand-in
+- `out/stills/status/status-63-2.jpg`: The approved mid-shake images the three storms are tuned against
+- `out/stills/status/status-63-3.jpg`: Still: fall rest hero, hd, draft
+- `out/stills/status/status-63-4.jpg`: Still: summer rest hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 00:07 UTC
-clock: phase 3, tick of 9.7 minutes
-phase 3: 15.67 h used of its 11.00 h box
-allowance (before the review): 22.28 h used of 36.00 h allowed
-all time before the review: 22.28 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
-extra rounds: no
-half point: reached
-box end: reached
+2026-11-25 00:31 UTC
+clock: phase 4, tick of 6.5 minutes
+phase 4: 0.41 h used of its 9.50 h box
+allowance (before the review): 22.69 h used of 36.00 h allowed
+all time before the review: 22.69 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+extra rounds: yes
+half point: not reached
+box end: not reached
 budget report: not due
-minutes since the last status: 19
+minutes since the last status: 15
 ```
 
 ## Phases
@@ -1179,6 +1179,15 @@ Merged into `main`, each verified here with types clean and the tests green (126
   - R1: `reviewer_r7_a` (`gpt_6_2_sol`), started 23:07, answered 23:09. R3: `reviewer_r7_b` (part 1, `grok_4_7`) and `reviewer_r7_c` (part 2, `gemini_4_carbon`), started 23:07, limit 23:52; `reviewer_r7_d` (part 3, `claude_opus_5_5`), started 23:07, answered 23:09.
   - R2: `viewer_r7_01` to `viewer_r7_15`, five per judged image, three each of `claude_sonnet_5_5`, `gpt_6_2_astra`, `gemini_neon`, `pplx_computer_glm_5_3_1009` and `kimi_k3`, started in waves between 23:07 and 23:10 so that never more than six critics, jurors and render agents worked at once; all fifteen answered by 23:10.
 
+
+- Phase 4's first set of build agents, started 00:12 UTC (decision 71; limit 03:02 UTC, stage 1 pushed by 01:32; each in its own sandbox VM; brief `out/work/briefs/p4/common.md` plus one job message each and the season's two approved images at half size; heartbeat every 30 minutes to its branch and its looks branch `agent/p4-<name>-looks`).
+  - `spring_base`, `summer_base`, `fall_base` (branches `agent/p4-<name>`): the season's base, what lies on the surface, the arrival outside the glass. Files: `assets-src/base-<season>/`, `assets-src/slab-<season>/`, `base.ts`, `slab.ts`, `arrival.ts` of `src/seasons/<season>/`.
+  - `spring_mini`, `summer_mini`, `fall_mini`: the season's miniature with its small lights, its distance field and its pond. Files: `assets-src/village-<season>/`, `assets-src/tree-<season>/`, `miniature.ts`, `mini/`.
+  - `spring_air`, `summer_air`, `fall_air`: the glass dressing, the veil, the season's light (rig and backdrop), the storm's tuning, the rows of the season's kinds in `src/particles/engine/kinds.ts`. Files: `assets-src/dressing-<season>/`, `assets-src/refrig/<season>.json`, `glass.ts`, `veil.ts`, `rig.ts`, `backdrop.ts`.
+  - `kinds_builder` (branch `agent/p4-kinds`): the drawing of petal, mote, firefly, seed, leaf, ember and bat. Files: `src/particles/draw/`, `assets-src/kinds/`, `src/particles/engine/engine.ts`.
+  - The sound agent `sound_maker` (branch `agent/p4-sound`; `audio/`) starts when the first of the ten is done.
+  - Phase 3's agents are all done and idle: the ten closers, `looklock_scribe`, the four render agents (used again for Phase 4's rounds), Round 7's critics and jurors.
+
 ## Rounds
 
 One line per round: its number, the unit, the commit it judged, each part ticked off as it finished, the scores, and what changed next.
@@ -1540,3 +1549,7 @@ One entry per task: when it started, what it did, where it stopped.
 - 23:07 to 23:20 UTC. Round 7's still critics and the jury ran through the six slots: R1 answered 7 at 23:09 (2 severe, 7 major, 1 minor); R3 part 3 answered 5 at 23:09 (6 major, 5 minor); R3 part 1 answered 7 at 23:17 (2 major, 2 minor); R3 part 2 is still out (limit 23:52); the fifteen jurors were all in by 23:10: 4 of 15 against the control's 7 of 10, so R2 fails. Each answer was saved verbatim and pushed as it came. Step 7 of Phase 3 is done: the comparison for `winter-shake` finished at 23:07, `round_renderer` pushed the five raw judged stills of the round to its branch (fetched, not merged; the engine hash `ff72ea5c293221f1` equals the local final stills'), and `npm run keep -- --phase 3` kept 27 pictures under `out/stills/phase-3/` (7 judged stills at `final`, the two comparison images with six crop sheets, the twelve motion sheets at `review`). The stale draft sheets of earlier builds were moved aside first (`out/work/sheets-old/`), so none was kept as if it were this build's. The "Parts" summary under "Units" said "none" since Phase 2 while the register held 37 stand-ins: put right at 23:14. A slip: the message to `round_renderer` said "about 23:13" and was sent at 23:11; no time in the log depends on it. Status 61 at 23:20 with the mid shake comparison and two judged stills at `final`.
 
 - 23:20 to 00:07 UTC. Phase 3's close. R3 part 2 answered 5 at 23:28, the last answer of Round 7 (R1 7, R3 5 as the lowest of 7, 5 and 5, R4 4 as the lower of 7 and 4, the jury 4 of 15 against 7 of 10): the round does not pass, and it was the fifth of `quality.lookLockMaxRounds` 5. `round_scribe` drafted the summary, the open items and the ladder moves from the verbatim answers (done 23:32); the Builder checked them against the answers and the approved image at native size, wrote "Look lock", `scorecards/round-007/SUMMARY.md`, open items 38 to 62, ladder moves 19 to 35, Declined issues 7 to 13 and decision 72, and marked `winter` `finished` at its round limit (pushed `1ee1285`, 23:34). Step 10: G13 with winter covered ran here from 23:21 to 23:41 and is green (17 of 54 parts, 69 of 69 judged stills in the stand-in view); G6, G9, G13 and G15 were then run again on the closing state (all four green at 00:02, G15 alone took 20 minutes here; G6 and G9 once more at 00:06 on the last state of the log, green); decision 73 says what ran where and why. `gate_runner` was asked at 23:35 for one more whole gate on a clean clone of `1ee1285` as a confirmation. Status 62 was posted at 23:49 with the two comparison images and the test shake's sheet. Published at 00:04 UTC (the same build as at 22:19 with the review page now holding the twelve kept comparison pictures; the published app showed its first picture in 23.3 s with 53 requests and no error). Phase 3 is `done, at the limit of its look lock rounds`: the four gate lines with their evidence are in the Phases table. Phase 3 took 15.67 h against a box of 11 h; all time used is 22.28 h of 36 h.
+
+- 00:08 to 00:16 UTC. Phase 4 started. `origin/main` fetched and merged (nothing new), then `prep/phase4` merged into `main` (each of spring, summer and fall split into one file per part; the fit tool reads a season's reference camera): `npx tsc --noEmit` clean, `npx vitest run` 419 passed and 4 skipped, pushed as `31c5c75`. The ten build agents of decision 71 were started at 00:11:46 UTC, each in its own sandbox VM with `out/work/briefs/p4/common.md`, its job message and its season's two approved images at half size: stage 1 (a first real version of every piece, no stand-in left) is due by 01:32, the limit is 03:02. `round_renderer` and `motion_renderer` each wrote down the commands of their Round 7 job as a runbook (`out/work/runbooks/`, in the workspace only), so a fresh render agent can make a season's packs; `out/work/bin/fetchpack.sh` now takes the phase for its branch names. Status 63 was posted at 00:17 with the three seasons' approved pairs above the build's stand-ins (three draft stills of the blockout, drawn here at 00:13 to 00:16). `gate_runner`'s confirmation run of Phase 3's gate on a clean clone of `1ee1285` is still out (limit 01:05).
+
+- 00:32 UTC. The confirmation of Phase 3's gate is in (decision 73): `gate_runner` ran the whole gate, with no check left out and no unit named, on a fresh clean clone of `1ee1285` from 23:36 to 00:30 UTC: all 15 green, G13 covering winter's 17 of 54 parts through the Units table, 69 of 69 judged stills in the stand-in view (`scorecards/round-007/gate-phase-3-confirm.json` and `.log`). A first attempt a minute earlier was red on 11 checks for one reason outside the repo, "only 2.9 GB of disk is free, under sandbox.minFreeDiskGb": the agent's VM was full of its own clones of Rounds 3 to 7; it deleted them, changed nothing in the new clone and ran again. Later gate orders tell the runner to check its disk first and carry the sound files as an attachment. At 00:25 the three `air` builders' first pushes (each season's reference camera and a first rig) were merged into `main` (`4c9ded5`, tsc clean, vitest 419 passed).

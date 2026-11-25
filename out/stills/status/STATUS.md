@@ -1,17 +1,16 @@
-# Status 62
+# Status 63
 
-2026-11-24 23:48 UTC
+2026-11-25 00:16 UTC
 
-- Round 7 of 5 allowed look lock rounds is judged and does not pass: likeness 7 and craft 5 and motion 4 and the jury 4 of 15
-- Winter is marked finished at its round limit with 25 new open items for the polish rounds
-- The stand-in check now covers winter and is green: 69 of 69 judged stills show no stand-in pixel
-- Closing the Phase 3 gate now and then starting the three other seasons with ten builders
-- phase 3: 15.35 h used of its 11.00 h box
-- allowance (before the review): 21.97 h used of 36.00 h allowed
+- Phase 3 is closed at its round limit and the app is published again
+- Phase 4 started at 00:08 UTC: ten builders work on spring and summer and fall until 03:02
+- Their first real versions are due by 01:32 and spring goes to its first critic round right after
+- phase 4: 0.15 h used of its 9.50 h box
+- allowance (before the review): 22.43 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-62-1.jpg`: Winter at rest: the approved image on the left and the build on the right at the final tier
-- `out/stills/status/status-62-2.jpg`: Winter half a second after the shake lands: approved left and build right
-- `out/stills/status/status-62-3.jpg`: Twelve frames across the test shake at the review tier
-- `out/stills/status/status-62-4.jpg`: Comparison crops 2: winter-shake, approved image left, build right
+- `out/stills/status/status-63-1.jpg`: Top: the approved images of spring and summer and fall at rest. Bottom: the build now with every part of these three seasons still a grey stand-in
+- `out/stills/status/status-63-2.jpg`: The approved mid-shake images the three storms are tuned against
+- `out/stills/status/status-63-3.jpg`: Still: fall rest hero, hd, draft
+- `out/stills/status/status-63-4.jpg`: Still: summer rest hero, hd, draft
