@@ -1,8 +1,10 @@
 import * as THREE from 'three'
 import { config } from '../../config'
+import { viewCode } from '../../diagnostics/views'
 import { stageShader } from '../../core/materials'
 import { shellUniforms } from '../../globe/shell'
 import { ROOM_GLSL, roomUniforms } from '../../scene/room'
+import { moundAt } from '../../scene/layout'
 import { surfaceUniforms } from '../../scene/surface'
 import type { Dressing, KitMoment } from '../kit'
 
@@ -29,22 +31,27 @@ export const look = {
   fog: {
     tint: [0.4, 1.0, 0.5],
     sheets: 46,
-    floorMm: GROUND - 2.5,
+    skinMm: 1.2,
+    poolMm: 2.0,
+    backThin: 0.4,
     restMm: 6,
     liftMm: 42,
-    rest: 0.085,
-    underMm: 3,
+    rest: 0.06,
+    underMm: 2.2,
+    lip: 1.1,
+    lipLifted: 0.3,
+    lipGlow: 1.35,
     lifted: 0.011,
     lumpMm: 8.5,
     lumpFineMm: 3,
     middle: 0.5,
-    haze: 0.0075,
+    haze: 0.004,
     hazeMm: 15,
     pour: 0.05,
     pourFallMm: 36,
     cold: 0.9,
     warm: 1.0,
-    glow: 0.15,
+    glow: 0.11,
     glowDeepMm: 8,
     rollRad: 0.55,
     bigMm: 96,
@@ -212,9 +219,17 @@ function fogNoise(): THREE.Data3DTexture {
 }
 
 const F = look.fog
+// `moundAt` of `src/scene/layout.ts`, read off the function itself so it follows the layout.
+const MOUND = (() => {
+  const from = -8
+  const full = 4
+  const back = moundAt(from - 1) - moundAt(from)
+  const rake = moundAt(full + 1) - moundAt(full + 2)
+  return { from, full, top: moundAt(from), back, rake }
+})()
 const FOG_STEP = (2 * (RI - 1.5)) / (F.sheets - 1)
 
-const FOG = `
+const FOG_HEAD = `
 uniform highp sampler3D uFogNoise;
 uniform vec4 uFog;
 vec3 fogTurn(vec3 p, float a) {
@@ -223,12 +238,27 @@ vec3 fogTurn(vec3 p, float a) {
   return vec3(c * p.x + s * p.z, p.y, c * p.z - s * p.x);
 }
 // The billows at a place and a moment of the roll. The big ones go round the axis one way and the fine ones the other.
+// The ground under the fog: the mound of \`src/scene/layout.ts\` (\`moundAt\`), level at the back and raked down to the front.
+float fogMound(float z) {
+  float t = clamp(z, ${f(MOUND.from)}, ${f(MOUND.full)}) - ${f(MOUND.from)};
+  float y = ${f(MOUND.top)} - ${f(MOUND.back)} * t - ${f((MOUND.rake - MOUND.back) / (2 * (MOUND.full - MOUND.from)))} * t * t;
+  return y + ${f(MOUND.back)} * max(${f(MOUND.from)} - z, 0.0) - ${f(MOUND.rake)} * max(z - ${f(MOUND.full)}, 0.0);
+}
+// Where the fog lies: a skin on the ground, and a pool where the ground is lower than the pool's level.
+float fogFloor(vec3 p) {
+  float d = fogMound(p.z) - ${f(F.skinMm)} - ${f(GROUND + F.poolMm)};
+  return ${f(GROUND + F.poolMm)} + 0.5 * (d + sqrt(d * d + 6.0));
+}
 vec2 fogBillows(vec3 p, float along) {
   float big = texture(uFogNoise, fogTurn(p, ${f(F.rollRad)} * along) / ${f(F.bigMm)} + vec3(0.13, 0.41 - 0.05 * along, 0.71)).r;
   vec3 q = fogTurn(p, -${f(F.rollRad * 1.4)} * along);
   float fine = texture(uFogNoise, q / ${f(F.fineMm)} + vec3(0.52 + 0.3 * big, 0.27 + 0.11 * along, 0.9)).r;
   return vec2(big, fine);
 }
+`
+
+const FOG = `
+${FOG_HEAD}
 void main() {
   float c = stageChange();
   if (stageGone(c)) discard;
@@ -241,22 +271,26 @@ void main() {
   float lift = uFog.y;
   float deepMm = mix(${f(F.restMm)}, ${f(F.liftMm)}, lift);
   float amp = mix(${f(F.rest)}, ${f(F.lifted)}, lift);
-  float h = p.y - ${f(F.floorMm)};
+  float base = fogFloor(p);
+  float under = fogMound(p.z) - ${f(F.underMm)};
+  float h = p.y - base;
   float hazeAmp = ${f(F.haze)} * (1.0 - lift);
   float span = smoothstep(-2.0, 7.0, h) * (1.0 - smoothstep(34.0, 76.0, h));
   float bound = amp * exp(-max(h - ${f(F.lumpMm + F.lumpFineMm)}, 0.0) / deepMm) + hazeAmp * exp(-max(h, 0.0) / ${f(F.hazeMm)}) + uFog.z * ${f(F.pour)} * span;
-  if (bound * ${f(FOG_STEP * 1.7)} < 0.003 || p.y < ${f(GROUND - F.underMm)}) discard;
+  if (bound * ${f(FOG_STEP * 1.7)} < 0.003 || p.y < under) discard;
   // The roll comes round once a period: two takes of the billows half a turn of the clock apart, the one handed over to the other.
   float k = uFog.x;
   vec2 n0 = fogBillows(p, k);
   vec2 n1 = fogBillows(p, k - 1.0);
   vec2 n = 0.5 + (mix(n0, n1, k) - 0.5) / sqrt(k * k + (1.0 - k) * (1.0 - k));
   float lump = ${f(F.lumpMm)} * (n.x - 0.5) * 2.0 + ${f(F.lumpFineMm)} * (n.y - 0.5) * 2.0;
-  float body = exp(-max(h - lump * (1.0 + 2.0 * lift), 0.0) / deepMm);
   float wall = mix(${f(F.middle)}, 1.0, smoothstep(14.0, 44.0, length(p.xz)));
-  float wisp = 0.45 + 1.1 * smoothstep(0.25, 0.75, n.y) * (0.5 + n.x);
+  // Thinner on the mound at the back than in the low front, where it has pooled.
+  float thin = mix(1.0, mix(${f(F.backThin)}, 1.0, smoothstep(-6.0, 30.0, p.z)), 1.0 - lift);
+  float body = exp(-max(h - lump * thin * (1.0 + 2.0 * lift), 0.0) / (deepMm * thin));
+  float wisp = 0.12 + 1.9 * smoothstep(0.3, 0.8, n.y) * (0.25 + n.x);
   // Nothing of it lies under the ground.
-  float open = smoothstep(${f(GROUND - F.underMm)}, ${f(GROUND - F.underMm + 2.5)}, p.y);
+  float open = smoothstep(under, under + 2.0, p.y);
   float rho = amp * body * mix(wall, 1.0, lift) * wisp * open;
   rho += hazeAmp * exp(-max(h, 0.0) / ${f(F.hazeMm)}) * (0.35 + 1.3 * n.x);
   if (uFog.z > 0.0) {
@@ -270,6 +304,46 @@ void main() {
   vec3 lit = stageCold(p) * ${f(F.cold)} + stageGrid(p) * ${f(F.warm)} + vec3(${f(F.glow)}) * mix(0.3, 1.0, deep) * (0.75 + 0.5 * n.y);
   vec3 col = ${vec(F.tint)} * lit;
   gl_FragColor = vec4(col * a, a);
+  // In the cover view the fog says how much of the miniature it hides, as the particles do.
+  if (uDiag == ${viewCode('cover')}) {
+    gl_FragColor = vec4(a, 0.0, a, a);
+    return;
+  }
+  if (uDiag != 0) {
+    if (a < 0.35) discard;
+    gl_FragColor = stageDiag(${vec(F.tint)}, vec3(0.0, 0.0, 1.0), 0.0, c, 0.0);
+  }
+}
+`
+
+// The fog in the gap between the soil and the glass, under the ground's edge: the bright lip at the bottom of the dome. One
+// more slice of the same volume, bent to the wall.
+const LIP = `
+${FOG_HEAD}
+void main() {
+  float c = stageChange();
+  if (stageGone(c)) discard;
+  vec3 p = vStageLocal;
+  float edge = fogMound(p.z) + 1.0;
+  float top = 1.0 - smoothstep(edge - 3.0, edge + 1.5, p.y);
+  if (top <= 0.0) discard;
+  float k = uFog.x;
+  vec2 n0 = fogBillows(p * vec3(1.0, 2.2, 1.0), k);
+  vec2 n1 = fogBillows(p * vec3(1.0, 2.2, 1.0), k - 1.0);
+  vec2 n = 0.5 + (mix(n0, n1, k) - 0.5) / sqrt(k * k + (1.0 - k) * (1.0 - k));
+  float lift = uFog.y;
+  float deep = clamp((edge - p.y) / 12.0, 0.0, 1.0);
+  float rho = ${f(F.lip)} * mix(1.0, ${f(F.lipLifted)}, lift) * top * (0.38 + 1.1 * smoothstep(0.1, 0.9, n.y) * (0.35 + n.x)) * mix(0.6, 1.0, deep);
+  float a = 1.0 - exp(-rho);
+  if (a < 0.003) discard;
+  vec3 lit = stageCold(p) * ${f(F.cold)} + stageGrid(p) * ${f(F.warm)} + vec3(${f(F.glow * F.lipGlow)}) * (0.75 + 0.5 * n.y);
+  vec3 col = ${vec(F.tint)} * lit;
+  gl_FragColor = vec4(col * a, a);
+  // In the cover view the fog says how much of the miniature it hides, as the particles do.
+  if (uDiag == ${viewCode('cover')}) {
+    gl_FragColor = vec4(a, 0.0, a, a);
+    return;
+  }
   if (uDiag != 0) {
     if (a < 0.35) discard;
     gl_FragColor = stageDiag(${vec(F.tint)}, vec3(0.0, 0.0, 1.0), 0.0, c, 0.0);
@@ -377,15 +451,17 @@ function sheets(): THREE.BufferGeometry {
   const pos: number[] = []
   const idx: number[] = []
   const reach = RI - 1.5
-  const cols = 28
-  const rows = 22
+  // The liquid bends what is inside at every corner of a sheet, and most near the wall: the corners crowd there.
+  const cols = 18
+  const rows = 14
+  const crowd = (t: number): number => Math.sin((t - 0.5) * Math.PI)
   for (let s = 0; s < F.sheets; s++) {
     const z = -reach + s * FOG_STEP
     const half = Math.sqrt(Math.max(0, RI * RI - z * z))
     if (half < 2) continue
     const base = pos.length / 3
     for (let j = 0; j <= rows; j++)
-      for (let i = 0; i <= cols; i++) pos.push((i / cols - 0.5) * 2 * half, (j / rows - 0.5) * 2 * half, z)
+      for (let i = 0; i <= cols; i++) pos.push(crowd(i / cols) * half, crowd(j / rows) * half, z)
     for (let j = 0; j < rows; j++)
       for (let i = 0; i < cols; i++) {
         const a = base + j * (cols + 1) + i
@@ -412,8 +488,31 @@ function makeFog(): THREE.Mesh {
     // closed by that stamp to everything drawn later.
     params: { ...blend, transparent: false, side: THREE.DoubleSide },
   })
+  volumes.push(m)
   const mesh = new THREE.Mesh(sheets(), m)
   mesh.renderOrder = 5.5
+  mesh.frustumCulled = false
+  return mesh
+}
+
+const volumes: THREE.ShaderMaterial[] = []
+
+function makeLip(): THREE.Mesh {
+  const r = RI - 0.3
+  const from = Math.acos((MOUND.top + 3) / r)
+  const to = Math.acos(-50 / r)
+  const m = stageShader({
+    part: PART,
+    standIn: false,
+    inside: true,
+    change: 'glass-dressing',
+    uniforms: { uFog: uniforms.uFog, uFogNoise: uniforms.uFogNoise },
+    fragment: LIP,
+    params: { ...blend, transparent: false, side: THREE.DoubleSide },
+  })
+  volumes.push(m)
+  const mesh = new THREE.Mesh(new THREE.SphereGeometry(r, 64, 12, 0, Math.PI * 2, from, to - from), m)
+  mesh.renderOrder = 5.4
   mesh.frustumCulled = false
   return mesh
 }
@@ -438,7 +537,7 @@ function makeCrack(): THREE.Mesh {
 let group: THREE.Group | null = null
 
 export function dressing(): THREE.Object3D {
-  group ??= new THREE.Group().add(makeFog(), makeCrack())
+  group ??= new THREE.Group().add(makeLip(), makeFog(), makeCrack())
   return group
 }
 
@@ -473,6 +572,9 @@ export function update(moment: KitMoment): void {
   const pour = shaken || !Number.isFinite(since) ? 0 : ease(since / 0.6) * (1 - ease((since - 2.6) / 4.2))
   const fallen = Number.isFinite(since) ? look.fog.pourFallMm * (1 - Math.exp(-since / 2.4)) : look.fog.pourFallMm
   uniforms.uFog.value.set(fr.clock, lift, pour, fallen)
+  // The cover view counts what is hidden of the miniature only: there the fog is laid on where the miniature already is.
+  const src = fr.view === 'cover' ? THREE.DstAlphaFactor : THREE.OneFactor
+  for (const m of volumes) m.blendSrc = src
   uniforms.uCrack.value.x = Number.isFinite(since) ? crackSpread(since) : 1
 }
 
