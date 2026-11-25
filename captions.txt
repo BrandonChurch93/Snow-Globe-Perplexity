@@ -37,3 +37,9 @@ The step is a mirror-only choice of look, not a true image (decision 121).
   Tier: final. Commit: 43f0367. Key sha256 83e7fafc... as above.
   Right: legible band image, cool at the right end.
   Wrong: the same as 02.
+
+06-film-581-foot-main-over-branch-2x-final-43f0367.jpg
+  What: film frame 581 (hd, no look), the foot slightly lifted; main 11f3475 over this branch, 2 times native.
+  Tier: final. Commit: 43f0367 (frame sha256 8d0b3bdaf60adebe8f6c8c0dfa97b6904d4be9333982a6bc8ae384926013be0e); main's frame sha256 98c6d2ce8efa0ad385d8a96839a13804ac568e2ebd04fe197eceda5730f92c4c.
+  Right: the band and rope image sits under the lifted foot and follows it; no hole, no plinth floating, no image left behind; the dark band between foot and image is no wider than main's. Difference from main confined to x 581-1344, y 970-1079.
+  Wrong: the frond at the left front and the thin rime along the front are thinner than main's where they lay over the image; the image is dim at the right end.
