@@ -54,7 +54,7 @@ export const CARD_VERT = `
     keepC = mix(keepC, afloat * gustC * (${at(SHAPE.seed)} ? mix(${n(CARD.line.seedKeep[0])}, ${n(CARD.line.seedKeep[1])}, pow(fract(own * 53.0), ${n(CARD.line.seedSkew)})) : mix(${n(CARD.line.keep[0])}, ${n(CARD.line.keep[1])}, pow(fract(own * 53.0), ${n(CARD.line.skew)}))), lineC);
     float windowC = (1.0 - smoothstep(${n(STORM_WINDOW.from)}, ${n(STORM_WINDOW.to)}, length((nowL.xy - vec2(${n(STORM_WINDOW.x)}, ${n(STORM_WINDOW.y)})) / vec2(${n(STORM_WINDOW.wide)}, ${n(STORM_WINDOW.high)})))) * smoothstep(${n(STORM_WINDOW.back)}, ${n(STORM_WINDOW.front)}, nowL.z);
     keepC *= 1.0 - ${n(CARD.window)} * windowC * gustC * (sheet + (${at(SHAPE.seed)} ? 1.0 : 0.0));
-    float nearC = afloat * (1.0 - gustC) * whole * (shape > ${n(SHAPE.bat - 0.5)} ? 0.0 : 1.0) * step(fract(h.y * 29.0), ${n(CARD.near.share)}) * smoothstep(${n(CARD.near.from)}, ${n(CARD.near.to)}, depth) * (1.0 - ${n(CARD.near.clear)} * over);
+    float nearC = afloat * (1.0 - gustC) * whole * (shape > ${n(SHAPE.bat - 0.5)} ? 0.0 : 1.0) * step(fract(h.y * 29.0), ${at(SHAPE.spark)} ? ${n(CARD.spark.nearShare)} : ${n(CARD.near.share)}) * smoothstep(${n(CARD.near.from)}, ${n(CARD.near.to)}, depth) * (1.0 - ${n(CARD.near.clear)} * over);
     float farC = afloat * (1.0 - gustC) * whole * (shape > ${n(SHAPE.bat - 0.5)} ? 0.0 : 1.0) * smoothstep(${n(CARD.far.from)}, ${n(CARD.far.to)}, depth);
     rC *= 1.0 + ${n(CARD.near.size - 1)} * nearC * (sheet + (${at(SHAPE.seed)} ? 0.6 : 0.0));
     float ph = aData.w;
@@ -135,6 +135,7 @@ export const CARD_VERT = `
       if (abs(comp) < need) ca += pb * ((comp < 0.0 ? -need : need) - comp);
     }
     vec2 stC = (toView * ((aNow - aPrev) * shut)).xy * (uPoint.y * mag / zImg) * afloat;
+    if (${at(SHAPE.spark)}) stC *= mix(${n(CARD.spark.calmStreak)}, 1.0, gustC);
     stC *= uLimit.x / (uLimit.x + length(stC));
     float bowC = 0.0;
     if (lineC > 0.5) {
@@ -559,6 +560,7 @@ void cardMain(vec2 p, int kind, vec4 k, vec4 look, float lying) {
   vec3 col = body * light * mix(1.0, ${n(CARD.lieShade)}, lying);
   col += body * mix(vec3(1.0), body, ${n(CARD.throughHue)}) * vDom.rgb * (${n(LIGHT_LOOK.keySide)} * back * back * (1.0 - lying));
   col = mix(col, uVeil.rgb * vFog.rgb, vFog.a * mix(uTone.z, ${n(CARD.lieVeil)}, lying));
+  if (shape > ${n(SHAPE.bat - 0.5)}) col += (tint.r - 1.0) * vec3(${CARD.batGlow.map(n).join(', ')}) * (vGrid.rgb + vDom.rgb);
   gl_FragColor = vec4(col * cover, cover);
 }
 `
