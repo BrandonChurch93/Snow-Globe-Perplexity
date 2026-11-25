@@ -1,0 +1,4 @@
+01-hero-rest-hd-draft.jpg: hero, rest, draft hd, fc1668e on main e3fb23d. Still wrong: the whole miniature sits in a yellow-green haze (fog and particle discs, not my files); M3 miniature 0.425 against 0.75.
+02-hero-rest-miniature-zoom.jpg: the miniature of the same still, twice the size. New: orange wet glints on the ridges of the trunk and limbs, one stone tone with dark joints, brown roof, grey-brown flagstones. Still wrong: trunk reads olive under the fog, roof slates small and regular, crown has upright boughs.
+03-cottage-approved-left-ours-right.jpg: approved crop left, ours right. Still wrong: cottage smaller and turned less (shared layout), walls paler than the approved olive, door washed out, slates small.
+04-tree-approved-left-ours-right.jpg: approved crop left, ours right. Still wrong: trunk wider than approved, limbs brown under the haze where the approved is black with thin orange light, big discs in front of the crown (particles).
