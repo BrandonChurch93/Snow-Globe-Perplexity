@@ -44,7 +44,7 @@ const MOSS = { low: [0.68, 0.88, 0.5] as Rgb, high: [0.9, 1.06, 0.68] as Rgb, ta
 const STONE = { top: 0.18, knee: 0.12, power: 2.2 }
 // The shared slates run from 0.02 (a slate's shadowed top edge) to 0.12 (its lit lower edge). The approved roof is big warm
 // slates with bright lower edges over black gaps, so the tone is bent about `mid` and weathered in patches a few slates wide.
-const ROOF = { tone: [1.9, 1.25, 0.85] as Rgb, grey: 0.55, mid: 0.045, bend: 1.6, patch: [0.6, 1.7] as [number, number] }
+const ROOF = { tone: [1.65, 1.22, 0.95] as Rgb, grey: 0.55, mid: 0.045, bend: 1.6, patch: [0.6, 1.7] as [number, number] }
 const DOOR: Rgb = [0.24, 0.19, 0.13]
 const TIMBER: Rgb = [0.4, 0.42, 0.34]
 const DRY: readonly Rgb[] = [[0.42, 0.16, 0.05], [0.5, 0.26, 0.07], [0.3, 0.12, 0.05], [0.4, 0.3, 0.1]]
