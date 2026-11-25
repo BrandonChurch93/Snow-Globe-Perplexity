@@ -4,7 +4,7 @@ import { stageShader } from '../../core/materials'
 import { partChange } from '../../shake/change'
 import type { Dressing, KitMoment } from '../kit'
 import { rig } from './rig'
-import { holdStorm } from './veil'
+import { holdStorm, veil } from './veil'
 
 // Part `glass-dressing-summer`: the glass is clear, and what the season puts on it is light.
 // 1. The flare: the reflection of the one strong warm light (the rig's key) on the outside of the glass. It sits where a sphere
@@ -26,6 +26,8 @@ export const standIns: string[] = []
 export const glassDressing: Dressing = { tint: [1, 0.9, 0.6], amount: 0 }
 
 export const look = {
+  // leaving: the light goes out between these two counts of beats before the swap window opens
+  leaveBeats: [1.1, 0.2] as const,
   flare: {
     halfMm: 30,
     core: 30,
@@ -416,11 +418,16 @@ export function update(moment: KitMoment): void {
   // Inside the swap window the light goes with the dressing; after it the globe is in the hand, turning, and the light does
   // not hold on the glass until the landing kindles it.
   let lit = kindled(moment.sinceLanding)
-  if (two) lit = shaking && moment.arrived < 1 ? 0 : 1
+  if (two) lit = shaking && moment.arrived < 1 ? 0 : 1 - smooth(f.change / 0.6)
   else if (shaking) {
     const through = (moment.beat! - swap.fromBeat) / (swap.toBeat - swap.fromBeat)
     lit = through >= 1 ? 0 : 1 - partChange('glass-dressing', through)
   }
+  // Leaving: the liquid floods before the window opens, and a ball of milk throws no sun. The flare, the hot patch and the pool
+  // go out over most of a beat before the swap, so nothing of summer's light is left on the glass or the table when the outside
+  // changes; the change never has to cut them.
+  const leaving = f.from.veil === veil && f.to.veil !== veil
+  if (moment.beat !== null && (leaving || f.from === f.to)) lit = Math.min(lit, 1 - smooth((moment.beat - (swap.fromBeat - look.leaveBeats[0])) / (look.leaveBeats[0] - look.leaveBeats[1])))
   const key = rig.key.from
   const sun = uniforms.uFlareSun.value
   const len = Math.hypot(key[0], key[1] - 70, key[2]) || 1
@@ -442,6 +449,7 @@ export function update(moment: KitMoment): void {
   const there = lit * (1 - 0.65 * smooth(held)) * (shaking || two ? 1 : smooth(t / P.settleSeconds) * 0.999 + 0.001)
   // the storm's glow goes with the liquid: none in still water, whole when it churns
   const kept = holdStorm(moment)
-  const gale = Math.max(smooth((f.turbulence - W.stormFrom) / (W.stormTo - W.stormFrom)), kept)
+  // and it hands over with the veil: leaving, it thins as the next season's veil takes the liquid, never in a cut
+  const gale = Math.max(smooth((f.turbulence - W.stormFrom) / (W.stormTo - W.stormFrom)) * (leaving ? 1 - f.mix.veil : 1), kept)
   uniforms.uSummer.value.set(moment.time, P.swing * swing + 8 * (Math.sin(g.tiltZ) - Math.sin(g.tiltX)), there, gale)
 }
