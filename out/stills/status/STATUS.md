@@ -1,17 +1,15 @@
-# Status 109
+# Status 110
 
-2026-11-25 16:44 UTC
+2026-11-25 17:02 UTC
 
-- The interface's finish is on main (merge ffaa4a8, pushed 16:40) after four proofs on the merged tree: the build, the controls check 25 of 25, a draft still byte equal before and after, and hostcheck with all ten links open. Every part outside the film is built in the register (52 of 54).
-- Round 18, the whole globe's first round, started 16:42 on 3d01496: the gate, the measures and the packs for R2, R4, R5 and R8 are with four agents, the eight keys with four more.
-- Brandon's two notes on sound are answered and logged (notes 2 and 3, decision 108): 4 of 25 sounds kept, 18 never tried, about 9840 credits of the sound tool at the limit of three takes each; its account read 1 credit left at 16:24.
-- Found by the Builder's own look and not fixed yet: on the tablet in summer the sand on the table reaches the sound control (item 175).
-- phase 5: 2.55 h used of its 12.00 h box
-- allowance (before the review, continuation 1): 2.55 h used of 12.00 h allowed
+- Sound has started: the account is topped up (0 of 131,000 used at 16:58 UTC) and one agent is making the 18 missing sounds behind a guard that refuses any call past 10,000 credits.
+- The walk of the app on the wide screen and the tablet: 12 of 13 lines pass so far; Round 18's packs are rendering.
+- phase 5: 2.85 h used of its 12.00 h box
+- allowance (before the review, continuation 1): 2.85 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-109-1.jpg`: The controls on the wide screen, winter, draft tier: season marks, Shake, sound
-- `out/stills/status/status-109-2.jpg`: The controls on the phone, spring, draft tier: the sound control on its dark disc
-- `out/stills/status/status-109-3.jpg`: The controls on the tablet, summer, draft tier
-- `out/stills/status/status-109-4.jpg`: Tablet, summer, enlarged: the sand on the table reaches the sound control (open item 175)
+- `out/stills/status/status-110-1.jpg`: The visitor's walk, wide screen: winter from the front again after a look to the side
+- `out/stills/status/status-110-2.jpg`: The walk, wide screen: fall chosen with the keyboard, its mark ringed
+- `out/stills/status/status-110-3.jpg`: The walk, tablet: winter from the look's upper limit
+- `out/stills/status/status-110-4.jpg`: The walk, tablet: the row of controls in winter, spring, summer and fall (fall by keyboard)
