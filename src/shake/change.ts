@@ -13,28 +13,30 @@ const OUTSIDE: ChangeSpan = { from: 0.69, to: 0.85, lag: 0 }
 const WINDOW_FRAMES = ((config.shake.swapWindow.toBeat - config.shake.swapWindow.fromBeat) * 60 * config.film.fps) / config.film.defaultBpm
 const frames = (n: number): number => n / WINDOW_FRAMES
 
+const SHUTTER = config.film.shutterDegrees / 360
+
 /**
  * The cut of the base, as a place in the swap window. The base is the old season's before it and the new season's after it, with
- * nothing between. It lies in the middle of the shutter of the film frame on which the last stroke runs fastest (`frame`,
- * counted from the first frame of the window), so that one frame of the film holds the old base in the first half of its
- * exposure and the new one in the second, both drawn out by the stroke, and every other frame holds one base whole.
+ * nothing between. It lies where the film's shutter is closed, after the exposure of the frame before `frame` has ended and
+ * before the exposure of `frame` begins (`frame` is counted from the first frame of the window), between the two frames on
+ * which the last stroke runs fastest: no frame of the film holds both bases, the last frame of the old base and the first of
+ * the new are each drawn out by the stroke. A quarter of the way through the closed shutter, so that no picture taken on a
+ * whole, a half or a quarter of a frame's time falls on it.
  */
-export const CHANGE_CUT = { frame: 26, at: frames(26 + config.film.shutterDegrees / 720) } as const
+export const CHANGE_CUT = { frame: 26, at: frames(25 + SHUTTER + (1 - SHUTTER) / 4) } as const
 
 /**
  * What lies on the table, as places in the swap window. The old season's dressing leaves under the strokes before the cut
  * (`liftFrom`: the first frame anything on the table moves; `leaveFrom` to `leaveTo`: the frames across which it is gone, from
- * the foot outward), the table is bare on the cut, and the new season's dressing comes after it (`comeFrom` to `comeTo`).
+ * the foot outward, the last of it inside the last exposure of the old base), the table is bare on the cut, and the new
+ * season's dressing comes with the first frame of the new base and after it (`comeFrom` to `comeTo`).
  */
-export const DRESSING_CHANGE = { liftFrom: frames(12), leaveFrom: frames(16), leaveTo: frames(26), comeFrom: frames(27), comeTo: frames(35.5) } as const
+export const DRESSING_CHANGE = { liftFrom: frames(12), leaveFrom: frames(15.5), leaveTo: frames(25 + SHUTTER), comeFrom: frames(26), comeTo: frames(34.5) } as const
 
 /** The bloom rises over this much of the window to the cut and falls over as much after it. */
 const BLOOM_HALF = frames(6)
 
-/**
- * What the table carries as one number crossed straight from the old season to the new (the lumps of the slab) goes with the base:
- * across the cut, inside the one frame that holds it.
- */
+/** What the table carries as one number crossed straight from the old season to the new goes with the base, where the shutter is closed. */
 const ON_THE_CUT: ChangeSpan = { from: CHANGE_CUT.at - frames(0.125), to: CHANGE_CUT.at + frames(0.125), lag: 0 }
 const SPANS: Record<string, ChangeSpan> = {
   miniature: { from: 0.05, to: 0.95, lag: 0.5 },
