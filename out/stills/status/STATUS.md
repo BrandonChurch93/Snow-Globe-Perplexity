@@ -1,18 +1,16 @@
-# Status 117
+# Status 118
 
-2026-11-25 19:30 UTC
+2026-11-25 19:54 UTC
 
-- Published at 19:18 UTC from commit 82f1eaa5: the interface merge (framing on phone and tablet, the controls) and the sound pack cut on the mended bar lines. Visibility: Organization. Settings: https://www.perplexity.ai/computer/a/4c4f15d3-07df-421c-941e-77528b5e889f?open-publish=true
-- The eight sound checks pass on this build, over three runs: A7 after the blockout was mixed again, A4 after the check's own wait was mended (it asked once a frame and saw a mark set at 19.5 s only at 70.6 s; decision 119, no threshold moved).
-- All four seasons are measured at the final tier on polish round 1's merge: 81 lines, 3 red, each of them M3 (fine detail against the approved picture) on a rest still: spring 0.3941, fall 0.5348, summer 0.7057, bar 0.75. Winter has no red line.
-- Winter's mirror line (severe: the right half of the foot barely reflects) had no owner: the surface builder found its cause outside its file. A ninth builder holds it since 19:29 (decision 120). Nine builders work until 20:50 UTC.
-- The archive of kept sounds is shared again: 14 kept sounds, the film mix with the four season tracks, and the table of what is left.
-- phase 5: 5.33 h used of its 12.00 h box
-- allowance (before the review, continuation 1): 5.33 h used of 12.00 h allowed
+- Brandon asked at 19:53 for a link: the app is live at https://snow-globe-seasons.pplx.app (published 19:18 UTC from 82f1eaa5; Visibility: Organization, so sign in; settings: https://www.perplexity.ai/computer/a/4c4f15d3-07df-421c-941e-77528b5e889f?open-publish=true). It holds polish round 1 and the interface, not yet polish round 2. Sound is off until the speaker control is pressed: music for each season that changes on the landing, ambience in spring and summer, eight effects; eleven cues have no kept take and are silent. The film with its soundtrack is not joined yet.
+- Polish round 2: seven branches merge into one trial build (types clean, 526 tests pass, 4 skipped); the one collision, storm against liquid in the veil, is settled and both builders confirm it. Its eight keys are being drawn at the final tier and nothing goes into main before they are seen. Freeze at 20:50 UTC, then Round 19, the review cut and the last stills.
+- Sound, read 19:50 UTC: this job 6,765 of the 10,000 limit, 3,235 left, 40 paid calls, none since 18:11 and none planned. The account's counter stands at 15,891 of 131,000; the 53 above the reading of 19:30 are speech from other work on the account, not this job.
+- phase 5: 5.71 h used of its 12.00 h box
+- allowance (before the review, continuation 1): 5.71 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-117-1.jpg`: Not merged: the right flank of summer's base at rest, final tier, each pixel doubled: the approved picture, main, the sand branch 5f8e3e0. A fall of single grains now runs down the flank where main has none. Still wrong: thinner than the approved picture in its lower third, the grains too even in size and a little too yellow, no bright haze where it lands.
-- `out/stills/status/status-117-2.jpg`: Not merged: spring's foot on the table at rest, final tier, native size: the approved picture, main, the surface branch 5431bc6. The mirror is as dark as the approved picture's and the lit root at the right stays. Still wrong: the image is a plain flipped copy with straight sides, and the approved picture's brighter scatter of petals is not answered.
-- `out/stills/status/status-117-3.jpg`: Not merged: spring mid-shake, final tier, three crops: the approved picture, main, the storm branch fb96e74. Gable, roof, trunk and lower crown read through a thinner cloud where main is a pale mass. Still wrong: door and lamp are washed by a warm pale haze, the lower band of the glass is an even opaque pink.
-- `out/stills/status/status-117-4.jpg`: Not merged: the set down of the fourth shake in the film, frames 2874 to 2880 at the final tier, the left end of the foot over the right end, twice native size, the hand branch 1902fba. The left end is down first and holds, the right end comes down a like step on every frame. Still wrong: a rim of snow on the table fades in at the right end over the last four frames and reads as a thing that appears; the rock after the landing is not yet seen at the final tier.
+- `out/stills/status/status-118-1.jpg`: Not merged: winter in the film, frame 3060, three seconds after the fourth shake lands, final tier: the liquid branch before its last change (left) and with it (right). The clump of flakes between cottage and crown is thinner and roof and crown read plainer. It is thinner, not an open middle.
+- `out/stills/status/status-118-2.jpg`: Not merged: summer's glass at four places on its outline, final tier, enlarged: main, the glass branch 96ee765, the approved picture. Main's stepped arc (third row) is a smooth line with streaks of light and the top takes the room's blue. The banded reflections of the approved picture are still not there.
+- `out/stills/status/status-118-3.jpg`: Not merged: summer mid-shake, final tier: main (left), the liquid branch 318a959 (right). An hour ago this branch buried the cottage; after the mend every seed stands where main has it and cottage and tree are as plain as main's, with a touch more milk over the cottage. No gain in this picture, and no loss.
+- `out/stills/status/status-118-4.jpg`: Merged and published: the hint on the phone screen (390 x 844), whole above and enlarged below: the Shake control at rest, then 15 and 35 percent into the hint. A soft warm band around the control, clear of the dot under the lit season mark. The last third of the hint was not looked at.
