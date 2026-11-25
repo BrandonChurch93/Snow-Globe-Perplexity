@@ -89,7 +89,7 @@ function unitRows(progress) {
     const cells = line.split('|').slice(1, -1).map((c) => c.trim())
     const id = /^`([^`]+)`$/.exec(cells[0] ?? '')?.[1]
     if (!id) continue
-    out[id] = { state: cells[1] ?? '', rounds: Number(cells[2]) || 0 }
+    out[id] = { state: cells[1] ?? '', rounds: parseInt(cells[2] ?? '', 10) || 0 }
   }
   return out
 }
