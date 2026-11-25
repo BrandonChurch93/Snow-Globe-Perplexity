@@ -45,16 +45,17 @@ export const look = {
   },
   pool: {
     // where the hot middle of the pool lies from the foot's centre: down the light's way on the slab and a little across it
-    reachMm: 86,
-    sideMm: 5,
+    reachMm: 76,
+    sideMm: 2.7,
     // how far the low sun draws the pool out along its way
-    stretch: 4.5,
-    softMm: 26,
-    gain: 0.1,
-    core: 2.4,
-    coreMm: 2.4,
-    glow: 0.5,
-    glowMm: 5,
+    stretch: 2.2,
+    wave: 0.9,
+    softMm: 22,
+    gain: 0.14,
+    core: 2,
+    coreMm: 2.2,
+    glow: 0.45,
+    glowMm: 4.5,
     bands: 1.5,
     liftPerMm: 2.2,
     tiltMm: 160,
@@ -62,8 +63,8 @@ export const look = {
     swingSeconds: 1.1,
     swingHz: 1.7,
     settleSeconds: 0.18,
-    gold: [1, 0.64, 0.28] as const,
-    pale: [1, 0.86, 0.6] as const,
+    gold: [1, 0.6, 0.24] as const,
+    pale: [1, 0.8, 0.5] as const,
   },
 }
 
@@ -126,19 +127,20 @@ const P = look.pool
 const POOL = `
 uniform vec4 uSummer;
 uniform vec4 uPoolAt;
-// One fold of the light: a band along an arc that leaves the hot middle in the direction th and bends with the radius r
-// (its sign is the side it bends to). It is brightest on its crest, widens as it runs and dies away along its length.
-float poolFold(vec2 h, float th, float r, float len, float wide) {
+// One fold of the light: a band that leaves the point at in the direction th and bends with the radius r (its sign is the
+// side it bends to), waving a little as it runs. It is brightest where it starts, tapers, and dies away along its length;
+// here and there the light gathers on it in a bead.
+float poolFold(vec2 h, vec2 at, float th, float r, float len, float wide, float ph) {
   vec2 t = vec2(cos(th), sin(th));
   vec2 nrm = vec2(-t.y, t.x);
-  vec2 d = h - nrm * r;
-  float x = length(d) - abs(r);
+  vec2 d = h - at - nrm * r;
   float s = atan(dot(d, t), -dot(d, nrm) * sign(r)) * abs(r);
-  float w = wide * (1.0 + max(s, 0.0) / 70.0);
-  // a fold of light has a hard bright edge on its outer side and thins away slowly on its inner side
-  float crest = x > 0.0 ? exp(-x * x / (0.3 * w * w)) : exp(x / (1.6 * w)) * 0.6 + 0.4 * exp(-x * x / (0.3 * w * w));
-  float run = 0.72 + 0.28 * sin(s * 0.21 + th * 7.0);
-  return crest * run * exp(-max(s, 0.0) / len) * smoothstep(-1.0, 3.0, s);
+  if (s < -2.0 || s > 3.2 * len) return 0.0;
+  float x = length(d) - abs(r) + ${n(P.wave)} * sin(s * 0.33 + ph) * smoothstep(0.0, 8.0, s);
+  float run = clamp(s / len, 0.0, 3.2);
+  float w = wide * (1.0 - 0.27 * run);
+  float bead = 1.0 + 0.9 * pow(max(sin(s * 0.47 + ph * 2.3), 0.0), 6.0);
+  return exp(-x * x / (w * w)) * bead * exp(-1.5 * run) * (1.0 - smoothstep(1.8, 3.2, run)) * smoothstep(-2.0, 1.0, s);
 }
 void main() {
   float c = stageChange();
@@ -157,12 +159,23 @@ void main() {
   float core = exp(-rr / ${n(P.coreMm * P.coreMm)});
   float glow = exp(-sqrt(rr) / ${n(P.glowMm)});
   float folds = 0.0;
-  folds += poolFold(h, 3.42 + 0.07 * s, 95.0 * (1.0 + 0.1 * s), 30.0, 1.1);
-  folds += 0.85 * poolFold(h, 3.86 - 0.06 * s, -70.0 * (1.0 - 0.08 * s), 24.0, 1.0);
-  folds += 0.8 * poolFold(h, 0.16 - 0.05 * s, -120.0 * (1.0 + 0.1 * s), 22.0, 1.1);
-  folds += 0.6 * poolFold(h, 2.55 + 0.08 * s, -40.0 * (1.0 - 0.1 * s), 12.0, 0.9);
-  folds += 0.55 * poolFold(h, 0.75 - 0.07 * s, 36.0 * (1.0 + 0.08 * s), 10.0, 0.9);
-  folds += 0.45 * poolFold(h, 4.75 + 0.05 * s, 55.0, 12.0, 1.1);
+  vec2 o = vec2(0.0);
+  // toward the left, the long ones: they run out under the globe's shadow and one of them loops back toward the sand
+  folds += poolFold(h, o, 3.3 + 0.05 * s, 70.0, 20.0, 0.95, 0.4);
+  folds += 0.9 * poolFold(h, o, 2.95 - 0.04 * s, -55.0, 17.0, 0.85, 2.1);
+  folds += 0.85 * poolFold(h, o, 3.62 + 0.06 * s, -90.0, 15.0, 0.85, 4.0);
+  folds += 0.7 * poolFold(h, vec2(-17.0, 2.0), 2.7 + 0.05 * s, 30.0, 13.0, 0.58, 5.2);
+  folds += 0.65 * poolFold(h, vec2(-24.0, -3.5), 3.5 - 0.05 * s, -26.0, 14.0, 0.58, 1.3);
+  folds += 0.5 * poolFold(h, vec2(-38.0, -1.0), 2.4 + 0.04 * s, -22.0, 12.0, 0.54, 3.1);
+  // toward the right, under the foot's edge
+  folds += 0.8 * poolFold(h, o, 0.12 - 0.05 * s, 85.0, 15.0, 0.85, 0.9);
+  folds += 0.6 * poolFold(h, o, -0.3 + 0.04 * s, -48.0, 9.0, 0.58, 2.7);
+  folds += 0.55 * poolFold(h, o, 0.5 - 0.04 * s, 40.0, 7.0, 0.58, 5.6);
+  // toward the front and the back, short
+  folds += 0.7 * poolFold(h, o, 1.25 + 0.06 * s, -32.0, 7.0, 0.58, 3.6);
+  folds += 0.65 * poolFold(h, o, 1.9 - 0.05 * s, 28.0, 8.0, 0.58, 0.2);
+  folds += 0.6 * poolFold(h, o, 4.5 + 0.05 * s, 36.0, 6.0, 0.58, 4.4);
+  folds += 0.55 * poolFold(h, o, 5.2 - 0.06 * s, -30.0, 6.0, 0.54, 1.8);
   vec3 col = ${vec(P.gold)} * (${n(P.gain)} * soft + ${n(P.bands)} * folds) + ${vec(P.pale)} * (${n(P.core)} * core + ${n(P.glow)} * glow);
   gl_FragColor = vec4(col * there, 0.0);
 }`
