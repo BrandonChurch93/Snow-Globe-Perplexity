@@ -154,17 +154,18 @@ vec4 baseCover = texture2D(uBaseCover, vBaseUv1);
 vec4 baseMossD = texture2D(uBaseDetail, vMapUv);
 vec2 baseStoneUv = vMapUv * 0.5;
 vec3 baseStoneC = texture2D(uBaseStone, baseStoneUv).rgb;
-vec4 baseStoneD = texture2D(uBaseStoneDetail, baseStoneUv);
+vec4 baseStoneD = texture2D(uBaseStoneDetail, vMapUv);
 float baseSeat = vBasePaint.x;
 float baseMoss = mix(1.0, smoothstep(0.44, 0.72, baseCover.r + 0.3 * (baseMossD.b - 0.5)), baseSeat);
 float baseRun = smoothstep(uWater.x + 0.015, uWater.x - 0.015, baseCover.b);
 float baseWet = baseCover.g * mix(1.0, baseRun * uWater.w, step(baseCover.b, 0.99)) * (1.0 - baseMoss);
 float baseAo = mix(0.3, mix(smoothstep(-0.25, 0.5, baseRelief.b), smoothstep(0.08, 0.72, baseRelief.b), baseMoss), baseSeat);
+baseAo *= mix(1.0, mix(0.5, 1.0, smoothstep(0.2, 0.6, baseMossD.b)), baseMoss);
 float baseBlotch = baseNoise(vBasePos * 0.19) * 0.6 + baseNoise(vBasePos * 0.8) * 0.4;
 float baseSun = baseNoise(vBasePos * 0.45 + 7.3);
-vec3 baseStone = baseStoneC * vec3(2.5, 1.95, 1.5) * mix(0.55, 1.3, baseBlotch) * mix(0.7, 1.15, baseStoneD.b);
+vec3 baseStone = baseStoneC * vec3(2.5, 1.95, 1.5) * mix(0.55, 1.3, baseBlotch) * mix(0.5, 1.25, baseStoneD.b);
 baseStone = mix(baseStone, baseStone * vec3(0.6, 0.62, 0.66), baseWet);
-vec3 baseGreen = diffuseColor.rgb * mix(vec3(0.27, 0.31, 0.29), vec3(1.1, 0.84, 0.3), smoothstep(0.3, 0.75, baseSun) * (0.35 + 0.65 * baseMossD.b));
+vec3 baseGreen = diffuseColor.rgb * mix(vec3(0.27, 0.31, 0.29), vec3(1.35, 0.92, 0.28), smoothstep(0.3, 0.75, baseSun) * (0.35 + 0.65 * baseMossD.b));
 baseGreen *= mix(0.22, 1.7, smoothstep(0.15, 0.85, baseMossD.b)) * mix(0.6, 1.1, baseBlotch);
 baseGreen = mix(baseGreen, vec3(0.03, 0.035, 0.012), 0.45 * (1.0 - smoothstep(0.1, 0.6, baseRelief.b)));
 float baseFilm = max(smoothstep(0.3, 0.7, 0.6 * baseNoise(vBasePos * 0.31 + 3.1) + 0.3 * baseMossD.b + 0.3 * (1.0 - smoothstep(0.1, 0.7, baseRelief.b))), smoothstep(0.03, 0.28, baseCover.r)) * (1.0 - baseWet) * baseSeat;
@@ -179,7 +180,7 @@ metalnessFactor = 0.0;
 `
 
 const ROCK_TILT = `
-vec2 baseTilt = baseSlope(baseRelief.rg) * (1.15 * baseSeat) + mix(baseSlope(baseStoneD.rg) * mix(1.3, 0.3, baseWet), baseSlope(baseMossD.rg) * 1.5, baseMoss);
+vec2 baseTilt = baseSlope(baseRelief.rg) * (1.15 * baseSeat) + mix(baseSlope(baseStoneD.rg) * mix(1.7, 0.35, baseWet), baseSlope(baseMossD.rg) * 2.3, baseMoss);
 `
 
 const ROCK_AFTER = `
@@ -330,7 +331,7 @@ void main() {
   float core = body * body;
   vec3 glow = (uWaterKeyCol * 0.5 + uRigCardCol * 0.3 + uWaterSky * 1.2) * RECIPROCAL_PI;
   float rimline = smoothstep(0.55, 0.12, body) * smoothstep(0.0, 0.12, body);
-  col += glow * (body * 0.1 + core * (0.9 * streak + 3.0 * head) + 0.8 * rimline * (0.4 + 0.6 * h0));
+  col += glow * (body * 0.06 + core * (0.8 * streak + 3.0 * head) + 0.6 * rimline * (0.4 + 0.6 * h0));
   vec3 cell = floor(vec3(u * 3.0, (mm - run) * 0.9, 1.0));
   float spark = step(0.9, baseHash(cell + 5.0)) * smoothstep(0.5, 0.1, length(fract(vec2(u * 3.0, (mm - run) * 0.9)) - 0.5));
   col += (uWaterKeyCol + uRigCardCol) * 0.9 * spark * core;
