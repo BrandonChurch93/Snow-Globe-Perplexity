@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 109 · 2026-11-25 16:44 UTC
+Status 110 · 2026-11-25 17:02 UTC
 
-- `out/stills/status/status-109-1.jpg`: The controls on the wide screen, winter, draft tier: season marks, Shake, sound
-- `out/stills/status/status-109-2.jpg`: The controls on the phone, spring, draft tier: the sound control on its dark disc
-- `out/stills/status/status-109-3.jpg`: The controls on the tablet, summer, draft tier
-- `out/stills/status/status-109-4.jpg`: Tablet, summer, enlarged: the sand on the table reaches the sound control (open item 175)
+- `out/stills/status/status-110-1.jpg`: The visitor's walk, wide screen: winter from the front again after a look to the side
+- `out/stills/status/status-110-2.jpg`: The walk, wide screen: fall chosen with the keyboard, its mark ringed
+- `out/stills/status/status-110-3.jpg`: The walk, tablet: winter from the look's upper limit
+- `out/stills/status/status-110-4.jpg`: The walk, tablet: the row of controls in winter, spring, summer and fall (fall by keyboard)
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 16:52 UTC
-clock: phase 5, tick of 8.4 minutes
-phase 5: 2.69 h used of its 12.00 h box
-allowance (before the review, continuation 1): 2.69 h used of 12.00 h allowed
-all time before the review: 38.88 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 17:02 UTC
+clock: phase 5, tick of 0.4 minutes
+phase 5: 2.85 h used of its 12.00 h box
+allowance (before the review, continuation 1): 2.85 h used of 12.00 h allowed
+all time before the review: 39.05 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 8
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -2146,4 +2146,6 @@ One entry per task: when it started, what it did, where it stopped.
 
 - 16:47 UTC. Published (Phase 5, Continuation 1): `dist/` built here from `3d01496` (engine `80483ec9ffb8348a`) with the review page, checked before the upload by opening the built site (first picture after 19.0 s, 87 requests, no error; `out/work/distcheck.log`), then deployed and published to `https://snow-globe-seasons.pplx.app` (Visibility: Organization). It holds the finished interface: the Tab order of the screen, the room under the globe on the wide screens, the phone held sideways, the phone's sound control on its disc, the line for a browser that cannot draw.
 
-- 17:01 UTC. Brandon wrote at about 16:59 that the sound tool's account is topped up and that no more than 10,000 credits may be used (note 4; decision 109). The account read 0 of 131000 used at 16:58:55 UTC. `sound_taker` started at 17:02 on this machine in its own clone (`/home/user/workspace/sg-sound`, branch `agent/p5-sound-takes`), brief `out/work/briefs/p5c/job-sound_taker.md`: thirteen effects cue by cue, then the five pieces of music in passes, every call between the guard's `begin` and `end` (`out/work/bin/soundguard.mjs`, ledger `out/work/audio/ledger.jsonl`, spent 0 of 10000 at 17:00:24); effects due 18:30, music 19:40, its limit 20:00. Also since 16:48: both walkers sent their first parts (hd and tablet, steps 5, 3 and 6 walked: twelve lines ok, one not, `look-returned`, which measures the view after a look against the first picture of the run; its cause is being measured here with `out/work/bin/detailpop.mjs` before it is written as an item); both walkers run on to the tool's own end, 17:35 at the latest, so that `result.json` is written. `storm_polisher` wrote at 16:52: the shutter of 0.8 came out worse than kept at the final tier on spring and winter, so it is now 0.3 (`c28539c`); its report is due 17:15. `hand_builder` reported at 17:00 (`agent/p5-hand` `3027074`): read next.
+- 17:01 UTC. Brandon wrote at about 16:59 that the sound tool's account is topped up and that no more than 10,000 credits may be used (note 4; decision 109). The account read 0 of 131000 used at 16:58:55 UTC. `sound_taker` started at 17:01 on this machine in its own clone (`/home/user/workspace/sg-sound`, branch `agent/p5-sound-takes`), brief `out/work/briefs/p5c/job-sound_taker.md`: thirteen effects cue by cue, then the five pieces of music in passes, every call between the guard's `begin` and `end` (`out/work/bin/soundguard.mjs`, ledger `out/work/audio/ledger.jsonl`, spent 0 of 10000 at 17:00:24); effects due 18:30, music 19:40, its limit 20:00. Also since 16:48: both walkers sent their first parts (hd and tablet, steps 5, 3 and 6 walked: twelve lines ok, one not, `look-returned`, which measures the view after a look against the first picture of the run; its cause is being measured here with `out/work/bin/detailpop.mjs` before it is written as an item); both walkers run on to the tool's own end, 17:35 at the latest, so that `result.json` is written. `storm_polisher` wrote at 16:52: the shutter of 0.8 came out worse than kept at the final tier on spring and winter, so it is now 0.3 (`c28539c`); its report is due 17:15. `hand_builder` reported at 17:00 (`agent/p5-hand` `3027074`): read next.
+
+- 17:03 UTC. Status 110 posted (Phase 5, Continuation 1, Round 18 running), four pictures of the visitor's walk as the two walkers saved them on `99f6092`: the wide screen in winter after a look to the side, the wide screen in fall chosen with the keyboard, the tablet at the look's upper limit, and the tablet's row of controls in the four seasons. Said with it: sound has started (the account read 0 of 131000 used at 16:58:55 UTC; `sound_taker` makes the eighteen missing sounds; the guard of decision 109 had booked 0 of 10000 at 17:02:23); the walk on the wide screen ended at 17:01 with 17 lines, 15 ok, and the two that are not (`look-returned`, `tab-order`) are being checked before either is written as a fault; Round 18's packs and gate are rendering; six polish builders at work, the hand's report in. The app and review links were given.

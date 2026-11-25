@@ -1,43 +1,41 @@
 {
-  "number": 109,
-  "time": "2026-11-25 16:44 UTC",
+  "number": 110,
+  "time": "2026-11-25 17:02 UTC",
   "phase": "5",
   "unit": "",
   "lines": [
-    "Status 109 · 2026-11-25 16:44 UTC · Phase 5",
-    "The interface's finish is on main (merge ffaa4a8, pushed 16:40) after four proofs on the merged tree: the build, the controls check 25 of 25, a draft still byte equal before and after, and hostcheck with all ten links open. Every part outside the film is built in the register (52 of 54).",
-    "Round 18, the whole globe's first round, started 16:42 on 3d01496: the gate, the measures and the packs for R2, R4, R5 and R8 are with four agents, the eight keys with four more.",
-    "Brandon's two notes on sound are answered and logged (notes 2 and 3, decision 108): 4 of 25 sounds kept, 18 never tried, about 9840 credits of the sound tool at the limit of three takes each; its account read 1 credit left at 16:24.",
-    "Found by the Builder's own look and not fixed yet: on the tablet in summer the sand on the table reaches the sound control (item 175).",
-    "phase 5: 2.55 h used of its 12.00 h box",
-    "allowance (before the review, continuation 1): 2.55 h used of 12.00 h allowed",
+    "Status 110 · 2026-11-25 17:02 UTC · Phase 5",
+    "Sound has started: the account is topped up (0 of 131,000 used at 16:58 UTC) and one agent is making the 18 missing sounds behind a guard that refuses any call past 10,000 credits.",
+    "The walk of the app on the wide screen and the tablet: 12 of 13 lines pass so far; Round 18's packs are rendering.",
+    "phase 5: 2.85 h used of its 12.00 h box",
+    "allowance (before the review, continuation 1): 2.85 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-109-1.jpg",
-      "caption": "The controls on the wide screen, winter, draft tier: season marks, Shake, sound",
+      "file": "out/stills/status/status-110-1.jpg",
+      "caption": "The visitor's walk, wide screen: winter from the front again after a look to the side",
       "w": 1200,
-      "h": 144
+      "h": 675
     },
     {
-      "file": "out/stills/status/status-109-2.jpg",
-      "caption": "The controls on the phone, spring, draft tier: the sound control on its dark disc",
-      "w": 780,
-      "h": 642
+      "file": "out/stills/status/status-110-2.jpg",
+      "caption": "The walk, wide screen: fall chosen with the keyboard, its mark ringed",
+      "w": 1200,
+      "h": 675
     },
     {
-      "file": "out/stills/status/status-109-3.jpg",
-      "caption": "The controls on the tablet, summer, draft tier",
+      "file": "out/stills/status/status-110-3.jpg",
+      "caption": "The walk, tablet: winter from the look's upper limit",
+      "w": 900,
+      "h": 1200
+    },
+    {
+      "file": "out/stills/status/status-110-4.jpg",
+      "caption": "The walk, tablet: the row of controls in winter, spring, summer and fall (fall by keyboard)",
       "w": 1024,
-      "h": 300
-    },
-    {
-      "file": "out/stills/status/status-109-4.jpg",
-      "caption": "Tablet, summer, enlarged: the sand on the table reaches the sound control (open item 175)",
-      "w": 648,
-      "h": 372
+      "h": 504
     }
   ]
 }
