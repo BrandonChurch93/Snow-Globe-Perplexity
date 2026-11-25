@@ -183,7 +183,7 @@ void main() {
   vec3 albedo = pow(tex.rgb, vec3(1.0 + 0.5 * wet));
   albedo = min(mix(albedo, vec3(pow(dot(albedo, vec3(0.4, 0.4, 0.2)), 1.5) * 1.35) * vec3(0.97, 0.77, 1.0), 0.7) * 1.3, vec3(0.94));
   vec3 col = petalLight(n, vStageWorld, v, albedo, wet);
-  float thin = pow(1.0 - abs(dot(n, v)), 2.0);
+  float thin = pow(max(1.0 - abs(dot(n, v)), 0.0), 2.0);
   col += albedo * RECIPROCAL_PI * (uRimCol + uRigCardCol) * 0.25 * thin;
   gl_FragColor = vec4(col * alpha, alpha);
   if (uDiag != 0) gl_FragColor = stageDiag(albedo, n, 0.0, c, 0.0);

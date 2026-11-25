@@ -89,9 +89,11 @@ vec2 baseSlope(vec2 rg) {
   return n / sqrt(max(1.0 - dot(n, n), 0.05));
 }
 vec3 baseBend(vec2 slope) {
-  vec3 n0 = normalize(vBaseNormal);
+  vec3 n0 = dot(vBaseNormal, vBaseNormal) > 1e-8 ? normalize(vBaseNormal) : vec3(0.0, 1.0, 0.0);
   vec3 t0 = vec3(vBasePos.z, 0.0, -vBasePos.x);
-  t0 = normalize(t0 - n0 * dot(t0, n0) + vec3(1e-5, 0.0, 0.0));
+  t0 = t0 - n0 * dot(t0, n0);
+  if (dot(t0, t0) < 1e-6) t0 = abs(n0.y) < 0.9 ? cross(vec3(0.0, 1.0, 0.0), n0) : cross(vec3(1.0, 0.0, 0.0), n0);
+  t0 = normalize(t0);
   vec3 b0 = cross(n0, t0);
   return normalize(n0 + t0 * slope.x + b0 * slope.y);
 }
@@ -318,9 +320,10 @@ void main() {
   float h0 = waterHeight(u, mm);
   float hu = waterHeight(u + e, mm);
   float hm = waterHeight(u, mm + 0.12);
-  vec3 n0 = normalize(vWaterN);
-  vec3 up = normalize(vec3(0.0, 1.0, 0.0) - n0 * n0.y + vec3(0.0, 1e-4, 0.0));
-  vec3 side = normalize(cross(up, n0));
+  vec3 n0 = dot(vWaterN, vWaterN) > 1e-8 ? normalize(vWaterN) : vec3(0.0, 1.0, 0.0);
+  vec3 lean = abs(n0.y) < 0.999 ? vec3(0.0, 1.0, 0.0) : vec3(0.0, 0.0, -1.0);
+  vec3 side = normalize(cross(lean, n0));
+  vec3 up = cross(n0, side);
   vec3 n = normalize(n0 - side * ((hu - h0) / e) * 0.85 + up * ((hm - h0) / 0.12) * 0.22);
   vec3 v = normalize(cameraPosition - vStageWorld);
   float nv = clamp(dot(n, v), 0.0, 1.0);
