@@ -214,10 +214,10 @@ ${SHADE}
   float liveKick = clamp((dot(geometryNormal, liveKickDir) + 0.2) / 1.2, 0.0, 1.0);
   reflectedLight.indirectDiffuse *= mix(1.0, 0.42, baseMoss) * liveShade;
   reflectedLight.directDiffuse *= mix(1.0, liveShade, 0.92);
-  reflectedLight.directDiffuse += diffuseColor.rgb * RECIPROCAL_PI * liveSunC * vec3(1.0, 0.82, 0.76) * (2.6 * liveKick * liveKick * baseAo);
+  reflectedLight.directDiffuse += diffuseColor.rgb * RECIPROCAL_PI * liveSunC * vec3(1.0, 0.82, 0.76) * (2.6 * (1.0 + 2.5 * baseMoss) * liveKick * liveKick * baseAo);
   float liveTuft = smoothstep(0.55, 0.85, baseMossD.b);
   vec3 liveTip = vec3(0.6, 0.68, 0.2) * RECIPROCAL_PI * baseMoss * baseAo;
-  reflectedLight.directDiffuse += liveTip * (liveKeyC * ((1.0 + 12.0 * liveTuft + 1.2 * liveFuzz) * mix(0.35, 2.0, baseClump) * (liveRim * liveRim + 0.8 * liveUp * liveUp * liveHigh) * liveOpen * smoothstep(0.02, 0.4, liveRimM + 0.6 * liveUpM * liveHigh)) + uRigCardCol * (0.01 * liveCardWrap * liveCardWrap + 0.04 * liveFuzz * liveCardWrap));
+  reflectedLight.directDiffuse += liveTip * (liveKeyC * ((1.6 + 18.0 * liveTuft + 2.0 * liveFuzz) * mix(0.35, 2.0, baseClump) * (liveRim * liveRim + 0.8 * liveUp * liveUp * liveHigh) * liveOpen * smoothstep(0.02, 0.4, liveRimM + 0.6 * liveUpM * liveHigh)) + uRigCardCol * (0.01 * liveCardWrap * liveCardWrap + 0.04 * liveFuzz * liveCardWrap));
   vec3 liveCell = floor(vBasePos * 7.5);
   vec3 liveFacet = normalize(normalMatrix * normalize(baseObjectNormal + 1.3 * (vec3(baseHash(liveCell + 3.7), baseHash(liveCell + 11.3), baseHash(liveCell + 23.9)) - 0.5)));
   float liveGrit = smoothstep(0.34, 0.08, length(fract(vBasePos * 7.5) - 0.5)) * step(0.66, baseHash(liveCell));
