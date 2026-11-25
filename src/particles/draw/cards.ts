@@ -1,5 +1,5 @@
 import { viewCode } from '../../diagnostics/views'
-import { CARD, LENS_LOOK, LIGHT_LOOK, LIT_MOST, MAX_KINDS, PIXEL_SIGMA2, SHAPE, STORM_WINDOW } from './looks'
+import { BATS, CARD, LENS_LOOK, LIGHT_LOOK, LIT_MOST, MAX_KINDS, PIXEL_SIGMA2, SHAPE, STORM_WINDOW } from './looks'
 import { ROLL_CENTRE } from '../../globe/liquid'
 
 const n = (v: number) => (Number.isInteger(v) ? v.toFixed(1) : String(v))
@@ -15,6 +15,8 @@ const at = (shape: number) => `(shape > ${n(shape - 0.5)} && shape < ${n(shape +
  */
 export const CARD_VERT_PARS = `
 uniform vec4 uKindWay[${MAX_KINDS}];
+/** Where the bats are in the globe's own frame, and each one's radius in millimetres (0: no bat). */
+uniform vec4 uBat[${BATS}];
 /** The engine's own hash (hash2 in src/core/rng.ts): the same number that gives a particle its way of falling there. */
 uint cardHash2(uint a, uint b) {
   uint v = ((a ^ 0x9e3779b9u) * 0x85ebca6bu) ^ ((b + 0x7f4a7c15u) * 0xc2b2ae35u);
@@ -39,7 +41,7 @@ export const CARD_VERT = `
     float whole = way.z < 0.5 || u5 < max(way.x, way.y) || own > 1.0 - chosen ? 1.0 : 0.0;
     float keepC = mix(afloat * max(gustC, ${n(CARD.dabCalm)} * uStorm.x * uStorm.w) * mix(${n(CARD.dabKeep[0])}, ${n(CARD.dabKeep[1])}, smoothstep(1.0 - chosen - dabShare - 0.02, 1.0 - chosen - dabShare, own)), 1.0, whole);
     if (${at(SHAPE.seed)} && whole > 0.5 && way.z > 0.5 && u5 >= max(way.x, way.y)) keepC *= max(afloat * gustC, uStorm.x * uStorm.w);
-    if (${at(SHAPE.spark)}) keepC = mix(${n(CARD.sparkKeep[0])}, ${n(CARD.sparkKeep[1])}, pow(own, ${n(CARD.sparkSkew)}));
+    if (${at(SHAPE.spark)}) keepC = max(mix(${n(CARD.sparkKeep[0])}, ${n(CARD.sparkKeep[1])}, pow(own, ${n(CARD.sparkSkew)})), smoothstep(${n(CARD.sparkClear[0])}, ${n(CARD.sparkClear[1])}, own));
     if (${at(SHAPE.fleck)}) keepC = mix(${n(CARD.fleckKeep[0])}, ${n(CARD.fleckKeep[1])}, pow(own, mix(${n(CARD.fleckSkew)}, ${n(CARD.fleckStorm)}, gustC)));
     float stormSize = ${at(SHAPE.petal)} ? ${n(CARD.stormSize[0])} : (${at(SHAPE.leaf)} ? ${n(CARD.stormSize[1])} : 1.0);
     rC *= mix(${n(CARD.dabSize)}, mix(1.0, stormSize, gustC * (own > 1.0 - chosen ? 0.0 : 1.0)), whole);
@@ -57,10 +59,17 @@ export const CARD_VERT = `
     keepC = mix(keepC, afloat * gustC * (${at(SHAPE.seed)} ? mix(${n(CARD.line.seedKeep[0])}, ${n(CARD.line.seedKeep[1])}, pow(fract(own * 53.0), ${n(CARD.line.seedSkew)})) : mix(${n(CARD.line.keep[0])}, ${n(CARD.line.keep[1])}, pow(fract(own * 53.0), ${n(CARD.line.skew)}))), lineC);
     float windowC = (1.0 - smoothstep(${n(STORM_WINDOW.from)}, ${n(STORM_WINDOW.to)}, length((nowL.xy - vec2(${n(STORM_WINDOW.x)}, ${n(STORM_WINDOW.y)})) / vec2(${n(STORM_WINDOW.wide)}, ${n(STORM_WINDOW.high)})))) * smoothstep(${n(STORM_WINDOW.back)}, ${n(STORM_WINDOW.front)}, nowL.z);
     keepC *= 1.0 - ${n(CARD.window)} * windowC * gustC * (sheet + (${at(SHAPE.seed)} ? 1.0 : 0.0));
-    float nearC = afloat * (1.0 - gustC) * whole * (shape > ${n(SHAPE.bat - 0.5)} ? 0.0 : 1.0) * step(fract(h.y * 29.0), ${at(SHAPE.spark)} ? ${n(CARD.spark.nearShare)} : ${n(CARD.near.share)}) * (${at(SHAPE.spark)} ? smoothstep(${n(CARD.spark.nearFrom[0])}, ${n(CARD.spark.nearFrom[1])}, depth) : smoothstep(${n(CARD.near.from)}, ${n(CARD.near.to)}, depth)) * (1.0 - ${n(CARD.near.clear)} * over);
+    float clearC = over * smoothstep(${n(CARD.clear.back)}, ${n(CARD.clear.front)}, depth) * (1.0 - smoothstep(${n(CARD.clear.lowMm)}, ${n(CARD.clear.highMm)}, nowL.y)) * (shape > ${n(SHAPE.bat - 0.5)} ? 0.0 : 1.0);
+    float nearC = afloat * (1.0 - gustC) * whole * (shape > ${n(SHAPE.bat - 0.5)} ? 0.0 : 1.0) * step(fract(h.y * 29.0), ${at(SHAPE.spark)} ? ${n(CARD.spark.nearShare)} : ${n(CARD.near.share)}) * (${at(SHAPE.spark)} ? smoothstep(${n(CARD.spark.nearFrom[0])}, ${n(CARD.spark.nearFrom[1])}, depth) : smoothstep(${n(CARD.near.from)}, ${n(CARD.near.to)}, depth)) * (1.0 - ${n(CARD.near.clear)} * over) * (1.0 - clearC);
+    if (${at(SHAPE.seed)}) {
+      nearC = 0.0;
+      keepC *= 1.0 - clearC * whole * (1.0 - gustC);
+    }
     if (${at(SHAPE.spark)}) keepC = mix(keepC, 1.0, nearC);
     float farC = afloat * (1.0 - gustC) * whole * (shape > ${n(SHAPE.bat - 0.5)} ? 0.0 : 1.0) * smoothstep(${n(CARD.far.from)}, ${n(CARD.far.to)}, depth);
     rC *= 1.0 + ${n(CARD.near.size - 1)} * nearC * (sheet + (${at(SHAPE.seed)} ? 0.6 : 0.0));
+    rC = mix(rC, min(rC, uPoint.w * (${at(SHAPE.seed)} ? ${n(CARD.clear.seedPx)} : (sheet > 0.5 ? ${n(CARD.clear.sheetPx)} : 1e4))), clearC);
+    if (shape > ${n(SHAPE.bat - 0.5)}) rC /= shrink;
     float ph = aData.w;
     float yaw = 6.2831853 * h.x + ${n(CARD.yawSway)} * sin(ph + 6.2831853 * h2.x) * afloat;
     float rock = mix(${at(SHAPE.petal)} ? ${n(CARD.petalRock)} : (${at(SHAPE.leaf)} ? ${n(CARD.leafRock)} : ${n(CARD.fleckRock)}), ${n(CARD.stormRock)}, gustC);
@@ -139,7 +148,11 @@ export const CARD_VERT = `
       if (abs(comp) < need) ca += pb * ((comp < 0.0 ? -need : need) - comp);
     }
     vec2 stC = (toView * ((aNow - aPrev) * shut)).xy * (uPoint.y * mag / zImg) * afloat;
-    if (${at(SHAPE.spark)}) stC *= mix(${n(CARD.spark.calmStreak)}, 1.0, gustC);
+    vec2 holdC = vec2(0.0);
+    if (${at(SHAPE.spark)}) {
+      holdC = stC * uStorm.y * (1.0 - mix(${n(CARD.spark.calmStreak)}, 1.0, gustC));
+      stC *= mix(${n(CARD.spark.calmStreak)}, 1.0, gustC);
+    }
     if (whole < 0.5 && lineC < 0.5) stC *= ${n(CARD.dabStreak)};
     stC *= uLimit.x / (uLimit.x + length(stC));
     float bowC = 0.0;
@@ -156,7 +169,9 @@ export const CARD_VERT = `
     }
     float hlC = 0.5 * length(stC);
     vec2 alC = hlC > 1e-4 ? stC / (2.0 * hlC) : vec2(1.0, 0.0);
-    float sgC = 0.5 * uBlur.z * (1.0 - exp(-(coc > 0.0 ? coc * uBlur.x : -coc * uBlur.y) / uBlur.z)) * afloat;
+    float sgC = 0.5 * uBlur.z * (1.0 - exp(-(coc > 0.0 ? coc * uBlur.x : -coc * uBlur.y) / uBlur.z)) * afloat * mix(1.0, ${n(CARD.clear.blur)}, clearC);
+    if (${at(SHAPE.spark)}) sgC *= mix(${n(CARD.spark.soft)}, 1.0, gustC);
+    if (${at(SHAPE.seed)}) sgC *= mix(${n(CARD.hair.soft)}, 1.0, gustC);
     sgC += uPoint.w * (nearC * (${at(SHAPE.spark)} ? mix(${n(CARD.spark.nearPx[0])}, ${n(CARD.spark.nearPx[1])}, fract(h.y * 173.0)) : mix(${n(CARD.near.px[0])}, ${n(CARD.near.px[1])}, fract(h.y * 173.0))) + farC * mix(${n(CARD.far.px[0])}, ${n(CARD.far.px[1])}, fract(h.y * 173.0)));
     if (shape > ${n(SHAPE.bat - 0.5)}) sgC *= ${n(CARD.batSoft)};
     float s2C = sgC * sgC + ${n(PIXEL_SIGMA2)} * uPoint.w * uPoint.w;
@@ -166,6 +181,19 @@ export const CARD_VERT = `
     vec2 extC = min(vec2(reachC) + 1.05 * hlC * abs(alC), vec2(uLimit.y));
     alpha = aData.z * (shape > ${n(SHAPE.bat - 0.5)} ? 1.0 : rim) * mix(1.0, mix(${n(LENS_LOOK.farDim)}, 1.0, smoothstep(${n(LENS_LOOK.farDimFrom)}, ${n(LENS_LOOK.farDimTo)}, depth)), afloat * (shape > ${n(SHAPE.bat - 0.5)} ? 0.0 : 1.0)) * keepC;
     if (${at(SHAPE.light)}) alpha *= mix(${n(CARD.glow.blinkLow)}, 1.0, pow(0.5 + 0.5 * sin(ph + 6.2831853 * h.y), 3.0));
+    if (shape < ${n(SHAPE.bat - 0.5)}) {
+      for (int b = 0; b < ${BATS}; b++) {
+        vec4 bt = uBat[b];
+        if (bt.w <= 0.0) continue;
+        vec3 bW = (modelMatrix * vec4(bt.xyz, 1.0)).xyz;
+        vec4 bV = viewMatrix * vec4(lensPlace(bW, eye).xyz, 1.0);
+        float ab = dot(bW - uLensCentre, oe / dist);
+        float denB = max(R + (uLens.y - 1.0) * ab, 0.3 * R);
+        float brPx = bt.w * uPoint.y * mix(1.0, uLens.y * R / denB, on) / max(dist - mix(ab, R - R * (R - ab) / denB, on), 1.0);
+        float gapB = length((view.xy / view.z - bV.xy / bV.z) * uPoint.y) - 1.3 * sgC - 0.4 * rC;
+        alpha *= smoothstep(${n(CARD.batHide[0])}, ${n(CARD.batHide[1])}, gapB / max(brPx, 1e-3));
+      }
+    }
     if (alpha < 0.003) extC = vec2(0.0);
     vL0 = vec4(ca, cb);
     vL1 = vec4(nV.xy * rC, uV.z, vV.z);
@@ -184,6 +212,7 @@ export const CARD_VERT = `
     vGrid = vec4(base0 * min(1.0, ${n(LIT_MOST)} / max(max(base0.r, max(base0.g, base0.b)), 1e-3)), bendFit);
     vDom = vec4(keyIn * uRigPoint.x, lineC);
     clip = clipC;
+    clip.xy -= holdC * vec2(projectionMatrix[0][0], projectionMatrix[1][1]) * (clip.w / uPoint.y);
     #ifdef POINT_SPRITES
     float sideC = 2.0 * max(extC.x, extC.y);
     gl_PointSize = sideC;
@@ -208,6 +237,22 @@ float cardLeafHalf(float v, vec2 own) {
   float lobes = mix(0.0, 0.42, smoothstep(0.45, 1.0, own.y));
   w *= 1.0 - lobes * (0.5 + 0.5 * cos(6.2831853 * 3.5 * v));
   return w * (1.0 - 0.1 * abs(fract(v * 9.0) * 2.0 - 1.0));
+}
+/** Which of the leaf outlines a leaf has: under 0.5 the long oval and the lobed oak (by the leaf's own number), over it the maple. */
+float cardLeafForm(vec2 own) {
+  return step(fract(own.x * 13.0 + own.y * 5.0), ${n(CARD.maple.share)});
+}
+/** The maple: five pointed lobes about a middle a little ahead of the stem's end; the rim's radius at this place and the place's own radius. */
+vec2 cardMaple(vec2 q) {
+  vec2 c = q - vec2(${n(CARD.maple.mid)}, 0.0);
+  float r = length(c) + 1e-4;
+  float a = abs(atan(c.y, c.x));
+  float rim = ${n(CARD.maple.floor)};
+  rim = max(rim, ${n(CARD.maple.long[0])} * pow(max(1.0 - a / ${n(CARD.maple.wide[0])}, 0.0), ${n(CARD.maple.point)}));
+  rim = max(rim, ${n(CARD.maple.long[1])} * pow(max(1.0 - abs(a - ${n(CARD.maple.at[0])}) / ${n(CARD.maple.wide[1])}, 0.0), ${n(CARD.maple.point)}));
+  rim = max(rim, ${n(CARD.maple.long[2])} * pow(max(1.0 - abs(a - ${n(CARD.maple.at[1])}) / ${n(CARD.maple.wide[2])}, 0.0), ${n(CARD.maple.point)}));
+  rim *= 1.0 - ${n(CARD.maple.teeth)} * abs(sin(a * 10.0));
+  return vec2(rim, r);
 }
 vec3 cardEdge(float shape, vec2 q, vec2 own) {
   float u = q.x * 0.5 + 0.5;
@@ -246,6 +291,14 @@ vec3 cardEdge(float shape, vec2 q, vec2 own) {
     if (head < e.x) e = vec3(head, hq.x / max(length(hq), 1e-4), hq.y / max(length(hq), 1e-4));
     float ear = max(abs(tt - 0.065) * 2.2 + (q.x - 0.52), 0.4 - q.x);
     if (ear < e.x) e = vec3(ear, 1.0, 0.0);
+    return e;
+  }
+  if (cardLeafForm(own) > 0.5) {
+    vec2 m = cardMaple(q);
+    vec2 c = (q - vec2(${n(CARD.maple.mid)}, 0.0)) / m.y;
+    vec3 e = vec3(m.y - m.x, c.x, c.y);
+    float st = max(abs(q.y) - 0.035, max(q.x - ${n(CARD.maple.mid)}, -1.0 - q.x));
+    if (st < e.x) e = vec3(st, 0.0, side);
     return e;
   }
   float stem = 0.16;
@@ -353,17 +406,31 @@ vec4 cardTint(float shape, vec2 q, vec2 own) {
   if (shape > ${n(SHAPE.bat - 0.5)}) return vec4(vec3(1.0 + ${n(CARD.batRim)} * smoothstep(-0.14, 0.0, cardEdge(shape, q, own).x)), 0.15 * smoothstep(0.12, 0.5, abs(q.y)));
   float stem = 0.16;
   float v = clamp((u - stem) / (1.0 - stem), 0.0, 1.0);
-  vec3 t = mix(vec3(1.12, 1.65, 1.2), vec3(1.0, 1.0, 1.0), smoothstep(0.0, 0.22, own.y));
-  t = mix(t, vec3(0.98, 0.4, 0.5), smoothstep(0.38, 0.8, own.y + 0.25 * (own.x - 0.5)));
+  vec3 t = mix(vec3(${CARD.leafGold.map(n).join(', ')}), vec3(1.0, 1.0, 1.0), smoothstep(0.0, ${n(CARD.leafGoldShare)}, own.y));
+  t = mix(t, vec3(${CARD.leafRed.map(n).join(', ')}), smoothstep(${n(CARD.leafRedFrom[0])}, ${n(CARD.leafRedFrom[1])}, own.y + 0.25 * (own.x - 0.5)));
   t *= mix(vec3(1.0), vec3(0.62, 0.5, 0.6), smoothstep(0.72, 0.9, fract(own.x * 5.0 + own.y * 3.0)));
-  float w = max(cardLeafHalf(v, own), 1e-3);
-  float out1 = abs(q.y) / w;
+  float out1;
+  float rib;
+  float fine;
+  if (cardLeafForm(own) > 0.5) {
+    vec2 m = cardMaple(q);
+    vec2 c = q - vec2(${n(CARD.maple.mid)}, 0.0);
+    float a = abs(atan(c.y, c.x));
+    out1 = m.y / max(m.x, 1e-3);
+    float da = min(a, min(abs(a - ${n(CARD.maple.at[0])}), abs(a - ${n(CARD.maple.at[1])})));
+    rib = exp(-da * da * m.y * m.y * 900.0);
+    fine = 0.0;
+    if (q.x < ${n(CARD.maple.mid)} && abs(q.y) < 0.05 && out1 > 1.0) return vec4(vec3(0.5, 0.36, 0.26), 0.0);
+  } else {
+    float w = max(cardLeafHalf(v, own), 1e-3);
+    out1 = abs(q.y) / w;
+    rib = exp(-q.y * q.y * 900.0);
+    float ribs = fract(v * 6.5 - abs(q.y) * 2.4);
+    fine = smoothstep(0.1, 0.0, abs(ribs - 0.5)) * (1.0 - smoothstep(0.75, 1.0, out1));
+    if (u < stem) return vec4(vec3(0.5, 0.36, 0.26), 0.0);
+  }
   t *= mix(1.05, 0.72, smoothstep(0.35, 1.0, out1) * mix(0.4, 1.0, own.x));
-  float rib = exp(-q.y * q.y * 900.0);
-  float ribs = fract(v * 6.5 - abs(q.y) * 2.4);
-  float fine = smoothstep(0.1, 0.0, abs(ribs - 0.5)) * (1.0 - smoothstep(0.75, 1.0, out1));
   float veins = max(rib, 0.6 * fine);
-  if (u < stem) return vec4(vec3(0.5, 0.36, 0.26), 0.0);
   return vec4(t * (1.0 - 0.38 * veins), 1.0 - 0.6 * veins);
 }
 float cardLine(vec2 p, vec2 a, vec2 b, float wide, float s2, out float along) {
@@ -450,8 +517,8 @@ void cardGlow(vec2 p, int kind, vec4 k, vec4 look) {
   if (disc > 0.0) {
     float rd = ${n(CARD.glow.discWide)} * sg;
     float dd = sqrt(d2);
-    float face = (1.0 - smoothstep(rd - 0.12 * rd - 0.6, rd + 0.6, dd)) * (${n(1 - CARD.glow.discRim)} + ${n(CARD.glow.discRim)} * smoothstep(0.45 * rd, rd, dd));
-    core = mix(core, pow(rc * rc / vc, spark ? ${n(CARD.spark.discHold)} : ${n(CARD.glow.discHold)}) * face * fade, disc);
+    float face = (1.0 - smoothstep(rd - 0.12 * rd - 0.6, rd + 0.6, dd)) * (1.0 - (spark ? ${n(CARD.spark.discRim)} : ${n(CARD.glow.discRim)}) * (1.0 - smoothstep(0.45 * rd, rd, dd)));
+    core = mix(core, pow(rc * rc / vc, spark ? ${n(CARD.spark.discHold)} : ${n(CARD.glow.discHold)}) * face, disc);
   }
   float halo = (spark ? ${n(CARD.spark.haloShare)} : ${n(CARD.glow.haloShare)}) * rh * rh / vh / (1.0 + 0.8 * vStreak.z / sqrt(vh)) * exp(-0.5 * d2 / vh);
   float wide = spark ? 0.0 : ${n(CARD.glow.wideShare)} * rw * rw / vw * exp(-0.5 * d2 / vw);
