@@ -1,17 +1,17 @@
-# Status 80
+# Status 81
 
-2026-11-25 06:40 UTC
+2026-11-25 07:05 UTC
 
-- Rounds 11 and 12 judge the frozen build e39ec6c. The first critic scores spring 5 (it was 4) and summer 6 (it was 4). Part 1 of spring's realism critic scores 7 (it was 3). No pass yet: the bar is 9
-- Measures at final tier: summer has 1 red line of 19 (the miniature holds 0.58 of the approved image's fine detail against 0.75). Spring has 5 red and the causes of four of them were fixed after the freeze
-- Named by two critics each: the storm's trails merge into bands or a milky sheet. A tall cut bank makes the miniature a raised disk. The air bubble at the top of the glass reads as an oval ring (shared glass: kept for the polish rounds)
-- Ten build agents are fixing these for the third freeze at 08:32 UTC. Fall's stills and the three motion packs and the gate are still rendering
-- phase 4: 6.55 h used of its 9.50 h box
-- allowance (before the review): 28.83 h used of 36.00 h allowed
+- All still critics of Rounds 11 and 12 have answered. Spring: R1 5 and R3 6 (Round 8 had 4 and 3). Summer: R1 6 and R3 4 (Round 9 had 4 and 4). The bar is 9 so neither passes on stills
+- Spring's gate on the frozen build is all 15 green for the first time in Phase 4. Summer's and fall's gates are running
+- Summer's low R3 comes from the base and table: a flat sand decal and pole dots on the sea glass and a band that floats across the lower glass. These went to the base builder as its first jobs
+- Both seasons were told to sink the globe into a taller collar as the approved images show. The pictures are builders' fixes since the freeze. They are judged in the third round after the freeze at 08:32 UTC
+- phase 4: 6.96 h used of its 9.50 h box
+- allowance (before the review): 29.25 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-80-1.jpg`: Spring at rest: the judged build (left) beside the approved image (right)
-- `out/stills/status/status-80-2.jpg`: Spring mid-shake: the judged build (left) beside the approved image (right)
-- `out/stills/status/status-80-3.jpg`: Summer at rest: the judged build (left) beside the approved image (right)
-- `out/stills/status/status-80-4.jpg`: Summer mid-shake: the judged build (left) beside the approved image (right)
+- `out/stills/status/status-81-1.jpg`: Spring's storm after the fix (left) beside the approved image (right): shorter trails that carry petal heads. Draft quality
+- `out/stills/status/status-81-2.jpg`: Fall's storm after the fix (left) beside the approved image (right): the tree and cottage read through it. Draft quality
+- `out/stills/status/status-81-3.jpg`: Summer half a second after landing: no streaks across the stone and a shower on the right edge only. Draft quality
+- `out/stills/status/status-81-4.jpg`: Spring's base: the approved image (above) and the new base (below) with a flared foot and rounder roots. Draft quality
