@@ -9,8 +9,9 @@ import type { KitMoment, SeasonKit } from '../kit'
 export const standIns: string[] = []
 
 // The shared veil keeps a fifth of its storm haze for as long as most of the pool is afloat, and summer's motes never land:
-// `rest` takes most of that share back, so the storm can be thick and the air at rest stays clear (0.04 x 0.2 x density is the share).
-export const veil: SeasonKit['veil'] = { tint: [1.2, 1, 0.74], density: 0.09, rest: -0.00068 }
+// `rest` takes a little over half of that share back (0.04 x 0.2 x density is the share), so the storm can be thick and the air at
+// rest is a thin warm dust: enough for the far side of the ball to stand off behind the tree, never enough to veil the miniature.
+export const veil: SeasonKit['veil'] = { tint: [1.24, 0.98, 0.76], density: 0.09, rest: -0.0004 }
 export const particles: SeasonKit['particles'] = { firefly: { color: [0.95, 1, 0.3], glow: 4 }, seed: { color: [1.8, 1.66, 1.4], glow: 0 }, mote: { color: [1.25, 1, 0.66], glow: 0.5 } }
 
 // The storm outlasts the shake. The shared veil thins with the liquid's turbulence, which is spent by the time the globe is set

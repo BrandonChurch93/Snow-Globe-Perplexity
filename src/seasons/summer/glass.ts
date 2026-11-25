@@ -96,11 +96,11 @@ export const look = {
     coreMm: 2.4,
     glow: 0.7,
     glowMm: 5,
-    bands: 5.5,
+    bands: 8,
     // the web of veins: its cells round the knot and per e-fold of distance, the reach of its light, a vein's width and glow
     webCells: 19,
     webRings: 1.25,
-    webMm: 25,
+    webMm: 15,
     veinMm: 0.42,
     veinGlowMm: 1.5,
     veinGlow: 0.16,
@@ -197,12 +197,12 @@ void main() {
   // the hot patch: three tongues of different length, slanting along the wall
   // each tongue is a sheaf of thin bright lines lying along the wall, sharp at the limb side and feathered toward the middle
   float lines = 0.5 + 0.5 * pow(0.5 + 0.5 * sin(r * 290.0 + 14.0 * sin(a * 9.0 + 1.3) + 5.0 * sin(a * 23.0)), 3.0) * (0.6 + 0.4 * sin(r * 97.0 + a * 40.0));
-  float hot = exp(-pow((r - 0.905) / 0.034, 2.0) - pow((a + 0.02) / 0.08, 2.0));
+  float hot = exp(-pow((r - 0.9) / 0.044, 2.0) - pow((a + 0.02) / 0.1, 2.0));
   hot += 0.8 * exp(-pow((r - 0.94) / 0.016, 2.0) - pow((a - 0.1) / 0.12, 2.0));
   hot += 0.7 * exp(-pow((r - 0.872) / 0.022, 2.0) - pow((a + 0.1) / 0.06, 2.0));
   hot *= lines;
   // the middle of it burns out
-  hot += 1.2 * exp(-pow((r - 0.912) / 0.02, 2.0) - pow((a + 0.01) / 0.045, 2.0));
+  hot += 1.2 * exp(-pow((r - 0.908) / 0.028, 2.0) - pow((a + 0.01) / 0.065, 2.0));
   float glow = exp(-pow((r - 0.9) / 0.06, 2.0) - a * a / 0.03);
   float edge = exp(-pow((r - 0.972) / 0.012, 2.0)) * exp(-pow((a - 0.45) / 0.75, 2.0));
   vec3 col = ${vec(W.color)} * (${n(W.band)} * band + ${n(W.glow)} * glow * inside + ${n(W.edge)} * edge) + ${vec(W.hotColor)} * (${n(W.hot)} * hot * inside);
