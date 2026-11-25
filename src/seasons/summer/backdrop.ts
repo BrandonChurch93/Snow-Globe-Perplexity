@@ -25,7 +25,7 @@ const smooth = (a: number, b: number, x: number): number => {
 }
 
 /** The cluster: the lights high on the right burn several times brighter than they are placed. One smooth field over the room. */
-export const CLUSTER = { lift: 3.5, fromPx: [1500, 2000] as const, topPx: [210, 430] as const, left: 0.7, leftPx: [900, 1900] as const }
+export const CLUSTER = { lift: 5, fromPx: [1500, 2000] as const, topPx: [210, 430] as const, left: 0.7, leftPx: [900, 1900] as const }
 
 function gain(at: readonly [number, number, number]): number {
   const dx = at[0] - EYE[0]

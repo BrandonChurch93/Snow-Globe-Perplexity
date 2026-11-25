@@ -4,7 +4,7 @@ import { stageShader } from '../../core/materials'
 import { partChange } from '../../shake/change'
 import type { Dressing, KitMoment } from '../kit'
 import { rig } from './rig'
-import { holdStorm } from './veil'
+import { holdStorm, veil } from './veil'
 
 // Part `glass-dressing-summer`: the glass is clear, and what the season puts on it is light.
 // 1. The flare: the reflection of the one strong warm light (the rig's key) on the outside of the glass. It sits where a sphere
@@ -26,6 +26,8 @@ export const standIns: string[] = []
 export const glassDressing: Dressing = { tint: [1, 0.9, 0.6], amount: 0 }
 
 export const look = {
+  // leaving: the light goes out between these two counts of beats before the swap window opens
+  leaveBeats: [1.1, 0.2] as const,
   flare: {
     halfMm: 30,
     core: 30,
@@ -83,6 +85,7 @@ export const look = {
     stormColor: [1, 0.68, 0.34] as const,
     stormArms: 0.22,
     stormOpen: 0.55,
+    stormDulls: 0.8,
   },
   pool: {
     // where the hot middle of the pool lies from the foot's centre: down the light's way on the slab and a little across it
@@ -101,12 +104,13 @@ export const look = {
     webCells: 19,
     webRings: 1.25,
     webMm: 15,
+    webEndMm: [20, 46] as const,
     veinMm: 0.42,
     veinGlowMm: 1.5,
     veinGlow: 0.16,
     // the short bright rays round the hot knot, as the approved image has them: their strength and their reach
-    rays: 0.9,
-    raysMm: 7,
+    rays: 1.5,
+    raysMm: 9,
     liftPerMm: 2.2,
     tiltMm: 160,
     swing: 1,
@@ -205,7 +209,9 @@ void main() {
   hot += 1.2 * exp(-pow((r - 0.908) / 0.028, 2.0) - pow((a + 0.01) / 0.065, 2.0));
   float glow = exp(-pow((r - 0.9) / 0.06, 2.0) - a * a / 0.03);
   float edge = exp(-pow((r - 0.972) / 0.012, 2.0)) * exp(-pow((a - 0.45) / 0.75, 2.0));
-  vec3 col = ${vec(W.color)} * (${n(W.band)} * band + ${n(W.glow)} * glow * inside + ${n(W.edge)} * edge) + ${vec(W.hotColor)} * (${n(W.hot)} * hot * inside);
+  // in the storm the liquid scatters the sun: the patch is a dull amber glow, not a burn
+  float clear = 1.0 - ${n(W.stormDulls)} * storm;
+  vec3 col = ${vec(W.color)} * (${n(W.band)} * band + ${n(W.glow)} * glow * inside * clear + ${n(W.edge)} * edge) + ${vec(W.hotColor)} * (${n(W.hot)} * hot * inside * clear * clear);
   float body = 1.0 - smoothstep(0.86, 0.992, r);
   vec2 off = vWl - vWlDir * 0.93;
   vec3 spill = ${vec(W.color)} * (${n(W.spill)} * exp(-dot(off, off) / 0.022) * lit);
@@ -276,7 +282,7 @@ void main() {
   vec2 web = poolWeb(h, s);
   float side = 0.3 + 0.7 * smoothstep(-0.5, 0.5, -h.x / max(lenW, 1.0));
   float bead = 0.55 + 0.45 * sin(h.x * 1.3 + 2.0 * sin(h.y * 0.9)) * sin(h.y * 1.7 + 1.0 + 1.5 * sin(h.x * 0.6));
-  float folds = (web.x * bead + ${n(P.veinGlow)} * web.y) * exp(-lenW / ${n(P.webMm)}) * side * smoothstep(1.0, 4.0, lenW);
+  float folds = (web.x * bead + ${n(P.veinGlow)} * web.y) * exp(-lenW / ${n(P.webMm)}) * (1.0 - smoothstep(${n(P.webEndMm[0])}, ${n(P.webEndMm[1])}, lenW)) * side * smoothstep(1.0, 4.0, lenW);
   // the knot's short rays: two uneven fans of them, turning a little with the swing, gone a few millimetres out
   float ang = atan(h.y, h.x) + 0.04 * s;
   float len = sqrt(rr);
@@ -416,11 +422,16 @@ export function update(moment: KitMoment): void {
   // Inside the swap window the light goes with the dressing; after it the globe is in the hand, turning, and the light does
   // not hold on the glass until the landing kindles it.
   let lit = kindled(moment.sinceLanding)
-  if (two) lit = shaking && moment.arrived < 1 ? 0 : 1
+  if (two) lit = shaking && moment.arrived < 1 ? 0 : 1 - smooth(f.change / 0.6)
   else if (shaking) {
     const through = (moment.beat! - swap.fromBeat) / (swap.toBeat - swap.fromBeat)
     lit = through >= 1 ? 0 : 1 - partChange('glass-dressing', through)
   }
+  // Leaving: the liquid floods before the window opens, and a ball of milk throws no sun. The flare, the hot patch and the pool
+  // go out over most of a beat before the swap, so nothing of summer's light is left on the glass or the table when the outside
+  // changes; the change never has to cut them.
+  const leaving = f.from.veil === veil && f.to.veil !== veil
+  if (moment.beat !== null && (leaving || f.from === f.to)) lit = Math.min(lit, 1 - smooth((moment.beat - (swap.fromBeat - look.leaveBeats[0])) / (look.leaveBeats[0] - look.leaveBeats[1])))
   const key = rig.key.from
   const sun = uniforms.uFlareSun.value
   const len = Math.hypot(key[0], key[1] - 70, key[2]) || 1
@@ -442,6 +453,7 @@ export function update(moment: KitMoment): void {
   const there = lit * (1 - 0.65 * smooth(held)) * (shaking || two ? 1 : smooth(t / P.settleSeconds) * 0.999 + 0.001)
   // the storm's glow goes with the liquid: none in still water, whole when it churns
   const kept = holdStorm(moment)
-  const gale = Math.max(smooth((f.turbulence - W.stormFrom) / (W.stormTo - W.stormFrom)), kept)
+  // and it hands over with the veil: leaving, it thins as the next season's veil takes the liquid, never in a cut
+  const gale = Math.max(smooth((f.turbulence - W.stormFrom) / (W.stormTo - W.stormFrom)) * (leaving ? 1 - f.mix.veil : 1), kept)
   uniforms.uSummer.value.set(moment.time, P.swing * swing + 8 * (Math.sin(g.tiltZ) - Math.sin(g.tiltX)), there, gale)
 }
