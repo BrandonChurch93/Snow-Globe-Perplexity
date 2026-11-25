@@ -30,7 +30,7 @@ One upright, left of the tree, about 110 px long; one level near the top of the 
 
 ## Not checked
 
-No film in motion was seen, so a jump at the frame where `uStorm.x` reaches 0 is possible. The live app (`--live`) was not drawn. No shake key but spring was seen at the final tier at 0.3. The proofs ran on c28539c; later merges of origin/main changed `src/shake/table.ts`, which may move the shake keys by itself.
+No film in motion was seen, so a jump at the frame where `uStorm.x` reaches 0 is possible. The live app (`--live`) was not drawn. At 0.3 only spring-shake was seen at the final tier and winter-shake at the review tier; fall and summer at draft. The proofs ran on c28539c; later merges of origin/main changed `src/shake/table.ts`, which may move the shake keys by itself.
 
 ## Commands
 
