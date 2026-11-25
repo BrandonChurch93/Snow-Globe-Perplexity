@@ -95,7 +95,12 @@ if (capture) {
   const collider = colliderOf(stage)
   const emitters = emittersOf(stage)
   sim.setCollider(collider, emitters)
-  sim.reset(params.season)
+  // A season's collider may read that season's models (spring's boulders come with its village), so the engine takes the
+  // season the page opens on when the stage has prepared it. The app asks for the same preparation and draws nothing before it.
+  void ready
+    .then(() => stage.prepare?.(params.season))
+    .then(() => sim.reset(params.season))
+    .catch(() => undefined)
   const setQuality = stage.setQuality?.bind(stage)
   if (setQuality) {
     stage.setQuality = (q) => {
