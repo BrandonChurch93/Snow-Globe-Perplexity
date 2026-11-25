@@ -1,16 +1,16 @@
-# Status 105
+# Status 106
 
-2026-11-25 15:06 UTC
+2026-11-25 15:27 UTC
 
-- Step 1 is whole: the last unused shape is out of the particle shader, all eight final keys came back byte-identical, the stand-in check is green, and it is on main.
-- Multisampling is mended, the drops are clear again; its proof is drawing on five agents (eight final keys, the stand-in check, determinism) before it lands.
-- The app opens in a second engine, Firefox, on the third try. Found on the way: with no WebGL2 the page stays black and silent; that is open item 174 and went to the interface finisher.
-- phase 5: 0.93 h used of its 12.00 h box
-- allowance (before the review, continuation 1): 0.93 h used of 12.00 h allowed
+- Six polish builders are an hour in: the hand's weight, the base changing in the open, the mirror, the glass, the liquid's lag, the storm's drawing. First looks are in from five; nothing is landed yet, and I land nothing without its proofs and my own look.
+- The liquid builder found the engine's cloud now swings 20 mm inside the glass, yet the picture still shows one even green disc at the swap; it is tracing what paints that disc.
+- Next: land the multisampled levels and the finished interface, then Round 18, the first round on the whole globe.
+- phase 5: 1.28 h used of its 12.00 h box
+- allowance (before the review, continuation 1): 1.28 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-105-1.jpg`: The app in a second browser engine: Firefox 148 on software drawing, winter at rest with its controls, first picture 35 s after the page opened (the published build of 13:57).
-- `out/stills/status/status-105-2.jpg`: Spring's drops on the glass at native size through the app's path: main with no multisampling, the first try (black drops), the mend.
-- `out/stills/status/status-105-3.jpg`: Every film frame of the cut of shake 1 (669 to 680), draft tier: the base is exchanged in one frame between 674 and 675 in the open and the frost leaves the glass on the same frame. This is what the swap builder starts from.
-- `out/stills/status/status-105-4.jpg`: Still: spring rest hero, preview, draft
+- `out/stills/status/status-106-1.jpg`: The strokes today, every film frame 2829 to 2838 of the fall to winter shake (review tier): the lean peaks on the turn and is level again by 2836, and the base cuts hard at 2834. This is what the hand and swap builders are changing.
+- `out/stills/status/status-106-2.jpg`: Smoother edges in the live app, native size: top the published build, bottom the build with multisampling (frost, rim, branches). Six of its eight proof keys are back byte-identical; fall and the gate checks are still out.
+- `out/stills/status/status-106-3.jpg`: New for the interface critic: every control at rest, focused and pressed, cut from the wide screen at its real size.
+- `out/stills/status/status-106-4.jpg`: New for the interface critic: the Shake control's hint, twelve steps across its 1.9 second pulse.
