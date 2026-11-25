@@ -16,7 +16,7 @@ const FAR_HALF_MM = 520
 
 export const surfaceDressing: Dressing & { reachMm: number } = { tint: [1, 0.7, 0.8], amount: 0, reachMm: 240 }
 
-export const PETALS = { count: 320, nearMm: 62, farMm: 240, sizeMm: [4.6, 8.4], wetShare: 0.2, focusMm: 60, far: [70, 330], near: [4, 80], farMips: 3.2, nearMips: 4.2 }
+export const PETALS = { count: 300, nearMm: 63, farMm: 240, sizeMm: [5, 9.4], clumpMm: 46, wetShare: 0.2, focusMm: 60, far: [70, 330], near: [4, 80], farMips: 3.2, nearMips: 4.2 }
 export const JUMP = { reachMm: 60, shockMmPerSecond: 1500, heightMm: 15, flight: [0.34, 0.8], shiftMm: 9, rise: 0.5 }
 export const POOL = { radiusMm: 10.5, outMm: 6.5, fillSeconds: 5 }
 
@@ -157,7 +157,7 @@ void main() {
   vec3 v = normalize(cameraPosition - vStageWorld);
   float wet = vPetalKind.y;
   vec3 albedo = pow(tex.rgb, vec3(1.0 + 0.5 * wet));
-  albedo = mix(albedo, vec3(dot(albedo, vec3(0.4, 0.4, 0.2))) * vec3(1.0, 0.9, 0.93), 0.5);
+  albedo = min(mix(albedo, vec3(dot(albedo, vec3(0.4, 0.4, 0.2))) * vec3(1.0, 0.9, 0.93), 0.5) * 1.3, vec3(0.92));
   vec3 col = petalLight(n, vStageWorld, v, albedo, wet);
   float thin = pow(1.0 - abs(dot(n, v)), 2.0);
   col += albedo * RECIPROCAL_PI * (uRimCol + uRigCardCol) * 0.25 * thin;
@@ -179,7 +179,7 @@ void main() {
   float alpha = tex.a * 0.95;
   if (alpha <= 0.004) discard;
   vec3 v = normalize(cameraPosition - vStageWorld);
-  vec3 albedo = mix(tex.rgb, vec3(dot(tex.rgb, vec3(0.4, 0.4, 0.2))) * vec3(1.0, 0.9, 0.93), 0.5);
+  vec3 albedo = min(mix(tex.rgb, vec3(dot(tex.rgb, vec3(0.4, 0.4, 0.2))) * vec3(1.0, 0.9, 0.93), 0.5) * 1.3, vec3(0.92));
   vec3 col = petalLight(vec3(0.0, 1.0, 0.0), vStageWorld, v, albedo, 0.0);
   gl_FragColor = vec4(col * alpha, alpha);
   if (uDiag != 0) gl_FragColor = stageDiag(albedo, vec3(0.0, 1.0, 0.0), 0.0, c, 0.0);
@@ -254,6 +254,26 @@ export async function prepare(): Promise<void> {}
 let surface: THREE.Object3D | null = null
 let puddle: THREE.Mesh | null = null
 
+function lattice(i: number, j: number): number {
+  let h = Math.imul(i, 374761393) ^ Math.imul(j, 668265263)
+  h = Math.imul(h ^ (h >>> 13), 1274126177)
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296
+}
+
+function clump(x: number, z: number): number {
+  const u = x / PETALS.clumpMm + 31.5
+  const v = z / PETALS.clumpMm + 17.5
+  const i = Math.floor(u)
+  const j = Math.floor(v)
+  const fu = (u - i) * (u - i) * (3 - 2 * (u - i))
+  const fv = (v - j) * (v - j) * (3 - 2 * (v - j))
+  const low = lattice(i, j) * (1 - fu) + lattice(i + 1, j) * fu
+  const high = lattice(i, j + 1) * (1 - fu) + lattice(i + 1, j + 1) * fu
+  const n = low * (1 - fv) + high * fv
+  const t = Math.min(1, Math.max(0, (n - 0.36) / 0.34))
+  return t * t * (3 - 2 * t)
+}
+
 function petalGeometry(): THREE.InstancedBufferGeometry {
   const plane = new THREE.PlaneGeometry(1, 1, 8, 6)
   const g = new THREE.InstancedBufferGeometry()
@@ -272,10 +292,11 @@ function petalGeometry(): THREE.InstancedBufferGeometry {
   let guard = 0
   while (placed < PETALS.count && guard++ < 20000) {
     const a = rng.range(0, Math.PI * 2)
-    const r = PETALS.nearMm + (PETALS.farMm - PETALS.nearMm) * Math.pow(rng.next(), 1.35)
+    const r = PETALS.nearMm + (PETALS.farMm - PETALS.nearMm) * Math.pow(rng.next(), 1.7)
     const x = Math.sin(a) * r
     const z = Math.cos(a) * r
     if (z < -150 && rng.next() < 0.5) continue
+    if (rng.next() > (0.14 + 0.86 * clump(x, z)) * (z > 0 && Math.abs(x) < 45 ? 0.45 : 1)) continue
     const soaked = rng.next() < PETALS.wetShare + 0.25 * Math.exp(-(r - PETALS.nearMm) / 30) ? 1 : 0
     const list = soaked ? wet : dry
     const id = list[Math.floor(rng.next() * list.length) % list.length]!
