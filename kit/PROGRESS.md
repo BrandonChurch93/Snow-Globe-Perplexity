@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 95 · 2026-11-25 11:45 UTC
+Status 96 · 2026-11-25 11:55 UTC
 
-- `out/stills/status/status-95-1.jpg`: Fix build at the review tier: winter to spring. The base is winter's at 672 and spring's at 676
-- `out/stills/status/status-95-2.jpg`: Fix build at the review tier: spring to summer. Petals lift as the sand arrives at 1396
-- `out/stills/status/status-95-3.jpg`: Fix build at the review tier: summer to fall. The base changes between 2112 and 2116
-- `out/stills/status/status-95-4.jpg`: Fix build at the review tier: fall to winter. The base changes between 2832 and 2836
+- `out/stills/status/status-96-1.jpg`: Winter to spring: the swap of shake 1 on the kept build dcda6ca (frames 648 to 680)
+- `out/stills/status/status-96-2.jpg`: Spring to summer: the swap of shake 2 on the kept build
+- `out/stills/status/status-96-3.jpg`: Summer to fall: the swap of shake 3 on the kept build
+- `out/stills/status/status-96-4.jpg`: Fall to winter: the swap of shake 4 on the kept build
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 11:50 UTC
-clock: phase 5, tick of 0.3 minutes
-phase 5: 0.00 h used of its 4.50 h box
-allowance (before the review): 33.99 h used of 36.00 h allowed
-all time before the review: 33.99 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 11:55 UTC
+clock: phase 5, tick of 5.0 minutes
+phase 5: 0.09 h used of its 4.50 h box
+allowance (before the review): 34.07 h used of 36.00 h allowed
+all time before the review: 34.07 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 4
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -1987,3 +1987,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 11:45 UTC. Status 95 posted at 11:45 UTC with the four swap sheets of the fix build `a6e09d6` at the review tier, one across each change (`out/stills/status/status-95-1.jpg` to `-4.jpg`; sources on `agent/p4-fix-sheet-1` to `-4`). The backup gate started at 11:43:14 in `round_renderer_b`'s clone, detached at `a6e09d6`, with the sound pack of the Round 10 gate unpacked into the git-ignored `public/audio/`.
 
 - 11:49 UTC. Phase 4 gate, line by line (11:49 UTC). (1) "The machine checks are met, with G13 and G15 covering all five units": met. The whole gate with `--unit change` on `ceee512` is 15 of 15 green (`scorecards/phase-4/gate-phase-4-ceee512.json`): G1 build clean, G2 436 of 440 tests pass, G3 5 pictures pixel-identical across 4 fresh page loads, G4 sizes and counts, G5 no interface pixel in 25 stills and 7 frames, G6 all 69 judged ids listed, G7 lengths, G8 151 shipped files with sources and recipes, G9 the repo, G10 portable WebGL2, G11 every seasonal part 0 or 1 on the 3456 frames outside the 4 swap windows, G12 the four landings on bar lines, G13 covers 49 of 54 parts over change and the four finished seasons with none a stand-in, G14 the loop's seam, G15 memory and counts after all 4 seasons on one page. No file under `src`, `config`, `public`, `tools`, `parts` or `cut` differs between `ceee512` and this commit. (2) "Every unit is marked `finished`: its pass bar held, or its limit was reached": met, each at a limit and none by a pass: spring (Round 14), summer (Round 15), fall (Round 16) at `quality.maxRoundsPerUnit` 3, `change` on the clock after Round 17 (decision 99). (3) "A comparison image is committed for every key": met, eight keys, `out/stills/phase-3/` for winter's two and `out/stills/spring|summer|fall/` for the other six. (4) "Every cue has a kept take or an open item, and the music of each candidate exists or the log says why not": met. Kept: `glass-clink` take 2, `ui-sound-on` take 1, `ui-tick` take 2, `lift` take 3. Open: `amb-winter` (item 1), `land-winter` (item 9), `shake-winter` (item 37), the other thirteen (item 63). No music: the account has no credits (decision 78, item 63). Phase 4 is done at 11:49 UTC; it used 11.7 h of its 9.5 h box, and the overrun came out of the extra rounds of Phase 5, as the clock rules say. Phase 5 starts now. The fix pass of `change` (`a6e09d6`) is still under proof and is not part of this gate.
+
+- 11:55 UTC. Status 96 (unit `change` finished, and the gate of Phase 4), posted 11:55 UTC with four pictures: the swap sheet of each change from the kept build `dcda6ca` (`out/stills/change/change-swap-shake-1..4-round-017.jpg`). Published at 11:54 (the kept build with the logs of this hour; the local check of `dist/` drew its first picture in 18.1 s with 87 requests and no error). Proof of the fix pass `a6e09d6` so far, both read against the records of `dcda6ca` line by line (`out/work/bin/cmpmeasure.py`): `change` at the final tier is complete at 24 of 24 lines with 0 red (11:54, `scorecards/fix-pass/a6e09d6/change.json`; M4 0.983, 0.9647, 0.9658, 0.9721 against 0.85; M5 0.9851, 1, 0.9777, 0.9997 against 0.6; M6 at most 0.000245 against 0.002); `summer` is complete at 19 lines with 1 red, the same line with the same value as on `dcda6ca` (M3 `summer-rest` 0.7055 against 0.75), and all 19 values are identical (`scorecards/fix-pass/a6e09d6/summer.json`). Still to come: winter, spring, fall and the gate.

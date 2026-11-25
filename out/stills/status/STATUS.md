@@ -1,17 +1,17 @@
-# Status 95
+# Status 96
 
-2026-11-25 11:45 UTC
+2026-11-25 11:55 UTC
 
-- The gate on the kept build is all 15 green: the stand-in check now covers 49 of 54 parts over all five units
-- The four sheets of the fix build are in at the review tier: on each the base is one season's on one tile and the next season's on the next
-- Nothing covers that cut yet: it is open item 154
-- The fix build is kept only if its own gate and the measures of all five units show no new red line; due near 12:40
-- phase 4: 11.63 h used of its 9.50 h box
-- allowance (before the review): 33.91 h used of 36.00 h allowed
+- The unit change is finished at its limit: the clock allows no second round and Round 17 did not pass (R4 4 and R2 5 of 20)
+- Kept build dcda6ca. The fix pass a6e09d6 joins only if its gate and all measures end green. Proof due about 12:40
+- Phase 4 gate closed at 11:49: checks 15 of 15 on ceee512. Every unit finished at a limit and none by a pass
+- Phase 5 started. Budget report is due about 13:50 UTC
+- phase 5: 0.09 h used of its 4.50 h box
+- allowance (before the review): 34.07 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-95-1.jpg`: Fix build at the review tier: winter to spring. The base is winter's at 672 and spring's at 676
-- `out/stills/status/status-95-2.jpg`: Fix build at the review tier: spring to summer. Petals lift as the sand arrives at 1396
-- `out/stills/status/status-95-3.jpg`: Fix build at the review tier: summer to fall. The base changes between 2112 and 2116
-- `out/stills/status/status-95-4.jpg`: Fix build at the review tier: fall to winter. The base changes between 2832 and 2836
+- `out/stills/status/status-96-1.jpg`: Winter to spring: the swap of shake 1 on the kept build dcda6ca (frames 648 to 680)
+- `out/stills/status/status-96-2.jpg`: Spring to summer: the swap of shake 2 on the kept build
+- `out/stills/status/status-96-3.jpg`: Summer to fall: the swap of shake 3 on the kept build
+- `out/stills/status/status-96-4.jpg`: Fall to winter: the swap of shake 4 on the kept build
