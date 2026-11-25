@@ -40,16 +40,21 @@ const look = {
   /** Lowest place of a still drop and the place a run leaves the glass, as polar angles from the top. */
   lowDeg: 118,
   offDeg: 131,
-  run: { headMm: [0.8, 1.35], track: 0.42, fromDeg: [9, 50], goDeg: [22, 52], trailDeg: [9, 24], wander: [0.012, 0.04], waves: [4.5, 10], slideSeconds: [9, 17], hangSeconds: [3, 8], offSeconds: 1.3, drySeconds: 3, firstBy: 9 },
+  run: { headMm: [0.8, 1.35], track: 0.42, fromDeg: [9, 50], goDeg: [22, 52], trailDeg: [3, 8], wander: [0, 0.004], waves: [2, 4], slideSeconds: [9, 17], hangSeconds: [3, 8], offSeconds: 1.3, drySeconds: 3, firstBy: 9 },
   /** How far toward the camera a drop is drawn, so that the glass under it never cuts it at the limb. */
   liftMm: 14,
   /** How much of the frame a drop gathers, as a share of the frame's height, and how dark its edge is. */
   field: 0.2,
-  trailField: 0.05,
-  film: 0.74,
-  body: 0.9,
-  edge: 0.1,
-  mirror: 0.55,
+  trailField: 0.008,
+  film: 0.98,
+  /** How much of what a film gathers is lost at its edge, and how much of the film is seen at its head and where it is oldest. */
+  filmEdge: 0.9,
+  filmShown: [0.5, 0.18],
+  body: 0.96,
+  edge: 0.5,
+  mirror: 0.35,
+  /** Toward the limb a drop is seen edge on and would be a burr on the outline of the glass: how square to the eye the glass must be for a drop to be drawn at all, and to be drawn whole. */
+  limb: [0.02, 0.2],
   glint: 5,
   crescent: 0.55,
 }
@@ -158,7 +163,7 @@ vec3 dA0;
 vec3 dA1;
 vec2 dSq;
 dewFrame(dDir, dDir * dDir.y - vec3(0.0, 1.0, 0.0) + vec3(1e-4, 0.0, 0.0), dC, dEye, dA0, dA1, dSq);
-if (dot(normalize(mat3(modelMatrix) * dDir), dEye) < -0.03) dOn = 0.0;
+dOn *= smoothstep(${f(look.limb[0])}, ${f(look.limb[1])}, dot(normalize(mat3(modelMatrix) * dDir), dEye));
 vec2 dQ = vec2(position.x, position.y > 0.0 ? position.y * (1.0 + dTail) : position.y);
 vec3 dP = dC + dR * dOn * (dA0 * dQ.x * dSq.x - dA1 * dQ.y * dSq.y) + dEye * ${f(look.liftMm)};
 vec4 dView = viewMatrix * vec4(dP, 1.0);
@@ -277,7 +282,8 @@ vec3 tNw = normalize(mat3(modelMatrix) * tDir);
 vec3 tAcross = normalize(cross(tEye, normalize(mat3(modelMatrix) * (tNext - tDir))));
 // Wide where it joins the head, thin behind, and drawn to a point where it has dried.
 float tWide = uPathC[tj].x * (0.72 + 0.28 * smoothstep(1.0 - min(0.12 / max(tLong, 1e-3), 1.0), 1.0, aTrail.y)) * smoothstep(0.0, min(0.05 / max(tLong, 1e-3), 0.5), aTrail.y);
-if (uDew.x < 0.0 || tLong <= 0.0 || dot(tNw, tEye) < -0.03) tWide = 0.0;
+if (uDew.x < 0.0 || tLong <= 0.0) tWide = 0.0;
+tWide *= smoothstep(${f(look.limb[0])}, ${f(look.limb[1])}, dot(tNw, tEye));
 vec3 tP = tC + tAcross * aTrail.z * tWide + tEye * ${f(look.liftMm)};
 vec4 tView = viewMatrix * vec4(tP, 1.0);
 gl_Position = projectionMatrix * tView;
@@ -329,11 +335,11 @@ void main() {
     body = stageRoomSoft(reflect(eye, n), 0.4);
   }
   float crescent = smoothstep(0.15, 0.7, d2) * (1.0 - smoothstep(0.8, 1.0, d2)) * max(-sign(x) * dot(uKeyDir, vTrailA), 0.0);
-  // A film is thin: it darkens what is behind it more than it mirrors the room.
+  // A film is thin and clear: it shifts what is behind it a little and has no dark core and no dark edge.
   float rim = smoothstep(0.3, 1.0, d2);
-  vec3 col = body * ${f(look.film)} * mix(0.97, 0.5, rim * rim) + uKeyCol * (${f(look.crescent)} * 0.14 * crescent);
+  vec3 col = body * ${f(look.film)} * mix(1.0, ${f(look.filmEdge)}, rim * rim) + uKeyCol * (${f(look.crescent)} * 0.14 * crescent);
   // Older film is thinner: it shows less the further behind the head it lies.
-  a *= mix(0.9, 0.5, old);
+  a *= mix(${f(look.filmShown[0])}, ${f(look.filmShown[1])}, old);
   gl_FragColor = vec4(col * a, a);
   if (uDiag != 0) {
     if (a < 0.5) discard;
