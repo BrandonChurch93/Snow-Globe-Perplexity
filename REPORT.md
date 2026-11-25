@@ -1,6 +1,6 @@
 # Report: summer_air (summer: glass dressing, veil, light, storm)
 
-1. Branch `agent/p4-summer_air`, last commit 0b52836 (merge of `origin/main` c35f1e4 over my last change c5f597b). Looks branch `agent/p4-summer_air-looks`.
+1. Branch `agent/p4-summer_air`: my last change is c5f597b; the tip is a merge of `origin/main` over it (0b52836, or d76d2bd if that push went through: my message to `/root` names it). Looks branch `agent/p4-summer_air-looks`.
 2. Stand-ins: none left (`standIns = []` in `glass.ts` and `veil.ts`; the stand-ins still is black, largest pixel value 0). Fallbacks: none used.
 3. Built assets: none. `npm run make` targets of my parts: none, so no order. Everything is drawn in the shader. 0 MiB, 3 quads, 3 draw calls.
 
