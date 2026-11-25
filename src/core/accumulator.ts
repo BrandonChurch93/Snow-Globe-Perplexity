@@ -244,6 +244,69 @@ export class LensFill {
   }
 }
 
+/** How many samples a pixel of the live picture gets: `LIVE_SAMPLES`, or as many as the device reports, or none. */
+export const LIVE_SAMPLES = 4
+
+export function liveSamples(maxSamples: number): number {
+  const n = Math.min(LIVE_SAMPLES, Math.floor(Number.isFinite(maxSamples) ? maxSamples : 0))
+  return n >= 2 ? n : 0
+}
+
+const resolves = new Map<string, THREE.WebGLRenderTarget>()
+
+/**
+ * The frame as it stands in a multisampled target, resolved into a texture a shell can look through: what
+ * `copyFramebufferToTexture` gives for a target without samples. One texture per asker, size and type.
+ */
+export function resolveBehind(renderer: THREE.WebGLRenderer, target: THREE.WebGLRenderTarget, who: string): THREE.Texture | null {
+  const gl = renderer.getContext() as WebGL2RenderingContext
+  const from = (renderer.properties.get(target) as { __webglMultisampledFramebuffer?: WebGLFramebuffer }).__webglMultisampledFramebuffer
+  if (!from) return null
+  const key = `${who} ${target.width} ${target.height} ${target.texture.type}`
+  let rt = resolves.get(key)
+  if (!rt) {
+    if (resolves.size >= 8) {
+      for (const old of resolves.values()) old.dispose()
+      resolves.clear()
+    }
+    rt = new THREE.WebGLRenderTarget(target.width, target.height, {
+      type: target.texture.type,
+      format: THREE.RGBAFormat,
+      minFilter: THREE.LinearFilter,
+      magFilter: THREE.LinearFilter,
+      depthBuffer: false,
+      stencilBuffer: false,
+      generateMipmaps: false,
+    })
+    rt.texture.colorSpace = THREE.NoColorSpace
+    resolves.set(key, rt)
+  }
+  type Made = { __webglFramebuffer?: WebGLFramebuffer }
+  let to = (renderer.properties.get(rt) as Made).__webglFramebuffer
+  if (!to) {
+    // Made here, in the middle of a frame, the first time and again after a lost context.
+    renderer.initRenderTarget(rt)
+    to = (renderer.properties.get(rt) as Made).__webglFramebuffer
+  }
+  if (!to) return null
+  // three.js keeps a note of the framebuffers that are bound and skips a bind it believes is in place; making a target
+  // (above) rebinds without correcting the note for reading. So the bindings and the note are first brought to one known
+  // state, and every bind from there goes through the note: the blit then reads the multisampled frame whatever came before,
+  // and three.js goes on drawing into it.
+  const state = renderer.state
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+  state.bindFramebuffer(gl.FRAMEBUFFER, null)
+  state.bindFramebuffer(gl.READ_FRAMEBUFFER, null)
+  state.bindFramebuffer(gl.READ_FRAMEBUFFER, from)
+  state.bindFramebuffer(gl.DRAW_FRAMEBUFFER, to)
+  const scissor = gl.isEnabled(gl.SCISSOR_TEST)
+  if (scissor) gl.disable(gl.SCISSOR_TEST)
+  gl.blitFramebuffer(0, 0, target.width, target.height, 0, 0, target.width, target.height, gl.COLOR_BUFFER_BIT, gl.NEAREST)
+  if (scissor) gl.enable(gl.SCISSOR_TEST)
+  state.bindFramebuffer(gl.FRAMEBUFFER, from)
+  return rt.texture
+}
+
 export class Accumulator {
   readonly sample: THREE.WebGLRenderTarget
   private readonly mean: [THREE.WebGLRenderTarget, THREE.WebGLRenderTarget]

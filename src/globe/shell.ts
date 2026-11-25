@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { config } from '../config'
 import { stageShader, stageUniforms } from '../core/materials'
+import { resolveBehind } from '../core/accumulator'
 import { stream } from '../core/rng'
 import { partBytes, viewCode } from '../diagnostics/views'
 import type { StageFrame } from '../scene/frame'
@@ -754,8 +755,14 @@ function copyBehind(renderer: THREE.WebGLRenderer, material: THREE.Material): vo
   const target = renderer.getRenderTarget()
   const u = shellUniforms
   ;(material as THREE.ShaderMaterial).uniformsNeedUpdate = true
-  if (!target || target.samples > 0 || stageUniforms.uDiag.value !== 0) {
+  if (!target || stageUniforms.uDiag.value !== 0) {
     u.uBehindSize.value.set(0, 0)
+    return
+  }
+  if (target.samples > 0) {
+    const resolved = resolveBehind(renderer, target, 'shell')
+    if (resolved) u.uBehind.value = resolved
+    u.uBehindSize.value.set(resolved ? target.width : 0, resolved ? target.height : 0)
     return
   }
   const type = target.texture.type

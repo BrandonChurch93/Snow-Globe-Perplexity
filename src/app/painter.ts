@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { liveSamples } from '../core/accumulator'
 import type { Gfx } from '../core/gl'
 import type { Moment, Stage } from '../core/stage'
 import { Post } from '../post/post'
@@ -32,6 +33,7 @@ export class Painter {
       stencilBuffer: false,
       minFilter: THREE.NearestFilter,
       magFilter: THREE.NearestFilter,
+      samples: liveSamples(this.gfx.caps.maxSamples),
     })
     this.stage.resize(w, h)
     return true
