@@ -123,6 +123,9 @@ const LIGHTS = `
   float liveCh = max(dot(geometryNormal, normalize(liveCard + geometryViewDir)), 0.0);
   float liveWrap = clamp(dot(geometryNormal, liveKey) * 0.5 + 0.5, 0.0, 1.0);
   float liveCardWrap = clamp(dot(geometryNormal, liveCard) * 0.5 + 0.5, 0.0, 1.0);
+  float liveRim = clamp((dot(geometryNormal, normalize(mat3(viewMatrix) * vec3(0.76, 0.3, -0.58))) + 0.25) / 1.25, 0.0, 1.0);
+  float liveUp = max(inverseTransformDirection(geometryNormal, viewMatrix).y, 0.0);
+  float liveOpen = smoothstep(0.05, 0.7, liveRim + 0.3 * liveUp);
 `
 
 const SHADE = `
@@ -167,11 +170,12 @@ baseAo *= mix(1.0, mix(0.5, 1.0, smoothstep(0.2, 0.6, baseMossD.b)), baseMoss);
 float baseBlotch = baseNoise(vBasePos * 0.19) * 0.6 + baseNoise(vBasePos * 0.8) * 0.4;
 float baseSun = baseNoise(vBasePos * 0.45 + 7.3);
 float baseSpeck = baseNoise(vBasePos * 6.5);
-vec3 baseStone = baseStoneC * vec3(2.3, 1.75, 1.3) * mix(0.55, 1.3, baseBlotch) * mix(0.45, 1.25, baseStoneD.b) * mix(0.6, 1.2, baseStoneF.b) * mix(0.8, 1.15, baseSpeck);
+vec3 baseStone = baseStoneC * vec3(1.7, 1.65, 1.4) * mix(0.55, 1.3, baseBlotch) * mix(0.45, 1.25, baseStoneD.b) * mix(0.6, 1.2, baseStoneF.b) * mix(0.8, 1.15, baseSpeck);
 baseStone = mix(baseStone, vec3(0.3, 0.27, 0.23), 0.5 * smoothstep(0.68, 0.8, baseSpeck) * baseStoneF.b);
 baseStone = mix(baseStone, baseStone * vec3(0.36, 0.38, 0.42), baseWet);
 vec3 baseGreen = diffuseColor.rgb * mix(vec3(0.2, 0.22, 0.15), vec3(0.56, 0.6, 0.18), smoothstep(0.3, 0.75, baseSun) * (0.35 + 0.65 * baseMossD.b));
 baseGreen *= mix(0.1, 1.15, smoothstep(0.2, 0.9, baseMossD.b)) * mix(0.5, 1.1, baseBlotch);
+baseGreen = mix(vec3(dot(baseGreen, vec3(0.3, 0.6, 0.1))) * vec3(0.95, 1.02, 0.72), baseGreen, 0.62);
 baseGreen = mix(baseGreen, vec3(0.03, 0.035, 0.012), 0.45 * (1.0 - smoothstep(0.1, 0.6, baseRelief.b)));
 float baseFilm = max(smoothstep(0.3, 0.7, 0.6 * baseNoise(vBasePos * 0.31 + 3.1) + 0.3 * baseMossD.b + 0.3 * (1.0 - smoothstep(0.1, 0.7, baseRelief.b))), smoothstep(0.03, 0.28, baseCover.r)) * (1.0 - baseWet) * baseSeat;
 vec3 baseOlive = vec3(0.085, 0.13, 0.04) * mix(0.45, 1.6, baseMossD.b) * mix(0.7, 1.2, baseBlotch);
@@ -193,18 +197,22 @@ ${SHADE}
 {
   ${LIGHTS}
   float liveFuzz = pow(1.0 - liveNv, 2.2);
-  float liveShade = mix(0.24, 1.2, smoothstep(0.3, 0.8, liveWrap));
+  float liveHigh = smoothstep(17.0, 30.0, vBasePos.y);
+  float liveShade = mix(0.1, 1.25, liveOpen * mix(0.3, 1.0, max(liveHigh, smoothstep(0.1, 0.5, liveRim))));
+  vec3 liveKickDir = normalize(mat3(viewMatrix) * vec3(-0.85, 0.3, -0.3));
+  float liveKick = clamp((dot(geometryNormal, liveKickDir) + 0.2) / 1.2, 0.0, 1.0);
   reflectedLight.indirectDiffuse *= mix(1.0, 0.42, baseMoss) * liveShade;
   reflectedLight.directDiffuse *= mix(1.0, liveShade, 0.8);
+  reflectedLight.directDiffuse += diffuseColor.rgb * RECIPROCAL_PI * liveKeyC * vec3(1.0, 0.82, 0.76) * (1.7 * liveKick * liveKick * baseAo);
   float liveTuft = smoothstep(0.35, 0.8, baseMossD.b);
-  vec3 liveTip = vec3(0.5, 0.6, 0.08) * RECIPROCAL_PI * baseMoss * baseAo;
-  reflectedLight.directDiffuse += liveTip * (liveKeyC * (0.1 * liveWrap * liveWrap + 1.1 * liveTuft * pow(liveWrap, 4.0) + 0.6 * liveFuzz * liveWrap * liveWrap) + uRigCardCol * (0.03 * liveCardWrap * liveCardWrap + 0.14 * liveFuzz * liveCardWrap));
+  vec3 liveTip = vec3(0.66, 0.64, 0.25) * RECIPROCAL_PI * baseMoss * baseAo;
+  reflectedLight.directDiffuse += liveTip * (liveKeyC * ((1.6 + 7.0 * liveTuft + 3.0 * liveFuzz) * (liveRim * liveRim + 0.3 * liveUp * liveUp * liveHigh) * liveOpen) + uRigCardCol * (0.01 * liveCardWrap * liveCardWrap + 0.04 * liveFuzz * liveCardWrap));
   vec3 liveCell = floor(vBasePos * 7.5);
   vec3 liveFacet = normalize(normalMatrix * normalize(baseObjectNormal + 1.3 * (vec3(baseHash(liveCell + 3.7), baseHash(liveCell + 11.3), baseHash(liveCell + 23.9)) - 0.5)));
   float liveGrit = smoothstep(0.34, 0.08, length(fract(vBasePos * 7.5) - 0.5)) * step(0.66, baseHash(liveCell));
   float liveDew = pow(max(dot(liveFacet, normalize(liveKey + geometryViewDir)), 0.0), 120.0);
   float liveDewCard = pow(max(dot(liveFacet, normalize(liveCard + geometryViewDir)), 0.0), 120.0);
-  reflectedLight.directSpecular += mix(vec3(1.0), vec3(1.0, 0.82, 0.45), baseMoss) * (liveKeyC * (liveDew * 2.2 + 0.16 * pow(liveDew, 0.2) * baseMoss) + uRigCardCol * (liveDewCard * 1.2 + 0.06 * pow(liveDewCard, 0.2) * baseMoss)) * liveGrit * baseAo * mix(0.25 * baseWet, 1.0, max(baseMoss, 0.5 * baseFilm));
+  reflectedLight.directSpecular += mix(vec3(1.0), vec3(1.0, 0.82, 0.45), baseMoss) * (liveKeyC * (liveDew * 1.0 + 0.03 * pow(liveDew, 0.2) * baseMoss) + uRigCardCol * (liveDewCard * 0.3 + 0.01 * pow(liveDewCard, 0.2) * baseMoss)) * liveGrit * baseAo * mix(0.25 * baseWet, 1.0, max(baseMoss, 0.5 * baseFilm));
   float liveF = 0.03 + 0.97 * pow(1.0 - liveNv, 5.0);
   vec3 liveAway = inverseTransformDirection(reflect(-geometryViewDir, geometryNormal), viewMatrix);
   float liveSheet = baseWet * baseAo;
@@ -218,7 +226,7 @@ vec4 baseDetail = texture2D(uBaseDetail, vMapUv);
 float baseBark = vBaseUv1.x;
 float baseAo = vBaseUv1.y;
 vec3 baseWood = diffuseColor.rgb * vec3(0.7, 0.57, 0.46) * vBasePaint * mix(0.7, 1.15, baseDetail.b);
-baseWood = mix(vec3(dot(baseWood, vec3(0.3, 0.5, 0.2))), baseWood, 0.38) * vec3(1.8, 1.62, 1.44);
+baseWood = mix(vec3(dot(baseWood, vec3(0.3, 0.5, 0.2))), baseWood, 0.5) * vec3(0.95, 0.8, 0.62);
 diffuseColor.rgb = mix(vBasePaint, baseWood, baseBark);
 `
 
@@ -235,6 +243,10 @@ const GROWTH_AFTER = `
 ${SHADE}
 {
   ${LIGHTS}
+  float liveShade = mix(0.12, 1.2, liveOpen);
+  reflectedLight.indirectDiffuse *= liveShade;
+  reflectedLight.directDiffuse *= mix(1.0, liveShade, 0.8);
+  reflectedLight.directDiffuse += diffuseColor.rgb * RECIPROCAL_PI * liveKeyC * vec3(1.0, 0.8, 0.66) * (2.2 * liveRim * liveRim * liveOpen * baseAo);
   vec3 liveSkin = diffuseColor.rgb * RECIPROCAL_PI * (1.0 - baseBark) * baseAo;
   reflectedLight.directDiffuse += liveSkin * (liveKeyC * 0.45 * liveWrap * liveWrap + uRigCardCol * 0.6 * liveCardWrap * liveCardWrap);
   reflectedLight.directSpecular += (liveKeyC * pow(liveNh, 60.0) * 0.5 + uRigCardCol * pow(liveCh, 50.0) * 0.4) * baseAo * mix(0.6, 0.25, baseBark);
@@ -346,7 +358,7 @@ void main() {
   col += glow * vec3(0.86, 0.94, 1.0) * (body * 0.13 + core * (0.1 * streak + 1.3 * fine + 3.0 * head) + mix(0.16, 0.5, smoothstep(0.97, 0.86, t)) * rimline * (0.4 + 0.6 * h0));
   vec3 cell = floor(vec3(u * 3.0, (mm - run) * 0.9, 1.0));
   float spark = step(0.78, baseHash(cell + 5.0)) * smoothstep(0.32, 0.06, length(fract(vec2(u * 3.0, (mm - run) * 0.9)) - 0.5));
-  col += (uWaterKeyCol * vec3(1.0, 0.8, 0.55) + 0.4 * uRigCardCol) * 2.4 * spark * sqrt(body);
+  col += (uWaterKeyCol * vec3(1.0, 0.8, 0.55) + 0.4 * uRigCardCol) * 0.7 * spark * sqrt(body);
   float edge = smoothstep(0.0, 0.3, body);
   col *= edge * uWater.w;
   gl_FragColor = vec4(col, 0.07 * edge * uWater.w);

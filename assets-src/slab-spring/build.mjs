@@ -13,8 +13,8 @@ const started = process.hrtime.bigint()
 export const COLS = 4
 export const ROWS = 3
 const CELL = 512
-const FILL = 480
-const FAR = { px: 2048, halfMm: 520, fromMm: 232, count: 440, sizeMm: [7, 11.5] }
+const FILL = 400
+const FAR = { px: 2048, halfMm: 520, fromMm: 232, count: 440, sizeMm: [8.4, 13.8] }
 const PINK = [0.93, 0.72, 0.78]
 
 const flipRows = (bytes, w, h, ch) => {
