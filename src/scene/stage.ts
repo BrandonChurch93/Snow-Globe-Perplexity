@@ -49,6 +49,9 @@ void main() {
   gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }`
 
+/** The power the veil's share of the swap window is raised to. */
+const VEIL_LATE = 2.5
+
 export class GlobeStage implements Stage {
   readonly standIn = true
   readonly scene = new THREE.Scene()
@@ -253,7 +256,9 @@ export class GlobeStage implements Stage {
     f.to = b.kit
     f.change = change
     f.mix.light = partChange('light', change)
-    f.mix.veil = partChange('veil', change)
+    // The veil crosses through the whole window, but late: a sixth of the way at the middle of the window, four tenths where the base
+    // begins to change. Crossed evenly, the storm stood in the new season's colour a dozen frames before the outside of the globe.
+    f.mix.veil = Math.pow(partChange('veil', change), VEIL_LATE)
     f.mix.base = partChange('base', change)
     f.mix.particles = partChange('particles', change)
     f.mix.bloom = changeBloom(change)
