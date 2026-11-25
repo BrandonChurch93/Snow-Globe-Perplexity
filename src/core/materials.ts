@@ -27,7 +27,7 @@ export const DRESSING_FRONT = { gain: 2, fromMm: 58, toMm: 230 } as const
 
 /**
  * How the parts outside the glass give way inside their span. The new season's light pours out of the globe: a front runs
- * down the base from the collar to the foot over the first `share` of the span, and on across the table from the foot
+ * down the base from the collar to the foot inside `cutLong` of the span from `cutFrom` on (less than a frame of the film), and on across the table from the foot
  * outward over the span from `tableFrom` on. Behind the front a part is the new season, ahead of it the old; the front's
  * edge is broken into patches (`cellMm`, in the part's own space, so it travels with the globe) and feathered across the
  * samples of a frame (`feather`), and it carries the new season's light (`glowBase`, `glowTable` wide, in shares of the
@@ -37,7 +37,7 @@ export const DRESSING_FRONT = { gain: 2, fromMm: 58, toMm: 230 } as const
  * and takes the whole span from `tableFrom` on to cross it. The code of a part's kind rides in `uState.z`: 0 and above is the lag
  * of a part inside the glass, under 0 the table's gain, under `-BASE_CODE` the base's.
  */
-export const OUTSIDE_FRONT = { share: 0.62, gain: 3, tableFrom: 0.26, rayMm: 110, streak: 3.4, cellMm: 6.5, fineMm: 2.3, fine: 0.36, contrast: 2.6, feather: 0.14, glowBase: 0.11, glowTable: 0.07, topMm: 33, footMm: 0 } as const
+export const OUTSIDE_FRONT = { cutFrom: 0.24, cutLong: 0.1, gain: 3, tableFrom: 0.26, rayMm: 110, streak: 3.4, cellMm: 6.5, fineMm: 2.3, fine: 0.36, contrast: 2.6, feather: 0.14, glowBase: 0.11, glowTable: 0.07, topMm: 33, footMm: 0 } as const
 const BASE_CODE = 10
 
 /**
@@ -213,7 +213,9 @@ float stageChange() {
     if (uState.z < -${(BASE_CODE - 1).toFixed(1)}) {
       float gain = -uState.z - ${BASE_CODE.toFixed(1)};
       float way = clamp((${(OUTSIDE_FRONT.topMm).toFixed(1)} + uLightFloodFloor.x - vStageLocal.y) / ${(OUTSIDE_FRONT.topMm - OUTSIDE_FRONT.footMm).toFixed(1)}, 0.0, 1.0);
-      float run = through / ${OUTSIDE_FRONT.share.toFixed(2)};
+      // The base is cut, not crossed: the front runs down it between two frames of the film (the third and the fourth of its span),
+      // so no frame holds a base that is half one season and half the next.
+      float run = (through - ${OUTSIDE_FRONT.cutFrom.toFixed(2)}) / ${OUTSIDE_FRONT.cutLong.toFixed(2)};
       float reach = run * (1.0 + gain) - gain * way;
       stageEdge = stagePatch(vStageLocal);
       float at = (reach - clamp(stageEdge, 0.0, 1.0)) / (gain * ${OUTSIDE_FRONT.glowBase.toFixed(2)});
