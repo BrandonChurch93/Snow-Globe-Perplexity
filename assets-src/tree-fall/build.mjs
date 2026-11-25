@@ -1,17 +1,22 @@
+import fs from 'node:fs'
 import * as THREE from 'three'
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import { fromThree, writeGlb } from '../../tools/lib/glb.mjs'
+import { addLevels } from '../../tools/lib/glblevels.mjs'
 import { rel, writeJson } from '../../tools/lib/paths.mjs'
 import { loadSource } from '../trunk/source.mjs'
 import { loadLayout } from '../village/layout.mjs'
 
 const TAU = Math.PI * 2
+const LEVELS = { medium: { error: 0.12, worth: 1 }, low: { error: 0.3, worth: 1 } }
 const GLASS_CLEAR = 3.2
-const BOUGH = { perLimb: [2, 4], from: 0.3, length: [6.5, 12], seg: 1.05, radius: 1.0, minR: 0.42, turn: 0.3, kink: 0.95, kinkShare: 0.3, rise: 0.1 }
-const TWIG = { each: [2, 3], length: [0.3, 0.55], seg: 0.8, radius: 0.86, turn: 0.3, kink: 1.0, kinkShare: 0.3 }
-const SPIKE = { each: [0.4, 1.8], length: [0.28, 0.5], seg: 0.6, radius: 0.78, turn: 0.2, kink: 0.6, kinkShare: 0.15 }
-const TIP_R = 0.095
-const EMBER = { count: 58, apart: 2.6, r: [0.17, 0.3], drop: [0.02, 0.22], stalk: 0.045, cap: 0.6 }
+const BOUGH = { perLimb: [1, 2], from: 0.3, length: [9, 15], seg: 1.05, radius: 1.0, minR: 0.5, turn: 0.3, kink: 0.9, kinkShare: 0.3, rise: 0.4, lift: 0.4, tip: [11, 17], tipLift: 0.6 }
+const TWIG = { each: [0.6, 1.2], length: [0.3, 0.52], seg: 0.8, radius: 0.86, turn: 0.3, kink: 1.0, kinkShare: 0.3 }
+const SPIKE = { each: [0.1, 0.7], length: [0.28, 0.5], seg: 0.6, radius: 0.78, turn: 0.2, kink: 0.6, kinkShare: 0.15 }
+const TIP_R = 0.11
+const THICK = { limb: 1.85, twig: 1.5, bough: 0.78, tip: 0.9 }
+const SLEEVE = { from: -3.2, to: 36.5, split: 15.2, step: [0.45, 0.6], around: [96, 48], out: 0.05, deep: [0.95, 0.34], stem: 0.42, twist: 2.4 }
+const EMBER = { count: 36, apart: 3.6, r: [0.15, 0.26], drop: [0.02, 0.22], stalk: 0.045, cap: 0.6 }
 
 const [T, RNG] = await loadSource(['/src/miniature/trunk.ts', '/src/core/rng.ts'])
 const L = await loadLayout()
@@ -73,19 +78,21 @@ for (const limb of T.limbs) {
       const t = BOUGH.from + (1 - BOUGH.from) * ((k + rng.range(0.1, 0.9)) / n)
       const i = Math.min(pts.length - 1, Math.round(t * (pts.length - 1)))
       const d = turned(tan(i), rng.range(0.5, 1.1))
-      d.y = Math.abs(d.y) * 0.8 + 0.15
-      grow(pts[i], d.normalize(), rng.range(BOUGH.length[0], BOUGH.length[1]) * (0.75 + 0.5 * (1 - t)), Math.max(BOUGH.minR, limb.radii[i] * BOUGH.radius), 0, BOUGH)
+      d.y = Math.abs(d.y) * 0.8 + BOUGH.lift
+      grow(pts[i], d.normalize(), rng.range(BOUGH.length[0], BOUGH.length[1]) * (0.75 + 0.5 * (1 - t)), Math.max(BOUGH.minR, limb.radii[i] * BOUGH.radius * THICK.limb * THICK.bough), 0, BOUGH)
     }
-    grow(pts[pts.length - 1], tan(pts.length - 1), rng.range(7, 11), Math.max(BOUGH.minR, limb.radii[limb.radii.length - 1] * 0.95), 0, BOUGH)
+    grow(pts[pts.length - 1], tan(pts.length - 1).add(new THREE.Vector3(0, BOUGH.tipLift, 0)).normalize(), rng.range(BOUGH.tip[0], BOUGH.tip[1]), Math.max(BOUGH.minR, limb.radii[limb.radii.length - 1] * THICK.limb * THICK.tip), 0, BOUGH)
+    chains.push({ pts, radii: limb.radii.map((r) => r * THICK.limb), depth: 0, sleeve: true })
   } else if (limb.kind === 'twig') {
     const last = pts.length - 1
-    grow(pts[last], tan(last), rng.range(3, 6.5), Math.max(TIP_R * 2, limb.radii[last] * 0.95), 1, TWIG)
-    if (rng.next() < 0.7) grow(pts[Math.floor(last * 0.55)], turned(tan(Math.floor(last * 0.55)), rng.range(0.6, 1.1)), rng.range(2, 4.5), 0.13, 1, TWIG)
+    grow(pts[last], tan(last), rng.range(3, 6.5), Math.max(TIP_R * 2, limb.radii[last] * THICK.twig * THICK.tip), 1, TWIG)
+    chains.push({ pts, radii: limb.radii.map((r) => r * THICK.twig), depth: 1, sleeve: true })
+    if (rng.next() < 0.45) grow(pts[Math.floor(last * 0.55)], turned(tan(Math.floor(last * 0.55)), rng.range(0.6, 1.1)), rng.range(2, 4.5), 0.13, 1, TWIG)
   }
 }
 
 function tube(chain, n) {
-  const sides = chain.radii[0] > 0.2 ? 7 : 5
+  const sides = chain.radii[0] > 0.9 ? 10 : chain.radii[0] > 0.45 ? 7 : chain.radii[0] > 0.2 ? 5 : 4
   const pts = chain.pts
   const count = pts.length
   const row = sides + 1
@@ -106,10 +113,10 @@ function tube(chain, n) {
     nrm.sub(tk.clone().multiplyScalar(nrm.dot(tk))).normalize()
     const bin = new THREE.Vector3().crossVectors(tk, nrm)
     if (i > 0 && i < count) along += pts[k].distanceTo(pts[k - 1])
-    const knot = 1 + 0.16 * Math.sin(along * 2.6 + n) + (i === 0 ? 0.35 : 0)
+    const knot = 1 + 0.16 * Math.sin(along * 2.6 + n) + (i === 0 && !chain.sleeve ? 0.35 : 0)
     const r = i === count ? 0.012 : chain.radii[k] * knot
     const c = pts[k].clone()
-    if (i === count) c.add(tk.clone().multiplyScalar(0.4 + 2.2 * chain.radii[k]))
+    if (i === count) c.add(tk.clone().multiplyScalar(0.12 + 1.1 * chain.radii[k]))
     for (let j = 0; j <= sides; j++) {
       const a = (j / sides) * TAU
       const rr = r * (1 + 0.14 * Math.sin(3 * a + along * 1.3 + n))
@@ -143,7 +150,75 @@ function tube(chain, n) {
   return g
 }
 
-const twigs = mergeGeometries(chains.map((c, i) => tube(c, i + 1)))
+const smoothstep = (a, b, v) => {
+  const t = Math.min(1, Math.max(0, (v - a) / (b - a)))
+  return t * t * (3 - 2 * t)
+}
+function barkAt(phi, h) {
+  const a = phi + T.trunkTwist(h) * SLEEVE.twist
+  const wander = 0.4 * Math.sin(2 * a + 0.27 * h + 1.1) + 0.28 * Math.sin(3 * a - 0.33 * h + 0.5)
+  const broad = Math.pow(Math.abs(Math.sin(4.5 * a + wander)), 0.6)
+  const fine = Math.pow(Math.abs(Math.sin(11.5 * a + 1.8 * wander + 0.7 * Math.sin(0.55 * h) + 0.9)), 0.75)
+  const split = 1 - 0.5 * Math.exp(-Math.pow(Math.sin(0.9 * h + 2.3 * Math.sin(3 * a + 1.3) + 5 * a), 2) / 0.02)
+  return (0.76 * broad + 0.24 * fine) * split
+}
+function sleeve(from, to, step, around, v0) {
+  const hs = []
+  for (let h = from; h < to - step * 0.5; h += step) hs.push(h)
+  hs.push(to)
+  const row = around + 1
+  const pos = []
+  const uv = []
+  const col = []
+  const index = []
+  let v = v0
+  let last = null
+  for (let k = 0; k < hs.length; k++) {
+    const h = hs[k]
+    const [ax, az] = T.trunkAxis(h)
+    const mean = T.trunkRadius(1.1, h)
+    if (last) v += Math.hypot(h - last.h, mean - last.mean)
+    last = { h, mean }
+    const up = smoothstep(2, S.fork + 4, h)
+    const deep = SLEEVE.deep[0] + (SLEEVE.deep[1] - SLEEVE.deep[0]) * up
+    const stout = 1 + SLEEVE.stem * smoothstep(S.fork - 3, S.fork + 7, h)
+    const end = smoothstep(SLEEVE.to, SLEEVE.to - 3, h)
+    for (let j = 0; j <= around; j++) {
+      const phi = (j / around) * TAU
+      const b = barkAt(phi, h)
+      const r = T.trunkRadius(phi, h) * stout + SLEEVE.out + deep * b * (0.35 + 0.65 * end)
+      pos.push(ax + Math.cos(phi) * r, h, az + Math.sin(phi) * r)
+      uv.push(((phi + T.trunkTwist(h)) / TAU) * S.barkAround, v / S.barkMm)
+      const shade = (0.16 + 0.84 * Math.pow(smoothstep(0.08, 0.85, b), 1.5)) * (0.8 + 0.2 * smoothstep(-1, 5, h))
+      const warm = 0.95 + 0.1 * hash(Math.round(((phi + T.trunkTwist(h) * SLEEVE.twist) / TAU) * 9) + 3)
+      col.push(shade * warm, shade * 0.99, shade * (2 - warm) * 0.97)
+    }
+  }
+  for (let k = 0; k < hs.length - 1; k++)
+    for (let j = 0; j < around; j++) {
+      const a = k * row + j
+      const b = a + row
+      index.push(a, b, a + 1, a + 1, b, b + 1)
+    }
+  const g = new THREE.BufferGeometry()
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2))
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3))
+  g.setIndex(index)
+  g.computeVertexNormals()
+  const N = g.getAttribute('normal')
+  for (let k = 0; k < hs.length; k++) {
+    const a = k * row
+    const b = a + row - 1
+    const n = new THREE.Vector3(N.getX(a) + N.getX(b), N.getY(a) + N.getY(b), N.getZ(a) + N.getZ(b)).normalize()
+    N.setXYZ(a, n.x, n.y, n.z)
+    N.setXYZ(b, n.x, n.y, n.z)
+  }
+  return g
+}
+
+const bark = [sleeve(SLEEVE.from, SLEEVE.split, SLEEVE.step[0], SLEEVE.around[0], 0), sleeve(SLEEVE.split - 0.3, SLEEVE.to, SLEEVE.step[1], SLEEVE.around[1], SLEEVE.split - 0.3 - SLEEVE.from)]
+const twigs = mergeGeometries([...bark, ...chains.map((c, i) => tube(c, i + 1))])
 
 function colourOf(g, r, gr, b, a) {
   const n = g.getAttribute('position').count
@@ -186,7 +261,7 @@ const embers = []
 
 const parts = []
 for (const e of embers) {
-  const g = new THREE.IcosahedronGeometry(e.r, 2)
+  const g = new THREE.IcosahedronGeometry(e.r, 1)
   g.deleteAttribute('uv')
   g.applyMatrix4(new THREE.Matrix4().makeScale(1, 1.1, 1))
   g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, -1, 0), e.sway))
@@ -221,7 +296,12 @@ for (const c of chains) {
   for (let i = 0; i < c.pts.length; i++) solid.push(+c.pts[i].x.toFixed(2), +c.pts[i].y.toFixed(2), +c.pts[i].z.toFixed(2), +c.radii[i].toFixed(3))
 }
 const tri = (g) => (g.index ? g.index.count : g.getAttribute('position').count) / 3
-const out = writeGlb(rel('assets-full', 'fall', 'tree-fall.glb'), [fromThree('twigs', twigs, { triangles: tri(twigs), chains: solid }), fromThree('lights', lights, { triangles: tri(lights), bulbs })])
+const file = rel('assets-full', 'fall', 'tree-fall.glb')
+const out = writeGlb(file, [fromThree('twigs', twigs, { triangles: tri(twigs), chains: solid }), fromThree('lights', lights, { triangles: tri(lights), bulbs })])
+const levelled = await addLevels(fs.readFileSync(file), { levels: LEVELS })
+fs.writeFileSync(file, levelled.glb)
+out.bytes = levelled.glb.length
+const lighter = Object.fromEntries(Object.keys(LEVELS).map((l) => [l, levelled.meshes.reduce((n, m) => n + (m[l] ?? m.triangles), 0)]))
 const depths = [0, 1, 2].map((d) => chains.filter((c) => c.depth === d).length)
 writeJson(rel('out', 'work', 'tree-fall', 'build.json'), { made: 'assets-src/tree-fall/build.mjs', file: 'assets-full/fall/tree-fall.glb', bytes: out.bytes, triangles: out.triangles, chains: depths, embers: embers.length })
-console.log(`tree-fall: ${out.triangles} triangles (twigs ${tri(twigs)}, lights ${tri(lights)}), ${(out.bytes / 1e6).toFixed(2)} MB; chains by depth ${depths.join(' / ')}; ${embers.length} embers`)
+console.log(`tree-fall: ${out.triangles} triangles (medium ${lighter.medium}, low ${lighter.low}; twigs ${tri(twigs)}, lights ${tri(lights)}), ${(out.bytes / 1e6).toFixed(2)} MB; chains by depth ${depths.join(' / ')}; ${embers.length} embers`)
