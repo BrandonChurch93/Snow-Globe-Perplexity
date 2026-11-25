@@ -14,6 +14,9 @@
   --label: 12px;
   --pair: 10px;
   --step: 2px;
+  --gap: 26px;
+  --disc: 3px;
+  --dot: 3px;
   --dim: 1;
   --fade: var(--dim-in, 0.18s);
   position: absolute;
@@ -74,14 +77,26 @@
 }
 
 .marks {
+  position: relative;
   grid-column: 1;
   grid-row: 1;
-  justify-self: start;
+  justify-self: end;
   display: flex;
   gap: var(--step);
-  margin-left: calc((var(--glyph) - var(--hit)) / 2);
+  margin-right: var(--gap);
   opacity: var(--dim);
   transition: opacity var(--fade) ease-out;
+}
+
+/* The marks are bare glyphs. Where the table mirrors something light under them, a shade with no edge keeps them quiet and legible. */
+.marks::before {
+  content: '';
+  position: absolute;
+  inset: -4px -12px;
+  border-radius: 999px;
+  background: rgb(var(--shade) / 0.42);
+  filter: blur(11px);
+  pointer-events: none;
 }
 
 .mark,
@@ -114,9 +129,59 @@
   transition: filter 0.5s ease, transform 0.16s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
+/* The disc under a glyph: the same dark glass and hairline as the Shake control, and the same warm rim under a press. */
+.disc {
+  position: absolute;
+  inset: var(--disc);
+  border-radius: 50%;
+  pointer-events: none;
+  transition:
+    background-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.16s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.sound .disc {
+  background: rgb(var(--glass) / 0.46);
+  -webkit-backdrop-filter: blur(14px) saturate(1.25);
+  backdrop-filter: blur(14px) saturate(1.25);
+  box-shadow:
+    inset 0 0 0 1px rgb(var(--line) / 0.15),
+    inset 0 1px 0 0 rgb(var(--line) / 0.08);
+}
+
 .mark {
-  color: rgb(var(--ink) / 0.5);
+  color: rgb(var(--ink) / 0.62);
   transition: color 0.4s ease;
+}
+
+.mark::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: calc((var(--hit) - var(--glyph)) / 2 - var(--dot) - 4px);
+  width: var(--dot);
+  height: var(--dot);
+  margin-left: calc(var(--dot) / -2);
+  border-radius: 50%;
+  background: rgb(var(--lit));
+  box-shadow: 0 0 6px 0 rgb(var(--glow) / 0.8);
+  opacity: 0;
+  transform: scale(0.3);
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+  pointer-events: none;
+}
+
+.mark[aria-pressed='true']::after {
+  opacity: 0.92;
+  transform: none;
+}
+
+.mark[data-target]::after {
+  opacity: 0.45;
+  transform: scale(0.7);
 }
 
 .mark::before {
@@ -153,17 +218,44 @@
   cursor: default;
 }
 
+.mark:active:not([aria-disabled='true']),
+.mark[data-press],
+.sound:active,
+.sound[data-press] {
+  color: rgb(var(--lit));
+  transition-duration: 0.08s;
+}
+
 .mark:active:not([aria-disabled='true']) svg,
-.sound:active svg {
+.mark[data-press] svg,
+.sound:active svg,
+.sound[data-press] svg {
   transform: scale(0.88);
+}
+
+.mark:active:not([aria-disabled='true']) .disc,
+.mark[data-press] .disc,
+.sound:active .disc,
+.sound[data-press] .disc {
+  background-color: rgb(var(--glow) / 0.17);
+  box-shadow:
+    inset 0 0 0 1px rgb(var(--glow) / 0.62),
+    inset 0 0 12px 0 rgb(var(--glow) / 0.2);
+  transform: scale(0.96);
+  transition-duration: 0.08s;
+}
+
+.sound:active .disc,
+.sound[data-press] .disc {
+  background: linear-gradient(rgb(var(--glow) / 0.17), rgb(var(--glow) / 0.17)), rgb(var(--glass) / 0.62);
 }
 
 .sound {
   grid-column: 3;
   grid-row: 1;
-  justify-self: end;
-  margin-right: calc((var(--glyph) - var(--hit)) / 2);
-  color: rgb(var(--ink) / 0.66);
+  justify-self: start;
+  margin-left: calc(var(--gap) + (var(--hit) - var(--glyph)) / 2 - var(--disc));
+  color: rgb(var(--ink) / 0.74);
   opacity: var(--dim);
   transition: opacity var(--fade) ease-out, color 0.3s ease;
 }
@@ -173,7 +265,7 @@
 }
 
 .sound[aria-pressed='false'] {
-  color: rgb(var(--ink) / 0.5);
+  color: rgb(var(--ink) / 0.56);
 }
 
 .waves,
@@ -268,12 +360,14 @@
   transition: opacity 0.25s ease;
 }
 
-.shake:active:not([aria-disabled='true']) {
+.shake:active:not([aria-disabled='true']),
+.shake[data-press] {
   transform: scale(0.97);
   background: rgb(var(--glass) / 0.62);
 }
 
-.shake:active:not([aria-disabled='true'])::before {
+.shake:active:not([aria-disabled='true'])::before,
+.shake[data-press]::before {
   opacity: 0.8;
   transition-duration: 0.08s;
 }
@@ -324,8 +418,12 @@
 
 .mark:focus-visible,
 .sound:focus-visible {
-  outline-offset: -3px;
+  outline-offset: calc(var(--disc) * -1);
   background: rgb(var(--shade) / 0.3);
+}
+
+.sound:focus-visible .disc {
+  box-shadow: none;
 }
 
 .mark:focus-visible:not([aria-pressed='true']),
@@ -495,7 +593,9 @@
     --step: 6px;
   }
 
+  /* The bottom row stands 12 px over the home indicator's strip, and as high where the screen reports none. */
   .bar {
+    --foot: calc(max(env(safe-area-inset-bottom, 0px), 34px) + 12px);
     row-gap: 10px;
   }
 
@@ -516,7 +616,11 @@
   .marks {
     grid-column: 1 / -1;
     justify-self: center;
-    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .marks::before {
+    display: none;
   }
 
   .shake,
@@ -525,24 +629,8 @@
   }
 
   .sound {
-    margin-right: 0;
-  }
-
-  .sound::before {
-    content: '';
-    position: absolute;
-    inset: 3px;
-    border-radius: 50%;
-    background: rgb(var(--glass) / 0.46);
-    -webkit-backdrop-filter: blur(14px) saturate(1.25);
-    backdrop-filter: blur(14px) saturate(1.25);
-    box-shadow:
-      inset 0 0 0 1px rgb(var(--line) / 0.13),
-      inset 0 1px 0 0 rgb(var(--line) / 0.08);
-  }
-
-  .sound:focus-visible::before {
-    opacity: 0;
+    justify-self: end;
+    margin-left: 0;
   }
 }
 
