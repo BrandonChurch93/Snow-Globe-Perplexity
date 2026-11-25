@@ -24,7 +24,7 @@ const RI = RS - config.globe.glassThicknessMm
 const GROUND = config.globe.islandLevelMm - (config.globe.baseHeightMm - config.globe.collarDepthMm + RS)
 const RAD = Math.PI / 180
 
-setGlass('fall', { windowTint: [0.8, 0.88, 1], windowGain: [0.15, 0.05, 1, 1], windowSoftDeg: 4, windowGrain: 0.5, rimTint: [0.5, 0.6, 0.55], wallTint: [0.44, 0.55, 0.48], ringCover: 0.35, strip: 0, bend: 0, ringThin: 1, rimClear: 0.3, topLine: 0, ringMottle: 0.3, ceiling: 0.15, roomHue: [0.85, 0.95, 1.1], roomHueOn: 1, windowShade: 0, rimGlow: 0 })
+setGlass('fall', { windowTint: [0.8, 0.88, 1], windowGain: [0.15, 0.05, 1, 1], windowSoftDeg: 4, windowGrain: 0.5, rimTint: [0.5, 0.6, 0.55], wallTint: [0.44, 0.55, 0.48], ringCover: 0.35, strip: 0, bend: 0, ringThin: 1, rimClear: 0.3, topLine: 0, ringMottle: 0.3, ceiling: 0.15, roomHue: [0.85, 0.95, 1.1], roomHueOn: 1, windowShade: 0, rimGlow: 0, arcs: 3.2, arcTint: [1, 0.42, 0.13], arcCool: 0.4 })
 
 export const look = {
   fog: {
