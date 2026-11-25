@@ -109,10 +109,15 @@ async function liveChecks(session) {
     }
   })
   await page.goto(`${session.server.url}?mode=live`)
-  const marked = await page
-    .waitForFunction(() => document.documentElement.dataset.firstPicture === '1', null, { timeout: cfg.live.loadWaitSeconds * 15000 })
-    .then(() => true)
-    .catch(() => false)
+  // Asked every quarter second, not once a frame: the frame after the first picture loads the rest of the detail and
+  // can take a minute where the picture is drawn in software, and a question tied to frames is answered only after it.
+  const patience = cfg.live.loadWaitSeconds * 15000
+  const asked = Date.now()
+  let marked = false
+  while (!marked && Date.now() - asked < patience) {
+    marked = await page.evaluate(() => document.documentElement.dataset.firstPicture === '1').catch(() => false)
+    if (!marked) await new Promise((r) => setTimeout(r, 250))
+  }
   await page.waitForTimeout(1500)
   const state = () =>
     page.evaluate(() => {

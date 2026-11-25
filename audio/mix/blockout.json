@@ -18,7 +18,17 @@
   "openingSeconds": 0,
   "placed": [
     {
+      "cue": "music-box",
+      "at": 0,
+      "cents": 0
+    },
+    {
       "cue": "lift",
+      "at": 9.6,
+      "cents": 0
+    },
+    {
+      "cue": "shake-spring",
       "at": 9.6,
       "cents": 0
     },
@@ -56,17 +66,24 @@
       "cue": "glass-clink",
       "at": 48,
       "cents": 0
+    },
+    {
+      "cue": "music-box",
+      "at": 57.6,
+      "cents": 0
+    },
+    {
+      "cue": "amb-spring",
+      "from": 9.6,
+      "to": 24
+    },
+    {
+      "cue": "amb-summer",
+      "from": 21.6,
+      "to": 36
     }
   ],
   "skipped": [
-    {
-      "cue": "music-box",
-      "why": "no kept file"
-    },
-    {
-      "cue": "shake-spring",
-      "why": "no kept file"
-    },
     {
       "cue": "land-spring",
       "why": "no kept file"
@@ -100,14 +117,6 @@
       "why": "no kept file"
     },
     {
-      "cue": "amb-spring",
-      "why": "no kept file"
-    },
-    {
-      "cue": "amb-summer",
-      "why": "no kept file"
-    },
-    {
       "cue": "amb-fall",
       "why": "no kept file"
     }
@@ -120,24 +129,28 @@
   "master": {
     "targetLufs": -14,
     "ceilingDb": -1,
-    "gainDb": 10.568,
-    "limiterReductionDb": 1.66,
-    "lufs": -14.02,
-    "truePeakDb": -1.13,
-    "passes": 3,
+    "gainDb": 16.242,
+    "limiterReductionDb": 17.83,
+    "lufs": -14.03,
+    "truePeakDb": -1.15,
+    "passes": 6,
     "silent": false
   },
   "inputs": {
+    "music-box": "72151df063e96e705b89f33748f908f0c03530a75cfac77da7719a3c6a5c9a82",
     "lift": "3def1da6008ad9f0cb4e3435664c84e5bc123b468ffa00a1872b2ae509ee85c6",
-    "glass-clink": "a62138e2781a5f480ec29a3cbe16cabf876f0f466600e4e9223fa2e54c2f984e"
+    "shake-spring": "e6abd21dd21a3ebf8d1e5b5a120cbc919c28d72c3ec23ecc1cb636f0f50c2f9c",
+    "glass-clink": "a62138e2781a5f480ec29a3cbe16cabf876f0f466600e4e9223fa2e54c2f984e",
+    "amb-spring": "8201e37f095b1644d48d18c13a2bdc63622f7880ed2a6cc79406ce1b38dbd35c",
+    "amb-summer": "692f4040c43aa832b9fdcaa17e2c762312807c1e83894f1c62dc57aaa3167bda"
   },
   "measuredByFfmpeg": {
     "lufs": -14,
-    "lra": 3.8,
+    "lra": 6,
     "truePeakDb": -1.1
   },
-  "sha256": "0bea7fb6edbc17a43fa7710f0abcfb279b7de8043acf993ea445d120810388c7",
+  "sha256": "e74133383cbd3ff701a6ba56ad59310395a6867a2fa3546fcfa566a17702ea9c",
   "musicStem": null,
-  "engineHash": "54854b516e91cc12",
-  "time": "2026-11-24T20:34:59.266Z"
+  "engineHash": "71432fafa852fbd3",
+  "time": "2026-11-25T19:10:30.522Z"
 }
