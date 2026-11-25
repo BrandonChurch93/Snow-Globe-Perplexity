@@ -19,7 +19,7 @@ export interface KindLook {
 const LOOKS: Record<string, KindLook> = {
   flake: { shape: SHAPE.cluster, size: 0.95, body: 0.95, flash: 0, real: true },
   glitter: { shape: SHAPE.mirror, size: 1.15, body: 0.3, flash: 5.5, real: true },
-  petal: { shape: SHAPE.petal, size: 1, body: 0.96, flash: 0.75, real: true },
+  petal: { shape: SHAPE.petal, size: 1.25, body: 0.9, flash: 0.75, real: true },
   mote: { shape: SHAPE.fleck, size: 1.2, body: 0.8, flash: 1, real: true },
   leaf: { shape: SHAPE.leaf, size: 1.6, body: 1, flash: 0.35, real: true },
   seed: { shape: SHAPE.seed, size: 3.6, body: 0.9, flash: 0, real: true },
@@ -169,11 +169,14 @@ export const GLINT_HIGH = 0.9994
 /** The kinds drawn as cards (shapes from 3 on): a thin curved sheet with its own outline, turned by the particle's turn. For these `flash` is the share of light let through from behind. */
 export const CARD = {
   thick: 0.1,
-  petalThick: 0.3,
+  petalThick: 0.42,
+  /** A petal's deeper pink at its foot, and how far along the petal it has paled to the row's colour. */
+  petalFoot: [0.92, 0.5, 0.62] as const,
+  petalFootTo: 0.75,
   /** The spread of the sizes of the petals and the leaves: the least and the most as shares of the row's size, and the skew toward the small. */
   spread: [0.5, 1.35, 1.5] as const,
   /** The few near the eye that are far out of focus: their share, the depths they start and are full at, how much larger they are drawn, their blur in pixels of a 1080 picture, and how much of them is kept off the middle of the picture. */
-  near: { share: 0.4, from: 0.05, to: 0.7, size: 1.7, px: [2.5, 12] as const, clear: 0.55 },
+  near: { share: 0.4, from: 0.05, to: 0.7, size: 1.7, petalSize: [1.2, 3.4] as const, petalSkew: 2.5, px: [2.5, 12] as const, clear: 0.55 },
   /** At rest nothing is drawn large or soft in front of the cottage and the tree (winter's REST_CLEAR for the cards): inside the middle of the picture, from this depth forward and up to this height above the globe's centre, a sheet and a seed head are held to these radii in pixels of a 1080 picture, keep this share of the lens's blur, and none is of the large soft class. */
   clear: { back: -0.25, front: 0.05, lowMm: 6, highMm: 26, blur: 0.25, sheetPx: 11, seedPx: 10 },
   /** The ones far behind are a little out of focus too. */
@@ -281,7 +284,7 @@ export const CARD = {
   /** How much lighter a bat's edge is than its body, so that its outline holds on dark air. */
   batRim: 1.5,
   /** A light's core, its glow and its wide glow, as radii in the particle's radius and as shares of its light. */
-  glow: { spread: [0.55, 2, 3] as const, discFrom: [1.3, 3.2] as const, discWide: 1.55, discRim: 0.3, discHold: 0.42, core: 0.34, halo: 1.5, wide: 4.5, haloShare: 0.1, wideShare: 0.01, hide: 0.6, blinkLow: 0.04 },
+  glow: { spread: [0.55, 2, 3] as const, discFrom: [1.3, 3.2] as const, discWide: 1.55, discRim: 0.3, discHold: 0.42, core: 0.34, halo: 1.5, wide: 4.5, haloShare: 0.1, wideShare: 0.01, hide: 0.6, blinkLow: 0.04, nearShare: 0.07 },
   spark: { gain: 1.9, core: 0.3, halo: 1.3, haloShare: 0.07, tail: 1.6, calmTail: 0.1, hotCore: 0.8, hotWide: 0.3, hotFrom: [0.8, 2.2] as const, discHold: 0.25, discRim: 0.08, soft: 0.12, nearShare: 0.022, nearFrom: [0.05, 0.45] as const, nearPx: [9, 20] as const, calmStreak: 0.08, small: 1.8, large: 0.75, fromMm: [0.12, 0.7] as const, hot: [1, 0.74, 0.26] as const, dying: [0.85, 0.17, 0.03] as const },
   hair: { gain: 1.5, soft: 0.3, restSize: 1.5, restWide: 0.55, restBall: 0.25, restOdd: 0.6, restSeen: 0.62, runHead: 0.5, runTrail: 0.6, runWide: 0.04, wide: 0.012, seen: 1.25, hairSeen: 1.5, stemSeen: 0.8, reach: 1.7, foot: 1.15, stem: 0.012, body: 0.04, hub: 0.3, spread: [0.55, 1.3, 1.3] as const, count: 52, open: [0.4, 2.25] as const, long: [0.7, 1.08] as const, droop: 0.16, thin: 0.55, lean: 0.25, tipFade: 0.35, ballAt: 0.5, ballWide: 0.55, ball: [0.1, 0.42] as const, ballFrom: [0.06, 0.45] as const, stemTint: [0.62, 0.48, 0.32] as const, },
 }
