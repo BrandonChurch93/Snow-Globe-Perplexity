@@ -37,16 +37,16 @@ export const look = {
     coreAcross: 0.03,
     coreAlong: 0.062,
     // the bloom of the lens round the core: a soft ball a few millimetres wide
-    bloom: 5,
-    bloomWide: 0.085,
+    bloom: 3.2,
+    bloomWide: 0.06,
     halo: 0.7,
     haloWide: 0.24,
     veil: 0.22,
     // the star: many soft tapered rays, short, each with its own length, widest at the core, fanning away from the globe
-    rays: 0.8,
-    spikes: 13,
-    reach: [0.17, 0.16] as const,
-    rayWide: [0.016, 0.05] as const,
+    rays: 1.3,
+    spikes: 18,
+    reach: [0.2, 0.16] as const,
+    rayWide: [0.008, 0.024] as const,
     arc: 1.6,
     hot: [1, 0.9, 0.72] as const,
     warm: [1, 0.7, 0.38] as const,
@@ -227,8 +227,8 @@ void main() {
   hot += 0.7 * exp(-pow((r - 0.872) / 0.022, 2.0) - pow((a + 0.1) / 0.06, 2.0));
   hot *= lines;
   // the middle of it burns out
-  hot += 1.2 * exp(-pow((r - 0.908) / 0.028, 2.0) - pow((a + 0.01) / 0.065, 2.0));
-  float glow = exp(-pow((r - 0.9) / 0.06, 2.0) - a * a / 0.03);
+  hot += 0.8 * exp(-pow((r - 0.915) / 0.02, 2.0) - pow((a + 0.01) / 0.085, 2.0));
+  float glow = exp(-pow((r - 0.91) / 0.04, 2.0) - a * a / 0.05);
   float edge = exp(-pow((r - 0.972) / 0.012, 2.0)) * exp(-pow((a - 0.45) / 0.75, 2.0));
   // in the storm the liquid scatters the sun: the patch is a dull amber glow, not a burn
   float clear = 1.0 - ${n(W.stormDulls)} * storm;
