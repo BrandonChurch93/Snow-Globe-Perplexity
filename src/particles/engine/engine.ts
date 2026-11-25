@@ -38,6 +38,14 @@ export const SWAP_HALF = 0.22
 const HOLD = 0.6
 const GRAVITY_MM = 9810
 const STEER_GAIN = 1.5
+/** A light that is carried off by the storm goes dim and stops blinking; it lights again as it comes within this many reaches of the point it wanders after (at home it is never farther than two). */
+const HOME_NEAR_REACHES = 2.2
+const HOME_UNLIT = 0.4
+/** Carried: the liquid about it moves faster than this many times its own cruising pace. Still: it moves slower than this share of that pace. */
+const HOME_CARRIED = 3
+const HOME_STILL = 0.5
+const HOME_LIGHTS_SECONDS = 0.7
+const HOME_DIMS_SECONDS = 0.3
 const CURL = 2.5 / (R * R)
 const NOISE_INV_CELL = (NOISE_N - 1) / (2 * R)
 const NOISE_TOP = NOISE_N - 1.0001
@@ -1204,6 +1212,21 @@ export class ParticleEngine {
     const q = this.q
     const g = this.g
     wanderAt(i, k, this.home, (n + 1) * DT, 0, q)
+    if (!TABLE_OF[k]!.orbit) {
+      const hx = q[0]! - x
+      const hy = q[1]! - y
+      const hz = q[2]! - z
+      const lit = this.fade[i]!
+      const near = HOME_NEAR_REACHES * TABLE_OF[k]!.reachMm
+      const cruise0 = K_CRUISE[k]!
+      const carried = ux * ux + uy * uy + uz * uz > HOME_CARRIED * HOME_CARRIED * cruise0 * cruise0
+      const pace2 = vel[o]! * vel[o]! + vel[o + 1]! * vel[o + 1]! + vel[o + 2]! * vel[o + 2]!
+      // home, or as near to it as the things in its way let it come; a light that was never put out stays lit wherever it wanders
+      const arrived = hx * hx + hy * hy + hz * hz < near * near || pace2 < HOME_STILL * HOME_STILL * cruise0 * cruise0
+      const next = !carried && (arrived || lit >= 1) ? Math.min(1, lit + H / HOME_LIGHTS_SECONDS) : Math.max(HOME_UNLIT, lit - H / HOME_DIMS_SECONDS)
+      this.fade[i] = next
+      this.opacity[i] = next
+    }
     const cruise = K_CRUISE[k]!
     const clr = K_CLEAR[k]!
     let sx = (q[0]! - x) * STEER_GAIN

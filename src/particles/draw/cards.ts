@@ -40,7 +40,7 @@ export const CARD_VERT = `
     float dabShare = ${at(SHAPE.leaf)} ? ${n(CARD.dabShare[1])} : (${at(SHAPE.seed)} ? ${n(CARD.dabShare[2])} : ${n(CARD.dabShare[0])});
     float whole = way.z < 0.5 || u5 < max(way.x, way.y) || own > 1.0 - chosen ? 1.0 : 0.0;
     float keepC = mix(afloat * max(gustC, ${n(CARD.dabCalm)} * uStorm.x * uStorm.w) * mix(${n(CARD.dabKeep[0])}, ${n(CARD.dabKeep[1])}, smoothstep(1.0 - chosen - dabShare - 0.02, 1.0 - chosen - dabShare, own)), 1.0, whole);
-    if (${at(SHAPE.seed)} && whole > 0.5 && way.z > 0.5 && u5 >= max(way.x, way.y)) keepC *= max(afloat * gustC, uStorm.x * uStorm.w);
+    if (${at(SHAPE.seed)} && whole > 0.5 && way.z > 0.5 && u5 >= max(way.x, way.y)) keepC *= max(max(afloat * gustC, uStorm.x * uStorm.w), lying * step(fract(own * 977.0), ${n(CARD.clear.snagSeen)}));
     if (${at(SHAPE.spark)}) keepC = max(mix(${n(CARD.sparkKeep[0])}, ${n(CARD.sparkKeep[1])}, pow(own, ${n(CARD.sparkSkew)})), smoothstep(${n(CARD.sparkClear[0])}, ${n(CARD.sparkClear[1])}, own));
     if (${at(SHAPE.fleck)}) keepC = mix(${n(CARD.fleckKeep[0])}, ${n(CARD.fleckKeep[1])}, pow(own, mix(${n(CARD.fleckSkew)}, ${n(CARD.fleckStorm)}, gustC)));
     float stormSize = ${at(SHAPE.petal)} ? ${n(CARD.stormSize[0])} : (${at(SHAPE.leaf)} ? ${n(CARD.stormSize[1])} : 1.0);
@@ -60,16 +60,17 @@ export const CARD_VERT = `
     float windowC = (1.0 - smoothstep(${n(STORM_WINDOW.from)}, ${n(STORM_WINDOW.to)}, length((nowL.xy - vec2(${n(STORM_WINDOW.x)}, ${n(STORM_WINDOW.y)})) / vec2(${n(STORM_WINDOW.wide)}, ${n(STORM_WINDOW.high)})))) * smoothstep(${n(STORM_WINDOW.back)}, ${n(STORM_WINDOW.front)}, nowL.z);
     keepC *= 1.0 - ${n(CARD.window)} * windowC * gustC * (sheet + (${at(SHAPE.seed)} ? 1.0 : 0.0));
     float clearC = over * smoothstep(${n(CARD.clear.back)}, ${n(CARD.clear.front)}, depth) * (1.0 - smoothstep(${n(CARD.clear.lowMm)}, ${n(CARD.clear.highMm)}, nowL.y)) * (shape > ${n(SHAPE.bat - 0.5)} ? 0.0 : 1.0);
-    float nearC = afloat * (1.0 - gustC) * whole * (shape > ${n(SHAPE.bat - 0.5)} ? 0.0 : 1.0) * step(fract(h.y * 29.0), ${at(SHAPE.spark)} ? ${n(CARD.spark.nearShare)} : ${n(CARD.near.share)}) * (${at(SHAPE.spark)} ? smoothstep(${n(CARD.spark.nearFrom[0])}, ${n(CARD.spark.nearFrom[1])}, depth) : smoothstep(${n(CARD.near.from)}, ${n(CARD.near.to)}, depth)) * (1.0 - ${n(CARD.near.clear)} * over) * (1.0 - clearC);
+    float nearC = afloat * (1.0 - gustC) * whole * (shape > ${n(SHAPE.bat - 0.5)} ? 0.0 : 1.0) * step(fract(h.y * 29.0), ${at(SHAPE.spark)} ? ${n(CARD.spark.nearShare)} : (${at(SHAPE.light)} ? ${n(CARD.glow.nearShare)} : ${n(CARD.near.share)})) * (${at(SHAPE.spark)} ? smoothstep(${n(CARD.spark.nearFrom[0])}, ${n(CARD.spark.nearFrom[1])}, depth) : smoothstep(${n(CARD.near.from)}, ${n(CARD.near.to)}, depth)) * (1.0 - ${n(CARD.near.clear)} * over) * (1.0 - clearC);
     if (${at(SHAPE.seed)}) {
       nearC = 0.0;
       rC *= mix(${n(CARD.hair.restSize)}, 1.0, max(gustC, 1.0 - whole));
-      keepC *= 1.0 - over * (1.0 - smoothstep(${n(CARD.clear.lowMm)}, ${n(CARD.clear.highMm)}, nowL.y)) * whole * (1.0 - gustC);
+      keepC *= 1.0 - over * (1.0 - smoothstep(${n(CARD.clear.lowMm)}, ${n(CARD.clear.highMm)}, nowL.y)) * whole * (1.0 - gustC) * afloat;
     }
     if (${at(SHAPE.spark)}) keepC = mix(keepC, 1.0, nearC);
     float farC = afloat * (1.0 - gustC) * whole * (shape > ${n(SHAPE.bat - 0.5)} ? 0.0 : 1.0) * smoothstep(${n(CARD.far.from)}, ${n(CARD.far.to)}, depth);
-    rC *= 1.0 + ${n(CARD.near.size - 1)} * nearC * (sheet + (${at(SHAPE.seed)} ? 0.6 : 0.0));
+    rC *= 1.0 + (${at(SHAPE.petal)} ? mix(${n(CARD.near.petalSize[0] - 1)}, ${n(CARD.near.petalSize[1] - 1)}, pow(fract(h.y * 173.0), ${n(CARD.near.petalSkew)})) : ${n(CARD.near.size - 1)}) * nearC * (sheet + (${at(SHAPE.seed)} ? 0.6 : 0.0));
     rC = mix(rC, min(rC, uPoint.w * (${at(SHAPE.seed)} ? ${n(CARD.clear.seedPx)} : (sheet > 0.5 ? ${n(CARD.clear.sheetPx)} : 1e4))), clearC);
+    if (${at(SHAPE.seed)} && aState > 0.5) rC = min(rC, uPoint.w * mix(${n(CARD.clear.snagPx[0])}, ${n(CARD.clear.snagPx[1])}, pow(fract(h.w * 113.0), ${n(CARD.clear.snagSkew)})));
     if (shape > ${n(SHAPE.bat - 0.5)}) rC /= shrink;
     float ph = aData.w;
     float yaw = 6.2831853 * h.x + ${n(CARD.yawSway)} * sin(ph + 6.2831853 * h2.x) * afloat;
@@ -157,6 +158,7 @@ export const CARD_VERT = `
     if (whole < 0.5 && lineC < 0.5) stC *= ${n(CARD.dabStreak)};
     stC *= uLimit.x / (uLimit.x + length(stC));
     float bowC = 0.0;
+    float dzC = 0.0;
     if (lineC > 0.5) {
       vec3 mvC = (aNow - aPrev) * shut;
       vec3 curC = veilCurrent(nowL);
@@ -164,6 +166,8 @@ export const CARD_VERT = `
       stC = (toView * mvC).xy * (uPoint.y * mag / zImg) * afloat;
       stC *= ${at(SHAPE.seed)} ? mix(${n(CARD.line.seedStretch[0])}, ${n(CARD.line.seedStretch[1])}, pow(fract(own * 97.0), 2.0)) : (${at(SHAPE.leaf)} ? mix(${n(CARD.line.leafStretch[0])}, ${n(CARD.line.leafStretch[1])}, pow(fract(own * 97.0), 2.0)) : mix(${n(CARD.line.stretch[0])}, ${n(CARD.line.stretch[1])}, pow(fract(own * 97.0), 2.0)));
       stC *= uLimit.x / (uLimit.x + length(stC));
+      // how far the trail runs toward or away from the eye, in millimetres over its drawn length
+      dzC = clamp((toView * mvC).z * length(stC) / max(length((toView * mvC).xy) * (uPoint.y * mag / zImg), 1e-4), ${n(-CARD.line.deepMostMm)}, ${n(CARD.line.deepMostMm)}) * afloat;
       keepC *= smoothstep(${n(CARD.line.fromPx[0])}, ${n(CARD.line.fromPx[1])}, length(stC) / uPoint.w);
       vec2 inC = (toView * (vec3(${ROLL_CENTRE.map(n).join(', ')}) - nowL)).xy;
       bowC = mix(${n(CARD.line.bow[0])}, ${n(CARD.line.bow[1])}, fract(h2.z * 131.0)) * (dot(vec2(-stC.y, stC.x), inC) < 0.0 ? -1.0 : 1.0) * (fract(h2.z * 17.0) < 0.25 ? -1.0 : 1.0);
@@ -200,7 +204,7 @@ export const CARD_VERT = `
     }
     vec2 extC = min(vec2(reachC) + 1.05 * hlC * abs(alC), vec2(uLimit.y));
     alpha = aData.z * (shape > ${n(SHAPE.bat - 0.5)} ? 1.0 : rim) * mix(1.0, mix(${n(LENS_LOOK.farDim)}, 1.0, smoothstep(${n(LENS_LOOK.farDimFrom)}, ${n(LENS_LOOK.farDimTo)}, depth)), afloat * (shape > ${n(SHAPE.bat - 0.5)} ? 0.0 : 1.0)) * keepC;
-    if (${at(SHAPE.light)}) alpha *= mix(${n(CARD.glow.blinkLow)}, 1.0, pow(0.5 + 0.5 * sin(ph + 6.2831853 * h.y), 3.0));
+    if (${at(SHAPE.light)}) alpha *= mix(1.0, mix(${n(CARD.glow.blinkLow)}, 1.0, pow(0.5 + 0.5 * sin(ph + 6.2831853 * h.y), 3.0)), smoothstep(${n(CARD.glow.unlit)}, 1.0, aData.z));
     if (shape < ${n(SHAPE.bat - 0.5)}) {
       for (int b = 0; b < ${BATS}; b++) {
         vec4 bt = uBat[b];
@@ -232,6 +236,11 @@ export const CARD_VERT = `
     vGrid = vec4(base0 * min(1.0, ${n(LIT_MOST)} / max(max(base0.r, max(base0.g, base0.b)), 1e-3)), bendFit);
     vDom = vec4(keyIn * uRigPoint.x, lineC);
     clip = clipC;
+    if (${at(SHAPE.seed)} && aState > 0.5) {
+      // a head that has come to rest on a roof or a stone stands on it: its card is drawn that far nearer, so the thing it lies on does not cut it
+      vec4 nearerC = projectionMatrix * vec4(view.xy, view.z + min(reachC * zImg / (uPoint.y * mag), ${n(CARD.clear.snagLiftMm)}), 1.0);
+      clip.z = nearerC.z / nearerC.w * clip.w;
+    }
     if (shape > ${n(SHAPE.bat - 0.5)} && on > 0.5) {
       vec2 fromC = (view.xy / -view.z - centreV.xy / -centreV.z) * uPoint.y;
       float mostC = max(R * uPoint.y / sqrt(max(dist * dist - R * R, 1.0)) - ${n(CARD.batInside)} * rC, 1.0);
@@ -246,6 +255,11 @@ export const CARD_VERT = `
     #else
     vec2 offC = position.xy * extC;
     vCore = vec4(offC, 1.0, alpha);
+    if (lineC > 0.5 && hlC > 1e-3) {
+      // a trail keeps its own depth along its whole length, so a wall or a trunk hides the part of it that runs behind
+      vec4 alongC = projectionMatrix * vec4(view.xy, view.z + dzC * clamp(dot(offC, alC) / (2.0 * hlC), -0.5, 0.5), 1.0);
+      clip.z = alongC.z / alongC.w * clip.w;
+    }
     clip.xy += offC * vec2(projectionMatrix[0][0], projectionMatrix[1][1]) * (clip.w / uPoint.y);
     #endif
     vec4 liftC = projectionMatrix * vec4(view.xy, view.z + min(1.2 * rC * zImg / (uPoint.y * mag), ${n(LENS_LOOK.liftMostMm)}), 1.0);
@@ -424,7 +438,7 @@ float cardCover(float shape, vec2 p, out vec2 q) {
 vec4 cardTint(float shape, vec2 q, vec2 own) {
   float u = clamp(q.x * 0.5 + 0.5, 0.0, 1.0);
   if (shape < ${n(SHAPE.petal + 0.5)}) {
-    vec3 t = mix(vec3(0.9, 0.6, 0.7), vec3(1.0), smoothstep(0.0, 0.6, u)) * mix(vec3(1.0, 0.82, 0.89), vec3(1.0, 1.24, 1.16), own.y);
+    vec3 t = mix(vec3(${CARD.petalFoot.map(n).join(', ')}), vec3(1.0), smoothstep(0.0, ${n(CARD.petalFootTo)}, u)) * mix(vec3(1.0, 0.82, 0.89), vec3(1.0, 1.24, 1.16), own.y);
     t *= 1.0 - 0.12 * exp(-q.y * q.y * 70.0) * (1.0 - u);
     return vec4(t, 1.0);
   }
