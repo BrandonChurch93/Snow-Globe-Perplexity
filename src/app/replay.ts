@@ -73,7 +73,7 @@ export function scriptPlan(name: string, from?: string, to?: string): ScriptPlan
     events.push({ frame: lead, what: `the season is set to ${end} with no shake` })
   } else if (name === 'stir') {
     const run = frames(SCRIPT.stirSeconds)
-    events.push({ frame: lead, what: 'the pointer goes down' }, { frame: lead + run, what: 'the pointer is let go: the stir' })
+    events.push({ frame: lead, what: 'the pointer goes down: the stir builds with the drag' }, { frame: lead + run, what: 'the pointer is let go' })
     frameCount = lead + run + tail
   } else {
     const run = frames(SCRIPT.dragSeconds)
@@ -132,14 +132,14 @@ export class Replay {
       const last = lead + frames(p.name === 'stir' ? SCRIPT.stirSeconds : SCRIPT.dragSeconds) + (p.name === 'drag' ? frames(SCRIPT.holdSeconds) : 0)
       if (at && k === lead) this.drag.down(at[0], at[1], t, SCRIPT.refPx)
       else if (at) this.stir(this.drag.move(at[0], at[1], t))
-      if (k === last) this.stir(this.drag.up())
+      if (k === last) this.drag.up()
     }
   }
 
-  private stir(s: ReturnType<Drag['up']>): void {
+  private stir(s: ReturnType<Drag['move']>): void {
     if (!s) return
-    this.stirs++
-    this.stirStrength = s.strength
+    if (s.begins) this.stirs++
+    this.stirStrength += s.strength
     this.sim.stir?.(...stirAxis(s, liveRig(this.aspect, this.look.yaw, this.look.pitch).yawDeg))
   }
 
