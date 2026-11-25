@@ -1,0 +1,27 @@
+# Recipes: base-fall
+
+Fall's base: the iron ring of thorns, the pumpkins and their carved faces, the wax and the cobweb. Everything that ships is made by `npm run make -- base-fall` from the scripts in this folder, in about 5 seconds. No picture was generated or fetched: 0 takes of 6 for every file. No pixel of an approved image is in any file; `layout.mjs` holds numbers read from `references/approved/fall-rest.png` by eye (pixel positions of the three faces in view, of the wax runs and of the thorns a viewer can count) and turns them into places on the ring through the reference camera of `assets-src/refrig/fall.json`.
+
+## assets-full/fall/base-fall.glb
+Made by: assets-src/base-fall/mesh.mjs (buildIron, buildPumpkins, buildWax, buildWeb) through assets-src/base-fall/build.mjs, Node 20.20.2
+From: assets-src/base-fall/layout.mjs (the drum's profile, the seven faces, the wax runs, the hero thorns), assets-src/base-fall/lib.mjs, config/showcase.json (globe)
+Prompt or command: npm run make -- base-fall
+Takes: 1
+Why this one: four meshes: `iron` (the lathed drum with winter's collar and cup, the woven strands as tubes that bow round every face, the thorns; a thorn that would cross a face on the ring or in the hero camera's view is refused), `pumpkin` (a ribbed gourd behind each face, face coordinates in the second set, paint = shade, face number, carving number), `wax` (the lumpy ring at the glass, the runs measured from the approved image, the runs that reached the slab and their pools), `web` (three sheets strung from the thorns at the right). The faces and their sizes go in the pumpkin mesh's extras.
+Date: 2026-11-25
+
+## assets-full/fall/base-iron-detail.lin.tile.w1024.png
+Made by: assets-src/base-fall/maps.mjs (ironDetail) through assets-src/base-fall/build.mjs, Node 20.20.2, sharp 0.35.5
+From: nothing but the script
+Prompt or command: npm run make -- base-fall
+Takes: 1
+Why this one: hammered iron as a tiling field of shallow dents: the slope in red and green, the roughness in blue
+Date: 2026-11-25
+
+## assets-full/fall/base-faces.lin.w1024.png
+Made by: assets-src/base-fall/maps.mjs (faces) through assets-src/base-fall/build.mjs, Node 20.20.2, sharp 0.35.5
+From: nothing but the script: four carvings of our own design (two triangle eyes, a triangle nose, a grin with teeth), each a list of polygons
+Prompt or command: npm run make -- base-fall
+Takes: 1
+Why this one: a signed distance to the edge of the openings (0.5 at the edge) in a sheet of two by two, so the cut stays sharp at any size and the shader can read the rind's thickness from a second sample
+Date: 2026-11-25
