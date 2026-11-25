@@ -6,10 +6,10 @@ import type { SeasonKit } from '../kit'
 // same sun's spill from the back left; the card is the warm bounce that lights the front of the base and of the miniature.
 // Fitted to `references/approved/summer-rest.png` by the recipe "The light of one more season".
 export const rig: SeasonKit['rig'] = {
-  key: { color: [1, 0.8, 0.56], intensity: 1.05, from: [250, 230, -400] },
-  rim: { color: [1, 0.82, 0.6], intensity: 0.8, from: [-330, 250, -280] },
-  sky: [0.2, 0.17, 0.13],
-  ground: [0.07, 0.055, 0.04],
+  key: { color: [1, 0.8, 0.56], intensity: 1.3, from: [250, 230, -400] },
+  rim: { color: [1, 0.82, 0.6], intensity: 0.9, from: [-330, 250, -280] },
+  sky: [0.1, 0.082, 0.062],
+  ground: [0.035, 0.028, 0.02],
   fill: 0.7,
-  card: { color: [1, 0.8, 0.58], intensity: 0.55, from: [500, 140, 60], wrap: 0.2, specular: 0.4, inside: 0.3 },
+  card: { color: [1, 0.8, 0.58], intensity: 0.16, from: [500, 140, 60], wrap: 0.2, specular: 0.4, inside: 0.3 },
 }
