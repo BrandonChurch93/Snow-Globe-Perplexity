@@ -1,0 +1,20 @@
+# Report: fall_air (fall's glass dressing, veil, light, storm behaviour)
+
+1. Branch `agent/p4-fall_air`, last commit 8e4829f (merge of main e442e41 over 97327ad), pushed 02:27 UTC and already in main 20710cc. Looks branch `agent/p4-fall_air-looks`: the tip is the commit that holds this file.
+2. Stand-ins left: none. `standIns` is empty in `glass.ts` and `veil.ts`, nothing carries `userData.standIn`, the standins view at rest was all black (02:16, state b4a148c). Fallbacks used: none. No picture was generated, no file of these parts ships.
+3. Still wrong, worst first (pictures in this branch, details in `HANDOVER.md`):
+4. a. Storm against `fall-shake.png` (`veil-02-s9-landed-pair.jpg`): leaves are flat flakes bunched in the upper middle, not thin orange streaks through the dome (drawing is `kinds_builder`'s; size, count, colour mine).
+5. b. Same picture: the pool at the bottom is dimmer than the approved's bright mint, the fog over the ground hides the litter, the strands are faint.
+6. c. Rest (`glass-04-g20-rest-pair.jpg`): bats are dark blue zigzag smears, not black silhouettes (redrawn by `kinds_builder` after my last look; not seen by me).
+7. d. Rest, macro camera (`glass-05-rest-macro.jpg`): embers are pale grey soft puffs before the cottage and in the crown.
+8. e. Rest: leaves and embers afloat keep to the middle band and the tree; the lip of fog is flatter and dimmer than the approved's billows; the top of the glass inside is a little dark.
+9. f. Motion was seen only as one small sheet of the first 0.9 s after the landing: the flood thins in about 0.2 s (slowed after that sheet, not seen again); the crack's spread and the pour were not judged in motion; cameras `low`, `surface`, `interior` not checked for banding of the fog's sheets.
+10. Built: `glass.ts` (a crack traced from the approved image that spreads from its hub in about 0.95 s, a place cracked or not; a green fog as a lit volume of 46 sheets and a lip shell: pooled at the wall and behind at rest, thrown to the wall in turning strands when stirred, filling the dome at the hardest of the shake, pouring and pooling after the landing), `veil.ts` (thin shared veil, colours of leaf, ember, mote, bat), `rig.ts`, `backdrop.ts`, `assets-src/refrig/fall.json`, rows `leaf`, `ember`, `bat` in `kinds.ts`.
+11. Make targets: none of this part. The built assets are tracked in main; if a still says a file is not prepared: `village`, `trunk`, `village-fall`, `tree-fall`, `base-fall`, `slab-fall`, then `npm run texpack`, `npm run build`.
+12. Tests on 8e4829f: `npx tsc --noEmit` clean; `npx vitest run` 432 passed, 4 skipped; `npm run determinism` last line `determinism: pass · 3 pictures, 4 page loads, preview, draft, 332 s` (02:33).
+13. `npm run measure -- --unit fall --only M1,M2,M3,M6 --tier draft` (02:41): 19 of 19 lines, 6 red. M1 and M6 pass on all stills. Red: M3 `fall-rest` 0.592 against 0.75 (base 0.606, miniature 0.592); M2 on `fall-rest` 0.233, `fall-shake` 0.236, `fall-base` 0.170, `fall-surface` 0.389 against 0.03 (texture detail of textured parts; my parts carry no texture). No threshold was touched.
+14. `npm run measure -- --unit change --only M4,M5 --tier draft` on 8e4829f (02:49): 8 of 24 lines, 0 red. M4 shake-3 0.963 and shake-4 0.994 (threshold 0.85); M5 shake-3 0.944 and shake-4 1.000 (threshold 0.6).
+15. Size and triangles: nothing of mine under `public/assets/fall/`; fog about 23,000 triangles, crack sphere about 12,000, 3 draw calls; none added after `/root`'s line of 00:57.
+16. Looks used: light-fall 3, glass-dressing-fall 20, veil-fall and the storm 15 (limit 40 a part). 9 pictures on this branch with `captions.txt`.
+17. Open between builders: the ember's brightness is turned on two sides (my glow, `kinds_builder`'s gain). Agreed at 02:30: my row stays glow 1.3, `sizeMm [0.12, 0.7]`, `sizeSkew 4`, and `kinds_builder` tunes to it (its 93f789c).
+18. Not done from the brief: `kit/06-ASSETS.md` and `scorecards/round-006/SUMMARY.md` unread; no request for other counts was sent to `/root`; no lines for `mote` were sent to `spring_air` (only its colour is set, in my `veil.ts`).
