@@ -31,7 +31,7 @@
   },
   "b": {
     "file": "out/work/stills/spring-shake-hd-final.png",
-    "sha256": "cb8b5947979d4c76000fc1e4cbb70f5142e813b6513a034ea75c863b493fbf87",
+    "sha256": "6af2090780b8c0ef0fd21f5c8618b68535f4f1233d339d3690aa646747339363",
     "width": 1920,
     "height": 1080,
     "globe": {
@@ -355,6 +355,6 @@
   ],
   "comparison": "spring-shake: the approved image (a) beside the build (b), hd, final",
   "keptFrom": "out/work/compare/compare-spring-shake.jpg",
-  "sourceSha256": "07b1cddebf4cfada0c8b2eb1ea6f1500966ebc316d3b6414ca1737e7c256b7e3",
-  "keptAt": "2026-11-25T10:31:21.846Z"
+  "sourceSha256": "4afa8ffce57fec40c8cee9e01151b29ba03e553e353d6ba6b54541bf77d8bf9c",
+  "keptAt": "2026-11-25T21:31:54.894Z"
 }

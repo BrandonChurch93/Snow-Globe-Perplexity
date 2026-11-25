@@ -31,7 +31,7 @@
   },
   "b": {
     "file": "out/work/stills/summer-rest-hd-final.png",
-    "sha256": "b82d77aeef5ccb504608ef02a30e627e7265de49c82c01538737a662b0f30edd",
+    "sha256": "fbb729f7d6da34ea9a157d2df7738b0c3c34457f1afff025755347e7fde4a1d4",
     "width": 1920,
     "height": 1080,
     "globe": {
@@ -355,6 +355,6 @@
   ],
   "comparison": "summer-rest: the approved image (a) beside the build (b), hd, final",
   "keptFrom": "out/work/compare/compare-summer-rest.jpg",
-  "sourceSha256": "3750b3fff588998c103ae1192af02184e1d5a7ecb1d2127a8544ad424ed39115",
-  "keptAt": "2026-11-25T10:29:47.312Z"
+  "sourceSha256": "824b5e09c49c4d0bca34b3803525e161ebcb152c56e0c2bedb55381bbb683136",
+  "keptAt": "2026-11-25T21:31:58.167Z"
 }

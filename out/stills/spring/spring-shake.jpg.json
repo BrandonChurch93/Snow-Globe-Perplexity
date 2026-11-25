@@ -1,5 +1,5 @@
 {
-  "engineHash": "5a94146defd3d562",
+  "engineHash": "a103ddd4fdecc107",
   "seasonHashes": {
     "winter": "5c39d16f98d3d0be",
     "spring": "e579a2c24f41ece7",
@@ -13,7 +13,7 @@
   "browser": "Google Chrome for Testing 147.0.7727.15",
   "graphics": "software",
   "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB",
-  "time": "2026-11-25T09:15:13.795Z",
+  "time": "2026-11-25T20:28:16.243Z",
   "diag": "",
   "spec": {
     "id": "spring-shake",
@@ -28,24 +28,19 @@
     "live": ""
   },
   "noext": [],
-  "method": 3,
-  "seconds": 641.079,
+  "seconds": 667.642,
   "timings": {
-    "simMs": 1158.1000000089407,
-    "drawMs": 638901.3000000566,
+    "simMs": 3550.9999999776483,
+    "drawMs": 663182.2000000179,
     "samples": 24,
-    "steps": 218
+    "steps": 698
   },
-  "measured": {
-    "sanity": {
-      "invalid": 0,
-      "pixels": 2073600
-    },
-    "inside": {
-      "inside": 21,
-      "outside": 0,
-      "total": 102000
-    }
+  "precision": "float32",
+  "standIns": 2,
+  "counts": {
+    "triangles": 1016739,
+    "drawCalls": 57,
+    "particles": 102000
   },
   "framing": {
     "globe": {
@@ -64,15 +59,8 @@
     "heroFill": 0.8037025771261214,
     "cornerReachMm": 182.0728848812925
   },
-  "state": null,
-  "standIns": 9,
-  "counts": {
-    "triangles": 1016739,
-    "drawCalls": 57,
-    "particles": 102000
-  },
   "errors": [],
   "keptFrom": "out/work/stills/spring-shake-hd-final.png",
-  "sourceSha256": "cb8b5947979d4c76000fc1e4cbb70f5142e813b6513a034ea75c863b493fbf87",
-  "keptAt": "2026-11-25T10:31:19.798Z"
+  "sourceSha256": "6af2090780b8c0ef0fd21f5c8618b68535f4f1233d339d3690aa646747339363",
+  "keptAt": "2026-11-25T21:31:52.756Z"
 }

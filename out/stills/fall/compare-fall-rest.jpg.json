@@ -31,7 +31,7 @@
   },
   "b": {
     "file": "out/work/stills/fall-rest-hd-final.png",
-    "sha256": "13b65a622b66d390ad9cef092d6828d44f43747de92cafc472d8c3803708a290",
+    "sha256": "6f5776adb871eef54af58d99fea4adffc5d506cfd9d856d1e0d1950239327027",
     "width": 1920,
     "height": 1080,
     "globe": {
@@ -355,6 +355,6 @@
   ],
   "comparison": "fall-rest: the approved image (a) beside the build (b), hd, final",
   "keptFrom": "out/work/compare/compare-fall-rest.jpg",
-  "sourceSha256": "1203d43519a72949a4b2286e95aa16bbef8a6d2b04ebc4dfd78d68b7d2a47cb6",
-  "keptAt": "2026-11-25T10:31:24.764Z"
+  "sourceSha256": "d7b0c1ad395b8c20cda9a57abd8ab37e35c890304f3467726378f3aaf1c38f2d",
+  "keptAt": "2026-11-25T21:32:01.184Z"
 }

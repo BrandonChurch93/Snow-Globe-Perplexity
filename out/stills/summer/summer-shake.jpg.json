@@ -1,5 +1,5 @@
 {
-  "engineHash": "5a94146defd3d562",
+  "engineHash": "a103ddd4fdecc107",
   "seasonHashes": {
     "winter": "5c39d16f98d3d0be",
     "spring": "e579a2c24f41ece7",
@@ -13,7 +13,7 @@
   "browser": "Google Chrome for Testing 147.0.7727.15",
   "graphics": "software",
   "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB",
-  "time": "2026-11-25T09:10:50.770Z",
+  "time": "2026-11-25T20:27:30.963Z",
   "diag": "",
   "spec": {
     "id": "summer-shake",
@@ -28,24 +28,19 @@
     "live": ""
   },
   "noext": [],
-  "method": 3,
-  "seconds": 555.756,
+  "seconds": 604.035,
   "timings": {
-    "simMs": 1233.1000000052154,
-    "drawMs": 553742.8999999911,
+    "simMs": 3879.10000000149,
+    "drawMs": 599200.1000000238,
     "samples": 24,
-    "steps": 218
+    "steps": 698
   },
-  "measured": {
-    "sanity": {
-      "invalid": 0,
-      "pixels": 2073600
-    },
-    "inside": {
-      "inside": 4,
-      "outside": 0,
-      "total": 102000
-    }
+  "precision": "float32",
+  "standIns": 2,
+  "counts": {
+    "triangles": 1273638,
+    "drawCalls": 53,
+    "particles": 102000
   },
   "framing": {
     "globe": {
@@ -64,15 +59,8 @@
     "heroFill": 0.8037025771261214,
     "cornerReachMm": 182.0728848812925
   },
-  "state": null,
-  "standIns": 9,
-  "counts": {
-    "triangles": 1263638,
-    "drawCalls": 53,
-    "particles": 102000
-  },
   "errors": [],
   "keptFrom": "out/work/stills/summer-shake-hd-final.png",
-  "sourceSha256": "de4d2af96d126e6b972ac498c2af3797a8fa013684b55b629f47115446b5a7f7",
-  "keptAt": "2026-11-25T10:29:45.315Z"
+  "sourceSha256": "729eb8f35938f79db0d36824c2e54980b3741101f33aaa8a6413bbb10af40b70",
+  "keptAt": "2026-11-25T21:31:56.214Z"
 }

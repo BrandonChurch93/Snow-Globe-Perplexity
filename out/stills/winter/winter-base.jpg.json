@@ -1,0 +1,78 @@
+{
+  "engineHash": "ff72ea5c293221f1",
+  "seasonHashes": {
+    "winter": "5c39d16f98d3d0be",
+    "spring": "70ee49aaec2b26c1",
+    "summer": "70ee49aaec2b26c1",
+    "fall": "70ee49aaec2b26c1"
+  },
+  "format": "hd",
+  "tier": "final",
+  "assets": "full",
+  "diagnostic": "",
+  "browser": "Google Chrome for Testing 147.0.7727.15",
+  "graphics": "software",
+  "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB",
+  "time": "2026-11-24T22:44:17.313Z",
+  "diag": "",
+  "spec": {
+    "id": "winter-base",
+    "season": "winter",
+    "state": "rest",
+    "camera": "base",
+    "tier": "final",
+    "format": "hd",
+    "assets": "full",
+    "diag": "",
+    "interface": false,
+    "live": ""
+  },
+  "noext": [],
+  "method": 3,
+  "seconds": 357.574,
+  "timings": {
+    "simMs": 2.2000000029802322,
+    "drawMs": 356756.09999999404,
+    "samples": 24,
+    "steps": 0
+  },
+  "measured": {
+    "sanity": {
+      "invalid": 0,
+      "pixels": 2073600
+    },
+    "inside": {
+      "inside": 0,
+      "outside": 0,
+      "total": 102000
+    }
+  },
+  "framing": {
+    "globe": {
+      "cx": 960,
+      "cy": -453.507051900251,
+      "r": 894.4640739556496
+    },
+    "base": {
+      "left": 81.74367294979766,
+      "right": 1838.2563270502023,
+      "top": 232.1615095040964,
+      "foot": 867.6454289935874
+    },
+    "frameHeightMm": 73.64339738405312,
+    "frameWidthMm": 130.92159534942778,
+    "heroFill": 1.8874740294110783,
+    "cornerReachMm": 120.63799188323472
+  },
+  "state": null,
+  "standIns": 37,
+  "counts": {
+    "triangles": 650944,
+    "drawCalls": 37,
+    "particles": 102000
+  },
+  "errors": [],
+  "keptFrom": "out/work/stills/winter-base-hd-final.png",
+  "sourceSha256": "183e1a52625af738a7e22e245c2fc08edc966ff5184029beb18dffad5ccda90e",
+  "keptAt": "2026-11-25T21:31:50.230Z"
+}

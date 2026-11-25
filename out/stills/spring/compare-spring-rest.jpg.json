@@ -31,7 +31,7 @@
   },
   "b": {
     "file": "out/work/stills/spring-rest-hd-final.png",
-    "sha256": "5ff92889db7f5378ab6ef42a9a4a71853b6d643528805bff2a747ee47293efda",
+    "sha256": "59957fd26983c9d7e43391453fc182a9bc0977834b8281f29a058e596bc92c8f",
     "width": 1920,
     "height": 1080,
     "globe": {
@@ -355,6 +355,6 @@
   ],
   "comparison": "spring-rest: the approved image (a) beside the build (b), hd, final",
   "keptFrom": "out/work/compare/compare-spring-rest.jpg",
-  "sourceSha256": "6e3e9ff3fcf39e69f1955ba036e81cd3c8d843e5c364d9e79afd1f031ea8b68f",
-  "keptAt": "2026-11-25T10:31:21.839Z"
+  "sourceSha256": "ea1b06e4c5fdc5efedfdc59e563e30332a4e46b99e9efdf4fc0f6982ed78d538",
+  "keptAt": "2026-11-25T21:31:54.888Z"
 }

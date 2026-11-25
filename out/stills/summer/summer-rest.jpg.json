@@ -1,5 +1,5 @@
 {
-  "engineHash": "5a94146defd3d562",
+  "engineHash": "a103ddd4fdecc107",
   "seasonHashes": {
     "winter": "5c39d16f98d3d0be",
     "spring": "e579a2c24f41ece7",
@@ -13,7 +13,7 @@
   "browser": "Google Chrome for Testing 147.0.7727.15",
   "graphics": "software",
   "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB",
-  "time": "2026-11-25T09:01:14.178Z",
+  "time": "2026-11-25T20:23:35.294Z",
   "diag": "",
   "spec": {
     "id": "summer-rest",
@@ -28,24 +28,19 @@
     "live": ""
   },
   "noext": [],
-  "method": 3,
-  "seconds": 286.38,
+  "seconds": 331.701,
   "timings": {
-    "simMs": 409.5000000074506,
-    "drawMs": 284985,
+    "simMs": 14687.20000000298,
+    "drawMs": 315994.1999999881,
     "samples": 24,
-    "steps": 96
+    "steps": 3456
   },
-  "measured": {
-    "sanity": {
-      "invalid": 0,
-      "pixels": 2073600
-    },
-    "inside": {
-      "inside": 0,
-      "outside": 0,
-      "total": 102000
-    }
+  "precision": "float32",
+  "standIns": 2,
+  "counts": {
+    "triangles": 898297,
+    "drawCalls": 46,
+    "particles": 102000
   },
   "framing": {
     "globe": {
@@ -64,15 +59,8 @@
     "heroFill": 0.8037025771261214,
     "cornerReachMm": 182.0728848812925
   },
-  "state": null,
-  "standIns": 9,
-  "counts": {
-    "triangles": 870297,
-    "drawCalls": 45,
-    "particles": 102000
-  },
   "errors": [],
   "keptFrom": "out/work/stills/summer-rest-hd-final.png",
-  "sourceSha256": "b82d77aeef5ccb504608ef02a30e627e7265de49c82c01538737a662b0f30edd",
-  "keptAt": "2026-11-25T10:29:44.882Z"
+  "sourceSha256": "fbb729f7d6da34ea9a157d2df7738b0c3c34457f1afff025755347e7fde4a1d4",
+  "keptAt": "2026-11-25T21:31:55.758Z"
 }

@@ -31,7 +31,7 @@
   },
   "b": {
     "file": "out/work/stills/fall-shake-hd-final.png",
-    "sha256": "6d48280f594f7502995a42f8a25bd0b044919cccb596cb00306046d4b33eeed4",
+    "sha256": "a13ddcd7481bdc445205b3d60f163d7dd39a41b284d9fa271d65de819fc4ea38",
     "width": 1920,
     "height": 1080,
     "globe": {
@@ -355,6 +355,6 @@
   ],
   "comparison": "fall-shake: the approved image (a) beside the build (b), hd, final",
   "keptFrom": "out/work/compare/compare-fall-shake.jpg",
-  "sourceSha256": "d3c9fc589fd5fd4be94d75190a6fdad042028910563a1f6a0b8ab0a62aed48ed",
-  "keptAt": "2026-11-25T10:31:24.772Z"
+  "sourceSha256": "eb06615ae0e8281ff8af966fb75760008be2cb52da6bdeb8ed6b4f36173004d1",
+  "keptAt": "2026-11-25T21:32:01.191Z"
 }

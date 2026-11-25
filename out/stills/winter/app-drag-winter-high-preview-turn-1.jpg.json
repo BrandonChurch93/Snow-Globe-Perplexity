@@ -1,0 +1,238 @@
+{
+  "engineHash": "a103ddd4fdecc107",
+  "seasonHashes": {
+    "winter": "5c39d16f98d3d0be",
+    "spring": "e579a2c24f41ece7",
+    "summer": "364b4daf13dc8bb8",
+    "fall": "767926ecb026caa1"
+  },
+  "format": "preview",
+  "tier": "",
+  "assets": "full",
+  "diagnostic": "",
+  "browser": "Google Chrome for Testing 147.0.7727.15",
+  "graphics": "software",
+  "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB",
+  "time": "2026-11-25T21:02:53.384Z",
+  "diag": "",
+  "layoutHash": "94f221794c579a83",
+  "spec": {
+    "kind": "app",
+    "script": "drag",
+    "part": "turn",
+    "what": "the camera turning to its limit and easing back, from the pointer going down to the end of the script",
+    "level": "high",
+    "source": "app-drag-winter-high",
+    "stride": 0,
+    "spacing": "25 frames apart at 60 frames a second",
+    "sheet": 1,
+    "sheets": 1,
+    "label": "yaw",
+    "frames": [
+      30,
+      55,
+      80,
+      105,
+      130,
+      155,
+      180,
+      205,
+      230,
+      255,
+      280,
+      305
+    ],
+    "plan": {
+      "name": "drag",
+      "fps": 60,
+      "frameCount": 306,
+      "from": "winter",
+      "to": "winter",
+      "events": [
+        {
+          "frame": 30,
+          "what": "the pointer goes down"
+        },
+        {
+          "frame": 126,
+          "what": "the drag ends and is held"
+        },
+        {
+          "frame": 162,
+          "what": "the pointer is let go: the camera eases back"
+        }
+      ]
+    },
+    "marks": [
+      {
+        "frame": 30,
+        "what": "the pointer goes down"
+      },
+      {
+        "frame": 126,
+        "what": "the drag ends and is held"
+      },
+      {
+        "frame": 162,
+        "what": "the pointer is let go: the camera eases back"
+      }
+    ]
+  },
+  "caption": "App sheet 1 of 1: a drag around the globe in winter, the camera turning to its limit and easing back, from the pointer going down to the end of the script, frames 30 to 305, 25 frames apart at 60 frames a second, preview, level high",
+  "legend": "a drag around the globe in winter in the app, the camera turning to its limit and easing back, from the pointer going down to the end of the script: frames 30 to 305 of the script's 306, 25 frames apart at 60 frames a second. Each tile is labelled with its frame, its time and the camera's turn around the globe in degrees. In the script: frame 30 (0.50 s) the pointer goes down; frame 126 (2.10 s) the drag ends and is held; frame 162 (2.70 s) the pointer is let go: the camera eases back",
+  "width": 1149,
+  "height": 986,
+  "limits": {
+    "longEdge": 1400,
+    "maxPixels": 1140000
+  },
+  "layout": {
+    "cols": 3,
+    "rows": 4,
+    "cell": {
+      "width": 367,
+      "height": 206
+    },
+    "labelHeight": 24,
+    "gap": 12,
+    "rowGap": 14,
+    "margin": 12
+  },
+  "frames": [
+    {
+      "index": 30,
+      "seconds": 0.5,
+      "file": "out/work/seq/app-drag-winter-high-preview/app-drag-winter-high-000030.png",
+      "at": {
+        "left": 12,
+        "top": 12,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 55,
+      "seconds": 0.9166666666666666,
+      "file": "out/work/seq/app-drag-winter-high-preview/app-drag-winter-high-000055.png",
+      "at": {
+        "left": 391,
+        "top": 12,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 80,
+      "seconds": 1.3333333333333333,
+      "file": "out/work/seq/app-drag-winter-high-preview/app-drag-winter-high-000080.png",
+      "at": {
+        "left": 770,
+        "top": 12,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 105,
+      "seconds": 1.75,
+      "file": "out/work/seq/app-drag-winter-high-preview/app-drag-winter-high-000105.png",
+      "at": {
+        "left": 12,
+        "top": 256,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 130,
+      "seconds": 2.1666666666666665,
+      "file": "out/work/seq/app-drag-winter-high-preview/app-drag-winter-high-000130.png",
+      "at": {
+        "left": 391,
+        "top": 256,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 155,
+      "seconds": 2.5833333333333335,
+      "file": "out/work/seq/app-drag-winter-high-preview/app-drag-winter-high-000155.png",
+      "at": {
+        "left": 770,
+        "top": 256,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 180,
+      "seconds": 3,
+      "file": "out/work/seq/app-drag-winter-high-preview/app-drag-winter-high-000180.png",
+      "at": {
+        "left": 12,
+        "top": 500,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 205,
+      "seconds": 3.4166666666666665,
+      "file": "out/work/seq/app-drag-winter-high-preview/app-drag-winter-high-000205.png",
+      "at": {
+        "left": 391,
+        "top": 500,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 230,
+      "seconds": 3.8333333333333335,
+      "file": "out/work/seq/app-drag-winter-high-preview/app-drag-winter-high-000230.png",
+      "at": {
+        "left": 770,
+        "top": 500,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 255,
+      "seconds": 4.25,
+      "file": "out/work/seq/app-drag-winter-high-preview/app-drag-winter-high-000255.png",
+      "at": {
+        "left": 12,
+        "top": 744,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 280,
+      "seconds": 4.666666666666667,
+      "file": "out/work/seq/app-drag-winter-high-preview/app-drag-winter-high-000280.png",
+      "at": {
+        "left": 391,
+        "top": 744,
+        "width": 367,
+        "height": 206
+      }
+    },
+    {
+      "index": 305,
+      "seconds": 5.083333333333333,
+      "file": "out/work/seq/app-drag-winter-high-preview/app-drag-winter-high-000305.png",
+      "at": {
+        "left": 770,
+        "top": 744,
+        "width": 367,
+        "height": 206
+      }
+    }
+  ],
+  "keptFrom": "out/work/sheets/round-019/app-drag-winter-high-preview-turn-1.jpg",
+  "sourceSha256": "ef1a5553c758d45e6b8d39747119863fce8a55831d466370abca1d70c341f046",
+  "keptAt": "2026-11-25T21:31:51.580Z"
+}

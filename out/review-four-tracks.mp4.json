@@ -1,0 +1,422 @@
+{
+  "engineHash": "a103ddd4fdecc107",
+  "seasonHashes": {
+    "winter": "5c39d16f98d3d0be",
+    "spring": "e579a2c24f41ece7",
+    "summer": "364b4daf13dc8bb8",
+    "fall": "767926ecb026caa1"
+  },
+  "format": "preview",
+  "tier": "draft",
+  "assets": "full",
+  "diagnostic": "",
+  "browser": "Google Chrome for Testing 147.0.7727.15",
+  "graphics": "software",
+  "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB",
+  "joinedOn": "space-sandbox · 2 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7958 MB",
+  "time": "2026-11-25T21:32:44.323Z",
+  "fps": 30,
+  "frames": 1800,
+  "seconds": 60,
+  "chunks": [
+    {
+      "file": "out/work/film/b-preview-draft/chunk-0-154.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 0,
+      "last": 154,
+      "frames": 78,
+      "sha256": "695191832b6e6eef3efa4ed56694b3c9533686add21d2b3412c1b20e45a8cfff",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-156-310.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 156,
+      "last": 310,
+      "frames": 78,
+      "sha256": "6e77815056415babc9af94f9bf1b596d1f14efcc27012e9d8c7976e2c1322d89",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-312-454.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 312,
+      "last": 454,
+      "frames": 72,
+      "sha256": "ee7b295ec68d22e41690a80a200e9fe0f9933f0a1fac1f4af9108a01bd1e12eb",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-456-598.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 456,
+      "last": 598,
+      "frames": 72,
+      "sha256": "8efbb9093686cf2c4302c43f1730ebf2f85ec482ac58a70f1153ba699dc779b5",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-600-658.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 600,
+      "last": 658,
+      "frames": 30,
+      "sha256": "5d91ff87bcbe12310c1517554af1d935444bfee1768eb5062ad1ee06c8dd933e",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-660-718.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 660,
+      "last": 718,
+      "frames": 30,
+      "sha256": "584ed00a458c960f59ac051d48399a06587149e595844e389fbba6da96aaf0cd",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-720-790.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 720,
+      "last": 790,
+      "frames": 36,
+      "sha256": "63a13fe0bd18508b338a1c75405f31ff26046f8d5889d6446d5f9196fce571ed",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-792-850.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 792,
+      "last": 850,
+      "frames": 30,
+      "sha256": "46f500eb106f5f656776ea95ccae3514f8b4246ca79003d4a03629f954c7d2e7",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-852-934.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 852,
+      "last": 934,
+      "frames": 42,
+      "sha256": "87e1bde8af3c86da92ef6fe6ddf11ffaaf59e8bc3060f0bf53b0eb80063f3a28",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-936-1054.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 936,
+      "last": 1054,
+      "frames": 60,
+      "sha256": "fdef2d89c0d3483b1df1ece2f77def31ade9551a6073e834709a1ae5ef5b3d33",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-1056-1210.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 1056,
+      "last": 1210,
+      "frames": 78,
+      "sha256": "0b205a216dff50032c1fd05ef65fd100afeb56ef346e484251bef086fd5472ac",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-1212-1318.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 1212,
+      "last": 1318,
+      "frames": 54,
+      "sha256": "d8d7cede98e42dac2bc2694cc39ccc490b0764b9eeb35e99f761d4bd378a8dde",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-1320-1390.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 1320,
+      "last": 1390,
+      "frames": 36,
+      "sha256": "b6090219129a7ce7126f4dc95003323ab5264e1dae490d8ead2c7eb15ec2e342",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-1392-1450.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 1392,
+      "last": 1450,
+      "frames": 30,
+      "sha256": "36fdf53265f8397b0c3196ececfa7ab3581bafe8a74698f77f2c1f4fc63251d0",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-1452-1510.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 1452,
+      "last": 1510,
+      "frames": 30,
+      "sha256": "4c82e76d8e898687ae96b5fc744605dacb710c33b2f177142caa114f5e8e35e9",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-1512-1582.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 1512,
+      "last": 1582,
+      "frames": 36,
+      "sha256": "58cd7d9203bdb301c6e50d35488ae08368fa8bc61a2f6d76a101db9068db3976",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-1584-1678.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 1584,
+      "last": 1678,
+      "frames": 48,
+      "sha256": "9ae04d18c9b3df03debdfe9ad9740ba83b485fdfc2f307c4531c1bfbf8739b61",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-1680-1798.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 1680,
+      "last": 1798,
+      "frames": 60,
+      "sha256": "8bebf0943ad774ba36c8f384eefa8fb2183ce3261389f24459b1d6b422763094",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-1800-1954.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 1800,
+      "last": 1954,
+      "frames": 78,
+      "sha256": "8e1e2ec173ea218bbaa731c75817cb0a785865a9fe4e3ecd4c84c7463226e91e",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-1956-2050.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 1956,
+      "last": 2050,
+      "frames": 48,
+      "sha256": "d903ad873334fa143200e08fb57741927477d4081a41d4e5d4dc088bd43163a8",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-2052-2110.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 2052,
+      "last": 2110,
+      "frames": 30,
+      "sha256": "26c5a4a2cc7a336d348791b24d409ca7b4ea46b077564d33fa9d96235a502c79",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-2112-2182.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 2112,
+      "last": 2182,
+      "frames": 36,
+      "sha256": "f5711b9f7e2295a58c2bdb3d5ebabb4e812d5c4a6630f847489ad8a5bd5f3b1c",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-2184-2242.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 2184,
+      "last": 2242,
+      "frames": 30,
+      "sha256": "933445130c199efdd9baed5e7a3f2e22d489761508f6730cf72b5ad14804f01d",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-2244-2314.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 2244,
+      "last": 2314,
+      "frames": 36,
+      "sha256": "a4ce7e7be5161cfbf063903234786fdd886a1f2690f396234e9c7444b112cae0",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-2316-2422.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 2316,
+      "last": 2422,
+      "frames": 54,
+      "sha256": "4500e297c61828042939d7d50de9b1fb76bccbf9c253f46bb1c9f97fe8ea6082",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-2424-2566.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 2424,
+      "last": 2566,
+      "frames": 72,
+      "sha256": "30dafc58d228cb5a25d6acb80086cc4f2e6e336341188b35d574a69bc8f75aad",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-2568-2710.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 2568,
+      "last": 2710,
+      "frames": 72,
+      "sha256": "ffc4388e0911d126fdf08d86fcd55e416ade511d20b734d76b36a1e0e853c2ec",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-2712-2794.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 2712,
+      "last": 2794,
+      "frames": 42,
+      "sha256": "032dda8e36b4f4016c999b22e228a3cbd44a97e246cc876ac0c247ea8b25b448",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-2796-2854.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 2796,
+      "last": 2854,
+      "frames": 30,
+      "sha256": "0c9c5b53f89615ea5cdef5791cad38452c917cfbb6dad9c749cbe58729e70336",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-2856-2914.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 2856,
+      "last": 2914,
+      "frames": 30,
+      "sha256": "51192a10f7272515871d0a14f9b88cbc74bac519c4330d4a713abac417f61309",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-2916-2986.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 2916,
+      "last": 2986,
+      "frames": 36,
+      "sha256": "41326c8f6e9de0d553a04be5ac2f9aeaf2d95b327d0392471ef32e1c152d4f46",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-2988-3058.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 2988,
+      "last": 3058,
+      "frames": 36,
+      "sha256": "61fc7cb2dc8f94c58bf98f07ed32757a66079fb59ba7ecea3db876ed4ee06a19",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-3060-3154.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 3060,
+      "last": 3154,
+      "frames": 48,
+      "sha256": "90be085199cb2a43a32f5a4c65bad0ce3d019b27236304374d533a513335ba11",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-3156-3310.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 3156,
+      "last": 3310,
+      "frames": 78,
+      "sha256": "0656509183324eba9ff8d761a2474f3bcf0c3df79f14068494c1ec721b9020eb",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-3312-3454.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 3312,
+      "last": 3454,
+      "frames": 72,
+      "sha256": "8189ff1fd6c891a2dd3faff53b3ec9475810258d643d6f851d1be12d04ee82d3",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-3456-3526.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 3456,
+      "last": 3526,
+      "frames": 36,
+      "sha256": "cd55c19bf798cfd8b27b6b904ed196fc78925c04aa3a8c31ee8388c8c8447577",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    },
+    {
+      "file": "out/work/film/b-preview-draft/chunk-3528-3598.mp4",
+      "kind": "film",
+      "shot": "range",
+      "first": 3528,
+      "last": 3598,
+      "frames": 36,
+      "sha256": "a2fd03aa2d11cd84764496afd005fe543b097d57ed3f35ef7e3d2e313f683676",
+      "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB"
+    }
+  ],
+  "sound": {
+    "file": "audio/mix/four-tracks.wav",
+    "sha256": "64e4d84f7685b51f4be28f854633c7e667469e211130c15b9104b1bfef1a7368",
+    "offsetSeconds": 0
+  },
+  "probe": {
+    "codec": "h264",
+    "profile": "High",
+    "pixFmt": "yuv420p",
+    "width": 960,
+    "height": 540,
+    "fps": 30,
+    "frames": 1800,
+    "seconds": 60,
+    "bytes": 21228072,
+    "mbps": 2.83,
+    "streams": 2,
+    "audio": {
+      "codec": "aac",
+      "sampleRate": 48000,
+      "channels": 2
+    }
+  },
+  "worstFrameOffsetMs": 0,
+  "sha256": "1df3fe5ab8b9cf2d93f512eba42862bb01c949b4a6a3c1b6d109cae24272f42c",
+  "which": "b",
+  "review": true,
+  "candidate": "four-tracks",
+  "complete": true
+}

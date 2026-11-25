@@ -31,7 +31,7 @@
   },
   "b": {
     "file": "out/work/stills/summer-shake-hd-final.png",
-    "sha256": "de4d2af96d126e6b972ac498c2af3797a8fa013684b55b629f47115446b5a7f7",
+    "sha256": "729eb8f35938f79db0d36824c2e54980b3741101f33aaa8a6413bbb10af40b70",
     "width": 1920,
     "height": 1080,
     "globe": {
@@ -355,6 +355,6 @@
   ],
   "comparison": "summer-shake: the approved image (a) beside the build (b), hd, final",
   "keptFrom": "out/work/compare/compare-summer-shake.jpg",
-  "sourceSha256": "2eeaea23a8f3add328eb9847761abdb588121b6587b21737363d75150668a9ea",
-  "keptAt": "2026-11-25T10:29:47.320Z"
+  "sourceSha256": "13a7f1fcf5c32423f955eda3f03b74bdf9961cbe6b9e77a9deb2fd11bc0257f0",
+  "keptAt": "2026-11-25T21:31:58.176Z"
 }
