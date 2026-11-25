@@ -11,7 +11,7 @@ export const TOUCH = {
   fullAt: 4.5,
   stirLeastShare: 0.07,
   stirLeastPx: 28,
-  stirSpan: 0.36,
+  stirSpan: 0.3,
   stirMost: 1,
   stirRestSeconds: 1.2,
   smoothSeconds: 0.05,
