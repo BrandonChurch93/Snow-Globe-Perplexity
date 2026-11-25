@@ -750,7 +750,6 @@ async function buildR8(role) {
   const cropsWhat = 'close crops of each control at rest, focused and pressed'
   const hintWhat = "one sheet of the Shake control's hint"
   const layouts = new Set()
-  const list = (names) => (names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}` : names[0])
   for (const e of screens()) {
     const wanted = !layouts.has(e.format)
     const withHint = !pulse.files.length
@@ -767,13 +766,15 @@ async function buildR8(role) {
       const size = `the ${still.width} by ${still.height} screen`
       const c = got.crops.record
       const marks = c.rows.filter((r) => cfg.seasons.includes(r.control))
-      const rows = c.rows.map((r) => (r.control === 'shake' ? 'the Shake control' : r.control === 'sound' ? 'the sound control' : `the mark of ${r.control}${r.current ? ' (the season shown)' : ''}`))
+      const count = ['no', 'one', 'two', 'three', 'four'][marks.length] ?? String(marks.length)
+      const rows = c.rows.filter((r) => !r.mark || r.mark === 1).map((r) => (r.control === 'shake' ? 'the Shake control' : r.control === 'sound' ? 'the sound control' : `the ${count} marks in a row beside it from left to right (mark 1 to mark ${marks.length})`))
+      const truth = marks.map((r) => `mark ${r.mark} is ${r.control}${r.current ? ', the current season, the one shown' : ''}`).join('; ')
       const press = c.spec.pointer === 'mouse' ? 'pressed with a mouse, held down with the pointer on it' : 'pressed with a finger, held down'
       close.files.push(
         one(
           got.crops.file,
-          `${e.id}: ${cropsWhat}, ${tier} tier, cut from the page that holds the still, tiles ${c.tile.join(' by ')}: ${c.labels.join('; ')}. Focused is the interface state focus of the capture page (focus with the keyboard's ring); pressed is the browser's own :active${c.spec.pointer === 'mouse' ? ' and :hover' : ''} on the control`,
-          `close crops of the controls on ${size}, at the size they are shown, each with the picture around it. Rows from the top: ${list(rows)}. Columns from the left: at rest, focused from the keyboard, ${press}. ${marks.length} season marks; the one named current is the season shown. Each tile has its number and name above it`,
+          `${e.id}: ${cropsWhat}, ${tier} tier, cut from the page that holds the still, tiles ${c.tile.join(' by ')}: ${c.labels.join('; ')}. The marks are the season marks: ${truth}; the labels and the critic's text do not say so. Focused is the interface state focus of the capture page (focus with the keyboard's ring); pressed is the browser's own :active${c.spec.pointer === 'mouse' ? ' and :hover' : ''} on the control`,
+          `close crops of the controls on ${size}, at the size they are shown, each with the picture around it. Rows from the top: ${rows.join(', ')}. Columns from the left: at rest, focused from the keyboard, ${press}. Each tile has its number and name above it`,
         ),
       )
       for (const h of c.hidden) notes.push(`${e.id}: the page shows no ${h} control, so the crops have no row for it`)

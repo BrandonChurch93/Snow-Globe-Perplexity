@@ -3,7 +3,7 @@ import { readJson, rel } from './paths.mjs'
 import { cfg, formatById, recordMatches, writeWithRecord } from './page.mjs'
 import { limits } from './compose.mjs'
 
-const METHOD = 3
+const METHOD = 4
 const GAP = 6
 const STRIP = 20
 const GROUND = [20, 20, 23]
@@ -204,9 +204,13 @@ async function crops(page, entry, spec, stage) {
       hidden.push(control)
       continue
     }
-    const name = cfg.seasons.includes(control) ? `${control}${control === season ? ' current' : ''}` : control
-    rows.push({ control, name, current: control === season, rect: r.rect.map((v) => Math.round(v * 100) / 100) })
+    rows.push({ control, name: control, current: control === season, rect: r.rect.map((v) => Math.round(v * 100) / 100) })
   }
+  // The season marks are named by their place on the screen, left to right: a label must not say which season a mark is or which is shown.
+  const isMark = (r) => cfg.seasons.includes(r.control)
+  const placed = rows.filter(isMark).sort((p, q) => p.rect[0] - q.rect[0] || p.rect[1] - q.rect[1])
+  placed.forEach((r, i) => Object.assign(r, { mark: i + 1, name: `mark ${i + 1}` }))
+  for (let i = 0, k = 0; i < rows.length; i++) if (isMark(rows[i])) rows[i] = placed[k++]
   if (!rows.length) throw new Error('the page shows no control')
   const last = rows.length * STATES.length
   const chars = Math.max(...rows.map((r) => r.name.length)) + Math.max(...STATES.map((s) => s.length)) + String(last).length + 2
