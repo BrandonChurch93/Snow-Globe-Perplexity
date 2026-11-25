@@ -33,7 +33,7 @@ interface FaceExtras {
 // of its light; then, over the next seconds, each face takes in its turn (`takeSeconds`): a flare of `flare` of what is
 // left inside `flareSeconds`, and a creep to the whole of it over `creepSeconds`. The three a viewer faces come first.
 const LIGHT = {
-  catchSeconds: [0.06, 0.2, 0.34, 0.48, 0.6, 0.72, 0.84],
+  catchSeconds: [0.05, 0.21, 0.38, 0.52, 0.66, 0.8, 0.94],
   takeSeconds: [0.85, 1.5, 2.15, 2.7, 3.15, 3.5, 3.8],
   ember: 0.42,
   flare: 0.7,
@@ -56,7 +56,7 @@ const baseUniforms = {
   uBaseRimCol: { value: new THREE.Color() },
   uBaseSky: { value: new THREE.Color() },
 }
-const FLOOR_SHARE = 0.3
+const FLOOR_SHARE = 0.1
 const flicker: { a: number; b: number; c: number }[] = []
 let faceList: Face[] = []
 export const faces = (): Face[] => faceList
@@ -240,11 +240,13 @@ const IRON_AFTER = `
   vec3 ironRim = normalize(mat3(viewMatrix) * uBaseRimDir);
   float ironRh = max(dot(geometryNormal, normalize(ironRim + geometryViewDir)), 0.0);
   float ironRl = smoothstep(0.0, 0.25, dot(geometryNormal, ironRim));
-  reflectedLight.directSpecular += uBaseRimCol * (0.3 * pow(ironRh, 7.0) + 0.8 * pow(ironRh, 50.0)) * ironRl * ironSheen;
+  reflectedLight.directSpecular += uBaseRimCol * (0.08 * pow(ironRh, 7.0) + 0.4 * pow(ironRh, 50.0)) * ironRl * ironSheen;
   vec3 ironCardC = mix(uRigCardCol, vec3(dot(uRigCardCol, vec3(0.3, 0.5, 0.2))), 0.65);
   reflectedLight.directSpecular += (ironKeyC * vec3(0.8, 0.9, 1.0) * (0.13 * pow(ironKh, 9.0) + 0.85 * pow(ironKh, 90.0)) * ironKl + ironCardC * (0.04 * pow(ironCh, 10.0) + 0.14 * pow(ironCh, 50.0)) * ironCl) * ironSheen;
   float ironEdge = pow(1.0 - clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0), 3.0);
   vec3 ironUp = inverseTransformDirection(geometryNormal, viewMatrix);
+  float ironWarm = clamp(dot(ironUp, normalize(vec3(uBaseRimDir.x, uBaseRimDir.y * 0.25, uBaseRimDir.z))) * 0.5 + 0.5, 0.0, 1.0);
+  reflectedLight.directSpecular += uBaseRimCol * (0.3 * ironWarm * ironWarm) * ironSheen;
   reflectedLight.indirectSpecular += (uRigSky * 0.6 * smoothstep(-0.2, 0.8, ironUp.y) + uBaseFloor * smoothstep(0.2, -0.8, ironUp.y)) * ironEdge * ironSheen;
 }
 `
@@ -277,8 +279,8 @@ float faceNear = exp(-max(-faceD, 0.0) / 0.05);
 float faceSoft = exp(-max(-faceD, 0.0) / 0.3);
 vec3 faceCandle = uFaceCol * faceGlowing;
 float faceLow = smoothstep(0.75, 0.2, faceUv.y);
-float faceHot = exp(-dot(faceIn - vec2(0.5, 0.36), faceIn - vec2(0.5, 0.36)) / 0.05);
-vec3 faceCave = mix(vec3(1.0, 0.17, 0.01), vec3(1.0, 0.5, 0.1), faceHot) * (0.38 + 1.9 * faceHot) * (0.75 + 0.5 * baseNoise(vec3(faceUv * 9.0, 3.0)));
+float faceHot = exp(-dot(faceIn - vec2(0.5, 0.3), faceIn - vec2(0.5, 0.3)) / 0.06);
+vec3 faceCave = mix(vec3(1.0, 0.17, 0.01), vec3(1.0, 0.44, 0.08), faceHot) * (0.36 + 1.15 * faceHot) * (0.75 + 0.5 * baseNoise(vec3(faceUv * 9.0, 3.0)));
 vec3 faceWall = vec3(1.0, 0.24, 0.02) * (0.5 + 0.6 * baseNoise(vec3(faceUv * 40.0, 7.0)));
 vec3 faceLight = mix(faceWall, faceCave, faceThrough) * faceGlowing * uFacePower;
 vec3 faceSkin = faceCandle * (0.24 * faceNear + 0.022 * faceSoft + 0.003 * (0.4 + faceRib)) * (1.0 - faceStem) * (0.5 + 0.5 * baseAo);
@@ -300,7 +302,7 @@ const WAX_PAINT = `
 float baseAo = vBasePaint.x;
 float waxDeep = vBasePaint.y;
 float waxMottle = baseNoise(vBasePos * 0.9) * 0.6 + baseNoise(vBasePos * 3.7) * 0.4;
-diffuseColor.rgb = mix(vec3(0.95, 0.62, 0.26), vec3(1.0, 0.8, 0.44), smoothstep(0.1, 0.7, waxDeep) * (0.7 + 0.3 * waxMottle)) * mix(0.92, 1.05, waxMottle);
+diffuseColor.rgb = mix(vec3(0.95, 0.55, 0.24), vec3(1.0, 0.72, 0.42), smoothstep(0.1, 0.7, waxDeep) * (0.7 + 0.3 * waxMottle)) * mix(0.92, 1.05, waxMottle);
 float baseWrap = 0.55;
 float baseCandle = 0.5;
 `
@@ -374,7 +376,7 @@ void main() {
   float rings = 5.0 - sheet;
   float v = vWebUv.y * rings + 0.5 * between * between + 0.9 * webHash(cell + sheet * 17.0);
   float gapped = step(0.42, webHash(floor(v) * 13.0 + cell * 7.0 + sheet * 3.0));
-  float spoke = webLine(u + 0.08 * sin(vWebUv.y * 9.0 + cell), 0.05);
+  float spoke = webLine(u + 0.05 * sin(vWebUv.y * 9.0 + cell), 0.0);
   float ring = webLine(v, 0.0) * gapped * smoothstep(0.08, 0.2, vWebUv.y);
   float edge = max(webLine(vWebUv.y * 1.0 - 0.999, 0.6), 0.0);
   float thread = max(max(spoke, ring * 0.75), edge);
@@ -382,9 +384,9 @@ void main() {
   vec3 view = normalize(cameraPosition - vStageWorld);
   float back = pow(max(dot(-view, uBaseRimDir) * 0.5 + 0.5, 0.0), 2.0);
   float fore = pow(max(dot(view, uBaseKeyDir) * 0.5 + 0.5, 0.0), 2.0);
-  vec3 lit = uBaseKeyCol * (0.12 + 0.25 * fore) + uBaseRimCol * (0.2 + 1.2 * back) + uRigCardCol * 0.25 + uBaseSky * 0.6;
-  float veil = (0.03 + 0.1 * pow(abs(sin(u * 9.0 + 3.0 * sin(vWebUv.y * 5.0 + sheet))), 6.0) * webHash(floor(u * 2.87) + sheet)) * smoothstep(0.0, 0.3, vWebUv.y);
-  float a = clamp(thread * 0.22 + veil * 0.7 + dew * 0.1, 0.0, 1.0);
+  vec3 lit = uBaseKeyCol * (0.3 + 0.5 * fore) + uBaseRimCol * (0.1 + 0.5 * back) + uBaseSky * 0.6;
+  float veil = (0.03 + 0.1 * pow(abs(sin(u * 9.0 + 3.0 * sin(vWebUv.y * 5.0 + sheet))), 6.0) * webHash(floor(u * 2.87) + sheet)) * smoothstep(0.0, 0.3, vWebUv.y) * 0.5;
+  float a = clamp(thread * 0.34 + veil * 0.7 + dew * 0.14, 0.0, 1.0);
   gl_FragColor = vec4(lit * vec3(0.85, 0.9, 0.92) * (0.6 + 1.2 * dew) * a, a);
   if (uDiag != 0) gl_FragColor = stageDiag(vec3(0.8, 0.82, 0.85), normalize(vWebNormal), 0.0, c, 0.0);
 }
