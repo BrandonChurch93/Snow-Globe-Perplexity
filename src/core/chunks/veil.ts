@@ -181,6 +181,18 @@ export const VEIL_LOOK = {
   openFromBeats: 0.05,
   openToBeats: 0.55,
   openHoldSeconds: 1,
+  pocket: 0.86,
+  pocketBank: 0.8,
+  pocketAt: [1.5, -2.5] as const,
+  pocketMm: [31, 23] as const,
+  pocketFrom: 0.62,
+  pocketTo: 1.3,
+  pocketBackMm: [-24, -9] as const,
+  pocketStart: 0.3,
+  pocketInSeconds: 0.22,
+  pocketWideSeconds: 0.45,
+  pocketHoldSeconds: 3,
+  pocketGoneSeconds: 6,
 }
 
 function hash(x: number, y: number, z: number, s: number): number {
@@ -269,6 +281,7 @@ export const veilUniforms = {
   uVeilRoll: { value: new THREE.Vector4(1, 0, 0, 0) },
   uVeilDrift: { value: new THREE.Vector4() },
   uVeilLean: { value: new THREE.Vector3() },
+  uVeilOpen: { value: new THREE.Vector4(0, 1, 0, 0) },
   uVeilNoise: { value: stirNoise() as THREE.Texture },
 }
 
@@ -292,7 +305,13 @@ uniform mat3 uVeilTurn;
 uniform vec4 uVeilRoll;
 uniform vec4 uVeilDrift;
 uniform vec3 uVeilLean;
+uniform vec4 uVeilOpen;
 uniform highp sampler3D uVeilNoise;
+float veilPocket(vec3 p) {
+  if (uVeilOpen.x <= 0.0) return 0.0;
+  vec2 e = (p.xy - vec2(${n(L.pocketAt[0])}, ${n(L.pocketAt[1])})) / (vec2(${n(L.pocketMm[0])}, ${n(L.pocketMm[1])}) * uVeilOpen.y);
+  return uVeilOpen.x * (1.0 - smoothstep(${n(L.pocketFrom)}, ${n(L.pocketTo)}, length(e))) * smoothstep(${n(L.pocketBackMm[0])}, ${n(L.pocketBackMm[1])}, p.z);
+}
 float veilDisc(vec3 p) {
   vec3 c = p - ${vec(CENTRE)};
   float h = dot(c, ${vec(ROLL)});
@@ -392,6 +411,11 @@ vec4 veilField(vec3 p, vec3 f, float sheet) {
   float even = smoothstep(uVeilBank.x + uVeilBank.y, uVeilBank.x - uVeilBank.y, level + ${n(L.bankWave)} * (f.x - 0.5));
   float thin = uVeil.a * mix(1.0, ring * arc * sheet, uVeilUp.w) + uVeilRoll.z * mix(1.0, fold, uVeilRoll.w) * max(1.0 + ${n(L.leanFlood)} * lean, ${n(L.leanFloor)});
   float bank = uVeilBank.z * even * even * even * mix(fold, 1.0, uVeilBank.w) + uVeilDrift.x * streak * sheet;
+  float pocket = veilPocket(p);
+  if (pocket > 0.0) {
+    thin *= 1.0 - ${n(L.pocket)} * pocket;
+    bank *= 1.0 - ${n(L.pocketBank)} * pocket;
+  }
   return vec4(thin, bank, max(mix(deep, uVeilBank.x - level, uVeilRoll.y), 0.0) * uLens.w, f.z);
 }
 vec3 veilLit(vec3 p, vec4 field) {
@@ -490,6 +514,12 @@ const tilt = new THREE.Euler()
 const local = new THREE.Vector3()
 const spin = new THREE.Matrix4()
 
+/** The pocket the haze opens about the miniature after a landing: how much of it is open (0 to 1) and how far it has spread (a share of its reach), from the time since the landing alone. */
+export function veilPocketAt(beat: number | null, sinceLanding: number): { open: number; reach: number } {
+  if (beat !== null || !(sinceLanding >= 0) || !(sinceLanding < L.pocketGoneSeconds)) return { open: 0, reach: 1 }
+  return { open: ramp(sinceLanding, 0, L.pocketInSeconds) * (1 - ramp(sinceLanding, L.pocketHoldSeconds, L.pocketGoneSeconds)), reach: lerp(L.pocketStart, 1, ramp(sinceLanding, 0, L.pocketWideSeconds)) }
+}
+
 const now = { most: 0, rest: 0, turb: 0, slow: 0, held: 0, aloft: 0, roll: 0, open: 0 }
 const ramp = (v: number, from: number, to: number) => {
   const t = Math.min(1, Math.max(0, (v - from) / (to - from)))
@@ -542,6 +572,8 @@ export function updateVeil(f: StageFrame): void {
   const shut = config.shake.swapWindow.toBeat
   now.open = beat !== null ? ramp(beat, shut + L.openFromBeats, shut + L.openToBeats) : since >= 0 && since < L.openHoldSeconds ? 1 : 0
   const u = veilUniforms
+  const pocket = veilPocketAt(beat, since)
+  u.uVeilOpen.value.set(pocket.open, pocket.reach, 0, 0)
   u.uVeil.value.set(lerp(a.tint[0], b.tint[0], t), lerp(a.tint[1], b.tint[1], t), lerp(a.tint[2], b.tint[2], t), 0)
   const amb = (L.ambientShare * 0.5) / Math.PI
   u.uVeilLight.value.set((f.ambient.r + f.ground.r * f.fill) * amb, (f.ambient.g + f.ground.g * f.fill) * amb, (f.ambient.b + f.ground.b * f.fill) * amb)
