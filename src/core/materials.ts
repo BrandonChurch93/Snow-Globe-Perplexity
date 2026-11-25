@@ -18,11 +18,27 @@ export const stageUniforms = {
   uSeed: { value: 0 },
   uChange: { value: 0 },
   uCoc: { value: new THREE.Vector3() },
+  uFront: { value: new THREE.Vector3() },
 }
 
 export const MODE = { always: 0, incoming: 1, outgoing: 2 } as const
 
 export const DRESSING_FRONT = { gain: 2, fromMm: 58, toMm: 230 } as const
+
+/**
+ * How the parts outside the glass give way inside their span. The new season's light pours out of the globe: a front runs
+ * down the base from the collar to the foot over the first `share` of the span, and on across the table from the foot
+ * outward over the span from `tableFrom` on. Behind the front a part is the new season, ahead of it the old; the front's
+ * edge is broken into patches (`cellMm`, in the part's own space, so it travels with the globe) and feathered across the
+ * samples of a frame (`feather`), and it carries the new season's light (`glowBase`, `glowTable` wide, in shares of the
+ * way): the light sits on the broken edge itself, brightest where a patch is just turning, so the edge is never seen
+ * clean and never reads as a level line. On the table the patches are drawn out along the way the light runs (`streak`
+ * times as long as wide, `rayMm` to a radian across): the new season reaches over the table in fingers, as a gust does,
+ * and takes the whole span from `tableFrom` on to cross it. The code of a part's kind rides in `uState.z`: 0 and above is the lag
+ * of a part inside the glass, under 0 the table's gain, under `-BASE_CODE` the base's.
+ */
+export const OUTSIDE_FRONT = { share: 0.62, gain: 3, tableFrom: 0.26, rayMm: 110, streak: 3.4, cellMm: 6.5, fineMm: 2.3, fine: 0.36, contrast: 2.6, feather: 0.14, glowBase: 0.11, glowTable: 0.07, topMm: 33, footMm: 0 } as const
+const BASE_CODE = 10
 
 export interface StageHandle {
   part: string
@@ -49,7 +65,7 @@ export function makeHandle(spec: PartSpec): StageHandle {
   return {
     part: spec.part,
     uPart: { value: new THREE.Vector4(c[0] / 255, c[1] / 255, c[2] / 255, standIn ? 1 : 0) },
-    uState: { value: new THREE.Vector4(ramp.start, ramp.length, spec.change === 'surface-dressing' ? -DRESSING_FRONT.gain : ramp.lag, MODE.always) },
+    uState: { value: new THREE.Vector4(ramp.start, ramp.length, spec.change === 'surface-dressing' ? -DRESSING_FRONT.gain : spec.change === 'base' ? -BASE_CODE - OUTSIDE_FRONT.gain : ramp.lag, MODE.always) },
     uFlags: { value: new THREE.Vector4(spec.miniature ? 1 : 0, spec.textured ? (spec.texels ?? 0) : 0, spec.inside ? 1 : 0, 1) },
   }
 }
@@ -117,6 +133,7 @@ uniform vec4 uState;
 uniform vec4 uFlags;
 uniform vec3 uLensCentre;
 uniform vec4 uLens;
+uniform vec3 uFront;
 varying vec3 vStageWorld;
 varying vec3 vStageLocal;
 varying vec3 vStageAux;
@@ -140,11 +157,45 @@ float stageHash(vec3 p) {
   return float(v.x >> 8u) / 16777216.0;
 }
 ${LIGHT_FRAG_PARS}
+float stageFront = 0.0;
+float stageEdge = -1.0;
+float stageNoise(vec3 p) {
+  vec3 q = p + 2048.0;
+  vec3 i = floor(q);
+  vec3 f = q - i;
+  f = f * f * (3.0 - 2.0 * f);
+  float z0 = i.z / 4096.0;
+  float z1 = (i.z + 1.0) / 4096.0;
+  float a = mix(mix(stageHash(vec3(i.x, i.y, z0)), stageHash(vec3(i.x + 1.0, i.y, z0)), f.x), mix(stageHash(vec3(i.x, i.y + 1.0, z0)), stageHash(vec3(i.x + 1.0, i.y + 1.0, z0)), f.x), f.y);
+  float b = mix(mix(stageHash(vec3(i.x, i.y, z1)), stageHash(vec3(i.x + 1.0, i.y, z1)), f.x), mix(stageHash(vec3(i.x, i.y + 1.0, z1)), stageHash(vec3(i.x + 1.0, i.y + 1.0, z1)), f.x), f.y);
+  return mix(a, b, f.z);
+}
+float stagePatch(vec3 p) {
+  float n = ${(1 - OUTSIDE_FRONT.fine).toFixed(2)} * stageNoise(p / ${OUTSIDE_FRONT.cellMm.toFixed(1)}) + ${OUTSIDE_FRONT.fine.toFixed(2)} * stageNoise(p / ${OUTSIDE_FRONT.fineMm.toFixed(1)} + 37.0);
+  return (n - 0.5) * ${OUTSIDE_FRONT.contrast.toFixed(1)} + 0.5;
+}
 float stageChange() {
   if (uState.w < 0.5) return 0.0;
   if (uState.z < 0.0) {
+    float through = clamp((uChange - uState.x) / uState.y, 0.0, 1.0);
+    float live = smoothstep(0.0, 0.06, through) * (1.0 - smoothstep(0.92, 1.0, through));
+    if (uState.z < -${(BASE_CODE - 1).toFixed(1)}) {
+      float gain = -uState.z - ${BASE_CODE.toFixed(1)};
+      float way = clamp((${(OUTSIDE_FRONT.topMm).toFixed(1)} + uLightFloodFloor.x - vStageLocal.y) / ${(OUTSIDE_FRONT.topMm - OUTSIDE_FRONT.footMm).toFixed(1)}, 0.0, 1.0);
+      float run = through / ${OUTSIDE_FRONT.share.toFixed(2)};
+      float reach = run * (1.0 + gain) - gain * way;
+      stageEdge = stagePatch(vStageLocal);
+      float at = (reach - clamp(stageEdge, 0.0, 1.0)) / (gain * ${OUTSIDE_FRONT.glowBase.toFixed(2)});
+      stageFront = live * exp(-at * at);
+      return clamp(reach, 0.0, 1.0);
+    }
     float far = clamp((length(vStageWorld.xz) - ${DRESSING_FRONT.fromMm.toFixed(1)}) / ${(DRESSING_FRONT.toMm - DRESSING_FRONT.fromMm).toFixed(1)}, 0.0, 1.0);
-    return clamp((uChange - uState.x) / uState.y * (1.0 - uState.z) + uState.z * far, 0.0, 1.0);
+    float run = clamp((through - ${OUTSIDE_FRONT.tableFrom.toFixed(2)}) / ${(1 - OUTSIDE_FRONT.tableFrom).toFixed(2)}, 0.0, 1.0);
+    float reach = run * (1.0 - uState.z) + uState.z * far;
+    stageEdge = stagePatch(vec3(atan(vStageWorld.x, vStageWorld.z) * ${OUTSIDE_FRONT.rayMm.toFixed(1)}, 0.0, length(vStageWorld.xz) / ${OUTSIDE_FRONT.streak.toFixed(1)}));
+    float at = (reach - clamp(stageEdge, 0.0, 1.0)) / (-uState.z * ${OUTSIDE_FRONT.glowTable.toFixed(2)});
+    stageFront = live * step(0.0001, run) * exp(-at * at);
+    return clamp(reach, 0.0, 1.0);
   }
   float side = clamp(0.5 + vStageLocal.z / (2.0 * uGrid.w), 0.0, 1.0);
   return clamp((uChange - uState.x - uState.z * side) / uState.y, 0.0, 1.0);
@@ -152,6 +203,7 @@ float stageChange() {
 bool stageGone(float c) {
   if (uState.w > 0.5) {
     float h = stageHash(vec3(gl_FragCoord.xy, uSeed));
+    if (stageEdge > -0.5) h = clamp(stageEdge + (h - 0.5) * ${OUTSIDE_FRONT.feather.toFixed(2)}, 0.001, 0.999);
     if (uState.w > 1.5 ? h < c : h >= c) return true;
   }
   if (uFlags.w < 1.0 && stageHash(vec3(gl_FragCoord.xy + 29.0, uSeed + 0.61)) >= uFlags.w) return true;
@@ -190,6 +242,7 @@ const FRAG_LIGHT = LIGHT_FRAG
 
 const FRAG_TAIL = `
 ${VEIL_FRAG}
+if (uState.w > 0.5 && stageFront > 0.0) gl_FragColor.rgb += uFront * stageFront;
 if (uDiag != 0) {
   float stageTexels = 0.0;
   #ifdef USE_MAP

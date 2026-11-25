@@ -19,7 +19,7 @@ const RAD = Math.PI / 180
 const LOOK = {
   gravity: 3400,
   ledge: { r: [46.5, 52.0], h: 40.3 },
-  jump: { count: 14000, reachMm: 26, ringShare: 0.3, ringMm: 5, liftMm: [0.5, 4.5], hopMm: [0.3, 2.6], quick: 0.11, tail: 0.5, tailShare: [0.6, 0.12], skidMm: [0.4, 3.2], radiusMm: [0.07, 0.15] },
+  jump: { count: 14000, reachMm: 26, ringShare: 0.3, ringMm: 5, liftMm: [1.2, 8], hopMm: [0.6, 5], quick: 0.11, tail: 0.5, tailShare: [0.6, 0.12], skidMm: [0.4, 3.2], radiusMm: [0.07, 0.15] },
   pour: { count: 9000, az: 82, spread: 1.6, r: 52.4, h: 38.8, reachMm: [4.6, 9], fanDeg: 3, rate: [1.3, 2.3], radiusMm: [0.06, 0.12], fadeFrom: 0.5 },
   flow: { surge: 0.96, seconds: 1.6, endFrom: 3.5, endTo: 6, gapMm: [0.3, 2.5] },
   shadow: { r: 57, top: [36, 41] },
