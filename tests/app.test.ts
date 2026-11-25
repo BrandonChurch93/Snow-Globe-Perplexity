@@ -1,6 +1,7 @@
+import { readFileSync } from 'node:fs'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { config } from '../src/config'
-import { FRAME, edges, framingOfRig, livePath, liveRig, margins, roomUnder, shakeReach } from '../src/app/framing'
+import { FRAME, baseSide, edges, framingOfRig, livePath, liveRig, margins, roomUnder, shakeReach } from '../src/app/framing'
 import { Drag, Look, MotionShake, TOUCH, stirAxis } from '../src/app/gestures'
 import { INTERFACE_STATES, createOverlay } from '../src/app/overlay'
 import { Autopilot, LoopPlayer } from '../src/app/players'
@@ -524,7 +525,7 @@ describe('the framing of the app', () => {
     const clearPx = ((1 - rest.foot) / 2) * h - barPx
     const heap = edges(rig).heap
     const heapPx = ((1 + heap) / 2) * h - barPx
-    return { under, rig, rest, top, side, aspect: w / h, low: -1 + 2 * under, clearPx, clear: clearPx / h, heap, heapPx, heapClear: heapPx / h }
+    return { under, rig, rest, top, side, base: baseSide(rig), aspect: w / h, low: -1 + 2 * under, clearPx, clear: clearPx / h, heap, heapPx, heapClear: heapPx / h }
   }
 
   it('is the wide camera of the film moved back along its own axis, never nearer', () => {
@@ -593,14 +594,17 @@ describe('the framing of the app', () => {
     }
   })
 
-  it('lets the glass at rest fill the width of an upright screen, where the strokes may pass the sides', () => {
+  it('lets the whole globe at rest, the glass and the widest base, fill the width of an upright screen, where the strokes may pass the sides', () => {
     const p = config.formats.phone
     const m = measure(p.width, p.height, 130)
-    expect(m.rest.side / m.aspect).toBeCloseTo(1 - 2 * FRAME.edgeShare, 4)
+    expect(m.base / m.aspect).toBeCloseTo(1 - 2 * FRAME.edgeShare, 4)
+    expect(m.rest.side).toBeLessThan(m.base)
+    expect(m.rest.side / m.aspect).toBeGreaterThan(0.78)
     expect(m.side / m.aspect).toBeGreaterThan(1)
     expect(-m.rest.foot).toBeGreaterThan(m.low)
     const t = config.formats.tablet
     const tablet = measure(t.width, t.height, null)
+    expect(tablet.base / tablet.aspect).toBeLessThanOrEqual(1 - 2 * FRAME.edgeShare + 1e-4)
     expect(tablet.rest.side / tablet.aspect).toBeLessThan(1 - 2 * FRAME.edgeShare)
     expect(tablet.rest.side / tablet.aspect).toBeGreaterThan(0.75)
   })
@@ -612,17 +616,17 @@ describe('the framing of the app', () => {
         const m = measure(4000 * aspect, 4000, 4000 * (under - (aspect < FRAME.narrowAspect ? FRAME.thumbShare : FRAME.clearShare)))
         expect(m.under).toBeCloseTo(under, 9)
         const upright = Math.abs(m.top - high) < 1e-4 && Math.abs(m.heap - m.low) < 1e-6
-        const across = Math.abs((aspect >= 1 ? m.side : m.rest.side) / aspect - (1 - 2 * FRAME.edgeShare)) < 1.5e-3
+        const across = Math.abs((aspect >= 1 ? m.side : m.base) / aspect - (1 - 2 * FRAME.edgeShare)) < 1.5e-3
         expect(upright || across || m.rig.distanceMm === hero.distanceMm, `${aspect} ${under}`).toBe(true)
         expect(m.top, `${aspect} ${under}`).toBeLessThanOrEqual(high + 1e-4)
         expect(-m.rest.foot, `${aspect} ${under}`).toBeGreaterThanOrEqual(m.low - 1e-9)
         expect(m.heap, `${aspect} ${under}`).toBeGreaterThanOrEqual(m.low - 1e-9)
-        expect((aspect >= 1 ? m.side : m.rest.side) / aspect, `${aspect} ${under}`).toBeLessThanOrEqual(1 - 2 * FRAME.edgeShare + 1e-4)
+        expect((aspect >= 1 ? m.side : m.base) / aspect, `${aspect} ${under}`).toBeLessThanOrEqual(1 - 2 * FRAME.edgeShare + 1e-4)
       }
     }
   })
 
-  it('stands the foot at rest, with what the season heaps in front of the base, 7 percent of the height over the highest control on a wide screen and on a tablet, with the globe as large as that and the top edge allow', () => {
+  it('stands the foot at rest, with what the season heaps in front of the base, 7 percent of the height over the highest control on a wide screen and on a tablet, with the globe as large as that, the top edge and, on the tablet, the sides allow', () => {
     const hero = rigOf('hero')
     for (const [w, h] of [[config.formats.hd.width, config.formats.hd.height], [config.formats.tablet.width, config.formats.tablet.height]] as const) {
       for (const controls of [60, 74, 86, 130]) {
@@ -631,29 +635,101 @@ describe('the framing of the app', () => {
         expect(m.heapClear, `${w} ${controls}`).toBeCloseTo(FRAME.clearShare, 6)
         expect(m.heapPx, `${w} ${controls}`).toBeCloseTo(FRAME.clearShare * h, 3)
         expect(m.clear, `${w} ${controls}`).toBeGreaterThan(FRAME.clearShare + 0.03)
-        expect(m.top, `${w} ${controls}`).toBeCloseTo(high, 4)
+        expect(m.top, `${w} ${controls}`).toBeLessThanOrEqual(high + 1e-4)
         expect(m.rig.distanceMm, `${w} ${controls}`).toBeGreaterThan(hero.distanceMm)
         const nearer = { ...m.rig, distanceMm: m.rig.distanceMm * 0.995 }
         const pose = poseOfRig(nearer)
         let top = -Infinity
         for (let n = 0; n < FRAME.shakePaths; n++) for (let b = 0; b <= bar; b += 0.004) top = Math.max(top, reachOf(pose, livePath(n).poseAt(b)).top)
         const span = top - edges(nearer).heap
-        expect(span, `${w} ${controls}`).toBeGreaterThan(high - m.low)
+        const tall = span > high - m.low
+        const broad = baseSide(nearer) / m.aspect > 1 - 2 * FRAME.edgeShare
+        expect(tall || broad, `${w} ${controls}`).toBe(true)
+        if (w > h) {
+          expect(m.top, `${w} ${controls}`).toBeCloseTo(high, 4)
+          expect(tall, `${w} ${controls}`).toBe(true)
+        }
       }
     }
   })
 
-  it('keeps the framing of a phone: the glass fills the width, and the foot stands 5 percent of the height or more over the highest control', () => {
+  it('keeps the framing of a phone: the whole globe fills the width, and the foot stands 5 percent of the height or more over the highest control', () => {
     const p = config.formats.phone
     for (const controls of [100, 128, 150]) {
       const m = measure(p.width, p.height, controls)
-      expect(m.rest.side / m.aspect, `${controls}`).toBeCloseTo(1 - 2 * FRAME.edgeShare, 4)
+      expect(m.base / m.aspect, `${controls}`).toBeCloseTo(1 - 2 * FRAME.edgeShare, 4)
       expect(m.clear, `${controls}`).toBeGreaterThanOrEqual(FRAME.thumbShare - 1e-9)
       expect(m.top, `${controls}`).toBeLessThanOrEqual(high + 1e-6)
-      expect(Math.abs(m.rig.distanceMm / measure(p.width, p.height, 0).rig.distanceMm - 1), `${controls}`).toBeLessThan(0.002)
+      expect(Math.abs(m.rig.distanceMm / measure(p.width, p.height, 0).rig.distanceMm - 1), `${controls}`).toBeLessThan(0.003)
     }
     expect(roomUnder(p.height, 128, p.width) - 128 / p.height).toBeCloseTo(FRAME.thumbShare, 12)
     expect(roomUnder(p.width, 60, p.height) - 60 / p.width).toBeCloseTo(FRAME.clearShare, 12)
+  })
+
+  it('holds the base of every season, as its model is built, between the sides of the phone and of the tablet', () => {
+    const reachOfModel = (season: string): { left: number; right: number; top: number } => {
+      const file = readFileSync(`public/assets/${season}/base-${season}.glb`)
+      const gltf = JSON.parse(file.subarray(20, 20 + file.readUInt32LE(12)).toString('utf8')) as {
+        meshes: { primitives: { attributes: { POSITION: number } }[] }[]
+        accessors: { min?: number[]; max?: number[] }[]
+        nodes: { scale?: number[]; translation?: number[]; rotation?: number[]; matrix?: number[] }[]
+      }
+      for (const n of gltf.nodes) expect(n.scale ?? n.translation ?? n.rotation ?? n.matrix, season).toBeUndefined()
+      const out = { left: 0, right: 0, top: 0 }
+      for (const mesh of gltf.meshes) {
+        for (const prim of mesh.primitives) {
+          const a = gltf.accessors[prim.attributes.POSITION]!
+          out.left = Math.min(out.left, a.min![0]!)
+          out.right = Math.max(out.right, a.max![0]!)
+          out.top = Math.max(out.top, a.max![1]!)
+        }
+      }
+      return out
+    }
+    const models = config.seasons.map((season) => ({ season, ...reachOfModel(season) }))
+    const widest = Math.max(...models.map((m) => Math.max(-m.left, m.right)))
+    expect(widest).toBeLessThanOrEqual(FRAME.baseReachMm)
+    expect(widest).toBeGreaterThan(FRAME.baseReachMm - 1.5)
+    expect(widest).toBeGreaterThan(config.globe.baseDiameterMm / 2)
+    for (const [name, w, h] of sizes) {
+      if (w > h) continue
+      for (const controls of [null, 86, 128, 150]) {
+        const rig = liveRig(w / h, 0, 0, roomUnder(h, controls, w))
+        const pose = poseOfRig(rig)
+        const f = h / 2 / Math.tan((rig.fovDeg * Math.PI) / 360)
+        const { x: px, y: py, z: pz } = pose.position
+        const d = pose.aim.distanceTo(pose.position)
+        const dir = [(pose.aim.x - px) / d, (pose.aim.y - py) / d, (pose.aim.z - pz) / d] as const
+        for (const m of models) {
+          for (const y of [0, m.top]) {
+            const depth = (0 - px) * dir[0] + (y - py) * dir[1] + (0 - pz) * dir[2]
+            const left = w / 2 + (f * m.left) / depth
+            const right = w / 2 + (f * m.right) / depth
+            expect(left, `${name} ${controls} ${m.season}`).toBeGreaterThanOrEqual(FRAME.edgeShare * w - 0.0005 * w)
+            expect(right, `${name} ${controls} ${m.season}`).toBeLessThanOrEqual(w - FRAME.edgeShare * w + 0.0005 * w)
+          }
+        }
+      }
+    }
+  })
+
+  it('places the smaller globe of a phone between the top edge and the controls: the room over the glass 1.6 times the room under the foot, never more than twice', () => {
+    for (const [w, h] of [[config.formats.phone.width, config.formats.phone.height], [360, 800], [414, 896], [430, 932]] as const) {
+      for (const controls of [100, 128, 150]) {
+        const m = measure(w, h, controls)
+        const over = (1 - m.rest.top) / 2
+        const underFoot = (1 - m.rest.foot) / 2 - controls / h
+        expect(over / underFoot, `${w} ${controls}`).toBeCloseTo(FRAME.overUnder, 2)
+        expect(over / underFoot, `${w} ${controls}`).toBeLessThanOrEqual(2)
+        expect(underFoot, `${w} ${controls}`).toBeGreaterThanOrEqual(FRAME.thumbShare)
+        expect(m.top, `${w} ${controls}`).toBeLessThanOrEqual(high + 1e-6)
+        expect(m.heap, `${w} ${controls}`).toBeGreaterThanOrEqual(m.low - 1e-9)
+      }
+    }
+    const t = config.formats.tablet
+    const tablet = measure(t.width, t.height, 86)
+    expect((1 - tablet.rest.top) / 2 / ((1 - tablet.rest.foot) / 2 - 86 / t.height)).toBeLessThan(FRAME.overUnder)
+    expect(tablet.heapClear).toBeCloseTo(FRAME.clearShare, 6)
   })
 
   it('gives a screen still the framing numbers of the camera that drew it, as the harness gives them for a camera of the config', () => {
