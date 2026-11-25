@@ -72,13 +72,15 @@ Rounds 8 and 9 R4 (spring, summer): "no globe motion" is the hand, frozen for th
 
 Known and open, worst first as a viewer sees it:
 
-1. The outside dissolve is a per pixel stipple (`stageGone` in `materials.ts` hashes `gl_FragCoord.xy` with `uSeed`). At draft's 2 samples it shows as grain on the base in 2 frames of each change. At final tier (24 samples, frame 2116 rendered at 05:05, `final-2116.jpg` on the looks branch) it averages to a fine grain and the frame reads as a double exposure of the shell base and the twig base under the flood; the globe hardly moves in that frame, so no motion blur helps.
-2. The arrivals are not yet staged one thing after another across the first 3 s in any season; the storm thins as an even fade in about 1 to 3 s, not as one slow whirl (the air builders' `veil.ts` and the engine's settle, not mine; what an arrival adds is mine).
+1. The arrivals are not yet staged one thing after another across the first 3 s in any season; the storm thins as an even fade in about 1 to 3 s, not as one slow whirl (the air builders' `veil.ts` and the engine's settle, not mine; what an arrival adds is mine).
+2. The outside dissolve is a per pixel stipple (`stageGone` in `materials.ts` hashes `gl_FragCoord.xy` with `uSeed`). At draft's 2 samples it shows as grain on the base in 2 frames of each change. At final tier (24 samples, frame 2116 rendered at 05:05, `final-2116.jpg` on the looks branch) it averages to a fine grain and the frame reads as a double exposure of the shell base and the twig base under the flood; the globe hardly moves in that frame, so no motion blur helps.
 3. Summer: the sand's jump off the ledge does not read (see next things).
 4. Shake-2: the shell base is flat cream in the flood at 1398 to 1400 and the heap is nearly whole at 1396 while petals still lie beyond it (the heap is one mesh with `change: 'surface-dressing'`, its front runs 58 to 230 mm so most of a heap near the foot changes first; that is the wanted order, but it reads early).
 5. Shake-4: winter's base is rust orange in winter's amber flood (winter's approved look; frozen).
 
 ## Next three things, in order
+
+The order below is by what can be finished and seen soonest, not by rank; the arrivals (rank 1 above) are the longest work and need the owners.
 
 Before them: the branch last merged main at 832eb32 (04:41). Main has moved since (194209a at 05:23; the commit of the 05:20 freeze, with all ten tips, is due on origin/main about 05:35). `git checkout -- assets-full public/assets`, merge `origin/main`, make the parts whose sources changed, `npm run texpack`, `npm run build`, then render winter's two stills and the test shake again and compare them with the hashes below before anything else.
 
