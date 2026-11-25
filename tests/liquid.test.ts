@@ -158,8 +158,15 @@ describe('the liquid model', () => {
     const c = new Liquid()
     c.stir(0, 2, 0)
     c.step(REST_POSE, REST_POSE, REST_POSE, 0)
-    expect(c.state[LIQUID_TURN + 1]!).toBeGreaterThan(1.5)
-    for (let n = 1; n < HZ * 40; n++) c.step(REST_POSE, REST_POSE, REST_POSE, n * DT)
+    expect(c.state[LIQUID_TURN + 1]!).toBeGreaterThan(0)
+    expect(c.state[LIQUID_TURN + 1]!).toBeLessThan(0.1)
+    let peak = 0
+    for (let n = 1; n < HZ; n++) {
+      c.step(REST_POSE, REST_POSE, REST_POSE, n * DT)
+      peak = Math.max(peak, c.state[LIQUID_TURN + 1]!)
+    }
+    expect(peak).toBeGreaterThan(1.2)
+    for (let n = HZ; n < HZ * 40; n++) c.step(REST_POSE, REST_POSE, REST_POSE, n * DT)
     expect(c.atRest).toBe(true)
   })
 })

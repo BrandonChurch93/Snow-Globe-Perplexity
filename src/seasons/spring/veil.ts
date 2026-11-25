@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { config } from '../../config'
-import { VEIL_LOOK } from '../../core/chunks/veil'
+import { leanGlsl, loadLean, VEIL_LOOK } from '../../core/chunks/veil'
 import { stageShader, stageUniforms } from '../../core/materials'
 import { viewCode } from '../../diagnostics/views'
 import { LIQUID_ROLL, LIQUID_SWIRL, ROLL_AXIS, ROLL_MAX } from '../../globe/liquid'
@@ -211,6 +211,7 @@ const storm = {
   /** The dashes: the few places where the streaks are thick enough to be seen one by one, how many times the mist's thickness they have, and how white they are. */
   dash: 4.5,
   dashWhite: 0.55,
+  lean: 0.6,
   /** The long dark lanes between the bands of the turn, through which the room behind is seen. */
   laneMm: 110,
   lane: 0.92,
@@ -277,7 +278,7 @@ const storm = {
 const stormUniforms = {
   /** The thickness per mm, the liquid's swirl as an angle, the place in the period (0 to 1), how even the mist is. */
   uStorm: { value: new THREE.Vector4(0, 0, 0, 0) },
-  /** How much of the wash stands on the inside of the glass (0 to 1). */
+  /** x: how much of the wash stands on the inside of the glass (0 to 1); yzw: which way and how far the load is thrown. */
   uWash: { value: new THREE.Vector4(0, 0, 0, 0) },
 }
 
@@ -393,7 +394,7 @@ void main() {
   float dashes = ${n(storm.dash)} * dash * stirred * (0.12 + 0.88 * lane) * (1.0 - ${n(storm.crownEven)} * crown);
   vec3 pc = (p - ${v3(storm.pocketAt)}) / ${v3(storm.pocketReach)};
   float pocket = 1.0 - ${n(storm.pocket)} * stirred * exp(-dot(pc, pc));
-  float sigma = uStorm.x * wall * eye * low * front * rest * trunk * pocket * (soft + dashes) * (1.0 - ${n(storm.opened)} * veilPocket(p));
+  float sigma = uStorm.x * wall * eye * low * front * rest * trunk * pocket * (soft + dashes) * (1.0 - ${n(storm.opened)} * veilPocket(p)) * ${leanGlsl('p', 'uWash.yzw', n(INNER))};
   // One sheet's share of the way through the liquid, along the eye's ray.
   float slant = max(abs(normalize(vStageWorld - cameraPosition).z), 0.35);
   float a = 1.0 - exp(-sigma * ${n((2 * INNER * 0.97) / storm.sheets)} / slant);
@@ -624,13 +625,17 @@ export function mistAt(sinceLanding: number): { heightMm: number; density: numbe
   return { heightMm: look.heightMm[0]! + (look.heightMm[1]! - look.heightMm[0]!) * risen, density: look.density[0]! + (look.density[1]! - look.density[0]!) * thinned }
 }
 
+const thrown = new THREE.Vector3()
+const leanShare = storm.lean
+
 export function updateMist(moment: KitMoment, bare: boolean): void {
   const m = mistAt(moment.sinceLanding)
   const storm = Math.min(1, Math.max(0, moment.frame.turbulence))
   mistUniforms.uMist.value.set(m.heightMm, bare ? 0 : m.density / look.sheets, (moment.time / moment.period) % 1, storm)
   const air = stormAt(moment)
   stormUniforms.uStorm.value.set(air.thick, moment.frame.liquid[LIQUID_SWIRL] ?? 0, (moment.time / moment.period) % 1, air.even)
-  stormUniforms.uWash.value.set(air.wash, 0, 0, 0)
+  const lean = loadLean(moment.frame.liquid, thrown).multiplyScalar(leanShare)
+  stormUniforms.uWash.value.set(air.wash, lean.x, lean.y, lean.z)
   if (billows) billows.visible = air.thick > 1e-4
   if (washed) washed.visible = air.wash > 1e-3
   if (sheets) sheets.visible = !bare
