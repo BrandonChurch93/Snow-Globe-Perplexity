@@ -31,12 +31,12 @@ const HALO_KIND = { lamp: { size: 3.6, rest: 0.08, hot: 0, bloom: 0.2 }, pane: {
 const THROUGH = 6
 const LAMP_GLASS: Rgb = [1.9, 1.1, 0.38]
 const WALL_FILL = 2.8
-const SAND = { body: 4.2, floor: 0.8, wrap: 1.5, foot: 0.85, bump: 0.6, grainLow: 0.3, grain: 1.0, spark: 2.6, topFrom: 0.22, topTo: 0.62 }
+const SAND = { body: 4.2, floor: 0.8, wrap: 1.5, foot: 0.85, bump: 0.6, grainLow: 0.62, grain: 0.5, spark: 1.5, topFrom: 0.22, topTo: 0.62 }
 const TURF_LOOK = { tone: 0.5, fineMm: 0.05, clumpMm: 0.22, fill: 0.45, wrap: 0.5 }
 const GRASS_LOOK = { fill: 0.1, wrap: 1.0, through: 0.36, near: 2.1, sun: 30, sunRoot: 0.35, shade: 0.6 }
-const ROOF = { slate: [0.3, 0.34, 0.42] as Rgb, chimney: [0.5, 0.49, 0.46] as Rgb, railTop: [1.5, 1.2, 0.85] as Rgb, door: [0.4, 0.2, 0.13] as Rgb, doorMm: 2.4, reachMm: 0.4 }
+const ROOF = { slate: [0.3, 0.34, 0.42] as Rgb, chimney: [0.56, 0.5, 0.43] as Rgb, stone: [1.34, 1.06, 0.76] as Rgb, stoneMm: 0.7, railTop: [1.5, 1.2, 0.85] as Rgb, door: [0.4, 0.2, 0.13] as Rgb, doorMm: 2.4, reachMm: 0.4 }
 const DARK_PANE = 0.07
-const WATER = { spark: 1.1, mass: 0.975, houseMm: 9.5, houseTall: 17, flat: 0.2, wobble: 0.8, rough: 0.035, ripple: 0.0045, fine: 0.0012, shoreFrom: 0.9, shoreTo: 1.0, sky: 1.6, skyFrom: -0.75, skyTo: 0.35, bankMm: 1.5, bankVary: 1.9, bankEdge: 0.35, bankDark: 0.975, env: 0.1, glint: 0.4, squash: 0.14, paperGlint: 2.4, post: 0.93, postMm: 0.6, postTall: 11.5, trunk: 0.975, trunkMm: 3.7, trunkTall: 26, body: 0.4 }
+const WATER = { spark: 1.1, mass: 0.975, houseMm: 9.5, houseTall: 17, flat: 0.14, wobble: 0.9, rough: 0.035, ripple: 0.0045, fine: 0.0012, shoreFrom: 0.9, shoreTo: 1.0, sky: 2.6, skyFrom: -0.75, skyTo: 0.35, skyAt: 1.5, skyWide: 9.5, skyLow: 0.1, bankMm: 1.6, bankVary: 2.2, bankEdge: 0.16, bankDark: 0.975, env: 0.1, glint: 0.5, squash: 0.14, paperGlint: 2.4, paperMm: 1.5, paperTall: 0.5, post: 0.93, postMm: 0.75, postTall: 11.5, trunk: 0.975, trunkMm: 5.2, trunkTall: 26, body: 0.4 }
 
 const flame = lampFlame()
 const mirrored: [number, number, number] = [flame[0], flame[1] - MIRROR.lowMm, flame[2]]
@@ -104,9 +104,10 @@ vec3 turfT = texture2D(map, vMapUv).rgb;
 float turfFine = texture2D(map, vMapUv * 4.7 + 0.31).r;
 diffuseColor.rgb *= 1.0 + ${TURF_LOOK.tone.toFixed(2)} * (0.5 * (turfT.g - 0.5) + 0.3 * (turfT.b - 0.5) + 0.45 * (turfFine - 0.5) + 0.25 * (turfT.r - 0.5));
 float sandAmt = max(smoothstep(0.0, 0.2, vSurf.y), smoothstep(${SAND.topFrom.toFixed(2)}, ${SAND.topTo.toFixed(2)}, vSurf.x + 0.25 * (turfT.g - 0.5)));
-float sandFineB = texture2D(map, vMapUv * 2.3 + 0.17).r;
-float sandGrain = turfT.r + 0.6 * sandFineB;
-diffuseColor.rgb *= mix(1.0, ${SAND.grainLow.toFixed(2)} + ${SAND.grain.toFixed(2)} * sandGrain + ${SAND.spark.toFixed(2)} * smoothstep(0.5, 0.66, turfT.r * (0.6 + 0.8 * sandFineB)), sandAmt);
+float sandFineB = texture2D(map, vMapUv * 5.3 + 0.17).r;
+float sandFineC = texture2D(map, vMapUv * 13.7 + 0.41).g;
+float sandGrain = 0.5 * turfT.g + 0.6 * sandFineB + 0.5 * sandFineC;
+diffuseColor.rgb *= mix(1.0, ${SAND.grainLow.toFixed(2)} + ${SAND.grain.toFixed(2)} * sandGrain + ${SAND.spark.toFixed(2)} * smoothstep(0.42, 0.6, sandFineC * (0.45 + 0.9 * sandFineB)), sandAmt);
 `,
         )
         .replace(
@@ -220,11 +221,16 @@ float waterPost(vec3 r, vec3 foot, float radius, float tall) {
 }
 vec3 waterLights(vec3 r) {
   vec3 sum = vec3(0.0);
+  vec2 dir = r.xz / max(length(r.xz), 1e-4);
+  float rise = r.y / max(length(r.xz), 1e-4);
   for (int i = 0; i < ${MIRROR_MAX}; i++) {
     if (i >= uMirrorCount) break;
-    vec3 to = uMirror[i].xyz - vStageLocal;
-    float miss = 1.0 - dot(r, normalize(to));
-    sum += (i < 2 ? ${glsl(tones.lamp)} * (exp(-miss / ${MIRROR.tight.toFixed(5)}) + ${MIRROR.wideShare.toFixed(3)} * exp(-miss / ${MIRROR.wide.toFixed(5)})) : ${glsl(tones.paperLight)} * (${WATER.paperGlint.toFixed(2)} * exp(-miss / ${(MIRROR.tight * 2.5).toFixed(5)}))) * uMirror[i].w;
+    vec2 to = uMirror[i].xz - vStageLocal.xz;
+    float along = dot(to, dir);
+    float side = length(to - dir * along) / ${WATER.paperMm.toFixed(2)};
+    float tall = uMirror[i].y - vStageLocal.y;
+    float off = (along * rise - tall) / (${WATER.paperTall.toFixed(2)} * tall + 0.25);
+    sum += ${glsl(tones.paperLight)} * (${WATER.paperGlint.toFixed(2)} * step(0.0, along) * exp(-side * side - off * off)) * uMirror[i].w;
   }
   return sum;
 }`,
@@ -267,7 +273,7 @@ diffuseColor.rgb = mix(${glsl(tones.waterDeep)}, vec3(0.03, 0.025, 0.014), water
   waterShade = max(waterShade, waterBank);
   float waterSky = smoothstep(${WATER.skyFrom.toFixed(2)}, ${WATER.skyTo.toFixed(2)}, waterR.x * 0.75 - waterR.z * 0.5 + 0.2);
   float waterSpark = pow(texture2D(map, vMapUv * 2.3 + 0.41).r * texture2D(map, vMapUv * 5.9 + 0.13).r * 2.2, 5.0);
-  totalEmissiveRadiance += waterGlint * (uGlowGain * ${WATER.glint.toFixed(2)}) * (1.0 - 0.6 * waterShore) + ${glsl(tones.waterSky)} * (${WATER.sky.toFixed(2)} * waterSky * (0.25 + 0.75 * waterFresnel) * (0.86 + 0.14 * texture2D(map, vMapUv * vec2(0.9, 2.2)).b + ${WATER.spark.toFixed(2)} * waterSpark)) * (1.0 - waterShade) * (1.0 - 0.75 * waterShore);
+  totalEmissiveRadiance += waterGlint * (uGlowGain * ${WATER.glint.toFixed(2)}) * (1.0 - 0.6 * waterShore) * (1.0 - 0.5 * waterBank) + ${glsl(tones.waterSky)} * (${WATER.sky.toFixed(2)} * waterSky * (0.25 + 0.75 * waterFresnel) * (0.86 + 0.14 * texture2D(map, vMapUv * vec2(0.9, 2.2)).b + ${WATER.spark.toFixed(2)} * waterSpark)) * (1.0 - waterShade) * (1.0 - 0.75 * waterShore) * (${WATER.skyLow.toFixed(2)} + ${(1 - WATER.skyLow).toFixed(2)} * exp(-pow((vStageLocal.x + 14.0 * waterN.x - ${(pond.x + WATER.skyAt).toFixed(2)}) / ${WATER.skyWide.toFixed(2)}, 2.0)));
 }
 `,
         )
@@ -292,6 +298,7 @@ function dressed(g: THREE.BufferGeometry, sharedCount: number): THREE.BufferGeom
   const roof = only('roof')
   const chimney = only('chimney')
   const fence = only('fence')
+  const cottage = only('cottage')
   for (let i = 0; i < sharedCount; i++) {
     const x = P.getX(i)
     const y = P.getY(i)
@@ -300,6 +307,7 @@ function dressed(g: THREE.BufferGeometry, sharedCount: number): THREE.BufferGeom
     if (solidDistance(x, y, z, chimney) < ROOF.reachMm) C.setXYZ(i, lum * ROOF.chimney[0] * 2, lum * ROOF.chimney[1] * 2, lum * ROOF.chimney[2] * 2)
     else if (solidDistance(x, y, z, roof) < ROOF.reachMm) C.setXYZ(i, lum * ROOF.slate[0] * 2, lum * ROOF.slate[1] * 2, lum * ROOF.slate[2] * 2)
     else if (Math.hypot(x - anchors.door[0], z - anchors.door[2]) < ROOF.doorMm && C.getX(i) > 1.2 * C.getZ(i) && Math.abs(y - anchors.door[1]) < ROOF.doorMm * 1.6) C.setXYZ(i, C.getX(i) * ROOF.door[0], C.getY(i) * ROOF.door[1], C.getZ(i) * ROOF.door[2])
+    else if (solidDistance(x, y, z, cottage) < ROOF.stoneMm && Math.abs(C.getX(i) - C.getZ(i)) < 0.3 * lum) C.setXYZ(i, C.getX(i) * ROOF.stone[0], C.getY(i) * ROOF.stone[1], C.getZ(i) * ROOF.stone[2])
     else if (N.getY(i) > 0.6 && solidDistance(x, y, z, fence) < ROOF.reachMm) C.setXYZ(i, C.getX(i) * ROOF.railTop[0], C.getY(i) * ROOF.railTop[1], C.getZ(i) * ROOF.railTop[2])
   }
   C.needsUpdate = true
