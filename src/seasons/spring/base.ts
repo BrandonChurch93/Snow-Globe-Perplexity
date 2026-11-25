@@ -378,7 +378,7 @@ void main() {
   float front = uWater.x;
   if (t > front || uWater.w <= 0.0) discard;
   float body = waterBody(u, mm);
-  float head = front < 0.999 ? smoothstep(0.05, 0.0, front - t) : 0.0;
+  float head = front < 0.999 ? smoothstep(0.022, 0.0, front - t) * smoothstep(0.45, 0.85, body) : 0.0;
   float tip = front < 0.999 ? smoothstep(0.0, 0.012, front - t) : 1.0;
   body *= tip;
   if (body <= 0.002) discard;
@@ -409,8 +409,8 @@ void main() {
   vec3 glow = (uWaterKeyCol * 0.5 + uRigCardCol * 0.3 + uWaterSky * 1.2) * RECIPROCAL_PI;
   float rimline = smoothstep(0.17, 0.07, body) * smoothstep(0.0, 0.07, body);
   float fine = smoothstep(0.58, 0.9, baseNoise(vec3(u * 9.0, (mm - run) * 0.14, 3.0))) * smoothstep(0.35, 0.7, baseNoise(vec3(u * 3.0, (mm - run) * 0.9, 11.0)));
-  float foam = smoothstep(0.86, 1.0, t) * smoothstep(0.3, 0.75, baseNoise(vec3(u * 5.0, (mm - run) * 1.6, 17.0)));
-  col += glow * vec3(0.86, 0.94, 1.0) * (body * 0.08 + core * (0.3 * streak + 0.9 * fine + 3.0 * head + 1.4 * foam) + mix(0.1, 0.24, smoothstep(0.97, 0.86, t)) * rimline * (0.4 + 0.6 * h0));
+  float foam = smoothstep(0.93, 1.0, front) * smoothstep(0.9, 1.0, t) * smoothstep(0.3, 0.75, baseNoise(vec3(u * 5.0, (mm - run) * 1.6, 17.0)));
+  col += glow * vec3(0.86, 0.94, 1.0) * (body * 0.08 + core * (0.3 * streak + 0.9 * fine + 0.9 * head + 0.6 * foam) + mix(0.1, 0.24, smoothstep(0.97, 0.86, t)) * rimline * (0.4 + 0.6 * h0));
   float edge = smoothstep(0.0, 0.3, body);
   col *= edge * uWater.w * 0.55;
   gl_FragColor = vec4(col, mix(0.04, 0.14, core) * edge * uWater.w);
