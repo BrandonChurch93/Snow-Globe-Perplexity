@@ -1,0 +1,39 @@
+agent/p5r2-foot-looks: pictures for the winter line "the tabletop mirror image directly under the base" (polish round 2).
+Code branch agent/p5r2-foot. Every picture is cut from a FINAL tier key at native size unless it says otherwise.
+The step is a mirror-only choice of look, not a true image (decision 121).
+
+00-winter-rest-foot-trio-final-a74dc4f.jpg
+  What: foot of winter-rest, approved reference over main's key over this branch.
+  Tier: final. Commit: a74dc4f0408f21065f157919d1692bbaed7b1cb1 (first step). Key sha256 ffc576a638c42fa0e8e340cdac69e99f36014b37406a01a6a5a356b69921bbf5.
+  Right: band and rope have an image under the foot where main has a black gap.
+  Wrong: dimmer than the approved image; rope at the right end veiled; superseded by 01.
+
+01-winter-rest-foot-trio-final-43f0367.jpg
+  What: foot of winter-rest, approved reference over main's key over this branch.
+  Tier: final. Commit: 43f03673f26624551a6c279bcc11cd43c32a2eb8 (source of b2c8273, engine 8baf25fc7e9a15f0). Key sha256 4e123f7180d78f7837127fea60959f79395429dd2714cc9da1e7243eda437443.
+  Right: band image continuous from left to right directly under the dark plinth line, warm gold at left and centre, paling to cool metal at the right end; rope legible at left and centre; broken by the lumps of snow. Foot above the table unchanged from main (difference confined to x 581-1344, y 981-1079).
+  Wrong: dimmer than the approved image; rope at the right end partly veiled; the dark plinth line stays between foot and image as on main; the thin rime in the strip in front of the foot is thinner than main's.
+
+02-winter-rest-foot-right-3x-final-43f0367.jpg
+  What: right half of the foot, main over this branch, 3 times native.
+  Tier: final. Commit: 43f0367. Key sha256 4e123f71... as above.
+  Right: the right half has a legible band image, cool-edged at the right end; rope shows through the thinner snow.
+  Wrong: rope at the far right is still partly under snow; the white heap right of centre is visibly thinner than on main.
+
+03-winter-rest-foot-left-3x-final-43f0367.jpg
+  What: left half of the foot, main over this branch, 3 times native.
+  Tier: final. Commit: 43f0367. Key sha256 4e123f71... as above.
+  Right: warm gold band and rope image at the left, no black gap.
+  Wrong: the frond at the left front is thinner than main's where it lay over the image.
+
+04-winter-shake-foot-trio-final-43f0367.jpg
+  What: foot of winter-shake, approved reference over main's key over this branch.
+  Tier: final. Commit: 43f0367. Key sha256 83e7fafc3ec0005a3ec3b75c32e1ec4ddf1636773078402e1d5d42962260effa.
+  Right: same image as at rest, attached to the foot: no hole, no plinth floating, no image left behind. Difference from main's shake key confined to x 581-1344, y 981-1079.
+  Wrong: the same as 01. In this key the foot stands on the table, so it does not show the image following a lifted foot.
+
+05-winter-shake-foot-right-3x-final-43f0367.jpg
+  What: right half of the foot in winter-shake, main over this branch, 3 times native.
+  Tier: final. Commit: 43f0367. Key sha256 83e7fafc... as above.
+  Right: legible band image, cool at the right end.
+  Wrong: the same as 02.
