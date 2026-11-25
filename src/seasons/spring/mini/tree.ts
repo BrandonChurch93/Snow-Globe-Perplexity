@@ -2,11 +2,14 @@ import * as THREE from 'three'
 import { afterLight } from '../../../core/chunks/light'
 import { stageMaterial } from '../../../core/materials'
 import { geometry, meshLevel, prepareModel } from '../../../core/models'
+import { levels } from '../../../core/quality'
 import { lampFlame } from '../../../miniature/roof'
 import { bakeGlow, buildTrunk, crownOffset, glowHook, prepareTrunk, trunkSolid, type GlowLight } from '../../../miniature/trunk'
 import { emitters } from '../../../scene/layout'
 import type { InnerLight, KitMoment, Vec3 } from '../../kit'
 import { season, tones } from './palette'
+
+const TOP = levels[0]!.id
 
 const MODEL = 'spring/tree-blossom.glb'
 const PART = `miniature-${season}`
@@ -153,9 +156,16 @@ export function build(): THREE.Object3D {
   const inShadow = (geometry(MODEL, 'blossom').userData.extras as { shadow?: Record<string, number> } | undefined)?.shadow ?? {}
   blossom.onBeforeShadow = (_r, _o, _c, _s, g) => g.setDrawRange(0, inShadow[meshLevel()] ?? Infinity)
   blossom.onAfterShadow = (_r, _o, _c, _s, g) => g.setDrawRange(0, Infinity)
+  const lighter = (): boolean => meshLevel() !== TOP
+  blossom.onBeforeRender = (_r, _s, _c, g) => g.setDrawRange(0, lighter() && blossom.matrixWorld.determinant() < 0 ? (inShadow[meshLevel()] ?? Infinity) : Infinity)
+  blossom.onAfterRender = (_r, _s, _c, g) => g.setDrawRange(0, Infinity)
   const twigs = new THREE.Mesh(placed('twigs', lampOn(LAMP_ON_WOOD)), twigMaterial())
   twigs.castShadow = true
   twigs.receiveShadow = true
+  twigs.onBeforeShadow = (_r, _o, _c, _s, g) => g.setDrawRange(0, lighter() ? 0 : Infinity)
+  twigs.onAfterShadow = (_r, _o, _c, _s, g) => g.setDrawRange(0, Infinity)
+  twigs.onBeforeRender = (_r, _s, _c, g) => g.setDrawRange(0, lighter() && twigs.matrixWorld.determinant() < 0 ? 0 : Infinity)
+  twigs.onAfterRender = (_r, _s, _c, g) => g.setDrawRange(0, Infinity)
   return new THREE.Group().add(trunk, blossom, twigs)
 }
 

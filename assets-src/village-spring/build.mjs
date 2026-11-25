@@ -3,6 +3,7 @@ import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import { fromThree, writeGlb } from '../../tools/lib/glb.mjs'
 import { rel, writeJson } from '../../tools/lib/paths.mjs'
 import { loadLayout, loadRoof } from '../village/layout.mjs'
+import { MeshoptSimplifier } from 'meshoptimizer'
 import { addLists } from './levels.mjs'
 import { Bag, STACK_LIFT, TILE_MM, add3, basis, clamp, fbm, lin, mix3, mul3, netGeometry, noise, norm3, rng, smin, smooth, sub3, writePng } from '../village/kit.mjs'
 
@@ -505,7 +506,8 @@ class Sprigs {
     return merged
   }
 }
-const LEVEL = { medium: 0.4, low: 0.25 }
+const LEVEL = { medium: 0.3, low: 0.25 }
+const TURF_LEVEL = { medium: 0.1, low: 0.22 }
 const growth = new Sprigs()
 const KIND_OF = { blade: 0, leaf: 1, petal: 2 }
 const pick = (list) => list[Math.floor(R() * list.length)]
@@ -845,9 +847,18 @@ for (let z = -50; z <= 50; z += 1)
     }
   }
 
-const meshes = [fromThree('turf', turf.geometry()), fromThree('growth', growth.geometry()), fromThree('water', water.geometry(), { level: L.pond.level, boulders })]
+const turfGeometry = turf.geometry()
+const meshes = [fromThree('turf', turfGeometry), fromThree('growth', growth.geometry()), fromThree('water', water.geometry(), { level: L.pond.level, boulders })]
 const out = writeGlb(rel('assets-full', 'spring', 'village-spring.glb'), meshes)
-out.bytes = addLists(rel('assets-full', 'spring', 'village-spring.glb'), 'growth', growth.lists)
+addLists(rel('assets-full', 'spring', 'village-spring.glb'), 'growth', growth.lists)
+await MeshoptSimplifier.ready
+const turfLists = {}
+for (const [level, error] of Object.entries(TURF_LEVEL)) {
+  const [list] = MeshoptSimplifier.simplifyWithAttributes(new Uint32Array(turfGeometry.index.array), new Float32Array(turfGeometry.getAttribute('position').array), 3, new Float32Array(turfGeometry.getAttribute('normal').array), 3, [0.5, 0.5, 0.5], null, 0, error, ['ErrorAbsolute'])
+  turfLists[level] = Array.from(list)
+  tally[`turf${level[0].toUpperCase()}${level.slice(1)}`] = list.length / 3
+}
+out.bytes = addLists(rel('assets-full', 'spring', 'village-spring.glb'), 'turf', turfLists)
 tally.growthMedium = growth.lists.medium.length / 3
 tally.growthLow = growth.lists.low.length / 3
 

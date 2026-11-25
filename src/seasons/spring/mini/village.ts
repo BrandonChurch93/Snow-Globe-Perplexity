@@ -390,6 +390,8 @@ export function build(): THREE.Object3D {
   const turf = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'turf'), near), turfMaterial()), false)
   const growth = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'growth'), nearGrowth), growthMaterial()), false)
   const water = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'water'), near), waterMaterial()), false)
+  growth.onBeforeRender = (_r, _s, _c, g) => g.setDrawRange(0, growth.matrixWorld.determinant() < 0 ? 0 : Infinity)
+  growth.onAfterRender = (_r, _s, _c, g) => g.setDrawRange(0, Infinity)
   return new THREE.Group().add(walls, turf, growth, water)
 }
 
