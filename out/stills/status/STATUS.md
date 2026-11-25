@@ -1,18 +1,16 @@
-# Status 117
+# Status 119
 
-2026-11-25 19:30 UTC
+2026-11-25 20:03 UTC
 
-- Published at 19:18 UTC from commit 82f1eaa5: the interface merge (framing on phone and tablet, the controls) and the sound pack cut on the mended bar lines. Visibility: Organization. Settings: https://www.perplexity.ai/computer/a/4c4f15d3-07df-421c-941e-77528b5e889f?open-publish=true
-- The eight sound checks pass on this build, over three runs: A7 after the blockout was mixed again, A4 after the check's own wait was mended (it asked once a frame and saw a mark set at 19.5 s only at 70.6 s; decision 119, no threshold moved).
-- All four seasons are measured at the final tier on polish round 1's merge: 81 lines, 3 red, each of them M3 (fine detail against the approved picture) on a rest still: spring 0.3941, fall 0.5348, summer 0.7057, bar 0.75. Winter has no red line.
-- Winter's mirror line (severe: the right half of the foot barely reflects) had no owner: the surface builder found its cause outside its file. A ninth builder holds it since 19:29 (decision 120). Nine builders work until 20:50 UTC.
-- The archive of kept sounds is shared again: 14 kept sounds, the film mix with the four season tracks, and the table of what is left.
-- phase 5: 5.33 h used of its 12.00 h box
-- allowance (before the review, continuation 1): 5.33 h used of 12.00 h allowed
+- Answer to Brandon's note 6 (where this stands; nothing changed or stopped by it): Phase 5 of 6, the last before the review stop. Now: the second and last polish round, nine builders until 20:50; their branches merged on trial and looked at key by key at the final tier, four of eight seen, one defect found and traced (the glass's dotted outline).
+- Left before the review stop, in order (table under the pictures): the merge and a publish; Round 19 on the whole globe, the last critic round; the review cut of the film with its soundtrack; all eight keys and 21 judged stills at the final tier with the comparisons; the phase gate, about 93 minutes; the review block. An estimate, not a promise: the review stop between 00:30 and 01:45 UTC.
+- Sound, read 20:02 UTC: 6,765 of the 10,000 limit used, 3,235 left, 40 paid calls, none since 18:11 and none planned; 14 of 25 cues kept, 11 without a kept take; the account counter 15,891 of 131,000.
+- phase 5: 5.87 h used of its 12.00 h box
+- allowance (before the review, continuation 1): 5.87 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-117-1.jpg`: Not merged: the right flank of summer's base at rest, final tier, each pixel doubled: the approved picture, main, the sand branch 5f8e3e0. A fall of single grains now runs down the flank where main has none. Still wrong: thinner than the approved picture in its lower third, the grains too even in size and a little too yellow, no bright haze where it lands.
-- `out/stills/status/status-117-2.jpg`: Not merged: spring's foot on the table at rest, final tier, native size: the approved picture, main, the surface branch 5431bc6. The mirror is as dark as the approved picture's and the lit root at the right stays. Still wrong: the image is a plain flipped copy with straight sides, and the approved picture's brighter scatter of petals is not answered.
-- `out/stills/status/status-117-3.jpg`: Not merged: spring mid-shake, final tier, three crops: the approved picture, main, the storm branch fb96e74. Gable, roof, trunk and lower crown read through a thinner cloud where main is a pale mass. Still wrong: door and lamp are washed by a warm pale haze, the lower band of the glass is an even opaque pink.
-- `out/stills/status/status-117-4.jpg`: Not merged: the set down of the fourth shake in the film, frames 2874 to 2880 at the final tier, the left end of the foot over the right end, twice native size, the hand branch 1902fba. The left end is down first and holds, the right end comes down a like step on every frame. Still wrong: a rim of snow on the table fades in at the right end over the last four frames and reads as a thing that appears; the rock after the landing is not yet seen at the final tier.
+- `out/stills/status/status-119-1.jpg`: Not merged: the seven branches of polish round 2 together, on trial. Spring mid-shake at the final tier: the approved picture (left), main as published (middle), the trial (right). Cottage, lamp and trunk can be read through the petals; the lower glass is still an even pink
+- `out/stills/status/status-119-2.jpg`: Not merged, the same trial: winter mid-shake at the final tier: approved, main, trial. Trunk, crown and lights read through the storm; the lamp's glow is still a soft patch over its stem
+- `out/stills/status/status-119-3.jpg`: A defect found in the trial and traced: fall mid-shake, the left outline of the glass at 6x: main (left) is a smooth line, the trial (right) is broken into single lit dots. Cause: two commits of the glass branch's outline fade; its builder has taken both back and is drawing the keys again
+- `out/stills/status/status-119-4.jpg`: Not merged, the ninth builder: winter's foot seen in the table: approved (top), main (middle), the branch at the final tier (bottom). The band and rope now have an image under the foot; drawn so in the mirror pass only, 2.6 mm nearer the table, which is a choice of look and not a true image
