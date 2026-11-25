@@ -11,18 +11,26 @@ export const standIns: string[] = []
 export const surfaceDressing: Dressing & { reachMm: number } = { tint: [0.86, 0.74, 0.55], amount: 0, reachMm: 150 }
 
 // Where the sand lies on the slab, in mm from the globe's axis (x to the right of the hero camera, z toward it), measured
-// from the approved image: the dune the spill builds against the foot on the right, its shoulder round the front of the
+// from the approved image: the dune the spill builds against the foot on the right (a cone under the stream, on a low
+// mound, with loose grains sprayed out to its right), its shoulder round the front of the
 // foot, the fan toward the camera, a thin sheet behind the foot on the left, and a few grains everywhere near the foot.
 const HEAP = {
-  dune: { x: 67, z: 2, sx: 15, sz: 19, mm: 12.5 },
+  dune: { x: 67, z: 2, sx: 15, sz: 19, mm: 5.5 },
+  cone: { x: 60, z: 0, mm: 9.5, run: 0.44, deep: 1.3 },
+  spray: { x: 80, z: 10, sx: 24, sz: 27 },
+  apron: { wide: 1.1, core: [0.34, 0.92], tail: 0.13, least: 0.02 },
+  streak: { x: -71, z: -13, sx: 11, sz: 6, share: 0.72 },
   skirt: { x: 71, z: 30, sx: 10, sz: 20, mm: 2.2 },
   shoulder: { x: 47, z: 58, sx: 21, sz: 14, mm: 2.4 },
   fan: { x: 50, z: 98, sx: 23, sz: 44, mm: 1.5 },
-  sheet: { x: -96, z: -18, sx: 36, sz: 24, mm: 0.19 },
+  sheet: { x: -96, z: -18, sx: 36, sz: 24, mm: 0.15 },
   stray: { x: 56, z: 66, sx: 26, sz: 52, mm: 0.2 },
   ring: { r: 61.5, w: 4.5, mm: 0.55 },
 }
-export const SLAB = { liftMm: 0.5, footMm: 54, repose: 0.62, stepMm: 1.3, x: [-150, 142], z: [-232, 216] } as const
+// What the sand's shader does with a thin layer (base.ts, SAND): none of it below `none` mm, all of it from `all` mm, a
+// smooth step between, and a grain is drawn where that step is over `cover` times the grain's own number.
+const GRAIN = { none: 0.11, all: 0.35, cover: 0.62 }
+export const SLAB = { liftMm: 0.5, footMm: 54, repose: 0.62, stepMm: 1.45, x: [-150, 142], z: [-232, 216] } as const
 
 const hash = (x: number, y: number, s: number): number => {
   let h = (Math.imul(x | 0, 374761393) + Math.imul(y | 0, 668265263) + Math.imul(s | 0, 1274126177)) | 0
@@ -45,19 +53,29 @@ function noise(x: number, y: number, s: number): number {
 }
 const bump = (x: number, z: number, g: { x: number; z: number; sx: number; sz: number; mm: number }): number => g.mm * Math.exp(-(((x - g.x) / g.sx) ** 2 + ((z - g.z) / g.sz) ** 2))
 
+// The pile under the stream: a cone at the sand's angle of repose with its top against the foot, where the stream lands.
+const cone = (x: number, z: number): number => Math.max(0, HEAP.cone.mm - HEAP.cone.run * Math.hypot(x - HEAP.cone.x, (z - HEAP.cone.z) / HEAP.cone.deep))
+
 export function sandHeight(x: number, z: number): number {
   const r = Math.hypot(x, z)
   const broad = noise(x / 23 + 3.1, z / 23 + 7.7, 11)
   const mid = noise(x / 7.3 + 1.7, z / 7.3 + 9.2, 13)
   const fine = noise(x / 2.1 + 5.3, z / 2.1 + 2.9, 17)
-  const heap = bump(x, z, HEAP.dune) * (0.86 + 0.28 * broad) + bump(x, z, HEAP.skirt) * (0.5 + mid) + bump(x, z, HEAP.shoulder) * (0.6 + 0.8 * broad) + bump(x, z, HEAP.fan) * (0.25 + 1.5 * broad * mid)
+  const heap = (bump(x, z, HEAP.dune) + cone(x, z)) * (0.86 + 0.28 * broad) + bump(x, z, HEAP.skirt) * (0.5 + mid) + bump(x, z, HEAP.shoulder) * (0.6 + 0.8 * broad) + bump(x, z, HEAP.fan) * (0.25 + 1.5 * broad * mid)
   const sheet = bump(x, z, HEAP.sheet) * (0.55 + 0.75 * broad * mid)
   const stray = bump(x, z, HEAP.stray) * mid * mid * (0.4 + 1.2 * fine)
   const az = Math.atan2(x, z) * (180 / Math.PI)
   const clear = az > -150 && az < -8 ? 0.06 : 1
   const ring = HEAP.ring.mm * Math.exp(-(((r - HEAP.ring.r) / HEAP.ring.w) ** 2)) * (0.15 + 1.7 * broad * mid) * clear
-  const lumps = (fine - 0.5) * 0.22 * Math.min(1, heap / 0.8) + (mid - 0.5) * 0.5 * Math.min(1, heap / 3)
-  return Math.max(0, heap + sheet + stray + ring + lumps)
+  const lumps = (fine - 0.5) * 0.3 * Math.min(1, heap / 0.8) + (mid - 0.5) * 1.1 * Math.min(1, heap / 3)
+  // Round every heap lies an apron thinner than a grain is high. The shader draws such a layer as single grains, as many
+  // as the layer is thick, so the apron's thickness is set from the share of the ground the grains should take: all of it
+  // next to a heap, quickly less, then a few for a long way out. No heap ends in an outline.
+  const near = (g: { x: number; z: number; sx: number; sz: number }): number => Math.exp(-(((x - g.x) / (g.sx * HEAP.apron.wide)) ** 2 + ((z - g.z) / (g.sz * HEAP.apron.wide)) ** 2))
+  const by = Math.min(1, near(HEAP.fan) + near(HEAP.shoulder) + near(HEAP.spray) + HEAP.streak.share * near(HEAP.streak))
+  const share = Math.min(1, Math.min(1, Math.max(0, (by - HEAP.apron.core[0]) / (HEAP.apron.core[1] - HEAP.apron.core[0]))) ** 1.5 + HEAP.apron.tail * by ** 0.4 * (0.5 + mid))
+  const apron = share > HEAP.apron.least ? GRAIN.none + (GRAIN.all - GRAIN.none) * (0.5 - Math.sin(Math.asin(1 - 2 * GRAIN.cover * Math.min(1, share)) / 3)) : 0
+  return Math.max(0, heap + sheet + stray + ring + lumps) + apron
 }
 
 export function sandSpread(x: number, z: number): number {
@@ -104,7 +122,7 @@ function heapGeometry(): THREE.BufferGeometry {
   for (let j = 0; j < nz - 1; j++) {
     for (let i = 0; i < nx - 1; i++) {
       const top = Math.max(at(i, j), at(i + 1, j), at(i, j + 1), at(i + 1, j + 1))
-      if (top < 0.012) continue
+      if (top < 0.1) continue
       const a = vertex(i, j)
       const b = vertex(i + 1, j)
       const c = vertex(i, j + 1)
