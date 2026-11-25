@@ -1303,6 +1303,12 @@ Things only he can settle. Nothing waits on them.
 
 7. The coding of the app's textures (decision 56, 2026-11-24 16:16 UTC). The kit asks for a compressed GPU format; measured here it made the files larger and the normal and height maps less exact, and the memory it would save is not needed (129 of 500 MB). The app ships near-lossless WebP instead. Say if the GPU format is wanted regardless, for phones with little memory; it is one more coding in the pack tool and one branch in the loader.
 
+- Item 6, added 2026-11-25 11:12 UTC: the motion critics still read the shake as light, with a low lift and little tilt (Round 14, open item 127; Rounds 8 and 11 before it, open items 71 and 81). The larger shake is the choice described above; the Builder did not take it, because decision 45 was made for the blockout critic's ask and the fill check.
+
+8. Summer: five asks of Round 15's likeness critic that would undo what Round 12's critics asked for (Declined 23, added 2026-11-25 11:12 UTC). Each stands as Round 12 left it and is not changed again: (a) the large soft discs among the fireflies, cut for Round 12, asked back in Round 15 (open item 91); (b) the vines, made larger for Round 12, asked smaller in Round 15 (open item 96); (c) the ring of stones, built for Round 12, questioned in Round 15 (open item 97); (d) the room behind the globe, made bluer for Round 12, asked warmer in Round 15 (open item 101); (e) the sea glass on the base, sunk into sockets for Round 12, asked to stand proud in Round 15 (open item 89). Say for each which reading you want against the approved summer images.
+
+9. The bats of fall (decision 85, added 2026-11-25 11:12 UTC). Fall carries four bats where the config began with seven; the approved images show two to three, and Round 16's likeness critic still asks for "fewer smaller, sharper bat silhouettes" (open item 135). Fewer than four is below the range the config gives the Builder (`tuneMin` 0.5 of 7). Say if fall may carry two or three.
+
 ## Running jobs
 
 The command, the range, the log file, the VM, the time it should take, when it started.
