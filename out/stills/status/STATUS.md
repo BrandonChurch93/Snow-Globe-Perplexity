@@ -1,16 +1,18 @@
-# Status 119
+# Status 120
 
-2026-11-25 20:03 UTC
+2026-11-25 20:24 UTC
 
-- Answer to Brandon's note 6 (where this stands; nothing changed or stopped by it): Phase 5 of 6, the last before the review stop. Now: the second and last polish round, nine builders until 20:50; their branches merged on trial and looked at key by key at the final tier, four of eight seen, one defect found and traced (the glass's dotted outline).
-- Left before the review stop, in order (table under the pictures): the merge and a publish; Round 19 on the whole globe, the last critic round; the review cut of the film with its soundtrack; all eight keys and 21 judged stills at the final tier with the comparisons; the phase gate, about 93 minutes; the review block. An estimate, not a promise: the review stop between 00:30 and 01:45 UTC.
-- Sound, read 20:02 UTC: 6,765 of the 10,000 limit used, 3,235 left, 40 paid calls, none since 18:11 and none planned; 14 of 25 cues kept, 11 without a kept take; the account counter 15,891 of 131,000.
-- phase 5: 5.87 h used of its 12.00 h box
-- allowance (before the review, continuation 1): 5.87 h used of 12.00 h allowed
+- Phase 5 of 6, polish round 2. Builders report at 20:35 and stop at 20:50, then the freeze.
+- Second trial merge f7121c32 (main, glass after its revert, swap, surface, hand, sand, storm, liquid, foot): tsc clean, 526 tests pass and 4 are skipped, engine a103ddd4fdecc107. Its eight keys are being drawn at the final tier. Winter at rest is in and holds: 9 outline rows with a dot, main has 9.
+- Timing probe on one agent, a film frame at 960 x 540: 10.8 s calm and 27.3 s stormy at draft, 34.6 s and 97.0 s at review. The review cut is drawn at draft across twelve agents. Review would take over 30 agent-hours against a limit of one hour.
+- Sound, read 20:24 UTC: 6,765 of 10,000 credits used by this job, 3,235 left, 40 paid calls, none since 18:11, none planned. 14 of 25 cues kept.
+- The app: https://snow-globe-seasons.pplx.app (published 19:18 from polish round 1; the next publish follows the freeze).
+- phase 5: 6.22 h used of its 12.00 h box
+- allowance (before the review, continuation 1): 6.22 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-119-1.jpg`: Not merged: the seven branches of polish round 2 together, on trial. Spring mid-shake at the final tier: the approved picture (left), main as published (middle), the trial (right). Cottage, lamp and trunk can be read through the petals; the lower glass is still an even pink
-- `out/stills/status/status-119-2.jpg`: Not merged, the same trial: winter mid-shake at the final tier: approved, main, trial. Trunk, crown and lights read through the storm; the lamp's glow is still a soft patch over its stem
-- `out/stills/status/status-119-3.jpg`: A defect found in the trial and traced: fall mid-shake, the left outline of the glass at 6x: main (left) is a smooth line, the trial (right) is broken into single lit dots. Cause: two commits of the glass branch's outline fade; its builder has taken both back and is drawing the keys again
-- `out/stills/status/status-119-4.jpg`: Not merged, the ninth builder: winter's foot seen in the table: approved (top), main (middle), the branch at the final tier (bottom). The band and rope now have an image under the foot; drawn so in the mirror pass only, 2.6 mm nearer the table, which is a choice of look and not a true image
+- `out/stills/status/status-120-1.jpg`: Winter at rest, final tier: the approved picture, main, and the second trial merge of all nine branches (not merged yet)
+- `out/stills/status/status-120-2.jpg`: Winter's foot at 2x: main on the left, the second trial merge on the right. The band and rope now have an image in the table, a named choice of look (decision 121)
+- `out/stills/status/status-120-3.jpg`: Spring at rest, the glass's left outline at 6x: main on the left, the glass branch after its revert on the right. One smooth line, no dots
+- `out/stills/status/status-120-4.jpg`: The phone layout before and after the interface pass (already in main and published)
