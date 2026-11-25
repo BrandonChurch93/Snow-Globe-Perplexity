@@ -20,7 +20,7 @@ const LOOKS: Record<string, KindLook> = {
   petal: { shape: SHAPE.petal, size: 1, body: 0.96, flash: 0.75, real: true },
   mote: { shape: SHAPE.fleck, size: 1.2, body: 0.8, flash: 1, real: true },
   leaf: { shape: SHAPE.leaf, size: 1.35, body: 1, flash: 0.5, real: true },
-  seed: { shape: SHAPE.seed, size: 1.5, body: 0.9, flash: 0, real: true },
+  seed: { shape: SHAPE.seed, size: 3.6, body: 0.9, flash: 0, real: true },
   firefly: { shape: SHAPE.light, size: 1, body: 1, flash: 0, real: true },
   ember: { shape: SHAPE.spark, size: 1.5, body: 1, flash: 0, real: true },
   bat: { shape: SHAPE.bat, size: 1.3, body: 1, flash: 0, real: true },
@@ -172,7 +172,7 @@ export const CARD = {
   area: 1.3,
   hold: 0.6,
   lieTilt: 0.22,
-  lieShade: 0.85,
+  lieShade: 1,
   lieFlat: 0.45,
   petalRock: 1.1,
   fleckRock: 2.6,
@@ -180,7 +180,7 @@ export const CARD = {
   stormRock: 2.8,
   yawSway: 0.6,
   /** Of the ones that settle and stay down, the share drawn whole, in the storm and lying; the rest are the storm's small dabs and are gone once they are down. */
-  chosen: 0.012,
+  chosen: [0.004, 0.012] as const,
   dabSize: 0.36,
   /** The size of a whole petal and of a whole leaf in the storm, as a share of its size at rest. */
   stormSize: [0.45, 0.6] as const,
