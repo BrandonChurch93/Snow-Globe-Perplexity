@@ -393,11 +393,23 @@
   animation: rock 1.15s cubic-bezier(0.4, 0, 0.3, 1) infinite;
 }
 
+.pulse {
+  animation: glow var(--hint, 1.9s) ease-in-out 1;
+}
+
 .pulse::before {
+  box-shadow:
+    inset 0 0 0 1px rgb(var(--glow) / 0.86),
+    inset 0 0 20px 0 rgb(var(--glow) / 0.3),
+    0 0 22px 1px rgb(var(--glow) / 0.36);
+  background: rgb(var(--glow) / 0.09);
   animation: warm var(--hint, 1.9s) ease-in-out 1;
 }
 
 .pulse::after {
+  box-shadow:
+    0 0 0 1px rgb(var(--glow) / 0.5),
+    0 0 16px 0 rgb(var(--glow) / 0.3);
   animation: ring var(--hint, 1.9s) cubic-bezier(0.16, 0.6, 0.3, 1) 1;
 }
 
@@ -488,8 +500,16 @@
   100% {
     opacity: 0;
   }
-  32% {
+  26%,
+  44% {
     opacity: 1;
+  }
+}
+
+@keyframes glow {
+  26%,
+  44% {
+    color: rgb(var(--lit));
   }
 }
 
@@ -498,11 +518,11 @@
     inset: 0;
     opacity: 0;
   }
-  18% {
-    opacity: 0.85;
+  22% {
+    opacity: 0.9;
   }
   100% {
-    inset: -13px;
+    inset: -16px;
     opacity: 0;
   }
 }
