@@ -76,6 +76,6 @@ export function appLegend(spec) {
   const name = { shake: `a shake from ${p.from} to ${p.to}`, jump: `a jump from ${p.from} to ${p.to}`, stir: `a stir of the liquid in ${p.from}`, drag: `a drag around the globe in ${p.from}` }[p.name] ?? p.name
   const f = spec.frames
   const marks = (spec.marks ?? []).map((m) => `frame ${m.frame} (${secs(m.frame)}) ${m.what}`).join('; ')
-  const label = { season: ', its time and the season it shows', yaw: ", its time and the camera's turn around the globe in degrees" }[spec.label] ?? ' and its time'
+  const label = { season: ', its time and the season the app holds, written as the old season to the new one from the press to the landing', yaw: ", its time and the camera's turn around the globe in degrees" }[spec.label] ?? ' and its time'
   return `${name} in the app, ${spec.what}${spec.sheets > 1 ? `, sheet ${spec.sheet} of ${spec.sheets}` : ''}: frames ${f[0]} to ${f[f.length - 1]} of the script's ${p.frameCount}, ${spec.spacing}. Each tile is labelled with its frame${label}. In the script: ${marks}`
 }

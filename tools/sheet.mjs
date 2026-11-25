@@ -260,7 +260,7 @@ try {
       const said = { shake: `the shake from ${sp.from} to ${sp.to}`, jump: `the jump from ${sp.from} to ${sp.to}`, stir: `a stir in ${sp.from}`, drag: `a drag around the globe in ${sp.from}` }[sp.name]
       const appLabel = (i) => {
         const a = readJson(`${have.get(i)}.json`).app
-        return labelKind === 'season' ? a.season : labelKind === 'yaw' ? `yaw ${a.yawDeg.toFixed(1)}` : ''
+        return labelKind === 'season' ? (a.target && a.target !== a.season ? `${a.season} to ${a.target}` : a.season) : labelKind === 'yaw' ? `yaw ${a.yawDeg.toFixed(1)}` : ''
       }
       for (const part of chosen) {
         const sets = pages(part.frames, per)
