@@ -99,8 +99,10 @@ const HAND = {
   redraws: 24,
   gripRockDeg: [1.6, 2],
   gripBeats: 0.36,
+  gripSnap: 0,
   liftOffBeats: 0.14,
   liftEffort: 1.05,
+  liftQuick: 0,
   windReach: [0.5, 0.62],
   windLate: 1.2,
   windShare: 0.84,
@@ -172,16 +174,32 @@ const HELD: Hand = {
   heldLead: 0.07,
   dipShare: 0.4,
   /** The rock after the landing: each rock lasts this share of the one before it, so the foot rocks over once, back, and once more, quicker each time. */
-  overshootDeg: [1.74, 1.8],
-  rockFirst: 0.56,
-  rockShrink: 0.48,
-  rockPower: 1.3,
-  rockFade: 0.8,
+  overshootDeg: [2.3, 2.4],
+  rockFirst: 0.74,
+  rockShrink: 0.26,
+  /** The set down. The foot comes down tipped further and is already turning toward flat when its edge meets the surface, and the fall is eased out over
+   * the frames in which that turn gathers: the way down runs into the roll with no stop on the edge, and the foot goes flat faster than it fell. */
+  approachDeg: 4.2,
+  touchShare: 0.55,
+  fallStopBeats: 0.16,
+  rockPower: 1,
+  rockFade: 0.74,
+  /** The pick up. The hand takes the foot by the edge near the lens and tips it up in this share of the lift, as quickly as a hand can turn a weight:
+   * the lean is there on the first frames, the far edge leaves the surface under it, and the globe comes up fast at first and slower toward the top. */
+  gripSnap: 0.16,
+  gripRockDeg: [3.6, 3.9],
+  gripDeg: [26, 34],
+  liftOffBeats: 0.055,
+  liftQuick: 2.2,
+  windLate: 1,
+  awayMm: [13.6, 14.6],
 }
 const keepsOldHand = (name: string): boolean => name === 'test' || name.startsWith('test:') || name === 'preroll'
 
 const s5 = (u: number): number => (u <= 0 ? 0 : u >= 1 ? 1 : u * u * u * (10 + u * (-15 + 6 * u)))
 const clamp = (v: number, lo: number, hi: number): number => (v < lo ? lo : v > hi ? hi : v)
+/** From 0 to 1 and at rest at both ends in speed, pull and the rate of the pull: a turn of the wrist with no step in jerk. */
+const s7 = (u: number): number => (u <= 0 ? 0 : u >= 1 ? 1 : u * u * u * u * (35 + u * (-84 + u * (70 - 20 * u))))
 const pick = (rng: Rng, span: readonly [number, number] | readonly number[]): number => rng.range(span[0]!, span[1]!)
 
 /** The sine of the angle between the globe's axis and the vertical. */
@@ -195,8 +213,7 @@ export const tiltSine = (tiltX: number, tiltZ: number): number => {
 export const rimGapMm = (pose: GlobePose): number => pose.y - FOOT_MM * tiltSine(pose.tiltX, pose.tiltZ)
 
 /** The height of the foot's centre while the foot rocks on its rim: zero and flat when level, the rim's own rise beyond a hair of tilt. */
-const rockHeight = (sine: number): number => {
-  const e = HAND.padRad
+const rockHeight = (sine: number, e: number): number => {
   return FOOT_MM * (Math.hypot(sine, e) - e * Math.exp((-sine * sine) / (2 * e * e)))
 }
 
@@ -559,8 +576,11 @@ function build(name: string): ShakeMotion {
   // It comes down on the edge that trails the last swing.
   const gripDir = { x: -Math.sin(gripAngle), z: -first * Math.cos(gripAngle) }
   const landDir = { x: -Math.sin(landAngle), z: -lastSide * Math.cos(landAngle) }
-  const landGap = c.liftMm - rockHeight(Math.sin(approach))
-  const rise = (beat: number): number => s5(Math.pow(clamp((beat - liftOff) / (liftEnd - liftOff), 0, 1), H.liftEffort))
+  const landGap = c.liftMm - rockHeight(Math.sin(approach), H.padRad)
+  const rise = (beat: number): number => {
+    const u = clamp((beat - liftOff) / (liftEnd - liftOff), 0, 1)
+    return H.liftQuick > 0 ? s5(1 - Math.pow(1 - u, H.liftQuick)) : s5(Math.pow(u, H.liftEffort))
+  }
   // The fall: it sinks through the last swing, then comes down faster and faster, and is stopped short as the trailing edge meets the surface.
   const fallen = new Float64Array(count)
   {
@@ -603,10 +623,10 @@ function build(name: string): ShakeMotion {
     if (b <= liftEnd) {
       const up = rise(b)
       const held = Math.pow(up, H.leanLag)
-      const rocked = gripRock * s5(b / gripBeats) * (1 - held)
+      const rocked = gripRock * (H.gripSnap > 0 ? s7(b / (H.gripSnap * liftEnd)) : s5(b / gripBeats)) * (1 - held)
       lx = rocked * gripDir.x + lean * held * hold.x
       lz = rocked * gripDir.z + lean * held * hold.z
-      yTop[i] = rockHeight(tiltSine(lx, lz)) + (c.liftMm - rockHeight(Math.sin(lean))) * up
+      yTop[i] = rockHeight(tiltSine(lx, lz), H.padRad) + (c.liftMm - rockHeight(Math.sin(lean), H.padRad)) * up
       z[i] = -awayMm * up
     } else if (b < strokesEnd) {
       lx = lean * hold.x
@@ -622,7 +642,7 @@ function build(name: string): ShakeMotion {
       const held = 1 - s5((b - strokesEnd) / (touch - strokesEnd))
       lx = flat * landDir.x + (lean * hold.x - approach * landDir.x) * held
       lz = flat * landDir.z + (lean * hold.z - approach * landDir.z) * held
-      yTop[i] = rockHeight(Math.sin(Math.abs(flat))) + landGap * down
+      yTop[i] = rockHeight(Math.sin(Math.abs(flat)), H.padRad) + landGap * down
       z[i] = -awayMm * down
     }
     x[i] = s * Math.cos(planAngle) + H.tremorMm * 0.6 * inHold(b) * shiver.x(b)
@@ -647,7 +667,7 @@ function build(name: string): ShakeMotion {
       const height = yTop[i]! - dip * pump[i]!
       const gap = height - FOOT_MM * sine
       // In the lift the foot may still be on the felt: it is never asked to stand higher than a foot rocking on its rim does.
-      const needs = i < iLift ? Math.min(0, rockHeight(sine) - FOOT_MM * sine) : i <= iStrokes ? H.rimAirMm : Math.min(H.rimAirMm, 0.5 * (height - FOOT_MM * Math.sin(leanOnly[i]!)))
+      const needs = i < iLift ? Math.min(0, rockHeight(sine, H.padRad) - FOOT_MM * sine) : i <= iStrokes ? H.rimAirMm : Math.min(H.rimAirMm, 0.5 * (height - FOOT_MM * Math.sin(leanOnly[i]!)))
       if (gap < needs) return false
     }
     return true

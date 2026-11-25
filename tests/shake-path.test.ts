@@ -34,8 +34,8 @@ const SEEN_PUMP = 9 / 1080
 
 /** The shakes that keep the first hand: every still of a season and the film's opening stand on them. */
 const FIRST_HAND = (name: string): boolean => name === 'test' || name.startsWith('test:') || name === 'preroll'
-/** The most the foot of the held hand rocks over after the landing, in degrees. */
-const OVERSHOOT_HELD_DEG = 1.9
+/** The most the foot of the held hand rocks over after the landing, in degrees: the bound of decision 106 itself. */
+const OVERSHOOT_HELD_DEG = 2.5
 
 const film = shots.filter((shot) => shot.kind === 'shake').map((shot) => shot.id)
 const NAMES = ['test', ...config.seasons.map((season) => `test:${season}`), 'preroll', ...film, 'loop', ...Array.from({ length: FRAME.shakePaths }, (_, i) => `live-${i}`)]
@@ -207,12 +207,14 @@ describe('the shake path: continuous from the first frame of the lift to the end
 })
 
 describe('the shake path: a heavy thing in a hand', () => {
-  it('is gripped before it lifts: the foot rocks on the surface, then leaves it with effort, drawn to the side away from the first stroke and rolled that way, and eases at the top', () => {
+  it('is gripped before it lifts: the foot rocks on the surface, then leaves it, drawn to the side away from the first stroke and rolled that way, and eases at the top', () => {
     for (const name of NAMES) {
       const m = shakeMotion(name)
       const path = makeShake(name)
       const off = m.plan.liftOff
-      expect(off).toBeGreaterThan(0.1 * s.liftBeats)
+      // The first hand waits on the felt and leaves it with effort. The held hand does not wait: its far edge is off within three frames of the press.
+      if (FIRST_HAND(name)) expect(off).toBeGreaterThan(0.1 * s.liftBeats)
+      else expect(off).toBeLessThanOrEqual(3 * FRAME_BEATS)
       expect(off).toBeLessThan(0.5 * s.liftBeats)
       let rocked = 0
       for (let b = 0.002; b <= off; b += 0.002) {
@@ -223,8 +225,21 @@ describe('the shake path: a heavy thing in a hand', () => {
       expect(rocked).toBeGreaterThan(0.3)
       expect(rocked).toBeLessThan(1)
       let fastest = { beat: 0, v: 0 }
-      for (let b = off; b <= s.liftBeats; b += 0.002) if (m.at('y', b, 1) > fastest.v) fastest = { beat: b, v: m.at('y', b, 1) }
-      expect(fastest.beat, `${name} lift`).toBeGreaterThan((off + s.liftBeats) / 2)
+      for (let b = 0.002; b <= s.liftBeats; b += 0.002) if (m.at('y', b, 1) > fastest.v) fastest = { beat: b, v: m.at('y', b, 1) }
+      if (FIRST_HAND(name)) expect(fastest.beat, `${name} lift`).toBeGreaterThan((off + s.liftBeats) / 2)
+      else {
+        // The held hand reads from its first three frames: the lean leads the rise, the near edge of the foot is up before the far one leaves,
+        // and the globe comes up quickly off the table and slower toward the top, never falling back.
+        const third = path.poseAt(3 * FRAME_BEATS)
+        expect(tiltOf(third) * DEG, `${name} lean on the third frame`).toBeGreaterThan(1.8)
+        expect(third.tiltX, `${name} the edge near the lens comes up`).toBeLessThan(0)
+        expect(FOOT_MM * tiltSine(third.tiltX, third.tiltZ) + third.y, `${name} high edge on the third frame`).toBeGreaterThan(4)
+        expect(rimGap(third), `${name} low edge on the third frame`).toBeLessThan(0.5)
+        expect(fastest.beat, `${name} lift`).toBeLessThan(0.15 * s.liftBeats)
+        expect(path.poseAt(0.25 * s.liftBeats).y, `${name} up early`).toBeGreaterThan(0.6 * s.liftMm)
+        expect(path.poseAt(0.5 * s.liftBeats).y, `${name} up early`).toBeGreaterThan(0.9 * s.liftMm)
+        for (let b = FRAME_BEATS / 4; b <= s.liftBeats; b += FRAME_BEATS / 4) expect(m.at('y', b, 1), `${name} rises at ${b.toFixed(3)}`).toBeGreaterThan(-1e-6)
+      }
       expect(m.at('y', s.liftBeats, 1)).toBe(0)
       expect(m.at('y', s.liftBeats, 2)).toBe(0)
       const top = path.poseAt(s.liftBeats)
@@ -265,8 +280,9 @@ describe('the shake path: a heavy thing in a hand', () => {
         const roll = side * seen(path.poseAt(b)).roll
         if (roll < tip.roll) tip = { beat: b, roll }
       }
-      expect(tip.roll, `${name} tip`).toBeLessThan(-1.2)
-      expect(tip.roll, `${name} tip`).toBeGreaterThan(-2.2)
+      // The held hand tips it further, so that the frame shows the edge come up.
+      expect(tip.roll, `${name} tip`).toBeLessThan(FIRST_HAND(name) ? -1.2 : -2.6)
+      expect(tip.roll, `${name} tip`).toBeGreaterThan(FIRST_HAND(name) ? -2.2 : -4.2)
       expect(tip.beat, `${name} tip`).toBeLessThan(0.4 * s.liftBeats)
       // The foot swings level in the first part of the lift, and when it is level the whole rim is off the surface.
       let level = { beat: tip.beat, tilt: Infinity }
@@ -274,7 +290,8 @@ describe('the shake path: a heavy thing in a hand', () => {
         const t = tiltOf(path.poseAt(b)) * DEG
         if (t < level.tilt) level = { beat: b, tilt: t }
       }
-      expect(level.tilt, `${name} level`).toBeLessThan(1.2)
+      // The held hand tips the edge near the lens up as well, and keeps that lean away from the lens as the roll swings level.
+      expect(level.tilt, `${name} level`).toBeLessThan(FIRST_HAND(name) ? 1.2 : 1.9)
       expect(level.beat, `${name} level`).toBeLessThan(0.6 * s.liftBeats)
       expect(rimGap(path.poseAt(level.beat)), `${name} clear when level`).toBeGreaterThan(0.3 * s.liftMm)
       // No edge drags: once the low edge is off the felt it only rises until the foot is level, it is a millimetre clear before the middle of the lift, and the roll of the wind up never brings it back down.
@@ -522,8 +539,9 @@ describe('the shake path: a heavy thing in a hand', () => {
       let late = 0
       let crossings = 0
       let side = 0
-      // The first hand is all but still past half of the settle. The held hand rocks further and so for longer: it is all but still past 0.85 of it.
-      const lateFrom = FIRST_HAND(name) ? 0.5 : 0.85
+      // The first hand is all but still past half of the settle. The held hand rocks further and so for longer: its one rock over takes three
+      // quarters of the settle, the small rock back the rest, and it is all but still past 0.9 of it and still at its end.
+      const lateFrom = FIRST_HAND(name) ? 0.5 : 0.9
       const rocks: number[] = [0]
       for (let b = landing + 0.0005; b < m.endBeat; b += 0.0005) {
         const p = path.poseAt(b)
@@ -553,11 +571,13 @@ describe('the shake path: a heavy thing in a hand', () => {
       expect(peak.x * into.x + peak.z * into.z, `${name} rocks over to the other side`).toBeLessThan(0)
       expect(over, `${name} overshoot`).toBeGreaterThan(0.3)
       // Decision 59 caps the rock of the first hand at 1.3 degrees; it is kept close under the cap. The hand of the film, the loop and the app
-      // rocks further, so that the frame shows it: under OVERSHOOT_HELD_DEG, and never over the 2.5 degrees the ruling of 14:40 UTC on 2026-11-25 allows.
+      // rocks further, so that the small frame shows it: under OVERSHOOT_HELD_DEG, the 2.5 degrees the ruling of 14:40 UTC on 2026-11-25 allows.
       expect(over, `${name} overshoot`).toBeGreaterThan(1.1)
       expect(over, `${name} overshoot`).toBeLessThan(FIRST_HAND(name) ? 1.3 : OVERSHOOT_HELD_DEG)
       expect(m.plan.overshoot * DEG).toBeCloseTo(over, 1)
-      expect(overBeat - landing).toBeLessThan(0.3 * settle)
+      // The first hand is at the top of its rock inside 0.3 of the settle. The held hand rocks twice as far and the foot may turn through flat no
+      // faster than the bound on jerk allows, so the top of its rock comes later: inside 0.4 of the settle.
+      expect(overBeat - landing, `${name} top of the rock`).toBeLessThan((FIRST_HAND(name) ? 0.3 : 0.4) * settle)
       expect(late / over, `${name} dies`).toBeLessThan(0.12)
       expect(crossings, `${name} rattles`).toBeGreaterThanOrEqual(2)
       expect(tiltOf(path.poseAt(m.endBeat - 0.02)) * DEG).toBeLessThan(0.002)
