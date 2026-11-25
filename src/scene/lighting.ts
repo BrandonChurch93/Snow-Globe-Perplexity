@@ -41,7 +41,7 @@ export const ROOM_RIG = {
  * frames, highest on the cut, down over six. Nothing is laid on the base itself beyond `outside`, so the base keeps its own colours
  * and its own shadow side under the glare.
  */
-export const CHANGE_BLOOM = { outside: 3, flood: 0, lens: 0.2, pool: 2, swellFrom: 0.56, fall: 0.6, glare: 1.2 } as const
+export const CHANGE_BLOOM = { outside: 3, flood: 0, lens: 0.2, pool: 2, swellFrom: 0.56, fall: 0.6, glare: 2.4 } as const
 
 const SHADOW_OFF = 10
 
