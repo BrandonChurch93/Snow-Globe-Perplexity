@@ -277,6 +277,11 @@ export function sourceOf(plan, id) {
   throw new Error(`no such source: ${id}`)
 }
 
+export function appSource(plan, level) {
+  const ask = { from: plan.from, to: plan.to }
+  return { id: ['app', plan.name, plan.from, ...(plan.to === plan.from ? [] : [plan.to]), level].join('-'), what: `${plan.name} script of the app`, count: plan.frameCount, step: 1, fps: plan.fps, tiered: false, stage: false, app: { name: plan.name, level, ask } }
+}
+
 export const SEQ = rel('out', 'work', 'seq')
 export const SHEETS = rel('out', 'work', 'sheets')
 export const nameParts = (o, tiered = true) => [o.format, tiered ? o.tier : '', o.assets === 'full' ? '' : o.assets, o.diag].filter(Boolean)
@@ -358,12 +363,13 @@ export async function renderFrames(session, page, src, indices, o, onFrame = asy
     if (rendered > 0 && Date.now() + lastMs > o.deadline) break
     const t0 = Date.now()
     const r = await page.evaluate(
-      async ([id, index, tier, diag]) => {
+      async ([id, index, tier, diag, app]) => {
         const sc = window.showcase
         if (id !== 'opening') sc.setDiagnostic(diag || 'none')
         const before = sc.dev.timings()
         let state = null
-        if (id === 'film') {
+        if (app) state = await sc.dev.renderAppFrame(app.name, index, app.level, app.ask)
+        else if (id === 'film') {
           await sc.renderFilmFrame(index, tier)
           state = sc.filmState(index)
         } else if (id === 'test') {
@@ -379,15 +385,16 @@ export async function renderFrames(session, page, src, indices, o, onFrame = asy
           precision: sc.dev.caps().precision,
           shot: state?.shot ?? '',
           season: state?.season ?? '',
+          app: app ? state : null,
           timings: { simMs: after.simMs - before.simMs, drawMs: after.drawMs - before.drawMs, samples: after.samples - before.samples, steps: after.steps - before.steps },
         }
       },
-      [src.id, i, o.tier, o.diag],
+      [src.id, i, o.tier, o.diag, src.app ?? null],
     )
     const png = src.stage ? await session.grabStage(page) : await session.grab(page)
     lastMs = Date.now() - t0
     const file = frameFile(src, o, i)
-    const record = session.record(r.info, { diag: o.diag, spec: { source: src.id, index: i }, frameSeconds: i / src.fps, shot: r.shot, season: r.season, seconds: lastMs / 1000, timings: r.timings, precision: r.precision, errors: page.errors.slice(seen, seen + 20) })
+    const record = session.record(r.info, { diag: o.diag, spec: { source: src.id, index: i }, frameSeconds: i / src.fps, shot: r.shot, season: r.season, seconds: lastMs / 1000, timings: r.timings, precision: r.precision, ...(r.app ? { app: r.app } : {}), errors: page.errors.slice(seen, seen + 20) })
     seen = page.errors.length
     writeWithRecord(file, png, record)
     files.set(i, file)
