@@ -1,44 +1,43 @@
 {
-  "number": 84,
-  "time": "2026-11-25 08:07 UTC",
+  "number": 85,
+  "time": "2026-11-25 08:15 UTC",
   "phase": "4",
   "unit": "",
   "lines": [
-    "Status 84 · 2026-11-25 08:07 UTC · Phase 4",
-    "Round 13 (fall) has every critic and juror in and does not pass: R1 6 (was 3) and R3 6 and R4 6 and the jury 0 of 20 against the controls' 7 of 10. Its gate is still running",
-    "Fall's miniature now measures 0.572 for detail at final tier against 0.279 on the judged build (the bar is 0.75) and its base 0.641 against 0.407",
-    "All twelve measures of the four changes are green at final tier on the change builder's branch",
-    "Ten builders push their last by 08:32. Then one freeze for the third rounds of spring and summer and fall (Rounds 14 to 16) and the change unit's floor round (Round 17)",
-    "Sound is still missing: the sound tool's account has no credits",
-    "phase 4: 8.00 h used of its 9.50 h box",
-    "allowance (before the review): 30.29 h used of 36.00 h allowed",
+    "Status 85 · 2026-11-25 08:15 UTC · Phase 4",
+    "Rounds 11 to 13 are fully answered and none passes: spring R1 5 R3 6 R4 5; summer R1 6 R3 4 R4 7; fall R1 6 R3 6 R4 6; the jury fails all three; every gate is 15 of 15 green",
+    "The ten builders are in the last minutes of their fix pass: summer's rest detail measure went from 0.58 to 0.76 at the final tier against a bar of 0.75; spring's soft-part measure reads 0 on every shot at draft; fall's key light went from blue to warm",
+    "Next: one freeze at about 08:45 for the third round of each season and the first round of the changes; all four must start before the clock closes extra rounds at about 09:15",
+    "Sound is as it was: four kept cues and no credits for more",
+    "phase 4: 8.14 h used of its 9.50 h box",
+    "allowance (before the review): 30.42 h used of 36.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-84-1.jpg",
-      "caption": "Summer into fall on the fix pass: the whole swap window on even frames 2088 to 2120. The background lights now cross with no step (decision 89). Draft tier",
+      "file": "out/stills/status/status-85-1.jpg",
+      "caption": "Summer at rest from the hero camera in a draft still: a scratch merge of this pass's air and miniature and particle work; what the next round should judge",
       "w": 1200,
-      "h": 761
+      "h": 675
     },
     {
-      "file": "out/stills/status/status-84-2.jpg",
-      "caption": "Fall's base on the fix pass: approved above and ours below. Vines cross at angles and the wax is a rim with thin runs. Draft tier",
+      "file": "out/stills/status/status-85-2.jpg",
+      "caption": "Fall at rest: approved image left and the build right in a draft still. The low fog is darker and uneven and the sparks stand through the dome",
+      "w": 1200,
+      "h": 608
+    },
+    {
+      "file": "out/stills/status/status-85-3.jpg",
+      "caption": "Spring at rest: approved left and the build right. Slate-blue room and pinker discs; the right side still has fewer and whiter discs than the approved",
+      "w": 1200,
+      "h": 338
+    },
+    {
+      "file": "out/stills/status/status-85-4.jpg",
+      "caption": "Fall's base: approved above and the build below in a draft still. The vines cross at angles and the wax is a rim with thin runs",
       "w": 1200,
       "h": 1132
-    },
-    {
-      "file": "out/stills/status/status-84-3.jpg",
-      "caption": "Fall's miniature on the fix pass: approved left and ours right. Thinner crown and tall grass through the fog. Draft tier",
-      "w": 1200,
-      "h": 472
-    },
-    {
-      "file": "out/stills/status/status-84-4.jpg",
-      "caption": "Summer's base on the fix pass: approved above and ours below. Foot rounded and sea glass set in sockets. Draft tier",
-      "w": 1200,
-      "h": 902
     }
   ]
 }
