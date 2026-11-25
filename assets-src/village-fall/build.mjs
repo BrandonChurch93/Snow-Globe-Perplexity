@@ -1,5 +1,7 @@
+import fs from 'node:fs'
 import * as THREE from 'three'
 import { fromThree, writeGlb } from '../../tools/lib/glb.mjs'
+import { addLevels } from '../../tools/lib/glblevels.mjs'
 import { rel, writeJson } from '../../tools/lib/paths.mjs'
 import { loadSource } from '../trunk/source.mjs'
 import { loadLayout } from '../village/layout.mjs'
@@ -24,7 +26,8 @@ const STONES = PROPS.STONES
 const LEAF_TONES = ['#c8541a', '#d9812a', '#a8371a', '#e0a030', '#7a3a18', '#b5651d', '#c9451c', '#8f5a1e'].map(lin)
 const GRASS_TONES = ['#5a7a2a', '#7d9438', '#b0a548', '#4a6424', '#96893a'].map(lin)
 
-const LITTER = { base: 0.03, patch: 0.2, fence: 0.2, tree: 0.1, wall: 0.1, leaves: 480 }
+const LITTER = { base: 0.03, patch: 0.2, fence: 0.2, tree: 0.1, wall: 0.1, leaves: 230 }
+const LEVELS = { medium: { error: 0.08, worth: 1 }, low: { error: 0.2, worth: 1 } }
 const STONE_TONES = ['#d6d0bf', '#c4c0b2', '#e0d9c6', '#b3b0a4', '#cbc5b3'].map(lin).map((c) => mul3(c, 1.3))
 const ground = new Bag('ground')
 const water = new Bag('water')
@@ -54,7 +57,7 @@ const lineGap = (x, z) => {
 }
 const pathGap = (x, z) => Math.min(lineGap(x, z) - 2.2, ...[...L.steps, ...L.stones].map(([sx, sz]) => Math.hypot(x - sx, z - sz)))
 const rockGap = (x, z) => Math.min(...PROPS.ROCKS.map((r) => Math.hypot(x - r.at[0], z - r.at[1]) - Math.max(r.r[0], r.r[2])))
-const reliefAt = (x, z) => 0.22 * fbm(x * 0.33 + 3.1, z * 0.33 + 7.7, 2, 3) * smooth(1.2, 3.2, pathGap(x, z)) * smooth(1.0, 1.12, L.pondField(x, z)) * smooth(0.5, 2.5, cottageGap(x, z))
+const reliefAt = (x, z) => 0.42 * fbm(x * 0.33 + 3.1, z * 0.33 + 7.7, 2, 3) * smooth(1.2, 3.2, pathGap(x, z)) * smooth(1.0, 1.12, L.pondField(x, z)) * smooth(0.5, 2.5, cottageGap(x, z))
 const earthAt = (x, z) => L.groundAt(x, z) + reliefAt(x, z)
 const litterAt = (x, z) => {
   const base = LITTER.base + LITTER.patch * fbm(x * 0.12 + 1.7, z * 0.12 + 4.2, 5, 3)
@@ -72,8 +75,8 @@ const mossAt = (x, z) => {
 }
 
 {
-  const rings = 130
-  const around = 400
+  const rings = 110
+  const around = 320
   const skirt = 8
   const r = L.innerRadiusMm - 0.6
   const pos = []
@@ -106,7 +109,7 @@ const mossAt = (x, z) => {
   g.setIndex(idx)
   g.computeVertexNormals()
   const under = (p) => smooth(1.2, 4.2, L.groundAt(p[0], p[2]) - p[1])
-  const wet = (x, z) => 0.5 + 0.5 * smooth(0.95, 1.12, L.pondField(x, z))
+  const wet = (x, z) => 0.28 + 0.72 * smooth(0.99, 1.1, L.pondField(x, z))
   const contact = (x, z) => 0.55 + 0.45 * smooth(0, 1.6, cottageGap(x, z))
   ground.add(g, {
     color: (p) => {
@@ -756,7 +759,12 @@ const litterBytes = writePng(rel('assets-full', 'fall', 'village-litter.srgb.til
 
 const names = [ground, water, decor, glow, attic]
 const extras = { pumpkins: pumpkinList, stones: stoneList, tileMm: TILE_MM }
-const out = writeGlb(rel('assets-full', 'fall', 'village-fall.glb'), names.map((b) => fromThree(b.name, b.geometry(), b === decor ? extras : undefined)))
+const file = rel('assets-full', 'fall', 'village-fall.glb')
+const out = writeGlb(file, names.map((b) => fromThree(b.name, b.geometry(), b === decor ? extras : undefined)))
+const levelled = await addLevels(fs.readFileSync(file), { levels: LEVELS })
+fs.writeFileSync(file, levelled.glb)
+out.bytes = levelled.glb.length
+const lighter = Object.fromEntries(Object.keys(LEVELS).map((l) => [l, levelled.meshes.reduce((n, m) => n + (m[l] ?? m.triangles), 0)]))
 const record = {
   made: 'assets-src/village-fall/build.mjs',
   model: { file: 'assets-full/fall/village-fall.glb', bytes: out.bytes, triangles: out.triangles, meshes: Object.fromEntries(names.map((b) => [b.name, b.triangles])) },
@@ -769,4 +777,4 @@ const record = {
   },
 }
 writeJson(rel('out', 'work', 'village', 'build-fall.json'), record)
-console.log(`village-fall: ${out.triangles} triangles in ${out.meshes} meshes (${Object.entries(record.model.meshes).map(([k, v]) => `${k} ${v}`).join(', ')}), ${(out.bytes / 1e6).toFixed(2)} MB; ${leafCount} leaves, ${tuftCount} tufts, ${flagCount} flagstones, ${rimCount} rim stones, ${pebbleCount} pebbles; maps ${((earthBytes + litterBytes) / 1e6).toFixed(2)} MB`)
+console.log(`village-fall: ${out.triangles} triangles (medium ${lighter.medium}, low ${lighter.low}) in ${out.meshes} meshes (${Object.entries(record.model.meshes).map(([k, v]) => `${k} ${v}`).join(', ')}), ${(out.bytes / 1e6).toFixed(2)} MB; ${leafCount} leaves, ${tuftCount} tufts, ${flagCount} flagstones, ${rimCount} rim stones, ${pebbleCount} pebbles; maps ${((earthBytes + litterBytes) / 1e6).toFixed(2)} MB`)

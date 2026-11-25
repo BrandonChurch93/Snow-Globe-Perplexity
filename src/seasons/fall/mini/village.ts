@@ -7,7 +7,7 @@ import { texture } from '../../../core/textures'
 import { GLOW, glowGeometry, glowMaterial, glowPiece, haloGeometry, haloMaterial, type GlowLook } from '../../../miniature/glow'
 import { MIRROR_GLSL, mirrorUniforms } from '../../../miniature/mirror'
 import { prepareVillage, villageGeometry, villageGrain } from '../../../miniature/model'
-import { lampFlame, lampFoot, shrubDistance } from '../../../miniature/roof'
+import { isIvy, lampFlame, lampFoot, shrubs } from '../../../miniature/roof'
 import { BUMP_GLSL, NEAR_LIGHT, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, withSurface, type GlowSource } from '../../../miniature/surface'
 import { anchors, cottage, cottageFrame, fence, groundAt, moundSlope, pond, pondField, solidDistance, steps, stones, tree } from '../../../scene/layout'
 import { gainOf } from '../../../scene/lightgrid'
@@ -44,7 +44,7 @@ const ROOF = { tone: [2.2, 1.7, 1.45] as Rgb, grey: 0.55 }
 const DOOR: Rgb = [0.34, 0.24, 0.17]
 const DRY: readonly Rgb[] = [[0.42, 0.16, 0.05], [0.5, 0.26, 0.07], [0.3, 0.12, 0.05], [0.4, 0.3, 0.1]]
 const GROUND = { soil: 1.1, leaf: 0.85, leafScale: 0.6, soilMm: 0.26, wideMm: 0.5, leafMm: 0.34 }
-const WATER = { rough: 0.07, rippleMm: 0.12, lamp: 12, pane: 0.8, pumpkin: 2.2, tight: 0.0005, wide: 0.006, wideShare: 0.004, lowMm: 3.4, fog: 0.26, shore: [0.9, 0.99] as [number, number] }
+const WATER = { rough: 0.07, rippleMm: 0.12, lamp: 12, pane: 0.8, pumpkin: 2.2, tight: 0.0005, wide: 0.006, wideShare: 0.004, lowMm: 3.4, fog: 0.17, shore: [0.9, 0.99] as [number, number] }
 
 const TALL_LAMP = { reachMm: 2.6, neckMm: 9.5, post: [1.6, 1.2] as [number, number], head: [1.5, 1.5] as [number, number] }
 const foot = lampFoot()
@@ -68,6 +68,19 @@ function stretched(source: THREE.BufferGeometry): THREE.BufferGeometry {
 }
 
 const flame = tallLamp(lampFlame())
+const STACK = { fromMm: 17.6, keep: 0.7, reachMm: 0.5 }
+const BUSHES = shrubs().filter((s) => !isIvy(s.r))
+const IVY = shrubs().filter((s) => isIvy(s.r))
+const inIvy = (x: number, y: number, z: number): boolean => IVY.some((s) => Math.hypot((x - s.centre[0]) / s.r[0], (y - s.centre[1]) / s.r[1], (z - s.centre[2]) / s.r[2]) < 1.5)
+
+function bushDistance(x: number, y: number, z: number): number {
+  let d = Infinity
+  for (const s of BUSHES) {
+    const k = Math.hypot((x - s.centre[0]) / s.r[0], (y - s.centre[1]) / s.r[1], (z - s.centre[2]) / s.r[2])
+    d = Math.min(d, (k - 1) * Math.min(s.r[0], s.r[1], s.r[2]))
+  }
+  return d
+}
 const mirrored: Point = [flame[0], flame[1] - WATER.lowMm, flame[2]]
 const attic = atticAt()
 const pumpkinLights = PUMPKINS.map((p) => pumpkinFace(p, 0.55, 0.05))
@@ -150,7 +163,16 @@ function autumn(source: THREE.BufferGeometry): THREE.BufferGeometry {
       const q = tallLamp([x, y, z])
       P.setXYZ(i, q[0], q[1], q[2])
     }
-    if (inFence(x, y, z) && kind === 1) {
+    const cl = cottageLocal(x, z)
+    const inStack = Math.abs(cl.across - cottage.chimney.across) < cottage.chimney.half + STACK.reachMm && Math.abs(cl.along - cottage.chimney.along) < cottage.chimney.halfAlong + STACK.reachMm && y - frame.floor > STACK.fromMm
+    if (inStack) {
+      const top = frame.floor + STACK.fromMm + (y - frame.floor - STACK.fromMm) * STACK.keep
+      if (kind === 2) P.setXYZ(i, x, Math.min(top, frame.floor + STACK.fromMm + (cottage.chimney.top - STACK.fromMm) * STACK.keep - 0.6), z)
+      else P.setY(i, top)
+    }
+    if (kind === 3 && inIvy(x, y, z)) {
+      P.setXYZ(i, IVY[0]!.centre[0], groundAt(IVY[0]!.centre[0], IVY[0]!.centre[2]) - FENCE.sinkMm, IVY[0]!.centre[2])
+    } else if (inFence(x, y, z) && kind === 1) {
       P.setXYZ(i, fence.from[0], groundAt(fence.from[0], fence.from[1]) - FENCE.sinkMm, fence.from[1])
     } else if (kind === 3) {
       const lum = Math.min(1.4, (0.3 * r + 0.6 * gr + 0.1 * b) * 3.2)
@@ -429,7 +451,7 @@ function propDistance(x: number, y: number, z: number): number {
 }
 
 export function solid(x: number, y: number, z: number): number {
-  return Math.min(solidDistance(x, y, z, keep), shrubDistance(x, y, z), groundDistance(x, y, z), fenceDistance(x, y, z), propDistance(x, y, z))
+  return Math.min(solidDistance(x, y, z, keep), bushDistance(x, y, z), groundDistance(x, y, z), fenceDistance(x, y, z), propDistance(x, y, z))
 }
 
 export const places = { pond: { x: pond.x, z: pond.z, rx: pond.rx, rz: pond.rz, yaw: pond.yaw }, tree: { x: tree.x, z: tree.z }, lampFoot: lampFoot() }
