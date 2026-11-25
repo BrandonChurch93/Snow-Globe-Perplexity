@@ -22,7 +22,7 @@ const LOOKS: Record<string, KindLook> = {
   leaf: { shape: SHAPE.leaf, size: 1.35, body: 1, flash: 0.5, real: true },
   seed: { shape: SHAPE.seed, size: 3.6, body: 0.9, flash: 0, real: true },
   firefly: { shape: SHAPE.light, size: 1, body: 1, flash: 0, real: true },
-  ember: { shape: SHAPE.spark, size: 1.3, body: 1, flash: 0, real: true },
+  ember: { shape: SHAPE.spark, size: 1.7, body: 1, flash: 0, real: true },
   bat: { shape: SHAPE.bat, size: 1.15, body: 1, flash: 0, real: true },
 }
 
@@ -179,12 +179,14 @@ export const CARD = {
   /** The most a card's bends may move its outline on the picture, as a share of what keeps the outline whole when the card is seen edge on. */
   bendFit: 0.55,
   /** The storm's fine streaks, for the petals and for the leaves: their share of the ones not drawn whole, the least and most they are seen and its skew, how much longer than the shutter's path, their bow, width in pixels, the tail's share of the head's light, how pale (petals) and the tints (leaves). */
-  line: { share: [0.3, 0.5] as const, keep: [0.03, 0.9] as const, skew: 3.5, stretch: [1.5, 4.5] as const, align: 0.85, fromPx: [6, 30] as const, bow: [0.03, 0.16] as const, widePx: [0.4, 0.95] as const, tail: 0.1, pale: [0.2, 0.8] as const, gain: 1.15, leafLow: [1.25, 0.55, 0.3] as const, leafHigh: [1.7, 1.45, 0.9] as const },
+  line: { seedKeep: [0.015, 0.75] as const, seedSkew: 3.5, seedStretch: [0.7, 2.2] as const, seedWidePx: [0.3, 0.6] as const, headPx: [0.8, 2.6] as const, headSeen: 0.8, share: [0.3, 0.5] as const, keep: [0.03, 0.9] as const, skew: 3.5, stretch: [1.5, 4.5] as const, align: 0.85, fromPx: [6, 30] as const, bow: [0.03, 0.16] as const, widePx: [0.4, 0.95] as const, tail: 0.1, pale: [0.2, 0.8] as const, gain: 1.15, leafLow: [1.25, 0.55, 0.3] as const, leafHigh: [1.7, 1.45, 0.9] as const },
   /** How much of the storm's sheets is taken away in front of the cottage, so that it still reads. */
   window: 0.75,
   /** How much a lying sheet is lit as one in the air, how much of the veil lies over it, and how much of its own colour the light takes on its way through a sheet. */
   /** How far a lying sheet's facing strays from the facing of what it lies on. */
   lieLoose: 0.08,
+  /** The size of a lying petal or leaf as a share of its size in the air: what lies on the ground reads smaller than what hangs before it. */
+  lieSize: 0.7,
   lieLit: 0.8,
   lieVeil: 0.45,
   throughHue: 0.35,
@@ -214,15 +216,21 @@ export const CARD = {
   fleckKeep: [0.01, 0.5] as const,
   fleckSkew: 8,
   fleckStorm: 3,
+  /** The spread of the flecks' sizes, so that the smallest are not one stamp. */
+  fleckSpread: [0.6, 1.7, 2] as const,
   /** How much of the veil lies over a card in the air, and over a bat. */
   fog: 0.3,
   batFog: 0.08,
+  /** How much of the lens's blur a bat keeps: the approved bats are crisp black shapes wherever they fly. */
+  batSoft: 0.3,
   petalCup: [0.2, 0.42] as const,
   leafCurl: [0.34, 0.5, 0.3] as const,
-  seedRock: 0.35,
+  seedRock: 0.5,
+  /** How far each seed leans its own way, so that no two show the same side. */
+  seedLean: 0.95,
   seedTilt: 1.2,
   litMost: 1.25,
-  sparkKeep: [0.02, 1] as const,
+  sparkKeep: [0.05, 1] as const,
   sparkSkew: 4,
   batFlap: 0.45,
   batBank: 0.3,
@@ -231,7 +239,7 @@ export const CARD = {
   /** How much lighter a bat's edge is than its body, so that its outline holds on dark air. */
   batRim: 1.5,
   /** A light's core, its glow and its wide glow, as radii in the particle's radius and as shares of its light. */
-  glow: { core: 0.34, halo: 1.5, wide: 4.5, haloShare: 0.1, wideShare: 0.01, hide: 0.6, blinkLow: 0.04 },
-  spark: { gain: 1, core: 0.42, halo: 1.5, haloShare: 0.05, tail: 1.6, hotCore: 0.3, hot: [1, 0.8, 0.5] as const, dying: [0.85, 0.17, 0.03] as const },
-  hair: { runHead: 0.5, runTrail: 0.6, runWide: 0.04, runLeast: 1.2, runSeen: 1.6, runStretch: 2, runKeep: 0.2, wide: 0.011, seen: 1.25, reach: 1.7, foot: 1.5, stem: 0.022, body: 0.06, hub: 0.3, ringA: [15, 1.45, 1] as const, ringB: [10, 0.8, 0.9] as const, ringC: [9, 2.1, 0.8] as const },
+  glow: { spread: [0.55, 2, 3] as const, discFrom: [1.3, 3.2] as const, discWide: 1.55, discRim: 0.3, discHold: 0.42, core: 0.34, halo: 1.5, wide: 4.5, haloShare: 0.1, wideShare: 0.01, hide: 0.6, blinkLow: 0.04 },
+  spark: { gain: 1, core: 0.42, halo: 1.5, haloShare: 0.05, tail: 1.6, hotCore: 0.8, hotWide: 0.3, hotFrom: [0.8, 2.2] as const, discHold: 0.62, small: 1.8, large: 0.75, fromMm: [0.12, 0.7] as const, hot: [1, 0.74, 0.26] as const, dying: [0.85, 0.17, 0.03] as const },
+  hair: { gain: 1.5, runHead: 0.5, runTrail: 0.6, runWide: 0.04, wide: 0.009, seen: 1.25, hairSeen: 1.2, stemSeen: 0.8, reach: 1.7, foot: 1.15, stem: 0.012, body: 0.04, hub: 0.3, spread: [0.55, 1.3, 1.3] as const, count: 52, open: [0.4, 2.25] as const, long: [0.7, 1.08] as const, droop: 0.16, thin: 0.55, lean: 0.25, tipFade: 0.35, ballAt: 0.5, ballWide: 0.55, ball: [0.1, 0.42] as const, ballFrom: [0.06, 0.45] as const, stemTint: [0.62, 0.48, 0.32] as const, },
 }
