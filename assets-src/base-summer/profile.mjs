@@ -20,17 +20,17 @@ export const LEDGE_H = TOP + 7.0 + RISE
 
 // Radius and height in mm, foot to collar, read from the silhouette of references/approved/summer-rest.png (measure.mjs).
 export const BODY = [
-  [55.4, 0.0],
-  [57.9, 0.7],
-  [59.6, 2.2],
-  [60.45, 4.4],
-  [60.4, 6.8],
-  [59.8, 9.6],
-  [58.9, 13.0],
-  [57.8, 16.6],
-  [56.6, 20.0],
-  [55.3, 23.5],
-  [53.9, 27.0],
+  [53.2, 0.0],
+  [55.6, 0.9],
+  [57.7, 2.6],
+  [59.3, 5.0],
+  [60.2, 8.0],
+  [60.3, 11.2],
+  [59.7, 14.6],
+  [58.6, 18.0],
+  [57.3, 21.2],
+  [55.8, 24.4],
+  [54.3, 27.4],
   [53.0, 30.5],
   [52.8, 34.0],
   [52.7, 37.5],
@@ -152,7 +152,7 @@ export function strataCoord(az, h) {
   const A = az / 360
   const a = az - 360 * Math.round(az / 360)
   const sag = 8.5 * Math.exp(-(((a - 14) / 42) ** 2))
-  return bedWarp(h + sag + 8 * (fbm(A * 4 + 4, h / 34 + 3, 4, 64, 21, 3) - 0.5) + 2.0 * Math.sin((az * 2 + 35) * RAD) + 1.2 * Math.sin((az * 5 - 80) * RAD + h * 0.1))
+  return bedWarp(h + sag + 13 * (fbm(A * 4 + 4, h / 34 + 3, 4, 64, 21, 3) - 0.5) + 3.2 * Math.sin((az * 2 + 35) * RAD) + 2.1 * Math.sin((az * 5 - 80) * RAD + h * 0.1))
 }
 export function relief(m, az, s) {
   const q = atS(m, s)
@@ -163,7 +163,7 @@ export function relief(m, az, s) {
   const t = w / BED_MM
   const k = Math.floor(t)
   const f = t - k
-  const amp = (hashK(k, 5) < 0.3 ? 0.1 : 0.35 + 0.8 * hashK(k, 6)) * smooth(0.25, 0.6, fbm(A * 6 + k * 3.1, 0.5, 6, 4, 31, 2))
+  const amp = (hashK(k, 5) < 0.3 ? 0.1 : 0.35 + 0.8 * hashK(k, 6)) * smooth(0.36, 0.62, fbm(A * 6 + k * 3.1, 0.5, 6, 4, 31, 2))
   const prof = f < 0.4 ? smooth(0, 0.4, f) : 1 - mix(Math.pow((f - 0.4) / 0.6, 0.9), smooth(0.4, 1, f), 0.6)
   const swell = 2.3 * (fbm(A * 5 + 1, h / 16, 5, 64, 11, 3) - 0.5) + 2.0 * (fbm(A * 9 + 3, h / 11, 9, 64, 15, 3) - 0.5) + 1.0 * (fbm(A * 19 + 7, h / 5.5, 19, 64, 13, 2) - 0.5)
   const lw = w / 2.3 + 0.9 * fbm(A * 24, h / 5, 24, 64, 41, 2)
@@ -199,7 +199,7 @@ export function relief(m, az, s) {
     if (dist > R * 1.7) continue
     const inside = 1 - smooth(0.7 * R, 1.12 * R, dist)
     const rim = smooth(0.95 * R, 1.2 * R, dist) * (1 - smooth(1.25 * R, 1.7 * R, dist))
-    const deep = it.kind === 'pearl' ? 0.2 * it.r : it.kind === 'glass' ? 0.18 + 0.05 * it.r : 0.12 + 0.04 * it.r
+    const deep = it.kind === 'pearl' ? 0.2 * it.r : it.kind === 'glass' ? 0.42 + 0.08 * it.r : 0.12 + 0.04 * it.r
     d = d * (1 - 0.75 * inside) - deep * inside + 0.1 * rim
     seat = Math.max(seat, inside)
   }

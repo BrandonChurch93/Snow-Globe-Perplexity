@@ -75,7 +75,7 @@ export function buildStone(f) {
     cup.push([Math.max(big * Math.sin(beta), 0.01), P.CENTRE_H - big * Math.cos(beta), 0.03])
   }
   lathe(soup, cup, even(48))
-  lathe(soup, [[0.01, 0.02, 0.02], [57.7, 0.02, 0.02]].reverse(), even(48))
+  lathe(soup, [[0.01, 0.02, 0.02], [P.BODY[0][0] - 0.25, 0.02, 0.02]].reverse(), even(48))
   return { soup, body, repeats }
 }
 
@@ -136,10 +136,30 @@ function scallop(soup, fr, it, rnd, opt) {
   const spread = opt.spread * RAD
   const ribs = opt.ribs
   const hinge = -0.9 * R * long
+  // The two ears beside the hinge: small ridged tabs between the hinge line and the fan's first rib.
+  if (opt.ears) {
+    for (const side of [-1, 1]) {
+      surf(
+        soup,
+        fr,
+        4,
+        3,
+        (u, v) => {
+          const ex = side * R * (0.5 + 0.02 * u)
+          const ey = hinge + R * (-0.07 + 0.24 * u)
+          return [(ex * v) / long, hinge + (ey - hinge) * v, -0.02 * R + 0.035 * R * Math.sin(u * Math.PI) * v + 0.012 * R * Math.cos(u * 4 * Math.PI) * v]
+        },
+        (u, v) => {
+          const k = (0.86 + 0.1 * Math.cos(u * 4 * Math.PI)) * (0.84 + 0.16 * v)
+          return { uv: [u, v], uv2: [0.62 + 0.3 * v, 0.25], c: [it.c[0] * k, it.c[1] * k, it.c[2] * k * 0.96] }
+        },
+      )
+    }
+  }
   surf(
     soup,
     fr,
-    51,
+    opt.ears ? 47 : 51,
     20,
     (u, v) => {
       const th = (u * 2 - 1) * spread
@@ -153,15 +173,15 @@ function scallop(soup, fr, it, rnd, opt) {
       const x = (sx * L * rho) / long
       const y = hinge + cx * L * rho
       const dome = opt.dome * R * Math.pow(Math.max(4 * rho * (1 - rho * 0.86), 0), 0.62) * (1 - 0.35 * (th / spread) ** 2)
-      const z = dome + opt.rib * R * Math.pow(rho, 0.6) * (rib - 0.5) * (1 - 0.5 * smooth(0.9, 1, rho)) + 0.01 * R * Math.sin(rho * 46 + 3 * rnd.k) - 0.12 * R + 0.1 * R * (1 - rho)
+      const z = dome + opt.rib * R * Math.pow(rho, 0.6) * (rib - 0.5) * (1 - 0.5 * smooth(0.9, 1, rho)) + 0.016 * R * Math.sin(rho * 58 + 3 * rnd.k) * smooth(0.15, 0.5, rho) - 0.12 * R + 0.1 * R * (1 - rho)
       return [x, y, z]
     },
     (u, v) => {
       const th = (u * 2 - 1) * spread
       const rib = 0.5 + 0.5 * Math.cos(ribs * Math.PI * (th / spread))
-      const band = 0.5 + 0.5 * Math.sin(v * 19 + 6 * rnd.k + 1.5 * Math.sin(u * 9))
-      const k = (0.9 + 0.1 * rib) * (0.93 + 0.07 * band) * (0.82 + 0.18 * smooth(0, 0.35, v))
-      return { uv: [u * ribs * 0.5, v * 3], uv2: [0.7 + 0.3 * rib * smooth(0.02, 0.2, v), 0.45], c: [it.c[0] * k, it.c[1] * k * (0.97 + 0.03 * band), it.c[2] * k * (0.92 + 0.08 * band)] }
+      const band = 0.5 + 0.5 * Math.sin(v * 31 + 6 * rnd.k + 1.5 * Math.sin(u * 9))
+      const k = (0.9 + 0.1 * rib) * (0.89 + 0.11 * band) * (0.82 + 0.18 * smooth(0, 0.35, v))
+      return { uv: [u * ribs * 0.5, v * 3], uv2: [0.7 + 0.3 * rib * smooth(0.02, 0.2, v), 0.24], c: [it.c[0] * k, it.c[1] * k * (0.97 + 0.03 * band), it.c[2] * k * (0.92 + 0.08 * band)] }
     },
   )
 }
@@ -221,8 +241,8 @@ function dome(soup, fr, it, rnd, a, b, c, sink, gloss, groove) {
 function seaGlass(soup, fr, it, rnd) {
   const R = it.r * 1.08
   const long = it.long ?? 1
-  const tri = it.tri ?? 0.05 + 0.08 * rnd.a
-  const two = 0.05 + 0.08 * rnd.b
+  const tri = it.tri ?? 0.07 + 0.11 * rnd.a
+  const two = 0.07 + 0.1 * rnd.b
   const p2 = rnd.c * 6.28
   const p3 = rnd.d * 6.28
   const T = Math.min(0.55 * R, 1.7)
@@ -233,10 +253,10 @@ function seaGlass(soup, fr, it, rnd) {
     11,
     (u, v) => {
       const phi = u * 2 * Math.PI
-      const out = R * (1 + two * Math.cos(2 * phi + p2) + tri * Math.cos(3 * phi + p3) + 0.03 * Math.cos(5 * phi + p2 * 2))
+      const out = R * (1 + two * Math.cos(2 * phi + p2) + tri * Math.cos(3 * phi + p3) + 0.045 * Math.cos(5 * phi + p2 * 2) + 0.03 * Math.cos(8 * phi + p3 * 3))
       const rho = Math.sin((v * Math.PI) / 2)
       const lump = 1 + 0.1 * (fbm(u * 5 + rnd.a * 9, v * 2 + rnd.b * 5, 5, 64, 91, 2) - 0.5) * smooth(0.05, 0.4, rho)
-      return [out * rho * Math.cos(phi), out * rho * Math.sin(phi) * long, T * Math.pow(Math.max(1 - Math.pow(rho, 2.6), 0), 0.5) * lump - 0.22 * T]
+      return [out * rho * Math.cos(phi), out * rho * Math.sin(phi) * long, T * Math.pow(Math.max(1 - Math.pow(rho, 2.6), 0), 0.5) * lump - 0.42 * T]
     },
     (u, v, p) => ({ uv: [p[0] / 3, p[1] / 3], uv2: [1 - Math.sin((v * Math.PI) / 2), it.frost ? 1 : 0.25 + 0.3 * rnd.a], c: it.c }),
     true,
@@ -253,7 +273,7 @@ export function buildSet(f) {
     const fr = frameOf(f, it)
     count[it.kind]++
     if (it.kind === 'glass') seaGlass(glass, fr, it, rnd)
-    else if (it.kind === 'scallop') scallop(shells, fr, it, rnd, { spread: 74, ribs: 9, dome: 0.3, rib: 0.11 })
+    else if (it.kind === 'scallop') scallop(shells, fr, it, rnd, { spread: 74, ribs: 9, dome: 0.3, rib: 0.11, ears: true })
     else if (it.kind === 'cockle') scallop(shells, fr, it, rnd, { spread: 86, ribs: 11, dome: 0.5, rib: 0.09 })
     else if (it.kind === 'snail') snail(shells, fr, it, rnd)
     else if (it.kind === 'olive') dome(shells, fr, it, rnd, it.r * 1.12, it.r * 0.76, it.r * 0.56, 0.1 * it.r, 0.85, true)

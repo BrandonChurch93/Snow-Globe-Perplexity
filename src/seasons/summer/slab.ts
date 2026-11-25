@@ -19,18 +19,18 @@ const HEAP = {
   cone: { x: 60, z: 0, mm: 9.5, run: 0.44, deep: 1.3 },
   spray: { x: 80, z: 10, sx: 24, sz: 27 },
   apron: { wide: 1.1, core: [0.3, 1.0], tail: 0.16, least: 0.02 },
-  streak: { x: -78, z: -13, sx: 21, sz: 8, share: 0.62 },
+  streak: { x: -74, z: -13, sx: 14, sz: 7, share: 0.45 },
   skirt: { x: 71, z: 30, sx: 10, sz: 20, mm: 2.2 },
   shoulder: { x: 53, z: 56, sx: 18, sz: 14, mm: 2.4 },
   fan: { x: 58, z: 98, sx: 20, sz: 44, mm: 1.5 },
   sheet: { x: -96, z: -18, sx: 36, sz: 24, mm: 0.15 },
   stray: { x: 56, z: 66, sx: 26, sz: 52, mm: 0.2 },
-  ring: { r: 61.5, w: 4.5, mm: 0.55 },
+  ring: { r: 61.5, w: 4.5, mm: 0.34 },
 }
 // What the sand's shader does with a thin layer (base.ts, SAND): none of it below `none` mm, all of it from `all` mm, a
 // smooth step between, and a grain is drawn where that step is over `cover` times the grain's own number.
 const GRAIN = { none: 0.11, all: 0.35, cover: 0.62 }
-export const SLAB = { liftMm: 0.5, footMm: 54, repose: 0.62, stepMm: 1.45, x: [-150, 142], z: [-232, 216] } as const
+export const SLAB = { liftMm: 0.5, footMm: 52.4, repose: 0.62, stepMm: 1.46, x: [-150, 142], z: [-232, 216] } as const
 
 const hash = (x: number, y: number, s: number): number => {
   let h = (Math.imul(x | 0, 374761393) + Math.imul(y | 0, 668265263) + Math.imul(s | 0, 1274126177)) | 0
@@ -115,7 +115,7 @@ function heapGeometry(): THREE.BufferGeometry {
     const r = Math.hypot(x, z)
     position.push(x, SLAB.liftMm + h[o]!, z)
     normal.push(-gx / l, 1 / l, -gz / l)
-    color.push(Math.min(1, h[o]! / 0.5), 0.45 + 0.55 * Math.min(1, Math.max(0, (r - 57) / 14)), 0)
+    color.push(Math.min(1, h[o]! / 0.5), 0.14 + 0.86 * Math.min(1, Math.max(0, (r - 55.5) / 13)), 0)
     slot[o] = position.length / 3 - 1
     return slot[o]!
   }

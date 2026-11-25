@@ -132,7 +132,7 @@ function hookOf(uniforms: Record<string, THREE.IUniform>, at: Stages): (shader: 
 
 // The stone. Its colour comes bed by bed from the tone map, its relief from the carve map, its grain from the tile; loose
 // sand lies on whatever faces up.
-const STONE = { grain: 0.55, carve: 1.5, dust: 0.75, glint: 3.0, wrap: 0.3, card: 0.07, sun: 0.6, kick: 0.15, flare: 1.05, side: 3.2, bounce: 0.05, sheen: 0.03, top: 0.2, belly: 0.75, table: 0.5, patch: 0.5 }
+const STONE = { grain: 0.55, carve: 1.5, dust: 0.75, glint: 3.0, wrap: 0.3, card: 0.07, sun: 1.05, kick: 0.15, flare: 1.05, side: 3.2, bounce: 0.05, sheen: 0.03, top: 0.6, belly: 0.75, table: 0.7, patch: 0.5 }
 
 const STONE_PAINT = `
 vec4 baseDetail = texture2D(uBaseGrain, vMapUv);
@@ -235,13 +235,13 @@ const SHELL_AFTER = `
   reflectedLight.indirectDiffuse *= baseAo * 0.4 * vec3(0.88, 0.96, 1.08);
   reflectedLight.indirectSpecular *= baseAo * 0.5;
   // The shells on the front stand in the base's own shade, lit by the room's cool fill, not by the sun.
-  reflectedLight.directDiffuse *= mix(1.0, baseAo, 0.5) * 0.95 * vec3(0.9, 0.98, 1.1);
+  reflectedLight.directDiffuse *= mix(1.0, baseAo, 0.5) * 0.95 * vec3(1.0, 0.97, 0.92);
   float shellLeft = clamp((dot(geometryNormal, normalize(mat3(viewMatrix) * vec3(-0.85, 0.35, -0.3))) + 0.2) / 1.2, 0.0, 1.0);
   // The same light wrapped right round, so the far side of each rib is dimmer, not black.
   float shellWide = clamp(dot(geometryNormal, normalize(mat3(viewMatrix) * vec3(-0.85, 0.35, -0.3))) * 0.5 + 0.5, 0.0, 1.0);
   float shellWarm = clamp(dot(geometryNormal, baseCard) * 0.5 + 0.5, 0.0, 1.0);
   float shellSun = clamp((dot(geometryNormal, baseKey) + 0.3) / 1.3, 0.0, 1.0);
-  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * baseAo * (uRigCardCol * 0.15 * shellWarm * shellWarm + baseSunC * 0.5 * pow(shellWarm, 14.0) + baseKeyC * 0.9 * shellSun * shellSun + baseSunC * (0.75 * shellLeft * shellLeft + 0.5 * shellWide) + vec3(0.72, 0.86, 1.05) * dot(baseSunC, vec3(0.3333)) * 0.26);
+  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * baseAo * (uRigCardCol * 0.15 * shellWarm * shellWarm + baseSunC * 0.5 * pow(shellWarm, 14.0) + baseKeyC * 0.9 * shellSun * shellSun + baseSunC * (0.75 * shellLeft * shellLeft + 0.5 * shellWide) + vec3(1.0, 0.9, 0.78) * dot(baseSunC, vec3(0.3333)) * 0.34);
   vec3 shellAway = inverseTransformDirection(reflect(-geometryViewDir, geometryNormal), viewMatrix);
   float shellNv = clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0);
   float shellF = 0.05 + 0.95 * pow(1.0 - shellNv, 5.0);
@@ -298,7 +298,7 @@ const GLASS_AFTER = `
   #endif
   reflectedLight.indirectDiffuse += mix(glassTint, vec3(dot(glassTint, vec3(0.3333))) + 0.25, 0.5) * RECIPROCAL_PI * (baseKeyC * 0.5 + uRigCardCol * 0.4) * pow(1.0 - glassNv, 2.5) * (0.2 + 0.3 * baseFrost);
   float glassSkin = clamp((dot(geometryNormal, normalize(mat3(viewMatrix) * vec3(-0.6, 0.5, 0.6))) + 0.5) / 1.5, 0.0, 1.0);
-  reflectedLight.indirectDiffuse += (glassTint * 0.75 + 0.1) * RECIPROCAL_PI * dot(baseSunC, vec3(0.3333)) * vec3(1.0, 0.93, 0.82) * 0.5 * glassSkin * glassSkin * (0.6 + 0.4 * baseFrost) * baseFootAo;
+  reflectedLight.indirectDiffuse += (glassTint * 0.75 + 0.1) * RECIPROCAL_PI * dot(baseSunC, vec3(0.3333)) * vec3(1.0, 0.93, 0.82) * 0.8 * glassSkin * glassSkin * (0.6 + 0.4 * baseFrost) * baseFootAo;
   vec3 glassAway = inverseTransformDirection(reflect(-geometryViewDir, geometryNormal), viewMatrix);
   float glassF = 0.04 + 0.96 * pow(1.0 - glassNv, 5.0);
   reflectedLight.indirectSpecular += (stageRoomSoft(glassAway, 0.6) + stageRoomLights(glassAway, 0.2) * 0.15 * (1.0 - baseFrost)) * glassF * 0.35;
@@ -306,7 +306,7 @@ const GLASS_AFTER = `
   float glassCh = max(dot(geometryNormal, normalize(baseCard + geometryViewDir)), 0.0);
   reflectedLight.directSpecular += baseKeyC * (0.05 * pow(glassNh, 22.0) + 0.3 * pow(glassNh, 240.0)) * smoothstep(0.0, 0.15, dot(geometryNormal, baseKey)) * (1.0 - 0.6 * baseFrost);
   float glassRoom = max(dot(geometryNormal, normalize(normalize(vec3(-0.35, 0.55, 0.75)) + geometryViewDir)), 0.0);
-  reflectedLight.directSpecular += (uRigCardCol + vec3(1.0, 0.93, 0.82) * dot(baseSunC, vec3(0.3333)) * 1.6) * (0.004 * pow(glassRoom, 10.0)) * (0.3 + 1.4 * glassOne);
+  reflectedLight.directSpecular += (uRigCardCol + vec3(1.0, 0.93, 0.82) * dot(baseSunC, vec3(0.3333)) * 1.6) * (0.02 * pow(glassRoom, 7.0)) * (0.3 + 1.4 * glassOne);
   // Light that went in at the far side comes out through the thin edge, in the colour of the glass.
   reflectedLight.indirectDiffuse += mix(glassTint, vec3(dot(glassTint, vec3(0.3333))) + 0.12, 0.3) * RECIPROCAL_PI * (baseSunC * 1.1 + uRigCardCol * 0.3) * pow(1.0 - baseThin, 1.3) * (0.25 + 0.75 * clamp(0.5 - 0.5 * dot(geometryNormal, baseKey), 0.0, 1.0)) * (0.5 + glassOne) * baseFootAo;
   reflectedLight.indirectDiffuse += glassDeep * RECIPROCAL_PI * uRigCardCol * 0.6 * glassBody * clamp(inverseTransformDirection(geometryNormal, viewMatrix).y * 0.6 + 0.4, 0.0, 1.0);
@@ -406,6 +406,8 @@ const SAND_AFTER = `
   // The sun's own side light, low from the right: what makes the dune and the ledge's sand bright on the side the camera sees.
   reflectedLight.indirectDiffuse += (uRigCardCol * 0.1 + baseSunC * 9.5 * sandWarm * sandWarm * sandWarm * mix(1.0, 0.35, smoothstep(24.0, 30.0, sandAt.y))) * material.diffuseContribution * RECIPROCAL_PI * sandWarm * sandWarm * mix(0.5, 1.0, sandLit);
   reflectedLight.indirectDiffuse *= mix(0.3, 1.0, sandLit);
+  // Under the foot's overhang the slab's sand is in the stone's own shade.
+  reflectedLight.indirectDiffuse *= mix(1.0, smoothstep(0.1, 0.8, vBasePaint.y), step(sandAt.y, 12.0) * (1.0 - step(0.5, vBasePaint.z)));
   vec3 sandFacet = normalize(normalMatrix * normalize(baseObjectNormal + 1.3 * (vec3(fract(sandGrain * 53.1), fract(sandGrain * 113.7), fract(sandGrain * 211.3)) - 0.5)));
   float sandShine = step(0.72, fract(sandGrain * 17.9)) * step(0.02, sandGrain) * (0.25 + 0.75 * sandDeep);
   reflectedLight.directSpecular += baseKeyC * (pow(max(dot(sandFacet, normalize(baseKey + geometryViewDir)), 0.0), 90.0) * sandShine * ${SAND.glint.toFixed(1)} * sandDim * sandDim * smoothstep(0.0, 0.2, dot(nonPerturbedNormal, baseKey))) * sandLit;
