@@ -2,8 +2,8 @@ import { blur, clamp, fbm, hashInt, mix, mulberry, smooth, writePng } from './li
 import * as P from './profile.mjs'
 import { FIELD } from './field.mjs'
 
-export const GRAIN = { px: 1024 }
-export const SAND = { px: 1024, grains: 2600 }
+export const GRAIN = { px: 512 }
+export const SAND = { px: 512, grains: 2600 }
 
 // Row 0 of a picture is its top; the maps are worked out from the foot up.
 const up = (bytes, w, h, ch) => {
@@ -48,10 +48,10 @@ export async function carveMap(dir, f) {
 export async function toneMap(dir, f) {
   const { W, H } = FIELD
   const out = new Uint8Array(W * H * 3)
-  const cream = [0.9, 0.81, 0.66]
-  const ochre = [0.82, 0.67, 0.47]
+  const cream = [0.93, 0.87, 0.77]
+  const ochre = [0.87, 0.76, 0.6]
   const rust = [0.56, 0.31, 0.15]
-  const pale = [0.93, 0.87, 0.76]
+  const pale = [0.95, 0.91, 0.83]
   for (let j = 0; j < H; j++) {
     for (let i = 0; i < W; i++) {
       const o = j * W + i
@@ -99,13 +99,13 @@ export async function grainMap(dir) {
     a[i] = rnd()
     b[i] = rnd()
   }
-  const fine = blur(a, n, n, 1.6, true, true)
-  const coarse = blur(b, n, n, 5.5, true, true)
+  const fine = blur(a, n, n, 0.9, true, true)
+  const coarse = blur(b, n, n, 2.75, true, true)
   const h = new Float32Array(n * n)
   for (let i = 0; i < n * n; i++) h[i] = (fine[i] - 0.5) * 5 + (coarse[i] - 0.5) * 9
-  const out = normalFromHeight(h, n, 1.4)
+  const out = normalFromHeight(h, n, 2.8)
   for (let i = 0; i < n * n; i++) out[i * 3 + 2] = Math.round(clamp(0.5 + (fine[i] - 0.5) * 4 - (coarse[i] - 0.5) * 3) * 255)
-  return [await writePng(`${dir}/base-grain.lin.tile.w1024.png`, n, n, 3, up(out, n, n, 3))]
+  return [await writePng(`${dir}/base-grain.lin.tile.w512.png`, n, n, 3, up(out, n, n, 3))]
 }
 
 // Loose sand: single grains as small domes, each with its own number in blue (0 where no grain lies), so a thin layer can
@@ -118,7 +118,7 @@ export async function sandMap(dir) {
   for (let g = 0; g < SAND.grains; g++) {
     const cx = rnd() * n
     const cy = rnd() * n
-    const r = 9 + 15 * rnd() * rnd()
+    const r = (9 + 15 * rnd() * rnd()) * (n / 1024)
     const ax = 0.75 + 0.5 * rnd()
     const rot = rnd() * Math.PI
     const top = 0.35 + 0.65 * rnd()
@@ -129,7 +129,7 @@ export async function sandMap(dir) {
       const y = (-dx * Math.sin(rot) + dy * Math.cos(rot)) / ax
       const q = (x * x + y * y) / (r * r)
       if (q >= 1) continue
-      const z = top * Math.pow(1 - q, 0.45) * (r / 24 + 0.5)
+      const z = top * Math.pow(1 - q, 0.45) * ((r * 1024) / n / 24 + 0.5)
       const o = ((((Math.round(cy) + dy) % n) + n) % n) * n + ((((Math.round(cx) + dx) % n) + n) % n)
       if (z > h[o]) {
         h[o] = z
@@ -137,7 +137,7 @@ export async function sandMap(dir) {
       }
     }
   }
-  const out = normalFromHeight(h, n, 9)
+  const out = normalFromHeight(h, n, 18)
   for (let i = 0; i < n * n; i++) out[i * 3 + 2] = Math.round(id[i] * 255)
-  return [await writePng(`${dir}/base-sand.lin.tile.w1024.png`, n, n, 3, up(out, n, n, 3))]
+  return [await writePng(`${dir}/base-sand.lin.tile.w512.png`, n, n, 3, up(out, n, n, 3))]
 }

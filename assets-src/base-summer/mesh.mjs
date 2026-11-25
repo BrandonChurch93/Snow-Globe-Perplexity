@@ -38,9 +38,9 @@ function lathe(soup, profile, cols) {
 export function buildStone(f) {
   const soup = new Soup('stone')
   const cols = []
-  for (let az = -180; az < 180 - 1e-6; az += Math.abs(az + 0.2) <= P.FRONT_DEG + 6 ? 0.3125 : 1.25) cols.push(az)
+  for (let az = -180; az < 180 - 1e-6; az += Math.abs(az + 0.2) <= P.FRONT_DEG + 6 ? 0.45 : 1.5) cols.push(az)
   cols.push(180)
-  const rows = 208
+  const rows = 152
   const repeats = Math.round((2 * Math.PI * 56) / TILE_MM)
   soup.grid(cols.length, rows, (i, j) => {
     const az = cols[i]
@@ -125,7 +125,7 @@ function surf(soup, fr, nu, nv, local, attr, wrapU = false) {
 const tone = (c, k) => [c[0] * k, c[1] * k, c[2] * k]
 
 function scallop(soup, fr, it, rnd, opt) {
-  const R = it.r
+  const R = it.r * 1.24
   const long = it.long ?? 1
   const spread = opt.spread * RAD
   const ribs = opt.ribs
@@ -133,8 +133,8 @@ function scallop(soup, fr, it, rnd, opt) {
   surf(
     soup,
     fr,
-    73,
-    26,
+    51,
+    20,
     (u, v) => {
       const th = (u * 2 - 1) * spread
       const sx = Math.sin(th)
@@ -154,21 +154,21 @@ function scallop(soup, fr, it, rnd, opt) {
       const th = (u * 2 - 1) * spread
       const rib = 0.5 + 0.5 * Math.cos(ribs * Math.PI * (th / spread))
       const band = 0.5 + 0.5 * Math.sin(v * 19 + 6 * rnd.k + 1.5 * Math.sin(u * 9))
-      const k = (0.84 + 0.16 * rib) * (0.9 + 0.1 * band) * (0.82 + 0.18 * smooth(0, 0.35, v))
-      return { uv: [u * ribs * 0.5, v * 3], uv2: [0.45 + 0.55 * rib * smooth(0.02, 0.2, v), 0.45], c: [it.c[0] * k, it.c[1] * k * (0.97 + 0.03 * band), it.c[2] * k * (0.92 + 0.08 * band)] }
+      const k = (0.9 + 0.1 * rib) * (0.93 + 0.07 * band) * (0.82 + 0.18 * smooth(0, 0.35, v))
+      return { uv: [u * ribs * 0.5, v * 3], uv2: [0.7 + 0.3 * rib * smooth(0.02, 0.2, v), 0.45], c: [it.c[0] * k, it.c[1] * k * (0.97 + 0.03 * band), it.c[2] * k * (0.92 + 0.08 * band)] }
     },
   )
 }
 
 function snail(soup, fr, it, rnd) {
-  const R = it.r
+  const R = it.r * 1.45
   const turns = 2.7
   const band = it.band ?? [0.5, 0.28, 0.14]
   surf(
     soup,
     fr,
-    150,
-    13,
+    112,
+    11,
     (u, v) => {
       const g = Math.exp(-2.35 * (1 - u))
       const phi = u * turns * 2 * Math.PI
@@ -194,8 +194,8 @@ function dome(soup, fr, it, rnd, a, b, c, sink, gloss, groove) {
   surf(
     soup,
     fr,
-    41,
-    15,
+    groove ? 41 : 19,
+    groove ? 15 : 9,
     (u, v) => {
       const phi = u * 2 * Math.PI
       const al = Math.pow(v, 0.8) * 108 * RAD
@@ -213,18 +213,18 @@ function dome(soup, fr, it, rnd, a, b, c, sink, gloss, groove) {
 }
 
 function seaGlass(soup, fr, it, rnd) {
-  const R = it.r
+  const R = it.r * 1.08
   const long = it.long ?? 1
   const tri = it.tri ?? 0.05 + 0.08 * rnd.a
   const two = 0.05 + 0.08 * rnd.b
   const p2 = rnd.c * 6.28
   const p3 = rnd.d * 6.28
-  const T = Math.min(0.5 * R, 1.5)
+  const T = Math.min(0.55 * R, 1.7)
   surf(
     soup,
     fr,
-    49,
-    13,
+    41,
+    11,
     (u, v) => {
       const phi = u * 2 * Math.PI
       const out = R * (1 + two * Math.cos(2 * phi + p2) + tri * Math.cos(3 * phi + p3) + 0.03 * Math.cos(5 * phi + p2 * 2))
@@ -247,10 +247,10 @@ export function buildSet(f) {
     const fr = frameOf(f, it)
     count[it.kind]++
     if (it.kind === 'glass') seaGlass(glass, fr, it, rnd)
-    else if (it.kind === 'scallop') scallop(shells, fr, it, rnd, { spread: 74, ribs: 9, dome: 0.3, rib: 0.075 })
-    else if (it.kind === 'cockle') scallop(shells, fr, it, rnd, { spread: 86, ribs: 11, dome: 0.5, rib: 0.06 })
+    else if (it.kind === 'scallop') scallop(shells, fr, it, rnd, { spread: 74, ribs: 9, dome: 0.3, rib: 0.11 })
+    else if (it.kind === 'cockle') scallop(shells, fr, it, rnd, { spread: 86, ribs: 11, dome: 0.5, rib: 0.09 })
     else if (it.kind === 'snail') snail(shells, fr, it, rnd)
-    else if (it.kind === 'olive') dome(shells, fr, it, rnd, it.r, it.r * 0.7, it.r * 0.52, 0.12 * it.r, 0.85, true)
+    else if (it.kind === 'olive') dome(shells, fr, it, rnd, it.r * 1.12, it.r * 0.76, it.r * 0.56, 0.1 * it.r, 0.85, true)
     else dome(shells, fr, it, rnd, it.r, it.r, it.r, 0.3 * it.r, 1, false)
   })
   return { shells, glass, count }
