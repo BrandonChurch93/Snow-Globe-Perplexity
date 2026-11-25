@@ -25,15 +25,21 @@ export const glassDressing: Dressing = { tint: [1, 0.9, 0.6], amount: 0 }
 export const look = {
   flare: {
     halfMm: 30,
-    core: 34,
+    core: 30,
     coreAcross: 0.03,
     coreAlong: 0.062,
-    halo: 1.1,
-    haloWide: 0.2,
-    veil: 0.16,
-    rays: 2.6,
-    spikes: 9,
-    arc: 2.2,
+    // the bloom of the lens round the core: a soft ball a few millimetres wide
+    bloom: 5,
+    bloomWide: 0.085,
+    halo: 1.0,
+    haloWide: 0.27,
+    veil: 0.2,
+    // the star: a few soft tapered rays, short, each with its own length, widest at the core
+    rays: 1.15,
+    spikes: 7,
+    reach: [0.13, 0.33] as const,
+    rayWide: [0.011, 0.034] as const,
+    arc: 1.6,
     hot: [1, 0.9, 0.72] as const,
     warm: [1, 0.7, 0.38] as const,
     amber: [1, 0.52, 0.2] as const,
@@ -45,7 +51,23 @@ export const look = {
   },
   // the far wall: the light that crosses the globe gathers on the inside of the glass opposite the sun, a warm crescent
   // along the limb
-  wall: { gain: 0.42, low: 0.42, wide: 0.42, from: 0.8, peak: 0.94, color: [1, 0.74, 0.44] as const, top: 0.15, topWide: 0.7, topLean: 0.35 },
+  wall: {
+    gain: 0.42,
+    low: 0.38,
+    // the thin warm crescent along the limb
+    band: 0.09,
+    wide: 0.5,
+    from: 0.86,
+    peak: 0.95,
+    color: [1, 0.74, 0.44] as const,
+    // the hot patch: the sun, bent by the globe, lands on the inside of the glass low on the far side and burns out there
+    hot: 11,
+    hotColor: [1, 0.86, 0.64] as const,
+    // the amber glow of the liquid round the patch
+    glow: 0.2,
+    // the limb's own warm edge on the far side
+    edge: 0.7,
+  },
   pool: {
     // where the hot middle of the pool lies from the foot's centre: down the light's way on the slab and a little across it
     reachMm: 76,
@@ -111,7 +133,8 @@ void main() {
   // the glass beside it takes the light along the limb
   float arc = exp(-q.x * q.x / 0.0009) * exp(-q.y * q.y / 0.09);
   float halo = exp(-r * r / ${n(F.haloWide * F.haloWide)}) + ${n(F.veil)} * exp(-r / 0.34);
-  // the star: thin spikes through the core, each with its own length, breathing a little
+  float bloom = exp(-r * r / ${n(F.bloomWide * F.bloomWide)});
+  // the star: soft tapered rays through the core, each with its own length, breathing a little
   float star = 0.0;
   for (int i = 0; i < ${F.spikes}; i++) {
     float fi = float(i);
@@ -120,12 +143,12 @@ void main() {
     float along = dot(p, d);
     float across = p.x * d.y - p.y * d.x;
     float side = along > 0.0 ? flRnd(fi, 2.0) : flRnd(fi, 3.0);
-    float reach = (0.2 + 0.72 * side * side) * (0.75 + 0.5 * max(dot(d * sign(along), vFlOut), 0.0)) * (1.0 + ${n(F.breath)} * sin(uSummer.x * (0.9 + 1.3 * flRnd(fi, 4.0)) + 6.28 * flRnd(fi, 5.0)));
+    float reach = (${n(F.reach[0])} + ${n(F.reach[1])} * side * side) * (0.7 + 0.6 * max(dot(d * sign(along), vFlOut), 0.0)) * (1.0 + ${n(F.breath)} * sin(uSummer.x * (0.9 + 1.3 * flRnd(fi, 4.0)) + 6.28 * flRnd(fi, 5.0)));
     float t = abs(along) / reach;
-    float wide = 0.0035 + 0.012 * (1.0 - min(t, 1.0));
-    star += exp(-across * across / (wide * wide)) * exp(-3.2 * t) * (0.45 + 0.55 * side);
+    float wide = ${n(F.rayWide[0])} + ${n(F.rayWide[1])} * (1.0 - min(t, 1.0)) * (1.0 - min(t, 1.0));
+    star += exp(-across * across / (wide * wide)) * exp(-2.3 * t) * (1.0 - smoothstep(0.75, 1.25, t)) * (0.45 + 0.55 * side);
   }
-  vec3 col = ${vec(F.hot)} * (${n(F.core)} * core) + ${vec(F.warm)} * (${n(F.rays)} * star + ${n(F.arc)} * arc) + ${vec(F.amber)} * (${n(F.halo)} * halo);
+  vec3 col = ${vec(F.hot)} * (${n(F.core)} * core + ${n(F.bloom)} * bloom) + ${vec(F.warm)} * (${n(F.rays)} * star + ${n(F.arc)} * arc) + ${vec(F.amber)} * (${n(F.halo)} * halo);
   gl_FragColor = vec4(col * (lit * edge), 0.0);
 }`
 
@@ -144,15 +167,18 @@ void main() {
   if (r > 0.995) discard;
   vec2 e = vWl / max(r, 1e-4);
   float a = atan(e.x * vWlDir.y - e.y * vWlDir.x, dot(e, vWlDir));
-  // thin toward the middle of the globe, full just inside the limb, gone at the limb itself
-  float band = pow(smoothstep(${n(W.from)}, ${n(W.peak)}, r), 2.2) * (1.0 - smoothstep(0.955, 0.992, r));
-  float along = exp(-a * a / ${n(W.wide * W.wide)});
-  float hot = exp(-pow((r - 0.945) / 0.022, 2.0)) * exp(-a * a / ${n(W.wide * W.wide * 0.3)});
-  // the crown of the glass takes the same light as a broad soft sheen under the top, leaning away from the sun
-  vec2 up = normalize(vec2(vWlDir.x * ${n(W.topLean)}, 1.0));
-  float b = atan(e.x * up.y - e.y * up.x, dot(e, up));
-  float sheen = ${n(W.top)} * exp(-b * b / ${n(W.topWide * W.topWide)}) * smoothstep(0.5, 0.78, r) * (1.0 - smoothstep(0.82, 0.96, r));
-  gl_FragColor = vec4(${vec(W.color)} * (${n(W.gain)} * (band * along + 1.4 * hot + sheen) * lit), 0.0);
+  float inside = 1.0 - smoothstep(0.965, 0.993, r);
+  // the crescent: thin toward the middle of the globe, full just inside the limb, gone at the limb itself
+  float band = pow(smoothstep(${n(W.from)}, ${n(W.peak)}, r), 2.2) * (1.0 - smoothstep(0.955, 0.992, r)) * exp(-a * a / ${n(W.wide * W.wide)});
+  // the hot patch: three tongues of different length, slanting along the wall
+  float hot = exp(-pow((r - 0.905) / 0.036, 2.0) - pow((a + 0.02) / 0.1, 2.0));
+  hot += 0.8 * exp(-pow((r - 0.94) / 0.016, 2.0) - pow((a - 0.12) / 0.15, 2.0));
+  hot += 0.7 * exp(-pow((r - 0.872) / 0.022, 2.0) - pow((a + 0.11) / 0.07, 2.0));
+  hot *= 0.62 + 0.38 * sin(a * 52.0 + r * 70.0);
+  float glow = exp(-pow((r - 0.88) / 0.1, 2.0) - a * a / 0.07);
+  float edge = exp(-pow((r - 0.972) / 0.012, 2.0)) * exp(-pow((a - 0.45) / 0.75, 2.0));
+  vec3 col = ${vec(W.color)} * (${n(W.band)} * band + ${n(W.glow)} * glow * inside + ${n(W.edge)} * edge) + ${vec(W.hotColor)} * (${n(W.hot)} * hot * inside);
+  gl_FragColor = vec4(col * (${n(W.gain)} * lit), 0.0);
 }`
 
 const P = look.pool
