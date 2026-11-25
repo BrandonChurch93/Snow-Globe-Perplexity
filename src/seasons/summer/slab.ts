@@ -22,7 +22,7 @@ const HEAP = {
   stray: { x: 56, z: 66, sx: 26, sz: 52, mm: 0.2 },
   ring: { r: 61.5, w: 4.5, mm: 0.55 },
 }
-export const SLAB = { liftMm: 0.5, footMm: 54, stepMm: 1.2, x: [-150, 142], z: [-232, 216] } as const
+export const SLAB = { liftMm: 0.5, footMm: 54, repose: 0.62, stepMm: 1.2, x: [-150, 142], z: [-232, 216] } as const
 
 const hash = (x: number, y: number, s: number): number => {
   let h = (Math.imul(x | 0, 374761393) + Math.imul(y | 0, 668265263) + Math.imul(s | 0, 1274126177)) | 0
@@ -69,7 +69,17 @@ function heapGeometry(): THREE.BufferGeometry {
   const nx = Math.round((SLAB.x[1] - SLAB.x[0]) / step) + 1
   const nz = Math.round((SLAB.z[1] - SLAB.z[0]) / step) + 1
   const h = new Float32Array(nx * nz)
-  for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) h[j * nx + i] = sandHeight(SLAB.x[0] + i * step, SLAB.z[0] + j * step)
+  // Under the foot the sand does not stop at a wall: it runs down from where it leant on the base at its angle of repose,
+  // so when the globe is lifted clear the heap has a slumped inner face and a whole footprint, not a notch.
+  const under = (x: number, z: number): number => {
+    const r = Math.hypot(x, z)
+    if (r >= SLAB.footMm) return sandHeight(x, z)
+    if (r < 1) return 0
+    const k = SLAB.footMm / r
+    const gone = SLAB.footMm - r
+    return Math.max(0, sandHeight(x * k, z * k) - SLAB.repose * gone * (0.8 + 0.4 * noise(x / 3.1 + 2.3, z / 3.1 + 6.1, 19)) - 0.02 * gone * gone)
+  }
+  for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) h[j * nx + i] = under(SLAB.x[0] + i * step, SLAB.z[0] + j * step)
   const at = (i: number, j: number): number => h[Math.min(Math.max(j, 0), nz - 1) * nx + Math.min(Math.max(i, 0), nx - 1)]!
   const slot = new Int32Array(nx * nz).fill(-1)
   const position: number[] = []
@@ -95,9 +105,6 @@ function heapGeometry(): THREE.BufferGeometry {
     for (let i = 0; i < nx - 1; i++) {
       const top = Math.max(at(i, j), at(i + 1, j), at(i, j + 1), at(i + 1, j + 1))
       if (top < 0.012) continue
-      const x = SLAB.x[0] + (i + 0.5) * step
-      const z = SLAB.z[0] + (j + 0.5) * step
-      if (Math.hypot(x, z) < SLAB.footMm) continue
       const a = vertex(i, j)
       const b = vertex(i + 1, j)
       const c = vertex(i, j + 1)
