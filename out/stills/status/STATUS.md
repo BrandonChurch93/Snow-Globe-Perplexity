@@ -1,19 +1,18 @@
-# Status 90
+# Status 91
 
-2026-11-25 10:28 UTC
+2026-11-25 10:46 UTC
 
-- Round 15 (summer) has every answer: likeness 4 and craft 6 and motion 3 and the jury picks the build out 5 times of 15. It does not pass and it was the last round summer may have
-- Round 17 (the changes): all four motion critics are in and the round reads 4 as the lowest of 4 and 7 and 4 and 5. Six severe findings and all are with the builder for its fix pass
-- Spring's gate is all 15 green. The gates for fall and for the changes are still running
-- The motion packs of Rounds 14 and 16 came in and are with their critics
-- Three scribes are drafting the open items of the three seasons from the critics' own words
-- The disk here fell to 2.5 GB free. I cleared the finished sound clone's copies of the repo and it has 5 GB again
-- phase 4: 10.35 h used of its 9.50 h box
-- allowance (before the review): 32.64 h used of 36.00 h allowed
+- Summer is finished at its round limit: three rounds and none passed
+- Its last round scored likeness 4 and craft 6 and motion 3 and the jury chose it 5 times of 15
+- Its 34 severe and major issues are written as open items 84 to 108
+- The change has 24 of 24 measure lines green in its floor round
+- The app is republished from the kept build
+- phase 4: 10.65 h used of its 9.50 h box
+- allowance (before the review): 32.93 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-90-1.jpg`: Summer at rest: the approved image left and the build right (the final still Round 15 judged)
-- `out/stills/status/status-90-2.jpg`: Summer mid shake: the approved image left and the build right
-- `out/stills/status/status-90-3.jpg`: Shake 3 whole: summer to fall in twelve frames (Round 16 motion pack)
-- `out/stills/status/status-90-4.jpg`: Spring arriving: frames 816 to 838 after the landing (Round 14 motion pack)
+- `out/stills/status/status-91-1.jpg`: Summer at rest: the approved image on the left and the build on the right
+- `out/stills/status/status-91-2.jpg`: Summer mid shake: the approved image on the left and the build on the right
+- `out/stills/status/status-91-3.jpg`: Still: fall rest hero, preview, draft, standins view
+- `out/stills/status/status-91-4.jpg`: Still: summer rest hero, preview, draft
