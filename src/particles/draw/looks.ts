@@ -22,7 +22,7 @@ const LOOKS: Record<string, KindLook> = {
   leaf: { shape: SHAPE.leaf, size: 1.35, body: 1, flash: 0.5, real: true },
   seed: { shape: SHAPE.seed, size: 3.6, body: 0.9, flash: 0, real: true },
   firefly: { shape: SHAPE.light, size: 1, body: 1, flash: 0, real: true },
-  ember: { shape: SHAPE.spark, size: 1, body: 1, flash: 0, real: true },
+  ember: { shape: SHAPE.spark, size: 1.3, body: 1, flash: 0, real: true },
   bat: { shape: SHAPE.bat, size: 1.15, body: 1, flash: 0, real: true },
 }
 
@@ -202,16 +202,16 @@ export const CARD = {
   seedRock: 0.35,
   seedTilt: 1.2,
   litMost: 1.25,
-  sparkKeep: [0, 1] as const,
-  sparkSkew: 9,
+  sparkKeep: [0.02, 1] as const,
+  sparkSkew: 4,
   batFlap: 0.45,
   batBank: 0.3,
   /** How far a bat leans its head the way it is going across the picture. */
   batLean: 0.5,
   /** How much lighter a bat's edge is than its body, so that its outline holds on dark air. */
-  batRim: 0.6,
+  batRim: 1.5,
   /** A light's core, its glow and its wide glow, as radii in the particle's radius and as shares of its light. */
   glow: { core: 0.34, halo: 1.5, wide: 4.5, haloShare: 0.1, wideShare: 0.01, hide: 0.6, blinkLow: 0.04 },
-  spark: { gain: 0.4, core: 0.42, halo: 1.5, haloShare: 0.05, tail: 1.6, hotCore: 0.3, hot: [1, 0.8, 0.5] as const, dying: [0.85, 0.17, 0.03] as const },
+  spark: { gain: 1, core: 0.42, halo: 1.5, haloShare: 0.05, tail: 1.6, hotCore: 0.3, hot: [1, 0.8, 0.5] as const, dying: [0.85, 0.17, 0.03] as const },
   hair: { runHead: 0.5, runTrail: 0.6, runWide: 0.04, runLeast: 1.2, runSeen: 1.6, runStretch: 2, runKeep: 0.2, wide: 0.011, seen: 1.25, reach: 1.7, foot: 1.5, stem: 0.022, body: 0.06, hub: 0.3, ringA: [15, 1.45, 1] as const, ringB: [10, 0.8, 0.9] as const, ringC: [9, 2.1, 0.8] as const },
 }
