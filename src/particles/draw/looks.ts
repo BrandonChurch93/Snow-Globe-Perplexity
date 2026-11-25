@@ -106,6 +106,8 @@ export const STRETCH_HIGH = 0.7
 export const STORM_SMEAR_SHARE = 0.36
 export const STORM_SHARP_SHARE = 0.13
 export const STORM_SHARP_REACH = 0.85
+/** In the storm the sharp share is softened by its motion too: its share of the smear's blur, and how much of it is seen, so that its stroke is a soft one and no brighter for it. */
+export const STORM_SHARP_SOFT = { soft: 0.4, seen: 0.5 }
 export const STORM_DAB_LIGHT = 1.35
 export const STORM_FINE_SHARE = 0.18
 export const STORM_SMEAR = 0.44
