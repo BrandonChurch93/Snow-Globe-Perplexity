@@ -1,0 +1,178 @@
+{
+ "critic": "R2",
+ "round": 10,
+ "unit": "fall",
+ "judgedCommit": "216e427",
+ "tier": "final",
+ "jurorsPerImage": 5,
+ "panel": [
+  "claude_sonnet_5_5",
+  "gemini_neon",
+  "gpt_6_2_astra",
+  "kimi_k3",
+  "pplx_computer_glm_5_3_1009"
+ ],
+ "controlShare": 0.7,
+ "controlVotes": "7 of 10",
+ "judgedShare": 0.05,
+ "judgedVotes": "1 of 20",
+ "maxShareGap": 0.2,
+ "bar": 0.5,
+ "pass": false,
+ "missing": false,
+ "images": [
+  {
+   "file": "set-A-01.jpg",
+   "kind": "control",
+   "id": "the approved image references/approved/fall-rest.png",
+   "sha256": "dac8c7db14b2742387dda3ef6ea6dacc1ac9392ece255e8590677d406de16797",
+   "votes": [
+    "b",
+    "c",
+    "b",
+    "c",
+    "c"
+   ],
+   "reusedFromRound": [
+    10
+   ],
+   "aOrB": 2,
+   "answers": 5
+  },
+  {
+   "file": "set-A-02.jpg",
+   "kind": "judged",
+   "id": "fall-settled",
+   "sha256": "19d05c8e11e95766758241e9bbd5e43aef9f32ee4bddee56d3f96bb6a0475e97",
+   "votes": [
+    "c",
+    "c",
+    "c",
+    "c",
+    "c"
+   ],
+   "jurors": [
+    "viewer_r10_02",
+    "viewer_r10_08",
+    "viewer_r10_14",
+    "viewer_r10_20",
+    "viewer_r10_26"
+   ],
+   "models": [
+    "claude_sonnet_5_5",
+    "gpt_6_2_astra",
+    "gemini_neon",
+    "pplx_computer_glm_5_3_1009",
+    "kimi_k3"
+   ],
+   "aOrB": 0,
+   "answers": 5
+  },
+  {
+   "file": "set-A-03.jpg",
+   "kind": "judged",
+   "id": "fall-rest",
+   "sha256": "9cea34553904ed3d1212ff242b9c018751cc52fb5547cd3253964a4a86ebf2b8",
+   "votes": [
+    "c",
+    "c",
+    "c",
+    "c",
+    "c"
+   ],
+   "jurors": [
+    "viewer_r10_03",
+    "viewer_r10_09",
+    "viewer_r10_15",
+    "viewer_r10_21",
+    "viewer_r10_27"
+   ],
+   "models": [
+    "claude_sonnet_5_5",
+    "gpt_6_2_astra",
+    "gemini_neon",
+    "pplx_computer_glm_5_3_1009",
+    "kimi_k3"
+   ],
+   "aOrB": 0,
+   "answers": 5
+  },
+  {
+   "file": "set-A-04.jpg",
+   "kind": "judged",
+   "id": "fall-shake",
+   "sha256": "f8807481116b5ac18db59e6b9b3461e77ce528a1ad1402fc99577d5d37448533",
+   "votes": [
+    "b",
+    "c",
+    "c",
+    "c",
+    "c"
+   ],
+   "jurors": [
+    "viewer_r10_04",
+    "viewer_r10_10",
+    "viewer_r10_16",
+    "viewer_r10_22",
+    "viewer_r10_28"
+   ],
+   "models": [
+    "claude_sonnet_5_5",
+    "gpt_6_2_astra",
+    "gemini_neon",
+    "pplx_computer_glm_5_3_1009",
+    "kimi_k3"
+   ],
+   "aOrB": 1,
+   "answers": 5
+  },
+  {
+   "file": "set-A-05.jpg",
+   "kind": "control",
+   "id": "the approved image references/approved/fall-shake.png",
+   "sha256": "5050d6ae08ba4d8ba76343554096881c55dd29a98026048e84a508cc573a6d0b",
+   "votes": [
+    "b",
+    "a",
+    "b",
+    "b",
+    "b"
+   ],
+   "reusedFromRound": [
+    10
+   ],
+   "aOrB": 5,
+   "answers": 5
+  },
+  {
+   "file": "set-A-06.jpg",
+   "kind": "judged",
+   "id": "fall-base",
+   "sha256": "91d020076f0ad846d1b7d466792663736eb4b8d38fa1cd6e3cea8a2fb19d5d09",
+   "votes": [
+    "c",
+    "d",
+    "d",
+    "c",
+    "c"
+   ],
+   "jurors": [
+    "viewer_r10_06",
+    "viewer_r10_12",
+    "viewer_r10_18",
+    "viewer_r10_24",
+    "viewer_r10_30"
+   ],
+   "models": [
+    "claude_sonnet_5_5",
+    "gpt_6_2_astra",
+    "gemini_neon",
+    "pplx_computer_glm_5_3_1009",
+    "kimi_k3"
+   ],
+   "aOrB": 0,
+   "answers": 5
+  }
+ ],
+ "countsAs": "one major issue (kit/07-QUALITY-BAR.md, R2: \"A failed R2 counts as one major issue\")"
+}
