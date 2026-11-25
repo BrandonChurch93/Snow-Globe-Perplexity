@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 92 · 2026-11-25 10:53 UTC
+Status 93 · 2026-11-25 11:09 UTC
 
-- `out/stills/status/status-92-1.jpg`: Spring at rest: the approved image on the left and the build on the right
-- `out/stills/status/status-92-2.jpg`: Spring mid shake: the approved image on the left and the build on the right
-- `out/stills/status/status-92-3.jpg`: Still: summer rest hero, preview, draft, standins view
-- `out/stills/status/status-92-4.jpg`: Still: spring rest hero, preview, draft
+- `out/stills/status/status-93-1.jpg`: Fall at rest: the approved image on the left and the kept build on the right
+- `out/stills/status/status-93-2.jpg`: Fall mid-shake: the approved image on the left and the kept build on the right
+- `out/stills/status/status-93-3.jpg`: Still: spring rest hero, preview, draft, standins view
+- `out/stills/status/status-93-4.jpg`: Still: spring rest hero, preview, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 10:53 UTC
-clock: phase 4, tick of 7.4 minutes
-phase 4: 10.77 h used of its 9.50 h box
-allowance (before the review): 33.05 h used of 36.00 h allowed
-all time before the review: 33.05 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 11:09 UTC
+clock: phase 4, tick of 0.0 minutes
+phase 4: 11.04 h used of its 9.50 h box
+allowance (before the review): 33.32 h used of 36.00 h allowed
+all time before the review: 33.32 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
@@ -1929,3 +1929,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 10:29 UTC. Status 90 posted with the two comparisons of summer (the approved image beside the final still Round 15 judged, at rest and mid shake), the whole of shake 3 from Round 16's motion pack and spring's arrival from Round 14's. Round 15 has every answer and does not pass: R1 4, R3 6, R4 3 (3 severe, 2 major, 1 minor), the jury 5 of 15 against 8 of 10, checks all 15 green, 1 of 19 measure lines red (M3 `summer-rest` 0.7055). Round 17's R4 is 4, the lowest of four parts (4, 7, 4, 5; 6 severe and 12 major in all); every answer went to `change_builder3` verbatim, with the three issues of Round 15's R4 that touch the change. Round 14: spring's gate is all 15 green on a fresh clone (88.8 min), R3 is 6 (parts 7 and 6), its motion pack came at 10:24 (`agent/p4-round14-motion` `34e1aa3`) and its R4 critic started at 10:24. Round 16: its motion pack came at 10:21 (`agent/p4-round16-motion` `082694f`) and its R4 critic started at 10:21. `summer_scribe`, `spring_scribe` and `fall_scribe` were started at 10:26 to draft the open items of the three seasons from the verbatim answers and the builders' reports (they write one file each under `out/work/scribe/` and change nothing else). The six comparison images of spring, summer and fall were made with `npm run compare -- --key <id> --tier final` from the final stills the rounds judged (each reused, none rendered again). The disk of this VM had fallen to 2.5 GB free, under `sandbox.minFreeDiskGb` 3, and `compare` refused to start: the finished sound agent's clone at `/home/user/workspace/sg-sound` held 2.5 GB of copies of the repo (`.git`, `node_modules`, `assets-full`, `references`, `dist`, `assets-src`, `public/assets`; its branch `agent/p4-sound` is pushed in full), which were deleted; its `audio/`, `out/` and `public/audio` stay; 5.0 GB free after. Clock: half point reached, box end reached, budget report not due, 32.63 h used.
 
 - 10:46 UTC. 10:46 UTC, Nov 25. Status 91 posted (the unit status for summer) with its two comparison images (`out/work/compare/compare-summer-rest.jpg`, `compare-summer-shake.jpg`). Summer is `finished` at `quality.maxRoundsPerUnit` 3: open items 84 to 108, Declined issues 18 to 23, decision 95. Published from the kept build `dcda6ca` with the review page rebuilt (36 comparison pictures); Visibility: Organization. Round 17's measure arrived complete: 24 of 24 lines, 0 red (`scorecards/round-017/measures-change.json`, branch `agent/p4-round17-pack` `7db9d0b`, fetched and not merged). Round 14's last answer arrived (R4 5); the scribes for spring, summer and fall have delivered their drafts and each was machine-checked (every `what` and `fix` of a severe or major issue is in its file word for word). Clock at 10:46: 32.93 h of 36 h used, budget report not due.
+
+- 11:10 UTC. Status 93 posted at 11:10 UTC with the two comparison images of fall (`out/stills/fall/`), after the publish of 11:09 (code of `dcda6ca`, review page rebuilt; the local check drew the first picture after 17.9 s with no page error). Clock at 11:09: 33.32 h of 36 h, `budget report: not due`. The fix build of `change` is commit `a6e09d6` on the branch `agent/p4-fix-f` (main `270df7e` plus `agent/p4-change3` at `e7c7bdd`, seven files under `src/`); it is not on `main`, so that everything published stays the kept build until the fix is proven. Its proof was ordered at 11:07 with the limit 13:05: the whole gate of `change` on a clean clone (`gate_runner_b`), the measures of winter, spring, summer and fall (`round_renderer_c`, `round_renderer_d`, `motion_renderer_d`, `motion_renderer_e`) and the measures of `change` in three parts (`frame_helper_1`, `frame_helper_2`, `frame_helper_3`).
