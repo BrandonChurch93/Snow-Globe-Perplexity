@@ -14,7 +14,7 @@ export const COLS = 4
 export const ROWS = 3
 const CELL = 512
 const FILL = 480
-const FAR = { px: 2048, halfMm: 520, fromMm: 232, count: 1500, sizeMm: [7, 11.5] }
+const FAR = { px: 2048, halfMm: 520, fromMm: 232, count: 560, sizeMm: [7, 11.5] }
 const PINK = [0.93, 0.72, 0.78]
 
 const flipRows = (bytes, w, h, ch) => {
@@ -132,7 +132,7 @@ while (placed < FAR.count) {
   const z = (rng() * 2 - 1) * FAR.halfMm
   const r = Math.hypot(x, z)
   const keep = rng()
-  if (r < FAR.fromMm || r > FAR.halfMm - 8 || keep > 0.35 + 0.65 * Math.exp(-(r - FAR.fromMm) / 160)) continue
+  if (r < FAR.fromMm || r > FAR.halfMm - 8 || keep > 0.1 + 0.9 * Math.exp(-(r - FAR.fromMm) / 105)) continue
   placed++
   const size = FAR.sizeMm[0] + (FAR.sizeMm[1] - FAR.sizeMm[0]) * rng()
   const yaw = rng() * 2 * Math.PI

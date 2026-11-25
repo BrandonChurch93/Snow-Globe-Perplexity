@@ -29,9 +29,17 @@ interface FaceExtras {
   faceRange: number
 }
 
-// The candles. `catchSeconds` is when each face takes after the landing, the three a viewer faces first; a face flares to
-// `flare` of its light inside `flareSeconds` and creeps to the whole of it over `creepSeconds`.
-const LIGHT = { catchSeconds: [0.2, 0.05, 0.34, 0.52, 0.72, 0.9, 1.1], flare: 0.72, flareSeconds: 0.07, creepSeconds: 0.9 }
+// The candles. On the landing each wick catches, one a breath after the other (`catchSeconds`), and burns low at `ember`
+// of its light; then, over the next seconds, each face takes in its turn (`takeSeconds`): a flare of `flare` of what is
+// left inside `flareSeconds`, and a creep to the whole of it over `creepSeconds`. The three a viewer faces come first.
+const LIGHT = {
+  catchSeconds: [0.06, 0.2, 0.34, 0.48, 0.6, 0.72, 0.84],
+  takeSeconds: [0.85, 1.5, 2.15, 2.7, 3.15, 3.5, 3.8],
+  ember: 0.42,
+  flare: 0.7,
+  flareSeconds: 0.07,
+  creepSeconds: 0.9,
+}
 const CANDLE: Rgb = [1, 0.36, 0.045]
 
 export const faceUniforms = {
@@ -95,6 +103,8 @@ float baseNoise(vec3 p) {
 const FRAG_PARS = `
 uniform sampler2D uBaseDetail;
 uniform vec3 uBaseFloor;
+uniform vec3 uBaseRimDir;
+uniform vec3 uBaseRimCol;
 uniform vec3 uFaceAt[${FACE_COUNT}];
 uniform vec4 uFaceOut[${FACE_COUNT}];
 uniform float uFaceGlow[${FACE_COUNT}];
@@ -196,19 +206,19 @@ float baseKind = vBasePaint.y;
 float baseThorn = step(0.75, baseKind);
 float baseDrum = 1.0 - step(0.25, baseKind);
 float baseBlotch = baseNoise(vBasePos * 0.35) * 0.6 + baseNoise(vBasePos * 1.3) * 0.4;
-float baseScale = smoothstep(0.42, 0.7, baseNoise(vBasePos * 2.6) * 0.6 + baseDetail.b * 0.4);
-diffuseColor.rgb = mix(vec3(0.028, 0.03, 0.034), vec3(0.05, 0.046, 0.044), baseBlotch) * mix(1.0, 0.55, baseScale) * mix(1.0, 0.7, baseDrum);
+float baseScale = smoothstep(0.52, 0.8, baseNoise(vBasePos * 2.6) * 0.6 + baseDetail.b * 0.4);
+diffuseColor.rgb = mix(vec3(0.028, 0.03, 0.034), vec3(0.05, 0.046, 0.044), baseBlotch) * mix(1.0, 0.72, baseScale) * mix(1.0, 0.3, baseDrum);
 float baseRust = smoothstep(0.62, 0.85, baseNoise(vBasePos * 0.9 + 7.0)) * (1.0 - baseThorn) * 0.35;
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.1, 0.05, 0.028), baseRust);
 float baseWrap = 0.1;
 float baseCandle = 1.0;
 `
 const IRON_ROUGH = `
-roughnessFactor = clamp(mix(0.3, 0.58, baseDetail.b) + 0.25 * baseScale + 0.2 * baseRust - 0.1 * baseThorn * vBasePaint.z + 0.1 * baseDrum, 0.18, 1.0);
-metalnessFactor = mix(0.82, 0.45, baseScale) * (1.0 - 0.6 * baseRust);
+roughnessFactor = clamp(mix(0.3, 0.54, baseDetail.b) + 0.16 * baseScale + 0.2 * baseRust - 0.1 * baseThorn * vBasePaint.z + 0.3 * baseDrum, 0.18, 1.0);
+metalnessFactor = mix(0.85, 0.6, baseScale) * (1.0 - 0.6 * baseRust);
 `
 const IRON_TILT = `
-vec2 baseTilt = baseSlope(baseDetail.rg) * mix(mix(0.36, 0.2 * (1.0 - vBasePaint.z), baseThorn), 1.0, baseDrum);
+vec2 baseTilt = baseSlope(baseDetail.rg) * mix(mix(0.34, 0.14 * (1.0 - vBasePaint.z), baseThorn), 0.22, baseDrum);
 `
 const IRON_AFTER = `
 {
@@ -226,8 +236,13 @@ const IRON_AFTER = `
   float ironCh = max(dot(geometryNormal, normalize(ironCard + geometryViewDir)), 0.0);
   float ironKl = smoothstep(0.0, 0.2, dot(geometryNormal, ironKey));
   float ironCl = smoothstep(0.0, 0.25, dot(geometryNormal, ironCard));
-  float ironSheen = (1.0 - 0.7 * baseScale) * baseAo;
-  reflectedLight.directSpecular += (ironKeyC * vec3(0.8, 0.9, 1.0) * (0.05 * pow(ironKh, 12.0) + 0.5 * pow(ironKh, 70.0)) * ironKl + uRigCardCol * (0.04 * pow(ironCh, 10.0) + 0.3 * pow(ironCh, 60.0)) * ironCl) * ironSheen;
+  float ironSheen = (1.0 - 0.45 * baseScale) * baseAo * (1.0 - 0.8 * baseDrum);
+  vec3 ironRim = normalize(mat3(viewMatrix) * uBaseRimDir);
+  float ironRh = max(dot(geometryNormal, normalize(ironRim + geometryViewDir)), 0.0);
+  float ironRl = smoothstep(0.0, 0.25, dot(geometryNormal, ironRim));
+  reflectedLight.directSpecular += uBaseRimCol * (0.3 * pow(ironRh, 7.0) + 0.8 * pow(ironRh, 50.0)) * ironRl * ironSheen;
+  vec3 ironCardC = mix(uRigCardCol, vec3(dot(uRigCardCol, vec3(0.3, 0.5, 0.2))), 0.65);
+  reflectedLight.directSpecular += (ironKeyC * vec3(0.8, 0.9, 1.0) * (0.13 * pow(ironKh, 9.0) + 0.85 * pow(ironKh, 90.0)) * ironKl + ironCardC * (0.04 * pow(ironCh, 10.0) + 0.14 * pow(ironCh, 50.0)) * ironCl) * ironSheen;
   float ironEdge = pow(1.0 - clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0), 3.0);
   vec3 ironUp = inverseTransformDirection(geometryNormal, viewMatrix);
   reflectedLight.indirectSpecular += (uRigSky * 0.6 * smoothstep(-0.2, 0.8, ironUp.y) + uBaseFloor * smoothstep(0.2, -0.8, ironUp.y)) * ironEdge * ironSheen;
@@ -257,15 +272,16 @@ float faceThrough = smoothstep(-faceAa, faceAa, faceD2) * faceInside;
 float faceGlowing = uFaceGlow[faceId];
 float baseAo = vBasePaint.x;
 float faceRib = baseNoise(vBasePos * 1.7) * 0.6 + baseNoise(vBasePos * 5.0) * 0.4;
-diffuseColor.rgb = mix(vec3(0.045, 0.018, 0.008), vec3(0.085, 0.03, 0.012), faceRib) * mix(1.0, 0.25, faceStem);
+diffuseColor.rgb = mix(vec3(0.1, 0.036, 0.01), vec3(0.2, 0.075, 0.018), faceRib) * mix(0.35, 1.0, smoothstep(0.1, 0.8, baseAo)) * mix(1.0, 0.25, faceStem);
 float faceNear = exp(-max(-faceD, 0.0) / 0.05);
 float faceSoft = exp(-max(-faceD, 0.0) / 0.3);
 vec3 faceCandle = uFaceCol * faceGlowing;
 float faceLow = smoothstep(0.75, 0.2, faceUv.y);
-vec3 faceCave = mix(vec3(1.0, 0.24, 0.02), vec3(1.0, 0.5, 0.08), faceLow * 0.8) * (0.9 + 1.1 * faceLow) * (0.75 + 0.5 * baseNoise(vec3(faceUv * 9.0, 3.0)));
-vec3 faceWall = vec3(1.0, 0.52, 0.1) * (1.3 + 0.6 * baseNoise(vec3(faceUv * 40.0, 7.0)));
+float faceHot = exp(-dot(faceIn - vec2(0.5, 0.36), faceIn - vec2(0.5, 0.36)) / 0.05);
+vec3 faceCave = mix(vec3(1.0, 0.17, 0.01), vec3(1.0, 0.5, 0.1), faceHot) * (0.38 + 1.9 * faceHot) * (0.75 + 0.5 * baseNoise(vec3(faceUv * 9.0, 3.0)));
+vec3 faceWall = vec3(1.0, 0.24, 0.02) * (0.5 + 0.6 * baseNoise(vec3(faceUv * 40.0, 7.0)));
 vec3 faceLight = mix(faceWall, faceCave, faceThrough) * faceGlowing * uFacePower;
-vec3 faceSkin = faceCandle * (0.16 * faceNear + 0.02 * faceSoft + 0.002 * (0.4 + faceRib)) * (1.0 - faceStem) * (0.5 + 0.5 * baseAo);
+vec3 faceSkin = faceCandle * (0.24 * faceNear + 0.022 * faceSoft + 0.003 * (0.4 + faceRib)) * (1.0 - faceStem) * (0.5 + 0.5 * baseAo);
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.02, 0.006, 0.002), faceOpen);
 totalEmissiveRadiance += mix(faceSkin, faceLight, faceOpen);
 float baseWrap = 0.3;
@@ -284,16 +300,16 @@ const WAX_PAINT = `
 float baseAo = vBasePaint.x;
 float waxDeep = vBasePaint.y;
 float waxMottle = baseNoise(vBasePos * 0.9) * 0.6 + baseNoise(vBasePos * 3.7) * 0.4;
-diffuseColor.rgb = mix(vec3(0.62, 0.5, 0.3), vec3(0.8, 0.72, 0.52), smoothstep(0.1, 0.7, waxDeep) * (0.7 + 0.3 * waxMottle)) * mix(0.85, 1.05, waxMottle);
+diffuseColor.rgb = mix(vec3(0.95, 0.62, 0.26), vec3(1.0, 0.8, 0.44), smoothstep(0.1, 0.7, waxDeep) * (0.7 + 0.3 * waxMottle)) * mix(0.92, 1.05, waxMottle);
 float baseWrap = 0.55;
-float baseCandle = 1.6;
+float baseCandle = 0.5;
 `
 const WAX_ROUGH = `
-roughnessFactor = 0.34 + 0.2 * waxMottle;
+roughnessFactor = 0.22 + 0.16 * waxMottle;
 metalnessFactor = 0.0;
 `
 const WAX_TILT = `
-vec2 baseTilt = (vec2(baseNoise(vBasePos * 1.9 + 3.0), baseNoise(vBasePos * 1.9 + 31.0)) - 0.5) * 0.55 + (vec2(baseNoise(vBasePos * 6.0 + 13.0), baseNoise(vBasePos * 6.0 + 71.0)) - 0.5) * 0.18;
+vec2 baseTilt = (vec2(baseNoise(vBasePos * 1.9 + 3.0), baseNoise(vBasePos * 1.9 + 31.0)) - 0.5) * 0.22 + (vec2(baseNoise(vBasePos * 6.0 + 13.0), baseNoise(vBasePos * 6.0 + 71.0)) - 0.5) * 0.05;
 `
 const WAX_AFTER = `
 {
@@ -311,9 +327,9 @@ const WAX_AFTER = `
   float waxC = clamp(dot(nonPerturbedNormal, waxCard) * 0.5 + 0.5, 0.0, 1.0);
   float waxThin = 1.0 - 0.6 * smoothstep(0.2, 0.9, waxDeep);
   vec3 waxThrough = vec3(1.0, 0.78, 0.5);
-  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * waxThrough * (waxKeyC * 0.55 * waxK * waxK + uRigCardCol * 0.5 * waxC * waxC) * waxThin * baseAo;
+  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * waxThrough * (waxKeyC * 0.6 * waxK * waxK + uRigCardCol * 0.22 * waxC * waxC) * waxThin * baseAo;
   float waxEdge = pow(1.0 - clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0), 2.0);
-  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * waxThrough * (waxKeyC * 0.25 + uRigCardCol * 0.3 + uRigSky * 2.0) * waxEdge * baseAo;
+  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * waxThrough * (waxKeyC * 0.25 + uRigCardCol * 0.12 + uRigSky * 1.2) * waxEdge * baseAo;
   float waxH = max(dot(geometryNormal, normalize(waxKey + geometryViewDir)), 0.0);
   float waxHc = max(dot(geometryNormal, normalize(waxCard + geometryViewDir)), 0.0);
   reflectedLight.directSpecular += (waxKeyC * (0.6 * pow(waxH, 90.0) + 0.04 * pow(waxH, 9.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, waxKey)) + uRigCardCol * (0.4 * pow(waxHc, 60.0) + 0.03 * pow(waxHc, 8.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, waxCard))) * baseAo;
@@ -351,15 +367,15 @@ void main() {
   float c = stageChange();
   if (stageGone(c)) discard;
   float sheet = floor(vWebPaint.y * 4.0);
-  float spokes = 7.0 + 2.0 * sheet;
+  float spokes = 5.0 + 2.0 * sheet;
   float u = vWebUv.x * spokes;
   float cell = floor(u);
   float between = sin(fract(u) * 3.14159265);
-  float rings = 11.0 - 2.0 * sheet;
-  float v = vWebUv.y * rings + 0.28 * between * between + 0.5 * webHash(cell + sheet * 17.0);
-  float gapped = step(0.16, webHash(floor(v) * 13.0 + cell * 7.0 + sheet * 3.0));
-  float spoke = webLine(u, 0.25);
-  float ring = webLine(v, 0.1) * gapped * smoothstep(0.08, 0.2, vWebUv.y);
+  float rings = 5.0 - sheet;
+  float v = vWebUv.y * rings + 0.5 * between * between + 0.9 * webHash(cell + sheet * 17.0);
+  float gapped = step(0.42, webHash(floor(v) * 13.0 + cell * 7.0 + sheet * 3.0));
+  float spoke = webLine(u + 0.08 * sin(vWebUv.y * 9.0 + cell), 0.05);
+  float ring = webLine(v, 0.0) * gapped * smoothstep(0.08, 0.2, vWebUv.y);
   float edge = max(webLine(vWebUv.y * 1.0 - 0.999, 0.6), 0.0);
   float thread = max(max(spoke, ring * 0.75), edge);
   float dew = smoothstep(0.75, 1.0, webHash(floor(v * 3.0) + cell * 5.0)) * ring;
@@ -367,8 +383,8 @@ void main() {
   float back = pow(max(dot(-view, uBaseRimDir) * 0.5 + 0.5, 0.0), 2.0);
   float fore = pow(max(dot(view, uBaseKeyDir) * 0.5 + 0.5, 0.0), 2.0);
   vec3 lit = uBaseKeyCol * (0.12 + 0.25 * fore) + uBaseRimCol * (0.2 + 1.2 * back) + uRigCardCol * 0.25 + uBaseSky * 0.6;
-  float veil = 0.035 * smoothstep(0.0, 0.3, vWebUv.y);
-  float a = clamp(thread * 0.2 + veil * 0.5 + dew * 0.12, 0.0, 1.0);
+  float veil = (0.03 + 0.1 * pow(abs(sin(u * 9.0 + 3.0 * sin(vWebUv.y * 5.0 + sheet))), 6.0) * webHash(floor(u * 2.87) + sheet)) * smoothstep(0.0, 0.3, vWebUv.y);
+  float a = clamp(thread * 0.22 + veil * 0.7 + dew * 0.1, 0.0, 1.0);
   gl_FragColor = vec4(lit * vec3(0.85, 0.9, 0.92) * (0.6 + 1.2 * dew) * a, a);
   if (uDiag != 0) gl_FragColor = stageDiag(vec3(0.8, 0.82, 0.85), normalize(vWebNormal), 0.0, c, 0.0);
 }
@@ -412,7 +428,7 @@ export function base(): THREE.Object3D {
     key: `${PART}-pumpkin`,
     physical: true,
     hook: hookOf(
-      { ...detail, uFaceMap: { value: map('faces.lin.w1024') }, uFaceRange: { value: extras.faceRange }, uFaceRind: { value: 0.085 }, uFacePower: { value: 2.4 } },
+      { ...detail, uFaceMap: { value: map('faces.lin.w1024') }, uFaceRange: { value: extras.faceRange }, uFaceRind: { value: 0.12 }, uFacePower: { value: 2.3 } },
       { pars: 'uniform sampler2D uFaceMap;\nuniform float uFaceRange;\nuniform float uFaceRind;\nuniform float uFacePower;', paint: PUMPKIN_PAINT, rough: PUMPKIN_ROUGH, tilt: PUMPKIN_TILT, after: SHADE },
     ),
   })
@@ -438,10 +454,13 @@ export function base(): THREE.Object3D {
 
 // How lit a face is `seconds` after the landing: nothing before its turn, then a flare, then the creep to its whole light.
 export function faceLevel(index: number, seconds: number): number {
-  const t = seconds - (LIGHT.catchSeconds[index] ?? 1)
-  if (!(t > 0)) return 0
-  if (!(t < Infinity)) return 1
-  return LIGHT.flare * (1 - Math.exp(-t / LIGHT.flareSeconds)) + (1 - LIGHT.flare) * (1 - Math.exp(-t / LIGHT.creepSeconds))
+  const lit = seconds - (LIGHT.catchSeconds[index] ?? 1)
+  if (!(lit > 0)) return 0
+  if (!(lit < Infinity)) return 1
+  const ember = LIGHT.ember * (1 - Math.exp(-lit / LIGHT.flareSeconds))
+  const t = seconds - (LIGHT.takeSeconds[index] ?? 4)
+  if (!(t > 0)) return ember
+  return ember + (1 - LIGHT.ember) * (LIGHT.flare * (1 - Math.exp(-t / LIGHT.flareSeconds)) + (1 - LIGHT.flare) * (1 - Math.exp(-t / LIGHT.creepSeconds)))
 }
 
 export function update(moment: KitMoment): void {
