@@ -37,16 +37,16 @@ Status 94 · 2026-11-25 11:25 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 11:28 UTC
-clock: phase 4, tick of 2.5 minutes
-phase 4: 11.34 h used of its 9.50 h box
-allowance (before the review): 33.63 h used of 36.00 h allowed
-all time before the review: 33.63 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 11:36 UTC
+clock: phase 4, tick of 8.0 minutes
+phase 4: 11.47 h used of its 9.50 h box
+allowance (before the review): 33.76 h used of 36.00 h allowed
+all time before the review: 33.76 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
 budget report: not due
-minutes since the last status: 2
+minutes since the last status: 10
 ```
 
 ## Phases
@@ -1979,3 +1979,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 11:10 UTC. Status 93 posted at 11:10 UTC with the two comparison images of fall (`out/stills/fall/`), after the publish of 11:09 (code of `dcda6ca`, review page rebuilt; the local check drew the first picture after 17.9 s with no page error). Clock at 11:09: 33.32 h of 36 h, `budget report: not due`. The fix build of `change` is commit `a6e09d6` on the branch `agent/p4-fix-f` (main `270df7e` plus `agent/p4-change3` at `e7c7bdd`, seven files under `src/`); it is not on `main`, so that everything published stays the kept build until the fix is proven. Its proof was ordered at 11:07 with the limit 13:05: the whole gate of `change` on a clean clone (`gate_runner_b`), the measures of winter, spring, summer and fall (`round_renderer_c`, `round_renderer_d`, `motion_renderer_d`, `motion_renderer_e`) and the measures of `change` in three parts (`frame_helper_1`, `frame_helper_2`, `frame_helper_3`).
 
 - 11:25 UTC. Status 94 posted at 11:25 UTC (its text in the thread says 11:27, written without reading the clock; the clock is right), the round-end status of Round 17: the sheet of the change from winter to spring that the round judged (`dcda6ca`), and three sheets of the fix pass at draft tier (`e70a11e`, from the builder's looks branch `agent/p4-change3-looks` at `aeba7dd`). Round 17 closed without a pass (R4 4, R2 fails 5 of 20; open items 154 to 165; Declined issues 34 to 40). The fix build `a6e09d6` on `agent/p4-fix-f` is not kept until its proof is in. Two lines reported red on it so far are not new: M3 `spring-rest` 0.394 and M3 `fall-rest` 0.5518, the same values as on `dcda6ca` (Rounds 14 and 16). The status tool shows four pictures at most, so the fifth (fall to winter) is not in it.
+
+- 11:42 UTC. - 11:42 UTC. The whole gate with `--unit change` on `ceee512` came back at 11:38: all 15 green (`scorecards/phase-4/gate-phase-4-ceee512.json` and `.log`; engine `5a94146defd3d562`; run 11:00:52 to 11:38:21 in the clone that held this engine's records, so G5 reused 36 pictures and G13 69 views "from records of this build"). `ceee512` is the code of `dcda6ca` with the register corrected and spring, summer and fall marked `finished`. G13: "covers 49 of 54 parts: the unit of this round, change; the units marked finished in kit/PROGRESS.md (winter, spring, summer, fall). None is stand-in in the register, the files of each differ from its stand-in hash, the standins view of 69 of 69 judged stills and frames shows no pixel within 2 of a covered part's colour, and dev.flagged() names none of them". G15 drew all four seasons on one page (web 241.4 of 500 MB, full 687.4 of 2000 MB). This closes decision 98: G13 is green on the hash and on the view of every part, so no fallback is called for. It is the machine proof of the Phase 4 gate for the kept build as it stands now; if the fix build `a6e09d6` is kept, its own gate replaces it. A second run of the gate on `a6e09d6` was ordered at 11:41 in a clone that already holds that build (`round_renderer_b`), as a backup for the run on the clean clone (`gate_runner_b`, due about 12:40). The four swap sheets of the fix build at the review tier are in (11:34 to 11:36, branches `agent/p4-fix-sheet-1` to `-4`, fetched, not merged): on each the base is the old season's on one tile and the new season's on the next, with nothing between and nothing covering it.
