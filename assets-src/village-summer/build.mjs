@@ -15,6 +15,7 @@ const sc = (a, k) => [a[0] * k, a[1] * k, a[2] * k]
 const pick = (list) => list[Math.floor(R() * list.length) % list.length]
 const range = (a, b) => a + (b - a) * R()
 
+const IVY = { leaves: 760, roses: 14, low: 4.5, size: 0.62 }
 const TURF = { lumpMm: 0.35, fineMm: 0.12, sandMm: 0.7, sandReach: 6.5, sandSides: 0.35 }
 const GRASS = { tufts: 21000, blades: 3, tall: [0.55, 1.6], wide: [0.11, 0.2], rimTall: 1.5, sandFrom: 0.12, sandTo: 0.55 }
 const LEVEL = { seed: 4107, medium: { back: 0.4, front: 0.72 }, low: { back: 0.25, front: 0.5 }, zFrom: -12, zTo: 6 }
@@ -454,6 +455,25 @@ for (const sh of RF.shrubs()) {
       blossom(p, out, range(0.18, 0.32), pick(TONES.rose))
       counts.roses++
     }
+  }
+  // The side wall is half grown over: ivy from the footing up to an uneven line under the eaves, open around the window.
+  const sideV = L.cottagePoint(-1, 0, 0).map((v, i) => v - L.cottagePoint(0, 0, 0)[i])
+  const sideOut = norm3([sideV[0], 0.15, sideV[2]])
+  const win = C.sideWindow
+  const open = (along, up) => Math.abs(along - win.along) < win.width / 2 + 0.5 && up > win.sill - 0.5 && up < win.sill + win.height + 0.6
+  for (let i = 0; i < IVY.leaves; i++) {
+    const along = range(-C.halfLength + 0.3, C.halfLength - 0.2)
+    const top = IVY.low + (C.wall - 0.5 - IVY.low) * clamp(0.5 + 1.3 * fbm(along * 0.35 + 4.2, 1.7, 2.9, 3))
+    const up = 0.2 + (top - 0.2) * Math.pow(R(), 1.25)
+    if (open(along, up)) continue
+    leaf(L.cottagePoint(-C.halfWidth - range(0.1, 0.55), up, along), sideOut, IVY.size, mul3(pick(TONES.leaf), range(0.5, 1.25)))
+  }
+  for (let i = 0; i < IVY.roses; i++) {
+    const along = range(-C.halfLength + 0.8, C.halfLength - 0.8)
+    const up = range(0.8, IVY.low + 1.5)
+    if (open(along, up)) continue
+    blossom(L.cottagePoint(-C.halfWidth - 0.6, up, along), sideOut, range(0.2, 0.34), pick(TONES.rose))
+    counts.roses++
   }
 }
 
