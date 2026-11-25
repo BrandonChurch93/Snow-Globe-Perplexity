@@ -82,3 +82,60 @@ describe('the hand: the landing', () => {
     }
   })
 })
+
+describe('the hand: the strokes', () => {
+  it('arcs in height through every stroke, highest at its turns, inside the lift', () => {
+    for (const name of HELD) {
+      const m = shakeMotion(name)
+      const turns = m.plan.strokes
+      for (let i = 0; i + 1 < turns.length; i++) {
+        let low = Infinity
+        for (let b = turns[i]!.beat; b <= turns[i + 1]!.beat; b += FRAME_BEATS / 8) {
+          const y = m.at('y', b)
+          expect(y, `${name} stroke ${i}`).toBeLessThanOrEqual(s.liftMm + 1e-9)
+          low = Math.min(low, y)
+        }
+        expect(m.at('y', turns[i]!.beat) - low, `${name} stroke ${i} from its first turn`).toBeGreaterThan(1.5)
+        expect(m.at('y', turns[i + 1]!.beat) - low, `${name} stroke ${i} to its second turn`).toBeGreaterThan(1.5)
+      }
+    }
+  })
+
+  it('takes strokes of unequal length and unequal time', () => {
+    for (const name of HELD) {
+      const turns = shakeMotion(name).plan.strokes
+      const frames = turns.slice(1).map((t, i) => (t.beat - turns[i]!.beat) / FRAME_BEATS)
+      const reach = turns.map((t) => Math.abs(t.mm))
+      expect(Math.max(...frames) / Math.min(...frames), `${name} time`).toBeGreaterThan(1.6)
+      expect(Math.max(...reach) / Math.min(...reach), `${name} reach`).toBeGreaterThan(1.3)
+    }
+  })
+
+  it('leans on past every turn for a frame or more, is not level where it crosses the centre, and rocks on a second axis', () => {
+    for (const name of HELD) {
+      const m = shakeMotion(name)
+      const turns = m.plan.strokes
+      for (let i = 0; i < turns.length; i++) {
+        const turn = turns[i]!.beat
+        const lean = (b: number): number => Math.abs(m.at('tiltZ', b)) * DEG
+        let peak = { frames: 0, deg: 0 }
+        for (let f = -3; f <= 6; f += 1 / 8) if (lean(turn + f * FRAME_BEATS) > peak.deg) peak = { frames: f, deg: lean(turn + f * FRAME_BEATS) }
+        expect(peak.frames, `${name} turn ${i} lag`).toBeGreaterThanOrEqual(1.5)
+        expect(peak.frames, `${name} turn ${i} lag`).toBeLessThanOrEqual(4)
+        expect(peak.deg, `${name} turn ${i} lean`).toBeGreaterThan(4)
+        expect(peak.deg - lean(turn), `${name} turn ${i} goes on`).toBeGreaterThan(0.7)
+        const next = turns[i + 1]
+        if (!next) continue
+        let cross = Number.NaN
+        let fore = { lo: Infinity, hi: -Infinity }
+        for (let b = turn; b <= next.beat; b += FRAME_BEATS / 8) {
+          const t = m.at('tiltX', b) * DEG
+          fore = { lo: Math.min(fore.lo, t), hi: Math.max(fore.hi, t) }
+          if (Number.isNaN(cross) && m.at('x', b) * m.at('x', b + FRAME_BEATS / 8) <= 0) cross = b
+        }
+        expect(lean(cross), `${name} stroke ${i} at the centre`).toBeGreaterThan(3)
+        expect(fore.hi - fore.lo, `${name} stroke ${i} second axis`).toBeGreaterThan(0.8)
+      }
+    }
+  })
+})
