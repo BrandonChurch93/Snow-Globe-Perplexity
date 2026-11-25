@@ -6,7 +6,7 @@ import type { SeasonKit } from '../kit'
 export const rig: SeasonKit['rig'] = {
   key: { color: [0.82, 0.9, 1], intensity: 0.75, from: [450, 455, 80] },
   rim: { color: [1, 0.55, 0.22], intensity: 0.35, from: [-240, 230, -380] },
-  sky: [0.07, 0.12, 0.13],
+  sky: [0.085, 0.105, 0.085],
   ground: [0.035, 0.04, 0.035],
   fill: 0.6,
   card: { color: [0.55, 0.85, 0.7], intensity: 0.6, from: [-460, 190, -40], wrap: 0.1, specular: 0.6, inside: 0.2 },

@@ -3,6 +3,7 @@ import { COVER_GLSL } from '../../core/chunks/cover'
 import { LIGHT_FRAG_PARS } from '../../core/chunks/light'
 import { VEIL_GLSL } from '../../core/chunks/veil'
 import { viewCode } from '../../diagnostics/views'
+import { CARD_FRAG_PARS, CARD_VERT, CARD_VERT_PARS } from './cards'
 import { BLUR_HOLD, BLUR_STRICT_FROM_PX, BLUR_STRICT_TO_PX, CLUMP, EDGE_CRISP_HIGH, EDGE_CRISP_LOW, EDGE_SOFT_HIGH, EDGE_SOFT_LOW, FLASH_MOST, FLASH_WHITE, GLINT_HIGH, GLINT_LOW, GLINT_SOFT_PX, LAMPS, LENS_LOOK, LIT_MOST, LIGHT_LOOK, LOBE_CORE, LOBE_GIRTH, LOBE_REACH, LYING_LOOK, MAX_KINDS, PIXEL_SIGMA2, REST_CLEAR, SETTLE_FADE, SIZE_HIGH, SIZE_LOW, SIZE_SKEW, STORM_CROSS, STORM_ALIGN, STORM_BEND, STORM_BIG, STORM_DAB_LIGHT, STORM_DAB_REACH, STORM_DAB_SLOW, STORM_DAB_TIGHT, STORM_FAR, STORM_OFF_DISC, STORM_PACE, STORM_PALE, STORM_PALE_TO, STORM_FINE_HIGH, STORM_FINE_LOW, STORM_FINE_SOFT, STORM_FINE_SHARE, STORM_FLASH, STORM_FLOOD, STORM_GLINT, STORM_GLINT_KEEP, STORM_GLINT_REACH, STORM_GLITTER, STORM_GLITTER_FROM, STORM_GLITTER_PX, STORM_GLITTER_TO, STORM_GLOW, STORM_GOLD, STORM_MOST_PX, STORM_SHARP, STORM_SHARP_REACH, STORM_SHARP_SHARE, STORM_SHUTTER, STORM_SIDE, STORM_SLOW, STORM_SMEAR, STORM_SMEAR_BRIGHT, STORM_SMEAR_FAINT, STORM_SMEAR_HIGH_PX, STORM_SMEAR_LOW_PX, STORM_SMEAR_FAR, STORM_SMEAR_NEAR, STORM_SMEAR_SHARE, STORM_SMEAR_SKEW, STORM_SOFT_TOP, STORM_STREAK_DIM, STORM_THIN, STORM_TOP, STORM_VEILED, STORM_WALL, STORM_WARM, STORM_WINDOW, STREAK_CAPSULE, STREAK_HOLD, STREAK_REACH, STREAK_TAPER, STRETCH_HIGH, STRETCH_LOW, THIN_FROM, THIN_LOW, THIN_TO } from './looks'
 
 const MEAN_LOBE = 0.42
@@ -49,7 +50,7 @@ uniform vec4 uLamp[${LAMPS}];
 uniform vec4 uLampCol[${LAMPS}];
 uniform sampler2D uLobes;
 uniform float uLobeRows;
-${LIGHT_FRAG_PARS}
+${CARD_VERT_PARS}${LIGHT_FRAG_PARS}
 ${VEIL_GLSL}
 ${COVER_GLSL}
 ${VARYINGS}
@@ -104,6 +105,7 @@ export const VERT_MAIN = `
   view.xy += uAperture.xy * afloat;
   vec4 clip = projectionMatrix * view;
   clip.xy += vec2(projectionMatrix[0][0] * uAperture.x, projectionMatrix[1][1] * uAperture.y) * (uAperture.z * view.z * afloat);
+  vec4 clipC = clip;
   vStageWorld = nowW;
   vStageLocal = nowL;
   vStagePlaced = placed.xyz;
@@ -227,6 +229,7 @@ export const VERT_MAIN = `
   vec3 cardIn = uRigCardCol * (uRigInside.x * uRigCard.w * mix(uGridShade.w, 1.0, gridAir));
   float cardFace = stageWrap((uLightFrame * uRigCardDir).y, uRigCard.x) * 0.31831;
   vec3 base = stageSoftIn(nowL) + gridCol * mix(uTone.y, gridFace, lying) + cardIn * mix(uRigPoint.x * ${n(LIGHT_LOOK.cardShare)}, cardFace, lying);
+  vec3 base0 = base;
   if (gusty > 0.0) base += max(stageGridWarm(nowL) + stageFlood(nowL) - gridCol, 0.0) * (uTone.y * ${n(STORM_WARM)} * gusty);
   vec3 toEye = normalize((uGlobeInv * vec4(eye, 1.0)).xyz - nowL);
   vec3 face = lying > 0.5 ? normalize(vec3(0.0, 1.0, 0.0) + uLimit.w * tilt) : pointTurn(normalize(cross(axis, normalize(tilt + 1e-3))), axis, ca, sa);
@@ -275,7 +278,7 @@ export const VERT_MAIN = `
   }
   vGrid = vec4(lit * min(1.0, ${n(LIT_MOST)} / max(max(lit.r, max(lit.g, lit.b)), 1e-3)), flash.g);
   vDom = vec4(keyIn * uRigPoint.x * warmth, flash.b);
-  gl_Position = aState > 2.5 || alpha <= 0.0 ? vec4(2.0, 2.0, 2.0, 1.0) : clip;
+${CARD_VERT}  gl_Position = aState > 2.5 || alpha <= 0.0 ? vec4(2.0, 2.0, 2.0, 1.0) : clip;
 `
 
 export const FRAG = `
@@ -288,7 +291,7 @@ uniform float uPointChange;
 uniform mat4 modelViewMatrix;
 ${VARYINGS}
 float pointBend = 0.0;
-void pointAdd(vec4 lobe, vec2 p, inout float f, inout vec3 nrm) {
+${CARD_FRAG_PARS}void pointAdd(vec4 lobe, vec2 p, inout float f, inout vec3 nrm) {
   float r = ${n(LOBE_CORE)} * lobe.z;
   float r2 = r * r;
   if (r2 <= 0.0) return;
@@ -317,6 +320,10 @@ void main() {
   #else
   vec2 p = vCore.xy;
   #endif
+  if (look.x > 2.5) {
+    cardMain(p, kind, k, look, lying);
+    return;
+  }
   float f = 0.0;
   vec3 nrm = vec3(0.0, 0.0, 1e-3);
   pointAdd(vL0, p, f, nrm);
