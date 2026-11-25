@@ -664,8 +664,10 @@ let tuftCount = 0
     const rim = 1 - smooth(1.5, 7, L.islandEdge(Math.atan2(z, x)) - Math.hypot(x, z))
     const patch = smooth(0.0, 0.5, fbm(x * 0.14 + 5, z * 0.14 + 1, 4, 2))
     const east = smooth(4, 16, x) * smooth(-4, 8, z)
-    if (R() > 0.02 + 0.3 * bank + 0.45 * post + 0.25 * rim + 0.12 * patch + 0.75 * east + 0.9 * rock) continue
-    tuft(x, z, 0.8 + 0.3 * bank + 0.2 * rim + 0.5 * east + 0.5 * rock)
+    // The front rim (toward the hero camera) carries tall grass that stands up through the low fog and breaks its level edge.
+    const front = rim * smooth(-0.2, 0.5, z / Math.max(1, Math.hypot(x, z)))
+    if (R() > 0.02 + 0.3 * bank + 0.45 * post + 0.2 * rim + 0.75 * front + 0.08 * patch + 0.6 * east + 0.9 * rock) continue
+    tuft(x, z, 0.8 + 0.3 * bank + 0.2 * rim + 1.1 * front + 0.5 * east + 0.5 * rock)
   }
   const g = new THREE.BufferGeometry()
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))

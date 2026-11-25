@@ -408,10 +408,12 @@ export function build(): THREE.Object3D {
 
 const scaled = (c: Rgb, k: number): Rgb => [c[0] * k, c[1] * k, c[2] * k]
 
-const PANE = { room: 0.8, drape: 0.6, hot: 0.8 }
+// The jury read the panes as flat lit colour. The shared pane gives a room, drapes, a hot centre and a frost at the
+// corners and the sill: fall dims the room, keeps the hot centre, and uses the frost slot as dark grime on the glass.
+const PANE = { room: 0.45, drape: 0.3, hot: 1.0, grime: [0.014, 0.013, 0.009] as Rgb, grimeAmount: 0.7 }
 
 function paneLook(room: Rgb, drape: Rgb): GlowLook {
-  return { bulb: 1, bulbCore: 1, glass: scaled(room, 2.4), flame: tones.flame, room: scaled(room, PANE.room), curtain: scaled(drape, PANE.drape), frost: [0, 0, 0], frostAmount: 0, flicker: 0.07, cycles: 3, through: THROUGH, paneHot: PANE.hot }
+  return { bulb: 1, bulbCore: 1, glass: scaled(room, 2.4), flame: tones.flame, room: scaled(room, PANE.room), curtain: scaled(drape, PANE.drape), frost: PANE.grime, frostAmount: PANE.grimeAmount, flicker: 0.07, cycles: 3, through: THROUGH, paneHot: PANE.hot }
 }
 
 export function lights(): THREE.Object3D {
