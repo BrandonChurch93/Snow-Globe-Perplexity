@@ -149,10 +149,26 @@ function grassAt(x, z) {
   const bank = 0.4 * smooth(0.99, 1.05, pf) * (1 - smooth(1.08, 1.3, pf)) * (0.6 + 0.8 * noise(x * 0.4, z * 0.4, 7.7))
   return L.moundAt(z) - (L.pond.level + GROUND.underMm) * (1 - lip) + (extra + bank) * lip
 }
+// The moss mounds of the bank (approved rest image: a lip of round cushions under the pond, lit on top, dark below).
+// One mound to each cell around the rim; moundAt gives 0 in the gap between two and up to 1 on a mound's middle line.
+const MOUND = { count: 30, low: 0.5, lipMm: 1.25, lipReach: 3.2, fromMm: 5.0, deepMm: 6.5, raggedMm: 3.0, underMm: 2.4, soilMm: [0.4, 4.5] }
+const moundCells = Array.from({ length: MOUND.count }, (_, i) => ({ tall: MOUND.low + (1 - MOUND.low) * clamp(0.5 + 0.9 * noise(i * 1.7, 4.2, 9.9 + i * 0.37)), shift: 0.3 * clamp(0.5 + 0.9 * noise(i * 2.3, 1.1, 3.3)) - 0.15 }))
+function moundAt(th) {
+  const u = ((th / (Math.PI * 2)) % 1 + 1) % 1 * MOUND.count
+  let m = 0
+  for (const o of [-1, 0, 1]) {
+    const i = (Math.floor(u) + o + MOUND.count) % MOUND.count
+    const c = Math.floor(u) + o + 0.5 + moundCells[i].shift
+    const d = Math.abs(u - c) / 0.62
+    if (d < 1) m = Math.max(m, moundCells[i].tall * Math.sqrt(1 - d * d))
+  }
+  return m
+}
 const rimLift = (x, z) => {
   const e = edgeOf(x, z)
   const near = 1 - smooth(0, GROUND.rimReach, e)
-  return GROUND.rimMm * near * (0.45 + 0.9 * clamp(0.5 + fbm(x * 0.21 + 2.2, z * 0.21 + 8.1, 1.1, 3)))
+  const lip = 1 - smooth(0, MOUND.lipReach, e)
+  return GROUND.rimMm * near * (0.45 + 0.9 * clamp(0.5 + fbm(x * 0.21 + 2.2, z * 0.21 + 8.1, 1.1, 3))) + MOUND.lipMm * lip * lip * (moundAt(Math.atan2(z, x)) - 0.35)
 }
 const topAt = (x, z) => grassAt(x, z) + rimLift(x, z)
 function contact(x, z) {
@@ -193,6 +209,7 @@ const SKIRT = { cycles: 6.5, deepMm: 2.8, clumps: 17, clumpMm: 0.85 }
   const pos = []
   const idx = []
   const depth = []
+  const soilShade = []
   const rows = shore.length + outer + skirt
   for (let j = 0; j <= around; j++) {
     const a = (j / around) * Math.PI * 2
@@ -219,6 +236,7 @@ const SKIRT = { cycles: 6.5, deepMm: 2.8, clumps: 17, clumpMm: 0.85 }
       let y
       let z
       let q = 0
+      let shade = 1
       if (k < shore.length) {
         const t = Math.min(shore[k] / unit, t1 * (0.9 + 0.1 * (k / (shore.length - 1))))
         x = L.pond.x + dx * t
@@ -254,13 +272,18 @@ const SKIRT = { cycles: 6.5, deepMm: 2.8, clumps: 17, clumpMm: 0.85 }
         const warp = [fbm(wx * 9.3 + 1.7, wy * 9.3, wz * 9.3, 2), fbm(wx * 9.3, wy * 9.3 + 4.4, wz * 9.3 + 2.1, 2), fbm(wx * 9.3 + 8.8, wy * 9.3 + 3.2, wz * 9.3, 2)]
         const lump = clamp(0.5 + 0.75 * fbm(wx * SKIRT.cycles + 3.1 + 0.5 * warp[0], wy * SKIRT.cycles + 0.5 * warp[1], wz * SKIRT.cycles + 7.7 + 0.5 * warp[2], 4))
         const clump = clamp(0.5 + 0.8 * fbm(wx * SKIRT.clumps + 1.3 + 0.9 * warp[1], wy * SKIRT.clumps + 5.9 + 0.9 * warp[2], wz * SKIRT.clumps + 2.2 + 0.9 * warp[0], 4))
-        const rr = r - 0.15 - SKIRT.deepMm * Math.pow(lump, 1.5) * smooth(0.06, 0.5, q) - SKIRT.clumpMm * clump * clump * smooth(0.0, 0.2, q)
+        const arc = (phi0 - Math.min(phi1, phi0 - 0.12)) * r
+        const foot = Math.max(1.2, MOUND.fromMm + MOUND.deepMm * moundAt(th) + MOUND.raggedMm * (clump - 0.5)) / arc
+        shade = 1 - 0.92 * smooth(MOUND.soilMm[0], MOUND.soilMm[1], (q - foot) * arc)
+        const rr = r - 0.15 - SKIRT.deepMm * Math.pow(lump, 1.5) * smooth(foot, foot + 0.35, q) - SKIRT.clumpMm * clump * clump * smooth(0.0, 0.2, q) - MOUND.underMm * smooth(foot - 0.05, foot + 0.1, q)
+        q = Math.max(1e-3, clamp(0.5 * q / foot))
         x = ux * rr
         y = uy * rr
         z = uz * rr
       }
       pos.push(x, y, z)
       depth.push(q)
+      soilShade.push(shade)
     }
   }
   for (let j = 0; j < around; j++)
@@ -302,9 +325,10 @@ const SKIRT = { cycles: 6.5, deepMm: 2.8, clumps: 17, clumpMm: 0.85 }
     color: (p, n, i) => {
       const q = depth[i]
       if (q <= 0) return grassTone(p[0], p[2])
+      if (q > 0.5) return [soilShade[i], soilShade[i], soilShade[i]]
       const top = mix3(TONE.grass, TONE.moss, clamp(0.5 + noise(p[0] * 0.45, p[1] * 0.45, p[2] * 0.45)))
       const patch = smooth(-0.1, 0.35, fbm(p[0] * 0.3, p[1] * 0.3, p[2] * 0.3, 3))
-      return mul3(mix3(mix3(top, TONE.mossDeep, smooth(0.3, 0.85, q) * (1 - 0.7 * patch)), TONE.sun, 0.6 * patch * (1 - 0.7 * q) * smooth(-0.5, 0.4, n[1])), (1 - 0.25 * smooth(0.4, 1, q)) * (1.25 + 0.6 * smooth(-0.3, 0.6, n[1])))
+      return mul3(mix3(mix3(top, TONE.mossDeep, smooth(0.2, 0.55, q) * (1 - 0.5 * patch)), TONE.sun, (0.35 + 0.45 * patch) * (1 - smooth(0.02, 0.3, q))), (1 - 0.25 * smooth(0.3, 0.6, q)) * (1.25 + 0.6 * smooth(-0.3, 0.6, n[1])))
     },
     surf: (_p, _n, i) => [depth[i] > 0 ? 2 : 0, depth[i]],
   })
@@ -332,7 +356,7 @@ const boulders = []
     const yaw = R() * Math.PI
     const y = topAt(x, z) + ry * 0.28
     const seed = R() * 50
-    const g = new THREE.IcosahedronGeometry(1, 4)
+    const g = new THREE.IcosahedronGeometry(1, 3)
     g.deleteAttribute('normal')
     g.deleteAttribute('uv')
     const P = g.getAttribute('position')
@@ -360,6 +384,45 @@ const boulders = []
   }
   tally.boulders = turf.triangles - before
 }
+// The stepping stones from the door to the pond: the shared path gives their places and turns as thin slabs; here each
+// is a worn, flat topped stone thick enough to read from the hero camera's low angle, as the approved image shows them.
+const STEPPING = { halfMm: [2.25, 0.8, 1.6], sinkMm: 0.3, flat: 0.5, tones: ['#d8c6b8', '#e2d3c6', '#cbb9ab', '#dccbbd'].map(lin), moss: 0.12, seed: 7719 }
+{
+  const RS = rng(STEPPING.seed)
+  const before = turf.triangles
+  L.stones.forEach(([x, z], i) => {
+    const rx = STEPPING.halfMm[0] * (0.9 + 0.25 * RS())
+    const rz = STEPPING.halfMm[2] * (0.9 + 0.25 * RS())
+    const ry = STEPPING.halfMm[1] * (0.9 + 0.2 * RS())
+    const yaw = ((20 - 28 * i) * Math.PI) / 180
+    const y = topAt(x, z) + ry - STEPPING.sinkMm
+    const seed = RS() * 50
+    const g = new THREE.IcosahedronGeometry(1, 3)
+    g.deleteAttribute('normal')
+    g.deleteAttribute('uv')
+    const P = g.getAttribute('position')
+    for (let k = 0; k < P.count; k++) {
+      const q = [P.getX(k), P.getY(k), P.getZ(k)]
+      const lump = 1 + 0.16 * fbm(q[0] * 1.4 + seed, q[1] * 1.4, q[2] * 1.4 + seed, 3)
+      const flat = q[1] > 0 ? 1 - STEPPING.flat * q[1] * q[1] : 1
+      const lx = q[0] * rx * lump
+      const lz = q[2] * rz * lump
+      P.setXYZ(k, x + lx * Math.cos(yaw) + lz * Math.sin(yaw), y + q[1] * ry * flat, z - lx * Math.sin(yaw) + lz * Math.cos(yaw))
+    }
+    const tone = STEPPING.tones[i % STEPPING.tones.length]
+    turf.add(g, {
+      renormal: true,
+      color: (p, n) => {
+        const up = n[1] + 0.5 * fbm(p[0] * 0.9 + seed, p[1] * 0.9, p[2] * 0.9, 3)
+        const low = smooth(0.8, 0.0, (p[1] - (y - ry)) / ry)
+        const stone = mul3(tone, (0.82 + 0.36 * clamp(0.5 + fbm(p[0] * 2.2, p[1] * 2.2 + seed, p[2] * 2.2, 2))) * (1 - 0.35 * low))
+        return mix3(stone, mix3(TONE.mossDeep, TONE.moss, clamp(0.5 + noise(p[0] * 1.7, p[1] * 1.7, p[2] * 1.7))), STEPPING.moss * smooth(0.9, 1.3, up) + 0.25 * low * smooth(0.45, 0.7, noise(p[0] * 1.1 + seed, p[1] * 1.1, p[2] * 1.1) + 0.5))
+      },
+      surf: [3, 1],
+    })
+  })
+  tally.stepping = turf.triangles - before
+}
 const boulderGap = (x, z) => boulders.reduce((m, b) => Math.min(m, Math.hypot(x - b[0], z - b[2]) - b[3]), 1e9)
 
 const MOUNDS = { count: 110, sizeMm: [1.2, 3.3], seed: 9133 }
@@ -372,14 +435,14 @@ const MOUNDS = { count: 110, sizeMm: [1.2, 3.3], seed: 9133 }
     tries++
     const a = RM() * Math.PI * 2
     const size = MOUNDS.sizeMm[0] + (MOUNDS.sizeMm[1] - MOUNDS.sizeMm[0]) * RM() ** 1.6
-    const inset = size * 0.8 + 0.2 + 1.6 * RM() * RM()
+    const inset = size * 1.45 + 0.3 + 1.6 * RM() * RM()
     const back = RM()
     if (Math.sin(a) < -0.1 && back < 0.8) continue
     let rr = 20
     while (rr < 70 && edgeOf(Math.cos(a) * (rr + 0.1), Math.sin(a) * (rr + 0.1)) > inset) rr += 0.1
     const x = Math.cos(a) * rr
     const z = Math.sin(a) * rr
-    if (edgeOf(x, z) < size * 0.7) continue
+    if (edgeOf(x, z) < size * 1.3) continue
     if (L.pondField(x, z) < 1.1 || stoneGap(x, z) < size + 0.4 || wallGap(x, z) < size + 0.6 || treeGap(x, z) < size + 4.5 || boulderGap(x, z) < size * 0.5) continue
     if (fposts.some((f) => Math.hypot(x - f[0], z - f[1]) < size + 0.7)) continue
     const rx = size * (0.95 + 0.35 * RM())
@@ -745,10 +808,10 @@ const fenceDir = norm3([L.fence.to[0] - L.fence.from[0], 0, L.fence.to[1] - L.fe
 const fenceIn = [fenceDir[2], 0, -fenceDir[0]]
 const TULIP_TALL = 0.64
 const BEDS = [
-  { at: [fenceMid[0] + fenceIn[0] * 2.4, fenceMid[1] + fenceIn[2] * 2.4], along: [fenceDir[0], fenceDir[2]], half: [6.2, 1.9], count: 17, tall: [4.4, 6.4], hues: [3, 1, 4, 0, 2, 1, 3] },
+  { at: [fenceMid[0] + fenceIn[0] * 2.4, fenceMid[1] + fenceIn[2] * 2.4], along: [fenceDir[0], fenceDir[2]], half: [6.2, 1.9], count: 11, tall: [4.4, 6.4], hues: [3, 1, 4, 0, 2, 1, 3] },
   { at: [L.tree.x + 9.2, L.tree.z + 9.6], along: [0.86, 0.5], half: [4.2, 2.2], count: 15, tall: [4.6, 6.8], hues: [4, 2, 1, 4, 3, 2] },
-  { at: [L.tree.x + 15.5, L.tree.z + 4], along: [0.5, -0.86], half: [2.6, 1.6], count: 8, tall: [3.6, 5.2], hues: [4, 3, 2] },
-  { at: [fenceMid[0] - fenceIn[0] * 2.2 + fenceDir[0] * 3, fenceMid[1] - fenceIn[2] * 2.2 + fenceDir[2] * 3], along: [fenceDir[0], fenceDir[2]], half: [3.4, 1.1], count: 9, tall: [3.2, 4.6], hues: [4, 2, 3] },
+  { at: [L.tree.x + 15.5, L.tree.z + 4], along: [0.5, -0.86], half: [2.6, 1.6], count: 5, tall: [3.6, 5.2], hues: [4, 3, 2] },
+  { at: [fenceMid[0] - fenceIn[0] * 2.2 + fenceDir[0] * 3, fenceMid[1] - fenceIn[2] * 2.2 + fenceDir[2] * 3], along: [fenceDir[0], fenceDir[2]], half: [3.4, 1.1], count: 4, tall: [2.2, 3.1], hues: [4, 2, 3] },
 ]
 {
   const before = growth.triangles
@@ -848,6 +911,10 @@ for (let z = -50; z <= 50; z += 1)
   }
 
 const turfGeometry = turf.geometry()
+for (const name of ['position', 'normal', 'color']) {
+  const at = turfGeometry.getAttribute(name)
+  if (at) for (let i = 0; i < at.array.length; i++) if (!Number.isFinite(at.array[i])) throw new Error(`village-spring: turf ${name} holds a value that is not a number at ${i}`)
+}
 const meshes = [fromThree('turf', turfGeometry), fromThree('growth', growth.geometry()), fromThree('water', water.geometry(), { level: L.pond.level, boulders })]
 const out = writeGlb(rel('assets-full', 'spring', 'village-spring.glb'), meshes)
 addLists(rel('assets-full', 'spring', 'village-spring.glb'), 'growth', growth.lists)

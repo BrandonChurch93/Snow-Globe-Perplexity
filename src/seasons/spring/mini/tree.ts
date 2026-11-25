@@ -1,10 +1,11 @@
 import * as THREE from 'three'
+import { config } from '../../../config'
 import { afterLight } from '../../../core/chunks/light'
 import { stageMaterial } from '../../../core/materials'
 import { geometry, meshLevel, prepareModel } from '../../../core/models'
 import { levels } from '../../../core/quality'
 import { lampFlame } from '../../../miniature/roof'
-import { bakeGlow, buildTrunk, crownOffset, glowHook, prepareTrunk, trunkSolid, type GlowLight } from '../../../miniature/trunk'
+import { bakeGlow, buildTrunk, crownOffset, glowHook, prepareTrunk, trunkShape, trunkSolid, type GlowLight } from '../../../miniature/trunk'
 import { emitters } from '../../../scene/layout'
 import type { InnerLight, KitMoment, Vec3 } from '../../kit'
 import { season, tones } from './palette'
@@ -20,8 +21,13 @@ const TWIG = { wrap: 0.45, fill: 0.9 }
 const BARK = { wrap: 0.4, fill: 1.1, normal: 2.6, rough: 0.9, ridgeMm: 0.22, ridge: 3.1, grainMm: 0.07, relief: 0.95 }
 const WARM: [number, number, number] = [1, 0.6, 0.34]
 const CLEAR_MM = 1
+// While the storm turns, the crown is a pale glowing cloud in the approved mid-shake image and no dark branch shows in it.
+const STORM = { blossom: [0.3, 0.2, 0.25] as const, pale: 0.25, wood: [0.5, 0.38, 0.38] as const, woodPale: 0.8 }
+const storm = { value: 0 }
 
 const offset = crownOffset()
+const FORK_Y = offset[1] + trunkShape.fork
+const v3 = (c: readonly [number, number, number]): string => `vec3(${c[0].toFixed(3)}, ${c[1].toFixed(3)}, ${c[2].toFixed(3)})`
 const lamp = lampFlame()
 
 export const innerLights: InnerLight[] = []
@@ -50,7 +56,11 @@ function blossomMaterial(): THREE.MeshStandardMaterial {
     key: 'tree-blossom-spring',
     hook: (shader) => {
       glowHook(shader)
-      shader.fragmentShader = shader.fragmentShader.replace('#include <normal_fragment_maps>', 'normal = normalize(vNormal);')
+      shader.uniforms.uTreeStorm = storm
+      shader.fragmentShader = shader.fragmentShader
+        .replace('#include <normal_fragment_maps>', 'normal = normalize(vNormal);')
+        .replace('#include <common>', '#include <common>\nuniform float uTreeStorm;')
+        .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>\ntotalEmissiveRadiance += ${v3(STORM.blossom)} * (uTreeStorm * (0.55 + 0.45 * dot(diffuseColor.rgb, vec3(0.3333))));\ndiffuseColor.rgb = mix(diffuseColor.rgb, vec3(1.0, 0.93, 0.95), ${STORM.pale.toFixed(2)} * uTreeStorm);`)
       afterLight(
         shader,
         `
@@ -77,6 +87,10 @@ function twigMaterial(): THREE.MeshStandardMaterial {
     key: 'tree-twigs-spring',
     hook: (shader) => {
       glowHook(shader)
+      shader.uniforms.uTreeStorm = storm
+      shader.fragmentShader = shader.fragmentShader
+        .replace('#include <common>', '#include <common>\nuniform float uTreeStorm;')
+        .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>\ntotalEmissiveRadiance += ${v3(STORM.wood)} * uTreeStorm;\ndiffuseColor.rgb = mix(diffuseColor.rgb, vec3(1.0, 0.86, 0.86), ${STORM.woodPale.toFixed(2)} * uTreeStorm);`)
       afterLight(shader, `reflectedLight.directDiffuse += (stageWrapped(geometryNormal, ${TWIG.wrap.toFixed(2)}) + stageKeyC * (RECIPROCAL_PI * ${TWIG.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), 1.0))) * material.diffuseContribution;`)
     },
   })
@@ -97,7 +111,10 @@ function barkMaterial(shared: THREE.MeshStandardMaterial): THREE.MeshStandardMat
     key: 'trunk-spring',
     hook: (shader) => {
       glowHook(shader, undefined, BARK.relief)
+      shader.uniforms.uTreeStorm = storm
       shader.fragmentShader = shader.fragmentShader
+        .replace('#include <common>', '#include <common>\nuniform float uTreeStorm;')
+        .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>\n{\n  float barkUp = uTreeStorm * smoothstep(${(FORK_Y + 1).toFixed(2)}, ${(FORK_Y + 8).toFixed(2)}, vStageLocal.y);\n  totalEmissiveRadiance += ${v3(STORM.wood)} * barkUp;\n  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(1.0, 0.86, 0.86), ${STORM.woodPale.toFixed(2)} * barkUp);\n}`)
         .replace(
           '#include <map_pars_fragment>',
           `#include <map_pars_fragment>
@@ -135,7 +152,8 @@ diffuseColor.rgb *= 0.5 + 0.85 * smoothstep(0.02, ${(BARK.ridgeMm + BARK.grainMm
   vec3 barkR1 = cross(barkSy, normal);
   vec3 barkR2 = cross(normal, barkSx);
   float barkDet = dot(barkSx, barkR1);
-  normal = normalize(abs(barkDet) * normal - sign(barkDet) * (barkDh.x * barkR1 + barkDh.y * barkR2));
+  vec3 barkBumped = abs(barkDet) * normal - sign(barkDet) * (barkDh.x * barkR1 + barkDh.y * barkR2);
+  if (dot(barkBumped, barkBumped) > 0.0) normal = normalize(barkBumped);
 }`,
         )
       afterLight(shader, `reflectedLight.directDiffuse += (stageWrapped(geometryNormal, ${BARK.wrap.toFixed(2)}) + stageKeyC * (RECIPROCAL_PI * ${BARK.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), 1.0))) * material.diffuseContribution;`)
@@ -196,4 +214,7 @@ export function solid(x: number, y: number, z: number): number {
 
 export const crownTop = (): Vec3 => [offset[0] + 1.2, offset[1] + 45, offset[2] + 1]
 
-export function update(_moment: KitMoment): void {}
+export function update(moment: KitMoment): void {
+  const t = Number.isFinite(moment.sinceLanding) ? Math.min(1, Math.max(0, moment.sinceLanding / config.shake.settleCheckSeconds)) : 1
+  storm.value = 1 - t * t * (3 - 2 * t)
+}
