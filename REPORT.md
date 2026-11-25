@@ -1,4 +1,4 @@
-# Report: fall miniature (`miniature-fall`), by `fall_mini`, 25 Nov 2026, 02:42 UTC
+# Report: fall miniature (`miniature-fall`), by `fall_mini`, 25 Nov 2026, 02:41 UTC
 
 - Branch `agent/p4-fall_mini`, last commit `5e12700` (merge of `origin/main` at `192ccf3`), pushed 02:33. Looks branch `agent/p4-fall_mini-looks`; its tip holds this file and `HANDOVER.md`.
 - Stand-ins and fallbacks: none left. `standIns` is empty, nothing carries `userData.standIn`, the stand-in view is black over the part (0 of 94,111 pixels). No generated picture, no photograph.
