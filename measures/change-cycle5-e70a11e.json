@@ -1,0 +1,211 @@
+{
+  "unit": "change",
+  "tier": "final",
+  "assets": "full",
+  "method": 3,
+  "engineHash": "a3f6d8084017227f",
+  "seasonHashes": {
+    "winter": "8f129d0d27a193d6",
+    "spring": "a64486f61d1439ad",
+    "summer": "d7abce4a455d36c9",
+    "fall": "d1e0b031cb36a287"
+  },
+  "browser": "147.0.7727.15",
+  "time": "2026-11-25T10:49:27.007Z",
+  "complete": false,
+  "planned": 24,
+  "red": 0,
+  "measures": [
+    "M1",
+    "M4",
+    "M5",
+    "M6"
+  ],
+  "notes": [],
+  "lines": [
+    {
+      "measure": "M6",
+      "still": "change-shake-1-swap",
+      "pass": true,
+      "value": 0.000167,
+      "threshold": 0.002,
+      "key": "sim.maxInsideFraction",
+      "detail": "17 of 102000 particles inside a solid, 0 outside the sphere",
+      "inside": 17,
+      "outside": 0,
+      "total": 102000
+    },
+    {
+      "measure": "M6",
+      "still": "change-shake-1-landing",
+      "pass": true,
+      "value": 0.000167,
+      "threshold": 0.002,
+      "key": "sim.maxInsideFraction",
+      "detail": "17 of 102000 particles inside a solid, 0 outside the sphere",
+      "inside": 17,
+      "outside": 0,
+      "total": 102000
+    },
+    {
+      "measure": "M6",
+      "still": "change-shake-2-swap",
+      "pass": true,
+      "value": 0.000294,
+      "threshold": 0.002,
+      "key": "sim.maxInsideFraction",
+      "detail": "30 of 102000 particles inside a solid, 0 outside the sphere",
+      "inside": 30,
+      "outside": 0,
+      "total": 102000
+    },
+    {
+      "measure": "M6",
+      "still": "change-shake-2-landing",
+      "pass": true,
+      "value": 0.00002,
+      "threshold": 0.002,
+      "key": "sim.maxInsideFraction",
+      "detail": "2 of 102000 particles inside a solid, 0 outside the sphere",
+      "inside": 2,
+      "outside": 0,
+      "total": 102000
+    },
+    {
+      "measure": "M6",
+      "still": "change-shake-3-swap",
+      "pass": true,
+      "value": 0.000186,
+      "threshold": 0.002,
+      "key": "sim.maxInsideFraction",
+      "detail": "19 of 102000 particles inside a solid, 0 outside the sphere",
+      "inside": 19,
+      "outside": 0,
+      "total": 102000
+    },
+    {
+      "measure": "M6",
+      "still": "change-shake-3-landing",
+      "pass": true,
+      "value": 0,
+      "threshold": 0.002,
+      "key": "sim.maxInsideFraction",
+      "detail": "0 of 102000 particles inside a solid, 0 outside the sphere",
+      "inside": 0,
+      "outside": 0,
+      "total": 102000
+    },
+    {
+      "measure": "M6",
+      "still": "change-shake-4-swap",
+      "pass": true,
+      "value": 0.000029,
+      "threshold": 0.002,
+      "key": "sim.maxInsideFraction",
+      "detail": "3 of 102000 particles inside a solid, 0 outside the sphere",
+      "inside": 3,
+      "outside": 0,
+      "total": 102000
+    },
+    {
+      "measure": "M6",
+      "still": "change-shake-4-landing",
+      "pass": true,
+      "value": 0.000088,
+      "threshold": 0.002,
+      "key": "sim.maxInsideFraction",
+      "detail": "9 of 102000 particles inside a solid, 0 outside the sphere",
+      "inside": 9,
+      "outside": 0,
+      "total": 102000
+    },
+    {
+      "measure": "M4",
+      "still": "shake-1",
+      "pass": true,
+      "value": 0.983,
+      "threshold": 0.85,
+      "key": "shake.minCoverAtSwap",
+      "detail": "144653 of 147153 miniature pixels are hidden to at least shake.coverOpacity in the middle of the swap window",
+      "miniature": 147153,
+      "hidden": 144653
+    },
+    {
+      "measure": "M5",
+      "still": "shake-1",
+      "pass": true,
+      "value": 0.9851,
+      "threshold": 0.6,
+      "key": "shake.minVisibleAfterSettle",
+      "detail": "152294 of 154604 miniature pixels are hidden by less than shake.coverOpacity, shake.settleCheckSeconds after the landing",
+      "miniature": 154604,
+      "hidden": 2310
+    },
+    {
+      "measure": "M4",
+      "still": "shake-2",
+      "pass": true,
+      "value": 0.9647,
+      "threshold": 0.85,
+      "key": "shake.minCoverAtSwap",
+      "detail": "136983 of 142002 miniature pixels are hidden to at least shake.coverOpacity in the middle of the swap window",
+      "miniature": 142002,
+      "hidden": 136983
+    },
+    {
+      "measure": "M5",
+      "still": "shake-2",
+      "pass": true,
+      "value": 1,
+      "threshold": 0.6,
+      "key": "shake.minVisibleAfterSettle",
+      "detail": "154829 of 154829 miniature pixels are hidden by less than shake.coverOpacity, shake.settleCheckSeconds after the landing",
+      "miniature": 154829,
+      "hidden": 0
+    },
+    {
+      "measure": "M4",
+      "still": "shake-3",
+      "pass": true,
+      "value": 0.9658,
+      "threshold": 0.85,
+      "key": "shake.minCoverAtSwap",
+      "detail": "125869 of 130329 miniature pixels are hidden to at least shake.coverOpacity in the middle of the swap window",
+      "miniature": 130329,
+      "hidden": 125869
+    },
+    {
+      "measure": "M5",
+      "still": "shake-3",
+      "pass": true,
+      "value": 0.9777,
+      "threshold": 0.6,
+      "key": "shake.minVisibleAfterSettle",
+      "detail": "141079 of 144304 miniature pixels are hidden by less than shake.coverOpacity, shake.settleCheckSeconds after the landing",
+      "miniature": 144304,
+      "hidden": 3225
+    },
+    {
+      "measure": "M4",
+      "still": "shake-4",
+      "pass": true,
+      "value": 0.9721,
+      "threshold": 0.85,
+      "key": "shake.minCoverAtSwap",
+      "detail": "142599 of 146686 miniature pixels are hidden to at least shake.coverOpacity in the middle of the swap window",
+      "miniature": 146686,
+      "hidden": 142599
+    },
+    {
+      "measure": "M5",
+      "still": "shake-4",
+      "pass": true,
+      "value": 0.9997,
+      "threshold": 0.6,
+      "key": "shake.minVisibleAfterSettle",
+      "detail": "155954 of 156002 miniature pixels are hidden by less than shake.coverOpacity, shake.settleCheckSeconds after the landing",
+      "miniature": 156002,
+      "hidden": 48
+    }
+  ]
+}
