@@ -44,7 +44,8 @@ export const look = {
     spinDownSeconds: 2.6,
     backTall: 2.4,
     restMm: 3.2,
-    liftMm: 42,
+    liftMm: 28,
+    floodMm: 42,
     rest: 0.03,
     lip: 1.1,
     lipLifted: 0.9,
@@ -58,11 +59,11 @@ export const look = {
     liftedMiddle: 0.02,
     liftedFromMm: 45,
     liftedToMm: 54,
-    liftedFront: 0.12,
+    liftedFront: 0.07,
     lean: 0.22,
-    bank: 0.5,
+    bank: 0.36,
     bankMm: 9,
-    pale: [0.62, 1.0, 0.68],
+    pale: [0.6, 1.0, 0.54],
     paleMm: 5,
     paleGain: 0.35,
     air: 0.0003,
@@ -70,11 +71,13 @@ export const look = {
     airTint: [0.3, 0.24, 0.1],
     airGrid: 0.6,
     dustGlow: 0.0004,
+    // Stirred, the liquid is full of fine stuff, and the lamp and the windows stand in a wide warm glow.
+    dustStirred: 3,
     dustTint: [1.0, 0.72, 0.42],
     flood: 0.1,
     floodFrom: 0.64,
     floodTo: 0.99,
-    floodHeld: 0.05,
+    floodHeld: 0.015,
     floodGoneSeconds: 1.2,
     lumpMm: 5,
     lumpFineMm: 1.8,
@@ -98,7 +101,7 @@ export const look = {
     bigMm: 96,
     fineMm: 37,
   },
-  crack: { widthMm: 0.09, edgeMm: 0.05, shade: 0.3, bright: 3.6, sky: 0.5, key: 1.6, rim: 3.0, room: 2.4, jitterMm: 0.08, stepMm: 2.2, glintPerMm: 0.3, catchPerMm: 0.1, faint: 0.16, warm: [1.0, 0.8, 0.56] },
+  crack: { widthMm: 0.09, edgeMm: 0.055, shade: 0.3, bright: 4.6, sky: 0.3, key: 1.6, rim: 3.0, room: 2.4, jitterMm: 0.14, stepMm: 1.6, glintPerMm: 0.3, catchPerMm: 0.1, faint: 0.22, warm: [1.0, 0.8, 0.56] },
 }
 
 // The crack's path in the pixels of `references/approved/fall-rest.png` (glass circle centre (1417.1, 662.2), radius 564.3 px,
@@ -112,6 +115,9 @@ const ARMS: { on: number; at: number; path: [number, number][] }[] = [
   { on: -1, at: 0, path: [[1152, 397.8], [1132, 459.7], [1110, 519.5]] },
   { on: 0, at: 2, path: [[1296, 267]] },
   { on: 1, at: 2, path: [[1147.6, 282.7], [1141, 292.5], [1072.4, 302.7], [1065.8, 316], [970.6, 342.5]] },
+  // A second line runs down from the hub, right of the first, and a short bow joins the two upper arms.
+  { on: -1, at: 0, path: [[1161, 387], [1173, 406], [1166, 445], [1171, 465], [1186.5, 524]] },
+  { on: 1, at: 2, path: [[1176, 305], [1173, 328], [1184, 334]] },
 ]
 
 const unit = (n: number): number => {
@@ -315,7 +321,7 @@ void main() {
   float r = length(p);
   if (r > ${f(RI - 0.25)}) discard;
   float lift = uFog.y;
-  float deepMm = mix(${f(F.restMm)}, ${f(F.liftMm)}, lift);
+  float deepMm = mix(${f(F.restMm)}, mix(${f(F.liftMm)}, ${f(F.floodMm)}, uFogTurn.y), lift);
   float amp = mix(${f(F.rest)}, mix(${f(F.lifted)}, ${f(F.flood)}, uFogTurn.y), lift);
   float base = fogFloor(p);
   float ground = fogMound(p.z);
@@ -331,7 +337,7 @@ void main() {
   if (p.y < under) discard;
   // The same dust shows the light of the lamp, the windows and the lanterns as a glow in the liquid round them.
   vec3 grid = stageGrid(p);
-  vec3 dust = ${vec(F.dustTint)} * grid * ${f(F.dustGlow * FOG_STEP)};
+  vec3 dust = ${vec(F.dustTint)} * grid * ${f(F.dustGlow * FOG_STEP)} * (1.0 + ${f(F.dustStirred)} * lift);
   bool dustHere = dust.r + dust.g > 0.0012;
   if (!fogHere && !dustHere && air * ${f(FOG_STEP)} < 0.0006) discard;
   // The roll comes round once a period: two takes of the billows half a turn of the clock apart, the one handed over to the other.
@@ -375,7 +381,7 @@ void main() {
     // the house and the tree stand dark against the green. Only at the hardest of the shake does it fill the dome.
     around = mix(${f(F.liftedMiddle)}, 1.0, smoothstep(${f(F.liftedFromMm)}, ${f(F.liftedToMm)}, r)) * mix(1.0, ${f(F.liftedFront)}, smoothstep(-8.0, 24.0, p.z));
     // What is left of the pool is a low bright bank behind the scene.
-    bank = lift * ${f(F.bank)} * exp(-max(h, 0.0) / ${f(F.bankMm)}) * smoothstep(6.0, -20.0, p.z) * mix(1.0, strands, 0.4);
+    bank = lift * ${f(F.bank)} * exp(-max(h, 0.0) / ${f(F.bankMm)}) * smoothstep(-2.0, -22.0, p.z) * mix(1.0, strands, 0.75);
   }
   float rho = amp * wisp * open * (body * mix(wall, mix(around, 1.0, uFogTurn.y), lift) * strands + bank);
   // The haze is a glow at the back of the dome: it stands behind the house and the tree, which are dark and clear before it.

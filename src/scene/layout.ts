@@ -420,7 +420,12 @@ const sparks: readonly Emitter[] = [
   spot(onGable(cottage.window.across, cottage.window.sill + cottage.window.height / 2, 2 + CLEAR + 1.2), 2),
   spot(onGable(cottage.door.across, cottage.door.height * 0.6, 2 + CLEAR + 1.2), 2),
   spot([trunk.foot[0] - 7, groundAt(trunk.foot[0] - 7, trunk.foot[2] + 7) + 2.2 + CLEAR, trunk.foot[2] + 7], 2.2),
-  ...shell(crown.centre, crown.radius, 2.5, [[-1, -0.35, 0.5], [0.4, -0.3, 1], [1, 0.1, 0.6]]),
+  spot([anchors.chimney[0], anchors.chimney[1] + 2.5 + CLEAR, anchors.chimney[2]], 2.5),
+  // The rest rise in the open liquid, left of the tree and before it: the sparks stand through the whole dome, not on the crown.
+  spot([-24, 12, 6], 12),
+  spot([-6, 22, 18], 12),
+  spot([-30, -6, 16], 8),
+  spot([20, 0, 24], 8),
 ]
 
 export const emitters: Readonly<Record<string, readonly Emitter[]>> = { petal: canopy, leaf: canopy, ember: sparks }
