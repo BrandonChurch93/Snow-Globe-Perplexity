@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 97 · 2026-11-25 12:19 UTC
+Status 98 · 2026-11-25 12:44 UTC
 
-- `out/stills/status/status-97-1.jpg`: The four seasons at rest in the kept build that is on the published app
-- `out/stills/status/status-97-2.jpg`: The live app's first picture in the host check at 12:02
-- `out/stills/status/status-97-3.jpg`: Winter mid shake on the fix build: byte for byte the kept still
-- `out/stills/status/status-97-4.jpg`: Summer mid shake on the fix build: byte for byte the kept still
+- `out/stills/status/status-98-1.jpg`: Shake 1 on the fix build now in the app: winter's base on frame 672 and spring's on 676 with no half state between
+- `out/stills/status/status-98-2.jpg`: Shake 3 on the fix build: summer's base on frame 2112 and fall's on 2116
+- `out/stills/status/status-98-3.jpg`: First paint on the wide layout the phone and the tablet from the visitor's walk: on the phone the controls sit on a light band
+- `out/stills/status/status-98-4.jpg`: The published app's first picture in the local check at 12:42
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 12:38 UTC
-clock: phase 5, tick of 8.9 minutes
-phase 5: 0.80 h used of its 4.50 h box
-allowance (before the review): 34.79 h used of 36.00 h allowed
-all time before the review: 34.79 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 12:44 UTC
+clock: phase 5, tick of 3.5 minutes
+phase 5: 0.91 h used of its 4.50 h box
+allowance (before the review): 34.90 h used of 36.00 h allowed
+all time before the review: 34.90 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 18
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -1525,6 +1525,13 @@ Merged into `main`, each verified here with types clean and the tests green (126
 
 - 12:20 UTC, Nov 25. Five of the six proofs of `a6e09d6` are in and saved, all at the final tier on clean clones: `change` 24 of 24 green; winter 24 of 24 green; spring, summer and fall each equal line for line to the measures of `dcda6ca` (19 lines, the same one red M3 line each). The keys of all four seasons on `a6e09d6` have the same sha256 as the kept stills (`out/work/verify/kept-key-hashes.txt`; mails in `out/work/verify/`). `round_renderer_c`, `round_renderer_d`, `motion_renderer_d` and `motion_renderer_e` are done and idle. Still on the proof: `gate_runner_b` (the whole gate, due about 12:40) and `round_renderer_b` (the backup, limit 13:15). New at 12:14: `frame_helper_1`, read only, checks the parts `sound-engine` and `quality-levels` of `globe` against their methods in the kit (brief `out/work/briefs/p5/job-audit-globe-parts.md`; report by 13:15; it pushes nothing). Five agents at work, two of them build agents (`gate_runner` on step 1, `frame_helper_4` on step 2).
 
+- 12:44 UTC, Nov 25. The proof of `a6e09d6` is complete and the fix pass is on `main` as `982cb80` (decision 101). `gate_runner_b` ended the whole gate at 12:34 (15 of 15); the backup gate of `round_renderer_b` was stopped at 12:41 in G13 with G1 to G12 printed as passes (`out/work/verify/gate-backup-a6e09d6-stopped-1241.log`); `motion_renderer_e` sent fall's measures at 12:19 and the hashes of fall's keys at 12:20 and is done. At work now, each in its own VM:
+  - `gate_runner` (build agent, step 1): the removal is pushed as `964b782` on `agent/p5-standins`, a merge of `main` at `982cb80` into its two commits (types clean, 436 tests pass, the build green there; engine `f7b9ed1ff77b04de`). It now draws the seven proof stills before (on `982cb80`) and after (on `964b782`) in one VM; hashes and report by 13:25, stop at 13:35.
+  - `gate_runner_b`: check G13 alone on `964b782` (started 12:42; report by 13:28, stop at 13:35).
+  - `frame_helper_4` (build agent, step 2): findings of its first walk came at 12:41 (`out/work/p5/mail-1241-visitor-findings.md`); the walk is not complete (three walks side by side starved each other, so the phone runs alone first); it fixes, merges `main`, and walks all three layouts again; report by 13:25, stop at 13:35.
+  - `frame_helper_1`: the read-only check of `sound-engine` and `quality-levels` against their methods, report by 13:15.
+  - Four agents at work, two of them build agents. Idle: `round_renderer_b`, `round_renderer_c`, `round_renderer_d`, `motion_renderer_b` to `motion_renderer_e`, `frame_helper_2`, `frame_helper_3`, `change_builder3`, the scribes.
+
 ## Rounds
 
 One line per round: its number, the unit, the commit it judged, each part ticked off as it finished, the scores, and what changed next.
@@ -2002,3 +2009,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 11:55 UTC. Status 96 (unit `change` finished, and the gate of Phase 4), posted 11:55 UTC with four pictures: the swap sheet of each change from the kept build `dcda6ca` (`out/stills/change/change-swap-shake-1..4-round-017.jpg`). Published at 11:54 (the kept build with the logs of this hour; the local check of `dist/` drew its first picture in 18.1 s with 87 requests and no error). Proof of the fix pass `a6e09d6` so far, both read against the records of `dcda6ca` line by line (`out/work/bin/cmpmeasure.py`): `change` at the final tier is complete at 24 of 24 lines with 0 red (11:54, `scorecards/fix-pass/a6e09d6/change.json`; M4 0.983, 0.9647, 0.9658, 0.9721 against 0.85; M5 0.9851, 1, 0.9777, 0.9997 against 0.6; M6 at most 0.000245 against 0.002); `summer` is complete at 19 lines with 1 red, the same line with the same value as on `dcda6ca` (M3 `summer-rest` 0.7055 against 0.75), and all 19 values are identical (`scorecards/fix-pass/a6e09d6/summer.json`). Still to come: winter, spring, fall and the gate.
 
 - 12:20 UTC. Status 97 shown with four pictures: the four seasons at rest in the kept build (`out/work/p5/four-seasons-rest-kept.jpg`), the live app's first picture from the trial host check at 12:02, and winter and summer mid shake on the fix build `a6e09d6`. What it said: Phase 5 is under way with steps 1 and 2 at two build agents; the proof of the fix pass stands at 5 of 6 (fall came in at 12:19: 19 lines, all equal to `dcda6ca`'s, the same one red line M3 `fall-rest` 0.5518; saved under `scorecards/fix-pass/a6e09d6/`); the keys of all four seasons on `a6e09d6` are byte for byte the kept stills (fall's hashes came at 12:20: `13b65a62…` and `6d48280f…`, equal to the kept ones), so under Freshness (kit/07) nothing has to be drawn again for the seasons if the fix pass joins; trial readings of step 4's host check (pass: 60.75 of 95 MB shipped, largest file 4.42 of 20 MB, first load 13.80 of 16 MB) and of step 3's sound check (7 pass, 1 open: A2, the click on the sound control timed out); these are readings, not a closed step. Only the gate on `a6e09d6` is still to come; decision 101 follows it.
+
+- 12:44 UTC. The fix pass of `change` joined `main` at 12:37 as `982cb80` (decision 101) and was published at 12:43 from `9b600b7` (Visibility: Organization; the local check of `dist/` drew the first picture in 19.1 s over 87 requests with no error; review page rebuilt). Status 98 shown at 12:44 with four pictures: the swap sheets of shakes 1 and 3 on the fix build (`out/stills/change/change-swap-shake-N-fix-a6e09d6.jpg`), the first paint on the three layouts from the visitor's walk, and the published build's first picture. Step 1: `gate_runner` pushed `964b782` on `agent/p5-standins` at 12:41 (its two removal commits merged with `main`; types clean, 436 tests pass, 4 skipped, build green; engine `f7b9ed1ff77b04de`; `src/seasons/blockout.ts` is deleted and its box, cone and ball live on only as a fixture of the engine tests in `tests/blockout.ts`). Its proof runs on two VMs: the seven stills before and after in the builder's, check G13 alone in `gate_runner_b`'s. Step 2: the findings of the first walk are in, with the walk not yet complete (phone first; the wide layout and the tablet after the fix pass). Worst first: on the phone the controls sit on a light tan band, the table's mirror picture of the base at the `low` level, where the thin pale marks are hard to read and the lit mark is lost once dimmed; the Tab order (Shake, the four marks, sound) differs from the order on screen (marks, Shake, sound); the controls arrive in a 0.7 s fade, which only matters to a test that looks at once. What the walk found right is in `out/work/p5/mail-1241-visitor-findings.md`. The open line of the trial sound check (A2) is the slow VM so far, not the control: a real tap changes its state and starts sound, and the tool's click waits for the control to hold still over two frames that are seconds apart here.
