@@ -314,6 +314,7 @@ function sheetLegend(file, fallback) {
   const record = fs.existsSync(`${file}.json`) ? readJson(`${file}.json`) : null
   const spec = record?.spec ?? {}
   const shot = shots.find((x) => x.id === spec.shot)
+  if (spec.kind === 'app' && record.legend) return record.legend
   if (spec.kind === 'film-overview') return `the whole film in ${spec.frames?.length ?? 'a few'} frames, every shot at least once`
   if (spec.kind === 'shot' && shot) {
     const moved = shotMoves[shot.id] ? `. The camera: ${shotMoves[shot.id].replace(/\.$/, '')}` : ''
@@ -542,7 +543,7 @@ function buildR4(role) {
       wanted.push({ what: `the change ${s.from} to ${s.to}: from the landing through the arrival`, flags: sheetFlags('--motion', 'arrival', '--shot', s.id) })
     }
   } else if (unit === 'globe') {
-    for (const w of ['a shake', 'a stir', 'a drag around the globe', 'a jump to another season']) wanted.push({ what: `${w}, drawn through the app's path` })
+    for (const [w, name] of [['a shake', 'shake'], ['a stir', 'stir'], ['a drag around the globe', 'drag'], ['a jump to another season', 'jump']]) wanted.push({ what: `${w}, drawn through the app's path`, flags: ['--app', name], byRecord: true })
   } else {
     wanted.push(wholeFilm(sheetFlags('--film')))
     for (const s of shakes) wanted.push({ what: `one sheet across the shake ${s.id}`, flags: sheetFlags('--shot', s.id) })
@@ -580,15 +581,14 @@ async function buildR5(role) {
   const missing = []
   let groups
   if (unit === 'globe') {
-    groups = sheetGroups(role, [{ what: 'the four seasons at rest', flags: sheetFlags('--seasons') }], missing)
+    groups = sheetGroups(role, [{ what: 'the four seasons at rest', flags: sheetFlags('--seasons') }, { what: 'one sheet across a shake in the app', flags: ['--app', 'shake', '--part', 'whole'], byRecord: true }], missing)
     await open()
     const scr = { title: 'the screen stills', files: [] }
     for (const e of screens()) {
       const still = await tryDraw(e, missing)
       if (still) scr.files.push(one(await fitted(still.file, tmp(role, `${e.id}.jpg`)), still.what, 'a still of the app'))
     }
-    if (scr.files.length) groups.push(scr)
-    missing.push("one sheet across a shake in the app: no tool makes this yet, so this part is empty")
+    if (scr.files.length) groups.splice(1, 0, scr)
   } else {
     groups = sheetGroups(role, [wholeFilm(sheetFlags('--film'))], missing)
     await open()

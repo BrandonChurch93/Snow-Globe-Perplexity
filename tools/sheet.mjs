@@ -4,7 +4,8 @@ import sharp from 'sharp'
 import { parseArgs, rel, readJson, writeJson } from './lib/paths.mjs'
 import { Session, cfg, formatById, stillSpec, stillName, renderStill } from './lib/page.mjs'
 import { addLook } from './lib/looks.mjs'
-import { SHEETS, across, around, composeSheet, gridLayout, labelUnits, layoutHashFor, matches, nameParts, overview, pageInfo, pages, readPlan, renderFrames, run, secondsText, shown, snapUp, sourceOf } from './lib/sheetlayout.mjs'
+import { appLegend, appMarks, appParts, appSpacing, APP_SCRIPTS } from './lib/appsheets.mjs'
+import { SHEETS, across, appSource, around, composeSheet, gridLayout, labelUnits, layoutHashFor, matches, nameParts, overview, pageInfo, pages, readPlan, renderFrames, run, secondsText, shown, snapUp, sourceOf } from './lib/sheetlayout.mjs'
 
 const USAGE = `npm run sheet -- <what> [--tier T] [--format F] [--assets A] [--diag V] [--cols N] [--force] [--look no] [--by NAME]
   --shot ID                 ${cfg.critics.contactSheetFrames} frames across a shot. ID may be test, for the test shake and the clearing after it
@@ -16,6 +17,10 @@ const USAGE = `npm run sheet -- <what> [--tier T] [--format F] [--assets A] [--d
   --first N --last M        across a range of the film, or of the test shake with --shot test, or of the loop with --loop
   --motion NAME [--shot ID] consecutive frames at film.previewFps: lift, strokes, setdown, landing, swap, arrival (ID a shake, the hold after it, or test), move (ID a shot)
                             with --at S and --seconds S to choose a part, --stride K to show every Kth frame, --fit to choose the stride that fills one sheet
+  --app NAME                a script of the live app, drawn through the app's own path: ${APP_SCRIPTS.join(', ')}
+                            with --level L (${Object.keys(cfg.live.quality).join(', ')}; high unless asked), --from SEASON, --to SEASON (jump),
+                            --part ID for one part (whole, and bar and landing for shake and jump, turn for stir and drag),
+                            --stride K or --fit for the whole script in consecutive frames
 exit 0 when every sheet is written, 3 when the chunk budget ran out: run the same command again to carry on`
 
 const layoutHash = layoutHashFor(import.meta.url)
@@ -39,9 +44,11 @@ const cols = Number(str('cols')) || 0
 const by = str('by') || 'builder'
 const motion = str('motion')
 const shotArg = str('shot')
+const app = str('app')
+if (app && !APP_SCRIPTS.includes(app)) fail(`no such script of the app: ${app}. One of ${APP_SCRIPTS.join(', ')}`, 2)
 const ranged = str('first') !== '' && str('last') !== ''
 if (!motion && (str('first') !== '') !== (str('last') !== '')) fail('give --first and --last together', 2)
-const mode = motion ? 'motion' : args.film === true ? 'film' : args.seasons === true ? 'seasons' : args.opening === true ? 'opening' : ranged ? 'range' : args.loop === true ? 'loop' : shotArg ? 'shot' : ''
+const mode = app ? 'app' : motion ? 'motion' : args.film === true ? 'film' : args.seasons === true ? 'seasons' : args.opening === true ? 'opening' : ranged ? 'range' : args.loop === true ? 'loop' : shotArg ? 'shot' : ''
 if (!mode) fail(USAGE, 2)
 const MOTIONS = ['lift', 'strokes', 'setdown', 'landing', 'swap', 'arrival', 'move']
 if (motion && !MOTIONS.includes(motion)) fail(`no such motion: ${motion}. One of ${MOTIONS.join(', ')}`, 2)
@@ -222,6 +229,52 @@ try {
       if (!Number.isInteger(first) || !Number.isInteger(last) || first < 0 || last < first || last >= src.count) throw new Stop(`give --first and --last as frames of the ${src.what}, 0 to ${src.count - 1}`)
       const frames = across(first, last, per, src.step)
       jobs.push({ file: sheetFile('range', src.id, first, last, tag), frames, perSheet: per, spec: { kind: 'range', source: src.id, frames }, caption: `Sheet: ${frames.length} frames across frames ${first} to ${last} of the ${src.what}, ${tail}` })
+    } else if (mode === 'app') {
+      const level = str('level') || 'high'
+      if (!(level in cfg.live.quality)) throw new Stop(`no such level: ${level}. One of ${Object.keys(cfg.live.quality).join(', ')}`)
+      const ask = { ...(str('from') ? { from: str('from') } : {}), ...(str('to') ? { to: str('to') } : {}) }
+      const got = await page.evaluate(
+        ([n, a]) => {
+          try {
+            return { plan: window.showcase.dev.appScript(n, a) }
+          } catch (e) {
+            return { error: String(e?.message ?? e) }
+          }
+        },
+        [app, ask],
+      )
+      if (got.error) throw new Stop(got.error)
+      const sp = got.plan
+      src = appSource(sp, level)
+      const parts = appParts(sp, per)
+      const marksOf = appMarks(sp, cfg.shake, cfg.film.beatsPerBar)
+      const labelKind = sp.name === 'drag' ? 'yaw' : sp.name === 'stir' ? '' : 'season'
+      let chosen
+      if (args.fit === true || str('stride')) {
+        const stride = args.fit === true ? Math.ceil(sp.frameCount / per) : Math.max(1, Math.floor(Number(str('stride')) || 1))
+        chosen = [{ id: `x${stride}`, what: 'the whole script', frames: run(0, sp.frameCount, stride), stride }]
+      } else if (str('part')) {
+        chosen = parts.all.filter((x) => x.id === str('part'))
+        if (!chosen.length) throw new Stop(`the ${sp.name} script has no part ${str('part')}. It has ${parts.all.map((x) => x.id).join(', ')}`)
+      } else chosen = parts.all.filter((x) => parts.usual.includes(x.id))
+      const said = { shake: `the shake from ${sp.from} to ${sp.to}`, jump: `the jump from ${sp.from} to ${sp.to}`, stir: `a stir in ${sp.from}`, drag: `a drag around the globe in ${sp.from}` }[sp.name]
+      const appLabel = (i) => {
+        const a = readJson(`${have.get(i)}.json`).app
+        return labelKind === 'season' ? a.season : labelKind === 'yaw' ? `yaw ${a.yawDeg.toFixed(1)}` : ''
+      }
+      for (const part of chosen) {
+        const sets = pages(part.frames, per)
+        const stem = ['app', sp.name, sp.from, sp.to === sp.from ? '' : sp.to, level, nameParts(o, false).join('-'), part.id].filter(Boolean).join('-')
+        const spacing = appSpacing(part, sp.fps)
+        sets.forEach((frames, n) => {
+          const spec = { kind: 'app', script: sp.name, part: part.id, what: part.what, level, source: src.id, stride: part.stride, spacing, sheet: n + 1, sheets: sets.length, label: labelKind, frames, plan: sp, marks: marksOf }
+          jobs.push({ file: sheetFile(stem, String(n + 1)), frames, ordered: true, perSheet: Math.min(per, part.frames.length), step: part.stride || 1, name: appLabel, spec, caption: `App sheet ${n + 1} of ${sets.length}: ${said}, ${part.what}, frames ${frames[0]} to ${frames[frames.length - 1]}, ${spacing}, ${nameParts(o, false).join(', ')}, level ${level}`, legend: appLegend(spec) })
+        })
+        for (const f of fs.existsSync(SHEETS) ? fs.readdirSync(SHEETS) : []) {
+          const m = f.startsWith(`${stem}-`) ? /^(\d+)\.jpg(\.json)?$/.exec(f.slice(stem.length + 1)) : null
+          if (m && Number(m[1]) > sets.length) fs.rmSync(path.join(SHEETS, f), { force: true })
+        }
+      }
     } else {
       const id = shotArg || (motion === 'move' ? '' : 'test')
       let range
@@ -285,6 +338,7 @@ try {
           file: job.file,
           spec: job.spec,
           caption: job.caption,
+          legend: job.legend,
           layout,
           fresh: job.frames.some((i) => freshFrames.has(i)),
           tiles: job.frames.map((i) => ({ file: have.get(i), label: frameLabel(src, i, step, job.name) })),
@@ -315,7 +369,7 @@ function reusable(spec) {
   return matches(rel('out', 'work', 'stills', stillName(spec)), { format: spec.format, tier: spec.tier, assets: spec.assets, diagnostic: spec.diag })
 }
 
-async function write({ file, spec, caption, layout, fresh, tiles, frames, info, tiered = true, order = 0 }) {
+async function write({ file, spec, caption, legend, layout, fresh, tiles, frames, info, tiered = true, order = 0 }) {
   const want = { format: o.format, tier: tiered ? o.tier : undefined, assets: o.assets, diagnostic: o.diag, layoutHash, spec }
   if (!fresh && !o.force && matches(file, want)) {
     const meta = await sharp(file).metadata()
@@ -333,6 +387,7 @@ async function write({ file, spec, caption, layout, fresh, tiles, frames, info, 
     layoutHash,
     spec,
     caption,
+    ...(legend ? { legend } : {}),
     width: layout.width,
     height: layout.height,
     limits: layout.limits,
