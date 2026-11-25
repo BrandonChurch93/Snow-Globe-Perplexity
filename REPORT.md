@@ -65,4 +65,4 @@ Looks: 834b316 06:09, d6057fa 06:39, 342193d 07:07, f112509 07:33, 32ac349 07:54
 
 ## Looks used
 
-Mine plus the predecessor's, of 40 a part: change-winter-spring 13 (3 mine, 10 before); change-spring-summer 10 (6, 4); change-summer-fall 14 (8, 6); change-fall-winter 7 (3, 4); arrival-spring 3 (1, 2); arrival-summer 6 (2, 4); arrival-fall 4 (2, 2). All under 40. Checks, not looks of a part: the winter into winter test shake 3 sheets, the two winter stills 4 pairs..
+Mine plus the predecessor's, of 40 a part: change-winter-spring 13 (3 mine, 10 before); change-spring-summer 10 (6, 4); change-summer-fall 14 (8, 6); change-fall-winter 7 (3, 4); arrival-spring 3 (1, 2); arrival-summer 6 (2, 4); arrival-fall 4 (2, 2). All under 40. Checks, not looks of a part: the winter into winter test shake 3 sheets, the two winter stills 4 pairs.
