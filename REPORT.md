@@ -1,7 +1,7 @@
 # Summer miniature: final report
-Part `miniature-summer`, agent `summer_mini`, written 02:43 UTC, 2026-11-25. Longer notes: `HANDOVER.md` beside this file.
+Part `miniature-summer`, agent `summer_mini`, written 02:44 UTC, 2026-11-25. Longer notes: `HANDOVER.md` beside this file.
 - Branch `agent/p4-summer_mini`, last commit `2347819` (main merged at 02:29). Looks branch `agent/p4-summer_mini-looks`.
-- Stand-ins and fallbacks left: none. `standIns` is empty, nothing drawn carries `userData.standIn`; the stand-in view was black where the part is at stage 1 (`03-rest-standins.jpg`), not rendered again since.
+- Stand-ins and fallbacks left: none. `standIns` is empty, nothing drawn carries `userData.standIn`; the stand-in view of rest, hero at `2347819` is black over the whole frame (02:43, `03-rest-standins.jpg`, 0 pixels above black).
 ## Still wrong, worst first
 1. Flatter than the approved image: M3 on `summer-rest` is 0.703 against 0.75 for the miniature (0.627 one merge earlier). The one red line of the summer measures I ran.
 2. Grass brighter and yellower than the approved darker green.
@@ -24,4 +24,4 @@ Part `miniature-summer`, agent `summer_mini`, written 02:43 UTC, 2026-11-25. Lon
 - `npm run measure -- --unit summer --only M2,M3,M6 --tier draft` (02:36): 13 of 19 lines, 12 pass, 1 red. M2 0 soft pixels on all six stills; M6 passes on all six (shake 6 of 102000 inside a solid); M3 as in point 1 (base 3.101).
 ## Size, triangles, looks
 - Miniature web files after texpack 8.91 MiB of 9.5; 260547 triangles, none added since the 00:57 mail (5192 taken out of the leaves).
-- Looks used: 37 of 40 (stills, fits and sheets looked at; measure sheets not counted).
+- Looks used: 38 of 40 (stills, fits and sheets looked at; measure sheets not counted).

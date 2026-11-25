@@ -95,4 +95,4 @@ Everything else is made by the two build scripts from seeded noise and the share
 
 ## Looks
 
-Looks used: 37 of 40 for this part (stills, fits and sheets rendered and looked at; measure sheets not counted).
+Looks used: 38 of 40 for this part (stills, fits and sheets rendered and looked at; measure sheets not counted).
