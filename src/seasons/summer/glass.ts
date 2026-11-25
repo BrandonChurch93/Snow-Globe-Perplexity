@@ -45,7 +45,7 @@ export const look = {
   },
   // the far wall: the light that crosses the globe gathers on the inside of the glass opposite the sun, a warm crescent
   // along the limb
-  wall: { gain: 0.42, low: 0.42, wide: 0.42, from: 0.8, peak: 0.94, color: [1, 0.74, 0.44] as const },
+  wall: { gain: 0.42, low: 0.42, wide: 0.42, from: 0.8, peak: 0.94, color: [1, 0.74, 0.44] as const, top: 0.15, topWide: 0.7, topLean: 0.35 },
   pool: {
     // where the hot middle of the pool lies from the foot's centre: down the light's way on the slab and a little across it
     reachMm: 76,
@@ -145,7 +145,11 @@ void main() {
   float band = pow(smoothstep(${n(W.from)}, ${n(W.peak)}, r), 2.2) * (1.0 - smoothstep(0.955, 0.992, r));
   float along = exp(-a * a / ${n(W.wide * W.wide)});
   float hot = exp(-pow((r - 0.945) / 0.022, 2.0)) * exp(-a * a / ${n(W.wide * W.wide * 0.3)});
-  gl_FragColor = vec4(${vec(W.color)} * (${n(W.gain)} * (band * along + 1.4 * hot) * lit), 0.0);
+  // the crown of the glass takes the same light as a broad soft sheen under the top, leaning away from the sun
+  vec2 up = normalize(vec2(vWlDir.x * ${n(W.topLean)}, 1.0));
+  float b = atan(e.x * up.y - e.y * up.x, dot(e, up));
+  float sheen = ${n(W.top)} * exp(-b * b / ${n(W.topWide * W.topWide)}) * smoothstep(0.5, 0.78, r) * (1.0 - smoothstep(0.82, 0.96, r));
+  gl_FragColor = vec4(${vec(W.color)} * (${n(W.gain)} * (band * along + 1.4 * hot + sheen) * lit), 0.0);
 }`
 
 const P = look.pool

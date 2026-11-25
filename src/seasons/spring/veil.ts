@@ -151,7 +151,9 @@ const storm = {
   stirred: 0.03,
   rolling: 0.008,
   /** What is left in still liquid: the pink in the air of the approved rest, far too thin to hide anything. */
-  calm: 0.003,
+  calm: 0.0045,
+  /** Where that rest lies, mm from the middle toward the eye: none in front of the first, all of it behind the second. */
+  calmBack: [8, -22],
   rollPower: 1.4,
   /** The billows: two sizes, mm, and how much of the mist is even between them at the flood and after. */
   wideMm: 96,
@@ -208,7 +210,10 @@ void main() {
   float wall = 1.0 - smoothstep(0.9, 1.0, far);
   // After the flood the mist hangs low, where the petals come down, and the top of the liquid clears first.
   float low = mix(mix(${n(storm.top)}, 1.0, smoothstep(34.0, -12.0, p.y)), 1.0, uStorm.w / ${n(storm.even[0])});
-  float sigma = uStorm.x * wall * eye * low * mix(billow * 3.4, 1.0, uStorm.w);
+  // What still liquid keeps hangs behind the island, so the cottage and the tree stand clear in front of the pink air.
+  float still = smoothstep(0.5, 1.0, ${n(storm.calm)} / uStorm.x);
+  float back = mix(1.0, smoothstep(${n(storm.calmBack[0])}, ${n(storm.calmBack[1])}, p.z), still);
+  float sigma = uStorm.x * wall * eye * low * back * mix(billow * 3.4, 1.0, uStorm.w);
   // One sheet's share of the way through the liquid, along the eye's ray.
   float slant = max(abs(normalize(vStageWorld - cameraPosition).z), 0.35);
   float a = 1.0 - exp(-sigma * ${n((2 * INNER * 0.97) / storm.sheets)} / slant);
