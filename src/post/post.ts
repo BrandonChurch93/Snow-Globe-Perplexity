@@ -71,6 +71,8 @@ uniform int uRaw;
 uniform vec2 uInv;
 uniform vec2 uGlowTexel;
 uniform vec3 uGlowGain;
+uniform vec3 uGlare;
+uniform vec3 uGlareAt;
 uniform vec4 uCurve;
 uniform float uCurveBlack;
 uniform vec4 uHold;
@@ -153,6 +155,10 @@ void main() {
   vec2 g = uGlowTexel * 0.5;
   vec3 glow = texture(uGlow, uv + g).rgb + texture(uGlow, uv - g).rgb + texture(uGlow, uv + vec2(g.x, -g.y)).rgb + texture(uGlow, uv + vec2(-g.x, g.y)).rgb;
   c += glow * 0.25 * uGlowGain;
+  if (uGlare.r + uGlare.g + uGlare.b > 0.0) {
+    vec2 off = (uv - uGlareAt.xy) * vec2(uInv.y / uInv.x, 1.0) / uGlareAt.z;
+    c += uGlare * pow(1.0 + dot(off, off), -2.5);
+  }
   c *= 1.0 - uLens.z * pow(r2, uLens.w);
   c = film(c);
   c = pow(max(c * uGain + uLift * (1.0 - c), 0.0), uGamma);
@@ -187,6 +193,8 @@ export class Post {
       uInv: { value: new THREE.Vector2(1, 1) },
       uGlowTexel: { value: new THREE.Vector2(1, 1) },
       uGlowGain: { value: new THREE.Vector3() },
+      uGlare: { value: new THREE.Color(0, 0, 0) },
+      uGlareAt: { value: new THREE.Vector3(0.5, 0.5, 1) },
       uCurve: { value: new THREE.Vector4() },
       uCurveBlack: { value: 1 },
       uHold: { value: new THREE.Vector4(0, 0, 1, 1) },
@@ -300,6 +308,8 @@ export class Post {
       u.uGlow!.value = glow.texture
       ;(u.uGlowTexel!.value as THREE.Vector2).set(1 / glow.width, 1 / glow.height)
       ;(u.uGlowGain!.value as THREE.Vector3).set(k * (1 + g.glowTint * t.r), k * (1 + g.glowTint * t.g), k * (1 + g.glowTint * t.b))
+      ;(u.uGlare!.value as THREE.Color).copy(lensState.glare)
+      ;(u.uGlareAt!.value as THREE.Vector3).copy(lensState.glareAt)
       ;(u.uCurve!.value as THREE.Vector4).set(g.curveGain, g.curveToe, g.curveShoulder, g.curveMid)
       u.uCurveBlack!.value = g.curveBlack
       ;(u.uHold!.value as THREE.Vector4).set(g.colourHold, g.colourHoldFrom, g.colourHoldFull, g.whiteFrom)

@@ -113,11 +113,22 @@ export const SLAB = {
   dustTint: [0.55, 1, 1.5],
   shadowReach: 0.6,
   bakedGain: 0.5,
+  bakedFoot: 0.6,
+  bakedGlow: 0.2,
+  bakedGlowReach: 0.62,
+  bakedShell: 0.5,
+  bakedShellFrom: 0.55,
+  bakedThrough: 0.5,
   underSky: 0.6,
-  underBounce: 0.8,
-  underReach: 4,
   underSoftMm: 2,
   underSpread: 0.1,
+  underFelt: 0.3,
+  underKey: 0.35,
+  underKeySide: 0.75,
+  shadeBlendMm: 1,
+  shadeSoftMm: 2.2,
+  shadeInMm: 2,
+  shadeOpen: 1,
 }
 
 export const LUMPS: readonly (readonly [number, number, number, number, number])[] = [
@@ -191,8 +202,9 @@ vec2 slabCast(vec2 at, vec2 foot, float lift, vec2 along) {
   float rise = ${f(G.baseHeightMm)};
   float baseFar = length(along) * (lift + rise);
   float baseSoft = 2.5 + 0.11 * baseFar + 0.5 * lift;
-  float baseShade = 1.0 - smoothstep(-baseSoft, baseSoft, slabCapsule(at, foot - along * lift, foot - along * (lift + rise)) - uFoot.z);
-  vec2 ball = at - (foot - along * (lift + ${f(centreHeight)}));
+  vec2 sole = foot - uLean.xy;
+  float baseShade = 1.0 - smoothstep(-baseSoft, baseSoft, slabCapsule(at, sole - along * lift, sole + uLean.zw * rise - along * (lift + rise)) - uFoot.z);
+  vec2 ball = at - (sole + uLean.zw * ${f(centreHeight)} - along * (lift + ${f(centreHeight)}));
   vec2 dirL = along / max(length(along), 1e-3);
   float stretch = sqrt(1.0 + dot(along, along));
   float ballAt = length(vec2(dot(ball, dirL) / stretch, dot(ball, vec2(-dirL.y, dirL.x)))) / ${f(globeRadius)};
@@ -210,6 +222,14 @@ float slabShade(vec2 at) {
   float tight = exp(-max(gap, 0.0) / (${f(SLAB.contactMm)} + 0.9 * lift) - lift / ${f(SLAB.contactLiftMm)});
   float wide = (1.0 - smoothstep(-0.25 * uFoot.z, uFoot.z * (${f(SLAB.shadowReach)} + 0.035 * lift), gap)) * 0.6 / (1.0 + 0.045 * lift);
   float under = (1.0 - smoothstep(-5.0 - lift, 1.0 + 0.6 * lift, gap)) / (1.0 + 0.05 * lift);
+  if (uFoot.w > 0.0 || dot(uLean.zw, uLean.zw) > 0.0) {
+    float raised = smoothstep(0.0, ${f(SLAB.shadeBlendMm)}, lift);
+    float rim = length(at - uFoot.xy) - uFoot.z;
+    tight = exp(-max(rim, 0.0) / (${f(SLAB.contactMm)} + 0.9 * lift) - lift / ${f(SLAB.contactLiftMm)});
+    float in2 = rim + ${f(SLAB.shadeInMm)};
+    float open = 0.5 + 0.5 * in2 / length(vec2(in2, ${f(SLAB.shadeSoftMm)} + ${f(SLAB.shadeOpen)} * lift));
+    under = mix(under, 1.0 - open, raised);
+  }
   return (1.0 - 0.85 * tight) * (1.0 - wide) * (1.0 - 0.9 * under);
 }
 void slabLight(vec3 P, out vec3 keyDir, out float keyGain, out vec3 rimDir, out float rimGain, out float occl, out vec3 warm) {
@@ -423,16 +443,24 @@ void main() {
   float height = tGlobe * r0.y;
   float silSoft = ${f(SLAB.girthSoftMm)} + ${f(SLAB.girthSoftRise)} * height;
   float sil = (1.0 - smoothstep(girth - silSoft, girth + 0.25 * silSoft, side)) * step(0.0, th + girth);
-  float fade = mix(1.0, ${f(SLAB.nearFloor)}, smoothstep(0.0, ${f(SLAB.nearHeightMm)}, height)) * mix(1.0, ${f(SLAB.fadeFloor)}, smoothstep(0.0, ${f(SLAB.fadeHeightMm)}, height));
+  float above = max(height - lift, 0.0);
+  float fade = mix(1.0, ${f(SLAB.nearFloor)}, smoothstep(0.0, ${f(SLAB.nearHeightMm)}, above)) * mix(1.0, ${f(SLAB.fadeFloor)}, smoothstep(0.0, ${f(SLAB.fadeHeightMm)}, above));
 
   vec3 footUp = vec3(uLean.z, sqrt(max(1.0 - dot(uLean.zw, uLean.zw), 0.0)), uLean.w);
   vec3 footAt = vec3(uFoot.x, lift, uFoot.y);
   float tUnder = max(dot(footAt - P, footUp) / max(dot(r0, footUp), 1e-3), 0.0);
-  float underSoft = ${f(SLAB.underSoftMm)} + ${f(SLAB.underSpread)} * tUnder;
-  float underFar = length(P + r0 * tUnder - footAt);
+  vec3 underOut = P + r0 * tUnder - footAt;
+  float underFar = length(underOut);
   float underGap = r0.y * tUnder;
-  float underHit = (1.0 - smoothstep(uFoot.z - underSoft, uFoot.z + underSoft, underFar)) * smoothstep(0.0, 0.5, lift);
-  vec3 underSeen = uBaked * (uSky * ${f(SLAB.underSky)} + uKeyCol * (${f(SLAB.underBounce)} * smoothstep(uFoot.z - ${f(SLAB.underReach)} * underGap - 4.0, uFoot.z, underFar)));
+  vec2 underDir = underOut.xz / max(underFar, 1e-3);
+  float underAlong = dot(underDir, rdir);
+  float underSoft = (${f(SLAB.underSoftMm)} + ${f(SLAB.underSpread)} * tUnder) * sqrt(1.0 + underAlong * underAlong * (1.0 / max(r0.y * r0.y, 0.01) - 1.0));
+  float underHit = (1.0 - smoothstep(uFoot.z - underSoft, uFoot.z + underSoft, underFar)) * smoothstep(0.0, 0.5, max(lift, uFoot.z * length(uLean.zw)));
+  float underIn = max(uFoot.z - underFar, 0.0);
+  float underOpen = 1.0 - underIn / length(vec2(underIn, 2.0 * underGap + 0.5));
+  vec2 underKey = uKeyAt.xz - uFoot.xy;
+  float underLit = mix(1.0 - ${f(SLAB.underKeySide)}, 1.0, 0.5 + 0.5 * dot(underDir, underKey / max(length(underKey), 1.0)));
+  vec3 underSeen = mix(uBaked, vec3(dot(uBaked, vec3(0.3333))), 0.5) * ${f(SLAB.underFelt)} * (uSky * ${f(SLAB.underSky)} + uKeyCol * (${f(SLAB.underKey)} * underLit)) * underOpen;
 
   vec3 seen = vec3(0.0);
   vec3 image = vec3(0.0);
@@ -454,10 +482,14 @@ void main() {
     float body = sil * (1.0 - smoothstep(bodyTop - blurMm, bodyTop + blurMm, height)) * smoothstep(lift - blurMm, lift + blurMm, height);
     float domeTop = lift + ${f(centreHeight + globeRadius)};
     float glass = sil * smoothstep(bodyTop - blurMm, bodyTop + blurMm, height) * (1.0 - smoothstep(domeTop - 3.0 * blurMm, domeTop, height));
-    vec3 lit = uBaked * (uSky + uKeyCol * 0.22) * ${f(SLAB.bakedGain)};
-    image = lit * body + (uPool * 0.35 + uSky * 0.05) * glass;
+    float up = clamp((height - lift) / ${f(G.baseHeightMm)}, 0.0, 1.0);
+    vec3 lit = uBaked * (uSky + uKeyCol * 0.22) * (${f(SLAB.bakedGain)} * mix(${f(SLAB.bakedFoot)}, 1.0, up));
+    vec2 heart = vec2(side, height - lift - ${f(centreHeight)}) / ${f(globeRadius * SLAB.bakedGlowReach)};
+    float glow = exp(-dot(heart, heart));
+    float shell = smoothstep(${f(SLAB.bakedShellFrom)}, 1.0, side / girth);
+    image = lit * body + (uPool * (${f(SLAB.bakedGlow)} * glow) + uSky * (${f(SLAB.bakedShell)} * shell)) * glass;
     held = clamp(body + glass, 0.0, 1.0);
-    seen *= 1.0 - held;
+    seen *= 1.0 - body - ${f(1 - SLAB.bakedThrough)} * glass;
   }
   image = mix(image, underSeen, underHit);
   held = max(held, underHit);
