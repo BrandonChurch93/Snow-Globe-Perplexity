@@ -1,0 +1,77 @@
+[
+ {
+  "name": "viewer_r11_01",
+  "model": "claude_sonnet_5_5",
+  "img": "set-A-01"
+ },
+ {
+  "name": "viewer_r11_02",
+  "model": "claude_sonnet_5_5",
+  "img": "set-A-03"
+ },
+ {
+  "name": "viewer_r11_03",
+  "model": "claude_sonnet_5_5",
+  "img": "set-A-05"
+ },
+ {
+  "name": "viewer_r11_04",
+  "model": "gpt_6_2_astra",
+  "img": "set-A-01"
+ },
+ {
+  "name": "viewer_r11_05",
+  "model": "gpt_6_2_astra",
+  "img": "set-A-03"
+ },
+ {
+  "name": "viewer_r11_06",
+  "model": "gpt_6_2_astra",
+  "img": "set-A-05"
+ },
+ {
+  "name": "viewer_r11_07",
+  "model": "gemini_neon",
+  "img": "set-A-01"
+ },
+ {
+  "name": "viewer_r11_08",
+  "model": "gemini_neon",
+  "img": "set-A-03"
+ },
+ {
+  "name": "viewer_r11_09",
+  "model": "gemini_neon",
+  "img": "set-A-05"
+ },
+ {
+  "name": "viewer_r11_10",
+  "model": "pplx_computer_glm_5_3_1009",
+  "img": "set-A-01"
+ },
+ {
+  "name": "viewer_r11_11",
+  "model": "pplx_computer_glm_5_3_1009",
+  "img": "set-A-03"
+ },
+ {
+  "name": "viewer_r11_12",
+  "model": "pplx_computer_glm_5_3_1009",
+  "img": "set-A-05"
+ },
+ {
+  "name": "viewer_r11_13",
+  "model": "kimi_k3",
+  "img": "set-A-01"
+ },
+ {
+  "name": "viewer_r11_14",
+  "model": "kimi_k3",
+  "img": "set-A-03"
+ },
+ {
+  "name": "viewer_r11_15",
+  "model": "kimi_k3",
+  "img": "set-A-05"
+ }
+]
