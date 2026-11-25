@@ -38,7 +38,7 @@ export const look = {
     ringToMm: 56,
     back: 0.3,
     front: 0.3,
-    swirl: 10,
+    swirl: 8,
     swirlThin: 0.0,
     spinRadS: 2.2,
     spinDownSeconds: 2.6,
@@ -47,18 +47,19 @@ export const look = {
     liftMm: 42,
     rest: 0.1,
     lip: 1.1,
-    lipLifted: 1.7,
+    lipLifted: 0.9,
+    lipLiftedGlow: 0.9,
     lipGlow: 1.35,
-    lipDeepGlow: 10,
+    lipDeepGlow: 3.2,
     lipDeepMm: 8,
-    lipDeep: [0.5, 1.0, 0.42],
+    lipDeep: [0.26, 1.0, 0.32],
     lifted: 0.03,
     liftedMiddle: 0.02,
     liftedFromMm: 45,
     liftedToMm: 54,
     liftedFront: 0.12,
     lean: 0.22,
-    bank: 0.7,
+    bank: 0.5,
     bankMm: 9,
     pale: [0.62, 1.0, 0.68],
     paleMm: 5,
@@ -67,7 +68,7 @@ export const look = {
     airStirred: 0.3,
     airTint: [0.3, 0.24, 0.1],
     airGrid: 0.6,
-    dustGlow: 0.002,
+    dustGlow: 0.001,
     dustTint: [1.0, 0.72, 0.42],
     flood: 0.1,
     floodFrom: 0.64,
@@ -83,7 +84,7 @@ export const look = {
     warm: 1.0,
     glow: 0.11,
     glowDeepMm: 8,
-    glowLifted: 0.8,
+    glowLifted: 1.2,
     rollRad: 0.55,
     bigMm: 96,
     fineMm: 37,
@@ -356,7 +357,7 @@ void main() {
     float turn = atan(dot(e, ${vec([0, ROLL_AXIS[2], -ROLL_AXIS[1]])}), e.x) / 6.2831853 - uFogTurn.x * mix(1.04, 0.96, r / ${f(RI)}) / 6.2831853 + ${f(F.lean)} * lat;
     float s1 = texture(uFogNoise, vec3(turn, 2.3 * lat + 0.17, r / 240.0 + 0.4)).r;
     float s2 = texture(uFogNoise, vec3(2.0 * turn + 0.31, 5.1 * lat + 0.5, r / 150.0 + 0.63)).r;
-    float strand = smoothstep(0.49, 0.6, 0.56 * s1 + 0.44 * s2 + 0.08 * (n.y - 0.5));
+    float strand = smoothstep(0.52, 0.62, 0.56 * s1 + 0.44 * s2 + 0.08 * (n.y - 0.5));
     strands = mix(1.0, mix(${f(F.swirlThin)} + ${f(F.swirl)} * strand * strand, 0.55 + 0.9 * strand, uFogTurn.y), lift);
     // The turning liquid throws it to the wall: thick round the scene and behind it, thin in the middle and before it, so
     // the house and the tree stand dark against the green. Only at the hardest of the shake does it fill the dome.
@@ -420,7 +421,7 @@ void main() {
   // It glows from below: brightest at the collar, where it is deepest, and fading up to the ground's edge.
   float low = clamp((edge - p.y) / ${f(F.lipDeepMm)}, 0.0, 1.0);
   low *= low;
-  vec3 lit = stageCold(p) * ${f(F.cold)} + stageGrid(p) * ${f(F.warm)} + vec3(${f(F.glow * F.lipGlow)}) * (0.75 + 0.5 * n.y) * (1.0 + ${f(F.lipDeepGlow)} * low);
+  vec3 lit = stageCold(p) * ${f(F.cold)} + stageGrid(p) * ${f(F.warm)} + vec3(${f(F.glow * F.lipGlow)}) * (0.45 + 1.1 * n.y) * (1.0 + ${f(F.lipDeepGlow)} * low * mix(1.0, ${f(F.lipLiftedGlow)}, lift));
   vec3 col = mix(${vec(F.tint)}, ${vec(F.lipDeep)}, low) * lit;
   gl_FragColor = vec4(col * a, a);
   // In the cover view the fog says how much of the miniature it hides, as the particles do.

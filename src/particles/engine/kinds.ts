@@ -90,7 +90,7 @@ export const BEHAVIOUR: Record<string, Behaviour> = {
   firefly: { ...base, mode: 'steer', followSeconds: 0.1, turnRadS: [0.6, 1.3], sizeMm: [0.25, 0.58], sizeSkew: 1.4, cruiseMmS: 9, reachMm: 9, clearanceMm: 4 },
   leaf: { ...base, sinkMmS: [0.3, 1.8], settleMmS: [35, 65], floats: 0.125, followSeconds: 0.08, swayMmS: 13, crossMmS: 6, dip: 0.5, turnRadS: [3.5, 5.5], spinPerMm: 0.05, rest: 'lies', slope: 0.72, restSpeedMmS: 18, gripPerSecond: 5, liftMmS: [50, 160], kick: 0.5, layerMm: [0.15, 1], renew: 0.09, dwellSeconds: [4, 16], renewMmS: [4, 8], sizeMm: [1.0, 3.5], sizeSkew: 2.2 },
   ember: { ...base, mode: 'cycle', sinkMmS: [-5.5, -2.2], followSeconds: 0.05, swayMmS: 20, crossMmS: 5, turnRadS: [3, 6], sizeMm: [0.12, 0.7], sizeSkew: 4, lifeSeconds: [4, 8] },
-  bat: { ...base, mode: 'steer', followSeconds: 0.25, turnRadS: [40, 55], sizeMm: [5, 7], cruiseMmS: 26, reachMm: 32, clearanceMm: 7, orbit: true },
+  bat: { ...base, mode: 'steer', followSeconds: 0.25, turnRadS: [40, 55], sizeMm: [4.4, 5.8], cruiseMmS: 26, reachMm: 32, clearanceMm: 7, orbit: true },
 }
 
 export const SEASONS: readonly string[] = config.seasons

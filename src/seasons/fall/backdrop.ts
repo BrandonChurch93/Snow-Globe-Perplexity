@@ -10,4 +10,4 @@ const amber: [number, number, number] = [0.65, 0.28, 0.08]
 const warm: [number, number, number] = [0.85, 0.37, 0.1]
 const gold: [number, number, number] = [0.68, 0.33, 0.11]
 
-export const backdrop: SeasonKit['backdrop'] = { colors: [teal, slate, rust, teal, orange, orange, warm, amber, gold, amber], room: [0.0026, 0.0036, 0.0046], floor: [0.0065, 0.0048, 0.0063] }
+export const backdrop: SeasonKit['backdrop'] = { colors: [teal, rust, amber, slate, orange, orange, warm, amber, gold, amber], gain: () => 1.3, room: [0.0026, 0.0036, 0.0046], floor: [0.0065, 0.0048, 0.0063] }

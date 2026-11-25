@@ -5,7 +5,7 @@ import type { SeasonKit } from '../kit'
 // throws on the glass. The green of the fog and the orange of the faces on the base do the lighting.
 export const rig: SeasonKit['rig'] = {
   key: { color: [0.82, 0.9, 1], intensity: 0.75, from: [450, 455, 80] },
-  rim: { color: [1, 0.55, 0.22], intensity: 0.35, from: [-240, 230, -380] },
+  rim: { color: [1, 0.55, 0.22], intensity: 0.5, from: [-240, 230, -380] },
   sky: [0.085, 0.105, 0.085],
   ground: [0.035, 0.04, 0.035],
   fill: 0.6,
