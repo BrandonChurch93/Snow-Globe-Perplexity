@@ -1,16 +1,18 @@
-# Status 88
+# Status 89
 
-2026-11-25 09:40 UTC
+2026-11-25 10:05 UTC
 
-- The fix work on the change has its first proven step: the hand path is reshaped for open items 71 and 81 with the amounts untouched. On that tip the type check and 436 tests pass and G11 and G12 pass and the four rest stills are byte-identical.
-- Cycle 4 of the change measures at the final tier is green on the new path: cover at the swap 0.93 to 0.97 against 0.85 and M5 0.97 to 1 against 0.6 and M6 far under its bar.
-- Rounds 14 to 17 are still drawing on dcda6ca: three of the four swap sheets of Round 17 are in and four helpers share the arrival frames. Still packs and the first gates are due from about 09:55 UTC.
-- phase 4: 9.54 h used of its 9.50 h box
-- allowance (before the review): 31.83 h used of 36.00 h allowed
+- Round 17 jury on the change: 5 of 20 against 19 of 20 for the controls. It fails and counts as one major
+- Round 15 summer so far: one measure red (sharpness of the base 0.7055 against 0.75) and critics at 4 and 7
+- Round 14 spring so far: one measure red (sharpness of the base 0.394 against 0.75) and one critic at 6
+- All arrival frames of shakes 1 to 3 are drawn. The motion packs and the gates are still running
+- The change builder holds one proven tip and is proving four more steps. Its last push is due 11:25 UTC
+- phase 4: 9.96 h used of its 9.50 h box
+- allowance (before the review): 32.24 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-88-1.jpg`: Reshaped shake 1 across the swap window (draft look from the builder of the change): the lean now turns over once per stroke and is held
-- `out/stills/status/status-88-2.jpg`: Reshaped set down of shake 1 (frames 684 to 716): sideways travel ends early and the last millimetres come straight down
-- `out/stills/status/status-88-3.jpg`: Still: spring rest hero, preview, draft
-- `out/stills/status/status-88-4.jpg`: Still: spring rest hero, preview, draft, standins view
+- `out/stills/status/status-89-1.jpg`: The four landings that the jury saw: spring and summer above and fall and winter below (frozen build dcda6ca at the final tier)
+- `out/stills/status/status-89-2.jpg`: Spring and summer at rest at the final tier: the stills that Rounds 14 and 15 judge
+- `out/stills/status/status-89-3.jpg`: The first twelve frames after the third shake lands: fall arrives (one of 36 sheets for the motion critics)
+- `out/stills/status/status-89-4.jpg`: Still: fall rest hero, preview, draft

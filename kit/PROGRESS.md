@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 88 · 2026-11-25 09:40 UTC
+Status 89 · 2026-11-25 10:05 UTC
 
-- `out/stills/status/status-88-1.jpg`: Reshaped shake 1 across the swap window (draft look from the builder of the change): the lean now turns over once per stroke and is held
-- `out/stills/status/status-88-2.jpg`: Reshaped set down of shake 1 (frames 684 to 716): sideways travel ends early and the last millimetres come straight down
-- `out/stills/status/status-88-3.jpg`: Still: spring rest hero, preview, draft
-- `out/stills/status/status-88-4.jpg`: Still: spring rest hero, preview, draft, standins view
+- `out/stills/status/status-89-1.jpg`: The four landings that the jury saw: spring and summer above and fall and winter below (frozen build dcda6ca at the final tier)
+- `out/stills/status/status-89-2.jpg`: Spring and summer at rest at the final tier: the stills that Rounds 14 and 15 judge
+- `out/stills/status/status-89-3.jpg`: The first twelve frames after the third shake lands: fall arrives (one of 36 sheets for the motion critics)
+- `out/stills/status/status-89-4.jpg`: Still: fall rest hero, preview, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 09:40 UTC
-clock: phase 4, tick of 14.5 minutes
-phase 4: 9.54 h used of its 9.50 h box
-allowance (before the review): 31.83 h used of 36.00 h allowed
-all time before the review: 31.83 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 10:05 UTC
+clock: phase 4, tick of 0.0 minutes
+phase 4: 9.96 h used of its 9.50 h box
+allowance (before the review): 32.24 h used of 36.00 h allowed
+all time before the review: 32.24 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
@@ -1751,3 +1751,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 09:16 UTC. - 09:16 UTC: Status 87 posted with the swap sheet of shake 1 (Round 17, `agent/p4-round17-swaps` 50f6c76). Decision 93: four frame helpers (`frame_helper_1` to `_4`, branches `agent/p4-frames-shake-N`) draw the arrival frames from the last frame backwards; `round_renderer_d` draws Round 17's four landing stills before the rest of its measure (limit moved to 11:30); M4 and M5 go to a second runner with `--only M4,M5`. 16 agents at work. Clock at 09:11: extra rounds yes, half point reached, box end not reached.
 
 - 09:40 UTC. - 09:40 UTC: Status 88 posted with two draft looks of the reshaped shake from `change_builder3` (`agent/p4-change3-looks` ca970f6). Its tip `6d42039` (path, `fc13124`) is proven by the builder: tsc clean, vitest 436, G11 and G12 pass, four rest stills byte-identical, cycle 4 of M4 to M6 green at final (M4 0.9515 / 0.9638 / 0.9276 / 0.9718; M5 0.9835 / 1 / 0.9749 / 0.9998; M6 all under 0.0003). The builder's last push moved to 11:25 UTC so that the fix build can be checked on twelve machines before the budget report. Swap sheets of shake 1, 2 and 3 of Round 17 are on `agent/p4-round17-swaps` (ef012bc).
+
+- 10:05 UTC. - 10:05 UTC: Status 89 posted with the four landing stills of Round 17, spring and summer at rest (Rounds 14 and 15) and the first arrival sheet of shake 3. Round 17's jury fails (5 of 20 against 19 of 20) and its words went to `change_builder3` verbatim. Frame helpers 1, 3 and 4 finished (the arrival frames of shakes 1 to 4 are complete between the helpers and their partners). Clock: half point reached, box end reached, budget report not due.
