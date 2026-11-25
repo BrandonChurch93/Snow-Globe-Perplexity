@@ -17,9 +17,9 @@ const RAD = Math.PI / 180
 const LOOK = {
   gravity: 3400,
   ledge: { r: [46.5, 52.0], h: 40.3 },
-  jump: { count: 14000, liftMm: [1.5, 24], quick: 0.11, tail: 0.5, tailShare: [0.6, 0.12], skidMm: [0.4, 3.2], radiusMm: [0.12, 0.27] },
-  pour: { count: 64000, az: 81, spread: 5.5, r: 52.4, h: 38.8, reachMm: [1.5, 12.5], fanDeg: 9, rate: [1.3, 2.3], radiusMm: [0.1, 0.2] },
-  flow: { rest: 0.45, surge: 0.55, seconds: 1.3, gapMm: [0.3, 2.5] },
+  jump: { count: 14000, reachMm: 26, ringShare: 0.2, ringMm: 5, liftMm: [0.6, 8], hopMm: [0.3, 2.6], quick: 0.11, tail: 0.5, tailShare: [0.6, 0.12], skidMm: [0.4, 3.2], radiusMm: [0.12, 0.27] },
+  pour: { count: 9000, az: 82, spread: 4.5, r: 52.4, h: 38.8, reachMm: [4.6, 11], fanDeg: 7, rate: [1.3, 2.3], radiusMm: [0.1, 0.2] },
+  flow: { rest: 0.3, surge: 0.6, seconds: 1.3, gapMm: [0.3, 2.5] },
   shadow: { r: 57, top: [36, 41] },
 }
 
@@ -69,6 +69,7 @@ float grainShade(vec3 p, vec3 L) {
   float b = dot(p.xz, L.xz);
   float c = dot(p.xz, p.xz) - ${(LOOK.shadow.r * LOOK.shadow.r).toFixed(1)};
   float disc = b * b - a * c;
+  if (c < 0.0) return smoothstep(-8.0, 8.0, b);
   if (disc < 0.0) return 1.0;
   float s2 = (-b + sqrt(disc)) / a;
   if (s2 < 0.0) return 1.0;
@@ -82,7 +83,9 @@ float grainT = uGrain.x;
 float tau;
 float alive = 1.0;
 float airborne = 0.0;
-if (aSeed.y < 0.5) {
+if (aSeed.y < -0.5) {
+  tau = max(grainT - aFlight.x, 0.0);
+} else if (aSeed.y < 0.5) {
   tau = grainT - aFlight.x;
   if (grainT < 0.0 || tau < 0.0) alive = 0.0;
 } else {
@@ -102,7 +105,9 @@ float len = length(along);
 vec2 axis = len > 1e-4 ? along / len : vec2(0.0, 1.0);
 vec2 across = vec2(-axis.y, axis.x);
 vec4 grainV = mix(thenV, nowV, aCorner.y * 0.5 + 0.5);
-grainV.xy += (axis * aCorner.y + across * aCorner.x) * size;
+float streak = 1.0 + len / max(2.0 * aFlight.w, 1e-4);
+float thin = max(1.0 / streak, 0.3);
+grainV.xy += (axis * aCorner.y + across * aCorner.x * thin) * size;
 gl_Position = projectionMatrix * grainV;
 vec4 grainW = modelMatrix * vec4(nowAt, 1.0);
 vStageWorld = grainW.xyz;
@@ -111,7 +116,7 @@ vStageAux = vec3(0.0, -grainV.z, length(grainV.xyz));
 vStagePlaced = grainW.xyz;
 vStageSeen = 1.0;
 vGrainUv = aCorner;
-vGrainShape = vec2(1.0 + len / max(2.0 * aFlight.w, 1e-4), airborne);
+vGrainShape = vec2(streak / thin, airborne);
 vGrainLook = vec4(aSeed.x, fract(aSeed.x * 91.7 + aSeed.z * 13.1), grainShade(grainW.xyz, uGrainKey), alive);
 `
 
@@ -131,7 +136,6 @@ void main() {
   float capY = sign(vGrainUv.y) * max(abs(vGrainUv.y) * L - (L - 1.0), 0.0);
   float d2 = vGrainUv.x * vGrainUv.x + capY * capY;
   if (d2 > 1.0) discard;
-  if (L > 1.05 && stageHash(vec3(gl_FragCoord.xy + 13.0, uSeed + 0.37)) > 1.0 / L + 0.04) discard;
   vec3 nv = normalize(vec3(vGrainUv.x, capY, sqrt(1.0 - d2)));
   vec3 n = normalize(nv * mat3(viewMatrix));
   vec3 v = normalize(cameraPosition - vStageWorld);
@@ -145,13 +149,19 @@ void main() {
   float wrap = clamp((ndl + 0.45) / 1.45, 0.0, 1.0);
   float thru = pow(clamp(dot(-v, uGrainKey) * 0.5 + 0.5, 0.0, 1.0), 3.0);
   vec3 dome = mix(uGrainGround, uGrainSky, 0.5 + 0.5 * n.y);
-  vec3 col = albedo * RECIPROCAL_PI * (uGrainKeyCol * shade * (wrap + (0.5 + 1.6 * vGrainShape.y) * thru) + dome + uRigCardCol * 0.35 * clamp(dot(n, uRigCardDir) * 0.5 + 0.5, 0.0, 1.0));
+  albedo = mix(albedo, vec3(0.96, 0.92, 0.84), 0.55 * vGrainShape.y);
+  vec3 col = albedo * RECIPROCAL_PI * (uGrainKeyCol * shade * (wrap + 1.8 + (0.6 + 5.0 * vGrainShape.y) * thru) + dome + uRigCardCol * 0.35 * clamp(dot(n, uRigCardDir) * 0.5 + 0.5, 0.0, 1.0));
   float hk = max(dot(n, normalize(v + uGrainKey)), 0.0);
   col += uGrainKeyCol * shade * step(0.7, fract(id * 17.9)) * pow(hk, 60.0) * 1.2;
   gl_FragColor = vec4(col, 1.0);
   if (uDiag != 0) gl_FragColor = stageDiag(albedo, n, 0.0, c, 0.0);
 }
 `
+
+const frontLeft = (x: number, z: number): number => {
+  const az = Math.atan2(x, z) / RAD
+  return az > -150 && az < -8 ? 0.06 : 1
+}
 
 const flightOf = (lift: number, drop: number): { T: number; vy: number } => {
   const g = LOOK.gravity
@@ -188,25 +198,39 @@ function grainGeometry(): THREE.BufferGeometry {
   let tries = 0
   while (made < J.count && tries < J.count * 400) {
     tries++
-    const wide = rj.next() < 0.12
-    const x = wide ? rj.range(SLAB.x[0], SLAB.x[1]) : rj.range(-6, 132)
-    const z = wide ? rj.range(SLAB.z[0], SLAB.z[1]) : rj.range(-70, 214)
+    const pick = rj.next()
+    const ringed = pick < J.ringShare
+    const wide = !ringed && pick < J.ringShare + 0.12
+    const ringAz = rj.range(-Math.PI, Math.PI)
+    const ringR = 61.5 + -Math.log(Math.max(rj.next(), 1e-6)) * J.ringMm
+    const x = ringed ? ringR * Math.sin(ringAz) : wide ? rj.range(SLAB.x[0], SLAB.x[1]) : rj.range(-6, 132)
+    const z = ringed ? ringR * Math.cos(ringAz) : wide ? rj.range(SLAB.z[0], SLAB.z[1]) : rj.range(-70, 214)
     const r = Math.hypot(x, z)
     if (r < 61.5) continue
     const h = sandHeight(x, z)
     const far = Math.exp(-(r - 60) / 55)
-    const want = h < 0.02 ? 0.035 * far : h < 0.9 ? 0.35 + 0.65 * far : 0.22
+    const want = ringed ? frontLeft(x, z) : h < 0.02 ? 0.035 * far : h < 0.9 ? 0.35 + 0.65 * far : 0.22
     if (rj.next() > want) continue
-    const az = Math.atan2(x, z) + rj.gauss() * 0.12
-    const rl = rj.range(LOOK.ledge.r[0], LOOK.ledge.r[1])
     const radius = J.radiusMm[0] + (J.radiusMm[1] - J.radiusMm[0]) * rj.next() ** 2
     const y = SLAB.liftMm + h + radius * 0.7
-    const near = Math.min(1, Math.max(0, (r - 62) / 30))
+    const near = Math.min(1, Math.max(0, (r - 62) / J.reachMm))
+    const flies = rj.next() > near
     const late = rj.next() < J.tailShare[0] + (J.tailShare[1] - J.tailShare[0]) * near
     const delay = late ? J.quick + -Math.log(Math.max(rj.next(), 1e-6)) * J.tail : rj.next() ** 1.5 * J.quick
-    const lift = late ? rj.range(0.2, 3) : J.liftMm[0] + (J.liftMm[1] - J.liftMm[0]) * rj.next() ** 2 * (0.35 + 0.65 * near)
-    const f = flightOf(lift, LOOK.ledge.h - y)
-    put([x, y, z], [rl * Math.sin(az), LOOK.ledge.h, rl * Math.cos(az)], [delay, f.T, f.vy, radius], [rj.next(), 0, rj.next(), rj.range(J.skidMm[0], J.skidMm[1])])
+    if (flies) {
+      const az = Math.atan2(x, z) + rj.gauss() * 0.12
+      const rl = rj.range(LOOK.ledge.r[0], LOOK.ledge.r[1])
+      const lift = late ? rj.range(0.2, 2) : J.liftMm[0] + (J.liftMm[1] - J.liftMm[0]) * rj.next() ** 2 * (0.35 + 0.65 * near)
+      const f = flightOf(lift, LOOK.ledge.h - y)
+      put([x, y, z], [rl * Math.sin(az), LOOK.ledge.h, rl * Math.cos(az)], [delay, f.T, f.vy, radius], [rj.next(), 0, rj.next(), rj.range(J.skidMm[0], J.skidMm[1])])
+    } else {
+      const lift = J.hopMm[0] + (J.hopMm[1] - J.hopMm[0]) * rj.next() ** 2 * Math.exp(-(r - 60) / 90)
+      const vy = Math.sqrt(2 * LOOK.gravity * lift)
+      const f = { T: (2 * vy) / LOOK.gravity, vy }
+      const drift = rj.range(0.1, 0.9)
+      const turn = rj.range(-Math.PI, Math.PI)
+      put([x, y, z], [x + drift * Math.sin(turn), y, z + drift * Math.cos(turn)], [rj.next() ** 1.5 * 0.05, f.T, f.vy, radius], [rj.next(), -1, rj.next(), rj.range(0.05, 0.5)])
+    }
     made++
   }
 
@@ -214,7 +238,7 @@ function grainGeometry(): THREE.BufferGeometry {
   const P = LOOK.pour
   for (let i = 0; i < P.count; i++) {
     const az0 = (P.az + rp.gauss() * P.spread) * RAD
-    const reach = P.reachMm[0] + (P.reachMm[1] - P.reachMm[0]) * rp.next() ** 1.6
+    const reach = P.reachMm[0] + (P.reachMm[1] - P.reachMm[0]) * rp.next() ** 1.3
     const az1 = az0 + rp.gauss() * P.fanDeg * RAD * (reach / P.reachMm[1])
     const fx = P.r * Math.sin(az0)
     const fz = P.r * Math.cos(az0)

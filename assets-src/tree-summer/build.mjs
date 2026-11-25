@@ -1,16 +1,17 @@
 import * as THREE from 'three'
 import { edgeTable, triTable } from 'three/examples/jsm/objects/MarchingCubes.js'
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
+import { mergeGeometries, mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import { fromThree, writeGlb } from '../../tools/lib/glb.mjs'
 import { rel } from '../../tools/lib/paths.mjs'
 import { blurWrap, loadSource, luma, readPicture, seamless, toBytes, writePng } from '../trunk/source.mjs'
 
 const TAU = Math.PI * 2
-const LEAF_CELL = 0.5
+const LEAF_CELL = 0.56
 const LEAF_TILE_MM = 11
 const SPRIGS = { share: 0.6, size: [1.3, 2.3], rise: 0.35, out: 0.34 }
-const TONE = { deep: [0.5, 0.78, 0.42], mid: [0.8, 1, 0.5], tip: [1.55, 1.6, 0.5] }
-const PAPER = { orange: [1, 0.27, 0.06], peach: [1, 0.37, 0.11], cream: [1, 0.62, 0.26] }
+const TONE = { deep: [0.3, 0.54, 0.26], mid: [0.66, 0.95, 0.4], tip: [2.3, 2.3, 0.55] }
+const SUN = [0.5, 0.32, -0.8]
+const PAPER = { orange: [1, 0.27, 0.06], peach: [1, 0.37, 0.11], cream: [1, 0.55, 0.19] }
 const CAP = [0.035, 0.028, 0.022]
 const WIRE = [0.05, 0.04, 0.03]
 
@@ -180,9 +181,10 @@ function leaves() {
     const n = [s.nor[v * 3], s.nor[v * 3 + 1], s.nor[v * 3 + 2]]
     const open = 0.45 * openness(C.leafBody, x, h, z, n, 0.7) + 0.55 * openness(C.leafBody, x, h, z, n, 2.4)
     const sky = 0.5 + 0.5 * n[1]
-    const shade = (0.22 + 0.78 * Math.pow(open, 1.5)) * (0.4 + 0.6 * Math.pow(sky, 1.3))
+    const shade = (0.1 + 0.9 * Math.pow(open, 1.7)) * (0.3 + 0.7 * Math.pow(sky, 1.5))
     const hue = 0.5 + 0.5 * Math.sin(0.7 * x + 1.3 * h + 0.9 * z) * Math.sin(1.1 * x - 0.6 * z + 2)
-    const tip = smooth(0.55, 1, open) * smooth(0.35, 0.9, sky) * (0.5 + 0.5 * hue)
+    const sun = 0.5 + 0.5 * (n[0] * SUN[0] + n[1] * SUN[1] + n[2] * SUN[2])
+    const tip = smooth(0.5, 1, open) * smooth(0.35, 0.85, Math.max(sky, sun)) * (0.6 + 0.4 * hue)
     const base = [lerp(TONE.deep[0], TONE.mid[0], hue), lerp(TONE.deep[1], TONE.mid[1], hue), lerp(TONE.deep[2], TONE.mid[2], hue)]
     return [shade * lerp(base[0], TONE.tip[0], tip), shade * lerp(base[1], TONE.tip[1], tip), shade * lerp(base[2], TONE.tip[2], tip)]
   }
@@ -338,7 +340,7 @@ function lanternMesh() {
   const line = []
   for (let i = 0; i <= LN.STRING.steps; i++) line.push(new THREE.Vector3(...LN.stringAt(i / LN.STRING.steps)))
   parts.push(dress(rod(line, line.map(() => LN.STRING.wireMm), 5), [...WIRE, 0], null, 0, 0, 0))
-  return mergeGeometries(parts)
+  return mergeVertices(mergeGeometries(parts), 1e-4)
 }
 
 async function leafMaps() {
@@ -387,6 +389,11 @@ const N = leaves()
 const LM = lanternMesh()
 const tri = (g) => (g.index ? g.index.count : g.getAttribute('position').count) / 3
 const counts = { leaves: tri(N.g), lanterns: tri(LM) }
-writeGlb(rel('assets-full', 'summer', 'tree-summer.glb'), [fromThree('leaves', N.g, { triangles: counts.leaves, tufts: N.tufts, tileMm: LEAF_TILE_MM }), fromThree('lanterns', LM, { triangles: counts.lanterns, count: LN.lanterns.length })])
+const SNAP = { position: 128, normal: 32 }
+function snap(mesh) {
+  for (const k of Object.keys(SNAP)) for (let i = 0; i < mesh[k].length; i++) mesh[k][i] = Math.round(mesh[k][i] * SNAP[k]) / SNAP[k]
+  return mesh
+}
+writeGlb(rel('assets-full', 'summer', 'tree-summer.glb'), [snap(fromThree('leaves', N.g, { triangles: counts.leaves, tufts: N.tufts, tileMm: LEAF_TILE_MM })), snap(fromThree('lanterns', LM, { triangles: counts.lanterns, count: LN.lanterns.length }))])
 await leafMaps()
 console.log(`tree-summer: leaves ${counts.leaves} triangles (${N.tufts} tufts), lanterns ${counts.lanterns} (${LN.lanterns.length} lanterns); ${C.lumps.length / 4} lumps on ${T.localPads.length} pads`)

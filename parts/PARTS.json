@@ -235,13 +235,14 @@
     {
       "name": "glass-dressing-spring",
       "unit": "spring",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/spring",
         "public/assets/spring"
       ],
       "standInHash": "cc932466df558d97",
-      "commit": "2530677"
+      "commit": "b50558b",
+      "note": "agent/p4-spring_air at cb08977: stage 1; dew, beads and drying rain trails on the glass, dawn mist and petal mist, the rig fitted to the approved image's camera (assets-src/refrig/spring.json)"
     },
     {
       "name": "surface-dressing-spring",
@@ -258,25 +259,27 @@
     {
       "name": "light-spring",
       "unit": "spring",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/spring",
         "public/assets/spring"
       ],
       "standInHash": "cc932466df558d97",
-      "commit": "2530677"
+      "commit": "b50558b",
+      "note": "agent/p4-spring_air at cb08977: stage 1; dew, beads and drying rain trails on the glass, dawn mist and petal mist, the rig fitted to the approved image's camera (assets-src/refrig/spring.json)"
     },
     {
       "name": "veil-spring",
       "unit": "spring",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/spring",
         "public/assets/spring",
         "src/core/chunks/veil.ts"
       ],
       "standInHash": "6edf29ee38b28296",
-      "commit": "2530677"
+      "commit": "b50558b",
+      "note": "agent/p4-spring_air at cb08977: stage 1; dew, beads and drying rain trails on the glass, dawn mist and petal mist, the rig fitted to the approved image's camera (assets-src/refrig/spring.json)"
     },
     {
       "name": "arrival-spring",
@@ -293,26 +296,28 @@
     {
       "name": "particle-petal",
       "unit": "spring",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/particles/draw",
         "src/particles/engine",
         "src/seasons/spring"
       ],
       "standInHash": "45dcfe742040e25c",
-      "commit": "2530677"
+      "commit": "b50558b",
+      "note": "agent/p4-kinds at b97f86e (the drawing) with the motion rows of agent/p4-spring_air at cb08977"
     },
     {
       "name": "particle-mote",
       "unit": "spring",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/particles/draw",
         "src/particles/engine",
         "src/seasons/spring"
       ],
       "standInHash": "45dcfe742040e25c",
-      "commit": "2530677"
+      "commit": "b50558b",
+      "note": "agent/p4-kinds at b97f86e (the drawing) with the motion rows of agent/p4-spring_air at cb08977"
     },
     {
       "name": "base-summer",
@@ -343,13 +348,14 @@
     {
       "name": "glass-dressing-summer",
       "unit": "summer",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/summer",
         "public/assets/summer"
       ],
       "standInHash": "823d191bcc66aa2a",
-      "commit": "2530677"
+      "commit": "b50558b",
+      "note": "agent/p4-summer_air at aa30671: stage 1; glass dressing, heat haze and veil, the rig fitted to the approved image's camera (assets-src/refrig/summer.json)"
     },
     {
       "name": "surface-dressing-summer",
@@ -366,25 +372,27 @@
     {
       "name": "light-summer",
       "unit": "summer",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/summer",
         "public/assets/summer"
       ],
       "standInHash": "823d191bcc66aa2a",
-      "commit": "2530677"
+      "commit": "b50558b",
+      "note": "agent/p4-summer_air at aa30671: stage 1; glass dressing, heat haze and veil, the rig fitted to the approved image's camera (assets-src/refrig/summer.json)"
     },
     {
       "name": "veil-summer",
       "unit": "summer",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/summer",
         "public/assets/summer",
         "src/core/chunks/veil.ts"
       ],
       "standInHash": "fe403bf01dbbb0a1",
-      "commit": "2530677"
+      "commit": "b50558b",
+      "note": "agent/p4-summer_air at aa30671: stage 1; glass dressing, heat haze and veil, the rig fitted to the approved image's camera (assets-src/refrig/summer.json)"
     },
     {
       "name": "arrival-summer",
@@ -401,26 +409,28 @@
     {
       "name": "particle-firefly",
       "unit": "summer",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/particles/draw",
         "src/particles/engine",
         "src/seasons/summer"
       ],
       "standInHash": "89b55970d622eeb0",
-      "commit": "2530677"
+      "commit": "b50558b",
+      "note": "agent/p4-kinds at b97f86e (the drawing) with the motion rows of agent/p4-summer_air at aa30671"
     },
     {
       "name": "particle-seed",
       "unit": "summer",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/particles/draw",
         "src/particles/engine",
         "src/seasons/summer"
       ],
       "standInHash": "89b55970d622eeb0",
-      "commit": "2530677"
+      "commit": "b50558b",
+      "note": "agent/p4-kinds at b97f86e (the drawing) with the motion rows of agent/p4-summer_air at aa30671"
     },
     {
       "name": "base-fall",
@@ -451,13 +461,14 @@
     {
       "name": "glass-dressing-fall",
       "unit": "fall",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/fall",
         "public/assets/fall"
       ],
       "standInHash": "80afa9ee5fdea3b2",
-      "commit": "2530677"
+      "commit": "73c4019",
+      "note": "fall_air b0fa4e2: stage 1 merged at b50558b; the stand-in view of rest from hero (fall-rest-hero-preview-draft-standins.png, 01:39 UTC) is black all over, max pixel 0"
     },
     {
       "name": "surface-dressing-fall",
@@ -474,25 +485,27 @@
     {
       "name": "light-fall",
       "unit": "fall",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/fall",
         "public/assets/fall"
       ],
       "standInHash": "80afa9ee5fdea3b2",
-      "commit": "2530677"
+      "commit": "73c4019",
+      "note": "fall_air b0fa4e2: stage 1 merged at b50558b; the stand-in view of rest from hero (fall-rest-hero-preview-draft-standins.png, 01:39 UTC) is black all over, max pixel 0"
     },
     {
       "name": "veil-fall",
       "unit": "fall",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/seasons/fall",
         "public/assets/fall",
         "src/core/chunks/veil.ts"
       ],
       "standInHash": "3fc2d0ad1740e842",
-      "commit": "2530677"
+      "commit": "73c4019",
+      "note": "fall_air b0fa4e2: stage 1 merged at b50558b; the stand-in view of rest from hero (fall-rest-hero-preview-draft-standins.png, 01:39 UTC) is black all over, max pixel 0"
     },
     {
       "name": "arrival-fall",
@@ -509,38 +522,41 @@
     {
       "name": "particle-leaf",
       "unit": "fall",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/particles/draw",
         "src/particles/engine",
         "src/seasons/fall"
       ],
       "standInHash": "81397ddc17976474",
-      "commit": "2530677"
+      "commit": "73c4019",
+      "note": "kinds_builder b97f86e with fall_air's rows in kinds.ts: stage 1 merged at b50558b; the stand-in view of rest from hero (fall-rest-hero-preview-draft-standins.png, 01:39 UTC) is black all over, max pixel 0"
     },
     {
       "name": "particle-ember",
       "unit": "fall",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/particles/draw",
         "src/particles/engine",
         "src/seasons/fall"
       ],
       "standInHash": "81397ddc17976474",
-      "commit": "2530677"
+      "commit": "73c4019",
+      "note": "kinds_builder b97f86e with fall_air's rows in kinds.ts: stage 1 merged at b50558b; the stand-in view of rest from hero (fall-rest-hero-preview-draft-standins.png, 01:39 UTC) is black all over, max pixel 0"
     },
     {
       "name": "particle-bat",
       "unit": "fall",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/particles/draw",
         "src/particles/engine",
         "src/seasons/fall"
       ],
       "standInHash": "81397ddc17976474",
-      "commit": "2530677"
+      "commit": "73c4019",
+      "note": "kinds_builder b97f86e with fall_air's rows in kinds.ts: stage 1 merged at b50558b; the stand-in view of rest from hero (fall-rest-hero-preview-draft-standins.png, 01:39 UTC) is black all over, max pixel 0"
     },
     {
       "name": "change-winter-spring",

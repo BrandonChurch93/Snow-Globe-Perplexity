@@ -177,13 +177,13 @@ function grassTone(x, z) {
   return mul3(c, contact(x, z))
 }
 
-const SKIRT = { cycles: 6.5, deepMm: 2.1, clumps: 17, clumpMm: 0.55 }
+const SKIRT = { cycles: 6.5, deepMm: 2.8, clumps: 17, clumpMm: 0.85 }
 {
   const before = turf.triangles
-  const around = 520
+  const around = 400
   const shore = [0.9, 0.93, 0.95, 0.962, 0.972, 0.981, 0.99, 1.0, 1.012, 1.028, 1.05, 1.08]
-  const outer = 54
-  const skirt = 46
+  const outer = 40
+  const skirt = 30
   const r = L.innerRadiusMm - 0.6
   const footY = L.collarY - 1.5
   const pc = Math.cos(L.pond.yaw)
@@ -297,17 +297,68 @@ const SKIRT = { cycles: 6.5, deepMm: 2.1, clumps: 17, clumpMm: 0.55 }
     P.setXYZ(b, P.getX(a), P.getY(a), P.getZ(a))
   }
   turf.add(g, {
-    color: (p, _n, i) => {
+    color: (p, n, i) => {
       const q = depth[i]
       if (q <= 0) return grassTone(p[0], p[2])
-      const top = mix3(TONE.moss, TONE.mossDeep, clamp(0.5 + noise(p[0] * 0.45, p[1] * 0.45, p[2] * 0.45)))
+      const top = mix3(TONE.grass, TONE.moss, clamp(0.5 + noise(p[0] * 0.45, p[1] * 0.45, p[2] * 0.45)))
       const patch = smooth(-0.1, 0.35, fbm(p[0] * 0.3, p[1] * 0.3, p[2] * 0.3, 3))
-      return mul3(mix3(mix3(top, TONE.earth, smooth(0.2, 0.75, q) * (1 - 0.7 * patch)), TONE.sun, 0.18 * patch * (1 - q)), 1 - 0.45 * smooth(0.3, 1, q))
+      return mul3(mix3(mix3(top, TONE.mossDeep, smooth(0.3, 0.85, q) * (1 - 0.7 * patch)), TONE.sun, 0.6 * patch * (1 - 0.7 * q) * smooth(-0.5, 0.4, n[1])), (1 - 0.25 * smooth(0.4, 1, q)) * (1.25 + 0.6 * smooth(-0.3, 0.6, n[1])))
     },
     surf: (_p, _n, i) => [depth[i] > 0 ? 2 : 0, depth[i]],
   })
   tally.ground = turf.triangles - before
 }
+
+const BOULDERS = [
+  [148, 1.07, 2.5], [163, 1.06, 1.9], [178, 1.08, 2.7], [196, 1.06, 2.1], [213, 1.08, 2.4], [229, 1.05, 1.7],
+  [322, 1.07, 2.2], [341, 1.05, 1.6], [12, 1.07, 2.4], [31, 1.05, 1.5], [96, 1.06, 1.4], [121, 1.05, 1.8],
+]
+const boulders = []
+{
+  const before = turf.triangles
+  const tones = ['#b3aaa0', '#c4bbb0', '#9d958d', '#b8ab9e'].map(lin)
+  for (const [deg, f, size] of BOULDERS) {
+    const a = (deg * Math.PI) / 180
+    let t = 6
+    while (t < 40 && L.pondField(L.pond.x + Math.cos(a) * t, L.pond.z + Math.sin(a) * t) < f) t += 0.05
+    const x = L.pond.x + Math.cos(a) * t
+    const z = L.pond.z + Math.sin(a) * t
+    if (edgeOf(x, z) < 2.2) continue
+    const rx = size * (0.9 + 0.3 * R())
+    const rz = size * (0.7 + 0.25 * R())
+    const ry = size * (0.5 + 0.16 * R())
+    const yaw = R() * Math.PI
+    const y = topAt(x, z) + ry * 0.28
+    const seed = R() * 50
+    const g = new THREE.IcosahedronGeometry(1, 4)
+    g.deleteAttribute('normal')
+    g.deleteAttribute('uv')
+    const P = g.getAttribute('position')
+    for (let i = 0; i < P.count; i++) {
+      const q = [P.getX(i), P.getY(i), P.getZ(i)]
+      const lump = 1 + 0.2 * fbm(q[0] * 1.3 + seed, q[1] * 1.3, q[2] * 1.3 + seed, 3) + 0.05 * fbm(q[0] * 5 + seed, q[1] * 5, q[2] * 5, 2)
+      const flat = q[1] > 0 ? 1 - 0.18 * q[1] * q[1] : 1
+      const lx = q[0] * rx * lump
+      const lz = q[2] * rz * lump
+      P.setXYZ(i, x + lx * Math.cos(yaw) - lz * Math.sin(yaw), y + q[1] * ry * lump * flat, z + lx * Math.sin(yaw) + lz * Math.cos(yaw))
+    }
+    const tone = tones[Math.floor(R() * tones.length)]
+    turf.add(g, {
+      renormal: true,
+      color: (p, n) => {
+        const up = n[1] + 0.5 * fbm(p[0] * 0.9 + seed, p[1] * 0.9, p[2] * 0.9, 3)
+        const moss = smooth(0.7, 1.15, up)
+        const low = smooth(0.9, 0.0, (p[1] - (y - ry * 0.28)) / ry)
+        const stone = mul3(tone, (0.62 + 0.5 * clamp(0.5 + fbm(p[0] * 2.2, p[1] * 2.2 + seed, p[2] * 2.2, 2))) * (1 - 0.35 * low))
+        return mix3(stone, mix3(TONE.mossDeep, TONE.moss, clamp(0.5 + noise(p[0] * 1.7, p[1] * 1.7, p[2] * 1.7))), 0.7 * moss)
+      },
+      surf: [3, 0],
+    })
+    boulders.push([Number(x.toFixed(2)), Number(y.toFixed(2)), Number(z.toFixed(2)), Number((Math.min(rx, rz) * 0.9).toFixed(2)), Number(ry.toFixed(2))])
+  }
+  tally.boulders = turf.triangles - before
+}
+const boulderGap = (x, z) => boulders.reduce((m, b) => Math.min(m, Math.hypot(x - b[0], z - b[2]) - b[3]), 1e9)
 
 {
   const rings = [0, 0.14, 0.28, 0.42, 0.55, 0.66, 0.76, 0.85, 0.92, 0.965, 0.995]
@@ -419,11 +470,13 @@ const BLADES = { tufts: 8200, perTuft: [3, 6], lenMm: [0.5, 1.05], tallMm: 1.15,
     const z = Math.sin(a) * rr
     const e = edgeOf(x, z)
     if (e < 0.5) continue
+    if (z < -20 && R() < 0.6) continue
     const pf = L.pondField(x, z)
     if (pf < 1.0) continue
     if (wallGap(x, z) < 0.15) continue
     const sg = stoneGap(x, z)
     if (sg < 0.3) continue
+    if (boulderGap(x, z) < 0.1) continue
     if (sg < 1.6 && R() < 0.6) continue
     const tg = treeGap(x, z)
     if (tg < 2.6) continue
@@ -570,8 +623,8 @@ function tulip(x, z, tall, hue, turn) {
     }
   }
   const top = at(1)
-  const cupH = 1.25 + 0.5 * R()
-  const cupR = 0.52 + 0.14 * R()
+  const cupH = 1.9 + 0.6 * R()
+  const cupR = 0.82 + 0.2 * R()
   const open = 0.72 + 0.3 * R()
   const [deep, pale] = TONE.tulips[hue]
   const tilt = norm3([bend[0] * 2, 1, bend[1] * 2])
@@ -613,6 +666,7 @@ function tulip(x, z, tall, hue, turn) {
 const fenceMid = [(L.fence.from[0] + L.fence.to[0]) / 2, (L.fence.from[1] + L.fence.to[1]) / 2]
 const fenceDir = norm3([L.fence.to[0] - L.fence.from[0], 0, L.fence.to[1] - L.fence.from[1]])
 const fenceIn = [fenceDir[2], 0, -fenceDir[0]]
+const TULIP_TALL = 0.74
 const BEDS = [
   { at: [fenceMid[0] + fenceIn[0] * 2.4, fenceMid[1] + fenceIn[2] * 2.4], along: [fenceDir[0], fenceDir[2]], half: [6.2, 1.9], count: 17, tall: [4.4, 6.4], hues: [3, 1, 4, 0, 2, 1, 3] },
   { at: [L.tree.x + 9.2, L.tree.z + 9.6], along: [0.86, 0.5], half: [4.2, 2.2], count: 15, tall: [4.6, 6.8], hues: [3, 0, 2, 1, 4, 3] },
@@ -632,9 +686,9 @@ const BEDS = [
       const x = bed.at[0] + bed.along[0] * u - bed.along[1] * v
       const z = bed.at[1] + bed.along[1] * u + bed.along[0] * v
       if (edgeOf(x, z) < 2 || L.pondField(x, z) < 1.04 || wallGap(x, z) < 0.8 || stoneGap(x, z) < 0.4 || treeGap(x, z) < 4) continue
-      if (placed.some((q) => Math.hypot(q[0] - x, q[1] - z) < 1.25)) continue
+      if (placed.some((q) => Math.hypot(q[0] - x, q[1] - z) < 1.7)) continue
       placed.push([x, z])
-      tulip(x, z, bed.tall[0] + R() * (bed.tall[1] - bed.tall[0]), bed.hues[Math.floor(R() * bed.hues.length)], R() * Math.PI * 2)
+      tulip(x, z, TULIP_TALL * (bed.tall[0] + R() * (bed.tall[1] - bed.tall[0])), bed.hues[Math.floor(R() * bed.hues.length)], R() * Math.PI * 2)
     }
   }
   tally.tulips = growth.triangles - before
@@ -716,10 +770,11 @@ for (let z = -50; z <= 50; z += 1)
     }
   }
 
-const meshes = [fromThree('turf', turf.geometry()), fromThree('growth', growth.geometry()), fromThree('water', water.geometry(), { level: L.pond.level })]
+const meshes = [fromThree('turf', turf.geometry()), fromThree('growth', growth.geometry()), fromThree('water', water.geometry(), { level: L.pond.level, boulders })]
 const out = writeGlb(rel('assets-full', 'spring', 'village-spring.glb'), meshes)
 
 const SIZE = 1024
+const WATER_SIZE = 512
 const cell = (u, v, n, seed) => {
   const x = u * n
   const y = v * n
@@ -752,9 +807,9 @@ const turfBytes = writePng(rel('assets-full', 'spring', 'village-turf.lin.tile.p
   const tone = 0.5 + 0.8 * fbm(u * 7, v * 7, 5, 4, 7)
   return [0.55 * sprig + 0.45 * fine, tone, 0.6 * cushion + 0.4 * (0.5 + 0.7 * fbm(u * 12, v * 12, 9, 3, 12))]
 })
-const waterBytes = writePng(rel('assets-full', 'spring', 'village-water.lin.tile.png'), SIZE, (px, py) => {
-  const u = px / SIZE
-  const v = py / SIZE
+const waterBytes = writePng(rel('assets-full', 'spring', 'village-water.lin.tile.png'), WATER_SIZE, (px, py) => {
+  const u = px / WATER_SIZE
+  const v = py / WATER_SIZE
   const a = 0.5 + 0.9 * fbm(u * 9, v * 9, 1, 4, 9)
   const b = 0.5 + 0.9 * fbm(u * 14 + 3, v * 14 + 5, 7, 3, 14)
   const c = 0.5 + 0.9 * fbm(u * 5, v * 5, 13, 4, 5)
@@ -768,7 +823,7 @@ const record = {
   model: { file: 'assets-full/spring/village-spring.glb', bytes: out.bytes, triangles: out.triangles },
   maps: {
     'assets-full/spring/village-turf.lin.tile.png': { px: SIZE, bytes: turfBytes, tileMm: TILE_MM },
-    'assets-full/spring/village-water.lin.tile.png': { px: SIZE, bytes: waterBytes, tileMm: TILE_MM },
+    'assets-full/spring/village-water.lin.tile.png': { px: WATER_SIZE, bytes: waterBytes, tileMm: TILE_MM },
   },
 }
 writeJson(rel('out', 'work', 'village', 'build-spring.json'), record)
