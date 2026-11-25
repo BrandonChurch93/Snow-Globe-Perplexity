@@ -370,12 +370,15 @@ export function startApp(d: AppDeps): AppBridge {
     } else {
       const t0 = now()
       const wasBusy = session.busy
+      const wasShaking = session.shaking !== null
       let mix = 1
       budget = Math.max(STEP_BUDGET_MS, STEP_SHARE * (dt * 1000 - stepMs))
       if (session.skipping) session.skip(() => now() - t0, SKIP_BUDGET_MS)
       else mix = session.tick(dt, () => now() - t0 > budget)
       stepMs = now() - t0
       look.tick(dt)
+      if (session.shaking?.holdBeats) engine?.shake(told, Number.POSITIVE_INFINITY)
+      if (wasShaking && !session.shaking) engine?.setSeason((told = session.season))
       if (wasBusy && !session.busy) {
         governor.rest()
         if (told !== session.season) engine?.setSeason((told = session.season))
