@@ -127,9 +127,14 @@ function addStrands() {
     const slope = (rng() < 0.5 ? -1 : 1) * (steep ? r(20, 30) : r(5, 19))
     push({ a0, span, h0: steep ? r(12, 22) : r(6, 31), slope, amp: steep ? r(0.5, 1.1) : r(0.9, 2.2), k: r(1.2, 2.2), ph: r(0, 6.28), rad: steep ? r(1.2, 1.7) : r(1.5, 2.5), lift: r(2.6, 4.6), sprawl: 0.8, thorn: [7, 13], every: 42, layer: 3, open: true, reach: r(3.5, 8.5) })
   }
+  // Three more across the front at the height of the faces, where the thicket is thickest in the approved image: they
+  // run level and pass behind the pumpkins.
+  for (let i = 0; i < 3; i++) {
+    push({ a0: -118 + i * 52 + r(-6, 6), span: r(84, 120), h0: [15, 24, 19][i] + r(-1.5, 1.5), slope: [9, -7, 4][i], amp: r(0.8, 1.6), k: r(1.2, 2.2), ph: r(0, 6.28), rad: r(1.5, 2.3), lift: r(2.6, 4.2), sprawl: 0.8, thorn: [7, 13], every: 42, layer: 3, open: true, reach: r(3.5, 7) })
+  }
   // The wires: thin lengths that fill the weave between the branches.
-  for (let i = 0; i < 8; i++) {
-    const a0 = -180 + i * 45 + r(-8, 8)
+  for (let i = 0; i < 5; i++) {
+    const a0 = -180 + i * 72 + r(-8, 8)
     push({ a0, span: r(50, 110), h0: r(4, 21), slope: (rng() < 0.5 ? -1 : 1) * r(5, 22), amp: r(1.2, 3.2), k: r(2, 4), ph: r(0, 6.28), rad: r(0.5, 0.8), lift: r(1.2, 5.2), sprawl: 0.5, thorn: [3.5, 6.5], every: 40, layer: 3, open: true, reach: r(2, 6) })
   }
 }
@@ -199,7 +204,7 @@ function strandPath(s) {
     FACES.forEach((f, q) => {
       if (!under[q]) return
       const d = L.wrapDeg(az - f.az) * RAD * FACE_R
-      sink = Math.max(sink, smooth(1.12, 0.82, Math.hypot(d / (f.rad + 0.5), (h - f.h) / (f.tall + 0.4))))
+      sink = Math.max(sink, smooth(1.22, 0.95, Math.hypot(d / (f.rad + 0.5), (h - f.h) / (f.tall + 0.4))))
     })
     pts.push(place(mix(drumR(h) + rr * 0.55 + (s.lift * weave + off) * hug + low, drumR(h) - rr - 0.3, sink), h, az))
     radii.push(rr)
@@ -479,11 +484,14 @@ export function buildWax() {
     const az = cols[i]
     const { thick, drop } = prof(az)
     const t = j / (rows - 1)
-    const top = [L.sphereRadiusAt(39.45) + 0.1, 39.45]
+    const top = [L.sphereRadiusAt(39.62) + 0.1, 39.62]
     const h = top[1] - (drop + 0.9) * t
     const bulge = Math.sin(Math.PI * Math.min(t * 1.08, 1)) ** 0.6
-    const inner = h > 38.75 ? L.sphereRadiusAt(h) + 0.1 : Math.max(drumR(Math.min(h, 38.3)), 45.1 + 0.9 * smooth(38.75, 38.3, h))
-    const rr = inner + Math.max(thick, 0) * bulge + mix(mix(0.02, -1.6, smooth(0.08, 0.3, t)), 0.02, smooth(-0.3, 0.04, thick))
+    // The wax lies over the bead of the collar, never through it.
+    const beadDy = h - (L.CROWN[1] - 0.79)
+    const beadR = Math.abs(beadDy) < 0.8 ? L.CROWN[0] - 0.14 + Math.sqrt(0.64 - beadDy * beadDy) + 0.14 : 0
+    const inner = h > 38.75 ? Math.max(L.sphereRadiusAt(h) + 0.3, beadR) : Math.max(drumR(Math.min(h, 38.3)), 45.1 + 0.9 * smooth(38.75, 38.3, h), beadR)
+    const rr = inner + Math.max(thick, 0) * 0.7 * bulge + mix(mix(0.02, -1.6, smooth(0.08, 0.3, t)), 0.02, smooth(-0.3, 0.04, thick))
     const nr = norm3([Math.sin(Math.PI * (0.25 + 0.5 * t)) + 0.2, Math.cos(Math.PI * (0.1 + 0.9 * t)) * 0.9, 0])
     const s = Math.sin(az * RAD)
     const c = Math.cos(az * RAD)
@@ -499,9 +507,9 @@ export function buildWax() {
       const t = i / n
       const h = mix(h0, d.h1, t)
       const sway = (fbm(t * 3 + d.az, 0.4, 64, 4, 17, 2) - 0.5) * (d.h1 < 26 ? 3.2 : 1.4) * t
-      const ride = 2.0 + (d.h1 < 26 ? 1.2 : 3.0) * smooth(0, 0.3, t) * (0.75 + 0.25 * Math.sin(t * 5 + d.az))
+      const ride = 2.0 + 4.6 * smooth(38.0, 35.0, h) * (0.85 + 0.15 * Math.sin(t * 5 + d.az))
       pts.push(place(drumR(clamp(h, 0, 38.3)) + ride, h, d.az + sway))
-      const neck = mix(d.wide * 1.5, 0.58, smooth(0, 0.5, t))
+      const neck = mix(d.wide * 1.25, 0.58, smooth(0, 0.5, t))
       const bulb = 1 + 0.95 * Math.exp(-(((t - 0.88) / 0.1) ** 2))
       const cap = Math.sqrt(Math.max(1 - Math.max((t - 0.93) / 0.07, 0) ** 2, 0.0004))
       radii.push(d.w * neck * bulb * cap * (0.84 + 0.34 * fbm(t * 2.2 + d.az * 1.7, 0.2, 64, 4, 47, 1)))
