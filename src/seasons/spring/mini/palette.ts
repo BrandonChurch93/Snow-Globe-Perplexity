@@ -15,10 +15,10 @@ export const tones: Record<'lamp' | 'flame' | 'room' | 'curtain' | 'pane' | 'lam
   haloCore: [1, 0.68, 0.26],
   pool: [1, 0.55, 0.24],
   moss: [0.16, 0.24, 0.045],
-  waterDeep: [0.11, 0.115, 0.13],
+  waterDeep: [0.04, 0.055, 0.055],
   waterPale: [0.55, 0.46, 0.48],
   bed: [0.13, 0.14, 0.075],
-  bark: [0.16, 0.122, 0.104],
-  blossom: [1.17, 0.98, 1.07],
+  bark: [1.62, 1.33, 1.2],
+  blossom: [1.15, 1.02, 1.17],
   twig: [1, 1, 1],
 }
