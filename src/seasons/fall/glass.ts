@@ -38,7 +38,7 @@ export const look = {
     ringToMm: 56,
     back: 0.08,
     front: 0.3,
-    swirl: 8,
+    swirl: 15,
     swirlThin: 0.0,
     spinRadS: 2.2,
     spinDownSeconds: 2.6,
@@ -60,12 +60,14 @@ export const look = {
     liftedFromMm: 45,
     liftedToMm: 54,
     liftedFront: 0.07,
+    // Above the roof and the crown the strands go round the front of the dome too: there is nothing there for them to hide.
+    liftedFrontHigh: 0.45,
     lean: 0.22,
-    bank: 0.36,
+    bank: 0.24,
     bankMm: 9,
     pale: [0.6, 1.0, 0.54],
-    paleMm: 5,
-    paleGain: 0.35,
+    paleMm: 2.5,
+    paleGain: 0.1,
     air: 0.0003,
     airStirred: 0.3,
     airTint: [0.3, 0.24, 0.1],
@@ -377,11 +379,14 @@ void main() {
     float s2 = texture(uFogNoise, vec3(2.0 * turn + 0.31, 5.1 * lat + 0.5, r / 70.0 + 0.63)).r;
     // A finer run of wisps lies over the broad ones, and each depth of the wall has its own.
     float s3 = texture(uFogNoise, vec3(4.0 * turn + 0.77, 11.3 * lat + 0.21, r / 45.0 + 0.19)).r;
-    float strand = smoothstep(0.52, 0.6, 0.46 * s1 + 0.34 * s2 + 0.2 * s3 + 0.08 * (n.y - 0.5));
-    strands = mix(1.0, mix(${f(F.swirlThin)} + ${f(F.swirl)} * strand * strand, 0.55 + 0.9 * strand, uFogTurn.y), lift);
+    float weave = 0.46 * s1 + 0.34 * s2 + 0.2 * s3 + 0.08 * (n.y - 0.5);
+    float strand = smoothstep(0.55, 0.61, weave);
+    // At the flood the strands are as broad as they were, so the cover of the change is what it was.
+    float broad = smoothstep(0.52, 0.6, weave);
+    strands = mix(1.0, mix(${f(F.swirlThin)} + ${f(F.swirl)} * strand * strand, 0.55 + 0.9 * broad, uFogTurn.y), lift);
     // The turning liquid throws it to the wall: thick round the scene and behind it, thin in the middle and before it, so
     // the house and the tree stand dark against the green. Only at the hardest of the shake does it fill the dome.
-    around = mix(${f(F.liftedMiddle)}, 1.0, smoothstep(${f(F.liftedFromMm)}, ${f(F.liftedToMm)}, r)) * mix(1.0, ${f(F.liftedFront)}, smoothstep(-8.0, 24.0, p.z));
+    around = mix(${f(F.liftedMiddle)}, 1.0, smoothstep(${f(F.liftedFromMm)}, ${f(F.liftedToMm)}, r)) * mix(1.0, mix(${f(F.liftedFront)}, ${f(F.liftedFrontHigh)}, smoothstep(${f(GROUND + 24)}, ${f(GROUND + 50)}, p.y)), smoothstep(-8.0, 24.0, p.z));
     // What is left of the pool is a low bright bank behind the scene.
     bank = lift * ${f(F.bank)} * exp(-max(h, 0.0) / ${f(F.bankMm)}) * smoothstep(-2.0, -22.0, p.z) * mix(1.0, strands, 0.75);
   }
