@@ -40,6 +40,9 @@ export interface Behaviour {
   clearanceMm: number
   lifeSeconds: [number, number]
   orbit: boolean
+  /** Steering kinds: how high their homes reach above the ground (mm) and how they are spread up it (absent: 42 and 1.5). */
+  nestMm?: number
+  nestPower?: number
 }
 
 const base: Behaviour = {
@@ -84,10 +87,10 @@ const base: Behaviour = {
 export const BEHAVIOUR: Record<string, Behaviour> = {
   flake: { ...base, sinkMmS: [0.9, 3], settleMmS: [8, 16], floats: 0.17, followSeconds: 0.045, swayMmS: 2.2, crossMmS: 1.6, dip: 0.15, turnRadS: [0.5, 1.4], spinPerMm: 0.05, rest: 'lies', slope: 0.5, restSpeedMmS: 22, gripPerSecond: 9, liftMmS: [40, 140], kick: 0.55, layerMm: [0.12, 1.5], renew: 0.08, dwellSeconds: [6, 24], stormDwellSeconds: [1, 4], renewMmS: [2.5, 4], sizeMm: [0.09, 1.9], sizeMedianMm: 0.27, sizeSigma: 0.72, sinkPower: 0.5, sinkSigma: 0.5, hangSigma: 0.6, loft: 0.8, gather: 1, ball: 0.5 },
   glitter: { ...base, sinkMmS: [1.5, 4], settleMmS: [5, 10], followSeconds: 0.03, swayMmS: 0.8, crossMmS: 0.6, dip: 0.3, turnRadS: [2.2, 4.5], spinPerMm: 0.12, rest: 'lies', slope: 0.6, restSpeedMmS: 22, gripPerSecond: 10, liftMmS: [45, 150], kick: 0.6, layerMm: [0.05, 0.5], renew: 0.04, floats: 0.08, dwellSeconds: [6, 24], stormDwellSeconds: [1, 4], renewMmS: [2.5, 4], sizeMm: [0.08, 0.6], sizeMedianMm: 0.2, sizeSigma: 0.45, sinkPower: 0.5, sinkSigma: 0.5, hangSigma: 0.7, loft: 0.3, gather: 1, ball: 0.5 },
-  petal: { ...base, sinkMmS: [0.6, 2.6], settleMmS: [14, 30], floats: 0.05, followSeconds: 0.07, swayMmS: 7.5, crossMmS: 5, dip: 0.6, turnRadS: [1.1, 1.9], spinPerMm: 0.04, rest: 'lies', slope: 0.78, restSpeedMmS: 14, gripPerSecond: 5, liftMmS: [45, 150], kick: 0.5, layerMm: [0.08, 0.6], renew: 0.014, renewMmS: [5, 9], dwellSeconds: [2, 7], stormDwellSeconds: [1, 9], sizeMm: [1.6, 3], sizeSkew: 1.3 },
+  petal: { ...base, sinkMmS: [0.2, 1.9], settleMmS: [14, 30], floats: 0.085, followSeconds: 0.07, swayMmS: 7.5, crossMmS: 5, dip: 0.6, turnRadS: [1.1, 1.9], spinPerMm: 0.04, rest: 'lies', slope: 0.78, restSpeedMmS: 14, gripPerSecond: 5, liftMmS: [45, 150], kick: 0.5, layerMm: [0.08, 0.6], renew: 0.014, renewMmS: [5, 9], dwellSeconds: [2, 7], stormDwellSeconds: [1, 9], sizeMm: [1.3, 2.9], sizeSkew: 1.6 },
   mote: { ...base, sinkMmS: [-0.15, 0.2], followSeconds: 0.02, swayMmS: 0.35, crossMmS: 0.3, turnRadS: [0.15, 0.5], spinPerMm: 0.02, sizeMm: [0.1, 0.38], sizeSkew: 2 },
-  seed: { ...base, sinkMmS: [-0.12, 0.3], settleMmS: [6, 14], floats: 0.006, followSeconds: 0.03, swayMmS: 0.9, crossMmS: 0.7, dip: 0.2, turnRadS: [0.15, 0.5], spinPerMm: 0.03, rest: 'snags', slope: -2, restSpeedMmS: 30, gripPerSecond: 9, liftMmS: [18, 60], kick: 0.5, layerMm: [0.3, 1.2], sizeMm: [0.69, 1.39], sizeSkew: 1.6 },
-  firefly: { ...base, mode: 'steer', followSeconds: 0.1, turnRadS: [0.6, 1.3], sizeMm: [0.25, 0.58], sizeSkew: 1.4, cruiseMmS: 9, reachMm: 9, clearanceMm: 4 },
+  seed: { ...base, sinkMmS: [-0.25, 0.5], settleMmS: [6, 14], floats: 0.018, renew: 0.008, renewMmS: [1.5, 4.5], dwellSeconds: [4, 14], stormDwellSeconds: [1, 5], followSeconds: 0.03, swayMmS: 2.6, crossMmS: 2, dip: 0.2, turnRadS: [0.15, 0.5], spinPerMm: 0.03, rest: 'snags', slope: -2, restSpeedMmS: 30, gripPerSecond: 9, liftMmS: [18, 60], kick: 0.5, layerMm: [0.3, 1.2], sizeMm: [0.69, 1.39], sizeSkew: 1.6 },
+  firefly: { ...base, mode: 'steer', followSeconds: 0.1, turnRadS: [0.6, 1.3], sizeMm: [0.25, 0.58], sizeSkew: 1.4, cruiseMmS: 9, reachMm: 9, clearanceMm: 4, nestMm: 98, nestPower: 1.1 },
   leaf: { ...base, sinkMmS: [0.3, 1.8], settleMmS: [35, 65], floats: 0.05, followSeconds: 0.08, swayMmS: 13, crossMmS: 6, dip: 0.5, turnRadS: [3.5, 5.5], spinPerMm: 0.05, rest: 'lies', slope: 0.5, restSpeedMmS: 18, gripPerSecond: 5, liftMmS: [50, 160], kick: 0.5, layerMm: [0.15, 1], renew: 0.03, dwellSeconds: [4, 16], renewMmS: [4, 8], sizeMm: [1.0, 3.5], sizeSkew: 2.2 },
   ember: { ...base, mode: 'cycle', sinkMmS: [-5.5, -2.2], followSeconds: 0.05, swayMmS: 20, crossMmS: 5, turnRadS: [3, 6], sizeMm: [0.12, 0.7], sizeSkew: 4, lifeSeconds: [4, 8] },
   bat: { ...base, mode: 'steer', followSeconds: 0.25, turnRadS: [40, 55], sizeMm: [4.4, 5.8], cruiseMmS: 26, reachMm: 32, clearanceMm: 7, orbit: true },
