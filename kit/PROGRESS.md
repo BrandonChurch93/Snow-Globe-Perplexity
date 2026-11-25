@@ -1193,6 +1193,10 @@ Merged into `main`, each verified here with types clean and the tests green (126
   - The sound agent `sound_maker` (branch `agent/p4-sound`; `audio/`) starts when the first of the ten is done.
   - Phase 3's agents are all done and idle: the ten closers, `looklock_scribe`, the four render agents (used again for Phase 4's rounds), Round 7's critics and jurors.
 
+- Rounds 8 (spring) and 9 (summer), both on `fe1072c`, orders sent 01:36 UTC (decision 75). Never more than six critics, jurors and render agents at once.
+  - Round 8: `gate_runner` (the whole gate with `--unit spring` on a clean clone, limit 03:16), `round_renderer` (measures and the packs of R1, R2, R3, branch `agent/p4-round8-pack`, limit 02:51), `motion_renderer` (the motion pack R4, branch `agent/p4-round8-motion`, limit 02:46).
+  - Round 9: `round_renderer_b`, a new render agent started 01:36 in its own VM with the pack runbook (measures and the packs of R1, R2, R3, branch `agent/p4-round9-pack`, limit 03:06); `motion_renderer_b` (the motion pack R4, branch `agent/p4-round9-motion`, limit 02:46, then the whole gate with `--unit summer` on a clean clone, limit 04:06).
+
 ## Rounds
 
 One line per round: its number, the unit, the commit it judged, each part ticked off as it finished, the scores, and what changed next.
