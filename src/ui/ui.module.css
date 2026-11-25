@@ -8,7 +8,7 @@
   --pill: 46px;
   --hit: 44px;
   --glyph: 24px;
-  --emblem: 20px;
+  --emblem: 22px;
   --edge: 28px;
   --side: 34px;
   --label: 12px;
@@ -352,7 +352,7 @@
 }
 
 .globe {
-  transform-origin: 12px 19.2px;
+  transform-origin: 12px 19.9px;
 }
 
 .arcs {
@@ -523,7 +523,7 @@
     --pill: 42px;
     --hit: 40px;
     --glyph: 22px;
-    --emblem: 19px;
+    --emblem: 21px;
     --edge: 20px;
     --side: 28px;
     --label: 11.5px;
@@ -545,7 +545,7 @@
     --pill: 58px;
     --hit: 56px;
     --glyph: 30px;
-    --emblem: 25px;
+    --emblem: 27px;
     --edge: 38px;
     --side: 46px;
     --label: 15px;
@@ -558,7 +558,7 @@
     --pill: 52px;
     --hit: 48px;
     --glyph: 26px;
-    --emblem: 22px;
+    --emblem: 24px;
     --edge: 34px;
     --side: 32px;
     --label: 13px;
@@ -572,7 +572,7 @@
     --pill: 44px;
     --hit: 44px;
     --glyph: 24px;
-    --emblem: 20px;
+    --emblem: 22px;
     --edge: 10px;
     --side: 22px;
     --label: 11.5px;
@@ -586,7 +586,7 @@
     --pill: 50px;
     --hit: 48px;
     --glyph: 24px;
-    --emblem: 21px;
+    --emblem: 23px;
     --edge: 22px;
     --side: 16px;
     --label: 12.5px;
