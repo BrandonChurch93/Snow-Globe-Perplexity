@@ -167,6 +167,10 @@ const storm = {
   backZ: [-10, -26],
   backY: [18, -22],
   rollPower: 1.4,
+  /** The release of the flood: how long after the landing it is over (the landed state's moment), which share of the release the set down takes (0.6 s of set down before 0.5 s after), and by which share of it the flood has let go of the liquid's turbulence. */
+  releaseSeconds: config.states.landedSeconds,
+  releaseLanding: 0.545,
+  releaseOwn: 0.3,
   /** The billows: two sizes, mm, and how much of the mist is even between them at the flood and after. */
   wideMm: 96,
   fineMm: 34,
@@ -183,6 +187,9 @@ const storm = {
   treeSideMm: 18,
   treeSide: 2,
   cottageSide: 0.5,
+  /** The island's bank, below the lawn: how thick the mist stays there before the miniature (a share of its thickness behind), and up to how far above the lawn that reaches, mm. */
+  bank: 1,
+  bankTopMm: 4,
   /** The streaks: the mist is drawn out along the liquid's turn in fine dashes. The tile of their pattern across the turn (mm), how slowly it changes along the turn, and how much of the mist they carry. */
   streakMm: 16,
   streakLong: 0.15,
@@ -301,7 +308,11 @@ void main() {
   // After the flood the mist stands behind the miniature and thins toward the eye, so the cottage, the lamp and the trunk
   // stand before a bright veil and are not blotted out by it.
   float tree = smoothstep(-6.0, 16.0, p.x);
-  float front = mix(1.0, mix(1.0, ${n(storm.near)}, smoothstep(${n(storm.nearFrom)}, ${n(storm.nearTo)}, p.z - ${n(storm.treeSideMm)} * tree)) * mix(${n(storm.cottageSide)}, ${n(storm.treeSide)}, tree), after);
+  float thin = mix(1.0, ${n(storm.near)}, smoothstep(${n(storm.nearFrom)}, ${n(storm.nearTo)}, p.z - ${n(storm.treeSideMm)} * tree)) * mix(${n(storm.cottageSide)}, ${n(storm.treeSide)}, tree);
+  // Below the lawn the mist is not thinned toward the eye: it lies on the island's bank down to the collar while the liquid turns.
+  thin = mix(thin, max(thin, ${n(storm.bank)}), smoothstep(${n(groundY + storm.bankTopMm)}, ${n(groundY)}, p.y));
+  // The mist opens before the miniature by equal ratios as the flood lets go, not all at its end.
+  float front = pow(thin, after);
   // What still liquid keeps hangs about the lamp and behind the tree, and nowhere else.
   vec3 e = (p - ${v3(storm.calmAt)}) / ${v3(storm.calmReach)};
   vec3 l = p - ${v3(storm.lampAt)};
@@ -506,12 +517,25 @@ export function stormAt(moment: KitMoment): { thick: number; even: number; wash:
   const shut = config.shake.swapWindow.toBeat
   const beat = f.moment.beat
   const since = f.moment.sinceLanding
-  const open = beat !== null ? ramp(beat, shut + L.openFromBeats, shut + L.openToBeats) : since >= 0 && since < L.openHoldSeconds ? 1 : 0
-  const flood = Math.max(Math.pow(w, L.whitePower), held * Math.pow(up, L.shakenPower)) * (1 - open)
   const rolling = Math.min(1, Math.max(0, (f.liquid[LIQUID_ROLL] ?? 0) / ROLL_MAX))
-  const after = Math.max(storm.stirred * Math.pow(turb, L.hazePower), storm.rolling * Math.pow(rolling, storm.rollPower))
-  const wash = Math.min(1, Math.max(after, storm.flood * flood) / storm.washFull)
-  return { thick: Math.max(storm.flood * flood, after, storm.calm), even: storm.even[1]! + (storm.even[0]! - storm.even[1]!) * flood, wash }
+  const stir = Math.max(storm.stirred * Math.pow(turb, L.hazePower), storm.rolling * Math.pow(rolling, storm.rollPower))
+  const after = Math.max(stir, storm.calm)
+  // The flood does not open in a step. From the close of the swap it thins through the set down and the landing and is the
+  // stirred mist `releaseSeconds` after the landing: 0 to 1 over that whole time, the landing at `releaseLanding` of it.
+  const u =
+    beat !== null
+      ? Math.min(1, Math.max(0, (beat - shut) / config.shake.setDownBeats)) * storm.releaseLanding
+      : since >= 0 && since < L.openHoldSeconds
+        ? storm.releaseLanding + (1 - storm.releaseLanding) * Math.min(1, since / storm.releaseSeconds)
+        : 0
+  const e = u * u * (3 - 2 * u)
+  const raw = Math.max(Math.pow(w, L.whitePower), held * Math.pow(up, L.shakenPower))
+  // Once the release is under way the flood no longer hangs on the turbulence of that instant, only on the release.
+  const flood = u > 0 ? raw + (1 - raw) * ramp(u, 0, storm.releaseOwn) : raw
+  // Thickness falls by equal ratios in equal times (the eye reads thickness by its logarithm), from the flood's to the stirred mist's.
+  const thick = Math.max(after, storm.flood * flood * Math.pow(after / storm.flood, e))
+  const wash = Math.min(1, (thick > after ? thick : stir) / storm.washFull)
+  return { thick, even: storm.even[1]! + (storm.even[0]! - storm.even[1]!) * flood * (1 - e), wash }
 }
 
 /** The mist at a moment: on the ground and thick at the landing, risen and thin at rest; `bare` between the swap and the landing. */
