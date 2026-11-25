@@ -59,3 +59,29 @@ Pictures are on this branch. `12`, `13`, `14` show the last commit; `15` and `11
 - Maps drawn upside down gave ring marks; `up()` in `maps.mjs` fixes the row order.
 - Broad highlight lobes on the sea glass: milky white faces. Removed; now too saturated instead.
 - Deeper beds through the profile's noise amplitudes (1.3 to 2.0 and 0.5 to 1.0): more folds, still cloth.
+
+## Measured numbers (02:23..02:37 UTC, at 01edebf)
+
+- `npx tsc --noEmit` clean; `npx vitest run` 32 files passed, 1 skipped; 432 tests passed, 4 skipped.
+- `npm run determinism`: `determinism: pass · 3 pictures, 4 page loads, preview, draft, 330 s` at 02:29; a second run after the last merge of main wrote `"pass": true` to `out/work/determinism/result.json` at 02:44 (I did not see its last line). Both ran without `--season`, so on winter: they do not prove summer. `npm run determinism -- --season summer` was not run for lack of time; run it first. My own check at 02:48: two `landed` hero stills of summer at hd draft were byte identical.
+- `npm run measure -- --unit summer --only M2,M3 --tier draft`: M2 pass on rest, shake, interior, base, surface, settled (0 soft pixels each). M3 `summer-rest` FAIL 0.6909 against 0.75: the measure takes the lowest part; the base scores 2.683 over 170,641 pixels, the miniature 0.691.
+- `npm run measure -- --unit summer --only M1,M6 --tier draft`: all pass (M6 shake: 8 of 102,000 particles inside a solid, 0.000078 against 0.002).
+- `--diag standins` still (hero, rest, hd, draft): all black, 0 pixels lit.
+- Colour, by `summer_air` at 01:56 (before my last changes), approved | build: base right 165,133,109 | 153,121,76; "base front" 55,55,46 | 85,68,36 (their labels). Not measured again.
+- Size: `public/assets/summer/base-*` 5.23 MiB of the 6.5 MiB allowed (glb 3.57 MiB, carve 0.38, stone 0.48, grain tile 0.53, sand tile 0.26); the season folder 14.1 MiB of 18.
+- Triangles: base glb 282,656; grains 30,000 quads (60,000 triangles, one draw call); the slab's sand mesh was not counted; G15 through the app's path was not measured by me.
+- Looks used: 15 pictures over the three parts. Generated pictures: none.
+
+## Rows for `ASSETS.md` (`/root` adds them; I may not edit that file)
+
+Under "Generated images", as a line of prose like the one for the scene slab:
+
+Made by script, with no generated picture in them (2026-11-25): `assets-full/summer/base-summer.glb`, `assets-full/summer/base-stone.srgb.w2048.png`, `assets-full/summer/base-carve.lin.w2048.png`, `assets-full/summer/base-grain.lin.tile.w512.png`, `assets-full/summer/base-sand.lin.tile.w512.png`, all by `assets-src/base-summer/build.mjs` through `npm run make -- base-summer`; recipe in `assets-src/base-summer/RECIPE.md`. The positions of the shells and glass pieces in `assets-src/base-summer/set.json` are numbers read off `references/approved/summer-rest.png`; no pixel of it is in any file.
+
+## Where I would start
+
+1. Shape first: in `profile.mjs` and `field.mjs` replace the rolling beds by three or four stepped ledges with a hard upper lip and an undercut, sweeping up to the right as in the approved image, and one swelling foot. Check with `--diag normals` from the base camera before touching any light.
+2. Then the carve picture in `maps.mjs`: remove the thin crease lines, add pitted, wind-eaten hollows of 1 to 3 mm.
+3. Then the sea glass: lower saturation, add a frosted pale rim and light through the body (`GLASS_AFTER` in `base.ts`), and close the pole of each piece in `seaGlass()`.
+4. Then shells: vertex colours in `mesh.mjs` toward peach, rose and cream, gloss up.
+5. Fit command: `npm run fit -- --season summer --tier draft --format hd --box 820,960,2000,1480 --name <n> --wide 1180 --force` writes `out/work/fit/<n>-pair.jpg` (approved above, ours below). One render process at a time.

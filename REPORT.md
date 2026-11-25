@@ -18,12 +18,10 @@ What I built:
 12. Base: a 282,656 triangle glb made by script from 34 measured picks (stone wall with beds, 34 shells and sea glass pieces as geometry, ledge sand), four materials, `baseHeightMm` 33, winter's collar, gives way inside the bloom through `partChange`.
 13. Surface: sand heaps as a height field on the slab (mesh on a 0.8 mm grid), lit by slope, shadowed by globe and base; front left kept clear for `summer_air`'s pool, which `slab.ts` draws through `glassPart.surfacePool`.
 14. Arrival: 30,000 grains in one draw call; 14,000 jump off the ledge on the landing and come to rest, 16,000 pour off the ledge in a loop; all a pure function of the moment.
-
 Make targets, in order: `npm run make -- base-summer` (26 s), `npm run texpack`, `npm run build`. No `slab-summer` folder.
-
 Tests run on the last own commit:
 15. `npx tsc --noEmit`: clean. `npx vitest run`: 32 files passed, 1 skipped; 432 tests passed, 4 skipped (run again after the last merge, same result).
-16. `npm run determinism`: `determinism: pass · 3 pictures, 4 page loads, preview, draft, 330 s` (run 02:23..02:29 UTC, before the last merge of main; not run again after it).
+16. `npm run determinism`: `determinism: pass · 3 pictures, 4 page loads, preview, draft, 330 s` at 02:29 UTC; run again after the last merge, `result.json` says pass at 02:44 (last line not seen). Both ran on the default season, winter (`--season` not given), so they do not prove summer. Own check: two `landed` hero stills of summer, hd draft, byte identical (02:48).
 17. `npm run measure -- --unit summer --only M2,M3 --tier draft`: M2 pass on all six pictures (0 soft pixels); M3 `summer-rest` FAIL 0.6909 against 0.75, where the base scores 2.683 and the miniature 0.691 (the failing part is not mine).
 18. `npm run measure -- --unit summer --only M1,M6 --tier draft`: M1 and M6 pass on all six pictures (`measure summer: complete · 19 of 19 lines, 1 red`, the red line is M3 above).
 
