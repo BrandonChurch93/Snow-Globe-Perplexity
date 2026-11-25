@@ -16,29 +16,29 @@ import type { KitMoment, SeasonKit } from '../kit'
 // is snow, not petals.
 export const standIns: string[] = []
 
-export const veil: SeasonKit['veil'] = { tint: [1, 0.9, 0.93], density: 0.02, rest: 0 }
-export const particles: SeasonKit['particles'] = { petal: { color: [1, 0.74, 0.8], glow: 0 }, mote: { color: [0.5, 0.44, 0.42], glow: 0 } }
+export const veil: SeasonKit['veil'] = { tint: [1, 0.9, 0.93], density: 0.002, rest: 0 }
+export const particles: SeasonKit['particles'] = { petal: { color: [1, 0.66, 0.76], glow: 0 }, mote: { color: [0.3, 0.27, 0.27], glow: 0 } }
 
 const PART = 'veil-spring'
 const INNER = config.globe.sphereDiameterMm / 2 - config.globe.glassThicknessMm
 
 const look = {
   /** The sheets the volume is cut into, front to back, and how finely each is cut for the lens to bend it. */
-  sheets: 18,
+  sheets: 36,
   cols: 28,
   rows: 8,
-  topMm: 34,
+  topMm: 46,
   /** How high the mist stands (the height at which it has thinned to a third) on the landing and at rest, and how long it takes to rise. */
-  heightMm: [3.2, 8.5],
+  heightMm: [3.2, 7.5],
   riseSeconds: 5,
   /** How thick it is on the landing and at rest. */
-  density: [3.2, 2.2],
+  density: [3.6, 1.1],
   thinSeconds: 7,
   /** How much of it the storm blows off. */
   blown: 0.7,
   tint: [1, 0.8, 0.82],
   cold: 3.2,
-  warm: 1.6,
+  warm: 2.6,
   /** How far the banks drift round in one period, mm. */
   driftMm: 5,
 }
@@ -149,7 +149,7 @@ const storm = {
   /** The mist's thickness per mm: closed over the miniature at the height of the storm, while the liquid is stirred, while it only rolls. */
   flood: 0.2,
   stirred: 0.03,
-  rolling: 0.013,
+  rolling: 0.011,
   rollPower: 1.4,
   /** The billows: two sizes, mm, and how much of the mist is even between them at the flood and after. */
   wideMm: 96,
@@ -199,10 +199,10 @@ void main() {
   float turn = 6.2831853 * uStorm.z;
   vec4 wide = texture(uVeilNoise, q / ${n(storm.wideMm)} + vec3(0.03 * sin(turn), 0.03 * cos(turn), 0.17));
   vec4 fine = texture(uVeilNoise, q / ${n(storm.fineMm)} + vec3(wide.rg - 0.5, 0.0) * 0.5 + vec3(0.41, 0.07 * sin(turn + 2.1), 0.63));
-  float billow = smoothstep(0.4, 0.8, 0.62 * wide.a + 0.38 * fine.a);
+  float billow = smoothstep(0.46, 0.82, 0.62 * wide.a + 0.38 * fine.a);
   float eye = mix(${n(storm.eye)}, 1.0, smoothstep(5.0, 38.0, rad));
   float wall = 1.0 - smoothstep(0.9, 1.0, far);
-  float sigma = uStorm.x * wall * eye * mix(billow * 2.6, 1.0, uStorm.w);
+  float sigma = uStorm.x * wall * eye * mix(billow * 3.4, 1.0, uStorm.w);
   // One sheet's share of the way through the liquid, along the eye's ray.
   float slant = max(abs(normalize(vStageWorld - cameraPosition).z), 0.35);
   float a = 1.0 - exp(-sigma * ${n((2 * INNER * 0.97) / storm.sheets)} / slant);
