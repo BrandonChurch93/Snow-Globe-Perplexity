@@ -66,7 +66,7 @@ export const glassLook = {
  * `windowTint`: the colour of the window's reflection over the key light's. `windowGain`: the gain of its four orders (outer
  * face, inner face, third, through view). `windowSoftDeg`: how far its edges are feathered. `windowGrain`: the depth of the
  * texture inside it. `rimTint`: the room's light in the rim's band and on the outline. `wallTint`: the same in the wall low on
- * the glass. `ringCover`: how much of the inside the ring at the outline hides. `strip`: the gain of the tall cool strip at the left.
+ * the glass. `ringCover`: how much of the inside the ring at the outline hides, short of its outermost line, which always covers. `strip`: the gain of the tall cool strip at the left.
  * `bend`: how much of the mirrored band inside the outline is drawn over the lens's own picture there. `ringThin`: how far the
  * ring's inner edge is moved out toward the outline, 0 to 1, which thins the band round the glass. `rimClear`: how much of the
  * inside the rim's band hides. `topLine`: how much of the cool line the ring carries over the top. `ringMottle`: the depth of the
@@ -593,7 +593,7 @@ void main() {
   ringCol = mix(ringCol, uSky * uRimTint * mix(${vec(glassLook.ring.line)}, ${vec(glassLook.ring.lineTop)}, uRimAmt.y * smoothstep(0.6, 0.95, nWorld.y)), ${num(glassLook.ring.lineMix)} * ringEdge);
   float ringLow = (1.0 - smoothstep(${num(glassLook.ring.low[0])}, ${num(glassLook.ring.low[1])}, nWorld.y)) * smoothstep(${num(glassLook.ring.lowEnd[0])}, ${num(glassLook.ring.lowEnd[1])}, nWorld.y);
   ringCol = mix(ringCol, uSky * uRimTint * ${vec(glassLook.ring.lowLine)}, ${num(glassLook.ring.lowMix)} * ringLow * smoothstep(${num(glassLook.ring.lowAt[0])}, ${num(glassLook.ring.lowAt[1])}, s));
-  float ringCover = ring * mix(1.0, mix(${num(glassLook.ring.cover)}, 1.0, ringEdge), ringTop) * uRingAmt.x;
+  float ringCover = ring * mix(1.0, mix(${num(glassLook.ring.cover)}, 1.0, ringEdge), ringTop) * (uRingAmt.x + (1.0 - uRingAmt.x) * smoothstep(${num(glassLook.ring.edge[0])}, ${num(glassLook.ring.edge[1])}, s));
   vec3 mirTo = refract(v, n, 1.0 / uLens.y);
   float mirChord = 2.0 * uLens.x * max(dot(-n, mirTo), 0.0);
   vec3 mirAt = p + mirTo * mirChord;
