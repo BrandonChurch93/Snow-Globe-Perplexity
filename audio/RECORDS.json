@@ -2379,6 +2379,720 @@
       },
       "time": "2026-11-25T17:23:09.617Z",
       "answersTime": "2026-11-25T17:24:23.073Z"
+    },
+    {
+      "cue": "shake-fall",
+      "take": 1,
+      "round": "build",
+      "class": "impact",
+      "season": "fall",
+      "line": "Liquid sloshing and churning inside glass, with dry leaves and a hollow rattle in it",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "A small sealed wooden keg, half full of water with a few dry acorns in it, shaken back and forth six times from the first moment to the last: the acorns knocking hollow against the wood and the water sloshing and churning hard around them, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 2.6,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 29
+      },
+      "source": {
+        "name": "shake-fall-2026-11-25T17-25-55-474Z.wav",
+        "bytes": 491598,
+        "sha256": "b4fb8e47a06b557883680a6a0cb1225c2f46a9a5b7d88042c885f74201f63610",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 2.56,
+        "kbps": 1536
+      },
+      "sha256": "ac5651099e93608f21b662b7077e39a4bb5832823c879dfac2dcd325b3ebca4b",
+      "measured": {
+        "seconds": 2.56,
+        "peakDb": -0.02,
+        "truePeakDb": -0.02,
+        "lufs": -19.01,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": -74.72,
+        "rmsDb": -26.1,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 1.67,
+        "soundSeconds": 0.89,
+        "tailDb": -80.56,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 343,
+          "bands": {
+            "sub": 0.0016,
+            "low": 0.243,
+            "lowMid": 0.7292,
+            "mid": 0.0259,
+            "high": 0.0002,
+            "air": 0
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -19,
+        "lra": 0,
+        "truePeakDb": 0
+      },
+      "fits": {
+        "wantSeconds": 2.6,
+        "soundSeconds": 0.89,
+        "ok": false,
+        "note": "the sound is 0.89 s, short for a cue of 2.6 s"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: 2.56 s filed but only 0.89 s of sound, short for a cue of 2.6 s: three hits at 0.1, 0.25 and 0.4 s, then nothing; 97 percent of the energy under 1 kHz and nothing above 4 kHz, so there is no liquid in it. Listener, open: three quick knocks on a hard, slightly hollow surface, likely a wooden door. Fit: no, a fast hollow bouncing like a ping-pong ball, no liquid, no leaves. No voice, no music. Rejected by the numbers and by the listener: the hollow knock came alone and was over in under a second.",
+        "listener": {
+          "line": "Liquid sloshing and churning inside glass, with dry leaves and a hollow rattle in it",
+          "open": "1. I hear a brief, rapid knocking sound on a hard, slightly hollow surface, likely a wooden door. The sound is sharp, percussive, and unvarying in tone.\n2. There are three separate sound events consisting of distinct, consecutive knocks.\n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or musical instrument present.\n5. The audio starts abruptly with the first knock. It ends almost immediately after the short resonance of the third knock fades out.",
+          "fit": "1. No, because the audio only contains a rapid, hollow bouncing noise, completely lacking any sounds of liquid sloshing, churning, or rustling leaves. \n2. The sound consists of the rhythmic, accelerating tapping of what sounds like a ping-pong ball bouncing on a hard surface, which does not fit the described elements of liquid, glass, or leaves.\n3. No, there is no human voice, spoken word, or singing in this recording."
+        }
+      },
+      "time": "2026-11-25T17:25:59.175Z",
+      "answersTime": "2026-11-25T17:26:50.305Z"
+    },
+    {
+      "cue": "shake-fall",
+      "take": 2,
+      "round": "build",
+      "class": "impact",
+      "season": "fall",
+      "line": "Liquid sloshing and churning inside glass, with dry leaves and a hollow rattle in it",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "Water sloshing and churning back and forth inside a small sealed wooden keg, half full, that is being shaken, six fast sloshes from the first moment to the last: quick wet sloshes of water thumping hollow against the wood, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 2.6,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 29
+      },
+      "source": {
+        "name": "shake-fall-2026-11-25T17-26-52-860Z.wav",
+        "bytes": 491598,
+        "sha256": "49595322a734e248243bbc2a38ca9521dfe27af29711359bb586a163cfa91cd3",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 2.56,
+        "kbps": 1536
+      },
+      "sha256": "f2f1296bad49a97b3cd250e6e248179b0eedd1cfa7204b84c9d295966b5ccd28",
+      "measured": {
+        "seconds": 2.56,
+        "peakDb": -1.29,
+        "truePeakDb": -1.27,
+        "lufs": -19,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -24.42,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0.4,
+        "soundSeconds": 2.16,
+        "tailDb": -72.89,
+        "events": 2,
+        "spectrum": {
+          "centroidHz": 662,
+          "bands": {
+            "sub": 0.0026,
+            "low": 0.622,
+            "lowMid": 0.108,
+            "mid": 0.2606,
+            "high": 0.0066,
+            "air": 0.0002
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -19,
+        "lra": 0,
+        "truePeakDb": -1.3
+      },
+      "fits": {
+        "wantSeconds": 2.6,
+        "soundSeconds": 2.16,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "fits weakly",
+        "why": "Numbers: 2.56 s filed, sound from 0.1 to 1.4 s in several bursts, loudest at 0.3 to 0.6 s, then quiet; 62 percent of the energy between 60 and 250 Hz, the hollow thump, and 26 percent between 1 and 4 kHz, the water. Listener, open, asked twice: water splashing with a hollow clatter, like a plastic bucket or a metal bowl moved roughly, a splash and a fast rattle at once; then a splash or plop, like a solid thing dropped into a small pool, wet and sloshing with a slightly hollow or metallic echo. Fit: no, it lacks the dry leaves and the hollow rattle; nothing in it is outside the line. No voice, no music. The liquid and a hollow body are heard in all three calls, a rattle in one of three, leaves in none: it holds the liquid part of the line and is not yet the whole line.",
+        "listener": {
+          "line": "Liquid sloshing and churning inside glass, with dry leaves and a hollow rattle in it",
+          "open": "1. I hear water splashing accompanied by a hollow clatter, like a plastic bucket or metallic bowl being dropped or moved roughly. The sound is wet, abrupt, and slightly resonant.\n2. There is one continuous, brief sound event made up of a simultaneous splash and rapid rattle.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument present.\n5. The sound begins suddenly with a sharp splash and impact. It ends almost immediately as the clattering noise quickly fades into silence.",
+          "fit": "1. No, the audio does not fit the description because it lacks the sounds of dry leaves and a hollow rattle. \n2. There are no additional sounds in the audio that fall outside of the provided description. \n3. No, there is no human voice, spoken word, or singing in this clip.",
+          "openSecond": "1. I hear a distinct splash or plop, like a solid object dropping into a small pool of water. The sound has a wet, sloshing character with a slightly hollow or metallic echo.\n2. There is one main sound event consisting of the initial splash and the resulting water movement.\n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or musical instrument.\n5. It starts abruptly with the sharp impact of the splash and ends quickly as the water sloshing and echo fade out.",
+          "note": "the open call heard a hollow rattle and the fit call said there was none, so the open questions were asked a second time (openSecond)"
+        }
+      },
+      "time": "2026-11-25T17:26:57.098Z",
+      "answersTime": "2026-11-25T17:28:16.644Z"
+    },
+    {
+      "cue": "shake-fall",
+      "take": 3,
+      "round": "build",
+      "class": "impact",
+      "season": "fall",
+      "line": "Liquid sloshing and churning inside glass, with dry leaves and a hollow rattle in it",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "A handful of dry leaves and dry acorns rattling and rustling inside a small hollow wooden box that is shaken back and forth six times from the first moment to the last: a steady hollow wooden rattle and a dry papery rustle of leaves the whole time, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 2.6,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 29
+      },
+      "source": {
+        "name": "shake-fall-2026-11-25T17-28-19-184Z.wav",
+        "bytes": 491598,
+        "sha256": "a9b3af96aa0ca4552e5d96e2f9a0cc6582ae026dd0779d9d87dbe29d2f764b89",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 2.56,
+        "kbps": 1536
+      },
+      "sha256": "a219266dad2a8a5d145af964a9083882309fa2e2fbb5c690336de71c69e74d75",
+      "measured": {
+        "seconds": 2.56,
+        "peakDb": -13.93,
+        "truePeakDb": -13.58,
+        "lufs": -35.22,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -43.05,
+        "silenceFrontSeconds": 0.015,
+        "silenceEndSeconds": 0.095,
+        "soundSeconds": 2.45,
+        "tailDb": -79.7,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 4637,
+          "bands": {
+            "sub": 0.0003,
+            "low": 0.0017,
+            "lowMid": 0.002,
+            "mid": 0.5078,
+            "high": 0.4517,
+            "air": 0.0367
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -35.2,
+        "lra": 0,
+        "truePeakDb": -13.6
+      },
+      "fits": {
+        "wantSeconds": 2.6,
+        "soundSeconds": 2.45,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: 2.56 s filed, sound 2.45 s, one unbroken run of clicks from 0.15 to about 1.9 s at an even level, then fading; 51 percent of the energy between 1 and 4 kHz and 45 percent between 4 and 10 kHz, nothing under 1 kHz. Listener, open: a continuous rattle of small hard objects shaken together, like dice in a hand or a cup, dry and clattering, one event, starts and stops abruptly. Fit: no, it is small hard objects shaken, with no liquid and no rustling leaves. No voice, no music. It holds the dry rattle of the line and nothing of the liquid; take 2 holds the liquid in a hollow vessel. The cue is out of takes and stays open as a take; the two may be laid together in the free work (decision 111).",
+        "listener": {
+          "line": "Liquid sloshing and churning inside glass, with dry leaves and a hollow rattle in it",
+          "open": "1. I hear the continuous rattling of small, hard objects being shaken together, which sounds exactly like dice in a hand or a cup. The sound is dry, clattering, and full of rapid clicks.\n2. There is one continuous sound event consisting of a rapid, ongoing series of small impacts.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument.\n5. The sound starts abruptly right as the shaking begins. It ends just as suddenly when the action stops, with no fade-out or lingering echo.",
+          "fit": "1. No, because the audio consists entirely of small, hard objects being shaken, completely lacking any sounds of sloshing liquid or rustling leaves. \n2. The sharp, dry clattering of solid objects—which sounds like dice being shaken in a cup—does not fit the fluid and rustling elements of the description. \n3. No, there is no human voice, spoken word, or singing in the audio."
+        }
+      },
+      "time": "2026-11-25T17:28:23.139Z",
+      "answersTime": "2026-11-25T17:29:13.802Z"
+    },
+    {
+      "cue": "land-fall",
+      "take": 1,
+      "round": "build",
+      "class": "impact",
+      "season": "fall",
+      "line": "A heavy glass globe set down on stone, heavy and short, then a wooden creak and a low eerie tone",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "A heavy glass ball dropped onto a thick old wooden floor in an empty stone cellar: one deep booming thud of its weight landing, then the old wood creaking slowly once and a low dark eerie hum dying away, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 3,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 33
+      },
+      "source": {
+        "name": "land-fall-2026-11-25T17-29-37-426Z.wav",
+        "bytes": 576078,
+        "sha256": "768b0f34f377d07aab4440358f16c8b9033ad60ac58a032b7b905a524248cd36",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 3,
+        "kbps": 1536
+      },
+      "sha256": "3a242439fbab61ff90fb7738f3b602b9b3a1b092aae17aec3a07862d97fd9ca1",
+      "measured": {
+        "seconds": 3,
+        "peakDb": -3.36,
+        "truePeakDb": -3.36,
+        "lufs": -28.07,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -28.52,
+        "silenceFrontSeconds": 0.01,
+        "silenceEndSeconds": 0.4,
+        "soundSeconds": 2.59,
+        "tailDb": -83.8,
+        "events": 2,
+        "spectrum": {
+          "centroidHz": 129,
+          "bands": {
+            "sub": 0.5254,
+            "low": 0.311,
+            "lowMid": 0.1613,
+            "mid": 0.0023,
+            "high": 0,
+            "air": 0
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -28.1,
+        "lra": 20,
+        "truePeakDb": -3.4
+      },
+      "fits": {
+        "wantSeconds": 1.5,
+        "soundSeconds": 2.59,
+        "ok": false,
+        "note": "the sound is 2.59 s, long for a cue of 1.5 s: the chain cuts it to length"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: 3.00 s filed, sound 2.59 s, cut by the chain to 1.5 s; a hard low hit at the start falling 28 dB in 0.5 s, and a second, quieter low bump at 1.0 s; 53 percent of the energy under 60 Hz, 31 percent between 60 and 250 Hz, nothing over 1 kHz. Listener, open: one sharp impact like a hollow wooden object being struck, quick and resonant with a very brief echo, like a strike on a woodblock; one event. Fit: no; there is a heavy, short impact at the beginning, but no wooden creak and no low eerie tone. No voice, no music. It is the first landing of the nine heard as a heavy impact: it holds the set down of the line and not the creak or the tone.",
+        "listener": {
+          "line": "A heavy glass globe set down on stone, heavy and short, then a wooden creak and a low eerie tone",
+          "open": "1. I hear a single, sharp impact sound that resembles a hollow wooden object being struck. It has a quick, resonant quality with a very brief echo.\n2. There is exactly one separate sound event.\n3. There is no human voice, spoken word, breath, or singing in the clip.\n4. There is no music or melody, although the sound is similar to a percussive strike on a woodblock.\n5. The sound begins abruptly with a loud impact and ends almost immediately as the brief resonance fades out.",
+          "fit": "1. No, because although there is a heavy, short impact at the beginning, the sound completely lacks the described wooden creak and low eerie tone.\n2. There are no extra elements in the sound that fall outside the description. \n3. No, there is no human voice, spoken word, or singing in the clip."
+        }
+      },
+      "time": "2026-11-25T17:29:41.903Z",
+      "answersTime": "2026-11-25T17:30:35.471Z"
+    },
+    {
+      "cue": "land-fall",
+      "take": 2,
+      "round": "build",
+      "class": "impact",
+      "season": "fall",
+      "line": "A heavy glass globe set down on stone, heavy and short, then a wooden creak and a low eerie tone",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "One deep heavy thud, and at once a slow dry creak of an old wooden beam bending, with a low dark eerie tone humming under the creak and dying away, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 2,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 22
+      },
+      "source": {
+        "name": "land-fall-2026-11-25T17-30-38-226Z.wav",
+        "bytes": 384078,
+        "sha256": "526f240d80d84a6ee9fdbf0a1343a27609c0b2613686e2b5ee8ef728c1090455",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 2,
+        "kbps": 1536
+      },
+      "sha256": "a598d5c4bc65380d676437c5b305988d35b3829fe09ac2b2718dae04c887b7fa",
+      "measured": {
+        "seconds": 2,
+        "peakDb": -15.88,
+        "truePeakDb": -15.88,
+        "lufs": -36.31,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -33.6,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0,
+        "soundSeconds": 2,
+        "tailDb": -71.25,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 35,
+          "bands": {
+            "sub": 0.928,
+            "low": 0.0693,
+            "lowMid": 0.0027,
+            "mid": 0,
+            "high": 0,
+            "air": 0
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -36.3,
+        "lra": 0,
+        "truePeakDb": -15.9
+      },
+      "fits": {
+        "wantSeconds": 1.5,
+        "soundSeconds": 2,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: 2.00 s filed, cut by the chain to 1.5 s; one swell loudest at 0.2 s and falling evenly to the end; 93 percent of the energy under 60 Hz and 7 percent between 60 and 250 Hz, nothing above: a sub rumble that a phone or a laptop speaker will not play. Listener, open, four calls: two answered that no file came; one heard a short muffled thump and then a quick rubbery squeak, like a microphone bumped or an object moved on a desk; one heard a fast clicking and whirring like an old film projector, which the numbers rule out, since there is no energy over 250 Hz. Fit, one call: yes, a heavy short impact, then a creak and a low tone. The fit call agrees easily and the open calls do not agree with each other; a creak was heard in none of them as a creak and the tone in none. No voice, no music. Not kept: what it is cannot be settled by ear and it lies almost wholly under what small speakers play.",
+        "listener": {
+          "line": "A heavy glass globe set down on stone, heavy and short, then a wooden creak and a low eerie tone",
+          "open": "1. Not sure, as no audio file was provided or attached to your prompt for me to listen to.\n2. Not sure.\n3. Not sure.\n4. Not sure.\n5. Not sure.",
+          "fit": "1. Yes, the sound fits the description because it sequentially features a heavy, short impact on a hard surface, followed by a creaking noise and a resonant, low-pitched tone. \n2. There are no additional or background sounds in the audio that do not belong to the description. \n3. No, there is no human voice, spoken word, or singing present in this audio clip.",
+          "note": "the first open call returned no evaluation; it was asked again once and the second answer is recorded; the first fit call answered that no file came; it was asked again once and the second answer is recorded; the open questions were then asked three more times (openMore), because the first open answer was that no file came",
+          "openMore": [
+            "1. I hear a short, muffled thump followed by a quick, rubbery squeak. It sounds like physical handling noise, such as bumping a microphone or moving an object on a desk.\n2. There are two rapid sound events occurring back-to-back: the initial bump and the immediate squeak.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument.\n5. It starts abruptly with a low-pitched thump. It ends less than a second later as the brief squeaking noise quickly fades out.",
+            "1. I hear a rapid, rhythmic clicking and whirring sound, likely from a mechanical device in operation. Its character is clattering and continuous, resembling an old film projector or similar machinery.\n2. There is only one continuous sound event throughout the clip.\n3. No, there is no human voice, spoken word, breath, or singing heard.\n4. No, there is no music, melody, or musical instrument.\n5. The sound starts abruptly with the mechanism already running at full speed. It ends just as abruptly, cutting off without any fade.",
+            "1. I am not sure, because no audio file was provided with your message for me to listen to.\n2. Not sure.\n3. Not sure.\n4. Not sure.\n5. Not sure."
+          ]
+        }
+      },
+      "time": "2026-11-25T17:30:42.338Z",
+      "answersTime": "2026-11-25T17:32:55.997Z"
+    },
+    {
+      "cue": "land-fall",
+      "take": 3,
+      "round": "build",
+      "class": "impact",
+      "season": "fall",
+      "line": "A heavy glass globe set down on stone, heavy and short, then a wooden creak and a low eerie tone",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "An old wooden door creaking slowly open once, a dry woody creak in the middle of the hearing range, then one low eerie organ-like drone note held and dying away, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 2,
+        "prompt_influence": 0.6,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 22
+      },
+      "source": {
+        "name": "land-fall-2026-11-25T17-32-58-483Z.wav",
+        "bytes": 384078,
+        "sha256": "bf4cf9be2bad6ccc160fdf19348de2d63388d1abdebf64d44fdc8b48aaa769ec",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 2,
+        "kbps": 1536
+      },
+      "sha256": "7f334e3e84e6c8b275c103d610abb39378ef8db0f22faeec922fb6c1943117a0",
+      "measured": {
+        "seconds": 2,
+        "peakDb": -6.33,
+        "truePeakDb": -6.25,
+        "lufs": -24.48,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": -72.22,
+        "rmsDb": -29.61,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0.015,
+        "soundSeconds": 1.985,
+        "tailDb": -57.27,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 1699,
+          "bands": {
+            "sub": 0.2197,
+            "low": 0.0165,
+            "lowMid": 0.1626,
+            "mid": 0.4838,
+            "high": 0.1172,
+            "air": 0.0002
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -24.5,
+        "lra": 0,
+        "truePeakDb": -6.3
+      },
+      "fits": {
+        "wantSeconds": 1.5,
+        "soundSeconds": 1.985,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: 2.00 s filed, cut by the chain to 1.5 s; a quiet creak from 0 to 0.5 s, a second, louder one rising from 0.8 s to the cut; 48 percent of the energy between 1 and 4 kHz, 22 percent under 60 Hz. Listener, open, asked twice: a high, drawn-out squeak or creak and then a sharp click, like an old door on rusty hinges swinging and latching shut; two events; no animal sound when asked. Fit: no; it named a cat meowing and then a squeaky door hinge, and no glass globe on stone. A cat was heard in one call of three and in neither open call. No human voice, no music. It holds the creak of the line and neither the landing nor the tone. The cue is out of takes and stays open as a take; take 1 holds the heavy landing, so the two may be laid together in the free work (decision 111).",
+        "listener": {
+          "line": "A heavy glass globe set down on stone, heavy and short, then a wooden creak and a low eerie tone",
+          "open": "1. I hear a high-pitched, continuous squeak followed by a sharp click. It sounds like an old, creaky door moving on rusty hinges and then latching shut.\n2. There are two separate sound events.\n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or musical instrument.\n5. The audio starts immediately with the drawn-out, high-pitched squeaking noise. It ends abruptly with a sharp, mechanical clack.",
+          "fit": "1. No, because the audio actually consists of a cat meowing followed by a squeaky door hinge, rather than a glass globe hitting stone. \n2. The clear sound of a cat meowing does not belong to the description at all. \n3. No, there is no human voice, spoken word, or singing in this clip.",
+          "openSecond": "1. I hear a high-pitched, continuous creaking noise followed by a mechanical clack. It has the distinct character of an old door with rusty hinges swinging and then latching shut.\n2. There are two primary sound events: the sustained creak and the final click.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument present.\n5. The sound begins with a drawn-out, squeaky friction noise and ends abruptly with a sharp, mechanical click.\n6. No, there is no animal sound.",
+          "note": "the fit call named a cat meowing, so the open questions were asked a second time with a sixth question, is there any animal sound (openSecond)"
+        }
+      },
+      "time": "2026-11-25T17:33:02.483Z",
+      "answersTime": "2026-11-25T17:34:07.153Z"
+    },
+    {
+      "cue": "amb-fall",
+      "take": 1,
+      "round": "build",
+      "class": "ambience",
+      "season": "fall",
+      "line": "Wind, dry leaves and a low eerie tone, very quiet, an ambience that loops",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "Dry autumn leaves rustling softly in a light steady breeze among bare trees at night, with a low hollow tone of air humming in an old chimney under them: one even quiet bed of dry rustling leaves and low hollow hum that stays the same from the first moment to the last, with no gusts, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 20,
+        "prompt_influence": 0.5,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 220
+      },
+      "source": {
+        "name": "amb-fall-2026-11-25T17-34-18-872Z.wav",
+        "bytes": 3840078,
+        "sha256": "732533dd0ed69f789489c311845e17c7f870b14e1db8f36fb5ce47ce2731959f",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 20,
+        "kbps": 1536
+      },
+      "sha256": "b09398c2f575c0249f208c10d4a7702b9ee68f2d01a174a2fec889515cd3dd3a",
+      "measured": {
+        "seconds": 20,
+        "peakDb": -33.75,
+        "truePeakDb": -33.01,
+        "lufs": -51.91,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -57.51,
+        "silenceFrontSeconds": 0.01,
+        "silenceEndSeconds": 0.1,
+        "soundSeconds": 19.89,
+        "tailDb": -79.92,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 5868,
+          "bands": {
+            "sub": 0.0027,
+            "low": 0.1822,
+            "lowMid": 0.0787,
+            "mid": 0.1529,
+            "high": 0.3745,
+            "air": 0.2089
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -51.9,
+        "lra": 6.1,
+        "truePeakDb": -33
+      },
+      "fits": {
+        "wantSeconds": 20,
+        "soundSeconds": 19.89,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: 20.00 s filed, loop of 18.39 s, seam ratio 1.19, level step -0.18 dB; very quiet as made (-51.9 LUFS); level per second between -42 and -32 dB, loudest at 3 to 5 s and at 14 s; 58 percent of the energy over 4 kHz, 18 percent between 60 and 250 Hz. Listener, open: continuous crunching and rustling, like someone walking or wading through dry leaves and brush, dry, crackling and somewhat rhythmic. Fit: no; the dry leaves are there, but no wind and no low eerie tone, and what is heard is loud footsteps crunching through leaves, not a quiet ambience. No voice, no music. Not kept: steps are a person in the scene, and the wind and the tone are missing.",
+        "listener": {
+          "line": "Wind, dry leaves and a low eerie tone, very quiet, an ambience that loops",
+          "open": "1. I hear a continuous crunching and rustling sound, resembling someone walking or wading through dry leaves and brush. The character is dry, crackling, and somewhat rhythmic.\n2. There is one continuous, overlapping sound event of rustling foliage that spans the entire audio clip.\n3. No, there is no human voice, spoken word, breath, or singing heard.\n4. No, there is no music, melody, or musical instrument in the recording.\n5. The audio starts abruptly with the rustling already in progress. It ends abruptly by cutting off while the rustling action is still continuing.",
+          "fit": "1. No, because while the audio contains the sound of dry leaves, it lacks wind or a low eerie tone and is not a quiet ambient loop. Instead, it features the distinct, rhythmic sound of loud footsteps crunching through the leaves. \n2. The prominent, active sound of heavy footsteps walking on the leaves does not belong to the description of a quiet ambience.\n3. No, there is no human voice, spoken word, or singing heard in the audio."
+        }
+      },
+      "time": "2026-11-25T17:34:24.662Z",
+      "answersTime": "2026-11-25T17:35:12.858Z"
+    },
+    {
+      "cue": "amb-fall",
+      "take": 2,
+      "round": "build",
+      "class": "ambience",
+      "season": "fall",
+      "line": "Wind, dry leaves and a low eerie tone, very quiet, an ambience that loops",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "A soft steady night wind passing through the dry leaves still hanging in the tops of tall trees far overhead: a soft airy rush of wind and a dry shimmer of leaves high above, with a low hollow hum of wind in an old chimney under it, one even quiet bed that stays the same from the first moment to the last, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 20,
+        "prompt_influence": 0.5,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 220
+      },
+      "source": {
+        "name": "amb-fall-2026-11-25T17-35-15-359Z.wav",
+        "bytes": 3840078,
+        "sha256": "604fed529e14b0e9a061442712ed1796f356bffc7b26a9d06f28e1783f4f14b6",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 20,
+        "kbps": 1536
+      },
+      "sha256": "2678a92adb111618344d288939a38718a362cd4b8fc9d92f7708e00619740c92",
+      "measured": {
+        "seconds": 20,
+        "peakDb": -32.68,
+        "truePeakDb": -32.62,
+        "lufs": -49.61,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": -76.07,
+        "rmsDb": -47.08,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0.005,
+        "soundSeconds": 19.995,
+        "tailDb": -68.36,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 424,
+          "bands": {
+            "sub": 0.8314,
+            "low": 0.0694,
+            "lowMid": 0.0713,
+            "mid": 0.0048,
+            "high": 0.0024,
+            "air": 0.0207
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -49.6,
+        "lra": 1.9,
+        "truePeakDb": -32.6
+      },
+      "fits": {
+        "wantSeconds": 20,
+        "soundSeconds": 19.995,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "fits weakly",
+        "why": "Numbers: 20.00 s filed, loop of 18.43 s, seam ratio 0.25, level step 0.18 dB; very quiet as made (-49.6 LUFS); level per second between -36 and -34 dB, the most even bed of the build; as made 83 percent of the energy under 60 Hz, in the listening copy 41 percent between 250 Hz and 1 kHz and 32 percent between 60 and 250 Hz. Listener, open, asked twice: a continuous rushing noise like a heavy waterfall, strong wind or torrential rain, a steady roar like white noise; then a continuous rushing noise like strong wind blowing, steady and roaring. Fit: yes, a continuous quiet low rushing noise that resembles wind and rustling leaves. The fit call agrees easily; in neither open call were leaves or a tone heard. No voice, no music. It holds the wind of the line and neither the leaves nor the tone: not kept as the whole line. Take 1 holds the leaves.",
+        "listener": {
+          "line": "Wind, dry leaves and a low eerie tone, very quiet, an ambience that loops",
+          "open": "1. I hear a continuous, rushing noise that sounds like a heavy waterfall, strong wind, or torrential rain. It has a steady, roaring character similar to white noise.\n2. There is only one continuous sound event throughout the recording.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument present.\n5. The sound starts abruptly at full volume and ends with a sudden cut-off.",
+          "fit": "1. Yes, it fits the description because the audio consists entirely of a continuous, quiet, low-pitched rushing noise that perfectly resembles wind and rustling leaves creating an eerie ambiance.\n2. There are no elements in the audio that do not belong to the provided description.\n3. No, there is no human voice, spoken word, or singing present in the sound.",
+          "openSecond": "1. I hear a continuous, rushing noise that sounds like strong wind blowing. It has a steady, roaring character similar to white noise.\n2. There is only one continuous sound event throughout the recording.\n3. There is no human voice, spoken word, breath, or singing present.\n4. There is no music, melody, or musical instrument.\n5. The sound begins abruptly at full volume and ends just as abruptly without fading.",
+          "note": "the open call named three things it could be and the fit call said yes to all of the line, so the open questions were asked a second time (openSecond)"
+        }
+      },
+      "time": "2026-11-25T17:35:20.779Z",
+      "answersTime": "2026-11-25T17:36:30.413Z"
+    },
+    {
+      "cue": "amb-fall",
+      "take": 3,
+      "round": "build",
+      "class": "ambience",
+      "season": "fall",
+      "line": "Wind, dry leaves and a low eerie tone, very quiet, an ambience that loops",
+      "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+      "prompt": "A hollow eerie tone of air blowing softly across the mouth of a big empty bottle, one soft steady hollow note that wavers slightly, quiet and far away: one even quiet bed that stays the same from the first moment to the last, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+      "settings": {
+        "endpoint": "POST /v1/sound-generation",
+        "model": "default",
+        "duration_seconds": 20,
+        "prompt_influence": 0.5,
+        "loop": false,
+        "output_format": "pcm_48000",
+        "cost": 220
+      },
+      "source": {
+        "name": "amb-fall-2026-11-25T17-36-33-103Z.wav",
+        "bytes": 3840078,
+        "sha256": "c366757417c0051233222a4b86c265f5c9081291e03f60b3a33a0869a908ad4c",
+        "codec": "pcm_s16le",
+        "sampleRate": 48000,
+        "channels": 2,
+        "seconds": 20,
+        "kbps": 1536
+      },
+      "sha256": "5bdbbf7afc39283e9f0939aff4882925369391776c14bbde5b66557c4224b8f6",
+      "measured": {
+        "seconds": 20,
+        "peakDb": -26.52,
+        "truePeakDb": -26.52,
+        "lufs": -46.99,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -50.79,
+        "silenceFrontSeconds": 0.21,
+        "silenceEndSeconds": 0.695,
+        "soundSeconds": 19.095,
+        "tailDb": -84.78,
+        "events": 4,
+        "spectrum": {
+          "centroidHz": 70,
+          "bands": {
+            "sub": 0.5976,
+            "low": 0.3989,
+            "lowMid": 0.0033,
+            "mid": 0.0001,
+            "high": 0,
+            "air": 0
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -47,
+        "lra": 17.8,
+        "truePeakDb": -26.5
+      },
+      "fits": {
+        "wantSeconds": 20,
+        "soundSeconds": 19.095,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": {
+        "verdict": "does not fit",
+        "why": "Numbers: 20.00 s filed, loop of 17.14 s, seam ratio 0.33, level step 0.99 dB; four separate swells with near silence between them, level per second from -54 to -25 dB; 60 percent of the energy under 60 Hz and 40 percent between 60 and 250 Hz, nothing above; left and right the same. Listener, open: deep rhythmic breathing with a hollow, mechanical character, like someone breathing heavily through a diving regulator or a gas mask, four events, each an inhale and an exhale; it called the whole recording amplified human breathing. Fit: no; no wind and no dry leaves, a rhythmic thumping and whooshing like a heartbeat or heavy breathing through a respirator. Breathing was heard in both calls. Not kept and not for a layer: a breath is a person in the scene, and it is four blows, not a bed.",
+        "listener": {
+          "line": "Wind, dry leaves and a low eerie tone, very quiet, an ambience that loops",
+          "open": "1. I hear deep, rhythmic breathing with a hollow, mechanical character. It sounds like someone breathing heavily through a scuba diving regulator or a gas mask.\n2. There are four separate sound events, each consisting of a complete inhale and exhale cycle. \n3. The entire recording consists of amplified human breathing, but there are no spoken words, humming, or singing.\n4. No, there is no music, melody, or musical instrument present in this audio.\n5. It starts abruptly with a loud inhalation sound. It ends as the final exhalation breath gradually fades into silence.",
+          "fit": "1. No, it does not fit because the audio lacks the sound of wind or dry leaves and is instead dominated by a distinct rhythmic pulsing. \n2. The rhythmic thumping and whooshing, which strongly resemble a heartbeat or heavy breathing through a respirator, do not belong to the description.\n3. No, there is no human voice, spoken word, or singing in this sound."
+        }
+      },
+      "time": "2026-11-25T17:36:37.872Z",
+      "answersTime": "2026-11-25T17:37:21.038Z"
     }
   ],
   "kept": [
@@ -2459,7 +3173,7 @@
     }
   ],
   "pack": {
-    "time": "2026-11-25T17:24:44.452Z",
+    "time": "2026-11-25T17:37:33.106Z",
     "kbps": 192,
     "bytes": 1032768,
     "fits": true,
