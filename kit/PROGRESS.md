@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 67 · 2026-11-25 01:52 UTC
+Status 68 · 2026-11-25 02:17 UTC
 
-- `out/stills/status/status-67-1.jpg`: Summer at rest. Left: the build that Round 9 judges (draft tier). Right: the approved image
-- `out/stills/status/status-67-2.jpg`: Summer just after a shake has landed (draft tier)
-- `out/stills/status/status-67-3.jpg`: Fall at rest. Left: the newest fall build (draft tier; not in a round yet). Right: the approved image
-- `out/stills/status/status-67-4.jpg`: Fall just after a shake has landed (draft tier)
+- `out/stills/status/status-68-1.jpg`: Fall at rest. Left: the build that Round 10 judges (draft tier). Right: the approved image
+- `out/stills/status/status-68-2.jpg`: Spring at rest from the spring base builder at 02:11. Top: the approved image. Bottom: the build (draft tier)
+- `out/stills/status/status-68-3.jpg`: Spring arriving after the shake from winter: twelve frames over three seconds from the landing (preview size; draft tier)
+- `out/stills/status/status-68-4.jpg`: Still: fall rest hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 01:58 UTC
-clock: phase 4, tick of 5.3 minutes
-phase 4: 1.85 h used of its 9.50 h box
-allowance (before the review): 24.13 h used of 36.00 h allowed
-all time before the review: 24.13 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 02:21 UTC
+clock: phase 4, tick of 4.2 minutes
+phase 4: 2.24 h used of its 9.50 h box
+allowance (before the review): 24.52 h used of 36.00 h allowed
+all time before the review: 24.52 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 5
+minutes since the last status: 4
 ```
 
 ## Phases
@@ -1199,6 +1199,9 @@ Merged into `main`, each verified here with types clean and the tests green (126
   - Round 8: `gate_runner` (the whole gate with `--unit spring` on a clean clone, limit 03:16), `round_renderer` (measures and the packs of R1, R2, R3, branch `agent/p4-round8-pack`, limit 02:51), `motion_renderer` (the motion pack R4, branch `agent/p4-round8-motion`, limit 02:46).
   - Round 9: `round_renderer_b`, a new render agent started 01:36 in its own VM with the pack runbook (measures and the packs of R1, R2, R3, branch `agent/p4-round9-pack`, limit 03:06); `motion_renderer_b` (the motion pack R4, branch `agent/p4-round9-motion`, limit 02:46, then the whole gate with `--unit summer` on a clean clone, limit 04:06).
 
+- Changes at 02:04 to 02:15 UTC (decision 76). The two motion agents reported that a season's arrival sheet is about 90 frames at 51 to 54 s a frame; `motion_renderer`'s and `motion_renderer_b`'s limits for the motion packs of Rounds 8 and 9 moved to 03:35. `motion_renderer`'s pushes fail (no sign-in left in its VM since about 02:06); it sends a bundle with its report if that stays so. Round 9's gate was taken off `motion_renderer_b` and goes to `gate_runner` as a second job after Round 8's gate, on the same clean clone of `fe1072c` (order sent 02:15, limit 04:40).
+  - Round 10 (fall) on `216e427`: `motion_renderer_c`, a new render agent started 02:14 in its own VM with the motion runbook (the motion pack R4, branch `agent/p4-round10-motion`, limit 04:19). Its still pack goes to the first pack agent that is free with no critic of Rounds 8 or 9 waiting; its gate to `gate_runner` after Round 9's.
+
 ## Rounds
 
 One line per round: its number, the unit, the commit it judged, each part ticked off as it finished, the scores, and what changed next.
@@ -1582,3 +1585,7 @@ One entry per task: when it started, what it did, where it stopped.
 - 01:53 UTC. Status 67 posted at 01:53 (summer and fall at rest beside their approved images, and each just after a shake has landed; drafts).
 
 - 01:58 UTC. `npm run hostcheck` on a clean copy of the tracked files at 01:54 to 01:56: pass. `dist/` is 69.23 MB in 102 files (`host.maxShippedMb` 95); the largest file is `assets/spring/village-spring.glb` at 5.46 MB (`host.maxFileMb` 20); 13.67 MB in 32 requests were fetched before the first complete picture of the default season, 15.7 s after the page was opened (`host.firstLoadMaxMb` 16); the clean install and build took 0.15 minutes. This is the measurement decision 74 left open. `kinds_builder` reported at 01:55 that winter's rest still on `fe1072c` and after differs from its baseline in 3787 pixels of flakes (landed is identical): `engine.ts` took its lowest lift speed over the kinds of every season, and `summer_air`'s row of the seed lowered it from 18 to 10 mm/s. It was told at 01:56 to make that number depend on the running season's kinds only, with winter's two stills byte-identical with its baseline again. Rounds 8 and 9 judge spring and summer on `fe1072c`, where winter's flakes at rest sit a little differently from the kept build; winter itself is not judged in them. A third merge at 01:56 (`5cad7dc`: `fall_air` `a641a57`, `fall_base` `8c68fce`, `spring_air` `257a36b`, `spring_base` `cc6fe80`, `spring_mini` `5be7305`, `summer_air` `9dfc19f`) merged clean.
+
+- 02:14 UTC. Fall's first round counted: Round 10 judges `216e427` (pushed 02:13; round line and decision 76 pushed 02:14 as `9c8a51d`, before its first order went out at 02:14). The freeze was made from a fourth merge (`97e9caa`: `fall_mini` `d6f8d14`, `kinds_builder` `fc18a80`, `summer_base` `4da5501`, `summer_mini` `f517c9a`), with every built file of spring, summer and fall deleted and made again from its sources, because two builders had reported stale tiles of their first versions in the tracked built files (18 of spring's base, 6 of summer's base); the web set is 65.626 MiB in 84 files; tsc clean, vitest 432 passed, 4 skipped; the stand-in view of fall at rest is black all over. `kinds_builder`'s fix (`ac677c5`) is in it: winter's rest and landed stills are byte-identical with its baseline again. Round 9's gate moved to `gate_runner` (second job, same clone); the motion packs of Rounds 8 and 9 are expected about 03:20 to 03:35, not 02:46. Every builder was asked at 01:59 to leave `REPORT.md` and `HANDOVER.md` on its looks branch by 02:54 for the agent that takes over its files.
+
+- 02:18 UTC. Status 68 posted at 02:18 (fall at rest on Round 10's judged build beside the approved image; spring at rest and spring's arrival sheet from the builders' looks). Published at 02:16 from `216e427`'s build: first picture in 17.4 s, 87 requests, no error; Visibility: Organization.
