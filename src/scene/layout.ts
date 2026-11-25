@@ -417,10 +417,18 @@ function spot(at: readonly [number, number, number], r: number): Emitter {
 
 const sparks: readonly Emitter[] = [
   spot([lamp.centre[0], lamp.centre[1] + lamp.radius + 2 + CLEAR, lamp.centre[2]], 2),
-  spot(onGable(cottage.window.across, cottage.window.sill + cottage.window.height / 2, 2 + CLEAR + 1.2), 2),
-  spot(onGable(cottage.door.across, cottage.door.height * 0.6, 2 + CLEAR + 1.2), 2),
   spot([trunk.foot[0] - 7, groundAt(trunk.foot[0] - 7, trunk.foot[2] + 7) + 2.2 + CLEAR, trunk.foot[2] + 7], 2.2),
-  ...shell(crown.centre, crown.radius, 2.5, [[-1, -0.35, 0.5], [0.4, -0.3, 1], [1, 0.1, 0.6]]),
+  spot([anchors.chimney[0], anchors.chimney[1] + 2.5 + CLEAR, anchors.chimney[2]], 2.5),
+  // The rest rise in the open liquid, left of the tree and before it: the sparks stand through the whole dome, not on the crown.
+  spot([-24, 12, 6], 12),
+  spot([-6, 22, 18], 12),
+  spot([-30, -6, 16], 8),
+  spot([20, 0, 24], 8),
+  spot([0, 30, -20], 10),
+  spot([-20, 28, -10], 10),
+  spot([28, 22, 14], 8),
+  spot([-10, 36, 4], 10),
+  spot([8, -6, 30], 6),
 ]
 
 export const emitters: Readonly<Record<string, readonly Emitter[]>> = { petal: canopy, leaf: canopy, ember: sparks }

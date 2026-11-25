@@ -36,54 +36,75 @@ export const look = {
     poolMm: 2.0,
     ringFromMm: 46,
     ringToMm: 56,
-    back: 0.3,
+    back: 0.08,
     front: 0.3,
-    swirl: 8,
+    swirl: 15,
+    // Half the width of a ribbon, in the weave's own measure, and how much of the broad body stays under the ribbons.
+    ribbon: 0.045,
+    ribbonBody: 0.25,
     swirlThin: 0.0,
     spinRadS: 2.2,
     spinDownSeconds: 2.6,
     backTall: 2.4,
     restMm: 3.2,
-    liftMm: 42,
-    rest: 0.1,
+    liftMm: 28,
+    floodMm: 42,
+    rest: 0.03,
     lip: 1.1,
     lipLifted: 0.9,
     lipLiftedGlow: 0.9,
-    lipGlow: 1.35,
-    lipDeepGlow: 3.2,
+    lipGlow: 1.1,
+    lipDeepGlow: 2.6,
+    // Tufts of it stand a little over the ground's edge before the scene, so the edge is no hard line.
+    lipFrontMm: 3,
+    lipSides: 0.6,
     lipDeepMm: 8,
+    lipRiseMm: 11,
     lipDeep: [0.26, 1.0, 0.32],
     lifted: 0.03,
-    liftedMiddle: 0.02,
+    liftedMiddle: 0.007,
     liftedFromMm: 45,
     liftedToMm: 54,
-    liftedFront: 0.12,
+    liftedFront: 0.025,
+    // Above the roof and the crown the strands go round the front of the dome too: there is nothing there for them to hide.
+    liftedFrontHigh: 0.45,
     lean: 0.22,
-    bank: 0.5,
+    bank: 0.24,
     bankMm: 9,
-    pale: [0.62, 1.0, 0.68],
-    paleMm: 5,
-    paleGain: 0.35,
+    pale: [0.6, 1.0, 0.54],
+    paleMm: 2.5,
+    paleGain: 0.1,
     air: 0.0003,
     airStirred: 0.3,
     airTint: [0.3, 0.24, 0.1],
     airGrid: 0.6,
-    dustGlow: 0.001,
+    dustGlow: 0.0004,
+    // Stirred, the liquid is full of fine stuff, and the lamp and the windows stand in a wide warm glow.
+    dustStirred: 1.5,
     dustTint: [1.0, 0.72, 0.42],
     flood: 0.1,
     floodFrom: 0.64,
     floodTo: 0.99,
-    floodHeld: 0.05,
+    floodHeld: 0.015,
     floodGoneSeconds: 1.2,
-    lumpMm: 3.5,
+    lumpMm: 5,
     lumpFineMm: 1.8,
-    middle: 0.04,
-    haze: 0.0016,
-    hazeMm: 15,
+    middle: 0.01,
+    haze: 0.016,
+    hazeMm: 12,
+    hazeLumpMm: 16,
+    hazeBankMm: 150,
+    hazeBillowMm: 64,
+    hazeTint: [0.24, 1.0, 0.4],
+    hazeFrontMm: -9,
+    hazeBackMm: -24,
     pour: 0.006,
     pourFallMm: 36,
     cold: 0.9,
     warm: 1.0,
+    // Thrown up by the shake it is thin strands on the wall: the lamp and the windows no longer light it, or the thin fog
+    // before the house would stand as a pale veil over it.
+    warmLifted: 0.9,
     glow: 0.11,
     glowDeepMm: 8,
     glowLifted: 1.6,
@@ -91,7 +112,7 @@ export const look = {
     bigMm: 96,
     fineMm: 37,
   },
-  crack: { widthMm: 0.09, edgeMm: 0.05, shade: 0.3, bright: 3.6, sky: 0.5, key: 1.6, rim: 3.0, room: 2.4, jitterMm: 0.08, stepMm: 2.2, glintPerMm: 0.3, catchPerMm: 0.1, faint: 0.16, warm: [1.0, 0.8, 0.56] },
+  crack: { widthMm: 0.09, edgeMm: 0.055, shade: 0.3, bright: 3.6, sky: 0.3, key: 1.6, rim: 3.0, room: 2.4, jitterMm: 0.14, bowMm: 0.5, stepMm: 1.6, glintPerMm: 0.3, catchPerMm: 0.1, faint: 0.07, warm: [1.0, 0.74, 0.46] },
 }
 
 // The crack's path in the pixels of `references/approved/fall-rest.png` (glass circle centre (1417.1, 662.2), radius 564.3 px,
@@ -105,6 +126,9 @@ const ARMS: { on: number; at: number; path: [number, number][] }[] = [
   { on: -1, at: 0, path: [[1152, 397.8], [1132, 459.7], [1110, 519.5]] },
   { on: 0, at: 2, path: [[1296, 267]] },
   { on: 1, at: 2, path: [[1147.6, 282.7], [1141, 292.5], [1072.4, 302.7], [1065.8, 316], [970.6, 342.5]] },
+  // A second line runs down from the hub, right of the first, and a short bow joins the two upper arms.
+  { on: -1, at: 0, path: [[1161, 387], [1173, 406], [1166, 445], [1171, 465], [1186.5, 524]] },
+  { on: 1, at: 2, path: [[1176, 305], [1173, 328], [1184, 334]] },
 ]
 
 const unit = (n: number): number => {
@@ -147,10 +171,12 @@ function crackPieces(): Piece[] {
       const dy = to[1] - from.p[1]
       const len = Math.hypot(dx, dy)
       const n = Math.max(1, Math.round(len / (L.stepMm * pxPerMm)))
+      // Glass does not break along a ruler: between two traced points the line bows a little to one side.
+      const bow = (unit(salt++ * 13 + k + 500) - 0.5) * 2 * L.bowMm * pxPerMm * Math.min(1, len / (10 * pxPerMm))
       let prev = from
       for (let i = 1; i <= n; i++) {
         const t = i / n
-        const j = i < n ? (unit(salt++ * 7 + k) - 0.5) * 2 * L.jitterMm * pxPerMm : 0
+        const j = i < n ? (unit(salt++ * 7 + k) - 0.5) * 2 * L.jitterMm * pxPerMm + bow * Math.sin(Math.PI * t) : 0
         const p: [number, number] = [from.p[0] + dx * t - (dy / len) * j, from.p[1] + dy * t + (dx / len) * j]
         const d = prev.d + Math.hypot(p[0] - prev.p[0], p[1] - prev.p[1])
         out.push({ a: prev.p, b: p, da: prev.d, db: d })
@@ -308,22 +334,23 @@ void main() {
   float r = length(p);
   if (r > ${f(RI - 0.25)}) discard;
   float lift = uFog.y;
-  float deepMm = mix(${f(F.restMm)}, ${f(F.liftMm)}, lift);
+  float deepMm = mix(${f(F.restMm)}, mix(${f(F.liftMm)}, ${f(F.floodMm)}, uFogTurn.y), lift);
   float amp = mix(${f(F.rest)}, mix(${f(F.lifted)}, ${f(F.flood)}, uFogTurn.y), lift);
   float base = fogFloor(p);
   float ground = fogMound(p.z);
   float under = ground - 0.4;
   float h = p.y - base;
+  float hazeBack = smoothstep(${f(F.hazeFrontMm)}, ${f(F.hazeBackMm)}, p.z);
   float hazeAmp = ${f(F.haze)} * (1.0 - lift);
   float span = smoothstep(-2.0, 7.0, h) * (1.0 - smoothstep(34.0, 76.0, h));
-  float bound = amp * exp(-max(h - ${f((F.lumpMm + F.lumpFineMm) * F.backTall)}, 0.0) / (deepMm * ${f(F.backTall)})) + hazeAmp * exp(-max(h, 0.0) / ${f(F.hazeMm)}) + uFog.z * ${f(F.pour)} * span;
+  float bound = amp * exp(-max(h - ${f((F.lumpMm + F.lumpFineMm) * F.backTall)}, 0.0) / (deepMm * ${f(F.backTall)})) + hazeAmp * hazeBack * 3.0 * exp(-max(h - ${f(F.hazeLumpMm)}, 0.0) / ${f(F.hazeMm)}) + uFog.z * ${f(F.pour)} * span;
   // The liquid itself is not clear: fine dust in it takes the orange of the lights, most in the upper dome and near the wall.
   float air = ${f(F.air)} * (1.0 + ${f(F.airStirred)} * lift) * smoothstep(${f(GROUND + 14)}, ${f(GROUND + 46)}, p.y) * mix(0.35, 1.0, smoothstep(24.0, 50.0, r));
   bool fogHere = bound * ${f(FOG_STEP * 1.7)} >= 0.003;
   if (p.y < under) discard;
   // The same dust shows the light of the lamp, the windows and the lanterns as a glow in the liquid round them.
   vec3 grid = stageGrid(p);
-  vec3 dust = ${vec(F.dustTint)} * grid * ${f(F.dustGlow * FOG_STEP)};
+  vec3 dust = ${vec(F.dustTint)} * grid * ${f(F.dustGlow * FOG_STEP)} * (1.0 + ${f(F.dustStirred)} * lift);
   bool dustHere = dust.r + dust.g > 0.0012;
   if (!fogHere && !dustHere && air * ${f(FOG_STEP)} < 0.0006) discard;
   // The roll comes round once a period: two takes of the billows half a turn of the clock apart, the one handed over to the other.
@@ -337,7 +364,7 @@ void main() {
   float lump = ${f(F.lumpMm)} * (n.x - 0.5) * 2.0 + ${f(F.lumpFineMm)} * (n.y - 0.5) * 2.0;
   // Pooled, it lies against the wall, where the ground is lowest, and leaves the ground of the scene clear; behind the scene
   // it stands taller and thinner, a glow at the back of the dome.
-  float behind = smoothstep(4.0, -22.0, p.z) * (1.0 - lift);
+  float behind = smoothstep(${f(F.hazeFrontMm)}, ${f(F.hazeBackMm)}, p.z) * (1.0 - lift);
   float wall = max(mix(${f(F.middle)}, 1.0, smoothstep(${f(F.ringFromMm)}, ${f(F.ringToMm)}, length(p.xz))), ${f(F.back)} * behind);
   // In front of the scene it stays low, under the ground's edge, so the fence and the path stand dark before it.
   wall *= mix(1.0, ${f(F.front)}, smoothstep(6.0, 34.0, p.z) * smoothstep(${f(GROUND - 5)}, ${f(GROUND - 1)}, p.y));
@@ -361,16 +388,39 @@ void main() {
     float s2 = texture(uFogNoise, vec3(2.0 * turn + 0.31, 5.1 * lat + 0.5, r / 70.0 + 0.63)).r;
     // A finer run of wisps lies over the broad ones, and each depth of the wall has its own.
     float s3 = texture(uFogNoise, vec3(4.0 * turn + 0.77, 11.3 * lat + 0.21, r / 45.0 + 0.19)).r;
-    float strand = smoothstep(0.52, 0.6, 0.46 * s1 + 0.34 * s2 + 0.2 * s3 + 0.08 * (n.y - 0.5));
-    strands = mix(1.0, mix(${f(F.swirlThin)} + ${f(F.swirl)} * strand * strand, 0.55 + 0.9 * strand, uFogTurn.y), lift);
+    float weave = 0.46 * s1 + 0.34 * s2 + 0.2 * s3 + 0.08 * (n.y - 0.5);
+    // A strand is a thin ribbon: the line where the weave crosses a level, not the whole of what lies above it. Two levels,
+    // the second fainter, and a little of the body between them.
+    float ribbon = 1.0 - smoothstep(${f(F.ribbon * 0.3)}, ${f(F.ribbon)}, abs(weave - 0.585));
+    float second = 1.0 - smoothstep(${f(F.ribbon * 0.3)}, ${f(F.ribbon)}, abs(weave - 0.45));
+    float strand = max(max(ribbon, 0.5 * second), ${f(F.ribbonBody)} * smoothstep(0.55, 0.61, weave));
+    // At the flood the strands are as broad as they were, so the cover of the change is what it was.
+    float broad = smoothstep(0.52, 0.6, weave);
+    strands = mix(1.0, mix(${f(F.swirlThin)} + ${f(F.swirl)} * strand * strand, 0.55 + 0.9 * broad, uFogTurn.y), lift);
     // The turning liquid throws it to the wall: thick round the scene and behind it, thin in the middle and before it, so
     // the house and the tree stand dark against the green. Only at the hardest of the shake does it fill the dome.
-    around = mix(${f(F.liftedMiddle)}, 1.0, smoothstep(${f(F.liftedFromMm)}, ${f(F.liftedToMm)}, r)) * mix(1.0, ${f(F.liftedFront)}, smoothstep(-8.0, 24.0, p.z));
+    around = mix(${f(F.liftedMiddle)}, 1.0, smoothstep(${f(F.liftedFromMm)}, ${f(F.liftedToMm)}, r)) * mix(1.0, mix(${f(F.liftedFront)}, ${f(F.liftedFrontHigh)}, smoothstep(${f(GROUND + 24)}, ${f(GROUND + 50)}, p.y)), smoothstep(-8.0, 24.0, p.z));
     // What is left of the pool is a low bright bank behind the scene.
-    bank = lift * ${f(F.bank)} * exp(-max(h, 0.0) / ${f(F.bankMm)}) * smoothstep(6.0, -20.0, p.z) * mix(1.0, strands, 0.4);
+    bank = lift * ${f(F.bank)} * exp(-max(h, 0.0) / ${f(F.bankMm)}) * smoothstep(-2.0, -22.0, p.z) * mix(1.0, strands, 0.75);
   }
   float rho = amp * wisp * open * (body * mix(wall, mix(around, 1.0, uFogTurn.y), lift) * strands + bank);
-  rho += hazeAmp * exp(-max(h, 0.0) / ${f(F.hazeMm)}) * (0.35 + 1.3 * n.x);
+  // The haze is a glow at the back of the dome: it stands behind the house and the tree, which are dark and clear before it.
+  float hazeRho = 0.0;
+  if (hazeAmp * hazeBack > 0.0) {
+    // Banks of it, a few to the width of the dome, each standing to its own height, with finer billows on them. They change
+    // little along the line of sight from the front, so a bank stays a bank through the depth of the dome.
+    vec3 hp = vec3(p.x, p.y, 0.3 * p.z);
+    float kn = 1.0 / sqrt(k * k + (1.0 - k) * (1.0 - k));
+    float z0 = texture(uFogNoise, fogTurn(hp, 0.35 * k) / ${f(F.hazeBankMm)} + vec3(0.37, 0.11 - 0.04 * k, 0.59)).r;
+    float z1 = texture(uFogNoise, fogTurn(hp, 0.35 * (k - 1.0)) / ${f(F.hazeBankMm)} + vec3(0.37, 0.11 - 0.04 * (k - 1.0), 0.59)).r;
+    float hz = 0.5 + (mix(z0, z1, k) - 0.5) * kn;
+    float f0 = texture(uFogNoise, fogTurn(hp, -0.5 * k) / ${f(F.hazeBillowMm)} + vec3(0.81 + 0.2 * hz, 0.43 + 0.07 * k, 0.17)).r;
+    float f1 = texture(uFogNoise, fogTurn(hp, -0.5 * (k - 1.0)) / ${f(F.hazeBillowMm)} + vec3(0.81 + 0.2 * hz, 0.43 + 0.07 * (k - 1.0), 0.17)).r;
+    float hf = 0.5 + (mix(f0, f1, k) - 0.5) * kn;
+    float puff = smoothstep(0.43, 0.57, 0.5 * hz + 0.5 * hf);
+    hazeRho = hazeAmp * hazeBack * exp(-max(h - ${f(F.hazeLumpMm)} * (hz - 0.5) * 2.0, 0.0) / ${f(F.hazeMm)}) * (0.03 + 2.2 * puff * puff);
+    rho += hazeRho;
+  }
   if (uFog.z > 0.0) {
     float run = texture(uFogNoise, vec3(p.x / 31.0, (p.y + uFog.w) / 110.0, p.z / 31.0) + vec3(0.3, 0.0, 0.6)).r;
     float fall = texture(uFogNoise, vec3(p.x / 13.0, (p.y + 1.6 * uFog.w) / 64.0, p.z / 13.0)).r;
@@ -381,10 +431,10 @@ void main() {
   a *= seen;
   if (a < 0.0006 && !dustHere) discard;
   float deep = exp(-max(h, 0.0) / ${f(F.glowDeepMm)});
-  vec3 lit = stageCold(p) * ${f(F.cold)} + grid * ${f(F.warm)} + vec3(${f(F.glow)}) * mix(mix(0.3, 1.0, deep), 1.0, ${f(F.glowLifted)} * lift) * (0.75 + 0.5 * n.y);
+  vec3 lit = stageCold(p) * ${f(F.cold)} + grid * ${f(F.warm)} * (1.0 - ${f(F.warmLifted)} * lift) + vec3(${f(F.glow)}) * mix(mix(0.3, 1.0, deep), 1.0, ${f(F.glowLifted)} * lift) * (0.75 + 0.5 * n.y);
   // Where it is thick it scatters more and goes pale: mint, not green.
   float thick = clamp(rho * ${f(F.paleMm)}, 0.0, 1.0);
-  vec3 col = mix(${vec(F.tint)}, ${vec(F.pale)}, thick) * lit * (1.0 + ${f(F.paleGain)} * thick);
+  vec3 col = mix(mix(${vec(F.tint)}, ${vec(F.pale)}, thick), ${vec(F.hazeTint)}, hazeRho / max(rho, 1e-6)) * lit * (1.0 + ${f(F.paleGain)} * thick);
   col = (col * rho + ${vec(F.airTint)} * (1.0 + ${f(F.airGrid)} * (grid.r + grid.g)) * air) / max(rho + air, 1e-6);
   gl_FragColor = vec4(col * a + dust * seen, a);
   // In the cover view the fog says how much of the miniature it hides, as the particles do.
@@ -410,22 +460,28 @@ void main() {
   if (seen <= 0.0) discard;
   vec3 p = vStageLocal;
   float edge = fogMound(p.z) + 1.0;
-  float top = 1.0 - smoothstep(edge - 3.0, edge + 1.5, p.y);
-  if (top <= 0.0) discard;
+  if (p.y > edge + ${f(1.5 + F.lipRiseMm * 1.3)}) discard;
   float k = uFog.x;
   vec2 n0 = fogBillows(p * vec3(1.0, 2.2, 1.0), k);
   vec2 n1 = fogBillows(p * vec3(1.0, 2.2, 1.0), k - 1.0);
   vec2 n = 0.5 + (mix(n0, n1, k) - 0.5) / sqrt(k * k + (1.0 - k) * (1.0 - k));
+  // Behind the scene and beside it the mist stands up the wall in tufts, each to its own height; before the scene it stays
+  // under the ground's edge.
+  float rise = ${f(F.lipRiseMm)} * smoothstep(14.0, -8.0, p.z) * (0.3 + n.x) + ${f(F.lipFrontMm)} * n.x * n.x * 2.0;
+  // It is brightest low in the middle of the front and thins and darkens toward the sides of the dome: no even band.
+  float side = 1.0 - ${f(F.lipSides)} * smoothstep(16.0, 50.0, abs(p.x));
+  float top = 1.0 - smoothstep(edge - 3.0, edge + 1.5 + rise, p.y);
+  if (top <= 0.0) discard;
   float lift = uFog.y;
   float deep = clamp((edge - p.y) / 12.0, 0.0, 1.0);
-  float rho = ${f(F.lip)} * mix(1.0, ${f(F.lipLifted)}, lift) * top * (0.38 + 1.1 * smoothstep(0.1, 0.9, n.y) * (0.35 + n.x)) * mix(0.6, 1.0, deep);
+  float rho = ${f(F.lip)} * mix(1.0, ${f(F.lipLifted)}, lift) * top * (0.24 + 1.4 * smoothstep(0.3, 0.75, n.y) * (0.3 + n.x)) * mix(0.6, 1.0, deep) * side;
   float a = 1.0 - exp(-rho);
   a *= seen;
   if (a < 0.003) discard;
   // It glows from below: brightest at the collar, where it is deepest, and fading up to the ground's edge.
   float low = clamp((edge - p.y) / ${f(F.lipDeepMm)}, 0.0, 1.0);
   low *= low;
-  vec3 lit = stageCold(p) * ${f(F.cold)} + stageGrid(p) * ${f(F.warm)} + vec3(${f(F.glow * F.lipGlow)}) * (0.45 + 1.1 * n.y) * (1.0 + ${f(F.lipDeepGlow)} * low * mix(1.0, ${f(F.lipLiftedGlow)}, lift));
+  vec3 lit = stageCold(p) * ${f(F.cold)} + stageGrid(p) * ${f(F.warm)} + vec3(${f(F.glow * F.lipGlow)}) * side * (0.2 + 1.6 * n.y * n.y * 1.5) * (1.0 + ${f(F.lipDeepGlow)} * low * mix(1.0, ${f(F.lipLiftedGlow)}, lift));
   vec3 col = mix(${vec(F.tint)}, ${vec(F.lipDeep)}, low) * lit;
   gl_FragColor = vec4(col * a, a);
   // In the cover view the fog says how much of the miniature it hides, as the particles do.
@@ -513,7 +569,7 @@ void main() {
   vec3 face = normalize(n + acrossW * (lit * (0.5 + 0.9 * g2)) + cross(n, acrossW) * (g - 0.5));
   vec3 r = reflect(v, face);
   vec3 light = uSky * ${f(C.sky)} + uKeyCol * (0.2 + ${f(C.key)} * pow(max(dot(r, uKeyDir), 0.0), 6.0)) + uRimCol * (0.15 + ${f(C.rim)} * pow(max(dot(r, uRimDir), 0.0), 4.0)) + stageRoomLights(r, 0.08) * ${f(C.room)};
-  float flash = 0.3 + 2.4 * g * g * g + 1.5 * (1.0 - smoothstep(0.0, 0.05, run)) * step(uCrack.x, 0.999);
+  float flash = 0.22 + 3.2 * g * g * g + 1.5 * (1.0 - smoothstep(0.0, 0.05, run)) * step(uCrack.x, 0.999);
   // It catches the light in stretches and is a faint hair between them, fainter still toward its tips.
   float stretch = crackGlint(tau * ${f(CRACK_LENGTH_MM * C.catchPerMm)} + 9.0 * floor(4.0 * atan(d.y - CRACK_A[0].y, d.x - CRACK_A[0].x) / 6.2831853 + 0.5) + 40.0);
   float caught = mix(${f(C.faint)}, 1.0, smoothstep(0.38, 0.72, stretch)) * mix(1.0, 0.35, smoothstep(0.6, 1.0, tau));
@@ -592,7 +648,7 @@ const volumes: THREE.ShaderMaterial[] = []
 
 function makeLip(): THREE.Mesh {
   const r = RI - 0.3
-  const from = Math.acos((MOUND.top + 3) / r)
+  const from = Math.acos((MOUND.top + 3 + F.lipRiseMm * 1.3) / r)
   const to = Math.acos(-50 / r)
   const m = stageShader({
     part: PART,
