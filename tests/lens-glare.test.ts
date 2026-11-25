@@ -14,7 +14,7 @@ const WINDOW = config.shake.swapWindow.toBeat - config.shake.swapWindow.fromBeat
 const FRAME = 1 / config.film.fps / (60 / config.film.defaultBpm) / WINDOW
 const quality = { particleFraction: 1, shadowMapPx: 256, surfaceReflection: 'none' }
 
-function glare(change: number, to = spring): number {
+function glare(change: number, to = spring, live = false): number {
   const light = new Lighting(quality.shadowMapPx)
   const f = newFrame(winter, quality)
   f.to = to
@@ -22,6 +22,7 @@ function glare(change: number, to = spring): number {
   f.moment = { season: 'winter', from: 'winter', to: two ? 'spring' : 'winter', change, sinceLanding: 0, globe: REST_POSE, mix: 0, seed: 1, time: 0, beat: null, period: null } as Moment
   f.mix.light = two ? partChange('light', change) : 0
   f.mix.bloom = changeBloom(change)
+  f.live = live
   light.update(f)
   return Math.max(lensState.glare.r, lensState.glare.g, lensState.glare.b)
 }
@@ -43,6 +44,13 @@ describe('the glare of a change in the lens', () => {
     for (let k = 8; k <= 14; k++) expect(series[k]!).toBeLessThanOrEqual(series[k - 1]!)
     expect(series[4]!).toBeGreaterThan(0)
     expect(series[10]!).toBeGreaterThan(0)
+  })
+
+  it('is stronger in the live picture, which has no shutter to draw the bases out, by one factor on every frame', () => {
+    expect(CHANGE_BLOOM.glareLive).toBeGreaterThan(1)
+    expect(CHANGE_BLOOM.glareLive).toBeLessThanOrEqual(3)
+    for (let k = -7; k <= 7; k++) expect(glare(CHANGE_CUT.at + k * FRAME, spring, true)).toBeCloseTo(CHANGE_BLOOM.glareLive * glare(CHANGE_CUT.at + k * FRAME), 9)
+    for (let c = 0; c <= 1; c += FRAME / 2) expect(glare(c, winter, true)).toBe(0)
   })
 
   it('lies over the seat of the glass and leaves the room behind the glass dark', () => {

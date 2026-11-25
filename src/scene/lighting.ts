@@ -42,8 +42,10 @@ export const ROOM_RIG = {
  * is), so nothing else in the picture, no lamp of the room and no petal, feeds it, and the room behind the glass keeps its dark.
  * It follows `changeBloom`: up over six frames, highest on the cut, down over six. Nothing is laid on the base itself beyond
  * `outside`, so the base keeps its own colours and its own shadow side under the glare.
+ * The live picture has no shutter, so nothing draws the two bases out along the stroke there; its glare is `glareLive` times the
+ * film's, which is what is left to cover the step.
  */
-export const CHANGE_BLOOM = { outside: 3, flood: 0, lens: 0.2, pool: 2, swellFrom: 0.56, fall: 0.6, glare: 0.16, glareReach: 1.1, glareSeat: 1 } as const
+export const CHANGE_BLOOM = { outside: 3, flood: 0, lens: 0.2, pool: 2, swellFrom: 0.56, fall: 0.6, glare: 0.16, glareReach: 1.1, glareSeat: 1, glareLive: 2 } as const
 
 const SHADOW_OFF = 10
 
@@ -242,7 +244,7 @@ export class Lighting {
     f.pool.setRGB(pool[0] * spill + gb[0] * wash, pool[1] * spill + gb[1] * wash, pool[2] * spill + gb[2] * wash)
     const lens = ROOM_RIG.flood.lens * lift + (CHANGE_BLOOM.lens * cross) / peak
     f.bloomTint.setRGB(gb[0] * lens, gb[1] * lens, gb[2] * lens)
-    const glare = a === b ? 0 : (CHANGE_BLOOM.glare * f.mix.bloom) / peak
+    const glare = a === b ? 0 : (CHANGE_BLOOM.glare * (f.live ? CHANGE_BLOOM.glareLive : 1) * f.mix.bloom) / peak
     lensState.glare.setRGB(gb[0] * glare, gb[1] * glare, gb[2] * glare)
     const flood = swell.whole * breath
     u.uLightFlood.value.setRGB(gb[0] * flood, gb[1] * flood, gb[2] * flood)
