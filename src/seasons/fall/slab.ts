@@ -233,10 +233,11 @@ void main() {
   float toKey = clamp(dot(dir2, normalize(uKeyAt.xz + vec2(1e-4))) * 0.5 + 0.5, 0.0, 1.0);
   vec3 cold = uKeyCol * (0.35 + 0.65 * toKey) + uSky * 2.0;
   vec3 hot = uRimCol * (0.3 + 0.7 * toRim);
-  vec3 col = (cold * 0.05 + hot * 0.06) * (line * 1.0 + skirt * 0.22) * dust * down;
-  col += candleOnSlab(P, vec3(0.0, 1.0, 0.0), lift) * vec3(1.0, 0.6, 0.3) * (0.07 * dust) * smoothstep(-2.0, 3.0, gap);
+  // A lifted foot no longer lays its line of dust and its cut in the lanterns' light on the slab: both open and fade with the height.
+  vec3 col = (cold * 0.05 + hot * 0.06) * (line * 1.0 + skirt * 0.22) * dust * down * exp(-lift / 1.2);
+  col += candleOnSlab(P, vec3(0.0, 1.0, 0.0), lift) * vec3(1.0, 0.6, 0.3) * (0.07 * dust) * smoothstep(-2.0 - 3.0 * lift, 3.0 + 1.0 * lift, gap);
   float ripple = 0.2 + 0.8 * rimNoise(vec2(P.x * 1.7, P.z * 0.3)) + 0.9 * pow(rimNoise(P.xz * vec2(3.1, 0.6) + 11.0), 3.0);
-  col += candleInSlab(P, lift) * (0.55 * ripple) * smoothstep(-1.0, 2.0, gap) * down;
+  col += candleInSlab(P, lift) * (0.55 * ripple) * smoothstep(-1.0 - 3.0 * lift, 2.0 + 1.0 * lift, gap) * down;
   gl_FragColor = vec4(col, 0.0);
   if (uDiag != 0) gl_FragColor = stageDiag(vec3(0.02), vec3(0.0, 1.0, 0.0), 0.0, c, 0.0);
 }
