@@ -4,7 +4,7 @@ export const LAMPS = 6
 export const LOBE_TABLE = 'shared/flake-lobes.lin.png'
 export const TABLE_COLUMNS = 8
 
-export const SHAPE = { soft: 0, cluster: 1, mirror: 2 } as const
+export const SHAPE = { soft: 0, cluster: 1, mirror: 2, petal: 3, fleck: 4, leaf: 5, seed: 6, light: 7, spark: 8, bat: 9 } as const
 
 export interface KindLook {
   shape: number
@@ -17,6 +17,13 @@ export interface KindLook {
 const LOOKS: Record<string, KindLook> = {
   flake: { shape: SHAPE.cluster, size: 0.95, body: 0.95, flash: 0, real: true },
   glitter: { shape: SHAPE.mirror, size: 1.15, body: 0.3, flash: 5.5, real: true },
+  petal: { shape: SHAPE.petal, size: 1, body: 0.96, flash: 0.75, real: true },
+  mote: { shape: SHAPE.fleck, size: 1.2, body: 0.8, flash: 1, real: true },
+  leaf: { shape: SHAPE.leaf, size: 1, body: 1, flash: 0.5, real: true },
+  seed: { shape: SHAPE.seed, size: 3.6, body: 0.9, flash: 0, real: true },
+  firefly: { shape: SHAPE.light, size: 1, body: 1, flash: 0, real: true },
+  ember: { shape: SHAPE.spark, size: 1.1, body: 1, flash: 0, real: true },
+  bat: { shape: SHAPE.bat, size: 1, body: 1, flash: 0, real: true },
 }
 
 const PLAIN: KindLook = { shape: SHAPE.soft, size: 1, body: 1, flash: 0, real: false }
@@ -156,3 +163,39 @@ export const GLINT_SOFT_PX = 0.7
 export const CLUMP = { floor: 0.06, gain: 1.2, most: 1.6, core: 0.5 }
 export const GLINT_LOW = 0.9925
 export const GLINT_HIGH = 0.9994
+
+/** The kinds drawn as cards (shapes from 3 on): a thin curved sheet with its own outline, turned by the particle's turn. For these `flash` is the share of light let through from behind. */
+export const CARD = {
+  thick: 0.1,
+  bound: 1.12,
+  area: 1.3,
+  hold: 0.6,
+  lieTilt: 0.22,
+  lieShade: 0.85,
+  lieFlat: 0.45,
+  petalRock: 0.62,
+  fleckRock: 2.6,
+  leafRock: 0.55,
+  stormRock: 2.8,
+  yawSway: 0.6,
+  /** Of the ones that settle and stay down, the share drawn whole, in the storm and lying; the rest are the storm's small dabs and are gone once they are down. */
+  chosen: 0.025,
+  dabSize: 0.45,
+  dabKeep: [0.02, 1] as const,
+  dabSkew: 4,
+  fleckKeep: [0.04, 1] as const,
+  fleckSkew: 5,
+  petalCup: [0.2, 0.42] as const,
+  leafCurl: [0.34, 0.5, 0.3] as const,
+  seedRock: 0.35,
+  seedTilt: 1.2,
+  litMost: 1.25,
+  sparkKeep: [0.03, 1] as const,
+  sparkSkew: 5,
+  batFlap: 0.85,
+  batBank: 0.35,
+  /** A light's core, its glow and its wide glow, as radii in the particle's radius and as shares of its light. */
+  glow: { core: 0.42, halo: 1.6, wide: 4.5, haloShare: 0.1, wideShare: 0.012, hide: 0.6, blinkLow: 0.04 },
+  spark: { core: 0.5, halo: 2, haloShare: 0.07, tail: 1.6, hot: [1, 0.93, 0.72] as const, dying: [0.85, 0.17, 0.03] as const },
+  hair: { wide: 0.022, stem: 0.03, body: 0.075, hub: 0.3, ringA: [7, 1.5, 0.95] as const, ringB: [5, 0.8, 0.85] as const, ringC: [4, 2.15, 0.7] as const },
+}
