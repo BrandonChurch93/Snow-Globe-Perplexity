@@ -1179,6 +1179,15 @@ Merged into `main`, each verified here with types clean and the tests green (126
   - R1: `reviewer_r7_a` (`gpt_6_2_sol`), started 23:07, answered 23:09. R3: `reviewer_r7_b` (part 1, `grok_4_7`) and `reviewer_r7_c` (part 2, `gemini_4_carbon`), started 23:07, limit 23:52; `reviewer_r7_d` (part 3, `claude_opus_5_5`), started 23:07, answered 23:09.
   - R2: `viewer_r7_01` to `viewer_r7_15`, five per judged image, three each of `claude_sonnet_5_5`, `gpt_6_2_astra`, `gemini_neon`, `pplx_computer_glm_5_3_1009` and `kimi_k3`, started in waves between 23:07 and 23:10 so that never more than six critics, jurors and render agents worked at once; all fifteen answered by 23:10.
 
+
+- Phase 4's first set of build agents, started 00:12 UTC (decision 71; limit 03:02 UTC, stage 1 pushed by 01:32; each in its own sandbox VM; brief `out/work/briefs/p4/common.md` plus one job message each and the season's two approved images at half size; heartbeat every 30 minutes to its branch and its looks branch `agent/p4-<name>-looks`).
+  - `spring_base`, `summer_base`, `fall_base` (branches `agent/p4-<name>`): the season's base, what lies on the surface, the arrival outside the glass. Files: `assets-src/base-<season>/`, `assets-src/slab-<season>/`, `base.ts`, `slab.ts`, `arrival.ts` of `src/seasons/<season>/`.
+  - `spring_mini`, `summer_mini`, `fall_mini`: the season's miniature with its small lights, its distance field and its pond. Files: `assets-src/village-<season>/`, `assets-src/tree-<season>/`, `miniature.ts`, `mini/`.
+  - `spring_air`, `summer_air`, `fall_air`: the glass dressing, the veil, the season's light (rig and backdrop), the storm's tuning, the rows of the season's kinds in `src/particles/engine/kinds.ts`. Files: `assets-src/dressing-<season>/`, `assets-src/refrig/<season>.json`, `glass.ts`, `veil.ts`, `rig.ts`, `backdrop.ts`.
+  - `kinds_builder` (branch `agent/p4-kinds`): the drawing of petal, mote, firefly, seed, leaf, ember and bat. Files: `src/particles/draw/`, `assets-src/kinds/`, `src/particles/engine/engine.ts`.
+  - The sound agent `sound_maker` (branch `agent/p4-sound`; `audio/`) starts when the first of the ten is done.
+  - Phase 3's agents are all done and idle: the ten closers, `looklock_scribe`, the four render agents (used again for Phase 4's rounds), Round 7's critics and jurors.
+
 ## Rounds
 
 One line per round: its number, the unit, the commit it judged, each part ticked off as it finished, the scores, and what changed next.
