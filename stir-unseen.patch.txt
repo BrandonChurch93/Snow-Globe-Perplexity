@@ -1,0 +1,139 @@
+diff --git a/src/scene/surface.ts b/src/scene/surface.ts
+index 165ed73..8a15508 100644
+--- a/src/scene/surface.ts
++++ b/src/scene/surface.ts
+@@ -273,6 +273,31 @@ void slabLight(vec3 P, out vec3 keyDir, out float keyGain, out vec3 rimDir, out
+ }
+ `
+ 
++export const STIR = { reachMm: 24, gapMm: 2.5, drawMm: 2.6, hopMm: 1.5, sweepMm: 3.5, rockMm: 1.4, rockHopMm: 0.9, rockLiftMm: 2, leanFull: 0.05, turn: 0.6 }
++
++// What the foot's own air does to a loose thing that lies at `rest` on the slab, read from the foot's height (uFoot.w) and
++// lean (uLean.zw) and nothing else: it is drawn toward the foot while the foot is off the slab, hops while the gap under the
++// foot is small, slides with the lean of a lifted globe, and rocks with the foot while it settles. All of it is zero at rest.
++// Returns the shift on the slab (xy, mm), the hop (z, mm) and the turn (w, radians); `a` and `b` are the thing's own numbers.
++export const SLAB_STIR_GLSL = `
++vec4 slabStir(vec2 rest, float a, float b) {
++  vec2 out2 = rest - uFoot.xy;
++  float far = length(out2);
++  vec2 dir = out2 / max(far, 1.0);
++  float near = exp(-max(far - uFoot.z, 0.0) / ${f(STIR.reachMm)}) * (0.35 + 0.65 * a);
++  float open = uFoot.w / (uFoot.w + ${f(STIR.gapMm)});
++  float puff = 4.0 * open * (1.0 - open);
++  float tilt = length(uLean.zw);
++  vec2 unit = uLean.zw / max(tilt, 1e-5);
++  float lean = min(tilt / ${f(STIR.leanFull)}, 1.0);
++  float rock = lean * exp(-uFoot.w / ${f(STIR.rockLiftMm)});
++  vec2 shift = dir * (${f(STIR.rockMm)} * rock * dot(dir, unit) - ${f(STIR.drawMm)} * open) + unit * (${f(STIR.sweepMm)} * lean * open);
++  float hop = ${f(STIR.hopMm)} * puff * (0.4 + 0.6 * b) + ${f(STIR.rockHopMm)} * rock * b;
++  float turned = ${f(STIR.turn)} * (2.0 * a - 1.0) * (open + rock);
++  return near * vec4(shift, hop, turned);
++}
++`
++
+ const blank = new THREE.DataTexture(new Uint8Array([128, 128, 0, 255]), 1, 1)
+ blank.needsUpdate = true
+ const dark = new THREE.DataTexture(new Uint8Array([0, 0, 0, 0]), 1, 1)
+diff --git a/src/seasons/fall/slab.ts b/src/seasons/fall/slab.ts
+index 748a711..9a5f676 100644
+--- a/src/seasons/fall/slab.ts
++++ b/src/seasons/fall/slab.ts
+@@ -4,7 +4,7 @@ import { GUST, STAGE_GUST_GLSL, stageShader } from '../../core/materials'
+ import { geometry, prepareModel } from '../../core/models'
+ import { texture } from '../../core/textures'
+ import { ROOM_GLSL, roomUniforms } from '../../scene/room'
+-import { SLAB_LIGHT_GLSL, slabLightUniforms, surfaceUniforms } from '../../scene/surface'
++import { SLAB_LIGHT_GLSL, SLAB_STIR_GLSL, slabLightUniforms, surfaceUniforms } from '../../scene/surface'
+ import type { KitMoment } from '../kit'
+ import { cobweb, FACE_COUNT, faceUniforms } from './base'
+ 
+@@ -42,6 +42,7 @@ uniform vec4 uLeafSpan;
+ uniform vec4 uLeafMove;
+ uniform vec4 uLeafTurn;
+ uniform vec4 uFoot;
++uniform vec4 uLean;
+ varying vec2 vLeafUv;
+ varying vec3 vLeafN;
+ varying vec4 vLeafOne;
+@@ -49,6 +50,7 @@ float leafHash(float n) {
+   return fract(sin(n * 127.1) * 43758.5453);
+ }
+ ${STAGE_GUST_GLSL}
++${SLAB_STIR_GLSL}
+ `
+ const LEAF_VERT_MAIN = `
+ vec2 leafRest = (color.xy - 0.5) * uLeafSpan.x;
+@@ -72,6 +74,12 @@ float leafHop = abs(sin(leafEase * 3.14159265 * leafHops)) * leafLive * uLeafTur
+ float leafYaw = (leafHash(leafId * 6.7) - 0.5) * 2.0 * uLeafTurn.y * leafLeft * leafStir;
+ float leafOver = step(leafHash(leafId * 8.3), uLeafTurn.z) * leafStir;
+ float leafRoll = leafOver * leafLeft * 6.2831853 * (leafHash(leafId * 1.7) < 0.5 ? 1.0 : 2.0) + (1.0 - leafOver) * 0.5 * sin(leafEase * 9.0 + leafId * 40.0) * leafLive * leafStir;
++// The leaves nearest the foot answer the foot itself: they stir as it leaves the slab, slide under a leaning globe and rock as it settles.
++vec4 leafStirred = slabStir(leafRest, leafHash(leafId * 13.9), leafHash(leafId * 15.1));
++leafAt += leafStirred.xy;
++leafHop += leafStirred.z;
++leafYaw += leafStirred.w;
++leafRoll += 0.6 * leafStirred.w;
+ // Inside a change the leaves are carried: blown out ahead of the front of light when fall leaves, flown out behind it when fall comes.
+ if (uState.w > 0.5) {
+   vec3 leafGust = stageGust(leafRest, leafHash(leafId * 11.3), leafHash(leafId * 12.7));
+@@ -150,6 +158,7 @@ vec3 candleInSlab(vec3 P, float lift) {
+ 
+ const LEAF_FRAG = `
+ uniform sampler2D uLeafMap;
++uniform vec4 uLeafSpan;
+ uniform vec3 uKeyCol;
+ uniform vec3 uRimCol;
+ uniform vec3 uSky;
+@@ -185,7 +194,9 @@ void main() {
+   float thru = clamp(-dot(n, keyDir), 0.0, 1.0) * 0.35;
+   float shade = mix(0.35, 1.0, occl);
+   vec3 lit = uKeyCol * (keyGain * (key + thru)) + uRimCol * (rimGain * rim) + uSky * (0.9 * shade) + warm * 0.6 + uRigCardCol * 0.25 * shade;
+-  lit += candleOnSlab(vStageWorld, n, uFoot.w) * 3.2;
++  // A lifted foot shades the lanterns' light on the leaves it passes over, as it does on the slab under it.
++  float leafShut = smoothstep(-2.0 - 3.0 * uFoot.w, 3.0 + uFoot.w, length(vStageWorld.xz - uFoot.xy - uLean.xy) - (uLeafSpan.z - 2.5));
++  lit += candleOnSlab(vStageWorld, n, uFoot.w) * 3.2 * mix(1.0, leafShut, smoothstep(0.0, 1.0, uFoot.w));
+   vec3 col = albedo * lit * RECIPROCAL_PI;
+   vec3 h = normalize(keyDir + view);
+   float waxy = pow(max(dot(n, h), 0.0), 60.0) * 0.16 * keyGain;
+diff --git a/src/seasons/spring/slab.ts b/src/seasons/spring/slab.ts
+index 530afff..5a58f16 100644
+--- a/src/seasons/spring/slab.ts
++++ b/src/seasons/spring/slab.ts
+@@ -3,7 +3,7 @@ import { GUST, STAGE_GUST_GLSL, stageShader } from '../../core/materials'
+ import { stream } from '../../core/rng'
+ import { texture } from '../../core/textures'
+ import { ROOM_GLSL, roomUniforms } from '../../scene/room'
+-import { SLAB_LIGHT_GLSL, slabLightUniforms, surfaceUniforms } from '../../scene/surface'
++import { SLAB_LIGHT_GLSL, SLAB_STIR_GLSL, slabLightUniforms, surfaceUniforms } from '../../scene/surface'
+ import type { KitMoment } from '../kit'
+ import { FLOW, waterUniforms } from './base'
+ 
+@@ -80,6 +80,7 @@ attribute vec4 aKind;
+ attribute vec4 aShape;
+ uniform vec4 uJump;
+ uniform vec4 uFoot;
++uniform vec4 uLean;
+ uniform float uPetalMode;
+ varying vec3 vPetalN;
+ varying vec2 vPetalUv;
+@@ -88,6 +89,7 @@ varying float vPetalSoft;
+ varying float vPetalBlur;
+ ${BLUR}
+ ${STAGE_GUST_GLSL}
++${SLAB_STIR_GLSL}
+ mat3 petalTurn(vec3 axis, float a) {
+   float s = sin(a);
+   float c = cos(a);
+@@ -118,6 +120,12 @@ float petalFlips = floor(aKind.z * 2.99) * step(0.25, petalKick);
+ float petalRoll = 3.14159265 * petalFlips * (1.0 - petalEase) + 0.9 * petalKick * petalArc * (aKind.w - 0.5);
+ float petalYaw = aRest.z + (aKind.w - 0.5) * 2.6 * petalKick * (1.0 - petalEase);
+ vec2 petalAt = aRest.xy - (petalOut / max(petalFar, 1.0)) * (${JUMP.shiftMm.toFixed(1)} * petalKick * (0.4 + 0.6 * aKind.z) * (1.0 - petalEase));
++// The petals nearest the foot answer the foot itself: they stir as it leaves the slab, slide under a leaning globe and rock as it settles; a soaked petal clings.
++vec4 petalStirred = slabStir(aRest.xy, aKind.z, aKind.w) * (1.0 - 0.8 * aKind.y);
++petalAt += petalStirred.xy;
++petalUp += petalStirred.z;
++petalYaw += petalStirred.w;
++petalRoll += 0.5 * petalStirred.w;
+ // Inside a change the petals are carried: blown out ahead of the front of light when spring leaves, flown out behind it when spring comes.
+ if (uState.w > 0.5) {
+   vec3 petalGust = stageGust(aRest.xy, aKind.z, aKind.w);
