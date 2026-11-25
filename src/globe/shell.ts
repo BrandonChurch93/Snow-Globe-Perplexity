@@ -72,9 +72,9 @@ export const glassLook = {
     core: 1.6,
     /** Where round the rim the lamps stand: from and to in degrees, how many, share of the radius, thickness and half length in degrees, level, coolness (each a range). */
     groups: [
-      { deg: [-52, 50], count: 14, share: [0.9, 0.992], thick: [0.5, 1.2], half: [4, 15], level: [0.3, 1.5], cool: [0, 0.08] },
-      { deg: [132, 232], count: 12, share: [0.9, 0.992], thick: [0.5, 1.2], half: [4, 15], level: [0.3, 1.5], cool: [0, 0.1] },
-      { deg: [48, 134], count: 6, share: [0.93, 0.99], thick: [0.8, 2.2], half: [10, 26], level: [0.15, 0.4], cool: [0.7, 1] },
+      { deg: [-52, 50], count: 14, share: [0.9, 0.988], thick: [0.5, 1.2], half: [4, 15], level: [0.3, 1.5], cool: [0, 0.08] },
+      { deg: [132, 232], count: 12, share: [0.9, 0.988], thick: [0.5, 1.2], half: [4, 15], level: [0.3, 1.5], cool: [0, 0.1] },
+      { deg: [48, 134], count: 6, share: [0.93, 0.988], thick: [0.8, 2.2], half: [10, 26], level: [0.15, 0.4], cool: [0.7, 1] },
       { deg: [234, 306], count: 4, share: [0.93, 0.985], thick: [0.6, 1.1], half: [4, 10], level: [0.3, 0.7], cool: [0, 0.1] },
     ],
     /** The ceiling's soft light over the top of the rim: share, place, thickness, half length, level, coolness. */
