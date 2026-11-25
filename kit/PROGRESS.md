@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 68 · 2026-11-25 02:17 UTC
+Status 69 · 2026-11-25 02:30 UTC
 
-- `out/stills/status/status-68-1.jpg`: Fall at rest. Left: the build that Round 10 judges (draft tier). Right: the approved image
-- `out/stills/status/status-68-2.jpg`: Spring at rest from the spring base builder at 02:11. Top: the approved image. Bottom: the build (draft tier)
-- `out/stills/status/status-68-3.jpg`: Spring arriving after the shake from winter: twelve frames over three seconds from the landing (preview size; draft tier)
-- `out/stills/status/status-68-4.jpg`: Still: fall rest hero, hd, draft
+- `out/stills/status/status-69-1.jpg`: Spring at rest as Round 8 judges it at final tier (left) beside its approved image (right)
+- `out/stills/status/status-69-2.jpg`: Spring half a second after a landing as Round 8 judges it (left) beside its approved image (right)
+- `out/stills/status/status-69-3.jpg`: Still: fall rest hero, preview, draft, standins view
+- `out/stills/status/status-69-4.jpg`: Still: fall landed hero, hd, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 02:21 UTC
-clock: phase 4, tick of 4.2 minutes
-phase 4: 2.24 h used of its 9.50 h box
-allowance (before the review): 24.52 h used of 36.00 h allowed
-all time before the review: 24.52 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 02:30 UTC
+clock: phase 4, tick of 0.5 minutes
+phase 4: 2.38 h used of its 9.50 h box
+allowance (before the review): 24.66 h used of 36.00 h allowed
+all time before the review: 24.66 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 4
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -1589,3 +1589,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 02:14 UTC. Fall's first round counted: Round 10 judges `216e427` (pushed 02:13; round line and decision 76 pushed 02:14 as `9c8a51d`, before its first order went out at 02:14). The freeze was made from a fourth merge (`97e9caa`: `fall_mini` `d6f8d14`, `kinds_builder` `fc18a80`, `summer_base` `4da5501`, `summer_mini` `f517c9a`), with every built file of spring, summer and fall deleted and made again from its sources, because two builders had reported stale tiles of their first versions in the tracked built files (18 of spring's base, 6 of summer's base); the web set is 65.626 MiB in 84 files; tsc clean, vitest 432 passed, 4 skipped; the stand-in view of fall at rest is black all over. `kinds_builder`'s fix (`ac677c5`) is in it: winter's rest and landed stills are byte-identical with its baseline again. Round 9's gate moved to `gate_runner` (second job, same clone); the motion packs of Rounds 8 and 9 are expected about 03:20 to 03:35, not 02:46. Every builder was asked at 01:59 to leave `REPORT.md` and `HANDOVER.md` on its looks branch by 02:54 for the agent that takes over its files.
 
 - 02:18 UTC. Status 68 posted at 02:18 (fall at rest on Round 10's judged build beside the approved image; spring at rest and spring's arrival sheet from the builders' looks). Published at 02:16 from `216e427`'s build: first picture in 17.4 s, 87 requests, no error; Visibility: Organization.
+
+- 02:30 UTC. Status 69 posted: spring's two judged stills of Round 8 (final tier) beside their approved images. Round 8's pack arrived at 02:27 from `round_renderer` (branch `agent/p4-round8-pack` `c578f23`, 31 files, no part missing; spring has no macro still, so R3 has two parts), its measures at final tier have 7 of 19 lines red (M1 spring-base 3 invalid values, M1 spring-interior the miniature touches the frame's edge, M2 on four stills between 0.0346 and 0.055 against 0.03, M3 spring-rest 0.3942 against 0.75). R1 of Round 8 (`reviewer_r8_a`, Grok) started 02:28 on the one free slot; the other critics follow one at a time while five render agents work. Third merge of the builders' branches at 02:21 (`kinds.ts` by ownership again, a helper now does it: `out/work/bin/kindsresolve.py`), 432 tests pass, pushed as `e442e41`.
