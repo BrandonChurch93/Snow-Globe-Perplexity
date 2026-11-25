@@ -25,7 +25,7 @@ const lin = (hex) => {
   return [c.r, c.g, c.b]
 }
 
-const CROWN = { centre: [1.2, 29.5, 1], r: [22.5, 15.5, 15], floor: 14.2, sprays: 132, spacing: 4.1, reach: 13, inner: 0.5, layer: 5.0, layerJitter: 2.5 }
+const CROWN = { centre: [1.2, 29.5, 1], r: [22.5, 15.5, 15], floor: 14.2, sprays: 114, spacing: 4.9, reach: 13, inner: 0.5, layer: 5.0, layerJitter: 2.5 }
 const TWIG = { from: 0.34, to: 0.08, sides: 5, steps: 7 }
 const CLUSTER = { step: 1.35, from: 0.26, size: [0.95, 1.5], tip: [1.4, 2.0], flowers: [8, 12], flower: [0.62, 0.98], side: 0.55, flat: 0.72 }
 const TONES = ['#f6b3c9', '#f9c6d6', '#f2a7c0', '#fbd7e2', '#f0a2bc', '#f7bdd0', '#fde4ea'].map(lin)
