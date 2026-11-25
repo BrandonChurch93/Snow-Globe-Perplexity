@@ -389,8 +389,7 @@ vec4 veilField(vec3 p, vec3 f, float sheet) {
   vec3 flat2 = p - dot(p, ${vec(AXIS)}) * ${vec(AXIS)};
   float ring = mix(${n(L.arcCore)}, 1.0, smoothstep(${n(L.hazeFrom)}, ${n(L.hazeTo)}, (length(flat2) - ${n(L.hazeLift)} * dot(p, uVeilUp.xyz) - ${n(L.hazeSide)} * p.x) / uLens.w));
   float even = smoothstep(uVeilBank.x + uVeilBank.y, uVeilBank.x - uVeilBank.y, level + ${n(L.bankWave)} * (f.x - 0.5));
-  float thrown = ${n(L.leanFlood * L.leanFlood)} * dot(uVeilLean, uVeilLean);
-  float thin = (uVeil.a * mix(1.0, ring * arc * sheet, uVeilUp.w) + uVeilRoll.z * mix(1.0, fold, uVeilRoll.w)) * exp(${n(L.leanFlood)} * lean) / (1.0 + thrown * (0.1 + thrown / 280.0));
+  float thin = (uVeil.a * mix(1.0, ring * arc * sheet, uVeilUp.w) + uVeilRoll.z * mix(1.0, fold, uVeilRoll.w)) * ${leanGlsl('p', 'uVeilLean', 'uLens.w')};
   float bank = uVeilBank.z * even * even * even * mix(fold, 1.0, uVeilBank.w) + uVeilDrift.x * streak * sheet;
   return vec4(thin, bank, max(mix(deep, uVeilBank.x - level, uVeilRoll.y), 0.0) * uLens.w, f.z);
 }
@@ -528,6 +527,21 @@ export function veilSettle(afloat: number): void {
   densities()
 }
 
+/** Which way and how far what the liquid carries has been thrown, as the lean of a veil: 0 at rest, `leanMost` at the most. */
+export function loadLean(liquid: ArrayLike<number>, out: THREE.Vector3): THREE.Vector3 {
+  const sx = liquid[LIQUID_LOAD] ?? 0
+  const sy = liquid[LIQUID_LOAD + 1] ?? 0
+  const sz = liquid[LIQUID_LOAD + 2] ?? 0
+  const pace = Math.hypot(sx, sy, sz)
+  const lean = pace > 0 ? Math.min(VEIL_LOOK.lean, VEIL_LOOK.leanMost / pace) : 0
+  return out.set(sx * lean, sy * lean, sz * lean)
+}
+
+/** GLSL: the share of a veil's density at `p` (mm from the middle of the glass of radius `r`) when the load leans by `lean`. */
+export function leanGlsl(p: string, lean: string, r: string): string {
+  return `(exp(${n(VEIL_LOOK.leanFlood)} * dot(${p}, ${lean}) / ${r}) / (1.0 + ${n(VEIL_LOOK.leanFlood * VEIL_LOOK.leanFlood)} * dot(${lean}, ${lean}) * (0.1 + ${n((VEIL_LOOK.leanFlood * VEIL_LOOK.leanFlood) / 280)} * dot(${lean}, ${lean}))))`
+}
+
 export function updateVeil(f: StageFrame): void {
   const a = f.from.veil
   const b = f.to.veil
@@ -557,12 +571,7 @@ export function updateVeil(f: StageFrame): void {
   u.uVeilDrift.value.y = pa / TAU
   densities()
   u.uVeilRoll.value.x = ramp(now.roll, L.rollFrom, L.rollTo)
-  const sx = f.liquid[LIQUID_LOAD] ?? 0
-  const sy = f.liquid[LIQUID_LOAD + 1] ?? 0
-  const sz = f.liquid[LIQUID_LOAD + 2] ?? 0
-  const pace = Math.hypot(sx, sy, sz)
-  const lean = pace > 0 ? Math.min(L.lean, L.leanMost / pace) : 0
-  u.uVeilLean.value.set(sx * lean, sy * lean, sz * lean)
+  loadLean(f.liquid, u.uVeilLean.value)
   const pb = f.liquid[LIQUID_PHASE_B] ?? 0
   u.uVeilFlow.value.set((pa / TAU) * L.arcTurns, Math.sin(pb) * 0.5 * L.blobDrift, Math.sin(pb) * L.blobDrift, Math.cos(pb) * L.blobDrift)
 }
