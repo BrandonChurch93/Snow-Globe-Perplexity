@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 78 · 2026-11-25 06:04 UTC
+Status 79 · 2026-11-25 06:30 UTC
 
-- `out/stills/status/status-78-1.jpg`: Spring at rest half an hour into the third fix pass (left) beside the approved image (right): the crown is now tiers of blossom on boughs with air between. Draft tier.
-- `out/stills/status/status-78-2.jpg`: Summer: the approved image (left) beside the build (right): about twenty fine seed heads float again at rest. Draft tier.
-- `out/stills/status/status-78-3.jpg`: Fall: the approved image (left) beside the build (right): the mist now stands behind the cottage and the tree instead of over them. Draft tier.
-- `out/stills/status/status-78-4.jpg`: Still: fall rest hero, preview, draft, standins view
+- `out/stills/status/status-79-1.jpg`: Spring into summer across the swap (film frames 1390 to 1400): the base now changes behind a line of light instead of a speckled dissolve. Draft tier.
+- `out/stills/status/status-79-2.jpg`: Fall's base: the approved image (above) and the build (below). The vines are now black and thorned and cross each other. Draft tier.
+- `out/stills/status/status-79-3.jpg`: Summer at rest through the reference camera: the approved image (left) beside the build (right). The crown is darker with gold on its sunward rims. Draft tier.
+- `out/stills/status/status-79-4.jpg`: Still: summer rest hero, preview, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 06:16 UTC
-clock: phase 4, tick of 7.7 minutes
-phase 4: 6.15 h used of its 9.50 h box
-allowance (before the review): 28.43 h used of 36.00 h allowed
-all time before the review: 28.43 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 06:30 UTC
+clock: phase 4, tick of 0.8 minutes
+phase 4: 6.38 h used of its 9.50 h box
+allowance (before the review): 28.66 h used of 36.00 h allowed
+all time before the review: 28.66 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
 budget report: not due
-minutes since the last status: 11
+minutes since the last status: 0
 ```
 
 ## Phases
@@ -883,6 +883,8 @@ Numbered. What, why, and the date.
 
 86. **A third set of build agents for the fix pass after the second rounds** (05:35 UTC, Phase 4). The second set reached its three hour limit between 05:40 and 05:58, with Rounds 11, 12 and 13 just frozen on `e39ec6c` and one more round allowed for each season by the count and, so far, by the clock. Each of the ten jobs is handed to a fresh agent that reads its predecessor's `REPORT.md` and `HANDOVER.md`, the job messages before it and the digest of the first rounds' issues: `spring_mini3`, `spring_air3`, `summer_mini3`, `summer_air3`, `fall_mini3`, `fall_air3`, `kinds3` and `change_builder2` started at 05:35; `bases3` and `fall_base3` start when `bases2` and `fall_base2` hand over (limits 05:55 and 05:58). Same ownership of files as the second set, same rules, branches `agent/p4-<name>` (`agent/p4-change2` for the changes). They work the open lists first and the second rounds' issues as those arrive, and push what they would show by 08:32: the third rounds (14, 15, 16) and the floor round of `change` (17) are frozen on one commit at about 08:40, so that they start while the clock still prints `extra rounds: yes` (it stops at about 09:15). Ten build agents and six render agents are the sixteen that may work at once, so critics and jurors of the second rounds start only as render agents finish; fall's still pack waits for the first still renderer that is free (about 06:35). Not chosen: fewer build agents to free slots for critics sooner (it would bring the answers about half an hour earlier and cost two builders for three hours).
 
+87. **A one-line guard in the shared bump of the miniature, inside the seasons' rounds** (06:30 UTC, Phase 4). `spring_mini3` traced M1 `spring-base`'s 6 invalid values to `villageBump` in `src/miniature/surface.ts`: where a face is seen edge on it returns the normalised zero vector, which is not a number. The file is shared by all four miniatures and is not a builder's; a shared system is not reworked inside another unit's round. This is not a rework: the guard `dot(v, v) > 0.0 ? normalize(v) : n` answers only where the old line had no answer, so it changes no valid pixel. `spring_mini3` makes that one line as its own commit and proves it by winter's rest and landed hero stills staying byte-identical and spring's count of invalid values staying 0. Not chosen: a guard at each caller in each season's own files (three agents doing the same thing, and winter's caller left open), or leaving it for the polish rounds (spring's M1 would stay red through Round 14 for a known cause).
+
 ## Notes from Brandon
 
 Numbered, in his words, with the date and how each was applied. Review round items carry their round's number.
@@ -1689,3 +1691,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 06:22 UTC. - Published at 06:19 UTC from the build Rounds 11, 12 and 13 judge (`e39ec6c`): https://snow-globe-seasons.pplx.app (spring, summer and fall after the second fix pass, with the four changes of season built), review page rebuilt (`dist/` 101.7 MB with the review pictures, 39.8 MB of it). Visibility unchanged: Organization. The check of the live page after the publish is in the next line of this log.
 
 - 06:22 UTC. - 06:22: the live page after the publish: first picture in 16.4 s, 87 requests, 42 of them assets, no errors (`distcheck.mjs`).
+
+- 06:30 UTC. - Status 79 posted (the publish of 06:19; spring into summer across the swap with the base changing behind a line of light; fall's base beside the approved image; summer at rest through the reference camera; decision 87). `fall_air3` moved fall's ember emitters: the three crown rows of `sparks` in `src/scene/layout.ts` (lines 423 to 428) became a chimney spot and four wide spots in open liquid, as its job allowed; winter's rest and landed hero stills are byte-identical before and after (its `cmp`), `tests/layout.test.ts` passes.
