@@ -33,7 +33,7 @@ export const ROOM_RIG = {
   glow: { outside: 0.8, islandMm: innerRadiusMm * 0.88, lobe: 0.3, specular: 1 },
 } as const
 
-export const CHANGE_BLOOM = { flood: 200, lens: 0.6, pool: 8, swellFrom: 0.46, fall: 0.6, front: 14 } as const
+export const CHANGE_BLOOM = { outside: 3, flood: 0, lens: 0.2, pool: 2, swellFrom: 0.56, fall: 0.6, front: 14 } as const
 
 const SHADOW_OFF = 10
 
@@ -237,7 +237,10 @@ export class Lighting {
     stageUniforms.uFront.value.set(gb[0] * front, gb[1] * front, gb[2] * front)
     const flood = swell.whole * breath
     u.uLightFlood.value.setRGB(gb[0] * flood, gb[1] * flood, gb[2] * flood)
-    u.uLightFloodFloor.value.w = swell.whole > 0 ? (ROOM_RIG.flood.outside * lift + (CHANGE_BLOOM.flood * cross) / peak) / swell.whole : 0
+    // Between two seasons the base is cut between two frames of the film, so the swell lays a sixth of a shake's light on it and on the
+    // table: on both sides of the cut the base looks like itself, not like a lamp.
+    const outside = a === b ? ROOM_RIG.flood.outside : CHANGE_BLOOM.outside
+    u.uLightFloodFloor.value.w = swell.whole > 0 ? (outside * lift + (CHANGE_BLOOM.flood * cross) / peak) / swell.whole : 0
     u.uLightFloodAt.value.z = swell.whole > 0 ? (ROOM_RIG.flood.inside * lift) / swell.whole : 0
     if (f.pose) {
       u.uLightEye.value.set(f.pose.position.x - f.globe.x, f.pose.position.y - f.globe.y, f.pose.position.z - f.globe.z).applyMatrix3(u.uLightFrame.value)
