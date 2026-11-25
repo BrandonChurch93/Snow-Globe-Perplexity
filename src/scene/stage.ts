@@ -19,7 +19,7 @@ import { CHANGE_CUT, changeBloom, partChange } from '../shake/change'
 import { Backdrop } from './backdrop'
 import { applyPose, type Pose } from './cameras'
 import { newFrame, type StageFrame } from './frame'
-import { centreHeightMm, emitters as layoutEmitters, innerRadiusMm, outerRadiusMm } from './layout'
+import { centreHeightMm, collarY, emitters as layoutEmitters, innerRadiusMm, outerRadiusMm } from './layout'
 import { bakeGrid, flickerOf, gridBytes } from './lightgrid'
 import { CHANGE_BLOOM, Lighting } from './lighting'
 import { drawPasses, type PassContext } from './passes'
@@ -343,7 +343,8 @@ export class GlobeStage implements Stage {
       renderer.setRenderTarget(target)
     } else {
       applyPose(this.camera, pose, w, h, sample)
-      this.inside.getWorldPosition(this.centre)
+      this.inside.updateWorldMatrix(true, false)
+      this.inside.localToWorld(this.centre.set(0, CHANGE_BLOOM.glareSeat * collarY, 0))
       const reach = (CHANGE_BLOOM.glareReach * f.focalPx * outerRadiusMm) / (this.centre.distanceTo(this.camera.position) * h)
       this.centre.project(this.camera)
       lensState.glareAt.set(0.5 + 0.5 * this.centre.x, 0.5 + 0.5 * this.centre.y, reach)

@@ -100,14 +100,20 @@ describe('the change number', () => {
 
   it('changes what is outside the glass together, across a few frames', () => {
     const span = changeSpan('base')
-    for (const part of OUTSIDE.filter((p) => p !== 'surface-dressing')) expect(changeSpan(part)).toEqual(span)
+    for (const part of ['base', 'backdrop']) expect(changeSpan(part)).toEqual(span)
+    // What is on the glass begins with the base's span and is gone on the cut, so the old season's dressing is never seen over the new base.
+    expect(changeSpan('glass-dressing')).toEqual({ from: span.from, to: CHANGE_CUT.at, lag: 0 })
+    // The heaps of the slab sink with the old dressing before the cut and rise with the new after it.
+    expect(changeSpan('surface-leave')).toEqual({ from: DRESSING_CHANGE.leaveFrom, to: DRESSING_CHANGE.leaveTo, lag: 0 })
+    expect(changeSpan('surface-come')).toEqual({ from: DRESSING_CHANGE.comeFrom, to: DRESSING_CHANGE.comeTo, lag: 0 })
+    for (let c = 0; c <= 1; c += 0.001) expect(partChange('surface-leave', c) < 1 && partChange('surface-come', c) > 0, `a heap of both seasons at ${c}`).toBe(false)
     expect(span.lag).toBe(0)
     const table = changeSpan('surface-dressing')
     const frame = FRAME_BEATS / WINDOW
     expect(table.from, 'what the table carries crosses inside the outside span').toBeGreaterThan(span.from)
     expect(table.to).toBeLessThan(span.to)
-    expect(table.from, 'and inside the shutter of the frame of the cut').toBeGreaterThanOrEqual(CHANGE_CUT.frame * frame)
-    expect(table.to).toBeLessThanOrEqual((CHANGE_CUT.frame + 0.5) * frame)
+    expect(table.from, 'and where the shutter is closed, with the cut').toBeGreaterThanOrEqual((CHANGE_CUT.frame - 1) * frame + SHUTTER_S / BEAT_S / WINDOW - 1e-12)
+    expect(table.to).toBeLessThanOrEqual(CHANGE_CUT.frame * frame + 1e-12)
     expect((table.from + table.to) / 2).toBeCloseTo(CHANGE_CUT.at, 12)
     const frames = ((span.to - span.from) * WINDOW) / FRAME_BEATS
     expect(frames).toBeGreaterThanOrEqual(4)
@@ -150,16 +156,26 @@ describe('the change number', () => {
     expect(lit * WINDOW * BEAT_S).toBeLessThan(0.35)
   })
 
-  it('cuts the base in the middle of one film frame\'s shutter, so every other frame holds one base whole', () => {
+  it('cuts the base where the shutter is closed, between two film frames, so no frame holds both bases', () => {
     const frame = FRAME_BEATS / WINDOW
     const shutter = SHUTTER_S / BEAT_S / WINDOW
     const at = CHANGE_CUT.at / frame
-    expect(Math.floor(at)).toBe(CHANGE_CUT.frame)
-    expect(at - Math.floor(at)).toBeCloseTo(shutter / frame / 2, 9)
-    // The table is bare on the cut: what leaves is gone before the frame of the cut opens, what comes starts after it closes.
+    expect(Math.ceil(at)).toBe(CHANGE_CUT.frame)
+    expect(at, 'after the exposure of the frame before has ended').toBeGreaterThan(CHANGE_CUT.frame - 1 + shutter / frame + 0.05)
+    expect(at, 'before the exposure of the first frame of the new base begins').toBeLessThan(CHANGE_CUT.frame - 0.05)
+    for (let k = 0; k < WINDOW / FRAME_BEATS; k++) {
+      const opens = k * frame
+      const closes = opens + shutter
+      expect(opens < CHANGE_CUT.at === closes < CHANGE_CUT.at, `frame ${k} of the window holds one base`).toBe(true)
+    }
+    // A live picture has no shutter: one taken on a whole, a half or a quarter of a frame's time never falls on the cut.
+    expect(Math.abs(at * 4 - Math.round(at * 4))).toBeGreaterThan(0.2)
+    // The table is bare on the cut: what leaves is gone when the last exposure of the old base ends, what comes starts with the first frame of the new base.
     expect(DRESSING_CHANGE.liftFrom).toBeLessThan(DRESSING_CHANGE.leaveFrom)
-    expect(DRESSING_CHANGE.leaveTo).toBeLessThanOrEqual(CHANGE_CUT.frame * frame + 1e-12)
-    expect(DRESSING_CHANGE.comeFrom).toBeGreaterThanOrEqual(CHANGE_CUT.frame * frame + shutter - 1e-12)
+    expect(DRESSING_CHANGE.leaveTo).toBeLessThanOrEqual((CHANGE_CUT.frame - 1) * frame + shutter + 1e-12)
+    expect(DRESSING_CHANGE.leaveTo).toBeLessThan(CHANGE_CUT.at)
+    expect(DRESSING_CHANGE.comeFrom).toBeGreaterThan(CHANGE_CUT.at)
+    expect(DRESSING_CHANGE.comeFrom).toBeGreaterThanOrEqual(CHANGE_CUT.frame * frame - 1e-12)
     expect(DRESSING_CHANGE.comeTo).toBeLessThan(1)
     expect(DRESSING_CHANGE.liftFrom / frame, 'the first frames of the window show the table as it was').toBeGreaterThan(12 - 1e-9)
     expect(GUST_LAST_DOWN, 'every new piece on the table is down before the window closes').toBeLessThan(GUST_CLOSES)
