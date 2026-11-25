@@ -109,6 +109,17 @@ const K_BLEND = new Float64Array(NK)
 const K_GRIP = new Float64Array(NK)
 const K_LOFT = new Float64Array(NK)
 const K_GATHER = new Float64Array(NK)
+/** The kinds that lie as sheets (a petal, a leaf): one of these keeps, while it lies, the facing of what it lies on in its `phase`, which a lying particle has no other use for, so that it is drawn flat on a roof as on the ground. */
+const K_SHEET = new Uint8Array(NK)
+KINDS.forEach((name, k) => {
+  K_SHEET[k] = name === 'petal' || name === 'leaf' ? 1 : 0
+})
+/** The facing of a surface as a `phase`: its two level parts in 8 bits each. The drawing (src/particles/draw/cards.ts) reads it back. */
+export const facingPhase = (nx: number, nz: number): number => {
+  const qx = Math.round((Math.max(-1, Math.min(1, nx)) * 0.5 + 0.5) * 255)
+  const qz = Math.round((Math.max(-1, Math.min(1, nz)) * 0.5 + 0.5) * 255)
+  return ((qx + 256 * qz + 0.5) / 65536) * TAU
+}
 TABLE_OF.forEach((b, k) => {
   K_MODE[k] = b.mode === 'steer' ? 1 : b.mode === 'cycle' ? 2 : 0
   K_REST[k] = b.rest === 'lies' ? STATE_REST : b.rest === 'snags' ? STATE_SNAG : 0
@@ -838,13 +849,15 @@ export class ParticleEngine {
     const G = this.grid(ix)
     const g = this.g
     const need = b.clearanceMm + b.reachMm * 0.5
+    /** How high the homes reach above the ground and how they are spread up it: the row's, where it names them. */
+    const nestOf = b as Behaviour & { nestMm?: number; nestPower?: number }
     let x = 0
     let y = GROUND_Y + need + 4
     let z = 0
     for (let tries = 0; tries < 24; tries++) {
       const s = 72 + tries * 3
       const cx = (unit(hash2(i, s)) * 2 - 1) * WALL
-      const cy = GROUND_Y + 3 + 42 * Math.pow(unit(hash2(i, s + 1)), 1.5)
+      const cy = GROUND_Y + 3 + (nestOf.nestMm ?? 42) * Math.pow(unit(hash2(i, s + 1)), nestOf.nestPower ?? 1.5)
       const cz = (unit(hash2(i, s + 2)) * 2 - 1) * WALL
       const lim = WALL - need
       if (cx * cx + cy * cy + cz * cz > lim * lim) continue
@@ -1007,6 +1020,12 @@ export class ParticleEngine {
         else {
           this.drop(i, k, G)
           this.state[i] = K_REST[k]!
+          if (K_SHEET[k] !== 0) {
+            const g = this.g
+            sdfSample(G.source, this.xyz[i * 3]!, this.xyz[i * 3 + 1]!, this.xyz[i * 3 + 2]!, g)
+            const gl = Math.hypot(g[0]!, g[1]!, g[2]!)
+            this.phase[i] = gl > 1e-6 ? facingPhase(g[0]! / gl, g[2]! / gl) : facingPhase(0, 0)
+          }
           if (this.renews[i]) this.stamp[i] = Math.floor(unit(hash2(i, 33)) * Math.sqrt(dw[0] * dw[0] + unit(hash2(i, 34)) * (dw[1] * dw[1] - dw[0] * dw[0])) * HZ)
         }
       } else this.afloat(i, 21, G, 1.5, GROUND_Y + 1, WALL)
@@ -1674,6 +1693,7 @@ export class ParticleEngine {
               vel[o + 2] = 0
               base[i] = n
               state[i] = rk
+              if (K_SHEET[k] !== 0) phase[i] = facingPhase(nx, nz)
               feel[f] = NaN
               this.drifted = true
               if (renews[i] !== 0) {

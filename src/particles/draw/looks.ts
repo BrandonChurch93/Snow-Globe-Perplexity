@@ -168,6 +168,26 @@ export const GLINT_HIGH = 0.9994
 export const CARD = {
   thick: 0.1,
   petalThick: 0.3,
+  /** The spread of the sizes of the petals and the leaves: the least and the most as shares of the row's size, and the skew toward the small. */
+  spread: [0.5, 1.35, 1.5] as const,
+  /** The few near the eye that are far out of focus: their share, the depths they start and are full at, how much larger they are drawn, their blur in pixels of a 1080 picture, and how much of them is kept off the middle of the picture. */
+  near: { share: 0.4, from: 0.05, to: 0.7, size: 1.5, px: [2.5, 9] as const, clear: 0.55 },
+  /** The ones far behind are a little out of focus too. */
+  far: { from: -0.25, to: -0.9, px: [0.6, 2.2] as const },
+  /** From this blur on (as a share of the card's own width on the picture) a card is drawn as the soft blob of its outline. */
+  blob: [0.45, 1.3] as const,
+  /** The most a card's bends may move its outline on the picture, as a share of what keeps the outline whole when the card is seen edge on. */
+  bendFit: 0.55,
+  /** The storm's fine streaks, for the petals and for the leaves: their share of the ones not drawn whole, the least and most they are seen and its skew, how much longer than the shutter's path, their bow, width in pixels, the tail's share of the head's light, how pale (petals) and the tints (leaves). */
+  line: { share: [0.3, 0.5] as const, keep: [0.03, 0.9] as const, skew: 3.5, stretch: [1.5, 4.5] as const, align: 0.85, fromPx: [6, 30] as const, bow: [0.03, 0.16] as const, widePx: [0.4, 0.95] as const, tail: 0.1, pale: [0.2, 0.8] as const, gain: 1.15, leafLow: [1.25, 0.55, 0.3] as const, leafHigh: [1.7, 1.45, 0.9] as const },
+  /** How much of the storm's sheets is taken away in front of the cottage, so that it still reads. */
+  window: 0.75,
+  /** How much a lying sheet is lit as one in the air, how much of the veil lies over it, and how much of its own colour the light takes on its way through a sheet. */
+  /** How far a lying sheet's facing strays from the facing of what it lies on. */
+  lieLoose: 0.08,
+  lieLit: 0.8,
+  lieVeil: 0.45,
+  throughHue: 0.35,
   bound: 1.12,
   area: 1.3,
   hold: 0.6,
