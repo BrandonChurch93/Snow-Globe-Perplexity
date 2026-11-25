@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 127 · 2026-11-25 22:50 UTC
+Status 128 · 2026-11-25 23:15 UTC
 
-- `out/stills/status/status-127-1.jpg`: The probe at its end, opened from the built files at 960 x 540: Done, the table filled, the graphics line, the pick and Copy. The numbers are this machine's software renderer, not a graphics card.
-- `out/stills/status/status-127-2.jpg`: The app as a visitor first sees it, 1920 x 1080, from the host check on the frozen build: winter at rest with the Shake control.
-- `out/stills/status/status-127-3.jpg`: Sheet: 12 frames across the shot shake-1, frames 576 to 719, preview, draft
-- `out/stills/status/status-127-4.jpg`: Sheet: the 4 at-rest keys, winter-rest, spring-rest, summer-rest, fall-rest, hd, final
+- `out/stills/status/status-128-1.jpg`: Spring mid-shake, hd, final tier: the approved picture (a) beside the frozen build (b).
+- `out/stills/status/status-128-2.jpg`: Summer mid-shake, the same way: approved (a), build (b).
+- `out/stills/status/status-128-3.jpg`: Fall mid-shake, the same way: approved (a), build (b).
+- `out/stills/status/status-128-4.jpg`: Fall on the wide layout as the app draws it, with the season marks, the Shake control and the sound control.
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-25 22:50 UTC
-clock: phase 5, tick of 3.3 minutes
-phase 5: 8.66 h used of its 12.00 h box
-allowance (before the review, continuation 1): 8.66 h used of 12.00 h allowed
-all time before the review: 44.85 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-25 23:15 UTC
+clock: phase 5, tick of 7.7 minutes
+phase 5: 9.07 h used of its 12.00 h box
+allowance (before the review, continuation 1): 9.07 h used of 12.00 h allowed
+all time before the review: 45.26 h, after it: 0.00 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: reached
 box end: not reached
@@ -1784,6 +1784,9 @@ Merged into `main`, each verified here with types clean and the tests green (126
 
 - 20:36 UTC, Nov 25 (Phase 5, Continuation 1): Agents' states at the freeze of polish round 2. The nine builders of the round have reported (20:23 to 20:35; `interface_polisher` earlier) and their build work is ended: `glass_finisher_b`, `swap_finisher`, `surface_finisher`, `hand_finisher`, `sand_finisher`, `storm_finisher`, `liquid_finisher_b`, `gate_runner_b` (winter's foot), `interface_polisher`. At work since 20:35 on the frozen commit `9f4d94a`, 16 of at most 16, none of them a build agent: the review cut at `draft` in twelve ranges (`frame_helper_4`, `change_builder3`, `motion_renderer_b`, `round_renderer`, `round_renderer_c`, `round_renderer_d`, `motion_renderer`, `motion_renderer_c`, `storm_finisher`, `liquid_finisher_b`, `swap_finisher`, `hand_finisher`; limit 21:40; each sends its chunks as files, pushes nothing); Round 19's packs (`round_renderer_b` on `agent/p5-round19-pack`, `motion_renderer_d` on `agent/p5-round19-motion`, `motion_renderer_e` on `agent/p5-round19-motion-b`; limit 22:05); Round 19's gate (`gate_runner`, a fresh clone, limit 22:25). Idle with their clones: `surface_finisher`, `gate_runner_b`, `interface_polisher`, `sound_taker`. The orders are in `out/work/orders/cut/` and `out/work/orders/round-019/`.
 
+- 23:14 UTC, Nov 25 (Phase 5, Continuation 1): Agents at work before the review stop, three of at most 16, none of them a build agent and none on a branch. `gate_runner_b`: the phase gate of Phase 5, whole, once, on a fresh clone of `0f167f99671c` in its own VM, with the app's sound files, the film mix and the review cut put in place first (order `out/work/orders/final/gate.md`); ordered 22:09, its gate started 22:23:35, a line every 30 minutes (22:53: G1 to G4 pass, G5 running), limit 00:25 UTC Nov 26. `final_pass_reviewer`: the project standard's fresh review of the delivered output (the request, the standard's rules and the output alone; a score from 1 to 10 with must-fixes), in its own VM; started 22:12, limit 23:45. `publish_security_reviewer`: the read-only check the workspace's publishing guide asks for before a publish (dependency audit, key-like strings in the tracked files and in `dist/`, risky patterns), here in this VM with grep, find and git alone; started 23:13, limit 15 minutes. The log holds no record of such a check before the earlier publishes of this build; it is run now, before the publish at the phase gate.
+
+
 ## Rounds
 
 One line per round: its number, the unit, the commit it judged, each part ticked off as it finished, the scores, and what changed next.
@@ -2370,3 +2373,7 @@ One entry per task: when it started, what it did, where it stopped.
 - 22:50 UTC. The probe run to its end on the frozen build, from the local built files (`dist/` of `9f4d94a`, `?mode=probe`, Chrome for Testing 147 headless on software GL, SwiftShader). The first try at 1920 x 1080 was given 420 s, did not reach its end and left no picture. The second, at 960 x 540, started 22:43:42: first complete picture after 17.3 s, the probe's own state `done` 217.0 s after the page was opened, nothing logged by the page and no failed request. So the real page's end state has now been seen here, where before only the preview check held it with a stand-in engine: the panel reads "Frame rate probe", "Done", the table of the three levels is filled, under it the graphics line ("ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"), "960 x 540 at 1x", "pick low", and one button, Copy; the text block for pasting reads "Snow Globe: frame rate probe / high: rest 0.0 fps (slowest 1% 0.0), storm 0.0 fps (slowest 1% 0.0) / medium: rest 0.0 fps (slowest 1% 0.0), storm 0.1 fps (slowest 1% 0.1) / low: rest 0.0 fps (slowest 1% 0.0), storm 0.1 fps (slowest 1% 0.1)" with the graphics, screen, pick and browser lines after it. Looked at before it was kept: `out/stills/phase-5/probe-end-local-frozen.jpg`; at this size the panel covers the left part of the globe, which stands in spring's storm behind it. The numbers are this machine's software renderer, where one frame takes ten seconds or more, and say nothing about a graphics card (open item 167); they are not written under "Probe results", which is for what Brandon pastes. One thing the run showed is open item 213: where the table reads 0.0 at rest, most likely no frame was counted at rest at all (read from `src/app/probe.ts`, the frame lists were not printed). Copy was not pressed here.
 
 - 22:51 UTC. Status 127 posted in the thread at 22:50 UTC (Phase 5, Continuation 1), four pictures, each looked at first: the probe page at its end (opened from the built files at 960 x 540), the app as a visitor first sees it (1920 x 1080, the host check's picture of 22:09 on the frozen build, shown at 1200 wide), the sheet of twelve frames across the first shake (preview size, draft tier) and the four seasons at rest (hd, final tier), both of engine `a103ddd4fdecc107`. What it said: the globe unit is finished at its limit and the build is frozen, the phase gate and the fresh reviewer are still at work; the probe ran to its end here; open items 212 and 213 are written; next come the gate's result (about 23:50), the reviewer's score, the last tick and the REVIEW block.
+
+- 23:08 UTC. Check D4 alone, run here on the working folder at 22:52 UTC (`npm run gate -- --phase 5 --only D4`, a check of files, no render): pass. Its line: "D4 pass · the review cuts: one review cut for each of the 1 candidates with a mix in audio/mix/: out/work/review-four-tracks.mp4 (1800 frames, with a sound stream), each 960 x 540 at 30 frames a second with the frame count of the default grid; no mix exists for one-piece". This is not the phase gate: that is the whole gate on a clean clone of `0f167f99671c`, still running with `gate_runner_b`, whose line of 22:53 reads "G1, G2, G3 and G4 pass; G5 is running (about 10 minutes in)". The sound numbers read again at 22:52 from the records and the account: 6,765 of the 10,000 credits spent in 40 paid calls (effects 1,914, music 4,851), 3,235 left, no paid call since 18:11:27; the account's own counter stands at 15,995 of 131,000, unchanged since 22:13.
+
+- 23:15 UTC. Status 128 posted in the thread at 23:15 UTC (Phase 5, Continuation 1), four pictures, each looked at first: spring, summer and fall mid-shake at hd and the final tier, the approved picture (a) beside the frozen build (b) (`out/stills/spring/compare-spring-shake.jpg`, `out/stills/summer/compare-summer-shake.jpg`, `out/stills/fall/compare-fall-shake.jpg`), and fall on the wide layout as the app draws it (`out/stills/globe/screen-wide-fall.jpg`, Round 19's picture). What it said: the build waits on three checks of the frozen build, none of them a round (the phase gate, G1 to G4 pass and G5 running at 22:53; the fresh reviewer; a read-only security check before the publish at the gate); since Status 127, check D4 passes here on the review cut, the REVIEW block is drafted from the log and no file of the app has changed; the clock stood at 9.07 h of Phase 5's 12 and 45.26 h of the 48 before the review; next come the gate's result (about 23:50), the reviewer's score, the last tick, the publish and the REVIEW block.

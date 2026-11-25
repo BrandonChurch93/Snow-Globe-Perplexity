@@ -1,16 +1,16 @@
-# Status 127
+# Status 128
 
-2026-11-25 22:50 UTC
+2026-11-25 23:15 UTC
 
-- Phase 5, Continuation 1. The globe unit is finished at its limit (Round 19) and the build is frozen as 9f4d94a; the phase gate and the fresh reviewer are still at work on it.
-- Since Status 126: the probe ran to its end from the built files (Done after 217 s, no error); two small open items written, 212 (returning visitors on the portfolio host would keep old sound files) and 213 (the probe writes 0.0 where it counted no frame).
-- Next: the phase gate's result (about 23:50 UTC), the reviewer's score, the last tick of the clock, then the REVIEW block.
-- phase 5: 8.66 h used of its 12.00 h box
-- allowance (before the review, continuation 1): 8.66 h used of 12.00 h allowed
+- Phase 5, Continuation 1. Waiting on three checks of the frozen build, none of them a round: the phase gate (G1 to G4 pass, G5 running at 22:53), the fresh reviewer, and a read-only security check before the publish at the gate.
+- Since Status 127: check D4 passes here on the review cut; the REVIEW block is drafted from the log; no file of the app has changed.
+- Next: the gate's result (about 23:50 UTC), the reviewer's score, the last tick of the clock, the publish, then the REVIEW block.
+- phase 5: 9.07 h used of its 12.00 h box
+- allowance (before the review, continuation 1): 9.07 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-127-1.jpg`: The probe at its end, opened from the built files at 960 x 540: Done, the table filled, the graphics line, the pick and Copy. The numbers are this machine's software renderer, not a graphics card.
-- `out/stills/status/status-127-2.jpg`: The app as a visitor first sees it, 1920 x 1080, from the host check on the frozen build: winter at rest with the Shake control.
-- `out/stills/status/status-127-3.jpg`: Sheet: 12 frames across the shot shake-1, frames 576 to 719, preview, draft
-- `out/stills/status/status-127-4.jpg`: Sheet: the 4 at-rest keys, winter-rest, spring-rest, summer-rest, fall-rest, hd, final
+- `out/stills/status/status-128-1.jpg`: Spring mid-shake, hd, final tier: the approved picture (a) beside the frozen build (b).
+- `out/stills/status/status-128-2.jpg`: Summer mid-shake, the same way: approved (a), build (b).
+- `out/stills/status/status-128-3.jpg`: Fall mid-shake, the same way: approved (a), build (b).
+- `out/stills/status/status-128-4.jpg`: Fall on the wide layout as the app draws it, with the season marks, the Shake control and the sound control.
