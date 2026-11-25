@@ -139,8 +139,11 @@ export const look = {
     // the arrival: the pool comes last, after the lanterns have come up one by one (kit, "The arrival": the flare kindles on
     // the landing, the lanterns over the next seconds, then "the pool of light settles on the surface"): nothing of it until
     // `afterSeconds` past the landing, whole `settleSeconds` later
+    // `early` of it kindles with the flare (the approved mid-shake image has the pool under a stormy globe), within `kindleSeconds`
     afterSeconds: 2.0,
     settleSeconds: 1.1,
+    early: 0.3,
+    kindleSeconds: 0.18,
     gold: [1, 0.6, 0.24] as const,
     pale: [1, 0.8, 0.5] as const,
     // the low sun on the table itself: a strip of dusty warm light past the far side of the globe's long shadow, which lies
@@ -500,7 +503,7 @@ export function update(moment: KitMoment): void {
   uniforms.uPoolAt.value.set(g.x + wx * reach + wz * P.sideMm + leanX, g.z + wz * reach - wx * P.sideMm + leanZ, wx, wz)
   uniforms.uPoolFoot.value.set(g.x, g.z)
   const held = Math.min(1, Math.max(0, g.y / config.shake.liftMm))
-  const there = lit * (1 - 0.65 * smooth(held)) * (shaking || two ? 1 : smooth((t - P.afterSeconds) / P.settleSeconds))
+  const there = lit * (1 - 0.65 * smooth(held)) * (shaking || two ? 1 : P.early * smooth(t / P.kindleSeconds) + (1 - P.early) * smooth((t - P.afterSeconds) / P.settleSeconds))
   // the storm's glow goes with the liquid: none in still water, whole when it churns
   const kept = holdStorm(moment)
   // and it hands over with the veil: leaving, it thins as the next season's veil takes the liquid, never in a cut
