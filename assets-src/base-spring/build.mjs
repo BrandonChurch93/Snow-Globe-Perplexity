@@ -318,7 +318,7 @@ for (const root of roots) {
   })
 }
 function taper(root, t) {
-  return root.keep ? 1 : mix(1, 0.4, Math.pow(t, 1.4))
+  return root.keep ? 1 : mix(1.22, 0.26, Math.pow(t, 1.1))
 }
 
 const low = blur(height, W, H, 3.2, true, false)
@@ -510,13 +510,15 @@ function buildGrowth() {
   let rootTriangles = 0
   for (const root of roots) {
     const tint = 0.75 + 0.5 * rng()
+    const knot = 6.283 * rng()
     const centres = root.samples.map((q) => {
       const rr = root.r * taper(root, q.t)
       const g = surf(q.az, q.s, rockWide, 0.3 * rr + 0.15)
       return { p: g.p, n: g.n, rr }
     })
     const before = soup.triangles
-    tube(soup, centres, centres.map((c) => c.rr), () => [tint, tint, tint], [1, 14])
+    const gnarl = (i) => 1 + 0.2 * Math.sin(i * 0.62 + knot) + 0.11 * Math.sin(i * 1.9 + 2.7 * knot)
+    tube(soup, centres, centres.map((c, i) => c.rr * gnarl(i)), (i) => { const v = tint * (0.86 + 0.2 * Math.sin(i * 0.33 + 1.7 * knot)); return [v, v, v] }, [1, 14])
     rootTriangles += soup.triangles - before
   }
   const caps = [...MUSHROOMS]

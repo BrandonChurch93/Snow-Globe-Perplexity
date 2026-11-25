@@ -160,7 +160,7 @@ export function relief(m, az, s) {
   const f = t - k
   const amp = (hashK(k, 5) < 0.3 ? 0.1 : 0.35 + 0.8 * hashK(k, 6)) * smooth(0.25, 0.6, fbm(A * 6 + k * 3.1, 0.5, 6, 4, 31, 2))
   const prof = f < 0.4 ? smooth(0, 0.4, f) : 1 - Math.pow((f - 0.4) / 0.6, 0.9)
-  const swell = 2.3 * (fbm(A * 5 + 1, h / 16, 5, 64, 11, 3) - 0.5) + 1.3 * (fbm(A * 9 + 3, h / 11, 9, 64, 15, 3) - 0.5) + 0.5 * (fbm(A * 19 + 7, h / 5.5, 19, 64, 13, 2) - 0.5)
+  const swell = 2.3 * (fbm(A * 5 + 1, h / 16, 5, 64, 11, 3) - 0.5) + 2.0 * (fbm(A * 9 + 3, h / 11, 9, 64, 15, 3) - 0.5) + 1.0 * (fbm(A * 19 + 7, h / 5.5, 19, 64, 13, 2) - 0.5)
   const lw = w / 2.3 + 0.9 * fbm(A * 24, h / 5, 24, 64, 41, 2)
   const lf = lw - Math.floor(lw)
   const lam = 0.17 * ((lf < 0.42 ? smooth(0, 0.42, lf) : 1 - smooth(0.42, 1, lf)) - 0.5) * smooth(0.36, 0.6, fbm(A * 7 + 2, h / 12, 7, 64, 43, 2))

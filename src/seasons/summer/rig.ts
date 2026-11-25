@@ -11,5 +11,5 @@ export const rig: SeasonKit['rig'] = {
   sky: [0.2, 0.17, 0.13],
   ground: [0.07, 0.055, 0.04],
   fill: 0.7,
-  card: { color: [1, 0.82, 0.62], intensity: 0.9, from: [500, 140, 60], wrap: 0.2, specular: 0.4, inside: 0.3 },
+  card: { color: [1, 0.8, 0.58], intensity: 0.55, from: [500, 140, 60], wrap: 0.2, specular: 0.4, inside: 0.3 },
 }
