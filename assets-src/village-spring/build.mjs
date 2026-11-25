@@ -457,6 +457,8 @@ const MOUNDS = { count: 70, sizeMm: [1.0, 2.6], seed: 9133 }
     }
     g.computeVertexNormals()
   }
+  const nrm = g.getAttribute('normal')
+  for (let i = 0; i < nrm.count; i++) if (Math.hypot(nrm.getX(i), nrm.getY(i), nrm.getZ(i)) < 0.5) nrm.setXYZ(i, nrm.getX(0), nrm.getY(0), nrm.getZ(0))
   let vi = 0
   water.add(g, { keepUv: true, color: [1, 1, 1], surf: () => [st[2 * vi++], 0] })
 }
