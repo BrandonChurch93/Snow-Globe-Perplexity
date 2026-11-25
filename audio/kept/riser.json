@@ -1,0 +1,134 @@
+{
+  "id": "riser",
+  "file": "riser.wav",
+  "class": "touch",
+  "season": null,
+  "line": "A rising breath of air into frame 0",
+  "seconds": 1.2,
+  "take": 3,
+  "takes": 3,
+  "round": "build",
+  "why": "the first take that rises: heard twice without the line as a whoosh of rushing air that builds up; the numbers show the rise from -60 to -20 dB over 0.95 s of 1.2 s; the fit call said no because it is not a human inhalation, which is not wanted; all energy under 250 Hz",
+  "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+  "prompt": "A slow soft rush of wind passing by: one long smooth whoosh of air that swells slowly and evenly from nothing to full and then dies away as slowly, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+  "settings": {
+    "endpoint": "POST /v1/sound-generation",
+    "model": "default",
+    "duration_seconds": 2.4,
+    "prompt_influence": 0.6,
+    "loop": false,
+    "output_format": "pcm_48000",
+    "cost": 26
+  },
+  "chain": {
+    "settings": {
+      "trimDb": -48,
+      "padMs": 3,
+      "fadeInMs": 3,
+      "fadeOutMs": 80,
+      "lowCutHz": 45,
+      "loop": false,
+      "targetLufs": -22,
+      "capSeconds": 1.2
+    },
+    "steps": [
+      "low cut at 45 Hz, before the trim",
+      "trimmed 0.017 s in front and 0.443 s at the end",
+      "cut to 1.2 s",
+      "fade in 3 ms, fade out 80 ms",
+      "level: -3.89 dB to -22 LUFS, measured as gated loudness over 400 ms blocks"
+    ],
+    "gainDb": -3.89,
+    "level": {
+      "measure": "gated",
+      "measuredAs": "gated loudness over 400 ms blocks",
+      "seconds": 1.2,
+      "beforeLufs": -18.11,
+      "afterLufs": -22,
+      "targetLufs": -22,
+      "truePeakDb": -9.37
+    }
+  },
+  "loop": null,
+  "measured": {
+    "seconds": 1.2,
+    "peakDb": -9.37,
+    "truePeakDb": -9.37,
+    "lufs": -22,
+    "lufsMeasure": "gated",
+    "soundLufs": null,
+    "offsetDb": -74.4,
+    "rmsDb": -23.66,
+    "silenceFrontSeconds": 0,
+    "silenceEndSeconds": 0.005,
+    "soundSeconds": 1.195,
+    "tailDb": -27.71,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 80,
+      "bands": {
+        "sub": 0.3255,
+        "low": 0.6728,
+        "lowMid": 0.0017,
+        "mid": 0,
+        "high": 0,
+        "air": 0
+      }
+    }
+  },
+  "ffmpeg": {
+    "lufs": -22,
+    "lra": 0,
+    "truePeakDb": -9.4
+  },
+  "takeMeasured": {
+    "seconds": 2.4,
+    "peakDb": -2.86,
+    "truePeakDb": -2.86,
+    "lufs": -17.75,
+    "lufsMeasure": "gated",
+    "soundLufs": null,
+    "offsetDb": null,
+    "rmsDb": -20.57,
+    "silenceFrontSeconds": 0.015,
+    "silenceEndSeconds": 0.34,
+    "soundSeconds": 2.045,
+    "tailDb": -84.98,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 64,
+      "bands": {
+        "sub": 0.5475,
+        "low": 0.4515,
+        "lowMid": 0.001,
+        "mid": 0,
+        "high": 0,
+        "air": 0
+      }
+    }
+  },
+  "answers": {
+    "verdict": "fits",
+    "why": "Numbers: 2.40 s filed, sound 2.05 s, cut by the chain to 1.2 s; in the cut the level per 0.1 s rises from -60 dB to -20 dB at 0.95 s and falls 14 dB over the last 0.2 s, where the chain fades it: it rises for four fifths of its length and ends near its loudest. All of its energy is under 250 Hz (33 percent under 60 Hz, 67 percent between 60 and 250 Hz). Listener, on the copy that plays it three times, open, asked twice: a quick sharp whoosh or swish of air, like a stick or a whip cutting through the air or a transition effect; a fast buildup of rushing air that trails off quickly; the first call placed the loudest point near the start, the second in the middle. Fit: no, for this reason: it is a synthetic whoosh and not an actual human inhalation. No voice, no breath, no music in any call. The fit call read the line's breath as a person breathing in, which the family line forbids; what the line asks of the sound, air that rises into frame 0, is what the numbers show and what both open calls name as air. Kept, with one thing for the review round: it lies wholly under 250 Hz, so a phone speaker will play little of it.",
+    "listener": {
+      "line": "A rising breath of air into frame 0",
+      "note": "the listening copy plays the cut sound three times in a row, because a sound of about 1 s alone was not heard by the listener; both questions say so; the open questions ask where the sound is loudest; the first open call placed the loudest point near the start, against the numbers, so the open questions were asked a second time (openSecond)",
+      "open": "1. I hear a quick, sharp whooshing or swishing sound. It resembles a fast-moving object slicing through the air, like a swinging stick or a cinematic transition effect.\n2. The sound gets rapidly louder and then quickly gets quieter. It is loudest near its start, right after the initial attack.\n3. No, there is no human voice, spoken word, breath, or singing present.\n4. No, there is no music, melody, or musical instrument heard in the clip.\n5. The sound starts abruptly with a sudden, energetic burst. It ends by rapidly fading out into complete silence.",
+      "fit": "1. No, the sound does not fit the description because it sounds like a synthetic, electronic \"whoosh\" transition effect rather than an actual human inhalation. \n2. The artificial, digital sweeping tone and highly processed noise do not belong to the description of a natural breath of air.\n3. No, there is no human voice, spoken word, or singing in this audio.",
+      "openSecond": "1. I hear a quick, sharp swooshing or swishing sound. It has an airy, fast character, similar to a stick or whip rapidly cutting through the air.\n2. The sound gets both louder and then quieter during its short duration. It is loudest right in its middle at the peak of the swoosh.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument present.\n5. The sound starts rapidly with a sudden, fast buildup of rushing air. It ends by quickly trailing off and fading out into silence."
+    }
+  },
+  "source": {
+    "name": "riser-2026-11-25T17-51-15-125Z.wav",
+    "bytes": 460878,
+    "sha256": "05727edeee499529ec7683486347f439c6f4caf05390415188e4380fc8743536",
+    "codec": "pcm_s16le",
+    "sampleRate": 48000,
+    "channels": 2,
+    "seconds": 2.4,
+    "kbps": 1536
+  },
+  "takeSha256": "b257e49e3a170249c412da5b0e690338b93189407c430a3bd81ff3550c57356a",
+  "sha256": "3a9aa41c40237b23ad846e32e0e239d7f11415a9bed99992f4647b3bfcde19ab",
+  "time": "2026-11-25T17:52:49.741Z"
+}
