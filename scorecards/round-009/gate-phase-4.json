@@ -1,0 +1,113 @@
+{
+  "phase": 4,
+  "time": "2026-11-25T03:30:00.385Z",
+  "engineHash": "860c085c45f24b98",
+  "commit": "fe1072c",
+  "results": [
+    {
+      "id": "G1",
+      "name": "the build is clean",
+      "pass": true,
+      "detail": "npm run build exited 0 in 4.6 s, no type errors",
+      "seconds": 4.57
+    },
+    {
+      "id": "G2",
+      "name": "unit tests",
+      "pass": true,
+      "detail": "425 of 429 tests pass in 32 files",
+      "seconds": 52.245
+    },
+    {
+      "id": "G3",
+      "name": "determinism",
+      "pass": true,
+      "detail": "5 pictures pixel-identical across 4 fresh page loads in 4 orders (preview, draft, with a late film frame and a loop frame)",
+      "seconds": 569.461
+    },
+    {
+      "id": "G4",
+      "name": "sizes and counts",
+      "pass": true,
+      "detail": "a still in every format has its exact size (uhd 3840 x 2160, hd 1920 x 1080, preview 960 x 540, phone 390 x 844, tablet 1024 x 1366), 5 stills on disk agree with their records, loop().frameCount is 480, film().frameCount 3600 matches frameCount in cut/CUTLIST.json",
+      "seconds": 20.166
+    },
+    {
+      "id": "G5",
+      "name": "no interface pixel where none belongs",
+      "pass": true,
+      "detail": "in 25 stills without interface, film B frames 0, 666, 720, 3598 and loop frames 0, 120, 478 the stage is pixel-identical to the canvas and #ui is empty or hidden; 4 screen stills (screen-wide, screen-wide-fall, screen-phone, screen-tablet) show the Shake control, 4 season marks and the sound control, and their stage differs from the canvas in 9677 to 15929 pixels; 36 pictures reused from records of this build",
+      "seconds": 84.11
+    },
+    {
+      "id": "G6",
+      "name": "startup validation and the judged list",
+      "pass": true,
+      "detail": "the page starts in capture mode with no error, so the config passes startup validation; all 69 ids of dev.judged() are in the Judged list of kit/PROGRESS.md (69 rows), each under its unit",
+      "seconds": 14.011
+    },
+    {
+      "id": "G7",
+      "name": "lengths",
+      "pass": true,
+      "detail": "film B is 3600 frames, 60.00 s: at most film.maxSeconds 80 and at least film.minSeconds 45; the opening is 870 frames, 14.50 s of at most 16; film A is 74.50 s of at most 140; at 20 Mbit/s of picture and 256 kbit/s of sound film A is 189 MB (152 MB for film B), under platform.maxFileMb 512",
+      "seconds": 14.213
+    },
+    {
+      "id": "G8",
+      "name": "sources and recipes",
+      "pass": false,
+      "detail": "assets-full/spring/base-bark-detail.lin.tile.w1024.png has neither a row in ASSETS.md nor a recipe in assets-src/; assets-full/spring/base-bark-detail.lin.tile.w512.png has neither a row in ASSETS.md nor a recipe in assets-src/; assets-full/spring/base-bark.srgb.tile.w1024.png has neither a row in ASSETS.md nor a recipe in assets-src/; assets-full/spring/base-bark.srgb.tile.w512.png has neither a row in ASSETS.md nor a recipe in assets-src/; assets-full/spring/base-moss-detail.lin.tile.w1024.png has neither a row in ASSETS.md nor a recipe in assets-src/; assets-full/spring/base-moss-detail.lin.tile.w512.png has neither a row in ASSETS.md nor a recipe in assets-src/; assets-full/spring/base-moss.srgb.tile.w1024.png has neither a row in ASSETS.md nor a recipe in assets-src/; assets-full/spring/base-stone-detail.lin.tile.w1024.png has neither a row in ASSETS.md nor a recipe in assets-src/",
+      "seconds": 0.009
+    },
+    {
+      "id": "G9",
+      "name": "the repo",
+      "pass": true,
+      "detail": "932 tracked files, 795 MB in all, the largest 18.8 MB (assets-full/summer/village-summer.glb); no secret found; references/cache/ and out/work/ untracked; 9 of 9 approved files hold their hashes",
+      "seconds": 0.237
+    },
+    {
+      "id": "G10",
+      "name": "portable WebGL2",
+      "pass": true,
+      "detail": "src asks for EXT_color_buffer_float, EXT_color_buffer_half_float, EXT_texture_filter_anisotropic, WEBGL_debug_renderer_info; with all 24 extensions that are not portable denied the still is pixel-identical; without EXT_color_buffer_float it renders on the half float path at 70.9 dB from the float path; with no float target it still renders (41.2 dB)",
+      "seconds": 149.892
+    },
+    {
+      "id": "G11",
+      "name": "the change stays in its window",
+      "pass": true,
+      "detail": "film: 7 seasonal parts read on all 3600 frames, every value 0 or 1 on the 3456 frames outside the 4 swap windows (648 to 683, 1368 to 1403, 2088 to 2123, 2808 to 2843), a part mid change on 140 frames inside them; test shake: the same on 828 of 864 frames outside 72 to 107; loop: no value changes across 480 frames and the frame one past the last",
+      "seconds": 14.32
+    },
+    {
+      "id": "G12",
+      "name": "landings",
+      "pass": true,
+      "detail": "4 shakes of the cut list: globe.heightMm is above zero on all 432 frames from each liftEnd to the frame before each landing (the lowest is 0.46 mm); every landing frame (720, 1440, 2160, 2880) is one of the 25 bar lines of the cut list and of film().landings; the camera on each first frame (576, 1296, 2016, 2736) equals dev.pose('hero') within 0.001 mm and degrees (the largest difference is 0.0e+0)",
+      "seconds": 13.653
+    },
+    {
+      "id": "G13",
+      "name": "stand-ins",
+      "pass": true,
+      "detail": "covers 26 of 54 parts: the unit of this round, summer; the units marked finished in kit/PROGRESS.md (winter). None is stand-in in the register, the files of each differ from its stand-in hash, the standins view of 69 of 69 judged stills and frames shows no pixel within 2 of a covered part's colour, and dev.flagged() names none of them; 69 views reused from records of this build",
+      "seconds": 82.105
+    },
+    {
+      "id": "G14",
+      "name": "the loop's seam",
+      "pass": true,
+      "detail": "renderLoopFrame(480), one past the last, is pixel-identical to frame 0 (hd, draft)",
+      "seconds": 83.89
+    },
+    {
+      "id": "G15",
+      "name": "memory and counts",
+      "pass": false,
+      "detail": "spring at high: 2132522 triangles, over perf.maxTriangles.high 1800000; summer at high: 2432532 triangles, over perf.maxTriangles.high 1800000; spring at medium: 1803650 triangles, over perf.maxTriangles.medium 1100000; summer at medium: 1592992 triangles, over perf.maxTriangles.medium 1100000; fall at medium: 1328457 triangles, over perf.maxTriangles.medium 1100000; spring at low: 790033 triangles, over perf.maxTriangles.low 600000; and 2 more",
+      "seconds": 939.485
+    }
+  ]
+}
