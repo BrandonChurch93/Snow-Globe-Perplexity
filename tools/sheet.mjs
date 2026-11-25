@@ -275,6 +275,15 @@ try {
           if (m && Number(m[1]) > sets.length) fs.rmSync(path.join(SHEETS, f), { force: true })
         }
       }
+      // A sheet drawn in another VM is kept without its frames: the scripts of a pack can be drawn by one render agent each and only the sheets carried over.
+      for (const job of o.force ? [] : jobs) {
+        if (!matches(job.file, { format: o.format, assets: o.assets, diagnostic: o.diag, layoutHash, spec: job.spec })) continue
+        const record = readJson(`${job.file}.json`)
+        const meta = await sharp(job.file).metadata()
+        if (meta.width !== record.width || meta.height !== record.height || (cols && record.layout?.cols !== cols)) continue
+        job.done = true
+        done.push({ order: jobs.indexOf(job), file: job.file, reused: true, width: meta.width, height: meta.height, count: job.frames.length })
+      }
     } else {
       const id = shotArg || (motion === 'move' ? '' : 'test')
       let range
@@ -348,7 +357,7 @@ try {
         })
       }
     }
-    const r = await renderFrames(session, page, src, jobs.flatMap((j) => j.frames), o, async (i, file, reused) => {
+    const r = await renderFrames(session, page, src, jobs.filter((j) => !j.done).flatMap((j) => j.frames), o, async (i, file, reused) => {
       have.set(i, file)
       if (!reused) freshFrames.add(i)
       if (!reused) await composeReady()
