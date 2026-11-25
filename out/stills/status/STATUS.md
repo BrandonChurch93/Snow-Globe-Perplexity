@@ -1,16 +1,16 @@
-# Status 125
+# Status 126
 
-2026-11-25 22:13 UTC
+2026-11-25 22:39 UTC
 
-- Phase 5, Continuation 1. The globe is marked finished at its limit: two rounds, none passed (Round 19: whole 9, motion 4, interface 7, jury 4 of 20 against a bar of 9). The phase gate was ordered at 22:09 UTC on a clean clone and runs about 95 minutes
-- Since Status 124: polish round 2's measures at the final tier: winter 24 of 24 green (real sharpness 0.9189), spring 18 of 19 (real sharpness 0.3933 against 0.75, was 0.3941), summer 18 of 19 (0.7152, was 0.7057), change 24 of 24 green, fall not in yet. Round 19's own gate has G1 to G14 green and G15 running. Decision 126: the stand-in check in the gates of Rounds 18 and 19 covered 49 of 54 parts where the kit asks for 52; mended in the tool, and the phase gate covers the 52. A fresh reviewer for the project's showcase standard started at 22:12 on the same build
-- Next: the gate's result (about 23:50 UTC), the second-engine still, the last tick of the clock, then the REVIEW block
-- phase 5: 8.04 h used of its 12.00 h box
-- allowance (before the review, continuation 1): 8.04 h used of 12.00 h allowed
+- Phase 5, Continuation 1. The frozen build passes the host check here and draws in a second browser engine. The phase gate runs on a clean clone (expected about 23:50 UTC) and a fresh reviewer for the project's showcase standard is at work on the same build
+- Since Status 125: Round 19's own gate is in: G1 to G15 green, G16 green after its host check, D4 red there because that clone holds neither the mix nor the cut. Fall's measures are in: 18 of 19, real sharpness 0.5189 against 0.75 (was 0.5348). The host check on the frozen build: 60.78 of 95 MB in 100 files, 13.83 of 16 MB before the first picture, all 10 links open. The Sound section of the log now lists all 25 cues: 14 kept, 11 out of takes
+- Next: the gate's result, the reviewer's score, the last tick of the clock, then the REVIEW block (about 00:30 to 01:45 UTC)
+- phase 5: 8.47 h used of its 12.00 h box
+- allowance (before the review, continuation 1): 8.47 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-125-1.jpg`: The built site of the frozen build in live mode at 22:09 UTC: the first picture of the host check that is running now (winter, with the Shake control)
-- `out/stills/status/status-125-2.jpg`: Polish round 2, winter at rest at the final tier: the approved picture (a) beside the frozen build (b); its likeness critic gave 7, and all 24 of its measure lines are green
-- `out/stills/status/status-125-3.jpg`: Polish round 2, summer at rest at the final tier: the approved picture (a) beside the frozen build (b); its likeness critic gave 4, and real sharpness is still red at 0.7152 against 0.75
-- `out/stills/status/status-125-4.jpg`: Round 19, the phone screen at the final tier: spring with the season marks, Shake and the sound control; the globe and its base now lie inside the frame
+- `out/stills/status/status-126-1.jpg`: The frozen build in a second browser engine: Firefox 148.0.2 with software graphics, the page as a visitor opens it, first picture after 55.2 s (winter at rest with the Shake control)
+- `out/stills/status/status-126-2.jpg`: The probe page opened from the same built files (?mode=probe): its panel at the start of the run, measuring the high level at rest
+- `out/stills/status/status-126-3.jpg`: Polish round 2, fall at rest at the final tier: the approved picture (a) beside the frozen build (b); its likeness critic gave 5, and real sharpness is red at 0.5189 against 0.75
+- `out/stills/status/status-126-4.jpg`: The 14 kept sounds as waveforms, drawn again at 22:28 UTC from the kept files, each with its length and loudness

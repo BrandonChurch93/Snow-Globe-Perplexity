@@ -1,0 +1,31 @@
+{
+ "engine": "firefox",
+ "version": "148.0.2",
+ "firstPicture": true,
+ "seconds": "55.2",
+ "gl": {
+  "webgl2": true,
+  "version": "WebGL 2.0",
+  "renderer": "llvmpipe, or similar",
+  "floatTargets": true,
+  "halfFloat": false,
+  "maxSamples": 8
+ },
+ "ua": "Mozilla/5.0 (X11; Linux x86_64; rv:148.0) Gecko/20100101 Firefox/148.0",
+ "build": "9f4d94aebada702e061a8651eca141722a097074",
+ "engineHash": "a103ddd4fdecc107",
+ "query": "(none: the app as a visitor opens it)",
+ "size": [
+  1920,
+  1080
+ ],
+ "sha256": "8d23b1ea42c928acbb49297784e86c77165eb61c6295b63c98bb1ecd30ddf87a",
+ "time": "2026-11-25T22:30:07Z",
+ "said": [
+  "warning: [JavaScript Warning: \"WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.\" {file: \"http://127.0.0.1:35517/assets/main-CFPnsRVz.js\" line: 4485}]",
+  "warning: [JavaScript Warning: \"Use of the motion sensor is deprecated.\" {file: \"http://127.0.0.1:35517/assets/main-CFPnsRVz.js\" line: 4485}]",
+  "warning: [JavaScript Warning: \"WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.\" {file: \"debugger eval code line 302 > eval\" line: 5}]",
+  "warning: [JavaScript Warning: \"WebGL warning: drawElementsInstanced: Depth texture comparison requests (e.g. `LINEAR`) Filtering, but behavior is implementation-defined, and so on some systems will sometimes behave as `NEAREST`. (warns once)\"]",
+  "warning: [JavaScript Warning: \"WebGL warning: generateMipmap: Tex image TEXTURE_2D level 0 is incurring lazy initialization.\"]"
+ ]
+}
