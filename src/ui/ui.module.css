@@ -54,7 +54,8 @@
   position: absolute;
   left: 0;
   right: 0;
-  bottom: max(var(--edge), calc(env(safe-area-inset-bottom, 0px) + var(--edge) * 0.5));
+  --foot: max(var(--edge), calc(env(safe-area-inset-bottom, 0px) + var(--edge) * 0.5));
+  bottom: var(--foot);
   width: min(calc(100% - 2 * var(--side) - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)), 168vh);
   margin-inline: auto;
   display: grid;
@@ -359,6 +360,12 @@
   }
 }
 
+@keyframes arrive-shade {
+  from {
+    opacity: 0;
+  }
+}
+
 @keyframes rock {
   0%,
   100% {
@@ -476,6 +483,20 @@
 
   .bar {
     row-gap: 10px;
+  }
+
+  /* Under the globe the controls lie over the near table and whatever it mirrors, which can be light. A soft warm shade under
+     them keeps them low contrast against the dark, as on the wide layout. It has no edge and takes no press. */
+  .bar::before {
+    content: '';
+    position: absolute;
+    top: calc(var(--hit) * -1.5);
+    bottom: calc(var(--foot) * -1);
+    left: -100vw;
+    right: -100vw;
+    background: linear-gradient(to top, rgb(var(--shade) / 0.8), rgb(var(--shade) / 0.66) 52%, rgb(var(--shade) / 0.3) 80%, rgb(var(--shade) / 0));
+    pointer-events: none;
+    animation: arrive-shade 0.7s ease-out;
   }
 
   .marks {
