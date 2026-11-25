@@ -63,18 +63,27 @@ export class Pages {
   }
 }
 
+// Which camera's numbers a judged still is measured with. A screen still (drawn with the controls, or the live app's view)
+// is drawn from the app's own framing, which is not the film's camera of the same name: `stillFraming()` gives the numbers
+// of the camera that drew the last still. Every other still is drawn from the named camera itself.
+export function framingSource(entry) {
+  if (entry.interface || entry.kind === 'live') return 'still'
+  return entry.camera ? 'camera' : 'none'
+}
+
 export async function drawJudged(session, pages, entry, { tier, diag = '', force = false } = {}) {
   const spec = specOf(entry, tier, diag)
   const file = judgedFile(entry, tier, diag)
   const want = { seasons: seasonsOf(entry), format: spec.format, tier, assets: spec.assets, diagnostic: diag, spec }
   if (!force && recordMatches(file, want)) {
     const record = readJson(`${file}.json`)
-    if (record.measured && record.method === METHOD) return { file, reused: true, record }
+    // a screen still measured before its framing was read from the camera that drew it is drawn again
+    if (record.measured && record.method === METHOD && (framingSource(entry) !== 'still' || record.framingFrom === 'still')) return { file, reused: true, record }
   }
   const page = await pages.get(spec.format)
   const t0 = Date.now()
   const got = await page.evaluate(
-    async ([e, t, d, season]) => {
+    async ([e, t, d, season, from]) => {
       const sc = window.showcase
       await sc.setFormat(e.format)
       sc.setDiagnostic(d || 'none')
@@ -96,12 +105,12 @@ export async function drawJudged(session, pages, entry, { tier, diag = '', force
         info: sc.info(),
         sanity: sc.dev.sanity(),
         inside: sc.dev.inside(),
-        framing: e.camera ? sc.dev.framing(e.camera) : null,
+        framing: from === 'still' ? sc.dev.stillFraming() : from === 'camera' ? sc.dev.framing(e.camera) : null,
         state,
         timings: { simMs: after.simMs - before.simMs, drawMs: after.drawMs - before.drawMs, samples: after.samples - before.samples, steps: after.steps - before.steps },
       }
     },
-    [entry, tier, diag, cfg.defaultSeason],
+    [entry, tier, diag, cfg.defaultSeason, framingSource(entry)],
   )
   const png = entry.interface ? await session.grabStage(page) : await session.grab(page)
   const record = session.record(got.info, {
@@ -113,6 +122,7 @@ export async function drawJudged(session, pages, entry, { tier, diag = '', force
     timings: got.timings,
     measured: { sanity: got.sanity, inside: got.inside },
     framing: got.framing,
+    framingFrom: framingSource(entry),
     state: got.state,
     standIns: got.info.standIns.length,
     counts: got.info.counts,
