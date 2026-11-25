@@ -155,7 +155,8 @@ async function liveChecks(session) {
       const steps = []
       const bad = []
       try {
-        await control.click({ timeout: 5000 })
+        const frameMs = await page.evaluate(() => new Promise((r) => requestAnimationFrame((t0) => requestAnimationFrame((t1) => r(t1 - t0)))))
+        await control.click({ timeout: Math.max(5000, Math.ceil(6 * frameMs)) })
         await page.waitForTimeout(1200)
         const clicked = await state()
         steps.push(`pointer: ${before.shown} to ${clicked.shown}`)
