@@ -224,7 +224,7 @@ vec2 fibreAt = vec2(vBaseUv1.x * 1.3, vBaseUv1.y * 7.0);
 float fibreHere = baseNoise(vec3(fibreAt, 5.0)) * 0.42 + baseNoise(vec3(fibreAt * vec2(2.3, 3.1), 9.0)) * 0.3 + baseNoise(vec3(fibreAt * vec2(4.1, 6.3), 3.0)) * 0.28;
 float fibreNext = baseNoise(vec3(fibreAt + vec2(0.0, 0.3), 5.0)) * 0.42 + baseNoise(vec3((fibreAt + vec2(0.0, 0.3)) * vec2(2.3, 3.1), 9.0)) * 0.3 + baseNoise(vec3((fibreAt + vec2(0.0, 0.3)) * vec2(4.1, 6.3), 3.0)) * 0.28;
 diffuseColor.rgb *= mix(1.0, 0.45 + 0.6 * fibreHere, baseStrand);
-baseCandle = mix(baseCandle, 7.5, baseStrand);
+baseCandle = mix(baseCandle, 13.0, baseStrand);
 `
 const IRON_ROUGH = `
 roughnessFactor = clamp(mix(0.44, 0.62, baseDetail.b) + 0.04 * baseStrand + 0.14 * baseScale + 0.2 * baseRust - 0.08 * baseThorn * vBasePaint.z + 0.12 * baseDrum, 0.18, 1.0);

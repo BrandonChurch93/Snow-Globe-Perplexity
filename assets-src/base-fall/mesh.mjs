@@ -126,7 +126,10 @@ function addStrands() {
     const steep = i % 3 === 2
     const turn = steep ? r(20, 46) : r(3, 21)
     const span = steep ? r(22, 46) : Math.min(r(52, 128), 30 / (Math.tan(turn * RAD) * RAD * 53))
-    const a0 = -180 + (i * 360) / count + r(-9, 9) + ((i * 137.5) % 360)
+    let a0 = -180 + (i * 360) / count + r(-9, 9) + ((i * 137.5) % 360)
+    // Fewer vines cross the right flank, where the key lights the leather between them.
+    const mid = L.wrapDeg(a0 + span / 2)
+    if (!steep && mid > 42 && mid < 100 && i % 2 === 0) a0 += 180
     const angle = (rng() < 0.5 ? -1 : 1) * turn
     const slope = Math.tan(angle * RAD) * span * RAD * 53
     const rad = steep ? r(1.0, 1.45) : i % 4 === 0 ? r(1.6, 2.05) : r(1.15, 1.7)
