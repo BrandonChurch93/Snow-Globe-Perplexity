@@ -269,6 +269,9 @@ const storm = {
   washPond: 0.75,
   washPondMm: 9,
   washLight: 1.75,
+  /** After a landing the shared veil opens a pocket about the cottage and the crown (`veilPocket`): how much of the mist and of the wash on the front glass it takes away there. */
+  opened: 0.82,
+  washOpened: 0.7,
 }
 
 const stormUniforms = {
@@ -390,7 +393,7 @@ void main() {
   float dashes = ${n(storm.dash)} * dash * stirred * (0.12 + 0.88 * lane) * (1.0 - ${n(storm.crownEven)} * crown);
   vec3 pc = (p - ${v3(storm.pocketAt)}) / ${v3(storm.pocketReach)};
   float pocket = 1.0 - ${n(storm.pocket)} * stirred * exp(-dot(pc, pc));
-  float sigma = uStorm.x * wall * eye * low * front * rest * trunk * pocket * (soft + dashes);
+  float sigma = uStorm.x * wall * eye * low * front * rest * trunk * pocket * (soft + dashes) * (1.0 - ${n(storm.opened)} * veilPocket(p));
   // One sheet's share of the way through the liquid, along the eye's ray.
   float slant = max(abs(normalize(vStageWorld - cameraPosition).z), 0.35);
   float a = 1.0 - exp(-sigma * ${n((2 * INNER * 0.97) / storm.sheets)} / slant);
@@ -437,7 +440,7 @@ void main() {
   // Not one ribbon: it is whole only in the dashes, the lanes are gaps through to the scene, and before the pond's glint it is thin.
   float pond = 1.0 - ${n(storm.washPond)} * exp(-(p.x - ${n(storm.lampAt[0])}) * (p.x - ${n(storm.lampAt[0])}) / ${n(storm.washPondMm * storm.washPondMm)}) * smoothstep(0.0, 20.0, p.z);
   pond *= 1.0 - ${n(storm.washTrunk)} * exp(-(p.x - ${n(storm.washTrunkAt)}) * (p.x - ${n(storm.washTrunkAt)}) / ${n(storm.washTrunkMm * storm.washTrunkMm)}) * smoothstep(0.0, 20.0, p.z) * smoothstep(-36.0, -24.0, p.y);
-  float a = ${n(storm.wash)} * band * left * pond * (${n(storm.washEven)} + ${n((1 - storm.washEven) * 0.45)} * streak + ${n((1 - storm.washEven) * 0.55)} * dash) * mix(${n(storm.washGap)}, 1.0, lane);
+  float a = ${n(storm.wash)} * (1.0 - ${n(storm.washOpened)} * veilPocket(p)) * band * left * pond * (${n(storm.washEven)} + ${n((1 - storm.washEven) * 0.45)} * streak + ${n((1 - storm.washEven) * 0.55)} * dash) * mix(${n(storm.washGap)}, 1.0, lane);
   if (a <= 0.004) discard;
   if (uDiag != 0) {
     if (uDiag != ${viewCode('cover')}) discard;

@@ -90,6 +90,8 @@ export const STREAK_HOLD = 0.7
 export const STREAK_CAPSULE = 0.8
 export const STREAK_TAPER = 0.75
 export const STREAK_REACH = 1.05
+/** The arc of a path in the storm: the least radius about the roll's axis that a path is bent by, and the most the ends of a trail leave the straight line through its middle, as a share of half its length. */
+export const STREAK_ARC = { leastMm: 5, most: 0.45 }
 export const BLUR_HOLD = 0.5
 export const BLUR_STRICT_FROM_PX = 5
 export const BLUR_STRICT_TO_PX = 24
@@ -104,6 +106,8 @@ export const STRETCH_HIGH = 0.7
 export const STORM_SMEAR_SHARE = 0.36
 export const STORM_SHARP_SHARE = 0.13
 export const STORM_SHARP_REACH = 0.85
+/** In the storm the sharp share is softened by its motion too: its share of the smear's blur, and how much of it is seen, so that its stroke is a soft one and no brighter for it. */
+export const STORM_SHARP_SOFT = { soft: 0.4, seen: 0.5 }
 export const STORM_DAB_LIGHT = 1.35
 export const STORM_FINE_SHARE = 0.18
 export const STORM_SMEAR = 0.44
@@ -111,8 +115,14 @@ export const STORM_OFF_DISC = 0.75
 export const STORM_CROSS = { keep: 1, from: 0.8, to: 0.97, fromPx: 1.5, toPx: 4 }
 export const STORM_SIDE = 0.9
 export const STORM_WALL = { dim: 0.8, from: 0.3, to: 0.85 }
-export const STORM_SHUTTER = 0.8
+/** The share of the film's shutter for which a thing in the storm is seen: its stroke is this share of the path of one exposure, so that a piece is blurred by about its own size and stays one piece. */
+export const STORM_SHUTTER = 0.3
+/** The kinds that are drawn along their own path in the storm: the leaf, the seed, the light and the spark (shapes above this). The flake, the glitter, the petal and the mote are turned to the veil's current and seen for this share of the shutter, as the approved winter and spring are. */
+export const STORM_OWN_PATH_FROM = 4.5
+export const STORM_SHUTTER_TURNED = 0.8
 export const STORM_ALIGN = 0.7
+/** The whirl loosened in the storm: the least share of the turn to the current that a flake takes (each its own, up to the whole), the level the clumps of the dabs are evened toward and by how much, how much of a far dab is seen, and how long a far and a near stroke are beside the stroke of the middle. */
+export const STORM_LOOSE = { alignLow: 0.25, even: 0.5, spread: 0.5, farSeen: 0.6, farLong: 0.65, nearLong: 1.35 }
 export const STORM_TOP = { keep: 0.22, from: 0.15, to: 0.7 }
 export const STORM_SLOW = { keep: 0.35, fromPx: 2, toPx: 9 }
 export const STORM_SMEAR_FAINT = 0.1
@@ -122,6 +132,8 @@ export const STORM_DAB_TIGHT = 0.35
 export const STORM_DAB_REACH = { low: 0.5, high: 2, skew: 1.8 }
 export const STORM_DAB_SLOW = 0.12
 export const STORM_VEILED = 0.5
+/** After a landing the large soft dabs thin with the veil's pocket: the share of them taken off where the pocket is fully open, so that the cottage and the tree stand plain while the sharp flakes still go round in front of them. */
+export const STORM_POCKET_SMEARS = 0.8
 export const STORM_WINDOW = { x: -11, y: -12, wide: 20, high: 18, from: 0.75, to: 1.5, floor: 0.03, small: 0.5, back: -20, front: 0 }
 export const STORM_PACE = { fromPx: 0.5, toPx: 2, unseen: 0.1 }
 export const STORM_SHARP = 0.9
@@ -149,7 +161,8 @@ export const STORM_GLINT = 0.05
 export const STORM_GLINT_REACH = { low: 0.3, high: 0.95 }
 export const STORM_GLINT_KEEP = 0.4
 export const REST_CLEAR = { from: 0.72, to: 0.92, near: 0.3, size: 1.6, mostPx: 3.1 }
-export const STORM_FLOOD = { fogPerMm: 0.022, gain: 1.4 }
+/** The flood of the swap: how fast a thing sinks into it with its depth behind the glass, its gain, and the ones just behind the front glass that stand in front of it: the depths (mm) they end between, how much of the flood is taken off them and how much more of them is seen. */
+export const STORM_FLOOD = { fogPerMm: 0.022, gain: 1.4, frontMm: [6, 22] as const, frontClear: 0.8, frontGain: 1.5 }
 /** The storm's flecks near the lamp take its colour at their own brightness: the warm light spreads through the storm and the field gets no brighter. */
 export const STORM_GLOW = { to: [1.529, 0.894, 0.501] as const, most: 0.8, reachMm: 30 }
 /** The few very large near ones: a small share of the soft dabs, near the eye, far out of focus and bright enough to be seen. */
@@ -175,8 +188,8 @@ export const CARD = {
   petalFootTo: 0.75,
   /** The spread of the sizes of the petals and the leaves: the least and the most as shares of the row's size, and the skew toward the small. */
   spread: [0.5, 1.35, 1.5] as const,
-  /** The few near the eye that are far out of focus: their share, the depths they start and are full at, how much larger they are drawn, their blur in pixels of a 1080 picture, and how much of them is kept off the middle of the picture. */
-  near: { share: 0.4, from: 0.05, to: 0.7, size: 1.7, petalSize: [1.2, 3.4] as const, petalSkew: 2.5, px: [2.5, 12] as const, clear: 0.55 },
+  /** The few near the eye that are far out of focus: in the storm the share of the leaves and petals and the depths they come in between; at rest their share, the depths they start and are full at, how much larger they are drawn, their blur in pixels of a 1080 picture, and how much of them is kept off the middle of the picture. */
+  near: { stormShare: 0.12, stormFrom: [0.45, 0.85] as const, share: 0.4, from: 0.05, to: 0.7, size: 1.7, petalSize: [1.2, 3.4] as const, petalSkew: 2.5, px: [2.5, 12] as const, clear: 0.55 },
   /** At rest nothing is drawn large or soft in front of the cottage and the tree (winter's REST_CLEAR for the cards): inside the middle of the picture, from this depth forward and up to this height above the globe's centre, a sheet and a seed head are held to these radii in pixels of a 1080 picture, keep this share of the lens's blur, and none is of the large soft class. */
   clear: { back: -0.25, front: 0.05, lowMm: 6, highMm: 26, blur: 0.25, sheetPx: 11, seedPx: 10, snagPx: [5, 14] as const, snagSkew: 3, snagLiftMm: 3, snagSeen: 0.25 },
   /** The ones far behind are a little out of focus too. */
@@ -185,8 +198,10 @@ export const CARD = {
   blob: [0.45, 1.3] as const,
   /** The most a card's bends may move its outline on the picture, as a share of what keeps the outline whole when the card is seen edge on. */
   bendFit: 0.55,
-  /** The storm's fine streaks, for the petals and for the leaves: their share of the ones not drawn whole, the least and most they are seen and its skew, how much longer than the shutter's path, their bow, width in pixels, the tail's share of the head's light, how pale (petals) and the tints (leaves). */
-  line: { deepMostMm: 14, seedKeep: [0.015, 0.75] as const, seedSkew: 3.5, seedStretch: [0.5, 1.6] as const, seedWidePx: [0.3, 0.6] as const, seedHeads: 0.3, fanPx: [9, 24] as const, fanHairs: 7, fanSpread: 1.2, fanShort: 0.55, fanWide: 0.7, fanCore: 0.06, fanOpen: [0.08, 0.4] as const, headSeen: 0.6, deep: [0.6, 1.2] as const, frontCut: 0.45, share: [0.2, 0.4] as const, leafStretch: [1, 2.8] as const, leafPale: 0.6, leafSkew: 1.8, petalHeads: 0.55, petalHeadPx: [4.5, 10] as const, leafHeads: 0.45, leafHeadPx: [3, 8] as const, leafWidePx: [0.9, 1.9] as const, headOval: [0.5, 0.85] as const, headLift: 3, headGain: 1.1, petalHead: [[1, 0.74, 0.86], [1.25, 1.25, 1.25]] as const, petalWhite: 0.72, leafHead: [[1, 0.52, 0.18], [1.25, 0.85, 0.4]] as const, leafWhite: 0.85, keep: [0.03, 0.9] as const, skew: 3.5, stretch: [0.8, 2.4] as const, align: 0.85, fromPx: [6, 30] as const, bow: [0.03, 0.16] as const, widePx: [0.8, 1.8] as const, tail: 0.1, pale: [0.2, 0.8] as const, gain: 1.15, seedGain: 1.9, leafLow: [1.5, 1.0, 0.6] as const, leafHigh: [1.7, 1.25, 0.75] as const },
+  /** The storm's fine streaks, for the petals and for the leaves: their share of the ones not drawn whole, the least and most they are seen and its skew, how much longer than the shutter's path, their bow, width in pixels, the tail's share of the head's light, how pale (petals) and the tints (leaves). In the storm a streak is the true path of one exposure: the lengths in pixels it comes in between, the half length up to which it keeps its light (longer ones thin with their length), its width's share and the skew of its paleness. */
+  line: { shutFromPx: [3, 14] as const, dwellPx: 13, shutLong: [1.2, 2.6] as const, shutSeedSkew: 1.1, shutSeedWide: 1.4, shutWide: 0.6, shutPale: 2.2, deepMostMm: 14, seedKeep: [0.015, 0.75] as const, seedSkew: 3.5, seedStretch: [0.5, 1.6] as const, seedWidePx: [0.3, 0.6] as const, seedHeads: 0.3, fanPx: [9, 24] as const, fanHairs: 7, fanSpread: 1.2, fanShort: 0.55, fanWide: 0.7, fanCore: 0.06, fanOpen: [0.08, 0.4] as const, headSeen: 0.6, deep: [0.6, 1.2] as const, frontCut: 0.45, share: [0.2, 0.4] as const, leafStretch: [1, 2.8] as const, leafPale: 0.6, leafSkew: 1.8, petalHeads: 0.55, petalHeadPx: [4.5, 10] as const, leafHeads: 0.45, leafHeadPx: [3, 8] as const, leafWidePx: [0.9, 1.9] as const, headOval: [0.5, 0.85] as const, headLift: 3, headGain: 1.1, petalHead: [[1, 0.74, 0.86], [1.25, 1.25, 1.25]] as const, petalWhite: 0.72, leafHead: [[1, 0.52, 0.18], [1.25, 0.85, 0.4]] as const, leafWhite: 0.85, keep: [0.03, 0.9] as const, skew: 3.5, stretch: [0.8, 2.4] as const, align: 0.85, fromPx: [6, 30] as const, bow: [0.03, 0.16] as const, widePx: [0.8, 1.8] as const, tail: 0.1, pale: [0.2, 0.8] as const, gain: 1.15, seedGain: 1.9, leafLow: [1.5, 1.0, 0.6] as const, leafHigh: [1.7, 1.25, 0.75] as const },
+  /** A card in the storm, seen for the whole shutter: the places along its path it is drawn at, from which length of a piece of the path (in the card's own thin width) the card is the soft blob of its outline, and for a seed's head from which length of path (in its own radius) the hairs give way to the smear of the tuft, how much of the tuft is seen and how fast it thins with the path. */
+  run: { taps: 5, blob: [0.35, 1.1] as const, seedFrom: [0.35, 1.6] as const, seedTuft: 0.42, seedThin: 0.8 },
   /** How much of the storm's sheets is taken away in front of the cottage, so that it still reads. */
   window: 0.75,
   /** How much a lying sheet is lit as one in the air, how much of the veil lies over it, and how much of its own colour the light takes on its way through a sheet. */
