@@ -1,0 +1,49 @@
+{
+  "critic": "R3",
+  "score": 6,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "major",
+      "file": "set-D-02.jpg",
+      "where": "the water trickle on the left of the base, crops 1 and 5",
+      "what": "the trickle is a smooth resin ribbon with beaded highlights, and it does not wet or darken the stone beside it",
+      "fix": "break it into a thin wet film, darken the stone along it, and drop the painted highlight beads"
+    },
+    {
+      "severity": "major",
+      "file": "set-D-02.jpg",
+      "where": "the thick roots across the front of the base, crop 6",
+      "what": "the roots are flat ribbons of straight segments and sharp corners, not round wood",
+      "fix": "round the root sections so the silhouette is a curve, and vary the bark so it is not a stretched strip"
+    },
+    {
+      "severity": "major",
+      "file": "set-D-03.jpg",
+      "where": "the line where the roots meet the reflective surface, crop 11",
+      "what": "the roots end on a hard cut into the mirror plane, with no wet line and no contact shadow",
+      "fix": "add a thin dark wet line and a soft shadow along the contact, and let the reflection soften off that line"
+    },
+    {
+      "severity": "major",
+      "file": "set-F-01.jpg",
+      "where": "the cottage and the tree inside the glass, out to the left and right edges",
+      "what": "the inside is not bent or enlarged by the liquid; it stays straight and the same scale up to the glass",
+      "fix": "enlarge the interior and bend it toward the rim, strongest at the left and right edges"
+    },
+    {
+      "severity": "minor",
+      "file": "set-F-03.jpg",
+      "where": "the petals lying on the surface, crops 11 and 12",
+      "what": "the petals are paper-flat and dry, with no thickness and no wet edge where they meet the surface",
+      "fix": "give each petal a little thickness and a thin wet contact where it lies"
+    },
+    {
+      "severity": "minor",
+      "file": "set-D-02.jpg",
+      "where": "the mushrooms on the moss, crops 2 and 4",
+      "what": "the caps repeat the same smooth shape, like small toys rather than grown mushrooms",
+      "fix": "vary the caps and stems, and tuck the stems into the moss with a small shadow"
+    }
+  ]
+}
