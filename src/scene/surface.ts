@@ -99,6 +99,7 @@ export const SLAB = {
   sideMost: 0.45,
   fadeHeightMm: 170,
   fadeFloor: 0.3,
+  speckPx: 1.6,
   poolGain: 4,
   poolRiseMm: 46,
   contactMm: 4,
@@ -401,7 +402,8 @@ void main() {
   vec2 tilt = slabSlope(fine) + vec2(turned.x * ${f(Math.cos(crumbTurn))} - turned.y * ${f(Math.sin(crumbTurn))}, turned.x * ${f(Math.sin(crumbTurn))} + turned.y * ${f(Math.cos(crumbTurn))});
   vec3 n = normalize(vec3(tilt.x, 1.0, tilt.y));
   vec2 lump = uLumps > 0.0 ? uLumps * slabLumps(P, -v, ${f(SLAB.lumpBlur)} * lensBlurMm(depth)) : vec2(0.0);
-  float dust = clamp(max(fine.b, crumb.b * ${f(SLAB.crumbDust)}), 0.0, 1.0);
+  float speck = max(spread, ${f(SLAB.speckPx)});
+  float dust = clamp(max(textureGrad(uDetail, uvA, dFdx(uvA) * speck, dFdy(uvA) * speck).b, textureGrad(uDetail, uvC, dFdx(uvC) * speck, dFdy(uvC) * speck).b * ${f(SLAB.crumbDust)}), 0.0, 1.0);
   dust = max(dust * (1.0 - min(lump.x, 1.0)), min(lump.y * ${f(SLAB.lumpGain)}, 1.0));
   float vein = stone.r;
   float cloud = stone.g;
