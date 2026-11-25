@@ -27,7 +27,15 @@ declare global {
 const params = readParams(location.search)
 const canvas = document.getElementById('view') as HTMLCanvasElement
 const capture = params.mode === 'capture'
-const gfx = createGfx(canvas, { deny: params.deny, preserve: capture })
+const gfx = (() => {
+  try {
+    return createGfx(canvas, { deny: params.deny, preserve: capture })
+  } catch (e) {
+    const ui = document.getElementById('ui')
+    if (!capture && ui) void import('./ui/cannot').then((m) => m.showCannot(ui))
+    throw e
+  }
+})()
 const assets = new Assets()
 // The live page draws its first picture from what that picture needs and fetches the rest behind it (src/app/app.ts). Every other
 // page waits for the whole set. `detail=first` holds any page at the first files: `npm run firstlook` measures what they cost with it.

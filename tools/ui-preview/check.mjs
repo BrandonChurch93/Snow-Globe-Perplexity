@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import { createServer } from 'vite'
 import { launch, ensureDir } from '../lib/browser.mjs'
 import { loadConfig, parseArgs, rel, writeJson } from '../lib/paths.mjs'
@@ -563,6 +564,45 @@ try {
       want(rest, { more: true, above: false, overflows: true, copyInView: true }, 'at rest'),
       want(end, { more: false, above: true, overflows: true, copyInView: true }, 'scrolled to the end'),
       want(tall, { more: false, above: false, overflows: false, copyInView: true }, 'on the full phone height'),
+    )
+  })
+  await check('with no WebGL2 the app says so in one quiet line, centred, and shows no control', async () => {
+    const said = /cannot: '([^']+)'/.exec(fs.readFileSync(rel('src', 'copy.ts'), 'utf8'))?.[1] ?? ''
+    const context = await browser.newContext({ viewport: { width: 1280, height: 720 } })
+    await context.addInitScript(() => {
+      HTMLCanvasElement.prototype.getContext = () => null
+    })
+    const page = await context.newPage()
+    await page.goto(`${origin}/`)
+    await page.waitForSelector('#ui [role="status"]')
+    await page.evaluate(() => document.fonts.ready)
+    const got = await page.evaluate(() => {
+      const line = document.querySelector('#ui [role="status"]')
+      const words = line.firstElementChild.getBoundingClientRect()
+      const style = getComputedStyle(line)
+      return {
+        text: line.textContent,
+        inUi: document.getElementById('ui').children.length,
+        controls: document.querySelectorAll('[data-control], [data-menu], button, a').length,
+        offCentre: [Math.round(Math.abs(words.left + words.width / 2 - innerWidth / 2)), Math.round(Math.abs(words.top + words.height / 2 - innerHeight / 2))],
+        face: style.fontFamily.split(',')[0].replace(/['"]/g, ''),
+        loaded: document.fonts.check(`${style.fontWeight} ${style.fontSize} ${style.fontFamily}`),
+        colour: style.color,
+        told: document.documentElement.dataset.cannot ?? '',
+        firstPicture: document.documentElement.dataset.firstPicture ?? '',
+      }
+    })
+    fs.writeFileSync(rel('out', 'work', 'ui-preview', 'no-webgl2.png'), await page.screenshot())
+    notes.noWebgl2 = got
+    await context.close()
+    return first(
+      said ? '' : 'src/copy.ts holds no line for it',
+      want(got.text, said, 'the line'),
+      want([got.inUi, got.controls], [1, 0], 'what else is in the interface'),
+      got.offCentre[0] <= 1 && got.offCentre[1] <= 1 ? '' : `the line is ${got.offCentre} px off the centre`,
+      want([got.face, got.loaded], ['Jost', true], 'the type'),
+      /^rgba?\((0, 0, 0|255, 255, 255)\b/.test(got.colour) ? `the line is ${got.colour}` : '',
+      want([got.told, got.firstPicture], ['1', ''], 'what the page says of itself'),
     )
   })
 } finally {
