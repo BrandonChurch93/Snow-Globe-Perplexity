@@ -146,6 +146,9 @@ const HAND = {
   rockChirp: 3,
   rockDecay: 3.2,
   contactLead: 0.11,
+  rockShrink: 0,
+  rockPower: 1.5,
+  rockFade: 0.82,
 } as const
 
 type Hand = { [K in keyof typeof HAND]: (typeof HAND)[K] extends readonly number[] ? readonly number[] : number }
@@ -166,6 +169,12 @@ const HELD: Hand = {
   heldTrace: 0.2,
   heldReach: 0.6,
   heldJoin: [0.14, 0.03],
+  /** The rock after the landing: each rock lasts this share of the one before it, so the foot rocks over once, back, and once more, quicker each time. */
+  overshootDeg: [1.74, 1.8],
+  rockFirst: 0.56,
+  rockShrink: 0.48,
+  rockPower: 1.3,
+  rockFade: 0.8,
 }
 const keepsOldHand = (name: string): boolean => name === 'test' || name.startsWith('test:') || name === 'preroll'
 
@@ -266,7 +275,14 @@ function build(name: string): ShakeMotion {
   const chirp = H.rockChirp / settle
   const decay = H.rockDecay / settle
   const rate = Math.PI / (lobe * (1 + chirp * lobe))
-  const rattle = (t: number): number => -Math.exp(-decay * t) * Math.sin(rate * t * (1 + chirp * t)) * (t > 0 ? 1 - s5(t / settle) : 1)
+  const rockEnd = lobe / (1 - H.rockShrink)
+  const shrinking = (t: number): number => {
+    const left = 1 - t / rockEnd
+    if (left <= 0) return 0
+    return -Math.pow(left, H.rockPower) * Math.sin((Math.PI * Math.log(left)) / Math.log(H.rockShrink)) * (t > 0 ? 1 - s5((t / settle - H.rockFade) / (1 - H.rockFade)) : 1)
+  }
+  const chirped = (t: number): number => -Math.exp(-decay * t) * Math.sin(rate * t * (1 + chirp * t)) * (t > 0 ? 1 - s5(t / settle) : 1)
+  const rattle = H.rockShrink > 0 ? shrinking : chirped
   let over = 0
   for (let t = 0; t < lobe; t += lobe / 400) over = Math.max(over, -rattle(t))
   const landGain = over > 0 ? overshoot / over : 0
@@ -274,7 +290,7 @@ function build(name: string): ShakeMotion {
   let crestValue = rattle(-contactLead)
   for (let t = contactLead; t < Math.min(0.9 * c.setDownBeats, 3 * contactLead); t += contactLead / 200) {
     const value = rattle(-t)
-    if (value < crestValue) break
+    if (value < crestValue || (H.rockShrink > 0 && value * landGain > H.approachDeg * RAD)) break
     crest = t
     crestValue = value
   }
