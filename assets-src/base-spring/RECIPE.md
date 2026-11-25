@@ -52,8 +52,8 @@ Date: 2026-11-25
 
 ## assets-full/spring/base-spring.glb
 Made by: assets-src/base-spring/build.mjs
-From: assets-src/base-spring/layout.mjs, assets-src/base-winter/lib.mjs, config/showcase.json
+From: assets-src/base-spring/layout.mjs, assets-src/base-spring/thin.mjs, assets-src/base-winter/lib.mjs, config/showcase.json
 Prompt or command: npm run make -- base-spring
 Takes: built, not generated
-Why this one: three meshes. `rock` is the turned profile measured from the approved image, displaced by the height field (cobbles, moss cushions, the trickle's channel) and cupped to the glass at the same collar as winter's; `growth` is the roots as tubes that taper from the collar to the foot and swell at knots, laid on that height, the mushrooms, the flowers and the petals on the ledge; `water` is the strip of the trickle with its length and its foot in the extras
+Why this one: three meshes. `rock` is the turned profile measured from the approved image, displaced by the height field (cobbles, moss cushions, the trickle's channel) and cupped to the glass at the same collar as winter's; `growth` is the roots as tubes that taper from the collar to the foot and swell at knots, laid on that height, the mushrooms, the flowers and the petals on the ledge; `water` is the strip of the trickle with its length and its foot in the extras. For the triangle budget (G15) `thin.mjs` thins `rock` and `growth` by edge collapse to the shares in `THIN` of build.mjs (0.74 of each at an error bound of 0.06) and writes the lighter medium and low lists (error bounds 0.18 and 0.3); six long roots at the left of the front were taken out of `ROOTS` in layout.mjs because the approved image has far fewer there
 Date: 2026-11-25

@@ -30,10 +30,10 @@ winter's are, so that they sit the right way up on the mesh.
 
 ## assets-full/summer/base-summer.glb
 Made by: assets-src/base-summer/build.mjs (the half `mesh`)
-From: assets-src/base-summer/profile.mjs, assets-src/base-summer/set.json, assets-src/base-summer/field.mjs, assets-src/base-summer/mesh.mjs, assets-src/base-summer/lib.mjs, config/showcase.json
+From: assets-src/base-summer/profile.mjs, assets-src/base-summer/set.json, assets-src/base-summer/field.mjs, assets-src/base-summer/mesh.mjs, assets-src/base-summer/lib.mjs, assets-src/base-spring/thin.mjs, config/showcase.json
 Prompt or command: npm run make -- base-summer
 Takes: built, not generated
-Why this one: four meshes, `stone`, `shells`, `seaglass` and `sand`, as the list above describes them; every shape comes from numbers measured in the approved image through the summer camera, none from a generated picture.
+Why this one: four meshes, `stone`, `shells`, `seaglass` and `sand`, as the list above describes them; every shape comes from numbers measured in the approved image through the summer camera, none from a generated picture. For the triangle budget (G15) `thin.mjs` of base-spring thins `stone`, `shells` and `sand` by edge collapse to the shares in `THIN` of build.mjs (0.68, 0.72 and 0.66) and writes the lighter medium and low lists (error bounds 0.09 and 0.22).
 Date: 2026-11-25
 
 ## assets-full/summer/base-carve.lin.w2048.png, assets-full/summer/base-stone.srgb.w2048.png, assets-full/summer/base-grain.lin.tile.w512.png, assets-full/summer/base-sand.lin.tile.w512.png

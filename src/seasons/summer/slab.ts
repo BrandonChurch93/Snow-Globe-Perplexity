@@ -22,7 +22,7 @@ const HEAP = {
   stray: { x: 56, z: 66, sx: 26, sz: 52, mm: 0.2 },
   ring: { r: 61.5, w: 4.5, mm: 0.55 },
 }
-export const SLAB = { liftMm: 0.5, footMm: 54, repose: 0.62, stepMm: 1.2, x: [-150, 142], z: [-232, 216] } as const
+export const SLAB = { liftMm: 0.5, footMm: 54, repose: 0.62, stepMm: 1.3, x: [-150, 142], z: [-232, 216] } as const
 
 const hash = (x: number, y: number, s: number): number => {
   let h = (Math.imul(x | 0, 374761393) + Math.imul(y | 0, 668265263) + Math.imul(s | 0, 1274126177)) | 0
