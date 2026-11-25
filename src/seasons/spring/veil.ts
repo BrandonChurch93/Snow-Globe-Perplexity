@@ -148,7 +148,7 @@ const storm = {
   cells: 18,
   /** The mist's thickness per mm: closed over the miniature at the height of the storm, while the liquid is stirred, while it only rolls. */
   flood: 0.26,
-  stirred: 0.03,
+  stirred: 0.04,
   rolling: 0.008,
   /** What is left in still liquid: the pink in the air of the approved rest, far too thin to hide anything. */
   calm: 0.0045,
@@ -207,7 +207,7 @@ void main() {
   vec4 fine = texture(uVeilNoise, q / ${n(storm.fineMm)} + vec3(wide.rg - 0.5, 0.0) * 0.5 + vec3(0.41, 0.07 * sin(turn + 2.1), 0.63));
   float billow = smoothstep(0.46, 0.82, 0.62 * wide.a + 0.38 * fine.a);
   float eye = mix(${n(storm.eye)}, 1.0, smoothstep(5.0, 38.0, rad));
-  float wall = 1.0 - smoothstep(0.9, 1.0, far);
+  float wall = 1.0 - smoothstep(0.94, 1.0, far);
   // After the flood the mist hangs low, where the petals come down, and the top of the liquid clears first.
   float low = mix(mix(${n(storm.top)}, 1.0, smoothstep(34.0, -12.0, p.y)), 1.0, uStorm.w / ${n(storm.even[0])});
   // What still liquid keeps hangs behind the island, so the cottage and the tree stand clear in front of the pink air.
