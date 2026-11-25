@@ -452,7 +452,7 @@ if (want(6)) {
   const same = await read()
   await note(6, `mark-current-${here}`, { ...brief(same) }, !same.busy && same.lit.join() === here)
   // The others, in turn, and back: every season is reached by its own mark. Two by pointer, one by Enter, one by Space.
-  const order = [1, 2, 3, 0].map((k) => seasons[(seasons.indexOf(here) + k + 1) % seasons.length])
+  const order = [1, 2, 3, 4].map((k) => seasons[(seasons.indexOf(here) + k) % seasons.length])
   const focusMark = (id) => page.evaluate((x) => document.querySelector(`#ui [data-season="${x}"]`).focus({ focusVisible: true }), id)
   const ways = [
     ['pointer', (id) => pressControl(id)],
