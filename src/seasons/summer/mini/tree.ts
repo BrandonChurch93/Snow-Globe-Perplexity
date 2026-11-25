@@ -31,7 +31,7 @@ const BARK: Rgb3 = [0.4, 0.19, 0.1]
 const BARK_BUMP = 3.4
 const LEAF_TINT: Rgb3 = [0.55, 0.95, 0.34]
 const LEAF_LIT = 'vec3(1.25, 1.05, 0.6)'
-const LEAF = { rim: 6, rimTight: 2.5, through: 1.5, tight: 3.0, fill: 1.2, wrap: 0.8, bump: 1.0, clumpDark: 0.16, clumpBright: 3.4, top: 28 }
+const LEAF = { rim: 6, rimTight: 2.5, through: 1.5, tight: 3.0, fill: 1.2, wrap: 0.8, bump: 1.0, clumpDark: 0.16, clumpBright: 3.4, top: 23 }
 const LANTERN = { rib: 0.55, ribs: 26, gain: 0.68, body: 0.8, core: 1.35, tight: 6.0, paper: 0.06, dim: 0.1, stepS: 0.04, rampS: 0.18, swayRad: 0.045, sway2: 0.6, kickRad: 0.16, kickFade: 1.2, kickHz: 1.3, cycles: 2 }
 const HALO = { radius: 2.6, strength: 0.075, hot: 0.0 }
 const HALO_EDGE: Rgb3 = [0.9, 0.36, 0.08]
@@ -128,7 +128,7 @@ vLamp = uv;
   float lampBeat = 1.0 + ${FLICKER.toFixed(3)} * sin(6.2831853 * (uTwinkle.x + vLamp.x * 0.381966));
   float lampLat = asin(clamp((vec4(normalize(normal), 0.0) * viewMatrix).y, -1.0, 1.0));
   float lampRib = 1.0 - ${LANTERN.rib.toFixed(2)} * pow(0.5 + 0.5 * cos(lampLat * ${LANTERN.ribs.toFixed(1)}), 3.0);
-  vec3 lampHot = mix(lampTint, lampTint * vec3(1.0, 1.75, 2.0) + vec3(0.0, 0.05, 0.01), lampCore * lampCore);
+  vec3 lampHot = mix(lampTint, lampTint * vec3(1.0, 1.55, 1.6) + vec3(0.0, 0.04, 0.0), lampCore * lampCore);
   totalEmissiveRadiance = lampHot * lampLit * (${LANTERN.gain.toFixed(2)} * (${LANTERN.body.toFixed(2)} + ${LANTERN.core.toFixed(2)} * lampCore)) * lanternLevel(vLamp.x) * lampBeat * lampRib;
 }`,
     )

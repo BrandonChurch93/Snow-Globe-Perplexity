@@ -1,6 +1,6 @@
 # Recipes: base-spring
 
-Spring's base: rough stone under living moss, wrapped in roots, with mushrooms, a few small flowers and the trickle. Everything that ships is made by `npm run make -- base-spring` (about 56 s) from the scripts and inputs in this folder. Counts: moss sheet 1 take of 6, stone sheet 1 take of 6, bark sheet 1 take of 6.
+Spring's base: rough stone under living moss, wrapped in roots, with mushrooms, a few small flowers and the trickle. Everything that ships is made by `npm run make -- base-spring` (about 70 s) from the scripts and inputs in this folder. Counts: moss sheet 1 take of 6, stone sheet 1 take of 6, bark sheet 1 take of 6.
 
 ## assets-src/base-spring/ref/approved-base-crop.png
 Made by: Python 3 with Pillow, by hand in the shell
@@ -39,7 +39,7 @@ Made by: assets-src/base-spring/build.mjs (sheet), Node 20.20.2 with sharp, help
 From: assets-src/base-spring/gen/moss-take1.png, stone-take1.png, bark-take1.png
 Prompt or command: npm run make -- base-spring
 Takes: built, not generated
-Why this one: each sheet with its slow light taken out, 2048 px; the detail map carries the slope of the sheet's own grain in red and green and its height in blue
+Why this one: each sheet with its slow light taken out, 2048 px in the file and 512 px in the pack (the name's `w512`); the detail map carries the slope of the sheet's own grain in red and green and its height in blue
 Date: 2026-11-25
 
 ## assets-full/spring/base-relief.lin.w2048.png, assets-full/spring/base-cover.lin.w2048.png
@@ -55,5 +55,5 @@ Made by: assets-src/base-spring/build.mjs
 From: assets-src/base-spring/layout.mjs, assets-src/base-winter/lib.mjs, config/showcase.json
 Prompt or command: npm run make -- base-spring
 Takes: built, not generated
-Why this one: three meshes. `rock` is the turned profile measured from the approved image, displaced by the height field (cobbles, moss cushions, the trickle's channel) and cupped to the glass at the same collar as winter's; `growth` is the roots as tubes laid on that height, the mushrooms, the flowers and the petals on the ledge; `water` is the strip of the trickle with its length and its foot in the extras
+Why this one: three meshes. `rock` is the turned profile measured from the approved image, displaced by the height field (cobbles, moss cushions, the trickle's channel) and cupped to the glass at the same collar as winter's; `growth` is the roots as tubes that taper from the collar to the foot and swell at knots, laid on that height, the mushrooms, the flowers and the petals on the ledge; `water` is the strip of the trickle with its length and its foot in the extras
 Date: 2026-11-25
