@@ -34,7 +34,7 @@ const LAMP_GLASS: Rgb = [4.2, 3.3, 2.0]
 const WALL_FILL = 2.0
 const SAND = { body: 5, floor: 0.8, wrap: 1.5, foot: 0.85, bump: 0.3, grainLow: 0.55, grain: 1.8 }
 const TURF_LOOK = { tone: 0.5, fineMm: 0.05, clumpMm: 0.22, fill: 0.45, wrap: 0.5 }
-const GRASS_LOOK = { fill: 0.3, wrap: 1.0, through: 0.6, near: 2.1 }
+const GRASS_LOOK = { fill: 0.23, wrap: 1.0, through: 0.48, near: 2.1 }
 const WATER = { spark: 1.4, mass: 0.88, crownMm: 11, crownTall: 38, houseMm: 8.5, houseTall: 17, rough: 0.05, ripple: 0.006, shoreFrom: 0.9, shoreTo: 1.0, sky: 0.62, skyFrom: -0.7, skyTo: 0.5, post: 0.85, postMm: 0.55, postTall: 11.5, trunk: 0.55, trunkMm: 3, trunkTall: 26, body: 0.4 }
 
 const flame = lampFlame()
