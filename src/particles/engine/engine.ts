@@ -2,7 +2,7 @@ import { config } from '../../config'
 import { hash2, unit } from '../../core/rng'
 import type { SdfGrid } from '../../core/stage'
 import { globePoseAt, seasonAt, type Timeline } from '../../film/timeline'
-import { Liquid, LIQUID_LENGTH, LIQUID_R, LIQUID_SWIRL, NOISE_N, ROLL_AXIS, ROLL_CENTRE, ROLL_EDGE, ROLL_FLOOR_MM, ROLL_FLOOR_SLOPE, ROLL_FREE, ROLL_RISE_MM, ROLL_SLAB_MM, SOLID_REACH_MM, TURBULENCE_MAX } from '../../globe/liquid'
+import { Liquid, LIQUID_CURL, LIQUID_LENGTH, LIQUID_R, LIQUID_SWIRL, NOISE_N, ROLL_AXIS, ROLL_CENTRE, ROLL_EDGE, ROLL_FLOOR_MM, ROLL_FLOOR_SLOPE, ROLL_FREE, ROLL_RISE_MM, ROLL_SLAB_MM, SOLID_REACH_MM, TURBULENCE_MAX } from '../../globe/liquid'
 import { BEHAVIOUR, KINDS, KIND_IN, NONE, POOL, SEASONS, type Behaviour } from './kinds'
 import { emptySdf, GROUND_Y, sdfSample, sdfSlope, type Emitter } from './sdf'
 
@@ -51,7 +51,7 @@ const HOME_CARRIED = 3
 const HOME_STILL = 0.5
 const HOME_LIGHTS_SECONDS = 0.7
 const HOME_DIMS_SECONDS = 0.3
-const CURL = 2.5 / (R * R)
+const CURL = LIQUID_CURL
 const NOISE_INV_CELL = (NOISE_N - 1) / (2 * R)
 const NOISE_TOP = NOISE_N - 1.0001
 const NOISE_DY = NOISE_N * 3
@@ -86,6 +86,7 @@ const BALL_ROOM_MM = 0.1
 const BANK_FROM = 6 / ROLL_RISE_MM
 const BANK_OVER = ROLL_RISE_MM / (48 - 6)
 const LEAP2 = 3 * 3
+const HEFT_SPREAD = 1 / 1024
 
 const TABLE = 4096
 const MASK = TABLE - 1
@@ -125,6 +126,9 @@ const K_BLEND = new Float64Array(NK)
 const K_GRIP = new Float64Array(NK)
 const K_LOFT = new Float64Array(NK)
 const K_GATHER = new Float64Array(NK)
+const K_HEFT = new Float64Array(NK)
+const OUT_RING = 0.85
+const OUT_RING2 = 1 / (OUT_RING * OUT_RING)
 /** The kinds that lie as sheets (a petal, a leaf): one of these keeps, while it lies, the facing of what it lies on in its `phase`, which a lying particle has no other use for, so that it is drawn flat on a roof as on the ground. */
 const K_SHEET = new Uint8Array(NK)
 KINDS.forEach((name, k) => {
@@ -154,6 +158,7 @@ TABLE_OF.forEach((b, k) => {
   K_GRIP[k] = 1 / (1 + b.gripPerSecond * H)
   K_LOFT[k] = b.rest === 'lies' ? b.loft : 0
   K_GATHER[k] = b.mode === 'drift' ? b.gather : 0
+  K_HEFT[k] = b.heft
 })
 /**
  * The slowest stir that can lift anything, for each season: the lowest first number of `liftMmS` among that
@@ -1304,6 +1309,11 @@ export class ParticleEngine {
     const stiff = roll / (roll + ROLL_SOFT)
     const stirred = c[6]! > 0
     const loose = 1 - stiff
+    const kx = L.carry[0]!
+    const ky = L.carry[1]!
+    const kz = L.carry[2]!
+    const thrown = kx !== 0 || ky !== 0 || kz !== 0
+    const out = L.clearing
     const m = L.motion
     const gux = m.gx
     const guy = m.gy
@@ -1511,6 +1521,21 @@ export class ParticleEngine {
             fz = arm * tz
           }
         }
+      }
+      if (out > 0) {
+        const room = R2 - y * y
+        const far = room > 1 ? ((x * x + z * z) * OUT_RING2) / room : 1
+        if (far < 1) {
+          const push = out * K_HEFT[k]! * (1 - far)
+          fx += x * push
+          fz += z * push
+        }
+      }
+      if (thrown) {
+        const hw = K_HEFT[k]! * (0.5 + (Math.imul(i, 0x85ebca6b) >>> 22) * HEFT_SPREAD) * (q < 1 ? 1 - q * q : 0)
+        fx += kx * hw
+        fy += ky * hw
+        fz += kz * hw
       }
       const us2 = (ux + rx) * (ux + rx) + (uy + ry) * (uy + ry) + (uz + rz) * (uz + rz)
       if (walled) {
