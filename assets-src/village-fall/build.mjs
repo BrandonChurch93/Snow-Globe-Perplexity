@@ -58,8 +58,8 @@ const litterAt = (x, z) => {
   return clamp((base + byFence + underTree + byWall) * (0.25 + 0.75 * shore), 0, 1)
 }
 const mossAt = (x, z) => {
-  const patch = 0.5 + 1.1 * fbm(x * 0.09 + 9.3, z * 0.09 + 2.2, 8, 3)
-  const bank = 0.45 * (1 - smooth(1.02, 1.5, L.pondField(x, z)))
+  const patch = 0.36 + 1.1 * fbm(x * 0.09 + 9.3, z * 0.09 + 2.2, 8, 3)
+  const bank = 0.2 * (1 - smooth(1.02, 1.3, L.pondField(x, z)))
   const wall = 0.3 * (1 - smooth(0.2, 2.2, cottageGap(x, z)))
   return clamp(patch + bank + wall - 0.35 * (1 - smooth(4, 12, treeGap(x, z))), 0, 1)
 }
