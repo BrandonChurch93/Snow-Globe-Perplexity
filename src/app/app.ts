@@ -247,7 +247,7 @@ export function startApp(d: AppDeps): AppBridge {
     if (!s || playing !== 'live') return
     const aspect = painter.width / Math.max(1, painter.height)
     sim.stir?.(...stirAxis(s, liveRig(aspect, look.yaw, look.pitch).yawDeg))
-    engine?.stir(s.strength)
+    if (s.begins) engine?.stir(s.force)
   }
 
   const onMotion = (e: DeviceMotionEvent): void => {
@@ -415,7 +415,7 @@ export function startApp(d: AppDeps): AppBridge {
   const release = (e: PointerEvent): void => {
     if (e.pointerId !== pointer) return
     pointer = -1
-    stir(drag.up())
+    drag.up()
   }
   canvas.addEventListener('pointerup', release)
   canvas.addEventListener('pointercancel', release)

@@ -12,11 +12,11 @@ function make<K extends keyof HTMLElementTagNameMap>(tag: K, className: string):
   return e
 }
 
-function button(className: string, control: string, glyph: string): HTMLButtonElement {
+function button(className: string, control: string, glyph: string, disc = ''): HTMLButtonElement {
   const b = make('button', className)
   b.type = 'button'
   b.dataset.control = control
-  b.innerHTML = glyph
+  b.innerHTML = (disc ? `<span class="${disc}" aria-hidden="true"></span>` : '') + glyph
   return b
 }
 
@@ -48,14 +48,14 @@ export function mountInterface(root: HTMLElement, bridge: AppBridge): InterfaceH
   marks.setAttribute('role', 'group')
   marks.setAttribute('aria-label', copy.seasons.group)
   const markOf = seasons.map((id, i) => {
-    const b = button(s.mark, 'season', seasonGlyphs[i % seasonGlyphs.length])
+    const b = button(s.mark, 'season', seasonGlyphs[i % seasonGlyphs.length], s.disc)
     b.dataset.season = id
     b.append(named(copy.seasons.name(id)))
     marks.append(b)
     return b
   })
 
-  const sound = button(s.sound, 'sound', soundGlyph(s.waves, s.cross))
+  const sound = button(s.sound, 'sound', soundGlyph(s.waves, s.cross), s.disc)
   sound.append(named(copy.sound.name))
 
   const live = make('div', s.hidden)
@@ -242,9 +242,44 @@ export function mountInterface(root: HTMLElement, bridge: AppBridge): InterfaceH
     }
   }
 
+  const pressed = new Map<HTMLElement, { since: number; timer: number }>()
+
+  const controlOf = (t: EventTarget | null): HTMLElement | null => (t instanceof Element ? t.closest<HTMLElement>('[data-control]') : null)
+
+  const press = (el: HTMLElement, now: number): void => {
+    if (el.getAttribute('aria-disabled') === 'true') return
+    window.clearTimeout(pressed.get(el)?.timer)
+    pressed.set(el, { since: now, timer: 0 })
+    el.dataset.press = ''
+  }
+
+  const release = (el: HTMLElement, now: number): void => {
+    const p = pressed.get(el)
+    if (!p) return
+    window.clearTimeout(p.timer)
+    p.timer = window.setTimeout(() => {
+      pressed.delete(el)
+      delete el.dataset.press
+    }, Math.max(0, timing.pressSeconds * 1000 - (now - p.since)))
+  }
+
+  const onPress = (e: PointerEvent): void => {
+    const el = controlOf(e.target)
+    if (el) press(el, e.timeStamp)
+  }
+
+  const onRelease = (e: Event): void => {
+    for (const el of pressed.keys()) release(el, e.timeStamp)
+  }
+
   const onClick = (e: MouseEvent): void => {
     const a = document.activeElement
     if (e.detail > 0 && a instanceof HTMLElement && ui.contains(a)) a.blur()
+    const el = e.detail === 0 ? controlOf(e.target) : null
+    if (el) {
+      press(el, e.timeStamp)
+      release(el, e.timeStamp)
+    }
   }
 
   const onPulseEnd = (e: AnimationEvent): void => {
@@ -267,6 +302,9 @@ export function mountInterface(root: HTMLElement, bridge: AppBridge): InterfaceH
   markOf.forEach((b, i) => b.addEventListener('click', () => go(seasons[i])))
   sound.addEventListener('click', toggleSound)
   ui.addEventListener('click', onClick)
+  ui.addEventListener('pointerdown', onPress)
+  window.addEventListener('pointerup', onRelease, { capture: true, passive: true })
+  window.addEventListener('pointercancel', onRelease, { capture: true, passive: true })
   root.addEventListener('hint', onHint)
   window.addEventListener('pointermove', onMove, { capture: true, passive: true })
   window.addEventListener('pointerdown', onInput, { capture: true, passive: true })
@@ -295,7 +333,9 @@ export function mountInterface(root: HTMLElement, bridge: AppBridge): InterfaceH
     },
     dispose(): void {
       unsubscribe()
-      for (const t of [latchTimer, hintTimer, idleTimer, fontTimer]) window.clearTimeout(t)
+      for (const t of [latchTimer, hintTimer, idleTimer, fontTimer, ...[...pressed.values()].map((p) => p.timer)]) window.clearTimeout(t)
+      window.removeEventListener('pointerup', onRelease, { capture: true })
+      window.removeEventListener('pointercancel', onRelease, { capture: true })
       root.removeEventListener('hint', onHint)
       window.removeEventListener('pointermove', onMove, { capture: true })
       window.removeEventListener('pointerdown', onInput, { capture: true })

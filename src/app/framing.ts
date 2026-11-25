@@ -14,6 +14,8 @@ export const FRAME = {
   clearShare: 0.07,
   thumbShare: 0.05,
   heapMm: 46,
+  baseReachMm: 74,
+  overUnder: 1.6,
   narrowAspect: 0.6,
   mostUnder: 0.35,
   easeRate: 4,
@@ -50,6 +52,18 @@ export const margins = (rig: Rig): { over: number; under: number } => {
   return { over: (1 - e.top) / 2, under: (1 + e.foot) / 2 }
 }
 
+/** How far the base reaches to either side, in half heights of the frame, from a rig that looks from the front:
+ * the widest any season builds it (fall's, with the pumpkin at its foot), since one framing holds all four. */
+export const baseSide = (rig: Rig): number => {
+  const p = rig.pitchDeg * RAD
+  const t = Math.tan((rig.fovDeg * RAD) / 2)
+  let most = 0
+  for (const y of [0, config.globe.baseHeightMm]) most = Math.max(most, FRAME.baseReachMm / (rig.distanceMm - (y - rig.aimHeightMm) * Math.sin(p)) / t)
+  return most
+}
+
+const clearOf = (aspect: number): number => (aspect < FRAME.narrowAspect ? FRAME.thumbShare : FRAME.clearShare)
+
 const aimForFoot = (rig: Rig, foot: number): number => {
   const p = rig.pitchDeg * RAD
   const y = foot * Math.tan((rig.fovDeg * RAD) / 2)
@@ -62,7 +76,7 @@ const aimForFoot = (rig: Rig, foot: number): number => {
 export const roomUnder = (heightPx: number, controlsPx: number | null = null, widthPx: number | null = null): number => {
   const h = Math.max(1, heightPx)
   const bar = controlsPx === null ? Math.min(Math.max(FRAME.barShare * h, FRAME.barPx), FRAME.barMost * h) : controlsPx
-  const clear = widthPx !== null && widthPx / h < FRAME.narrowAspect ? FRAME.thumbShare : FRAME.clearShare
+  const clear = widthPx !== null ? clearOf(widthPx / h) : FRAME.clearShare
   return Math.min(FRAME.mostUnder, bar / h + clear)
 }
 
@@ -161,7 +175,9 @@ let fitted: { aspect: number; under: number; rig: Rig } | null = null
 
 /** The camera of the app at rest and through a shake: the wide camera moved back along its own axis and aimed so that
  * the lifted glass stays under the top edge, the foot stays over the controls, a wide screen holds the strokes between its sides
- * and an upright screen holds the glass at rest between its sides. It stands as near as those allow. */
+ * and an upright screen holds the whole globe at rest, glass and base, between its sides. It stands as near as those allow.
+ * Where an upright screen leaves room over and under the globe, the room over the glass is `overUnder` times the room
+ * between the foot and the highest control. */
 function fit(aspect: number, under: number): Rig {
   if (fitted && fitted.aspect === aspect && fitted.under === under) return fitted.rig
   const wide = rigOf(MOVES.wide)
@@ -175,14 +191,23 @@ function fit(aspect: number, under: number): Rig {
     const floor = aimForFoot(rig, low)
     rig.aimHeightMm = floor
     const tall = (topOf(rig) - low) / (high - low)
-    rig.aimHeightMm = Math.min(floor, wide.aimHeightMm - FRAME.underShare * k * (rig.distanceMm - wide.distanceMm))
+    if (a >= 1) rig.aimHeightMm = Math.min(floor, wide.aimHeightMm - FRAME.underShare * k * (rig.distanceMm - wide.distanceMm))
+    else {
+      const controls = low - 2 * clearOf(a)
+      for (let j = 0; j < 6; j++) {
+        const e = edges(rig)
+        const rise = (FRAME.overUnder * (e.foot - controls) - (1 - e.top)) / (1 + FRAME.overUnder)
+        const p = rig.pitchDeg * RAD
+        rig.aimHeightMm = Math.min(floor, rig.aimHeightMm + (rise * (k / 2) * (rig.distanceMm - (sphereCentreHeightMm - rig.aimHeightMm) * Math.sin(p))) / Math.cos(p))
+      }
+    }
     for (let j = 0; j < 4; j++) {
       const over = topOf(rig) - high
       if (over <= 0) break
       const p = rig.pitchDeg * RAD
       rig.aimHeightMm = Math.min(floor, rig.aimHeightMm + (over * (k / 2) * (rig.distanceMm - (sphereCentreHeightMm - rig.aimHeightMm) * Math.sin(p))) / Math.cos(p))
     }
-    const broad = (a >= 1 ? sideOf(rig) : glass(rig, REST).side) / across
+    const broad = (a >= 1 ? sideOf(rig) : Math.max(glass(rig, REST).side, baseSide(rig))) / across
     const next = Math.max(wide.distanceMm, rig.distanceMm * Math.max(tall, broad))
     if (Math.abs(next - rig.distanceMm) < 1e-7) break
     rig.distanceMm = next
