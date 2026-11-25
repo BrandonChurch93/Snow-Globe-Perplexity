@@ -29,12 +29,15 @@ interface FaceExtras {
   faceRange: number
 }
 
-// The candles. On the landing each wick catches, one a breath after the other (`catchSeconds`), and burns low at `ember`
-// of its light; then, over the next seconds, each face takes in its turn (`takeSeconds`): a flare of `flare` of what is
-// left inside `flareSeconds`, and a creep to the whole of it over `creepSeconds`. The three a viewer faces come first.
+// The candles. On the landing each wick catches (`catchSeconds`): a spit of flame that all but dies, then holds low at
+// `ember` of its light with a tremble that fades; then each face takes (`takeSeconds`): a flare of `flare` of what is
+// left inside `flareSeconds`, and a creep to the whole of it over `creepSeconds`. The three a viewer faces never light
+// in the order they stand: the middle one, then the right, then the left, at uneven gaps. All three are alight half a
+// second after the landing, because that is the moment of the approved shake image, which shows them lit; the four
+// behind follow over the next three seconds in a shuffled order (the arrival's spread).
 const LIGHT = {
-  catchSeconds: [0.05, 0.21, 0.38, 0.52, 0.66, 0.8, 0.94],
-  takeSeconds: [0.85, 1.5, 2.15, 2.7, 3.15, 3.5, 3.8],
+  catchSeconds: [0.2, 0.04, 0.1, 0.6, 1.9, 0.3, 1.0],
+  takeSeconds: [0.44, 0.2, 0.34, 1.1, 2.5, 0.8, 1.6],
   ember: 0.42,
   flare: 0.7,
   flareSeconds: 0.07,
@@ -211,20 +214,20 @@ diffuseColor.rgb = mix(vec3(0.028, 0.03, 0.034), vec3(0.05, 0.046, 0.044), baseB
 float baseRust = smoothstep(0.62, 0.85, baseNoise(vBasePos * 0.9 + 7.0)) * (1.0 - baseThorn) * 0.35;
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.1, 0.05, 0.028), baseRust);
 float baseWrap = 0.1;
-float baseCandle = 2.0;
+float baseCandle = 3.6;
 // Bark on the strands: fibres that run along them.
 float baseStrand = (1.0 - baseThorn) * (1.0 - baseDrum);
 vec2 fibreAt = vec2(vBaseUv1.x * 1.3, vBaseUv1.y * 7.0);
-float fibreHere = baseNoise(vec3(fibreAt, 5.0)) * 0.65 + baseNoise(vec3(fibreAt * vec2(2.3, 3.1), 9.0)) * 0.35;
-float fibreNext = baseNoise(vec3(fibreAt + vec2(0.0, 0.3), 5.0)) * 0.65 + baseNoise(vec3((fibreAt + vec2(0.0, 0.3)) * vec2(2.3, 3.1), 9.0)) * 0.35;
-diffuseColor.rgb *= mix(1.0, (0.55 + 0.9 * fibreHere) * 1.2, baseStrand);
+float fibreHere = baseNoise(vec3(fibreAt, 5.0)) * 0.5 + baseNoise(vec3(fibreAt * vec2(2.3, 3.1), 9.0)) * 0.3 + baseNoise(vec3(fibreAt * vec2(4.1, 6.3), 3.0)) * 0.2;
+float fibreNext = baseNoise(vec3(fibreAt + vec2(0.0, 0.3), 5.0)) * 0.5 + baseNoise(vec3((fibreAt + vec2(0.0, 0.3)) * vec2(2.3, 3.1), 9.0)) * 0.3 + baseNoise(vec3((fibreAt + vec2(0.0, 0.3)) * vec2(4.1, 6.3), 3.0)) * 0.2;
+diffuseColor.rgb *= mix(1.0, (0.3 + 1.4 * fibreHere) * 1.2, baseStrand);
 `
 const IRON_ROUGH = `
 roughnessFactor = clamp(mix(0.44, 0.62, baseDetail.b) + 0.2 * baseStrand + 0.14 * baseScale + 0.2 * baseRust - 0.08 * baseThorn * vBasePaint.z + 0.12 * baseDrum, 0.18, 1.0);
 metalnessFactor = mix(0.85, 0.6, baseScale) * (1.0 - 0.6 * baseRust) * (1.0 - 0.6 * baseStrand);
 `
 const IRON_TILT = `
-vec2 baseTilt = baseSlope(baseDetail.rg) * mix(mix(0.12, 0.14 * (1.0 - vBasePaint.z), baseThorn), 0.75, baseDrum) + vec2(0.0, (fibreNext - fibreHere) * 1.8 * baseStrand);
+vec2 baseTilt = baseSlope(baseDetail.rg) * mix(mix(0.12, 0.14 * (1.0 - vBasePaint.z), baseThorn), 0.75, baseDrum) + vec2(0.0, (fibreNext - fibreHere) * 3.0 * baseStrand);
 `
 const IRON_AFTER = `
 #define IRON_WARM 1.5
@@ -313,7 +316,7 @@ vec2 baseTilt = (vec2(baseNoise(vBasePos * 3.3 + 11.0), baseNoise(vBasePos * 3.3
 
 // The wax: pale, soft, thick where it has gathered. Light enters it and comes out again round the edges.
 const WAX_PAINT = `
-float baseAo = vBasePaint.x * mix(0.25, 1.0, smoothstep(39.55, 39.0, vBasePos.y));
+float baseAo = vBasePaint.x * mix(0.25, 1.0, smoothstep(39.7, 39.25, vBasePos.y));
 float waxDeep = vBasePaint.y;
 float waxMottle = baseNoise(vBasePos * 0.9) * 0.6 + baseNoise(vBasePos * 3.7) * 0.4;
 diffuseColor.rgb = mix(vec3(0.92, 0.8, 0.5), vec3(0.8, 0.52, 0.2), smoothstep(0.15, 0.8, waxDeep) * (0.5 + 0.5 * waxMottle)) * mix(0.9, 1.06, waxMottle);
@@ -351,7 +354,7 @@ const WAX_AFTER = `
   reflectedLight.directSpecular += (vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * 5.0 + waxKeyC * 0.1) * (1.6 * pow(waxTh, 90.0) + 0.12 * pow(waxTh, 9.0)) * baseAo;
   vec3 waxSide = normalize(mat3(viewMatrix) * vec3(-0.7, 0.45, 0.55));
   float waxSh = max(dot(geometryNormal, normalize(waxSide + geometryViewDir)), 0.0);
-  reflectedLight.directSpecular += (vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * 9.0 * pow(waxSh, 120.0) + waxKeyC * 0.5 * pow(max(dot(geometryNormal, normalize(waxKey + geometryViewDir)), 0.0), 80.0)) * baseAo;
+  reflectedLight.directSpecular += (vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * 9.0 * pow(waxSh, 120.0) + waxKeyC * (1.6 * pow(max(dot(geometryNormal, normalize(waxKey + geometryViewDir)), 0.0), 90.0) + 0.2 * pow(max(dot(geometryNormal, normalize(waxKey + geometryViewDir)), 0.0), 14.0))) * baseAo;
   float waxH = max(dot(geometryNormal, normalize(waxKey + geometryViewDir)), 0.0);
   float waxHc = max(dot(geometryNormal, normalize(waxCard + geometryViewDir)), 0.0);
   reflectedLight.directSpecular += (waxKeyC * (0.9 * pow(waxH, 40.0) + 0.14 * pow(waxH, 8.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, waxKey)) + uRigCardCol * (0.4 * pow(waxHc, 60.0) + 0.03 * pow(waxHc, 8.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, waxCard))) * baseAo;
@@ -500,7 +503,10 @@ export function faceLevel(index: number, seconds: number): number {
   const lit = seconds - (LIGHT.catchSeconds[index] ?? 1)
   if (!(lit > 0)) return 0
   if (!(lit < Infinity)) return 1
-  const ember = LIGHT.ember * (1 - Math.exp(-lit / LIGHT.flareSeconds))
+  const spit = 0.8 * Math.exp(-(((lit - 0.06) / 0.035) ** 2))
+  const hold = 1 - Math.exp(-Math.max(lit - 0.13, 0) / 0.12)
+  const tremble = 1 + 0.4 * Math.exp(-lit / 0.7) * Math.sin(lit * 43 + index * 2.3) * Math.sin(lit * 17 + index * 5.1)
+  const ember = LIGHT.ember * Math.min(lit / 0.03, 1) * (spit + (1 - spit) * hold * tremble)
   const t = seconds - (LIGHT.takeSeconds[index] ?? 4)
   if (!(t > 0)) return ember
   return ember + (1 - LIGHT.ember) * (LIGHT.flare * (1 - Math.exp(-t / LIGHT.flareSeconds)) + (1 - LIGHT.flare) * (1 - Math.exp(-t / LIGHT.creepSeconds)))

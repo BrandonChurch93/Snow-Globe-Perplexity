@@ -86,12 +86,12 @@ export const look = {
     warm: 1.0,
     glow: 0.11,
     glowDeepMm: 8,
-    glowLifted: 1.2,
+    glowLifted: 1.6,
     rollRad: 0.55,
     bigMm: 96,
     fineMm: 37,
   },
-  crack: { widthMm: 0.09, edgeMm: 0.05, shade: 0.3, bright: 3.6, sky: 0.5, key: 1.6, rim: 3.0, room: 2.4, jitterMm: 0.08, stepMm: 2.2, glintPerMm: 0.75, catchPerMm: 0.1, faint: 0.16, warm: [1.0, 0.8, 0.56] },
+  crack: { widthMm: 0.09, edgeMm: 0.05, shade: 0.3, bright: 3.6, sky: 0.5, key: 1.6, rim: 3.0, room: 2.4, jitterMm: 0.08, stepMm: 2.2, glintPerMm: 0.3, catchPerMm: 0.1, faint: 0.16, warm: [1.0, 0.8, 0.56] },
 }
 
 // The crack's path in the pixels of `references/approved/fall-rest.png` (glass circle centre (1417.1, 662.2), radius 564.3 px,
@@ -357,9 +357,11 @@ void main() {
     float lat = dot(d, ${vec(ROLL_AXIS)});
     vec3 e = d - lat * ${vec(ROLL_AXIS)};
     float turn = atan(dot(e, ${vec([0, ROLL_AXIS[2], -ROLL_AXIS[1]])}), e.x) / 6.2831853 - uFogTurn.x * mix(1.04, 0.96, r / ${f(RI)}) / 6.2831853 + ${f(F.lean)} * lat;
-    float s1 = texture(uFogNoise, vec3(turn, 2.3 * lat + 0.17, r / 240.0 + 0.4)).r;
-    float s2 = texture(uFogNoise, vec3(2.0 * turn + 0.31, 5.1 * lat + 0.5, r / 150.0 + 0.63)).r;
-    float strand = smoothstep(0.52, 0.62, 0.56 * s1 + 0.44 * s2 + 0.08 * (n.y - 0.5));
+    float s1 = texture(uFogNoise, vec3(turn, 2.3 * lat + 0.17, r / 110.0 + 0.4)).r;
+    float s2 = texture(uFogNoise, vec3(2.0 * turn + 0.31, 5.1 * lat + 0.5, r / 70.0 + 0.63)).r;
+    // A finer run of wisps lies over the broad ones, and each depth of the wall has its own.
+    float s3 = texture(uFogNoise, vec3(4.0 * turn + 0.77, 11.3 * lat + 0.21, r / 45.0 + 0.19)).r;
+    float strand = smoothstep(0.52, 0.6, 0.46 * s1 + 0.34 * s2 + 0.2 * s3 + 0.08 * (n.y - 0.5));
     strands = mix(1.0, mix(${f(F.swirlThin)} + ${f(F.swirl)} * strand * strand, 0.55 + 0.9 * strand, uFogTurn.y), lift);
     // The turning liquid throws it to the wall: thick round the scene and behind it, thin in the middle and before it, so
     // the house and the tree stand dark against the green. Only at the hardest of the shake does it fill the dome.
@@ -491,7 +493,8 @@ void main() {
   float run = uCrack.x * 1.03 - tau;
   if (run <= 0.0) discard;
   float mm = best * ${f(RS)};
-  float px = max(max(length(dFdx(vStageLocal)), length(dFdy(vStageLocal))), 1e-4);
+  // Thinner than a pixel, it is spread over nearly two with the same light, so that it does not break into dots that crawl.
+  float px = 1.8 * max(max(length(dFdx(vStageLocal)), length(dFdy(vStageLocal))), 1e-4);
   float taper = smoothstep(0.0, 0.07, run) * mix(1.0, 0.45, smoothstep(0.35, 1.0, tau));
   float w = ${f(C.widthMm)} * taper;
   float core = clamp((0.5 * (w + px) - mm) / px, 0.0, min(1.0, w / px));

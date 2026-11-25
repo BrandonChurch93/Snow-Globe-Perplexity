@@ -1,0 +1,182 @@
+[
+ {
+  "name": "viewer_r10_01",
+  "model": "claude_sonnet_5_5",
+  "img": "set-A-01",
+  "control": "approved fall-rest",
+  "sha256": "dac8c7db14b2742387dda3ef6ea6dacc1ac9392ece255e8590677d406de16797",
+  "sha256Source": "42729ddc87a6d9c8d4a2bb899b9217cee8c57e12beab539b821130464e43c1b0"
+ },
+ {
+  "name": "viewer_r10_02",
+  "model": "claude_sonnet_5_5",
+  "img": "set-A-02"
+ },
+ {
+  "name": "viewer_r10_03",
+  "model": "claude_sonnet_5_5",
+  "img": "set-A-03"
+ },
+ {
+  "name": "viewer_r10_04",
+  "model": "claude_sonnet_5_5",
+  "img": "set-A-04"
+ },
+ {
+  "name": "viewer_r10_05",
+  "model": "claude_sonnet_5_5",
+  "img": "set-A-05",
+  "control": "approved fall-shake",
+  "sha256": "5050d6ae08ba4d8ba76343554096881c55dd29a98026048e84a508cc573a6d0b",
+  "sha256Source": "f124676cc4f5ad2356c891cda1b3fc950c9a40da8d07919ebed147bf01a65099"
+ },
+ {
+  "name": "viewer_r10_06",
+  "model": "claude_sonnet_5_5",
+  "img": "set-A-06"
+ },
+ {
+  "name": "viewer_r10_07",
+  "model": "gpt_6_2_astra",
+  "img": "set-A-01",
+  "control": "approved fall-rest",
+  "sha256": "dac8c7db14b2742387dda3ef6ea6dacc1ac9392ece255e8590677d406de16797",
+  "sha256Source": "42729ddc87a6d9c8d4a2bb899b9217cee8c57e12beab539b821130464e43c1b0"
+ },
+ {
+  "name": "viewer_r10_08",
+  "model": "gpt_6_2_astra",
+  "img": "set-A-02"
+ },
+ {
+  "name": "viewer_r10_09",
+  "model": "gpt_6_2_astra",
+  "img": "set-A-03"
+ },
+ {
+  "name": "viewer_r10_10",
+  "model": "gpt_6_2_astra",
+  "img": "set-A-04"
+ },
+ {
+  "name": "viewer_r10_11",
+  "model": "gpt_6_2_astra",
+  "img": "set-A-05",
+  "control": "approved fall-shake",
+  "sha256": "5050d6ae08ba4d8ba76343554096881c55dd29a98026048e84a508cc573a6d0b",
+  "sha256Source": "f124676cc4f5ad2356c891cda1b3fc950c9a40da8d07919ebed147bf01a65099"
+ },
+ {
+  "name": "viewer_r10_12",
+  "model": "gpt_6_2_astra",
+  "img": "set-A-06"
+ },
+ {
+  "name": "viewer_r10_13",
+  "model": "gemini_neon",
+  "img": "set-A-01",
+  "control": "approved fall-rest",
+  "sha256": "dac8c7db14b2742387dda3ef6ea6dacc1ac9392ece255e8590677d406de16797",
+  "sha256Source": "42729ddc87a6d9c8d4a2bb899b9217cee8c57e12beab539b821130464e43c1b0"
+ },
+ {
+  "name": "viewer_r10_14",
+  "model": "gemini_neon",
+  "img": "set-A-02"
+ },
+ {
+  "name": "viewer_r10_15",
+  "model": "gemini_neon",
+  "img": "set-A-03"
+ },
+ {
+  "name": "viewer_r10_16",
+  "model": "gemini_neon",
+  "img": "set-A-04"
+ },
+ {
+  "name": "viewer_r10_17",
+  "model": "gemini_neon",
+  "img": "set-A-05",
+  "control": "approved fall-shake",
+  "sha256": "5050d6ae08ba4d8ba76343554096881c55dd29a98026048e84a508cc573a6d0b",
+  "sha256Source": "f124676cc4f5ad2356c891cda1b3fc950c9a40da8d07919ebed147bf01a65099"
+ },
+ {
+  "name": "viewer_r10_18",
+  "model": "gemini_neon",
+  "img": "set-A-06"
+ },
+ {
+  "name": "viewer_r10_19",
+  "model": "pplx_computer_glm_5_3_1009",
+  "img": "set-A-01",
+  "control": "approved fall-rest",
+  "sha256": "dac8c7db14b2742387dda3ef6ea6dacc1ac9392ece255e8590677d406de16797",
+  "sha256Source": "42729ddc87a6d9c8d4a2bb899b9217cee8c57e12beab539b821130464e43c1b0"
+ },
+ {
+  "name": "viewer_r10_20",
+  "model": "pplx_computer_glm_5_3_1009",
+  "img": "set-A-02"
+ },
+ {
+  "name": "viewer_r10_21",
+  "model": "pplx_computer_glm_5_3_1009",
+  "img": "set-A-03"
+ },
+ {
+  "name": "viewer_r10_22",
+  "model": "pplx_computer_glm_5_3_1009",
+  "img": "set-A-04"
+ },
+ {
+  "name": "viewer_r10_23",
+  "model": "pplx_computer_glm_5_3_1009",
+  "img": "set-A-05",
+  "control": "approved fall-shake",
+  "sha256": "5050d6ae08ba4d8ba76343554096881c55dd29a98026048e84a508cc573a6d0b",
+  "sha256Source": "f124676cc4f5ad2356c891cda1b3fc950c9a40da8d07919ebed147bf01a65099"
+ },
+ {
+  "name": "viewer_r10_24",
+  "model": "pplx_computer_glm_5_3_1009",
+  "img": "set-A-06"
+ },
+ {
+  "name": "viewer_r10_25",
+  "model": "kimi_k3",
+  "img": "set-A-01",
+  "control": "approved fall-rest",
+  "sha256": "dac8c7db14b2742387dda3ef6ea6dacc1ac9392ece255e8590677d406de16797",
+  "sha256Source": "42729ddc87a6d9c8d4a2bb899b9217cee8c57e12beab539b821130464e43c1b0"
+ },
+ {
+  "name": "viewer_r10_26",
+  "model": "kimi_k3",
+  "img": "set-A-02"
+ },
+ {
+  "name": "viewer_r10_27",
+  "model": "kimi_k3",
+  "img": "set-A-03"
+ },
+ {
+  "name": "viewer_r10_28",
+  "model": "kimi_k3",
+  "img": "set-A-04"
+ },
+ {
+  "name": "viewer_r10_29",
+  "model": "kimi_k3",
+  "img": "set-A-05",
+  "control": "approved fall-shake",
+  "sha256": "5050d6ae08ba4d8ba76343554096881c55dd29a98026048e84a508cc573a6d0b",
+  "sha256Source": "f124676cc4f5ad2356c891cda1b3fc950c9a40da8d07919ebed147bf01a65099"
+ },
+ {
+  "name": "viewer_r10_30",
+  "model": "kimi_k3",
+  "img": "set-A-06"
+ }
+]
