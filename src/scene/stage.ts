@@ -14,7 +14,7 @@ import { Shell } from '../globe/shell'
 import { ParticleDraw } from '../particles/draw/points'
 import { kitOf, kits } from '../seasons'
 import type { SeasonKit } from '../seasons/kit'
-import { changeBloom, partChange } from '../shake/change'
+import { CHANGE_CUT, changeBloom, partChange } from '../shake/change'
 import { Backdrop } from './backdrop'
 import { applyPose, type Pose } from './cameras'
 import { newFrame, type StageFrame } from './frame'
@@ -256,7 +256,8 @@ export class GlobeStage implements Stage {
     // even, because there the veil that comes is part of the cover of the swap.
     const veil = partChange('veil', change)
     f.mix.veil = a.kit.veil.density >= b.kit.veil.density ? Math.pow(veil, VEIL_LATE) : veil
-    f.mix.base = partChange('base', change)
+    // What the glass and the table show of the base (its colour in the collar's refraction and in the baked mirror) steps with the base itself, on the cut.
+    f.mix.base = change <= 0 ? 0 : change >= 1 ? 1 : change < CHANGE_CUT.at ? 0 : 1
     f.mix.particles = partChange('particles', change)
     f.mix.bloom = changeBloom(change)
     f.grids[0] = a.grid

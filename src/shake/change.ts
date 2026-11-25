@@ -1,3 +1,5 @@
+import { config } from '../config'
+
 export const SEASONAL_PARTS = ['base', 'miniature', 'glass-dressing', 'surface-dressing', 'light', 'veil', 'particles'] as const
 
 export interface ChangeSpan {
@@ -7,7 +9,27 @@ export interface ChangeSpan {
 }
 
 const OUTSIDE: ChangeSpan = { from: 0.69, to: 0.85, lag: 0 }
-const BLOOM_RAMP = 0.12
+
+const WINDOW_FRAMES = ((config.shake.swapWindow.toBeat - config.shake.swapWindow.fromBeat) * 60 * config.film.fps) / config.film.defaultBpm
+const frames = (n: number): number => n / WINDOW_FRAMES
+
+/**
+ * The cut of the base, as a place in the swap window. The base is the old season's before it and the new season's after it, with
+ * nothing between. It lies in the middle of the shutter of the film frame on which the last stroke runs fastest (`frame`,
+ * counted from the first frame of the window), so that one frame of the film holds the old base in the first half of its
+ * exposure and the new one in the second, both drawn out by the stroke, and every other frame holds one base whole.
+ */
+export const CHANGE_CUT = { frame: 26, at: frames(26 + config.film.shutterDegrees / 720) } as const
+
+/**
+ * What lies on the table, as places in the swap window. The old season's dressing leaves under the strokes before the cut
+ * (`liftFrom`: the first frame anything on the table moves; `leaveFrom` to `leaveTo`: the frames across which it is gone, from
+ * the foot outward), the table is bare on the cut, and the new season's dressing comes after it (`comeFrom` to `comeTo`).
+ */
+export const DRESSING_CHANGE = { liftFrom: frames(12), leaveFrom: frames(16), leaveTo: frames(26), comeFrom: frames(27), comeTo: frames(35.5) } as const
+
+/** The bloom rises over this much of the window to the cut and falls over as much after it. */
+const BLOOM_HALF = frames(6)
 const SPANS: Record<string, ChangeSpan> = {
   miniature: { from: 0.05, to: 0.95, lag: 0.5 },
   arrival: { from: 0.05, to: 0.95, lag: 0.5 },
@@ -40,8 +62,6 @@ export function partChange(part: string, change: number, side = 0.5): number {
 
 export function changeBloom(change: number): number {
   if (!(change > 0) || change >= 1) return 0
-  const mid = (OUTSIDE.from + OUTSIDE.to) / 2
-  const half = (OUTSIDE.to - OUTSIDE.from) / 2
-  const v = Math.min(1, (half + BLOOM_RAMP - Math.abs(change - mid)) / BLOOM_RAMP)
+  const v = 1 - Math.abs(change - CHANGE_CUT.at) / BLOOM_HALF
   return v <= 0 ? 0 : v * v * (3 - 2 * v)
 }
