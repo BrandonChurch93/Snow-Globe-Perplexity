@@ -204,7 +204,7 @@ function strandPath(s) {
     FACES.forEach((f, q) => {
       if (!under[q]) return
       const d = L.wrapDeg(az - f.az) * RAD * FACE_R
-      sink = Math.max(sink, smooth(1.12, 0.82, Math.hypot(d / (f.rad + 0.5), (h - f.h) / (f.tall + 0.4))))
+      sink = Math.max(sink, smooth(1.22, 0.95, Math.hypot(d / (f.rad + 0.5), (h - f.h) / (f.tall + 0.4))))
     })
     pts.push(place(mix(drumR(h) + rr * 0.55 + (s.lift * weave + off) * hug + low, drumR(h) - rr - 0.3, sink), h, az))
     radii.push(rr)
@@ -487,7 +487,10 @@ export function buildWax() {
     const top = [L.sphereRadiusAt(39.62) + 0.1, 39.62]
     const h = top[1] - (drop + 0.9) * t
     const bulge = Math.sin(Math.PI * Math.min(t * 1.08, 1)) ** 0.6
-    const inner = h > 38.75 ? L.sphereRadiusAt(h) + 0.3 : Math.max(drumR(Math.min(h, 38.3)), 45.1 + 0.9 * smooth(38.75, 38.3, h))
+    // The wax lies over the bead of the collar, never through it.
+    const beadDy = h - (L.CROWN[1] - 0.79)
+    const beadR = Math.abs(beadDy) < 0.8 ? L.CROWN[0] - 0.14 + Math.sqrt(0.64 - beadDy * beadDy) + 0.14 : 0
+    const inner = h > 38.75 ? Math.max(L.sphereRadiusAt(h) + 0.3, beadR) : Math.max(drumR(Math.min(h, 38.3)), 45.1 + 0.9 * smooth(38.75, 38.3, h), beadR)
     const rr = inner + Math.max(thick, 0) * 0.7 * bulge + mix(mix(0.02, -1.6, smooth(0.08, 0.3, t)), 0.02, smooth(-0.3, 0.04, thick))
     const nr = norm3([Math.sin(Math.PI * (0.25 + 0.5 * t)) + 0.2, Math.cos(Math.PI * (0.1 + 0.9 * t)) * 0.9, 0])
     const s = Math.sin(az * RAD)
