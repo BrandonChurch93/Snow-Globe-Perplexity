@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { config } from '../../config'
 import { stageShader, stageUniforms } from '../../core/materials'
 import { resolveBehind } from '../../core/accumulator'
-import { shellUniforms } from '../../globe/shell'
+import { setGlass, shellUniforms } from '../../globe/shell'
 import { ROOM_GLSL, roomUniforms } from '../../scene/room'
 import { lensUniforms } from '../../scene/cameras'
 import type { KitMoment } from '../kit'
@@ -29,6 +29,8 @@ const PART = 'glass-dressing-spring'
 const RS = config.globe.sphereDiameterMm / 2
 const RAD = Math.PI / 180
 const SLOTS = 26
+
+setGlass('spring', { windowTint: [1, 0.9, 0.93], windowGain: [0.5, 0.25, 1, 1], windowSoftDeg: 3, windowGrain: 0.5, rimTint: [1.4, 1.3, 1], wallTint: [0.72, 0.83, 0.61], ringCover: 0.35, strip: 0, bend: 0, ringThin: 1, rimClear: 0.3, topLine: 0, ringMottle: 0.3, ceiling: 0.15, roomHue: [1.1, 0.92, 0.95], roomHueOn: 1, windowShade: 0, rimGlow: 0 })
 const SEGMENTS = 14
 const TAU = Math.PI * 2
 
@@ -54,7 +56,7 @@ const look = {
   edge: 0.5,
   mirror: 0.35,
   /** Toward the limb a drop is seen edge on and would be a burr on the outline of the glass: how square to the eye the glass must be for a drop to be drawn at all, and to be drawn whole. */
-  limb: [0.02, 0.2],
+  limb: [0.08, 0.3],
   /** Out of focus a drop is a soft disc: how much blur, as an angle (its radius over its distance; 0.0007 is under 3 pixels of the hd frame at the hero), the lens gives away before a drop is drawn soft at all. From the hero the glass is within it and the dew is sharp; from the macro it is far outside it. */
   sharp: 0.0007,
   glint: 5,

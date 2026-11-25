@@ -1,0 +1,144 @@
+{
+  "id": "amb-summer",
+  "file": "amb-summer.wav",
+  "class": "ambience",
+  "season": "summer",
+  "line": "Crickets and warm air, very quiet, an ambience that loops",
+  "seconds": 18.5,
+  "take": 1,
+  "takes": 1,
+  "round": "build",
+  "why": "A steady even cricket chirp (open, second call: an insect such as a cricket; fit: yes, crickets and nothing else; the first open call heard a rhythmic squeak), level even within 3 dB, no voice, no music",
+  "tool": "ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz",
+  "prompt": "A field of crickets chirping steadily on a warm summer night: one even full chorus of many crickets that stays the same from the first moment to the last, close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+  "settings": {
+    "endpoint": "POST /v1/sound-generation",
+    "model": "default",
+    "duration_seconds": 20,
+    "prompt_influence": 0.5,
+    "loop": false,
+    "output_format": "pcm_48000",
+    "cost": 220
+  },
+  "chain": {
+    "settings": {
+      "trimDb": -60,
+      "padMs": 0,
+      "fadeInMs": 0,
+      "fadeOutMs": 0,
+      "lowCutHz": 70,
+      "loop": true,
+      "crossSeconds": 1.5,
+      "targetLufs": -30,
+      "capSeconds": 20
+    },
+    "steps": [
+      "took a constant offset of -78.33 dB out",
+      "low cut at 70 Hz, before the trim",
+      "trimmed 0 s in front and 0 s at the end",
+      "looped: 18.5 s with 1.5 s of its end crossfaded into its start",
+      "level: -15.25 dB to -30 LUFS, measured as gated loudness over 400 ms blocks"
+    ],
+    "gainDb": -15.25,
+    "level": {
+      "measure": "gated",
+      "measuredAs": "gated loudness over 400 ms blocks",
+      "seconds": 18.5,
+      "beforeLufs": -14.75,
+      "afterLufs": -30,
+      "targetLufs": -30,
+      "truePeakDb": -17.7
+    }
+  },
+  "loop": {
+    "seconds": 18.5,
+    "crossSeconds": 1.5,
+    "seam": {
+      "jump": 0.043075,
+      "typicalStep": 0.072721,
+      "ratio": 0.59,
+      "levelStepDb": -7.47
+    }
+  },
+  "measured": {
+    "seconds": 18.5,
+    "peakDb": -17.83,
+    "truePeakDb": -17.7,
+    "lufs": -30,
+    "lufsMeasure": "gated",
+    "soundLufs": null,
+    "offsetDb": null,
+    "rmsDb": -36.35,
+    "silenceFrontSeconds": 0,
+    "silenceEndSeconds": 0,
+    "soundSeconds": 18.5,
+    "tailDb": -33.53,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 6483,
+      "bands": {
+        "sub": 0,
+        "low": 0.0001,
+        "lowMid": 0.0001,
+        "mid": 0.0003,
+        "high": 0.999,
+        "air": 0.0006
+      }
+    }
+  },
+  "ffmpeg": {
+    "lufs": -30,
+    "lra": 1.8,
+    "truePeakDb": -17.7
+  },
+  "takeMeasured": {
+    "seconds": 20,
+    "peakDb": -2.59,
+    "truePeakDb": -2.44,
+    "lufs": -14.83,
+    "lufsMeasure": "gated",
+    "soundLufs": null,
+    "offsetDb": -78.33,
+    "rmsDb": -21.21,
+    "silenceFrontSeconds": 0,
+    "silenceEndSeconds": 0,
+    "soundSeconds": 20,
+    "tailDb": -26.71,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 6487,
+      "bands": {
+        "sub": 0,
+        "low": 0.0001,
+        "lowMid": 0.0001,
+        "mid": 0.0003,
+        "high": 0.9989,
+        "air": 0.0006
+      }
+    }
+  },
+  "answers": {
+    "verdict": "fits",
+    "why": "Numbers: 20 s filed, 18.5 s as a loop, one event, level even within 3 dB from second to second; all of its energy between 4 and 10 kHz, centred at 6.5 kHz, and the same in both channels: one bright pulsing chirp, not a wide chorus; the seam's jump is 0.59 of a typical step and the level steps 7.5 dB across it, which is the chirp's own pulse. Listener, open, asked twice: a high repetitive squeak, rhythmic and metallic, like a rusty swing or a dry wheel; then a fast high rhythmic chirping, the continuous stridulation of an insect such as a cricket. Fit: yes, the steady chirping of crickets and nothing else. No voice, no music. Kept as a steady cricket chirp; one of three calls heard a squeak, and it is one voice of crickets, not a field.",
+    "listener": {
+      "line": "Crickets and warm air, very quiet, an ambience that loops",
+      "open": "1. I hear a high-pitched, repetitive squeaking sound. It has a rhythmic, metallic character, similar to a rusty swing set or an unlubricated wheel.\n2. There is one continuous sound event consisting of a steady series of squeaks.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument.\n5. The sound starts abruptly with the squeaking already in progress. It ends suddenly by cutting off while the squeaking is still happening.",
+      "fit": "1. Yes, it fits the description because the audio consists entirely of the steady, quiet chirping of crickets, creating a peaceful, looping nighttime ambience.\n2. There is nothing in the sound that does not belong to the description.\n3. No, there is no human voice, spoken word, or singing in the audio.",
+      "openSecond": "1. I hear a rapid, high-pitched, rhythmic chirping sound. It sounds like the continuous stridulation of an insect, such as a cricket.\n2. There is only one continuous sound event throughout the clip.\n3. There is no human voice, spoken word, breath, or singing.\n4. There is no music, melody, or musical instrument present.\n5. The sound starts abruptly at full volume and ends just as abruptly.",
+      "note": "the first open call heard a squeak where the fit call heard crickets, so the open questions were asked a second time (openSecond)"
+    }
+  },
+  "source": {
+    "name": "amb-summer-2026-11-25T17-23-04-788Z.wav",
+    "bytes": 3840078,
+    "sha256": "62e973a72888b83e113489a5ace134f038492151f466046e7309e06531ddbb24",
+    "codec": "pcm_s16le",
+    "sampleRate": 48000,
+    "channels": 2,
+    "seconds": 20,
+    "kbps": 1536
+  },
+  "takeSha256": "ece9ce5c154537c2b8606ded52b65535897c5328479dbdcb2f04a6b96132250f",
+  "sha256": "692f4040c43aa832b9fdcaa17e2c762312807c1e83894f1c62dc57aaa3167bda",
+  "time": "2026-11-25T17:24:24.693Z"
+}
