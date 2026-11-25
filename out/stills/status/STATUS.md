@@ -1,16 +1,18 @@
-# Status 69
+# Status 70
 
-2026-11-25 02:30 UTC
+2026-11-25 02:55 UTC
 
-- Round 8 (spring): the still pack is in and its first critic is reading it. Its measures at final tier: 7 of 19 lines red (texture detail on four stills and sharpness against the approved image at 0.39 of 0.75 needed)
-- Rounds 9 (summer) and 10 (fall) are rendering. Ten builders keep working until 03:02 UTC and then hand over to a second set with the critics' issues
-- Third merge of the builders' work is on main (432 tests pass)
-- phase 4: 2.38 h used of its 9.50 h box
-- allowance (before the review): 24.66 h used of 36.00 h allowed
+- Round 8 on spring: the first two critics score 4 and 3 against a pass bar of 9 and 7 of 19 measures are red. Their issues are with spring's builders
+- Round 9 on summer: the judged stills are in and 5 of 19 measures are red. Its critics are answering. Round 10 on fall: its stills are rendering
+- The second set of build agents has taken over from the first: nine are at work and the tenth starts at 03:02
+- Sound: the ElevenLabs account has 4 credits left of 131000 so no more sound can be made. What is not made yet stays silent. About 10000 credits would cover the rest
+- Next: every critic's answer goes to the builders. Spring and summer freeze for their second rounds at 04:45 and fall at 05:30
+- phase 4: 2.80 h used of its 9.50 h box
+- allowance (before the review): 25.08 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-69-1.jpg`: Spring at rest as Round 8 judges it at final tier (left) beside its approved image (right)
-- `out/stills/status/status-69-2.jpg`: Spring half a second after a landing as Round 8 judges it (left) beside its approved image (right)
-- `out/stills/status/status-69-3.jpg`: Still: fall rest hero, preview, draft, standins view
-- `out/stills/status/status-69-4.jpg`: Still: fall landed hero, hd, draft
+- `out/stills/status/status-70-1.jpg`: Summer at rest as Round 9 judges it (left) beside the approved image (right)
+- `out/stills/status/status-70-2.jpg`: Summer mid-shake as Round 9 judges it (left) beside the approved image (right)
+- `out/stills/status/status-70-3.jpg`: Still: fall rest hero, hd, draft
+- `out/stills/status/status-70-4.jpg`: Still: fall rest hero, preview, draft, standins view

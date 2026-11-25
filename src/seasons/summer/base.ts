@@ -125,7 +125,7 @@ function hookOf(uniforms: Record<string, THREE.IUniform>, at: Stages): (shader: 
 
 // The stone. Its colour comes bed by bed from the tone map, its relief from the carve map, its grain from the tile; loose
 // sand lies on whatever faces up.
-const STONE = { grain: 0.16, carve: 2.1, dust: 0.75, glint: 3.0, wrap: 0.9, card: 1.0, sun: 3.4, bounce: 0.5, sheen: 0.5, top: 1.6 }
+const STONE = { grain: 0.16, carve: 2.1, dust: 0.75, glint: 3.0, wrap: 0.9, card: 1.0, sun: 3.4, bounce: 0.5, sheen: 0.18, top: 1.6 }
 
 const STONE_PAINT = `
 vec4 baseDetail = texture2D(uBaseGrain, vMapUv);
@@ -134,10 +134,10 @@ vec4 baseCarve = texture2D(uBaseCarve, vBaseUv1);
 float baseCavity = clamp(1.0 - 2.0 * baseCarve.b, 0.0, 1.0);
 float baseHigh = clamp(2.0 * baseCarve.b - 1.0, 0.0, 1.0);
 float baseAo = mix(1.0, vBasePaint.x, 0.8) * (1.0 - 0.45 * baseCavity);
-diffuseColor.rgb = diffuse * texture2D(uBaseTone, vBaseUv1).rgb * vec3(0.98, 0.96, 1.12);
+diffuseColor.rgb = diffuse * texture2D(uBaseTone, vBaseUv1).rgb * vec3(1.0, 0.96, 1.04);
 float baseBlotch = baseNoise(vBasePos * 0.23) * 0.6 + baseNoise(vBasePos * 0.9) * 0.4;
 diffuseColor.rgb *= mix(0.86, 1.1, baseBlotch) * (0.96 + 0.08 * baseDetail.b) * (0.97 + 0.06 * baseFine.b);
-diffuseColor.rgb *= 0.88 + 0.24 * baseHash(floor(vBasePos * 6.5));
+diffuseColor.rgb *= (0.84 + 0.32 * baseHash(floor(vBasePos * 2.7))) * (0.92 + 0.16 * baseHash(floor(vBasePos * 6.5)));
 diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.86, 0.7, 0.52), 0.5 * baseCavity);
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.93, 0.86, 0.72), 0.3 * baseHigh);
 `
