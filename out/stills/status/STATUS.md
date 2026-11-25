@@ -1,18 +1,17 @@
-# Status 78
+# Status 81
 
-2026-11-25 06:04 UTC
+2026-11-25 07:05 UTC
 
-- Rounds 11 12 and 13 are being rendered: still packs of spring and summer due about 06:45 UTC and the three motion packs about 07:30 to 07:45 (an arrival frame costs about a minute)
-- All ten build agents of the third set are at work on the open lists. First fixes are in: spring's crown in tiers. Summer's seed heads afloat at rest. Fall's mist behind the scene
-- Found and fixed: the soft pixels that kept spring's sharpness measure red were the petals on the table reporting no texture density
-- Fall's likeness measure at rest is red because the miniature alone is too dark and the fog cost 0.14 of it. Both are being worked
-- Triangles on the judged build are inside the limits for all three seasons on all three levels
-- phase 4: 5.95 h used of its 9.50 h box
-- allowance (before the review): 28.24 h used of 36.00 h allowed
+- All still critics of Rounds 11 and 12 have answered. Spring: R1 5 and R3 6 (Round 8 had 4 and 3). Summer: R1 6 and R3 4 (Round 9 had 4 and 4). The bar is 9 so neither passes on stills
+- Spring's gate on the frozen build is all 15 green for the first time in Phase 4. Summer's and fall's gates are running
+- Summer's low R3 comes from the base and table: a flat sand decal and pole dots on the sea glass and a band that floats across the lower glass. These went to the base builder as its first jobs
+- Both seasons were told to sink the globe into a taller collar as the approved images show. The pictures are builders' fixes since the freeze. They are judged in the third round after the freeze at 08:32 UTC
+- phase 4: 6.96 h used of its 9.50 h box
+- allowance (before the review): 29.25 h used of 36.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-78-1.jpg`: Spring at rest half an hour into the third fix pass (left) beside the approved image (right): the crown is now tiers of blossom on boughs with air between. Draft tier.
-- `out/stills/status/status-78-2.jpg`: Summer: the approved image (left) beside the build (right): about twenty fine seed heads float again at rest. Draft tier.
-- `out/stills/status/status-78-3.jpg`: Fall: the approved image (left) beside the build (right): the mist now stands behind the cottage and the tree instead of over them. Draft tier.
-- `out/stills/status/status-78-4.jpg`: Still: fall rest hero, preview, draft, standins view
+- `out/stills/status/status-81-1.jpg`: Spring's storm after the fix (left) beside the approved image (right): shorter trails that carry petal heads. Draft quality
+- `out/stills/status/status-81-2.jpg`: Fall's storm after the fix (left) beside the approved image (right): the tree and cottage read through it. Draft quality
+- `out/stills/status/status-81-3.jpg`: Summer half a second after landing: no streaks across the stone and a shower on the right edge only. Draft quality
+- `out/stills/status/status-81-4.jpg`: Spring's base: the approved image (above) and the new base (below) with a flared foot and rounder roots. Draft quality
