@@ -25,21 +25,21 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 151 · 2026-11-26 10:10 UTC
+Status 152 · 2026-11-26 10:34 UTC
 
-- `out/stills/status/status-151-1.jpg`: The middle frame of each of the four changes at the final tier (film frames 675, 1395, 2115, 2835): the storm covers the whole globe while the season is swapped
-- `out/stills/status/status-151-2.jpg`: Under the foot at film frame 2115, final tier: above before the fourth job, below after it; the two crops at the bottom show the grain gone
+- `out/stills/status/status-152-1.jpg`: The first picture on a square window, before (left) and after (right): winter at 600 x 600 and fall at 650 x 561. Before, a part of a second globe stood at each side
+- `out/stills/status/status-152-2.jpg`: The first picture on a low touch screen (spring, 650 x 550) and the lower part of an unfolded phone (winter, 673 x 841), before (left) and after (right)
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-26 10:10 UTC
-clock: phase 6, tick of 20.7 minutes
-phase 6: 7.35 h used of its 12.00 h box
-allowance (after the review): 7.35 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 7.35 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-26 10:34 UTC
+clock: phase 6, tick of 23.6 minutes
+phase 6: 7.75 h used of its 12.00 h box
+allowance (after the review): 7.75 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 7.75 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: not reached
