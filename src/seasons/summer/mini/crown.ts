@@ -43,6 +43,7 @@ export const clumps: readonly Clump[] = [
   seen(-8.4, 23.2, 3.6, [2.6, 0.6, 3.0], -0.18),
   seen(2.8, 24.8, 2.6, [1.3, 1.3, 1.6]),
   seen(7.0, 24.4, 3.1, [2.4, 1.6, 3.7], 0.15),
+  seen(4.9, 28.3, 3.6, [0.7, 1.4, 1.0]),
   seen(11.6, 21.2, 2.8, [2.8, 4.4, 3.9], 0.03),
   seen(15.8, 20.0, 1.8, [2.3, 2.6, 2.9], 0.12),
   seen(10.4, 17.6, 3.8, [0.9, 1.2, 1.3], -0.05),
@@ -146,7 +147,10 @@ const knobs = (x: number, h: number, z: number): number => {
 // Notches through the crown, as the hero camera sees it: each is an ellipse in the plane that faces the camera (its middle, its half
 // width and half height in millimetres, and its tilt in degrees) and runs straight through along the line of sight, which climbs by
 // PITCH for every millimetre toward the camera. The sprigs on their walls close about a millimetre of each side.
-export const holes: readonly (readonly [number, number, number, number, number])[] = [[-9.9, 33.9, 3.2, 1.6, 2]]
+export const holes: readonly (readonly [number, number, number, number, number])[] = [
+  [-9.9, 33.9, 3.2, 1.6, 2],
+  [1.2, 32.2, 1.7, 2.1, -8],
+]
 
 const cuts = holes.map((o) => ({ x: o[0], h: o[1], a: o[2], b: o[3], cos: Math.cos((o[4] * Math.PI) / 180), sin: Math.sin((o[4] * Math.PI) / 180) }))
 
