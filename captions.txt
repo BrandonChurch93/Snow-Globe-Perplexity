@@ -1,0 +1,14 @@
+agent/p6-points-looks: the point sprite cut on Mesa lavapipe at 3840 x 2160, before and after the mend (agent/p6-points).
+Every picture: lavapipe (ANGLE Vulkan), film frame at uhd, tier draft, crop at full size, left = before (main fad0ca7), right = after the mend. No look is judged here.
+
+1022-probe-before-after.jpg
+  Film frame 1022 (base camera, spring), crop 560 x 700 at 2790,0. Probe picture: every particle whose wanted half side is 128 px or less is hidden, the others are painted flat. Left: sprites, each cut to the 256 px square of lavapipe's largest point (flat sides). Right: the same particles as quads after the mend, drawn whole, about 265, 285 and 335 px across (red = wanted half side 160 to 192 px, magenta = 128 to 160 px). The two probe builds paint with different strengths, so the backgrounds differ; only the shapes count.
+
+1022-plain-before-after.jpg
+  The same crop of the plain film frame. Measured over the 800 x 760 crop at 2700,0: largest difference 7 of 255, one sample over 2 levels. Whole frame: PSNR 88.25 dB, largest difference 8 of 255.
+
+682-probe-before-after.jpg
+  Film frame 682 (fastest stroke), crop 460 x 320 at 1820,660. Probe picture as above. Left: one streak as a sprite, cut at 256 px. Right: the same streak as a quad, about 262 px long (wanted half side about 131 px).
+
+682-plain-before-after.jpg
+  The same crop of the plain film frame. Measured in this crop: largest difference 1 of 255. Whole frame: PSNR 88.82 dB, largest difference 3 of 255.
