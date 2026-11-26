@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 141 · 2026-11-26 06:55 UTC
+Status 142 · 2026-11-26 07:15 UTC
 
-- `out/stills/status/status-141-1.jpg`: The live app on a phone through one press of Shake, on main: the camera stands back and the whole globe stays on the screen (drawn by its builder at low quality).
-- `out/stills/status/status-141-2.jpg`: Summer at rest at feed size: the approved image, before the mend, after it. The white stars are gone and the fireflies lead.
-- `out/stills/status/status-141-3.jpg`: Still: winter rest hero, hd, review
-- `out/stills/status/status-141-4.jpg`: Still: summer rest hero, hd, review
+- `out/stills/status/status-142-1.jpg`: The first shake's change of season, every second frame from 660 to 690, drawn from main by the new renderer at preview size, draft tier.
+- `out/stills/status/status-142-2.jpg`: Frames 670, 674, 680 and 682 larger: the cover as it stands today.
+- `out/stills/status/status-142-3.jpg`: Sequence: film frames 660 to 690, every 2, 16 pictures in out/work/seq/film-preview-draft, 12 of them on this sheet, preview, draft
+- `out/stills/status/status-142-4.jpg`: Still: winter rest hero, preview, draft
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-26 06:55 UTC
-clock: phase 6, tick of 25.9 minutes
-phase 6: 4.10 h used of its 12.00 h box
-allowance (after the review): 4.10 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 4.10 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-26 07:15 UTC
+clock: phase 6, tick of 19.4 minutes
+phase 6: 4.43 h used of its 12.00 h box
+allowance (after the review): 4.43 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 4.43 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached

@@ -1,18 +1,17 @@
-# Status 141
+# Status 142
 
-2026-11-26 06:55 UTC
+2026-11-26 07:15 UTC
 
-- Merged into main since 06:30, each as its builder pushed it and none judged by a critic yet: the first frame (the page paints a still of the opening season where the globe will stand), the Shake control that went missing and the reduced motion change, summer's seeds, fireflies and pool of light, the change of season, the phone framing in a shake. Checks on main: types pass, 585 tests passed before these merges and run again now.
-- Every film frame from here is drawn by the faster renderer on sandbox machines (decision 139), and a study of three 4K frames set the masters at 24 samples a frame (decision 140).
-- Found in the speed study and not yet mended: that renderer cuts any particle wider than 256 px to its square, which no 1920 x 1080 picture shows and a 4K frame of the macro camera may. It is being measured and mended before a master frame is drawn.
-- Sound: the typing of film A was tried as a set of soft presses in three settings and failed its listening each time. 7,200 of the 10,000 credits are spent, 2,800 are left, nothing more is bought.
-- Next: the opening and the master tool land, the first frame's stills are drawn again on the final build, the app is published again, then critic rounds on summer, the change and the globe.
-- phase 6: 4.10 h used of its 12.00 h box
-- allowance (after the review): 4.10 h used of 12.00 h allowed
+- After the review, step 1: all five builders have reported and their work is on main; none of it is judged by a critic yet. The tools now draw every picture with the second software renderer (Mesa lavapipe), the one the 4K frames will come from.
+- Found and being mended: on that renderer a large particle near the lens is cut to a square in a 4K frame (two of six film frames probed show it); and a render that runs out of memory wrote a black frame and called it done, so the master tool now refuses a flat frame.
+- The change of season, drawn from main: the old base no longer swaps in sight, but for about eight frames the picture is a soft disc of light on black. Its builder has a second job to 08:15: the glass keeps its outline and burns from inside.
+- Still out: the first picture standing where the globe stays (08:15), the opening (07:35), the master tool (08:05), the sound's last laying (08:15), the strict check (07:50). Then the critics' rounds on summer, the change and the globe.
+- phase 6: 4.43 h used of its 12.00 h box
+- allowance (after the review): 4.43 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-141-1.jpg`: The live app on a phone through one press of Shake, on main: the camera stands back and the whole globe stays on the screen (drawn by its builder at low quality).
-- `out/stills/status/status-141-2.jpg`: Summer at rest at feed size: the approved image, before the mend, after it. The white stars are gone and the fireflies lead.
-- `out/stills/status/status-141-3.jpg`: Still: winter rest hero, hd, review
-- `out/stills/status/status-141-4.jpg`: Still: summer rest hero, hd, review
+- `out/stills/status/status-142-1.jpg`: The first shake's change of season, every second frame from 660 to 690, drawn from main by the new renderer at preview size, draft tier.
+- `out/stills/status/status-142-2.jpg`: Frames 670, 674, 680 and 682 larger: the cover as it stands today.
+- `out/stills/status/status-142-3.jpg`: Sequence: film frames 660 to 690, every 2, 16 pictures in out/work/seq/film-preview-draft, 12 of them on this sheet, preview, draft
+- `out/stills/status/status-142-4.jpg`: Still: winter rest hero, preview, draft
