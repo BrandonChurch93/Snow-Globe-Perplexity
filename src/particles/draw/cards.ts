@@ -78,6 +78,8 @@ export const CARD_VERT = `
       float cotC = 1.0 - smoothstep(${n(CARD.hair.sceneEdge[0])}, ${n(CARD.hair.sceneEdge[1])}, length((atC - vec2(${n(CARD.hair.cottageAt[0])}, ${n(CARD.hair.cottageAt[1])})) / vec2(${n(CARD.hair.cottageWide[0])}, ${n(CARD.hair.cottageWide[1])})));
       float crownC = 1.0 - smoothstep(${n(CARD.hair.sceneEdge[0])}, ${n(CARD.hair.sceneEdge[1])}, length((atC - vec2(${n(CARD.hair.crownAt[0])}, ${n(CARD.hair.crownAt[1])})) / vec2(${n(CARD.hair.crownWide[0])}, ${n(CARD.hair.crownWide[1])})));
       float sceneC = max(cotC, crownC);
+      // in the storm half as many stand before the cottage and the tree, so that both are seen through it
+      keepC *= 1.0 - ${n(CARD.hair.stormScene)} * sceneC * gustC;
       denseC = max(denseC, max(${n(CARD.hair.sceneOut[0])} * cotC, ${n(CARD.hair.sceneOut[1])} * crownC));
       keepC *= mix(1.0, smoothstep(denseC - 0.1, denseC, fract(own * 211.0)), calmC);
       // depth and light: about one head in five is near and sharp and lit; the others are dimmer and a little soft; the far ones are small soft puffs
@@ -96,7 +98,13 @@ export const CARD_VERT = `
       vec2 atG = (view.xy * (centreV.z / view.z) - centreV.xy) / max(uLens.x, 1e-4);
       float swarmG = sin(atG.x * ${n(CARD.glow.swarm[0])} + ${n(CARD.glow.swarm[1])}) * sin(atG.y * ${n(CARD.glow.swarm[2])} + ${n(CARD.glow.swarm[3])}) + ${n(CARD.glow.swarmFine)} * sin((atG.x - atG.y) * ${n(CARD.glow.swarm[4])} + ${n(CARD.glow.swarm[5])});
       float cotG = 1.0 - smoothstep(${n(CARD.hair.sceneEdge[0])}, ${n(CARD.hair.sceneEdge[1])}, length((atG - vec2(${n(CARD.hair.cottageAt[0])}, ${n(CARD.hair.cottageAt[1])})) / vec2(${n(CARD.hair.cottageWide[0])}, ${n(CARD.hair.cottageWide[1])})));
-      float outG = max(${n(CARD.glow.swarmOut)} * (1.0 - smoothstep(${n(CARD.glow.swarmFrom[0])}, ${n(CARD.glow.swarmFrom[1])}, swarmG)), ${n(CARD.glow.cottageOut)} * cotG);
+      // many more of them low at the left and round the crown, where the swarms stand nearly whole, and few in the upper middle
+      vec2 lowG = (atG - vec2(${n(CARD.glow.lowAt[0])}, ${n(CARD.glow.lowAt[1])})) / vec2(${n(CARD.glow.lowWide[0])}, ${n(CARD.glow.lowWide[1])});
+      float ringG = (length((atG - vec2(${n(CARD.hair.crownAt[0])}, ${n(CARD.hair.crownAt[1])})) / vec2(${n(CARD.hair.crownWide[0])}, ${n(CARD.hair.crownWide[1])})) - ${n(CARD.glow.ring[0])}) / ${n(CARD.glow.ring[1])};
+      float moreG = max(exp(-0.5 * dot(lowG, lowG)), exp(-0.5 * ringG * ringG));
+      vec2 topG = (atG - vec2(${n(CARD.glow.topAt[0])}, ${n(CARD.glow.topAt[1])})) / vec2(${n(CARD.glow.topWide[0])}, ${n(CARD.glow.topWide[1])});
+      float outG = max(${n(CARD.glow.swarmOut)} * (1.0 - smoothstep(${n(CARD.glow.swarmFrom[0])}, ${n(CARD.glow.swarmFrom[1])}, swarmG)) * (1.0 - ${n(CARD.glow.moreKeep)} * moreG), ${n(CARD.glow.cottageOut)} * cotG);
+      outG = max(outG, max(${n(CARD.glow.fieldOut)} * (1.0 - moreG), ${n(CARD.glow.topOut)} * exp(-0.5 * dot(topG, topG))));
       keepC *= mix(1.0, smoothstep(outG - 0.1, outG, fract(own * 211.0)), afloat * (1.0 - gustC));
     }
     if (${at(SHAPE.spark)}) keepC = mix(keepC, 1.0, nearC);
@@ -591,6 +599,15 @@ float cardLine(vec2 p, vec2 a, vec2 b, float wide, float s2, out float along) {
   float v = s2 + wide * wide;
   return min(1.0, ${n(CARD.hair.seedSeen)} * wide / sqrt(v)) * exp(-0.5 * dot(d, d) / v);
 }
+/** One hair of a seed's head: a fine line from the hub that bows a little to one side toward its tip. */
+float cardHair(vec2 p, vec2 a, vec2 b, float bow, float wide, float s2, out float along) {
+  vec2 pa = p - a;
+  vec2 ba = b - a;
+  along = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-6), 0.0, 1.0);
+  vec2 d = pa - ba * along - vec2(-ba.y, ba.x) * (bow * along * along);
+  float v = s2 + wide * wide;
+  return min(1.0, ${n(CARD.hair.seedSeen)} * wide / sqrt(v)) * exp(-0.5 * dot(d, d) / v);
+}
 /** A seed: a slender stem with its grain at the foot and a tuft of fine hairs opening from its head, each hair a line in the particle's own three axes with its own length and droop; the hairs too fine to be told apart are the soft ball of the tuft. */
 void cardSeed(vec2 p, int kind, vec4 k, vec4 look) {
   vec2 a = vL0.xy;
@@ -614,9 +631,6 @@ void cardSeed(vec2 p, int kind, vec4 k, vec4 look) {
   // a head that moves through the shutter is drawn out along its path, hair by hair, and stays a head
   if (storm) pp -= vStreak.xy * (dot(pp - mid, vStreak.xy) * (1.0 - 1.0 / (1.0 + ${n(CARD.run.seedDrawn)} * smear)));
   float gauze = 0.0;
-  // in the storm a head's hairs stream behind it: the burst closes to a fan round the way it came from
-  float trailAt = atan(-vStreak.y, -vStreak.x);
-  float swept = storm ? max(smear, smoothstep(0.0, ${n(CARD.run.seedFanFrom)}, uStorm.x) * vL2.w) : 0.0;
   // a head is a burst of fine straight hairs: each head has its own count, spread evenly round its hub on the picture and unequal in length, so that it never bunches into wedges and no two are one stamp
   float mine = floor(mix(${n(CARD.hair.least)}, 1.0, fract(vL3.x * 23.0)) * ${n(CARD.hair.count)});
   for (int i = 0; i < ${CARD.hair.count}; i++) {
@@ -625,13 +639,13 @@ void cardSeed(vec2 p, int kind, vec4 k, vec4 look) {
     float j1 = fract(sin(fi * 12.9898 + vL3.x * 78.233) * 43758.5453);
     float j2 = fract(j1 * 57.31 + 0.37);
     float share = fract((fi + ${n(CARD.hair.jitter)} * (j1 - 0.5)) / max(mine, 1.0) + vL3.w);
-    float turn = mix(6.2831853 * share, trailAt + (share - 0.5) * ${n(CARD.run.seedFan)}, swept);
-    float len = mix(${n(CARD.hair.long[0])}, ${n(CARD.hair.long[1])}, j2) * (1.0 - thinBy * pow(max(cos(turn - thinAt), 0.0), 2.0)) * (1.0 + ${n(CARD.run.seedReach - 1)} * swept);
+    float turn = 6.2831853 * share;
+    float len = mix(${n(CARD.hair.long[0])}, ${n(CARD.hair.long[1])}, j2) * (1.0 - thinBy * pow(max(cos(turn - thinAt), 0.0), 2.0));
     vec2 tip = hub + len * rC * vec2(cos(turn), sin(turn)) + len * lean;
-    float line = cardLine(pp, hub, tip, ${n(CARD.hair.wide)} * rC * (0.8 + 0.4 * j2), s2, along);
-    // swept, a head keeps one hair in ${CARD.run.seedFew} and that one is the stronger for it: hairs to be told apart, not a white wedge
-    float few = mix(1.0, step(mod(fi, ${n(CARD.run.seedFew)}), 0.5) * ${n(CARD.run.seedFew)}, swept);
-    gauze += few * ${n(CARD.hair.hairSeen)} * mix(${n(CARD.hair.faint)}, 1.0, fract(vL3.y * 53.0)) * line * (1.0 - ${n(CARD.hair.tipFade)} * along) * (0.6 + 0.4 * j1);
+    // each hair bows a little its own way, and all of them away from the stalk, as the down of a seed opens like a cup
+    float bowed = (${n(CARD.hair.bow)} * (fract(j1 * 91.7 + 0.61) - 0.5) + ${n(CARD.hair.cup)} * (cos(turn) * a.y - sin(turn) * a.x) / rC);
+    float line = cardHair(pp, hub, tip, bowed, ${n(CARD.hair.wide)} * rC * (0.8 + 0.4 * j2), s2, along);
+    gauze += ${n(CARD.hair.hairSeen)} * mix(${n(CARD.hair.faint)}, 1.0, fract(vL3.y * 53.0)) * line * (1.0 - ${n(CARD.hair.tipFade)} * along) * (0.6 + 0.4 * j1);
   }
   float ballV = s2 + ${n(CARD.hair.ballWide * CARD.hair.ballWide)} * rC * rC;
   float ball = mix(${n(CARD.hair.ball[0])}, ${n(CARD.hair.ball[1])}, smoothstep(${n(CARD.hair.ballFrom[0])}, ${n(CARD.hair.ballFrom[1])}, sqrt(s2) / rC)) * rC * rC / ballV * ${n(CARD.hair.ballWide * CARD.hair.ballWide)} * exp(-0.5 * dot(pp - mid, pp - mid) / ballV);
@@ -641,7 +655,9 @@ void cardSeed(vec2 p, int kind, vec4 k, vec4 look) {
     float ts = clamp(dot(p - mid, vStreak.xy), -vStreak.z, vStreak.z);
     vec2 ds = p - mid - vStreak.xy * ts - vec2(-vStreak.y, vStreak.x) * (pointBend * (ts * ts / max(vStreak.z, 1e-3) - 0.333 * vStreak.z));
     float tuft = ${n(CARD.run.seedTuft)} * rC * rC / ballV * ${n(CARD.hair.ballWide * CARD.hair.ballWide)} * exp(-0.5 * dot(ds, ds) / ballV) / (1.0 + ${n(CARD.run.seedThin)} * vStreak.z / sqrt(ballV));
-    float tail = cardLine(p - mid, -vStreak.xy * vStreak.z, vStreak.xy * vStreak.z, ${n(CARD.hair.runWide)} * rC, s2, along);
+    // a head in the storm keeps its shape: it is smeared by no more than about its own width, a tuft with a short tail
+    float tailLong = min(vStreak.z, ${n(CARD.run.seedTailMost)} * rC);
+    float tail = cardLine(p - mid, -vStreak.xy * tailLong, vStreak.xy * tailLong, ${n(CARD.hair.runWide)} * rC, s2, along);
     hairs = max(hairs * (1.0 - ${n(1 - CARD.run.seedHairs)} * smear), smear * max(tuft, ${n(CARD.run.seedTrail)} * tail * along * (1.0 - along) * 4.0));
   }
   hairs = max(hairs, ${n(CARD.hair.hubSeen)} * cardLine(pp, hub, hub, 0.07 * rC, s2, along)) * mix(1.0, ${n(CARD.hair.runHead)}, run);
@@ -649,7 +665,7 @@ void cardSeed(vec2 p, int kind, vec4 k, vec4 look) {
   // the stalk is a pale hair; the grain at its foot is the one dark thing of the seed
   float grain = cardLine(pp, foot, foot + ${n(CARD.hair.grain)} * a, ${n(CARD.hair.body)} * rC, s2, along);
   // about one head in three hangs its stalk with the seed at its end
-  stems = step(fract(vL3.x * 47.0), ${n(CARD.hair.stalks)}) * ${n(CARD.hair.stemSeen)} * max(cardLine(pp, foot, hub, ${n(CARD.hair.stem)} * rC, s2, along), grain) * mix(1.0, ${n(CARD.hair.runHead)}, run) * (1.0 - smear);
+  stems = max(step(fract(vL3.x * 47.0), ${n(CARD.hair.stalks)}), vL3.z) * ${n(CARD.hair.stemSeen)} * max(cardLine(pp, foot, hub, ${n(CARD.hair.stem)} * rC, s2, along), grain) * mix(1.0, ${n(CARD.hair.runHead)}, run) * (1.0 - smear);
   float trail = cardLine(p, -vStreak.xy * vStreak.z, vStreak.xy * vStreak.z, ${n(CARD.hair.runWide)} * rC, s2, along);
   if (!storm) hairs = max(hairs, run * ${n(CARD.hair.runTrail)} * trail * (0.25 + 0.75 * along));
   float cover = min(max(hairs, stems) * vCore.w * look.z, 1.0);
@@ -670,8 +686,10 @@ void cardSeed(vec2 p, int kind, vec4 k, vec4 look) {
   // a hair is fine: in the low sun it is lit and white, never burnt to a solid stroke
   light *= min(1.0, ${n(CARD.hair.litMost)} * uLightBurn / max(max(light.r, max(light.g, light.b)), 1e-3));
   vec3 col = k.rgb * mix(vec3(1.0), mix(vec3(${CARD.hair.stemTint.map(n).join(', ')}), vec3(${CARD.hair.grainTint.map(n).join(', ')}), grain), stems / max(hairs + stems, 1e-4)) * light * ${n(CARD.hair.gain)};
+  // a head that is not lit is the warmer for it: dim down in low light is cream gold, never grey
+  col *= mix(vec3(${CARD.hair.dimTint.map(n).join(', ')}), vec3(1.0), max(vL3.z, ${n(CARD.hair.stormPale)} * vL2.w));
   // a few of the lit heads glow warm at the heart, where the low sun comes through the down
-  float heart = vL3.z * step(fract(vL3.y * 91.0), ${n(CARD.hair.heartShare)}) * exp(-0.5 * dot(pp - hub, pp - hub) / (s2 + ${n(CARD.hair.heartWide * CARD.hair.heartWide)} * rC * rC));
+  float heart = mix(${n(CARD.hair.heartDim)}, 1.0, vL3.z) * step(fract(vL3.y * 91.0), ${n(CARD.hair.heartShare)}) * exp(-0.5 * dot(pp - hub, pp - hub) / (s2 + ${n(CARD.hair.heartWide * CARD.hair.heartWide)} * rC * rC));
   col = mix(col, vec3(${CARD.hair.heartTint.map(n).join(', ')}) * light * ${n(CARD.hair.gain)}, ${n(CARD.hair.heartSeen)} * heart * (1.0 - vL2.w));
   // the down stands white in the storm's mist: it is lit from before, and takes a share only of the haze it stands in
   col = mix(col, uVeil.rgb * vFog.rgb, vFog.a * uTone.z * mix(1.0, ${n(CARD.hair.stormFog)}, vL2.w));
@@ -705,7 +723,7 @@ void cardGlow(vec2 p, int kind, vec4 k, vec4 look) {
     core = mix(core, pow(abs(rc * rc / vc), spark ? ${n(CARD.spark.discHold)} : ${n(CARD.glow.discHold)}) * face * (spark ? 1.0 : ${n(CARD.glow.discSeen)}), disc);
   }
   float halo = (spark ? ${n(CARD.spark.haloShare)} : ${n(CARD.glow.haloShare)} * (1.0 - ${n(CARD.glow.stormHalo)} * vL2.w)) * rh * rh / vh / (1.0 + 0.8 * vStreak.z / sqrt(vh)) * exp(-0.5 * d2 / vh);
-  float wide = spark ? 0.0 : ${n(CARD.glow.wideShare)} * rw * rw / vw * exp(-0.5 * d2 / vw);
+  float wide = spark ? 0.0 : ${n(CARD.glow.wideShare)} * (1.0 - ${n(CARD.glow.stormHalo)} * vL2.w) * rw * rw / vw * exp(-0.5 * d2 / vw);
   // a light in the storm is a thin bright streak: it keeps over its path the light the shutter spread thin
   float lum = vCore.w * (core + halo + wide) * (spark ? ${n(CARD.spark.gain)} : ${n(CARD.glow.gain)} * (1.0 + ${n(CARD.glow.stormGain - 1)} * vL2.w));
   float cover = min(vCore.w * core * (spark ? ${n(CARD.glow.hide)} : ${n(CARD.glow.lightHide)}) * (1.0 - disc), 1.0);
@@ -722,7 +740,9 @@ void cardGlow(vec2 p, int kind, vec4 k, vec4 look) {
     else gl_FragColor = stageDiag(k.rgb, inverseTransformDirection(vec3(0.0, 0.0, 1.0), viewMatrix), vFog.a, uPointChange, 0.0);
     return;
   }
-  vec3 tint = mix(k.rgb, vec3(1.0, 1.0, 0.86), (spark ? ${n(CARD.glow.sparkPale)} : ${n(CARD.glow.pale)}) * (1.0 - disc) * core / max(core + halo + wide, 1e-4));
+  // the lights run from yellow green to warm gold, each its own
+  vec3 own = spark ? k.rgb : k.rgb * mix(vec3(${CARD.glow.green.map(n).join(', ')}), vec3(${CARD.glow.gold.map(n).join(', ')}), smoothstep(${n(CARD.glow.goldFrom[0])}, ${n(CARD.glow.goldFrom[1])}, vL3.y));
+  vec3 tint = mix(own, vec3(1.0, 1.0, 0.86), (spark ? ${n(CARD.glow.sparkPale)} : ${n(CARD.glow.pale)}) * (1.0 - disc) * core / max(core + halo + wide, 1e-4));
   if (spark) {
     float part = vL3.z / 6.2831853;
     float sharp = 1.0 - smoothstep(${n(CARD.spark.hotFrom[0])}, ${n(CARD.spark.hotFrom[1])}, sg / max(rc, 0.6));
