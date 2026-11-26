@@ -154,7 +154,7 @@ export class Replay {
   }
 
   pose(under: number): Pose {
-    return livePose(this.aspect, this.look.yaw, this.look.pitch, under)
+    return livePose(this.aspect, this.look.yaw, this.look.pitch, under, this.moment())
   }
 
   moment(): Moment {

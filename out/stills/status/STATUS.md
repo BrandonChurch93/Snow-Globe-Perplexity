@@ -1,17 +1,16 @@
-# Status 138
+# Status 140
 
-2026-11-26 05:52 UTC
+2026-11-26 06:30 UTC
 
-- Summer's worst fault is mended and merged: its air now reads as fireflies, green-gold points first, with seeds as faint backlit tufts. Its builder still owes the final stills and the app's own path; no critic has judged it yet.
-- The check for real graphics cards found two more places where the picture hangs on an answer the shader language leaves open (the caps of summer's lanterns and one pixel in the middle of a fleck). Both are mended on main. Neither could be seen on this build's own renderer, which is why it took the check to find them.
-- A second software renderer is now a choice of the tools. On this machine it drew these four pictures at 3.4 to 6.2 s a sample where the present one takes about 35. Its picture is close to the present one but not the same (40.5 dB on one winter still, the floor between machines is 45), so it is all or nothing: nothing judged uses it until two agents report how it behaves at 3840 x 2160, in a storm and from one machine to the next.
-- Merged since the last status: the season change's deeper cover, the phone's globe centred over its controls, reduced motion as a true cross dissolve. Tests on main: 565 passed. Eleven agents are at work.
-- phase 6: 3.04 h used of its 12.00 h box
-- allowance (after the review): 3.04 h used of 12.00 h allowed
+- Decision 139: every picture and frame from here on is drawn by the faster software renderer on sandbox machines. Two sandbox machines drew the same two frames to the same bytes; the devbox and the first renderer do not match them, so neither is ever joined to this work.
+- Summer's builder has sent its looks: the pool of light under the foot is now a soft pool with a net of light inside it, and the app's own path shows the same garden as the film's. A critic has not judged either yet.
+- Still working inside their limits: the first frame, the controls, the framing, the season change, the opening, the tool for the 4K masters, the strict check and the paid sounds. The count of samples for the masters is the next decision, when the strips at 4 to 24 samples arrive.
+- phase 6: 3.67 h used of its 12.00 h box
+- allowance (after the review): 3.67 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-138-1.jpg`: The four seasons at rest from main as it stands, 1080p at 8 samples, drawn by the faster renderer as a look, not as judged pictures. Summer is the new one.
-- `out/stills/status/status-138-2.jpg`: Summer at 400 px wide, the size at which the review said it read as snow.
-- `out/stills/status/status-138-3.jpg`: Still: summer rest hero, hd, review
-- `out/stills/status/status-138-4.jpg`: Still: fall rest hero, hd, review
+- `out/stills/status/status-140-1.jpg`: Summer, the table under the foot. Top: the approved image. Middle: before. Bottom: after, at the final tier.
+- `out/stills/status/status-140-2.jpg`: Summer at rest, the globe cut out of three stills. Left: the film's path. Middle: the app at its high level. Right: the app at its low level.
+- `out/stills/status/status-140-3.jpg`: Still: winter rest hero, preview, draft
+- `out/stills/status/status-140-4.jpg`: Still: winter landed hero, hd, review
