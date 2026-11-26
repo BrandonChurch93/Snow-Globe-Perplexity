@@ -94,6 +94,9 @@ const HAND = {
   reachEnds: 1.08,
   reachWaist: 0.33,
   reachDraw: 0.04,
+  /** The weight and the reach of each stroke, first to last, where a hand sets them one by one; empty, the two curves above draw them. */
+  strokeWeights: [] as readonly number[],
+  strokeReach: [] as readonly number[],
   peakReach: [1.02, 1.12],
   planDeg: [6, 10],
   leanDeg: [1.6, 1.9],
@@ -172,8 +175,9 @@ type Hand = { [K in keyof typeof HAND]: (typeof HAND)[K] extends readonly number
  */
 const HELD: Hand = {
   ...HAND,
-  /** A lighter base lean and a lighter second axis leave the room under the cap to the lean of the strokes. */
-  leanDeg: [1.2, 1.4],
+  /** A lighter base lean and a lighter second axis leave the room under the cap to the lean of the strokes; a little more than that, so the top
+   * still leans away from the lens through the quick strokes at the end. */
+  leanDeg: [1.28, 1.48],
   rockGain: [0.11, 0.15],
   /** Beats before its edge meets the surface at which the globe is over its mark: it comes down the last of the way straight. */
   homeLead: 0.17,
@@ -185,6 +189,12 @@ const HELD: Hand = {
   heldLead: 0.07,
   /** More than the room under the rim gives, so each swoop is as deep as the rim's air allows: about 4 mm in the film, where 0.4 left 2.9. */
   dipShare: 0.7,
+  /** The strokes, one by one. The first two are the heavy ones, slow, as a hand gets a weight going (about 14.5 frames each, 2.4 to 2.8 mm
+   * a frame, and on the whole shorter); the last three are quick and long (12, 12 and 9 frames, 3.3 to 5.2 mm a frame). The middle breath the
+   * curves drew is gone: it made the third stroke the slowest and the strokes before and after it alike. The three turns inside the swap
+   * window keep their frames within half a frame, and the fastest instant of the last stroke keeps its frame. */
+  strokeWeights: [1.35, 1.76, 1.62, 1.45, 1.42, 1],
+  strokeReach: [1, 0.74, 0.74, 1, 0.95, 1.05],
   /** The rock after the landing: each rock lasts this share of the one before it, so the foot rocks over once, back, and once more, quicker each time. */
   overshootDeg: [2.3, 2.4],
   rockFirst: 0.74,
@@ -364,18 +374,19 @@ function build(name: string): ShakeMotion {
   let before = 0
   let whole = 0
   const drawStrokes = (): void => {
-    weights = [H.firstReach * rng.range(0.94, 1.06)]
+    const own = H.strokeWeights.length === n && H.strokeReach.length === n
+    weights = [(own ? H.strokeWeights[0]! : H.firstReach) * rng.range(0.94, 1.06)]
     for (let i = 1; i < n; i++) {
       const t = n > 2 ? (i - 1) / (n - 2) : 1
       // The hand speeds up on the whole, but it takes one long breath in the middle: a slow, wide stroke before the last quick ones.
-      const w = H.slowStroke + (H.fastStroke - H.slowStroke) * t * t * t + H.breath * Math.pow(Math.sin(Math.PI * t), 4)
+      const w = own ? H.strokeWeights[i]! : H.slowStroke + (H.fastStroke - H.slowStroke) * t * t * t + H.breath * Math.pow(Math.sin(Math.PI * t), 4)
       weights.push(i === n - 1 ? w * rng.range(0.96, 1) : Math.max(w * rng.range(0.93, 1.07), H.fastStroke * 1.05))
     }
     reach = []
     for (let k = 0; k < n; k++) {
       // Wide at both ends and narrow at the waist, so the strokes the lens sees differ in length as well as in time.
       const waist = Math.pow(Math.sin((Math.PI * k) / Math.max(1, n - 1)), 1.5)
-      reach.push(H.reachEnds - H.reachWaist * waist + rng.range(-H.reachDraw, H.reachDraw))
+      reach.push((own ? H.strokeReach[k]! : H.reachEnds - H.reachWaist * waist) + rng.range(-H.reachDraw, H.reachDraw))
     }
     peakReach = pick(rng, H.peakReach)
     before = weights.slice(0, n - 1).reduce((s, w) => s + w, 0)
