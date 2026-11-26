@@ -40,8 +40,8 @@ function cover(change: number, to = spring, live = false): Cover {
   return { glare: most(lensState.glare), halo: most(lensFall.halo), veil: most(lensFall.veil), dim: lensFall.dim, inside: lightUniforms.uGrid.value.z }
 }
 
-/** What lies on the table from the lights inside at a place in the window: as the lights at rest lay it, and as the picture shows it under the cover. */
-function table(change: number): { rest: number; shown: number } {
+/** What the lights inside lay on the table at a place in the window: as the lights at rest lay it, as the picture shows it on the slab under the cover, and as it shows it on what lies on the slab. */
+function table(change: number): { rest: number; shown: number; on: number } {
   const light = new Lighting(quality.shadowMapPx)
   const f = newFrame(winter, quality)
   f.to = spring
@@ -52,7 +52,7 @@ function table(change: number): { rest: number; shown: number } {
   const rest = f.pool.r
   f.mix.bloom = changeBloom(change)
   light.update(f)
-  return { rest, shown: f.pool.r * lensFall.dim }
+  return { rest, shown: f.pool.r * lensFall.dim, on: f.poolOn.r * lensFall.dim }
 }
 
 describe('the cover of a change in the lens', () => {
@@ -146,6 +146,25 @@ describe('the cover of a change in the lens', () => {
     }
     // Away from the cover nothing is poured.
     for (const c of [0.02, CHANGE_COVER.riseFrom - FRAME, CHANGE_COVER.goneAt + FRAME / 2]) expect(table(c).shown).toBe(table(c).rest)
+  })
+
+  it('lays less of the pour on what lies on the table than on the slab under it, so what is white there stays under white', () => {
+    expect(CHANGE_BLOOM.pourOn).toBeLessThanOrEqual(CHANGE_BLOOM.pour / 4)
+    let top = 0
+    for (let c = CHANGE_COVER.riseFrom; c <= CHANGE_COVER.goneAt; c += FRAME / 4) {
+      const at = table(c)
+      // Without the pour both take what the lights at rest lay, drawn in under the flash. Of the pour the frost, the petals
+      // and the leaves take `pourOn` where the slab, near black, takes `pour`.
+      const drawn = at.rest * Math.pow(CHANGE_BLOOM.flashPour, Math.pow(changeBloom(c), CHANGE_BLOOM.sharp))
+      expect(at.on - drawn, `what lies on the table at ${c}`).toBeCloseTo(((at.shown - drawn) * CHANGE_BLOOM.pourOn) / CHANGE_BLOOM.pour, 9)
+      expect(at.on).toBeLessThanOrEqual(at.shown)
+      top = Math.max(top, at.on / at.rest)
+    }
+    // At its most that is between one and a half and three times what lies there at rest: lit by the pour, not burnt out by it.
+    expect(top).toBeGreaterThan(1.5)
+    expect(top).toBeLessThan(3)
+    // Away from the cover they take what the slab takes, to the last bit: the pictures at rest are what they were.
+    for (const c of [0.02, CHANGE_COVER.riseFrom - FRAME, CHANGE_COVER.goneAt + FRAME / 2]) expect(table(c).on).toBe(table(c).rest)
   })
 
   it('holds everything inside the glass through the fallen exposure: both seasons\' lights and what the room sends in', () => {

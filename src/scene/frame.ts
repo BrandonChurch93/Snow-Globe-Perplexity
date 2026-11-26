@@ -33,6 +33,8 @@ export interface StageFrame {
   fill: number
   ambient: THREE.Color
   pool: THREE.Color
+  /** `pool` as winter's frost on the table takes it: the same but for the pour of a change, of which what lies on the table takes less (lighting.ts, `CHANGE_BLOOM.pourOn`; the petals and the leaves take theirs through the glow of the light chunk). */
+  poolOn: THREE.Color
   bloomTint: THREE.Color
   liquid: ArrayLike<number>
   turbulence: number
@@ -75,6 +77,7 @@ export function newFrame(kit: SeasonKit, quality: StageQuality): StageFrame {
     fill: 0,
     ambient: new THREE.Color(),
     pool: new THREE.Color(),
+    poolOn: new THREE.Color(),
     bloomTint: new THREE.Color(),
     liquid: [0, 0, 0, 0, 0, 0, 0],
     turbulence: 0,
