@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 158 · 2026-11-26 13:20 UTC
+Status 159 · 2026-11-26 13:43 UTC
 
-- `out/stills/status/status-158-1.jpg`: Film B frame 5 as the farm drew it at 3840 x 2160 with 24 samples, shown at 1600 px wide: winter in the first shot's close view.
-- `out/stills/status/status-158-2.jpg`: The same frame at full size, a window of 1400 x 788 px: the lights along the eave, a lit bough, falling snow.
-- `out/stills/status/status-158-3.jpg`: Twelve frames across the shake from spring to summer at review quality: petals rise, the glass fills, the outside changes in the dark frame 1400, summer shows through from 1426.
-- `out/stills/status/status-158-4.jpg`: Twelve frames of the summer shot, 1440 to 2014: the storm thins, the camera goes in and comes back. This is summer before the third list.
+- `out/stills/status/status-159-1.jpg`: Summer at rest, the approved picture above and ours below: the third list from all five builders merged, drawn at review quality.
+- `out/stills/status/status-159-2.jpg`: The same pair closer, approved left and ours right. Ours is still short: the ball is pale and even where the approved is dark with a warm glow, the seeds are large white clumps, the base lacks the carved waves.
+- `out/stills/status/status-159-3.jpg`: Film frame 3414 at 4K: left a crop of 400 pixels, right its middle 50 pixels enlarged. The dark pixel in the middle is one of the specks.
+- `out/stills/status/status-159-4.jpg`: A 4K shake frame (621) enlarged six times: each lamp's blur is a row of separate copies, not one smooth streak.
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-26 13:20 UTC
-clock: phase 6, tick of 26.9 minutes
-phase 6: 10.51 h used of its 12.00 h box
-allowance (after the review): 10.51 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 10.51 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-26 13:43 UTC
+clock: phase 6, tick of 23.2 minutes
+phase 6: 10.90 h used of its 12.00 h box
+allowance (after the review): 10.90 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 10.90 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: not reached
