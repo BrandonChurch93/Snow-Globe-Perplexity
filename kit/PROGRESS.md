@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 155 · 2026-11-26 11:59 UTC
+Status 156 · 2026-11-26 12:38 UTC
 
-- `out/stills/status/status-155-1.jpg`: Summer at rest: the approved image (left) and ours at the final tier (right), main at 0e9dbcca with all five mended parts. Ours: white star shapes on a darker ball, a grey base, a dark heap of sand at the right, a white zigzag of light on the table.
-- `out/stills/status/status-155-2.jpg`: Summer half a second after a landing: approved (left), ours at the final tier (right). Ours is an even cream fog of short thick strokes over the whole ball; the approved has finer streaks with dark between them, and a bright haze low down.
-- `out/stills/status/status-155-3.jpg`: The inside at rest, large: approved (left), ours at the review tier (right). Our seeds are white asterisks, all alike; the approved seeds are soft tufts on thin stalks in a glowing ball. Our band of sand at the bottom of the glass is flat and tall.
-- `out/stills/status/status-155-4.jpg`: The base and the table: approved (left), ours at the review tier (right). The approved stone is cream with sunlit patches and deep shade, level strata, pale frosted sea glass; ours is even grey with broad folds and saturated gems, and its net of light is a white bolt where the approved is fine gold thread.
+- `out/stills/status/status-156-1.jpg`: Summer at rest, the stone builder's tree before the merge: approved on the left, ours on the right (review tier). Ours is darker inside the ball and the stone is grey where the approved is cream.
+- `out/stills/status/status-156-2.jpg`: The base, approved above and ours below: level beds, pale sea glass and cream shells are in; ours is greyer and more streaked than the approved stone.
+- `out/stills/status/status-156-3.jpg`: Seeds, approved on the left and ours on the right (the air builder's tree): ours are tufts on stalks now; behind them ours is a flat pale haze where the approved shows the dark room through the glass.
+- `out/stills/status/status-156-4.jpg`: The sand at the foot, approved on the left and ours on the right (the sand builder's tree): ours is a pale drift now, wider and flatter than the approved.
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-26 11:59 UTC
-clock: phase 6, tick of 27.7 minutes
-phase 6: 9.16 h used of its 12.00 h box
-allowance (after the review): 9.16 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 9.16 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-26 12:38 UTC
+clock: phase 6, tick of 38.8 minutes
+phase 6: 9.81 h used of its 12.00 h box
+allowance (after the review): 9.81 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 9.81 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: not reached
