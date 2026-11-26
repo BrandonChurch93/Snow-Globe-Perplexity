@@ -1,47 +1,46 @@
 {
-  "number": 163,
-  "time": "2026-11-26 15:33 UTC",
+  "number": 165,
+  "time": "2026-11-26 16:19 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 163 · 2026-11-26 15:33 UTC · Phase 6",
-    "Summer's fifth list: two of five builders are in and merged, the base and the miniature. The glass, the air and the sand heap are due about 15:52. First picture: the approved above, ours below, with the miniature's work (the white asterisks in it are the old air; the air builder's work is not in this picture yet).",
-    "The base (second picture, the approved left, ours right): it was slate grey at the right with ridges like comb lines. Its builder found the cause in the light, a flat cool shade, and not in the sand. Now it is one cream sand with broad swells and pale shells. What is left, in its builder's words: the approved is still whiter at the right and far more carved, and the blue glass piece is still too solid.",
-    "The miniature (third picture): the cottage front is lit warm, the lawn has lit tufts, the tree's crown is near black with gold on its upper rims, and a low turf mound sits under cottage and tree. Left: the cottage reads smaller than the approved's and its stones coarser; the layout is shared by all four seasons and does not move.",
-    "A fault that would have shown in the 4K film is mended and proven (fourth picture): in a shake every lamp was a dotted line of copies. Above, one frame at 4K the old way; below, the same frame with the new blur rule: solid bars. Drawn twice, the frame comes out identical to the last bit.",
-    "The 4K scan for dead pixels: twelve of eighteen ranges of film B have ended, every one clean.",
-    "Guards against dead pixels on sixteen more shader lines are merged; fourteen pictures kept every pixel, so nothing changed in what you see.",
-    "I looked at winter, spring and fall on today's build beside their approved pictures: no harm from today's shared changes.",
-    "The change's new cover: its builder found two more things on its own frames (the table's front edge too bright at the flash, snow lumps on the table going cream white) and mends them first; its push is now due about 15:50.",
-    "phase 6: 12.73 h used of its 12.00 h box",
-    "allowance (after the review): 12.73 h used of 12.00 h allowed",
+    "Status 165 · 2026-11-26 16:19 UTC · Phase 6",
+    "The 4K scan for dead pixels is finished: all eighteen ranges of the film are clean, and that open item is closed. The masters still wait for one more scan on the frozen build.",
+    "Summer's sixth list, first builder in (the miniature, not yet merged, the other four are due about 16:40): the white band at the foot of the scene is now tan gold sand with a lit rim, the crown is dark with gold points, the pond is a mirror. First picture: the approved above, ours below. Second: cottage and bank, the approved left, ours right. I sent the pond back: it is now the brightest patch in the ball and reads as ice; it goes to dark water with warm reflections.",
+    "A check I asked for because nobody had: summer drawn at the masters' size, 2160 rows. The loose sand grains carry a green rim there that no smaller picture shows (990 green pixels in one box at 2160 rows, 0 at 1080). Third picture, a crop at its own pixels. The sand's builder is replacing the fit that caused it, in this list.",
+    "Two rehearsals of the 4K master passed: real chunks through the new motion blur rule are pixel for pixel what the film path draws, memory does not grow, and the joining encode takes them with the final mix (3840 x 2160, 60 a second, the colour tags in place).",
+    "Two dry runs for the film's own round passed: the hosting limits (first load 14.03 of 16 MB, the tight one) and the compression test. Fourth picture: the middle of a shake as drawn, at 20 Mbps and at 5 Mbps; at 5 the storm's fine grain goes to cloud, which the film's critics will weigh.",
+    "The change's new cover is pushed by its builder with its measures green. It asked me one thing: the pour has the same colour in two of the four changes. My call: it tries a tint in the key of the season that arrives. Report about 17:40.",
+    "Next: merge the sixth list about 16:45, my look, then the critics' round on summer, a fresh publish of the app, and rough draft 3 of the film.",
+    "phase 6: 13.50 h used of its 12.00 h box",
+    "allowance (after the review): 13.50 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-163-1.jpg",
-      "caption": "Summer at rest with the miniature's fifth list (review tier): the approved above, ours below. The air and the glass in it are still the fourth list's.",
+      "file": "out/stills/status/status-165-1.jpg",
+      "caption": "Summer at rest with the miniature's sixth list only (builder's own still, not merged yet): the approved above, ours below.",
       "w": 1065,
       "h": 1200
     },
     {
-      "file": "out/stills/status/status-163-2.jpg",
-      "caption": "Summer's base, right half, at one scale: the approved on the left, ours on the right after the fifth list.",
-      "w": 1200,
-      "h": 394
-    },
-    {
-      "file": "out/stills/status/status-163-3.jpg",
-      "caption": "Cottage, lawn and bank at one scale: the approved on the left, ours on the right after the miniature's fifth list.",
+      "file": "out/stills/status/status-165-2.jpg",
+      "caption": "Cottage, lawn and bank at one scale: the approved on the left, ours on the right. The bank is sand now; the pond goes darker.",
       "w": 1200,
       "h": 502
     },
     {
-      "file": "out/stills/status/status-163-4.jpg",
-      "caption": "Film B frame 621 at 3840 x 2160, a crop at 6 times: 24 samples above (each lamp a dotted line), the blur rule's 50 samples below (each lamp one bar).",
-      "w": 1120,
-      "h": 1180
+      "file": "out/stills/status/status-165-3.jpg",
+      "caption": "Summer at 3840 x 2160, a crop at its own pixels: the loose grains right of the heap each carry a green rim. Found before any master was drawn.",
+      "w": 700,
+      "h": 500
+    },
+    {
+      "file": "out/stills/status/status-165-4.jpg",
+      "caption": "The compression test, the middle of a shake at the draft tier: as drawn, at 20 Mbps, at 5 Mbps.",
+      "w": 1200,
+      "h": 239
     }
   ]
 }
