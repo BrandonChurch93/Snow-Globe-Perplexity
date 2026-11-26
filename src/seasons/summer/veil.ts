@@ -50,15 +50,16 @@ export function stormHeld(moment: KitMoment): number {
 
 /**
  * How much of the shared veil the held storm has taken over, 0 to 1. Where summer comes out of another season, nothing through
- * the swap window: the storm that hides the change is the shared one, whole, and the held storm is far thinner. It takes over
- * as the shared veil opens after the window, over the same beats, and has all of it from then to the landing and after. A shake
- * of summer alone has nothing to hide, and the held storm comes in over the window as it always did.
+ * the first half of the swap window: the storm that hides the change is the shared one, whole, and the held storm is far
+ * thinner. It takes over through the second half and has all of it at the window's end, where it always had it, so every frame
+ * from there to the landing and after is as it was. A shake of summer alone has nothing to hide, and the held storm comes in
+ * over the whole window as it always did.
  */
 function taken(moment: KitMoment): number {
   const f = moment.frame
   if (moment.beat === null || f.from.veil === f.to.veil) return 1
-  const shut = config.shake.swapWindow.toBeat
-  return ramp(moment.beat, shut + VEIL_LOOK.openFromBeats, shut + VEIL_LOOK.openToBeats)
+  const w = config.shake.swapWindow
+  return ramp(moment.beat, (w.fromBeat + w.toBeat) / 2, w.toBeat)
 }
 
 /** Turns the shared veil to summer's held storm. Runs after the shared veil has set its own values for the frame. */
