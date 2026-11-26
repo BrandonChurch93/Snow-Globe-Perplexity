@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 156 · 2026-11-26 12:38 UTC
+Status 157 · 2026-11-26 12:53 UTC
 
-- `out/stills/status/status-156-1.jpg`: Summer at rest, the stone builder's tree before the merge: approved on the left, ours on the right (review tier). Ours is darker inside the ball and the stone is grey where the approved is cream.
-- `out/stills/status/status-156-2.jpg`: The base, approved above and ours below: level beds, pale sea glass and cream shells are in; ours is greyer and more streaked than the approved stone.
-- `out/stills/status/status-156-3.jpg`: Seeds, approved on the left and ours on the right (the air builder's tree): ours are tufts on stalks now; behind them ours is a flat pale haze where the approved shows the dark room through the glass.
-- `out/stills/status/status-156-4.jpg`: The sand at the foot, approved on the left and ours on the right (the sand builder's tree): ours is a pale drift now, wider and flatter than the approved.
+- `out/stills/status/status-157-1.jpg`: Summer at rest, final tier. Left the approved image, right ours after the second fix list.
+- `out/stills/status/status-157-2.jpg`: Summer half a second after a landing, final tier. Left the approved image, right ours.
+- `out/stills/status/status-157-3.jpg`: The bottom of the glass. Above the line the approved image, below it ours with its flat bright bank of sand and grey lip.
+- `out/stills/status/status-157-4.jpg`: The table at the left of the base. Above the line the approved image with its lit wedge of sand, below it ours.
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-26 12:38 UTC
-clock: phase 6, tick of 38.8 minutes
-phase 6: 9.81 h used of its 12.00 h box
-allowance (after the review): 9.81 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 9.81 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-26 12:53 UTC
+clock: phase 6, tick of 15.0 minutes
+phase 6: 10.06 h used of its 12.00 h box
+allowance (after the review): 10.06 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 10.06 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: not reached
