@@ -4,7 +4,7 @@ Written by `npm run cut` from the page. Do not edit by hand: change the config o
 
 - Source of the timing: the default grid, until the music has a map.
 - Film B is 60 s: 3600 frames at 60 a second, 25 bars of 4 beats at 100 beats a minute.
-- Times are from frame 0 of film B. In film A everything moves later by the opening, 14.5 s (870 frames).
+- Times are from frame 0 of film B. In film A everything moves later by the opening, 14.45 s (867 frames).
 
 ## Shots
 
@@ -78,17 +78,17 @@ Each shake is one bar with the camera locked. The season changes inside the swap
 
 | Part | From | To | Frames |
 | --- | --- | --- | --- |
-| The prompt is typed | 0:00.50 | 0:06.50 | 30 to 389 |
-| The reasoning control is opened and set | 0:06.50 | 0:08.05 | 390 to 482 |
-| The send control is pressed | 0:08.85 | 0:09.10 | 531 to 545 |
-| The build screen | 0:09.10 | 0:14.50 | 546 to 869 |
+| The prompt is typed | 0:02.50 | 0:08.50 | 150 to 509 |
+| The reasoning control is opened and set | 0:00.40 | 0:02.25 | 24 to 134 |
+| The send control is pressed | 0:09.30 | 0:09.95 | 558 to 596 |
+| The build screen | 0:09.95 | 0:14.45 | 597 to 866 |
 
-The steps of the build appear on frames 582, 636, 690, 744, 798. The reasoning menu opens on frame 411 and the choice is made on frame 465.
+The steps of the build appear on frames 633, 687, 741, 795. The reasoning menu opens on frame 65 and the choice is made on frame 112.
 
-- `key-tap`: 84 times, one for each character, from 0:00.50 to 0:06.43. The frames are in `opening.cues` of `CUTLIST.json`.
-- `ui-send`: 0:08.85, frame 531.
-- `riser`: 0:13.30, frame 798.
+- `key-tap`: 84 times, one for each character, from 0:02.50 to 0:08.43. The frames are in `opening.cues` of `CUTLIST.json`.
+- `ui-send`: 0:09.30, frame 558.
+- `riser`: 0:13.25, frame 795.
 
 ## The card loop
 
-8 s, 480 frames at 60 a second, from the `hero` camera in the `hd` format. The camera stands at 622.4 mm: moved back from 616 mm along its own axis, so the glass and the base stay inside the centred square crop of the card through the shake. One shake: lift on frame 48, in the air on 84, strokes end on 156, landing on 192. The season does not change, and the frame after the last is frame 0.
+8 s, 480 frames at 60 a second, from the `hero` camera in the `hd` format. The camera stands at 669.7 mm: moved back from 615.3 mm along its own axis, so the glass and the base stay inside the centred square crop of the card through the shake. One shake: lift on frame 48, in the air on 84, strokes end on 156, landing on 192. The season does not change, and the frame after the last is frame 0.

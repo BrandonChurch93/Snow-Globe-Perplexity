@@ -6,10 +6,10 @@ Written by `npm run cut` from the page. Do not edit by hand. Lengths are in mill
 
 - When: 0:00.00 to 0:09.60, frames 0 to 575, 4 bars. A hold on winter.
 - Lens: field of view 16 degrees, aperture 2.5 mm, opening to 2 mm at hero.
-- Move: Starts on the macro camera already moving and pulls back to hero over the first 2 bars, fast at first and easing to nothing. Then an arc of 2.6 degrees to one side and back, which lowers its aim by up to 4.5 mm and gives it back.
+- Move: Starts on the macro camera already moving and pulls back to hero over the first 2 bars, fast at first and easing to nothing. Then an arc of 2.6 degrees to one side and back, which lowers its aim by up to 3.4 mm and gives it back.
 - Starts: 150 mm from a point 66 mm up the axis, yaw -6, pitch 6, the frame 42.2 mm tall there, the globe and base 330 percent of that height.
-- Ends: 616 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 173.1 mm tall there, the globe and base 80 percent of that height.
-- Focus: 151.7 mm from the lens, 1.7 mm behind the aim point; at hero 604 mm from the lens, 12 mm in front of the aim point.
+- Ends: 615.3 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 172.9 mm tall there, the globe and base 80 percent of that height.
+- Focus: 151.7 mm from the lens, 1.7 mm behind the aim point; at hero 603.3 mm from the lens, 12 mm in front of the aim point.
 - Keys:
   - frame 0, 0:00.00: first frame
   - frame 120, 0:02.00: film.hookSeconds: the pull back is plain
@@ -24,9 +24,9 @@ Written by `npm run cut` from the page. Do not edit by hand. Lengths are in mill
 - When: 0:09.60 to 0:12.00, frames 576 to 719, 1 bar. The shake from winter to spring.
 - Lens: field of view 16 degrees, aperture 2 mm.
 - Move: Locked at hero on every frame, with no ease in. Only the globe moves.
-- Starts: 616 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 173.1 mm tall there, the globe and base 80 percent of that height.
-- Ends: 616 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 173.1 mm tall there, the globe and base 80 percent of that height.
-- Focus: 604 mm from the lens, 12 mm in front of the aim point: it stays where hero holds it, on the glass, and does not follow the globe.
+- Starts: 615.3 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 172.9 mm tall there, the globe and base 80 percent of that height.
+- Ends: 615.3 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 172.9 mm tall there, the globe and base 80 percent of that height.
+- Focus: 603.3 mm from the lens, 12 mm in front of the aim point: it stays where hero holds it, on the glass, and does not follow the globe.
 - Keys:
   - frame 576, 0:09.60: first frame
   - frame 719, 0:11.98: last frame
@@ -36,10 +36,10 @@ Written by `npm run cut` from the page. Do not edit by hand. Lengths are in mill
 
 - When: 0:12.00 to 0:21.60, frames 720 to 1295, 4 bars. A hold on spring.
 - Lens: field of view 16 degrees, aperture 2 mm at hero; field of view 16 degrees, aperture 1.1 mm at the nearest point to base.
-- Move: Starts on hero and lowers its aim by up to 4.5 mm as the globe settles, then one slow move toward the base camera and back, 60 percent of the way, so the miniature stays in the frame, with a sweep of 1.6 degrees across it so the camera never rests there.
-- Starts: 616 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 173.1 mm tall there, the globe and base 80 percent of that height.
-- Ends: 616 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 173.1 mm tall there, the globe and base 80 percent of that height.
-- Focus: 604 mm from the lens, 12 mm in front of the aim point; at the nearest point to base 345.4 mm from the lens, 23.4 mm in front of the aim point.
+- Move: Starts on hero and lowers its aim by up to 3.4 mm as the globe settles, then one slow move toward the base camera and back, 60 percent of the way, so the miniature stays in the frame, with a sweep of 1.6 degrees across it so the camera never rests there.
+- Starts: 615.3 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 172.9 mm tall there, the globe and base 80 percent of that height.
+- Ends: 615.3 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 172.9 mm tall there, the globe and base 80 percent of that height.
+- Focus: 603.3 mm from the lens, 12 mm in front of the aim point; at the nearest point to base 345.3 mm from the lens, 23.4 mm in front of the aim point.
 - Keys:
   - frame 720, 0:12.00: first frame
   - frame 828, 0:13.80: the move toward base begins
@@ -53,9 +53,9 @@ Written by `npm run cut` from the page. Do not edit by hand. Lengths are in mill
 - When: 0:21.60 to 0:24.00, frames 1296 to 1439, 1 bar. The shake from spring to summer.
 - Lens: field of view 16 degrees, aperture 2 mm.
 - Move: Locked at hero on every frame, with no ease in. Only the globe moves.
-- Starts: 616 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 173.1 mm tall there, the globe and base 80 percent of that height.
-- Ends: 616 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 173.1 mm tall there, the globe and base 80 percent of that height.
-- Focus: 604 mm from the lens, 12 mm in front of the aim point: it stays where hero holds it, on the glass, and does not follow the globe.
+- Starts: 615.3 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 172.9 mm tall there, the globe and base 80 percent of that height.
+- Ends: 615.3 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 172.9 mm tall there, the globe and base 80 percent of that height.
+- Focus: 603.3 mm from the lens, 12 mm in front of the aim point: it stays where hero holds it, on the glass, and does not follow the globe.
 - Keys:
   - frame 1296, 0:21.60: first frame
   - frame 1439, 0:23.98: last frame
@@ -65,10 +65,10 @@ Written by `npm run cut` from the page. Do not edit by hand. Lengths are in mill
 
 - When: 0:24.00 to 0:33.60, frames 1440 to 2015, 4 bars. A hold on summer.
 - Lens: field of view 16 degrees, aperture 2 mm at hero; field of view 16 degrees, aperture 0.5 mm at interior.
-- Move: Starts on hero and lowers its aim by up to 4.5 mm as the globe settles, then one slow move to the interior camera and back, with a sweep of 1.6 degrees across it so the camera never rests there.
-- Starts: 616 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 173.1 mm tall there, the globe and base 80 percent of that height.
-- Ends: 616 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 173.1 mm tall there, the globe and base 80 percent of that height.
-- Focus: 604 mm from the lens, 12 mm in front of the aim point; at interior 298 mm from the lens, 12 mm in front of the aim point.
+- Move: Starts on hero and lowers its aim by up to 3.4 mm as the globe settles, then one slow move to the interior camera and back, with a sweep of 1.6 degrees across it so the camera never rests there.
+- Starts: 615.3 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 172.9 mm tall there, the globe and base 80 percent of that height.
+- Ends: 615.3 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 172.9 mm tall there, the globe and base 80 percent of that height.
+- Focus: 603.3 mm from the lens, 12 mm in front of the aim point; at interior 298 mm from the lens, 12 mm in front of the aim point.
 - Keys:
   - frame 1440, 0:24.00: first frame
   - frame 1548, 0:25.80: the move toward interior begins
@@ -82,9 +82,9 @@ Written by `npm run cut` from the page. Do not edit by hand. Lengths are in mill
 - When: 0:33.60 to 0:36.00, frames 2016 to 2159, 1 bar. The shake from summer to fall.
 - Lens: field of view 16 degrees, aperture 2 mm.
 - Move: Locked at hero on every frame, with no ease in. Only the globe moves.
-- Starts: 616 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 173.1 mm tall there, the globe and base 80 percent of that height.
-- Ends: 616 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 173.1 mm tall there, the globe and base 80 percent of that height.
-- Focus: 604 mm from the lens, 12 mm in front of the aim point: it stays where hero holds it, on the glass, and does not follow the globe.
+- Starts: 615.3 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 172.9 mm tall there, the globe and base 80 percent of that height.
+- Ends: 615.3 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 172.9 mm tall there, the globe and base 80 percent of that height.
+- Focus: 603.3 mm from the lens, 12 mm in front of the aim point: it stays where hero holds it, on the glass, and does not follow the globe.
 - Keys:
   - frame 2016, 0:33.60: first frame
   - frame 2159, 0:35.98: last frame
@@ -94,10 +94,10 @@ Written by `npm run cut` from the page. Do not edit by hand. Lengths are in mill
 
 - When: 0:36.00 to 0:45.60, frames 2160 to 2735, 4 bars. A hold on fall.
 - Lens: field of view 16 degrees, aperture 2 mm at hero; field of view 20 degrees, aperture 1.4 mm at low.
-- Move: Starts on hero and lowers its aim by up to 4.5 mm as the globe settles, then one slow move to the low camera and back, with a sweep of 1.6 degrees across it so the camera never rests there.
-- Starts: 616 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 173.1 mm tall there, the globe and base 80 percent of that height.
-- Ends: 616 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 173.1 mm tall there, the globe and base 80 percent of that height.
-- Focus: 604 mm from the lens, 12 mm in front of the aim point; at low 488 mm from the lens, 12 mm in front of the aim point.
+- Move: Starts on hero and lowers its aim by up to 3.4 mm as the globe settles, then one slow move to the low camera and back, with a sweep of 1.6 degrees across it so the camera never rests there.
+- Starts: 615.3 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 172.9 mm tall there, the globe and base 80 percent of that height.
+- Ends: 615.3 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 172.9 mm tall there, the globe and base 80 percent of that height.
+- Focus: 603.3 mm from the lens, 12 mm in front of the aim point; at low 488 mm from the lens, 12 mm in front of the aim point.
 - Keys:
   - frame 2160, 0:36.00: first frame
   - frame 2268, 0:37.80: the move toward low begins
@@ -111,9 +111,9 @@ Written by `npm run cut` from the page. Do not edit by hand. Lengths are in mill
 - When: 0:45.60 to 0:48.00, frames 2736 to 2879, 1 bar. The shake from fall to winter.
 - Lens: field of view 16 degrees, aperture 2 mm.
 - Move: Locked at hero on every frame, with no ease in. Only the globe moves.
-- Starts: 616 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 173.1 mm tall there, the globe and base 80 percent of that height.
-- Ends: 616 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 173.1 mm tall there, the globe and base 80 percent of that height.
-- Focus: 604 mm from the lens, 12 mm in front of the aim point: it stays where hero holds it, on the glass, and does not follow the globe.
+- Starts: 615.3 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 172.9 mm tall there, the globe and base 80 percent of that height.
+- Ends: 615.3 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 172.9 mm tall there, the globe and base 80 percent of that height.
+- Focus: 603.3 mm from the lens, 12 mm in front of the aim point: it stays where hero holds it, on the glass, and does not follow the globe.
 - Keys:
   - frame 2736, 0:45.60: first frame
   - frame 2879, 0:47.98: last frame
@@ -123,10 +123,10 @@ Written by `npm run cut` from the page. Do not edit by hand. Lengths are in mill
 
 - When: 0:48.00 to 1:00.00, frames 2880 to 3599, 5 bars. A hold on winter.
 - Lens: field of view 16 degrees, aperture 2 mm, closing to 2.5 mm at macro.
-- Move: Starts on hero and lowers its aim by up to 4.5 mm over the first bar, then one unbroken push from hero to the macro camera, which is held for the last bar. The last frame is the camera of frame 0.
-- Starts: 616 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 173.1 mm tall there, the globe and base 80 percent of that height.
+- Move: Starts on hero and lowers its aim by up to 3.4 mm over the first bar, then one unbroken push from hero to the macro camera, which is held for the last bar. The last frame is the camera of frame 0.
+- Starts: 615.3 mm from a point 67.4 mm up the axis, yaw 0, pitch 4.5, the frame 172.9 mm tall there, the globe and base 80 percent of that height.
 - Ends: 150 mm from a point 66 mm up the axis, yaw -6, pitch 6, the frame 42.2 mm tall there, the globe and base 330 percent of that height.
-- Focus: 604 mm from the lens, 12 mm in front of the aim point; at macro 151.7 mm from the lens, 1.7 mm behind the aim point.
+- Focus: 603.3 mm from the lens, 12 mm in front of the aim point; at macro 151.7 mm from the lens, 1.7 mm behind the aim point.
 - Keys:
   - frame 2880, 0:48.00: first frame
   - frame 3024, 0:50.40: the push toward macro begins
