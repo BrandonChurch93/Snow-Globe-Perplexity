@@ -24,15 +24,17 @@ const OUTSIDE_MID = (SHED.from + SHED.to) / 2
 const OUTSIDE: ChangeSpan = { from: OUTSIDE_MID - frames(1.5), to: OUTSIDE_MID + frames(1.5), lag: 0 }
 
 /**
- * The base alone takes six frames about the same middle. Under the cover both bases are black and all that is in sight of
- * them is their line against the lit foot of the glass. Swapped in one frame that line steps, so the old shape gives way to
- * the new as a fade of cover between two black shapes (materials.ts).
+ * The base alone takes six frames about the same middle. Under the cover both bases are near black, the halo of the flash
+ * stands over them (lighting.ts, `CHANGE_BLOOM`), and all that is in sight of them is their line against the lit foot of the
+ * glass. Swapped in one frame that line steps, so the old shape gives way to the new as a fade of cover between two dark
+ * shapes (materials.ts).
  */
 export const BASE_PASS = { from: OUTSIDE_MID - frames(3), to: OUTSIDE_MID + frames(3) } as const
 
 /**
- * The cover of that span, as places in the swap window: the glass burns from inside and the room falls away from it, as a
- * camera's exposure does when a lamp flares in the dark (lighting.ts, `CHANGE_BLOOM`). The glass stays in sight, so what is
+ * The cover of that span, as places in the swap window: the glass burns from inside and what the room lights falls away
+ * from it, as a camera's exposure does when a lamp flares in the dark, while the light of the glass pours out on the table
+ * and the base and keeps the room there (lighting.ts, `CHANGE_BLOOM`). The glass stays in sight, so what is
  * on it goes as the cover rises and comes as it falls (materials.ts, `GLASS_LEAVE`). It is whole from
  * `fullFrom` to `fullTo`: on every exposure of the film that opens or closes inside the span, and a quarter of a frame past
  * each, so that a live picture taken on any instant of the span is under it as well. It rises from `riseFrom` over seven

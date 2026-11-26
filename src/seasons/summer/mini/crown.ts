@@ -1,76 +1,88 @@
 import { stream } from '../../../core/rng'
-import { crownField, localPads, padAxes, type Pad } from '../../../miniature/trunk'
+import { padAxes, type Pad } from '../../../miniature/trunk'
 
-// Each pad is a cushion with a flat underside: lumps heap up on it and a layer of them hangs under it. The shared body is worn down
-// only a little, so the tiers run into one another and the crown reads as one broad mass with holes in it.
-export const FULL = { swell: -1.5, perMm2: 0.55, radius: [0.8, 1.75] as const, dome: 0.5, plump: 1.3, under: 0.6, underReach: 0.86, hang: 0.38, underSize: 1, reach: 1.04, blend: 0.16, knob: 0.3, knobMm: 1.15, wave: 0.45, waveMm: 4.3 }
+// The crown is a handful of rounded clumps of unlike size. Each is a dome of leaf on a nearly flat underside: `at` is the middle of
+// that underside, `size` the clump's half width, its height and its half depth (millimetres, in the trunk's own frame) and `dir` the
+// way it stands. Lumps stand proud of the dome and make its lobes; small ones hang under it and break the underside.
+export interface Clump {
+  at: Pad['at']
+  size: Pad['size']
+  dir: Pad['dir']
+}
 
-// More pads than the shared list has, all of them in front of the limbs, so that from the front the leaves cover the wood. One stands
-// over the fork and one at each side of it, between the tiers: they bridge the cushions. Four more stand at the ends of the two tiers
-// and carry the crown out to the width it has in the approved picture. Between them small holes stay open, and short lengths of limb
-// are seen through those.
-export const more: readonly Pad[] = [
-  { at: [0.6, 29.6, 3.6], size: [6.0, 2.6, 4.0], dir: [0.02, 1.0, 0] },
-  { at: [-7.5, 31.4, 3.4], size: [5.0, 2.4, 3.8], dir: [-0.1, 0.995, 0] },
-  { at: [7.2, 28.6, 3.8], size: [5.4, 2.6, 4.0], dir: [0.158, 0.987, 0] },
-  { at: [-13.6, 31.5, 1.0], size: [4.6, 2.3, 3.8], dir: [-0.287, 0.958, 0] },
-  { at: [-15.8, 23.0, 1.0], size: [4.0, 2.4, 3.6], dir: [-0.33, 0.944, 0] },
-  { at: [13.6, 27.6, 1.4], size: [4.8, 2.6, 3.8], dir: [0.339, 0.941, 0] },
-  { at: [14.0, 23.4, 2.4], size: [3.8, 2.6, 3.6], dir: [0.287, 0.958, 0] },
+export const FULL = { core: 0.9, belly: 0.75, perMm2: 0.2, radius: [1.15, 2.3] as const, small: 0.3, proud: 0.45, under: 0.1, underRadius: [0.7, 1.15] as const, grain: 4.6, middle: 0.42, blend: 0.16, knob: 0.3, knobMm: 1.15, wave: 0.45, waveMm: 4.3 }
+
+// The hero camera looks a little down: a point nearer to it by a millimetre sits lower in the picture by PITCH. The clumps are set
+// out as that camera sees them, so `seen` takes the height in the picture and gives the height in the trunk's frame.
+const PITCH = 0.0787
+
+const seen = (x: number, hs: number, z: number, size: Pad['size'], lx = 0, lz = 0): Clump => {
+  const n = Math.hypot(lx, 1, lz)
+  return { at: [x, hs + PITCH * z, z], size, dir: [lx / n, 1 / n, lz / n] }
+}
+
+export const clumps: readonly Clump[] = [
+  seen(-0.5, 37.6, 0.3, [4.6, 4.4, 4.0], 0.03),
+  seen(-3.2, 39.8, 0.7, [2.2, 2.2, 2.8], -0.05),
+  seen(3.4, 38.6, 0.6, [2.0, 1.6, 2.6], 0.08),
+  seen(-11.6, 36.8, 2.0, [1.6, 0.9, 2.6], -0.1),
+  seen(-7.8, 37.3, 1.5, [2.6, 1.4, 3.0], 0.12),
+  seen(-9.6, 29.4, -2.2, [1.6, 1.4, 1.6]),
+  seen(6.0, 31.9, 3.0, [2.9, 2.8, 3.5], 0.05),
+  seen(7.2, 35.2, 2.2, [2.6, 2.8, 3.2], 0.1),
+  seen(11.8, 31.0, 1.6, [2.3, 2.9, 3.5], 0.3),
+  seen(-13.0, 29.0, 2.6, [3.0, 1.6, 3.3], -0.14),
+  seen(-8.7, 29.1, 3.1, [3.0, 2.0, 3.9], 0.1),
+  seen(-10.6, 27.6, 3.4, [1.7, 1.2, 2.2], -0.05),
+  seen(-4.4, 29.8, 3.2, [1.6, 0.8, 3.0], 0.12),
+  seen(-15.6, 21.4, 1.4, [1.4, 1.2, 2.0], 0.08),
+  seen(-13.4, 23.2, 3.6, [3.2, 0.5, 3.0], 0.1),
+  seen(-11.6, 24.2, 4.8, [2.2, 0.8, 1.4], -0.06),
+  seen(-9.0, 23.2, 3.6, [2.6, 0.6, 3.0], -0.1),
+  seen(-5.9, 23.0, 2.6, [1.2, 0.6, 2.0], 0.1),
+  seen(2.6, 25.4, 2.6, [1.8, 0.8, 1.8]),
+  seen(6.4, 24.2, 3.1, [2.4, 1.6, 3.7], 0.15),
+  seen(10.9, 20.9, 2.8, [3.0, 4.9, 3.9], 0.03),
+  seen(14.8, 19.5, 1.8, [1.6, 2.4, 2.9], 0.12),
+  seen(9.9, 17.0, 3.8, [1.4, 1.8, 1.6], -0.05),
+  seen(0.5, 33.6, -0.6, [4.8, 3.6, 3.3]),
+  seen(0.4, 33.0, 3.6, [2.4, 1.8, 2.2]),
+  seen(5.6, 23.6, -2.2, [2.2, 1.6, 2.4], 0.2),
 ]
 
-// How each shared pad carries its leaves: moved sideways (dx) and down (drop), narrower (wide, a share of its width) and heaped higher at
-// its middle (heap, a factor on the dome). The wide pad at the middle left hangs a little lower and the three lower pads heap a little
-// higher; the others stand as the shared list has them. The lumps are drawn as the shared list has them (the same draws, in the same
-// order) and then moved, so that a pad that is not named here stands where it stood.
-type Carry = { dx: number; drop: number; wide: number; heap: number; bare?: boolean }
-const SAME: Carry = { dx: 0, drop: 0, wide: 1, heap: 1 }
-const CARRY: readonly Carry[] = [
-  SAME,
-  SAME,
-  SAME,
-  SAME,
-  SAME,
-  SAME,
-  SAME,
-  { dx: 0, drop: 0.6, wide: 1, heap: 1.3 },
-  { dx: 0, drop: 0, wide: 1, heap: 1.3 },
-  { dx: 0, drop: 0, wide: 1, heap: 1.3 },
-]
-const carry = (i: number): Carry => CARRY[i] ?? SAME
+const frames = clumps.map((k) => ({ at: k.at, a: k.size[0], t: k.size[1], c: k.size[2], grain: Math.min(1, Math.max(0.35, Math.sqrt(k.size[0] * k.size[2]) / FULL.grain)), ...padAxes(k) }))
 
-// The pads as the leaves stand on them, in the trunk's own frame.
-export const crownPads: readonly Pad[] = [...localPads.map((p, i): Pad => ({ ...p, at: [p.at[0] + carry(i).dx, p.at[1] - carry(i).drop, p.at[2]], size: [p.size[0] * carry(i).wide, p.size[1], p.size[2]] })).filter((_, i) => !carry(i).bare), ...more]
+// The clumps as the leaves are lit on them: each a flat ellipsoid about the clump's middle, so that its top faces up and its
+// underside faces down.
+export const crownPads: readonly Pad[] = clumps.map((k) => {
+  const lift = FULL.middle * k.size[1]
+  return { at: [k.at[0] + k.dir[0] * lift, k.at[1] + k.dir[1] * lift, k.at[2] + k.dir[2] * lift], size: [k.size[0], (1 - FULL.middle) * k.size[1], k.size[2]], dir: k.dir }
+})
 
 function gather(): Float64Array {
   const rng = stream('crown-summer')
   const out: number[] = []
-  const all = [...localPads, ...more]
-  for (let i = 0; i < all.length; i++) {
-    const pad = all[i]!
-    const how = i < localPads.length ? carry(i) : SAME
-    const at = [pad.at[0] + how.dx, pad.at[1] - how.drop, pad.at[2]]
-    const ax = padAxes(pad)
-    const [a, b, c] = pad.size
-    const n = Math.round(a * c * FULL.perMm2)
-    for (let k = 0; k < n; k++) {
-      const rr = Math.sqrt((k + 0.5) / n) * FULL.reach
-      const th = k * 2.39996 + rng.range(-0.4, 0.4)
-      const r = rng.range(FULL.radius[0], FULL.radius[1]) * (1 - 0.3 * rr)
-      const s = Math.cos(th) * rr * (a - 0.6 * r) * how.wide
-      const d = Math.sin(th) * rr * (c - 0.6 * r)
-      const v = b * FULL.plump * (0.15 + FULL.dome * how.heap * (1 - rr * rr)) - 0.5 * r + rng.range(-0.5, 0.4)
-      if (!how.bare) out.push(at[0]! + ax.side[0] * s + ax.up[0] * v + ax.depth[0] * d, at[1]! + ax.side[1] * s + ax.up[1] * v + ax.depth[1] * d, at[2]! + ax.side[2] * s + ax.up[2] * v + ax.depth[2] * d, r)
+  for (const f of frames) {
+    const put = (s: number, v: number, d: number, r: number): void => {
+      out.push(f.at[0] + f.side[0] * s + f.up[0] * v + f.depth[0] * d, f.at[1] + f.side[1] * s + f.up[1] * v + f.depth[1] * d, f.at[2] + f.side[2] * s + f.up[2] * v + f.depth[2] * d, r)
     }
-    const m = Math.round(n * FULL.under)
+    const n = Math.round((Math.PI * f.a * f.c * (1 + (0.6 * f.t) / Math.sqrt(f.a * f.c)) * FULL.perMm2) / (f.grain * f.grain))
+    for (let k = 0; k < n; k++) {
+      const rr = Math.sqrt((k + 0.5) / n)
+      const th = k * 2.39996 + rng.range(-0.4, 0.4)
+      const r = rng.range(FULL.radius[0], FULL.radius[1]) * (1 - FULL.small * rr) * f.grain
+      const s = Math.cos(th) * rr * f.a
+      const d = Math.sin(th) * rr * f.c
+      const v = f.t * Math.sqrt(Math.max(0, 1 - rr * rr))
+      const pull = 1 - ((1 - FULL.proud) * r + rng.range(-0.45, 0.35) * f.grain) / (Math.hypot(s, v, d) || 1)
+      put(s * pull, Math.max(v * pull, 0.3 * r), d * pull, r)
+    }
+    const m = Math.round((Math.PI * f.a * f.c * FULL.under) / (f.grain * f.grain))
     for (let k = 0; k < m; k++) {
-      const rr = Math.sqrt((k + 0.5) / m) * FULL.underReach
+      const rr = Math.sqrt((k + 0.5) / m) * 0.85
       const th = k * 2.39996 + 1.1 + rng.range(-0.4, 0.4)
-      const r = rng.range(FULL.radius[0], FULL.radius[1]) * (1 - 0.3 * rr)
-      const s = Math.cos(th) * rr * (a - 0.6 * r) * how.wide
-      const d = Math.sin(th) * rr * (c - 0.6 * r)
-      const v = -b * FULL.plump * (0.1 + FULL.hang * (1 - rr * rr)) + 0.5 * r + rng.range(-0.4, 0.4)
-      if (!how.bare) out.push(at[0]! + ax.side[0] * s + ax.up[0] * v + ax.depth[0] * d, at[1]! + ax.side[1] * s + ax.up[1] * v + ax.depth[1] * d, at[2]! + ax.side[2] * s + ax.up[2] * v + ax.depth[2] * d, r * FULL.underSize)
+      const r = rng.range(FULL.underRadius[0], FULL.underRadius[1]) * f.grain
+      put(Math.cos(th) * rr * (f.a - r), (-FULL.belly * (1 - rr * rr) + rng.range(-0.2, 0.2)) * f.grain + 0.35 * r, Math.sin(th) * rr * (f.c - r), r)
     }
   }
   return new Float64Array(out)
@@ -106,39 +118,50 @@ function lumpField(x: number, h: number, z: number): number {
   return near - FULL.blend * Math.log(sum)
 }
 
+// The smooth body of the clumps, under the lumps: a dome over each underside and a shallow belly below it.
+function bodyField(x: number, h: number, z: number): number {
+  let near = Infinity
+  for (const f of frames) {
+    const dx = x - f.at[0]
+    const dy = h - f.at[1]
+    const dz = z - f.at[2]
+    const s = dx * f.side[0] + dy * f.side[1] + dz * f.side[2]
+    const u = dx * f.up[0] + dy * f.up[1] + dz * f.up[2]
+    const d = dx * f.depth[0] + dy * f.depth[1] + dz * f.depth[2]
+    const q = Math.hypot(s / f.a, u / (u >= 0 ? f.t : FULL.belly * f.grain), d / f.c)
+    const dist = (q > 1e-6 ? Math.hypot(s, u, d) * (1 - 1 / q) : -FULL.belly * f.grain) + FULL.core * f.grain
+    if (dist < near) near = dist
+  }
+  return near
+}
+
 const knobs = (x: number, h: number, z: number): number => {
   const k = (2 * Math.PI) / FULL.knobMm
   const w = (2 * Math.PI) / FULL.waveMm
   return FULL.knob * (Math.sin(k * x + 1.3 * Math.sin(0.9 * h)) * Math.sin(k * h + 1.1 * Math.sin(1.2 * z)) * Math.sin(k * z + 1.7 * Math.sin(0.8 * x)) + 0.5 * Math.sin(1.9 * k * x + 2) * Math.sin(2.1 * k * h + 1) * Math.sin(1.7 * k * z)) + FULL.wave * Math.sin(w * x + 0.7) * Math.sin(w * h + 2.1) * Math.sin(w * z + 4.2)
 }
 
-// Holes through the crown, as the hero camera sees it: each is an ellipse in the plane that faces the camera (its middle, then its
-// half width and half height, in millimetres) and runs straight through along the line of sight, which climbs by PITCH for every
-// millimetre toward the camera. They stand where the limbs pass, so that a short length of limb is seen in each. The sprigs on their
-// walls close about a millimetre of each side, which leaves none wider than a lantern.
-const PITCH = 0.0787
-export const holes: readonly (readonly [number, number, number, number])[] = [
-  [1.4, 29.4, 2.7, 2.3],
-  [-5.4, 32.0, 2.5, 2.1],
-  [-11.6, 28.6, 2.7, 2.0],
-  [9.6, 31.4, 2.5, 1.9],
-  [7.4, 26.0, 2.5, 2.0],
-  [0.0, 35.6, 2.4, 2.0],
-  [-15.6, 24.6, 2.6, 1.9],
-  [6.2, 36.0, 2.4, 1.9],
-]
+// Notches through the crown, as the hero camera sees it: each is an ellipse in the plane that faces the camera (its middle, its half
+// width and half height in millimetres, and its tilt in degrees) and runs straight through along the line of sight, which climbs by
+// PITCH for every millimetre toward the camera. The sprigs on their walls close about a millimetre of each side.
+export const holes: readonly (readonly [number, number, number, number, number])[] = []
+
+const cuts = holes.map((o) => ({ x: o[0], h: o[1], a: o[2], b: o[3], cos: Math.cos((o[4] * Math.PI) / 180), sin: Math.sin((o[4] * Math.PI) / 180) }))
 
 function holeField(x: number, h: number, z: number): number {
   let near = Infinity
-  for (const o of holes) {
-    const d = (Math.hypot((x - o[0]) / o[2], (h - o[1] - PITCH * z) / o[3]) - 1) * Math.min(o[2], o[3])
+  const hs = h - PITCH * z
+  for (const o of cuts) {
+    const dx = x - o.x
+    const dy = hs - o.h
+    const d = (Math.hypot((dx * o.cos + dy * o.sin) / o.a, (dy * o.cos - dx * o.sin) / o.b) - 1) * Math.min(o.a, o.b)
     if (d < near) near = d
   }
   return near
 }
 
 export function leafBody(x: number, h: number, z: number): number {
-  return Math.max(Math.min(crownField(x, h, z) - FULL.swell, lumpField(x, h, z)), -holeField(x, h, z))
+  return Math.max(Math.min(bodyField(x, h, z), lumpField(x, h, z)), -holeField(x, h, z))
 }
 
 export function leafField(x: number, h: number, z: number): number {
