@@ -75,6 +75,15 @@ The four `4789-shake*` strips use final main `58687dc1` above and pushed inertia
 - **Spring wall bank and fold, f1338 to f1340**: The left side has more clear space and the right-hand bank is more defined as the streaks cross the globe. The additional f1341 to f1343 sample still turns into a broad pink wash in both builds. The fold is bettered, not cured.
 - **Fall fold, f2777 to f2779**: Orange clusters pass in sweeping bands with green gaps. There is still enough blur to obscure some branches in both builds.
 
+### Matched final hero stills against the approvals
+
+`4789-hero-*-400.jpg` compares main, inertia, and the approved picture, in that order. Rest (+12 s) is above landed (+0.5 s). Both drawn states are 1920 by 1080, HD review, full assets, the hero camera, and the same test shake. The summer rest candidate is the actual forced M3 picture. All eight PNGs change between the matched builds. I inspected the eight triptychs at 400 px per full frame and the two native crops for each state.
+
+- **Winter**: At landing the white bands are still curved and the roof, tree and lantern read through them. The foreground over the pond stays milky in both builds. At rest the pond remains open, with small differences in flake placement and flecks by the cottage.
+- **Spring**: At landing the pale pink front band remains strong, with a roof and trunk readable through it. At rest the heavier petals are still scattered under the crown and by the path; there is no new mound or bare patch apparent in the pictures.
+- **Summer**: At landing the gold ribbons wrap past the tree, and green points still read behind them. Narrow streaks stay more line-like than the approved's broader haze in both builds. At rest the light chains, seed heads and fireflies remain. The seed head distribution changes, but the cottage wall and pond have the same broad silhouette.
+- **Fall**: At landing the orange streaks still arc through the green interior, with the cottage and branches readable through the gaps. At rest both renders still have larger, more numerous orange points than the approved. No broad placement regression was apparent between the matched columns; this is not an approval or an exact pixel match.
+
 The `2585-shake*` strips and painted-hand triptychs below are historical. Strict and stand-ins below also predate the final merge, as do the isolated live step costs. No full-speed film or live application playback was seen.
 
 ## After the summer base and veil merge
