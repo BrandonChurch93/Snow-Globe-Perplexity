@@ -64,6 +64,8 @@ export interface Stage {
   setDiagnostic(view: string): void
   setQuality?(level: StageQuality): void
   prepare?(season: string): Promise<void>
+  /** A shake has been asked that goes into `season`: until it has landed, nothing is made ready for any other season. */
+  expect?(season: string): void
   collider(season: string): SdfGrid
   emitters(season: string): Record<string, Emitter[]>
   particleCount(): number

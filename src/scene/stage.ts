@@ -19,6 +19,7 @@ import { changeBloom, partChange } from '../shake/change'
 import { Backdrop } from './backdrop'
 import { applyPose, type Pose } from './cameras'
 import { newFrame, type StageFrame } from './frame'
+import { gridAddress, readGrid } from './gridfile'
 import { centreHeightMm, collarY, emitters as layoutEmitters, innerRadiusMm, outerRadiusMm } from './layout'
 import { bakeGrid, flickerOf, gridBytes } from './lightgrid'
 import { CHANGE_BLOOM, Lighting } from './lighting'
@@ -34,6 +35,28 @@ interface SeasonSet {
   arrival: THREE.Material[]
   glass: THREE.Object3D[]
 }
+
+/** A season's set while it is built: what is still to do, in the order it is done. The last step puts the set in the scene. */
+interface Making {
+  steps: (() => void)[]
+}
+
+/** How long a step waits for a frame before it goes without one, on a page that draws slowly or not at all. */
+const SOON_MS = 50
+/** How long a press holds other seasons' work back while no frame of its shake has been drawn. */
+const PRESS_MS = 3000
+
+const frameOrSoon = (): Promise<void> =>
+  new Promise((resolve) => {
+    let waiting = true
+    const go = (): void => {
+      if (!waiting) return
+      waiting = false
+      resolve()
+    }
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(go)
+    setTimeout(go, SOON_MS)
+  })
 
 const BLUR_CLEAR = new THREE.Color(0, 1, 0.5)
 
@@ -71,6 +94,7 @@ export class GlobeStage implements Stage {
   private readonly lighting: Lighting
   private readonly slice: THREE.Mesh
   private readonly sets = new Map<string, SeasonSet>()
+  private readonly makings = new Map<string, Making>()
   private readonly colliders = new Map<string, SdfGrid>()
   private readonly prepared = new Map<string, Promise<void>>()
   private diag = ''
@@ -81,6 +105,10 @@ export class GlobeStage implements Stage {
   private readonly pass: PassContext
   private readonly up = new THREE.Vector3()
   private readonly turn = new THREE.Quaternion()
+  private drawn = false
+  private inAir = false
+  private into: string | null = null
+  private intoAt = 0
 
   constructor(private readonly gfx: Gfx, private readonly source: ParticleSource, private readonly assets: Assets) {
     const { scene, world, floor, globe, inside } = this
@@ -119,31 +147,71 @@ export class GlobeStage implements Stage {
     let p = this.prepared.get(season)
     if (!p) {
       const kit = kitOf(season)
-      p = prepareGroup(this.assets, 'shared')
+      const models = prepareGroup(this.assets, 'shared')
         .then(() => prepareGroup(this.assets, season))
         .then(() => kit.prepare?.())
-        .then(() => {
-          this.set(season)
-        })
+      p = Promise.all([models, this.fetchCollider(season)]).then(() => this.make(season))
       this.prepared.set(season, p)
     }
     return p
   }
 
+  expect(season: string): void {
+    this.into = season
+    this.intoAt = performance.now()
+  }
+
+  /** Whether a shake is in the air that does not go into `season`: nothing is made for a season the shake does not need. */
+  private held(season: string): boolean {
+    if (this.into !== null && !this.inAir && performance.now() - this.intoAt > PRESS_MS) this.into = null
+    return (this.inAir || this.into !== null) && this.into !== season
+  }
+
+  /**
+   * Builds a season's set. Before the first picture, and on a page that only captures, in one piece. Once the page draws, one
+   * step a frame: built in one piece each season held the page's thread for 0.4 to 2 s, and the picture stood still for as long.
+   */
+  private async make(season: string): Promise<void> {
+    const m = this.making(season)
+    while (m.steps.length) {
+      if (this.drawn) {
+        do await frameOrSoon()
+        while (this.held(season))
+      }
+      m.steps.shift()?.()
+    }
+  }
+
+  /**
+   * The season's collider as the build made it (tools/lib/grids.mjs). Made here it held the page's thread for two to three
+   * seconds a season, and the picture stood still for as long.
+   */
+  private async fetchCollider(season: string): Promise<void> {
+    const version = `${__ENGINE_HASH__}${this.assets.index.seasonHashes[season] ?? ''}`
+    const r = await fetch(new URL(gridAddress(season, version), document.baseURI))
+    if (!r.ok || !r.body) throw new Error(`collider did not load: ${season}`)
+    this.colliders.set(season, await readGrid(r.body))
+  }
+
+  /** The season's set, whole: whatever of it is still to be built is built now, because a frame that needs it is being drawn. */
   private set(season: string): SeasonSet {
-    let s = this.sets.get(season)
-    if (s) return s
+    const made = this.sets.get(season)
+    if (made) return made
+    const m = this.making(season)
+    for (let step = m.steps.shift(); step; step = m.steps.shift()) step()
+    return this.sets.get(season)!
+  }
+
+  private making(season: string): Making {
+    const begun = this.makings.get(season)
+    if (begun) return begun
     const kit = kitOf(season)
-    const base = kit.base()
-    const miniature = kit.miniature()
-    const arrival = kit.arrival()
-    const lights = kit.lights()
-    const own = kit.dressing()
-    const dressing = own.surface
-    const glass = [own.glass]
-    this.globe.add(base)
-    this.inside.add(miniature, arrival, lights, ...glass)
-    this.floor.add(dressing)
+    let base: THREE.Object3D
+    let miniature: THREE.Object3D
+    let arrival: THREE.Object3D
+    let lights: THREE.Object3D
+    let own: ReturnType<SeasonKit['dressing']>
+    let grid: THREE.Data3DTexture
     const collect = (roots: THREE.Object3D[]): THREE.Material[] => {
       const out: THREE.Material[] = []
       for (const r of roots) r.traverse((o) => {
@@ -152,17 +220,34 @@ export class GlobeStage implements Stage {
       })
       return out
     }
-    s = {
-      kit,
-      objects: [base, miniature, arrival, lights, dressing, ...glass],
-      lights,
-      grid: bakeGrid(kit.innerLights, this.collider(season)),
-      materials: collect([base, miniature, lights, dressing, ...glass]),
-      arrival: collect([arrival]),
-      glass,
+    const m: Making = {
+      steps: [
+        () => void (base = kit.base()),
+        () => void (miniature = kit.miniature()),
+        () => void (arrival = kit.arrival()),
+        () => void (lights = kit.lights()),
+        () => void (own = kit.dressing()),
+        () => void (grid = bakeGrid(kit.innerLights, this.collider(season))),
+        () => {
+          const dressing = own.surface
+          const glass = [own.glass]
+          this.globe.add(base)
+          this.inside.add(miniature, arrival, lights, ...glass)
+          this.floor.add(dressing)
+          this.sets.set(season, {
+            kit,
+            objects: [base, miniature, arrival, lights, dressing, ...glass],
+            lights,
+            grid,
+            materials: collect([base, miniature, lights, dressing, ...glass]),
+            arrival: collect([arrival]),
+            glass,
+          })
+        },
+      ],
     }
-    this.sets.set(season, s)
-    return s
+    this.makings.set(season, m)
+    return m
   }
 
   parts(): { name: string; color: number }[] {
@@ -185,6 +270,8 @@ export class GlobeStage implements Stage {
     kitOf(season)
     let c = this.colliders.get(season)
     if (!c) {
+      // Asked before the season is prepared, which only a capture page does (its engine resets as the page starts): made here
+      // as it always was, and the same to the bit as the build's (tests/collider-file.test.ts).
       c = kitOf(season).collider()
       this.colliders.set(season, c)
     }
@@ -223,6 +310,12 @@ export class GlobeStage implements Stage {
     const beauty = view === '' || view === 'refraction'
     const sliceOnly = view === 'flow' || view === 'lightgrid'
     const single = moment.from === moment.to || !(moment.change > 0) || moment.change >= 1
+    this.drawn = true
+    if (moment.beat !== null) this.inAir = true
+    else if (this.inAir) {
+      this.inAir = false
+      this.into = null
+    }
     const a = this.set(single ? moment.season : moment.from)
     const b = single ? a : this.set(moment.to)
     const change = single ? 0 : moment.change
