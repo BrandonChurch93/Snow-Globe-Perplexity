@@ -5,6 +5,7 @@ import { geometry, prepareModel } from '../../core/models'
 import { texture } from '../../core/textures'
 import { ROOM_GLSL, roomUniforms } from '../../scene/room'
 import type { KitMoment } from '../kit'
+import { stormHeld } from './veil'
 
 export const season = 'summer'
 export const main: Rgb = [0.62, 0.45, 0.26]
@@ -149,7 +150,7 @@ function shadeIn(deep: number, left: number, from: number, edge: number, tint: b
 `
 }
 
-const STONE = { grain: 0.8, carve: 1.0, dust: 0.75, glint: 3.0, wrap: 0.3, card: 0.02, sun: 0.9, kick: 0.06, flare: 1.05, side: 0.06, bounce: 0.02, sheen: 0.1, top: 0.3, belly: 1.0, table: 0.14, patch: 0.7, direct: 0.12, room: 0.3, rake: 1.0, lit: 3.0, sky: 0.5, heap: 0.55, cool: 0.14, spark: 2.5, even: 0.05 }
+const STONE = { grain: 0.8, carve: 0.8, dust: 0.75, glint: 3.0, wrap: 0.3, card: 0.02, sun: 0.9, kick: 0.06, flare: 1.05, side: 0.06, bounce: 0.02, sheen: 0.1, top: 0.3, belly: 1.0, table: 0.14, patch: 0.7, direct: 0.12, room: 0.3, rake: 1.0, lit: 3.0, sky: 0.5, heap: 0.55, cool: 0.14, spark: 3.0, even: 0.05, storm: 0.06 }
 
 const STONE_PAINT = `
 vec4 baseDetail = texture2D(uBaseGrain, vMapUv);
@@ -161,7 +162,7 @@ float baseRidged = smoothstep(38.0, 35.0, vBasePos.y);
 float baseCrease = smoothstep(0.0, 0.45, baseCavity) * baseRidged;
 float baseCrest = smoothstep(0.5, 0.9, baseHigh) * baseRidged;
 ${SEAT}
-float baseAo = max(mix(1.0, vBasePaint.x, 0.48) * (1.0 - mix(0.2, 0.3, smoothstep(4.0, -30.0, vBasePos.x)) * baseCavity) * (1.0 - 0.12 * baseCrease), 0.5) * (1.0 + 1.0 * baseCrest) * baseSeatAo * baseFootAo;
+float baseAo = max(mix(1.0, vBasePaint.x, 0.3) * (1.0 - mix(0.1, 0.16, smoothstep(4.0, -30.0, vBasePos.x)) * baseCavity) * (1.0 - 0.05 * baseCrease), 0.68) * (1.0 + 0.5 * baseCrest) * baseSeatAo * baseFootAo;
 diffuseColor.rgb = diffuse * texture2D(uBaseTone, vBaseUv1).rgb * vec3(1.0, 0.98, 0.93);
 float basePale = smoothstep(-4.0, 36.0, vBasePos.x);
 diffuseColor.rgb = mix(vec3(dot(diffuseColor.rgb, vec3(0.3, 0.55, 0.15))) * vec3(1.0, 0.99, 0.96), diffuseColor.rgb, mix(0.46, 0.34, basePale)) * mix(1.0, 1.1, basePale);
@@ -171,8 +172,8 @@ diffuseColor.rgb *= mix(0.86, 1.1, baseBlotch) * (0.96 + 0.08 * baseDetail.b) * 
 diffuseColor.rgb *= (0.84 + 0.32 * baseHash(floor(vBasePos * 2.7 + 1.3))) * (0.84 + 0.32 * baseHash(floor(vBasePos * 7.0))) * (0.94 + 0.12 * baseNoise(vBasePos * 9.0)) * (0.86 + 0.28 * baseHash(floor(vBasePos * 13.0 + 5.0)));
 float baseGrainOne = baseHash(floor(vBasePos * 3.3) + 71.0);
 diffuseColor.rgb *= (1.0 - 0.28 * step(0.94, baseGrainOne)) * (1.0 + 0.3 * step(baseGrainOne, 0.08));
-diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * mix(vec3(0.92, 0.76, 0.6), vec3(0.9, 0.78, 0.64), smoothstep(-8.0, 20.0, vBasePos.x)), mix(0.45, 0.7, smoothstep(4.0, -30.0, vBasePos.x)) * baseCavity);
-diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * mix(vec3(1.0, 0.74, 0.5), vec3(0.95, 0.76, 0.56), smoothstep(-8.0, 20.0, vBasePos.x)), 0.4 * baseCrease);
+diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * mix(vec3(0.92, 0.76, 0.6), vec3(0.9, 0.78, 0.64), smoothstep(-8.0, 20.0, vBasePos.x)), mix(0.25, 0.4, smoothstep(4.0, -30.0, vBasePos.x)) * baseCavity);
+diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * mix(vec3(1.0, 0.74, 0.5), vec3(0.95, 0.76, 0.56), smoothstep(-8.0, 20.0, vBasePos.x)), 0.2 * baseCrease);
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.97, 0.84, 0.68), 0.25 * baseHigh + 0.35 * baseCrest);
 float baseCollar = smoothstep(34.5, 37.5, vBasePos.y);
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.3, 0.55, 0.15))) * vec3(1.05, 0.99, 0.9), 0.4 * baseCollar) * (1.0 + 0.12 * baseCollar);
@@ -245,39 +246,41 @@ const STONE_AFTER = `
   reflectedLight.directSpecular += baseKeyC * (pow(max(dot(stoneFacet, normalize(baseKey + geometryViewDir)), 0.0), 160.0) * stoneGrit * stoneLit * ${STONE.glint.toFixed(2)} * (0.5 + baseDust) * baseAo);
   reflectedLight.directSpecular += uRigCardCol * (pow(max(dot(stoneFacet, normalize(baseCard + geometryViewDir)), 0.0), 120.0) * stoneGrit * ${(STONE.glint * 0.6).toFixed(2)} * (0.5 + baseDust) * baseAo * smoothstep(0.0, 0.25, dot(geometryNormal, baseCard)));
   // Past the ball on either side the sun lies on the top of the stone in soft patches, broken by the ridges, each with its small shadow.
-  float stoneLitL = 0.32 * smoothstep(-6.0, -20.0, vBasePos.x);
-  float stoneLitR = 0.5 * smoothstep(28.0, 42.0, vBasePos.x);
+  float stoneLitL = 0.75 * smoothstep(-8.0, -20.0, vBasePos.x);
+  float stoneLitR = 0.4 * smoothstep(28.0, 42.0, vBasePos.x);
   float stoneCatch = smoothstep(0.05, 0.5, stoneUp) * (1.0 - 0.8 * baseCavity) * (0.75 + 0.5 * baseHigh);
   // The ball stands between the lights behind and the roll that holds it: from left of the middle to the right shoulder the roll is in the ball's shade.
   float stoneBall = smoothstep(-34.0, -8.0, vBasePos.x) * smoothstep(44.0, 30.0, vBasePos.x);
-  vec3 stoneSunlit = baseSunC * mix(vec3(1.0, 0.8, 0.64), vec3(1.0, 0.94, 0.85), smoothstep(-20.0, 10.0, vBasePos.x)) * (${STONE.lit.toFixed(2)} * smoothstep(39.5, 41.5, vBasePos.y + 1.6 * (baseNoise(vBasePos * 0.45 + 51.0) - 0.5)) * (stoneLitL + stoneLitR + 0.1 * (1.0 - stoneBall)) * stoneCatch * smoothstep(0.3, 0.7, stoneUp) * mix(0.5, 1.0, smoothstep(0.34, 0.6, baseNoise(vBasePos * 0.33 + 91.0))));
+  vec3 stoneSunlit = baseSunC * mix(vec3(1.0, 0.8, 0.64), vec3(1.0, 0.94, 0.85), smoothstep(-20.0, 10.0, vBasePos.x)) * (${STONE.lit.toFixed(2)} * smoothstep(39.5, 41.5, vBasePos.y + 1.6 * (baseNoise(vBasePos * 0.45 + 51.0) - 0.5)) * (stoneLitL + stoneLitR + 0.1 * (1.0 - stoneBall)) * stoneCatch * smoothstep(0.3, 0.7, stoneUp) * mix(0.72, 1.0, smoothstep(0.34, 0.6, baseNoise(vBasePos * 0.33 + 91.0))));
   ${shadeIn(FRONT_SHADE.deep, FRONT_SHADE.left, FRONT_SHADE.from, FRONT_SHADE.edge, 'mix(mix(mix(vec3(1.0, 0.86, 0.68), vec3(1.0, 0.95, 0.86), smoothstep(-28.0, -6.0, vBasePos.x)), mix(vec3(0.8, 0.95, 1.06), vec3(1.0, 0.96, 0.88), 0.75 * baseNoise(vBasePos * 0.16 + 61.0)), smoothstep(-2.0, 22.0, vBasePos.x)), vec3(1.06, 0.98, 0.87), smoothstep(34.0, 50.0, vBasePos.x))')}
   // Right of the middle the room's light off the table reaches into the ball's shade: there the shade is lightest and coolest.
   float stoneRoom = smoothstep(4.0, 20.0, vBasePos.x) * smoothstep(46.0, 34.0, vBasePos.x);
-  reflectedLight.indirectDiffuse *= mix(vec3(1.0), vec3(1.15, 1.35, 1.55), stoneRoom * smoothstep(38.0, 30.0, vBasePos.y)) * mix(vec3(1.0), vec3(0.86, 0.98, 1.2), stoneRoom * smoothstep(30.0, 38.0, vBasePos.y));
-  float stoneUnderGlass = 1.0 - stoneBall * mix(0.42 * smoothstep(34.0, 38.0, vBasePos.y), 0.8, smoothstep(0.2, 0.8, stoneUp) * smoothstep(36.0, 39.5, vBasePos.y));
-  reflectedLight.indirectDiffuse *= stoneUnderGlass * mix(vec3(1.0), vec3(0.9, 0.97, 1.08), stoneBall * smoothstep(34.0, 38.0, vBasePos.y));
+  reflectedLight.indirectDiffuse *= mix(vec3(1.0), vec3(1.15, 1.25, 1.3), stoneRoom * smoothstep(38.0, 30.0, vBasePos.y)) * mix(vec3(1.0), vec3(0.94, 0.98, 1.06), stoneRoom * smoothstep(30.0, 38.0, vBasePos.y));
+  float stoneUnderGlass = 1.0 - stoneBall * mix(0.05 * smoothstep(34.0, 38.0, vBasePos.y), 0.8, smoothstep(0.45, 0.85, stoneUp) * smoothstep(36.0, 39.5, vBasePos.y));
+  reflectedLight.indirectDiffuse *= stoneUnderGlass * mix(vec3(1.0), vec3(0.96, 0.99, 1.03), stoneBall * smoothstep(34.0, 38.0, vBasePos.y));
   reflectedLight.directDiffuse *= stoneUnderGlass;
+  // The left flank stands in deep warm shade, so the sunlit strip on the lip and the lit tops stand out of it.
+  reflectedLight.indirectDiffuse *= mix(vec3(1.0), vec3(0.6, 0.52, 0.44), smoothstep(-10.0, -28.0, vBasePos.x));
   reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * stoneSunlit;
   // The heap and the lit strip of table lie beside the right flank and throw their warmth back onto it, most from below.
   float stoneHeap = clamp((dot(geometryNormal, normalize(mat3(viewMatrix) * vec3(0.7, -0.35, 0.62))) + 0.25) / 1.25, 0.0, 1.0);
   reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * baseAo * mix(baseSunC, vec3(dot(baseSunC, vec3(0.3333))), 0.35) * vec3(1.0, 0.94, 0.86) * (${STONE.heap.toFixed(2)} * stoneHeap * smoothstep(40.0, 54.0, vBasePos.x) * mix(1.0, 0.75, smoothstep(8.0, 36.0, vBasePos.y)));
   // Right of the middle the front stands in the room's cool light: soft, from the front right, rising toward the shoulder.
   float stoneCool = clamp((dot(geometryNormal, normalize(mat3(viewMatrix) * vec3(0.6, 0.3, 0.74))) + 0.35) / 1.35, 0.0, 1.0);
-  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * baseAo * dot(baseSunC, vec3(0.3333)) * vec3(0.82, 0.93, 1.12) * (${STONE.cool.toFixed(2)} * stoneCool * stoneCool * smoothstep(-4.0, 24.0, vBasePos.x) * smoothstep(46.0, 32.0, vBasePos.x) * mix(0.45, 1.0, smoothstep(8.0, 34.0, vBasePos.y)) * stoneUnderGlass);
+  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * baseAo * dot(baseSunC, vec3(0.3333)) * vec3(0.86, 0.92, 1.0) * (${STONE.cool.toFixed(2)} * stoneCool * stoneCool * smoothstep(-4.0, 24.0, vBasePos.x) * smoothstep(46.0, 32.0, vBasePos.x) * mix(0.45, 1.0, smoothstep(8.0, 34.0, vBasePos.y)) * stoneUnderGlass);
   // Wet sand: here and there a grain on the crest of a swell flashes.
   vec3 stoneSpk = floor(vBasePos * 2.2);
   float stoneSpkOn = step(0.9, baseHash(stoneSpk + 5.0)) * smoothstep(0.34, 0.1, length(fract(vBasePos * 2.2) - 0.5));
   vec3 stoneSpkN = normalize(normalMatrix * normalize(baseObjectNormal + 0.9 * (vec3(baseHash(stoneSpk + 1.7), baseHash(stoneSpk + 9.3), baseHash(stoneSpk + 27.1)) - 0.5)));
   float stoneSpkH = dot(stoneSpkN, normalize(normalize(mat3(viewMatrix) * vec3(0.3, 0.75, 0.6)) + geometryViewDir));
-  reflectedLight.directSpecular += vec3(1.0, 0.95, 0.86) * dot(baseSunC, vec3(0.3333)) * (${STONE.spark.toFixed(2)} * pow(max(stoneSpkH, 0.0), 40.0) * stoneSpkOn * (0.45 + 0.55 * baseCrest) * baseAo * mix(1.0, 0.55, stoneBall));
+  reflectedLight.directSpecular += vec3(1.0, 0.95, 0.86) * dot(baseSunC, vec3(0.3333)) * (${STONE.spark.toFixed(2)} * pow(max(stoneSpkH, 0.0), 40.0) * stoneSpkOn * (0.45 + 0.55 * baseCrest) * baseAo * mix(1.0, 0.9, stoneBall));
   // Moulded, not cut: the light comes from above and behind, so the underside of every swell lies in a broad soft shade, warm on the left and cool on the right.
   float stoneUnder = smoothstep(0.3, -0.35, stoneUp);
   float stoneOver = smoothstep(0.15, 0.7, stoneUp);
-  reflectedLight.indirectDiffuse *= mix(vec3(1.0), mix(mix(vec3(0.62, 0.42, 0.26), vec3(0.74, 0.62, 0.5), smoothstep(-20.0, 16.0, vBasePos.x)), vec3(0.7, 0.62, 0.54), smoothstep(34.0, 50.0, vBasePos.x)), stoneUnder) * mix(vec3(1.0), vec3(1.7, 1.74, 1.8) * (1.0 + 0.9 * baseCrest), stoneOver * smoothstep(20.0, -24.0, vBasePos.x) * mix(1.0, smoothstep(0.42, 0.62, baseNoise(vBasePos * 0.14 + 91.0)), smoothstep(36.5, 39.0, vBasePos.y))) * (1.0 + 0.22 * stoneOver);
+  reflectedLight.indirectDiffuse *= mix(vec3(1.0), mix(mix(vec3(0.8, 0.6, 0.42), vec3(0.88, 0.8, 0.7), smoothstep(-20.0, 16.0, vBasePos.x)), vec3(0.84, 0.78, 0.7), smoothstep(34.0, 50.0, vBasePos.x)), stoneUnder) * mix(vec3(1.0), vec3(1.7, 1.74, 1.8) * (1.0 + 0.9 * baseCrest), stoneOver * smoothstep(20.0, -24.0, vBasePos.x) * mix(1.0, smoothstep(0.42, 0.62, baseNoise(vBasePos * 0.14 + 91.0)), smoothstep(36.5, 39.0, vBasePos.y))) * (1.0 + 0.22 * stoneOver);
   // On the left the lip's top takes the low light in patches; between them it lies in its own soft shade. Low on the left flank the table's glint turns the stone orange.
   float stoneLipTop = smoothstep(37.5, 40.0, vBasePos.y) * smoothstep(0.2, 0.55, stoneUp) * smoothstep(-4.0, -22.0, vBasePos.x);
-  reflectedLight.indirectDiffuse *= mix(1.0, mix(0.4, 1.15, smoothstep(0.38, 0.62, baseNoise(vBasePos * 0.14 + 91.0))), stoneLipTop) * mix(vec3(1.0), vec3(0.95, 0.74, 0.52), smoothstep(13.0, 2.0, vBasePos.y) * smoothstep(-8.0, -30.0, vBasePos.x));
+  reflectedLight.indirectDiffuse *= mix(1.0, mix(0.75, 1.2, smoothstep(0.38, 0.62, baseNoise(vBasePos * 0.14 + 91.0))), stoneLipTop) * mix(vec3(1.0), vec3(0.95, 0.74, 0.52), smoothstep(13.0, 2.0, vBasePos.y) * smoothstep(-8.0, -30.0, vBasePos.x));
   // What is turned up takes the warm light from behind over the whole front, so the top of every ledge stands lighter than its face.
   reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * baseAo * baseSunC * mix(vec3(1.0, 0.92, 0.8), vec3(0.8, 0.9, 1.05), stoneBall) * (0.85 * smoothstep(0.3, 0.75, stoneUp) * (0.5 + 0.8 * baseHigh) * smoothstep(38.0, 34.0, vBasePos.y) * mix(1.0, 0.22, stoneBall));
   // The ball's shade lies deepest where the belly stands out furthest, round the things set in it.
@@ -286,24 +289,45 @@ const STONE_AFTER = `
   reflectedLight.directDiffuse *= stoneBand;
   // In the ball's shade the approved shows the relief only faintly: one even soft shade, warm in the middle, cool right of it.
   float stoneEven = smoothstep(-26.0, -8.0, vBasePos.x) * smoothstep(44.0, 30.0, vBasePos.x);
-  vec3 stoneFloor = material.diffuseContribution * RECIPROCAL_PI * dot(baseSunC, vec3(0.3333)) * mix(vec3(0.88, 0.78, 0.62), mix(vec3(1.7, 2.05, 2.5), vec3(2.3, 2.3, 2.2), smoothstep(26.0, 40.0, vBasePos.x)), smoothstep(-4.0, 16.0, vBasePos.x)) * ${STONE.even.toFixed(3)};
+  vec3 stoneFloor = material.diffuseContribution * RECIPROCAL_PI * dot(baseSunC, vec3(0.3333)) * mix(vec3(0.88, 0.78, 0.62), mix(vec3(1.65, 1.8, 1.9), vec3(2.3, 2.3, 2.2), smoothstep(26.0, 40.0, vBasePos.x)), smoothstep(-4.0, 16.0, vBasePos.x)) * ${STONE.even.toFixed(3)};
   reflectedLight.indirectDiffuse = reflectedLight.indirectDiffuse * mix(1.0, 0.35, stoneEven) + stoneFloor * max(stoneEven, smoothstep(30.0, 40.0, vBasePos.x) * smoothstep(56.0, 46.0, vBasePos.x) * smoothstep(41.0, 37.0, vBasePos.y));
   reflectedLight.directDiffuse *= mix(1.0, 0.35, stoneEven);
+  // Under the ball the collar is no darker than the face under it.
+  float stoneNeck = stoneEven * smoothstep(29.0, 33.0, vBasePos.y) * smoothstep(44.5, 42.0, vBasePos.y);
+  reflectedLight.indirectDiffuse *= mix(vec3(1.0), vec3(1.4, 1.38, 1.3), stoneNeck) * mix(1.0, 0.86, stoneEven * smoothstep(17.0, 9.0, vBasePos.y));
   // Low on the right the belly faces the lit sand on the table and takes its light back, neither warm nor cool.
   reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * dot(baseSunC, vec3(0.3333)) * vec3(1.0, 0.94, 0.86) * (0.075 * smoothstep(22.0, 36.0, vBasePos.x) * smoothstep(15.0, 5.0, vBasePos.y) * smoothstep(0.0, 2.5, vBasePos.y));
+  // A few drops of water stand on the sand: each a small wet bead, darker than the sand round it, with one bright point and a lighter far edge.
+  vec3 stoneDropC = floor(vBasePos * 0.42 + 3.0);
+  vec3 stoneDropP = (fract(vBasePos * 0.42 + 3.0) - 0.5 - 0.3 * (vec3(baseHash(stoneDropC + 3.1), baseHash(stoneDropC + 13.7), baseHash(stoneDropC + 29.3)) - 0.5)) / 0.42;
+  float stoneDropR = mix(0.4, 0.75, baseHash(stoneDropC + 51.0));
+  float stoneDropD = length(stoneDropP) / stoneDropR;
+  float stoneDrop = step(0.95, baseHash(stoneDropC + 77.0)) * smoothstep(1.0, 0.82, stoneDropD) * smoothstep(3.0, 6.0, vBasePos.y);
+  float stoneDropFar = smoothstep(0.45, 0.95, stoneDropD) * clamp(dot(stoneDropP.xy, vec2(0.6, -0.8)) / stoneDropR, 0.0, 1.0);
+  reflectedLight.indirectDiffuse *= mix(1.0, 0.72 + 0.9 * stoneDropFar, stoneDrop);
+  reflectedLight.directDiffuse *= mix(1.0, 0.72 + 0.9 * stoneDropFar, stoneDrop);
+  reflectedLight.directSpecular += vec3(1.0, 0.97, 0.9) * dot(baseSunC, vec3(0.3333)) * (2.2 * stoneDrop * smoothstep(0.34, 0.12, length(stoneDropP - stoneDropR * vec3(-0.3, 0.38, 0.0)) / stoneDropR));
+  // While the storm glows the ball is a lamp over the base: what faces up and out takes its warm white, most near the glass.
+  float stoneStorm = uBaseStorm * mix(0.4, 1.0, smoothstep(2.0, 38.0, vBasePos.y)) * (0.6 + 0.4 * clamp(stoneUp, 0.0, 1.0));
+  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * mix(1.0, baseAo, 0.5) * dot(baseSunC, vec3(0.3333)) * vec3(1.0, 0.98, 0.94) * (${STONE.storm.toFixed(2)} * stoneStorm);
   // The ball sits in the stone: by the glass the stone is in the ball's shade, darkest in the groove.
   float stoneSeat = mix(0.08, 1.0, smoothstep(0.3, 1.25, baseSeatD)) * mix(0.8, 1.0, smoothstep(1.0, 4.0, baseSeatD));
   reflectedLight.indirectDiffuse *= stoneSeat;
   reflectedLight.directDiffuse *= stoneSeat;
   reflectedLight.indirectSpecular *= stoneSeat;
   reflectedLight.directSpecular *= stoneSeat;
+  // The lit lip stands against the dark of the room. Where it turns away from the eye its light falls off, so the lens's red and blue taps find no lit grain beside the room's dark.
+  float stoneLimb = mix(1.0, smoothstep(0.0, 0.5, clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0)), smoothstep(36.0, 39.0, vBasePos.y));
+  reflectedLight.indirectDiffuse *= stoneLimb;
+  reflectedLight.directDiffuse *= stoneLimb;
+  reflectedLight.directSpecular *= stoneLimb;
 }
 `
 
 // Shell: the colour is in the vertices; the second uv holds the shade of its own folds and how glossy it is.
 const SHELL_PAINT = `
 ${SEAT}
-float baseAo = (0.5 + 0.5 * pow(abs(vBaseUv1.x), 1.2)) * baseFootAo;
+float baseAo = (0.85 + 0.15 * pow(abs(vBaseUv1.x), 1.2)) * baseFootAo;
 float baseGloss = vBaseUv1.y;
 float shellChalk = baseNoise(vBasePos * 6.0) * 0.6 + baseNoise(vBasePos * 17.0) * 0.4;
 float shellOne = baseHash(floor(vBasePaint * 255.0) + 7.0);
@@ -332,7 +356,7 @@ const SHELL_AFTER = `
   // On the right the shells face the cool light that the table and the sky send back: one side of each takes it, the other stays in shade.
   float shellRight = clamp((dot(geometryNormal, normalize(mat3(viewMatrix) * vec3(0.8, 0.45, 0.4))) + 0.1) / 1.1, 0.0, 1.0) * smoothstep(2.0, 26.0, vBasePos.x);
   float shellSun = clamp((dot(geometryNormal, baseKey) + 0.3) / 1.3, 0.0, 1.0);
-  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * baseAo * (uRigCardCol * 0.15 * shellWarm * shellWarm + baseSunC * 0.5 * pow(abs(shellWarm), 14.0) + baseKeyC * 0.9 * shellSun * shellSun + baseSunC * (0.75 * shellLeft * shellLeft + 0.5 * shellWide) + vec3(1.0, 0.9, 0.78) * dot(baseSunC, vec3(0.3333)) * 0.34 + vec3(0.9, 0.97, 1.08) * dot(baseSunC, vec3(0.3333)) * 1.3 * shellRight * shellRight);
+  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * baseAo * (uRigCardCol * 0.15 * shellWarm * shellWarm + baseSunC * 0.5 * pow(abs(shellWarm), 14.0) + baseKeyC * 0.9 * shellSun * shellSun + baseSunC * (0.55 * shellLeft * shellLeft + 0.65 * shellWide) + vec3(1.0, 0.9, 0.78) * dot(baseSunC, vec3(0.3333)) * 0.34 + vec3(0.9, 0.97, 1.08) * dot(baseSunC, vec3(0.3333)) * 1.3 * shellRight * shellRight);
   vec3 shellAway = inverseTransformDirection(reflect(-geometryViewDir, geometryNormal), viewMatrix);
   float shellNv = clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0);
   float shellF = 0.05 + 0.95 * pow(abs(1.0 - shellNv), 5.0);
@@ -343,10 +367,11 @@ const SHELL_AFTER = `
   float shellLustre = smoothstep(0.8, 1.0, baseGloss);
   reflectedLight.directSpecular += (baseKeyC * (0.9 * pow(abs(shellNh), 220.0) + 0.05 * pow(abs(shellNh), 14.0)) * smoothstep(0.0, 0.15, dot(geometryNormal, baseKey)) + (uRigCardCol + vec3(1.0, 0.9, 0.76) * dot(baseSunC, vec3(0.3333)) * 1.4) * (0.7 * pow(abs(shellCh), 120.0) + 0.1 * pow(abs(shellCh), 9.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, baseCard))) * baseGloss * baseAo * mix(vec3(1.0), 0.7 + 0.6 * shellPearl, shellLustre);
   reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * (baseKeyC + uRigCardCol) * 0.08 * shellLustre * shellPearl;
-  ${shadeIn(0.15, 0.44, 24, 0.4, 'mix(mix(vec3(1.0, 0.93, 0.86), vec3(0.86, 0.96, 1.14), smoothstep(-32.0, 8.0, vBasePos.x)), vec3(1.05, 0.98, 0.9), smoothstep(34.0, 50.0, vBasePos.x))')}
+  ${shadeIn(0.15, 0.44, 24, 0.4, 'mix(mix(vec3(1.0, 0.93, 0.86), vec3(0.95, 0.97, 1.04), smoothstep(-32.0, 8.0, vBasePos.x)), vec3(1.05, 0.98, 0.9), smoothstep(34.0, 50.0, vBasePos.x))')}
   // Each shell is glossy: one small hard highlight from the room, whatever shade it lies in.
   float shellSpark = max(dot(geometryNormal, normalize(normalize(mat3(viewMatrix) * vec3(-0.3, 0.8, 0.52)) + geometryViewDir)), 0.0);
-  reflectedLight.directSpecular += vec3(1.0, 0.96, 0.9) * dot(baseSunC, vec3(0.3333)) * (0.25 * pow(max(shellSpark, 0.0), 220.0) + 0.05 * pow(max(shellSpark, 0.0), 24.0)) * smoothstep(0.1, 0.4, baseGloss) * baseFootAo;
+  reflectedLight.directSpecular += vec3(1.0, 0.96, 0.9) * dot(baseSunC, vec3(0.3333)) * (0.5 * pow(max(shellSpark, 0.0), 220.0) + 0.06 * pow(max(shellSpark, 0.0), 24.0)) * smoothstep(0.1, 0.4, baseGloss) * baseFootAo;
+  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * baseAo * dot(baseSunC, vec3(0.3333)) * vec3(1.0, 0.94, 0.82) * (${STONE.storm.toFixed(2)} * uBaseStorm);
 }
 `
 
@@ -375,7 +400,7 @@ metalnessFactor = 0.0;
 const GLASS_TILT = `
 vec2 baseTilt = (vec2(baseNoise(vBasePos * 23.0 + 5.0), baseNoise(vBasePos * 23.0 + 31.0)) - 0.5) * (0.12 + 0.2 * baseFrost);
 `
-const GLASS = { body: 1.0, thru: 1.3, frost: 0.12, grain: 0.5, rim: 0.04 }
+const GLASS = { body: 1.0, thru: 1.5, frost: 0.07, grain: 0.5, rim: 0.14, spark: 0.9 }
 const GLASS_AFTER = `
 {
   ${KEY}
@@ -392,7 +417,7 @@ const GLASS_AFTER = `
   vec3 glassDeep = material.diffuseContribution;
   vec3 glassPale = pow(max(glassHue, 0.0005), vec3(0.6));
   reflectedLight.directDiffuse *= 0.2;
-  reflectedLight.indirectDiffuse *= 0.35;
+  reflectedLight.indirectDiffuse *= 0.16;
   vec3 glassIn = uRigCardCol + glassE * vec3(1.0, 0.92, 0.8) * 0.3;
   float glassPatch = mix(0.55, 1.5, glassCloud) * mix(0.88, 1.08, glassMottle) * (1.0 - 0.35 * glassPit);
   vec3 glassCol = glassDeep * glassIn * (${GLASS.body.toFixed(2)} * (0.45 + 0.2 * glassUl + 0.5 * glassLl) * mix(0.75, 2.8, smoothstep(0.58, 0.75, glassVal)) * mix(1.0, 0.9, glassHeart) * glassPatch);
@@ -400,10 +425,12 @@ const GLASS_AFTER = `
   glassCol += glassPale * glassIn * (${GLASS.rim.toFixed(2)} * smoothstep(0.5, 0.22, baseThin) * glassLine * mix(0.7, 1.2, glassMottle));
   float glassSkin = smoothstep(0.42, 0.8, glassCloud) * (0.5 + 0.5 * glassMottle) * (1.0 - 0.7 * glassPit) * mix(0.35, 1.0, baseFrost);
   glassCol += (glassPale * 0.8 + 0.08) * glassIn * (${GLASS.frost.toFixed(2)} * glassSkin);
-  glassCol = mix(vec3(dot(glassCol, vec3(0.3, 0.55, 0.15))) * vec3(1.06, 1.0, 0.9), glassCol, 0.6);
+  glassCol = mix(vec3(dot(glassCol, vec3(0.3, 0.55, 0.15))) * vec3(1.06, 1.0, 0.9), glassCol, 0.9);
   vec3 glassCell = floor(vBasePos * 5.2);
   float glassGrain = step(0.86, baseHash(glassCell + 9.0)) * smoothstep(0.3, 0.14, baseThin + 0.2 * (baseHash(glassCell + 21.0) - 0.5)) * smoothstep(0.45, 0.15, length(fract(vBasePos * 5.2) - 0.5));
-  glassCol = mix(glassCol * mix(0.3, 1.0, glassLine), ${vec(SAND_COLOUR.pale)} * glassIn * ${GLASS.grain.toFixed(2)}, glassGrain);
+  vec3 glassSpkC = floor(vBasePos * 2.3 + 7.0);
+  glassCol += glassPale * glassIn * (${GLASS.spark.toFixed(2)} * step(0.86, baseHash(glassSpkC + 2.0)) * smoothstep(0.3, 0.08, length(fract(vBasePos * 2.3 + 7.0) - 0.5)) * glassLine);
+  glassCol = mix(glassCol * mix(0.92, 1.0, glassLine), ${vec(SAND_COLOUR.pale)} * glassIn * ${GLASS.grain.toFixed(2)}, glassGrain);
   reflectedLight.indirectDiffuse += glassCol * RECIPROCAL_PI * baseFootAo;
   #ifdef STAGE_LIGHT_DONE
   reflectedLight.indirectDiffuse += stageThrough(geometryNormal, geometryViewDir, 0.4, 3.0) * glassPale * 0.2 * glassLine;
@@ -411,12 +438,13 @@ const GLASS_AFTER = `
   vec3 glassAway = inverseTransformDirection(reflect(-geometryViewDir, geometryNormal), viewMatrix);
   float glassF = 0.04 + 0.96 * pow(abs(1.0 - glassNv), 5.0);
   reflectedLight.indirectSpecular *= 0.1;
-  reflectedLight.indirectSpecular += stageRoomSoft(glassAway, 0.8) * glassF * 0.25 * (1.0 - glassGrain);
+  reflectedLight.indirectSpecular += stageRoomSoft(glassAway, 0.8) * glassF * 0.12 * (1.0 - glassGrain);
   reflectedLight.directSpecular *= 0.1;
   vec3 glassHl = normalize(mat3(viewMatrix) * normalize(vec3(-0.3 + (glassOne - 0.5), 0.8, 0.5 + 0.7 * (glassTwo - 0.5))));
   float glassNh = dot(normal, normalize(glassHl + geometryViewDir));
   reflectedLight.directSpecular += vec3(1.0, 0.96, 0.9) * glassE * (mix(0.08, 0.2, glassTwo) * pow(max(glassNh, 0.0), mix(70.0, 180.0, glassOne)) * mix(1.0, 0.45, baseFrost) * mix(0.5, 1.2, glassMottle) * glassLine * (1.0 - glassGrain));
   ${shadeIn(0.5, 0.8, 20, 0.66, false)}
+  reflectedLight.indirectDiffuse += (glassPale * 0.6 + glassDeep * 0.4) * RECIPROCAL_PI * glassE * vec3(1.0, 0.94, 0.82) * (${STONE.storm.toFixed(2)} * uBaseStorm);
 }
 `
 
@@ -425,6 +453,9 @@ const GLASS_AFTER = `
 // edge of a heap breaks up into them.
 export const SAND = { tileMm: 6.6, cover: 0.62, glint: 5.0, slope: 0.6, wrap: 40.0, thru: 5.0, ledge: 0.3, stage: 0.2, drape: 0.55, crest: 3.0, far: [0.05, 0.14], speck: 2.4 }
 const SHADE = { r: 56, soft: 3.5, top: 40, globeH: 79, globeR: 60, globe: 0.5, front: 0.1, frontMm: [-6, 44], frontX: [58, 98] }
+const baseUniforms = {
+  uBaseStorm: { value: 0 },
+}
 export const sandUniforms = {
   uSandSpill: { value: 1 },
   uSandRoom: { value: 1 },
@@ -575,12 +606,12 @@ export function base(): THREE.Object3D {
     key: `${PART}-stone`,
     map: map('grain.lin.tile.w512'),
     hook: hookOf(
-      { uBaseGrain: { value: map('grain.lin.tile.w512') }, uBaseCarve: { value: map('carve.lin.w2048') }, uBaseTone: { value: map('stone.srgb.w2048') } },
-      { pars: 'uniform sampler2D uBaseGrain;\nuniform sampler2D uBaseCarve;\nuniform sampler2D uBaseTone;', paint: STONE_PAINT, rough: STONE_ROUGH, tilt: STONE_TILT, bent: STONE_BENT, after: STONE_AFTER },
+      { uBaseGrain: { value: map('grain.lin.tile.w512') }, uBaseCarve: { value: map('carve.lin.w2048') }, uBaseTone: { value: map('stone.srgb.w2048') }, uBaseStorm: baseUniforms.uBaseStorm },
+      { pars: 'uniform sampler2D uBaseGrain;\nuniform sampler2D uBaseCarve;\nuniform sampler2D uBaseTone;\nuniform float uBaseStorm;', paint: STONE_PAINT, rough: STONE_ROUGH, tilt: STONE_TILT, bent: STONE_BENT, after: STONE_AFTER },
     ),
   })
-  const shell = stageMaterial({ ...lit, key: `${PART}-shell`, vertexColors: true, hook: hookOf({}, { paint: SHELL_PAINT, rough: SHELL_ROUGH, tilt: SHELL_TILT, after: SHELL_AFTER }) })
-  const glass = stageMaterial({ ...lit, key: `${PART}-seaglass`, vertexColors: true, hook: hookOf({}, { paint: GLASS_PAINT, rough: GLASS_ROUGH, tilt: GLASS_TILT, after: GLASS_AFTER }) })
+  const shell = stageMaterial({ ...lit, key: `${PART}-shell`, vertexColors: true, hook: hookOf({ uBaseStorm: baseUniforms.uBaseStorm }, { pars: 'uniform float uBaseStorm;', paint: SHELL_PAINT, rough: SHELL_ROUGH, tilt: SHELL_TILT, after: SHELL_AFTER }) })
+  const glass = stageMaterial({ ...lit, key: `${PART}-seaglass`, vertexColors: true, hook: hookOf({ uBaseStorm: baseUniforms.uBaseStorm }, { pars: 'uniform float uBaseStorm;', paint: GLASS_PAINT, rough: GLASS_ROUGH, tilt: GLASS_TILT, after: GLASS_AFTER }) })
   const sand = sandMaterial(PART, 'base', `${PART}-sand`, true)
   group.add(solid('stone', stone), solid('shells', shell), solid('seaglass', glass), solid('sand', sand))
   return group
@@ -608,5 +639,6 @@ export function spillAt(moment: KitMoment): number {
 export function update(moment: KitMoment): void {
   const f = moment.frame
   sandUniforms.uSandSpill.value = spillAt(moment)
+  baseUniforms.uBaseStorm.value = stormHeld(moment)
   sandUniforms.uSandRoom.value = f.from === f.to ? 1 : Math.pow(SAND_DARK, f.mix.bloom)
 }
