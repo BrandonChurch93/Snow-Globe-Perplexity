@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 170 · 2026-11-26 18:35 UTC
+Status 171 · 2026-11-26 18:50 UTC
 
-- `out/stills/status/status-170-1.jpg`: The whole picture at rest mid-pass, the approved on the left and ours on the right: the new soft pool of light on the table left of the base, and the warmer air in the glass.
-- `out/stills/status/status-170-2.jpg`: The cottage, the approved on the left and ours on the right: the ivy, the roses and the pond read; the lanterns' light on the wall, the light from behind and the bed of sand do not yet.
-- `out/stills/status/status-170-3.jpg`: The tree, the approved on the left and ours on the right: the pads are lit one by one and the lanterns hang in a row; the light points are too many and too pale, so the crown reads as in blossom.
-- `out/stills/status/status-170-4.jpg`: The landing, the approved above and ours below: one whirl of long arcs now; the tree is still a dark cut-out where the approved's is washed by the storm, and the lanterns do not bloom through it.
+- `out/stills/status/status-171-1.jpg`: Summer at rest: the approved on the left, a trial merge of four of the seven branches on the right (air, glass, tree, room; the cottage, the sand and the stone of this pass are not in it yet).
+- `out/stills/status/status-171-2.jpg`: The same, close: the seeds are wheels now and the crown is lit pad by pad; the air is milky where the approved's is clear and dark, and the tree and the cottage are darker.
+- `out/stills/status/status-171-3.jpg`: The landing, the approved on the left and the trial on the right: one whirl now, no leaves fly; seed heads stray outside the glass at the rim (sent back), and the streaks are tan where the approved's are white.
+- `out/stills/status/status-171-4.jpg`: The four changes of season as the change's branch draws them, not in the app yet: no dark frame any more; the glow is a column, the base goes flat in it and summer arrives blue, three of the six points sent back.
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-26 18:39 UTC
-clock: phase 6, tick of 4.1 minutes
-phase 6: 15.84 h used of its 12.00 h box
-allowance (after the review): 15.84 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 15.84 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-26 18:50 UTC
+clock: phase 6, tick of 10.3 minutes
+phase 6: 16.01 h used of its 12.00 h box
+allowance (after the review): 16.01 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 16.01 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
 budget report: due
-minutes since the last status: 4
+minutes since the last status: 0
 ```
 
 ## Phases
