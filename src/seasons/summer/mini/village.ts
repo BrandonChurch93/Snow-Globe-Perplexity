@@ -10,7 +10,7 @@ import { MIRROR_GLSL, MIRROR_MAX, mirrorUniforms } from '../../../miniature/mirr
 import { prepareVillage, tileMm, villageGeometry, villageGrain } from '../../../miniature/model'
 import { lampFlame, lampFoot, shrubDistance } from '../../../miniature/roof'
 import { BUMP_GLSL, NEAR_LIGHT, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, withSurface, type GlowSource } from '../../../miniature/surface'
-import { anchors, groundAt, moundAt, moundSlope, pond, solidDistance, tree } from '../../../scene/layout'
+import { anchors, cottage as house, cottageFrame, groundAt, moundAt, moundSlope, pond, solidDistance, tree } from '../../../scene/layout'
 import { gainOf } from '../../../scene/lightgrid'
 import type { InnerLight, KitMoment } from '../../kit'
 import { lanterns } from './lanterns'
@@ -23,23 +23,25 @@ const LIGHT = `light-${season}`
 
 const LAMP = { power: 3, reachMm: 12, flicker: 0.05, cycles: 3, phase: 0.1 }
 const WINDOW = { power: 0.9, reachMm: 8, flicker: 0.1, cycles: 5, phase: 0.4 }
-const NEAR = { lamp: { power: 1.8, reachMm: 7 }, pane: { power: 0.9, reachMm: 3 }, paper: { power: 0.5, reachMm: 2.2 } }
+const NEAR = { lamp: { power: 1.8, reachMm: 7 }, pane: { power: 0.9, reachMm: 3 }, paper: { power: 1.0, reachMm: 6 } }
 const NEAR_WALL = { lamp: { power: 1.3, reachMm: 8, ends: 3 }, pane: { power: 1.6, reachMm: 4.5, ends: 3 }, paper: { power: 1.25, reachMm: 5.2, ends: 3 } }
 const MIRROR = { lamp: 9, pane: 1.2, paper: 1.6, tight: 0.002, wide: 0.03, wideShare: 0.01, lowMm: 3.4 }
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
 const HALO_KIND = { lamp: { size: 3.6, rest: 0.08, hot: 0, bloom: 0.2 }, pane: { size: 2.6, rest: 0.07, hot: 0, bloom: 0.2 }, pool: { size: 5, rest: 0, hot: 0, bloom: 0.06 } }
 const THROUGH = 6
-const LAMP_GLASS: Rgb = [1.7, 0.82, 0.22]
+const LAMP_GLASS: Rgb = [1.6, 0.66, 0.15]
 const WALL_FILL = 1.1
-const SAND = { white: [0.86, 0.9, 0.98] as Rgb, whiten: 0.8, clumpPerMm: 1.1, midPerMm: 2.1, sparkMid: 2.3, grainPerMm: 4.2, heapPerMm: 0.16, heapLow: 0.72, heap: 0.42, reliefMm: 1.1, reliefClump: 0.34, reliefMid: 0.09, body: 3.6, floor: 0.28, wrap: 0.5, foot: 0.7, lip: 1.5, lipLow: 0.15, lipTo: 0.2, breakPerMm: 0.42, shade: [0.6, 0.45, 0.31] as Rgb, bump: 0.6, grainLow: 0.42, grain: 0.62, spark: 1.5, topFrom: 0.22, topTo: 0.62 }
-const PEBBLE = { perMm: 0.8, from: 1.13, to: 1.2, dark: [0.34, 0.29, 0.24] as Rgb, pale: [0.7, 0.62, 0.5] as Rgb, sky: 1.1, sun: 2.6 }
-const TURF_LOOK = { tone: 0.5, fineMm: 0.05, clumpMm: 0.22, fill: 0.25, wrap: 0.5, sun: 14 }
+const SAND = { white: [1.0, 0.93, 0.8] as Rgb, whiten: 0.9, clumpPerMm: 1.1, midPerMm: 2.1, sparkMid: 0.22, grainPerMm: 4.2, heapPerMm: 0.16, heapLow: 0.9, heap: 0.16, reliefMm: 0.5, reliefClump: 0.12, reliefMid: 0.05, body: 2.3, floor: 0.5, wrap: 0.6, foot: 0.8, lip: 1.5, lipLow: 0.7, lipFrom: 0.0, lipTo: 0.2, breakPerMm: 0.3, shade: [0.4, 0.28, 0.18] as Rgb, bump: 0.6, grainLow: 0.78, grain: 0.26, spark: 0.2, topFrom: 0.22, topTo: 0.62 }
+const TURF_LOOK = { tone: 0.5, fineMm: 0.05, clumpMm: 0.22, fill: 0.25, wrap: 0.5, sun: 8 }
 // Where the low sun reaches the floor: the same four pools as `sunAt` in assets-src/village-summer/build.mjs, which the grass carries.
 const SUN_POOLS: readonly [number, number, number, number, number][] = [[1.2, 27, 3, 11, 9], [1.4, 3, -8, 9, 6], [0.4, -24, 21, 6, 5], [0.5, 24, 22, 9, 6]]
-const GRASS_LOOK = { fill: 0.1, wrap: 1.0, through: 0.36, near: 2.1, sun: 40, sunRoot: 0.12, shade: [0.26, 0.23, 0.62] as Rgb }
-const ROOF = { slate: [0.07, 0.11, 0.22] as Rgb, chimney: [0.2, 0.185, 0.18] as Rgb, vary: 0.75, varyMm: 1.3, stone: [0.6, 0.45, 0.37] as Rgb, stoneMid: 0.34, stoneFlat: 0.45, stoneHue: 0.5, plank: [0.5, 0.26, 0.15] as Rgb, plankMm: 2.2, plankTall: 3.8, pitch: 0.2, stoneMm: 1.4, picket: [0.5, 0.27, 0.14] as Rgb, picketMm: 1.6, boardMm: 0.9, boardVary: 0.9, grainMm: 0.22, grainVary: 0.5, boardFoot: 0.45, boardTall: 3.2, pale: 0.25, railTop: [1.5, 1.2, 0.85] as Rgb, door: [0.27, 0.125, 0.08] as Rgb, doorMm: 2.4, reachMm: 0.4 }
+const GRASS_LOOK = { fill: 0.1, wrap: 1.0, through: 0.36, near: 2.1, sun: 22, sunRoot: 0.12, shade: [0.26, 0.23, 0.62] as Rgb }
+const ROOF = { slate: [0.2, 0.25, 0.36] as Rgb, chimney: [0.42, 0.395, 0.37] as Rgb, vary: 0.75, varyMm: 1.3, stone: [0.92, 0.78, 0.62] as Rgb, stoneMid: 0.42, stoneFlat: 0.45, stoneHue: 0.5, plank: [0.8, 0.7, 0.58] as Rgb, plankMm: 2.2, plankTall: 3.8, pitch: 0.2, stoneMm: 1.4, picket: [0.85, 0.5, 0.27] as Rgb, picketMm: 1.6, boardMm: 0.9, boardVary: 0.9, grainMm: 0.22, grainVary: 0.5, boardFoot: 0.7, boardTall: 3.2, pale: 0.25, railTop: [1.5, 1.2, 0.85] as Rgb, door: [0.2, 0.1, 0.065] as Rgb, verge: [0.42, 0.4, 0.4] as Rgb, doorMm: 2.4, reachMm: 0.4 }
 const DARK_PANE = 0.8
-const WATER = { spark: 1.1, mass: 0.975, houseMm: 9.5, houseTall: 17, flat: 0.14, wobble: 0.9, rough: 0.035, ripple: 0.0045, fine: 0.0012, shoreFrom: 0.84, shoreTo: 1.0, sky: 2.0, skyFrom: -0.75, skyTo: 0.35, skyAt: 1.5, skyWide: 11.5, skyLow: 0.1, bankMm: 0.7, bankVary: 1.1, bankEdge: 0.16, bankDark: 0.975, env: 0.1, glint: 0.5, squash: 0.14, paperGlint: 0.25, paperMm: 1.5, paperTall: 0.5, post: 0.93, postMm: 0.75, postTall: 11.5, trunk: 0.975, trunkMm: 5.2, trunkTall: 26, body: 0.4 }
+// The approved cottage has a short stack: what stands over the ridge is drawn in to under half its height, in this season's
+// copy of the mesh and in what the particles meet.
+const STACK = { fromMm: 18.8, squash: 0.45, marginMm: 0.9, pot: 0.3 }
+const WATER = { spark: 0.5, mass: 0.975, houseMm: 9.5, houseTall: 17, flat: 0.14, wobble: 0.9, rough: 0.035, ripple: 0.0045, fine: 0.0012, shoreFrom: 0.84, shoreTo: 1.0, sky: 0.62, skyFrom: -0.75, skyTo: 0.35, skyAt: 1.5, skyWide: 11.5, skyLow: 0.1, bankMm: 0.7, bankVary: 1.1, bankEdge: 0.16, bankDark: 0.975, env: 0.1, glint: 0.5, squash: 0.14, paperGlint: 0.25, paperMm: 1.5, paperTall: 0.5, post: 0.93, postMm: 0.75, postTall: 11.5, trunk: 0.975, trunkMm: 5.2, trunkTall: 26, body: 0.4 }
 
 const flame = lampFlame()
 const mirrored: [number, number, number] = [flame[0], flame[1] - MIRROR.lowMm, flame[2]]
@@ -113,30 +115,6 @@ float turfSunAt(vec2 p) {
   float turfBank = smoothstep(1.06, 1.4, pow(abs(pow(abs(turfPondL.x), ${pond.power.toFixed(1)}) + pow(abs(turfPondL.y), ${pond.power.toFixed(1)})), ${(1 / pond.power).toFixed(4)}));
   return turfBank * clamp(${SUN_POOLS.map(([k, x, z, rx, rz]) => `${k.toFixed(2)} * exp(-dot((p - vec2(${x.toFixed(1)}, ${z.toFixed(1)})) / vec2(${rx.toFixed(1)}, ${rz.toFixed(1)}), (p - vec2(${x.toFixed(1)}, ${z.toFixed(1)})) / vec2(${rx.toFixed(1)}, ${rz.toFixed(1)})))`).join(' + ')}, 0.0, 1.0);
 }
-// The stones of the pond's bank: one rounded stone to a cell, each with its own place, size and tone, dark and wet between.
-vec2 turfPebR = vec2(0.0);
-vec3 turfPebble(vec2 p) {
-  vec2 i = floor(p);
-  vec2 f = fract(p);
-  float d1 = 9.0;
-  float d2 = 9.0;
-  float id = 0.0;
-  for (int y = -1; y <= 1; y++) {
-    for (int x = -1; x <= 1; x++) {
-      vec2 g = vec2(float(x), float(y));
-      vec2 r = g + 0.12 + 0.76 * vec2(sandHash(vec3(i + g, 1.3)), sandHash(vec3(i + g, 7.9))) - f;
-      float d = dot(r, r);
-      if (d < d1) { d2 = d1; d1 = d; id = sandHash(vec3(i + g, 3.1)); turfPebR = r; }
-      else if (d < d2) d2 = d;
-    }
-  }
-  return vec3(sqrt(d1), sqrt(d2) - sqrt(d1), id);
-}
-float turfBankAt(vec2 p) {
-  vec2 d = p - vec2(${pond.x.toFixed(2)}, ${pond.z.toFixed(2)});
-  vec2 l = abs(vec2(${Math.cos(pond.yaw).toFixed(4)} * d.x - ${Math.sin(pond.yaw).toFixed(4)} * d.y, ${Math.sin(pond.yaw).toFixed(4)} * d.x + ${Math.cos(pond.yaw).toFixed(4)} * d.y) / vec2(${pond.rx.toFixed(2)}, ${pond.rz.toFixed(2)}));
-  return pow(abs(pow(abs(l.x), ${pond.power.toFixed(1)}) + pow(abs(l.y), ${pond.power.toFixed(1)})), ${(1 / pond.power).toFixed(4)});
-}
 float turfHeight(vec2 uv) {
   vec3 t = texture2D(map, uv).rgb;
   return t.r * ${TURF_LOOK.fineMm.toFixed(3)} + t.g * ${TURF_LOOK.clumpMm.toFixed(3)} + texture2D(map, uv * 4.7 + 0.31).r * ${TURF_LOOK.fineMm.toFixed(3)};
@@ -158,11 +136,6 @@ float sandHeap = sandNoise(vStageLocal * ${SAND.heapPerMm.toFixed(2)} + 3.1);
 float sandRelief = ${SAND.reliefMm.toFixed(2)} * sandHeap + ${SAND.reliefClump.toFixed(2)} * sandFineB + ${SAND.reliefMid.toFixed(2)} * sandFineM;
 float sandGrain = 0.4 * turfT.g + 0.35 * sandFineB + 0.3 * sandFineC + 0.75 * sandFineM;
 diffuseColor.rgb = mix(diffuseColor.rgb, mix(diffuseColor.rgb, ${glsl(SAND.white)}, ${SAND.whiten.toFixed(2)}) * (${SAND.heapLow.toFixed(2)} + ${SAND.heap.toFixed(2)} * sandHeap) * (${SAND.grainLow.toFixed(2)} + ${SAND.grain.toFixed(2)} * sandGrain + ${SAND.spark.toFixed(2)} * smoothstep(0.5, 0.72, sandFineC * (0.45 + 0.9 * sandFineB)) + ${SAND.sparkMid.toFixed(2)} * smoothstep(0.6, 0.78, sandFineM)), sandAmt);
-vec3 turfPeb = turfPebble(vStageLocal.xz * ${PEBBLE.perMm.toFixed(2)});
-float turfPebRing = (1.0 - smoothstep(${PEBBLE.from.toFixed(2)}, ${PEBBLE.to.toFixed(2)}, turfBankAt(vStageLocal.xz) + 0.07 * (sandFineB - 0.5))) * (1.0 - sandAmt);
-float turfPebOn = smoothstep(0.05, 0.2, turfPeb.y);
-vec3 turfPebTone = mix(${glsl(PEBBLE.dark)}, ${glsl(PEBBLE.pale)}, turfPeb.z) * (0.8 + 0.4 * sandFineC);
-diffuseColor.rgb = mix(diffuseColor.rgb, mix(vec3(0.012, 0.01, 0.007), turfPebTone, turfPebOn), turfPebRing);
 `,
         )
         .replace(
@@ -175,7 +148,7 @@ diffuseColor.rgb = mix(diffuseColor.rgb, mix(vec3(0.012, 0.01, 0.007), turfPebTo
 }
 `,
         )
-      afterLight(shader, `${NEAR_LIGHT}\n{\n  float sandBank = sandAmt;\n  vec3 sandBody = stageKeyC * (RECIPROCAL_PI * ${SAND.body.toFixed(2)} * mix(${SAND.floor.toFixed(2)}, 1.0, stageWrap(dot(geometryNormal, stageKeyL), ${SAND.wrap.toFixed(2)})) * mix(1.0, ${SAND.foot.toFixed(2)}, vSurf.y)) * material.diffuseContribution;\n  // The low sun whitens the lip of the sand where it meets the ground and leaves the face against the glass in warm shade.\n  float sandLip = 1.0 - smoothstep(0.0, ${SAND.lipTo.toFixed(2)}, vSurf.y);\n  // The shelf is not one white band: heaps catch the sun, the hollows between them stay in shade.\n  float sandBreak = smoothstep(0.25, 0.75, 0.6 * sandNoise(vStageLocal * ${SAND.breakPerMm.toFixed(2)} + 9.7) + 0.4 * sandFineB);\n  sandBody *= mix(${glsl(SAND.shade)}, vec3(1.0 + mix(${SAND.lipLow.toFixed(2)}, ${SAND.lip.toFixed(2)}, sandBreak)), sandLip);\n  reflectedLight.directDiffuse = mix(reflectedLight.directDiffuse, sandBody, sandBank);\n}\n// Each stone is lit on its crown by the evening sky and rimmed by the low sun on the side that faces it.\nreflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * turfPebRing * turfPebOn * (${PEBBLE.sky.toFixed(2)} * (1.0 - 0.8 * turfPeb.x) + ${PEBBLE.sun.toFixed(2)} * smoothstep(0.15, 0.75, dot(turfPebR / max(length(turfPebR), 1e-4), vec2(-0.53, 0.85))) * smoothstep(0.1, 0.45, turfPeb.x))) * turfPebTone;\nreflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${TURF_LOOK.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), ${TURF_LOOK.wrap.toFixed(2)})) * material.diffuseContribution;\nreflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${TURF_LOOK.sun.toFixed(2)} * turfSunAt(vStageLocal.xz) * (1.0 - sandAmt)) * mix(material.diffuseContribution, vec3(0.22, 0.19, 0.095), 0.58);`)
+      afterLight(shader, `${NEAR_LIGHT}\n{\n  float sandBank = sandAmt;\n  vec3 sandBody = stageKeyC * (RECIPROCAL_PI * ${SAND.body.toFixed(2)} * mix(${SAND.floor.toFixed(2)}, 1.0, stageWrap(dot(geometryNormal, stageKeyL), ${SAND.wrap.toFixed(2)})) * mix(1.0, ${SAND.foot.toFixed(2)}, vSurf.y)) * material.diffuseContribution;\n  // The low sun whitens the lip of the sand where it meets the ground and leaves the face against the glass in warm shade.\n  float sandLip = 1.0 - smoothstep(${SAND.lipFrom.toFixed(2)}, ${SAND.lipTo.toFixed(2)}, vSurf.y + 0.16 * (sandNoise(vStageLocal * 0.45 + 2.3) - 0.5) + 0.06 * (sandFineB - 0.5));\n  // The shelf is not one white band: heaps catch the sun, the hollows between them stay in shade.\n  float sandBreak = smoothstep(0.25, 0.75, 0.6 * sandNoise(vStageLocal * ${SAND.breakPerMm.toFixed(2)} + 9.7) + 0.4 * sandFineB);\n  sandBody *= mix(${glsl(SAND.shade)}, vec3(1.0 + mix(${SAND.lipLow.toFixed(2)}, ${SAND.lip.toFixed(2)}, sandBreak)), sandLip);\n  reflectedLight.directDiffuse = mix(reflectedLight.directDiffuse, sandBody, sandBank);\n}\nreflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${TURF_LOOK.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), ${TURF_LOOK.wrap.toFixed(2)})) * material.diffuseContribution;\nreflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${TURF_LOOK.sun.toFixed(2)} * turfSunAt(vStageLocal.xz) * (1.0 - sandAmt)) * mix(material.diffuseContribution, vec3(0.22, 0.19, 0.095), 0.58);`)
     },
   })
 }
@@ -384,6 +357,16 @@ function stoneVary(x: number, y: number, z: number, mm = ROOF.varyMm, tall = 1.6
   return 1 + amount * (n - 0.5)
 }
 
+const frame = cottageFrame()
+function inStack(x: number, z: number): boolean {
+  const dx = x - house.x
+  const dz = z - house.z
+  const across = frame.v[0] * dx + frame.v[1] * dz
+  const along = frame.u[0] * dx + frame.u[1] * dz
+  return Math.abs(across - house.chimney.across) < house.chimney.half + STACK.marginMm && Math.abs(along - house.chimney.along) < house.chimney.halfAlong + STACK.marginMm
+}
+const stackLow = (y: number): number => (y - frame.floor > STACK.fromMm ? frame.floor + STACK.fromMm + (y - frame.floor - STACK.fromMm) * STACK.squash : y)
+
 function dressed(g: THREE.BufferGeometry, sharedCount: number): THREE.BufferGeometry {
   const P = g.getAttribute('position')
   const N = g.getAttribute('normal')
@@ -397,16 +380,23 @@ function dressed(g: THREE.BufferGeometry, sharedCount: number): THREE.BufferGeom
     const x = P.getX(i)
     const y = P.getY(i)
     const z = P.getZ(i)
-    const lum = 0.3 * C.getX(i) + 0.6 * C.getY(i) + 0.1 * C.getZ(i)
+    const stack = inStack(x, z) && y - frame.floor > STACK.fromMm
+    if (stack) {
+      P.setY(i, stackLow(y))
+      const l = Math.hypot(N.getX(i), N.getY(i) / STACK.squash, N.getZ(i)) || 1
+      N.setXYZ(i, N.getX(i) / l, N.getY(i) / STACK.squash / l, N.getZ(i) / l)
+    }
+    const lum = Math.max(0.3 * C.getX(i) + 0.6 * C.getY(i) + 0.1 * C.getZ(i), stack ? STACK.pot : 0)
     // The roof's solid fills the gable too: only what faces up is slate, the wall under the verge stays stone.
     const nearRoof = solidDistance(x, y, z, roof) < ROOF.reachMm
-    if (solidDistance(x, y, z, chimney) < ROOF.reachMm) {
+    if (stack || solidDistance(x, y, z, chimney) < ROOF.reachMm) {
       const v = 2 * stoneVary(x, y, z)
       C.setXYZ(i, lum * ROOF.chimney[0] * v, lum * ROOF.chimney[1] * v, lum * ROOF.chimney[2] * v)
     }
     else if (nearRoof && N.getY(i) > ROOF.pitch) C.setXYZ(i, lum * ROOF.slate[0] * 2, lum * ROOF.slate[1] * 2, lum * ROOF.slate[2] * 2)
     else if (Math.hypot(x - anchors.door[0], z - anchors.door[2]) < ROOF.doorMm && C.getX(i) > 1.2 * C.getZ(i) && Math.abs(y - anchors.door[1]) < ROOF.doorMm * 1.6) C.setXYZ(i, C.getX(i) * ROOF.door[0], C.getY(i) * ROOF.door[1], C.getZ(i) * ROOF.door[2])
     else if (Math.hypot(x - anchors.door[0], z - anchors.door[2]) < ROOF.plankMm && Math.abs(y - anchors.door[1]) < ROOF.plankTall) C.setXYZ(i, lum * ROOF.plank[0], lum * ROOF.plank[1], lum * ROOF.plank[2])
+    else if (nearRoof && C.getX(i) > 1.25 * C.getZ(i)) C.setXYZ(i, C.getX(i) * ROOF.verge[0], C.getY(i) * ROOF.verge[1], C.getZ(i) * ROOF.verge[2])
     else if ((nearRoof || solidDistance(x, y, z, cottage) < ROOF.stoneMm) && Math.abs(C.getX(i) - C.getZ(i)) < ROOF.stoneHue * lum) {
       const v = stoneVary(x, y, z)
       C.setXYZ(i, (C.getX(i) + (ROOF.stoneMid - lum) * ROOF.stoneFlat) * ROOF.stone[0] * v, (C.getY(i) + (ROOF.stoneMid - lum) * ROOF.stoneFlat) * ROOF.stone[1] * v, (C.getZ(i) + (ROOF.stoneMid - lum) * ROOF.stoneFlat) * ROOF.stone[2] * v)
@@ -419,6 +409,8 @@ function dressed(g: THREE.BufferGeometry, sharedCount: number): THREE.BufferGeom
     else if (N.getY(i) > 0.6 && solidDistance(x, y, z, fence) < ROOF.reachMm) C.setXYZ(i, C.getX(i) * ROOF.railTop[0], C.getY(i) * ROOF.railTop[1], C.getZ(i) * ROOF.railTop[2])
   }
   C.needsUpdate = true
+  P.needsUpdate = true
+  N.needsUpdate = true
   return g
 }
 
@@ -438,7 +430,7 @@ export function lights(): THREE.Object3D {
     glowPiece(villageGeometry('pane-gable'), (_i, w, h) => [GLOW.pane, w, h, 1]),
   ]
   const unlit = [glowPiece(villageGeometry('pane-side'), (_i, w, h) => [GLOW.pane, w, h, 2])]
-  const look = { bulb: 0.75, bulbCore: 1.7, glass: LAMP_GLASS, flame: tones.flame.map((v) => v * 6) as unknown as Rgb, room: tones.room.map((v) => v * 1.25) as unknown as Rgb, curtain: tones.curtain.map((v) => v * 0.45) as unknown as Rgb, frost: tones.haze.map((v) => v * 0.4) as unknown as Rgb, frostAmount: 0, flicker: 0.08, cycles: 3, through: THROUGH, paneHot: 0.4 }
+  const look = { bulb: 0.75, bulbCore: 1.7, glass: LAMP_GLASS, flame: tones.flame.map((v) => v * 4) as unknown as Rgb, room: tones.room.map((v) => v * 1.25) as unknown as Rgb, curtain: tones.curtain.map((v) => v * 0.45) as unknown as Rgb, frost: tones.haze.map((v) => v * 0.4) as unknown as Rgb, frostAmount: 0, flicker: 0.08, cycles: 3, through: THROUGH, paneHot: 0.4 }
   const lit = (x: number, z: number): [number, number, number] => [x, groundAt(x, z) + 1.5, z]
   const pools = [lit(flame[0] + 0.4, flame[2] + 1.6), lit(anchors.door[0] * 0.75 + flame[0] * 0.25, anchors.door[2] * 0.75 + flame[2] * 0.25)]
   const halos = new THREE.Mesh(haloGeometry([flame, anchors.window, ...pools], HALO.radiusMm, [HALO_KIND.lamp, HALO_KIND.pane, ...pools.map(() => HALO_KIND.pool)], HALO.wide), haloMaterial(LIGHT, tones.haloEdge, tones.haloCore, HALO, clock, storm))
@@ -447,7 +439,9 @@ export function lights(): THREE.Object3D {
   return new THREE.Group().add(new THREE.Mesh(glowGeometry(pieces), glowMaterial(LIGHT, look, clock)), new THREE.Mesh(glowGeometry(unlit), glowMaterial(LIGHT, dark, clock)), halos)
 }
 
-const keep = (role: string): boolean => !isTree(role) && role !== 'ground' && role !== 'pond'
+const keep = (role: string): boolean => !isTree(role) && role !== 'ground' && role !== 'pond' && role !== 'chimney'
+const stackOnly = (role: string): boolean => role === 'chimney'
+const stackTop = frame.floor + STACK.fromMm + (house.chimney.top - STACK.fromMm) * STACK.squash
 const STEMS = { radiusMm: 0.45, headMm: 1.1 }
 let stems: number[] | null = null
 
@@ -473,7 +467,7 @@ function groundDistance(x: number, y: number, z: number): number {
 }
 
 export function solid(x: number, y: number, z: number): number {
-  return Math.min(solidDistance(x, y, z, keep), shrubDistance(x, y, z), groundDistance(x, y, z), stemDistance(x, y, z))
+  return Math.min(solidDistance(x, y, z, keep), Math.max(solidDistance(x, y, z, stackOnly), y - stackTop), shrubDistance(x, y, z), groundDistance(x, y, z), stemDistance(x, y, z))
 }
 
 export function update(moment: KitMoment): void {
