@@ -1,13 +1,19 @@
 import { stream } from '../../../core/rng'
-import { crownField, localPads, padAxes } from '../../../miniature/trunk'
+import { crownField, localPads, padAxes, type Pad } from '../../../miniature/trunk'
 
 // Each pad is a plump cushion: lumps heap up on it and hang under it, so that the tiers stand close and only narrow air parts them.
 export const FULL = { swell: -1.5, perMm2: 0.55, radius: [0.8, 1.75] as const, dome: 0.5, plump: 1.3, under: 0.6, underReach: 0.86, hang: 0.38, reach: 1.04, blend: 0.16, knob: 0.3, knobMm: 1.15, wave: 0.45, waveMm: 4.3 }
 
+// The shared pads leave the fork and the right side bare. Two more pads stand there, one over the fork and one at the right, each parted from its neighbours by a narrow slit of air.
+export const more: readonly Pad[] = [
+  { at: [0.8, 30, 2.6], size: [4.2, 1.6, 3.4], dir: [0, 1, 0] },
+  { at: [12.6, 26.9, 0.8], size: [3.4, 1.5, 3.2], dir: [0, 1, 0] },
+]
+
 function gather(): Float64Array {
   const rng = stream('crown-summer')
   const out: number[] = []
-  for (const pad of localPads) {
+  for (const pad of [...localPads, ...more]) {
     const ax = padAxes(pad)
     const [a, b, c] = pad.size
     const n = Math.round(a * c * FULL.perMm2)

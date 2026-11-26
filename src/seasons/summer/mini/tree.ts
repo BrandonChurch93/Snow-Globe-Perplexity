@@ -7,7 +7,7 @@ import { haloGeometry } from '../../../miniature/glow'
 import { lampFlame } from '../../../miniature/roof'
 import { bakeGlow, buildTrunk, crownOffset, glow, glowHook, padAxes, pads, placeGeometry, placePoint, prepareTrunk, trunkSolid, type GlowLight } from '../../../miniature/trunk'
 import type { InnerLight, KitMoment, Vec3 } from '../../kit'
-import { leafField } from './crown'
+import { leafField, more } from './crown'
 import { lanterns, type Lantern } from './lanterns'
 import { season, tones } from './palette'
 
@@ -25,9 +25,9 @@ const LAMP_ON_WOOD = { power: 0.5, reachMm: 14, wrap: -0.2 }
 const LAMP_ON_LEAVES = { power: 0.8, reachMm: 12, wrap: 0.1 }
 const LAMP_SHIFT: Vec3 = [-3, 0, -5]
 const FILL_ON_WOOD = { power: 0.25, reachMm: 1000, wrap: 0.4 }
-const FILL_ON_LEAVES = { power: 0.12, reachMm: 1000, wrap: 0.3 }
+const FILL_ON_LEAVES = { power: 0.03, reachMm: 1000, wrap: 0.3 }
 const FILL_FROM: Vec3 = [30, 60, 60]
-const BARK: Rgb3 = [0.2, 0.125, 0.082]
+const BARK: Rgb3 = [0.135, 0.085, 0.056]
 // The wood stands half again as thick as the shared trunk: each vertex moves out along its normal, less up in the crown and least on the twigs far from the stem.
 const THICK = { footMm: 1.1, crownMm: 0.7, fromMm: 6, toMm: 22, twig: 0.25, nearMm: 5, farMm: 15, limb: 0.85 }
 const BARK_BUMP = 3.4
@@ -41,10 +41,10 @@ const LEAF_LIT = 'vec3(1.5, 0.9, 0.45)'
 const glsl3 = (c: Rgb3): string => `vec3(${c.map((v) => v.toFixed(4)).join(', ')})`
 const LEAF_VARY = { big: 0.36, mid: 1.15, scaleLow: 0.56, scale: 0.4, cool: [0.72, 0.9, 1.08] as Rgb3, warm: [1.08, 1.06, 0.9] as Rgb3 }
 // A leaf's tone runs from the dark between the leaves to the bright of a leaf's face, by the map's own light (one over each map's mean stands in `gain`).
-const LEAF_TONE = { deep: [0.018, 0.042, 0.034] as Rgb3, high: [0.078, 0.15, 0.06] as Rgb3, from: 0.15, to: 2.4, gain: { body: 18.6, sprig: 7.9 }, lod: 0.75, bump: 0.5 }
-// Each pad is lit as one body: its top and the side toward the low sun are bright, what is underneath and away is in shade, and a fine gold
-// light runs along the edge that is turned from the lens and toward the sun.
-const PAD = { soft: 7, round: 0.7, upFrom: -0.75, upTo: 0.55, under: 0.3, sky: [0.3, 0.3, 0.24] as Rgb3, ground: [0.15, 0.14, 0.1] as Rgb3, light: 1.3, wrap: 0.7, shade: 0.45, rim: 1.7, rimTight: 3.0, rimFrom: -0.2, rimTo: 0.5, gold: [0.55, 0.5, 0.3] as Rgb3, speckFrom: 0.8, speckTo: 2.1, closed: 0.3, through: 0.55, throughTight: 1.5, leaf: [0.5, 0.62, 0.14] as Rgb3, haze: [0.006, 0.0049, 0.0031] as Rgb3 }
+const LEAF_TONE = { deep: [0.004, 0.009, 0.008] as Rgb3, high: [0.016, 0.038, 0.022] as Rgb3, from: 0.15, to: 2.4, gain: { body: 18.6, sprig: 7.9 }, lod: { body: 0.75, sprig: 0 }, bump: 0.5 }
+// Each pad is a dark body, lit as one: its top and the side toward the low sun are a little brighter, what is underneath is in shade. The bright tufts
+// that stand on the edge turned from the lens and toward the sun, with open air between them and it, catch it as single points of gold. The lanterns light the same tufts.
+const PAD = { soft: 7, round: 0.7, upFrom: -0.75, upTo: 0.55, under: 0.3, sky: [0.3, 0.3, 0.24] as Rgb3, ground: [0.15, 0.14, 0.1] as Rgb3, light: 1.3, wrap: 0.7, shade: 0.45, rim: 8.0, rimTight: 4.0, rimFrom: -0.1, rimTo: 0.5, tipFrom: 0.3, tipTo: 0.75, gold: [0.8, 0.66, 0.38] as Rgb3, speckFrom: 1.25, speckTo: 2.3, openFrom: 0.3, openTo: 0.9, closed: 0.3, lamp: 0.12, lampFrom: 1.5, lampTo: 4.5, haze: [0.008, 0.009, 0.005] as Rgb3 }
 const LANTERN = { rib: 0.3, gores: 12, ring: 0.16, ribs: 26, gain: 0.95, body: 0.5, core: 5.0, tight: 2.2, paper: 0.06, dim: 0.4, first: 2, firstStepS: 0.23, firstRampS: 0.42, stepS: 0.6, rampS: 0.8, swayRad: 0.045, sway2: 0.6, kickRad: 0.16, kickFade: 1.2, kickHz: 1.3, cycles: 2 }
 const HALO = { radius: 2.9, strength: 0.17, hot: 0.0 }
 const HALO_EDGE: Rgb3 = [0.9, 0.36, 0.08]
@@ -95,7 +95,7 @@ vec3 treeBump(vec3 sx, vec3 sy, vec2 dh, vec3 n, float face) {
 `
 
 function leafHook(shader: Shader): void {
-  glowHook(shader, `material.diffuseContribution * ${LEAF_LIT}`)
+  glowHook(shader, `(material.diffuseContribution * ${LEAF_LIT} + ${glsl3(PAD.gold)} * (${PAD.lamp.toFixed(2)} * treeSpeck * smoothstep(${PAD.lampFrom.toFixed(2)}, ${PAD.lampTo.toFixed(2)}, vGlow.r)))`)
   Object.assign(shader.uniforms, { uTile: { value: 1 / tileOf('leaves') }, uBump: { value: LEAF_TONE.bump }, uSprigs: { value: texture(SPRIGS) } })
   shader.vertexShader = shader.vertexShader
     .replace('#include <common>', '#include <common>\nattribute vec2 uv1;\nattribute vec4 aPad;\nvarying vec2 vCard;\nvarying vec3 vTreeP;\nvarying vec3 vTreeN;\nvarying vec3 vPadN;\nvarying vec2 vPad;')
@@ -108,8 +108,9 @@ function leafHook(shader: Shader): void {
       float treeBig = 0.5 + 0.5 * sin(vTreeP.x * ${LEAF_VARY.big.toFixed(2)} + 1.7 * sin(vTreeP.y * ${(LEAF_VARY.big * 0.8).toFixed(3)} + 0.6)) * sin(vTreeP.z * ${(LEAF_VARY.big * 0.9).toFixed(3)} + 1.3 * sin(vTreeP.x * ${(LEAF_VARY.big * 0.7).toFixed(3)}) + 2.1);
       float treeMid = 0.5 + 0.5 * sin(vTreeP.x * ${LEAF_VARY.mid.toFixed(2)} + vTreeP.y * ${(LEAF_VARY.mid * 0.7).toFixed(3)} + 0.4) * sin(vTreeP.z * ${(LEAF_VARY.mid * 0.85).toFixed(3)} - vTreeP.y * ${(LEAF_VARY.mid * 0.55).toFixed(3)} + 1.9);
       bool treeCard = vCard.x > 0.5;
-      vec4 treeC = treeCard ? texture2D(uSprigs, vMapUv, ${LEAF_TONE.lod.toFixed(2)}) : treeTri(map, vTreeP * (uTile * (${LEAF_VARY.scaleLow.toFixed(2)} + ${LEAF_VARY.scale.toFixed(2)} * treeBig)), normalize(vTreeN), ${LEAF_TONE.lod.toFixed(2)});
+      vec4 treeC = treeCard ? texture2D(uSprigs, vMapUv, ${LEAF_TONE.lod.sprig.toFixed(2)}) : treeTri(map, vTreeP * (uTile * (${LEAF_VARY.scaleLow.toFixed(2)} + ${LEAF_VARY.scale.toFixed(2)} * treeBig)), normalize(vTreeN), ${LEAF_TONE.lod.body.toFixed(2)});
       float treeLum = dot(treeC.rgb, vec3(0.3, 0.6, 0.1)) * (treeCard ? ${LEAF_TONE.gain.sprig.toFixed(1)} : ${LEAF_TONE.gain.body.toFixed(1)});
+      float treeSpeck = treeCard ? smoothstep(${PAD.speckFrom.toFixed(2)}, ${PAD.speckTo.toFixed(2)}, treeLum) : 0.0;
       float treeH = treeLum * 0.22;
       vec3 treeSx = dFdx(-vViewPosition);
       vec3 treeSy = dFdy(-vViewPosition);
@@ -136,12 +137,11 @@ function leafHook(shader: Shader): void {
   reflectedLight.indirectDiffuse *= mix(${PAD.under.toFixed(2)}, 1.0, treeUp);
   reflectedLight.indirectDiffuse += treeTone * mix(${glsl3(PAD.ground)}, ${glsl3(PAD.sky)}, treeUp) + ${glsl3(PAD.haze)};
   reflectedLight.directDiffuse += stageKeyC * treeTone * (RECIPROCAL_PI * ${PAD.light.toFixed(2)} * treeSide * treeSide * treeSky * mix(${PAD.shade.toFixed(2)}, 1.0, stageKeyS));
-  float treeEdge = pow(clamp(1.0 - dot(treeRound, treeV), 0.0, 1.0), ${PAD.rimTight.toFixed(1)});
+  float treeEdge = pow(clamp(1.0 - abs(dot(normalize(vNormal), treeV)), 0.0, 1.0), ${PAD.rimTight.toFixed(1)});
   float treeTurn = smoothstep(${PAD.rimFrom.toFixed(2)}, ${PAD.rimTo.toFixed(2)}, treeToSun);
-  float treeSpeck = smoothstep(${PAD.speckFrom.toFixed(2)}, ${PAD.speckTo.toFixed(2)}, treeLum);
-  reflectedLight.directDiffuse += stageKeyC * ${glsl3(PAD.gold)} * (${PAD.rim.toFixed(2)} * treeEdge * treeTurn * treeSpeck * treeSky);
-  float treeBack = clamp(dot(treeRound, -stageKeyL), 0.0, 1.0) * pow(clamp(1.0 - abs(dot(treePad, treeV)), 0.0, 1.0), ${PAD.throughTight.toFixed(1)});
-  reflectedLight.directDiffuse += stageKeyC * ${glsl3(PAD.leaf)} * treeTone * (${PAD.through.toFixed(2)} * treeBack * treeSky * treeUp);
+  float treeOpen = smoothstep(${PAD.openFrom.toFixed(2)}, ${PAD.openTo.toFixed(2)}, vCard.y);
+  float treeTip = smoothstep(${PAD.tipFrom.toFixed(2)}, ${PAD.tipTo.toFixed(2)}, fract(vMapUv.y * 2.0));
+  reflectedLight.directDiffuse += stageKeyC * ${glsl3(PAD.gold)} * (${PAD.rim.toFixed(2)} * treeSpeck * treeOpen * treeEdge * treeTurn * treeTip);
 }`,
   )
 }
@@ -267,7 +267,7 @@ function lampOn(on: { power: number; reachMm: number; wrap: number }): GlowLight
 function bakePads(g: THREE.BufferGeometry): void {
   const pos = g.getAttribute('position')
   const out = new Float32Array(pos.count * 4)
-  const frames = pads.map((p) => ({ at: p.at, size: p.size, ...padAxes(p) }))
+  const frames = [...pads, ...more.map((p) => ({ ...p, at: placePoint(p.at) }))].map((p) => ({ at: p.at, size: p.size, ...padAxes(p) }))
   const dist = new Float64Array(frames.length)
   const dirs = new Float64Array(frames.length * 4)
   for (let i = 0; i < pos.count; i++) {
