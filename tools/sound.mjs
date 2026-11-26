@@ -353,11 +353,14 @@ function pack() {
   const r = writePack()
   const ledger = readLedger()
   const mb = (b) => (b / 1048576).toFixed(2)
-  ledger.pack = { time: new Date().toISOString(), kbps: r.kbps, bytes: r.index.bytes, fits: r.fits, files: r.index.files.map((f) => ({ ...f, sha256: r.shas[f.file] })), sprites: Object.keys(r.index.sprites), laid: r.laid, loops: r.loopChecks, notes: r.notes }
+  // trimsDb and shakes: what the app's gains are made of (decision 146), so the ledger says why a gain is what it is.
+  ledger.pack = { time: new Date().toISOString(), kbps: r.kbps, bytes: r.index.bytes, fits: r.fits, files: r.index.files.map((f) => ({ ...f, sha256: r.shas[f.file] })), sprites: Object.keys(r.index.sprites), laid: r.laid, trimsDb: r.trimsDb, shakes: r.shakes, loops: r.loopChecks, notes: r.notes }
   writeLedger(ledger)
   for (const f of r.index.files) console.log(`${show(path.join(PUBLIC_AUDIO, f.file))} · ${mb(f.bytes)} MB`)
   console.log(`sprite: ${Object.keys(r.index.sprites).length} sounds${Object.keys(r.index.sprites).length ? ` (${Object.keys(r.index.sprites).join(', ')})` : ''}`)
   if (r.laid.length) console.log(`of these, laid by decision 141 and not kept: ${r.laid.map((l) => l.id).join(', ')}`)
+  console.log(`the app's trims by class, dB against the film's level: ${Object.entries(r.trimsDb).map(([k, v]) => `${k} ${v}`).join(', ')}`)
+  for (const s of r.shakes) console.log(`${s.id}: the ${s.class} trim of ${s.trimDb} dB and the film's shake step of ${s.stepDb} dB, ${s.appDb} dB together, gain ${s.gain}; it rises over its first ${s.riseMs} ms in the sprite`)
   for (const c of r.loopChecks) {
     if (c.seamErrorDb === undefined) console.log(`loop ${c.id}: ${c.expectedSeconds} s written, ${c.decodedSeconds} s decoded · bars ${c.fromBar} to ${c.toBar} and the track's next ${c.heard.seamSeconds} s · under the app's cross it is heard every ${c.heard.periodSeconds} s (${c.bars} bars), the crossed bar ${c.heard.seamDb} dB against the loop's mean`)
     else console.log(`loop ${c.id}: ${c.expectedSeconds} s written, ${c.decodedSeconds} s decoded, the two sides of the seam differ by ${c.seamErrorDb} dB of the signal · under the app's cross of ${c.heard.seamSeconds} s it is heard every ${c.heard.periodSeconds} s, the crossed part ${c.heard.seamDb} dB against the loop's mean`)
