@@ -153,10 +153,10 @@ export const look = {
     // light in two soft bands along the upper left arc just inside the outline, with a dark band between them (each: where in
     // the radius, how thick, how strong), in one more, broad and faint, under the top (`rimTop`, about `rimTopToward`), and
     // the sky's in layered pale streaks inside the right arc beside the flare
-    rimBands: 0.75,
-    rimBand: [[0.955, 0.012, 1], [0.895, 0.019, 0.9]] as const,
-    rimTop: [0.75, 0.065, 0.7] as const,
-    rimTopToward: [0.26, 0.966] as const,
+    rimBands: 0.95,
+    rimBand: [[0.955, 0.013, 1.15], [0.895, 0.021, 0.85]] as const,
+    rimTop: [0.77, 0.055, 0.4] as const,
+    rimTopToward: [0.42, 0.908] as const,
     rimBandColor: [1, 0.8, 0.62] as const,
     rimBandIn: [1, 0.64, 0.4] as const,
     rimSway: 0.02,
@@ -386,7 +386,7 @@ void main() {
   vec3 rimBands = vec3(0.0);
 ${W.rimBand.map((b, i) => `  rimBands += ${vec(W.rimBandColor.map((v, k) => v + ((W.rimBandIn[k] - v) * i) / (W.rimBand.length - 1)))} * (${n(b[2])} * wlBand(r - ${n(b[0])} - ${n(1 + 0.6 * i)} * sway, ${n(b[1])}) * mix(${n(1 - W.rimBroken)}, 1.0, smoothstep(0.25, 0.6, stageNoise(vec3(ring * 2.3, ${n(11 + 2 * i)})))));`).join('\n')}
   air += rimBands * (${n(W.rimBands)} * grain * smoothstep(${n(W.rimSpan[0])}, ${n(W.rimSpan[1])}, dot(e, vec2(${n(W.rimToward[0])}, ${n(W.rimToward[1])}))) * inside * still);
-  air += ${vec(W.rimBandIn)} * (${n(W.rimBands * W.rimTop[2])} * wlBand(r - ${n(W.rimTop[0])} - 2.0 * sway, ${n(W.rimTop[1])}) * mix(${n(1 - W.rimBroken)}, 1.0, smoothstep(0.25, 0.6, stageNoise(vec3(ring * 2.3, 17.0)))) * grain * smoothstep(0.5, 0.9, dot(e, vec2(${n(W.rimTopToward[0])}, ${n(W.rimTopToward[1])}))) * still);
+  air += ${vec(W.rimBandIn)} * (${n(W.rimBands * W.rimTop[2])} * wlBand(r - ${n(W.rimTop[0])} - 2.0 * sway, ${n(W.rimTop[1])}) * mix(${n(1 - W.rimBroken)}, 1.0, smoothstep(0.25, 0.6, stageNoise(vec3(ring * 2.3, 17.0)))) * grain * smoothstep(0.6, 0.95, dot(e, vec2(${n(W.rimTopToward[0])}, ${n(W.rimTopToward[1])}))) * still);
   float streaks = 0.0;
 ${W.streak.map((b, i) => `  streaks += ${n(b[2])} * wlBand(r - ${n(b[0])} + ${n(0.5 + 0.3 * i)} * sway, ${n(b[1])}) * mix(0.3, 1.0, smoothstep(0.3, 0.6, stageNoise(vec3(ring * 2.9, ${n(21 + 2 * i)}))));`).join('\n')}
   air += ${vec(W.streakColor)} * (${n(W.streaks)} * streaks * grain * smoothstep(0.5, 0.9, dot(e, vec2(0.985, 0.174))) * inside * still);
