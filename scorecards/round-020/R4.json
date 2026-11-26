@@ -1,0 +1,28 @@
+{
+  "critic": "R4",
+  "score": 4,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "severe",
+      "file": "set-A-01.jpg",
+      "where": "the glass and base from 21.60 s through 23.10 s",
+      "what": "the globe never lifts, strokes, reverses, or tilts; the outline stays locked while the interior storms, so it has no weight in the hand",
+      "fix": "drive unequal strokes with a lagging tilt, a lift that costs effort, and a set-down that lands and settles"
+    },
+    {
+      "severity": "severe",
+      "file": "set-A-01.jpg",
+      "where": "the swap from 23.10 s to 23.53 s, including the dark frame at 23.33 s",
+      "what": "base, petals, sand, background lights, and particle color pop in one step; no clean frame is half one season and half another",
+      "fix": "grow the new season through the storm so the base changes only where the eye cannot catch a jump"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01.jpg",
+      "where": "the liquid inside the glass during the shake, 21.60 s to 23.10 s",
+      "what": "the petals whip into a storm while the glass is still, so nothing lags the glass, slams, or folds off a reversal",
+      "fix": "hold the liquid back on each stroke, then let it slam, fold into one whirl, and die away after the landing"
+    }
+  ]
+}
