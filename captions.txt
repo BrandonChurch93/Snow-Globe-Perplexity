@@ -167,7 +167,10 @@ walk-f/sq-0-first-look.jpg
   asks for under half a pixel, so this stands at the rule's edge and the tool's line reads NOT), and the live picture
   stays where it came (0 px over its first 66 frames, searched 48 px each way). By eye at this size nothing doubles.
   Neither before nor after: main 38eff8da as it is, quality as the page picks it. Run sq-fs-f (alone on the machine),
-  pictures 01-first-look-came-first, 06-first-look-still-by-page and 03-first-look-came-live.
+  pictures 01-first-look-came-first, 06-first-look-still-by-page and 03-first-look-came-live. Read again on main
+  266d093d, whose still is drawn again and which is not in the picture (run sq-fs-main5, alone on the machine, its 11
+  pictures looked at): the same. First paint 56 ms with a picture in it, the still fits the live picture best moved
+  0.5 px to the left, the live picture stays where it came (0 px over 65 frames), console 0 lines.
 
 walk-f/sq-1-half-pixel.jpg
   Shows: the same window, a cut of the glass at its own size (380 x 380 px from 110, 10), three pictures side by side.
@@ -207,29 +210,34 @@ walk-f/shake-control-asked-picture.jpg
   on the software renderer, the page stepping the particles. Neither before nor after: main 38eff8da as it is. Run
   land-f (alone on the machine), pictures 5-landed-spring-a-GONE and 1-landed-spring-a.
 
-After the walk, read again on main 304bf55c (the newest when the walk closed): two looks for their owners, the live
-app at one sample a frame. Neither is before or after a mend: no source file was changed.
+After the walk: two looks for their owners, the live app at one sample a frame, read again on main e235f76b (16:49
+UTC; main 266d093d of 17:07 UTC differs from it in the first pictures only, no script). The first is before and after
+a mend the sand's owner made on main. The second is neither before nor after: no source file was changed for it.
 
 walk-f/summer-grains-fringe.jpg
-  Shows: tablet 1024 x 1366 at 2, summer at rest from its link, the right flank of the base as the tablet's own
-  pixels hold it (the picture taken at 2048 x 2732, every cut at its own size), four cuts. Top left: main 304bf55c at
-  quality high (the canvas holds 2048 x 2732), 598 x 500 from 1450, 1560: the sand's fall sparkles pink. Top right:
-  main 38eff8da, the build walked, at high, the same cut: the grains were larger then and keep their sand colour,
-  with a red and a blue edge. Bottom left: 74 x 37 pixels of the top left's fall (from 1820, 1700) eight times over:
-  each grain has a red edge on its inner side and a blue edge on its outer side. Bottom right: main 304bf55c at
-  quality low (the canvas holds 1024 x 1366 and the browser stretches it), 598 x 300 from 1450, 1600: softer, the
-  fall reads pinkish. State of each: summer lit, the controls shown, not busy, the whole pictures loaded. Pixels of a
-  colour no sand has (strong, bright red, magenta or blue) in the right 800 x 1000 of the tablet's pixels (from
-  1248, 1520): 14791 on 304bf55c at high, 1914 at low, 4957 on 38eff8da at high. Cause, read and counted: the lens
-  fringe in src/post/post.ts 156 to 157 takes red from further out and blue from further in, and on 304bf55c the
-  grains are single hard pixels at one sample a frame. Counted in the same box on 304bf55c at high, with green (the
-  one colour the fringe does not move) telling where the grain is: a blue pixel has a brighter grain one pixel
-  further in 2194 times and one further out 12 times; a red or magenta pixel has it further out 6811 times and
-  further in 2166. The left 800 x 1000 reads the same way from the middle (blue 261 against 1, red 758 against 67),
-  so the edges change sides with the flank, as a fringe from the picture's middle does. These are the tablet's
-  pixels one to one: on a real tablet each is far smaller than on a desk screen, and what the eye makes of them
-  there I could not see. Tier: the live app on the software renderer. Runs dev-main3-summer-high,
-  dev-main3-summer-low and dev-f-summer-high (each alone on the machine).
+  Shows: tablet 1024 x 1366 at 2, quality high (the canvas holds 2048 x 2732), summer at rest from its link, the right
+  flank of the base as the tablet's own pixels hold it, on three builds side by side. Left, before: main 38eff8da, the
+  build walked. Middle, before: main 304bf55c, where it was worst. Right, after: main e235f76b, which holds the fifth
+  and sixth lists of summer's sand (commits 38833aaa and 89c24063; the mend is the sand's owner's, not mine). Above:
+  398 x 500 of the tablet's pixels from 1610, 1560, at their own size. Under each: the same 49 x 37 pixels of the
+  sand's fall (from 1752, 1640) eight times over. Left: every grain carries a red and a blue edge. Middle: the grains
+  are single hard pixels and the fall sparkles pink. Right: the fall is warm sand; the pale pink and green pixels at
+  the left edge of that zoom are the base's flank where it begins, not the fall. State of each: summer lit, the
+  controls shown, not busy, the whole pictures loaded, console 0 lines. Counted, left to right, the pixels of a colour
+  no sand has (strong, bright red, magenta or blue): 193, 484 and 0 in the 49 x 37 shown eight times over; 3122, 8672
+  and 203 in the 398 x 500 above; 4957, 14791 and 879 in the right 800 x 1000 of the tablet's pixels (from 1248,
+  1520). At quality low in that last box: 1914 on 304bf55c and 26 on e235f76b. The 879 left on e235f76b lie at the
+  heap's rim on the table and on a small patch of the base's shoulder (67 in the 150 x 170 from 1650, 1560), almost
+  none in the fall. Cause, read and counted on 304bf55c: the lens fringe in src/post/post.ts 156 to 157 takes red from
+  further out and blue from further in, over grains one pixel wide at one sample a frame. With green (the one colour
+  the fringe does not move) telling where the grain is, in the 800 x 1000 at high: a blue pixel has a brighter grain
+  one pixel further in 2194 times and one further out 12 times; a red or magenta pixel has it further out 6811 times
+  and further in 2166. The left 800 x 1000 reads the same way from the middle (blue 261 against 1, red 758 against
+  67), so the edges change sides with the flank, as a fringe from the picture's middle does. The sand's owner names
+  the same cause in commit 38833aaa and lays each grain's red and blue where the lens brings them together. These are
+  the tablet's pixels one to one: what the eye makes of them on a real tablet I could not see. Tier: the live app on
+  the software renderer. Runs dev-f-summer-high, dev-main3-summer-high, dev-main3-summer-low, dev-main4-summer-high
+  and dev-main4-summer-low (each alone on the machine).
 
 walk-f/mid-shake-stipple.jpg
   Shows: tablet 1024 x 1366 at 2, quality low, a shake from winter to spring pressed on the control, one cut of the
@@ -241,15 +249,26 @@ walk-f/mid-shake-stipple.jpg
   pixels, run dev-main3-shake-low). State at the press: lit winter, target spring, busy; both runs landed in spring.
   While the season is exchanged inside the milky glass the scene comes and goes pixel by pixel, in both builds alike.
   Of the pixels of the kept cut (400 x 400), those that stand outside all four beside them by six levels are 2.1 in a
-  hundred at rest, and at the most 12.6 on 304bf55c (frame 102) and 13.4 on 38eff8da (frame 112). The pattern is drawn
-  anew every frame: of 19776 such pixels in frame 101 on 304bf55c, 3294 stand apart in frame 102 as well, where chance
-  alone would give 2487 (at rest 3029 of 3361 do). It is there in 41 of the shake's 136 frames on 304bf55c (frames 78
-  to 118, the control busy from 25 to 160) and in 37 of 137 on 38eff8da (90 to 126, busy from 31 to 167); the config
-  gives the exchange 0.6 s of the shake's 2.4 s (config/showcase.json 161, beats 2 to 3 of 4 at 100 a minute). These
-  two runs play slowly, which is the tool's doing and not the page's: the store is read in the frame's own task, that
-  holds the page's thread, and the particle worker then gets one turn a frame (told 138 times over the 137 busy frames
-  on 38eff8da); with nothing read a shake took 11 frames on 304bf55c (run dev-main3-shake-low-b). Cause, read:
-  `stageGone` in src/core/materials.ts 324 to 336 sets a pixel's hash, seeded anew each frame (src/app/app.ts 427,
-  src/scene/stage.ts 286), against the change's progress, and the live app draws one sample a frame where the film
-  averages many. Not seen moving: at speed the eye may take it for grain, and a still cannot tell. Not looked at on
-  high. Tier: the live app on the software renderer. Runs grab-main3-low and grab-f-low-w (each alone on the machine).
+  hundred at rest, and at the most 12.6 on 304bf55c (frame 102) and 13.4 on 38eff8da (frame 112). Read again on main
+  e235f76b, which is not in the picture (run grab-main4-low, landed in spring, console 0 lines; frames 25 and 95
+  looked at): 2.1 at rest and 12.2 at the most (frame 95), the same look. The pattern is drawn anew every frame: of
+  19776 such pixels in frame 101 on 304bf55c, 3294 stand apart in frame 102 as well, where chance alone would give
+  2487 (at rest 3029 of 3361 do). It is there (above 1.5 in a hundred around its top) in 41 of the shake's 136 frames
+  on 304bf55c (frames 78 to 118, the control busy from 25 to 160), in 37 of 137 on 38eff8da (90 to 126, busy from 31
+  to 167) and in 40 of 122 on e235f76b (70 to 109, busy from 26 to 147); the config gives the exchange 0.6 s of the
+  shake's 2.4 s (config/showcase.json 161, beats 2 to 3 of 4 at 100 a minute). These runs play slowly, which is the
+  tool's doing and not the page's: the store is read in the frame's own task, that holds the page's thread, and the
+  particle worker then gets one turn a frame (told 138 times over the 137 busy frames on 38eff8da); with nothing read
+  a shake took 11 frames on 304bf55c (run dev-main3-shake-low-b). Cause, read: `stageGone` in src/core/materials.ts
+  324 to 336 sets a pixel's hash, seeded anew each frame (src/app/app.ts 427, src/scene/stage.ts 286), against the
+  change's progress, and the live app draws one sample a frame where the film averages many. Not seen moving: at speed
+  the eye may take it for grain, and a still cannot tell. Not looked at on high. Tier: the live app on the software
+  renderer. Runs grab-main3-low, grab-f-low-w and grab-main4-low (each alone on the machine).
+
+The first look read again on main 266d093d (commit of 17:07 UTC, its first pictures drawn again). State only: none of
+its pictures is here. Phone and tablet side by side, hd alone, 600 x 600 alone. The browser's first paint has a
+picture in it at 92, 228, 240 and 56 ms; the still lies on the live picture with no shift on phone, tablet and hd (0
+px by whole pixels and between them) and half a pixel to its right at 600 x 600, as on 38eff8da; the live picture
+stays where it came (0 px over its first 71, 66, 70 and 65 frames); the controls stood whole in every look once they
+were in (129, 132, 135 and 137 looks, 0 faults); console 0 lines. Runs phone-fs-main5, tablet-fs-main5, hd-fs-main5
+and sq-fs-main5: 11 pictures each, all 44 looked at, none flat or black.
