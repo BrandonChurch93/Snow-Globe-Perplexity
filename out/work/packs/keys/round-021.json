@@ -1,0 +1,294 @@
+{
+  "round": 21,
+  "phase": 6,
+  "unit": "summer",
+  "tier": "final",
+  "motionTier": "final",
+  "record": false,
+  "limits": {
+    "longEdge": 1400,
+    "maxPixels": 1140000,
+    "maxFiles": 10
+  },
+  "engineHash": "7bed76e87f414806",
+  "roles": {
+    "R1": {
+      "parts": [
+        {
+          "folder": "out/work/packs/round-021/R1",
+          "message": "out/work/packs/round-021/R1.message.md",
+          "files": [
+            {
+              "name": "set-A-01-a.jpg",
+              "what": "the approved image references/approved/summer-rest.png, cropped to the globe, its base and the surface around them",
+              "sha256": "91146fc8bdc05c32e5140706a9fa8a83b23fa6db1396cbf8e6de88558c322842",
+              "width": 1070,
+              "height": 1059,
+              "sha256Source": "a417381d64998fba7916037888a924cf3c9f4b9cfa13cc746872cef938602b39"
+            },
+            {
+              "name": "set-A-01-b.jpg",
+              "what": "summer-rest: summer in the rest state from hero, hd, final tier, cropped the same way",
+              "sha256": "4fc83b5072977cf2d7d961c8d337f7127bf80b2487b98c5373c34002c0eddb1b",
+              "width": 1070,
+              "height": 1059
+            },
+            {
+              "name": "set-A-02-a.jpg",
+              "what": "crops of the approved image references/approved/summer-rest.png, resized to the size of the still: 1 the glass at its shoulder; 2 the cottage wall and roof; 3 the tree's crown; 4 the base from its rim to its foot; 5 the collar; 6 the line where the base meets the surface, and the mirror image",
+              "sha256": "71a58159993a61464363be395d1480580ef976e5ed1ea0e96028eaf4a9d8c3b0",
+              "width": 1398,
+              "height": 814
+            },
+            {
+              "name": "set-A-02-b.jpg",
+              "what": "native size crops of summer-rest: summer in the rest state from hero, hd, final tier: 1 the glass at its shoulder; 2 the cottage wall and roof; 3 the tree's crown; 4 the base from its rim to its foot; 5 the collar; 6 the line where the base meets the surface, and the mirror image",
+              "sha256": "fafe2ca9b6cb502fae4445f66af6bb0aa28a84abb1c408d29b39f13358391674",
+              "width": 1398,
+              "height": 814
+            },
+            {
+              "name": "set-B-01-a.jpg",
+              "what": "the approved image references/approved/summer-shake.png, cropped to the globe, its base and the surface around them",
+              "sha256": "ee78e0b094e9bb73fa0f913cc2bb1e4d9f2b121e79ce3adf7e2e249938b916f4",
+              "width": 1070,
+              "height": 1059,
+              "sha256Source": "1f07b479ad0c39c4626e52c8540e5b597a77ac054b386ff5867cb93c5c929ced"
+            },
+            {
+              "name": "set-B-01-b.jpg",
+              "what": "summer-shake: summer in the landed state from hero, hd, final tier, cropped the same way",
+              "sha256": "f59634ee64b42b8a9c5ec59d4f438c58bdfd22a2fbdeb20bdc1e4c3491cb4aa6",
+              "width": 1070,
+              "height": 1059
+            },
+            {
+              "name": "set-B-02-a.jpg",
+              "what": "crops of the approved image references/approved/summer-shake.png, resized to the size of the still: 1 the glass at its shoulder; 2 the cottage wall and roof; 3 the tree's crown; 4 the base from its rim to its foot; 5 the collar; 6 the line where the base meets the surface, and the mirror image",
+              "sha256": "9f35beaf73f457d7e0225fe560b5a24fbbe94fb987b99e60de41016a369aac46",
+              "width": 1398,
+              "height": 814
+            },
+            {
+              "name": "set-B-02-b.jpg",
+              "what": "native size crops of summer-shake: summer in the landed state from hero, hd, final tier: 1 the glass at its shoulder; 2 the cottage wall and roof; 3 the tree's crown; 4 the base from its rim to its foot; 5 the collar; 6 the line where the base meets the surface, and the mirror image",
+              "sha256": "ea9d9a6edad52e04b714160d3083135818bdb29dd2cc1cb38455a6fb724834ca",
+              "width": 1398,
+              "height": 814
+            }
+          ]
+        }
+      ],
+      "missing": [],
+      "notes": []
+    },
+    "R2": {
+      "parts": [
+        {
+          "folder": "out/work/packs/round-021/R2",
+          "message": "out/work/packs/round-021/R2.message.md",
+          "files": [
+            {
+              "name": "set-A-01.jpg",
+              "what": "judged: summer-settled: summer in the settled state from hero, hd, final tier",
+              "sha256": "85508688805b16f28a975142c6457366236a48b3a725f651ffb7f63bb5cdf3d9",
+              "width": 1070,
+              "height": 1059,
+              "jury": "judged",
+              "id": "summer-settled"
+            },
+            {
+              "name": "set-A-02.jpg",
+              "what": "judged: summer-shake: summer in the landed state from hero, hd, final tier",
+              "sha256": "f59634ee64b42b8a9c5ec59d4f438c58bdfd22a2fbdeb20bdc1e4c3491cb4aa6",
+              "width": 1070,
+              "height": 1059,
+              "jury": "judged",
+              "id": "summer-shake"
+            },
+            {
+              "name": "set-A-03.jpg",
+              "what": "control: the approved image references/approved/summer-shake.png",
+              "sha256": "ee78e0b094e9bb73fa0f913cc2bb1e4d9f2b121e79ce3adf7e2e249938b916f4",
+              "width": 1070,
+              "height": 1059,
+              "jury": "control",
+              "id": "approved summer-shake",
+              "sha256Source": "1f07b479ad0c39c4626e52c8540e5b597a77ac054b386ff5867cb93c5c929ced"
+            },
+            {
+              "name": "set-A-04.jpg",
+              "what": "control: the approved image references/approved/summer-rest.png",
+              "sha256": "91146fc8bdc05c32e5140706a9fa8a83b23fa6db1396cbf8e6de88558c322842",
+              "width": 1070,
+              "height": 1059,
+              "jury": "control",
+              "id": "approved summer-rest",
+              "sha256Source": "a417381d64998fba7916037888a924cf3c9f4b9cfa13cc746872cef938602b39"
+            },
+            {
+              "name": "set-A-05.jpg",
+              "what": "judged: summer-rest: summer in the rest state from hero, hd, final tier",
+              "sha256": "4fc83b5072977cf2d7d961c8d337f7127bf80b2487b98c5373c34002c0eddb1b",
+              "width": 1070,
+              "height": 1059,
+              "jury": "judged",
+              "id": "summer-rest"
+            }
+          ]
+        }
+      ],
+      "missing": [],
+      "notes": [
+        "left out of the jury: summer-interior. Its framing does not show the globe and its base whole, so it cannot be cropped to what a control shows",
+        "left out of the jury: summer-base. Its framing does not show the globe and its base whole, so it cannot be cropped to what a control shows",
+        "left out of the jury: summer-surface. Its framing does not show the globe and its base whole, so it cannot be cropped to what a control shows",
+        "every image is cropped to 1.42 radii left, 1.42 right, 1.19 up and 1.62 down of the globe centre, at 1070 x 1059"
+      ]
+    },
+    "R3": {
+      "parts": [
+        {
+          "folder": "out/work/packs/round-021/R3-1",
+          "message": "out/work/packs/round-021/R3-1.message.md",
+          "files": [
+            {
+              "name": "set-A-01.jpg",
+              "what": "summer-rest: summer in the rest state from hero, hd, final tier, resized to fit",
+              "sha256": "dd33676a09d7de473bb649dc1268041ca41a3bf21d269f93062418bb66ff682c",
+              "width": 1400,
+              "height": 787
+            },
+            {
+              "name": "set-A-02.jpg",
+              "what": "native size crops of summer-rest: summer in the rest state from hero, hd, final tier: 1 the glass at its shoulder; 2 the glass at its rim; 3 the cottage wall and roof; 4 the tree's crown; 5 the pond and the ground around it; 6 particles near the glass; 7 particles far behind; 8 the base from its rim to its foot; 9 the collar; 10 the line where the base meets the surface, and the mirror image; 11 what lies on the surface, left; 12 what lies on the surface, right",
+              "sha256": "706847c1a8c5003ab5e572ba5f1a6f57e953039e30ad03f8759aa84806c25cf2",
+              "width": 1398,
+              "height": 814
+            },
+            {
+              "name": "set-A-03.jpg",
+              "what": "native size crops of summer-rest: summer in the rest state from hero, hd, final tier: 1 the glass at its shoulder; 2 the glass at its rim; 3 the cottage wall and roof; 4 the tree's crown; 5 the pond and the ground around it; 6 particles near the glass; 7 particles far behind; 8 the base from its rim to its foot; 9 the collar; 10 the line where the base meets the surface, and the mirror image; 11 what lies on the surface, left; 12 what lies on the surface, right",
+              "sha256": "74211753f06700bb0b405132f1808f26f8ad2c6ee6473357de9a0b2d867aaa31",
+              "width": 1398,
+              "height": 814
+            },
+            {
+              "name": "set-B-01.jpg",
+              "what": "summer-shake: summer in the landed state from hero, hd, final tier, resized to fit",
+              "sha256": "1c3222617b68982474610f98466132106a3ee189dd2bdcec0a8d32fe92675db9",
+              "width": 1400,
+              "height": 787
+            },
+            {
+              "name": "set-B-02.jpg",
+              "what": "native size crops of summer-shake: summer in the landed state from hero, hd, final tier: 1 the glass at its shoulder; 2 the glass at its rim; 3 the cottage wall and roof; 4 the tree's crown; 5 the pond and the ground around it; 6 particles near the glass; 7 particles far behind; 8 the base from its rim to its foot; 9 the collar; 10 the line where the base meets the surface, and the mirror image; 11 what lies on the surface, left; 12 what lies on the surface, right",
+              "sha256": "bb28ad13e7264f04cdbcd460ac50137660117671a5a119c3c2124f74dc481619",
+              "width": 1398,
+              "height": 814
+            },
+            {
+              "name": "set-B-03.jpg",
+              "what": "native size crops of summer-shake: summer in the landed state from hero, hd, final tier: 1 the glass at its shoulder; 2 the glass at its rim; 3 the cottage wall and roof; 4 the tree's crown; 5 the pond and the ground around it; 6 particles near the glass; 7 particles far behind; 8 the base from its rim to its foot; 9 the collar; 10 the line where the base meets the surface, and the mirror image; 11 what lies on the surface, left; 12 what lies on the surface, right",
+              "sha256": "98efdb182fcc1fb4e6e583a461456d356acddb9b2e209f4b74924d88dfe5905e",
+              "width": 1398,
+              "height": 814
+            },
+            {
+              "name": "set-C-01.jpg",
+              "what": "summer-interior: summer in the rest state from interior, hd, final tier, resized to fit",
+              "sha256": "b778e2dd84f16deb36536b53e8c51b46e2f0e689e3165b51129301bcbfc3ca47",
+              "width": 1400,
+              "height": 787
+            },
+            {
+              "name": "set-C-02.jpg",
+              "what": "native size crops of summer-interior: summer in the rest state from interior, hd, final tier: numbered left to right, top to bottom across the still, four to a row",
+              "sha256": "9e5f52cbe61cf033da70527d68a9e62fd72660954fa18c8921b00ce02546a318",
+              "width": 1398,
+              "height": 814
+            },
+            {
+              "name": "set-C-03.jpg",
+              "what": "native size crops of summer-interior: summer in the rest state from interior, hd, final tier: numbered left to right, top to bottom across the still, four to a row",
+              "sha256": "29dd9a419f251ef94e44f92c578da33c482ff2eeab49caf994f0b99910ab831f",
+              "width": 1398,
+              "height": 814
+            }
+          ]
+        },
+        {
+          "folder": "out/work/packs/round-021/R3-2",
+          "message": "out/work/packs/round-021/R3-2.message.md",
+          "files": [
+            {
+              "name": "set-D-01.jpg",
+              "what": "summer-base: summer in the rest state from base, hd, final tier, resized to fit",
+              "sha256": "59be8e0466a75e995c2966e201befaef4611ea4fba3b0643ed0aa2a130fd7776",
+              "width": 1400,
+              "height": 787
+            },
+            {
+              "name": "set-D-02.jpg",
+              "what": "native size crops of summer-base: summer in the rest state from base, hd, final tier: numbered left to right, top to bottom across the still, four to a row",
+              "sha256": "163a27bd163cc28560e333a1bb7d067a46defe268df8940d3f4b86bb53f1e621",
+              "width": 1398,
+              "height": 814
+            },
+            {
+              "name": "set-D-03.jpg",
+              "what": "native size crops of summer-base: summer in the rest state from base, hd, final tier: numbered left to right, top to bottom across the still, four to a row",
+              "sha256": "177884525c206a5a701e2b183195e6dd4a968d38188b2407324edfdaca432390",
+              "width": 1398,
+              "height": 814
+            },
+            {
+              "name": "set-E-01.jpg",
+              "what": "summer-surface: summer in the rest state from surface, hd, final tier, resized to fit",
+              "sha256": "19039e333e139698a3275b0a9a8720af46e563d253fc27dca5f65c6575368b76",
+              "width": 1400,
+              "height": 787
+            },
+            {
+              "name": "set-E-02.jpg",
+              "what": "native size crops of summer-surface: summer in the rest state from surface, hd, final tier: numbered left to right, top to bottom across the still, four to a row",
+              "sha256": "e7d243b32e9f2cc6026e94627eb0008d17065df713b68cdb288dbbcb139a89ec",
+              "width": 1398,
+              "height": 814
+            },
+            {
+              "name": "set-E-03.jpg",
+              "what": "native size crops of summer-surface: summer in the rest state from surface, hd, final tier: numbered left to right, top to bottom across the still, four to a row",
+              "sha256": "cbbd7dcd58679953480aece7d2e93a0f4493f2876f26fb60bcb4684dcd3388fb",
+              "width": 1398,
+              "height": 814
+            },
+            {
+              "name": "set-F-01.jpg",
+              "what": "summer-settled: summer in the settled state from hero, hd, final tier, resized to fit",
+              "sha256": "d2da838b1136a4b62a7024d8bcd23293ba709feb7738e7a693fb5318d8c068e4",
+              "width": 1400,
+              "height": 787
+            },
+            {
+              "name": "set-F-02.jpg",
+              "what": "native size crops of summer-settled: summer in the settled state from hero, hd, final tier: 1 the glass at its shoulder; 2 the glass at its rim; 3 the cottage wall and roof; 4 the tree's crown; 5 the pond and the ground around it; 6 particles near the glass; 7 particles far behind; 8 the base from its rim to its foot; 9 the collar; 10 the line where the base meets the surface, and the mirror image; 11 what lies on the surface, left; 12 what lies on the surface, right",
+              "sha256": "80052d1b5cfea9033e2c7d290bef19477bffe661ca231da62f76d094a4252dc2",
+              "width": 1398,
+              "height": 814
+            },
+            {
+              "name": "set-F-03.jpg",
+              "what": "native size crops of summer-settled: summer in the settled state from hero, hd, final tier: 1 the glass at its shoulder; 2 the glass at its rim; 3 the cottage wall and roof; 4 the tree's crown; 5 the pond and the ground around it; 6 particles near the glass; 7 particles far behind; 8 the base from its rim to its foot; 9 the collar; 10 the line where the base meets the surface, and the mirror image; 11 what lies on the surface, left; 12 what lies on the surface, right",
+              "sha256": "576bdc25f3561f467fa1771a5b2572dfb538c05243b7cacef78619c55e875ac9",
+              "width": 1398,
+              "height": 814
+            }
+          ]
+        }
+      ],
+      "missing": [],
+      "notes": []
+    }
+  }
+}
