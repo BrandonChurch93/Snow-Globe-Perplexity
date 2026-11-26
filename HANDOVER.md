@@ -1,4 +1,19 @@
-# Handover: the master tool (agent/p6-master, then agent/p6-master2)
+# Handover: the master tool (agent/p6-master, agent/p6-master2, agent/p6-master3)
+
+## Job 3 (agent/p6-master3, 2ed4a60f): what the first run on a larger machine mended
+
+Written by master_tool_builder on 26 Nov, 10:20 UTC. Tool and tests only; the engine's hash did not move by it. The short road for a farm machine is `tools/farm/README.md` on that branch.
+
+- `--procs`: the parent sweeps the frame folders once, then a worker reads and drops the folders of its own chunks only. `frames.json` and each chunk's record are written under another name and renamed. A key file that cannot be read marks its folder as stale.
+- The first line of every run is `limits: ... GiB of memory, ... CPUs`, read from the cgroup (`memory.max`, `cpu.max` of the path in `/proc/self/cgroup` and of every folder above it; the v1 names too), else from the machine. Each chunk's record carries it as `limits`. `--procs` at `uhd` is refused over what the memory holds (4.1 GB a process, 2 GB kept: 24 GiB hold 5, 7.6 GiB hold 1). More processes than the CPUs gain from get one plain line and run. `--encode` takes its x264 threads from the same limit.
+- `--local` is the installed Chrome in a window with a graphics card. It is refused where no display is.
+- A stopped process: `render process N stopped at chunk FIRST-LAST, frame F: why`, the PNGs stay, and the last line is `To go on from there:` with the command as it was typed.
+- `--stand-in DIR [--stand-in-fail N]` draws ramps without a browser into DIR, for the tool's own tests only (it needs one of `--samples`, `--format`, `--chunk`; its records say `stand-in` and `test`).
+
+Run for real on this VM (hd, 1 sample, lavapipe, build 4708b960e00eb5d2): `--procs 2` over two fresh chunks, both finished, 4 min 45 s; then two more with the graphics process of one browser killed by hand at frame 215: the parent named chunk 000210-000239 and frame 215, 5 PNGs stayed, the other process finished its chunk, and the printed command rendered the 25 missing frames and no other.
+
+Not run: more than 2 real processes; a real cgroup with a cpu.max (this VM has only memory.max); a real cgroup v1 machine; `--local` on a machine with a display.
+
 
 ## Job 2 (agent/p6-master2): intermediates by attachment, one encode of each master
 
