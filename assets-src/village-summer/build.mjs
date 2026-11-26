@@ -4,10 +4,12 @@ import { fromThree, writeGlb } from '../../tools/lib/glb.mjs'
 import { readGlb, writeGlb as packedGlb } from '../../tools/lib/glbpack.mjs'
 import { rel } from '../../tools/lib/paths.mjs'
 import { loadLayout, loadRoof } from '../village/layout.mjs'
+import { loadSource } from '../trunk/source.mjs'
 import { Bag, KIND, TILE_MM, add3, clamp, fbm, lin, mix3, mul3, noise, norm3, rng, smooth, surf, writePng } from '../village/kit.mjs'
 
 const L = await loadLayout()
 const RF = await loadRoof()
+const [TF] = await loadSource(['/src/seasons/summer/mini/turf.ts'])
 const C = L.cottage
 const R = rng(7717)
 const TAU = Math.PI * 2
@@ -17,7 +19,7 @@ const range = (a, b) => a + (b - a) * R()
 
 const IVY = { leaves: 520, roses: 14, low: 4.5, size: 0.85 }
 const TURF = { lumpMm: 0.6, fineMm: 0.12, sandMm: 1.3, sandReach: 5.0, sandSides: 0.35 }
-const GRASS = { tufts: 21000, keep: 0.45, blades: 3, tall: [0.4, 1.15], clump: 1.5, wide: [0.13, 0.23], rimTall: 1.5, sandFrom: 0.55, sandTo: 1.0, edgeTall: 1.0 }
+const GRASS = { tufts: 21000, keep: 0.6, edge: 1100, edgeFrom: 0.1, edgeTo: 0.6, edgeWide: 1.6, edgeTuft: [1.3, 2.6], edgeLean: [0.35, 0.9], blades: 3, tall: [0.4, 1.15], clump: 1.5, wide: [0.13, 0.23], rimTall: 1.5, sandFrom: 0.55, sandTo: 1.0, edgeTall: 1.0 }
 const LEVEL = { seed: 4107, medium: { back: 0.4, front: 0.72 }, low: { back: 0.25, front: 0.5 }, zFrom: -12, zTo: 6 }
 const STONE = { buried: 0.25, sink: 0.45, lumps: 0.36, chips: 0.11, wet: 0.6, tones: ['#8f887a', '#a39a88', '#7b7568', '#b0a692', '#9a8c74', '#6f6a62'] }
 const TONES = {
@@ -52,9 +54,9 @@ const sandAt = (x, z) => (1 - smooth(0.5, TURF.sandReach * (0.45 + 1.3 * clamp(0
 const blob = (x, z, cx, cz, rx, rz) => Math.exp(-(((x - cx) / rx) ** 2 + ((z - cz) / rz) ** 2))
 // Where the low sun reaches the floor between the crown, the trunk and the cottage (read off the approved image): right of
 // the trunk out to the sunflowers, behind the lamp, a little by the fence and on the near right bank.
-const sunAt = (x, z) => clamp((1.2 * blob(x, z, 27, 3, 11, 9) + 0.9 * blob(x, z, 3, -8, 7.5, 5) + 0.4 * blob(x, z, -24, 21, 6, 5) + 0.5 * blob(x, z, 24, 22, 9, 6)) * (0.5 + 1.0 * clamp(0.5 + 1.4 * fbm(x * 0.3 + 9, z * 0.3 + 4, 6.1, 2))))
+const sunAt = (x, z) => clamp((1.5 * blob(x, z, 24, 4, 13, 9) + 0.7 * blob(x, z, 6, -4, 9, 6) + 0.4 * blob(x, z, -24, 21, 6, 5) + 0.5 * blob(x, z, 24, 22, 9, 6)) * (0.5 + 1.0 * clamp(0.5 + 1.4 * fbm(x * 0.3 + 9, z * 0.3 + 4, 6.1, 2))))
 const turfAt = (x, z) => TURF.lumpMm * fbm(x * 0.22 + 3.1, z * 0.22 + 1.7, 2.2, 3) + TURF.fineMm * fbm(x * 0.9, z * 0.9, 5.5, 2)
-const topAt = (x, z) => L.groundAt(x, z) + turfAt(x, z) * smooth(0.98, 1.1, L.pondField(x, z)) + TURF.sandMm * sandAt(x, z) * (0.3 + 0.7 * fbm(x * 0.26, z * 0.26, 9, 3) + 0.9 * clamp(0.5 + 1.2 * fbm(x * 0.075 + 4.4, z * 0.075 + 9.1, 2.9, 2)))
+const topAt = (x, z) => L.groundAt(x, z) + TF.riseAt(x, z) + turfAt(x, z) * smooth(0.98, 1.1, L.pondField(x, z)) + TURF.sandMm * sandAt(x, z) * (0.3 + 0.7 * fbm(x * 0.26, z * 0.26, 9, 3) + 0.9 * clamp(0.5 + 1.2 * fbm(x * 0.075 + 4.4, z * 0.075 + 9.1, 2.9, 2)))
 const keepHard = (role) => role === 'cottage' || role === 'chimney' || role === 'path' || role === 'post' || role === 'fence'
 const hardGap = (x, z) => L.solidDistance(x, L.groundAt(x, z) + 0.6, z, keepHard)
 const trunkGap = (x, z) => Math.hypot(x - L.tree.x, z - L.tree.z) - 5.2
@@ -271,7 +273,7 @@ const stoneList = []
       P.setXYZ(i, nx * rx * k, (sy / cap) * h * k, nz * rz * k)
     }
     g.rotateY(yaw)
-    const y = L.groundAt(x, z) + h * (1 - 2 * STONE.sink) + 0.1
+    const y = L.groundAt(x, z) + TF.riseAt(x, z) + h * (1 - 2 * STONE.sink) + 0.1
     g.translate(x, y, z)
     {
       // The sunk half of a stone is never seen: its triangles are left out.
@@ -375,6 +377,52 @@ let planted = 0
       }
     }
     tufts++
+  }
+  // Tufts that grow out over the bank's upper edge, from a run of numbers of their own so that the lawn and the flowers keep their places.
+  const E = rng(9137)
+  const er = (a, b) => a + (b - a) * E()
+  const ep = (set) => set[Math.floor(E() * set.length) % set.length]
+  let over = 0
+  for (let i = 0; i < GRASS.edge * 40 && over < GRASS.edge; i++) {
+    const a = E() * TAU
+    const rr = edge - E() * 13
+    const x = Math.cos(a) * rr
+    const z = Math.sin(a) * rr
+    if (wallGap(x, z) < 0.7 || front(x, z) < 0.25) continue
+    const sand = sandAt(x, z)
+    if (sand < GRASS.edgeFrom || sand > GRASS.edgeTo) continue
+    if (L.pondField(x, z) < 1.035 || hardGap(x, z) < 0.3 || stoneGap(x, z) < 0.15) continue
+    const y0 = topAt(x, z) - 0.05
+    const lit = clamp(0.25 + 0.3 * E() + 0.35 * smooth(-10, 25, x))
+    const deep = 0.7 + 0.6 * E()
+    const base = mul3(ep(TONES.grass), deep * 1.3)
+    const top = mul3(mix3(ep(TONES.tip), ep(TONES.straw), 0.15), deep)
+    const cell = { key: morton(x, z), pos: [], nor: [], col: [], tip: [], sun: [] }
+    const up = norm3([(E() - 0.5) * 0.5, 1, (E() - 0.5) * 0.5])
+    const out = norm3([x, 0, z])
+    for (let b = 0; b < GRASS.blades; b++) {
+      const yaw = Math.atan2(out[2], out[0]) + er(-1.3, 1.3)
+      const lean = er(GRASS.edgeLean[0], GRASS.edgeLean[1])
+      const dir = [Math.cos(yaw), 0, Math.sin(yaw)]
+      const side = [-dir[2], 0, dir[0]]
+      const w = er(GRASS.wide[0], GRASS.wide[1]) * GRASS.edgeWide
+      const h = er(GRASS.edgeTuft[0], GRASS.edgeTuft[1])
+      const ox = x + er(-0.25, 0.25)
+      const oz = z + er(-0.25, 0.25)
+      const A = [ox - side[0] * w, y0, oz - side[2] * w]
+      const B = [ox + side[0] * w, y0, oz + side[2] * w]
+      const T = [ox + dir[0] * h * lean, y0 + h, oz + dir[2] * h * lean]
+      for (const [q, c, t] of [[A, base, 0], [B, base, 0], [T, top, 1]]) {
+        cell.pos.push(...q)
+        cell.nor.push(...up)
+        cell.col.push(c[0] * (0.32 + 0.95 * t), c[1] * (0.32 + 0.95 * t), c[2] * (0.32 + 0.95 * t))
+        cell.tip.push(t)
+        cell.sun.push(lit)
+      }
+    }
+    list.push(cell)
+    planted++
+    over++
   }
   list.sort((p, q) => p.key - q.key)
   for (const c of list) {
