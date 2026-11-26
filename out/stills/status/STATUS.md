@@ -1,0 +1,15 @@
+# Status 143
+
+2026-11-26 07:23 UTC
+
+- Your note is applied: rough draft 0 of the film (the cut as it stood at the review, 960 x 540, with sound) is shared in the thread now, and rough draft 1, with the prompt opening and today's mends, is being drawn across several machines for about 08:30 UTC.
+- From this status on the words and the links stand inside this card, because lines written between steps do not stay in the thread.
+- The prompt opening of the film is built: the composer, the level set to High, the prompt typed key by key, the send, the build screen. 867 frames, 14.45 s, drawn at 1920 x 1080 and at 3840 x 2160.
+- Running now, each in its own box to about 08:15: the change of season keeping the glass in sight, the phone's globe higher in a shake, the first picture standing where the globe stays, a whole visitor walk on three screens, the 4K render tool, the large particles in 4K, the sound of the four shakes.
+- phase 6: 4.57 h used of its 12.00 h box
+- allowance (after the review): 4.57 h used of 12.00 h allowed
+- App: https://snow-globe-seasons.pplx.app
+- Review page: https://snow-globe-seasons.pplx.app/review.html
+
+- `out/stills/status/status-143-1.jpg`: The film's opening, frame 330: the prompt being typed in the product's own composer.
+- `out/stills/status/status-143-2.jpg`: Twelve frames across the opening: the level menu, the typing, the send, the build screen.
