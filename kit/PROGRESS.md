@@ -25,21 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 143 · 2026-11-26 07:23 UTC
+Status 144 · 2026-11-26 07:34 UTC
 
-- `out/stills/status/status-143-1.jpg`: The film's opening, frame 330: the prompt being typed in the product's own composer.
-- `out/stills/status/status-143-2.jpg`: Twelve frames across the opening: the level menu, the typing, the send, the build screen.
+- `out/stills/status/status-144-1.jpg`: A frame of rough draft 1: the opening at 6 s, at draft size
+- `out/stills/status/status-144-2.jpg`: Summer at rest, drawn by the new renderer
+- `out/stills/status/status-144-3.jpg`: Summer just after a landing: the cream whirl of open item 224
+- `out/stills/status/status-144-4.jpg`: Film frames 1400 to 1620: the cover of the change, the landing and the settling of summer
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-26 07:23 UTC
-clock: phase 6, tick of 0.4 minutes
-phase 6: 4.57 h used of its 12.00 h box
-allowance (after the review): 4.57 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 4.57 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-26 07:34 UTC
+clock: phase 6, tick of 10.7 minutes
+phase 6: 4.75 h used of its 12.00 h box
+allowance (after the review): 4.75 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 4.75 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached

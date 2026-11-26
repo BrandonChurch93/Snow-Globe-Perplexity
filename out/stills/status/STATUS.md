@@ -1,15 +1,18 @@
-# Status 143
+# Status 144
 
-2026-11-26 07:23 UTC
+2026-11-26 07:34 UTC
 
-- Your note is applied: rough draft 0 of the film (the cut as it stood at the review, 960 x 540, with sound) is shared in the thread now, and rough draft 1, with the prompt opening and today's mends, is being drawn across several machines for about 08:30 UTC.
-- From this status on the words and the links stand inside this card, because lines written between steps do not stay in the thread.
-- The prompt opening of the film is built: the composer, the level set to High, the prompt typed key by key, the send, the build screen. 867 frames, 14.45 s, drawn at 1920 x 1080 and at 3840 x 2160.
-- Running now, each in its own box to about 08:15: the change of season keeping the glass in sight, the phone's globe higher in a shake, the first picture standing where the globe stays, a whole visitor walk on three screens, the 4K render tool, the large particles in 4K, the sound of the four shakes.
-- phase 6: 4.57 h used of its 12.00 h box
-- allowance (after the review): 4.57 h used of 12.00 h allowed
+- The real opening is in. Film A now begins with the prompt screen drawn by the team's skill: 867 frames, 14.45 s, merged, built and pushed as 9691393f.
+- Rough draft 1 of the film (960 x 540, 30 frames a second) is being drawn on eight machines, and the opening's part is already drawn here. It is due in the thread at about 08:30 UTC and will carry the faults of this hour: the soft disc of light at each change of season, summer's cream whirl, and a typing sound that may not be laid yet.
+- Summer under the new renderer, looked at for the first time. At rest it holds: fireflies, lanterns, the pool. Just after a landing the whirl of seeds and dust is pale cream and lacks the glow of the approved picture (open item 224). It goes to the critics as it is.
+- Sixteen agents are at work, which is the limit: the first picture, the cover of the change, the phone's framing, the visitor walk, the point mend at 4K, the master tool, the strict run, the sound, and eight renderers.
+- Tests on 9691393f: types clean, 599 tests pass and 2 fail, both in the sound mix's own test file, which is being changed right now.
+- phase 6: 4.75 h used of its 12.00 h box
+- allowance (after the review): 4.75 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-143-1.jpg`: The film's opening, frame 330: the prompt being typed in the product's own composer.
-- `out/stills/status/status-143-2.jpg`: Twelve frames across the opening: the level menu, the typing, the send, the build screen.
+- `out/stills/status/status-144-1.jpg`: A frame of rough draft 1: the opening at 6 s, at draft size
+- `out/stills/status/status-144-2.jpg`: Summer at rest, drawn by the new renderer
+- `out/stills/status/status-144-3.jpg`: Summer just after a landing: the cream whirl of open item 224
+- `out/stills/status/status-144-4.jpg`: Film frames 1400 to 1620: the cover of the change, the landing and the settling of summer
