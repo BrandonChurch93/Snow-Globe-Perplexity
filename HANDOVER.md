@@ -27,6 +27,25 @@ pass M3 summer-rest: 0.8007 (threshold 0.75, detail.minSharpnessRatio) high freq
 
 The unfloored miniature ratio is `0.8006892232885603`, over the decision 169 floor of 0.77. The same final review image was opened beside the approved summer rest: gold seed heads, green lights and fine motes are still present around the cottage and tree. The pass is a measure of sharpness, not approval of the likeness.
 
+### Other original M3 lines on the matched trees
+
+Both trees ran `npm run measure -- --unit <season> --only M3 --force --tier review` for winter, spring and fall. The displayed minimum ratio changes by less than 0.015 in each case. Winter remains green; spring's base and fall's miniature already make the main lines red. Spring's non-limiting miniature changes from 0.894240 to 0.862232 and remains over 0.75; the .015 comparison is for the gate's minimum line, not every region. No limit or mask was changed.
+
+```text
+Main 58687dc1:
+pass M3 winter-rest: 0.9365 (threshold 0.75, detail.minSharpnessRatio) high frequency energy of the still over the approved image at the same size: base 0.964 over 173291 pixels of the part in the ids view; miniature 0.936 over 98795 pixels of the part in the ids view
+FAIL M3 spring-rest: 0.4308 (threshold 0.75, detail.minSharpnessRatio) high frequency energy of the still over the approved image at the same size: base 0.431 over 176612 pixels of the part in the ids view; miniature 0.894 over 111223 pixels of the part in the ids view
+FAIL M3 fall-rest: 0.5336 (threshold 0.75, detail.minSharpnessRatio) high frequency energy of the still over the approved image at the same size: base 0.700 over 173846 pixels of the part in the ids view; miniature 0.534 over 101144 pixels of the part in the ids view
+Inertia 47891785:
+pass M3 winter-rest: 0.9262 (threshold 0.75, detail.minSharpnessRatio) high frequency energy of the still over the approved image at the same size: base 0.964 over 173291 pixels of the part in the ids view; miniature 0.926 over 98850 pixels of the part in the ids view
+FAIL M3 spring-rest: 0.4307 (threshold 0.75, detail.minSharpnessRatio) high frequency energy of the still over the approved image at the same size: base 0.431 over 176612 pixels of the part in the ids view; miniature 0.862 over 111177 pixels of the part in the ids view
+FAIL M3 fall-rest: 0.5393 (threshold 0.75, detail.minSharpnessRatio) high frequency energy of the still over the approved image at the same size: base 0.700 over 173846 pixels of the part in the ids view; miniature 0.539 over 101418 pixels of the part in the ids view
+```
+
+### Change, landing and stand-in guards on the pushed head
+
+`npm run gate -- --phase 6 --only G11,G12,G14` passed all three. G11 holds the seven seasonal parts to their four swap windows and finds no change in the loop. G12 finds a minimum airborne gap of 0.44 mm, all four landings on bar lines and the shake openings at the hero camera. G14 finds HD draft frame 480 pixel-identical to 0. The new HD review `winter-rest` stand-ins draw on `1330a4aaef250f20` has 0 nonblack pixels and maximum RGB 0, ignoring alpha, across 2,073,600 pixels, with no page errors.
+
 ### All four card seams on the pushed head
 
 Each season's HD review PNGs at frames 0 and 480 are byte-identical. The `4789-loop-*` sheets show 479, 0 and 1 left to right. At 400 px per picture and in the native 400 by 400 px crops inspected here, the globe, miniature and distribution of floating detail hold across the join. These are adjacent frames, not playback.
@@ -84,7 +103,7 @@ The four `4789-shake*` strips use final main `58687dc1` above and pushed inertia
 - **Summer**: At landing the gold ribbons wrap past the tree, and green points still read behind them. Narrow streaks stay more line-like than the approved's broader haze in both builds. At rest the light chains, seed heads and fireflies remain. The seed head distribution changes, but the cottage wall and pond have the same broad silhouette.
 - **Fall**: At landing the orange streaks still arc through the green interior, with the cottage and branches readable through the gaps. At rest both renders still have larger, more numerous orange points than the approved. No broad placement regression was apparent between the matched columns; this is not an approval or an exact pixel match.
 
-The `2585-shake*` strips and painted-hand triptychs below are historical. Strict and stand-ins below also predate the final merge, as do the isolated live step costs. No full-speed film or live application playback was seen.
+The `2585-shake*` strips and painted-hand triptychs below are historical. The strict run and isolated live step costs below predate the final merge. No full-speed film or live application playback was seen.
 
 ## After the summer base and veil merge
 
