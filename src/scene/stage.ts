@@ -55,6 +55,8 @@ interface Making {
 const SOON_MS = 50
 /** How long a press holds other seasons' work back while no frame of its shake has been drawn. */
 const PRESS_MS = 3000
+/** How long after a landing the picture is still watched as a shake: until the storm has cleared and the liquid stands. */
+const SETTLE_S = Math.max(config.shake.settleCheckSeconds, config.shake.spinDownSeconds)
 /** What one frame spends on handing a season that is not on show to the GPU: the step that passes it is the frame's last. */
 const HAND_MS = 4
 /** A layer nothing is on but the lights, which every program counts, and for one draw the mesh that is handed over. */
@@ -198,7 +200,10 @@ export class GlobeStage implements Stage {
     this.intoAt = performance.now()
   }
 
-  /** Whether a shake is in the air that does not go into `season`: nothing is made for a season the shake does not need. */
+  /**
+   * Whether a shake is in the air, or has landed and not yet settled, that does not go into `season`: nothing is made for a
+   * season the shake does not need.
+   */
   private held(season: string): boolean {
     if (this.into !== null && !this.inAir && performance.now() - this.intoAt > PRESS_MS) this.into = null
     return (this.inAir || this.into !== null) && this.into !== season
@@ -466,8 +471,9 @@ export class GlobeStage implements Stage {
     // A mesh handed to the GPU since the last frame left the shadow map with nothing else in it.
     const cast = shadows || this.stale
     this.stale = false
+    // A landing is no rest: what arrived is still coming down, and a stop there is seen.
     if (moment.beat !== null) this.inAir = true
-    else if (this.inAir) {
+    else if (this.inAir && !(moment.sinceLanding < SETTLE_S)) {
       this.inAir = false
       this.into = null
     }

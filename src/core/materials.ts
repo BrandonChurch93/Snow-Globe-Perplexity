@@ -5,8 +5,17 @@ import { BASE_PASS, CHANGE_COVER, DRESSING_CHANGE, changeRamp } from '../shake/c
 import { LIGHT_FRAG, LIGHT_FRAG_PARS, lightUniforms } from './chunks/light'
 import { VEIL_FRAG, VEIL_FRAG_PARS, veilUniforms } from './chunks/veil'
 import { flagStandIn } from './standins'
+import { STILL_SIDE, stillBytes } from './still'
 
 export type Rgb = readonly [number, number, number]
+
+const STILL = stillBytes()
+
+function stillPicture(): THREE.DataTexture {
+  const t = new THREE.DataTexture(STILL, STILL_SIDE, STILL_SIDE, THREE.RedFormat, THREE.UnsignedByteType)
+  t.needsUpdate = true
+  return t
+}
 
 export const stageUniforms = {
   uLensCentre: { value: new THREE.Vector3() },
@@ -18,6 +27,7 @@ export const stageUniforms = {
   uSeed: { value: 0 },
   uChange: { value: 0 },
   uPass: { value: new THREE.Vector4(0, 0, 0, 1) },
+  uStill: { value: stillPicture() },
   uCoc: { value: new THREE.Vector3() },
 }
 
@@ -41,9 +51,10 @@ export const DRESSING_FRONT = { gain: 2, fromMm: 58, toMm: 230 } as const
  * base fall evenly over any part of the shutter, at every pixel.
  * Where the page draws one sample a frame and shows it (`uPass.w` 0, `passCount`), nothing averages the hash away, and a hash
  * drawn afresh each frame made every pixel of a part that gives way flicker for as long as the change ran. There the level
- * is the pixel's own and never the frame's (`stageStill`): a pixel goes once and stays gone, comes once and stays. The pattern
- * is interleaved gradient noise, which holds close to the same share of every small patch of pixels, so a part thins evenly
- * and never in the clumps a white hash leaves.
+ * is the pixel's own and never the frame's (`stageStill`): a pixel goes once and stays gone, comes once and stays. The levels
+ * are a tile in the order of the void and the cluster (still.ts): at every share the pixels that are gone stand as far from
+ * one another as they can, so a part thins evenly. A white hash leaves clumps, and a lattice such as interleaved gradient
+ * noise, which this was first, sets its dots in rows that the eye reads as a weave across the part.
  * The table's dressing never holds two seasons: the old season's is gone in the first half of the span and the new season's
  * comes in the second (`DRESSING_CHANGE`). Each goes and comes from the foot outward; the edge of that front is broken into
  * patches (`cellMm`, `fineMm`) drawn out along the way a gust runs (`streak` times as long as wide, `rayMm` to a radian across)
@@ -109,11 +120,9 @@ export function passCount(sample: { of?: number } | null): number {
   return sample ? (sample.of ?? 1) : 0
 }
 
-/** The level a pixel stands at wherever one sample is a frame: what `stageStill` works out, in the shader's own precision. */
+/** The level the pixel of column `x` and row `y` stands at wherever one sample is a frame: what `stageStill` reads. */
 export function stillLevel(x: number, y: number): number {
-  const f = Math.fround
-  const fract = (v: number): number => f(v - Math.floor(v))
-  return fract(f(f(52.9829189) * fract(f(f(x * f(0.06711056)) + f(y * f(0.00583715))))))
+  return (STILL[(y & (STILL_SIDE - 1)) * STILL_SIDE + (x & (STILL_SIDE - 1))]! + 0.5) / 256
 }
 
 /**
@@ -277,6 +286,7 @@ uniform int uDiag;
 uniform float uSeed;
 uniform float uChange;
 uniform vec4 uPass;
+uniform highp sampler2D uStill;
 uniform vec3 uCoc;
 uniform vec4 uPart;
 uniform vec4 uState;
@@ -340,16 +350,16 @@ float stageChange() {
   float side = clamp(0.5 + vStageLocal.z / (2.0 * uGrid.w), 0.0, 1.0);
   return clamp((uChange - uState.x - uState.z * side) / uState.y, 0.0, 1.0);
 }
-float stageStill(vec2 at) {
-  return fract(52.9829189 * fract(dot(at, vec2(0.06711056, 0.00583715))));
+float stageStill(ivec2 at) {
+  return (floor(texelFetch(uStill, at & ${STILL_SIDE - 1}, 0).r * 255.0 + 0.5) + 0.5) / 256.0;
 }
 bool stageGoneStill(float c) {
   if (uState.w > 0.5) {
-    float h = stageStill(gl_FragCoord.xy);
+    float h = stageStill(ivec2(gl_FragCoord.xy));
     if (!(uState.z < -${(BASE_CODE - 1).toFixed(1)}) && stageEdge > -0.5) h = clamp(stageEdge + (h - 0.5) * ${OUTSIDE_FRONT.feather.toFixed(2)}, 0.001, 0.999);
     if (uState.w > 1.5 ? h < c : h >= c) return true;
   }
-  return uFlags.w < 1.0 && stageStill(gl_FragCoord.yx + 29.0) >= uFlags.w;
+  return uFlags.w < 1.0 && stageStill(ivec2(gl_FragCoord.yx) + 29) >= uFlags.w;
 }
 bool stageGone(float c) {
   if (uPass.w < 0.5) return stageGoneStill(c);
