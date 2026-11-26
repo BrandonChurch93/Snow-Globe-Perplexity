@@ -12,7 +12,7 @@ const LEAF_CELL = 0.85
 const LEVEL_SPRIGS = { medium: 0.45, low: 0.3 }
 const LEAF_TILE_MM = 11
 const SPRIGS = { share: 0.8, size: [1.8, 3.1], rise: 0.35, out: 0.34 }
-const TONE = { deep: [0.22, 0.5, 0.34], mid: [0.4, 0.76, 0.46], tip: [1.6, 1.15, 0.4] }
+const TONE = { deep: [0.22, 0.5, 0.34], mid: [0.4, 0.76, 0.46], tip: [0.9, 1.45, 0.5] }
 // Only the top of a pad, with open air over it, takes the light. Its sides and its underside are in deep shade.
 const SHADE = { body: 0.04, clearMm: 2.4, upFrom: 0.2, upTo: 0.85, tight: 1.25 }
 const PAPER = { orange: [1, 0.3, 0.045], peach: [1, 0.38, 0.06], cream: [1, 0.62, 0.12] }
