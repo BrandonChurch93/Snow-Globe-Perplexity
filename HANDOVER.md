@@ -54,7 +54,7 @@ to the masters' settings in the config and then the fourth job of the change of 
 all of them stale, and the files came out the same bytes): the full run draws all 40. Timed on
 Mesa lavapipe at b91bdb3b: the measure of the controls 5 s; the table 250 s the first time on a build
 (61,822 places of the framing asked) and nothing the second time, since the answers are kept in
-`out/work/poster/framing-<build>.json`; the ten stills of a season 123 to 151 s; the whole run 13 to 14.5 min; `--check`
+`out/work/poster/framing-<build>.json`; the ten stills of a season 123 to 151 s; the whole run 13 to 14 min; `--check`
 2 s after a run on the same build. A run on an unchanged scene draws the same files, byte for byte (seen three times
 in the fourth job: the 28 older stills after the first two were added, the 36 older ones after the third, and all 40 again
 after main's change of `src/core/materials.ts`).
@@ -326,6 +326,10 @@ show the same picture (0 of 255 apart, seen at 600 x 600).
   mean 0.0016 % of the height; 8 over 0.1 %, none over 0.2 %; 41 over 1 px, at worst 1.38 px (930 x 1196 with a finger).
 - The files of the stills that were there before this job came out of the full runs the same, byte for byte:
   the 56 files of the 28 older stills in both runs (`git status` showed none of them changed), and the 80 files of the second run are the 80 of the first (SHA-256 of each).
+- G8 of the gate (`npm run gate -- --phase 4 --only G8`): `assets-src/first/RECIPE.md` covers all 81 files of
+  `public/first/`. At this head the check is still red for another file: six headings of `assets-src/opening/RECIPE.md`
+  (lines 16, 21, 28, 49, 55, 64) are written `## `, and the gate reads each as a recipe without its six lines. Reported to
+  `/root` and to that file's owner with the exact lines (`## ` to `### `); not changed here.
 
 ### Seen and not seen
 
