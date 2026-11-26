@@ -15,6 +15,7 @@ import { gainOf } from '../../../scene/lightgrid'
 import type { InnerLight, KitMoment } from '../../kit'
 import { lanterns } from './lanterns'
 import { isTree, season, tones } from './palette'
+import { riseAt } from './turf'
 
 const MODEL = 'summer/village-summer.glb'
 const TURF = 'summer/village-turf.lin.tile.png'
@@ -23,20 +24,20 @@ const LIGHT = `light-${season}`
 
 const LAMP = { power: 3, reachMm: 12, flicker: 0.05, cycles: 3, phase: 0.1 }
 const WINDOW = { power: 0.9, reachMm: 8, flicker: 0.1, cycles: 5, phase: 0.4 }
-const NEAR = { lamp: { power: 2.9, reachMm: 7 }, pane: { power: 2.2, reachMm: 4 }, paper: { power: 3.8, reachMm: 7 } }
-const NEAR_WALL = { lamp: { power: 1.1, reachMm: 8, ends: 3 }, pane: { power: 1.3, reachMm: 4.5, ends: 3 }, paper: { power: 1.7, reachMm: 5.2, ends: 3 } }
+const NEAR = { lamp: { power: 2.1, reachMm: 7 }, pane: { power: 2.2, reachMm: 4 }, paper: { power: 2.6, reachMm: 7 } }
+const NEAR_WALL = { lamp: { power: 1.6, reachMm: 8, ends: 3 }, pane: { power: 2.0, reachMm: 4.5, ends: 3 }, paper: { power: 3.4, reachMm: 6.5, ends: 3 } }
 const MIRROR = { lamp: 9, pane: 1.2, paper: 1.6, tight: 0.002, wide: 0.03, wideShare: 0.01, lowMm: 3.4 }
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
 const HALO_KIND = { lamp: { size: 3.6, rest: 0.08, hot: 0, bloom: 0.2 }, pane: { size: 2.6, rest: 0.07, hot: 0, bloom: 0.2 }, pool: { size: 5, rest: 0, hot: 0, bloom: 0.06 } }
 const THROUGH = 6
 const LAMP_GLASS: Rgb = [1.6, 0.66, 0.15]
 const WALL_FILL = 0.4
-const SAND = { white: [1.0, 0.95, 0.86] as Rgb, whiten: 0.9, clumpPerMm: 1.1, midPerMm: 2.1, sparkMid: 0.22, grainPerMm: 4.2, heapPerMm: 0.16, heapLow: 0.9, heap: 0.16, reliefMm: 0.5, reliefClump: 0.12, reliefMid: 0.05, body: 1.15, floor: 1.0, wrap: 0.6, foot: [0.11, 0.09, 0.07] as Rgb, footFrom: 0.09, footTo: 0.27, mottleLow: 0.55, mottle: 1.2, lip: 4.6, lipLow: 2.6, lipFrom: 0.04, lipTo: 0.232, breakPerMm: 0.3, shade: [1.2, 1.02, 1.1] as Rgb, shadeLow: 0.6, right: [0.36, 0.4, 0.48] as Rgb, rightFromMm: 6, rightToMm: 26, left: -0.62, leftFromMm: -36, leftToMm: -14, edgeSoft: 0.12, lipTint: [1.0, 1.05, 1.2] as Rgb, driftFrom: 0.3, driftTo: 0.75, driftPerMm: 0.3, drift: 0.45, bump: 0.6, grainLow: 0.68, grain: 0.36, spark: 0.3, topFrom: 0.5, topTo: 0.85 }
+const SAND = { white: [1.0, 0.95, 0.86] as Rgb, whiten: 0.9, clumpPerMm: 1.1, midPerMm: 2.1, sparkMid: 0.22, grainPerMm: 4.2, heapPerMm: 0.16, heapLow: 0.9, heap: 0.16, reliefMm: 0.5, reliefClump: 0.12, reliefMid: 0.05, body: 1.15, floor: 1.0, wrap: 0.6, foot: [0.11, 0.09, 0.07] as Rgb, footFrom: 0.09, footTo: 0.27, mottleLow: 0.55, mottle: 1.2, lip: 4.6, lipLow: 2.6, lipFrom: 0.04, lipTo: 0.232, breakPerMm: 0.3, shade: [1.2, 1.02, 1.1] as Rgb, shadeLow: 0.6, right: [0.36, 0.4, 0.48] as Rgb, rightFromMm: 6, rightToMm: 26, left: -0.62, leftFromMm: -36, leftToMm: -14, edgeSoft: 0.12, lipTint: [1.0, 1.05, 1.2] as Rgb, driftFrom: 0.3, driftTo: 0.75, driftPerMm: 0.3, drift: 0.45, bump: 0.6, grainLow: 0.68, grain: 0.36, spark: 1.3, topFrom: 0.5, topTo: 0.85 }
 const TURF_LOOK = { tone: 0.5, fineMm: 0.05, clumpMm: 0.22, fill: 0.25, wrap: 0.5, sun: 2.8, moss: [0.22, 0.25, 0.58] as Rgb, rim: 0.45, rimFromMm: 30, rimToMm: 46 }
 // Where the low sun reaches the floor: the same four pools as `sunAt` in assets-src/village-summer/build.mjs, which the grass carries.
-const SUN_POOLS: readonly [number, number, number, number, number][] = [[1.2, 27, 3, 11, 9], [0.9, 3, -8, 7.5, 5], [0.4, -24, 21, 6, 5], [0.5, 24, 22, 9, 6]]
-const GRASS_LOOK = { fill: 0.1, wrap: 1.0, through: 0.36, near: 0.85, sun: 5.5, patchLow: 0.22, moss: [0.22, 0.25, 0.58] as Rgb, patchPerMm: 0.3, sunRoot: 0.12, shade: [0.26, 0.23, 0.62] as Rgb }
-const ROOF = { slate: [0.15, 0.18, 0.24] as Rgb, chimney: [0.17, 0.16, 0.15] as Rgb, vary: 0.75, varyMm: 1.3, stone: [0.3, 0.255, 0.21] as Rgb, block: [0.4, 0.33, 0.27] as Rgb, paneMm: 2.2, stoneMid: 0.42, stoneFlat: 0.45, stoneHue: 0.5, plank: [0.36, 0.3, 0.26] as Rgb, plankMm: 2.2, plankTall: 3.8, pitch: 0.2, stoneMm: 1.4, picket: [0.85, 0.5, 0.27] as Rgb, picketMm: 1.6, boardMm: 0.9, boardVary: 0.9, grainMm: 0.22, grainVary: 0.5, boardFoot: 0.7, boardTall: 3.2, pale: 0.25, rail: [1.5, 1.3, 1.05] as Rgb, door: [0.1, 0.052, 0.034] as Rgb, verge: [0.24, 0.2, 0.18] as Rgb, doorMm: 2.9, reachMm: 0.4, buryMm: 1.5 }
+const SUN_POOLS: readonly [number, number, number, number, number][] = [[1.5, 24, 4, 13, 9], [0.7, 6, -4, 9, 6], [0.4, -24, 21, 6, 5], [0.5, 24, 22, 9, 6]]
+const GRASS_LOOK = { fill: 0.1, wrap: 1.0, through: 0.16, near: 0.6, sun: 6.0, patchLow: 0.22, moss: [0.22, 0.25, 0.58] as Rgb, patchPerMm: 0.3, sunRoot: 0.12, shade: [0.26, 0.3, 0.45] as Rgb }
+const ROOF = { slate: [0.14, 0.18, 0.27] as Rgb, chimney: [0.17, 0.16, 0.15] as Rgb, vary: 0.75, varyMm: 1.3, stone: [0.56, 0.47, 0.38] as Rgb, block: [0.64, 0.54, 0.42] as Rgb, paneMm: 2.2, stoneMid: 0.42, stoneFlat: 0.45, stoneHue: 0.5, plank: [0.36, 0.3, 0.26] as Rgb, plankMm: 2.2, plankTall: 3.8, pitch: 0.2, stoneMm: 1.4, picket: [0.85, 0.5, 0.27] as Rgb, picketMm: 1.6, boardMm: 0.9, boardVary: 0.9, grainMm: 0.22, grainVary: 0.5, boardFoot: 0.7, boardTall: 3.2, pale: 0.25, rail: [1.5, 1.3, 1.05] as Rgb, door: [0.1, 0.052, 0.034] as Rgb, verge: [0.05, 0.06, 0.08] as Rgb, sheen: 4.2, sheenMm: 3.5, doorMm: 2.9, reachMm: 0.4, buryMm: 1.5 }
 const DARK_PANE = 0.8
 // The approved cottage has a short stack: what stands over the ridge is drawn in to under half its height, in this season's
 // copy of the mesh and in what the particles meet.
@@ -138,7 +139,7 @@ float sandHeap = sandNoise(vStageLocal * ${SAND.heapPerMm.toFixed(2)} + 3.1);
 // The bed has relief: heaps, clumps and grains, in millimetres, which the low sun shades.
 float sandRelief = ${SAND.reliefMm.toFixed(2)} * sandHeap + ${SAND.reliefClump.toFixed(2)} * sandFineB + ${SAND.reliefMid.toFixed(2)} * sandFineM;
 float sandGrain = 0.4 * turfT.g + 0.35 * sandFineB + 0.3 * sandFineC + 0.75 * sandFineM;
-diffuseColor.rgb = mix(diffuseColor.rgb, mix(diffuseColor.rgb, ${glsl(SAND.white)}, ${SAND.whiten.toFixed(2)}) * (${SAND.heapLow.toFixed(2)} + ${SAND.heap.toFixed(2)} * sandHeap) * (${SAND.grainLow.toFixed(2)} + ${SAND.grain.toFixed(2)} * sandGrain + ${SAND.spark.toFixed(2)} * smoothstep(0.5, 0.72, sandFineC * (0.45 + 0.9 * sandFineB)) + ${SAND.sparkMid.toFixed(2)} * smoothstep(0.6, 0.78, sandFineM)), sandAmt);
+diffuseColor.rgb = mix(diffuseColor.rgb, mix(diffuseColor.rgb, ${glsl(SAND.white)}, ${SAND.whiten.toFixed(2)}) * (${SAND.heapLow.toFixed(2)} + ${SAND.heap.toFixed(2)} * sandHeap) * (${SAND.grainLow.toFixed(2)} + ${SAND.grain.toFixed(2)} * sandGrain + ${SAND.spark.toFixed(2)} * smoothstep(0.6, 0.74, sandFineC * (0.45 + 0.9 * sandFineB)) + ${SAND.sparkMid.toFixed(2)} * smoothstep(0.6, 0.78, sandFineM)), sandAmt);
 `,
         )
         .replace(
@@ -188,7 +189,7 @@ function grassMaterial(): THREE.MeshStandardMaterial {
 reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${GRASS_LOOK.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), ${GRASS_LOOK.wrap.toFixed(2)}) + ${GRASS_LOOK.through.toFixed(2)} * vSurf.x * pow(clamp(dot(normalize(vViewPosition), -stageKeyL), 0.0, 1.0), 2.0))) * material.diffuseContribution;
 // The low sun does not lie evenly on the lawn: it catches tufts and leaves the moss between them in shade.
 float grassPatch = 0.5 + 0.5 * sin(vStageLocal.x * ${GRASS_LOOK.patchPerMm.toFixed(2)} + 1.7 * sin(vStageLocal.z * ${(GRASS_LOOK.patchPerMm * 0.87).toFixed(3)} + 0.6)) * sin(vStageLocal.z * ${(GRASS_LOOK.patchPerMm * 1.16).toFixed(3)} + 1.3 * sin(vStageLocal.x * ${(GRASS_LOOK.patchPerMm * 0.71).toFixed(3)}) + 2.1);
-reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${GRASS_LOOK.sun.toFixed(2)} * mix(${GRASS_LOOK.patchLow.toFixed(2)}, 1.0, smoothstep(0.35, 0.8, grassPatch)) * vSurf.y * vSurf.y * mix(${GRASS_LOOK.sunRoot.toFixed(2)}, 1.0, vSurf.x)) * mix(material.diffuseContribution, vec3(0.3, 0.2, 0.11), 0.58);`,
+reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${GRASS_LOOK.sun.toFixed(2)} * mix(${GRASS_LOOK.patchLow.toFixed(2)}, 1.0, smoothstep(0.35, 0.8, grassPatch)) * vSurf.y * vSurf.y * mix(${GRASS_LOOK.sunRoot.toFixed(2)}, 1.0, vSurf.x)) * mix(material.diffuseContribution, vec3(0.34, 0.21, 0.07), 0.78);`,
       )
     },
   })
@@ -400,7 +401,11 @@ function dressed(g: THREE.BufferGeometry, sharedCount: number): THREE.BufferGeom
       const v = 2 * stoneVary(x, y, z)
       C.setXYZ(i, lum * ROOF.chimney[0] * v, lum * ROOF.chimney[1] * v, lum * ROOF.chimney[2] * v)
     }
-    else if (nearRoof && N.getY(i) > ROOF.pitch) C.setXYZ(i, lum * ROOF.slate[0] * 2, lum * ROOF.slate[1] * 2, lum * ROOF.slate[2] * 2)
+    else if (nearRoof && N.getY(i) > ROOF.pitch) {
+      // A soft sheen along the ridge, where the slate turns up to the sky.
+      const v = 2.9 * (1 + ROOF.sheen * Math.min(1, Math.max(0, (y - frame.floor - (house.wall + house.rise - ROOF.sheenMm)) / ROOF.sheenMm)))
+      C.setXYZ(i, lum * ROOF.slate[0] * v, lum * ROOF.slate[1] * v, lum * ROOF.slate[2] * v)
+    }
     else if (Math.hypot(x - anchors.door[0], z - anchors.door[2]) < ROOF.doorMm && C.getX(i) > 1.2 * C.getZ(i) && Math.abs(y - anchors.door[1]) < ROOF.doorMm * 1.6) C.setXYZ(i, lum * ROOF.door[0], lum * ROOF.door[1], lum * ROOF.door[2])
     else if (Math.hypot(x - anchors.door[0], z - anchors.door[2]) < ROOF.plankMm && Math.abs(y - anchors.door[1]) < ROOF.plankTall) C.setXYZ(i, lum * ROOF.plank[0], lum * ROOF.plank[1], lum * ROOF.plank[2])
     else if (nearRoof && C.getX(i) > 1.25 * C.getZ(i)) C.setXYZ(i, C.getX(i) * ROOF.verge[0], C.getY(i) * ROOF.verge[1], C.getZ(i) * ROOF.verge[2])
@@ -475,7 +480,7 @@ function stemDistance(x: number, y: number, z: number): number {
 
 function groundDistance(x: number, y: number, z: number): number {
   const slope = moundSlope(z)
-  return (y - groundAt(x, z)) / Math.sqrt(1 + slope * slope)
+  return (y - groundAt(x, z) - riseAt(x, z)) / Math.sqrt(1 + slope * slope)
 }
 
 export function solid(x: number, y: number, z: number): number {
