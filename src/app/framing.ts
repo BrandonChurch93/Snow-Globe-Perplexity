@@ -19,7 +19,7 @@ export const FRAME = {
   baseReachMm: 74,
   overUnder: 1.1,
   narrowAspect: 0.6,
-  narrowYawDeg: 0,
+  narrowYawDeg: 1.2,
   tableKeepMm: 20,
   mostUnder: 0.35,
   easeRate: 4,
