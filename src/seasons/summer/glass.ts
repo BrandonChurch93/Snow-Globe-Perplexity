@@ -226,25 +226,25 @@ export const look = {
     glintCool: [0.74, 0.86, 1] as const,
     // the glass's own reflections across the top and down the right shoulder: a few curved bands that follow the dome
     // inside the outline, cream at the upper left, blue white down the right shoulder and faintly under the top, where the room's cool light lies in
-    // them, and a deep warm brown in the gap by the right limb, where the lamps do (each: bearing and
+    // them, and a deep warm brown in the gap by the right limb and broad at the upper left, where the lamps do (each: bearing and
     // half length in degrees, where in the radius, half its thickness, how strong, and its colour: 0 cream, 1 cool, 2 deep
     // warm). A band is not smooth: `reflexLined` of it lies in fine lines that run along the arc (`reflexLines` sets how
     // fine they are across the band, `reflexLong` how short along it), so it reads as a reflection in glass and not as mist.
-    // `sheen` holds the broad smooth ones, the room's lit walls: a brown band under the outline at the top, which lies
-    // further in toward the right, and a fainter one at the upper left (each: bearing and half length in degrees, where
-    // in the radius, half its thickness, how strong, and how far it leans inward along the arc, clockwise)
+    // `sheen` holds the broad smooth one, the room's lit wall: a brown band under the outline at the top, which lies
+    // further in toward the right (bearing and half length in degrees, where in the radius, half its thickness, how
+    // strong, and how far it leans inward along the arc, clockwise). The upper left one is lined, so the dark shows between its streaks
     reflex: [
       [116, 32, 0.89, 0.045, 0.27, 0],
       [80, 26, 0.945, 0.022, 0.03, 1],
       [24, 30, 0.875, 0.03, 0.47, 1],
       [30, 26, 0.955, 0.022, 0.24, 2],
+      [138, 30, 0.76, 0.08, 0.13, 2],
     ] as const,
     reflexCool: [0.9, 0.95, 1] as const,
     reflexWarm: [1, 0.8, 0.56] as const,
     reflexDeep: [1, 0.52, 0.25] as const,
     sheen: [
       [84, 34, 0.769, 0.085, 0.36, -0.33],
-      [138, 30, 0.76, 0.08, 0.1, 0],
     ] as const,
     sheenColor: [1, 0.54, 0.28] as const,
     reflexLined: 0.8,
