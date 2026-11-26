@@ -1,5 +1,6 @@
 import { config } from '../config'
-import { MOVES, poseOfRig, rigOf, type Rig } from '../film/moves'
+import { MOVES, poseOfRig, rigOf, smoother, type Rig } from '../film/moves'
+import { beatSeconds } from '../film/timeline'
 import type { Pose } from '../scene/cameras'
 import { globeTopMm, sphereCentreHeightMm, sphereRadiusMm, type Framing } from '../scene/framing'
 import { REST_POSE, makeShake, type GlobePose, type ShakePath } from '../shake/table'
@@ -26,6 +27,8 @@ export const FRAME = {
   keepShare: 0.0015,
   fitFar: [1, 2, 4],
   fitPasses: 16,
+  backPower: 4,
+  homeBars: 1,
 }
 
 const L = config.live
@@ -92,13 +95,18 @@ export function controlsPx(ui: Element | null, frame: Element): number | null {
 
 type Centre = readonly [number, number, number]
 
-const centreOf = (g: GlobePose): Centre => {
-  const ax = -sphereCentreHeightMm * Math.sin(g.tiltZ)
-  const ay = sphereCentreHeightMm * Math.cos(g.tiltZ)
+const moved = (g: GlobePose, x: number, y: number): Centre => {
+  const ax = x * Math.cos(g.tiltZ) - y * Math.sin(g.tiltZ)
+  const ay = x * Math.sin(g.tiltZ) + y * Math.cos(g.tiltZ)
   return [ax + g.x, ay * Math.cos(g.tiltX) + g.y, ay * Math.sin(g.tiltX) + g.z]
 }
 
-const reach = (rig: Rig, centres: readonly Centre[], sideways: boolean, least: number): number => {
+const centreOf = (g: GlobePose): Centre => moved(g, 0, sphereCentreHeightMm)
+
+/** The ends of the widest base, low and high, where a shaken globe carries them. */
+const endsOf = (g: GlobePose): Centre[] => [-1, 1].flatMap((side) => [0, config.globe.baseHeightMm].map((y) => moved(g, side * FRAME.baseReachMm, y)))
+
+const reach = (rig: Rig, centres: readonly Centre[], sideways: boolean, least: number, round = sphereRadiusMm): number => {
   const p = rig.pitchDeg * RAD
   const cp = Math.cos(p)
   const sp = Math.sin(p)
@@ -107,7 +115,7 @@ const reach = (rig: Rig, centres: readonly Centre[], sideways: boolean, least: n
     const y = c[1] - rig.aimHeightMm
     const off = sideways ? Math.abs(c[0]) : y * cp - c[2] * sp
     const depth = rig.distanceMm - y * sp - c[2] * cp
-    const v = Math.tan(Math.atan2(off, depth) + Math.asin(Math.min(1, sphereRadiusMm / Math.hypot(off, depth))))
+    const v = Math.tan(Math.atan2(off, depth) + Math.asin(Math.min(1, round / Math.hypot(off, depth))))
     if (v > most) most = v
   }
   return most / Math.tan((rig.fovDeg * RAD) / 2)
@@ -117,48 +125,52 @@ const reach = (rig: Rig, centres: readonly Centre[], sideways: boolean, least: n
 const glass = (rig: Rig, c: Centre): { top: number; side: number } => ({ top: reach(rig, [c], false, -Infinity), side: reach(rig, [c], true, 0) })
 
 const REST: Centre = centreOf(REST_POSE)
-let shaken: { high: Centre[]; wide: Centre[] } | null = null
+const sideOfEnds = (rig: Rig, ends: readonly Centre[]): number => reach(rig, ends, true, 0, 0)
 
-/** The places of the glass, over every shake the app plays, that can reach furthest up or furthest to a side. */
-export function shakenCentres(): { high: Centre[]; wide: Centre[] } {
+type Shaken = { high: Centre[]; wide: Centre[]; ends: Centre[] }
+let shaken: Shaken | null = null
+
+/** The places of the glass, and of the ends of the widest base, over every shake the app plays, that can reach furthest up or furthest to a side. */
+export function shakenCentres(): Shaken {
   if (shaken) return shaken
   const bar = config.film.beatsPerBar
   const hero = rigOf(MOVES.wide)
   const rigs = FRAME.fitFar.map((far) => ({ ...hero, yawDeg: 0, distanceMm: hero.distanceMm * far }))
-  const near = (centres: Centre[], share: number): { high: Set<number>; wide: Set<number> } => {
-    const high = new Set<number>()
-    const wide = new Set<number>()
+  const near = <T>(samples: readonly T[], seen: (rig: Rig, s: T) => number, share: number): Set<number> => {
+    const kept = new Set<number>()
     rigs.forEach((rig, r) => {
-      const seen = centres.map((c) => glass(rig, c))
-      const top = seen.reduce((m, s) => Math.max(m, s.top), -Infinity)
-      const side = seen.reduce((m, s) => Math.max(m, s.side), -Infinity)
-      seen.forEach((s, i) => {
-        if (s.top >= top - share / FRAME.fitFar[r]!) high.add(i)
-        if (s.side >= side - share / FRAME.fitFar[r]!) wide.add(i)
+      const all = samples.map((s) => seen(rig, s))
+      const most = all.reduce((m, v) => Math.max(m, v), -Infinity)
+      all.forEach((v, i) => {
+        if (v >= most - share / FRAME.fitFar[r]!) kept.add(i)
       })
     })
-    return { high, wide }
+    return kept
   }
-  const out = { high: [] as Centre[], wide: [] as Centre[] }
+  const top = (rig: Rig, c: Centre): number => glass(rig, c).top
+  const side = (rig: Rig, c: Centre): number => glass(rig, c).side
+  const out: Shaken = { high: [], wide: [], ends: [] }
   const once = new Set<string>()
   for (let n = 0; n < FRAME.shakePaths; n++) {
     const path = livePath(n)
     const beats: number[] = []
     for (let i = 0; i * FRAME.pathStepBeats <= bar + 1e-9; i++) beats.push(i * FRAME.pathStepBeats)
-    const coarse = near(beats.map((b) => centreOf(path.poseAt(b))), FRAME.nearShare)
-    const fine = (kept: Set<number>): Centre[] => {
+    const poses = beats.map((b) => path.poseAt(b))
+    const grid = poses.map(centreOf)
+    const fine = (kept: Set<number>): GlobePose[] => {
       const at = new Set<number>()
       for (const i of kept) for (let j = -FRAME.pathFine; j <= FRAME.pathFine; j++) at.add(i * FRAME.pathFine + j)
-      return [...at].map((q) => centreOf(path.poseAt((q * FRAME.pathStepBeats) / FRAME.pathFine)))
+      return [...at].map((q) => path.poseAt((q * FRAME.pathStepBeats) / FRAME.pathFine))
     }
-    const wide = fine(coarse.wide)
-    const grid = beats.map((b) => centreOf(path.poseAt(b)))
-    for (const i of near(grid, FRAME.keepShare).high) {
+    for (const i of near(grid, top, FRAME.keepShare)) {
       const key = grid[i]!.map((v) => v.toFixed(2)).join()
       if (!once.has(key)) out.high.push(grid[i]!)
       once.add(key)
     }
-    out.wide.push(...[...near(wide, FRAME.keepShare).wide].map((i) => wide[i]!))
+    const wide = fine(near(grid, side, FRAME.nearShare)).map(centreOf)
+    out.wide.push(...[...near(wide, side, FRAME.keepShare)].map((i) => wide[i]!))
+    const ends = fine(near(poses.map(endsOf), sideOfEnds, FRAME.nearShare)).map(endsOf)
+    out.ends.push(...[...near(ends, sideOfEnds, FRAME.keepShare)].flatMap((i) => ends[i]!))
   }
   shaken = out
   return out
@@ -171,15 +183,20 @@ const sideOf = (rig: Rig): number => reach(rig, shakenCentres().wide, true, 0)
 /** The furthest the glass reaches through a shake from a rig that looks from the front: up, and to a side. */
 export const shakeReach = (rig: Rig): { top: number; side: number } => ({ top: topOf(rig), side: sideOf(rig) })
 
-let fitted: { aspect: number; under: number; rig: Rig } | null = null
+/** The furthest the whole globe reaches to a side through a shake, the glass or the widest base, from a rig that looks from the front. */
+export const shakeSide = (rig: Rig): number => Math.max(sideOf(rig), sideOfEnds(rig, shakenCentres().ends))
 
-/** The camera of the app at rest and through a shake: the wide camera moved back along its own axis and aimed so that
- * the lifted glass stays under the top edge, the foot stays over the controls, a wide screen holds the strokes between its sides
- * and an upright screen holds the whole globe at rest, glass and base, between its sides. It stands as near as those allow.
+let fitted: { aspect: number; under: number; rig: Rig; farMm: number } | null = null
+
+/** The camera of the app: the wide camera moved back along its own axis and aimed so that the lifted glass stays under
+ * the top edge, the foot stays over the controls, a wide screen holds the strokes between its sides and an upright screen
+ * holds the whole globe at rest, glass and base, between its sides. It stands as near as those allow.
  * Where an upright screen leaves room over and under the globe, the room over the glass is `overUnder` times the room
- * between the foot and the highest control. */
-function fit(aspect: number, under: number): Rig {
-  if (fitted && fitted.aspect === aspect && fitted.under === under) return fitted.rig
+ * between the foot and the highest control.
+ * `farMm` is how far the same camera stands for the bar of a shake: the nearest that holds every stroke, glass and widest
+ * base, between the sides. On a wide screen that is where it stands at rest; on an upright one it is further. */
+function fit(aspect: number, under: number): { rig: Rig; farMm: number } {
+  if (fitted && fitted.aspect === aspect && fitted.under === under) return fitted
   const wide = rigOf(MOVES.wide)
   const rig = { ...wide, yawDeg: 0 }
   const k = 2 * Math.tan((rig.fovDeg * RAD) / 2)
@@ -212,19 +229,48 @@ function fit(aspect: number, under: number): Rig {
     if (Math.abs(next - rig.distanceMm) < 1e-7) break
     rig.distanceMm = next
   }
-  fitted = { aspect, under, rig }
-  return rig
+  const far = { ...rig }
+  for (let i = 0; i < FRAME.fitPasses; i++) {
+    const next = Math.max(rig.distanceMm, (far.distanceMm * shakeSide(far)) / across)
+    if (Math.abs(next - far.distanceMm) < 1e-7) break
+    far.distanceMm = next
+  }
+  fitted = { aspect, under, rig, farMm: far.distanceMm }
+  return fitted
 }
 
-export function liveRig(aspect: number, yawDeg = 0, pitchDeg = 0, under = 0): Rig {
+export interface Shaking {
+  beat: number | null
+  sinceLanding: number
+}
+
+/** The way back over the lift: it leaves from standing, covers most of the way early, because the hand tips the globe
+ * outward on the first frames of its grip, and arrives without a stop. */
+const leave = (v: number): number => {
+  const u = v <= 0 ? 0 : v >= 1 ? 1 : v
+  return 1 - Math.pow(1 - u, FRAME.backPower) * (1 + FRAME.backPower * u)
+}
+
+/** How far the camera stands back, 0 at rest and 1 where the whole shake fits: it goes back with the lift and comes home
+ * over `homeBars` after the landing. A shake asked while it still comes home takes it back from where it is, with no step. */
+export function standBack(at: Shaking | null = null): number {
+  if (!at) return 0
+  const out = at.beat === null ? 0 : leave(at.beat / config.shake.liftBeats)
+  const home = 1 - smoother(Math.max(0, at.sinceLanding) / (FRAME.homeBars * config.film.beatsPerBar * beatSeconds))
+  return 1 - (1 - out) * (1 - home)
+}
+
+export function liveRig(aspect: number, yawDeg = 0, pitchDeg = 0, under = 0, at: Shaking | null = null): Rig {
   const base = rigOf(MOVES.wide)
-  const rig = { ...fit(aspect, under) }
+  const held = fit(aspect, under)
+  const rig = { ...held.rig }
+  rig.distanceMm *= Math.pow(held.farMm / rig.distanceMm, standBack(at))
   rig.yawDeg = Math.max(-L.orbitYawDeg, Math.min(L.orbitYawDeg, base.yawDeg + yawDeg))
   rig.pitchDeg = Math.max(L.orbitPitchMinDeg, Math.min(L.orbitPitchMaxDeg, rig.pitchDeg + pitchDeg))
   return rig
 }
 
-export const livePose = (aspect: number, yawDeg = 0, pitchDeg = 0, under = 0): Pose => poseOfRig(liveRig(aspect, yawDeg, pitchDeg, under))
+export const livePose = (aspect: number, yawDeg = 0, pitchDeg = 0, under = 0, at: Shaking | null = null): Pose => poseOfRig(liveRig(aspect, yawDeg, pitchDeg, under, at))
 
 /** The framing numbers of `framingOf`, for a rig that no camera of the config names: the app's own. */
 export function framingOfRig(rig: Rig, width: number, height: number): Framing {

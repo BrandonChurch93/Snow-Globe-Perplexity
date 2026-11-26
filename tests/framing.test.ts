@@ -1,10 +1,14 @@
 import * as THREE from 'three'
 import { describe, expect, it } from 'vitest'
+import { FRAME, livePath, liveRig, roomUnder, standBack, type Shaking } from '../src/app/framing'
 import { config } from '../src/config'
+import { poseOfRig, reachOf, rigOf, type Rig } from '../src/film/moves'
+import { beatSeconds } from '../src/film/timeline'
 import { lensPlace } from '../src/globe/lens'
 import { poseById, sphereCentreMm } from '../src/scene/cameras'
 import { framingOf, globeTopMm, sphereRadiusMm } from '../src/scene/framing'
 import { anchors, centreHeightMm, shapePoints, shapes, type Role } from '../src/scene/layout'
+import { REST_POSE, type GlobePose } from '../src/shake/table'
 
 const hd = config.formats.hd
 const RAD = Math.PI / 180
@@ -156,5 +160,209 @@ describe('framing', () => {
     const doorDepth = v.project([anchors.door[0]!, anchors.door[1]! + centreHeightMm, anchors.door[2]!]).z
     expect(Math.abs(v.pose.focusMm - doorDepth)).toBeLessThanOrEqual(5)
     expect(v.pose.apertureMm).toBeLessThanOrEqual(3)
+  })
+})
+
+describe('the framing of the app through a shake', () => {
+  const bar = config.film.beatsPerBar
+  const liftBeats = config.shake.liftBeats
+  const homeSeconds = FRAME.homeBars * bar * beatSeconds
+  const settleBeats = config.shake.landSettleSeconds / beatSeconds
+  const long = config.states.settledSeconds
+  const screens: [string, number, number][] = [
+    ['320 x 568', 320, 568],
+    ['360 x 800', 360, 800],
+    ['phone', config.formats.phone.width, config.formats.phone.height],
+    ['tablet', config.formats.tablet.width, config.formats.tablet.height],
+    ['4 to 5', 800, 1000],
+    ['square', 1000, 1000],
+    ['5 to 4', 1280, 1024],
+    ['hd', config.formats.hd.width, config.formats.hd.height],
+    ['phone on its side', config.formats.phone.height, config.formats.phone.width],
+    ['2560 x 1080', 2560, 1080],
+  ]
+  const room = 1 - 2 * FRAME.edgeShare
+  const slack = 1e-6
+
+  /** What a shaken globe covers, in half heights of the frame from its middle: the glass and the base as `reachOf` has them,
+   * and to the sides the widest base any season builds, carried by the same pose. `heap` is how low the front of what a season
+   * heaps on the surface lies: it stays on the surface. */
+  const cover = (rig: Rig, g: GlobePose): { side: number; top: number; foot: number; heap: number } => {
+    const r = reachOf(poseOfRig(rig), g)
+    const p = rig.pitchDeg * RAD
+    const k = Math.tan((rig.fovDeg * RAD) / 2)
+    let side = r.side
+    for (const end of [-FRAME.baseReachMm, FRAME.baseReachMm]) {
+      for (const up of [0, config.globe.baseHeightMm]) {
+        const ax = end * Math.cos(g.tiltZ) - up * Math.sin(g.tiltZ)
+        const ay = end * Math.sin(g.tiltZ) + up * Math.cos(g.tiltZ)
+        const y = ay * Math.cos(g.tiltX) + g.y - rig.aimHeightMm
+        const z = ay * Math.sin(g.tiltX) + g.z
+        side = Math.max(side, Math.abs(ax + g.x) / (rig.distanceMm - y * Math.sin(p) - z * Math.cos(p)) / k)
+      }
+    }
+    const reachMm = config.globe.baseDiameterMm / 2 + FRAME.heapMm
+    const heap = (rig.aimHeightMm * Math.cos(p) + reachMm * Math.sin(p)) / (rig.distanceMm + rig.aimHeightMm * Math.sin(p) - reachMm * Math.cos(p)) / k
+    return { side, top: r.top, foot: r.foot, heap }
+  }
+
+  /** Every moment the rule is asked at: the bar of the shake, then the landing's rock and the camera's way home. */
+  const moments = (step: number): { beat: number; at: Shaking }[] => {
+    const out: { beat: number; at: Shaking }[] = []
+    for (let b = 0; b < bar; b += step) out.push({ beat: b, at: { beat: b, sinceLanding: long } })
+    for (let b = bar; b <= bar + FRAME.homeBars * bar + 0.5; b += step) out.push({ beat: b, at: { beat: null, sinceLanding: (b - bar) * beatSeconds } })
+    return out
+  }
+
+  it('keeps the glass, the widest base and the heap at its foot inside the frame by the margin, at every moment of every shake, on every shape of screen', () => {
+    const all = moments(FRAME.pathStepBeats)
+    for (const [name, w, h] of screens) {
+      const a = w / h
+      for (const controls of [null, Math.round(0.152 * h)]) {
+        const under = roomUnder(h, controls, w)
+        const low = -1 + 2 * under
+        const worst = { side: 0, top: -Infinity, foot: -Infinity, heap: -Infinity }
+        for (let n = 0; n < FRAME.shakePaths; n++) {
+          const path = livePath(n)
+          for (const m of all) {
+            const c = cover(liveRig(a, 0, 0, under, m.at), path.poseAt(m.beat))
+            worst.side = Math.max(worst.side, c.side)
+            worst.top = Math.max(worst.top, c.top)
+            worst.foot = Math.max(worst.foot, c.foot)
+            worst.heap = Math.max(worst.heap, c.heap)
+          }
+        }
+        expect(worst.side / a, `${name} ${controls} side`).toBeLessThanOrEqual(room + slack)
+        expect(worst.top, `${name} ${controls} top`).toBeLessThanOrEqual(room + slack)
+        expect(-worst.foot, `${name} ${controls} foot`).toBeGreaterThanOrEqual(low - slack)
+        expect(-worst.heap, `${name} ${controls} heap`).toBeGreaterThanOrEqual(low - slack)
+      }
+    }
+  })
+
+  it('holds the same at rest, and through a second shake asked while the camera still comes home', () => {
+    for (const [name, w, h] of screens) {
+      const a = w / h
+      const under = roomUnder(h, null, w)
+      const rest = cover(liveRig(a, 0, 0, under), REST_POSE)
+      expect(rest.side / a, name).toBeLessThanOrEqual(room + slack)
+      expect(rest.top, name).toBeLessThanOrEqual(room + slack)
+      expect(-rest.heap, name).toBeGreaterThanOrEqual(-1 + 2 * under - slack)
+      for (const since of [config.shake.landSettleSeconds, 0.3 * homeSeconds, 0.6 * homeSeconds]) {
+        for (let n = 0; n < FRAME.shakePaths; n++) {
+          const path = livePath(n)
+          for (let b = 0; b < bar; b += 4 * FRAME.pathStepBeats) {
+            const c = cover(liveRig(a, 0, 0, under, { beat: b, sinceLanding: since + b * beatSeconds }), path.poseAt(b))
+            expect(c.side / a, `${name} ${since} ${n} ${b}`).toBeLessThanOrEqual(room + slack)
+            expect(c.top, `${name} ${since} ${n} ${b}`).toBeLessThanOrEqual(room + slack)
+          }
+        }
+      }
+    }
+  })
+
+  it('stands the camera back only as far as the widest stroke asks: not at all on a wide screen, and on an upright one until that stroke meets the margin', () => {
+    const through: Shaking = { beat: liftBeats, sinceLanding: long }
+    for (const [name, w, h] of screens) {
+      const a = w / h
+      const under = roomUnder(h, null, w)
+      const rest = liveRig(a, 0, 0, under)
+      const far = liveRig(a, 0, 0, under, through)
+      for (const k of ['fovDeg', 'yawDeg', 'pitchDeg', 'aimHeightMm', 'apertureMm', 'focusShiftMm'] as const) expect(far[k], `${name} ${k}`).toBe(rest[k])
+      expect(far.distanceMm, name).toBeGreaterThanOrEqual(rest.distanceMm)
+      let side = 0
+      for (let n = 0; n < FRAME.shakePaths; n++) for (let b = 0; b <= bar; b += FRAME.pathStepBeats / 4) side = Math.max(side, cover(far, livePath(n).poseAt(b)).side)
+      if (a >= 16 / 10) expect(far.distanceMm, name).toBe(rest.distanceMm)
+      if (far.distanceMm > rest.distanceMm) expect(side / a, name).toBeCloseTo(room, 4)
+      else expect(side / a, name).toBeLessThanOrEqual(room + slack)
+    }
+    const p = config.formats.phone
+    const phone = roomUnder(p.height, null, p.width)
+    const back = liveRig(p.width / p.height, 0, 0, phone, through).distanceMm / liveRig(p.width / p.height, 0, 0, phone).distanceMm
+    expect(back).toBeGreaterThan(1.3)
+    expect(back).toBeLessThan(1.45)
+    expect(liveRig(16 / 9, 0, 0, 0.14, through)).toEqual(liveRig(16 / 9, 0, 0, 0.14))
+  })
+
+  it('goes back with the lift, stays for the strokes and the set-down, and comes home over a bar after the landing, never with a step', () => {
+    expect(standBack()).toBe(0)
+    expect(standBack(null)).toBe(0)
+    expect(standBack({ beat: null, sinceLanding: long })).toBe(0)
+    expect(standBack({ beat: null, sinceLanding: homeSeconds })).toBe(0)
+    expect(standBack({ beat: 0, sinceLanding: long })).toBe(0)
+    for (const b of [liftBeats, config.shake.swapWindow.fromBeat, config.shake.swapWindow.toBeat, bar - 1e-9]) expect(standBack({ beat: b, sinceLanding: long })).toBe(1)
+    expect(standBack({ beat: null, sinceLanding: 0 })).toBe(1)
+    expect(standBack({ beat: null, sinceLanding: -1 })).toBe(1)
+    const fps = config.film.fps
+    const frame = 1 / fps / beatSeconds
+    let last = 0
+    let fastest = 0
+    for (let b = 0; b <= liftBeats + frame; b += frame) {
+      const v = standBack({ beat: b, sinceLanding: long })
+      expect(v).toBeGreaterThanOrEqual(last)
+      fastest = Math.max(fastest, v - last)
+      last = v
+    }
+    expect(fastest).toBeLessThan(0.07)
+    expect(standBack({ beat: frame, sinceLanding: long })).toBeLessThan(0.01)
+    expect(standBack({ beat: liftBeats - frame, sinceLanding: long })).toBeGreaterThan(0.999)
+    last = 1
+    for (let t = 0; t <= homeSeconds + 1 / fps; t += 1 / fps) {
+      const v = standBack({ beat: null, sinceLanding: t })
+      expect(v).toBeLessThanOrEqual(last)
+      expect(last - v).toBeLessThan(0.015)
+      last = v
+    }
+    expect(last).toBe(0)
+    expect(standBack({ beat: null, sinceLanding: settleBeats * beatSeconds })).toBeGreaterThan(0.95)
+    for (const since of [0.2, 0.5 * homeSeconds, 0.9 * homeSeconds]) {
+      const before = standBack({ beat: null, sinceLanding: since })
+      expect(standBack({ beat: 0, sinceLanding: since })).toBe(before)
+      let was = before
+      for (let b = frame; b <= liftBeats; b += frame) {
+        const v = standBack({ beat: b, sinceLanding: since + b * beatSeconds })
+        expect(Math.abs(v - was)).toBeLessThan(0.07)
+        expect(v).toBeGreaterThanOrEqual(standBack({ beat: b, sinceLanding: long }))
+        was = v
+      }
+    }
+  })
+
+  it('moves the picture by little from one frame to the next: the fastest the globe shrinks on a phone is under 2.5 percent a frame at 60 a second, and it grows again under half a percent a frame', () => {
+    const p = config.formats.phone
+    const a = p.width / p.height
+    const under = roomUnder(p.height, null, p.width)
+    const fps = 60
+    const frame = 1 / fps / beatSeconds
+    let out = 0
+    let was = liveRig(a, 0, 0, under).distanceMm
+    for (let b = frame; b <= liftBeats + frame; b += frame) {
+      const d = liveRig(a, 0, 0, under, { beat: b, sinceLanding: long }).distanceMm
+      out = Math.max(out, d / was - 1)
+      was = d
+    }
+    expect(out).toBeGreaterThan(0)
+    expect(out).toBeLessThan(0.025)
+    let home = 0
+    for (let t = 1 / fps; t <= homeSeconds; t += 1 / fps) {
+      const d = liveRig(a, 0, 0, under, { beat: null, sinceLanding: t }).distanceMm
+      home = Math.max(home, was / d - 1)
+      was = d
+    }
+    expect(home).toBeLessThan(0.005)
+    expect(was).toBeCloseTo(liveRig(a, 0, 0, under).distanceMm, 6)
+  })
+
+  it('is still the wide camera of the film, moved back along its own axis, while it stands back', () => {
+    const hero = rigOf('hero')
+    for (const [name, w, h] of screens) {
+      for (const back of [0.2, 0.5, 1]) {
+        const rig = liveRig(w / h, 0, 0, roomUnder(h, null, w), { beat: back * liftBeats, sinceLanding: long })
+        expect(rig.pitchDeg, name).toBe(hero.pitchDeg)
+        expect(rig.yawDeg, name).toBe(hero.yawDeg)
+        expect(rig.fovDeg, name).toBe(hero.fovDeg)
+        expect(rig.distanceMm, name).toBeGreaterThanOrEqual(hero.distanceMm)
+      }
+    }
   })
 })
