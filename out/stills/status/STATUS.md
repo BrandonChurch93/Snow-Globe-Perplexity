@@ -1,17 +1,17 @@
-# Status 137
+# Status 138
 
-2026-11-26 05:20 UTC
+2026-11-26 05:52 UTC
 
-- Three of the review's must-fixes are merged into main from their builders: the Shake control stays on screen, the camera stands back so the whole globe stays on a phone through a shake, and the season now changes across several frames under a bloom of the new season's light instead of in one cut. None is judged yet: critics see them after the other builders report.
-- The film's sound is mended by number (no dead silence before a landing or at the end, the four landings within 0.56 dB of each other, -14.0 LUFS, the encoded copy under -1 dBTP) and the app's six loops no longer step at the seam. A listener still hears three ticks at the very start and a click at some starts. The paid takes for the ten missing effects come next, inside the 3,235 credits left.
-- A faster renderer was measured on a sandbox machine: 1.31 s a sample against 10.9 at 1080p. Its picture has not been compared with the present one yet, so the 4K masters' plan waits for that number.
-- The opening of the film with the prompt has its reasoning menu drawn (Standard, High, Max). Ten agents are at work; the next reports are due by 07:05 UTC.
-- phase 6: 2.52 h used of its 12.00 h box
-- allowance (after the review): 2.52 h used of 12.00 h allowed
+- Summer's worst fault is mended and merged: its air now reads as fireflies, green-gold points first, with seeds as faint backlit tufts. Its builder still owes the final stills and the app's own path; no critic has judged it yet.
+- The check for real graphics cards found two more places where the picture hangs on an answer the shader language leaves open (the caps of summer's lanterns and one pixel in the middle of a fleck). Both are mended on main. Neither could be seen on this build's own renderer, which is why it took the check to find them.
+- A second software renderer is now a choice of the tools. On this machine it drew these four pictures at 3.4 to 6.2 s a sample where the present one takes about 35. Its picture is close to the present one but not the same (40.5 dB on one winter still, the floor between machines is 45), so it is all or nothing: nothing judged uses it until two agents report how it behaves at 3840 x 2160, in a storm and from one machine to the next.
+- Merged since the last status: the season change's deeper cover, the phone's globe centred over its controls, reduced motion as a true cross dissolve. Tests on main: 565 passed. Eleven agents are at work.
+- phase 6: 3.04 h used of its 12.00 h box
+- allowance (after the review): 3.04 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-137-1.jpg`: The winter to spring change as merged, film frames 668 to 679 at preview size and draft quality: about a fifth of a second at 60 frames a second. The table's frost gives way to petals under the bloom.
-- `out/stills/status/status-137-2.jpg`: The opening's reasoning menu, frame 89 of the 1080p render: the level is changed from Standard to High before the prompt is typed.
-- `out/stills/status/status-137-3.jpg`: Comparison crops 2: fall-rest, approved image left, build right
-- `out/stills/status/status-137-4.jpg`: Comparison crops 1: fall-rest, approved image left, build right
+- `out/stills/status/status-138-1.jpg`: The four seasons at rest from main as it stands, 1080p at 8 samples, drawn by the faster renderer as a look, not as judged pictures. Summer is the new one.
+- `out/stills/status/status-138-2.jpg`: Summer at 400 px wide, the size at which the review said it read as snow.
+- `out/stills/status/status-138-3.jpg`: Still: summer rest hero, hd, review
+- `out/stills/status/status-138-4.jpg`: Still: fall rest hero, hd, review

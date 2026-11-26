@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 137 · 2026-11-26 05:20 UTC
+Status 138 · 2026-11-26 05:52 UTC
 
-- `out/stills/status/status-137-1.jpg`: The winter to spring change as merged, film frames 668 to 679 at preview size and draft quality: about a fifth of a second at 60 frames a second. The table's frost gives way to petals under the bloom.
-- `out/stills/status/status-137-2.jpg`: The opening's reasoning menu, frame 89 of the 1080p render: the level is changed from Standard to High before the prompt is typed.
-- `out/stills/status/status-137-3.jpg`: Comparison crops 2: fall-rest, approved image left, build right
-- `out/stills/status/status-137-4.jpg`: Comparison crops 1: fall-rest, approved image left, build right
+- `out/stills/status/status-138-1.jpg`: The four seasons at rest from main as it stands, 1080p at 8 samples, drawn by the faster renderer as a look, not as judged pictures. Summer is the new one.
+- `out/stills/status/status-138-2.jpg`: Summer at 400 px wide, the size at which the review said it read as snow.
+- `out/stills/status/status-138-3.jpg`: Still: summer rest hero, hd, review
+- `out/stills/status/status-138-4.jpg`: Still: fall rest hero, hd, review
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-26 05:20 UTC
-clock: phase 6, tick of 50.5 minutes
-phase 6: 2.52 h used of its 12.00 h box
-allowance (after the review): 2.52 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 2.52 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-26 05:52 UTC
+clock: phase 6, tick of 31.3 minutes
+phase 6: 3.04 h used of its 12.00 h box
+allowance (after the review): 3.04 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 3.04 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
@@ -1018,6 +1018,8 @@ Numbered. What, why, and the date.
 136. **The export skill, and how the masters are rendered** (04:52 UTC Nov 26, after the review; note 12: "Please use the export skill for the final video 4K 60 FPS export videos with and without the prompt"). (a) What "the export skill" was taken to mean: Brandon's shared recorder, the frame by frame capture tool taken out of an earlier build of his. It was looked for and is not in reach: no skill of that name or purpose is in his own library, in this Project's, in the organization's or in the marketplace (searched 04:45 UTC), no machine of his is connected (checked 04:45 UTC), and none of his 32 public repos holds it (listed 04:47 UTC by the devbox agent). So the build's own exporter is used. It works the same way: every frame is asked for by its index, drawn to completion, read back and encoded, and the sound is added afterwards in step with the picture. The final message says this plainly. This replaces part (c) of decision 131. (b) The masters are 3840 x 2160 at 60 frames a second, H.264 High 5.2, yuv420p, constant quality 15 with at most 50 Mbps so that film A stays under the platform's 512 MB, AAC at 320 kbps, mp4 with faststart. A new tool, `npm run master` (brief `tools/briefs/p6/master.md`, agent `master_tool_builder`), renders them after the freeze in chunks of 30 frames on up to 14 sandbox VMs at once, each VM pushing every finished chunk to its own branch, and joins them on this VM by stream copy; each file is then proven by decoding all of it. `deliver.sandboxMaster` becomes true: the kit planned the master for Brandon's own machine with a graphics card, and note 12 asks for the files from here. `npm run render:local` stays as it is for his machine. (c) Samples a frame are not decided. They are set before the freeze from a measurement of 4, 8, 12 and 16 against 24 at 3840 x 2160 on a storm frame, a rest frame and a season change (PSNR, SSIM, the flicker between neighbouring frames, crops at their own size). (d) The devbox is no render farm: it has 48 threads, but four renders at once each took four times as long (189.5 to 194.4 s against 46 s alone, its report of 04:42 UTC), and one sample at 3840 x 2160 took it about 23 s, no better than a sandbox VM. A second probe (`render_speed_prober`, brief `tools/briefs/p6/speed.md`) measures why a render uses so little of a machine and whether another software renderer draws the same picture faster. Its result is used only if the picture stays within `quality.crossMachineMinPsnr` of today's in all four seasons and the strict run passes. (e) The portfolio files: the loop's master is the kit's card loop drawn at 3840 x 2160 and 60 frames a second, and the screenshot is its frame 0, the very picture the loop's first chunk was encoded from. The kit's own card loop (1920 x 1080, 30 frames a second) stays in the repo as the kit asks. (f) Considered and declined: enlarging a 1920 x 1080 render (not the picture asked for), rendering 30 frames a second and making the frames between by estimate (the same), and ProRes chunks from the sandbox (about 14 GB, too large for git and for this VM).
 
 137. **The reasoning menu of the opening follows the package Brandon directed, not a menu of five levels** (04:54 UTC Nov 26, after the review; amends decision 135). Brandon's library holds a package of the team's skill, `synthetic-query-typing` 2.1.0, made on November 23 at his direction for an earlier film: it adds an on-screen effort change (`composer.effortTo`) with a card under the chip of three rows, Standard, High and Max, a check mark on the current row, the pointer's approach and press, and the label switching on the press. Its own notes say the menu is a synthetic design in the skill's vocabulary, not a read of the product's menu, and that without `effortTo` every frame is identical to 2.0.2. It is the menu he has already seen and accepted, so film A's opening uses that design exactly (geometry, colours, rows, timings), from Standard to High, and `intro.reasoningLevels` becomes Standard, High, Max. The five levels of decision 135 and the menu drawn in the slash menu's style are dropped. `opening_builder` was sent the package at 04:54 UTC and chooses whether to carry its effort code into the skill it uses or to make the whole opening with it; its report names the package and version. Nothing of either package enters the repo. Still true: no menu here can be compared with the product's own, and the final message says so.
+
+138. **The strict check reads a wrapped row against its own unchanged twin, and two open cases it found are mended by their owner** (05:46 UTC Nov 26, after the review; follows decision 133). `strict_checker` ran the check on engine `e35b2bd01d0015cf` every way it has and reported at 05:39 UTC. Found, and met in the picture: `atan(0, 0)` in summer's lantern (`src/seasons/summer/mini/tree.ts` line 165; on a strict graphics card the caps of two lanterns go dark at rest and of six in the shake) and in the fleck edge of the particle cards (`src/particles/draw/cards.ts` line 332; one dark pixel in the middle of a fleck in spring, summer and fall). Both exact mends went to `summer_finisher`, who owns both files; neither changes a pixel on the build's own renderer. Also found: with both mended the check would still say FAILED on the winter and summer rows, because wrapping every call changes the compiled form of the shader and the picture moves by a low wide field (summer about 4,350 pixels by up to 9 levels, winter about 850 by up to 2) that has nothing to do with an answer the language leaves open: the same field appears when the wrappers answer exactly as the plain function does. Chosen: a wrapped row is judged against that twin (wrappers kept, the open case answering the plain function), which is what the check exists to find. The limits do not move: no pixel by more than 1 level, at most 0.01 percent of pixels. The old reading stays reachable by a flag, the last line of a run says which reading it used, and the new reading has to be shown to fail today's `main` on the two open cases before it is trusted. Declined: raising the limits until the rows pass, and dropping the `all+smooth` rows. Not covered by the check at all, as its builder states: division by zero, and the roughly 1,300 wrapped calls were tested only where these pictures meet them. No run of it is a run on a real graphics card.
 
 ## Notes from Brandon
 
