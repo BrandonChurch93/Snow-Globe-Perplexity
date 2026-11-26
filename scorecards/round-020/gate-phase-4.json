@@ -1,0 +1,113 @@
+{
+  "phase": 4,
+  "time": "2026-11-26T10:04:18.277Z",
+  "engineHash": "4708b960e00eb5d2",
+  "commit": "e8b3d2cf",
+  "results": [
+    {
+      "id": "G1",
+      "name": "the build is clean",
+      "pass": true,
+      "detail": "npm run build exited 0 in 2.6 s, no type errors",
+      "seconds": 2.599
+    },
+    {
+      "id": "G2",
+      "name": "unit tests",
+      "pass": false,
+      "detail": "673 of 681 tests pass in 54 files, 3 fail",
+      "seconds": 96.188
+    },
+    {
+      "id": "G3",
+      "name": "determinism",
+      "pass": false,
+      "detail": "0 comparisons differ: ; page messages: warning: [.WebGL-0x3a4400127200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "seconds": 380.583
+    },
+    {
+      "id": "G4",
+      "name": "sizes and counts",
+      "pass": true,
+      "detail": "a still in every format has its exact size (uhd 3840 x 2160, hd 1920 x 1080, preview 960 x 540, phone 390 x 844, tablet 1024 x 1366), 5 stills on disk agree with their records, loop().frameCount is 480, film().frameCount 3600 matches frameCount in cut/CUTLIST.json",
+      "seconds": 96.871
+    },
+    {
+      "id": "G5",
+      "name": "no interface pixel where none belongs",
+      "pass": false,
+      "detail": "in 25 stills without interface, film B frames 0, 666, 720, 3598 and loop frames 0, 120, 478 the stage is pixel-identical to the canvas and #ui is empty or hidden; 4 of 4 screen stills (screen-wide, screen-wide-fall, screen-phone, screen-tablet): the sound control is not visible (public/audio/index.json does not exist, and the app hides the control when it has no sound files)",
+      "seconds": 318.658
+    },
+    {
+      "id": "G6",
+      "name": "startup validation and the judged list",
+      "pass": true,
+      "detail": "the page starts in capture mode with no error, so the config passes startup validation; all 69 ids of dev.judged() are in the Judged list of kit/PROGRESS.md (69 rows), each under its unit",
+      "seconds": 11.074
+    },
+    {
+      "id": "G7",
+      "name": "lengths",
+      "pass": true,
+      "detail": "film B is 3600 frames, 60.00 s: at most film.maxSeconds 80 and at least film.minSeconds 45; the opening is 867 frames, 14.45 s of at most 16; film A is 74.45 s of at most 140; at 20 Mbit/s of picture and 256 kbit/s of sound film A is 189 MB (152 MB for film B), under platform.maxFileMb 512",
+      "seconds": 11.078
+    },
+    {
+      "id": "G8",
+      "name": "sources and recipes",
+      "pass": false,
+      "detail": "public/first/fall-hd.avif has neither a row in ASSETS.md nor a recipe in assets-src/; public/first/fall-hd.webp has neither a row in ASSETS.md nor a recipe in assets-src/; public/first/fall-phone.avif has neither a row in ASSETS.md nor a recipe in assets-src/; public/first/fall-phone.webp has neither a row in ASSETS.md nor a recipe in assets-src/; public/first/fall-phone590.avif has neither a row in ASSETS.md nor a recipe in assets-src/; public/first/fall-phone590.webp has neither a row in ASSETS.md nor a recipe in assets-src/; public/first/fall-phone667.avif has neither a row in ASSETS.md nor a recipe in assets-src/; public/first/fall-phone667.webp has neither a row in ASSETS.md nor a recipe in assets-src/",
+      "seconds": 0.008
+    },
+    {
+      "id": "G9",
+      "name": "the repo",
+      "pass": true,
+      "detail": "1675 tracked files, 804 MB in all, the largest 20.2 MB (out/review-four-tracks.mp4); no secret found; references/cache/ and out/work/ untracked; 9 of 9 approved files hold their hashes",
+      "seconds": 0.163
+    },
+    {
+      "id": "G10",
+      "name": "portable WebGL2",
+      "pass": false,
+      "detail": "the all run logged: warning: [.WebGL-0x38c400140e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "seconds": 78.608
+    },
+    {
+      "id": "G11",
+      "name": "the change stays in its window",
+      "pass": true,
+      "detail": "film: 7 seasonal parts read on all 3600 frames, every value 0 or 1 on the 3456 frames outside the 4 swap windows (648 to 683, 1368 to 1403, 2088 to 2123, 2808 to 2843), a part mid change on 140 frames inside them; test shake: the same on 828 of 864 frames outside 72 to 107; loop: no value changes across 480 frames and the frame one past the last",
+      "seconds": 11.168
+    },
+    {
+      "id": "G12",
+      "name": "landings",
+      "pass": true,
+      "detail": "4 shakes of the cut list: globe.heightMm is above zero on all 432 frames from each liftEnd to the frame before each landing (the lowest is 0.44 mm); every landing frame (720, 1440, 2160, 2880) is one of the 25 bar lines of the cut list and of film().landings; the camera on each first frame (576, 1296, 2016, 2736) equals dev.pose('hero') within 0.001 mm and degrees (the largest difference is 0.0e+0)",
+      "seconds": 11.266
+    },
+    {
+      "id": "G13",
+      "name": "stand-ins",
+      "pass": true,
+      "detail": "covers 52 of 54 parts: the unit of this round, summer; the units marked finished in kit/PROGRESS.md (winter, spring, summer, fall, change, globe). None is stand-in in the register, the files of each differ from its stand-in hash, the standins view of 69 of 69 judged stills and frames shows no pixel within 2 of a covered part's colour, and dev.flagged() names none of them",
+      "seconds": 180.045
+    },
+    {
+      "id": "G14",
+      "name": "the loop's seam",
+      "pass": true,
+      "detail": "renderLoopFrame(480), one past the last, is pixel-identical to frame 0 (hd, draft)",
+      "seconds": 31.742
+    },
+    {
+      "id": "G15",
+      "name": "memory and counts",
+      "pass": true,
+      "detail": "info().textureMb in uhd, the largest format, after all 4 seasons were drawn on one page: web 241.4 of 500 MB (most in winter), full 687.4 of 2000 MB (most in winter); the most info().counts gives in any season through the app's path in hd: high 1653649 of 1800000 triangles and 67 of 140 draw calls with 102000 particles, medium 999606 of 1100000 triangles and 67 of 140 draw calls with 61200 particles, low 435164 of 600000 triangles and 53 of 140 draw calls with 30600 particles",
+      "seconds": 115.378
+    }
+  ]
+}
