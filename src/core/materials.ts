@@ -17,6 +17,7 @@ export const stageUniforms = {
   uDiag: { value: 0 },
   uSeed: { value: 0 },
   uChange: { value: 0 },
+  uPass: { value: new THREE.Vector4(0, 0, 0, 1) },
   uCoc: { value: new THREE.Vector3() },
 }
 
@@ -29,6 +30,14 @@ export const DRESSING_FRONT = { gain: 2, fromMm: 58, toMm: 230 } as const
  * The base is never morphed: every pixel of a sample holds one base or the other, and the share that holds the new one grows
  * over `BASE_PASS`, longer than the span. Both are black under the cover, so no mix of two bases is in sight; what is in sight
  * is their line against the lit glass, which passes from one shape to the other and never steps.
+ * Which base a pixel holds is a hash against that share. Drawn afresh at each sample of a frame, the hash left the strip between
+ * the two lines as grain a critic reads at native pixels: a pixel held the new base in a number of samples that fell by chance.
+ * So a frame has one hash to a pixel and one share (`uPass`, set in stage.ts): of N samples the hash is set at the middle of one
+ * of N even levels, and each sample steps it on by whole levels and round again (`passLevel`). Every pixel then holds the new
+ * base in the same number of the frame's samples, the share to the nearest of N. The globe travels while the shutter is open,
+ * so a base's line that stands across the travel is drawn out, and a pixel there is under that base for a part of the shutter
+ * only. The step therefore goes by the sample's place in the shutter, `passStride` levels a place: the samples that hold the new
+ * base fall evenly over any part of the shutter, at every pixel. One sample, the app's own path, keeps the plain hash.
  * The table's dressing never holds two seasons: the old season's is gone in the first half of the span and the new season's
  * comes in the second (`DRESSING_CHANGE`). Each goes and comes from the foot outward; the edge of that front is broken into
  * patches (`cellMm`, `fineMm`) drawn out along the way a gust runs (`streak` times as long as wide, `rayMm` to a radian across)
@@ -45,6 +54,63 @@ const OUTSIDE_RAMP = changeRamp('base')
  * The dressing on the glass is on the one thing the cover leaves in sight, so it is not there while the base changes: the old
  * season's goes as the cover rises, burnt off by the light, and the new season's comes as the cover falls.
  */
+/**
+ * How far from its even share the number of samples in a band of levels and a first part of the shutter stands, in samples:
+ * the root of the mean square over every band and every part.
+ */
+export function passSpread(count: number, stride: number): number {
+  let sum = 0
+  let terms = 0
+  for (let from = 0; from < count; from++) {
+    for (let long = 1; long < count; long++) {
+      let held = 0
+      for (let place = 0; place < count; place++) {
+        if ((place * stride + from) % count < long) held++
+        sum += (held - ((place + 1) * long) / count) ** 2
+        terms++
+      }
+    }
+  }
+  return terms > 0 ? Math.sqrt(sum / terms) : 0
+}
+
+const strides = new Map<number, number>()
+/** The levels a sample steps on for each place it stands later in the shutter: of the strides that visit every level, the one with the least `passSpread`. */
+export function passStride(count: number): number {
+  let best = strides.get(count)
+  if (best === undefined) {
+    best = 1
+    let least = Infinity
+    const shares = (a: number, b: number): number => (b === 0 ? a : shares(b, a % b))
+    for (let g = 1; g < count; g++) {
+      if (shares(g, count) !== 1) continue
+      const d = passSpread(count, g)
+      if (d < least - 1e-9) {
+        least = d
+        best = g
+      }
+    }
+    strides.set(count, best)
+  }
+  return best
+}
+
+/** How far on a sample steps the hash, in levels of `count`, from where it stands in the shutter (`t`, 0 to 1). */
+export function passStep(t: number, count: number): number {
+  const place = Math.min(count - 1, Math.max(0, Math.floor(t * count)))
+  return ((place * passStride(count)) % count) / count
+}
+
+/**
+ * The level a pixel's hash stands at in one sample of a frame of `count`: what the base's branch of `stageGone` works out.
+ * The pixel holds the new base in that sample where this is under the share that has passed.
+ */
+export function passLevel(hash: number, step: number, count: number): number {
+  const h = count > 1 ? (Math.floor(hash * count) + 0.5) / count : hash
+  const v = h + step
+  return v - Math.floor(v)
+}
+
 export const GLASS_LEAVE = { start: CHANGE_COVER.riseFrom, length: CHANGE_COVER.fullFrom - CHANGE_COVER.riseFrom } as const
 export const GLASS_COME = { start: CHANGE_COVER.fullTo, length: CHANGE_COVER.goneAt - CHANGE_COVER.fullTo } as const
 /** A place in the window as a share of the outside span, read past both of its ends: what `(uChange - uState.x) / uState.y` gives. */
@@ -191,6 +257,7 @@ export const STAGE_FRAG_PARS = `
 uniform int uDiag;
 uniform float uSeed;
 uniform float uChange;
+uniform vec4 uPass;
 uniform vec3 uCoc;
 uniform vec4 uPart;
 uniform vec4 uState;
@@ -240,7 +307,7 @@ float stageChange() {
   if (uState.w < 0.5) return 0.0;
   if (uState.z < 0.0) {
     float s = (uChange - uState.x) / uState.y;
-    if (uState.z < -${(BASE_CODE - 1).toFixed(1)}) return clamp((s + ${(-BASE.from).toFixed(4)}) / ${BASE.long.toFixed(4)}, 0.0, 1.0);
+    if (uState.z < -${(BASE_CODE - 1).toFixed(1)}) return clamp(((uPass.z - uState.x) / uState.y + ${(-BASE.from).toFixed(4)}) / ${BASE.long.toFixed(4)}, 0.0, 1.0);
     float far = clamp((length(vStageWorld.xz) - ${DRESSING_FRONT.fromMm.toFixed(1)}) / ${(DRESSING_FRONT.toMm - DRESSING_FRONT.fromMm).toFixed(1)}, 0.0, 1.0);
     float run = uState.w > 1.5 ? (s - ${TABLE.leaveFrom.toFixed(4)}) / ${TABLE.leaveLong.toFixed(4)} : (s - ${TABLE.comeFrom.toFixed(4)}) / ${TABLE.comeLong.toFixed(4)};
     float reach = clamp(run, 0.0, 1.0) * (1.0 - uState.z) + uState.z * (uState.w > 1.5 ? far : 1.0 - far);
@@ -253,7 +320,11 @@ float stageChange() {
 bool stageGone(float c) {
   if (uState.w > 0.5) {
     float h = stageHash(vec3(gl_FragCoord.xy, uSeed));
-    if (stageEdge > -0.5) h = clamp(stageEdge + (h - 0.5) * ${OUTSIDE_FRONT.feather.toFixed(2)}, 0.001, 0.999);
+    if (uState.z < -${(BASE_CODE - 1).toFixed(1)}) {
+      h = stageHash(vec3(gl_FragCoord.xy, uPass.x));
+      if (uPass.w > 1.5) h = (floor(h * uPass.w) + 0.5) / uPass.w;
+      h = fract(h + uPass.y);
+    } else if (stageEdge > -0.5) h = clamp(stageEdge + (h - 0.5) * ${OUTSIDE_FRONT.feather.toFixed(2)}, 0.001, 0.999);
     if (uState.w > 1.5 ? h < c : h >= c) return true;
   }
   if (uFlags.w < 1.0 && stageHash(vec3(gl_FragCoord.xy + 29.0, uSeed + 0.61)) >= uFlags.w) return true;
