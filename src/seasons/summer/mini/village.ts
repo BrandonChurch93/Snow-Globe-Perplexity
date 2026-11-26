@@ -201,6 +201,11 @@ function grassMaterial(): THREE.MeshStandardMaterial {
         .replace('#include <map_pars_fragment>', `#include <map_pars_fragment>\n${BUMP_GLSL}`)
         .replace('#include <map_fragment>', `diffuseColor.rgb *= (0.85 + 0.3 * texture2D(map, vMapUv * 3.0).g) * mix(${glsl(GRASS_LOOK.shade)}, vec3(1.0), vSurf.y);`)
         .replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\nnormal *= faceDirection;')
+        // The glass's outline cuts a blade last. A pixel that is cut stops being worked out, and the lighting of the pixel beside
+        // it reads its numbers (the slope of the shadow's place): cut at the head, the grass at the outline was lit from numbers
+        // nobody set.
+        .replace('if (stageOutside()) discard;', 'bool grassOutside = stageOutside();')
+        .replace(/\}\s*$/, '#ifdef STAGE_INSIDE\nif (grassOutside) discard;\n#endif\n}')
       afterLight(
         shader,
         `reflectedLight.indirectDiffuse += vGlow * (uGlowGain * ${GRASS_LOOK.near.toFixed(2)}) * material.diffuseContribution;

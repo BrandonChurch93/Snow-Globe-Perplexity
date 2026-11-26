@@ -51,6 +51,7 @@ export class ParticleDraw {
       uStorm: { value: new THREE.Vector4() },
       uAperture: { value: new THREE.Vector4(0, 0, 0, 0) },
       uEyeShift: { value: new THREE.Vector3() },
+      uWhole: { value: 0 },
       uBlur: { value: new THREE.Vector4() },
       uLying: { value: new THREE.Vector4(LYING_LOOK.flat, LYING_LOOK.lobe, LYING_LOOK.mergeFromMm, LYING_LOOK.mergeToMm) },
       uLimit: { value: new THREE.Vector4(1, 1, LYING_LOOK.mergeSpread, LYING_LOOK.glitterTilt) },
@@ -220,6 +221,7 @@ export class ParticleDraw {
     this.up.copy(this.back).cross(this.right)
     ;(u.uAperture!.value as THREE.Vector4).set(dx, dy, 1 / pose.focusMm, f.blurMm)
     ;(u.uEyeShift!.value as THREE.Vector3).set(0, 0, 0).addScaledVector(this.right, dx).addScaledVector(this.up, dy)
+    u.uWhole!.value = f.live ? 1 : 0
     ;(u.uBlur!.value as THREE.Vector4).set(LENS_LOOK.nearGain, LENS_LOOK.farGain, LENS_LOOK.maxBlurPx * scale, LENS_LOOK.farShrink)
     ;(u.uTone!.value as THREE.Vector4).w = LENS_LOOK.glassDiscPx * scale
     const limit = u.uLimit!.value as THREE.Vector4
