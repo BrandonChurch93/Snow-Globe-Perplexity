@@ -80,3 +80,12 @@ After. The foot of the glass in the same six frames at their own pixels, two to 
 
 25-foot-675-final-preview.jpg
 After. The foot of the glass in film frame 675 at its own pixels, a cut of 480 by 110. Format preview (960 by 540), tier final (24 samples a frame), commit bbe4db9b. The one frame drawn at final tier: the strip that spring's base covers reads as a soft band with a faint grain.
+
+26-foot-673-678-review-before-after.jpg
+Before beside after. The foot of the glass in film frames 673 to 678 at their own pixels, one frame to a row from the top, each a cut of 598 by 190 hung from the top and the middle of the lit glass in its own picture. Left: before, commit bbe4db9b. Right: after, commit 82d5c566 (the fourth job's 2e19534b with main merged in; the branch's head 632d9514 holds the same source, engine b2552a068a75a0bc). Format hd, tier review (8 samples a frame). Before: the strip between the two bases' lines is grain in 674 to 678. After: the strip is one even tone that darkens frame by frame, and no grain lies in it. What is left is on the strip's two lines: a rim of fine dots a few px deep, plainest at the two sloped ends in 676 to 678, where the globe's travel draws the lines out. 673 after holds the old base alone.
+
+27-foot-675-1395-2115-2835-final.jpg
+After. The foot of the glass at the middle frame of each of the four changes at its own pixels, two to a row: 675 (winter to spring) and 1395 (spring to summer), 2115 (summer to fall) and 2835 (fall to winter). Each is a cut of 598 by 298 centred on the lit glass, the base's line 90 rows above its lower edge. Format hd, tier final (24 samples a frame), engine b2552a068a75a0bc (commit 2e19534b; the head 632d9514 holds the same source). No before was drawn at this tier at hd. In all four the strip between the two bases' lines is a smooth band and no grain is seen in it at these pixels. In 2115 the thin arc of summer's collar lies in the band as a clean line. Not in this cut: one speck of about 3 by 3 px in 2115 at x 625, y 600 of the frame, on the left rim of the lit glass about 140 rows above the base's line; its cause is not found.
+
+28-whole-675-1395-2115-2835-final.jpg
+After. The same four frames whole, set down to 598 by 336, in the same order. Format hd, tier final, the same engine. In each the glass is a lit globe with its halo on black, and its foot ends in one clean line.
