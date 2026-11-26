@@ -159,7 +159,7 @@ function makeRoom(mine, wanted) {
   return dropped
 }
 
-function pngOk(file, format) {
+export function pngOk(file, format) {
   let fd
   try {
     const size = fs.statSync(file).size

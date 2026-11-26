@@ -42,6 +42,7 @@
     "pack": "node tools/pack.mjs",
     "hostcheck": "node tools/hostcheck.mjs",
     "render:local": "node tools/render-local.mjs",
+    "master": "node tools/master.mjs",
     "make": "node tools/make.mjs",
     "texpack": "node tools/texpack.mjs",
     "firstlook": "node tools/firstlook.mjs",
