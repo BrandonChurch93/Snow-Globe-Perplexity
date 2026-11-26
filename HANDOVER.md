@@ -1,4 +1,78 @@
-# Handover: the master tool (agent/p6-master)
+# Handover: the master tool (agent/p6-master, then agent/p6-master2)
+
+## Job 2 (agent/p6-master2): intermediates by attachment, one encode of each master
+
+Written by master_tool_builder on 26 Nov, 09:25 UTC. Measured on one sandbox VM: 4 cores, 7.9 GB, no graphics card, ffmpeg 8.0.1, x264 core 165, lavapipe. Where this section and the older one below disagree, this one stands: `--join` is gone, a master is made by `--encode`.
+
+### A render agent, from nothing
+
+```
+sudo apt-get update && sudo apt-get install -y mesa-vulkan-drivers ffmpeg
+git clone --depth 400 https://github.com/BrandonChurch93/Snow-Globe-Perplexity && cd Snow-Globe-Perplexity
+git checkout <the ONE commit /root names for the master>
+npm ci
+PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-x64 npx playwright-core install chromium
+npm run build
+npm run master -- --calibrate
+npm run master -- --what film-b --first 600 --last 899 --ship agent/p6-chunks-vm07
+```
+
+- The first line of `--calibrate` must be the same on every machine. Here lavapipe printed `calibration ba63d3b2ceb11deb5db2ee01024ba807d9354f4447e9d849af15add72629607d` on main c2a3064f and on this branch's build 4708b960e00eb5d2.
+- When the range ends the tool prints `to send to the joining agent by attachment: N files ...` and one line a message. Send exactly those files, in those groups of at most 10, as attachments to the joining agent. A chunk is one `.mp4` (25 to 27 MB) and its `.json`; the loop's first chunk also sends `frame-000000.png`.
+- `--ship BRANCH` carries the record and the look only. The picture is never pushed.
+- Run the same command again after any stop. PNGs of a chunk exist only until its intermediate has passed its check.
+- All machines must be on one commit: the build hash takes in `src/` and `config/`, and `--encode` refuses chunks of two builds.
+
+### The joining agent
+
+One flat folder for every attachment, any order, any names for the pictures and parts. Then:
+
+```
+npm ci
+npm run master -- --collect out/work/collected --files /path/to/the/attachments
+npm run master -- --encode film-b --from out/work/collected
+npm run master -- --encode loop --from out/work/collected
+mkdir -p out/work/opening/master
+git fetch origin agent/p6-opening-master
+for f in manifest.json opening.bin; do git show FETCH_HEAD:out/opening-master/$f > out/work/opening/master/$f; done
+npm run master -- --what opening
+npm run master -- --encode film-a --from out/work/collected
+npm run master -- --split out/deliver/snow-globe-film-4k60.mp4
+npm run master -- --split out/deliver/snow-globe-film-with-prompt-4k60.mp4
+npm run master -- --split out/deliver/snow-globe-portfolio-loop-4k60.mp4
+```
+
+- `--collect` may be run as often as files arrive; it says what is there, what is missing, and which chunk still waits for a part. Exit code 1 while something is incomplete or flat.
+- Film B first: the loop reads film B's record for the quality it must reach. The sound must be in `audio/final/film-b.wav` and `film-a.wav`, or named with `--sound FILE`.
+- Each `--encode` ends with one table. Every row `pass` (two rows only say `measured`): the file is in `out/deliver/`. Any `FAIL`: it is `.unproven.mp4` and not a master.
+- Where the parts of a master arrive: `npm run master -- --unsplit FOLDER`.
+- Tuning without touching `config/` (which would change the build hash): `--target-mb`, `--preset`, `--keyint`, `--min-keyint`, `--x264`, `--final-min-psnr`; for the loop `--crf`, `--min-crf`, `--loop-x264`, `--seam-db`; on a render machine `--crf`, `--part-mb`.
+
+### What was run with real pictures
+
+The 20 frames of part A (film B 60 to 69, a hold, and 660 to 669, a change; `uhd`, 24 samples, lavapipe, drawn by main c2a3064f) went through the whole path on this branch's build. Their `frames.json` was written by hand to carry this build's hash, so the tool took them as its own; nothing was rendered again. All of it ran with `--chunk 10`, so every chunk is marked `test`.
+
+- Intermediates at crf 6: 9.03 MB (least 48.95 dB, mean 49.78) and 8.97 MB (least 50.67, mean 51.82); the second was split into 3 parts with `--part-mb 4`.
+- Collect: the records, one whole chunk and two of three parts copied to a flat folder with a stranger file. First run: `NOT COMPLETE ... part 2 of 3`. Third part added, second run: put together, sha256 as recorded.
+- Encode, `--encode film-b --test --gaps --target-mb 2.76 --sound` (a 0.33 s test tone, no final mix is on this machine): two passes at 64 914 kbps, 2.54 MB, every row pass, least 40.46 dB at frame 9, mean 43.06 dB against the decoded intermediates, 13 s to encode.
+- Split into 3 parts with `--part-mb 1`, unsplit from a folder where every file had another name: the same sha256, and `cmp` says identical. With one part missing: `NOT PUT TOGETHER`, exit code 1.
+- The loop's path, on the 10 hold frames renamed 0 to 9 by hand (not loop frames): intermediate, screenshot `frame-000000.png` (14.4 MB) by the flat folder, `--encode loop --test` at crf 18: every row pass, least 46.31 dB, frame 0 47.56 dB and the last 46.44 dB against their intermediates; against the PNGs themselves frame 0 is 46.70 dB and the last 45.58 dB (measured by hand, the PNGs do not exist on a joining machine).
+- `--what opening` against the real 4K pack of `origin/agent/p6-opening-master` (e44b7e51): 867 frames, 29 chunks, 5.75 MB in all, 0.09 to 0.31 MB a chunk, least 56.9 dB.
+
+### Not run
+
+- No chunk of 30 frames at `uhd` and 24 samples was rendered and encoded as one. The 25 to 27 MB a chunk is a projection from 10 frames each of a hold and a change.
+- `--encode film-a` (the opening's chunks then film B's) was not run: there are no film B chunks on the chunk lines here. `--encode` of a real master, with 300 frames between key frames, was not run; the 20-frame test has one key frame.
+- The loop's step down (crf 18 to 16 when its least frame is under film B's best second) did not fire in the test and is covered by unit tests only.
+- `--procs 2`, `--local`: never run.
+- The final encode is not byte for byte repeatable (four runs, four files within 0.2 percent of one size). The intermediates are.
+- `tools/briefs/p6/master.md` still describes job 1's design (`--join`, `minChunkPsnr`). I did not touch it.
+
+### Sheets
+
+`sheet-d-hold.png`, `sheet-d-change.png`: the dark backdrop under four final encodes at the same size. See `captions.txt`.
+
+## Job 1 (agent/p6-master), as it was handed over
 
 Written by master_tool_builder on 26 Nov. Everything here was measured on one sandbox VM: 4 cores, 7.9 GB, no graphics card, Node 20.20.2, ffmpeg 8.0.1, x264 core 165, the pinned Chromium. The first half of the session drew with SwiftShader, the second with Mesa lavapipe 26.0.8 (decision 139). The numbers say which.
 
