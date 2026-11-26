@@ -11,20 +11,20 @@ const PART = 'surface-dressing-summer'
 // dune), its shoulder round the front of the foot, a tongue toward the camera, and a sheet beside the foot on the left that runs out to the front along the edge of the base's shadow.
 // Everywhere else the table is bare.
 const HEAP = {
-  dune: { x: 70, z: 8, sx: 15, sz: 20, mm: 4.2 },
-  cone: { x: 60.5, z: 1, mm: 6.0, run: 0.3, deep: 1.3 },
-  bank: { mm: 3.2, r: 57.5, w: 8, az: [2, 104], ease: 16 },
-  skirt: { x: 70, z: 32, sx: 15, sz: 18, mm: 2.2 },
+  dune: { x: 66, z: -12, sx: 11, sz: 30, mm: 3.0 },
+  cone: { x: 61.5, z: 6, mm: 9.0, run: 0.42, deep: 1.3 },
+  bank: { mm: 3.2, r: 57.5, w: 8, az: [2, 100], ease: 16 },
+  skirt: { x: 66, z: 30, sx: 11, sz: 15, mm: 1.5 },
   shoulder: { x: 52, z: 55, sx: 15, sz: 11, mm: 2.0 },
-  fan: { x: 62, z: 92, sx: 30, sz: 36, mm: 1.5 },
-  sheet: { x: -82, z: 6, sx: 40, sz: 18, mm: 0.22, turn: 112 },
+  fan: { x: 56, z: 88, sx: 22, sz: 34, mm: 1.3 },
+  sheet: { x: -75.4, z: -30.8, sx: 46, sz: 11, mm: 1.6, turn: 113.3, from: [-104, -96] },
   edge: { mm: [0.2, 0.45], sharp: 1.0, looseMm: 0.25, cover: [0.04, 0.75] },
-  loose: { on: 0.05, fromMm: 0.03, edgeMm: 0.4, reach: 1.3, flung: 0.3, x: 90, z: 22, sx: 15, sz: 24 },
+  loose: { on: 0.05, fromMm: 0.03, edgeMm: 0.4, reach: 1.3, flung: 0.5, x: 88, z: 12, sx: 15, sz: 24 },
 }
 // The light on the sand of the table. The stage's lit material is made for the stone of the base; this takes its paint
 // (every grain's own colour and tilt) and the stage's key, shadow, sky and card, and lights the sand as dry sand is lit
 // by a low sun from behind: bright where a grain faces it, dark and cool in the shade, with no part burnt to white.
-export const SAND_LIT = { tilt: 0.75, sun: 2.2, face: [-0.25, 0.5], back: 1.0, sky: 3.4, card: 0.22, glint: 0.9, shade: 0.5, knee: 0.9, top: 2.6, warm: [1.0, 0.74, 0.57], pale: 0.55, tint: [1.0, 0.94, 0.93], speck: 1.3, grain: [0.5, 1.12], thru: 1.2, left: [0.15, -95, -40], deep: [0.8, 40], front: [0.1, 0.3, 4, 50], line: [67.5, 4, -0.97, 0.243], soft: [-6, 11], wander: 1.2, from: [-25, 5] }
+export const SAND_LIT = { tilt: 0.5, sun: 4.8, face: [-0.05, 0.55], back: 1.0, sky: 3.4, card: 0.22, glint: 0.9, shade: 0.5, knee: 0.9, top: 3.0, warm: [1.0, 0.74, 0.57], pale: 0.55, tint: [1.0, 0.94, 0.93], speck: 1.3, grain: [0.86, 1.06], thru: 1.2, cut: [-63.8, -47.6, -0.918, -0.396, -0.8, 1.2, -48, -30], deep: [0.15, 40], front: [0.03, 0.2, 4, 45], line: [61.5, 6, -0.866, 0.5], soft: [-3, 7], wander: 1.2, from: [-25, 5], lift: [7.5, 11.5] }
 export const SLAB = { liftMm: 0.5, footMm: 52.4, repose: 0.62, stepMm: 1.0, x: [-150, 142], z: [-232, 216] } as const
 
 const hash = (x: number, y: number, s: number): number => {
@@ -74,9 +74,9 @@ function laid(x: number, z: number): number {
   const mid = noise(x / 7.3 + 1.7, z / 7.3 + 9.2, 13)
   const fine = noise(x / 2.1 + 5.3, z / 2.1 + 2.9, 17)
   const heap = (bump(x, z, HEAP.dune) + cone(x, z)) * (0.86 + 0.28 * broad) + bank(x, z) * (0.8 + 0.4 * mid) + bump(x, z, HEAP.skirt) * (0.75 + 0.5 * mid) + bump(x, z, HEAP.shoulder) * (0.6 + 0.8 * broad) + bump(x, z, HEAP.fan) * (0.75 + 0.5 * broad * mid)
-  const sheet = bump(x, z, HEAP.sheet) * (0.55 + 0.9 * broad * mid)
+  const sheet = bump(x, z, HEAP.sheet) * Math.min(1, Math.max(0, (x - HEAP.sheet.from[0]!) / (HEAP.sheet.from[1]! - HEAP.sheet.from[0]!))) * (0.55 + 0.9 * broad * mid)
   const grit = noise(x / 1.1 + 4.7, z / 1.1 + 1.3, 31)
-  const lumps = (grit - 0.5) * 0.3 * Math.min(1, heap / 1.5) + (fine - 0.5) * 0.5 * Math.min(1, heap / 2.5) + (mid - 0.5) * 1.1 * Math.min(1, heap / 4)
+  const lumps = (grit - 0.5) * 0.15 * Math.min(1, heap / 1.5) + (fine - 0.5) * 0.25 * Math.min(1, heap / 2.5) + (mid - 0.5) * 0.6 * Math.min(1, heap / 4)
   return Math.max(0, heap + sheet + lumps)
 }
 
@@ -139,7 +139,7 @@ function heapGeometry(): THREE.BufferGeometry {
     const r = Math.hypot(x, z)
     position.push(x, SLAB.liftMm + h[o]!, z)
     normal.push(-gx / l, 1 / l, -gz / l)
-    const shade = 0.38 + 0.62 * Math.min(1, Math.max(0, (r - 55.5) / 13))
+    const shade = 0.7 + 0.3 * Math.min(1, Math.max(0, (r - 55.5) / 13))
     const t = Math.min(1, Math.max(0, (h[o]! - HEAP.edge.cover[0]) / (HEAP.edge.cover[1] - HEAP.edge.cover[0])))
     color.push(1, shade, 0)
     cover.push(t * t * (3 - 2 * t), shade)
@@ -181,7 +181,7 @@ const sandLine = (at: string): string => `((${at}.x - ${f(SAND_LIT.line[0]!)}) *
 const sandGate = (at: string): string => `smoothstep(${f(SAND_LIT.from[0]!)}, ${f(SAND_LIT.from[1]!)}, ${at}.x)`
 export const sandShade = (at: string): string => {
   const L = SAND_LIT
-  return `(mix(1.0, mix(${f(L.front[0]!)}, ${f(L.front[1]!)}, smoothstep(${f(L.front[2]!)}, ${f(L.front[3]!)}, ${sandLine(at)})), smoothstep(${f(L.soft[0]!)}, ${f(L.soft[1]!)}, ${sandLine(at)} + ${f(L.wander)} * sin(${at}.x * 0.37 + ${at}.z * 0.23)) * ${sandGate(at)}) * mix(${f(L.left[0]!)}, 1.0, smoothstep(${f(L.left[1]!)}, ${f(L.left[2]!)}, ${at}.x)))`
+  return `(mix(1.0, mix(${f(L.front[0]!)}, ${f(L.front[1]!)}, smoothstep(${f(L.front[2]!)}, ${f(L.front[3]!)}, ${sandLine(at)})), smoothstep(${f(L.soft[0]!)}, ${f(L.soft[1]!)}, ${sandLine(at)} + ${f(L.wander)} * sin(${at}.x * 0.37 + ${at}.z * 0.23)) * ${sandGate(at)} * (1.0 - smoothstep(${f(L.lift[0]!)}, ${f(L.lift[1]!)}, ${at}.y))) * mix(smoothstep(${f(L.cut[4]!)}, ${f(L.cut[5]!)}, (${at}.x - ${f(L.cut[0]!)}) * ${f(L.cut[2]!)} + (${at}.z - ${f(L.cut[1]!)}) * ${f(L.cut[3]!)}), 1.0, smoothstep(${f(L.cut[6]!)}, ${f(L.cut[7]!)}, ${at}.x)))`
 }
 export const sandOpen = (at: string, key: string): string => `mix(${f(SAND_LIT.deep[0]!)}, 1.0, mix(${key}, 1.0 - smoothstep(0.0, ${f(SAND_LIT.deep[1]!)}, ${sandLine(at)}), ${sandGate(at)}))`
 

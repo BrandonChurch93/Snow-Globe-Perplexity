@@ -1,5 +1,5 @@
 import { config, formatById, tierSamples, type FormatSpec } from '../config'
-import { Accumulator } from '../core/accumulator'
+import { Accumulator, type SampleFacts, type Sanity } from '../core/accumulator'
 import type { Assets } from '../core/assets'
 import { finish, type Gfx } from '../core/gl'
 import { sampleSet, type Sample } from '../core/sampler'
@@ -80,7 +80,9 @@ export interface Dev {
   loopState(frameIndex: number): FilmState
   loopPlan(): { frameCount: number; shake: { first: number; liftEnd: number; strokesEnd: number; landing: number } }
   openingPlan(): { frameCount: number; typing: { first: number; last: number }; reasoning: { first: number; open: number; choose: number; last: number }; send: number; build: { first: number; last: number }; steps: number[]; keyTaps: number[] }
-  sanity(): { invalid: number; pixels: number }
+  sanity(): Sanity
+  watchSamples(on: boolean, at?: { x: number; y: number }): void
+  sampleFacts(): SampleFacts[]
   inside(): { inside: number; outside: number; total: number }
   simcache(what: 'film' | 'stills' | 'loop', budgetSeconds?: number, fromSeconds?: number): Promise<{ checkpoints: number; simulatedSeconds: number; ms: number; done: boolean; totalSeconds: number }>
   flagged(): string[]
@@ -444,6 +446,10 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
       loopPlan: () => loopPlan(),
       openingPlan: () => openingPlan(),
       sanity: () => acc.invalid(),
+      watchSamples: (on, at) => {
+        acc.watch = on ? { at: at ?? null, keep: !!at } : null
+      },
+      sampleFacts: () => acc.samples,
       inside: () => {
         const sim = particles
         const grid = stage.collider(lastSeason)
