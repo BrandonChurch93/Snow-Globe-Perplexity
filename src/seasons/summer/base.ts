@@ -165,14 +165,15 @@ float baseAo = mix(1.0, vBasePaint.x, 0.48) * (1.0 - mix(0.2, 0.34, smoothstep(4
 diffuseColor.rgb = diffuse * texture2D(uBaseTone, vBaseUv1).rgb * vec3(1.0, 0.98, 0.93);
 float basePale = smoothstep(-4.0, 36.0, vBasePos.x);
 diffuseColor.rgb = mix(vec3(dot(diffuseColor.rgb, vec3(0.3, 0.55, 0.15))) * vec3(1.0, 0.99, 0.96), diffuseColor.rgb, mix(0.5, 0.34, basePale)) * mix(1.0, 1.1, basePale);
+diffuseColor.rgb *= mix(vec3(1.12, 1.03, 0.95), vec3(1.0), smoothstep(-6.0, 30.0, vBasePos.x));
 float baseBlotch = baseNoise(vBasePos * 0.23) * 0.6 + baseNoise(vBasePos * 0.9) * 0.4;
 diffuseColor.rgb *= mix(0.86, 1.1, baseBlotch) * (0.96 + 0.08 * baseDetail.b) * (0.97 + 0.06 * baseFine.b);
 diffuseColor.rgb *= (0.9 + 0.2 * baseHash(floor(vBasePos * 2.7 + 1.3))) * (0.86 + 0.28 * baseHash(floor(vBasePos * 7.0))) * (0.94 + 0.12 * baseNoise(vBasePos * 9.0)) * (0.86 + 0.28 * baseHash(floor(vBasePos * 13.0 + 5.0)));
-diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.9, 0.78, 0.66), mix(0.3, 0.65, smoothstep(4.0, -30.0, vBasePos.x)) * baseCavity);
-diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(1.06, 0.78, 0.52), 0.6 * baseCrease);
-diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.93, 0.86, 0.72), 0.15 * baseHigh + 0.35 * baseCrest);
+diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.92, 0.76, 0.6), mix(0.45, 0.7, smoothstep(4.0, -30.0, vBasePos.x)) * baseCavity);
+diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(1.1, 0.76, 0.48), 0.75 * baseCrease);
+diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.97, 0.84, 0.68), 0.25 * baseHigh + 0.35 * baseCrest);
 float baseCollar = smoothstep(28.5, 31.5, vBasePos.y);
-diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.3, 0.55, 0.15))) * vec3(1.04, 1.0, 0.93), 0.35 * baseCollar) * (1.0 + 0.1 * baseCollar);
+diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.3, 0.55, 0.15))) * vec3(1.18, 0.94, 0.78), 0.35 * baseCollar) * (1.0 + 0.1 * baseCollar);
 `
 
 const STONE_ROUGH = `
@@ -245,8 +246,8 @@ const STONE_AFTER = `
   float stoneLitL = 0.32 * smoothstep(-6.0, -20.0, vBasePos.x);
   float stoneLitR = 0.6 * smoothstep(34.0, 46.0, vBasePos.x);
   float stoneCatch = smoothstep(0.05, 0.5, stoneUp) * (1.0 - 0.8 * baseCavity) * (0.75 + 0.5 * baseHigh);
-  vec3 stoneSunlit = baseSunC * mix(vec3(1.0, 0.86, 0.66), vec3(1.0, 0.94, 0.85), smoothstep(-20.0, 10.0, vBasePos.x)) * (${STONE.lit.toFixed(2)} * smoothstep(28.0, 35.0, vBasePos.y) * (stoneLitL + stoneLitR + 0.1) * stoneCatch);
-  ${shadeIn(FRONT_SHADE.deep, FRONT_SHADE.left, FRONT_SHADE.from, FRONT_SHADE.edge, 'mix(mix(vec3(1.0, 0.93, 0.82), vec3(1.0, 0.965, 0.91), smoothstep(-28.0, -10.0, vBasePos.x)), vec3(1.0, 0.96, 0.9), smoothstep(38.0, 50.0, vBasePos.x))')}
+  vec3 stoneSunlit = baseSunC * mix(vec3(1.0, 0.8, 0.64), vec3(1.0, 0.94, 0.85), smoothstep(-20.0, 10.0, vBasePos.x)) * (${STONE.lit.toFixed(2)} * smoothstep(28.0, 35.0, vBasePos.y) * (stoneLitL + stoneLitR + 0.1) * stoneCatch);
+  ${shadeIn(FRONT_SHADE.deep, FRONT_SHADE.left, FRONT_SHADE.from, FRONT_SHADE.edge, 'mix(mix(vec3(1.0, 0.93, 0.82), vec3(1.0, 0.95, 0.87), smoothstep(-28.0, -10.0, vBasePos.x)), vec3(1.0, 0.96, 0.9), smoothstep(38.0, 50.0, vBasePos.x))')}
   // The glass stands over the middle of the lip's top and keeps the sky off it.
   float stoneUnderGlass = 1.0 - 0.5 * smoothstep(36.0, 39.5, vBasePos.y) * smoothstep(34.0, 14.0, abs(vBasePos.x + 3.0)) * smoothstep(0.2, 0.8, stoneUp);
   reflectedLight.indirectDiffuse *= stoneUnderGlass;
