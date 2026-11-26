@@ -4,6 +4,8 @@ Start 04:04:56 UTC on 26 November 2026. Engine `e35b2bd01d0015cf`. Tool branch `
 
 All pictures are 960x540. "preview, draft" is the tool's own tier. "live high" is the app's own path at the high level. Steps are levels of 255.
 
+At 05:38 UTC `origin/main` stood at `3fb0bede`, with changes under `src/` since `17e9b252` (audio, copy, core/materials, post, scene, two season bases, winter arrival, shake/change, ui). Every run below is of engine `e35b2bd01d0015cf`, that is `17e9b252`; none was repeated on the newer main. `src/seasons/summer/mini/tree.ts`, `src/particles/draw/cards.ts` and `src/core/chunks/veil.ts` are the same in both, so the files and lines named below hold on `3fb0bede`. `tools/strict.mjs` is untouched on main since, so the branch merges without conflict. tsc and vitest were run again on the branch at 05:37 UTC with the same result.
+
 ## What `tools/strict.mjs` can do now (the one file that was mine)
 
 - `--live LEVEL`: the same keys through the app's own path, on the pattern of `tools/still.mjs`. Pictures and report go to `out/work/strict/live-LEVEL/`. The plain picture is rendered once and kept. Two plain renders of the live path agree to the pixel (`pow+dry`, 0 pixels), so the live rows are not noise.
