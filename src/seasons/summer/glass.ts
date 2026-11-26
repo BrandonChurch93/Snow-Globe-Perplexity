@@ -39,7 +39,7 @@ export const look = {
     coreAcross: 0.045,
     coreAlong: 0.09,
     // the bloom of the lens round the core: a soft ball that takes the core's hard edge away
-    bloom: 2.6,
+    bloom: 3,
     bloomWide: 0.12,
     // the broad warm glow under the rays, a quarter of a globe radius wide, and the thin `veil` that carries it on
     halo: 1.0,
@@ -48,7 +48,7 @@ export const look = {
     // the star: fine straight rays through the core, `spikes` lines of them, each end with its own length (`reach`: the
     // shortest, and how much longer the longest is), longer and brighter away from the globe; `rayWide` is a ray's width at
     // its tip and how much wider it is at the core
-    rays: 3.4,
+    rays: 2.7,
     spikes: 11,
     reach: [0.16, 0.3] as const,
     rayWide: [0.004, 0.011] as const,
@@ -127,9 +127,9 @@ export const look = {
     // a faint body of light over the middle, behind the cottage and left of the crown (`domeAt`, globe radii across and up;
     // `domeSize`, how far it reaches to the left, to the right and up or down). It lies in broad soft folds that follow the
     // glass, `folds` of them to a globe radius, and `foldDeep` of it is gone in the gaps between them
-    dome: 0.02,
-    domeAt: [-0.15, 0.12] as const,
-    domeSize: [0.45, 0.45, 0.4] as const,
+    dome: 0.055,
+    domeAt: [-0.12, 0.22] as const,
+    domeSize: [0.4, 0.38, 0.38] as const,
     domeColor: [1, 0.56, 0.28] as const,
     folds: 7,
     foldLong: 1.3,
@@ -201,20 +201,21 @@ export const look = {
     fork: [0.16, 0.42] as const,
     kinkMm: 1.3,
     kinkEveryMm: [18, 38] as const,
-    thinMm: 0.17,
-    lines: 3,
+    thinMm: 0.2,
+    lines: 4.4,
     // the soft light each line lies in, as a share of the line
     lineGlow: 0.004,
     // how far the lines' bearings are drawn together toward the side the sun throws them to (0 even, 1 all of them)
     gather: 0.4,
     // the brightest lines are `stout` times thicker again at the knot and back to their own width `stoutMm` out; every
-    // line is `hair` of its width at its tip. Along it the light gathers in knots, `knots` times brighter and `swell`
-    // times thicker again, and fails between them: below the first of `breaks` in the line's own noise it is gone, whole
-    // above the second
+    // line is `hair` of its width at its tip. Along it the light gathers in knots, `knots` brighter and `swell` times thicker
+    // again; between them the line is a thread, `between` as bright, and it fails there: below the first of `breaks` in the
+    // line's own noise it is gone, whole above the second
     stout: 0.7,
     stoutMm: 26,
     hair: 0.6,
     knots: 3.2,
+    between: 0.34,
     swell: 0.35,
     knotPerMm: 0.42,
     breaks: [0.26, 0.36] as const,
@@ -474,7 +475,7 @@ void main() {
       float drawn = max(thin, 0.8 * foot);
       float off = across * across / (drawn * drawn);
       float weight = exp(-far * far) * (1.0 - smoothstep(1.0, 1.6, far)) * mix(smoothstep(0.12, 0.5, poolRnd(fk, 10.0) * poolRnd(fj, 14.0)), 0.15 + 0.85 * poolRnd(fj, 14.0) * poolRnd(fj, 14.0), byKnot) * (dot(h, e) > 0.0 ? 1.0 : 0.0);
-      float lit = (thin / drawn) * (exp(-off) + ${n(P.lineGlow)} * exp(-off / 16.0)) * weight * whole * (0.6 + ${n(P.knots)} * knot) * (1.0 + ${n(P.nearKnot)} * byKnot);
+      float lit = (thin / drawn) * (exp(-off) + ${n(P.lineGlow)} * exp(-off / 16.0)) * weight * whole * (${n(P.between)} + ${n(P.knots)} * knot) * (1.0 + ${n(P.nearKnot)} * byKnot);
       sown += weight * exp(-across * across / ${n(P.grainsNearMm * P.grainsNearMm)});
       lines += lit;
       tips += lit * smoothstep(0.35, 1.1, far);
