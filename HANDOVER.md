@@ -40,6 +40,32 @@ Each season's HD review PNGs at frames 0 and 480 are byte-identical. The `4789-l
 
 Winter frame 0 in `47891785` is byte-identical to the one in `2585e411`, so the earlier comparison against the pinned `1deae971` frame 0 still applies. The composition holds, but those two historical frames are not pixel-identical: full-frame RMS 23.958.
 
+### Matched final solver measurements
+
+The main control is `58687dc1`, engine `4fdd312e06b0e534`. The pushed build is `47891785`, engine `1330a4aaef250f20`. The checked asset manifests are byte-identical, including the web and full sets. Both solver probes used full colliders and emitters, the complete 102,000-particle pool, and 240 steps per second. `5868-main-motion.csv` and `4789-final-motion.csv` hold all 145 motion rows from f1296 to f1440 plus the film holds. The matching `*-states.jsonl` files give the per-kind counts and laid locations of the test shakes.
+
+- **Room lag**: At f1308 to f1322 the glass moves +14.558 mm, or +18.452 px at 400 px width, in both builds. The f1308 petal cohort goes from +8.971 mm and +10.893 px on main to +2.461 mm and +3.325 px with inertia. Mean room speeds over that interval are 72.749 mm/s for the glass and 72.426 to 58.429 mm/s for what floats. These are solver positions and camera projections, not pixel tracking.
+- **Wall bank**: At f1338 the share of visible particles behind the direction of travel and beyond 90% of the liquid radius rises from 44.7% to 78.0%.
+- **Lift**: The visible suspended petal count across f1297 and f1298 goes 1593 to 7838 on main and 1613 to 1613 with inertia. Visible here means airborne with opacity above 0.2.
+- **Settling**: End-of-hold upper motes go 3599 to 451 in spring, 503 to 47 in summer and 4288 to 280 in fall. Summer f2015 keeps 549 seeds, 1200 fireflies and 2500 motes. Closing winter has 54 more afloat overall, but upper flakes fall from 1531 to 1355. Counts alone do not measure visible density: the crown and alpha totals distinguish low-opacity motes.
+
+| Film hold | Frames | Main afloat first to last | Inertia afloat first to last | Test-shake settled, main to inertia |
+| --- | --- | ---: | ---: | ---: |
+| Winter opening | 0 to 575 | 13047 to 7715 | 13012 to 7659 | 5328 to 5325 |
+| Spring | 720 to 1295 | 44000 to 21607 | 44000 to 21625 | 20897 to 20882 |
+| Summer | 1440 to 2015 | 12700 to 4254 | 12700 to 4249 | 4216 to 4220 |
+| Fall | 2160 to 2735 | 36004 to 26855 | 36004 to 26776 | 26554 to 26555 |
+| Winter closing | 2880 to 3599 | 101999 to 12789 | 101998 to 12843 | 5328 to 5325 |
+
+Landed at +0.5 s and rest at +12 s use the same test shake. The laid quadrants are ordered `-x,-z | +x,-z | -x,+z | +x,+z`; elevated is more than 12 mm above local ground.
+
+| Season | Landed afloat, main to inertia | Rest afloat, main to inertia | Rest laid quadrants, main to inertia | Elevated laid at rest, main to inertia |
+| --- | ---: | ---: | --- | ---: |
+| Winter | 101980 to 101990 | 13018 to 12858 | 24809/43874/7042/13257 to 25008/43916/7055/13163 | 4278 to 4350 |
+| Spring | 43982 to 43984 | 21583 to 21575 | 4191/11780/1065/5381 to 4135/11841/1082/5367 | 551 to 522 |
+| Summer | 12698 to 12699 | 4252 to 4256 | 1971/4342/437/1698 to 2051/4307/377/1709 | 386 to 405 |
+| Fall | 35979 to 35976 | 26770 to 26742 | 642/5901/159/2532 to 641/5819/171/2631 | 23 to 35 |
+
 The consecutive storm strips below are the staged-hand comparison, not the last hand's drawn frames. The all-season landed/rest triptychs are the earlier painted-hand comparison. Strict and stand-ins below also predate the final merge, as do the isolated live step costs. No full-speed film or live application playback was seen.
 
 ## After the summer base and veil merge
