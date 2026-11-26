@@ -73,9 +73,12 @@ describe('the cover of a change in the lens', () => {
   })
 
   it('lets the room fall to a near silhouette while the lights inside rise by as much, so the glass burns as it did', () => {
-    expect(CHANGE_BLOOM.dim).toBeGreaterThan(0.02)
-    expect(CHANGE_BLOOM.dim).toBeLessThanOrEqual(0.1)
+    // The brightest lamp of a backdrop is about twice the white of the film: under a fiftieth of the exposure it is in the toe of
+    // the film's curve, where a lamp of one season and of the next are the same dark.
+    expect(CHANGE_BLOOM.dim).toBeGreaterThan(0.002)
+    expect(CHANGE_BLOOM.dim).toBeLessThanOrEqual(0.01)
     const mid = (span.from + span.to) / 2
+    const still = cover(0).inside
     const light = new Lighting(quality.shadowMapPx)
     const f = newFrame(winter, quality)
     f.to = spring
@@ -83,11 +86,13 @@ describe('the cover of a change in the lens', () => {
     f.mix.light = partChange('light', mid)
     f.mix.bloom = 0
     light.update(f)
-    const plain = lightUniforms.uGrid.value.z
+    const swollen = lightUniforms.uGrid.value.z
     const pool = f.pool.r
     f.mix.bloom = changeBloom(mid)
     light.update(f)
-    expect(lightUniforms.uGrid.value.z * lensFall.dim).toBeCloseTo(plain, 6)
+    // The swell of the shake is not laid on top of the flare: through the fallen exposure the lights inside are their resting selves.
+    expect(swollen).toBeGreaterThan(5 * still)
+    expect(lightUniforms.uGrid.value.z * lensFall.dim).toBeCloseTo(still, 6)
     // What the lights inside lay on the table does not rise with them: the table falls with the room.
     expect(f.pool.r * lensFall.dim).toBeLessThan(pool)
   })
@@ -116,6 +121,9 @@ describe('the cover of a change in the lens', () => {
     expect(share(Math.hypot(foot, config.globe.baseDiameterMm / (2 * r))) * CHANGE_BLOOM.glare, 'and on the corners of the foot').toBeGreaterThan(2 * CHANGE_BLOOM.dim)
     // The film's picture of a shake is about five and a half radii wide: its sides keep the dark of the room.
     expect(share(2.5) * CHANGE_BLOOM.glare, 'the room two and a half radii to the side has almost none').toBeLessThan(0.02)
-    expect(CHANGE_BLOOM.glare, 'the glass is seen through it, it is not a white disc').toBeLessThanOrEqual(1.5)
+    // Its middle burns out, as a lamp looked into does, and it is under the white of the film by the edge of the glass: the
+    // light has a source, and the white is never wider than the glass.
+    expect(CHANGE_BLOOM.glare, 'the middle burns').toBeGreaterThanOrEqual(2)
+    expect(share(1) * CHANGE_BLOOM.glare, 'the edge of the glass does not').toBeLessThan(1)
   })
 })

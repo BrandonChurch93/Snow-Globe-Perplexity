@@ -17,8 +17,9 @@ export const FRAME = {
   thumbShare: 0.05,
   heapMm: 46,
   baseReachMm: 74,
-  overUnder: 1.6,
+  overUnder: 1.1,
   narrowAspect: 0.6,
+  narrowYawDeg: 0,
   tableKeepMm: 20,
   mostUnder: 0.35,
   easeRate: 4,
@@ -291,7 +292,7 @@ export function liveRig(aspect: number, yawDeg = 0, pitchDeg = 0, under = 0, at:
     rig.distanceMm *= Math.pow(held.far.distanceMm / rig.distanceMm, back)
     rig.aimHeightMm += ((held.far.aimHeightMm - rig.aimHeightMm) * (rig.distanceMm - held.rig.distanceMm)) / span
   }
-  rig.yawDeg = Math.max(-L.orbitYawDeg, Math.min(L.orbitYawDeg, base.yawDeg + yawDeg))
+  rig.yawDeg = Math.max(-L.orbitYawDeg, Math.min(L.orbitYawDeg, base.yawDeg + (aspect < FRAME.narrowAspect ? FRAME.narrowYawDeg : 0) + yawDeg))
   rig.pitchDeg = Math.max(L.orbitPitchMinDeg, Math.min(L.orbitPitchMaxDeg, rig.pitchDeg + pitchDeg))
   rig.aimHeightMm = Math.max(rig.aimHeightMm, Math.min(aimForFoot(rig, lowOf(under)), aimForTable(rig, Math.max(aspect, FRAME.leastAspect))))
   return rig
@@ -322,7 +323,7 @@ export function framingOfRig(rig: Rig, width: number, height: number): Framing {
   const r = (f * sphereRadiusMm) / Math.sqrt(d * d - sphereRadiusMm * sphereRadiusMm)
   const base = { left: Infinity, right: -Infinity, top: Infinity, foot: -Infinity }
   for (let i = 0; i < 180; i++) {
-    const a = (i / 180) * Math.PI * 2
+    const a = (i / 180) * Math.PI * 2 - yaw
     for (const y of [0, config.globe.baseHeightMm]) {
       const [x, py] = project(Math.cos(a) * BASE_R, y, Math.sin(a) * BASE_R)
       base.left = Math.min(base.left, x)

@@ -335,6 +335,29 @@ describe('the framing of the app through a shake', () => {
     expect(least).toBeGreaterThan(0)
   })
 
+  it('sets the globe of a phone nearly in the middle of the room between the top edge and the controls, FRAME.overUnder times as much over the glass as under the foot, and where that would show the near edge of the table, as high as that edge allows', () => {
+    expect(FRAME.overUnder).toBeGreaterThanOrEqual(1)
+    expect(FRAME.overUnder).toBeLessThanOrEqual(1.2)
+    const reach = SLAB_SHAPE.nearMm - FRAME.tableKeepMm
+    let held = 0
+    for (const [w, h] of [[320, 568], [375, 667], [360, 800], [390, 844], [393, 852], [412, 915], [430, 932]] as const) {
+      const a = w / h
+      for (const controls of [100, 128, 154, 170]) {
+        const rig = liveRig(a, 0, 0, roomUnder(h, controls, w))
+        const c = cover(rig, REST_POSE)
+        const ratio = (1 - c.top) / 2 / ((1 - c.foot) / 2 - controls / h)
+        if (onTable(rig, a).out < reach - 1e-3) expect(ratio, `${w} x ${h} ${controls}`).toBeCloseTo(FRAME.overUnder, 3)
+        else {
+          held++
+          expect(onTable(rig, a).out, `${w} x ${h} ${controls}`).toBeCloseTo(reach, 4)
+          expect(ratio, `${w} x ${h} ${controls}`).toBeGreaterThan(FRAME.overUnder)
+          expect(ratio, `${w} x ${h} ${controls}`).toBeLessThanOrEqual(2)
+        }
+      }
+    }
+    expect(held).toBeGreaterThan(0)
+  })
+
   it('rises as it stands back on a narrow screen, on a straight line, and only as far as keeps that edge out: the foot stays near where it stood', () => {
     const through: Shaking = { beat: liftBeats, sinceLanding: long }
     const reach = SLAB_SHAPE.nearMm - FRAME.tableKeepMm
