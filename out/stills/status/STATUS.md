@@ -1,17 +1,18 @@
-# Status 145
+# Status 146
 
-2026-11-26 07:56 UTC
+2026-11-26 08:17 UTC
 
-- Rough draft 1 of the film is shared in this thread: 74 seconds, 960 x 540 at 30 frames a second, with the prompt opening and sound. Eight machines drew its 60 seconds of globe in about 10 minutes each.
-- What is wrong in it and already being worked on: at each change of season a pale disc hides the globe for about a quarter of a second; the grain and rough edges of the fastest quality setting; a pale haze in summer for about a second after it lands.
-- Merged since the last status: particles near the lens are drawn whole under the new renderer (their sides were being cut off), the stricter shader check, and the tool that renders the 4K films. Types are clean and 613 tests pass.
-- The 4K films keep 24 samples on every frame. Measured cost: 129 seconds for a frame at rest, more in a change of season, so film B is on the order of 150 machine hours once the build is frozen. Their encode is being rebuilt so the picture cannot pulse twice a second: each film is encoded once, whole, from near lossless pieces.
-- Next: the mends of the change of season, the first frame, the framing on phones and the controls are due between 08:15 and 08:45 UTC. Then the app is published again and fresh critics judge the changed parts.
-- phase 6: 5.11 h used of its 12.00 h box
-- allowance (after the review): 5.11 h used of 12.00 h allowed
+- Sound: both films' final mixes are in the repo's records (film with the prompt 74.45 s, film 60 s; each -14.0 LUFS, true peak -1.3 dB, measured here). 84 typing taps for 84 keys, none more than 20 ms from its key. All four shakes now carry water. Sound check 8 of 8. No ElevenLabs credits spent today: 7,200 of your 10,000 used, 2,800 left.
+- For you to look at: the ElevenLabs account's own counter shows 644 credits used since 05:48 UTC that this build did not spend (its guard recorded no call since then). Something else is using the same account.
+- The change of season: the blurred ball on black is gone. The glass stays a lit globe with a halo through the quarter second of the change (first picture; builder's frames, not yet judged by critics). Left: the base's outline under the glass changes shape in one frame, in work for the next 45 minutes.
+- First seconds of a visit: the globe no longer glides after the controls arrive (phone: about 30 px before, 0 px now, measured by its builder under a software renderer; a second, independent check is running). Second picture: the still, the moment the live picture takes over, and later.
+- Phone, in the shake: the globe sits about 80 px higher (its middle at 43 percent of the height, 52 before). Bettered, not mended: it is still 72 percent of its rest size there. Third picture.
+- Next: all 28 first pictures are being redrawn on the merged build, then the app is published again and rough draft 2 of the film is drawn with the new change and the final sound.
+- phase 6: 5.47 h used of its 12.00 h box
+- allowance (after the review): 5.47 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-145-1.jpg`: Rough draft 1, the four seasons at rest: winter, spring, summer, fall. Fastest quality setting, 960 x 540.
-- `out/stills/status/status-145-2.jpg`: Rough draft 1, eight seconds in: the prompt being typed.
-- `out/stills/status/status-145-3.jpg`: The fault in this draft, six frames across the first change of season: the pale disc hides the globe for a quarter of a second. Its mend is due at 08:15.
+- `out/stills/status/status-146-1.jpg`: The change of season, winter into spring, frames 668 to 682: before (top two rows) and after the mend (bottom two rows).
+- `out/stills/status/status-146-2.jpg`: Phone, first visit: the still shown at once (left), the first live picture (middle), about 50 frames later (right). The globe stays where it is.
+- `out/stills/status/status-146-3.jpg`: Phone, one shake, frames 1 to 5: before (top) and after (bottom). The globe sits higher; the last frame of the bottom row is the change itself, drawn before the mend of the first picture.

@@ -90,6 +90,9 @@ function run({ name, which, candidate, musicFile, out, stem }) {
   console.log(`${show(out)} · film ${which.toUpperCase()}, ${r.report.seconds} s${r.report.openingSeconds ? `, of which the opening is ${r.report.openingSeconds} s` : ''}, ${((Date.now() - t0) / 1000).toFixed(1)} s to mix`)
   console.log(`  placed: ${r.report.placed.length} cues and ambience beds · music: ${r.report.music.source}${r.report.music.end ? `, ${r.report.music.end}` : ''}`)
   if (r.report.skipped.length) console.log(`  skipped: ${r.report.skipped.map((s) => `${s.cue} (${s.why})`).join(', ')}`)
+  if (r.report.laid?.length) console.log(`  laid by decision 141, not kept, the cue open: ${r.report.laid.map((l) => `${l.cue} (${l.times} ${l.times === 1 ? 'time' : 'times'}${l.presses ? `, ${l.presses} presses in turn` : ''})`).join(', ')}`)
+  const ty = r.report.typing
+  if (ty && (ty.keys || ty.taps)) console.log(`  typing: ${ty.taps} taps for ${ty.keys} keys, ${ty.withoutKey ? `${ty.withoutKey} WITHOUT A KEY` : 'none without a key'}${ty.keysWithoutTap ? `, ${ty.keysWithoutTap} keys with no tap` : ''}; each begins within ${ty.limitMs} ms of its own key (the earliest ${ty.earliestMs} ms, the latest ${ty.latestMs} ms)`)
   if (m.silent) console.log('  the mix is silent: nothing was placed')
   else {
     console.log(`  level: ${m.gainDb} dB of gain, the limiter took off at most ${m.limiterReductionDb} dB, ${m.passes} passes`)

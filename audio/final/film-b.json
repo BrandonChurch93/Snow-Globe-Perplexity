@@ -1,0 +1,327 @@
+{
+  "name": "film-b",
+  "file": "film-b.wav",
+  "which": "b",
+  "candidate": "four-tracks",
+  "args": {
+    "skip": [],
+    "gains": {},
+    "music": null
+  },
+  "cutlist": {
+    "sha256": "41c0d3791baf32994da238361df06b048bba4a86e98886ef264abc84de696b64",
+    "source": "default-grid",
+    "seconds": 60,
+    "frameCount": 3600
+  },
+  "seconds": 60,
+  "openingSeconds": 0,
+  "placed": [
+    {
+      "cue": "music-box",
+      "at": 0,
+      "cents": 0
+    },
+    {
+      "cue": "lift",
+      "at": 9.6,
+      "cents": 0
+    },
+    {
+      "cue": "shake-spring",
+      "at": 9.6,
+      "cents": 0,
+      "downDb": -3,
+      "riseMs": 30
+    },
+    {
+      "cue": "glass-clink",
+      "at": 12,
+      "cents": 0
+    },
+    {
+      "cue": "lift",
+      "at": 21.6,
+      "cents": 0
+    },
+    {
+      "cue": "shake-summer",
+      "at": 21.6,
+      "cents": 0,
+      "downDb": -3,
+      "riseMs": 30
+    },
+    {
+      "cue": "glass-clink",
+      "at": 24,
+      "cents": 0
+    },
+    {
+      "cue": "lift",
+      "at": 33.6,
+      "cents": 0
+    },
+    {
+      "cue": "shake-fall",
+      "at": 33.6,
+      "cents": 0,
+      "downDb": -6,
+      "riseMs": 30
+    },
+    {
+      "cue": "glass-clink",
+      "at": 36,
+      "cents": 0
+    },
+    {
+      "cue": "lift",
+      "at": 45.6,
+      "cents": 0
+    },
+    {
+      "cue": "shake-winter",
+      "at": 45.6,
+      "cents": 0,
+      "downDb": -3,
+      "riseMs": 30
+    },
+    {
+      "cue": "glass-clink",
+      "at": 48,
+      "cents": 0
+    },
+    {
+      "cue": "music-box",
+      "at": 57.6,
+      "cents": 0
+    },
+    {
+      "cue": "amb-winter",
+      "from": 0,
+      "to": 12
+    },
+    {
+      "cue": "amb-spring",
+      "from": 9.6,
+      "to": 24
+    },
+    {
+      "cue": "amb-summer",
+      "from": 21.6,
+      "to": 36
+    },
+    {
+      "cue": "amb-fall",
+      "from": 33.6,
+      "to": 48
+    },
+    {
+      "cue": "amb-winter",
+      "from": 45.6,
+      "to": 60
+    }
+  ],
+  "skipped": [
+    {
+      "cue": "land-spring",
+      "why": "no kept file"
+    },
+    {
+      "cue": "land-summer",
+      "why": "no kept file"
+    },
+    {
+      "cue": "land-fall",
+      "why": "no kept file"
+    },
+    {
+      "cue": "land-winter",
+      "why": "no kept file"
+    }
+  ],
+  "laid": [
+    {
+      "cue": "shake-summer",
+      "state": "laid by decision 141, the water of shake-spring",
+      "kept": false,
+      "times": 1
+    },
+    {
+      "cue": "shake-fall",
+      "state": "laid by decision 141, the water of shake-spring",
+      "kept": false,
+      "times": 1
+    },
+    {
+      "cue": "shake-winter",
+      "state": "laid by decision 141, the water of shake-spring",
+      "kept": false,
+      "times": 1
+    }
+  ],
+  "typing": {
+    "keys": 0,
+    "taps": 0,
+    "withoutKey": 0,
+    "keysWithoutTap": 0,
+    "limitMs": 20,
+    "largestOffsetMs": 0,
+    "earliestMs": 0,
+    "latestMs": 0
+  },
+  "music": {
+    "candidate": "four-tracks",
+    "source": "four tracks",
+    "parts": [
+      {
+        "id": "music-winter",
+        "at": 0,
+        "fromBar": 2,
+        "toBar": 6,
+        "sourceAt": 4.808,
+        "seconds": 12,
+        "barLines": "map",
+        "firstBarWithMusic": 2,
+        "lastBarWithMusic": 10,
+        "centredByDb": -0.52,
+        "thinned": true
+      },
+      {
+        "id": "music-spring",
+        "at": 12,
+        "fromBar": 0,
+        "toBar": 4,
+        "sourceAt": 0.006,
+        "seconds": 12,
+        "barLines": "map",
+        "firstBarWithMusic": 0,
+        "lastBarWithMusic": 10,
+        "centredByDb": 8.05,
+        "thinned": true
+      },
+      {
+        "id": "music-summer",
+        "at": 24,
+        "fromBar": 0,
+        "toBar": 4,
+        "sourceAt": 0.012,
+        "seconds": 12,
+        "barLines": "map",
+        "firstBarWithMusic": 0,
+        "lastBarWithMusic": 10,
+        "centredByDb": -0.11,
+        "thinned": true
+      },
+      {
+        "id": "music-fall",
+        "at": 36,
+        "fromBar": 1,
+        "toBar": 5,
+        "sourceAt": 2.404,
+        "seconds": 12,
+        "barLines": "map",
+        "firstBarWithMusic": 1,
+        "lastBarWithMusic": 10,
+        "centredByDb": -0.82,
+        "thinned": true
+      },
+      {
+        "id": "music-winter",
+        "at": 48,
+        "fromBar": 6,
+        "toBar": 10,
+        "sourceAt": 14.409,
+        "seconds": 12,
+        "barLines": "map",
+        "firstBarWithMusic": 2,
+        "lastBarWithMusic": 10,
+        "centredByDb": -0.52,
+        "thinned": false
+      }
+    ]
+  },
+  "landings": {
+    "at": [
+      12,
+      24,
+      36,
+      48
+    ],
+    "firstMomentSeconds": 0.05,
+    "beforeDb": [
+      -11.11,
+      -9.95,
+      -12.97,
+      -14.77
+    ],
+    "trimsDb": [
+      -1.25,
+      -2.41,
+      0.62,
+      2.41
+    ],
+    "afterDb": [
+      -12.35,
+      -11.81,
+      -12.35,
+      -12.35
+    ],
+    "spreadDb": 0.54,
+    "rounds": 1
+  },
+  "channels": {
+    "leftOverRightDb": 0.05,
+    "busMovedDb": 0
+  },
+  "master": {
+    "targetLufs": -14,
+    "ceilingDb": -1,
+    "gainDb": 2.005,
+    "limiterReductionDb": 1.22,
+    "lufs": -14.02,
+    "truePeakDb": -1.33,
+    "passes": 2,
+    "silent": false,
+    "encoded": {
+      "codec": "aac",
+      "kbps": 256,
+      "truePeakDb": -1.33,
+      "roomDb": 0,
+      "gaveWay": [
+        {
+          "at": 26.995,
+          "db": 0.34
+        }
+      ]
+    }
+  },
+  "inputs": {
+    "music-box": "72151df063e96e705b89f33748f908f0c03530a75cfac77da7719a3c6a5c9a82",
+    "lift": "3def1da6008ad9f0cb4e3435664c84e5bc123b468ffa00a1872b2ae509ee85c6",
+    "shake-spring": "e6abd21dd21a3ebf8d1e5b5a120cbc919c28d72c3ec23ecc1cb636f0f50c2f9c",
+    "glass-clink": "a62138e2781a5f480ec29a3cbe16cabf876f0f466600e4e9223fa2e54c2f984e",
+    "laid:shake-summer": "db5026b473ef767f0efc64c971685707af42d83a99b1c42be3f3ec29eb48715b",
+    "laid:shake-fall": "78bfd501f9b037bdfcc07a35764f083b755071e544749faef56c9931223f6462",
+    "laid:shake-winter": "78bfd501f9b037bdfcc07a35764f083b755071e544749faef56c9931223f6462",
+    "amb-winter": "ac4bf0c6cea391e2ca91aa5a9988c1003a6a4887abf977033002c90b9032462d",
+    "amb-spring": "8201e37f095b1644d48d18c13a2bdc63622f7880ed2a6cc79406ce1b38dbd35c",
+    "amb-summer": "692f4040c43aa832b9fdcaa17e2c762312807c1e83894f1c62dc57aaa3167bda",
+    "amb-fall": "07ded692ee7571b68493eb6ff1ef5826ab3771d83210b3b7a65311ff3b452db8",
+    "music-winter": "f21f53156f8d47122176e61ad3c0207a85cdee83a04d87c6548535b5091cebb2",
+    "music-spring": "1a82c5957c58a4c66255310434f5e75f461204452ce9747e6772dad305993ea1",
+    "music-summer": "82e1b12920f1e5def907b8144639a04528e9f3d84275479b837273b55c7e2cee",
+    "music-fall": "dfa4603dd806ebf6d55ac4ad587e7b8edf5c157654a7581d2c07f7b0e0b623e3"
+  },
+  "measuredByFfmpeg": {
+    "lufs": -14,
+    "lra": 3.5,
+    "truePeakDb": -1.3
+  },
+  "sha256": "3edd8ff579404fce8d62a041b2172306a6b26eb9a31d59e0b90d82315337bf23",
+  "musicStem": {
+    "file": "music.wav",
+    "sha256": "6bda4fcffd7a9ca47d361e6e1f09127941cb19cf07bf13791577ca9282c1f3e6"
+  },
+  "engineHash": "108b05aa8366ba41",
+  "time": "2026-11-26T07:49:18.936Z"
+}
