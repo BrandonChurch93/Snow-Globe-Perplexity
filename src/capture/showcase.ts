@@ -228,10 +228,13 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
     gfx.renderer.info.reset()
     acc.begin()
     let done = 0
+    let hold: number | null = null
     for (const s of set) {
       const t = timeSec + (s && shutterSec > 0 ? s.t * shutterSec : 0)
       const t0 = now()
       const moment = await at(t, salt * 0.618 + 1)
+      hold ??= moment.change
+      if (s) s.hold = hold
       const t1 = now()
       timing.simMs += t1 - t0
       stage.drawSample(acc.sample, pose(t), s, moment, done === 0 || shutterSec > 0)
