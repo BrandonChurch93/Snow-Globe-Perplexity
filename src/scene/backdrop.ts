@@ -184,7 +184,7 @@ void main() {
   vec3 d = normalize(vStageWorld - vec3(0.0, ${centreHeightMm.toFixed(1)}, 0.0));
   float blur = lensBlurMm(vStageAux.y) / max(vStageAux.z, 1.0);
   float keep = 1.0 / (1.0 + 40.0 * blur);
-  float az = atan(d.x, -d.z);
+  float az = dot(d.xz, d.xz) > 0.0 ? atan(d.x, -d.z) : 0.0;
   float el = asin(clamp(d.y, -1.0, 1.0));
   float bands = 0.5 * sin(az * 23.0 + 1.3 + 0.9 * el) + 0.3 * sin(az * 41.0 + 4.1 - 1.4 * el) + 0.2 * sin(az * 67.0 + 0.7 + 0.5 * el);
   float folds = wallNoise(vec2(az * 11.0 + 3.0, el * 4.3 + 5.0)) + ${f4(WALL.curtain)} * wallNoise(vec2(az * ${f4(WALL.curtainPerRad)} + 1.0 + 6.0 * wallNoise(vec2(az * 9.0, el * 7.0)), el * ${f4(WALL.curtainPerRad / WALL.curtainLong)} + 2.0)) - ${f4(0.5 + 0.5 * WALL.curtain)};
