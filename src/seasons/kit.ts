@@ -44,7 +44,8 @@ export interface SeasonKit {
   dressing(): { glass: THREE.Object3D; surface: THREE.Object3D }
   readonly rig: { key: RoomLight; rim: RoomLight; sky: Rgb; ground: Rgb; fill: number; card?: { color: Rgb; intensity: number; from: Vec3; wrap: number; specular: number; inside: number } }
   readonly innerLights: readonly InnerLight[]
-  readonly veil: { tint: Rgb; density: number; rest: number }
+  /** `bankWhite`, when a season gives one, is how far the bank of its flood is turned from the tint toward white: 0 leaves it the tint, 1 is white, past 1 is the tint's opposite. A season that gives none has the shared veil's (`VEIL_LOOK.bankWhite`). */
+  readonly veil: { tint: Rgb; density: number; rest: number; bankWhite?: number }
   /** `gain`, when a season gives one, scales each background light by where it stands (1 leaves it as placed). */
   readonly backdrop: { colors: readonly Rgb[]; room: Rgb; floor: Rgb; gain?: (at: Vec3) => number }
   readonly particles: Readonly<Record<string, { color: Rgb; glow: number }>>
