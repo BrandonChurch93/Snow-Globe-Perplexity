@@ -23,6 +23,8 @@ interface SwapOptions {
 
 interface Backend {
   start(): void
+  /** The clock a cue is placed on, in seconds: the audio clock where there is one. */
+  now(): number
   ready(files: string[]): Promise<void>
   /** Plays or schedules one cue. The answer takes it back: a cue not yet heard is never heard. */
   play(entry: AudioIndexEntry, o: PlayOptions): () => void
@@ -59,13 +61,32 @@ const SEASON_FADE = 1.6
 const FIRST_FADE = 0.8
 const LATE_FADE = 0.5
 const CUT_FADE = 0.03
+/** The way out when the sound is turned off stays short. The way in is longer, a quarter sine: at 0.04 s it was heard as a blast. */
 const MUTE_FADE = 0.04
+const UNMUTE_FADE = 0.35
+/**
+ * The old music through a shake is let go as the film's mix thins it (thin() of tools/lib/audio.mjs): down to THIN_DB in
+ * even steps of dB over the bar and to nothing over the last THIN_TAIL seconds, behind a high-pass of two plain poles
+ * (THIN_Q_DB is that slope as the filter node counts it) that is brought in over the first THIN_IN of the bar and swept
+ * from THIN_FROM_HZ to THIN_TO_HZ.
+ */
 const THIN_FROM_HZ = 30
-const THIN_TO_HZ = 2400
+const THIN_TO_HZ = 900
+const THIN_DB = -12
+const THIN_TAIL = 0.15
+const THIN_IN = 1 / 8
+const THIN_Q_DB = -6.02
+const VOICE_HZ = 10
+const VOICE_Q_DB = 0.5
 const AMB_SEAM = 1.5
 const SEAM_SHARE = 0.25
 const STIR_GAP = 0.18
 const STIR_FLOOR = 0.05
+/**
+ * Interface cues are spaced: a second tick or chime inside this many seconds of the last one is not played. Two presses
+ * that close are one gesture, and two interface cues on top of each other are the one sum the headroom cannot carry.
+ */
+const INTERFACE_GAP = 0.1
 const TICK_CENTS = [0, 200, 500, 200, 700, 500, 0, -300]
 const CURVE_POINTS = 24
 
@@ -114,6 +135,25 @@ function shape(p: AudioParam, from: number, to: number, at: number, seconds: num
   }
 }
 
+/** The film's thin as a level: even steps of dB from `from` down to THIN_DB over the whole time, the last THIN_TAIL of it down to nothing. */
+function thinOut(p: AudioParam, from: number, at: number, seconds: number): void {
+  const tail = Math.min(THIN_TAIL, seconds)
+  const body = seconds - tail
+  const down = (share: number): number => from * Math.pow(10, (THIN_DB * share) / 20)
+  const last = CURVE_POINTS - 1
+  p.cancelScheduledValues(at)
+  p.setValueAtTime(from, at)
+  if (body >= 0.005) {
+    const curve = new Float32Array(CURVE_POINTS)
+    for (let i = 0; i <= last; i++) curve[i] = down(((i / last) * body) / seconds)
+    p.setValueCurveAtTime(curve, at, body)
+  }
+  const end = new Float32Array(CURVE_POINTS)
+  for (let i = 0; i < last; i++) end[i] = down((body + (i / last) * tail) / seconds) * Math.cos((i / last) * (Math.PI / 2))
+  end[last] = 0
+  p.setValueCurveAtTime(end, at + body, tail)
+}
+
 /**
  * A loop is not left to the source to wrap: the file is played pass after pass, each pass starting one overlap before the
  * last one ends and the two crossed at equal power over it. Whatever level the file ends and begins at, no step is heard.
@@ -123,6 +163,9 @@ interface Voice {
   gain: GainNode
   filter: BiquadFilterNode
   startAt: number
+  /** Where its rise ends: at `level`, `rise` seconds after startAt. Kept so that no level has to be read back from the node. */
+  level: number
+  rise: number
   /** The passes that have been started and have not ended: the one that sounds and the one after it. */
   passes: Set<AudioBufferSourceNode>
   next: number
@@ -131,6 +174,9 @@ interface Voice {
 
 /** What two passes of a loop share: one bar of the music, so its beat is kept, a breath of the ambience, and never more than a quarter of the loop. */
 const seamOf = (kind: Kind, loopSeconds: number): number => Math.min(kind === 'music' ? barSeconds : AMB_SEAM, loopSeconds * SEAM_SHARE)
+
+/** The level a voice has got to at a time on the audio clock: shape() gives its rise, a quarter sine. */
+const levelOf = (v: Voice, at: number): number => (at >= v.startAt + v.rise ? v.level : v.level * Math.sin((Math.max(0, at - v.startAt) / v.rise) * (Math.PI / 2)))
 
 function stopAll(v: Voice, at?: number): void {
   for (const src of v.passes) {
@@ -150,6 +196,8 @@ class WebBackend implements Backend {
   private voices: Record<Kind, Voice | null> = { amb: null, music: null }
   private serial: Record<Kind, number> = { amb: 0, music: 0 }
   private muted = false
+  /** The last move of the master level. The next move starts where this one has got to, worked out from the clock. */
+  private gate = { from: 1, to: 1, at: 0, seconds: 0 }
   private hidden = false
   private dead = false
 
@@ -163,7 +211,9 @@ class WebBackend implements Backend {
     if (!this.ctx) {
       const ctx = new this.Ctor()
       const master = ctx.createGain()
-      master.gain.value = this.muted ? 0 : 1
+      const through = this.muted ? 0 : 1
+      master.gain.value = through
+      this.gate = { from: through, to: through, at: 0, seconds: 0 }
       master.connect(ctx.destination)
       this.ctx = ctx
       this.master = master
@@ -258,14 +308,14 @@ class WebBackend implements Backend {
       if (!this.master) return
       const filter = ctx.createBiquadFilter()
       filter.type = 'highpass'
-      filter.frequency.value = 10
-      filter.Q.value = 0.5
+      filter.frequency.value = VOICE_HZ
+      filter.Q.value = VOICE_Q_DB
       const gain = ctx.createGain()
       gain.gain.value = 0
       filter.connect(gain)
       gain.connect(this.master)
       shape(gain.gain, 0, entry.gain, at, fadeIn)
-      const voice: Voice = { id, gain, filter, startAt: at, passes: new Set(), next: at, over: false }
+      const voice: Voice = { id, gain, filter, startAt: at, level: entry.gain, rise: Math.max(fadeIn, 0.005), passes: new Set(), next: at, over: false }
       // The pass after the one that sounds is always scheduled already, and each pass that ends schedules the one after that:
       // the audio clock keeps the seam, and no timer or frame of the page is waited on.
       const pass = (first: boolean): void => {
@@ -314,11 +364,23 @@ class WebBackend implements Backend {
         stopAll(v, at)
         return
       }
-      shape(v.gain.gain, v.gain.gain.value, 0, at, d)
-      if (thin) {
-        v.filter.frequency.setValueAtTime(THIN_FROM_HZ, at)
-        v.filter.frequency.exponentialRampToValueAtTime(THIN_TO_HZ, at + d)
-      }
+      const from = levelOf(v, at)
+      if (thin && from > 0) {
+        try {
+          thinOut(v.gain.gain, from, at, d)
+        } catch {
+          shape(v.gain.gain, from, 0, at, d)
+        }
+        // The film blends its filter in over the first eighth of the bar: here the corner and the slope move there from the
+        // voice's own, and from then on the corner is the film's, THIN_FROM_HZ * (THIN_TO_HZ / THIN_FROM_HZ) ** (t / d).
+        const f = v.filter.frequency
+        const q = v.filter.Q
+        f.setValueAtTime(VOICE_HZ, at)
+        f.exponentialRampToValueAtTime(THIN_FROM_HZ * Math.pow(THIN_TO_HZ / THIN_FROM_HZ, THIN_IN), at + d * THIN_IN)
+        f.exponentialRampToValueAtTime(THIN_TO_HZ, at + d)
+        q.setValueAtTime(VOICE_Q_DB, at)
+        q.linearRampToValueAtTime(THIN_Q_DB, at + d * THIN_IN)
+      } else shape(v.gain.gain, from, 0, at, d)
       stopAll(v, at + d + 0.05)
     } catch {
       stopAll(v)
@@ -326,15 +388,38 @@ class WebBackend implements Backend {
     }
   }
 
+  now(): number {
+    return this.ctx ? this.ctx.currentTime : 0
+  }
+
+  /** The master level at a time: the way in is shape()'s quarter sine, the way out a straight line. */
+  private through(at: number): number {
+    const g = this.gate
+    if (at >= g.at + g.seconds) return g.to
+    const x = Math.max(0, (at - g.at) / g.seconds)
+    return g.from + (g.to - g.from) * (g.to >= g.from ? Math.sin(x * (Math.PI / 2)) : x)
+  }
+
   setMuted(muted: boolean): void {
+    if (muted === this.muted) return
     this.muted = muted
     const ctx = this.ctx
     if (!ctx || !this.master) return
     const at = ctx.currentTime
     const p = this.master.gain
-    p.cancelScheduledValues(at)
-    p.setValueAtTime(p.value, at)
-    p.linearRampToValueAtTime(muted ? 0 : 1, at + MUTE_FADE)
+    const from = this.through(at)
+    this.gate = { from, to: muted ? 0 : 1, at, seconds: muted ? MUTE_FADE : UNMUTE_FADE }
+    if (!muted) {
+      shape(p, from, 1, at, UNMUTE_FADE)
+      return
+    }
+    try {
+      p.cancelScheduledValues(at)
+      p.setValueAtTime(from, at)
+      p.linearRampToValueAtTime(0, at + MUTE_FADE)
+    } catch {
+      p.value = 0
+    }
   }
 
   setHidden(hidden: boolean): void {
@@ -380,12 +465,19 @@ class ElementBackend implements Backend {
   private counted = new Set<string>()
   private open = false
   private muted = false
+  /** What the sound switch lets through: nothing while it is off, and it rises over UNMUTE_FADE when it is turned on. */
+  private through = 1
+  private rising: number[] = []
   private hidden = false
   private dead = false
 
   constructor(private readonly shared: Shared) {}
 
   start(): void {}
+
+  now(): number {
+    return (typeof performance === 'undefined' ? Date.now() : performance.now()) / 1000
+  }
 
   async ready(): Promise<void> {
     await this.shared.gate
@@ -407,7 +499,7 @@ class ElementBackend implements Backend {
   }
 
   private apply(item: Item): void {
-    item.el.volume = this.muted ? 0 : clamp01(item.level * item.scale)
+    item.el.volume = this.muted ? 0 : clamp01(item.level * item.scale * this.through)
   }
 
   private seekAndPlay(item: Item, at: number): void {
@@ -499,8 +591,18 @@ class ElementBackend implements Backend {
   }
 
   setMuted(muted: boolean): void {
+    if (muted === this.muted) return
     this.muted = muted
-    for (const item of this.live) this.apply(item)
+    for (const t of this.rising) window.clearTimeout(t)
+    this.rising.length = 0
+    const set = (through: number): void => {
+      this.through = through
+      for (const item of this.live) this.apply(item)
+    }
+    set(muted ? 1 : 0)
+    if (muted) return
+    const steps = Math.max(1, Math.round(UNMUTE_FADE / 0.05))
+    for (let i = 1; i <= steps; i++) this.rising.push(window.setTimeout(() => set(Math.sin((Math.PI / 2) * (i / steps))), (UNMUTE_FADE * 1000 * i) / steps))
   }
 
   setHidden(hidden: boolean): void {
@@ -514,6 +616,8 @@ class ElementBackend implements Backend {
 
   dispose(): void {
     this.dead = true
+    for (const t of this.rising) window.clearTimeout(t)
+    this.rising.length = 0
     for (const item of [...this.live]) this.drop(item)
     this.voices = { amb: null, music: null }
   }
@@ -534,6 +638,7 @@ export function createSoundEngine(opts: SoundEngineOptions): SoundEngine {
   let disposed = false
   let stirOpen = true
   let ticks = 0
+  let lastInterface = Number.NEGATIVE_INFINITY
   /** The shake whose landing has not been confirmed by the picture: its cues can still be taken back. */
   let pending: { to: string; held: boolean; cancel: Array<() => void> } | null = null
 
@@ -571,6 +676,16 @@ export function createSoundEngine(opts: SoundEngineOptions): SoundEngine {
   const play = (id: string, o: PlayOptions = {}): (() => void) => {
     const entry = sprite(id)
     return entry && backend && unlocked && !disposed ? backend.play(entry, o) : NOTHING
+  }
+
+  /** An interface cue, kept INTERFACE_GAP from the last one that was played. The answer says whether it was played. */
+  const spaced = (id: string, o: PlayOptions = {}): boolean => {
+    if (!backend) return false
+    const now = backend.now()
+    if (now - lastInterface < INTERFACE_GAP) return false
+    if (play(id, o) === NOTHING) return false
+    lastInterface = now
+    return true
   }
 
   const music = (to: string, o: SwapOptions): void => {
@@ -672,12 +787,12 @@ export function createSoundEngine(opts: SoundEngineOptions): SoundEngine {
     },
 
     tick(): void {
-      const cents = TICK_CENTS[ticks++ % TICK_CENTS.length] ?? 0
-      play(CUE.tick, { rate: Math.pow(2, cents / 1200) })
+      const cents = TICK_CENTS[ticks % TICK_CENTS.length] ?? 0
+      if (spaced(CUE.tick, { rate: Math.pow(2, cents / 1200) })) ticks++
     },
 
     chime(): void {
-      play(CUE.chime)
+      spaced(CUE.chime)
     },
 
     bytesFetched: () => bytes,
