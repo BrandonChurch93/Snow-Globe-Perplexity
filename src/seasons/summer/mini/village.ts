@@ -29,13 +29,13 @@ const NEAR = { lamp: { power: 2.1, reachMm: 7 }, pane: { power: 2.2, reachMm: 4 
 // takes it from the lantern drawn up to it, the turf from a point just over it; the lamp post lays its own on the path.
 // It follows its lantern up after the landing (the times are the tree's, `LANTERN` in tree.ts) and never burns: what it adds
 // bends over under `cap`.
-const POOL = { patch: 5, patchReach: 1.3, patchCap: 0.16, ember: [1, 0.4, 0.1] as Rgb, emberShare: 0.65, down: 0.55, face: 0.3, frontMm: 8, leaf: 0.015, hug: 1.1, lawn: 1.0, lawnReach: 2.4, overMm: 3, ends: 2.2, wrap: 0.22, post: 10, postReachMm: 4.5, postOverMm: 2.5, wash: 0.12, cap: 0.28, dim: 0.4, firstStepS: 0.23, firstRampS: 0.42, rampS: 0.8, stepS: 0.6, orange: [1, 0.5, 0.17] as Rgb, cream: [1, 0.68, 0.34] as Rgb, gold: [1, 0.62, 0.28] as Rgb, straw: [0.31, 0.26, 0.22] as Rgb, strawShare: 0.7 }
+const POOL = { patch: 5, patchReach: 1.3, patchCap: 0.16, ember: [1, 0.4, 0.1] as Rgb, emberShare: 0.65, down: 0.55, face: 0.3, frontMm: 8, leaf: 0.015, hug: 1.1, lawn: 1.0, lawnReach: 2.4, overMm: 3, ends: 2.2, wrap: 0.22, post: 10, postReachMm: 4.5, postOverMm: 2.5, wash: 0.12, cap: 0.2, dim: 0.4, firstStepS: 0.23, firstRampS: 0.42, rampS: 0.8, stepS: 0.6, orange: [1, 0.5, 0.17] as Rgb, cream: [1, 0.68, 0.34] as Rgb, gold: [1, 0.62, 0.28] as Rgb, straw: [0.31, 0.245, 0.24] as Rgb, strawShare: 0.7 }
 // The liquid is lit: it lies between the eye and every dark thing in the ball, so nothing in it is black.
 const LIFT: Rgb = [0.0145, 0.012, 0.0085]
 // The bank's turf faces away from the low sun: it takes the sky's light, as the mound's front does in the approved image.
 const SLOPE = { ground: 2.6, blade: 6.5, fromMm: 55.6, toMm: 56.3 }
 // The low sun stands behind the scene to the right. What turns from the eye toward it takes a rim of it; a blade's tip lets it through.
-const RIM = { wall: 2.0, tint: [0.62, 0.46, 0.26] as Rgb, share: 0.5, turf: 0.5, tip: 3.0, tipFar: 1.6, tipLow: 0.12, tipTint: [1.0, 0.76, 0.45] as Rgb, tipShare: 0.8, edge: 1.8, edgeTint: [1.0, 0.82, 0.55] as Rgb, edgeFromMm: 0.1, edgeToMm: 0.55, topMm: 0.85, eave: 0.7, eaveFromMm: 1.25, eaveToMm: 1.6, leaf: 1.2, petal: 3.0, rail: 0.9, railLow: 0.3, railSide: 0.1, postFromMm: 4.9 }
+const RIM = { wall: 2.0, tint: [0.62, 0.46, 0.26] as Rgb, share: 0.5, turf: 0.5, tip: 4.0, tipFar: 2.4, tipLow: 0.12, tipTint: [1.0, 0.76, 0.45] as Rgb, tipShare: 0.8, edge: 1.8, edgeTint: [1.0, 0.82, 0.55] as Rgb, edgeFromMm: 0.1, edgeToMm: 0.55, topMm: 0.85, eave: 0.7, eaveFromMm: 1.25, eaveToMm: 1.6, leaf: 1.2, petal: 3.0, rail: 0.9, railLow: 0.3, railSide: 0.1, postFromMm: 4.9 }
 const NEAR_WALL = { lamp: { power: 1.6, reachMm: 8, ends: 3 }, pane: { power: 2.0, reachMm: 4.5, ends: 3 }, paper: { power: 3.4, reachMm: 6.5, ends: 3 } }
 const MIRROR = { lamp: 9, flame: 5, pane: 1.2, paper: 1.6, tight: 0.002, wide: 0.03, wideShare: 0.01, lowMm: 3.4 }
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
@@ -47,14 +47,14 @@ const SAND = { white: [0.93, 0.86, 0.72] as Rgb, whiten: 0.9, clumpPerMm: 1.1, m
 const TURF_LOOK = { tone: 0.5, fineMm: 0.05, clumpMm: 0.22, fill: 0.2, wrap: 0.5, sun: 0.3, moss: [0.15, 0.2, 0.34] as Rgb, rim: 0.9, rimFromMm: 30, rimToMm: 46 }
 // Where the low sun reaches the floor: the same four pools as `sunAt` in assets-src/village-summer/build.mjs, which the grass carries.
 const SUN_POOLS: readonly [number, number, number, number, number][] = [[1.5, 24, 4, 13, 9], [0.7, 6, -4, 9, 6], [0.4, -24, 21, 6, 5], [0.5, 24, 22, 9, 6]]
-const GRASS_LOOK = { fill: 0.09, wrap: 1.0, through: 0.16, near: 0.2, sun: 0.5, patchLow: 0.12, moss: [0.15, 0.2, 0.34] as Rgb, patchPerMm: 0.3, sunRoot: 0.12, rightDark: 0.35, rightGlow: 0.15, rightFromMm: 1, rightToMm: 6, shade: [0.26, 0.3, 0.45] as Rgb }
+const GRASS_LOOK = { fill: 0.05, wrap: 1.0, through: 0.16, near: 0.13, sun: 0.5, patchLow: 0.12, moss: [0.15, 0.2, 0.34] as Rgb, patchPerMm: 0.3, sunRoot: 0.12, rightDark: 0.35, rightGlow: 0.15, rightFromMm: 1, rightToMm: 6, shade: [0.26, 0.3, 0.45] as Rgb }
 const ROOF = { slate: [0.07, 0.11, 0.21] as Rgb, chimney: [0.21, 0.225, 0.25] as Rgb, vary: 0.75, varyMm: 1.3, stone: [0.62, 0.59, 0.54] as Rgb, block: [0.62, 0.59, 0.54] as Rgb, paneMm: 2.2, stoneMid: 0.55, blockMid: 0.55, gableMm: 0.55, gableDeepMm: 0.9, underMm: 0.7, stoneFlat: 1.0, stoneHue: 0.5, plank: [0.36, 0.3, 0.26] as Rgb, plankMm: 2.2, plankTall: 3.8, pitch: 0.2, stoneMm: 1.4, picket: [0.85, 0.5, 0.27] as Rgb, picketMm: 1.6, boardMm: 0.9, boardVary: 0.9, grainMm: 0.22, grainVary: 0.5, boardFoot: 0.7, boardTall: 3.2, pale: 0.25, rail: [2.3, 1.1, 0.5] as Rgb, railTop: 2.0, door: [0.1, 0.052, 0.034] as Rgb, verge: [0.11, 0.085, 0.07] as Rgb, sheen: 1.5, sheenMm: 3.5, doorMm: 2.9, reachMm: 0.4, buryMm: 1.5 }
 const DARK_PANE = 0.8
 const STONE_TOP = { sky: 1.6, fromMm: 2, toMm: 4 }
 // The shared stone map lies stretched along the walls and reads as courses of logs. The approved's walls are round cobbles of
 // unlike size in dark joints, lit on their upper left: cells drawn pixel by pixel in place of the map's grain, the bump laid flat.
 // The lanterns' patch is capped and would level the stones out: it takes their light and dark after the cap.
-const COBBLE = { cellMm: 2.4, joint: 0.17, dark: 0.16, lit: 0.6, flat: 1.0, base: 0.5, grain: 0.0, smooth: 1.0, patch: 0.8, patchTop: 1.2, small: 0.55, big: 1.5, round: 0.3, rough: 0.9, wash: 0.5, washTint: [1.0, 0.8, 0.6] as Rgb, poolCap: 0.1 }
+const COBBLE = { cellMm: 2.4, joint: 0.17, dark: 0.11, lit: 0.6, flat: 1.0, base: 0.5, grain: 0.0, smooth: 1.0, patch: 0.8, patchTop: 1.2, small: 0.55, big: 1.5, round: 0.3, rough: 0.9, wash: 0.5, washTint: [1.0, 0.8, 0.6] as Rgb, poolCap: 0.1 }
 // The approved cottage has a short stack: what stands over the ridge is drawn in to under half its height, in this season's
 // copy of the mesh and in what the particles meet.
 const STACK = { fromMm: 18.8, squash: 0.45, marginMm: 0.9, pot: 0.3 }
