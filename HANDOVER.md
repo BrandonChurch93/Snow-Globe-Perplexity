@@ -77,7 +77,7 @@ The four `4789-shake*` strips use final main `58687dc1` above and pushed inertia
 
 ### Matched final hero stills against the approvals
 
-`4789-hero-*-400.jpg` compares main, inertia, and the approved picture, in that order. Rest (+12 s) is above landed (+0.5 s). Both drawn states are 1920 by 1080, HD review, full assets, the hero camera, and the same test shake. The summer rest candidate is the actual forced M3 picture. All eight PNGs change between the matched builds. I inspected the eight triptychs at 400 px per full frame and the two native crops for each state.
+`4789-hero-*-400.jpg` compares main, inertia, and the approved picture, in that order. Rest (+12 s) is above landed (+0.5 s). Both drawn states are 1920 by 1080, HD review, full assets, the hero camera, and the same test shake. The summer rest candidate is the actual forced M3 picture. All eight PNGs change between the matched builds. I inspected the eight triptychs at 400 px per full frame and the two native crops for each state. The `4789-hero-*-native.jpg` sheets keep those columns at 1:1. The rows are rest crown, rest ground, landed crown, landed ground; each panel is cropped to 400 by 300 px without resizing.
 
 - **Winter**: At landing the white bands are still curved and the roof, tree and lantern read through them. The foreground over the pond stays milky in both builds. At rest the pond remains open, with small differences in flake placement and flecks by the cottage.
 - **Spring**: At landing the pale pink front band remains strong, with a roof and trunk readable through it. At rest the heavier petals are still scattered under the crown and by the path; there is no new mound or bare patch apparent in the pictures.

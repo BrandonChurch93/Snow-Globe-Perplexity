@@ -33,3 +33,7 @@ winter-f0-pinned-native.jpg: The same pinned and candidate frame zero pair in na
 4789-hero-spring-400.jpg: Spring hero, HD review and full assets. Main 58687dc1, inertia 47891785 and the approved picture left to right. Rest at +12 s above and landed at +0.5 s below. Each picture is 400 px wide.
 4789-hero-summer-400.jpg: Summer hero, HD review and full assets. Main 58687dc1, inertia 47891785 and the approved picture left to right. Rest at +12 s above and landed at +0.5 s below. Each picture is 400 px wide.
 4789-hero-fall-400.jpg: Fall hero, HD review and full assets. Main 58687dc1, inertia 47891785 and the approved picture left to right. Rest at +12 s above and landed at +0.5 s below. Each picture is 400 px wide.
+4789-hero-winter-native.jpg: Winter hero native crops, HD review and full assets. Main, inertia and approval left to right. Rest crown, rest ground, landed crown, landed ground top to bottom.
+4789-hero-spring-native.jpg: Spring hero native crops, HD review and full assets. Main, inertia and approval left to right. Rest crown, rest ground, landed crown, landed ground top to bottom.
+4789-hero-summer-native.jpg: Summer hero native crops, HD review and full assets. Main, inertia and approval left to right. Rest crown, rest ground, landed crown, landed ground top to bottom.
+4789-hero-fall-native.jpg: Fall hero native crops, HD review and full assets. Main, inertia and approval left to right. Rest crown, rest ground, landed crown, landed ground top to bottom.
