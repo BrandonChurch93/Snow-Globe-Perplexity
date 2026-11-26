@@ -26,7 +26,7 @@ const PART = 'glass-dressing-summer'
 const RS = config.globe.sphereDiameterMm / 2
 const TAU = Math.PI * 2
 
-setGlass('summer', { windowTint: [1, 0.85, 0.62], windowGain: [0.5, 0.2, 1, 1], windowSoftDeg: 5, windowGrain: 0.5, rimTint: [1.5, 1.05, 0.45], wallTint: [0.77, 0.71, 0.29], ringCover: 0.35, strip: 0, bend: 0, ringThin: 1, rimClear: 0.3, topLine: 0, ringMottle: 0.3, ceiling: 0.35, roomHue: [1.2, 0.95, 0.6], roomHueOn: 1, windowShade: 0, rimGlow: 0, arcs: 2.5, arcTint: [1, 0.72, 0.34], arcCool: 1 })
+setGlass('summer', { windowTint: [1, 0.85, 0.62], windowGain: [0.5, 0.2, 1, 1], windowSoftDeg: 5, windowGrain: 0.5, rimTint: [0.8, 1, 1.25], wallTint: [0.77, 0.71, 0.29], ringCover: 0.35, strip: 0, bend: 0, ringThin: 1, rimClear: 0.3, topLine: 0, ringMottle: 0.3, ceiling: 0.35, roomHue: [0.85, 0.98, 1.15], roomHueOn: 1, windowShade: 0, rimGlow: 0, arcs: 2.5, arcTint: [1, 0.9, 0.74], arcCool: 1.6 })
 
 export const look = {
   // leaving: the light goes out between these two counts of beats before the swap window opens
@@ -80,21 +80,24 @@ export const look = {
     // the air: the low sun in the liquid, warm on the side the light falls toward and nothing on the side it comes from
     air: 0.012,
     airColor: [1, 0.66, 0.36] as const,
-    // the haze: the liquid behind the miniature holds the sun as a warm glow, fullest in a column up the middle of the globe
-    // (`hazeAt`, `hazeWide`, in globe radii across the picture) and `hazeRim` of that toward the sides
-    // It is gold and fullest low, behind the miniature (`hazeLow`, `hazeTall`, in globe radii up the picture); toward the top
-    // of the dome it thins to `hazeTop` of that, and to the sides of the column up there the liquid holds a paler, cooler light
-    // (`hazeSky`, `hazeSkyColor`), so the dome is not one flat tone
-    haze: 0.17,
-    hazeColor: [1, 0.6, 0.3] as const,
-    hazeRim: 0.1,
-    hazeAt: -0.1,
-    hazeWide: 0.45,
-    hazeLow: -0.3,
-    hazeTall: 0.28,
-    hazeTop: 0.03,
-    hazeSky: 0,
-    hazeSkyColor: [0.7, 0.8, 0.95] as const,
+    // the haze: the liquid behind the miniature holds the last sun. It is gold and fullest low, just over the ground
+    // (`hazeLow`, in globe radii up the picture), and stands highest in a plume between the cottage and the tree (`hazeAt`,
+    // `hazeWide`), `hazeTall` radii tall there and `hazeSideTall` of that at the sides, where it is `hazeRim` as strong. Over
+    // it the liquid is clear: `hazeSky` is all it holds under the dome, so the dark of the room shows through the top of the
+    // glass. `hazeBanks` is how unevenly it lies, in soft banks `hazeBankSize` globe radii across, so it reads as lit liquid
+    // and never as a flat card
+    haze: 0.3,
+    hazeColor: [1, 0.64, 0.35] as const,
+    hazeRim: 0.3,
+    hazeAt: -0.15,
+    hazeWide: 0.4,
+    hazeLow: -0.46,
+    hazeTall: 1,
+    hazeSideTall: 0.6,
+    hazeSky: 0.012,
+    hazeSkyColor: [1, 0.74, 0.5] as const,
+    hazeBanks: 0.35,
+    hazeBankSize: 0.42,
     // the storm: the seeds and the dust aloft take the sun and the whole dome glows white-gold; it goes with the liquid's
     // turbulence, in slow arms that turn with the time, and is thinner over the miniature so the lanterns stay
     storm: 0.03,
@@ -254,10 +257,12 @@ void main() {
   float toward = 0.5 + 0.5 * dot(vWl, vWlDir);
   vec3 air = ${vec(W.airColor)} * (${n(W.air)} * smoothstep(0.45, 1.0, toward) * body);
   float column = (vWl.x - ${n(W.hazeAt)}) / ${n(W.hazeWide)};
+  float plume = exp(-column * column);
   float still = 1.0 - ${n(W.stormClears)} * storm;
-  float low = exp(-pow(abs((vWl.y - ${n(W.hazeLow)}) / ${n(W.hazeTall)}), 2.0));
-  air += ${vec(W.hazeColor)} * (${n(W.haze)} * still * body * (${n(W.hazeRim)} + ${n(1 - W.hazeRim)} * exp(-column * column)) * (${n(W.hazeTop)} + ${n(1 - W.hazeTop)} * low));
-  air += ${vec(W.hazeSkyColor)} * (${n(W.hazeSky)} * still * body * smoothstep(-0.1, 0.6, vWl.y) * (1.0 - 0.8 * exp(-column * column)));
+  float rise = max(vWl.y - ${n(W.hazeLow)}, 0.0) / (${n(W.hazeTall * W.hazeSideTall)} + ${n(W.hazeTall * (1 - W.hazeSideTall))} * plume);
+  float bank = 1.0 - ${n(W.hazeBanks)} + ${n(2 * W.hazeBanks)} * stageNoise(vec3(vWl / ${n(W.hazeBankSize)}, 3.7));
+  air += ${vec(W.hazeColor)} * (${n(W.haze)} * still * body * bank * (${n(W.hazeRim)} + ${n(1 - W.hazeRim)} * plume) * exp(-rise * rise * rise));
+  air += ${vec(W.hazeSkyColor)} * (${n(W.hazeSky)} * still * body);
   // the storm's light: slow broad arms about the middle, turning with the time
   float turn = atan(vWl.y, vWl.x);
   float arms = 1.0 - ${n(W.stormArms)} + ${n(W.stormArms)} * sin(2.0 * turn + 5.0 * r - 1.7 * uSummer.x) * smoothstep(0.05, 0.4, r);
