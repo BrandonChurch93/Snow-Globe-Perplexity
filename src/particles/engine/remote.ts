@@ -163,7 +163,9 @@ export class LiveRunner {
     }
     if (this.away && this.waitingSince >= 0 && this.now() - this.waitingSince > this.frameMs) this.fail()
     if (!this.away) {
+      // The picture reads `source`, a copy made again only when it is told the arrays moved; the engine tells its own view, not this one.
       this.local.advanceTo(target, tl)
+      this.source.touch()
       return
     }
     const c = this.client!
@@ -175,6 +177,7 @@ export class LiveRunner {
     } catch {
       this.fail()
       this.local.advanceTo(target, tl)
+      this.source.touch()
     }
   }
 
