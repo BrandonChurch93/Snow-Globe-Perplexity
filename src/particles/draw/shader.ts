@@ -113,7 +113,7 @@ export const VERT_MAIN = `
   vec3 nowL = mix(aPrev, aNow, uPoint.x + shut * uStorm.y * afloat * (storming ? 1.0 - uStorm.x : 1.0));
   vec3 nowW = (modelMatrix * vec4(nowL, 1.0)).xyz;
   // a seed's down is finer than the film's lens can hold out of focus: a head takes a share only of the lens's spread, so its hairs stay hairs
-  float lensShare = abs(shape - ${n(SHAPE.seed)}) < 0.5 ? ${n(CARD.hair.lensFilm)} : 1.0;
+  float lensShare = abs(shape - ${n(SHAPE.seed)}) < 0.5 ? ${n(CARD.hair.lensFilm)} : (abs(shape - ${n(SHAPE.light)}) < 0.5 ? ${n(CARD.glow.lensFilm)} : 1.0);
   float lensC = afloat * lensShare;
   vec3 eye = cameraPosition - uEyeShift * lensC;
   vec4 placed = lensPlace(nowW, eye);

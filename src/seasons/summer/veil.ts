@@ -27,7 +27,7 @@ export const particles: SeasonKit['particles'] = { firefly: { color: [1, 0.97, 0
 // line of sight through the ball is longest, at its middle, so the tree and the cottage are washed and the lanterns bloom in it.
 // `bank` is the haze of the held storm that lies over the miniature: below `level` (in radii, up from the middle) it is whole, and
 // it thins over `soft` above that, so the cottage and the foot of the tree are ghosted and the upper dome keeps its dark gaps.
-export const STORM = { share: 1, holdSeconds: 0.3, fallSeconds: 3, uneven: 0.97, calms: 0.55, bank: { level: -0.6, soft: 0.25, density: 0.012, even: 0.7 }, white: 0.0014, fold: 0.9 }
+export const STORM = { share: 0.3, holdSeconds: 0.3, fallSeconds: 3, uneven: 0.97, calms: 0.9, bank: { level: -0.17, soft: 0.25, density: 0.013, even: 0.7 }, white: 0.0004, fold: 0.9 }
 
 const ramp = (v: number, from: number, to: number): number => {
   const t = Math.min(1, Math.max(0, (v - from) / (to - from)))
