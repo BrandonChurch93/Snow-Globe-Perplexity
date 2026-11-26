@@ -448,6 +448,20 @@ export function notNumberLine(chunk) {
 }
 export const notNumberLoud = (what, index, count) => `${NOT_A_NUMBER}: ${what} frame ${index} holds ${count} ${count === 1 ? 'value that is' : 'values that are'} no number in its mean, before the lens and the grade. Its chunk is marked ${NOT_A_NUMBER} and no master is encoded from it. Tell /root the frame. Do not draw it again hoping: the same frame draws the same values.`
 
+const shipMark = (record) => {
+  const n = notNumberOf(record)
+  return n ? `${NOT_A_NUMBER} in ${n.frames.length === 1 ? 'frame' : 'frames'} ${nanFrames(n)}` : ''
+}
+/** The message of the commit that carries a chunk's record and look to its machine's branch. A marked chunk says so in its first line. */
+export function shipTitle(what, c, record, test = false) {
+  const mark = shipMark(record)
+  return `Chunk ${chunkStem(what, c.first, c.last)}${test ? ', a test' : ''}${mark ? `, ${mark}: never encoded into a master` : ''}`
+}
+export function shippedLine(what, c, record, branch) {
+  const mark = shipMark(record)
+  return `shipped the record and the look of ${chunkStem(what, c.first, c.last)}${mark ? `, marked ${mark},` : ''} to ${branch} (the picture travels by attachment)`
+}
+
 /** --local starts the installed Chrome in a window, with the machine's graphics card. Without a display it cannot open. */
 export function localProblem(local, platform = process.platform, env = process.env) {
   if (!local || platform !== 'linux' || env.DISPLAY || env.WAYLAND_DISPLAY) return null
