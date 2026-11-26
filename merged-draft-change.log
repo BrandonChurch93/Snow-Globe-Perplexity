@@ -1,0 +1,15 @@
+
+> snow-globe-seasons@0.1.0 measure
+> node tools/measure.mjs --unit change --only M4,M5 --force --tier draft
+
+pass M4 shake-1: 0.9696 (threshold 0.85, shake.minCoverAtSwap) 144076 of 148598 miniature pixels are hidden to at least shake.coverOpacity in the middle of the swap window
+pass M5 shake-1: 0.993 (threshold 0.6, shake.minVisibleAfterSettle) 153516 of 154602 miniature pixels are hidden by less than shake.coverOpacity, shake.settleCheckSeconds after the landing
+pass M4 shake-2: 0.9046 (threshold 0.85, shake.minCoverAtSwap) 132627 of 146611 miniature pixels are hidden to at least shake.coverOpacity in the middle of the swap window
+pass M5 shake-2: 1 (threshold 0.6, shake.minVisibleAfterSettle) 175433 of 175433 miniature pixels are hidden by less than shake.coverOpacity, shake.settleCheckSeconds after the landing
+pass M4 shake-3: 0.9548 (threshold 0.85, shake.minCoverAtSwap) 141134 of 147821 miniature pixels are hidden to at least shake.coverOpacity in the middle of the swap window
+pass M5 shake-3: 0.9718 (threshold 0.6, shake.minVisibleAfterSettle) 140232 of 144301 miniature pixels are hidden by less than shake.coverOpacity, shake.settleCheckSeconds after the landing
+pass M4 shake-4: 0.9594 (threshold 0.85, shake.minCoverAtSwap) 143482 of 149552 miniature pixels are hidden to at least shake.coverOpacity in the middle of the swap window
+pass M5 shake-4: 0.9997 (threshold 0.6, shake.minVisibleAfterSettle) 155929 of 155974 miniature pixels are hidden by less than shake.coverOpacity, shake.settleCheckSeconds after the landing
+measure change: not complete · 8 of 24 lines, 0 red · draft · 116 s
+out/work/measure/change.json
+out/work/measure/change.md

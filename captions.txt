@@ -10,3 +10,6 @@ c11-winter-rest-400.jpg: Winter hero, rest 12 s after the same test shake. HD re
 c11-spring-rest-400.jpg: Spring hero, rest 12 s after the same test shake. HD review at 400 px per picture. Left hand-only 4c1ebe13, centre inertia c11e34ce, right approved. M3 0.4308 to 0.4307.
 c11-summer-rest-400.jpg: Summer hero, rest 12 s after the same test shake. HD review at 400 px per picture. Left hand-only 4c1ebe13, centre inertia c11e34ce, right approved. M3 0.7276 to 0.7160.
 c11-fall-rest-400.jpg: Fall hero, rest 12 s after the same test shake. HD review at 400 px per picture. Left hand-only 4c1ebe13, centre inertia c11e34ce, right approved. M3 0.5336 to 0.5393.
+summer-rest-400.jpg: Matched summer rest after the new base and veil. HD review at 400 px per picture, main 15d7017d left and inertia 68d5b464 right. The base limits both to 0.6211; the miniature moves from 0.820385 to 0.790982.
+summer-rest-miniature-native.jpg: Exact 696 by 392 px miniature crop used by M3, actual particles visible. Main 15d7017d above and inertia 68d5b464 below.
+summer-rest-miniature-no-particles-native.jpg: The same native crop, in scratch pictures with all particle kinds hidden. Main above, inertia below. The original RGB crops are byte-identical. This is an isolation picture, not a gate result.
