@@ -22,6 +22,7 @@ Date: 2026-11-26 (UTC)
 - The composer page: the prompt, the model's name, the level in force (`intro.reasoningFrom`), the typing speed, the skill's capture mode, and the film's frames for the pointer coming in, every key, the pointer leaving for the send, the pointer on the send and the press.
 - The sequence page: `mode: thinking`, the prompt, the heading, one step for each line with its title only and the time it works, the time before the first line and the hold at the end. No `result`.
 - A viewport of 1280 x 720 at a device scale of 1.5 (3 for the master). Both pages are served from this machine by the tools' server, and any request that would leave the machine is refused and fails the run.
+- The browser named in `tools/browser.json`, drawing with SwiftShader, which was the tools' renderer when the pack was drawn. The pack was not drawn with any other renderer, so "the same bytes" is shown for SwiftShader only: `SHOWCASE_RENDERER=swiftshader npm run opening` asks for it. Under another renderer the browser may draw a canvas another way; compare the sha256 after the first run there.
 - For frame `i` the composer is asked for the time `i / 60`, and the build screen for `(i - build.first) / 60`. One second of the film is one second of every motion the skill draws.
 
 ## What was changed in the work copy, and why
