@@ -406,8 +406,8 @@
       "format": "uhd",
       "chunkFrames": 30,
       "samples": {
-        "film-b": 12,
-        "loop": 12
+        "film-b": 24,
+        "loop": 24
       },
       "video": {
         "codec": "libx264",
