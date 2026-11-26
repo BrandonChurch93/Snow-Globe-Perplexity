@@ -159,3 +159,16 @@ Job 7, first state. Before left, after right. Film frames 676, 678, 680, 682, th
 
 51-cover7-shake1-684-690-draft-before-after.jpg
 Job 7, first state. Before left, after right. Film frames 684, 686, 688, 690 (after the cover), same trees, tier and size as 48. The same pictures pixel for pixel, before and after.
+
+
+52-cover7-change1-669-680-draft.jpg
+Job 7, the state that is pushed. The first change, winter to spring, film frames 669 to 680 in order, left to right and top to bottom, each made smaller to 397 px. Tier draft (2 samples), format hd, lavapipe. Drawn on af9dca04 (engine 1b120a3ccbf06f35); the pushed head d3f0f958 (engine bf7d83a7d0c27deb) differs from it in source by one line of summer's glass, and the two summer frames drawn on both (1402, 2108) keep their sha256. What is seen: at 669 and 670 a rose glow rises round the foot and lights the base and the frost by it; at 671 the pool lies at the foot; at 672 the base is nearly gone in it; 673 to 678 are the ball with the strokes of its storm readable in a rose glow, a flat oval of light below it, the room dark with a tone and the lamps faint discs; at 679 spring's petals lie lit on the table; at 680 spring's base stands dark under a rose haze. No base is in sight on 673 to 678 and no frame shows two bases. Pixels with a sum of red, green and blue under 4: 0.00 in 100 on each of 668 to 682.
+
+53-cover7-change2-1389-1400-draft.jpg
+Job 7, the state that is pushed. The second change, spring to summer, film frames 1389 to 1400 in order, same tree, tier and size as 52. The light is a champagne gold, summer's own. At 1389 to 1391 the glow rises round the foot with spring's petals still on the table and spring's base in it; 1393 to 1398 are the ball in its glow over a flat oval of light; at 1399 the pool thins and summer's base is a faint shape in it; at 1400 summer's base stands under a gold haze. Pixels under 4: 0.00 in 100 on each of 1388 to 1402.
+
+54-cover7-change3-2109-2120-draft.jpg
+Job 7, the state that is pushed. The third change, summer to fall, film frames 2109 to 2120 in order, same tree, tier and size as 52. The light is amber, fall's own. From 2115 on the white tree of fall's miniature is read through the storm inside the ball; the miniature is not this unit's. At 2119 the pool has thinned, fall's leaves lie lit on the table and the fringe of fall's collar catches the light before the rest of the base is read; at 2120 the base stands dark under an amber haze. Pixels under 4: 0.00 in 100 on each of 2108 to 2122.
+
+55-cover7-change4-2829-2840-draft.jpg
+Job 7, the state that is pushed. The fourth change, fall to winter, film frames 2829 to 2840 in order, same tree, tier and size as 52. The light is an ice blue, winter's own. What the colour brings and is not hidden: on 2829 to 2831 fall's base and fall's leaves stand on a table that is already lit blue, the leaving season in the light of the one that comes. 2833 to 2838 are the ball in its glow over a flat oval of light; at 2839 winter's base is a faint shape in it; at 2840 it stands on a blue table. Pixels under 4: 0.00 in 100 on each of 2828 to 2842.
