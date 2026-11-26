@@ -409,7 +409,7 @@ const SHELL_AFTER = `
   float shellLustre = smoothstep(0.8, 1.0, baseGloss);
   reflectedLight.directSpecular += (baseKeyC * (0.1 * pow(abs(shellNh), 60.0) + 0.03 * pow(abs(shellNh), 14.0)) * smoothstep(0.0, 0.15, dot(geometryNormal, baseKey)) + (uRigCardCol + vec3(1.0, 0.9, 0.76) * dot(baseSunC, vec3(0.3333)) * 1.4) * (0.08 * pow(abs(shellCh), 40.0) + 0.04 * pow(abs(shellCh), 9.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, baseCard))) * baseGloss * baseAo * mix(vec3(1.0), 0.7 + 0.6 * shellPearl, shellLustre);
   reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * (baseKeyC + uRigCardCol) * 0.08 * shellLustre * shellPearl;
-  ${shadeIn(0.17, 0.19, 14, 0.22, 'mix(mix(mix(vec3(1.0, 0.84, 0.7), vec3(1.0, 1.08, 1.1), smoothstep(-32.0, 2.0, vBasePos.x)), vec3(0.82, 0.87, 0.9), smoothstep(10.0, 24.0, vBasePos.x)), vec3(1.0, 0.74, 0.58), smoothstep(41.0, 50.0, vBasePos.x))')}
+  ${shadeIn(0.17, 0.19, 14, 0.22, 'mix(mix(mix(vec3(1.0, 0.84, 0.7), vec3(1.05, 1.05, 1.0), smoothstep(-32.0, 2.0, vBasePos.x)), vec3(0.86, 0.86, 0.84), smoothstep(10.0, 24.0, vBasePos.x)), vec3(1.0, 0.74, 0.58), smoothstep(41.0, 50.0, vBasePos.x))')}
   // The whelks left of the middle lie in the same sun as the scallop beside them.
   float shellNear = smoothstep(-36.5, -31.5, vBasePos.x) * (1.0 - smoothstep(-20.0, -17.0, vBasePos.x));
   reflectedLight.indirectDiffuse *= 1.0 + shellNear * vec3(0.5, 0.45, 0.5);
@@ -420,7 +420,7 @@ const SHELL_AFTER = `
   reflectedLight.directDiffuse *= 1.0 + 2.6 * shellRim;
   // Each shell is glossy: one soft highlight from the room, whatever shade it lies in.
   float shellSpark = max(dot(geometryNormal, normalize(normalize(mat3(viewMatrix) * vec3(-0.3, 0.8, 0.52)) + geometryViewDir)), 0.0);
-  reflectedLight.directSpecular += vec3(1.0, 0.96, 0.9) * dot(baseSunC, vec3(0.3333)) * (0.5 * pow(max(shellSpark, 0.0), 160.0) + 0.07 * pow(max(shellSpark, 0.0), 40.0) + 0.035 * pow(max(shellSpark, 0.0), 12.0)) * smoothstep(0.1, 0.4, baseGloss) * baseFootAo;
+  reflectedLight.directSpecular += vec3(1.0, 0.96, 0.9) * dot(baseSunC, vec3(0.3333)) * (0.28 * pow(max(shellSpark, 0.0), 160.0) + 0.07 * pow(max(shellSpark, 0.0), 40.0) + 0.035 * pow(max(shellSpark, 0.0), 12.0)) * smoothstep(0.1, 0.4, baseGloss) * baseFootAo;
   reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * baseAo * dot(baseSunC, vec3(0.3333)) * vec3(1.0, 0.94, 0.82) * (${STONE.storm.toFixed(2)} * uBaseStorm);
 }
 `
