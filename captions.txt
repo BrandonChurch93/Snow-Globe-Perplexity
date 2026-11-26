@@ -152,3 +152,57 @@ walk-f/hd-3-landed.jpg
   Shows: just landed in spring, the petals of the way home still in the liquid. State: not busy, spring lit, the page
   says "Spring". The bar is at its dimmed floor (60 percent), as on the phone and the tablet. Run hd-1, picture
   24-row-3-spring.
+
+After the walk, main 38eff8da: the nearly square window, the particle mend seen both ways, and the Shake control
+missing from a picture asked for (the capture, not the page). No source file was changed for them. Tier: none (the
+live app on the software renderer); each says whether it is a before, an after or neither.
+
+walk-f/sq-0-first-look.jpg
+  Shows: a window nearly square, 600 x 600, one device pixel to the pixel, no touch, the first look as it came, three
+  pictures side by side. Left: the first picture the tool could take, 471 ms after the address was asked: the soft
+  picture (the browser's own record puts its first paint and its first paint with a picture in it both at 120 ms).
+  Middle: the still, as the page laid it. Right: the live picture with the controls. State: the still stands half a
+  pixel to the right of the live picture (laid on it between whole pixels it fits best moved 0.5 px to the left and 0
+  px down, searched 4 px each way; finer measures of the same window, run snap3-sq1, read 0.48 and 0.49 px; the rule
+  asks for under half a pixel, so this stands at the rule's edge and the tool's line reads NOT), and the live picture
+  stays where it came (0 px over its first 66 frames, searched 48 px each way). By eye at this size nothing doubles.
+  Neither before nor after: main 38eff8da as it is, quality as the page picks it. Run sq-fs-f (alone on the machine),
+  pictures 01-first-look-came-first, 06-first-look-still-by-page and 03-first-look-came-live.
+
+walk-f/sq-1-half-pixel.jpg
+  Shows: the same window, a cut of the glass at its own size (380 x 380 px from 110, 10), three pictures side by side.
+  Left: the live picture. Middle: the still as the page lays it today against the live picture, each pixel's
+  difference times 4, white where they differ. Right: the same difference with the still's box laid on whole pixels
+  picked by the page, so that the browser has nothing left to round (the mend named for `put` in `index.html`, tried
+  in the page by the tool; no source file was changed). State: the upright edges (the sides of the glass, the walls,
+  the trunk, the icicles) are brighter in the middle than on the right; the mean difference in this cut is 7.62 of 255
+  today against 6.43 on whole pixels; over the whole window today's still fits the live picture best moved 0.48 px to
+  the left, the still on whole pixels 0 px. The middle is the build as it is, the right is after a mend that is not
+  made and that I would not make: at a real device scale of 1.25 (a window of 1535 x 864) the same box stood 0.29 px
+  off where today's stands 0.16, and at 1.5 both stand under 0.45, so no way of laying the box is better everywhere.
+  Tier: the live app on the software renderer, quality as the page picks it. Run snap3-sq1 at the plain address (alone
+  on the machine), pictures still-layout, still-whole and live.
+
+walk-f/particles-held-before-after.jpg
+  Shows: phone 390 x 844 at 3, quality low, two builds side by side after the same thing: the particle worker kept
+  busy 20 s so that the page gives it up and steps the particles itself, then one press of the Shake control, landed
+  in spring, the controls at their dimmed floor. Left, before: build d2ae1cc2, about 14 s of the page's clock after
+  the landing, no petal in the liquid, winter's flakes stand where they were as pale specks (state: the picture's copy
+  of the particles did not move, its kinds are still winter's, flake 27000 and glitter 3600). Right, after: main
+  38eff8da with the mend of open item 231, about 18 s after the landing, petals in the liquid (state: the copy moved,
+  its kinds are spring's, petal 7201 and mote 5998). Tier: the live app on the software renderer. Runs moved-held20-d
+  and moved-held20-f (each alone on the machine), picture 1-landed-spring-b of each.
+
+walk-f/shake-control-asked-picture.jpg
+  Shows: phone 390 x 844 at 3, quality low, the controls cut out of two pictures asked of the browser as a shake
+  landed in spring, side by side, and under each the same cut with every value times 12. Left: landing 5 of run
+  land-f, the Shake control is not in the picture; times 12 its blur is there in the control's shape and nothing of
+  its own paint (no line, no word, no emblem). Right: landing 1 of the same run at the same moment, the control whole.
+  State on both sides of the left picture: the page holds the control visible, its opacity 0.6 just before and 1 just
+  after, and no animation that hides it. It is the capture and not the page: 4 of 101 pictures asked for across
+  landings and dims came without the control's paint, all four with this same blur and no paint, while of 532 frames
+  the browser presented by itself none did (441 across 8 landings and the dim after each, run landcast-f; 91 across
+  dims alone, runs dimcast-f and dimcast-f-ss; no picture asked in any of them). My reading: a picture asked for makes
+  the browser draw at once, before the control's layer is painted again. Not seen on a real card. Tier: the live app
+  on the software renderer, the page stepping the particles. Neither before nor after: main 38eff8da as it is. Run
+  land-f (alone on the machine), pictures 5-landed-spring-a-GONE and 1-landed-spring-a.
