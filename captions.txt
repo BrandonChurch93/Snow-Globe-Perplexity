@@ -79,3 +79,17 @@ THIRD PUSH
   Tool: tools/visit.mjs --layout side --only 1,5 (the app's own page in a browser, quality low). On 66936ac4.
   The whole globe stands inside in both, glass top about 17 px under the top edge, foot about 287 px, clear of the
   controls (from 335 px). The camera does not stand back on this shape. The visit was stopped before its two tilts.
+
+FOURTH PUSH
+
+11-main-live-app-phone-one-shake.jpg
+  Shows: the live app itself (not the replay), built from main 27e83641, 390 x 844, touch, pixel ratio 1, quality low,
+  one press of Shake. Six of the frames the app drew, read off its canvas in the same task as each frame, so the
+  controls are not in them. AFTER.
+  Frames: at rest before the shake; then frames 1, 2, 3, 6 and 10 of the ten the app drew from the press to the landing
+  (winter to spring). The software renderer drew a frame every 1 to 16 s, mostly 4 to 7; the session moves at most 0.25 s a frame.
+  Tool: a scratch page script, never committed. Tier: the app's level low.
+  The camera stands back with the lift (frame 1) and the whole glass and base stay inside the screen in all ten. Read
+  off the frames, the glass is 222 px across through the bar (computed 223) and never nearer a side than 38 px (frame
+  3); in the frame of the season's glare the glow hides the edge of the glass.
+  It also shows what is still wrong: through the shake the globe is small and low on a phone.

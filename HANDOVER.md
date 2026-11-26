@@ -259,8 +259,23 @@ On `main` 27e83641 (the caller lines in; 06:35 to 06:50 UTC). `/root` asked for 
   - 1920 x 1080: the camera does not move (701 mm, or 751 mm with controls of 164 px). Sides 405.7 px at the least. The
     lifted glass 10.8 px under the top edge at the least (asked 10.8 px; shake 6, frame 37, beat 1.02).
   So the whole globe stays on the screen on all three, at every frame of all eight shakes: computed.
-- Drawn in the live app on 27e83641 (the built app in a browser, 390 x 844, touch, pixel ratio 1, quality low, one press
-  of Shake): in progress as this was pushed; the next push says what the frames show.
+- Drawn in the live app on 27e83641 (the built app in a browser, 390 x 844, touch, pixel ratio 1, `?quality=low`, one
+  press of Shake; every frame the app drew was read off its canvas in the same task, so nothing was missed): picture 11.
+  The app drew ten frames from the press to the landing (winter to spring), one every 1 to 16 s; the session moves at
+  most 0.25 s a frame (`LIVE.maxFrameSeconds`), so this is the whole shake at four frames a second of its own time.
+  What I see, at full size: the camera stands back with the lift, from the first frame; the whole glass and base stand
+  inside the screen in all ten frames. Read off the frames: the glass is 222 px across through the bar (computed 223.4)
+  and its room to the sides is 78 and 65 px (frame 1), 117 and 51, 38 and 129, 100 and 68, 71 and 97, 85 and 83,
+  then the frame of the season's glare, where the glow hides the edge of the glass (the glass is inside by eye), then
+  55 and 113, 73 and 94, and landed 88 and 79. The nearest drawn is 38 px; the nearest computed, between those frames,
+  is 23.2 px. The globe is small and low through the shake, as "still wrong" says.
+- Tablet and hd in the live app on `main`: not drawn (no time; an hd frame takes about 40 s). Computed, above. Drawn
+  only through the replay with my lines applied, before they were on `main` (pictures 3 and 4).
+- Not run on 27e83641: full vitest, both determinism runs, M1. `/root` reports tsc clean and 92 framing and app tests
+  passed there. The determinism runs above passed on 66936ac4, where the callers did not yet pass the moment.
+- Seen in passing in the live app: the app measures its controls every 20 frames (`MEASURE_EVERY`) and then eases. On a
+  real phone that is a third of a second; here it is minutes, so the globe stood at the estimate (glass top about 194 px)
+  through this run.
 - The drag script on 1920 x 1080, frames 30 and 140 (`tools/sheet.mjs --app drag --level high --format hd`, picked
   frames): drawn and seen, picture 9.
 
