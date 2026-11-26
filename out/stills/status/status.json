@@ -1,43 +1,44 @@
 {
-  "number": 172,
-  "time": "2026-11-26 19:17 UTC",
+  "number": 174,
+  "time": "2026-11-26 20:05 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 172 · 2026-11-26 19:17 UTC · Phase 6",
-    "Summer's seventh list is all in main: room, cottage, glass, base, sand, tree and air, merged between 18:51 and 19:13 UTC (head 5f9a5fd2, engine 9482e8f1fdeda6da).",
-    "By my own look the merged summer is still below the bar: the base reads grey where the approved picture is cream, the white points in the air read close to snow at small size, the crown is one mass where the approved's has open gaps.",
-    "From here a status is a delivered message with picture files attached (note 9, decision 162); a follow-through wakes this thread every 20 minutes so the build goes on by itself.",
-    "Next: the second half of summer's pass, the change's new cover, then Round 22. Sound: 7,420 of Brandon's 10,000 credits spent by this build, no call planned.",
-    "phase 6: 16.46 h used of its 12.00 h box",
-    "allowance (after the review): 16.46 h used of 12.00 h allowed",
+    "Status 174 · 2026-11-26 20:05 UTC · Phase 6",
+    "Rough draft 3 of the film is being drawn on today's main (`c4665a9b`, engine `803ea1dff1d787a4`): 8 of 12 ranges of film B are in (frames 0 to 2099 and 3300 to 3599, 960 x 540, draft tier, 1.84 to 4.07 s a frame in the mean on six farm machines) and the opening is drawn here (434 pictures, 0.06 s a frame). The farm machines cannot push to the repo, so each chunk comes by message.",
+    "A fault found by it: in summer, film frames 1644 to 1654 (3.4 to 3.6 s after the landing; 4 pixels at 1630), saturated blue blocks with yellow rims at the left edge of the glass, 28 such pixels on frame 1648 at 960 x 540. The draft of 08:40 on `74032238` has none on frames 1600 to 1700, and the capture counted 0 values that are no number. Summer's air owner hunts the cause, the glass owner checks its edge terms, and a farm machine bisects for the commit that brought it.",
+    "Decision 164: one history for the film, the app and every still. The motion builder's wish for a history of their own for the landed stills is refused, and the line of its brief on the rest stills, written by /root, is changed. Its first push `b680bfc4`, by its own measure: on frames 1308 to 1322 what floats moves 3.70 mm where the glass moves 14.28 mm (8.42 mm before).",
+    "The controls' branch is pushed at `19786cd4` with stage one whole (by its own report: tsc 0, 775 tests passed and 8 skipped on the merge `e034be4d`). A farm machine draws the eight stills on it and on main to prove no picture moved before it is merged.",
+    "The change's builder moved its mend report to about 20:25 UTC (main moved twice under it). Summer's six owners report on the second lists by 20:30 UTC.",
+    "phase 6: 17.26 h used of its 12.00 h box",
+    "allowance (after the review): 17.26 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-172-1.jpg",
-      "caption": "The four seasons at rest, drawn from main at 19:05 to 19:16 UTC: winter and spring above, summer and fall below.",
+      "file": "out/stills/status/status-174-1.jpg",
+      "caption": "Rough draft 3 of the film, eight frames from winter to summer (960 x 540, draft tier)",
       "w": 1200,
-      "h": 675
+      "h": 338
     },
     {
-      "file": "out/stills/status/status-172-2.jpg",
-      "caption": "Summer at rest with all seven branches of this pass merged.",
+      "file": "out/stills/status/status-174-2.jpg",
+      "caption": "Summer 3.3, 3.5 and 3.7 s after the landing, the left edge of the glass enlarged: the blue fault found in the draft is in the middle picture",
       "w": 1200,
-      "h": 675
+      "h": 398
     },
     {
-      "file": "out/stills/status/status-172-3.jpg",
-      "caption": "Summer: the approved picture on the left, the build on the right.",
-      "w": 1200,
-      "h": 336
+      "file": "out/stills/status/status-174-3.jpg",
+      "caption": "Rough draft 3, summer 7.7 s after the landing",
+      "w": 960,
+      "h": 540
     },
     {
-      "file": "out/stills/status/status-172-4.jpg",
-      "caption": "The change of season, four frames of each of the four changes, as it stood at 18:49 UTC (its builder is mending the glow and the blue arrival).",
-      "w": 1200,
-      "h": 752
+      "file": "out/stills/status/status-174-4.jpg",
+      "caption": "The opening of film A, frame 866 at 60 frames a second, preview, draft",
+      "w": 960,
+      "h": 540
     }
   ]
 }
