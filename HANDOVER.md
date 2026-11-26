@@ -139,3 +139,27 @@ The report sent to the lead, as sent:
 >
 
 Logs of the runs are in `out/work/p2/` of my clone (before.log, main1.log, mainlive1.log, mainw.log, mainw2.log, mainw3.log), not committed. The scratch copy with the two mends (`sg-mend`, engine `02f8b037dbd40cf5`) was stopped on its first key and gives no row.
+
+## Job 3 (06:38 to 07:46 UTC), lavapipe
+
+Tool pushed: agent/p6-strict 87dabc7e. Local only and untested, not pushed: 292b6f9b (a row over the limit against the
+plain picture is read against the plain picture twice before it goes to its own --same picture) and its merge 5af71bfb.
+
+What was seen, engine 00d85924a764cc69 unless said, all drawn by lavapipe (Mesa 26.0.8, 4 cores):
+- Engine 365e27f8ae66164f: winter-rest all+smooth and its --same picture rendered fresh three times are the same bytes
+  each time. No wobble in preview under lavapipe.
+- Engine 365e27f8ae66164f: winter-rest all+smooth against its --same picture, 1094 pixels, largest step 13, the same on
+  three renders. Narrowed: only sqrt,inversesqrt,normalize 1094; only normalize 1094; only log,log2,pow 0; only
+  normalize~abs(det) 0; only normalize~vTreeN 102 against same and 0 against plain. The picture of all+smooth with
+  every function strict is the same bytes as with only normalize~vTreeN strict, so it is the plain picture. The --same
+  picture is the one that moves. Not explained. assets-full/winter/tree-crown.glb holds no normal of no length.
+- npm run strict: pass, all 32 rows 0 pixels, 15 min 19 s.
+- npm run strict -- --live high: 2 FAILED, both winter-shake (all+smooth and all+smooth+noguard, each 2 pixels from the
+  plain picture, largest step 2; their guards row 0 pixels; pow 0). Not narrowed. Next step: --live high --keys
+  winter-shake --modes all+smooth --against plain --only with the groups sqrt,inversesqrt,normalize then
+  log,log2 then atan,acos,asin,mod then smoothstep (one render each, the plain picture is kept).
+- Not run: main 9691393f (six files under src changed, the opening film; a new engine). No known met case was drawn
+  under lavapipe to show the check can fail there.
+
+To find out about sm_same: in SAME_INIT set the uniform to 0 after each link and see whether the --same picture of
+winter-rest all+smooth becomes the plain picture.
