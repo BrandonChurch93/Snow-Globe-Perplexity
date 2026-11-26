@@ -19,3 +19,20 @@ cannot-looks.jpg  the page with WebGL2 taken away: phone (winter) and hd (?seaso
 
 Not in these pictures: the tablet, summer on three screens (not run, see HANDOVER.md), and the move of the globe that
 follows when the controls are measured at frame 20 (HANDOVER.md, fault 1).
+
+Second job (the globe no longer moves after the takeover). Pictures of the built page at commit f577539f of agent/p6-first,
+winter, web assets, the app's own automatic quality, Mesa lavapipe. Each is three moments left to right: the still alone (the
+app's script held back); the takeover (the app's first picture alone, the still taken away, further frames held back); 51 to
+53 frames after the takeover, which is 64 to 95 s on this machine and past the measures of the controls at frames 20 and 40.
+
+p2-phone-three.jpg   phone 390 x 844 at ratio 2, touch. Controls 154 px. The globe moves 0 px between the takeover and the
+                     later frame, and 0 px between the still and the takeover (five windows around the glass). Before: about
+                     30 px up. The live picture is softer than the still, as before (canvas 390 x 844 on this machine).
+p2-tablet-three.jpg  tablet 820 x 1180 at ratio 1, touch. Controls 86 px. 0 px between the takeover and the later frame.
+                     Still against takeover: within 1 px (the still is the 1024 x 1366 one, laid on another shape).
+p2-hd-three.jpg      hd 1920 x 1080 at ratio 1, mouse. Controls 74 px. 0 px and 0 px.
+p2-tablet-arc.jpg    a fault seen and not mended in this push: tablet 820 x 1180, the top of the still (left) beside the
+                     takeover (right), native pixels. Over the glass of the still lies a faint arc: the larger copy that
+                     fills the screen where the still does not reach shows its own glass through the still's thinned edge.
+                     It is so on screens no still is drawn for, and was so before this job.
+

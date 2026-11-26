@@ -24,8 +24,9 @@ from first paint to first picture.
   `phone590`). Four seasons, seven shapes, 28 stills, each as AVIF and WebP under a byte budget (`BUDGET`).
 - The tool writes the stills to `public/first/`, what each was drawn from to `public/first/stills.json`, and a table into
   `index.html` between `/*first:begin*/` and `/*first:end*/`.
-- The table holds: the stills (size, where the glass is in each, a version for the URL), the app's framing sampled over aspect
-  and height (read from `src/app/framing.ts` through the build, never copied as constants), and the soft inline pictures.
+- The table holds: the stills (size, where the glass is in each, a version for the URL), the app's framing as a row for an aspect over the height of the
+  controls, and the heights of the controls by the interface's media rules (both read from the built app, never copied as
+  constants; see fault 1), and the soft inline pictures.
 - The page script picks the still whose shape is nearest the screen, and lays it so that its glass is exactly where the table
   says the app will put the glass on this screen. Edges the still does not cover get an enlarged, dimmed copy under it.
 - `src/app/app.ts` calls `window.firstStill.place(globe)` with the app's own framing numbers when it starts and on resize, so
@@ -37,57 +38,76 @@ from first paint to first picture.
 
 ```
 npm run build
-node tools/poster.mjs            # draws only what is stale; about 19 minutes for all 28 on software GL
+node tools/poster.mjs            # measures the controls, draws what is stale, writes the table
 npm run build                    # the table is part of the page
 node tools/poster.mjs --check    # must print: poster: pass
 ```
 
-`--season winter,fall` and `--shape phone,wide` redraw those whatever they were drawn from. `--keep` keeps stills drawn from
-another build when the framing is unchanged; use it only for a change known to move no pixel. A still is stale when the app's
-build, the season's files, the framing or the coding rules changed since it was drawn, so after any change to a look or to the
-framing every still is drawn again. `/root` was asked to add `"poster": "node tools/poster.mjs"` to `package.json`.
+Every still is stale after any change under `src/` or `config/`: the full run draws all 28. Timed on Mesa lavapipe at
+f577539f: the measure of the controls 4 to 5 s; three stills of one season (phone, tablet, hd) 65 s; the table 165 s the
+first time on a build (42,124 places of the framing asked) and nothing the second time, since the answers are kept in
+`out/work/poster/framing-<build>.json`; `--check` 2 s after a run on the same build. A full run was not timed on lavapipe.
+
+`--season winter,fall` and `--shape phone,wide` redraw those whatever they were drawn from; with `--only` nothing but those is
+drawn (and `node tools/poster.mjs --only` alone draws nothing and writes the table anew). `--keep` keeps stills drawn from
+another build when the framing is unchanged; use it only for a change known to move no pixel. `/root` was asked to add
+`"poster": "node tools/poster.mjs"` to `package.json`.
 
 Commit `public/first/` and `index.html` together: the table names the stills by content version.
 
 ## What is still wrong, worst first
 
-### 1. The globe moves in the second after the takeover (not mended)
+### 1. The globe moved in the second after the takeover (mended in the second job, f577539f)
 
-The still and the first live frame agree (see the numbers below). What follows does not hold still: the app frames the globe
-with `roomUnder(height, bar, width)`, and `bar` is the default until the interface is on screen. The interface is loaded only
-after the first picture, its controls are measured every 20 frames, and the room then eases at `FRAME.easeRate`. So within
-about a second of the takeover the globe moves to make room for the controls as they arrive. This was already so before this
-work; it is now the one visible seam of the opening.
+The first pictures, and the still under them, stood on an estimate of the bar (96 px on the phone, where the controls measure
+154 px). The app measured its controls every 20th frame after the takeover and the globe then moved: about 30 px up on the
+phone, 20 px on a tablet, 8 px on hd.
 
-Size of the move on the merged build (framing numbers from `src/app/framing.ts`, controls as measured in the page):
-- phone 390 x 844: default bar 96 px puts the glass at cy 349.5, r 155.6; the controls measure 154 px, and a bar of 160 gives
-  cy 316.8: the globe rises about 30 px.
-- hd 1920 x 1080: default cy 378.9, r 330.9; the controls measure 74 px, and a bar of 80 gives cy 384.6, r 336.1: about 8 px
-  down and 6 px larger.
-- tablet 1024 x 1366: default cy 503.4, r 410.1; a bar of 80 gives cy 528.7 (controls measured 86 px before the merges):
-  about 20 px down.
-These are the framing's numbers before main's ce9548e2; the move itself was not photographed (the "later" pictures are 10 to
-12 frames after the takeover, and the controls are first measured at frame 20).
+What stands now:
 
-It cannot be closed from the page alone: the controls' height depends on `pointer: coarse`, the orientation and
-`env(safe-area-inset-bottom)` as well as on width and height, so the still cannot know it before the interface's CSS is there.
+- `src/app/app.ts` fetches the interface beside the first files (about 12 kB of script and 14 kB of CSS) and measures its
+  controls before the first frame, on a copy that is taken away before anything is painted: the interface is mounted once for
+  the measure and disposed again, the holders of the shake control are copied, anything hidden in the copy is shown, the copy
+  is measured with the app's own `controlsPx` and removed. A copy is not hidden and does not rise into place as the arriving
+  controls do, so the measure is the height at rest. The camera has the measured room from its first picture, the still is
+  placed with it, and the measure is said on the document (`data-controls` on `<html>`, an empty string where there is no
+  interface). The interface's real mount is in the frame of the first picture, so the controls come in after it as before.
+- `tools/poster.mjs` draws the stills over the measured controls (the interface is out of sight by `opacity: 0`, not out of the
+  page), and refuses a frame whose `data-controls` is not the height it expects. Before it draws, it asks the app how high the
+  controls stand on every screen beside a number that one of the interface's media rules names, with a mouse and with a
+  finger; it keeps the rules the measure changes with (7 on this build) and, for each way they hold together, the height and
+  the safe area it rises from (heights 50, 54, 60, 62, 74, 86, 96 and 154 px). That goes into the table as `c`.
+- The table of the framing is a row for an aspect (`a`, `g`): the glass at the heights of the controls where its line bends,
+  as shares of the screen's height. The framing is straight between a few bends, so a row is three to seven points: 121 rows,
+  618 points, 11.6 kB, where a grid of aspects by heights came to 91 kB. Both sides of the two steps of the framing (aspects
+  0.6 and 1) are rows a millionth apart, so no screen is read across a step. The page is 29,956 bytes (28,358 before).
+- `index.html` reads the rules with `matchMedia` and the safe area under the page, looks the height up, and lays the still
+  where the globe will stay. Where the rules hold together in a way the tool did not meet it takes the nearest it met.
 
-The mend, about an hour of work in files this job owns plus one full run of the poster:
+Seen, winter, on the built page at f577539f, Mesa lavapipe, the globe's place by matching five windows around the glass:
 
-1. `src/app/app.ts`: mount the interface before the first frame (its chunk is about 10 kB of script and 14 kB of CSS), measure
-   the controls while they are unseen, set `bar` before frame 1, call `placeStill()` with that bar, and publish the measured
-   pixels for the tools (for example `document.documentElement.dataset.under`). The measurement has to be taken with the
-   controls' arrival animation off, since it starts 6 px low: a rule
-   that turns animation and transition off, at the highest priority, for `#ui[data-measure]` and all it holds, in `index.html`,
-   for the one synchronous reading.
-2. `tools/poster.mjs`: hide the interface with `opacity:0` rather than `display:none` so the stills are drawn with the measured
-   bar; keep the bar in each still's record; sample the table as G(aspect, bar / height), since the framing is free of scale;
-   add the interface's media queries and a map from their match vector to the bar in pixels, sampled with a fine and a coarse
-   pointer in pages whose `requestAnimationFrame` never fires.
-3. `index.html`: read those with `matchMedia`, look the bar up, and place the still with it. `tests/first-frame.test.ts` then
-   needs a small stand-in for `matchMedia`.
+| screen | controls | still against takeover | takeover against 51 to 53 frames later | before |
+| --- | --- | --- | --- | --- |
+| phone 390 x 844 at 2, touch | 154 px | 0 px | 0 px | about 30 px up |
+| tablet 820 x 1180 at 1, touch | 86 px | within 1 px | 0 px | about 20 px |
+| hd 1920 x 1080 at 1, mouse | 74 px | 0 px | 0 px | about 8 px |
 
-Until then the opening is: still, seamless takeover, then the globe settling as the controls come in.
+The later frame is 51 to 53 frames after the takeover, past the measures at frames 20 and 40. On this machine that is 64 to
+95 s, not two seconds: a frame takes over a second here. No console message, no failed request. The tablet 820 x 1180 has no
+still of its own: it is served the 1024 x 1366 one.
+
+The page's reading of the table against the app's own framing, on 33 common screens (phones, tablets both ways, desktops, a
+square, an aspect of exactly 0.6): within 0.17 px on 32 of them and 0.87 px on 360 x 800. The tool says of the whole table:
+within 0.100 % of the height where it tested between rows wider apart than its finest, and within 0.218 % where rows are as
+near as they go (0.008 in aspect). The app corrects the still to the exact place when it starts, as before.
+
+### 1b. A faint arc over the glass on screens no still is drawn for (seen, not mended in f577539f)
+
+On the tablet 820 x 1180 the still does not reach the top of the screen, a larger copy of it lies under it there, and the
+still thins out into the copy over 66 px. The copy's own glass, 14 % larger, shows its top highlight through that thinned
+edge: a faint arc about 45 px over the real glass (p2-tablet-arc.jpg). It goes when the live picture takes over. It was so
+before this job; the geometry is the same as on the merged build. The mend is in `index.html`, `lay()`: the thinning must end
+before it reaches the copy's glass.
 
 ### 2. The stills on the head are stale (one tool run mends it)
 
@@ -156,7 +176,22 @@ Seen on phone (winter) and hd (`?season=fall`) with WebGL2 taken away (cannot-lo
 canvas unseen, and the app's words across the middle of the glass. On hd the words are small against the dimmed picture. The
 app throws `This browser has no WebGL2` on that page, as it did before.
 
-## Checks
+## The second job: checks, and what was not seen
+
+- Pushed head 9bcc9fdc (f577539f with main 16dcd6ae merged in): `npx tsc --noEmit` exit 0; `npx vitest run`: 53 files passed,
+  1 skipped; 641 tests passed, 7 skipped; `npm run build` exit 0.
+- The numbers of fault 1 were measured at f577539f, before main's opening (bef56f56) and its point mend (16dcd6ae) were merged
+  in. They were not measured again on the pushed head.
+- `node tools/poster.mjs --check` passed for the three winter stills at f577539f and failed on the 25 others (other build). On
+  the pushed head it fails on all 28 and on the controls (measured on another build), since main changed `src/`: the stills
+  are drawn again by `/root` on the frozen build.
+- Not seen: a real phone, a real GPU; a press in the first frames with reduced motion; a real safe area (the page's reading of
+  it is tested in a stand-in only); spring, summer and fall after the mend; the films, the loop and the capture pages after
+  the mend (they have no interface, and `data-controls` is empty there); two seconds of real time after the takeover (51 to
+  53 frames were waited for instead).
+- The first picture now also waits for the interface's files. The effect on the time to the first picture was not measured.
+
+## Checks of the first job
 
 - Head f46b0ee8: `npx tsc --noEmit` exit 0; `npx vitest run`: 50 files passed, 1 skipped; 582 tests passed, 7 skipped;
   `npm run build` exit 0 (at cad9f69b; no file of the build changed after it).
