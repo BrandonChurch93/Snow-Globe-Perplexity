@@ -1,15 +1,16 @@
-# Status 169
+# Status 171
 
-2026-11-26 17:59 UTC
+2026-11-26 18:50 UTC
 
-- The app is published again, from the build that has the first pictures, after a clean build, the first picture check and a fresh security review that found nothing blocking. Summer's seven owners are an hour and a half into the last fix pass before summer's last round. The change of season has a new head that loses nothing to black, but its glow is a column and summer arrives blue, so it gets one more turn. A correction to Status 168: 3 of 15 viewers took summer for a frame from a top-budget film or game cinematic and none took it for a photograph.
-- Next: the owners' mid-pass pictures at about 18:15, their reports at 19:20, my own look at the merged picture, then Round 22, summer's last.
-- phase 6: 15.16 h used of its 12.00 h box
-- allowance (after the review): 15.16 h used of 12.00 h allowed
+- Phase 6, summer's fix pass before its last round (Round 22), and the app's first seconds. A trial merge of the four branches pushed so far (air, glass, tree, room) was drawn to see the sum that no owner sees alone: the crown, the pool and the seeds read; the air inside is still milky, the tree and the cottage darker than the approved's, and at the landing seed heads are drawn outside the glass, a fault found on this picture and sent back at once.
+- The app's stops after the controls appear: with the light grid baked at build time what is left is each season's parts built in one piece (summer 2.0 s, spring 0.4 s, fall 0.6 s on the builder's machine); they are now built one a frame, and the sand grains and the miniatures follow in a second stage (decision 160). The change of season waits on six points of mine.
+- Next: reports at 19:20, the merge, my look, the guard for the other three seasons, Round 22.
+- phase 6: 16.01 h used of its 12.00 h box
+- allowance (after the review): 16.01 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-169-1.jpg`: The change from spring to summer, three frames at its peak. Top row: main, where the table and the base go black. Bottom row: the builder's new head, which keeps tone and lights the new base but floods as a column and a flat oval.
-- `out/stills/status/status-169-2.jpg`: The seeds at rest, the approved on the left and ours mid-pass on the right: the heads are round wheels of down now; the stalks still read as sticks and the lights are a half stop short.
-- `out/stills/status/status-169-3.jpg`: The landing mid-pass: one whirl of long thin arcs, nothing green flying, the tree dark and clean; the lanterns do not bloom through it yet.
-- `out/stills/status/status-169-4.jpg`: Four frames of the same change at final tier on the builder's head: no black anywhere, and summer arriving sky blue in the last frame, where the approved storm is cream gold.
+- `out/stills/status/status-171-1.jpg`: Summer at rest: the approved on the left, a trial merge of four of the seven branches on the right (air, glass, tree, room; the cottage, the sand and the stone of this pass are not in it yet).
+- `out/stills/status/status-171-2.jpg`: The same, close: the seeds are wheels now and the crown is lit pad by pad; the air is milky where the approved's is clear and dark, and the tree and the cottage are darker.
+- `out/stills/status/status-171-3.jpg`: The landing, the approved on the left and the trial on the right: one whirl now, no leaves fly; seed heads stray outside the glass at the rim (sent back), and the streaks are tan where the approved's are white.
+- `out/stills/status/status-171-4.jpg`: The four changes of season as the change's branch draws them, not in the app yet: no dark frame any more; the glow is a column, the base goes flat in it and summer arrives blue, three of the six points sent back.
