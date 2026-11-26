@@ -332,7 +332,8 @@ vec4 veilStir(vec3 p) {
   float h = dot(c, ${vec(ROLL)});
   vec3 r = c - h * ${vec(ROLL)};
   float rad = length(r);
-  float turn = atan(dot(r, ${vec(OTHER)}), dot(r, ${vec(SIDE)})) / 6.2831853;
+  vec2 about = vec2(dot(r, ${vec(OTHER)}), dot(r, ${vec(SIDE)}));
+  float turn = (dot(about, about) > 0.0 ? atan(about.x, about.y) : 0.0) / 6.2831853;
   vec3 q = vec3(rad / ${n(L.arcTileMm)} + turn * ${n(L.arcSpiral)}, h / ${n(L.arcDeepMm)}, turn * ${n(L.arcTurns)} - uVeilFlow.x);
   float a = mix(w.b, texture(uVeilNoise, q + vec3((w.rg - 0.5) * ${n(L.warp)}, uVeilFlow.y)).a, uVeilRoll.x);
   float d = ${n(L.wisp)} * smoothstep(${n(L.cutLow)}, ${n(L.cutHigh)}, a) * (${n(L.blobLow)} + ${n(L.blobGain)} * w.a) * mix(1.0, mix(${n(L.discFloor)}, ${n(L.discPeak)}, veilDisc(p)), uVeilRoll.x);
@@ -347,7 +348,8 @@ vec3 veilFlow(vec3 p) {
   vec3 c = d + lam * ${vec(CENTRE)};
   float off = dot(c, ${vec(ROLL)});
   vec3 r = c - off * ${vec(ROLL)};
-  return vec3(lam * uLens.w, off, atan(dot(r, ${vec(OTHER)}), dot(r, ${vec(SIDE)}) + 1e-6) / 6.2831853);
+  vec2 about = vec2(dot(r, ${vec(OTHER)}), dot(r, ${vec(SIDE)}) + 1e-6);
+  return vec3(lam * uLens.w, off, (dot(about, about) > 0.0 ? atan(about.x, about.y) : 0.0) / 6.2831853);
 }
 vec3 veilCurrent(vec3 p) {
   vec3 d = p - ${vec(CENTRE)};

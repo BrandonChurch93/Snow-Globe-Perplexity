@@ -381,6 +381,106 @@ The tree and its crown are the tree builder's for this pass; if it needs a line 
    ... In -b that surface is dark". Measured on the table right of the base: the approved's mean 101 with
    its dark at (46,40,34); ours 51 with (18,18,17). The table must mirror the cluster as soft tall streaks.
 
-## What R4 adds
+## The settled lines (written 17:30 UTC; a second correction of mine)
 
-Written here when it is in (the critic on motion, started 17:21 UTC), and each owner told.
+The two keys of summer carry settled lines in `config/showcase.json`. By `kit/00-README.md` line 31 such a
+line beats the approved image on its one point, and only Brandon changes one. This pass had not named them,
+and one earlier list of mine went against one. Word for word (-a is the approved, -b ours):
+
+- `summer-rest`: "In -a the particles in the liquid are pale and read close to snow. In -b they are
+  yellow-green fireflies that hover and blink, drifting dandelion seeds and fine golden motes."
+- `summer-rest` and `summer-shake`: "In -a the light on the surface left of the base is thin gold veins
+  running out from one point. In -b it is a soft pool of refracted light with a few broad curved bands."
+- `summer-rest` and `summer-shake`: "In -a the base carries few shells and the stone is only lightly carved.
+  In -b it carries more shells and sea glass and the stone is more deeply carved."
+- `summer-shake`: "In -a dark green leaf fragments fly in the storm and the tree crown looks shredded. In -b
+  the crown is whole and no leaves fly."
+- `summer-shake`: "In -a the fireflies are pale. In -b they are yellow-green."
+
+What follows for the owners:
+
+1. Glass, the light on the table. The fourth list's item 4 ("In the approved they are veins ... work the
+   arms") sent the pool to the approved's veins, against the line. That was /root's error. What we draw on
+   `0e1100bb` is thin gold lines that branch out from one knot on a table that is otherwise dark: the fault
+   the line names. It goes back to the line: a soft pool of warm refracted light left of the base and in
+   front of it, seen at once at 400 pixels, and in it three to five broad curved bands, soft edged, arcs
+   round the knot by the foot, no net of thin lines and no lines out of one point. It moves as now.
+2. Air. The fireflies stay yellow-green at rest and in the storm, the fine motes golden, the whole never
+   close to snow; the heads go white gold against the cream haze as told. Nothing green and flat flies at
+   the landing.
+3. Tree. At the landing the crown is whole: the pads of the rest, seen through the storm.
+4. Stone. More shells and sea glass than the approved and deeper carving are intended; R1's words on the
+   carving and the glass's colours go the same way and stand.
+
+## What R4 adds (in at 17:31 UTC, written 17:33 UTC)
+
+R4, the critic on motion, saw film B from frame 1296 to 2014 on `0e1100bb` (shake 2 from spring into summer,
+then summer's shot) and gave 3 of 10: 4 severe, 3 major. The whole answer is `scorecards/round-021/R4.json`.
+Its first, second and fourth issues are the change's and the shake's (the dark flash at the swap, the
+globe's path in the hand, spring's petals at the first stroke): they go to the change's builder and to the
+round on `change`, not to this pass. What is summer's, by owner:
+
+### Air
+
+1. Major: "Bright neon-green sparkle pixels strobe on for a single 2-frame step and disappear on the next
+   (~70% of bright green pixels in 1502-1514 have no counterpart within 2 px on adjacent frames)". Its fix:
+   "Make specular particle glints temporally coherent along continuous multi-frame trajectories". The
+   frames are one to one and a half seconds after the landing, the sheet shows every second frame. A
+   firefly's blink is a slow swell and fade over half a second and more, never a flash of one or two
+   frames; a mote's glint lasts four frames or more. Draw frames 1500 to 1516 of film B, every frame,
+   and follow ten green lights by eye: each must be there in the next frame, a little further on.
+2. Major: "Nearly 10 seconds after touchdown (1962-2014), ~20% of the upper dome right up to the top glass
+   rim remains continuously crowded with suspended particles that never die away or come to rest on
+   interior surfaces". R4 does not see the approved pictures: the approved at rest has the dome full of
+   fireflies and seeds, and the settled line asks for fireflies that hover and blink and seeds that drift.
+   So the count at rest stays. What stands of it: the seeds that lie on the roof, the branches and the
+   grass (your landing item), and at rest a drift that is slow and unlike from seed to seed, not a field
+   that hangs.
+
+### Tree
+
+1. Major: "Nothing inside the globe grows in during the arrival window: the summer tree canopy, sunflowers,
+   grass, and string lanterns are already 100% full-sized and static by 1426-1440 and are merely uncovered
+   as haze thins". The kit's arrival for summer (`kit/02-SUBJECT.md`, "The arrival") is: "The lanterns come
+   up one by one. The fireflies, scattered by the storm, find their places and begin to blink. The pool of
+   light settles on the surface." Nothing grows in summer, so foliage that fills out is not asked. But the
+   lanterns' coming up cannot be seen: `LANTERN` in `mini/tree.ts` has `stepS` 0.23 and `rampS` 0.42, so
+   the whole row is up within some two seconds, while the storm still hides it. Keep the first two as they
+   are (the landed still, half a second after the landing, must not get darker), and let the others follow
+   at steps of about 0.6 s with a ramp of about 0.8 s, so that the row is still coming up, one by one, as
+   the storm thins. Tell the Miniature's builder the times, so that the pools on the ground come up with
+   their lanterns.
+2. Major, with the Miniature: "high-frequency stipple crawl across fine foliage and stonework" from frame
+   to frame. The leaves' edges and the fine detail must hold still when nothing moves: no alpha test that
+   flickers, detail no finer than a pixel at the preview size.
+
+### Sand
+
+1. Major: "a vertical crust of sand materializes along the right side of the landed base" at frames 1444
+   to 1480. The fall of sand must begin at the ledge on the landing and run down: nothing fades in along
+   its whole length at once.
+2. Severe, your share: "during 1400-1412, while the summer base is hovering high and tilted in mid-air, the
+   landed sand piles, dark table contact shadow ... are already pinned in their final landed positions on
+   the surface and do not shift or scatter upon touchdown at 1426-1438". The dressing on the table changes
+   in the swap, as the kit has it, so the sand may lie there before the globe is down. But the dark under
+   the base (the slate you are making, and any shadow you draw) must follow the globe's height: open and
+   pale while it is in the air, closing as it comes down. And the kit's landing is "Sand jumps off the
+   ledge": the grains near the foot must be seen to jump on the landing frame.
+
+### Glass
+
+1. Severe, your share: the "sharp left-side golden light wedges" lie "pinned in their final landed
+   positions" while the base is in the air, and, major, "rigid bright-yellow stick lines sprout across the
+   front-left table" at 1444 to 1480. Both are the light on the table. The kit: "The pool of light settles
+   on the surface" over the seconds after the landing. So: no pool before the landing, and after it the
+   soft pool swells and its broad bands slide into place and come to rest. Nothing sprouts as a line.
+
+### Miniature
+
+1. With the Tree: the lanterns' pools on the ground come up with their lanterns, one by one (the Tree's
+   builder tells you the times). And the stipple crawl on the stonework and the turf (Tree, item 2).
+
+### Room, Stone
+
+Nothing of R4's is yours. The table's mirror of the room's lights stays where it is while the globe is in
+the air: those are the room's lights, not the globe's.
