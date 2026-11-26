@@ -1,44 +1,44 @@
 {
-  "number": 157,
-  "time": "2026-11-26 12:53 UTC",
+  "number": 159,
+  "time": "2026-11-26 13:43 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 157 · 2026-11-26 12:53 UTC · Phase 6",
-    "Summer's second fix list is merged and drawn whole at the final tier. I looked at it beside the approved image before spending a critic round on it, and I can name what is still wrong myself, so Round 21 waits.",
-    "Worst first: our base reads as grey slate with dark level lines where the approved is one mound of cream sand in soft waves; our ball reads as fog because too few seeds and lights stand in it at the top and right; the crown is five clumps, not one canopy; the bank of sand is one flat bright band; the table lacks the wedge of sunlit sand at the left front; the heap is brightest too far out.",
-    "A third list with measured targets went to the five summer builders at 12:52, 45 minutes each. The measures on the merged commit all passed (19 of 19), so this is the look and not the checks.",
-    "Also running: the frost's last fault in the change of season, the controls' closing walk, the first pictures for the next publish, and a rehearsal of the 4K masters on one farm machine, which found two faults in the upload path that are being mended.",
-    "The published app is still the build of 11:02. The next publish follows summer's third list.",
-    "phase 6: 10.06 h used of its 12.00 h box",
-    "allowance (after the review): 10.06 h used of 12.00 h allowed",
+    "Status 159 · 2026-11-26 13:43 UTC · Phase 6",
+    "Summer's third list is merged from all five builders. My own look at the merged picture finds it better and still short, so a fourth list goes out before any critic round.",
+    "The speck in 4K frames has a cause: a needle card of the small tree whose shading direction has no length. A scan of every seventh film frame on nine machines has found four more frames so far, at winter's and summer's miniature.",
+    "The 4K rehearsal drew, shipped and collected one chunk end to end at a median of 78.3 seconds a frame. The encode refused it because of the specks, as it is built to.",
+    "New from the 4K frames: in shake frames the lamps blur as 24 separate copies. It goes to a builder now.",
+    "The phase 6 gate ran whole on a small machine: 13 of 20 green. Five reds are files not made yet. Two are real: one check ran out of memory there, and summer has 17,862 triangles too many at the high level.",
+    "phase 6: 10.90 h used of its 12.00 h box",
+    "allowance (after the review): 10.90 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-157-1.jpg",
-      "caption": "Summer at rest, final tier. Left the approved image, right ours after the second fix list.",
+      "file": "out/stills/status/status-159-1.jpg",
+      "caption": "Summer at rest, the approved picture above and ours below: the third list from all five builders merged, drawn at review quality.",
+      "w": 1062,
+      "h": 1200
+    },
+    {
+      "file": "out/stills/status/status-159-2.jpg",
+      "caption": "The same pair closer, approved left and ours right. Ours is still short: the ball is pale and even where the approved is dark with a warm glow, the seeds are large white clumps, the base lacks the carved waves.",
       "w": 1200,
-      "h": 332
+      "h": 733
     },
     {
-      "file": "out/stills/status/status-157-2.jpg",
-      "caption": "Summer half a second after a landing, final tier. Left the approved image, right ours.",
+      "file": "out/stills/status/status-159-3.jpg",
+      "caption": "Film frame 3414 at 4K: left a crop of 400 pixels, right its middle 50 pixels enlarged. The dark pixel in the middle is one of the specks.",
       "w": 1200,
-      "h": 332
+      "h": 597
     },
     {
-      "file": "out/stills/status/status-157-3.jpg",
-      "caption": "The bottom of the glass. Above the line the approved image, below it ours with its flat bright bank of sand and grey lip.",
-      "w": 1100,
-      "h": 584
-    },
-    {
-      "file": "out/stills/status/status-157-4.jpg",
-      "caption": "The table at the left of the base. Above the line the approved image with its lit wedge of sand, below it ours.",
-      "w": 1100,
-      "h": 1044
+      "file": "out/stills/status/status-159-4.jpg",
+      "caption": "A 4K shake frame (621) enlarged six times: each lamp's blur is a row of separate copies, not one smooth streak.",
+      "w": 1080,
+      "h": 720
     }
   ]
 }
