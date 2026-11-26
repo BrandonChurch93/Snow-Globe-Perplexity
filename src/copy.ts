@@ -46,6 +46,8 @@ export const copy = {
     screenAt: (size: string, ratio: number): string => `${size} at ${ratio}x`,
     pick: 'Pick',
     browser: 'Browser',
+    glass: 'Glass',
+    maths: 'Arithmetic',
     empty: '\u00b7',
     copy: 'Copy',
     copied: 'Copied',

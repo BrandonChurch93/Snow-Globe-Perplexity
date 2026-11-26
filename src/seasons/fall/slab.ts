@@ -226,7 +226,7 @@ void main() {
   float gap = far - uRimLook.x;
   float down = exp(-lift / uRimLook.w);
   float dust = 0.55 + 0.9 * rimNoise(P.xz * 0.9) * rimNoise(P.xz * 0.23 + 7.0);
-  float line = exp(-pow((gap - 1.6) / uRimLook.y, 2.0)) * smoothstep(-1.5, 1.0, gap);
+  float line = exp(-pow(abs((gap - 1.6) / uRimLook.y), 2.0)) * smoothstep(-1.5, 1.0, gap);
   float skirt = exp(-max(gap, 0.0) / uRimLook.z) * smoothstep(-1.5, 2.0, gap);
   vec2 dir2 = out2 / max(far, 1.0);
   float toRim = clamp(dot(dir2, normalize(uRimAt.xz + vec2(1e-4))) * 0.5 + 0.5, 0.0, 1.0);
@@ -236,7 +236,7 @@ void main() {
   // A lifted foot no longer lays its line of dust and its cut in the lanterns' light on the slab: both open and fade with the height.
   vec3 col = (cold * 0.05 + hot * 0.06) * (line * 1.0 + skirt * 0.22) * dust * down * exp(-lift / 1.2);
   col += candleOnSlab(P, vec3(0.0, 1.0, 0.0), lift) * vec3(1.0, 0.6, 0.3) * (0.07 * dust) * smoothstep(-2.0 - 3.0 * lift, 3.0 + 1.0 * lift, gap);
-  float ripple = 0.2 + 0.8 * rimNoise(vec2(P.x * 1.7, P.z * 0.3)) + 0.9 * pow(rimNoise(P.xz * vec2(3.1, 0.6) + 11.0), 3.0);
+  float ripple = 0.2 + 0.8 * rimNoise(vec2(P.x * 1.7, P.z * 0.3)) + 0.9 * pow(abs(rimNoise(P.xz * vec2(3.1, 0.6) + 11.0)), 3.0);
   col += candleInSlab(P, lift) * (0.55 * ripple) * smoothstep(-1.0 - 3.0 * lift, 2.0 + 1.0 * lift, gap) * down;
   gl_FragColor = vec4(col, 0.0);
   if (uDiag != 0) gl_FragColor = stageDiag(vec3(0.02), vec3(0.0, 1.0, 0.0), 0.0, c, 0.0);

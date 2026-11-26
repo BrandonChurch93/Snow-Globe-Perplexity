@@ -378,7 +378,7 @@ diffuseColor.rgb = mix(${glsl(tones.water)}, ${glsl(tones.moss)} * 0.5, pondShor
 {
   vec3 pondN = villageInside(normal);
   vec3 pondSight = villageSight();
-  float pondFresnel = 0.03 + 0.97 * pow(1.0 - clamp(dot(pondN, pondSight), 0.0, 1.0), 5.0);
+  float pondFresnel = 0.03 + 0.97 * pow(abs(1.0 - clamp(dot(pondN, pondSight), 0.0, 1.0)), 5.0);
   float pondGlint = villageMirror(pondN, pondSight, ${WATER.tight.toFixed(5)}, ${WATER.wide.toFixed(5)}, ${WATER.wideShare.toFixed(3)});
   float pondLap = 0.5 * (texture2D(map, vMapUv * 0.11 + 0.2).a + texture2D(map, vMapUv * 0.07 + 0.6).a);
   float pondPosts = max(villagePost(pondN, pondSight, ${vec(trunkFoot)}, ${WATER.trunkMm.toFixed(1)}, 80.0), villagePost(pondN, pondSight, ${vec(foot)}, 0.8, ${(flame[1] - foot[1] + 2).toFixed(1)}));

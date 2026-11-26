@@ -266,7 +266,7 @@ void slabLight(vec3 P, out vec3 keyDir, out float keyGain, out vec3 rimDir, out 
   float rimBall = 0.5 * (1.0 - smoothstep(0.72, 1.12, rimCast.y));
   rimGain = min(rimReach * rimReach / (rimFar * rimFar), ${f(RIM_NEAR_GAIN)}) * rimCast.x * (1.0 - rimBall);
   float source = ${f(centreHeight)} + lift;
-  float glowFall = pow(source * source / (source * source + d * d), 1.5);
+  float glowFall = pow(abs(source * source / (source * source + d * d)), 1.5);
   float glowRise = smoothstep(uFoot.z - 4.0, uFoot.z + ${f(SLAB.poolRiseMm)} + lift, d);
   warm = uPool * (${f(SLAB.poolGain)} * glowFall * glowRise);
   occl = slabShade(P.xz);
@@ -440,7 +440,7 @@ void main() {
   vec2 ground = v.xz / max(length(v.xz), 1e-4);
   vec2 slope = tilt;
   vec3 r = normalize(r0 + 2.0 * vec3(slope.x * grazing, -dot(v.xz, slope), slope.y * grazing));
-  float fres = ${f(SLAB.f0)} + ${f(1 - SLAB.f0)} * pow(1.0 - clamp(grazing, 0.0, 1.0), ${f(SLAB.fresnelPower)});
+  float fres = ${f(SLAB.f0)} + ${f(1 - SLAB.f0)} * pow(abs(1.0 - clamp(grazing, 0.0, 1.0)), ${f(SLAB.fresnelPower)});
 
   float rl = max(length(r0.xz), 1e-4);
   vec2 rdir = r0.xz / rl;

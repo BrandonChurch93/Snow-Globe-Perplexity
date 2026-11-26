@@ -127,14 +127,14 @@ void main() {
   float far = max(0.0, 1.0 - miss / ${((look.wide ?? 1) ** 2).toFixed(3)});
   float beat = 1.0 + ${look.flicker.toFixed(3)} * sin(6.2831853 * (${look.cycles.toFixed(1)} * uClock + vHalo.w));
   float glow = g * g;
-  float hot = pow(g, 12.0) * vHaloSize.z;
+  float hot = pow(abs(g), 12.0) * vHaloSize.z;
   float fog = stageVeil(vStageAux.x);
   float seen = min(1.0, ${(look.through ?? 1).toFixed(2)} * (1.0 - fog));
   float spread = ${(look.bloom ?? 0).toFixed(3)} * vHaloSize.w * max(fog, uHaloStorm) * far * far * far * far * seen;
   float body = (g * g * g * ${look.strength.toFixed(3)} * vHaloSize.y + hot) * beat * seen;
   vec3 warm = mix(${v3(edge)}, ${v3(core)}, glow) * (1.0 + ${look.hot.toFixed(2)} * hot);
   float a = clamp(body + spread, 0.0, 1.0);
-  gl_FragColor = vec4((warm * body + ${v3(look.glare ?? core)} * (1.0 + 3.0 * pow(far, 8.0)) * spread) / max(body + spread, 1e-4), a);
+  gl_FragColor = vec4((warm * body + ${v3(look.glare ?? core)} * (1.0 + 3.0 * pow(abs(far), 8.0)) * spread) / max(body + spread, 1e-4), a);
 }
 `,
   })
@@ -199,7 +199,7 @@ void main() {
   vec3 col;
   vec3 albedo;
   if (kind < 0.5) {
-    float core = pow(facing, 1.8);
+    float core = pow(abs(facing), 1.8);
     albedo = vTone;
     col = vTone * (${look.bulb.toFixed(3)} + ${look.bulbCore.toFixed(3)} * core) * beat;
   } else if (kind < 1.5) {
@@ -211,7 +211,7 @@ void main() {
     float edge = smoothstep(1.0, 0.72, across) * smoothstep(0.0, 0.14, up) * smoothstep(1.0, 0.86, up);
     float haze = 0.32 + 0.68 * core;
     albedo = ${v3(look.glass)};
-    col = ${v3(look.glass)} * haze * (0.55 + 0.45 * edge) * (0.82 + 0.36 * soot) * beat + ${v3(look.flame)} * pow(core, 5.0) * 0.5 * beat;
+    col = ${v3(look.glass)} * haze * (0.55 + 0.45 * edge) * (0.82 + 0.36 * soot) * beat + ${v3(look.flame)} * pow(abs(core), 5.0) * 0.5 * beat;
   } else if (kind < 2.5) {
     albedo = ${v3(look.flame)};
     col = ${v3(look.flame)} * (0.55 + 0.45 * facing) * beat;

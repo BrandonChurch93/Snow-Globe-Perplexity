@@ -375,7 +375,7 @@ void main() {
   // Below the lawn the mist is not thinned toward the eye: it lies on the island's bank down to the collar while the liquid turns.
   thin = mix(thin, max(thin, ${n(storm.bank)}), smoothstep(${n(groundY + storm.bankTopMm)}, ${n(groundY)}, p.y));
   // The mist opens before the miniature by equal ratios as the flood lets go, not all at its end.
-  float front = pow(thin, after);
+  float front = pow(abs(thin), after);
   // What still liquid keeps hangs about the lamp and behind the tree, and nowhere else.
   vec3 e = (p - ${v3(storm.calmAt)}) / ${v3(storm.calmReach)};
   vec3 l = p - ${v3(storm.lampAt)};

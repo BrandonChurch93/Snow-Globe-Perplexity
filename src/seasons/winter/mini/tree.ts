@@ -125,7 +125,7 @@ function needleHook(shader: Shader): void {
       float treeH = dot(treeC.rgb, vec3(0.3, 0.6, 0.1)) + ${CLUMP.height.toFixed(2)} * treeClump;
       ${TREE_SLOPES}
       if (treeCard && treeC.a < 0.5) discard;
-      vec3 treeOwn = pow(treeC.rgb, vec3(2.5)) * 3.0;
+      vec3 treeOwn = pow(abs(treeC.rgb), vec3(2.5)) * 3.0;
       diffuseColor.rgb *= mix(vec3(dot(treeOwn, vec3(0.3, 0.6, 0.1))), treeOwn, 0.38) * mix(${CLUMP.dark.toFixed(2)}, ${CLUMP.bright.toFixed(2)}, smoothstep(${CLUMP.from.toFixed(2)}, ${CLUMP.to.toFixed(2)}, treeClump));`,
     )
     .replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\nif (vCard.x > 0.5) normal *= faceDirection;')

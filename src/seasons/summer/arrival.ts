@@ -194,7 +194,7 @@ void main() {
   albedo *= mix(vec3(1.0), ${vec(LOOK.gold)} * (0.7 + 0.6 * fract(id2 * 7.3)), vGrainShape.y);
   vec3 col = albedo * RECIPROCAL_PI * (uGrainKeyCol * shade * (wrap + 1.8 + (0.6 + ${LOOK.backlit.toFixed(2)} * vGrainShape.y) * thru) + dome + uRigCardCol * 0.35 * clamp(dot(n, uRigCardDir) * 0.5 + 0.5, 0.0, 1.0));
   float hk = max(dot(n, normalize(v + uGrainKey)), 0.0);
-  col += uGrainKeyCol * shade * step(0.7, fract(id * 17.9)) * pow(hk, 60.0) * 1.2;
+  col += uGrainKeyCol * shade * step(0.7, fract(id * 17.9)) * pow(abs(hk), 60.0) * 1.2;
   float cover = vGrainCover * (1.0 - smoothstep(mix(0.55, 0.0, vGrainShape.y), 1.0, d2));
   gl_FragColor = vec4(col * cover, cover);
   if (uDiag != 0) gl_FragColor = stageDiag(albedo, n, 0.0, c, 0.0);

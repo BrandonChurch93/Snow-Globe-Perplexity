@@ -314,13 +314,13 @@ vec3 glassWindow(vec3 d, float soft, int k) {
   m *= mix(ending.z, 1.0, smoothstep(${num(-W.edgeDeg.cut * RAD)}, ${num(W.edgeDeg.cut * RAD)}, q.x - ending.x + ending.y * (q.y - outer)));
   if (m <= 0.0) return vec3(0.0);
   float u = clamp((q.y - outer) / max(inner - outer, 1e-3), 0.0, 1.0);
-  float tail = 1.0 - smoothstep(${num(W.tip.tailDeg[0] * RAD)}, ${num(W.tip.tailDeg[1] * RAD)}, q.x - ${num(W.tip.tailLeanDeg * RAD)} * pow(1.0 - u, 8.0));
+  float tail = 1.0 - smoothstep(${num(W.tip.tailDeg[0] * RAD)}, ${num(W.tip.tailDeg[1] * RAD)}, q.x - ${num(W.tip.tailLeanDeg * RAD)} * pow(abs(1.0 - u), 8.0));
   float top = mix(level.x, level.y, first * max(smoothstep(${num(W.tip.flatDeg[0] * RAD)}, ${num(W.tip.flatDeg[1] * RAD)}, q.x), tail));
   m *= (1.0 - ${num(1 - W.tip.tailLevel)} * first * tail) * mix(1.0, WIN_FLOOR[k], smoothstep(WIN_FALL[k].z, WIN_FALL[k].w, q.x));
   vec3 fade = WIN_HUE[k] * mix(vec3(1.0), ${vec(W.tip.tint)}, first * smoothstep(${num(W.tip.fadeDeg[0] * RAD)}, ${num(W.tip.fadeDeg[1] * RAD)}, reach));
   vec3 core = vec3(1.0) + WIN_CORE[k] * (1.0 - smoothstep(WIN_FALL[k].x, WIN_FALL[k].y, q.x));
   float plate = 1.0 + first * ${num(W.tip.plate)} * (1.0 - smoothstep(${num(W.tip.plateDeg[0] * RAD)}, ${num(W.tip.plateDeg[1] * RAD)}, q.x));
-  return fade * (level.y * plate * WIN_BASE[k] + (top - level.y) * pow(1.0 - u, level.z) * core) * (m * (0.9 + 0.1 * glassNoise(vec3(q * 22.0, 3.0))) * (1.0 + uWinSoft.y * (glassNoise(vec3(q * 5.0, 7.0)) + 0.5 * glassNoise(vec3(q * 13.0, 5.0)) - 0.75)));
+  return fade * (level.y * plate * WIN_BASE[k] + (top - level.y) * pow(abs(1.0 - u), level.z) * core) * (m * (0.9 + 0.1 * glassNoise(vec3(q * 22.0, 3.0))) * (1.0 + uWinSoft.y * (glassNoise(vec3(q * 5.0, 7.0)) + 0.5 * glassNoise(vec3(q * 13.0, 5.0)) - 0.75)));
 }
 float glassHalo(vec3 d) {
   float z = dot(d, WIN_C);
@@ -404,7 +404,7 @@ vec3 glassRoom(vec3 d, float soft, int k, float own) {
   float streak = 1.0 - ${num(glassLook.ceiling.depth)} * (0.5 + 0.5 * sin(up * ${num(glassLook.ceiling.rings)} + 6.0 * glassNoise(d * 2.3 + 29.0)));
   if (k != 3) dim += uSky * ${vec(glassLook.ceiling.tint)} * (${num(glassLook.ceiling.gain)} * uRimAmt.w) * own * blotch * streak * smoothstep(${num(glassLook.ceiling.edge[0])}, ${num(glassLook.ceiling.edge[1])}, up) * smoothstep(${num(glassLook.ceiling.low[0])}, ${num(glassLook.ceiling.low[1])}, d.y);
   float rim = max(dot(d, uRimDir), 0.0);
-  dim += uRimCol * ${vec(glassLook.rimCard.tint)} * own * (${num(glassLook.rimCard.wide)} * pow(rim, ${num(glassLook.rimCard.widePower)}) + ${num(glassLook.rimCard.core)} * pow(rim, ${num(glassLook.rimCard.corePower)}));
+  dim += uRimCol * ${vec(glassLook.rimCard.tint)} * own * (${num(glassLook.rimCard.wide)} * pow(abs(rim), ${num(glassLook.rimCard.widePower)}) + ${num(glassLook.rimCard.core)} * pow(abs(rim), ${num(glassLook.rimCard.corePower)}));
   float lit = k == 0 ? 1.0 - ${num(W.dark.depth)} * glassDark(d) : 1.0;
   c += dim * lit;
   if (k < 2 && uArc.a + uArc.r + uArc.g + uArc.b > 0.0) c += glassArcs(d) * (k == 0 ? 1.0 : ${num(glassLook.arcs.inner)});
@@ -469,6 +469,10 @@ float glassHair(vec3 n) {
 }
 `
 
+// Whatever a graphics card answers where GLSL leaves the answer open, the glass does not paint it: a pixel of the
+// glass that came out as no number adds no light and keeps all of what is behind it, which is clear glass.
+const NUMBER_GUARD = '  if (any(isnan(gl_FragColor)) || any(isinf(gl_FragColor))) gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);'
+
 const THROUGH = `
 ${GLASS_GLSL}
 void main() {
@@ -495,12 +499,13 @@ void main() {
   vec3 around = n - axis * dot(n, axis);
   around /= max(length(around), 1e-4);
   float arcs = 1.0 + ${num(glassLook.through.arcs)} * smoothstep(0.35, 0.8, share) * (glassNoise(vec3(around.xy * 1.7, share * ${num(glassLook.through.arcRings)})) - 0.5);
-  col += uSky * ${vec(glassLook.through.liftTint)} * (${num(glassLook.through.lift[0])} + ${num(glassLook.through.lift[1])} * pow(share, ${num(glassLook.through.lift[2])})) * (0.78 + 0.44 * glassNoise(n2 * 2.2 + 17.0)) * arcs;
+  col += uSky * ${vec(glassLook.through.liftTint)} * (${num(glassLook.through.lift[0])} + ${num(glassLook.through.lift[1])} * pow(abs(share), ${num(glassLook.through.lift[2])})) * (0.78 + 0.44 * glassNoise(n2 * 2.2 + 17.0)) * arcs;
   col += wall * ${num(glassLook.through.mirror)} * glow / ${num(glassLook.through.steps)};
   float fog = stageVeil(chord);
   col = stageFogged(col, mid, fog);
   float cover = glassLimb(share);
   gl_FragColor = vec4(col * cover, 1.0 - cover);
+${NUMBER_GUARD}
   if (uDiag != 0) gl_FragColor = vec4(stageDiag(col, normalize(vStageWorld - uLensCentre), fog, 0.0, 0.0).rgb, 0.0);
 }`
 
@@ -585,12 +590,12 @@ void main() {
   float band = smoothstep(from - 0.004, from + 0.003, s) * (1.0 - smoothstep(to - 0.003, to + 0.004, s)) * (0.5 + 0.5 * fine) * smoothstep(${num(glassLook.band.side[0])}, ${num(glassLook.band.side[1])}, nWorld.x) * smoothstep(${num(glassLook.band.low[0])}, ${num(glassLook.band.low[1])}, nWorld.y);
   float rimZone = smoothstep(${num(glassLook.rim.from)}, ${num(glassLook.rim.to)}, s);
   float rimHigh = smoothstep(-0.35, 0.15, nWorld.y);
-  float rimLine = exp(-pow((s - ${num(glassLook.rim.line)}) / ${num(glassLook.rim.lineWide)}, 2.0));
+  float rimLine = exp(-pow(abs((s - ${num(glassLook.rim.line)}) / ${num(glassLook.rim.lineWide)}), 2.0));
   vec3 rimAxis = normalize(-vEye);
   vec3 rimAround = n - rimAxis * dot(n, rimAxis);
   rimAround /= max(length(rimAround), 1e-4);
   float rimStreak = 1.0 + ${num(glassLook.rim.streak)} * rimHigh * (glassNoise(rimAround * 9.0 + rimAxis * (s * 60.0) + 41.0) - 0.5);
-  float rimOuter = exp(-pow((s - ${num(glassLook.rim.outer)}) / ${num(glassLook.rim.outerWide)}, 2.0)) * (0.3 + 0.7 * smoothstep(0.35, 0.75, glassNoise(rimAround * 5.0 + 31.0)));
+  float rimOuter = exp(-pow(abs((s - ${num(glassLook.rim.outer)}) / ${num(glassLook.rim.outerWide)}), 2.0)) * (0.3 + 0.7 * smoothstep(0.35, 0.75, glassNoise(rimAround * 5.0 + 31.0)));
   if (uOwn > 0.5) col += uSky * uRimTint * mix(${vec(glassLook.rim.tint)}, ${vec(glassLook.rim.highTint)}, rimHigh) * (mix(${num(glassLook.rim.low)}, ${num(glassLook.rim.high)}, rimHigh) * uRimGlow * rimZone * (0.75 + 0.5 * thick) * rimStreak + ${num(glassLook.rim.lineGain)} * rimLine * (0.3 + 0.7 * fine) * (1.0 - 0.7 * rimHigh) + ${num(glassLook.rim.outerGain)} * rimOuter * rimHigh);
   float wallLeft = smoothstep(0.3, -0.3, nWorld.x);
   float wallLow = smoothstep(${num(glassLook.wall.lowY[0])}, ${num(glassLook.wall.lowY[1])}, nWorld.y + ${num(glassLook.wall.leftDrop)} * wallLeft) * uOwn;
@@ -604,7 +609,7 @@ void main() {
     float inner = ${num(glassLook.wall.wander)} * (thick - 0.5) * 2.0;
     float wallTo = ${num(glassLook.wall.leftTo)} * wallLeft + ${num(glassLook.wall.lowTo)} * smoothstep(-0.3, -0.6, nWorld.y);
     float plate = smoothstep(${num(glassLook.wall.from[0])} + inner, ${num(glassLook.wall.from[1])} + inner, s) * (1.0 - smoothstep(${num(glassLook.wall.to[0])} + wallTo, ${num(glassLook.wall.to[1])} + wallTo, s));
-    float crest = exp(-pow((s - ${num(glassLook.wall.crest)}) / ${num(glassLook.wall.crestWide)}, 2.0));
+    float crest = exp(-pow(abs((s - ${num(glassLook.wall.crest)}) / ${num(glassLook.wall.crestWide)}), 2.0));
     vec3 hue = mix(${vec(glassLook.wall.inTint)}, ${vec(glassLook.wall.tint)}, smoothstep(${num(glassLook.wall.from[1])}, ${num(glassLook.wall.mirrorTo)}, s));
     vec3 tw = refract(v, n, 1.0 / uLens.y);
     float chordW = 2.0 * uLens.x * max(dot(-n, tw), 0.0);
@@ -643,11 +648,15 @@ void main() {
   float footLimb = 1.0 - smoothstep(${num(glassLook.seat.limb[0])}, ${num(glassLook.seat.limb[1])}, s);
   float seat = (1.0 - mix(${num(glassLook.seat.shade)} * shade * shade, ${num(glassLook.seat.wide)} * wide, footLimb)) * (1.0 - ${num(glassLook.seat.lineDepth)} * line);
   col *= seat;
-  if (uOwn > 0.5) col += uSky * ${vec(glassLook.seat.footTint)} * (${num(glassLook.seat.foot)} * exp(-pow((above - ${num(glassLook.seat.footMm)}) / ${num(glassLook.seat.footWideMm)}, 2.0)) * (0.5 + 0.5 * fine) * footLimb);
+  if (uOwn > 0.5) col += uSky * ${vec(glassLook.seat.footTint)} * (${num(glassLook.seat.foot)} * exp(-pow(abs((above - ${num(glassLook.seat.footMm)}) / ${num(glassLook.seat.footWideMm)}), 2.0)) * (0.5 + 0.5 * fine) * footLimb);
 
+  // A term that came out as no number must not reach the shoulder: min and max would turn it into the shoulder's own
+  // ceiling and the whole globe into one flat bright sheet. Held to zero instead, the glass adds no light there and
+  // the miniature is still seen through it.
+  col = clamp(col, 0.0, 1.0e4);
   col = min(col, ${num(glassLook.shoulder.from)}) + ${num(glassLook.shoulder.to - glassLook.shoulder.from)} * (1.0 - exp(-max(col - ${num(glassLook.shoulder.from)}, 0.0) / ${num(glassLook.shoulder.to - glassLook.shoulder.from)}));
   float alpha = (1.0 - f1) * (1.0 - ${num(glassLook.band.shade)} * band) * seat * (1.0 - ${num(W.dark.shade)} * (uWinSoft.z * deep)) * (1.0 - ${num(glassLook.rim.clear)} * uRimAmt.x * rimZone * uOwn);
-  col += uBloom * (${num(glassLook.bloom.floor)} + ${num(1 - glassLook.bloom.floor)} * pow(nv, ${num(glassLook.bloom.power)})) + vec3(dot(uBloom, vec3(0.2126, 0.7152, 0.0722)) * ${num(glassLook.bloom.white)} * pow(nv, ${num(glassLook.bloom.whitePower)}));
+  col += uBloom * (${num(glassLook.bloom.floor)} + ${num(1 - glassLook.bloom.floor)} * pow(abs(nv), ${num(glassLook.bloom.power)})) + vec3(dot(uBloom, vec3(0.2126, 0.7152, 0.0722)) * ${num(glassLook.bloom.white)} * pow(abs(nv), ${num(glassLook.bloom.whitePower)}));
 
   float limb = glassLimb(s);
 #ifdef GLASS_RING
@@ -701,7 +710,7 @@ void main() {
     for (int i = 0; i < ${glassLook.bend.taps}; i++) {
       float sj = s + ((float(i) + 0.5) / ${num(glassLook.bend.taps)} - 0.5) * bendPer;
       float uj = clamp((sj - ${num(glassLook.bend.from)}) / ${num(1 - glassLook.bend.from)}, 0.0, 1.0);
-      float to = sj - ${num(glassLook.bend.shift)} * pow(uj, ${num(glassLook.bend.power)});
+      float to = sj - ${num(glassLook.bend.shift)} * pow(abs(uj), ${num(glassLook.bend.power)});
       vec3 tap = textureLod(uBehind, (gl_FragCoord.xy + outward * ((to - s) / bendPer)) / uBehindSize, 0.0).rgb;
       if (any(isnan(tap)) || any(isinf(tap))) tap = vec3(0.0);
       bent += max(tap, 0.0);
@@ -724,6 +733,7 @@ void main() {
   }
   gl_FragColor = vec4(lit, keep);
 #endif
+${NUMBER_GUARD}
 }`
 
 const RING_VERT = `
@@ -761,8 +771,8 @@ void main() {
   float fine = glassNoise(vStageLocal * 2.3 + 5.0);
   float wide = max(${num(glassLook.bubble.line)}, 0.75 * length(vec2(dFdx(x), dFdy(x))));
   float thin = ${num(glassLook.bubble.line)} / wide;
-  float outerRing = exp(-pow((x - ${num(1 - glassLook.bubble.line * 2.2)}) / wide, 2.0)) * thin;
-  float innerRing = exp(-pow((x - ${num(glassLook.bubble.patch)}) / (wide * 1.2), 2.0)) * cap * thin;
+  float outerRing = exp(-pow(abs((x - ${num(1 - glassLook.bubble.line * 2.2)}) / wide), 2.0)) * thin;
+  float innerRing = exp(-pow(abs((x - ${num(glassLook.bubble.patch)}) / (wide * 1.2)), 2.0)) * cap * thin;
   float inPatch = cap * (1.0 - smoothstep(${num(glassLook.bubble.patch - 0.06)}, ${num(glassLook.bubble.patch + 0.02)}, x));
   float between = (1.0 - inPatch) * (1.0 - smoothstep(0.84, 0.97, x));
   float lip = cap * front * front * smoothstep(${num(glassLook.bubble.patch - 0.04)}, ${num(glassLook.bubble.patch + 0.01)}, x) * (1.0 - smoothstep(${num(glassLook.bubble.patch + 0.03)}, ${num(glassLook.bubble.patch + 0.09)}, x));
@@ -776,9 +786,10 @@ void main() {
   col += inPatch * (uSky * ${vec(glassLook.bubble.fill)} * ${num(glassLook.bubble.patchFill)} * (0.8 + 0.4 * fine) + streak * ${num(glassLook.bubble.patchGain)} * (0.6 + 0.4 * swirl));
   col += between * (uSky * ${num(glassLook.bubble.milk * 0.2)} + streak * ${num(glassLook.bubble.swirl)} * smoothstep(0.42, 0.8, swirl) * smoothstep(${num(glassLook.bubble.patch)}, 0.9, x));
   col += lip * spark * uKeyCol * ${vec(glassLook.bubble.sparkTint)} * ${num(glassLook.bubble.spark)};
-  col += uKeyCol * ${vec(glassLook.bubble.underTint)} * (${num(glassLook.bubble.under)} * exp(-pow((x - ${num(1 - glassLook.bubble.line * 0.5)}) / (wide * 0.8), 2.0)) * thin * front * front * (0.6 + 0.8 * fine));
+  col += uKeyCol * ${vec(glassLook.bubble.underTint)} * (${num(glassLook.bubble.under)} * exp(-pow(abs((x - ${num(1 - glassLook.bubble.line * 0.5)}) / (wide * 0.8)), 2.0)) * thin * front * front * (0.6 + 0.8 * fine));
   float alpha = (1.0 - ${num(glassLook.bubble.lip)} * lip) * (1.0 - ${num(glassLook.bubble.shade)} * inPatch) * (1.0 - ${num(glassLook.bubble.edge)} * outerRing * (1.0 - 0.5 * front)) * (1.0 - ${num(glassLook.bubble.edge)} * innerRing * front);
   gl_FragColor = vec4(col, alpha);
+${NUMBER_GUARD}
   if (uDiag != 0) gl_FragColor = vec4(stageDiag(vec3(1.0), nb, 0.0, 0.0, 0.0).rgb, 0.0);
 }`
 

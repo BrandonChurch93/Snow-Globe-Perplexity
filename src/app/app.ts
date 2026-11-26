@@ -10,7 +10,7 @@ import type { LoopParticles, SourceSwitch } from '../film/loop'
 import { drawOpening } from '../film/openingStandIn'
 import { barSeconds } from '../film/timeline'
 import type { Pose } from '../scene/cameras'
-import { FRAME, controlsPx, livePose, liveRig, roomUnder } from './framing'
+import { FRAME, controlsPx, framingOfRig, livePose, liveRig, roomUnder } from './framing'
 import { Drag, Look, MotionShake, stirAxis, type Stir } from './gestures'
 import { audioBase, audioIndex, audioShips, loadAudio, loadInterface, loadProbe } from './mounts'
 import { Painter } from './painter'
@@ -456,7 +456,7 @@ export function startApp(d: AppDeps): AppBridge {
 
   void afterFirstPicture.then(async () => {
     if (probing) {
-      const m = await loadProbe()
+      const [m, card] = await Promise.all([loadProbe(), import('../core/maths')])
       if (m && ui) {
         m.mountProbe(
           ui,
@@ -469,6 +469,8 @@ export function startApp(d: AppDeps): AppBridge {
             shake: () => void shake(null),
             onFrame: (fn) => (onFrame = fn),
             graphics: () => gfx.caps.renderer,
+            maths: () => card.mathsReport(gfx),
+            glass: () => card.glassReport(gfx, framingOfRig(liveRig(painter.width / Math.max(1, painter.height), look.yaw, look.pitch, under(0)), painter.width, painter.height).globe),
           }),
         )
       }

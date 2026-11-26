@@ -28,6 +28,8 @@ function report(levels: ProbeLevelResult[], result: ProbeResult | null): string 
     lines.push(`${copy.probe.screen.toLowerCase()}: ${copy.probe.screenAt(result.screen, Number(result.pixelRatio.toFixed(2)))}`)
     lines.push(`${copy.probe.pick.toLowerCase()}: ${result.pick}`)
     lines.push(`${copy.probe.browser.toLowerCase()}: ${result.userAgent}`)
+    if (result.glass) lines.push(`${copy.probe.glass.toLowerCase()}: ${result.glass}`)
+    if (result.maths.length) lines.push(`${copy.probe.maths.toLowerCase()}: ${result.maths.join('; ')}`)
   }
   return lines.join('\n')
 }
@@ -98,6 +100,7 @@ export function mountProbe(root: HTMLElement, bridge: ProbeBridge): void {
   const graphics = fact(copy.probe.graphics)
   const screen = fact(copy.probe.screen)
   const pick = fact(copy.probe.pick)
+  const glass = fact(copy.probe.glass)
 
   const text = make('pre', s.text)
   text.tabIndex = 0
@@ -180,6 +183,7 @@ export function mountProbe(root: HTMLElement, bridge: ProbeBridge): void {
       graphics.textContent = result.graphics
       screen.textContent = copy.probe.screenAt(result.screen, Number(result.pixelRatio.toFixed(2)))
       pick.textContent = result.pick
+      glass.textContent = result.glass || copy.probe.empty
     }
     text.textContent = report(done, result)
     facts.hidden = !result

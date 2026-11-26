@@ -110,7 +110,7 @@ float turfSunAt(vec2 p) {
   // No pool of sun on the bank of the pond: it lies under the grass that hangs over the water.
   vec2 turfPondD = p - vec2(${pond.x.toFixed(2)}, ${pond.z.toFixed(2)});
   vec2 turfPondL = abs(vec2(${Math.cos(pond.yaw).toFixed(4)} * turfPondD.x - ${Math.sin(pond.yaw).toFixed(4)} * turfPondD.y, ${Math.sin(pond.yaw).toFixed(4)} * turfPondD.x + ${Math.cos(pond.yaw).toFixed(4)} * turfPondD.y) / vec2(${pond.rx.toFixed(2)}, ${pond.rz.toFixed(2)}));
-  float turfBank = smoothstep(1.06, 1.4, pow(pow(turfPondL.x, ${pond.power.toFixed(1)}) + pow(turfPondL.y, ${pond.power.toFixed(1)}), ${(1 / pond.power).toFixed(4)}));
+  float turfBank = smoothstep(1.06, 1.4, pow(abs(pow(abs(turfPondL.x), ${pond.power.toFixed(1)}) + pow(abs(turfPondL.y), ${pond.power.toFixed(1)})), ${(1 / pond.power).toFixed(4)}));
   return turfBank * clamp(${SUN_POOLS.map(([k, x, z, rx, rz]) => `${k.toFixed(2)} * exp(-dot((p - vec2(${x.toFixed(1)}, ${z.toFixed(1)})) / vec2(${rx.toFixed(1)}, ${rz.toFixed(1)}), (p - vec2(${x.toFixed(1)}, ${z.toFixed(1)})) / vec2(${rx.toFixed(1)}, ${rz.toFixed(1)})))`).join(' + ')}, 0.0, 1.0);
 }
 // The stones of the pond's bank: one rounded stone to a cell, each with its own place, size and tone, dark and wet between.
@@ -135,7 +135,7 @@ vec3 turfPebble(vec2 p) {
 float turfBankAt(vec2 p) {
   vec2 d = p - vec2(${pond.x.toFixed(2)}, ${pond.z.toFixed(2)});
   vec2 l = abs(vec2(${Math.cos(pond.yaw).toFixed(4)} * d.x - ${Math.sin(pond.yaw).toFixed(4)} * d.y, ${Math.sin(pond.yaw).toFixed(4)} * d.x + ${Math.cos(pond.yaw).toFixed(4)} * d.y) / vec2(${pond.rx.toFixed(2)}, ${pond.rz.toFixed(2)}));
-  return pow(pow(l.x, ${pond.power.toFixed(1)}) + pow(l.y, ${pond.power.toFixed(1)}), ${(1 / pond.power).toFixed(4)});
+  return pow(abs(pow(abs(l.x), ${pond.power.toFixed(1)}) + pow(abs(l.y), ${pond.power.toFixed(1)})), ${(1 / pond.power).toFixed(4)});
 }
 float turfHeight(vec2 uv) {
   vec3 t = texture2D(map, uv).rgb;
@@ -246,7 +246,7 @@ float waterPond(vec2 p) {
   float a = atan(l.y, l.x);
   float wobble = 1.0 + 0.045 * sin(3.0 * a + 1.3) + 0.03 * sin(5.0 * a + 0.4) + 0.018 * sin(9.0 * a + 2.1);
   vec2 q = abs(l / vec2(${pond.rx.toFixed(2)}, ${pond.rz.toFixed(2)}));
-  return pow(q.x * q.x * q.x + q.y * q.y * q.y, 1.0 / 3.0) / wobble;
+  return pow(abs(q.x * q.x * q.x + q.y * q.y * q.y), 1.0 / 3.0) / wobble;
 }
 // How much of the bank the mirrored sight line meets: the line is walked across the water to the shore, and what stands on
 // the shore (moss, stones, grass) is as tall there as the turf map says.
@@ -316,7 +316,7 @@ diffuseColor.rgb = mix(${glsl(tones.waterDeep)}, vec3(0.3, 0.22, 0.13), waterSho
 {
   vec3 waterN = villageInside(normal);
   vec3 waterSight = villageSight();
-  float waterFresnel = 0.03 + 0.97 * pow(1.0 - clamp(dot(waterN, waterSight), 0.0, 1.0), 5.0);
+  float waterFresnel = 0.03 + 0.97 * pow(abs(1.0 - clamp(dot(waterN, waterSight), 0.0, 1.0)), 5.0);
   vec3 waterR = reflect(-waterSight, waterN);
   // The pond is drawn as the low view of a pond: what it mirrors is looked up along a flatter line than the lens gives, so
   // that the bank, the foot of the tree and the lamp post lie in it and the open evening sky fills the rest.
@@ -329,8 +329,8 @@ diffuseColor.rgb = mix(${glsl(tones.waterDeep)}, vec3(0.3, 0.22, 0.13), waterSho
   waterShade = max(waterShade, waterBank);
   float waterSky = smoothstep(${WATER.skyFrom.toFixed(2)}, ${WATER.skyTo.toFixed(2)}, waterR.x * 0.75 - waterR.z * 0.5 + 0.2);
   // Held low: one glint alone on the pond, clipped to white, reads as a fault and not as a ripple.
-  float waterSpark = min(pow(texture2D(map, vMapUv * 2.3 + 0.41).r * texture2D(map, vMapUv * 5.9 + 0.13).r * 2.2, 5.0), 0.35);
-  totalEmissiveRadiance += waterGlint * (uGlowGain * ${WATER.glint.toFixed(2)}) * (1.0 - 0.6 * waterShore) * (1.0 - 0.5 * waterBank) + ${glsl(tones.waterSky)} * (${WATER.sky.toFixed(2)} * waterSky * (0.25 + 0.75 * waterFresnel) * (0.86 + 0.14 * texture2D(map, vMapUv * vec2(0.9, 2.2)).b + ${WATER.spark.toFixed(2)} * waterSpark)) * (1.0 - waterShade) * (1.0 - 0.75 * waterShore) * (${WATER.skyLow.toFixed(2)} + ${(1 - WATER.skyLow).toFixed(2)} * exp(-pow((vStageLocal.x + 14.0 * waterN.x - ${(pond.x + WATER.skyAt).toFixed(2)}) / ${WATER.skyWide.toFixed(2)}, 2.0)));
+  float waterSpark = min(pow(abs(texture2D(map, vMapUv * 2.3 + 0.41).r * texture2D(map, vMapUv * 5.9 + 0.13).r * 2.2), 5.0), 0.35);
+  totalEmissiveRadiance += waterGlint * (uGlowGain * ${WATER.glint.toFixed(2)}) * (1.0 - 0.6 * waterShore) * (1.0 - 0.5 * waterBank) + ${glsl(tones.waterSky)} * (${WATER.sky.toFixed(2)} * waterSky * (0.25 + 0.75 * waterFresnel) * (0.86 + 0.14 * texture2D(map, vMapUv * vec2(0.9, 2.2)).b + ${WATER.spark.toFixed(2)} * waterSpark)) * (1.0 - waterShade) * (1.0 - 0.75 * waterShore) * (${WATER.skyLow.toFixed(2)} + ${(1 - WATER.skyLow).toFixed(2)} * exp(-pow(abs((vStageLocal.x + 14.0 * waterN.x - ${(pond.x + WATER.skyAt).toFixed(2)}) / ${WATER.skyWide.toFixed(2)}), 2.0)));
 }
 `,
         )

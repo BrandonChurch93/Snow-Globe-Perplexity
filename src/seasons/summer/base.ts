@@ -189,7 +189,7 @@ const STONE_AFTER = `
   reflectedLight.directDiffuse *= mix(1.0, stoneBelly, 0.6);
   float stoneOpen = mix(0.05, 2.1, smoothstep(-0.35, 0.6, stoneUp)) * mix(0.3, 1.05, smoothstep(2.0, 34.0, vBasePos.y));
   float stoneDapple = mix(0.7, 2.0, smoothstep(0.3, 0.7, baseNoise(vBasePos * 0.13 + 7.0) * 0.65 + baseNoise(vBasePos * 0.41 + 3.0) * 0.35));
-  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * baseAo * ((uRigCardCol * ${STONE.card.toFixed(2)} * stoneWarm * stoneWarm + baseSunC * ${STONE.side.toFixed(2)} * pow(stoneWarm, 36.0) + stoneBounce * ${STONE.bounce.toFixed(2)}) * stoneOpen * stoneBelly + baseSunC * stoneDapple * (${STONE.sun.toFixed(2)} * stoneSun * stoneSun + vec3(1.0, 0.8, 0.56) * ${STONE.kick.toFixed(2)} * stoneLeft * stoneLeft * stoneLeft * smoothstep(8.0, 30.0, vBasePos.y) + ${STONE.top.toFixed(2)} * smoothstep(26.0, 42.0, vBasePos.y) * (0.3 + 0.7 * smoothstep(0.0, 0.7, stoneUp))));
+  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * baseAo * ((uRigCardCol * ${STONE.card.toFixed(2)} * stoneWarm * stoneWarm + baseSunC * ${STONE.side.toFixed(2)} * pow(abs(stoneWarm), 36.0) + stoneBounce * ${STONE.bounce.toFixed(2)}) * stoneOpen * stoneBelly + baseSunC * stoneDapple * (${STONE.sun.toFixed(2)} * stoneSun * stoneSun + vec3(1.0, 0.8, 0.56) * ${STONE.kick.toFixed(2)} * stoneLeft * stoneLeft * stoneLeft * smoothstep(8.0, 30.0, vBasePos.y) + ${STONE.top.toFixed(2)} * smoothstep(26.0, 42.0, vBasePos.y) * (0.3 + 0.7 * smoothstep(0.0, 0.7, stoneUp))));
   // The sun's glint on the wet table in front of the base on the left throws its warmth back up the left flank, strongest low down.
   vec3 stoneFlare = normalize(mat3(viewMatrix) * vec3(-0.72, -0.1, 0.68));
   float stoneFl = clamp((dot(geometryNormal, stoneFlare) + 0.1) / 1.1, 0.0, 1.0);
@@ -216,7 +216,7 @@ const STONE_AFTER = `
 // Shell: the colour is in the vertices; the second uv holds the shade of its own folds and how glossy it is.
 const SHELL_PAINT = `
 ${SEAT}
-float baseAo = (0.5 + 0.5 * pow(vBaseUv1.x, 1.2)) * baseFootAo;
+float baseAo = (0.5 + 0.5 * pow(abs(vBaseUv1.x), 1.2)) * baseFootAo;
 float baseGloss = vBaseUv1.y;
 float shellChalk = baseNoise(vBasePos * 6.0) * 0.6 + baseNoise(vBasePos * 17.0) * 0.4;
 diffuseColor.rgb *= mix(0.9, 1.06, shellChalk);
@@ -241,16 +241,16 @@ const SHELL_AFTER = `
   float shellWide = clamp(dot(geometryNormal, normalize(mat3(viewMatrix) * vec3(-0.85, 0.35, -0.3))) * 0.5 + 0.5, 0.0, 1.0);
   float shellWarm = clamp(dot(geometryNormal, baseCard) * 0.5 + 0.5, 0.0, 1.0);
   float shellSun = clamp((dot(geometryNormal, baseKey) + 0.3) / 1.3, 0.0, 1.0);
-  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * baseAo * (uRigCardCol * 0.15 * shellWarm * shellWarm + baseSunC * 0.5 * pow(shellWarm, 14.0) + baseKeyC * 0.9 * shellSun * shellSun + baseSunC * (0.75 * shellLeft * shellLeft + 0.5 * shellWide) + vec3(1.0, 0.9, 0.78) * dot(baseSunC, vec3(0.3333)) * 0.34);
+  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * baseAo * (uRigCardCol * 0.15 * shellWarm * shellWarm + baseSunC * 0.5 * pow(abs(shellWarm), 14.0) + baseKeyC * 0.9 * shellSun * shellSun + baseSunC * (0.75 * shellLeft * shellLeft + 0.5 * shellWide) + vec3(1.0, 0.9, 0.78) * dot(baseSunC, vec3(0.3333)) * 0.34);
   vec3 shellAway = inverseTransformDirection(reflect(-geometryViewDir, geometryNormal), viewMatrix);
   float shellNv = clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0);
-  float shellF = 0.05 + 0.95 * pow(1.0 - shellNv, 5.0);
+  float shellF = 0.05 + 0.95 * pow(abs(1.0 - shellNv), 5.0);
   reflectedLight.indirectSpecular += (stageRoomSoft(shellAway, 0.3) + stageRoomLights(shellAway, 0.03)) * shellF * baseGloss * baseAo;
   float shellNh = max(dot(geometryNormal, normalize(baseKey + geometryViewDir)), 0.0);
   float shellCh = max(dot(geometryNormal, normalize(baseCard + geometryViewDir)), 0.0);
   vec3 shellPearl = 0.5 + 0.5 * cos(6.2831853 * (shellNv * 1.3 + vec3(0.0, 0.33, 0.67)));
   float shellLustre = smoothstep(0.8, 1.0, baseGloss);
-  reflectedLight.directSpecular += (baseKeyC * (0.9 * pow(shellNh, 220.0) + 0.05 * pow(shellNh, 14.0)) * smoothstep(0.0, 0.15, dot(geometryNormal, baseKey)) + (uRigCardCol + vec3(1.0, 0.9, 0.76) * dot(baseSunC, vec3(0.3333)) * 1.4) * (0.7 * pow(shellCh, 120.0) + 0.1 * pow(shellCh, 9.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, baseCard))) * baseGloss * baseAo * mix(vec3(1.0), 0.7 + 0.6 * shellPearl, shellLustre);
+  reflectedLight.directSpecular += (baseKeyC * (0.9 * pow(abs(shellNh), 220.0) + 0.05 * pow(abs(shellNh), 14.0)) * smoothstep(0.0, 0.15, dot(geometryNormal, baseKey)) + (uRigCardCol + vec3(1.0, 0.9, 0.76) * dot(baseSunC, vec3(0.3333)) * 1.4) * (0.7 * pow(abs(shellCh), 120.0) + 0.1 * pow(abs(shellCh), 9.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, baseCard))) * baseGloss * baseAo * mix(vec3(1.0), 0.7 + 0.6 * shellPearl, shellLustre);
   reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * (baseKeyC + uRigCardCol) * 0.08 * shellLustre * shellPearl;
 }
 `
@@ -296,21 +296,21 @@ const GLASS_AFTER = `
   #ifdef STAGE_LIGHT_DONE
   reflectedLight.indirectDiffuse += stageThrough(geometryNormal, geometryViewDir, 0.4, 3.0) * glassDeep * (0.22 + 0.08 * baseThin) * (0.7 + 0.6 * glassOne);
   #endif
-  reflectedLight.indirectDiffuse += mix(glassTint, vec3(dot(glassTint, vec3(0.3333))) + 0.25, 0.5) * RECIPROCAL_PI * (baseKeyC * 0.5 + uRigCardCol * 0.4) * pow(1.0 - glassNv, 2.5) * (0.2 + 0.3 * baseFrost);
+  reflectedLight.indirectDiffuse += mix(glassTint, vec3(dot(glassTint, vec3(0.3333))) + 0.25, 0.5) * RECIPROCAL_PI * (baseKeyC * 0.5 + uRigCardCol * 0.4) * pow(abs(1.0 - glassNv), 2.5) * (0.2 + 0.3 * baseFrost);
   float glassSkin = clamp((dot(geometryNormal, normalize(mat3(viewMatrix) * vec3(-0.6, 0.5, 0.6))) + 0.5) / 1.5, 0.0, 1.0);
   reflectedLight.indirectDiffuse += (glassTint * 0.75 + 0.1) * RECIPROCAL_PI * dot(baseSunC, vec3(0.3333)) * vec3(1.0, 0.93, 0.82) * 0.8 * glassSkin * glassSkin * (0.6 + 0.4 * baseFrost) * baseFootAo;
   vec3 glassAway = inverseTransformDirection(reflect(-geometryViewDir, geometryNormal), viewMatrix);
-  float glassF = 0.04 + 0.96 * pow(1.0 - glassNv, 5.0);
+  float glassF = 0.04 + 0.96 * pow(abs(1.0 - glassNv), 5.0);
   reflectedLight.indirectSpecular += (stageRoomSoft(glassAway, 0.6) + stageRoomLights(glassAway, 0.2) * 0.15 * (1.0 - baseFrost)) * glassF * 0.35;
   float glassNh = max(dot(geometryNormal, normalize(baseKey + geometryViewDir)), 0.0);
   float glassCh = max(dot(geometryNormal, normalize(baseCard + geometryViewDir)), 0.0);
-  reflectedLight.directSpecular += baseKeyC * (0.05 * pow(glassNh, 22.0) + 0.3 * pow(glassNh, 240.0)) * smoothstep(0.0, 0.15, dot(geometryNormal, baseKey)) * (1.0 - 0.6 * baseFrost);
+  reflectedLight.directSpecular += baseKeyC * (0.05 * pow(abs(glassNh), 22.0) + 0.3 * pow(abs(glassNh), 240.0)) * smoothstep(0.0, 0.15, dot(geometryNormal, baseKey)) * (1.0 - 0.6 * baseFrost);
   float glassRoom = max(dot(geometryNormal, normalize(normalize(vec3(-0.35, 0.55, 0.75)) + geometryViewDir)), 0.0);
-  reflectedLight.directSpecular += (uRigCardCol + vec3(1.0, 0.93, 0.82) * dot(baseSunC, vec3(0.3333)) * 1.6) * (0.02 * pow(glassRoom, 7.0)) * (0.3 + 1.4 * glassOne);
+  reflectedLight.directSpecular += (uRigCardCol + vec3(1.0, 0.93, 0.82) * dot(baseSunC, vec3(0.3333)) * 1.6) * (0.02 * pow(abs(glassRoom), 7.0)) * (0.3 + 1.4 * glassOne);
   // Light that went in at the far side comes out through the thin edge, in the colour of the glass.
-  reflectedLight.indirectDiffuse += mix(glassTint, vec3(dot(glassTint, vec3(0.3333))) + 0.12, 0.3) * RECIPROCAL_PI * (baseSunC * 1.1 + uRigCardCol * 0.3) * pow(1.0 - baseThin, 1.3) * (0.25 + 0.75 * clamp(0.5 - 0.5 * dot(geometryNormal, baseKey), 0.0, 1.0)) * (0.5 + glassOne) * baseFootAo;
+  reflectedLight.indirectDiffuse += mix(glassTint, vec3(dot(glassTint, vec3(0.3333))) + 0.12, 0.3) * RECIPROCAL_PI * (baseSunC * 1.1 + uRigCardCol * 0.3) * pow(abs(1.0 - baseThin), 1.3) * (0.25 + 0.75 * clamp(0.5 - 0.5 * dot(geometryNormal, baseKey), 0.0, 1.0)) * (0.5 + glassOne) * baseFootAo;
   reflectedLight.indirectDiffuse += glassDeep * RECIPROCAL_PI * uRigCardCol * 0.6 * glassBody * clamp(inverseTransformDirection(geometryNormal, viewMatrix).y * 0.6 + 0.4, 0.0, 1.0);
-  reflectedLight.directSpecular += uRigCardCol * (0.02 * pow(glassCh, 12.0) + 0.1 * pow(glassCh, 110.0) * (1.0 - 0.8 * baseFrost)) * smoothstep(0.0, 0.2, dot(geometryNormal, baseCard));
+  reflectedLight.directSpecular += uRigCardCol * (0.02 * pow(abs(glassCh), 12.0) + 0.1 * pow(abs(glassCh), 110.0) * (1.0 - 0.8 * baseFrost)) * smoothstep(0.0, 0.2, dot(geometryNormal, baseCard));
 }
 `
 

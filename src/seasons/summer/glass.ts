@@ -237,15 +237,15 @@ void main() {
   float band = pow(smoothstep(${n(W.from)}, ${n(W.peak)}, r), 2.2) * (1.0 - smoothstep(0.955, 0.992, r)) * exp(-a * a / ${n(W.wide * W.wide)});
   // the hot patch: three tongues of different length, slanting along the wall
   // each tongue is a sheaf of thin bright lines lying along the wall, sharp at the limb side and feathered toward the middle
-  float lines = 0.5 + 0.5 * pow(0.5 + 0.5 * sin(r * 290.0 + 14.0 * sin(a * 9.0 + 1.3) + 5.0 * sin(a * 23.0)), 3.0) * (0.6 + 0.4 * sin(r * 97.0 + a * 40.0));
-  float hot = exp(-pow((r - 0.9) / 0.044, 2.0) - pow((a + 0.02) / 0.1, 2.0));
-  hot += 0.8 * exp(-pow((r - 0.94) / 0.016, 2.0) - pow((a - 0.1) / 0.12, 2.0));
-  hot += 0.7 * exp(-pow((r - 0.872) / 0.022, 2.0) - pow((a + 0.1) / 0.06, 2.0));
+  float lines = 0.5 + 0.5 * pow(abs(0.5 + 0.5 * sin(r * 290.0 + 14.0 * sin(a * 9.0 + 1.3) + 5.0 * sin(a * 23.0))), 3.0) * (0.6 + 0.4 * sin(r * 97.0 + a * 40.0));
+  float hot = exp(-pow(abs((r - 0.9) / 0.044), 2.0) - pow(abs((a + 0.02) / 0.1), 2.0));
+  hot += 0.8 * exp(-pow(abs((r - 0.94) / 0.016), 2.0) - pow(abs((a - 0.1) / 0.12), 2.0));
+  hot += 0.7 * exp(-pow(abs((r - 0.872) / 0.022), 2.0) - pow(abs((a + 0.1) / 0.06), 2.0));
   hot *= lines;
   // the middle of it burns out
-  hot += 0.8 * exp(-pow((r - 0.915) / 0.02, 2.0) - pow((a + 0.01) / 0.085, 2.0));
-  float glow = exp(-pow((r - 0.91) / 0.04, 2.0) - a * a / 0.05);
-  float edge = exp(-pow((r - 0.972) / 0.012, 2.0)) * exp(-pow((a - 0.45) / 0.75, 2.0));
+  hot += 0.8 * exp(-pow(abs((r - 0.915) / 0.02), 2.0) - pow(abs((a + 0.01) / 0.085), 2.0));
+  float glow = exp(-pow(abs((r - 0.91) / 0.04), 2.0) - a * a / 0.05);
+  float edge = exp(-pow(abs((r - 0.972) / 0.012), 2.0)) * exp(-pow(abs((a - 0.45) / 0.75), 2.0));
   // in the storm the liquid scatters the sun: the patch is a dull amber glow, not a burn
   float clear = 1.0 - ${n(W.stormDulls)} * storm;
   vec3 col = ${vec(W.color)} * (${n(W.band)} * band + ${n(W.glow)} * glow * inside * clear + ${n(W.edge)} * edge) + ${vec(W.hotColor)} * (${n(W.hot)} * hot * inside * clear * clear);
@@ -256,7 +256,7 @@ void main() {
   vec3 air = ${vec(W.airColor)} * (${n(W.air)} * smoothstep(0.45, 1.0, toward) * body);
   float column = (vWl.x - ${n(W.hazeAt)}) / ${n(W.hazeWide)};
   float still = 1.0 - ${n(W.stormClears)} * storm;
-  float low = exp(-pow((vWl.y - ${n(W.hazeLow)}) / ${n(W.hazeTall)}, 2.0));
+  float low = exp(-pow(abs((vWl.y - ${n(W.hazeLow)}) / ${n(W.hazeTall)}), 2.0));
   air += ${vec(W.hazeColor)} * (${n(W.haze)} * still * body * (${n(W.hazeRim)} + ${n(1 - W.hazeRim)} * exp(-column * column)) * (${n(W.hazeTop)} + ${n(1 - W.hazeTop)} * low));
   air += ${vec(W.hazeSkyColor)} * (${n(W.hazeSky)} * still * body * smoothstep(-0.1, 0.6, vWl.y) * (1.0 - 0.8 * exp(-column * column)));
   // the storm's light: slow broad arms about the middle, turning with the time
@@ -372,7 +372,7 @@ vFlOut = flOut / max(length(flOut), 1e-4);
 vFl = position.xy;
 // a mirror at a grazing angle returns far more of the light than one seen face on
 float flCos = clamp(dot(flH, flV), 0.0, 1.0);
-vFlGain = clamp((0.04 + 0.96 * pow(1.0 - flCos, 5.0)) / 0.2, 0.25, 1.6);
+vFlGain = clamp((0.04 + 0.96 * pow(abs(1.0 - flCos), 5.0)) / 0.2, 0.25, 1.6);
 flAt.xy += position.xy * ${n(F.halfMm)};
 gl_Position = projectionMatrix * flAt;
 vStageWorld = flP;

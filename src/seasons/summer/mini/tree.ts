@@ -106,7 +106,7 @@ function leafHook(shader: Shader): void {
     )
     .replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\nif (vCard.x > 0.5) normal *= faceDirection;')
     .replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\nnormal = treeBump(treeSx, treeSy, treeDh, normal, faceDirection);')
-  afterLight(shader, `reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${LEAF.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), ${LEAF.wrap.toFixed(2)}) + ${LEAF.through.toFixed(2)} * pow(clamp(dot(normalize(vViewPosition), -stageKeyL), 0.0, 1.0), ${LEAF.tight.toFixed(1)}) + ${LEAF.rim.toFixed(2)} * pow(1.0 - abs(dot(normal, normalize(vViewPosition))), ${LEAF.rimTight.toFixed(1)}) * smoothstep(-0.3, 0.7, dot(normal, stageKeyL)))) * material.diffuseContribution;\n{\n  vec3 treeUpN = normalize(vTreeN);\n  // Each pad of leaves is lit from above and dark underneath, so the crown reads as layers and not as one mass.\n  reflectedLight.directDiffuse *= mix(${LEAF.under.toFixed(2)}, 1.0, smoothstep(-0.55, 0.5, treeUpN.y));\n  float goldSpeck = mix(${LEAF.speck.toFixed(2)}, 1.0, smoothstep(${LEAF.topFrom.toFixed(2)}, ${LEAF.topTo.toFixed(2)}, treeLum));\n  vec3 treeVN = normalize(vNormal);\n  // The dusk sky fills the crown from above with a cool green, so its body reads as leaves and not as a silhouette.\n  reflectedLight.directDiffuse += material.diffuseContribution * vec3(0.9, 1.0, 0.95) * (${LEAF.sky.toFixed(2)} * (0.15 + 0.85 * smoothstep(-0.2, 0.9, treeUpN.y)));\n  float goldUp = smoothstep(${LEAF.sunFrom.toFixed(2)}, ${LEAF.sunTo.toFixed(2)}, dot(treeVN, stageKeyL));\n  // The low sun stands behind the crown: it only catches the leaves that face it on the rims of the pads, as seen from the lens.\n  float goldEdge = (treeCard ? ${LEAF.card.toFixed(2)} : ${LEAF.top.toFixed(2)}) * pow(1.0 - abs(dot(treeVN, normalize(vViewPosition))), ${LEAF.topEdge.toFixed(1)});\n  // Held under the clip of the grade: past it the gold would wash out to pink.\n  reflectedLight.directDiffuse += stageKeyC * vec3(0.9, 0.68, 0.3) * min(goldEdge * goldUp * goldSpeck, ${LEAF.goldMax.toFixed(2)});\n}`)
+  afterLight(shader, `reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${LEAF.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), ${LEAF.wrap.toFixed(2)}) + ${LEAF.through.toFixed(2)} * pow(clamp(dot(normalize(vViewPosition), -stageKeyL), 0.0, 1.0), ${LEAF.tight.toFixed(1)}) + ${LEAF.rim.toFixed(2)} * pow(abs(1.0 - abs(dot(normal, normalize(vViewPosition)))), ${LEAF.rimTight.toFixed(1)}) * smoothstep(-0.3, 0.7, dot(normal, stageKeyL)))) * material.diffuseContribution;\n{\n  vec3 treeUpN = normalize(vTreeN);\n  // Each pad of leaves is lit from above and dark underneath, so the crown reads as layers and not as one mass.\n  reflectedLight.directDiffuse *= mix(${LEAF.under.toFixed(2)}, 1.0, smoothstep(-0.55, 0.5, treeUpN.y));\n  float goldSpeck = mix(${LEAF.speck.toFixed(2)}, 1.0, smoothstep(${LEAF.topFrom.toFixed(2)}, ${LEAF.topTo.toFixed(2)}, treeLum));\n  vec3 treeVN = normalize(vNormal);\n  // The dusk sky fills the crown from above with a cool green, so its body reads as leaves and not as a silhouette.\n  reflectedLight.directDiffuse += material.diffuseContribution * vec3(0.9, 1.0, 0.95) * (${LEAF.sky.toFixed(2)} * (0.15 + 0.85 * smoothstep(-0.2, 0.9, treeUpN.y)));\n  float goldUp = smoothstep(${LEAF.sunFrom.toFixed(2)}, ${LEAF.sunTo.toFixed(2)}, dot(treeVN, stageKeyL));\n  // The low sun stands behind the crown: it only catches the leaves that face it on the rims of the pads, as seen from the lens.\n  float goldEdge = (treeCard ? ${LEAF.card.toFixed(2)} : ${LEAF.top.toFixed(2)}) * pow(abs(1.0 - abs(dot(treeVN, normalize(vViewPosition)))), ${LEAF.topEdge.toFixed(1)});\n  // Held under the clip of the grade: past it the gold would wash out to pink.\n  reflectedLight.directDiffuse += stageKeyC * vec3(0.9, 0.68, 0.3) * min(goldEdge * goldUp * goldSpeck, ${LEAF.goldMax.toFixed(2)});\n}`)
 }
 
 function woodHook(shader: Shader, groundY: number): void {
@@ -131,7 +131,7 @@ function woodHook(shader: Shader, groundY: number): void {
 }`,
     )
     .replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\nnormal = treeBump(dFdx(-vViewPosition), dFdy(-vViewPosition), vec2(dFdx(woodH), dFdy(woodH)), normal, faceDirection);')
-  afterLight(shader, `reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${WOOD.side.toFixed(2)} * stageWrap(dot(normal, stageKeyL), ${WOOD.wrap.toFixed(2)}) + ${WOOD.rim.toFixed(2)} * pow(1.0 - abs(dot(normal, normalize(vViewPosition))), ${WOOD.rimTight.toFixed(1)}) * smoothstep(-0.35, 0.5, dot(normal, stageKeyL)))) * material.diffuseContribution;`)
+  afterLight(shader, `reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${WOOD.side.toFixed(2)} * stageWrap(dot(normal, stageKeyL), ${WOOD.wrap.toFixed(2)}) + ${WOOD.rim.toFixed(2)} * pow(abs(1.0 - abs(dot(normal, normalize(vViewPosition)))), ${WOOD.rimTight.toFixed(1)}) * smoothstep(-0.35, 0.5, dot(normal, stageKeyL)))) * material.diffuseContribution;`)
 }
 
 function lanternHook(shader: Shader): void {
@@ -159,10 +159,10 @@ vLamp = uv;
       `#include <emissivemap_fragment>
 {
   float lampFace = clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0);
-  float lampCore = pow(lampFace, ${LANTERN.tight.toFixed(1)});
+  float lampCore = pow(abs(lampFace), ${LANTERN.tight.toFixed(1)});
   float lampBeat = 1.0 + ${FLICKER.toFixed(3)} * sin(6.2831853 * (uTwinkle.x + vLamp.x * 0.381966));
   vec3 lampOut = (vec4(normalize(normal), 0.0) * viewMatrix).xyz;
-  float lampRib = (1.0 - ${LANTERN.rib.toFixed(2)} * pow(0.5 + 0.5 * cos(atan(lampOut.x, lampOut.z) * ${LANTERN.gores.toFixed(1)}), 5.0)) * (1.0 - ${LANTERN.ring.toFixed(2)} * pow(0.5 + 0.5 * cos(asin(clamp(lampOut.y, -1.0, 1.0)) * ${LANTERN.ribs.toFixed(1)}), 3.0));
+  float lampRib = (1.0 - ${LANTERN.rib.toFixed(2)} * pow(abs(0.5 + 0.5 * cos(atan(lampOut.x, lampOut.z) * ${LANTERN.gores.toFixed(1)})), 5.0)) * (1.0 - ${LANTERN.ring.toFixed(2)} * pow(abs(0.5 + 0.5 * cos(asin(clamp(lampOut.y, -1.0, 1.0)) * ${LANTERN.ribs.toFixed(1)})), 3.0));
   vec3 lampHot = mix(lampTint * vec3(1.15, 0.5 + 0.5 * lampTint.g, 0.45), vec3(1.0, 0.42 + 0.62 * lampTint.g, 0.06 + 0.34 * lampTint.g) * max(lampTint.r, lampTint.g), lampCore * lampCore);
   totalEmissiveRadiance = lampHot * lampLit * (${LANTERN.gain.toFixed(2)} * (${LANTERN.body.toFixed(2)} + ${LANTERN.core.toFixed(2)} * lampCore)) * lanternLevel(vLamp.x) * lampBeat * lampRib;
 }`,
@@ -199,7 +199,7 @@ void main() {
   vec3 sight = normalize(cameraPosition + d * (-b - sqrt(max(h, 0.0))) - vStageWorld);
   vec3 off = cross(sight, vStageWorld - vHalo.xyz);
   float g = max(0.0, 1.0 - dot(off, off) / (vHaloSize.x * vHaloSize.x));
-  float body = g * g * g * ${HALO.strength.toFixed(3)} + pow(g, 10.0) * ${HALO.hot.toFixed(3)};
+  float body = g * g * g * ${HALO.strength.toFixed(3)} + pow(abs(g), 10.0) * ${HALO.hot.toFixed(3)};
   gl_FragColor = vec4(mix(${v3(HALO_EDGE)}, ${v3(HALO_CORE)}, g * g), body * lanternLevel(vHaloSize.y) * (1.0 - 0.8 * stageVeil(vStageAux.x)));
 }
 `,

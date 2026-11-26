@@ -359,7 +359,7 @@ float veilSheetOf(vec3 p) {
   return floor((dot(p - ${vec(CENTRE)}, ${vec(ROLL)}) - ${n(L.sheetLowMm)}) / ${n(L.sheetMm)});
 }
 float veilStrand(float coarse, float fine) {
-  return pow(1.0 - abs(2.0 * fine - 1.0), ${n(L.strand)}) * mix(${n(L.tuftLow)}, ${n(L.tuftHigh)}, smoothstep(${n(L.tuftFrom)}, ${n(L.tuftTo)}, coarse));
+  return pow(abs(1.0 - abs(2.0 * fine - 1.0)), ${n(L.strand)}) * mix(${n(L.tuftLow)}, ${n(L.tuftHigh)}, smoothstep(${n(L.tuftFrom)}, ${n(L.tuftTo)}, coarse));
 }
 vec3 veilFibre(vec3 at, float k) {
   vec3 fl = veilFlow(at);
@@ -392,7 +392,7 @@ float veilStreak(vec3 p, vec3 f, float aloft, out float deep) {
   float side = p.x / uLens.w;
   float dip = (p.x - ${n(L.driftDipAtMm)}) / ${n(L.driftDipWideMm)};
   float open = exp(-dip * dip);
-  deep = uVeilDrift.z - dot(p, uVeilUp.xyz - ${n(L.leanDrift)} * uVeilLean) / uLens.w + (side < 0.0 ? ${n(L.driftWallLeft)} * pow(-side, ${n(L.driftWallLeftPower)}) : ${n(L.driftWallRight)} * side * side * side) - ${n(L.driftDip)} * open;
+  deep = uVeilDrift.z - dot(p, uVeilUp.xyz - ${n(L.leanDrift)} * uVeilLean) / uLens.w + (side < 0.0 ? ${n(L.driftWallLeft)} * pow(abs(-side), ${n(L.driftWallLeftPower)}) : ${n(L.driftWallRight)} * side * side * side) - ${n(L.driftDip)} * open;
   float soft = mix(${n(L.driftSoft)}, ${n(L.driftSoftWall)}, smoothstep(${n(L.driftSoftWallFrom)}, ${n(L.driftSoftWallTo)}, -side));
   float inside = smoothstep(-1.0, 1.0, deep / soft + ${n(L.driftWisp)} * (f.x - 0.5));
   float cut = mix(${n(L.driftCutCrest)}, ${n(L.driftCutDeep)}, inside);

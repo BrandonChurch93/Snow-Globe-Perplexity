@@ -1185,11 +1185,14 @@ describe('the probe', () => {
     const set: string[] = []
     let shakes = 0
     let feed: ((seconds: number) => void) | null = null
+    let glassReads = 0
     const host: ProbeHost = {
       setLevel: (id) => set.push(id),
       shake: () => shakes++,
       onFrame: (fn) => (feed = fn),
       graphics: () => 'a test renderer',
+      maths: () => ['pow(-2, 2) nan'],
+      glass: () => `picture ${++glassReads}`,
     }
     const probe = createProbe(host)
     expect(probe.levels()).toEqual(levels.map((l) => l.id))
@@ -1219,6 +1222,9 @@ describe('the probe', () => {
     expect(r.levels[1]!.stormMedianFps).toBe(44)
     expect(r.pick).toBe(pickLevel(r.levels))
     expect(r.graphics).toBe('a test renderer')
+    expect(r.maths).toEqual(['pow(-2, 2) nan'])
+    expect(r.glass).toBe('picture 1')
+    expect(glassReads).toBe(1)
     expect(r.screen).toBe('1280 x 720')
     expect(r.pixelRatio).toBe(2)
     expect(frames).toBeGreaterThan(levels.length * config.perf.probeSeconds * 30)

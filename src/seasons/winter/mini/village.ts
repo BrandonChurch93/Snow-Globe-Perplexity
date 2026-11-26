@@ -283,7 +283,7 @@ float iceRough = mix(0.09, 0.72, iceFrost);
 {
   vec3 iceN = villageInside(normal);
   vec3 iceSight = villageSight();
-  float iceFresnel = 0.03 + 0.97 * pow(1.0 - clamp(dot(iceN, iceSight), 0.0, 1.0), 5.0);
+  float iceFresnel = 0.03 + 0.97 * pow(abs(1.0 - clamp(dot(iceN, iceSight), 0.0, 1.0)), 5.0);
   float iceGlitter = 0.6 + 1.4 * smoothstep(0.45, 0.85, texture2D(map, vMapUv * 2.3 + 0.37).g);
   vec3 iceMirror = villageInside(normalize(mix(iceFlat, normal, ${MIRROR.bump.toFixed(2)})));
   float iceGlint = iceGlitter * villageMirror(iceMirror, iceSight, ${MIRROR.tight.toFixed(5)}, ${MIRROR.wide.toFixed(5)}, ${MIRROR.wideShare.toFixed(3)});

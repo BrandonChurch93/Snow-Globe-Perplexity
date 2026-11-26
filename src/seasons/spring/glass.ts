@@ -272,7 +272,7 @@ vec3 dewWater(vec3 body, vec3 n, vec3 eye, float d2, float crescent, float skin)
   float edge = smoothstep(0.3, 1.0, d2);
   vec3 col = body * mix(${f(look.body)}, ${f(look.edge)}, edge * edge * skin);
   float nv = max(dot(n, eye), 0.0);
-  col += stageRoomSeen(reflect(-eye, n), 0.12) * (0.03 + ${f(look.mirror)} * pow(1.0 - nv, 3.0)) * skin;
+  col += stageRoomSeen(reflect(-eye, n), 0.12) * (0.03 + ${f(look.mirror)} * pow(abs(1.0 - nv), 3.0)) * skin;
   vec3 hk = normalize(uKeyDir + eye);
   vec3 hr = normalize(uRimDir + eye);
   col += uKeyCol * (${f(look.glint)} * pow(max(dot(n, hk), 0.0), 140.0) + ${f(look.crescent)} * crescent) * skin;
@@ -454,7 +454,7 @@ float filmNoise(vec3 x) {
 vec2 filmSpecks(vec3 pm, float cell, float blur) {
   vec3 id = floor(pm / cell);
   vec3 h = vec3(filmHash(id + 0.13), filmHash(id + 17.31), filmHash(id + 41.77));
-  float r = mix(${f(look.breath.speckR[0])}, ${f(look.breath.speckR[1])}, pow(filmHash(id + 71.9), 2.2)) * cell / ${f(look.breath.speckMm[0])};
+  float r = mix(${f(look.breath.speckR[0])}, ${f(look.breath.speckR[1])}, pow(abs(filmHash(id + 71.9)), 2.2)) * cell / ${f(look.breath.speckMm[0])};
   float d = length(pm - (id + 0.5 + (h - 0.5) * 0.5) * cell);
   float wide = min(r + blur, 0.42 * cell);
   float aa = max(fwidth(d), 1e-4);
@@ -468,7 +468,7 @@ vec2 filmRill(float th, float ph, float cells, float seed, float grown, float bl
   vec3 k = vec3(id, seed, 0.0);
   float there = step(filmHash(k + 0.31), ${f(look.breath.rill.share)} * mix(${f(look.breath.rill.off)}, 1.0, smoothstep(0.62, 0.93, cos((id + 0.5) * 6.2831853 / cells - ${f(look.breath.rill.sideRad)}))));
   float from = mix(${f(look.breath.rill.fromDeg[0] * RAD)}, ${f(look.breath.rill.fromDeg[1] * RAD)}, filmHash(k + 3.7));
-  float len = mix(${f(look.breath.rill.lenDeg[0] * RAD)}, ${f(look.breath.rill.lenDeg[1] * RAD)}, pow(filmHash(k + 9.1), 1.6)) * grown;
+  float len = mix(${f(look.breath.rill.lenDeg[0] * RAD)}, ${f(look.breath.rill.lenDeg[1] * RAD)}, pow(abs(filmHash(k + 9.1)), 1.6)) * grown;
   float t = (th - from) / max(len, 1e-3);
   float c = 0.5 + ${f(look.breath.rill.wind)} * (filmNoise(vec3(th * ${f(look.breath.rill.windPer)}, id * 3.3, seed)) - 0.5) + ${f(look.breath.rill.wind * 0.12)} * (filmNoise(vec3(th * ${f(look.breath.rill.windPer * 3.1)}, id * 1.7, seed + 5.0)) - 0.5);
   float mmPer = 6.2831853 / cells * sin(th) * uDew.z;

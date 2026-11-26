@@ -211,7 +211,7 @@ const ROCK_AFTER = `
 ${SHADE}
 {
   ${LIGHTS}
-  float liveFuzz = pow(1.0 - liveNv, 2.2);
+  float liveFuzz = pow(abs(1.0 - liveNv), 2.2);
   float liveHigh = smoothstep(24.0, 33.0, vBasePos.y);
   float liveShade = mix(0.17, 1.25, liveOpen * mix(0.3, 1.0, max(liveHigh, smoothstep(0.1, 0.5, liveRimM))));
   vec3 liveKickDir = normalize(mat3(viewMatrix) * vec3(-0.85, 0.3, -0.3));
@@ -243,14 +243,14 @@ ${SHADE}
   float liveGrit = smoothstep(0.34, 0.08, length(fract(vBasePos * 7.5) - 0.5)) * step(0.66, baseHash(liveCell));
   float liveDew = pow(max(dot(liveFacet, normalize(liveKey + geometryViewDir)), 0.0), 120.0);
   float liveDewCard = pow(max(dot(liveFacet, normalize(liveCard + geometryViewDir)), 0.0), 120.0);
-  reflectedLight.directSpecular += mix(vec3(1.0), vec3(1.0, 0.82, 0.45), baseMoss) * (liveKeyC * (liveDew * 1.0 + 0.03 * pow(liveDew, 0.2) * baseMoss) + uRigCardCol * (liveDewCard * 0.3 + 0.01 * pow(liveDewCard, 0.2) * baseMoss)) * liveGrit * baseAo * mix(0.25 * baseWet, 1.0, max(baseMoss, 0.5 * baseFilm));
+  reflectedLight.directSpecular += mix(vec3(1.0), vec3(1.0, 0.82, 0.45), baseMoss) * (liveKeyC * (liveDew * 1.0 + 0.03 * pow(abs(liveDew), 0.2) * baseMoss) + uRigCardCol * (liveDewCard * 0.3 + 0.01 * pow(abs(liveDewCard), 0.2) * baseMoss)) * liveGrit * baseAo * mix(0.25 * baseWet, 1.0, max(baseMoss, 0.5 * baseFilm));
   // Dew on the moss that the low sun reaches: pinpoints, warm, only on the side it grazes.
   float liveDewSun = pow(max(dot(liveFacet, normalize(liveGrazeDir + geometryViewDir)), 0.0), 40.0);
   reflectedLight.directSpecular += vec3(1.0, 0.8, 0.55) * liveSunC * (2.5 * liveDewSun * liveGrit * baseAo * baseMoss * smoothstep(0.0, 0.4, liveGrazeM));
-  float liveF = 0.03 + 0.97 * pow(1.0 - liveNv, 5.0);
+  float liveF = 0.03 + 0.97 * pow(abs(1.0 - liveNv), 5.0);
   vec3 liveAway = inverseTransformDirection(reflect(-geometryViewDir, geometryNormal), viewMatrix);
   float liveSheet = baseWet * baseAo;
-  reflectedLight.directSpecular += (liveKeyC * (1.2 * pow(liveNh, 260.0) + 0.08 * pow(liveNh, 30.0)) + uRigCardCol * (0.8 * pow(liveCh, 200.0) + 0.06 * pow(liveCh, 24.0))) * liveSheet;
+  reflectedLight.directSpecular += (liveKeyC * (1.2 * pow(abs(liveNh), 260.0) + 0.08 * pow(abs(liveNh), 30.0)) + uRigCardCol * (0.8 * pow(abs(liveCh), 200.0) + 0.06 * pow(abs(liveCh), 24.0))) * liveSheet;
   reflectedLight.indirectSpecular += (stageRoomLights(liveAway, 0.05) * 0.06 + stageRoomSoft(liveAway, 0.2) * 0.05) * min(liveF, 0.4) * liveSheet;
 }
 `
@@ -293,7 +293,7 @@ ${SHADE}
   reflectedLight.directDiffuse += diffuseColor.rgb * RECIPROCAL_PI * liveSunC * vec3(1.0, 0.66, 0.5) * (${ROCK.flank.toFixed(2)} * 0.38 * liveGraze * liveGraze * liveGraze * baseAo);
   vec3 liveSkin = diffuseColor.rgb * RECIPROCAL_PI * (1.0 - baseBark) * baseAo;
   reflectedLight.directDiffuse += liveSkin * (liveKeyC * 0.45 * liveWrap * liveWrap + uRigCardCol * 0.6 * liveCardWrap * liveCardWrap) * mix(0.4, 1.0, liveOpen);
-  reflectedLight.directSpecular += (liveKeyC * pow(liveNh, 60.0) * 0.5 + uRigCardCol * pow(liveCh, 50.0) * 0.4) * baseAo * mix(0.6, 0.25, baseBark);
+  reflectedLight.directSpecular += (liveKeyC * pow(abs(liveNh), 60.0) * 0.5 + uRigCardCol * pow(abs(liveCh), 50.0) * 0.4) * baseAo * mix(0.6, 0.25, baseBark);
 }
 `
 
@@ -393,16 +393,16 @@ void main() {
   vec3 n = normalize(n0 - side * ((hu - h0) / e) * 0.85 + up * ((hm - h0) / 0.12) * 0.22);
   vec3 v = normalize(cameraPosition - vStageWorld);
   float nv = clamp(dot(n, v), 0.0, 1.0);
-  float fres = 0.02 + 0.98 * pow(1.0 - nv, 5.0);
+  float fres = 0.02 + 0.98 * pow(abs(1.0 - nv), 5.0);
   vec3 away = reflect(-v, n);
   vec3 mirror = stageRoom(away) + stageRoomLights(away, 0.02);
   float hk = max(dot(n, normalize(v + uWaterKeyDir)), 0.0);
   float hr = max(dot(n, normalize(v + uWaterRimDir)), 0.0);
   float hc = max(dot(n, normalize(v + uRigCardDir)), 0.0);
   vec3 col = mirror * min(fres, 0.3) * 0.18;
-  col += uWaterKeyCol * (pow(hk, 380.0) * 1.3 + pow(hk, 40.0) * 0.03);
-  col += uWaterRimCol * (pow(hr, 260.0) * 0.9 + pow(hr, 30.0) * 0.03);
-  col += uRigCardCol * (pow(hc, 300.0) * 0.9 + pow(hc, 26.0) * 0.03);
+  col += uWaterKeyCol * (pow(abs(hk), 380.0) * 1.3 + pow(abs(hk), 40.0) * 0.03);
+  col += uWaterRimCol * (pow(abs(hr), 260.0) * 0.9 + pow(abs(hr), 30.0) * 0.03);
+  col += uRigCardCol * (pow(abs(hc), 300.0) * 0.9 + pow(abs(hc), 26.0) * 0.03);
   float run = uWater.y * ${FLOW.speedMm.toFixed(1)};
   float streak = smoothstep(0.52, 0.86, baseNoise(vec3(u * 2.6, (mm - run) * 0.3, 7.0)));
   float core = body * body;

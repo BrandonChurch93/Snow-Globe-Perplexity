@@ -47,6 +47,8 @@ export interface ProbeResult {
   pixelRatio: number
   pick: string
   userAgent: string
+  maths: string[]
+  glass: string
 }
 
 export interface ProbeBridge {

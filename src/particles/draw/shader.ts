@@ -22,7 +22,7 @@ varying vec4 vGrid;
 varying vec4 vDom;
 varying vec4 vFog;
 float pointSpread(float halfLong, float s2) {
-  return pow(1.0 + ${n(STREAK_CAPSULE)} * halfLong / sqrt(s2), ${n(STREAK_HOLD)});
+  return pow(abs(1.0 + ${n(STREAK_CAPSULE)} * halfLong / sqrt(s2)), ${n(STREAK_HOLD)});
 }
 `
 
@@ -134,7 +134,7 @@ export const VERT_MAIN = `
   float zImg = max(dist - mix(a, R - R * (R - a) / den, on), 1.0);
   float depth = clamp(a / uLens.w, -1.0, 1.0);
   float shrink = mix(1.0, mix(uBlur.w, 1.0, smoothstep(-1.0, 0.15, depth)), afloat);
-  float spread = shape < 1.5 ? mix(${n(SIZE_LOW)}, ${n(SIZE_HIGH)}, pow(h2.w, ${n(SIZE_SKEW)})) : 1.0;
+  float spread = shape < 1.5 ? mix(${n(SIZE_LOW)}, ${n(SIZE_HIGH)}, pow(abs(h2.w), ${n(SIZE_SKEW)})) : 1.0;
   float rPx = aData.x * look.y * spread * uPoint.y * mag / zImg * shrink * mix(1.0, ${n(LYING_LOOK.size)}, lying);
   float glints = shape > 1.5 ? 1.0 : 0.0;
   float pick = fract(h.x * 91.0);
@@ -209,7 +209,7 @@ export const VERT_MAIN = `
   float big = smears * step(fract(h2.x * 389.0), ${n(STORM_BIG.share)}) * smoothstep(${n(STORM_BIG.from)}, ${n(STORM_BIG.to)}, depth);
   float smear = soft * mix(1.0, ${n(STORM_BIG.blur)}, big) * mix(${n(STORM_SMEAR_LOW_PX)}, ${n(STORM_SMEAR_HIGH_PX)}, fract(h.y * 53.0) * (1.0 - ${n(STORM_DAB_TIGHT)} * bright)) * mix(${n(STORM_SMEAR_FAR)}, ${n(STORM_SMEAR_NEAR)}, smoothstep(-0.4, 0.9, depth)) * mix(${n(STORM_SLOW.keep)}, 1.0, smoothstep(${n(STORM_SLOW.fromPx)}, ${n(STORM_SLOW.toPx)}, halfLong / uPoint.w)) * uPoint.w;
   s2x += smear * smear;
-  float still = pow(c2 / (c2 + s2x), ${n(BLUR_HOLD)});
+  float still = pow(abs(c2 / (c2 + s2x)), ${n(BLUR_HOLD)});
   float stretch = pointSpread(halfLong, c2 + s2x);
   float amp = still / stretch;
   float held = 1.0;
@@ -221,7 +221,7 @@ export const VERT_MAIN = `
     vec2 flow2 = (toView * veilTangent(veilOnDisc(eyeL, normalize(nowL - eyeL)))).xy;
     float rollWith = abs(dot(normalize((toView * moved).xy + 1e-9), normalize(flow2 + 1e-9)));
     float want = smears * ${n(STORM_SMEAR)} * mix(1.0, ${n(STORM_BIG.gain)}, big) * mix(${n(STORM_SMEAR_FAINT)}, ${n(STORM_SMEAR_BRIGHT)}, max(bright, ${n(STORM_BIG.bright)} * big)) * mix(${n(STORM_DAB_SLOW)}, 1.0, smoothstep(${n(STORM_SLOW.fromPx)}, ${n(STORM_SLOW.toPx)}, halfLong / uPoint.w)) + sharps * ${n(STORM_SHARP)} * (storming ? ${n(STORM_SHARP_SOFT.seen)} : 1.0) + fines * mix(${n(STORM_FINE_HIGH)}, ${n(STORM_FINE_LOW)}, fine);
-    float full = pow(stretch, ${n(1 - STORM_STREAK_DIM)}) / max(still, 0.02) * mix(mix(${n(STORM_FAR)}, ${n(STORM_LOOSE.farSeen)}, uStorm.x), 1.0, smoothstep(-0.9, 0.0, depth)) * mix(${n(STORM_OFF_DISC)}, 1.0, veilDisc(nowL)) * mix(1.0, mix(${n(STORM_CROSS.keep)}, 1.0, smoothstep(${n(STORM_CROSS.from)}, ${n(STORM_CROSS.to)}, rollWith)), smoothstep(${n(STORM_CROSS.fromPx)}, ${n(STORM_CROSS.toPx)}, halfLong / uPoint.w)) * mix(1.0, mix(mix(${n(STORM_WINDOW.small)}, ${n(STORM_WINDOW.floor)} * bright, smears), 1.0, smoothstep(${n(STORM_WINDOW.from)}, ${n(STORM_WINDOW.to)}, length((nowL.xy - vec2(${n(STORM_WINDOW.x)}, ${n(STORM_WINDOW.y)})) / vec2(${n(STORM_WINDOW.wide)}, ${n(STORM_WINDOW.high)})))), smoothstep(${n(STORM_WINDOW.back)}, ${n(STORM_WINDOW.front)}, nowL.z) * (1.0 - uVeilRoll.y)) * (1.0 - ${n(STORM_SIDE)} * (1.0 - uVeilRoll.y) * nowL.x / uLens.w) * mix(1.0, ${n(STORM_TOP.keep)}, smoothstep(${n(STORM_TOP.from)}, ${n(STORM_TOP.to)}, nowL.y / uLens.w) * (1.0 - uVeilRoll.y)) * (1.0 + ${n(STORM_FLOOD.gain - 1)} * uVeilRoll.y);
+    float full = pow(abs(stretch), ${n(1 - STORM_STREAK_DIM)}) / max(still, 0.02) * mix(mix(${n(STORM_FAR)}, ${n(STORM_LOOSE.farSeen)}, uStorm.x), 1.0, smoothstep(-0.9, 0.0, depth)) * mix(${n(STORM_OFF_DISC)}, 1.0, veilDisc(nowL)) * mix(1.0, mix(${n(STORM_CROSS.keep)}, 1.0, smoothstep(${n(STORM_CROSS.from)}, ${n(STORM_CROSS.to)}, rollWith)), smoothstep(${n(STORM_CROSS.fromPx)}, ${n(STORM_CROSS.toPx)}, halfLong / uPoint.w)) * mix(1.0, mix(mix(${n(STORM_WINDOW.small)}, ${n(STORM_WINDOW.floor)} * bright, smears), 1.0, smoothstep(${n(STORM_WINDOW.from)}, ${n(STORM_WINDOW.to)}, length((nowL.xy - vec2(${n(STORM_WINDOW.x)}, ${n(STORM_WINDOW.y)})) / vec2(${n(STORM_WINDOW.wide)}, ${n(STORM_WINDOW.high)})))), smoothstep(${n(STORM_WINDOW.back)}, ${n(STORM_WINDOW.front)}, nowL.z) * (1.0 - uVeilRoll.y)) * (1.0 - ${n(STORM_SIDE)} * (1.0 - uVeilRoll.y) * nowL.x / uLens.w) * mix(1.0, ${n(STORM_TOP.keep)}, smoothstep(${n(STORM_TOP.from)}, ${n(STORM_TOP.to)}, nowL.y / uLens.w) * (1.0 - uVeilRoll.y)) * (1.0 + ${n(STORM_FLOOD.gain - 1)} * uVeilRoll.y);
     held = mix(1.0, glints > 0.5 ? ${n(STORM_GLITTER)} * full : clump * (want > 0.0 ? want * full : ${n(STORM_THIN)}), gusty);
   }
   held *= mix(1.0, mix(${n(STORM_PACE.unseen)}, 1.0, gust), afloat * classed * (1.0 - shown));
@@ -268,7 +268,7 @@ export const VERT_MAIN = `
     if (glints > 0.5) flash += uLampCol[i].rgb * (fall * uLamp[i].w * pointGlint(face, dn, toEye));
   }
   if (glints > 0.5) flash += keyIn * pointGlint(face, uLightFrame * keyTo, toEye) + uRigRimCol * (uRigInside.x * pointGlint(face, uLightFrame * uRigRimDir, toEye));
-  flash *= look.w * pow(c2 / (c2 + s2x), ${n(1 - BLUR_HOLD)});
+  flash *= look.w * pow(abs(c2 / (c2 + s2x)), ${n(1 - BLUR_HOLD)});
   float flashMost = max(flash.r, max(flash.g, flash.b));
   flash = mix(flash, vec3(flashMost), ${n(FLASH_WHITE)}) * min(1.0, ${n(FLASH_MOST)} / max(flashMost, 1e-3));
   flash *= mix(vec3(1.0), vec3(${STORM_GOLD.map(n).join(', ')}), glints * gusty) * mix(1.0, min(1.0, ${n(STORM_FLASH)} / max(flashMost, 1e-3)), glints * gusty);
@@ -284,7 +284,7 @@ export const VERT_MAIN = `
   // the ones just behind the front glass stand in front of the flood: clear of it and plainly seen
   float front = flooded * (1.0 - smoothstep(${n(STORM_FLOOD.frontMm[0])}, ${n(STORM_FLOOD.frontMm[1])}, placed.w));
   vFog.a *= 1.0 - ${n(STORM_FLOOD.frontClear)} * front;
-  float alpha = aData.z * rim * held * (1.0 + ${n(STORM_FLOOD.frontGain)} * front) * (1.0 - ${n(STORM_VEILED)} * vFog.a * gusty * (1.0 - glints)) * mix(1.0, mix(${n(THIN_LOW)}, 1.0, smoothstep(${n(THIN_FROM)}, ${n(THIN_TO)}, fract(h2.y * 211.0))), afloat * (1.0 - gusty) * (1.0 - glints) * (1.0 - byGlass * byGlass)) * mix(1.0, mix(${n(LENS_LOOK.farDim)}, 1.0, smoothstep(${n(LENS_LOOK.farDimFrom)}, ${n(LENS_LOOK.farDimTo)}, depth)), afloat * (1.0 - gusty)) * mix(1.0, ${n(LYING_LOOK.alpha)}, lying) * mix(1.0, max(1.0, ${n(LENS_LOOK.glassDiscCover)} / max(amp, 0.01)), byDisc) * mix(1.0, smoothstep(${n(STORM_GLITTER_FROM)}, ${n(STORM_GLITTER_TO)}, flashMost) * step(fract(h2.y * 157.0), ${n(STORM_GLINT_KEEP)}), glints * gusty) * pow(c2 / (c2 + sigma * sigma), ${n(1 - BLUR_HOLD)} * smoothstep(${n(BLUR_STRICT_FROM_PX)} * uPoint.w, ${n(BLUR_STRICT_TO_PX)} * uPoint.w, sigma));
+  float alpha = aData.z * rim * held * (1.0 + ${n(STORM_FLOOD.frontGain)} * front) * (1.0 - ${n(STORM_VEILED)} * vFog.a * gusty * (1.0 - glints)) * mix(1.0, mix(${n(THIN_LOW)}, 1.0, smoothstep(${n(THIN_FROM)}, ${n(THIN_TO)}, fract(h2.y * 211.0))), afloat * (1.0 - gusty) * (1.0 - glints) * (1.0 - byGlass * byGlass)) * mix(1.0, mix(${n(LENS_LOOK.farDim)}, 1.0, smoothstep(${n(LENS_LOOK.farDimFrom)}, ${n(LENS_LOOK.farDimTo)}, depth)), afloat * (1.0 - gusty)) * mix(1.0, ${n(LYING_LOOK.alpha)}, lying) * mix(1.0, max(1.0, ${n(LENS_LOOK.glassDiscCover)} / max(amp, 0.01)), byDisc) * mix(1.0, smoothstep(${n(STORM_GLITTER_FROM)}, ${n(STORM_GLITTER_TO)}, flashMost) * step(fract(h2.y * 157.0), ${n(STORM_GLINT_KEEP)}), glints * gusty) * pow(abs(c2 / (c2 + sigma * sigma)), ${n(1 - BLUR_HOLD)} * smoothstep(${n(BLUR_STRICT_FROM_PX)} * uPoint.w, ${n(BLUR_STRICT_TO_PX)} * uPoint.w, sigma));
   #ifdef POINT_SPRITES
   float side = 2.0 * max(ext.x, ext.y);
   gl_PointSize = side;
@@ -333,7 +333,7 @@ ${CARD_FRAG_PARS}void pointAdd(vec4 lobe, vec2 p, inout float f, inout vec3 nrm)
   float u = min(abs(t) / max(vStreak.z, 1e-3), 1.0);
   float long2 = vStreak.z * vStreak.z;
   float sharp = r2 / s2;
-  float g = pow(sharp, ${n(BLUR_HOLD)}) / pointSpread(vStreak.z, s2) * exp(-0.5 * dot(q, q) / s2) * (1.0 - ${n(STREAK_TAPER)} * u * u * u * u * long2 / (long2 + s2));
+  float g = pow(abs(sharp), ${n(BLUR_HOLD)}) / pointSpread(vStreak.z, s2) * exp(-0.5 * dot(q, q) / s2) * (1.0 - ${n(STREAK_TAPER)} * u * u * u * u * long2 / (long2 + s2));
   f += g;
   nrm += g * (1.0 + 0.6 * lobe.w) * vec3(q / lobe.z * sharp, sqrt(max(1.0 - dot(q, q) / (lobe.z * lobe.z), 0.05)));
 }

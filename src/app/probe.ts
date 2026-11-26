@@ -8,6 +8,10 @@ export interface ProbeHost {
   shake(): void
   onFrame(fn: ((seconds: number) => void) | null): void
   graphics(): string
+  /** What the card answers where GLSL leaves the answer open, a line a case. */
+  maths(): string[]
+  /** Whether the globe just drawn is a picture or a flat bright sheet. Call it right after a frame is drawn. */
+  glass(): string
 }
 
 export const slowest = (frames: number[]): number => {
@@ -41,6 +45,7 @@ export function createProbe(host: ProbeHost): ProbeBridge {
         let shaken = false
         let rest: number[] = []
         let busy: number[] = []
+        let glass = ''
         const begin = () => {
           spent = 0
           warm = 2
@@ -59,6 +64,7 @@ export function createProbe(host: ProbeHost): ProbeBridge {
           const inStorm = spent >= total - storm
           if (inStorm && !shaken) {
             shaken = true
+            if (at === 0) glass = host.glass()
             host.shake()
           }
           ;(inStorm ? busy : rest).push(seconds)
@@ -75,7 +81,7 @@ export function createProbe(host: ProbeHost): ProbeBridge {
           }
           host.onFrame(null)
           onProgress([...done], null)
-          resolve({ levels: done, graphics: host.graphics(), screen: `${window.screen.width} x ${window.screen.height}`, pixelRatio: window.devicePixelRatio || 1, pick: pickLevel(done), userAgent: navigator.userAgent })
+          resolve({ levels: done, graphics: host.graphics(), screen: `${window.screen.width} x ${window.screen.height}`, pixelRatio: window.devicePixelRatio || 1, pick: pickLevel(done), maths: host.maths(), glass, userAgent: navigator.userAgent })
         })
         begin()
       })

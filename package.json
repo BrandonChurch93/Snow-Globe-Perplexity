@@ -20,6 +20,7 @@
     "review": "node tools/review.mjs",
     "status": "node tools/status.mjs",
     "determinism": "node tools/determinism.mjs",
+    "strict": "node tools/strict.mjs",
     "gate": "node tools/gate.mjs",
     "budget": "node tools/budget.mjs",
     "keep": "node tools/keep.mjs",

@@ -255,23 +255,23 @@ const IRON_AFTER = `
   float ironKl = smoothstep(0.0, 0.2, dot(geometryNormal, ironKey));
   float ironCl = smoothstep(0.0, 0.25, dot(geometryNormal, ironCard));
   float ironSheen = (1.0 - 0.45 * baseScale) * baseAo * (1.0 - 0.4 * baseDrum);
-  float ironGlint = 0.45 + 3.0 * pow(baseDetail.b, 3.0);
+  float ironGlint = 0.45 + 3.0 * pow(abs(baseDetail.b), 3.0);
   vec3 ironRim = normalize(mat3(viewMatrix) * uBaseRimDir);
   float ironRh = max(dot(geometryNormal, normalize(ironRim + geometryViewDir)), 0.0);
   float ironRl = smoothstep(0.0, 0.25, dot(geometryNormal, ironRim));
-  reflectedLight.directSpecular += uBaseRimCol * (0.08 * pow(ironRh, 7.0) + mix(0.4 * pow(ironRh, 50.0), 0.3 * pow(ironRh, 36.0), baseStrand)) * ironRl * ironSheen;
+  reflectedLight.directSpecular += uBaseRimCol * (0.08 * pow(abs(ironRh), 7.0) + mix(0.4 * pow(abs(ironRh), 50.0), 0.3 * pow(abs(ironRh), 36.0), baseStrand)) * ironRl * ironSheen;
   vec3 ironCardC = mix(uRigCardCol, vec3(dot(uRigCardCol, vec3(0.3, 0.5, 0.2))), 0.65);
-  reflectedLight.directSpecular += (ironKeyC * vec3(0.8, 0.9, 1.0) * (mix(0.05, 0.4 * baseDim, baseDrum) * pow(ironKh, mix(8.0, 9.0, baseDrum)) + mix((0.14 * pow(ironKh, 10.0) + 1.3 * pow(ironKh, 50.0)) * (0.55 + 0.7 * fibreHere) * ironGlint, 0.6 * pow(ironKh, 44.0) * (0.35 + 0.65 * baseDetail.b), 1.0 - baseStrand)) * ironKl + ironCardC * (0.05 * pow(ironCh, 10.0) + mix(0.26 * pow(ironCh, 50.0), 0.45 * pow(ironCh, 40.0) * ironGlint, baseStrand)) * ironCl) * ironSheen;
+  reflectedLight.directSpecular += (ironKeyC * vec3(0.8, 0.9, 1.0) * (mix(0.05, 0.4 * baseDim, baseDrum) * pow(abs(ironKh), mix(8.0, 9.0, baseDrum)) + mix((0.14 * pow(abs(ironKh), 10.0) + 1.3 * pow(abs(ironKh), 50.0)) * (0.55 + 0.7 * fibreHere) * ironGlint, 0.6 * pow(abs(ironKh), 44.0) * (0.35 + 0.65 * baseDetail.b), 1.0 - baseStrand)) * ironKl + ironCardC * (0.05 * pow(abs(ironCh), 10.0) + mix(0.26 * pow(abs(ironCh), 50.0), 0.45 * pow(abs(ironCh), 40.0) * ironGlint, baseStrand)) * ironCl) * ironSheen;
   // The key rakes the bare leather of the right flank: a broad grey sheen, grained by the hide.
-  reflectedLight.directSpecular += ironKeyC * vec3(0.8, 0.9, 1.0) * 0.7 * pow(ironKh, 3.0) * ironKl * baseDrum * smoothstep(8.0, 46.0, vBasePos.x) * (0.2 + 1.7 * baseDetail.b * baseDetail.b) * (0.6 + 0.8 * (baseNoise(vBasePos * 2.3) * 0.55 + baseNoise(vBasePos * 5.1 + 17.0) * 0.45)) * baseAo;
-  float ironEdge = pow(1.0 - clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0), 3.0);
+  reflectedLight.directSpecular += ironKeyC * vec3(0.8, 0.9, 1.0) * 0.7 * pow(abs(ironKh), 3.0) * ironKl * baseDrum * smoothstep(8.0, 46.0, vBasePos.x) * (0.2 + 1.7 * baseDetail.b * baseDetail.b) * (0.6 + 0.8 * (baseNoise(vBasePos * 2.3) * 0.55 + baseNoise(vBasePos * 5.1 + 17.0) * 0.45)) * baseAo;
+  float ironEdge = pow(abs(1.0 - clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0)), 3.0);
   vec3 ironUp = inverseTransformDirection(geometryNormal, viewMatrix);
   float ironWarm = clamp(dot(ironUp, normalize(vec3(uBaseRimDir.x, uBaseRimDir.y * 0.25, uBaseRimDir.z))) * 0.5 + 0.5, 0.0, 1.0);
   float ironLeft = clamp(dot(ironUp, normalize(vec3(-0.8, 0.25, 0.55))), 0.0, 1.0);
-  reflectedLight.directSpecular += uBaseRimCol * mix(vec3(1.0, 0.72, 0.5), vec3(1.0, 0.6, 0.36), baseStrand) * (IRON_WARM * (mix(0.3, 0.9 * ironGlint, baseStrand) * pow(ironWarm, mix(5.0, 16.0, baseStrand)) + mix(0.07, 0.22 * ironGlint, baseStrand) * pow(ironLeft, mix(5.0, 14.0, baseStrand)))) * mix(0.25, 1.0, baseAo) * (1.0 - 0.8 * baseDrum) * (0.4 + 1.2 * baseBlotch) * mix(1.0, 0.3 + 1.7 * fibreHere, baseStrand) * (1.0 + 4.0 * smoothstep(-8.0, -46.0, vBasePos.x) * baseStrand);
+  reflectedLight.directSpecular += uBaseRimCol * mix(vec3(1.0, 0.72, 0.5), vec3(1.0, 0.6, 0.36), baseStrand) * (IRON_WARM * (mix(0.3, 0.9 * ironGlint, baseStrand) * pow(abs(ironWarm), mix(5.0, 16.0, baseStrand)) + mix(0.07, 0.22 * ironGlint, baseStrand) * pow(abs(ironLeft), mix(5.0, 14.0, baseStrand)))) * mix(0.25, 1.0, baseAo) * (1.0 - 0.8 * baseDrum) * (0.4 + 1.2 * baseBlotch) * mix(1.0, 0.3 + 1.7 * fibreHere, baseStrand) * (1.0 + 4.0 * smoothstep(-8.0, -46.0, vBasePos.x) * baseStrand);
   vec3 ironTop = normalize(mat3(viewMatrix) * vec3(0.0, 1.0, 0.0));
   float ironTh = max(dot(geometryNormal, normalize(ironTop + geometryViewDir)), 0.0);
-  reflectedLight.directSpecular += (uRigSky * 1.1 + ironKeyC * 0.03) * pow(ironTh, mix(9.0, 18.0, baseStrand)) * smoothstep(0.0, 0.3, dot(geometryNormal, ironTop)) * (0.5 + 0.7 * fibreHere) * ironSheen * (1.0 - baseDrum);
+  reflectedLight.directSpecular += (uRigSky * 1.1 + ironKeyC * 0.03) * pow(abs(ironTh), mix(9.0, 18.0, baseStrand)) * smoothstep(0.0, 0.3, dot(geometryNormal, ironTop)) * (0.5 + 0.7 * fibreHere) * ironSheen * (1.0 - baseDrum);
   reflectedLight.directSpecular = ironBefore + (reflectedLight.directSpecular - ironBefore) * baseDim;
   ironEdge *= (1.0 + 3.0 * baseThorn) * baseDim;
   reflectedLight.indirectSpecular += (uRigSky * 0.35 * smoothstep(-0.2, 0.8, ironUp.y) + uBaseFloor * smoothstep(0.2, -0.8, ironUp.y)) * ironEdge * ironSheen;
@@ -363,17 +363,17 @@ const WAX_AFTER = `
   float waxThin = 1.0 - 0.6 * smoothstep(0.2, 0.9, waxDeep);
   vec3 waxThrough = vec3(1.0, 0.85, 0.6);
   reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * waxThrough * (waxKeyC * 2.2 * waxK * waxK + uRigCardCol * 0.12 * waxC * waxC) * waxThin * baseAo;
-  float waxEdge = pow(1.0 - clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0), 2.0);
+  float waxEdge = pow(abs(1.0 - clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0)), 2.0);
   reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * waxThrough * vec3(dot(waxKeyC * 0.5 + uRigCardCol * 0.15 + uRigSky * 3.2, vec3(0.3, 0.5, 0.2))) * mix(0.1, 1.0, waxEdge) * baseAo;
   vec3 waxTop = normalize(mat3(viewMatrix) * vec3(0.25, 1.0, 0.35));
   float waxTh = max(dot(geometryNormal, normalize(waxTop + geometryViewDir)), 0.0);
-  reflectedLight.directSpecular += (vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * 5.0 + waxKeyC * 0.1) * (1.6 * pow(waxTh, 90.0) + 0.12 * pow(waxTh, 9.0)) * baseAo;
+  reflectedLight.directSpecular += (vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * 5.0 + waxKeyC * 0.1) * (1.6 * pow(abs(waxTh), 90.0) + 0.12 * pow(abs(waxTh), 9.0)) * baseAo;
   vec3 waxSide = normalize(mat3(viewMatrix) * vec3(-0.7, 0.45, 0.55));
   float waxSh = max(dot(geometryNormal, normalize(waxSide + geometryViewDir)), 0.0);
-  reflectedLight.directSpecular += (vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * 9.0 * pow(waxSh, 120.0) + waxKeyC * (1.6 * pow(max(dot(geometryNormal, normalize(waxKey + geometryViewDir)), 0.0), 90.0) + 0.2 * pow(max(dot(geometryNormal, normalize(waxKey + geometryViewDir)), 0.0), 14.0))) * baseAo;
+  reflectedLight.directSpecular += (vec3(dot(uRigSky, vec3(0.3, 0.5, 0.2))) * 9.0 * pow(abs(waxSh), 120.0) + waxKeyC * (1.6 * pow(max(dot(geometryNormal, normalize(waxKey + geometryViewDir)), 0.0), 90.0) + 0.2 * pow(max(dot(geometryNormal, normalize(waxKey + geometryViewDir)), 0.0), 14.0))) * baseAo;
   float waxH = max(dot(geometryNormal, normalize(waxKey + geometryViewDir)), 0.0);
   float waxHc = max(dot(geometryNormal, normalize(waxCard + geometryViewDir)), 0.0);
-  reflectedLight.directSpecular += (waxKeyC * (0.9 * pow(waxH, 40.0) + 0.14 * pow(waxH, 8.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, waxKey)) + uRigCardCol * (0.4 * pow(waxHc, 60.0) + 0.03 * pow(waxHc, 8.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, waxCard))) * baseAo;
+  reflectedLight.directSpecular += (waxKeyC * (0.9 * pow(abs(waxH), 40.0) + 0.14 * pow(abs(waxH), 8.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, waxKey)) + uRigCardCol * (0.4 * pow(abs(waxHc), 60.0) + 0.03 * pow(abs(waxHc), 8.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, waxCard))) * baseAo;
 }
 `
 
@@ -414,7 +414,7 @@ void main() {
   float cell = floor(u);
   float between = sin(fract(u) * 3.14159265);
   float rings = mix(7.0, 6.0, big);
-  float v = pow(vWebUv.y, 0.8) * rings - 1.1 * between * between + 1.0 * webHash(cell + sheet * 17.0) + 0.5 * fract(u) * (webHash(cell * 3.0 + sheet) - 0.5);
+  float v = pow(abs(vWebUv.y), 0.8) * rings - 1.1 * between * between + 1.0 * webHash(cell + sheet * 17.0) + 0.5 * fract(u) * (webHash(cell * 3.0 + sheet) - 0.5);
   float gapped = step(0.5, webHash(floor(v) * 13.0 + cell * 7.0 + sheet * 3.0));
   // No two threads alike: each its own weight, a third of them broken part of the way down, the loose end gone.
   float strand = floor(u + 0.5) + sheet * 5.0;

@@ -274,7 +274,7 @@ if (turfBankA > 0.01) {
         `${NEAR_LIGHT}
 {
   reflectedLight.directDiffuse += (stageWrapped(geometryNormal, ${TURF_LOOK.wrap.toFixed(2)}) + stageKeyC * (RECIPROCAL_PI * ${TURF_LOOK.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), 1.0))) * material.diffuseContribution;
-  float turfFuzz = pow(1.0 - clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0), 3.0);
+  float turfFuzz = pow(abs(1.0 - clamp(dot(geometryNormal, geometryViewDir), 0.0, 1.0)), 3.0);
   float turfBank = turfBankA;
   float turfCatch = smoothstep(-0.15, 0.9, dot(geometryNormal, vec3(0.0, 0.76, 0.65)));
   float turfRock = smoothstep(2.5, 2.9, vSurf.x);
@@ -408,7 +408,7 @@ diffuseColor.rgb = mix(${glsl(tones.waterDeep)}, ${glsl(tones.bed)}, waterEdge *
 {
   vec3 waterN = villageInside(normal);
   vec3 waterSight = villageSight();
-  float waterFresnel = 0.03 + 0.97 * pow(1.0 - clamp(dot(waterN, waterSight), 0.0, 1.0), 5.0);
+  float waterFresnel = 0.03 + 0.97 * pow(abs(1.0 - clamp(dot(waterN, waterSight), 0.0, 1.0)), 5.0);
   vec3 waterMirror = villageInside(normalize(mix(waterFlat, normal, ${MIRROR.bump.toFixed(2)})));
   vec3 waterR = reflect(-waterSight, waterMirror);
   float waterGlint = villageMirror(waterMirror, waterSight, ${MIRROR.tight.toFixed(5)}, ${MIRROR.wide.toFixed(5)}, ${MIRROR.wideShare.toFixed(3)});
@@ -472,7 +472,7 @@ void main() {
   float far = max(0.0, 1.0 - dot(off, off) / (${(HALO.radiusMm * HALO.radiusMm).toFixed(4)} * vHaloSize.x * vHaloSize.x));
   float fall = far * far * (3.0 - 2.0 * far);
   float a = clamp(vHaloSize.y * uHaloStorm * fall * fall, 0.0, 0.96);
-  gl_FragColor = vec4(${glsl(STORM_GLOW.tone)} * (1.0 + vHaloSize.w * pow(far, 10.0)), a);
+  gl_FragColor = vec4(${glsl(STORM_GLOW.tone)} * (1.0 + vHaloSize.w * pow(abs(far), 10.0)), a);
 }
 `,
   })

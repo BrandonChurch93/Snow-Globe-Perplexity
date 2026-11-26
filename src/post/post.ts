@@ -150,16 +150,16 @@ void main() {
   vec2 q = (uv - 0.5) / uInv;
   vec2 mid = 0.5 / uInv;
   float r2 = dot(q, q) / dot(mid, mid);
-  vec2 shift = q / max(length(q), 1e-4) * uLens.x * pow(r2, 0.5 * uLens.y);
+  vec2 shift = q / max(length(q), 1e-4) * uLens.x * pow(max(r2, 1e-12), 0.5 * uLens.y);
   c = max(vec3(tap(gl_FragCoord.xy + shift).r, c.g, tap(gl_FragCoord.xy - shift).b), 0.0) * uExposure;
   vec2 g = uGlowTexel * 0.5;
   vec3 glow = texture(uGlow, uv + g).rgb + texture(uGlow, uv - g).rgb + texture(uGlow, uv + vec2(g.x, -g.y)).rgb + texture(uGlow, uv + vec2(-g.x, g.y)).rgb;
   c += glow * 0.25 * uGlowGain;
   if (uGlare.r + uGlare.g + uGlare.b > 0.0) {
     vec2 off = (uv - uGlareAt.xy) * vec2(uInv.y / uInv.x, 1.0) / uGlareAt.z;
-    c += uGlare * pow(1.0 + dot(off, off), -2.5);
+    c += uGlare * pow(abs(1.0 + dot(off, off)), -2.5);
   }
-  c *= 1.0 - uLens.z * pow(r2, uLens.w);
+  c *= 1.0 - uLens.z * pow(max(r2, 1e-12), uLens.w);
   c = film(c);
   c = pow(max(c * uGain + uLift * (1.0 - c), 0.0), uGamma);
   float l = dot(c, LUMA);

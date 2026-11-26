@@ -60,9 +60,9 @@ vec3 petalLight(vec3 n, vec3 P, vec3 v, vec3 albedo, float wet) {
   float hk = max(dot(n, normalize(v + keyDir)), 0.0);
   float hr = max(dot(n, normalize(v + rimDir)), 0.0);
   float hc = max(dot(n, normalize(v + uRigCardDir)), 0.0);
-  col += uKeyCol * keyGain * (mix(0.02, 0.0, wet) * pow(hk, 14.0) + wet * 0.9 * pow(hk, 120.0));
-  col += uRimCol * rimGain * (0.03 * pow(hr, 12.0) + wet * 1.2 * pow(hr, 90.0));
-  col += uRigCardCol * occl * (0.03 * pow(hc, 10.0) + wet * 0.8 * pow(hc, 90.0));
+  col += uKeyCol * keyGain * (mix(0.02, 0.0, wet) * pow(abs(hk), 14.0) + wet * 0.9 * pow(abs(hk), 120.0));
+  col += uRimCol * rimGain * (0.03 * pow(abs(hr), 12.0) + wet * 1.2 * pow(abs(hr), 90.0));
+  col += uRigCardCol * occl * (0.03 * pow(abs(hc), 10.0) + wet * 0.8 * pow(abs(hc), 90.0));
   return col;
 }
 `
@@ -111,7 +111,7 @@ float petalKick = max(exp(-petalGap / ${JUMP.reachMm.toFixed(1)}), ${JUMP.floor.
 float petalWait = petalGap / ${JUMP.shockMmPerSecond.toFixed(1)} + 0.03 * aKind.w;
 float petalFlight = mix(${JUMP.flight[0].toFixed(3)}, ${JUMP.flight[1].toFixed(3)}, petalKick) * (0.8 + 0.4 * aKind.w);
 float petalQ = clamp((uJump.x - petalWait) / petalFlight, 0.0, 1.0);
-float petalArc = sin(3.14159265 * pow(petalQ, ${JUMP.rise.toFixed(2)}));
+float petalArc = sin(3.14159265 * pow(abs(petalQ), ${JUMP.rise.toFixed(2)}));
 float petalEase = 1.0 - (1.0 - petalQ) * (1.0 - petalQ);
 float petalUp = ${JUMP.heightMm.toFixed(1)} * petalKick * petalArc;
 float petalFlips = floor(aKind.z * 2.99) * step(0.25, petalKick);
@@ -193,8 +193,8 @@ void main() {
   if (!gl_FrontFacing) n = -n;
   vec3 v = normalize(cameraPosition - vStageWorld);
   float wet = vPetalKind.y;
-  vec3 albedo = pow(tex.rgb, vec3(1.0 + 0.5 * wet));
-  albedo = min(mix(albedo, vec3(pow(dot(albedo, vec3(0.4, 0.4, 0.2)), 1.5) * 1.35) * vec3(0.97, 0.77, 1.0), 0.7) * 1.3, vec3(0.94));
+  vec3 albedo = pow(abs(tex.rgb), vec3(1.0 + 0.5 * wet));
+  albedo = min(mix(albedo, vec3(pow(abs(dot(albedo, vec3(0.4, 0.4, 0.2))), 1.5) * 1.35) * vec3(0.97, 0.77, 1.0), 0.7) * 1.3, vec3(0.94));
   albedo *= mix(vec3(0.94, 0.97, 1.0), vec3(0.97, 0.8, 0.87), vPetalKind.w * vPetalKind.w) * mix(0.86, 1.16, vPetalKind.z);
   vec3 col = petalLight(n, vStageWorld, v, albedo, wet);
   float thin = pow(max(1.0 - abs(dot(n, v)), 0.0), 2.0);
@@ -225,7 +225,7 @@ void main() {
   float alpha = tex.a * 0.5;
   if (alpha <= 0.004) discard;
   vec3 v = normalize(cameraPosition - vStageWorld);
-  vec3 albedo = min(mix(tex.rgb, vec3(pow(dot(tex.rgb, vec3(0.4, 0.4, 0.2)), 1.5) * 1.35) * vec3(0.97, 0.77, 1.0), 0.7) * 1.3, vec3(0.94));
+  vec3 albedo = min(mix(tex.rgb, vec3(pow(abs(dot(tex.rgb, vec3(0.4, 0.4, 0.2))), 1.5) * 1.35) * vec3(0.97, 0.77, 1.0), 0.7) * 1.3, vec3(0.94));
   vec3 col = petalLight(vec3(0.0, 1.0, 0.0), vStageWorld, v, albedo, 0.0);
   gl_FragColor = vec4(col * alpha, alpha);
   if (uDiag != 0) {
@@ -288,9 +288,9 @@ void main() {
   float hk = max(dot(n, normalize(v + keyDir)), 0.0);
   float hr = max(dot(n, normalize(v + rimDir)), 0.0);
   float hc = max(dot(n, normalize(v + uRigCardDir)), 0.0);
-  col += uKeyCol * keyGain * (5.0 * pow(hk, 300.0) + 0.1 * pow(hk, 30.0) * tilt);
-  col += uRimCol * rimGain * (6.0 * pow(hr, 220.0) + 0.25 * pow(hr, 24.0) * tilt);
-  col += uRigCardCol * (4.0 * pow(hc, 220.0) + 0.2 * pow(hc, 24.0) * tilt);
+  col += uKeyCol * keyGain * (5.0 * pow(abs(hk), 300.0) + 0.1 * pow(abs(hk), 30.0) * tilt);
+  col += uRimCol * rimGain * (6.0 * pow(abs(hr), 220.0) + 0.25 * pow(abs(hr), 24.0) * tilt);
+  col += uRigCardCol * (4.0 * pow(abs(hc), 220.0) + 0.2 * pow(abs(hc), 24.0) * tilt);
   col += (uSky + warm) * RECIPROCAL_PI * 0.12 * lip * occl;
   col *= body * uWater.w;
   gl_FragColor = vec4(col, 0.22 * body * uWater.w);
