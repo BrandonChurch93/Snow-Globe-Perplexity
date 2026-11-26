@@ -16,14 +16,19 @@ const SHUTTER = config.film.shutterDegrees / 360
 /**
  * What is outside the glass (the base, what lies on the table, what is on the glass, the lights of the backdrop, the light of
  * the room) changes in one span of the window, three frames long, in the middle of the last and fastest stroke: table.ts puts
- * the middle of that stroke on the middle of this span. At that middle the old base gives way to the new, whole: its line
- * against the lit glass is in sight under the cover, so no sample holds a base that is part one season's and part the
- * other's (materials.ts). A shake of one season changes nothing outside the glass; what it sheds, and the swell of the
- * light inside in every shake, keep the wider span about the same middle (`shed`).
+ * the middle of that stroke on the middle of this span. A shake of one season changes nothing outside the glass; what it
+ * sheds, and the swell of the light inside in every shake, keep the wider span about the same middle (`shed`).
  */
 const SHED: ChangeSpan = { from: 0.69, to: 0.85, lag: 0 }
 const OUTSIDE_MID = (SHED.from + SHED.to) / 2
 const OUTSIDE: ChangeSpan = { from: OUTSIDE_MID - frames(1.5), to: OUTSIDE_MID + frames(1.5), lag: 0 }
+
+/**
+ * The base alone takes six frames about the same middle. Under the cover both bases are black and all that is in sight of
+ * them is their line against the lit foot of the glass. Swapped in one frame that line steps, so the old shape gives way to
+ * the new as a fade of cover between two black shapes (materials.ts).
+ */
+export const BASE_PASS = { from: OUTSIDE_MID - frames(3), to: OUTSIDE_MID + frames(3) } as const
 
 /**
  * The cover of that span, as places in the swap window: the glass burns from inside and the room falls away from it, as a
