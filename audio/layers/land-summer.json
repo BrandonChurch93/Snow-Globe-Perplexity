@@ -1,0 +1,36 @@
+{
+  "cue": "land-summer",
+  "line": "A heavy glass globe set down on stone, heavy and short, then a warm chime and a hiss of sand",
+  "why": "the set-down that lies under all four landings (land-winter's takes 3 and 2), 60 cents lower for summer; when the knock has died, the kept ui-sound-on, a small chime, 700 cents lower as the warm chime; then the hiss of the cue's own take 1 as the sand, far under",
+  "seconds": 1.5,
+  "layers": [
+    {
+      "take": 3,
+      "cue": "land-winter",
+      "to": 0.7,
+      "fadeOutMs": 100,
+      "cents": -60
+    },
+    {
+      "take": 2,
+      "cue": "land-winter",
+      "underDb": 6,
+      "cents": -60
+    },
+    {
+      "kept": "ui-sound-on",
+      "cents": -700,
+      "at": 0.45,
+      "underDb": 5
+    },
+    {
+      "take": 1,
+      "from": 0.1,
+      "to": 0.95,
+      "fadeInMs": 150,
+      "fadeOutMs": 400,
+      "at": 0.65,
+      "underDb": 9
+    }
+  ]
+}

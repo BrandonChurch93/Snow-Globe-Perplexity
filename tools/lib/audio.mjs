@@ -16,8 +16,20 @@ const CHAIN = {
   impact: { trimDb: -50, padMs: 3, fadeInMs: 3, fadeOutMs: 180, lowCutHz: 30, loop: false, cap: true },
   music: { trimDb: -60, padMs: 5, fadeInMs: 2, fadeOutMs: 30, lowCutHz: 0, loop: false, cap: false },
 }
-const APP_TRIM_DB = { ambience: 0, interface: 0, touch: 0, impact: 0, music: -8 }
+// The app plays its music 8 dB under the kept level. The ambience was left at its kept level, 6 dB under that music by
+// loudness, where the film has it 14 dB under: the listener, given each season's two loops at the pack's gains, said of the
+// ambience "too loud", "competes" or "overpowers" in 8 of 12 answers (each of the four seasons at least once), in 2 of 7
+// with it 4 dB lower and in 1 of 11 with it 8 dB lower. So the ambience takes the music's trim and the app keeps the
+// film's distance between the two (kit: "The music leads. Ambience sits far under it."). Not heard by a human.
+const APP_TRIM_DB = { ambience: -8, interface: 0, touch: 0, impact: 0, music: -8 }
 const VARIED = { 'key-tap': [0, -45, 30, -20, 55, -65, 15, 40, -30] }
+// A hand does not type like a wheel. At the film's 14 a second one press repeated in the cut list's even steps was heard as
+// a ratchet, a prize wheel or a card in bicycle spokes (asked 5 times, with three different presses), and as typing on a
+// keyboard once each repeat is moved a few milliseconds off its place and turned down a little. Both lists are fixed, so
+// the film stays the same bytes; no tap is moved by more than 20 ms, about one frame, and the first tap is not moved at all.
+// underDb: a run of 14 presses a second, each at the level its class gives one press alone, was heard in film A as loud,
+// sharp typing (fit to "Soft key presses": no, twice); 9 dB lower it was heard as soft typing (yes, twice), 6 dB lower once.
+const HAND = { 'key-tap': { ms: [0, 14, -9, 18, -16, 6, -20, 11, -4, 20, -13, 8, -18], db: [0, -2.5, -1, -4, -0.5, -3, -1.5], underDb: 9 } }
 export const PEAK_MARGIN_DB = 0.15
 export const LOUDNESS_BLOCK = 0.4
 export const SHORT_CREST_DB = 16
@@ -968,8 +980,11 @@ export function mixFilm({ cut, which = 'b', candidate = 'blockout', keptDir = KE
     counts[c.cue] = k + 1
     const cents = VARIED[c.cue] ? VARIED[c.cue][k % VARIED[c.cue].length] : 0
     if (cents) a = resample(a, Math.pow(2, cents / 1200))
-    add(bus, a, Math.round(c.at * rate), gainOf(c.cue, c))
-    placed.push({ cue: c.cue, at: round(c.at, 4), cents })
+    const hand = HAND[c.cue]
+    const moveMs = hand ? hand.ms[k % hand.ms.length] : 0
+    const downDb = hand ? hand.db[k % hand.db.length] - (hand.underDb ?? 0) : 0
+    add(bus, a, Math.max(0, Math.round((c.at + moveMs / 1000) * rate)), gainOf(c.cue, c) * lin(downDb))
+    placed.push({ cue: c.cue, at: round(c.at, 4), cents, ...(hand ? { moveMs, downDb } : {}) })
   }
   for (const e of cut.ambience ?? []) {
     if (skip.includes(e.cue)) {
@@ -1216,7 +1231,21 @@ export function layTogether(recipe, { takesDir = TAKES, keptDir = KEPT, rate = R
     const { underDb: _under, ...asked } = p.l
     return { ...asked, source: p.source, underMainDb: under, gainDb: round(gainDb), levelDb: round(p.level + gainDb), seconds: round(p.a.L.length / rate, 3) }
   })
-  return { audio: bus, layers, sha256: sha256(encodeWav(bus)) }
+  // The file is whole numbers: a sum that stands over full scale would be cut off. The whole lay is turned down so its top stays 1 dB under it.
+  const top = db(peak(bus))
+  const roomDb = top > -1 ? round(-1 - top) : 0
+  if (roomDb < 0) {
+    const g = lin(roomDb)
+    for (let i = 0; i < bus.L.length; i++) {
+      bus.L[i] *= g
+      bus.R[i] *= g
+    }
+    for (const l of layers) {
+      l.gainDb = round(l.gainDb + roomDb)
+      l.levelDb = round(l.levelDb + roomDb)
+    }
+  }
+  return { audio: bus, layers, roomDb, sha256: sha256(encodeWav(bus)) }
 }
 
 export function readLedger() {

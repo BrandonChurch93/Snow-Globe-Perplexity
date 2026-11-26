@@ -1,0 +1,306 @@
+{
+  "id": "amb-winter",
+  "file": "amb-winter.wav",
+  "class": "ambience",
+  "season": "winter",
+  "line": "Wind and distant bells, very quiet, an ambience that loops",
+  "seconds": 20,
+  "take": 12,
+  "takes": 4,
+  "round": "after-review",
+  "why": "laid, not a take: the wind is the even bed that also lies in the kept amb-fall (amb-fall's take 2), 250 cents lower and without its leaves; the bells of the cue's own take 3 come and go 26 dB under it, set back with three quieter later copies. Heard twice with the open questions as a continuous howling wind with sleigh bells that come and go, three times with the fit questions: yes each time. The paid wind of this round (take 4) came as a whistling howl and is not in it.",
+  "layer": true,
+  "layers": [
+    {
+      "take": 2,
+      "cue": "amb-fall",
+      "from": 0.3,
+      "to": 19,
+      "cents": -250,
+      "lowCutHz": 100,
+      "highCutHz": 1500,
+      "fadeInMs": 20,
+      "fadeOutMs": 20,
+      "source": {
+        "cue": "amb-fall",
+        "take": 2,
+        "sha256": "2678a92adb111618344d288939a38718a362cd4b8fc9d92f7708e00619740c92"
+      },
+      "underMainDb": 0,
+      "gainDb": 0,
+      "levelDb": -55.01,
+      "seconds": 21.605
+    },
+    {
+      "take": 3,
+      "from": 6.5,
+      "to": 11,
+      "lowCutHz": 1500,
+      "highCutHz": 2500,
+      "fadeInMs": 1800,
+      "fadeOutMs": 2200,
+      "at": 2,
+      "source": {
+        "cue": "amb-winter",
+        "take": 3,
+        "sha256": "03e8c9fbe44c55a316a9cb394954393809e0fa86b2807e69967f294c9f76b125"
+      },
+      "underMainDb": 26,
+      "gainDb": -28.97,
+      "levelDb": -81.01,
+      "seconds": 4.5
+    },
+    {
+      "take": 3,
+      "from": 6.5,
+      "to": 11,
+      "lowCutHz": 1500,
+      "highCutHz": 2000,
+      "fadeInMs": 1800,
+      "fadeOutMs": 2200,
+      "at": 2.07,
+      "source": {
+        "cue": "amb-winter",
+        "take": 3,
+        "sha256": "03e8c9fbe44c55a316a9cb394954393809e0fa86b2807e69967f294c9f76b125"
+      },
+      "underMainDb": 29,
+      "gainDb": -29.59,
+      "levelDb": -84.01,
+      "seconds": 4.5
+    },
+    {
+      "take": 3,
+      "from": 6.5,
+      "to": 11,
+      "lowCutHz": 1500,
+      "highCutHz": 2000,
+      "fadeInMs": 1800,
+      "fadeOutMs": 2200,
+      "at": 2.16,
+      "source": {
+        "cue": "amb-winter",
+        "take": 3,
+        "sha256": "03e8c9fbe44c55a316a9cb394954393809e0fa86b2807e69967f294c9f76b125"
+      },
+      "underMainDb": 32,
+      "gainDb": -32.59,
+      "levelDb": -87.01,
+      "seconds": 4.5
+    },
+    {
+      "take": 3,
+      "from": 6.5,
+      "to": 11,
+      "lowCutHz": 1500,
+      "highCutHz": 2000,
+      "fadeInMs": 1800,
+      "fadeOutMs": 2200,
+      "at": 2.29,
+      "source": {
+        "cue": "amb-winter",
+        "take": 3,
+        "sha256": "03e8c9fbe44c55a316a9cb394954393809e0fa86b2807e69967f294c9f76b125"
+      },
+      "underMainDb": 35,
+      "gainDb": -35.59,
+      "levelDb": -90.01,
+      "seconds": 4.5
+    },
+    {
+      "take": 3,
+      "from": 11.5,
+      "to": 16,
+      "lowCutHz": 1500,
+      "highCutHz": 2500,
+      "fadeInMs": 1800,
+      "fadeOutMs": 2200,
+      "at": 12,
+      "source": {
+        "cue": "amb-winter",
+        "take": 3,
+        "sha256": "03e8c9fbe44c55a316a9cb394954393809e0fa86b2807e69967f294c9f76b125"
+      },
+      "underMainDb": 26,
+      "gainDb": -31.11,
+      "levelDb": -81.01,
+      "seconds": 4.5
+    },
+    {
+      "take": 3,
+      "from": 11.5,
+      "to": 16,
+      "lowCutHz": 1500,
+      "highCutHz": 2000,
+      "fadeInMs": 1800,
+      "fadeOutMs": 2200,
+      "at": 12.07,
+      "source": {
+        "cue": "amb-winter",
+        "take": 3,
+        "sha256": "03e8c9fbe44c55a316a9cb394954393809e0fa86b2807e69967f294c9f76b125"
+      },
+      "underMainDb": 29,
+      "gainDb": -31.43,
+      "levelDb": -84.01,
+      "seconds": 4.5
+    },
+    {
+      "take": 3,
+      "from": 11.5,
+      "to": 16,
+      "lowCutHz": 1500,
+      "highCutHz": 2000,
+      "fadeInMs": 1800,
+      "fadeOutMs": 2200,
+      "at": 12.16,
+      "source": {
+        "cue": "amb-winter",
+        "take": 3,
+        "sha256": "03e8c9fbe44c55a316a9cb394954393809e0fa86b2807e69967f294c9f76b125"
+      },
+      "underMainDb": 32,
+      "gainDb": -34.43,
+      "levelDb": -87.01,
+      "seconds": 4.5
+    },
+    {
+      "take": 3,
+      "from": 11.5,
+      "to": 16,
+      "lowCutHz": 1500,
+      "highCutHz": 2000,
+      "fadeInMs": 1800,
+      "fadeOutMs": 2200,
+      "at": 12.29,
+      "source": {
+        "cue": "amb-winter",
+        "take": 3,
+        "sha256": "03e8c9fbe44c55a316a9cb394954393809e0fa86b2807e69967f294c9f76b125"
+      },
+      "underMainDb": 35,
+      "gainDb": -37.43,
+      "levelDb": -90.01,
+      "seconds": 4.5
+    }
+  ],
+  "recipe": {
+    "file": "audio/layers/amb-winter-h.json",
+    "sha256": "2639fd5ecc3a201533a838cd8914f92811458f111b94692aafa6476f5562e55b",
+    "why": "the wind is the even bed that also lies in the kept amb-fall (amb-fall's take 2; both lines begin with wind), 250 cents lower for winter and without what lies over 1.5 kHz, where that take holds its leaves; the bells are those of the cue's own take 3, two stretches of 4.5 s set 10 s apart so that they come and go around the loop, without what lies under 1.5 kHz (that take's own gust) and over 2.5 kHz, 26 dB under the wind, each with three later and quieter copies of itself 70, 160 and 290 ms behind as distance"
+  },
+  "tool": "laid together by the harness from the layers named, by fixed numbers (decisions 111 and 134): no call, no credit, not a take",
+  "prompt": null,
+  "settings": null,
+  "chain": {
+    "settings": {
+      "trimDb": -60,
+      "padMs": 0,
+      "fadeInMs": 0,
+      "fadeOutMs": 0,
+      "lowCutHz": 70,
+      "loop": true,
+      "crossSeconds": 1.5,
+      "targetLufs": -30,
+      "capSeconds": 20
+    },
+    "steps": [
+      "low cut at 70 Hz, before the trim",
+      "trimmed 0.005 s in front and 0.005 s at the end",
+      "looped: 20 s with 1.5 s of its end crossfaded into its start",
+      "level: 23.05 dB to -30 LUFS, measured as gated loudness over 400 ms blocks"
+    ],
+    "gainDb": 23.05,
+    "level": {
+      "measure": "gated",
+      "measuredAs": "gated loudness over 400 ms blocks",
+      "seconds": 20,
+      "beforeLufs": -53.05,
+      "afterLufs": -30,
+      "targetLufs": -30,
+      "truePeakDb": -18.38
+    }
+  },
+  "loop": {
+    "seconds": 20,
+    "crossSeconds": 1.5,
+    "seam": {
+      "jump": 0.000013,
+      "typicalStep": 0.000106,
+      "ratio": 0.12,
+      "levelStepDb": 0.58
+    }
+  },
+  "measured": {
+    "seconds": 20,
+    "peakDb": -18.39,
+    "truePeakDb": -18.38,
+    "lufs": -30,
+    "lufsMeasure": "gated",
+    "soundLufs": null,
+    "offsetDb": null,
+    "rmsDb": -32.19,
+    "silenceFrontSeconds": 0,
+    "silenceEndSeconds": 0,
+    "soundSeconds": 20,
+    "tailDb": -32.21,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 390,
+      "bands": {
+        "sub": 0.0088,
+        "low": 0.3396,
+        "lowMid": 0.6331,
+        "mid": 0.0182,
+        "high": 0.0004,
+        "air": 0
+      }
+    }
+  },
+  "ffmpeg": {
+    "lufs": -30,
+    "lra": 1,
+    "truePeakDb": -18.4
+  },
+  "takeMeasured": {
+    "seconds": 21.605,
+    "peakDb": -41.08,
+    "truePeakDb": -41.08,
+    "lufs": -52.9,
+    "lufsMeasure": "gated",
+    "soundLufs": null,
+    "offsetDb": null,
+    "rmsDb": -55,
+    "silenceFrontSeconds": 0.005,
+    "silenceEndSeconds": 0.005,
+    "soundSeconds": 21.595,
+    "tailDb": -57.06,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 369,
+      "bands": {
+        "sub": 0.0395,
+        "low": 0.3541,
+        "lowMid": 0.5893,
+        "mid": 0.0167,
+        "high": 0.0003,
+        "air": 0
+      }
+    }
+  },
+  "answers": {
+    "line": "Wind and distant bells, very quiet, an ambience that loops",
+    "open": "1. I hear a continuous howling wind, resembling a harsh winter storm or blizzard. Accompanying the wind are intermittent, bright metallic sounds of jingle bells ringing.\n2. There is one continuous background sound of wind, along with two separate, distinct events of the bells ringing.\n3. No, there are no human voices, spoken words, breathing, or singing in this audio.\n4. There is no structured music or melody, though the jingle bells serve as a percussion instrument.\n5. The audio begins with the steady sound of howling wind alone. It ends the exact same way, with the continuous wind blowing after the final bell ringing has faded out.",
+    "fit": "1. Yes, it fits the description because the audio consists entirely of a soft, continuous wind and the repeating sound of distant bells.\n2. Nothing in the sound contradicts the description. \n3. No, there is no human voice, spoken word, or singing present in the audio.",
+    "openSecond": "1. I hear a continuous howling wind accompanied by the intermittent jingling of sleigh bells. The wind sounds cold and atmospheric, while the metallic bells give the audio a festive character.\n2. There are two separate jingling bell events that occur over the constant background wind.\n3. No, there is no human voice, spoken word, breath, or singing in this audio.\n4. There is no melody or structured music, but the sleigh bells act as a musical percussion instrument.\n5. The audio starts with the sound of blowing wind. It ends with this same continuous wind noise gradually fading out.",
+    "family": "1. No, they do not belong together because they capture completely different outdoor environments rather than a single room with the same objects. The scenes shift drastically from a watery daytime setting with birds, to nighttime crickets, and finally to a harsh wind. \n\n2. The third sound stands apart because it introduces a man-made element—ringing bells—whereas the first two consist purely of natural environmental noises.",
+    "note": "the fit questions were asked three times of this laid sound: yes each time; the third answer adds that the bells sound relatively close. The two open answers both name a continuous howling wind and sleigh bells that come and go."
+  },
+  "source": {
+    "name": "amb-winter-h.json",
+    "sha256": "19648c8a817d1dde40130786ffefc728d302c1ed4f3a95c149b47fa814e74f80"
+  },
+  "takeSha256": "19648c8a817d1dde40130786ffefc728d302c1ed4f3a95c149b47fa814e74f80",
+  "sha256": "ac4bf0c6cea391e2ca91aa5a9988c1003a6a4887abf977033002c90b9032462d",
+  "time": "2026-11-26T05:46:21.821Z"
+}

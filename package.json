@@ -46,6 +46,7 @@
     "make": "node tools/make.mjs",
     "texpack": "node tools/texpack.mjs",
     "firstlook": "node tools/firstlook.mjs",
+    "poster": "node tools/poster.mjs",
     "fit": "node tools/fit.mjs"
   },
   "dependencies": {

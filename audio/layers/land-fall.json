@@ -1,0 +1,45 @@
+{
+  "cue": "land-fall",
+  "line": "A heavy glass globe set down on stone, heavy and short, then a wooden creak and a low eerie tone",
+  "why": "the set-down that lies under all four landings (land-winter's takes 3 and 2), 120 cents lower for fall, its glass set back; when the knock has died, the wooden creak of the cue's own take 3; under the creak one made low tone that wavers, quiet support",
+  "seconds": 1.5,
+  "layers": [
+    {
+      "take": 3,
+      "cue": "land-winter",
+      "to": 0.7,
+      "fadeOutMs": 100,
+      "cents": -120
+    },
+    {
+      "take": 2,
+      "cue": "land-winter",
+      "underDb": 9,
+      "cents": -120
+    },
+    {
+      "take": 3,
+      "from": 0.1,
+      "to": 1.05,
+      "fadeInMs": 60,
+      "fadeOutMs": 200,
+      "at": 0.5,
+      "underDb": 2
+    },
+    {
+      "made": "tone",
+      "hz": 147,
+      "waverHz": 0.7,
+      "waverCents": 45,
+      "partials": [
+        1,
+        0.3
+      ],
+      "seconds": 1.0,
+      "fadeInMs": 300,
+      "fadeOutMs": 450,
+      "at": 0.5,
+      "underDb": 12
+    }
+  ]
+}

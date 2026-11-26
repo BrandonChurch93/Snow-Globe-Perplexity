@@ -83,6 +83,11 @@
       "cents": 0
     },
     {
+      "cue": "amb-winter",
+      "from": 14.5,
+      "to": 26.5
+    },
+    {
       "cue": "amb-spring",
       "from": 24.1,
       "to": 38.5
@@ -91,6 +96,16 @@
       "cue": "amb-summer",
       "from": 36.1,
       "to": 50.5
+    },
+    {
+      "cue": "amb-fall",
+      "from": 48.1,
+      "to": 62.5
+    },
+    {
+      "cue": "amb-winter",
+      "from": 60.1,
+      "to": 74.5
     }
   ],
   "skipped": [
@@ -124,14 +139,6 @@
     },
     {
       "cue": "land-winter",
-      "why": "no kept file"
-    },
-    {
-      "cue": "amb-winter",
-      "why": "no kept file"
-    },
-    {
-      "cue": "amb-fall",
       "why": "no kept file"
     }
   ],
@@ -216,25 +223,25 @@
     ],
     "firstMomentSeconds": 0.05,
     "beforeDb": [
-      -11.04,
-      -9.93,
-      -12.92,
-      -14.87
+      -11.11,
+      -9.95,
+      -12.98,
+      -14.77
     ],
     "trimsDb": [
-      -1.29,
-      -2.99,
-      0.59,
-      2.99
+      -1.25,
+      -2.41,
+      0.62,
+      2.41
     ],
     "afterDb": [
-      -12.32,
-      -12.32,
-      -12.32,
-      -12.5
+      -12.35,
+      -11.81,
+      -12.35,
+      -12.35
     ],
-    "spreadDb": 0.18,
-    "rounds": 2
+    "spreadDb": 0.54,
+    "rounds": 1
   },
   "channels": {
     "leftOverRightDb": 0.06,
@@ -243,21 +250,21 @@
   "master": {
     "targetLufs": -14,
     "ceilingDb": -1,
-    "gainDb": 2.074,
-    "limiterReductionDb": 1.59,
-    "lufs": -14.03,
+    "gainDb": 2.001,
+    "limiterReductionDb": 1.22,
+    "lufs": -14.02,
     "truePeakDb": -1.15,
     "passes": 2,
     "silent": false,
     "encoded": {
       "codec": "aac",
       "kbps": 256,
-      "truePeakDb": -1.29,
+      "truePeakDb": -1.3,
       "roomDb": 0,
       "gaveWay": [
         {
-          "at": 62.515,
-          "db": 2.86
+          "at": 43.905,
+          "db": 0.11
         }
       ]
     }
@@ -269,8 +276,10 @@
     "lift": "3def1da6008ad9f0cb4e3435664c84e5bc123b468ffa00a1872b2ae509ee85c6",
     "shake-spring": "e6abd21dd21a3ebf8d1e5b5a120cbc919c28d72c3ec23ecc1cb636f0f50c2f9c",
     "glass-clink": "a62138e2781a5f480ec29a3cbe16cabf876f0f466600e4e9223fa2e54c2f984e",
+    "amb-winter": "ac4bf0c6cea391e2ca91aa5a9988c1003a6a4887abf977033002c90b9032462d",
     "amb-spring": "8201e37f095b1644d48d18c13a2bdc63622f7880ed2a6cc79406ce1b38dbd35c",
     "amb-summer": "692f4040c43aa832b9fdcaa17e2c762312807c1e83894f1c62dc57aaa3167bda",
+    "amb-fall": "07ded692ee7571b68493eb6ff1ef5826ab3771d83210b3b7a65311ff3b452db8",
     "music-winter": "f21f53156f8d47122176e61ad3c0207a85cdee83a04d87c6548535b5091cebb2",
     "music-spring": "1a82c5957c58a4c66255310434f5e75f461204452ce9747e6772dad305993ea1",
     "music-summer": "82e1b12920f1e5def907b8144639a04528e9f3d84275479b837273b55c7e2cee",
@@ -278,14 +287,14 @@
   },
   "measuredByFfmpeg": {
     "lufs": -14,
-    "lra": 3.9,
+    "lra": 3.8,
     "truePeakDb": -1.1
   },
-  "sha256": "c515036ea88a6897cbc989f71fd2348115ad89fbc840fe9bb79e5959fc6cb055",
+  "sha256": "96a8da27df1f6b42ee37bb683ada0e1c03caaf189e54b544d2442b24b474c740",
   "musicStem": {
     "file": "four-tracks-film-a-music.wav",
-    "sha256": "039f3b1da7651865966400a1eb88a3c2d3547dbea7aa41f02298f80d36e0f26e"
+    "sha256": "4d330d067350d44b30649ef6ad5e8ce8c35f62789a7350fcb6af05aae3e36c74"
   },
-  "engineHash": "e35b2bd01d0015cf",
-  "time": "2026-11-26T04:50:05.664Z"
+  "engineHash": "bba0f03ee97cdcc0",
+  "time": "2026-11-26T06:29:12.862Z"
 }
