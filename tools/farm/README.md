@@ -32,7 +32,7 @@ to send to the joining agent by attachment: N files, ... MB, none over 45 MB, in
 
 Send exactly those files, in those groups, to the joining agent: at most 10 files a message, every file under 45 MB (the tool has cut a larger one into `.part-` files). Names and order do not matter on the other side. Keep `out/master/` until the joining agent says the range is there.
 
-When a push fails (the sign-in is away on and off): nothing is lost and the render goes on. The tool tries the push again after the next chunk and at the next run. If a run cannot even start because the remote asks for a name, start it without `--ship`. The join does not need the branch: every record is among the attachments. If the branch is wanted anyway, attach it as one file, a bundle (a code change travels the same way, `git bundle create NAME.bundle origin/main..HEAD`):
+When a push fails (the sign-in is away on and off): nothing is lost and the render goes on. The tool tries a push 4 times, 5, 15 and 30 s apart, then again after the next chunk and at the next run. If a run cannot even start because the remote asks for a name, start it without `--ship`. The join does not need the branch: every record is among the attachments. If the branch is wanted anyway, attach it as one file, a bundle (a code change travels the same way, `git bundle create NAME.bundle origin/main..HEAD`):
 
 ```
 git -C out/work/master/ship/* bundle create "$PWD/chunks-NAME.bundle" HEAD
