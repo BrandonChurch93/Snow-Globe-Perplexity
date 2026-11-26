@@ -71,6 +71,12 @@ export const ROOM_RIG = {
  * it and what lies on the table is not lit while it leaves and comes. Before the flash and after it the picture is a lit
  * room: the glass, its pool on the table, the base against it and the lamps, fallen.
  *
+ * The mirror image of the glass in the slab is not drawn in, since it is the glass and holds nothing that turns. Where the
+ * slab draws the stage a second time it is the glass as that is drawn, at rest through the fallen exposure. Where the slab
+ * bakes it (the level `low`, a glow under the foot: surface.ts, `uImage`) it is the lights inside at rest held the same way,
+ * and `image` times what the new season's lights at rest lay there is added at the whole cover in the colour of the pour:
+ * the glow swells as the cover rises, is at its most under the flash and falls with it, and never goes out.
+ *
  * Each change has its own colour of light, the arriving season's. What the glass pours on the table, the base and the
  * dressing, the glare, the veil and the halo take the colour of that season's own rig, its rim through its key (rig.ts:
  * winter's blue, spring's rose, summer's gold, fall's orange; `tint` of the way to it from the colour of its lamps, at the
@@ -81,7 +87,7 @@ export const ROOM_RIG = {
  * Nothing in the picture feeds the glare, the halo or the veil, no lamp of the room and no petal. `lens` is the tint of the
  * glow round what burns, risen over `fall` of the swell from `swellFrom` of the window. The live picture has the same cover.
  */
-export const CHANGE_BLOOM = { lens: 0.2, swellFrom: 0.56, fall: 0.6, dim: 0.005, sharp: 4, pour: 30, pourOn: 5, flashPour: 0.005, flood: 0.5, glare: 0.3, flashGlare: 0.7, glareReach: 1.1, glareSeat: 0.1, glareHole: 0.9, glareHoleReach: 1.3, halo: 0.8, haloReach: 1.4, haloUp: 0.4, haloDown: 0.33, haloSeat: 1.52, haloCore: 3, haloWhite: 0.5, tint: 1, veil: 0.03, flashVeil: 0.03, veilReach: 1.5, room: 0.75 } as const
+export const CHANGE_BLOOM = { lens: 0.2, swellFrom: 0.56, fall: 0.6, dim: 0.005, sharp: 4, pour: 30, pourOn: 5, flashPour: 0.005, image: 5, flood: 0.5, glare: 0.3, flashGlare: 0.7, glareReach: 1.1, glareSeat: 0.1, glareHole: 0.9, glareHoleReach: 1.3, halo: 0.8, haloReach: 1.4, haloUp: 0.4, haloDown: 0.33, haloSeat: 1.52, haloCore: 3, haloWhite: 0.5, tint: 1, veil: 0.03, flashVeil: 0.03, veilReach: 1.5, room: 0.75 } as const
 
 /**
  * The colour a change pours: the light of the arriving season's own rig, its rim through its key (rig.ts: winter's blue,
@@ -295,6 +301,11 @@ export class Lighting {
     const laidB = two ? restB : gainB
     const held = two ? flare * Math.pow(CHANGE_BLOOM.flashPour, flash) : 1
     const pool = mixRgb([ga[0] * laidA * held, ga[1] * laidA * held, ga[2] * laidA * held], [gb[0] * laidB * held, gb[1] * laidB * held, gb[2] * laidB * held], inner)
+    // The mirror image of the glass that the slab bakes (the level `low`) is the glass's own light, so it is not drawn in under
+    // the flash: the lights inside at rest through the fallen exposure, and on top of that the pour in its colour, as much of
+    // it as the cover is whole. It swells with the glass and is at its most while the glass burns most.
+    const image = two ? mixRgb([ga[0] * laidA * flare, ga[1] * laidA * flare, ga[2] * laidA * flare], [gb[0] * laidB * flare, gb[1] * laidB * flare, gb[2] * laidB * flare], inner) : pool
+    const burn = two ? restB * flare * CHANGE_BLOOM.image * cover : 0
     // The pour is the new season's light from its first frame: on the table's own surface many times what lies there at rest, on
     // the base and on what lies on the table (the frost, the petals, the leaves) less, so that what is white there stays under
     // white and takes the colour of the light. `f.pool` is what the slab and the glass take, `f.poolOn` what the frost on the
@@ -315,6 +326,7 @@ export class Lighting {
     const spill = 1 + ROOM_RIG.flood.pool * more
     f.pool.setRGB((pool[0] + gt[0] * pourTable) * spill, (pool[1] + gt[1] * pourTable) * spill, (pool[2] + gt[2] * pourTable) * spill)
     f.poolOn.setRGB((pool[0] + gt[0] * pourOn) * spill, (pool[1] + gt[1] * pourOn) * spill, (pool[2] + gt[2] * pourOn) * spill)
+    f.image.setRGB((image[0] + gt[0] * burn) * spill, (image[1] + gt[1] * burn) * spill, (image[2] + gt[2] * burn) * spill)
     const lens = ROOM_RIG.flood.lens * lift + (CHANGE_BLOOM.lens * cross) / peak
     f.bloomTint.setRGB(gb[0] * lens, gb[1] * lens, gb[2] * lens)
     const glare = (CHANGE_BLOOM.glare * cover + CHANGE_BLOOM.flashGlare * flash) / peak

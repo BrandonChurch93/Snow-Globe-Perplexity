@@ -339,6 +339,7 @@ export const surfaceUniforms = {
   uLean: { value: new THREE.Vector4(0, 0, 0, 0) },
   uPool: { value: new THREE.Color() },
   uPour: { value: new THREE.Color() },
+  uImage: { value: new THREE.Color() },
   uReflect: { value: new THREE.Vector4(1, 0, 0, 0) },
   uBaked: { value: new THREE.Color() },
   uMirror: { value: dark as THREE.Texture },
@@ -368,6 +369,7 @@ uniform vec3 uSky;
 uniform vec4 uReflect;
 uniform vec3 uBaked;
 uniform vec3 uPour;
+uniform vec3 uImage;
 uniform sampler2D uMirror;
 uniform vec4 uMirrorSize;
 uniform sampler2D uDetail;
@@ -556,7 +558,7 @@ void main() {
     vec2 heart = vec2(side, height - lift - ${f(centreHeight)}) / ${f(globeRadius * SLAB.bakedGlowReach)};
     float glow = exp(-dot(heart, heart));
     float shell = smoothstep(${f(SLAB.bakedShellFrom)}, 1.0, side / girth);
-    vec3 near = lit * body + ((uPool + uPour) * (${f(SLAB.bakedGlow)} * glow) + uSky * (${f(SLAB.bakedShell)} * shell)) * glass;
+    vec3 near = lit * body + (uImage * (${f(SLAB.bakedGlow)} * glow) + uSky * (${f(SLAB.bakedShell)} * shell)) * glass;
     far *= 1.0 - body - ${f(1 - SLAB.bakedThrough)} * glass;
     seen = far * uReflect.y + seen * uReflect.x;
     image = near * uReflect.y + image * uReflect.x;
@@ -625,6 +627,7 @@ export function updateSurface(f: StageFrame): void {
   su.uLean.value.set(-Math.sin(g.tiltZ) * lean, Math.sin(g.tiltX) * lean, -Math.sin(g.tiltZ), Math.sin(g.tiltX) * Math.cos(g.tiltZ))
   su.uPool.value.copy(f.poolOn)
   su.uPour.value.setRGB(f.pool.r - f.poolOn.r, f.pool.g - f.poolOn.g, f.pool.b - f.poolOn.b)
+  su.uImage.value.copy(f.image)
   const lumpsA = SLAB.lumpSeasons[f.from.season] ?? 0
   su.uLumps.value = lumpsA * (1 - partChange('surface-leave', f.change)) + (SLAB.lumpSeasons[f.to.season] ?? 0) * partChange('surface-come', f.change)
   const mirror = f.view === '' && f.planar ? f.reflect : 0

@@ -9,7 +9,7 @@ import { newFrame } from '../src/scene/frame'
 import { lightUniforms } from '../src/core/chunks/light'
 import { glowOf } from '../src/scene/lightgrid'
 import { CHANGE_BLOOM, Lighting, pourColour } from '../src/scene/lighting'
-import { makeSlab } from '../src/scene/surface'
+import { makeSlab, surfaceUniforms, updateSurface } from '../src/scene/surface'
 import { kitOf } from '../src/seasons'
 import { CHANGE_COVER, changeBloom, changeSpan, partChange } from '../src/shake/change'
 import { REST_POSE } from '../src/shake/table'
@@ -179,6 +179,84 @@ describe('the cover of a change in the lens', () => {
     const lit = frag.split('\n').filter((line) => line.includes('scatter') && line.includes('uPour'))
     expect(lit.length).toBe(1)
     expect(lit[0]).toContain('scatter * (direct + (uSky + warm) * occl)')
+  })
+
+  it('holds the mirror image of the glass that the slab bakes through the flash: one swell with the cover, never out', () => {
+    const names = ['winter', 'spring', 'summer', 'fall'] as const
+    const luma = (c: readonly number[]): number => 0.2126 * c[0]! + 0.7152 * c[1]! + 0.0722 * c[2]!
+    for (let k = 0; k < names.length; k++) {
+      const from = names[k]!
+      const to = names[(k + 1) % names.length]!
+      const name = `${from} to ${to}`
+      const light = new Lighting(quality.shadowMapPx)
+      const f = newFrame(kitOf(from), quality)
+      f.to = kitOf(to)
+      /** The image and the pool at a place in the window as the picture shows them, and what both are there with no cover. */
+      const at = (change: number): { rest: number[]; image: number[]; pool: number[] } => {
+        f.moment = { season: from, from, to, change, sinceLanding: 0, globe: REST_POSE, mix: 0, seed: 1, time: 0, beat: null, period: null } as Moment
+        f.mix.light = partChange('light', change)
+        f.mix.bloom = 0
+        light.update(f)
+        const rest = f.pool.toArray()
+        // With no cover the image is the pool to the last bit: the pictures away from the cover are what they were.
+        expect(f.image.toArray(), `${name}, no cover at ${change}`).toEqual(rest)
+        f.mix.bloom = changeBloom(change)
+        light.update(f)
+        return { rest, image: f.image.toArray().map((v) => v * lensFall.dim), pool: f.pool.toArray().map((v) => v * lensFall.dim) }
+      }
+      const first = at(CHANGE_COVER.riseFrom)
+      let before = luma(first.image) / luma(first.rest)
+      for (let c = CHANGE_COVER.riseFrom + FRAME / 4; c <= CHANGE_COVER.goneAt; c += FRAME / 4) {
+        const now = at(c)
+        // It is the glass's own light: in no channel and at no instant of the cover is it under what it is at rest.
+        for (let i = 0; i < 3; i++) expect(now.image[i]!, `${name}, channel ${i} at ${c}`).toBeGreaterThanOrEqual(now.rest[i]! * (1 - 1e-12))
+        // It rises with the cover and falls with it: one swell, with no dip under the flash.
+        const share = luma(now.image) / luma(now.rest)
+        if (c <= CHANGE_COVER.fullFrom) expect(share, `${name}, rising at ${c}`).toBeGreaterThanOrEqual(before - 1e-9)
+        else if (c > CHANGE_COVER.fullTo + FRAME / 4) expect(share, `${name}, falling at ${c}`).toBeLessThanOrEqual(before + 1e-9)
+        before = share
+      }
+      // Where the cover is whole it is several times its resting self: a glow that burns with the glass and is not burnt out.
+      const mid = at((span.from + span.to) / 2)
+      expect(luma(mid.image) / luma(mid.rest), name).toBeGreaterThan(4)
+      expect(luma(mid.image) / luma(mid.rest), name).toBeLessThan(9)
+      // The pool round it is drawn in there, the image is not: on the span it is many times the pool.
+      for (let c = span.from; c <= span.to; c += FRAME / 4) {
+        const now = at(c)
+        expect(luma(now.image), `${name}, on the span at ${c}`).toBeGreaterThan(10 * luma(now.pool))
+      }
+      // What is added to the lights at rest is the pour's own colour, the arriving season's.
+      const pour = pourColour(glowOf(kitOf(to).innerLights), kitOf(to).rig)
+      const top = pour.indexOf(Math.max(...pour))
+      for (let i = 0; i < 3; i++) expect((mid.image[i]! - mid.rest[i]!) / (mid.image[top]! - mid.rest[top]!), `${name}, channel ${i}`).toBeCloseTo(pour[i]! / pour[top]!, 9)
+      // Away from the cover it is the pool.
+      for (const c of [0.02, CHANGE_COVER.riseFrom - FRAME, CHANGE_COVER.goneAt + FRAME / 2]) expect(at(c).image, `${name} at ${c}`).toEqual(at(c).rest)
+    }
+    // Through a shake of one season, swell and all, it is the pool to the last bit.
+    const light = new Lighting(quality.shadowMapPx)
+    const f = newFrame(winter, quality)
+    for (let c = 0; c <= 1; c += FRAME) {
+      f.moment = { season: 'winter', from: 'winter', to: 'winter', change: c, sinceLanding: 0, globe: REST_POSE, mix: 0, seed: 1, time: 0, beat: null, period: null } as Moment
+      f.mix.light = 0
+      f.mix.bloom = changeBloom(c)
+      light.update(f)
+      expect(f.image.toArray(), `one season at ${c}`).toEqual(f.pool.toArray())
+    }
+  })
+
+  it('reads the image and not the pool where the slab bakes the mirror image of the glass', () => {
+    const frag = (makeSlab().material as THREE.ShaderMaterial).fragmentShader
+    const near = frag.split('\n').filter((line) => line.includes('vec3 near ='))
+    expect(near.length).toBe(1)
+    expect(near[0]).toContain('uImage * (')
+    expect(near[0]).not.toContain('uPool')
+    expect(near[0]).not.toContain('uPour')
+    // The base's own image in that line is lit by the room alone, so it falls with the room and shows no base while two cross.
+    expect(near[0]).toContain('lit * body')
+    const f = newFrame(winter, quality)
+    f.image.setRGB(0.25, 0.5, 0.75)
+    updateSurface(f)
+    expect(surfaceUniforms.uImage.value.toArray()).toEqual([0.25, 0.5, 0.75])
   })
 
   it('holds everything inside the glass through the fallen exposure: both seasons\' lights and what the room sends in', () => {
