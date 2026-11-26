@@ -60,3 +60,19 @@ walk/tablet-2-mid-shake.jpg
 walk/tablet-3-landed.jpg
   Shows: just landed in fall. State: not busy, fall lit, the page says "Fall". The bar is at its dimmed floor (60
   percent), as on the phone. Run tablet-1, picture 17-row-1-fall.
+
+walk/hd-1-rest.jpg
+  Shows: hd 1920 x 1080, pointer, at rest in winter with the controls, after the one hint and a move of the pointer.
+  State: winter lit, not busy, the bar awake, no sound control (no sound files here), so the four marks stand to the
+  left of the Shake control. Run hd-1, picture 09-returned.
+
+walk/hd-2-mid-shake.jpg
+  Shows: the same page in the middle of a shake by the Shake control, summer to fall, the first of four in a row: the
+  globe lifted and leaning, the liquid stirred, sand thrown on the table. The controls keep their place, clear of the
+  globe. State: busy, summer still lit, a small dot under the fall mark for the season to come, the Shake control held.
+  Run hd-1, picture 15-row-1-fall-across-1.
+
+walk/hd-3-landed.jpg
+  Shows: just landed in fall. State: not busy, fall lit, the page says "Fall". The bar is at its dimmed floor (60
+  percent); the lanterns' reflections on the table pass behind the marks, which stay legible. Run hd-1, picture
+  17-row-1-fall.
