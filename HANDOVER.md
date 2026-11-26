@@ -150,3 +150,11 @@ Whole frame PSNR / SSIM, then the globe's rectangle. Seconds are for the frame a
 
 - `.gitignore` does not name `out/master/` or `out/deliver/`.
 - `Session.open` waits for the clone's render lock without a word. The master says so itself before it waits.
+
+## Job 4: values that are no number (branch `agent/p6-master4`)
+
+- After every frame of `film-b` and `loop` the tool asks the page `window.showcase.dev.sanity()` and writes the count into the frame's side file (`notNumber`, `sanityMs`) and the chunk's record (`notNumber`: `total`, `frames`, `unread`, `measure`, `precision`, `blind`, `msAFrame`; `mark: "NOT A NUMBER"` when the total is above 0).
+- A count above 0 prints one loud line with the frame and the count, keeps the PNG under `out/work/master/<what>/not-a-number/`, and the other chunks are drawn. The run ends with an error that lists the marked chunks. `--collect` lists them like `FLAT:` and ends with an error; `--encode` refuses them.
+- Proof, film B frame 2115, hd, 24 samples, lavapipe: 3 values on `4d9963ca` (build `652230a2dfb97a64`), 0 on `03b972d7` (build `edc6089afec023dd`) and 0 on main `0e9dbcca` (build `06926917ace0eb4c`). At uhd with 1 sample the same frame of `4d9963ca` counts 0: the fault needs the sample that holds it.
+- Cost: the page reads the whole mean back in strips of 64 rows. Measured 102 and 111 ms a frame at uhd (float32), 46 to 88 ms at hd.
+- `npm run film` makes the same read in `Run.renderChunk` of `tools/lib/frames.mjs` and still encodes: a rough film is for looking.
