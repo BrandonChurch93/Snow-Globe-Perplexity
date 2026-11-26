@@ -8,6 +8,8 @@ export interface GlobePose {
   z: number
   tiltX: number
   tiltZ: number
+  /** The turn of the globe about its own upright axis, in radians, taken before the tilt: the stage turns it by Euler(tiltX, twist, tiltZ, 'XZY'). Absent is none. */
+  twist?: number
 }
 
 export const REST_POSE: GlobePose = { x: 0, y: 0, z: 0, tiltX: 0, tiltZ: 0 }
@@ -19,6 +21,9 @@ export interface ShakePath {
 
 export const SHAKE_CHANNELS = ['x', 'y', 'z', 'tiltX', 'tiltZ'] as const
 export type ShakeChannel = (typeof SHAKE_CHANNELS)[number]
+/** The channels of a table: the five every hand has and the twist, which only the held hand makes. */
+export const MOTION_CHANNELS = [...SHAKE_CHANNELS, 'twist'] as const
+export type MotionChannel = (typeof MOTION_CHANNELS)[number]
 
 export interface ShakeStroke {
   beat: number
@@ -44,6 +49,8 @@ export interface ShakePlan {
   rollStart: number
   overshoot: number
   settleEnd: number
+  /** The most the wrist turns the globe about its upright axis, in radians: zero for the first hand. */
+  twistPeak: number
 }
 
 export interface ShakeMotion {
@@ -53,9 +60,9 @@ export interface ShakeMotion {
   readonly endBeat: number
   readonly plan: ShakePlan
   /** The channel or one of its derivatives per beat, order 0 to 3. */
-  at(channel: ShakeChannel, beat: number, order?: number): number
+  at(channel: MotionChannel, beat: number, order?: number): number
   /** The largest third derivative per beat cubed that any piece of the table between the two beats holds. */
-  jerkPeak(channel: ShakeChannel, from: number, to: number): number
+  jerkPeak(channel: MotionChannel, from: number, to: number): number
 }
 
 const RAD = Math.PI / 180
@@ -151,6 +158,10 @@ const HAND = {
   rockShrink: 0,
   rockPower: 1.5,
   rockFade: 0.82,
+  twistDeg: 0,
+  twistEase: 3,
+  twistTurns: 2.5,
+  twistDamping: 0.55,
 } as const
 
 type Hand = { [K in keyof typeof HAND]: (typeof HAND)[K] extends readonly number[] ? readonly number[] : number }
@@ -172,7 +183,8 @@ const HELD: Hand = {
   heldReach: 0.6,
   heldJoin: [0.14, 0.09],
   heldLead: 0.07,
-  dipShare: 0.4,
+  /** More than the room under the rim gives, so each swoop is as deep as the rim's air allows: about 4 mm in the film, where 0.4 left 2.9. */
+  dipShare: 0.7,
   /** The rock after the landing: each rock lasts this share of the one before it, so the foot rocks over once, back, and once more, quicker each time. */
   overshootDeg: [2.3, 2.4],
   rockFirst: 0.74,
@@ -193,6 +205,9 @@ const HELD: Hand = {
   liftQuick: 2.2,
   windLate: 1,
   awayMm: [13.6, 14.6],
+  /** The twist. The wrist turns the globe about its own upright axis as it swings it, which needs no room under the foot: the turn trails the
+   * wrist through a softer spring than the lean, so it whips past a few frames after each reversal and comes back more slowly than it went. */
+  twistDeg: 10,
 }
 const keepsOldHand = (name: string): boolean => name === 'test' || name.startsWith('test:') || name === 'preroll'
 
@@ -537,6 +552,19 @@ function build(name: string): ShakeMotion {
     rockPeak = Math.max(rockPeak, Math.abs(rock[i]!))
   }
   const rockGain = rng.sign() * pick(rng, H.rockGain)
+  // The twist answers the pull, not the place: the globe sits in the hand ahead of the wrist, so the hand's pull at a reversal swings the
+  // front of the glass on past the turn, some frames late, and between the turns, where the hand only carries it, it comes back. The pull
+  // is eased through a stiff spring first, so the turn is as quick as the bound on jerk lets a hand turn a weight and no quicker.
+  const twist = new Float64Array(count)
+  if (H.twistDeg > 0) {
+    const pullOf = derive(stroke, h, (i) => i <= iOff || i >= iHome, [iOff, iHome]).d2
+    const kick = new Float64Array(count)
+    for (let i = 0; i < count; i++) kick[i] = -pullOf[i]!
+    const spun = follower(follower(kick, H.twistEase, 1), H.twistTurns, H.twistDamping)
+    let most = 0
+    for (let i = 0; i < count; i++) most = Math.max(most, Math.abs(spun[i]!))
+    for (let i = 0; i < count; i++) twist[i] = most > 0 ? (spun[i]! / most) * H.twistDeg * RAD : 0
+  }
 
   const strokes = extremesOf(stroke)
   let lastSwing: ShakeStroke = { beat: lastBeat, mm: 0 }
@@ -694,7 +722,12 @@ function build(name: string): ShakeMotion {
     tiltZ[i] = baseZ[i]! + rocking * moveZ[i]!
     peakTilt = Math.max(peakTilt, Math.asin(Math.min(1, tiltSine(tiltX[i]!, tiltZ[i]!))))
   }
-  for (const v of [x, y, z, tiltX, tiltZ]) {
+  let twistPeak = 0
+  for (let i = 0; i < count; i++) {
+    if (beatOf(i) >= touch) twist[i] = 0
+    twistPeak = Math.max(twistPeak, Math.abs(twist[i]!))
+  }
+  for (const v of [x, y, z, tiltX, tiltZ, twist]) {
     v[0] = 0
     v[iLand] = 0
     for (let i = 0; i < count; i++) if (beatOf(i) >= endBeat) v[i] = 0
@@ -705,18 +738,19 @@ function build(name: string): ShakeMotion {
 
   const ends = (i: number): boolean => i === 0 || beatOf(i) >= endBeat
   const iEnd = Math.min(last, Math.ceil(endBeat * K - 1e-9))
-  const channels: Record<ShakeChannel, Channel> = {
+  const channels: Record<MotionChannel, Channel> = {
     x: derive(x, h, (i) => ends(i) || i <= iOff || i >= iRest, [iOff, iRest]),
     y: derive(y, h, (i) => ends(i) || i === iLift || i === iStrokes, [0, iLift, iStrokes, iEnd]),
     z: derive(z, h, ends, [0, iEnd]),
     tiltX: derive(tiltX, h, ends, [0, iEnd]),
     tiltZ: derive(tiltZ, h, ends, [0, iEnd]),
+    twist: derive(twist, h, ends, [0, iEnd]),
   }
 
   let fastest = { beat: liftEnd, mmPerBeat: 0 }
   for (let i = iLift + 1; i < iStrokes; i++) if (Math.abs(strokeRate[i]!) > fastest.mmPerBeat) fastest = { beat: beatOf(i), mmPerBeat: Math.abs(strokeRate[i]!) }
 
-  const at = (channel: ShakeChannel, beat: number, order = 0): number => {
+  const at = (channel: MotionChannel, beat: number, order = 0): number => {
     if (!(beat > 0) || beat >= endBeat) return 0
     const f = beat * K
     const i = Math.min(last - 1, Math.floor(f))
@@ -727,7 +761,7 @@ function build(name: string): ShakeMotion {
     if (order === 2) return (2 * k[2] + u * (6 * k[3] + u * (12 * k[4] + u * 20 * k[5]))) * K * K
     return (6 * k[3] + u * (24 * k[4] + u * 60 * k[5])) * K * K * K
   }
-  const jerkPeak = (channel: ShakeChannel, from: number, to: number): number => {
+  const jerkPeak = (channel: MotionChannel, from: number, to: number): number => {
     let peak = 0
     const i0 = Math.max(0, Math.floor(from * K))
     const i1 = Math.min(last - 1, Math.ceil(to * K) - 1)
@@ -766,6 +800,7 @@ function build(name: string): ShakeMotion {
       rollStart: touch,
       overshoot,
       settleEnd: endBeat,
+      twistPeak,
     },
     at,
     jerkPeak,
@@ -791,12 +826,18 @@ export function makeShake(name: string): ShakePath {
   if (made) return made
   const m = shakeMotion(name)
   const landing = m.parts.landing
+  const twists = m.plan.twistPeak > 0
   const path: ShakePath = {
     parts: { ...m.parts },
     poseAt(beat: number): GlobePose {
       if (!(beat > 0) || beat >= m.endBeat || beat === landing) return REST_POSE
       const x = m.at('x', beat)
-      return { x: x === 0 ? 0 : x, y: m.at('y', beat), z: m.at('z', beat), tiltX: m.at('tiltX', beat), tiltZ: m.at('tiltZ', beat) }
+      const pose: GlobePose = { x: x === 0 ? 0 : x, y: m.at('y', beat), z: m.at('z', beat), tiltX: m.at('tiltX', beat), tiltZ: m.at('tiltZ', beat) }
+      if (twists) {
+        const twist = m.at('twist', beat)
+        pose.twist = twist === 0 ? 0 : twist
+      }
+      return pose
     },
   }
   paths.set(name, path)
