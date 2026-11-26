@@ -33,7 +33,7 @@
 }
 
 .ui[data-dim] {
-  --dim: var(--dim-to, 0.36);
+  --dim: var(--dim-to, 0.6);
   --fade: var(--dim-out, 0.9s);
 }
 

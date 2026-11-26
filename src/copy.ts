@@ -60,7 +60,7 @@ export const copy = {
 
 export const timing = {
   idleSeconds: 8,
-  dimTo: 0.36,
+  dimTo: 0.6,
   dimOutSeconds: 0.9,
   dimInSeconds: 0.18,
   arriveSeconds: 0.7,
