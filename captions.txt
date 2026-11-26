@@ -76,3 +76,31 @@ walk/hd-3-landed.jpg
   Shows: just landed in fall. State: not busy, fall lit, the page says "Fall". The bar is at its dimmed floor (60
   percent); the lanterns' reflections on the table pass behind the marks, which stay legible. Run hd-1, picture
   17-row-1-fall.
+
+THE LAST WALK of main 38eff8da (engine hash 652230a2dfb97a64, built in a clean worktree). Pictures under `walk-f/`:
+the page as a visitor has it, the live app at `?quality=low` drawn by the tools' software renderer (lavapipe), the
+page's own controls drawn on the processor. No source file was changed for them: none is the before or the after of a
+mend. Tier: none (the live app at quality low).
+
+walk-f/phone-0-first-look.jpg
+  Shows: phone 390 x 844, touch, the first look as it came, three pictures side by side. Left: the first picture the
+  tool could take, 386 ms after the address was asked: the soft picture (the browser's own record puts its first paint
+  and its first paint with a picture in it both at 180 ms). Middle: the still, as the page laid it. Right: the live
+  picture with the controls. State: the still lies on the live picture with no shift (0 px by whole pixels and between
+  them, searched 4 px each way), and the live picture stays where it came (0 px over its first 68 frames, searched 48
+  px each way). Run phone-1, pictures 36-first-look-came-first, 41-first-look-still-by-page and
+  38-first-look-came-live.
+
+walk-f/phone-1-rest.jpg
+  Shows: at rest in winter with the controls, after the one hint. State: winter lit, not busy, the bar awake, no sound
+  control (there are no sound files on this machine). Run phone-1, picture 04-hint-after.
+
+walk-f/phone-2-mid-shake.jpg
+  Shows: the middle of a shake by the Shake control, winter to spring, the third of four in a row. The camera has
+  drawn back; the controls keep their place, clear of the globe. State: busy, winter still lit, a small dot under the
+  spring mark for the season to come, the Shake control held. Run phone-1, picture 22-row-3-spring-across-2.
+
+walk-f/phone-3-landed.jpg
+  Shows: just landed in spring, the petals of the way home still in the liquid. State: not busy, spring lit, the page
+  says "Spring". The bar is at its dimmed floor (60 percent): a shake takes more than eight seconds without input on
+  this renderer. Run phone-1, picture 24-row-3-spring.
