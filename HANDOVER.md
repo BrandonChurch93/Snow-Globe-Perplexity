@@ -34,6 +34,14 @@ The joining machine: `npm run master -- --collect DIR`, `npm run master -- --joi
 3. ffmpeg 8 left the colour primaries and the transfer of every chunk unknown although the encoder was given them. The join's table caught it. The tags are now set on the frames and in the x264 parameters, and a chunk is checked for all four when it is made. The older encodes in `tools/lib/encode.mjs` pass the same options and were not looked at.
 4. A machine out of memory draws black frames without an error (found by render_speed_prober). The guards are in the README section. Checked at `preview`, `draft`, lavapipe: film B frames 0, 1, 3598 and 3599 and the loop's frames 0, 24, 48 and so on to 456, and 479 are none of them flat (darkest 0, brightest 255 in every one), so `FLAT_FRAMES` names no exception. `npm run determinism` passed with the guards in (3 pictures, 4 page loads, 174 s) and a still with `--diag standins` is still written, all black.
 
+## Measurement c, uhd, lavapipe, against 24 samples
+
+Whole frame PSNR / SSIM, then the globe's rectangle. Seconds are for the frame alone.
+
+- Rest, frame 60: 4: 32.25 / 0.9309, 31.94 / 0.9178; 8: 36.10 / 0.9579, 35.78 / 0.9521; 12: 37.80 / 0.9687, 37.51 / 0.9654; 16: 40.21 / 0.9798, 39.82 / 0.9776. 24 samples took 128.7 s.
+- Storm, frame 644: 4: 35.10 / 0.9579, 34.15 / 0.9300; 8: 38.95 / 0.9768, 38.29 / 0.9642; 12: 40.60 / 0.9823, 39.36 / 0.9724; 16: 42.92 / 0.9878, 41.77 / 0.9811. 16 samples took 87.3 s, 12: 67.0, 8: 43.1, 4: 23.4.
+- Season change, frame 666: 4: 32.81 / 0.9217, 30.29 / 0.7885; 8: 37.69 / 0.9568, 34.63 / 0.8836; 12: 38.41 / 0.9656, 35.43 / 0.9146; 16: 39.74 / 0.9726, 36.99 / 0.9365. 16 samples took 137.1 s, 12: 105.3, 8: 68.8, 4: 36.9: this frame costs 8.6 s a sample, 1.6 times the others.
+
 ## What was run by hand
 
 - At `preview`, SwiftShader: a range of two chunks, killed with `kill -9` during frame 7 and run again (`53 frames to render (7 more are on disk as PNGs)`), shipped to `agent/p6-chunks-test`, collected into a fresh folder, joined from that folder alone with a 1.0 s sound. The second pass of this, after the colour tags were mended, passed every row of the table.
@@ -46,7 +54,7 @@ The joining machine: `npm run master -- --collect DIR`, `npm run master -- --joi
 - `--procs 2` and `--local` were never run. `--join film-a` and `--join loop` were never run to the end.
 - No `uhd` chunk at 12 samples, no real master, no join of `uhd` chunks. The new flat-frame refusal in `--collect` and `--join` was run only on the test chunks. A lost WebGL context was not provoked: that guard is read, not seen to fire.
 - `npm run render:local -- --proof --rehearse` was started under SwiftShader, ran normally for 14 of 60 frames and was stopped for time.
-- The storm and season-change sample frames (644 and 666) exist only at 2 samples: tables and sheets for them were not made. The sample table for the frame at rest is in the report, at `uhd` under lavapipe and at `hd` under SwiftShader.
+- No neighbour-frame (flicker) measurement under lavapipe, and none at all for the storm and the change.
 - The hd card loop and the card still from the 4K loop: not built. `npm run loop` joins its own chunks in `out/work/loop/<format>-<tier>/` and writes `out/work/loop/card-loop.mp4`, `card-loop-web.mp4` and the card still, which `npm run keep -- --deliver` copies by name. To come from the 4K loop it needs a flag that takes `out/deliver/snow-globe-loop-4k60.mp4` as the source of `card-loop.mp4` (every second frame, scaled, as `--hd` does) and the loop's frame 0 PNG, which `--join loop` already writes beside the master, as the card still.
 
 ## Not mine to mend
