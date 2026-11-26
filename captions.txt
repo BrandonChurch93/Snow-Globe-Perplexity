@@ -77,3 +77,6 @@ After. Fourth change, fall to winter: film frames 2833 to 2838, whole frames set
 
 24-swap4-foot-2833-2838-review.jpg
 After. The foot of the glass in the same six frames at their own pixels, two to a row: 2833 and 2834, 2835 and 2836, 2837 and 2838, cut as in picture 18. Format hd, tier review, commit bbe4db9b. The two bases share most of their line here, so the grain is a fringe of a few px, up to about 15 px at the right end where winter's base has its notch. 2835 and 2836 hold the same outline.
+
+25-foot-675-final-preview.jpg
+After. The foot of the glass in film frame 675 at its own pixels, a cut of 480 by 110. Format preview (960 by 540), tier final (24 samples a frame), commit bbe4db9b. The one frame drawn at final tier: the strip that spring's base covers reads as a soft band with a faint grain.
