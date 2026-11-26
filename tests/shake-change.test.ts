@@ -6,6 +6,7 @@ import { GLASS_COME, GLASS_LEAVE, GUST_CLOSES, GUST_LAST_DOWN, GUST_LAST_DOWN_AT
 import { BASE_PASS, CHANGE_COVER, DRESSING_CHANGE, changeBloom, changeRamp, changeSpan, partChange, SEASONAL_PARTS } from '../src/shake/change'
 import { shakeMotion } from '../src/shake/table'
 import { CHANGE_BLOOM } from '../src/scene/lighting'
+import { makeSlab, REFLECT_MIX, ReflectMix, reflectStep } from '../src/scene/surface'
 
 const s = config.shake
 const BEAT_S = 60 / config.film.defaultBpm
@@ -355,5 +356,94 @@ describe('the dressing on the glass under a change', () => {
     // One sample, the app's own path: the plain hash.
     expect(passStep(0.5, 1)).toBe(0)
     for (let j = 0; j < 997; j++) expect(passLevel(j / 997, 0, 1)).toBe(j / 997)
+  })
+})
+
+describe('the table between two levels of quality', () => {
+  const EIGHTH = 1 / REFLECT_MIX.fewestFrames
+
+  it('crosses over in a few frames where the frames are slow and in half a second where they are quick, and never by more than an eighth a frame', () => {
+    const cases: [number, number][] = [
+      [0.25, REFLECT_MIX.fewestFrames],
+      [1 / 12, REFLECT_MIX.fewestFrames],
+      [1 / 30, 15],
+      [1 / 60, 30],
+      [1 / 240, REFLECT_MIX.mostFrames],
+      [0, REFLECT_MIX.mostFrames],
+      [-3, REFLECT_MIX.mostFrames],
+      [Number.NaN, REFLECT_MIX.mostFrames],
+      [900, REFLECT_MIX.fewestFrames],
+    ]
+    expect(REFLECT_MIX.fewestFrames).toBeLessThanOrEqual(8)
+    expect(REFLECT_MIX.seconds).toBeGreaterThanOrEqual(0.4)
+    for (const [seconds, frames] of cases) {
+      for (const to of [0, 1]) {
+        const seen: number[] = [1 - to]
+        while (seen[seen.length - 1] !== to && seen.length < 500) seen.push(reflectStep(seen[seen.length - 1]!, to, seconds))
+        expect(seen.length - 1, `frames from ${1 - to} to ${to} at ${seconds} s a frame`).toBe(frames)
+        for (let i = 1; i < seen.length; i++) {
+          const step = Math.abs(seen[i]! - seen[i - 1]!)
+          expect(step, `step ${i} at ${seconds} s a frame`).toBeGreaterThan(0)
+          expect(step, `step ${i} at ${seconds} s a frame`).toBeLessThanOrEqual(EIGHTH + 1e-9)
+          expect(seen[i]! >= 0 && seen[i]! <= 1).toBe(true)
+        }
+        expect(reflectStep(to, to, seconds), 'at rest').toBe(to)
+      }
+    }
+  })
+
+  it('crosses over at a step of the page, either way, and from where it stands when the page turns back', () => {
+    const mix = new ReflectMix()
+    let clock = 0
+    const frames = (mirror: boolean, count: number, seconds = 0.25): number[] => Array.from({ length: count }, () => mix.frame(true, mirror, (clock += seconds)))
+    mix.level()
+    expect(frames(true, 5), 'the first frames, at high').toEqual([1, 1, 1, 1, 1])
+    mix.level()
+    expect(frames(true, 5), 'at medium, which draws the mirror too').toEqual([1, 1, 1, 1, 1])
+    mix.level()
+    expect(frames(false, 10), 'down to low').toEqual([7, 6, 5, 4, 3, 2, 1, 0, 0, 0].map((k) => k * EIGHTH))
+    mix.level()
+    expect(frames(true, 3), 'back up').toEqual([1, 2, 3].map((k) => k * EIGHTH))
+    mix.level()
+    expect(frames(false, 2), 'and down again from where it stands').toEqual([2, 1].map((k) => k * EIGHTH))
+    mix.level()
+    const quick = frames(true, 40, 1 / 60)
+    for (let i = 1; i < quick.length; i++) expect(quick[i]! - quick[i - 1]!, `quick frame ${i}`).toBeLessThanOrEqual(1 / 30 + 1e-9)
+    expect(quick[quick.length - 1]).toBe(1)
+    // The mirror pass runs for as long as any of the mirror is in the picture, and not a frame longer.
+    mix.level()
+    const down = frames(false, 12)
+    expect(down.filter((share) => share > 0).length, 'frames that still draw the mirror after the step down').toBe(REFLECT_MIX.fewestFrames - 1)
+  })
+
+  it('draws a picture of the capture whole at once, whatever was drawn before it', () => {
+    const mix = new ReflectMix()
+    const live = (mirror: boolean, time: number): number => {
+      mix.level()
+      const share = mix.frame(true, mirror, time)
+      mix.level()
+      return share
+    }
+    const order = [true, false, false, true, true, false, true, false]
+    order.forEach((mirror, i) => expect(live(mirror, i / 60), `picture ${i}`).toBe(mirror ? 1 : 0))
+    // Pictures of samples and views between them, and a first live picture after those.
+    expect(mix.frame(false, true, 5)).toBe(1)
+    expect(live(false, 5.1)).toBe(0)
+    expect(mix.frame(false, true, 5.2)).toBe(1)
+    expect(mix.frame(false, false, 5.2)).toBe(0)
+    expect(live(true, 5.3)).toBe(1)
+    expect(live(false, 5.3 + 1 / 60)).toBe(0)
+  })
+
+  it('draws each of the two alone where the other has no share, and the two by their shares between', () => {
+    const frag = (makeSlab().material as THREE.ShaderMaterial).fragmentShader
+    const mirror = frag.indexOf('if (uReflect.x > 0.0) {')
+    const baked = frag.indexOf('if (uReflect.y > 0.0) {')
+    expect(mirror).toBeGreaterThan(0)
+    expect(baked).toBeGreaterThan(mirror)
+    expect(frag.slice(mirror, baked)).toContain('slabMirror(')
+    expect(frag.slice(baked)).not.toContain('slabMirror(')
+    for (const line of ['seen = far * uReflect.y + seen * uReflect.x;', 'image = near * uReflect.y + image * uReflect.x;', 'held = clamp(body + glass, 0.0, 1.0) * uReflect.y + held * uReflect.x;']) expect(frag, line).toContain(line)
+    expect(frag).not.toMatch(/uReflect\.[xy] > 0\.5/)
   })
 })
