@@ -235,7 +235,7 @@ if (turfBankA > 0.01) {
   bankTone *= mix(${BANK.lip.toFixed(2)}, ${BANK.deep.toFixed(2)}, smoothstep(${BANK.fall[0].toFixed(2)}, ${BANK.fall[1].toFixed(2)}, vSurf.y));
   bankTone = mix(bankTone, bankTone * ${glsl(BANK_SUN)}, (1.0 - smoothstep(${BANK.sun[0].toFixed(2)}, ${BANK.sun[1].toFixed(2)}, vSurf.y)) * (0.35 + 0.65 * bankCrest));
   turfSoil = smoothstep(0.42, 0.56, vSurf.y);
-  float bankAround = atan(vStageLocal.z, vStageLocal.x) * ${SOIL.roots.toFixed(1)};
+  float bankAround = (dot(vStageLocal.xz, vStageLocal.xz) > 0.0 ? atan(vStageLocal.z, vStageLocal.x) : 0.0) * ${SOIL.roots.toFixed(1)};
   float bankBand = bankNoise(vec3(bankAround * 0.12, vStageLocal.y * 1.5, 2.0));
   vec3 soilTone = ${glsl(SOIL.tone)} * (0.55 + 0.9 * bankPatch) * (0.6 + 0.8 * bankBand) * (0.75 + 0.5 * bankFine * bankSpeck);
   float soilPebble = smoothstep(0.74, 0.9, bankCells(bankQ * 0.34 + 2.7)) * smoothstep(0.5, 0.66, bankNoise(bankQ * 0.19 + 4.0));
