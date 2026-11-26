@@ -3,13 +3,16 @@ import type { SeasonKit } from '../kit'
 // Part `light-summer`: the last hour of sun. The key is one strong warm light, low, behind the globe and to its right: it draws
 // the flare on the glass's upper right shoulder (its reflection at the limb), throws the globe's shadow toward the camera and
 // to the left, and is focused by the globe into the pool of light there (`glass.ts` reads the same direction). The rim is the
-// same sun's spill from the back left; the card is the warm bounce that lights the front of the base and of the miniature.
+// same sun's spill from the back left: the two rake the shoulder and the flanks of the base. The sky is cool, so what the sun
+// does not reach is blue-grey, as the approved image has the shade between the ridges. The card is the warm light the glowing
+// liquid and the lit table send back: it stands in front, upper left, lights the front of the base to cream and reaches
+// inside the glass (`inside` above 1: the liquid round the miniature is itself bright).
 // Fitted to `references/approved/summer-rest.png` by the recipe "The light of one more season".
 export const rig: SeasonKit['rig'] = {
-  key: { color: [1, 0.8, 0.56], intensity: 1.3, from: [250, 230, -400] },
-  rim: { color: [1, 0.82, 0.6], intensity: 0.9, from: [-330, 250, -280] },
-  sky: [0.1, 0.082, 0.062],
-  ground: [0.035, 0.028, 0.02],
+  key: { color: [1, 0.82, 0.6], intensity: 1.9, from: [250, 230, -400] },
+  rim: { color: [1, 0.84, 0.64], intensity: 1.3, from: [-330, 250, -280] },
+  sky: [0.075, 0.092, 0.115],
+  ground: [0.03, 0.03, 0.032],
   fill: 0.7,
-  card: { color: [1, 0.8, 0.58], intensity: 0.16, from: [500, 140, 60], wrap: 0.2, specular: 0.4, inside: 0.3 },
+  card: { color: [1, 0.84, 0.66], intensity: 0.45, from: [-240, 300, 450], wrap: 0.25, specular: 0.4, inside: 1.2 },
 }
