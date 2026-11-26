@@ -9,7 +9,7 @@ import { loadConfig, readJson, rel, writeJson } from '../tools/lib/paths.mjs'
 import { branchFolder, branchMatches, chunkLines, chunkStem, coverReport, framesOf, heartbeat, joinPlan, lumaPsnrOf, nearestRanges, openingPack as readOpening, pad6, psnrOf, rangeChunks as chunksOfRange, ranges, readChunks, recordMatchesRun, resultName, split, stillName, stillToDo as leftToDo, table, tierOf, totalsFromCut } from '../tools/lib/master.mjs'
 import { Shipper, collectBranches } from '../tools/lib/mastergit.mjs'
 import { levelProblems, pictureLevels, procsProblem } from '../tools/lib/master.mjs'
-import { NOT_A_NUMBER, notNumberLine, notNumberLoud, notNumberOf, notNumberRecord, notNumberUnknown } from '../tools/lib/master.mjs'
+import { NOT_A_NUMBER, notNumberLine, notNumberLoud, notNumberOf, notNumberRecord, notNumberUnknown, shipTitle, shippedLine } from '../tools/lib/master.mjs'
 import { limitsLine, limitsRecord, localProblem, machineLimits, procsGainLine, procsMemoryHolds, readLimits, sameCommand, stoppedAt, stoppedLine } from '../tools/lib/master.mjs'
 import { bestRun, bigSha, butCrf, crfLadder, crfOf, encodeProofRows, finalKbps, hashFolder, intermediateVideo, masterConfigProblems, partName, partPlan, psnrFacts, sendGroups, splitFile, takeFiles, unsplitFile } from '../tools/lib/master.mjs'
 import { flatValue, refuseFlat } from '../tools/lib/page.mjs'
@@ -377,6 +377,13 @@ describe('files on disk', () => {
     expect(b.push()).toBe(true)
     expect(b.unpushed).toBe(false)
 
+    const marked = rec('film-b', 60, 89, { mark: NOT_A_NUMBER, notNumber: notNumberRecord([{ index: 75, notNumber: 3, sanityMs: 40 }]) })
+    writeJson(file('film-b-000060-000089.json', ''), marked)
+    expect(a.add([{ src: path.join(dir, 'made', 'film-b-000060-000089.json'), to: 'film-b/film-b-000060-000089.json' }], shipTitle('film-b', { first: 60, last: 89 }, marked))).toBe(true)
+    expect(a.push()).toBe(true)
+    expect(git(remote, 'log', '--format=%s', branch).stdout.split('\n')).toContain('Chunk film-b-000060-000089, NOT A NUMBER in frame 75 (3): never encoded into a master')
+    expect(readJson(path.join(dir, 'ship-a', 'agent_p6-chunks-unit', 'film-b', 'film-b-000060-000089.json')).mark).toBe(NOT_A_NUMBER)
+
     const log = git(remote, 'log', '--format=%B', branch).stdout
     expect(git(path.join(dir, 'ship-a', 'agent_p6-chunks-unit'), 'config', '--local', 'user.email').stdout.trim()).toBe('test@example.com')
     expect(log).toContain('Chunk film-b-000030-000059')
@@ -389,8 +396,9 @@ describe('files on disk', () => {
     expect(fs.existsSync(path.join(into, '.clone'))).toBe(false)
     expect(fs.existsSync(path.join(into, 'agent_p6-chunks-unit', '.git'))).toBe(false)
     const chunks = readChunks([into])
-    expect(chunks.map((c: Chunk) => c.record.first)).toEqual([0, 30])
+    expect(chunks.map((c: Chunk) => c.record.first)).toEqual([0, 30, 60])
     expect(fs.readFileSync(chunks[1].file, 'utf8')).toBe('two')
+    expect(notNumberOf(chunks[2].record)).toEqual({ total: 3, frames: [{ frame: 75, count: 3 }] })
     expect(collectBranches({ dir: into, say, facts, pattern: 'agent/p6-chunks-*' }).length).toBe(1)
     expect(said.join('\n')).toMatch(/unchanged at/)
     expect(() => new Shipper({ branch: cfg.repo.branch, say, root: dir, facts })).toThrow(/never the code branch/)
@@ -871,6 +879,20 @@ describe('values that are no number', () => {
     expect(notNumberLine({ record: marked, file: '/x/film-b-002100-002129.mp4', from: 'agent/p6-chunks-vm07' })).toBe('agent/p6-chunks-vm07 (film-b 2100 to 2129, drawn on vm07) holds 4 values that are no number in 2 frames: 2115 (3), 2120 (1)')
     expect(notNumberLoud('film-b', 2115, 3)).toBe('NOT A NUMBER: film-b frame 2115 holds 3 values that are no number in its mean, before the lens and the grade. Its chunk is marked NOT A NUMBER and no master is encoded from it. Tell /root the frame. Do not draw it again hoping: the same frame draws the same values.')
     expect(notNumberLoud('loop', 7, 1)).toMatch(/holds 1 value that is no number/)
+  })
+
+  it('says the mark in the commit that ships a chunk and in the line of the run, and nothing more for a good chunk', () => {
+    const c = { first: 2100, last: 2129 }
+    const marked = rec('film-b', 2100, 2129, { mark: NOT_A_NUMBER, notNumber: notNumberRecord([frame(2115, 3), frame(2120, 1)]) })
+    const good = rec('film-b', 2100, 2129, { notNumber: notNumberRecord([frame(2115, 0)]) })
+    expect(shipTitle('film-b', c, good)).toBe('Chunk film-b-002100-002129')
+    expect(shipTitle('film-b', c, good, true)).toBe('Chunk film-b-002100-002129, a test')
+    expect(shipTitle('film-b', c, null)).toBe('Chunk film-b-002100-002129')
+    expect(shipTitle('film-b', c, marked)).toBe('Chunk film-b-002100-002129, NOT A NUMBER in frames 2115 (3), 2120 (1): never encoded into a master')
+    expect(shipTitle('film-b', c, marked, true)).toBe('Chunk film-b-002100-002129, a test, NOT A NUMBER in frames 2115 (3), 2120 (1): never encoded into a master')
+    expect(shipTitle('film-b', c, rec('film-b', 2100, 2129, { mark: NOT_A_NUMBER }))).toBe('Chunk film-b-002100-002129, NOT A NUMBER in frames not named: never encoded into a master')
+    expect(shippedLine('film-b', c, good, 'agent/p6-chunks-vm07')).toBe('shipped the record and the look of film-b-002100-002129 to agent/p6-chunks-vm07 (the picture travels by attachment)')
+    expect(shippedLine('film-b', c, marked, 'agent/p6-chunks-vm07')).toBe('shipped the record and the look of film-b-002100-002129, marked NOT A NUMBER in frames 2115 (3), 2120 (1), to agent/p6-chunks-vm07 (the picture travels by attachment)')
   })
 
   it('refuses to encode a master from a marked chunk, and takes the same chunks without the mark', () => {
