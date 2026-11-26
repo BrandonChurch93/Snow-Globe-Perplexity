@@ -1,0 +1,53 @@
+# Fall's miniature, pass 6: handover
+
+Branch `agent/p6-fall-scene`. Files touched: `assets-src/village-fall/build.mjs`, `src/seasons/fall/mini/village.ts`, `src/seasons/fall/mini/tree.ts`. Make target changed: `village-fall` only (`npm run make -- village-fall`; 288278 triangles, 640 leaves, 560 tufts, 20.50 MB, was 14.28 MB). `tree-fall` is unchanged.
+
+## What changed, part by part
+
+- Roof: fall has its own shingles in `decor` (8 staggered rows of thick slabs, each with its own width, thickness, rise and tone, a worn warm lower edge, and a ridge that sags toward the ends). The shared slates under them are bent dark.
+- Walls: the shared stones are retoned per vertex to dark grey green with near black joints (`STONE`), mossed low (`MOSS`). Upright stone is broken up by the grain map read coarser through its levels (`CHIP`, a cover on the shared surface material).
+- Chimney: the shared pale brick is turned to dark grey stone (`CHIMNEY`). The branch stands before the roof's branch in `autumn()`: in the other order the roof's test took half of the chimney and left it in pale stripes.
+- Door: darker and greener (`DOOR`). Steps: finer mesh, speckled, darker.
+- Ground: 640 leaves (were 230) with a wider tone range and a dark midrib, 560 grass tufts (were 360) with bright tips, more fill (`GROUND_FILL 8`), warmer lamp light on it (`NEAR.lamp.power 12`), a bounce on the bank and the cottage foot (`BOUNCE.bank`, `BOUNCE.side`).
+- Rim stones and flags: finer mesh, stronger mottle, darker edges, brighter faces.
+- Water: finer lapping and more lamp in it (`WATER`).
+- Pumpkins: deeper ribs and skin mottle; halo smaller and fainter so it does not veil the door and steps (`HALO_KIND.pumpkin`).
+- Fence: darker weathered wood with stronger grain, splits and end grain.
+- Shrubs: per leaf tone and shade (`BUSH`).
+- Tree: `BARK_RELIEF 1.25`, lamp and pumpkin light on the wood a little up. The tree's asset is untouched.
+
+## What the number is made of
+
+M3 is the mean squared high pass (sigma 1.5 px at hd) of the luma over the miniature's pixels, against the approved picture at the same size. It rises with features 2 to 6 px wide and with brightness squared.
+
+- A run with the chimney half in pale stripes read about 0.74. The stripes alone carried about 0.07 of it and they are wrong against the approved chimney. They were removed, and the number fell to where it stands.
+- A run with paler roof edges read 0.73; the edges were paler than the approved roof and were toned down.
+- Brighter twigs and more ember light on the tree lowered the number and were taken back.
+- A finer grain cover averaged out under a pixel at hd and was removed. The coarser one (`CHIP`) is kept; it adds little to the number and was looked at in one 3840 draft still, where it does not sparkle. It was not seen in motion.
+- Wider shingle gaps, a wider shingle tone range and `BARK_RELIEF 1.5` changed neither the number nor the picture at hd and were not kept.
+
+Where the number is still lost, by a 6 by 4 grid over the miniature (approved energy against build): the front wall and door 0.0062 against 0.0030; the ground in front of the door 0.0083 against 0.0034; the tree's crown 0.0038 against 0.0026; the right half of the trunk 0.0043 against 0.0018. The green fog band covers about half of the mask's bottom row and belongs to the air.
+
+## What is still short of the approved picture
+
+1. The wall's stones are the shared model's large stones. Their size is in `assets-src/village`, not in fall's files. Small stones in tight courses need fall's own wall mesh there, or a wall in `assets-src/village-fall` over the shared one.
+2. The chimney is the shared thin brick courses in dark grey, not blocks of stone with a cap of its own.
+3. The door is the shared door: it reads warm brown under the lamp and the pumpkin, not grey green planks deep in a stone arch.
+4. The roof reads as thick rows more than as single shingles, and it is brighter and more orange than the approved dark brown violet.
+5. The trunk shows pale diagonal glints, and its bark could only be judged through the air's ember cloud (`src/seasons/fall/veil.ts`), which lies over all of it.
+6. The ground is seen at a flatter angle than in the approved picture, with the fog band over its front. Layout was left as it is.
+7. The fence in front is dark and plain at hd.
+
+## Scratch tools (not in the repo)
+
+A replica of M3 with a per cell grid, a tone reader per box and a pair maker lived in `out/work/mine/`; they are not committed. The replica reads about 1 percent under the official number.
+
+## Checks on the merged tree (d260e9b2, main 58687dc1 merged)
+
+- `npx tsc --noEmit` clean; `npx vitest run`: 59 files passed, 1 skipped; 805 tests passed, 8 skipped.
+- M3 before: miniature 0.534, base 0.700. M3 after: miniature 0.709, base 0.700. The line still fails: 0.6996 against 0.75.
+- G15: pass, high 1714204 of 1800000 triangles in the fullest season. Fall's own count in the rest still's record at hd: 1288815 before, 1445415 after.
+- `npm run determinism`: pass, 3 pictures, 4 page loads.
+- The still with `--diag standins` is black (largest value 0 over the whole frame).
+- Winter, spring and summer at rest, draft, hd: sha256 equal to main 58687dc1.
+- Fall at `--state landed` (draft, hd) and the sheet `shake-3` (draft, 12 frames) were looked at; nothing new seen wrong at their size.

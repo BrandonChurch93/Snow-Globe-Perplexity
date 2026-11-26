@@ -1,0 +1,4 @@
+1-miniature-pair.jpg: fall's miniature at rest, hero camera, hd, review tier (8 samples). Approved picture left, main before this pass middle, this branch (d260e9b2) right. Each panel is about 400 px wide.
+2-cottage-pair.jpg: the cottage, same three stills, review tier, enlarged 1.47 times. Approved left, before middle, after right.
+3-ground-pair.jpg: the door, pumpkin, steps, fence, rim stones and pond, same three stills, review tier, enlarged 1.24 times. Approved left, before middle, after right.
+4-uhd-one-to-one.jpg: after only, fall at rest, hero camera, 3840 x 2160, draft tier (2 samples), one to one crop. Taken one small change before the last commit (the door's tone); a still, not motion.
