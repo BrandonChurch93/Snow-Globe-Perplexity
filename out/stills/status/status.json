@@ -1,47 +1,47 @@
 {
-  "number": 178,
-  "time": "2026-11-26 21:41 UTC",
+  "number": 181,
+  "time": "2026-11-26 23:08 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 178 · 2026-11-26 21:41 UTC · Phase 6",
-    "The change of season no longer burns sky blue around summer. The change's owner gave each season its own white for the flood's bank (`bankWhite`, 0.3 for summer); it is in main as `1878461b`. On frames 1400 and 2086 the left two thirds of the glass were sky blue; with the mend the flood is a warm cream gold (picture 3). By its sha256 at draft the eight keys at rest and mid shake are unchanged and so are nine frames of the other three changes. Not built yet: the cover's five points (the column of glow, the pool over the base, the flat globe, the lamps gone, the blink). First change as a picture about 23:30 UTC, all four with their checks about 01:30 UTC.",
-    "Summer at rest and at the landing were drawn again on main (pictures 1 and 2) after the tree's fourth pass (`d75524aa`), the glass's third list (`698ed8d6`) and the cottage's third pass (`18a19dd5`). The detail gate is green again: \"pass M3 summer-rest: 0.8266 (threshold 0.75, detail.minSharpnessRatio)\". Still below the bar beside the approved picture (picture 4): a grey white film over the upper middle of the glass, a crown of dark shelves where the approved has plump bright clumps, seed heads too many and too large, a base too grey. Every part is on its next list: glass fourth, tree fifth, cottage fourth, sand fourth, stone third, air third.",
-    "Main was red on one test from 21:27 UTC until the mend. The test left `src/seasons/summer/arrival.ts` out while the file was with its builder, and the sand's third pass brought in a `normalize` of a flat vector without a test of its length (line 183). The change's merge took the exemption out, rightly, and I merged it without the whole test run. Four builders found it on their merges and held their pushes. Mended with the form line 196 of the same file already has; every merge into main now runs the whole test run before its push.",
-    "The loose matter now trails the glass in a shake, on the inertia builder's candidate (not in main yet): over frames 1308 to 1322 the glass moves 18.10 px at 400 wide, the same petals 10.81 px before and 3.32 after; the lift no longer loses a frame. It goes in after the hand's final report (decision 168).",
-    "The standstill branch holds all eight stills byte for byte on a farm machine. One of its own tests is red on the merged tree (the size bound of summer's baked grains, which grew with the sand's third pass); it goes in when its builder has mended that.",
-    "A push from this machine failed at 21:22 for want of the sign-in; the eleven commits went through a courier as a verified bundle, a plain fast forward. Pushes from here work again.",
-    "Rough draft 4 is being drawn: only frames 1200 to 2399, which changed; the other eight ranges are draft 3's.",
-    "Sound: 7,420 of 10,000 credits spent, no call since.",
-    "phase 6: 18.86 h used of its 12.00 h box",
-    "allowance (after the review): 18.86 h used of 12.00 h allowed",
+    "Status 181 · 2026-11-26 23:08 UTC · Phase 6",
+    "Main is `57503019`, pushed 23:06 UTC: the hand's last pass is in (a twist of up to 10 degrees after each turn, a deeper arched dip, uneven strokes with a heavy start). Read before the push: `npx tsc --noEmit` clean, the build green, the whole test run 58 files passed and 1 skipped, 799 tests passed and 4 skipped, and the eight draft stills of the four seasons at rest and at the landing byte for byte equal with it and without it. The inertia's builder took it up at 23:07 UTC with 60 minutes.",
+    "Waiting here for the test run's last word, not yet on origin: summer's base, first push, and the standstill (local main `8aabc817`). On that tree summer's detail line is green for the first time: \"pass M3 summer-rest: 0.8159 (threshold 0.75, detail.minSharpnessRatio)\", base 1.041 against 0.621 before, miniature 0.816. Picture 1 says what that is worth: the number is green and the look is still below the bar. Left the approved base, in the middle main before, right with the first push: sand grain and grooves are there now, the form is still thin even rings where the approved picture has broad carved swirls, and the shade is still warm where the approved one is blue grey. The base's builder works on; in the storm the base follows the approved shake picture (decision 172).",
+    "The standstill: where the live page draws one sample a frame, a part that gives way to another now does so through a fixed fine pattern instead of a flicker. Decision 171 restates the grain file's size rule that came with it.",
+    "Fall's air has its builder since 22:57 UTC (`tools/briefs/p6/fall-air.md`). Picture 2, approved left and build right at draft tier, below the bar: the build draws its sparks as golden blobs of 6 to 14 px spread evenly where the approved picture has fine points in drifts; by the widest of three counts warm pixels fill 14.4 in 100 of the glass against 9.9; between cottage and tree the build stands at 32, 33, 29 against 69, 71, 60 (the fog at rest, granted to the same builder).",
+    "Summer at 3840 in motion, final tier, drawn by a farm machine on `708c31cd` (film frames 1860 to 1889, the pull back; 77 to 79 s a frame). Picture 4 is a window of frame 1860 at full size. It holds almost everywhere: the base, shells, lamps, leaves, roof, fence, the air and the glass's film. Two faults found and sent to their builders at 23:04 UTC: the sand that pours over the lip at the right of the base is drawn anew in every frame and steps; the ball's outline at upper left is a band of 2 to 3 px of alternating pixels that shimmers as it moves.",
+    "Picture 3 is summer at the landing at review tier on the merged tree.",
+    "No rough draft since draft 4 and no frame of the 4K masters drawn yet: the masters wait until the motion faults of winter, spring and summer are mended. Open item 249 is new: this machine's disk (20 GB, 4.3 GB free) is too small to join the masters as it stands.",
+    "Sound: 7,420 of 10,000 credits, unchanged, no call planned.",
+    "phase 6: 20.32 h used of its 12.00 h box",
+    "allowance (after the review): 20.32 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-178-1.jpg",
-      "caption": "Summer at rest on `1878461b` (hd, review tier), after the tree's fourth pass, the glass's third list and the cottage's third pass",
+      "file": "out/stills/status/status-181-1.jpg",
+      "caption": "Summer's base: approved picture left, main before in the middle, with the first push right, still below the bar",
+      "w": 1200,
+      "h": 175
+    },
+    {
+      "file": "out/stills/status/status-181-2.jpg",
+      "caption": "Fall's air: approved picture left and build right at draft tier, below the bar",
+      "w": 1200,
+      "h": 463
+    },
+    {
+      "file": "out/stills/status/status-181-3.jpg",
+      "caption": "Summer at the landing at review tier on the merged tree",
       "w": 1200,
       "h": 675
     },
     {
-      "file": "out/stills/status/status-178-2.jpg",
-      "caption": "Summer at the landing on `1878461b` (hd, review tier)",
+      "file": "out/stills/status/status-181-4.jpg",
+      "caption": "Summer at 4K in motion: a window of frame 1860 at full size",
       "w": 1200,
       "h": 675
-    },
-    {
-      "file": "out/stills/status/status-178-3.jpg",
-      "caption": "The change of season around summer, frames 1400 and 2086 at draft: sky blue before the mend left, cream gold with it right",
-      "w": 1200,
-      "h": 716
-    },
-    {
-      "file": "out/stills/status/status-178-4.jpg",
-      "caption": "Summer at rest, approved picture above and build below at one scale: still below the bar",
-      "w": 1062,
-      "h": 1200
     }
   ]
 }
