@@ -1,6 +1,6 @@
 # Summer: light, glass, air glow, net of light, room behind (job `summer_glass`, Phase 6)
 
-Code branch `agent/p6-summer-glass`, last commit `51d687ac`. Files changed: `src/seasons/summer/rig.ts`, `src/seasons/summer/glass.ts`,
+Code branch `agent/p6-summer-glass`, last commit `ae2c486c` (a merge of main f80dc66a; the last change is `51d687ac`). Files changed: `src/seasons/summer/rig.ts`, `src/seasons/summer/glass.ts`,
 `src/seasons/summer/backdrop.ts`. Nothing else. `src/scene/surface.ts` and `src/globe/shell.ts` are untouched.
 
 ## What changed
@@ -49,7 +49,8 @@ Code branch `agent/p6-summer-glass`, last commit `51d687ac`. Files changed: `src
 5. The storm (`landed`, seen at review): the dome is a beige grey swirl where approved is white gold with hard bright
    streaks. The glass's part of it (`storm 0.03`) was left as it was; the streaks are the air's.
 6. A thin dark straight line at the upper left of the glass (hero hd, about 627,387 to 659,408) stands in `rest` and
-   `settled` alike. It is not the window's reflection (it stays with `windowGain` at zero). Not found.
+   `settled` alike. It is not the window's reflection (it stays with `windowGain` at zero). At six times size it reads as the straight edge of
+   a darker wedge in the glass, not a hair. Not found.
 
 ## What a critic asks beyond the approved image
 
@@ -63,7 +64,8 @@ through the ball. Left as it is.
 pass (3 pictures, 4 page loads); `npm run strict -- --keys summer-rest,summer-shake` pass; `npm run measure -- --unit
 summer --tier draft` 19 of 19 lines, 0 red; `--diag standins` black (0 lit pixels). `winter-rest`, `spring-rest`,
 `fall-rest` at draft: the same file hashes on this branch, with `origin/main`'s three files and with the three files as
-they were before this pass.
+they were before this pass. On the merge `ae2c486c`: `tsc` clean, vitest 54 files passed, 716 tests passed, 8 skipped,
+and the final rest still has the same file hash as on `51d687ac`; strict, determinism and measure were not run again.
 
 ## How to look
 
