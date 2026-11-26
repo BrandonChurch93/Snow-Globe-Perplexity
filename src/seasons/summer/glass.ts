@@ -336,7 +336,9 @@ void main() {
   float r = length(vWl);
   if (r > 1.24) discard;
   vec2 e = vWl / max(r, 1e-4);
-  float a = atan(e.x * vWlDir.y - e.y * vWlDir.x, dot(e, vWlDir));
+  // where up the limb: the angle from the wall's middle. At the very middle of the globe there is none to take
+  vec2 swung = vec2(e.x * vWlDir.y - e.y * vWlDir.x, dot(e, vWlDir));
+  float a = dot(swung, swung) > 0.0 ? atan(swung.x, swung.y) : 0.0;
   float inside = 1.0 - smoothstep(0.965, 0.993, r);
   // the crescent: thin toward the middle of the globe, full just inside the limb, gone at the limb itself
   float band = pow(smoothstep(${n(W.from)}, ${n(W.peak)}, r), 2.2) * (1.0 - smoothstep(0.955, 0.992, r)) * exp(-a * a / ${n(W.wide * W.wide)});
@@ -391,7 +393,7 @@ ${W.rimBand.map((b, i) => `  rimBands += ${vec(W.rimBandColor.map((v, k) => v + 
 ${W.streak.map((b, i) => `  streaks += ${n(b[2])} * wlBand(r - ${n(b[0])} + ${n(0.5 + 0.3 * i)} * sway, ${n(b[1])}) * mix(0.3, 1.0, smoothstep(0.3, 0.6, stageNoise(vec3(ring * 2.9, ${n(21 + 2 * i)}))));`).join('\n')}
   air += ${vec(W.streakColor)} * (${n(W.streaks)} * streaks * grain * smoothstep(0.5, 0.9, dot(e, vec2(0.985, 0.174))) * inside * still);
   // the storm's light: slow broad arms about the middle, turning with the time
-  float turn = atan(vWl.y, vWl.x);
+  float turn = dot(vWl, vWl) > 0.0 ? atan(vWl.y, vWl.x) : 0.0;
   float arms = 1.0 - ${n(W.stormArms)} + ${n(W.stormArms)} * sin(2.0 * turn + 5.0 * r - 1.7 * uSummer.x) * smoothstep(0.05, 0.4, r);
   float open = 1.0 - ${n(W.stormOpen)} * exp(-(vWl.x * vWl.x / 0.42 + (vWl.y + 0.34) * (vWl.y + 0.34) / 0.14));
   vec3 gale = ${vec(W.stormColor)} * (${n(W.storm)} * storm * arms * open * body * (0.75 + 0.25 * toward));
