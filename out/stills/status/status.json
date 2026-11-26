@@ -1,32 +1,29 @@
 {
-  "number": 149,
-  "time": "2026-11-26 09:21 UTC",
+  "number": 150,
+  "time": "2026-11-26 09:50 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 149 · 2026-11-26 09:21 UTC · Phase 6",
-    "Round 20 judges summer on e8b3d2cf: four machines draw its gate, measures, pack and motion sheets. The measures are in: 19 lines, one red, M3 at rest 0.6923 against 0.75",
-    "The season change, third job, is on main: the base passes from the old shape to the new inside the cover (sheet below, frames 660 to 690). Its fourth job, an even fade, is at work",
-    "The opening of film A: every typed word is whole and readable at 1920 x 1080 on the frame it lands (14 words, frames 167 to 506, read by eye from the committed pack)",
-    "Masters: four sandbox machines draw the same bytes (ba63d3b2), the 64 core machine draws another picture (2faffc20, 42.6 dB apart, the table's pattern differs), so one kind of machine draws every master frame. Three tests run to bring them together",
-    "The app's sound pack with the shake levels of decision 146 is written (sprite and index only), not yet committed",
-    "phase 6: 6.53 h used of its 12.00 h box",
-    "allowance (after the review): 6.53 h used of 12.00 h allowed",
+    "Status 150 · 2026-11-26 09:50 UTC · Phase 6",
+    "Round 20 judged summer and it did not pass: 5, 4 and 4 of 10 from three critics, 3 of 15 from the jury against 8 of 10 for the approved images, one critic still out. Five builders start on its faults next.",
+    "The 4K masters can be drawn by two kinds of machine that now print the same bytes. A fault found in the live app (the flakes stand still after a slow frame) is being mended.",
+    "phase 6: 7.01 h used of its 12.00 h box",
+    "allowance (after the review): 7.01 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-149-1.jpg",
-      "caption": "The change of season after its third job: film B frames 660 to 690, every second frame, review tier, drawn by the builder on bbe4db9b. Not judged yet",
+      "file": "out/stills/status/status-150-1.jpg",
+      "caption": "Summer at rest: the approved image on the left, the build Round 20 judged on the right (final tier, cropped alike). Ours is darker inside, on a greyer base, with a wider apron of sand",
       "w": 1200,
-      "h": 680
+      "h": 594
     },
     {
-      "file": "out/stills/status/status-149-2.jpg",
-      "caption": "The opening of film A at 1920 x 1080: the frames on which the last six words become whole, cut to the input, from the committed pack",
+      "file": "out/stills/status/status-150-2.jpg",
+      "caption": "Summer in the shake: the approved image on the left, ours on the right. The critic's words for ours: a transparent cage of long straight hairlines",
       "w": 1200,
-      "h": 455
+      "h": 594
     }
   ]
 }
