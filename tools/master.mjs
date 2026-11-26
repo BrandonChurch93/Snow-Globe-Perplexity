@@ -102,6 +102,8 @@ function dropStaleFrames(ctx, c) {
 }
 
 async function openSession(lock, local) {
+  const busy = lock ? renderBusy() : null
+  if (busy) say(`waiting for the render that holds this clone's lock: ${busy.what} (pid ${busy.pid})`)
   if (lock) return Session.open({ local, what: `master ${process.argv.slice(2).join(' ')}` })
   const s = Object.create(Session.prototype)
   s.hash = requireBuild()
