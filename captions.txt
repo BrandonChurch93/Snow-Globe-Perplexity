@@ -12,3 +12,17 @@ Every picture: lavapipe (ANGLE Vulkan), film frame at uhd, tier draft, crop at f
 
 682-plain-before-after.jpg
   The same crop of the plain film frame. Measured in this crop: largest difference 1 of 255. Whole frame: PSNR 88.82 dB, largest difference 3 of 255.
+
+Second push: plain film frames, the crop round the worst 32 px block of each pair (largest summed difference). Left = before (main fad0ca7, sprites), right = after the mend (quads).
+
+hd-288-plain-before-after.jpg
+  Film frame 288 at hd (1920 x 1080), crop 480 x 360 at 1024,252. Whole frame: PSNR 73.87 dB, largest difference 4 of 255, 0.545 % of pixels differ, 0.0118 % by more than one level. The largest of the three hd pairs (682: 86.90 dB, largest 3; 732: 84.75 dB, largest 3).
+
+uhd-0-plain-before-after.jpg
+  Film frame 0 at uhd (macro camera), crop 560 x 420 at 1200,80. Whole frame: PSNR 69.05 dB, largest difference 5 of 255, 2.057 % of pixels differ, 0.0183 % by more than one level. No particle is over the limit in this frame; the difference is quads against sprites.
+
+uhd-3500-plain-before-after.jpg
+  Film frame 3500 at uhd (macro held, snow falling), crop 560 x 420 at 0,0. Whole frame: PSNR 69.54 dB, largest difference 9 of 255, 1.812 % of pixels differ, 0.0227 % by more than one level. No particle is over the limit in this frame.
+
+uhd-1742-plain-before-after.jpg
+  Film frame 1742 at uhd (interior camera, summer), crop 560 x 420 at 680,0. Whole frame: PSNR 83.15 dB, largest difference 10 of 255, 0.048 % of pixels differ. No particle is over the limit in this frame.
