@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { cfg, formatById, currentSeasonHashes } from './page.mjs'
+import { cfg, formatById, currentSeasonHashes, refuseFlat } from './page.mjs'
 import { rel, readJson, writeJson } from './paths.mjs'
 import { freeDiskGb, machineId } from './browser.mjs'
 import { engineHash, fileSha } from './hashes.mjs'
@@ -169,7 +169,7 @@ function makeRoom(mine, wanted) {
   return dropped
 }
 
-function pngOk(file, format) {
+export function pngOk(file, format) {
   let fd
   try {
     const size = fs.statSync(file).size
@@ -193,6 +193,8 @@ function checkPng(buffer, format, what) {
   const h = buffer.readUInt32BE(20)
   if (w !== format.width || h !== format.height) throw new Error(`${what} is ${w} x ${h}, not ${format.width} x ${format.height}`)
 }
+
+export const FLAT_FRAMES = { film: [], loop: [], opening: null }
 
 export class Run {
   constructor(session, { by = 'builder', looks = true, say = console.log } = {}) {
@@ -250,6 +252,8 @@ export class Run {
     await page.evaluate(([c, i, t]) => window.showcase[c](i, t), [call, index, track.tier])
     const png = track.kind === 'opening' ? await this.session.grabStage(page) : await this.session.grab(page)
     checkPng(png, track.format, `${track.name} frame ${index}`)
+    const flatOk = FLAT_FRAMES[track.kind]
+    if (flatOk && !flatOk.includes(index)) await refuseFlat(png, `${track.name} frame ${index}`)
     return png
   }
 

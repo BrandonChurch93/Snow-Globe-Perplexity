@@ -67,10 +67,14 @@ export function cameraById(id: string): CameraSpec {
   return c
 }
 
+const COUNTED_TIER = /^samples-([1-9]\d{0,2})$/
+
 export function tierSamples(id: string): number {
   const t = tiers[id]
-  if (!t) throw new Error(`no such tier: ${id}`)
-  return t.samplesPerFrame
+  if (t) return t.samplesPerFrame
+  const counted = COUNTED_TIER.exec(id)
+  if (!counted) throw new Error(`no such tier: ${id}`)
+  return Number(counted[1])
 }
 
 export function particleKinds(season: string): ParticleKind[] {

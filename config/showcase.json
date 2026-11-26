@@ -401,7 +401,34 @@
     "criticSlots": 6
   },
   "deliver": {
-    "sandboxMaster": false,
+    "sandboxMaster": true,
+    "master": {
+      "format": "uhd",
+      "chunkFrames": 30,
+      "samples": {
+        "film-b": 12,
+        "loop": 12
+      },
+      "video": {
+        "codec": "libx264",
+        "preset": "slow",
+        "crf": 15,
+        "maxrateMbps": 50,
+        "bufsizeMbps": 75,
+        "profile": "high",
+        "level": "5.2",
+        "pixFmt": "yuv420p"
+      },
+      "audioKbps": 320,
+      "minChunkPsnr": 40,
+      "chunkBranches": "agent/p6-chunks-*",
+      "names": {
+        "film-a": "snow-globe-film-with-prompt-4k60.mp4",
+        "film-b": "snow-globe-film-4k60.mp4",
+        "loop": "snow-globe-portfolio-loop-4k60.mp4",
+        "still": "snow-globe-portfolio-screenshot-4k.png"
+      }
+    },
     "cardLoop": {
       "seconds": 8,
       "fps": 30,
