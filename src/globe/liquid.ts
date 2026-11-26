@@ -387,7 +387,8 @@ export class Liquid {
     let wz = L[2]! - LAG * ddb * DT + pz * taken
     if (yaw !== 0 || ddc !== 0) {
       wx += (LAG * dda * cb * (1 - cc) + LAG * ddb * sc) * DT
-      wy -= LAG_UPRIGHT * ddc * DT
+      // Direct twist carries the same inertia as either transverse turn. Only the tilt's upright bias uses the stronger gain.
+      wy -= LAG * ddc * DT
       wz += (LAG * ddb * (1 - cc) - LAG * dda * cb * sc) * DT
     }
     px -= px * taken
