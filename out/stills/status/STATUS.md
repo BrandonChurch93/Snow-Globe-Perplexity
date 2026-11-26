@@ -1,18 +1,18 @@
-# Status 157
+# Status 158
 
-2026-11-26 12:53 UTC
+2026-11-26 13:20 UTC
 
-- Summer's second fix list is merged and drawn whole at the final tier. I looked at it beside the approved image before spending a critic round on it, and I can name what is still wrong myself, so Round 21 waits.
-- Worst first: our base reads as grey slate with dark level lines where the approved is one mound of cream sand in soft waves; our ball reads as fog because too few seeds and lights stand in it at the top and right; the crown is five clumps, not one canopy; the bank of sand is one flat bright band; the table lacks the wedge of sunlit sand at the left front; the heap is brightest too far out.
-- A third list with measured targets went to the five summer builders at 12:52, 45 minutes each. The measures on the merged commit all passed (19 of 19), so this is the look and not the checks.
-- Also running: the frost's last fault in the change of season, the controls' closing walk, the first pictures for the next publish, and a rehearsal of the 4K masters on one farm machine, which found two faults in the upload path that are being mended.
-- The published app is still the build of 11:02. The next publish follows summer's third list.
-- phase 6: 10.06 h used of its 12.00 h box
-- allowance (after the review): 10.06 h used of 12.00 h allowed
+- The farm's rehearsal chunk drew the first 4K frames of film B (about 80 s a frame) and found a fault before the masters start: frames 4, 6 and 8 each hold 3 values that are not finite before the lens and the grade (open item 237).
+- No blotch shows in those three pictures, and the masters' tool refuses their chunk all the same. A farm machine hunts the cause from 13:10; no master frame is drawn until a scan of the film is clean.
+- Summer's third fix list is with five builders until about 13:37. Round 21 is called only when my own look at the merged picture finds nothing I can name.
+- The frost and the crack on the glass are mended on the change's branch (they thin evenly where they left as dots at one sample); merge and checks are next.
+- The motion sheets of the present main are in: the shake from spring to summer and the summer shot, both before the third list.
+- phase 6: 10.51 h used of its 12.00 h box
+- allowance (after the review): 10.51 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-157-1.jpg`: Summer at rest, final tier. Left the approved image, right ours after the second fix list.
-- `out/stills/status/status-157-2.jpg`: Summer half a second after a landing, final tier. Left the approved image, right ours.
-- `out/stills/status/status-157-3.jpg`: The bottom of the glass. Above the line the approved image, below it ours with its flat bright bank of sand and grey lip.
-- `out/stills/status/status-157-4.jpg`: The table at the left of the base. Above the line the approved image with its lit wedge of sand, below it ours.
+- `out/stills/status/status-158-1.jpg`: Film B frame 5 as the farm drew it at 3840 x 2160 with 24 samples, shown at 1600 px wide: winter in the first shot's close view.
+- `out/stills/status/status-158-2.jpg`: The same frame at full size, a window of 1400 x 788 px: the lights along the eave, a lit bough, falling snow.
+- `out/stills/status/status-158-3.jpg`: Twelve frames across the shake from spring to summer at review quality: petals rise, the glass fills, the outside changes in the dark frame 1400, summer shows through from 1426.
+- `out/stills/status/status-158-4.jpg`: Twelve frames of the summer shot, 1440 to 2014: the storm thins, the camera goes in and comes back. This is summer before the third list.

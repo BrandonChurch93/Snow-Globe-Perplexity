@@ -167,8 +167,12 @@ vec3 frostBehind(vec2 uv, float thickness, vec2 slope) {
   return sum / total;
 }
 void main() {
+  // The frost on the glass goes and comes by its cover, evenly, and not as a stipple: the app draws one sample a frame, and a
+  // stipple there stands as single dark pixels along the rim. It is laid over what is behind it with its colour already times
+  // its cover, so the picture times the share that stays is the mean of a film frame's samples that kept it and dropped it.
   float c = stageChange();
-  if (stageGone(c)) discard;
+  float seen = (uState.w > 1.5 ? 1.0 - c : uState.w > 0.5 ? c : 1.0) * uFlags.w;
+  if (seen <= 0.0) discard;
   if (frostHidden(uGrow.z)) discard;
   vec3 d = normalize(vStageLocal);
   float ct = clamp(d.z, -0.999, 0.999);
@@ -236,8 +240,9 @@ void main() {
     vec3 behind = frostBehind(gl_FragCoord.xy / uBehindSize, thickness, (viewMatrix * vec4(n - ng, 0.0)).xy);
     gl_FragColor = vec4(col * alpha + spark + behind * ((1.0 - alpha) * soft + alpha * ${look.glass.scatter.toFixed(3)}), 1.0 - (1.0 - alpha) * (1.0 - soft));
   } else gl_FragColor = vec4(col * alpha + spark, alpha);
+  gl_FragColor *= seen;
   if (uDiag != 0) {
-    if (alpha < 0.3) discard;
+    if (alpha * seen < 0.3) discard;
     gl_FragColor = stageDiag(albedo, n, 0.0, c, fw / uShape.y);
   } else if (alpha < 0.004) discard;
 }`
