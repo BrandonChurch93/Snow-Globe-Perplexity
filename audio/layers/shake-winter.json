@@ -1,0 +1,11 @@
+{
+  "cue": "shake-winter",
+  "line": "Liquid sloshing and churning inside glass, with a hiss of snow and tiny bells in it",
+  "why": "the liquid of the kept shake-spring, a little higher for winter; the cue's own take 3 gives the tiny bells, as loud as the water; a made hiss of fine noise is the snow, quiet support",
+  "seconds": 2.6,
+  "layers": [
+    { "kept": "shake-spring", "cents": 40 },
+    { "take": 3, "lowCutHz": 1200, "from": 0.05, "to": 2.3, "fadeInMs": 20, "fadeOutMs": 300, "underDb": 1 },
+    { "made": "noise", "fromHz": 5000, "toHz": 11000, "seconds": 2.0, "seed": 11, "fadeInMs": 150, "fadeOutMs": 900, "at": 0.05, "underDb": 12 }
+  ]
+}

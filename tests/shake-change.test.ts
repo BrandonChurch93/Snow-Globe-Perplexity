@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { config, shots } from '../src/config'
 import { FRAME } from '../src/app/framing'
-import { GUST_CLOSES, GUST_LAST_DOWN } from '../src/core/materials'
-import { CHANGE_CUT, DRESSING_CHANGE, changeBloom, changeRamp, changeSpan, partChange, SEASONAL_PARTS } from '../src/shake/change'
+import { GUST_CLOSES, GUST_LAST_DOWN, GUST_LAST_DOWN_AT } from '../src/core/materials'
+import { CHANGE_COVER, DRESSING_CHANGE, changeBloom, changeRamp, changeSpan, partChange, SEASONAL_PARTS } from '../src/shake/change'
 import { shakeMotion } from '../src/shake/table'
 
 const s = config.shake
@@ -17,9 +17,10 @@ const STREAK_MM = 1.5
 const SHUTTER_S = config.film.shutterDegrees / 360 / config.film.fps
 
 const INSIDE = ['miniature', 'arrival']
-const OUTSIDE = ['base', 'glass-dressing', 'surface-dressing', 'backdrop']
+const OUTSIDE = ['base', 'glass-dressing', 'surface-dressing', 'backdrop', 'room']
+const ON_THE_TABLE = ['surface-leave', 'surface-come']
 const ACROSS = ['light', 'veil', 'particles']
-const PARTS = [...new Set([...SEASONAL_PARTS, ...INSIDE, ...OUTSIDE, ...ACROSS, 'none'])]
+const PARTS = [...new Set([...SEASONAL_PARTS, ...INSIDE, ...OUTSIDE, ...ON_THE_TABLE, ...ACROSS, 'none'])]
 const film = shots.filter((shot) => shot.kind === 'shake').map((shot) => shot.id)
 const NAMES = ['test', ...config.seasons.map((season) => `test:${season}`), 'preroll', ...film, 'loop', ...Array.from({ length: FRAME.shakePaths }, (_, i) => `live-${i}`)]
 
@@ -98,87 +99,81 @@ describe('the change number', () => {
     }
   })
 
-  it('changes what is outside the glass together, across a few frames', () => {
+  it('changes everything outside the glass in one span of a few frames', () => {
     const span = changeSpan('base')
-    for (const part of ['base', 'backdrop']) expect(changeSpan(part)).toEqual(span)
-    // What is on the glass begins with the base's span and is gone on the cut, so the old season's dressing is never seen over the new base.
-    expect(changeSpan('glass-dressing')).toEqual({ from: span.from, to: CHANGE_CUT.at, lag: 0 })
-    // The heaps of the slab sink with the old dressing before the cut and rise with the new after it.
+    for (const part of OUTSIDE) expect(changeSpan(part), part).toEqual(span)
+    expect(span.lag).toBe(0)
+    // The heaps of the slab sink with the old dressing and rise with the new, and the table never carries both.
     expect(changeSpan('surface-leave')).toEqual({ from: DRESSING_CHANGE.leaveFrom, to: DRESSING_CHANGE.leaveTo, lag: 0 })
     expect(changeSpan('surface-come')).toEqual({ from: DRESSING_CHANGE.comeFrom, to: DRESSING_CHANGE.comeTo, lag: 0 })
     for (let c = 0; c <= 1; c += 0.001) expect(partChange('surface-leave', c) < 1 && partChange('surface-come', c) > 0, `a heap of both seasons at ${c}`).toBe(false)
-    expect(span.lag).toBe(0)
-    const table = changeSpan('surface-dressing')
-    const frame = FRAME_BEATS / WINDOW
-    expect(table.from, 'what the table carries crosses inside the outside span').toBeGreaterThan(span.from)
-    expect(table.to).toBeLessThan(span.to)
-    expect(table.from, 'and where the shutter is closed, with the cut').toBeGreaterThanOrEqual((CHANGE_CUT.frame - 1) * frame + SHUTTER_S / BEAT_S / WINDOW - 1e-12)
-    expect(table.to).toBeLessThanOrEqual(CHANGE_CUT.frame * frame + 1e-12)
-    expect((table.from + table.to) / 2).toBeCloseTo(CHANGE_CUT.at, 12)
+    // Nothing on the table moves before the span or after it.
+    expect(DRESSING_CHANGE.liftFrom).toBeGreaterThanOrEqual(span.from)
+    expect(DRESSING_CHANGE.leaveFrom).toBeGreaterThanOrEqual(DRESSING_CHANGE.liftFrom)
+    expect(DRESSING_CHANGE.leaveTo).toBeLessThanOrEqual(DRESSING_CHANGE.comeFrom)
+    expect(DRESSING_CHANGE.comeTo).toBeLessThanOrEqual(span.to)
     const frames = ((span.to - span.from) * WINDOW) / FRAME_BEATS
-    expect(frames).toBeGreaterThanOrEqual(4)
-    expect(frames).toBeLessThanOrEqual(9)
+    expect(frames).toBeGreaterThanOrEqual(2)
+    expect(frames).toBeLessThanOrEqual(4)
   })
 
-  it('raises a short bloom with a rise and a fall the eye can follow, and puts the cut of the base at its top', () => {
+  it('raises a short cover with a rise and a fall the eye can follow, whole across the span', () => {
     const span = changeSpan('base')
-    const cut = CHANGE_CUT.at
+    const cover = CHANGE_COVER
     const frame = FRAME_BEATS / WINDOW
-    expect(cut, 'the cut is inside the outside span').toBeGreaterThan(span.from)
-    expect(cut, 'the cut is inside the outside span').toBeLessThan(span.to)
-    expect(changeBloom(cut)).toBeCloseTo(1, 12)
+    expect(cover.riseFrom).toBeLessThan(cover.fullFrom)
+    expect(cover.fullFrom).toBeLessThan(span.from)
+    expect(cover.fullTo).toBeGreaterThan(span.to)
+    expect(cover.goneAt).toBeGreaterThan(cover.fullTo)
     for (const c of [-1, 0, 1, 2, Number.NaN]) expect(changeBloom(c)).toBe(0)
     let before = 0
     let lit = 0
-    let first = Infinity
-    let last = -Infinity
     for (let c = 0; c <= 1; c += 0.001) {
       const v = changeBloom(c)
       expect(v).toBeGreaterThanOrEqual(0)
       expect(v).toBeLessThanOrEqual(1)
-      if (c <= cut) expect(v).toBeGreaterThanOrEqual(before - 1e-12)
-      else if (c > cut + 0.001) expect(v).toBeLessThanOrEqual(before + 1e-12)
+      if (c < cover.fullFrom) expect(v).toBeGreaterThanOrEqual(before - 1e-12)
+      else if (c > cover.fullTo) expect(v).toBeLessThanOrEqual(before + 1e-12)
+      else expect(v, `cover at ${c}`).toBe(1)
       before = v
-      if (v > 0) {
-        lit += 0.001
-        first = Math.min(first, c)
-        last = Math.max(last, c)
-      }
-      if (Math.abs(c - cut) <= 2 * frame) expect(v, `bloom at ${c}`).toBeGreaterThan(0.5)
+      if (v > 0) lit += 0.001
+      expect(v > 0, `lit at ${c}`).toBe(c > cover.riseFrom && c < cover.goneAt)
       if (partChange('base', c) > 0 && partChange('base', c) < 1 && (c < span.from || c > span.to)) throw new Error('the base is changing outside its span')
     }
-    // The rise and the fall each take five frames or more, so neither is a pop; the whole bloom is short.
-    expect((cut - first) / frame, 'frames of rise').toBeGreaterThanOrEqual(5)
-    expect((last - cut) / frame, 'frames of fall').toBeGreaterThanOrEqual(5)
+    // The rise and the fall each take five frames or more, so neither is a pop; the cover is whole for a few frames and the whole of it is short.
+    expect((cover.fullFrom - cover.riseFrom) / frame, 'frames of rise').toBeGreaterThanOrEqual(5)
+    expect((cover.goneAt - cover.fullTo) / frame, 'frames of fall').toBeGreaterThanOrEqual(5)
+    expect((cover.fullTo - cover.fullFrom) / frame, 'frames of the whole cover').toBeLessThanOrEqual(5)
     expect(changeBloom(0.02)).toBe(0)
-    expect(changeBloom(0.98)).toBe(0)
-    expect(lit / (span.to - span.from)).toBeGreaterThan(1.5)
+    expect(changeBloom(0.99)).toBe(0)
     expect(lit * WINDOW * BEAT_S).toBeLessThan(0.35)
   })
 
-  it('cuts the base where the shutter is closed, between two film frames, so no frame holds both bases', () => {
+  it('holds no picture, of the film or live, with anything outside the glass between two seasons and the cover not whole', () => {
     const frame = FRAME_BEATS / WINDOW
     const shutter = SHUTTER_S / BEAT_S / WINDOW
-    const at = CHANGE_CUT.at / frame
-    expect(Math.ceil(at)).toBe(CHANGE_CUT.frame)
-    expect(at, 'after the exposure of the frame before has ended').toBeGreaterThan(CHANGE_CUT.frame - 1 + shutter / frame + 0.05)
-    expect(at, 'before the exposure of the first frame of the new base begins').toBeLessThan(CHANGE_CUT.frame - 0.05)
+    const between = (c: number): boolean => [...OUTSIDE, ...ON_THE_TABLE].some((part) => partChange(part, c) > 0 && partChange(part, c) < 1) || (partChange('surface-leave', c) >= 1 && partChange('surface-come', c) <= 0 && c > 0 && c < 1)
+    let mixed = 0
     for (let k = 0; k < WINDOW / FRAME_BEATS; k++) {
       const opens = k * frame
-      const closes = opens + shutter
-      expect(opens < CHANGE_CUT.at === closes < CHANGE_CUT.at, `frame ${k} of the window holds one base`).toBe(true)
+      let any = false
+      for (let i = 0; i <= 32; i++) any = any || between(opens + (shutter * i) / 32)
+      if (!any) continue
+      mixed++
+      for (let i = 0; i <= 32; i++) expect(changeBloom(opens + (shutter * i) / 32), `frame ${k} of the window is under the whole cover`).toBe(1)
     }
-    // A live picture has no shutter: one taken on a whole, a half or a quarter of a frame's time never falls on the cut.
-    expect(Math.abs(at * 4 - Math.round(at * 4))).toBeGreaterThan(0.2)
-    // The table is bare on the cut: what leaves is gone when the last exposure of the old base ends, what comes starts with the first frame of the new base.
-    expect(DRESSING_CHANGE.liftFrom).toBeLessThan(DRESSING_CHANGE.leaveFrom)
-    expect(DRESSING_CHANGE.leaveTo).toBeLessThanOrEqual((CHANGE_CUT.frame - 1) * frame + shutter + 1e-12)
-    expect(DRESSING_CHANGE.leaveTo).toBeLessThan(CHANGE_CUT.at)
-    expect(DRESSING_CHANGE.comeFrom).toBeGreaterThan(CHANGE_CUT.at)
-    expect(DRESSING_CHANGE.comeFrom).toBeGreaterThanOrEqual(CHANGE_CUT.frame * frame - 1e-12)
+    expect(mixed, 'film frames that hold two seasons').toBeGreaterThanOrEqual(2)
+    expect(mixed).toBeLessThanOrEqual(5)
+    // A live picture has no shutter and is taken on any instant: a quarter of a frame to each side of the span is covered as well.
+    for (let c = 0; c <= 1; c += frame / 64) {
+      if (!between(c)) continue
+      expect(changeBloom(c - frame / 4), `live at ${c}`).toBe(1)
+      expect(changeBloom(c + frame / 4), `live at ${c}`).toBe(1)
+    }
     expect(DRESSING_CHANGE.comeTo).toBeLessThan(1)
     expect(DRESSING_CHANGE.liftFrom / frame, 'the first frames of the window show the table as it was').toBeGreaterThan(12 - 1e-9)
     expect(GUST_LAST_DOWN, 'every new piece on the table is down before the window closes').toBeLessThan(GUST_CLOSES)
+    expect(GUST_LAST_DOWN_AT, 'and while the cover is still whole, so none is seen in the air').toBeLessThanOrEqual(CHANGE_COVER.fullTo)
   })
 })
 
@@ -209,7 +204,7 @@ describe('the change at the first frame of the window', () => {
 })
 
 describe('the change against the motion', () => {
-  it('puts the fastest stroke of every shake on the outside parts, so no clean frame shows them half changed', () => {
+  it('puts the outside parts on the fast run of the last stroke of every shake, so no clean frame shows them half changed', () => {
     const span = changeSpan('base')
     const from = beatOf(span.from)
     const to = beatOf(span.to)
@@ -221,8 +216,9 @@ describe('the change against the motion', () => {
       expect((prior.beat + last.beat) / 2, `${name} stroke centre`).toBeCloseTo((from + to) / 2, 2)
       expect(from - prior.beat, `${name} span starts after the turn`).toBeGreaterThan(0.012)
       expect(last.beat - to, `${name} span ends before the turn`).toBeGreaterThan(0.012)
-      expect(m.plan.fastest.beat, `${name} fastest`).toBeGreaterThan(from)
+      expect(m.plan.fastest.beat, `${name} fastest`).toBeGreaterThan(prior.beat)
       expect(m.plan.fastest.beat, `${name} fastest`).toBeLessThan(to)
+      expect(changeBloom(changeAt(m.plan.fastest.beat)), `${name} cover at the fastest instant`).toBeGreaterThan(0.95)
       let slowest = Infinity
       for (let b = from; b <= to + 1e-9; b += FRAME_BEATS / 16) {
         const speed = Math.hypot(m.at('x', b, 1), m.at('y', b, 1), m.at('z', b, 1)) / BEAT_S
@@ -233,10 +229,8 @@ describe('the change against the motion', () => {
         const v = partChange('base', changeAt(b))
         if (v > 0 && v < 1) expect(b >= from && b <= to).toBe(true)
       }
-      // The cut falls where the stroke is at its fastest: the globe moves at nine tenths or more of its top speed on that instant.
-      const cutBeat = beatOf(CHANGE_CUT.at)
-      const atCut = Math.hypot(m.at('x', cutBeat, 1), m.at('y', cutBeat, 1), m.at('z', cutBeat, 1))
-      expect(atCut, `${name} speed at the cut`).toBeGreaterThan(0.9 * m.plan.fastest.mmPerBeat)
+      // The span lies on the fast run of the stroke: through all of it the globe moves at seven tenths or more of its top speed.
+      expect(slowest * BEAT_S, `${name} slowest speed in the span`).toBeGreaterThan(0.7 * m.plan.fastest.mmPerBeat)
       let fastest = 0
       for (let k = 1; k < turns.length; k++) {
         let peak = 0
