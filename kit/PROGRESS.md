@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 174 · 2026-11-26 20:05 UTC
+Status 175 · 2026-11-26 20:14 UTC
 
-- `out/stills/status/status-174-1.jpg`: Rough draft 3 of the film, eight frames from winter to summer (960 x 540, draft tier)
-- `out/stills/status/status-174-2.jpg`: Summer 3.3, 3.5 and 3.7 s after the landing, the left edge of the glass enlarged: the blue fault found in the draft is in the middle picture
-- `out/stills/status/status-174-3.jpg`: Rough draft 3, summer 7.7 s after the landing
-- `out/stills/status/status-174-4.jpg`: The opening of film A, frame 866 at 60 frames a second, preview, draft
+- `out/stills/status/status-175-1.jpg`: Rough draft 3, twenty frames across the whole film with its prompt opening (960 x 540, draft tier)
+- `out/stills/status/status-175-2.jpg`: Summer's sand now comes out of the foot after the landing: film frames 1440, 1442, 1444, 1446, 1448 and 1456
+- `out/stills/status/status-175-3.jpg`: Summer's tree, approved picture left and build right: the crown is still below the bar
+- `out/stills/status/status-175-4.jpg`: Still: summer rest hero, hd, review
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-26 20:05 UTC
-clock: phase 6, tick of 27.2 minutes
-phase 6: 17.26 h used of its 12.00 h box
-allowance (after the review): 17.26 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 17.26 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-26 20:14 UTC
+clock: phase 6, tick of 9.3 minutes
+phase 6: 17.42 h used of its 12.00 h box
+allowance (after the review): 17.42 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 17.42 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
