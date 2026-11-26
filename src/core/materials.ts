@@ -317,7 +317,7 @@ float stageChange() {
     float far = clamp((length(vStageWorld.xz) - ${DRESSING_FRONT.fromMm.toFixed(1)}) / ${(DRESSING_FRONT.toMm - DRESSING_FRONT.fromMm).toFixed(1)}, 0.0, 1.0);
     float run = uState.w > 1.5 ? (s - ${TABLE.leaveFrom.toFixed(4)}) / ${TABLE.leaveLong.toFixed(4)} : (s - ${TABLE.comeFrom.toFixed(4)}) / ${TABLE.comeLong.toFixed(4)};
     float reach = clamp(run, 0.0, 1.0) * (1.0 - uState.z) + uState.z * (uState.w > 1.5 ? far : 1.0 - far);
-    stageEdge = stagePatch(vec3(atan(vStageWorld.x, vStageWorld.z) * ${OUTSIDE_FRONT.rayMm.toFixed(1)}, 0.0, length(vStageWorld.xz) / ${OUTSIDE_FRONT.streak.toFixed(1)}));
+    stageEdge = stagePatch(vec3((dot(vStageWorld.xz, vStageWorld.xz) > 0.0 ? atan(vStageWorld.x, vStageWorld.z) : 0.0) * ${OUTSIDE_FRONT.rayMm.toFixed(1)}, 0.0, length(vStageWorld.xz) / ${OUTSIDE_FRONT.streak.toFixed(1)}));
     return clamp(reach, 0.0, 1.0);
   }
   float side = clamp(0.5 + vStageLocal.z / (2.0 * uGrid.w), 0.0, 1.0);

@@ -19,13 +19,14 @@ const HEAP = {
   shoulder: { x: 52, z: 55, sx: 15, sz: 11, mm: 2.0 },
   fan: { x: 56, z: 88, sx: 22, sz: 34, mm: 1.3 },
   sprinkle: { at: [-63.8, -47.6], lit: [-0.918, -0.396], run: [-12, -2, 22, 78], rise: [0, 0.6], core: [0.95, 1.1], veil: [0.5, 6.5] },
-  edge: { mm: [0.2, 0.45], sharp: 1.0, looseMm: 0.25, onHeap: 0.25, thickMm: 1.6, cover: [0.03, 2.4], far: [66, 92, 1.3] },
+  edge: { mm: [0.2, 0.45], sharp: 1.0, looseMm: 0.25, onHeap: 0.1, thickMm: 1.6, cover: [0.03, 2.4], far: [66, 92, 1.3] },
   loose: { on: 0.05, fromMm: 0.03, edgeMm: 0.4, reach: 1.3, flung: 0.5, x: 88, z: 12, sx: 15, sz: 24 },
 }
 // The light on the sand of the table. The stage's lit material is made for the stone of the base; this takes its paint
 // (every grain's own colour and tilt) and the stage's key, shadow, sky and card, and lights the sand as dry sand is lit
 // by a low sun from behind: bright where a grain faces it, dark and cool in the shade, with no part burnt to white.
-export const SAND_LIT = { tilt: 0.5, sun: 4.8, face: [-0.05, 0.55], back: 1.0, sky: 3.4, card: 0.22, glint: 0.9, shade: 0.5, knee: 0.5, top: 1.45, warm: [1.0, 0.74, 0.57], cool: [0.7, 0.92, 1.25], pale: 0.45, tint: [1.0, 0.965, 0.92], speck: 1.2, mote: [1.1, 4.5, 0.55], grain: [0.45, 1.25], spark: [40, 0.7], fray: [0.5, 1.3], thru: 1.2, cut: [-63.8, -47.6, -0.918, -0.396, -0.4, 0.5, -48, -30], deep: [0.5, 40], front: [0.02, 0.2, 26, 62], line: [61.5, 6, -0.866, 0.5], soft: [-13, 15], wander: 1.2, from: [-25, 5], lift: [7.5, 11.5] }
+export const SAND_LIT = { tilt: 0.5, sun: 5.6, face: [-0.05, 0.55], back: 1.0, sky: 3.4, card: 0.22, glint: 0.9, shade: 0.5, knee: 0.5, top: 1.0, warm: [1.0, 0.74, 0.57], cool: [1.0, 1.45, 2.35], pale: 0.12, tint: [1.0, 0.82, 0.6], speck: 2.0, rows: 1080, grit: [0.3, 0.45, 0.7, 0.73, 0.85], mote: [1.1, 4.5, 0.55], grain: [0.25, 0.75], spark: [40, 0.7], fray: [0.5, 1.3], thru: 1.2, cut: [-63.8, -47.6, -0.918, -0.396, -3.6, 0.6, -48, -30], deep: [0.5, 40], front: [0.02, 0.2, 26, 62], line: [61.5, 6, -0.866, 0.5], soft: [-13, 15], wander: 1.2, from: [-25, 5], lift: [7.5, 11.5] }
+export const SPRINKLE = { softMm: 5.0 } as const
 export const SLAB = { liftMm: 0.5, footMm: 52.4, repose: 0.62, stepMm: 1.0, x: [-150, 142], z: [-232, 216] } as const
 
 const hash = (x: number, y: number, s: number): number => {
@@ -117,7 +118,8 @@ export function sandSprinkle(x: number, z: number): number {
   return Math.min(1, along * across * (0.6 + 0.8 * noise(x / 5.1 + 3.3, z / 5.1 + 8.8, 37)))
 }
 
-// How thick the sprinkle's core lies along the edge of the base's shadow: nothing in the shadow, whole from the edge on.
+// How thick the sprinkle's core lies along the edge of the base's shadow: whole from the edge on, and thinning out over
+// a few millimetres into the shadow.
 export function sandSprinkleRun(x: number, z: number): number {
   const S = HEAP.sprinkle
   const ease = (a: number, b: number, v: number): number => {
@@ -126,7 +128,7 @@ export function sandSprinkleRun(x: number, z: number): number {
   }
   const d = (x - S.at[0]!) * S.lit[0]! + (z - S.at[1]!) * S.lit[1]!
   const s = (x - S.at[0]!) * S.lit[1]! - (z - S.at[1]!) * S.lit[0]!
-  return d < 0 ? 0 : ease(S.run[0]!, S.run[1]!, s) * (1 - ease(S.run[2]!, S.run[3]!, s)) ** 1.3 * (0.55 + 0.45 * noise(x / 5.1 + 3.3, z / 5.1 + 8.8, 37))
+  return ease(-SPRINKLE.softMm, 0, d) * ease(S.run[0]!, S.run[1]!, s) * (1 - ease(S.run[2]!, S.run[3]!, s)) ** 1.3 * (0.55 + 0.45 * noise(x / 5.1 + 3.3, z / 5.1 + 8.8, 37))
 }
 
 // The place on the table that lies `s` mm along the edge of the base's shadow and `d` mm into the light from it.
@@ -244,9 +246,20 @@ float slabNoise(vec2 p) {
   t = t * t * (3.0 - 2.0 * t);
   return mix(mix(slabHash(i), slabHash(i + vec2(1.0, 0.0)), t.x), mix(slabHash(i + vec2(0.0, 1.0)), slabHash(i + vec2(1.0, 1.0)), t.x), t.y);
 }
+float slabSpeck(vec2 at, float seed) {
+  vec2 cell = floor(at);
+  vec2 off = at - cell - 0.5 - ${f(SAND_LIT.grit[0]!)} * (vec2(slabHash(cell + seed), slabHash(cell + seed + 16.0)) - 0.5);
+  float size = mix(0.7, 1.0, slabHash(cell + seed + 52.0));
+  return (1.0 - smoothstep(${f(SAND_LIT.grit[1]!)}, ${f(SAND_LIT.grit[2]!)}, 2.0 * length(off) / size)) * (1.0 - mix(${f(SAND_LIT.grain[0]!)}, ${f(SAND_LIT.grain[1]!)}, slabHash(cell + seed + 34.0)));
+}
+// The grain of the sand: on the lit ground, the small shade each grain throws on the next, in two layers that do not
+// share a grid, and here and there a grain that glints.
 vec2 slabGrit(vec2 at, float whole) {
-  float g = mix(${f(SAND_LIT.grain[0]!)}, ${f(SAND_LIT.grain[1]!)}, slabHash(at + 41.0)) * mix(mix(${f(SAND_LIT.fray[0]!)}, ${f(SAND_LIT.fray[1]!)}, slabHash(at + 7.0)), 1.0, whole);
-  return vec2(g, step(${f(1 - 1 / SAND_LIT.spark[0]!)}, slabHash(at + 17.0)));
+  vec2 cell = floor(at);
+  float g = (1.0 - slabSpeck(at, 7.0)) * (1.0 - slabSpeck(mat2(0.8, 0.6, -0.6, 0.8) * at * ${f(SAND_LIT.grit[3]!)} + 17.3, 67.0));
+  g *= mix(mix(${f(SAND_LIT.fray[0]!)}, ${f(SAND_LIT.fray[1]!)}, slabHash(cell + 7.0)), 1.0, whole);
+  vec2 mid = at - cell - 0.5;
+  return vec2(g, step(${f(1 - 1 / SAND_LIT.spark[0]!)}, slabHash(cell + 17.0)) * (1.0 - smoothstep(0.2, 0.9, 2.0 * length(mid))));
 }
 `
 
@@ -272,22 +285,47 @@ float slabAlpha = 1.0;
   slabSpark *= slabSpark;
   slabC += stageKeyC * (slabSun * ${f(SAND_LIT.glint)} * slabSpark * slabSpark);
   // The lens parts red from blue toward the frame's edge (post.ts), and a grain a pixel wide would come out of it as a
-  // red, a green and a blue one. The grain of the sand is laid for each of the three where the lens will bring them together.
+  // red, a green and a blue one. The grain of the sand is laid for each of the three as arrival.ts lays its grains: on the
+  // pixels the post reads them from, with its weights.
   vec2 slabFoot = max(abs(dFdx(vStageWorld.xz)) + abs(dFdy(vStageWorld.xz)), vec2(0.02));
-  vec2 slabStep = exp2(ceil(log2(slabFoot * ${f(SAND_LIT.speck)})));
+  vec2 slabStep = exp2(ceil(log2(slabFoot * (${f(SAND_LIT.speck)} * min(uSlabLens.x, uSlabLens.y) / ${f(SAND_LIT.rows / 2)}))));
   vec2 slabAt = vStageWorld.xz / slabStep;
   vec2 slabQ = gl_FragCoord.xy - uSlabLens.xy;
   float slabR = dot(slabQ, slabQ) / dot(uSlabLens.xy, uSlabLens.xy);
   vec2 slabPx = slabQ / max(length(slabQ), 1e-4) * (uSlabLens.z * pow(max(slabR, 1e-12), 0.5 * uSlabLens.w));
-  vec2 slabOff = (dFdx(vStageWorld.xz) * slabPx.x + dFdy(vStageWorld.xz) * slabPx.y) / slabStep;
-  vec2 slabGr = slabGrit(slabAt - slabOff, vSlab.x);
-  vec2 slabGg = slabGrit(slabAt, vSlab.x);
-  vec2 slabGb = slabGrit(slabAt + slabOff, vSlab.x);
+  vec2 slabX = dFdx(vStageWorld.xz) / slabStep;
+  vec2 slabY = dFdy(vStageWorld.xz) / slabStep;
+  vec2 slabLowR = floor(slabPx);
+  vec2 slabFarR = slabPx - slabLowR;
+  vec2 slabLowB = floor(-slabPx);
+  vec2 slabFarB = -slabPx - slabLowB;
+  vec2 slabGr = vec2(0.0);
+  vec2 slabGg = vec2(0.0);
+  vec2 slabGb = vec2(0.0);
+  for (int j = 0; j < 2; j++) {
+    for (int i = 0; i < 2; i++) {
+      vec2 k = vec2(float(i), float(j));
+      vec2 wR = mix(1.0 - slabFarR, slabFarR, k);
+      vec2 wB = mix(1.0 - slabFarB, slabFarB, k);
+      vec2 oR = slabLowR + k;
+      vec2 oB = slabLowB + k;
+      slabGr += wR.x * wR.y * slabGrit(slabAt - slabX * oR.x - slabY * oR.y, vSlab.x);
+      slabGb += wB.x * wB.y * slabGrit(slabAt - slabX * oB.x - slabY * oB.y, vSlab.x);
+    }
+  }
+  vec2 slabSide = slabFarR * (1.0 - slabFarR);
+  vec2 slabMid = 1.0 - 2.0 * slabSide;
+  for (int j = -1; j < 2; j++) {
+    for (int i = -1; i < 2; i++) {
+      float w = (i == 0 ? slabMid.x : slabSide.x) * (j == 0 ? slabMid.y : slabSide.y);
+      slabGg += w * slabGrit(slabAt + slabX * float(i) + slabY * float(j), vSlab.x);
+    }
+  }
   float slabL = dot(slabC, vec3(0.2126, 0.7152, 0.0722));
   float slabOver = max(slabL - ${f(SAND_LIT.knee)}, 0.0);
   slabC *= (min(slabL, ${f(SAND_LIT.knee)}) + ${f(SAND_LIT.top - SAND_LIT.knee)} * (1.0 - exp(-slabOver / ${f(SAND_LIT.top - SAND_LIT.knee)}))) / max(slabL, 1e-4);
   slabC = mix(slabC, vec3(dot(slabC, vec3(0.2126, 0.7152, 0.0722))), ${f(SAND_LIT.pale)} * smoothstep(${f(SAND_LIT.knee * 0.5)}, ${f(SAND_LIT.top)}, slabL));
-  slabC *= mix(vec3(1.0), vec3(slabGr.x, slabGg.x, slabGb.x), mix(0.4, 1.0, clamp(slabSun, 0.0, 1.0)));
+  slabC *= mix(vec3(1.0), vec3(slabGr.x, slabGg.x, slabGb.x), mix(${f(SAND_LIT.grit[4]!)}, 1.0, clamp(slabSun, 0.0, 1.0)));
   slabC += stageKeyC * (slabSun * slabSun * (0.35 + 0.65 * slabFace) * ${f(SAND_LIT.spark[1]!)}) * vec3(slabGr.y, slabGg.y, slabGb.y);
   outgoingLight = slabC;
   // The heap's rim is not cut: it lies over the table by its cover, thinner in drifts a few grains wide, and the single

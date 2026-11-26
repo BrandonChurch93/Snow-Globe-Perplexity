@@ -182,8 +182,8 @@ void main() {
   vec2 t2 = vec2(-e2.y, e2.x);
   vec2 uv = 0.5 + 0.5 * (th / uShape.x) * e2;
   float merc = 0.5 * (log(1.0 - ct) - log(1.0 + ct));
-  vec2 ga = vec2(atan(d.x, d.y), merc);
-  vec2 gb = vec2(atan(-d.x, -d.y), merc);
+  vec2 ga = vec2(dot(d.xy, d.xy) > 0.0 ? atan(d.x, d.y) : 0.0, merc);
+  vec2 gb = vec2(dot(d.xy, d.xy) > 0.0 ? atan(-d.x, -d.y) : 0.0, merc);
   float gs = uShape.w / 6.2831853;
   vec2 gdx = (d.y > 0.0 ? dFdx(ga) : dFdx(gb)) * gs;
   vec2 gdy = (d.y > 0.0 ? dFdy(ga) : dFdy(gb)) * gs;

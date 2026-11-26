@@ -7,7 +7,7 @@ import { grade } from '../../post/grade'
 import { rimGapMm } from '../../shake/table'
 import type { KitMoment } from '../kit'
 import { SAND_COLOUR, sinceLoose } from './base'
-import { SAND_LIT, SLAB, sandHeight, sandLoose, sandOpen, sandShade, sandSpread, sandSprinkle, sandSprinkleAt, sandSprinkleRun } from './slab'
+import { SAND_LIT, SLAB, SPRINKLE, sandHeight, sandLoose, sandOpen, sandShade, sandSpread, sandSprinkle, sandSprinkleAt, sandSprinkleRun } from './slab'
 
 const PART = 'arrival-summer'
 const RAD = Math.PI / 180
@@ -29,9 +29,9 @@ const LOOK = {
   ledge: { r: [46.5, 52.0], h: 40.3 },
   jump: { count: 14000, reachMm: 26, ringShare: 0, ringMm: 5, edgeDeg: [62, 76], liftMm: [1.2, 8], hopMm: [0.6, 5], quick: 0.11, tail: 0.5, tailShare: [0.6, 0.12], skidMm: [0.4, 3.2], radiusMm: [0.07, 0.15] },
   fall: { count: 15000, gravity: 7000, az: 85, spread: 5, most: 2.2, r: [53.0, 54.4], h: [41.3, 42.4], outMmS: [6, 102], lean: 1.6, fanDeg: 2, downMmS: [10, 110], rate: [5.0, 6.7], radiusMm: [0.022, 0.065], fadeFrom: 0.9, core: [0.85, 5, 90], exposure: 0.3, longMm: 1.0, thinPx: 1.1, cover: 0.22, rise: 0.012, low: [0.6, 0.48, 0.36], lowMm: [12, 40], least: [0.2, 0.7], bright: [0.75, 1.9], even: 0.15, lit: 1.4, shaded: 0.08, puff: { seconds: 0.07, outMmS: [20, 130], upMmS: [40, 170], cover: 0.3, wide: 2.4 } },
-  loose: { count: 14600, radiusMm: [0.05, 0.19], x: [-140, 136], z: [-70, 150], thinPx: 1.7, veil: 0.15, vary: [0.5, 2.2], big: { share: 0.012, mm: [0.3, 0.62], cover: [0.25, 0.5, 0.4] } },
-  sprinkle: { count: 8400, s: [-12, 78], d: [-0.4, 16], mm: [0.09, 0.24], core: { share: 0.7, mm: 3.0, wide: 2.4, lit: 2.4, size: [0.15, 0.3] }, glints: { count: 46, d: [13, 46], mm: [0.16, 0.34], lit: 2.6 } },
-  lens: { rows: 1080, most: 2 },
+  loose: { count: 14600, radiusMm: [0.05, 0.19], x: [-140, 136], z: [-70, 150], thinPx: 0.85, veil: 0.15, vary: [0.4, 1.15], warm: [1.0, 0.84, 0.64], big: { share: 0.012, mm: [0.3, 0.62], cover: [0.25, 0.5, 0.4] } },
+  sprinkle: { count: 11000, s: [-12, 78], d: [-0.4, 16], mm: [0.07, 0.18], core: { share: 0.7, mm: 3.0, wide: 2.4, lit: 0.85, size: [0.08, 0.2] }, glints: { count: 46, d: [13, 46], mm: [0.16, 0.34], lit: 2.6 } },
+  lens: { rows: 1080, most: 4, flyPx: 1.0, round: [1.6, 4.0], clear: 6 },
   slope: { clearMm: 0.25, keeps: 0.75, crestMm: [60.6, 67.5], crestLean: 1.6, offMm: [0.12, 0.55], belly: [[60.3, 8], [60.3, 11.2], [59.7, 14.6], [58.6, 18], [57.3, 21.2], [55.8, 24.4], [54.3, 27.4], [53, 30.5], [52.8, 34], [52.7, 37.5], [52.6, 40]] },
   flow: { stand: 0.8, seconds: 1.6, gapMm: [0.3, 2.5] },
   exposure: 0.15,
@@ -181,9 +181,9 @@ if (falls > 0.5) {
   thinner = (aFlight.w / max(aFlight.w, least)) * pow(max(2.0 * aFlight.w / max(blur + 2.0 * aFlight.w, 1e-5), 0.0), ${LOOK.fall.even.toFixed(2)});
   if (puff >= 0.0) size *= ${LOOK.fall.puff.wide.toFixed(2)};
 }
-if (lies > 0.5) {
-  float least = ${LOOK.loose.thinPx.toFixed(2)} * max(-nowV.z, 1.0) / uGrainPx;
-  blur = 0.0;
+if (falls < 0.5) {
+  float least = mix(${LOOK.lens.flyPx.toFixed(2)}, ${LOOK.loose.thinPx.toFixed(2)}, lies) * max(-nowV.z, 1.0) / uGrainPx;
+  if (lies > 0.5) blur = 0.0;
   size = max(aFlight.w, least) * alive;
   thinner = aFlight.w / max(aFlight.w, least);
   thinner *= thinner;
@@ -193,9 +193,16 @@ grainV.xy -= axis * (blur * (0.5 - 0.5 * aCorner.y));
 float streak = 1.0 + blur / max(2.0 * size, 1e-4);
 // The lens parts red from blue toward the frame's edge (post.ts). The grain is drawn that much wider, and its fragment
 // lays its red and blue where the lens will bring them back onto its green.
-float pad = 1.0 + min(uGrainLens.z * max(-nowV.z, 1.0) / max(size * uGrainPx, 1e-3), ${LOOK.lens.most.toFixed(1)});
+float pad = 1.0 + min(1.5 * (1.0 + floor(uGrainLens.z)) * max(-nowV.z, 1.0) / max(size * uGrainPx, 1e-3), ${LOOK.lens.most.toFixed(1)});
+// A grain at rest stands on the sand with the whole of what is drawn of it, and the table does not cut the margin its
+// colours are laid in: a cut edge is a hard edge, and the lens gives every hard edge a blue line.
+if (falls < 0.5) grainV.y += (1.0 - airborne) * max(size - aFlight.w, 0.0);
 grainV.xy += (axis * aCorner.y + across * aCorner.x * wide) * (size * pad);
 gl_Position = projectionMatrix * grainV;
+if (falls < 0.5) {
+  vec4 grainNear = projectionMatrix * vec4(grainV.xy, grainV.z + ${LOOK.lens.clear.toFixed(1)} * size * pad, 1.0);
+  gl_Position.z = grainNear.z / grainNear.w * gl_Position.w;
+}
 vec4 grainW = modelMatrix * vec4(nowAt, 1.0);
 vStageWorld = grainW.xyz;
 vStageLocal = (uGlobeInv * grainW).xyz;
@@ -204,7 +211,7 @@ vStagePlaced = grainW.xyz;
 vStageSeen = 1.0;
 vGrainUv = aCorner * vec2(pad, 1.0 + (pad - 1.0) / streak);
 vGrainShape = vec3(streak / wide, airborne, falls + 2.0 * lies);
-vGrainCover = (aSeed.y > 0.5 ? 1.0 : 1.0 - uGrain.y) * min(1.0, ${LOOK.streak.toFixed(2)} / streak) / wide;
+vGrainCover = (aSeed.y > 0.5 ? 1.0 : 1.0 - uGrain.y) * min(1.0, ${LOOK.streak.toFixed(2)} / streak) / wide * min(1.0, thinner);
 if (falls > 0.5) {
   float glint = fract(aSeed.x * 53.7 + aSeed.z * 7.1);
   glint *= glint * glint;
@@ -233,9 +240,9 @@ varying vec3 vGrainShape;
 varying float vGrainCover;
 varying float vGrainLit;
 uniform vec4 uGrainLens;
-float grainDisc(vec2 uv, float L, float soft) {
+float grainDisc(vec2 uv, float L) {
   float capY = sign(uv.y) * max(abs(uv.y) * L - (L - 1.0), 0.0);
-  return 1.0 - smoothstep(soft, 1.0, uv.x * uv.x + capY * capY);
+  return 1.0 - smoothstep(0.0, 1.0, uv.x * uv.x + capY * capY);
 }
 void main() {
   float c = stageChange();
@@ -245,21 +252,48 @@ void main() {
   vec2 lensQ = gl_FragCoord.xy - uGrainLens.xy;
   float lensR = dot(lensQ, lensQ) / dot(uGrainLens.xy, uGrainLens.xy);
   vec2 lensPx = lensQ / max(length(lensQ), 1e-4) * (uGrainLens.z * pow(max(lensR, 1e-12), 0.5 * uGrainLens.w));
-  vec2 lensUv = dFdx(vGrainUv) * lensPx.x + dFdy(vGrainUv) * lensPx.y;
-  float soft = mix(0.55, 0.0, max(vGrainShape.y, step(1.5, vGrainShape.z)));
-  // The red is laid where the lens will take it from and the blue likewise; the green lies under both, half and half.
-  vec3 disc = vec3(grainDisc(vGrainUv - lensUv, L, soft), 0.0, grainDisc(vGrainUv + lensUv, L, soft));
-  disc.g = 0.5 * (disc.r + disc.b);
+  vec2 lensX = dFdx(vGrainUv);
+  vec2 lensY = dFdy(vGrainUv);
+  // The post reads the red between four pixels on one side of this one and the blue between four on the other. The red is
+  // laid on its four pixels with the weights the post will read them back with, the blue likewise, and the green is laid
+  // as both come out: the three are the same picture after the lens, at any size of picture.
+  vec2 lensLowR = floor(lensPx);
+  vec2 lensFarR = lensPx - lensLowR;
+  vec2 lensLowB = floor(-lensPx);
+  vec2 lensFarB = -lensPx - lensLowB;
+  vec3 disc = vec3(0.0);
+  for (int j = 0; j < 2; j++) {
+    for (int i = 0; i < 2; i++) {
+      vec2 k = vec2(float(i), float(j));
+      vec2 wR = mix(1.0 - lensFarR, lensFarR, k);
+      vec2 wB = mix(1.0 - lensFarB, lensFarB, k);
+      vec2 oR = lensLowR + k;
+      vec2 oB = lensLowB + k;
+      disc.r += wR.x * wR.y * grainDisc(vGrainUv - lensX * oR.x - lensY * oR.y, L);
+      disc.b += wB.x * wB.y * grainDisc(vGrainUv - lensX * oB.x - lensY * oB.y, L);
+    }
+  }
+  vec2 lensSide = lensFarR * (1.0 - lensFarR);
+  vec2 lensMid = 1.0 - 2.0 * lensSide;
+  for (int j = -1; j < 2; j++) {
+    for (int i = -1; i < 2; i++) {
+      float w = (i == 0 ? lensMid.x : lensSide.x) * (j == 0 ? lensMid.y : lensSide.y);
+      disc.g += w * grainDisc(vGrainUv + lensX * float(i) + lensY * float(j), L);
+    }
+  }
   if (max(disc.r, max(disc.g, disc.b)) <= 0.0) discard;
   float capY = sign(vGrainUv.y) * max(abs(vGrainUv.y) * L - (L - 1.0), 0.0);
   float d2 = min(vGrainUv.x * vGrainUv.x + capY * capY, 1.0);
   vec3 nv = normalize(vec3(vGrainUv.x, capY, sqrt(1.0 - d2)));
   vec3 n = normalize(nv * mat3(viewMatrix));
   vec3 v = normalize(cameraPosition - vStageWorld);
+  float falls = vGrainShape.z > 0.5 && vGrainShape.z < 1.5 ? 1.0 : 0.0;
+  // A grain a pixel or two wide has no lit side and shaded side to show: each would be a rim of its own colour. It is lit as one.
+  float round = max(falls, smoothstep(${LOOK.lens.round[0]!.toFixed(1)}, ${LOOK.lens.round[1]!.toFixed(1)}, inversesqrt(max(lensX.x * lensX.x + lensY.x * lensY.x, 1e-8)) * ${(LOOK.lens.rows / 2).toFixed(1)} / min(uGrainLens.x, uGrainLens.y)));
+  n = normalize(mix(normalize(uGrainKey + v + vec3(0.0, 1.0, 0.0)), n, round));
   float id = vGrainLook.x;
   float id2 = vGrainLook.y;
   vec3 albedo = mix(${vec(SAND_COLOUR.deep)}, ${vec(SAND_COLOUR.pale)}, smoothstep(0.1, 0.75, id));
-  float falls = vGrainShape.z > 0.5 && vGrainShape.z < 1.5 ? 1.0 : 0.0;
   // A dark grain in the fall is a dark dash across the pale stone behind it; the fall is drawn in the pale grains alone.
   albedo = mix(albedo, ${vec(SAND_COLOUR.dark)}, step(0.93, id2) * (1.0 - falls));
   albedo = mix(albedo, ${vec(SAND_COLOUR.white)}, step(id2, 0.12));
@@ -283,7 +317,7 @@ void main() {
     float vary = fract(id * 29.3 + id2 * 3.1);
     float kind = vGrainLit - 1.0;
     float gain = mix(mix(${LOOK.loose.vary[0]!.toFixed(2)}, ${LOOK.loose.vary[1]!.toFixed(2)}, vary * vary), mix(${LOOK.sprinkle.core.lit.toFixed(2)}, ${LOOK.sprinkle.glints.lit.toFixed(2)}, step(0.75, kind)) * (0.75 + 0.5 * vary), step(0.25, kind));
-    col = mix(albedo, ${vec(LOOK.gold)} * vec3(1.0, 0.8, 0.5), step(0.75, kind)) * RECIPROCAL_PI * lit * gain + uGrainKeyCol * (sun * step(0.6, fract(id * 17.9)) * pow(abs(hk), 40.0) * ${SAND_LIT.glint.toFixed(3)});
+    col = mix(albedo * ${vec(LOOK.loose.warm)}, ${vec(LOOK.gold)} * vec3(1.0, 0.8, 0.5), step(0.75, kind)) * RECIPROCAL_PI * lit * gain + uGrainKeyCol * (sun * step(0.6, fract(id * 17.9)) * pow(abs(hk), 40.0) * ${SAND_LIT.glint.toFixed(3)});
     float lum = dot(col, vec3(0.2126, 0.7152, 0.0722));
     float over = max(lum - ${SAND_LIT.knee.toFixed(3)}, 0.0);
     col *= (min(lum, ${SAND_LIT.knee.toFixed(3)}) + ${(SAND_LIT.top - SAND_LIT.knee).toFixed(3)} * (1.0 - exp(-over / ${(SAND_LIT.top - SAND_LIT.knee).toFixed(3)}))) / max(lum, 1e-4);
@@ -483,14 +517,14 @@ function grainGeometry(): THREE.BufferGeometry {
     const glint = !core && laid >= K.count - K.glints.count
     const along = ra.range(K.s[0]!, K.s[1]!)
     const pick = rd.next()
-    const d = core ? -Math.log(Math.max(pick, 1e-6)) * K.core.mm * (laid % 3 === 0 ? K.core.wide : 1) : glint ? K.glints.d[0]! + (K.glints.d[1]! - K.glints.d[0]!) * pick : K.d[0]! + (K.d[1]! - K.d[0]!) * pick
-    const [x, z] = sandSprinkleAt(along, d)
     const keep = rs.next()
     const size = rs.next() ** 2
     const span = glint ? K.glints.mm : core ? K.core.size : K.mm
     const radius = span[0]! + (span[1]! - span[0]!) * size
     const id = rs.next()
     const phase = rs.next()
+    const d = core ? -Math.log(Math.max(pick, 1e-6)) * K.core.mm * (laid % 3 === 0 ? K.core.wide : 1) - SPRINKLE.softMm * phase : glint ? K.glints.d[0]! + (K.glints.d[1]! - K.glints.d[0]!) * pick : K.d[0]! + (K.d[1]! - K.d[0]!) * pick
+    const [x, z] = sandSprinkleAt(along, d)
     if (Math.hypot(x, z) < 61.5 || keep > (core || glint ? sandSprinkleRun(x, z) : sandSprinkle(x, z))) continue
     const at = [x, SLAB.liftMm + radius * 0.7, z]
     put(at, at, [0, 0, 0, radius], [id, 2, phase, core ? 0.5 : glint ? 1 : 0])
