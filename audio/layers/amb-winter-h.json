@@ -1,0 +1,106 @@
+{
+  "cue": "amb-winter",
+  "line": "Wind and distant bells, very quiet, an ambience that loops",
+  "why": "the wind is the even bed that also lies in the kept amb-fall (amb-fall's take 2; both lines begin with wind), 250 cents lower for winter and without what lies over 1.5 kHz, where that take holds its leaves; the bells are those of the cue's own take 3, two stretches of 4.5 s set 10 s apart so that they come and go around the loop, without what lies under 1.5 kHz (that take's own gust) and over 2.5 kHz, 26 dB under the wind, each with three later and quieter copies of itself 70, 160 and 290 ms behind as distance",
+  "layers": [
+    {
+      "take": 2,
+      "cue": "amb-fall",
+      "from": 0.3,
+      "to": 19.0,
+      "cents": -250,
+      "lowCutHz": 100,
+      "highCutHz": 1500,
+      "fadeInMs": 20,
+      "fadeOutMs": 20
+    },
+    {
+      "take": 3,
+      "from": 6.5,
+      "to": 11.0,
+      "lowCutHz": 1500,
+      "highCutHz": 2500,
+      "fadeInMs": 1800,
+      "fadeOutMs": 2200,
+      "at": 2.0,
+      "underDb": 26
+    },
+    {
+      "take": 3,
+      "from": 6.5,
+      "to": 11.0,
+      "lowCutHz": 1500,
+      "highCutHz": 2000,
+      "fadeInMs": 1800,
+      "fadeOutMs": 2200,
+      "at": 2.07,
+      "underDb": 29
+    },
+    {
+      "take": 3,
+      "from": 6.5,
+      "to": 11.0,
+      "lowCutHz": 1500,
+      "highCutHz": 2000,
+      "fadeInMs": 1800,
+      "fadeOutMs": 2200,
+      "at": 2.16,
+      "underDb": 32
+    },
+    {
+      "take": 3,
+      "from": 6.5,
+      "to": 11.0,
+      "lowCutHz": 1500,
+      "highCutHz": 2000,
+      "fadeInMs": 1800,
+      "fadeOutMs": 2200,
+      "at": 2.29,
+      "underDb": 35
+    },
+    {
+      "take": 3,
+      "from": 11.5,
+      "to": 16.0,
+      "lowCutHz": 1500,
+      "highCutHz": 2500,
+      "fadeInMs": 1800,
+      "fadeOutMs": 2200,
+      "at": 12.0,
+      "underDb": 26
+    },
+    {
+      "take": 3,
+      "from": 11.5,
+      "to": 16.0,
+      "lowCutHz": 1500,
+      "highCutHz": 2000,
+      "fadeInMs": 1800,
+      "fadeOutMs": 2200,
+      "at": 12.07,
+      "underDb": 29
+    },
+    {
+      "take": 3,
+      "from": 11.5,
+      "to": 16.0,
+      "lowCutHz": 1500,
+      "highCutHz": 2000,
+      "fadeInMs": 1800,
+      "fadeOutMs": 2200,
+      "at": 12.16,
+      "underDb": 32
+    },
+    {
+      "take": 3,
+      "from": 11.5,
+      "to": 16.0,
+      "lowCutHz": 1500,
+      "highCutHz": 2000,
+      "fadeInMs": 1800,
+      "fadeOutMs": 2200,
+      "at": 12.29,
+      "underDb": 35
+    }
+  ]
+}

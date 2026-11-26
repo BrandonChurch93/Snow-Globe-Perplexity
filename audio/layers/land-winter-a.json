@@ -1,0 +1,27 @@
+{
+  "cue": "land-winter",
+  "line": "A heavy glass globe set down on stone, heavy and short, then ice crackling outward",
+  "why": "the set-down is the first knock of the cue's own take 3 with the glass of its take 2 on the same instant; the ice of take 5 (after-review take 2), asked for alone, follows from 0.3 s, 10 dB under the set-down",
+  "seconds": 1.5,
+  "layers": [
+    {
+      "take": 3,
+      "cue": "land-winter",
+      "to": 0.7,
+      "fadeOutMs": 100
+    },
+    {
+      "take": 2,
+      "cue": "land-winter",
+      "underDb": 6
+    },
+    {
+      "take": 5,
+      "to": 1.2,
+      "fadeInMs": 40,
+      "fadeOutMs": 350,
+      "at": 0.3,
+      "underDb": 10
+    }
+  ]
+}
