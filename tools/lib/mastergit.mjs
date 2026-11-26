@@ -61,6 +61,37 @@ export function repoFacts(root = rel()) {
   }
 }
 
+const person = (text) => {
+  const m = /^(.*) <([^>]*)>/.exec(text)
+  return m ? { name: m[1], email: m[2] } : null
+}
+
+/** The author of the head of origin's code branch as this clone knows it, or of HEAD when the clone holds no such ref. */
+export function mainAuthor(root = rel()) {
+  const read = (ref) => person(git(root, ['log', '-1', '--format=%an <%ae>', ref], { ok: true }).out)
+  const ref = `origin/${cfg.repo.branch}`
+  const main = read(`refs/remotes/${ref}`)
+  if (main) return { ...main, of: `the head of ${ref}` }
+  const head = read('HEAD')
+  return head ? { ...head, of: `HEAD (this clone holds no ${ref})` } : null
+}
+
+const same = (a, b) => !!a && !!b && a.name === b.name && a.email === b.email
+const shown = (p) => (p ? `${p.name} <${p.email}>` : 'nobody git can name')
+/**
+ * One plain line when a commit made here would not carry the name and e-mail of `wanted` as author and committer, else null.
+ * @param {{ name: string, email: string, of?: string } | null} wanted
+ * @param {{ author: { name: string, email: string } | null, committer: { name: string, email: string } | null, why?: string }} would
+ * @param {Record<string, string | undefined>} [env]
+ */
+export function identityProblem(wanted, would, env = process.env) {
+  if (!wanted) return '--ship cannot tell whose name its commits must carry: this clone holds no commit git can read. Nothing is drawn.'
+  if (same(wanted, would.author) && same(wanted, would.committer)) return null
+  const set = IDENT.filter((k) => typeof env[k] === 'string' && env[k].trim() !== '')
+  const shell = set.length ? ` The shell sets ${set.join(', ')}, which ${set.length === 1 ? 'wins' : 'win'} over the clone's config: unset ${set.length === 1 ? 'it' : 'them'} first.` : ''
+  return `--ship would commit as ${shown(would.author)} (author) and ${shown(would.committer)} (committer)${would.why ? ` (${would.why})` : ''}, and ${wanted.of ?? 'the head of the code branch'} is by ${shown(wanted)}. Nothing is drawn.${shell} Run these two in this clone and start again: git config user.name "${wanted.name}" && git config user.email "${wanted.email}"`
+}
+
 function remoteTip(dir, url, branch) {
   const r = git(dir, ['ls-remote', url, `refs/heads/${branch}`])
   return r.out ? r.out.split(/\s+/)[0] : null
@@ -70,7 +101,6 @@ function remoteTip(dir, url, branch) {
 export class Shipper {
   constructor({ branch, say = console.log, root = rel('out', 'work', 'master', 'ship'), facts = repoFacts(), waits = REMOTE_WAITS, sleep = sleepSync }) {
     if (!branch || /\s/.test(branch) || branch === cfg.repo.branch) throw new Error('--ship takes the name of a chunk branch, never the code branch')
-    if (!facts.name || !facts.email) throw new Error('git user.name and user.email are not set in this clone, so a chunk cannot be committed. Set them first.')
     this.branch = branch
     this.say = say
     this.dir = path.join(root, branchFolder(branch))
@@ -86,15 +116,32 @@ export class Shipper {
     return withWaits(once, { what: `${what} of ${this.branch}`, waits: this.waits, sleep: this.sleep, say: this.say })
   }
 
-  prepare() {
+  open() {
     const d = this.dir
     if (!fs.existsSync(path.join(d, '.git'))) {
       fs.mkdirSync(d, { recursive: true })
       git(d, ['init', '-q'])
       git(d, ['remote', 'add', 'origin', this.facts.url])
     }
-    git(d, ['config', 'user.name', this.facts.name])
-    git(d, ['config', 'user.email', this.facts.email])
+    for (const [key, value] of [['user.name', this.facts.name], ['user.email', this.facts.email]]) {
+      if (value) git(d, ['config', key, value])
+      else git(d, ['config', '--unset', key], { ok: true })
+    }
+  }
+
+  /** Who a commit made by this shipper would carry, asked of git itself, with no word to the remote. */
+  identity() {
+    this.open()
+    const ask = (what) => git(this.dir, ['var', what], { ok: true })
+    const a = ask('GIT_AUTHOR_IDENT')
+    const c = ask('GIT_COMMITTER_IDENT')
+    const why = [a, c].map((r) => (r.status === 0 ? '' : lastLine(r.err))).filter(Boolean)[0]
+    return { author: person(a.out), committer: person(c.out), ...(why ? { why } : {}) }
+  }
+
+  prepare() {
+    const d = this.dir
+    this.open()
     const tip = this.remote('the look at the remote tip', () => remoteTip(d, this.facts.url, this.branch))
     const local = git(d, ['rev-parse', '-q', '--verify', `refs/heads/${this.branch}`], { ok: true }).out
     if (tip) {
