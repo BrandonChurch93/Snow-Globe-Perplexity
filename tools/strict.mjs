@@ -1,6 +1,18 @@
-// npm run strict -- [--keys winter-rest,fall-shake] [--modes pow,all+smooth,all+smooth+noguard] [--format preview] [--tier draft] [--live high] [--assets web] [--fresh]
-// Renders each key plainly and under each mode of the strict rule (tools/lib/strict.mjs) and counts the pixels that
-// differ. Without --keys it takes every judged key. The report is out/work/strict/report.json.
+// npm run strict -- [--keys winter-rest,fall-shake] [--modes pow,all+smooth,all+smooth+noguard] [--against plain] [--format preview] [--tier draft] [--live high] [--assets web] [--fresh]
+// Renders each key under each mode of the strict rule (tools/lib/strict.mjs) and counts the pixels that differ from
+// the picture the row is read against. Without --keys it takes every judged key. The report is
+// out/work/strict/report.json.
+// What a row is read against (decision of the lead, phase 6): its own --same picture, which is the same mode with
+// every wrapper kept and each open case answering what the plain function answers. The check is for one thing,
+// whether the picture rests on an answer the language leaves open, and that is exactly the difference between those
+// two pictures. Against the plain picture a wrapped build also differs by the wrappers' compiled form alone (a wide
+// field of last digits, up to 9 levels in the summer crown), which says nothing about any graphics card. Every mode is
+// read this way, pow too: through the app's own path the pow wrapper alone moves a pixel of winter by 3 levels.
+// The limits are the same for both readings. --against plain gives the old reading (each mode against the plain
+// picture). The last line says which reading the run used.
+// In the --same picture of a noguard mode isnan() and isinf() answer false as they do in the mode itself, so that row
+// says whether an open case reaches the picture once the guards are gone; it no longer says whether a guard holds
+// back a number that came from somewhere the wrappers do not watch (a division by zero): --against plain still does.
 // --live LEVEL draws each key through the app's own path at that level of live.quality, as `still --live` does: the
 // painter a visitor's browser runs, not the film's shutter. Its pictures and report are kept apart, in
 // out/work/strict/live-LEVEL/. --assets web draws the set a visitor is sent instead of the full one.
@@ -13,7 +25,8 @@
 // plain function answers (plus a uniform that is never set, so no compiler can fold the choice away). `dry` cannot
 // show what the wrappers alone change, because a wrapper that only calls the plain function is compiled as the plain
 // function. A picture that differs from the plain one under --same differs by the wrappers alone; what an open case
-// does to a picture is the difference between the mode's picture and the --same picture of that mode.
+// does to a picture is the difference between the mode's picture and the --same picture of that mode. A run with
+// --same is always read against the plain picture.
 import fs from 'node:fs'
 import path from 'node:path'
 import { parseArgs, rel, writeJson, readJson } from './lib/paths.mjs'
@@ -37,10 +50,12 @@ const assets = text('assets', '')
 if (live && !(live in cfg.live.quality)) throw new Error(`no such level: ${live}. The levels are ${Object.keys(cfg.live.quality).join(', ')}`)
 const only = text('only', '')
 const same = args.same === true
+const against = same ? 'plain' : text('against', 'same')
+if (against !== 'same' && against !== 'plain') throw new Error(`--against takes same or plain, not ${against}`)
 const sub = [live ? `live-${live}` : '', assets].filter(Boolean).join('-')
 const root = sub ? rel('out', 'work', 'strict', sub) : rel('out', 'work', 'strict')
-const tag = (mode) => (mode === 'none' ? mode : `${mode}${same ? ' same' : ''}${only ? ` only ${only}` : ''}`)
-const folder = (mode) => path.join(root, tag(mode).replace(/[^a-zA-Z0-9]+/g, '_'))
+const tag = (mode, s = same) => (mode === 'none' ? mode : `${mode}${s ? ' same' : ''}${only ? ` only ${only}` : ''}`)
+const folder = (mode, s = same) => path.join(root, tag(mode, s).replace(/[^a-zA-Z0-9]+/g, '_'))
 const reportFile = path.join(root, 'report.json')
 fs.mkdirSync(root, { recursive: true })
 
@@ -145,50 +160,69 @@ const engine = requireBuild()
 const session = await Session.open({ what: 'strict' })
 const old = fs.existsSync(reportFile) && args.fresh !== true ? readJson(reportFile) : null
 const report = old && old.engineHash === engine && old.format === format && old.tier === tier && (old.live ?? '') === live && (old.assets ?? '') === assets ? old : { engineHash: engine, format, tier, live, assets, rows: {} }
+report.made ??= {}
 const newContext = session.browser.newContext.bind(session.browser)
 let mode = 'none'
+let sameNow = false
 session.browser.newContext = async (...x) => {
   const context = await newContext(...x)
-  if (mode !== 'none' && same) await context.addInitScript(SAME_INIT)
+  if (mode !== 'none' && sameNow) await context.addInitScript(SAME_INIT)
   if (mode !== 'none' && only) await context.addInitScript(NARROW_INIT, only)
   if (mode !== 'none') await context.addInitScript(STRICT_INIT, mode)
   return context
+}
+
+// One picture of one key under one mode, with or without --same. A picture made for this engine is kept: the report
+// holds what was made, and a report of another engine is thrown away above.
+async function picture(spec, key, m, s) {
+  const file = path.join(folder(m, s), `${key}.png`)
+  const id = path.relative(root, file)
+  if (report.made[id] && fs.existsSync(file)) return { file, ...report.made[id] }
+  mode = m
+  sameNow = s
+  const t = Date.now()
+  try {
+    const page = await session.page({ format: spec.format, assets: spec.assets })
+    const made = await renderStill(session, spec, { file, force: true, page })
+    const state = await page.evaluate(() => window.__strict || null)
+    const narrow = only ? await page.evaluate(() => window.__narrow || null) : null
+    if (narrow) writeJson(`${file}.calls.json`, narrow)
+    await page.context().close()
+    report.made[id] = { taken: narrow && /[#~@]/.test(only) ? narrow.taken.length : undefined, shaders: state ? state.shaders : 0, missed: state ? state.missed : 0, messages: made.record.errors ?? [], seconds: Math.round((Date.now() - t) / 1000) }
+  } finally {
+    mode = 'none'
+    sameNow = false
+  }
+  writeJson(reportFile, report)
+  return { file, ...report.made[id] }
 }
 
 let failed = 0
 try {
   for (const key of keys) {
     const spec = stillSpec({ key, format, tier, live: live || undefined, assets: assets || undefined })
-    mode = 'none'
     const plain = path.join(folder('none'), `${key}.png`)
-    const first = await renderStill(session, spec, { file: plain })
-    console.log(`${key}: plain ${first.reused ? 'kept' : 'rendered'}`)
+    if (against === 'plain') {
+      const first = await renderStill(session, spec, { file: plain })
+      console.log(`${key}: plain ${first.reused ? 'kept' : 'rendered'}`)
+    } else console.log(`${key}:`)
     for (const m of modes) {
-      const id = `${key} ${tag(m)}`
-      const file = path.join(folder(m), `${key}.png`)
-      if (!report.rows[id] || !fs.existsSync(file)) {
-        mode = m
-        const t = Date.now()
-        const page = await session.page({ format: spec.format, assets: spec.assets })
-        const made = await renderStill(session, spec, { file, force: true, page })
-        const state = await page.evaluate(() => window.__strict || null)
-        const narrow = only ? await page.evaluate(() => window.__narrow || null) : null
-        if (narrow) writeJson(`${file}.calls.json`, narrow)
-        const narrowed = narrow && /[#~@]/.test(only)
-        await page.context().close()
-        const d = await differ(plain, file)
-        report.rows[id] = { key, mode: tag(m), taken: narrowed ? narrow.taken.length : undefined, shaders: state ? state.shaders : 0, missed: state ? state.missed : 0, ...d, messages: made.record.errors ?? [], seconds: Math.round((Date.now() - t) / 1000) }
-        writeJson(reportFile, report)
-      }
-      const r = report.rows[id]
-      const ok = r.step <= MAX_STEP && r.share <= MAX_SHARE && r.shaders > 0 && !r.messages.length
+      const pic = await picture(spec, key, m, same)
+      const ref = against === 'same' ? await picture(spec, key, m, true) : null
+      const d = await differ(ref ? ref.file : plain, pic.file)
+      const messages = [...pic.messages, ...(ref ? ref.messages : [])]
+      const name = `${tag(m)}${ref ? ' against same' : ''}`
+      const r = (report.rows[`${key} ${name}`] = { key, mode: tag(m), against, taken: pic.taken, shaders: pic.shaders, missed: pic.missed, ...d, messages, seconds: pic.seconds + (ref ? ref.seconds : 0) })
+      writeJson(reportFile, report)
+      const ok = r.step <= MAX_STEP && r.share <= MAX_SHARE && r.shaders > 0 && (!ref || ref.shaders > 0) && !r.messages.length
       if (!ok) failed++
-      console.log(`  ${tag(m)}${r.taken === undefined ? '' : ` (${r.taken} calls)`}: ${r.count} pixels differ${r.count ? `, largest step ${r.step}, box ${r.box.join(',')}` : ''}; ${r.shaders} shaders rewritten${r.missed ? `, ${r.missed} not` : ''}${r.messages.length ? `; messages: ${r.messages.slice(0, 2).join(' | ')}` : ''}  ${ok ? 'pass' : 'FAIL'}`)
+      console.log(`  ${name}${r.taken === undefined ? '' : ` (${r.taken} calls)`}: ${r.count} pixels differ${r.count ? `, largest step ${r.step}, box ${r.box.join(',')}` : ''}; ${r.shaders} shaders rewritten${r.missed ? `, ${r.missed} not` : ''}${r.messages.length ? `; messages: ${r.messages.slice(0, 2).join(' | ')}` : ''}  ${ok ? 'pass' : 'FAIL'}`)
     }
   }
 } finally {
   await session.close()
 }
 const through = `${live ? ` through the app's own path at ${live}` : ''}${assets ? ` with the ${assets} set` : ''}`
-console.log(failed ? `strict: ${failed} FAILED${through} (engine ${engine})` : `strict: pass, ${keys.length} keys${through} under ${modes.map(tag).join(', ')} (engine ${engine}): no pixel moves by more than ${MAX_STEP} level, at most ${(MAX_SHARE * 100).toFixed(2)}% of pixels move`)
+const reading = against === 'same' ? 'each row read against its own --same picture' : 'each row read against the plain picture'
+console.log(failed ? `strict: ${failed} FAILED${through}, ${reading} (engine ${engine})` : `strict: pass, ${keys.length} keys${through} under ${modes.map((m) => tag(m)).join(', ')}, ${reading} (engine ${engine}): no pixel moves by more than ${MAX_STEP} level, at most ${(MAX_SHARE * 100).toFixed(2)}% of pixels move`)
 process.exit(failed ? 1 : 0)
