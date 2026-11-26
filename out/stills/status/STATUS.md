@@ -1,15 +1,14 @@
-# Status 152
+# Status 153
 
-2026-11-26 10:34 UTC
+2026-11-26 11:03 UTC
 
-- The first picture, the still a visitor sees before the app has loaded, is mended and in main (6184b5a0): windows nearly square get a still of their own, no copy ever shows a second glass or foot (8,195 of 20,104 screens before, 0 after, by the builder's count), and the first paint is held for the soft picture. Not published yet.
-- Sound: the app's shake now stands where the film's does against the music before it (within 0.05 dB in all four seasons, before 11 dB over), committed as a0d81a5c; the sound check prints 8 pass. A last sound job runs until about 11:26 UTC for four things the listening agent and the numbers hold against the app (headroom in pile-ups, the entry when sound is switched on, the music under a shake, spring's onset). Nothing was bought; nobody has heard any of it.
-- The masters' tool, job 3, is in main (89257016): it reads the limits of its container and survives a lost graphics context. Round 20's gate follow-up: G3, G5 and G10 green on the newer build with the mended tool, G8 green here after two recipe mends, G2's one failing test is the larger machine's newer Node (Node 20.20.2 is now the standard everywhere).
-- Summer's fix pass: four of the five builders have pushed a first step (light and glass, sand, miniature), seen by them at draft only; nothing of it is merged or judged. Their limit is about 11:35 UTC.
-- phase 6: 7.75 h used of its 12.00 h box
-- allowance (after the review): 7.75 h used of 12.00 h allowed
+- Published at 11:02 from 38eff8da: the change's jobs 3 and 4, the sound of decision 146, the first picture's mend for nearly square windows and the particle mend are in the app. The security review found nothing that blocks; the live address answers 401 to a signed-out request, so it is checked through the preview's build line only.
+- Summer's fix pass after Round 20 (not passed: R1 5, R2 3 of 15, R3 6 and 4, R4 4) runs with five builders until about 11:36; a look in the middle went back to three of them with notes. Then Round 21 on the change and Round 22 on the globe.
+- The farm for the 4K frames is planned in decision 149: machines set up by one script (merged), two processes each, started at the freeze with one real chunk. An estimate, not a promise: about 49 machine hours for film B and the loop.
+- phase 6: 8.23 h used of its 12.00 h box
+- allowance (after the review): 8.23 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-152-1.jpg`: The first picture on a square window, before (left) and after (right): winter at 600 x 600 and fall at 650 x 561. Before, a part of a second globe stood at each side
-- `out/stills/status/status-152-2.jpg`: The first picture on a low touch screen (spring, 650 x 550) and the lower part of an unfolded phone (winter, 673 x 841), before (left) and after (right)
+- `out/stills/status/status-153-1.jpg`: Summer at rest in the middle of the fix pass: the approved picture (left) and the build with three of the five builders' work (right). Not judged; the stone and the air are not in it yet. Sent back: the haze is too even and milky, the lights of the room too large and bright, the warm rim weak
+- `out/stills/status/status-153-2.jpg`: The particle mend (open item 231) on a phone, fall to winter at the medium level, three moments of one shake: before (top row) fall's leaves, embers and bats stay frozen in the glass through winter once the particle worker is given up; after (bottom row) the snow whirls and settles
