@@ -31,3 +31,18 @@ Looks of summer_finisher, branch agent/p6-summer. Every picture is a still of th
 8-seeds-2x-before-after.jpg
   The air in the upper left of the globe, summer-rest in hd, shown at twice its size. Left: before, tier draft. Right: after, tier final.
   Before: cream stars on thick stalks. After: faint warm tufts among green-gold fireflies and gold motes.
+
+9-sheet-shake-2.jpg
+  The film's shot shake-2 (spring to summer), 12 frames across it, film frames 1296 to 1438, preview format, tier draft. After.
+  Spring's petals cover the glass, the cover of light at 1400, then summer: at 1412 the storm is pale under the last of the flare, at 1426 and 1438 it is gold.
+
+10-sheet-arrival-into-summer.jpg
+  The arrival into summer after shake-2, film frames 1440 to 1616, every 16th, preview format, tier draft. After.
+  A gold swirl at the landing that thins to fireflies. From 25.6 to 26.4 s the settling air is pale gold specks: of the arrival, these are the frames nearest to snow.
+
+11-sheet-arrival-first-frames.jpg
+  The first 12 preview frames of the same arrival, film frames 1440 to 1462, consecutive at film.previewFps, preview format, tier draft. After.
+
+12-sheet-shake-3.jpg
+  The film's shot shake-3 (summer to fall), 12 frames across it, film frames 2016 to 2158, preview format, tier draft. After.
+  At 2068 and 2080 the storm is a pale haze, cream and then near white, where summer's veil crosses to fall's: no stars and no flakes in it, but it is pale. From 2094 it is fall's.
