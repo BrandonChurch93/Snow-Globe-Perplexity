@@ -149,7 +149,7 @@ describe('the sound engine with files missing', () => {
   it('releases the old voice and plays nothing for a loop with no file', async () => {
     const engine = await running(indexOf(Object.keys(SPRITES), ['amb-winter', 'music-winter']))
     const before = [...find('music-winter'), ...find('amb-winter')]
-    expect(before.map((v) => v.stoppedAt)).toEqual([null, null])
+    expect(before.map((v) => v.stoppedAt)).toEqual([null, null, null, null])
     const count = heard.started.length
     expect(() => engine.setSeason('spring')).not.toThrow()
     await settle()
@@ -202,12 +202,12 @@ describe('the sound engine on a shake', () => {
     const engine = await running(indexOf(Object.keys(SPRITES), LOOPS))
     heard.now = 10
     const old = find('music-winter')
-    expect(old.map((v) => v.stoppedAt)).toEqual([null])
+    expect(old.map((v) => v.stoppedAt)).toEqual([null, null])
     heard.started = []
     engine.shake('spring', BAR)
     const cues = names().filter((n) => !n.startsWith('amb-'))
     expect(cues.slice(0, 2)).toEqual(['lift', 'shake-spring'])
-    expect(cues).toEqual(['lift', 'shake-spring', 'land-spring', 'glass-clink', 'music-spring'])
+    expect(cues).toEqual(['lift', 'shake-spring', 'land-spring', 'glass-clink', 'music-spring', 'music-spring'])
     const lift = find('lift')[0]!
     expect(find('shake-spring')[0]!.at).toBeCloseTo(lift.at, 6)
     expect(lift.at).toBeLessThan(10.1)
@@ -215,11 +215,11 @@ describe('the sound engine on a shake', () => {
     expect(find('music-spring')[0]!.at).toBeCloseTo(lift.at + BAR, 6)
     expect(names()).not.toContain('land-winter')
     expect(names()).not.toContain('shake-winter')
-    expect(old[0]!.stoppedAt).not.toBeNull()
+    expect(old.every((v) => v.stoppedAt !== null)).toBe(true)
     heard.now = 13
     engine.setSeason('spring')
     expect(find('land-spring')).toHaveLength(1)
-    expect(sounding('music-spring')).toHaveLength(1)
+    expect(sounding('music-spring')).toHaveLength(2)
     expect(find('land-spring')[0]!.stoppedAt).toBeNull()
   })
 
@@ -242,7 +242,7 @@ describe('the sound engine on a shake', () => {
     const land = sounding('land-spring')
     const music = sounding('music-spring')
     expect(land).toHaveLength(1)
-    expect(music).toHaveLength(1)
+    expect(music).toHaveLength(2)
     expect(land[0]!.at).toBeGreaterThanOrEqual(14.8)
     expect(land[0]!.at).toBeLessThan(14.9)
     expect(music[0]!.at).toBeGreaterThanOrEqual(14.8)
@@ -263,7 +263,7 @@ describe('the sound engine on a shake', () => {
     expect(sounding('land-spring')).toEqual([])
     expect(sounding('land-winter')).toEqual([])
     expect(sounding('music-spring')).toEqual([])
-    expect(sounding('music-winter').filter((s) => s.stoppedAt === null)).toHaveLength(1)
-    expect(sounding('amb-winter').filter((s) => s.stoppedAt === null)).toHaveLength(1)
+    expect(sounding('music-winter').filter((s) => s.stoppedAt === null)).toHaveLength(2)
+    expect(sounding('amb-winter').filter((s) => s.stoppedAt === null)).toHaveLength(2)
   })
 })
