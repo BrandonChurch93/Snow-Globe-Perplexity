@@ -1,17 +1,16 @@
-# Status 137
+# Status 140
 
-2026-11-26 05:20 UTC
+2026-11-26 06:30 UTC
 
-- Three of the review's must-fixes are merged into main from their builders: the Shake control stays on screen, the camera stands back so the whole globe stays on a phone through a shake, and the season now changes across several frames under a bloom of the new season's light instead of in one cut. None is judged yet: critics see them after the other builders report.
-- The film's sound is mended by number (no dead silence before a landing or at the end, the four landings within 0.56 dB of each other, -14.0 LUFS, the encoded copy under -1 dBTP) and the app's six loops no longer step at the seam. A listener still hears three ticks at the very start and a click at some starts. The paid takes for the ten missing effects come next, inside the 3,235 credits left.
-- A faster renderer was measured on a sandbox machine: 1.31 s a sample against 10.9 at 1080p. Its picture has not been compared with the present one yet, so the 4K masters' plan waits for that number.
-- The opening of the film with the prompt has its reasoning menu drawn (Standard, High, Max). Ten agents are at work; the next reports are due by 07:05 UTC.
-- phase 6: 2.52 h used of its 12.00 h box
-- allowance (after the review): 2.52 h used of 12.00 h allowed
+- Decision 139: every picture and frame from here on is drawn by the faster software renderer on sandbox machines. Two sandbox machines drew the same two frames to the same bytes; the devbox and the first renderer do not match them, so neither is ever joined to this work.
+- Summer's builder has sent its looks: the pool of light under the foot is now a soft pool with a net of light inside it, and the app's own path shows the same garden as the film's. A critic has not judged either yet.
+- Still working inside their limits: the first frame, the controls, the framing, the season change, the opening, the tool for the 4K masters, the strict check and the paid sounds. The count of samples for the masters is the next decision, when the strips at 4 to 24 samples arrive.
+- phase 6: 3.67 h used of its 12.00 h box
+- allowance (after the review): 3.67 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-137-1.jpg`: The winter to spring change as merged, film frames 668 to 679 at preview size and draft quality: about a fifth of a second at 60 frames a second. The table's frost gives way to petals under the bloom.
-- `out/stills/status/status-137-2.jpg`: The opening's reasoning menu, frame 89 of the 1080p render: the level is changed from Standard to High before the prompt is typed.
-- `out/stills/status/status-137-3.jpg`: Comparison crops 2: fall-rest, approved image left, build right
-- `out/stills/status/status-137-4.jpg`: Comparison crops 1: fall-rest, approved image left, build right
+- `out/stills/status/status-140-1.jpg`: Summer, the table under the foot. Top: the approved image. Middle: before. Bottom: after, at the final tier.
+- `out/stills/status/status-140-2.jpg`: Summer at rest, the globe cut out of three stills. Left: the film's path. Middle: the app at its high level. Right: the app at its low level.
+- `out/stills/status/status-140-3.jpg`: Still: winter rest hero, preview, draft
+- `out/stills/status/status-140-4.jpg`: Still: winter landed hero, hd, review

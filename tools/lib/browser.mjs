@@ -5,6 +5,28 @@ import { chromium } from 'playwright-core'
 import { readJson, rel } from './paths.mjs'
 
 export const SOFTWARE_FLAGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist']
+// The second software renderer: Mesa lavapipe behind ANGLE's Vulkan back end. It is asked for by name,
+// SHOWCASE_RENDERER=lavapipe, and needs Mesa 26 or newer (mesa-vulkan-drivers). SHOWCASE_LVP_ICD names
+// the driver's json when it is not in the usual place.
+export const LAVAPIPE_FLAGS = ['--use-angle=vulkan', '--ignore-gpu-blocklist']
+export const LAVAPIPE_ICD = '/usr/share/vulkan/icd.d/lvp_icd.json'
+export function softwareRenderer() {
+  const want = (process.env.SHOWCASE_RENDERER ?? pinnedBrowser().renderer ?? 'swiftshader').toLowerCase()
+  if (want === 'swiftshader') return { name: 'swiftshader', flags: SOFTWARE_FLAGS, env: undefined }
+  if (want !== 'lavapipe') throw new Error(`SHOWCASE_RENDERER is ${want}. It is swiftshader or lavapipe.`)
+  const icd = process.env.SHOWCASE_LVP_ICD ?? LAVAPIPE_ICD
+  if (!fs.existsSync(icd)) throw new Error(`SHOWCASE_RENDERER is lavapipe and ${icd} is not there. Install mesa-vulkan-drivers (Mesa 26 or newer) or set SHOWCASE_LVP_ICD.`)
+  return { name: 'lavapipe', flags: LAVAPIPE_FLAGS, env: { ...process.env, VK_ICD_FILENAMES: icd } }
+}
+// The name a record carries for what drew it: swiftshader, lavapipe, or card for an installed browser with its
+// graphics card on. A record from before the name was written was drawn by SwiftShader if it says software.
+export const rendererName = (local = false) => (local ? 'card' : softwareRenderer().name)
+export const rendererOf = (record) => record?.renderer ?? (record?.graphics === 'software' ? 'swiftshader' : null)
+// Two software renderers do not draw the same bytes, so a kept picture counts only under the renderer that drew it.
+export function sameRenderer(record) {
+  const drew = rendererOf(record)
+  return !drew || drew === 'card' || drew === softwareRenderer().name
+}
 const COMMON_FLAGS = ['--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows', '--force-color-profile=srgb', '--hide-scrollbars', '--mute-audio']
 
 export function pinnedBrowser() {
@@ -23,7 +45,8 @@ export async function launch({ local = false, headless = true, extraArgs = [] } 
   if (local) {
     return chromium.launch({ channel: 'chrome', headless: false, args: [...COMMON_FLAGS, '--ignore-gpu-blocklist', '--enable-gpu-rasterization', ...extraArgs] })
   }
-  return chromium.launch({ executablePath: findBrowser(), headless, args: [...SOFTWARE_FLAGS, ...COMMON_FLAGS, ...extraArgs] })
+  const soft = softwareRenderer()
+  return chromium.launch({ executablePath: findBrowser(), headless, args: [...soft.flags, ...COMMON_FLAGS, ...extraArgs], ...(soft.env ? { env: soft.env } : {}) })
 }
 
 export function machineId() {

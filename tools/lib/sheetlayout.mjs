@@ -6,6 +6,7 @@ import { limits, fitForModel } from './compose.mjs'
 import { fileURLToPath } from 'node:url'
 import { engineHash, fileSha, sha256 } from './hashes.mjs'
 import { cfg, currentSeasonHashes, writeWithRecord } from './page.mjs'
+import { sameRenderer } from './browser.mjs'
 
 export const layoutHashFor = (toolUrl) => sha256(fileSha(fileURLToPath(import.meta.url)) + fileSha(fileURLToPath(toolUrl))).slice(0, 16)
 const GROUND = [30, 30, 30]
@@ -302,6 +303,7 @@ export function matches(file, want) {
   }
   const c = current()
   if (r.engineHash !== c.engine) return false
+  if (!sameRenderer(r)) return false
   for (const s of cfg.seasons) if (r.seasonHashes?.[s] !== c.seasons[s]) return false
   for (const k of ['format', 'tier', 'assets', 'diagnostic', 'layoutHash']) if (want[k] !== undefined && r[k] !== want[k]) return false
   if (want.spec && JSON.stringify(r.spec) !== JSON.stringify(want.spec)) return false
