@@ -6,6 +6,7 @@
 //
 //   node tools/briefs/p6/regions.mjs <our still.png or .jpg> [--approved references/approved/summer-rest.png]
 //        [--centre 960,468 --radius 377]   our globe at hd from the hero camera, scaled by the picture's width
+//        [--steps]   a second line for each: luminance at the 10th, 25th, 50th, 75th and 90th percentile and the share between 40 and 80
 //        [--json]
 //
 // The approved images' globe: centre (1405, 658), radius 546 of 2816 x 1584, fitted by eye with a drawn circle.
@@ -28,6 +29,15 @@ const REGIONS = [
   ['crown of the tree', 0.0, 0.6, -0.5, 0.0],
   ['cottage', -0.5, -0.1, 0.05, 0.45],
   ['pond', -0.2, 0.3, 0.46, 0.62],
+  // added for the third list
+  ['base body, middle', -0.3, 0.3, 0.95, 1.3],
+  ['base body, left', -0.8, -0.35, 0.9, 1.3],
+  ['bank face, centre', -0.4, 0.4, 0.65, 0.71],
+  ['bank, left side', -0.85, -0.55, 0.45, 0.6],
+  ['ball, top centre', -0.25, 0.05, -0.85, -0.55],
+  ['heap, near the base', 0.95, 1.25, 1.1, 1.5],
+  ['heap, further out', 1.25, 1.6, 1.1, 1.5],
+  ['sand at the left front', -1.45, -0.85, 1.2, 1.45],
 ]
 
 const args = process.argv.slice(2)
@@ -92,6 +102,8 @@ function measure(img, fit, [, x0, x1, y0, y1]) {
     below40: +((100 * lum.filter((v) => v < 40).length) / lum.length).toFixed(1),
     spread: +spread.toFixed(1),
     saturation: +sat.toFixed(2),
+    steps: [10, 25, 50, 75, 90].map((q) => Math.round(at(q))),
+    from40to80: +((100 * lum.filter((v) => v >= 40 && v < 80).length) / lum.length).toFixed(1),
     pixels: px.length,
   }
 }
@@ -114,9 +126,14 @@ if (args.includes('--json')) {
       ? `  ${label.padEnd(9)} dark ${c(m.p2).padEnd(16)} middle ${c(m.p50).padEnd(16)} bright ${c(m.p98).padEnd(16)} above 200: ${String(m.above200).padStart(4)}%  below 40: ${String(m.below40).padStart(4)}%  spread ${String(m.spread).padStart(4)}  saturation ${m.saturation}`
       : `  ${label.padEnd(9)} outside the picture`
   console.log(`approved: ${approved}\nours:     ${ours}\n`)
+  const steps = (label, m) => (m ? `  ${label.padEnd(9)} luminance at 10, 25, 50, 75, 90 percent: ${m.steps.join(', ')}  between 40 and 80: ${m.from40to80}%` : '')
   for (const row of rows) {
     console.log(row.region)
     console.log(line('approved', row.approved))
     console.log(line('ours', row.ours))
+    if (args.includes('--steps')) {
+      console.log(steps('approved', row.approved))
+      console.log(steps('ours', row.ours))
+    }
   }
 }
