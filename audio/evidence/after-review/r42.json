@@ -1,0 +1,15 @@
+{
+ "what": "decision 142, part (b): down3-winter-0-d of r41 got no answer from the listener (an error of the call), so that one listening is asked again here as down3-winter-0-e. The same file (the kept water at its own pitch in the bar of shake-winter, 45.6 s of film B, 3 dB lower with a 30 ms rise) and the same prompt.",
+ "prompts": {
+  "place": "Listen to this recording of about 5 seconds from the soundtrack of a short film. Answer each question in one or two plain sentences, numbered 1 to 5. If you cannot tell, say \"not sure\".\n\n1. What happens at which second?\n2. Apart from the music, what sound do you hear, and what could be making it?\n3. Does that sound fit this description: \"Liquid sloshing and churning inside glass\"? Answer yes or no and say why.\n4. Is anything unpleasant, too loud, unnatural or out of place? Say what, when and why.\n5. Is there any human voice, spoken word or singing?"
+ },
+ "files": {
+  "down3-winter-0-e": {
+   "file": "n5.wav",
+   "prompt": "place"
+  }
+ },
+ "answers": {
+  "down3-winter-0-e": "1. Eerie music plays from the beginning, and a distinct liquid sloshing sound starts at about 2 seconds.\n2. I hear a liquid sloshing and bubbling sound. It could be made by a fluid being shaken or agitated inside a container.\n3. Yes, it fits well. The audio has an enclosed, slightly echoing resonance that strongly resembles fluid hitting the hard sides of a glass vessel.\n4. No, nothing is unpleasant, too loud, or unnatural. The sound effects and music are well-balanced and suit the eerie cinematic atmosphere.\n5. No, there is no human voice, spoken word, or singing in this recording."
+ }
+}

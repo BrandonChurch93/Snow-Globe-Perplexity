@@ -13793,15 +13793,15 @@
     }
   ],
   "pack": {
-    "time": "2026-11-26T06:24:59.449Z",
+    "time": "2026-11-26T07:50:30.491Z",
     "kbps": 192,
-    "bytes": 3968064,
+    "bytes": 4378752,
     "fits": true,
     "files": [
       {
         "file": "sprite.mp3",
-        "bytes": 226944,
-        "sha256": "18a5ae72f4a3e093a2dc2fd1c9ce5e799e3e8bdfb6ede0b145af94e325a8da07"
+        "bytes": 407232,
+        "sha256": "fcd76c2ec6c9cf7e18576e069ec8201b30cba304eb9c48ba7f36f012e9ee9fc8"
       },
       {
         "file": "amb-winter.mp3",
@@ -13825,23 +13825,23 @@
       },
       {
         "file": "music-fall.mp3",
-        "bytes": 471744,
-        "sha256": "1f06c001ee38db86b32ac1c5f6047aed0c9dbb22ff3ec155a44bf55968f67a91"
+        "bytes": 529344,
+        "sha256": "0f2d50b35b1a7c69e8d93ad96eb2aec48f92f875df9ea28375bc29149657d38f"
       },
       {
         "file": "music-spring.mp3",
-        "bytes": 471744,
-        "sha256": "14263e89f1a5aec844c2f44bd4eeccf6f8bcccb35bb34774374979d4e3d4ac54"
+        "bytes": 529344,
+        "sha256": "fd28759ddc5e3675b2b6a6cc3f76c187f188b6d227a698f102ee31b97fbe4ac2"
       },
       {
         "file": "music-summer.mp3",
-        "bytes": 471744,
-        "sha256": "bb04b39791b0617ec1c4f54909d1f44043041f51e4f6bc1c56614f18a1e68b37"
+        "bytes": 529344,
+        "sha256": "d2dc9291940d4f3c6d3b310adbec720f37e5f426f27a29c4e39024810c54c975"
       },
       {
         "file": "music-winter.mp3",
-        "bytes": 471744,
-        "sha256": "49f88f58286c2f56dc52dd081d7f191ac26a4ac865d2834daafadbe95b605aba"
+        "bytes": 529344,
+        "sha256": "7849b7dc2f354e9edfd8dce612a32b5c72d4e9a7efae5ed9bb1c03c5bb2efd5c"
       }
     ],
     "sprites": [
@@ -13852,7 +13852,24 @@
       "ui-tick",
       "ui-sound-on",
       "ui-send",
-      "riser"
+      "riser",
+      "shake-winter",
+      "shake-summer",
+      "shake-fall"
+    ],
+    "laid": [
+      {
+        "id": "shake-winter",
+        "state": "laid by decision 141, the water of shake-spring"
+      },
+      {
+        "id": "shake-summer",
+        "state": "laid by decision 141, the water of shake-spring"
+      },
+      {
+        "id": "shake-fall",
+        "state": "laid by decision 141, the water of shake-spring"
+      }
     ],
     "loops": [
       {
@@ -13866,6 +13883,20 @@
           "ratio": 0.12,
           "levelStepDb": 0.58,
           "secondStepDb": -0.07
+        },
+        "heard": {
+          "periodSeconds": 18.5,
+          "seamSeconds": 1.5,
+          "meanDb": -17.06,
+          "seamDb": -0.22,
+          "quartersDb": [
+            -0.6,
+            -0.71,
+            -0.2,
+            0.53
+          ],
+          "startAloneDb": -0.01,
+          "tailAloneDb": -0.27
         }
       },
       {
@@ -13879,6 +13910,20 @@
           "ratio": 0.91,
           "levelStepDb": 0.07,
           "secondStepDb": 0.07
+        },
+        "heard": {
+          "periodSeconds": 17,
+          "seamSeconds": 1.5,
+          "meanDb": -32.17,
+          "seamDb": -1.45,
+          "quartersDb": [
+            -2.1,
+            -2.26,
+            -0.11,
+            -1.71
+          ],
+          "startAloneDb": -0.87,
+          "tailAloneDb": -1.35
         }
       },
       {
@@ -13892,6 +13937,20 @@
           "ratio": 0.06,
           "levelStepDb": 0.03,
           "secondStepDb": -0.04
+        },
+        "heard": {
+          "periodSeconds": 17,
+          "seamSeconds": 1.5,
+          "meanDb": -21.74,
+          "seamDb": -1.07,
+          "quartersDb": [
+            -1.13,
+            -2.11,
+            -0.94,
+            -0.31
+          ],
+          "startAloneDb": -0.71,
+          "tailAloneDb": -0.94
         }
       },
       {
@@ -13905,58 +13964,164 @@
           "ratio": 0.93,
           "levelStepDb": -0.15,
           "secondStepDb": -0.78
+        },
+        "heard": {
+          "periodSeconds": 16.935,
+          "seamSeconds": 1.5,
+          "meanDb": -21.5,
+          "seamDb": -0.94,
+          "quartersDb": [
+            -1.05,
+            -1.2,
+            -1.07,
+            -0.48
+          ],
+          "startAloneDb": -1.25,
+          "tailAloneDb": -0.86
         }
       },
       {
         "id": "music-fall",
-        "decodedSeconds": 19.5995,
-        "expectedSeconds": 19.5995,
-        "seamErrorDb": -34.3,
-        "sourceSeam": {
-          "jump": 0.002843,
-          "typicalStep": 0.020486,
-          "ratio": 0.14,
-          "levelStepDb": 0.34,
-          "secondStepDb": -0.96
+        "decodedSeconds": 21.9999,
+        "expectedSeconds": 21.9999,
+        "bars": 8,
+        "fromBar": 1,
+        "toBar": 8,
+        "heard": {
+          "periodSeconds": 19.1999,
+          "seamSeconds": 2.4,
+          "meanDb": -17.52,
+          "seamDb": 0.57,
+          "quartersDb": [
+            -0.7,
+            -0.72,
+            2.57,
+            0.22
+          ],
+          "startAloneDb": 1.56,
+          "tailAloneDb": -0.23
+        },
+        "planned": {
+          "periodSeconds": 19.1999,
+          "seamSeconds": 2.4,
+          "meanDb": -18.58,
+          "seamDb": 0.56,
+          "quartersDb": [
+            -0.7,
+            -0.72,
+            2.56,
+            0.21
+          ],
+          "startAloneDb": 1.55,
+          "tailAloneDb": -0.23
         }
       },
       {
         "id": "music-spring",
-        "decodedSeconds": 19.5996,
-        "expectedSeconds": 19.5996,
-        "seamErrorDb": -34.65,
-        "sourceSeam": {
-          "jump": 0.001542,
-          "typicalStep": 0.008806,
-          "ratio": 0.18,
-          "levelStepDb": -1.71,
-          "secondStepDb": 1.93
+        "decodedSeconds": 22.0021,
+        "expectedSeconds": 22.0021,
+        "bars": 8,
+        "fromBar": 1,
+        "toBar": 8,
+        "heard": {
+          "periodSeconds": 19.2021,
+          "seamSeconds": 2.4,
+          "meanDb": -18.72,
+          "seamDb": 0.17,
+          "quartersDb": [
+            1.55,
+            0.95,
+            -2.97,
+            -0.08
+          ],
+          "startAloneDb": -0.88,
+          "tailAloneDb": 1.53
+        },
+        "planned": {
+          "periodSeconds": 19.2021,
+          "seamSeconds": 2.4,
+          "meanDb": -18.24,
+          "seamDb": 0.17,
+          "quartersDb": [
+            1.55,
+            0.95,
+            -2.97,
+            -0.08
+          ],
+          "startAloneDb": -0.88,
+          "tailAloneDb": 1.53
         }
       },
       {
         "id": "music-summer",
-        "decodedSeconds": 19.6001,
-        "expectedSeconds": 19.6001,
-        "seamErrorDb": -31.22,
-        "sourceSeam": {
-          "jump": 0.001125,
-          "typicalStep": 0.010518,
-          "ratio": 0.11,
-          "levelStepDb": -2.68,
-          "secondStepDb": -0.5
+        "decodedSeconds": 21.9996,
+        "expectedSeconds": 21.9996,
+        "bars": 8,
+        "fromBar": 1,
+        "toBar": 8,
+        "heard": {
+          "periodSeconds": 19.1996,
+          "seamSeconds": 2.4,
+          "meanDb": -20.47,
+          "seamDb": 1.5,
+          "quartersDb": [
+            0.27,
+            3.21,
+            0.71,
+            1.17
+          ],
+          "startAloneDb": 0.58,
+          "tailAloneDb": 0.44
+        },
+        "planned": {
+          "periodSeconds": 19.1996,
+          "seamSeconds": 2.4,
+          "meanDb": -18.54,
+          "seamDb": 1.5,
+          "quartersDb": [
+            0.27,
+            3.22,
+            0.7,
+            1.17
+          ],
+          "startAloneDb": 0.57,
+          "tailAloneDb": 0.44
         }
       },
       {
         "id": "music-winter",
-        "decodedSeconds": 19.6034,
-        "expectedSeconds": 19.6034,
-        "seamErrorDb": -31.76,
-        "sourceSeam": {
-          "jump": 0.011193,
-          "typicalStep": 0.026776,
-          "ratio": 0.42,
-          "levelStepDb": -0.56,
-          "secondStepDb": -1.91
+        "decodedSeconds": 22.0006,
+        "expectedSeconds": 22.0006,
+        "bars": 8,
+        "fromBar": 1,
+        "toBar": 8,
+        "heard": {
+          "periodSeconds": 19.2006,
+          "seamSeconds": 2.4,
+          "meanDb": -16.95,
+          "seamDb": -1.22,
+          "quartersDb": [
+            -1.63,
+            -1.21,
+            -1.7,
+            -0.44
+          ],
+          "startAloneDb": -1.8,
+          "tailAloneDb": -0.16
+        },
+        "planned": {
+          "periodSeconds": 19.2006,
+          "seamSeconds": 2.4,
+          "meanDb": -18.5,
+          "seamDb": -1.22,
+          "quartersDb": [
+            -1.64,
+            -1.21,
+            -1.72,
+            -0.45
+          ],
+          "startAloneDb": -1.8,
+          "tailAloneDb": -0.17
         }
       }
     ],
@@ -13964,28 +14129,86 @@
   },
   "mixes": {
     "audio/mix/blockout.wav": {
-      "sha256": "79609a5eeacfcc1e3c3027cb4ec61476d8934a6c348fcc38dc431a48a04cef0e",
-      "lufs": -14,
+      "sha256": "6217368dcbd171ca1821aa2cac14da4560fb719389546ca91491d85b635d40c8",
+      "lufs": -14.1,
       "truePeakDb": -1.1,
       "candidate": "blockout",
       "which": "b",
-      "time": "2026-11-26T06:29:26.385Z"
+      "time": "2026-11-26T07:50:22.374Z"
     },
     "audio/mix/four-tracks.wav": {
-      "sha256": "574e5caf6490d7895fd7f617fb455e96999d2037e977b5d13b0bf73e6be4c92a",
+      "sha256": "3edd8ff579404fce8d62a041b2172306a6b26eb9a31d59e0b90d82315337bf23",
       "lufs": -14,
-      "truePeakDb": -1.1,
+      "truePeakDb": -1.3,
       "candidate": "four-tracks",
       "which": "b",
-      "time": "2026-11-26T06:28:55.863Z"
+      "time": "2026-11-26T07:50:09.416Z"
     },
     "audio/mix/four-tracks-film-a.wav": {
-      "sha256": "96a8da27df1f6b42ee37bb683ada0e1c03caaf189e54b544d2442b24b474c740",
+      "sha256": "883ee8bd67c284161d0156b0e10fcc7dc79be5c0526423809174e456544b5515",
       "lufs": -14,
-      "truePeakDb": -1.1,
+      "truePeakDb": -1.3,
       "candidate": "four-tracks",
       "which": "a",
-      "time": "2026-11-26T06:29:12.862Z"
+      "time": "2026-11-26T07:49:57.931Z"
+    },
+    "audio/final/film-b.wav": {
+      "sha256": "3edd8ff579404fce8d62a041b2172306a6b26eb9a31d59e0b90d82315337bf23",
+      "lufs": -14,
+      "truePeakDb": -1.3,
+      "candidate": "four-tracks",
+      "which": "b",
+      "time": "2026-11-26T07:49:18.936Z"
+    },
+    "audio/final/film-a.wav": {
+      "sha256": "883ee8bd67c284161d0156b0e10fcc7dc79be5c0526423809174e456544b5515",
+      "lufs": -14,
+      "truePeakDb": -1.3,
+      "candidate": "four-tracks",
+      "which": "a",
+      "time": "2026-11-26T07:49:32.688Z"
     }
-  }
+  },
+  "laid": [
+    {
+      "cue": "key-tap",
+      "state": "laid by decision 141",
+      "kept": false,
+      "file": "audio/laid/key-tap.wav",
+      "sha256": "d39cd9e6a38b41bfff04ff2263811ec76ca0c40efc15262e60cdf90b86fbb23c",
+      "seconds": 1.03,
+      "lufs": -37.28,
+      "time": "2026-11-26T07:40:59.599Z"
+    },
+    {
+      "cue": "shake-fall",
+      "state": "laid by decision 141, the water of shake-spring",
+      "kept": false,
+      "file": "audio/laid/shake-fall.wav",
+      "sha256": "78bfd501f9b037bdfcc07a35764f083b755071e544749faef56c9931223f6462",
+      "seconds": 2.177,
+      "lufs": -22.85,
+      "time": "2026-11-26T07:45:32.990Z"
+    },
+    {
+      "cue": "shake-summer",
+      "state": "laid by decision 141, the water of shake-spring",
+      "kept": false,
+      "file": "audio/laid/shake-summer.wav",
+      "sha256": "db5026b473ef767f0efc64c971685707af42d83a99b1c42be3f3ec29eb48715b",
+      "seconds": 2.241,
+      "lufs": -22.79,
+      "time": "2026-11-26T07:11:56.681Z"
+    },
+    {
+      "cue": "shake-winter",
+      "state": "laid by decision 141, the water of shake-spring",
+      "kept": false,
+      "file": "audio/laid/shake-winter.wav",
+      "sha256": "78bfd501f9b037bdfcc07a35764f083b755071e544749faef56c9931223f6462",
+      "seconds": 2.177,
+      "lufs": -22.85,
+      "time": "2026-11-26T07:34:58.429Z"
+    }
+  ]
 }
