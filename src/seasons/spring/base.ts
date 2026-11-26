@@ -238,15 +238,26 @@ ${SHADE}
   float liveCrown = smoothstep(34.0, 42.5, vBasePos.y) * mix(0.35, 1.0, liveUp);
   vec3 liveTip = vec3(0.64, 0.62, 0.22) * RECIPROCAL_PI * baseMoss * baseAo;
   reflectedLight.directDiffuse += liveTip * (liveKeyC * ((1.6 + 18.0 * liveTuft + 2.0 * liveFuzz) * mix(0.35, 2.0, baseClump) * (liveRim * liveRim + 0.8 * liveUp * liveUp * liveHigh + 0.2 * liveCrown) * max(liveOpen * smoothstep(0.02, 0.4, liveRimM + 0.6 * liveUpM * liveHigh), liveCrown)) + uRigCardCol * (0.01 * liveCardWrap * liveCardWrap + 0.04 * liveFuzz * liveCardWrap));
-  vec3 liveCell = floor(vBasePos * 7.5);
-  vec3 liveFacet = normalize(normalMatrix * normalize(baseObjectNormal + 1.3 * (vec3(baseHash(liveCell + 3.7), baseHash(liveCell + 11.3), baseHash(liveCell + 23.9)) - 0.5)));
-  float liveGrit = smoothstep(0.34, 0.08, length(fract(vBasePos * 7.5) - 0.5)) * step(0.66, baseHash(liveCell));
-  float liveDew = pow(max(dot(liveFacet, normalize(liveKey + geometryViewDir)), 0.0), 120.0);
-  float liveDewCard = pow(max(dot(liveFacet, normalize(liveCard + geometryViewDir)), 0.0), 120.0);
-  reflectedLight.directSpecular += mix(vec3(1.0), vec3(1.0, 0.82, 0.45), baseMoss) * (liveKeyC * (liveDew * 1.0 + 0.03 * pow(abs(liveDew), 0.2) * baseMoss) + uRigCardCol * (liveDewCard * 0.3 + 0.01 * pow(abs(liveDewCard), 0.2) * baseMoss)) * liveGrit * baseAo * mix(0.25 * baseWet, 1.0, max(baseMoss, 0.5 * baseFilm));
+  // A grain of dew is drawn no narrower than two pixels, with the same light in all.
+  vec3 liveAt = vBasePos * 7.5;
+  float liveWide = clamp(max(length(dFdx(liveAt)), length(dFdy(liveAt))) / 0.21, 1.0, 2.9);
+  vec3 liveLow = floor(liveAt - 0.5);
+  vec3 liveGrit = vec3(0.0);
+  for (int i = 0; i < 8; i++) {
+    vec3 liveCell = liveLow + vec3(float(i & 1), float((i >> 1) & 1), float((i >> 2) & 1));
+    if (baseHash(liveCell) < 0.66) continue;
+    float liveNear = 1.0 - smoothstep(0.08 * liveWide, 0.34 * liveWide, length(liveAt - liveCell - 0.5));
+    if (liveNear <= 0.0) continue;
+    vec3 liveFacet = normalize(normalMatrix * normalize(baseObjectNormal + 1.3 * (vec3(baseHash(liveCell + 3.7), baseHash(liveCell + 11.3), baseHash(liveCell + 23.9)) - 0.5)));
+    float liveDew = pow(max(dot(liveFacet, normalize(liveKey + geometryViewDir)), 0.0), 120.0);
+    float liveDewCard = pow(max(dot(liveFacet, normalize(liveCard + geometryViewDir)), 0.0), 120.0);
+    float liveDewSun = pow(max(dot(liveFacet, normalize(liveGrazeDir + geometryViewDir)), 0.0), 40.0);
+    liveGrit += liveNear * vec3(liveDew + 0.03 * pow(abs(liveDew), 0.2) * baseMoss, liveDewCard * 0.3 + 0.01 * pow(abs(liveDewCard), 0.2) * baseMoss, liveDewSun);
+  }
+  liveGrit /= liveWide * liveWide * liveWide;
+  reflectedLight.directSpecular += mix(vec3(1.0), vec3(1.0, 0.82, 0.45), baseMoss) * (liveKeyC * liveGrit.x + uRigCardCol * liveGrit.y) * baseAo * mix(0.25 * baseWet, 1.0, max(baseMoss, 0.5 * baseFilm));
   // Dew on the moss that the low sun reaches: pinpoints, warm, only on the side it grazes.
-  float liveDewSun = pow(max(dot(liveFacet, normalize(liveGrazeDir + geometryViewDir)), 0.0), 40.0);
-  reflectedLight.directSpecular += vec3(1.0, 0.8, 0.55) * liveSunC * (2.5 * liveDewSun * liveGrit * baseAo * baseMoss * smoothstep(0.0, 0.4, liveGrazeM));
+  reflectedLight.directSpecular += vec3(1.0, 0.8, 0.55) * liveSunC * (2.5 * liveGrit.z * baseAo * baseMoss * smoothstep(0.0, 0.4, liveGrazeM));
   float liveF = 0.03 + 0.97 * pow(abs(1.0 - liveNv), 5.0);
   vec3 liveAway = inverseTransformDirection(reflect(-geometryViewDir, geometryNormal), viewMatrix);
   float liveSheet = baseWet * baseAo;
