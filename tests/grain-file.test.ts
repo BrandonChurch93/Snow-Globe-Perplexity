@@ -102,7 +102,7 @@ describe("the grains the build makes for summer's sand", () => {
     expect(() => rows.packRows(set, [null, null, 3])).toThrow()
   })
 
-  it('the file holds the rows grainRows makes, to the bit, in less than six tenths of their bytes', async () => {
+  it('the file holds the rows grainRows makes, to the bit, in under 72 in 100 of the bytes of a grain that flies and 40 in 100 of one that lies', async () => {
     expect(made.width).toBe(arrival.GRAIN_ROW)
     expect(Number.isInteger(made.data.length / made.width)).toBe(true)
     expect(made.data.length / made.width).toBeGreaterThan(10000)
@@ -117,9 +117,20 @@ describe("the grains the build makes for summer's sand", () => {
     // Made twice it is the same file: nothing of it hangs on the hour or on the machine's own order.
     const again = await fresh()
     expect(Buffer.from(rowFile({ rows }, setOf(again))).equals(Buffer.from(file))).toBe(true)
-    // Most of a grain is its own chance, which no packing makes smaller; what packs away is where the grains that never
-    // fly come from, and the bytes that are alike down a column.
-    expect(file.length).toBeLessThan(bytes(made.data).length * 0.6)
+    // Most of a grain that flies is its own chance, which no packing makes smaller. A grain that never flies comes from
+    // where it lies and has no flight, and that packs away. So the size is held a grain and by its kind: a share of the
+    // whole would hang on how many of the grains lie, which is the look's to choose and not the file's.
+    // The twelfth number of a row is the grain's kind (`aSeed.y`), and 2 is the grain that lies.
+    const count = made.data.length / made.width
+    const kinds = new Set<number>()
+    let lying = 0
+    for (let r = 0; r < count; r++) {
+      const kind = made.data[r * made.width + 11]!
+      kinds.add(kind)
+      if (kind > 1.5) lying++
+    }
+    expect([...kinds].filter((kind) => ![-1, 0, 1, 2].includes(kind))).toEqual([])
+    expect(file.length).toBeLessThan(4 * made.width * (0.72 * (count - lying) + 0.4 * lying))
   })
 
   it('a page that has the file draws the grains the page without it works out, to the bit, and works nothing out', async () => {

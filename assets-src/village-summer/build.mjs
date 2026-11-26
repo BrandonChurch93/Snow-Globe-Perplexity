@@ -20,7 +20,7 @@ const range = (a, b) => a + (b - a) * R()
 const IVY = { leaves: 520, roses: 14, low: 4.5, size: 0.85, coat: 620, coatSize: 1.45, coatRoses: 18, coatOut: [0.5, 1.2] }
 const LEAF = { cup: 0.6, sink: 0.07, lift: 0.1, shadeMm: 0.28, shadeDropMm: 0.22, shadeTone: 0.1 }
 const TURF = { lumpMm: 0.6, fineMm: 0.12, sandMm: 1.3, sandReach: 5.0, sandSides: 0.35 }
-const GRASS = { tufts: 21000, keep: 0.6, edge: 1100, edgeFrom: 0.1, edgeTo: 0.6, edgeWide: 1.6, edgeTuft: [1.3, 2.6], edgeLean: [0.35, 0.9], blades: 3, tall: [0.4, 1.15], clump: 1.5, wide: [0.13, 0.23], rimTall: 1.5, sandFrom: 0.55, sandTo: 1.0, edgeTall: 1.0 }
+const GRASS = { tufts: 21000, keep: 0.6, edge: 1100, edgeFrom: 0.1, edgeTo: 0.6, edgeWide: 1.6, edgeTuft: [1.3, 2.6], edgeLean: [0.35, 0.9], blades: 3, tall: [0.4, 1.15], clump: 1.5, wide: [0.13, 0.23], rimTall: 1.5, sandFrom: 0.55, sandTo: 1.0, edgeTall: 1.0, dye: [0.85, 0.72, 1.0] }
 const BLOOMS_KEEP = 0.2
 const LEVEL = { seed: 4107, medium: { back: 0.4, front: 0.72 }, low: { back: 0.25, front: 0.5 }, zFrom: -12, zTo: 6 }
 const WATER_CLEAR_MM = 2.2
@@ -28,6 +28,7 @@ const WATER_CLEAR_MM = 2.2
 // Of the bank only its upper three tenths stand over the collar: there the rows lie close (`rowsPow`).
 const BANK = { turfTo: 0.115, turfVary: 0.1, sandTo: 0.3, rowsPow: 1.8, hang: 1500, hangTuft: [0.7, 1.7], hangWide: 1.5, hangDown: 0.25, lawn: 900, rootMm: 0.62, tipMm: 0.42 }
 const turfTo = (th) => clamp(BANK.turfTo + BANK.turfVary * fbm(Math.cos(th) * 9 + 2.3, Math.sin(th) * 9 + 9.1, 4.7, 3) + 0.02 * fbm(Math.cos(th) * 41 + 5.1, Math.sin(th) * 41 + 1.3, 7.9, 2), 0.07, 0.2)
+const STEP = { seed: 9091, rise: 0.4, pale: 2.4, fenceFrontMm: 6, fenceLow: 0.4, at: [[150, 0.93, 2.6], [171, 0.9, 3.1], [192, 0.92, 2.7], [212, 0.9, 3.0]] }
 const STONE = { lift: 1.7, buried: 0.25, sink: 0.45, lumps: 0.36, chips: 0.11, wet: 0.6, moss: 0.8, rim: 18, rimTufts: 420, tones: ['#8f887a', '#a39a88', '#7b7568', '#b0a692', '#9a8c74', '#6f6a62'] }
 const TONES = {
   grass: ['#1c3413', '#274616', '#30531a', '#213c15'].map(lin),
@@ -79,7 +80,7 @@ const lensAt = (c) => {
 }
 const LENSES = [lensAt(SHOW.cameras.hero), lensAt(SHOW.cameras.macro)]
 if (!LENSES.every((p) => p.every(Number.isFinite))) throw new Error('village-summer: the lenses are not read')
-const HIDE = { stepMm: 0.8, wallIn: 0.8, trunkMm: 2.2, trunkTall: 14, groundMm: 0.25, farFrom: 8, farTo: 24, farKeep: 0.82 }
+const HIDE = { stepMm: 0.8, wallIn: 0.8, trunkMm: 2.2, trunkTall: 14, groundMm: 0.25, farFrom: 8, farTo: 24, farKeep: 0.74 }
 const houseO = L.cottagePoint(0, 0, 0)
 const houseU = [L.cottagePoint(0, 0, 1)[0] - houseO[0], L.cottagePoint(0, 0, 1)[2] - houseO[2]]
 const houseV = [L.cottagePoint(1, 0, 0)[0] - houseO[0], L.cottagePoint(1, 0, 0)[2] - houseO[2]]
@@ -285,7 +286,7 @@ function soup(bag, pos, nor, col, surfOf) {
 }
 
 // One stone, worn flat on top, half sunk, mossy where it faces up. It draws its numbers from the run it is given and returns its turn.
-function stone(x, z, rx, rz, rise, rnd, detail) {
+function stone(x, z, rx, rz, rise, rnd, detail, pale = 1) {
   const rg = (a, b) => a + (b - a) * rnd()
   const yaw = rg(0, TAU)
   const h = rx * rise
@@ -320,7 +321,7 @@ function stone(x, z, rx, rz, rise, rnd, detail) {
     g.deleteAttribute('normal')
     g.deleteAttribute('uv')
   }
-  const tone = mul3(lin(STONE.tones[Math.floor(rnd() * STONE.tones.length) % STONE.tones.length]), rg(0.8, 1.3))
+  const tone = mul3(lin(STONE.tones[Math.floor(rnd() * STONE.tones.length) % STONE.tones.length]), rg(0.8, 1.3) * pale)
   // A stone that would stand in the glass at the front is left out, its place kept bare: through the bank it showed as a dark mark.
   if (Math.hypot(x, y, z) + Math.max(rx, rz) * (1 + STONE.lumps + STONE.chips) > L.innerRadiusMm - WATER_CLEAR_MM) return yaw
   // Wet and dark where the stone stands in the pond, dry and pale above.
@@ -344,6 +345,15 @@ const stoneList = []
   const small = [[255, 1.05, 1.0], [239, 1.04, 0.8], [222, 1.05, 1.25], [207, 1.035, 0.9], [188, 1.05, 1.4], [173, 1.06, 1.0], [161, 1.04, 0.75], [142, 1.045, 1.1], [121, 1.06, 1.3], [98, 1.06, 0.85], [61, 1.055, 1.0], [23, 1.05, 1.2], [287, 1.065, 1.3]]
   const along = [...L.stones.map(([x, z], i) => [x, z, 2.3 + 0.22 * i, 1.7 + 0.12 * i, 0.3, 3]), ...[...shore, ...small].map(([deg, f, w]) => [...edgeAt(deg + range(-3, 3), f), w * range(0.85, 1.2), w * range(0.55, 0.85), range(0.34, 0.56), w < 1.5 ? 2 : 3])]
   for (const [x, z, rx, rz, rise, detail] of along) stoneList.push([x, z, rx, rz, stone(x, z, rx, rz, rise, R, detail)])
+  // Flat pale stones stand in the shallow water at the pond's left end, mossy on top: stepping stones, from a run of their own
+  // so that the lawn and the flowers keep their places.
+  const S = rng(STEP.seed)
+  for (const [deg, f, w] of STEP.at) {
+    const [x, z] = edgeAt(deg, f)
+    const rx = w * (0.95 + 0.2 * S())
+    const rz = w * (0.68 + 0.14 * S())
+    stoneList.push([x, z, rx, rz, stone(x, z, rx, rz, STEP.rise, S, 2, STEP.pale)])
+  }
 }
 const stoneGap = (x, z) => {
   let d = Infinity
@@ -375,6 +385,8 @@ let planted = 0
   const edge = L.innerRadiusMm - 1.2
   // Two tufts in five are left out by a run of numbers of their own: the lawn's run stays as long as it was, so the flowers set after it keep their places.
   const K = rng(4421)
+  const fenceLong = Math.hypot(L.fence.to[0] - L.fence.from[0], L.fence.to[1] - L.fence.from[1])
+  const fenceRun = [(L.fence.to[0] - L.fence.from[0]) / fenceLong, (L.fence.to[1] - L.fence.from[1]) / fenceLong]
   for (let i = 0; i < GRASS.tufts * 6 && tufts < GRASS.tufts; i++) {
     const a = R() * TAU
     const rr = Math.sqrt(R()) * edge
@@ -394,9 +406,15 @@ let planted = 0
     const worn = Math.exp(-Math.max(hardGap(x, z), 0) / 1.6)
     if (R() < 0.55 * worn) continue
     const y0 = topAt(x, z) - 0.05
+    // The grass before the fence is cropped short: its lower rail is seen over it.
+    const fx = x - L.fence.from[0]
+    const fz = z - L.fence.from[1]
+    const fenceT = (fx * fenceRun[0] + fz * fenceRun[1]) / fenceLong
+    const fenceOff = fz * fenceRun[0] - fx * fenceRun[1]
+    const cropped = 1 - (1 - STEP.fenceLow) * smooth(-1.5, -0.5, fenceOff) * (1 - smooth(STEP.fenceFrontMm * 0.6, STEP.fenceFrontMm, fenceOff)) * smooth(-0.2, -0.05, fenceT) * (1 - smooth(1.05, 1.2, fenceT))
     // Most of the lawn is short as moss; here and there a clump of tufts stands over it.
     const clump = smooth(0.56, 0.8, clamp(0.5 + 1.5 * fbm(x * 0.5 + 31, z * 0.5 + 17, 4.4, 2)))
-    const tall = range(GRASS.tall[0], GRASS.tall[1]) * (1 + GRASS.clump * clump) * (0.6 + 0.6 * lush) * (1 - 0.45 * worn) * (1 + (GRASS.rimTall - 1) * smooth(1.035, 1.09, f) * (1 - smooth(1.09, 1.25, f))) * (1 + GRASS.edgeTall * smooth(0.06, 0.4, sand))
+    const tall = range(GRASS.tall[0], GRASS.tall[1]) * (1 + GRASS.clump * clump) * (0.6 + 0.6 * lush) * (1 - 0.45 * worn) * (1 + (GRASS.rimTall - 1) * smooth(1.035, 1.09, f) * (1 - smooth(1.09, 1.25, f))) * (1 + GRASS.edgeTall * smooth(0.06, 0.4, sand)) * cropped
     const patch = 0.45 + 0.75 * clamp(0.5 + 1.4 * fbm(x * 0.09 + 3, z * 0.09 + 11, 2.3, 2))
     const base = mul3(mix3(pick(TONES.grass), pick(TONES.straw), sand * 0.25), patch * deep)
     const top = mul3(mix3(pick(TONES.tip), pick(TONES.straw), clamp(sand * 0.3 + 0.08 * R())), patch * deep)
@@ -423,7 +441,7 @@ let planted = 0
       for (const [q, c, t] of [[A, base, 0], [B, base, 0], [T, top, 1]]) {
         cell.pos.push(...q)
         cell.nor.push(...up)
-        cell.col.push(c[0] * (0.32 + 0.95 * t), c[1] * (0.32 + 0.95 * t), c[2] * (0.32 + 0.95 * t))
+        cell.col.push(c[0] * (0.32 + 0.95 * t) * GRASS.dye[0], c[1] * (0.32 + 0.95 * t) * GRASS.dye[1], c[2] * (0.32 + 0.95 * t) * GRASS.dye[2])
         cell.tip.push(t)
         cell.sun.push(lit)
       }
@@ -1013,5 +1031,5 @@ const grassLow = []
   }
 }
 addLists(rel('assets-full', 'summer', 'village-summer.glb'), { grass: { medium: grassMedium, low: grassLow } })
-console.log(`village-summer: ${unseen} tufts stand where neither lens sees them and are left out`)
+console.log(`village-summer: ${unseen} of ${tufts} places for a tuft stand where neither lens sees them and stay bare`)
 console.log(`village-summer: ground ${ground.triangles}, water ${water.triangles}, grass ${grass.triangles} (${planted} tufts, ${grassMedium.length / 3} at medium, ${grassLow.length / 3} at low), decor ${decor.triangles} (${counts.roses} roses, ${counts.leaves} leaves, ${counts.sunflowers} sunflowers, ${counts.blooms} blooms)`)

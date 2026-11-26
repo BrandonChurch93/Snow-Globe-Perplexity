@@ -12,7 +12,7 @@ import type { KitMoment, SeasonKit } from '../kit'
 // `rest` takes nearly all of that share back (0.04 x 0.2 x density is the share). The shared haze fogs what stands in the liquid
 // as well as what lies behind it, and it cost the miniature a quarter of its fine detail at rest; the warm air behind the
 // miniature is the wall layer's haze in `glass.ts`, which is drawn behind the cottage and the tree.
-export const veil: SeasonKit['veil'] = { tint: [1.75, 1.4, 0.86], density: 0.09, rest: -0.0007 }
+export const veil: SeasonKit['veil'] = { tint: [1.75, 1.4, 0.86], density: 0.09, rest: -0.0007, bankWhite: 0.3 }
 export const particles: SeasonKit['particles'] = { firefly: { color: [1, 0.97, 0.2], glow: 11 }, seed: { color: [1.3, 1.16, 0.9], glow: 0 }, mote: { color: [0.9, 0.62, 0.24], glow: 0.2 } }
 
 // The storm outlasts the shake. The shared veil thins with the liquid's turbulence, which is spent by the time the globe is set
@@ -38,7 +38,9 @@ const ramp = (v: number, from: number, to: number): number => {
 export function stormHeld(moment: KitMoment): number {
   const f = moment.frame
   const t = f.mix.veil
-  const mine = (f.to.veil === veil ? t : 0) + (f.from.veil === veil ? 1 - t : 0)
+  // The held storm is summer's landing. Summer coming holds its share of the change; a shake of summer alone holds all of it;
+  // summer leaving holds nothing, so the storm that hides the swap out of summer is the shared one, whole.
+  const mine = f.to.veil === veil ? (f.from.veil === veil ? 1 : t) : 0
   const beat = moment.beat
   const since = moment.sinceLanding
   const w = config.shake.swapWindow
@@ -46,9 +48,24 @@ export function stormHeld(moment: KitMoment): number {
   return Math.min(1, mine) * held
 }
 
+/**
+ * How much of the shared veil the held storm has taken over, 0 to 1. Where summer comes out of another season, nothing through
+ * the first half of the swap window: the storm that hides the change is the shared one, whole, and the held storm is far
+ * thinner. It takes over through the second half and has all of it at the window's end, where it always had it, so every frame
+ * from there to the landing and after is as it was. A shake of summer alone has nothing to hide, and the held storm comes in
+ * over the whole window as it always did.
+ */
+function taken(moment: KitMoment): number {
+  const f = moment.frame
+  if (moment.beat === null || f.from.veil === f.to.veil) return 1
+  const w = config.shake.swapWindow
+  return ramp(moment.beat, (w.fromBeat + w.toBeat) / 2, w.toBeat)
+}
+
 /** Turns the shared veil to summer's held storm. Runs after the shared veil has set its own values for the frame. */
 export function holdStorm(moment: KitMoment): number {
-  const held = stormHeld(moment)
+  const kept = stormHeld(moment)
+  const held = kept * taken(moment)
   const u = veilUniforms
   const storm = veil.density * VEIL_LOOK.haze * STORM.share * held
   const density = veil.rest + veil.density * VEIL_LOOK.haze * STORM.share
@@ -62,5 +79,11 @@ export function holdStorm(moment: KitMoment): number {
     const bank = u.uVeilBank.value
     bank.set(bank.x + (STORM.bank.level - bank.x) * held, bank.y + (STORM.bank.soft - bank.y) * held, bank.z + (STORM.bank.density - bank.z) * held, bank.w + (STORM.bank.even - bank.w) * held)
   }
-  return held
+  // `rest` is below zero: it takes back the share of haze the shared veil keeps while the pool is afloat. Where the shared haze is
+  // thinner than that share (seeds that lie count as landed, and the kept share falls with them), the sum went below zero. A veil
+  // below zero takes light away, and the drift bank's share of the whole haze, bank over thin and bank, then leaves 0 to 1 and
+  // carries the bank's whitening far past white: pure yellow where the sum is below zero and blue where it is just above.
+  // The sum stops at zero.
+  if (u.uVeil.value.w < 0) u.uVeil.value.w = 0
+  return kept
 }
