@@ -17,6 +17,7 @@ import { ParticleDraw } from '../particles/draw/points'
 import { kitOf, kits } from '../seasons'
 import type { SeasonKit } from '../seasons/kit'
 import { changeBloom, partChange } from '../shake/change'
+import { AirHold, clearVeil } from './air'
 import { Backdrop } from './backdrop'
 import { applyPose, type Pose } from './cameras'
 import { newFrame, type StageFrame } from './frame'
@@ -127,6 +128,8 @@ export class GlobeStage implements Stage {
   private readonly colliders = new Map<string, SdfGrid>()
   private readonly prepared = new Map<string, Promise<void>>()
   private diag = ''
+  private air = true
+  private readonly airHeld = new AirHold()
   private quality: StageQuality = { particleFraction: 1, shadowMapPx: config.live.quality.high.shadowMapPx, surfaceReflection: 'planar' }
   private readonly reflect = new ReflectMix()
   private readonly clear = new THREE.Color()
@@ -411,6 +414,11 @@ export class GlobeStage implements Stage {
     this.diag = view === 'none' ? '' : view
   }
 
+  setAir(on: boolean): void {
+    this.air = on
+    this.airHeld.back()
+  }
+
   setQuality(level: StageQuality): void {
     this.lighting.setShadowMap(level.shadowMapPx)
     this.quality = { ...level }
@@ -439,7 +447,7 @@ export class GlobeStage implements Stage {
   }
 
   particleCount(): number {
-    return Math.floor(this.source.count * Math.min(1, Math.max(0, this.quality.particleFraction)))
+    return this.air ? Math.floor(this.source.count * Math.min(1, Math.max(0, this.quality.particleFraction))) : 0
   }
 
   textureBytes(): number {
@@ -561,6 +569,7 @@ export class GlobeStage implements Stage {
         if (l && m) m.emissiveIntensity = flickerOf(l, moment.time, period)
       })
     }
+    if (!this.air) this.airOut(single ? [a] : [a, b])
     this.slab.visible = !sliceOnly
     this.slice.visible = sliceOnly
 
@@ -613,6 +622,18 @@ export class GlobeStage implements Stage {
     }
     renderer.autoClear = auto
     renderer.setClearColor(this.clear, alpha)
+    this.airHeld.back()
+  }
+
+  /**
+   * The frame with the air left out, for the still that is a measuring aid: no particle, nothing in the shared veil, and what
+   * the seasons on show hang in the liquid hidden until the frame is drawn. The particles and the veil need no giving back:
+   * every frame sets them anew.
+   */
+  private airOut(sets: SeasonSet[]): void {
+    this.draw.points.visible = false
+    clearVeil()
+    for (const s of sets) this.airHeld.hide(s.glass)
   }
 
   /**

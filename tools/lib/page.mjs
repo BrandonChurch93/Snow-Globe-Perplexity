@@ -226,6 +226,11 @@ export function stillSpec(args) {
     live: args.live && args.live !== true ? args.live : '',
   }
   if (args.rig && args.rig !== true) spec.rig = typeof args.rig === 'string' ? JSON.parse(args.rig) : args.rig
+  if (args['no-air'] !== undefined) {
+    if (args['no-air'] !== true) throw new Error('--no-air takes no value')
+    if (id) throw new Error(`${id} is a judged picture and is never drawn without the air. --no-air goes with --season, --state and --camera.`)
+    spec.noAir = true
+  }
   if (!cfg.seasons.includes(spec.season)) throw new Error(`no such season: ${spec.season}`)
   if (!(spec.camera in cfg.cameras)) throw new Error(`no such camera: ${spec.camera}`)
   if (!(spec.tier in cfg.tiers)) throw new Error(`no such tier: ${spec.tier}`)
@@ -234,9 +239,32 @@ export function stillSpec(args) {
   return spec
 }
 
+const NO_AIR = 'noair'
+
 export function stillName(spec, suffix = '') {
   const head = spec.id || `${spec.season}-${spec.state}-${spec.camera}`
-  return [head, spec.format, spec.tier, spec.assets === 'full' ? '' : spec.assets, spec.diag, spec.live ? `live-${spec.live}` : '', spec.interface ? 'ui' : '', spec.rig ? 'rig' : '', suffix].filter(Boolean).join('-') + '.png'
+  return [head, spec.format, spec.tier, spec.assets === 'full' ? '' : spec.assets, spec.diag, spec.live ? `live-${spec.live}` : '', spec.interface ? 'ui' : '', spec.rig ? 'rig' : '', suffix, spec.noAir ? NO_AIR : ''].filter(Boolean).join('-') + '.png'
+}
+
+/**
+ * Why a still may not be drawn as asked, or nothing. A still without the air is a measuring aid: a builder reads the tone of
+ * wood, walls and lawn in it, which the plain still shows through particles and haze. Only `npm run still` asks for one
+ * (`aid`), never of a judged picture, and its file ends in -noair, so that no tool and no reader takes it for the plain still.
+ */
+export function noAirProblem(spec, out, aid) {
+  const name = path.basename(out)
+  const named = name.endsWith(`-${NO_AIR}.png`)
+  if (!spec.noAir) return named ? `${name} is the name of a still without the air, and this still has its air. Nothing was drawn.` : ''
+  if (!aid) return 'A still without the air is a measuring aid of `npm run still` alone. Nothing was drawn.'
+  if (spec.id) return `${spec.id} is a judged picture and is never drawn without the air. Nothing was drawn.`
+  if (!named) return `A still without the air has a name that ends in -${NO_AIR}.png, and ${name} does not. Nothing was drawn.`
+  return ''
+}
+
+const AIR_LEFT_OUT = {
+  leftOut: true,
+  what: 'no particle afloat or lain, nothing in the shared veil (haze, whitening, bank, drift, a held storm), and no mist or pooled fog that a season hangs in the liquid',
+  use: 'a measuring aid for the tone of the surfaces: never a judged picture, and never held against an approved image',
 }
 
 export async function flatValue(png) {
@@ -250,8 +278,10 @@ export async function refuseFlat(png, what) {
   if (flat) throw new Error(`${what} came back as one flat value (${flat.join(', ')}) over the whole picture, which no frame of the cut is. The graphics process may have been killed for memory: look at dmesg. No picture and no record were written.`)
 }
 
-export async function renderStill(session, spec, { file, noext = [], force = false, page: given = null } = {}) {
+export async function renderStill(session, spec, { file, noext = [], force = false, page: given = null, aid = false } = {}) {
   const out = file ?? rel('out', 'work', 'stills', stillName(spec))
+  const problem = noAirProblem(spec, out, aid)
+  if (problem) throw new Error(problem)
   const want = { seasons: [spec.season], format: spec.format, tier: spec.tier, assets: spec.assets, diagnostic: spec.diag, spec, noext }
   if (!force && recordMatches(out, want)) return { file: out, reused: true, record: readJson(`${out}.json`) }
   const page = given ?? (await session.page({ format: spec.format, noext, assets: spec.assets }))
@@ -265,14 +295,17 @@ export async function renderStill(session, spec, { file, noext = [], force = fal
     if (s.interface) call.interface = true
     if (s.live) call.live = s.live
     if (s.rig) call.rig = s.rig
+    if (s.noAir) call.noAir = true
     await sc.renderStill(call)
     const after = sc.dev.timings()
     return { info: sc.info(), caps: sc.dev.caps(), framing: sc.dev.stillFraming(), timings: { simMs: after.simMs - before.simMs, drawMs: after.drawMs - before.drawMs, samples: after.samples - before.samples, steps: after.steps - before.steps } }
   }, spec)
+  // The page counts no particle in a picture it drew with the air out: a page that did not know the switch would count them.
+  if (spec.noAir && result.info.counts.particles !== 0) throw new Error(`the page drew ${result.info.counts.particles} particles into ${path.basename(out)}, which leaves the air out. No picture and no record were written.`)
   const png = await session.grab(page)
   if (!spec.diag) await refuseFlat(png, `the still ${path.basename(out)}`)
   const seconds = (Date.now() - t0) / 1000
-  const record = session.record(result.info, { diag: spec.diag, spec, noext, seconds, timings: result.timings, precision: result.caps.precision, standIns: result.info.standIns.length, counts: result.info.counts, framing: result.framing, errors: page.errors.slice(0, 20) })
+  const record = session.record(result.info, { diag: spec.diag, spec, noext, seconds, timings: result.timings, precision: result.caps.precision, standIns: result.info.standIns.length, counts: result.info.counts, framing: result.framing, errors: page.errors.slice(0, 20), ...(spec.noAir ? { air: AIR_LEFT_OUT } : {}) })
   writeWithRecord(out, png, record)
   if (!given) await page.context().close()
   return { file: out, reused: false, record }
