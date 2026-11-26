@@ -1,17 +1,17 @@
-# Status 138
+# Status 139
 
-2026-11-26 05:52 UTC
+2026-11-26 06:16 UTC
 
-- Summer's worst fault is mended and merged: its air now reads as fireflies, green-gold points first, with seeds as faint backlit tufts. Its builder still owes the final stills and the app's own path; no critic has judged it yet.
-- The check for real graphics cards found two more places where the picture hangs on an answer the shader language leaves open (the caps of summer's lanterns and one pixel in the middle of a fleck). Both are mended on main. Neither could be seen on this build's own renderer, which is why it took the check to find them.
-- A second software renderer is now a choice of the tools. On this machine it drew these four pictures at 3.4 to 6.2 s a sample where the present one takes about 35. Its picture is close to the present one but not the same (40.5 dB on one winter still, the floor between machines is 45), so it is all or nothing: nothing judged uses it until two agents report how it behaves at 3840 x 2160, in a storm and from one machine to the next.
-- Merged since the last status: the season change's deeper cover, the phone's globe centred over its controls, reduced motion as a true cross dissolve. Tests on main: 565 passed. Eleven agents are at work.
-- phase 6: 3.04 h used of its 12.00 h box
-- allowance (after the review): 3.04 h used of 12.00 h allowed
+- On a phone the whole globe now stays on the screen through a shake: the camera stands back as the glass is lifted, and the table's edge stays out of the frame. This was must-fix 4 of the review. It is merged; a critic has not judged it yet, and nobody has seen it move on a real phone.
+- Summer in a shake reads warmer and greener at feed size than before. It is still the season nearest to snow when shaken, and that is what its critics will be asked first.
+- The season change's glare is now a ball of light the size of the glass, so the room stays in the picture through it. Tests on main: 571 passed.
+- The 4K masters: a second machine confirmed the faster renderer (1.9 s a sample at 3840 x 2160 at rest, 3.2 in a storm, the same bytes twice). At the full 24 samples a frame the 3,600 frames of the film are still many hours across every machine there is. The count of samples is not decided; it waits for the pictures that show what fewer samples cost.
+- phase 6: 3.45 h used of its 12.00 h box
+- allowance (after the review): 3.45 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-138-1.jpg`: The four seasons at rest from main as it stands, 1080p at 8 samples, drawn by the faster renderer as a look, not as judged pictures. Summer is the new one.
-- `out/stills/status/status-138-2.jpg`: Summer at 400 px wide, the size at which the review said it read as snow.
-- `out/stills/status/status-138-3.jpg`: Still: summer rest hero, hd, review
-- `out/stills/status/status-138-4.jpg`: Still: fall rest hero, hd, review
+- `out/stills/status/status-139-1.jpg`: A phone, 390 x 844, drawn by the builder through the app's own path: at rest, the glass lifted in the shake, and landed in spring.
+- `out/stills/status/status-139-2.jpg`: Summer in a shake at feed size: the approved image, before, and now.
+- `out/stills/status/status-139-3.jpg`: The 16 kept sounds as waveforms, each with its name, length and loudness
+- `out/stills/status/status-139-4.jpg`: Still: winter landed hero, hd, review
