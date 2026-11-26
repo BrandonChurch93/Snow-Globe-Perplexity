@@ -1046,7 +1046,7 @@ export class Shell {
     sh.uBase.value.setRGB(a.main[0] + (b.main[0] - a.main[0]) * t, a.main[1] + (b.main[1] - a.main[1]) * t, a.main[2] + (b.main[2] - a.main[2]) * t)
     sh.uPool.value.copy(f.pool)
     sh.uOwn.value = glassLook.ownSources ? 1 : 0
-    sh.uTurn.value.setFromMatrix4(this.turn.makeRotationFromEuler(this.euler.set(f.globe.tiltX, 0, f.globe.tiltZ)))
+    sh.uTurn.value.setFromMatrix4(this.turn.makeRotationFromEuler(this.euler.set(f.globe.tiltX, f.globe.twist ?? 0, f.globe.tiltZ, 'XZY')))
     sh.uGlobeAt.value.set(f.globe.x, f.globe.y, f.globe.z)
     sh.uBloom.value.copy(f.bloomTint).multiplyScalar(glassLook.bloom.gain)
     const ga = glassOf(a.season)
