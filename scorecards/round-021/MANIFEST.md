@@ -1,6 +1,6 @@
 # Round 21 · pack manifest
 
-Phase 6, unit `summer`, tier final (motion final), engine hash `d9c3f29b3999ef20`, limits: long edge 1400 px, at most 10 files a part.
+Phase 6, unit `summer`, tier final (motion review), engine hash `d9c3f29b3999ef20`, limits: long edge 1400 px, at most 10 files a part.
 
 ## R1 · `out/work/packs/round-021/R1`
 
@@ -57,5 +57,20 @@ Phase 6, unit `summer`, tier final (motion final), engine hash `d9c3f29b3999ef20
 | `set-F-01.jpg` | summer-settled: summer in the settled state from hero, hd, final tier, resized to fit | 1400 x 787 | `8944cc347c195146` |
 | `set-F-02.jpg` | native size crops of summer-settled: summer in the settled state from hero, hd, final tier: 1 the glass at its shoulder; 2 the glass at its rim; 3 the cottage wall and roof; 4 the tree's crown; 5 the pond and the ground around it; 6 particles near the glass; 7 particles far behind; 8 the base from its rim to its foot; 9 the collar; 10 the line where the base meets the surface, and the mirror image; 11 what lies on the surface, left; 12 what lies on the surface, right | 1398 x 814 | `88a64b9f0053f678` |
 | `set-F-03.jpg` | native size crops of summer-settled: summer in the settled state from hero, hd, final tier: 1 the glass at its shoulder; 2 the glass at its rim; 3 the cottage wall and roof; 4 the tree's crown; 5 the pond and the ground around it; 6 particles near the glass; 7 particles far behind; 8 the base from its rim to its foot; 9 the collar; 10 the line where the base meets the surface, and the mirror image; 11 what lies on the surface, left; 12 what lies on the surface, right | 1398 x 814 | `1eedd0ac11a2e317` |
+
+## R4 · `out/work/packs/round-021/R4`
+
+| File | What it is | Size | sha256 |
+| --- | --- | --- | --- |
+| `set-A-01.jpg` | one sheet across the whole shake and the clearing that follows, from node tools/sheet.mjs --shot shake-2 --tier review: out/work/sheets/shot-shake-2-preview-review.jpg | 1149 x 986 | `3c9fbbc0ab7934ef` |
+| `set-B-01.jpg` | the arrival, from node tools/sheet.mjs --motion arrival --shot shake-2 --tier review: out/work/sheets/motion-arrival-shake-2-preview-review-1.jpg | 1149 x 986 | `9683219efd38ec86` |
+| `set-B-02.jpg` | the arrival, from node tools/sheet.mjs --motion arrival --shot shake-2 --tier review: out/work/sheets/motion-arrival-shake-2-preview-review-2.jpg | 1149 x 986 | `f5abf00bf269cd74` |
+| `set-B-03.jpg` | the arrival, from node tools/sheet.mjs --motion arrival --shot shake-2 --tier review: out/work/sheets/motion-arrival-shake-2-preview-review-3.jpg | 1149 x 986 | `95a83858f039e64b` |
+| `set-B-04.jpg` | the arrival, from node tools/sheet.mjs --motion arrival --shot shake-2 --tier review: out/work/sheets/motion-arrival-shake-2-preview-review-4.jpg | 1149 x 986 | `f32ee077da3cee91` |
+| `set-B-05.jpg` | the arrival, from node tools/sheet.mjs --motion arrival --shot shake-2 --tier review: out/work/sheets/motion-arrival-shake-2-preview-review-5.jpg | 1149 x 986 | `2323ca16987b701d` |
+| `set-B-06.jpg` | the arrival, from node tools/sheet.mjs --motion arrival --shot shake-2 --tier review: out/work/sheets/motion-arrival-shake-2-preview-review-6.jpg | 1149 x 986 | `e6a78adb1917cb33` |
+| `set-B-07.jpg` | the arrival, from node tools/sheet.mjs --motion arrival --shot shake-2 --tier review: out/work/sheets/motion-arrival-shake-2-preview-review-7.jpg | 1149 x 986 | `8fe6e2065fff4193` |
+| `set-B-08.jpg` | the arrival, from node tools/sheet.mjs --motion arrival --shot shake-2 --tier review: out/work/sheets/motion-arrival-shake-2-preview-review-8.jpg | 1149 x 498 | `2ecb6dc8e0407fd6` |
+| `set-C-01.jpg` | the globe at rest across several seconds, from node tools/sheet.mjs --shot summer --tier review: out/work/sheets/shot-summer-preview-review.jpg | 1149 x 986 | `8cd17afcb9e32a44` |
 
 The key that maps each neutral name to its source is `KEY.json`; the jurors and the image each saw are in `KEY-jury.json`. Both were added after every answer was in.

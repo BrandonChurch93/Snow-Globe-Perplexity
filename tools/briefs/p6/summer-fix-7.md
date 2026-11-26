@@ -145,12 +145,242 @@ Time: eighty minutes from the message, of which the checks take the last ten. It
    (1034,1918), (1038,1930); the other light lines left of the base show the same thin rims. Take the colour
    off those rims or make it too small to see at 1:1.
 
-## Miniature, Sand, Stone
+## Miniature (`src/seasons/summer/mini/`, `assets-src/tree-summer`, `assets-src/village-summer`)
 
-Your headings are written when R1 and R4 are in (within the hour). Known already, so that you can think
-ahead. From R3 part 1: the seat of the glass in the collar has no recess and no contact shadow (Stone, with
-Glass); the teal and blue inlays read as moulded plastic with one highlight for all (Stone); the ivy's larger
-leaves at the door are flat cut card (Miniature). From R3 part 2 (score 7): the sand fall at the right breaks
-into vertical strips instead of grains (Sand); a black hole and a dark speck stand in the pale sand of the
-bank, seen from the base and the interior cameras (Sand or Miniature, whoever owns that face); no seed has
-come to rest on the roof, the branches or the grass (Air).
+Written 17:15 UTC, before R1 and R4 are in; what they name for you is added below and you are told.
+Time: seventy five minutes from the message, of which the checks take the last ten.
+
+1. The lanterns' light on the place (pair C, and the whole at 400 pixels). This weighs most of yours. The
+   jurors' praise of the approved: "warm lantern glow". In the approved the cottage is the warmest lit thing
+   in the ball after the lanterns themselves: each lantern throws a pool of orange gold on the wall behind
+   it, on the door's arch, under the eaves and on the grass below it, and the lamp post lights the path at
+   its foot. Ours has the lanterns bright and the place round them grey: the left wall falls into dark, the
+   front wall is dim and cool, the lawn is grey green right up to the lamp post. Give each lantern its pool,
+   falling off within about one lantern's width and a half, on walls, door, roof edge, fence and turf. At
+   400 pixels the cottage must read as lit by its lanterns. Nothing of it may burn white.
+2. The ivy at the door. R3 part 1, major (`set-C-02.jpg`, crop 6, the interior camera at native size): "The
+   larger leaves and petals are flat, hard-edged polygons with single-tone faces. They look cut from colored
+   card against the more convincing stonework." Its fix: "Give the prominent leaves cupped profiles,
+   irregular edges and subtle veins, and add small shadows where they overlap the masonry."
+3. Two dark marks in the bank. R3 part 2, major: "a black hole in the sand, with a second dark speck one
+   crop to the left". Seen from the interior camera and the base camera at the same place, so they are in
+   the world: on the front face of the pale bank under the pond's front edge, a two lobed black mark with a
+   soft shade above it, a round black dot to its right, and a hair thin dark line between the two (a seam
+   with two gaps is my guess). The crop is attached. Find them and close them. If the face is not yours,
+   tell /root whose within ten minutes.
+4. Rest places for the Air. R3 part 1, major: "The shingle courses remain bare even with the feathery
+   particles concentrated immediately above them. Nothing recognizable as the same material has caught on
+   the roof." R3 part 2, minor: "none have come to rest on the roof, the branches, or the ground". The Air
+   owns the seeds. Within fifteen minutes send it (to `/root/summer_air_p6`, one message) a short list of
+   places where a head of down would catch: along the eaves, at the chimney's foot, in two shingle seams, on
+   two branches, on three tufts of the lawn, on the fence's top rail; each as a world position and the
+   surface's normal, in the units the particles use. If a small contact shade under each helps, it is yours
+   to draw once the Air tells you where it put them.
+5. Triangles stay under 1,800,000 at high, counted the gate's way.
+
+## Sand (`src/seasons/summer/slab.ts`, `src/seasons/summer/arrival.ts`)
+
+Written 17:15 UTC, before R1 and R4 are in; what they name for you is added below and you are told.
+Time: seventy five minutes from the message, of which the checks take the last ten.
+Your count at the masters' size held: a farm machine drew rest and landed at 3840 x 2160 at the final tier
+on `0e1100bb` and counted 0 coloured pixels on the sand at the right (990 green before your list).
+
+1. The fall at the right. R3 part 2, major (`set-D-02.jpg`, crop 4, the base camera at native size): "the
+   cascade breaks into vertical strips instead of separate grains". Its fix: "render the falling sand as
+   separate grains of mixed size, some soft, none in strips". What I see in that crop and in `set-A-03.jpg`
+   crops 9 and 12 (the hero camera at native size): where the sand goes over the shoulder, the first
+   centimetre is a comb of thin vertical streaks, some of them with coloured hairlines (at 3840 x 2160
+   about x 2545 to 2585, y 1470 to 1530), and beside it on the shoulder stands a pepper of dark specks. The
+   body of the fall below is good. Make the top of the fall grains from its first pixel: no streak longer
+   than three grains, no coloured line, no dark speck on the shoulder.
+2. The grains strewn on the table (pair F). Ours are round beads of one size sown evenly, like dots on
+   cloth. The approved's are far finer for the most part, with a few larger ones, lying in drifts and gaps,
+   and single grains glint. Mixed sizes over about one to five, nine tenths of them at the small end; drifts
+   and bare table between; a glint on about one grain in thirty.
+3. The heap's shade (pair F). Ours is a flat blue grey blotch covering the heap's left half. The approved's
+   heap is lit sand with a short soft warm shade on the side away from the key, and every grain in the shade
+   still reads. Warm the shade, shorten it, keep the grain in it.
+4. Say in your report what the fall and the strewn grains cost in the app's frame.
+
+## Stone (`src/seasons/summer/base.ts`, `assets-src/base-summer`)
+
+Written 17:15 UTC, before R1 and R4 are in; what they name for you is added below and you are told.
+Time: seventy five minutes from the message, of which the checks take the last ten.
+
+1. The seat of the glass, with Glass. R3 part 1, major (`set-C-03.jpg`, crops 9 and 12): "The thin blue edge
+   of the sphere cuts straight into a bright, uninterrupted collar. There is no visible recess or narrow
+   contact shadow to show how the glass is seated." Its fix: "Recess the glass into the collar, expose a thin
+   bevel at the seat, and add a tight contact shadow that follows the join." In the approved (the whole
+   pair) the ball sits in the base: the base's lip rises round the ball's foot and the join is a dark line
+   in a groove. Ours stands on a flat topped collar like a ball on a plinth. Yours: the lip with its groove
+   and bevel, and the shade in the groove. The base's outline in the picture (its width, its height, where
+   its foot stands) does not move; the lip may rise by a few millimetres round the ball. Write to
+   `/root/summer_glass` in one message what you make of the join so that its dark line at the seat meets
+   your groove.
+2. The inlays. R3 part 1, major (`set-A-03.jpg`, crops 8 and 10): "The inlays have nearly uniform domed
+   shading and broad milky highlights. Next to the ridged shells and granular base, they read as molded
+   plastic rather than worn glass." Its fix: "Vary their surface roughness and edge thickness, and use subtle
+   transmission and mottled frosting so thinner edges respond differently from their centers." A juror on the
+   same: "sea-glass pebbles ... nearly identical soft highlights". What the approved's have (pair D, the
+   left half): light goes through them. Their thin edges are the brightest part and their hearts the
+   deepest in colour, the frosting is mottled with small pits, no two carry the same highlight, and each
+   lies a little sunk in the sand with a dark line where it meets it and a few grains on its edge. No
+   broad white dome on any of them.
+3. The key on the carving (pair D). Bettered since the fifth list, and still even: ours reads as felt lit
+   from the front. In the approved the top of each swell is a thin bright cream line, the undercut below it
+   falls to warm brown, and grains sparkle along the lit crests. More of that: the crests brighter and
+   thinner, the hollows deeper in warm shade, a sparkle on the crests.
+4. The collar's face (the whole pair): tall and plain. Carry the swells' lines up into it, fainter, so that
+   it is the same sand and not a band.
+5. M3 stays over the config's 0.75, without speckle.
+
+## What R1 adds (in at 17:17 UTC, written 17:22 UTC)
+
+R1 is the critic who compares our stills with the approved pictures, pair by pair. It scored 3 of 10 with 4
+severe, 12 major and 5 minor issues; the whole answer is `scorecards/round-021/R1.json`. Its two files are
+attached to the message that tells you of this section (the approved on the left, ours on the right, cropped
+alike): look at them at 400 pixels first. What it names, by owner, in the order of weight. Where I measured,
+the numbers are the mean colour of the darkest part of a region on R1's own pair.
+
+The pass ends for every owner at 19:20 UTC, not at the time your heading names; the checks take the last
+ten minutes. At about 18:15 UTC each owner sends /root two pictures without stopping (the whole at 400
+pixels beside the approved, and the one pair that shows the most) and one line on the way taken.
+
+Two new owners work beside you for this pass: `/root/summer_tree_builder` has the tree (`mini/crown.ts`,
+`mini/tree.ts`, `assets-src/tree-summer`; it reads `mini/lanterns.ts` and `mini/palette.ts`, which stay the
+Miniature's), taken from the Miniature's list, and
+`/root/summer_room_builder` has the lights behind the globe (`backdrop.ts`), taken from the Glass's list,
+with the table's mirror of them.
+
+### One correction of mine, for all
+
+I wrote under Glass that the haze behind the heads should be thinned so that the heads stand against dark.
+That was wrong. Between the seeds the approved's haze is warm cream at about (70,65,52) across the upper
+dome and about (130,117,96) behind the crown, two to three times ours, which is olive at about (32,36,32).
+The approved's ball glows from within; ours is a clear dark ball with small things in it. Every owner's
+part of that is named below.
+
+### Glass (also `rig.ts`)
+
+1. Severe: "the bright cream-gold backlit haze that fills -a's globe is gone. -b's interior is dim olive and
+   grey-brown, about half as bright in the upper dome." Sent to you as a correction at 17:19 with the map.
+   Its second half is the rig's: "the crown, roof edge and grass tips have lost their warm rim light"; fix:
+   "a strong warm light from behind and to the right inside the globe ... warm rim light on the crown, roof
+   edge, fence and grass tips". If the key in `rig.ts` cannot give that rim on the miniature as it stands,
+   tell the Miniature's and the tree's builders in one message what their materials must take from it.
+2. Major, the rim: "the glass reads thin: one cool blue-white outline with no visible thickness and no
+   bending of the inside at the edge. -a's rim has a refraction band about 15 to 25 px wide, a warm amber edge
+   on the left, broad blue and warm-brown reflection bands across the top and down the right shoulder, and a
+   large warm glare low on the left. In -b the left glare is a cooler streak set higher in A and is missing
+   in B. A-b also has a dull brown curved smear and scattered brown blobs in the upper dome where -a has
+   bright blue-white curved reflection bands." (The 15 to 25 px are of a ball 752 px wide.) The low left
+   limb, measured: the approved's darkest fifth (123,102,74), ours (45,40,28).
+3. The flare (your item 2), R1 minor: "a hard core with about eight long, sharp spikes that reach well
+   outside the glass. In -a a soft, broad warm glow with many fine, short rays sits on the rim".
+4. The lights behind the globe are the room builder's for this pass. Leave `backdrop.ts`.
+
+### Air
+
+Sent to you at 17:19 in full: the heads against a cream haze (crisp, fine, on long stems, white gold);
+severe, the storm must ghost the cottage and the tree and leave dark gaps in the upper dome; severe, long
+curved arcs in one whirl in place of short straight dashes and the smear at the left; major, the flat green
+sprites that fly at the landing; minor, the flat beige polygons seen through the crown's gaps at the
+landing, which are the haze behind the crown: with the tree's builder.
+
+### Miniature (the village, the ground and the lanterns: `mini/village.ts`, `mini/turf.ts`, `mini/lanterns.ts`, `mini/palette.ts`, `assets-src/village-summer`)
+
+The tree and its crown are the tree builder's for this pass; if it needs a line in `lanterns.ts` or
+`palette.ts` it asks you. In the order of weight:
+
+1. The light (your item 1, now with R1's severe): the lanterns' pools on the walls, the door and the turf,
+   and the warm rim from the back right along the roof's edge, the fence's top and the grass tips. Your
+   darks are too deep: the approved's darkest tones in the scene are lifted by the lit liquid (the trunk's
+   shade (64,48,31) against ours (9,5,5); behind the cottage (95,80,61) against (29,34,31)). Nothing of the
+   village or the ground under about (25,22,15) at rest.
+2. The bank, major: "a thick tan band with a jagged, torn top edge shows through the lower glass, like a
+   cutaway. In -a it is a thin, pale, frosted sand layer that sparkles, under a domed grass mound." Fix:
+   "thin the layer, make it pale and sparkly, and round its top edge into the grass mound". My sixth list
+   asked you for tan gold with no white; that overshot. Pale cream, sparkling, half as tall as now, its top
+   edge soft and round, the turf coming down over it in tufts. The two dark marks (your item 3) lie in it.
+3. The pond, major: "a flat, muddy brown-orange rounded shape with one white blob of reflection and a hard,
+   smooth rim. In -a it is dark, clear water that mirrors the lamp post, the trunk and the bright sky, edged
+   with mossy stepping stones." Fix: "make the water dark and clear with a true mirror of the lamp, the
+   trunk and the glowing sky, and break the rim with mossy stones and grass".
+4. The cottage, major: "lit flat and darker and built of large blocky stones. Its chimney is brick-red where
+   -a's is grey stone, its left wall is bare stone where -a's is covered in ivy and roses, and there is no
+   warm rim light along the roof edge." Fix: "smaller mortared stones in warm tan, make the chimney grey
+   stone, cover the left wall in ivy and roses". The cottage's place and size stay.
+5. The ivy's leaves (your item 2) and, minor: "a flat, untextured green quad sits beside the right
+   sunflower like a leaf card, and the sunflowers read as flat cut-outs. In -a they are modelled and backlit".
+
+### Tree (`mini/crown.ts`, `mini/tree.ts`, `assets-src/tree-summer`; reads `mini/lanterns.ts` and `mini/palette.ts`)
+
+1. Major: "the crown is a dark, dense single mass without -a's layered foliage pads and warm rim light, and
+   its gaps show grey-brown. Thin bright rope-like lines run along the branches, and the lanterns cast little
+   light onto the trunk and leaves." Fix: "break the crown into layered pads lit from the back right, let
+   bright haze show through the gaps, remove the bright rope lines along the branches, and let the lanterns
+   spill warm light onto the trunk and leaves". Measured in the crown's shade: the approved (34,36,21) and
+   (24,26,17), ours (16,19,11) and (8,12,6); the trunk's shade (64,48,31) against (9,5,5).
+2. Minor, the landing: "flat beige polygons with hard edges show through the crown, like cut-outs". The
+   gaps' edges soft, with the Air's builder.
+3. Rest places for seed heads on two or three branches, to the Air's builder (the Miniature's item 4).
+4. The tree's place, height and spread stay (decision 157). Triangles of the whole miniature stay under
+   1,800,000 at high: ask the Miniature's builder for your share before you add.
+
+### Sand (`slab.ts`, `arrival.ts`)
+
+1. The fall, major: "a soft, opaque wedge of sand rises from the heap to above the collar, like a wall. In
+   -a a thin, see-through, backlit stream of separate grains falls in an arc from the right shoulder of the
+   base into the heap." Fix: "replace the wedge with a thin falling stream that leaves the shoulder below the
+   collar, with visible grains lit from behind". With your item 1 this is one thing: a thin veil of separate
+   grains in an arc, the dark seen through it, lit from behind.
+2. The heap, major: "the crest of the backlit heap glows. In -b ... the heap is a flat, evenly lit spread".
+   Fix: "backlight the heap so its crest glows". With your item 3.
+3. Minor: "the surface just below the base is a brighter, brown, glossy mirror. In -a it is a darker, cool
+   slate with a fine dusting of sand and a softer reflection". Measured under the front of the base: the
+   approved (10,14,17), ours (17,13,10). If that mirror is not in your files, tell /root whose.
+
+### Stone
+
+1. Severe, and first of yours: "the base reads grey-tan and matte, like suede. It is lit flat from the
+   front, with a dull grey gradient across the top band. In -a it is pale ivory moulded wet sand with fine
+   grain sparkle and droplets, raked by warm light from the back right on its top and right shoulder, with
+   the front in soft cool shade". Fix: "move the base to a paler, less saturated ivory-cream, add grain
+   sparkle and a slight wet sheen, light it from the back right with warm raking highlights on the top and
+   right shoulder and a soft cool shade on the front, and remove the grey gradient". This is your item 3
+   made larger: the whole base paler and ivory, the light from the back right, the front in soft cool shade.
+2. The collar, major (your items 1 and 4): "the glass rests on a flat-topped, plain cylindrical band with no
+   seat and no contact shadow. The top third of the base, about 90 px, has no carving and only a faint
+   grain. In -a the glass sinks into a rounded, lumpy sand roll that wraps its foot with a shadowed crease,
+   and the carving runs right up to it." Fix: "replace the flat band with a rounded, sculpted sand lip that
+   rises around the foot of the glass, add the thin dark crease under the glass, and carry the carving and
+   grain up to the lip".
+3. The sea glass, major (your item 2): "smooth, rounded, opaque pastel blobs, like jelly beans. In -a they
+   are frosted, translucent, irregular tumbled pieces in deep emerald, teal and cobalt, with grain inside
+   and light passing through". So also: irregular tumbled forms and deeper colours.
+4. The right shoulder (17:22 UTC, from the Sand's builder, who drew rest at 3840 x 2160 with all its grains
+   hidden): the comb of thin curved streaks with red rims and the pepper of dark specks at about x 2545 to
+   2575, y 1440 to 1515 stand unchanged on the stone, and down the stone's right edge runs a ragged strip of
+   dark and coloured pixels that the fall otherwise covers. They are in `base.ts` or its asset. R3 part 2
+   called the same place major from the base camera ("vertical strips"). Clean stone there at 3840 x 2160:
+   no streak, no coloured rim, no dark speck, a whole edge.
+
+### Room (`backdrop.ts`, and the table's mirror of the lights)
+
+1. Major: "small, separate, saturated orange discs are spread evenly ... In -a large, overlapping,
+   near-white cream discs cluster brightly at the top right ... with softer warm discs down the left".
+   Measured at the top right (the upper fifth of the crop, its right sixth): the approved's mean 104, its
+   brightest (240,223,207), the dark between its discs (46,37,28); ours 48, (183,141,87), (11,14,17). At the
+   left, mid height: the approved's brightest (173,136,92), ours (60,43,27). At the top left ours is the
+   brighter: (104,74,42) against (34,28,18). R1 also calls our black navy and the approved's neutral: that
+   does not hold by measure, both are (4 to 8, 9 to 13, 12 to 16). Leave the black.
+   The discs' places and sizes are the shared layout's and stay (one room in four seasons). Their colours
+   and where they burn are summer's: cream white at the top right and about twice as bright in the sum,
+   warm and softer down the left, less at the top left.
+2. Major: "in -a the wet surface right of the globe carries bright, soft reflections of the lights behind
+   ... In -b that surface is dark". Measured on the table right of the base: the approved's mean 101 with
+   its dark at (46,40,34); ours 51 with (18,18,17). The table must mirror the cluster as soft tall streaks.
+
+## What R4 adds
+
+Written here when it is in (the critic on motion, started 17:21 UTC), and each owner told.
