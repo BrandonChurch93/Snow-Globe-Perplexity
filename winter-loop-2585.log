@@ -1,0 +1,15 @@
+winter hd review frame 0
+winter hd review frame 1
+winter hd review frame 479
+winter hd review frame 480
+{"season":"winter","format":"hd","tier":"review","across":{"rms":2.399,"pixelsOver4":49025},"after":{"rms":2.382,"pixelsOver4":49222},"closed":{"rms":0,"pixelsOver4":0}}
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+page.waitForFunction: Timeout 60000ms exceeded.
+    at /home/user/workspace/snow-globe-inertia/out/work/inertia/loop-proof.mjs:44:18 {
+  name: 'TimeoutError'
+}
+
+Node.js v20.20.2

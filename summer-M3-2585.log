@@ -1,0 +1,8 @@
+
+> snow-globe-seasons@0.1.0 measure
+> node tools/measure.mjs --unit summer --only M3 --force --tier review
+
+FAIL M3 summer-rest: 0.6211 (threshold 0.75, detail.minSharpnessRatio) high frequency energy of the still over the approved image at the same size: base 0.621 over 166536 pixels of the part in the ids view; miniature 0.791 over 134780 pixels of the part in the ids view
+measure summer: not complete · 1 of 19 lines, 1 red · review · 31 s
+out/work/measure/summer.json
+out/work/measure/summer.md

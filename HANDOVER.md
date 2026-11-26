@@ -43,6 +43,18 @@ The eight-key strict check on `2585e411` found zero differing pixels in all 32 r
 
 The `winter-rest` stand-ins view was drawn at HD review and inspected. All 2,073,600 pixels have RGB zero, as recorded in `standins-rgb-2585e411.json`.
 
+### Winter card and fresh summer M3
+
+HD review winter frames 0 and 480 are byte-identical PNGs. In the native crop and at 400 px, 479, 0 and 1 keep the outline and snow density steady. Whole-frame RGB RMS is 2.399 across the join and 2.382 immediately after it. The `winter-hd-review-seam` JPEGs show all three frames, not continuous playback.
+
+The pinned winter frame 0 at `1deae971` was rendered again at HD review. Side by side with `2585e411` at 400 px and in the native miniature crop, the framing and main winter composition hold; individual snow points and details at the pond rim differ. This is a whole-build historical baseline, not a controlled inertia-only comparison. The 1920 by 1080 RGB images are not byte-identical, with whole-picture RMS 23.958, as recorded in `winter-f0-pinned.json`. The loop closure above compares frame 480 and frame 0 of the same current tree.
+
+The forced official HD review summer M3 line on `2585e411` was:
+
+> FAIL M3 summer-rest: 0.6211 (threshold 0.75, detail.minSharpnessRatio) high frequency energy of the still over the approved image at the same size: base 0.621 over 166536 pixels of the part in the ids view; miniature 0.791 over 134780 pixels of the part in the ids view
+
+The miniature meets decision 169's 0.77 floor; the complete M3 result is still a fail by the base. The number is not read from a diagnostic without particles.
+
 ## Retimed comparison
 
 `7aa7b19a` brings in main `a6b42369`, which contains the summer sand guard, and the held hand at `6165039b`. The control `f82ea164` is tree-identical to `agent/p6-hand` at `90f78390`. The two comparison trees differ only in `src/globe/liquid.ts`, `src/particles/engine/engine.ts`, `src/particles/engine/loop.ts`, `tests/engine-storm.test.ts` and `tests/liquid.test.ts`.
