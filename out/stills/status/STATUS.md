@@ -1,19 +1,21 @@
-# Status 177
+# Status 178
 
-2026-11-26 21:10 UTC
+2026-11-26 21:41 UTC
 
-- The shimmer at 3840 has its cause and its mend. Two farm machines found it on their own: the film chose the 24 sample places of a frame anew for every frame (`src/capture/showcase.ts` line 231), so ground that stands still was drawn differently each time. One line gives every picture the stills' set; it is in main as `1621ff09` (decision 166). Measured with it at 3840 final: spring's moss collar, frames 1290 and 1291, 19.7% of pixels over 12 levels before, 0.0% after; fall's lower third, frames 2734 and 2735, 8,871 pixels before, 316 after; the six guard stills of winter, spring and fall equal by sha256; the grain unchanged. Not seen yet: a shot in motion. Four machines draw one second each at 3840 final (winter's opening, spring, fall, the close) with clips to look at; no master before that (open item 246).
-- The change from summer into fall fails its cover gate on main: "FAIL M4 shake-3: 0.7601 (threshold 0.85, shake.minCoverAtSwap)" on `6f6330ed`. A farm machine walked main back over ten commits: green at the review stop (0.9667) and up to `eca1ac61` (0.9603), red from the merge of summer's air for fix list 7 (`5f9a5fd2`, 0.7719), which also took spring into summer from 0.8968 to 0.8666. The change's owner proved one cause at draft: summer's held storm is thinned while summer leaves; with that term off shake-3 reads 0.9652 and nothing else moves. It is with the air's builder as a must (open item 245). The swap frame is also still milky green where it should burn warm; that is the change owner's mend, reported about 21:40 UTC.
-- Summer's sand, third list, is in main (`8f6770e2`): the heap stays on the table when the globe is lifted and slumps into the foot's print, the stream ends with the lift, the apron and the sprinkle are gone. Still below the bar by the builder's own account and by my look: a white lobe with a clean outline where the approved has a low wedge of fine grain. Fourth list sent; the red line on its far rim is mended in the world, not in the lens (decision 167).
-- Summer's tree, third pass, is in main since the last status; summer at rest was drawn again here on `8f6770e2` (picture 1).
-- The standstill work is pushed (`agent/p6-standstill` `26e6ac52`) and merges clean; a farm machine guards its eight stills against main before it comes in, after the change's report.
+- The change of season no longer burns sky blue around summer. The change's owner gave each season its own white for the flood's bank (`bankWhite`, 0.3 for summer); it is in main as `1878461b`. On frames 1400 and 2086 the left two thirds of the glass were sky blue; with the mend the flood is a warm cream gold (picture 3). By its sha256 at draft the eight keys at rest and mid shake are unchanged and so are nine frames of the other three changes. Not built yet: the cover's five points (the column of glow, the pool over the base, the flat globe, the lamps gone, the blink). First change as a picture about 23:30 UTC, all four with their checks about 01:30 UTC.
+- Summer at rest and at the landing were drawn again on main (pictures 1 and 2) after the tree's fourth pass (`d75524aa`), the glass's third list (`698ed8d6`) and the cottage's third pass (`18a19dd5`). The detail gate is green again: "pass M3 summer-rest: 0.8266 (threshold 0.75, detail.minSharpnessRatio)". Still below the bar beside the approved picture (picture 4): a grey white film over the upper middle of the glass, a crown of dark shelves where the approved has plump bright clumps, seed heads too many and too large, a base too grey. Every part is on its next list: glass fourth, tree fifth, cottage fourth, sand fourth, stone third, air third.
+- Main was red on one test from 21:27 UTC until the mend. The test left `src/seasons/summer/arrival.ts` out while the file was with its builder, and the sand's third pass brought in a `normalize` of a flat vector without a test of its length (line 183). The change's merge took the exemption out, rightly, and I merged it without the whole test run. Four builders found it on their merges and held their pushes. Mended with the form line 196 of the same file already has; every merge into main now runs the whole test run before its push.
+- The loose matter now trails the glass in a shake, on the inertia builder's candidate (not in main yet): over frames 1308 to 1322 the glass moves 18.10 px at 400 wide, the same petals 10.81 px before and 3.32 after; the lift no longer loses a frame. It goes in after the hand's final report (decision 168).
+- The standstill branch holds all eight stills byte for byte on a farm machine. One of its own tests is red on the merged tree (the size bound of summer's baked grains, which grew with the sand's third pass); it goes in when its builder has mended that.
+- A push from this machine failed at 21:22 for want of the sign-in; the eleven commits went through a courier as a verified bundle, a plain fast forward. Pushes from here work again.
+- Rough draft 4 is being drawn: only frames 1200 to 2399, which changed; the other eight ranges are draft 3's.
 - Sound: 7,420 of 10,000 credits spent, no call since.
-- phase 6: 18.35 h used of its 12.00 h box
-- allowance (after the review): 18.35 h used of 12.00 h allowed
+- phase 6: 18.86 h used of its 12.00 h box
+- allowance (after the review): 18.86 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-177-1.jpg`: Summer at rest on `8f6770e2` (hd, review tier), after the tree's and the sand's third passes
-- `out/stills/status/status-177-2.jpg`: Summer's sand heap, approved picture left and build right: still below the bar
-- `out/stills/status/status-177-3.jpg`: Spring's moss at 3840 final, frames 1290 and 1291 and their difference times 8: before the mend above, with it below
-- `out/stills/status/status-177-4.jpg`: Summer into fall at the middle of the change on `6f6330ed`: the cover gate fails here and the light is milky green, both in work
+- `out/stills/status/status-178-1.jpg`: Summer at rest on `1878461b` (hd, review tier), after the tree's fourth pass, the glass's third list and the cottage's third pass
+- `out/stills/status/status-178-2.jpg`: Summer at the landing on `1878461b` (hd, review tier)
+- `out/stills/status/status-178-3.jpg`: The change of season around summer, frames 1400 and 2086 at draft: sky blue before the mend left, cream gold with it right
+- `out/stills/status/status-178-4.jpg`: Summer at rest, approved picture above and build below at one scale: still below the bar
