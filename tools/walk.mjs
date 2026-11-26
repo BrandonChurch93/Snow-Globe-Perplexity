@@ -37,7 +37,7 @@ if (!names) {
   for (const [k, only] of RUNS) {
     const name = `${layout}-${k}`
     const pass = ['tools/visit.mjs', '--layout', layout, '--only', only, '--name', name]
-    for (const o of ['url', 'quality', 'wait', 'raster']) if (args[o] && args[o] !== true) pass.push(`--${o}`, String(args[o]))
+    for (const o of ['url', 'quality', 'wait']) if (args[o] && args[o] !== true) pass.push(`--${o}`, String(args[o]))
     const t0 = Date.now()
     const r = spawnSync(process.execPath, pass, { cwd: rel(), stdio: 'inherit' })
     took.push(`${name} ${Math.round((Date.now() - t0) / 1000)} s${r.status === 0 ? '' : `, ended with ${r.status ?? r.signal}`}`)

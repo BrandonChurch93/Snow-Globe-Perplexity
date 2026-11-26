@@ -67,10 +67,7 @@ const plain = (extra = {}) => {
   return u.href
 }
 
-// The page's own controls are drawn on the processor. Drawn by the tools' software graphics card (lavapipe) the season marks
-// come out as stripes and blocks in some pictures, which is the card and not the page: `--raster gpu` shows it again.
-const raster = str('raster', 'cpu')
-const browser = await launch({ extraArgs: raster === 'gpu' ? [] : ['--disable-gpu-rasterization'] })
+const browser = await launch()
 const context = await browser.newContext({
   viewport: { width: fmt.width, height: fmt.height },
   deviceScaleFactor: ratio,
@@ -839,6 +836,22 @@ if (want(16)) {
   // Pictures are taken as fast as the page gives them from the moment the address is asked for, each with what the page says
   // of itself, and the still is laid on the live picture to find how far the one stands from the other.
   await gather()
+  // What the page holds at each of its first frames, and when the first picture came into it: a first frame made before the
+  // page's own script has laid the soft picture is a first paint with nothing in it.
+  await page.addInitScript(() => {
+    const w = (window.__firstFrames = { frames: [], pictureInMs: null })
+    const pictures = () => document.querySelectorAll('#first img').length
+    const seen = new MutationObserver(() => {
+      if (w.pictureInMs === null && pictures() > 0) w.pictureInMs = Math.round(performance.now())
+    })
+    seen.observe(document, { childList: true, subtree: true })
+    const frame = () => {
+      w.frames.push({ ms: Math.round(performance.now()), pictures: pictures(), body: !!document.body, script: 'firstStill' in window })
+      if (w.frames.length < 4) requestAnimationFrame(frame)
+      else seen.disconnect()
+    }
+    requestAnimationFrame(frame)
+  })
   const t0 = Date.now()
   await page.goto(plain(), { waitUntil: 'commit' })
   const look = () =>
@@ -853,6 +866,7 @@ if (want(16)) {
           canvasOpacity: view ? Number(getComputedStyle(view).opacity) : null,
           shown: document.getElementById('ui')?.dataset.interface === 'shown',
           frames: window.__frames ?? 0,
+          said: document.documentElement.dataset.controls ?? null,
         }
       })
       .catch(() => null)
@@ -861,14 +875,20 @@ if (want(16)) {
   while (Date.now() - t0 < WAIT && whole < 3) {
     const st = await look()
     const png = await grab()
-    if (!st || !png) continue
+    const after = await look()
+    if (!st || !png || !after) continue
     const stats = await sharp(png).extract(middle).removeAlpha().stats()
-    shots.push({ ms: Date.now() - t0, ...st, png, spread: Math.round(Math.max(...stats.channels.map((c) => c.stdev)) * 10) / 10 })
+    // A picture is slow to take here: it stands for a stage only where the page said the same before it and after it.
+    const steady = st.still === after.still && st.live === after.live && st.shown === after.shown && Math.abs((st.canvasOpacity ?? 0) - (after.canvasOpacity ?? 0)) < 0.001
+    shots.push({ ms: Date.now() - t0, ...st, steady, said: after.said === st.said ? st.said : `${st.said}>${after.said}`, png, spread: Math.round(Math.max(...stats.channels.map((c) => c.stdev)) * 10) / 10 })
     if (st.live && st.canvasOpacity >= 0.999 && st.shown) whole++
   }
   const firstStill = shots.findIndex((x) => x.still && !x.live)
-  const lastStill = shots.findLastIndex((x) => x.still && (!x.live || x.canvasOpacity <= 0.001))
-  const firstLive = shots.findIndex((x) => x.live && x.canvasOpacity >= 0.999)
+  const lastStill = shots.findLastIndex((x) => x.steady && x.still && (!x.live || x.canvasOpacity <= 0.001))
+  const firstLive = shots.findIndex((x) => x.steady && x.live && x.canvasOpacity >= 0.999)
+  // The still as the page laid it by its own reckoning, before the app had measured the controls, and as the app placed it after.
+  const stillByPage = shots.findLastIndex((x, i) => i <= lastStill && x.steady && x.still && !x.live && x.said === null)
+  const stillByApp = shots.findIndex((x, i) => i <= lastStill && x.steady && x.still && !x.live && x.said !== null && !String(x.said).includes('>'))
   const mixes = shots.filter((x) => x.live && x.canvasOpacity > 0.001 && x.canvasOpacity < 0.999)
   // The live picture moved over the still by whole pixels each way: where the two lie closest is how far the one stands
   // from the other.
@@ -895,7 +915,7 @@ if (want(16)) {
     return { ...best, atNoShift }
   }
   const save = (name, png) => fs.writeFileSync(path.join(dir, `${String(++shot).padStart(2, '0')}-first-look-${name}.png`), png)
-  let facts = { link: plain(), shots: shots.length, timeline: shots.map((x) => ({ ms: x.ms, still: x.still, live: x.live, canvasOpacity: x.canvasOpacity, controls: x.shown, spread: x.spread, frames: x.frames })) }
+  let facts = { link: plain(), shots: shots.length, timeline: shots.map((x) => ({ ms: x.ms, still: x.still, live: x.live, canvasOpacity: x.canvasOpacity, controls: x.shown, said: x.said, steady: x.steady, spread: x.spread, frames: x.frames })) }
   let ok = false
   if (firstStill >= 0 && lastStill >= 0 && firstLive > lastStill) {
     const [a, b, c] = [shots[lastStill], shots[firstLive], shots[firstLive + 1] ?? null]
@@ -904,14 +924,17 @@ if (want(16)) {
     save('live', b.png)
     const laid = await fit(a.png, b.png)
     const rest = c ? await fit(b.png, c.png) : null
+    if (stillByPage >= 0 && stillByApp > stillByPage) save('still-by-page', shots[stillByPage].png)
+    const placed = stillByPage >= 0 && stillByApp > stillByPage ? await fit(shots[stillByPage].png, shots[stillByApp].png, 12) : null
     const flat = shots.slice(firstStill).filter((x) => x.spread < 2).map((x) => x.ms)
     const paints = await page.evaluate(() => ({
       paint: Object.fromEntries(performance.getEntriesByType('paint').map((e) => [e.name, Math.round(e.startTime)])),
       stills: performance.getEntriesByType('resource').filter((e) => /\/first\//.test(e.name)).map((e) => ({ file: e.name.split('/').pop(), arrivedMs: Math.round(e.responseEnd) })),
+      firstFrames: window.__firstFrames ?? null,
     }))
     const end = await read()
-    facts = { ...facts, stillFile: a.stillFile, emptyShotsBeforeTheStill: firstStill, stillFirstSeenMs: shots[firstStill].ms, liveWholeMs: b.ms, shotsHalfIn: mixes.length, flatShotsAfterTheStill: flat, stillOnLive: laid, liveOnNextLive: rest, ...paints, lit: end.lit.join(), busy: end.busy }
-    ok = flat.length === 0 && laid.dx === 0 && laid.dy === 0 && end.lit.join() === cfg.defaultSeason && !end.busy
+    facts = { ...facts, stillFile: a.stillFile, emptyShotsBeforeTheStill: firstStill, stillFirstSeenMs: shots[firstStill].ms, liveWholeMs: b.ms, shotsHalfIn: mixes.length, flatShotsAfterTheStill: flat, stillOnLive: laid, stillByPageOnStillByApp: placed, liveOnNextLive: rest, ...paints, lit: end.lit.join(), busy: end.busy }
+    ok = flat.length === 0 && laid.dx === 0 && laid.dy === 0 && (!placed || (placed.dx === 0 && placed.dy === 0)) && end.lit.join() === cfg.defaultSeason && !end.busy
   }
   await note(16, 'first-look', facts, ok)
   if (firstLive >= 0) {
@@ -931,7 +954,14 @@ if (want(16)) {
     }
     if (last) save('settled', last)
     const end = way[way.length - 1] ?? null
-    await note(16, 'first-settle', { link: plain(), searchedPx: R, liveToSettled: end, way }, !!end && Math.abs(end.dx) <= 1 && Math.abs(end.dy) <= 1)
+    // The height the app says it took for the controls, against the controls as they stand: the room under the globe is theirs.
+    const now = await read()
+    const tops = Object.values(now.boxes).filter(Boolean).map((box) => box[1])
+    const barMeasured = tops.length ? Math.round((fmt.height - Math.min(...tops)) * 100) / 100 : null
+    const said = await page.evaluate(() => document.documentElement.dataset.controls ?? null)
+    const barSaid = said === null || said === '' ? null : Number(said)
+    const barAgrees = barSaid === null || barMeasured === null ? null : Math.abs(barSaid - barMeasured) <= 1
+    await note(16, 'first-settle', { link: plain(), searchedPx: R, liveToSettled: end, barSaid, barMeasured, barAgrees, way }, !!end && Math.abs(end.dx) <= 1 && Math.abs(end.dy) <= 1 && barAgrees !== false)
   }
 }
 
@@ -1076,6 +1106,6 @@ await gather()
 await note(11, 'controls-watched', { looks: watched.looks, least: watched.least, faults: watched.faults.slice(0, 24), faultCount: watched.faults.length }, watched.looks > 0 && watched.faults.length === 0)
 
 const bad = lines.filter((l) => !l.ok)
-fs.writeFileSync(path.join(dir, 'result.json'), JSON.stringify({ url: base, layout, size: [fmt.width, fmt.height], ratio, touch, quality, raster, lines, notOk: bad.map((l) => `${l.step} ${l.action}`), pageErrors: errors, console: consoleLines, failedRequests: failed }, null, 1))
+fs.writeFileSync(path.join(dir, 'result.json'), JSON.stringify({ url: base, layout, size: [fmt.width, fmt.height], ratio, touch, quality, lines, notOk: bad.map((l) => `${l.step} ${l.action}`), pageErrors: errors, console: consoleLines, failedRequests: failed }, null, 1))
 await browser.close()
 console.log(`visit ${layout}: ${lines.length} lines, ${bad.length} not ok${bad.length ? ': ' + bad.map((l) => l.action).join(', ') : ''}${errors.length ? ` · ${errors.length} page errors` : ''} · console ${consoleLines.length} lines · ${failed.filter((f) => !/ERR_ABORTED/.test(f)).length} requests failed · ${dir}`)
