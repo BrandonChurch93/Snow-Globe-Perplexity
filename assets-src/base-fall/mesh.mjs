@@ -454,19 +454,13 @@ export function buildWax() {
   const drips = L.DRIPS.map((d) => {
     const top = L.onCylinder(d.x, 1085, 48.5)
     const end = L.onCylinder(d.x, d.y1, 51.5)
-    return { az: top.az, h1: end.h, w: (d.w / 9.3) * 0.53, wide: d.wide }
+    return { az: top.az, h1: end.h, w: (d.w / 9.3) * 0.72, wide: d.wide }
   })
   for (let az = 100; az < 260; az += 23 + 9 * Math.sin(az)) drips.push({ az: L.wrapDeg(az), h1: 35.5 - 9 * Math.abs(Math.sin(az * 1.7)), w: 0.85, wide: 1.4 })
-  const wrng = mulberry(733)
-  for (const d of drips.slice(0, L.DRIPS.length)) {
-    if (d.w < 0.85 || d.h1 < 27 || wrng() < 0.5) continue
-    const sgn = wrng() < 0.5 ? -1 : 1
-    drips.push({ az: d.az + sgn * (1.3 + 1.2 * wrng()), h1: d.h1 + (wrng() - 0.35) * 6, w: d.w * (0.4 + 0.2 * wrng()), wide: 1.0, thin: true })
-  }
   const heavy = (az) => {
     let v = 0
     for (const d of drips) {
-      const x = (L.wrapDeg(az - d.az) * RAD * 48) / (d.w * d.wide * 1.6)
+      const x = (L.wrapDeg(az - d.az) * RAD * 48) / (d.w * d.wide * 1.25)
       v = Math.max(v, Math.exp(-x * x))
     }
     return v
@@ -475,7 +469,7 @@ export function buildWax() {
     const m = heavy(az)
     const n = fbm(((az + 180) / 360) * 10, 0.3, 10, 4, 61, 2)
     const side = 1.1 * smooth(48, 82, L.front(az)) * smooth(140, 100, L.front(az))
-    const thick = -0.5 + 1.5 * n * n + 0.9 * m + 0.4 * side
+    const thick = -0.8 + 0.9 * n * n + 1.35 * m + 0.3 * side
     const drop = 0.3 + 1.0 * n * n * n + 3.3 * m + 0.7 * side
     return { thick, drop }
   }
@@ -521,20 +515,20 @@ export function buildWax() {
     for (let i = 0; i <= n; i++) {
       const t = i / n
       const h = mix(h0, d.h1, t)
-      const sway = (fbm(t * 3 + d.az, 0.4, 64, 4, 17, 2) - 0.5) * (d.h1 < 26 ? 3.2 : 1.4) * t
-      const neck = mix(Math.min(d.wide, 1.45), 0.66, smooth(0, 0.6, t) ** 0.7)
-      const bulb = 1 + 0.32 * Math.exp(-(((t - 0.9) / 0.08) ** 2))
+      const sway = (fbm(t * 3 + d.az, 0.4, 64, 4, 17, 2) - 0.5) * (d.h1 < 26 ? 1.6 : 0.9) * t
+      const neck = mix(Math.min(d.wide, 2.3), 0.7, smooth(0, 0.42, t) ** 0.6)
+      const bulb = 1 + 0.45 * Math.exp(-(((t - 0.88) / 0.09) ** 2))
       const cap = Math.sqrt(Math.max(1 - Math.max((t - 0.93) / 0.07, 0) ** 2, 0.0004))
       const rad = d.w * neck * bulb * cap * (0.84 + 0.34 * fbm(t * 2.2 + d.az * 1.7, 0.2, 64, 4, 47, 1))
       pts.push(place(mix(drumR(clamp(h, 0, 38.3)) + 1.2, outs[i] + rad * 0.55, smooth(0, 0.18, t)), h, d.az + sway))
       radii.push(rad)
     }
-    tube(soup, pts, radii, L.front(d.az) <= 125 ? (d.thin ? 8 : 12) : 5, (j, a, p, nrm) => [0.6 + 0.4 * (0.5 + 0.5 * dot3(nrm, norm3([p[0], 0, p[2]]))), clamp(radii[j] * 0.55, 0, 1), j / n], 0.72)
+    tube(soup, pts, radii, L.front(d.az) <= 125 ? 14 : 5, (j, a, p, nrm) => [0.6 + 0.4 * (0.5 + 0.5 * dot3(nrm, norm3([p[0], 0, p[2]]))), clamp(radii[j] * 0.55, 0, 1), j / n], 0.72)
     count++
   }
   for (const run of L.RUNS) {
     const start = L.onCylinder(run.x, run.y0, 55)
-    const w = (run.w / 9.3) * 0.8
+    const w = (run.w / 9.3) * 1.0
     weaveOut(start.az, 5, 2)
     // A run at the foot fell on the outermost vine that passes above it, and lies over it and down to the slab.
     let over = null
@@ -562,7 +556,7 @@ export function buildWax() {
       const cap = Math.sqrt(Math.max(1 - Math.max((0.1 - t) / 0.1, 0) ** 2, 0.0004))
       const tail = run.pool > 0 ? 1 + 0.9 * smooth(0.72, 1, t) ** 2 : Math.sqrt(Math.max(1 - Math.max((t - 0.9) / 0.1, 0) ** 2, 0.0004)) * (1 + 0.4 * Math.exp(-(((t - 0.86) / 0.1) ** 2)))
       const rad = w * (run.pool > 0 ? 0.58 + 0.26 * Math.exp(-((t / 0.14) ** 2)) + 0.04 * Math.sin(t * 5 + run.x) : 0.3 + 0.8 * smooth(0, 0.55, t) + 0.1 * Math.sin(t * 9 + run.x)) * cap * tail
-      pts.push(place(outs[i] + rad * 0.3, h, start.az + sway * 2.2 * Math.sin(2 * Math.PI * t) * (1 - t) + 0.9 * (fbm(t * 2.5 + run.x, 0.4, 64, 4, 23, 2) - 0.5) * (1 - t)))
+      pts.push(place(outs[i] + rad * 0.3, h, start.az + sway * 0.9 * Math.sin(2 * Math.PI * t) * (1 - t) + 0.9 * (fbm(t * 2.5 + run.x, 0.4, 64, 4, 23, 2) - 0.5) * (1 - t)))
       radii.push(rad)
     }
     tube(soup, pts, radii, 12, (j, a, p, nrm) => [(0.55 + 0.45 * (0.5 + 0.5 * dot3(nrm, norm3([p[0], 0, p[2]])))) * (0.5 + 0.5 * smooth(0, 16, p[1])), clamp(radii[j] * 0.55, 0, 1), j / n], 0.85)
@@ -574,9 +568,9 @@ export function buildWax() {
     soup.grid(seg + 1, rings, (i, j) => {
       const a = (i / seg) * 2 * Math.PI
       const q = j / (rings - 1)
-      const lobes = run.pool * 0.95 * (0.5 + 0.8 * fbm((i % seg) / seg * 5, 0.5, 5, 4, Math.round(run.x), 3)) * (1 + 0.45 * Math.cos(a - 1.2))
+      const lobes = run.pool * 1.45 * (0.5 + 0.8 * fbm((i % seg) / seg * 5, 0.5, 5, 4, Math.round(run.x), 3)) * (1 + 0.45 * Math.cos(a - 1.2))
       const rho = Math.sin((q * Math.PI) / 2)
-      const y = 0.06 + 1.25 * Math.cos((q * Math.PI) / 2) ** 0.55 * (0.6 + 0.4 * rho)
+      const y = 0.06 + 1.6 * Math.cos((q * Math.PI) / 2) ** 0.55 * (0.6 + 0.4 * rho)
       const dirx = Math.cos(a)
       const dirz = Math.sin(a) * 0.62
       const p = [centre[0] + dirx * lobes * rho, q >= 1 ? 0.04 : y * (1 - q ** 5), centre[2] + dirz * lobes * rho]
