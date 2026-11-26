@@ -17,7 +17,7 @@ const CUP_R = SPHERE_R + 0.15
 const W = 4096
 const H = 1024
 const R_REF = 58
-const MOSS_TILE = 14
+const MOSS_TILE = 22
 const REPEATS = Math.round((2 * Math.PI * R_REF) / MOSS_TILE)
 const dir = rel('assets-full', 'spring')
 fs.mkdirSync(dir, { recursive: true })
@@ -199,8 +199,9 @@ for (const p of trickle.samples) p.w = widthAt(p.t)
 
 console.log(`profile ${mer.total.toFixed(1)} mm long, the shoulder at ${S_TOP.toFixed(1)}; field ${W} by ${H}; trickle ${trickle.length.toFixed(1)} mm`)
 
-const cob = voronoi(15, 10.5, 11, 0.95)
-const tuft = voronoi(4.6, 4.2, 57, 1.0, 1.6)
+const cob = voronoi(9.4, 6.6, 11, 0.95, 0.7)
+const tuft = voronoi(5.2, 4.6, 57, 1.0, 1.6)
+const sprig = voronoi(0.95, 0.9, 91, 1.0, 0)
 const rock = new Float32Array(W * H)
 const moss = new Float32Array(W * H)
 for (let y = 0; y < H; y++) {
@@ -209,16 +210,18 @@ for (let y = 0; y < H; y++) {
   for (let x = 0; x < W; x++) {
     const k = y * W + x
     const az = (x / W) * 360 - 180
-    const pillow = smooth(0, 5.6, cob.f2[k] - cob.f1[k])
+    const pillow = smooth(0, 3.3, cob.f2[k] - cob.f1[k])
     const lump = fbm((x / W) * 60, (y / H) * 9, 60, 9, 31, 4) - 0.5
-    rock[k] = 1.9 * Math.pow(pillow, 0.85) + (cob.id[k] - 0.5) * 1.7 + 1.7 * lump - 1.45
-    let drape = 3.5 + 7 * (fbm((x / W) * 22, 0.5, 22, 1, 71, 3) - 0.5)
+    const dome = Math.max(0, 1 - (cob.f1[k] / 4.8) ** 2)
+    rock[k] = (1.15 + 1.35 * dome) * Math.sin(1.5708 * pillow) + (cob.id[k] - 0.5) * 1.3 + 1.3 * lump - 1.5
+    let tongue = 0
     for (const d of DRIPS) {
       const da = ((az - d[0] + 540) % 360) - 180
-      drape = Math.max(drape, d[1] * Math.exp(-((da / d[2]) ** 2)))
+      tongue = Math.max(tongue, d[1] * Math.exp(-((da / d[2]) ** 2)))
     }
-    const ragged = 3.2 * (fbm((x / W) * 90, (y / H) * 12, 90, 12, 83, 4) - 0.5) + 1.6 * (1 - pillow)
-    let cover = smooth(S_TOP - drape - 2.2, S_TOP - drape + 1.6, s + ragged)
+    const drape = -4.5 + 4 * (fbm((x / W) * 22, 0.5, 22, 1, 71, 3) - 0.5) + 4 * (fbm((x / W) * 76, 0.5, 76, 1, 171, 2) - 0.5) + tongue
+    const ragged = 5.0 * (fbm((x / W) * 90, (y / H) * 12, 90, 12, 83, 4) - 0.5) + 3.0 * (1 - pillow)
+    let cover = smooth(S_TOP - drape - 1.2, S_TOP - drape + 1.2, s + ragged)
     let patch = smooth(0.58, 0.78, fbm((x / W) * 26, (y / H) * 4, 26, 4, 97, 4) + 0.16 * (1 - pillow))
     const frayed = 0.3 * (fbm((x / W) * 110, (y / H) * 16, 110, 16, 41, 3) - 0.5) + 0.2 * (1 - pillow)
     for (const p of PATCHES) {
@@ -226,7 +229,7 @@ for (let y = 0; y < H; y++) {
       const dh = m.h - p[1]
       patch = Math.max(patch, smooth(1.0, 0.35, Math.hypot(da / p[2], dh / p[3]) - 1.6 * frayed))
     }
-    const seam = smooth(0.34, 0.04, pillow) * smooth(0.42, 0.7, fbm((x / W) * 34, (y / H) * 5, 34, 5, 211, 3) + 0.25 * smooth(8, 30, m.h))
+    const seam = smooth(0.34, 0.04, pillow) * smooth(0.5, 0.74, fbm((x / W) * 34, (y / H) * 5, 34, 5, 211, 3) + 0.25 * smooth(8, 30, m.h))
     cover = Math.max(cover, patch * smooth(0.5, 3.5, s), 0.42 * seam * smooth(0.5, 3.5, s))
     const fine = fbm((x / W) * 420, (y / H) * 60, 420, 60, 149, 3) - 0.5
     moss[k] = clamp(cover + 2.6 * fine * cover * (1 - cover))
@@ -243,12 +246,12 @@ stampPath(trickle.samples, 7, (k, d, p) => {
   }
 })
 const rockRaw = Float32Array.from(rock)
-rock.set(blur(rockRaw, W, H, 0.3 / MM_X, true, false))
+rock.set(blur(rockRaw, W, H, 0.75 / MM_X, true, false))
 const rockSoft = blur(rock, W, H, 1.2 / MM_X, true, false)
 for (let k = 0; k < W * H; k++) {
   const bed = smooth(2.4, 0.7, band[k])
-  rock[k] = mix(rock[k], rockSoft[k] - 0.55, bed)
-  moss[k] *= smooth(1.0, 3.2, band[k])
+  rock[k] = mix(rock[k], rockSoft[k] - 0.2, bed)
+  moss[k] *= smooth(0.3, 1.3, band[k])
 }
 
 const rockWide = blur(rock, W, H, 2.2 / MM_X, true, false)
@@ -263,8 +266,9 @@ for (let y = 0; y < H; y++) {
     const k = y * W + x
     const c = moss[k]
     const mound = smooth(0, 2.6, tuft.f2[k] - tuft.f1[k])
-    const cushion = 0.24 * mound + 0.4 * fbm((x / W) * 64, (y / H) * 10, 64, 10, 173, 3) + 0.36 * fbm((x / W) * 150, (y / H) * 22, 150, 22, 131, 3)
-    const thick = (0.3 + 1.35 * cushion + 0.55 * top * seat + 0.3 * (tuft.id[k] - 0.5)) * smooth(0.12, 0.95, c) * smooth(0.3, 0.92, mossSoft[k])
+    const star = smooth(0, 0.6, sprig.f2[k] - sprig.f1[k])
+    const cushion = 0.46 * Math.pow(mound, 0.8) + 0.3 * fbm((x / W) * 64, (y / H) * 10, 64, 10, 173, 3) + 0.24 * fbm((x / W) * 150, (y / H) * 22, 150, 22, 131, 3)
+    const thick = (0.25 + 1.9 * cushion + 0.55 * top * seat + 0.55 * (tuft.id[k] - 0.5) + 0.3 * star * star * (0.35 + sprig.id[k])) * smooth(0.12, 0.95, c) * smooth(0.3, 0.92, mossSoft[k])
     height[k] = mix(rock[k], Math.max(rock[k], mix(rockWide[k], rockBroad[k] + 0.5, 0.8) + 0.15) + thick, smooth(0.12, 0.6, c))
   }
 }
@@ -274,17 +278,17 @@ const roots = []
 const rng = mulberry(4401)
 const pushRoot = (spec) => {
   const p = pathOf(spec.pts, 0.8, spec.keep ? 1.2 : 2.2, roots.length + 1)
-  spec = { ...spec, r: spec.r * (spec.keep ? 1.08 : 1.12) }
+  spec = { ...spec, r: spec.r * (spec.keep ? 0.8 : spec.fine ? 1 : spec.r > 1.3 ? 0.92 : 0.74) }
   roots.push({ ...spec, ...p })
   return p
 }
 for (const spec of ROOTS) {
   const p = pushRoot(spec)
-  const twigs = spec.twigs ?? 2
+  const twigs = spec.keep ? 0 : (spec.twigs ?? 0) + 2
   for (let i = 0; i < twigs; i++) {
     const from = p.samples[Math.floor(p.samples.length * (0.25 + 0.6 * rng()))]
     const side = rng() < 0.5 ? -1 : 1
-    const len = 5 + 8 * rng()
+    const len = 6 + 11 * rng()
     const r = atS(from.s).r
     const pts = []
     let az = from.az
@@ -296,8 +300,21 @@ for (const spec of ROOTS) {
       h -= (len / 4) * (0.5 + 0.5 * rng())
       lean += 0.7 * (rng() - 0.5)
     }
-    if (from.s < S_TOP) pushRoot({ r: spec.r * (0.34 + 0.2 * rng()) * (1 - 0.5 * from.t), pts, twigs: 0 })
+    if (from.s < S_TOP) pushRoot({ r: Math.max(0.3, spec.r * 0.62 * (0.5 + 0.3 * rng()) * (1 - 0.5 * from.t)), pts, twigs: 0, fine: true })
   }
+}
+for (let i = 0; i < 11; i++) {
+  let az = -92 + (184 * (i + rng())) / 11
+  let h = 20 + 12 * rng()
+  const pts = [[az, h]]
+  let lean = (rng() - 0.5) * 3.2
+  while (h > 0.5) {
+    az += lean * 2.6 + 5 * (rng() - 0.5)
+    h -= 3.5 + 3.5 * rng()
+    lean += 1.2 * (rng() - 0.5)
+    pts.push([az, Math.max(h, 0.2)])
+  }
+  if (pts.length > 2) pushRoot({ r: 0.38 + 0.36 * rng(), pts, twigs: 0, fine: true })
 }
 for (let i = 0; i < 12; i++) {
   let az = 100 + (160 * (i + rng())) / 12
@@ -309,7 +326,7 @@ for (let i = 0; i < 12; i++) {
     h -= 5 + 4 * rng()
     pts.push([az, Math.max(h, 0.2)])
   }
-  pushRoot({ r: 0.7 + 1.1 * rng(), pts, twigs: 0 })
+  pushRoot({ r: 0.7 + 1.1 * rng(), pts, twigs: -2 })
 }
 const shade = new Float32Array(W * H)
 for (const root of roots) {
@@ -323,7 +340,7 @@ function taper(root, t) {
   return root.keep ? 1 : mix(1.25, 0.32, Math.pow(t, 1.1))
 }
 
-const low = blur(height, W, H, 3.2, true, false)
+const low = blur(height, W, H, 6, true, false)
 const wide = blur(height, W, H, 2.6 / MM_X, true, false)
 const sheets = {}
 for (const name of ['moss', 'stone', 'bark']) sheets[name] = await sheet(name)
@@ -514,7 +531,7 @@ function buildGrowth() {
     const tint = 0.75 + 0.5 * rng()
     const knot = 6.283 * rng()
     const centres = root.samples.map((q) => {
-      const rr = root.r * taper(root, q.t)
+      const rr = Math.max(root.r * taper(root, q.t), 0.17)
       const g = surf(q.az, q.s, rockWide, 0.45 * rr)
       return { p: g.p, n: g.n, rr }
     })
@@ -523,13 +540,18 @@ function buildGrowth() {
     tube(soup, centres, centres.map((c, i) => c.rr * gnarl(i)), (i) => { const v = tint * (0.86 + 0.2 * Math.sin(i * 0.33 + 1.7 * knot)); return [v, v, v] }, [1, 14], 1.0, root.r > 1.1 ? 10 : 6)
     rootTriangles += soup.triangles - before
   }
-  const caps = [...MUSHROOMS]
+  const caps = []
+  for (const cap of MUSHROOMS) {
+    caps.push(cap)
+    const more = cap[2] > 1.2 ? 2 : cap[2] > 0.95 ? 1 : 0
+    for (let i = 0; i < more; i++) caps.push([cap[0] + (i ? -1 : 1) * (1.6 + 1.6 * rng()) * (cap[2] / 1.6), Math.max(cap[1] - 1.2 - 2.2 * rng(), 1.5), cap[2] * (0.42 + 0.22 * rng())])
+  }
   for (let i = 0; i < 14; i++) caps.push([95 + 170 * rng(), 6 + 26 * rng(), 0.9 + 1.2 * rng()])
   for (const [az, h, R] of caps) {
     const s = sOf([az, h])
     const g = surf(az, s, height, -0.2)
-    const len = R * (1.5 + 1.2 * rng())
-    const lean = norm3(add(add(g.n, [0, 1, 0], 0.9), [rng() - 0.5, 0, rng() - 0.5], 0.5))
+    const len = R * (2.3 + 1.5 * rng())
+    const lean = norm3(add(add(g.n, [0, 1, 0], 1.5), [rng() - 0.5, 0, rng() - 0.5], 0.5))
     const p1 = add(g.p, g.n, len * 0.5)
     const p2 = add(p1, lean, len * 0.6)
     const stem = []
@@ -612,7 +634,7 @@ function buildGrowth() {
   for (const [az, h, extra, size] of LEDGE_PETALS) {
     const g = surf(az, sOf([az, h, extra]), height, 0.25)
     const n = norm3(add(g.n, [rng() - 0.5, rng() * 0.3, rng() - 0.5], 0.5))
-    leaf(g.p, n, size * 0.72, [0.72, 0.4 + 0.12 * rng(), 0.46 + 0.1 * rng()], rng() * 6.28, 1.45, 0.5)
+    leaf(g.p, n, size * (0.42 + 0.2 * rng()), [0.72, 0.4 + 0.12 * rng(), 0.46 + 0.1 * rng()], rng() * 6.28, 1.2 + 0.4 * rng(), 0.3)
   }
   return { soup, rootTriangles }
 }
