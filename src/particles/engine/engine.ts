@@ -44,11 +44,13 @@ const HOLD = 0.6
 const GRAVITY_MM = 9810
 const MOTE = KINDS.indexOf('mote')
 const SUMMER = SEASONS.indexOf('summer')
-const MOTE_DRAIN_MM_S = 8.5
+const RETURN_MM_S = 8.5
 const DRAIN_RISE_SECONDS = config.shake.spinDownSeconds * 0.62
 const DRAIN_FALL_SECONDS = config.states.restSeconds - config.shake.spinDownSeconds
 const DUST_FADE_SECONDS = (config.states.restSeconds - config.shake.settleCheckSeconds) * 0.65
 const DRAIN_INV_HEIGHT = 1 / (0.72 * R)
+const DUST_RETURN_HEIGHT = 0.14 * R
+const DUST_RETURN_INV_HEIGHT = 1 / (0.5 * R)
 const STEER_GAIN = 1.5
 /** A light that is carried off by the storm goes dim and stops blinking; it lights again as it comes within this many reaches of the point it wanders after (at home it is never farther than two). */
 const HOME_NEAR_REACHES = 2.2
@@ -120,6 +122,8 @@ const K_SLOPE = new Float64Array(NK)
 /** The share of a kind that is born away from its emitters, anywhere under the dome: fall's leaves and embers fill the whole volume to the top (the approved pair), not only the air round the tree that sheds them. */
 const BORN_WIDE: Readonly<Record<string, number>> = { leaf: 0.5, ember: 0.55 }
 const K_WIDE = new Float64Array(NK)
+const RETURN_SHARE: Readonly<Record<string, number>> = { mote: 1, flake: 0.08, seed: 0.34 }
+const K_RETURN = Float64Array.from(KINDS, (name) => RETURN_SHARE[name] ?? 0)
 const K_REST2 = new Float64Array(NK)
 const K_KICK = new Float64Array(NK)
 const K_CRUISE = new Float64Array(NK)
@@ -1211,7 +1215,7 @@ export class ParticleEngine {
       const wake = beat === null ? 1 : 1 - smooth((beat - lift) / (stroke - lift))
       const rise = smooth((age - config.states.landedSeconds) / DRAIN_RISE_SECONDS)
       const fall = smooth((age - config.shake.spinDownSeconds) / DRAIN_FALL_SECONDS)
-      drain = wake * MOTE_DRAIN_MM_S * rise * (1 - fall)
+      drain = wake * RETURN_MM_S * rise * (1 - fall)
       if (this.nowIx !== SUMMER) thin = wake * smooth((age - config.shake.settleCheckSeconds) / DUST_FADE_SECONDS)
     }
     this.model.step(globePoseAt(tl, t - DT), globePoseAt(tl, t), globePoseAt(tl, t + DT), t, beat)
@@ -1585,9 +1589,15 @@ export class ParticleEngine {
         fy += (slipY + turnZ * x - turnX * z) * bulk
         fz += (slipZ + turnX * y - turnY * x) * bulk
       }
+      // The last slow current carries fine suspended material away from the crown. Heavier loads already settle under gravity.
+      if (drain > 0 && q < 1) {
+        const returnShare = K_RETURN[k]!
+        if (returnShare > 0) {
+          const speed = drain * returnShare * (1 - q * q)
+          fy -= speed * (k === MOTE ? smooth((y - DUST_RETURN_HEIGHT) * DUST_RETURN_INV_HEIGHT) : smooth((y + 0.12 * R) * DRAIN_INV_HEIGHT))
+        }
+      }
       if (k === MOTE && this.window === 0) {
-        // The last slow current brings fine dust away from the crown, without asking it to land.
-        if (drain > 0 && q < 1) fy -= drain * smooth((y + 0.12 * R) * DRAIN_INV_HEIGHT) * (1 - q * q)
         if (thin > 0) {
           const dust = (hash2(i, 781) >>> 24) < 160 ? 0.94 : 0.18
           opacity[i] = fade[i]! * (1 - dust * thin)

@@ -431,7 +431,9 @@ export class Liquid {
 
     const fed = TURB_FROM_SLOSH * s0 * (1 - keep) + TURB_FROM_REVERSAL * SLOSH_GAIN * Math.max(0, against) * DT + TURB_FROM_TURN * shed
     let turb = L[6]! * Math.exp(-DT / TURB_SECONDS) + fed
-    const cover = shakeBeat === null ? 1 : smooth((shakeBeat - swap.fromBeat) / ((swap.toBeat - swap.fromBeat) * 0.42))
+    // Let the first bank form in clear water, then build the full whirl before the miniature changes.
+    const approach = swap.fromBeat - lift
+    const cover = shakeBeat === null ? 1 : smooth((shakeBeat - lift - 0.32 * approach) / (0.49 * approach))
     const turbLimit = TURBULENCE_MAX * (PRE_SWAP_TURBULENCE + (1 - PRE_SWAP_TURBULENCE) * cover)
     if (turb > turbLimit) turb = turbLimit
     let roll = L[15]! * Math.exp(-DT / ROLL_SECONDS) + ROLL_FROM_STORM * fed - ROLL_DRAIN * DT
