@@ -54,15 +54,16 @@ it. The lift's first frames and the set down are mended; the strokes are not.
 3. Strokes that are not even: the lengths are 46.0, 38.5, 33.8, 36.6, 45.8 mm and the turns 12.3, 12.6,
    16.5, 11.5, 8.8 frames apart. More contrast between the first two strokes and the rest (`slowStroke`,
    `breath`), sharp turns, without leaving the pins.
-4. The table's answer: the shade and the mirror image under the foot follow the height only (`uFoot`,
-   `src/scene/surface.ts` near line 625). Let them follow the foot's gap with its tilt and its sideways
-   place (the pose's own rim gap), so that the shade slides and opens under a tipped, moving foot and closes
-   at the landing frame, not before.
+4. The table's answer (corrected by message after the start: the surface's shade already reads the lean as
+   well as the height, `uFoot` and `uLean`, `src/scene/surface.ts` lines 262 to 293). First a question: on
+   consecutive frames of a lift, the strokes and a set down, are the shade and the mirror image under the
+   foot seen to follow its place, height and lean? Where they are not, the exact lines go to /root; the file
+   is the change's builder's until its branch is merged.
 
 ## Files
 
-`src/shake/table.ts` and its tests (`tests/shake-*.test.ts`, the shake's part of `tests/film.test.ts`);
-`src/scene/surface.ts` for point 4 only. Where the pose is read by another file and a twist needs a line
+`src/shake/table.ts` and its tests (`tests/shake-*.test.ts`, the shake's part of `tests/film.test.ts`).
+Not `src/scene/surface.ts` (see point 4). Where the pose is read by another file and a twist needs a line
 there, send the exact lines to /root. `src/shake/change.ts` belongs to `/root/change_finisher`, who is at
 work on the change's light in the same frames: tell it by message what you change in the pose inside the
 swap window before you push.

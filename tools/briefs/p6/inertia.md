@@ -45,7 +45,14 @@ start): the eye takes that before the lift at a third size."
 
 ## What stands and may not move
 
-- `rest` stills of all four seasons: byte for byte as on main (sha256). Say so for all four.
+- `rest` stills of all four seasons: the look holds, the bytes may move (changed by /root at 19:57 UTC, decision
+  164; this line first asked for byte for byte, which cannot hold: `rest` is 12 s after the same test shake as
+  `landed`, in one history, and the film, the app and every still are drawn by one step). Proof: pairs before
+  and after at one to one and at 400 px for the four (hero, review, hd); the count afloat at rest before and
+  after for each season and where what lies has come to lie (no new heap at one side, no bare place); M3 of
+  each rest still against its approved picture not lower than before (`node tools/measure.mjs`, the numbers).
+  No step, name or switch may give a still another motion than the film's; a trial switch of your own is
+  taken out before the final push. No hunk in `src/capture/showcase.ts`.
 - `landed` stills of all four seasons will move with the storm. Show each as a pair beside its approved
   shake picture at 400 px and at one to one, before and after. None may read further from its approved
   picture than it does now.
