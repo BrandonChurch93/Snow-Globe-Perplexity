@@ -4,7 +4,7 @@ import type { KitMoment, SeasonKit } from '../kit'
 
 // Part `veil-summer` and the colours of the season's particle kinds. The veil is a golden haze: thick and honey coloured in the
 // storm, and at rest only the faint warmth of dusty air in low sun. The fireflies are yellow-green lights, far brighter than
-// anything they pass; the seeds are the cream white of dandelion down and take the light they hang in; the motes are fine gold
+// anything they pass; the seeds are dandelion down lit from behind by the low sun, warm and never white; the motes are fine gold
 // dust, dim enough that tens of thousands of them read as air and never as snow.
 
 // The shared veil keeps a fifth of its storm haze for as long as most of the pool is afloat, and summer's motes never land:

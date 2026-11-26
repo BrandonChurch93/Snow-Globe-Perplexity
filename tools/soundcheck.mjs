@@ -253,13 +253,16 @@ function keptCheck() {
   for (const { id, record: k } of kept) {
     const miss = []
     if (!Number.isInteger(k.take)) miss.push('take')
-    if (!k.prompt) miss.push('prompt')
+    // A laid sound (decisions 111 and 134) has no prompt: its layers and the recipe they were laid by stand in that place.
+    if (k.layer === true) {
+      if (!Array.isArray(k.layers) || !k.layers.length || !k.recipe) miss.push('its layers and their recipe')
+    } else if (!k.prompt) miss.push('prompt')
     if (!k.measured || !Number.isFinite(k.measured.lufs)) miss.push('measurements')
     if (!k.answers || (typeof k.answers === 'object' && !Object.keys(k.answers).length)) miss.push("the listener's answers")
     if (!assets.includes(`audio/kept/${id}.`)) miss.push('ASSETS.md row')
     if (miss.length) bad.push(`${id} (${miss.join(', ')})`)
   }
-  set('A5', bad.length ? 'open' : 'pass', bad.length ? `${bad.length} of ${kept.length} kept sounds lack something: ${list(bad, 8)}` : `all ${kept.length} kept sounds have take, prompt, measurements, answers and a row`, { kept: kept.length, lacking: bad })
+  set('A5', bad.length ? 'open' : 'pass', bad.length ? `${bad.length} of ${kept.length} kept sounds lack something: ${list(bad, 8)}` : `all ${kept.length} kept sounds have take, prompt (a laid one its layers and recipe), measurements, answers and a row`, { kept: kept.length, lacking: bad })
 }
 
 function mixFiles() {

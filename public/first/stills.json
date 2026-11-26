@@ -1,0 +1,704 @@
+{
+  "stills": {
+    "fall-hd": {
+      "season": "fall",
+      "shape": "hd",
+      "width": 1920,
+      "height": 1080,
+      "ratio": 1,
+      "globe": [
+        35087,
+        30643
+      ],
+      "from": "8cefa38df8a86807",
+      "coder": 3,
+      "avif": {
+        "bytes": 59174,
+        "quality": 48,
+        "scale": 1,
+        "sha": "11c9d343da1f9ed4bcc78811e8c3fc8b8c69041b3bc3f906344941022f29202f"
+      },
+      "webp": {
+        "bytes": 88150,
+        "quality": 59,
+        "scale": 1,
+        "sha": "6dd3e856e60ea4fcc55ed38b87313c43bf039bfd70a209774b7315a9fd1365ba"
+      }
+    },
+    "fall-phone": {
+      "season": "fall",
+      "shape": "phone",
+      "width": 390,
+      "height": 844,
+      "ratio": 2,
+      "globe": [
+        41410,
+        18435
+      ],
+      "from": "8cefa38df8a86807",
+      "coder": 3,
+      "avif": {
+        "bytes": 57270,
+        "quality": 55,
+        "scale": 1,
+        "sha": "81eb50e06a57794bd921207f48de6eb9accaf9189f5fc7166fcedc320281d1b3"
+      },
+      "webp": {
+        "bytes": 86224,
+        "quality": 76,
+        "scale": 1,
+        "sha": "ea385c8665cf6509d7c0810185e396c185a9b16793c876eb12efd9c2326ad26d"
+      }
+    },
+    "fall-phone590": {
+      "season": "fall",
+      "shape": "phone590",
+      "width": 390,
+      "height": 590,
+      "ratio": 2,
+      "globe": [
+        37294,
+        26435
+      ],
+      "from": "8cefa38df8a86807",
+      "coder": 3,
+      "avif": {
+        "bytes": 57450,
+        "quality": 55,
+        "scale": 1,
+        "sha": "2e0908612ba710e199cb422a8d09be96e2d2b30f5d4247e7486d7c96b633dd7b"
+      },
+      "webp": {
+        "bytes": 87822,
+        "quality": 76,
+        "scale": 1,
+        "sha": "ff576e1ab696f055a2c8bda85a754f62712e2127630f4e5510c7560576f2fb2d"
+      }
+    },
+    "fall-phone667": {
+      "season": "fall",
+      "shape": "phone667",
+      "width": 390,
+      "height": 667,
+      "ratio": 2,
+      "globe": [
+        38588,
+        23360
+      ],
+      "from": "8cefa38df8a86807",
+      "coder": 3,
+      "avif": {
+        "bytes": 57934,
+        "quality": 55,
+        "scale": 1,
+        "sha": "2d689e658b2225411616b944b9d73839dfe3a569fc26d570b5474c8756b40f96"
+      },
+      "webp": {
+        "bytes": 86812,
+        "quality": 76,
+        "scale": 1,
+        "sha": "2c6c0c8ba14e0bea87efce851f130cf4b7d3200e466dbce23c782972c6d32240"
+      }
+    },
+    "fall-phone750": {
+      "season": "fall",
+      "shape": "phone750",
+      "width": 390,
+      "height": 750,
+      "ratio": 2,
+      "globe": [
+        39988,
+        20759
+      ],
+      "from": "8cefa38df8a86807",
+      "coder": 3,
+      "avif": {
+        "bytes": 57746,
+        "quality": 55,
+        "scale": 1,
+        "sha": "313802f014db59d50924b57997245e532da14d7d2b048e7a48a9892adad536a7"
+      },
+      "webp": {
+        "bytes": 86624,
+        "quality": 76,
+        "scale": 1,
+        "sha": "7ec43d902da17df4fe86eb828ac331c316c73ba63e7c6482d62ea30cca6bcd46"
+      }
+    },
+    "fall-tablet": {
+      "season": "fall",
+      "shape": "tablet",
+      "width": 1024,
+      "height": 1366,
+      "ratio": 1.5,
+      "globe": [
+        36854,
+        30019
+      ],
+      "from": "8cefa38df8a86807",
+      "coder": 3,
+      "avif": {
+        "bytes": 59232,
+        "quality": 39,
+        "scale": 0.8,
+        "sha": "b00c5cd0d8328357f13915fdfd50568b79f05d9759dbb720dbfc874d8fb3a952"
+      },
+      "webp": {
+        "bytes": 89118,
+        "quality": 56,
+        "scale": 0.64,
+        "sha": "f0505e58403d633696f91cf9cff4734fcf0e4ebb8a86dac1b679bbfa63d28fe1"
+      }
+    },
+    "fall-wide": {
+      "season": "fall",
+      "shape": "wide",
+      "width": 2560,
+      "height": 1080,
+      "ratio": 1,
+      "globe": [
+        35087,
+        30643
+      ],
+      "from": "8cefa38df8a86807",
+      "coder": 3,
+      "avif": {
+        "bytes": 59728,
+        "quality": 46,
+        "scale": 1,
+        "sha": "62442437dfd509478cc32b01ea557d9f1b624afba64c94f4c8455d3cdd3a141a"
+      },
+      "webp": {
+        "bytes": 89794,
+        "quality": 54,
+        "scale": 1,
+        "sha": "582c7156e3dc7bafdd1a672df71fd4cac4fabf953051f311652504f7ff3c704e"
+      }
+    },
+    "spring-hd": {
+      "season": "spring",
+      "shape": "hd",
+      "width": 1920,
+      "height": 1080,
+      "ratio": 1,
+      "globe": [
+        35087,
+        30643
+      ],
+      "from": "a1ec468bd73f636f",
+      "coder": 3,
+      "avif": {
+        "bytes": 56121,
+        "quality": 44,
+        "scale": 1,
+        "sha": "219ce5eeffcfa6cb5173fbaef43dc594c4b24f80d6cfbf792ddffd54880ed613"
+      },
+      "webp": {
+        "bytes": 89370,
+        "quality": 56,
+        "scale": 1,
+        "sha": "1d4861c292cb61ce6c9006270dd4ef91b27c0e9b8b5ba0b72f1ceeba798da2ee"
+      }
+    },
+    "spring-phone": {
+      "season": "spring",
+      "shape": "phone",
+      "width": 390,
+      "height": 844,
+      "ratio": 2,
+      "globe": [
+        41410,
+        18435
+      ],
+      "from": "a1ec468bd73f636f",
+      "coder": 3,
+      "avif": {
+        "bytes": 57470,
+        "quality": 54,
+        "scale": 1,
+        "sha": "32f09d5f1eefa2b4635ac07e02f960d02120bd0da725c14bedd3502403988837"
+      },
+      "webp": {
+        "bytes": 88530,
+        "quality": 77,
+        "scale": 1,
+        "sha": "6835b413bbba6decded5ddd345e23c18338a49dff198ba01d8d7af95fd35f28e"
+      }
+    },
+    "spring-phone590": {
+      "season": "spring",
+      "shape": "phone590",
+      "width": 390,
+      "height": 590,
+      "ratio": 2,
+      "globe": [
+        37294,
+        26435
+      ],
+      "from": "a1ec468bd73f636f",
+      "coder": 3,
+      "avif": {
+        "bytes": 57430,
+        "quality": 54,
+        "scale": 1,
+        "sha": "c8b9fbdaa0d778fc8bf818e078d7aa4d99a681fc8cf142b1cf7054f1fce2f543"
+      },
+      "webp": {
+        "bytes": 88472,
+        "quality": 77,
+        "scale": 1,
+        "sha": "aa5e035ea56549efb93f94815917c178627e5368be944df66165e134e5a0b1f8"
+      }
+    },
+    "spring-phone667": {
+      "season": "spring",
+      "shape": "phone667",
+      "width": 390,
+      "height": 667,
+      "ratio": 2,
+      "globe": [
+        38588,
+        23360
+      ],
+      "from": "a1ec468bd73f636f",
+      "coder": 3,
+      "avif": {
+        "bytes": 57158,
+        "quality": 54,
+        "scale": 1,
+        "sha": "1f3507f510c91668634017079319fc5214b3af455bd0a95bd5ad72cc907928d8"
+      },
+      "webp": {
+        "bytes": 89120,
+        "quality": 77,
+        "scale": 1,
+        "sha": "5a6679cd3d01c7091c702c4be8a728b1daf350d931ac6d5e341a558f40083a76"
+      }
+    },
+    "spring-phone750": {
+      "season": "spring",
+      "shape": "phone750",
+      "width": 390,
+      "height": 750,
+      "ratio": 2,
+      "globe": [
+        39988,
+        20759
+      ],
+      "from": "a1ec468bd73f636f",
+      "coder": 3,
+      "avif": {
+        "bytes": 56786,
+        "quality": 54,
+        "scale": 1,
+        "sha": "31fcf5666f4bc8c556e9a012040b398e4dfd0a73c9c41b26d6a49465f158b5f6"
+      },
+      "webp": {
+        "bytes": 88088,
+        "quality": 77,
+        "scale": 1,
+        "sha": "70452b76193467cc944473548af7c5f3440da09e22027a6efd38c690b053aff8"
+      }
+    },
+    "spring-tablet": {
+      "season": "spring",
+      "shape": "tablet",
+      "width": 1024,
+      "height": 1366,
+      "ratio": 1.5,
+      "globe": [
+        36854,
+        30019
+      ],
+      "from": "a1ec468bd73f636f",
+      "coder": 3,
+      "avif": {
+        "bytes": 59793,
+        "quality": 38,
+        "scale": 0.8,
+        "sha": "40166a6cd30e15db2795961eadec968bed28f90e2520e112941f4a78ea0103cb"
+      },
+      "webp": {
+        "bytes": 89678,
+        "quality": 57,
+        "scale": 0.64,
+        "sha": "6e9e1d321db04bd36352f539d7e25f8d8794b18e69d29867bcfa995783ecbb8b"
+      }
+    },
+    "spring-wide": {
+      "season": "spring",
+      "shape": "wide",
+      "width": 2560,
+      "height": 1080,
+      "ratio": 1,
+      "globe": [
+        35087,
+        30643
+      ],
+      "from": "a1ec468bd73f636f",
+      "coder": 3,
+      "avif": {
+        "bytes": 57948,
+        "quality": 43,
+        "scale": 1,
+        "sha": "989446073de0e9976f65c942b9274d9e005142e345b74f3705458c558386a120"
+      },
+      "webp": {
+        "bytes": 89340,
+        "quality": 48,
+        "scale": 1,
+        "sha": "e6e6e767a9384810c5f69ca1e2cf3d8c0cb3ce6da954f133301e383ae4b1271e"
+      }
+    },
+    "summer-hd": {
+      "season": "summer",
+      "shape": "hd",
+      "width": 1920,
+      "height": 1080,
+      "ratio": 1,
+      "globe": [
+        35087,
+        30643
+      ],
+      "from": "c51613997ae2299f",
+      "coder": 3,
+      "avif": {
+        "bytes": 58663,
+        "quality": 44,
+        "scale": 1,
+        "sha": "9eee75f4460f6276b2a7bdd84b8ee1ec2c58ba65ce3f56bfd86409a98097c6e9"
+      },
+      "webp": {
+        "bytes": 89974,
+        "quality": 70,
+        "scale": 0.8,
+        "sha": "76f015516b0f0277242e506106d4aeac0d8dc488ac0bffcdd3d7bbe8f55d8c4c"
+      }
+    },
+    "summer-phone": {
+      "season": "summer",
+      "shape": "phone",
+      "width": 390,
+      "height": 844,
+      "ratio": 2,
+      "globe": [
+        41410,
+        18435
+      ],
+      "from": "c51613997ae2299f",
+      "coder": 3,
+      "avif": {
+        "bytes": 58309,
+        "quality": 53,
+        "scale": 1,
+        "sha": "93d4f80ea39ece3c218fd314aa7d990b9c5866e508186da1fae055c39f684d5a"
+      },
+      "webp": {
+        "bytes": 89844,
+        "quality": 69,
+        "scale": 1,
+        "sha": "1c1dea63a48e22152c7a798c28fa1245da646aee6c4d0180db67a8c7731ec0be"
+      }
+    },
+    "summer-phone590": {
+      "season": "summer",
+      "shape": "phone590",
+      "width": 390,
+      "height": 590,
+      "ratio": 2,
+      "globe": [
+        37294,
+        26435
+      ],
+      "from": "c51613997ae2299f",
+      "coder": 3,
+      "avif": {
+        "bytes": 56528,
+        "quality": 51,
+        "scale": 1,
+        "sha": "d3ac304204603ad72463b876465c86204d8ac9fc67467db92173307498e4e8bb"
+      },
+      "webp": {
+        "bytes": 89808,
+        "quality": 67,
+        "scale": 1,
+        "sha": "f768afa647638c9c8b8911190aba1251905c234d31ce0af3a3dee0cae094a8c4"
+      }
+    },
+    "summer-phone667": {
+      "season": "summer",
+      "shape": "phone667",
+      "width": 390,
+      "height": 667,
+      "ratio": 2,
+      "globe": [
+        38588,
+        23360
+      ],
+      "from": "c51613997ae2299f",
+      "coder": 3,
+      "avif": {
+        "bytes": 59677,
+        "quality": 53,
+        "scale": 1,
+        "sha": "cc389ddd7e0e2878964c70fc4f9cd69f0996b498fcb2fec14c07762ffe1d75d6"
+      },
+      "webp": {
+        "bytes": 89718,
+        "quality": 68,
+        "scale": 1,
+        "sha": "95304d90fcd3fef67e743d72c09b97fa59ac1878cf07986f9b8925bdff73bf3b"
+      }
+    },
+    "summer-phone750": {
+      "season": "summer",
+      "shape": "phone750",
+      "width": 390,
+      "height": 750,
+      "ratio": 2,
+      "globe": [
+        39988,
+        20759
+      ],
+      "from": "c51613997ae2299f",
+      "coder": 3,
+      "avif": {
+        "bytes": 58512,
+        "quality": 53,
+        "scale": 1,
+        "sha": "5e608667871846e9581a3384bcad97ca933ab5e436a01a0d4aeaab936e07dab1"
+      },
+      "webp": {
+        "bytes": 89624,
+        "quality": 68,
+        "scale": 1,
+        "sha": "99dbe253f74428eab89d15b64d7babe7662739aa5896bd05bb9dbfcab331f33e"
+      }
+    },
+    "summer-tablet": {
+      "season": "summer",
+      "shape": "tablet",
+      "width": 1024,
+      "height": 1366,
+      "ratio": 1.5,
+      "globe": [
+        36854,
+        30019
+      ],
+      "from": "c51613997ae2299f",
+      "coder": 3,
+      "avif": {
+        "bytes": 55568,
+        "quality": 36,
+        "scale": 0.8,
+        "sha": "7a6542203af705c735000d0d3c73c4894f487ae1edc3dbc1e9bea5d0f344c868"
+      },
+      "webp": {
+        "bytes": 89314,
+        "quality": 46,
+        "scale": 0.64,
+        "sha": "2110f0deb61894ee8f0bfc47d62611e2075cc370c6bc2de08f88bc7eb5cb021d"
+      }
+    },
+    "summer-wide": {
+      "season": "summer",
+      "shape": "wide",
+      "width": 2560,
+      "height": 1080,
+      "ratio": 1,
+      "globe": [
+        35087,
+        30643
+      ],
+      "from": "c51613997ae2299f",
+      "coder": 3,
+      "avif": {
+        "bytes": 56391,
+        "quality": 43,
+        "scale": 1,
+        "sha": "bb65db9a1b23ce25a17f86ef4c4519c3f257d04e221162b0c02c9979d3b5f261"
+      },
+      "webp": {
+        "bytes": 89160,
+        "quality": 67,
+        "scale": 0.8,
+        "sha": "778d67196ce963f6d867eb7842e666f383008cb3ab4805821fa070c5849fa4a2"
+      }
+    },
+    "winter-hd": {
+      "season": "winter",
+      "shape": "hd",
+      "width": 1920,
+      "height": 1080,
+      "ratio": 1,
+      "globe": [
+        35087,
+        30643
+      ],
+      "from": "d15bce09a2791dd4",
+      "coder": 3,
+      "avif": {
+        "bytes": 58808,
+        "quality": 48,
+        "scale": 1,
+        "sha": "9dc41b5688f410686d997be9022761c400213f3a965d9a4ec3dba5321e4b2bbc"
+      },
+      "webp": {
+        "bytes": 89640,
+        "quality": 59,
+        "scale": 1,
+        "sha": "50cd9eb163a4f3db320867c99706c8798cc84b07f952a8f7fad6909e3c4227e6"
+      }
+    },
+    "winter-phone": {
+      "season": "winter",
+      "shape": "phone",
+      "width": 390,
+      "height": 844,
+      "ratio": 2,
+      "globe": [
+        41410,
+        18435
+      ],
+      "from": "d15bce09a2791dd4",
+      "coder": 3,
+      "avif": {
+        "bytes": 59223,
+        "quality": 55,
+        "scale": 1,
+        "sha": "0d44a5536a918b16e025a244bd920f740f9517f6d9c139b46177216aaa4398c3"
+      },
+      "webp": {
+        "bytes": 87102,
+        "quality": 76,
+        "scale": 1,
+        "sha": "61ea56f174cd66df46d1dbf32a3bf838ff89b6cf72d1b55687c5267a8d7a0531"
+      }
+    },
+    "winter-phone590": {
+      "season": "winter",
+      "shape": "phone590",
+      "width": 390,
+      "height": 590,
+      "ratio": 2,
+      "globe": [
+        37294,
+        26435
+      ],
+      "from": "d15bce09a2791dd4",
+      "coder": 3,
+      "avif": {
+        "bytes": 58920,
+        "quality": 55,
+        "scale": 1,
+        "sha": "4fd9d0f1e7d5224406ec2f054ca16994bf659b1dfbceed7cc128274c439d26d9"
+      },
+      "webp": {
+        "bytes": 88048,
+        "quality": 76,
+        "scale": 1,
+        "sha": "2150786099baef541ec65422ccd0b7b14eec4089f4f49ec9c1bbc4e18821e7b4"
+      }
+    },
+    "winter-phone667": {
+      "season": "winter",
+      "shape": "phone667",
+      "width": 390,
+      "height": 667,
+      "ratio": 2,
+      "globe": [
+        38588,
+        23360
+      ],
+      "from": "d15bce09a2791dd4",
+      "coder": 3,
+      "avif": {
+        "bytes": 59146,
+        "quality": 55,
+        "scale": 1,
+        "sha": "5d55ab2a4f0470839c4f3e7895d8859450ca09980b057730311fb30ace2573ce"
+      },
+      "webp": {
+        "bytes": 87476,
+        "quality": 76,
+        "scale": 1,
+        "sha": "0c1f5471c196bd13af027d11d4d54bacb1e5dacf552d02c4e53c9ef637b203c7"
+      }
+    },
+    "winter-phone750": {
+      "season": "winter",
+      "shape": "phone750",
+      "width": 390,
+      "height": 750,
+      "ratio": 2,
+      "globe": [
+        39988,
+        20759
+      ],
+      "from": "d15bce09a2791dd4",
+      "coder": 3,
+      "avif": {
+        "bytes": 58859,
+        "quality": 55,
+        "scale": 1,
+        "sha": "936c9637c178f458e7aa29b9e5f576d74aac794304414c11bff0d58324cb7a4d"
+      },
+      "webp": {
+        "bytes": 87710,
+        "quality": 76,
+        "scale": 1,
+        "sha": "f6bb43d402b35f9c11e0af49b8f2fd00b8b0053ad2dc0fbc59169655d289be97"
+      }
+    },
+    "winter-tablet": {
+      "season": "winter",
+      "shape": "tablet",
+      "width": 1024,
+      "height": 1366,
+      "ratio": 1.5,
+      "globe": [
+        36854,
+        30019
+      ],
+      "from": "d15bce09a2791dd4",
+      "coder": 3,
+      "avif": {
+        "bytes": 56414,
+        "quality": 38,
+        "scale": 0.8,
+        "sha": "570067b131a828497721aab5026604f9bf181a1fcb254f038f714af12a756406"
+      },
+      "webp": {
+        "bytes": 89476,
+        "quality": 56,
+        "scale": 0.64,
+        "sha": "de809bba71e4f99089f3d3fe07df355eb6d3ee4536bd00631fb6c30ae009ef6e"
+      }
+    },
+    "winter-wide": {
+      "season": "winter",
+      "shape": "wide",
+      "width": 2560,
+      "height": 1080,
+      "ratio": 1,
+      "globe": [
+        35087,
+        30643
+      ],
+      "from": "d15bce09a2791dd4",
+      "coder": 3,
+      "avif": {
+        "bytes": 58074,
+        "quality": 46,
+        "scale": 1,
+        "sha": "084187f69621b7c7838cf3cc15001ee7c1ff13b919c4170122d578a6e837de87"
+      },
+      "webp": {
+        "bytes": 89930,
+        "quality": 55,
+        "scale": 1,
+        "sha": "5009399a85ac52c2ca409b5338510af9fce1e6e756b22183d2464b21e8a49ed1"
+      }
+    }
+  }
+}

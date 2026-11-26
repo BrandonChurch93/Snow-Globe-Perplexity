@@ -1,0 +1,32 @@
+{
+  "cue": "shake-winter",
+  "line": "Liquid sloshing and churning inside glass, with a hiss of snow and tiny bells in it",
+  "why": "the liquid of the kept shake-spring, 40 cents higher for winter; the small sleigh bells of the cue's own take 3; the snow is the cue's own take 12 (after-review take 1, fine dry snow blowing across ice, asked for alone), 10 dB under the liquid; the liquid leads and falls away at 1.5 s, the bells ring on to the end, as in number 10",
+  "seconds": 2.6,
+  "layers": [
+    {
+      "kept": "shake-spring",
+      "cents": 40,
+      "to": 1.5,
+      "fadeOutMs": 700
+    },
+    {
+      "take": 3,
+      "from": 0.05,
+      "to": 1.85,
+      "fadeInMs": 250,
+      "fadeOutMs": 500,
+      "at": 0.75,
+      "underDb": -6
+    },
+    {
+      "take": 12,
+      "from": 0.0,
+      "to": 2.45,
+      "fadeInMs": 300,
+      "fadeOutMs": 900,
+      "at": 0.1,
+      "underDb": 10
+    }
+  ]
+}

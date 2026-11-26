@@ -31,12 +31,25 @@ export interface AppDeps {
 
 type Playing = AppState['playing']
 
+/** The still the page painted before any of this ran (index.html): the app says where its own globe is, and when it is no longer needed. */
+interface FirstStill {
+  place(globe: { cx: number; cy: number; r: number }): void
+  end(): void
+}
+declare global {
+  interface Window {
+    firstStill?: FirstStill
+  }
+}
+
 const SOUND_ON_AT_START = true
 const STEP_BUDGET_MS = (0.7 * 1000) / Math.min(...levels.map((l) => l.minFps))
 const STEP_SHARE = 0.4
 const SKIP_BUDGET_MS = 14
 const FILMS: Playing[] = ['film-a', 'film-b']
 const MEASURE_EVERY = 20
+/** How long the page may take to bring the canvas in over the still before the still is dropped anyway. */
+const REVEAL_MS = 1500
 const CONTROL = 'button, a[href], input, select, textarea, summary, [role="button"], [contenteditable=""], [contenteditable="true"]'
 
 export function startApp(d: AppDeps): AppBridge {
@@ -170,6 +183,38 @@ export function startApp(d: AppDeps): AppBridge {
     else if (!session.busy) room += (want - room) * (1 - Math.exp(-dt * FRAME.easeRate))
     roomFor = size
     return room
+  }
+
+  // The still under the canvas sits where the first picture will draw the globe: the same camera, fitted to the same screen with
+  // the same room under it, so the live picture comes in over a picture of itself.
+  const placeStill = (): void => {
+    const first = window.firstStill
+    if (!first || playing !== 'live') return
+    const w = app.clientWidth || window.innerWidth
+    const h = app.clientHeight || window.innerHeight
+    const ratio = Math.min(window.devicePixelRatio || 1, governor.level.pixelRatioCap)
+    const aspect = Math.max(2, Math.round(w * ratio)) / Math.max(2, Math.round(h * ratio))
+    first.place(framingOfRig(liveRig(aspect, 0, 0, roomUnder(h, null, w)), w, h).globe)
+  }
+
+  // The canvas is out of sight until its first whole picture (index.html). Over the still it comes in softly, a picture over a
+  // picture of itself; a film or the loop has no still under it and starts at once, on its first frame.
+  const reveal = (): void => {
+    let over = false
+    const done = (): void => {
+      if (over) return
+      over = true
+      window.removeEventListener('resize', placeStill)
+      window.firstStill?.end()
+    }
+    if (window.firstStill) {
+      canvas.addEventListener('transitionend', done, { once: true })
+      window.setTimeout(done, REVEAL_MS)
+    } else {
+      canvas.style.transition = 'none'
+      done()
+    }
+    canvas.dataset.live = ''
   }
 
   const muted = (): boolean => !soundOn || playing !== 'live'
@@ -392,6 +437,7 @@ export function startApp(d: AppDeps): AppBridge {
     if (drawn === 2) {
       ready = true
       doc.dataset.firstPicture = '1'
+      reveal()
       markFirst()
       governor.rest()
     } else if (ready && dt > 0) {
@@ -452,6 +498,10 @@ export function startApp(d: AppDeps): AppBridge {
   if (params.diag) bridge.setDiagnostic(params.diag)
   if (playing !== 'live') start(playing)
   applyLevel()
+  if (playing === 'live') {
+    window.addEventListener('resize', placeStill)
+    placeStill()
+  } else window.firstStill?.end()
 
   void Promise.all([d.ready, (FILMS.includes(playing) ? loader.all : loader.first).catch(() => undefined), playing === 'film-a' ? loadOpening() : null]).then(() => requestAnimationFrame(frame))
 

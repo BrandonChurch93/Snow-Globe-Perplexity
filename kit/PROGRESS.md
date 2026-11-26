@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 140 · 2026-11-26 06:30 UTC
+Status 141 · 2026-11-26 06:55 UTC
 
-- `out/stills/status/status-140-1.jpg`: Summer, the table under the foot. Top: the approved image. Middle: before. Bottom: after, at the final tier.
-- `out/stills/status/status-140-2.jpg`: Summer at rest, the globe cut out of three stills. Left: the film's path. Middle: the app at its high level. Right: the app at its low level.
-- `out/stills/status/status-140-3.jpg`: Still: winter rest hero, preview, draft
-- `out/stills/status/status-140-4.jpg`: Still: winter landed hero, hd, review
+- `out/stills/status/status-141-1.jpg`: The live app on a phone through one press of Shake, on main: the camera stands back and the whole globe stays on the screen (drawn by its builder at low quality).
+- `out/stills/status/status-141-2.jpg`: Summer at rest at feed size: the approved image, before the mend, after it. The white stars are gone and the fireflies lead.
+- `out/stills/status/status-141-3.jpg`: Still: winter rest hero, hd, review
+- `out/stills/status/status-141-4.jpg`: Still: summer rest hero, hd, review
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-26 06:30 UTC
-clock: phase 6, tick of 13.4 minutes
-phase 6: 3.67 h used of its 12.00 h box
-allowance (after the review): 3.67 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 3.67 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-26 06:55 UTC
+clock: phase 6, tick of 25.9 minutes
+phase 6: 4.10 h used of its 12.00 h box
+allowance (after the review): 4.10 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 4.10 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
@@ -2500,3 +2500,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 06:16 UTC. Merged again as they moved: `agent/p6-summer` (summer's air as fireflies, with the two `atan` mends of decision 138 in their own commits), `agent/p6-change` (a tighter glare, the size of the glass), `agent/p6-controls` (the replay's camera through a shake) and `agent/p6-framing` (a phone stands 1.2 degrees round the globe at rest; a tilted view keeps to the room). On `main` after them: `npx tsc --noEmit` clean, `npx vitest run` 571 passed and 4 skipped. `render_env_prober` reported the faster renderer on the devbox, all measured: 1.93 s a sample at 3840 x 2160 at rest and 3.22 in a storm (SwiftShader there: 23); one still at 24 samples at that size in 54.5 s; the same frame twice gives identical bytes; against SwiftShader 43.68 dB at 1080p, under the 45 dB floor, so the two are never mixed; twelve film frames at 3840 x 2160 and 2 samples took 131 s. Its 48 threads do not add up: one render stops gaining past about 8 threads and several at once share one total, about 1,450 to 2,050 samples an hour for the whole machine. So the devbox is worth about two sandbox machines, not a farm.
 
 - 06:38 UTC. The strict check's second report (`strict_checker`, 06:34 UTC), merged as `f9765faa` (only `tools/strict.mjs`): by default every wrapped row is read against its own `--same` picture, `--against plain` gives the old reading, and the last line of a run names the reading. MEASURED by it on main `197e2476` (engine `d3c64f0b7e6b5c04`), rows of `all+smooth` only: with the two mends in, seven of eight keys pass in the film's path and in the app's own path at high (most rows 0 pixels, the rest 1 to 20 pixels by 1 level). The eighth, winter at rest, FAILED in both runs (7 pixels, one by 2 levels; live 21 pixels, two by 2 levels) and passed when rendered again: a wrapped winter differs from render to render by a handful of pixels, one by up to 3 levels, and an open case answering 1e30 passes too, so it is not an open case. Cause not found. NOT RUN: the pow rows and the noguard rows under the new reading, so no whole run of `npm run strict` has been seen to pass. Its third job (limit 07:50): find the wobble, read a failing row twice, add a guards row for division by zero, key its pictures by renderer, then the whole check under lavapipe on main after the builders' merges. Also at 06:32: `framing_finisher` found that the live app and the stills on main did not pass the shake's moment to the camera, so only the replay drew the camera standing back, and Status 139's words were ahead of main. Its three caller lines are applied as `27e83641` (tsc clean, the framing and app tests 92 passed).
+
+- 06:47 UTC. `sound_finisher`'s last report (06:45 UTC), committed as it stood: two beds kept, both laid by the harness with no call of their own. `amb-fall`: its own takes 2 and 1 and one made tone, 18.4 s. `amb-winter`: the wind is take 2 of `amb-fall`, 250 cents lower, with the bells of its own take 3, 20.0 s. My call on the second: kept. Decision 134 (d) allows "a kept take of another cue where the two lines name the same thing", and both lines name wind. Bought this phase: 12 calls, 435 credits, each through the guard; 7,200 of Brandon's 10,000 are spent and 2,800 are left, which nobody spends: for no open cue was there a next text the answers made likely to work. OPEN, with their moments silent or the glass ring alone: `key-tap`, `shake-winter`, `shake-summer`, `shake-fall`, `land-winter`, `land-spring`, `land-summer`, `land-fall`, and the one-piece music. The app's ambience loops play 8 dB lower than before (the listener called them too loud against the music in 8 of 12 answers, in 1 of 11 at the new level); kept, because the kit asks for ambience very quiet and far under the music. Film B's mix: 16 cues and beds placed, 7 skipped, -14 LUFS, true peak -1.1 dB, AAC copy -1.29 dBTP; film A: 18 placed, its opening has no typing. The app's pack: 9 files, 3.78 MB. Check A5 asked for two rows in `ASSETS.md`: added. Checks A1 to A4 are not run yet (they need a fresh build). NOT HEARD BY A PERSON: anything of this round. Last job given, free of credits, to 07:15: the typing as a set of ten soft presses in turn, kept only if it passes the same listening as every other sound. `first_frame_finisher`'s branch is merged (`62f380c2`): the page paints a still of the opening season where the globe will be and the canvas stays unseen until its first whole picture; 28 stills in two codings under `public/first`, drawn by `npm run poster`. They were drawn before the last framing change, so `node tools/poster.mjs --check` fails on main until they are drawn again on the final build. That is a step of the freeze now.

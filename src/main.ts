@@ -24,9 +24,20 @@ declare global {
   }
 }
 
+/** The longest the app waits for the page's own first frame before it sets up: a page that is given no frames is not waited for. */
+const PAGE_FRAME_MS = 100
+
 const params = readParams(location.search)
 const canvas = document.getElementById('view') as HTMLCanvasElement
 const capture = params.mode === 'capture'
+// The page paints a still of the season before any of this runs (index.html). On a load from the cache this script is at hand
+// before the page's first frame, and setting up the graphics would hold that frame back: the page's frame goes first.
+if (!capture && document.visibilityState === 'visible') {
+  await new Promise<void>((resolve) => {
+    requestAnimationFrame(() => setTimeout(resolve, 0))
+    setTimeout(resolve, PAGE_FRAME_MS)
+  })
+}
 const gfx = (() => {
   try {
     return createGfx(canvas, { deny: params.deny, preserve: capture })
@@ -77,6 +88,10 @@ function lazyLoop(make: () => LoopPaths, pad: boolean): LoopParticles {
 }
 
 if (capture) {
+  // The page keeps the canvas out of sight until the app has drawn its first picture (index.html). A capture page has no such
+  // moment: its pictures are read as they are made, and a stage shot must find the canvas there.
+  canvas.style.transition = 'none'
+  canvas.style.opacity = '1'
   const fraction = named ? named.particleFraction : 1
   const sim = new ParticleEngine({ season: config.defaultSeason, fraction })
   const particles = new SourceSwitch(sim)
