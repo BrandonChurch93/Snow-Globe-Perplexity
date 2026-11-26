@@ -90,7 +90,8 @@ export function downAtlas(): THREE.DataTexture {
           const side = hr.bow * t * t
           dab(cx + tx * t - ty * side, cy + ty * t + tx * side, hr.seen * each * (len / count / step) * (1 - D.tipFade * t), x0, y0, D.wide)
         }
-        if (hr.tip > 0) dab(cx + tx - ty * hr.bow, cy + ty + tx * hr.bow, hr.tip, x0, y0, D.wide)
+        // a faint tuft at the tip of most hairs: wider than the hair and far dimmer, so the rim of a head is soft and dotted
+        if (hr.tip > 0) dab(cx + tx - ty * hr.bow, cy + ty + tx * hr.bow, hr.tip, x0, y0, D.wide * D.tipWide)
       }
       // the heart, where every hair meets
       dab(cx, cy, D.heart, x0, y0, D.heartWide * unit)
