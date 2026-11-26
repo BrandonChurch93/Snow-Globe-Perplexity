@@ -166,8 +166,8 @@ export function unsplitFile(wanted, have, out, { move = false } = {}) {
 export const chunkName = (c) => `${c.record.what} ${c.record.first} to ${c.record.last}${c.record.test ? ' (a test)' : ''}, drawn on ${c.record.machine}`
 
 export function isChunkRecord(file) {
-  if (!/\.json$/.test(file)) return null
   try {
+    if (fs.statSync(file).size > 1e6) return null
     const r = readJson(file)
     return WHATS.includes(r.what) && Number.isInteger(r.first) && Number.isInteger(r.last) && typeof r.sha256 === 'string' && Array.isArray(r.frameHashes) ? r : null
   } catch {
@@ -182,7 +182,8 @@ export function isChunkRecord(file) {
 export function takeFiles(folder, dir, { keep = false } = {}) {
   if (!fs.existsSync(folder)) throw new Error(`--files ${folder} does not exist`)
   if (path.resolve(folder) === path.resolve(dir) || path.resolve(folder).startsWith(path.resolve(dir) + path.sep)) throw new Error('--files takes the folder the attachments were saved in, which is not inside the folder that is collected into')
-  const known = new Set(readChunks([dir]).map((c) => `${c.record.sha256} ${c.record.machine} ${c.record.boot}`))
+  const idOf = (r) => `${r.test ? 'test ' : ''}${r.what} ${r.first} ${r.last} ${r.sha256} ${r.machine} ${r.boot}`
+  const known = new Set(readChunks([dir]).map((c) => idOf(c.record)))
   let records = 0
   const walk = (d) => {
     for (const e of fs.readdirSync(d, { withFileTypes: true }).sort((a, b) => (a.name < b.name ? -1 : 1))) {
@@ -193,7 +194,7 @@ export function takeFiles(folder, dir, { keep = false } = {}) {
       }
       const r = isChunkRecord(p)
       if (!r) continue
-      const id = `${r.sha256} ${r.machine} ${r.boot}`
+      const id = idOf(r)
       if (!known.has(id)) {
         known.add(id)
         const to = path.join(dir, 'files', ...(r.test ? ['test'] : []), r.what, `${chunkStem(r.what, r.first, r.last)}.json`)
@@ -236,7 +237,7 @@ export function takeFiles(folder, dir, { keep = false } = {}) {
         const got = unsplitFile({ bytes: r.still.bytes, sha256: r.still.sha256 }, have, to, { move: !keep })
         if (got.ok) {
           stills++
-          } else problems.push(`${chunkName(c)}: its screenshot ${r.still.file} is not here`)
+        } else problems.push(`${chunkName(c)}: its screenshot ${r.still.file} is not here`)
       }
     }
   }
@@ -652,7 +653,7 @@ export function encodeProofRows(f) {
   rows.push(row('colour tags', COLOUR_TAGS, f.tags, f.tags === COLOUR_TAGS))
   const level = Math.round(Number(M.video.level) * 10)
   rows.push(row('codec', `h264 High, level ${M.video.level}`, `${f.codec} ${f.profile}, level ${(f.level / 10).toFixed(1)}`, f.codec === 'h264' && f.profile === 'High' && f.level === level))
-  rows.push(row('reference frames', `at most ${M.final.refs}, what level ${M.video.level} holds at this size`, f.refs, f.refs >= 1 && f.refs <= M.final.refs))
+  rows.push(row('reference frames', `at most ${M.final.refs}, what level ${M.video.level} holds at this size`, f.refs ?? 'not read from the stream', f.refs >= 1 && f.refs <= M.final.refs))
   const gaps = f.keys.map((k, i) => (i + 1 < f.keys.length ? f.keys[i + 1] : f.frames) - k)
   const widest = Math.max(0, ...gaps)
   const keyint = f.keyint ?? M.final.keyint
@@ -674,7 +675,7 @@ export function encodeProofRows(f) {
   if (f.loop) {
     const l = f.loop
     rows.push(row("the loop against film B's best hold", l.wanted === null ? 'every frame as close to its picture as the best second of film B' : `every frame ${dB(l.wanted)} dB or more, the best second of film B`, l.wanted === null ? 'the record of film B is not here' : `least ${f.psnr.least} dB at frame ${f.psnr.leastFrame}`, l.wanted === null ? (f.test ? null : false) : f.psnr.least >= l.wanted))
-    rows.push(row('the wrap', `the last frame within ${l.seamDb} dB of the first, each against its own picture`, `frame 0 ${dB(l.first)} dB, frame ${f.frames - 1} ${dB(l.last)} dB`, Math.abs(l.first - l.last) <= l.seamDb))
+    rows.push(row('the wrap', `the last frame within ${l.seamDb} dB of the first, each against its own frame of the decoded intermediate`, `frame 0 ${dB(l.first)} dB, frame ${f.frames - 1} ${dB(l.last)} dB`, Math.abs(l.first - l.last) <= l.seamDb))
   }
   return rows
 }
