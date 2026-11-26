@@ -350,8 +350,9 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
         await overlay.show(spec.season, spec.state)
         under = roomUnder(format.height, overlay.controlsPx(), format.width)
       }
-      const pose = onScreen ? livePose(format.width / format.height, 0, 0, under) : spec.rig ? poseWith(spec.camera, spec.rig) : poseById(spec.camera)
-      if (onScreen) drawn = framingOfRig(liveRig(format.width / format.height, 0, 0, under), format.width, format.height)
+      const since = { beat: null, sinceLanding: stateSeconds(spec.state) - barSeconds }
+      const pose = onScreen ? livePose(format.width / format.height, 0, 0, under, since) : spec.rig ? poseWith(spec.camera, spec.rig) : poseById(spec.camera)
+      if (onScreen) drawn = framingOfRig(liveRig(format.width / format.height, 0, 0, under, since), format.width, format.height)
       if (spec.live) await livePicture(along(stillTl(spec.season)), stateSeconds(spec.state), pose, spec.live)
       else await picture(along(stillTl(spec.season)), stateSeconds(spec.state), spec.state === 'landed' ? shutter : 0, () => pose, samples, 0)
       if (spec.interface) await overlay.show(spec.season, spec.state)
@@ -486,7 +487,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
         count(1)
         stage.setQuality?.(stageQuality(topLevel))
         const g = moment.globe
-        return { ...run.record(), camera: cameraNumbers(pose), globe: { heightMm: g.y, tiltDeg: [g.tiltX * DEG, g.tiltZ * DEG] }, level: q.id, controlsPx: bar, under, framing: framingOfRig(liveRig(format.width / format.height, 0, 0, under), format.width, format.height) }
+        return { ...run.record(), camera: cameraNumbers(pose), globe: { heightMm: g.y, tiltDeg: [g.tiltX * DEG, g.tiltZ * DEG] }, level: q.id, controlsPx: bar, under, framing: framingOfRig(liveRig(format.width / format.height, 0, 0, under, moment), format.width, format.height) }
       },
       async interfaceState(state, ask = {}) {
         await ready

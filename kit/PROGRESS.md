@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 139 · 2026-11-26 06:16 UTC
+Status 140 · 2026-11-26 06:30 UTC
 
-- `out/stills/status/status-139-1.jpg`: A phone, 390 x 844, drawn by the builder through the app's own path: at rest, the glass lifted in the shake, and landed in spring.
-- `out/stills/status/status-139-2.jpg`: Summer in a shake at feed size: the approved image, before, and now.
-- `out/stills/status/status-139-3.jpg`: The 16 kept sounds as waveforms, each with its name, length and loudness
-- `out/stills/status/status-139-4.jpg`: Still: winter landed hero, hd, review
+- `out/stills/status/status-140-1.jpg`: Summer, the table under the foot. Top: the approved image. Middle: before. Bottom: after, at the final tier.
+- `out/stills/status/status-140-2.jpg`: Summer at rest, the globe cut out of three stills. Left: the film's path. Middle: the app at its high level. Right: the app at its low level.
+- `out/stills/status/status-140-3.jpg`: Still: winter rest hero, preview, draft
+- `out/stills/status/status-140-4.jpg`: Still: winter landed hero, hd, review
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-26 06:16 UTC
-clock: phase 6, tick of 7.8 minutes
-phase 6: 3.45 h used of its 12.00 h box
-allowance (after the review): 3.45 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 3.45 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-26 06:30 UTC
+clock: phase 6, tick of 13.4 minutes
+phase 6: 3.67 h used of its 12.00 h box
+allowance (after the review): 3.67 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 3.67 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
@@ -1020,6 +1020,8 @@ Numbered. What, why, and the date.
 137. **The reasoning menu of the opening follows the package Brandon directed, not a menu of five levels** (04:54 UTC Nov 26, after the review; amends decision 135). Brandon's library holds a package of the team's skill, `synthetic-query-typing` 2.1.0, made on November 23 at his direction for an earlier film: it adds an on-screen effort change (`composer.effortTo`) with a card under the chip of three rows, Standard, High and Max, a check mark on the current row, the pointer's approach and press, and the label switching on the press. Its own notes say the menu is a synthetic design in the skill's vocabulary, not a read of the product's menu, and that without `effortTo` every frame is identical to 2.0.2. It is the menu he has already seen and accepted, so film A's opening uses that design exactly (geometry, colours, rows, timings), from Standard to High, and `intro.reasoningLevels` becomes Standard, High, Max. The five levels of decision 135 and the menu drawn in the slash menu's style are dropped. `opening_builder` was sent the package at 04:54 UTC and chooses whether to carry its effort code into the skill it uses or to make the whole opening with it; its report names the package and version. Nothing of either package enters the repo. Still true: no menu here can be compared with the product's own, and the final message says so.
 
 138. **The strict check reads a wrapped row against its own unchanged twin, and two open cases it found are mended by their owner** (05:46 UTC Nov 26, after the review; follows decision 133). `strict_checker` ran the check on engine `e35b2bd01d0015cf` every way it has and reported at 05:39 UTC. Found, and met in the picture: `atan(0, 0)` in summer's lantern (`src/seasons/summer/mini/tree.ts` line 165; on a strict graphics card the caps of two lanterns go dark at rest and of six in the shake) and in the fleck edge of the particle cards (`src/particles/draw/cards.ts` line 332; one dark pixel in the middle of a fleck in spring, summer and fall). Both exact mends went to `summer_finisher`, who owns both files; neither changes a pixel on the build's own renderer. Also found: with both mended the check would still say FAILED on the winter and summer rows, because wrapping every call changes the compiled form of the shader and the picture moves by a low wide field (summer about 4,350 pixels by up to 9 levels, winter about 850 by up to 2) that has nothing to do with an answer the language leaves open: the same field appears when the wrappers answer exactly as the plain function does. Chosen: a wrapped row is judged against that twin (wrappers kept, the open case answering the plain function), which is what the check exists to find. The limits do not move: no pixel by more than 1 level, at most 0.01 percent of pixels. The old reading stays reachable by a flag, the last line of a run says which reading it used, and the new reading has to be shown to fail today's `main` on the two open cases before it is trusted. Declined: raising the limits until the rows pass, and dropping the `all+smooth` rows. Not covered by the check at all, as its builder states: division by zero, and the roughly 1,300 wrapped calls were tested only where these pictures meet them. No run of it is a run on a real graphics card.
+
+139. **Every picture and frame from here on is drawn by the second software renderer, on sandbox machines only, and nothing it draws is ever set beside or joined to what the first one drew** (06:29 UTC Nov 26, after the review; follows decision 136). The second renderer is Mesa lavapipe behind ANGLE's Vulkan back end, a choice of the tools since `bad03291`. MEASURED: on a 4-core sandbox machine it draws the hd winter still at rest at 1.31 s a sample against SwiftShader's 10.9, about eight times as fast, and two or three SwiftShader renders at once give no more samples an hour than one. MEASURED: the two renderers do not draw the same bytes, 40.5 to 43.7 dB on the stills compared, under `quality.crossMachineMinPsnr` 45; the four seasons at rest and winter landed read the same to the eye, and SwiftShader's table carries a faint grid of dots that lavapipe's does not. MEASURED at 06:25: winter at rest and winter landed, hd, 8 samples, drawn on this machine (2 cores) and on a second sandbox machine (4 cores), both with `mesa-vulkan-drivers` 26.0.8 and LLVM 21.1.8, are the same bytes (sha256 `1ffe828c...` and `1cb03edb...`, checked with `cmp`). That is two machines of one processor model. MEASURED: the devbox (Mesa 26.1.6, LLVM 19, another processor) against a sandbox machine gives 42.59 and 42.63 dB, under the floor, almost all of it in the table's ripple. Chosen: (a) judged stills, sheets, sequences, the films, the masters and the loop are all drawn by lavapipe from the moment the builders' work is in; all or nothing. (b) The tools' default becomes lavapipe in `tools/browser.json` when the builders have reported, so no command depends on a variable somebody forgets; `SHOWCASE_RENDERER` still overrides it, and a machine without the driver stops with the line that installs it and never falls back in silence. (c) Every record names what drew it (`renderer`), and a kept picture counts only under the renderer that drew it, so nothing drawn before is reused by accident. (d) Every machine that renders for a film first draws one fixed frame and compares its sha256 with the one in its brief; a machine that draws other bytes renders nothing that is joined to another machine's work. (e) The devbox renders at most a whole unit of its own. (f) `npm run caps` stays with SwiftShader and declines under any other renderer, because `config/webgl-caps.json` is inside the engine hash and holds the limits the scene was written against. The kit does not name a renderer as a rule: `AGENTS.md` lists SwiftShader under what was measured in earlier builds and says to trust this build's own numbers. What this changes for the record: the pictures judged in rounds before now were drawn by SwiftShader and stay as the records of their rounds, so a unit's earlier scores and its coming ones come from two renderers; each coming round's notes say so. Not known: whether every sandbox machine has this processor (the fixed frame answers it machine by machine); how many samples a frame the masters get (the next decision, when the strips at 4, 8, 12, 16 and 24 samples are in). No run of either renderer is a real graphics card.
 
 ## Notes from Brandon
 

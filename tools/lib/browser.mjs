@@ -11,12 +11,21 @@ export const SOFTWARE_FLAGS = ['--use-angle=swiftshader', '--enable-unsafe-swift
 export const LAVAPIPE_FLAGS = ['--use-angle=vulkan', '--ignore-gpu-blocklist']
 export const LAVAPIPE_ICD = '/usr/share/vulkan/icd.d/lvp_icd.json'
 export function softwareRenderer() {
-  const want = (process.env.SHOWCASE_RENDERER ?? 'swiftshader').toLowerCase()
+  const want = (process.env.SHOWCASE_RENDERER ?? pinnedBrowser().renderer ?? 'swiftshader').toLowerCase()
   if (want === 'swiftshader') return { name: 'swiftshader', flags: SOFTWARE_FLAGS, env: undefined }
   if (want !== 'lavapipe') throw new Error(`SHOWCASE_RENDERER is ${want}. It is swiftshader or lavapipe.`)
   const icd = process.env.SHOWCASE_LVP_ICD ?? LAVAPIPE_ICD
   if (!fs.existsSync(icd)) throw new Error(`SHOWCASE_RENDERER is lavapipe and ${icd} is not there. Install mesa-vulkan-drivers (Mesa 26 or newer) or set SHOWCASE_LVP_ICD.`)
   return { name: 'lavapipe', flags: LAVAPIPE_FLAGS, env: { ...process.env, VK_ICD_FILENAMES: icd } }
+}
+// The name a record carries for what drew it: swiftshader, lavapipe, or card for an installed browser with its
+// graphics card on. A record from before the name was written was drawn by SwiftShader if it says software.
+export const rendererName = (local = false) => (local ? 'card' : softwareRenderer().name)
+export const rendererOf = (record) => record?.renderer ?? (record?.graphics === 'software' ? 'swiftshader' : null)
+// Two software renderers do not draw the same bytes, so a kept picture counts only under the renderer that drew it.
+export function sameRenderer(record) {
+  const drew = rendererOf(record)
+  return !drew || drew === 'card' || drew === softwareRenderer().name
 }
 const COMMON_FLAGS = ['--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows', '--force-color-profile=srgb', '--hide-scrollbars', '--mute-audio']
 
