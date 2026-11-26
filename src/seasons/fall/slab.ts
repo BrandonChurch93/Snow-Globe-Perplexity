@@ -75,7 +75,7 @@ float leafRoll = leafOver * leafLeft * 6.2831853 * (leafHash(leafId * 1.7) < 0.5
 // Inside a change the leaves are carried: blown out ahead of the front of light when fall leaves, flown out behind it when fall comes.
 if (uState.w > 0.5) {
   vec3 leafGust = stageGust(leafRest, leafHash(leafId * 11.3), leafHash(leafId * 12.7));
-  leafAt += normalize(leafRest) * leafGust.x;
+  leafAt += (dot(leafRest, leafRest) > 0.0 ? normalize(leafRest) : vec2(1.0, 0.0)) * leafGust.x;
   leafHop += ${GUST.heightMm.toFixed(1)} * (0.4 + 0.6 * leafHash(leafId * 12.7)) * leafGust.y;
   leafRoll += 3.14159265 * (1.0 + floor(leafHash(leafId * 11.3) * 2.99)) * leafGust.z;
   leafYaw += (leafHash(leafId * 12.7) - 0.5) * 3.0 * leafGust.z;
