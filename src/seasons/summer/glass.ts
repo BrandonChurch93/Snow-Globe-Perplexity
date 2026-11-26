@@ -71,9 +71,9 @@ export const look = {
     // the hot patch: the sun, bent by the globe, lands on the inside of the glass low on the far side and burns out there.
     // Where (share of the radius, radians up the limb from the wall's middle), how wide, how far it runs down to the ground
     // and how far up the limb, how strong
-    hot: 8,
+    hot: 10,
     hotAt: [0.89, -0.06] as const,
-    hotSize: [0.05, 0.1, 0.13] as const,
+    hotSize: [0.044, 0.1, 0.13] as const,
     hotColor: [1, 0.93, 0.82] as const,
     // above the burn the wall parts the light into slanted strokes that climb the limb: how many lie across one globe
     // radius, how far each leans out toward the limb as it climbs, how far up they reach (radians), how wide the sheaf is
@@ -89,12 +89,12 @@ export const look = {
     glow: 1,
     glowSize: [0.12, 0.2] as const,
     // its spill past the limb: the lens blooms round the patch, outside the glass too
-    spill: 0.2,
+    spill: 0.3,
     spillAt: 0.12,
     spillColor: [1, 0.62, 0.3] as const,
     // the limb's own warm edge on the far side: the glass wall takes the sun's amber low on the left, round the burn. How
     // strong, where up the limb (radians) and how far it runs, where in the radius and how thick
-    edge: 1.4,
+    edge: 2.6,
     edgeAt: [0, 0.34] as const,
     edgeIn: [0.966, 0.02] as const,
     edgeColor: [1, 0.5, 0.18] as const,
