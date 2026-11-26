@@ -209,7 +209,7 @@ if (aLife.z > 1.5) {
   float span = aLife.z > 0.5 ? ${f(look.bead.growSeconds)} : ${f(look.dew.growSeconds)};
   dOn = pow(clamp((tau - aLife.x) / span, 0.0, 1.0), 0.4);
   float th = acos(clamp(dDir.y, -1.0, 1.0));
-  float ph = atan(dDir.x, dDir.z);
+  float ph = dot(dDir.xz, dDir.xz) > 0.0 ? atan(dDir.x, dDir.z) : 0.0;
   for (int j = 0; j < ${SLOTS}; j++) {
     vec4 a = uPathA[j];
     vec4 b = uPathB[j];
@@ -502,7 +502,7 @@ void main() {
   // It forms blot by blot after the landing, from the places where it will be thickest.
   float formed = smoothstep(0.0, 0.3, 1.4 * clamp(uDew.x / ${f(look.breath.formSeconds)}, 0.0, 1.0) - (1.0 - 0.6 * blot - 0.4 * fine)) * keep;
   float th = acos(clamp(pl.y, -1.0, 1.0));
-  float ph = atan(pl.x, pl.z);
+  float ph = dot(pl.xz, pl.xz) > 0.0 ? atan(pl.x, pl.z) : 0.0;
   // Drawn out downward where water has run through it: fine across the glass, long down it.
   float bend = filmNoise(vec3(th * 7.0, ph * 2.6, 1.7));
   float run = filmNoise(vec3(ph * sin(th) * uDew.z / 2.6 + 5.0 * bend, th * uDew.z / 22.0 + 1.5 * bend, 3.1));
