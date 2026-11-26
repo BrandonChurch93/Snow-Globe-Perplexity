@@ -20,12 +20,12 @@ const HEAP = {
   fan: { x: 56, z: 88, sx: 22, sz: 34, mm: 1.3 },
   sprinkle: { at: [-63.8, -47.6], lit: [-0.918, -0.396], run: [-12, -2, 22, 78], rise: [0, 0.6], core: [0.95, 1.1], veil: [0.5, 6.5] },
   edge: { mm: [0.2, 0.45], sharp: 1.0, looseMm: 0.25, onHeap: 0.1, thickMm: 1.6, cover: [0.03, 1.2], far: [62, 88, 4.5], flat: [0.5, 4.5] },
-  loose: { on: 0.05, fromMm: 0.03, edgeMm: 0.4, thinMm: 2.0, reach: 1.3, flung: 0.2, x: 84, z: 20, sx: 12, sz: 17, drift: { mm: [10, 22, 3.5, 9], edge: [0.42, 0.6], bare: 0.05, full: 2.4, rim: 0.45 } },
+  loose: { on: 0.05, fromMm: 0.03, edgeMm: 0.4, thinMm: 2.0, reach: 1.3, flung: 0.2, x: 84, z: 20, sx: 12, sz: 17, drift: { mm: [10, 22, 3.5, 9], edge: [0.5, 0.62], bare: 0.0, full: 3.6, rim: 0.45 } },
 }
 // The light on the sand of the table. The stage's lit material is made for the stone of the base; this takes its paint
 // (every grain's own colour and tilt) and the stage's key, shadow, sky and card, and lights the sand as dry sand is lit
 // by a low sun from behind: bright where a grain faces it, dark and cool in the shade, with no part burnt to white.
-export const SAND_LIT = { tilt: 0.25, sun: 5.6, crest: [4.5, 11.0, 1.8, 1.3, 0.3, 0.6], face: [-0.05, 0.55], turn: [0.15, 0.6, 1.07, 0.05, 0.55], side: [0.5, 0.45], back: 1.0, sky: 3.4, card: 0.22, glint: 0.9, shade: 0.5, knee: 0.5, top: 1.0, high: 1.18, warm: [1.0, 0.74, 0.57], cool: [1.9, 1.75, 1.6], pale: 0.12, tint: [1.0, 0.9, 0.78], speck: 2.2, rows: 1080, grit: [0.42, 0.45, 0.7, 0.73, 0.65, 0.9], mote: [1.0, 4.5, 0.6], grain: [0.25, 0.75], spark: [12, 1.0], fray: [0.5, 1.3], thru: 1.2, cut: [-63.8, -47.6, -0.918, -0.396, -3.6, 0.6, -48, -30], deep: [0.5, 40], front: [0.12, 0.4, 12, 36], line: [61.5, 6, -0.866, 0.5], soft: [0, 10], wander: 1.2, from: [-25, 5], lift: [2, 16] }
+export const SAND_LIT = { tilt: 0.25, sun: 5.6, crest: [2.5, 7.5, 3.0, 2.2, 0.2, 0.55], face: [-0.05, 0.55], turn: [0.15, 0.6, 1.07, 0.05, 0.55], side: [0.5, 0.45], back: 1.0, sky: 3.4, card: 0.22, glint: 0.9, shade: 0.5, knee: 0.5, top: 1.0, high: 1.18, warm: [1.0, 0.74, 0.57], cool: [1.9, 1.75, 1.6], pale: 0.12, tint: [1.0, 0.9, 0.78], speck: 2.2, rows: 1080, grit: [0.42, 0.45, 0.7, 0.73, 0.65, 0.9], mote: [1.0, 4.5, 0.6], grain: [0.25, 0.75], spark: [12, 1.0], fray: [0.5, 1.3], thru: 1.2, cut: [-63.8, -47.6, -0.918, -0.396, -3.6, 0.6, -48, -30], deep: [0.5, 40], front: [0.12, 0.4, 12, 36], line: [61.5, 6, -0.866, 0.5], soft: [0, 10], end: [30, 46], wander: 1.2, from: [-25, 5], lift: [2, 16] }
 export const SPRINKLE = { softMm: 5.0 } as const
 export const SLAB = { liftMm: 0.5, footMm: 52.4, repose: 0.62, stepMm: 1.0, x: [-150, 142], z: [-232, 216] } as const
 
@@ -152,7 +152,8 @@ export function sandLoose(x: number, z: number): number {
   const lie = Math.min(1, Math.max(0, (0.6 * noise(x / D.mm[0]! + 1.3, z / D.mm[1]! + 7.1, 41) + 0.4 * noise(x / D.mm[2]! + 5.9, z / D.mm[3]! + 2.7, 43) - D.edge[0]!) / (D.edge[1]! - D.edge[0]!)))
   const drift = lie * lie * (3 - 2 * lie)
   const flung = L.flung * Math.exp(-(((x - L.x) / L.sx) ** 2 + ((z - L.z) / L.sz) ** 2)) * (D.bare + (D.full - D.bare) * drift)
-  return whole ? L.on : Math.min(1, (Math.min(1, Math.max(0, raw - L.fromMm) / L.edgeMm) ** L.reach / (1 + (raw / L.thinMm) ** 2)) * (D.rim + (1 - D.rim) * drift) + flung)
+  const far = sandFar(x)
+  return whole ? L.on : Math.min(1, (Math.min(1, Math.max(0, raw - L.fromMm) / L.edgeMm) ** L.reach / (1 + (raw / (L.thinMm + HEAP.edge.far[2] * far)) ** 2)) * (D.rim + (1 - D.rim) * Math.max(drift, far)) + flung)
 }
 
 function heapGeometry(): THREE.BufferGeometry {
@@ -230,18 +231,21 @@ const f = (v: number): string => v.toFixed(3)
 // `sandShade` is what is left of the key there: least close under the mound, more toward the front, where the light
 // that comes through the globe falls. `sandOpen` is what is left of the sky in the shade (to the left, where the
 // stage's own shadow of the base falls, that shadow counts).
+const sandFrom = (at: string): string => `(${at} - vec3(uSandFoot.x, 0.0, uSandFoot.y))`
 const sandLine = (at: string): string => `((${at}.x - ${f(SAND_LIT.line[0]!)}) * ${f(SAND_LIT.line[2]!)} + (${at}.z - ${f(SAND_LIT.line[1]!)}) * ${f(SAND_LIT.line[3]!)})`
 const sandGate = (at: string): string => `smoothstep(${f(SAND_LIT.from[0]!)}, ${f(SAND_LIT.from[1]!)}, ${at}.x)`
-export const sandShade = (at: string): string => {
+export const sandShade = (world: string): string => {
   const L = SAND_LIT
-  return `mix(1.0, (mix(1.0, mix(${f(L.front[0]!)}, ${f(L.front[1]!)}, smoothstep(${f(L.front[2]!)}, ${f(L.front[3]!)}, ${sandLine(at)})), smoothstep(${f(L.soft[0]!)}, ${f(L.soft[1]!)}, ${sandLine(at)} + ${f(L.wander)} * sin(${at}.x * 0.37 + ${at}.z * 0.23)) * ${sandGate(at)} * (1.0 - smoothstep(${f(L.lift[0]!)}, ${f(L.lift[1]!)}, ${at}.y))) * mix(smoothstep(${f(L.cut[4]!)}, ${f(L.cut[5]!)}, (${at}.x - ${f(L.cut[0]!)}) * ${f(L.cut[2]!)} + (${at}.z - ${f(L.cut[1]!)}) * ${f(L.cut[3]!)}), 1.0, smoothstep(${f(L.cut[6]!)}, ${f(L.cut[7]!)}, ${at}.x))), uSandDown)`
+  const at = sandFrom(world)
+  return `mix(1.0, (mix(1.0, mix(${f(L.front[0]!)}, ${f(L.front[1]!)}, smoothstep(${f(L.front[2]!)}, ${f(L.front[3]!)}, ${sandLine(at)})), smoothstep(${f(L.soft[0]!)}, ${f(L.soft[1]!)}, ${sandLine(at)} + ${f(L.wander)} * sin(${at}.x * 0.37 + ${at}.z * 0.23)) * ${sandGate(at)} * (1.0 - smoothstep(${f(L.lift[0]!)}, ${f(L.lift[1]!)}, ${at}.y)) * (1.0 - smoothstep(${f(L.end[0]!)}, ${f(L.end[1]!)}, (${at}.x - ${f(L.line[0]!)}) * ${f(L.line[3]!)} - (${at}.z - ${f(L.line[1]!)}) * ${f(L.line[2]!)}))) * mix(smoothstep(${f(L.cut[4]!)}, ${f(L.cut[5]!)}, (${at}.x - ${f(L.cut[0]!)}) * ${f(L.cut[2]!)} + (${at}.z - ${f(L.cut[1]!)}) * ${f(L.cut[3]!)}), 1.0, smoothstep(${f(L.cut[6]!)}, ${f(L.cut[7]!)}, ${at}.x))), uSandDown)`
 }
-export const sandOpen = (at: string, key: string): string => `mix(${f(SAND_LIT.deep[0]!)}, 1.0, mix(${key}, 1.0 - smoothstep(0.0, ${f(SAND_LIT.deep[1]!)}, ${sandLine(at)}), ${sandGate(at)} * uSandDown))`
+export const sandOpen = (world: string, key: string, at = sandFrom(world)): string => `mix(${f(SAND_LIT.deep[0]!)}, 1.0, mix(${key}, 1.0 - smoothstep(0.0, ${f(SAND_LIT.deep[1]!)}, ${sandLine(at)}), ${sandGate(at)} * uSandDown))`
 
 const SLAB_PARS = `
 varying vec2 vSlab;
 uniform vec4 uSlabLens;
 uniform float uSandDown;
+uniform vec2 uSandFoot;
 float slabHash(vec2 p) {
   uvec2 q = uvec2(ivec2(floor(p)) + 32768);
   q = q * 1664525u + 1013904223u;
@@ -286,7 +290,7 @@ float slabAlpha = 1.0;
   float slabLit = smoothstep(${f(SAND_LIT.turn[0]!)}, ${f(SAND_LIT.turn[1]!)}, slabTurn);
   float slabFace = ${f(SAND_LIT.turn[2]!)} * mix(${f(SAND_LIT.turn[3]!)}, 1.0, slabLit);
   float slabBack = clamp(dot(-geometryViewDir, stageKeyL) * 0.5 + 0.5, 0.0, 1.0);
-  float slabSun = mix(stageKeyS, 1.0, ${sandGate('vStageWorld')} * uSandDown) * mix(${f(SAND_LIT.shade)}, 1.0, vSlab.y);
+  float slabSun = mix(stageKeyS, 1.0, ${sandGate(sandFrom('vStageWorld'))} * uSandDown) * mix(${f(SAND_LIT.shade)}, 1.0, vSlab.y);
   slabSun *= ${sandShade('vStageWorld')};
   // The top of the mound stands in the light that comes over it from behind, and glows.
   float slabHigh = smoothstep(${f(SAND_LIT.crest[0]!)}, ${f(SAND_LIT.crest[1]!)}, vStageWorld.y - ${f(SLAB.liftMm)}) * smoothstep(${f(SAND_LIT.crest[4]!)}, ${f(SAND_LIT.crest[5]!)}, slabTurn);
@@ -355,6 +359,13 @@ float slabAlpha = 1.0;
 diffuseColor.a = slabAlpha;
 `
 
+// While the heap grows (arrival.ts) it is as high as it has grown, and covers the table only where that height covers it.
+const SLAB_RISE = `
+float slabRise = (position.y - ${f(SLAB.liftMm)}) * uSandGrow;
+float slabGrown = clamp((slabRise - ${f(HEAP.edge.cover[0]!)}) / (${f(HEAP.edge.cover[1]!)} + ${f(HEAP.edge.far[2]!)} * clamp((position.x - ${f(HEAP.edge.far[0]!)}) / ${f(HEAP.edge.far[1]! - HEAP.edge.far[0]!)}, 0.0, 1.0) - ${f(HEAP.edge.cover[0]!)}), 0.0, 1.0);
+vSlab = vec2(mix(slabGrown * slabGrown * (3.0 - 2.0 * slabGrown), aSlab.x, step(1.0, uSandGrow)), aSlab.y);
+`
+
 // The heap is the stage's sand (base.ts) with the light and the edge of this file put in place of its own.
 function slabSand(): THREE.Material {
   const m = sandMaterial(PART, 'surface-dressing', `${PART}-sand`)
@@ -364,7 +375,9 @@ function slabSand(): THREE.Material {
     inner.call(m, shader, renderer)
     shader.uniforms.uSlabLens = arrivalPart.grainLens
     shader.uniforms.uSandDown = arrivalPart.sandDown
-    shader.vertexShader = shader.vertexShader.replace('#include <common>', '#include <common>\nattribute vec2 aSlab;\nvarying vec2 vSlab;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvSlab = aSlab;')
+    shader.uniforms.uSandGrow = arrivalPart.sandGrow
+    shader.uniforms.uSandFoot = arrivalPart.sandFoot
+    shader.vertexShader = shader.vertexShader.replace('#include <common>', '#include <common>\nattribute vec2 aSlab;\nvarying vec2 vSlab;\nuniform float uSandGrow;').replace('#include <begin_vertex>', `#include <begin_vertex>\n${SLAB_RISE}`)
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', `#include <common>\n${SLAB_PARS}`)
       .replace('#include <opaque_fragment>', `${SLAB_LIGHT}\n#include <opaque_fragment>`)
@@ -374,6 +387,8 @@ function slabSand(): THREE.Material {
 
 export async function prepare(): Promise<void> {}
 
+const heaps: THREE.Mesh[] = []
+
 export function dressing(): THREE.Object3D {
   const group = new THREE.Group()
   const pool = (glassPart as { surfacePool?: () => THREE.Object3D }).surfacePool?.()
@@ -382,10 +397,19 @@ export function dressing(): THREE.Object3D {
   sand.castShadow = true
   sand.receiveShadow = true
   sand.renderOrder = 3
+  heaps.push(sand)
   const loose = arrivalPart.grains()
   loose.renderOrder = 4
   group.add(sand, loose)
   return group
 }
 
-export function update(_moment: KitMoment): void {}
+export function update(moment: KitMoment): void {
+  const grown = arrivalPart.sandGrown(moment)
+  for (const heap of heaps) {
+    heap.visible = grown > 0
+    heap.scale.y = Math.max(grown, 1e-3)
+    heap.position.y = SLAB.liftMm * (1 - grown)
+    heap.updateMatrix()
+  }
+}
