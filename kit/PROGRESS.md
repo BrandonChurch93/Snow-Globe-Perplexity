@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 166 · 2026-11-26 16:44 UTC
+Status 167 · 2026-11-26 17:11 UTC
 
-- `out/stills/status/status-166-1.jpg`: Summer at rest after the sixth list (0e1100bb, review tier): the approved above, ours below.
-- `out/stills/status/status-166-2.jpg`: Half a second after the landing: the approved above, ours below.
-- `out/stills/status/status-166-3.jpg`: The ball's upper left at one scale: the approved on the left, ours on the right.
-- `out/stills/status/status-166-4.jpg`: Cottage, pond and bank at one scale: the approved on the left, ours on the right.
+- `out/stills/status/status-167-1.jpg`: What the jury saw at rest: the approved on the left, ours on the right (final tier).
+- `out/stills/status/status-167-2.jpg`: What the jury saw at the landing: the approved on the left, ours on the right.
+- `out/stills/status/status-167-3.jpg`: Ours at full size from the interior camera: crop 2 shows the seed heads as wheels of spokes.
+- `out/stills/status/status-167-4.jpg`: The flare at one scale: the approved on the left, ours on the right.
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-26 16:44 UTC
-clock: phase 6, tick of 24.7 minutes
-phase 6: 13.91 h used of its 12.00 h box
-allowance (after the review): 13.91 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 13.91 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-26 17:11 UTC
+clock: phase 6, tick of 27.4 minutes
+phase 6: 14.37 h used of its 12.00 h box
+allowance (after the review): 14.37 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 14.37 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
