@@ -66,7 +66,16 @@ Landed at +0.5 s and rest at +12 s use the same test shake. The laid quadrants a
 | Summer | 12698 to 12699 | 4252 to 4256 | 1971/4342/437/1698 to 2051/4307/377/1709 | 386 to 405 |
 | Fall | 35979 to 35976 | 26770 to 26742 | 642/5901/159/2532 to 641/5819/171/2631 | 23 to 35 |
 
-The consecutive storm strips below are the staged-hand comparison, not the last hand's drawn frames. The all-season landed/rest triptychs are the earlier painted-hand comparison. Strict and stand-ins below also predate the final merge, as do the isolated live step costs. No full-speed film or live application playback was seen.
+### Matched final storm frames
+
+The four `4789-shake*` strips use final main `58687dc1` above and pushed inertia `47891785` below, with the same hand, configuration and assets. The columns are consecutive 60 fps film frames, drawn at HD review and inspected at 400 px wide and in 1:1 crops.
+
+- **Lift, f1296 to f1298**: The loose petal pattern holds into the lift with inertia. The main row puts more small particles across the cottage at f1298; both rows retain motion blur.
+- **Lag, f1318 to f1320**: The chimney and tree move right farther than the suspended petals. The measured f1308 to f1322 difference is in the solver section above.
+- **Spring wall bank and fold, f1338 to f1340**: The left side has more clear space and the right-hand bank is more defined as the streaks cross the globe. The additional f1341 to f1343 sample still turns into a broad pink wash in both builds. The fold is bettered, not cured.
+- **Fall fold, f2777 to f2779**: Orange clusters pass in sweeping bands with green gaps. There is still enough blur to obscure some branches in both builds.
+
+The `2585-shake*` strips and painted-hand triptychs below are historical. Strict and stand-ins below also predate the final merge, as do the isolated live step costs. No full-speed film or live application playback was seen.
 
 ## After the summer base and veil merge
 
