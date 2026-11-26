@@ -20,6 +20,7 @@ const range = (a, b) => a + (b - a) * R()
 const IVY = { leaves: 520, roses: 14, low: 4.5, size: 0.85 }
 const TURF = { lumpMm: 0.6, fineMm: 0.12, sandMm: 1.3, sandReach: 5.0, sandSides: 0.35 }
 const GRASS = { tufts: 21000, keep: 0.6, edge: 1100, edgeFrom: 0.1, edgeTo: 0.6, edgeWide: 1.6, edgeTuft: [1.3, 2.6], edgeLean: [0.35, 0.9], blades: 3, tall: [0.4, 1.15], clump: 1.5, wide: [0.13, 0.23], rimTall: 1.5, sandFrom: 0.55, sandTo: 1.0, edgeTall: 1.0 }
+const BLOOMS_KEEP = 0.2
 const LEVEL = { seed: 4107, medium: { back: 0.4, front: 0.72 }, low: { back: 0.25, front: 0.5 }, zFrom: -12, zTo: 6 }
 const STONE = { buried: 0.25, sink: 0.45, lumps: 0.36, chips: 0.11, wet: 0.6, tones: ['#8f887a', '#a39a88', '#7b7568', '#b0a692', '#9a8c74', '#6f6a62'] }
 const TONES = {
@@ -288,7 +289,7 @@ const stoneList = []
       g.deleteAttribute('normal')
       g.deleteAttribute('uv')
     }
-    const tone = mul3(lin(pick(STONE.tones)), range(1.6, 2.6))
+    const tone = mul3(lin(pick(STONE.tones)), range(0.8, 1.3))
     // Wet and dark where the stone stands in the pond, dry and pale above.
     const wetAt = (p) => (1 - smooth(1.0, 1.1, L.pondField(p[0], p[2]))) * (1 - smooth(0.1, 0.9, p[1] - (L.moundAt(p[2]) - L.pond.level)))
     decor.add(g, { color: (p) => mul3(tone, (0.4 + 1.2 * clamp((p[1] - (y - h)) / (2 * h)) ** 2 + 0.5 * (noise(p[0] * 2.1 + seed, p[1] * 2.1, p[2] * 2.1) - 0.5) + 0.25 * (noise(p[0] * 7 + seed, p[1] * 7, p[2] * 7) - 0.5)) * (1 - STONE.wet * wetAt(p))), surf: [surf(KIND.stone, 0.85), 0], renormal: true })
@@ -348,8 +349,8 @@ let planted = 0
     const clump = smooth(0.56, 0.8, clamp(0.5 + 1.5 * fbm(x * 0.5 + 31, z * 0.5 + 17, 4.4, 2)))
     const tall = range(GRASS.tall[0], GRASS.tall[1]) * (1 + GRASS.clump * clump) * (0.6 + 0.6 * lush) * (1 - 0.45 * worn) * (1 + (GRASS.rimTall - 1) * smooth(1.035, 1.09, f) * (1 - smooth(1.09, 1.25, f))) * (1 + GRASS.edgeTall * smooth(0.06, 0.4, sand))
     const patch = 0.45 + 0.75 * clamp(0.5 + 1.4 * fbm(x * 0.09 + 3, z * 0.09 + 11, 2.3, 2))
-    const base = mul3(mix3(pick(TONES.grass), pick(TONES.straw), sand * 0.8), patch * deep)
-    const top = mul3(mix3(pick(TONES.tip), pick(TONES.straw), clamp(sand * 0.9 + 0.08 * R())), patch * deep)
+    const base = mul3(mix3(pick(TONES.grass), pick(TONES.straw), sand * 0.25), patch * deep)
+    const top = mul3(mix3(pick(TONES.tip), pick(TONES.straw), clamp(sand * 0.3 + 0.08 * R())), patch * deep)
     const cell = { key: morton(x, z), pos: [], nor: [], col: [], tip: [], sun: [] }
     if (K() < GRASS.keep) {
       list.push(cell)
@@ -652,8 +653,11 @@ for (const [x, z, tall, turn, nod] of [[27.5, 7.5, 7.4, -0.45, 0.25], [22.6, 11.
     const rr = Math.sqrt(R()) * (L.innerRadiusMm - 3)
     spots.push([Math.cos(a) * rr, Math.sin(a) * rr])
   }
+  // One small flower in five stands: the lawn is moss with a few blooms in it. A run of numbers of its own picks them.
+  const F = rng(6203)
   for (const [x, z] of spots) {
     if (L.pondField(x, z) < 1.05 || hardGap(x, z) < 0.5 || wallGap(x, z) < 1.5 || trunkGap(x, z) < -1.2) continue
+    if (F() > BLOOMS_KEEP) continue
     const y = topAt(x, z)
     const h = range(0.7, 1.9)
     const tone = pick(TONES.bloom)

@@ -401,7 +401,7 @@ void main() {
   float ragged = ${n(1 - W.brushDeep[0])} + ${n(W.brushDeep[0])} * stroked;
   float flame = ${n(W.hotSize[0])} * mix(${n(W.hotFlame[0])}, ${n(W.hotFlame[1])}, smoothstep(${n(-W.hotSize[1])}, ${n(W.hotSize[2])}, da));
   float burnt = dr * dr / (flame * flame) + da * da / (tall * tall);
-  float hot = exp(-pow(burnt, ${n(W.hotEdge)})) * mix(1.0, ragged, smoothstep(0.2, 0.9, burnt));
+  float hot = exp(-pow(max(burnt, 0.0), ${n(W.hotEdge)})) * mix(1.0, ragged, smoothstep(0.2, 0.9, burnt));
   float sheafAt = r - ${n(W.hotAt[0] + 0.012)} - 0.05 * da;
   float sheaf = exp(-sheafAt * sheafAt / ${n(W.brushWide * W.brushWide)}) * smoothstep(-0.02, 0.12, da) * exp(-max(da, 0.0) / ${n(W.brushTall)});
   hot += ${n(W.brushGain)} * sheaf * smoothstep(0.52, 0.66, brush);
