@@ -166,7 +166,7 @@ const TROUGHS = [[5.2, 1.6, 3, 20, 1.0, 0.6]]
 // The body is carved in flowing ridges (references/approved/summer-rest.png): they sweep from the upper left down to the right, lie closer
 // here and wider there, and part round the things set in the sand as water parts round a stone. A ridge stands out over the crease under it
 // and falls back slowly to the crease over it. STARTS ridges make the whole turn, so they meet themselves behind.
-const RIDGE = { apart: 4.8, starts: 17, lean: 8, deep: 0.7, edge: 0.48, uneven: 1.6, waves: 3 }
+const RIDGE = { apart: 4.8, starts: 17, lean: 8, deep: 1.6, edge: 0.5, sharp: 0.75, uneven: 1.6, waves: 3 }
 const ridgeLean = (az) => ((RIDGE.starts * RIDGE.apart) / 360) * az + RIDGE.lean * Math.sin((az - 10) * RAD)
 const ridgeWander = (A, h) => 5.0 * (fbm(A * 4 + 1, h / 30, 4, 64, 139, 2) - 0.5) + 3.0 * (fbm(A * 9 + 2, h / 12, 9, 64, 141, 3) - 0.5) + 1.2 * (fbm(A * 21 + 5, h / 6, 21, 64, 143, 2) - 0.5)
 function ridgeCoord(m, az, s, h, r) {
@@ -210,27 +210,31 @@ function bare(m, az, s) {
     const x = (h - c) / wide
     trough -= deep * live * Math.exp(-x * x)
   }
-  const swell = 1.9 * (fbm(A * 5 + 1, h / 16, 5, 64, 11, 3) - 0.5) + 1.2 * (fbm(A * 9 + 3, h / 11, 9, 64, 15, 3) - 0.5) + 0.4 * (fbm(A * 19 + 7, h / 5.5, 19, 64, 13, 2) - 0.5) + 0.45 * (fbm(A * 40 + 11, h / 3.5, 40, 64, 17, 3) - 0.5) + 0.34 * (fbm(A * 84 + 5, h / 2.4, 84, 64, 157, 2) - 0.5)
+  const swell = 1.9 * (fbm(A * 5 + 1, h / 16, 5, 64, 11, 3) - 0.5) + 1.2 * (fbm(A * 9 + 3, h / 11, 9, 64, 15, 3) - 0.5)
+  const ripple = 0.4 * (fbm(A * 19 + 7, h / 5.5, 19, 64, 13, 2) - 0.5) + 0.45 * (fbm(A * 40 + 11, h / 3.5, 40, 64, 17, 3) - 0.5) + 0.34 * (fbm(A * 84 + 5, h / 2.4, 84, 64, 157, 2) - 0.5)
   const gh = TROUGHS[0][0] + TROUGHS[0][1] * Math.sin((az * TROUGHS[0][2] + TROUGHS[0][3]) * RAD)
   const seatLip = 0.12 * smooth(35.8 + RISE, 37.2 + RISE, q.h + 1.6 * (fbm(A * 9, 0.7, 9, 4, 61, 2) - 0.5)) * (1 - onTop)
   // The top is a thick round lip that rolls out over a shallow neck and over the corner onto the top, so the glass sits in it; where the sand falls it keeps close to the turned shape.
   // It is packed by hand: its edge wanders, the roll is thicker here and thinner there, and in a few places a piece has broken away.
   let gone = 0
   for (const [at, wide] of BREAKS) gone = Math.max(gone, smooth(1.0, 0.25, Math.abs(a180 - at) / wide + 0.9 * (fbm(A * 90 + 3, q.h / 2.5, 90, 64, 95, 2) - 0.5)))
-  const lipH = 30.6 + RISE + 3.0 * (fbm(A * 5 + 5, 0.4, 5, 4, 83, 3) - 0.5) + 3.0 * (fbm(A * 13 + 2, 0.4, 13, 4, 87, 2) - 0.5) + 1.8 * (fbm(A * 37 + 6, 0.4, 37, 4, 89, 2) - 0.5) + 2.2 * gone
-  const thick = (0.62 + 0.76 * fbm(A * 17 + 8, 0.6, 17, 4, 93, 2)) * (1 - 0.3 * gone)
-  const lip = (2.0 * thick * smooth(lipH - 2.4, lipH + 1.0, q.h) * smooth(46.0, 49.6, q.r) - 0.35 * Math.exp(-(((q.h - lipH + 3.4) / 1.6) ** 2)) * (1 - onTop)) * (1 - 0.7 * smooth(48, 62, a180) * smooth(128, 114, a180))
-  const lumps = (1.8 * (fbm(A * 23 + 4, q.h / 9, 23, 64, 99, 3) - 0.5) + 0.5 * (fbm(A * 70 + 3, q.h / 2, 70, 64, 19, 2) - 0.5)) * smooth(lipH - 2.0, lipH + 1.5, q.h) * smooth(45.0, 48.5, q.r)
+  const lipH = 30.6 + RISE + 1.2 * (fbm(A * 5 + 5, 0.4, 5, 4, 83, 3) - 0.5) + 0.7 * (fbm(A * 13 + 2, 0.4, 13, 4, 87, 2) - 0.5) + 0.25 * (fbm(A * 37 + 6, 0.4, 37, 4, 89, 2) - 0.5) + 0.7 * gone
+  const thick = (0.9 + 0.3 * fbm(A * 17 + 8, 0.6, 17, 4, 93, 2)) * (1 - 0.1 * gone)
+  const lip = (2.3 * thick * smooth(lipH - 2.4, lipH + 1.0, q.h) * smooth(46.0, 49.6, q.r) - 0.35 * Math.exp(-(((q.h - lipH + 3.4) / 1.6) ** 2)) * (1 - onTop)) * (1 - 0.7 * smooth(34, 74, a180) * smooth(128, 114, a180))
+  const lumps = (0.5 * (fbm(A * 23 + 4, q.h / 9, 23, 64, 99, 3) - 0.5) + 0.12 * (fbm(A * 70 + 3, q.h / 2, 70, 64, 19, 2) - 0.5)) * smooth(lipH - 2.0, lipH + 1.5, q.h) * smooth(45.0, 48.5, q.r)
   const psi = ridgeCoord(m, az, s, h, q.r)
   // The swells are uneven in width, and a hollow dies out here and there so that two swells run into one.
   const rt = (psi + RIDGE.uneven * Math.sin((2 * Math.PI * RIDGE.waves * psi) / (RIDGE.starts * RIDGE.apart) + 5.0 * fbm(A * 3 + 2, 0.5, 3, 4, 151, 2))) / RIDGE.apart
   const rk = Math.floor(rt)
   const rf = rt - rk
-  const shape = 0.5 - 0.5 * Math.cos(Math.PI * (rf < RIDGE.edge ? rf / RIDGE.edge : 1 + (rf - RIDGE.edge) / (1 - RIDGE.edge)))
+  // Each hollow is a round scoop and two scoops meet in an edge, so the crest takes the light as a line.
+  const under = rf < RIDGE.edge
+  const rs = under ? rf / RIDGE.edge : 1 - (rf - RIDGE.edge) / (1 - RIDGE.edge)
+  const shape = mix(0.5 - 0.5 * Math.cos(Math.PI * rs), 1 - Math.cos((Math.PI / 2) * rs), RIDGE.sharp)
   const live = smooth(0.3, 0.56, fbm(A * 6 + 9, ((rf < RIDGE.edge ? rk : rk + 1) * 64) / RIDGE.starts, 6, 64, 147, 2))
   const ridge = -RIDGE.deep * (1 - shape) * (0.14 + 0.86 * live) * (0.8 + 0.4 * fbm(A * 6 + 9, h / 16, 6, 64, 153, 3)) * mix(1, 0.3, smooth(55, 85, Math.abs(a180))) * smooth(1.2, 4.5, q.h) * smooth(lipH + 0.2, lipH - 2.8, q.h) * (1 - onTop)
   const fade = smooth(0.0, 1.6, s) * smooth(m.total, m.total - 2.2, s)
-  const d = (swell * (1 - 0.55 * onTop) + trough * (1 - onTop) + ridge + seatLip + lip + lumps) * fade
+  const d = ((swell + ripple * (1 - 0.85 * smooth(lipH - 3.0, lipH - 0.5, q.h))) * (1 - 0.55 * onTop) + trough * (1 - onTop) + ridge + seatLip + lip + lumps) * fade
   return { d, w, k, f, q, onTop, gh }
 }
 export function relief(m, az, s) {
