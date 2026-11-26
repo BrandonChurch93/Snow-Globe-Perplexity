@@ -17,11 +17,29 @@ const list = (items, n = 6) => (items.length > n ? `${items.slice(0, n).join(', 
 const mb = (bytes) => `${(bytes / 1048576).toFixed(2)} MB`
 
 const INIT = `(() => {
-  const seen = { contexts: 0, plays: 0, fetches: [], media: [], firstAt: null }
+  const seen = { contexts: 0, plays: 0, fetches: [], media: [], firstAt: null, frames: null }
   const first = () => !!document.documentElement && document.documentElement.dataset.firstPicture === '1'
   window.__soundcheck = seen
+  // The page's frames from the first picture on: how many came since this was last read, the longest time without one
+  // since then, and the slowest frame of all. It reads the clock once a frame and nothing else.
+  seen.countFrames = () => {
+    if (seen.frames) return
+    const now = performance.now()
+    const f = (seen.frames = { count: 0, longest: 0, slowest: 0, last: now, from: now })
+    const tick = () => {
+      const t = performance.now()
+      f.count += 1
+      f.longest = Math.max(f.longest, t - Math.max(f.last, f.from))
+      f.slowest = Math.max(f.slowest, t - f.last)
+      f.last = t
+      requestAnimationFrame(tick)
+    }
+    requestAnimationFrame(tick)
+  }
   new MutationObserver(() => {
-    if (seen.firstAt === null && first()) seen.firstAt = performance.now()
+    if (seen.firstAt !== null || !first()) return
+    seen.firstAt = performance.now()
+    seen.countFrames()
   }).observe(document, { attributes: true, subtree: true, attributeFilter: ['data-first-picture'] })
   for (const k of ['AudioContext', 'webkitAudioContext']) {
     const C = window[k]
@@ -109,8 +127,9 @@ async function liveChecks(session) {
     }
   })
   await page.goto(`${session.server.url}?mode=live`)
-  // Asked every quarter second, not once a frame: the frame after the first picture loads the rest of the detail and
-  // can take a minute where the picture is drawn in software, and a question tied to frames is answered only after it.
+  // Asked every quarter second, not once a frame: after the first picture the page loads the rest of the detail, and where
+  // the picture is drawn in software its frames then come 5 to 18 s apart for more than a minute (measured, see A2
+  // below). A question tied to frames is answered only after them.
   const patience = cfg.live.loadWaitSeconds * 15000
   const asked = Date.now()
   let marked = false
@@ -140,6 +159,21 @@ async function liveChecks(session) {
       return { audio: document.documentElement.dataset.audio ?? null, contexts: s.contexts, plays: s.plays, fetches: s.fetches, media: s.media, firstAt: s.firstAt, resources: performance.getEntriesByType('resource').map((e) => ({ url: e.name, at: e.startTime })), control: !!el, name: label(el), shown: shown(el), tag: el ? el.tagName.toLowerCase() : '', focusable: el ? el.tabIndex >= 0 : false }
     })
   const before = await state()
+  // What the page's frames did since this was last asked, and the slowest frame since the first picture.
+  const CLICK_FRAMES = 6
+  const CLICK_TRIES = 3
+  const frames = () =>
+    page.evaluate(() => {
+      const s = window.__soundcheck
+      s.countFrames()
+      const f = s.frames
+      const now = performance.now()
+      const seen = { count: f.count, longest: Math.max(f.longest, now - Math.max(f.last, f.from)), slowest: Math.max(f.slowest, now - f.last) }
+      f.count = 0
+      f.longest = 0
+      f.from = now
+      return seen
+    })
 
   if (wanted('A1')) {
     const bad = []
@@ -159,9 +193,39 @@ async function liveChecks(session) {
       const control = page.locator('[data-control="sound"]').first()
       const steps = []
       const bad = []
+      const tries = []
       try {
-        const frameMs = await page.evaluate(() => new Promise((r) => requestAnimationFrame((t0) => requestAnimationFrame((t1) => r(t1 - t0)))))
-        await control.click({ timeout: Math.max(5000, Math.ceil(6 * frameMs)) })
+        // The click's patience follows the page's own frames. Measured here, where the picture is drawn in software (seven
+        // runs of these steps, 12:00 to 12:12 UTC Nov 26): from the first picture on the page loads the other seasons and
+        // its frames come 5 to 18 s apart, for more than a minute, while the control stands still, shown, enabled and
+        // uncovered. A click needs two frames in a row to see that its target stands still, and a third to land. The one
+        // pair of frames measured before the click was a short one in four runs of seven (67 or 100 ms, two frames at the
+        // head of a drawing that then held the page for 5 to 18 s), and the 5 s it gave held one or two frames of the page:
+        // "Timeout 5000ms exceeded" while "waiting for element to be visible, enabled and stable". So the click is sized by
+        // the slowest frame since the first picture as well, and a click whose time ran out is tried again, sized anew, as
+        // long as the page stood still under it: a frame inside the try was longer than the sixth of the try it was sized
+        // for. A page that gave the click its frames and a control that still could not be clicked fails at once, as
+        // before, and so does the third try. A click that was sent before its time ran out is not sent twice: the state
+        // the control shows is asked first.
+        for (;;) {
+          const frameMs = await page.evaluate(() => new Promise((r) => requestAnimationFrame((t0) => requestAnimationFrame((t1) => r(t1 - t0)))))
+          if (tries.length && (await state()).shown !== before.shown) break
+          const { slowest } = await frames()
+          const timeout = Math.max(5000, Math.ceil(CLICK_FRAMES * Math.max(frameMs, slowest)))
+          const at = Date.now()
+          let failed = null
+          await control.click({ timeout }).catch((e) => (failed = e))
+          const seen = await frames()
+          tries.push({ frameMs: Math.round(frameMs), slowestFrameMs: Math.round(slowest), timeout, ms: Date.now() - at, frames: seen.count, longestFrameMs: Math.round(seen.longest), clicked: !failed })
+          if (!failed) break
+          if (seen.longest * CLICK_FRAMES < timeout || tries.length >= CLICK_TRIES) throw failed
+          if (/performing click action/.test(String(failed.message ?? failed))) {
+            const until = Date.now() + timeout
+            while ((await state()).shown === before.shown && Date.now() < until) await new Promise((r) => setTimeout(r, 250))
+            if ((await state()).shown === before.shown) throw failed
+            break
+          }
+        }
         await page.waitForTimeout(1200)
         const clicked = await state()
         steps.push(`pointer: ${before.shown} to ${clicked.shown}`)
@@ -184,7 +248,9 @@ async function liveChecks(session) {
       } catch (e) {
         bad.push(`the control could not be used: ${String(e.message ?? e).split('\n')[0]}`)
       }
-      if (wanted('A2')) set('A2', bad.length ? 'open' : 'pass', bad.length ? `${bad.join(', ')} · ${steps.join(', ')}` : `named "${before.name}", ${steps.join(', ')}`, { name: before.name, steps })
+      const still = tries.filter((t) => !t.clicked)
+      const waited = still.length ? `, the page stood still under the click (try ${tries.length}, a frame of ${(Math.max(...still.map((t) => t.longestFrameMs)) / 1000).toFixed(1)} s under a try of ${(still[0].timeout / 1000).toFixed(1)} s)` : ''
+      if (wanted('A2')) set('A2', bad.length ? 'open' : 'pass', bad.length ? `${bad.join(', ')} · ${steps.join(', ')}` : `named "${before.name}", ${steps.join(', ')}${waited}`, { name: before.name, steps, tries })
       await page.waitForTimeout(2500)
       after = await state()
     }
