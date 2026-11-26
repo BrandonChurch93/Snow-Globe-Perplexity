@@ -20,25 +20,25 @@ const SPRIGS = 'summer/tree-sprigs.srgb.w512.png'
 const CYCLES = 3
 const FLICKER = 0.06
 const PAPER = { power: 0.26, reachMm: 2.5 }
-const GLOW = { leaves: { power: 3.2, reachMm: 5.4 }, wood: { power: 1.3, reachMm: 4.6 } }
+const GLOW = { leaves: { power: 3.6, reachMm: 7.5 }, wood: { power: 2.2, reachMm: 7 } }
 const LAMP_ON_WOOD = { power: 0.5, reachMm: 14, wrap: -0.2 }
 const LAMP_ON_LEAVES = { power: 3, reachMm: 12, wrap: 0.1 }
 const LAMP_SHIFT: Vec3 = [-3, 0, -5]
-const FILL_ON_WOOD = { power: 0.15, reachMm: 1000, wrap: 0.4 }
+const FILL_ON_WOOD = { power: 0.25, reachMm: 1000, wrap: 0.4 }
 const FILL_ON_LEAVES = { power: 0.5, reachMm: 1000, wrap: 0.3 }
 const FILL_FROM: Vec3 = [30, 60, 60]
-const BARK: Rgb3 = [0.56, 0.29, 0.16]
+const BARK: Rgb3 = [0.36, 0.26, 0.19]
 const BARK_BUMP = 3.4
 // The bark: long flutes down the wood (the bark map drawn out along the grain), dark in their grooves, with the low sun
 // on the edge of the wood that faces it and moss on what faces up near the ground.
 const WOOD = { relief: 0.95, ridges: 5, warp: 2.6, fine: 0.4, low: 0.42, high: 1.45, from: 0.15, to: 0.85, depthMm: 1.5, rim: 3.0, rimTight: 3.4, side: 0.4, wrap: 0.95, mossTo: 5.5, moss: 0.45 }
 const MOSS: Rgb3 = [0.3, 0.52, 0.12]
 const ROOT_MM = 4.5
-const LEAF_TINT: Rgb3 = [0.15, 0.3, 0.13]
-const LEAF_LIT = 'vec3(1.25, 1.05, 0.6)'
+const LEAF_TINT: Rgb3 = [0.15, 0.215, 0.09]
+const LEAF_LIT = 'vec3(1.7, 0.85, 0.42)'
 const glsl3 = (c: Rgb3): string => `vec3(${c.map((v) => v.toFixed(3)).join(', ')})`
 const LEAF_VARY = { big: 0.36, mid: 1.15, scaleLow: 0.56, scale: 0.4, cool: [0.5, 0.74, 0.95] as Rgb3, warm: [1.15, 1.16, 0.86] as Rgb3 }
-const LEAF = { rim: 6, rimTight: 3.2, through: 0.7, tight: 3.0, fill: 1.0, wrap: 0.8, bump: 1.0, clumpDark: 0.55, clumpBright: 1.15, top: 7, card: 5, topEdge: 12.0, sky: 0.8, sunFrom: -0.7, sunTo: 0.3, goldMax: 1.7, topFrom: 0.06, topTo: 0.2, under: 0.24, side: 0.35, speck: 0.0 }
+const LEAF = { rim: 6, rimTight: 3.2, through: 0.7, tight: 3.0, fill: 1.0, wrap: 0.8, bump: 1.0, clumpDark: 0.8, clumpBright: 0.95, top: 3.5, card: 2.2, topEdge: 12.0, sky: 0.8, sunFrom: -0.7, sunTo: 0.3, goldMax: 1.7, topFrom: 0.06, topTo: 0.2, under: 0.24, side: 0.35, speck: 0.0 }
 const LANTERN = { rib: 0.3, gores: 12, ring: 0.16, ribs: 26, gain: 0.95, body: 0.42, core: 3.1, tight: 1.8, paper: 0.06, dim: 0.4, stepS: 0.23, rampS: 0.42, swayRad: 0.045, sway2: 0.6, kickRad: 0.16, kickFade: 1.2, kickHz: 1.3, cycles: 2 }
 const HALO = { radius: 2.9, strength: 0.11, hot: 0.0 }
 const HALO_EDGE: Rgb3 = [0.9, 0.36, 0.08]
@@ -108,7 +108,7 @@ function leafHook(shader: Shader): void {
     // A card is cut last. A pixel that is cut stops being worked out, and the lighting after it reads its neighbours' numbers
     // (the slope of the normal, of the shadow's place): cut early, the edge of every sprig was lit from numbers nobody set.
     .replace(/\}\s*$/, 'if (treeCard && treeC.a < 0.5) discard;\n}')
-  afterLight(shader, `reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${LEAF.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), ${LEAF.wrap.toFixed(2)}) + ${LEAF.through.toFixed(2)} * pow(clamp(dot(normalize(vViewPosition), -stageKeyL), 0.0, 1.0), ${LEAF.tight.toFixed(1)}) + ${LEAF.rim.toFixed(2)} * pow(abs(1.0 - abs(dot(normal, normalize(vViewPosition)))), ${LEAF.rimTight.toFixed(1)}) * smoothstep(-0.3, 0.7, dot(normal, stageKeyL)))) * material.diffuseContribution;\n{\n  vec3 treeUpN = normalize(vTreeN);\n  // Each pad of leaves is lit from above and dark underneath, so the crown reads as layers and not as one mass.\n  reflectedLight.directDiffuse *= mix(${LEAF.under.toFixed(2)}, 1.0, smoothstep(-0.55, 0.5, treeUpN.y));\n  float goldSpeck = mix(${LEAF.speck.toFixed(2)}, 1.0, smoothstep(${LEAF.topFrom.toFixed(2)}, ${LEAF.topTo.toFixed(2)}, treeLum));\n  vec3 treeVN = normalize(vNormal);\n  // The dusk sky fills the crown from above with a cool green, so its body reads as leaves and not as a silhouette.\n  reflectedLight.directDiffuse += material.diffuseContribution * vec3(0.9, 1.0, 0.95) * (${LEAF.sky.toFixed(2)} * (0.15 + 0.85 * smoothstep(-0.2, 0.9, treeUpN.y)));\n  float goldUp = smoothstep(${LEAF.sunFrom.toFixed(2)}, ${LEAF.sunTo.toFixed(2)}, dot(treeVN, stageKeyL));\n  // The low sun stands behind the crown: it only catches the leaves that face it on the rims of the pads, as seen from the lens.\n  float goldEdge = (treeCard ? ${LEAF.card.toFixed(2)} : ${LEAF.top.toFixed(2)}) * pow(abs(1.0 - abs(dot(treeVN, normalize(vViewPosition)))), ${LEAF.topEdge.toFixed(1)});\n  // Held under the clip of the grade: past it the gold would wash out to pink.\n  reflectedLight.directDiffuse += stageKeyC * vec3(0.9, 0.68, 0.3) * min(goldEdge * goldUp * goldSpeck, ${LEAF.goldMax.toFixed(2)});\n}`)
+  afterLight(shader, `reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${LEAF.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), ${LEAF.wrap.toFixed(2)}) + ${LEAF.through.toFixed(2)} * pow(clamp(dot(normalize(vViewPosition), -stageKeyL), 0.0, 1.0), ${LEAF.tight.toFixed(1)}) + ${LEAF.rim.toFixed(2)} * pow(abs(1.0 - abs(dot(normal, normalize(vViewPosition)))), ${LEAF.rimTight.toFixed(1)}) * smoothstep(-0.3, 0.7, dot(normal, stageKeyL)))) * material.diffuseContribution;\n{\n  vec3 treeUpN = normalize(vTreeN);\n  // Each pad of leaves is lit from above and dark underneath, so the crown reads as layers and not as one mass.\n  reflectedLight.directDiffuse *= mix(${LEAF.under.toFixed(2)}, 1.0, smoothstep(-0.55, 0.5, treeUpN.y));\n  float goldSpeck = mix(${LEAF.speck.toFixed(2)}, 1.0, smoothstep(${LEAF.topFrom.toFixed(2)}, ${LEAF.topTo.toFixed(2)}, treeLum));\n  vec3 treeVN = normalize(vNormal);\n  // The gold air fills the crown from above, so its body reads as leaves and not as a silhouette.\n  reflectedLight.directDiffuse += material.diffuseContribution * vec3(1.2, 0.95, 0.62) * (${LEAF.sky.toFixed(2)} * (0.15 + 0.85 * smoothstep(-0.2, 0.9, treeUpN.y)));\n  float goldUp = smoothstep(${LEAF.sunFrom.toFixed(2)}, ${LEAF.sunTo.toFixed(2)}, dot(treeVN, stageKeyL));\n  // The low sun stands behind the crown: it only catches the leaves that face it on the rims of the pads, as seen from the lens.\n  float goldEdge = (treeCard ? ${LEAF.card.toFixed(2)} : ${LEAF.top.toFixed(2)}) * pow(abs(1.0 - abs(dot(treeVN, normalize(vViewPosition)))), ${LEAF.topEdge.toFixed(1)});\n  // Held under the clip of the grade: past it the gold would wash out to pink.\n  reflectedLight.directDiffuse += stageKeyC * vec3(0.9, 0.68, 0.3) * min(goldEdge * goldUp * goldSpeck, ${LEAF.goldMax.toFixed(2)});\n}`)
 }
 
 function woodHook(shader: Shader, groundY: number): void {

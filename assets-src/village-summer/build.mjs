@@ -24,8 +24,8 @@ const TONES = {
   grass: ['#1c3413', '#274616', '#30531a', '#213c15'].map(lin),
   tip: ['#566f27', '#6b8230', '#465f20'].map(lin),
   straw: ['#c9b674', '#d8c88c', '#b9a460'].map(lin),
-  earth: lin('#3b2c1c'),
-  mud: lin('#231c12'),
+  earth: lin('#2a3019'),
+  mud: lin('#1b2013'),
   sand: lin('#efe5ca'),
   bed: lin('#16201c'),
   leaf: ['#233d18', '#2f4e1d', '#1d3516', '#395a24'].map(lin),
@@ -52,7 +52,7 @@ const sandAt = (x, z) => (1 - smooth(0.5, TURF.sandReach * (0.45 + 1.3 * clamp(0
 const blob = (x, z, cx, cz, rx, rz) => Math.exp(-(((x - cx) / rx) ** 2 + ((z - cz) / rz) ** 2))
 // Where the low sun reaches the floor between the crown, the trunk and the cottage (read off the approved image): right of
 // the trunk out to the sunflowers, behind the lamp, a little by the fence and on the near right bank.
-const sunAt = (x, z) => clamp((1.2 * blob(x, z, 27, 3, 11, 9) + 1.4 * blob(x, z, 3, -8, 9, 6) + 0.4 * blob(x, z, -24, 21, 6, 5) + 0.5 * blob(x, z, 24, 22, 9, 6)) * (0.5 + 1.0 * clamp(0.5 + 1.4 * fbm(x * 0.3 + 9, z * 0.3 + 4, 6.1, 2))))
+const sunAt = (x, z) => clamp((1.2 * blob(x, z, 27, 3, 11, 9) + 0.9 * blob(x, z, 3, -8, 7.5, 5) + 0.4 * blob(x, z, -24, 21, 6, 5) + 0.5 * blob(x, z, 24, 22, 9, 6)) * (0.5 + 1.0 * clamp(0.5 + 1.4 * fbm(x * 0.3 + 9, z * 0.3 + 4, 6.1, 2))))
 const turfAt = (x, z) => TURF.lumpMm * fbm(x * 0.22 + 3.1, z * 0.22 + 1.7, 2.2, 3) + TURF.fineMm * fbm(x * 0.9, z * 0.9, 5.5, 2)
 const topAt = (x, z) => L.groundAt(x, z) + turfAt(x, z) * smooth(0.98, 1.1, L.pondField(x, z)) + TURF.sandMm * sandAt(x, z) * (0.3 + 0.7 * fbm(x * 0.26, z * 0.26, 9, 3) + 0.9 * clamp(0.5 + 1.2 * fbm(x * 0.075 + 4.4, z * 0.075 + 9.1, 2.9, 2)))
 const keepHard = (role) => role === 'cottage' || role === 'chimney' || role === 'path' || role === 'post' || role === 'fence'
@@ -248,9 +248,9 @@ const stoneList = []
     while (t < 60 && L.pondField(L.pond.x + Math.cos(a) * t, L.pond.z + Math.sin(a) * t) < field) t += 0.05
     return [L.pond.x + Math.cos(a) * t, L.pond.z + Math.sin(a) * t]
   }
-  const shore = [[262, 1.1, 1.7], [246, 1.09, 2.1], [230, 1.085, 2.9], [214, 1.08, 2.2], [199, 1.08, 3.1], [150, 1.07, 2.4], [133, 1.065, 1.9], [38, 1.07, 2.0], [4, 1.075, 2.6], [318, 1.08, 1.8]]
+  const shore = [[262, 1.1, 1.7], [246, 1.09, 2.1], [230, 1.085, 2.9], [214, 1.08, 2.2], [199, 1.08, 3.1], [150, 1.07, 2.4], [133, 1.065, 1.9], [38, 1.07, 2.0], [4, 1.075, 2.6]]
   // Between the large stones lie small ones at no even step, some half in the water: the bank is no ring of one size.
-  const small = [[255, 1.05, 1.0], [239, 1.04, 0.8], [222, 1.05, 1.25], [207, 1.035, 0.9], [188, 1.05, 1.4], [173, 1.06, 1.0], [161, 1.04, 0.75], [142, 1.045, 1.1], [121, 1.06, 1.3], [98, 1.06, 0.85], [61, 1.055, 1.0], [23, 1.05, 1.2], [349, 1.06, 1.35], [334, 1.045, 0.8], [303, 1.055, 1.05], [287, 1.065, 1.3], [276, 1.05, 0.7]]
+  const small = [[255, 1.05, 1.0], [239, 1.04, 0.8], [222, 1.05, 1.25], [207, 1.035, 0.9], [188, 1.05, 1.4], [173, 1.06, 1.0], [161, 1.04, 0.75], [142, 1.045, 1.1], [121, 1.06, 1.3], [98, 1.06, 0.85], [61, 1.055, 1.0], [23, 1.05, 1.2], [287, 1.065, 1.3]]
   const along = [...L.stones.map(([x, z], i) => [x, z, 2.3 + 0.22 * i, 1.7 + 0.12 * i, 0.3]), ...[...shore, ...small].map(([deg, f, w]) => [...edgeAt(deg + range(-3, 3), f), w * range(0.85, 1.2), w * range(0.55, 0.85), range(0.34, 0.56)])]
   for (const [x, z, rx, rz, rise] of along) {
     const yaw = range(0, TAU)
@@ -286,7 +286,7 @@ const stoneList = []
       g.deleteAttribute('normal')
       g.deleteAttribute('uv')
     }
-    const tone = mul3(lin(pick(STONE.tones)), range(1.1, 1.9))
+    const tone = mul3(lin(pick(STONE.tones)), range(1.6, 2.6))
     // Wet and dark where the stone stands in the pond, dry and pale above.
     const wetAt = (p) => (1 - smooth(1.0, 1.1, L.pondField(p[0], p[2]))) * (1 - smooth(0.1, 0.9, p[1] - (L.moundAt(p[2]) - L.pond.level)))
     decor.add(g, { color: (p) => mul3(tone, (0.4 + 1.2 * clamp((p[1] - (y - h)) / (2 * h)) ** 2 + 0.5 * (noise(p[0] * 2.1 + seed, p[1] * 2.1, p[2] * 2.1) - 0.5) + 0.25 * (noise(p[0] * 7 + seed, p[1] * 7, p[2] * 7) - 0.5)) * (1 - STONE.wet * wetAt(p))), surf: [surf(KIND.stone, 0.85), 0], renormal: true })
@@ -503,12 +503,12 @@ function sunflower(x, z, tall, face) {
   const pts = []
   for (let i = 0; i <= 8; i++) {
     const t = i / 8
-    const s = Math.sin(t * Math.PI * 0.85) * tall * 0.09 + Math.sin(t * TAU) * tall * 0.02
+    const s = Math.sin(t * Math.PI * 0.85) * tall * 0.14 + Math.sin(t * TAU) * tall * 0.03
     const off = t * tall * 0.1
     pts.push(new THREE.Vector3(x + bend[0] * t * t + lean[0] * s + tip[0] * off, y0 + tall * t - 0.35 * t * t * t, z + bend[2] * t * t + lean[1] * s + tip[1] * off))
   }
   const curve = new THREE.CatmullRomCurve3(pts)
-  const stem = new THREE.TubeGeometry(curve, 14, 0.27, 6, false)
+  const stem = new THREE.TubeGeometry(curve, 14, 0.3, 6, false)
   decor.add(stem, { color: (p) => mul3(TONES.stem, 1.5 + 1.0 * ((p[1] - y0) / tall)), surf: leafSurf, renormal: true })
   const head = pts[pts.length - 1].toArray()
   const f = norm3(face)
@@ -567,7 +567,7 @@ function sunflower(x, z, tall, face) {
     const at = curve.getPoint(t).toArray()
     const a = i * 2.4 + range(-0.4, 0.4)
     const d = [Math.cos(a), range(-0.35, 0.2), Math.sin(a)]
-    const size = tall * 0.27 * range(0.75, 1.2) * (1 - 0.35 * t)
+    const size = tall * 0.36 * range(0.75, 1.2) * (1 - 0.35 * t)
     const before = leafBits.pos.length
     leaf(at, d, size, mul3(pick(TONES.leaf), range(2.2, 3.2)))
     void before
