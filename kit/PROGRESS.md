@@ -25,21 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 153 · 2026-11-26 11:03 UTC
+Status 154 · 2026-11-26 11:31 UTC
 
-- `out/stills/status/status-153-1.jpg`: Summer at rest in the middle of the fix pass: the approved picture (left) and the build with three of the five builders' work (right). Not judged; the stone and the air are not in it yet. Sent back: the haze is too even and milky, the lights of the room too large and bright, the warm rim weak
-- `out/stills/status/status-153-2.jpg`: The particle mend (open item 231) on a phone, fall to winter at the medium level, three moments of one shake: before (top row) fall's leaves, embers and bats stay frozen in the glass through winter once the particle worker is given up; after (bottom row) the snow whirls and settles
+- `out/stills/status/status-154-1.jpg`: Summer at rest after the pass on the light and the glass alone (final tier): the white curtain on the ball is gone, the glow sits low behind the miniature. The stone, the air and the miniature in this picture are still the old ones
+- `out/stills/status/status-154-2.jpg`: Summer's storm, half a second after the landing: approved (left), before (middle, draft tier), after the pass on the air (right, review tier). Cream curved strokes with green leaf bits in place of straight amber hairlines; still less white and less fine than approved
+- `out/stills/status/status-154-3.jpg`: Summer's stone base: approved (top), before (middle), after its pass (bottom), draft tier. Layered ridges, ribbed shells, glossy sea glass; still grey, tan at the left, without the sunlit cream of the approved
+- `out/stills/status/status-154-4.jpg`: Summer's miniature at rest: approved (left), after its pass (right), review tier. Slate roof in rows, ribbed lanterns on a cord, open rail fence, dark pond. It stands smaller in the globe than approved
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-26 11:03 UTC
-clock: phase 6, tick of 29.0 minutes
-phase 6: 8.23 h used of its 12.00 h box
-allowance (after the review): 8.23 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 8.23 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-26 11:31 UTC
+clock: phase 6, tick of 28.4 minutes
+phase 6: 8.70 h used of its 12.00 h box
+allowance (after the review): 8.70 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 8.70 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: not reached
