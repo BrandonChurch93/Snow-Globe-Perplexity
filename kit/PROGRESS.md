@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 178 · 2026-11-26 21:41 UTC
+Status 179 · 2026-11-26 22:09 UTC
 
-- `out/stills/status/status-178-1.jpg`: Summer at rest on `1878461b` (hd, review tier), after the tree's fourth pass, the glass's third list and the cottage's third pass
-- `out/stills/status/status-178-2.jpg`: Summer at the landing on `1878461b` (hd, review tier)
-- `out/stills/status/status-178-3.jpg`: The change of season around summer, frames 1400 and 2086 at draft: sky blue before the mend left, cream gold with it right
-- `out/stills/status/status-178-4.jpg`: Summer at rest, approved picture above and build below at one scale: still below the bar
+- `out/stills/status/status-179-1.jpg`: Summer at rest on main 15d7017d, hd, review tier. The base after its third list is a round mound with slanting swirls; its fine even lines read as turned wood and the gate's detail line is red by it. Still below the bar.
+- `out/stills/status/status-179-2.jpg`: Rough draft 4, 24 frames from 1280 to 2014: spring into summer, then summer. No blue is left in the change.
+- `out/stills/status/status-179-3.jpg`: Fall's storm: the approved picture left, the build at frames 2130 and 2150. Green is the approved look. The flat even ball at the cover's peak is what falls short.
+- `out/stills/status/status-179-4.jpg`: Spring at 3840 final with the camera travelling, four neighbouring frames at 8 times: a bead on the glass as a patch of one pixel dots that differ in every frame (above), the dew on the dark moss as rings of dots (below). A mender has both.
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-26 21:41 UTC
-clock: phase 6, tick of 30.5 minutes
-phase 6: 18.86 h used of its 12.00 h box
-allowance (after the review): 18.86 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 18.86 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-26 22:09 UTC
+clock: phase 6, tick of 28.4 minutes
+phase 6: 19.33 h used of its 12.00 h box
+allowance (after the review): 19.33 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 19.33 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
@@ -1081,6 +1081,8 @@ Numbered. What, why, and the date.
 
 168. **The inertia's builder may push with M3 at rest moved by less than 0.015, as long as the gate's own M3 line stays green wherever it is green on main.** Its brief said the rest pictures' detail must not fall. Its candidate moves M3 at rest by about a hundredth either way (winter 0.9365 to 0.9262, summer 0.7276 to 0.7160, fall 0.5336 to 0.5393, spring unchanged, on its own comparator and its older base), because the loose matter comes to rest in other places and fewer motes hang in the upper air at the holds (494 and 307 where there were 3,937 and 4,814). What it gains is what the kit asks of a shake: the matter trails the glass, the lift loses no frame, the air clears to the hold. Holding that back for a hundredth of a detail ratio would trade a fault a viewer sees for a number a viewer does not. The guard that stays: `npm run measure -- --unit <season> --only M3 --force --tier review` reads green on the merged head wherever it reads green on main, the line word for word in its report, and a farm machine repeats it before the merge. Its spring and fall readings under 0.75 come from its own comparator and are to be named against the gate's line before the merge; if the gate's line is red on main for either season, that is a finding of its own and goes into the open items.
 
+169. **The inertia's move of summer's miniature number (0.820 to 0.791 on `15d7017d`) is taken, though it is twice what decision 168 allows.** Its builder took the cause apart on matched trees at hd review: with the particles hidden the miniature's box is byte for byte the same on main and on its branch, so nothing of the cottage, the tree or the ground is softer. The number falls with where the seed heads come to rest: 107 are snagged on the miniature where main has 138 (1747 px against 2324), and the measure counts their fine edges as detail. Fewer heads caught on the scene is what summer's lists ask of the air anyway, and moving single heads to win the number back would be tuning the measure, not the picture. What stays as the guard: on the merged head the miniature's number in the gate's line reads 0.77 or more, the line word for word in the merge's note, and the base's own number is the stone's (open item 247).
+
 ## Notes from Brandon
 
 Numbered, in his words, with the date and how each was applied. Review round items carry their round's number.
@@ -1662,9 +1664,11 @@ Open items of Round 7, the last round of the look lock (commit `4f10d97`, all te
 
 244. **Two guard lines in the shared `src/core/chunks/veil.ts` have no owner yet.** Seen: summer's `veil.rest` of -0.0007 takes the shared density below zero (line 541), which drew blue blocks at the left of the glass in rough draft 3 at about 0:42, and `low` is not held in 0 to 1 (line 428). The air's builder mends its own side by clamping `u.uVeil.value.w` at 0 at the end of `holdStorm`. Owner: /root, after the hand's merge (the hand holds a granted line in the same file, line 598). Proof: the eight stills at rest and landed byte equal before and after, and frames 1644, 1646, 1648 free of blue.
 
-245. **M4 is red for shake-3 (summer into fall): 0.7601 on `6f6330ed`, threshold 0.85.** Seen: red on `c4665a9b` (0.7698), `9e0c42d6` (0.77), `6f6330ed` (0.7601), at draft and review alike; green on the review stop's head `e1485c5f` (0.9667) and up to `eca1ac61` (0.9603); red from `5f9a5fd2`, the merge of summer's air for fix list 7 (0.7719), which also took shake-2 from 0.8968 to 0.8666, 0.017 over the floor. The open pixels are the tree's crown and the ground's front rim. The change's owner proved one cause at draft: `stormHeld` in `src/seasons/summer/veil.ts` holds summer's storm also while summer leaves; with that term off shake-3 reads 0.9652 and nothing else moves. Owner: the air's builder (`/root/summer_air_p6`), ahead of its third list. Proof: M4 at 0.89 or more for shake-2 and shake-3, shake-1, shake-4 and all four M5 kept, the eight lines word for word, on main, by a farm machine.
+245. **M4 is red for shake-3 (summer into fall): 0.7601 on `6f6330ed`, threshold 0.85.** Seen: red on `c4665a9b` (0.7698), `9e0c42d6` (0.77), `6f6330ed` (0.7601), at draft and review alike; green on the review stop's head `e1485c5f` (0.9667) and up to `eca1ac61` (0.9603); red from `5f9a5fd2`, the merge of summer's air for fix list 7 (0.7719), which also took shake-2 from 0.8968 to 0.8666, 0.017 over the floor. The open pixels are the tree's crown and the ground's front rim. The change's owner proved one cause at draft: `stormHeld` in `src/seasons/summer/veil.ts` holds summer's storm also while summer leaves; with that term off shake-3 reads 0.9652 and nothing else moves. Owner: the air's builder (`/root/summer_air_p6`), ahead of its third list. Proof: M4 at 0.89 or more for shake-2 and shake-3, shake-1, shake-4 and all four M5 kept, the eight lines word for word, on main, by a farm machine. Mended in main as `d8b98f9a` (in `15d7017d`, pushed 21:57 UTC Nov 26): summer leaving holds nothing of the held storm, and summer coming takes the shared veil over only through the second half of the swap window. On `15d7017d` a farm machine reads, forced, at draft: "pass M4 shake-1: 0.9872", "pass M4 shake-2: 0.905", "pass M4 shake-3: 0.9602", "pass M4 shake-4: 0.9655", and M5 passing on all four (0.9804, 1, 0.9833, 0.9998); the tool's last line "measure change: not complete · 8 of 24 lines, 0 red · draft · 118 s". Closed. Seen in the same run and passed on to the air's builder and the change's owner: in the one frame from 1403 to 1404 the glass's mean falls by 16 levels where its neighbours move by 1 to 4; the draft drawn before the mend has the same fall there (22 levels over the two frames 1402 to 1404), so it is older than the mend.
 
 246. **The film in motion at 3840 has not been looked at.** Seen: decision 166 stills the ground on a still camera; with a moving camera about half of the frame to frame change is left (spring 1200 against 1201, rows 1440 down, 24,272 pixels over 12 levels after laying one frame over the other), and single-pixel speckle stands inside single frames on the tree's leaves at the close and on summer's stone. Owner: /root, with four farm machines drawing one second each (winter's opening, spring, fall, the close) on `1621ff09`. Proof: the four clips and their strips looked at, what shimmers named and given an owner, before any master frame is drawn. Summer's second follows at its freeze.
+
+247. **The gate's detail line for summer is red on main since `15d7017d` (22:07 UTC Nov 26 as written), by the base.** Read by two builders on that commit at review: "FAIL M3 summer-rest: 0.6211 (threshold 0.75, detail.minSharpnessRatio)" with "base 0.621 over 166536 pixels" and "miniature 0.820 over 134718 pixels"; on `1878461b` the base read 1.208 and the line 0.8266. The base's third list brought its tones to the approved picture's by thirds and took the stone's grain with the grey, so the surface is smooth with fine even lines. The slip is /root's: the merge was looked at as a picture and pushed after the whole test run, without the measure's line. The base's builder has it as the first point of its fourth list (the base's ratio at 1.0 or over with the tones where they are). Until it lands the other summer builders read the miniature's number in the same line, and summer's base is not published. New rule for /root: every merge of a summer part into main reads `npm run measure -- --unit summer --only M3 --force --tier review` on the merged tree before its push.
 
 ## The count
 
