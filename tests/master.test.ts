@@ -31,6 +31,8 @@ const rec = (what: keyof typeof totals, first: number, last: number, over: Recor
   frames: last - first + 1,
   total: totals[what],
   engineHash: 'build-1',
+  renderer: what === 'opening' ? 'pack' : 'lavapipe',
+  ...(what === 'opening' ? {} : { calibration: 'c'.repeat(64) }),
   samples: 12,
   format: 'uhd',
   fps: 60,
@@ -121,6 +123,17 @@ describe('what a second run still has to render', () => {
     expect(recordMatchesRun(rec('film-b', 0, 29, { verify: { ok: false } }), want)).toBe(false)
     expect(recordMatchesRun(rec('film-b', 0, 29, { frameHashes: ['one'] }), want)).toBe(false)
   })
+
+  it('does not take a chunk drawn by another renderer, or on another calibration, as finished', () => {
+    const want = { what: 'film-b', first: 0, last: 29, engineHash: 'build-1', samples: 12, format: 'uhd', fps: 60, test: false, renderer: 'lavapipe', calibration: 'c'.repeat(64), encoderArgs: ARGS }
+    expect(recordMatchesRun(rec('film-b', 0, 29), want)).toBe(true)
+    expect(recordMatchesRun(rec('film-b', 0, 29, { renderer: 'swiftshader' }), want)).toBe(false)
+    expect(recordMatchesRun(rec('film-b', 0, 29, { renderer: undefined }), want)).toBe(false)
+    expect(recordMatchesRun(rec('film-b', 0, 29, { calibration: 'd'.repeat(64) }), want)).toBe(false)
+    expect(recordMatchesRun(rec('film-b', 0, 29, { calibration: undefined }), want)).toBe(false)
+    const pack = { what: 'opening', first: 0, last: 29, engineHash: 'build-1', samples: 12, format: 'uhd', fps: 60, test: false, renderer: 'pack', calibration: null, encoderArgs: ARGS }
+    expect(recordMatchesRun(rec('opening', 0, 29), pack)).toBe(true)
+  })
 })
 
 describe('the join', () => {
@@ -164,6 +177,10 @@ describe('the join', () => {
     refused('film-b', one({ format: 'hd' }), /the format differs between chunks/)
     refused('film-b', one({ encoderArgs: [...ARGS, '-g', '60'] }), /the list of encoder arguments differs between chunks/)
     refused('film-b', one({ fps: 30 }), /the frame rate differs between chunks/)
+    refused('film-b', one({ renderer: 'swiftshader' }), /the renderer of film-b differs between chunks/)
+    refused('film-b', one({ calibration: 'd'.repeat(64) }), /the calibration picture of film-b differs between chunks/)
+    refused('film-b', one({ calibration: undefined }), /names no calibration picture/)
+    expect(plan('film-a', [chunk(rec('opening', 0, 29)), chunk(rec('opening', 30, 59)), ...filmB()]).problems.join(' ')).not.toMatch(/renderer|calibration/)
   })
 
   it('refuses a chunk marked test, and a test join takes nothing else', () => {

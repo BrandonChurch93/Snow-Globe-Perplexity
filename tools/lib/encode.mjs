@@ -120,6 +120,17 @@ export async function scaleCopy({ src, settings, out }) {
   })
 }
 
+export async function scaleEvery({ src, every, settings, out }) {
+  const codec = VIDEO[settings.codec]
+  await encode({
+    input: ['-i', src],
+    filter: `framestep=${every},scale=${settings.width}:${settings.height}:${SCALER},format=${codec.pixFmt}`,
+    settings,
+    out,
+    audio: ['-c:a', 'copy'],
+  })
+}
+
 export async function join({ parts, out, container, fps, sound = null, audioKbps = cfg.export.audioKbps, channels = null }) {
   if (!parts.length) throw new Error('nothing to join')
   const list = path.join(tmpDir(), `join-${process.pid}-${path.basename(out)}.txt`)

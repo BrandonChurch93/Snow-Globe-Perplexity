@@ -81,6 +81,8 @@ export function totalsFromCut(cut = readJson(rel('cut', 'CUTLIST.json'))) {
 export function recordMatchesRun(r, want) {
   if (!r) return false
   for (const k of ['what', 'first', 'last', 'engineHash', 'samples', 'format', 'fps']) if (r[k] !== want[k]) return false
+  if (want.renderer !== undefined && r.renderer !== want.renderer) return false
+  if (want.calibration !== undefined && (r.calibration ?? null) !== want.calibration) return false
   if (!!r.test !== !!want.test) return false
   if (JSON.stringify(r.encoderArgs) !== JSON.stringify(want.encoderArgs)) return false
   return r.verify?.ok === true && Array.isArray(r.frameHashes) && r.frameHashes.length === want.last - want.first + 1
@@ -140,6 +142,9 @@ export function joinPlan({ which, chunks, totals, test = false, size = M.chunkFr
   same('fps', 'the frame rate', mine)
   same('encoderArgs', 'the list of encoder arguments', mine)
   for (const w of whats) same('samples', `the samples of ${w}`, mine.filter((c) => c.record.what === w))
+  for (const w of whats) same('renderer', `the renderer of ${w}`, mine.filter((c) => c.record.what === w))
+  for (const w of whats) same('calibration', `the calibration picture of ${w}`, mine.filter((c) => c.record.what === w), (r) => r.calibration ?? null)
+  for (const c of mine) if (c.record.what !== 'opening' && !c.record.calibration) problems.push(`${named(c)} names no calibration picture, so nothing says its machine draws what the others draw`)
 
   let frames = 0
   for (const w of whats) {

@@ -3,12 +3,12 @@ import path from 'node:path'
 import { spawn, spawnSync } from 'node:child_process'
 import sharp from 'sharp'
 import { bootId, parseArgs, rel, readJson, writeJson } from './lib/paths.mjs'
-import { Session, cfg, formatById, renderBusy, requireBuild } from './lib/page.mjs'
+import { Session, cfg, currentSeasonHashes, formatById, renderBusy, renderStill, requireBuild, stillSpec } from './lib/page.mjs'
 import { engineHash, fileSha, sha256 } from './lib/hashes.mjs'
-import { freeDiskGb, launch, machineId, pinnedBrowser } from './lib/browser.mjs'
+import { freeDiskGb, launch, machineId, pinnedBrowser, rendererName } from './lib/browser.mjs'
 import { serve } from './lib/server.mjs'
 import { Run, argFrame, argText, pngOk, short } from './lib/frames.mjs'
-import { decodedHashes, decodedPictures, encodeMasterChunk, haveFfmpeg, join, masterVideoArgs, probeStreams, soundSeconds, startsFast, stillJpeg, toolVersions } from './lib/encode.mjs'
+import { decodedHashes, decodedPictures, encodeMasterChunk, haveFfmpeg, join, masterVideoArgs, probe, probeLine, probeStreams, scaleEvery, soundSeconds, startsFast, stillJpeg, toolVersions, videoSettings } from './lib/encode.mjs'
 import { FPS, JOINS, LOOK_WIDTH, M, SOUND, STILL_MAX_MB, WHATS, chunkDir, chunkStem, coverReport, dB, framesOf, heartbeat, hours, joinPlan, lumaPsnrOf, openingPack, pad6, psnrOf, rangeChunks, ranges, readChunks, recordMatchesRun, resultName, split, stillName, stillToDo, table, tierOf, totalsFromCut } from './lib/master.mjs'
 import { Shipper, collectBranches, repoFacts } from './lib/mastergit.mjs'
 
@@ -16,12 +16,16 @@ const args = parseArgs(process.argv.slice(2))
 const say = console.log
 const USAGE = [
   'npm run master -- --what film-b|loop|opening [--first N --last M] [--ship BRANCH] [--procs P]',
+  'npm run master -- --calibrate',
+  'npm run master -- --hd film-a|film-b [--test]',
   'npm run master -- --collect DIR',
   'npm run master -- --join film-b|film-a|loop --from DIR',
   'For tests only: --samples S, --format F, --min-psnr N, and --join ... --test [--sound FILE]',
 ].join('\n')
 const LOCK = rel('out', 'work', 'render.lock')
 const COLOUR_TAGS = 'bt709 / bt709 / bt709 / tv'
+const CALIBRATION = rel('out', 'work', 'master', 'calibration.json')
+const CALIBRATION_SPEC = { season: 'winter', state: 'rest', camera: 'hero', tier: 'review', format: 'hd' }
 const span = (r) => (r.first === r.last ? `${r.first}` : `${r.first} to ${r.last}`)
 const mb = (bytes) => (bytes / 1e6).toFixed(2)
 
@@ -55,8 +59,10 @@ function setup() {
   const chunks = rangeChunks(total, argFrame(args, 'first'), argFrame(args, 'last'))
   const work = test ? rel('out', 'work', 'master', 'test', what) : rel('out', 'work', 'master', what)
   const hash = engineHash()
-  const want = (c) => ({ what, first: c.first, last: c.last, engineHash: hash, samples, format: format.id, fps: FPS, test, encoderArgs: masterVideoArgs(M.video, M.chunkFrames) })
-  return { what, engine, test, format, samples, procs, total, chunks, work, want, hash, floor: psnrFloor(test), out: chunkDir(what, test), local: args.local === true }
+  const renderer = engine ? rendererName(args.local === true) : 'pack'
+  const calibration = engine ? calibrationOf(hash, renderer) : null
+  const want = (c) => ({ what, first: c.first, last: c.last, engineHash: hash, samples, format: format.id, fps: FPS, test, renderer, calibration, encoderArgs: masterVideoArgs(M.video, M.chunkFrames) })
+  return { what, engine, test, format, samples, procs, total, chunks, work, want, hash, renderer, calibration, floor: psnrFloor(test), out: chunkDir(what, test), local: args.local === true }
 }
 
 const filesOf = (ctx, c) => {
@@ -89,8 +95,34 @@ function frameOnDisk(ctx, c, index) {
   }
 }
 
+function calibrationOf(hash, renderer) {
+  let c = null
+  try {
+    c = readJson(CALIBRATION)
+  } catch {}
+  return c && c.engineHash === hash && c.renderer === renderer && c.machine === machineId() && typeof c.sha256 === 'string' ? c.sha256 : null
+}
+
+async function calibrate() {
+  const hash = requireBuild()
+  const renderer = rendererName(args.local === true)
+  const session = await openSession(true, args.local === true)
+  const file = rel('out', 'work', 'master', 'calibration.png')
+  const t0 = Date.now()
+  try {
+    await renderStill(session, stillSpec(CALIBRATION_SPEC), { file, force: true })
+  } finally {
+    await session.close()
+  }
+  const record = { sha256: fileSha(file), pixelsSha256: sha256(await rgbOf(file)), spec: CALIBRATION_SPEC, engineHash: hash, renderer, machine: machineId(), boot: bootId(), seconds: Math.round((Date.now() - t0) / 100) / 10, time: new Date().toISOString() }
+  writeJson(CALIBRATION, record)
+  say(`calibration ${record.sha256}`)
+  say(`the sha256 of the PNG of ${Object.values(CALIBRATION_SPEC).join(' ')} drawn by ${renderer} on ${record.machine}, build ${hash}, in ${record.seconds} s (its pixels alone: ${record.pixelsSha256})`)
+  say('Every machine that renders for one master must print the same first line. A machine that prints another one renders nothing for it.')
+}
+
 function framesKey(ctx) {
-  return { what: ctx.what, engineHash: ctx.engine ? ctx.hash : '', samples: ctx.samples, format: ctx.format.id, width: ctx.format.width, height: ctx.format.height }
+  return { what: ctx.what, engineHash: ctx.engine ? ctx.hash : '', samples: ctx.samples, format: ctx.format.id, width: ctx.format.width, height: ctx.format.height, renderer: ctx.renderer, calibration: ctx.calibration }
 }
 
 function dropStaleFrames(ctx, c) {
@@ -127,7 +159,7 @@ async function source(ctx, lock) {
     if (pack.width !== ctx.format.width || pack.height !== ctx.format.height) throw new Error(`the opening pack is ${pack.width} x ${pack.height}, the master is ${ctx.format.width} x ${ctx.format.height}`)
     if (pack.frameCount !== ctx.total) throw new Error(`the opening pack holds ${pack.frameCount} frames, cut/CUTLIST.json holds ${ctx.total} for the opening`)
     return {
-      renderer: 'none, the pictures come from the opening pack',
+      graphics: 'none, the pictures come from the opening pack',
       browser: 'none',
       picture: async (index) => {
         const rgb = await pack.frame(index)
@@ -145,13 +177,13 @@ async function source(ctx, lock) {
     const plan = await run.plan(track)
     const has = ctx.what === 'loop' ? plan.loop : plan.film.frameCount
     if (has !== ctx.total) throw new Error(`the page holds ${has} frames for ${ctx.what}, cut/CUTLIST.json holds ${ctx.total}. Run npm run cut and npm run build, then render again.`)
-    const renderer = await page.evaluate(() => {
+    const graphics = await page.evaluate(() => {
       const gl = document.createElement('canvas').getContext('webgl2')
       const ext = gl?.getExtension('WEBGL_debug_renderer_info')
       return gl ? String(gl.getParameter(ext ? ext.UNMASKED_RENDERER_WEBGL : gl.RENDERER)) : 'no WebGL'
     })
     return {
-      renderer,
+      graphics,
       browser: `${pinnedBrowser().name} ${session.browserVersion}`,
       picture: async (index) => {
         const png = await run.frame(track, page, index)
@@ -265,7 +297,10 @@ async function doChunk(ctx, src, c, progress) {
     width: ctx.format.width,
     height: ctx.format.height,
     fps: FPS,
-    renderer: src.renderer,
+    renderer: ctx.renderer,
+    ...(ctx.engine ? { seasonHashes: currentSeasonHashes() } : {}),
+    graphics: src.graphics,
+    ...(ctx.calibration ? { calibration: ctx.calibration } : {}),
     browser: src.browser,
     ffmpeg: versions.ffmpeg,
     x264: versions.x264,
@@ -365,6 +400,7 @@ async function render() {
   const ctx = setup()
   const worker = args.worker === undefined ? null : Number(args.worker)
   if (!haveFfmpeg()) throw new Error('ffmpeg and ffprobe are needed and were not found')
+  if (ctx.engine && !ctx.calibration) throw new Error(`this machine has no calibration for this build and ${ctx.renderer}. Run npm run master -- --calibrate first (one picture, a few minutes), and check that its first line is the one every other machine printed.`)
   const todo = stillToDo(ctx.chunks, { done: (c) => !!finished(ctx, c), has: (c, i) => (dropStaleFrames(ctx, c), !!frameOnDisk(ctx, c, i)) })
   const lane = worker === null ? null : split(ctx.chunks, ctx.procs, worker)
   const mine = lane ? todo.filter((t) => lane.some((c) => c.first === t.first)) : todo
@@ -549,6 +585,9 @@ async function joinMaster() {
     height: format.height,
     engineHash: Object.fromEntries(JOINS[which].map((w) => [w, plan.parts.find((p) => p.record.what === w)?.record.engineHash])),
     samples: Object.fromEntries(JOINS[which].map((w) => [w, plan.parts.find((p) => p.record.what === w)?.record.samples])),
+    renderer: Object.fromEntries(JOINS[which].map((w) => [w, plan.parts.find((p) => p.record.what === w)?.record.renderer])),
+    calibration: Object.fromEntries(JOINS[which].map((w) => [w, plan.parts.find((p) => p.record.what === w)?.record.calibration ?? null])),
+    seasonHashes: plan.parts.find((p) => p.record.seasonHashes)?.record.seasonHashes ?? null,
     encoderArgs: r0.encoderArgs,
     sha256: fileSha(final),
     bytes: fs.statSync(final).size,
@@ -570,8 +609,72 @@ async function joinMaster() {
   say(`${short(final)}: ${plan.frames} frames, ${hours(seconds)}, ${mb(fs.statSync(final).size)} MB${still ? `, screenshot ${short(still)}` : ''}`)
 }
 
+async function hdFromMaster() {
+  const which = argText(args, 'hd', '')
+  if (which !== 'film-a' && which !== 'film-b') throw new Error(`--hd takes film-a or film-b.\n${USAGE}`)
+  if (!haveFfmpeg()) throw new Error('ffmpeg and ffprobe are needed and were not found')
+  const test = args.test === true
+  const src = test ? rel('out', 'work', 'master', 'test', resultName(which)) : rel('out', 'deliver', resultName(which))
+  if (!fs.existsSync(src) || !fs.existsSync(`${src}.json`)) throw new Error(`${short(src)} is not here. Join it first: npm run master -- --join ${which}${test ? ' --test' : ''}`)
+  const m = readJson(`${src}.json`)
+  if (m.passed !== true) throw new Error(`${short(src)} did not pass its proof, so nothing is made from it`)
+  if (fileSha(src) !== m.sha256) throw new Error(`${short(src)} is not the file its record names`)
+  const fps = cfg.film.previewFps
+  const every = m.fps / fps
+  if (!Number.isInteger(every)) throw new Error(`the master is at ${m.fps} frames a second, which is not a whole multiple of film.previewFps ${fps}`)
+  const hd = formatById(cfg.formats.hd.id)
+  const size = test ? { id: hd.id, width: Math.round(m.width / 4) * 2, height: Math.round(m.height / 4) * 2 } : hd
+  if (!test && (m.width !== hd.width * 2 || m.height !== hd.height * 2)) throw new Error(`the master is ${m.width} x ${m.height}, which is not twice ${hd.width} x ${hd.height}`)
+  const settings = videoSettings({ format: size, fps })
+  const letter = which === 'film-a' ? 'a' : 'b'
+  const out = test ? rel('out', 'work', 'master', 'test', `film-${letter}-${hd.id}-final.${cfg.export.container}`) : rel('out', 'work', `film-${letter}-${hd.id}-final.${cfg.export.container}`)
+  const frames = Math.ceil(m.frames / every)
+  await scaleEvery({ src, every, settings, out: `${out}.new` })
+  const seen = probe(`${out}.new`)
+  if (seen.frames !== frames) {
+    fs.rmSync(`${out}.new`, { force: true })
+    throw new Error(`the scaled film holds ${seen.frames} frames, every ${every === 2 ? 'second' : `${every}th`} frame of ${short(src)} is ${frames}`)
+  }
+  const sha = fileSha(`${out}.new`)
+  fs.renameSync(`${out}.new`, out)
+  const built = m.engineHash['film-b']
+  writeJson(`${out}.json`, {
+    engineHash: built,
+    seasonHashes: m.seasonHashes ?? currentSeasonHashes(),
+    format: hd.id,
+    tier: 'final',
+    assets: 'full',
+    diagnostic: '',
+    renderer: m.renderer?.['film-b'],
+    samples: m.samples,
+    calibration: m.calibration,
+    machine: m.machines,
+    joinedOn: machineId(),
+    time: new Date().toISOString(),
+    fps,
+    frames,
+    seconds: frames / fps,
+    which: letter,
+    complete: !test,
+    ...(test ? { test: true } : {}),
+    sound: m.sound ? { file: m.sound.file, sha256: m.sound.sha256, offsetSeconds: 0 } : null,
+    scaledFrom: { file: short(src), sha256: m.sha256, width: m.width, height: m.height, fps: m.fps, every },
+    codec: settings.codec,
+    mbps: settings.mbps,
+    probe: seen,
+    sha256: sha,
+  })
+  say(`scaled every ${every === 2 ? 'second' : `${every}th`} frame of ${short(src)} down to ${short(out)}: ${frames} frames at ${fps} a second, ${settings.width} x ${settings.height}, ${settings.codec} at ${settings.mbps} Mbps`)
+  say(`ffprobe: ${probeLine(seen)}`)
+  say(m.sound ? `sound: ${m.sound.file}, the master's own track, copied` : 'sound: none')
+  if (built !== engineHash()) say(`note: the master was rendered from build ${built} and this clone is at ${engineHash()}, so npm run film -- --from-hd will not take this film here`)
+  else say(`next: npm run film -- --which ${letter} --from-hd --tier final, then npm run keep -- --film`)
+}
+
 try {
-  if (args.collect !== undefined) collect()
+  if (args.calibrate !== undefined) await calibrate()
+  else if (args.hd !== undefined) await hdFromMaster()
+  else if (args.collect !== undefined) collect()
   else if (args.join !== undefined) await joinMaster()
   else if (args.what !== undefined) await render()
   else say(USAGE)
