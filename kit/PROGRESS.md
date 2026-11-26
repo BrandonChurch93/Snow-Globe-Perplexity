@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 175 · 2026-11-26 20:14 UTC
+Status 176 · 2026-11-26 20:42 UTC
 
-- `out/stills/status/status-175-1.jpg`: Rough draft 3, twenty frames across the whole film with its prompt opening (960 x 540, draft tier)
-- `out/stills/status/status-175-2.jpg`: Summer's sand now comes out of the foot after the landing: film frames 1440, 1442, 1444, 1446, 1448 and 1456
-- `out/stills/status/status-175-3.jpg`: Summer's tree, approved picture left and build right: the crown is still below the bar
-- `out/stills/status/status-175-4.jpg`: Still: summer rest hero, hd, review
+- `out/stills/status/status-176-1.jpg`: Summer at rest on `6f6330ed` (hd, review tier), drawn by a farm machine
+- `out/stills/status/status-176-2.jpg`: Summer at the landing, approved picture above and build below: still below the bar
+- `out/stills/status/status-176-3.jpg`: Summer's base after its second pass, approved picture above and build below: still below the bar
+- `out/stills/status/status-176-4.jpg`: Winter's base, a cut at one to one from a final still at 3840 x 2160
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-26 20:14 UTC
-clock: phase 6, tick of 9.3 minutes
-phase 6: 17.42 h used of its 12.00 h box
-allowance (after the review): 17.42 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 17.42 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-26 20:42 UTC
+clock: phase 6, tick of 27.7 minutes
+phase 6: 17.88 h used of its 12.00 h box
+allowance (after the review): 17.88 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 17.88 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
@@ -1099,6 +1099,8 @@ Numbered, in his words, with the date and how each was applied. Review round ite
    - Applied at 19:03 UTC (decision 162): a status is a delivered message that ends the turn, in plain words and Mountain Time, with 2 to 4 picture files and the newest preview film attached, at least every 30 working minutes; a follow-through wakes this thread every 20 minutes so the build goes on by itself; a loop that would close below the bar is shown as below the bar and worked further; every attached file is named "Snow Globe Seasons - <what it is> - <resolution>" and no two share a name; his 4K 60 fps answer of note 7 stands, so no question on resolution; sound stays inside his 10,000 and each status says the count; nothing about how he works is saved to memory from here.
 10. 2026-11-26, about 20:35 UTC, not written in this thread: a message from Brandon's other thread, "Partner" (his account, the thread of note 9), "on Brandon's instruction today, November 26". In its words: "No change to your work."; "Separate matter, not urgent, and it must not interrupt a render or any running work: Brandon has decided this project's GitHub repo will be made private."; check whether anything in the build depends on the repo being public, change what is needed, "then set the repo to private yourself if your GitHub access allows it, or tell me it is safe and I will do it"; "Sound files you held back because the repo was public can go in once it is private."
    - Applied at 20:37 UTC: checked what hangs on it (open item 243: only the render machines, which fetch without a sign-in) and answered there in one line, as asked: not before the 4K masters are drawn, earliest Friday November 27 about 2 PM Mountain Time; /root sets it to private itself then and says so there. No work was stopped for it.
+11. 2026-11-26, about 20:39 UTC, not written in this thread: a second message from the "Partner" thread, "on Brandon's request today": "please let me know if any of these ever are waiting on me." From now on, without pausing the work: whenever something only Brandon can give (a decision, an approval, "move on", a file, a budget) holds up finishing or a phase, one line also goes to that thread, "<project>: waiting on Brandon for <what>, asked <time MT>, costs <what it delays>", and one more line when he has answered.
+   - Applied at once: nothing waits on Brandon now (his word of note 7 lets the build take the time it needs, and a loop below the bar is worked further, decision 162), so no line was sent. The rule stands for the rest of the build.
 
 ## Probe results
 
