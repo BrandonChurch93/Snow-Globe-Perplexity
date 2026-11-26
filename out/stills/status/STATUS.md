@@ -1,21 +1,20 @@
-# Status 163
+# Status 164
 
-2026-11-26 15:33 UTC
+2026-11-26 15:51 UTC
 
-- Summer's fifth list: two of five builders are in and merged, the base and the miniature. The glass, the air and the sand heap are due about 15:52. First picture: the approved above, ours below, with the miniature's work (the white asterisks in it are the old air; the air builder's work is not in this picture yet).
-- The base (second picture, the approved left, ours right): it was slate grey at the right with ridges like comb lines. Its builder found the cause in the light, a flat cool shade, and not in the sand. Now it is one cream sand with broad swells and pale shells. What is left, in its builder's words: the approved is still whiter at the right and far more carved, and the blue glass piece is still too solid.
-- The miniature (third picture): the cottage front is lit warm, the lawn has lit tufts, the tree's crown is near black with gold on its upper rims, and a low turf mound sits under cottage and tree. Left: the cottage reads smaller than the approved's and its stones coarser; the layout is shared by all four seasons and does not move.
-- A fault that would have shown in the 4K film is mended and proven (fourth picture): in a shake every lamp was a dotted line of copies. Above, one frame at 4K the old way; below, the same frame with the new blur rule: solid bars. Drawn twice, the frame comes out identical to the last bit.
-- The 4K scan for dead pixels: twelve of eighteen ranges of film B have ended, every one clean.
-- Guards against dead pixels on sixteen more shader lines are merged; fourteen pictures kept every pixel, so nothing changed in what you see.
-- I looked at winter, spring and fall on today's build beside their approved pictures: no harm from today's shared changes.
-- The change's new cover: its builder found two more things on its own frames (the table's front edge too bright at the flash, snow lumps on the table going cream white) and mends them first; its push is now due about 15:50.
-- phase 6: 12.73 h used of its 12.00 h box
-- allowance (after the review): 12.73 h used of 12.00 h allowed
+- Summer's fifth list is whole and merged, and for the first time the picture reads like the approved one at the size of a feed: a clear ball in a dark room, a white flare on its shoulder, a cream sand base, a gold net on a black table. First picture: the approved above, ours below.
+- What I can still name at that size, and it is now a sixth list with the same five builders, fifty minutes, the last before the critics' round: a broad pale ring round the glass (second picture, approved left, ours right), too little glitter inside, a white fuzzy band at the foot of the scene that reads as snow (third picture), a white heap at the right, and the landing, which is a ball of white feathers where the approved is a glowing gold mist (fourth picture).
+- Why a sixth list and then the round whatever it gives: against a generated reference my own look will always name something, so I have set the end myself (decision 158). The critics' bar does not move.
+- The 4K scan for dead pixels: sixteen of eighteen ranges of film B clean; the last two end about 16:15.
+- The checks on summer's merged head run on a farm machine, with one new one: the sand's mend was tuned at 1080 rows, so the machine draws it at 2160 rows and counts coloured pixels before any master is drawn.
+- The change's new cover: its builder's own measures are green on all four changes; it merges summer's new base and sand under its pour and looks before it pushes. Report about 17:15.
+- Next for you: rough draft 3 of the film, drawn when the cover and the sixth list are in.
+- phase 6: 13.03 h used of its 12.00 h box
+- allowance (after the review): 13.03 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-163-1.jpg`: Summer at rest with the miniature's fifth list (review tier): the approved above, ours below. The air and the glass in it are still the fourth list's.
-- `out/stills/status/status-163-2.jpg`: Summer's base, right half, at one scale: the approved on the left, ours on the right after the fifth list.
-- `out/stills/status/status-163-3.jpg`: Cottage, lawn and bank at one scale: the approved on the left, ours on the right after the miniature's fifth list.
-- `out/stills/status/status-163-4.jpg`: Film B frame 621 at 3840 x 2160, a crop at 6 times: 24 samples above (each lamp a dotted line), the blur rule's 50 samples below (each lamp one bar).
+- `out/stills/status/status-164-1.jpg`: Summer at rest after the fifth list (39901bc4, review tier): the approved above, ours below.
+- `out/stills/status/status-164-2.jpg`: The ball's upper left at one scale: the approved on the left, ours on the right. The glass is clear now; its pale ring and the white stars are in the sixth list.
+- `out/stills/status/status-164-3.jpg`: Cottage, lawn and bank at one scale: the approved on the left, ours on the right. The white band under the lawn is in the sixth list.
+- `out/stills/status/status-164-4.jpg`: Half a second after the landing: the approved above, ours below. The white wedges are the air builder's first job in the sixth list.
