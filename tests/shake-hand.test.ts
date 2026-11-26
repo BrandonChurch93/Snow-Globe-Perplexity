@@ -164,3 +164,13 @@ describe('the hand: the strokes', () => {
     }
   })
 })
+
+describe('the hand: the arc', () => {
+  it('swoops through the strokes as deep as the air under the rim allows, about 4 mm under the lift in every held shake', () => {
+    for (const name of HELD) {
+      const m = shakeMotion(name)
+      expect(m.plan.dipMm, name).toBeGreaterThan(3.8)
+      expect(m.plan.dipMm, name).toBeLessThan(s.liftMm * 0.7)
+    }
+  })
+})

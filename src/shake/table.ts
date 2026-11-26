@@ -183,7 +183,8 @@ const HELD: Hand = {
   heldReach: 0.6,
   heldJoin: [0.14, 0.09],
   heldLead: 0.07,
-  dipShare: 0.4,
+  /** More than the room under the rim gives, so each swoop is as deep as the rim's air allows: about 4 mm in the film, where 0.4 left 2.9. */
+  dipShare: 0.7,
   /** The rock after the landing: each rock lasts this share of the one before it, so the foot rocks over once, back, and once more, quicker each time. */
   overshootDeg: [2.3, 2.4],
   rockFirst: 0.74,
