@@ -1,0 +1,394 @@
+{
+  "unit": "film",
+  "tier": "draft",
+  "assets": "full",
+  "method": 3,
+  "engineHash": "f800ef889b4d6232",
+  "seasonHashes": {
+    "winter": "5c39d16f98d3d0be",
+    "spring": "e579a2c24f41ece7",
+    "summer": "c81bc07158bf5fa7",
+    "fall": "767926ecb026caa1"
+  },
+  "browser": "147.0.7727.15",
+  "time": "2026-11-26T13:38:45.352Z",
+  "complete": true,
+  "planned": 36,
+  "red": 0,
+  "measures": [
+    "M1",
+    "M4",
+    "M5"
+  ],
+  "notes": [],
+  "lines": [
+    {
+      "measure": "M1",
+      "still": "film-first",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "film-hook",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "film-reveal",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "film-hold-open",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "film-shake-1-swap",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "film-shake-1-landing",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "film-shake-1-landed",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "film-hold-spring",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "film-shake-2-swap",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "film-shake-2-landing",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "film-shake-2-landed",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "film-hold-summer",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "film-shake-3-swap",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "film-shake-3-landing",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "film-shake-3-landed",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "film-hold-fall",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "film-shake-4-swap",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "film-shake-4-landing",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "film-shake-4-landed",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "film-hold-close",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "film-last",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "opening-typing",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "opening-reasoning",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "opening-build",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "loop-first",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "loop-strokes",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "loop-landed",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M1",
+      "still": "loop-three-quarters",
+      "pass": true,
+      "value": 0,
+      "threshold": 0,
+      "key": "",
+      "detail": "0 invalid values in 2073600 pixels; no framing rule for this camera",
+      "framed": true
+    },
+    {
+      "measure": "M4",
+      "still": "shake-1",
+      "pass": true,
+      "value": 0.9874,
+      "threshold": 0.85,
+      "key": "shake.minCoverAtSwap",
+      "detail": "144835 of 146680 miniature pixels are hidden to at least shake.coverOpacity in the middle of the swap window",
+      "miniature": 146680,
+      "hidden": 144835
+    },
+    {
+      "measure": "M5",
+      "still": "shake-1",
+      "pass": true,
+      "value": 0.9804,
+      "threshold": 0.6,
+      "key": "shake.minVisibleAfterSettle",
+      "detail": "151567 of 154602 miniature pixels are hidden by less than shake.coverOpacity, shake.settleCheckSeconds after the landing",
+      "miniature": 154602,
+      "hidden": 3035
+    },
+    {
+      "measure": "M4",
+      "still": "shake-2",
+      "pass": true,
+      "value": 0.8896,
+      "threshold": 0.85,
+      "key": "shake.minCoverAtSwap",
+      "detail": "123419 of 138729 miniature pixels are hidden to at least shake.coverOpacity in the middle of the swap window",
+      "miniature": 138729,
+      "hidden": 123419
+    },
+    {
+      "measure": "M5",
+      "still": "shake-2",
+      "pass": true,
+      "value": 1,
+      "threshold": 0.6,
+      "key": "shake.minVisibleAfterSettle",
+      "detail": "168150 of 168150 miniature pixels are hidden by less than shake.coverOpacity, shake.settleCheckSeconds after the landing",
+      "miniature": 168150,
+      "hidden": 0
+    },
+    {
+      "measure": "M4",
+      "still": "shake-3",
+      "pass": true,
+      "value": 0.9468,
+      "threshold": 0.85,
+      "key": "shake.minCoverAtSwap",
+      "detail": "137861 of 145612 miniature pixels are hidden to at least shake.coverOpacity in the middle of the swap window",
+      "miniature": 145612,
+      "hidden": 137861
+    },
+    {
+      "measure": "M5",
+      "still": "shake-3",
+      "pass": true,
+      "value": 0.9859,
+      "threshold": 0.6,
+      "key": "shake.minVisibleAfterSettle",
+      "detail": "142260 of 144301 miniature pixels are hidden by less than shake.coverOpacity, shake.settleCheckSeconds after the landing",
+      "miniature": 144301,
+      "hidden": 2041
+    },
+    {
+      "measure": "M4",
+      "still": "shake-4",
+      "pass": true,
+      "value": 0.9633,
+      "threshold": 0.85,
+      "key": "shake.minCoverAtSwap",
+      "detail": "142405 of 147836 miniature pixels are hidden to at least shake.coverOpacity in the middle of the swap window",
+      "miniature": 147836,
+      "hidden": 142405
+    },
+    {
+      "measure": "M5",
+      "still": "shake-4",
+      "pass": true,
+      "value": 0.9998,
+      "threshold": 0.6,
+      "key": "shake.minVisibleAfterSettle",
+      "detail": "156044 of 156083 miniature pixels are hidden by less than shake.coverOpacity, shake.settleCheckSeconds after the landing",
+      "miniature": 156083,
+      "hidden": 39
+    }
+  ]
+}

@@ -1,0 +1,385 @@
+{
+  "round": 90,
+  "phase": 6,
+  "unit": "film",
+  "tier": "draft",
+  "motionTier": "draft",
+  "record": false,
+  "limits": {
+    "longEdge": 1400,
+    "maxPixels": 1140000,
+    "maxFiles": 10
+  },
+  "engineHash": "f800ef889b4d6232",
+  "roles": {
+    "R2": {
+      "parts": [
+        {
+          "folder": "out/work/packs/round-090/R2",
+          "message": "out/work/packs/round-090/R2.message.md",
+          "files": [
+            {
+              "name": "set-A-01.jpg",
+              "what": "judged: film-shake-1-landing: the landing of shake-1, hd, draft tier",
+              "sha256": "7d7e3f202980b3e37a6ac54cfb4bba449083a3df454daf85f6b2797178f8c687",
+              "width": 1093,
+              "height": 1036,
+              "jury": "judged",
+              "id": "film-shake-1-landing"
+            },
+            {
+              "name": "set-A-02.jpg",
+              "what": "judged: film-hold-open: the middle of the hold open, hd, draft tier",
+              "sha256": "f65be0bf994fa029edc4763decb6e65c13139fa371ddd4ebb9427da41f42ce44",
+              "width": 1093,
+              "height": 1036,
+              "jury": "judged",
+              "id": "film-hold-open"
+            },
+            {
+              "name": "set-A-03.jpg",
+              "what": "judged: film-reveal: the frame at film.revealBySeconds, hd, draft tier",
+              "sha256": "17a7fe4f93f7382fc547af3182de8d2a508b3fd8c072d2a20123161e1bf9cfb9",
+              "width": 1093,
+              "height": 1036,
+              "jury": "judged",
+              "id": "film-reveal"
+            },
+            {
+              "name": "set-A-04.jpg",
+              "what": "control: the approved image references/approved/spring-shake.png",
+              "sha256": "f29a69f5f1ac0361b09de022c168c6ce6d588679be6312aaae9989d0b68ec0aa",
+              "width": 1093,
+              "height": 1036,
+              "jury": "control",
+              "id": "approved spring-shake",
+              "sha256Source": "1402ef4e31019fa3e6e20f587e7283ae2f5fc8e1911f944a1d6cfe8540721f19"
+            },
+            {
+              "name": "set-A-05.jpg",
+              "what": "judged: film-shake-1-landed: states.landedSeconds after the landing of shake-1, hd, draft tier",
+              "sha256": "c578390cd45dec9e1a28b43d80f64e72af1285f354a2d8ad99d682f7762de460",
+              "width": 1093,
+              "height": 1036,
+              "jury": "judged",
+              "id": "film-shake-1-landed"
+            },
+            {
+              "name": "set-A-06.jpg",
+              "what": "control: the approved image references/approved/winter-rest.png",
+              "sha256": "97703992b9ac148d383783ba527cdc0a0604a76b6627e53d74372c75d66d87c7",
+              "width": 1093,
+              "height": 1036,
+              "jury": "control",
+              "id": "approved winter-rest",
+              "sha256Source": "1cbc7f6c260402fd025a9c08d5fe1e945a8f704bbdef57ff298b96d531cb06e8"
+            }
+          ]
+        }
+      ],
+      "missing": [],
+      "notes": [
+        "left out of the jury: film-first. Its framing does not show the globe and its base whole, so it cannot be cropped to what a control shows",
+        "left out of the jury: film-hook. Its framing does not show the globe and its base whole, so it cannot be cropped to what a control shows",
+        "every image is cropped to 1.45 radii left, 1.45 right, 1.17 up and 1.58 down of the globe centre, at 1093 x 1036"
+      ]
+    },
+    "R5": {
+      "parts": [
+        {
+          "folder": "out/work/packs/round-090/R5-1",
+          "message": "out/work/packs/round-090/R5-1.message.md",
+          "files": [
+            {
+              "name": "set-A-01.jpg",
+              "what": "the whole film, from node tools/sheet.mjs --film --tier draft: out/work/sheets/film-preview-draft-overview.jpg",
+              "source": "out/work/sheets/film-preview-draft-overview.jpg",
+              "sha256": "b3bc3ab38875f2e80f14845d484c15cba04add3f9847439d89f30f208ea68c3f",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-A-02.jpg",
+              "what": "the whole film, from node tools/sheet.mjs --film --tier draft: out/work/sheets/shot-open-preview-draft.jpg",
+              "source": "out/work/sheets/shot-open-preview-draft.jpg",
+              "sha256": "6e8dafdab57679b0932ec5eef994fa25bcde744652c6f245a13453786e23f388",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-A-03.jpg",
+              "what": "the whole film, from node tools/sheet.mjs --film --tier draft: out/work/sheets/shot-shake-1-preview-draft.jpg",
+              "source": "out/work/sheets/shot-shake-1-preview-draft.jpg",
+              "sha256": "b0a541fc832c781952cd43ec4edfc286ab1d6126b7c21e7f3722d7565b3f0976",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-A-04.jpg",
+              "what": "the whole film, from node tools/sheet.mjs --film --tier draft: out/work/sheets/shot-spring-preview-draft.jpg",
+              "source": "out/work/sheets/shot-spring-preview-draft.jpg",
+              "sha256": "67a9302745338f949ceff6956565fecaa81ebd17be3854d6d173a3fb10c5ad22",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-A-05.jpg",
+              "what": "the whole film, from node tools/sheet.mjs --film --tier draft: out/work/sheets/shot-shake-2-preview-draft.jpg",
+              "source": "out/work/sheets/shot-shake-2-preview-draft.jpg",
+              "sha256": "eecb74e94554b5f904be169d1ebb2d312b4a25d9e253fd77ab8ae8cd82b7386a",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-A-06.jpg",
+              "what": "the whole film, from node tools/sheet.mjs --film --tier draft: out/work/sheets/shot-summer-preview-draft.jpg",
+              "source": "out/work/sheets/shot-summer-preview-draft.jpg",
+              "sha256": "2cce136c7d4fbcdf909f5c16254be61880cf3076c70d7f9aaff541d64769d1fb",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-A-07.jpg",
+              "what": "the whole film, from node tools/sheet.mjs --film --tier draft: out/work/sheets/shot-shake-3-preview-draft.jpg",
+              "source": "out/work/sheets/shot-shake-3-preview-draft.jpg",
+              "sha256": "4648329644e3dc9682c28583fd39b5bee36a2e5f9bb981b9b9c4900af9fd949e",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-A-08.jpg",
+              "what": "the whole film, from node tools/sheet.mjs --film --tier draft: out/work/sheets/shot-fall-preview-draft.jpg",
+              "source": "out/work/sheets/shot-fall-preview-draft.jpg",
+              "sha256": "f1e911f652c528f7432d42110ca65afb33243ef8b6cc154803e6ebe01cfae55b",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-A-09.jpg",
+              "what": "the whole film, from node tools/sheet.mjs --film --tier draft: out/work/sheets/shot-shake-4-preview-draft.jpg",
+              "source": "out/work/sheets/shot-shake-4-preview-draft.jpg",
+              "sha256": "4936221ece3d957ea81a26dc610ce2a886527d431b7606467b3a3a7f4bbc6a21",
+              "width": 1149,
+              "height": 986
+            },
+            {
+              "name": "set-A-10.jpg",
+              "what": "the whole film, from node tools/sheet.mjs --film --tier draft: out/work/sheets/shot-close-preview-draft.jpg",
+              "source": "out/work/sheets/shot-close-preview-draft.jpg",
+              "sha256": "a7d6639df8f4ae8f578bc942edc8786908a0b920b03a3ae5e5750fde0d0b8e14",
+              "width": 1149,
+              "height": 986
+            }
+          ]
+        },
+        {
+          "folder": "out/work/packs/round-090/R5-2",
+          "message": "out/work/packs/round-090/R5-2.message.md",
+          "files": [
+            {
+              "name": "set-B-01.jpg",
+              "what": "frames film-first, film-hook, film-reveal, film-hold-open, film-shake-1-swap, film-shake-1-landing, film-shake-1-landed, film-hold-spring, film-shake-2-swap, draft tier: 1 frame 0; 2 the frame at film.hookSeconds; 3 the frame at film.revealBySeconds; 4 the middle of the hold open; 5 the middle of the swap window of shake-1; 6 the landing of shake-1; 7 states.landedSeconds after the landing of shake-1; 8 the middle of the hold spring; 9 the middle of the swap window of shake-2",
+              "sha256": "3fb129f5cb139caf5bd53b54643743fa3c33cc7291148a7036bf1fa5eb5a28af",
+              "width": 1365,
+              "height": 834
+            },
+            {
+              "name": "set-B-02.jpg",
+              "what": "frames film-shake-2-landing, film-shake-2-landed, film-hold-summer, film-shake-3-swap, film-shake-3-landing, film-shake-3-landed, film-hold-fall, film-shake-4-swap, film-shake-4-landing, draft tier: 10 the landing of shake-2; 11 states.landedSeconds after the landing of shake-2; 12 the middle of the hold summer; 13 the middle of the swap window of shake-3; 14 the landing of shake-3; 15 states.landedSeconds after the landing of shake-3; 16 the middle of the hold fall; 17 the middle of the swap window of shake-4; 18 the landing of shake-4",
+              "sha256": "fd7c46ae980225a712d39d14de8e9b44e646cbba07c4411cf7e474682ca9412c",
+              "width": 1365,
+              "height": 834
+            },
+            {
+              "name": "set-B-03.jpg",
+              "what": "frames film-shake-4-landed, film-hold-close, film-last, draft tier: 19 states.landedSeconds after the landing of shake-4; 20 the middle of the hold close; 21 the last frame",
+              "sha256": "42d7faaf70562d5ec0f6ea0a7e022d7119a550064e29399e7bb5a0a9e6473a5d",
+              "width": 1365,
+              "height": 274
+            }
+          ]
+        }
+      ],
+      "missing": [],
+      "notes": []
+    },
+    "R6": {
+      "parts": [
+        {
+          "folder": "out/work/packs/round-090/R6",
+          "message": "out/work/packs/round-090/R6.message.md",
+          "files": [
+            {
+              "name": "set-A-01.jpg",
+              "what": "film B, frame 0, 400 px wide",
+              "sha256": "c69aa3191dceda0e97655ca286805866b3ed9bb22f385f4b721d25b0cb9b6075",
+              "width": 400,
+              "height": 225
+            },
+            {
+              "name": "set-A-02.jpg",
+              "what": "frames film-frame-0, film-frame-30, film-frame-60, film-frame-90, film-frame-120, film-frame-150, film-frame-180, draft tier: 1 the frame at 0.00 s; 2 the frame at 0.50 s; 3 the frame at 1.00 s; 4 the frame at 1.50 s; 5 the frame at 2.00 s; 6 the frame at 2.50 s; 7 the frame at 3.00 s",
+              "sha256": "5bb2cb9a854072e978b87ddc5b7fbd9a8dd91907372db3df00a46c33195d7468",
+              "width": 1212,
+              "height": 747
+            },
+            {
+              "name": "set-B-01.jpg",
+              "what": "film A, frame 0, 400 px wide",
+              "sha256": "7277b4689a9d2661dd4626c3228618d17777b36a2f9c669dee6f6a1385820d1b",
+              "width": 400,
+              "height": 225
+            },
+            {
+              "name": "set-B-02.jpg",
+              "what": "frames opening-frame-0, opening-frame-30, opening-frame-60, opening-frame-90, opening-frame-120, opening-frame-150, opening-frame-180, draft tier: 1 the frame at 0.00 s; 2 the frame at 0.50 s; 3 the frame at 1.00 s; 4 the frame at 1.50 s; 5 the frame at 2.00 s; 6 the frame at 2.50 s; 7 the frame at 3.00 s",
+              "sha256": "e04dd1c7b231bab043a8cbd7e414c810d35f99b4ba56bdcbb51db1b2c5179715",
+              "width": 1212,
+              "height": 747
+            }
+          ]
+        }
+      ],
+      "missing": [],
+      "notes": []
+    },
+    "R7": {
+      "parts": [
+        {
+          "folder": "out/work/packs/round-090/R7-1",
+          "message": "out/work/packs/round-090/R7-1.message.md",
+          "files": [
+            {
+              "name": "set-A-01-a.jpg",
+              "what": "the hold open at 4.80 s: film frame 288 before encoding, out/work/stress/open-274-302-frame-288-source.jpg, resized to fit",
+              "sha256": "3e00ca94ecd1f36057f08b5726b9530d655990a83536286c9cac6a00fdd2455f",
+              "width": 1400,
+              "height": 787,
+              "sha256Source": "6dad09fb74ed73308568b347fbe6f17c2a456d2c4cb5575816a40563c0d93d4e"
+            },
+            {
+              "name": "set-A-01-b.jpg",
+              "what": "the hold open at 4.80 s: the same frame taken out of the encode at 5 Mbps (5.98 Mbps in the file, 33.6 dB against the frame before), out/work/stress/open-274-302-frame-288-5mbps.jpg, resized to fit",
+              "sha256": "47d5c26c3b6065e2988f0dc34346e3cc7767bd5e24a0e6d5670095bab5097db5",
+              "width": 1400,
+              "height": 787,
+              "sha256Source": "f25e901f073114af8ddfca7a4602f319f3a1e60a2e994ef6295c8837a7e23ebd"
+            },
+            {
+              "name": "set-A-02-a.jpg",
+              "what": "the hold open at 4.80 s: native size crops of the frame before encoding: 1 the dark backdrop; 2 the soft discs of light; 3 the surface the globe stands on, left; 4 the surface the globe stands on, right; 5 the particles inside the globe; 6 frost on the glass; 7 fine branches; 8 glow",
+              "sha256": "f17f9d6e549c610c722ef650b623dee1b3202c7b32d03414cbb5fa66c02e8042",
+              "width": 1398,
+              "height": 736
+            },
+            {
+              "name": "set-A-02-b.jpg",
+              "what": "the hold open at 4.80 s: native size crops of the frame out of the encode: 1 the dark backdrop; 2 the soft discs of light; 3 the surface the globe stands on, left; 4 the surface the globe stands on, right; 5 the particles inside the globe; 6 frost on the glass; 7 fine branches; 8 glow",
+              "sha256": "2521c1241b2570d86c5ee153df33f6009fa9490fd70cd753bb4471656f0447c9",
+              "width": 1398,
+              "height": 736
+            },
+            {
+              "name": "set-B-01-a.jpg",
+              "what": "the hold fall at 40.80 s: film frame 2448 before encoding, out/work/stress/fall-2434-2462-frame-2448-source.jpg, resized to fit",
+              "sha256": "e8e2a1ee90237dee0da236934055665c43293d4ce306006d63967daf31fd5155",
+              "width": 1400,
+              "height": 787,
+              "sha256Source": "5de6249059fccd24193d13feb1ff9a84b28f1d3f39bc762847e0d7d089dee903"
+            },
+            {
+              "name": "set-B-01-b.jpg",
+              "what": "the hold fall at 40.80 s: the same frame taken out of the encode at 5 Mbps (5.64 Mbps in the file, 33.9 dB against the frame before), out/work/stress/fall-2434-2462-frame-2448-5mbps.jpg, resized to fit",
+              "sha256": "602639a37011ded11b2c06bbb0e59216aa7d23bb5f23705c2baf92def0495f76",
+              "width": 1400,
+              "height": 787,
+              "sha256Source": "7cf3ff0d1fe18b5f65040b201b9901648fec7f722f211c4f8e09dccfb6f3e30e"
+            },
+            {
+              "name": "set-B-02-a.jpg",
+              "what": "the hold fall at 40.80 s: native size crops of the frame before encoding: 1 the dark backdrop; 2 the soft discs of light; 3 the surface the globe stands on, left; 4 the surface the globe stands on, right; 5 the particles inside the globe; 6 frost on the glass; 7 fine branches; 8 glow",
+              "sha256": "d3f418faf5c8ec9fe07f25ccd618f7443ad91e6d529d6d0eaf9fbb6b9c5acf40",
+              "width": 1398,
+              "height": 736
+            },
+            {
+              "name": "set-B-02-b.jpg",
+              "what": "the hold fall at 40.80 s: native size crops of the frame out of the encode: 1 the dark backdrop; 2 the soft discs of light; 3 the surface the globe stands on, left; 4 the surface the globe stands on, right; 5 the particles inside the globe; 6 frost on the glass; 7 fine branches; 8 glow",
+              "sha256": "c2293dfeef135a0a72d0664221586cd7e06d7c37ab09e0d46782ea20918466eb",
+              "width": 1398,
+              "height": 736
+            }
+          ]
+        },
+        {
+          "folder": "out/work/packs/round-090/R7-2",
+          "message": "out/work/packs/round-090/R7-2.message.md",
+          "files": [
+            {
+              "name": "set-C-01-a.jpg",
+              "what": "the shake shake-1 at 11.10 s: film frame 666 before encoding, out/work/stress/shake-1-652-680-frame-666-source.jpg, resized to fit",
+              "sha256": "9efd6b5aaea0bda83094b78bd47227d882d90475b2bf3daae4f2d884061890d9",
+              "width": 1400,
+              "height": 787,
+              "sha256Source": "bdf2a2906c7f4a5042ea1a8bec50c3b75111eebc691019e7fe9bbe0b3508e10f"
+            },
+            {
+              "name": "set-C-01-b.jpg",
+              "what": "the shake shake-1 at 11.10 s: the same frame taken out of the encode at 5 Mbps (5.52 Mbps in the file, 32.5 dB against the frame before), out/work/stress/shake-1-652-680-frame-666-5mbps.jpg, resized to fit",
+              "sha256": "13cb0acc2aefc6f25576f411b605a6ff130d64e2162cc392e3a749fc61a92990",
+              "width": 1400,
+              "height": 787,
+              "sha256Source": "c6fdbc764e83df815e1a77a482c3af55c456f1a171d39381309cc776a84704e5"
+            },
+            {
+              "name": "set-C-02-a.jpg",
+              "what": "the shake shake-1 at 11.10 s: native size crops of the frame before encoding: 1 the dark backdrop; 2 the soft discs of light; 3 the surface the globe stands on, left; 4 the surface the globe stands on, right; 5 the particles inside the globe; 6 frost on the glass; 7 fine branches; 8 glow",
+              "sha256": "4ba7fab31c8a541347dd6d4ed3a5b28cb53aeb17b38c0464d7ecfdf5501e34d8",
+              "width": 1398,
+              "height": 736
+            },
+            {
+              "name": "set-C-02-b.jpg",
+              "what": "the shake shake-1 at 11.10 s: native size crops of the frame out of the encode: 1 the dark backdrop; 2 the soft discs of light; 3 the surface the globe stands on, left; 4 the surface the globe stands on, right; 5 the particles inside the globe; 6 frost on the glass; 7 fine branches; 8 glow",
+              "sha256": "bff45acea2a12d1015b9d4fbd033cb53fc572be60e85e1b0e32a7de02c9d7358",
+              "width": 1398,
+              "height": 736
+            },
+            {
+              "name": "set-D-01-a.jpg",
+              "what": "the shake shake-4 at 47.10 s: film frame 2826 before encoding, out/work/stress/shake-4-2812-2840-frame-2826-source.jpg, resized to fit",
+              "sha256": "e44f2c0ea15113b6718fcefc82e88dc3e70594c615239087afd71df20ec7964c",
+              "width": 1400,
+              "height": 787,
+              "sha256Source": "985b96461c5f236e61078ab9aa1157b296742a08af14c2babf2c603156b2de32"
+            },
+            {
+              "name": "set-D-01-b.jpg",
+              "what": "the shake shake-4 at 47.10 s: the same frame taken out of the encode at 5 Mbps (5.49 Mbps in the file, 35.7 dB against the frame before), out/work/stress/shake-4-2812-2840-frame-2826-5mbps.jpg, resized to fit",
+              "sha256": "01dfb9cda082e7b8992f4e02c037776b4aae4f8d7c850c87ccf72a073cd51fb3",
+              "width": 1400,
+              "height": 787,
+              "sha256Source": "7aa8d11119e77e0afc101831d4647d77c56ec66a7dac521d8e93bc44f6c5ace3"
+            },
+            {
+              "name": "set-D-02-a.jpg",
+              "what": "the shake shake-4 at 47.10 s: native size crops of the frame before encoding: 1 the dark backdrop; 2 the soft discs of light; 3 the surface the globe stands on, left; 4 the surface the globe stands on, right; 5 the particles inside the globe; 6 frost on the glass; 7 fine branches; 8 glow",
+              "sha256": "b6a94aec3627d65527cf6c64e5fd040fcdb1626bdf5e18352a242a263c007c3d",
+              "width": 1398,
+              "height": 736
+            },
+            {
+              "name": "set-D-02-b.jpg",
+              "what": "the shake shake-4 at 47.10 s: native size crops of the frame out of the encode: 1 the dark backdrop; 2 the soft discs of light; 3 the surface the globe stands on, left; 4 the surface the globe stands on, right; 5 the particles inside the globe; 6 frost on the glass; 7 fine branches; 8 glow",
+              "sha256": "05c5a35bcd68ea69b47650c7e4232852e0afabb2466c9cd679473fcefb9fa7a3",
+              "width": 1398,
+              "height": 736
+            }
+          ]
+        }
+      ],
+      "missing": [],
+      "notes": []
+    }
+  }
+}
