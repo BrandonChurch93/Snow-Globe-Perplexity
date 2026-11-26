@@ -62,3 +62,20 @@ SECOND PUSH
   (base from 45 px to 345 px). Right: screen-tablet, summer, 1024 x 1366 scaled to 633 x 844.
   Tool: npm run measure -- --unit globe --only M1 --tier draft, on 43b8108d. Tier: draft.
   What is still wrong shows here: on the tablet one bright light is cut in half by the right edge near the top.
+
+THIRD PUSH
+
+9-hd-drag-level-and-limit.jpg
+  Shows: 1920 x 1080, the app's drag script, two frames on one sheet. AFTER.
+  Frames: 30 (level, straight on) and 140 (held at the limit of the turn, 35 degrees round, and at the lowest tilt,
+  2.5 degrees down).
+  Tool: the sheet tool with --app drag --level high --format hd, picked frames. Tier: draft, level high. On 66936ac4.
+  The globe keeps its size and its place: glass top about 47 px and 45 px, foot about 845 px and 838 px (read off the
+  frames at full size). The script does not tilt upward, so this does not show the stand-back of the top tilt.
+
+10-side-844x390-app-rest-and-turn-limit.jpg
+  Shows: a phone held sideways, 844 x 390, the app itself with its real controls, two states side by side. AFTER.
+  States: left, first paint at rest; right, a drag held at the limit of the turn.
+  Tool: tools/visit.mjs --layout side --only 1,5 (the app's own page in a browser, quality low). On 66936ac4.
+  The whole globe stands inside in both, glass top about 17 px under the top edge, foot about 287 px, clear of the
+  controls (from 335 px). The camera does not stand back on this shape. The visit was stopped before its two tilts.

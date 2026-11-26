@@ -56,17 +56,12 @@ the margin, 1 percent of the height, 10.8 px. Drawn: in frames 50, 73, 134 and 1
 THE MEND NEEDS LINES IN THREE FILES THAT ARE NOT MINE. Sent to their owners. Without them the rule and its tests are
 there, and the caller still holds the camera at rest through a shake.
 
-State on `main` ce9548e2 (06:28 UTC), which holds this branch:
+State on `main`. At 06:28 UTC (ce9548e2) the replay's line was in (b0019b15) and the app's and the stills' were not,
+on no branch I could fetch, while Status 139 said the fault was mended and merged (its phone picture was drawn with my
+lines applied in my working tree). I told `/root` at 06:31. `/root` put the app's line and the stills' lines on `main`
+as 27e83641 at 06:33. All three callers now pass the moment. What I then measured on 27e83641 is under "checks".
 
-- `src/app/replay.ts`: in (b0019b15). The frames of `sheet --app` and of the film of the app draw the stand-back.
-- `src/app/app.ts` line 386: NOT in, and on no branch I could fetch (`agent/p6-opening` dbfae53d, `agent/p6-controls`
-  249f8dbb, `agent/p6-master` 8d20f8fd). The app built from `main` still holds its camera at rest through a shake, so
-  a phone's globe still leaves the screen there. Status 139 on `main` says the fault is mended and merged; its phone
-  picture was drawn with my lines applied in my working tree. I told `/root` at 06:31 UTC.
-- `src/capture/showcase.ts` lines 353, 354 and 489: NOT in. A still of a shake state on a screen, and the framing in the
-  record of `renderAppFrame`, still describe the camera at rest.
-
-All hunks below apply clean to ce9548e2 (dry run with `patch`).
+The lines, as I sent them:
 
 `src/app/app.ts` (sent to `/root/first_frame_finisher`), in the frame loop, the pose after the moment:
 
@@ -138,8 +133,9 @@ The alternative, if this is not wanted, is one line for `/root`: `"orbitPitchMax
 
 ## Still wrong, worst first
 
-1. The app's line and the stills' lines above are not on `main` (ce9548e2, 06:28 UTC). Until `src/app/app.ts` line 386
-   takes the moment, fault 1 is not mended in the app: a phone's globe leaves the screen in the shake as before.
+1. Nobody has watched the stand-back move. The caller lines are on `main` since 27e83641, and there I drew one shake in
+   the live app on a phone-sized screen and computed every frame of eight (see "checks"). Whether the move reads as the
+   camera breathing or as a lurch is not known. It has to be watched on a real phone.
 2. During a phone's shake the globe is 72 percent of its rest size and low: glass top at 345 px of 844, foot at 618 px,
    the top 40 percent dark room with two small lights. It is forced from both sides: the width decides the distance, and
    the near edge of the table decides how low the camera may aim. Centring it would take a pitch 6.5 to 8 degrees higher
@@ -185,6 +181,10 @@ The alternative, if this is not wanted, is one line for `/root`: `"orbitPitchMax
   ease out and home, under 2.5 percent a frame) is computed and tested, not watched.
 - 320 x 568, 360 x 800, 844 x 390 and 2560 x 1080 through a shake: computed only (the tests walk every moment of every
   path on them). Drawn: phone (60 frames: whole, bar, landing), tablet (8 picked frames), hd (6 picked frames).
+- 844 x 390 in the app with its real controls (`tools/visit.mjs --layout side --only 1,5`, on 66936ac4): drawn and seen
+  at first paint, with a look held, returned, and at the limit of the turn (picture 10): the whole globe stands inside,
+  glass top about 17 px under the top edge, foot about 287 px, clear of the controls (from 335 px). I stopped that visit
+  before its two tilts, to measure `main`. It says `NOT 5 look-returned` there too (`returnedApart` 3.84).
 - The stand-back of the top tilt on 1920 x 1080: computed only. The app's drag script turns to the limit and tilts
   down, not up; I drew it on hd (picture 9: the globe keeps its size and place). On the phone I saw the app at the limit
   of the turn, the top tilt and the lowest tilt (`visit` step 5, picture 7).
@@ -240,6 +240,27 @@ On 66936ac4 (the branch with `main` 197e2476 merged, as pushed):
 - M1 was not run again after the merge of `main`: the merge changes none of my files, and the limit left no time for it.
 - On `main` ce9548e2, which holds this branch (06:28 UTC): `npx tsc --noEmit` exit 0; `npx vitest run`:
   `Test Files  49 passed | 1 skipped (50)`, `Tests  568 passed | 7 skipped (575)`.
+- The same tree with the app's line and the stills' lines applied (scratch, never committed): tsc exit 0; vitest
+  `Test Files  49 passed | 1 skipped (50)`, `Tests  568 passed | 7 skipped (575)`.
+
+On `main` 27e83641 (the caller lines in; 06:35 to 06:50 UTC). `/root` asked for the live app, not the replay.
+
+- Computed through the app's own `LiveSession` (`shake()`, `tick(1 / 60)`, `moment()`) and the app's own call,
+  `liveRig(aspect, 0, 0, under, moment)`, eight shakes in one session (the paths `live-0` to `live-7`), each to its
+  landing and a bar and a half after: 2544 frames a screen. A scratch test, not committed; the cover of the globe is
+  computed as `tests/framing.test.ts` computes it. Distances are from the nearest edge, in px of the screen.
+  - 390 x 844, controls measured 154 px: camera 1162 to 1613 mm. The widest base any season builds: 3.9 px inside at rest
+    (the margin asked is 3.9 px), 4.1 px at the least in the bar. The glass alone: 23.2 px at the least (shake 5, frame
+    105, beat 2.91). Glass top 163.9 px under the top edge at the least. The heap 16.8 px over the line of the controls at
+    the least (shake 1, frame 37, beat 1.02). With the controls only estimated: the same to the sides, top 193.6 px.
+  - 1024 x 1366, controls 208 px: camera 751 to 990 mm. Widest base 12.1 px at the least (asked 10.2 px; shake 4, frame
+    104, beat 2.88), glass 57.5 px, top 51.9 px. With the controls estimated: 715 to 989 mm, base 10.2 px at rest and
+    10.8 px in the bar, top 88.6 px.
+  - 1920 x 1080: the camera does not move (701 mm, or 751 mm with controls of 164 px). Sides 405.7 px at the least. The
+    lifted glass 10.8 px under the top edge at the least (asked 10.8 px; shake 6, frame 37, beat 1.02).
+  So the whole globe stays on the screen on all three, at every frame of all eight shakes: computed.
+- Drawn in the live app on 27e83641 (the built app in a browser, 390 x 844, touch, pixel ratio 1, quality low, one press
+  of Shake): in progress as this was pushed; the next push says what the frames show.
 - The drag script on 1920 x 1080, frames 30 and 140 (`tools/sheet.mjs --app drag --level high --format hd`, picked
   frames): drawn and seen, picture 9.
 
