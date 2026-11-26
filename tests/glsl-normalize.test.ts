@@ -15,7 +15,6 @@ const ASKS = join('core', 'maths.ts')
 const FLAT = [/^[\w.[\]]+\.(xz|xy|yz)$/, /^cross\(vec3\([-\d., ]+\), [\w.]+\)$/, /^vec3\(-?[\w.]+, 0\.0, -?[\w.]+\)$/]
 const FIXED = /^(?:(?:vec3|cross)\b|u[A-Z]\w*(?:\.[xyz]+)?|-?\d[\d.]*|[\s(),-])+$/
 const TESTED = /dot\(([\w.[\]]+), \1\) > 0\.0 \? $/
-const WITH_ITS_BUILDER = join('seasons', 'summer', 'arrival.ts')
 
 // atan(0, 0) is as open as normalize of no length. An angle about an axis is asked of two components of one vector,
 // and the vector is tested first. A call that is sure by another road stands here with the road, and where the road is
@@ -102,7 +101,7 @@ describe('shader arithmetic: normalize', () => {
     const open: string[] = []
     let flat = 0
     for (const file of sources('src')) {
-      if (file.endsWith(ASKS) || file.endsWith(WITH_ITS_BUILDER)) continue
+      if (file.endsWith(ASKS)) continue
       const text = readFileSync(file, 'utf8')
       for (const m of text.matchAll(/(?<![\w.])normalize\(/g)) {
         const arg = argument(text, m.index + m[0].length).trim()
