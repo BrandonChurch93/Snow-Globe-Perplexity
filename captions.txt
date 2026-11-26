@@ -93,3 +93,50 @@ FOURTH PUSH
   off the frames, the glass is 222 px across through the bar (computed 223) and never nearer a side than 38 px (frame
   3); in the frame of the season's glare the glow hides the edge of the glass.
   It also shows what is still wrong: through the shake the globe is small and low on a phone.
+
+FIFTH PUSH (the second job: on a phone the shake sits higher, over a longer table)
+
+12-phone-shake-frames-1-to-5-before-after.jpg
+  Shows: the live app itself (not the replay), 390 x 844, touch, pixel ratio 1, quality low, one press of Shake,
+  winter to spring. The first five of ten frames of one shake. Top row BEFORE, bottom row AFTER.
+  Frames: before, 1 to 5 of the ten the app drew from the press to the landing (lift, four strokes), main 27e83641,
+  drawn by the old software renderer. After, f024, f034, f041, f072 and f098 of the 198 the app drew (lift, three
+  strokes, the change), this change on main bcad846f, drawn by lavapipe.
+  Tool: a scratch page script, never committed; every frame read off the canvas, so the controls are not in them.
+  Tier: the app's level low.
+  Middle of the glass as a share of the height: before 47.6, 52.1, 52.3, 52.2, 52.3; after 41.0, 43.2, 43.0, 43.2,
+  and in the frame of the change the glow hides the glass. Glass top: before 279, 329, 331, 331, 331 px; after 224,
+  254, 253, 254 px. The table fills the picture to the bottom edge in every frame.
+
+13-phone-shake-frames-6-to-10-before-after.jpg
+  Shows: the same two shakes, the last five of the ten frames. Top row BEFORE, bottom row AFTER.
+  Frames: before, 6 to 10 (stroke, the change, stroke, set down, landed); it ends at the landing, the way back was
+  not drawn before. After, f120, f146, f152, f175 and f197 (stroke, set down, landed, two of the camera's way back).
+  Tool and tier as picture 12.
+  Middle of the glass as a share of the height: before 52.4, the change (the glow hides the glass), 52.3, 52.9, 53.6;
+  after 43.0, 44.7, 44.4, 42.6, 39.7. The last after frame is 72 percent of the way back to rest; rest itself is
+  37.8, above the band, and was not allowed to change. The last 28 percent of the way back was not drawn.
+
+14-phone-four-seasons-rest-after.jpg
+  Shows: the four seasons at rest in the live app, 390 x 844, quality low. AFTER.
+  State: at rest, the first frames after the load, before the app has measured its controls (it measures every 20
+  frames), so the glass top reads 193 px here and 164 px once measured. The same as before this change on every
+  layout: 4600 rest rigs over 23 screens are the same numbers to full precision.
+  Tool: the same scratch page script, ?season= and ?quality=low. Tier: the app's level low. On f53ce4f1.
+  The table fills the picture to the bottom edge in all four.
+
+15-phone-four-seasons-shake-low-medium-after.jpg
+  Shows: the four seasons in the shake in the live app, 390 x 844, the camera stood back. AFTER. Top row quality low
+  (the baked reflection), bottom row quality medium (the planar reflection).
+  Frames: of the ten the app drew after one press of Shake, the furthest back that still shows the season asked:
+  low winter 4, spring 4, summer 4, fall 10; medium winter 10, spring 10, summer 5, fall 10. In fall at both levels and
+  in winter and spring at medium the ten frames end before the camera is fully back (glass 222 to 228 px across
+  against 220), so the furthest view was not seen there.
+  Tool: the same scratch page script. Tier: the app's levels low and medium. On f53ce4f1.
+  Middle of the glass as a share of the height: low 43.3, 43.0, 43.1, 42.6; medium 42.7, 42.8, 43.1, 42.6.
+  The table fills the picture to the bottom edge in all eight, with no edge, seam or end, also with the brightness
+  raised four times; the reflection runs on unbroken. The new part of the table is roughly the lowest tenth of the
+  screen when the camera stands back (the picture moved up 80 px). The dressing was not extended and thins out
+  before it: spring's petals stop about 640 px down, fall's loose leaves lie a little lower, and there is no line
+  where they stop. Summer's sand has a jagged edge at the foot, which is not from this change and not on the new
+  part.
