@@ -20,8 +20,8 @@ const SPRIGS = 'summer/tree-sprigs.srgb.w512.png'
 const CYCLES = 3
 const FLICKER = 0.06
 const PAPER = { power: 0.26, reachMm: 2.5 }
-const GLOW = { leaves: { power: 1.0, reachMm: 9 }, wood: { power: 0.3, reachMm: 11 } }
-const LAMP_ON_WOOD = { power: 0.55, reachMm: 14, wrap: -0.2 }
+const GLOW = { leaves: { power: 1.0, reachMm: 12 }, wood: { power: 0.09, reachMm: 11 } }
+const LAMP_ON_WOOD = { power: 0.45, reachMm: 14, wrap: -0.2 }
 const LAMP_ON_LEAVES = { power: 0.8, reachMm: 12, wrap: 0.1 }
 const LAMP_SHIFT: Vec3 = [-3, 0, -5]
 const FILL_ON_WOOD = { power: 0.15, reachMm: 1000, wrap: 0.4 }
@@ -33,7 +33,7 @@ const THICK = { footMm: 1.1, crownMm: 0.7, fromMm: 6, toMm: 22, twig: 0.25, near
 const BARK_BUMP = 3.4
 // The bark: long flutes down the wood (the bark map drawn out along the grain), dark in their grooves, with the low sun
 // on the edge of the wood that faces it and moss on what faces up near the ground.
-const WOOD = { relief: 0.95, ridges: 5, warp: 2.6, fine: 0.4, low: 0.55, high: 1.35, from: 0.15, to: 0.85, depthMm: 1.5, rim: 4.0, rimTight: 3.4, rimFrom: -0.2, rimTo: 0.5, side: 0.36, wrap: 0.95, air: [1.25, 0.95, 0.66] as Rgb3, haze: [0.011, 0.0085, 0.0055] as Rgb3, pool: 2.6, poolReachMm: 7.5, poolWrap: 0.5, top: 0.45, mossTo: 5.5, moss: 0.45 }
+const WOOD = { relief: 0.95, ridges: 5, warp: 2.6, fine: 0.4, low: 0.55, high: 1.35, from: 0.15, to: 0.85, depthMm: 1.5, rim: 4.0, rimTight: 3.4, rimFrom: -0.2, rimTo: 0.5, side: 0.2, wrap: 0.95, air: [0.34, 0.29, 0.27] as Rgb3, haze: [0.011, 0.0085, 0.0055] as Rgb3, pool: 2.2, poolReachMm: 7.5, poolWrap: 0.5, top: 0.45, mossTo: 5.5, moss: 0.45 }
 const MOSS: Rgb3 = [0.3, 0.52, 0.12]
 const ROOT_MM = 4.5
 const LEAF_TINT: Rgb3 = [1, 1, 1]
@@ -44,7 +44,7 @@ const LEAF_VARY = { big: 0.36, mid: 1.15, scaleLow: 0.56, scale: 0.4, cool: [0.7
 const LEAF_TONE = { deep: [0.004, 0.009, 0.008] as Rgb3, high: [0.014, 0.0405, 0.029] as Rgb3, from: 0.15, to: 2.4, gain: { body: 18.6, sprig: 7.9 }, lod: { body: 0.75, sprig: 0.7 }, bump: 0.5 }
 // Each pad is a dark body, lit as one: its top and the side toward the low sun are a little brighter, what is underneath is in shade. The bright tufts
 // that stand on the edge turned from the lens and toward the sun, with open air between them and it, catch it as single points of gold. The lanterns light the same tufts.
-const PAD = { soft: 7, round: 0.7, upFrom: -0.75, upTo: 0.55, under: 0.3, sky: [0.32, 0.4, 0.35] as Rgb3, ground: [0.15, 0.14, 0.1] as Rgb3, light: 1.3, wrap: 0.7, shade: 0.45, rim: 0.6, cap: 0.3, fringe: 2.0, even: 0.35, hem: 0.35, rimTight: 12.0, rimFrom: 0.15, rimTo: 0.75, leafFrom: 0.4, leafTo: 2.0, gold: [1.0, 0.62, 0.14] as Rgb3, speckFrom: 1.7, speckTo: 2.6, inFrom: 0.5, inTo: 0.9, openFrom: 0.5, openTo: 0.9, closed: 0.3, lamp: 0.09, lampFrom: 1.8, lampTo: 4.5, haze: [0.008, 0.0115, 0.009] as Rgb3 }
+const PAD = { soft: 7, round: 0.7, upFrom: -0.75, upTo: 0.55, under: 0.3, sky: [0.32, 0.4, 0.35] as Rgb3, ground: [0.15, 0.14, 0.1] as Rgb3, light: 1.3, wrap: 0.7, shade: 0.45, rim: 0.4, cap: 0.22, fringe: 1.2, even: 0.35, hem: 0.35, rimTight: 12.0, rimFrom: 0.3, rimTo: 0.75, leafFrom: 0.4, leafTo: 2.0, gold: [1.0, 0.62, 0.14] as Rgb3, speckFrom: 1.7, speckTo: 2.6, inFrom: 0.5, inTo: 0.9, openFrom: 0.5, openTo: 0.9, closed: 0.3, lamp: 0.09, lampFrom: 1.8, lampTo: 4.5, dapple: 0.22, dappleTone: [0.66, 0.8, 0.42] as Rgb3, dapFrom: 0.5, dapTo: 0.8, dapEven: 0.4, warm: 0.03, warmTone: [0.5, 0.3, 0.1] as Rgb3, warmFrom: 0.5, warmTo: 3.0, haze: [0.008, 0.0115, 0.009] as Rgb3 }
 const LANTERN = { rib: 0.3, gores: 12, ring: 0.16, ribs: 26, gain: 0.95, body: 0.5, core: 5.0, tight: 2.2, paper: 0.06, dim: 0.4, first: 2, firstStepS: 0.23, firstRampS: 0.42, stepS: 0.6, rampS: 0.8, swayRad: 0.045, sway2: 0.6, kickRad: 0.16, kickFade: 1.2, kickHz: 1.3, cycles: 2 }
 const HALO = { radius: 2.9, strength: 0.17, hot: 0.0 }
 const HALO_EDGE: Rgb3 = [0.9, 0.36, 0.08]
@@ -144,6 +144,10 @@ function leafHook(shader: Shader): void {
   float treeInside = treeCard ? smoothstep(${PAD.inFrom.toFixed(2)}, ${PAD.inTo.toFixed(2)}, treeIn) : 1.0;
   float treeLeaf = mix(${PAD.even.toFixed(2)}, 1.0, smoothstep(${PAD.leafFrom.toFixed(2)}, ${PAD.leafTo.toFixed(2)}, treeLum)) * treeInside;
   float treeDot = treeCard ? smoothstep(${PAD.speckFrom.toFixed(2)}, ${PAD.speckTo.toFixed(2)}, treeLum) * smoothstep(${PAD.inFrom.toFixed(2)}, ${PAD.inTo.toFixed(2)}, treeIn) : 0.0;
+  float treeDap = 0.5 + 0.5 * sin(vTreeP.x * 1.37 + 1.4 * sin(vTreeP.z * 0.83 + 0.9) + 2.1) * sin(vTreeP.z * 1.21 + 1.2 * sin(vTreeP.x * 0.71 + vTreeP.y * 0.9) + 0.7);
+  float treeDapple = smoothstep(${PAD.dapFrom.toFixed(2)}, ${PAD.dapTo.toFixed(2)}, treeDap) * treeUp * treeUp * treeSky * mix(${PAD.dapEven.toFixed(2)}, 1.0, smoothstep(${PAD.leafFrom.toFixed(2)}, ${PAD.leafTo.toFixed(2)}, treeLum));
+  reflectedLight.directDiffuse += stageKeyC * ${glsl3(PAD.dappleTone)} * (${PAD.dapple.toFixed(2)} * treeDapple * mix(${PAD.shade.toFixed(2)}, 1.0, stageKeyS));
+  reflectedLight.indirectDiffuse += vGlow.rgb * uTwinkle.z * ${glsl3(PAD.warmTone)} * (${PAD.warm.toFixed(3)} * (1.0 - treeUp) * (1.0 - treeUp) * smoothstep(${PAD.warmFrom.toFixed(2)}, ${PAD.warmTo.toFixed(2)}, vGlow.r) * mix(${PAD.dapEven.toFixed(2)}, 1.0, smoothstep(${PAD.leafFrom.toFixed(2)}, ${PAD.leafTo.toFixed(2)}, treeLum)));
   reflectedLight.directDiffuse += stageKeyC * ${glsl3(PAD.gold)} * min(${PAD.cap.toFixed(2)}, treeHem * treeTurn * treeOpen * (${PAD.fringe.toFixed(2)} * treeLeaf + ${PAD.rim.toFixed(2)} * treeDot));
 }`,
   )

@@ -1,31 +1,41 @@
 import { stream } from '../../../core/rng'
 import { crownField, localPads, padAxes, type Pad } from '../../../miniature/trunk'
 
-// Each pad is a cushion with a flat underside: lumps heap up on it, and only a thin layer of small ones lies under it. The shared body
-// is worn down to a core, so that the tiers stand apart and the light of the bank shows between them, with the limbs crossing it.
-export const FULL = { swell: -2.6, perMm2: 0.55, radius: [0.8, 1.75] as const, dome: 0.5, plump: 1.3, under: 0.6, underReach: 0.86, hang: 0.14, underSize: 0.7, reach: 1.04, blend: 0.16, knob: 0.3, knobMm: 1.15, wave: 0.45, waveMm: 4.3 }
+// Each pad is a cushion with a flat underside: lumps heap up on it and a layer of them hangs under it. The shared body is worn down
+// only a little, so the tiers run into one another and the crown reads as one broad mass with holes in it.
+export const FULL = { swell: -1.5, perMm2: 0.55, radius: [0.8, 1.75] as const, dome: 0.5, plump: 1.3, under: 0.6, underReach: 0.86, hang: 0.38, underSize: 1, reach: 1.04, blend: 0.16, knob: 0.3, knobMm: 1.15, wave: 0.45, waveMm: 4.3 }
 
-// No pad stands over the fork or at the right any more: there the air is open and the limbs are seen against the bank.
-export const more: readonly Pad[] = []
+// More pads than the shared list has, all of them in front of the limbs, so that from the front the leaves cover the wood. One stands
+// over the fork and one at each side of it, between the tiers: they bridge the cushions. Four more stand at the ends of the two tiers
+// and carry the crown out to the width it has in the approved picture. Between them small holes stay open, and short lengths of limb
+// are seen through those.
+export const more: readonly Pad[] = [
+  { at: [0.6, 29.6, 3.6], size: [6.0, 2.6, 4.0], dir: [0.02, 1.0, 0] },
+  { at: [-7.5, 31.4, 3.4], size: [5.0, 2.4, 3.8], dir: [-0.1, 0.995, 0] },
+  { at: [7.2, 28.6, 3.8], size: [5.4, 2.6, 4.0], dir: [0.158, 0.987, 0] },
+  { at: [-13.6, 31.5, 1.0], size: [4.6, 2.3, 3.8], dir: [-0.287, 0.958, 0] },
+  { at: [-15.8, 23.0, 1.0], size: [4.0, 2.4, 3.6], dir: [-0.33, 0.944, 0] },
+  { at: [13.6, 27.6, 1.4], size: [4.8, 2.6, 3.8], dir: [0.339, 0.941, 0] },
+  { at: [14.0, 23.4, 2.4], size: [3.8, 2.6, 3.6], dir: [0.287, 0.958, 0] },
+]
 
 // How each shared pad carries its leaves: moved sideways (dx) and down (drop), narrower (wide, a share of its width) and heaped higher at
-// its middle (heap, a factor on the dome). The two upper pads draw back from the middle and the thin pad behind them is bare, which leaves
-// a slit of light under the dome. The wide pad at the middle left hangs lower, which opens the air between it and the pads above. The three
-// lower pads heap up into full cushions; the upper ones keep their tops, so the tree is as tall as it was. The lumps are drawn as the
-// shared list has them (the same draws, in the same order) and then moved, so that a pad that is not named here stands where it stood.
+// its middle (heap, a factor on the dome). The wide pad at the middle left hangs a little lower and the three lower pads heap a little
+// higher; the others stand as the shared list has them. The lumps are drawn as the shared list has them (the same draws, in the same
+// order) and then moved, so that a pad that is not named here stands where it stood.
 type Carry = { dx: number; drop: number; wide: number; heap: number; bare?: boolean }
 const SAME: Carry = { dx: 0, drop: 0, wide: 1, heap: 1 }
 const CARRY: readonly Carry[] = [
   SAME,
-  { dx: -1.0, drop: 0, wide: 0.82, heap: 1 },
-  { dx: 1.4, drop: 0, wide: 0.8, heap: 1 },
   SAME,
   SAME,
   SAME,
-  { dx: 0, drop: 0, wide: 1, heap: 1, bare: true },
-  { dx: 0, drop: 1.5, wide: 1, heap: 1.7 },
-  { dx: 0, drop: 0, wide: 1, heap: 1.7 },
-  { dx: 0, drop: 0, wide: 1, heap: 1.7 },
+  SAME,
+  SAME,
+  SAME,
+  { dx: 0, drop: 0.6, wide: 1, heap: 1.3 },
+  { dx: 0, drop: 0, wide: 1, heap: 1.3 },
+  { dx: 0, drop: 0, wide: 1, heap: 1.3 },
 ]
 const carry = (i: number): Carry => CARRY[i] ?? SAME
 
@@ -102,8 +112,33 @@ const knobs = (x: number, h: number, z: number): number => {
   return FULL.knob * (Math.sin(k * x + 1.3 * Math.sin(0.9 * h)) * Math.sin(k * h + 1.1 * Math.sin(1.2 * z)) * Math.sin(k * z + 1.7 * Math.sin(0.8 * x)) + 0.5 * Math.sin(1.9 * k * x + 2) * Math.sin(2.1 * k * h + 1) * Math.sin(1.7 * k * z)) + FULL.wave * Math.sin(w * x + 0.7) * Math.sin(w * h + 2.1) * Math.sin(w * z + 4.2)
 }
 
+// Holes through the crown, as the hero camera sees it: each is an ellipse in the plane that faces the camera (its middle, then its
+// half width and half height, in millimetres) and runs straight through along the line of sight, which climbs by PITCH for every
+// millimetre toward the camera. They stand where the limbs pass, so that a short length of limb is seen in each. The sprigs on their
+// walls close about a millimetre of each side, which leaves none wider than a lantern.
+const PITCH = 0.0787
+export const holes: readonly (readonly [number, number, number, number])[] = [
+  [1.4, 29.4, 2.7, 2.3],
+  [-5.4, 32.0, 2.5, 2.1],
+  [-11.6, 28.6, 2.7, 2.0],
+  [9.6, 31.4, 2.5, 1.9],
+  [7.4, 26.0, 2.5, 2.0],
+  [0.0, 35.6, 2.4, 2.0],
+  [-15.6, 24.6, 2.6, 1.9],
+  [6.2, 36.0, 2.4, 1.9],
+]
+
+function holeField(x: number, h: number, z: number): number {
+  let near = Infinity
+  for (const o of holes) {
+    const d = (Math.hypot((x - o[0]) / o[2], (h - o[1] - PITCH * z) / o[3]) - 1) * Math.min(o[2], o[3])
+    if (d < near) near = d
+  }
+  return near
+}
+
 export function leafBody(x: number, h: number, z: number): number {
-  return Math.min(crownField(x, h, z) - FULL.swell, lumpField(x, h, z))
+  return Math.max(Math.min(crownField(x, h, z) - FULL.swell, lumpField(x, h, z)), -holeField(x, h, z))
 }
 
 export function leafField(x: number, h: number, z: number): number {
