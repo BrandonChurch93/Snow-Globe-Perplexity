@@ -234,6 +234,151 @@ Time: seventy five minutes from the message, of which the checks take the last t
    it is the same sand and not a band.
 5. M3 stays over the config's 0.75, without speckle.
 
-## What R1 and R4 add
+## What R1 adds (in at 17:17 UTC, written 17:22 UTC)
 
-Written under each owner's heading above when they are in, and each owner told.
+R1 is the critic who compares our stills with the approved pictures, pair by pair. It scored 3 of 10 with 4
+severe, 12 major and 5 minor issues; the whole answer is `scorecards/round-021/R1.json`. Its two files are
+attached to the message that tells you of this section (the approved on the left, ours on the right, cropped
+alike): look at them at 400 pixels first. What it names, by owner, in the order of weight. Where I measured,
+the numbers are the mean colour of the darkest part of a region on R1's own pair.
+
+The pass ends for every owner at 19:20 UTC, not at the time your heading names; the checks take the last
+ten minutes. At about 18:15 UTC each owner sends /root two pictures without stopping (the whole at 400
+pixels beside the approved, and the one pair that shows the most) and one line on the way taken.
+
+Two new owners work beside you for this pass: `/root/summer_tree_builder` has the tree (`mini/crown.ts`,
+`mini/tree.ts`, `mini/lanterns.ts`, `assets-src/tree-summer`), taken from the Miniature's list, and
+`/root/summer_room_builder` has the lights behind the globe (`backdrop.ts`), taken from the Glass's list,
+with the table's mirror of them.
+
+### One correction of mine, for all
+
+I wrote under Glass that the haze behind the heads should be thinned so that the heads stand against dark.
+That was wrong. Between the seeds the approved's haze is warm cream at about (70,65,52) across the upper
+dome and about (130,117,96) behind the crown, two to three times ours, which is olive at about (32,36,32).
+The approved's ball glows from within; ours is a clear dark ball with small things in it. Every owner's
+part of that is named below.
+
+### Glass (also `rig.ts`)
+
+1. Severe: "the bright cream-gold backlit haze that fills -a's globe is gone. -b's interior is dim olive and
+   grey-brown, about half as bright in the upper dome." Sent to you as a correction at 17:19 with the map.
+   Its second half is the rig's: "the crown, roof edge and grass tips have lost their warm rim light"; fix:
+   "a strong warm light from behind and to the right inside the globe ... warm rim light on the crown, roof
+   edge, fence and grass tips". If the key in `rig.ts` cannot give that rim on the miniature as it stands,
+   tell the Miniature's and the tree's builders in one message what their materials must take from it.
+2. Major, the rim: "the glass reads thin: one cool blue-white outline with no visible thickness and no
+   bending of the inside at the edge. -a's rim has a refraction band about 15 to 25 px wide, a warm amber edge
+   on the left, broad blue and warm-brown reflection bands across the top and down the right shoulder, and a
+   large warm glare low on the left. In -b the left glare is a cooler streak set higher in A and is missing
+   in B. A-b also has a dull brown curved smear and scattered brown blobs in the upper dome where -a has
+   bright blue-white curved reflection bands." (The 15 to 25 px are of a ball 752 px wide.) The low left
+   limb, measured: the approved's darkest fifth (123,102,74), ours (45,40,28).
+3. The flare (your item 2), R1 minor: "a hard core with about eight long, sharp spikes that reach well
+   outside the glass. In -a a soft, broad warm glow with many fine, short rays sits on the rim".
+4. The lights behind the globe are the room builder's for this pass. Leave `backdrop.ts`.
+
+### Air
+
+Sent to you at 17:19 in full: the heads against a cream haze (crisp, fine, on long stems, white gold);
+severe, the storm must ghost the cottage and the tree and leave dark gaps in the upper dome; severe, long
+curved arcs in one whirl in place of short straight dashes and the smear at the left; major, the flat green
+sprites that fly at the landing; minor, the flat beige polygons seen through the crown's gaps at the
+landing, which are the haze behind the crown: with the tree's builder.
+
+### Miniature (the village and the ground: `mini/village.ts`, `mini/turf.ts`, `mini/palette.ts`, `assets-src/village-summer`)
+
+The tree, its crown and the lanterns' own form are the tree builder's for this pass. In the order of weight:
+
+1. The light (your item 1, now with R1's severe): the lanterns' pools on the walls, the door and the turf,
+   and the warm rim from the back right along the roof's edge, the fence's top and the grass tips. Your
+   darks are too deep: the approved's darkest tones in the scene are lifted by the lit liquid (the trunk's
+   shade (64,48,31) against ours (9,5,5); behind the cottage (95,80,61) against (29,34,31)). Nothing of the
+   village or the ground under about (25,22,15) at rest.
+2. The bank, major: "a thick tan band with a jagged, torn top edge shows through the lower glass, like a
+   cutaway. In -a it is a thin, pale, frosted sand layer that sparkles, under a domed grass mound." Fix:
+   "thin the layer, make it pale and sparkly, and round its top edge into the grass mound". My sixth list
+   asked you for tan gold with no white; that overshot. Pale cream, sparkling, half as tall as now, its top
+   edge soft and round, the turf coming down over it in tufts. The two dark marks (your item 3) lie in it.
+3. The pond, major: "a flat, muddy brown-orange rounded shape with one white blob of reflection and a hard,
+   smooth rim. In -a it is dark, clear water that mirrors the lamp post, the trunk and the bright sky, edged
+   with mossy stepping stones." Fix: "make the water dark and clear with a true mirror of the lamp, the
+   trunk and the glowing sky, and break the rim with mossy stones and grass".
+4. The cottage, major: "lit flat and darker and built of large blocky stones. Its chimney is brick-red where
+   -a's is grey stone, its left wall is bare stone where -a's is covered in ivy and roses, and there is no
+   warm rim light along the roof edge." Fix: "smaller mortared stones in warm tan, make the chimney grey
+   stone, cover the left wall in ivy and roses". The cottage's place and size stay.
+5. The ivy's leaves (your item 2) and, minor: "a flat, untextured green quad sits beside the right
+   sunflower like a leaf card, and the sunflowers read as flat cut-outs. In -a they are modelled and backlit".
+
+### Tree (`mini/crown.ts`, `mini/tree.ts`, `mini/lanterns.ts`, `assets-src/tree-summer`)
+
+1. Major: "the crown is a dark, dense single mass without -a's layered foliage pads and warm rim light, and
+   its gaps show grey-brown. Thin bright rope-like lines run along the branches, and the lanterns cast little
+   light onto the trunk and leaves." Fix: "break the crown into layered pads lit from the back right, let
+   bright haze show through the gaps, remove the bright rope lines along the branches, and let the lanterns
+   spill warm light onto the trunk and leaves". Measured in the crown's shade: the approved (34,36,21) and
+   (24,26,17), ours (16,19,11) and (8,12,6); the trunk's shade (64,48,31) against (9,5,5).
+2. Minor, the landing: "flat beige polygons with hard edges show through the crown, like cut-outs". The
+   gaps' edges soft, with the Air's builder.
+3. Rest places for seed heads on two or three branches, to the Air's builder (the Miniature's item 4).
+4. The tree's place, height and spread stay (decision 157). Triangles of the whole miniature stay under
+   1,800,000 at high: ask the Miniature's builder for your share before you add.
+
+### Sand (`slab.ts`, `arrival.ts`)
+
+1. The fall, major: "a soft, opaque wedge of sand rises from the heap to above the collar, like a wall. In
+   -a a thin, see-through, backlit stream of separate grains falls in an arc from the right shoulder of the
+   base into the heap." Fix: "replace the wedge with a thin falling stream that leaves the shoulder below the
+   collar, with visible grains lit from behind". With your item 1 this is one thing: a thin veil of separate
+   grains in an arc, the dark seen through it, lit from behind.
+2. The heap, major: "the crest of the backlit heap glows. In -b ... the heap is a flat, evenly lit spread".
+   Fix: "backlight the heap so its crest glows". With your item 3.
+3. Minor: "the surface just below the base is a brighter, brown, glossy mirror. In -a it is a darker, cool
+   slate with a fine dusting of sand and a softer reflection". Measured under the front of the base: the
+   approved (10,14,17), ours (17,13,10). If that mirror is not in your files, tell /root whose.
+
+### Stone
+
+1. Severe, and first of yours: "the base reads grey-tan and matte, like suede. It is lit flat from the
+   front, with a dull grey gradient across the top band. In -a it is pale ivory moulded wet sand with fine
+   grain sparkle and droplets, raked by warm light from the back right on its top and right shoulder, with
+   the front in soft cool shade". Fix: "move the base to a paler, less saturated ivory-cream, add grain
+   sparkle and a slight wet sheen, light it from the back right with warm raking highlights on the top and
+   right shoulder and a soft cool shade on the front, and remove the grey gradient". This is your item 3
+   made larger: the whole base paler and ivory, the light from the back right, the front in soft cool shade.
+2. The collar, major (your items 1 and 4): "the glass rests on a flat-topped, plain cylindrical band with no
+   seat and no contact shadow. The top third of the base, about 90 px, has no carving and only a faint
+   grain. In -a the glass sinks into a rounded, lumpy sand roll that wraps its foot with a shadowed crease,
+   and the carving runs right up to it." Fix: "replace the flat band with a rounded, sculpted sand lip that
+   rises around the foot of the glass, add the thin dark crease under the glass, and carry the carving and
+   grain up to the lip".
+3. The sea glass, major (your item 2): "smooth, rounded, opaque pastel blobs, like jelly beans. In -a they
+   are frosted, translucent, irregular tumbled pieces in deep emerald, teal and cobalt, with grain inside
+   and light passing through". So also: irregular tumbled forms and deeper colours.
+4. The right shoulder (17:22 UTC, from the Sand's builder, who drew rest at 3840 x 2160 with all its grains
+   hidden): the comb of thin curved streaks with red rims and the pepper of dark specks at about x 2545 to
+   2575, y 1440 to 1515 stand unchanged on the stone, and down the stone's right edge runs a ragged strip of
+   dark and coloured pixels that the fall otherwise covers. They are in `base.ts` or its asset. R3 part 2
+   called the same place major from the base camera ("vertical strips"). Clean stone there at 3840 x 2160:
+   no streak, no coloured rim, no dark speck, a whole edge.
+
+### Room (`backdrop.ts`, and the table's mirror of the lights)
+
+1. Major: "small, separate, saturated orange discs are spread evenly ... In -a large, overlapping,
+   near-white cream discs cluster brightly at the top right ... with softer warm discs down the left".
+   Measured at the top right (the upper fifth of the crop, its right sixth): the approved's mean 104, its
+   brightest (240,223,207), the dark between its discs (46,37,28); ours 48, (183,141,87), (11,14,17). At the
+   left, mid height: the approved's brightest (173,136,92), ours (60,43,27). At the top left ours is the
+   brighter: (104,74,42) against (34,28,18). R1 also calls our black navy and the approved's neutral: that
+   does not hold by measure, both are (4 to 8, 9 to 13, 12 to 16). Leave the black.
+   The discs' places and sizes are the shared layout's and stay (one room in four seasons). Their colours
+   and where they burn are summer's: cream white at the top right and about twice as bright in the sum,
+   warm and softer down the left, less at the top left.
+2. Major: "in -a the wet surface right of the globe carries bright, soft reflections of the lights behind
+   ... In -b that surface is dark". Measured on the table right of the base: the approved's mean 101 with
+   its dark at (46,40,34); ours 51 with (18,18,17). The table must mirror the cluster as soft tall streaks.
+
+## What R4 adds
+
+Written here when it is in (the critic on motion, started 17:21 UTC), and each owner told.

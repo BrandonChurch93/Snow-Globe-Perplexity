@@ -1,0 +1,43 @@
+{
+  "phase": 6,
+  "time": "2026-11-26T17:15:46.244Z",
+  "engineHash": "9dd2a0dba29ddf8c",
+  "commit": "e235f76b",
+  "results": [
+    {
+      "id": "G2",
+      "name": "unit tests",
+      "pass": true,
+      "detail": "761 of 769 tests pass in 57 files",
+      "seconds": 123.132
+    },
+    {
+      "id": "D2",
+      "name": "the preview of film B",
+      "pass": false,
+      "detail": "out/preview-b.mp4: its record names build b98352868abb52c6, the current build is 9dd2a0dba29ddf8c",
+      "seconds": 3.631
+    },
+    {
+      "id": "D3",
+      "name": "the local render proof",
+      "pass": false,
+      "detail": "out/work/local/proof.json does not exist. Run npm run render:local -- --proof",
+      "seconds": 0.001
+    },
+    {
+      "id": "D5",
+      "name": "the preview of film A",
+      "pass": false,
+      "detail": "out/preview-a.mp4 does not exist. Render film A in preview, then npm run keep -- --film",
+      "seconds": 0
+    },
+    {
+      "id": "D6",
+      "name": "the card",
+      "pass": false,
+      "detail": "deliver/card-loop.mp4 does not exist; deliver/card-loop-web.mp4 does not exist; deliver/card-still.jpg does not exist",
+      "seconds": 0
+    }
+  ]
+}
