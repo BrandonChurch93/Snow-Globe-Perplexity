@@ -2,7 +2,7 @@
 
 ## Newest: thing 6 is mended and pushed (a6ce69a8); things 1 to 5 are designed and not built
 
-Written 2026-11-26 about 21:35 UTC. This part is newer than everything below it. Where the two differ, this part holds.
+Written 2026-11-26 at 21:25 UTC by the clock. This part is newer than everything below it. Where the two differ, this part holds.
 
 Head of the code branch `agent/p6-change`: a6ce69a8 (engine d02c4c4f0d27779b). It is 557a79f2 (the branch with `main` 84f037e2 merged) and one commit on top, the mend of thing 6. `main` is ae5b48b4 as this is written. The head does not hold what `main` took after 84f037e2: 49dae6ef, the sand's third pass (8f6770e2), 1621ff09 (`src/capture/showcase.ts`: one sample set for every picture, which changes the bytes of every film frame and leaves the stills' bytes), the air's stop at zero (a54d91a5) and the cottage's third pass (18a19dd5). `/root` at 20:27 UTC: "do not chase main any further. Report on your merged head 557a79f2 (which holds 84f037e2) when its proofs are drawn." So this push was made without the newest `main` merged, by `/root`'s word, against the standing rule.
 
