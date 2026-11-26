@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import { loadConfig } from '../../tools/lib/paths.mjs'
-import { clamp, fbm, mix, smooth } from './lib.mjs'
+import { clamp, fbm, mix, mulberry, smooth } from './lib.mjs'
 
 const G = loadConfig().globe
 export const RAD = Math.PI / 180
@@ -13,13 +13,13 @@ export const sphereRadiusAt = (h) => Math.sqrt(Math.max(SPHERE_R * SPHERE_R - (C
 // 40 mm up, and the glass goes down into the stone where the sphere is about 91 mm wide), so RISE is nothing; it stays as the one
 // number that lifts the whole seat. The crown of the collar keeps winter's gap to the glass, and the cup under the sphere is the same.
 export const RISE = 0
-const CROWN_H = TOP + 5.6 + RISE
+const CROWN_H = TOP + 8.3 + RISE
 export const COLLAR = { crown: [sphereRadiusAt(CROWN_H) + 0.57, CROWN_H], bead: 0.8, gap: 0.12 }
 export const CUP = { offset: 0.15 }
 export const LEDGE_H = TOP + 7.4 + RISE
 
 // Radius and height in mm, foot to collar, read from the silhouette of references/approved/summer-rest.png (measure.mjs). From the
-// rim inward the stone goes down to the glass in one rounded seat.
+// rim inward the stone rises a little to a crest beside the glass and goes down to it in a short bevel: the groove the ball sits in.
 export const BODY = [
   [53.2, 0.0],
   [55.6, 0.9],
@@ -38,10 +38,9 @@ export const BODY = [
   [52.3, 38.4],
   [51.5, LEDGE_H - 0.7],
   [50.3, LEDGE_H],
-  [48.8, LEDGE_H - 0.1],
-  [47.3, LEDGE_H - 0.4],
-  [46.2, LEDGE_H - 0.85],
-  [45.4, LEDGE_H - 1.4],
+  [49.3, LEDGE_H + 0.35],
+  [48.4, LEDGE_H + 0.65],
+  [47.7, LEDGE_H + 0.85],
   [COLLAR.crown[0] - 0.13, COLLAR.crown[1]],
 ]
 
@@ -151,6 +150,30 @@ export const SET = JSON.parse(fs.readFileSync(new URL('./set.json', import.meta.
   }
 }
 
+// A piece of sea glass is a tumbled pebble: three to five sides worn nearly round, no two alike. Its outline is a share of
+// its half size by the angle in its own frame; the dish it lies in is cut to the same outline.
+SET.forEach((it, i) => {
+  if (it.kind !== 'glass') return
+  const next = mulberry(7000 + i * 53)
+  const n = (it.tri ?? 0) > 0.15 ? 3 : 3 + Math.floor(next() * 2.99)
+  const power = [0, 0, 0, 2.0, 3.0, 4.2][n]
+  const p0 = next() * 2 * Math.PI
+  const sides = Array.from({ length: n }, (_, k) => ({ at: p0 + ((k + 0.5 * (next() - 0.5)) * 2 * Math.PI) / n, d: 0.8 + 0.3 * next() }))
+  it.shard = { sides, power, scale: 1, p0 }
+  let mean = 0
+  for (let k = 0; k < 64; k++) mean += shardAt(it, (k / 64) * 2 * Math.PI) ** 2 / 64
+  it.shard.scale = 1 / Math.sqrt(mean)
+})
+export function shardAt(it, phi) {
+  const sh = it.shard
+  let sum = 0
+  for (const e of sh.sides) {
+    const c = Math.cos(phi - e.at)
+    if (c > 0) sum += Math.pow(c / e.d, sh.power)
+  }
+  return mix(1, Math.min(Math.pow(Math.max(sum, 1e-6), -1 / sh.power), 1.45) * sh.scale, 0.6) * (1 + 0.02 * Math.cos(5 * phi + sh.p0 * 2) + 0.012 * Math.cos(9 * phi + sh.p0 * 5))
+}
+
 // How far the stone stands out from the turned shape, in mm, at an azimuth and a place along the meridian.
 export const BED_MM = 6.4
 const bedWarp = (w) => w + 1.9 * Math.sin(w / 5.1 + 0.7) + 1.1 * Math.sin(w / 2.3 + 1.0)
@@ -163,10 +186,11 @@ export function strataCoord(az, h) {
 const FOOT = { glass: 1.08, scallop: 1.2, cockle: 1.2, snail: 1.25, olive: 1.0, pearl: 0.95 }
 // Packed sand, worked by hand. One shallow trough runs round above the foot: [height, sway, turns round the body, phase, half width, depth], in mm and degrees.
 const TROUGHS = [[5.2, 1.6, 3, 20, 1.0, 0.6]]
-// The body is carved in flowing ridges (references/approved/summer-rest.png): they sweep from the upper left down to the right, lie closer
-// here and wider there, and part round the things set in the sand as water parts round a stone. A ridge stands out over the crease under it
-// and falls back slowly to the crease over it. STARTS ridges make the whole turn, so they meet themselves behind.
-const RIDGE = { apart: 4.8, starts: 17, lean: 8, deep: 1.6, edge: 0.5, sharp: 0.75, uneven: 1.6, waves: 3 }
+// The body is packed in broad soft ledges (references/approved/summer-rest.png): they sweep from the upper left down to the right, lie closer
+// here and wider there, and part round the things set in the sand as water parts round a stone. A ledge stands out over the crease under it
+// and falls back slowly to the crease over it. STARTS ledges make the whole turn, so they meet themselves behind. Most are faint; here and
+// there one stands out further and its edge has crumbled, so its top takes the light and its underside lies in shade.
+const RIDGE = { apart: 7.4, starts: 5, lean: 3.5, deep: 0.8, edge: 0.2, uneven: 1.8, waves: 3, collar: 0.3, broken: 2.6, crumb: 0.3 }
 const ridgeLean = (az) => ((RIDGE.starts * RIDGE.apart) / 360) * az + RIDGE.lean * Math.sin((az - 10) * RAD)
 const ridgeWander = (A, h) => 5.0 * (fbm(A * 4 + 1, h / 30, 4, 64, 139, 2) - 0.5) + 3.0 * (fbm(A * 9 + 2, h / 12, 9, 64, 141, 3) - 0.5) + 1.2 * (fbm(A * 21 + 5, h / 6, 21, 64, 143, 2) - 0.5)
 function ridgeCoord(m, az, s, h, r) {
@@ -190,6 +214,8 @@ function ridgeCoord(m, az, s, h, r) {
   }
   return psi
 }
+// Where a ledge stands out and its edge has crumbled, as the approved image has it: [azimuth, height, half width in degrees, half height in mm].
+const BROKEN = [[-40, 31, 24, 4], [-36, 9.5, 32, 3.5], [44, 30, 16, 3.5]]
 // Where a piece of the lip has broken away: [azimuth, half width], in degrees.
 const BREAKS = [[-61, 4.2], [-17, 3.0], [22, 5.2], [57, 3.4], [141, 5], [-128, 4]]
 function bare(m, az, s) {
@@ -220,21 +246,30 @@ function bare(m, az, s) {
   for (const [at, wide] of BREAKS) gone = Math.max(gone, smooth(1.0, 0.25, Math.abs(a180 - at) / wide + 0.9 * (fbm(A * 90 + 3, q.h / 2.5, 90, 64, 95, 2) - 0.5)))
   const lipH = 30.6 + RISE + 1.2 * (fbm(A * 5 + 5, 0.4, 5, 4, 83, 3) - 0.5) + 0.7 * (fbm(A * 13 + 2, 0.4, 13, 4, 87, 2) - 0.5) + 0.25 * (fbm(A * 37 + 6, 0.4, 37, 4, 89, 2) - 0.5) + 0.7 * gone
   const thick = (0.9 + 0.3 * fbm(A * 17 + 8, 0.6, 17, 4, 93, 2)) * (1 - 0.1 * gone)
-  const lip = (2.3 * thick * smooth(lipH - 2.4, lipH + 1.0, q.h) * smooth(46.0, 49.6, q.r) - 0.35 * Math.exp(-(((q.h - lipH + 3.4) / 1.6) ** 2)) * (1 - onTop)) * (1 - 0.7 * smooth(34, 74, a180) * smooth(128, 114, a180))
-  const lumps = (0.5 * (fbm(A * 23 + 4, q.h / 9, 23, 64, 99, 3) - 0.5) + 0.12 * (fbm(A * 70 + 3, q.h / 2, 70, 64, 19, 2) - 0.5)) * smooth(lipH - 2.0, lipH + 1.5, q.h) * smooth(45.0, 48.5, q.r)
+  const lip = (2.3 * thick * smooth(lipH - 2.4, lipH + 1.0, q.h) * smooth(47.3, 48.9, q.r) - 0.35 * Math.exp(-(((q.h - lipH + 3.4) / 1.6) ** 2)) * (1 - onTop)) * (1 - 0.7 * smooth(34, 74, a180) * smooth(128, 114, a180))
+  // The roll that holds the glass begins at a crease that wanders round the body: under it the carving runs at its full depth, over it the roll swells, uneven as a hand leaves it.
+  // Toward the sides all of this thins, so the outline keeps its place.
+  const front = mix(1, 0.3, smooth(55, 85, Math.abs(a180)))
+  const rollH = 36.2 + 1.7 * (fbm(A * 7 + 3, 0.4, 7, 4, 161, 3) - 0.5) + 0.8 * (fbm(A * 19 + 8, 0.4, 19, 4, 163, 2) - 0.5)
+  const face = front * (1 - onTop)
+  const roll = (0.8 * smooth(rollH - 0.2, rollH + 1.2, q.h) * smooth(41.0, 38.6, q.h) - 0.3 * (0.4 + 0.9 * fbm(A * 11 + 6, 0.4, 11, 4, 165, 2)) * Math.exp(-(((q.h - rollH + 0.5) / 0.7) ** 2)) + 0.6 * (fbm(A * 13 + 1, q.h / 5, 13, 64, 167, 3) - 0.5) * smooth(rollH - 0.4, rollH + 1.0, q.h)) * face
+  const lumps = (0.5 * (fbm(A * 23 + 4, q.h / 9, 23, 64, 99, 3) - 0.5) + 0.12 * (fbm(A * 70 + 3, q.h / 2, 70, 64, 19, 2) - 0.5)) * smooth(lipH - 2.0, lipH + 1.5, q.h) * smooth(47.3, 49.2, q.r) + roll
   const psi = ridgeCoord(m, az, s, h, q.r)
   // The swells are uneven in width, and a hollow dies out here and there so that two swells run into one.
-  const rt = (psi + RIDGE.uneven * Math.sin((2 * Math.PI * RIDGE.waves * psi) / (RIDGE.starts * RIDGE.apart) + 5.0 * fbm(A * 3 + 2, 0.5, 3, 4, 151, 2))) / RIDGE.apart
+  const rt0 = (psi + RIDGE.uneven * Math.sin((2 * Math.PI * RIDGE.waves * psi) / (RIDGE.starts * RIDGE.apart) + 5.0 * fbm(A * 3 + 2, 0.5, 3, 4, 151, 2))) / RIDGE.apart
+  let broken = 0.7 * smooth(0.56, 0.72, fbm(A * 5 + 2, h / 14 + 7, 5, 64, 177, 2))
+  for (const [at, up, wide, tall] of BROKEN) broken = Math.max(broken, Math.exp(-(((a180 - at) / wide) ** 2) - ((h - up) / tall) ** 2))
+  broken *= front
+  const rt = rt0 + RIDGE.crumb * broken * ((fbm(A * 46 + 3, h / 2.6, 46, 64, 181, 3) - 0.5) + 0.5 * (fbm(A * 110 + 8, h / 1.1, 110, 64, 183, 2) - 0.5))
   const rk = Math.floor(rt)
   const rf = rt - rk
-  // Each hollow is a round scoop and two scoops meet in an edge, so the crest takes the light as a line.
   const under = rf < RIDGE.edge
   const rs = under ? rf / RIDGE.edge : 1 - (rf - RIDGE.edge) / (1 - RIDGE.edge)
-  const shape = mix(0.5 - 0.5 * Math.cos(Math.PI * rs), 1 - Math.cos((Math.PI / 2) * rs), RIDGE.sharp)
+  const shape = Math.sin((Math.PI / 2) * rs)
   const live = smooth(0.3, 0.56, fbm(A * 6 + 9, ((rf < RIDGE.edge ? rk : rk + 1) * 64) / RIDGE.starts, 6, 64, 147, 2))
-  const ridge = -RIDGE.deep * (1 - shape) * (0.14 + 0.86 * live) * (0.8 + 0.4 * fbm(A * 6 + 9, h / 16, 6, 64, 153, 3)) * mix(1, 0.3, smooth(55, 85, Math.abs(a180))) * smooth(1.2, 4.5, q.h) * smooth(lipH + 0.2, lipH - 2.8, q.h) * (1 - onTop)
-  const fade = smooth(0.0, 1.6, s) * smooth(m.total, m.total - 2.2, s)
-  const d = ((swell + ripple * (1 - 0.85 * smooth(lipH - 3.0, lipH - 0.5, q.h))) * (1 - 0.55 * onTop) + trough * (1 - onTop) + ridge + seatLip + lip + lumps) * fade
+  const ridge = -RIDGE.deep * Math.pow(1 - shape, 1.4) * mix(0.1 + 0.5 * live, RIDGE.broken, broken) * (0.8 + 0.4 * fbm(A * 6 + 9, h / 16, 6, 64, 153, 3)) * mix(1, 0.3, smooth(55, 85, Math.abs(a180))) * smooth(1.2, 4.5, q.h) * mix(RIDGE.collar, 1, smooth(rollH + 0.5, rollH - 1.5, q.h)) * (1 - onTop)
+  const fade = smooth(0.0, 1.6, s) * smooth(m.total, m.total - 1.5, s)
+  const d = ((swell + ripple * (1 - 0.5 * smooth(rollH - 1.0, rollH + 1.0, q.h))) * (1 - 0.55 * onTop) + trough * (1 - onTop) + ridge + seatLip + lip + lumps) * fade
   return { d, w, k, f, q, onTop, gh }
 }
 export function relief(m, az, s) {
@@ -251,16 +286,18 @@ export function relief(m, az, s) {
     const foot = it.r * FOOT[it.kind]
     const fan = it.kind === 'scallop' || it.kind === 'cockle'
     const long = it.kind === 'glass' || fan ? (it.long ?? 1) : 1
-    const reach = foot * long + 1.6
+    const reach = foot * long * (it.kind === 'glass' ? 1.5 : 1) + 1.6
     const u = da * RAD * q.r
     const v = s - it.s
     if (Math.abs(u) > reach || Math.abs(v) > reach) continue
     const t = (it.turn ?? 0) * RAD
-    const dist = Math.hypot((u * Math.cos(t) + v * Math.sin(t)) * (fan ? long : 1), (-u * Math.sin(t) + v * Math.cos(t)) / long)
+    const along = u * Math.cos(t) + v * Math.sin(t)
+    const up = -u * Math.sin(t) + v * Math.cos(t)
+    const dist = Math.hypot(along * (fan ? long : 1), up / long) / (it.kind === 'glass' ? shardAt(it, Math.atan2(up / long, along)) : 1)
     // A thing lies in a dish cut into the stone where the stone is, not where the turned shape was: level with its own middle.
     if (it.d0 === undefined) it.d0 = bare(m, it.az, it.s).d
     const inside = 1 - smooth(0.78 * foot, 1.07 * foot, dist)
-    const deep = it.kind === 'pearl' ? 0.2 * it.r : it.kind === 'glass' ? 0.3 + 0.05 * it.r : 0.12 + 0.04 * it.r
+    const deep = it.kind === 'pearl' ? 0.2 * it.r : it.kind === 'glass' ? 0.34 + 0.05 * it.r : 0.12 + 0.04 * it.r
     d = mix(d, it.d0, 0.88 * inside) - deep * inside
     seat = Math.max(seat, inside)
     halo = Math.max(halo, 1 - smooth(0.88 * foot, foot + 0.7 + 0.14 * foot, dist))
