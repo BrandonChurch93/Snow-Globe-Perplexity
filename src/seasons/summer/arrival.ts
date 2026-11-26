@@ -27,8 +27,8 @@ const LOOK = {
   gravity: 3400,
   ledge: { r: [46.5, 52.0], h: 40.3 },
   jump: { count: 14000, reachMm: 26, ringShare: 0, ringMm: 5, edgeDeg: [62, 76], liftMm: [1.2, 8], hopMm: [0.6, 5], quick: 0.11, tail: 0.5, tailShare: [0.6, 0.12], skidMm: [0.4, 3.2], radiusMm: [0.07, 0.15] },
-  fall: { count: 24000, gravity: 7000, az: 85, spread: 4, most: 2.2, r: [53.0, 53.4], h: [41.3, 42.4], outMmS: [6, 110], lean: 1.5, fanDeg: 2, downMmS: [10, 110], rate: [5.0, 6.7], radiusMm: [0.022, 0.065], fadeFrom: 0.9, core: [0.6, 5, 90], exposure: 0.3, longMm: 9, thinPx: 0.7, cover: 0.8, bright: [0.1, 3.4], even: 0.15, lit: 1.4, shaded: 0.08, puff: { seconds: 0.07, outMmS: [20, 130], upMmS: [40, 170], cover: 0.3, wide: 2.4 } },
-  loose: { count: 14000, radiusMm: [0.05, 0.19], x: [-140, 136], z: [-70, 150], thinPx: 0.8, vary: [0.3, 1.3] },
+  fall: { count: 24000, gravity: 7000, az: 85, spread: 5, most: 2.2, r: [53.0, 53.4], h: [41.3, 42.4], outMmS: [6, 145], lean: 1.0, fanDeg: 2, downMmS: [10, 110], rate: [5.0, 6.7], radiusMm: [0.022, 0.065], fadeFrom: 0.9, core: [0.6, 5, 90], exposure: 0.3, longMm: 12, thinPx: 0.7, cover: 0.38, low: [0.6, 0.48, 0.36], lowMm: [12, 40], least: [0.2, 0.7], bright: [0.1, 3.4], even: 0.15, lit: 1.4, shaded: 0.08, puff: { seconds: 0.07, outMmS: [20, 130], upMmS: [40, 170], cover: 0.3, wide: 2.4 } },
+  loose: { count: 14000, radiusMm: [0.05, 0.19], x: [-140, 136], z: [-70, 150], thinPx: 0.8, vary: [0.3, 2.0] },
   slope: { clearMm: 0.25, keeps: 0.75, crestMm: [60.5, 62.1], offMm: [0.12, 0.55], belly: [[60.3, 8], [60.3, 11.2], [59.7, 14.6], [58.6, 18], [57.3, 21.2], [55.8, 24.4], [54.3, 27.4], [53, 30.5], [52.8, 34], [52.7, 37.5], [52.6, 40]] },
   flow: { stand: 0.65, seconds: 1.6, gapMm: [0.3, 2.5] },
   exposure: 0.15,
@@ -257,11 +257,15 @@ void main() {
     float back = clamp(dot(-v, uGrainKey) * 0.5 + 0.5, 0.0, 1.0);
     float near = clamp((length(vStageWorld.xz) - 55.5) / 13.0, 0.0, 1.0);
     float sun = vGrainLook.z * mix(${SAND_LIT.shade.toFixed(3)}, 1.0, near) * ${sandShade('vStageWorld')};
-    vec3 lit = uGrainKeyCol * (sun * (face * (${SAND_LIT.sun.toFixed(3)} + ${SAND_LIT.back.toFixed(3)} * back * back) + ${SAND_LIT.thru.toFixed(3)} * thru)) + dome * (${SAND_LIT.sky.toFixed(3)} * mix(0.45, 1.0, near) * ${sandOpen('vStageWorld', 'vGrainLook.z')}) + uRigCardCol * (${SAND_LIT.card.toFixed(3)} * mix(0.3, 1.0, near) * clamp(dot(n, uRigCardDir) * 0.5 + 0.5, 0.0, 1.0));
+    vec3 lit = uGrainKeyCol * (sun * (face * (${SAND_LIT.sun.toFixed(3)} + ${SAND_LIT.back.toFixed(3)} * back * back) + ${SAND_LIT.thru.toFixed(3)} * thru)) + dome * ${vec(SAND_LIT.warm)} * (${SAND_LIT.sky.toFixed(3)} * mix(0.45, 1.0, near) * ${sandOpen('vStageWorld', 'vGrainLook.z')}) + uRigCardCol * (${SAND_LIT.card.toFixed(3)} * mix(0.3, 1.0, near) * clamp(dot(n, uRigCardDir) * 0.5 + 0.5, 0.0, 1.0));
     float vary = fract(id * 29.3 + id2 * 3.1);
     col = albedo * RECIPROCAL_PI * lit * mix(${LOOK.loose.vary[0]!.toFixed(2)}, ${LOOK.loose.vary[1]!.toFixed(2)}, vary * vary) + uGrainKeyCol * (sun * step(0.6, fract(id * 17.9)) * pow(abs(hk), 40.0) * ${SAND_LIT.glint.toFixed(3)});
   }
   float cover = vGrainCover * (1.0 - smoothstep(mix(0.55, 0.0, max(vGrainShape.y, step(1.5, vGrainShape.z))), 1.0, d2));
+  if (falls > 0.5) {
+    col *= mix(${vec(LOOK.fall.low)}, vec3(1.0), smoothstep(${LOOK.fall.lowMm[0]!.toFixed(1)}, ${LOOK.fall.lowMm[1]!.toFixed(1)}, vStageWorld.y));
+    cover *= smoothstep(${LOOK.fall.least[0]!.toFixed(2)}, ${LOOK.fall.least[1]!.toFixed(2)}, dot(col, vec3(0.2126, 0.7152, 0.0722)));
+  }
   gl_FragColor = vec4(col * cover, cover);
   if (uDiag != 0) gl_FragColor = stageDiag(albedo, n, 0.0, c, 0.0);
 }
