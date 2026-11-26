@@ -327,14 +327,16 @@ function takesCheck() {
   const ledger = readLedger()
   if (!ledger.takes.length) return set('A8', 'not run', 'no take is filed yet')
   const counts = {}
+  // A take is a call of the sound tool. A layer laid from takes costs nothing and is not one (decision 111).
   for (const t of ledger.takes) {
+    if (t.layer) continue
     const k = `${t.cue} in ${t.round ?? 'build'}`
     counts[k] = (counts[k] ?? 0) + 1
   }
   const over = Object.entries(counts).filter(([, n]) => n > cfg.audio.maxTakesPerCue)
   const cues = new Set(ledger.takes.map((t) => t.cue)).size
   const most = Math.max(...Object.values(counts))
-  set('A8', over.length ? 'open' : 'pass', over.length ? `over audio.maxTakesPerCue of ${cfg.audio.maxTakesPerCue}: ${list(over.map(([k, n]) => `${k} (${n})`))}` : `${ledger.takes.length} takes over ${cues} cues, at most ${most} for one cue in one round, limit ${cfg.audio.maxTakesPerCue}`, { counts })
+  set('A8', over.length ? 'open' : 'pass', over.length ? `over audio.maxTakesPerCue of ${cfg.audio.maxTakesPerCue}: ${list(over.map(([k, n]) => `${k} (${n})`))}` : `${ledger.takes.filter((t) => !t.layer).length} takes over ${cues} cues, at most ${most} for one cue in one round, limit ${cfg.audio.maxTakesPerCue}${ledger.takes.some((t) => t.layer) ? `; ${ledger.takes.filter((t) => t.layer).length} layers laid from them, not counted` : ''}`, { counts })
 }
 
 async function main() {

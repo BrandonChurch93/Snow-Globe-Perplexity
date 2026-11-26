@@ -418,7 +418,7 @@ try {
       await t.page.waitForTimeout(500)
       const high = await t.page.evaluate((s) => Number(getComputedStyle(document.querySelector(s)).opacity), sel.shake)
       await t.close()
-      return early === false && took > 7000 && took < 10500 && low > 0.2 && low < 0.5 && back === false && high === 1 ? '' : `dim facts ${JSON.stringify({ early, took, low, back, high })}`
+      return early === false && took > 7000 && took < 10500 && low >= 0.5 && low < 0.8 && back === false && high === 1 ? '' : `dim facts ${JSON.stringify({ early, took, low, back, high })}`
     })(),
     (async () => {
       const t = await open()
