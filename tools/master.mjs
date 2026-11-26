@@ -10,7 +10,7 @@ import { freeDiskGb, launch, machineId, pinnedBrowser, rendererName } from './li
 import { serve } from './lib/server.mjs'
 import { Run, argFrame, argText, pngOk, short } from './lib/frames.mjs'
 import { decodedHashes, encodeFinal, encodeMasterChunk, finalVideoArgs, frameLevels, framePsnr, haveFfmpeg, headerRefFrames, keyFrames, masterVideoArgs, probe, probeLine, probeStreams, scaleEvery, soundSeconds, startsFast, stillJpeg, toolVersions, videoSettings } from './lib/encode.mjs'
-import { COLOUR_TAGS, FPS, JOINS, LOOK_WIDTH, M, SOUND, STILL_MAX_MB, WHATS, bestRun, bigSha, chunkDir, chunkStem, coverReport, dB, encodeProofRows, finalKbps, framesOf, heartbeat, heldLine, heldRanges, hours, intermediateVideo, joinPlan, levelProblems, masterConfigProblems, openingPack, pad6, pictureLevels, procsProblem, NOT_A_NUMBER, notNumberLine, notNumberLoud, notNumberOf, notNumberRecord, notNumberUnknown, parseTake, procsGainLine, limitsLine, limitsRecord, localProblem, machineLimits, sameCommand, standInPicture, stoppedAt, stoppedLine, writeJsonAtomic, psnrFacts, rangeChunks, readChunks, recordMatchesRun, crfLadder, crfOf, resultName, sendGroups, shipTitle, shippedLine, split, splitFile, stillName, stillToDo, table, takeFiles, tierOf, totalsFromCut, unsplitFile, hashFolder, chunkName } from './lib/master.mjs'
+import { COLOUR_TAGS, FPS, JOINS, LOOK_WIDTH, M, SOUND, STILL_MAX_MB, WHATS, bestRun, bigSha, chunkDir, chunkStem, coverReport, dB, encodeProofRows, finalKbps, framesOf, heartbeat, firstPlace, heldLine, heldRanges, hours, intermediateVideo, joinPlan, markedHolder, notNumberFrames, levelProblems, masterConfigProblems, openingPack, pad6, pictureLevels, procsProblem, NOT_A_NUMBER, notNumberLine, notNumberLoud, notNumberOf, notNumberRecord, notNumberUnknown, parseTake, procsGainLine, limitsLine, limitsRecord, localProblem, machineLimits, sameCommand, standInPicture, stoppedAt, stoppedLine, writeJsonAtomic, psnrFacts, rangeChunks, readChunks, recordMatchesRun, crfLadder, crfOf, resultName, sendGroups, shipTitle, shippedLine, split, splitFile, stillName, stillToDo, table, takeFiles, tierOf, totalsFromCut, unsplitFile, hashFolder, chunkName } from './lib/master.mjs'
 import { Shipper, identityProblem, mainAuthor, collectBranches, repoFacts } from './lib/mastergit.mjs'
 
 const args = parseArgs(process.argv.slice(2))
@@ -209,7 +209,7 @@ async function source(ctx, lock) {
       picture: async (index) => {
         if (index === ctx.failAt) throw new Error('the WebGL context was lost before the picture was read back (a stand-in said so, for a test). No picture was written.')
         const rgb = standInPicture(width, height, index)
-        return { png: await sharp(rgb, { raw: { width, height, channels: 3 } }).png({ compressionLevel: 3 }).toBuffer(), rgb, notNumber: index === ctx.nanAt ? 3 : 0, sanityMs: 0 }
+        return { png: await sharp(rgb, { raw: { width, height, channels: 3 } }).png({ compressionLevel: 3 }).toBuffer(), rgb, notNumber: index === ctx.nanAt ? 3 : 0, sanityMs: 0, first: index === ctx.nanAt ? { x: 7, y: 5, channel: 'green', kind: 'no number' } : null }
       },
       close: async () => {},
     }
@@ -254,7 +254,7 @@ async function source(ctx, lock) {
         const sane = await page.evaluate(() => window.showcase.dev.sanity())
         const sanityMs = Date.now() - s0
         if (!Number.isInteger(sane?.invalid)) throw new Error(`the page gave no count of values that are no number for frame ${index}`)
-        return { png, rgb: await rgbOf(png), notNumber: sane.invalid, sanityMs }
+        return { png, rgb: await rgbOf(png), notNumber: sane.invalid, sanityMs, first: firstPlace(sane.first) }
       },
       close: async () => {
         await run.close()
@@ -332,8 +332,9 @@ async function doChunk(ctx, src, c, progress) {
     let rgb
     let notNumber
     let sanityMs
+    let first
     try {
-      ;({ png, rgb, notNumber = null, sanityMs = null } = await src.picture(index))
+      ;({ png, rgb, notNumber = null, sanityMs = null, first = null } = await src.picture(index))
     } catch (e) {
       const more = String(e.message).split('\n').slice(1).join('\n')
       throw new Error(`${stoppedLine(c, index, e.message)} ${stays}${more ? `\n${more}` : ''}`)
@@ -342,7 +343,7 @@ async function doChunk(ctx, src, c, progress) {
     if (!fs.existsSync(factsFile)) writeJson(factsFile, src.facts())
     const seen = pictureLevels(rgb)
     if (seen.flat && ctx.engine) throw new Error(`${stoppedLine(c, index, 'the frame came back as one flat value over the whole picture. Nothing was written for it. Look at dmesg for a killed chrome process.')} ${stays}`)
-    const side = { index, seconds: Math.round(seconds * 1000) / 1000, sha256: sha256(rgb), mean: Math.round(seen.mean * 1000) / 1000, flat: seen.flat, ...(notNumber === null ? {} : { notNumber, sanityMs }) }
+    const side = { index, seconds: Math.round(seconds * 1000) / 1000, sha256: sha256(rgb), mean: Math.round(seen.mean * 1000) / 1000, flat: seen.flat, ...(notNumber === null ? {} : { notNumber, sanityMs, ...(first ? { notNumberFirst: first } : {}) }) }
     writeJson(file.replace(/\.png$/, '.json'), side)
     fs.writeFileSync(`${file}.tmp`, png)
     fs.renameSync(`${file}.tmp`, file)
@@ -350,7 +351,7 @@ async function doChunk(ctx, src, c, progress) {
       const kept = path.join(ctx.work, 'not-a-number', `${pad6(index)}.png`)
       fs.mkdirSync(path.dirname(kept), { recursive: true })
       fs.copyFileSync(file, kept)
-      say(`${notNumberLoud(ctx.what, index, notNumber)} Its PNG is kept as ${short(kept)}.`)
+      say(`${notNumberLoud(ctx.what, index, notNumber, first)} Its PNG is kept as ${short(kept)}.`)
     }
     frames.push({ file, ...side })
     progress.left--
@@ -446,7 +447,7 @@ async function doChunk(ctx, src, c, progress) {
   writeJsonAtomic(f.json, record)
   fs.rmSync(dir, { recursive: true, force: true })
   const mean = record.frameSeconds.reduce((a, b) => a + b, 0) / frames.length
-  say(`finished ${chunkStem(ctx.what, c.first, c.last)}: ${frames.length} frames, ${mean.toFixed(1)} s a frame, crf ${crfOf(record)}, ${mb(record.bytes)} MB${record.parts ? ` in ${record.parts.length} parts` : ''}, luma PSNR against the PNGs least ${verify.psnr.least} dB (frame ${verify.psnr.leastFrame}), mean ${verify.psnr.mean} dB. Its PNGs are deleted${still ? `, but for ${short(f.still)}` : ''}${record.mark ? `. It is marked ${NOT_A_NUMBER}: frames ${record.notNumber.frames.map((x) => `${x.frame} (${x.count})`).join(', ')}` : ''}`)
+  say(`finished ${chunkStem(ctx.what, c.first, c.last)}: ${frames.length} frames, ${mean.toFixed(1)} s a frame, crf ${crfOf(record)}, ${mb(record.bytes)} MB${record.parts ? ` in ${record.parts.length} parts` : ''}, luma PSNR against the PNGs least ${verify.psnr.least} dB (frame ${verify.psnr.leastFrame}), mean ${verify.psnr.mean} dB. Its PNGs are deleted${still ? `, but for ${short(f.still)}` : ''}${record.mark ? `. It is marked ${NOT_A_NUMBER}: frames ${notNumberFrames(record)}` : ''}`)
   return record
 }
 
@@ -641,7 +642,7 @@ function collect() {
   const held = heldRanges(readChunks([rel('out', 'master'), dir]), { take: parseTake(args.take), exists: fs.existsSync })
   for (const g of held) if (g.holders.length > 1) say(g.taken ? heldLine(g) : `NOT AGREED: ${heldLine(g)}`)
   const open = held.filter((g) => !g.taken)
-  const all = held.map((g) => g.taken ?? g.holders.find((c) => notNumberOf(c.record)) ?? g.holders[0])
+  const all = held.map((g) => markedHolder(g) ?? g.taken ?? g.holders[0])
   const taken = held.filter((g) => g.taken && fs.existsSync(g.taken.file)).map((g) => g.taken)
   const waiting = held.filter((g) => g.taken && !fs.existsSync(g.taken.file)).map((g) => g.taken)
   if (waiting.length) say(`${waiting.length} ${waiting.length === 1 ? 'record has' : 'records have'} no picture here yet: ${waiting.slice(0, 12).map(chunkName).join('; ')}${waiting.length > 12 ? '; ...' : ''}`)
