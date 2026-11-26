@@ -20,6 +20,21 @@ const TAU = 2 * Math.PI
 
 type KindColors = Readonly<Record<string, { color: Rgb; glow: number }>>
 
+/** The largest point a machine must draw for the film's sprites to hold every shape: SwiftShader's, 1023 px. */
+export const SPRITE_POINT_PX = 1023
+/** The half side a quad is cut to, the same on every machine: a quad has no machine limit. */
+export const QUAD_HALF_PX = 512
+/**
+ * Which mesh draws the particles, and the half side a shape is cut to. A point sprite is cut to the machine's
+ * largest point (256 px on Mesa's software renderers), and the cut is a square edge in the picture. So the film
+ * path keeps its sprites only where the machine's largest point is SPRITE_POINT_PX or more, and otherwise draws
+ * the quads the live app draws.
+ */
+export function pointMesh(live: boolean, maxPointPx: number): { quads: boolean; halfPx: number } {
+  const quads = live || maxPointPx < SPRITE_POINT_PX
+  return { quads, halfPx: quads ? QUAD_HALF_PX : Math.max(4, maxPointPx / 2) }
+}
+
 export class ParticleDraw {
   readonly points = new THREE.Group()
   private readonly sprites: THREE.Points
@@ -135,12 +150,13 @@ export class ParticleDraw {
 
   frame(source: ParticleSource, f: StageFrame): void {
     this.points.visible = f.view !== 'flow' && f.view !== 'lightgrid'
-    this.sprites.visible = !f.live
-    this.quads.visible = f.live
+    const mesh = pointMesh(f.live, this.maxPointPx)
+    this.sprites.visible = !mesh.quads
+    this.quads.visible = mesh.quads
     const gate = Math.min(1, Math.max(0, (f.turbulence - LENS_LOOK.stormFrom) / (LENS_LOOK.stormTo - LENS_LOOK.stormFrom)))
     const stormy = f.live || f.view === 'cover' || (f.sample !== null && f.view === '')
     this.storm = stormy ? gate * gate * (3 - 2 * gate) : 0
-    this.fill(source, f.quality.particleFraction, f.live, f.moment.mix)
+    this.fill(source, f.quality.particleFraction, mesh.quads, f.moment.mix)
     this.shown = stormy ? Math.min(1, SETTLE_SHOWN / Math.max(this.afloat, 1e-3)) : 1
     this.paced = stormy ? 1 : 0
     veilSettle(this.afloat)
@@ -161,7 +177,7 @@ export class ParticleDraw {
     }
   }
 
-  private fill(source: ParticleSource, fraction: number, live: boolean, mix: number): void {
+  private fill(source: ParticleSource, fraction: number, quads: boolean, mix: number): void {
     const n = source.count
     if (n !== this.capacity) this.allocate(Math.max(1, n))
     this.arrays[0]!.set(source.pos.subarray(0, n * 3))
@@ -186,7 +202,7 @@ export class ParticleDraw {
       else if (s < 2.5) down++
     }
     this.afloat = up + down > 0 ? up / (up + down) : 0
-    for (const a of live ? this.instanced : this.single) a.needsUpdate = true
+    for (const a of quads ? this.instanced : this.single) a.needsUpdate = true
     this.drawn = Math.max(0, Math.min(n, Math.floor(n * fraction)))
     this.sprites.geometry.setDrawRange(0, this.drawn)
     const bats = this.uniforms.uBat!.value as THREE.Vector4[]
@@ -226,7 +242,7 @@ export class ParticleDraw {
     ;(u.uTone!.value as THREE.Vector4).w = LENS_LOOK.glassDiscPx * scale
     const limit = u.uLimit!.value as THREE.Vector4
     limit.x = LENS_LOOK.maxStreakPx * scale
-    limit.y = Math.max(4, this.maxPointPx / 2)
+    limit.y = pointMesh(f.live, this.maxPointPx).halfPx
   }
 
   private lights(f: StageFrame): void {
