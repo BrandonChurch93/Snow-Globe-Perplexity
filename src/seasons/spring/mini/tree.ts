@@ -5,7 +5,7 @@ import { stageMaterial } from '../../../core/materials'
 import { geometry, meshLevel, prepareModel } from '../../../core/models'
 import { levels } from '../../../core/quality'
 import { lampFlame } from '../../../miniature/roof'
-import { bakeGlow, buildTrunk, crownOffset, glowHook, prepareTrunk, trunkShape, trunkSolid, type GlowLight } from '../../../miniature/trunk'
+import { crownOffset, glowHook, glowing, prepareTrunk, trunkMaking, trunkShape, trunkSolid, type GlowLight } from '../../../miniature/trunk'
 import { emitters } from '../../../scene/layout'
 import type { InnerLight, KitMoment, Vec3 } from '../../kit'
 import { season, tones } from './palette'
@@ -34,10 +34,10 @@ export const innerLights: InnerLight[] = []
 
 const lampOn = (look: { power: number; reachMm: number; wrap: number }): GlowLight[] => [{ at: lamp, color: WARM, phase: 0.1, ...look }]
 
-function placed(name: string, lights: readonly GlowLight[]): THREE.BufferGeometry {
+function* placed(name: string, lights: readonly GlowLight[]): Generator<void, THREE.BufferGeometry> {
   const g = geometry(MODEL, name).clone()
   g.translate(offset[0], offset[1], offset[2])
-  bakeGlow(g, lights)
+  yield* glowing(g, lights)
   return g
 }
 
@@ -166,10 +166,10 @@ export async function prepare(): Promise<void> {
 }
 
 export function* making(): Generator<void, THREE.Object3D> {
-  const trunk = buildTrunk(PART, lampOn(LAMP_ON_WOOD), tones.bark)
+  const trunk = yield* trunkMaking(PART, lampOn(LAMP_ON_WOOD), tones.bark)
   trunk.material = barkMaterial(trunk.material as THREE.MeshStandardMaterial)
   yield
-  const blossom = new THREE.Mesh(placed('blossom', lampOn(LAMP_ON_BLOSSOM)), blossomMaterial())
+  const blossom = new THREE.Mesh(yield* placed('blossom', lampOn(LAMP_ON_BLOSSOM)), blossomMaterial())
   blossom.castShadow = true
   blossom.receiveShadow = true
   const inShadow = (geometry(MODEL, 'blossom').userData.extras as { shadow?: Record<string, number> } | undefined)?.shadow ?? {}
@@ -179,7 +179,7 @@ export function* making(): Generator<void, THREE.Object3D> {
   blossom.onBeforeRender = (_r, _s, _c, g) => g.setDrawRange(0, lighter() && blossom.matrixWorld.determinant() < 0 ? (inShadow[meshLevel()] ?? Infinity) : Infinity)
   blossom.onAfterRender = (_r, _s, _c, g) => g.setDrawRange(0, Infinity)
   yield
-  const twigs = new THREE.Mesh(placed('twigs', lampOn(LAMP_ON_WOOD)), twigMaterial())
+  const twigs = new THREE.Mesh(yield* placed('twigs', lampOn(LAMP_ON_WOOD)), twigMaterial())
   twigs.castShadow = true
   twigs.receiveShadow = true
   twigs.onBeforeShadow = (_r, _o, _c, _s, g) => g.setDrawRange(0, lighter() ? 0 : Infinity)

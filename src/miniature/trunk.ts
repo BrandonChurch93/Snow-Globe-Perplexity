@@ -4,6 +4,7 @@ import { geometry, prepareModel } from '../core/models'
 import { stream } from '../core/rng'
 import { texture } from '../core/textures'
 import { groundAt, tree } from '../scene/layout'
+import { ROW, whole } from '../scene/steps'
 import type { Vec3 } from '../seasons/kit'
 
 export interface Pad {
@@ -577,12 +578,13 @@ export const trunkSolid = (x: number, y: number, z: number): number => Math.min(
 
 export const glow = { uTwinkle: { value: new THREE.Vector4(0, 0, 1, 0) } }
 
-export function bakeGlow(g: THREE.BufferGeometry, lights: readonly GlowLight[], wrapLight = 0.35): void {
+export function* glowing(g: THREE.BufferGeometry, lights: readonly GlowLight[], wrapLight = 0.35): Generator<void, void> {
   const pos = g.getAttribute('position')
   const nor = g.getAttribute('normal')
   const n = pos.count
   const out = new Float32Array(n * 4)
   for (let i = 0; i < n; i++) {
+    if (i % ROW === 0) yield
     const x = pos.getX(i)
     const y = pos.getY(i)
     const z = pos.getZ(i)
@@ -618,6 +620,10 @@ export function bakeGlow(g: THREE.BufferGeometry, lights: readonly GlowLight[], 
   g.setAttribute('aGlow', new THREE.BufferAttribute(out, 4))
 }
 
+export function bakeGlow(g: THREE.BufferGeometry, lights: readonly GlowLight[], wrapLight = 0.35): void {
+  whole(glowing(g, lights, wrapLight))
+}
+
 export function glowHook(shader: THREE.WebGLProgramParametersWithUniforms, albedo = 'material.diffuseContribution', relief = 0): void {
   shader.uniforms.uTwinkle = glow.uTwinkle
   shader.vertexShader = shader.vertexShader
@@ -635,12 +641,13 @@ export function prepareTrunk(): Promise<void> {
   return prepareModel(MODEL)
 }
 
-export function placeGeometry(source: THREE.BufferGeometry): THREE.BufferGeometry {
+export function* placing(source: THREE.BufferGeometry): Generator<void, THREE.BufferGeometry> {
   const g = source.clone()
   const pos = g.getAttribute('position')
   const nor = g.getAttribute('normal')
   const e = 0.05
   for (let i = 0; i < pos.count; i++) {
+    if (i % ROW === 0) yield
     const x = pos.getX(i)
     const h = pos.getY(i)
     const z = pos.getZ(i)
@@ -658,9 +665,13 @@ export function placeGeometry(source: THREE.BufferGeometry): THREE.BufferGeometr
   return g
 }
 
-export function buildTrunk(part: string, lights: readonly GlowLight[] = [], tint: Rgb = [0.8, 1.5, 2.6]): THREE.Mesh {
-  const g = placeGeometry(geometry(MODEL, 'trunk'))
-  bakeGlow(g, lights)
+export function placeGeometry(source: THREE.BufferGeometry): THREE.BufferGeometry {
+  return whole(placing(source))
+}
+
+export function* trunkMaking(part: string, lights: readonly GlowLight[] = [], tint: Rgb = [0.8, 1.5, 2.6]): Generator<void, THREE.Mesh> {
+  const g = yield* placing(geometry(MODEL, 'trunk'))
+  yield* glowing(g, lights)
   const normal = texture(BARK_NORMAL)
   const m = stageMaterial({
     part,
@@ -680,4 +691,8 @@ export function buildTrunk(part: string, lights: readonly GlowLight[] = [], tint
   mesh.castShadow = true
   mesh.receiveShadow = true
   return mesh
+}
+
+export function buildTrunk(part: string, lights: readonly GlowLight[] = [], tint: Rgb = [0.8, 1.5, 2.6]): THREE.Mesh {
+  return whole(trunkMaking(part, lights, tint))
 }

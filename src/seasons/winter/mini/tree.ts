@@ -6,7 +6,8 @@ import { geometry, prepareModel } from '../../../core/models'
 import { texture } from '../../../core/textures'
 import { haloGeometry, haloMaterial } from '../../../miniature/glow'
 import { lampFlame } from '../../../miniature/roof'
-import { bakeGlow, buildTrunk, crownCap, crownField, crownOffset, glow, glowHook, pads, placeGeometry, placePoint, prepareTrunk, trunkSolid, type GlowLight } from '../../../miniature/trunk'
+import { crownCap, crownField, crownOffset, glow, glowHook, glowing, pads, placeGeometry, placePoint, placing, prepareTrunk, trunkMaking, trunkSolid, type GlowLight } from '../../../miniature/trunk'
+import { whole } from '../../../scene/steps'
 import type { InnerLight, KitMoment, Vec3 } from '../../kit'
 import { season, tones } from './palette'
 
@@ -247,11 +248,13 @@ function lampOn(on: { power: number; reachMm: number; wrap: number }): GlowLight
 
 const onSnow = (): GlowLight[] => [...bulbs(GLOW.snow), lampOn(LAMP_ON_SNOW), { at: placePoint(SKY_FROM), color: tones.sheen, ...SKY_ON_SNOW, phase: 0.6 }]
 
-function placed(name: string, lit: readonly GlowLight[]): THREE.BufferGeometry {
-  const g = placeGeometry(geometry(MODEL, name))
-  bakeGlow(g, lit)
+function* placedInSteps(name: string, lit: readonly GlowLight[]): Generator<void, THREE.BufferGeometry> {
+  const g = yield* placing(geometry(MODEL, name))
+  yield* glowing(g, lit)
   return g
 }
+
+const placed = (name: string, lit: readonly GlowLight[]): THREE.BufferGeometry => whole(placedInSteps(name, lit))
 
 function solidMesh(g: THREE.BufferGeometry, m: THREE.Material): THREE.Mesh {
   const mesh = new THREE.Mesh(g, m)
@@ -270,11 +273,11 @@ export function* making(): Generator<void, THREE.Object3D> {
   const snow = stageMaterial({ part, standIn: false, inside: true, miniature: true, change: 'miniature', map: texture(SNOW), color: new THREE.Color(SNOW_TINT[0], SNOW_TINT[1], SNOW_TINT[2]), vertexColors: true, roughness: 0.8, hook: snowHook, key: 'tree-snow' })
   const fill: GlowLight = { at: placePoint(FILL_FROM), color: tones.sheen, ...FILL_ON_WOOD, phase: 0.6 }
   const all = new THREE.Group()
-  const trunk = buildTrunk(part, [...bulbs(GLOW.wood), lampOn(LAMP_ON_WOOD), fill], BARK)
+  const trunk = yield* trunkMaking(part, [...bulbs(GLOW.wood), lampOn(LAMP_ON_WOOD), fill], BARK)
   yield
-  const crown = solidMesh(placed('needles', [...bulbs(GLOW.needles), lampOn(LAMP_ON_NEEDLES), { ...fill, ...FILL_ON_NEEDLES, at: placePoint(FILL_ON_NEEDLES_FROM) }]), needles)
+  const crown = solidMesh(yield* placedInSteps('needles', [...bulbs(GLOW.needles), lampOn(LAMP_ON_NEEDLES), { ...fill, ...FILL_ON_NEEDLES, at: placePoint(FILL_ON_NEEDLES_FROM) }]), needles)
   yield
-  return all.add(trunk, crown, solidMesh(placed('snow', onSnow()), snow))
+  return all.add(trunk, crown, solidMesh(yield* placedInSteps('snow', onSnow()), snow))
 }
 
 export function lights(): THREE.Object3D {

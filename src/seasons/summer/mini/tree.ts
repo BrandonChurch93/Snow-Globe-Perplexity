@@ -5,7 +5,8 @@ import { geometry, prepareModel } from '../../../core/models'
 import { texture } from '../../../core/textures'
 import { haloGeometry } from '../../../miniature/glow'
 import { lampFlame } from '../../../miniature/roof'
-import { bakeGlow, buildTrunk, crownOffset, glow, glowHook, padAxes, placeGeometry, placePoint, prepareTrunk, trunkSolid, type GlowLight } from '../../../miniature/trunk'
+import { crownOffset, glow, glowHook, glowing, padAxes, placePoint, placing, prepareTrunk, trunkMaking, trunkSolid, type GlowLight } from '../../../miniature/trunk'
+import { ROW } from '../../../scene/steps'
 import type { InnerLight, KitMoment, Vec3 } from '../../kit'
 import { crownPads, leafField } from './crown'
 import { lanterns, type Lantern } from './lanterns'
@@ -278,13 +279,14 @@ function lampOn(on: { power: number; reachMm: number; wrap: number }): GlowLight
 }
 
 // Which pad a leaf belongs to, as the way that pad's own rounded body faces there (a flat ellipsoid about the pad's middle), and how high in the pad it stands.
-function bakePads(g: THREE.BufferGeometry): void {
+function* bakePads(g: THREE.BufferGeometry): Generator<void, void> {
   const pos = g.getAttribute('position')
   const out = new Float32Array(pos.count * 4)
   const frames = crownPads.map((p) => ({ ...p, at: placePoint(p.at) })).map((p) => ({ at: p.at, size: p.size, ...padAxes(p) }))
   const dist = new Float64Array(frames.length)
   const dirs = new Float64Array(frames.length * 4)
   for (let i = 0; i < pos.count; i++) {
+    if (i % ROW === 0) yield
     let least = Infinity
     frames.forEach((f, k) => {
       const dx = pos.getX(i) - f.at[0]
@@ -328,17 +330,15 @@ export function* making(): Generator<void, THREE.Object3D> {
   const part = `miniature-${season}`
   const fill = placePoint(FILL_FROM)
   const leaves = stageMaterial({ part, standIn: false, inside: true, miniature: true, change: 'miniature', map: texture(LEAVES), color: new THREE.Color(LEAF_TINT[0], LEAF_TINT[1], LEAF_TINT[2]), vertexColors: true, roughness: 0.82, side: THREE.DoubleSide, hook: leafHook, key: 'tree-leaves-summer' })
-  const g = placeGeometry(geometry(MODEL, 'leaves'))
-  yield
-  bakePads(g)
-  yield
-  bakeGlow(g, [...paperOn(GLOW.leaves), lampOn(LAMP_ON_LEAVES), { at: fill, color: tones.sun, ...FILL_ON_LEAVES, phase: 0.6 }])
+  const g = yield* placing(geometry(MODEL, 'leaves'))
+  yield* bakePads(g)
+  yield* glowing(g, [...paperOn(GLOW.leaves), lampOn(LAMP_ON_LEAVES), { at: fill, color: tones.sun, ...FILL_ON_LEAVES, phase: 0.6 }])
   yield
   const crown = new THREE.Mesh(g, leaves)
   crown.castShadow = true
   crown.receiveShadow = false
   yield
-  const trunk = buildTrunk(part, [...paperOn(GLOW.wood), lampOn(LAMP_ON_WOOD), { at: fill, color: tones.sun, ...FILL_ON_WOOD, phase: 0.6 }], BARK)
+  const trunk = yield* trunkMaking(part, [...paperOn(GLOW.wood), lampOn(LAMP_ON_WOOD), { at: fill, color: tones.sun, ...FILL_ON_WOOD, phase: 0.6 }], BARK)
   yield
   const shared = trunk.material as THREE.MeshStandardMaterial
   const wood = trunk.geometry.getAttribute('position') as THREE.BufferAttribute
@@ -357,6 +357,7 @@ export function* making(): Generator<void, THREE.Object3D> {
   }
   const stemmed = new Float32Array(wood.count)
   for (let i = 0; i < wood.count; i++) {
+    if (i % ROW === 0) yield
     const far = ease(THICK.nearMm, THICK.farMm, Math.hypot(wood.getX(i) - stem.x / stem.n, wood.getZ(i) - stem.z / stem.n))
     const high = ease(THICK.fromMm, THICK.toMm, wood.getY(i) - box.min.y)
     const d = (THICK.footMm + (THICK.crownMm - THICK.footMm) * high) * (1 + (THICK.twig - 1) * far)

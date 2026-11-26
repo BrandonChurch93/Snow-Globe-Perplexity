@@ -10,7 +10,7 @@ import { GLOW, glowGeometry, glowMaterial, glowPiece, haloGeometry, haloMaterial
 import { MIRROR_GLSL, mirrorUniforms } from '../../../miniature/mirror'
 import { prepareVillage, tileMm, villageGeometry, villageGrain } from '../../../miniature/model'
 import { hangPoints, lampFlame, lampFoot, pitch, ridgeY, roofLength, shrubDistance, slopeLength } from '../../../miniature/roof'
-import { BUMP_GLSL, NEAR_LIGHT, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, withSurface, type Cover, type GlowSource } from '../../../miniature/surface'
+import { BUMP_GLSL, NEAR_LIGHT, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, surfacing, withSurface, type Cover, type GlowSource } from '../../../miniature/surface'
 import { wispGeometry, wispMaterial, wispPose, type Wisp, type WispLook } from '../../../miniature/wisp'
 import { anchors, bankAt, cottage, cottageFrame, cottagePoint, driftAt, groundAt, heapAt, moundSlope, pond, pondField, rimAt, solidDistance, tree } from '../../../scene/layout'
 import { gainOf } from '../../../scene/lightgrid'
@@ -310,13 +310,15 @@ const plume = wispGeometry(WISP)
 const storm = { value: 0 }
 
 export function* making(): Generator<void, THREE.Object3D> {
-  const solids = withSurface(mergeGeometries([villageGeometry('solid'), geometry(MODEL, 'decor')]), nearWall)
+  const merged = mergeGeometries([villageGeometry('solid'), geometry(MODEL, 'decor')])
+  yield
+  const solids = yield* surfacing(merged, nearWall)
   yield
   const walls = shadowed(new THREE.Mesh(solids, surfaceMaterial({ part: PART, map: villageGrain(), gain, cover: dusting, key: 'village-solid-winter', fill: WALL_FILL })))
   yield
-  const snow = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'snow'), near), snowMaterial(PART, 'miniature', 'village-snow', '')))
+  const snow = shadowed(new THREE.Mesh(yield* surfacing(geometry(MODEL, 'snow'), near), snowMaterial(PART, 'miniature', 'village-snow', '')))
   yield
-  const ice = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'ice'), near), iceMaterial()), false)
+  const ice = shadowed(new THREE.Mesh(yield* surfacing(geometry(MODEL, 'ice'), near), iceMaterial()), false)
   yield
   const smoke = new THREE.Mesh(plume, wispMaterial(PART, tones.smoke, WISP_LOOK, texture(PLUME), clock, storm))
   smoke.renderOrder = 3

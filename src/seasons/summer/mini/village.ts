@@ -9,9 +9,10 @@ import { GLOW, glowGeometry, glowMaterial, glowPiece, haloGeometry, haloMaterial
 import { MIRROR_GLSL, MIRROR_MAX, mirrorUniforms } from '../../../miniature/mirror'
 import { prepareVillage, tileMm, villageGeometry, villageGrain } from '../../../miniature/model'
 import { lampFlame, lampFoot, shrubDistance } from '../../../miniature/roof'
-import { BUMP_GLSL, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, withSurface, type GlowSource } from '../../../miniature/surface'
+import { BUMP_GLSL, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, surfacing, type GlowSource } from '../../../miniature/surface'
 import { anchors, cottage as house, cottageFrame, groundAt, moundAt, moundSlope, pond, solidDistance, tree } from '../../../scene/layout'
 import { gainOf } from '../../../scene/lightgrid'
+import { ROW } from '../../../scene/steps'
 import type { InnerLight, KitMoment } from '../../kit'
 import { lanterns, type Lantern } from './lanterns'
 import { isTree, season, tones } from './palette'
@@ -50,8 +51,6 @@ const SUN_POOLS: readonly [number, number, number, number, number][] = [[1.5, 24
 const GRASS_LOOK = { fill: 0.05, wrap: 1.0, through: 0.16, near: 0.13, sun: 0.5, patchLow: 0.12, moss: [0.15, 0.2, 0.34] as Rgb, patchPerMm: 0.3, sunRoot: 0.12, rightDark: 0.35, rightGlow: 0.15, rightFromMm: 1, rightToMm: 6, shade: [0.26, 0.3, 0.45] as Rgb }
 const ROOF = { slate: [0.07, 0.11, 0.21] as Rgb, chimney: [0.21, 0.225, 0.25] as Rgb, vary: 0.75, varyMm: 1.3, stone: [0.62, 0.59, 0.54] as Rgb, block: [0.62, 0.59, 0.54] as Rgb, paneMm: 2.2, stoneMid: 0.55, blockMid: 0.55, gableMm: 0.55, gableDeepMm: 0.9, underMm: 0.7, stoneFlat: 1.0, stoneHue: 0.5, plank: [0.36, 0.3, 0.26] as Rgb, plankMm: 2.2, plankTall: 3.8, pitch: 0.2, stoneMm: 1.4, picket: [0.85, 0.5, 0.27] as Rgb, picketMm: 1.6, boardMm: 0.9, boardVary: 0.9, grainMm: 0.22, grainVary: 0.5, boardFoot: 0.7, boardTall: 3.2, pale: 0.25, rail: [2.3, 1.1, 0.5] as Rgb, railTop: 2.0, door: [0.1, 0.052, 0.034] as Rgb, verge: [0.11, 0.085, 0.07] as Rgb, sheen: 1.5, sheenMm: 3.5, doorMm: 2.9, reachMm: 0.4, buryMm: 1.5 }
 const DARK_PANE = 0.8
-/** How many points of the walls are dressed before the page may give a frame. */
-const DRESS_ROW = 4000
 const STONE_TOP = { sky: 1.6, fromMm: 2, toMm: 4 }
 // The shared stone map lies stretched along the walls and reads as courses of logs. The approved's walls are round cobbles of
 // unlike size in dark joints, lit on their upper left: cells drawn pixel by pixel in place of the map's grain, the bump laid flat.
@@ -108,11 +107,12 @@ const patches = lanterns
   })
   .map((l) => ({ at: hugged(l), color: embered(poolOf(l.tone)), reachMm: POOL.patchReach * l.radius, startS: startOf(l.order), rampS: l.order < 2 ? POOL.firstRampS : POOL.rampS }))
 
-function withPools(g: THREE.BufferGeometry, pools: readonly Pool[]): THREE.BufferGeometry {
+function* withPools(g: THREE.BufferGeometry, pools: readonly Pool[]): Generator<void, THREE.BufferGeometry> {
   const P = g.getAttribute('position')
   const N = g.getAttribute('normal')
   const out = new Float32Array(P.count * 4)
   for (let i = 0; i < P.count; i++) {
+    if (i % ROW === 0) yield
     let weight = 0
     let start = 0
     for (const l of pools) {
@@ -579,9 +579,12 @@ function* dressed(g: THREE.BufferGeometry, sharedCount: number): Generator<void,
   // The top of a rail or a post is seen edge on and holds no light: the sides take it at their upper edge, where they meet it.
   const placed = (i: number): string => `${Math.round(P.getX(i) * 20)},${Math.round(P.getY(i) * 20)},${Math.round(P.getZ(i) * 20)}`
   const tops = new Set<string>()
-  for (let i = 0; i < sharedCount; i++) if (N.getY(i) > 0.5 && solidDistance(P.getX(i), P.getY(i), P.getZ(i), fence) < ROOF.reachMm) tops.add(placed(i))
   for (let i = 0; i < sharedCount; i++) {
-    if (i % DRESS_ROW === 0) yield
+    if (i % ROW === 0) yield
+    if (N.getY(i) > 0.5 && solidDistance(P.getX(i), P.getY(i), P.getZ(i), fence) < ROOF.reachMm) tops.add(placed(i))
+  }
+  for (let i = 0; i < sharedCount; i++) {
+    if (i % ROW === 0) yield
     const x = P.getX(i)
     const y = P.getY(i)
     const z = P.getZ(i)
@@ -688,17 +691,17 @@ export function* making(): Generator<void, THREE.Object3D> {
   yield
   const stone = yield* dressed(merged, shared.getAttribute('position').count)
   yield
-  const lit = withSurface(stone, nearWall)
+  const lit = yield* surfacing(stone, nearWall)
   yield
-  const solids = withPools(lit, lawnPools)
+  const solids = yield* withPools(lit, lawnPools)
   yield
   const walls = unmirrored(shadowed(new THREE.Mesh(solids, rimmed(surfaceMaterial({ part: PART, map: villageGrain(), gain, key: 'village-solid-summer', fill: WALL_FILL })))), shared.index ? shared.index.count : shared.getAttribute('position').count)
   yield
-  const ground = shadowed(new THREE.Mesh(withPools(withSurface(geometry(MODEL, 'ground'), near), lawnPools), turfMaterial()), false)
+  const ground = shadowed(new THREE.Mesh(yield* withPools(yield* surfacing(geometry(MODEL, 'ground'), near), lawnPools), turfMaterial()), false)
   yield
-  const grass = unmirrored(shadowed(new THREE.Mesh(withPools(withSurface(geometry(MODEL, 'grass'), near), lawnPools), grassMaterial()), false))
+  const grass = unmirrored(shadowed(new THREE.Mesh(yield* withPools(yield* surfacing(geometry(MODEL, 'grass'), near), lawnPools), grassMaterial()), false))
   yield
-  const water = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'water'), near), waterMaterial()), false)
+  const water = shadowed(new THREE.Mesh(yield* surfacing(geometry(MODEL, 'water'), near), waterMaterial()), false)
   return new THREE.Group().add(walls, ground, grass, water)
 }
 
