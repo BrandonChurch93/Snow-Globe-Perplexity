@@ -158,10 +158,10 @@ vec4 baseCarve = texture2D(uBaseCarve, vBaseUv1);
 float baseCavity = clamp(1.0 - 2.0 * baseCarve.b, 0.0, 1.0);
 float baseHigh = clamp(2.0 * baseCarve.b - 1.0, 0.0, 1.0);
 float baseRidged = smoothstep(31.0, 27.5, vBasePos.y);
-float baseCrease = smoothstep(0.0, 0.3, baseCavity) * baseRidged;
-float baseCrest = smoothstep(0.0, 0.3, baseHigh) * baseRidged;
+float baseCrease = smoothstep(0.0, 0.45, baseCavity) * baseRidged;
+float baseCrest = smoothstep(0.5, 0.9, baseHigh) * baseRidged;
 ${SEAT}
-float baseAo = mix(1.0, vBasePaint.x, 0.48) * (1.0 - mix(0.2, 0.34, smoothstep(4.0, -30.0, vBasePos.x)) * baseCavity) * (1.0 - 0.16 * baseCrease) * (1.0 + 0.22 * baseCrest) * baseSeatAo * baseFootAo;
+float baseAo = mix(1.0, vBasePaint.x, 0.48) * (1.0 - mix(0.2, 0.34, smoothstep(4.0, -30.0, vBasePos.x)) * baseCavity) * (1.0 - 0.3 * baseCrease) * (1.0 + 1.0 * baseCrest) * baseSeatAo * baseFootAo;
 diffuseColor.rgb = diffuse * texture2D(uBaseTone, vBaseUv1).rgb * vec3(1.0, 0.98, 0.93);
 float basePale = smoothstep(-4.0, 36.0, vBasePos.x);
 diffuseColor.rgb = mix(vec3(dot(diffuseColor.rgb, vec3(0.3, 0.55, 0.15))) * vec3(1.0, 0.99, 0.96), diffuseColor.rgb, mix(0.5, 0.34, basePale)) * mix(1.0, 1.1, basePale);
@@ -169,8 +169,10 @@ float baseBlotch = baseNoise(vBasePos * 0.23) * 0.6 + baseNoise(vBasePos * 0.9) 
 diffuseColor.rgb *= mix(0.86, 1.1, baseBlotch) * (0.96 + 0.08 * baseDetail.b) * (0.97 + 0.06 * baseFine.b);
 diffuseColor.rgb *= (0.9 + 0.2 * baseHash(floor(vBasePos * 2.7 + 1.3))) * (0.86 + 0.28 * baseHash(floor(vBasePos * 7.0))) * (0.94 + 0.12 * baseNoise(vBasePos * 9.0)) * (0.86 + 0.28 * baseHash(floor(vBasePos * 13.0 + 5.0)));
 diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.9, 0.78, 0.66), mix(0.3, 0.65, smoothstep(4.0, -30.0, vBasePos.x)) * baseCavity);
-diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(1.1, 0.74, 0.44), 0.8 * baseCrease);
-diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.93, 0.86, 0.72), 0.15 * baseHigh);
+diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(1.06, 0.78, 0.52), 0.6 * baseCrease);
+diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.93, 0.86, 0.72), 0.15 * baseHigh + 0.35 * baseCrest);
+float baseCollar = smoothstep(28.5, 31.5, vBasePos.y);
+diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.3, 0.55, 0.15))) * vec3(1.04, 1.0, 0.93), 0.35 * baseCollar) * (1.0 + 0.1 * baseCollar);
 `
 
 const STONE_ROUGH = `
@@ -228,7 +230,7 @@ const STONE_AFTER = `
   #ifdef STAGE_LIGHT_DONE
   float stoneRakeL = clamp(dot(geometryNormal, stageRimL), 0.0, 1.0);
   float stoneRakeR = clamp(dot(geometryNormal, stageKeyL), 0.0, 1.0);
-  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * mix(1.0, baseAo, 0.5) * ${STONE.rake.toFixed(2)} * (stageRimC * vec3(1.0, 0.8, 0.6) * stoneRakeL * stoneRakeL * smoothstep(34.0, -30.0, vBasePos.x) + baseSunC * (1.6 * stoneRakeR * stoneRakeR * smoothstep(-10.0, 44.0, vBasePos.x) + 3.2 * stoneRakeR * smoothstep(30.0, 50.0, vBasePos.x)));
+  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * mix(1.0, baseAo, 0.5) * ${STONE.rake.toFixed(2)} * (1.0 + 1.5 * baseCrest) * (stageRimC * vec3(1.0, 0.8, 0.6) * stoneRakeL * stoneRakeL * smoothstep(34.0, -30.0, vBasePos.x) + baseSunC * (1.6 * stoneRakeR * stoneRakeR * smoothstep(-10.0, 44.0, vBasePos.x) + 3.2 * stoneRakeR * smoothstep(30.0, 50.0, vBasePos.x)));
   #endif
   float stoneSheen = pow(max(dot(normal, normalize(baseCard + geometryViewDir)), 0.0), 14.0) + pow(max(dot(normal, normalize(normalize((viewMatrix * vec4(-0.3, 0.8, 0.5, 0.0)).xyz) + geometryViewDir)), 0.0), 22.0);
   reflectedLight.directSpecular += vec3(1.0, 0.9, 0.76) * dot(baseSunC, vec3(0.3333)) * stoneSheen * ${STONE.sheen.toFixed(2)} * baseAo * (1.0 - baseDust);
@@ -242,8 +244,8 @@ const STONE_AFTER = `
   // Past the ball on either side the sun lies on the top of the stone in soft patches, broken by the ridges, each with its small shadow.
   float stoneLitL = 0.32 * smoothstep(-6.0, -20.0, vBasePos.x);
   float stoneLitR = 0.6 * smoothstep(34.0, 46.0, vBasePos.x);
-  float stoneCatch = smoothstep(0.2, 0.65, stoneUp) * (1.0 - 0.8 * baseCavity) * (0.75 + 0.5 * baseHigh);
-  vec3 stoneSunlit = baseSunC * mix(vec3(1.0, 0.86, 0.66), vec3(1.0, 0.93, 0.82), smoothstep(0.0, 30.0, vBasePos.x)) * (${STONE.lit.toFixed(2)} * smoothstep(28.0, 35.0, vBasePos.y) * (stoneLitL + stoneLitR) * stoneCatch);
+  float stoneCatch = smoothstep(0.05, 0.5, stoneUp) * (1.0 - 0.8 * baseCavity) * (0.75 + 0.5 * baseHigh);
+  vec3 stoneSunlit = baseSunC * mix(vec3(1.0, 0.86, 0.66), vec3(1.0, 0.94, 0.85), smoothstep(-20.0, 10.0, vBasePos.x)) * (${STONE.lit.toFixed(2)} * smoothstep(28.0, 35.0, vBasePos.y) * (stoneLitL + stoneLitR + 0.1) * stoneCatch);
   ${shadeIn(FRONT_SHADE.deep, FRONT_SHADE.left, FRONT_SHADE.from, FRONT_SHADE.edge, 'mix(mix(vec3(1.0, 0.93, 0.82), vec3(1.0, 0.965, 0.91), smoothstep(-28.0, -10.0, vBasePos.x)), vec3(1.0, 0.96, 0.9), smoothstep(38.0, 50.0, vBasePos.x))')}
   // The glass stands over the middle of the lip's top and keeps the sky off it.
   float stoneUnderGlass = 1.0 - 0.5 * smoothstep(36.0, 39.5, vBasePos.y) * smoothstep(34.0, 14.0, abs(vBasePos.x + 3.0)) * smoothstep(0.2, 0.8, stoneUp);
@@ -253,6 +255,9 @@ const STONE_AFTER = `
   // The heap and the lit strip of table lie beside the right flank and throw their warmth back onto it, most from below.
   float stoneHeap = clamp((dot(geometryNormal, normalize(mat3(viewMatrix) * vec3(0.7, -0.35, 0.62))) + 0.25) / 1.25, 0.0, 1.0);
   reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * baseAo * mix(baseSunC, vec3(dot(baseSunC, vec3(0.3333))), 0.35) * vec3(1.0, 0.94, 0.86) * (${STONE.heap.toFixed(2)} * stoneHeap * smoothstep(2.0, 44.0, vBasePos.x) * mix(1.0, 0.75, smoothstep(8.0, 36.0, vBasePos.y)));
+  // The lit sand on the ledge and the table in front light the face of the collar in the middle, so it is a pale band and not a dark step under the ledge.
+  float stoneFace = smoothstep(26.5, 30.5, vBasePos.y) * smoothstep(38.5, 36.0, vBasePos.y) * mix(0.6, 1.0, smoothstep(30.0, 35.0, vBasePos.y)) * smoothstep(-28.0, -8.0, vBasePos.x) * smoothstep(40.0, 14.0, vBasePos.x);
+  reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * baseAo * dot(baseSunC, vec3(0.3333)) * vec3(1.0, 0.96, 0.9) * (0.15 * stoneFace);
 }
 `
 
