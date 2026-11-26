@@ -7,10 +7,10 @@ import type { SeasonKit } from '../kit'
 // Where they are bright is then the field's alone (`CLUSTER`): a dense cream cluster high on the right, a column of clear amber
 // discs on the left, and next to nothing round the globe, where a half-lit soft disc reads as a brown stain.
 const tone = (lift: number, r: number, g: number, b: number): [number, number, number] => [r * lift, g * lift, b * lift]
-const gold = (lift: number) => tone(lift, 1, 0.62, 0.3)
-const amber = (lift: number) => tone(lift, 1, 0.52, 0.2)
-const peach = (lift: number) => tone(lift, 1, 0.64, 0.34)
-const cream = (lift: number) => tone(lift, 1, 0.74, 0.48)
+const gold = (lift: number) => tone(lift, 1, 0.55, 0.22)
+const amber = (lift: number) => tone(lift, 1, 0.44, 0.13)
+const peach = (lift: number) => tone(lift, 1, 0.58, 0.26)
+const cream = (lift: number) => tone(lift, 1, 0.7, 0.42)
 
 // Where a light stands in the approved picture (pixels of its 2816 x 1584 frame), from the view the shared layout was placed in
 // (`PLACED.view` in `src/scene/backdrop.ts`).
@@ -29,14 +29,14 @@ const smooth = (a: number, b: number, x: number): number => {
  * `topPx`).
  */
 export const CLUSTER = {
-  floor: 0.22,
+  floor: 0.07,
   near: 0.2,
   nearPx: [700, 900, 1900, 2100] as const,
-  column: 1.6,
+  column: 0.5,
   columnPx: [120, 260, 640, 800] as const,
-  lift: 6.5,
-  fromPx: [1850, 2100] as const,
-  topPx: [340, 660] as const,
+  lift: 5.5,
+  fromPx: [1930, 2230] as const,
+  topPx: [220, 540] as const,
 }
 
 function gain(at: readonly [number, number, number]): number {
