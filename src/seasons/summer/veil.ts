@@ -13,7 +13,7 @@ import type { KitMoment, SeasonKit } from '../kit'
 // as well as what lies behind it, and it cost the miniature a quarter of its fine detail at rest; the warm air behind the
 // miniature is the wall layer's haze in `glass.ts`, which is drawn behind the cottage and the tree.
 export const veil: SeasonKit['veil'] = { tint: [1.75, 1.4, 0.86], density: 0.09, rest: -0.0007, bankWhite: 0.3 }
-export const particles: SeasonKit['particles'] = { firefly: { color: [1, 0.97, 0.2], glow: 11 }, seed: { color: [1.3, 1.2, 1.02], glow: 0 }, mote: { color: [1, 0.74, 0.34], glow: 0.3 } }
+export const particles: SeasonKit['particles'] = { firefly: { color: [1, 0.97, 0.2], glow: 11 }, seed: { color: [1.3, 1.16, 0.9], glow: 0 }, mote: { color: [0.9, 0.62, 0.24], glow: 0.2 } }
 
 // The storm outlasts the shake. The shared veil thins with the liquid's turbulence, which is spent by the time the globe is set
 // down, so the air was clear on the landing frame. Summer holds its own storm from the swap through the set down and the
@@ -27,7 +27,7 @@ export const particles: SeasonKit['particles'] = { firefly: { color: [1, 0.97, 0
 // line of sight through the ball is longest, at its middle, so the tree and the cottage are washed and the lanterns bloom in it.
 // `bank` is the haze of the held storm that lies over the miniature: below `level` (in radii, up from the middle) it is whole, and
 // it thins over `soft` above that, so the cottage and the foot of the tree are ghosted and the upper dome keeps its dark gaps.
-export const STORM = { share: 0.3, holdSeconds: 0.3, fallSeconds: 3, uneven: 0.97, calms: 0.9, bank: { level: -0.17, soft: 0.25, density: 0.013, even: 0.7 }, white: 0.0004, fold: 0.9 }
+export const STORM = { share: 0.24, holdSeconds: 0.3, fallSeconds: 3, uneven: 0.97, calms: 0.9, bank: { level: -0.17, soft: 0.25, density: 0.006, even: 0.7 }, white: 0.0004, fold: 0.9 }
 
 const ramp = (v: number, from: number, to: number): number => {
   const t = Math.min(1, Math.max(0, (v - from) / (to - from)))
@@ -62,5 +62,11 @@ export function holdStorm(moment: KitMoment): number {
     const bank = u.uVeilBank.value
     bank.set(bank.x + (STORM.bank.level - bank.x) * held, bank.y + (STORM.bank.soft - bank.y) * held, bank.z + (STORM.bank.density - bank.z) * held, bank.w + (STORM.bank.even - bank.w) * held)
   }
+  // `rest` is below zero: it takes back the share of haze the shared veil keeps while the pool is afloat. Where the shared haze is
+  // thinner than that share (seeds that lie count as landed, and the kept share falls with them), the sum went below zero. A veil
+  // below zero takes light away, and the drift bank's share of the whole haze, bank over thin and bank, then leaves 0 to 1 and
+  // carries the bank's whitening far past white: pure yellow where the sum is below zero and blue where it is just above.
+  // The sum stops at zero.
+  if (u.uVeil.value.w < 0) u.uVeil.value.w = 0
   return held
 }
