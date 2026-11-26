@@ -138,7 +138,7 @@ export function joinPlan({ which, chunks, totals, test = false, size = M.chunkFr
   for (const w of whats) same('engineHash', `the build hash of ${w}`, mine.filter((c) => c.record.what === w))
   same('format', 'the format', mine)
   same('fps', 'the frame rate', mine)
-  same('encoderArgs', 'the encoder arguments', mine)
+  same('encoderArgs', 'the list of encoder arguments', mine)
   for (const w of whats) same('samples', `the samples of ${w}`, mine.filter((c) => c.record.what === w))
 
   let frames = 0

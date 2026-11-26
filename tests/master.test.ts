@@ -162,7 +162,7 @@ describe('the join', () => {
     refused('film-b', one({ engineHash: 'build-2' }), /the build hash of film-b differs between chunks/)
     refused('film-b', one({ samples: 8 }), /the samples of film-b differs between chunks/)
     refused('film-b', one({ format: 'hd' }), /the format differs between chunks/)
-    refused('film-b', one({ encoderArgs: [...ARGS, '-g', '60'] }), /the encoder arguments differs between chunks/)
+    refused('film-b', one({ encoderArgs: [...ARGS, '-g', '60'] }), /the list of encoder arguments differs between chunks/)
     refused('film-b', one({ fps: 30 }), /the frame rate differs between chunks/)
   })
 

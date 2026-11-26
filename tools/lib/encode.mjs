@@ -209,7 +209,7 @@ export function masterVideoArgs(video, gop) {
   return [
     '-c:v', 'libx264', '-preset', video.preset, '-profile:v', video.profile, '-level:v', video.level, '-pix_fmt', video.pixFmt,
     '-crf', String(video.crf), '-maxrate', `${Math.round(video.maxrateMbps * 1000)}k`, '-bufsize', `${Math.round(video.bufsizeMbps * 1000)}k`,
-    '-g', g, '-keyint_min', g, '-sc_threshold', '0', '-bf', '2', '-x264-params', 'aq-mode=3:open-gop=0',
+    '-g', g, '-keyint_min', g, '-sc_threshold', '0', '-bf', '2', '-x264-params', 'aq-mode=3:open-gop=0:colorprim=bt709:transfer=bt709:colormatrix=bt709',
     '-threads', String(ENCODER_THREADS), '-flags:v', '+cgop+bitexact', ...TAGS,
   ]
 }
@@ -218,7 +218,7 @@ export async function encodeMasterChunk({ files, video, fps, gop, out }) {
   const args = masterVideoArgs(video, gop)
   const tmp = `${out}.part`
   fs.mkdirSync(path.dirname(out), { recursive: true })
-  await ffmpeg(['-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'png', '-i', 'pipe:0', '-an', '-vf', `${TO_VIDEO},format=${video.pixFmt}`, ...args, ...EXACT, '-video_track_timescale', String(fps * 256), '-f', 'mp4', tmp], feedFiles(files))
+  await ffmpeg(['-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'png', '-i', 'pipe:0', '-an', '-vf', `${TO_VIDEO},format=${video.pixFmt},setparams=range=tv:color_primaries=bt709:color_trc=bt709:colorspace=bt709`, ...args, ...EXACT, '-video_track_timescale', String(fps * 256), '-f', 'mp4', tmp], feedFiles(files))
   fs.renameSync(tmp, out)
   return args
 }

@@ -21,6 +21,7 @@ const USAGE = [
   'For tests only: --samples S, --format F, --min-psnr N, and --join ... --test [--sound FILE]',
 ].join('\n')
 const LOCK = rel('out', 'work', 'render.lock')
+const COLOUR_TAGS = 'bt709 / bt709 / bt709 / tv'
 const span = (r) => (r.first === r.last ? `${r.first}` : `${r.first} to ${r.last}`)
 const mb = (bytes) => (bytes / 1e6).toFixed(2)
 
@@ -190,6 +191,9 @@ async function verifyChunk(file, frames, format, floor) {
   if (!seen.ok) problems.push(`the decoder wrote: ${seen.errors.join(' / ') || 'an error'}`)
   if (seen.frames.length !== n) problems.push(`it decodes to ${seen.frames.length} frames, not ${n}`)
   if (!even) problems.push(`its frames are not ${FPS} a second apart`)
+  const v = probeStreams(file).video[0] ?? {}
+  const tags = `${v.color_space} / ${v.color_primaries} / ${v.color_transfer} / ${v.color_range}`
+  if (tags !== COLOUR_TAGS) problems.push(`its colour tags are ${tags}, not ${COLOUR_TAGS}`)
   if (seen.frames.length === n && low < floor) problems.push(`a decoded frame is ${dB(low)} dB from its PNG in luma, under ${floor === M.minChunkPsnr ? 'deliver.master.minChunkPsnr' : '--min-psnr'} ${floor}`)
   return { verify: { ok: problems.length === 0, frames: seen.frames.length, decodeErrors: seen.errors, evenSteps: even, psnr, psnrRgb, measure: 'luma, BT.709', minPsnr: floor, problems }, decoded: seen.frames.map((f) => f.hash) }
 }
@@ -366,7 +370,7 @@ async function render() {
   let shipper = null
   if (worker === null) {
     const all = ctx.chunks.length
-    say(`${ctx.what}: frames ${ctx.chunks[0].first} to ${ctx.chunks[all - 1].last} of ${ctx.total}, ${all} ${all === 1 ? 'chunk' : 'chunks'} of ${M.chunkFrames}, ${ctx.format.width} x ${ctx.format.height}, ${ctx.engine ? `${ctx.samples} samples a frame` : 'from the opening pack'}${ctx.test ? ', a TEST that no master is joined from' : ''}`)
+    say(`${ctx.what}: frames ${ctx.chunks[0].first} to ${ctx.chunks[all - 1].last} of ${ctx.total}, ${all} ${all === 1 ? 'chunk' : 'chunks'} of ${M.chunkFrames}, ${ctx.format.width} x ${ctx.format.height}, ${ctx.engine ? `${ctx.samples} ${ctx.samples === 1 ? 'sample' : 'samples'} a frame` : 'from the opening pack'}${ctx.test ? ', a TEST that no master is joined from' : ''}`)
     say(`${all - todo.length} ${all - todo.length === 1 ? 'chunk is' : 'chunks are'} finished, ${todo.length} to do, ${progress.left} frames to render (${todo.reduce((n, c) => n + c.last - c.first + 1 - c.missing.length, 0)} more are on disk as PNGs)`)
     if (args.ship !== undefined) {
       shipper = new Shipper({ branch: argText(args, 'ship', ''), say })
@@ -428,7 +432,7 @@ async function prove({ file, which, plan, format, sound, test, totals }) {
   rows.push(row('frame rate', `${FPS}/1 constant`, `${v.r_frame_rate} and ${v.avg_frame_rate} on average`, v.r_frame_rate === `${FPS}/1` && v.avg_frame_rate === `${FPS}/1`))
   rows.push(row('pixel format', M.video.pixFmt, v.pix_fmt, v.pix_fmt === M.video.pixFmt))
   const tags = `${v.color_space} / ${v.color_primaries} / ${v.color_transfer} / ${v.color_range}`
-  rows.push(row('colour tags', 'bt709 / bt709 / bt709 / tv', tags, tags === 'bt709 / bt709 / bt709 / tv'))
+  rows.push(row('colour tags', COLOUR_TAGS, tags, tags === COLOUR_TAGS))
   rows.push(row('codec', 'h264 High', `${v.codec_name} ${v.profile}`, v.codec_name === 'h264' && v.profile === 'High'))
   if (sound) {
     const kbps = a ? Number(a.bit_rate) / 1000 : 0
