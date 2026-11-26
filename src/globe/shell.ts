@@ -424,7 +424,7 @@ vec3 glassSeen(vec3 o, vec3 d, float soft, int k, float own) {
     if (t > 0.0 && rho < BASE_R) {
       float open = smoothstep(SEAT_R - 2.0, SEAT_R + 17.0, rho);
       vec3 keyLocal = uKeyDir * uTurn;
-      vec3 lit = uSky * (0.2 + 0.8 * open) + uKeyCol * max(keyLocal.y, 0.0) * open * (0.35 + 0.65 * smoothstep(-0.4, 0.5, dot(normalize(q.xz), normalize(keyLocal.xz + 1e-4))));
+      vec3 lit = uSky * (0.2 + 0.8 * open) + uKeyCol * max(keyLocal.y, 0.0) * open * (0.35 + 0.65 * smoothstep(-0.4, 0.5, dot(dot(q.xz, q.xz) > 0.0 ? normalize(q.xz) : vec2(1.0, 0.0), normalize(keyLocal.xz + 1e-4))));
       float wear = 0.75 + 0.5 * glassNoise(vec3(q.xz * 0.35, 1.0));
       return uBase * lit * wear * 0.3183 + uPool * uBase * 0.2 * (1.0 - open);
     }
@@ -766,7 +766,7 @@ void main() {
   vec3 radial = normalize(vBubbleRadial);
   float x = vBubbleShape.x;
   float cap = vBubbleShape.y;
-  float front = 0.5 + 0.5 * dot(radial, normalize(vec3(vEye.x, 0.0, vEye.z)));
+  float front = 0.5 + 0.5 * dot(radial, dot(vEye.xz, vEye.xz) > 0.0 ? normalize(vec3(vEye.x, 0.0, vEye.z)) : vec3(0.0, 0.0, 1.0));
   float side = pow(max(dot(uTurn * radial, ${vec(unit(glassLook.bubble.streakDir))}), 0.0), ${num(glassLook.bubble.streakPower)});
   float swirl = glassNoise(radial * 2.6 + vec3(0.0, x * 5.0, 3.0));
   float fine = glassNoise(vStageLocal * 2.3 + 5.0);

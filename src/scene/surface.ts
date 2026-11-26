@@ -392,7 +392,7 @@ vec2 slabNoise(vec2 p) {
   return vec2(a, b) - 0.5;
 }
 vec2 slabLumps(vec3 at, vec3 toEye, float blurMm) {
-  vec3 across = normalize(vec3(toEye.z, 0.0, -toEye.x));
+  vec3 across = dot(toEye.xz, toEye.xz) > 0.0 ? normalize(vec3(toEye.z, 0.0, -toEye.x)) : vec3(1.0, 0.0, 0.0);
   vec3 upward = cross(toEye, across);
   float sum = 0.0;
   float lit = 0.0;

@@ -172,7 +172,8 @@ void dewFrame(vec3 dir, vec3 down, out vec3 centre, out vec3 eye, out vec3 acros
   vec3 a1 = g - eye * dot(eye, g);
   float l1 = length(a1);
   along = a1 / max(l1, 1e-4);
-  across = normalize(cross(eye, along));
+  vec3 wide = cross(eye, along);
+  across = dot(wide, wide) > 0.0 ? normalize(wide) : vec3(1.0, 0.0, 0.0);
   vec3 u = cross(nw, g);
   squash = vec2(max(length(u - eye * dot(eye, u)), 0.4), max(l1, 0.4));
 }
@@ -307,7 +308,8 @@ void main() {
   float sharp = 1.0 / (1.0 + 3.0 * vDewSoft);
   float h = sqrt(max(1.0 - d2, 0.0));
   vec3 eye = normalize(cameraPosition - vStageWorld);
-  vec3 face = normalize(mix(eye, vDewN, 0.5));
+  vec3 mid = mix(eye, vDewN, 0.5);
+  vec3 face = dot(mid, mid) > 0.0 ? normalize(mid) : eye;
   vec3 n = normalize(vDewA0 * e.x + vDewA1 * (-e.y) + face * (h + 0.12));
   vec3 body;
   if (uBehindSize.x > 0.0) {
@@ -352,7 +354,8 @@ vec3 tNext = dewDir(tTh + 0.01, dewPhi(tA, tB.x, tTh + 0.01));
 vec3 tC = (modelMatrix * vec4(tDir * (uDew.z + 0.04), 1.0)).xyz;
 vec3 tEye = normalize(cameraPosition - tC);
 vec3 tNw = normalize(mat3(modelMatrix) * tDir);
-vec3 tAcross = normalize(cross(tEye, normalize(mat3(modelMatrix) * (tNext - tDir))));
+vec3 tSide = cross(tEye, normalize(mat3(modelMatrix) * (tNext - tDir)));
+vec3 tAcross = dot(tSide, tSide) > 0.0 ? normalize(tSide) : vec3(1.0, 0.0, 0.0);
 // Wide where it joins the head, thin behind, and drawn to a point where it has dried.
 float tWide = uPathC[tj].x * (0.72 + 0.28 * smoothstep(1.0 - min(0.12 / max(tLong, 1e-3), 1.0), 1.0, aTrail.y)) * smoothstep(0.0, min(0.05 / max(tLong, 1e-3), 0.5), aTrail.y);
 if (uDew.x < 0.0 || tLong <= 0.0) tWide = 0.0;
@@ -401,7 +404,8 @@ void main() {
   float d2 = e * e;
   float h = sqrt(max(1.0 - d2, 0.0));
   vec3 eye = normalize(cameraPosition - vStageWorld);
-  vec3 face = normalize(mix(eye, vTrailN, 0.5));
+  vec3 mid = mix(eye, vTrailN, 0.5);
+  vec3 face = dot(mid, mid) > 0.0 ? normalize(mid) : eye;
   vec3 n = normalize(vTrailA * (x / w) + face * (h + 0.2));
   vec3 body;
   if (uBehindSize.x > 0.0) {
