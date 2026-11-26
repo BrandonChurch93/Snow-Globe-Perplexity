@@ -14,7 +14,7 @@ if (which !== 'a' && which !== 'b') throw new Error('--which takes a or b')
 const tier = argText(args, 'tier', 'draft')
 const formatId = review || args['from-hd'] === true ? cfg.formats.preview.id : argText(args, 'format', cfg.formats.hd.id)
 const assets = argText(args, 'assets', 'full')
-const fps = cfg.film.previewFps
+const fps = Number(argText(args, 'fps', String(cfg.film.previewFps)))
 const first = argFrame(args, 'first')
 const last = argFrame(args, 'last')
 const shot = argText(args, 'shot', '')

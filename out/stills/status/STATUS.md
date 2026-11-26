@@ -1,17 +1,18 @@
-# Status 142
+# Status 144
 
-2026-11-26 07:15 UTC
+2026-11-26 07:34 UTC
 
-- After the review, step 1: all five builders have reported and their work is on main; none of it is judged by a critic yet. The tools now draw every picture with the second software renderer (Mesa lavapipe), the one the 4K frames will come from.
-- Found and being mended: on that renderer a large particle near the lens is cut to a square in a 4K frame (two of six film frames probed show it); and a render that runs out of memory wrote a black frame and called it done, so the master tool now refuses a flat frame.
-- The change of season, drawn from main: the old base no longer swaps in sight, but for about eight frames the picture is a soft disc of light on black. Its builder has a second job to 08:15: the glass keeps its outline and burns from inside.
-- Still out: the first picture standing where the globe stays (08:15), the opening (07:35), the master tool (08:05), the sound's last laying (08:15), the strict check (07:50). Then the critics' rounds on summer, the change and the globe.
-- phase 6: 4.43 h used of its 12.00 h box
-- allowance (after the review): 4.43 h used of 12.00 h allowed
+- The real opening is in. Film A now begins with the prompt screen drawn by the team's skill: 867 frames, 14.45 s, merged, built and pushed as 9691393f.
+- Rough draft 1 of the film (960 x 540, 30 frames a second) is being drawn on eight machines, and the opening's part is already drawn here. It is due in the thread at about 08:30 UTC and will carry the faults of this hour: the soft disc of light at each change of season, summer's cream whirl, and a typing sound that may not be laid yet.
+- Summer under the new renderer, looked at for the first time. At rest it holds: fireflies, lanterns, the pool. Just after a landing the whirl of seeds and dust is pale cream and lacks the glow of the approved picture (open item 224). It goes to the critics as it is.
+- Sixteen agents are at work, which is the limit: the first picture, the cover of the change, the phone's framing, the visitor walk, the point mend at 4K, the master tool, the strict run, the sound, and eight renderers.
+- Tests on 9691393f: types clean, 599 tests pass and 2 fail, both in the sound mix's own test file, which is being changed right now.
+- phase 6: 4.75 h used of its 12.00 h box
+- allowance (after the review): 4.75 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-142-1.jpg`: The first shake's change of season, every second frame from 660 to 690, drawn from main by the new renderer at preview size, draft tier.
-- `out/stills/status/status-142-2.jpg`: Frames 670, 674, 680 and 682 larger: the cover as it stands today.
-- `out/stills/status/status-142-3.jpg`: Sequence: film frames 660 to 690, every 2, 16 pictures in out/work/seq/film-preview-draft, 12 of them on this sheet, preview, draft
-- `out/stills/status/status-142-4.jpg`: Still: winter rest hero, preview, draft
+- `out/stills/status/status-144-1.jpg`: A frame of rough draft 1: the opening at 6 s, at draft size
+- `out/stills/status/status-144-2.jpg`: Summer at rest, drawn by the new renderer
+- `out/stills/status/status-144-3.jpg`: Summer just after a landing: the cream whirl of open item 224
+- `out/stills/status/status-144-4.jpg`: Film frames 1400 to 1620: the cover of the change, the landing and the settling of summer
