@@ -18,7 +18,9 @@ const slopeByte = (gx, gy) => {
   return [Math.round(clamp(0.5 - (0.5 * gx) / l) * 255), Math.round(clamp(0.5 - (0.5 * gy) / l) * 255)]
 }
 
-// The relief the mesh cannot hold, as a normal in red and green; blue is the cavity (under the middle) and the edge (over it).
+// The relief the mesh cannot hold, as a normal in red and green: what of the mound is finer than its mesh, and the fine lines of the swirls,
+// which are in no mesh. Blue is the cavity (under the middle) and the edge (over it); round a thing set in the sand it is held back, so the
+// thing lies in a soft shade and not in a dark outline.
 export async function carveMap(dir, f) {
   const { W, H } = FIELD
   const fine = blur(f.d, W, H, 2.4, true, false)
@@ -34,11 +36,11 @@ export async function carveMap(dir, f) {
       const r = j * W + ((i + 1) % W)
       const d = Math.max(j - 1, 0) * W + i
       const t = Math.min(j + 1, H - 1) * W + i
-      const hp = (k) => f.d[k] - fine[k]
+      const hp = (k) => f.d[k] - fine[k] + f.fine[k]
       const [rb, gb] = slopeByte((hp(r) - hp(l)) / (2 * stepU), (hp(t) - hp(d)) / (2 * stepV))
       out[o * 3] = rb
       out[o * 3 + 1] = gb
-      out[o * 3 + 2] = Math.round(clamp(0.5 + 0.55 * (f.d[o] - f.wide[o])) * 255)
+      out[o * 3 + 2] = Math.round(clamp(0.5 + (0.45 * (f.d[o] - f.wide[o]) + 0.5 * f.fine[o]) * (1 - 0.6 * f.halo[o])) * 255)
     }
   }
   return [await writePng(`${dir}/base-carve.lin.w2048.png`, W, H, 3, up(out, W, H, 3))]
