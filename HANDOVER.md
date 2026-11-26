@@ -25,7 +25,7 @@ What it is now, and the means:
 
 All drawn with lavapipe, on 632d9514 unless said.
 
-The head 632d9514 is 2e19534b with `main` merged in three times (82d5c566, 65d17346, 632d9514). The merges brought no file under `src/` or `config/`, so the engine is one and the same from 2e19534b on: b2552a068a75a0bc. Every picture of this job was drawn from that engine.
+The head 632d9514 is 2e19534b with `main` merged in three times (82d5c566, 65d17346, 632d9514). The merges brought no file under `src/` or `config/`, so the engine is one and the same from 2e19534b on: b2552a068a75a0bc. Every after picture of this job was drawn from that engine; where a before stands beside it, its commit or engine is named.
 
 - `hd`, `review` (8 samples), film frames 673 to 678, bbe4db9b beside 82d5c566: picture 26. Before: the strip between the two bases' lines is grain in 674 to 678. After: the strip is one even tone that darkens frame by frame; 673 holds the old base alone. Left over: a rim of fine dots a few px deep on the strip's two lines, plainest at the two sloped ends in 676 to 678.
 - `hd`, `final` (24 samples), the middle frame of each change (675, 1395, 2115, 2835): picture 27 (the foot at its own pixels) and picture 28 (whole frames). In all four the strip is a smooth band and no grain is seen in it at its own pixels. Enlarged six times, 675 shows a trace of fine texture in the drawn out ends. In all four the glass is a lit globe with its halo.
