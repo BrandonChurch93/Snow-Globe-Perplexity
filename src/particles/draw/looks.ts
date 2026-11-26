@@ -20,8 +20,8 @@ const LOOKS: Record<string, KindLook> = {
   petal: { shape: SHAPE.petal, size: 1.25, body: 0.9, flash: 0.75 },
   mote: { shape: SHAPE.fleck, size: 1.2, body: 0.8, flash: 1 },
   leaf: { shape: SHAPE.leaf, size: 1.6, body: 1, flash: 0.35 },
-  seed: { shape: SHAPE.seed, size: 3.6, body: 0.9, flash: 0 },
-  firefly: { shape: SHAPE.light, size: 1, body: 1, flash: 0 },
+  seed: { shape: SHAPE.seed, size: 3.2, body: 0.9, flash: 0 },
+  firefly: { shape: SHAPE.light, size: 0.65, body: 1, flash: 0 },
   ember: { shape: SHAPE.spark, size: 1.35, body: 1, flash: 0 },
   bat: { shape: SHAPE.bat, size: 2.3, body: 1, flash: 0 },
 }
@@ -299,7 +299,7 @@ export const CARD = {
   /** How much lighter a bat's edge is than its body, so that its outline holds on dark air. */
   batRim: 1.5,
   /** A light's core, its glow and its wide glow, as radii in the particle's radius and as shares of its light. */
-  glow: { unlit: 0.4, spread: [0.55, 2, 3] as const, discFrom: [1.3, 3.2] as const, discWide: 1.55, discRim: 0.3, discHold: 0.42, core: 0.34, halo: 1.5, wide: 4.5, haloShare: 0.1, wideShare: 0.01, hide: 0.6, blinkLow: 0.04, nearShare: 0.07 },
+  glow: { unlit: 0.4, spread: [0.7, 1.9, 2.6] as const, discFrom: [1.3, 3.2] as const, discWide: 1.55, discRim: 0.3, discHold: 0.42, core: 0.46, halo: 1.5, wide: 4.5, haloShare: 0.1, wideShare: 0.004, soft: 0.4, hide: 0.6, blinkLow: 0.06, blinkSkew: 1.7, pale: 0.36, sparkPale: 0.65, nearShare: 0.03 },
   spark: { gain: 2.1, core: 0.3, halo: 1.3, haloShare: 0.07, tail: 1.6, calmTail: 0.1, hotCore: 0.8, hotWide: 0.3, hotFrom: [0.8, 2.2] as const, discHold: 0.25, discRim: 0.08, soft: 0.12, nearShare: 0.022, nearFrom: [0.05, 0.45] as const, nearPx: [9, 20] as const, calmStreak: 0.08, small: 1.8, large: 0.75, fromMm: [0.12, 0.7] as const, hot: [1, 0.68, 0.2] as const, dying: [0.85, 0.17, 0.03] as const },
-  hair: { gain: 1.5, soft: 0.3, restSize: 1.5, restWide: 0.55, restBall: 0.25, restOdd: 0.6, restSeen: 0.62, runHead: 0.5, runTrail: 0.6, runWide: 0.04, wide: 0.012, seen: 1.25, hairSeen: 1.5, stemSeen: 0.8, reach: 1.7, foot: 1.15, stem: 0.012, body: 0.04, hub: 0.3, spread: [0.55, 1.3, 1.3] as const, count: 52, open: [0.4, 2.25] as const, long: [0.7, 1.08] as const, droop: 0.16, thin: 0.55, lean: 0.25, tipFade: 0.35, ballAt: 0.5, ballWide: 0.55, ball: [0.1, 0.42] as const, ballFrom: [0.06, 0.45] as const, stemTint: [0.62, 0.48, 0.32] as const, },
+  hair: { gain: 1, soft: 0.3, restSize: 1.1, restShare: 0.6, restBall: 0.5, runHead: 0.5, runTrail: 0.6, runWide: 0.04, wide: 0.011, seen: 1.25, hairSeen: 0.5, hubSeen: 0.75, stemSeen: 0.5, reach: 1.7, foot: 1.25, stem: 0.011, body: 0.035, hub: 0.3, spread: [0.7, 1.3, 1.3] as const, count: 44, open: [0.35, 2.0] as const, long: [0.6, 1.08] as const, droop: 0.16, thin: 0.55, lean: 0.25, tipFade: 0.6, ballAt: 0.4, ballWide: 0.5, ball: [0.12, 0.42] as const, ballFrom: [0.06, 0.45] as const, stemTint: [0.62, 0.48, 0.32] as const, },
 }
