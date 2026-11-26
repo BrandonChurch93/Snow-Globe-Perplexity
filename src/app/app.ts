@@ -7,7 +7,7 @@ import { loadDetail } from '../core/textures'
 import { Governor, levels, stageQuality } from '../core/quality'
 import type { Moment, Stage } from '../core/stage'
 import type { LoopParticles, SourceSwitch } from '../film/loop'
-import { drawOpening } from '../film/openingStandIn'
+import { drawOpening, loadOpening, openingLoaded } from '../film/openingPack'
 import { barSeconds } from '../film/timeline'
 import type { Pose } from '../scene/cameras'
 import { FRAME, controlsPx, framingOfRig, livePose, liveRig, roomUnder } from './framing'
@@ -333,7 +333,8 @@ export function startApp(d: AppDeps): AppBridge {
         engine?.tick()
         tell()
       }
-      if (FILMS.includes(what) && !config.seasons.every(loader.ready)) void loader.all.then(go)
+      const waits = [...(FILMS.includes(what) && !config.seasons.every(loader.ready) ? [loader.all] : []), ...(what === 'film-a' && !openingLoaded() ? [loadOpening()] : [])]
+      if (waits.length) void Promise.all(waits).then(go)
       else go()
     },
     activity: () => undefined,
@@ -452,7 +453,7 @@ export function startApp(d: AppDeps): AppBridge {
   if (playing !== 'live') start(playing)
   applyLevel()
 
-  void Promise.all([d.ready, (FILMS.includes(playing) ? loader.all : loader.first).catch(() => undefined)]).then(() => requestAnimationFrame(frame))
+  void Promise.all([d.ready, (FILMS.includes(playing) ? loader.all : loader.first).catch(() => undefined), playing === 'film-a' ? loadOpening() : null]).then(() => requestAnimationFrame(frame))
 
   void afterFirstPicture.then(async () => {
     if (probing) {
