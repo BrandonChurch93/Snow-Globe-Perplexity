@@ -9,7 +9,7 @@ import { freeDiskGb, launch, machineId, pinnedBrowser } from './lib/browser.mjs'
 import { serve } from './lib/server.mjs'
 import { Run, argFrame, argText, pngOk, short } from './lib/frames.mjs'
 import { decodedHashes, decodedPictures, encodeMasterChunk, haveFfmpeg, join, masterVideoArgs, probeStreams, soundSeconds, startsFast, stillJpeg, toolVersions } from './lib/encode.mjs'
-import { FPS, JOINS, LOOK_WIDTH, M, SOUND, STILL_MAX_MB, WHATS, chunkDir, chunkStem, coverReport, dB, framesOf, heartbeat, hours, joinPlan, openingPack, pad6, psnrOf, rangeChunks, ranges, readChunks, recordMatchesRun, resultName, split, stillName, stillToDo, table, tierOf, totalsFromCut } from './lib/master.mjs'
+import { FPS, JOINS, LOOK_WIDTH, M, SOUND, STILL_MAX_MB, WHATS, chunkDir, chunkStem, coverReport, dB, framesOf, heartbeat, hours, joinPlan, lumaPsnrOf, openingPack, pad6, psnrOf, rangeChunks, ranges, readChunks, recordMatchesRun, resultName, split, stillName, stillToDo, table, tierOf, totalsFromCut } from './lib/master.mjs'
 import { Shipper, collectBranches, repoFacts } from './lib/mastergit.mjs'
 
 const args = parseArgs(process.argv.slice(2))
@@ -18,7 +18,7 @@ const USAGE = [
   'npm run master -- --what film-b|loop|opening [--first N --last M] [--ship BRANCH] [--procs P]',
   'npm run master -- --collect DIR',
   'npm run master -- --join film-b|film-a|loop --from DIR',
-  'For tests only: --samples S, --format F, and --join ... --test [--sound FILE]',
+  'For tests only: --samples S, --format F, --min-psnr N, and --join ... --test [--sound FILE]',
 ].join('\n')
 const LOCK = rel('out', 'work', 'render.lock')
 const span = (r) => (r.first === r.last ? `${r.first}` : `${r.first} to ${r.last}`)
@@ -28,6 +28,14 @@ function whole(key, fallback) {
   if (args[key] === undefined) return fallback
   const n = Number(args[key])
   if (args[key] === true || !Number.isInteger(n) || n < 1) throw new Error(`--${key} takes a whole number, 1 or more`)
+  return n
+}
+
+function psnrFloor(test) {
+  if (args['min-psnr'] === undefined) return M.minChunkPsnr
+  const n = Number(args['min-psnr'])
+  if (!test) throw new Error('--min-psnr is for tests only (with --samples or --format, or --join ... --test). A master is held to deliver.master.minChunkPsnr.')
+  if (args['min-psnr'] === true || !(n > 0)) throw new Error('--min-psnr takes a number of dB')
   return n
 }
 
@@ -47,7 +55,7 @@ function setup() {
   const work = test ? rel('out', 'work', 'master', 'test', what) : rel('out', 'work', 'master', what)
   const hash = engineHash()
   const want = (c) => ({ what, first: c.first, last: c.last, engineHash: hash, samples, format: format.id, fps: FPS, test, encoderArgs: masterVideoArgs(M.video, M.chunkFrames) })
-  return { what, engine, test, format, samples, procs, total, chunks, work, want, hash, out: chunkDir(what, test), local: args.local === true }
+  return { what, engine, test, format, samples, procs, total, chunks, work, want, hash, floor: psnrFloor(test), out: chunkDir(what, test), local: args.local === true }
 }
 
 const filesOf = (ctx, c) => {
@@ -157,7 +165,7 @@ async function source(ctx, lock) {
   }
 }
 
-async function verifyChunk(file, frames, format) {
+async function verifyChunk(file, frames, format, floor) {
   const n = frames.length
   const seen = decodedHashes(file)
   const steps = seen.frames.slice(1).map((f, i) => (f.pts - seen.frames[i].pts) * seen.timeBase)
@@ -165,12 +173,16 @@ async function verifyChunk(file, frames, format) {
   const places = [...new Set([0, Math.floor(n / 2), n - 1])]
   const names = ['first', 'middle', 'last']
   const psnr = {}
+  const psnrRgb = {}
   let low = Infinity
   if (seen.frames.length === n) {
     const pictures = decodedPictures(file, places, format.width, format.height)
     for (let k = 0; k < places.length; k++) {
-      const p = psnrOf(pictures[k], await rgbOf(frames[places[k]].file)).psnr
-      psnr[names[places.length === 1 ? 0 : k === places.length - 1 ? 2 : k]] = dB(p)
+      const png = await rgbOf(frames[places[k]].file)
+      const p = lumaPsnrOf(pictures[k], png)
+      const name = names[places.length === 1 ? 0 : k === places.length - 1 ? 2 : k]
+      psnr[name] = dB(p)
+      psnrRgb[name] = dB(psnrOf(pictures[k], png).psnr)
       low = Math.min(low, p)
     }
   }
@@ -178,8 +190,8 @@ async function verifyChunk(file, frames, format) {
   if (!seen.ok) problems.push(`the decoder wrote: ${seen.errors.join(' / ') || 'an error'}`)
   if (seen.frames.length !== n) problems.push(`it decodes to ${seen.frames.length} frames, not ${n}`)
   if (!even) problems.push(`its frames are not ${FPS} a second apart`)
-  if (seen.frames.length === n && low < M.minChunkPsnr) problems.push(`a decoded frame is ${dB(low)} dB from its PNG, under deliver.master.minChunkPsnr ${M.minChunkPsnr}`)
-  return { verify: { ok: problems.length === 0, frames: seen.frames.length, decodeErrors: seen.errors, evenSteps: even, psnr, minPsnr: M.minChunkPsnr, problems }, decoded: seen.frames.map((f) => f.hash) }
+  if (seen.frames.length === n && low < floor) problems.push(`a decoded frame is ${dB(low)} dB from its PNG in luma, under ${floor === M.minChunkPsnr ? 'deliver.master.minChunkPsnr' : '--min-psnr'} ${floor}`)
+  return { verify: { ok: problems.length === 0, frames: seen.frames.length, decodeErrors: seen.errors, evenSteps: even, psnr, psnrRgb, measure: 'luma, BT.709', minPsnr: floor, problems }, decoded: seen.frames.map((f) => f.hash) }
 }
 
 async function doChunk(ctx, src, c, progress) {
@@ -217,7 +229,7 @@ async function doChunk(ctx, src, c, progress) {
   const e0 = Date.now()
   const encoderArgs = await encodeMasterChunk({ files: frames.map((x) => x.file), video: M.video, fps: FPS, gop: M.chunkFrames, out: tmp })
   const encodeSeconds = (Date.now() - e0) / 1000
-  const { verify, decoded } = await verifyChunk(tmp, frames, ctx.format)
+  const { verify, decoded } = await verifyChunk(tmp, frames, ctx.format, ctx.floor)
   if (!verify.ok) {
     fs.rmSync(tmp, { force: true })
     throw new Error(`chunk ${pad6(c.first)}-${pad6(c.last)} did not pass its check after encoding: ${verify.problems.join('; ')}. Its frames stay in ${short(dir)}.`)
@@ -270,7 +282,7 @@ async function doChunk(ctx, src, c, progress) {
   writeJson(f.json, record)
   fs.rmSync(dir, { recursive: true, force: true })
   const mean = record.frameSeconds.reduce((a, b) => a + b, 0) / frames.length
-  say(`finished ${chunkStem(ctx.what, c.first, c.last)}: ${frames.length} frames, ${mean.toFixed(1)} s a frame, ${mb(record.bytes)} MB, PSNR against the PNGs ${Object.values(verify.psnr).join(' / ')} dB`)
+  say(`finished ${chunkStem(ctx.what, c.first, c.last)}: ${frames.length} frames, ${mean.toFixed(1)} s a frame, ${mb(record.bytes)} MB, luma PSNR against the PNGs ${Object.values(verify.psnr).join(' / ')} dB`)
   return record
 }
 
@@ -460,9 +472,10 @@ async function prove({ file, which, plan, format, sound, test, totals }) {
     const still = path.join(path.dirname(plan.parts[0].file), stillName(0))
     const told = plan.parts[0].record.still
     if (plan.parts[0].record.first === 0 && fs.existsSync(still)) {
-      const p = psnrOf(first, await rgbOf(still))
+      const floor = psnrFloor(test)
+      const p = { psnr: lumaPsnrOf(first, await rgbOf(still)) }
       const sameFile = fileSha(still) === told?.sha256
-      rows.push(row('screenshot', `the PNG of frame 0, ${M.minChunkPsnr} dB or more from the decoded first frame`, `${dB(p.psnr)} dB${sameFile ? '' : ', and the PNG is not the one its chunk names'}`, p.psnr >= M.minChunkPsnr && sameFile))
+      rows.push(row('screenshot', `the PNG of frame 0, ${floor} dB or more in luma from the decoded first frame`, `${dB(p.psnr)} dB${sameFile ? '' : ', and the PNG is not the one its chunk names'}`, p.psnr >= floor && sameFile))
       extra.still = still
     } else rows.push(row('screenshot', 'the PNG of frame 0 beside the first chunk', 'not there', test ? null : false))
   }

@@ -282,6 +282,18 @@ export function psnrOf(a, b) {
   return { psnr: mse === 0 ? Infinity : 10 * Math.log10((255 * 255) / mse), maxDiff, differing }
 }
 
+/** PSNR of the BT.709 luma of two rgb24 pictures: the measure a 4:2:0 encode can be held to. */
+export function lumaPsnrOf(a, b) {
+  if (a.length !== b.length) throw new Error('two pictures of different sizes cannot be compared')
+  let sum = 0
+  for (let i = 0; i < a.length; i += 3) {
+    const d = 0.2126 * (a[i] - b[i]) + 0.7152 * (a[i + 1] - b[i + 1]) + 0.0722 * (a[i + 2] - b[i + 2])
+    sum += d * d
+  }
+  const mse = sum / (a.length / 3)
+  return mse === 0 ? Infinity : 10 * Math.log10((255 * 255) / mse)
+}
+
 export const dB = (x) => (Number.isFinite(x) ? Math.round(x * 100) / 100 : 'identical')
 
 export function table(rows) {

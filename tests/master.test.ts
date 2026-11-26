@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { tierSamples } from '../src/config'
 import { masterVideoArgs } from '../tools/lib/encode.mjs'
 import { loadConfig, readJson, rel, writeJson } from '../tools/lib/paths.mjs'
-import { branchFolder, branchMatches, chunkLines, chunkStem, coverReport, framesOf, heartbeat, joinPlan, nearestRanges, openingPack as readOpening, pad6, psnrOf, rangeChunks as chunksOfRange, ranges, readChunks, recordMatchesRun, resultName, split, stillName, stillToDo as leftToDo, table, tierOf, totalsFromCut } from '../tools/lib/master.mjs'
+import { branchFolder, branchMatches, chunkLines, chunkStem, coverReport, framesOf, heartbeat, joinPlan, lumaPsnrOf, nearestRanges, openingPack as readOpening, pad6, psnrOf, rangeChunks as chunksOfRange, ranges, readChunks, recordMatchesRun, resultName, split, stillName, stillToDo as leftToDo, table, tierOf, totalsFromCut } from '../tools/lib/master.mjs'
 import { Shipper, collectBranches } from '../tools/lib/mastergit.mjs'
 
 type Rec = Record<string, unknown> & { what: string; first: number; last: number }
@@ -279,6 +279,10 @@ describe('what the tool says', () => {
     expect(d.differing).toBe(1)
     expect(d.psnr).toBeCloseTo(10 * Math.log10((255 * 255) / 4), 6)
     expect(() => psnrOf(a, Buffer.from([1]))).toThrow(/different sizes/)
+    const grey = Buffer.from([100, 100, 100, 50, 60, 70])
+    expect(lumaPsnrOf(grey, Buffer.from(grey))).toBe(Infinity)
+    expect(lumaPsnrOf(grey, Buffer.from([102, 102, 102, 52, 62, 72]))).toBeCloseTo(10 * Math.log10((255 * 255) / 4), 6)
+    expect(lumaPsnrOf(Buffer.from([100, 100, 100]), Buffer.from([100, 100, 110]))).toBeGreaterThan(psnrOf(Buffer.from([100, 100, 100]), Buffer.from([100, 100, 110])).psnr)
   })
 })
 
