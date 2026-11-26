@@ -138,7 +138,7 @@ export const look = {
     // across and up; `domeSize`, how far it reaches to the left, to the right and up or down). It lies in broad soft folds
     // that follow the glass, `folds` of them to a globe radius, `foldDeep` of it is gone in the gaps between them, and the
     // room's dark patches cut it
-    dome: 0.12,
+    dome: 0.08,
     domeAt: [-0.12, 0.24] as const,
     domeSize: [0.5, 0.45, 0.4] as const,
     domeColor: [1, 0.42, 0.2] as const,
@@ -153,7 +153,7 @@ export const look = {
     roomLong: 2.4,
     roomFine: 9,
     roomDark: 0.05,
-    roomLit: 1.5,
+    roomLit: 1.3,
     roomFrom: [-0.2, 0.12] as const,
     // behind the tree and the lanterns the liquid is brightest and warmest: a core between the trunk and the right wall
     core: 0.11,
@@ -169,10 +169,10 @@ export const look = {
     glints: 1.5,
     glint: [
       [127, 17, 0.966, 0.0042, 0.012, 1.8, 0],
-      [117, 9, 0.944, 0.0036, -0.01, 0.9, 0],
-      [152, 6, 0.9, 0.007, 0.05, 2.4, 0],
-      [168, 10, 0.962, 0.004, 0.01, 1.2, 0],
-      [139, 5, 0.925, 0.004, -0.03, 0.8, 0],
+      [117, 9, 0.944, 0.0036, -0.01, 1.5, 0],
+      [152, 6, 0.9, 0.0045, 0.05, 2.6, 0],
+      [168, 10, 0.962, 0.004, 0.01, 1.8, 0],
+      [139, 5, 0.925, 0.004, -0.03, 1.3, 0],
       [16, 13, 0.905, 0.009, 0.03, 0.75, 1],
       [22, 7, 0.862, 0.0055, -0.02, 0.6, 1],
       [3, 12, 0.948, 0.0045, 0.015, 0.9, 1],
