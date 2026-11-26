@@ -447,3 +447,27 @@ describe('the table between two levels of quality', () => {
     expect(frag).not.toMatch(/uReflect\.[xy] > 0\.5/)
   })
 })
+
+describe('a fragment of the inside whose varyings are no number', () => {
+  it('is dropped: both tests of the outline are asked the way that is true for no number', () => {
+    const from = STAGE_FRAG_PARS.indexOf('bool stageOutside() {')
+    expect(from).toBeGreaterThan(0)
+    const body = STAGE_FRAG_PARS.slice(from, STAGE_FRAG_PARS.indexOf('}', from) + 1)
+    expect(body).toContain('if (!(vStageSeen > 0.0)) return true;')
+    expect(body).toContain('return !(dot(c, c) <= uLens.x * uLens.x);')
+    expect(body.split('\n').length, 'the lines of the function').toBe(5)
+    // The same two tests in numbers. For a number they answer what the plain forms answer; for no number they answer true.
+    const outside = (seen: number, d: number, r: number): boolean => {
+      if (!(seen > 0)) return true
+      return !(d <= r * r)
+    }
+    const plain = (seen: number, d: number, r: number): boolean => {
+      if (seen <= 0) return true
+      return d > r * r
+    }
+    for (const seen of [-1, 0, 1e-6, 0.25, 1]) for (const d of [0, 1, 2499.999, 2500, 2500.001, 1e9, Infinity]) expect(outside(seen, d, 50), `seen ${seen}, ${d}`).toBe(plain(seen, d, 50))
+    expect(outside(Number.NaN, 0, 50), 'seen is no number').toBe(true)
+    expect(outside(1, Number.NaN, 50), 'the place is no number').toBe(true)
+    expect(plain(Number.NaN, Number.NaN, 50), 'the plain forms kept it').toBe(false)
+  })
+})

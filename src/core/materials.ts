@@ -269,10 +269,14 @@ varying vec3 vStageLocal;
 varying vec3 vStageAux;
 varying vec3 vStagePlaced;
 varying float vStageSeen;
+// A triangle whose corners are all unseen is a sliver on the outline (src/globe/lens.ts), and a fragment of such a sliver can
+// come with varyings that are no number. A comparison with no number is false whichever way it is asked, so both tests here
+// are asked the way that is true for it, and the fragment is dropped. Asked the other way (seen <= 0, dot > r * r) it was kept
+// and painted no number into one sample of a frame, and the mean of the samples keeps that: one dark pixel in a final frame.
 bool stageOutside() {
-  if (vStageSeen <= 0.0) return true;
+  if (!(vStageSeen > 0.0)) return true;
   vec3 c = cross(normalize(vStagePlaced - cameraPosition), uLensCentre - cameraPosition);
-  return dot(c, c) > uLens.x * uLens.x;
+  return !(dot(c, c) <= uLens.x * uLens.x);
 }
 float stageHash(vec3 p) {
   uvec3 v = uvec3(uint(p.x), uint(p.y), uint(p.z * 4096.0));
