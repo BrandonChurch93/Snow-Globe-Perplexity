@@ -10,6 +10,7 @@ import { parseArgs, rel } from './lib/paths.mjs'
  * that say so.
  *
  *   node tools/walk.mjs --layout hd|phone|tablet [--url http://localhost:4173/] [--quality low] [--wait 300]
+ *   node tools/walk.mjs --layout 600x600 [--touch] [--ratio 2]   (a window of any size, as tools/visit.mjs takes it)
  *     runs   <layout>-1  first paint, the hint and the look of the controls, the Shake control, the space bar, four shakes in a
  *                        row, the season marks, the first look measured
  *            <layout>-2  the hint and the controls a second time, keyboard and menu, reduced motion, the season links
@@ -37,7 +38,8 @@ if (!names) {
   for (const [k, only] of RUNS) {
     const name = `${layout}-${k}`
     const pass = ['tools/visit.mjs', '--layout', layout, '--only', only, '--name', name]
-    for (const o of ['url', 'quality', 'wait']) if (args[o] && args[o] !== true) pass.push(`--${o}`, String(args[o]))
+    for (const o of ['url', 'quality', 'wait', 'ratio']) if (args[o] && args[o] !== true) pass.push(`--${o}`, String(args[o]))
+    if (args.touch === true) pass.push('--touch')
     const t0 = Date.now()
     const r = spawnSync(process.execPath, pass, { cwd: rel(), stdio: 'inherit' })
     took.push(`${name} ${Math.round((Date.now() - t0) / 1000)} s${r.status === 0 ? '' : `, ended with ${r.status ?? r.signal}`}`)
@@ -66,7 +68,7 @@ for (const name of names) {
   }
 }
 
-const touch = layout !== 'hd'
+const touch = /^\d+x\d+$/.test(layout) ? args.touch === true : layout !== 'hd'
 const sizeLines = (re) => [...lines.keys()].filter((k) => re.test(k))
 const ITEMS = [
   ['1', 'opens live, in the default season, at rest, with only the controls; the still first, then the live picture', ['first-paint', 'first-look', 'first-settle']],

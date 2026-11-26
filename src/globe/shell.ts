@@ -376,7 +376,8 @@ vec3 glassArcs(vec3 d) {
   float beta = acos(clamp(along, -1.0, 1.0));
   float least = min(${num(glassLook.arcs.leastPx)} * fwidth(beta), 0.05);
   if (along < 0.45) return vec3(0.0);
-  float phi = atan(dot(d, ${vec(ARC_UP)}), d.x);
+  vec2 about = vec2(dot(d, ${vec(ARC_UP)}), d.x);
+  float phi = dot(about, about) > 0.0 ? atan(about.x, about.y) : 0.0;
   vec4 at[${ARC_N}] = ${ARC_AT};
   vec2 level[${ARC_N}] = ${ARC_LEVEL};
   vec2 sum = vec2(0.0);
