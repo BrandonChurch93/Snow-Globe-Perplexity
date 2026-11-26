@@ -464,7 +464,7 @@ describe('the framing of the app through a shake', () => {
       for (const back of [0.2, 0.5, 1]) {
         const rig = liveRig(w / h, 0, 0, roomUnder(h, null, w), { beat: back * liftBeats, sinceLanding: long })
         expect(rig.pitchDeg, name).toBe(hero.pitchDeg)
-        expect(rig.yawDeg, name).toBe(hero.yawDeg)
+        expect(rig.yawDeg, name).toBe(hero.yawDeg + (w / h < FRAME.narrowAspect ? FRAME.narrowYawDeg : 0))
         expect(rig.fovDeg, name).toBe(hero.fovDeg)
         expect(rig.distanceMm, name).toBeGreaterThanOrEqual(hero.distanceMm)
       }
