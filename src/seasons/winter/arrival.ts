@@ -88,7 +88,7 @@ export function update(moment: KitMoment): void {
       else frost.setGrowth(0, 0, 0, 0)
       return
     }
-    frost.setGrowth(g.glass, g.slab, kept('base', through), kept('base', through))
+    frost.setGrowth(g.glass, g.slab, kept('shed', through), kept('shed', through))
     return
   }
   frost.setGrowth(g.glass, g.slab, 1, 1)

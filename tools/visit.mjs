@@ -20,6 +20,9 @@ import { parseArgs, rel, loadConfig } from './lib/paths.mjs'
  *     --name NAME       the folder under out/work/visit/ (the layout's name).
  *     --wait SECONDS    the longest wait for one thing to happen (300).
  *
+ * Through the whole walk it also looks at the controls at every frame and at every animation the page starts (the line
+ * `controls-watched`): a control that has come is never under the floor it dims to, never dim with the bar awake, never gone.
+ *
  * Files: out/work/visit/<name>/NN-<action>.png and facts.jsonl (one line an action), result.json (the lines and the findings).
  * The tool judges nothing by eye. Lines whose `ok` is false are what it found wrong; the pictures are for the reader.
  * It waits on the app's own state, never on a control coming to rest: without a GPU a frame takes seconds.
@@ -86,6 +89,59 @@ await page.addInitScript(() => {
       if (window.__log.length < 4000) window.__log.push({ t: Math.round(performance.now()), el: what, attr: m.attributeName, value: el.getAttribute(m.attributeName ?? '') })
     }
   }).observe(document, { attributes: true, subtree: true, attributeFilter: ['class', 'aria-pressed', 'aria-disabled', 'data-target', 'data-dim', 'data-interface', 'data-first-picture', 'data-audio', 'hidden', 'data-reduced'] })
+
+  // The controls, looked at at every frame and whenever the page starts an animation or a transition: once a control has come
+  // it is never under the floor it dims to, never under 1 when the bar has been awake for a while, and never not drawn. What an
+  // animation on a control will do is read from its keyframes, so a dip is found however few frames this machine draws.
+  window.__watch = { looks: 0, faults: [], least: {}, veil: [] }
+  const parts = { shake: '[data-control="shake"]', marks: '[role="group"]', sound: '[data-control="sound"]' }
+  const came = {}
+  let dimAt = -Infinity
+  new MutationObserver(() => (dimAt = performance.now())).observe(document, { attributes: true, subtree: true, attributeFilter: ['data-dim'] })
+  const look = (why) => {
+    const root = document.getElementById('ui')
+    const ui = root?.firstElementChild
+    if (!root || !ui || root.dataset.interface !== 'shown') {
+      for (const k of Object.keys(came)) delete came[k]
+      return
+    }
+    const w = window.__watch
+    const t = Math.round(performance.now())
+    const dim = ui.hasAttribute('data-dim')
+    const floor = Number(getComputedStyle(ui).getPropertyValue('--dim-to')) || 0
+    const fault = (part, what, more = {}) => w.faults.length < 200 && w.faults.push({ t, part, what, why, ...more })
+    w.looks++
+    for (const [part, sel] of Object.entries(parts)) {
+      const el = ui.querySelector(sel)
+      if (!el || el.hidden || el.getClientRects().length === 0) {
+        if (came[part] && part !== 'sound') fault(part, 'not drawn')
+        delete came[part]
+        continue
+      }
+      let seen = 1
+      for (let e = el; e && e !== root; e = e.parentElement) seen *= Number(getComputedStyle(e).opacity)
+      if (!came[part]) {
+        if (seen >= 0.999) came[part] = true
+        continue
+      }
+      const ahead = el.getAnimations().flatMap((a) => (a.effect?.getKeyframes?.() ?? []).filter((k) => k.opacity !== undefined && k.opacity !== null).map((k) => Number(k.opacity)))
+      const least = Math.min(seen, ...ahead)
+      w.least[part] = Math.min(w.least[part] ?? 1, least)
+      if (least < floor - 0.005) fault(part, 'under the floor', { opacity: least, floor })
+      else if (!dim && performance.now() - dimAt > 1500 && seen < 0.995) fault(part, 'under 1 with the bar awake', { opacity: seen })
+    }
+    const veil = ui.querySelector('canvas')
+    const shown = veil && !veil.hidden
+    const last = w.veil[w.veil.length - 1]
+    if ((shown || (last && last.opacity !== null)) && w.veil.length < 400) w.veil.push({ t, opacity: shown ? Number(getComputedStyle(veil).opacity) : null, busy: ui.querySelector(parts.shake)?.getAttribute('aria-disabled') === 'true' })
+  }
+  const each = () => {
+    look('frame')
+    requestAnimationFrame(each)
+  }
+  requestAnimationFrame(each)
+  for (const type of ['animationstart', 'transitionrun']) document.addEventListener(type, (e) => look(`${type} ${e.animationName ?? e.propertyName ?? ''}`), true)
+  new MutationObserver(() => look('hidden')).observe(document, { attributes: true, subtree: true, attributeFilter: ['hidden'] })
 })
 
 /** What the page says about itself. */
@@ -116,6 +172,9 @@ const read = () =>
       sound: sound ? { shown: !!box(sound), on: sound.getAttribute('aria-pressed') === 'true' } : null,
       dim: ui?.firstElementChild?.hasAttribute('data-dim') ?? false,
       reduced: ui?.firstElementChild?.hasAttribute('data-reduced') ?? false,
+      said: ui?.querySelector('[role="status"]')?.textContent ?? '',
+      disabled: [shake, ...marks].filter((b) => b?.getAttribute('aria-disabled') === 'true').length,
+      veil: ((v) => (v && !v.hidden ? Number(getComputedStyle(v).opacity) : null))(ui?.querySelector('canvas')),
       menu: menu ? !menu.hidden : false,
       focus: a && a !== document.body ? (a.getAttribute('data-season') ?? a.getAttribute('data-control') ?? a.tagName.toLowerCase()) : '',
       frames: window.__frames,
@@ -191,18 +250,40 @@ async function drag(points, hold = false, goOn = false) {
 const line = (x0, y0, x1, y1, seconds, n = 12) => Array.from({ length: n + 1 }, (_, i) => [x0 + ((x1 - x0) * i) / n, y0 + ((y1 - y0) * i) / n, (seconds * i) / n])
 
 /** How far two screenshots are apart inside the middle of the picture, where the globe is: mean difference of a channel, 0 to 255. */
+const middle = { left: Math.round(fmt.width * 0.2), top: Math.round(fmt.height * 0.12), width: Math.round(fmt.width * 0.6), height: Math.round(fmt.height * 0.55) }
+const rawMiddle = (p) => sharp(p).extract(middle).removeAlpha().raw().toBuffer()
 async function apart(a, b) {
   if (!a || !b) return null
-  const cut = { left: Math.round(fmt.width * 0.2), top: Math.round(fmt.height * 0.12), width: Math.round(fmt.width * 0.6), height: Math.round(fmt.height * 0.55) }
-  const raw = (p) => sharp(p).extract(cut).removeAlpha().raw().toBuffer()
-  const [x, y] = await Promise.all([raw(a), raw(b)])
+  const [x, y] = await Promise.all([rawMiddle(a), rawMiddle(b)])
   let sum = 0
   for (let i = 0; i < x.length; i++) sum += Math.abs(x[i] - y[i])
   return Math.round((sum / x.length) * 100) / 100
 }
+/**
+ * How far `m` is from the even mix of `a` and `b`, in the same middle of the picture. A true dissolve at its half is the even
+ * mix, so this is near 0; a picture made of whole pixels of the one or the other is half of `apart(a, b)` away from it.
+ */
+async function offEvenMix(a, m, b) {
+  if (!a || !m || !b) return null
+  const [x, y, z] = await Promise.all([rawMiddle(a), rawMiddle(m), rawMiddle(b)])
+  let sum = 0
+  for (let i = 0; i < x.length; i++) sum += Math.abs(y[i] - (x[i] + z[i]) / 2)
+  return Math.round((sum / x.length) * 100) / 100
+}
 const grab = () => page.screenshot({ scale: 'css', timeout: 120000 }).catch(() => null)
 
+/** What the watch of the controls saw on the page that is open: taken before the page is left, and at the end. */
+const watched = { looks: 0, faults: [], least: {} }
+async function gather() {
+  const w = await page.evaluate(() => window.__watch ?? null).catch(() => null)
+  if (!w) return
+  watched.looks += w.looks
+  watched.faults.push(...w.faults)
+  for (const [k, v] of Object.entries(w.least)) watched.least[k] = Math.min(watched.least[k] ?? 1, v)
+}
+
 async function open(extra = {}) {
+  await gather()
   requests.length = 0
   const t0 = Date.now()
   await page.goto(urlOf(extra), { waitUntil: 'domcontentloaded' })
@@ -232,8 +313,8 @@ async function change(step, action, act, to, { again = null } = {}) {
   const log = await page.evaluate((from) => window.__log.slice(from), mark)
   const lits = log.filter((l) => l.attr === 'aria-pressed' && l.value === 'true' && seasons.includes(l.el)).map((l) => l.el)
   const starts = log.filter((l) => l.el === 'shake' && l.attr === 'aria-disabled' && l.value === 'true').length
-  const ok = started.ok && landed.ok && after.state.lit.join() === to && !after.state.busy && lits.filter((l) => l !== before.lit[0]).join() === to
-  await note(step, action, { from: before.lit.join(), to, started: started.ok, startSeconds: started.seconds, landed: landed.ok, seconds: Math.round(landed.seconds), litInTurn: lits.join('>'), heldCount: starts, second, ...brief(after.state) }, ok)
+  const ok = started.ok && landed.ok && after.state.lit.join() === to && !after.state.busy && lits.filter((l) => l !== before.lit[0]).join() === to && after.state.said === nameOf(to) && after.state.disabled === 0
+  await note(step, action, { from: before.lit.join(), to, started: started.ok, startSeconds: started.seconds, landed: landed.ok, seconds: Math.round(landed.seconds), litInTurn: lits.join('>'), heldCount: starts, second, said: after.state.said, ...brief(after.state) }, ok)
   return ok
 }
 /** The controls as the eye meets them: row by row, left to right. */
@@ -242,6 +323,8 @@ const inOrder = (boxes) => {
   return boxes.slice().sort((a, b) => row(a[1]) - row(b[1]) || a[1][0] - b[1][0]).map(([k]) => k)
 }
 const nextOf = (s) => seasons[(seasons.indexOf(s) + 1) % seasons.length]
+/** The name the status region says for a season: its id with a capital. */
+const nameOf = (id) => id.charAt(0).toUpperCase() + id.slice(1)
 
 // ---------------------------------------------------------------------------------------------------------------------------
 
@@ -364,8 +447,10 @@ if (want(11)) {
     }
     return op()
   }
-  const low = await settle((v) => v < 0.6)
-  await note(11, 'dimmed', { dimmed: dimmed.ok, afterSeconds: dimmed.seconds, opacity: low }, dimmed.ok && Number(low) < 0.6)
+  // The floor is the page's own (`--dim-to`). Dimmed is at that floor, and the floor is plainly there and still quieter than awake.
+  const floor = await page.evaluate(() => Number(getComputedStyle(document.querySelector('#ui > div')).getPropertyValue('--dim-to')))
+  const low = await settle((v) => Math.abs(v - floor) <= 0.02)
+  await note(11, 'dimmed', { dimmed: dimmed.ok, afterSeconds: dimmed.seconds, opacity: low, floor }, dimmed.ok && Math.abs(Number(low) - floor) <= 0.02 && floor >= 0.5 && floor <= 0.8)
   if (!touch) await page.mouse.move(fmt.width * 0.4, fmt.height * 0.4)
   else await press(fmt.width * 0.5, fmt.height * 0.06)
   const back = await until('the controls to return', (x) => !x.dim, 20000)
@@ -594,19 +679,68 @@ if (want(9)) {
   const set = await until('reduced motion to be seen', (x) => x.reduced, 30000)
   s = set.state
   const to = nextOf(s.lit[0])
-  const a = await grab()
-  const f0 = s.frames
+  // The dissolve lasts under two seconds and a frame takes seconds here. For the three stills the tool holds the fade as it
+  // starts, sets it to its half, and then lets it end. The press after that is left alone, to its end.
+  await page.evaluate(() => {
+    const veil = document.querySelector('#ui canvas')
+    window.__held = null
+    window.__hold = new MutationObserver(() => {
+      const a = veil.hidden ? null : veil.getAnimations()[0]
+      if (!a || window.__held) return
+      a.pause()
+      a.currentTime = 0
+      window.__held = a
+    })
+    window.__hold.observe(veil, { attributes: true, attributeFilter: ['hidden'] })
+  })
+  // The app measures the controls every twentieth frame and then moves the camera to stand over them: a third of a second
+  // on a visitor's machine, more than a minute here. The press waits for it, as a visitor's does.
+  const settled = opened.shown.state.frames + 24
+  s = await read()
+  if (s.frames < settled) await frames(settled - s.frames)
+  const before = await grab()
   const mark = await page.evaluate(() => window.__log.length)
   await pressControl('shake')
   const started = await until('the change to start', (x) => x.busy, 60000)
-  await frames(3)
+  const veiled = await until('the dissolve to start', (x) => x.veil !== null, 120000)
+  const held = await page.evaluate(() => (window.__held ? Number(window.__held.effect.getTiming().duration) : null))
+  await frames(1)
+  const start = await grab()
+  await note(9, 'reduced-start', { fadeHeldByTheTool: held !== null, fadeSeconds: held === null ? null : held / 1000, fadeAt: 0, apartFromBefore: await apart(before, start), ...brief(await read()), veil: (await read()).veil }, started.ok && veiled.ok && held !== null)
+  await page.evaluate(() => window.__held && (window.__held.currentTime = Number(window.__held.effect.getTiming().duration) / 2))
+  await frames(2)
   const mid = await grab()
-  await note(9, 'reduced-during', { ...brief(await read()), apartFromBefore: await apart(a, mid) })
-  const landed = await until('the season to arrive', (x) => !x.busy && x.lit[0] === to)
-  const took = landed.state.frames - f0
+  const half = await read()
+  await note(9, 'reduced-middle', { fadeAt: 0.5, apartFromBefore: await apart(before, mid), ...brief(half), veil: half.veil }, half.veil !== null && Math.abs(half.veil - 0.5) < 0.05)
+  await page.evaluate(() => {
+    window.__hold.disconnect()
+    window.__held?.finish()
+  })
+  const landed = await until('the season to arrive', (x) => !x.busy && x.lit[0] === to && x.veil === null)
+  await frames(2)
+  const end = await grab()
+  const done = await read()
   const rock = await page.evaluate(() => getComputedStyle(document.querySelector('#ui [data-control="shake"] svg *') ?? document.body).animationName)
   const log = await page.evaluate((from) => window.__log.slice(from), mark)
-  await note(9, 'reduced-after', { reducedSeen: set.ok, started: started.ok, landed: landed.ok, framesTaken: took, seconds: Math.round(landed.seconds), controlAnimation: rock, pulses: log.filter((l) => /pulse/.test(l.value ?? '')).length, ...brief(landed.state) }, set.ok && started.ok && landed.ok)
+  const pulses = log.filter((l) => /pulse/.test(l.value ?? '')).length
+  const whole = await apart(start, end)
+  const off = await offEvenMix(start, mid, end)
+  const trueDissolve = whole !== null && off !== null && whole > 2 && off < 0.25 * whole
+  await note(9, 'reduced-end', { reducedSeen: set.ok, landed: landed.ok, said: done.said, controlsHeld: done.disabled, controlAnimation: rock, pulses, apartFromBefore: await apart(before, end), startToEnd: whole, middleOffTheEvenMix: off, ...brief(done), veil: done.veil }, set.ok && landed.ok && done.said === nameOf(to) && done.disabled === 0 && done.veil === null && done.lit.join() === to && rock === 'none' && pulses === 0 && trueDissolve)
+
+  const again = nextOf(to)
+  const from = await page.evaluate(() => window.__watch.veil.length)
+  const f0 = done.frames
+  const t0 = Date.now()
+  await pressControl('shake')
+  const started2 = await until('the change to start', (x) => x.busy, 60000)
+  const landed2 = await until('the season to arrive', (x) => !x.busy && x.lit[0] === again && x.veil === null)
+  const seconds = (Date.now() - t0) / 1000
+  const fade = await page.evaluate((n) => window.__watch.veil.slice(n).map((v) => v.opacity), from)
+  const falls = fade.every((v, i) => i === 0 || v === null || fade[i - 1] === null || v <= fade[i - 1] + 1e-6)
+  await frames(2)
+  const alone = await read()
+  await note(9, 'reduced-alone', { started: started2.ok, landed: landed2.ok, framesTaken: landed2.state.frames - f0, seconds: Math.round(seconds * 10) / 10, veilWhenLookedAt: fade, said: alone.said, controlsHeld: alone.disabled, ...brief(alone) }, started2.ok && landed2.ok && alone.said === nameOf(again) && alone.disabled === 0 && alone.lit.join() === again && fade.length > 0 && fade[0] !== null && fade[fade.length - 1] === null && falls)
   await page.emulateMedia({ reducedMotion: 'no-preference' })
 }
 
@@ -617,6 +751,9 @@ if (want(10)) {
     await note(10, `link-${id}`, { link: urlOf({ season: id }), firstPictureSeconds: opened.seconds, lit: x.lit.join(), busy: x.busy, shown: x.shown }, opened.first.ok && opened.shown.ok && x.lit.join() === id && !x.busy)
   }
 }
+
+await gather()
+await note(11, 'controls-watched', { looks: watched.looks, least: watched.least, faults: watched.faults.slice(0, 24), faultCount: watched.faults.length }, watched.looks > 0 && watched.faults.length === 0)
 
 const bad = lines.filter((l) => !l.ok)
 fs.writeFileSync(path.join(dir, 'result.json'), JSON.stringify({ url: base, layout, size: [fmt.width, fmt.height], ratio, touch, quality, lines, notOk: bad.map((l) => `${l.step} ${l.action}`), pageErrors: errors }, null, 1))

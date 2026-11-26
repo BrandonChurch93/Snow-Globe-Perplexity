@@ -9,11 +9,22 @@ type Sound = { rate: number; L: Float64Array; R: Float64Array }
 type Measured = { seconds: number; lufs: number; lufsMeasure: string; soundLufs: number | null; offsetDb: number | null; soundSeconds: number; truePeakDb: number; silenceFrontSeconds: number; events: number; spectrum: { centroidHz: number } }
 type Level = { measure: string; measuredAs: string; seconds: number; beforeLufs: number; afterLufs: number; targetLufs: number; truePeakDb: number }
 type Kept = { audio: Sound; steps: string[]; gainDb: number; level: Level; loop: { seconds: number; seam: { ratio: number; levelStepDb: number } } | null }
-type Plan = { sprite: { audio: Sound | null; entries: Record<string, { start: number; seconds: number; gain: number }> }; loops: unknown[]; notes: string[] }
+type Ends = { ratio: number; levelStepDb: number; secondStepDb: number }
+type Loop = { id: string; audio: Sound; loopStart: number; loopSeconds: number; gain: number; seam: Ends; fromBar?: number; toBar?: number; leadSeconds?: number; centredByDb?: number; turnedSeconds?: number }
+type Plan = { sprite: { audio: Sound | null; entries: Record<string, { start: number; seconds: number; gain: number }> }; loops: Loop[]; notes: string[] }
 type Mixed = {
   audio: Sound
   music: Sound
-  report: { seconds: number; openingSeconds: number; placed: { cue: string; at?: number }[]; skipped: { cue: string; why: string }[]; music: { source: string; parts: { id: string }[] }; master: { lufs: number; truePeakDb: number; silent: boolean } }
+  report: {
+    seconds: number
+    openingSeconds: number
+    placed: { cue: string; at?: number }[]
+    skipped: { cue: string; why: string }[]
+    music: { source: string; parts: { id: string; fromBar?: number; toBar?: number; centredByDb?: number }[] }
+    landings: { at: number[]; beforeDb: number[]; trimsDb: number[]; afterDb: number[]; spreadDb: number }
+    channels: { leftOverRightDb: number }
+    master: { lufs: number; truePeakDb: number; silent: boolean; encoded: { truePeakDb: number; roomDb: number } | null }
+  }
 }
 type Cut = Record<string, unknown>
 type Lib = {
@@ -39,8 +50,21 @@ type Lib = {
   levelOf(cls: string): number
   keepChain(a: Sound, cls: string, options?: Record<string, unknown>): Kept
   master(a: Sound, target: number, ceilingDb: number): { audio: Sound; lufs: number; truePeakDb: number; passes: number; reductionDb: number }
-  mixFilm(o: { cut: Cut; which?: string; candidate?: string; keptDir: string; mapsDir: string; skip?: string[]; gains?: Record<string, number> }): Mixed
+  mixFilm(o: { cut: Cut; which?: string; candidate?: string; keptDir?: string; mapsDir?: string; skip?: string[]; gains?: Record<string, number> }): Mixed
   sha256(b: Buffer): string
+  KEPT: string
+  levelDb(a: Sound, from?: number, to?: number): number
+  channelsDb(a: Sound, from?: number, to?: number): number
+  centre(a: Sound, most?: number): { audio: Sound; movedDb: number }
+  musicBars(a: Sound, lines: number[]): { first: number; last: number; lastWhole: number; medianDb: number }
+  loopEnds(a: Sound): Ends
+  turnLoop(a: Sound): { audio: Sound; turnedSeconds: number; seam: Ends }
+  encodedTruePeak(a: Sound): number | null
+  encodedCopy(a: Sound): Sound | null
+  giveWay(a: Sound, ceilingDb: number): { audio: Sound; encodedDb: number | null; places: { at: number; db: number }[] }
+  layTogether(recipe: Record<string, unknown>, o: { takesDir: string; keptDir: string }): { audio: Sound; sha256: string; layers: { underMainDb: number; gainDb: number; levelDb: number; seconds: number; source: Record<string, unknown> }[] }
+  MADE_UNDER_DB: number
+  readJson(file: string): unknown
 }
 
 const A = lib as unknown as Lib
@@ -446,5 +470,345 @@ describe('mix', () => {
     expect(m.report.master.silent).toBe(true)
     expect(A.peak(m.audio)).toBe(0)
     expect(m.report.placed.length).toBe(0)
+  })
+})
+
+// The faults the fresh review measured in the film's sound, built into four small tracks:
+// a count-in before the winter music and a last bar that only rings out, a spring track that leans left,
+// a summer track of plucked notes, a fall track that fades in.
+const BARS = 12
+const sing = (i: number, hz: number[]): number => hz.reduce((sum, f, k) => sum + Math.sin((2 * Math.PI * f * i) / rate + k) / (k + 1), 0)
+const track = (f: (b: number, t: number, i: number) => [number, number], tail = 1.4): Sound => {
+  const a = A.make(Math.round(((BARS - 1) * bar + tail) * rate), rate)
+  for (let i = 0; i < a.L.length; i++) {
+    const at = i / rate
+    const b = Math.min(BARS - 1, Math.floor(at / bar))
+    const [l, r] = f(b, at - b * bar, i)
+    a.L[i] = l
+    a.R[i] = r
+  }
+  return a
+}
+const winterLike = (): Sound =>
+  track((b, t, i) => {
+    const pad = 0.11 * sing(i, [220, 277, 330, 880, 1760]) * (1 + 0.2 * Math.sin(i / 9000))
+    if (b === 0) {
+      const u = t % 0.3
+      const tick = u < 0.02 ? 0.12 * Math.sin((2 * Math.PI * 3000 * i) / rate) : 0
+      return [tick, tick]
+    }
+    if (b === 1 && t < 0.3) return [pad * 0.02, pad * 0.02]
+    if (b >= BARS - 2) {
+      const v = 0.3 * sing(i, [220, 277, 330, 880]) * Math.exp(-(t + (b - (BARS - 2)) * bar) / 0.45)
+      return [v, v]
+    }
+    return [pad, pad * 0.95]
+  })
+const pluckLike = (amp: number, decay: number, left: number, right: number, hz: number[]): Sound =>
+  track((b, t, i) => {
+    const beat = t % (bar / 4)
+    const v = amp * Math.exp(-beat / decay) * sing(i, [hz[(b + Math.floor(t / (bar / 4))) % hz.length]!, 1320, 2640]) + 0.01 * sing(i, [330, 990])
+    return [v * left, v * right]
+  }, bar - 0.01)
+const fallLike = (): Sound =>
+  track((b, t, i) => {
+    const pad = 0.12 * sing(i, [147, 233, 311, 932, 1870]) * (1 + 0.25 * Math.sin(i / 7000))
+    if (b === 0) return [pad * (t / bar) ** 2, pad * (t / bar) ** 2]
+    if (b >= BARS - 2) return [pad * Math.exp(-(t + (b - (BARS - 2)) * bar) / 0.3), pad * Math.exp(-(t + (b - (BARS - 2)) * bar) / 0.3)]
+    return [pad, pad]
+  })
+const PER = 3
+const SLOW = 300000
+const filmCut = (): Cut => {
+  const seasons = ['winter', 'spring', 'summer', 'fall', 'winter']
+  const sections = seasons.map((season, k) => ({ season, from: k * PER * bar, to: (k + 1) * PER * bar }))
+  const landings = sections.slice(1).map((sec) => Math.round(sec.from * config.film.fps))
+  return {
+    source: 'default-grid',
+    bpm: config.film.defaultBpm,
+    beatsPerBar: config.film.beatsPerBar,
+    fps: config.film.fps,
+    seconds: seasons.length * PER * bar,
+    frameCount: Math.round(seasons.length * PER * bar * config.film.fps),
+    landings,
+    opening: { frameCount: 90, seconds: 1.5, cues: [{ cue: 'key-tap', frame: 12, at: 0.2 }] },
+    cues: sections.slice(1).flatMap((sec) => [
+      { cue: 'lift', at: sec.from - bar },
+      { cue: `shake-${sec.season}`, at: sec.from - bar },
+      { cue: `land-${sec.season}`, at: sec.from },
+      { cue: 'glass-clink', at: sec.from },
+    ]),
+    ambience: sections.map((sec, k) => ({ cue: `amb-${sec.season}`, from: Math.max(0, sec.from - bar), to: sec.to, fadeIn: k ? bar : 0, fadeOut: k < seasons.length - 1 ? bar : 0 })),
+    sections,
+  }
+}
+const zeroRuns = (a: Sound, from = 0): { inside: number; atTheEnd: number } => {
+  const bytes = A.parseWav(A.encodeWav(a))
+  let run = 0
+  let inside = 0
+  for (let i = from; i < bytes.L.length; i++) {
+    if (bytes.L[i] === 0 && bytes.R[i] === 0) run++
+    else {
+      inside = Math.max(inside, run)
+      run = 0
+    }
+  }
+  return { inside: inside / rate, atTheEnd: run / rate }
+}
+const filmNumbers = (m: Mixed, cut: Cut, offset = 0) => {
+  const sections = cut.sections as { from: number; to: number }[]
+  const at = (t: number): number => Math.round((t + offset) * rate)
+  const landings = sections.slice(1).map((sec) => sec.from)
+  const holds = sections.map((sec, k) => A.levelDb(m.audio, at(sec.from + bar / 2), at((k < sections.length - 1 ? sec.to - bar : sec.to) - bar / 4)))
+  const open = landings.map((t) => A.levelDb(m.audio, at(t), at(t + 0.05)))
+  const before = landings.map((t) => A.levelDb(m.audio, at(t - 0.2), at(t)))
+  return { holds, open, before, firstSecond: A.levelDb(m.audio, at(0), at(1)), channels: A.channelsDb(m.audio), zeros: zeroRuns(m.audio, at(0)), lastHalfSecond: A.levelDb(m.audio, m.audio.L.length - rate / 2, m.audio.L.length), lastMoment: A.levelDb(m.audio, m.audio.L.length - 48, m.audio.L.length), momentBefore: A.levelDb(m.audio, m.audio.L.length - 4800, m.audio.L.length - 2400) }
+}
+const expectFilm = (n: ReturnType<typeof filmNumbers>, m: Mixed): void => {
+  // (a) the last bar rings to the last sample and the fade ends on it
+  expect(n.zeros.atTheEnd).toBeLessThan(0.001)
+  expect(n.lastHalfSecond).toBeGreaterThan(-70)
+  expect(n.lastMoment).toBeLessThan(n.momentBefore)
+  // (b) no run of exact zero inside the body of the film, and no shake bar runs down to nothing
+  expect(n.zeros.inside).toBeLessThan(0.002)
+  for (const v of n.before) expect(v).toBeGreaterThan(-62)
+  // (c) the four landings start alike
+  expect(Math.max(...n.open) - Math.min(...n.open)).toBeLessThanOrEqual(2)
+  // (d) the music is there from frame 0 of the body
+  expect(Math.abs(n.firstSecond - Math.min(...n.holds))).toBeLessThan(6)
+  expect(Math.abs(n.firstSecond - Math.max(...n.holds))).toBeLessThan(6)
+  // (e) centred, at the film's loudness, under the ceiling as a wav and as the film's encoded sound
+  expect(Math.abs(n.channels)).toBeLessThanOrEqual(0.5)
+  expect(Math.abs(A.loudness(m.audio) - config.audio.filmLoudnessLufs)).toBeLessThan(0.5)
+  expect(A.db(A.truePeak(m.audio))).toBeLessThanOrEqual(config.audio.truePeakDb)
+  expect(m.report.master.encoded).not.toBeNull()
+  expect(m.report.master.encoded!.truePeakDb).toBeLessThanOrEqual(config.audio.truePeakDb)
+}
+
+describe('the film mix, by number', () => {
+  let film = ''
+  let one: Mixed
+  beforeAll(() => {
+    film = path.join(dir, 'film')
+    fs.mkdirSync(film, { recursive: true })
+    for (const id of ['lift', 'glass-clink', 'shake-spring', 'key-tap', 'amb-winter']) fs.copyFileSync(path.join(kept, `${id}.wav`), path.join(film, `${id}.wav`))
+    const write = (id: string, a: Sound): void => {
+      fs.writeFileSync(path.join(film, `${id}.wav`), A.encodeWav(a))
+      fs.writeFileSync(path.join(film, `${id}.json`), JSON.stringify({ id, class: A.classOf(id) }))
+    }
+    write('music-winter', winterLike())
+    write('music-spring', pluckLike(0.3, 0.25, 1, 0.4, [523, 659, 784, 988]))
+    write('music-summer', pluckLike(0.45, 0.12, 1, 1, [392, 494, 587, 740]))
+    write('music-fall', fallLike())
+    one = A.mixFilm({ cut: filmCut(), candidate: 'four-tracks', keptDir: film, mapsDir: maps })
+  }, SLOW)
+
+  it('chooses the bars of each track by what they hold', () => {
+    const lines = Array.from({ length: BARS - 1 }, (_, i) => i * bar)
+    const winter = A.musicBars(winterLike(), lines)
+    expect(winter.first).toBe(2)
+    expect(winter.last).toBe(BARS - 2)
+    expect(A.musicBars(fallLike(), lines).first).toBe(1)
+    expect(A.musicBars(pluckLike(0.45, 0.12, 1, 1, [392]), lines).first).toBe(0)
+    const parts = one.report.music.parts
+    expect(parts.map((p) => p.id)).toEqual(['music-winter', 'music-spring', 'music-summer', 'music-fall', 'music-winter'])
+    expect(parts[0]!.fromBar).toBe(2)
+    expect(parts[3]!.fromBar).toBe(1)
+    expect(parts[4]!.toBar).toBe(BARS - 2)
+    expect(Math.abs(parts[1]!.centredByDb!)).toBeGreaterThan(6)
+  })
+
+  it('holds the numbers of the review: the end, the shake bars, the landings, frame 0, the channels and the peak', () => {
+    expectFilm(filmNumbers(one, filmCut()), one)
+    expect(one.report.landings.spreadDb).toBeLessThanOrEqual(2)
+    expect(Math.max(...one.report.landings.beforeDb) - Math.min(...one.report.landings.beforeDb)).toBeGreaterThan(2)
+  })
+
+  // These mix a whole film and read its encoded copy, which is slow while the machine renders: the time allowed is long.
+  it('holds them in film A too', () => {
+    const a = A.mixFilm({ cut: filmCut(), which: 'a', candidate: 'four-tracks', keptDir: film, mapsDir: maps })
+    expectFilm(filmNumbers(a, filmCut(), 1.5), a)
+  }, SLOW)
+
+  it('gives the same bytes and the same report twice', () => {
+    const two = A.mixFilm({ cut: filmCut(), candidate: 'four-tracks', keptDir: film, mapsDir: maps })
+    expect(A.encodeWav(one.audio).equals(A.encodeWav(two.audio))).toBe(true)
+    expect(JSON.stringify(one.report)).toBe(JSON.stringify(two.report))
+  }, SLOW)
+
+  it('centres a track that leans to one side and keeps its two channels apart', () => {
+    const lean = pluckLike(0.3, 0.25, 1, 0.4, [523, 659])
+    expect(A.channelsDb(lean)).toBeGreaterThan(7)
+    const c = A.centre(lean)
+    expect(Math.abs(A.channelsDb(c.audio))).toBeLessThan(0.01)
+    expect(Math.abs(A.levelDb(c.audio) - A.levelDb(lean))).toBeLessThan(0.01)
+    expect(A.centre(c.audio).audio).toBe(c.audio)
+  })
+
+  const filmIsHere = config.seasons.every((s) => fs.existsSync(path.join(A.KEPT, `music-${s}.wav`))) && fs.existsSync('cut/CUTLIST.json')
+  for (const which of ['b', 'a']) {
+    it.skipIf(!filmIsHere)(`holds them on film ${which.toUpperCase()} itself when its tracks are in the workspace`, () => {
+      const cut = A.readJson('cut/CUTLIST.json') as Cut
+      const m = A.mixFilm({ cut, which, candidate: 'four-tracks' })
+      expectFilm(filmNumbers(m, cut, which === 'a' ? Number((cut.opening as { seconds: number }).seconds) : 0), m)
+    }, SLOW)
+  }
+})
+
+describe("the app's loops, by number", () => {
+  const expectEnds = (l: Loop): void => {
+    const from = Math.round(l.loopStart * rate)
+    const body: Sound = { rate, L: l.audio.L.slice(from, from + Math.round(l.loopSeconds * rate)), R: l.audio.R.slice(from, from + Math.round(l.loopSeconds * rate)) }
+    const ends = A.loopEnds(body)
+    expect(Math.abs(ends.secondStepDb), `${l.id}: the last second against the first`).toBeLessThanOrEqual(3)
+    expect(Math.abs(ends.levelStepDb), `${l.id}: the last 50 ms against the first`).toBeLessThanOrEqual(3)
+    expect(ends.ratio, `${l.id}: the step across the seam against a usual step`).toBeLessThan(4)
+    expect(A.seconds(l.audio)).toBeCloseTo(l.loopSeconds + 2 * l.loopStart, 3)
+  }
+
+  it('hands the last bar of every loop back to its first at the same level', () => {
+    const pack = path.join(dir, 'film')
+    const crickets = A.make(Math.round(18.5 * rate), rate)
+    for (let i = 0; i < crickets.L.length; i++) {
+      const v = (((i / rate) % 0.4 < 0.25 ? 0.05 : 0.008) * Math.sin((2 * Math.PI * 4200 * i) / rate)) / (1 + 0.3 * Math.sin((2 * Math.PI * i) / crickets.L.length))
+      crickets.L[i] = v
+      crickets.R[i] = v
+    }
+    fs.writeFileSync(path.join(pack, 'amb-summer.wav'), A.encodeWav(crickets))
+    fs.writeFileSync(path.join(pack, 'amb-summer.json'), JSON.stringify({ id: 'amb-summer', class: 'ambience' }))
+    fs.writeFileSync(path.join(pack, 'amb-winter.json'), JSON.stringify({ id: 'amb-winter', class: 'ambience' }))
+    const plan = A.planPack({ keptDir: pack, mapsDir: maps })
+    expect(plan.notes).toEqual([])
+    expect(plan.loops.map((l) => l.id).sort()).toEqual(['amb-summer', 'amb-winter', 'music-fall', 'music-spring', 'music-summer', 'music-winter'])
+    for (const l of plan.loops) expectEnds(l)
+    const winter = plan.loops.find((l) => l.id === 'music-winter')!
+    expect(winter.fromBar).toBeGreaterThanOrEqual(2)
+    expect(winter.toBar).toBeLessThan(BARS - 2)
+    expect(winter.loopSeconds).toBeCloseTo(8 * bar, 2)
+    const spring = plan.loops.find((l) => l.id === 'music-spring')!
+    const from = Math.round(spring.loopStart * rate)
+    expect(Math.abs(A.channelsDb(spring.audio, from, from + Math.round(spring.loopSeconds * rate)))).toBeLessThanOrEqual(0.5)
+    const again = A.planPack({ keptDir: pack, mapsDir: maps })
+    for (const [k, l] of plan.loops.entries()) expect(A.encodeWav(l.audio).equals(A.encodeWav(again.loops[k]!.audio))).toBe(true)
+  })
+
+  it('turns an ambience that pulses so that its ends fall in a level place', () => {
+    const a = A.make(Math.round(6 * rate), rate)
+    for (let i = 0; i < a.L.length; i++) {
+      const v = ((i / rate) % 0.5 < 0.2 ? 0.1 : 0.01) * Math.sin((2 * Math.PI * 3000 * i) / rate)
+      a.L[i] = v
+      a.R[i] = v
+    }
+    expect(Math.abs(A.loopEnds(a).levelStepDb)).toBeGreaterThan(3)
+    const t = A.turnLoop(a)
+    expect(t.turnedSeconds).toBeGreaterThan(0)
+    expect(Math.abs(t.seam.levelStepDb)).toBeLessThanOrEqual(1.5)
+    expect(Math.abs(t.seam.secondStepDb)).toBeLessThanOrEqual(1.5)
+    expect(Math.abs(A.levelDb(t.audio) - A.levelDb(a))).toBeLessThan(0.001)
+    const level = A.keepChain(noise(24, 0.3, 19), 'ambience').audio
+    expect(A.turnLoop(level).turnedSeconds).toBe(0)
+  })
+
+  it.skipIf(!config.seasons.every((s) => fs.existsSync(path.join(A.KEPT, `music-${s}.wav`))))('holds on the loops of the app itself when its tracks are in the workspace', () => {
+    const plan = (A.planPack as unknown as () => Plan)()
+    expect(plan.loops.length).toBeGreaterThanOrEqual(4)
+    for (const l of plan.loops) expectEnds(l)
+  })
+})
+
+describe('the encoded copy of the mix', () => {
+  // A quiet bed with three hard bursts cut flat at the ceiling: the encoder throws peaks above them.
+  const hard = (): Sound => {
+    const a = tone(330, 3, A.lin(-30))
+    const top = A.lin(config.audio.truePeakDb - 0.2)
+    for (const at of [0.5, 1.4, 2.3]) {
+      const from = Math.round(at * rate)
+      for (let i = 0; i < Math.round(0.06 * rate); i++) {
+        const v = Math.max(-top, Math.min(top, 1.6 * top * (Math.sin((2 * Math.PI * 900 * i) / rate) + 0.5 * Math.sin((2 * Math.PI * 3100 * i) / rate))))
+        a.L[from + i] = v
+        a.R[from + i] = -v * 0.9
+      }
+    }
+    return a
+  }
+
+  it('comes back in step with the wav', () => {
+    const a = tone(440, 1.5, 0.3)
+    for (let i = 0; i < a.L.length; i++) a.R[i] = a.L[i]! * (i < rate / 2 ? 0.1 : 1)
+    const back = A.encodedCopy(a)!
+    expect(back.L.length).toBe(a.L.length)
+    let worst = 0
+    for (let i = rate / 4; i < a.L.length - rate / 4; i++) worst = Math.max(worst, Math.abs(back.L[i]! - a.L[i]!))
+    expect(worst).toBeLessThan(0.02)
+  })
+
+  it('makes the wav give way only where the copy stands over the limit', () => {
+    const a = hard()
+    const ceiling = config.audio.truePeakDb
+    expect(A.db(A.truePeak(a))).toBeLessThanOrEqual(ceiling + 0.3)
+    expect(A.encodedTruePeak(a)!).toBeGreaterThan(ceiling)
+    const fit = A.giveWay(a, ceiling)
+    expect(fit.places.length).toBeGreaterThan(0)
+    expect(fit.encodedDb!).toBeLessThanOrEqual(ceiling)
+    expect(A.encodedTruePeak(fit.audio)!).toBeLessThanOrEqual(ceiling)
+    for (const p of fit.places) expect([0.5, 1.4, 2.3].some((t) => p.at > t - 0.02 && p.at < t + 0.09)).toBe(true)
+    // the bed between the bursts is the same sample for sample
+    for (const t of [0.2, 1.0, 1.9, 2.7]) {
+      const i = Math.round(t * rate)
+      expect(fit.audio.L[i]).toBe(a.L[i])
+    }
+    const again = A.giveWay(a, ceiling)
+    expect(A.encodeWav(again.audio).equals(A.encodeWav(fit.audio))).toBe(true)
+  })
+
+  it('leaves a mix alone whose copy is under the limit', () => {
+    const a = tone(440, 1, 0.3)
+    const fit = A.giveWay(a, config.audio.truePeakDb)
+    expect(fit.places).toEqual([])
+    expect(fit.audio).toBe(a)
+  })
+})
+
+describe('laying sounds together', () => {
+  let takes = ''
+  const recipe = (underMade: number): Record<string, unknown> => ({
+    cue: 'shake-summer',
+    seconds: 2.6,
+    layers: [
+      { kept: 'shake-spring', cents: -70 },
+      { take: 1, underDb: 8, at: 0.2, lowCutHz: 800, fadeInMs: 5, fadeOutMs: 60 },
+      { made: 'noise', fromHz: 3000, toHz: 9000, seconds: 1, seed: 5, underDb: underMade, at: 0.4, fadeInMs: 100, fadeOutMs: 300 },
+      { made: 'tone', hz: 110, seconds: 1.2, underDb: underMade + 2, at: 1, fadeInMs: 50, fadeOutMs: 400 },
+    ],
+  })
+  beforeAll(() => {
+    takes = path.join(dir, 'takes')
+    fs.mkdirSync(path.join(takes, 'shake-summer'), { recursive: true })
+    fs.writeFileSync(path.join(takes, 'shake-summer', 'take-1.wav'), A.encodeWav(burst(1.2, 0.1, 0.9, -6, 29)))
+  })
+
+  it('gives the same bytes from the same recipe, each layer at its level under the main one', () => {
+    const one = A.layTogether(recipe(14), { takesDir: takes, keptDir: kept })
+    const two = A.layTogether(recipe(14), { takesDir: takes, keptDir: kept })
+    expect(one.sha256).toBe(two.sha256)
+    expect(A.encodeWav(one.audio).equals(A.encodeWav(two.audio))).toBe(true)
+    expect(A.seconds(one.audio)).toBeCloseTo(2.6, 3)
+    expect(one.layers.map((l) => l.underMainDb)).toEqual([0, 8, 14, 16])
+    const main = one.layers[0]!.levelDb
+    expect(one.layers[1]!.levelDb).toBeCloseTo(main - 8, 1)
+    expect(one.layers[2]!.levelDb).toBeCloseTo(main - 14, 1)
+    expect(one.layers[3]!.levelDb).toBeCloseTo(main - 16, 1)
+    expect(one.layers[0]!.source).toMatchObject({ kept: 'shake-spring' })
+    expect(one.layers[1]!.source).toMatchObject({ cue: 'shake-summer', take: 1 })
+    expect(one.layers[2]!.source).toEqual({ made: 'noise' })
+    const other = A.layTogether({ ...recipe(14), layers: (recipe(14).layers as Record<string, unknown>[]).map((l, k) => (k === 1 ? { ...l, underDb: 9 } : l)) }, { takesDir: takes, keptDir: kept })
+    expect(other.sha256).not.toBe(one.sha256)
+  })
+
+  it('refuses a made layer nearer than 12 dB to the main layer, or as the main layer', () => {
+    expect(A.MADE_UNDER_DB).toBe(12)
+    expect(() => A.layTogether(recipe(11.9), { takesDir: takes, keptDir: kept })).toThrow(/quiet support/)
+    expect(() => A.layTogether({ cue: 'amb-fall', layers: [{ made: 'tone', hz: 110, seconds: 2 }] }, { takesDir: takes, keptDir: kept })).toThrow(/main/)
+    expect(() => A.layTogether({ cue: 'shake-summer', layers: [{ kept: 'shake-spring' }, { take: 9, underDb: 6 }] }, { takesDir: takes, keptDir: kept })).toThrow(/not in this workspace/)
   })
 })
