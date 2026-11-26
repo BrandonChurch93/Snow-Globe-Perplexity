@@ -1,0 +1,5 @@
+1-base-approved-before-after-draft.jpg: the base at one framing. Top: the approved image (references/approved/summer-rest.png). Middle: before, summer at rest, hero camera, hd, draft, origin/main at 0f3e0973. Bottom: after, summer at rest, hero camera, hd, draft, this branch.
+2-hero-after-draft.jpg: after. Summer at rest, hero camera, hd, draft.
+3-base-camera-after-draft.jpg: after. Summer at rest, base camera, hd, draft.
+4-whole-400px-approved-before-after-draft.jpg: the whole picture three times at 400 px: approved, before, after. Summer at rest, hero camera, draft.
+All "after" pictures were drawn by lavapipe on 26 Nov after 11:22 UTC with summer_glass's six rig lines pasted into src/seasons/summer/rig.ts on the machine only (not committed here); the "before" picture has the rig of origin/main.
