@@ -9,12 +9,17 @@ import { parseArgs, rel, loadConfig, writeJson } from './lib/paths.mjs'
  * than `--gap` ms between two beats is such a stretch. No profiler runs and nothing of the app is wrapped.
  *
  *   node tools/standstill.mjs [--url http://localhost:4173/] [--layout 320x320|hd|phone|tablet|side] [--touch] [--ratio N]
- *                             [--quality low|none] [--seconds 30] [--press 1000] [--gap 250] [--name NAME] [--wait 300]
+ *                             [--quality low|none] [--seconds 30] [--press 1000] [--shakes N] [--gap 250] [--name NAME]
+ *                             [--wait 300]
  *     --layout    a format of the config, `side` (the phone held sideways) or a size. Without a GPU a small window (the
  *                 default) leaves the renderer little to do, so what is left is the page's own script.
  *     --seconds   how long after the controls came the page is listened to (30).
  *     --press MS  the space bar is pressed that long after the controls came, without waiting for the page: the line says
  *                 when the key reached the page, when the Shake control went busy and when the next frame came.
+ *     --shakes N  the space bar is pressed once the other seasons are ready and again 3 s after each landing, N times
+ *                 in all; the listening ends 3 s after the last landing and `--seconds` is not used. A line for each
+ *                 shake says where it landed, how long the control was busy, its frames and the stretches in it. The
+ *                 first shake into a season draws it for the first time; a shake into a season seen before does not.
  *     --gap MS    the shortest gap that counts as a stretch (250).
  *
  * Files: out/work/visit/<name>.json (standstill-<layout> unless named). The tool judges nothing; it prints what it read.
@@ -32,6 +37,9 @@ const layout = str('layout', '320x320')
 const quality = str('quality', 'low')
 const seconds = Number(str('seconds', '30'))
 const pressAt = args.press && args.press !== true ? Number(args.press) : null
+const shakes = args.shakes && args.shakes !== true ? Number(args.shakes) : 0
+if (pressAt !== null && shakes) throw new Error('--press or --shakes, not both')
+const REST = 3000
 const gap = Number(str('gap', '250'))
 const WAIT = Number(str('wait', '300')) * 1000
 const name = str('name', `standstill-${layout}`)
@@ -95,16 +103,39 @@ if (shownWall === null) {
   await browser.close()
   throw new Error(`the controls did not come in ${WAIT / 1000} s`)
 }
-if (pressAt !== null) {
-  const wait = shownWall + pressAt - Date.now()
-  if (wait > 0) await sleep(wait)
-  // Sent and not waited for: the browser takes the key while the page's thread may be in the middle of a stretch.
+// Sent and not waited for: the browser takes the key while the page's thread may be in the middle of a stretch.
+const space = async () => {
   const key = { key: ' ', code: 'Space', windowsVirtualKeyCode: 32, nativeVirtualKeyCode: 32 }
   void cdp.send('Input.dispatchKeyEvent', { type: 'keyDown', text: ' ', ...key }).catch(() => undefined)
   await sleep(60)
   void cdp.send('Input.dispatchKeyEvent', { type: 'keyUp', ...key }).catch(() => undefined)
 }
-while (Date.now() - shownWall < seconds * 1000) await sleep(250)
+// The control is told not busy once as it comes, so a landing is busy that ends, not every time it is told not busy.
+const landingsOf = (busy) => busy.filter((b, i) => !b.busy && i > 0 && busy[i - 1].busy)
+if (pressAt !== null) {
+  const wait = shownWall + pressAt - Date.now()
+  if (wait > 0) await sleep(wait)
+  await space()
+}
+if (shakes) {
+  let sent = 0
+  let rest = null
+  while (Date.now() - began < WAIT) {
+    const now = await page.evaluate(() => ({ ready: window.__standstill.ready.some((r) => r.value === 'ready'), busy: window.__standstill.busy }))
+    const busy = now.busy.length > 0 && now.busy[now.busy.length - 1].busy
+    if (now.ready && !busy && landingsOf(now.busy).length === sent) {
+      rest ??= Date.now()
+      if (Date.now() - rest >= REST) {
+        if (sent === shakes) break
+        await space()
+        sent++
+        rest = null
+      }
+    } else rest = null
+    await sleep(200)
+  }
+} else while (Date.now() - shownWall < seconds * 1000) await sleep(250)
+const listened = shakes ? Math.round((Date.now() - shownWall) / 1000) : seconds
 const got = await page.evaluate(() => window.__standstill)
 await browser.close()
 
@@ -120,7 +151,7 @@ const out = {
   size: [fmt.width, fmt.height],
   ratio,
   touch,
-  seconds,
+  seconds: listened,
   gapMs: gap,
   controlsAtMs: shownAt,
   stoodStill: { times: after.length, totalMs: after.reduce((s, g) => s + g.ms, 0), longestMs: after.reduce((m, g) => Math.max(m, g.ms), 0), stretches: after },
@@ -132,6 +163,7 @@ const out = {
   busy: got.busy.map((b) => ({ at: since(b.at), busy: b.busy })),
   season: got.season.map((s) => ({ at: since(s.at), season: s.season })),
   press: null,
+  shakes: null,
   console: consoleLines,
 }
 const key = got.keys[0]
@@ -148,10 +180,30 @@ if (pressAt !== null && key) {
     landedAfterMs: landed ? landed.at - key.sent : null,
   }
 } else if (pressAt !== null) out.press = { askedAfterMs: pressAt, sentAfterMs: null }
+if (shakes) {
+  const landings = landingsOf(got.busy)
+  out.shakes = got.busy
+    .filter((b) => b.busy)
+    .map((went) => {
+      const landed = landings.find((b) => b.at > went.at)
+      const to = landed ? landed.at : got.frames[got.frames.length - 1]
+      const within = got.frames.filter((f) => f >= went.at && f <= to)
+      const key = got.keys.filter((x) => x.sent <= went.at).pop()
+      return {
+        pressedAfterMs: key ? since(key.sent) : null,
+        controlBusyAfterMs: key ? went.at - key.sent : null,
+        landedIn: landed ? (got.season.filter((x) => x.at <= landed.at + 250).pop()?.season ?? null) : null,
+        busyMs: landed ? landed.at - went.at : null,
+        frames: within.length,
+        widestGapBetweenFramesMs: within.reduce((m, f, i) => (i ? Math.max(m, f - within[i - 1]) : m), 0),
+        stoodStill: got.gaps.filter((g) => g.from + g.ms > went.at && g.from < to).map((g) => ({ from: g.from - went.at, ms: g.ms })),
+      }
+    })
+}
 writeJson(rel('out', 'work', 'visit', `${name}.json`), out)
 
 const list = (gaps) => gaps.map((g) => `${g.ms} ms from ${g.from}`).join(' · ') || 'none'
-console.log(`${name} · ${fmt.width} x ${fmt.height} at ${ratio} · the controls came at ${shownAt} ms · ${frames.length} frames in the ${seconds} s after them`)
+console.log(`${name} · ${fmt.width} x ${fmt.height} at ${ratio} · the controls came at ${shownAt} ms · ${frames.length} frames in the ${listened} s after them`)
 console.log(`after the controls the page's thread stood still ${out.stoodStill.times} times, ${out.stoodStill.totalMs} ms in all, the longest ${out.stoodStill.longestMs} ms: ${list(after)}`)
 console.log(`before the controls: ${list(out.beforeTheControls)}`)
 const when = (v, after) => (v == null ? 'not in this time' : `${v} ms ${after}`)
@@ -160,4 +212,11 @@ if (out.press?.sentAfterMs != null) {
   const p = out.press
   console.log(`the press: sent ${p.sentAfterMs} ms after the controls · reached the page ${p.reachedThePageAfterMs} ms later · the control went busy ${when(p.controlBusyAfterMs, 'after it')} · the next frame came ${when(p.nextFrameAfterMs, 'after it')} · landed ${when(p.landedAfterMs, 'after it')}`)
 } else if (pressAt !== null) console.log('the press: the key did not reach the page in this time')
+if (out.shakes) {
+  out.shakes.forEach((k, i) => {
+    const end = k.busyMs === null ? 'did not land in this time' : `landed in ${k.landedIn} · the control was busy ${k.busyMs} ms`
+    console.log(`shake ${i + 1} of ${shakes}: ${end} · ${k.frames} frames, the widest gap between two ${k.widestGapBetweenFramesMs} ms · stood still, from the control going busy: ${list(k.stoodStill)}`)
+  })
+  if (out.shakes.length < shakes) console.log(`${shakes - out.shakes.length} of the ${shakes} shakes were not begun in this time`)
+}
 console.log(`console: ${consoleLines.length} lines${consoleLines.length ? ': ' + consoleLines.slice(0, 5).join(' | ') : ''}`)
