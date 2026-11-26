@@ -1,0 +1,20 @@
+Summer, job summer_glass, code branch agent/p6-summer-glass at 51d687ac. All stills: hero camera, hd, --look no.
+
+summer-rest-after.jpg
+  After. Summer at rest (state rest), tier final, 51d687ac. The ball is clear with a dark top, the glow sits low behind
+  the miniature, a cool thin outline, a small hot flare at the upper right, thin lines of light on the table at the lower
+  left, a dim amber column of discs at the left and one cream cluster at the upper right.
+
+summer-landed-after.jpg
+  After. Summer in the shake (state landed), tier final, 51d687ac. The dome is a beige grey swirl where the approved image
+  is white gold with hard bright streaks; the lines on the table stay lit under the storm.
+
+summer-approved-before-after-400.jpg
+  Each picture 400 px wide. Upper row, rest: approved, before, after. Lower row, the shake (landed): approved, before,
+  after. Before is origin/main 210a125a with rig.ts, glass.ts and backdrop.ts as they stood at 0f3e0973, tier review.
+  After is 51d687ac, tier review.
+
+summer-burn-and-table-approved-before-after.jpg
+  Details of the rest picture. Upper row: the lower left of the glass (approved, before, after). Lower row: the table at
+  the lower left (approved, before, after). Before and after as in the picture above, tier review. The burn is still
+  smoother, paler and wider than approved, and the lines on the table are thinner and paler than approved.
