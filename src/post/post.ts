@@ -5,7 +5,20 @@ import { config } from '../config'
 import { grade, lensState } from './grade'
 
 /** The fall of the camera's exposure under the flare of a change between two seasons, as a share of the exposure: 1 at every other time. */
-export const lensFall = { dim: 1, veil: new THREE.Color(0, 0, 0), veilShape: new THREE.Vector2(1, 0), halo: new THREE.Color(0, 0, 0), haloAt: new THREE.Vector3(0.5, 0.5, 1) }
+export const lensFall = {
+  dim: 1,
+  /** The wide veil round the glare, and how many times tighter than the glare's own reach its fall runs. */
+  veil: new THREE.Color(0, 0, 0),
+  veilTight: 1,
+  /** The room's own tone, laid back under the fallen exposure over the whole picture. */
+  room: new THREE.Color(0, 0, 0),
+  /** How much of the glare is taken off the middle of the ball, and how tight that hole is against the glare's reach. */
+  glareHole: new THREE.Vector2(0, 1),
+  /** The glow of the pool at the foot: its colour, its seat and reach across the picture, and how many times shorter it reaches up and down than to the sides. */
+  halo: new THREE.Color(0, 0, 0),
+  haloAt: new THREE.Vector3(0.5, 0.5, 1),
+  haloFlat: new THREE.Vector2(1, 1),
+}
 
 const REFERENCE_ROWS = 1080
 const TRIANGLE_STD = Math.sqrt(6)
@@ -77,9 +90,12 @@ uniform vec3 uGlowGain;
 uniform vec3 uGlare;
 uniform vec3 uGlareAt;
 uniform vec3 uVeil;
-uniform vec2 uVeilShape;
+uniform float uVeilTight;
+uniform vec3 uRoom;
+uniform vec2 uGlareHole;
 uniform vec3 uHalo;
 uniform vec3 uHaloAt;
+uniform vec2 uHaloFlat;
 uniform vec4 uCurve;
 uniform float uCurveBlack;
 uniform vec4 uHold;
@@ -166,8 +182,9 @@ void main() {
     vec2 wide = vec2(uInv.y / uInv.x, 1.0);
     vec2 off = (uv - uGlareAt.xy) * wide / uGlareAt.z;
     vec2 low = (uv - uHaloAt.xy) * wide / uHaloAt.z;
+    low.y *= low.y > 0.0 ? uHaloFlat.x : uHaloFlat.y;
     float far = dot(off, off);
-    c += uGlare * exp(-far) + uHalo * exp(-dot(low, low)) + uVeil * (uVeilShape.y + (1.0 - uVeilShape.y) * exp(-far * uVeilShape.x));
+    c += uGlare * (exp(-far) * (1.0 - uGlareHole.x * exp(-far * uGlareHole.y))) + uHalo * exp(-dot(low, low)) + uVeil * exp(-far * uVeilTight) + uRoom;
   }
   c *= 1.0 - uLens.z * pow(max(r2, 1e-12), uLens.w);
   c = film(c);
@@ -206,9 +223,12 @@ export class Post {
       uGlare: { value: new THREE.Color(0, 0, 0) },
       uGlareAt: { value: new THREE.Vector3(0.5, 0.5, 1) },
       uVeil: { value: new THREE.Color(0, 0, 0) },
-      uVeilShape: { value: new THREE.Vector2(1, 0) },
+      uVeilTight: { value: 1 },
+      uRoom: { value: new THREE.Color(0, 0, 0) },
+      uGlareHole: { value: new THREE.Vector2(0, 1) },
       uHalo: { value: new THREE.Color(0, 0, 0) },
       uHaloAt: { value: new THREE.Vector3(0.5, 0.5, 1) },
+      uHaloFlat: { value: new THREE.Vector2(1, 1) },
       uCurve: { value: new THREE.Vector4() },
       uCurveBlack: { value: 1 },
       uHold: { value: new THREE.Vector4(0, 0, 1, 1) },
@@ -325,9 +345,12 @@ export class Post {
       ;(u.uGlare!.value as THREE.Color).copy(lensState.glare)
       ;(u.uGlareAt!.value as THREE.Vector3).copy(lensState.glareAt)
       ;(u.uVeil!.value as THREE.Color).copy(lensFall.veil)
-      ;(u.uVeilShape!.value as THREE.Vector2).copy(lensFall.veilShape)
+      u.uVeilTight!.value = lensFall.veilTight
+      ;(u.uRoom!.value as THREE.Color).copy(lensFall.room)
+      ;(u.uGlareHole!.value as THREE.Vector2).copy(lensFall.glareHole)
       ;(u.uHalo!.value as THREE.Color).copy(lensFall.halo)
       ;(u.uHaloAt!.value as THREE.Vector3).copy(lensFall.haloAt)
+      ;(u.uHaloFlat!.value as THREE.Vector2).copy(lensFall.haloFlat)
       ;(u.uCurve!.value as THREE.Vector4).set(g.curveGain, g.curveToe, g.curveShoulder, g.curveMid)
       u.uCurveBlack!.value = g.curveBlack
       ;(u.uHold!.value as THREE.Vector4).set(g.colourHold, g.colourHoldFrom, g.colourHoldFull, g.whiteFrom)

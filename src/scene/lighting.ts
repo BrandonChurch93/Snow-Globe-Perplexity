@@ -47,28 +47,33 @@ export const ROOM_RIG = {
  * selves through the fallen exposure.
  *
  * The room is still there, because the glass lights it. As the cover rises the light of the glass pours out on the table and
- * the base (`pour`: how many times what the lights at rest lay there the pool is in the picture at the whole cover, held
- * through the fallen exposure as the glass is; `flood` and `flashFlood` are the same for the flood of the new season's light
- * on the base), strongest by the foot and falling off as the slab's pool does, with the burning glass in the wet slab under
- * it. Round the glass the lens lays a glow (`glare`, the light it adds at its middle, in the colour of the light inside,
- * falling off as a bell `glareReach` radii of the glass wide; post.ts adds it, the stage says where the glass is; `glareSeat`
- * is where it is centred on the glass's axis, 0 the middle of the glass, 1 the plane where it sits in the base), under white
- * at its middle, so it never hides the storm or the line of the glass. And over the whole picture it lays a veil (`veil` at
- * the glass, falling as a bell `veilReach` radii wide to `veilFloor` of that at the sides), so the room away from the pool
- * keeps a tone and no part of the picture is true black.
+ * the base in the new season's colour from its first frame (`pour`: how many times what the new season's lights at rest lay
+ * on the table is added there at the whole cover, held through the fallen exposure as the glass is; `pourOn` the same for
+ * the base and the dressing, less, so what is white there stays under white and takes the colour of the light; `flood` the
+ * same for the flood of the new season's light on the top of the base), strongest by the foot and falling off as the slab's
+ * pool does. Round the glass the lens lays a glow (`glare`, in the colour of the light inside, a bell `glareReach` radii of
+ * the glass wide with `glareHole` of it taken off its middle by a second bell `glareHoleReach` wide, so it sits round the
+ * ball more than on it and the storm's strokes are read through it; post.ts adds it, the stage says where the glass is;
+ * `glareSeat` is where it is centred on the glass's axis, 0 the middle of the glass, 1 the plane where it sits in the base).
+ * A veil of the same colour lies wider (`veil` at the glass, a bell `veilReach` radii wide). And what the fall takes from the
+ * dark of the backdrop is laid back over the whole picture in the backdrop's own colour (`room` of it, measured in the
+ * corners of the film's frames at rest), so the corners keep the tone they have at rest, the lamps stand faint on it and no
+ * part of the picture is true black.
  *
  * The flash is the top of that, the cover to the power `sharp`: whole on the frames in which the base, the dressing of the
  * table and the lamps turn (change.ts, the span and `BASE_PASS`) and a fraction of itself a frame or two to either side. In
- * it the glare rises over white (`flashGlare`), a halo stands over the base (`halo`, a bell `haloReach` radii wide about
- * `haloSeat` on the same axis, so the whole base is inside one reach of it and one season's base is the other's), the veil
- * rises (`flashVeil`), and the pool on the table is drawn in to `flashPour` of itself: under the flash the lens carries the
- * light, and what lies far out on the table is not lit while it leaves and comes. Before the flash and after it the picture
- * is a lit room: the glass, its pool on the table, the base against it and the lamps, fallen.
+ * it the glare rises (`flashGlare`), still under white on the ball, and the glow of the pool stands over the base (`halo`,
+ * a flat bell about `haloSeat` on the same axis, between the collar and the foot: `haloReach` radii to the sides, `haloUp`
+ * upward and `haloDown` downward, so it lies on the table, covers the whole base, leaves the ball alone and has fallen off
+ * by the front edge of the table), the veil rises (`flashVeil`), and what the glass pours on the table, the base and the
+ * dressing is drawn in to `flashPour` of itself: under the flash the lens carries the light, both bases are near black in
+ * it and what lies on the table is not lit while it leaves and comes. Before the flash and after it the picture is a lit
+ * room: the glass, its pool on the table, the base against it and the lamps, fallen.
  *
  * Nothing in the picture feeds the glare, the halo or the veil, no lamp of the room and no petal. `lens` is the tint of the
  * glow round what burns, risen over `fall` of the swell from `swellFrom` of the window. The live picture has the same cover.
  */
-export const CHANGE_BLOOM = { lens: 0.2, swellFrom: 0.56, fall: 0.6, dim: 0.005, sharp: 4, pour: 30, flashPour: 0.005, flood: 0.5, flashFlood: 0.5, glare: 0.5, flashGlare: 1, glareReach: 0.8, glareSeat: 0.1, halo: 1, haloReach: 1.2, haloSeat: 1.25, veil: 0.04, flashVeil: 0.04, veilReach: 2.2, veilFloor: 0.3 } as const
+export const CHANGE_BLOOM = { lens: 0.2, swellFrom: 0.56, fall: 0.6, dim: 0.005, sharp: 4, pour: 30, pourOn: 5, flashPour: 0.005, flood: 0.5, glare: 0.3, flashGlare: 0.7, glareReach: 1.1, glareSeat: 0.1, glareHole: 0.7, glareHoleReach: 1.1, halo: 0.8, haloReach: 1.4, haloUp: 0.4, haloDown: 0.4, haloSeat: 1.52, veil: 0.03, flashVeil: 0.03, veilReach: 1.5, room: 0.75 } as const
 
 const SHADOW_OFF = 10
 
@@ -266,21 +271,25 @@ export class Lighting {
     // cover: what the lights at rest lay, held through the fallen exposure and many times over, and drawn in under the flash.
     const laidA = two ? restA : gainA
     const laidB = two ? restB : gainB
-    const pour = two ? flare * (1 + CHANGE_BLOOM.pour * cover) * Math.pow(CHANGE_BLOOM.flashPour, flash) : 1
-    const pool = mixRgb([ga[0] * laidA * pour, ga[1] * laidA * pour, ga[2] * laidA * pour], [gb[0] * laidB * pour, gb[1] * laidB * pour, gb[2] * laidB * pour], inner)
+    const held = two ? flare * Math.pow(CHANGE_BLOOM.flashPour, flash) : 1
+    const pool = mixRgb([ga[0] * laidA * held, ga[1] * laidA * held, ga[2] * laidA * held], [gb[0] * laidB * held, gb[1] * laidB * held, gb[2] * laidB * held], inner)
+    // The pour is the new season's light from its first frame: on the table many times what lies there at rest, on the base and
+    // the dressing less, so that what is white there stays under white and takes the colour of the light.
+    const pourOn = restB * held * CHANGE_BLOOM.pourOn * cover
+    const pourTable = restB * held * CHANGE_BLOOM.pour * cover
     const pa = glowAt(a.innerLights)
     const pb = glowAt(b.innerLights)
     this.at.set(lerp(pa[0], pb[0], inner), lerp(pa[1], pb[1], inner), lerp(pa[2], pb[2], inner))
     const more = a === b ? lift / bloom : 0
     const out = ROOM_RIG.glow.outside * GRID.glowReachMm * GRID.glowReachMm * (1 + ROOM_RIG.flood.spill * more)
-    u.uLightGlow.value.set(pool[0] * out, pool[1] * out, pool[2] * out, groundY)
+    u.uLightGlow.value.set((pool[0] + gb[0] * pourOn) * out, (pool[1] + gb[1] * pourOn) * out, (pool[2] + gb[2] * pourOn) * out, groundY)
     u.uLightGlowAt.value.set(this.at.x, this.at.y, this.at.z, ROOM_RIG.glow.islandMm)
     this.glow.position.set(this.at.x, centreHeightMm + this.at.y, this.at.z)
 
     const cross = a === b ? 0 : f.mix.bloom * smooth(Math.min(1, lift / CHANGE_BLOOM.fall))
     const peak = Math.max(gb[0], gb[1], gb[2], 1e-4)
     const spill = 1 + ROOM_RIG.flood.pool * more
-    f.pool.setRGB(pool[0] * spill, pool[1] * spill, pool[2] * spill)
+    f.pool.setRGB((pool[0] + gb[0] * pourTable) * spill, (pool[1] + gb[1] * pourTable) * spill, (pool[2] + gb[2] * pourTable) * spill)
     const lens = ROOM_RIG.flood.lens * lift + (CHANGE_BLOOM.lens * cross) / peak
     f.bloomTint.setRGB(gb[0] * lens, gb[1] * lens, gb[2] * lens)
     const glare = (CHANGE_BLOOM.glare * cover + CHANGE_BLOOM.flashGlare * flash) / peak
@@ -289,10 +298,18 @@ export class Lighting {
     lensFall.veil.setRGB(gb[0] * veil, gb[1] * veil, gb[2] * veil)
     const halo = (CHANGE_BLOOM.halo * flash) / peak
     lensFall.halo.setRGB(gb[0] * halo, gb[1] * halo, gb[2] * halo)
-    lensFall.veilShape.set((CHANGE_BLOOM.glareReach / CHANGE_BLOOM.veilReach) ** 2, CHANGE_BLOOM.veilFloor)
+    lensFall.veilTight = (CHANGE_BLOOM.glareReach / CHANGE_BLOOM.veilReach) ** 2
+    lensFall.glareHole.set(CHANGE_BLOOM.glareHole, (CHANGE_BLOOM.glareReach / CHANGE_BLOOM.glareHoleReach) ** 2)
+    lensFall.haloFlat.set(CHANGE_BLOOM.haloReach / CHANGE_BLOOM.haloUp, CHANGE_BLOOM.haloReach / CHANGE_BLOOM.haloDown)
+    // The room away from the glass keeps its own tone under the fallen exposure: what the fall takes from the dark of the
+    // backdrop is laid back in that season's own colour, so the corners hold and the lamps stand faint on it.
+    const room = two ? CHANGE_BLOOM.room * (1 - lensFall.dim) : 0
+    const wa = a.backdrop.room
+    const wb = b.backdrop.room
+    lensFall.room.setRGB(lerp(wa[0], wb[0], f.mix.base) * room, lerp(wa[1], wb[1], f.mix.base) * room, lerp(wa[2], wb[2], f.mix.base) * room)
     const flood = swell.whole * breath
     u.uLightFlood.value.setRGB(gb[0] * flood, gb[1] * flood, gb[2] * flood)
-    u.uLightFloodFloor.value.w = !(swell.whole > 0) ? 0 : two ? ROOM_RIG.flood.outside * flare * (CHANGE_BLOOM.flood * cover + CHANGE_BLOOM.flashFlood * flash) : (ROOM_RIG.flood.outside * lift) / swell.whole
+    u.uLightFloodFloor.value.w = !(swell.whole > 0) ? 0 : two ? ROOM_RIG.flood.outside * held * CHANGE_BLOOM.flood * cover : (ROOM_RIG.flood.outside * lift) / swell.whole
     u.uLightFloodAt.value.z = swell.whole > 0 ? (ROOM_RIG.flood.inside * lift) / swell.whole : 0
     if (f.pose) {
       u.uLightEye.value.set(f.pose.position.x - f.globe.x, f.pose.position.y - f.globe.y, f.pose.position.z - f.globe.z).applyMatrix3(u.uLightFrame.value)

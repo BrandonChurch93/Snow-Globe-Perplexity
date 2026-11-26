@@ -183,48 +183,92 @@ describe('the cover of a change in the lens', () => {
     for (let c = 0; c <= 1; c += FRAME / 2) expect(cover(c, winter, true)).toMatchObject(NOTHING)
   })
 
-  it('is centred in the glass, lies over the base under the flash and leaves the sides of the picture their dark', () => {
+  it('sits round the ball more than on it, lies flat over the base under the flash and leaves the corners of the picture to the room', () => {
     expect(CHANGE_BLOOM.glareSeat).toBeGreaterThanOrEqual(0)
     expect(CHANGE_BLOOM.glareSeat).toBeLessThanOrEqual(1)
-    // post.ts: the glare and the halo fall off as bells, exp(-d * d), d the distance from the middle in reaches.
-    const share = (radii: number): number => Math.exp(-((radii / CHANGE_BLOOM.glareReach) ** 2))
-    const low = (radii: number): number => Math.exp(-((radii / CHANGE_BLOOM.haloReach) ** 2))
+    // post.ts: the glare is a bell, exp(-d * d), d the distance from its middle in reaches, with `glareHole` of it taken off
+    // its middle by a second bell `glareHoleReach` wide. The halo is a bell too, about its own seat: `haloReach` to the sides,
+    // `haloUp` upward and `haloDown` downward. Distances here are in radii of the glass, down the axis from its middle.
+    const share = (radii: number): number => Math.exp(-((radii / CHANGE_BLOOM.glareReach) ** 2)) * (1 - CHANGE_BLOOM.glareHole * Math.exp(-((radii / CHANGE_BLOOM.glareHoleReach) ** 2)))
+    const low = (side: number, up: number): number => Math.exp(-((side / CHANGE_BLOOM.haloReach) ** 2) - (up / (up > 0 ? CHANGE_BLOOM.haloUp : CHANGE_BLOOM.haloDown)) ** 2)
+    cover((span.from + span.to) / 2)
+    expect(lensFall.glareHole.x).toBe(CHANGE_BLOOM.glareHole)
+    expect(lensFall.glareHole.y).toBeCloseTo((CHANGE_BLOOM.glareReach / CHANGE_BLOOM.glareHoleReach) ** 2, 12)
+    expect(lensFall.haloFlat.x).toBeCloseTo(CHANGE_BLOOM.haloReach / CHANGE_BLOOM.haloUp, 12)
+    expect(lensFall.haloFlat.y).toBeCloseTo(CHANGE_BLOOM.haloReach / CHANGE_BLOOM.haloDown, 12)
+    expect(lensFall.veilTight).toBeCloseTo((CHANGE_BLOOM.glareReach / CHANGE_BLOOM.veilReach) ** 2, 12)
     const r = config.globe.sphereDiameterMm / 2
     const collar = (r - config.globe.collarDepthMm) / r
     const seat = CHANGE_BLOOM.glareSeat * collar
     const foot = collar + config.globe.baseHeightMm / r
     const half = config.globe.baseDiameterMm / (2 * r)
     expect(seat, 'its middle is inside the glass, above the base').toBeLessThan(0.6)
-    // The halo of the flash sits in the base, between the collar and the foot, so the whole of the base is inside one reach of it.
+    // The glow of the pool sits in the base, between the collar and the foot, and the whole of the base is inside one reach
+    // of it each way. It is a flat shape that lies on the table: at least three times as wide as it is tall.
     const haloSeat = CHANGE_BLOOM.haloSeat * collar
     expect(haloSeat).toBeGreaterThanOrEqual(collar)
     expect(haloSeat).toBeLessThanOrEqual(foot)
-    expect(Math.hypot(foot - haloSeat, half), 'the corners of the foot').toBeLessThan(CHANGE_BLOOM.haloReach)
-    expect(Math.hypot(haloSeat - collar, half), 'the corners of the collar').toBeLessThan(CHANGE_BLOOM.haloReach)
+    expect(half, 'the sides of the base').toBeLessThan(CHANGE_BLOOM.haloReach)
+    expect(haloSeat - collar, 'the collar').toBeLessThanOrEqual(CHANGE_BLOOM.haloUp)
+    expect(foot - haloSeat, 'the foot').toBeLessThanOrEqual(CHANGE_BLOOM.haloDown)
+    expect(CHANGE_BLOOM.haloReach).toBeGreaterThanOrEqual(3 * Math.max(CHANGE_BLOOM.haloUp, CHANGE_BLOOM.haloDown))
     // What the room keeps of its own light under the fallen exposure is `dim` of it. Before the flash the lens lays several times
-    // that on the foot of the base, and under the flash, in the frames in which the base turns, tens of times that: the base
-    // is in the light of the lens and one season's is the other's.
+    // that on the foot of the base, and under the flash, in the frames in which the base turns, tens of times that on every
+    // corner of it: the base is in the light of the lens and one season's is the other's.
     expect(share(foot - seat) * CHANGE_BLOOM.glare, 'the light the lens lays on the foot of the base').toBeGreaterThan(4 * CHANGE_BLOOM.dim)
     expect(share(Math.hypot(foot - seat, half)) * CHANGE_BLOOM.glare, 'and on the corners of the foot').toBeGreaterThan(2 * CHANGE_BLOOM.dim)
-    expect(low(Math.hypot(foot - haloSeat, half)) * CHANGE_BLOOM.halo, 'the halo on the corners of the foot under the flash').toBeGreaterThan(30 * CHANGE_BLOOM.dim)
-    // The film's picture of a shake is about five and a half radii wide. Its sides keep the dark of the room, with a tone: the
-    // glare and the halo have almost nothing there, and the veil has its floor, under a tenth of white and over what the film
-    // needs to hold a pixel off true black (about 0.002 a channel for a sum of 4).
+    expect(low(half, haloSeat - foot) * CHANGE_BLOOM.halo, 'the halo on the corners of the foot under the flash').toBeGreaterThan(30 * CHANGE_BLOOM.dim)
+    expect(low(half, haloSeat - collar) * CHANGE_BLOOM.halo, 'and on the corners of the collar').toBeGreaterThan(20 * CHANGE_BLOOM.dim)
+    // It leaves the ball alone, and it has fallen off by the front edge of the table as it has above the base: three quarters
+    // of a radius under its seat, and as far over it, it is under a tenth of itself.
+    expect(low(0, haloSeat - seat), 'the halo on the middle of the ball').toBeLessThan(0.01)
+    expect(low(0, -0.75), 'the halo under the foot').toBeLessThan(0.1)
+    expect(low(0, 0.75), 'and over the base').toBeLessThan(0.1)
+    // The film's picture of a shake is about five and a half radii wide. Its sides keep the room: the glare has almost nothing
+    // there, the pool's glow lies out to them thin, and the veil is under what the room's own tone is.
     expect(share(2.5) * (CHANGE_BLOOM.glare + CHANGE_BLOOM.flashGlare), 'the glare two and a half radii to the side has almost none').toBeLessThan(0.02)
-    expect(low(2.5) * CHANGE_BLOOM.halo, 'and the halo').toBeLessThan(0.02)
-    const wide = (radii: number): number => CHANGE_BLOOM.veilFloor + (1 - CHANGE_BLOOM.veilFloor) * Math.exp(-((radii / CHANGE_BLOOM.veilReach) ** 2))
-    expect(lensFall.veilShape.x).toBeCloseTo((CHANGE_BLOOM.glareReach / CHANGE_BLOOM.veilReach) ** 2, 12)
-    expect(lensFall.veilShape.y).toBe(CHANGE_BLOOM.veilFloor)
-    expect(wide(2.75) * (CHANGE_BLOOM.veil + CHANGE_BLOOM.flashVeil), 'the veil at the sides under the flash').toBeLessThan(0.05)
-    expect(CHANGE_BLOOM.veilFloor * CHANGE_BLOOM.veil, 'the floor of the veil at the whole cover').toBeGreaterThan(0.004)
-    // The lens lays a glow on what burns: before the flash its middle is under the white of the film, so the storm inside the
-    // glass is seen through it, and by the edge of the glass it is a fraction of that. Under the flash the middle is over white
-    // for the few frames of the span, and the edge of the glass still keeps under a quarter of the middle.
-    expect(CHANGE_BLOOM.glare, 'the middle is under white').toBeLessThan(1)
-    expect(CHANGE_BLOOM.glare, 'and is still a glow').toBeGreaterThanOrEqual(0.25)
-    expect(share(1) * CHANGE_BLOOM.glare, 'the edge of the glass keeps its line').toBeLessThan(0.25)
-    expect(CHANGE_BLOOM.glare + CHANGE_BLOOM.flashGlare, 'the flash is over white').toBeGreaterThan(1)
-    expect(share(1), 'and falls to under a quarter by the edge of the glass').toBeLessThan(0.25)
+    expect(low(2.5, 0) * CHANGE_BLOOM.halo, 'and the halo along the table').toBeLessThan(0.05)
+    expect(Math.exp(-((2.75 / CHANGE_BLOOM.veilReach) ** 2)) * (CHANGE_BLOOM.veil + CHANGE_BLOOM.flashVeil), 'the veil at the sides under the flash').toBeLessThan(0.003)
+    // The lens lays its glow round what burns more than on it: at the middle of the ball it stays well under the white of
+    // the film even under the flash, so the storm's strokes are read through the whole cover, and it is at its most by the
+    // edge of the glass, where it is still under half of white.
+    const whole = CHANGE_BLOOM.glare + CHANGE_BLOOM.flashGlare
+    expect(share(0) * whole, 'the middle of the ball under the flash').toBeLessThan(0.35)
+    expect(share(1), 'more round the ball than on its middle').toBeGreaterThan(share(0))
+    let most = 0
+    for (let d = 0; d <= 3; d += 0.01) most = Math.max(most, share(d))
+    expect(most * whole, 'nowhere over half of white').toBeLessThan(0.5)
+    expect(CHANGE_BLOOM.glare, 'before the flash it is a glow').toBeGreaterThanOrEqual(0.25)
+    expect(share(1) * CHANGE_BLOOM.glare, 'and the edge of the glass keeps its line').toBeLessThan(0.25)
+  })
+
+  it('lays the room\'s own tone back under the fallen exposure, in the colour of each season\'s backdrop', () => {
+    const mid = (span.from + span.to) / 2
+    cover(mid)
+    const wa = winter.backdrop.room
+    const wb = spring.backdrop.room
+    const share = partChange('base', mid)
+    // What the fall of the exposure takes from the dark of the backdrop is laid back: the corners of the picture keep their tone.
+    for (const [i, k] of (['r', 'g', 'b'] as const).entries()) {
+      expect(lensFall.room[k]).toBeCloseTo((wa[i]! + (wb[i]! - wa[i]!) * share) * CHANGE_BLOOM.room * (1 - CHANGE_BLOOM.dim), 12)
+    }
+    // It is a share of the backdrop's own dark, and over what the film needs to hold a pixel off true black (about 0.002 a
+    // channel for a sum of 4) in at least one channel of every season.
+    expect(CHANGE_BLOOM.room).toBeGreaterThan(0.5)
+    expect(CHANGE_BLOOM.room).toBeLessThanOrEqual(1)
+    for (const name of ['winter', 'spring', 'summer', 'fall'] as const) expect(Math.max(...kitOf(name).backdrop.room) * CHANGE_BLOOM.room, name).toBeGreaterThan(0.002)
+    // It rises as the exposure falls and is nothing away from the cover and in a shake of one season.
+    cover(CHANGE_COVER.riseFrom - FRAME)
+    expect(most(lensFall.room)).toBe(0)
+    cover(mid, winter)
+    expect(most(lensFall.room)).toBe(0)
+    let last = 0
+    for (let c = CHANGE_COVER.riseFrom; c <= CHANGE_COVER.fullFrom; c += FRAME / 4) {
+      cover(c)
+      const now = most(lensFall.room) / Math.max(...[0, 1, 2].map((i) => wa[i]! + (wb[i]! - wa[i]!) * partChange('base', c)))
+      expect(now).toBeGreaterThanOrEqual(last - 1e-12)
+      last = now
+    }
   })
 
   it('lets the lamps of the backdrop fall with the room and never go out', () => {
@@ -232,9 +276,9 @@ describe('the cover of a change in the lens', () => {
     const lamp = 5.5
     const top = lamp * CHANGE_BLOOM.dim
     // Under the whole cover it is in the toe of the film's curve, where its colour is not read while the lamps of one season
-    // give way to the next's, and it is still over what the veil lays at the sides by a share that is seen.
+    // give way to the next's, and it is still over the room's own tone laid back at the sides by a share that is seen.
     expect(top).toBeLessThan(0.03)
-    expect(top).toBeGreaterThan(0.2 * CHANGE_BLOOM.veilFloor * (CHANGE_BLOOM.veil + CHANGE_BLOOM.flashVeil))
+    for (const name of ['winter', 'spring', 'summer', 'fall'] as const) expect(top, name).toBeGreaterThan(2 * Math.max(...kitOf(name).backdrop.room) * CHANGE_BLOOM.room)
     // Two frames before the cover is whole and two frames after it the lamps are lamps again: several times that.
     const flank = (c: number): number => lamp * Math.pow(CHANGE_BLOOM.dim, changeBloom(c))
     expect(flank(CHANGE_COVER.fullFrom - 2 * FRAME)).toBeGreaterThan(3 * top)
