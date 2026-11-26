@@ -530,6 +530,7 @@ export class GlobeStage implements Stage {
     f.planar = f.reflect > 0
     f.focalPx = h / (2 * Math.tan((pose.fovDeg * Math.PI) / 360))
     f.blurMm = f.lensOn ? pose.apertureMm : 0
+    f.air = this.air
 
     const g = moment.globe
     f.globe = g

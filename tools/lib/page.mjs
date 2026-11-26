@@ -263,7 +263,7 @@ export function noAirProblem(spec, out, aid) {
 
 const AIR_LEFT_OUT = {
   leftOut: true,
-  what: 'no particle afloat or lain, nothing in the shared veil (haze, whitening, bank, drift, a held storm), and no mist or pooled fog that a season hangs in the liquid',
+  what: 'no particle afloat or lain, nothing in the shared veil (haze, whitening, bank, drift, a held storm), no mist or pooled fog that a season hangs in the liquid, and none of the lit liquid that summer paints on its far wall',
   use: 'a measuring aid for the tone of the surfaces: never a judged picture, and never held against an approved image',
 }
 

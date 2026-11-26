@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest'
 import { VEIL_GLSL } from '../src/core/chunks/veil'
 import { handleOf, stageUniforms } from '../src/core/materials'
 import { AirHold, clearVeil, seasonAir } from '../src/scene/air'
+import { newFrame } from '../src/scene/frame'
+import { kitOf } from '../src/seasons'
 import * as fall from '../src/seasons/fall/glass'
 import * as spring from '../src/seasons/spring/glass'
 import * as summer from '../src/seasons/summer/glass'
@@ -117,6 +119,41 @@ describe('a still without the air: the stage', () => {
     const root = summer.dressing()
     expect(seasonAir([root])).toEqual([])
     expect(meshes(root).length).toBe(5)
+  })
+
+  // Summer paints its lit liquid on its far wall, in one shader with the sun's patch and the glass's own reflections and glints.
+  // The wall is no air to hide, so the frame says whether the air is there and the wall leaves that paint out by it.
+  const farWall = (): THREE.ShaderMaterial => (meshes(summer.dressing()).find((o) => o.renderOrder === -0.25) as THREE.Mesh).material as THREE.ShaderMaterial
+
+  it("leaves the lit liquid out of summer's far wall and keeps the glass's own reflections and glints", () => {
+    const text = farWall().fragmentShader
+    const paint = text.slice(text.indexOf('vec3 air = '))
+    const out = 'air *= uSummerAir;'
+    expect(paint.split(out).length - 1).toBe(1)
+    const before = paint.slice(0, paint.indexOf(out))
+    const after = paint.slice(paint.indexOf(out))
+    expect(before.split('air += ').length - 1).toBeGreaterThan(0)
+    // A term added after the line stays in the still without the air: only the glass's own light belongs there.
+    expect(after.split('air += ').length - 1).toBe(2)
+    expect(after).toContain('air += reflex * ')
+    expect(after).toContain('air += glints * ')
+    expect(after).toContain('+ air * lit + spill, 0.0);')
+  })
+
+  it("tells summer's far wall through the frame, which has its air unless the stage says not", () => {
+    const f = newFrame(kitOf('summer'), { particleFraction: 1, shadowMapPx: 256, surfaceReflection: 'none' })
+    expect(f.air).toBe(true)
+    const u = farWall().uniforms.uSummerAir!
+    const moment = { time: 3, period: 8, sinceLanding: Infinity, arrived: 1, beat: null, seed: 1, frame: f }
+    summer.update(moment)
+    expect(u.value).toBe(1)
+    f.air = false
+    summer.update(moment)
+    expect(u.value).toBe(0)
+    f.air = true
+    summer.update(moment)
+    expect(u.value).toBe(1)
+    expect(fs.readFileSync(rel('src', 'scene', 'stage.ts'), 'utf8').split('f.air = this.air').length - 1).toBe(1)
   })
 
   it('gives back after the frame exactly what it hid, also after a frame that failed', () => {

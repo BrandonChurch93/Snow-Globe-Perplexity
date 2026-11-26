@@ -48,6 +48,8 @@ export interface StageFrame {
   reflect: number
   focalPx: number
   blurMm: number
+  /** False in the one still that leaves the air out (a measuring aid): a season that paints its still air on a surface leaves that out too. */
+  air: boolean
   kinds: Record<string, { color: Rgb; glow: number }>
 }
 
@@ -91,6 +93,7 @@ export function newFrame(kit: SeasonKit, quality: StageQuality): StageFrame {
     reflect: 1,
     focalPx: 1,
     blurMm: 0,
+    air: true,
     kinds: {},
   }
 }
