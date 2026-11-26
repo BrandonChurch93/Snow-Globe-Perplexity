@@ -37,16 +37,16 @@ Status 138 · 2026-11-26 05:52 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-26 05:52 UTC
-clock: phase 6, tick of 31.3 minutes
-phase 6: 3.04 h used of its 12.00 h box
-allowance (after the review): 3.04 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 3.04 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-26 06:08 UTC
+clock: phase 6, tick of 8.4 minutes
+phase 6: 3.32 h used of its 12.00 h box
+allowance (after the review): 3.32 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 3.32 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 0
+minutes since the last status: 16
 ```
 
 ## Phases
@@ -2492,3 +2492,5 @@ One entry per task: when it started, what it did, where it stopped.
 - 05:13 UTC. Merged into `main` as their builders pushed them: `agent/p6-controls` (the Shake control stays on screen), `agent/p6-framing` (the camera stands back for a shake on a narrow screen) and `agent/p6-change` (the season change over three frames). The sound state `sound_finisher` reported at 05:03 UTC is committed by name. `render_speed_prober` reports a far faster software renderer on the same 4-core sandbox machine: Mesa lavapipe through ANGLE's Vulkan back end, 1.31 s a sample against 10.9 at hd on a warm page, float textures kept; its picture is not yet compared with the present renderer's, so nothing is decided on it. `opening_builder`'s level menu frame arrived and is accepted as drawn.
 
 - 05:32 UTC. `agent/p6-controls` merged again at `11ac941e` (reduced motion: a press now changes the season by a cross dissolve of two whole pictures), with its one line for `tools/ui-preview/check.mjs` (the dim floor is 0.6). On `main` after the merges: `npx tsc --noEmit` clean, `npx vitest run` 563 passed and 4 skipped. The devbox agent `render_env_prober` was given one more measurement: the faster software renderer on its 48 threads, renders at once, memory at 3840 x 2160 and sameness against the present renderer. Its first line: the devbox's Mesa 25.0.7 does not start WebGL2 through Vulkan; the sandbox image has Mesa 26.0.8, so it tries that in a container.
+
+- 06:16 UTC. Merged again as they moved: `agent/p6-summer` (summer's air as fireflies, with the two `atan` mends of decision 138 in their own commits), `agent/p6-change` (a tighter glare, the size of the glass), `agent/p6-controls` (the replay's camera through a shake) and `agent/p6-framing` (a phone stands 1.2 degrees round the globe at rest; a tilted view keeps to the room). On `main` after them: `npx tsc --noEmit` clean, `npx vitest run` 571 passed and 4 skipped. `render_env_prober` reported the faster renderer on the devbox, all measured: 1.93 s a sample at 3840 x 2160 at rest and 3.22 in a storm (SwiftShader there: 23); one still at 24 samples at that size in 54.5 s; the same frame twice gives identical bytes; against SwiftShader 43.68 dB at 1080p, under the 45 dB floor, so the two are never mixed; twelve film frames at 3840 x 2160 and 2 samples took 131 s. Its 48 threads do not add up: one render stops gaining past about 8 threads and several at once share one total, about 1,450 to 2,050 samples an hour for the whole machine. So the devbox is worth about two sandbox machines, not a farm.
