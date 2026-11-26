@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import * as THREE from 'three'
 import { describe, expect, it } from 'vitest'
 import { config } from '../src/config'
@@ -6,7 +7,8 @@ import { lensState } from '../src/post/grade'
 import { lensFall } from '../src/post/post'
 import { newFrame } from '../src/scene/frame'
 import { lightUniforms } from '../src/core/chunks/light'
-import { CHANGE_BLOOM, Lighting } from '../src/scene/lighting'
+import { glowOf } from '../src/scene/lightgrid'
+import { CHANGE_BLOOM, Lighting, pourColour } from '../src/scene/lighting'
 import { makeSlab } from '../src/scene/surface'
 import { kitOf } from '../src/seasons'
 import { CHANGE_COVER, changeBloom, changeSpan, partChange } from '../src/shake/change'
@@ -271,6 +273,76 @@ describe('the cover of a change in the lens', () => {
     expect(most * whole, 'nowhere over half of white').toBeLessThan(0.5)
     expect(CHANGE_BLOOM.glare, 'before the flash it is a glow').toBeGreaterThanOrEqual(0.25)
     expect(share(1) * CHANGE_BLOOM.glare, 'and the edge of the glass keeps its line').toBeLessThan(0.25)
+  })
+
+  it('gives each change the arriving season\'s own colour of light, near white at the heart of the pool', () => {
+    const names = ['winter', 'spring', 'summer', 'fall'] as const
+    const mid = (span.from + span.to) / 2
+    const shares = (c: readonly number[]): number[] => c.map((v) => v / Math.max(...c))
+    const none: number = 0
+    const pours = names.map((name) => {
+      const kit = kitOf(name)
+      const lamps = glowOf(kit.innerLights)
+      const pour = pourColour(lamps, kit.rig)
+      // It is the colour of the season's own rig, its rim through its key, at the strongest channel of its lamps: the top of
+      // the glow stands where the lamps' colour had it. None of it and it is the colour of the lamps.
+      const own = shares([0, 1, 2].map((i) => kit.rig.rim.color[i]! * kit.rig.key.color[i]!))
+      for (let i = 0; i < 3; i++) expect(shares(pour)[i], `${name}, channel ${i}`).toBeCloseTo(own[i]! + (shares(lamps)[i]! - own[i]!) * (1 - CHANGE_BLOOM.tint), 12)
+      expect(Math.max(...pour), name).toBeCloseTo(Math.max(...lamps), 12)
+      expect(pourColour(lamps, kit.rig, none as typeof CHANGE_BLOOM.tint)).toEqual([...lamps])
+      return shares(pour)
+    })
+    expect(CHANGE_BLOOM.tint).toBeGreaterThan(0.75)
+    expect(CHANGE_BLOOM.tint).toBeLessThanOrEqual(1)
+    // Winter's is the one cold light, the other three are warm, and no two changes have one colour: every pair stands a tenth
+    // of a channel apart or more. The lamps of winter's and spring's miniatures, which the pour took before, are one colour.
+    expect(pours[0]![2], 'winter\'s blue').toBe(1)
+    for (const [i, name] of names.entries()) if (i > 0) expect(pours[i]![0], `${name}'s red`).toBe(1)
+    const apart = (p: readonly number[], q: readonly number[]): number => Math.max(...[0, 1, 2].map((k) => Math.abs(p[k]! - q[k]!)))
+    for (let i = 0; i < 4; i++) for (let j = i + 1; j < 4; j++) expect(apart(pours[i]!, pours[j]!), `${names[i]} and ${names[j]}`).toBeGreaterThan(0.1)
+    expect(apart(shares(glowOf(winter.innerLights)), shares(glowOf(spring.innerLights))), 'the lamps of winter and of spring').toBeLessThan(0.05)
+    for (const [i, name] of names.entries()) {
+      const from = names[(i + 3) % 4]!
+      const light = new Lighting(quality.shadowMapPx)
+      const f = newFrame(kitOf(from), quality)
+      f.to = kitOf(name)
+      // Before the flash, as the cover rises: what the slab takes of the pour, over what lies on it, is in that colour.
+      for (const c of [CHANGE_COVER.fullFrom - 2 * FRAME, mid]) {
+        f.moment = { season: from, from, to: name, change: c, sinceLanding: 0, globe: REST_POSE, mix: 0, seed: 1, time: 0, beat: null, period: null } as Moment
+        f.mix.light = partChange('light', c)
+        f.mix.base = partChange('base', c)
+        f.mix.bloom = changeBloom(c)
+        light.update(f)
+        const slab = shares([f.pool.r - f.poolOn.r, f.pool.g - f.poolOn.g, f.pool.b - f.poolOn.b])
+        for (let k = 0; k < 3; k++) expect(slab[k], `the pour into ${name} at ${c}, channel ${k}`).toBeCloseTo(pours[i]![k]!, 9)
+      }
+      // Under the flash the glare, the veil and the halo are in it too.
+      for (const lens of [lensState.glare, lensFall.halo, lensFall.veil]) {
+        const now = shares([lens.r, lens.g, lens.b])
+        for (let k = 0; k < 3; k++) expect(now[k], `the lens into ${name}, channel ${k}`).toBeCloseTo(pours[i]![k]!, 9)
+      }
+      // The heart of the halo is whitened: each channel `haloWhite` of the way to the strongest, which stays where it was, so
+      // the heart is under white as the halo is, and it is a tighter bell than the halo.
+      const halo = [lensFall.halo.r, lensFall.halo.g, lensFall.halo.b]
+      const top = Math.max(...halo)
+      const heart = [halo[0]! + lensFall.haloCore.x, halo[1]! + lensFall.haloCore.y, halo[2]! + lensFall.haloCore.z]
+      for (let k = 0; k < 3; k++) expect(heart[k], `the heart into ${name}, channel ${k}`).toBeCloseTo(halo[k]! + (top - halo[k]!) * CHANGE_BLOOM.haloWhite, 12)
+      expect(Math.max(...heart)).toBeCloseTo(top, 12)
+      expect(Math.min(...heart) / top, `the heart into ${name} is nearer white than its skirt`).toBeGreaterThan(Math.min(...halo) / top + 0.2)
+      expect(Math.min(...heart) / top, 'and under white in a channel').toBeLessThan(0.9)
+      expect(lensFall.haloCore.w).toBe(CHANGE_BLOOM.haloCore)
+    }
+    expect(CHANGE_BLOOM.haloWhite).toBeGreaterThan(0.25)
+    expect(CHANGE_BLOOM.haloWhite).toBeLessThanOrEqual(0.75)
+    expect(CHANGE_BLOOM.haloCore).toBeGreaterThan(1)
+    // The film adds the heart on the halo's own shape, in the same sum.
+    const post = readFileSync('src/post/post.ts', 'utf8')
+    expect(post).toContain('uHalo * exp(-pool) + uHaloCore.rgb * exp(-pool * uHaloCore.w)')
+    // A shake of one season and every place away from the cover have none of it.
+    cover(mid, winter)
+    expect([lensFall.haloCore.x, lensFall.haloCore.y, lensFall.haloCore.z]).toEqual([0, 0, 0])
+    cover(CHANGE_COVER.riseFrom - FRAME)
+    expect([lensFall.haloCore.x, lensFall.haloCore.y, lensFall.haloCore.z]).toEqual([0, 0, 0])
   })
 
   it('lays the room\'s own tone back under the fallen exposure, in the colour of each season\'s backdrop', () => {

@@ -52,7 +52,7 @@ export const ROOM_RIG = {
  * for what lies on the table, the frost, the petals, the leaves and the slab's own dust and lumps, less, so what is white there
  * stays under white and takes the colour of the light (the slab's own surface, near black, takes the difference: surface.ts,
  * `uPour`); `flood` the same for the flood of the new season's light on the top of the base), strongest by the foot and falling
- * off as the slab's pool does. Round the glass the lens lays a glow (`glare`, in the colour of the light inside, a bell
+ * off as the slab's pool does. Round the glass the lens lays a glow (`glare`, in the colour of the pour, a bell
  * `glareReach` radii of the glass wide with `glareHole` of it taken off its middle by a second bell `glareHoleReach` wide, so it
  * sits round the ball more than on it and the storm's strokes are read through it; post.ts adds it, the stage says where the
  * glass is; `glareSeat` is where it is centred on the glass's axis, 0 the middle of the glass, 1 the plane where it sits in the
@@ -71,10 +71,29 @@ export const ROOM_RIG = {
  * it and what lies on the table is not lit while it leaves and comes. Before the flash and after it the picture is a lit
  * room: the glass, its pool on the table, the base against it and the lamps, fallen.
  *
+ * Each change has its own colour of light, the arriving season's. What the glass pours on the table, the base and the
+ * dressing, the glare, the veil and the halo take the colour of that season's own rig, its rim through its key (rig.ts:
+ * winter's blue, spring's rose, summer's gold, fall's orange; `tint` of the way to it from the colour of its lamps, at the
+ * lamps' strongest channel, so the top of the glow stands where it stood). At its heart the halo is whitened, as a light too
+ * bright for the film is (`haloWhite` of the way to white there, on a bell `haloCore` times as tight as the halo), so the
+ * pool is near white at its middle, under white still, and holds its colour where it falls off.
+ *
  * Nothing in the picture feeds the glare, the halo or the veil, no lamp of the room and no petal. `lens` is the tint of the
  * glow round what burns, risen over `fall` of the swell from `swellFrom` of the window. The live picture has the same cover.
  */
-export const CHANGE_BLOOM = { lens: 0.2, swellFrom: 0.56, fall: 0.6, dim: 0.005, sharp: 4, pour: 30, pourOn: 5, flashPour: 0.005, flood: 0.5, glare: 0.3, flashGlare: 0.7, glareReach: 1.1, glareSeat: 0.1, glareHole: 0.9, glareHoleReach: 1.3, halo: 0.8, haloReach: 1.4, haloUp: 0.4, haloDown: 0.33, haloSeat: 1.52, veil: 0.03, flashVeil: 0.03, veilReach: 1.5, room: 0.75 } as const
+export const CHANGE_BLOOM = { lens: 0.2, swellFrom: 0.56, fall: 0.6, dim: 0.005, sharp: 4, pour: 30, pourOn: 5, flashPour: 0.005, flood: 0.5, glare: 0.3, flashGlare: 0.7, glareReach: 1.1, glareSeat: 0.1, glareHole: 0.9, glareHoleReach: 1.3, halo: 0.8, haloReach: 1.4, haloUp: 0.4, haloDown: 0.33, haloSeat: 1.52, haloCore: 3, haloWhite: 0.5, tint: 1, veil: 0.03, flashVeil: 0.03, veilReach: 1.5, room: 0.75 } as const
+
+/**
+ * The colour a change pours: the light of the arriving season's own rig, its rim through its key (rig.ts: winter's blue,
+ * spring's rose, summer's gold, fall's orange), at the strength of the strongest channel of the arriving lamps, so the top
+ * of the glow stands where it stood. `share` of the way to it from the colour of the lamps.
+ */
+export function pourColour(lamps: Rgb, rig: { key: { color: Rgb }; rim: { color: Rgb } }, share = CHANGE_BLOOM.tint): Rgb {
+  const own: Rgb = [rig.rim.color[0] * rig.key.color[0], rig.rim.color[1] * rig.key.color[1], rig.rim.color[2] * rig.key.color[2]]
+  const k = Math.max(lamps[0], lamps[1], lamps[2]) / Math.max(own[0], own[1], own[2], 1e-6)
+  return [lerp(lamps[0], own[0] * k, share), lerp(lamps[1], own[1] * k, share), lerp(lamps[2], own[2] * k, share)]
+}
+
 
 const SHADOW_OFF = 10
 
@@ -268,6 +287,8 @@ export class Lighting {
 
     const ga = glowOf(a.innerLights)
     const gb = glowOf(b.innerLights)
+    // What a change pours and what the lens lays round it are in the arriving season's own colour, not its lamps'.
+    const gt = two ? pourColour(gb, b.rig) : gb
     // Between two seasons the swell of the shake lays nothing on the base and the table. What is laid there is the pour of the
     // cover: what the lights at rest lay, held through the fallen exposure and many times over, and drawn in under the flash.
     const laidA = two ? restA : gainA
@@ -285,23 +306,26 @@ export class Lighting {
     this.at.set(lerp(pa[0], pb[0], inner), lerp(pa[1], pb[1], inner), lerp(pa[2], pb[2], inner))
     const more = a === b ? lift / bloom : 0
     const out = ROOM_RIG.glow.outside * GRID.glowReachMm * GRID.glowReachMm * (1 + ROOM_RIG.flood.spill * more)
-    u.uLightGlow.value.set((pool[0] + gb[0] * pourOn) * out, (pool[1] + gb[1] * pourOn) * out, (pool[2] + gb[2] * pourOn) * out, groundY)
+    u.uLightGlow.value.set((pool[0] + gt[0] * pourOn) * out, (pool[1] + gt[1] * pourOn) * out, (pool[2] + gt[2] * pourOn) * out, groundY)
     u.uLightGlowAt.value.set(this.at.x, this.at.y, this.at.z, ROOM_RIG.glow.islandMm)
     this.glow.position.set(this.at.x, centreHeightMm + this.at.y, this.at.z)
 
     const cross = a === b ? 0 : f.mix.bloom * smooth(Math.min(1, lift / CHANGE_BLOOM.fall))
     const peak = Math.max(gb[0], gb[1], gb[2], 1e-4)
     const spill = 1 + ROOM_RIG.flood.pool * more
-    f.pool.setRGB((pool[0] + gb[0] * pourTable) * spill, (pool[1] + gb[1] * pourTable) * spill, (pool[2] + gb[2] * pourTable) * spill)
-    f.poolOn.setRGB((pool[0] + gb[0] * pourOn) * spill, (pool[1] + gb[1] * pourOn) * spill, (pool[2] + gb[2] * pourOn) * spill)
+    f.pool.setRGB((pool[0] + gt[0] * pourTable) * spill, (pool[1] + gt[1] * pourTable) * spill, (pool[2] + gt[2] * pourTable) * spill)
+    f.poolOn.setRGB((pool[0] + gt[0] * pourOn) * spill, (pool[1] + gt[1] * pourOn) * spill, (pool[2] + gt[2] * pourOn) * spill)
     const lens = ROOM_RIG.flood.lens * lift + (CHANGE_BLOOM.lens * cross) / peak
     f.bloomTint.setRGB(gb[0] * lens, gb[1] * lens, gb[2] * lens)
     const glare = (CHANGE_BLOOM.glare * cover + CHANGE_BLOOM.flashGlare * flash) / peak
-    lensState.glare.setRGB(gb[0] * glare, gb[1] * glare, gb[2] * glare)
+    lensState.glare.setRGB(gt[0] * glare, gt[1] * glare, gt[2] * glare)
     const veil = (CHANGE_BLOOM.veil * cover + CHANGE_BLOOM.flashVeil * flash) / peak
-    lensFall.veil.setRGB(gb[0] * veil, gb[1] * veil, gb[2] * veil)
+    lensFall.veil.setRGB(gt[0] * veil, gt[1] * veil, gt[2] * veil)
     const halo = (CHANGE_BLOOM.halo * flash) / peak
-    lensFall.halo.setRGB(gb[0] * halo, gb[1] * halo, gb[2] * halo)
+    lensFall.halo.setRGB(gt[0] * halo, gt[1] * halo, gt[2] * halo)
+    const white = Math.max(gt[0], gt[1], gt[2])
+    const heart = halo * CHANGE_BLOOM.haloWhite
+    lensFall.haloCore.set((white - gt[0]) * heart, (white - gt[1]) * heart, (white - gt[2]) * heart, CHANGE_BLOOM.haloCore)
     lensFall.veilTight = (CHANGE_BLOOM.glareReach / CHANGE_BLOOM.veilReach) ** 2
     lensFall.glareHole.set(CHANGE_BLOOM.glareHole, (CHANGE_BLOOM.glareReach / CHANGE_BLOOM.glareHoleReach) ** 2)
     lensFall.haloFlat.set(CHANGE_BLOOM.haloReach / CHANGE_BLOOM.haloUp, CHANGE_BLOOM.haloReach / CHANGE_BLOOM.haloDown)

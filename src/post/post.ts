@@ -16,6 +16,8 @@ export const lensFall = {
   glareHole: new THREE.Vector2(0, 1),
   /** The glow of the pool at the foot: its colour, its seat and reach across the picture, and how many times shorter it reaches up and down than to the sides. */
   halo: new THREE.Color(0, 0, 0),
+  /** What whitens the heart of that glow (added there, in each channel what it lacks of its strongest), and how many times tighter than the glow that heart is. */
+  haloCore: new THREE.Vector4(0, 0, 0, 1),
   haloAt: new THREE.Vector3(0.5, 0.5, 1),
   haloFlat: new THREE.Vector2(1, 1),
 }
@@ -94,6 +96,7 @@ uniform float uVeilTight;
 uniform vec3 uRoom;
 uniform vec2 uGlareHole;
 uniform vec3 uHalo;
+uniform vec4 uHaloCore;
 uniform vec3 uHaloAt;
 uniform vec2 uHaloFlat;
 uniform vec4 uCurve;
@@ -184,7 +187,8 @@ void main() {
     vec2 low = (uv - uHaloAt.xy) * wide / uHaloAt.z;
     low.y *= low.y > 0.0 ? uHaloFlat.x : uHaloFlat.y;
     float far = dot(off, off);
-    c += uGlare * (exp(-far) * (1.0 - uGlareHole.x * exp(-far * uGlareHole.y))) + uHalo * exp(-dot(low, low)) + uVeil * exp(-far * uVeilTight) + uRoom;
+    float pool = dot(low, low);
+    c += uGlare * (exp(-far) * (1.0 - uGlareHole.x * exp(-far * uGlareHole.y))) + uHalo * exp(-pool) + uHaloCore.rgb * exp(-pool * uHaloCore.w) + uVeil * exp(-far * uVeilTight) + uRoom;
   }
   c *= 1.0 - uLens.z * pow(max(r2, 1e-12), uLens.w);
   c = film(c);
@@ -227,6 +231,7 @@ export class Post {
       uRoom: { value: new THREE.Color(0, 0, 0) },
       uGlareHole: { value: new THREE.Vector2(0, 1) },
       uHalo: { value: new THREE.Color(0, 0, 0) },
+      uHaloCore: { value: new THREE.Vector4(0, 0, 0, 1) },
       uHaloAt: { value: new THREE.Vector3(0.5, 0.5, 1) },
       uHaloFlat: { value: new THREE.Vector2(1, 1) },
       uCurve: { value: new THREE.Vector4() },
@@ -349,6 +354,7 @@ export class Post {
       ;(u.uRoom!.value as THREE.Color).copy(lensFall.room)
       ;(u.uGlareHole!.value as THREE.Vector2).copy(lensFall.glareHole)
       ;(u.uHalo!.value as THREE.Color).copy(lensFall.halo)
+      ;(u.uHaloCore!.value as THREE.Vector4).copy(lensFall.haloCore)
       ;(u.uHaloAt!.value as THREE.Vector3).copy(lensFall.haloAt)
       ;(u.uHaloFlat!.value as THREE.Vector2).copy(lensFall.haloFlat)
       ;(u.uCurve!.value as THREE.Vector4).set(g.curveGain, g.curveToe, g.curveShoulder, g.curveMid)
