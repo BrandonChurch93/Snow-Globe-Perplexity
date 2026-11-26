@@ -35,7 +35,13 @@ const CHAIN = {
 // season), 8 dB lower 6.1 to 12.7 dB under it; the chime 5.5 to 7.7 dB under, 8 dB lower 13.5 to 15.7 dB under.
 // So 8 dB lower it is lost, and where it is it is not too loud, though it is named little oftener there than where
 // none was laid (decision 146, point 2). Not heard by a human.
-export const APP_TRIM_DB = { ambience: -8, interface: 0, touch: -8, impact: -8, music: -8 }
+// The uniform step (the last job of 2026-11-26): every class 0.5 dB lower than the text above says, the interface
+// with the rest, so the 8 dB above read 8.5 and the interface's 0 reads 0.5, and no distance between two sounds of
+// the app moves. With the gap between interface cues the two nearest lines of the headroom table stood 0.04 and
+// 0.06 dB under the -1 dBFS that is asked (-1.04 and -1.06 dBFS, bounds on the sum, as the app has no limiter). They
+// stand at -1.54 and -1.56 dBFS now, and every other line is 0.5 dB lower too (audio/RECIPE.md, "The uniform step").
+// Only the gains of index.json moved: the sound files of the pack are byte for byte the same.
+export const APP_TRIM_DB = { ambience: -8.5, interface: -0.5, touch: -8.5, impact: -8.5, music: -8.5 }
 const VARIED = { 'key-tap': [0, -45, 30, -20, 55, -65, 15, 40, -30] }
 // A hand does not type like a wheel. At the film's 14 a second one press repeated in the cut list's even steps was heard as
 // a ratchet, a prize wheel or a card in bicycle spokes (asked 5 times, with three different presses), and as typing on a

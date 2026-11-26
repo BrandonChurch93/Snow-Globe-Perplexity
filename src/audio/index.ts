@@ -19,6 +19,8 @@ interface SwapOptions {
   fadeOut: number
   fadeIn: number
   thin: boolean
+  /** Seconds into the loop where its first pass begins: the entry of a landing. Left out, the loop begins at its start. */
+  enter?: number
 }
 
 interface Backend {
@@ -61,6 +63,28 @@ const SEASON_FADE = 1.6
 const FIRST_FADE = 0.8
 const LATE_FADE = 0.5
 const CUT_FADE = 0.03
+/**
+ * Where the new season's music is entered at a landing: on a bar line of its loop, as film B cuts its music on one
+ * (kit: "the music changes on the landing, as in the film"). The pack writes a music loop from LOOP_LEAD before the
+ * line of its first bar (LOOP_LEAD of tools/lib/audio.mjs) and from bar 1 of its track, so begun at its start the
+ * downbeat came 0.06 s after the landing's clink, on a bar the film does not land on. Measured against the music stem
+ * of film B, the app brought up by its trim and the master's gain: dB under the film over the 0.1 s after the landing,
+ * over 0 to 0.5 s and over the first bar (a minus sign: over the film).
+ *   spring: begun at its start 5.8, 1.9, -1.3; on the line of bar 6 of its track 1.7, 1.1, 0.7
+ *   summer: begun at its start 5.0, 0.9, 0.5; on the line of bar 4 1.0, 0.9, 0.5
+ *   fall: begun at its start 2.9, 0.6, 0.2; on the line of bar 1 1.0, 0.4, 0.3
+ *   winter: begun at its start 15.6, 5.6, 2.6; on the line of bar 6 1.0, 0.4, 0.3
+ * Fall's bar 1 and winter's bar 6 are the bars the film lands on. In spring and summer it lands on bar 0, which no
+ * loop holds, and the bar taken is one that stands within 1.5 dB of the film both over 0 to 0.5 s and over the first
+ * bar: in spring bar 6 alone does, in summer bars 1 and 4 do and bar 4 is the nearer over the first 0.1 s. Of that
+ * 0.1 s the lead alone cost 2.4 to 3.6 dB in every season and the bar 12.7 dB in winter. The rise of CUT_FADE stays:
+ * it costs 0.55 to 1.04 dB of that 0.1 s and nothing after. LANDING_BAR counts bars into the loop, whose first bar is
+ * bar 1 of the track. Only a landing enters there: switched on with no shake, or changed with no shake, a loop begins
+ * at its start, and after its first pass every loop goes on whole. Not heard by a human.
+ */
+const LOOP_LEAD = 0.06
+const LANDING_BAR: Record<string, number> = { winter: 5, spring: 5, summer: 3, fall: 0 }
+const landingEntry = (season: string): number => (season in LANDING_BAR ? LOOP_LEAD + LANDING_BAR[season]! * barSeconds : 0)
 /** The way out when the sound is turned off stays short. The way in is longer, a quarter sine: at 0.04 s it was heard as a blast. */
 const MUTE_FADE = 0.04
 const UNMUTE_FADE = 0.35
@@ -304,6 +328,8 @@ class WebBackend implements Backend {
     if (!entry || !(entry.loopSeconds > 0)) return
     const length = entry.loopSeconds
     const seam = seamOf(kind, length)
+    // A loop too short to hold the entry asked of it begins at its start.
+    const enter = o.enter !== undefined && o.enter > 0 && o.enter < length - seam ? o.enter : 0
     const begin = (buffer: AudioBuffer, at: number, fadeIn: number) => {
       if (!this.master) return
       const filter = ctx.createBiquadFilter()
@@ -321,6 +347,8 @@ class WebBackend implements Backend {
       const pass = (first: boolean): void => {
         if (voice.over || this.dead) return
         const t = first ? voice.next : Math.max(voice.next, ctx.currentTime + LEAD)
+        // Only the first pass is entered part of the way in: every pass after it is the whole loop.
+        const from = first ? enter : 0
         const src = ctx.createBufferSource()
         src.buffer = buffer
         const level = ctx.createGain()
@@ -328,16 +356,16 @@ class WebBackend implements Backend {
         src.connect(level)
         level.connect(filter)
         if (!first) shape(level.gain, 0, 1, t, seam)
-        shape(level.gain, 1, 0, t + length - seam, seam)
+        shape(level.gain, 1, 0, t + length - from - seam, seam)
         src.onended = () => {
           level.disconnect()
           voice.passes.delete(src)
           if (!voice.over) pass(false)
           else if (voice.passes.size === 0) gain.disconnect()
         }
-        src.start(t, entry.loopStart, length)
+        src.start(t, entry.loopStart + from, length - from)
         voice.passes.add(src)
-        voice.next = t + length - seam
+        voice.next = t + length - from - seam
       }
       pass(true)
       pass(false)
@@ -582,7 +610,8 @@ class ElementBackend implements Backend {
         if (item.el.currentTime >= end - 0.05) item.el.currentTime -= entry.loopSeconds
       })
       item.el.addEventListener('ended', () => this.seekAndPlay(item, entry.loopStart))
-      this.seekAndPlay(item, entry.loopStart)
+      const enter = o.enter !== undefined && o.enter > 0 && o.enter < entry.loopSeconds - seamOf(kind, entry.loopSeconds) ? o.enter : 0
+      this.seekAndPlay(item, entry.loopStart + enter)
       this.ramp(item, 0, 1, o.fadeIn)
       this.voices[kind] = { id, item }
     }
@@ -743,7 +772,7 @@ export function createSoundEngine(opts: SoundEngineOptions): SoundEngine {
       if (p && p.held && p.to === to) {
         play(CUE.land(to))
         play(CUE.clink)
-        music(to, { delay: 0, fadeOut: CUT_FADE, fadeIn: CUT_FADE, thin: false })
+        music(to, { delay: 0, fadeOut: CUT_FADE, fadeIn: CUT_FADE, thin: false, enter: landingEntry(to) })
       }
       const fade = immediate ? CUT_FADE : SEASON_FADE
       const o = { delay: 0, fadeOut: fade, fadeIn: fade, thin: false }
@@ -771,7 +800,7 @@ export function createSoundEngine(opts: SoundEngineOptions): SoundEngine {
       play(CUE.lift)
       play(CUE.shake(to))
       pending = { to, held: false, cancel: [play(CUE.land(to), { delay: bar }), play(CUE.clink, { delay: bar })] }
-      beds(to, { delay: 0, fadeOut: bar, fadeIn: bar, thin: false }, { delay: bar, fadeOut: bar, fadeIn: CUT_FADE, thin: true })
+      beds(to, { delay: 0, fadeOut: bar, fadeIn: bar, thin: false }, { delay: bar, fadeOut: bar, fadeIn: CUT_FADE, thin: true, enter: landingEntry(to) })
     },
 
     stir(strength: number): void {

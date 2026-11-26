@@ -760,7 +760,9 @@ describe("the app's loops, by number", () => {
     expect(Number(/const AMB_SEAM = ([\d.]+)/.exec(src)?.[1])).toBe(A.APP_SEAM.ambience)
     expect(Number(/const SEAM_SHARE = ([\d.]+)/.exec(src)?.[1])).toBe(A.APP_SEAM_SHARE)
     expect(src).toContain("Math.min(kind === 'music' ? barSeconds : AMB_SEAM, loopSeconds * SEAM_SHARE)")
-    expect(src).toContain('voice.next = t + length - seam')
+    // Each pass begins one seam before the last one ends. Only the first pass of a landing is entered part of the way in.
+    expect(src).toContain('const from = first ? enter : 0')
+    expect(src).toContain('voice.next = t + length - from - seam')
     expect(A.APP_SEAM.music).toBeCloseTo(bar, 9)
   })
 
@@ -1110,8 +1112,10 @@ describe('sounds laid by decision 141', () => {
 // its own lower level. Touch and impact take the music's trim, as the ambience did; a shake takes the film's own step
 // on top, from the one constant SHAKE, and rises over its first moment in the sprite's own audio.
 describe("the app's pack keeps the film's balance of a shake", () => {
-  // Decided by listening (audio/RECIPE.md, decision 146): the press's tick and the chime stay at their kept level.
-  const INTERFACE_DB = 0
+  // Decided by listening (audio/RECIPE.md, decision 146): the press's tick and the chime stay at their kept level,
+  // and since the uniform step every class sounds 0.5 dB lower, these two with the rest, so no distance moved.
+  const UNIFORM_STEP_DB = -0.5
+  const INTERFACE_DB = UNIFORM_STEP_DB
   let own = ''
   let plan: Plan
   const keptOf = (id: string): Sound => A.parseWav(fs.readFileSync(path.join(own, `${id}.wav`)))
@@ -1148,7 +1152,7 @@ describe("the app's pack keeps the film's balance of a shake", () => {
   })
 
   it('trims touch and impact as the music and the ambience, and takes the step of a shake from the one rule of the film', () => {
-    expect(A.APP_TRIM_DB.music).toBe(-8)
+    expect(A.APP_TRIM_DB.music).toBe(-8 + UNIFORM_STEP_DB)
     for (const cls of ['ambience', 'touch', 'impact']) expect(A.APP_TRIM_DB[cls], cls).toBe(A.APP_TRIM_DB.music)
     expect(A.APP_TRIM_DB.interface).toBe(INTERFACE_DB)
     for (const season of config.seasons) {
@@ -1170,13 +1174,13 @@ describe("the app's pack keeps the film's balance of a shake", () => {
     for (const p of shakes) expect(p.downDb, p.cue).toBe(A.shakeStepDb(p.cue))
   })
 
-  it('sounds the lift, the clink and the landing 8 dB under their kept level, a shake 11 and the shake of fall 14', () => {
+  it('sounds the lift, the clink and the landing 8.5 dB under their kept level, a shake 11.5 and the shake of fall 14.5', () => {
     const under = (id: string, from = 0): number => A.levelDb(played(id), from) - A.levelDb(keptOf(id), from)
-    expect(under('lift')).toBeCloseTo(-8, 1)
-    expect(under('glass-clink')).toBeCloseTo(-8, 1)
-    expect(under('land-spring')).toBeCloseTo(-8, 1)
-    expect(under('shake-spring', riseSamples())).toBeCloseTo(-11, 1)
-    expect(under('shake-fall', riseSamples())).toBeCloseTo(-14, 1)
+    expect(under('lift')).toBeCloseTo(-8.5, 1)
+    expect(under('glass-clink')).toBeCloseTo(-8.5, 1)
+    expect(under('land-spring')).toBeCloseTo(-8.5, 1)
+    expect(under('shake-spring', riseSamples())).toBeCloseTo(-11.5, 1)
+    expect(under('shake-fall', riseSamples())).toBeCloseTo(-14.5, 1)
     expect(under('ui-tick')).toBeCloseTo(INTERFACE_DB, 1)
     // So the distances inside a shake are the film's: there the lift lies at its kept level and a shake 3 dB (fall 6)
     // under its own, and here the lift sounds 3 dB (fall 6) over the shake by the same measure.
@@ -1204,7 +1208,7 @@ describe("the app's pack keeps the film's balance of a shake", () => {
     for (let i = n; i < k.L.length; i += 997) expect(p.L[i]!).toBeCloseTo(k.L[i]! * down, 4)
     expect(A.levelDb(p, 0, n >> 2)).toBeLessThan(A.levelDb(k, 0, n >> 2) + A.db(down) - 12)
     const one = A.spriteSound('shake-spring', 'impact', k)!
-    expect(one.shake).toEqual({ class: 'impact', trimDb: A.APP_TRIM_DB.impact, stepDb: -3, appDb: -11, riseMs: A.SHAKE.riseMs, gain: one.gain })
+    expect(one.shake).toEqual({ class: 'impact', trimDb: A.APP_TRIM_DB.impact, stepDb: -3, appDb: -11.5, riseMs: A.SHAKE.riseMs, gain: one.gain })
     expect(one.gain).toBe(plan.sprite.entries['shake-spring']!.gain)
     const lift = keptOf('lift')
     // Every copy in the sprite has its peak at one height, a shake's after its rise, so each gain puts back what sounds.
@@ -1222,8 +1226,8 @@ describe("the app's pack keeps the film's balance of a shake", () => {
       expect(s).toMatchObject({ class: 'impact', trimDb: A.APP_TRIM_DB.impact, stepDb: A.shakeStepDb(s.id), appDb: A.APP_TRIM_DB.impact! + A.shakeStepDb(s.id), riseMs: A.SHAKE.riseMs })
       expect(s.gain).toBe(plan.sprite.entries[s.id]!.gain)
     }
-    expect(plan.shakes.find((s) => s.id === 'shake-fall')!.appDb).toBe(-14)
-    expect(plan.shakes.find((s) => s.id === 'shake-spring')!.appDb).toBe(-11)
+    expect(plan.shakes.find((s) => s.id === 'shake-fall')!.appDb).toBe(-14.5)
+    expect(plan.shakes.find((s) => s.id === 'shake-spring')!.appDb).toBe(-11.5)
   })
 
   it('rests on the app playing an entry at its gain and making the stir from the entry of the shake', () => {
@@ -1293,7 +1297,8 @@ describe("the app's pack keeps the film's balance of a shake", () => {
         // shake (one more press, a stir) is not in this sum: see audio/RECIPE.md, decision 146.
         const inBar = tops[`music-${before}`]! + tops[`amb-${before}`]! + tops[`amb-${to}`]! + together('lift', `shake-${to}`, 'ui-tick')
         expect(A.db(inBar), `the shake from ${before} into ${to}`).toBeLessThan(-1)
-        // From the landing: the new music from its start, the new ambience and the clink.
+        // From the landing: the new music at its own highest (wherever a landing enters the loop), the new ambience
+        // and the clink.
         const landing = tops[`music-${to}`]! + tops[`amb-${to}`]! + together('glass-clink')
         expect(A.db(landing), `the landing into ${to}`).toBeLessThan(-1)
       }
