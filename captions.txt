@@ -89,3 +89,9 @@ After. The foot of the glass at the middle frame of each of the four changes at 
 
 28-whole-675-1395-2115-2835-final.jpg
 After. The same four frames whole, set down to 598 by 336, in the same order. Format hd, tier final, the same engine. In each the glass is a lit globe with its halo on black, and its foot ends in one clean line.
+
+29-app-high-foot-124-135.jpg
+After. The app's own path, level high: the shake from winter to spring as the app draws it (60 frames a second, one sample a frame), app frames 124 to 135, the foot at its own pixels: one fixed cut of each 960 by 540 frame (x 190 to 788, y 200 to 330), two to a row from the top left. Format preview, engine b2552a068a75a0bc (commit 2e19534b; the head 632d9514 holds the same source). The glass is a lit globe in all twelve. With one sample a frame the base's pass is a fringe of dots a few px deep along the foot's lower line in 126 to 131. From 132 the line is clean, and spring's base is in sight under it in 134 and 135. In 124 to 127 the sides of the glass are dotted as well; I take that for winter's dressing on the glass as it goes, and did not look into it. No app frame of before was drawn to lay beside these.
+
+30-app-low-foot-124-135.jpg
+After. The app's own path, level low: the same twelve frames and the same cut as picture 29. Format preview, the same engine. It reads as picture 29 does: the fringe of dots along the foot's lower line in 126 to 131, a clean line from 132, spring's base in 134 and 135, and the dotted sides of the glass in 124 to 127.
