@@ -23,7 +23,7 @@ export const particles: SeasonKit['particles'] = { firefly: { color: [1, 0.97, 0
 // over the ground and a white crescent inside the left limb, where the approved image has seeds over a ghosted miniature.
 // A share of that bank is kept: it is the bright haze low down that whitens the ground and the foot of the tree.
 // All of it is weighted by summer's share of the change, so the other seasons see nothing of it.
-export const STORM = { share: 0.95, holdSeconds: 0.3, fallSeconds: 3, uneven: 0.85, calms: 0.55 }
+export const STORM = { share: 1.25, holdSeconds: 0.3, fallSeconds: 3, uneven: 0.85, calms: 0.55 }
 
 const ramp = (v: number, from: number, to: number): number => {
   const t = Math.min(1, Math.max(0, (v - from) / (to - from)))
