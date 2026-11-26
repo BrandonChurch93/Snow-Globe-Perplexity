@@ -39,3 +39,23 @@
   Winter, rest, hero, hd, draft (2 samples). A 480 x 360 crop at its own size, taken at x 1056, y 604, around the 32 px block where the two pictures differ most.
   Left: SwiftShader. Right: Mesa lavapipe.
   Whole frame: PSNR 46.29 dB (40.52 dB with the scene as it is), largest difference 201 of 255. Without anisotropic filtering SwiftShader's own picture moves 34.03 dB from its picture with it.
+
+09-lavapipe-summer-rest-hd-review-largest-difference.jpg
+  Summer, rest, hero, hd, review (8 samples). A 480 x 360 crop at its own size, taken at x 672, y 60, around the 32 px block where the two pictures differ most.
+  Left: the baseline, SwiftShader. Right: Mesa lavapipe.
+  Whole frame: PSNR 33.07 dB, largest difference 187 of 255.
+
+10-lavapipe-summer-landed-hd-review-largest-difference.jpg
+  Summer, landed, hero, hd, review (8 samples). A 480 x 360 crop at its own size, taken at x 480, y 508, around the 32 px block where the two pictures differ most.
+  Left: the baseline, SwiftShader. Right: Mesa lavapipe.
+  Whole frame: PSNR 36.32 dB, largest difference 171 of 255.
+
+11-lavapipe-fall-rest-hd-review-largest-difference.jpg
+  Fall, rest, hero, hd, review (8 samples). A 480 x 360 crop at its own size, taken at x 1056, y 636, around the 32 px block where the two pictures differ most.
+  Left: the baseline, SwiftShader. Right: Mesa lavapipe.
+  Whole frame: PSNR 40.31 dB, largest difference 150 of 255.
+
+12-lavapipe-fall-landed-hd-review-largest-difference.jpg
+  Fall, landed, hero, hd, review (8 samples). A 480 x 360 crop at its own size, taken at x 0, y 700, around the 32 px block where the two pictures differ most.
+  Left: the baseline, SwiftShader. Right: Mesa lavapipe.
+  Whole frame: PSNR 31.49 dB, largest difference 169 of 255. The leaves on the table lie in different places; the saved simulation files of the two runs have the same bytes.
