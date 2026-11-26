@@ -411,16 +411,41 @@
       },
       "video": {
         "codec": "libx264",
-        "preset": "slow",
-        "crf": 15,
-        "maxrateMbps": 50,
-        "bufsizeMbps": 75,
         "profile": "high",
         "level": "5.2",
-        "pixFmt": "yuv420p"
+        "pixFmt": "yuv420p",
+        "maxrateMbps": 300,
+        "bufsizeMbps": 300
+      },
+      "intermediate": {
+        "preset": "medium",
+        "crf": 6,
+        "minPsnr": 46,
+        "partMb": 45
+      },
+      "final": {
+        "preset": "slow",
+        "passes": 2,
+        "targetMb": {
+          "film-a": 500,
+          "film-b": 500
+        },
+        "keyint": 300,
+        "minKeyint": 60,
+        "bframes": 3,
+        "refs": 5,
+        "aqMode": 3,
+        "params": "aq-strength=1.4:deblock=-1,-1:no-dct-decimate=1:no-fast-pskip=1",
+        "minPsnr": 36,
+        "loop": {
+          "crf": 18,
+          "crfStep": 2,
+          "minCrf": 16,
+          "params": "qcomp=1.0:ipratio=1.0:pbratio=1.0:mbtree=0",
+          "seamDb": 1.5
+        }
       },
       "audioKbps": 320,
-      "minChunkPsnr": 40,
       "chunkBranches": "agent/p6-chunks-*",
       "names": {
         "film-a": "snow-globe-film-with-prompt-4k60.mp4",
