@@ -66,7 +66,7 @@ export async function toneMap(dir, f) {
       c = c.map((v, q) => mix(v, rust[q], clamp(0.3 * stain)))
       const speck = 0.94 + 0.12 * hashInt(i, j, 311) * hashInt(i >> 1, j >> 1, 313) + 0.05 * (fbm(A * 400, h * 2.2, 400, 512, 315, 2) - 0.5)
       // Round each thing set into the sand the sand is in its shade.
-      const dark = 1 - 0.22 * f.halo[o] * f.halo[o]
+      const dark = 1 - 0.3 * f.halo[o] * f.halo[o]
       for (let q = 0; q < 3; q++) out[o * 3 + q] = Math.round(clamp(c[q] * speck * dark) * 255)
     }
   }

@@ -1,4 +1,4 @@
-import { Soup, clamp, cross3, dot3, fbm, mix, mulberry, norm3, smooth } from './lib.mjs'
+import { Soup, clamp, cross3, fbm, mix, mulberry, norm3, smooth } from './lib.mjs'
 import * as P from './profile.mjs'
 
 const RAD = P.RAD
@@ -251,28 +251,38 @@ function dome(soup, fr, it, rnd, a, b, c, sink, gloss, groove) {
 }
 
 function seaGlass(soup, fr, it, rnd) {
-  const R = it.r * 1.08
+  const R = it.r * 1.13
   const long = it.long ?? 1
-  const tri = Math.min(it.tri ?? 0.04 + 0.05 * rnd.a, 0.085)
-  const two = 0.05 + 0.07 * rnd.b
-  const p2 = rnd.c * 6.28
-  const p3 = rnd.d * 6.28
-  const T = Math.min(0.62 * R, 2.1)
+  const next = mulberry(7000 + Math.floor(rnd.k * 1e6))
+  const T = Math.min(0.85 * R, 2.8)
+  // The sea has worn the top uneven: it leans a little to one side or two, and nothing on it is an edge.
+  const leans = Array.from({ length: 2 + Math.floor(next() * 1.99) }, () => ({ at: next() * 6.28, tilt: 0.05 + 0.1 * next(), up: 0.9 + 0.16 * next() }))
   // How thick the piece is under a point, 1 in the middle and 0 at the rim: level in the middle, so nothing made of it comes to a point there.
-  const thick = (v) => Math.pow(Math.max(1 - Math.pow(Math.sin((v * Math.PI) / 2), 2.6), 0), 0.5)
+  const thick = (v) => Math.pow(Math.max(1 - Math.pow(Math.sin((v * Math.PI) / 2), 2.2), 0), 0.6)
+  const top = (u, v) => {
+    const phi = u * 2 * Math.PI
+    const rho = Math.sin((v * Math.PI) / 2)
+    let z = thick(v) * (1 + 0.14 * (fbm(u * 5 + rnd.a * 9, v * 2 + rnd.b * 5, 5, 64, 91, 2) - 0.5) * smooth(0.25, 0.6, rho))
+    for (const ln of leans) {
+      const plane = ln.up - ln.tilt * rho * Math.cos(phi - ln.at)
+      const k = 0.22
+      const h = clamp(0.5 + (0.5 * (plane - z)) / k)
+      z = mix(plane, z, h) - k * h * (1 - h)
+    }
+    return Math.max(z, 0)
+  }
   surf(
     soup,
     fr,
-    49,
-    13,
+    65,
+    15,
     (u, v) => {
       const phi = u * 2 * Math.PI
-      const out = R * (1 + two * Math.cos(2 * phi + p2) + tri * Math.cos(3 * phi + p3) + 0.012 * Math.cos(5 * phi + p2 * 2) + 0.004 * Math.cos(8 * phi + p3 * 3))
+      const out = R * P.shardAt(it, phi)
       const rho = Math.sin((v * Math.PI) / 2)
-      const lump = 1 + 0.12 * (fbm(u * 5 + rnd.a * 9, v * 2 + rnd.b * 5, 5, 64, 91, 2) - 0.5) * smooth(0.25, 0.6, rho)
-      return [out * rho * Math.cos(phi), out * rho * Math.sin(phi) * long, T * thick(v) * lump - 0.3 * T]
+      return [out * rho * Math.cos(phi), out * rho * Math.sin(phi) * long, T * top(u, v) - 0.4 * T]
     },
-    (u, v, p) => ({ uv: [p[0] / 3, p[1] / 3], uv2: [thick(v), it.frost ? 1 : 0.25 + 0.3 * rnd.a], c: it.c }),
+    (u, v, p) => ({ uv: [p[0] / 3, p[1] / 3], uv2: [clamp(top(u, v)), it.frost ? 1 : 0.25 + 0.3 * rnd.a], c: it.c }),
     true,
   )
 }
@@ -296,7 +306,10 @@ export function buildSet(f) {
   return { shells, glass, count }
 }
 
-// The sand on the ledge: it lies in the seat against the glass and thins to single grains toward the rim, and at SPILL runs over it.
+// The sand on the ledge: it lies on the top of the lip from its crest outward and thins to single grains at the corner. It stays on the top:
+// what runs over the lip at SPILL is the falling sand's, and a sheet of grains on the wall stood off the outline as a ragged strip.
+// The groove between the crest and the glass stays bare, LEDGE_FROM mm of the meridian.
+const LEDGE_FROM = 2.35
 export const SPILL = { az: 80, half: 17, lipR: 52.5, lipH: 38.8 + P.RISE }
 export const spillAt = (az) => {
   let d = az - SPILL.az
@@ -306,16 +319,18 @@ export const spillAt = (az) => {
 export function ledgeSand(f, az, t) {
   const A = (((az % 360) + 360) % 360) / 360
   const sp = spillAt(az)
-  const reach = Math.min(3.6 + 3.2 * fbm(A * 17, 0.7, 17, 4, 203, 3) + 5.5 * sp, 9.2)
-  const s = f.mer.total - 0.1 - reach * t
+  const reach = (2.3 + 1.7 * fbm(A * 17, 0.7, 17, 4, 203, 3)) * (1 - 0.3 * sp)
+  const s = f.mer.total - LEDGE_FROM - reach * t
   const q = P.atS(f.mer, s)
   const d = f.dAt(az, s)
   const heap = 0.55 + 0.9 * (fbm(A * 11, 0.3, 11, 4, 201, 3) - 0.35) + 0.9 * sp
-  const fall = Math.pow(1 - t, 1.25)
+  const fall = Math.pow(1 - t, 1.25) * smooth(0, 0.12, t)
   const lumps = (0.5 * (fbm(A * 60, t * 3, 60, 64, 205, 3) - 0.5) + 0.22 * (fbm(A * 170, t * 7, 170, 64, 207, 2) - 0.5)) * Math.sin(Math.PI * Math.min(t * 1.15, 1))
   const lee = 1 - 0.97 * smooth(-45, -75, az) * smooth(-178, -150, az)
-  const thick = (Math.max(Math.max(heap, 0.25) * 1.5 * fall + lumps * (0.3 + sp), 0) + 0.04) * lee
-  const lift = 0.03 + 0.45 * thick
+  const a180 = az - 360 * Math.round(az / 360)
+  const shaded = smooth(-42, -26, a180) * smooth(48, 34, a180)
+  const thick = (Math.max(Math.max(heap, 0.25) * 1.5 * fall + lumps * (0.3 + sp), 0) + 0.04) * lee * (1 - shaded)
+  const lift = 0.03 + 0.45 * Math.min(thick, 1.2)
   const h = q.h + q.nh * (d + lift)
   const r = Math.max(q.r + q.nr * (d + lift), P.sphereRadiusAt(h) + 0.06)
   return { r, h, thick }
@@ -341,32 +356,5 @@ export function buildSand(f) {
     return { p, n, uv: [p[0] / SAND_TILE_MM, p[2] / SAND_TILE_MM], uv2: [0, 0], c: [clamp(q.thick / 1.2), 0.55 + 0.45 * smooth(0, 0.5, j / (rows - 1)), 0] }
   })
   const ring = soup.triangles
-  // The drape: sand running down the wall under the spill.
-  const dc = 96
-  const dr = 40
-  const top = P.sOfH(f.mer, 39.3 + P.RISE)
-  const drape = (i, j) => {
-    const az = SPILL.az - 30 + (60 * i) / (dc - 1)
-    const down = j / (dr - 1)
-    const s = top - down * 15
-    const A = (az + 360) / 360
-    const across = spillAt(az)
-    const stream = smooth(0.42, 0.62, fbm(A * 260, down * 1.5, 2600, 64, 213, 2)) * (1 - 0.5 * smooth(0.2, 1, down))
-    const tongue = across * stream * (1.15 - down * (0.9 + 0.9 * fbm(A * 40, 0.4, 400, 4, 209, 2)))
-    const thick = Math.max(tongue, 0) * 0.9 * (0.6 + 0.8 * fbm(A * 90, down * 6, 900, 64, 211, 2)) * smooth(0, 0.06, down + 0.02)
-    const q = P.atS(f.mer, s)
-    const d = f.dAt(az, s) + 0.05 + thick
-    return { thick, p: place(q.r + q.nr * d, q.h + q.nh * d, az) }
-  }
-  soup.grid(dc, dr, (i, j) => {
-    const { thick, p } = drape(i, j)
-    const a = drape(Math.max(i - 1, 0), j).p
-    const b = drape(Math.min(i + 1, dc - 1), j).p
-    const c = drape(i, Math.max(j - 1, 0)).p
-    const d = drape(i, Math.min(j + 1, dr - 1)).p
-    let n = norm3(cross3([b[0] - a[0], b[1] - a[1], b[2] - a[2]], [d[0] - c[0], d[1] - c[1], d[2] - c[2]]))
-    if (dot3(n, [p[0], 0, p[2]]) < 0) n = [-n[0], -n[1], -n[2]]
-    return { p, n, uv: [(Math.atan2(p[0], p[2]) * 56) / SAND_TILE_MM, p[1] / SAND_TILE_MM], uv2: [j / (dr - 1), 0], c: [clamp(thick / 1.2), 0.8, 1] }
-  })
   return { soup, ring, drape: soup.triangles - ring }
 }

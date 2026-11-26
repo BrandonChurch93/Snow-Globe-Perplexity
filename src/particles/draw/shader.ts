@@ -4,7 +4,7 @@ import { LIGHT_FRAG_PARS } from '../../core/chunks/light'
 import { VEIL_GLSL } from '../../core/chunks/veil'
 import { viewCode } from '../../diagnostics/views'
 import { CARD_FRAG_PARS, CARD_VERT, CARD_VERT_PARS } from './cards'
-import { BLUR_HOLD, BLUR_STRICT_FROM_PX, BLUR_STRICT_TO_PX, CLUMP, EDGE_CRISP_HIGH, EDGE_CRISP_LOW, EDGE_SOFT_HIGH, EDGE_SOFT_LOW, FLASH_MOST, FLASH_WHITE, GLINT_HIGH, GLINT_LOW, GLINT_SOFT_PX, LAMPS, LENS_LOOK, LIT_MOST, LIGHT_LOOK, LOBE_CORE, LOBE_GIRTH, LOBE_REACH, LYING_LOOK, MAX_KINDS, PIXEL_SIGMA2, REST_CLEAR, SETTLE_FADE, SIZE_HIGH, SIZE_LOW, SIZE_SKEW, STORM_CROSS, STORM_ALIGN, STORM_BEND, STORM_BIG, STORM_DAB_LIGHT, STORM_DAB_REACH, STORM_DAB_SLOW, STORM_DAB_TIGHT, STORM_FAR, STORM_OFF_DISC, STORM_PACE, STORM_PALE, STORM_PALE_TO, STORM_FINE_HIGH, STORM_FINE_LOW, STORM_FINE_SOFT, STORM_FINE_SHARE, STORM_FLASH, STORM_FLOOD, STORM_GLINT, STORM_GLINT_KEEP, STORM_GLINT_REACH, STORM_GLITTER, STORM_GLITTER_FROM, STORM_GLITTER_PX, STORM_GLITTER_TO, STORM_GLOW, STORM_GOLD, STORM_MOST_PX, STORM_SHARP, STORM_SHARP_REACH, STORM_SHARP_SHARE, STORM_SHARP_SOFT, STORM_LOOSE, STORM_OWN_PATH_FROM, STORM_POCKET_SMEARS, STORM_SHUTTER, STORM_SHUTTER_TURNED, STORM_SIDE, STORM_SLOW, STORM_SMEAR, STORM_SMEAR_BRIGHT, STORM_SMEAR_FAINT, STORM_SMEAR_HIGH_PX, STORM_SMEAR_LOW_PX, STORM_SMEAR_FAR, STORM_SMEAR_NEAR, STORM_SMEAR_SHARE, STORM_SMEAR_SKEW, STORM_SOFT_TOP, STORM_STREAK_DIM, STORM_THIN, STORM_TOP, STORM_VEILED, STORM_WALL, STORM_WARM, STORM_WINDOW, STREAK_ARC, STREAK_CAPSULE, STREAK_HOLD, STREAK_REACH, STREAK_TAPER, STRETCH_HIGH, STRETCH_LOW, THIN_FROM, THIN_LOW, THIN_TO } from './looks'
+import { BLUR_HOLD, BLUR_STRICT_FROM_PX, BLUR_STRICT_TO_PX, CLUMP, EDGE_CRISP_HIGH, EDGE_CRISP_LOW, EDGE_SOFT_HIGH, EDGE_SOFT_LOW, FLASH_MOST, FLASH_WHITE, GLINT_HIGH, GLINT_LOW, GLINT_SOFT_PX, LAMPS, LENS_LOOK, LIT_MOST, LIGHT_LOOK, LOBE_CORE, LOBE_GIRTH, LOBE_REACH, LYING_LOOK, MAX_KINDS, PIXEL_SIGMA2, REST_CLEAR, SETTLE_FADE, SIZE_HIGH, SIZE_LOW, SIZE_SKEW, STORM_CROSS, STORM_ALIGN, STORM_BEND, STORM_BIG, STORM_DAB_LIGHT, STORM_DAB_REACH, STORM_DAB_SLOW, STORM_DAB_TIGHT, STORM_FAR, STORM_OFF_DISC, STORM_PACE, STORM_PALE, STORM_PALE_TO, STORM_FINE_HIGH, STORM_FINE_LOW, STORM_FINE_SOFT, STORM_FINE_SHARE, STORM_FLASH, STORM_FLOOD, STORM_GLINT, STORM_GLINT_KEEP, STORM_GLINT_REACH, STORM_GLITTER, STORM_GLITTER_FROM, STORM_GLITTER_PX, STORM_GLITTER_TO, STORM_GLOW, STORM_GOLD, STORM_MOST_PX, STORM_SHARP, STORM_SHARP_REACH, STORM_SHARP_SHARE, STORM_SHARP_SOFT, STORM_LOOSE, STORM_OWN_PATH_FROM, STORM_POCKET_SMEARS, STORM_SHUTTER, STORM_SHUTTER_TURNED, STORM_SIDE, STORM_SLOW, STORM_SMEAR, STORM_SMEAR_BRIGHT, STORM_SMEAR_FAINT, STORM_SMEAR_HIGH_PX, STORM_SMEAR_LOW_PX, STORM_SMEAR_FAR, STORM_SMEAR_NEAR, STORM_SMEAR_SHARE, STORM_SMEAR_SKEW, STORM_SOFT_TOP, STORM_STREAK_DIM, STORM_THIN, STORM_TOP, STORM_VEILED, STORM_WALL, STORM_WARM, STORM_WINDOW, STREAK_ARC, STREAK_CAPSULE, STREAK_HOLD, STREAK_REACH, STREAK_TAPER, STRETCH_HIGH, STRETCH_LOW, THIN_FROM, THIN_LOW, THIN_TO, CARD, SHAPE } from './looks'
 
 const MEAN_LOBE = 0.42
 const n = (v: number) => (Number.isInteger(v) ? v.toFixed(1) : String(v))
@@ -112,12 +112,15 @@ export const VERT_MAIN = `
   float shut = uPoint.z * mix(1.0, storming ? ${n(STORM_SHUTTER)} : ${n(STORM_SHUTTER_TURNED)}, uStorm.x);
   vec3 nowL = mix(aPrev, aNow, uPoint.x + shut * uStorm.y * afloat * (storming ? 1.0 - uStorm.x : 1.0));
   vec3 nowW = (modelMatrix * vec4(nowL, 1.0)).xyz;
-  vec3 eye = cameraPosition - uEyeShift * afloat;
+  // a seed's down is finer than the film's lens can hold out of focus: a head takes a share only of the lens's spread, so its hairs stay hairs
+  float lensShare = abs(shape - ${n(SHAPE.seed)}) < 0.5 ? ${n(CARD.hair.lensFilm)} : (abs(shape - ${n(SHAPE.light)}) < 0.5 ? ${n(CARD.glow.lensFilm)} : 1.0);
+  float lensC = afloat * lensShare;
+  vec3 eye = cameraPosition - uEyeShift * lensC;
   vec4 placed = lensPlace(nowW, eye);
   vec4 view = viewMatrix * vec4(placed.xyz, 1.0);
-  view.xy += uAperture.xy * afloat;
+  view.xy += uAperture.xy * lensC;
   vec4 clip = projectionMatrix * view;
-  clip.xy += vec2(projectionMatrix[0][0] * uAperture.x, projectionMatrix[1][1] * uAperture.y) * (uAperture.z * view.z * afloat);
+  clip.xy += vec2(projectionMatrix[0][0] * uAperture.x, projectionMatrix[1][1] * uAperture.y) * (uAperture.z * view.z * lensC);
   vec4 clipC = clip;
   vStageWorld = nowW;
   vStageLocal = nowL;
@@ -179,7 +182,7 @@ export const VERT_MAIN = `
     #else
     vec3 aheadW = (modelMatrix * vec4(nowL + moved * 0.5, 1.0)).xyz;
     vec4 aheadV = viewMatrix * vec4(lensPlace(aheadW, eye).xyz, 1.0);
-    aheadV.xy += uAperture.xy;
+    aheadV.xy += uAperture.xy * lensShare;
     streak = 2.0 * uPoint.y * (aheadV.xy / -aheadV.z - view.xy / -view.z);
     #endif
     float span = length(streak);

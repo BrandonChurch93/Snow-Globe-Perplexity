@@ -9,12 +9,15 @@ import { partBytes } from '../../diagnostics/views'
 import type { StageFrame } from '../../scene/frame'
 import { flickerOf } from '../../scene/lightgrid'
 import type { InnerLight } from '../../seasons/kit'
-import { BATS, CARD, LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_TABLE, LYING_LOOK, MAX_KINDS, SETTLE_SHOWN, SHAPE, lookOf } from './looks'
+import { BATS, CARD, LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_TABLE, LYING_LOOK, MAX_KINDS, SEED_RESTS, SETTLE_SHOWN, SHAPE, lookOf } from './looks'
 import { BEHAVIOUR } from '../engine/kinds'
 import { FRAG, VERT_MAIN, VERT_PARS } from './shader'
+import { downAtlas } from './down'
 
 export { MAX_KINDS } from './looks'
 export const SIZE_TO_RADIUS = 0.5
+/** The state the draw gives a seed that lies at one of the scene's places: between the engine's two states of rest, so the card lies, and is known. */
+const STATE_LAID = 1.5
 const SHUTTER = (config.film.shutterDegrees / 360) * (config.sim.stepHz / config.film.fps)
 const TAU = 2 * Math.PI
 
@@ -76,6 +79,7 @@ export class ParticleDraw {
       uLampCol: { value: Array.from({ length: LAMPS }, () => new THREE.Vector4(0, 0, 0, 1)) },
       uLobes: { value: null as THREE.Texture | null },
       uLobeRows: { value: 1 },
+      uDown: { value: downAtlas() },
       uPointChange: { value: 0 },
       uKindColor: { value: Array.from({ length: MAX_KINDS }, () => new THREE.Vector4()) },
       uKindPart: { value: Array.from({ length: MAX_KINDS }, () => new THREE.Vector4()) },
@@ -202,6 +206,28 @@ export class ParticleDraw {
       else if (s < 2.5) down++
     }
     this.afloat = up + down > 0 ? up / (up + down) : 0
+    // a few seeds lie where the scene has a place for them while the liquid is calm (looks.ts, SEED_RESTS): the first seeds of the list, so the same ones at every size of the film
+    const seedKind = this.storm < SEED_RESTS.until ? source.kinds.findIndex((kind) => lookOf(kind).shape === SHAPE.seed) : -1
+    if (seedKind >= 0) {
+      const now3 = this.arrays[0]!
+      const prev3 = this.arrays[1]!
+      const lift = SEED_RESTS.lift
+      let laid = 0
+      for (let i = 0; i < n && laid < SEED_RESTS.at.length; i++) {
+        if (kindOf[i] !== seedKind) continue
+        const place = SEED_RESTS.at[laid++]!
+        const o3 = i * 3
+        const o4 = i * 4
+        for (let c = 0; c < 3; c++) {
+          const v = place[c]! + place[3 + c]! * place[6]! * lift
+          now3[o3 + c] = v
+          prev3[o3 + c] = v
+        }
+        d[o4] = place[6]!
+        d[o4 + 2] = 1
+        st[i] = STATE_LAID
+      }
+    }
     for (const a of quads ? this.instanced : this.single) a.needsUpdate = true
     this.drawn = Math.max(0, Math.min(n, Math.floor(n * fraction)))
     this.sprites.geometry.setDrawRange(0, this.drawn)
