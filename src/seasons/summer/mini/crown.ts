@@ -1,16 +1,12 @@
 import { stream } from '../../../core/rng'
 import { crownField, localPads, padAxes } from '../../../miniature/trunk'
 
-export const FULL = { swell: -0.85, perMm2: 0.5, radius: [0.9, 2.3] as const, dome: 0.95, reach: 1.04, blend: 0.16, knob: 0.3, knobMm: 1.15, wave: 0.45, waveMm: 4.3 }
+export const FULL = { swell: -1.0, perMm2: 0.5, radius: [0.9, 2.2] as const, dome: 0.85, reach: 1.04, blend: 0.16, knob: 0.3, knobMm: 1.15, wave: 0.45, waveMm: 4.3 }
 
-// The shared pads stand in tiers with room between them. These stand in that room, inside the same outline, so the crown is one canopy.
+// The shared pads stand in tiers with room between them. Two more flat pads hang in that room, one over the fork and one at the right, each clear of its neighbours.
 const BETWEEN: readonly { at: readonly [number, number, number]; size: readonly [number, number, number] }[] = [
-  { at: [2, 30.6, 3], size: [5.6, 2.6, 4.2] },
-  { at: [11, 28.4, 2.4], size: [4.8, 2.6, 4] },
-  { at: [-1.5, 25.6, 4.2], size: [5.2, 2.4, 3.8] },
-  { at: [-13.4, 24.4, 1.6], size: [4, 2.2, 3.6] },
-  { at: [5.2, 26.2, 4.4], size: [3.8, 2.2, 3.4] },
-  { at: [-8.5, 31.4, 3.4], size: [4.4, 2, 3.6] },
+  { at: [0.5, 30.4, 3], size: [4.6, 1.8, 3.8] },
+  { at: [12.2, 27, 2.4], size: [4.4, 1.9, 3.8] },
 ]
 
 function gather(): Float64Array {

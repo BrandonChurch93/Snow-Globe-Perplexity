@@ -17,7 +17,7 @@ const range = (a, b) => a + (b - a) * R()
 
 const IVY = { leaves: 520, roses: 14, low: 4.5, size: 0.85 }
 const TURF = { lumpMm: 0.6, fineMm: 0.12, sandMm: 1.3, sandReach: 5.0, sandSides: 0.35 }
-const GRASS = { tufts: 21000, blades: 3, tall: [0.4, 1.15], clump: 1.5, wide: [0.11, 0.2], rimTall: 1.5, sandFrom: 0.55, sandTo: 1.0, edgeTall: 1.0, hang: 14000, hangShare: 0.05, hangMm: [0.8, 3.4], hangLeftMm: 2.5 }
+const GRASS = { tufts: 21000, keep: 0.45, blades: 3, tall: [0.4, 1.15], clump: 1.5, wide: [0.13, 0.23], rimTall: 1.5, sandFrom: 0.55, sandTo: 1.0, edgeTall: 1.0 }
 const LEVEL = { seed: 4107, medium: { back: 0.4, front: 0.72 }, low: { back: 0.25, front: 0.5 }, zFrom: -12, zTo: 6 }
 const STONE = { buried: 0.25, sink: 0.45, lumps: 0.36, chips: 0.11, wet: 0.6, tones: ['#8f887a', '#a39a88', '#7b7568', '#b0a692', '#9a8c74', '#6f6a62'] }
 const TONES = {
@@ -49,9 +49,6 @@ function wallGap(x, z) {
 }
 const front = (x, z) => smooth(-0.2, 0.55, z / (Math.hypot(x, z) || 1))
 const sandAt = (x, z) => (1 - smooth(0.5, TURF.sandReach * (0.45 + 1.3 * clamp(0.5 + 1.3 * fbm(x * 0.13 + 1.7, z * 0.13 + 5.3, 3.3, 3)) + 0.5 * clamp(0.5 + 1.5 * fbm(x * 0.45 + 8.1, z * 0.45 + 2.9, 6.7, 2))), wallGap(x, z))) * (TURF.sandSides + (1 - TURF.sandSides) * front(x, z))
-// Where the shelf of sand is narrow the lawn runs out to the glass and hangs over the bank; at the left of the lens it hides the bank.
-const hangLeft = (a) => smooth(0.45, 0.8, -Math.cos(a)) * smooth(-0.3, 0.15, Math.sin(a))
-const hangAt = (a) => Math.max(hangLeft(a), 1 - smooth(0.36, 0.56, clamp(0.5 + 1.3 * fbm(Math.cos(a) * 49 * 0.13 + 1.7, Math.sin(a) * 49 * 0.13 + 5.3, 3.3, 3))))
 const blob = (x, z, cx, cz, rx, rz) => Math.exp(-(((x - cx) / rx) ** 2 + ((z - cz) / rz) ** 2))
 // Where the low sun reaches the floor between the crown, the trunk and the cottage (read off the approved image): right of
 // the trunk out to the sunflowers, behind the lamp, a little by the fence and on the near right bank.
@@ -88,7 +85,6 @@ function groundTone(x, z) {
   const pos = []
   const idx = []
   const below = []
-  const hang = []
   const rows = shore.length + outer + skirt
   for (let j = 0; j <= around; j++) {
     const a = (j / around) * TAU
@@ -115,7 +111,6 @@ function groundTone(x, z) {
       let y
       let z
       let under = 0
-      let over = 0
       if (k < shore.length) {
         const t = Math.min(shore[k] / unit, t1 * (0.9 + 0.1 * (k / (shore.length - 1))))
         x = L.pond.x + dx * t
@@ -145,11 +140,9 @@ function groundTone(x, z) {
         y = uy * rr
         z = uz * rr
         under = q
-        over = hangAt(th)
       }
       pos.push(x, y, z)
       below.push(under)
-      hang.push(over)
     }
   }
   for (let j = 0; j < around; j++)
@@ -187,7 +180,7 @@ function groundTone(x, z) {
     NN.setXYZ(b, nx / l, ny / l, nz / l)
     P.setXYZ(b, P.getX(a), P.getY(a), P.getZ(a))
   }
-  ground.add(g, { color: (p, _n, i) => mix3(groundTone(p[0], p[2]), mix3(TONES.earth, TONES.sand, 0.8 + 0.2 * front(p[0], p[2])), smooth(0, 0.25, below[i])), surf: (p, _n, i) => [below[i] > 0 ? 1 + hang[i] : sandAt(p[0], p[2]), below[i]], uv: (p, n) => (Math.abs(n[1]) > 0.55 ? [p[0], p[2]] : [Math.atan2(p[2], p[0]) * 56, p[1] * 1.3]) })
+  ground.add(g, { color: (p, _n, i) => mix3(groundTone(p[0], p[2]), mix3(TONES.earth, TONES.sand, 0.8 + 0.2 * front(p[0], p[2])), smooth(0, 0.25, below[i])), surf: (p, _n, i) => [below[i] > 0 ? 1 : sandAt(p[0], p[2]), below[i]], uv: (p, n) => (Math.abs(n[1]) > 0.55 ? [p[0], p[2]] : [Math.atan2(p[2], p[0]) * 56, p[1] * 1.3]) })
 }
 
 {
@@ -313,6 +306,7 @@ const stoneGap = (x, z) => {
 }
 
 let tufts = 0
+let planted = 0
 {
   const pos = []
   const nor = []
@@ -327,6 +321,8 @@ let tufts = 0
   }
   const morton = (x, z) => spread(Math.floor((x + 64) * 4)) | (spread(Math.floor((z + 64) * 4)) << 1)
   const edge = L.innerRadiusMm - 1.2
+  // Two tufts in five are left out by a run of numbers of their own: the lawn's run stays as long as it was, so the flowers set after it keep their places.
+  const K = rng(4421)
   for (let i = 0; i < GRASS.tufts * 6 && tufts < GRASS.tufts; i++) {
     const a = R() * TAU
     const rr = Math.sqrt(R()) * edge
@@ -353,7 +349,10 @@ let tufts = 0
     const base = mul3(mix3(pick(TONES.grass), pick(TONES.straw), sand * 0.8), patch * deep)
     const top = mul3(mix3(pick(TONES.tip), pick(TONES.straw), clamp(sand * 0.9 + 0.08 * R())), patch * deep)
     const cell = { key: morton(x, z), pos: [], nor: [], col: [], tip: [], sun: [] }
-    list.push(cell)
+    if (K() < GRASS.keep) {
+      list.push(cell)
+      planted++
+    }
     const up = norm3([(R() - 0.5) * 0.5, 1, (R() - 0.5) * 0.5])
     for (let b = 0; b < GRASS.blades; b++) {
       const yaw = R() * TAU
@@ -372,73 +371,6 @@ let tufts = 0
         cell.nor.push(...up)
         cell.col.push(c[0] * (0.32 + 0.95 * t), c[1] * (0.32 + 0.95 * t), c[2] * (0.32 + 0.95 * t))
         cell.tip.push(t)
-        cell.sun.push(lit)
-      }
-    }
-    tufts++
-  }
-  // Its own run of numbers: the flowers that are set after the lawn keep their places.
-  const H = rng(4421)
-  const hrange = (a, b) => a + (b - a) * H()
-  const hpick = (l) => l[Math.floor(H() * l.length) % l.length]
-  const ring = L.innerRadiusMm - 0.55
-  for (let i = 0; i < GRASS.hang; i++) {
-    const a = H() * TAU
-    const cover = hangAt(a)
-    if (H() > cover) continue
-    const ca = Math.cos(a)
-    const sa = Math.sin(a)
-    let rho = 49
-    for (let k = 0; k < 3; k++) {
-      const y = topAt(rho * ca, rho * sa)
-      rho = Math.sqrt(Math.max(ring * ring - y * y, 1))
-    }
-    const gap = 0.1 + 3.2 * H() * H()
-    const x = (rho - gap) * ca
-    const z = (rho - gap) * sa
-    if (L.pondField(x, z) < 1.035 || hardGap(x, z) < 0.3 || stoneGap(x, z) < 0.15) continue
-    const y0 = topAt(x, z) - 0.05
-    const over = gap < 1.3 && H() < GRASS.hangShare
-    // Against the glare at the glass a blade lit through would clip: these keep under it.
-    const lit = over ? 0.45 + 0.5 * H() : 0.6 * sunAt(x, z) * (H() < 0.3 ? 0.2 : 0.75 + 0.6 * H())
-    const deep = over ? 0.9 + 0.5 * H() : 0.5 + 0.6 * H()
-    const base = mul3(mix3(hpick(TONES.grass), hpick(TONES.straw), 0.2), deep)
-    const top = mul3(mix3(hpick(TONES.tip), hpick(TONES.straw), 0.3 * H()), deep)
-    const cell = { key: morton(x, z), pos: [], nor: [], col: [], tip: [], sun: [] }
-    list.push(cell)
-    const phi0 = Math.atan2(rho, -topAt(rho * ca, rho * sa))
-    const onGlass = (phi, th) => [Math.cos(th) * Math.sin(phi) * ring, -Math.cos(phi) * ring, Math.sin(th) * Math.sin(phi) * ring]
-    for (let b = 0; b < GRASS.blades + 1; b++) {
-      const w = hrange(GRASS.wide[0], GRASS.wide[1])
-      let A
-      let B
-      let T
-      let nn
-      if (over) {
-        const th = a + hrange(-0.014, 0.014)
-        const drop = (hrange(GRASS.hangMm[0], GRASS.hangMm[1]) * (0.45 + 0.55 * cover) + GRASS.hangLeftMm * hangLeft(a) * H()) / ring
-        A = onGlass(phi0 + 0.004, th - (1.3 * w) / rho)
-        B = onGlass(phi0 + 0.004, th + (1.3 * w) / rho)
-        T = onGlass(phi0 - drop, th + hrange(-0.03, 0.03))
-        nn = [0, 1, 0]
-      } else {
-        const yaw = H() * TAU
-        const lean = hrange(0.15, 0.75)
-        const out = Math.cos(yaw) * ca + Math.sin(yaw) * sa > 0 && gap < 1.6 ? -1 : 1
-        const dir = [out * Math.cos(yaw), 0, out * Math.sin(yaw)]
-        const h = hrange(0.7, 1.7) * (0.7 + 0.6 * cover)
-        const ox = x + hrange(-0.25, 0.25)
-        const oz = z + hrange(-0.25, 0.25)
-        A = [ox + dir[2] * w, y0, oz - dir[0] * w]
-        B = [ox - dir[2] * w, y0, oz + dir[0] * w]
-        T = [ox + dir[0] * h * lean, y0 + h, oz + dir[2] * h * lean]
-        nn = [0, 1, 0]
-      }
-      for (const [q, c, t] of [[A, base, 0], [B, base, 0], [T, top, 1]]) {
-        cell.pos.push(...q)
-        cell.nor.push(...nn)
-        cell.col.push(c[0] * (0.32 + 0.95 * t), c[1] * (0.32 + 0.95 * t), c[2] * (0.32 + 0.95 * t))
-        cell.tip.push(over ? t : 0.5 * t)
         cell.sun.push(lit)
       }
     }
@@ -767,4 +699,4 @@ const grassLow = []
   }
 }
 addLists(rel('assets-full', 'summer', 'village-summer.glb'), { grass: { medium: grassMedium, low: grassLow } })
-console.log(`village-summer: ground ${ground.triangles}, water ${water.triangles}, grass ${grass.triangles} (${tufts} tufts, ${grassMedium.length / 3} at medium, ${grassLow.length / 3} at low), decor ${decor.triangles} (${counts.roses} roses, ${counts.leaves} leaves, ${counts.sunflowers} sunflowers, ${counts.blooms} blooms)`)
+console.log(`village-summer: ground ${ground.triangles}, water ${water.triangles}, grass ${grass.triangles} (${planted} tufts, ${grassMedium.length / 3} at medium, ${grassLow.length / 3} at low), decor ${decor.triangles} (${counts.roses} roses, ${counts.leaves} leaves, ${counts.sunflowers} sunflowers, ${counts.blooms} blooms)`)
