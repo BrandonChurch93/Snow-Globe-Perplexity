@@ -7,6 +7,7 @@ import { engineHash, fileSha } from './hashes.mjs'
 import { addLook } from './looks.mjs'
 import { encodeFrames, join, probe, timing, tmpDir, videoSettings } from './encode.mjs'
 import { packLine, packServed } from './openingpack.mjs'
+import { NOT_A_NUMBER, notNumberRecord } from './master.mjs'
 
 const CALLS = { film: 'renderFilmFrame', opening: 'renderOpeningFrame', loop: 'renderLoopFrame' }
 const FRAMES_ROOT = rel('out', 'work', 'frames')
@@ -287,6 +288,8 @@ export class Run {
     let kept = 0
     let beat = Date.now()
     const files = []
+    const countFile = path.join(dir, 'not-a-number.json')
+    const counts = fs.existsSync(countFile) ? readJson(countFile) : {}
     for (const index of c.frames) {
       const f = path.join(dir, `${pad(index)}.png`)
       files.push(f)
@@ -297,6 +300,15 @@ export class Run {
       }
       const s = Date.now()
       const png = await this.frame(track, page, index)
+      if (track.kind !== 'opening') {
+        const s0 = Date.now()
+        const count = await page.evaluate(() => window.showcase.dev?.sanity?.().invalid ?? null)
+        if (typeof count === 'number') {
+          counts[index] = { notNumber: count, sanityMs: Date.now() - s0 }
+          writeJson(countFile, counts)
+          if (count > 0) this.say(`${NOT_A_NUMBER}: ${track.name} frame ${index} holds ${count} ${count === 1 ? 'value that is' : 'values that are'} no number in its mean, before the lens and the grade. This rough film is still encoded and its chunk's record names the frame. Tell /root the frame.`)
+        }
+      }
       fs.writeFileSync(`${f}.tmp`, png)
       fs.renameSync(`${f}.tmp`, f)
       this.renderMs += Date.now() - s
@@ -353,6 +365,10 @@ export class Run {
       ...from,
     })
     record.tier = track.tier
+    if (track.kind !== 'opening') {
+      record.notNumber = notNumberRecord(c.frames.map((index) => ({ index, ...counts[index] })))
+      if (record.notNumber.total > 0) record.mark = NOT_A_NUMBER
+    }
     for (const index of c.frames) {
       if (!track.keep.includes(index)) continue
       const to = keptFrame(track, index)
