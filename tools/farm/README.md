@@ -16,9 +16,10 @@ npm run master -- --what film-b --first 600 --last 899 --ship agent/p6-chunks-NA
 ```
 
 - `--what` is `film-b`, `loop` or `opening`. `--ship` is optional: it pushes each chunk's record and look (small) to a branch of the machine's own, never the picture.
-- `--procs P` only when the memory holds it: about 4.1 GB a process at 4K with 24 samples, and the tool refuses more. On 8 CPUs a second process adds about 10 percent and a third nothing; the tool says so and runs.
+- With `--ship` the tool checks, before the first frame, that its commit would carry the name and e-mail of the author of `origin/main`'s head. If not it stops with one line that holds the two `git config` commands to run in this clone; run them and start again.
+- `--procs P` only when the memory holds it: about 4.1 GB a process at 4K with 24 samples, and the tool refuses more. The best count depends on the machine: measure it with `--procs 1`, 2 and 3 on three chunks before a long run.
 - Never `--local`: it opens the installed Chrome in a window with a graphics card, which is another renderer.
-- `NOT A NUMBER: film-b frame F holds N values ...` means the picture's mean of that frame held values that are no number, which the lens spreads into a dark speck. The tool has read the count after the frame, kept its PNG under `out/work/master/<what>/not-a-number/`, marked the chunk `NOT A NUMBER` in its record (its intermediate exists for looking and no master is ever encoded from it), and drawn every other chunk; the run ends with an error that lists the frames. Tell `/root` the frame and the count, and send the other chunks. Never draw it again hoping: the same frame on the same build draws the same values, and the mend is a change of the engine, which is `/root`'s to name.
+- `NOT A NUMBER: film-b frame F holds N values ...` means the picture's mean of that frame held values that are no number, which the lens spreads into a dark speck. The tool has read the count after the frame, kept its PNG under `out/work/master/<what>/not-a-number/`, marked the chunk `NOT A NUMBER` in its record (its intermediate exists for looking and no master is ever encoded from it), and drawn every other chunk; the run ends with an error that lists the frames. Tell `/root` the frame, the count and the place the line names (`the first at X, Y (CHANNEL, KIND)`), and send the other chunks. Never draw it again hoping: the same frame on the same build draws the same values, and the mend is a change of the engine, which is `/root`'s to name.
 - To stop and go on: run the same command again. A drawn frame is never drawn twice. When a process stops by itself, the last line of the run is the exact command that goes on.
 
 ## How its chunks travel
@@ -50,11 +51,13 @@ npm run master -- --collect out/work/collected --files out/work/inbox --no-branc
 - It finds the records by what they hold, and takes each chunk or each set of parts only if its sha256 is the one its record names. Parts are put together again.
 - `NOT COMPLETE: ...` names a chunk whose file or part has not come yet. Ask its machine for exactly that file.
 - It decodes every chunk it took. `FLAT: ...` names a chunk and its machine with a frame of one flat value: that range is drawn again, never encoded.
-- One line a timeline: how many chunks of how many, the ranges that are there, the ranges that are missing.
-- `NOT A NUMBER: ...` names a chunk, its machine and its frames (with each count) whose mean held values that are no number. It is never encoded; `/root` is told the frames.
-- It ends with an error while anything is `NOT COMPLETE`, `FLAT` or `NOT A NUMBER`.
+- One line a timeline: how many ranges of how many, the ranges that are there, the ranges that are missing. A range counts once, however many branches hold it.
+- `... is held 3 times with one and the same record ...` names a range that several branches or folders hold, with their machines. One is taken and its picture is laid once.
+- `NOT AGREED: ...` names a range whose holders differ in build, in calibration or in the pixels of a frame, and how. Holders with the same pixels and intermediates of other bytes agree; the line says so and the first by name is taken. Neither is taken until `--take WHAT:FIRST-LAST=BRANCH` names one, here and at the encode.
+- `NOT A NUMBER: ...` names a chunk, its machine and its frames (each with its count and the place and kind of the first such value) whose mean held values that are no number. It is never encoded; `/root` is told the frames.
+- It ends with an error while anything is `NOT COMPLETE`, `FLAT`, `NOT A NUMBER` or `NOT AGREED`.
 
-Then one encode a film: `npm run master -- --encode film-b|film-a|loop --from out/work/collected`. It refuses a gap, two builds, two renderers, two calibrations, two sample counts, a test chunk, and a chunk marked `NOT A NUMBER`, each with a plain list.
+Then one encode a film: `npm run master -- --encode film-b|film-a|loop --from out/work/collected`. It refuses a gap, two builds, two renderers, two calibrations, two sample counts, a test chunk, a range that is `NOT AGREED`, and a chunk marked `NOT A NUMBER`, each with a plain list.
 
 ## One rule for every agent that touches raw video
 
