@@ -16,3 +16,19 @@ All four are the hd pack's own pixels (1920 x 1080 frames drawn at device scale 
 What is the accepted design and what is fitted to this skill's composer:
   From the package with the level change, unchanged: the card's size and radius, the rows, type size and weight, the check mark, the pointer's entry point and path rule (control's middle, then 16 px under the row's top), the hover and pressed fill of the control, every timing (0.55 travel, 0.12 rest, 0.20 menu in, 0.12 read, 0.35 to the row, 0.12 rest, 0.20 settle, 0.16 menu out, 0.18 pointer out, 0.25 before typing).
   Fitted: the menu sits 3 px under the control's fill as there, which is 8 px higher here (this composer's control row is centred on 436, not 444), and its right edge is in line with the control's fill (987), which is 3 px left of the package's absolute x (790 becomes 787). The control's fill spans this skill's whole selector (sparkle, name, level, chevron) by the package's rule of 12 px beyond the glyph and the chevron. Colours are this skill's tokens of the same role: row tint and hover fill #f3f7f8, pressed fill #ebf2f3, labels and check #495a62, the card's shadow and border as this skill's own menu has them.
+
+Push 2: the four looks the job file names for the end. All four are from the pack as it is on the branch now, 1920 x 1080 frames, no tier (the opening has none). Before: the stand-in was a dark page of plain text.
+Pictures 01 to 04 of push 1 show the pack before the edges of the type became grey levels (HANDOVER.md, "Found late"). The layout is the same there; the edge pixels of the letters differ.
+
+05-typing-middle-frame-0330.jpg
+  Frame 330 (5.500 s), the judged frame "opening-typing", scaled to 1200 px: the middle of the typing, 43 of 84 characters, the caret after "three". The control reads the level chosen before the typing, "High".
+
+06-menu-open-frame-0104.jpg
+  Frame 104 (1.733 s), scaled to 1200 px: the menu of the three levels stands fully open, the check mark on "Standard", the pointer one frame from the row "High" (it is on the row on 105 and presses on 112). Nothing is typed yet. The judged frame "opening-reasoning" is 89, the frame of picture 01.
+
+07-build-middle-frame-0732.jpg
+  Frame 732 (12.200 s), the judged frame "opening-build", scaled to 1200 px: the middle of the build screen. Line 1 is done, line 2 works on its pale card.
+
+08-sheet-across-the-opening.jpg
+  The tool's own sheet (npm run sheet -- --opening --format hd): twelve frames across the opening, each labelled with its frame and its time: 0, 78, 158, 236, 314, 394, 472, 552, 630, 708, 788, 866.
+
