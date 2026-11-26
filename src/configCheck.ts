@@ -123,7 +123,20 @@ const spec: Spec = {
     maxAgents: 'n',
     criticSlots: 'n',
   },
-  deliver: { sandboxMaster: 'b', cardLoop: { seconds: 'n', fps: 'n', season: 's', camera: 's', format: 's', shakeStartSeconds: 'n', pickJurors: 'n', webWidth: 'n', webBitrateMbps: 'n' } },
+  deliver: {
+    sandboxMaster: 'b',
+    master: {
+      format: 's',
+      chunkFrames: 'n',
+      samples: { 'film-b': 'n', loop: 'n' },
+      video: { codec: 's', preset: 's', crf: 'n', maxrateMbps: 'n', bufsizeMbps: 'n', profile: 's', level: 's', pixFmt: 's' },
+      audioKbps: 'n',
+      minChunkPsnr: 'n',
+      chunkBranches: 's',
+      names: { 'film-a': 's', 'film-b': 's', loop: 's', still: 's' },
+    },
+    cardLoop: { seconds: 'n', fps: 'n', season: 's', camera: 's', format: 's', shakeStartSeconds: 'n', pickJurors: 'n', webWidth: 'n', webBitrateMbps: 'n' },
+  },
 }
 
 function shape(value: unknown, s: Spec, at: string, out: string[]): void {
@@ -198,6 +211,12 @@ export function configProblems(input: unknown, approvedPresent: readonly string[
   if (!cameras.includes(loop.camera)) out.push(`deliver.cardLoop names a camera that does not exist: ${loop.camera}`)
   if (loop.season !== 'auto' && !seasons.includes(loop.season)) out.push(`deliver.cardLoop names a season that does not exist: ${loop.season}`)
   if (!formats.includes(loop.format)) out.push(`deliver.cardLoop names a format that does not exist: ${loop.format}`)
+  const master = c.deliver.master
+  if (!formats.includes(master.format)) out.push(`deliver.master names a format that does not exist: ${master.format}`)
+  if (!whole(master.chunkFrames) || master.chunkFrames < 1) out.push(`deliver.master.chunkFrames (${master.chunkFrames}) is not a whole number of frames, one or more`)
+  for (const [what, n] of Object.entries(master.samples as Record<string, number>)) if (!whole(n) || n < 1) out.push(`deliver.master.samples.${what} (${n}) is not a whole number of samples, one or more`)
+  if (!(master.video.maxrateMbps > 0) || !(master.video.bufsizeMbps >= master.video.maxrateMbps)) out.push(`deliver.master.video.bufsizeMbps (${master.video.bufsizeMbps}) is under deliver.master.video.maxrateMbps (${master.video.maxrateMbps}), or the rate is not above zero`)
+  if (new Set(Object.values(master.names as Record<string, string>)).size !== Object.keys(master.names).length) out.push('deliver.master.names gives two results the same file name')
 
   const boxes = Object.values(c.budget.phaseHours as Record<string, number>).reduce((a, b) => a + b, 0)
   if (!near(boxes, c.budget.runHours)) out.push(`budget.phaseHours adds up to ${boxes}, not to budget.runHours (${c.budget.runHours})`)

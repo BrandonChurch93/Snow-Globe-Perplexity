@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import sharp from 'sharp'
 import { launch, machineId, pinnedBrowser, watchPage, ensureDir, freeDiskGb, rendererName, sameRenderer } from './browser.mjs'
 import { serve } from './server.mjs'
 import { loadConfig, rel, writeJson, readJson } from './paths.mjs'
@@ -104,14 +105,42 @@ export class Session {
       await page.waitForFunction(() => !!window.showcase, null, { timeout: 60000 })
       await page.evaluate(() => window.showcase.ready)
     }
+    page.on('crash', () => (page.crashed = true))
+    await page.evaluate(() => {
+      window.__contextLost = 0
+      document.getElementById('view')?.addEventListener('webglcontextlost', () => window.__contextLost++)
+    })
     this.pages.add(page)
     page.errors = errors
     return page
   }
 
+  alive(page) {
+    if (page.crashed || page.isClosed()) throw new Error('the page crashed or closed while a picture was drawn (the machine may be out of memory: look at dmesg). No picture was written.')
+    if (this.browser.isConnected && !this.browser.isConnected()) throw new Error('the browser went away while a picture was drawn (the machine may be out of memory: look at dmesg). No picture was written.')
+  }
+
+  async contextLost(page) {
+    return page.evaluate(() => {
+      const c = document.getElementById('view')
+      const gl = c ? (c.getContext('webgl2') ?? c.getContext('webgl')) : null
+      return (window.__contextLost ?? 0) > 0 || (gl ? gl.isContextLost() : false)
+    })
+  }
+
   async grab(page) {
-    const data = await page.evaluate(() => document.getElementById('view').toDataURL('image/png'))
-    return Buffer.from(data.slice(data.indexOf(',') + 1), 'base64')
+    this.alive(page)
+    const r = await page.evaluate(() => {
+      const c = document.getElementById('view')
+      const gl = c.getContext('webgl2') ?? c.getContext('webgl')
+      const lost = () => (window.__contextLost ?? 0) > 0 || (gl ? gl.isContextLost() : false)
+      if (lost()) return { lost: 'before the picture was read back' }
+      const data = c.toDataURL('image/png')
+      return lost() ? { lost: 'while the picture was read back' } : { data }
+    })
+    this.alive(page)
+    if (r.lost) throw new Error(`the WebGL context was lost ${r.lost} (the graphics process may have been killed for memory: look at dmesg). No picture was written.`)
+    return Buffer.from(r.data.slice(r.data.indexOf(',') + 1), 'base64')
   }
 
   async grabStage(page) {
@@ -119,7 +148,12 @@ export class Session {
       const r = document.getElementById('app').getBoundingClientRect()
       return { x: r.x, y: r.y, width: r.width, height: r.height }
     })
-    return page.screenshot({ type: 'png', clip: box, animations: 'disabled', caret: 'hide' })
+    this.alive(page)
+    if (await this.contextLost(page)) throw new Error('the WebGL context was lost before the picture was taken (the graphics process may have been killed for memory: look at dmesg). No picture was written.')
+    const png = await page.screenshot({ type: 'png', clip: box, animations: 'disabled', caret: 'hide' })
+    this.alive(page)
+    if (await this.contextLost(page)) throw new Error('the WebGL context was lost while the picture was taken (the graphics process may have been killed for memory: look at dmesg). No picture was written.')
+    return png
   }
 
   record(info, extra = {}) {
@@ -205,6 +239,17 @@ export function stillName(spec, suffix = '') {
   return [head, spec.format, spec.tier, spec.assets === 'full' ? '' : spec.assets, spec.diag, spec.live ? `live-${spec.live}` : '', spec.interface ? 'ui' : '', spec.rig ? 'rig' : '', suffix].filter(Boolean).join('-') + '.png'
 }
 
+export async function flatValue(png) {
+  const { channels } = await sharp(png).stats()
+  const colour = channels.slice(0, 3)
+  return colour.every((c) => c.min === c.max) ? colour.map((c) => c.min) : null
+}
+
+export async function refuseFlat(png, what) {
+  const flat = await flatValue(png)
+  if (flat) throw new Error(`${what} came back as one flat value (${flat.join(', ')}) over the whole picture, which no frame of the cut is. The graphics process may have been killed for memory: look at dmesg. No picture and no record were written.`)
+}
+
 export async function renderStill(session, spec, { file, noext = [], force = false, page: given = null } = {}) {
   const out = file ?? rel('out', 'work', 'stills', stillName(spec))
   const want = { seasons: [spec.season], format: spec.format, tier: spec.tier, assets: spec.assets, diagnostic: spec.diag, spec, noext }
@@ -225,6 +270,7 @@ export async function renderStill(session, spec, { file, noext = [], force = fal
     return { info: sc.info(), caps: sc.dev.caps(), framing: sc.dev.stillFraming(), timings: { simMs: after.simMs - before.simMs, drawMs: after.drawMs - before.drawMs, samples: after.samples - before.samples, steps: after.steps - before.steps } }
   }, spec)
   const png = await session.grab(page)
+  if (!spec.diag) await refuseFlat(png, `the still ${path.basename(out)}`)
   const seconds = (Date.now() - t0) / 1000
   const record = session.record(result.info, { diag: spec.diag, spec, noext, seconds, timings: result.timings, precision: result.caps.precision, standIns: result.info.standIns.length, counts: result.info.counts, framing: result.framing, errors: page.errors.slice(0, 20) })
   writeWithRecord(out, png, record)
