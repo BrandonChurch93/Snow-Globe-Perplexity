@@ -16,7 +16,10 @@ import { parseArgs, rel, loadConfig } from './lib/paths.mjs'
  *                       opens the app with no parameter, as a visitor gets it.
  *     --only 1,2,7      runs only these steps of the walk (1 first paint, 2 Shake control, 3 space bar, 4 stir, 5 look around,
  *                       6 season marks, 7 sound control, 8 keyboard and menu, 9 reduced motion, 10 season links, 11 look of the
- *                       controls). Without it, all of them.
+ *                       controls, 12 four shakes in a row with pictures across the first, 13 the screen turned or the window
+ *                       resized at rest and in a shake, 14 the probe, autopilot and loop modes, 15 the level of quality picked
+ *                       by the app and forced from the menu, 16 the first look: the still, then the live picture over it).
+ *                       Without it, all of them.
  *     --name NAME       the folder under out/work/visit/ (the layout's name).
  *     --wait SECONDS    the longest wait for one thing to happen (300).
  *
@@ -57,7 +60,17 @@ const urlOf = (extra = {}) => {
   return u.href
 }
 
-const browser = await launch()
+/** The address with only what is named: no level of quality unless it is given. */
+const plain = (extra = {}) => {
+  const u = new URL(base)
+  for (const [k, v] of Object.entries(extra)) u.searchParams.set(k, v)
+  return u.href
+}
+
+// The page's own controls are drawn on the processor. Drawn by the tools' software graphics card (lavapipe) the season marks
+// come out as stripes and blocks in some pictures, which is the card and not the page: `--raster gpu` shows it again.
+const raster = str('raster', 'cpu')
+const browser = await launch({ extraArgs: raster === 'gpu' ? [] : ['--disable-gpu-rasterization'] })
 const context = await browser.newContext({
   viewport: { width: fmt.width, height: fmt.height },
   deviceScaleFactor: ratio,
@@ -66,6 +79,13 @@ const context = await browser.newContext({
 })
 const page = await context.newPage()
 const errors = watchPage(page)
+// Every line the console holds and every request that did not come, for the reader. A request cut off by the tool leaving
+// the page is kept apart: it is the tool's doing.
+const consoleLines = []
+const failed = []
+page.on('console', (m) => consoleLines.push(`${m.type()}: ${m.text()}`))
+page.on('requestfailed', (r) => failed.push(`${r.failure()?.errorText ?? 'failed'} ${r.url()}`))
+page.on('response', (r) => r.status() >= 400 && failed.push(`${r.status()} ${r.url()}`))
 const cdp = await context.newCDPSession(page)
 const requests = []
 page.on('request', (r) => requests.push({ url: r.url(), at: Date.now() }))
@@ -206,9 +226,16 @@ const frames = async (n, timeout = WAIT) => {
 
 const brief = (s) => ({ lit: s.lit.join(','), target: s.target.join(','), busy: s.busy, sound: s.sound ? (s.sound.shown ? (s.sound.on ? 'on' : 'off') : 'hidden') : 'absent', audio: s.audio, dim: s.dim, menu: s.menu, focus: s.focus })
 
+const brightestOf = async (png) => Math.max(...(await sharp(png).removeAlpha().stats()).channels.map((c) => c.max))
 async function note(step, action, facts, ok = true) {
   const file = `${String(++shot).padStart(2, '0')}-${action}.png`
   const png = await page.screenshot({ path: path.join(dir, file), scale: 'css', timeout: 120000 }).catch((e) => (errors.push(`screenshot ${file}: ${e.message}`), null))
+  // A browser that ran out of memory writes a flat black picture and goes on: such a line does not count.
+  if (png && (await brightestOf(png)) < 8) {
+    errors.push(`flat black picture ${file}`)
+    ok = false
+    facts = { ...facts, flatBlack: true }
+  }
   const line = { step, action, ok, file, layout, ...facts }
   lines.push(line)
   fs.appendFileSync(path.join(dir, 'facts.jsonl'), JSON.stringify(line) + '\n')
@@ -302,7 +329,7 @@ async function open(extra = {}) {
 }
 
 /** One change of season: press, see it start, see it land. */
-async function change(step, action, act, to, { again = null } = {}) {
+async function change(step, action, act, to, { again = null, pictures = false } = {}) {
   const before = await read()
   const mark = await page.evaluate(() => window.__log.length)
   await act()
@@ -314,13 +341,21 @@ async function change(step, action, act, to, { again = null } = {}) {
     second = 'pressed again while busy'
     await note(step, `${action}-during`, { ...brief(await read()), second })
   }
+  let across = 0
+  if (pictures && started.ok) {
+    // Pictures across the shake, for the reader: where the globe goes against the controls.
+    for (; across < 14 && (await read()).busy; across++) {
+      await page.screenshot({ path: path.join(dir, `${String(++shot).padStart(2, '0')}-${action}-across-${across + 1}.png`), scale: 'css', timeout: 120000 }).catch(() => null)
+      await frames(1, 30000)
+    }
+  }
   const landed = await until('the season to arrive', (s) => !s.busy && s.lit[0] === to)
   const after = await frames(3)
   const log = await page.evaluate((from) => window.__log.slice(from), mark)
   const lits = log.filter((l) => l.attr === 'aria-pressed' && l.value === 'true' && seasons.includes(l.el)).map((l) => l.el)
   const starts = log.filter((l) => l.el === 'shake' && l.attr === 'aria-disabled' && l.value === 'true').length
   const ok = started.ok && landed.ok && after.state.lit.join() === to && !after.state.busy && lits.filter((l) => l !== before.lit[0]).join() === to && after.state.said === nameOf(to) && after.state.disabled === 0
-  await note(step, action, { from: before.lit.join(), to, started: started.ok, startSeconds: started.seconds, landed: landed.ok, seconds: Math.round(landed.seconds), litInTurn: lits.join('>'), heldCount: starts, second, said: after.state.said, ...brief(after.state) }, ok)
+  await note(step, action, { from: before.lit.join(), to, started: started.ok, startSeconds: started.seconds, landed: landed.ok, seconds: Math.round(landed.seconds), litInTurn: lits.join('>'), heldCount: starts, second, picturesAcross: across, said: after.state.said, ...brief(after.state) }, ok)
   return ok
 }
 /** The controls as the eye meets them: row by row, left to right. */
@@ -479,6 +514,8 @@ if (want(11)) {
   const [lit, quiet] = [await brightest(awakePicture, s.boxes.shake), await brightest(await grab(), s.boxes.shake)]
   const drawn = lit && quiet !== null ? Math.round((quiet / lit) * 100) / 100 : null
   await note(11, 'dimmed', { dimmed: dimmed.ok, afterSeconds: dimmed.seconds, opacity: low, floor, drawnShare: drawn }, dimmed.ok && Math.abs(Number(low) - floor) <= 0.02 && floor >= 0.5 && floor <= 0.8 && drawn !== null && drawn >= floor - 0.05 && drawn <= 0.9)
+  // The same state photographed a second time: a control drawn in one and not in the other is the renderer, not the page.
+  await note(11, 'dimmed-again', { opacity: await page.evaluate(() => getComputedStyle(document.querySelector('#ui > div')).opacity) })
   if (!touch) await page.mouse.move(fmt.width * 0.4, fmt.height * 0.4)
   else await press(fmt.width * 0.5, fmt.height * 0.06)
   const back = await until('the controls to return', (x) => !x.dim, 20000)
@@ -570,6 +607,23 @@ if (want(3)) {
   s = await read()
   await page.evaluate(() => document.activeElement instanceof HTMLElement && document.activeElement.blur())
   await change(3, 'space-bar', () => page.keyboard.press('Space'), nextOf(s.lit[0]), { again: () => page.keyboard.press('Space') })
+}
+
+if (want(12)) {
+  // Four shakes one after another by the Shake control: each lands in the next season, and after the last comes the first.
+  // Each is photographed across. During the second a season mark is pressed, which must start nothing.
+  s = await read()
+  const from = s.lit[0]
+  const went = []
+  let all = true
+  for (let k = 0; k < seasons.length; k++) {
+    const to = nextOf((await read()).lit[0])
+    const other = nextOf(nextOf(to))
+    all = (await change(12, `row-${k + 1}-${to}`, () => pressControl('shake'), to, { pictures: true, again: k === 1 ? () => pressControl(other) : null })) && all
+    went.push(to)
+  }
+  const end = await read()
+  await note(12, 'four-in-a-row', { from, went: went.join('>'), endsOn: end.lit.join(), ...brief(end) }, all && went.length === seasons.length && end.lit.join() === from)
 }
 
 if (want(6)) {
@@ -780,10 +834,248 @@ if (want(10)) {
   }
 }
 
+if (want(16)) {
+  // The first look, as a visitor gets it (no parameter): the still the page paints first, then the live picture over it.
+  // Pictures are taken as fast as the page gives them from the moment the address is asked for, each with what the page says
+  // of itself, and the still is laid on the live picture to find how far the one stands from the other.
+  await gather()
+  const t0 = Date.now()
+  await page.goto(plain(), { waitUntil: 'commit' })
+  const look = () =>
+    page
+      .evaluate(() => {
+        const view = document.getElementById('view')
+        const imgs = [...document.querySelectorAll('#first img')]
+        return {
+          still: imgs.some((i) => i.complete && i.naturalWidth > 0),
+          stillFile: [...new Set(imgs.map((i) => (i.currentSrc || i.src).split('/').pop()))].join(','),
+          live: view?.hasAttribute('data-live') ?? false,
+          canvasOpacity: view ? Number(getComputedStyle(view).opacity) : null,
+          shown: document.getElementById('ui')?.dataset.interface === 'shown',
+          frames: window.__frames ?? 0,
+        }
+      })
+      .catch(() => null)
+  const shots = []
+  let whole = 0
+  while (Date.now() - t0 < WAIT && whole < 3) {
+    const st = await look()
+    const png = await grab()
+    if (!st || !png) continue
+    const stats = await sharp(png).extract(middle).removeAlpha().stats()
+    shots.push({ ms: Date.now() - t0, ...st, png, spread: Math.round(Math.max(...stats.channels.map((c) => c.stdev)) * 10) / 10 })
+    if (st.live && st.canvasOpacity >= 0.999 && st.shown) whole++
+  }
+  const firstStill = shots.findIndex((x) => x.still && !x.live)
+  const lastStill = shots.findLastIndex((x) => x.still && (!x.live || x.canvasOpacity <= 0.001))
+  const firstLive = shots.findIndex((x) => x.live && x.canvasOpacity >= 0.999)
+  const mixes = shots.filter((x) => x.live && x.canvasOpacity > 0.001 && x.canvasOpacity < 0.999)
+  // The live picture moved over the still by whole pixels each way: where the two lie closest is how far the one stands
+  // from the other.
+  const fit = async (a, b, R = 4, every = 2) => {
+    const [x, y] = await Promise.all([rawMiddle(a), rawMiddle(b)])
+    const [w, h] = [middle.width, middle.height]
+    let best = null
+    let atNoShift = null
+    for (let dy = -R; dy <= R; dy++)
+      for (let dx = -R; dx <= R; dx++) {
+        let sum = 0
+        let n = 0
+        for (let j = R; j < h - R; j += every)
+          for (let i = R; i < w - R; i += every) {
+            const o = (j * w + i) * 3
+            const q = ((j + dy) * w + i + dx) * 3
+            sum += Math.abs(x[o] - y[q]) + Math.abs(x[o + 1] - y[q + 1]) + Math.abs(x[o + 2] - y[q + 2])
+            n += 3
+          }
+        const d = Math.round((sum / n) * 100) / 100
+        if (!best || d < best.apart) best = { dx, dy, apart: d }
+        if (dx === 0 && dy === 0) atNoShift = d
+      }
+    return { ...best, atNoShift }
+  }
+  const save = (name, png) => fs.writeFileSync(path.join(dir, `${String(++shot).padStart(2, '0')}-first-look-${name}.png`), png)
+  let facts = { link: plain(), shots: shots.length, timeline: shots.map((x) => ({ ms: x.ms, still: x.still, live: x.live, canvasOpacity: x.canvasOpacity, controls: x.shown, spread: x.spread, frames: x.frames })) }
+  let ok = false
+  if (firstStill >= 0 && lastStill >= 0 && firstLive > lastStill) {
+    const [a, b, c] = [shots[lastStill], shots[firstLive], shots[firstLive + 1] ?? null]
+    save('still', a.png)
+    if (mixes.length) save('half-in', mixes[Math.floor(mixes.length / 2)].png)
+    save('live', b.png)
+    const laid = await fit(a.png, b.png)
+    const rest = c ? await fit(b.png, c.png) : null
+    const flat = shots.slice(firstStill).filter((x) => x.spread < 2).map((x) => x.ms)
+    const paints = await page.evaluate(() => ({
+      paint: Object.fromEntries(performance.getEntriesByType('paint').map((e) => [e.name, Math.round(e.startTime)])),
+      stills: performance.getEntriesByType('resource').filter((e) => /\/first\//.test(e.name)).map((e) => ({ file: e.name.split('/').pop(), arrivedMs: Math.round(e.responseEnd) })),
+    }))
+    const end = await read()
+    facts = { ...facts, stillFile: a.stillFile, emptyShotsBeforeTheStill: firstStill, stillFirstSeenMs: shots[firstStill].ms, liveWholeMs: b.ms, shotsHalfIn: mixes.length, flatShotsAfterTheStill: flat, stillOnLive: laid, liveOnNextLive: rest, ...paints, lit: end.lit.join(), busy: end.busy }
+    ok = flat.length === 0 && laid.dx === 0 && laid.dy === 0 && end.lit.join() === cfg.defaultSeason && !end.busy
+  }
+  await note(16, 'first-look', facts, ok)
+  if (firstLive >= 0) {
+    // Once the controls are in, the page measures them and gives the globe the room they take (every 20th frame, then eased):
+    // how far the picture goes, with nobody touching it, from where it first stood.
+    const at = shots[firstLive]
+    const R = Math.min(48, Math.floor(Math.min(middle.width, middle.height) / 4))
+    const way = []
+    let last = null
+    for (let k = 0; k < 7; k++) {
+      const f = await frames(4, 120000)
+      const png = await grab()
+      if (!png) continue
+      last = png
+      const d = await fit(at.png, png, R, 4)
+      way.push({ frames: f.state.frames - at.frames, dx: d.dx, dy: d.dy, apart: d.apart })
+    }
+    if (last) save('settled', last)
+    const end = way[way.length - 1] ?? null
+    await note(16, 'first-settle', { link: plain(), searchedPx: R, liveToSettled: end, way }, !!end && Math.abs(end.dx) <= 1 && Math.abs(end.dy) <= 1)
+  }
+}
+
+if (want(15)) {
+  // The level of quality the app picks by itself, as a visitor gets it (no parameter), and each level forced from the menu.
+  await gather()
+  await page.goto(plain(), { waitUntil: 'domcontentloaded' })
+  const first = await until('the first complete picture', (x) => x.firstPicture)
+  const shown = await until('the controls', (x) => x.shown, 60000)
+  const row = () =>
+    page.evaluate(() => {
+      const bs = [...document.querySelectorAll('#ui [data-menu] [data-row="quality"] button')]
+      const c = document.getElementById('view')
+      return { pressed: bs.filter((b) => b.getAttribute('aria-pressed') === 'true').map((b) => b.dataset.value).join(), inUse: bs.filter((b) => b.hasAttribute('data-also')).map((b) => b.dataset.value).join(), canvasPx: c ? [c.width, c.height] : null }
+    })
+  await page.keyboard.press('m')
+  const menuOpen = await until('the menu', (x) => x.menu, 20000)
+  const levelIds = Object.keys(cfg.live.quality)
+  // By itself the app comes down a level at a time where the frames are slow: it is read until it has held for 30 frames.
+  const picks = []
+  const t0 = Date.now()
+  let held = (await read()).frames
+  for (;;) {
+    const r = await row()
+    const f = (await read()).frames
+    if (!picks.length || picks[picks.length - 1].inUse !== r.inUse) {
+      picks.push({ frame: f, seconds: Math.round((Date.now() - t0) / 100) / 10, ...r })
+      held = f
+    }
+    if (f - held >= 30 || Date.now() - t0 > WAIT) break
+    await sleep(1000)
+  }
+  const last = picks[picks.length - 1]
+  await note(15, 'quality-by-itself', { link: plain(), firstPicture: first.ok, controls: shown.ok, menu: menuOpen.ok, picks, endsOn: last.inUse, pressed: last.pressed }, first.ok && shown.ok && menuOpen.ok && last.pressed === 'auto' && levelIds.includes(last.inUse))
+  for (const id of levelIds) {
+    const at = await page.evaluate((v) => {
+      const b = document.querySelector(`#ui [data-menu] [data-row="quality"] button[data-value="${v}"]`)
+      const r = b?.getBoundingClientRect()
+      return r ? [r.left + r.width / 2, r.top + r.height / 2] : null
+    }, id)
+    if (at) await press(...at)
+    const t1 = Date.now()
+    let r = await row()
+    while (r.pressed !== id && Date.now() - t1 < 60000) {
+      await sleep(500)
+      r = await row()
+    }
+    const f1 = (await read()).frames
+    const drew = await frames(3)
+    const after = await row()
+    await note(15, `quality-${id}`, { ...after, framesAfter: drew.state.frames - f1, secondsForThreeFrames: drew.seconds, ...brief(drew.state) }, !!at && after.pressed === id && drew.ok)
+  }
+  await page.keyboard.press('m')
+  await until('the menu to close', (x) => !x.menu, 20000)
+}
+
+if (want(14)) {
+  // The other ways the page opens: the probe to its end and its block of text, the film by itself, the loop.
+  await gather()
+  const t0 = Date.now()
+  await page.goto(plain({ mode: 'probe' }), { waitUntil: 'domcontentloaded' })
+  const probe = () =>
+    page.evaluate(() => {
+      const ui = document.getElementById('ui')
+      const pre = ui?.querySelector('pre')
+      return { probe: ui?.dataset.probe ?? '', status: ui?.querySelector('[role="status"]')?.textContent ?? '', text: pre && !pre.hidden ? (pre.textContent ?? '') : '', frames: window.__frames }
+    })
+  let p = await probe()
+  while (p.probe !== 'done' && p.probe !== 'failed' && Date.now() - t0 < WAIT * 2) {
+    await sleep(2000)
+    p = await probe()
+  }
+  await frames(2, 60000)
+  await note(14, 'mode-probe', { link: plain({ mode: 'probe' }), ended: p.probe, seconds: Math.round((Date.now() - t0) / 1000), framesDrawn: p.frames, status: p.status, textLines: p.text.split('\n').filter((l) => l.trim()).length, text: p.text }, p.probe === 'done' && p.text.trim().length > 0)
+  for (const mode of ['autopilot', 'loop']) {
+    const extra = quality !== 'none' ? { mode, quality } : { mode }
+    const t1 = Date.now()
+    await page.goto(plain(extra), { waitUntil: 'domcontentloaded' })
+    const first = await until('the first complete picture', (x) => x.firstPicture)
+    const seconds = (Date.now() - t1) / 1000
+    const a = await grab()
+    const f0 = (await read()).frames
+    await frames(4)
+    const b = await grab()
+    await frames(4)
+    const c = await grab()
+    const x = await read()
+    await note(14, `mode-${mode}`, { link: plain(extra), firstPicture: first.ok, firstPictureSeconds: seconds, framesDrawn: x.frames - f0, movedApart: [await apart(a, b), await apart(b, c)], controlsShown: x.shown, ...brief(x) }, first.ok && x.frames - f0 >= 8 && ((await apart(a, b)) > 0 || (await apart(b, c)) > 0))
+  }
+}
+
+if (want(13)) {
+  // The screen turned (touch) or the window resized (a pointer), at rest and in the middle of a shake, and back each time.
+  const others = touch ? [[fmt.height, fmt.width]] : [[1280, 720], [2560, 1440]]
+  const placed = (x, w, h) => {
+    const boxes = Object.entries(x.boxes).filter(([, b]) => b)
+    const outside = boxes.filter(([, b]) => b[0] < 0 || b[1] < 0 || b[0] + b[2] > w || b[1] + b[3] > h).map(([k]) => k)
+    const overlapping = []
+    for (let i = 0; i < boxes.length; i++)
+      for (let j = i + 1; j < boxes.length; j++) {
+        const [a, b] = [boxes[i][1], boxes[j][1]]
+        if (a[0] < b[0] + b[2] && b[0] < a[0] + a[2] && a[1] < b[1] + b[3] && b[1] < a[1] + a[3]) overlapping.push(`${boxes[i][0]}/${boxes[j][0]}`)
+      }
+    return { size: [w, h], boxes: x.boxes, canvas: x.canvas, outside, overlapping, canvasFills: JSON.stringify(x.canvas) === JSON.stringify([0, 0, w, h]) }
+  }
+  const same = (a, b) => JSON.stringify(a.boxes) === JSON.stringify(b.boxes)
+  const size = (w, h) => page.setViewportSize({ width: w, height: h })
+  if (!(await read()).shown) await open()
+  const home = await read()
+  const count = Object.values(home.boxes).filter(Boolean).length
+  const good = (p) => p.outside.length === 0 && p.overlapping.length === 0 && p.canvasFills && Object.values(p.boxes).filter(Boolean).length === count
+  for (const [w, h] of others) {
+    await size(w, h)
+    await frames(4)
+    const there = await read()
+    const p = placed(there, w, h)
+    await note(13, `rest-${w}x${h}`, { ...p, ...brief(there) }, good(p) && there.lit.join() === home.lit.join() && !there.busy)
+    await size(fmt.width, fmt.height)
+    await frames(4)
+    const back = await read()
+    const q = placed(back, fmt.width, fmt.height)
+    await note(13, `rest-${w}x${h}-back`, { ...q, sameAsBefore: same(back, home), ...brief(back) }, good(q) && same(back, home) && back.lit.join() === home.lit.join() && !back.busy)
+  }
+  const [w, h] = others[0]
+  const to = nextOf(home.lit[0])
+  await pressControl('shake')
+  const started = await until('the shake to start', (x) => x.busy, 60000)
+  await frames(2)
+  await size(w, h)
+  await frames(2)
+  const mid = await read()
+  const p = placed(mid, w, h)
+  await note(13, `shake-${w}x${h}`, { started: started.ok, stillShaking: mid.busy, ...p, ...brief(mid) }, started.ok && good(p))
+  await size(fmt.width, fmt.height)
+  const landed = await until('the season to arrive', (x) => !x.busy && x.lit[0] === to)
+  const after = await frames(3)
+  const q = placed(after.state, fmt.width, fmt.height)
+  await note(13, `shake-${w}x${h}-back`, { landed: landed.ok, to, said: after.state.said, ...q, sameAsBefore: same(after.state, home), ...brief(after.state) }, landed.ok && after.state.lit.join() === to && after.state.said === nameOf(to) && good(q) && same(after.state, home))
+}
+
 await gather()
 await note(11, 'controls-watched', { looks: watched.looks, least: watched.least, faults: watched.faults.slice(0, 24), faultCount: watched.faults.length }, watched.looks > 0 && watched.faults.length === 0)
 
 const bad = lines.filter((l) => !l.ok)
-fs.writeFileSync(path.join(dir, 'result.json'), JSON.stringify({ url: base, layout, size: [fmt.width, fmt.height], ratio, touch, quality, lines, notOk: bad.map((l) => `${l.step} ${l.action}`), pageErrors: errors }, null, 1))
+fs.writeFileSync(path.join(dir, 'result.json'), JSON.stringify({ url: base, layout, size: [fmt.width, fmt.height], ratio, touch, quality, raster, lines, notOk: bad.map((l) => `${l.step} ${l.action}`), pageErrors: errors, console: consoleLines, failedRequests: failed }, null, 1))
 await browser.close()
-console.log(`visit ${layout}: ${lines.length} lines, ${bad.length} not ok${bad.length ? ': ' + bad.map((l) => l.action).join(', ') : ''}${errors.length ? ` · ${errors.length} page errors` : ''} · ${dir}`)
+console.log(`visit ${layout}: ${lines.length} lines, ${bad.length} not ok${bad.length ? ': ' + bad.map((l) => l.action).join(', ') : ''}${errors.length ? ` · ${errors.length} page errors` : ''} · console ${consoleLines.length} lines · ${failed.filter((f) => !/ERR_ABORTED/.test(f)).length} requests failed · ${dir}`)
