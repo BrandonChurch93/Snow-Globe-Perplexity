@@ -1,3 +1,4 @@
+import * as THREE from 'three'
 import { describe, expect, it } from 'vitest'
 import { config } from '../src/config'
 import type { Moment } from '../src/core/stage'
@@ -6,6 +7,7 @@ import { lensFall } from '../src/post/post'
 import { newFrame } from '../src/scene/frame'
 import { lightUniforms } from '../src/core/chunks/light'
 import { CHANGE_BLOOM, Lighting } from '../src/scene/lighting'
+import { makeSlab } from '../src/scene/surface'
 import { kitOf } from '../src/seasons'
 import { CHANGE_COVER, changeBloom, changeSpan, partChange } from '../src/shake/change'
 import { REST_POSE } from '../src/shake/table'
@@ -165,6 +167,16 @@ describe('the cover of a change in the lens', () => {
     expect(top).toBeLessThan(3)
     // Away from the cover they take what the slab takes, to the last bit: the pictures at rest are what they were.
     for (const c of [0.02, CHANGE_COVER.riseFrom - FRAME, CHANGE_COVER.goneAt + FRAME / 2]) expect(table(c).on).toBe(table(c).rest)
+  })
+
+  it('lays the larger pour on the slab\'s own near black only: its dust and its lumps take the smaller one', () => {
+    const frag = (makeSlab().material as THREE.ShaderMaterial).fragmentShader
+    // `scatter` is the slab's own colour with the dust and the lumps laid on it, `albedo` the slab's own colour alone. What is
+    // poured over and above the smaller pour (`uPour`) lights `albedo`; the dust and the lumps are lit as the frost is.
+    expect(frag).toContain('albedo * (uPour * (slabPoolShare * occl))')
+    const lit = frag.split('\n').filter((line) => line.includes('scatter') && line.includes('uPour'))
+    expect(lit.length).toBe(1)
+    expect(lit[0]).toContain('scatter * (direct + (uSky + warm) * occl)')
   })
 
   it('holds everything inside the glass through the fallen exposure: both seasons\' lights and what the room sends in', () => {

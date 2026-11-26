@@ -485,7 +485,9 @@ void main() {
   float occl;
   slabLight(P, keyDir, keyGain, rimDir, rimGain, occl, warm);
   vec3 direct = uKeyCol * (max(dot(n, keyDir), 0.0) * keyGain) + uRimCol * (max(dot(n, rimDir), 0.0) * rimGain);
-  vec3 col = scatter * (direct + (uSky + warm + uPour * slabPoolShare) * occl) + film * direct * (${f(SLAB.hazeAlbedo)} * haze);
+  // The dust and the lumps lie on the slab: they take the smaller pour with the rest of what lies there, and the slab's own
+  // near black takes the difference, so a white speck in the pool stays under white and takes the pool's colour.
+  vec3 col = scatter * (direct + (uSky + warm) * occl) + albedo * (uPour * (slabPoolShare * occl)) + film * direct * (${f(SLAB.hazeAlbedo)} * haze);
 
   vec3 r0 = vec3(v.x, -v.y, v.z);
   vec2 ground = v.xz / max(length(v.xz), 1e-4);

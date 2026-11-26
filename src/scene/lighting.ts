@@ -46,20 +46,20 @@ export const ROOM_RIG = {
  * laid on top of that flare: it gives way as the cover rises, and under the whole cover the lights inside are their resting
  * selves through the fallen exposure.
  *
- * The room is still there, because the glass lights it. As the cover rises the light of the glass pours out on the table and
- * the base in the new season's colour from its first frame (`pour`: how many times what the new season's lights at rest lay
- * on the table is added there at the whole cover, held through the fallen exposure as the glass is; `pourOn` the same for
- * the base and for what lies on the table, less, so what is white there stays under white and takes the colour of the light
- * (the slab's own surface, near black, takes the difference: surface.ts, `uPour`); `flood` the
- * same for the flood of the new season's light on the top of the base), strongest by the foot and falling off as the slab's
- * pool does. Round the glass the lens lays a glow (`glare`, in the colour of the light inside, a bell `glareReach` radii of
- * the glass wide with `glareHole` of it taken off its middle by a second bell `glareHoleReach` wide, so it sits round the
- * ball more than on it and the storm's strokes are read through it; post.ts adds it, the stage says where the glass is;
- * `glareSeat` is where it is centred on the glass's axis, 0 the middle of the glass, 1 the plane where it sits in the base).
- * A veil of the same colour lies wider (`veil` at the glass, a bell `veilReach` radii wide). And what the fall takes from the
- * dark of the backdrop is laid back over the whole picture in the backdrop's own colour (`room` of it, measured in the
- * corners of the film's frames at rest), so the corners keep the tone they have at rest, the lamps stand faint on it and no
- * part of the picture is true black.
+ * The room is still there, because the glass lights it. As the cover rises the light of the glass pours out on the table and the
+ * base in the new season's colour from its first frame (`pour`: how many times what the new season's lights at rest lay on the
+ * table is added there at the whole cover, held through the fallen exposure as the glass is; `pourOn` the same for the base and
+ * for what lies on the table, the frost, the petals, the leaves and the slab's own dust and lumps, less, so what is white there
+ * stays under white and takes the colour of the light (the slab's own surface, near black, takes the difference: surface.ts,
+ * `uPour`); `flood` the same for the flood of the new season's light on the top of the base), strongest by the foot and falling
+ * off as the slab's pool does. Round the glass the lens lays a glow (`glare`, in the colour of the light inside, a bell
+ * `glareReach` radii of the glass wide with `glareHole` of it taken off its middle by a second bell `glareHoleReach` wide, so it
+ * sits round the ball more than on it and the storm's strokes are read through it; post.ts adds it, the stage says where the
+ * glass is; `glareSeat` is where it is centred on the glass's axis, 0 the middle of the glass, 1 the plane where it sits in the
+ * base). A veil of the same colour lies wider (`veil` at the glass, a bell `veilReach` radii wide). And what the fall takes from
+ * the dark of the backdrop is laid back over the whole picture in the backdrop's own colour (`room` of it, measured in the
+ * corners of the film's frames at rest), so the corners keep the tone they have at rest, the lamps stand faint on it and no part
+ * of the picture is true black.
  *
  * The flash is the top of that, the cover to the power `sharp`: whole on the frames in which the base, the dressing of the
  * table and the lamps turn (change.ts, the span and `BASE_PASS`) and a fraction of itself a frame or two to either side. In
@@ -74,7 +74,7 @@ export const ROOM_RIG = {
  * Nothing in the picture feeds the glare, the halo or the veil, no lamp of the room and no petal. `lens` is the tint of the
  * glow round what burns, risen over `fall` of the swell from `swellFrom` of the window. The live picture has the same cover.
  */
-export const CHANGE_BLOOM = { lens: 0.2, swellFrom: 0.56, fall: 0.6, dim: 0.005, sharp: 4, pour: 30, pourOn: 5, flashPour: 0.005, flood: 0.5, glare: 0.3, flashGlare: 0.7, glareReach: 1.1, glareSeat: 0.1, glareHole: 0.9, glareHoleReach: 1.3, halo: 0.8, haloReach: 1.4, haloUp: 0.4, haloDown: 0.4, haloSeat: 1.52, veil: 0.03, flashVeil: 0.03, veilReach: 1.5, room: 0.75 } as const
+export const CHANGE_BLOOM = { lens: 0.2, swellFrom: 0.56, fall: 0.6, dim: 0.005, sharp: 4, pour: 30, pourOn: 5, flashPour: 0.005, flood: 0.5, glare: 0.3, flashGlare: 0.7, glareReach: 1.1, glareSeat: 0.1, glareHole: 0.9, glareHoleReach: 1.3, halo: 0.8, haloReach: 1.4, haloUp: 0.4, haloDown: 0.33, haloSeat: 1.52, veil: 0.03, flashVeil: 0.03, veilReach: 1.5, room: 0.75 } as const
 
 const SHADOW_OFF = 10
 
