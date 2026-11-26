@@ -1,16 +1,14 @@
-# Status 132
+# Status 133
 
-2026-11-26 00:16 UTC
+2026-11-26 02:58 UTC
 
-- The review stop. Phase 5 is closed at the limits of its rounds, not by a pass: its gate is green on all 17 machine checks, no unit passed its bar, and the fresh review gave 6 of 10
-- The app and its review page were published again at the gate; the review cut plays there with its one soundtrack, beside every kept sound
-- Nothing more is built until Brandon answers: review notes for changes, or the approval that names the soundtrack
-- phase 5: 10.09 h used of its 12.00 h box
-- allowance (before the review, continuation 1): 10.09 h used of 12.00 h allowed
+- Soundtrack: the films are cut to four-tracks, the one candidate that exists; no soundtrack was named, so by the kit the choice is the Builder's.
+- The review is approved (Note 7). The white glass is not intended: it is a fault that shows only on a real graphics card, and it is reproduced here now. Cause: pow() with a negative base, undefined in GLSL; Apple GPUs give NaN where the software renderer gives a number.
+- Order: 1 the glass, then publish; 2 the faults of the fresh review (the season swap, the first frame, the phone framing, the Shake control, summer at feed size, sound); 3 the films cut to the music, the opening, the card; 4 the 4K 60 masters, the portfolio screenshot and loop.
+- phase 6: 0.15 h used of its 12.00 h box
+- allowance (after the review): 0.15 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-132-1.jpg`: The kept sounds as waveforms
-- `out/stills/status/status-132-2.jpg`: The four seasons at rest, from the frozen build at 1920 x 1080
-- `out/stills/status/status-132-3.jpg`: One shake of the review cut as twelve frames, winter into spring (960 x 540, draft tier)
-- `out/stills/status/status-132-4.jpg`: Comparison crops 1: fall-shake, approved image left, build right
+- `out/stills/status/status-133-1.jpg`: Left: Brandon's iPad, the glass white. Right: this build in software with pow() made to fail on a negative base, as GLSL allows: the same white glass
+- `out/stills/status/status-133-2.jpg`: The same build and season in software as it was tested: what the glass should show
