@@ -4,6 +4,9 @@ import { Pass } from '../core/fullscreen'
 import { config } from '../config'
 import { grade, lensState } from './grade'
 
+/** The fall of the camera's exposure under the flare of a change between two seasons, as a share of the exposure: 1 at every other time. */
+export const lensFall = { dim: 1 }
+
 const REFERENCE_ROWS = 1080
 const TRIANGLE_STD = Math.sqrt(6)
 const MIN_WEIGHT = 1e-4
@@ -157,7 +160,7 @@ void main() {
   c += glow * 0.25 * uGlowGain;
   if (uGlare.r + uGlare.g + uGlare.b > 0.0) {
     vec2 off = (uv - uGlareAt.xy) * vec2(uInv.y / uInv.x, 1.0) / uGlareAt.z;
-    c += uGlare * pow(abs(1.0 + dot(off, off)), -2.5);
+    c += uGlare * exp(-dot(off, off));
   }
   c *= 1.0 - uLens.z * pow(max(r2, 1e-12), uLens.w);
   c = film(c);
@@ -294,7 +297,7 @@ export class Post {
     const h = gl.drawingBufferHeight
     const g = grade
     const u = this.pass.material.uniforms
-    const exposure = this.exposure * g.exposure
+    const exposure = this.exposure * g.exposure * (raw ? 1 : lensFall.dim)
     const scale = Math.min(w, h) / REFERENCE_ROWS
     u.uMean!.value = mean
     u.uExposure!.value = exposure

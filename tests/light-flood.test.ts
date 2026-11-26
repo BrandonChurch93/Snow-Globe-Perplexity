@@ -30,7 +30,7 @@ function lit(change: number, to = winter) {
 }
 
 describe('the flood of a change', () => {
-  const span = changeSpan('base')
+  const span = changeSpan('shed')
   const mid = (span.from + span.to) / 2
   const rest = lit(0)
 
@@ -139,6 +139,23 @@ describe('the flood of a change', () => {
     expect(top.gainA).toBeCloseTo(low.gainA, 12)
     expect(top.gainB / low.gainB).toBeCloseTo(1 + ROOM_RIG.bloomGain, 9)
     expect(top.flood).toBeGreaterThan(0)
+  })
+
+  it('lays nothing on the base and the table between two seasons: they keep what the lights at rest lay on them', () => {
+    const other = kitOf('spring')
+    const ga = glowOf(winter.innerLights)
+    const gb = glowOf(other.innerLights)
+    const still = lit(0, other)
+    let top = 0
+    for (const c of [span.from, ...Array.from({ length: Math.ceil(2 / FRAME) }, (_, i) => (i * FRAME) / 2)]) {
+      const at = lit(c, other)
+      expect(at.outside, `the flood on the base at ${c}`).toBe(0)
+      const share = partChange('light', c)
+      const each = (i: number) => ga[i]! * still.gainA * (1 - share) + gb[i]! * still.gainB * share
+      expect(at.pool, `the pool on the table at ${c}`).toBeCloseTo(lum({ r: each(0), g: each(1), b: each(2) }), 9)
+      top = Math.max(top, at.gainB / still.gainB)
+    }
+    expect(top, 'while the lights inside swell as they do in any shake').toBeCloseTo(1 + ROOM_RIG.bloomGain, 6)
   })
 
   it('reaches the grid inside and the base outside, and is declared once', () => {

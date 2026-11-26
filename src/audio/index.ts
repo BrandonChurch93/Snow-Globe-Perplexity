@@ -1,5 +1,6 @@
 import { config } from '../config'
 import type { AudioIndex, AudioIndexEntry, SoundEngine, SoundEngineOptions } from '../core/bridge'
+import { barSeconds } from '../film/timeline'
 
 type Kind = 'amb' | 'music'
 type LoopEntry = AudioIndex['loops'][string]
@@ -61,6 +62,8 @@ const CUT_FADE = 0.03
 const MUTE_FADE = 0.04
 const THIN_FROM_HZ = 30
 const THIN_TO_HZ = 2400
+const AMB_SEAM = 1.5
+const SEAM_SHARE = 0.25
 const STIR_GAP = 0.18
 const STIR_FLOOR = 0.05
 const TICK_CENTS = [0, 200, 500, 200, 700, 500, 0, -300]
@@ -111,12 +114,32 @@ function shape(p: AudioParam, from: number, to: number, at: number, seconds: num
   }
 }
 
+/**
+ * A loop is not left to the source to wrap: the file is played pass after pass, each pass starting one overlap before the
+ * last one ends and the two crossed at equal power over it. Whatever level the file ends and begins at, no step is heard.
+ */
 interface Voice {
   id: string
-  src: AudioBufferSourceNode
   gain: GainNode
   filter: BiquadFilterNode
   startAt: number
+  /** The passes that have been started and have not ended: the one that sounds and the one after it. */
+  passes: Set<AudioBufferSourceNode>
+  next: number
+  over: boolean
+}
+
+/** What two passes of a loop share: one bar of the music, so its beat is kept, a breath of the ambience, and never more than a quarter of the loop. */
+const seamOf = (kind: Kind, loopSeconds: number): number => Math.min(kind === 'music' ? barSeconds : AMB_SEAM, loopSeconds * SEAM_SHARE)
+
+function stopAll(v: Voice, at?: number): void {
+  for (const src of v.passes) {
+    try {
+      src.stop(at)
+    } catch {
+      // it has ended
+    }
+  }
 }
 
 class WebBackend implements Backend {
@@ -228,27 +251,47 @@ class WebBackend implements Backend {
     if (old) this.release(old, now, o.fadeOut, o.thin)
     this.voices[kind] = null
     const serial = ++this.serial[kind]
-    if (!entry) return
+    if (!entry || !(entry.loopSeconds > 0)) return
+    const length = entry.loopSeconds
+    const seam = seamOf(kind, length)
     const begin = (buffer: AudioBuffer, at: number, fadeIn: number) => {
       if (!this.master) return
-      const src = ctx.createBufferSource()
-      src.buffer = buffer
-      src.loop = true
-      src.loopStart = entry.loopStart
-      src.loopEnd = entry.loopStart + entry.loopSeconds
       const filter = ctx.createBiquadFilter()
       filter.type = 'highpass'
       filter.frequency.value = 10
       filter.Q.value = 0.5
       const gain = ctx.createGain()
       gain.gain.value = 0
-      src.connect(filter)
       filter.connect(gain)
       gain.connect(this.master)
       shape(gain.gain, 0, entry.gain, at, fadeIn)
-      src.onended = () => gain.disconnect()
-      src.start(at, entry.loopStart)
-      this.voices[kind] = { id, src, gain, filter, startAt: at }
+      const voice: Voice = { id, gain, filter, startAt: at, passes: new Set(), next: at, over: false }
+      // The pass after the one that sounds is always scheduled already, and each pass that ends schedules the one after that:
+      // the audio clock keeps the seam, and no timer or frame of the page is waited on.
+      const pass = (first: boolean): void => {
+        if (voice.over || this.dead) return
+        const t = first ? voice.next : Math.max(voice.next, ctx.currentTime + LEAD)
+        const src = ctx.createBufferSource()
+        src.buffer = buffer
+        const level = ctx.createGain()
+        level.gain.value = first ? 1 : 0
+        src.connect(level)
+        level.connect(filter)
+        if (!first) shape(level.gain, 0, 1, t, seam)
+        shape(level.gain, 1, 0, t + length - seam, seam)
+        src.onended = () => {
+          level.disconnect()
+          voice.passes.delete(src)
+          if (!voice.over) pass(false)
+          else if (voice.passes.size === 0) gain.disconnect()
+        }
+        src.start(t, entry.loopStart, length)
+        voice.passes.add(src)
+        voice.next = t + length - seam
+      }
+      pass(true)
+      pass(false)
+      this.voices[kind] = voice
     }
     const buffer = this.buffers.get(entry.file)
     if (buffer) begin(buffer, now + o.delay, o.fadeIn)
@@ -263,11 +306,12 @@ class WebBackend implements Backend {
 
   private release(v: Voice, at: number, seconds: number, thin: boolean): void {
     const d = Math.max(seconds, 0.01)
+    v.over = true
     try {
       if (v.startAt >= at) {
         v.gain.gain.cancelScheduledValues(0)
         v.gain.gain.value = 0
-        v.src.stop(at)
+        stopAll(v, at)
         return
       }
       shape(v.gain.gain, v.gain.gain.value, 0, at, d)
@@ -275,8 +319,9 @@ class WebBackend implements Backend {
         v.filter.frequency.setValueAtTime(THIN_FROM_HZ, at)
         v.filter.frequency.exponentialRampToValueAtTime(THIN_TO_HZ, at + d)
       }
-      v.src.stop(at + d + 0.05)
+      stopAll(v, at + d + 0.05)
     } catch {
+      stopAll(v)
       v.gain.disconnect()
     }
   }
@@ -305,11 +350,10 @@ class WebBackend implements Backend {
     for (const kind of ['amb', 'music'] as const) {
       const v = this.voices[kind]
       this.voices[kind] = null
-      try {
-        v?.src.stop()
-      } catch {
-        v?.gain.disconnect()
-      }
+      if (!v) continue
+      v.over = true
+      stopAll(v)
+      v.gain.disconnect()
     }
     this.master?.disconnect()
     this.buffers.clear()

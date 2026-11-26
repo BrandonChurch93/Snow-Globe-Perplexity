@@ -555,7 +555,7 @@ export function updateSurface(f: StageFrame): void {
   if (su.uStone.value === dark && hasTexture(SLAB_STONE)) su.uStone.value = texture(SLAB_STONE)
   su.uKeyDir.value.copy(f.keyDir)
   su.uKeyCol.value.copy(f.keyCol)
-  const light = f.mix.light
+  const light = f.mix.base
   const ka = f.from.rig.key.from
   const kb = f.to.rig.key.from
   su.uKeyAt.value.set(ka[0] + (kb[0] - ka[0]) * light, ka[1] + (kb[1] - ka[1]) * light, ka[2] + (kb[2] - ka[2]) * light)
