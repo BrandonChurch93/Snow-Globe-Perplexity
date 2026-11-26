@@ -140,3 +140,51 @@ FIFTH PUSH (the second job: on a phone the shake sits higher, over a longer tabl
   before it: spring's petals stop about 640 px down, fall's loose leaves lie a little lower, and there is no line
   where they stop. Summer's sand has a jagged edge at the foot, which is not from this change and not on the new
   part.
+
+16-phone-whole-shake-medium-frames-1-to-5-before-after.jpg
+  Shows: one whole live shake on a phone, 390 x 844, winter to spring, on main's head 6e63530d, drawn twice by the
+  same tool: BEFORE (top row) is that head with src/app/framing.ts and src/scene/surface.ts as they were at 12465d0e,
+  AFTER (bottom row) is that head as it is. Frames 1 to 5 of ten, the same moments in both rows.
+  Frames: lift, two strokes, the change, a stroke after it. Before f022, f024, f029, f035, f038; after f025, f027,
+  f031, f038, f040 (at medium the app draws 23 frames from the lift to rest, the same count in both runs).
+  Tool: the scratch page script (every frame the app draws, read off the canvas), ?quality=medium&season=winter,
+  touch, pixel ratio 1. Tier: the app's level medium (the planar reflection). Drawn by lavapipe.
+  Middle of the glass as a share of the height: before 47.6, 52.3, 52.4, 52.8, 52.4; after 41.0, 43.0, 43.1, 43.6,
+  43.1. Top of the glass: before 279, 331, 332, 336, 332 px; after 224, 253, 254, 258, 254 px. Side room beside the
+  glass, the same in both rows within 0.2 px: 65.5, 39.0, 37.3, 57.3, 50.7 px.
+  The table fills the picture to the bottom edge in every frame of both runs; no edge, seam or end, also with the
+  brightness raised four times.
+
+17-phone-whole-shake-medium-frames-6-to-10-before-after.jpg
+  Shows: the same two runs as picture 16, frames 6 to 10 of ten: set down, landed, two of the camera's way home, rest
+  again. BEFORE top row, AFTER bottom row.
+  Frames: before f040, f042, f044, f046, f051; after f042, f043, f045, f048, f052.
+  Tool and tier as picture 16.
+  Middle of the glass as a share of the height: before 53.5, 53.5, 50.1, 44.1, 37.7; after 44.2, 44.5, 43.0, 40.4,
+  37.7. Rest is the same picture in both (glass top 164 px, middle 37.7).
+  Every frame from the lift to rest, the middle of the glass: before 47.6; 52.1 to 52.8 stood back (12 frames); 53.2,
+  53.5, 53.5 at the set down; 52.2, 50.1, 47.2, 44.1, 41.1, 39.0, 37.9 on the way home; rest 37.7. After 41.0; 42.9 to
+  43.6 stood back (12 frames); 43.9, 44.2, 44.5 at the set down; 44.0, 43.0, 41.8, 40.4, 39.2, 38.3, 37.8 on the way
+  home; rest 37.7.
+  Said plainly: by the band of 42 to 58 alone the picture before was outside it in 3 of these 23 frames (the last three
+  of the way home) and the picture after is outside it in 6 (the lift's first frame and the last five of the way
+  home), because it now stands near the band's upper end and rest lies above the band. What the change mends is the
+  dark top: the glass's top stood 330 to 341 px down through the strokes and the landing and now stands 252 to 263.
+
+18-phone-fall-whole-shake-low-and-medium-after.jpg
+  Shows: fall to winter on a phone, 390 x 844, one whole live shake at each of two levels, on d9c7e03c. AFTER only.
+  Top row quality low (the baked reflection): five of the 247 frames drawn. Bottom row quality medium (the planar
+  reflection): five of the 19 frames the app draws from the lift to rest.
+  Frames: low f024 lift, f037 the stroke with the least side room drawn, f135 set down, f200 on the way home, f246
+  the last frame drawn (70 percent of the way home; at low the way home is about 160 frames and was not drawn to
+  its end). Medium f024 lift, f026 stroke, f034 landed, f038 way home, f042 rest again.
+  Tool: the same scratch page script, ?quality=low&season=fall and ?quality=medium&season=fall. Drawn by lavapipe.
+  Middle of the glass as a share of the height: low 41.0, 43.1, 44.7, 43.1, 40.2; medium 41.0, 43.0, 44.5, 40.7,
+  37.8. Least side room beside the glass: low 28.4 px (f037), medium 39.3 px (f026).
+  The table fills the picture to the bottom edge in every frame of both runs.
+
+A note on pictures 16, 17 and 18
+  Not the framing, said so that nobody takes it for it: at medium the particles in the globe stand still after the
+  first frames (spring's globe keeps winter's snow as white specks, winter's globe keeps fall's leaves, embers and
+  bats). That is open item 231: the live runner's view was never told that the page stepped the simulation itself.
+  It is mended in the commit after these pictures and shown before and after in pictures 19 to 22.
