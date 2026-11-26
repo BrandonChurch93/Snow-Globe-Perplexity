@@ -15,3 +15,19 @@ Looks of summer_finisher, branch agent/p6-summer. Every picture is a still of th
 
 4-shake-feed-approved-before-after.jpg
   summer-shake at 400 px wide each. Left: the approved image. Middle: before, tier draft. Right: after, tier final.
+
+5-rest-film-app-high-app-low.jpg
+  summer-rest, the globe cut out of three hd stills. Left: the film's path, tier final. Middle: the app's own path at live.quality high. Right: the app's own path at low. All after.
+  The same garden in all three: the same soft tufts and fireflies; low draws its smaller share of them.
+
+6-shake-film-app-high-app-low.jpg
+  summer-shake (state landed), the globe cut out of three hd stills. Left: the film's path, tier final. Middle: the app's path at high. Right: the app's path at low. All after.
+  The app draws each streak once, so its streaks stand apart more than the film's, which the shutter runs together. All three are gold, none reads as snow.
+
+7-pool-approved-before-after.jpg
+  The table under the foot, cut out of summer-rest in hd and scaled to 1200 px. Top: the approved image. Middle: before, tier draft. Bottom: after, tier final.
+  Before: a thin bright scribble of lines and rays. After: a soft pool of warm light, brightest at a knot by the foot, with the broad net of light through water inside it.
+
+8-seeds-2x-before-after.jpg
+  The air in the upper left of the globe, summer-rest in hd, shown at twice its size. Left: before, tier draft. Right: after, tier final.
+  Before: cream stars on thick stalks. After: faint warm tufts among green-gold fireflies and gold motes.
