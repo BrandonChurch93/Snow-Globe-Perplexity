@@ -470,7 +470,7 @@ void main() {
     vec3 rb = turn * (dot(at.xz, at.xz) > 0.0 ? normalize(vec3(at.x, 0.0, at.z)) : vec3(0.0, 0.0, 1.0));
     float under = smoothstep(0.5, 10.0, uIceSpan.z - at.y);
     vec3 fall = (uIceKeyCol * max(dot(rb, uIceKeyDir), 0.0) + uRigCardCol * max(dot(rb, uRigCardDir), 0.0)) * under + iceDome(rb) * (0.25 + 0.75 * under);
-    vec2 wuv = vec2(atan(at.x, at.z) / 6.2831853 * uIceTile.x, at.y / uIceTile.y);
+    vec2 wuv = vec2((dot(at.xz, at.xz) > 0.0 ? atan(at.x, at.z) : 0.0) / 6.2831853 * uIceTile.x, at.y / uIceTile.y);
     vec3 wood = mix(textureLod(uIceWood, wuv, 2.5).rgb, vec3(0.5, 0.56, 0.68), 0.6 * smoothstep(0.3, 0.9, at.x / max(length(at.xz), 1.0)));
     float metal = max(1.0 - smoothstep(uIceSpan.x + 4.45, uIceSpan.x + 4.95, at.y), smoothstep(uIceSpan.z - 1.6, uIceSpan.z - 1.1, at.y));
     behind = mix(mix(wood, uIceBrass, metal) * fall * (1.8 * RECIPROCAL_PI), behind + iceDome(outW) * RECIPROCAL_PI, 0.16);
