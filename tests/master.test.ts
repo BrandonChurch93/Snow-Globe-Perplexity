@@ -7,7 +7,7 @@ import { tierSamples } from '../src/config'
 import { finalVideoArgs, masterVideoArgs } from '../tools/lib/encode.mjs'
 import { loadConfig, readJson, rel, writeJson } from '../tools/lib/paths.mjs'
 import { branchFolder, branchMatches, chunkLines, chunkStem, coverReport, framesOf, heartbeat, joinPlan, lumaPsnrOf, nearestRanges, openingPack as readOpening, pad6, psnrOf, rangeChunks as chunksOfRange, ranges, readChunks, recordMatchesRun, resultName, split, stillName, stillToDo as leftToDo, table, tierOf, totalsFromCut } from '../tools/lib/master.mjs'
-import { Shipper, collectBranches } from '../tools/lib/mastergit.mjs'
+import { REMOTE_WAITS, Shipper, collectBranches, gitEnv, withWaits } from '../tools/lib/mastergit.mjs'
 import { levelProblems, pictureLevels, procsProblem } from '../tools/lib/master.mjs'
 import { NOT_A_NUMBER, notNumberLine, notNumberLoud, notNumberOf, notNumberRecord, notNumberUnknown, shipTitle, shippedLine } from '../tools/lib/master.mjs'
 import { limitsLine, limitsRecord, localProblem, machineLimits, procsGainLine, procsMemoryHolds, readLimits, sameCommand, stoppedAt, stoppedLine } from '../tools/lib/master.mjs'
@@ -403,6 +403,149 @@ describe('files on disk', () => {
     expect(said.join('\n')).toMatch(/unchanged at/)
     expect(() => new Shipper({ branch: cfg.repo.branch, say, root: dir, facts })).toThrow(/never the code branch/)
     expect(() => new Shipper({ branch, say, root: dir, facts: { ...facts, name: '' } })).toThrow(/user\.name and user\.email are not set/)
+  })
+
+  it("commits with the clone's name when the four identity variables are set and empty, and leaves one that holds a value", () => {
+    const keys = ['GIT_AUTHOR_NAME', 'GIT_AUTHOR_EMAIL', 'GIT_COMMITTER_NAME', 'GIT_COMMITTER_EMAIL']
+    expect(gitEnv({ GIT_AUTHOR_NAME: '', GIT_AUTHOR_EMAIL: ' ', GIT_COMMITTER_NAME: 'Kept Name', PATH: '/bin' })).toEqual({ GIT_COMMITTER_NAME: 'Kept Name', PATH: '/bin', GIT_TERMINAL_PROMPT: '0' })
+    expect(gitEnv({ PATH: '/bin' })).toEqual({ PATH: '/bin', GIT_TERMINAL_PROMPT: '0' })
+    const empty = Object.fromEntries(keys.map((k) => [k, '']))
+
+    const plain = path.join(dir, 'ident-plain')
+    fs.mkdirSync(plain)
+    git(plain, 'init', '-q')
+    git(plain, 'config', 'user.name', 'Test Person')
+    git(plain, 'config', 'user.email', 'test@example.com')
+    fs.writeFileSync(path.join(plain, 'a.txt'), 'a')
+    git(plain, 'add', 'a.txt')
+    const died = spawnSync('git', ['commit', '-q', '-m', 'a'], { cwd: plain, encoding: 'utf8', env: { ...process.env, ...empty } })
+    expect(died.status).not.toBe(0)
+    expect(died.stderr).toMatch(/empty ident name/)
+
+    const remote = path.join(dir, 'remote-ident.git')
+    fs.mkdirSync(remote)
+    git(remote, 'init', '-q', '--bare')
+    const facts = { url: remote, commit: 'none', name: 'Test Person', email: 'test@example.com' }
+    const branch = 'agent/p6-chunks-ident'
+    const src = (name: string) => {
+      const f = path.join(dir, 'ident-made', name)
+      fs.mkdirSync(path.dirname(f), { recursive: true })
+      fs.writeFileSync(f, name)
+      return f
+    }
+    const who = () => git(remote, 'log', '-1', '--format=%an <%ae> | %cn <%ce>', branch).stdout.trim()
+    const kept = keys.map((k) => process.env[k])
+    try {
+      for (const k of keys) process.env[k] = ''
+      const s = new Shipper({ branch, say: () => {}, root: path.join(dir, 'ship-ident'), facts })
+      s.prepare()
+      expect(s.add([{ src: src('one.json'), to: 'film-b/one.json' }], 'Chunk one')).toBe(true)
+      expect(s.push()).toBe(true)
+      expect(who()).toBe('Test Person <test@example.com> | Test Person <test@example.com>')
+      process.env.GIT_AUTHOR_NAME = 'Named By The Shell'
+      process.env.GIT_AUTHOR_EMAIL = 'shell@example.com'
+      expect(s.add([{ src: src('two.json'), to: 'film-b/two.json' }], 'Chunk two')).toBe(true)
+      expect(s.push()).toBe(true)
+      expect(who()).toBe('Named By The Shell <shell@example.com> | Test Person <test@example.com>')
+    } finally {
+      keys.forEach((k, i) => {
+        if (kept[i] === undefined) delete process.env[k]
+        else process.env[k] = kept[i]
+      })
+    }
+  })
+
+  it('waits between tries at a remote that refuses and comes back, and says how many tries a push took', () => {
+    expect(REMOTE_WAITS).toEqual([5, 15, 30])
+    const slept: number[] = []
+    const lines: string[] = []
+    let n = 0
+    const refusal = "fatal: could not read Username for 'https://github.com': terminal prompts disabled"
+    const twice = () => {
+      if (++n < 3) throw new Error(refusal)
+      return 'tip'
+    }
+    expect(withWaits(twice, { what: 'the fetch', sleep: (ms: number) => slept.push(ms), say: (l: string) => lines.push(l) })).toBe('tip')
+    expect(slept).toEqual([5000, 15000])
+    expect(lines).toEqual([`the fetch: refused (${refusal}). Try 2 of 4 in 5 s.`, `the fetch: refused (${refusal}). Try 3 of 4 in 15 s.`, 'the fetch: answered at try 3'])
+    slept.length = 0
+    const never = () => {
+      throw new Error(refusal)
+    }
+    expect(() => withWaits(never, { sleep: (ms: number) => slept.push(ms) })).toThrow(/terminal prompts disabled \(4 tries, 5, 15, 30 s apart\)$/)
+    expect(slept).toEqual([5000, 15000, 30000])
+    slept.length = 0
+    expect(withWaits(() => 7, { sleep: (ms: number) => slept.push(ms), say: (l: string) => lines.push(l) })).toBe(7)
+    expect(slept).toEqual([])
+    expect(lines.length).toBe(3)
+
+    const remote = path.join(dir, 'remote-waits.git')
+    const away = `${remote}.away`
+    fs.mkdirSync(remote)
+    git(remote, 'init', '-q', '--bare')
+    const facts = { url: remote, commit: 'none', name: 'Test Person', email: 'test@example.com' }
+    const branch = 'agent/p6-chunks-waits'
+    const said: string[] = []
+    const say = (l: string) => said.push(l)
+    const naps: number[] = []
+    let back = 0
+    const sleep = (ms: number) => {
+      naps.push(ms)
+      if (naps.length === back) fs.renameSync(away, remote)
+    }
+    const gone = (after: number) => {
+      naps.length = 0
+      back = after
+      fs.renameSync(remote, away)
+    }
+    const src = (name: string) => {
+      const f = path.join(dir, 'waits-made', name)
+      fs.mkdirSync(path.dirname(f), { recursive: true })
+      fs.writeFileSync(f, name)
+      return f
+    }
+    const s = new Shipper({ branch, say, root: path.join(dir, 'ship-waits'), facts, sleep })
+
+    gone(1)
+    s.prepare()
+    expect(naps).toEqual([5000])
+    expect(said[0]).toMatch(/^the look at the remote tip of agent\/p6-chunks-waits: refused \(.*\)\. Try 2 of 4 in 5 s\.$/)
+    expect(said[1]).toBe('the look at the remote tip of agent/p6-chunks-waits: answered at try 2')
+
+    expect(s.add([{ src: src('one.json'), to: 'film-b/one.json' }], 'Chunk one')).toBe(true)
+    gone(2)
+    expect(s.push()).toBe(true)
+    expect(s.tries).toBe(3)
+    expect(naps).toEqual([5000, 15000])
+    expect(said.slice(-2).map((l) => l.replace(/\(.*\)/, '(why)'))).toEqual(['the push to agent/p6-chunks-waits was refused (why). Try 2 of 4 in 5 s.', 'the push to agent/p6-chunks-waits was refused (why). Try 3 of 4 in 15 s.'])
+    expect(shippedLine('film-b', { first: 0, last: 29 }, null, branch, s.tries)).toBe('shipped the record and the look of film-b-000000-000029 to agent/p6-chunks-waits, the push went through at try 3 (the picture travels by attachment)')
+    expect(git(remote, 'log', '--format=%s', branch).stdout.trim()).toBe('Chunk one')
+
+    expect(s.add([{ src: src('two.json'), to: 'film-b/two.json' }], 'Chunk two')).toBe(true)
+    gone(99)
+    expect(s.push()).toBe(false)
+    expect(s.tries).toBe(4)
+    expect(naps).toEqual([5000, 15000, 30000])
+    expect(s.unpushed).toBe(true)
+    expect(said.at(-1)).toMatch(/^the push to agent\/p6-chunks-waits was refused 4 times \(.*\)\. The chunks stay on disk and the push is tried again after the next chunk\.$/)
+    fs.renameSync(away, remote)
+    naps.length = 0
+    expect(s.push()).toBe(true)
+    expect(s.tries).toBe(1)
+    expect(naps).toEqual([])
+    expect(s.push()).toBe(true)
+    expect(s.tries).toBe(0)
+    expect(git(remote, 'log', '--format=%s', branch).stdout.trim().split('\n')).toEqual(['Chunk two', 'Chunk one'])
+
+    const into = path.join(dir, 'collected-waits')
+    gone(1)
+    expect(collectBranches({ dir: into, say, facts, pattern: 'agent/p6-chunks-*', sleep }).map((x: { branch: string }) => x.branch)).toEqual([branch])
+    expect(naps).toEqual([5000])
+    expect(fs.existsSync(path.join(into, 'agent_p6-chunks-waits', 'film-b', 'two.json'))).toBe(true)
+    gone(99)
+    expect(() => collectBranches({ dir: path.join(dir, 'collected-never'), say, facts, pattern: 'agent/p6-chunks-*', sleep })).toThrow(/4 tries, 5, 15, 30 s apart/)
+    expect(naps).toEqual([5000, 15000, 30000])
+    fs.renameSync(away, remote)
   })
 })
 

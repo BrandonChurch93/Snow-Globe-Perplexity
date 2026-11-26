@@ -457,9 +457,9 @@ export function shipTitle(what, c, record, test = false) {
   const mark = shipMark(record)
   return `Chunk ${chunkStem(what, c.first, c.last)}${test ? ', a test' : ''}${mark ? `, ${mark}: never encoded into a master` : ''}`
 }
-export function shippedLine(what, c, record, branch) {
+export function shippedLine(what, c, record, branch, tries = 1) {
   const mark = shipMark(record)
-  return `shipped the record and the look of ${chunkStem(what, c.first, c.last)}${mark ? `, marked ${mark},` : ''} to ${branch} (the picture travels by attachment)`
+  return `shipped the record and the look of ${chunkStem(what, c.first, c.last)}${mark ? `, marked ${mark},` : ''} to ${branch}${tries > 1 ? `, the push went through at try ${tries}` : ''} (the picture travels by attachment)`
 }
 
 /** --local starts the installed Chrome in a window, with the machine's graphics card. Without a display it cannot open. */
