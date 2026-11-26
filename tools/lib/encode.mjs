@@ -272,7 +272,7 @@ export async function encodeFinal({ parts, args, out, fps, passes = 2, sound = n
   const tmp = `${out}.part`
   fs.mkdirSync(path.dirname(out), { recursive: true })
   const input = ['-f', 'concat', '-safe', '0', '-i', list]
-  const picture = ['-vf', `settb=1/${fps},setpts=N,${SET_TAGS}`, '-fps_mode', 'passthrough', '-r', String(fps), ...args]
+  const picture = ['-vf', `settb=1/${fps},setpts=N,${SET_TAGS}`, '-fps_mode', 'cfr', '-r', String(fps), ...args]
   try {
     if (passes > 1) await ffmpeg([...input, '-map', '0:v:0', '-an', ...picture, '-pass', '1', '-passlogfile', log, '-f', 'null', '-'])
     const pass = passes > 1 ? ['-pass', '2', '-passlogfile', log] : []
@@ -295,6 +295,13 @@ function readPsnr(stats) {
   }
   fs.rmSync(stats, { force: true })
   return out
+}
+
+/** The reference frames the stream's own header declares (max_num_ref_frames of its first sequence parameter set). ffprobe's `refs` does not say it. */
+export function headerRefFrames(file) {
+  const r = spawnSync('ffmpeg', ['-v', 'trace', '-i', file, '-map', '0:v:0', '-c', 'copy', '-frames:v', '1', '-bsf:v', 'trace_headers', '-f', 'null', '-'], { encoding: 'utf8', maxBuffer: 1 << 28 })
+  const m = /max_num_ref_frames\s+[01]+ = (\d+)/.exec(r.stderr ?? '')
+  return m ? Number(m[1]) : null
 }
 
 /** The luma PSNR of every frame of a file, in dB, against PNGs (made into video as the encoder is fed) or against other files decoded in order. */

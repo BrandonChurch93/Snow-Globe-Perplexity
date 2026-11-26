@@ -9,7 +9,7 @@ import { engineHash, fileSha, sha256 } from './lib/hashes.mjs'
 import { freeDiskGb, launch, machineId, pinnedBrowser, rendererName } from './lib/browser.mjs'
 import { serve } from './lib/server.mjs'
 import { Run, argFrame, argText, pngOk, short } from './lib/frames.mjs'
-import { decodedHashes, encodeFinal, encodeMasterChunk, finalVideoArgs, frameLevels, framePsnr, haveFfmpeg, keyFrames, masterVideoArgs, probe, probeLine, probeStreams, scaleEvery, soundSeconds, startsFast, stillJpeg, toolVersions, videoSettings } from './lib/encode.mjs'
+import { decodedHashes, encodeFinal, encodeMasterChunk, finalVideoArgs, frameLevels, framePsnr, haveFfmpeg, headerRefFrames, keyFrames, masterVideoArgs, probe, probeLine, probeStreams, scaleEvery, soundSeconds, startsFast, stillJpeg, toolVersions, videoSettings } from './lib/encode.mjs'
 import { COLOUR_TAGS, FPS, JOINS, LOOK_WIDTH, M, SOUND, STILL_MAX_MB, WHATS, bestRun, bigSha, chunkDir, chunkStem, coverReport, dB, encodeProofRows, finalKbps, framesOf, heartbeat, hours, intermediateVideo, joinPlan, levelProblems, masterConfigProblems, openingPack, pad6, pictureLevels, procsProblem, psnrFacts, rangeChunks, readChunks, recordMatchesRun, crfLadder, crfOf, resultName, sendGroups, split, splitFile, stillName, stillToDo, table, takeFiles, tierOf, totalsFromCut, unsplitFile, hashFolder, chunkName } from './lib/master.mjs'
 import { Shipper, collectBranches, repoFacts } from './lib/mastergit.mjs'
 
@@ -93,7 +93,7 @@ function setup() {
   const renderer = engine ? rendererName(args.local === true) : 'pack'
   const calibration = engine ? calibrationOf(hash, renderer) : null
   const want = (c) => ({ what, first: c.first, last: c.last, engineHash: hash, samples, format: format.id, fps: FPS, test, renderer, calibration, encoderArgs: masterVideoArgs({ ...intermediateVideo(), crf: INTER.crf }, SIZE) })
-  return { what, engine, test, format, samples, procs, total, chunks, work, want, hash, renderer, calibration, floor: psnrFloor(test), out: chunkDir(what, test), local: args.local === true }
+  return { what, engine, test, format, samples, procs, total, chunks, work, want, hash, renderer, calibration, floor: psnrFloor(test), out: chunkDir(what, test), local: args.local === true, overrides: overridden(['crf', 'part-mb']) }
 }
 
 const filesOf = (ctx, c) => {
@@ -386,6 +386,7 @@ async function doChunk(ctx, src, c, progress) {
     look: path.basename(f.look),
     ...(still ? { still } : {}),
     ...(ctx.test ? { test: true } : {}),
+    ...(Object.keys(ctx.overrides).length ? { overrides: ctx.overrides } : {}),
     time: new Date().toISOString(),
   }
   fs.renameSync(tmp, f.mp4)
@@ -550,7 +551,7 @@ function collect() {
     for (const p of got.problems) say(`NOT COMPLETE: ${p}`)
     if (got.strangers.length) say(`${got.strangers.length} ${got.strangers.length === 1 ? 'file' : 'files'} in ${short(folder)} that no record here names (left there): ${got.strangers.slice(0, 8).map((f) => path.basename(f)).join(', ')}${got.strangers.length > 8 ? ', ...' : ''}`)
   }
-  const all = readChunks([dir])
+  const all = readChunks([rel('out', 'master'), dir])
   const taken = all.filter((c) => fs.existsSync(c.file))
   const waiting = all.filter((c) => !fs.existsSync(c.file))
   if (waiting.length) say(`${waiting.length} ${waiting.length === 1 ? 'record has' : 'records have'} no picture here yet: ${waiting.slice(0, 12).map(chunkName).join('; ')}${waiting.length > 12 ? '; ...' : ''}`)
@@ -612,7 +613,7 @@ async function measure({ file, which, plan, format, sound, test, totals, targetM
     codec: v.codec_name,
     profile: v.profile,
     level: Number(v.level),
-    refs: Number(v.refs),
+    refs: headerRefFrames(file),
     keys: keyFrames(file),
     sound: sound ? { wanted: true, codec: a?.codec_name ?? null, sampleRate: Number(a?.sample_rate), channels: a?.channels, kbps: a ? Number(a.bit_rate) / 1000 : 0, seconds: Number(a?.duration), pictureSeconds: Number(v.duration) } : { wanted: false, codec: a?.codec_name ?? null },
     flat: frameLevels(file).filter((f) => f.flat).length,
@@ -802,8 +803,8 @@ function unsplitCommand() {
   if (!fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) throw new Error(`${short(dir)} is not a folder`)
   const manifests = []
   const isManifest = (p) => {
-    if (!/\.json$/.test(p)) return null
     try {
+      if (!fs.statSync(p).isFile() || fs.statSync(p).size > 1e6) return null
       const m = readJson(p)
       return typeof m.sha256 === 'string' && typeof m.file === 'string' && Array.isArray(m.parts) && m.parts.every((x) => typeof x.sha256 === 'string') ? m : null
     } catch {
@@ -814,7 +815,7 @@ function unsplitCommand() {
     const m = isManifest(path.join(dir, e))
     if (m) manifests.push(m)
   }
-  if (!manifests.length) throw new Error(`${short(dir)} holds no manifest (the .manifest.json that --split wrote beside the parts)`)
+  if (!manifests.length) throw new Error(`${short(dir)} holds no manifest (the file --split wrote beside the parts, <name>.manifest.json)`)
   if (args.out !== undefined && manifests.length > 1) throw new Error(`--out names one file and ${short(dir)} holds ${manifests.length} manifests`)
   const have = hashFolder(dir, (p) => !!isManifest(p))
   let failed = 0
