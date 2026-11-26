@@ -1,0 +1,6 @@
+All four pictures: summer, hero camera, hd, tier review, drawn on this machine with lavapipe on 26 Nov 2026 after 09:59 UTC. Pictures 01 to 03 are the crop 560,300 to 1360,800 of the 1920 by 1080 still, enlarged to 1200 px.
+
+01-before-rest-review.jpg: BEFORE. State rest. The branch as cloned from main, before any change, old light.
+02-after-rest-review.jpg: AFTER. State rest. Branch agent/p6-summer-mini at e1374cf8 (the last change to a picture), with rig.ts, glass.ts and backdrop.ts of agent/p6-summer-glass at 51d687ac laid over the working tree for the look only (never committed here).
+03-after-shake-review.jpg: AFTER. State landed (the shake). One commit earlier, c52509e6, before the crown was made darker; same overlay as 02.
+04-approved-left-after-right-rest.jpg: the approved summer-rest (left half) beside 02 (right half), same crop, each half 600 px wide.
