@@ -49,3 +49,41 @@ The strict run, the determinism run, the measure run and every still had `summer
 ## Scratch tools (on my VM only)
 
 `/tmp/t/pair.py approved ours out x0 y0 x1 y1 scale` stacks a crop of the approved image over the same crop of ours. `/tmp/t/inv.py` turns a pixel of the hero frame into slab millimetres.
+
+## The measure lines, word for word
+
+```
+pass M1 summer-rest: 0 (threshold 0, no config key) 0 invalid values in 2073600 pixels; the globe and base lie inside the 1920 x 1080 frame (glass top at 90.7 px, foot at 1029.8 px, base from 597.8 to 1322.2 px)
+pass M2 summer-rest: 0 (threshold 0.03, detail.maxSoftPixelFraction) 0 of 319845 textured pixels in the sharp zone are under detail.minTexelsPerPixel (827489 textured pixels in all)
+pass M3 summer-rest: 1.6726 (threshold 0.75, detail.minSharpnessRatio) high frequency energy of the still over the approved image at the same size: base 1.783 over 170619 pixels of the part in the ids view; miniature 1.673 over 120255 pixels of the part in the ids view
+pass M6 summer-rest: 0 (threshold 0.002, sim.maxInsideFraction) 0 of 102000 particles inside a solid, 0 outside the sphere
+pass M1 summer-shake: 0 (threshold 0, no config key) 0 invalid values in 2073600 pixels; the globe and base lie inside the 1920 x 1080 frame (glass top at 90.7 px, foot at 1029.8 px, base from 597.8 to 1322.2 px)
+pass M2 summer-shake: 0 (threshold 0.03, detail.maxSoftPixelFraction) 0 of 319256 textured pixels in the sharp zone are under detail.minTexelsPerPixel (824867 textured pixels in all)
+pass M6 summer-shake: 0.000088 (threshold 0.002, sim.maxInsideFraction) 9 of 102000 particles inside a solid, 0 outside the sphere
+pass M1 summer-interior: 0 (threshold 0, no config key) 0 invalid values in 2073600 pixels; the miniature, 517245 pixels in the ids view, stays clear of the edge of the frame
+pass M2 summer-interior: 0 (threshold 0.03, detail.maxSoftPixelFraction) 0 of 646468 textured pixels in the sharp zone are under detail.minTexelsPerPixel (888193 textured pixels in all)
+pass M6 summer-interior: 0 (threshold 0.002, sim.maxInsideFraction) 0 of 102000 particles inside a solid, 0 outside the sphere
+pass M1 summer-base: 0 (threshold 0, no config key) 0 invalid values in 2073600 pixels; the base lies inside the frame (81.7 to 1838.3 px across, 232.2 to 867.6 px down)
+pass M2 summer-base: 0 (threshold 0.03, detail.maxSoftPixelFraction) 0 of 562946 textured pixels in the sharp zone are under detail.minTexelsPerPixel (1544330 textured pixels in all)
+pass M6 summer-base: 0 (threshold 0.002, sim.maxInsideFraction) 0 of 102000 particles inside a solid, 0 outside the sphere
+pass M1 summer-surface: 0 (threshold 0, no config key) 0 invalid values in 2073600 pixels; no framing rule for this camera
+pass M2 summer-surface: 0 (threshold 0.03, detail.maxSoftPixelFraction) 0 of 351923 textured pixels in the sharp zone are under detail.minTexelsPerPixel (1852409 textured pixels in all)
+pass M6 summer-surface: 0 (threshold 0.002, sim.maxInsideFraction) 0 of 102000 particles inside a solid, 0 outside the sphere
+pass M1 summer-settled: 0 (threshold 0, no config key) 0 invalid values in 2073600 pixels; the globe and base lie inside the 1920 x 1080 frame (glass top at 90.7 px, foot at 1029.8 px, base from 597.8 to 1322.2 px)
+pass M2 summer-settled: 0 (threshold 0.03, detail.maxSoftPixelFraction) 0 of 319838 textured pixels in the sharp zone are under detail.minTexelsPerPixel (827500 textured pixels in all)
+pass M6 summer-settled: 0 (threshold 0.002, sim.maxInsideFraction) 0 of 102000 particles inside a solid, 0 outside the sphere
+measure summer: complete · 19 of 19 lines, 0 red · draft · 85 s
+```
+
+## The determinism lines I kept (the last six), word for word
+
+```
+identical: still-rest, pass c against pass a
+identical: still-rest, pass d against pass a
+identical: still-settled, pass b against pass a
+identical: still-settled, pass c against pass a
+identical: still-settled, pass d against pass a
+determinism: pass · 3 pictures, 4 page loads, preview, draft, 194 s
+```
+
+`origin/main` moved from 210a125a to f80dc66a after my last merge (sound, the log, the particle worker of the live app, a farm script). I did not merge it and did not push again. It touches no file of mine.
