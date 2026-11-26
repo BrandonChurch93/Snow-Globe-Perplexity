@@ -78,11 +78,12 @@ async function live(session) {
     }
     requestAnimationFrame(tick)
     const marks = (window.__marks = { still: 0, first: 0, ready: 0 })
-    // The still is there when its picture has loaded: a load does not bubble, so it is caught on its way down.
+    // The still is there when its file has loaded (the soft inline picture before it is not the still): a load does not
+    // bubble, so it is caught on its way down.
     document.addEventListener(
       'load',
       (e) => {
-        if (marks.still || !(e.target instanceof HTMLImageElement) || !e.target.closest('#first')) return
+        if (marks.still || !(e.target instanceof HTMLImageElement) || !e.target.closest('#first') || e.target.currentSrc.startsWith('data:')) return
         marks.still = performance.now()
         marks.stillFile = e.target.currentSrc
         window.__firstlook('still')

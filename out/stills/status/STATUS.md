@@ -1,16 +1,15 @@
-# Status 140
+# Status 143
 
-2026-11-26 06:30 UTC
+2026-11-26 07:23 UTC
 
-- Decision 139: every picture and frame from here on is drawn by the faster software renderer on sandbox machines. Two sandbox machines drew the same two frames to the same bytes; the devbox and the first renderer do not match them, so neither is ever joined to this work.
-- Summer's builder has sent its looks: the pool of light under the foot is now a soft pool with a net of light inside it, and the app's own path shows the same garden as the film's. A critic has not judged either yet.
-- Still working inside their limits: the first frame, the controls, the framing, the season change, the opening, the tool for the 4K masters, the strict check and the paid sounds. The count of samples for the masters is the next decision, when the strips at 4 to 24 samples arrive.
-- phase 6: 3.67 h used of its 12.00 h box
-- allowance (after the review): 3.67 h used of 12.00 h allowed
+- Your note is applied: rough draft 0 of the film (the cut as it stood at the review, 960 x 540, with sound) is shared in the thread now, and rough draft 1, with the prompt opening and today's mends, is being drawn across several machines for about 08:30 UTC.
+- From this status on the words and the links stand inside this card, because lines written between steps do not stay in the thread.
+- The prompt opening of the film is built: the composer, the level set to High, the prompt typed key by key, the send, the build screen. 867 frames, 14.45 s, drawn at 1920 x 1080 and at 3840 x 2160.
+- Running now, each in its own box to about 08:15: the change of season keeping the glass in sight, the phone's globe higher in a shake, the first picture standing where the globe stays, a whole visitor walk on three screens, the 4K render tool, the large particles in 4K, the sound of the four shakes.
+- phase 6: 4.57 h used of its 12.00 h box
+- allowance (after the review): 4.57 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-140-1.jpg`: Summer, the table under the foot. Top: the approved image. Middle: before. Bottom: after, at the final tier.
-- `out/stills/status/status-140-2.jpg`: Summer at rest, the globe cut out of three stills. Left: the film's path. Middle: the app at its high level. Right: the app at its low level.
-- `out/stills/status/status-140-3.jpg`: Still: winter rest hero, preview, draft
-- `out/stills/status/status-140-4.jpg`: Still: winter landed hero, hd, review
+- `out/stills/status/status-143-1.jpg`: The film's opening, frame 330: the prompt being typed in the product's own composer.
+- `out/stills/status/status-143-2.jpg`: Twelve frames across the opening: the level menu, the typing, the send, the build screen.
