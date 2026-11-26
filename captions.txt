@@ -104,3 +104,26 @@ walk-f/phone-3-landed.jpg
   Shows: just landed in spring, the petals of the way home still in the liquid. State: not busy, spring lit, the page
   says "Spring". The bar is at its dimmed floor (60 percent): a shake takes more than eight seconds without input on
   this renderer. Run phone-1, picture 24-row-3-spring.
+
+walk-f/tablet-0-first-look.jpg
+  Shows: tablet 1024 x 1366, touch, the first look as it came, three pictures side by side. Left: the first picture
+  the tool could take, 980 ms after the address was asked: the soft picture (the browser's own record puts its first
+  paint and its first paint with a picture in it both at 644 ms). Middle: the still, as the page laid it. Right: the
+  live picture with the controls. State: the still lies on the live picture with no shift (0 px by whole pixels and
+  between them, searched 4 px each way), and the live picture stays where it came (0 px over its first 68 frames,
+  searched 48 px each way). Run tablet-1, pictures 37-first-look-came-first, 42-first-look-still-by-page and
+  39-first-look-came-live.
+
+walk-f/tablet-1-rest.jpg
+  Shows: at rest in winter with the controls, after the one hint. State: winter lit, not busy, the bar awake, no sound
+  control (no sound files here), so the marks stand to the left of the centred Shake control with nothing to its
+  right. Run tablet-1, picture 04-hint-after.
+
+walk-f/tablet-2-mid-shake.jpg
+  Shows: the middle of a shake by the Shake control, winter to spring, the third of four in a row. The controls keep
+  their place, clear of the globe. State: busy, winter still lit, a small dot under the spring mark, the Shake control
+  held. Run tablet-1, picture 23-row-3-spring-across-2.
+
+walk-f/tablet-3-landed.jpg
+  Shows: just landed in spring, the petals of the way home still in the liquid. State: not busy, spring lit, the page
+  says "Spring". The bar is at its dimmed floor (60 percent), as on the phone. Run tablet-1, picture 25-row-3-spring.
