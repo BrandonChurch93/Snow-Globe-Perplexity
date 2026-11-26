@@ -7,7 +7,7 @@ import { GLOW, glowGeometry, glowMaterial, glowPiece, haloGeometry, haloMaterial
 import { MIRROR_GLSL, mirrorUniforms } from '../../../miniature/mirror'
 import { prepareVillage, villageGeometry, villageGrain } from '../../../miniature/model'
 import { isIvy, lampFlame, lampFoot, shrubs } from '../../../miniature/roof'
-import { BUMP_GLSL, NEAR_LIGHT, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, withSurface, type GlowSource } from '../../../miniature/surface'
+import { BUMP_GLSL, NEAR_LIGHT, SURFACE_VERT_MAIN, SURFACE_VERT_PARS, surfaceMaterial, withSurface, type Cover, type GlowSource } from '../../../miniature/surface'
 import { anchors, cottage, cottageFrame, fence, groundAt, moundSlope, pond, pondField, solidDistance, steps, stones, tree } from '../../../scene/layout'
 import { gainOf } from '../../../scene/lightgrid'
 import type { InnerLight, KitMoment } from '../../kit'
@@ -26,7 +26,7 @@ const SIDE = { power: 0.75, reachMm: 7, flicker: 0.1, cycles: 4, phase: 0.75 }
 const ATTIC_LIGHT = { power: 0.6, reachMm: 6, flicker: 0.1, cycles: 4, phase: 0.2 }
 const PUMPKIN = { power: 1.3, reachMm: 7, flicker: 0.16, cycles: 6 }
 const POND = { power: 0.3, reachMm: 20, flicker: 0.08, cycles: 2, phase: 0.8, liftMm: 2.5 }
-const NEAR = { lamp: { power: 9, reachMm: 10 }, pane: { power: 5, reachMm: 3.2 }, pumpkin: { power: 20, reachMm: 5.5, ends: 4 } }
+const NEAR = { lamp: { power: 12, reachMm: 10 }, pane: { power: 5, reachMm: 3.2 }, pumpkin: { power: 20, reachMm: 5.5, ends: 4 } }
 const NEAR_WALL = { lamp: { power: 2.4, reachMm: 9, ends: 3 }, pane: { power: 2.2, reachMm: 4.2, ends: 3 }, pumpkin: { power: 8, reachMm: 4.5, ends: 3 } }
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
 const HALO_KIND = { lamp: { size: 5.6, rest: 0.32, hot: 0, bloom: 0.3 }, pumpkin: { size: 4.2, rest: 0.16, hot: 0, bloom: 0.2 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
@@ -35,7 +35,7 @@ const PANE_SIZE = { size: 3.2, rest: 0.3, hot: 0, bloom: 0.3 }
 const THROUGH = 6
 const LAMP_GLASS: Rgb = [3.4, 1.25, 0.24]
 const WALL_FILL = 3.8
-const GROUND_FILL = 7.5
+const GROUND_FILL = 8
 const PATH = { tone: [0.96, 0.76, 0.58] as Rgb, nearMm: 2.6, highMm: 1.4 }
 const FENCE = { reachMm: 1.25, sinkMm: 5 }
 const MOSS = { low: [0.7, 0.9, 0.6] as Rgb, high: [0.88, 1.02, 0.86] as Rgb, tallMm: 9, soot: 0.8 }
@@ -44,11 +44,25 @@ const MOSS = { low: [0.7, 0.9, 0.6] as Rgb, high: [0.88, 1.02, 0.86] as Rgb, tal
 // third of `top`, and only the palest stones reach it, which keeps stone from stone apart without a white one.
 const STONE = { top: 0.115, knee: 0.17, power: 2.2 }
 // The shared chimney is pale brick. The approved one is the wall's dark stone, a little greyer.
-const CHIMNEY = { tone: [0.9, 0.95, 0.9] as Rgb, top: 0.2, knee: 0.5, power: 2.2, fromMm: 1.5, reachMm: 0.9 }
+const CHIMNEY = { tone: [0.9, 0.95, 0.9] as Rgb, top: 0.26, knee: 0.5, power: 2.2, fromMm: 1.5, reachMm: 0.9 }
 // The shared slates run from 0.02 (a slate's shadowed top edge) to 0.12 (its lit lower edge). The approved roof is big warm
 // slates with bright lower edges over black gaps, so the tone is bent about `mid` and weathered in patches a few slates wide.
 const ROOF = { tone: [1.65, 1.22, 0.95] as Rgb, grey: 0.55, mid: 0.045, bend: 1.6, patch: [0.6, 1.7] as [number, number] }
-const DOOR: Rgb = [0.075, 0.085, 0.07]
+const DOOR: Rgb = [0.055, 0.078, 0.066]
+// The shared stones are a few large blocks; the approved wall is small chipped stones. Upright stone is broken up by the
+// grain map read coarser, through its levels, so the chips hold their size at any distance.
+const CHIP = { scale: 0.4, low: 0.4, span: 1.2, edges: [0.3, 0.7] as [number, number] }
+const chipped: Cover = {
+  uniforms: {},
+  pars: '',
+  apply: `
+{
+  float fallChip = texture2D(map, vMapUv * ${CHIP.scale.toFixed(2)} + 0.61).r;
+  float fallUpright = 1.0 - smoothstep(0.3, 0.6, abs(vObjN.y) / max(length(vObjN), 1e-4));
+  diffuseColor.rgb *= mix(1.0, ${CHIP.low.toFixed(2)} + ${CHIP.span.toFixed(2)} * smoothstep(${CHIP.edges[0].toFixed(2)}, ${CHIP.edges[1].toFixed(2)}, fallChip), villageStone * fallUpright);
+}
+`,
+}
 const TIMBER: Rgb = [0.4, 0.42, 0.34]
 const DRY: readonly Rgb[] = [[0.42, 0.16, 0.05], [0.5, 0.26, 0.07], [0.3, 0.12, 0.05], [0.4, 0.3, 0.1]]
 // The shared shrubs are one soft mass. Dry leaves stand apart: each takes its own tone and its own depth of shade.
@@ -414,7 +428,7 @@ const shadowed = <T extends THREE.Mesh>(m: T, cast = true): T => {
 }
 
 export function build(): THREE.Object3D {
-  const stone = surfaceMaterial({ part: PART, map: villageGrain(), gain, key: 'village-solid-fall', fill: WALL_FILL })
+  const stone = surfaceMaterial({ part: PART, map: villageGrain(), gain, cover: chipped, key: 'village-solid-fall', fill: WALL_FILL })
   const walls = shadowed(new THREE.Mesh(withSurface(autumn(villageGeometry('solid')), sources(NEAR_WALL, tones.lampLight)), stone))
   const decor = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'decor').clone(), sources(NEAR_WALL, tones.lampLight)), stone))
   const earth = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'ground').clone(), sources(NEAR, tones.lampLight)), groundMaterial()), false)

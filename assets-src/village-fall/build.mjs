@@ -500,7 +500,7 @@ const wetAt = (p) => {
 const cobble = (x, z, w, l, h, yaw, lift, dark = 1, flat = false, shore = false) => {
   const seed = R() * 40
   const g = slab(w, h, l, { round: Math.min(h * 0.48, flat ? 0.16 : 0.34), sx: flat ? 9 : 7, sy: 2, sz: flat ? 9 : 7, warp: 0.11, seed })
-  const pick = mul3(STONE_TONES[Math.floor(R() * STONE_TONES.length)], between(flat ? 0.55 : 0.62, flat ? 1.5 : 1.3) * dark)
+  const pick = mul3(STONE_TONES[Math.floor(R() * STONE_TONES.length)], between(flat ? 0.7 : 0.8, flat ? 1.9 : 1.75) * dark)
   const tone = flat ? [pick[0] * FLAG_TONE[0], pick[1] * FLAG_TONE[1], pick[2] * FLAG_TONE[2]] : pick
   const side = flat ? 0.1 : 0.2
   shade(g, (px, py, pz) => (side + (1 - side) * smooth(flat ? h * 0.1 : -h * 0.2, h * 0.45, py)) * (0.45 + 1.15 * fbm(px * 2.4 + seed, pz * 2.4, py * 2, 3)) * (0.55 + 0.45 * smooth(0, 0.45, Math.min(w / 2 - Math.abs(px), l / 2 - Math.abs(pz)))))
@@ -592,7 +592,7 @@ let rimCount = 0
     const x = L.pond.x + dx * t
     const z = L.pond.z + dz * t
     if (R() < 0.3 + 0.7 * west && cottageGap(x, z) > 1 && rockGap(x, z) > 0.2) {
-      cobble(x, z, size, size * between(0.6, 0.9), size * between(0.55, 0.8), Math.atan2(-dx, dz) + between(-0.3, 0.3), size * 0.16, 0.85, false, true)
+      cobble(x, z, size, size * between(0.6, 0.9), size * between(0.55, 0.8), Math.atan2(-dx, dz) + between(-0.3, 0.3), size * 0.16, 1.05, false, true)
       rimCount++
     }
     deg += (size * 1.02 * 180) / Math.PI / (Math.hypot(dx * t, dz * t) || 1)
