@@ -18,7 +18,7 @@ type Mixed = {
   report: {
     seconds: number
     openingSeconds: number
-    placed: { cue: string; at?: number }[]
+    placed: { cue: string; at?: number; cents?: number; moveMs?: number; downDb?: number }[]
     skipped: { cue: string; why: string }[]
     music: { source: string; parts: { id: string; fromBar?: number; toBar?: number; centredByDb?: number }[] }
     landings: { at: number[]; beforeDb: number[]; trimsDb: number[]; afterDb: number[]; spreadDb: number }
@@ -457,6 +457,13 @@ describe('mix', () => {
     expect(A.seconds(a.audio)).toBeCloseTo(A.seconds(b.audio) + 1.5, 3)
     expect(a.report.placed.filter((p) => p.cue === 'key-tap').length).toBe(2)
     expect(b.report.placed.filter((p) => p.cue === 'key-tap').length).toBe(0)
+    // A run of key presses is laid as a hand types: each repeat keeps its place in the report and says by how many
+    // milliseconds it was moved (never more than 20, the first not at all) and how far under one press alone it lies.
+    const taps = a.report.placed.filter((p) => p.cue === 'key-tap')
+    expect(taps.map((p) => p.at)).toEqual([0.2, 0.5])
+    expect(taps.map((p) => p.moveMs)).toEqual([0, 14])
+    expect(taps.map((p) => p.downDb)).toEqual([-9, -11.5])
+    expect(a.report.placed.find((p) => p.cue === 'lift')!.moveMs).toBeUndefined()
     expect(a.report.skipped.map((s) => s.cue)).toContain('riser')
     const liftA = a.report.placed.find((p) => p.cue === 'lift')!.at!
     const liftB = b.report.placed.find((p) => p.cue === 'lift')!.at!

@@ -14,9 +14,10 @@ import { pixels } from './lib/pixels.mjs'
  * Stills: the same still is rendered twice from the web set, once held at the first files (`detail=first`) and once whole, and
  * the tool says how far the two are apart, per camera. `--camera hero,macro` names the cameras, `--season` and `--state` the
  * picture, `--tier` the tier (draft).
- * Live: the built site is opened as a visitor opens it. The tool lists what was fetched before the first complete picture and
- * what after it, checks that the whole file of every picture that was drawn from its first file arrives, and times the frames
- * while they arrive: the longest wait between two frames against the usual one.
+ * Live: the built site is opened as a visitor opens it. The tool says when the still the page paints first was there and what
+ * had to arrive for it (the page and one file, see tools/poster.mjs), lists what was fetched before the first complete picture
+ * and what after it, checks that the whole file of every picture that was drawn from its first file arrives, and times the
+ * frames while they arrive: the longest wait between two frames against the usual one.
  * `--stills` or `--live` runs one half alone. `--wait SECONDS` is how long the live page may take (180).
  * Files: out/work/firstlook/<camera>-first.png, <camera>-whole.png, <camera>-pair.jpg, live.png, result.json.
  */
@@ -65,7 +66,7 @@ async function live(session) {
   const errors = watchPage(page)
   const fetched = []
   const pending = []
-  const seen = { first: 0, ready: 0 }
+  const seen = { still: 0, first: 0, ready: 0 }
   await page.exposeBinding('__firstlook', (_source, what) => {
     if (!seen[what]) seen[what] = Date.now()
   })
@@ -76,7 +77,19 @@ async function live(session) {
       requestAnimationFrame(tick)
     }
     requestAnimationFrame(tick)
-    const marks = (window.__marks = { first: 0, ready: 0 })
+    const marks = (window.__marks = { still: 0, first: 0, ready: 0 })
+    // The still is there when its file has loaded (the soft inline picture before it is not the still): a load does not
+    // bubble, so it is caught on its way down.
+    document.addEventListener(
+      'load',
+      (e) => {
+        if (marks.still || !(e.target instanceof HTMLImageElement) || !e.target.closest('#first') || e.target.currentSrc.startsWith('data:')) return
+        marks.still = performance.now()
+        marks.stillFile = e.target.currentSrc
+        window.__firstlook('still')
+      },
+      true,
+    )
     const tell = () => {
       const d = document.documentElement?.dataset
       if (!d) return
@@ -127,6 +140,8 @@ async function live(session) {
     return { frames: g.length, medianMs: g.length ? g[g.length >> 1] : 0, longestMs: g.length ? g[g.length - 1] : 0 }
   }
   const early = fetched.filter((x) => x.early)
+  const stillUrl = timing.marks.stillFile ? timing.marks.stillFile.replace(session.server.url, '') : ''
+  const forStill = fetched.filter((x) => x.url === 'index.html' || (stillUrl && x.url === stillUrl))
   const late = fetched.filter((x) => !x.early)
   const sum = (list) => list.reduce((n, x) => n + x.bytes, 0)
   // Every picture that was drawn from its first file must have had its whole file fetched afterwards.
@@ -140,6 +155,7 @@ async function live(session) {
   // The first files of the season the page opened with: when it fetched none of them, it did not start from what the first picture needs.
   const firstFiles = [...names].filter((n) => n.startsWith('assets/shared/') || n.startsWith(`assets/${cfg.defaultSeason}/`)).filter((n) => /\.first\.[a-z0-9]+$/i.test(n)).length
   return {
+    still: stillUrl && timing.marks.still < timing.marks.first ? { seconds: timing.marks.still / 1000, kb: sum(forStill) / 1000, requests: forStill.length, file: stillUrl.replace(/\?.*$/, '') } : null,
     firstPictureSeconds: (seen.first - t) / 1000,
     wholeSeconds: (seen.ready - t) / 1000,
     before: { mb: mb(sum(early)), requests: early.length },
@@ -163,11 +179,13 @@ let failed = ''
 try {
   if (only !== 'stills') {
     const l = (result.live = await live(session))
+    if (l.still) console.log(`live: the still after ${l.still.seconds.toFixed(2)} s from ${l.still.kb.toFixed(1)} kB in ${l.still.requests} requests, the page and ${l.still.file}`)
     console.log(`live: the first picture after ${l.firstPictureSeconds.toFixed(1)} s from ${l.before.mb.toFixed(2)} MB in ${l.before.requests} requests; the whole pictures after ${l.wholeSeconds.toFixed(1)} s, ${l.after.mb.toFixed(2)} MB more in ${l.after.requests} requests`)
     console.log(
       `live: while the whole pictures arrived, ${l.frames.whileArriving.frames} frames, usual wait ${l.frames.whileArriving.medianMs.toFixed(0)} ms, longest ${l.frames.whileArriving.longestMs.toFixed(0)} ms; afterwards ${l.frames.afterwards.frames} frames, usual ${l.frames.afterwards.medianMs.toFixed(0)} ms, longest ${l.frames.afterwards.longestMs.toFixed(0)} ms`,
     )
-    if (l.owed < l.firstFiles) failed = `the page fetched ${l.owed} of the ${l.firstFiles} first files before its first picture: it did not start from what the first picture needs`
+    if (!l.still) failed = 'the page painted no still before its first picture'
+    else if (l.owed < l.firstFiles) failed = `the page fetched ${l.owed} of the ${l.firstFiles} first files before its first picture: it did not start from what the first picture needs`
     else if (l.missing.length) failed = `the whole file never came for ${l.missing.join(', ')}`
     else if (l.twice.length) failed = `fetched before and again after the first picture: ${l.twice.join(', ')}`
     else if (l.errors.length) failed = `the page logged:\n${l.errors.join('\n')}`

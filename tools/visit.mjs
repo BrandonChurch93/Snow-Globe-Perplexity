@@ -92,12 +92,17 @@ await page.addInitScript(() => {
 
   // The controls, looked at at every frame and whenever the page starts an animation or a transition: once a control has come
   // it is never under the floor it dims to, never under 1 when the bar has been awake for a while, and never not drawn. What an
-  // animation on a control will do is read from its keyframes, so a dip is found however few frames this machine draws.
+  // animation on a control will do is read from its keyframes, so a dip is found however few frames this machine draws. "A
+  // while" is a second and a half and four frames: the fade back is drawn by frames, and one can take many seconds here.
   window.__watch = { looks: 0, faults: [], least: {}, veil: [] }
   const parts = { shake: '[data-control="shake"]', marks: '[role="group"]', sound: '[data-control="sound"]' }
   const came = {}
   let dimAt = -Infinity
-  new MutationObserver(() => (dimAt = performance.now())).observe(document, { attributes: true, subtree: true, attributeFilter: ['data-dim'] })
+  let framesSince = 0
+  new MutationObserver(() => {
+    dimAt = performance.now()
+    framesSince = 0
+  }).observe(document, { attributes: true, subtree: true, attributeFilter: ['data-dim'] })
   const look = (why) => {
     const root = document.getElementById('ui')
     const ui = root?.firstElementChild
@@ -128,7 +133,7 @@ await page.addInitScript(() => {
       const least = Math.min(seen, ...ahead)
       w.least[part] = Math.min(w.least[part] ?? 1, least)
       if (least < floor - 0.005) fault(part, 'under the floor', { opacity: least, floor })
-      else if (!dim && performance.now() - dimAt > 1500 && seen < 0.995) fault(part, 'under 1 with the bar awake', { opacity: seen })
+      else if (!dim && performance.now() - dimAt > 1500 && framesSince >= 4 && seen < 0.995) fault(part, 'under 1 with the bar awake', { opacity: seen })
     }
     const veil = ui.querySelector('canvas')
     const shown = veil && !veil.hidden
@@ -136,6 +141,7 @@ await page.addInitScript(() => {
     if ((shown || (last && last.opacity !== null)) && w.veil.length < 400) w.veil.push({ t, opacity: shown ? Number(getComputedStyle(veil).opacity) : null, busy: ui.querySelector(parts.shake)?.getAttribute('aria-disabled') === 'true' })
   }
   const each = () => {
+    framesSince++
     look('frame')
     requestAnimationFrame(each)
   }
@@ -432,25 +438,47 @@ if (want(11)) {
   await note(11, 'places', { boxes: s.boxes, canvas: s.canvas, outside: out, overlapping: hit, controlsTopShare: top / fmt.height, gapUnder: fmt.height - bottom, under44: small, readingOrder: order }, out.length === 0 && hit.length === 0 && small.length === 0 && top / fmt.height > 0.7)
 
   // Dimming: after the pointer has moved once and then been still, the controls dim; they return when it moves.
+  const awakePicture = (await read()).dim ? null : await grab()
   if (!touch) await page.mouse.move(fmt.width * 0.3, fmt.height * 0.3)
   else await press(fmt.width * 0.5, fmt.height * 0.06)
   if (!touch) await page.mouse.move(fmt.width * 0.31, fmt.height * 0.31)
   const dimmed = await until('the controls to dim', (x) => x.dim, 40000)
   const op = () => page.evaluate(() => getComputedStyle(document.querySelector('[data-control="shake"]')).opacity)
   // `awake` keeps the pointer moving while the value is read: a frame can take seconds here, and a pointer that is still for
-  // `idleSeconds` dims the controls again before the fade back has been drawn.
+  // `idleSeconds` dims the controls again before the fade back has been drawn. On touch that is a tap every two seconds by the
+  // clock: counted in reads, the taps came further apart than `idleSeconds` when the reads were slow. The value a page gives
+  // for a fade is the one of its last frame, and a fade takes a frame to start and a frame to be told it has: so the wait is
+  // twenty seconds and, where frames are slower than that, six frames of the page.
   const settle = async (test, awake = false) => {
-    for (let i = 0; i < 40 && !test(Number(await op())); i++) {
+    const from = (await read()).frames
+    const t0 = Date.now()
+    let tapped = t0
+    for (let i = 0; !test(Number(await op())); i++) {
+      if (i >= 40 && ((await read()).frames >= from + 6 || Date.now() - t0 > WAIT)) break
       if (awake && !touch) await page.mouse.move(fmt.width * (0.4 + 0.004 * (i % 2)), fmt.height * 0.4)
-      else if (awake && i % 8 === 7) await press(fmt.width * 0.5, fmt.height * 0.06)
+      else if (awake && Date.now() - tapped >= 2000) {
+        await press(fmt.width * 0.5, fmt.height * 0.06)
+        tapped = Date.now()
+      }
       await sleep(500)
     }
     return op()
   }
+  // What a visitor sees of it: the brightest thing drawn in the Shake control's place (its word), dimmed over awake. It is
+  // plainly under awake and never under the floor: a control dimmed twice over (by itself and by what holds it) would be.
+  const brightest = async (png, [x, y, w, h]) => {
+    if (!png) return null
+    const { data, info } = await sharp(png).extract({ left: Math.round(x), top: Math.round(y), width: Math.round(w), height: Math.round(h) }).raw().toBuffer({ resolveWithObject: true })
+    let most = 0
+    for (let i = 0; i < data.length; i += info.channels) most = Math.max(most, 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2])
+    return most
+  }
   // The floor is the page's own (`--dim-to`). Dimmed is at that floor, and the floor is plainly there and still quieter than awake.
   const floor = await page.evaluate(() => Number(getComputedStyle(document.querySelector('#ui > div')).getPropertyValue('--dim-to')))
   const low = await settle((v) => Math.abs(v - floor) <= 0.02)
-  await note(11, 'dimmed', { dimmed: dimmed.ok, afterSeconds: dimmed.seconds, opacity: low, floor }, dimmed.ok && Math.abs(Number(low) - floor) <= 0.02 && floor >= 0.5 && floor <= 0.8)
+  const [lit, quiet] = [await brightest(awakePicture, s.boxes.shake), await brightest(await grab(), s.boxes.shake)]
+  const drawn = lit && quiet !== null ? Math.round((quiet / lit) * 100) / 100 : null
+  await note(11, 'dimmed', { dimmed: dimmed.ok, afterSeconds: dimmed.seconds, opacity: low, floor, drawnShare: drawn }, dimmed.ok && Math.abs(Number(low) - floor) <= 0.02 && floor >= 0.5 && floor <= 0.8 && drawn !== null && drawn >= floor - 0.05 && drawn <= 0.9)
   if (!touch) await page.mouse.move(fmt.width * 0.4, fmt.height * 0.4)
   else await press(fmt.width * 0.5, fmt.height * 0.06)
   const back = await until('the controls to return', (x) => !x.dim, 20000)

@@ -1,10 +1,16 @@
 import fs from 'node:fs'
 import os from 'node:os'
-import { launch, machineId, pinnedBrowser } from './lib/browser.mjs'
+import { launch, machineId, pinnedBrowser, softwareRenderer } from './lib/browser.mjs'
 import { rel, writeJson, readJson } from './lib/paths.mjs'
 
 const file = rel('config', 'webgl-caps.json')
 const previous = fs.existsSync(file) ? readJson(file) : null
+// config/webgl-caps.json is inside the engine hash and describes SwiftShader, the renderer the scene's limits were
+// read under. Under another renderer this tool would rewrite it, so it declines.
+if (softwareRenderer().name !== 'swiftshader') {
+  console.error(`caps: the renderer is ${softwareRenderer().name}. The caps file describes SwiftShader. Run it as SHOWCASE_RENDERER=swiftshader npm run caps.`)
+  process.exit(1)
+}
 const browser = await launch()
 const page = await browser.newPage()
 await page.goto('about:blank')

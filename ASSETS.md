@@ -49,8 +49,10 @@ The tool is ElevenLabs, on the Creator plan (measured from the account on 2026-1
 
 | Cue | File | Tool and model | Takes | Date |
 | --- | --- | --- | --- | --- |
+| `amb-fall` | `audio/kept/amb-fall.wav` | Laid by the harness (decisions 111 and 134) from two ElevenLabs sound effect takes of this cue (takes 2 and 1; POST /v1/sound-generation, the default model, PCM at 48 kHz) and one made tone of 220 Hz; no call of its own | 3 | 2026-11-26 |
 | `amb-spring` | `audio/kept/amb-spring.wav` | ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz | 2 | 2026-11-25 |
 | `amb-summer` | `audio/kept/amb-summer.wav` | ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz | 1 | 2026-11-25 |
+| `amb-winter` | `audio/kept/amb-winter.wav` | Laid by the harness (decisions 111 and 134) from two ElevenLabs sound effect takes (take 2 of `amb-fall` and take 3 of this cue; POST /v1/sound-generation, the default model, PCM at 48 kHz); no call of its own | 4 | 2026-11-26 |
 | `glass-clink` | `audio/kept/glass-clink.wav` | ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz | 2 | 2026-11-24 |
 | `lift` | `audio/kept/lift.wav` | ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz | 3 | 2026-11-24 |
 | `music-box` | `audio/kept/music-box.wav` | ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz | 1 | 2026-11-25 |

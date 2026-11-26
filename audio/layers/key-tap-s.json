@@ -1,0 +1,16 @@
+{
+  "cue": "key-tap",
+  "line": "A soft key press",
+  "why": "one key press cut out of the cue's own take 21 (after-review take 3, light taps of the flat keys of a thin laptop keyboard), without what lies over 2.5 kHz: the press at 0.495 s",
+  "seconds": 0.1,
+  "layers": [
+    {
+      "take": 21,
+      "from": 0.49,
+      "to": 0.585,
+      "highCutHz": 2500,
+      "fadeInMs": 2,
+      "fadeOutMs": 30
+    }
+  ]
+}
