@@ -17,6 +17,8 @@ export const CARD_VERT_PARS = `
 uniform vec4 uKindWay[${MAX_KINDS}];
 /** Where the bats are in the globe's own frame, and each one's radius in millimetres (0: no bat). */
 uniform vec4 uBat[${BATS}];
+/** 1 where each particle is drawn once and whole (the app), 0 where the film's samples draw it many times over. */
+uniform float uWhole;
 /** The engine's own hash (hash2 in src/core/rng.ts): the same number that gives a particle its way of falling there. */
 uint cardHash2(uint a, uint b) {
   uint v = ((a ^ 0x9e3779b9u) * 0x85ebca6bu) ^ ((b + 0x7f4a7c15u) * 0xc2b2ae35u);
@@ -64,6 +66,7 @@ export const CARD_VERT = `
     if (${at(SHAPE.seed)}) {
       nearC = 0.0;
       rC *= mix(${n(CARD.hair.restSize)}, 1.0, max(gustC, 1.0 - whole));
+      keepC *= mix(step(fract(own * 419.0), ${n(CARD.hair.restShare)}), 1.0, max(max(gustC, uStorm.x), 1.0 - whole * afloat));
       keepC *= 1.0 - over * (1.0 - smoothstep(${n(CARD.clear.lowMm)}, ${n(CARD.clear.highMm)}, nowL.y)) * whole * (1.0 - gustC) * afloat;
     }
     if (${at(SHAPE.spark)}) keepC = mix(keepC, 1.0, nearC);
@@ -192,9 +195,13 @@ export const CARD_VERT = `
     float sgC = 0.5 * uBlur.z * (1.0 - exp(-(coc > 0.0 ? coc * uBlur.x : -coc * uBlur.y) / uBlur.z)) * afloat * mix(1.0, ${n(CARD.clear.blur)}, clearC);
     if (${at(SHAPE.spark)}) sgC *= mix(${n(CARD.spark.soft)}, 1.0, gustC);
     if (${at(SHAPE.seed)}) sgC *= mix(${n(CARD.hair.soft)}, 1.0, gustC);
+    if (${at(SHAPE.light)}) sgC *= ${n(CARD.glow.soft)};
     sgC += uPoint.w * (nearC * (${at(SHAPE.spark)} ? mix(${n(CARD.spark.nearPx[0])}, ${n(CARD.spark.nearPx[1])}, fract(h.y * 173.0)) : mix(${n(CARD.near.px[0])}, ${n(CARD.near.px[1])}, fract(h.y * 173.0))) + farC * mix(${n(CARD.far.px[0])}, ${n(CARD.far.px[1])}, fract(h.y * 173.0)));
     if (shape > ${n(SHAPE.bat - 0.5)}) sgC *= ${n(CARD.batSoft)};
     float s2C = sgC * sgC + ${n(PIXEL_SIGMA2)} * uPoint.w * uPoint.w;
+    // The film's samples each look through another place of the lens, and so spread a seed or a light over the lens's blur circle
+    // at its depth. Drawn once, it is spread by the same circle here, or the app's air holds more of them, and sharper.
+    if (${at(SHAPE.seed)} || ${at(SHAPE.light)}) s2C += uWhole * 0.25 * coc * coc * afloat;
     float reachC = ((${at(SHAPE.seed)} ? ${n(CARD.hair.reach)} : ${n(CARD.bound)}) + abs(bends.x) + abs(bends.y)) * rC + 2.2 * sqrt(s2C) + 1.0;
     if (shape > ${n(SHAPE.light - 0.5)} && shape < ${n(SHAPE.spark + 0.5)}) reachC = ${n(CARD.glow.wide)} * 2.2 * rC + 2.6 * sqrt(s2C) + 1.0;
     float headC = 0.0;
@@ -223,7 +230,7 @@ export const CARD_VERT = `
     }
     vec2 extC = min(vec2(reachC + 0.67 * abs(arcC) * hlC) + 1.05 * hlC * abs(alC), vec2(uLimit.y));
     alpha = aData.z * (shape > ${n(SHAPE.bat - 0.5)} ? 1.0 : rim) * mix(1.0, mix(${n(LENS_LOOK.farDim)}, 1.0, smoothstep(${n(LENS_LOOK.farDimFrom)}, ${n(LENS_LOOK.farDimTo)}, depth)), afloat * (shape > ${n(SHAPE.bat - 0.5)} ? 0.0 : 1.0)) * keepC * (1.0 + ${n(STORM_FLOOD.frontGain)} * front);
-    if (${at(SHAPE.light)}) alpha *= mix(1.0, mix(${n(CARD.glow.blinkLow)}, 1.0, pow(abs(0.5 + 0.5 * sin(ph + 6.2831853 * h.y)), 3.0)), smoothstep(${n(CARD.glow.unlit)}, 1.0, aData.z));
+    if (${at(SHAPE.light)}) alpha *= mix(1.0, mix(${n(CARD.glow.blinkLow)}, 1.0, pow(abs(0.5 + 0.5 * sin(ph + 6.2831853 * h.y)), ${n(CARD.glow.blinkSkew)})), smoothstep(${n(CARD.glow.unlit)}, 1.0, aData.z));
     if (shape < ${n(SHAPE.bat - 0.5)}) {
       for (int b = 0; b < ${BATS}; b++) {
         vec4 bt = uBat[b];
@@ -329,7 +336,7 @@ vec3 cardEdge(float shape, vec2 q, vec2 own) {
   }
   if (shape < ${n(SHAPE.fleck + 0.5)}) {
     float r = length(q) + 1e-4;
-    float ang = atan(q.y, q.x);
+    float ang = atan(q.y, abs(q.x) + abs(q.y) > 0.0 ? q.x : 1.0);
     float lobes = 2.0 + floor(fract(own.x * 7.0) * 4.0);
     float rim = (0.6 + 0.2 * mix(0.3, 1.0, own.y) * sin(lobes * ang + 6.2831853 * own.x) + 0.1 * sin((lobes + 3.0) * ang + 6.2831853 * own.y)) * mix(1.0, 0.45, fract(own.y * 13.0) * abs(sin(ang + 6.2831853 * own.x)));
     return vec3(r - rim, q.x / r, q.y / r);
@@ -550,6 +557,7 @@ void cardSeed(vec2 p, int kind, vec4 k, vec4 look) {
   float thinAt = 6.2831853 * vL3.w;
   float thinBy = ${n(CARD.hair.thin)} * vL3.y;
   vec2 lean = ${n(CARD.hair.lean)} * ((vL3.y - 0.5) * b + (vL3.w - 0.5) * c);
+  float gauze = 0.0;
   for (int i = 0; i < ${CARD.hair.count}; i++) {
     float fi = float(i);
     float j1 = fract(sin(fi * 12.9898 + vL3.x * 78.233) * 43758.5453);
@@ -558,20 +566,21 @@ void cardSeed(vec2 p, int kind, vec4 k, vec4 look) {
     float turn = 6.2831853 * (fi * 0.5698403 + vL3.w) + 0.6 * (j1 - 0.5);
     float len = mix(${n(CARD.hair.long[0])}, ${n(CARD.hair.long[1])}, j2) * (1.0 - thinBy * pow(max(cos(turn - thinAt), 0.0), 2.0));
     vec2 tip = hub + len * (cos(open) * a + sin(open) * (cos(turn) * b + sin(turn) * c)) + len * lean - ${n(CARD.hair.droop)} * len * sin(open) * (0.4 + j1) * a;
-    float line = cardLine(pp, hub, tip, ${n(CARD.hair.wide)} * mix(${n(CARD.hair.restWide)}, 1.0, vL2.w) * rC * (0.8 + 0.4 * j2), s2, along);
-    hairs = max(hairs, min(1.0, ${n(CARD.hair.hairSeen)} * mix(${n(CARD.hair.restSeen)}, 1.0, vL2.w) * line) * (1.0 - ${n(CARD.hair.tipFade)} * along) * (0.7 + 0.3 * j1) * ((i & 1) == 1 ? mix(${n(CARD.hair.restOdd)}, 1.0, vL2.w) : 1.0));
+    float line = cardLine(pp, hub, tip, ${n(CARD.hair.wide)} * rC * (0.8 + 0.4 * j2), s2, along);
+    gauze += ${n(CARD.hair.hairSeen)} * line * (1.0 - ${n(CARD.hair.tipFade)} * along) * (0.55 + 0.45 * j1);
   }
   vec2 mid = hub + ${n(CARD.hair.ballAt)} * a + 0.5 * lean;
   float ballV = s2 + ${n(CARD.hair.ballWide * CARD.hair.ballWide)} * rC * rC;
   float ball = mix(${n(CARD.hair.ball[0])}, ${n(CARD.hair.ball[1])}, smoothstep(${n(CARD.hair.ballFrom[0])}, ${n(CARD.hair.ballFrom[1])}, sqrt(s2) / rC)) * rC * rC / ballV * ${n(CARD.hair.ballWide * CARD.hair.ballWide)} * exp(-0.5 * dot(pp - mid, pp - mid) / ballV);
-  hairs = max(hairs, ball * mix(${n(CARD.hair.restBall)}, 1.0, vL2.w));
+  // many hairs, each too faint to stand alone: where they cross they add, so the tuft is a gauze that is densest at its heart
+  hairs = 1.0 - exp(-gauze - ball * mix(${n(CARD.hair.restBall)}, 1.0, vL2.w));
   if (storm) {
     float ts = clamp(dot(p - mid, vStreak.xy), -vStreak.z, vStreak.z);
     vec2 ds = p - mid - vStreak.xy * ts - vec2(-vStreak.y, vStreak.x) * (pointBend * (ts * ts / max(vStreak.z, 1e-3) - 0.333 * vStreak.z));
     float tuft = ${n(CARD.run.seedTuft)} * rC * rC / ballV * ${n(CARD.hair.ballWide * CARD.hair.ballWide)} * exp(-0.5 * dot(ds, ds) / ballV) / (1.0 + ${n(CARD.run.seedThin)} * vStreak.z / sqrt(ballV));
     hairs = mix(hairs, tuft, smear);
   }
-  hairs = max(hairs, cardLine(pp, hub, hub, 0.07 * rC, s2, along)) * mix(1.0, ${n(CARD.hair.runHead)}, run);
+  hairs = max(hairs, ${n(CARD.hair.hubSeen)} * cardLine(pp, hub, hub, 0.07 * rC, s2, along)) * mix(1.0, ${n(CARD.hair.runHead)}, run);
   vec2 foot = -${n(CARD.hair.foot)} * mix(0.6, 1.15, vL3.w) * a - 0.25 * lean;
   stems = ${n(CARD.hair.stemSeen)} * max(cardLine(pp, foot, hub, ${n(CARD.hair.stem)} * rC, s2, along), cardLine(pp, foot, foot + 0.2 * a, ${n(CARD.hair.body)} * rC, s2, along)) * mix(1.0, ${n(CARD.hair.runHead)}, run) * (1.0 - smear);
   float trail = cardLine(p, -vStreak.xy * vStreak.z, vStreak.xy * vStreak.z, ${n(CARD.hair.runWide)} * rC, s2, along);
@@ -639,7 +648,7 @@ void cardGlow(vec2 p, int kind, vec4 k, vec4 look) {
     else gl_FragColor = stageDiag(k.rgb, inverseTransformDirection(vec3(0.0, 0.0, 1.0), viewMatrix), vFog.a, uPointChange, 0.0);
     return;
   }
-  vec3 tint = mix(k.rgb, vec3(1.0, 1.0, 0.86), 0.65 * (1.0 - disc) * core / max(core + halo + wide, 1e-4));
+  vec3 tint = mix(k.rgb, vec3(1.0, 1.0, 0.86), (spark ? ${n(CARD.glow.sparkPale)} : ${n(CARD.glow.pale)}) * (1.0 - disc) * core / max(core + halo + wide, 1e-4));
   if (spark) {
     float part = vL3.z / 6.2831853;
     float sharp = 1.0 - smoothstep(${n(CARD.spark.hotFrom[0])}, ${n(CARD.spark.hotFrom[1])}, sg / max(rc, 0.6));
@@ -670,7 +679,8 @@ void cardStreak(vec2 p, int kind, vec4 k, vec4 look) {
       vec2 back = -vStreak.xy;
       float rr = length(hd);
       float gap = ${n((2 * CARD.line.fanSpread) / CARD.line.fanHairs)};
-      float ua = atan(back.x * hd.y - back.y * hd.x, dot(back, hd)) / gap;
+      vec2 fanAt = vec2(dot(back, hd), back.x * hd.y - back.y * hd.x);
+      float ua = atan(fanAt.y, abs(fanAt.x) + abs(fanAt.y) > 0.0 ? fanAt.x : 1.0) / gap;
       float ia = floor(ua + 0.5);
       float da = abs(ua - ia) * gap * rr;
       float reach = vL4.z * mix(${n(CARD.line.fanShort)}, 1.0, fract(sin((ia + 7.0) * 12.9898 + vL3.x * 50.0) * 43758.5453));

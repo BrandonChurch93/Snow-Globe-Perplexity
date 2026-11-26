@@ -12,7 +12,7 @@ import type { KitMoment, SeasonKit } from '../kit'
 // as well as what lies behind it, and it cost the miniature a quarter of its fine detail at rest; the warm air behind the
 // miniature is the wall layer's haze in `glass.ts`, which is drawn behind the cottage and the tree.
 export const veil: SeasonKit['veil'] = { tint: [1.24, 0.98, 0.76], density: 0.09, rest: -0.0007 }
-export const particles: SeasonKit['particles'] = { firefly: { color: [0.95, 1, 0.3], glow: 4 }, seed: { color: [1.8, 1.66, 1.4], glow: 0 }, mote: { color: [1.25, 1, 0.66], glow: 0.5 } }
+export const particles: SeasonKit['particles'] = { firefly: { color: [0.93, 1, 0.27], glow: 8 }, seed: { color: [1.5, 1.2, 0.72], glow: 0 }, mote: { color: [1.3, 1.08, 0.5], glow: 0.5 } }
 
 // The storm outlasts the shake. The shared veil thins with the liquid's turbulence, which is spent by the time the globe is set
 // down, so the air was clear on the landing frame. Summer holds its own storm from the swap through the set down and the
