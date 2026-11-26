@@ -30,6 +30,7 @@ export const lightUniforms = {
   uGridGainB: { value: new THREE.Vector4(1, 1, 1, 1) },
   uGridShade: { value: new THREE.Vector4(0.25, 0.3, 1, 0.3) },
   uGridAir: { value: 0 },
+  uLightBurn: { value: 1 },
   uLightFrame: { value: new THREE.Matrix3() },
   uLightGlow: { value: new THREE.Vector4(0, 0, 0, 0) },
   uLightGlowAt: { value: new THREE.Vector4(0, 0, 0, 1) },
@@ -80,6 +81,7 @@ uniform vec4 uGridGainA;
 uniform vec4 uGridGainB;
 uniform vec4 uGridShade;
 uniform float uGridAir;
+uniform float uLightBurn;
 uniform mat3 uLightFrame;
 uniform vec4 uLightGlow;
 uniform vec4 uLightGlowAt;
@@ -206,7 +208,7 @@ vec3 stageKeyIn(vec3 local, out vec3 toward) {
   return uRigKeyCol * (uRigInside.x * stageGridShade(local));
 }
 vec3 stageSoftIn(vec3 local) {
-  return ((uRigSky + uRigGround) * (0.5 * uRigPoint.z) + uRigRimCol * (uRigInside.x * uRigPoint.y)) * stageGridOpen(local);
+  return ((uRigSky + uRigGround) * (0.5 * uRigPoint.z * uLightBurn) + uRigRimCol * (uRigInside.x * uRigPoint.y)) * stageGridOpen(local);
 }
 vec3 stageCold(vec3 local) {
   vec3 toward;

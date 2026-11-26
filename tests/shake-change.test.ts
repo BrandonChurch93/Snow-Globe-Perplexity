@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { config, shots } from '../src/config'
 import { FRAME } from '../src/app/framing'
-import { GUST_CLOSES, GUST_LAST_DOWN, GUST_LAST_DOWN_AT } from '../src/core/materials'
+import * as THREE from 'three'
+import { GLASS_COME, GLASS_LEAVE, GUST_CLOSES, GUST_LAST_DOWN, GUST_LAST_DOWN_AT, MODE, makeHandle, setPresence, STAGE_FRAG_PARS } from '../src/core/materials'
 import { CHANGE_COVER, DRESSING_CHANGE, changeBloom, changeRamp, changeSpan, partChange, SEASONAL_PARTS } from '../src/shake/change'
 import { shakeMotion } from '../src/shake/table'
 
@@ -251,5 +252,47 @@ describe('the change against the motion', () => {
       expect(beatOf(miniature.from)).toBeGreaterThan(turns[2]!.beat)
       expect(beatOf(miniature.to)).toBeLessThanOrEqual(s.liftBeats + s.strokeBeats)
     }
+  })
+})
+
+describe('the dressing on the glass under a change', () => {
+  const frame = FRAME_BEATS / WINDOW
+  const span = changeSpan('base')
+
+  it('is off the glass while the base changes: the old goes as the cover rises and the new comes as it falls', () => {
+    expect(GLASS_LEAVE.start).toBe(CHANGE_COVER.riseFrom)
+    expect(GLASS_LEAVE.start + GLASS_LEAVE.length).toBeLessThanOrEqual(CHANGE_COVER.fullFrom)
+    expect(GLASS_LEAVE.start + GLASS_LEAVE.length).toBeLessThan(span.from)
+    expect(GLASS_COME.start).toBeGreaterThanOrEqual(CHANGE_COVER.fullTo)
+    expect(GLASS_COME.start).toBeGreaterThan(span.to)
+    expect(GLASS_COME.start + GLASS_COME.length).toBeLessThanOrEqual(CHANGE_COVER.goneAt)
+    // Neither is a cut: each runs over five frames or more, and nothing of either moves outside the cover.
+    expect(GLASS_LEAVE.length).toBeGreaterThanOrEqual(5 * frame)
+    expect(GLASS_COME.length).toBeGreaterThanOrEqual(5 * frame)
+    for (const c of [GLASS_LEAVE.start, GLASS_COME.start + GLASS_COME.length]) expect(changeBloom(c)).toBe(0)
+    for (const c of [GLASS_LEAVE.start + GLASS_LEAVE.length, GLASS_COME.start]) expect(changeBloom(c)).toBe(1)
+  })
+
+  it('gives a part on the glass the ramp of the way it goes, and no other part', () => {
+    const glass = new THREE.Material()
+    glass.userData.stage = makeHandle({ part: 'glass-dressing-winter', standIn: false, change: 'glass-dressing' })
+    const state = (glass.userData.stage as ReturnType<typeof makeHandle>).uState.value
+    setPresence(glass, MODE.outgoing)
+    expect([state.x, state.y, state.w]).toEqual([GLASS_LEAVE.start, GLASS_LEAVE.length, MODE.outgoing])
+    setPresence(glass, MODE.incoming)
+    expect([state.x, state.y, state.w]).toEqual([GLASS_COME.start, GLASS_COME.length, MODE.incoming])
+    const base = new THREE.Material()
+    base.userData.stage = makeHandle({ part: 'base-winter', standIn: false, change: 'base' })
+    const ramp = changeRamp('base')
+    for (const mode of [MODE.outgoing, MODE.incoming, MODE.always]) {
+      setPresence(base, mode)
+      const b = (base.userData.stage as ReturnType<typeof makeHandle>).uState.value
+      expect([b.x, b.y]).toEqual([ramp.start, ramp.length])
+    }
+  })
+
+  it('swaps the base whole at the middle of its span, under the whole cover, so its line against the lit glass is never a mix of two', () => {
+    expect(/if \(uState\.z < -9\.0\) return ([^;]+);/.exec(STAGE_FRAG_PARS)?.[1]).toBe('step(0.5, s)')
+    expect(changeBloom((span.from + span.to) / 2)).toBe(1)
   })
 })

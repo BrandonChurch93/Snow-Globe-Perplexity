@@ -4,6 +4,7 @@ import { stageShader, stageUniforms } from '../core/materials'
 import { resolveBehind } from '../core/accumulator'
 import { stream } from '../core/rng'
 import { partBytes, viewCode } from '../diagnostics/views'
+import { lensFall } from '../post/post'
 import type { StageFrame } from '../scene/frame'
 import { centreHeightMm, collarY } from '../scene/layout'
 import { ROOM_GLSL, ROOM_LIGHTS, roomUniforms } from '../scene/room'
@@ -795,6 +796,10 @@ ${NUMBER_GUARD}
 
 const eyeChunk = { pars: 'varying vec3 vEye;', main: 'vEye = (uGlobeInv * vec4(cameraPosition, 1.0)).xyz;' }
 
+// What the room lays on the glass, held through the fall of the exposure under a change's cover (lighting.ts, `CHANGE_BLOOM`):
+// the glass keeps its windows and its rim while the room round it goes dark. The dressings on the glass read the room as it is.
+const shellHeld = { uKeyCol: { value: new THREE.Color() }, uRimCol: { value: new THREE.Color() }, uSky: { value: new THREE.Color() }, uGround: { value: new THREE.Color() } }
+
 export const shellUniforms = {
   uKeyDir: { value: new THREE.Vector3(0, 1, 0) },
   uKeyCol: { value: new THREE.Color() },
@@ -978,7 +983,7 @@ export class Shell {
 
   constructor() {
     const sphere = new THREE.SphereGeometry(lensRadiusMm, 128, 64)
-    const uniforms = { ...roomUniforms, ...shellUniforms }
+    const uniforms = { ...roomUniforms, ...shellUniforms, ...shellHeld }
     this.through = new THREE.Mesh(sphere, stageShader({ part: 'liquid', standIn: false, uniforms, vertexPars: eyeChunk.pars, vertexMain: eyeChunk.main, fragment: THROUGH, params: { ...blend } }))
     this.through.renderOrder = -0.5
     this.shell = new THREE.Mesh(sphere, stageShader({ part: 'glass', standIn: false, uniforms, vertexPars: eyeChunk.pars, vertexMain: eyeChunk.main, fragment: SHELL, params: { ...blend, transparent: true } }))
@@ -1026,6 +1031,11 @@ export class Shell {
     const ground = (0.2126 * f.ground.r + 0.7152 * f.ground.g + 0.0722 * f.ground.b) * f.fill * room.level
     sh.uSky.value.setRGB((hue[0]! / top) * sky * room.tint[0], (hue[1]! / top) * sky * room.tint[1], (hue[2]! / top) * sky * room.tint[2])
     sh.uGround.value.setRGB((hue[0]! / top) * ground * room.tint[0], (hue[1]! / top) * ground * room.tint[1], (hue[2]! / top) * ground * room.tint[2])
+    const held = 1 / lensFall.dim
+    shellHeld.uKeyCol.value.copy(sh.uKeyCol.value).multiplyScalar(held)
+    shellHeld.uRimCol.value.copy(sh.uRimCol.value).multiplyScalar(held)
+    shellHeld.uSky.value.copy(sh.uSky.value).multiplyScalar(held)
+    shellHeld.uGround.value.copy(sh.uGround.value).multiplyScalar(held)
     sh.uBase.value.setRGB(a.main[0] + (b.main[0] - a.main[0]) * t, a.main[1] + (b.main[1] - a.main[1]) * t, a.main[2] + (b.main[2] - a.main[2]) * t)
     sh.uPool.value.copy(f.pool)
     sh.uOwn.value = glassLook.ownSources ? 1 : 0

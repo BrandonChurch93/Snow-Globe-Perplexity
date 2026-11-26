@@ -259,7 +259,7 @@ export const CARD_VERT = `
     vKind = vec4(aData.y, 2.0 * lying + 0.5 + arcC, float(pid & 4095u) + 0.01 + 0.98 * gustC, whole);
     vFog.a *= shape > ${n(SHAPE.bat - 0.5)} ? ${n(CARD.batFog)} : mix(${n(CARD.fog)}, 1.0, lying) * mix(${n(CARD.dabFog)}, 1.0, max(whole, lineC));
     if (${at(SHAPE.leaf)}) vFog.a = mix(vFog.a, min(vFog.a, ${n(CARD.leafFogMost)}), afloat * uStorm.x);
-    vGrid = vec4(base0 * min(1.0, ${n(LIT_MOST)} / max(max(base0.r, max(base0.g, base0.b)), 1e-3)), bendFit);
+    vGrid = vec4(base0 * min(1.0, ${n(LIT_MOST)} * uLightBurn / max(max(base0.r, max(base0.g, base0.b)), 1e-3)), bendFit);
     vDom = vec4(keyIn * uRigPoint.x, lineC);
     clip = clipC;
     if (${at(SHAPE.seed)} && aState > 0.5) {
@@ -713,7 +713,7 @@ void cardStreak(vec2 p, int kind, vec4 k, vec4 look) {
   }
   bool leafy = look.x > ${n(SHAPE.leaf - 0.5)};
   vec3 light = vGrid.rgb + vDom.rgb * (${n(LIGHT_LOOK.keyFloor)} + ${n(LIGHT_LOOK.keySide * 0.45)});
-  light *= min(1.0, ${n(CARD.litMost)} / max(max(light.r, max(light.g, light.b)), 1e-3));
+  light *= min(1.0, ${n(CARD.litMost)} * uLightBurn / max(max(light.r, max(light.g, light.b)), 1e-3));
   if (leafy) light = mix(vec3(max(light.r, max(light.g, light.b))), light, ${n(CARD.leafHue)});
   vec3 body = leafy ? mix(k.rgb * vec3(${CARD.line.leafLow.map(n).join(', ')}), vec3(${CARD.line.leafHigh.map(n).join(', ')}), pow(abs(vL4.y), uStorm.x > 0.0 ? ${n(CARD.line.shutPale)} : ${n(CARD.line.leafPale)})) : mix(k.rgb, vec3(1.0), mix(${n(CARD.line.pale[0])}, ${n(CARD.line.pale[1])}, vL4.y));
   vec3 col = body * light * (seedy ? ${n(CARD.line.seedGain)} : ${n(CARD.line.gain)});
@@ -766,7 +766,7 @@ void cardMain(vec2 p, int kind, vec4 k, vec4 look, float lying) {
   float back = stageWrap(-nk, uTone.x) * look.w * tint.a;
   float keyShare = mix(${n(LIGHT_LOOK.keyFloor)} + ${n(LIGHT_LOOK.keySide)} * front * front, mix(stageWrap(nk, uRigInside.z) * 0.31831 / max(uRigPoint.x, 1e-3), ${n(LIGHT_LOOK.keyFloor)} + ${n(LIGHT_LOOK.keySide)} * front * front, ${n(CARD.lieLit)}), lying);
   vec3 light = vGrid.rgb * (1.0 + ${n(LIGHT_LOOK.skyTilt)} * dot(nv, upV)) + vDom.rgb * keyShare;
-  light *= min(1.0, ${n(CARD.litMost)} / max(max(light.r, max(light.g, light.b)), 1e-3));
+  light *= min(1.0, ${n(CARD.litMost)} * uLightBurn / max(max(light.r, max(light.g, light.b)), 1e-3));
   if (shape > ${n(SHAPE.leaf - 0.5)} && shape < ${n(SHAPE.leaf + 0.5)}) light = mix(vec3(max(light.r, max(light.g, light.b))), light, ${n(CARD.leafHue)});
   vec3 body = k.rgb * tint.rgb;
   if (vKind.w < 0.5 && shape < ${n(SHAPE.petal + 0.5)}) body *= vec3(${CARD.dabTint.map(n).join(', ')});
@@ -777,7 +777,7 @@ void cardMain(vec2 p, int kind, vec4 k, vec4 look, float lying) {
   if (leafC) {
     vec3 keyV = normalize(mat3(viewMatrix) * stageKeyBent(vStageLocal));
     col *= mix(mix(${n(CARD.leafShade[0])}, ${n(CARD.leafShade[1])}, smoothstep(-0.7, 0.7, nk)), ${n(CARD.leafLie)}, lying);
-    col *= min(1.0, ${n(CARD.leafMost)} / max(max(col.r, max(col.g, col.b)), 1e-3));
+    col *= min(1.0, ${n(CARD.leafMost)} * uLightBurn / max(max(col.r, max(col.g, col.b)), 1e-3));
     col += ${n(CARD.leafSheen)} * pow(max(dot(nv, normalize(keyV + vec3(0.0, 0.0, 1.0))), 0.0), 26.0) * vDom.rgb * (1.0 - lying);
   }
   col = mix(col, uVeil.rgb * vFog.rgb, vFog.a * mix(uTone.z, ${n(CARD.lieVeil)}, lying));
