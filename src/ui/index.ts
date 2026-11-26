@@ -43,6 +43,7 @@ export function mountInterface(root: HTMLElement, bridge: AppBridge): InterfaceH
   const word = make('span', s.word)
   word.textContent = copy.shake.word
   shake.append(word, named(` ${copy.shake.rest}`))
+  const globe = shake.getElementsByClassName(s.globe)[0] ?? null
 
   const marks = make('div', s.marks)
   marks.setAttribute('role', 'group')
@@ -80,6 +81,17 @@ export function mountInterface(root: HTMLElement, bridge: AppBridge): InterfaceH
   let fontTimer = 0
 
   const still = (): boolean => state.reducedMotion || reduce.matches
+
+  // The arrival is played once by the script when the controls come, and no style rule holds it: a rule would play it again
+  // from nothing each time another rule that covered it let go.
+  const rise: Keyframe[] = [{ offset: 0, opacity: 0, transform: `translateY(${timing.arriveRisePx}px)` }]
+  const arrive = (...parts: readonly Element[]): void => {
+    if (still()) return
+    for (const el of parts) el.animate(rise, { duration: timing.arriveSeconds * 1000, easing: 'cubic-bezier(0.2, 0.7, 0.2, 1)' })
+  }
+  const arriveShade = (): void => {
+    if (!still()) bar.animate([{ offset: 0, opacity: 0 }], { duration: timing.arriveSeconds * 1000, easing: 'ease-out', pseudoElement: '::before' })
+  }
 
   const endPulse = (): void => shake.classList.remove(s.pulse)
 
@@ -120,7 +132,11 @@ export function mountInterface(root: HTMLElement, bridge: AppBridge): InterfaceH
 
   const paint = (): void => {
     const show = visible && fontReady && state.ready && state.playing === 'live'
+    const calm = still()
+    const came = show && !shown
+    const soundCame = show && state.soundAvailable && (came || sound.hidden)
     ui.toggleAttribute('data-reduced', state.reducedMotion)
+    if (calm) endPulse()
     if (show !== shown) {
       shown = show
       bar.hidden = !show
@@ -134,6 +150,8 @@ export function mountInterface(root: HTMLElement, bridge: AppBridge): InterfaceH
       }
     }
     const held = state.busy || latched
+    if (held) shake.dataset.rock = ''
+    else if (calm || !show) delete shake.dataset.rock
     shake.setAttribute('aria-disabled', String(held))
     markOf.forEach((b, i) => {
       const id = seasons[i]
@@ -144,6 +162,11 @@ export function mountInterface(root: HTMLElement, bridge: AppBridge): InterfaceH
     sound.hidden = !state.soundAvailable
     sound.setAttribute('aria-pressed', String(state.soundOn))
     menu.update(state)
+    if (came) {
+      arrive(marks, shake)
+      arriveShade()
+    }
+    if (soundCame) arrive(sound)
   }
 
   const latch = (): void => {
@@ -286,6 +309,11 @@ export function mountInterface(root: HTMLElement, bridge: AppBridge): InterfaceH
     if (e.target === shake && e.pseudoElement === '::after') endPulse()
   }
 
+  // The glyph rocks while a shake plays and comes to rest at the end of a swing, upright, not wherever the landing caught it.
+  const onRockTurn = (e: AnimationEvent): void => {
+    if (e.target === globe && !state.busy && !latched) delete shake.dataset.rock
+  }
+
   const onHint = (): void => {
     if (shown) pulse()
   }
@@ -299,6 +327,9 @@ export function mountInterface(root: HTMLElement, bridge: AppBridge): InterfaceH
 
   shake.addEventListener('click', pressShake)
   shake.addEventListener('animationend', onPulseEnd)
+  shake.addEventListener('animationiteration', onRockTurn)
+  shake.addEventListener('animationcancel', onRockTurn)
+  reduce.addEventListener('change', paint)
   markOf.forEach((b, i) => b.addEventListener('click', () => go(seasons[i])))
   sound.addEventListener('click', toggleSound)
   ui.addEventListener('click', onClick)
@@ -342,6 +373,7 @@ export function mountInterface(root: HTMLElement, bridge: AppBridge): InterfaceH
       window.removeEventListener('wheel', onMove, { capture: true })
       window.removeEventListener('keydown', onKey)
       document.removeEventListener('visibilitychange', armHint)
+      reduce.removeEventListener('change', paint)
       delete root.dataset.interface
       ui.remove()
     },

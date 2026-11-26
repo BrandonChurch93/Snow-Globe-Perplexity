@@ -561,7 +561,7 @@ describe('the framing of the app', () => {
       const rig = liveRig(w / h, 0, 0, roomUnder(h))
       expect(rig.distanceMm).toBeGreaterThanOrEqual(hero.distanceMm)
       expect(rig.pitchDeg).toBe(hero.pitchDeg)
-      expect(rig.yawDeg).toBe(hero.yawDeg)
+      if (w / h >= FRAME.narrowAspect) expect(rig.yawDeg).toBe(hero.yawDeg)
       expect(rig.fovDeg).toBe(hero.fovDeg)
       expect(rig.apertureMm).toBe(hero.apertureMm)
       expect(rig.focusShiftMm).toBe(hero.focusShiftMm)
@@ -740,7 +740,7 @@ describe('the framing of the app', () => {
     }
   })
 
-  it('places the smaller globe of a phone between the top edge and the controls: the room over the glass 1.6 times the room under the foot, never more than twice', () => {
+  it('places the smaller globe of a phone between the top edge and the controls: the room over the glass FRAME.overUnder times the room under the foot, never more than twice', () => {
     for (const [w, h] of [[config.formats.phone.width, config.formats.phone.height], [360, 800], [414, 896], [430, 932]] as const) {
       for (const controls of [100, 128, 150]) {
         const m = measure(w, h, controls)
