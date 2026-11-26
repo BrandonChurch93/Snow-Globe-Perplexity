@@ -4,6 +4,7 @@ import { stageShader } from '../../core/materials'
 import { meshLevel } from '../../core/models'
 import { stream } from '../../core/rng'
 import { grade } from '../../post/grade'
+import { readRows, rowsAddress, type Rows } from '../../scene/rowsfile'
 import { rimGapMm } from '../../shake/table'
 import type { KitMoment } from '../kit'
 import { SAND_COLOUR, sinceLoose } from './base'
@@ -484,25 +485,28 @@ export function fallPaths(): FallPath[] {
   return out
 }
 
-function grainGeometry(): THREE.BufferGeometry {
+/** A grain is fourteen numbers: where it lies, where it comes from, its flight and its seed. */
+export const GRAIN_ROW = 14
+
+/**
+ * The file of the grains as the build makes it (tools/lib/grids.mjs), and which of a grain's numbers it holds against which:
+ * where a grain comes from against where it lies, which is one place for every grain that never flies.
+ */
+export const GRAIN_FILE = { name: 'summer-grains', against: [null, null, null, 0, 1, 2] as readonly (number | null)[] }
+
+/**
+ * Every grain, a row each, the jumping ones first: `mark` is the first that does not jump. Working them out takes the page's
+ * thread 1.6 s on a desktop, in one piece, so the build does it and the page reads the file (`prepare`).
+ */
+export function grainRows(): Rows {
   const total = LOOK.jump.count + LOOK.fall.count + LOOK.loose.proud.count + LOOK.loose.dust.count + LOOK.loose.grain.count + LOOK.loose.crumb.count + LOOK.sprinkle.count
-  const to = new Float32Array(total * 12)
-  const from = new Float32Array(total * 12)
-  const flight = new Float32Array(total * 16)
-  const seed = new Float32Array(total * 16)
-  const corner = new Float32Array(total * 8)
-  const index = new Uint32Array(total * 6)
+  const rows = new Float32Array(total * GRAIN_ROW)
   let n = 0
   const put = (t: readonly number[], f: readonly number[], fl: readonly number[], s: readonly number[]): void => {
-    for (let k = 0; k < 4; k++) {
-      const o = n * 4 + k
-      to.set(t, o * 3)
-      from.set(f, o * 3)
-      flight.set(fl, o * 4)
-      seed.set(s, o * 4)
-      corner[o * 2] = k % 2 === 0 ? -1 : 1
-      corner[o * 2 + 1] = k < 2 ? -1 : 1
-    }
+    rows.set(t, n * GRAIN_ROW)
+    rows.set(f, n * GRAIN_ROW + 3)
+    rows.set(fl, n * GRAIN_ROW + 6)
+    rows.set(s, n * GRAIN_ROW + 10)
     n++
   }
 
@@ -601,6 +605,36 @@ function grainGeometry(): THREE.BufferGeometry {
     put(at, at, [0, 0, 0, radius], [id, 2, phase, core ? 0.5 : glint ? 1 : 0])
     laid++
   }
+  return { width: GRAIN_ROW, mark: firstFall, data: rows.subarray(0, n * GRAIN_ROW) }
+}
+
+let baked: Rows | null = null
+
+function grainGeometry(): THREE.BufferGeometry {
+  const { data, mark: firstFall } = baked ?? grainRows()
+  const n = data.length / GRAIN_ROW
+  const to = new Float32Array(n * 12)
+  const from = new Float32Array(n * 12)
+  const flight = new Float32Array(n * 16)
+  const seed = new Float32Array(n * 16)
+  const corner = new Float32Array(n * 8)
+  const index = new Uint32Array(n * 6)
+  for (let q = 0; q < n; q++) {
+    const r = q * GRAIN_ROW
+    for (let k = 0; k < 4; k++) {
+      const o = q * 4 + k
+      for (let i = 0; i < 3; i++) {
+        to[o * 3 + i] = data[r + i]!
+        from[o * 3 + i] = data[r + 3 + i]!
+      }
+      for (let i = 0; i < 4; i++) {
+        flight[o * 4 + i] = data[r + 6 + i]!
+        seed[o * 4 + i] = data[r + 10 + i]!
+      }
+      corner[o * 2] = k % 2 === 0 ? -1 : 1
+      corner[o * 2 + 1] = k < 2 ? -1 : 1
+    }
+  }
   still = n - firstFall
 
   // The fall and the loose grains are first in the list, so that at rest they alone are drawn; within each kind the order is shuffled.
@@ -613,12 +647,12 @@ function grainGeometry(): THREE.BufferGeometry {
   order(firstFall, n - firstFall, 0)
   order(0, firstFall, n - firstFall)
   const g = new THREE.BufferGeometry()
-  g.setAttribute('position', new THREE.BufferAttribute(to.subarray(0, n * 12), 3))
-  g.setAttribute('aFrom', new THREE.BufferAttribute(from.subarray(0, n * 12), 3))
-  g.setAttribute('aFlight', new THREE.BufferAttribute(flight.subarray(0, n * 16), 4))
-  g.setAttribute('aSeed', new THREE.BufferAttribute(seed.subarray(0, n * 16), 4))
-  g.setAttribute('aCorner', new THREE.BufferAttribute(corner.subarray(0, n * 8), 2))
-  g.setIndex(new THREE.BufferAttribute(index.subarray(0, n * 6), 1))
+  g.setAttribute('position', new THREE.BufferAttribute(to, 3))
+  g.setAttribute('aFrom', new THREE.BufferAttribute(from, 3))
+  g.setAttribute('aFlight', new THREE.BufferAttribute(flight, 4))
+  g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 4))
+  g.setAttribute('aCorner', new THREE.BufferAttribute(corner, 2))
+  g.setIndex(new THREE.BufferAttribute(index, 1))
   return g
 }
 
@@ -631,7 +665,21 @@ export function fallShare(sinceLoose: number): number {
   return F.stand + (1 - F.stand) * Math.exp(-sinceLoose / F.seconds)
 }
 
-export async function prepare(): Promise<void> {}
+/**
+ * The grains as the build made them, where the page can have them. A page with no such file, or with one that is no file
+ * of grains, works them out itself as it always did: the file holds the same numbers to the bit and nothing else.
+ */
+export async function prepare(): Promise<void> {
+  if (baked || typeof document === 'undefined') return
+  try {
+    const r = await fetch(new URL(rowsAddress(GRAIN_FILE.name, __ENGINE_HASH__), document.baseURI))
+    if (!r.ok || !r.body) return
+    const rows = await readRows(r.body)
+    if (rows.width === GRAIN_ROW && rows.mark * GRAIN_ROW <= rows.data.length) baked = rows
+  } catch {
+    baked = null
+  }
+}
 
 // The grains lie on the slab and fall past the foot, outside the glass, so they are drawn with the surface dressing (slab.ts
 // adds them to its group); nothing of this arrival is inside the globe.
