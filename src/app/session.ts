@@ -1,9 +1,8 @@
 import { config } from '../config'
+import { timing } from '../copy'
 import type { Moment } from '../core/stage'
 import { timelineMoment } from '../film/moments'
-import { smoother } from '../film/moves'
 import { beatSeconds, eventSeconds, stateSeconds, stillTimeline, type ShakeEvent, type Timeline } from '../film/timeline'
-import { REST_POSE } from '../shake/table'
 import { livePath } from './framing'
 
 export interface LiveSim {
@@ -17,7 +16,7 @@ export interface LiveSim {
 export const LIVE = {
   maxFrameSeconds: 0.25,
   stepCap: Math.round(config.sim.stepHz * 0.25),
-  dissolveSeconds: 1.8,
+  dissolveSeconds: timing.dissolveSeconds,
   skipSliceSteps: 12,
   sliceSteps: 1,
 }
@@ -77,7 +76,8 @@ export class LiveSession {
   shakes = 0
   private made = 0
   private playing: ShakeEvent | null = null
-  private dissolve: { from: string; to: string; asked: number; start: number | null } | null = null
+  /** The change with reduced motion: `drawn` once a frame of the season it leaves has been drawn since the press, `left` the seconds of the dissolve still to run once the picture has changed. */
+  private dissolve: { to: string; asked: number; drawn: boolean; left: number | null } | null = null
   private skipTo = 0
   private landed = -config.states.settledSeconds
 
@@ -118,7 +118,7 @@ export class LiveSession {
     if (this.busy) return null
     this.target = to
     if (this.reduced) {
-      this.dissolve = { from: this.season, to, asked: this.clock, start: null }
+      this.dissolve = { to, asked: this.clock, drawn: false, left: null }
       return to
     }
     const n = this.made++
@@ -180,7 +180,7 @@ export class LiveSession {
       }
     }
     this.clock = next
-    this.settle()
+    this.settle(Math.max(dt, 0))
     return this.sim.step < target ? 1 : Math.min(1, Math.max(0, next * HZ - (target - 1)))
   }
 
@@ -198,7 +198,7 @@ export class LiveSession {
     }
   }
 
-  private settle(): void {
+  private settle(dt: number): void {
     const e = this.playing
     if (e && this.clock >= e.startSec + eventSeconds(e)) {
       this.season = e.to
@@ -209,16 +209,25 @@ export class LiveSession {
     }
     const d = this.dissolve
     if (!d) return
-    if (d.start === null) {
-      if (this.ready(d.to)) d.start = this.clock
-      else if (this.clock - d.asked >= config.live.loadWaitSeconds) {
+    if (d.left === null) {
+      // The picture changes whole, in one frame, and never before a frame of the old season has been drawn since the press:
+      // the interface keeps that frame and fades it out over the new one. The stage is never asked for half a change, which
+      // it draws as a grain that only a shake's blur hides.
+      if (d.drawn && this.ready(d.to)) {
+        this.tl.startSeason = d.to
+        this.tl.events.length = 0
+        this.season = d.to
+        d.left = LIVE.dissolveSeconds
+      } else if (this.clock - d.asked >= config.live.loadWaitSeconds) {
         this.dissolve = null
         this.target = null
       }
-    } else if (this.clock >= d.start + LIVE.dissolveSeconds) {
-      this.tl.startSeason = d.to
-      this.tl.events.length = 0
-      this.season = d.to
+      d.drawn = true
+      return
+    }
+    // The fade runs on the screen's clock, so its end is counted in real seconds, not in the capped ones of the simulation.
+    d.left -= dt
+    if (d.left <= 0) {
       this.target = null
       this.dissolve = null
     }
@@ -229,11 +238,6 @@ export class LiveSession {
   }
 
   moment(mix: number, seed: number): Moment {
-    const d = this.dissolve
-    if (d && d.start !== null) {
-      const change = smoother((this.clock - d.start) / LIVE.dissolveSeconds)
-      return { season: d.from, from: d.from, to: d.to, change, sinceLanding: this.clock - this.landed, globe: REST_POSE, mix, seed, time: this.clock, beat: null, period: null }
-    }
     return { ...timelineMoment(this.tl, this.clock, mix, seed), sinceLanding: this.clock - this.landed }
   }
 }

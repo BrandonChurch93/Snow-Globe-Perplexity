@@ -6,6 +6,8 @@ import { mountMenu } from './menu'
 import './face.css'
 import s from './ui.module.css'
 
+const PROBE_PX = 16
+
 function make<K extends keyof HTMLElementTagNameMap>(tag: K, className: string): HTMLElementTagNameMap[K] {
   const e = document.createElement(tag)
   e.className = className
@@ -36,6 +38,11 @@ export function mountInterface(root: HTMLElement, bridge: AppBridge): InterfaceH
   ui.style.setProperty('--dim-in', `${timing.dimInSeconds}s`)
   ui.style.setProperty('--hint', `${timing.hintSeconds}s`)
 
+  const veil = make('canvas', s.veil)
+  veil.hidden = true
+  veil.setAttribute('aria-hidden', 'true')
+  const pen = veil.getContext('2d', { alpha: false })
+
   const bar = make('div', s.bar)
   bar.hidden = true
 
@@ -63,7 +70,7 @@ export function mountInterface(root: HTMLElement, bridge: AppBridge): InterfaceH
   live.setAttribute('role', 'status')
 
   bar.append(marks, shake, sound)
-  ui.append(bar, live)
+  ui.append(veil, bar, live)
   const menu = mountMenu(ui, s.hidden, bridge)
   root.append(ui)
 
@@ -79,6 +86,10 @@ export function mountInterface(root: HTMLElement, bridge: AppBridge): InterfaceH
   let hintTimer = 0
   let idleTimer = 0
   let fontTimer = 0
+  let said = state.season
+  let watching = 0
+  let kept = false
+  let fade: Animation | null = null
 
   const still = (): boolean => state.reducedMotion || reduce.matches
 
@@ -116,6 +127,74 @@ export function mountInterface(root: HTMLElement, bridge: AppBridge): InterfaceH
       hintDone = true
       if (!state.busy && !latched) pulse()
     }, config.live.hintAfterSeconds * 1000)
+  }
+
+  // With reduced motion the season changes whole in one frame of the picture. The frame before it is kept here and faded out
+  // over the new one: a dissolve of two whole pictures, at the screen's own rate however slowly the picture is drawn.
+  const picture = (): HTMLCanvasElement | null => root.parentElement?.querySelector<HTMLCanvasElement>(':scope > canvas') ?? null
+
+  const unveil = (): void => {
+    const f = fade
+    fade = null
+    f?.cancel()
+    veil.hidden = true
+    veil.width = 0
+    veil.height = 0
+  }
+
+  const unwatch = (): void => {
+    window.cancelAnimationFrame(watching)
+    watching = 0
+    kept = false
+  }
+
+  // Asked for outside the picture's own frame, this runs after it in the same frame, while what it drew can still be read.
+  const watch = (): void => {
+    if (!watching) watching = window.requestAnimationFrame(keep)
+  }
+
+  const keep = (): void => {
+    watching = window.requestAnimationFrame(keep)
+    const view = picture()
+    if (!view || !pen || view.width < 1 || view.height < 1 || fade) return
+    if (veil.width !== view.width || veil.height !== view.height) {
+      veil.width = view.width
+      veil.height = view.height
+    }
+    pen.drawImage(view, 0, 0)
+    kept = true
+  }
+
+  // A picture read too late is one flat black: it is never shown. It is looked at small, on a canvas made for reading,
+  // so the kept picture itself stays where the graphics card can fade it.
+  const empty = (): boolean => {
+    if (veil.width < 1 || veil.height < 1) return true
+    const small = document.createElement('canvas')
+    small.width = PROBE_PX
+    small.height = PROBE_PX
+    const look = small.getContext('2d', { alpha: false, willReadFrequently: true })
+    if (!look) return true
+    look.drawImage(veil, 0, 0, PROBE_PX, PROBE_PX)
+    return look.getImageData(0, 0, PROBE_PX, PROBE_PX).data.every((v, i) => i % 4 === 3 || v === 0)
+  }
+
+  const dissolve = (): void => {
+    const view = picture()
+    const had = kept
+    unwatch()
+    if (!had || !view || !shown || empty()) return
+    const at = view.getBoundingClientRect()
+    const from = ui.getBoundingClientRect()
+    veil.style.left = `${at.left - from.left}px`
+    veil.style.top = `${at.top - from.top}px`
+    veil.style.width = `${at.width}px`
+    veil.style.height = `${at.height}px`
+    veil.hidden = false
+    const f = veil.animate([{ opacity: 1 }, { opacity: 0 }], { duration: timing.dissolveSeconds * 1000, easing: 'cubic-bezier(0.4, 0, 0.6, 1)', fill: 'forwards' })
+    fade = f
+    f.onfinish = () => {
+      if (fade === f) unveil()
+    }
   }
 
   const undim = (): void => {
@@ -217,7 +296,15 @@ export function mountInterface(root: HTMLElement, bridge: AppBridge): InterfaceH
       latched = false
       window.clearTimeout(latchTimer)
     }
-    if (shown && next.season !== prev.season) live.textContent = copy.seasons.name(next.season)
+    // The season is said when it is there: at the landing, and with reduced motion at the end of the dissolve.
+    if (!next.busy && next.season !== said) {
+      said = next.season
+      if (shown) live.textContent = copy.seasons.name(next.season)
+    }
+    const calm = next.reducedMotion && next.busy && next.playing === 'live'
+    if (calm && next.season !== prev.season) dissolve()
+    else if (calm && !fade) watch()
+    else if (!calm) unwatch()
     paint()
   }
 
@@ -330,6 +417,7 @@ export function mountInterface(root: HTMLElement, bridge: AppBridge): InterfaceH
   shake.addEventListener('animationiteration', onRockTurn)
   shake.addEventListener('animationcancel', onRockTurn)
   reduce.addEventListener('change', paint)
+  window.addEventListener('resize', unveil)
   markOf.forEach((b, i) => b.addEventListener('click', () => go(seasons[i])))
   sound.addEventListener('click', toggleSound)
   ui.addEventListener('click', onClick)
@@ -359,7 +447,11 @@ export function mountInterface(root: HTMLElement, bridge: AppBridge): InterfaceH
       if (next) {
         moved = false
         undim()
-      } else menu.close()
+      } else {
+        menu.close()
+        unwatch()
+        unveil()
+      }
       paint()
     },
     dispose(): void {
@@ -374,6 +466,9 @@ export function mountInterface(root: HTMLElement, bridge: AppBridge): InterfaceH
       window.removeEventListener('keydown', onKey)
       document.removeEventListener('visibilitychange', armHint)
       reduce.removeEventListener('change', paint)
+      window.removeEventListener('resize', unveil)
+      unwatch()
+      unveil()
       delete root.dataset.interface
       ui.remove()
     },
