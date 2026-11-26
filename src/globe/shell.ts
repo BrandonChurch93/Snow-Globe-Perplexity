@@ -552,7 +552,7 @@ void main() {
   float cw = clamp(dot(nw, -v), 0.0, 1.0);
   vec3 tang = v + nw * cw;
   float st = length(tang);
-  tang = st > 1e-5 ? tang / st : normalize(cross(nw, vec3(0.0, 1.0, 0.0)));
+  tang = st > 1e-5 ? tang / st : (dot(nw.xz, nw.xz) > 0.0 ? normalize(cross(nw, vec3(0.0, 1.0, 0.0))) : vec3(1.0, 0.0, 0.0));
   float theta = atan(st, cw);
   float f1 = glassFresnel(nv, GLASS_IOR);
   float marks = 1.0 - ${num(glassLook.dust.depth)} * glassDust(n) - ${num(glassLook.hair.depth)} * glassHair(n);
