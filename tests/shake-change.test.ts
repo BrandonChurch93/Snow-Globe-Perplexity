@@ -409,6 +409,25 @@ describe('the dressing on the glass under a change', () => {
     expect(/const veil = \{[^}]*blendSrc: THREE\.OneFactor,\s+blendDst: THREE\.OneMinusSrcAlphaFactor,/.test(text)).toBe(true)
     thinsAsTheStippleDoesInTheMean()
   })
+
+  it("thins fall's crack by the share that stays and drops none of it pixel by pixel, so a hair of one pixel's width is not a row of dots in the app", () => {
+    const file = 'src/seasons/fall/glass.ts'
+    const crack = shaderOf(file, 'CRACK')
+    expect(crack).toContain(SHARE)
+    expect(crack).toContain('if (seen <= 0.0) discard;')
+    expect(crack).not.toContain('stageGone(')
+    // Its colour holds its cover: both terms of it are times how much of the pixel the hair or its edge fills.
+    expect(crack).toContain('* edge * caught + uSky * (0.3 * ')
+    expect(crack.split('gl_FragColor = vec4(col, alpha) * seen;').length).toBe(2)
+    expect(crack).not.toContain('gl_FragColor = vec4(col, alpha);')
+    expect(crack).toContain('if (alpha * seen < 0.3) discard;')
+    const text = readFileSync(file, 'utf8')
+    expect(/fragment: CRACK,\s+params: \{ \.\.\.blend, /.test(text)).toBe(true)
+    expect(/const blend = \{[^}]*blendSrc: THREE\.OneFactor,\s+blendDst: THREE\.OneMinusSrcAlphaFactor,/.test(text)).toBe(true)
+    // The fog of the same season crosses the same way already.
+    expect(shaderOf(file, 'FOG')).toContain(SHARE)
+    thinsAsTheStippleDoesInTheMean()
+  })
 })
 
 describe('the table between two levels of quality', () => {
