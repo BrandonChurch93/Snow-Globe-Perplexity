@@ -32,6 +32,8 @@ export const FRAME = {
   fitPasses: 16,
   backPower: 4,
   homeBars: 1,
+  tiltShares: [0.25, 0.5, 0.75, 1],
+  tiltPasses: 6,
 }
 
 const L = config.live
@@ -74,6 +76,12 @@ const aimForFoot = (rig: Rig, foot: number): number => {
   const p = rig.pitchDeg * RAD
   const y = foot * Math.tan((rig.fovDeg * RAD) / 2)
   return -(y * (rig.distanceMm - FOOT_R * Math.cos(p)) + FOOT_R * Math.sin(p)) / (Math.cos(p) + y * Math.sin(p))
+}
+
+/** How much higher the camera aims to carry the globe `by` half heights of the frame down the screen. */
+const sink = (rig: Rig, by: number): number => {
+  const p = rig.pitchDeg * RAD
+  return (by * Math.tan((rig.fovDeg * RAD) / 2) * (rig.distanceMm - (sphereCentreHeightMm - rig.aimHeightMm) * Math.sin(p))) / Math.cos(p)
 }
 
 /** The lowest the camera may aim before the lowest corners of the frame look past the near edge of the table:
@@ -154,17 +162,22 @@ export function shakenCentres(): Shaken {
   const bar = config.film.beatsPerBar
   const hero = rigOf(MOVES.wide)
   const rigs = FRAME.fitFar.map((far) => ({ ...hero, yawDeg: 0, distanceMm: hero.distanceMm * far }))
-  const near = <T>(samples: readonly T[], seen: (rig: Rig, s: T) => number, share: number): Set<number> => {
+  const near = <T>(samples: readonly T[], seen: (rig: Rig, s: T) => number, share: number, pitches: readonly number[] = [hero.pitchDeg]): Set<number> => {
     const kept = new Set<number>()
-    rigs.forEach((rig, r) => {
-      const all = samples.map((s) => seen(rig, s))
-      const most = all.reduce((m, v) => Math.max(m, v), -Infinity)
-      all.forEach((v, i) => {
-        if (v >= most - share / FRAME.fitFar[r]!) kept.add(i)
+    for (const pitchDeg of pitches) {
+      rigs.forEach((level, r) => {
+        const rig = { ...level, pitchDeg }
+        const all = samples.map((s) => seen(rig, s))
+        const most = all.reduce((m, v) => Math.max(m, v), -Infinity)
+        all.forEach((v, i) => {
+          if (v >= most - share / FRAME.fitFar[r]!) kept.add(i)
+        })
       })
-    })
+    }
     return kept
   }
+  // A view tilted up turns a push away from the camera into a rise on the screen, so the highest moments differ with the tilt.
+  const tilts = [hero.pitchDeg, L.orbitPitchMinDeg, ...FRAME.tiltShares.map((v) => hero.pitchDeg + v * (L.orbitPitchMaxDeg - hero.pitchDeg))]
   const top = (rig: Rig, c: Centre): number => glass(rig, c).top
   const side = (rig: Rig, c: Centre): number => glass(rig, c).side
   const out: Shaken = { high: [], wide: [], ends: [] }
@@ -180,7 +193,7 @@ export function shakenCentres(): Shaken {
       for (const i of kept) for (let j = -FRAME.pathFine; j <= FRAME.pathFine; j++) at.add(i * FRAME.pathFine + j)
       return [...at].map((q) => path.poseAt((q * FRAME.pathStepBeats) / FRAME.pathFine))
     }
-    for (const i of near(grid, top, FRAME.keepShare)) {
+    for (const i of near(grid, top, FRAME.keepShare, tilts)) {
       const key = grid[i]!.map((v) => v.toFixed(2)).join()
       if (!once.has(key)) out.high.push(grid[i]!)
       once.add(key)
@@ -234,15 +247,13 @@ function fit(aspect: number, under: number): { rig: Rig; far: Rig } {
       for (let j = 0; j < 6; j++) {
         const e = edges(rig)
         const rise = (FRAME.overUnder * (e.foot - controls) - (1 - e.top)) / (1 + FRAME.overUnder)
-        const p = rig.pitchDeg * RAD
-        rig.aimHeightMm = Math.min(floor, rig.aimHeightMm + (rise * (k / 2) * (rig.distanceMm - (sphereCentreHeightMm - rig.aimHeightMm) * Math.sin(p))) / Math.cos(p))
+        rig.aimHeightMm = Math.min(floor, rig.aimHeightMm + sink(rig, rise))
       }
     }
     for (let j = 0; j < 4; j++) {
       const over = topOf(rig) - high
       if (over <= 0) break
-      const p = rig.pitchDeg * RAD
-      rig.aimHeightMm = Math.min(floor, rig.aimHeightMm + (over * (k / 2) * (rig.distanceMm - (sphereCentreHeightMm - rig.aimHeightMm) * Math.sin(p))) / Math.cos(p))
+      rig.aimHeightMm = Math.min(floor, rig.aimHeightMm + sink(rig, over))
     }
     rig.aimHeightMm = Math.min(floor, Math.max(rig.aimHeightMm, aimForTable(rig, a)))
     const broad = (a >= 1 ? sideOf(rig) : Math.max(glass(rig, REST).side, baseSide(rig))) / across
@@ -282,6 +293,42 @@ export function standBack(at: Shaking | null = null): number {
   return 1 - (1 - out) * (1 - home)
 }
 
+let tilted: { from: Rig; low: number; distanceMm: number; aimHeightMm: number } | null = null
+
+/** A tilted view kept to the room the level one has, between the line over the controls and the margin under the top edge.
+ * A view tilted up opens the foot of the globe downward and throws a shaken globe higher on the screen. The camera keeps
+ * its aim wherever that holds the globe between the two; else it carries the globe up as far as the line or down as far
+ * as the margin; and where the tilted globe is taller than the room, it stands back with the heap on the line. */
+function holdTilted(rig: Rig, low: number): void {
+  const from = tilted?.from
+  if (tilted && from && tilted.low === low && from.pitchDeg === rig.pitchDeg && from.distanceMm === rig.distanceMm && from.aimHeightMm === rig.aimHeightMm) {
+    rig.distanceMm = tilted.distanceMm
+    rig.aimHeightMm = tilted.aimHeightMm
+    return
+  }
+  const asked = { ...rig }
+  const high = 1 - 2 * FRAME.edgeShare
+  const floor = aimForFoot(rig, low)
+  rig.aimHeightMm = Math.min(rig.aimHeightMm, floor)
+  let top = topOf(rig)
+  for (let i = 0; i < FRAME.tiltPasses && top > high && rig.aimHeightMm < floor; i++) {
+    rig.aimHeightMm = Math.min(floor, rig.aimHeightMm + sink(rig, top - high))
+    top = topOf(rig)
+  }
+  if (rig.aimHeightMm >= floor) {
+    for (let i = 0; i < FRAME.tiltPasses; i++) {
+      const next = Math.max(asked.distanceMm, (rig.distanceMm * (top - low)) / (high - low))
+      if (Math.abs(next - rig.distanceMm) < 1e-7) break
+      rig.distanceMm = next
+      rig.aimHeightMm = aimForFoot(rig, low)
+      top = topOf(rig)
+    }
+  }
+  tilted = { from: asked, low, distanceMm: rig.distanceMm, aimHeightMm: rig.aimHeightMm }
+}
+
+/** The app's camera at one moment: the fitted camera, stood back for a shake, turned and tilted as the visitor holds it,
+ * and held to the room the level view has (`holdTilted`). */
 export function liveRig(aspect: number, yawDeg = 0, pitchDeg = 0, under = 0, at: Shaking | null = null): Rig {
   const base = rigOf(MOVES.wide)
   const held = fit(aspect, under)
@@ -293,8 +340,10 @@ export function liveRig(aspect: number, yawDeg = 0, pitchDeg = 0, under = 0, at:
     rig.aimHeightMm += ((held.far.aimHeightMm - rig.aimHeightMm) * (rig.distanceMm - held.rig.distanceMm)) / span
   }
   rig.yawDeg = Math.max(-L.orbitYawDeg, Math.min(L.orbitYawDeg, base.yawDeg + (aspect < FRAME.narrowAspect ? FRAME.narrowYawDeg : 0) + yawDeg))
+  const low = lowOf(under)
   rig.pitchDeg = Math.max(L.orbitPitchMinDeg, Math.min(L.orbitPitchMaxDeg, rig.pitchDeg + pitchDeg))
-  rig.aimHeightMm = Math.max(rig.aimHeightMm, Math.min(aimForFoot(rig, lowOf(under)), aimForTable(rig, Math.max(aspect, FRAME.leastAspect))))
+  if (rig.pitchDeg !== held.rig.pitchDeg) holdTilted(rig, low)
+  rig.aimHeightMm = Math.max(rig.aimHeightMm, Math.min(aimForFoot(rig, low), aimForTable(rig, Math.max(aspect, FRAME.leastAspect))))
   return rig
 }
 

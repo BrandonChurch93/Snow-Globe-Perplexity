@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { describe, expect, it } from 'vitest'
-import { FRAME, livePath, liveRig, roomUnder, standBack, type Shaking } from '../src/app/framing'
+import { FRAME, edges, livePath, liveRig, roomUnder, shakeReach, standBack, type Shaking } from '../src/app/framing'
 import { config } from '../src/config'
 import { poseOfRig, reachOf, rigOf, type Rig } from '../src/film/moves'
 import { beatSeconds } from '../src/film/timeline'
@@ -470,6 +470,101 @@ describe('the framing of the app through a shake', () => {
         expect(rig.distanceMm, name).toBeGreaterThanOrEqual(hero.distanceMm)
       }
     }
+  })
+
+  /** The tilts a visitor can hold, in degrees from the level view: the lowest, then `n` evenly up to the highest. */
+  const tiltsOf = (n: number): number[] => {
+    const level = rigOf('hero').pitchDeg
+    return [config.live.orbitPitchMinDeg - level, ...Array.from({ length: n }, (_, i) => ((i + 1) / n) * (config.live.orbitPitchMaxDeg - level))]
+  }
+
+  it('keeps a tilted view to the room the level one has: at every tilt the orbit allows, at rest and at every moment of every shake, the heap stays over the line of the controls and the lifted glass under the top edge by the margin, and the globe stays between the sides', () => {
+    const paths = Array.from({ length: FRAME.shakePaths }, (_, n) => livePath(n))
+    const all = moments(8 * FRAME.pathStepBeats)
+    for (const [name, w, h] of screens) {
+      const a = w / h
+      for (const controls of [null, Math.round(0.152 * h)]) {
+        const under = roomUnder(h, controls, w)
+        const low = -1 + 2 * under
+        for (const tilt of tiltsOf(4)) {
+          const worst = cover(liveRig(a, 0, tilt, under), REST_POSE)
+          for (const m of all) {
+            const rig = liveRig(a, 0, tilt, under, m.at)
+            for (const path of paths) {
+              const c = cover(rig, path.poseAt(m.beat))
+              worst.side = Math.max(worst.side, c.side)
+              worst.top = Math.max(worst.top, c.top)
+              worst.foot = Math.max(worst.foot, c.foot)
+              worst.heap = Math.max(worst.heap, c.heap)
+            }
+          }
+          expect(worst.top, `${name} ${controls} ${tilt} top`).toBeLessThanOrEqual(room + slack)
+          expect(-worst.foot, `${name} ${controls} ${tilt} foot`).toBeGreaterThanOrEqual(low - slack)
+          expect(-worst.heap, `${name} ${controls} ${tilt} heap`).toBeGreaterThanOrEqual(low - slack)
+          // A tilt changes how near each end of a stroke stands, so the sides keep at least half the margin, not all of it.
+          expect(worst.side / a, `${name} ${controls} ${tilt} side`).toBeLessThanOrEqual(1 - FRAME.edgeShare)
+        }
+      }
+    }
+  })
+
+  it('moves the camera for a tilt only where the room asks: never nearer, not at all where the tilted globe still stands between the line and the margin, and where it stands back, only until the heap is on the line and the lifted glass on the margin', () => {
+    let stood = 0
+    let still = 0
+    for (const [name, w, h] of screens) {
+      const a = w / h
+      for (const controls of [null, Math.round(0.152 * h)]) {
+        const under = roomUnder(h, controls, w)
+        const low = -1 + 2 * under
+        for (const at of [null, { beat: liftBeats, sinceLanding: long }]) {
+          const level = liveRig(a, 0, 0, under, at)
+          for (const tilt of tiltsOf(8)) {
+            const rig = liveRig(a, 0, tilt, under, at)
+            const plain = { ...level, pitchDeg: rig.pitchDeg }
+            expect(rig.distanceMm, `${name} ${controls} ${tilt}`).toBeGreaterThanOrEqual(level.distanceMm)
+            if (edges(plain).heap >= low && shakeReach(plain).top <= room) {
+              expect(rig.distanceMm, `${name} ${controls} ${tilt}`).toBe(level.distanceMm)
+              still++
+            }
+            if (rig.distanceMm > level.distanceMm + 1e-6) {
+              expect(edges(rig).heap, `${name} ${controls} ${tilt}`).toBeCloseTo(low, 6)
+              expect(shakeReach(rig).top, `${name} ${controls} ${tilt}`).toBeCloseTo(room, 6)
+              stood++
+            }
+          }
+        }
+      }
+    }
+    expect(stood).toBeGreaterThan(0)
+    expect(still).toBeGreaterThan(0)
+    const p = config.formats.phone
+    const phone = roomUnder(p.height, null, p.width)
+    for (const tilt of tiltsOf(8).slice(1)) expect(liveRig(p.width / p.height, 0, tilt, phone).distanceMm).toBe(liveRig(p.width / p.height, 0, 0, phone).distanceMm)
+    const top = tiltsOf(1)[1]!
+    expect(liveRig(hd.width / hd.height, 0, top, roomUnder(hd.height, null, hd.width)).distanceMm / liveRig(hd.width / hd.height, 0, 0, roomUnder(hd.height, null, hd.width)).distanceMm).toBeLessThan(1.25)
+  })
+
+  it('never steps as the view tilts: a tenth of a degree moves the camera back by under a millimetre and its aim by under a quarter of one, or by under a millimetre and a half where a view tilted down meets the near edge of the table', () => {
+    const [lowest, highest] = tiltsOf(1) as [number, number]
+    const most = { back: 0, up: 0, down: 0 }
+    for (const [, w, h] of screens) {
+      const a = w / h
+      const under = roomUnder(h, null, w)
+      for (const at of [null, { beat: liftBeats, sinceLanding: long }]) {
+        let was = liveRig(a, 0, lowest, under, at)
+        for (let tilt = lowest + 0.1; tilt <= highest + 1e-9; tilt += 0.1) {
+          const rig = liveRig(a, 0, tilt, under, at)
+          most.back = Math.max(most.back, Math.abs(rig.distanceMm - was.distanceMm))
+          if (tilt > 1e-9) most.up = Math.max(most.up, Math.abs(rig.aimHeightMm - was.aimHeightMm))
+          else most.down = Math.max(most.down, Math.abs(rig.aimHeightMm - was.aimHeightMm))
+          was = rig
+        }
+      }
+    }
+    expect(most.back).toBeGreaterThan(0)
+    expect(most.back).toBeLessThan(1)
+    expect(most.up).toBeLessThan(0.25)
+    expect(most.down).toBeLessThan(1.5)
   })
 })
 
