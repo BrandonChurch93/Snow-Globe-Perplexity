@@ -45,3 +45,18 @@ walk/phone-2-mid-shake.jpg
 walk/phone-3-landed.jpg
   Shows: just landed in spring. State: not busy, spring lit, the page says "Spring". The bar is at its dimmed floor (60
   percent): a shake takes more than eight seconds without input on this renderer. Run phone-1, picture 11-row-1-spring.
+
+walk/tablet-1-rest.jpg
+  Shows: tablet 1024 x 1366, touch, at rest in winter with the controls, after the one hint. State: winter lit, not
+  busy, the bar awake, no sound control (no sound files here), so the marks stand to the left of the centred Shake
+  control with nothing to its right. Run tablet-1, picture 04-hint-after.
+
+walk/tablet-2-mid-shake.jpg
+  Shows: the same page in the middle of a shake by the Shake control, summer to fall, the first of four in a row: the
+  liquid is stirred, summer's base still stands. The controls keep their place, clear of the globe; a warm reflection
+  on the table passes behind the bar and the controls stay legible. State: busy, summer still lit, the Shake control
+  held. Run tablet-1, picture 16-row-1-fall-across-2.
+
+walk/tablet-3-landed.jpg
+  Shows: just landed in fall. State: not busy, fall lit, the page says "Fall". The bar is at its dimmed floor (60
+  percent), as on the phone. Run tablet-1, picture 17-row-1-fall.
