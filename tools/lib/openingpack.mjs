@@ -2,9 +2,11 @@ import fs from 'node:fs'
 import path from 'node:path'
 import crypto from 'node:crypto'
 import sharp from 'sharp'
+import { rel } from './paths.mjs'
 
 export const PACK_FILES = { manifest: 'manifest.json', bin: 'opening.bin' }
 export const PACK_VERSION = 1
+export const PACK_DIRS = { source: () => rel('public', 'opening'), hosted: () => rel('dist', 'opening'), master: () => rel('out', 'work', 'opening', 'master') }
 
 const TILE = 16
 const KEY_SHARE = 0.4
@@ -163,6 +165,22 @@ export async function openPack(dir) {
 }
 
 export const hasPack = (dir) => fs.existsSync(path.join(dir, PACK_FILES.manifest)) && fs.existsSync(path.join(dir, PACK_FILES.bin))
+
+export const packSha = (dir) => crypto.createHash('sha256').update(fs.readFileSync(path.join(dir, PACK_FILES.manifest))).update(fs.readFileSync(path.join(dir, PACK_FILES.bin))).digest('hex')
+
+export function packServed(width, { hosted = PACK_DIRS.hosted(), master = PACK_DIRS.master() } = {}) {
+  if (!hasPack(hosted)) return null
+  const wider = width > JSON.parse(fs.readFileSync(path.join(hosted, PACK_FILES.manifest), 'utf8')).width
+  const dir = wider && hasPack(master) ? master : hosted
+  return { name: dir === master ? 'master' : wider ? 'hd, enlarged' : 'hd', sha256: packSha(dir) }
+}
+
+export const packLine = (name, format) =>
+  name === 'master'
+    ? `the opening's frames come from the master pack, one to one at ${format.width} x ${format.height}`
+    : name === 'hd'
+      ? "the opening's frames come from the hd pack, one to one or reduced"
+      : `the opening's frames come from the hd pack, enlarged to ${format.width} x ${format.height}: there is no master pack (npm run opening -- --master makes one)`
 
 export function buildPack({ width, height, fps }) {
   const images = []

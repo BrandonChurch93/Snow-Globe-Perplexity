@@ -15,7 +15,6 @@ export async function serve({ dist = rel('dist'), simcache = rel('out', 'work', 
   const master = rel('out', 'work', 'opening', 'master')
   const mounts = [
     ['/assets-full/', rel('assets-full')],
-    ['/opening/', rel('public', 'opening')],
     ['/opening-master/', master],
   ]
   const server = http.createServer((req, res) => {

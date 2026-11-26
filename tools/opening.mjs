@@ -8,7 +8,7 @@ import { Session, cfg } from './lib/page.mjs'
 import { serve } from './lib/server.mjs'
 import { watchPage } from './lib/browser.mjs'
 import { rel, parseArgs, writeJson } from './lib/paths.mjs'
-import { buildPack, openPack, PACK_FILES } from './lib/openingpack.mjs'
+import { buildPack, openPack, packServed, PACK_DIRS, PACK_FILES } from './lib/openingpack.mjs'
 
 const HELP = `npm run opening -- [options]
 
@@ -22,6 +22,9 @@ for the product's interface, and writes the pack the page shows: public/opening/
   --master        draw at device scale 3 into out/work/opening/master/ (never committed, never hosted)
   --stills A,B,C  also write these frames as PNG files to out/work/opening/stills/
   --only-stills   draw the frames named by --stills and nothing else: no pack, no checks
+  --page          draw nothing: ask the built page for frames of the opening, out of order and in a run,
+                  and compare what it shows with the pack, pixel for pixel (hd, and the master's size
+                  when a master pack exists). Writes out/work/opening/page.json
 `
 
 class Stop extends Error {}
@@ -285,8 +288,55 @@ function skillChecks(plan, raw, fonts, screens, twice) {
   }
 }
 
+async function checkPage() {
+  const session = await Session.open()
+  const results = []
+  try {
+    for (const format of [cfg.formats.hd, cfg.formats.master]) {
+      const id = format.id
+      const served = packServed(format.width)
+      if (!served) throw new Stop('there is no opening pack in dist/opening/: run npm run opening, then npm run build')
+      if (served.name === 'hd, enlarged') {
+        results.push({ format: id, pack: served.name, compared: 0, note: 'no master pack, so the page enlarges the hd pack and there is nothing to compare it with pixel for pixel' })
+        continue
+      }
+      const pack = await openPack(served.name === 'master' ? PACK_DIRS.master() : PACK_DIRS.hosted())
+      const page = await session.page({ format: id, simcache: false })
+      const plan = await page.evaluate(() => window.showcase.dev.openingPlan())
+      const jumbled = [plan.frameCount - 1, 0, plan.send, plan.reasoning.choose, plan.reasoning.choose - 1, plan.build.first, plan.build.first - 1, Math.round((plan.typing.first + plan.typing.last) / 2), 1, plan.steps[2], plan.reasoning.open, plan.lastDone, plan.keyTaps[40], plan.keyTaps[40] - 1]
+      const run = Array.from({ length: served.name === 'master' ? 12 : 90 }, (_, n) => plan.typing.first - 20 + n)
+      const differing = []
+      let names = new Set()
+      for (const i of [...jumbled, ...run]) {
+        await page.evaluate((n) => window.showcase.renderOpeningFrame(n), i)
+        const shown = await rgb(await session.grabStage(page), format.width, format.height)
+        const want = await pack.frame(i, { copy: false })
+        if (!shown.equals(want)) {
+          let n = 0
+          for (let o = 0; o < want.length; o += 3) if (shown[o] !== want[o] || shown[o + 1] !== want[o + 1] || shown[o + 2] !== want[o + 2]) n++
+          differing.push({ frame: i, pixels: n })
+        }
+        names.add(await page.evaluate(() => document.getElementById('opening').dataset.pack))
+      }
+      const flagged = await page.evaluate(() => window.showcase.dev.flagged())
+      const register = (await page.evaluate(() => window.showcase.info())).standIns.some((x) => x.name === 'opening')
+      const refused = await page.evaluate((n) => window.showcase.renderOpeningFrame(n).then(() => '', (e) => String(e.message)), plan.frameCount)
+      results.push({ format: id, pack: served.name, said: [...names], compared: jumbled.length + run.length, differing, flaggedAsStandIn: flagged.includes('opening'), registerSaysStandIn: register, errors: page.errors.slice(0, 10), refusesAFrameItDoesNotHold: refused })
+      await page.context().close()
+    }
+  } finally {
+    await session.close()
+  }
+  const pass = results.every((r) => !r.differing || (r.differing.length === 0 && r.said.length === 1 && r.said[0] === r.pack && r.errors.length === 0 && r.refusesAFrameItDoesNotHold !== '' && !r.flaggedAsStandIn))
+  writeJson(path.join(WORK, 'page.json'), { pass, results })
+  for (const r of results) console.log(r.differing ? `opening: the page at ${r.format} shows the ${r.pack} pack: ${r.compared} frames asked out of order and in a run, ${r.differing.length} differ from the pack` : `opening: the page at ${r.format}: ${r.note}`)
+  if (results.some((r) => r.registerSaysStandIn)) console.log('opening: parts/PARTS.json still lists the opening as a stand-in, so info().standIns names it until the register is changed')
+  if (!pass) throw new Stop('the page does not show the pack as it is. See out/work/opening/page.json')
+}
+
 async function main() {
   if (args.help) return console.log(HELP)
+  if (args.page === true) return checkPage()
   const skill = findSkill()
   const effort = findEffort()
   const master = args.master === true
@@ -341,7 +391,7 @@ async function main() {
     for (const i of [...probes].reverse()) twice &&= sha(await rgb((await screens.draw(i)).png, width, height)) === first.get(i)
     const states = raw.map((s, i) => sayState(plan, i, s))
     const checks = { skill: skillChecks(plan, raw, fonts, screens, twice), film: filmChecks(plan, intro, states, raw, screens.motion, effortModel) }
-    const out = master ? path.join(WORK, 'master') : rel('public', 'opening')
+    const out = master ? PACK_DIRS.master() : PACK_DIRS.source()
     const made = await pack.finish(states, `#${ground}`)
     checks.pack = { rebuiltEqualsDrawn: made.exact, underLimit: master || made.bytes <= MAX_BYTES, oneGroundColour: groundHolds }
     const failed = Object.entries(checks).flatMap(([group, c]) => Object.entries(c).filter(([, v]) => v === false).map(([k]) => `${group}.${k}`))
@@ -372,6 +422,10 @@ async function main() {
     fs.writeFileSync(path.join(out, PACK_FILES.bin), made.bin)
     const read = await openPack(out)
     if (read.frameCount !== plan.frameCount) throw new Stop('the pack on disk does not open again')
+    if (!master && fs.existsSync(rel('dist', 'index.html'))) {
+      fs.mkdirSync(PACK_DIRS.hosted(), { recursive: true })
+      for (const f of Object.values(PACK_FILES)) fs.copyFileSync(path.join(out, f), path.join(PACK_DIRS.hosted(), f))
+    }
     console.log(
       `opening: ${plan.frameCount} frames at ${plan.fps} a second (${plan.seconds.toFixed(2)} s), ${width} x ${height}, ${made.pictures} pictures in ${made.images} stored images, ${(made.bytes / 1e6).toFixed(2)} MB, in ${path.relative(rel(), out)}/ · every check passes · sha256 ${record.sha256.pack} · ${skill.name} ${skill.version} with the level change of ${effort.name} ${effort.version} · ${((Date.now() - t0) / 1000).toFixed(0)} s`,
     )
