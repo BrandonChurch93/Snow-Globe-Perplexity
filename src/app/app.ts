@@ -92,6 +92,11 @@ export function startApp(d: AppDeps): AppBridge {
     progressive ? afterFirstPicture.then(detail) : Promise.resolve(),
   )
   if (progressive) void afterFirstPicture.then(() => (doc.dataset.detail = 'loading')).then(() => loader.all).then(detail).then(() => (doc.dataset.detail = 'ready'))
+  void afterFirstPicture
+    .then(() => (doc.dataset.made = 'making'))
+    .then(() => loader.all)
+    .then(() => d.stage.settled?.())
+    .then(() => (doc.dataset.made = 'ready'))
   let session = new LiveSession(sim, params.season, loader.ready)
   let autopilot: Autopilot | null = null
   let looping: LoopPlayer | null = null

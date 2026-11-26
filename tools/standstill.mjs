@@ -20,6 +20,8 @@ import { parseArgs, rel, loadConfig, writeJson } from './lib/paths.mjs'
  *                 in all; the listening ends 3 s after the last landing and `--seconds` is not used. A line for each
  *                 shake says where it landed, how long the control was busy, its frames and the stretches in it. The
  *                 first shake into a season draws it for the first time; a shake into a season seen before does not.
+ *                 Ready is `data-made` where the page sets it (the seasons built and in the GPU's hands), and
+ *                 `data-detail` where it does not.
  *     --gap MS    the shortest gap that counts as a stretch (250).
  *
  * Files: out/work/visit/<name>.json (standstill-<layout> unless named). The tool judges nothing; it prints what it read.
@@ -58,7 +60,7 @@ const consoleLines = []
 page.on('console', (m) => consoleLines.push(`${m.type()}: ${m.text()}`))
 page.on('pageerror', (e) => consoleLines.push(`pageerror: ${e.message}`))
 await page.addInitScript((least) => {
-  const w = (window.__standstill = { gaps: [], frames: [], shown: [], ready: [], busy: [], keys: [], hint: [], season: [] })
+  const w = (window.__standstill = { gaps: [], frames: [], shown: [], ready: [], made: [], busy: [], keys: [], hint: [], season: [] })
   let last = performance.now()
   setInterval(() => {
     const t = performance.now()
@@ -80,11 +82,12 @@ await page.addInitScript((least) => {
       const control = el.matches('[data-control="shake"]')
       if (m.attributeName === 'data-interface') w.shown.push({ at: t, value })
       else if (m.attributeName === 'data-detail') w.ready.push({ at: t, value })
+      else if (m.attributeName === 'data-made') w.made.push({ at: t, value })
       else if (m.attributeName === 'aria-disabled' && control) w.busy.push({ at: t, busy: value === 'true' })
       else if (m.attributeName === 'aria-pressed' && value === 'true') w.season.push({ at: t, season: el.getAttribute('data-season') })
       else if (m.attributeName === 'class' && control) w.hint.push({ at: t, on: /pulse/.test(el.className) })
     }
-  }).observe(document, { attributes: true, subtree: true, attributeFilter: ['class', 'data-interface', 'data-detail', 'aria-disabled', 'aria-pressed'] })
+  }).observe(document, { attributes: true, subtree: true, attributeFilter: ['class', 'data-interface', 'data-detail', 'data-made', 'aria-disabled', 'aria-pressed'] })
 }, gap)
 const cdp = await context.newCDPSession(page)
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
@@ -121,7 +124,10 @@ if (shakes) {
   let sent = 0
   let rest = null
   while (Date.now() - began < WAIT) {
-    const now = await page.evaluate(() => ({ ready: window.__standstill.ready.some((r) => r.value === 'ready'), busy: window.__standstill.busy }))
+    const now = await page.evaluate(() => {
+      const w = window.__standstill
+      return { ready: (w.made.length ? w.made : w.ready).some((r) => r.value === 'ready'), busy: w.busy }
+    })
     const busy = now.busy.length > 0 && now.busy[now.busy.length - 1].busy
     if (now.ready && !busy && landingsOf(now.busy).length === sent) {
       rest ??= Date.now()
@@ -145,6 +151,7 @@ const after = got.gaps.filter((g) => g.from + g.ms > shownAt).map((g) => ({ from
 const frames = got.frames.filter((f) => f >= shownAt)
 const hintOn = got.hint.find((h) => h.on && h.at >= shownAt)
 const ready = got.ready.find((r) => r.value === 'ready')
+const made = got.made.find((r) => r.value === 'ready')
 const out = {
   url: address.href,
   layout,
@@ -158,6 +165,7 @@ const out = {
   beforeTheControls: got.gaps.filter((g) => g.from + g.ms <= shownAt),
   framesAfterTheControls: frames.length,
   otherSeasonsReadyAfterMs: ready ? since(ready.at) : null,
+  inTheGpusHandsAfterMs: got.made.length ? (made ? since(made.at) : null) : undefined,
   hintAfterMs: hintOn ? since(hintOn.at) : null,
   hintAskedAfterMs: cfg.live.hintAfterSeconds * 1000,
   busy: got.busy.map((b) => ({ at: since(b.at), busy: b.busy })),
@@ -208,6 +216,7 @@ console.log(`after the controls the page's thread stood still ${out.stoodStill.t
 console.log(`before the controls: ${list(out.beforeTheControls)}`)
 const when = (v, after) => (v == null ? 'not in this time' : `${v} ms ${after}`)
 console.log(`the other seasons were ready ${when(out.otherSeasonsReadyAfterMs, 'after the controls')} · the hint came ${when(out.hintAfterMs, 'after them')} (asked ${out.hintAskedAfterMs})`)
+if (out.inTheGpusHandsAfterMs !== undefined) console.log(`the other seasons were in the GPU's hands ${when(out.inTheGpusHandsAfterMs, 'after the controls')}`)
 if (out.press?.sentAfterMs != null) {
   const p = out.press
   console.log(`the press: sent ${p.sentAfterMs} ms after the controls · reached the page ${p.reachedThePageAfterMs} ms later · the control went busy ${when(p.controlBusyAfterMs, 'after it')} · the next frame came ${when(p.nextFrameAfterMs, 'after it')} · landed ${when(p.landedAfterMs, 'after it')}`)

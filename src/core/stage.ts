@@ -66,6 +66,8 @@ export interface Stage {
   prepare?(season: string): Promise<void>
   /** A shake has been asked that goes into `season`: until it has landed, nothing is made ready for any other season. */
   expect?(season: string): void
+  /** Resolves when every season asked for so far is ready down to the GPU, so that the first frame of it makes nothing. */
+  settled?(): Promise<void>
   collider(season: string): SdfGrid
   emitters(season: string): Record<string, Emitter[]>
   particleCount(): number

@@ -8,7 +8,7 @@ import type { Gfx } from '../core/gl'
 import { MODE, passStep, setPresence, stageShader, stageUniforms, type Rgb } from '../core/materials'
 import type { Sample } from '../core/sampler'
 import type { Emitter, Moment, ParticleSource, SdfGrid, Stage, StageQuality } from '../core/stage'
-import { preparedBytes, prepareGroup, setAnisotropy } from '../core/textures'
+import { hasTexture, preparedBytes, prepareGroup, setAnisotropy, texture } from '../core/textures'
 import { FLOW_RANGE_MM_S, LIGHT_RANGE, allParts, viewCode } from '../diagnostics/views'
 import { Shell } from '../globe/shell'
 import { lensState } from '../post/grade'
@@ -34,6 +34,15 @@ interface SeasonSet {
   materials: THREE.Material[]
   arrival: THREE.Material[]
   glass: THREE.Object3D[]
+  /** Whether a frame has shown the set: from then on the GPU has all of it. */
+  shown: boolean
+}
+
+type Drawn = THREE.Mesh<THREE.BufferGeometry, THREE.Material | THREE.Material[]>
+
+/** What the renderer keeps for a material once it has a program for it. */
+interface Linked {
+  uniforms?: Record<string, THREE.IUniform | undefined>
 }
 
 /** A season's set while it is built: what is still to do, in the order it is done. The last step puts the set in the scene. */
@@ -45,6 +54,25 @@ interface Making {
 const SOON_MS = 50
 /** How long a press holds other seasons' work back while no frame of its shake has been drawn. */
 const PRESS_MS = 3000
+/** What one frame spends on handing a season that is not on show to the GPU: the step that passes it is the frame's last. */
+const HAND_MS = 4
+/** A layer nothing is on but the lights, which every program counts, and for one draw the mesh that is handed over. */
+const HAND_LAYER = 31
+
+const NOTHING = (): void => undefined
+
+const materialsOf = (d: Drawn): THREE.Material[] => (Array.isArray(d.material) ? d.material : [d.material])
+
+function picturesOf(m: THREE.Material, linked: Linked['uniforms']): THREE.Texture[] {
+  const out: THREE.Texture[] = []
+  const take = (v: unknown): void => {
+    const t = v as (THREE.Texture & { isFramebufferTexture?: boolean }) | null | undefined
+    if (t && t.isTexture && t.image && !t.isRenderTargetTexture && !t.isFramebufferTexture && !(t as THREE.DepthTexture).isDepthTexture) out.push(t)
+  }
+  for (const v of Object.values(m)) take(v)
+  for (const u of Object.values({ ...(m as THREE.ShaderMaterial).uniforms, ...linked })) take(u?.value)
+  return out
+}
 
 const frameOrSoon = (): Promise<void> =>
   new Promise((resolve) => {
@@ -109,6 +137,11 @@ export class GlobeStage implements Stage {
   private inAir = false
   private into: string | null = null
   private intoAt = 0
+  /** The picture the page paints into while it draws one sample a frame; none on a page that captures. */
+  private live: THREE.WebGLRenderTarget | null = null
+  private handing: Promise<void> = Promise.resolve()
+  private readonly scratch = new Map<string, THREE.WebGLRenderTarget>()
+  private stale = false
 
   constructor(private readonly gfx: Gfx, private readonly source: ParticleSource, private readonly assets: Assets) {
     const { scene, world, floor, globe, inside } = this
@@ -141,6 +174,9 @@ export class GlobeStage implements Stage {
     for (const k of kits) for (const [name, c] of Object.entries(k.particles)) all[name] ??= c
     this.frame.kinds = all
     this.pass = { renderer, scene, camera: this.camera, floor, globe, backdrop: this.backdrop, key: this.lighting.key, orient: (sign) => this.orient(sign) }
+    scene.traverse((o) => {
+      if ((o as THREE.Light).isLight) o.layers.enable(HAND_LAYER)
+    })
   }
 
   prepare(season: string): Promise<void> {
@@ -174,12 +210,125 @@ export class GlobeStage implements Stage {
   private async make(season: string): Promise<void> {
     const m = this.making(season)
     while (m.steps.length) {
-      if (this.drawn) {
-        do await frameOrSoon()
-        while (this.held(season))
-      }
+      if (this.drawn) await this.turnFor(season)
       m.steps.shift()?.()
     }
+    // Not waited for: the season can be shown from here on, and a frame that shows it before this is done makes the rest
+    // itself, as it always did.
+    if (this.live) this.handing = this.handing.then(() => this.hand(season))
+  }
+
+  /** The next frame in which something may be done for `season`: none while a shake is in the air that does not go into it. */
+  private async turnFor(season: string): Promise<void> {
+    do await frameOrSoon()
+    while (this.held(season))
+  }
+
+  /** Resolves when every season asked for so far is built and, on a page that paints, in the GPU's hands. */
+  settled(): Promise<void> {
+    return Promise.allSettled([...this.prepared.values()]).then(() => this.handing)
+  }
+
+  private scratchOf(type: THREE.TextureDataType, samples: number): THREE.WebGLRenderTarget {
+    const key = `${type} ${samples}`
+    let t = this.scratch.get(key)
+    if (!t) this.scratch.set(key, (t = new THREE.WebGLRenderTarget(1, 1, { type, depthBuffer: true, stencilBuffer: false, samples })))
+    return t
+  }
+
+  /**
+   * Hands a season that is not on show to the GPU: its programs, its pictures, its buffers. The first frame that showed a
+   * season made them all at once, and that frame is in the middle of the first shake into it. Here they are made a few a
+   * frame while the picture rests. The programs are asked for first, all of them, so that a browser which links aside
+   * (KHR_parallel_shader_compile) links them while the page draws on; then each mesh is drawn once, alone, into one pixel
+   * of a picture of the page's own kind, which is the only way the renderer takes a buffer before the frame that needs it,
+   * and which is where a browser that does not link aside waits for a program, one a frame.
+   */
+  private async hand(season: string): Promise<void> {
+    const s = this.sets.get(season)
+    const live = this.live
+    if (!s || s.shown || !live) return
+    const { renderer } = this.gfx
+    const go = (): boolean => !s.shown && this.live !== null
+    const meshes: Drawn[] = []
+    for (const root of s.objects) root.traverse((o) => {
+      const d = o as Drawn & { isPoints?: boolean; isLine?: boolean }
+      if (d.material && (d.isMesh || d.isPoints || d.isLine)) meshes.push(d)
+    })
+    const aside = (target: THREE.WebGLRenderTarget, work: () => void): void => {
+      const bound = renderer.getRenderTarget()
+      const { calls, triangles, points, lines } = renderer.info.render
+      renderer.setRenderTarget(target)
+      try {
+        work()
+      } finally {
+        renderer.setRenderTarget(bound)
+        Object.assign(renderer.info.render, { calls, triangles, points, lines })
+      }
+    }
+    const run = async (steps: (() => void)[]): Promise<void> => {
+      for (let i = 0; i < steps.length && go(); ) {
+        await this.turnFor(season)
+        const from = performance.now()
+        while (i < steps.length && go() && performance.now() - from < HAND_MS) steps[i++]!()
+      }
+    }
+    const like = this.scratchOf(live.texture.type, live.samples)
+    const linked: Promise<unknown>[] = []
+    await run(
+      meshes.map((d) => () =>
+        aside(like, () => {
+          const below = d.children
+          d.children = []
+          try {
+            linked.push(renderer.compileAsync(d, this.camera, this.scene))
+          } finally {
+            d.children = below
+          }
+        }),
+      ),
+    )
+    await Promise.all(linked)
+
+    const pictures = new Set<THREE.Texture>([s.grid])
+    for (const e of this.assets.entries(season)) if (e.picture && hasTexture(e.name)) pictures.add(texture(e.name))
+    for (const d of meshes) for (const m of materialsOf(d)) for (const t of picturesOf(m, (renderer.properties.get(m) as Linked).uniforms)) pictures.add(t)
+    await run([...pictures].map((t) => () => renderer.initTexture(t)))
+
+    const draw = (d: Drawn, target: THREE.WebGLRenderTarget, cast: boolean): void =>
+      aside(target, () => {
+        const camera = this.camera
+        const mask = camera.layers.mask
+        const hidden: THREE.Object3D[] = []
+        for (let o: THREE.Object3D | null = d; o; o = o.parent) if (!o.visible) hidden.push(o)
+        const { frustumCulled, onBeforeRender, onAfterRender } = d
+        const { start, count } = d.geometry.drawRange
+        for (const o of hidden) o.visible = true
+        d.layers.enable(HAND_LAYER)
+        d.frustumCulled = false
+        // What a mesh does before it is drawn reads the frame it is drawn into, and this is no frame.
+        d.onBeforeRender = NOTHING
+        d.onAfterRender = NOTHING
+        camera.layers.set(HAND_LAYER)
+        // The shadow pass has programs and buffers of its own. It leaves the map with this one mesh in it.
+        renderer.shadowMap.needsUpdate = cast
+        if (cast) this.stale = true
+        try {
+          renderer.render(this.scene, camera)
+        } finally {
+          renderer.shadowMap.needsUpdate = false
+          camera.layers.mask = mask
+          d.onBeforeRender = onBeforeRender
+          d.onAfterRender = onAfterRender
+          d.frustumCulled = frustumCulled
+          d.layers.disable(HAND_LAYER)
+          d.geometry.setDrawRange(start, count)
+          for (const o of hidden) o.visible = false
+        }
+      })
+    // What the table mirrors is drawn into a picture of another kind, and a card may keep a program apart for each kind.
+    const mirrored = this.quality.surfaceReflection === 'planar' && live.samples > 0 ? this.scratchOf(live.texture.type, 0) : null
+    await run(meshes.flatMap((d) => [() => draw(d, like, d.castShadow), ...(mirrored ? [() => draw(d, mirrored, false)] : [])]))
   }
 
   /**
@@ -242,6 +391,7 @@ export class GlobeStage implements Stage {
             materials: collect([base, miniature, lights, dressing, ...glass]),
             arrival: collect([arrival]),
             glass,
+            shown: false,
           })
         },
       ],
@@ -311,6 +461,10 @@ export class GlobeStage implements Stage {
     const sliceOnly = view === 'flow' || view === 'lightgrid'
     const single = moment.from === moment.to || !(moment.change > 0) || moment.change >= 1
     this.drawn = true
+    this.live = sample === null ? target : null
+    // A mesh handed to the GPU since the last frame left the shadow map with nothing else in it.
+    const cast = shadows || this.stale
+    this.stale = false
     if (moment.beat !== null) this.inAir = true
     else if (this.inAir) {
       this.inAir = false
@@ -394,6 +548,7 @@ export class GlobeStage implements Stage {
       const on = !sliceOnly && (s === a || s === b)
       for (const o of s.objects) o.visible = on
       if (!on) continue
+      s.shown = true
       const mode = single ? MODE.always : s === a ? MODE.outgoing : MODE.incoming
       for (const m of s.materials) setPresence(m, mode, 1)
       const here = single ? arrived : s === a ? 1 : 0
@@ -433,7 +588,7 @@ export class GlobeStage implements Stage {
         renderer.setRenderTarget(target)
         applyPose(this.camera, pose, half, h, null)
         u.uLens.value.z = side === 0 ? 1 : 0
-        drawPasses(this.pass, { shadows: shadows && side === 0, mirror: false, sliceOnly: false, emitters: true }, f)
+        drawPasses(this.pass, { shadows: cast && side === 0, mirror: false, sliceOnly: false, emitters: true }, f)
       }
       u.uLens.value.z = 1
       target.scissorTest = false
@@ -447,7 +602,7 @@ export class GlobeStage implements Stage {
       const reach = (CHANGE_BLOOM.glareReach * f.focalPx * outerRadiusMm) / (this.centre.distanceTo(this.camera.position) * h)
       this.centre.project(this.camera)
       lensState.glareAt.set(0.5 + 0.5 * this.centre.x, 0.5 + 0.5 * this.centre.y, reach)
-      drawPasses(this.pass, { shadows, mirror: view === '' && f.planar, sliceOnly, emitters: beauty }, f)
+      drawPasses(this.pass, { shadows: cast, mirror: view === '' && f.planar, sliceOnly, emitters: beauty }, f)
       const fill = view === '' && pose.apertureMm > 0 ? lensFillOf(target) : undefined
       if (fill?.wants(sample)) this.drawBlur(fill, target, pose, f, single ? [a] : [a, b])
     }
