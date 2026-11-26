@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 168 · 2026-11-26 17:36 UTC
+Status 169 · 2026-11-26 17:59 UTC
 
-- `out/stills/status/status-168-1.jpg`: The crown, the approved on the left and ours on the right as Round 21 judged it: the approved's pads stand against lit cream haze, ours is one dark mass against dim air.
-- `out/stills/status/status-168-2.jpg`: The base at one scale: the approved is pale wet sand raked by light from the back right, ours is flat tan.
-- `out/stills/status/status-168-3.jpg`: The light on the table: both draw thin gold veins. The settled line asks ours for a soft pool with a few broad bands, so this goes back.
-- `out/stills/status/status-168-4.jpg`: Still: summer landed hero, hd, review
+- `out/stills/status/status-169-1.jpg`: The change from spring to summer, three frames at its peak. Top row: main, where the table and the base go black. Bottom row: the builder's new head, which keeps tone and lights the new base but floods as a column and a flat oval.
+- `out/stills/status/status-169-2.jpg`: The seeds at rest, the approved on the left and ours mid-pass on the right: the heads are round wheels of down now; the stalks still read as sticks and the lights are a half stop short.
+- `out/stills/status/status-169-3.jpg`: The landing mid-pass: one whirl of long thin arcs, nothing green flying, the tree dark and clean; the lanterns do not bloom through it yet.
+- `out/stills/status/status-169-4.jpg`: Four frames of the same change at final tier on the builder's head: no black anywhere, and summer arriving sky blue in the last frame, where the approved storm is cream gold.
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-26 17:36 UTC
-clock: phase 6, tick of 24.5 minutes
-phase 6: 14.78 h used of its 12.00 h box
-allowance (after the review): 14.78 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 14.78 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-26 17:59 UTC
+clock: phase 6, tick of 23.1 minutes
+phase 6: 15.16 h used of its 12.00 h box
+allowance (after the review): 15.16 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 15.16 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
