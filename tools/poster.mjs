@@ -21,7 +21,7 @@ import { watchPage } from './lib/browser.mjs'
  * The table goes into index.html between the marks `first:begin` and `first:end`: the stills; where the app puts the glass on a
  * screen of any shape over controls of any height (src/app/framing.ts, read through the same build); how high the controls
  * stand on any screen, as the app measured them on this build under every way the interface's media rules hold together, so
- * the page can place a still where the globe will stay before the app or its interface has run; and two soft pictures a
+ * the page can place a still where the globe will stay before the app or its interface has run; and three soft pictures a
  * season, a few hundred bytes each, made of the stills: the page lays one out of focus at its very first paint and brings the
  * still in over it.
  *
@@ -47,6 +47,19 @@ const WIDEST = 64 / 27
 /** The heights a phone's browser leaves of its screen when its bars are in: the camera stands nearer on each, so each is drawn. */
 const PHONE_HEIGHTS = [750, 667, 590]
 /**
+ * The broadest window that still has a phone's controls under it, as high as it is broad, as low as such a window gets, and
+ * between the two, where half the screen of a small laptop falls: the windows nearly square (half a tablet, an unfolded phone,
+ * a small window on a desk). No still of a phone reaches their sides and none of a desk their bottom, so the page filled them
+ * with copies that repeated the foot of the room. There the camera stands by the height of the window alone, so each of the
+ * three is every narrower window near its height. The last was added after the first two; it stays last so they are drawn as
+ * they were.
+ */
+const BROAD = [
+  { name: 'square', width: 719, height: 720 },
+  { name: 'low', width: 719, height: 481 },
+  { name: 'mid', width: 719, height: 600 },
+]
+/**
  * The screens a still is drawn for. The three sizes the app is judged at come from the config, so they are met exactly.
  * The glass keeps its place and size on any screen (the page lays a still by them); what a still of another shape cannot give
  * is the room behind the glass as this screen's camera sees it, and a narrow screen moves the camera with every change of
@@ -58,6 +71,7 @@ const SHAPES = [
   { name: 'tablet', width: F.tablet.width, height: F.tablet.height, ratio: 1.5 },
   { name: 'phone', width: F.phone.width, height: F.phone.height, ratio: 2 },
   ...PHONE_HEIGHTS.map((height) => ({ name: `phone${height}`, width: F.phone.width, height, ratio: 2 })),
+  ...BROAD.map((shape) => ({ ...shape, ratio: 2 })),
 ]
 const BUDGET = { avif: 60000, webp: 90000 }
 /** The quality a still is searched between. A still that does not fit the budget at the lowest is coded smaller, by `SMALLER` a
@@ -69,7 +83,7 @@ const EFFORT = { avif: [2, 4], webp: [6, 6] }
 /** The few bytes of a still that go into the page itself and lie out of focus where the still will come: the stills they are
  * made of, their longer side in pixels, the rim of repeated pixels that keeps the blur whole to the edge of the screen, and
  * their quality. */
-const SOFT = { of: ['wide', 'phone'], px: 32, rim: 2, quality: 90 }
+const SOFT = { of: ['wide', 'phone', 'low'], px: 32, rim: 2, quality: 90 }
 const WAIT_MS = 240000
 /** The frames the page draws at a new size before it is grabbed: one fits the picture to the screen and draws all of it. */
 const FRAMES_AT_A_SIZE = 1
@@ -144,6 +158,8 @@ async function framing() {
         }
         return known.get(key)
       },
+      /** The row the foot of the globe ends at on that screen, as a share of its height: the lowest of the heap it stands in. */
+      foot: (aspect, share) => (1 - m.edges(m.liveRig(aspect, 0, 0, m.roomUnder(UNIT, share * UNIT, aspect * UNIT))).heap) / 2,
       keep,
       estimate,
     }
@@ -156,8 +172,9 @@ async function framing() {
  * along straight lines between them. Between two rows the page reads along a straight line at the share asked.
  * A row is the app asked at every `FINEST.share`, and keeps the fewest of those points that hold all of them within
  * `ROW_TOLERANCE`. Rows are added, by halving, where the page's reading between two rows is further than `TOLERANCE` from the
- * app, until they are as near as `FINEST.aspect`. Where the app steps from one framing to another at an aspect (an upright
- * screen becomes a broad one), the two sides of the step are rows `STEP` apart, so the page reads no screen across it.
+ * app at any place a row could stand between them, until they are as near as `FINEST.aspect`. Where the app steps from one
+ * framing to another at an aspect (an upright screen becomes a broad one), the two sides of the step are rows `STEP` apart,
+ * so the page reads no screen across it.
  * The screens the stills are drawn for are points of rows, so the page lays each of them exactly where it was drawn. */
 function table(globe, screens) {
   const [least, most] = RANGE.share
@@ -242,7 +259,11 @@ function table(globe, screens) {
       seen.add(`${from}:${to}`)
       const mid = tidy((from + to) / 2, 1 / STEP)
       if (to - from > FINEST.aspect) {
-        const far = Math.max(off(from, to, mid), off(from, to, tidy(from + (to - from) / 4, 1 / STEP)), off(from, to, tidy(from + ((to - from) * 3) / 4, 1 / STEP)))
+        // Read at every place the table could hold a row: where the framing turns over fewer aspects than lie between two
+        // rows (it does just past a square screen with low controls), a reading in the middle alone would pass over it.
+        const places = Math.ceil((to - from) / FINEST.aspect)
+        let far = 0
+        for (let k = 1; k < places && far <= TOLERANCE; k++) far = Math.max(far, off(from, to, tidy(from + ((to - from) * k) / places, 1 / STEP)))
         if (far > TOLERANCE) {
           nodes.add(mid)
           added = true
@@ -508,12 +529,15 @@ async function draw(session, season, shapes, each) {
       window.__shown = () => new Promise((done) => next(() => next(() => setTimeout(done, 200))))
     }, SCREEN_HZ)
     await withoutTable(page)
+    // The first shape is given its window the way the others are: a page whose pixels the context alone has set is grabbed
+    // at one pixel a point, whatever it drew.
+    const client = await context.newCDPSession(page)
+    await client.send('Emulation.setDeviceMetricsOverride', { width: shapes[0].width, height: shapes[0].height, deviceScaleFactor: shapes[0].ratio, mobile: false })
     await page.goto(`${session.server.url}?season=${season}&quality=${TOP}`)
     // The interface is out of sight, not out of the page: the app measures its controls and keeps the room for them.
     await page.addStyleTag({ content: '#ui { opacity: 0 !important } #view { opacity: 1 !important; transition: none !important }' })
     // Asked on a clock: a wait that asked once a frame would stop with the frames.
     await page.waitForFunction(() => document.documentElement.dataset.firstPicture === '1', null, { timeout: WAIT_MS, polling: 100 })
-    const client = await context.newCDPSession(page)
     for (const [i, shape] of shapes.entries()) {
       if (i > 0) {
         await client.send('Emulation.setDeviceMetricsOverride', { width: shape.width, height: shape.height, deviceScaleFactor: shape.ratio, mobile: false })
@@ -601,14 +625,15 @@ async function softs() {
   return b
 }
 
-/** The table: the stills and the soft picture each is preceded by; where the app puts the glass (`g` holds a row for each
+/** The table: the stills, each with its glass, the soft picture it is preceded by and the row its globe's foot ends at, which
+ * the page keeps the copies it lays under a still clear of; where the app puts the glass (`g` holds a row for each
  * aspect of `a`: the share of the screen's height the controls stand high, the centre and the radius, at every bend); the controls (`c`: the media rules that say how high they
  * stand, and for each way those hold together the height and the safe area it rises from; `e`: the bar the app takes where
  * it measures none); the soft pictures (`p` says which still each is made of, its size and its rim; `b` holds them, season
  * by season). */
 function tableOf(record, grid, b) {
   const v = versions(record)
-  const stills = SHAPES.map((s) => [s.name, s.width, s.height, ...globeAt(s).map(round), v[s.name], softOf(s)])
+  const stills = SHAPES.map((s) => [s.name, s.width, s.height, ...globeAt(s).map(round), v[s.name], softOf(s), round(footAt(s))])
   return { season: cfg.defaultSeason, seasons: cfg.seasons, stills, a: grid.a, g: grid.g, c: controls && { q: controls.q, m: controls.m }, e: F0.estimate, p: softList().map((soft) => [soft.index, soft.width, soft.height, SOFT.rim]), b }
 }
 
@@ -642,6 +667,9 @@ const estimated = (height) => Math.min(Math.max(F0.estimate[0] * height, F0.esti
 const shareOf = (shape) => (barOf(shape) ?? estimated(shape.height)) / shape.height
 /** Where the glass is on the screen a still is drawn for, over the controls as they stand on it. */
 const globeAt = (shape) => F0.globe(shape.width / shape.height, shareOf(shape))
+const footAt = (shape) => F0.foot(shape.width / shape.height, shareOf(shape))
+const phoneBar = barOf(SHAPES.find((s) => s.name === 'phone'))
+for (const shape of BROAD) if (barOf(shape) !== null && barOf(shape) !== phoneBar) console.log(`poster: note · ${shape.name} (${shape.width} x ${shape.height}) no longer stands over a phone's controls (${barOf(shape)} px, a phone's are ${phoneBar}): the interface draws that line elsewhere now, and BROAD should follow it`)
 const tableAt = Date.now()
 const grid = table(F0.globe, SHAPES.map((s) => ({ aspect: s.width / s.height, share: shareOf(s) })))
 F0.keep()
