@@ -527,6 +527,52 @@ export const LOOK_WIDTH = 1200
 export const pad6 = (i) => String(i).padStart(6, '0')
 export const chunkStem = (what, first, last) => `${what}-${pad6(first)}-${pad6(last)}`
 export const tierOf = (samples) => `samples-${samples}`
+
+/**
+ * The count of samples a frame of a master is drawn with. Without --samples the base is deliver.master.samples of the piece
+ * and the motion is tiers.final.motion, the rule the page applies at the final tier, so the page is asked what that tier
+ * gives for each frame. The two bases must be one number, or the page's answer would not be the master's. With --samples N
+ * (a test) every frame takes N and no motion applies.
+ */
+export function sampleRule(what, given = /** @type {any} */ (undefined), c = cfg) {
+  if (given !== undefined) return { base: given, motion: null, tier: null }
+  const base = c.deliver.master.samples[what]
+  const final = c.tiers.final
+  if (base !== final.samplesPerFrame) throw new Error(`deliver.master.samples.${what} is ${base} and tiers.final.samplesPerFrame is ${final.samplesPerFrame}. The count of a master frame follows its motion by the rule of the final tier, which starts from the final tier's count, so the two must be one number. Nothing was drawn.`)
+  return { base, motion: final.motion ? { spacingPx: final.motion.spacingPx, maxSamplesPerFrame: final.motion.maxSamplesPerFrame } : null, tier: 'final' }
+}
+
+/** What the page says a frame takes: a whole count, never under the base, never over the rule's most. */
+export function ruleCount(rule, index, given) {
+  const n = given?.samples
+  const most = rule.motion ? Math.max(rule.base, rule.motion.maxSamplesPerFrame) : rule.base
+  if (!Number.isInteger(n) || n < rule.base || n > most) throw new Error(`the page gave ${JSON.stringify(given ?? null)} as the samples of frame ${index}, and the rule gives a whole count from ${rule.base} to ${most}. Run npm run build and render again.`)
+  return n
+}
+
+/** The facts of a list of counts: how many are over the base, the most and where, the sum. */
+export function countFacts(counts, base, first = 0) {
+  let over = 0
+  let most = base
+  let mostAt = null
+  let sum = 0
+  counts.forEach((n, i) => {
+    sum += n
+    if (n > base) over++
+    if (n > most) {
+      most = n
+      mostAt = first + i
+    }
+  })
+  return { frames: counts.length, over, most, mostAt, sum }
+}
+
+export function countsLine(rule, facts) {
+  const s = (n) => `${n} ${n === 1 ? 'sample' : 'samples'}`
+  const how = rule.motion ? `the count of a frame follows its motion (tiers.final.motion: a sample every ${rule.motion.spacingPx} px of travel, at most ${rule.motion.maxSamplesPerFrame})` : rule.tier ? 'tiers.final holds no motion, so no frame follows its motion' : 'the count was given with --samples, so no frame follows its motion'
+  if (!facts.over) return `${how}: ${facts.frames === 1 ? 'the one frame draws' : `every one of these ${facts.frames} frames draws`} the base of ${s(rule.base)}`
+  return `${how}: ${facts.over} of these ${facts.frames} frames ${facts.over === 1 ? 'draws' : 'draw'} more than the base of ${s(rule.base)}, the most is ${facts.most} (frame ${facts.mostAt}); ${facts.sum} samples in all, ${(facts.sum / (facts.frames * rule.base)).toFixed(2)} times the base`
+}
 export const masterRoot = (test = false) => (test ? rel('out', 'master', 'test') : rel('out', 'master'))
 export const chunkDir = (what, test = false) => path.join(masterRoot(test), what)
 export const stillName = (index = 0) => `frame-${pad6(index)}.png`
@@ -621,6 +667,10 @@ export function recordMatchesRun(r, want) {
   if (want.renderer !== undefined && r.renderer !== want.renderer) return false
   if (want.calibration !== undefined && (r.calibration ?? null) !== want.calibration) return false
   if (!!r.test !== !!want.test) return false
+  if (want.motion !== undefined) {
+    if (JSON.stringify(r.motion ?? null) !== JSON.stringify(want.motion)) return false
+    if (!Array.isArray(r.frameSamples) || r.frameSamples.length !== want.last - want.first + 1 || r.frameSamples.some((n) => !Number.isInteger(n) || n < want.samples)) return false
+  }
   if (JSON.stringify(butCrf(r.encoderArgs)) !== JSON.stringify(butCrf(want.encoderArgs))) return false
   return r.verify?.ok === true && Array.isArray(r.frameHashes) && r.frameHashes.length === want.last - want.first + 1
 }
@@ -670,6 +720,14 @@ const samePixels = (a, b) => {
   for (let i = 0; i < Math.max(x.length, y.length); i++) if (x[i] !== y[i]) differing.push(a.record.first + i)
   return differing
 }
+const sameCounts = (a, b) => {
+  const x = a.record.frameSamples
+  const y = b.record.frameSamples
+  if (!Array.isArray(x) && !Array.isArray(y)) return []
+  const differing = []
+  for (let i = 0; i <= a.record.last - a.record.first; i++) if (x?.[i] !== y?.[i]) differing.push(a.record.first + i)
+  return differing
+}
 
 /**
  * One entry a range (what, first, last), whoever holds it and however often. Holders agree when the build hash and the calibration
@@ -705,7 +763,8 @@ export function heldRanges(chunks, { take = [], exists = null } = {}) {
     const hashed = (c) => Array.isArray(c.record.frameHashes) && c.record.frameHashes.length === n
     const blind = bytes ? hs.filter((c) => !hashed(c)).map(holderName) : []
     const pixels = [...new Set(hs.slice(1).flatMap((c) => (hashed(hs[0]) && hashed(c) ? samePixels(hs[0], c) : [])))].sort((a, b) => a - b)
-    const agree = differ.length === 0 && pixels.length === 0 && blind.length === 0
+    const counts = [...new Set(hs.slice(1).flatMap((c) => sameCounts(hs[0], c)))].sort((a, b) => a - b)
+    const agree = differ.length === 0 && pixels.length === 0 && blind.length === 0 && counts.length === 0
     const ranged = take.filter((t) => t.what === g.what && t.first === g.first && t.last === g.last)
     let taken = null
     let named = null
@@ -728,7 +787,7 @@ export function heldRanges(chunks, { take = [], exists = null } = {}) {
         else wrong = `--take names ${names[0]}, which does not hold it`
       } else if (names.length > 1) wrong = `--take names ${names.length} of its holders (${names.join(', ')}); name one for this range`
     }
-    out.push({ ...g, agree, differ, bytes, blind, pixels, taken, named, wrong, passed })
+    out.push({ ...g, agree, differ, bytes, blind, pixels, counts, taken, named, wrong, passed })
   }
   return out
 }
@@ -749,6 +808,7 @@ const howTheyDiffer = (g) => {
   if (g.blind.length) parts.push(`the pixels of their frames cannot be compared (${g.blind.join(' and ')} ${g.blind.length === 1 ? 'names' : 'name'} no hash for each of the ${n} frames) and the intermediates differ in bytes`)
   else if (g.pixels.length) parts.push(`the pixels of their frames differ in ${g.pixels.length} of ${n} (the first is frame ${g.pixels[0]})`)
   else parts.push(`the pixels of their frames are the same in all ${n}`)
+  if (g.counts?.length) parts.push(`the count of samples a frame was drawn with differs in ${g.counts.length} of ${n} (the first is frame ${g.counts[0]})`)
   const text = parts.join('; ')
   return text.slice(0, 1).toUpperCase() + text.slice(1)
 }
@@ -761,7 +821,7 @@ export function heldLine(g) {
   if (g.agree && !g.bytes) return `${rangeName(g)} is held ${n} times with one and the same record (build, calibration, intermediate): ${who}. It counts once and one is taken: ${holderName(g.taken)}`
   if (g.agree) {
     const which = g.named ? `the one named is taken: ${g.named}` : g.passed ? `${holderName(g.taken)} is taken, since the picture of ${g.passed}, the first by name, is not here` : `the first by name is taken: ${holderName(g.taken)}`
-    return `${rangeName(g)} is held ${n} times with the same build, the same calibration and the same pixels in all ${frames} frames: ${who}. Their intermediates differ in bytes (sha256 ${valuesBy(g.bytes)}). It counts once and ${which}`
+    return `${rangeName(g)} is held ${n} times with the same build, the same calibration and the same pixels in all ${frames} frames${g.holders.every((c) => Array.isArray(c.record.frameSamples)) ? ', each drawn with the same count of samples' : ''}: ${who}. Their intermediates differ in bytes (sha256 ${valuesBy(g.bytes)}). It counts once and ${which}`
   }
   const how = `${rangeName(g)} is held ${n} times and the records do not agree: ${who}. ${howTheyDiffer(g)}`
   if (g.taken) return `${how}. Taken as named: ${g.named}`
@@ -811,6 +871,7 @@ export function joinPlan({ which, chunks, totals, test = false, size = M.chunkFr
       if (seen !== r.sha256) problems.push(`${named(c)} does not match the sha256 in its record (${seen ? `it is ${seen.slice(0, 12)}, the record says ${String(r.sha256).slice(0, 12)}` : 'the mp4 is missing'})`)
     }
     if (!Array.isArray(r.frameHashes) || r.frameHashes.length !== r.last - r.first + 1) problems.push(`${named(c)} holds ${r.frameHashes?.length ?? 0} frame hashes for ${r.last - r.first + 1} frames`)
+    if (r.what !== 'opening' && (!Array.isArray(r.frameSamples) || r.frameSamples.length !== r.last - r.first + 1)) problems.push(`${named(c)} names no count of samples for each of its ${r.last - r.first + 1} frames, so nothing says its frames were drawn with the count their motion asks for`)
     if (r.verify?.ok !== true) problems.push(`${named(c)} was never verified against its frames`)
     const marked = markedBy.get(c)
     const nan = marked ? notNumberOf(marked.record) : null
@@ -831,6 +892,7 @@ export function joinPlan({ which, chunks, totals, test = false, size = M.chunkFr
   same('fps', 'the frame rate', mine)
   same('encoderArgs', 'the list of encoder arguments (but for the quality)', mine, (r) => butCrf(r.encoderArgs))
   for (const w of whats) same('samples', `the samples of ${w}`, mine.filter((c) => c.record.what === w))
+  for (const w of whats) same('motion', `the rule from motion to samples of ${w}`, mine.filter((c) => c.record.what === w), (r) => r.motion ?? null)
   for (const w of whats) same('renderer', `the renderer of ${w}`, mine.filter((c) => c.record.what === w))
   for (const w of whats) same('calibration', `the calibration picture of ${w}`, mine.filter((c) => c.record.what === w), (r) => r.calibration ?? null)
   for (const c of mine) if (c.record.what !== 'opening' && !c.record.calibration) problems.push(`${named(c)} names no calibration picture, so nothing says its machine draws what the others draw`)
@@ -977,7 +1039,8 @@ export function hours(seconds) {
   return seconds < 5400 ? `${(seconds / 60).toFixed(1)} min` : `${(seconds / 3600).toFixed(1)} h`
 }
 
-export function heartbeat({ chunk, frame, seconds, left, average, procs = 1 }) {
+export function heartbeat({ chunk, frame, seconds, left, average, procs = 1, samples = /** @type {any} */ (undefined), samplesLeft = 0, perSample = 0 }) {
+  if (samples !== undefined) return `chunk ${pad6(chunk.first)}-${pad6(chunk.last)} · frame ${frame} · ${samples} ${samples === 1 ? 'sample' : 'samples'} · ${seconds.toFixed(1)} s · ${left} frames left in the range (${samplesLeft} samples) · ${((samplesLeft * perSample) / procs / 3600).toFixed(2)} h left at ${perSample.toFixed(2)} s a sample (${average.toFixed(1)} s a frame in the mean so far)`
   return `chunk ${pad6(chunk.first)}-${pad6(chunk.last)} · frame ${frame} · ${seconds.toFixed(1)} s · ${left} frames left in the range · ${((left * average) / procs / 3600).toFixed(2)} h left at ${average.toFixed(1)} s a frame`
 }
 

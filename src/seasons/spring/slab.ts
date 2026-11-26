@@ -121,7 +121,7 @@ vec2 petalAt = aRest.xy - (petalOut / max(petalFar, 1.0)) * (${JUMP.shiftMm.toFi
 // Inside a change the petals are carried: blown out ahead of the front of light when spring leaves, flown out behind it when spring comes.
 if (uState.w > 0.5) {
   vec3 petalGust = stageGust(aRest.xy, aKind.z, aKind.w);
-  petalAt += normalize(aRest.xy) * petalGust.x;
+  petalAt += (dot(aRest.xy, aRest.xy) > 0.0 ? normalize(aRest.xy) : vec2(1.0, 0.0)) * petalGust.x;
   petalUp += ${GUST.heightMm.toFixed(1)} * (0.4 + 0.6 * aKind.w) * petalGust.y;
   petalRoll += 3.14159265 * (1.0 + floor(aKind.z * 2.99)) * petalGust.z;
   petalYaw += (aKind.w - 0.5) * 3.0 * petalGust.z;
