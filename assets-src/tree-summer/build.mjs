@@ -8,7 +8,7 @@ import { rel } from '../../tools/lib/paths.mjs'
 import { blurWrap, loadSource, luma, readPicture, seamless, toBytes, writePng } from '../trunk/source.mjs'
 
 const TAU = Math.PI * 2
-const LEAF_CELL = 1.0
+const LEAF_CELL = 0.85
 const LEVEL_SPRIGS = { medium: 0.45, low: 0.3 }
 const LEAF_TILE_MM = 11
 const SPRIGS = { share: 1, size: [1.2, 2.2], rise: 0.35, out: 0.34, lift: [0.82, 0.36] }
@@ -476,4 +476,4 @@ const leafLow = []
 }
 addLists(rel('assets-full', 'summer', 'tree-summer.glb'), { leaves: { medium: leafMedium, low: leafLow } })
 await leafMaps()
-console.log(`tree-summer: leaves ${counts.leaves} triangles (${N.tufts} tufts, ${leafMedium.length / 3} triangles at medium, ${leafLow.length / 3} at low), lanterns ${counts.lanterns} (${LN.lanterns.length} lanterns); ${C.lumps.length / 4} lumps on ${T.localPads.length} pads`)
+console.log(`tree-summer: leaves ${counts.leaves} triangles (${N.tufts} tufts, ${leafMedium.length / 3} triangles at medium, ${leafLow.length / 3} at low), lanterns ${counts.lanterns} (${LN.lanterns.length} lanterns); ${C.lumps.length / 4} lumps on ${C.clumps.length} clumps`)
