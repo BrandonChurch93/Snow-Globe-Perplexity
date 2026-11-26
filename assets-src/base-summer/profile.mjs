@@ -190,7 +190,7 @@ const TROUGHS = [[5.2, 1.6, 3, 20, 1.0, 0.6]]
 // here and wider there, and part round the things set in the sand as water parts round a stone. A ledge stands out over the crease under it
 // and falls back slowly to the crease over it. STARTS ledges make the whole turn, so they meet themselves behind. Most are faint; here and
 // there one stands out further and its edge has crumbled, so its top takes the light and its underside lies in shade.
-const RIDGE = { apart: 7.4, starts: 5, lean: 3.5, deep: 0.8, edge: 0.2, uneven: 1.8, waves: 3, collar: 0.3, broken: 2.6, crumb: 0.3 }
+const RIDGE = { apart: 7.4, starts: 5, lean: 3.5, deep: 0.8, edge: 0.34, uneven: 1.8, waves: 3, collar: 0.3, broken: 1.7, crumb: 0.3 }
 const ridgeLean = (az) => ((RIDGE.starts * RIDGE.apart) / 360) * az + RIDGE.lean * Math.sin((az - 10) * RAD)
 const ridgeWander = (A, h) => 5.0 * (fbm(A * 4 + 1, h / 30, 4, 64, 139, 2) - 0.5) + 3.0 * (fbm(A * 9 + 2, h / 12, 9, 64, 141, 3) - 0.5) + 1.2 * (fbm(A * 21 + 5, h / 6, 21, 64, 143, 2) - 0.5)
 function ridgeCoord(m, az, s, h, r) {
@@ -297,7 +297,7 @@ export function relief(m, az, s) {
     // A thing lies in a dish cut into the stone where the stone is, not where the turned shape was: level with its own middle.
     if (it.d0 === undefined) it.d0 = bare(m, it.az, it.s).d
     const inside = 1 - smooth(0.78 * foot, 1.07 * foot, dist)
-    const deep = it.kind === 'pearl' ? 0.2 * it.r : it.kind === 'glass' ? 0.34 + 0.05 * it.r : 0.12 + 0.04 * it.r
+    const deep = it.kind === 'pearl' ? 0.2 * it.r : it.kind === 'glass' ? 0.1 + 0.02 * it.r : 0.12 + 0.04 * it.r
     d = mix(d, it.d0, 0.88 * inside) - deep * inside
     seat = Math.max(seat, inside)
     halo = Math.max(halo, 1 - smooth(0.88 * foot, foot + 0.7 + 0.14 * foot, dist))
