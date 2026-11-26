@@ -1,47 +1,41 @@
 {
-  "number": 167,
-  "time": "2026-11-26 17:11 UTC",
+  "number": 170,
+  "time": "2026-11-26 18:35 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 167 · 2026-11-26 17:11 UTC · Phase 6",
-    "Round 21, the critics' round on summer after the sixth list, is half in. The measures are all green for the first time on summer: 19 of 19, the sharpness measure 0.81 against 0.75 (0.69 and red in Round 20).",
-    "The jury says no: 3 of 15 fresh viewers call ours a photograph or a film frame, 9 are needed, and the same panel gave the approved pictures 8 of 10. First and second pictures: what the jurors saw, the approved on the left, ours on the right, at rest and at the landing.",
-    "Why: eight of the twelve who answered 'an ordinary 3D render' named the particles inside the ball, in words like 'repeated starburst shapes ... a stock particle effect'. Of the approved the same panel wrote 'backlit dandelion seeds ... a cinematic glow'. Third picture, crop 2: our seed heads at full size, wheels of spokes. That form came from my own sixth list, which asked for rays.",
-    "The critic on native crops, part 1: 6 of 10, one severe issue (the landing reads as 'a milky sheet pasted over the miniature') and five major. Part 2: 7 of 10, two major (the sand fall in strips, a black hole in the bank). The critic who compares with the approved and the critic on motion are still out.",
-    "The fix pass before summer's last round has begun with the two builders who weigh most: the air at 17:07 UTC (each head a small ball of down, lit white gold; the landing a spiral of seeds with dark air between) and the glass at 17:11 UTC (the haze behind the heads; the flare, which three jurors called artificial: fourth picture, the approved's flare on the left). The other three builders start when the last two critics are in.",
-    "One red found on the judged build: a shader test could not read one line of the sixth list. Mended in one line, both summer stills byte for byte the same; the red stays in Round 21's record, so its machine checks cannot be green.",
-    "The sand at the masters' size and tier, counted on a farm machine: 0 coloured pixels on the sand (990 green before the sixth list).",
-    "Next: the last two critics, the other builders' lists, a fresh publish of the app when its first pictures are drawn on the mended build (about 17:30 UTC), and my look at the change of season's new cover.",
-    "phase 6: 14.37 h used of its 12.00 h box",
-    "allowance (after the review): 14.37 h used of 12.00 h allowed",
+    "Status 170 · 2026-11-26 18:35 UTC · Phase 6",
+    "Summer's seven owners sent their mid-pass pictures and each got my look back with numbers. The pool on the table is now a soft pool with broad bands, as the settled line asks. The seeds are crisp, the landing reads as one whirl, the crown is lit pad by pad. Still short: the lanterns' light on the wall, the light from behind, the sea glass, the heap of sand, and the crown's light points that read as blossom. The closing walk of the app found that the picture stops three times in the first seconds after the controls appear, about three seconds each, so a first press can wait; its finder is mending that now, with two smaller things. One correction of my own: I had asked for more haze at the upper left of the dome on a measure that lay on the glass's edge; it made the glass milky, and it is being taken out again.",
+    "Next: the owners' reports at 19:20, the merge, my own look, a guard that the other three seasons did not move, then Round 22, summer's last.",
+    "phase 6: 15.77 h used of its 12.00 h box",
+    "allowance (after the review): 15.77 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-167-1.jpg",
-      "caption": "What the jury saw at rest: the approved on the left, ours on the right (final tier).",
+      "file": "out/stills/status/status-170-1.jpg",
+      "caption": "The whole picture at rest mid-pass, the approved on the left and ours on the right: the new soft pool of light on the table left of the base, and the warmer air in the glass.",
       "w": 1200,
-      "h": 591
+      "h": 335
     },
     {
-      "file": "out/stills/status/status-167-2.jpg",
-      "caption": "What the jury saw at the landing: the approved on the left, ours on the right.",
+      "file": "out/stills/status/status-170-2.jpg",
+      "caption": "The cottage, the approved on the left and ours on the right: the ivy, the roses and the pond read; the lanterns' light on the wall, the light from behind and the bed of sand do not yet.",
       "w": 1200,
-      "h": 591
+      "h": 502
     },
     {
-      "file": "out/stills/status/status-167-3.jpg",
-      "caption": "Ours at full size from the interior camera: crop 2 shows the seed heads as wheels of spokes.",
-      "w": 1200,
-      "h": 699
+      "file": "out/stills/status/status-170-3.jpg",
+      "caption": "The tree, the approved on the left and ours on the right: the pads are lit one by one and the lanterns hang in a row; the light points are too many and too pale, so the crown reads as in blossom.",
+      "w": 1126,
+      "h": 630
     },
     {
-      "file": "out/stills/status/status-167-4.jpg",
-      "caption": "The flare at one scale: the approved on the left, ours on the right.",
-      "w": 1158,
-      "h": 493
+      "file": "out/stills/status/status-170-4.jpg",
+      "caption": "The landing, the approved above and ours below: one whirl of long arcs now; the tree is still a dark cut-out where the approved's is washed by the storm, and the lanterns do not bloom through it.",
+      "w": 1063,
+      "h": 1200
     }
   ]
 }
