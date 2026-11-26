@@ -561,7 +561,7 @@ float cardLine(vec2 p, vec2 a, vec2 b, float wide, float s2, out float along) {
   along = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-6), 0.0, 1.0);
   vec2 d = pa - ba * along;
   float v = s2 + wide * wide;
-  return min(1.0, ${n(CARD.hair.seen)} * wide / sqrt(v)) * exp(-0.5 * dot(d, d) / v);
+  return min(1.0, ${n(CARD.hair.seedSeen)} * wide / sqrt(v)) * exp(-0.5 * dot(d, d) / v);
 }
 /** A seed: a slender stem with its grain at the foot and a tuft of fine hairs opening from its head, each hair a line in the particle's own three axes with its own length and droop; the hairs too fine to be told apart are the soft ball of the tuft. */
 void cardSeed(vec2 p, int kind, vec4 k, vec4 look) {
@@ -705,7 +705,8 @@ void cardStreak(vec2 p, int kind, vec4 k, vec4 look) {
   bool bit = swish && vL4.z < -0.5;
   float wide = vL4.w * (swish ? mix(bit ? 0.08 : ${n(CARD.line.stormTaper)}, 1.0, 1.0 - sc * sc) : 1.0);
   float v = vStreak.w + wide * wide;
-  float line = min(1.0, ${n(CARD.hair.seen)} * wide / sqrt(v)) * exp(-0.5 * (off * off + past * past) / v);
+  // the stroke of every kind reads one number; the seed alone, whose hairs are finer, reads its own, so no other season's stroke moves with it
+  float line = min(1.0, (seedy && look.x < ${n(SHAPE.seed + 0.5)} ? ${n(CARD.hair.seedSeen)} : ${n(CARD.hair.seen)}) * wide / sqrt(v)) * exp(-0.5 * (off * off + past * past) / v);
   // a bit of leaf is a blade with an edge, not a soft stroke
   if (bit) line = (1.0 - smoothstep(-1.0, 1.0, (abs(off) - wide) / (sqrt(vStreak.w) + 0.5))) * (1.0 - smoothstep(0.0, 1.5, past));
   float lit = line * (swish ? mix(bit ? 1.0 : ${n(CARD.line.stormTail)}, 1.0, smoothstep(-1.0, 0.2, sc)) : (uStorm.x > 0.0 && look.x > ${n(STORM_OWN_PATH_FROM)} ? 1.0 : mix(${n(CARD.line.tail)}, 1.0, smoothstep(-1.0, 0.7, sc))));
