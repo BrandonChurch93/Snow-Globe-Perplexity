@@ -37,11 +37,11 @@ Status 142 · 2026-11-26 07:15 UTC
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-26 07:15 UTC
-clock: phase 6, tick of 19.4 minutes
-phase 6: 4.43 h used of its 12.00 h box
-allowance (after the review): 4.43 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 4.43 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-26 07:23 UTC
+clock: phase 6, tick of 7.7 minutes
+phase 6: 4.56 h used of its 12.00 h box
+allowance (after the review): 4.56 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 4.56 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
