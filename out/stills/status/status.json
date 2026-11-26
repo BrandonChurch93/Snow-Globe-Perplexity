@@ -1,43 +1,43 @@
 {
-  "number": 137,
-  "time": "2026-11-26 05:20 UTC",
+  "number": 139,
+  "time": "2026-11-26 06:16 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 137 · 2026-11-26 05:20 UTC · Phase 6",
-    "Three of the review's must-fixes are merged into main from their builders: the Shake control stays on screen, the camera stands back so the whole globe stays on a phone through a shake, and the season now changes across several frames under a bloom of the new season's light instead of in one cut. None is judged yet: critics see them after the other builders report.",
-    "The film's sound is mended by number (no dead silence before a landing or at the end, the four landings within 0.56 dB of each other, -14.0 LUFS, the encoded copy under -1 dBTP) and the app's six loops no longer step at the seam. A listener still hears three ticks at the very start and a click at some starts. The paid takes for the ten missing effects come next, inside the 3,235 credits left.",
-    "A faster renderer was measured on a sandbox machine: 1.31 s a sample against 10.9 at 1080p. Its picture has not been compared with the present one yet, so the 4K masters' plan waits for that number.",
-    "The opening of the film with the prompt has its reasoning menu drawn (Standard, High, Max). Ten agents are at work; the next reports are due by 07:05 UTC.",
-    "phase 6: 2.52 h used of its 12.00 h box",
-    "allowance (after the review): 2.52 h used of 12.00 h allowed",
+    "Status 139 · 2026-11-26 06:16 UTC · Phase 6",
+    "On a phone the whole globe now stays on the screen through a shake: the camera stands back as the glass is lifted, and the table's edge stays out of the frame. This was must-fix 4 of the review. It is merged; a critic has not judged it yet, and nobody has seen it move on a real phone.",
+    "Summer in a shake reads warmer and greener at feed size than before. It is still the season nearest to snow when shaken, and that is what its critics will be asked first.",
+    "The season change's glare is now a ball of light the size of the glass, so the room stays in the picture through it. Tests on main: 571 passed.",
+    "The 4K masters: a second machine confirmed the faster renderer (1.9 s a sample at 3840 x 2160 at rest, 3.2 in a storm, the same bytes twice). At the full 24 samples a frame the 3,600 frames of the film are still many hours across every machine there is. The count of samples is not decided; it waits for the pictures that show what fewer samples cost.",
+    "phase 6: 3.45 h used of its 12.00 h box",
+    "allowance (after the review): 3.45 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-137-1.jpg",
-      "caption": "The winter to spring change as merged, film frames 668 to 679 at preview size and draft quality: about a fifth of a second at 60 frames a second. The table's frost gives way to petals under the bloom.",
-      "w": 1200,
-      "h": 559
+      "file": "out/stills/status/status-139-1.jpg",
+      "caption": "A phone, 390 x 844, drawn by the builder through the app's own path: at rest, the glass lifted in the shake, and landed in spring.",
+      "w": 1186,
+      "h": 844
     },
     {
-      "file": "out/stills/status/status-137-2.jpg",
-      "caption": "The opening's reasoning menu, frame 89 of the 1080p render: the level is changed from Standard to High before the prompt is typed.",
+      "file": "out/stills/status/status-139-2.jpg",
+      "caption": "Summer in a shake at feed size: the approved image, before, and now.",
+      "w": 1200,
+      "h": 225
+    },
+    {
+      "file": "out/stills/status/status-139-3.jpg",
+      "caption": "The 16 kept sounds as waveforms, each with its name, length and loudness",
+      "w": 1200,
+      "h": 946
+    },
+    {
+      "file": "out/stills/status/status-139-4.jpg",
+      "caption": "Still: winter landed hero, hd, review",
       "w": 1200,
       "h": 675
-    },
-    {
-      "file": "out/stills/status/status-137-3.jpg",
-      "caption": "Comparison crops 2: fall-rest, approved image left, build right",
-      "w": 1200,
-      "h": 679
-    },
-    {
-      "file": "out/stills/status/status-137-4.jpg",
-      "caption": "Comparison crops 1: fall-rest, approved image left, build right",
-      "w": 1200,
-      "h": 679
     }
   ]
 }
