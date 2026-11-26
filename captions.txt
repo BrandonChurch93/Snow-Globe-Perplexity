@@ -59,3 +59,9 @@ After. First change, winter to spring: film frames 673 to 678, whole frames set 
 
 18-swap1-foot-673-678-review.jpg
 After. The foot of the glass in the same six frames at their own pixels, two to a row: 673 and 674, 675 and 676, 677 and 678. Each cut is 598 by 200 and hangs from the top and the middle of the lit glass in its own frame, so the shake's travel is taken out and a step in the base's line would show as one. Format hd, tier review, commit bbe4db9b. The strip of lit foot that spring's taller base covers, about 20 to 30 px high, goes out as a fine grain over the six frames. 675 and 676 hold the same outline, the strip a little dimmer in 676. The grain itself is in sight at these pixels.
+
+19-swap2-1393-1398-review.jpg
+After. Second change, spring to summer: film frames 1393 to 1398, whole frames set down to 398 by 224, three to a row from the top left. Format hd, tier review, commit bbe4db9b. The glass is a lit globe with its halo in all six.
+
+20-swap2-foot-1393-1398-review.jpg
+After. The foot of the glass in the same six frames at their own pixels, two to a row: 1393 and 1394, 1395 and 1396, 1397 and 1398, cut as in picture 18. Format hd, tier review, commit bbe4db9b. 1395 and 1396 hold the same outline. Summer's collar comes in with the base's pass: its dark top covers a thin strip of the lit foot grain by grain, and its lit arc under that strip is faint in 1396, plainer in 1397 and plain in 1398, so it does not come in in one frame.
