@@ -1,19 +1,19 @@
-# Status 176
+# Status 177
 
-2026-11-26 20:42 UTC
+2026-11-26 21:10 UTC
 
-- Summer's glass, base and air, second passes, are in main (`49dae6ef`; `6ea1ac5e` with the base made again as `05c8fb48`; `6f6330ed`). A farm machine's guard on `6f6330ed`: winter, spring and fall at rest and landed equal the base stills of `c4665a9b` byte for byte, six of six. G15 is green there, "high 1742472 of 1800000 triangles"; on `9e0c42d6` it was red, "summer at high: 1812131 triangles, over perf.maxTriangles.high 1800000". The gate adds up every pass of a picture, so a triangle of the base counts three times and one of the leaves twice (a second farm machine's table). Summer's M3 at rest is red by a hair: "FAIL M3 summer-rest: 0.7498 (threshold 0.75, detail.minSharpnessRatio)", the miniature 0.750, the base 1.220.
-- Summer is still below the bar, by my look at both stills beside the approved pictures: the base is grey where the approved is pale cream and lit warm, the storm at the landing is milky with coarse white strokes where the approved's are hair fine and warm, the lanterns stay orange where the approved's bloom cream. Third lists are with the stone, the glass and the air; the tree, the sand and the miniature report between 21:00 and 21:25 UTC.
-- The blue blocks of rough draft 3 have a cause: summer's `veil.rest` of -0.0007 takes the shared veil's density below zero where the haze is thin. The mend stands in the air owner's tree, where frames 1644, 1646 and 1648 read 0 such pixels by its count; it comes to main with its proof on frames 1440 to 1700.
-- Fine detail at delivery size, before any master. Six final stills at 3840 x 2160, looked at one to one: winter's base, frost and miniature and spring's and fall's miniatures hold; the lens's colour fringe stays as it is (decision 165). Film frames at 3840 x 2160 with the camera standing still, by two farm machines: spring's moss collar is drawn differently from one frame to the next (frames 1290 and 1291: 36,494 pixels of the lower third differ by more than 12 levels, where the film's grain is 0.70 levels), and in fall thin dotted lines step along the edges of twigs and straw (frames 2734 and 2735: 8,871 pixels). In the 4K film that would show as a shimmer. Both machines look for the cause now; no master is drawn before it is mended.
-- Note 10: the repo is to be private. It stays public until the last master frame is in, because the render machines fetch it without a sign-in (open item 243); answered in the Partner thread. Note 11: one line goes to the Partner thread whenever something waits on Brandon; nothing does now.
-- The motion: the hand has a fifth single line (`src/film/motion.ts` line 16) so that the blur reads the twist; the inertia builder proves on the hand's branch. The change's owner reports about 21:05 UTC.
-- phase 6: 17.88 h used of its 12.00 h box
-- allowance (after the review): 17.88 h used of 12.00 h allowed
+- The shimmer at 3840 has its cause and its mend. Two farm machines found it on their own: the film chose the 24 sample places of a frame anew for every frame (`src/capture/showcase.ts` line 231), so ground that stands still was drawn differently each time. One line gives every picture the stills' set; it is in main as `1621ff09` (decision 166). Measured with it at 3840 final: spring's moss collar, frames 1290 and 1291, 19.7% of pixels over 12 levels before, 0.0% after; fall's lower third, frames 2734 and 2735, 8,871 pixels before, 316 after; the six guard stills of winter, spring and fall equal by sha256; the grain unchanged. Not seen yet: a shot in motion. Four machines draw one second each at 3840 final (winter's opening, spring, fall, the close) with clips to look at; no master before that (open item 246).
+- The change from summer into fall fails its cover gate on main: "FAIL M4 shake-3: 0.7601 (threshold 0.85, shake.minCoverAtSwap)" on `6f6330ed`. A farm machine walked main back over ten commits: green at the review stop (0.9667) and up to `eca1ac61` (0.9603), red from the merge of summer's air for fix list 7 (`5f9a5fd2`, 0.7719), which also took spring into summer from 0.8968 to 0.8666. The change's owner proved one cause at draft: summer's held storm is thinned while summer leaves; with that term off shake-3 reads 0.9652 and nothing else moves. It is with the air's builder as a must (open item 245). The swap frame is also still milky green where it should burn warm; that is the change owner's mend, reported about 21:40 UTC.
+- Summer's sand, third list, is in main (`8f6770e2`): the heap stays on the table when the globe is lifted and slumps into the foot's print, the stream ends with the lift, the apron and the sprinkle are gone. Still below the bar by the builder's own account and by my look: a white lobe with a clean outline where the approved has a low wedge of fine grain. Fourth list sent; the red line on its far rim is mended in the world, not in the lens (decision 167).
+- Summer's tree, third pass, is in main since the last status; summer at rest was drawn again here on `8f6770e2` (picture 1).
+- The standstill work is pushed (`agent/p6-standstill` `26e6ac52`) and merges clean; a farm machine guards its eight stills against main before it comes in, after the change's report.
+- Sound: 7,420 of 10,000 credits spent, no call since.
+- phase 6: 18.35 h used of its 12.00 h box
+- allowance (after the review): 18.35 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-176-1.jpg`: Summer at rest on `6f6330ed` (hd, review tier), drawn by a farm machine
-- `out/stills/status/status-176-2.jpg`: Summer at the landing, approved picture above and build below: still below the bar
-- `out/stills/status/status-176-3.jpg`: Summer's base after its second pass, approved picture above and build below: still below the bar
-- `out/stills/status/status-176-4.jpg`: Winter's base, a cut at one to one from a final still at 3840 x 2160
+- `out/stills/status/status-177-1.jpg`: Summer at rest on `8f6770e2` (hd, review tier), after the tree's and the sand's third passes
+- `out/stills/status/status-177-2.jpg`: Summer's sand heap, approved picture left and build right: still below the bar
+- `out/stills/status/status-177-3.jpg`: Spring's moss at 3840 final, frames 1290 and 1291 and their difference times 8: before the mend above, with it below
+- `out/stills/status/status-177-4.jpg`: Summer into fall at the middle of the change on `6f6330ed`: the cover gate fails here and the light is milky green, both in work
