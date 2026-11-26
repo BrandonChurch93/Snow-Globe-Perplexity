@@ -62,5 +62,11 @@ export function holdStorm(moment: KitMoment): number {
     const bank = u.uVeilBank.value
     bank.set(bank.x + (STORM.bank.level - bank.x) * held, bank.y + (STORM.bank.soft - bank.y) * held, bank.z + (STORM.bank.density - bank.z) * held, bank.w + (STORM.bank.even - bank.w) * held)
   }
+  // `rest` is below zero: it takes back the share of haze the shared veil keeps while the pool is afloat. Where the shared haze is
+  // thinner than that share (seeds that lie count as landed, and the kept share falls with them), the sum went below zero. A veil
+  // below zero takes light away, and the drift bank's share of the whole haze, bank over thin and bank, then leaves 0 to 1 and
+  // carries the bank's whitening far past white: pure yellow where the sum is below zero and blue where it is just above.
+  // The sum stops at zero.
+  if (u.uVeil.value.w < 0) u.uVeil.value.w = 0
   return held
 }
