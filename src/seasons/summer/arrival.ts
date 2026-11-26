@@ -28,12 +28,12 @@ const LOOK = {
   gravity: 3400,
   ledge: { r: [46.5, 52.0], h: 40.3 },
   jump: { count: 14000, reachMm: 26, ringShare: 0, ringMm: 5, edgeDeg: [62, 76], liftMm: [1.2, 8], hopMm: [0.6, 5], quick: 0.11, tail: 0.5, tailShare: [0.6, 0.12], skidMm: [0.4, 3.2], radiusMm: [0.07, 0.15] },
-  fall: { count: 15000, gravity: 7000, az: 85, spread: 5, most: 2.2, r: [53.0, 54.4], h: [41.3, 42.4], outMmS: [6, 102], lean: 1.6, fanDeg: 2, downMmS: [10, 110], rate: [5.0, 6.7], radiusMm: [0.022, 0.065], fadeFrom: 0.9, core: [0.85, 5, 90], exposure: 0.3, longMm: 1.0, thinPx: 1.1, cover: 0.22, rise: 0.012, low: [0.6, 0.48, 0.36], lowMm: [12, 40], least: [0.2, 0.7], bright: [0.75, 1.9], even: 0.15, lit: 1.4, shaded: 0.08, puff: { seconds: 0.07, outMmS: [20, 130], upMmS: [40, 170], cover: 0.3, wide: 2.4 } },
-  loose: { count: 14600, radiusMm: [0.05, 0.19], x: [-140, 136], z: [-70, 150], thinPx: 0.85, veil: 0.15, vary: [0.4, 1.15], warm: [1.0, 0.84, 0.64], big: { share: 0.012, mm: [0.3, 0.62], cover: [0.25, 0.5, 0.4] } },
-  sprinkle: { count: 11000, s: [-12, 78], d: [-0.4, 16], mm: [0.07, 0.18], core: { share: 0.7, mm: 3.0, wide: 2.4, lit: 0.85, size: [0.08, 0.2] }, glints: { count: 46, d: [13, 46], mm: [0.16, 0.34], lit: 2.6 } },
+  fall: { count: 15000, gravity: 7000, az: 81, spread: 4.5, most: 2.0, off: [0.35, 1.6], h: [29.0, 30.5], outMmS: [70, 185], lean: 2.2, fliers: { share: 0.05, far: [1.2, 1.6] }, fanDeg: 2, downMmS: [10, 40], rate: [5.0, 6.7], radiusMm: [0.035, 0.085], fine: 2.5, fadeFrom: 0.9, core: [0.3, 70, 160], exposure: 0.3, longMm: 1.0, thinPx: 0.5, grains: 1.9, mass: 2.4, sizes: [1.0, 1.15], soft: { share: 0.12, wide: 1.6, cover: 0.3 }, cover: 0.3, rise: 0.012, low: [0.66, 0.6, 0.56], shine: [0.4, 1.0], pale: 0.4, least: [0.03, 0.12], bright: [0.75, 1.9], even: 0.15, lit: 1.8, shaded: 0.08, puff: { seconds: 0.07, outMmS: [20, 130], upMmS: [40, 170], cover: 0.3, wide: 2.4 } },
+  loose: { count: 7500, radiusMm: [0.06, 0.09, 0.26], small: 0.9, lean: 2.0, glint: { one: 30, lit: 4.0, cover: 0.9 }, x: [-140, 136], z: [-70, 150], fromX: 0, thinPx: 0.5, veil: 0.15, vary: [0.12, 1.8], warm: [1.0, 0.93, 1.0], big: { share: 0.02, mm: [0.3, 0.65], underMm: 1.0, cover: [0.25, 0.5, 0.4], squash: [1.4, 2.4], bend: 0.5 } },
+  sprinkle: { count: 11000, thinPx: 0.85, vary: [0.4, 1.15], warm: [1.0, 0.84, 0.64], s: [-12, 78], d: [-0.4, 16], mm: [0.07, 0.18], core: { share: 0.7, mm: 3.0, wide: 2.4, lit: 0.85, size: [0.08, 0.2] }, glints: { count: 46, d: [13, 46], mm: [0.16, 0.34], lit: 2.6 } },
   lens: { rows: 1080, most: 4, flyPx: 1.0, round: [1.6, 4.0], clear: 6 },
-  slope: { clearMm: 0.25, keeps: 0.75, crestMm: [60.6, 67.5], crestLean: 1.6, offMm: [0.12, 0.55], belly: [[60.3, 8], [60.3, 11.2], [59.7, 14.6], [58.6, 18], [57.3, 21.2], [55.8, 24.4], [54.3, 27.4], [53, 30.5], [52.8, 34], [52.7, 37.5], [52.6, 40]] },
-  flow: { stand: 0.8, seconds: 1.6, gapMm: [0.3, 2.5] },
+  slope: { clearMm: 0.25, keeps: 0.75, roll: 0.5, bulge: 0.0038, crestMm: [60.6, 66], crestLean: 1.6, offMm: [0.12, 0.55], belly: [[60.3, 8], [60.3, 11.2], [59.7, 14.6], [58.6, 18], [57.3, 21.2], [55.8, 24.4], [54.3, 27.4], [53, 30.5], [52.8, 34], [52.7, 37.5], [52.6, 40]] },
+  flow: { stand: 0.8, seconds: 1.6, gapMm: [0.3, 2.5], shadeMm: [0.5, 60] },
   exposure: 0.15,
   gold: [1, 0.97, 0.92],
   backlit: 2.6,
@@ -57,6 +57,7 @@ const grainUniforms = {
   uGrainKeyCol: { value: new THREE.Color() },
   uGrainSky: { value: new THREE.Color() },
   uGrainGround: { value: new THREE.Color() },
+  uSandDown: { value: 1 },
 }
 
 const VERT_PARS = `
@@ -69,18 +70,23 @@ uniform vec2 uGrainLoop;
 uniform float uGrainLevel;
 uniform float uGrainPx;
 uniform vec4 uGrainLens;
+uniform float uSandDown;
 uniform vec3 uGrainKey;
 varying vec2 vGrainUv;
 varying vec4 vGrainLook;
 varying vec3 vGrainShape;
 varying float vGrainCover;
 varying float vGrainLit;
-float fallSlide() {
-  if (aSeed.w <= 0.0) return 0.0;
+vec3 fallRoll() {
   float G = ${LOOK.fall.gravity.toFixed(1)};
   float T = aFlight.y;
-  float touchY = aFrom.y + aFlight.z * T - 0.5 * G * T * T;
-  return max(touchY - position.y, 0.0) / (${LOOK.slope.keeps.toFixed(2)} * (G * T - aFlight.z));
+  float deep = max(aFrom.y + aFlight.z * T - 0.5 * G * T * T - position.y, 0.0);
+  float first = ${LOOK.slope.keeps.toFixed(2)} * (G * T - aFlight.z);
+  return vec3((sqrt(first * first + ${(2 * LOOK.slope.roll * LOOK.fall.gravity).toFixed(1)} * deep) - first) / ${(LOOK.slope.roll * LOOK.fall.gravity).toFixed(1)}, first, deep);
+}
+float fallSlide() {
+  if (aSeed.w <= 0.0) return 0.0;
+  return fallRoll().x;
 }
 vec3 grainPath(float tau) {
   if (aSeed.y > 1.5) return position;
@@ -99,8 +105,10 @@ vec3 grainPath(float tau) {
   }
   if (aSeed.y > 0.5) {
     float touchY = aFrom.y + vy * T - 0.5 * GRAVITY * T * T;
-    float s = clamp((tau - T) / max(fallSlide(), 1e-4), 0.0, 1.0);
-    float off = sin(3.14159 * s) * mix(${LOOK.slope.offMm[0].toFixed(2)}, ${LOOK.slope.offMm[1].toFixed(2)}, abs(sin(s * 7.0 + aSeed.z * 40.0)));
+    vec3 roll = fallRoll();
+    float after = min(tau - T, roll.x);
+    float s = clamp((roll.y * after + ${(0.5 * LOOK.slope.roll * LOOK.fall.gravity).toFixed(1)} * after * after) / max(roll.z, 1e-4), 0.0, 1.0);
+    float off = sin(3.14159 * s) * (${LOOK.slope.bulge.toFixed(4)} * roll.z * roll.z + mix(${LOOK.slope.offMm[0].toFixed(2)}, ${LOOK.slope.offMm[1].toFixed(2)}, abs(sin(s * 7.0 + aSeed.z * 40.0))));
     return vec3(mix(touch, to.xz, s) + dir * off, mix(touchY, to.y, s)).xzy;
   }
   float after = tau - T;
@@ -175,14 +183,23 @@ float thinner = 1.0;
 // leaves, never thinner than a pixel can show, and as much fainter as the line is longer and wider than the grain.
 if (falls > 0.5) {
   float least = ${LOOK.fall.thinPx.toFixed(2)} * max(-nowV.z, 1.0) / uGrainPx;
-  blur = min(len, ${LOOK.fall.longMm.toFixed(1)});
+  // The fall is grains, some larger, some out of focus, and none is drawn as a line longer than three of itself: what the
+  // shorter line loses in length it gains in light.
+  float softly = step(${(1 - LOOK.fall.soft.share).toFixed(2)}, fract(aSeed.x * 37.3 + aSeed.z * 11.9));
+  float larger = fract(aSeed.x * 7.7 + aSeed.z * 29.3);
+  float grow = mix(mix(${LOOK.fall.sizes[0]!.toFixed(2)}, ${LOOK.fall.sizes[1]!.toFixed(2)}, larger * larger * larger), ${LOOK.fall.soft.wide.toFixed(2)}, softly);
+  float line = min(len, ${LOOK.fall.longMm.toFixed(1)});
   wide = 1.0;
-  size = max(aFlight.w, least) * alive;
-  thinner = (aFlight.w / max(aFlight.w, least)) * pow(max(2.0 * aFlight.w / max(blur + 2.0 * aFlight.w, 1e-5), 0.0), ${LOOK.fall.even.toFixed(2)});
+  size = max(aFlight.w, least) * grow * alive;
+  blur = min(line, ${(2 * LOOK.fall.grains).toFixed(1)} * size);
+  float finer = aFlight.w / max(aFlight.w, least);
+  thinner = finer * finer * pow(max(2.0 * aFlight.w / max(line + 2.0 * aFlight.w, 1e-5), 0.0), ${LOOK.fall.even.toFixed(2)});
+  thinner *= min((line + 2.0 * size) / max(blur + 2.0 * size, 1e-5), ${LOOK.fall.mass.toFixed(2)}) * mix(1.0, ${LOOK.fall.soft.cover.toFixed(2)}, softly);
   if (puff >= 0.0) size *= ${LOOK.fall.puff.wide.toFixed(2)};
 }
 if (falls < 0.5) {
-  float least = mix(${LOOK.lens.flyPx.toFixed(2)}, ${LOOK.loose.thinPx.toFixed(2)}, lies) * max(-nowV.z, 1.0) / uGrainPx;
+  // The grains strewn to the right of the base are finer than the sprinkle to its left, which keeps its own size.
+  float least = mix(${LOOK.lens.flyPx.toFixed(2)}, mix(${LOOK.sprinkle.thinPx.toFixed(2)}, ${LOOK.loose.thinPx.toFixed(2)}, step(${LOOK.loose.fromX.toFixed(1)}, position.x)), lies) * max(-nowV.z, 1.0) / uGrainPx;
   if (lies > 0.5) blur = 0.0;
   size = max(aFlight.w, least) * alive;
   thinner = aFlight.w / max(aFlight.w, least);
@@ -221,15 +238,16 @@ if (falls > 0.5) {
   vGrainCover *= smoothstep(0.0, ${LOOK.fall.rise.toFixed(3)}, tau);
   if (puff >= 0.0) vGrainCover = ${LOOK.fall.puff.cover.toFixed(2)} * mix(0.4, 1.0, bright) * (1.0 - puff) * (1.0 - puff);
 }
-if (lies > 0.5) vGrainCover = min(1.0, thinner) * mix(1.0, ${LOOK.loose.big.cover[2]!.toFixed(2)}, smoothstep(${LOOK.loose.big.cover[0]!.toFixed(2)}, ${LOOK.loose.big.cover[1]!.toFixed(2)}, aFlight.w));
+if (lies > 0.5) vGrainCover = max(min(1.0, thinner) * mix(1.0, ${LOOK.loose.big.cover[2]!.toFixed(2)}, smoothstep(${LOOK.loose.big.cover[0]!.toFixed(2)}, ${LOOK.loose.big.cover[1]!.toFixed(2)}, aFlight.w) * (1.0 - step(0.05, aSeed.w) * step(aSeed.w, 0.2))), ${LOOK.loose.glint.cover.toFixed(2)} * step(1.5, aSeed.w));
 vGrainLit = lies > 0.5 ? 1.0 + aSeed.w : falls > 0.5 ? mix(${LOOK.fall.core[0].toFixed(2)}, 1.0, smoothstep(${LOOK.fall.core[1].toFixed(1)}, ${LOOK.fall.core[2].toFixed(1)}, (length(position.xz - aFrom.xz) - aSeed.w) / max(aFlight.y, 1e-3))) : 1.0;
-float sunlit = grainShade(grainW.xyz, uGrainKey);
+float sunlit = mix(1.0, grainShade(grainW.xyz, uGrainKey), uSandDown);
 // A falling grain in the shade of the stone is as dark as the stone behind it and is all but lost against it.
 if (falls > 0.5) vGrainCover *= mix(${LOOK.fall.shaded.toFixed(2)}, 1.0, sunlit);
 vGrainLook = vec4(aSeed.x, fract(aSeed.x * 91.7 + aSeed.z * 13.1), sunlit, alive);
 `
 
 const fragment = (): string => `
+uniform float uSandDown;
 uniform vec3 uGrainKey;
 uniform vec3 uGrainKeyCol;
 uniform vec3 uGrainSky;
@@ -240,7 +258,12 @@ varying vec3 vGrainShape;
 varying float vGrainCover;
 varying float vGrainLit;
 uniform vec4 uGrainLens;
-float grainDisc(vec2 uv, float L) {
+mat2 grainTurn = mat2(1.0, 0.0, 0.0, 1.0);
+vec2 grainCrumb = vec2(1.0, 0.0);
+float grainDisc(vec2 at, float L) {
+  vec2 uv = grainTurn * at;
+  uv.y *= grainCrumb.x;
+  uv.x += grainCrumb.y * (uv.y * uv.y - 0.3);
   float capY = sign(uv.y) * max(abs(uv.y) * L - (L - 1.0), 0.0);
   return 1.0 - smoothstep(0.0, 1.0, uv.x * uv.x + capY * capY);
 }
@@ -249,6 +272,12 @@ void main() {
   if (stageGone(c)) discard;
   if (vGrainLook.w < 0.5) discard;
   float L = vGrainShape.x;
+  // A coarse crumb on the table is not a ball: it is longer one way than the other, and bent.
+  if (vGrainShape.z > 1.5 && vGrainLit > 1.05 && vGrainLit < 1.2) {
+    float turn = 6.2832 * fract(vGrainLook.x * 57.3);
+    grainTurn = mat2(cos(turn), sin(turn), -sin(turn), cos(turn));
+    grainCrumb = vec2(mix(${LOOK.loose.big.squash[0]!.toFixed(2)}, ${LOOK.loose.big.squash[1]!.toFixed(2)}, vGrainLook.y), ${LOOK.loose.big.bend.toFixed(2)} * (2.0 * fract(vGrainLook.x * 13.7) - 1.0));
+  }
   vec2 lensQ = gl_FragCoord.xy - uGrainLens.xy;
   float lensR = dot(lensQ, lensQ) / dot(uGrainLens.xy, uGrainLens.xy);
   vec2 lensPx = lensQ / max(length(lensQ), 1e-4) * (uGrainLens.z * pow(max(lensR, 1e-12), 0.5 * uGrainLens.w));
@@ -296,7 +325,7 @@ void main() {
   vec3 albedo = mix(${vec(SAND_COLOUR.deep)}, ${vec(SAND_COLOUR.pale)}, smoothstep(0.1, 0.75, id));
   // A dark grain in the fall is a dark dash across the pale stone behind it; the fall is drawn in the pale grains alone.
   albedo = mix(albedo, ${vec(SAND_COLOUR.dark)}, step(0.93, id2) * (1.0 - falls));
-  albedo = mix(albedo, ${vec(SAND_COLOUR.white)}, step(id2, 0.12));
+  albedo = mix(albedo, ${vec(SAND_COLOUR.white)}, step(id2, mix(0.12, ${LOOK.fall.pale.toFixed(2)}, falls)));
   float shade = mix(0.25, 1.0, vGrainLook.z) * vGrainLit * mix(1.0, ${LOOK.fall.lit.toFixed(2)}, falls);
   if (vGrainShape.z < 0.5) shade *= ${sandShade('vStageWorld')};
   float ndl = dot(n, uGrainKey);
@@ -316,15 +345,18 @@ void main() {
     vec3 lit = uGrainKeyCol * (sun * (face * (${SAND_LIT.sun.toFixed(3)} + ${SAND_LIT.back.toFixed(3)} * back * back) + ${SAND_LIT.thru.toFixed(3)} * thru)) + dome * ${vec(SAND_LIT.warm)} * (${SAND_LIT.sky.toFixed(3)} * mix(0.45, 1.0, near) * ${sandOpen('vStageWorld', 'vGrainLook.z')}) + uRigCardCol * (${SAND_LIT.card.toFixed(3)} * mix(0.3, 1.0, near) * clamp(dot(n, uRigCardDir) * 0.5 + 0.5, 0.0, 1.0));
     float vary = fract(id * 29.3 + id2 * 3.1);
     float kind = vGrainLit - 1.0;
-    float gain = mix(mix(${LOOK.loose.vary[0]!.toFixed(2)}, ${LOOK.loose.vary[1]!.toFixed(2)}, vary * vary), mix(${LOOK.sprinkle.core.lit.toFixed(2)}, ${LOOK.sprinkle.glints.lit.toFixed(2)}, step(0.75, kind)) * (0.75 + 0.5 * vary), step(0.25, kind));
-    col = mix(albedo * ${vec(LOOK.loose.warm)}, ${vec(LOOK.gold)} * vec3(1.0, 0.8, 0.5), step(0.75, kind)) * RECIPROCAL_PI * lit * gain + uGrainKeyCol * (sun * step(0.6, fract(id * 17.9)) * pow(abs(hk), 40.0) * ${SAND_LIT.glint.toFixed(3)});
+    float strewn = step(${LOOK.loose.fromX.toFixed(1)}, vStageWorld.x);
+    float gain = mix(mix(mix(${LOOK.sprinkle.vary[0]!.toFixed(2)}, ${LOOK.loose.vary[0]!.toFixed(2)}, strewn), mix(${LOOK.sprinkle.vary[1]!.toFixed(2)}, ${LOOK.loose.vary[1]!.toFixed(2)}, strewn), vary * vary), mix(${LOOK.sprinkle.core.lit.toFixed(2)}, ${LOOK.sprinkle.glints.lit.toFixed(2)}, step(0.75, kind)) * (0.75 + 0.5 * vary), step(0.25, kind) * (1.0 - step(1.5, kind)));
+    col = mix(albedo * mix(${vec(LOOK.sprinkle.warm)}, ${vec(LOOK.loose.warm)}, strewn), ${vec(LOOK.gold)} * vec3(1.0, 0.8, 0.5), step(0.75, kind) * (1.0 - step(1.5, kind))) * RECIPROCAL_PI * lit * gain + uGrainKeyCol * (sun * step(0.6, fract(id * 17.9)) * pow(abs(hk), 40.0) * ${SAND_LIT.glint.toFixed(3)});
     float lum = dot(col, vec3(0.2126, 0.7152, 0.0722));
     float over = max(lum - ${SAND_LIT.knee.toFixed(3)}, 0.0);
     col *= (min(lum, ${SAND_LIT.knee.toFixed(3)}) + ${(SAND_LIT.top - SAND_LIT.knee).toFixed(3)} * (1.0 - exp(-over / ${(SAND_LIT.top - SAND_LIT.knee).toFixed(3)}))) / max(lum, 1e-4);
+    // One grain in thirty of those strewn on the table turns a face to the light and glints.
+    col *= mix(1.0, ${LOOK.loose.glint.lit.toFixed(2)}, step(1.5, kind));
   }
   vec3 cover = vGrainCover * disc;
   if (falls > 0.5) {
-    col *= mix(${vec(LOOK.fall.low)}, vec3(1.0), smoothstep(${LOOK.fall.lowMm[0]!.toFixed(1)}, ${LOOK.fall.lowMm[1]!.toFixed(1)}, vStageWorld.y));
+    col *= mix(${vec(LOOK.fall.low)}, vec3(1.0), smoothstep(${LOOK.fall.shine[0]!.toFixed(2)}, ${LOOK.fall.shine[1]!.toFixed(2)}, fract(id * 43.7 + id2 * 5.3)));
     cover *= smoothstep(${LOOK.fall.least[0]!.toFixed(2)}, ${LOOK.fall.least[1]!.toFixed(2)}, dot(col, vec3(0.2126, 0.7152, 0.0722)));
   }
   gl_FragColor = vec4(col * cover, cover.g * mix(1.0, ${LOOK.loose.veil.toFixed(2)}, step(1.5, vGrainShape.z)));
@@ -357,6 +389,7 @@ export interface FallPath {
 }
 
 export const grainLens = grainUniforms.uGrainLens
+export const sandDown = grainUniforms.uSandDown
 
 export const FALL = { gravity: LOOK.fall.gravity, count: LOOK.fall.count, stand: LOOK.flow.stand }
 
@@ -379,10 +412,11 @@ export function fallPaths(): FallPath[] {
   while (out.length < F.count && tries++ < F.count * 50) {
     const az0 = (F.az + Math.max(-F.most, Math.min(F.most, rf.gauss())) * F.spread) * RAD
     const az1 = az0 + Math.max(-F.most, Math.min(F.most, rf.gauss())) * F.fanDeg * RAD
-    const speed = F.outMmS[0] + (F.outMmS[1] - F.outMmS[0]) * rf.next() ** F.lean
-    const r0 = rf.range(F.r[0], F.r[1])
+    const flier = rf.next()
+    const speed = (F.outMmS[0] + (F.outMmS[1] - F.outMmS[0]) * rf.next() ** F.lean) * (flier < F.fliers.share ? F.fliers.far[0]! + (F.fliers.far[1]! - F.fliers.far[0]!) * (flier / F.fliers.share) : 1)
     const h0 = rf.range(F.h[0], F.h[1])
-    const radius = F.radiusMm[0] + (F.radiusMm[1] - F.radiusMm[0]) * rf.next() ** 2
+    const r0 = stoneAt(h0) + S.clearMm + rf.range(F.off[0], F.off[1])
+    const radius = F.radiusMm[0] + (F.radiusMm[1] - F.radiusMm[0]) * rf.next() ** F.fine
     const vy = -rf.range(F.downMmS[0], F.downMmS[1])
     const rate = rf.range(F.rate[0], F.rate[1])
     const id = rf.next()
@@ -403,7 +437,8 @@ export function fallPaths(): FallPath[] {
         const to: [number, number, number] = [tx + slide * Math.sin(az1), 0, tz + slide * Math.cos(az1)]
         to[1] = ground(to[0], to[2])
         if (th - to[1] < 1) break
-        done = { from, to, seconds, life: seconds + (th - to[1]) / (S.keeps * (F.gravity * seconds - vy)), slide, vy, rate, radius, id, phase }
+        const first = S.keeps * (F.gravity * seconds - vy)
+        done = { from, to, seconds, life: seconds + (Math.sqrt(first * first + 2 * S.roll * F.gravity * (th - to[1])) - first) / (S.roll * F.gravity), slide, vy, rate, radius, id, phase }
       } else if (h <= ground(x, z)) {
         const seconds = s - step
         const [tx, , tz] = at(seconds)
@@ -495,15 +530,16 @@ function grainGeometry(): THREE.BufferGeometry {
     const x = rl.range(O.x[0]!, O.x[1]!)
     const z = rl.range(O.z[0]!, O.z[1]!)
     const keep = rl.next()
-    const fine = O.radiusMm[0]! + (O.radiusMm[1]! - O.radiusMm[0]!) * rl.next() ** 2
+    const pick = rl.next()
+    const fine = pick < O.small ? O.radiusMm[0]! + (O.radiusMm[1]! - O.radiusMm[0]!) * (pick / O.small) : O.radiusMm[1]! + (O.radiusMm[2]! - O.radiusMm[1]!) * ((pick - O.small) / (1 - O.small)) ** O.lean
     const id = rl.next()
     const phase = rl.next()
     if (Math.hypot(x, z) < 61.5 || keep > sandLoose(x, z)) continue
-    // A few grains on the bare table are coarse, and lie out of focus.
-    const coarse = phase < O.big.share && sandHeight(x, z) < 0.05
+    // A few grains on the bare table and on the thin sand at the heap's foot are coarse crumbs.
+    const coarse = phase < O.big.share && sandHeight(x, z) < O.big.underMm
     const radius = coarse ? O.big.mm[0]! + (O.big.mm[1]! - O.big.mm[0]!) * id : fine
     const at = [x, SLAB.liftMm + sandHeight(x, z) + radius * 0.7, z]
-    put(at, at, [0, 0, 0, radius], [id, 2, phase, 0])
+    put(at, at, [0, 0, 0, radius], [id, 2, phase, coarse ? 0.1 : (id * 977 + phase * 131) % 1 < 1 / O.glint.one ? 2 : 0])
     laid++
   }
   // The sprinkle beside the foot on the left (slab.ts): single grains, laid where they are for good.
@@ -597,6 +633,8 @@ export function update(moment: KitMoment): void {
   const down = 1 - Math.min(1, Math.max(0, (rimGapMm(f.globe) - LOOK.flow.gapMm[0]) / (LOOK.flow.gapMm[1] - LOOK.flow.gapMm[0])))
   const out = Math.min(1, Math.max(0, (at - LOOK.gone[0]!) / (LOOK.gone[1]! - LOOK.gone[0]!)))
   const gone = at < 0 || !(at < Infinity) ? 1 : out * out * (3 - 2 * out)
+  const lifted = Math.min(1, Math.max(0, (rimGapMm(f.globe) - LOOK.flow.shadeMm[0]) / (LOOK.flow.shadeMm[1] - LOOK.flow.shadeMm[0])))
+  u.uSandDown.value = 1 - lifted * lifted * (3 - 2 * lifted)
   const falling = fallShare(at) * down
   u.uGrain.value.set(at < 0 ? -1 : Math.min(at, 50), gone, falling, shutter * LOOK.exposure)
   u.uGrainLoop.value.set((((open / moment.period) % 1) + 1) % 1, moment.period)

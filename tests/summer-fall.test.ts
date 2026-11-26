@@ -3,8 +3,9 @@ import { BODY } from '../assets-src/base-summer/profile.mjs'
 import { FALL, fallPaths, fallShare } from '../src/seasons/summer/arrival'
 
 // The sand that falls from the right shoulder of summer's base (open item 87: at rest nothing fell there). Each grain
-// leaves the lip of the ledge, clears the belly of the stone and lands on the mound; the fall stands for as long as the
-// globe stands, is fuller just after a landing and stops while the globe is in the air.
+// leaves the shoulder under the collar (round 21: a thin stream from below the collar, no wall of sand up to the ledge),
+// clears the belly of the stone or tumbles down it and lands on the mound; the fall stands for as long as the globe
+// stands, is fuller just after a landing and stops while the globe is in the air.
 describe("summer's falling sand", () => {
   const body = BODY as [number, number][]
   const stoneAt = (h: number): number => {
@@ -22,16 +23,22 @@ describe("summer's falling sand", () => {
     expect(paths.length).toBe(FALL.count)
   })
 
-  it('starts at the lip on the right and lands on the mound outside the foot', () => {
+  it('starts at the shoulder under the collar on the right, close to the stone, and lands on the mound outside the foot', () => {
+    const foot = body.find(([r, h], i) => h > 20 && i + 1 < body.length && body[i + 1]![1] > h && (r - body[i + 1]![0]) / (body[i + 1]![1] - h) < 0.1)![1]
+    expect(foot).toBeGreaterThan(28)
+    expect(foot).toBeLessThan(34)
     for (const p of paths) {
       const az = (Math.atan2(p.from[0], p.from[2]) * 180) / Math.PI
       expect(az).toBeGreaterThan(60)
       expect(az).toBeLessThan(116)
       expect(Math.hypot(p.from[0], p.from[2])).toBeGreaterThan(52)
-      expect(p.from[1]).toBeGreaterThan(40)
+      expect(Math.hypot(p.from[0], p.from[2])).toBeGreaterThan(stoneAt(p.from[1]))
+      expect(Math.hypot(p.from[0], p.from[2])).toBeLessThan(stoneAt(p.from[1]) + 2)
+      expect(p.from[1]).toBeLessThanOrEqual(foot)
+      expect(p.from[1]).toBeGreaterThan(foot - 2)
       expect(Math.hypot(p.to[0], p.to[2])).toBeGreaterThan(60)
       expect(p.to[1]).toBeGreaterThan(3)
-      expect(p.to[1]).toBeLessThan(p.from[1] - 20)
+      expect(p.to[1]).toBeLessThan(p.from[1] - 15)
     }
   })
 
@@ -54,7 +61,7 @@ describe("summer's falling sand", () => {
     expect(slow).toBeLessThan(paths.length * 0.9)
   })
 
-  it('takes the time a grain of sand takes to fall three centimetres, and is back at the lip only after it has landed', () => {
+  it('takes the time a grain of sand takes to fall two centimetres, and is back at the shoulder only after it has landed', () => {
     const period = 8
     for (const p of paths) {
       expect(p.life).toBeGreaterThanOrEqual(p.seconds)
