@@ -16,8 +16,8 @@ export interface Lantern {
   arm?: Vec3
 }
 
-export const STRING = { sagMm: 3.5, steps: 40, wireMm: 0.07, cordMm: 0.045 }
-export const SHAPE = { squash: 0.92, gores: 12, groove: 0.07, cap: 0.34, capTall: 0.26, ring: 0.3 }
+export const STRING = { sagMm: 3.5, steps: 40, wireMm: 0.1, cordMm: 0.09 }
+export const SHAPE = { squash: 0.92, gores: 12, groove: 0.07, cap: 0.42, capTall: 0.26, ring: 0.3 }
 
 const wood = limbs.filter((l) => l.kind === 'limb' || l.kind === 'twig')
 
