@@ -15,7 +15,7 @@ const spec: Spec = {
   seasons: ['arr', 's'],
   defaultSeason: 's',
   film: { fps: 'n', previewFps: 'n', defaultBpm: 'n', beatsPerBar: 'n', minSeconds: 'n', maxSeconds: 'n', shutterDegrees: 'n', hookSeconds: 'n', revealBySeconds: 'n', shots: ['arr', { id: 's', kind: 's', bars: 'n' }] },
-  intro: { prompt: 's', reasoning: 's', charsPerSecond: 'n', pauseBeforeSendSeconds: 'n', buildTitle: 's', steps: ['arr', 's'], stepSeconds: 'n', holdSeconds: 'n', maxSeconds: 'n' },
+  intro: { prompt: 's', model: 's', reasoning: 's', reasoningFrom: 's', reasoningLevels: ['arr', 's'], charsPerSecond: 'n', pauseBeforeSendSeconds: 'n', buildTitle: 's', steps: ['arr', 's'], stepSeconds: 'n', holdSeconds: 'n', maxSeconds: 'n' },
   formats: { master: format, hd: format, preview: format, phone: format, tablet: format },
   platform: { name: 's', standardAccountMaxSeconds: 'n', maxFileMb: 'n' },
   export: {
@@ -214,5 +214,9 @@ export function configProblems(input: unknown, approvedPresent: readonly string[
   const bar = (c.film.beatsPerBar * 60) / c.film.defaultBpm
   const need = loop.shakeStartSeconds + bar + sh.spinDownSeconds
   if (!(need < loop.seconds)) out.push(`deliver.cardLoop.shakeStartSeconds plus one bar plus shake.spinDownSeconds is ${need}, which is not less than deliver.cardLoop.seconds (${loop.seconds})`)
+
+  const levels: string[] = c.intro.reasoningLevels
+  for (const k of ['reasoning', 'reasoningFrom']) if (!levels.includes(c.intro[k])) out.push(`intro.${k} names a level that is not in intro.reasoningLevels: ${c.intro[k]}`)
+  if (c.intro.reasoning === c.intro.reasoningFrom) out.push(`intro.reasoning and intro.reasoningFrom are the same level (${c.intro.reasoning}), so the opening would show no change`)
   return out
 }

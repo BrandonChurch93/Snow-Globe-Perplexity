@@ -21,6 +21,16 @@ describe('config validation', () => {
     expect(configProblems(raw, present)).toEqual([])
   })
 
+  it("holds the opening's model name and its levels, with the level it starts on and the level it ends on among them", () => {
+    expectProblem((c) => delete c.intro.model, /intro\.model is missing/)
+    expectProblem((c) => delete c.intro.reasoningFrom, /intro\.reasoningFrom is missing/)
+    expectProblem((c) => delete c.intro.reasoningLevels, /intro\.reasoningLevels is missing/)
+    expectProblem((c) => (c.intro.reasoningLevels = ['Standard', 'Max']), /intro\.reasoning names a level that is not in intro\.reasoningLevels/)
+    expectProblem((c) => (c.intro.reasoningFrom = 'Low'), /intro\.reasoningFrom names a level that is not in intro\.reasoningLevels/)
+    expectProblem((c) => (c.intro.reasoningFrom = c.intro.reasoning), /the opening would show no change/)
+    expect(raw.intro.steps.length).toBe(4)
+  })
+
   it('fails when a key is missing', () => {
     expectProblem((c) => delete c.seed, /seed is missing/)
     expectProblem((c) => delete c.film.fps, /film\.fps is missing/)

@@ -66,9 +66,9 @@ Written by `npm run cut` from `dev.judged()`. Do not edit by hand. These are the
 | `film-shake-4-landed` | film | film frame 2910, hd: states.landedSeconds after the landing of shake-4 |
 | `film-hold-close` | film | film frame 3239, hd: the middle of the hold close |
 | `film-last` | film | film frame 3599, hd: the last frame |
-| `opening-typing` | film | opening frame 210, hd: the middle of the typing |
-| `opening-reasoning` | film | opening frame 438, hd: the reasoning level control open |
-| `opening-build` | film | opening frame 708, hd: the middle of the build screen |
+| `opening-typing` | film | opening frame 330, hd: the middle of the typing |
+| `opening-reasoning` | film | opening frame 89, hd: the reasoning level control open |
+| `opening-build` | film | opening frame 732, hd: the middle of the build screen |
 | `loop-first` | film | loop frame 0, hd: frame 0 of the loop |
 | `loop-strokes` | film | loop frame 120, hd: the middle of the strokes of the loop |
 | `loop-landed` | film | loop frame 222, hd: states.landedSeconds after the landing of the loop |
