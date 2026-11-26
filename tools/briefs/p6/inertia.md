@@ -65,7 +65,7 @@ start): the eye takes that before the lift at a third size."
 - Numbers first: for frames 1296 to 1440 the glass's speed and the mean speed of what floats in the room's
   frame, before and after, and the share of what floats in the trailing half of the ball on each frame.
 - Consecutive frames: `npm run sheet -- --motion lift --shot shake-2`, `--motion strokes --shot shake-2`,
-  the same for `shake-4` (snow into the glass of winter), at draft while you tune, at review for what you
+  the same for `shake-4` (fall into winter), at draft while you tune, at review for what you
   show; and the app's own path with `--app shake`.
 - `npx tsc --noEmit`, `npx vitest run`, `npm run determinism`, G11, G12, `node tools/measure.mjs --unit
   change --tier draft`, the strict run if a shader moved.

@@ -26,15 +26,15 @@ it. The lift's first frames and the set down are mended; the strokes are not.
 ## What stands and may not move
 
 - The lift is `shake.liftMm` 7.25 and the tilt's cap `shake.tiltDeg` 6 (decision 45). The camera is locked
-  through a shake, the globe fills 0.800 of the frame, the lifted glass must stay inside the frame with 4.5
-  percent of room above it, and the approved shake pictures (`references/approved/*-shake.png`) show the
-  globe near the table. A lift "well clear of the table" cannot be had and is not asked of you.
+  through a shake, the camera's fill is where decisions 29 and 35 left it, the lifted glass must stay inside
+  the frame with 4.5 percent of room above it, and the approved shake pictures
+  (`references/approved/*-shake.png`) show the globe near the table. A lift "well clear of the table" cannot be had and is not asked of you.
 - The clock of a shake: the lift's end, the strokes' end, the landing frame, the swap windows (G11), the
   landings (G12), the count of strokes, M4 and M5. The films' sound is cut to them.
 - `rest` stills of all four seasons: byte for byte as on main (sha256). `landed` stills: equal too, or you
   say which moved, why, and show the pair.
-- The first hand (`HAND`, kept for the first shake's old pins by `keepsOldHand`) as it is, unless you show
-  it is not drawn anywhere.
+- The first hand (`HAND`; `keepsOldHand` in `table.ts` says where it still applies) as it is, unless you
+  show it is not drawn anywhere.
 
 ## What to try, in this order
 
