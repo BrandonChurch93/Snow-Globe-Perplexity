@@ -32,3 +32,17 @@ Pictures 01 to 04 of push 1 show the pack before the edges of the type became gr
 08-sheet-across-the-opening.jpg
   The tool's own sheet (npm run sheet -- --opening --format hd): twelve frames across the opening, each labelled with its frame and its time: 0, 78, 158, 236, 314, 394, 472, 552, 630, 708, 788, 866.
 
+
+Push 3: three pictures of proof and one of the built app. No tier (the opening has none).
+
+09-type-edges-before-after-frame-0330.jpg
+  Frame 330, a strip of the prompt's type (x 590 to 890, y 492 to 554 of the 1920 x 1080 frame), each pixel enlarged four times. Above, before: the first pack, with orange and blue pixels on the edges of the letters. Below, after: the pack on the branch, the edges in grey levels (HANDOVER.md, "Found late").
+
+10-built-app-autopilot-menu-open.jpg
+  The built app at `?mode=autopilot&which=a`, a window of 960 x 540: the page shows the opening from the hd pack, reduced by the page, with the menu of the three levels open. From the run of 06:30 on the build of `428e8a76`, which was stopped after four minutes (this VM paints a page frame of that size in 15 to 30 s). Before: the same address showed the stand-in's dark page of plain text.
+
+11-master-beside-hd-frame-0330.jpg
+  Frame 330, two strips: the prompt's type, and the control with the level. For each, above: the hd pack enlarged two times; below: the master pack's own pixels (3840 x 2160). Both packs drawn after the change of the type's edges. The master's type is finer.
+
+12-built-app-opening-then-film.jpg
+  The built app at `?mode=autopilot&which=a` in a window of 192 x 108 (the size at which this VM gets through the opening in three minutes), three shots of one run, each pixel enlarged two times. Left: the opening 52 page frames in, the prompt being typed. Middle: the first look after the opening went, the film's picture of the winter globe from near. Right: seven page frames later, the whole globe. Build of `3eb53a38`, run of 07:12. Too small to read the interface; it shows the order, the opening and then the film.
