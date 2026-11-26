@@ -1,15 +1,18 @@
-# Job: the masters' tool (`master_tool_builder`)
+# The masters' tool (`npm run master`)
 
-Branch `agent/p6-master`, looks branch `agent/p6-master-looks`. Read `COMMON.md` first; where this file says otherwise, this file wins.
-You are a tool agent: you build a render tool and measure with it. You judge no look and you change no picture.
+Read `COMMON.md` first. The tool is owned by a tool agent: it judges no look and changes no picture, and since the freeze it may change under `tools/` and `tests/` only (the engine's hash takes in `src/` and `config/`).
 
-## Why
-Brandon asked for the final films from this build at 3840 x 2160 and 60 frames a second: the film with the opening (film A), the film without it (film B), a screenshot for his portfolio, and a 6 to 9 second loop that starts on that screenshot. What exists does not make them:
-- `npm run film` (`tools/film.mjs`) renders previews at `film.previewFps`.
-- `npm run render:local` (`tools/render-local.mjs`) renders masters as ProRes chunks of 120 frames on a machine with a graphics card. It has no way to render a range, and it refuses the software renderer unless `deliver.sandboxMaster` is true.
-- No graphics card is in reach. One sample at 3840 x 2160 costs about 20 s on a sandbox VM (4 cores), so film B (3,600 frames) is hundreds of machine hours. It will be rendered after the freeze by up to 14 sandbox VMs at once, each given a range, each pushing finished chunks to its own branch as it goes, and joined on `/root`'s VM (2 cores, 3 GB of free disk, no graphics card).
+## What the tool is today
+It makes Brandon's final files at 3840 x 2160 and 60 frames a second without a graphics card: the film with the opening (film A, 4,467 frames), the film without it (film B, 3,600), the portfolio loop (480) and its screenshot (the loop's frame 0, the very PNG). `tools/master.mjs`, `tools/lib/master.mjs`, `tools/lib/mastergit.mjs`; the settings are `deliver.master` in `config/showcase.json`; the exact commands are in `tools/README.md` ("The master") and `tools/farm/README.md`.
 
-So the tool must be made for that: ranges, small chunks, nothing lost when a VM stops, chunks that travel by git, a join that proves the file.
+- Many machines draw. `--what film-b|loop|opening --first N --last M` renders a range in chunks of 30 frames on lines every machine shares, with `deliver.master.samples` (24) samples a frame, by the software renderer (lavapipe). Each chunk becomes a near-lossless INTERMEDIATE (x264, crf 6, closed, no rate cap, about 25 MB), checked on every frame against its PNG (luma PSNR floor 46 dB, no flat frame) before the PNGs go. The intermediates are the archive of the render.
+- No machine draws before `--calibrate` prints the line the others printed. The first line of every run is the memory and the CPUs the process may really use (its cgroup's, not the node's); `--procs` is refused when the memory cannot hold it.
+- Nothing is lost: a drawn frame is a PNG until its chunk is checked, the same command goes on after any stop, and a stop names its chunk, its frame and that command.
+- The picture travels as message attachments (under 50 MiB each, 10 a message; the tool cuts files over 45 MB into parts), never through git. `--ship BRANCH` carries records and looks only.
+- One machine encodes. `--collect DIR --files FOLDER` takes a flat folder of what came, checks every file against its record's sha256 and says what is missing. `--encode film-b|film-a|loop --from DIR` decodes the intermediates in order and encodes each master ONCE, whole: two passes to a size (500 MB with sound, under `platform.maxFileMb`), long GOP, then proves the file row by row (every frame decodes, count, steps, tags, High 5.2, faststart, size, sound, no flat frame, luma PSNR of every frame against the intermediate). The loop is encoded by quality, with an even wrap. Film A is the opening's chunks, then film B's, in one stream.
+- `--split FILE` and `--unsplit DIR` carry a finished film as parts with a manifest of sha256s. `--hd` scales a master down for the page's film files. `--join` is gone.
+
+What follows is the job as it was first given (branch `agent/p6-master`, before decision 140 and before the design above). It is kept for its reasons and its measurements. Where it differs from the section above or from `tools/README.md`, they win: there is no per-chunk final encode, no `--join`, no `minChunkPsnr`, and the samples are 24.
 
 ## What is asked
 
