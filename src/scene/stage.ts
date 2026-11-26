@@ -15,7 +15,7 @@ import { lensState } from '../post/grade'
 import { ParticleDraw } from '../particles/draw/points'
 import { kitOf, kits } from '../seasons'
 import type { SeasonKit } from '../seasons/kit'
-import { CHANGE_CUT, changeBloom, partChange } from '../shake/change'
+import { changeBloom, partChange } from '../shake/change'
 import { Backdrop } from './backdrop'
 import { applyPose, type Pose } from './cameras'
 import { newFrame, type StageFrame } from './frame'
@@ -231,7 +231,7 @@ export class GlobeStage implements Stage {
     const settle = config.shake.settleCheckSeconds
     const settled = Math.min(1, Math.max(0, moment.sinceLanding / settle))
     const swapping = moment.beat !== null && moment.beat >= swap.fromBeat
-    const arrived = !swapping ? settled : single ? settled * (1 - partChange('base', (moment.beat! - swap.fromBeat) / (swap.toBeat - swap.fromBeat))) : 0
+    const arrived = !swapping ? settled : single ? settled * (1 - partChange('shed', (moment.beat! - swap.fromBeat) / (swap.toBeat - swap.fromBeat))) : 0
 
     const f = this.frame
     f.width = w
@@ -249,8 +249,8 @@ export class GlobeStage implements Stage {
     f.from = a.kit
     f.to = b.kit
     f.change = change
-    // The light inside and the lights of the room cross through the whole window, late in the same way: at the middle of the window the
-    // storm is still lit by the season that leaves, and the new season's colour comes up with the flood that hides the base.
+    // The light inside crosses through the whole window, late: at the middle of the window the storm is still lit by the season
+    // that leaves, and the new season's colour comes up with the flare that hides the base.
     f.mix.light = Math.pow(partChange('light', change), LIGHT_LATE)
     // The veil crosses through the whole window. Where the season that leaves has the thicker veil it crosses late: a sixth of the way
     // at the middle of the window, four tenths where the base begins to change. Crossed evenly, that storm stood in the new season's
@@ -258,8 +258,9 @@ export class GlobeStage implements Stage {
     // even, because there the veil that comes is part of the cover of the swap.
     const veil = partChange('veil', change)
     f.mix.veil = a.kit.veil.density >= b.kit.veil.density ? Math.pow(veil, VEIL_LATE) : veil
-    // What the glass and the table show of the base (its colour in the collar's refraction and in the baked mirror) steps with the base itself, on the cut.
-    f.mix.base = change <= 0 ? 0 : change >= 1 ? 1 : change < CHANGE_CUT.at ? 0 : 1
+    // Everything outside the glass reads this one number: the base, what the glass and the table show of it, the lights of the
+    // backdrop and the light of the room cross in the same few frames, under the cover.
+    f.mix.base = partChange('base', change)
     f.mix.particles = partChange('particles', change)
     f.mix.bloom = changeBloom(change)
     f.grids[0] = a.grid

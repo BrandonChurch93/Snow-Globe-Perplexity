@@ -3,6 +3,8 @@
 // The text, length and influence are read from audio/prompts.json (cues.<cue>), the cue's line from audio/lines.json.
 // The call goes through the credential proxy, so no key is in this file or in what it writes.
 // Set ELEVENLABS_HANDLE to the handle that list_credentials shows for api.elevenlabs.io.
+// The round the take is filed under: SOUND_ROUND, or a second argument (node audio/run/take.mjs <cue> after-review).
+// With neither, the harness takes the round from kit/PROGRESS.md. A cue's entry may carry its own `tail` in place of the family line.
 import fs from 'node:fs'
 import path from 'node:path'
 import { spawnSync } from 'node:child_process'
@@ -16,6 +18,7 @@ if (!HANDLE) {
 }
 const TOOL = 'ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz'
 const cue = process.argv[2]
+const ROUND = process.argv[3] ?? process.env.SOUND_ROUND ?? null
 const P = JSON.parse(fs.readFileSync(path.join(ROOT, 'audio', 'prompts.json'), 'utf8'))
 const LINES = JSON.parse(fs.readFileSync(path.join(ROOT, 'audio', 'lines.json'), 'utf8'))
 const c = P.cues[cue]
@@ -27,7 +30,8 @@ if (!LINES[cue]) {
   console.error(`no line in audio/lines.json for ${cue}`)
   process.exit(1)
 }
-const prompt = `${c.text}, ${P.familyLine}`
+const tail = typeof c.tail === 'string' ? c.tail : P.familyLine
+const prompt = tail ? `${c.text}, ${tail}` : c.text
 const dir = path.join(ROOT, 'out', 'work', 'audio', 'raw')
 fs.mkdirSync(dir, { recursive: true })
 const raw = path.join(dir, `${cue}-${new Date().toISOString().replace(/[:.]/g, '-')}`)
@@ -55,6 +59,6 @@ if (f.status !== 0) {
 }
 console.log(`${bytes} bytes, read as ${channels} channel(s): ${(bytes / (96000 * channels)).toFixed(2)} s`)
 const settings = { endpoint: 'POST /v1/sound-generation', model: 'default', duration_seconds: c.seconds, prompt_influence: c.influence, loop: c.loop, output_format: 'pcm_48000', cost: Number.isFinite(cost) ? cost : null }
-const s = spawnSync('npm', ['run', '-s', 'sound', '--', '--cue', cue, '--file', wav, '--prompt', prompt, '--settings', JSON.stringify(settings), '--line', LINES[cue], '--tool', TOOL], { cwd: ROOT, encoding: 'utf8' })
+const s = spawnSync('npm', ['run', '-s', 'sound', '--', '--cue', cue, '--file', wav, '--prompt', prompt, '--settings', JSON.stringify(settings), '--line', LINES[cue], '--tool', TOOL, ...(ROUND ? ['--round', ROUND] : [])], { cwd: ROOT, encoding: 'utf8' })
 console.log(s.stdout, s.stderr)
 process.exit(s.status ?? 0)

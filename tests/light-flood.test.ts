@@ -30,7 +30,7 @@ function lit(change: number, to = winter) {
 }
 
 describe('the flood of a change', () => {
-  const span = changeSpan('base')
+  const span = changeSpan('shed')
   const mid = (span.from + span.to) / 2
   const rest = lit(0)
 

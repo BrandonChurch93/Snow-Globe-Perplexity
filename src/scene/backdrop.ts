@@ -470,7 +470,7 @@ export class Backdrop {
     roomUniforms.uRoomRimCol.value.copy(f.rimCol)
     const ca = cardOf(f.from.rig)
     const cb = cardOf(f.to.rig)
-    const t = f.mix.light
+    const t = f.mix.base
     const at = ROOM_RIG.targetMm
     roomUniforms.uRoomCard.value.set(ca.from[0] + (cb.from[0] - ca.from[0]) * t - at[0], ca.from[1] + (cb.from[1] - ca.from[1]) * t - at[1], ca.from[2] + (cb.from[2] - ca.from[2]) * t - at[2]).normalize()
     roomUniforms.uRoomCardCol.value.setRGB(
@@ -479,9 +479,9 @@ export class Backdrop {
       ca.color[2] * ca.intensity + (cb.color[2] * cb.intensity - ca.color[2] * ca.intensity) * t,
     )
     lensState.bloomTint.copy(f.bloomTint)
-    // Decision 89: the discs and the room's walls cross with the key light, through the whole window, not inside the base's
-    // few frames. A shake inside one season mixes a season with itself; it keeps the number it had, so its frames stay as they were.
-    this.set(f.from, f.to, f.from.season === f.to.season ? f.mix.base : f.mix.light)
+    // The discs and the room's walls cross with the base, in its few frames: there the room has fallen dark under the flare, so
+    // the lights of one season go down and the lights of the next come up, and no clean frame holds a room between two seasons.
+    this.set(f.from, f.to, f.mix.base)
     this.group.visible = f.view !== 'flow' && f.view !== 'lightgrid'
   }
 

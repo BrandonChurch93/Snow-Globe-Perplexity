@@ -250,7 +250,7 @@ describe('a season that is not loaded yet', () => {
 })
 
 describe('reduced motion', () => {
-  it('changes the season by a dissolve with the globe at rest and no shake', () => {
+  it('changes the season whole in one frame, after one frame of the season it leaves, with the globe at rest and no shake', () => {
     const sim = new FakeSim()
     const s = new LiveSession(sim, first)
     s.reduced = true
@@ -259,36 +259,79 @@ describe('reduced motion', () => {
     expect(s.busy).toBe(true)
     expect(s.shakes).toBe(0)
     expect(s.tl.events.length).toBe(0)
-    let last = -1
+    s.tick(FRAME_S)
+    expect(s.season).toBe(first)
+    expect(s.moment(1, 1).season).toBe(first)
+    s.tick(FRAME_S)
+    expect(s.season).toBe(next(first))
     let moved = false
+    let between = false
     run(s, LIVE.dissolveSeconds - 0.1, () => {
       const m = s.moment(1, 1)
       if (m.globe.y !== 0 || m.globe.x !== 0 || m.globe.tiltX !== 0) moved = true
-      expect(m.change).toBeGreaterThanOrEqual(last)
-      expect(m.from).toBe(first)
-      expect(m.to).toBe(next(first))
-      last = m.change
+      if (m.change !== 0 || m.season !== next(first)) between = true
+      expect(s.busy).toBe(true)
+      expect(s.target).toBe(next(first))
     })
     expect(moved).toBe(false)
-    expect(last).toBeGreaterThan(0.9)
+    expect(between).toBe(false)
     expect(s.shake()).toBeNull()
     run(s, 0.3)
     expect(s.busy).toBe(false)
+    expect(s.target).toBeNull()
     expect(s.season).toBe(next(first))
+    expect(s.tl.events.length).toBe(0)
     expect(s.moment(1, 1).change).toBe(0)
     expect(s.moment(1, 1).season).toBe(next(first))
   })
 
-  it('waits for a late season before the dissolve and gives up after live.loadWaitSeconds', () => {
+  it('never asks the stage for half a change, at any frame of any press', () => {
+    const s = new LiveSession(new FakeSim(), first)
+    s.reduced = true
+    for (const season of [...seasons.slice(1), first]) {
+      expect(s.goTo(season)).toBe(season)
+      run(s, LIVE.dissolveSeconds + 0.5, () => {
+        const m = s.moment(1, 1)
+        expect(m.change).toBe(0)
+        expect(m.from).toBe(m.season)
+        expect(m.to).toBe(m.season)
+      })
+      expect(s.busy).toBe(false)
+      expect(s.season).toBe(season)
+    }
+  })
+
+  it('ends the dissolve in the seconds of the screen, in three frames on a machine that draws one frame in two seconds', () => {
+    const slow = LIVE.dissolveSeconds + 0.2
+    const s = new LiveSession(new FakeSim(), first)
+    s.reduced = true
+    s.shake()
+    s.tick(slow)
+    expect(s.season).toBe(first)
+    s.tick(slow)
+    expect(s.season).toBe(next(first))
+    expect(s.busy).toBe(true)
+    s.tick(slow)
+    expect(s.busy).toBe(false)
+    expect(s.target).toBeNull()
+    expect(s.shake()).toBe(next(next(first)))
+  })
+
+  it('waits for a late season before the change and gives up after live.loadWaitSeconds', () => {
     const loaded = new Set([first])
     const s = new LiveSession(new FakeSim(), first, (season) => loaded.has(season))
     s.reduced = true
     s.goTo(next(first))
     run(s, 1)
     expect(s.busy).toBe(true)
-    expect(s.moment(1, 1).change).toBe(0)
+    expect(s.season).toBe(first)
+    expect(s.moment(1, 1).season).toBe(first)
     loaded.add(next(first))
+    s.tick(FRAME_S)
+    expect(s.season).toBe(next(first))
+    expect(s.busy).toBe(true)
     run(s, LIVE.dissolveSeconds + 0.2)
+    expect(s.busy).toBe(false)
     expect(s.season).toBe(next(first))
     const far = next(next(first))
     s.goTo(far)
@@ -561,7 +604,7 @@ describe('the framing of the app', () => {
       const rig = liveRig(w / h, 0, 0, roomUnder(h))
       expect(rig.distanceMm).toBeGreaterThanOrEqual(hero.distanceMm)
       expect(rig.pitchDeg).toBe(hero.pitchDeg)
-      expect(rig.yawDeg).toBe(hero.yawDeg)
+      if (w / h >= FRAME.narrowAspect) expect(rig.yawDeg).toBe(hero.yawDeg)
       expect(rig.fovDeg).toBe(hero.fovDeg)
       expect(rig.apertureMm).toBe(hero.apertureMm)
       expect(rig.focusShiftMm).toBe(hero.focusShiftMm)
@@ -740,7 +783,7 @@ describe('the framing of the app', () => {
     }
   })
 
-  it('places the smaller globe of a phone between the top edge and the controls: the room over the glass 1.6 times the room under the foot, never more than twice', () => {
+  it('places the smaller globe of a phone between the top edge and the controls: the room over the glass FRAME.overUnder times the room under the foot, never more than twice', () => {
     for (const [w, h] of [[config.formats.phone.width, config.formats.phone.height], [360, 800], [414, 896], [430, 932]] as const) {
       for (const controls of [100, 128, 150]) {
         const m = measure(w, h, controls)
