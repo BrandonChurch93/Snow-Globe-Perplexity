@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import os from 'node:os'
 import { spawn, spawnSync } from 'node:child_process'
 import { loadConfig, rel } from './paths.mjs'
 
@@ -14,6 +15,8 @@ const SCALER = 'flags=lanczos+accurate_rnd+full_chroma_int'
 const TO_VIDEO = `scale=in_range=full:out_range=tv:out_color_matrix=bt709:${SCALER}`
 const TO_PICTURE = `scale=in_range=tv:out_range=full:in_color_matrix=bt709:${SCALER},format=rgb24`
 const TAGS = ['-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-color_range', 'tv']
+const X264_COLOUR = 'colorprim=bt709:transfer=bt709:colormatrix=bt709'
+const SET_TAGS = 'setparams=range=tv:color_primaries=bt709:color_trc=bt709:colorspace=bt709'
 const EXACT = ['-map_metadata', '-1', '-fflags', '+bitexact']
 const TIMING_SLACK_FRAMES = 0.02
 const STILL_JPEG = { quality: 95, chromaSubsampling: '4:4:4' }
@@ -219,8 +222,8 @@ export function masterVideoArgs(video, gop) {
   const g = String(gop)
   return [
     '-c:v', 'libx264', '-preset', video.preset, '-profile:v', video.profile, '-level:v', video.level, '-pix_fmt', video.pixFmt,
-    '-crf', String(video.crf), '-maxrate', `${Math.round(video.maxrateMbps * 1000)}k`, '-bufsize', `${Math.round(video.bufsizeMbps * 1000)}k`,
-    '-g', g, '-keyint_min', g, '-sc_threshold', '0', '-bf', '2', '-x264-params', 'aq-mode=3:open-gop=0:colorprim=bt709:transfer=bt709:colormatrix=bt709',
+    '-crf', String(video.crf),
+    '-g', g, '-keyint_min', g, '-sc_threshold', '0', '-bf', '2', '-x264-params', `open-gop=0:${X264_COLOUR}`,
     '-threads', String(ENCODER_THREADS), '-flags:v', '+cgop+bitexact', ...TAGS,
   ]
 }
@@ -229,9 +232,100 @@ export async function encodeMasterChunk({ files, video, fps, gop, out }) {
   const args = masterVideoArgs(video, gop)
   const tmp = `${out}.part`
   fs.mkdirSync(path.dirname(out), { recursive: true })
-  await ffmpeg(['-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'png', '-i', 'pipe:0', '-an', '-vf', `${TO_VIDEO},format=${video.pixFmt},setparams=range=tv:color_primaries=bt709:color_trc=bt709:colorspace=bt709`, ...args, ...EXACT, '-video_track_timescale', String(fps * 256), '-f', 'mp4', tmp], feedFiles(files))
+  await ffmpeg(['-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'png', '-i', 'pipe:0', '-an', '-vf', `${TO_VIDEO},format=${video.pixFmt},${SET_TAGS}`, ...args, ...EXACT, '-video_track_timescale', String(fps * 256), '-f', 'mp4', tmp], feedFiles(files))
   fs.renameSync(tmp, out)
   return args
+}
+
+/**
+ * The arguments of the one encode of a whole master: to a rate (two passes) or to a quality, never both.
+ * @param {any} video
+ * @param {any} final
+ * @param {{ kbps?: number | null, crf?: number | null, params?: string, threads?: number }} [how]
+ */
+export function finalVideoArgs(video, final, { kbps = null, crf = null, params = '', threads = os.cpus().length } = {}) {
+  if (video.codec !== 'libx264') throw new Error(`no master encoder for ${video.codec}`)
+  if ((kbps === null) === (crf === null)) throw new Error('a final encode is to a rate or to a quality, one of the two')
+  const x = [`aq-mode=${final.aqMode}`, final.params, params, 'open-gop=0', X264_COLOUR].filter(Boolean).join(':')
+  return [
+    '-c:v', 'libx264', '-preset', final.preset, '-profile:v', video.profile, '-level:v', video.level, '-pix_fmt', video.pixFmt,
+    ...(crf === null ? ['-b:v', `${Math.round(kbps)}k`] : ['-crf', String(crf)]),
+    '-maxrate', `${Math.round(video.maxrateMbps * 1000)}k`, '-bufsize', `${Math.round(video.bufsizeMbps * 1000)}k`,
+    '-g', String(final.keyint), '-keyint_min', String(final.minKeyint), '-bf', String(final.bframes), '-refs', String(final.refs),
+    '-x264-params', x, '-threads', String(threads), '-flags:v', '+cgop', ...TAGS,
+  ]
+}
+
+function concatList(parts, fps, name) {
+  const list = path.join(tmpDir(), `${name}-${process.pid}.txt`)
+  fs.writeFileSync(list, parts.map((p) => `file '${path.resolve(p.file).replace(/'/g, "'\\''")}'\nduration ${(p.frames / fps).toFixed(6)}`).join('\n') + '\n')
+  return list
+}
+
+/** One encode of the whole film from its chunks decoded in order: every frame is given its own place, 1/fps after the one before. */
+export async function encodeFinal({ parts, args, out, fps, passes = 2, sound = null, audioKbps, channels = 2 }) {
+  if (!parts.length) throw new Error('nothing to encode')
+  const frames = parts.reduce((n, p) => n + p.frames, 0)
+  const seconds = (frames / fps).toFixed(6)
+  const list = concatList(parts, fps, 'final')
+  const log = path.join(tmpDir(), `final-${process.pid}-${path.basename(out)}`)
+  const tmp = `${out}.part`
+  fs.mkdirSync(path.dirname(out), { recursive: true })
+  const input = ['-f', 'concat', '-safe', '0', '-i', list]
+  const picture = ['-vf', `settb=1/${fps},setpts=N,${SET_TAGS}`, '-fps_mode', 'cfr', '-r', String(fps), ...args]
+  try {
+    if (passes > 1) await ffmpeg([...input, '-map', '0:v:0', '-an', ...picture, '-pass', '1', '-passlogfile', log, '-f', 'null', '-'])
+    const pass = passes > 1 ? ['-pass', '2', '-passlogfile', log] : []
+    const audio = sound
+      ? ['-i', sound.file, '-map', '0:v:0', '-map', '1:a:0', '-af', `apad=whole_dur=${seconds},atrim=duration=${seconds}`, '-c:a', 'aac', '-b:a', `${audioKbps}k`, '-ar', String(cfg.audio.sampleRate), '-ac', String(channels)]
+      : ['-map', '0:v:0', '-an']
+    await ffmpeg([...input, ...audio, ...picture, ...pass, '-movflags', '+faststart', '-map_metadata', '-1', '-video_track_timescale', String(fps * 256), '-f', 'mp4', tmp])
+  } finally {
+    fs.rmSync(list, { force: true })
+    for (const f of fs.readdirSync(path.dirname(log))) if (f.startsWith(path.basename(log))) fs.rmSync(path.join(path.dirname(log), f), { force: true })
+  }
+  fs.renameSync(tmp, out)
+}
+
+function readPsnr(stats) {
+  const out = []
+  for (const line of fs.readFileSync(stats, 'utf8').split('\n')) {
+    const m = /psnr_y:(\S+)/.exec(line)
+    if (m) out.push(m[1] === 'inf' ? 100 : Math.min(100, Number(m[1])))
+  }
+  fs.rmSync(stats, { force: true })
+  return out
+}
+
+/** The reference frames the stream's own header declares (max_num_ref_frames of its first sequence parameter set). ffprobe's `refs` does not say it. */
+export function headerRefFrames(file) {
+  const r = spawnSync('ffmpeg', ['-v', 'trace', '-i', file, '-map', '0:v:0', '-c', 'copy', '-frames:v', '1', '-bsf:v', 'trace_headers', '-f', 'null', '-'], { encoding: 'utf8', maxBuffer: 1 << 28 })
+  const m = /max_num_ref_frames\s+[01]+ = (\d+)/.exec(r.stderr ?? '')
+  return m ? Number(m[1]) : null
+}
+
+/** The luma PSNR of every frame of a file, in dB, against PNGs (made into video as the encoder is fed) or against other files decoded in order. */
+export async function framePsnr({ file, files = null, parts = null, fps, pixFmt = 'yuv420p', frames = null }) {
+  const stats = path.join(tmpDir(), `psnr-${process.pid}-${path.basename(file)}.txt`)
+  const place = `settb=1/${fps},setpts=N`
+  const list = parts ? concatList(parts, fps, 'psnr') : null
+  const other = files ? ['-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'png', '-i', 'pipe:0'] : ['-f', 'concat', '-safe', '0', '-i', list]
+  const made = files ? `${TO_VIDEO},format=${pixFmt},${SET_TAGS},${place}` : `${SET_TAGS},${place}`
+  try {
+    await ffmpeg(['-i', file, ...other, '-lavfi', `[0:v]${SET_TAGS},${place}[a];[1:v]${made}[b];[a][b]psnr=stats_file=${stats}:shortest=1`, ...(frames ? ['-frames:v', String(frames)] : []), '-an', '-f', 'null', '-'], files ? feedFiles(files) : null)
+    return readPsnr(stats)
+  } finally {
+    fs.rmSync(stats, { force: true })
+    if (list) fs.rmSync(list, { force: true })
+  }
+}
+
+/** Which frames of a file are key frames, by their place in presentation order. */
+export function keyFrames(file) {
+  const r = spawnSync('ffprobe', ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'packet=pts,flags', '-of', 'csv=p=0', file], { encoding: 'utf8', maxBuffer: 1 << 28 })
+  if (r.status !== 0) throw new Error(`ffprobe failed on ${file}: ${r.stderr}`)
+  const packets = r.stdout.split('\n').filter(Boolean).map((l) => l.split(',')).map((p) => ({ pts: Number(p[0]), key: (p[1] ?? '').includes('K') }))
+  return packets.sort((a, b) => a.pts - b.pts).map((p, i) => (p.key ? i : -1)).filter((i) => i >= 0)
 }
 
 export function toolVersions() {
@@ -287,7 +381,7 @@ export function decodedPictures(file, places, width, height) {
 }
 
 export function probeStreams(file) {
-  const r = spawnSync('ffprobe', ['-v', 'error', '-show_entries', 'stream=codec_type,codec_name,profile,level,pix_fmt,width,height,r_frame_rate,avg_frame_rate,nb_frames,duration,bit_rate,sample_rate,channels,color_range,color_space,color_primaries,color_transfer:format=duration,size,bit_rate', '-of', 'json', file], { encoding: 'utf8', maxBuffer: 1 << 26 })
+  const r = spawnSync('ffprobe', ['-v', 'error', '-show_entries', 'stream=codec_type,codec_name,profile,level,refs,has_b_frames,pix_fmt,width,height,r_frame_rate,avg_frame_rate,nb_frames,duration,bit_rate,sample_rate,channels,color_range,color_space,color_primaries,color_transfer:format=duration,size,bit_rate', '-of', 'json', file], { encoding: 'utf8', maxBuffer: 1 << 26 })
   if (r.error) throw new Error(r.error.code === 'ENOENT' ? 'ffprobe was not found on this machine' : r.error.message)
   if (r.status !== 0) throw new Error(`ffprobe failed on ${file}: ${r.stderr}`)
   const j = JSON.parse(r.stdout)

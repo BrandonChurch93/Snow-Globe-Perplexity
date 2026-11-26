@@ -9,22 +9,24 @@ import { engineHash, fileSha, sha256 } from './lib/hashes.mjs'
 import { freeDiskGb, launch, machineId, pinnedBrowser, rendererName } from './lib/browser.mjs'
 import { serve } from './lib/server.mjs'
 import { Run, argFrame, argText, pngOk, short } from './lib/frames.mjs'
-import { decodedHashes, decodedPictures, encodeMasterChunk, frameLevels, haveFfmpeg, join, masterVideoArgs, probe, probeLine, probeStreams, scaleEvery, soundSeconds, startsFast, stillJpeg, toolVersions, videoSettings } from './lib/encode.mjs'
-import { FPS, JOINS, LOOK_WIDTH, M, SOUND, STILL_MAX_MB, WHATS, levelProblems, pictureLevels, procsProblem, chunkDir, chunkStem, coverReport, dB, framesOf, heartbeat, hours, joinPlan, lumaPsnrOf, openingPack, pad6, psnrOf, rangeChunks, ranges, readChunks, recordMatchesRun, resultName, split, stillName, stillToDo, table, tierOf, totalsFromCut } from './lib/master.mjs'
+import { decodedHashes, encodeFinal, encodeMasterChunk, finalVideoArgs, frameLevels, framePsnr, haveFfmpeg, headerRefFrames, keyFrames, masterVideoArgs, probe, probeLine, probeStreams, scaleEvery, soundSeconds, startsFast, stillJpeg, toolVersions, videoSettings } from './lib/encode.mjs'
+import { COLOUR_TAGS, FPS, JOINS, LOOK_WIDTH, M, SOUND, STILL_MAX_MB, WHATS, bestRun, bigSha, chunkDir, chunkStem, coverReport, dB, encodeProofRows, finalKbps, framesOf, heartbeat, hours, intermediateVideo, joinPlan, levelProblems, masterConfigProblems, openingPack, pad6, pictureLevels, procsProblem, psnrFacts, rangeChunks, readChunks, recordMatchesRun, crfLadder, crfOf, resultName, sendGroups, split, splitFile, stillName, stillToDo, table, takeFiles, tierOf, totalsFromCut, unsplitFile, hashFolder, chunkName } from './lib/master.mjs'
 import { Shipper, collectBranches, repoFacts } from './lib/mastergit.mjs'
 
 const args = parseArgs(process.argv.slice(2))
 const say = console.log
 const USAGE = [
-  'npm run master -- --what film-b|loop|opening [--first N --last M] [--ship BRANCH] [--procs P]',
+  'npm run master -- --what film-b|loop|opening [--first N --last M] [--ship BRANCH] [--procs P] [--crf N] [--part-mb N]',
   'npm run master -- --calibrate',
   'npm run master -- --hd film-a|film-b [--test]',
-  'npm run master -- --collect DIR',
-  'npm run master -- --join film-b|film-a|loop --from DIR',
-  'For tests only: --samples S, --format F, --min-psnr N, and --join ... --test [--sound FILE]',
+  'npm run master -- --collect DIR [--files FOLDER] [--keep]',
+  'npm run master -- --encode film-b|film-a|loop --from DIR [--target-mb N] [--preset P] [--keyint N] [--min-keyint N] [--x264 PARAMS] [--final-min-psnr N]',
+  '  and for the loop: [--crf N] [--min-crf N] [--loop-x264 PARAMS] [--seam-db N]',
+  'npm run master -- --split FILE [--part-mb N]',
+  'npm run master -- --unsplit DIR [--out FILE]',
+  'For tests only: --samples S, --format F, --chunk N, --min-psnr N, and --encode ... --test [--gaps] [--sound FILE]',
 ].join('\n')
 const LOCK = rel('out', 'work', 'render.lock')
-const COLOUR_TAGS = 'bt709 / bt709 / bt709 / tv'
 const CALIBRATION = rel('out', 'work', 'master', 'calibration.json')
 const CALIBRATION_SPEC = { season: 'winter', state: 'rest', camera: 'hero', tier: 'review', format: 'hd' }
 const span = (r) => (r.first === r.last ? `${r.first}` : `${r.first} to ${r.last}`)
@@ -37,10 +39,38 @@ function whole(key, fallback) {
   return n
 }
 
+const SIZE = whole('chunk', M.chunkFrames)
+
+function number(key, fallback, { least = -Infinity, most = Infinity, int = false } = {}) {
+  if (args[key] === undefined) return fallback
+  const n = Number(args[key])
+  if (args[key] === true || !Number.isFinite(n) || n < least || n > most || (int && !Number.isInteger(n))) throw new Error(`--${key} takes a ${int ? 'whole ' : ''}number from ${least} to ${most}`)
+  return n
+}
+
+const overridden = (keys) => Object.fromEntries(keys.filter((k) => args[k] !== undefined).map((k) => [k, args[k]]))
+const FINAL = {
+  ...M.final,
+  preset: args.preset === undefined ? M.final.preset : argText(args, 'preset', ''),
+  keyint: number('keyint', M.final.keyint, { least: 1, most: 600, int: true }),
+  minKeyint: number('min-keyint', M.final.minKeyint, { least: 1, most: 600, int: true }),
+  params: args.x264 === undefined ? M.final.params : args.x264 === true ? '' : String(args.x264),
+  minPsnr: number('final-min-psnr', M.final.minPsnr, { least: 20, most: 100 }),
+  loop: {
+    ...M.final.loop,
+    crf: number('crf', M.final.loop.crf, { least: 0, most: 30 }),
+    minCrf: Math.min(number('min-crf', M.final.loop.minCrf, { least: 0, most: 30 }), number('crf', M.final.loop.crf, { least: 0, most: 30 })),
+    seamDb: number('seam-db', M.final.loop.seamDb, { least: 0.000001, most: 10 }),
+    params: args['loop-x264'] === undefined ? M.final.loop.params : args['loop-x264'] === true ? '' : String(args['loop-x264']),
+  },
+}
+const INTER = { ...M.intermediate, crf: number('crf', M.intermediate.crf, { least: 0, most: 30 }), partMb: number('part-mb', M.intermediate.partMb, { least: 0.000001, most: 50 }) }
+const TEST_RUN = args.samples !== undefined || args.format !== undefined || args.chunk !== undefined
+
 function psnrFloor(test) {
-  if (args['min-psnr'] === undefined) return M.minChunkPsnr
+  if (args['min-psnr'] === undefined) return M.intermediate.minPsnr
   const n = Number(args['min-psnr'])
-  if (!test) throw new Error('--min-psnr is for tests only (with --samples or --format, or --join ... --test). A master is held to deliver.master.minChunkPsnr.')
+  if (!test) throw new Error('--min-psnr is for tests only (with --samples, --format or --chunk). A chunk of a master is held to deliver.master.intermediate.minPsnr.')
   if (args['min-psnr'] === true || !(n > 0)) throw new Error('--min-psnr takes a number of dB')
   return n
 }
@@ -51,19 +81,19 @@ function setup() {
   const what = argText(args, 'what', '')
   if (!WHATS.includes(what)) throw new Error(`--what takes ${WHATS.join(', ')}.\n${USAGE}`)
   const engine = what !== 'opening'
-  const test = args.samples !== undefined || args.format !== undefined
+  const test = TEST_RUN
   const format = formatById(argText(args, 'format', M.format))
   const samples = engine ? whole('samples', M.samples[what]) : 0
   const procs = whole('procs', 1)
   const total = totalsFromCut()[what]
   if (!(total > 0)) throw new Error(`cut/CUTLIST.json holds no frame count for ${what}`)
-  const chunks = rangeChunks(total, argFrame(args, 'first'), argFrame(args, 'last'))
+  const chunks = rangeChunks(total, argFrame(args, 'first'), argFrame(args, 'last'), SIZE)
   const work = test ? rel('out', 'work', 'master', 'test', what) : rel('out', 'work', 'master', what)
   const hash = engineHash()
   const renderer = engine ? rendererName(args.local === true) : 'pack'
   const calibration = engine ? calibrationOf(hash, renderer) : null
-  const want = (c) => ({ what, first: c.first, last: c.last, engineHash: hash, samples, format: format.id, fps: FPS, test, renderer, calibration, encoderArgs: masterVideoArgs(M.video, M.chunkFrames) })
-  return { what, engine, test, format, samples, procs, total, chunks, work, want, hash, renderer, calibration, floor: psnrFloor(test), out: chunkDir(what, test), local: args.local === true }
+  const want = (c) => ({ what, first: c.first, last: c.last, engineHash: hash, samples, format: format.id, fps: FPS, test, renderer, calibration, encoderArgs: masterVideoArgs({ ...intermediateVideo(), crf: INTER.crf }, SIZE) })
+  return { what, engine, test, format, samples, procs, total, chunks, work, want, hash, renderer, calibration, floor: psnrFloor(test), out: chunkDir(what, test), local: args.local === true, overrides: overridden(['crf', 'part-mb']) }
 }
 
 const filesOf = (ctx, c) => {
@@ -82,6 +112,10 @@ function finished(ctx, c) {
   }
   if (!recordMatchesRun(r, ctx.want(c)) || fs.statSync(f.mp4).size !== r.bytes || fileSha(f.mp4) !== r.sha256) return null
   if (f.still && !(fs.existsSync(f.still) && fileSha(f.still) === r.still?.sha256)) return null
+  for (const p of r.parts ?? []) {
+    const part = path.join(ctx.out, p.file)
+    if (!fs.existsSync(part) || fs.statSync(part).size !== p.bytes || fileSha(part) !== p.sha256) return null
+  }
   return r
 }
 
@@ -201,28 +235,33 @@ async function source(ctx, lock) {
   }
 }
 
-async function verifyChunk(file, frames, format, floor) {
+function lazySource(ctx, lock) {
+  let src = null
+  return {
+    facts: () => (src ? { graphics: src.graphics, browser: src.browser } : null),
+    picture: async (index) => {
+      src ??= await source(ctx, lock)
+      return src.picture(index)
+    },
+    close: async () => {
+      if (src) await src.close()
+    },
+  }
+}
+
+async function verifyChunk(file, frames, floor) {
   const n = frames.length
   const seen = decodedHashes(file)
   const steps = seen.frames.slice(1).map((f, i) => (f.pts - seen.frames[i].pts) * seen.timeBase)
   const even = steps.every((s) => Math.abs(s - 1 / FPS) < 1e-9)
-  const places = [...new Set([0, Math.floor(n / 2), n - 1])]
-  const names = ['first', 'middle', 'last']
-  const psnr = {}
-  const psnrRgb = {}
-  let low = Infinity
+  const early = []
+  let psnr = { least: 0, leastFrame: frames[0].index, mean: 0 }
   if (seen.frames.length === n) {
-    const pictures = decodedPictures(file, places, format.width, format.height)
-    for (let k = 0; k < places.length; k++) {
-      const png = await rgbOf(frames[places[k]].file)
-      const p = lumaPsnrOf(pictures[k], png)
-      const name = names[places.length === 1 ? 0 : k === places.length - 1 ? 2 : k]
-      psnr[name] = dB(p)
-      psnrRgb[name] = dB(psnrOf(pictures[k], png).psnr)
-      low = Math.min(low, p)
-    }
+    const list = await framePsnr({ file, files: frames.map((x) => x.file), fps: FPS, pixFmt: M.video.pixFmt })
+    if (list.length === n) psnr = { ...psnrFacts(list, frames[0].index), frames: list.map((x) => Math.round(x * 100) / 100) }
+    else early.push(`its PSNR could be measured on ${list.length} frames, not ${n}`)
   }
-  const problems = []
+  const problems = [...early]
   const sources = []
   for (const f of frames) sources.push(typeof f.mean === 'number' ? { index: f.index, mean: f.mean, flat: f.flat === true } : { index: f.index, ...pictureLevels(await rgbOf(f.file)) })
   const levels = frameLevels(file)
@@ -233,8 +272,9 @@ async function verifyChunk(file, frames, format, floor) {
   const v = probeStreams(file).video[0] ?? {}
   const tags = `${v.color_space} / ${v.color_primaries} / ${v.color_transfer} / ${v.color_range}`
   if (tags !== COLOUR_TAGS) problems.push(`its colour tags are ${tags}, not ${COLOUR_TAGS}`)
-  if (seen.frames.length === n && low < floor) problems.push(`a decoded frame is ${dB(low)} dB from its PNG in luma, under ${floor === M.minChunkPsnr ? 'deliver.master.minChunkPsnr' : '--min-psnr'} ${floor}`)
-  return { verify: { ok: problems.length === 0, frames: seen.frames.length, decodeErrors: seen.errors, evenSteps: even, psnr, psnrRgb, measure: 'luma, BT.709', minPsnr: floor, flatFrames: levels.filter((f) => f.flat).length, worstMeanStep: Math.round(Math.max(0, ...levels.map((f, k) => Math.abs(f.mean - sources[k]?.mean))) * 1000) / 1000, problems }, decoded: seen.frames.map((f) => f.hash) }
+  const before = problems.length
+  if (seen.frames.length === n && !early.length && psnr.least < floor) problems.push(`frame ${psnr.leastFrame} decodes to ${psnr.least} dB from its PNG in luma, under ${floor === M.intermediate.minPsnr ? 'deliver.master.intermediate.minPsnr' : '--min-psnr'} ${floor}`)
+  return { verify: { ok: problems.length === 0, onlyTheFloor: before === 0 && problems.length === 1, frames: seen.frames.length, decodeErrors: seen.errors, evenSteps: even, psnr, measure: 'luma of the yuv420p picture each PNG makes, BT.709, every frame', minPsnr: floor, flatFrames: levels.filter((f) => f.flat).length, worstMeanStep: Math.round(Math.max(0, ...levels.map((f, k) => Math.abs(f.mean - sources[k]?.mean))) * 1000) / 1000, problems }, decoded: seen.frames.map((f) => f.hash) }
 }
 
 async function doChunk(ctx, src, c, progress) {
@@ -243,6 +283,7 @@ async function doChunk(ctx, src, c, progress) {
   if (freeDiskGb() < cfg.sandbox.minFreeDiskGb) throw new Error(`only ${freeDiskGb().toFixed(1)} GB of disk is free, under sandbox.minFreeDiskGb ${cfg.sandbox.minFreeDiskGb}. Nothing was dropped: make room and run the same command again.`)
   fs.mkdirSync(dir, { recursive: true })
   writeJson(keyFile, key)
+  const factsFile = path.join(dir, 'source.json')
   const frames = []
   let kept = 0
   for (const index of framesOf(c)) {
@@ -256,6 +297,7 @@ async function doChunk(ctx, src, c, progress) {
     const t0 = Date.now()
     const { png, rgb } = await src.picture(index)
     const seconds = (Date.now() - t0) / 1000
+    if (!fs.existsSync(factsFile)) writeJson(factsFile, src.facts())
     const seen = pictureLevels(rgb)
     if (seen.flat && ctx.engine) throw new Error(`frame ${index} came back as one flat value over the whole picture. Nothing was written for it. Look at dmesg for a killed chrome process, then run the same command again.`)
     const side = { index, seconds: Math.round(seconds * 1000) / 1000, sha256: sha256(rgb), mean: Math.round(seen.mean * 1000) / 1000, flat: seen.flat }
@@ -272,9 +314,28 @@ async function doChunk(ctx, src, c, progress) {
 
   const tmp = path.join(ctx.work, `${path.basename(f.mp4)}.new`)
   const e0 = Date.now()
-  const encoderArgs = await encodeMasterChunk({ files: frames.map((x) => x.file), video: M.video, fps: FPS, gop: M.chunkFrames, out: tmp })
+  let facts = src.facts()
+  if (!facts) {
+    try {
+      facts = readJson(factsFile)
+    } catch {
+      facts = { graphics: 'not recorded', browser: 'not recorded' }
+    }
+  }
+  let encoderArgs
+  let verify
+  let decoded
+  const tried = []
+  for (const crf of crfLadder(INTER.crf)) {
+    encoderArgs = await encodeMasterChunk({ files: frames.map((x) => x.file), video: { ...intermediateVideo(), crf }, fps: FPS, gop: SIZE, out: tmp })
+    ;({ verify, decoded } = await verifyChunk(tmp, frames, ctx.floor))
+    tried.push({ crf, bytes: fs.statSync(tmp).size, least: verify.psnr.least, mean: verify.psnr.mean })
+    if (verify.ok || !verify.onlyTheFloor) break
+    say(`chunk ${pad6(c.first)}-${pad6(c.last)} at crf ${crf}: frame ${verify.psnr.leastFrame} is ${verify.psnr.least} dB from its PNG, under the floor of ${ctx.floor}, so it is encoded again from its PNGs at a lower crf`)
+  }
   const encodeSeconds = (Date.now() - e0) / 1000
-  const { verify, decoded } = await verifyChunk(tmp, frames, ctx.format, ctx.floor)
+  delete verify.onlyTheFloor
+  verify.tried = tried
   if (!verify.ok) {
     fs.rmSync(tmp, { force: true })
     throw new Error(`chunk ${pad6(c.first)}-${pad6(c.last)} did not pass its check after encoding: ${verify.problems.join('; ')}. Its frames stay in ${short(dir)}.`)
@@ -307,9 +368,9 @@ async function doChunk(ctx, src, c, progress) {
     renderer: ctx.renderer,
     flatFrames: frames.filter((x) => x.flat === true).map((x) => x.index),
     ...(ctx.engine ? { seasonHashes: currentSeasonHashes() } : {}),
-    graphics: src.graphics,
+    graphics: facts.graphics,
     ...(ctx.calibration ? { calibration: ctx.calibration } : {}),
-    browser: src.browser,
+    browser: facts.browser,
     ffmpeg: versions.ffmpeg,
     x264: versions.x264,
     encoderArgs,
@@ -325,27 +386,30 @@ async function doChunk(ctx, src, c, progress) {
     look: path.basename(f.look),
     ...(still ? { still } : {}),
     ...(ctx.test ? { test: true } : {}),
+    ...(Object.keys(ctx.overrides).length ? { overrides: ctx.overrides } : {}),
     time: new Date().toISOString(),
   }
   fs.renameSync(tmp, f.mp4)
+  for (const old of fs.readdirSync(ctx.out)) if (old.startsWith(`${path.basename(f.mp4)}.part-`)) fs.rmSync(path.join(ctx.out, old), { force: true })
+  if (record.bytes > INTER.partMb * 1e6) record.parts = splitFile(f.mp4, ctx.out, INTER.partMb).parts
   writeJson(f.json, record)
   fs.rmSync(dir, { recursive: true, force: true })
   const mean = record.frameSeconds.reduce((a, b) => a + b, 0) / frames.length
-  say(`finished ${chunkStem(ctx.what, c.first, c.last)}: ${frames.length} frames, ${mean.toFixed(1)} s a frame, ${mb(record.bytes)} MB, luma PSNR against the PNGs ${Object.values(verify.psnr).join(' / ')} dB`)
+  say(`finished ${chunkStem(ctx.what, c.first, c.last)}: ${frames.length} frames, ${mean.toFixed(1)} s a frame, crf ${crfOf(record)}, ${mb(record.bytes)} MB${record.parts ? ` in ${record.parts.length} parts` : ''}, luma PSNR against the PNGs least ${verify.psnr.least} dB (frame ${verify.psnr.leastFrame}), mean ${verify.psnr.mean} dB. Its PNGs are deleted${still ? `, but for ${short(f.still)}` : ''}`)
   return record
 }
 
 function shipFiles(ctx, c) {
   const f = filesOf(ctx, c)
   const to = (file) => `${ctx.test ? 'test/' : ''}${ctx.what}/${path.basename(file)}`
-  return [f.mp4, f.json, f.look, f.still].filter(Boolean).map((src) => ({ src, to: to(src) }))
+  return [f.json, f.look].map((src) => ({ src, to: to(src) }))
 }
 
 function ship(shipper, ctx, c) {
   if (!shipper) return
   const made = shipper.add(shipFiles(ctx, c), `Chunk ${chunkStem(ctx.what, c.first, c.last)}${ctx.test ? ', a test' : ''}`)
   const pushed = shipper.push()
-  if (made && pushed) say(`shipped ${chunkStem(ctx.what, c.first, c.last)} to ${shipper.branch}`)
+  if (made && pushed) say(`shipped the record and the look of ${chunkStem(ctx.what, c.first, c.last)} to ${shipper.branch} (the picture travels by attachment)`)
 }
 
 function holdLock(what) {
@@ -418,7 +482,7 @@ async function render() {
   let shipper = null
   if (worker === null) {
     const all = ctx.chunks.length
-    say(`${ctx.what}: frames ${ctx.chunks[0].first} to ${ctx.chunks[all - 1].last} of ${ctx.total}, ${all} ${all === 1 ? 'chunk' : 'chunks'} of ${M.chunkFrames}, ${ctx.format.width} x ${ctx.format.height}, ${ctx.engine ? `${ctx.samples} ${ctx.samples === 1 ? 'sample' : 'samples'} a frame` : 'from the opening pack'}${ctx.test ? ', a TEST that no master is joined from' : ''}`)
+    say(`${ctx.what}: frames ${ctx.chunks[0].first} to ${ctx.chunks[all - 1].last} of ${ctx.total}, ${all} ${all === 1 ? 'chunk' : 'chunks'} of ${SIZE}, ${ctx.format.width} x ${ctx.format.height}, ${ctx.engine ? `${ctx.samples} ${ctx.samples === 1 ? 'sample' : 'samples'} a frame` : 'from the opening pack'}${ctx.test ? ', a TEST that no master is made from' : ''}`)
     say(`${all - todo.length} ${all - todo.length === 1 ? 'chunk is' : 'chunks are'} finished, ${todo.length} to do, ${progress.left} frames to render (${todo.reduce((n, c) => n + c.last - c.first + 1 - c.missing.length, 0)} more are on disk as PNGs)`)
     if (args.ship !== undefined) {
       shipper = new Shipper({ branch: argText(args, 'ship', ''), say })
@@ -429,7 +493,7 @@ async function render() {
   if (mine.length) {
     if (worker === null && ctx.procs > 1 && ctx.engine) await withWorkers(ctx, todo, shipper)
     else {
-      const src = await source(ctx, worker === null)
+      const src = lazySource(ctx, worker === null)
       try {
         for (const c of mine) {
           await doChunk(ctx, src, c, progress)
@@ -442,7 +506,23 @@ async function render() {
   }
   if (worker !== null) return
   if (shipper && shipper.unpushed && !shipper.push()) throw new Error(`the chunks are finished and on disk in ${short(ctx.out)}, and the last push to ${shipper.branch} was refused. Run the same command again to push them.`)
-  say(`${ctx.what}: frames ${ctx.chunks[0].first} to ${ctx.chunks[ctx.chunks.length - 1].last} are finished in ${short(ctx.out)}${shipper ? ` and on ${shipper.branch}` : ''}`)
+  say(`${ctx.what}: frames ${ctx.chunks[0].first} to ${ctx.chunks[ctx.chunks.length - 1].last} are finished in ${short(ctx.out)}${shipper ? `, their records and looks on ${shipper.branch}` : ''}`)
+  printOutbox(ctx)
+}
+
+function printOutbox(ctx) {
+  const files = []
+  for (const c of ctx.chunks) {
+    const f = filesOf(ctx, c)
+    const r = finished(ctx, c)
+    if (!r) continue
+    files.push(f.json, ...(r.parts ? r.parts.map((p) => path.join(ctx.out, p.file)) : [f.mp4]))
+    if (f.still) files.push(f.still)
+  }
+  const bytes = files.reduce((n, x) => n + fs.statSync(x).size, 0)
+  const groups = sendGroups(files)
+  say(`to send to the joining agent by attachment: ${files.length} files, ${mb(bytes)} MB, none over ${INTER.partMb} MB, in ${groups.length} ${groups.length === 1 ? 'message' : 'messages'} of at most 10:`)
+  groups.forEach((g, k) => say(`  message ${k + 1}: ${g.map(short).join(' ')}`))
 }
 
 function printCover(chunks) {
@@ -450,21 +530,36 @@ function printCover(chunks) {
     say(`${r.what}: ${r.chunks} of ${r.wanted} chunks. There: ${r.there.length ? r.there.map(span).join(', ') : 'nothing'}. Missing: ${r.missing.length ? r.missing.map(span).join(', ') : 'nothing'}`)
   }
   const tests = chunks.filter((c) => c.record.test)
-  if (tests.length) say(`test chunks, which no master is joined from: ${tests.length} (${[...new Set(tests.map((c) => c.record.what))].join(', ')})`)
+  if (tests.length) say(`test chunks, which no master is made from: ${tests.length} (${[...new Set(tests.map((c) => c.record.what))].join(', ')})`)
 }
 
 function collect() {
   const dir = path.resolve(argText(args, 'collect', ''))
   if (args.collect === true) throw new Error(`--collect takes a folder.\n${USAGE}`)
   if (dir === rel() || dir.startsWith(rel('.git'))) throw new Error('--collect takes a folder of its own, never the repo itself')
-  const found = collectBranches({ dir, say })
-  say(`${found.length} ${found.length === 1 ? 'branch matches' : 'branches match'} ${M.chunkBranches}, laid out under ${short(dir)}`)
-  const taken = readChunks([dir])
+  if (args['no-branches'] !== true) {
+    const found = collectBranches({ dir, say })
+    say(`${found.length} ${found.length === 1 ? 'branch matches' : 'branches match'} ${M.chunkBranches}, their records laid out under ${short(dir)}`)
+  } else fs.mkdirSync(dir, { recursive: true })
+  let incomplete = []
+  if (args.files !== undefined) {
+    const folder = path.resolve(argText(args, 'files', ''))
+    const keep = args.keep === true
+    const got = takeFiles(folder, dir, { keep })
+    incomplete = got.problems
+    say(`from ${short(folder)}: ${got.records} new ${got.records === 1 ? 'record' : 'records'}, ${got.whole} ${got.whole === 1 ? 'chunk' : 'chunks'} that came whole, ${got.fromParts} put together from parts, ${got.stills} ${got.stills === 1 ? 'screenshot' : 'screenshots'}; every one has the sha256 its record names${keep ? '' : '. What was taken is no longer in that folder'}`)
+    for (const p of got.problems) say(`NOT COMPLETE: ${p}`)
+    if (got.strangers.length) say(`${got.strangers.length} ${got.strangers.length === 1 ? 'file' : 'files'} in ${short(folder)} that no record here names (left there): ${got.strangers.slice(0, 8).map((f) => path.basename(f)).join(', ')}${got.strangers.length > 8 ? ', ...' : ''}`)
+  }
+  const all = readChunks([rel('out', 'master'), dir])
+  const taken = all.filter((c) => fs.existsSync(c.file))
+  const waiting = all.filter((c) => !fs.existsSync(c.file))
+  if (waiting.length) say(`${waiting.length} ${waiting.length === 1 ? 'record has' : 'records have'} no picture here yet: ${waiting.slice(0, 12).map(chunkName).join('; ')}${waiting.length > 12 ? '; ...' : ''}`)
   const bad = flatChunks(taken)
-  for (const b of bad) say(`FLAT: ${flatLine(b)}. Do not join it: render that range again.`)
+  for (const b of bad) say(`FLAT: ${flatLine(b)}. Do not encode from it: render that range again.`)
   if (!bad.length) say(`no flat frame in ${taken.length} ${taken.length === 1 ? 'chunk' : 'chunks'}`)
   printCover(taken)
-  if (bad.length) process.exit(1)
+  if (bad.length || incomplete.length) process.exit(1)
 }
 
 function flatChunks(chunks) {
@@ -480,107 +575,84 @@ function flatChunks(chunks) {
 
 const flatLine = (b) => `${b.chunk.from} (${b.chunk.record.what} ${b.chunk.record.first} to ${b.chunk.record.last}, drawn on ${b.chunk.record.machine}) holds ${b.flat.length} flat ${b.flat.length === 1 ? 'frame' : 'frames'}: ${b.flat.slice(0, 12).join(', ')}`
 
-const row = (check, wanted, found, pass) => ({ check, wanted, found, pass })
+const deliverPath = (which, test) => (test ? rel('out', 'work', 'master', 'test', resultName(which)) : rel('out', 'deliver', resultName(which)))
 
-async function prove({ file, which, plan, format, sound, test, totals }) {
-  const rows = []
+function filmBBest(test) {
+  try {
+    const r = readJson(`${deliverPath('film-b', test)}.json`)
+    return r.passed === true && typeof r.psnr?.bestHold?.mean === 'number' ? r.psnr.bestHold.mean : null
+  } catch {
+    return null
+  }
+}
+
+async function measure({ file, which, plan, format, sound, test, totals, targetMb }) {
   const s = probeStreams(file)
   const v = s.video[0] ?? {}
   const a = s.audio[0] ?? null
   const seen = decodedHashes(file)
-  const n = seen.frames.length
-  rows.push(row('frames', plan.frames, n, n === plan.frames))
-  rows.push(row('decode errors', 'none', seen.ok ? 'none' : seen.errors.join(' / ') || 'some', seen.ok))
-  rows.push(row('size', `${format.width} x ${format.height}`, `${v.width} x ${v.height}`, v.width === format.width && v.height === format.height))
   const steps = seen.frames.slice(1).map((f, i) => (f.pts - seen.frames[i].pts) * seen.timeBase)
   const off = steps.filter((x) => Math.abs(x - 1 / FPS) > 1e-9)
-  rows.push(row('pts steps', `every one 1/${FPS} s`, off.length ? `${off.length} of ${steps.length} are not, the first ${off[0].toFixed(6)} s` : `${steps.length} of 1/${FPS} s, the first frame at ${(seen.frames[0]?.pts ?? 0) * seen.timeBase} s`, off.length === 0 && seen.frames[0]?.pts === 0))
-  rows.push(row('frame rate', `${FPS}/1 constant`, `${v.r_frame_rate} and ${v.avg_frame_rate} on average`, v.r_frame_rate === `${FPS}/1` && v.avg_frame_rate === `${FPS}/1`))
-  rows.push(row('pixel format', M.video.pixFmt, v.pix_fmt, v.pix_fmt === M.video.pixFmt))
-  const tags = `${v.color_space} / ${v.color_primaries} / ${v.color_transfer} / ${v.color_range}`
-  rows.push(row('colour tags', COLOUR_TAGS, tags, tags === COLOUR_TAGS))
-  rows.push(row('codec', 'h264 High', `${v.codec_name} ${v.profile}`, v.codec_name === 'h264' && v.profile === 'High'))
-  if (sound) {
-    const kbps = a ? Number(a.bit_rate) / 1000 : 0
-    rows.push(row('sound', `aac, ${cfg.audio.sampleRate} Hz, 2 channels`, a ? `${a.codec_name}, ${a.sample_rate} Hz, ${a.channels} channels` : 'none', !!a && a.codec_name === 'aac' && Number(a.sample_rate) === cfg.audio.sampleRate && a.channels === 2))
-    rows.push(row('sound bit rate', `${M.audioKbps} kbps asked, within a quarter under`, `${kbps.toFixed(0)} kbps`, kbps >= M.audioKbps * 0.75 && kbps <= M.audioKbps * 1.1))
-    const gap = a ? Math.abs(Number(a.duration) - Number(v.duration)) : Infinity
-    rows.push(row('sound length', `within 1/${FPS} s of the picture`, a ? `${Number(a.duration).toFixed(4)} s against ${Number(v.duration).toFixed(4)} s` : 'none', gap <= 1 / FPS + 1e-6))
-  } else rows.push(row('sound', 'no sound track at all', a ? `${a.codec_name}` : 'none', !a))
-
-  let unequal = 0
-  let seams = 0
-  let seamsOff = 0
-  for (const p of plan.parts) {
-    const own = Array.isArray(p.record.decodedHashes) && p.record.decodedHashes.length === p.record.frames ? p.record.decodedHashes : decodedHashes(p.file).frames.map((f) => f.hash)
-    for (let i = 0; i < own.length; i++) {
-      const same = seen.frames[p.offset + p.record.first + i]?.hash === own[i]
-      const seam = i === 0 || i === own.length - 1
-      if (seam) seams++
-      if (!same) {
-        unequal++
-        if (seam) seamsOff++
-      }
-    }
+  const list = seen.frames.length === plan.frames ? await framePsnr({ file, parts: plan.parts.map((p) => ({ file: p.file, frames: p.record.frames })), fps: FPS }) : []
+  const psnr = psnrFacts(list, 0)
+  const allowed = plan.parts.reduce((n, p) => n + (p.record.flatFrames ?? []).length, 0)
+  const facts = {
+    which,
+    test,
+    frames: seen.frames.length,
+    wantFrames: plan.frames,
+    decodeErrors: seen.ok ? [] : seen.errors.length ? seen.errors : ['an error'],
+    format,
+    width: v.width,
+    height: v.height,
+    steps: { off: off.length, count: steps.length, firstOff: off[0] ?? 0, start: (seen.frames[0]?.pts ?? 0) * seen.timeBase },
+    rFrameRate: v.r_frame_rate,
+    avgFrameRate: v.avg_frame_rate,
+    pixFmt: v.pix_fmt,
+    tags: `${v.color_space} / ${v.color_primaries} / ${v.color_transfer} / ${v.color_range}`,
+    codec: v.codec_name,
+    profile: v.profile,
+    level: Number(v.level),
+    refs: headerRefFrames(file),
+    keys: keyFrames(file),
+    sound: sound ? { wanted: true, codec: a?.codec_name ?? null, sampleRate: Number(a?.sample_rate), channels: a?.channels, kbps: a ? Number(a.bit_rate) / 1000 : 0, seconds: Number(a?.duration), pictureSeconds: Number(v.duration) } : { wanted: false, codec: a?.codec_name ?? null },
+    flat: frameLevels(file).filter((f) => f.flat).length,
+    flatAllowed: allowed,
+    fast: startsFast(file),
+    bytes: fs.statSync(file).size,
+    targetMb,
+    psnr,
+    minPsnr: FINAL.minPsnr,
+    keyint: FINAL.keyint,
+    bestHold: which === 'loop' ? null : bestRun(list, FPS),
+    opening: which === 'film-a' ? { found: plan.parts.filter((p) => p.record.what === 'opening').reduce((x, p) => x + p.record.frames, 0), wanted: totals.opening } : null,
+    loop: which === 'loop' && list.length ? { first: list[0], last: list[list.length - 1], seamDb: FINAL.loop.seamDb, wanted: filmBBest(test) } : null,
   }
-  rows.push(row('chunk seams', `bit for bit the chunk's own decoded frames`, seamsOff || unequal ? `${seamsOff} of ${seams} seam frames and ${unequal} of ${plan.frames} frames differ` : `${seams} seam frames of ${plan.parts.length} chunks equal, and all ${plan.frames} frames`, unequal === 0))
-  const allowed = new Set(plan.parts.flatMap((p) => (p.record.flatFrames ?? []).map((i) => `${p.record.what} ${i}`)))
-  const flat = frameLevels(file).filter((f) => f.flat).length
-  rows.push(row('flat frames', allowed.size ? `none but the ${allowed.size} the opening pack holds` : '0', String(flat), flat <= allowed.size))
-  rows.push(row('starts fast', 'the index before the pictures', startsFast(file) ? 'yes' : 'no', startsFast(file)))
-  const bytes = fs.statSync(file).size
-  rows.push(row('file size', `under ${cfg.platform.maxFileMb} MB`, `${(bytes / 1048576).toFixed(1)} MB`, bytes / 1048576 < cfg.platform.maxFileMb))
-  rows.push(row('drawn by two machines', 'counted', `${plan.twiceByTwoMachines} frames with equal hashes from two machines, ${plan.twice} rendered twice in all`, null))
-  if (which === 'film-a') {
-    const opening = plan.parts.filter((p) => p.record.what === 'opening').reduce((x, p) => x + p.record.frames, 0)
-    rows.push(row("the opening's frames", test ? 'counted' : totals.opening, opening, test ? null : opening === totals.opening))
-  }
-  const extra = {}
-  if (which === 'loop' && n > 1) {
-    const [first, last] = decodedPictures(file, [0, n - 1], format.width, format.height)
-    let differing = 0
-    for (let i = 0; i < first.length; i += 3) if (first[i] !== last[i] || first[i + 1] !== last[i + 1] || first[i + 2] !== last[i + 2]) differing++
-    const d = psnrOf(first, last)
-    rows.push(row("the loop's seam", 'measured, last frame against first', `${differing} pixels differ, the largest difference ${d.maxDiff} of 255, ${dB(d.psnr)} dB`, null))
-    const still = path.join(path.dirname(plan.parts[0].file), stillName(0))
-    const told = plan.parts[0].record.still
-    if (plan.parts[0].record.first === 0 && fs.existsSync(still)) {
-      const floor = psnrFloor(test)
-      const p = { psnr: lumaPsnrOf(first, await rgbOf(still)) }
-      const sameFile = fileSha(still) === told?.sha256
-      rows.push(row('screenshot', `the PNG of frame 0, ${floor} dB or more in luma from the decoded first frame`, `${dB(p.psnr)} dB${sameFile ? '' : ', and the PNG is not the one its chunk names'}`, p.psnr >= floor && sameFile))
-      extra.still = still
-    } else rows.push(row('screenshot', 'the PNG of frame 0 beside the first chunk', 'not there', test ? null : false))
-  }
-  return { rows, extra, streams: s }
+  return { facts, rows: encodeProofRows(facts), list, streams: s }
 }
 
-async function joinMaster() {
-  const which = argText(args, 'join', '')
-  if (!JOINS[which]) throw new Error(`--join takes ${Object.keys(JOINS).join(', ')}.\n${USAGE}`)
+async function encodeMaster() {
+  const which = argText(args, 'encode', '')
+  if (!JOINS[which]) throw new Error(`--encode takes ${Object.keys(JOINS).join(', ')}.\n${USAGE}`)
   if (!haveFfmpeg()) throw new Error('ffmpeg and ffprobe are needed and were not found')
   const test = args.test === true
+  if (args.gaps !== undefined && !test) throw new Error('--gaps is for tests only (with --test)')
+  if (FINAL.keyint < FINAL.minKeyint) throw new Error(`--keyint ${FINAL.keyint} is under the least spacing ${FINAL.minKeyint}`)
+  const overrides = overridden(['target-mb', 'preset', 'keyint', 'min-keyint', 'x264', 'final-min-psnr', 'crf', 'min-crf', 'loop-x264', 'seam-db'])
+  if (Object.keys(overrides).length) say(`not from the config but from the command line: ${Object.entries(overrides).map(([k, v]) => `--${k} ${v}`).join(' ')}`)
   const from = args.from === undefined || args.from === true ? null : path.resolve(String(args.from))
   if (from && !fs.existsSync(from)) throw new Error(`--from ${args.from} does not exist. Run --collect ${args.from} first.`)
   const totals = totalsFromCut()
   const chunks = readChunks([rel('out', 'master'), ...(from ? [from] : [])]).filter((c) => c.test === test)
-  const plan = joinPlan({ which, chunks, totals, test, sha: (f) => (fs.existsSync(f) ? fileSha(f) : null) })
+  const plan = joinPlan({ which, chunks, totals, test, size: test ? Math.max(SIZE, ...chunks.map((c) => c.record.frames ?? 0)) : SIZE, gaps: args.gaps === true, sha: (f) => (fs.existsSync(f) ? bigSha(f) : null) })
   if (!plan.ok) {
-    say(`${which} cannot be joined:`)
+    say(`${which} cannot be encoded:`)
     for (const p of plan.problems) say(`- ${p}`)
-    for (const c of plan.conflicts) {
-      const at = c.frames.slice(0, 3)
-      if (!at.length || !fs.existsSync(c.a.file) || !fs.existsSync(c.b.file)) continue
-      const places = at.map((i) => i - c.a.record.first)
-      const a = decodedPictures(c.a.file, places, c.a.record.width, c.a.record.height)
-      const b = decodedPictures(c.b.file, places, c.b.record.width, c.b.record.height)
-      say(`  ${c.a.from} against ${c.b.from}: ${at.map((i, k) => `frame ${i} ${dB(psnrOf(a[k], b[k]).psnr)} dB`).join(', ')}`)
-    }
     process.exit(1)
   }
   const bad = flatChunks(plan.parts)
   if (bad.length) {
-    say(`${which} cannot be joined:`)
+    say(`${which} cannot be encoded:`)
     for (const b of bad) say(`- ${flatLine(b)}`)
     process.exit(1)
   }
@@ -591,26 +663,79 @@ async function joinMaster() {
   let sound = null
   if (SOUND[which]) {
     const file = args.sound && args.sound !== true ? path.resolve(String(args.sound)) : rel('audio', 'final', `${SOUND[which]}.wav`)
-    if (!fs.existsSync(file)) throw new Error(`${short(file)} is not here, and ${which} is never joined silent. Pass --sound FILE with its final mix.`)
+    if (!fs.existsSync(file)) throw new Error(`${short(file)} is not here, and ${which} is never encoded silent. Pass --sound FILE with its final mix.`)
     sound = { file, offsetSeconds: 0, seconds: soundSeconds(file) }
     if (Math.abs(sound.seconds - seconds) > 1 / FPS) say(`note: ${short(file)} is ${sound.seconds.toFixed(3)} s and the picture is ${seconds.toFixed(3)} s, so the sound is ${sound.seconds > seconds ? 'cut' : 'filled with silence'} to the picture's length`)
   }
+  const isLoop = which === 'loop'
+  const targetMb = isLoop ? null : number('target-mb', M.final.targetMb[which], { least: 0.000001, most: cfg.platform.maxFileMb })
   const size = plan.parts.reduce((x, p) => x + p.record.bytes, 0)
-  if (freeDiskGb() * 1024 ** 3 < size * 1.1 + 64e6) throw new Error(`the join needs ${mb(size * 1.1)} MB of free disk and ${(freeDiskGb() * 1024).toFixed(0)} MB is free`)
-  const out = test ? rel('out', 'work', 'master', 'test', resultName(which)) : rel('out', 'deliver', resultName(which))
-  say(`joining ${plan.parts.length} chunks, ${plan.frames} frames, ${seconds.toFixed(3)} s, ${mb(size)} MB of picture${sound ? `, sound ${short(sound.file)}` : ', no sound'}`)
-  await join({ parts: plan.parts.map((p) => ({ file: p.file, frames: p.record.frames })), out: `${out}.new`, container: 'mp4', fps: FPS, sound, audioKbps: M.audioKbps, channels: 2 })
-  const proof = await prove({ file: `${out}.new`, which, plan, format, sound, test, totals })
+  const room = ((targetMb ?? (M.video.maxrateMbps * seconds) / 8) * 1e6) * 2.2 + 256e6
+  if (freeDiskGb() * 1024 ** 3 < room) throw new Error(`the encode needs ${mb(room)} MB of free disk and ${(freeDiskGb() * 1024).toFixed(0)} MB is free`)
+  const out = deliverPath(which, test)
+  const threads = os.cpus().length
+  const parts = plan.parts.map((p) => ({ file: p.file, frames: p.record.frames }))
+  say(`encoding ${which} once, whole: ${plan.parts.length} chunks, ${plan.frames} frames, ${seconds.toFixed(3)} s, ${mb(size)} MB of intermediate picture${sound ? `, sound ${short(sound.file)}` : ', no sound'}`)
+  const tries = []
+  let encoderArgs
+  let proof
+  const t0 = Date.now()
+  if (isLoop) {
+    const wanted = filmBBest(test)
+    let crf = FINAL.loop.crf
+    for (;;) {
+      encoderArgs = finalVideoArgs(M.video, FINAL, { crf, params: FINAL.loop.params, threads })
+      say(`the loop at crf ${crf}, one pass, preset ${FINAL.preset}`)
+      await encodeFinal({ parts, args: encoderArgs, out: `${out}.new`, fps: FPS, passes: 1, sound: null, audioKbps: M.audioKbps })
+      proof = await measure({ file: `${out}.new`, which, plan, format, sound, test, totals, targetMb })
+      tries.push({ crf, bytes: proof.facts.bytes, psnr: proof.facts.psnr })
+      if (wanted === null || proof.facts.psnr.least >= wanted || crf - FINAL.loop.crfStep < FINAL.loop.minCrf) break
+      say(`its least frame is ${proof.facts.psnr.least} dB (frame ${proof.facts.psnr.leastFrame}) and the best second of film B is ${dB(wanted)} dB, so it is encoded again ${FINAL.loop.crfStep} lower`)
+      crf -= FINAL.loop.crfStep
+    }
+  } else {
+    let kbps = finalKbps({ targetMb, seconds, audioKbps: sound ? M.audioKbps : 0 })
+    for (let go = 0; go < 2; go++) {
+      encoderArgs = finalVideoArgs(M.video, FINAL, { kbps, threads })
+      say(`two passes at ${kbps} kbps of picture for ${targetMb} MB with its sound, preset ${FINAL.preset}, a key frame every ${FINAL.keyint} frames at most`)
+      await encodeFinal({ parts, args: encoderArgs, out: `${out}.new`, fps: FPS, passes: FINAL.passes, sound, audioKbps: M.audioKbps })
+      const bytes = fs.statSync(`${out}.new`).size
+      tries.push({ kbps, bytes })
+      if (bytes <= targetMb * 1e6 || go === 1) break
+      const next = Math.floor(kbps * ((targetMb * 1e6) / bytes) * 0.99)
+      say(`it came out at ${mb(bytes)} MB, over the ${targetMb} MB target, so it is encoded once more at ${next} kbps`)
+      kbps = next
+    }
+    proof = await measure({ file: `${out}.new`, which, plan, format, sound, test, totals, targetMb })
+  }
+  const encodeSeconds = (Date.now() - t0) / 1000
+  const final0 = () => `${out}.new`
+  let still = null
+  const first = plan.parts[0]
+  let seam = null
+  if (isLoop) {
+    const png = path.join(path.dirname(first.file), stillName(0))
+    const told = first.record.still
+    const ok = first.record.first === 0 && fs.existsSync(png) && bigSha(png) === told?.sha256
+    proof.rows.push({ check: 'screenshot', wanted: "the PNG of frame 0, the file its chunk's record names", found: ok ? `${stillName(0)}, ${mb(fs.statSync(png).size)} MB` : 'not there, or not that file', pass: ok ? true : test ? null : false })
+    if (ok) still = png
+    const last = plan.parts[plan.parts.length - 1].record
+    const from = { first: first.record.verify?.psnr?.frames?.[0] ?? null, last: last.verify?.psnr?.frames?.[last.frames - 1] ?? null }
+    const direct = ok ? (await framePsnr({ file: final0(), files: [png], fps: FPS, pixFmt: M.video.pixFmt, frames: 1 }))[0] : null
+    seam = { firstAgainstItsPng: direct === undefined ? null : direct, intermediateAgainstPng: from }
+    proof.rows.push({ check: 'frame 0 against the screenshot', wanted: 'measured: the film\'s first frame against the PNG itself', found: direct === null || direct === undefined ? 'no screenshot here' : `${dB(direct)} dB (its intermediate was ${from.first ?? '?'} dB from that PNG, the last frame's ${from.last ?? '?'} dB from its own)`, pass: null })
+  }
   const text = table(proof.rows)
   say(text)
   const passed = proof.rows.every((x) => x.pass !== false)
   const final = passed ? out : out.replace(/\.mp4$/, '.unproven.mp4')
   fs.renameSync(`${out}.new`, final)
-  let still = null
-  if (passed && proof.extra.still) {
-    still = path.join(path.dirname(out), test ? `test-${resultName('still')}` : resultName('still'))
-    fs.copyFileSync(proof.extra.still, still)
+  let stillOut = null
+  if (passed && still) {
+    stillOut = path.join(path.dirname(out), test ? `test-${resultName('still')}` : resultName('still'))
+    fs.copyFileSync(still, stillOut)
   }
+  const of = (key, fallback = undefined) => Object.fromEntries(JOINS[which].map((w) => [w, plan.parts.find((p) => p.record.what === w)?.record[key] ?? fallback]))
   writeJson(`${final}.json`, {
     which,
     ...(test ? { test: true } : {}),
@@ -620,17 +745,26 @@ async function joinMaster() {
     format: format.id,
     width: format.width,
     height: format.height,
-    engineHash: Object.fromEntries(JOINS[which].map((w) => [w, plan.parts.find((p) => p.record.what === w)?.record.engineHash])),
-    samples: Object.fromEntries(JOINS[which].map((w) => [w, plan.parts.find((p) => p.record.what === w)?.record.samples])),
-    renderer: Object.fromEntries(JOINS[which].map((w) => [w, plan.parts.find((p) => p.record.what === w)?.record.renderer])),
-    calibration: Object.fromEntries(JOINS[which].map((w) => [w, plan.parts.find((p) => p.record.what === w)?.record.calibration ?? null])),
+    engineHash: of('engineHash'),
+    samples: of('samples'),
+    renderer: of('renderer'),
+    calibration: of('calibration', null),
     seasonHashes: plan.parts.find((p) => p.record.seasonHashes)?.record.seasonHashes ?? null,
-    encoderArgs: r0.encoderArgs,
-    sha256: fileSha(final),
+    intermediateArgs: r0.encoderArgs,
+    encoderArgs,
+    passes: isLoop ? 1 : FINAL.passes,
+    overrides,
+    targetMb,
+    tries,
+    encodeSeconds: Math.round(encodeSeconds),
+    sha256: bigSha(final),
     bytes: fs.statSync(final).size,
+    psnr: { ...proof.facts.psnr, measure: 'luma, every frame against its decoded intermediate chunk', seam, bestHold: proof.facts.bestHold, first: proof.list[0] ?? null, last: proof.list[proof.list.length - 1] ?? null },
+    framePsnr: proof.list.map((x) => Math.round(x * 100) / 100),
+    keyFrames: proof.facts.keys,
     sound: sound ? { file: short(sound.file), sha256: fileSha(sound.file), seconds: sound.seconds, kbps: M.audioKbps } : null,
-    still: still ? { file: short(still), sha256: fileSha(still) } : null,
-    chunks: plan.parts.map((p) => ({ from: p.from, what: p.record.what, first: p.record.first, last: p.record.last, sha256: p.record.sha256, machine: p.record.machine, boot: p.record.boot, commit: p.record.commit })),
+    still: stillOut ? { file: short(stillOut), sha256: fileSha(stillOut) } : null,
+    chunks: plan.parts.map((p) => ({ from: p.from, what: p.record.what, first: p.record.first, last: p.record.last, sha256: p.record.sha256, machine: p.record.machine, boot: p.record.boot, commit: p.record.commit, psnr: p.record.verify?.psnr })),
     machines: [...new Set(plan.parts.map((p) => `${p.record.machine} · ${p.record.boot ?? ''}`))],
     joinedOn: machineId(),
     tools: toolVersions(),
@@ -643,7 +777,59 @@ async function joinMaster() {
     say(`the proof did not pass, so the file is kept as ${short(final)} and is not a master`)
     process.exit(1)
   }
-  say(`${short(final)}: ${plan.frames} frames, ${hours(seconds)}, ${mb(fs.statSync(final).size)} MB${still ? `, screenshot ${short(still)}` : ''}`)
+  say(`${short(final)}: ${plan.frames} frames, ${hours(seconds)}, ${mb(fs.statSync(final).size)} MB, encoded and proven in ${hours(encodeSeconds)}${stillOut ? `, screenshot ${short(stillOut)}` : ''}`)
+  if (fs.statSync(final).size > INTER.partMb * 1e6) say(`it is over ${INTER.partMb} MB, so it leaves this machine in parts: npm run master -- --split ${short(final)}`)
+}
+
+function splitCommand() {
+  if (args.split === true) throw new Error(`--split takes a file.\n${USAGE}`)
+  const file = path.resolve(argText(args, 'split', ''))
+  if (!fs.existsSync(file) || !fs.statSync(file).isFile()) throw new Error(`${short(file)} is not a file`)
+  const dir = `${file}.parts`
+  fs.rmSync(dir, { recursive: true, force: true })
+  const made = splitFile(file, dir, INTER.partMb)
+  writeJson(path.join(dir, `${path.basename(file)}.manifest.json`), { ...made, splitOn: machineId(), time: new Date().toISOString() })
+  const files = [path.join(dir, `${path.basename(file)}.manifest.json`), ...made.parts.map((p) => path.join(dir, p.file))]
+  const groups = sendGroups(files)
+  say(`${short(file)}: ${mb(made.bytes)} MB, sha256 ${made.sha256}`)
+  say(`${made.parts.length} parts of at most ${INTER.partMb} MB and a manifest in ${short(dir)}, to send in ${groups.length} ${groups.length === 1 ? 'message' : 'messages'} of at most 10 attachments:`)
+  groups.forEach((g, k) => say(`  message ${k + 1}: ${g.map(short).join(' ')}`))
+  say(`where they arrive: npm run master -- --unsplit FOLDER (the folder they were saved in, under any names)`)
+}
+
+function unsplitCommand() {
+  if (args.unsplit === true) throw new Error(`--unsplit takes a folder.\n${USAGE}`)
+  const dir = path.resolve(argText(args, 'unsplit', ''))
+  if (!fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) throw new Error(`${short(dir)} is not a folder`)
+  const manifests = []
+  const isManifest = (p) => {
+    try {
+      if (!fs.statSync(p).isFile() || fs.statSync(p).size > 1e6) return null
+      const m = readJson(p)
+      return typeof m.sha256 === 'string' && typeof m.file === 'string' && Array.isArray(m.parts) && m.parts.every((x) => typeof x.sha256 === 'string') ? m : null
+    } catch {
+      return null
+    }
+  }
+  for (const e of fs.readdirSync(dir)) {
+    const m = isManifest(path.join(dir, e))
+    if (m) manifests.push(m)
+  }
+  if (!manifests.length) throw new Error(`${short(dir)} holds no manifest (the file --split wrote beside the parts, <name>.manifest.json)`)
+  if (args.out !== undefined && manifests.length > 1) throw new Error(`--out names one file and ${short(dir)} holds ${manifests.length} manifests`)
+  const have = hashFolder(dir, (p) => !!isManifest(p))
+  let failed = 0
+  for (const m of manifests) {
+    const out = args.out !== undefined ? path.resolve(argText(args, 'out', '')) : path.join(dir, path.basename(m.file))
+    const got = unsplitFile(m, have, out)
+    if (!got.ok) {
+      failed++
+      say(`NOT PUT TOGETHER: ${m.file}: ${got.why}${got.missing.length ? ` (${got.missing.join(', ')})` : ''}`)
+      continue
+    }
+    say(`${short(out)}: ${mb(m.bytes)} MB from ${m.parts.length} parts, sha256 ${m.sha256}, the one its manifest names`)
+  }
+  if (failed) process.exit(1)
 }
 
 async function hdFromMaster() {
@@ -652,7 +838,7 @@ async function hdFromMaster() {
   if (!haveFfmpeg()) throw new Error('ffmpeg and ffprobe are needed and were not found')
   const test = args.test === true
   const src = test ? rel('out', 'work', 'master', 'test', resultName(which)) : rel('out', 'deliver', resultName(which))
-  if (!fs.existsSync(src) || !fs.existsSync(`${src}.json`)) throw new Error(`${short(src)} is not here. Join it first: npm run master -- --join ${which}${test ? ' --test' : ''}`)
+  if (!fs.existsSync(src) || !fs.existsSync(`${src}.json`)) throw new Error(`${short(src)} is not here. Encode it first: npm run master -- --encode ${which}${test ? ' --test' : ''}`)
   const m = readJson(`${src}.json`)
   if (m.passed !== true) throw new Error(`${short(src)} did not pass its proof, so nothing is made from it`)
   if (fileSha(src) !== m.sha256) throw new Error(`${short(src)} is not the file its record names`)
@@ -709,10 +895,15 @@ async function hdFromMaster() {
 }
 
 try {
+  const wrong = masterConfigProblems()
+  if (wrong.length) throw new Error(`config/showcase.json: ${wrong.join('; ')}`)
   if (args.calibrate !== undefined) await calibrate()
   else if (args.hd !== undefined) await hdFromMaster()
   else if (args.collect !== undefined) collect()
-  else if (args.join !== undefined) await joinMaster()
+  else if (args.encode !== undefined) await encodeMaster()
+  else if (args.split !== undefined) splitCommand()
+  else if (args.unsplit !== undefined) unsplitCommand()
+  else if (args.join !== undefined) throw new Error('--join is gone: a master is one encode of the whole film from its chunks. Use --encode film-b|film-a|loop --from DIR')
   else if (args.what !== undefined) await render()
   else say(USAGE)
 } catch (e) {
