@@ -35,6 +35,7 @@ const WORK = rel('out', 'work', 'opening')
 const COPY = path.join(WORK, 'skill')
 const LOGICAL = { width: 1280, height: 720 }
 const MAX_BYTES = 12 * 1024 * 1024
+const RED_OVER_BLUE = 6
 const sha = (b) => crypto.createHash('sha256').update(b).digest('hex')
 const near = (a, b) => Math.abs(a - b) < 1e-9
 
@@ -100,6 +101,7 @@ function prepare(skill, effort) {
   let s = fs.readFileSync(file, 'utf8')
   once(s, 'the control row of the composer', 'const cy = 436;')
   once(s, 'the right edge of the control', 'const selectorRightX = 975;')
+  s = edit(s, "the composer's text in grey levels", 'canvas.getContext("2d", { alpha: false })', () => 'canvas.getContext("2d")')
   s = edit(s, 'the level change read in', 'const qs = new URLSearchParams(location.search);', (a) => `import { effortTimeline, EFFORTS, EFFORT_PACING } from "./effort-model.mjs";\n${a}`)
   s = edit(s, "the film's clock read in", 'const fps = 60;', (a) => `${a}\nconst FILM = JSON.parse(qs.get("film"));\nif (FILM.fps !== fps) throw new Error("the film's frame rate is not the page's");\nlet filmGeometry = null;`)
   s = edit(s, 'typing starts on the first key', 'T.typeDuration = prompt.length / cps;', () => 'T.typeStart = FILM.keyTaps[0] / fps;\nT.typeDuration = (FILM.keyTaps[FILM.keyTaps.length - 1] - FILM.keyTaps[0]) / fps;')
@@ -142,6 +144,9 @@ function prepare(skill, effort) {
 
   const model = path.join(COPY, 'scripts', 'sequence-model.mjs')
   fs.writeFileSync(model, edit(fs.readFileSync(model, 'utf8'), 'the first line arrives on the film', 'let at = .45;', () => 'let at = c.thinking.first;'))
+
+  const thread = path.join(COPY, 'scripts', 'sequence.mjs')
+  fs.writeFileSync(thread, edit(fs.readFileSync(thread, 'utf8'), "the build screen's text in grey levels", "canvas.getContext('2d', { alpha: false })", () => "canvas.getContext('2d')"))
 }
 
 const seconds = (frames, fps) => Math.round((frames / fps) * 1e6) / 1e6
@@ -206,6 +211,17 @@ const rgb = async (png, width, height) => {
   const { data, info } = await sharp(png).removeAlpha().raw().toBuffer({ resolveWithObject: true })
   if (info.width !== width || info.height !== height || info.channels !== 3) throw new Stop(`a picture came out ${info.width} x ${info.height}, not ${width} x ${height}`)
   return data
+}
+
+async function edges(png) {
+  const { data } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true })
+  let holes = 0
+  let warmest = 0
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3] !== 255) holes++
+    if (data[i] - data[i + 2] > warmest) warmest = data[i] - data[i + 2]
+  }
+  return { holes, warmest }
 }
 
 function sayState(plan, i, s) {
@@ -376,6 +392,8 @@ async function main() {
     const corners = (p) => [0, width - 1, (height - 1) * width, height * width - 1].map((n) => p.subarray(n * 3, n * 3 + 3).toString('hex'))
     let ground = ''
     let groundHolds = true
+    let holes = 0
+    let warmest = 0
     for (let i = 0; i < plan.frameCount; i++) {
       const f = await screens.draw(i)
       await keep(i, f.png)
@@ -384,7 +402,12 @@ async function main() {
       const pixels = await rgb(f.png, width, height)
       if (i === 0) ground = corners(pixels)[0]
       if (i === 0 || i === plan.build.first || i === plan.frameCount - 1) groundHolds &&= corners(pixels).every((c) => c === ground)
-      if (probes.includes(i)) first.set(i, sha(pixels))
+      if (probes.includes(i)) {
+        first.set(i, sha(pixels))
+        const e = await edges(f.png)
+        holes += e.holes
+        warmest = Math.max(warmest, e.warmest)
+      }
       await pack.add(pixels)
       if (i % 100 === 99) console.log(`opening: ${i + 1} of ${plan.frameCount} frames drawn`)
     }
@@ -394,7 +417,7 @@ async function main() {
     const checks = { skill: skillChecks(plan, raw, fonts, screens, twice), film: filmChecks(plan, intro, states, raw, screens.motion, effortModel) }
     const out = master ? PACK_DIRS.master() : PACK_DIRS.source()
     const made = await pack.finish(states, `#${ground}`)
-    checks.pack = { rebuiltEqualsDrawn: made.exact, underLimit: master || made.bytes <= MAX_BYTES, oneGroundColour: groundHolds }
+    checks.pack = { rebuiltEqualsDrawn: made.exact, underLimit: master || made.bytes <= MAX_BYTES, oneGroundColour: groundHolds, everyPixelPainted: holes === 0, textInGreyLevels: warmest <= RED_OVER_BLUE, warmestPixel: warmest }
     const failed = Object.entries(checks).flatMap(([group, c]) => Object.entries(c).filter(([, v]) => v === false).map(([k]) => `${group}.${k}`))
     const record = {
       pass: failed.length === 0,
