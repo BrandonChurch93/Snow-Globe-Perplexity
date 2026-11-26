@@ -675,7 +675,7 @@ describe('files that travel by attachment', () => {
     expect(cut.parts.length).toBe(3)
     const r1 = rec('loop', 0, 29, { sha256: sha(one), bytes: one.length, boot: 'b1', still: { file: 'frame-000000.png', bytes: still.length, sha256: sha(still) } })
     const r2 = rec('loop', 30, 59, { sha256: cut.sha256, bytes: two.length, boot: 'b1', parts: cut.parts })
-    writeJson(path.join(flat, 'download-7.json'), r2)
+    writeJson(path.join(flat, 'download-7'), r2)
     writeJson(path.join(flat, 'loop-000000-000029.json'), r1)
     fs.writeFileSync(path.join(flat, 'notes.json'), '{"hello": 1}')
     fs.writeFileSync(path.join(flat, 'zz (1)'), one)
@@ -724,6 +724,24 @@ describe('files that travel by attachment', () => {
     expect(fs.existsSync(path.join(flat, 'r.json'))).toBe(true)
     const p = plan('film-b', readChunks([into]), { sha: (f: string) => (fs.existsSync(f) ? bigSha(f) : null) })
     expect(p.problems.join(' ')).toMatch(/the mp4 is missing/)
+  })
+
+  it('takes two chunks that hold the same bytes, as two still stretches of the opening do', () => {
+    const flat = path.join(box, 'flat-3')
+    const into = path.join(box, 'collected-same')
+    fs.mkdirSync(flat)
+    const same = bytesOf(4000, 11)
+    fs.writeFileSync(path.join(flat, 'only-one-file'), same)
+    const sha = bigSha(path.join(flat, 'only-one-file'))
+    writeJson(path.join(flat, 'a.json'), rec('opening', 0, 29, { sha256: sha, bytes: same.length, boot: 'b1' }))
+    writeJson(path.join(flat, 'b.json'), rec('opening', 30, 59, { sha256: sha, bytes: same.length, boot: 'b1' }))
+    const got = takeFiles(flat, into, { keep: false })
+    expect(got.records).toBe(2)
+    expect(got.problems).toEqual([])
+    const chunks = readChunks([into])
+    expect(chunks.map((c: Chunk) => c.record.first)).toEqual([0, 30])
+    expect(chunks.every((c: Chunk) => fs.readFileSync(c.file).equals(same))).toBe(true)
+    expect(fs.readdirSync(flat)).toEqual([])
   })
 
   it('lets a test encode skip what was never rendered, and a real one never', () => {
