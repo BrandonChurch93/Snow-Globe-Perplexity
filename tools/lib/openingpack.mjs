@@ -8,6 +8,33 @@ export const PACK_FILES = { manifest: 'manifest.json', bin: 'opening.bin' }
 export const PACK_VERSION = 1
 export const PACK_DIRS = { source: () => rel('public', 'opening'), hosted: () => rel('dist', 'opening'), master: () => rel('out', 'work', 'opening', 'master') }
 
+// One renderer draws the opening: SwiftShader, whose bytes the committed pack is. The two screens are painted on a
+// 2D canvas and read back from it, and under Mesa lavapipe what is read back cannot be trusted: in each of two runs
+// 17 frames of 867 came out empty and the menu's frames garbled, and the same moment drawn twice gave two pictures
+// (measured 2026-11-26, with and without --disable-gpu-rasterization). The page that shows the pack is another
+// matter: it shows it pixel for pixel under either renderer, so --page keeps the machine's own.
+export const PACK_RENDERER = 'swiftshader'
+
+// What a run of the opening tool draws with: the pack's renderer for every run that draws (the pack, the master
+// pack, stills), and none named for a run that draws nothing.
+export const packRenderer = (args = {}) => (args.page === true || args.help ? null : PACK_RENDERER)
+
+// The one line the tool prints before it draws. `said` is SHOWCASE_RENDERER, `pinned` the renderer of tools/browser.json.
+export function rendererLine(said, pinned) {
+  const usual = (said ?? pinned ?? PACK_RENDERER).toLowerCase()
+  const aside = usual === PACK_RENDERER ? '' : said ? `, whatever SHOWCASE_RENDERER says (${said})` : `, whatever this machine's default is (${usual})`
+  return `the opening is drawn by SwiftShader, the renderer of the committed pack${aside}`
+}
+
+// '' when the browser that is about to draw is SwiftShader's, else the plain sentence the tool stops with.
+// `name` is what the tools asked for, `graphics` the browser's own word for what draws (WebGL's unmasked renderer).
+export function rendererProblem(name, graphics) {
+  const stays = 'Nothing was drawn, and the pack stays as it is'
+  if (name !== PACK_RENDERER) return `the renderer is ${name}. The opening is drawn by SwiftShader only: another renderer does not give the committed pictures. ${stays}`
+  if (!/swiftshader/i.test(graphics ?? '')) return `the browser was asked for SwiftShader and answers with ${graphics ? `"${graphics}"` : 'no renderer at all'}. The opening is drawn by SwiftShader only: another renderer does not give the committed pictures. ${stays}`
+  return ''
+}
+
 const TILE = 16
 const KEY_SHARE = 0.4
 const LONGEST_CHAIN = 120
