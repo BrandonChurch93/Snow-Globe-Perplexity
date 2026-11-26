@@ -149,7 +149,7 @@ function shadeIn(deep: number, left: number, from: number, edge: number, tint: b
 `
 }
 
-const STONE = { grain: 0.8, carve: 1.0, dust: 0.75, glint: 3.0, wrap: 0.3, card: 0.02, sun: 0.9, kick: 0.06, flare: 1.45, side: 0.06, bounce: 0.02, sheen: 0.03, top: 0.3, belly: 1.0, table: 0.42, patch: 0.3, direct: 0.12, room: 0.3, rake: 1.0, lit: 3.0, sky: 0.5 }
+const STONE = { grain: 1.1, carve: 1.0, dust: 0.75, glint: 3.0, wrap: 0.3, card: 0.02, sun: 0.9, kick: 0.06, flare: 1.45, side: 0.06, bounce: 0.02, sheen: 0.03, top: 0.3, belly: 1.0, table: 0.42, patch: 0.3, direct: 0.12, room: 0.3, rake: 1.0, lit: 3.0, sky: 0.5 }
 
 const STONE_PAINT = `
 vec4 baseDetail = texture2D(uBaseGrain, vMapUv);
@@ -163,7 +163,7 @@ diffuseColor.rgb = diffuse * texture2D(uBaseTone, vBaseUv1).rgb * vec3(1.0, 0.98
 diffuseColor.rgb = mix(vec3(dot(diffuseColor.rgb, vec3(0.3, 0.55, 0.15))) * vec3(1.0, 0.99, 0.96), diffuseColor.rgb, 0.5);
 float baseBlotch = baseNoise(vBasePos * 0.23) * 0.6 + baseNoise(vBasePos * 0.9) * 0.4;
 diffuseColor.rgb *= mix(0.86, 1.1, baseBlotch) * (0.96 + 0.08 * baseDetail.b) * (0.97 + 0.06 * baseFine.b);
-diffuseColor.rgb *= (0.88 + 0.24 * baseHash(floor(vBasePos * 2.7 + 1.3))) * (0.82 + 0.36 * baseHash(floor(vBasePos * 7.0))) * (0.92 + 0.16 * baseNoise(vBasePos * 9.0)) * (0.84 + 0.32 * baseHash(floor(vBasePos * 13.0 + 5.0)));
+diffuseColor.rgb *= (0.74 + 0.52 * baseHash(floor(vBasePos * 2.7 + 1.3))) * (0.7 + 0.6 * baseHash(floor(vBasePos * 7.0))) * (0.9 + 0.2 * baseNoise(vBasePos * 9.0)) * (0.8 + 0.4 * baseHash(floor(vBasePos * 13.0 + 5.0)));
 diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.9, 0.78, 0.66), mix(0.3, 0.65, smoothstep(4.0, -30.0, vBasePos.x)) * baseCavity);
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.93, 0.86, 0.72), 0.15 * baseHigh);
 `
