@@ -339,6 +339,7 @@ async function main() {
   if (args.page === true) return checkPage()
   const skill = findSkill()
   const effort = findEffort()
+  if (fs.realpathSync(skill.dir) === fs.realpathSync(effort.dir)) throw new Stop(`only ${skill.name} ${skill.version} was found (${skill.dir}). This tool draws the two screens with synthetic-ui and takes from ${effort.name} only the change of the reasoning level: name synthetic-ui with --skill DIR. The pack in public/opening/ stays as it is`)
   const master = args.master === true
   const scale = master ? cfg.formats.master.width / LOGICAL.width : cfg.formats.hd.width / LOGICAL.width
   const width = LOGICAL.width * scale
