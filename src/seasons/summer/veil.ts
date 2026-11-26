@@ -23,7 +23,11 @@ export const particles: SeasonKit['particles'] = { firefly: { color: [1, 0.97, 0
 // over the ground and a white crescent inside the left limb, where the approved image has seeds over a ghosted miniature.
 // A share of that bank is kept: it is the bright haze low down that whitens the ground and the foot of the tree.
 // All of it is weighted by summer's share of the change, so the other seasons see nothing of it.
-export const STORM = { share: 1.25, holdSeconds: 0.3, fallSeconds: 3, uneven: 0.85, calms: 0.55 }
+// `white` is the haze of the held storm in the liquid itself, in folds (`fold` of it; the rest is even): it is thickest where the
+// line of sight through the ball is longest, at its middle, so the tree and the cottage are washed and the lanterns bloom in it.
+// `bank` is the haze of the held storm that lies over the miniature: below `level` (in radii, up from the middle) it is whole, and
+// it thins over `soft` above that, so the cottage and the foot of the tree are ghosted and the upper dome keeps its dark gaps.
+export const STORM = { share: 1, holdSeconds: 0.3, fallSeconds: 3, uneven: 0.97, calms: 0.55, bank: { level: -0.6, soft: 0.25, density: 0.012, even: 0.7 }, white: 0.0014, fold: 0.9 }
 
 const ramp = (v: number, from: number, to: number): number => {
   const t = Math.min(1, Math.max(0, (v - from) / (to - from)))
@@ -52,6 +56,11 @@ export function holdStorm(moment: KitMoment): number {
     u.uVeilUp.value.w += (Math.min(STORM.uneven, storm / density) - u.uVeilUp.value.w) * held
     u.uVeil.value.w += (density - u.uVeil.value.w) * held
     u.uVeilDrift.value.x *= 1 - STORM.calms * held
+    const roll = u.uVeilRoll.value
+    roll.z += (STORM.white - roll.z) * held
+    roll.w += (STORM.fold - roll.w) * held
+    const bank = u.uVeilBank.value
+    bank.set(bank.x + (STORM.bank.level - bank.x) * held, bank.y + (STORM.bank.soft - bank.y) * held, bank.z + (STORM.bank.density - bank.z) * held, bank.w + (STORM.bank.even - bank.w) * held)
   }
   return held
 }

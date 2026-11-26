@@ -12,6 +12,7 @@ import type { InnerLight } from '../../seasons/kit'
 import { BATS, CARD, LAMPS, LENS_LOOK, LIGHT_LOOK, LOBE_TABLE, LYING_LOOK, MAX_KINDS, SETTLE_SHOWN, SHAPE, lookOf } from './looks'
 import { BEHAVIOUR } from '../engine/kinds'
 import { FRAG, VERT_MAIN, VERT_PARS } from './shader'
+import { downAtlas } from './down'
 
 export { MAX_KINDS } from './looks'
 export const SIZE_TO_RADIUS = 0.5
@@ -76,6 +77,7 @@ export class ParticleDraw {
       uLampCol: { value: Array.from({ length: LAMPS }, () => new THREE.Vector4(0, 0, 0, 1)) },
       uLobes: { value: null as THREE.Texture | null },
       uLobeRows: { value: 1 },
+      uDown: { value: downAtlas() },
       uPointChange: { value: 0 },
       uKindColor: { value: Array.from({ length: MAX_KINDS }, () => new THREE.Vector4()) },
       uKindPart: { value: Array.from({ length: MAX_KINDS }, () => new THREE.Vector4()) },
