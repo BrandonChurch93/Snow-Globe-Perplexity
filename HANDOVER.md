@@ -16,7 +16,7 @@ The unmuted controls are byte-identical to the respective official HD review sti
 | --- | ---: | ---: | ---: |
 | Official, all groups | 0.820385 | 0.790982 | -0.029403 |
 | All seeds hidden | 0.729597 | 0.722516 | -0.007081 |
-| Snagged and fixed seeds hidden | 0.741439 | 0.730252 | -0.011187 |
+| Non-airborne seeds hidden | 0.741439 | 0.730252 | -0.011187 |
 | Fireflies hidden | 0.748430 | 0.715908 | -0.032522 |
 | Motes hidden | 0.820209 | 0.789304 | -0.030905 |
 | All particles hidden | 0.622364 | 0.621807 | -0.000557 |
@@ -24,6 +24,24 @@ The unmuted controls are byte-identical to the respective official HD review sti
 The small residual in the last row comes from the two particle-sensitive ID masks. The 696 by 392 px particle-free RGB boxes are byte-identical, with the same common-box high-frequency energy. The cottage itself did not soften. The changes in M3 are driven by the arrangement of particle detail in the full composite, with most of the difference disappearing when seeds are hidden. The score still misses the 0.015 allowance in the actual picture.
 
 On the same particle-free miniature silhouette, using tag coverage of at least 0.10, main to candidate: airborne seeds 42 to 45 heads and 2080 to 2408 px; simulated seed snags 138 to 107 and 2324 to 1747 px; fixed-art heads 18 to 18 and 1253 to 1326 px, with the same scene anchors; fireflies 3 to 3 and 3 to 4 px; motes 26 to 27 and 34 to 40 px. The snags within 2 mm of ground go from 48 to 42, near the cottage proxy 8 to 5, roof 3 to 6, crown 6 to 4 and other above ground 65 to 46. The largest candidate-only snag covers 92 tagged pixels on the centre post, at native (963,612), not on the cottage. One new roof-area head covers 40 at (867,477). Neither points to a single conspicuous new perch that explains the score. No change to the rest behavior was made on this evidence.
+
+Decision 169 on main `d68a4f9d` accepts this composition difference without moving heads or altering the physical settling. On the hand-integrated candidate the summer miniature still has to read at least 0.77 in the original M3 line. The line's 0.75 threshold and base reading are not changed; main's failing base is open item 247.
+
+### Metadata merge and repeatable state counts
+
+`2585e411` adds the moment's left-season metadata from `1e9f9289`. Build and TypeScript passed; Vitest reports 800 passed and 8 skipped across 58 passing files and 1 skipped file. This is a pre-final-hand verification.
+
+A new pass with full asset colliders reproduced every recorded state value exactly for the `15d7017d` control and `2585e411` candidate, compared with their respective retimed guard results below. In particular, summer holds 4,249 afloat on both trees at rest, including 549 seeds, 1,200 fireflies and 2,500 motes on the candidate. Its four laid quadrants move from 1920/4348/386/1797 to 1924/4503/370/1654; the number laid more than 12 mm above its local ground goes from 454 to 417. These counts are not the rendered foreground-head sample above.
+
+The closest staged-hand comparison for film is `edc8bfa2` to `2585e411`. The trees differ in three inertia source files and two tests, not the hand, config or artwork. The raw 145-frame motion rows and hold counts repeat the earlier retimed rows below exactly on each side; only the wall-clock duration differs.
+
+### Strict and stand-ins
+
+The eight-key strict check on `2585e411` found zero differing pixels in all 32 rows. Its last line was:
+
+> strict: pass, 8 keys under pow, all+smooth, all+smooth+noguard, each row read against the plain picture, and against its own --same picture where that one differs (engine ca1985fc2fd38c9c, drawn by lavapipe): no pixel moves by more than 1 level, at most 0.01% of pixels move
+
+The `winter-rest` stand-ins view was drawn at HD review and inspected. All 2,073,600 pixels have RGB zero, as recorded in `standins-rgb-2585e411.json`.
 
 ## Retimed comparison
 

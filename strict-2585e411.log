@@ -1,0 +1,45 @@
+
+> snow-globe-seasons@0.1.0 strict
+> node tools/strict.mjs --keys winter-rest,winter-shake,spring-rest,spring-shake,summer-rest,summer-shake,fall-rest,fall-shake
+
+winter-rest: plain rendered
+  pow against plain: 0 pixels differ; 74 shaders rewritten  pass
+  all+smooth against plain: 0 pixels differ; 74 shaders rewritten  pass
+  all+smooth+noguard against plain: 0 pixels differ; 74 shaders rewritten  pass
+  guards (all+smooth against all+smooth+noguard): 0 pixels differ  pass
+winter-shake: plain rendered
+  pow against plain: 0 pixels differ; 74 shaders rewritten  pass
+  all+smooth against plain: 0 pixels differ; 74 shaders rewritten  pass
+  all+smooth+noguard against plain: 0 pixels differ; 74 shaders rewritten  pass
+  guards (all+smooth against all+smooth+noguard): 0 pixels differ  pass
+spring-rest: plain rendered
+  pow against plain: 0 pixels differ; 72 shaders rewritten  pass
+  all+smooth against plain: 0 pixels differ; 72 shaders rewritten  pass
+  all+smooth+noguard against plain: 0 pixels differ; 72 shaders rewritten  pass
+  guards (all+smooth against all+smooth+noguard): 0 pixels differ  pass
+spring-shake: plain rendered
+  pow against plain: 0 pixels differ; 74 shaders rewritten  pass
+  all+smooth against plain: 0 pixels differ; 74 shaders rewritten  pass
+  all+smooth+noguard against plain: 0 pixels differ; 74 shaders rewritten  pass
+  guards (all+smooth against all+smooth+noguard): 0 pixels differ  pass
+summer-rest: plain rendered
+  pow against plain: 0 pixels differ; 76 shaders rewritten  pass
+  all+smooth against plain: 0 pixels differ; 76 shaders rewritten  pass
+  all+smooth+noguard against plain: 0 pixels differ; 76 shaders rewritten  pass
+  guards (all+smooth against all+smooth+noguard): 0 pixels differ  pass
+summer-shake: plain rendered
+  pow against plain: 0 pixels differ; 76 shaders rewritten  pass
+  all+smooth against plain: 0 pixels differ; 76 shaders rewritten  pass
+  all+smooth+noguard against plain: 0 pixels differ; 76 shaders rewritten  pass
+  guards (all+smooth against all+smooth+noguard): 0 pixels differ  pass
+fall-rest: plain rendered
+  pow against plain: 0 pixels differ; 74 shaders rewritten  pass
+  all+smooth against plain: 0 pixels differ; 74 shaders rewritten  pass
+  all+smooth+noguard against plain: 0 pixels differ; 74 shaders rewritten  pass
+  guards (all+smooth against all+smooth+noguard): 0 pixels differ  pass
+fall-shake: plain rendered
+  pow against plain: 0 pixels differ; 74 shaders rewritten  pass
+  all+smooth against plain: 0 pixels differ; 74 shaders rewritten  pass
+  all+smooth+noguard against plain: 0 pixels differ; 74 shaders rewritten  pass
+  guards (all+smooth against all+smooth+noguard): 0 pixels differ  pass
+strict: pass, 8 keys under pow, all+smooth, all+smooth+noguard, each row read against the plain picture, and against its own --same picture where that one differs (engine ca1985fc2fd38c9c, drawn by lavapipe): no pixel moves by more than 1 level, at most 0.01% of pixels move

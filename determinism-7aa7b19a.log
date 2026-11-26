@@ -1,0 +1,40 @@
+
+> snow-globe-seasons@0.1.0 determinism
+> node tools/determinism.mjs --film
+
+pass a: still-landed in 16.5 s
+pass a: still-rest in 11.2 s
+pass a: still-settled in 6.1 s
+pass a: film-3240 in 48.5 s
+pass a: loop-288 in 19.8 s
+pass b: loop-288 in 24.2 s
+pass b: film-3240 in 48.9 s
+pass b: still-settled in 20.8 s
+pass b: still-rest in 16.8 s
+pass b: still-landed in 10.6 s
+pass c: still-rest in 25.6 s
+pass c: still-settled in 14.7 s
+pass c: film-3240 in 8.6 s
+pass c: loop-288 in 19.3 s
+pass c: still-landed in 7.2 s
+pass d: still-settled in 6.0 s
+pass d: film-3240 in 3.6 s
+pass d: loop-288 in 20.0 s
+pass d: still-landed in 7.2 s
+pass d: still-rest in 2.3 s
+identical: still-landed, pass b against pass a
+identical: still-landed, pass c against pass a
+identical: still-landed, pass d against pass a
+identical: still-rest, pass b against pass a
+identical: still-rest, pass c against pass a
+identical: still-rest, pass d against pass a
+identical: still-settled, pass b against pass a
+identical: still-settled, pass c against pass a
+identical: still-settled, pass d against pass a
+identical: film-3240, pass b against pass a
+identical: film-3240, pass c against pass a
+identical: film-3240, pass d against pass a
+identical: loop-288, pass b against pass a
+identical: loop-288, pass c against pass a
+identical: loop-288, pass d against pass a
+determinism: pass · 5 pictures, 4 page loads, preview, draft, 377 s

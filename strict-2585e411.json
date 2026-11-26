@@ -1,0 +1,572 @@
+{
+  "engineHash": "ca1985fc2fd38c9c",
+  "renderer": "lavapipe",
+  "format": "preview",
+  "tier": "draft",
+  "live": "",
+  "assets": "",
+  "rows": {
+    "winter-rest pow": {
+      "key": "winter-rest",
+      "mode": "pow",
+      "against": "plain",
+      "shaders": 74,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 41
+    },
+    "winter-rest all+smooth": {
+      "key": "winter-rest",
+      "mode": "all+smooth",
+      "against": "plain",
+      "shaders": 74,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 38
+    },
+    "winter-rest all+smooth+noguard": {
+      "key": "winter-rest",
+      "mode": "all+smooth+noguard",
+      "against": "plain",
+      "shaders": 74,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 22
+    },
+    "winter-rest guards all+smooth": {
+      "key": "winter-rest",
+      "mode": "guards all+smooth",
+      "against": "each other",
+      "shaders": 74,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 0
+    },
+    "winter-shake pow": {
+      "key": "winter-shake",
+      "mode": "pow",
+      "against": "plain",
+      "shaders": 74,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 23
+    },
+    "winter-shake all+smooth": {
+      "key": "winter-shake",
+      "mode": "all+smooth",
+      "against": "plain",
+      "shaders": 74,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 24
+    },
+    "winter-shake all+smooth+noguard": {
+      "key": "winter-shake",
+      "mode": "all+smooth+noguard",
+      "against": "plain",
+      "shaders": 74,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 24
+    },
+    "winter-shake guards all+smooth": {
+      "key": "winter-shake",
+      "mode": "guards all+smooth",
+      "against": "each other",
+      "shaders": 74,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 0
+    },
+    "spring-rest pow": {
+      "key": "spring-rest",
+      "mode": "pow",
+      "against": "plain",
+      "shaders": 72,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 28
+    },
+    "spring-rest all+smooth": {
+      "key": "spring-rest",
+      "mode": "all+smooth",
+      "against": "plain",
+      "shaders": 72,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 30
+    },
+    "spring-rest all+smooth+noguard": {
+      "key": "spring-rest",
+      "mode": "all+smooth+noguard",
+      "against": "plain",
+      "shaders": 72,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 18
+    },
+    "spring-rest guards all+smooth": {
+      "key": "spring-rest",
+      "mode": "guards all+smooth",
+      "against": "each other",
+      "shaders": 72,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 0
+    },
+    "spring-shake pow": {
+      "key": "spring-shake",
+      "mode": "pow",
+      "against": "plain",
+      "shaders": 74,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 20
+    },
+    "spring-shake all+smooth": {
+      "key": "spring-shake",
+      "mode": "all+smooth",
+      "against": "plain",
+      "shaders": 74,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 20
+    },
+    "spring-shake all+smooth+noguard": {
+      "key": "spring-shake",
+      "mode": "all+smooth+noguard",
+      "against": "plain",
+      "shaders": 74,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 20
+    },
+    "spring-shake guards all+smooth": {
+      "key": "spring-shake",
+      "mode": "guards all+smooth",
+      "against": "each other",
+      "shaders": 74,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 0
+    },
+    "summer-rest pow": {
+      "key": "summer-rest",
+      "mode": "pow",
+      "against": "plain",
+      "shaders": 76,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 26
+    },
+    "summer-rest all+smooth": {
+      "key": "summer-rest",
+      "mode": "all+smooth",
+      "against": "plain",
+      "shaders": 76,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 30
+    },
+    "summer-rest all+smooth+noguard": {
+      "key": "summer-rest",
+      "mode": "all+smooth+noguard",
+      "against": "plain",
+      "shaders": 76,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 17
+    },
+    "summer-rest guards all+smooth": {
+      "key": "summer-rest",
+      "mode": "guards all+smooth",
+      "against": "each other",
+      "shaders": 76,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 0
+    },
+    "summer-shake pow": {
+      "key": "summer-shake",
+      "mode": "pow",
+      "against": "plain",
+      "shaders": 76,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 19
+    },
+    "summer-shake all+smooth": {
+      "key": "summer-shake",
+      "mode": "all+smooth",
+      "against": "plain",
+      "shaders": 76,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 19
+    },
+    "summer-shake all+smooth+noguard": {
+      "key": "summer-shake",
+      "mode": "all+smooth+noguard",
+      "against": "plain",
+      "shaders": 76,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 19
+    },
+    "summer-shake guards all+smooth": {
+      "key": "summer-shake",
+      "mode": "guards all+smooth",
+      "against": "each other",
+      "shaders": 76,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 0
+    },
+    "fall-rest pow": {
+      "key": "fall-rest",
+      "mode": "pow",
+      "against": "plain",
+      "shaders": 74,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 26
+    },
+    "fall-rest all+smooth": {
+      "key": "fall-rest",
+      "mode": "all+smooth",
+      "against": "plain",
+      "shaders": 74,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 28
+    },
+    "fall-rest all+smooth+noguard": {
+      "key": "fall-rest",
+      "mode": "all+smooth+noguard",
+      "against": "plain",
+      "shaders": 74,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 18
+    },
+    "fall-rest guards all+smooth": {
+      "key": "fall-rest",
+      "mode": "guards all+smooth",
+      "against": "each other",
+      "shaders": 74,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 0
+    },
+    "fall-shake pow": {
+      "key": "fall-shake",
+      "mode": "pow",
+      "against": "plain",
+      "shaders": 74,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 20
+    },
+    "fall-shake all+smooth": {
+      "key": "fall-shake",
+      "mode": "all+smooth",
+      "against": "plain",
+      "shaders": 74,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 21
+    },
+    "fall-shake all+smooth+noguard": {
+      "key": "fall-shake",
+      "mode": "all+smooth+noguard",
+      "against": "plain",
+      "shaders": 74,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 20
+    },
+    "fall-shake guards all+smooth": {
+      "key": "fall-shake",
+      "mode": "guards all+smooth",
+      "against": "each other",
+      "shaders": 74,
+      "missed": 0,
+      "count": 0,
+      "step": 0,
+      "box": null,
+      "share": 0,
+      "messages": [],
+      "seconds": 0
+    }
+  },
+  "made": {
+    "pow/winter-rest.png": {
+      "shaders": 74,
+      "missed": 0,
+      "messages": [],
+      "seconds": 41
+    },
+    "all_smooth/winter-rest.png": {
+      "shaders": 74,
+      "missed": 0,
+      "messages": [],
+      "seconds": 38
+    },
+    "all_smooth_noguard/winter-rest.png": {
+      "shaders": 74,
+      "missed": 0,
+      "messages": [],
+      "seconds": 22
+    },
+    "pow/winter-shake.png": {
+      "shaders": 74,
+      "missed": 0,
+      "messages": [],
+      "seconds": 23
+    },
+    "all_smooth/winter-shake.png": {
+      "shaders": 74,
+      "missed": 0,
+      "messages": [],
+      "seconds": 24
+    },
+    "all_smooth_noguard/winter-shake.png": {
+      "shaders": 74,
+      "missed": 0,
+      "messages": [],
+      "seconds": 24
+    },
+    "pow/spring-rest.png": {
+      "shaders": 72,
+      "missed": 0,
+      "messages": [],
+      "seconds": 28
+    },
+    "all_smooth/spring-rest.png": {
+      "shaders": 72,
+      "missed": 0,
+      "messages": [],
+      "seconds": 30
+    },
+    "all_smooth_noguard/spring-rest.png": {
+      "shaders": 72,
+      "missed": 0,
+      "messages": [],
+      "seconds": 18
+    },
+    "pow/spring-shake.png": {
+      "shaders": 74,
+      "missed": 0,
+      "messages": [],
+      "seconds": 20
+    },
+    "all_smooth/spring-shake.png": {
+      "shaders": 74,
+      "missed": 0,
+      "messages": [],
+      "seconds": 20
+    },
+    "all_smooth_noguard/spring-shake.png": {
+      "shaders": 74,
+      "missed": 0,
+      "messages": [],
+      "seconds": 20
+    },
+    "pow/summer-rest.png": {
+      "shaders": 76,
+      "missed": 0,
+      "messages": [],
+      "seconds": 26
+    },
+    "all_smooth/summer-rest.png": {
+      "shaders": 76,
+      "missed": 0,
+      "messages": [],
+      "seconds": 30
+    },
+    "all_smooth_noguard/summer-rest.png": {
+      "shaders": 76,
+      "missed": 0,
+      "messages": [],
+      "seconds": 17
+    },
+    "pow/summer-shake.png": {
+      "shaders": 76,
+      "missed": 0,
+      "messages": [],
+      "seconds": 19
+    },
+    "all_smooth/summer-shake.png": {
+      "shaders": 76,
+      "missed": 0,
+      "messages": [],
+      "seconds": 19
+    },
+    "all_smooth_noguard/summer-shake.png": {
+      "shaders": 76,
+      "missed": 0,
+      "messages": [],
+      "seconds": 19
+    },
+    "pow/fall-rest.png": {
+      "shaders": 74,
+      "missed": 0,
+      "messages": [],
+      "seconds": 26
+    },
+    "all_smooth/fall-rest.png": {
+      "shaders": 74,
+      "missed": 0,
+      "messages": [],
+      "seconds": 28
+    },
+    "all_smooth_noguard/fall-rest.png": {
+      "shaders": 74,
+      "missed": 0,
+      "messages": [],
+      "seconds": 18
+    },
+    "pow/fall-shake.png": {
+      "shaders": 74,
+      "missed": 0,
+      "messages": [],
+      "seconds": 20
+    },
+    "all_smooth/fall-shake.png": {
+      "shaders": 74,
+      "missed": 0,
+      "messages": [],
+      "seconds": 21
+    },
+    "all_smooth_noguard/fall-shake.png": {
+      "shaders": 74,
+      "missed": 0,
+      "messages": [],
+      "seconds": 20
+    }
+  }
+}

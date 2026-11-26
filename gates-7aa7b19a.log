@@ -1,0 +1,8 @@
+
+> snow-globe-seasons@0.1.0 gate
+> node tools/gate.mjs --phase 6 --only G11,G12,G14
+
+G11 pass · the change stays in its window: film: 7 seasonal parts read on all 3600 frames, every value 0 or 1 on the 3456 frames outside the 4 swap windows (648 to 683, 1368 to 1403, 2088 to 2123, 2808 to 2843), a part mid change on 140 frames inside them; test shake: the same on 828 of 864 frames outside 72 to 107; loop: no value changes across 480 frames and the frame one past the last
+G12 pass · landings: 4 shakes of the cut list: globe.heightMm is above zero on all 432 frames from each liftEnd to the frame before each landing (the lowest is 0.44 mm); every landing frame (720, 1440, 2160, 2880) is one of the 25 bar lines of the cut list and of film().landings; the camera on each first frame (576, 1296, 2016, 2736) equals dev.pose('hero') within 0.001 mm and degrees (the largest difference is 0.0e+0)
+G14 pass · the loop's seam: renderLoopFrame(480), one past the last, is pixel-identical to frame 0 (hd, draft)
+gate, phase 6: all 3 green
