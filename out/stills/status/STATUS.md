@@ -1,18 +1,18 @@
-# Status 174
+# Status 175
 
-2026-11-26 20:05 UTC
+2026-11-26 20:14 UTC
 
-- Rough draft 3 of the film is being drawn on today's main (`c4665a9b`, engine `803ea1dff1d787a4`): 8 of 12 ranges of film B are in (frames 0 to 2099 and 3300 to 3599, 960 x 540, draft tier, 1.84 to 4.07 s a frame in the mean on six farm machines) and the opening is drawn here (434 pictures, 0.06 s a frame). The farm machines cannot push to the repo, so each chunk comes by message.
-- A fault found by it: in summer, film frames 1644 to 1654 (3.4 to 3.6 s after the landing; 4 pixels at 1630), saturated blue blocks with yellow rims at the left edge of the glass, 28 such pixels on frame 1648 at 960 x 540. The draft of 08:40 on `74032238` has none on frames 1600 to 1700, and the capture counted 0 values that are no number. Summer's air owner hunts the cause, the glass owner checks its edge terms, and a farm machine bisects for the commit that brought it.
-- Decision 164: one history for the film, the app and every still. The motion builder's wish for a history of their own for the landed stills is refused, and the line of its brief on the rest stills, written by /root, is changed. Its first push `b680bfc4`, by its own measure: on frames 1308 to 1322 what floats moves 3.70 mm where the glass moves 14.28 mm (8.42 mm before).
-- The controls' branch is pushed at `19786cd4` with stage one whole (by its own report: tsc 0, 775 tests passed and 8 skipped on the merge `e034be4d`). A farm machine draws the eight stills on it and on main to prove no picture moved before it is merged.
-- The change's builder moved its mend report to about 20:25 UTC (main moved twice under it). Summer's six owners report on the second lists by 20:30 UTC.
-- phase 6: 17.26 h used of its 12.00 h box
-- allowance (after the review): 17.26 h used of 12.00 h allowed
+- Rough draft 3 is joined: film A (the prompt opening and the film), 960 x 540, 30 fps, 2234 frames, 74.466 s, 21.61 MB, with the final sound `audio/final/film-a.wav`. Twelve ranges of film B were drawn on six farm machines on `c4665a9b` at 1.84 to 4.15 s a frame in the mean and the opening here. Every record's `errors` is empty with 0 values that are no number; on the joined file there is no dark frame and no repeated frame in the film, and the eleven seams between the twelve ranges step by 2.05 to 11.12 levels (mean grey difference from one frame to the next at 240 x 135), none by more than 0.33 over the largest step among the ten frame pairs around it. Corrected at 20:17 UTC: this sentence first said that none of the twelve seams is larger than the frames beside it; there are eleven, and five of them are larger, by 0.09 to 0.33.
+- The blue fault of Status 174 is at every tier: frame 1648 in hd has 288 such pixels at the review tier and 269 at the final tier, counted by a farm machine on the lossless frames, strongest pixel rgb 11, 7, 149. It reads as a strong yellow taken away from the cream ground. Summer's air owner has the lead and a bisect between `74032238` and `c4665a9b` runs.
+- Summer's sand, second pass, is merged (`agent/p6-summer-sand` `7375827c`, merge `4c9afbaa`): the table is bare of sand until the base is down at frame 1440 and the heap comes out of the foot from 1442, whole at 1460, by the owner's frames and my look at them. Not at the approved picture yet, in its own words and mine: the heap's skin, the strewn grains, the far rim and the lift. It goes on, report at 21:10 UTC.
+- Summer's tree, second pass (`8ae9354c`), is not merged: the crown stands as separate cushions with wide gaps where the approved has one broad mass with small holes, and the wood is brighter and redder than the approved's. One more pass, report at 21:00 UTC. Its leaves are back under the count of `39901bc4` (18,896 against 19,556).
+- The motion builder reports that its solver passes all 16 loop tests and 6 lag tests in a scratch merge with the hand's newest push. The controls' branch waits for the guard's eight stills.
+- phase 6: 17.42 h used of its 12.00 h box
+- allowance (after the review): 17.42 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-174-1.jpg`: Rough draft 3 of the film, eight frames from winter to summer (960 x 540, draft tier)
-- `out/stills/status/status-174-2.jpg`: Summer 3.3, 3.5 and 3.7 s after the landing, the left edge of the glass enlarged: the blue fault found in the draft is in the middle picture
-- `out/stills/status/status-174-3.jpg`: Rough draft 3, summer 7.7 s after the landing
-- `out/stills/status/status-174-4.jpg`: The opening of film A, frame 866 at 60 frames a second, preview, draft
+- `out/stills/status/status-175-1.jpg`: Rough draft 3, twenty frames across the whole film with its prompt opening (960 x 540, draft tier)
+- `out/stills/status/status-175-2.jpg`: Summer's sand now comes out of the foot after the landing: film frames 1440, 1442, 1444, 1446, 1448 and 1456
+- `out/stills/status/status-175-3.jpg`: Summer's tree, approved picture left and build right: the crown is still below the bar
+- `out/stills/status/status-175-4.jpg`: Still: summer rest hero, hd, review
