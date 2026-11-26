@@ -279,7 +279,8 @@ const BRASS_CARD = `
   reflectedLight.indirectSpecular *= mix(0.5, 1.0, smoothstep(10.0, 30.0, vBasePos.y));
   float brassRope = smoothstep(5.5, 5.8, vBasePos.y) * (1.0 - smoothstep(7.9, 8.2, vBasePos.y));
   vec3 brassT = normalize(normalMatrix * vec3(vBasePos.z, 0.0, -vBasePos.x) + vec3(1e-5, 0.0, 0.0));
-  brassT = normalize(brassT - geometryNormal * dot(brassT, geometryNormal));
+  vec3 brassFlat = brassT - geometryNormal * dot(brassT, geometryNormal);
+  brassT = dot(brassFlat, brassFlat) > 0.0 ? normalize(brassFlat) : brassT;
   vec3 brassB = cross(geometryNormal, brassT);
   vec3 brassCard = normalize(mat3(viewMatrix) * uRigCardDir);
   vec3 brassHc = normalize(brassCard + geometryViewDir);
@@ -466,7 +467,7 @@ void main() {
   }
   vec3 behind = mix(stageRoom(outW) + stageRoomLights(outW, 0.03), uIceFloor, smoothstep(0.0, -0.3, outW.y));
   if (hit > 0.5) {
-    vec3 rb = turn * normalize(vec3(at.x, 0.0, at.z));
+    vec3 rb = turn * (dot(at.xz, at.xz) > 0.0 ? normalize(vec3(at.x, 0.0, at.z)) : vec3(0.0, 0.0, 1.0));
     float under = smoothstep(0.5, 10.0, uIceSpan.z - at.y);
     vec3 fall = (uIceKeyCol * max(dot(rb, uIceKeyDir), 0.0) + uRigCardCol * max(dot(rb, uRigCardDir), 0.0)) * under + iceDome(rb) * (0.25 + 0.75 * under);
     vec2 wuv = vec2(atan(at.x, at.z) / 6.2831853 * uIceTile.x, at.y / uIceTile.y);
