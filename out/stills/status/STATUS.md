@@ -12,5 +12,5 @@
 
 - `out/stills/status/status-154-1.jpg`: Summer at rest after the pass on the light and the glass alone (final tier): the white curtain on the ball is gone, the glow sits low behind the miniature. The stone, the air and the miniature in this picture are still the old ones
 - `out/stills/status/status-154-2.jpg`: Summer's storm, half a second after the landing: approved (left), before (middle, draft tier), after the pass on the air (right, review tier). Cream curved strokes with green leaf bits in place of straight amber hairlines; still less white and less fine than approved
-- `out/stills/status/status-154-3.jpg`: Summer's stone base: approved (top), before (middle), after its pass (bottom), draft tier. Lower, layered, ribbed shells, thick sea glass; still warm grey and without the sunlit patches of the approved
-- `out/stills/status/status-154-4.jpg`: Summer's miniature at rest: approved (left), after its pass (right), review tier. Slate roof in rows, lit window, ribbed lanterns on cords, open rail fence, dark pond. It stands smaller in the globe than approved
+- `out/stills/status/status-154-3.jpg`: Summer's stone base: approved (top), before (middle), after its pass (bottom), draft tier. Layered ridges, ribbed shells, glossy sea glass; still grey, tan at the left, without the sunlit cream of the approved
+- `out/stills/status/status-154-4.jpg`: Summer's miniature at rest: approved (left), after its pass (right), review tier. Slate roof in rows, ribbed lanterns on a cord, open rail fence, dark pond. It stands smaller in the globe than approved
