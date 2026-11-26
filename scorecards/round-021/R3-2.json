@@ -1,0 +1,28 @@
+{
+  "critic": "R3",
+  "score": 7,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "major",
+      "file": "set-D-02.jpg",
+      "where": "crop 4, the sand falling off the right edge",
+      "what": "the cascade breaks into vertical strips instead of separate grains",
+      "fix": "render the falling sand as separate grains of mixed size, some soft, none in strips"
+    },
+    {
+      "severity": "major",
+      "file": "set-D-02.jpg",
+      "where": "crop 3, the pale sand above the collar, and the same band in crop 2",
+      "what": "a black hole in the sand, with a second dark speck one crop to the left",
+      "fix": "fill both marks with the surrounding grain"
+    },
+    {
+      "severity": "minor",
+      "file": "set-F-02.jpg",
+      "where": "the cottage roof, the tree, and the ground in crops 3, 4, and 5",
+      "what": "the seeds and motes all float; none have come to rest on the roof, the branches, or the ground",
+      "fix": "settle a few seeds on the roof, the branches, and the grass"
+    }
+  ]
+}
