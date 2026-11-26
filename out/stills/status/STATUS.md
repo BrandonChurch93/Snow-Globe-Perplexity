@@ -1,14 +1,16 @@
-# Status 153
+# Status 154
 
-2026-11-26 11:03 UTC
+2026-11-26 11:31 UTC
 
-- Published at 11:02 from 38eff8da: the change's jobs 3 and 4, the sound of decision 146, the first picture's mend for nearly square windows and the particle mend are in the app. The security review found nothing that blocks; the live address answers 401 to a signed-out request, so it is checked through the preview's build line only.
-- Summer's fix pass after Round 20 (not passed: R1 5, R2 3 of 15, R3 6 and 4, R4 4) runs with five builders until about 11:36; a look in the middle went back to three of them with notes. Then Round 21 on the change and Round 22 on the globe.
-- The farm for the 4K frames is planned in decision 149: machines set up by one script (merged), two processes each, started at the freeze with one real chunk. An estimate, not a promise: about 49 machine hours for film B and the loop.
-- phase 6: 8.23 h used of its 12.00 h box
-- allowance (after the review): 8.23 h used of 12.00 h allowed
+- Summer's fix pass after Round 20 is in main: the light and glass, the air, the miniature, the sand and the stone base, five merges. By each builder's own eye its part is bettered and none is mended, and I see the same: the storm, the miniature and the room are nearer the approved picture; the stone still reads warm grey where the approved is sunlit cream, and the seeds at rest read as white stars, too near snow. So before the next round the builders get a second list from one picture with everything together, about 40 minutes.
+- The change of season, job 5, is in main: the dark speck of film frame 2115 is mended (one sample of 24 held no number at one pixel), and the table under the globe no longer changes in one frame when the app steps down a level of quality (open item 232). A sixth job mends winter's frost, which leaves the glass as dots for three frames in the app.
+- Sound: the job of 10:26 is committed (interface cues spaced 0.1 s, the sound comes on over 0.35 s, the old music through a shake thins as in the film); soundcheck 8 pass, 0 open. One last trial runs on how the new music enters after a landing. Nothing bought; nobody has heard anything.
+- phase 6: 8.70 h used of its 12.00 h box
+- allowance (after the review): 8.70 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-153-1.jpg`: Summer at rest in the middle of the fix pass: the approved picture (left) and the build with three of the five builders' work (right). Not judged; the stone and the air are not in it yet. Sent back: the haze is too even and milky, the lights of the room too large and bright, the warm rim weak
-- `out/stills/status/status-153-2.jpg`: The particle mend (open item 231) on a phone, fall to winter at the medium level, three moments of one shake: before (top row) fall's leaves, embers and bats stay frozen in the glass through winter once the particle worker is given up; after (bottom row) the snow whirls and settles
+- `out/stills/status/status-154-1.jpg`: Summer at rest after the pass on the light and the glass alone (final tier): the white curtain on the ball is gone, the glow sits low behind the miniature. The stone, the air and the miniature in this picture are still the old ones
+- `out/stills/status/status-154-2.jpg`: Summer's storm, half a second after the landing: approved (left), before (middle, draft tier), after the pass on the air (right, review tier). Cream curved strokes with green leaf bits in place of straight amber hairlines; still less white and less fine than approved
+- `out/stills/status/status-154-3.jpg`: Summer's stone base: approved (top), before (middle), after its pass (bottom), draft tier. Lower, layered, ribbed shells, thick sea glass; still warm grey and without the sunlit patches of the approved
+- `out/stills/status/status-154-4.jpg`: Summer's miniature at rest: approved (left), after its pass (right), review tier. Slate roof in rows, lit window, ribbed lanterns on cords, open rail fence, dark pond. It stands smaller in the globe than approved
