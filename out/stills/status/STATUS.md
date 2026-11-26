@@ -1,15 +1,20 @@
-# Status 152
+# Status 162
 
-2026-11-26 10:34 UTC
+2026-11-26 15:07 UTC
 
-- The first picture, the still a visitor sees before the app has loaded, is mended and in main (6184b5a0): windows nearly square get a still of their own, no copy ever shows a second glass or foot (8,195 of 20,104 screens before, 0 after, by the builder's count), and the first paint is held for the soft picture. Not published yet.
-- Sound: the app's shake now stands where the film's does against the music before it (within 0.05 dB in all four seasons, before 11 dB over), committed as a0d81a5c; the sound check prints 8 pass. A last sound job runs until about 11:26 UTC for four things the listening agent and the numbers hold against the app (headroom in pile-ups, the entry when sound is switched on, the music under a shake, spring's onset). Nothing was bought; nobody has heard any of it.
-- The masters' tool, job 3, is in main (89257016): it reads the limits of its container and survives a lost graphics context. Round 20's gate follow-up: G3, G5 and G10 green on the newer build with the mended tool, G8 green here after two recipe mends, G2's one failing test is the larger machine's newer Node (Node 20.20.2 is now the standard everywhere).
-- Summer's fix pass: four of the five builders have pushed a first step (light and glass, sand, miniature), seen by them at draft only; nothing of it is merged or judged. Their limit is about 11:35 UTC.
-- phase 6: 7.75 h used of its 12.00 h box
-- allowance (after the review): 7.75 h used of 12.00 h allowed
+- Summer's fourth list is whole and merged (five builders: glass, air, miniature, sand, base). Every part is better than at its last round, and the picture as a whole still does not read like the approved one, so I did not call a round. First picture: the approved above, ours below.
+- What I see in ours: a milky khaki ball covered in white asterisks where the approved is clear glass with a dark room behind it (second picture); a base that is slate grey at the right with ridges like comb lines where the approved is cream carved sand (third picture); a soft smudge where the white hot flare should sit; and at the landing cold white patches where the approved is a warm glowing mist (fourth picture).
+- A fifth list went out at 14:52 for one hour. What changed in how it is worked: the glass and the air builders work as a pair on the ball, the tone ruler no longer holds the ball's haze in place (holding it is what kept the ball khaki), and the checks run once on the merged head so the hour goes to the picture.
+- Summer's triangle count is under the limit again: 1,748,956 of 1,800,000 at high, the gate's G15 is green.
+- The 4K scan for dead pixels: ten of eighteen ranges of film B have ended, every one clean, among them the frames that held a dead pixel before the mend.
+- The masters' tool now draws each frame with the sample count the blur rule gives it (merged). A farm machine draws the first real 4K chunks through it now, across the fastest frames of a shake. The farm measured: two render processes a machine is the best, 84 frames an hour on holds and 47 to 64 in a shake at 24 samples.
+- The change's new cover: its builder mended the clipped grains at their source; its push is due about 15:25 and its report about 16:00.
+- phase 6: 12.29 h used of its 12.00 h box
+- allowance (after the review): 12.29 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-152-1.jpg`: The first picture on a square window, before (left) and after (right): winter at 600 x 600 and fall at 650 x 561. Before, a part of a second globe stood at each side
-- `out/stills/status/status-152-2.jpg`: The first picture on a low touch screen (spring, 650 x 550) and the lower part of an unfolded phone (winter, 673 x 841), before (left) and after (right)
+- `out/stills/status/status-162-1.jpg`: Summer at rest, the merged fourth list on 066f167a at the review tier: the approved picture above, ours below.
+- `out/stills/status/status-162-2.jpg`: The ball's upper left at one scale: the approved on the left, ours on the right. Clear glass and fine seed heads against a khaki haze and white asterisks.
+- `out/stills/status/status-162-3.jpg`: The base's right half at one scale: the approved on the left (cream sand, pale shells, frosted glass), ours on the right (slate grey, comb lines, dark glass).
+- `out/stills/status/status-162-4.jpg`: Half a second after the landing: the approved above (a warm glowing mist), ours below (cold white patches).

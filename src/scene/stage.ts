@@ -23,7 +23,7 @@ import { centreHeightMm, collarY, emitters as layoutEmitters, innerRadiusMm, out
 import { bakeGrid, flickerOf, gridBytes } from './lightgrid'
 import { CHANGE_BLOOM, Lighting } from './lighting'
 import { drawPasses, type PassContext } from './passes'
-import { makeSlab, updateSurface } from './surface'
+import { makeSlab, ReflectMix, updateSurface } from './surface'
 
 interface SeasonSet {
   kit: SeasonKit
@@ -75,6 +75,7 @@ export class GlobeStage implements Stage {
   private readonly prepared = new Map<string, Promise<void>>()
   private diag = ''
   private quality: StageQuality = { particleFraction: 1, shadowMapPx: config.live.quality.high.shadowMapPx, surfaceReflection: 'planar' }
+  private readonly reflect = new ReflectMix()
   private readonly clear = new THREE.Color()
   private readonly frame: StageFrame
   private readonly pass: PassContext
@@ -177,6 +178,7 @@ export class GlobeStage implements Stage {
   setQuality(level: StageQuality): void {
     this.lighting.setShadowMap(level.shadowMapPx)
     this.quality = { ...level }
+    this.reflect.level()
   }
 
   collider(season: string): SdfGrid {
@@ -268,7 +270,8 @@ export class GlobeStage implements Stage {
     f.liquid = liquid
     f.turbulence = Math.min(1, Math.max(0, (liquid[6] ?? 0) / TURBULENCE_FULL))
     f.quality = this.quality
-    f.planar = this.quality.surfaceReflection === 'planar'
+    f.reflect = this.reflect.frame(f.live, this.quality.surfaceReflection === 'planar', moment.time)
+    f.planar = f.reflect > 0
     f.focalPx = h / (2 * Math.tan((pose.fovDeg * Math.PI) / 360))
     f.blurMm = f.lensOn ? pose.apertureMm : 0
 

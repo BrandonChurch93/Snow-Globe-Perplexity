@@ -529,8 +529,12 @@ float crackGlint(float x) {
   return mix(stageHash(vec3(i + 64.0, 7.0, 0.31)), stageHash(vec3(i + 65.0, 7.0, 0.31)), t);
 }
 void main() {
+  // The crack goes and comes by its cover, evenly, and not as a stipple: the app draws one sample a frame, and a hair of a
+  // pixel's width that drops pixels stands as a row of dots. Its colour holds its cover already, so the picture times the
+  // share that stays is the mean of a film frame's samples that kept it and dropped it.
   float c = stageChange();
-  if (stageGone(c)) discard;
+  float seen = (uState.w > 1.5 ? 1.0 - c : uState.w > 0.5 ? c : 1.0) * uFlags.w;
+  if (seen <= 0.0) discard;
   vec3 d = normalize(vStageLocal);
   if (dot(d, ${vec(CAP.axis.toArray())}) < ${f(CAP.cos)}) discard;
   float best = 1e9;
@@ -581,9 +585,9 @@ void main() {
   vec3 col = light * ${vec(C.warm)} * (${f(C.bright)} * flash) * edge * caught + uSky * (0.3 * ${f(C.shade)} * core);
   float alpha = max(${f(C.shade)} * core, 0.85 * edge * caught);
   if (alpha < 0.004) discard;
-  gl_FragColor = vec4(col, alpha);
+  gl_FragColor = vec4(col, alpha) * seen;
   if (uDiag != 0) {
-    if (alpha < 0.3) discard;
+    if (alpha * seen < 0.3) discard;
     gl_FragColor = stageDiag(vec3(0.8), n, 0.0, c, 0.0);
   }
 }

@@ -307,6 +307,49 @@ export function resolveBehind(renderer: THREE.WebGLRenderer, target: THREE.WebGL
   return rt.texture
 }
 
+export type OddKind = 'plus infinite' | 'minus infinite' | 'no number'
+
+/** A value that is not finite: its pixel from the top left, its channel and what it is. */
+export interface OddPlace {
+  x: number
+  y: number
+  channel: 'red' | 'green' | 'blue' | 'alpha'
+  kind: OddKind
+}
+
+export interface Sanity {
+  invalid: number
+  pixels: number
+  first: OddPlace | null
+}
+
+/** One sample as drawn: its values that are not finite, its largest finite colour value, and the watched pixel in it and in the sample before. */
+export interface SampleFacts {
+  invalid: number
+  first: OddPlace | null
+  peak: number
+  peakAt: { x: number; y: number } | null
+  at: number[] | null
+  before: number[] | null
+}
+
+const CHANNELS = ['red', 'green', 'blue', 'alpha'] as const
+
+const halfKind = (v: number): OddKind => ((v & 0x3ff) !== 0 ? 'no number' : (v & 0x8000) !== 0 ? 'minus infinite' : 'plus infinite')
+const floatKind = (v: number): OddKind => (Number.isNaN(v) ? 'no number' : v < 0 ? 'minus infinite' : 'plus infinite')
+
+/** The number a half float's 16 bits stand for. */
+export function halfValue(v: number): number {
+  const sign = (v & 0x8000) !== 0 ? -1 : 1
+  const e = (v >> 10) & 31
+  const m = v & 0x3ff
+  if (e === 31) return m !== 0 ? NaN : sign * Infinity
+  return sign * (e === 0 ? m * 2 ** -24 : (1 + m / 1024) * 2 ** (e - 15))
+}
+
+/** `i` counts values from the bottom row, as a target is read. */
+const placeOf = (i: number, w: number, h: number, kind: OddKind): OddPlace => ({ x: (i >> 2) % w, y: h - 1 - Math.floor((i >> 2) / w), channel: CHANNELS[i & 3]!, kind })
+
 export class Accumulator {
   readonly sample: THREE.WebGLRenderTarget
   private readonly mean: [THREE.WebGLRenderTarget, THREE.WebGLRenderTarget]
@@ -316,6 +359,11 @@ export class Accumulator {
   readonly precision: 'float32' | 'half' | 'byte'
   private readonly fill: LensFill | null
   private filled = false
+  /** Set to have every sample read as it is drawn: `at` is the pixel whose values are kept, from the top left; without one it is the first place that is not finite. */
+  watch: { at: { x: number; y: number } | null; keep: boolean } | null = null
+  samples: SampleFacts[] = []
+  private spare: Uint16Array | null = null
+  private heldBefore: Uint16Array | null = null
 
   constructor(private readonly gfx: Gfx, width: number, height: number, msaa = 0) {
     const { caps } = gfx
@@ -358,10 +406,15 @@ export class Accumulator {
   begin(): void {
     this.count = 0
     this.filled = false
+    this.samples = []
+    this.spare ??= this.heldBefore
+    this.heldBefore = null
+    if (this.watch && !this.watch.keep) this.watch.at = null
     if (this.fill) this.fill.drawn = false
   }
 
   add(): void {
+    if (this.watch) this.samples.push(this.look())
     const from = this.mean[this.flip]
     const to = this.mean[1 - this.flip]
     const u = this.pass.material.uniforms
@@ -386,12 +439,50 @@ export class Accumulator {
     return to.texture
   }
 
-  invalid(): { invalid: number; pixels: number } {
+  /** Every sample of the picture in hand as it was drawn, when `watch` is on: what `sanity` cannot tell from the mean. */
+  private look(): SampleFacts {
+    const t = this.sample
+    const w = t.width
+    const h = t.height
+    const facts: SampleFacts = { invalid: 0, first: null, peak: 0, peakAt: null, at: null, before: null }
+    if (this.precision === 'byte' || t.samples > 0) return facts
+    const len = w * h * 4
+    const buf = this.spare && this.spare.length === len ? this.spare : new Uint16Array(len)
+    this.gfx.renderer.readRenderTargetPixels(t, 0, 0, w, h, buf)
+    let peak = 0
+    let peakI = -1
+    for (let i = 0; i < len; i++) {
+      const v = buf[i]!
+      if ((v & 0x7c00) === 0x7c00) {
+        facts.invalid++
+        if (!facts.first) facts.first = placeOf(i, w, h, halfKind(v))
+      } else if ((i & 3) !== 3 && (v & 0x7fff) > peak) {
+        peak = v & 0x7fff
+        peakI = i
+      }
+    }
+    facts.peak = halfValue(peak)
+    if (peakI >= 0) facts.peakAt = { x: (peakI >> 2) % w, y: h - 1 - Math.floor((peakI >> 2) / w) }
+    const mark = this.watch?.at ?? null
+    const texel = (b: Uint16Array, x: number, y: number) => [0, 1, 2, 3].map((c) => halfValue(b[((h - 1 - y) * w + x) * 4 + c]!))
+    if (mark && mark.x >= 0 && mark.x < w && mark.y >= 0 && mark.y < h) facts.at = texel(buf, mark.x, mark.y)
+    else if (facts.first && this.watch && !this.watch.at) {
+      this.watch.at = { x: facts.first.x, y: facts.first.y }
+      facts.at = texel(buf, facts.first.x, facts.first.y)
+      if (this.heldBefore) facts.before = texel(this.heldBefore, facts.first.x, facts.first.y)
+    }
+    this.spare = this.heldBefore
+    this.heldBefore = buf
+    return facts
+  }
+
+  invalid(): Sanity {
     const t = this.mean[this.flip]
     const w = t.width
     const h = t.height
     let invalid = 0
-    if (this.precision === 'byte') return { invalid, pixels: w * h }
+    let first: OddPlace | null = null
+    if (this.precision === 'byte') return { invalid, pixels: w * h, first }
     const rows = 64
     const half = this.precision === 'half'
     const buf = half ? new Uint16Array(w * rows * 4) : new Float32Array(w * rows * 4)
@@ -399,13 +490,16 @@ export class Accumulator {
       const n = Math.min(rows, h - y)
       this.gfx.renderer.readRenderTargetPixels(t, 0, y, w, n, buf)
       const len = w * n * 4
-      if (half) {
-        for (let i = 0; i < len; i++) if ((buf[i]! & 0x7c00) === 0x7c00) invalid++
-      } else {
-        for (let i = 0; i < len; i++) if (!Number.isFinite(buf[i]!)) invalid++
+      for (let i = 0; i < len; i++) {
+        const v = buf[i]!
+        if (half ? (v & 0x7c00) !== 0x7c00 : Number.isFinite(v)) continue
+        invalid++
+        // The rows are read from the bottom up, so the first place by rows from the top is the last one met in the highest row.
+        const place = placeOf(y * w * 4 + i, w, h, half ? halfKind(v) : floatKind(v))
+        if (!first || place.y < first.y || (place.y === first.y && place.x < first.x)) first = place
       }
     }
-    return { invalid, pixels: w * h }
+    return { invalid, pixels: w * h, first }
   }
 
   dispose(): void {

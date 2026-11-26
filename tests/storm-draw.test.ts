@@ -64,4 +64,17 @@ describe('how the storm is drawn', () => {
       expect(text, name).not.toMatch(/Math\.random|Date\.now|performance\.now/)
     }
   })
+
+  it('the seed of summer alone is turned to the whirl on its own path: in the storm its stroke is a curved swish of its own length and width, and a few are bits of green leaf', () => {
+    expect(CARD_VERT).toContain('mix(mvC, curC * (length(mvC) * (dot(mvC, curC) < 0.0 ? -1.0 : 1.0)), mix(')
+    expect(CARD.line.stormAlign[0]).toBeGreaterThan(0)
+    expect(CARD.line.stormAlign[1]).toBeLessThanOrEqual(1)
+    expect(CARD.line.stormLong[0]).toBeLessThan(CARD.line.stormLong[1])
+    expect(CARD.line.stormWidePx[0]).toBeLessThan(CARD.line.stormWidePx[1])
+    expect(CARD.line.stormBow[1]).toBeLessThanOrEqual(CARD.line.stormBowMost)
+    expect(CARD.line.stormBowMost).toBeLessThanOrEqual(STREAK_ARC.most)
+    expect(CARD.line.stormLeaves).toBeGreaterThan(0)
+    expect(CARD.line.stormLeaves).toBeLessThan(0.05)
+    expect(CARD.line.stormDwellPx).toBeGreaterThan(0)
+  })
 })

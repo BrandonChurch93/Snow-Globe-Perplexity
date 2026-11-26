@@ -1,20 +1,16 @@
 import type { SeasonKit } from '../kit'
 
-// The lights behind the globe: amber and gold, the dim ones deep orange, the brightest a pale warm white. The list runs from
-// the dimmest level to the brightest (`DISCS.colourByLevel` in `src/scene/backdrop.ts`).
-// Each colour carries its light's strength too. The two lights the shared layout makes brightest (the last two levels) stand low
-// on the right, where summer's picture is dark, so their colours are held down; the pale middle levels carry the cream cluster.
+// The lights behind the globe: gold and amber, the brightest a pale warm white. The list runs from the dimmest level to the
+// brightest (`DISCS.colourByLevel` in `src/scene/backdrop.ts`). Each colour carries its light's strength too: the shared layout
+// places its lights where winter's picture has them and makes a few of them many times brighter than the rest, so here the low
+// levels are lifted and the high ones held down until the lights of one part of the room are near one another in brightness.
+// Where they are bright is then the field's alone (`CLUSTER`): a dense cream cluster high on the right, a column of clear amber
+// discs on the left, and next to nothing round the globe, where a half-lit soft disc reads as a brown stain.
 const tone = (lift: number, r: number, g: number, b: number): [number, number, number] => [r * lift, g * lift, b * lift]
-const ember = tone(1, 1, 0.36, 0.1)
-const amber = tone(1.2, 1, 0.46, 0.16)
-const gold = tone(1.6, 1, 0.55, 0.24)
-const peach = tone(1.3, 1, 0.6, 0.3)
-const cream = tone(1.1, 1, 0.72, 0.46)
-// The dimmest lights are held far down: in the approved picture the left side is a few clear amber discs on blue-black, and a
-// crowd of half-lit ones there reads as brown haze.
-const dim = (c: [number, number, number]): [number, number, number] => [c[0] * 0.4, c[1] * 0.4, c[2] * 0.4]
-const low = tone(0.15, 1, 0.66, 0.38)
-const lowest = tone(0.25, 1, 0.72, 0.46)
+const gold = (lift: number) => tone(lift, 1, 0.55, 0.22)
+const amber = (lift: number) => tone(lift, 1, 0.44, 0.13)
+const peach = (lift: number) => tone(lift, 1, 0.58, 0.26)
+const cream = (lift: number) => tone(lift, 1, 0.7, 0.42)
 
 // Where a light stands in the approved picture (pixels of its 2816 x 1584 frame), from the view the shared layout was placed in
 // (`PLACED.view` in `src/scene/backdrop.ts`).
@@ -27,8 +23,21 @@ const smooth = (a: number, b: number, x: number): number => {
   return t * t * (3 - 2 * t)
 }
 
-/** The cluster: the lights high on the right burn several times brighter than they are placed. One smooth field over the room. */
-export const CLUSTER = { lift: 8, fromPx: [1500, 2000] as const, topPx: [210, 430] as const, left: 0.7, leftPx: [900, 1900] as const }
+/**
+ * Where the lights burn, as one smooth field over the approved frame: `floor` everywhere, `near` of that beside the globe
+ * (`nearPx`), `column` more in the column on the left (`columnPx`), `lift` more in the cluster high on the right (`fromPx`,
+ * `topPx`).
+ */
+export const CLUSTER = {
+  floor: 0.07,
+  near: 0.2,
+  nearPx: [700, 900, 1900, 2100] as const,
+  column: 0.5,
+  columnPx: [120, 260, 640, 800] as const,
+  lift: 5.5,
+  fromPx: [1930, 2230] as const,
+  topPx: [220, 540] as const,
+}
 
 function gain(at: readonly [number, number, number]): number {
   const dx = at[0] - EYE[0]
@@ -37,14 +46,16 @@ function gain(at: readonly [number, number, number]): number {
   const depth = Math.max(1, -dy * Math.sin(TILT) - dz * Math.cos(TILT))
   const u = VIEW.widthPx / 2 + (FOCAL * dx) / depth
   const v = VIEW.heightPx / 2 - (FOCAL * (dy * Math.cos(TILT) - dz * Math.sin(TILT))) / depth
-  const side = CLUSTER.left + (1 - CLUSTER.left) * smooth(CLUSTER.leftPx[0], CLUSTER.leftPx[1], u)
-  const high = 1 - smooth(CLUSTER.topPx[0], CLUSTER.topPx[1], v)
-  return side * (1 + CLUSTER.lift * high * smooth(CLUSTER.fromPx[0], CLUSTER.fromPx[1], u))
+  const C = CLUSTER
+  const near = smooth(C.nearPx[0], C.nearPx[1], u) * (1 - smooth(C.nearPx[2], C.nearPx[3], u))
+  const column = smooth(C.columnPx[0], C.columnPx[1], u) * (1 - smooth(C.columnPx[2], C.columnPx[3], u))
+  const high = 1 - smooth(C.topPx[0], C.topPx[1], v)
+  return C.floor * (1 - (1 - C.near) * near) + C.column * column + C.lift * high * smooth(C.fromPx[0], C.fromPx[1], u)
 }
 
 export const backdrop: SeasonKit['backdrop'] = {
-  colors: [dim(gold), dim(ember), dim(amber), dim(peach), gold, amber, cream, gold, low, lowest],
-  room: [0.0028, 0.0038, 0.0058],
-  floor: [0.0032, 0.0048, 0.0076],
+  colors: [gold(3), amber(2), gold(1.8), peach(1.6), peach(1.3), gold(1.1), cream(0.9), amber(3.5), cream(0.7), cream(0.15)],
+  room: [0.002, 0.0033, 0.0036],
+  floor: [0.0024, 0.0042, 0.0046],
   gain,
 }

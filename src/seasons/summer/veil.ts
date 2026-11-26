@@ -2,17 +2,18 @@ import { config } from '../../config'
 import { VEIL_LOOK, veilUniforms } from '../../core/chunks/veil'
 import type { KitMoment, SeasonKit } from '../kit'
 
-// Part `veil-summer` and the colours of the season's particle kinds. The veil is a golden haze: thick and honey coloured in the
+// Part `veil-summer` and the colours of the season's particle kinds. The veil is a golden haze: thick and cream coloured in the
 // storm, and at rest only the faint warmth of dusty air in low sun. The fireflies are yellow-green lights, far brighter than
-// anything they pass; the seeds are dandelion down lit from behind by the low sun, warm and never white; the motes are fine gold
-// dust, dim enough that tens of thousands of them read as air and never as snow.
+// anything they pass; the seeds are dandelion down lit from behind by the low sun, white as the approved down is and warmed
+// only by the light they stand in; the motes are single warm glints of dust, a few hundred in sight, and never a field of
+// dots that sums to a veil.
 
 // The shared veil keeps a fifth of its storm haze for as long as most of the pool is afloat, and summer's motes never land:
 // `rest` takes nearly all of that share back (0.04 x 0.2 x density is the share). The shared haze fogs what stands in the liquid
 // as well as what lies behind it, and it cost the miniature a quarter of its fine detail at rest; the warm air behind the
 // miniature is the wall layer's haze in `glass.ts`, which is drawn behind the cottage and the tree.
-export const veil: SeasonKit['veil'] = { tint: [1.24, 0.98, 0.76], density: 0.09, rest: -0.0007 }
-export const particles: SeasonKit['particles'] = { firefly: { color: [0.93, 1, 0.27], glow: 8 }, seed: { color: [1.5, 1.2, 0.72], glow: 0 }, mote: { color: [1.3, 1.08, 0.5], glow: 0.5 } }
+export const veil: SeasonKit['veil'] = { tint: [1.26, 1.06, 0.86], density: 0.09, rest: -0.0007 }
+export const particles: SeasonKit['particles'] = { firefly: { color: [0.9, 1, 0.2], glow: 11 }, seed: { color: [1.32, 1.24, 1.1], glow: 0 }, mote: { color: [1, 0.74, 0.34], glow: 0.3 } }
 
 // The storm outlasts the shake. The shared veil thins with the liquid's turbulence, which is spent by the time the globe is set
 // down, so the air was clear on the landing frame. Summer holds its own storm from the swap through the set down and the
@@ -20,8 +21,9 @@ export const particles: SeasonKit['particles'] = { firefly: { color: [0.93, 1, 0
 // the veil is summer's own: `share` of the storm haze, `uneven` of it in the liquid's wisps so the dark shows between them, and
 // `calms` of the shared drift bank taken off. That bank is winter's snow going to the wall; in summer it stood as a cream slab
 // over the ground and a white crescent inside the left limb, where the approved image has seeds over a ghosted miniature.
+// A share of that bank is kept: it is the bright haze low down that whitens the ground and the foot of the tree.
 // All of it is weighted by summer's share of the change, so the other seasons see nothing of it.
-export const STORM = { share: 1.3, holdSeconds: 0.3, fallSeconds: 3, uneven: 0.8, calms: 0.97 }
+export const STORM = { share: 0.56, holdSeconds: 0.3, fallSeconds: 3, uneven: 0.8, calms: 0.93 }
 
 const ramp = (v: number, from: number, to: number): number => {
   const t = Math.min(1, Math.max(0, (v - from) / (to - from)))

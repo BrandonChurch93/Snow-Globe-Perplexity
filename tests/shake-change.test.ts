@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { config, shots, tiers } from '../src/config'
 import { FRAME } from '../src/app/framing'
@@ -6,6 +7,7 @@ import { GLASS_COME, GLASS_LEAVE, GUST_CLOSES, GUST_LAST_DOWN, GUST_LAST_DOWN_AT
 import { BASE_PASS, CHANGE_COVER, DRESSING_CHANGE, changeBloom, changeRamp, changeSpan, partChange, SEASONAL_PARTS } from '../src/shake/change'
 import { shakeMotion } from '../src/shake/table'
 import { CHANGE_BLOOM } from '../src/scene/lighting'
+import { makeSlab, REFLECT_MIX, ReflectMix, reflectStep } from '../src/scene/surface'
 
 const s = config.shake
 const BEAT_S = 60 / config.film.defaultBpm
@@ -355,5 +357,188 @@ describe('the dressing on the glass under a change', () => {
     // One sample, the app's own path: the plain hash.
     expect(passStep(0.5, 1)).toBe(0)
     for (let j = 0; j < 997; j++) expect(passLevel(j / 997, 0, 1)).toBe(j / 997)
+  })
+
+  /** One shader of a season's file by the name of its constant: the text between its two backticks. */
+  const shaderOf = (file: string, name: string): string => {
+    const text = readFileSync(file, 'utf8')
+    const open = `\nconst ${name} = \`\n`
+    const at = text.indexOf(open)
+    expect(at, `${name} in ${file}`).toBeGreaterThanOrEqual(0)
+    return text.slice(at + open.length, text.indexOf('`\n', at + open.length))
+  }
+  /** The share of a dressing that a pixel holds, as its shader works it out. */
+  const SHARE = 'float seen = (uState.w > 1.5 ? 1.0 - c : uState.w > 0.5 ? c : 1.0) * uFlags.w;'
+  const share = (mode: number, c: number, presence: number): number => (mode > 1.5 ? 1 - c : mode > 0.5 ? c : 1) * presence
+  /** Whether one sample holds it at a pixel by the stipple's rule (`stageGone`), from the pixel's two hashes. */
+  const kept = (mode: number, c: number, presence: number, h: number, h2: number): boolean => !(mode > 0.5 && (mode > 1.5 ? h < c : h >= c)) && !(presence < 1 && h2 >= presence)
+  /** The share is the part of all hashes that the stipple keeps, and a picture thinned by it is the mean of the samples that keep it and that drop it. */
+  const thinsAsTheStippleDoesInTheMean = (): void => {
+    expect(STAGE_FRAG_PARS).toContain('if (uState.w > 1.5 ? h < c : h >= c) return true;')
+    expect(STAGE_FRAG_PARS).toContain('if (uFlags.w < 1.0 && stageHash(vec3(gl_FragCoord.xy + 29.0, uSeed + 0.61)) >= uFlags.w) return true;')
+    const n = 240
+    for (const mode of [MODE.always, MODE.incoming, MODE.outgoing])
+      for (const c of [0, 0.125, 0.37, 0.5, 0.815, 1])
+        for (const presence of [1, 0.6, 0.25]) {
+          let held = 0
+          for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) if (kept(mode, c, presence, (i + 0.5) / n, (j + 0.5) / n)) held++
+          const s = share(mode, c, presence)
+          expect(Math.abs(held / (n * n) - s), `the part of the hashes that keep it, mode ${mode}, change ${c}, presence ${presence}`).toBeLessThanOrEqual(1.5 / n)
+          // A colour P that holds its cover A already, over a ground B.
+          for (const [P, A, B] of [[0.31, 0.72, 0.9], [1.4, 1, 0.02], [0.05, 0.1, 0.5]] as const) expect(s * (P + (1 - A) * B) + (1 - s) * B).toBeCloseTo(s * P + (1 - s * A) * B, 12)
+        }
+    expect([share(MODE.outgoing, 0, 1), share(MODE.outgoing, 1, 1), share(MODE.incoming, 0, 1), share(MODE.incoming, 1, 1), share(MODE.always, 0.5, 1)]).toEqual([1, 0, 0, 1, 1])
+  }
+
+  it("thins winter's frost by the share that stays and drops none of it pixel by pixel, so one sample of the app holds no dots", () => {
+    const file = 'src/seasons/winter/frost.ts'
+    const frost = shaderOf(file, 'GLASS')
+    expect(frost).toContain(SHARE)
+    expect(frost).toContain('if (seen <= 0.0) discard;')
+    expect(frost).not.toContain('stageGone(')
+    // Both ways it sets its colour hold the cover in the colour, and the share thins colour and cover once, after both.
+    const sets = [...frost.matchAll(/gl_FragColor = vec4\(col \* alpha \+ spark/g)].map((m) => m.index)
+    expect(sets.length).toBe(2)
+    expect(frost.split('gl_FragColor *= seen;').length).toBe(2)
+    expect(frost.indexOf('gl_FragColor *= seen;')).toBeGreaterThan(Math.max(...sets))
+    // The views that say which part a pixel is read the cover it has left.
+    expect(frost).toContain('if (alpha * seen < 0.3) discard;')
+    // It is laid over what is behind it as one plus what its cover leaves.
+    const text = readFileSync(file, 'utf8')
+    expect(/fragment: GLASS,\s+params: \{ \.\.\.veil \},/.test(text)).toBe(true)
+    expect(/const veil = \{[^}]*blendSrc: THREE\.OneFactor,\s+blendDst: THREE\.OneMinusSrcAlphaFactor,/.test(text)).toBe(true)
+    thinsAsTheStippleDoesInTheMean()
+  })
+
+  it("thins fall's crack by the share that stays and drops none of it pixel by pixel, so a hair of one pixel's width is not a row of dots in the app", () => {
+    const file = 'src/seasons/fall/glass.ts'
+    const crack = shaderOf(file, 'CRACK')
+    expect(crack).toContain(SHARE)
+    expect(crack).toContain('if (seen <= 0.0) discard;')
+    expect(crack).not.toContain('stageGone(')
+    // Its colour holds its cover: both terms of it are times how much of the pixel the hair or its edge fills.
+    expect(crack).toContain('* edge * caught + uSky * (0.3 * ')
+    expect(crack.split('gl_FragColor = vec4(col, alpha) * seen;').length).toBe(2)
+    expect(crack).not.toContain('gl_FragColor = vec4(col, alpha);')
+    expect(crack).toContain('if (alpha * seen < 0.3) discard;')
+    const text = readFileSync(file, 'utf8')
+    expect(/fragment: CRACK,\s+params: \{ \.\.\.blend, /.test(text)).toBe(true)
+    expect(/const blend = \{[^}]*blendSrc: THREE\.OneFactor,\s+blendDst: THREE\.OneMinusSrcAlphaFactor,/.test(text)).toBe(true)
+    // The fog of the same season crosses the same way already.
+    expect(shaderOf(file, 'FOG')).toContain(SHARE)
+    thinsAsTheStippleDoesInTheMean()
+  })
+})
+
+describe('the table between two levels of quality', () => {
+  const EIGHTH = 1 / REFLECT_MIX.fewestFrames
+
+  it('crosses over in a few frames where the frames are slow and in half a second where they are quick, and never by more than an eighth a frame', () => {
+    const cases: [number, number][] = [
+      [0.25, REFLECT_MIX.fewestFrames],
+      [1 / 12, REFLECT_MIX.fewestFrames],
+      [1 / 30, 15],
+      [1 / 60, 30],
+      [1 / 240, REFLECT_MIX.mostFrames],
+      [0, REFLECT_MIX.mostFrames],
+      [-3, REFLECT_MIX.mostFrames],
+      [Number.NaN, REFLECT_MIX.mostFrames],
+      [900, REFLECT_MIX.fewestFrames],
+    ]
+    expect(REFLECT_MIX.fewestFrames).toBeLessThanOrEqual(8)
+    expect(REFLECT_MIX.seconds).toBeGreaterThanOrEqual(0.4)
+    for (const [seconds, frames] of cases) {
+      for (const to of [0, 1]) {
+        const seen: number[] = [1 - to]
+        while (seen[seen.length - 1] !== to && seen.length < 500) seen.push(reflectStep(seen[seen.length - 1]!, to, seconds))
+        expect(seen.length - 1, `frames from ${1 - to} to ${to} at ${seconds} s a frame`).toBe(frames)
+        for (let i = 1; i < seen.length; i++) {
+          const step = Math.abs(seen[i]! - seen[i - 1]!)
+          expect(step, `step ${i} at ${seconds} s a frame`).toBeGreaterThan(0)
+          expect(step, `step ${i} at ${seconds} s a frame`).toBeLessThanOrEqual(EIGHTH + 1e-9)
+          expect(seen[i]! >= 0 && seen[i]! <= 1).toBe(true)
+        }
+        expect(reflectStep(to, to, seconds), 'at rest').toBe(to)
+      }
+    }
+  })
+
+  it('crosses over at a step of the page, either way, and from where it stands when the page turns back', () => {
+    const mix = new ReflectMix()
+    let clock = 0
+    const frames = (mirror: boolean, count: number, seconds = 0.25): number[] => Array.from({ length: count }, () => mix.frame(true, mirror, (clock += seconds)))
+    mix.level()
+    expect(frames(true, 5), 'the first frames, at high').toEqual([1, 1, 1, 1, 1])
+    mix.level()
+    expect(frames(true, 5), 'at medium, which draws the mirror too').toEqual([1, 1, 1, 1, 1])
+    mix.level()
+    expect(frames(false, 10), 'down to low').toEqual([7, 6, 5, 4, 3, 2, 1, 0, 0, 0].map((k) => k * EIGHTH))
+    mix.level()
+    expect(frames(true, 3), 'back up').toEqual([1, 2, 3].map((k) => k * EIGHTH))
+    mix.level()
+    expect(frames(false, 2), 'and down again from where it stands').toEqual([2, 1].map((k) => k * EIGHTH))
+    mix.level()
+    const quick = frames(true, 40, 1 / 60)
+    for (let i = 1; i < quick.length; i++) expect(quick[i]! - quick[i - 1]!, `quick frame ${i}`).toBeLessThanOrEqual(1 / 30 + 1e-9)
+    expect(quick[quick.length - 1]).toBe(1)
+    // The mirror pass runs for as long as any of the mirror is in the picture, and not a frame longer.
+    mix.level()
+    const down = frames(false, 12)
+    expect(down.filter((share) => share > 0).length, 'frames that still draw the mirror after the step down').toBe(REFLECT_MIX.fewestFrames - 1)
+  })
+
+  it('draws a picture of the capture whole at once, whatever was drawn before it', () => {
+    const mix = new ReflectMix()
+    const live = (mirror: boolean, time: number): number => {
+      mix.level()
+      const share = mix.frame(true, mirror, time)
+      mix.level()
+      return share
+    }
+    const order = [true, false, false, true, true, false, true, false]
+    order.forEach((mirror, i) => expect(live(mirror, i / 60), `picture ${i}`).toBe(mirror ? 1 : 0))
+    // Pictures of samples and views between them, and a first live picture after those.
+    expect(mix.frame(false, true, 5)).toBe(1)
+    expect(live(false, 5.1)).toBe(0)
+    expect(mix.frame(false, true, 5.2)).toBe(1)
+    expect(mix.frame(false, false, 5.2)).toBe(0)
+    expect(live(true, 5.3)).toBe(1)
+    expect(live(false, 5.3 + 1 / 60)).toBe(0)
+  })
+
+  it('draws each of the two alone where the other has no share, and the two by their shares between', () => {
+    const frag = (makeSlab().material as THREE.ShaderMaterial).fragmentShader
+    const mirror = frag.indexOf('if (uReflect.x > 0.0) {')
+    const baked = frag.indexOf('if (uReflect.y > 0.0) {')
+    expect(mirror).toBeGreaterThan(0)
+    expect(baked).toBeGreaterThan(mirror)
+    expect(frag.slice(mirror, baked)).toContain('slabMirror(')
+    expect(frag.slice(baked)).not.toContain('slabMirror(')
+    for (const line of ['seen = far * uReflect.y + seen * uReflect.x;', 'image = near * uReflect.y + image * uReflect.x;', 'held = clamp(body + glass, 0.0, 1.0) * uReflect.y + held * uReflect.x;']) expect(frag, line).toContain(line)
+    expect(frag).not.toMatch(/uReflect\.[xy] > 0\.5/)
+  })
+})
+
+describe('a fragment of the inside whose varyings are no number', () => {
+  it('is dropped: both tests of the outline are asked the way that is true for no number', () => {
+    const from = STAGE_FRAG_PARS.indexOf('bool stageOutside() {')
+    expect(from).toBeGreaterThan(0)
+    const body = STAGE_FRAG_PARS.slice(from, STAGE_FRAG_PARS.indexOf('}', from) + 1)
+    expect(body).toContain('if (!(vStageSeen > 0.0)) return true;')
+    expect(body).toContain('return !(dot(c, c) <= uLens.x * uLens.x);')
+    expect(body.split('\n').length, 'the lines of the function').toBe(5)
+    // The same two tests in numbers. For a number they answer what the plain forms answer; for no number they answer true.
+    const outside = (seen: number, d: number, r: number): boolean => {
+      if (!(seen > 0)) return true
+      return !(d <= r * r)
+    }
+    const plain = (seen: number, d: number, r: number): boolean => {
+      if (seen <= 0) return true
+      return d > r * r
+    }
+    for (const seen of [-1, 0, 1e-6, 0.25, 1]) for (const d of [0, 1, 2499.999, 2500, 2500.001, 1e9, Infinity]) expect(outside(seen, d, 50), `seen ${seen}, ${d}`).toBe(plain(seen, d, 50))
+    expect(outside(Number.NaN, 0, 50), 'seen is no number').toBe(true)
+    expect(outside(1, Number.NaN, 50), 'the place is no number').toBe(true)
+    expect(plain(Number.NaN, Number.NaN, 50), 'the plain forms kept it').toBe(false)
   })
 })

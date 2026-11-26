@@ -101,7 +101,7 @@
   "tiers": {
     "draft": { "samplesPerFrame": 2 },
     "review": { "samplesPerFrame": 8 },
-    "final": { "samplesPerFrame": 24 }
+    "final": { "samplesPerFrame": 24, "motion": { "spacingPx": 0.75, "maxSamplesPerFrame": 96 } }
   },
   "live": {
     "defaultQuality": "auto",
@@ -189,7 +189,7 @@
     "summer": [
       { "kind": "firefly", "count": 1200 },
       { "kind": "seed", "count": 9000 },
-      { "kind": "mote", "count": 40000 }
+      { "kind": "mote", "count": 6000 }
     ],
     "fall": [
       { "kind": "leaf", "count": 10000 },

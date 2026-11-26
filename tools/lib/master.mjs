@@ -16,7 +16,6 @@ export const STILL_MAX_MB = 20
 export const MEAN_SLACK = 1
 export const UHD_PROC_GB = 4.1
 export const UHD_SPARE_GB = 2
-export const CPUS_A_PROC = 4
 export const SIZE_AIM = 0.985
 export const MUX_KBPS = 12
 
@@ -218,10 +217,20 @@ export function takeFiles(folder, dir, { keep = false } = {}) {
   let whole = 0
   let fromParts = 0
   let stills = 0
-  for (const c of readChunks([dir])) {
+  const filed = readChunks([dir])
+  const isThere = new Map(filed.map((c) => [c.file, fs.existsSync(c.file) && fs.statSync(c.file).size === c.record.bytes && shaOfFile(c.file) === c.record.sha256]))
+  const range = (c) => [c.record.test ? 't' : 'r', c.record.what, c.record.first, c.record.last, c.record.sha256].join('/')
+  const laid = new Set()
+  for (const c of filed) {
+    if (!isThere.get(c.file)) continue
+    placed.set(c.record.sha256, c.file)
+    laid.add(range(c))
+  }
+  for (const c of filed) {
     const r = c.record
-    const there = fs.existsSync(c.file) && fs.statSync(c.file).size === r.bytes && shaOfFile(c.file) === r.sha256
+    const there = isThere.get(c.file)
     if (!there) {
+      if (laid.has(range(c))) continue
       if (placed.has(r.sha256)) fs.copyFileSync(placed.get(r.sha256), c.file)
       else {
         const got = unsplitFile({ bytes: r.bytes, sha256: r.sha256, parts: r.parts }, have, c.file, { move: !keep })
@@ -234,6 +243,7 @@ export function takeFiles(folder, dir, { keep = false } = {}) {
       }
     }
     placed.set(r.sha256, c.file)
+    laid.add(range(c))
     if (r.still) {
       const to = path.join(path.dirname(c.file), r.still.file)
       if (!(fs.existsSync(to) && shaOfFile(to) === r.still.sha256)) {
@@ -401,11 +411,75 @@ export function procsProblem(procs, format, limits) {
   return `--procs ${procs} is refused: this process may use ${gib(limits.memoryBytes)} GiB (${limits.memoryFrom === 'cgroup' ? "its cgroup's memory.max" : "the machine's memory"}) and one ${format} render holds about ${UHD_PROC_GB} GB, with ${UHD_SPARE_GB} GB kept for the encoder and the system. More than the memory holds gets browsers killed, and a killed graphics process draws nothing. The most here is --procs ${most}.`
 }
 
-/** A plain line when more processes are asked for than the CPUs can gain from, or null. One software render already uses every core: on 8 CPUs a second process added about 10 percent and a third nothing. */
+/** A plain line when more than one render process is asked for, or null. No count is promised: what a second and a third bring differs from machine to machine. */
 export function procsGainLine(procs, limits) {
-  const gain = Math.max(1, Math.floor(limits.cpus / CPUS_A_PROC))
-  if (procs <= gain) return null
-  return `--procs ${procs} on ${limits.cpus} ${limits.cpus === 1 ? 'CPU' : 'CPUs'}: one software render already uses every core. Measured on 8 CPUs, a second process added about 10 percent and a third nothing. It runs, but expect no gain over --procs ${gain}.`
+  if (procs < 2) return null
+  return `--procs ${procs} on ${limits.cpus} ${limits.cpus === 1 ? 'CPU' : 'CPUs'}: the best count depends on the machine. Measure it with --procs 1, 2 and 3 on three chunks before a long run, and keep the count that gives the most frames an hour.`
+}
+
+export const NOT_A_NUMBER = 'NOT A NUMBER'
+export const NAN_MEASURE = "window.showcase.dev.sanity(): the values in the picture's mean that are no number, counted before the lens and the grade"
+
+/** The first place of a value that is no number as the page names it, { x, y, channel, kind }, or null when it names none. */
+export function firstPlace(v) {
+  if (!v || !Number.isInteger(v.x) || !Number.isInteger(v.y) || typeof v.channel !== 'string' || typeof v.kind !== 'string') return null
+  return { x: v.x, y: v.y, channel: v.channel, kind: v.kind }
+}
+const firstText = (v) => (firstPlace(v) ? `, the first at ${v.x}, ${v.y} (${v.channel}, ${v.kind})` : '')
+
+/**
+ * What a chunk's record holds about values that are no number: one total, the frames where the count is not 0, and the frames whose count was never read.
+ * A frame entry keeps `first`, the place and kind of the first such value by rows from the top, when the page named one.
+ * @param {{ index: number, notNumber?: number, sanityMs?: number, notNumberFirst?: any }[]} frames
+ * @param {string | null} [precision]
+ */
+export function notNumberRecord(frames, precision = null) {
+  const read = frames.filter((f) => typeof f.notNumber === 'number')
+  const ms = read.filter((f) => typeof f.sanityMs === 'number').map((f) => f.sanityMs)
+  return {
+    total: read.reduce((n, f) => n + f.notNumber, 0),
+    frames: read.filter((f) => f.notNumber > 0).map((f) => ({ frame: f.index, count: f.notNumber, ...(firstPlace(f.notNumberFirst) ? { first: firstPlace(f.notNumberFirst) } : {}) })),
+    unread: frames.filter((f) => typeof f.notNumber !== 'number').map((f) => f.index),
+    measure: NAN_MEASURE,
+    ...(precision ? { precision, blind: precision === 'byte' } : {}),
+    msAFrame: ms.length ? Math.round(ms.reduce((a, b) => a + b, 0) / ms.length) : null,
+  }
+}
+
+/** The frames of a record that hold values that are no number, or null when it holds none. The mark alone is enough. */
+export function notNumberOf(record) {
+  const frames = Array.isArray(record?.notNumber?.frames) ? record.notNumber.frames.filter((f) => f.count > 0) : []
+  const total = Number(record?.notNumber?.total) || 0
+  if (record?.mark !== NOT_A_NUMBER && total <= 0 && !frames.length) return null
+  return { total, frames }
+}
+
+/** True when nothing says whether a chunk's frames held values that are no number: it was drawn before the tool read the count, or some of its frames were. */
+export const notNumberUnknown = (record) => record?.what !== 'opening' && (!record?.notNumber || (record.notNumber.unread ?? []).length > 0 || record.notNumber.blind === true)
+
+const nanFramesShort = (n) => (n.frames.length ? n.frames.map((f) => `${f.frame} (${f.count})`).join(', ') : 'not named')
+const nanFrames = (n) => (n.frames.some((f) => firstPlace(f.first)) ? n.frames.map((f) => `${f.frame} (${f.count})${firstText(f.first)}`).join('; ') : nanFramesShort(n))
+/** The marked frames of a record in words: each with its count and, when the record holds it, the first place. */
+export const notNumberFrames = (record) => nanFrames(notNumberOf(record) ?? { frames: [] })
+export function notNumberLine(chunk) {
+  const r = chunk.record
+  const n = notNumberOf(r)
+  return `${chunk.from ?? chunk.file} (${r.what} ${r.first} to ${r.last}, drawn on ${r.machine}) holds ${n.total} ${n.total === 1 ? 'value that is' : 'values that are'} no number in ${n.frames.length} ${n.frames.length === 1 ? 'frame' : 'frames'}: ${nanFrames(n)}`
+}
+export const notNumberLoud = (what, index, count, first = /** @type {any} */ (null)) => `${NOT_A_NUMBER}: ${what} frame ${index} holds ${count} ${count === 1 ? 'value that is' : 'values that are'} no number in its mean${firstText(first)}, before the lens and the grade. Its chunk is marked ${NOT_A_NUMBER} and no master is encoded from it. Tell /root the frame. Do not draw it again hoping: the same frame draws the same values.`
+
+const shipMark = (record) => {
+  const n = notNumberOf(record)
+  return n ? `${NOT_A_NUMBER} in ${n.frames.length === 1 ? 'frame' : 'frames'} ${nanFramesShort(n)}` : ''
+}
+/** The message of the commit that carries a chunk's record and look to its machine's branch. A marked chunk says so in its first line. */
+export function shipTitle(what, c, record, test = false) {
+  const mark = shipMark(record)
+  return `Chunk ${chunkStem(what, c.first, c.last)}${test ? ', a test' : ''}${mark ? `, ${mark}: never encoded into a master` : ''}`
+}
+export function shippedLine(what, c, record, branch, tries = 1) {
+  const mark = shipMark(record)
+  return `shipped the record and the look of ${chunkStem(what, c.first, c.last)}${mark ? `, marked ${mark},` : ''} to ${branch}${tries > 1 ? `, the push went through at try ${tries}` : ''} (the picture travels by attachment)`
 }
 
 /** --local starts the installed Chrome in a window, with the machine's graphics card. Without a display it cannot open. */
@@ -453,6 +527,52 @@ export const LOOK_WIDTH = 1200
 export const pad6 = (i) => String(i).padStart(6, '0')
 export const chunkStem = (what, first, last) => `${what}-${pad6(first)}-${pad6(last)}`
 export const tierOf = (samples) => `samples-${samples}`
+
+/**
+ * The count of samples a frame of a master is drawn with. Without --samples the base is deliver.master.samples of the piece
+ * and the motion is tiers.final.motion, the rule the page applies at the final tier, so the page is asked what that tier
+ * gives for each frame. The two bases must be one number, or the page's answer would not be the master's. With --samples N
+ * (a test) every frame takes N and no motion applies.
+ */
+export function sampleRule(what, given = /** @type {any} */ (undefined), c = cfg) {
+  if (given !== undefined) return { base: given, motion: null, tier: null }
+  const base = c.deliver.master.samples[what]
+  const final = c.tiers.final
+  if (base !== final.samplesPerFrame) throw new Error(`deliver.master.samples.${what} is ${base} and tiers.final.samplesPerFrame is ${final.samplesPerFrame}. The count of a master frame follows its motion by the rule of the final tier, which starts from the final tier's count, so the two must be one number. Nothing was drawn.`)
+  return { base, motion: final.motion ? { spacingPx: final.motion.spacingPx, maxSamplesPerFrame: final.motion.maxSamplesPerFrame } : null, tier: 'final' }
+}
+
+/** What the page says a frame takes: a whole count, never under the base, never over the rule's most. */
+export function ruleCount(rule, index, given) {
+  const n = given?.samples
+  const most = rule.motion ? Math.max(rule.base, rule.motion.maxSamplesPerFrame) : rule.base
+  if (!Number.isInteger(n) || n < rule.base || n > most) throw new Error(`the page gave ${JSON.stringify(given ?? null)} as the samples of frame ${index}, and the rule gives a whole count from ${rule.base} to ${most}. Run npm run build and render again.`)
+  return n
+}
+
+/** The facts of a list of counts: how many are over the base, the most and where, the sum. */
+export function countFacts(counts, base, first = 0) {
+  let over = 0
+  let most = base
+  let mostAt = null
+  let sum = 0
+  counts.forEach((n, i) => {
+    sum += n
+    if (n > base) over++
+    if (n > most) {
+      most = n
+      mostAt = first + i
+    }
+  })
+  return { frames: counts.length, over, most, mostAt, sum }
+}
+
+export function countsLine(rule, facts) {
+  const s = (n) => `${n} ${n === 1 ? 'sample' : 'samples'}`
+  const how = rule.motion ? `the count of a frame follows its motion (tiers.final.motion: a sample every ${rule.motion.spacingPx} px of travel, at most ${rule.motion.maxSamplesPerFrame})` : rule.tier ? 'tiers.final holds no motion, so no frame follows its motion' : 'the count was given with --samples, so no frame follows its motion'
+  if (!facts.over) return `${how}: ${facts.frames === 1 ? 'the one frame draws' : `every one of these ${facts.frames} frames draws`} the base of ${s(rule.base)}`
+  return `${how}: ${facts.over} of these ${facts.frames} frames ${facts.over === 1 ? 'draws' : 'draw'} more than the base of ${s(rule.base)}, the most is ${facts.most} (frame ${facts.mostAt}); ${facts.sum} samples in all, ${(facts.sum / (facts.frames * rule.base)).toFixed(2)} times the base`
+}
 export const masterRoot = (test = false) => (test ? rel('out', 'master', 'test') : rel('out', 'master'))
 export const chunkDir = (what, test = false) => path.join(masterRoot(test), what)
 export const stillName = (index = 0) => `frame-${pad6(index)}.png`
@@ -547,6 +667,10 @@ export function recordMatchesRun(r, want) {
   if (want.renderer !== undefined && r.renderer !== want.renderer) return false
   if (want.calibration !== undefined && (r.calibration ?? null) !== want.calibration) return false
   if (!!r.test !== !!want.test) return false
+  if (want.motion !== undefined) {
+    if (JSON.stringify(r.motion ?? null) !== JSON.stringify(want.motion)) return false
+    if (!Array.isArray(r.frameSamples) || r.frameSamples.length !== want.last - want.first + 1 || r.frameSamples.some((n) => !Number.isInteger(n) || n < want.samples)) return false
+  }
   if (JSON.stringify(butCrf(r.encoderArgs)) !== JSON.stringify(butCrf(want.encoderArgs))) return false
   return r.verify?.ok === true && Array.isArray(r.frameHashes) && r.frameHashes.length === want.last - want.first + 1
 }
@@ -564,11 +688,151 @@ export function ranges(list) {
   return out
 }
 
+const TAKE_USAGE = '--take takes BRANCH, or WHAT:FIRST-LAST=BRANCH for one range, several with commas between'
+/** `--take agent/p6-chunks-a` or `--take film-b:0-29=agent/p6-chunks-a,film-b:30-59=files`: whose chunk is taken where the holders of a range do not agree. */
+export function parseTake(text) {
+  if (text === undefined || text === null || text === false) return []
+  if (text === true || !String(text).trim()) throw new Error(TAKE_USAGE)
+  return String(text)
+    .split(',')
+    .map((x) => x.trim())
+    .filter(Boolean)
+    .map((item) => {
+      const m = /^([a-z-]+):(\d+)-(\d+)=(.+)$/.exec(item)
+      if (m && WHATS.includes(m[1])) return { what: m[1], first: Number(m[2]), last: Number(m[3]), holder: m[4] }
+      if (item.includes('=') || item.includes(':')) throw new Error(`${TAKE_USAGE}. Not understood: ${item}`)
+      return { what: null, first: null, last: null, holder: item }
+    })
+}
+
+const AGREE = [
+  ['engineHash', 'the build hash'],
+  ['calibration', 'the calibration picture'],
+]
+const BYTES = ['sha256', 'the sha256 of the intermediate']
+const brief = (v) => (typeof v === 'string' && v.length > 16 ? v.slice(0, 12) : v === undefined || v === null ? 'none' : String(v))
+const holderName = (c) => c.holder ?? c.from ?? c.file
+const holderLabel = (c) => `${holderName(c)} (${c.record.machine ?? 'no machine named'})`
+const samePixels = (a, b) => {
+  const x = a.record.frameHashes ?? []
+  const y = b.record.frameHashes ?? []
+  const differing = []
+  for (let i = 0; i < Math.max(x.length, y.length); i++) if (x[i] !== y[i]) differing.push(a.record.first + i)
+  return differing
+}
+const sameCounts = (a, b) => {
+  const x = a.record.frameSamples
+  const y = b.record.frameSamples
+  if (!Array.isArray(x) && !Array.isArray(y)) return []
+  const differing = []
+  for (let i = 0; i <= a.record.last - a.record.first; i++) if (x?.[i] !== y?.[i]) differing.push(a.record.first + i)
+  return differing
+}
+
+/**
+ * One entry a range (what, first, last), whoever holds it and however often. Holders agree when the build hash and the calibration
+ * picture are the same and the pixels of every frame are the same, also when their intermediates differ in bytes. They count as one
+ * and one is taken: a holder whose picture is there, and of intermediates that differ in bytes the first by name. Holders that do
+ * not agree are taken only as `take` names them.
+ * @param {any[]} chunks
+ * @param {{ take?: { what: string | null, first: number | null, last: number | null, holder: string }[], exists?: ((file: string) => boolean) | null }} [how]
+ */
+export function heldRanges(chunks, { take = [], exists = null } = {}) {
+  const groups = new Map()
+  for (const c of chunks) {
+    const r = c.record
+    const key = `${r.test ? 'test ' : ''}${r.what} ${r.first} ${r.last}`
+    if (!groups.has(key)) groups.set(key, { what: r.what, first: r.first, last: r.last, test: !!r.test, holders: [] })
+    groups.get(key).holders.push(c)
+  }
+  const out = []
+  for (const g of groups.values()) {
+    const hs = g.holders
+    const values = ([key, label]) => {
+      const seen = new Map()
+      for (const c of hs) {
+        const v = brief(c.record[key])
+        if (!seen.has(v)) seen.set(v, [])
+        seen.get(v).push(c)
+      }
+      return seen.size > 1 ? { key, label, values: [...seen].map(([value, cs]) => ({ value, holders: cs.map(holderName) })) } : null
+    }
+    const differ = AGREE.map(values).filter(Boolean)
+    const bytes = values(BYTES)
+    const n = g.last - g.first + 1
+    const hashed = (c) => Array.isArray(c.record.frameHashes) && c.record.frameHashes.length === n
+    const blind = bytes ? hs.filter((c) => !hashed(c)).map(holderName) : []
+    const pixels = [...new Set(hs.slice(1).flatMap((c) => (hashed(hs[0]) && hashed(c) ? samePixels(hs[0], c) : [])))].sort((a, b) => a - b)
+    const counts = [...new Set(hs.slice(1).flatMap((c) => sameCounts(hs[0], c)))].sort((a, b) => a - b)
+    const agree = differ.length === 0 && pixels.length === 0 && blind.length === 0 && counts.length === 0
+    const ranged = take.filter((t) => t.what === g.what && t.first === g.first && t.last === g.last)
+    let taken = null
+    let named = null
+    let wrong = null
+    let passed = null
+    if (hs.length === 1) taken = hs[0]
+    else if (agree) {
+      const byName = bytes ? [...hs].sort((x, y) => (holderName(x) < holderName(y) ? -1 : holderName(x) > holderName(y) ? 1 : 0)) : hs
+      const asked = bytes && ranged.length === 1 ? hs.find((c) => holderName(c) === ranged[0].holder) : null
+      if (asked) named = ranged[0].holder
+      taken = asked ?? (exists && byName.find((c) => exists(c.file))) ?? byName[0]
+      if (bytes && !asked && taken !== byName[0]) passed = holderName(byName[0])
+    } else {
+      const general = take.filter((t) => t.what === null && hs.some((c) => holderName(c) === t.holder))
+      const asked = ranged.length ? ranged : general
+      const names = [...new Set(asked.map((t) => t.holder))]
+      if (names.length === 1) {
+        taken = hs.find((c) => holderName(c) === names[0]) ?? null
+        if (taken) named = names[0]
+        else wrong = `--take names ${names[0]}, which does not hold it`
+      } else if (names.length > 1) wrong = `--take names ${names.length} of its holders (${names.join(', ')}); name one for this range`
+    }
+    out.push({ ...g, agree, differ, bytes, blind, pixels, counts, taken, named, wrong, passed })
+  }
+  return out
+}
+
+/** The holder of a range whose record is marked: the one taken, or one that holds the very same pixels. Null when none is. */
+export function markedHolder(g) {
+  const of = g.taken ?? g.holders[0]
+  if (notNumberOf(of.record)) return of
+  const same = (c) => c !== of && Array.isArray(c.record.frameHashes) && Array.isArray(of.record.frameHashes) && samePixels(of, c).length === 0
+  return g.holders.find((c) => notNumberOf(c.record) && (!g.taken || same(c))) ?? null
+}
+
+const rangeName = (g) => `${g.what} ${g.first} to ${g.last}${g.test ? ' (a test)' : ''}`
+const valuesBy = (d) => d.values.map((v) => `${v.value} in ${v.holders.join(' and ')}`).join(', ')
+const howTheyDiffer = (g) => {
+  const parts = g.differ.map((d) => `${d.label} is ${valuesBy(d)}`)
+  const n = g.last - g.first + 1
+  if (g.blind.length) parts.push(`the pixels of their frames cannot be compared (${g.blind.join(' and ')} ${g.blind.length === 1 ? 'names' : 'name'} no hash for each of the ${n} frames) and the intermediates differ in bytes`)
+  else if (g.pixels.length) parts.push(`the pixels of their frames differ in ${g.pixels.length} of ${n} (the first is frame ${g.pixels[0]})`)
+  else parts.push(`the pixels of their frames are the same in all ${n}`)
+  if (g.counts?.length) parts.push(`the count of samples a frame was drawn with differs in ${g.counts.length} of ${n} (the first is frame ${g.counts[0]})`)
+  const text = parts.join('; ')
+  return text.slice(0, 1).toUpperCase() + text.slice(1)
+}
+
+/** The one line of a range that more than one holds. */
+export function heldLine(g) {
+  const n = g.holders.length
+  const frames = g.last - g.first + 1
+  const who = g.holders.map(holderLabel).join('; ')
+  if (g.agree && !g.bytes) return `${rangeName(g)} is held ${n} times with one and the same record (build, calibration, intermediate): ${who}. It counts once and one is taken: ${holderName(g.taken)}`
+  if (g.agree) {
+    const which = g.named ? `the one named is taken: ${g.named}` : g.passed ? `${holderName(g.taken)} is taken, since the picture of ${g.passed}, the first by name, is not here` : `the first by name is taken: ${holderName(g.taken)}`
+    return `${rangeName(g)} is held ${n} times with the same build, the same calibration and the same pixels in all ${frames} frames${g.holders.every((c) => Array.isArray(c.record.frameSamples)) ? ', each drawn with the same count of samples' : ''}: ${who}. Their intermediates differ in bytes (sha256 ${valuesBy(g.bytes)}). It counts once and ${which}`
+  }
+  const how = `${rangeName(g)} is held ${n} times and the records do not agree: ${who}. ${howTheyDiffer(g)}`
+  if (g.taken) return `${how}. Taken as named: ${g.named}`
+  return `${how}. ${n === 2 ? 'Neither' : 'None'} is taken${g.wrong ? ` (${g.wrong})` : ''}. Name the one to take: ${g.holders.map((c) => `--take ${g.what}:${g.first}-${g.last}=${holderName(c)}`).join(' or ')}`
+}
+
 /**
  * Decides whether a set of chunk records can be joined, with no file read except through `sha`.
  * `chunks` is [{ record, file, from }]. `totals` holds the frame count of each part.
  */
-export function joinPlan({ which, chunks, totals, test = false, size = M.chunkFrames, sha = null, gaps = false }) {
+export function joinPlan({ which, chunks, totals, test = false, size = M.chunkFrames, sha = null, gaps = false, take = [], exists = null }) {
   const whats = JOINS[which]
   if (!whats) throw new Error(`--encode takes ${Object.keys(JOINS).join(', ')}`)
   const problems = []
@@ -576,8 +840,27 @@ export function joinPlan({ which, chunks, totals, test = false, size = M.chunkFr
   const parts = []
   let twice = 0
   let twiceByTwoMachines = 0
-  const mine = chunks.filter((c) => whats.includes(c.record?.what))
   const named = (c) => `${c.from ?? c.file}`
+  const held = heldRanges(chunks.filter((c) => whats.includes(c.record?.what)), { take, exists })
+  const mine = held.filter((g) => g.taken).map((g) => g.taken)
+  const markedBy = new Map(held.filter((g) => g.taken).map((g) => [g.taken, markedHolder(g)]))
+  for (const g of held) {
+    const others = g.holders.filter((c) => c !== (g.taken ?? g.holders[0]))
+    const a = (g.taken ?? g.holders[0]).record
+    if (!g.taken) {
+      problems.push(heldLine(g))
+      if (g.pixels.length) conflicts.push({ a: g.holders[0], b: g.holders[1], frames: g.pixels })
+      continue
+    }
+    for (const c of others) {
+      const b = c.record
+      if (samePixels(g.taken, c).length) continue
+      if (a.sha256 !== b.sha256 || who(a) !== who(b)) {
+        twice += b.frameHashes?.length ?? 0
+        if (who(a) !== who(b)) twiceByTwoMachines += b.frameHashes?.length ?? 0
+      }
+    }
+  }
 
   for (const c of mine) {
     const r = c.record
@@ -588,7 +871,11 @@ export function joinPlan({ which, chunks, totals, test = false, size = M.chunkFr
       if (seen !== r.sha256) problems.push(`${named(c)} does not match the sha256 in its record (${seen ? `it is ${seen.slice(0, 12)}, the record says ${String(r.sha256).slice(0, 12)}` : 'the mp4 is missing'})`)
     }
     if (!Array.isArray(r.frameHashes) || r.frameHashes.length !== r.last - r.first + 1) problems.push(`${named(c)} holds ${r.frameHashes?.length ?? 0} frame hashes for ${r.last - r.first + 1} frames`)
+    if (r.what !== 'opening' && (!Array.isArray(r.frameSamples) || r.frameSamples.length !== r.last - r.first + 1)) problems.push(`${named(c)} names no count of samples for each of its ${r.last - r.first + 1} frames, so nothing says its frames were drawn with the count their motion asks for`)
     if (r.verify?.ok !== true) problems.push(`${named(c)} was never verified against its frames`)
+    const marked = markedBy.get(c)
+    const nan = marked ? notNumberOf(marked.record) : null
+    if (nan) problems.push(`${named(marked)} is marked ${NOT_A_NUMBER}: ${nan.total} ${nan.total === 1 ? 'value' : 'values'} in ${nan.frames.length === 1 ? 'frame' : 'frames'} ${nanFrames(nan)}. It is never encoded into a master: the frame is mended in the engine and drawn again by a new build`)
   }
 
   const same = (key, label, list, of = (r) => r[key]) => {
@@ -605,6 +892,7 @@ export function joinPlan({ which, chunks, totals, test = false, size = M.chunkFr
   same('fps', 'the frame rate', mine)
   same('encoderArgs', 'the list of encoder arguments (but for the quality)', mine, (r) => butCrf(r.encoderArgs))
   for (const w of whats) same('samples', `the samples of ${w}`, mine.filter((c) => c.record.what === w))
+  for (const w of whats) same('motion', `the rule from motion to samples of ${w}`, mine.filter((c) => c.record.what === w), (r) => r.motion ?? null)
   for (const w of whats) same('renderer', `the renderer of ${w}`, mine.filter((c) => c.record.what === w))
   for (const w of whats) same('calibration', `the calibration picture of ${w}`, mine.filter((c) => c.record.what === w), (r) => r.calibration ?? null)
   for (const c of mine) if (c.record.what !== 'opening' && !c.record.calibration) problems.push(`${named(c)} names no calibration picture, so nothing says its machine draws what the others draw`)
@@ -620,6 +908,7 @@ export function joinPlan({ which, chunks, totals, test = false, size = M.chunkFr
     }
     const lines = total ?? told[0] ?? 0
     const cover = new Map()
+    for (const g of held) if (!g.taken && g.what === w) for (let i = g.first; i <= g.last; i++) cover.set(i, [])
     for (const c of list) {
       const r = c.record
       const onLine = r.first % size === 0 && (r.last === Math.min(r.first + size, lines) - 1 || (test && r.last - r.first + 1 <= size))
@@ -648,15 +937,9 @@ export function joinPlan({ which, chunks, totals, test = false, size = M.chunkFr
       }
       const a = first.record
       const b = c.record
-      const differing = []
-      for (let i = 0; i < Math.min(a.frameHashes?.length ?? 0, b.frameHashes?.length ?? 0); i++) if (a.frameHashes[i] !== b.frameHashes[i]) differing.push(a.first + i)
-      if (differing.length || a.last !== b.last) {
-        conflicts.push({ a: first, b: c, frames: differing })
-        problems.push(`${w}: ${named(first)} and ${named(c)} both cover frames ${span(a.first, Math.min(a.last, b.last))} and their frame hashes differ in ${differing.length} of them (the first is frame ${differing[0] ?? a.first})`)
-      } else if (a.sha256 !== b.sha256 || who(a) !== who(b)) {
-        twice += b.frameHashes.length
-        if (who(a) !== who(b)) twiceByTwoMachines += b.frameHashes.length
-      }
+      const differing = samePixels(first, c)
+      conflicts.push({ a: first, b: c, frames: differing })
+      problems.push(`${w}: ${named(first)} and ${named(c)} both cover frames ${span(a.first, Math.min(a.last, b.last))} and are not one range (${span(a.first, a.last)} and ${span(b.first, b.last)})`)
     }
     const ordered = [...chosen.values()].sort((a, b) => a.record.first - b.record.first)
     for (const c of ordered) parts.push({ ...c, offset: frames - firstWanted })
@@ -670,23 +953,43 @@ export function joinPlan({ which, chunks, totals, test = false, size = M.chunkFr
   return { ok: problems.length === 0, problems, conflicts, parts, frames: test && gaps ? at : frames, twice, twiceByTwoMachines }
 }
 
-export function coverReport(chunks, totals, size = M.chunkFrames) {
+/** `chunks` are the ones taken, `open` the ranges held by several whose records do not agree. A range counts once, whoever holds it. */
+export function coverReport(chunks, totals, size = M.chunkFrames, open = []) {
   const out = []
   for (const w of WHATS) {
     const list = chunks.filter((c) => c.record?.what === w && !c.record.test)
     const total = totals[w] ?? 0
     const have = new Set()
     for (const c of list) for (let i = c.record.first; i <= c.record.last; i++) have.add(i)
+    const held = new Set()
+    for (const g of open) if (g.what === w && !g.test) for (let i = g.first; i <= g.last; i++) if (!have.has(i)) held.add(i)
     const missing = []
-    for (let i = 0; i < total; i++) if (!have.has(i)) missing.push(i)
-    out.push({ what: w, total, chunks: list.length, wanted: chunkLines(total, size).length, there: ranges([...have]), missing: ranges(missing) })
+    for (let i = 0; i < total; i++) if (!have.has(i) && !held.has(i)) missing.push(i)
+    out.push({ what: w, total, chunks: new Set(list.map((c) => `${c.record.first} ${c.record.last}`)).size, wanted: chunkLines(total, size).length, there: ranges([...have]), missing: ranges(missing), notAgreed: ranges([...held]) })
   }
   return out
+}
+
+const branchNames = (dir) => {
+  try {
+    return new Map(Object.keys(readJson(path.join(dir, 'collected.json')).branches ?? {}).map((b) => [branchFolder(b), b]))
+  } catch {
+    return new Map()
+  }
+}
+/** Who holds a chunk: the branch it was fetched from, the attachments (`files`), or the folder itself (`out/master`). */
+function holderOf(root, inside, names) {
+  const lead = inside.split('/').slice(0, -2).filter((x) => x !== 'test')
+  if (lead.length === 1 && names.has(lead[0])) return names.get(lead[0])
+  if (lead.length) return lead.join('/')
+  const here = path.relative(rel(), root).split(path.sep).join('/')
+  return here && !here.startsWith('..') ? here : path.basename(root)
 }
 
 export function readChunks(dirs, { recursive = true } = {}) {
   const out = []
   const seen = new Set()
+  const names = new Map()
   const walk = (dir, from) => {
     if (!fs.existsSync(dir)) return
     for (const e of fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => (a.name < b.name ? -1 : 1))) {
@@ -708,10 +1011,13 @@ export function readChunks(dirs, { recursive = true } = {}) {
       if (seen.has(real)) continue
       seen.add(real)
       const inside = path.relative(from, file).split(path.sep).join('/')
-      out.push({ record, file, inside, test: inside.split('/').includes('test'), from: `${path.basename(from)}/${inside}` })
+      out.push({ record, file, inside, test: inside.split('/').includes('test'), from: `${path.basename(from)}/${inside}`, holder: holderOf(from, inside, names.get(from)) })
     }
   }
-  for (const d of dirs) walk(d, d)
+  for (const d of dirs) {
+    names.set(d, branchNames(d))
+    walk(d, d)
+  }
   return out
 }
 
@@ -733,7 +1039,8 @@ export function hours(seconds) {
   return seconds < 5400 ? `${(seconds / 60).toFixed(1)} min` : `${(seconds / 3600).toFixed(1)} h`
 }
 
-export function heartbeat({ chunk, frame, seconds, left, average, procs = 1 }) {
+export function heartbeat({ chunk, frame, seconds, left, average, procs = 1, samples = /** @type {any} */ (undefined), samplesLeft = 0, perSample = 0 }) {
+  if (samples !== undefined) return `chunk ${pad6(chunk.first)}-${pad6(chunk.last)} · frame ${frame} · ${samples} ${samples === 1 ? 'sample' : 'samples'} · ${seconds.toFixed(1)} s · ${left} frames left in the range (${samplesLeft} samples) · ${((samplesLeft * perSample) / procs / 3600).toFixed(2)} h left at ${perSample.toFixed(2)} s a sample (${average.toFixed(1)} s a frame in the mean so far)`
   return `chunk ${pad6(chunk.first)}-${pad6(chunk.last)} · frame ${frame} · ${seconds.toFixed(1)} s · ${left} frames left in the range · ${((left * average) / procs / 3600).toFixed(2)} h left at ${average.toFixed(1)} s a frame`
 }
 

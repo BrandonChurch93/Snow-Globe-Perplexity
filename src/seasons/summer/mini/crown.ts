@@ -1,7 +1,13 @@
 import { stream } from '../../../core/rng'
 import { crownField, localPads, padAxes } from '../../../miniature/trunk'
 
-export const FULL = { swell: -0.55, perMm2: 0.5, radius: [0.95, 2.5] as const, dome: 0.8, reach: 1.3, blend: 0.16, knob: 0.3, knobMm: 1.15, wave: 0.45, waveMm: 4.3 }
+export const FULL = { swell: -1.0, perMm2: 0.5, radius: [0.9, 2.2] as const, dome: 0.85, reach: 1.04, blend: 0.16, knob: 0.3, knobMm: 1.15, wave: 0.45, waveMm: 4.3 }
+
+// The shared pads stand in tiers with room between them. Two more flat pads hang in that room, one over the fork and one at the right, each clear of its neighbours.
+const BETWEEN: readonly { at: readonly [number, number, number]; size: readonly [number, number, number] }[] = [
+  { at: [0.5, 30.4, 3], size: [4.6, 1.8, 3.8] },
+  { at: [12.2, 27, 2.4], size: [4.4, 1.9, 3.8] },
+]
 
 function gather(): Float64Array {
   const rng = stream('crown-summer')
@@ -18,6 +24,17 @@ function gather(): Float64Array {
       const d = Math.sin(th) * rr * (c - 0.6 * r)
       const v = b * (0.15 + FULL.dome * (1 - rr * rr)) - 0.5 * r + rng.range(-0.5, 0.4)
       out.push(pad.at[0] + ax.side[0] * s + ax.up[0] * v + ax.depth[0] * d, pad.at[1] + ax.side[1] * s + ax.up[1] * v + ax.depth[1] * d, pad.at[2] + ax.side[2] * s + ax.up[2] * v + ax.depth[2] * d, r)
+    }
+  }
+  for (const pad of BETWEEN) {
+    const [a, b, c] = pad.size
+    for (const s of [-0.9, 0, 0.9]) out.push(pad.at[0] + s * (a - b), pad.at[1], pad.at[2], b)
+    const n = Math.round(a * c * FULL.perMm2)
+    for (let k = 0; k < n; k++) {
+      const rr = Math.sqrt((k + 0.5) / n) * FULL.reach
+      const th = k * 2.39996 + rng.range(-0.4, 0.4)
+      const r = rng.range(FULL.radius[0], FULL.radius[1]) * (1 - 0.3 * rr)
+      out.push(pad.at[0] + Math.cos(th) * rr * (a - 0.6 * r), pad.at[1] + b * (0.15 + FULL.dome * (1 - rr * rr)) - 0.5 * r + rng.range(-0.5, 0.4), pad.at[2] + Math.sin(th) * rr * (c - 0.6 * r), r)
     }
   }
   return new Float64Array(out)

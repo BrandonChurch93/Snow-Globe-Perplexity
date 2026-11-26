@@ -79,26 +79,31 @@ export function buildStone(f) {
   return { soup, body, repeats }
 }
 
-// A surface given in the frame of something set into the stone: x along the ring, y up the wall, z out of it.
+// A surface given in the frame of something set into the stone: x along the ring, y up the wall, z out of it. The frame is bent
+// to the wall, so a thing lies on the stone from edge to edge and no side of it stands off.
 function frameOf(f, it) {
   const s = it.s ?? P.sOfH(f.mer, it.h)
-  const o = stonePoint(f, it.az, s)
-  const q = P.atS(f.mer, s)
-  const ez = norm3(place(q.nr, q.nh, it.az))
-  const ex0 = [Math.cos(it.az * RAD), 0, -Math.sin(it.az * RAD)]
-  const ey0 = norm3(cross3(ez, ex0))
+  const d0 = f.dAt(it.az, s)
+  const q0 = P.atS(f.mer, s)
+  const o = place(q0.r + q0.nr * d0, q0.h + q0.nh * d0, it.az)
+  const ez = norm3(place(q0.nr, q0.nh, it.az))
   const t = (it.turn ?? 0) * RAD
-  const ex = [ex0[0] * Math.cos(t) + ey0[0] * Math.sin(t), ex0[1] * Math.cos(t) + ey0[1] * Math.sin(t), ex0[2] * Math.cos(t) + ey0[2] * Math.sin(t)]
-  const ey = cross3(ez, ex)
-  return { o, ex, ey, ez }
+  const world = (p) => {
+    const a = p[0] * Math.cos(t) - p[1] * Math.sin(t)
+    const b = p[0] * Math.sin(t) + p[1] * Math.cos(t)
+    const q = P.atS(f.mer, s + b)
+    const d = d0 + p[2]
+    return place(q.r + q.nr * d, q.h + q.nh * d, it.az + a / (q0.r * RAD))
+  }
+  return { o, ez, world }
 }
 
 function surf(soup, fr, nu, nv, local, attr, wrapU = false) {
   const pts = []
   for (let j = 0; j < nv; j++) for (let i = 0; i < nu; i++) pts.push(local(i / (nu - 1), j / (nv - 1)))
-  const at = (i, j) => pts[Math.min(Math.max(j, 0), nv - 1) * nu + (wrapU ? ((i % (nu - 1)) + (nu - 1)) % (nu - 1) : Math.min(Math.max(i, 0), nu - 1))]
-  const world = (p) => [fr.o[0] + fr.ex[0] * p[0] + fr.ey[0] * p[1] + fr.ez[0] * p[2], fr.o[1] + fr.ex[1] * p[0] + fr.ey[1] * p[1] + fr.ez[1] * p[2], fr.o[2] + fr.ex[2] * p[0] + fr.ey[2] * p[1] + fr.ez[2] * p[2]]
-  const turn = (p) => [fr.ex[0] * p[0] + fr.ey[0] * p[1] + fr.ez[0] * p[2], fr.ex[1] * p[0] + fr.ey[1] * p[1] + fr.ez[1] * p[2], fr.ex[2] * p[0] + fr.ey[2] * p[1] + fr.ez[2] * p[2]]
+  const wp = pts.map(fr.world)
+  const at = (i, j) => wp[Math.min(Math.max(j, 0), nv - 1) * nu + (wrapU ? ((i % (nu - 1)) + (nu - 1)) % (nu - 1) : Math.min(Math.max(i, 0), nu - 1))]
+  const under = [fr.o[0] - 0.5 * fr.ez[0], fr.o[1] - 0.5 * fr.ez[1], fr.o[2] - 0.5 * fr.ez[2]]
   let sign = 0
   const normals = []
   for (let j = 0; j < nv; j++) for (let i = 0; i < nu; i++) {
@@ -115,16 +120,16 @@ function surf(soup, fr, nu, nv, local, attr, wrapU = false) {
       continue
     }
     n = [n[0] / l, n[1] / l, n[2] / l]
-    sign += n[0] * p[0] + n[1] * p[1] + n[2] * (p[2] + 0.5)
+    sign += n[0] * (p[0] - under[0]) + n[1] * (p[1] - under[1]) + n[2] * (p[2] - under[2])
     normals.push(n)
   }
   const k = sign < 0 ? -1 : 1
-  for (let q = 0; q < normals.length; q++) if (!normals[q]) normals[q] = [0, 0, k]
+  for (let q = 0; q < normals.length; q++) if (!normals[q]) normals[q] = [fr.ez[0] * k, fr.ez[1] * k, fr.ez[2] * k]
   soup.grid(nu, nv, (i, j) => {
     const p = pts[j * nu + i]
     const n = normals[j * nu + i]
-    const a = attr(i / (nu - 1), j / (nv - 1), p, [n[0] * k, n[1] * k, n[2] * k])
-    return { p: world(p), n: turn([n[0] * k, n[1] * k, n[2] * k]), uv: a.uv ?? [p[0] / 4, p[1] / 4], uv2: a.uv2, c: a.c }
+    const a = attr(i / (nu - 1), j / (nv - 1), p)
+    return { p: wp[j * nu + i], n: [n[0] * k, n[1] * k, n[2] * k], uv: a.uv ?? [p[0] / 4, p[1] / 4], uv2: a.uv2, c: a.c }
   })
 }
 
@@ -156,32 +161,39 @@ function scallop(soup, fr, it, rnd, opt) {
       )
     }
   }
+  const ribAt = (th) => Math.pow(0.5 + 0.5 * Math.cos(ribs * Math.PI * (th / spread)), 0.55)
   surf(
     soup,
     fr,
-    opt.ears ? 47 : 51,
-    20,
+    opt.ears ? 83 : 89,
+    34,
     (u, v) => {
       const th = (u * 2 - 1) * spread
       const sx = Math.sin(th)
       const cx = Math.cos(th)
       const b = hinge * cx
       const reach = -b + Math.sqrt(Math.max(b * b - (hinge * hinge - R * R * long * long), 0))
-      const rib = 0.5 + 0.5 * Math.cos(ribs * Math.PI * (th / spread))
-      const L = reach * (1 + 0.035 * (rib - 0.5) * smooth(0.6, 1, v)) * (1 - 0.1 * Math.pow(Math.abs(th / spread), 6))
+      const rib = ribAt(th)
+      const L = reach * (1 + 0.04 * (rib - 0.5) * smooth(0.6, 1, v)) * (1 - 0.1 * Math.pow(Math.abs(th / spread), 6))
       const rho = Math.pow(v, 0.9)
       const x = (sx * L * rho) / long
       const y = hinge + cx * L * rho
-      const dome = opt.dome * R * Math.pow(Math.max(4 * rho * (1 - rho * 0.86), 0), 0.62) * (1 - 0.35 * (th / spread) ** 2)
-      const z = dome + opt.rib * R * Math.pow(rho, 0.6) * (rib - 0.5) * (1 - 0.5 * smooth(0.9, 1, rho)) + 0.016 * R * Math.sin(rho * 58 + 3 * rnd.k) * smooth(0.15, 0.5, rho) - 0.12 * R + 0.1 * R * (1 - rho)
+      const dome = opt.dome * R * Math.pow(Math.max(4 * rho * (1 - rho * 0.95), 0), 0.62) * (1 - 0.35 * (th / spread) ** 2)
+      const grow = rho * 7.5 + 0.5 * rnd.k
+      const step = grow - Math.floor(grow)
+      const z = dome + opt.rib * R * Math.pow(rho, 0.6) * (rib - 0.6) * (1 - 0.4 * smooth(0.9, 1, rho)) + 0.02 * R * (step * step - 0.33) * smooth(0.12, 0.4, rho) - 0.12 * R + 0.1 * R * (1 - rho)
       return [x, y, z]
     },
     (u, v) => {
       const th = (u * 2 - 1) * spread
-      const rib = 0.5 + 0.5 * Math.cos(ribs * Math.PI * (th / spread))
+      const rib = ribAt(th)
+      const rho = Math.pow(v, 0.9)
+      const grow = rho * 7.5 + 0.5 * rnd.k
+      const step = grow - Math.floor(grow)
       const band = 0.5 + 0.5 * Math.sin(v * 31 + 6 * rnd.k + 1.5 * Math.sin(u * 9))
-      const k = (0.9 + 0.1 * rib) * (0.89 + 0.11 * band) * (0.82 + 0.18 * smooth(0, 0.35, v))
-      return { uv: [u * ribs * 0.5, v * 3], uv2: [0.7 + 0.3 * rib * smooth(0.02, 0.2, v), 0.24], c: [it.c[0] * k, it.c[1] * k * (0.97 + 0.03 * band), it.c[2] * k * (0.92 + 0.08 * band)] }
+      const k = (0.84 + 0.16 * rib) * (0.9 + 0.1 * band) * (0.86 + 0.14 * step) * (0.8 + 0.2 * smooth(0, 0.35, v))
+      const fold = mix((0.3 + 0.7 * rib * smooth(0.02, 0.2, v)) * (0.55 + 0.45 * smooth(1.0, 0.86, rho)), 0.92, it.plain ?? 0)
+      return { uv: [u * ribs * 0.5, v * 3], uv2: [fold, it.gloss ?? 0.3], c: [it.c[0] * k, it.c[1] * k * (0.97 + 0.03 * band), it.c[2] * k * (0.92 + 0.08 * band)] }
     },
   )
 }
@@ -241,24 +253,26 @@ function dome(soup, fr, it, rnd, a, b, c, sink, gloss, groove) {
 function seaGlass(soup, fr, it, rnd) {
   const R = it.r * 1.08
   const long = it.long ?? 1
-  const tri = it.tri ?? 0.07 + 0.11 * rnd.a
-  const two = 0.07 + 0.1 * rnd.b
+  const tri = Math.min(it.tri ?? 0.04 + 0.05 * rnd.a, 0.085)
+  const two = 0.05 + 0.07 * rnd.b
   const p2 = rnd.c * 6.28
   const p3 = rnd.d * 6.28
-  const T = Math.min(0.55 * R, 1.7)
+  const T = Math.min(0.62 * R, 2.1)
+  // How thick the piece is under a point, 1 in the middle and 0 at the rim: level in the middle, so nothing made of it comes to a point there.
+  const thick = (v) => Math.pow(Math.max(1 - Math.pow(Math.sin((v * Math.PI) / 2), 2.6), 0), 0.5)
   surf(
     soup,
     fr,
-    41,
-    11,
+    49,
+    13,
     (u, v) => {
       const phi = u * 2 * Math.PI
-      const out = R * (1 + two * Math.cos(2 * phi + p2) + tri * Math.cos(3 * phi + p3) + 0.045 * Math.cos(5 * phi + p2 * 2) + 0.03 * Math.cos(8 * phi + p3 * 3))
+      const out = R * (1 + two * Math.cos(2 * phi + p2) + tri * Math.cos(3 * phi + p3) + 0.012 * Math.cos(5 * phi + p2 * 2) + 0.004 * Math.cos(8 * phi + p3 * 3))
       const rho = Math.sin((v * Math.PI) / 2)
-      const lump = 1 + 0.1 * (fbm(u * 5 + rnd.a * 9, v * 2 + rnd.b * 5, 5, 64, 91, 2) - 0.5) * smooth(0.05, 0.4, rho)
-      return [out * rho * Math.cos(phi), out * rho * Math.sin(phi) * long, T * Math.pow(Math.max(1 - Math.pow(rho, 2.6), 0), 0.5) * lump - 0.42 * T]
+      const lump = 1 + 0.12 * (fbm(u * 5 + rnd.a * 9, v * 2 + rnd.b * 5, 5, 64, 91, 2) - 0.5) * smooth(0.25, 0.6, rho)
+      return [out * rho * Math.cos(phi), out * rho * Math.sin(phi) * long, T * thick(v) * lump - 0.3 * T]
     },
-    (u, v, p) => ({ uv: [p[0] / 3, p[1] / 3], uv2: [1 - Math.sin((v * Math.PI) / 2), it.frost ? 1 : 0.25 + 0.3 * rnd.a], c: it.c }),
+    (u, v, p) => ({ uv: [p[0] / 3, p[1] / 3], uv2: [thick(v), it.frost ? 1 : 0.25 + 0.3 * rnd.a], c: it.c }),
     true,
   )
 }
@@ -273,8 +287,8 @@ export function buildSet(f) {
     const fr = frameOf(f, it)
     count[it.kind]++
     if (it.kind === 'glass') seaGlass(glass, fr, it, rnd)
-    else if (it.kind === 'scallop') scallop(shells, fr, it, rnd, { spread: 74, ribs: 9, dome: 0.3, rib: 0.11, ears: true })
-    else if (it.kind === 'cockle') scallop(shells, fr, it, rnd, { spread: 86, ribs: 11, dome: 0.5, rib: 0.09 })
+    else if (it.kind === 'scallop') scallop(shells, fr, it, rnd, { spread: 74, ribs: it.ribs ?? 9, dome: 0.3, rib: it.rib ?? 0.13, ears: true })
+    else if (it.kind === 'cockle') scallop(shells, fr, it, rnd, { spread: it.spread ?? 86, ribs: it.ribs ?? 11, dome: it.dome ?? 0.46, rib: it.rib ?? 0.1 })
     else if (it.kind === 'snail') snail(shells, fr, it, rnd)
     else if (it.kind === 'olive') dome(shells, fr, it, rnd, it.r * 1.12, it.r * 0.76, it.r * 0.56, 0.1 * it.r, 0.85, true)
     else dome(shells, fr, it, rnd, it.r, it.r, it.r, 0.3 * it.r, 1, false)
@@ -282,25 +296,29 @@ export function buildSet(f) {
   return { shells, glass, count }
 }
 
-// The sand on the ledge: a bank against the glass that thins to single grains toward the lip, and at SPILL runs over it.
+// The sand on the ledge: it lies in the seat against the glass and thins to single grains toward the rim, and at SPILL runs over it.
 export const SPILL = { az: 80, half: 17, lipR: 52.5, lipH: 38.8 + P.RISE }
 export const spillAt = (az) => {
   let d = az - SPILL.az
   d -= 360 * Math.round(d / 360)
   return Math.exp(-((d / SPILL.half) ** 2))
 }
-export function ledgeSand(az, t) {
+export function ledgeSand(f, az, t) {
   const A = (((az % 360) + 360) % 360) / 360
   const sp = spillAt(az)
-  const hg = P.LEDGE_H + 1.9 + 1.5 * (fbm(A * 11, 0.3, 11, 4, 201, 3) - 0.35) + 1.2 * sp
-  const rg = P.sphereRadiusAt(hg) + 0.06
-  const ro = Math.min(49.9 + 1.8 * fbm(A * 17, 0.7, 17, 4, 203, 3) + 3.0 * sp, 52.5)
-  const r = mix(rg, ro, t)
-  const floor = r > 50.6 ? P.LEDGE_H - 1.9 * smooth(50.6, 52.6, r) + 0.02 : P.LEDGE_H + 0.02
+  const reach = Math.min(3.6 + 3.2 * fbm(A * 17, 0.7, 17, 4, 203, 3) + 5.5 * sp, 9.2)
+  const s = f.mer.total - 0.1 - reach * t
+  const q = P.atS(f.mer, s)
+  const d = f.dAt(az, s)
+  const heap = 0.55 + 0.9 * (fbm(A * 11, 0.3, 11, 4, 201, 3) - 0.35) + 0.9 * sp
   const fall = Math.pow(1 - t, 1.25)
   const lumps = (0.5 * (fbm(A * 60, t * 3, 60, 64, 205, 3) - 0.5) + 0.22 * (fbm(A * 170, t * 7, 170, 64, 207, 2) - 0.5)) * Math.sin(Math.PI * Math.min(t * 1.15, 1))
-  const thick = Math.max((hg - floor) * fall + lumps * (0.3 + sp), 0) + 0.04
-  return { r, h: floor + thick, thick, rg, ro }
+  const lee = 1 - 0.97 * smooth(-45, -75, az) * smooth(-178, -150, az)
+  const thick = (Math.max(Math.max(heap, 0.25) * 1.5 * fall + lumps * (0.3 + sp), 0) + 0.04) * lee
+  const lift = 0.03 + 0.45 * thick
+  const h = q.h + q.nh * (d + lift)
+  const r = Math.max(q.r + q.nr * (d + lift), P.sphereRadiusAt(h) + 0.06)
+  return { r, h, thick }
 }
 
 export function buildSand(f) {
@@ -309,7 +327,7 @@ export function buildSand(f) {
   const rows = 22
   const pt = (i, j) => {
     const az = -180 + (360 * i) / cols
-    const q = ledgeSand(az, j / (rows - 1))
+    const q = ledgeSand(f, az, j / (rows - 1))
     return { q, az, p: place(q.r, q.h, az) }
   }
   soup.grid(cols + 1, rows, (i, j) => {

@@ -44,33 +44,29 @@ export async function carveMap(dir, f) {
   return [await writePng(`${dir}/base-carve.lin.w2048.png`, W, H, 3, up(out, W, H, 3))]
 }
 
-// The stone's colour, bed by bed: pale cream, ochre where the bed is soft, and rust in the groove above the foot.
+// The colour of packed sand: one pale cream, a little warmer low down and in broad soft patches, and warm in the trough above the foot.
 export async function toneMap(dir, f) {
   const { W, H } = FIELD
   const out = new Uint8Array(W * H * 3)
-  const cream = [0.93, 0.87, 0.77]
-  const ochre = [0.87, 0.76, 0.6]
-  const rust = [0.56, 0.31, 0.15]
-  const pale = [0.95, 0.91, 0.83]
+  const cream = [0.94, 0.89, 0.8]
+  const ochre = [0.9, 0.81, 0.67]
+  const rust = [0.7, 0.5, 0.33]
+  const pale = [0.96, 0.93, 0.86]
   for (let j = 0; j < H; j++) {
     for (let i = 0; i < W; i++) {
       const o = j * W + i
       const A = P.azOfU((i + 0.5) / W) / 360 + 0.5
-      const k = f.bed[o]
-      const fr = f.frac[o]
       const h = f.hgt[o]
-      const bedTone = hashInt(k, 3, 301)
-      const soft = smooth(0.35, 0.9, bedTone) * (0.4 + 0.6 * fr)
-      const thin = smooth(0.8, 0.96, 0.5 + 0.5 * Math.sin(fr * 6.283 * (2 + Math.floor(3 * hashInt(k, 5, 303))) + 4 * bedTone)) * smooth(0.45, 0.75, hashInt(k, 9, 305))
       const stain = Math.exp(-(((h - f.groove[o] - 0.4) / 2.1) ** 2)) * (0.55 + 0.45 * fbm(A * 14, h / 5, 14, 64, 307, 3))
-      const low = smooth(13, 3, h) * 0.35
+      const low = smooth(13, 3, h) * 0.3
       const blotch = fbm(A * 9, h / 9, 9, 64, 309, 3)
       const top = smooth(30, 37, h) * 0.5
-      let c = [0, 1, 2].map((q) => mix(cream[q], ochre[q], clamp(0.5 * soft + low + 0.45 * (blotch - 0.5))))
-      c = c.map((v, q) => mix(v, pale[q], top * (1 - soft)))
-      c = c.map((v, q) => mix(v, rust[q], clamp(0.55 * stain + 0.07 * thin * smooth(0.7, 0.9, hashInt(k, 11, 317)))))
+      let c = [0, 1, 2].map((q) => mix(cream[q], ochre[q], clamp(low + 0.5 * (blotch - 0.5))))
+      c = c.map((v, q) => mix(v, pale[q], top))
+      c = c.map((v, q) => mix(v, rust[q], clamp(0.3 * stain)))
       const speck = 0.94 + 0.12 * hashInt(i, j, 311) * hashInt(i >> 1, j >> 1, 313) + 0.05 * (fbm(A * 400, h * 2.2, 400, 512, 315, 2) - 0.5)
-      const dark = 1 - 0.2 * clamp(-(f.d[o] - f.wide[o]) * 0.9)
+      // Round each thing set into the sand the sand is in its shade.
+      const dark = 1 - 0.22 * f.halo[o] * f.halo[o]
       for (let q = 0; q < 3; q++) out[o * 3 + q] = Math.round(clamp(c[q] * speck * dark) * 255)
     }
   }
