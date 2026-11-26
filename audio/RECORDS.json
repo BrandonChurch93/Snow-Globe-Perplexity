@@ -13793,7 +13793,7 @@
     }
   ],
   "pack": {
-    "time": "2026-11-26T07:50:30.491Z",
+    "time": "2026-11-26T09:15:30.849Z",
     "kbps": 192,
     "bytes": 4378752,
     "fits": true,
@@ -13801,7 +13801,7 @@
       {
         "file": "sprite.mp3",
         "bytes": 407232,
-        "sha256": "fcd76c2ec6c9cf7e18576e069ec8201b30cba304eb9c48ba7f36f012e9ee9fc8"
+        "sha256": "07b01b7740d98ce8a5440175a6b0246297b996bfe4b2ac9483f7ab2dbe4ee449"
       },
       {
         "file": "amb-winter.mp3",
@@ -13869,6 +13869,51 @@
       {
         "id": "shake-fall",
         "state": "laid by decision 141, the water of shake-spring"
+      }
+    ],
+    "trimsDb": {
+      "ambience": -8,
+      "interface": 0,
+      "touch": -8,
+      "impact": -8,
+      "music": -8
+    },
+    "shakes": [
+      {
+        "id": "shake-spring",
+        "class": "impact",
+        "trimDb": -8,
+        "stepDb": -3,
+        "appDb": -11,
+        "riseMs": 30,
+        "gain": 0.34874
+      },
+      {
+        "id": "shake-winter",
+        "class": "impact",
+        "trimDb": -8,
+        "stepDb": -3,
+        "appDb": -11,
+        "riseMs": 30,
+        "gain": 0.34874
+      },
+      {
+        "id": "shake-summer",
+        "class": "impact",
+        "trimDb": -8,
+        "stepDb": -3,
+        "appDb": -11,
+        "riseMs": 30,
+        "gain": 0.34809
+      },
+      {
+        "id": "shake-fall",
+        "class": "impact",
+        "trimDb": -8,
+        "stepDb": -6,
+        "appDb": -14,
+        "riseMs": 30,
+        "gain": 0.24689
       }
     ],
     "loops": [

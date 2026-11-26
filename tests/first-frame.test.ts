@@ -14,7 +14,7 @@ const root = path.resolve(__dirname, '..')
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8')
 const BUDGET: Record<string, number> = { avif: 60000, webp: 90000 }
 
-type Still = [string, number, number, number, number, string, number]
+type Still = [string, number, number, number, number, string, number, number]
 interface Table {
   season: string
   seasons: string[]
@@ -157,12 +157,54 @@ const softIn = (box: El): El[] => box.all('img').filter(isSoft)
 const boxOf = (img: El): { x: number; y: number; right: number; bottom: number } => ({ x: px(img.style.left), y: px(img.style.top), right: px(img.style.left) + px(img.style.width), bottom: px(img.style.top) + px(img.style.height) })
 const judged = [config.formats.phone, config.formats.tablet, config.formats.hd]
 
+/** A still or a copy of it as the page laid it: its box, the globe in it (the glass and the row its foot ends at) and how far
+ * in from its top, right, bottom and left the page thins it out. */
+interface Laid {
+  x: number
+  y: number
+  right: number
+  bottom: number
+  globe: { cx: number; cy: number; r: number; foot: number }
+  thin: [number, number, number, number]
+}
+/** The way the page writes the thinning toward the top, the right, the bottom and the left of a picture. */
+const TOWARD = ['bottom', 'left', 'top', 'right']
+/** The glass with the rim of light around it: what of a copy must not show beside the still. */
+const RIM = 1.02
+/** The still of a page and the copies under it, the still first and the largest copy last. */
+function laidIn(box: El): Laid[] {
+  return stillsIn(box)
+    .reverse()
+    .map((img) => {
+      const b = boxOf(img)
+      const s = table.stills.find((x) => img.src.includes(`-${x[0]}.`))!
+      const high = b.bottom - b.y
+      const thin: [number, number, number, number] = [0, 0, 0, 0]
+      for (const m of (img.style.maskImage ?? '').matchAll(/to (\w+), transparent, #000 ([\d.]+)px/g)) thin[TOWARD.indexOf(m[1]!)] = Number(m[2])
+      return { ...b, thin, globe: { cx: (b.x + b.right) / 2, cy: b.y + (s[3] / 1e5) * high, r: (s[4] / 1e5) * high, foot: b.y + (s[7] / 1e5) * high } }
+    })
+}
+/** How far each edge of a picture is from the edge of the screen it does not reach: top, right, bottom, left. */
+const bareOf = (l: Laid, w: number, h: number): number[] => [l.y, w - l.right, h - l.bottom, l.x]
+/** How far inside the part of `over` that is not thinned out the globe of `under` ends, toward each edge: under 0 it shows. */
+const clearOf = (over: Laid, under: Laid): number[] => [
+  under.globe.cy - RIM * under.globe.r - (over.y + over.thin[0]),
+  over.right - over.thin[1] - (under.globe.cx + RIM * under.globe.r),
+  over.bottom - over.thin[2] - under.globe.foot,
+  under.globe.cx - RIM * under.globe.r - (over.x + over.thin[3]),
+]
+
 describe('the stills the page paints first', () => {
   it('has a table, written by the tool, that names the seasons of the config', () => {
     expect(table, 'index.html holds no table: run node tools/poster.mjs').not.toBeNull()
     expect(table.season).toBe(config.defaultSeason)
     expect(table.seasons).toEqual(config.seasons)
     expect(table.stills.length).toBeGreaterThan(0)
+    for (const s of table.stills) {
+      expect(s, s[0]).toHaveLength(8)
+      expect(s[3] + s[4], s[0]).toBeLessThan(s[7])
+      expect(s[7], s[0]).toBeLessThan(1e5)
+    }
     expect(table.g).toHaveLength(table.a.length)
     expect([...table.a].sort((x, y) => x - y)).toEqual(table.a)
     expect(new Set(table.a).size).toBe(table.a.length)
@@ -241,25 +283,99 @@ describe('the page before the app runs', () => {
     }
   })
 
-  it('covers a screen no still was drawn for: a larger copy lies under the still where it does not reach', () => {
+  it('covers a screen no still was drawn for: larger copies lie under the still where it does not reach, the lowest over all of it', () => {
     for (const [w, h] of [[360, 800], [1366, 768], [3440, 1080], [600, 1000], [844, 390]] as const) {
       const { box } = open(w, h)
       const imgs = stillsIn(box)
       const over = imgs[imgs.length - 1]!
       const b = boxOf(over)
-      const reaches = b.x <= 0.5 && b.y <= 0.5 && b.right >= w - 0.5 && b.bottom >= h - 0.5
+      const reaches = b.x <= 1e-6 && b.y <= 1e-6 && b.right >= w - 1e-6 && b.bottom >= h - 1e-6
       if (reaches) {
         expect(imgs, `${w}x${h}`).toHaveLength(1)
+        expect(over.style.maskImage, `${w}x${h}`).toBe('')
         continue
       }
-      expect(imgs, `${w}x${h}`).toHaveLength(2)
+      expect(imgs.length, `${w}x${h}`).toBeGreaterThanOrEqual(2)
+      expect(new Set(imgs.map((img) => img.src)).size, `${w}x${h}`).toBe(1)
       expect(over.style.maskImage, `${w}x${h}`).toContain('linear-gradient')
+      expect(imgs[0]!.style.maskImage, `${w}x${h}`).toBe('')
       const u = boxOf(imgs[0]!)
       expect(u.x, `${w}x${h}`).toBeLessThanOrEqual(1e-6)
       expect(u.y, `${w}x${h}`).toBeLessThanOrEqual(1e-6)
       expect(u.right, `${w}x${h}`).toBeGreaterThanOrEqual(w - 1e-6)
       expect(u.bottom, `${w}x${h}`).toBeGreaterThanOrEqual(h - 1e-6)
     }
+  })
+
+  it('shows one globe on a screen of any shape: no copy shows its glass or its foot where the picture over it thins out or ends', () => {
+    const widths = [300, 320, 360, 390, 414, 480, 540, 600, 650, 673, 700, 719, 720, 768, 820, 834, 853, 912, 1024, 1180, 1366, 1600, 1920, 2560, 3440]
+    let screens = 0
+    let copied = 0
+    for (const coarse of [false, true]) {
+      for (const w of widths) {
+        for (let aspect = 0.4; aspect <= 3.2; aspect *= 1.04) {
+          const h = Math.round(w / aspect)
+          if (h < 280 || h > 2600) continue
+          const at = `${w}x${h}${coarse ? ' touch' : ''}`
+          const { box } = open(w, h, '', { coarse })
+          const layers = laidIn(box)
+          const lowest = layers[layers.length - 1]!
+          screens++
+          if (layers.length > 1) copied++
+          expect(Math.max(...bareOf(lowest, w, h)), at).toBeLessThanOrEqual(1e-6)
+          expect(lowest.thin, at).toEqual([0, 0, 0, 0])
+          for (let j = 0; j + 1 < layers.length; j++) {
+            const bare = bareOf(layers[j]!, w, h)
+            const clear = clearOf(layers[j]!, layers[j + 1]!)
+            for (let e = 0; e < 4; e++) {
+              if (bare[e]! > 1e-6) expect(clear[e], `${at}: the globe of copy ${j + 1} toward the ${TOWARD[(e + 2) % 4]} of the picture over it`).toBeGreaterThanOrEqual(-1e-6)
+              else expect(layers[j]!.thin[e], at).toBe(0)
+              if (bare[e]! > 0.5) expect(layers[j]!.thin[e], `${at}: picture ${j} ends at a line`).toBeGreaterThanOrEqual(1)
+            }
+          }
+        }
+      }
+    }
+    expect(screens).toBeGreaterThan(2000)
+    expect(copied).toBeGreaterThan(screens / 4)
+  })
+
+  it('thins a still out over a part the eye does not read as a line, on the tablets and the windows it shows a band beside', () => {
+    const tablets = [[820, 1180], [834, 1194], [834, 1210], [853, 1280], [912, 1368]] as const
+    const windows = [[600, 600, false], [650, 561, false], [640, 700, false], [650, 550, true], [694, 768, true], [673, 841, true], [1920, 600, false], [2660, 837, false], [1820, 572, true], [1000, 1000, false]] as const
+    for (const [w, h, coarse] of [...tablets.map(([tw, th]) => [tw, th, true] as const), ...windows]) {
+      const at = `${w}x${h}${coarse ? ' touch' : ''}`
+      const layers = laidIn(open(w, h, '', { coarse }).box)
+      for (let j = 0; j + 1 < layers.length; j++) {
+        const bare = bareOf(layers[j]!, w, h)
+        for (let e = 0; e < 4; e++) if (bare[e]! > 3) expect(layers[j]!.thin[e], `${at}: picture ${j}, ${bare[e]!.toFixed(1)} px short of the ${TOWARD[(e + 2) % 4]}`).toBeGreaterThanOrEqual(8)
+      }
+    }
+    for (const [w, h] of tablets) {
+      const layers = laidIn(open(w, h, '', { coarse: true }).box)
+      expect(layers.length, `${w}x${h}`).toBeGreaterThan(1)
+      expect(layers[0]!.thin[0], `${w}x${h}: the still thins out toward the top`).toBeGreaterThanOrEqual(8)
+    }
+  })
+
+  it('lays every copy about the glass of the still, larger than the one over it', () => {
+    for (const [w, h, coarse] of [[820, 1180, true], [600, 600, false], [1920, 600, false], [360, 800, false], [3440, 1080, false]] as const) {
+      const layers = laidIn(open(w, h, '', { coarse }).box)
+      for (let j = 1; j < layers.length; j++) {
+        expect(layers[j]!.globe.cx, `${w}x${h}`).toBeCloseTo(layers[0]!.globe.cx, 6)
+        expect(layers[j]!.globe.cy, `${w}x${h}`).toBeCloseTo(layers[0]!.globe.cy, 6)
+        expect(layers[j]!.globe.r, `${w}x${h}`).toBeGreaterThan(layers[j - 1]!.globe.r)
+      }
+    }
+  })
+
+  it('takes the copies away again on a screen the still fills', () => {
+    const { box, win } = open(820, 1180, '', { coarse: true })
+    expect(stillsIn(box).length).toBeGreaterThan(1)
+    const f = config.formats.tablet
+    win.resize(f.width, f.height)
+    expect(stillsIn(box)).toHaveLength(1)
+    expect(stillsIn(box)[0]!.style.maskImage).toBe('')
   })
 })
 
@@ -323,7 +439,40 @@ describe('the still stands where the globe stays once the controls are measured'
   })
 })
 
+/**
+ * A browser that knows `rel=expect` paints nothing until the element the link names has been parsed, so its first paint has
+ * the soft picture in it and never the bare ground. The element stands right after the script and outside it: a parser
+ * reaches it whether the script ran or threw, and a browser that does not know the link paints as it always did.
+ */
+const heldUntilLaid = (page: string): void => {
+  const head = page.slice(0, page.indexOf('<body'))
+  const link = /<link\b[^>]*\brel="expect"[^>]*>/.exec(head)?.[0] ?? ''
+  expect(link).toContain('blocking="render"')
+  const id = /\bhref="#([^"]+)"/.exec(link)?.[1] ?? ''
+  expect(id).not.toBe('')
+  const named = [...page.matchAll(new RegExp(`<([a-z]+)\\b[^>]*\\bid="${id}"[^>]*>`, 'g'))]
+  expect(named).toHaveLength(1)
+  const element = named[0]!
+  expect(element[0]).toMatch(/\shidden\b/)
+  const laid = page.indexOf('</script>', page.indexOf('/*first:end*/')) + '</script>'.length
+  expect(page.indexOf('/*first:end*/')).toBeGreaterThan(head.length)
+  expect(element.index!).toBeGreaterThanOrEqual(laid)
+  expect(page.slice(laid, element.index!).trim()).toBe('')
+  expect(page.slice(element.index!).startsWith(`${element[0]}</${element[1]}>`)).toBe(true)
+}
+const builtFile = path.join(root, 'dist', 'index.html')
+const built = fs.existsSync(builtFile) ? fs.readFileSync(builtFile, 'utf8') : null
+const builtOfThisPage = built !== null && tableText !== 'null' && /\/\*first:begin\*\/([\s\S]*?)\/\*first:end\*\//.exec(built)?.[1]?.trim() === tableText
+
 describe('the first paint, before the still has arrived', () => {
+  it('is held until the soft picture is laid: the head expects an element that stands right after the script', () => {
+    heldUntilLaid(html)
+  })
+
+  it.skipIf(!builtOfThisPage)('is held the same way in the built page, where the workspace has one built of this page', () => {
+    heldUntilLaid(built!)
+  })
+
   it('holds a soft picture of every season in the page, a few hundred bytes each', () => {
     expect(table.p.length).toBeGreaterThan(0)
     for (const [still, width, height, rim] of table.p) {

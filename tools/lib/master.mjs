@@ -1,8 +1,9 @@
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import crypto from 'node:crypto'
-import { loadConfig, readJson, rel } from './paths.mjs'
+import { loadConfig, readJson, rel, writeJson } from './paths.mjs'
 
 const cfg = loadConfig()
 export const M = cfg.deliver.master
@@ -13,7 +14,9 @@ export const JOINS = { 'film-b': ['film-b'], 'film-a': ['opening', 'film-b'], lo
 export const SOUND = { 'film-b': 'film-b', 'film-a': 'film-a', loop: null }
 export const STILL_MAX_MB = 20
 export const MEAN_SLACK = 1
-export const UHD_RAM_GB = 12
+export const UHD_PROC_GB = 4.1
+export const UHD_SPARE_GB = 2
+export const CPUS_A_PROC = 4
 export const SIZE_AIM = 0.985
 export const MUX_KBPS = 12
 
@@ -166,8 +169,8 @@ export function unsplitFile(wanted, have, out, { move = false } = {}) {
 export const chunkName = (c) => `${c.record.what} ${c.record.first} to ${c.record.last}${c.record.test ? ' (a test)' : ''}, drawn on ${c.record.machine}`
 
 export function isChunkRecord(file) {
-  if (!/\.json$/.test(file)) return null
   try {
+    if (fs.statSync(file).size > 1e6) return null
     const r = readJson(file)
     return WHATS.includes(r.what) && Number.isInteger(r.first) && Number.isInteger(r.last) && typeof r.sha256 === 'string' && Array.isArray(r.frameHashes) ? r : null
   } catch {
@@ -182,7 +185,8 @@ export function isChunkRecord(file) {
 export function takeFiles(folder, dir, { keep = false } = {}) {
   if (!fs.existsSync(folder)) throw new Error(`--files ${folder} does not exist`)
   if (path.resolve(folder) === path.resolve(dir) || path.resolve(folder).startsWith(path.resolve(dir) + path.sep)) throw new Error('--files takes the folder the attachments were saved in, which is not inside the folder that is collected into')
-  const known = new Set(readChunks([dir]).map((c) => `${c.record.sha256} ${c.record.machine} ${c.record.boot}`))
+  const idOf = (r) => `${r.test ? 'test ' : ''}${r.what} ${r.first} ${r.last} ${r.sha256} ${r.machine} ${r.boot}`
+  const known = new Set(readChunks([dir]).map((c) => idOf(c.record)))
   let records = 0
   const walk = (d) => {
     for (const e of fs.readdirSync(d, { withFileTypes: true }).sort((a, b) => (a.name < b.name ? -1 : 1))) {
@@ -193,7 +197,7 @@ export function takeFiles(folder, dir, { keep = false } = {}) {
       }
       const r = isChunkRecord(p)
       if (!r) continue
-      const id = `${r.sha256} ${r.machine} ${r.boot}`
+      const id = idOf(r)
       if (!known.has(id)) {
         known.add(id)
         const to = path.join(dir, 'files', ...(r.test ? ['test'] : []), r.what, `${chunkStem(r.what, r.first, r.last)}.json`)
@@ -236,7 +240,7 @@ export function takeFiles(folder, dir, { keep = false } = {}) {
         const got = unsplitFile({ bytes: r.still.bytes, sha256: r.still.sha256 }, have, to, { move: !keep })
         if (got.ok) {
           stills++
-          } else problems.push(`${chunkName(c)}: its screenshot ${r.still.file} is not here`)
+        } else problems.push(`${chunkName(c)}: its screenshot ${r.still.file} is not here`)
       }
     }
   }
@@ -315,11 +319,135 @@ export function levelProblems(levels, sources) {
   return problems
 }
 
-export function procsProblem(procs, format, totalBytes) {
-  const gb = Math.floor(totalBytes / 2 ** 30)
-  if (procs > 1 && format === M.format && gb < UHD_RAM_GB) return `--procs ${procs} is refused: this machine has ${gb} GB (free -g) and one ${format} render holds about 3 GB, so two at once can run it out of memory, and a killed graphics process draws black frames. Under ${UHD_RAM_GB} GB it is one ${format} render at a time.`
-  return null
+const GIB = 2 ** 30
+const gib = (bytes) => Math.round((bytes / GIB) * 10) / 10
+
+/**
+ * What this process may really use. A pod can show its node's memory and cores to os.totalmem() and os.cpus()
+ * and be held far under them by its cgroup, so the cgroup's own files are read first: memory.max and cpu.max
+ * (v2) of the path in /proc/self/cgroup and of every folder above it, the least of them; the v1 names where
+ * a machine still has those. read(path) gives a file's text, or null when it is not there.
+ * @param {{ cgroup?: string, read?: (file: string) => string | null, totalmem: number, cpus: number }} facts
+ */
+export function readLimits({ cgroup = '', read = () => null, totalmem, cpus }) {
+  const above = (p) => {
+    const parts = p.split('/').filter(Boolean)
+    return parts.map((_, i) => `/${parts.slice(0, parts.length - i).join('/')}`).concat('')
+  }
+  const lines = cgroup.split('\n').map((l) => l.trim()).filter(Boolean).map((l) => l.split(':')).filter((l) => l.length >= 3).map((l) => ({ controllers: l[1].split(','), path: l.slice(2).join(':') }))
+  const v2 = lines.find((l) => l.controllers.join('') === '')
+  const v1 = (name) => lines.find((l) => l.controllers.includes(name))
+  let mem = Infinity
+  let cpu = Infinity
+  if (v2) {
+    for (const p of above(v2.path)) {
+      const m = (read(`/sys/fs/cgroup${p}/memory.max`) ?? '').trim()
+      if (/^\d+$/.test(m)) mem = Math.min(mem, Number(m))
+      const c = /^(\d+)\s+(\d+)$/.exec((read(`/sys/fs/cgroup${p}/cpu.max`) ?? '').trim())
+      if (c && Number(c[2]) > 0) cpu = Math.min(cpu, Number(c[1]) / Number(c[2]))
+    }
+  }
+  if (v1('memory')) {
+    for (const p of above(v1('memory').path)) {
+      const m = (read(`/sys/fs/cgroup/memory${p}/memory.limit_in_bytes`) ?? '').trim()
+      if (/^\d+$/.test(m)) mem = Math.min(mem, Number(m))
+    }
+  }
+  if (v1('cpu')) {
+    for (const p of above(v1('cpu').path)) {
+      const dir = `/sys/fs/cgroup/${v1('cpu').controllers.join(',')}${p}`
+      const quota = Number((read(`${dir}/cpu.cfs_quota_us`) ?? '').trim())
+      const period = Number((read(`${dir}/cpu.cfs_period_us`) ?? '').trim())
+      if (quota > 0 && period > 0) cpu = Math.min(cpu, quota / period)
+    }
+  }
+  const capped = { memory: mem < totalmem, cpus: cpu < cpus }
+  return {
+    memoryBytes: capped.memory ? mem : totalmem,
+    cpus: capped.cpus ? Math.round(cpu * 100) / 100 : cpus,
+    memoryFrom: capped.memory ? 'cgroup' : 'machine',
+    cpusFrom: capped.cpus ? 'cgroup' : 'machine',
+    machineMemoryBytes: totalmem,
+    machineCpus: cpus,
+  }
 }
+
+export function machineLimits() {
+  const read = (p) => {
+    try {
+      return fs.readFileSync(p, 'utf8')
+    } catch {
+      return null
+    }
+  }
+  return readLimits({ cgroup: read('/proc/self/cgroup') ?? '', read, totalmem: os.totalmem(), cpus: os.availableParallelism?.() ?? os.cpus().length })
+}
+
+export function limitsLine(l) {
+  const mem = `${gib(l.memoryBytes)} GiB of memory${l.memoryFrom === 'cgroup' ? ` (the cgroup's memory.max; the machine shows ${gib(l.machineMemoryBytes)} GiB)` : ''}`
+  const cpu = `${l.cpus} ${l.cpus === 1 ? 'CPU' : 'CPUs'}${l.cpusFrom === 'cgroup' ? ` (the cgroup's cpu.max; the machine shows ${l.machineCpus})` : ''}`
+  return `limits: ${mem}, ${cpu}`
+}
+
+export const limitsRecord = (l) => ({ memoryGiB: gib(l.memoryBytes), cpus: l.cpus, memoryFrom: l.memoryFrom, cpusFrom: l.cpusFrom, machineMemoryGiB: gib(l.machineMemoryBytes), machineCpus: l.machineCpus })
+
+/** The most render processes the memory holds at the master's size: each about UHD_PROC_GB (measured at 24 samples), and UHD_SPARE_GB kept for the encoder and the system. */
+export const procsMemoryHolds = (memoryBytes) => Math.max(1, Math.floor((memoryBytes / GIB - UHD_SPARE_GB) / UHD_PROC_GB))
+
+export function procsProblem(procs, format, limits) {
+  if (procs < 2 || format !== M.format) return null
+  const most = procsMemoryHolds(limits.memoryBytes)
+  if (procs <= most) return null
+  return `--procs ${procs} is refused: this process may use ${gib(limits.memoryBytes)} GiB (${limits.memoryFrom === 'cgroup' ? "its cgroup's memory.max" : "the machine's memory"}) and one ${format} render holds about ${UHD_PROC_GB} GB, with ${UHD_SPARE_GB} GB kept for the encoder and the system. More than the memory holds gets browsers killed, and a killed graphics process draws nothing. The most here is --procs ${most}.`
+}
+
+/** A plain line when more processes are asked for than the CPUs can gain from, or null. One software render already uses every core: on 8 CPUs a second process added about 10 percent and a third nothing. */
+export function procsGainLine(procs, limits) {
+  const gain = Math.max(1, Math.floor(limits.cpus / CPUS_A_PROC))
+  if (procs <= gain) return null
+  return `--procs ${procs} on ${limits.cpus} ${limits.cpus === 1 ? 'CPU' : 'CPUs'}: one software render already uses every core. Measured on 8 CPUs, a second process added about 10 percent and a third nothing. It runs, but expect no gain over --procs ${gain}.`
+}
+
+/** --local starts the installed Chrome in a window, with the machine's graphics card. Without a display it cannot open. */
+export function localProblem(local, platform = process.platform, env = process.env) {
+  if (!local || platform !== 'linux' || env.DISPLAY || env.WAYLAND_DISPLAY) return null
+  return '--local is refused: it starts the installed Chrome in a window, with the graphics card of this machine, and no display is here (DISPLAY and WAYLAND_DISPLAY are not set). On a machine without a screen leave --local off: the software renderer draws without a window. With a virtual screen, start it under xvfb-run.'
+}
+
+/** A file of JSON that is never seen half written: written under another name, then renamed. */
+export function writeJsonAtomic(file, value) {
+  const tmp = `${file}.${process.pid}.tmp`
+  writeJson(tmp, value)
+  fs.renameSync(tmp, file)
+}
+
+/** A picture of nothing real, for the tool's own tests: a smooth ramp that moves with the frame. Never flat. */
+export function standInPicture(width, height, index) {
+  const rgb = Buffer.alloc(width * height * 3)
+  for (let y = 0, o = 0; y < height; y++) {
+    const g = Math.round((255 * y) / (height - 1))
+    for (let x = 0; x < width; x++, o += 3) {
+      rgb[o] = Math.round((255 * x) / (width - 1))
+      rgb[o + 1] = g
+      rgb[o + 2] = (index * 8) % 256
+    }
+  }
+  return rgb
+}
+
+/** The line a stopped render ends on: which chunk, which frame, and why. The parent reads it back from a worker with stoppedAt. */
+export const stoppedLine = (c, index, why) => `stopped at chunk ${pad6(c.first)}-${pad6(c.last)}, frame ${index}: ${String(why).split('\n')[0]}`
+export function stoppedAt(line) {
+  const m = /stopped at chunk (\d{6})-(\d{6}), frame (\d+): (.*)$/m.exec(line)
+  return m ? { first: Number(m[1]), last: Number(m[2]), frame: Number(m[3]), why: m[4] } : null
+}
+
+/** The command line as it was typed, without what the tool adds for its own workers. */
+export function sameCommand(argv) {
+  const kept = argv.filter((a, i) => a !== '--worker' && argv[i - 1] !== '--worker')
+  return `npm run master -- ${kept.map((a) => (/^[\w@%+=:,./-]+$/.test(a) ? a : `'${a.replace(/'/g, "'\\''")}'`)).join(' ')}`
+}
+
 export const LOOK_WIDTH = 1200
 
 export const pad6 = (i) => String(i).padStart(6, '0')
@@ -375,8 +503,13 @@ export function rangeChunks(total, first = null, last = null, size = M.chunkFram
 export const framesOf = (c) => Array.from({ length: c.last - c.first + 1 }, (_, i) => c.first + i)
 
 /** What a run still has to do: every chunk without a verified record, with the frames of it that are not on disk yet. */
-export function stillToDo(chunks, { done, has }) {
-  return chunks.filter((c) => !done(c)).map((c) => ({ ...c, missing: framesOf(c).filter((i) => !has(c, i)) }))
+export function stillToDo(chunks, { done, has, sweep }) {
+  return chunks
+    .filter((c) => !done(c))
+    .map((c) => {
+      sweep?.(c)
+      return { ...c, missing: framesOf(c).filter((i) => !has(c, i)) }
+    })
 }
 
 export function split(chunks, procs, worker) {
@@ -652,7 +785,7 @@ export function encodeProofRows(f) {
   rows.push(row('colour tags', COLOUR_TAGS, f.tags, f.tags === COLOUR_TAGS))
   const level = Math.round(Number(M.video.level) * 10)
   rows.push(row('codec', `h264 High, level ${M.video.level}`, `${f.codec} ${f.profile}, level ${(f.level / 10).toFixed(1)}`, f.codec === 'h264' && f.profile === 'High' && f.level === level))
-  rows.push(row('reference frames', `at most ${M.final.refs}, what level ${M.video.level} holds at this size`, f.refs, f.refs >= 1 && f.refs <= M.final.refs))
+  rows.push(row('reference frames', `at most ${M.final.refs}, what level ${M.video.level} holds at this size`, f.refs ?? 'not read from the stream', f.refs >= 1 && f.refs <= M.final.refs))
   const gaps = f.keys.map((k, i) => (i + 1 < f.keys.length ? f.keys[i + 1] : f.frames) - k)
   const widest = Math.max(0, ...gaps)
   const keyint = f.keyint ?? M.final.keyint
@@ -674,7 +807,7 @@ export function encodeProofRows(f) {
   if (f.loop) {
     const l = f.loop
     rows.push(row("the loop against film B's best hold", l.wanted === null ? 'every frame as close to its picture as the best second of film B' : `every frame ${dB(l.wanted)} dB or more, the best second of film B`, l.wanted === null ? 'the record of film B is not here' : `least ${f.psnr.least} dB at frame ${f.psnr.leastFrame}`, l.wanted === null ? (f.test ? null : false) : f.psnr.least >= l.wanted))
-    rows.push(row('the wrap', `the last frame within ${l.seamDb} dB of the first, each against its own picture`, `frame 0 ${dB(l.first)} dB, frame ${f.frames - 1} ${dB(l.last)} dB`, Math.abs(l.first - l.last) <= l.seamDb))
+    rows.push(row('the wrap', `the last frame within ${l.seamDb} dB of the first, each against its own frame of the decoded intermediate`, `frame 0 ${dB(l.first)} dB, frame ${f.frames - 1} ${dB(l.last)} dB`, Math.abs(l.first - l.last) <= l.seamDb))
   }
   return rows
 }
