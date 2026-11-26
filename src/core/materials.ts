@@ -37,7 +37,12 @@ export const DRESSING_FRONT = { gain: 2, fromMm: 58, toMm: 230 } as const
  * base in the same number of the frame's samples, the share to the nearest of N. The globe travels while the shutter is open,
  * so a base's line that stands across the travel is drawn out, and a pixel there is under that base for a part of the shutter
  * only. The step therefore goes by the sample's place in the shutter, `passStride` levels a place: the samples that hold the new
- * base fall evenly over any part of the shutter, at every pixel. One sample, the app's own path, keeps the plain hash.
+ * base fall evenly over any part of the shutter, at every pixel.
+ * Where the page draws one sample a frame and shows it (`uPass.w` 0, `passCount`), nothing averages the hash away, and a hash
+ * drawn afresh each frame made every pixel of a part that gives way flicker for as long as the change ran. There the level
+ * is the pixel's own and never the frame's (`stageStill`): a pixel goes once and stays gone, comes once and stays. The pattern
+ * is interleaved gradient noise, which holds close to the same share of every small patch of pixels, so a part thins evenly
+ * and never in the clumps a white hash leaves.
  * The table's dressing never holds two seasons: the old season's is gone in the first half of the span and the new season's
  * comes in the second (`DRESSING_CHANGE`). Each goes and comes from the foot outward; the edge of that front is broken into
  * patches (`cellMm`, `fineMm`) drawn out along the way a gust runs (`streak` times as long as wide, `rayMm` to a radian across)
@@ -95,6 +100,18 @@ export function passStride(count: number): number {
 export function passStep(t: number, count: number): number {
   const place = Math.min(count - 1, Math.max(0, Math.floor(t * count)))
   return ((place * passStride(count)) % count) / count
+}
+
+/** How many samples a frame is the mean of, as `uPass.w` carries it. None: the page draws one sample a frame and shows it. */
+export function passCount(sample: { of?: number } | null): number {
+  return sample ? (sample.of ?? 1) : 0
+}
+
+/** The level a pixel stands at wherever one sample is a frame: what `stageStill` works out, in the shader's own precision. */
+export function stillLevel(x: number, y: number): number {
+  const f = Math.fround
+  const fract = (v: number): number => f(v - Math.floor(v))
+  return fract(f(f(52.9829189) * fract(f(f(x * f(0.06711056)) + f(y * f(0.00583715))))))
 }
 
 /**
@@ -321,7 +338,19 @@ float stageChange() {
   float side = clamp(0.5 + vStageLocal.z / (2.0 * uGrid.w), 0.0, 1.0);
   return clamp((uChange - uState.x - uState.z * side) / uState.y, 0.0, 1.0);
 }
+float stageStill(vec2 at) {
+  return fract(52.9829189 * fract(dot(at, vec2(0.06711056, 0.00583715))));
+}
+bool stageGoneStill(float c) {
+  if (uState.w > 0.5) {
+    float h = stageStill(gl_FragCoord.xy);
+    if (!(uState.z < -${(BASE_CODE - 1).toFixed(1)}) && stageEdge > -0.5) h = clamp(stageEdge + (h - 0.5) * ${OUTSIDE_FRONT.feather.toFixed(2)}, 0.001, 0.999);
+    if (uState.w > 1.5 ? h < c : h >= c) return true;
+  }
+  return uFlags.w < 1.0 && stageStill(gl_FragCoord.yx + 29.0) >= uFlags.w;
+}
 bool stageGone(float c) {
+  if (uPass.w < 0.5) return stageGoneStill(c);
   if (uState.w > 0.5) {
     float h = stageHash(vec3(gl_FragCoord.xy, uSeed));
     if (uState.z < -${(BASE_CODE - 1).toFixed(1)}) {
