@@ -8,40 +8,50 @@ export interface ChangeSpan {
   lag: number
 }
 
-const OUTSIDE: ChangeSpan = { from: 0.69, to: 0.85, lag: 0 }
-
 const WINDOW_FRAMES = ((config.shake.swapWindow.toBeat - config.shake.swapWindow.fromBeat) * 60 * config.film.fps) / config.film.defaultBpm
 const frames = (n: number): number => n / WINDOW_FRAMES
 
 const SHUTTER = config.film.shutterDegrees / 360
 
 /**
- * The cut of the base, as a place in the swap window. The base is the old season's before it and the new season's after it, with
- * nothing between. It lies where the film's shutter is closed, after the exposure of the frame before `frame` has ended and
- * before the exposure of `frame` begins (`frame` is counted from the first frame of the window), between the two frames on
- * which the last stroke runs fastest: no frame of the film holds both bases, the last frame of the old base and the first of
- * the new are each drawn out by the stroke. A quarter of the way through the closed shutter, so that no picture taken on a
- * whole, a half or a quarter of a frame's time falls on it.
+ * What is outside the glass (the base, what lies on the table, what is on the glass, the lights of the backdrop, the light of
+ * the room) changes in one span of the window, three frames long, in the middle of the last and fastest stroke: table.ts puts
+ * the middle of that stroke on the middle of this span. Across it the old base gives way to the new. Both are drawn whole and
+ * every pixel of every sample holds one or the other, so a frame of the film holds the two laid over each other and never a
+ * base that is neither season's. A shake of one season changes nothing outside the glass; what it sheds, and the swell of the
+ * light inside in every shake, keep the wider span about the same middle (`shed`).
  */
-export const CHANGE_CUT = { frame: 26, at: frames(25 + SHUTTER + (1 - SHUTTER) / 4) } as const
+const SHED: ChangeSpan = { from: 0.69, to: 0.85, lag: 0 }
+const OUTSIDE_MID = (SHED.from + SHED.to) / 2
+const OUTSIDE: ChangeSpan = { from: OUTSIDE_MID - frames(1.5), to: OUTSIDE_MID + frames(1.5), lag: 0 }
 
 /**
- * What lies on the table, as places in the swap window. The old season's dressing leaves under the strokes before the cut
- * (`liftFrom`: the first frame anything on the table moves; `leaveFrom` to `leaveTo`: the frames across which it is gone, from
- * the foot outward, the last of it inside the last exposure of the old base), the table is bare on the cut, and the new
- * season's dressing comes with the first frame of the new base and after it (`comeFrom` to `comeTo`).
+ * The cover of that span, as places in the swap window: the new season's light pours out of the glass and the room falls
+ * away from it, as a camera's exposure does when a lamp flares in the dark (lighting.ts, `CHANGE_BLOOM`). It is whole from
+ * `fullFrom` to `fullTo`: on every exposure of the film that opens or closes inside the span, and a quarter of a frame past
+ * each, so that a live picture taken on any instant of the span is under it as well. It rises from `riseFrom` over seven
+ * frames and is gone at `goneAt`, five and a half after `fullTo` and inside the window, so that no frame of it is a step.
  */
-export const DRESSING_CHANGE = { liftFrom: frames(12), leaveFrom: frames(15.5), leaveTo: frames(25 + SHUTTER), comeFrom: frames(26), comeTo: frames(34.5) } as const
+const COVER_ROOM = frames(SHUTTER + 0.25)
+const COVER_RISE = frames(7)
+const COVER_FALL = frames(5.5)
+export const CHANGE_COVER = {
+  riseFrom: OUTSIDE.from - COVER_ROOM - COVER_RISE,
+  fullFrom: OUTSIDE.from - COVER_ROOM,
+  fullTo: OUTSIDE.to + COVER_ROOM,
+  goneAt: OUTSIDE.to + COVER_ROOM + COVER_FALL,
+} as const
 
-/** The bloom rises over this much of the window to the cut and falls over as much after it. */
-const BLOOM_HALF = frames(6)
-
-/** What the table carries as one number crossed straight from the old season to the new goes with the base, where the shutter is closed. */
-const ON_THE_CUT: ChangeSpan = { from: CHANGE_CUT.at - frames(0.125), to: CHANGE_CUT.at + frames(0.125), lag: 0 }
 /**
- * What is on the glass goes before the cut and is gone on it: no frame shows the old season's dressing on the glass over the new base.
- * The heaps of the slab (`surface-leave`, `surface-come`) sink with the old dressing before the cut and rise with the new after it.
- * A shake of one season reads the base's span and none of these.
+ * What lies on the table, as places in the swap window, all of them inside the span and so under the whole cover. The old
+ * season's dressing leaves in the first half of the span, from the foot outward (`liftFrom`: the first instant anything on the
+ * table moves), the table is bare at the middle, and the new season's comes in the second half.
+ */
+export const DRESSING_CHANGE = { liftFrom: OUTSIDE.from, leaveFrom: OUTSIDE.from, leaveTo: OUTSIDE_MID, comeFrom: OUTSIDE_MID, comeTo: OUTSIDE.to } as const
+
+/**
+ * Every part outside the glass reads the one span. The heaps of the slab (`surface-leave`, `surface-come`) sink with the old
+ * dressing and rise with the new. A shake of one season reads `shed` and none of the others.
  */
 const SPANS: Record<string, ChangeSpan> = {
   miniature: { from: 0.05, to: 0.95, lag: 0.5 },
@@ -50,11 +60,13 @@ const SPANS: Record<string, ChangeSpan> = {
   veil: { from: 0, to: 1, lag: 0 },
   particles: { from: 0, to: 1, lag: 0 },
   base: OUTSIDE,
-  'glass-dressing': { from: OUTSIDE.from, to: CHANGE_CUT.at, lag: 0 },
-  'surface-dressing': ON_THE_CUT,
+  'glass-dressing': OUTSIDE,
+  'surface-dressing': OUTSIDE,
   'surface-leave': { from: DRESSING_CHANGE.leaveFrom, to: DRESSING_CHANGE.leaveTo, lag: 0 },
   'surface-come': { from: DRESSING_CHANGE.comeFrom, to: DRESSING_CHANGE.comeTo, lag: 0 },
   backdrop: OUTSIDE,
+  room: OUTSIDE,
+  shed: SHED,
 }
 
 const WHOLE: ChangeSpan = { from: 0, to: 1, lag: 0 }
@@ -75,8 +87,15 @@ export function partChange(part: string, change: number, side = 0.5): number {
   return v <= 0 ? 0 : v >= 1 ? 1 : v
 }
 
+// The exposure falls by the cover as an exponent (lighting.ts), so a straight ramp is the room falling by the same share of a
+// stop on every frame, the slowest it can fall and rise in the frames it has.
+const ramp = (v: number): number => (v <= 0 ? 0 : v >= 1 ? 1 : v)
+
+/** How much of the cover stands at a place in the window: 0 before `riseFrom` and after `goneAt`, 1 from `fullFrom` to `fullTo`. */
 export function changeBloom(change: number): number {
   if (!(change > 0) || change >= 1) return 0
-  const v = 1 - Math.abs(change - CHANGE_CUT.at) / BLOOM_HALF
-  return v <= 0 ? 0 : v * v * (3 - 2 * v)
+  const c = CHANGE_COVER
+  if (change < c.fullFrom) return ramp((change - c.riseFrom) / (c.fullFrom - c.riseFrom))
+  if (change > c.fullTo) return ramp((c.goneAt - change) / (c.goneAt - c.fullTo))
+  return 1
 }

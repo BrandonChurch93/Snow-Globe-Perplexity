@@ -1,43 +1,43 @@
 {
-  "number": 135,
-  "time": "2026-11-26 03:58 UTC",
+  "number": 137,
+  "time": "2026-11-26 05:20 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 135 · 2026-11-26 03:58 UTC · Phase 6",
-    "Review item 1, the white glass: the mend is complete in the code and passes its checks (types clean; 528 tests pass, 4 skipped). As a second net, the glass now turns a pixel that is no number into clear glass, never into a bright sheet. Publishing it is the next step.",
-    "The winter pixels of the last status are traced: 5 to 8 lone pixels move by one level when the test wraps a call whose base cannot be below zero by its own text; with the wrapper answering as the plain function the picture equals the plain one. The same size of step with three different answers (no number, 0, 1e30), so no picture rests on an open case there.",
-    "The strict check is now a command of the repo (npm run strict). It passes when no pixel moves by more than one level and at most 0.01 percent of pixels move.",
-    "Next, at once and in parallel: builders on the faults the fresh review named, shown below as the reviewer found them (the season change seen in one frame, the blank first frame, the phone framing, summer reading as snow), a checker running the strict rule on all eight judged pictures, and the open sounds.",
-    "phase 6: 1.15 h used of its 12.00 h box",
-    "allowance (after the review): 1.15 h used of 12.00 h allowed",
+    "Status 137 · 2026-11-26 05:20 UTC · Phase 6",
+    "Three of the review's must-fixes are merged into main from their builders: the Shake control stays on screen, the camera stands back so the whole globe stays on a phone through a shake, and the season now changes across several frames under a bloom of the new season's light instead of in one cut. None is judged yet: critics see them after the other builders report.",
+    "The film's sound is mended by number (no dead silence before a landing or at the end, the four landings within 0.56 dB of each other, -14.0 LUFS, the encoded copy under -1 dBTP) and the app's six loops no longer step at the seam. A listener still hears three ticks at the very start and a click at some starts. The paid takes for the ten missing effects come next, inside the 3,235 credits left.",
+    "A faster renderer was measured on a sandbox machine: 1.31 s a sample against 10.9 at 1080p. Its picture has not been compared with the present one yet, so the 4K masters' plan waits for that number.",
+    "The opening of the film with the prompt has its reasoning menu drawn (Standard, High, Max). Ten agents are at work; the next reports are due by 07:05 UTC.",
+    "phase 6: 2.52 h used of its 12.00 h box",
+    "allowance (after the review): 2.52 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-135-1.jpg",
-      "caption": "To mend: the season change outside the glass. The fresh review's frames of the review film: the old base whole in one frame, the new one in the next",
+      "file": "out/stills/status/status-137-1.jpg",
+      "caption": "The winter to spring change as merged, film frames 668 to 679 at preview size and draft quality: about a fifth of a second at 60 frames a second. The table's frost gives way to petals under the bloom.",
       "w": 1200,
-      "h": 669
+      "h": 559
     },
     {
-      "file": "out/stills/status/status-135-2.jpg",
-      "caption": "To mend: on a phone the glass leaves the screen in a shake (the fresh review's captures at 390 x 844)",
-      "w": 1186,
-      "h": 870
+      "file": "out/stills/status/status-137-2.jpg",
+      "caption": "The opening's reasoning menu, frame 89 of the 1080p render: the level is changed from Standard to High before the prompt is typed.",
+      "w": 1200,
+      "h": 675
     },
     {
-      "file": "out/stills/status/status-135-3.jpg",
-      "caption": "To mend: summer at feed size. The approved picture, the film and the live app, as the fresh review set them side by side",
+      "file": "out/stills/status/status-137-3.jpg",
+      "caption": "Comparison crops 2: fall-rest, approved image left, build right",
       "w": 1200,
-      "h": 238
+      "h": 679
     },
     {
-      "file": "out/stills/status/status-135-4.jpg",
-      "caption": "To mend: the page before the first picture, as the fresh review caught it",
+      "file": "out/stills/status/status-137-4.jpg",
+      "caption": "Comparison crops 1: fall-rest, approved image left, build right",
       "w": 1200,
-      "h": 280
+      "h": 679
     }
   ]
 }

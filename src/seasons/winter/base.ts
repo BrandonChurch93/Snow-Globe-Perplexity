@@ -625,7 +625,7 @@ export function update(moment: KitMoment): void {
   let held = -1
   let shed = -1
   if (two) held = moment.arrived >= 1 ? 1 : shaking ? 0 : -1
-  else if (shaking) shed = partChange('base', (moment.beat! - swap.fromBeat) / (swap.toBeat - swap.fromBeat))
+  else if (shaking) shed = partChange('shed', (moment.beat! - swap.fromBeat) / (swap.toBeat - swap.fromBeat))
   const since = Math.max(0, moment.sinceLanding)
   const grow = iceUniforms.uIceGrow.value
   for (let i = 0; i < growth.length; i++) {

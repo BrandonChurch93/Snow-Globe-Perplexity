@@ -4459,6 +4459,222 @@
       },
       "time": "2026-11-25T18:11:23.886Z",
       "answersTime": "2026-11-25T18:13:07.900Z"
+    },
+    {
+      "cue": "shake-winter",
+      "take": 4,
+      "round": "after-review",
+      "layer": true,
+      "class": "impact",
+      "season": "winter",
+      "line": "Liquid sloshing and churning inside glass, with a hiss of snow and tiny bells in it",
+      "tool": "laid together by the harness from the layers named, by fixed numbers (decisions 111 and 134): no call, no credit, not a take",
+      "prompt": null,
+      "settings": null,
+      "recipe": {
+        "file": "audio/layers/shake-winter.json",
+        "sha256": "d806024365ab0f2f90409fc9cc570b0bcf8d527d80b5a2b052071b2b6facc50a",
+        "why": "the liquid of the kept shake-spring, a little higher for winter; the cue's own take 3 gives the tiny bells, thinned to their top and set behind the water; a made hiss of fine noise is the snow, quiet support"
+      },
+      "layers": [
+        {
+          "kept": "shake-spring",
+          "cents": 40,
+          "source": {
+            "kept": "shake-spring",
+            "sha256": "e6abd21dd21a3ebf8d1e5b5a120cbc919c28d72c3ec23ecc1cb636f0f50c2f9c"
+          },
+          "underMainDb": 0,
+          "gainDb": 0,
+          "levelDb": -28.05,
+          "seconds": 2.127
+        },
+        {
+          "take": 3,
+          "lowCutHz": 2500,
+          "from": 0.05,
+          "to": 2.3,
+          "fadeInMs": 20,
+          "fadeOutMs": 300,
+          "source": {
+            "cue": "shake-winter",
+            "take": 3,
+            "sha256": "10ab4d8d611aaf40d4de98f77035d5ab79d84a417e97592b38fee77185d4cfef"
+          },
+          "underMainDb": 7,
+          "gainDb": -7.18,
+          "levelDb": -35.05,
+          "seconds": 2.25
+        },
+        {
+          "made": "noise",
+          "fromHz": 5000,
+          "toHz": 11000,
+          "seconds": 2,
+          "seed": 11,
+          "fadeInMs": 150,
+          "fadeOutMs": 900,
+          "at": 0.05,
+          "source": {
+            "made": "noise"
+          },
+          "underMainDb": 13,
+          "gainDb": -26.01,
+          "levelDb": -41.05
+        }
+      ],
+      "source": {
+        "name": "shake-winter.json",
+        "sha256": "9dd2f267aaf5004b983a50a975e4c96d834bd5291db573ebfb0c9c8c4e55356e"
+      },
+      "sha256": "9dd2f267aaf5004b983a50a975e4c96d834bd5291db573ebfb0c9c8c4e55356e",
+      "measured": {
+        "seconds": 2.6,
+        "peakDb": -1.49,
+        "truePeakDb": -1.2,
+        "lufs": -21.52,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -28.17,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0.49,
+        "soundSeconds": 2.11,
+        "tailDb": null,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 2911,
+          "bands": {
+            "sub": 0.0002,
+            "low": 0.0009,
+            "lowMid": 0.309,
+            "mid": 0.472,
+            "high": 0.1342,
+            "air": 0.0837
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -21.5,
+        "lra": 0,
+        "truePeakDb": -1.2
+      },
+      "fits": {
+        "wantSeconds": 2.6,
+        "soundSeconds": 2.11,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": null,
+      "time": "2026-11-26T05:04:19.555Z"
+    },
+    {
+      "cue": "shake-winter",
+      "take": 5,
+      "round": "after-review",
+      "layer": true,
+      "class": "impact",
+      "season": "winter",
+      "line": "Liquid sloshing and churning inside glass, with a hiss of snow and tiny bells in it",
+      "tool": "laid together by the harness from the layers named, by fixed numbers (decisions 111 and 134): no call, no credit, not a take",
+      "prompt": null,
+      "settings": null,
+      "recipe": {
+        "file": "audio/layers/shake-winter.json",
+        "sha256": "af0dcd93b1b2f3830f895bd2ad2d7b5a28f30eae381d08215c616e98dff09025",
+        "why": "the liquid of the kept shake-spring, a little higher for winter; the cue's own take 3 gives the tiny bells, as loud as the water; a made hiss of fine noise is the snow, quiet support"
+      },
+      "layers": [
+        {
+          "kept": "shake-spring",
+          "cents": 40,
+          "source": {
+            "kept": "shake-spring",
+            "sha256": "e6abd21dd21a3ebf8d1e5b5a120cbc919c28d72c3ec23ecc1cb636f0f50c2f9c"
+          },
+          "underMainDb": 0,
+          "gainDb": 0,
+          "levelDb": -28.05,
+          "seconds": 2.127
+        },
+        {
+          "take": 3,
+          "lowCutHz": 1200,
+          "from": 0.05,
+          "to": 2.3,
+          "fadeInMs": 20,
+          "fadeOutMs": 300,
+          "source": {
+            "cue": "shake-winter",
+            "take": 3,
+            "sha256": "10ab4d8d611aaf40d4de98f77035d5ab79d84a417e97592b38fee77185d4cfef"
+          },
+          "underMainDb": 1,
+          "gainDb": -1.69,
+          "levelDb": -29.05,
+          "seconds": 2.25
+        },
+        {
+          "made": "noise",
+          "fromHz": 5000,
+          "toHz": 11000,
+          "seconds": 2,
+          "seed": 11,
+          "fadeInMs": 150,
+          "fadeOutMs": 900,
+          "at": 0.05,
+          "source": {
+            "made": "noise"
+          },
+          "underMainDb": 12,
+          "gainDb": -25.01,
+          "levelDb": -40.05
+        }
+      ],
+      "source": {
+        "name": "shake-winter.json",
+        "sha256": "f6cad02e2ed137f95e301c8797e7e874250e309464cf0df8a15592b6a2b8eee1"
+      },
+      "sha256": "f6cad02e2ed137f95e301c8797e7e874250e309464cf0df8a15592b6a2b8eee1",
+      "measured": {
+        "seconds": 2.6,
+        "peakDb": -1.53,
+        "truePeakDb": -1.23,
+        "lufs": -19.58,
+        "lufsMeasure": "gated",
+        "soundLufs": null,
+        "offsetDb": null,
+        "rmsDb": -26.39,
+        "silenceFrontSeconds": 0,
+        "silenceEndSeconds": 0.485,
+        "soundSeconds": 2.115,
+        "tailDb": null,
+        "events": 1,
+        "spectrum": {
+          "centroidHz": 4380,
+          "bands": {
+            "sub": 0.0001,
+            "low": 0.0006,
+            "lowMid": 0.2077,
+            "mid": 0.401,
+            "high": 0.2056,
+            "air": 0.185
+          }
+        }
+      },
+      "ffmpeg": {
+        "lufs": -19.6,
+        "lra": 0,
+        "truePeakDb": -1.2
+      },
+      "fits": {
+        "wantSeconds": 2.6,
+        "soundSeconds": 2.115,
+        "ok": true,
+        "note": "the sound fits the length of its cue"
+      },
+      "answers": null,
+      "time": "2026-11-26T05:06:15.045Z"
     }
   ],
   "kept": [
@@ -4616,7 +4832,7 @@
     }
   ],
   "pack": {
-    "time": "2026-11-25T18:57:56.046Z",
+    "time": "2026-11-26T04:56:55.187Z",
     "kbps": 192,
     "bytes": 3024000,
     "fits": true,
@@ -4629,32 +4845,32 @@
       {
         "file": "amb-spring.mp3",
         "bytes": 455040,
-        "sha256": "25da46098ae5b51d8f0dc2f1c2a19161d493f7d67c522bdd74221a1adab4cc96"
+        "sha256": "1271ac0dd77eec233dfa15437df9cee3253970e2e6550c196a2abe3d3e69d389"
       },
       {
         "file": "amb-summer.mp3",
         "bytes": 455040,
-        "sha256": "5fd52d37313f1d30e1f4ed4f7cacc315e9c2fbd997d8479d188160477586c5eb"
+        "sha256": "7a88b77c386807b815c9051be6668af867cb6ac6bdf3b3e4e6cd55d6565ab260"
       },
       {
         "file": "music-fall.mp3",
         "bytes": 471744,
-        "sha256": "acd2c7549bddde8e94c2c085e50d64fbe947ff95dff6f2d188a8d159599b90a8"
+        "sha256": "1f06c001ee38db86b32ac1c5f6047aed0c9dbb22ff3ec155a44bf55968f67a91"
       },
       {
         "file": "music-spring.mp3",
         "bytes": 471744,
-        "sha256": "f6632b172a76dd83d3055117369d4fc6093113bf10548c4d3053f9022917c248"
+        "sha256": "14263e89f1a5aec844c2f44bd4eeccf6f8bcccb35bb34774374979d4e3d4ac54"
       },
       {
         "file": "music-summer.mp3",
         "bytes": 471744,
-        "sha256": "3be20683f19ac0de9b93c72cb417b8753a5c9be1f3a122233a28a049f3cd71af"
+        "sha256": "bb04b39791b0617ec1c4f54909d1f44043041f51e4f6bc1c56614f18a1e68b37"
       },
       {
         "file": "music-winter.mp3",
         "bytes": 471744,
-        "sha256": "80aa325c1ea6fde52321ee073c9f54c76f16a0c9bb3e2f94fa2fd05f7cfef28e"
+        "sha256": "49f88f58286c2f56dc52dd081d7f191ac26a4ac865d2834daafadbe95b605aba"
       }
     ],
     "sprites": [
@@ -4672,72 +4888,78 @@
         "id": "amb-spring",
         "decodedSeconds": 18.9,
         "expectedSeconds": 18.9,
-        "seamErrorDb": -9.8,
+        "seamErrorDb": -6.8,
         "sourceSeam": {
-          "jump": 0.004078,
+          "jump": 0.014009,
           "typicalStep": 0.015358,
-          "ratio": 0.27,
-          "levelStepDb": 3.71
+          "ratio": 0.91,
+          "levelStepDb": 0.07,
+          "secondStepDb": 0.07
         }
       },
       {
         "id": "amb-summer",
         "decodedSeconds": 18.9,
         "expectedSeconds": 18.9,
-        "seamErrorDb": -26.89,
+        "seamErrorDb": -32.08,
         "sourceSeam": {
-          "jump": 0.007444,
+          "jump": 0.000697,
           "typicalStep": 0.012568,
-          "ratio": 0.59,
-          "levelStepDb": -7.47
+          "ratio": 0.06,
+          "levelStepDb": 0.03,
+          "secondStepDb": -0.04
         }
       },
       {
         "id": "music-fall",
-        "decodedSeconds": 19.6006,
-        "expectedSeconds": 19.6006,
-        "seamErrorDb": -22.36,
+        "decodedSeconds": 19.5995,
+        "expectedSeconds": 19.5995,
+        "seamErrorDb": -34.3,
         "sourceSeam": {
-          "jump": 0.029174,
-          "typicalStep": 0.02129,
-          "ratio": 1.37,
-          "levelStepDb": -0.52
+          "jump": 0.002843,
+          "typicalStep": 0.020486,
+          "ratio": 0.14,
+          "levelStepDb": 0.34,
+          "secondStepDb": -0.96
         }
       },
       {
         "id": "music-spring",
-        "decodedSeconds": 19.6018,
-        "expectedSeconds": 19.6018,
-        "seamErrorDb": -38.47,
+        "decodedSeconds": 19.5996,
+        "expectedSeconds": 19.5996,
+        "seamErrorDb": -34.65,
         "sourceSeam": {
-          "jump": 0.005541,
-          "typicalStep": 0.007235,
-          "ratio": 0.77,
-          "levelStepDb": 10.62
+          "jump": 0.001542,
+          "typicalStep": 0.008806,
+          "ratio": 0.18,
+          "levelStepDb": -1.71,
+          "secondStepDb": 1.93
         }
       },
       {
         "id": "music-summer",
-        "decodedSeconds": 19.6004,
-        "expectedSeconds": 19.6004,
-        "seamErrorDb": -27.96,
+        "decodedSeconds": 19.6001,
+        "expectedSeconds": 19.6001,
+        "seamErrorDb": -31.22,
         "sourceSeam": {
-          "jump": 0.028136,
-          "typicalStep": 0.010703,
-          "ratio": 2.63,
-          "levelStepDb": 17.07
+          "jump": 0.001125,
+          "typicalStep": 0.010518,
+          "ratio": 0.11,
+          "levelStepDb": -2.68,
+          "secondStepDb": -0.5
         }
       },
       {
         "id": "music-winter",
-        "decodedSeconds": 19.5962,
-        "expectedSeconds": 19.5962,
-        "seamErrorDb": -17.82,
+        "decodedSeconds": 19.6034,
+        "expectedSeconds": 19.6034,
+        "seamErrorDb": -31.76,
         "sourceSeam": {
-          "jump": 0.060834,
-          "typicalStep": 0.026386,
-          "ratio": 2.31,
-          "levelStepDb": -4.35
+          "jump": 0.011193,
+          "typicalStep": 0.026776,
+          "ratio": 0.42,
+          "levelStepDb": -0.56,
+          "secondStepDb": -1.91
         }
       }
     ],
@@ -4753,12 +4975,20 @@
       "time": "2026-11-25T19:10:30.522Z"
     },
     "audio/mix/four-tracks.wav": {
-      "sha256": "64e4d84f7685b51f4be28f854633c7e667469e211130c15b9104b1bfef1a7368",
+      "sha256": "5d76a7685e9993097f263f0bb70f9dee7d4f7ab1ab9434381c4a8b4a9d2f647c",
       "lufs": -14,
       "truePeakDb": -1.1,
       "candidate": "four-tracks",
       "which": "b",
-      "time": "2026-11-25T20:38:23.025Z"
+      "time": "2026-11-26T04:56:42.705Z"
+    },
+    "audio/mix/four-tracks-film-a.wav": {
+      "sha256": "c515036ea88a6897cbc989f71fd2348115ad89fbc840fe9bb79e5959fc6cb055",
+      "lufs": -14,
+      "truePeakDb": -1.1,
+      "candidate": "four-tracks",
+      "which": "a",
+      "time": "2026-11-26T04:50:05.664Z"
     }
   }
 }

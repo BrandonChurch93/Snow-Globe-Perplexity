@@ -28,6 +28,26 @@ const SPRITE_PEAK_DB = -3
 const SPRITE_GAP = 0.3
 const SPRITE_LEAD = 0.1
 const LOOP_PAD = 0.2
+const LOOP_LEAD = 0.06
+const LOOP_CROSS = 0.05
+const LOOP_STEP_DB = 3
+const HOLD_DB = 9
+const OPEN_SECONDS = 0.05
+const CENTRE_WITHIN_DB = 0.1
+const BUS_CENTRE_DB = 1.5
+const THIN_DB = -12
+const THIN_TOP_HZ = 900
+const THIN_TAIL = 0.15
+const LANDING_TRIM_DB = 6
+const LANDING_MATCH_DB = 1
+const LANDING_EASE = 0.25
+const ENCODERS = { aac: 'aac' }
+const ENCODE_ROOM_DB = 0.25
+const ENCODER_DELAY = { aac: 1024 }
+const GIVE_WINDOW = 0.005
+const GIVE_EDGE = 0.004
+const GIVE_MORE_DB = 0.1
+const GIVE_PASSES = 6
 const BITRATES = [192, 160, 128, 112, 96, 80, 64]
 const BANDS = [['sub', 0, 60], ['low', 60, 250], ['lowMid', 250, 1000], ['mid', 1000, 4000], ['high', 4000, 10000], ['air', 10000, Infinity]]
 
@@ -649,6 +669,7 @@ function thin(bus, from, to) {
   const s1 = Math.min(bus.L.length, Math.round(to * rate))
   const n = s1 - s0
   if (n <= 0) return
+  const tail = Math.max(1, Math.min(n, Math.round(THIN_TAIL * rate)))
   for (const x of [bus.L, bus.R]) {
     let px = s0 > 0 ? x[s0 - 1] : 0
     let p1 = 0
@@ -656,7 +677,7 @@ function thin(bus, from, to) {
     let p2 = 0
     for (let i = 0; i < n; i++) {
       const t = i / n
-      const hz = 30 * Math.pow(2400 / 30, t)
+      const hz = 30 * Math.pow(THIN_TOP_HZ / 30, t)
       const c = 1 / (1 + (2 * Math.PI * hz) / rate)
       const v = x[s0 + i]
       const y1 = c * (p1 + v - px)
@@ -666,10 +687,64 @@ function thin(bus, from, to) {
       pm = y1
       p2 = y2
       const wet = Math.min(1, t * 8)
-      const g = Math.cos((Math.PI / 2) * t)
-      x[s0 + i] = (v * (1 - wet) + y2 * wet) * g * g
+      const left = n - i
+      const g = lin(THIN_DB * t) * (left <= tail ? Math.sin((Math.PI / 2) * ((left - 0.5) / tail)) : 1)
+      x[s0 + i] = (v * (1 - wet) + y2 * wet) * g
     }
   }
+}
+
+export function levelDb(a, from = 0, to = a.L.length) {
+  const s0 = Math.max(0, from)
+  const s1 = Math.min(a.L.length, to)
+  if (s1 <= s0) return -Infinity
+  let e = 0
+  for (let i = s0; i < s1; i++) e += a.L[i] * a.L[i] + a.R[i] * a.R[i]
+  return e > 0 ? 10 * Math.log10(e / (2 * (s1 - s0))) : -Infinity
+}
+
+export function channelsDb(a, from = 0, to = a.L.length) {
+  let l = 0
+  let r = 0
+  for (let i = Math.max(0, from); i < Math.min(a.L.length, to); i++) {
+    l += a.L[i] * a.L[i]
+    r += a.R[i] * a.R[i]
+  }
+  return l > 0 && r > 0 ? 10 * Math.log10(l / r) : 0
+}
+
+export function centre(a, most = Infinity) {
+  const off = channelsDb(a)
+  if (Math.abs(off) < CENTRE_WITHIN_DB) return { audio: a, movedDb: 0 }
+  const move = Math.max(-most, Math.min(most, off))
+  const l = Math.pow(10, off / 10)
+  const k = Math.pow(10, move / 10)
+  const gl = Math.sqrt((l + 1) / (l + k))
+  const gr = gl * Math.sqrt(k)
+  const o = make(a.L.length, a.rate)
+  for (let i = 0; i < a.L.length; i++) {
+    o.L[i] = a.L[i] * gl
+    o.R[i] = a.R[i] * gr
+  }
+  return { audio: o, movedDb: round(move) }
+}
+
+export function musicBars(a, lines) {
+  const rate = a.rate
+  const n = lines.length
+  const bar = n > 1 ? (lines[n - 1] - lines[0]) / (n - 1) : seconds(a) - lines[0]
+  const level = lines.map((t, i) => levelDb(a, Math.round(t * rate), Math.round((i + 1 < n ? lines[i + 1] : t + bar) * rate)))
+  const open = lines.map((t) => levelDb(a, Math.round(t * rate), Math.round((t + OPEN_SECONDS) * rate)))
+  const sorted = level.filter(Number.isFinite).sort((x, y) => x - y)
+  const median = sorted.length ? (sorted[(sorted.length - 1) >> 1] + sorted[sorted.length >> 1]) / 2 : -Infinity
+  const holds = level.map((v) => v >= median - HOLD_DB)
+  const whole = lines.map((t) => Math.round((t + bar) * rate) <= a.L.length)
+  let first = holds.findIndex((h, i) => h && open[i] >= median - HOLD_DB)
+  if (first < 0) first = Math.max(0, holds.indexOf(true))
+  let last = -1
+  for (let i = 0; i < n; i++) if (holds[i] && whole[i]) last = i
+  if (last < 0) last = Math.max(0, whole.lastIndexOf(true))
+  return { bar, level: level.map((v) => round(v)), open: open.map((v) => round(v)), medianDb: round(median), first, last, lastWhole: Math.max(0, whole.lastIndexOf(true)) }
 }
 
 export function limit(a, ceiling) {
@@ -737,6 +812,120 @@ export function master(a, target, ceilingDb) {
     if (offLevel) gainDb = Math.min(36, gainDb + (target - lufs))
   }
   return best
+}
+
+// The film carries an encoded copy of the mix, and an encoder can throw a peak above the wav's own at a
+// hard start. The copy is made the way the film's export makes it and comes back in step with the wav.
+export function encodedCopy(a, codec = cfg.export?.audioCodec, kbps = cfg.export?.audioKbps) {
+  const encoder = ENCODERS[codec]
+  if (!encoder || !(kbps > 0) || a.L.length === 0) return null
+  const enc = ffmpeg(['-v', 'error', '-nostdin', '-f', 'wav', '-i', 'pipe:0', '-map_metadata', '-1', '-fflags', '+bitexact', '-flags', '+bitexact', '-c:a', encoder, '-b:a', `${kbps}k`, '-ar', String(a.rate), '-f', 'adts', 'pipe:1'], { input: encodeWav(a) })
+  if (enc.code !== 0 || enc.stdout.length === 0) throw new Error(`ffmpeg could not encode the mix as ${codec}: ${enc.stderr.trim().split('\n').pop() ?? ''}`)
+  const dec = ffmpeg(['-v', 'error', '-nostdin', '-f', 'aac', '-i', 'pipe:0', '-f', 'f32le', '-ac', '2', '-ar', String(a.rate), 'pipe:1'], { input: enc.stdout })
+  if (dec.code !== 0 || dec.stdout.length === 0) throw new Error(`ffmpeg could not read the ${codec} copy of the mix: ${dec.stderr.trim().split('\n').pop() ?? ''}`)
+  const late = ENCODER_DELAY[codec] ?? 0
+  const n = Math.max(0, Math.min(a.L.length, Math.floor(dec.stdout.length / 8) - late))
+  const back = make(n, a.rate)
+  for (let i = 0; i < n; i++) {
+    back.L[i] = dec.stdout.readFloatLE((i + late) * 8)
+    back.R[i] = dec.stdout.readFloatLE((i + late) * 8 + 4)
+  }
+  return back
+}
+
+export function encodedTruePeak(a, codec = cfg.export?.audioCodec, kbps = cfg.export?.audioKbps) {
+  const back = encodedCopy(a, codec, kbps)
+  return back ? db(truePeak(back)) : null
+}
+
+// The true peak of each short window, read between the samples only where a sample comes near `least`.
+function windowPeaks(a, win, least) {
+  const n = a.L.length
+  const out = new Float64Array(Math.ceil(n / win))
+  const half = TP_TAPS / 2 - 1
+  for (const x of [a.L, a.R]) {
+    for (let i = 0; i < n; i++) {
+      const w = Math.floor(i / win)
+      const v = Math.abs(x[i])
+      if (v > out[w]) out[w] = v
+      if (v * 2 < least && Math.abs(x[Math.min(n - 1, i + 1)]) * 2 < least) continue
+      for (const h of TP_PHASES) {
+        let s = 0
+        for (let k = 0; k < TP_TAPS; k++) {
+          const j = i - half + k
+          if (j >= 0 && j < n) s += h[k] * x[j]
+        }
+        if (s > out[w]) out[w] = s
+        else if (-s > out[w]) out[w] = -s
+      }
+    }
+  }
+  return out
+}
+
+// Where the encoded copy stands over its limit, the wav gives way there and only there: a short dip as
+// deep as the copy is over, with a slope each side, read again until the copy fits. The rest of the mix
+// keeps its level, which a lower ceiling for the whole film would not allow.
+export function giveWay(a, ceilingDb, codec = cfg.export?.audioCodec, kbps = cfg.export?.audioKbps) {
+  const goal = lin(ceilingDb - ENCODE_ROOM_DB)
+  const n = a.L.length
+  const win = Math.max(1, Math.round(GIVE_WINDOW * a.rate))
+  const edge = Math.max(1, Math.round(GIVE_EDGE * a.rate))
+  const taken = new Map()
+  let audio = a
+  let encodedDb = null
+  for (let pass = 0; pass <= GIVE_PASSES; pass++) {
+    const back = encodedCopy(audio, codec, kbps)
+    if (!back) return { audio: a, encodedDb: null, places: [] }
+    const peaks = windowPeaks(back, win, goal)
+    let top = 0
+    const over = []
+    peaks.forEach((v, w) => {
+      if (v > top) top = v
+      if (v > goal) over.push([w, db(v / goal)])
+    })
+    encodedDb = top > goal / 2 ? db(top) : db(truePeak(back))
+    if (!over.length || pass === GIVE_PASSES) break
+    const curve = new Float64Array(n).fill(1)
+    for (const [w, by] of over) {
+      const depth = by + GIVE_MORE_DB
+      taken.set(w, (taken.get(w) ?? 0) + depth)
+      const from = w * win
+      const to = Math.min(n, from + win)
+      for (let i = Math.max(0, from - edge); i < Math.min(n, to + edge); i++) {
+        const u = i < from ? (i - (from - edge) + 0.5) / edge : i >= to ? (to + edge - i - 0.5) / edge : 1
+        const g = lin(-depth * (0.5 - 0.5 * Math.cos(Math.PI * u)))
+        if (g < curve[i]) curve[i] = g
+      }
+    }
+    const next = make(n, a.rate)
+    for (let i = 0; i < n; i++) {
+      next.L[i] = audio.L[i] * curve[i]
+      next.R[i] = audio.R[i] * curve[i]
+    }
+    audio = next
+  }
+  const places = [...taken].sort((p, q) => p[0] - q[0]).map(([w, by]) => ({ at: round((w * win) / a.rate, 3), db: round(by) }))
+  return { audio, encodedDb, places }
+}
+
+function accent(bus, times, trims) {
+  const rate = bus.rate
+  const o = slice(bus, 0)
+  const pre = Math.max(1, Math.round(0.002 * rate))
+  const hold = Math.round(OPEN_SECONDS * rate)
+  const ease = Math.max(1, Math.round(LANDING_EASE * rate))
+  times.forEach((t, k) => {
+    if (!trims[k]) return
+    const at = Math.round(t * rate)
+    for (let i = Math.max(0, at - pre); i < Math.min(o.L.length, at + hold + ease); i++) {
+      const u = i < at ? (i - (at - pre) + 0.5) / pre : i < at + hold ? 1 : 0.5 + 0.5 * Math.cos((Math.PI * (i - at - hold + 0.5)) / ease)
+      const g = lin(trims[k] * u)
+      o.L[i] *= g
+      o.R[i] *= g
+    }
+  })
+  return o
 }
 
 export function keptFile(id, dir = KEPT) {
@@ -821,19 +1010,24 @@ export function mixFilm({ cut, which = 'b', candidate = 'blockout', keptDir = KE
     const seen = {}
     sections.forEach((sec, index) => {
       const id = `music-${sec.season}`
-      const a = load(id)
-      if (!a) {
+      const kept = load(id)
+      if (!kept) {
         miss(id, 'no kept file')
         return
       }
       musicNote.source = 'four tracks'
+      if (!seen[id]) seen[id] = { ...centre(kept), next: null }
+      const a = seen[id].audio
       const map = mapOf(id)
       const lines = Array.isArray(map?.barLines) && map.barLines.length ? map.barLines : Array.from({ length: Math.max(1, Math.floor(seconds(a) / barSeconds)) }, (_, i) => i * barSeconds)
-      const bars = Math.round((sec.to - sec.from) / barSeconds)
-      const again = seen[id] === true
-      seen[id] = true
+      const found = musicBars(a, lines)
+      const bars = Math.max(1, Math.round((sec.to - sec.from) / barSeconds))
+      const again = seen[id].next !== null
       const lastSection = index === sections.length - 1
-      const first = again ? Math.max(0, lines.length - bars) : 0
+      const toTheEnd = found.last - bars + 1
+      const wanted = lastSection ? toTheEnd : !again ? found.first : seen[id].next + bars - 1 <= found.last ? seen[id].next : toTheEnd
+      const first = Math.max(0, Math.min(wanted, found.lastWhole - bars + 1))
+      seen[id].next = first + bars
       const src = Math.round(lines[first] * rate)
       const len = Math.round((sec.to - sec.from) * rate)
       const part = fade(slice(a, src, src + len), 0.002, 0)
@@ -841,15 +1035,16 @@ export function mixFilm({ cut, which = 'b', candidate = 'blockout', keptDir = KE
       add(section, part, Math.round((sec.from + offset) * rate), lin(gains.music ?? 0))
       if (!lastSection) thin(section, sec.to + offset - barSeconds, sec.to + offset)
       add(music, section, 0)
-      musicNote.parts.push({ id, at: round(sec.from + offset, 4), fromBar: first, sourceAt: round(lines[first], 3), seconds: round(part.L.length / rate, 3), barLines: map ? 'map' : 'grid', thinned: !lastSection })
+      musicNote.parts.push({ id, at: round(sec.from + offset, 4), fromBar: first, toBar: first + bars - 1, sourceAt: round(lines[first], 3), seconds: round(part.L.length / rate, 3), barLines: map ? 'map' : 'grid', firstBarWithMusic: found.first, lastBarWithMusic: found.last, centredByDb: seen[id].movedDb, thinned: !lastSection })
     })
   }
   if (which === 'a' && musicNote.source !== 'none') musicNote.note = 'the music starts on frame 0 of film B'
 
+  const beat = barSeconds / Math.max(1, Number(cut.beatsPerBar) || 1)
   const endFade = (bus2, sec) => {
     const n = Math.min(total, Math.round(sec * rate))
     for (let i = 0; i < n; i++) {
-      const g = 0.5 - 0.5 * Math.cos((Math.PI * (i + 0.5)) / n)
+      const g = Math.sin((Math.PI / 2) * ((i + 0.5) / n))
       bus2.L[total - 1 - i] *= g
       bus2.R[total - 1 - i] *= g
     }
@@ -860,9 +1055,47 @@ export function mixFilm({ cut, which = 'b', candidate = 'blockout', keptDir = KE
     musicNote.end = 'the music is longer than the film and fades over the last bar'
   }
   add(bus, music, 0)
-  endFade(bus, 0.02)
-  endFade(music, 0.02)
-  const done = master(bus, target, ceilingDb)
+  endFade(bus, beat)
+  endFade(music, beat)
+
+  const landingTimes = (Array.isArray(cut.landings) && cut.fps > 0 ? cut.landings.map((f) => Number(f) / cut.fps) : (cut.sections ?? []).slice(1).map((sec) => Number(sec.from))).map((t) => t + offset).filter((t) => t >= 0 && Math.round((t + OPEN_SECONDS) * rate) <= total)
+  const firstMoment = (a) => landingTimes.map((t) => levelDb(a, Math.round(t * rate), Math.round((t + OPEN_SECONDS) * rate)))
+  const spreadOf = (v) => {
+    const f = v.filter(Number.isFinite)
+    return f.length > 1 ? Math.max(...f) - Math.min(...f) : 0
+  }
+  const centred = centre(bus, BUS_CENTRE_DB)
+  // One finish of the film: the landings' trims, the level and the limit, then the encoded copy's peak.
+  const finish = (trims, room) => {
+    const m = master(accent(centred.audio, landingTimes, trims), target, ceilingDb - room)
+    if (m.silent) return { ...m, encodedDb: null, places: [] }
+    const fit = giveWay(m.audio, ceilingDb)
+    if (!fit.places.length) return { ...m, encodedDb: fit.encodedDb, places: [] }
+    return { ...m, audio: fit.audio, lufs: round(loudness(fit.audio)), truePeakDb: round(db(truePeak(fit.audio))), encodedDb: fit.encodedDb, places: fit.places }
+  }
+  let trims = landingTimes.map(() => 0)
+  let room = 0
+  let done = finish(trims, room)
+  const before = done.silent ? [] : firstMoment(done.audio)
+  let heard = before
+  let rounds = 0
+  while (!done.silent && rounds < 4 && spreadOf(heard) > LANDING_MATCH_DB) {
+    const f = heard.filter(Number.isFinite)
+    const goal = (Math.max(...f) + Math.min(...f)) / 2
+    const next = trims.map((v, k) => (Number.isFinite(heard[k]) ? Math.max(-LANDING_TRIM_DB, Math.min(LANDING_TRIM_DB, v + goal - heard[k])) : v))
+    if (next.every((v, k) => Math.abs(v - trims[k]) < 0.02)) break
+    trims = next
+    rounds++
+    done = finish(trims, room)
+    heard = firstMoment(done.audio)
+  }
+  // Only if giving way where the copy is over was not enough does the whole film get a lower ceiling.
+  for (let pass = 0; !done.silent && done.encodedDb !== null && pass < 3 && done.encodedDb > ceilingDb - ENCODE_ROOM_DB + 0.01; pass++) {
+    room += done.encodedDb - ceilingDb + ENCODE_ROOM_DB + 0.1
+    done = finish(trims, room)
+    heard = firstMoment(done.audio)
+  }
+  const encodedDb = done.encodedDb ?? null
   const stem = done.silent ? music : scale(music, lin(done.gainDb))
   return {
     audio: done.audio,
@@ -875,10 +1108,115 @@ export function mixFilm({ cut, which = 'b', candidate = 'blockout', keptDir = KE
       placed,
       skipped: [...skipped].map(([cue, why]) => ({ cue, why })),
       music: musicNote,
-      master: { targetLufs: target, ceilingDb, gainDb: done.gainDb, limiterReductionDb: done.reductionDb, lufs: done.lufs, truePeakDb: done.truePeakDb, passes: done.passes, silent: done.silent },
+      landings: { at: landingTimes.map((t) => round(t, 4)), firstMomentSeconds: OPEN_SECONDS, beforeDb: before.map((v) => round(v)), trimsDb: trims.map((v) => round(v)), afterDb: heard.map((v) => round(v)), spreadDb: round(spreadOf(heard)), rounds },
+      channels: { leftOverRightDb: done.silent ? 0 : round(channelsDb(done.audio)), busMovedDb: centred.movedDb },
+      master: { targetLufs: target, ceilingDb, gainDb: done.gainDb, limiterReductionDb: done.reductionDb, lufs: done.lufs, truePeakDb: done.truePeakDb, passes: done.passes, silent: done.silent, encoded: encodedDb === null ? null : { codec: cfg.export.audioCodec, kbps: cfg.export.audioKbps, truePeakDb: round(encodedDb), roomDb: round(room), gaveWay: done.places } },
       inputs,
     },
   }
+}
+
+// Laying sounds together (decisions 111 and 134 of kit/PROGRESS.md). One call of the sound tool gives one
+// thing, so a cue whose line names two or three is laid from parts: takes of the cue, a kept take of
+// another cue whose line names the same thing, and, only as quiet support, a plain made layer. Every
+// number is fixed in the recipe, so the same recipe gives the same bytes. Laying costs no credit and
+// is not a take: the laid sound is heard and judged like one before it is kept.
+export const MADE_UNDER_DB = 12
+
+function mulberry(seed) {
+  let t = seed >>> 0
+  return () => {
+    t = (t + 0x6d2b79f5) >>> 0
+    let r = Math.imul(t ^ (t >>> 15), 1 | t)
+    r = (r + Math.imul(r ^ (r >>> 7), 61 | r)) ^ r
+    return ((r ^ (r >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+export function lowpass(a, hz) {
+  if (!(hz > 0) || hz >= a.rate / 2) return a
+  const w = (2 * Math.PI * hz) / a.rate
+  const alpha = Math.sin(w) / (2 * Math.SQRT1_2)
+  const c = Math.cos(w)
+  const a0 = 1 + alpha
+  const run = (x) => biquad(x, (1 - c) / 2 / a0, (1 - c) / a0, (1 - c) / 2 / a0, (-2 * c) / a0, (1 - alpha) / a0)
+  return { rate: a.rate, L: run(a.L), R: run(a.R) }
+}
+
+// A made layer: shaped noise (a hiss of snow or sand) or one steady tone. Nothing made stands in for a cue.
+function madeLayer(spec, rate) {
+  const n = Math.max(1, Math.round(Number(spec.seconds) * rate))
+  const o = make(n, rate)
+  if (spec.made === 'noise') {
+    const rand = mulberry(Number(spec.seed ?? 1))
+    for (let i = 0; i < n; i++) {
+      o.L[i] = rand() * 2 - 1
+      o.R[i] = rand() * 2 - 1
+    }
+    let a = o
+    for (let k = 0; k < 2; k++) a = lowpass(highpass(a, Number(spec.fromHz ?? 0)), Number(spec.toHz ?? 0))
+    return a
+  }
+  if (spec.made === 'tone') {
+    const hz = Number(spec.hz)
+    if (!(hz > 0)) throw new Error('a made tone needs hz')
+    const waverHz = Number(spec.waverHz ?? 0)
+    const waverCents = Number(spec.waverCents ?? 0)
+    const partials = Array.isArray(spec.partials) && spec.partials.length ? spec.partials.map(Number) : [1]
+    let phase = 0
+    for (let i = 0; i < n; i++) {
+      const bend = waverHz > 0 ? Math.pow(2, (waverCents * Math.sin((2 * Math.PI * waverHz * i) / rate)) / 1200) : 1
+      phase += (2 * Math.PI * hz * bend) / rate
+      let v = 0
+      partials.forEach((g, k) => (v += g * Math.sin(phase * (k + 1))))
+      o.L[i] = v
+      o.R[i] = v
+    }
+    return o
+  }
+  throw new Error(`no such made layer: ${spec.made} (noise or tone)`)
+}
+
+export function layTogether(recipe, { takesDir = TAKES, keptDir = KEPT, rate = RATE } = {}) {
+  const specs = Array.isArray(recipe?.layers) ? recipe.layers : []
+  if (!specs.length) throw new Error('a lay needs at least one layer')
+  if (specs[0].made) throw new Error('the first layer is the main one, and nothing made stands in for a cue')
+  const parts = specs.map((l) => {
+    let a
+    let source
+    if (l.made) {
+      a = madeLayer(l, rate)
+      source = { made: l.made }
+    } else {
+      const file = l.kept ? path.join(keptDir, `${l.kept}.wav`) : path.join(takesDir, String(l.cue ?? recipe.cue), `take-${l.take}.wav`)
+      if (!fs.existsSync(file)) throw new Error(`the layer's file is not in this workspace: ${file}`)
+      a = decodeFile(file, rate)
+      source = l.kept ? { kept: l.kept, sha256: fileSha(file) } : { cue: String(l.cue ?? recipe.cue), take: Number(l.take), sha256: fileSha(file) }
+    }
+    if (l.from !== undefined || l.to !== undefined) a = slice(a, Math.round(Number(l.from ?? 0) * rate), l.to !== undefined ? Math.round(Number(l.to) * rate) : a.L.length)
+    if (l.cents) a = resample(a, Math.pow(2, Number(l.cents) / 1200))
+    if (l.lowCutHz) a = highpass(a, Number(l.lowCutHz))
+    if (l.highCutHz) a = lowpass(a, Number(l.highCutHz))
+    if (l.fadeInMs || l.fadeOutMs) a = fade(a, Number(l.fadeInMs ?? 0) / 1000, Number(l.fadeOutMs ?? 0) / 1000)
+    const span = soundSpan(a, -40)
+    return { l, a, source, level: span.silent ? -Infinity : levelDb(a, span.first, span.last) }
+  })
+  const main = parts[0]
+  if (!Number.isFinite(main.level)) throw new Error('the main layer holds no sound')
+  const ends = parts.map((p) => Math.round(Number(p.l.at ?? 0) * rate) + p.a.L.length)
+  const total = recipe.seconds > 0 ? Math.round(Number(recipe.seconds) * rate) : Math.max(...ends)
+  const bus = make(total, rate)
+  const layers = parts.map((p, k) => {
+    const under = k === 0 ? 0 : Number(p.l.underDb)
+    if (!Number.isFinite(under)) throw new Error(`layer ${k + 1} needs underDb, its level under the main layer`)
+    if (!Number.isFinite(p.level)) throw new Error(`layer ${k + 1} holds no sound`)
+    if (p.l.made && under < MADE_UNDER_DB) throw new Error(`a made layer is quiet support: at least ${MADE_UNDER_DB} dB under the main layer, not ${under}`)
+    const gainDb = main.level - under - p.level
+    add(bus, p.a, Math.round(Number(p.l.at ?? 0) * rate), lin(gainDb))
+    const { underDb: _under, ...asked } = p.l
+    return { ...asked, source: p.source, underMainDb: under, gainDb: round(gainDb), levelDb: round(p.level + gainDb), seconds: round(p.a.L.length / rate, 3) }
+  })
+  return { audio: bus, layers, sha256: sha256(encodeWav(bus)) }
 }
 
 export function readLedger() {
@@ -926,6 +1264,58 @@ function concat(parts, rate) {
   return o
 }
 
+export function loopEnds(a) {
+  const n = a.L.length
+  const second = Math.min(Math.round(a.rate), n >> 1)
+  const s = seam(a)
+  return { ...s, secondStepDb: round(levelDb(a, 0, second) - levelDb(a, n - second, n)) }
+}
+
+export function musicLoop(a, lines, bars) {
+  const rate = a.rate
+  const found = musicBars(a, lines)
+  const options = []
+  for (let k = 0; k < lines.length; k++) {
+    const lead = lines[k] >= LOOP_LEAD ? LOOP_LEAD : 0
+    const length = k + bars < lines.length ? lines[k + bars] - lines[k] : bars * found.bar
+    const from = Math.round((lines[k] - lead) * rate)
+    const n = Math.round(length * rate)
+    const cross = Math.round(LOOP_CROSS * rate)
+    if (from + n + cross > a.L.length) break
+    const made = makeLoop(slice(a, from, from + n + cross), n / rate, LOOP_CROSS, true).audio
+    const ends = loopEnds(made)
+    const quiet = found.level.slice(k, k + bars).some((v) => !(v >= found.medianDb - HOLD_DB))
+    options.push({ audio: made, fromBar: k, toBar: k + bars - 1, leadSeconds: lead, crossSeconds: LOOP_CROSS, seam: ends, score: Math.max(Math.abs(ends.levelStepDb), Math.abs(ends.secondStepDb)) + (quiet ? 100 : 0) + (lead ? 0 : 50) })
+  }
+  if (!options.length) return null
+  return options.find((o) => o.score <= LOOP_STEP_DB / 2) ?? options.reduce((p, o) => (o.score < p.score ? o : p))
+}
+
+export function turnLoop(a) {
+  const n = a.L.length
+  const w = Math.round(0.05 * a.rate)
+  const second = Math.min(Math.round(a.rate), n >> 1)
+  const still = { audio: a, turnedSeconds: 0, seam: loopEnds(a) }
+  if (n < 8 * w || Math.max(Math.abs(still.seam.levelStepDb), Math.abs(still.seam.secondStepDb)) <= LOOP_STEP_DB / 2) return still
+  const e = new Float64Array(3 * n + 1)
+  for (let i = 0; i < 3 * n; i++) e[i + 1] = e[i] + a.L[i % n] * a.L[i % n] + a.R[i % n] * a.R[i % n]
+  const level = (from, len) => (e[from + len] > e[from] ? 10 * Math.log10((e[from + len] - e[from]) / (2 * len)) : -200)
+  const step = Math.max(1, Math.round(0.01 * a.rate))
+  let best = { at: 0, score: Infinity }
+  for (let r = 0; r < n; r += step) {
+    const p = r + n
+    const score = Math.max(Math.abs(level(p, w) - level(p - w, w)), Math.abs(level(p, second) - level(p - second, second)))
+    if (score < best.score - 1e-9) best = { at: r, score }
+  }
+  if (best.at === 0) return still
+  const o = make(n, a.rate)
+  for (let i = 0; i < n; i++) {
+    o.L[i] = a.L[(i + best.at) % n]
+    o.R[i] = a.R[(i + best.at) % n]
+  }
+  return { audio: o, turnedSeconds: round(best.at / a.rate, 3), seam: loopEnds(o) }
+}
+
 export function planPack({ keptDir = KEPT, mapsDir = rel('out', 'work', 'audio', 'maps'), rate = RATE } = {}) {
   const kept = readKept(keptDir).filter((k) => k.file)
   const barSeconds = (cfg.film.beatsPerBar * 60) / cfg.film.defaultBpm
@@ -952,25 +1342,39 @@ export function planPack({ keptDir = KEPT, mapsDir = rel('out', 'work', 'audio',
       continue
     }
     let loop = a
+    let how = null
     if (cls === 'music') {
       const mapFile = path.join(mapsDir, `${k.id}.json`)
       const map = fs.existsSync(mapFile) ? readJson(mapFile) : null
-      const lines = Array.isArray(map?.barLines) && map.barLines.length > 1 ? map.barLines : null
-      const bar = lines ? (lines[lines.length - 1] - lines[0]) / (lines.length - 1) : barSeconds
-      const start = lines ? lines[0] : 0
-      const fit = Math.floor((seconds(a) - start - 0.05) / bar)
+      const lines = Array.isArray(map?.barLines) && map.barLines.length > 1 ? map.barLines : Array.from({ length: Math.floor(seconds(a) / barSeconds) + 1 }, (_, i) => i * barSeconds)
+      const bar = lines.length > 1 ? (lines[lines.length - 1] - lines[0]) / (lines.length - 1) : barSeconds
+      const fit = Math.floor((seconds(a) - lines[0] - LOOP_CROSS) / bar)
       const bars = Math.min(cfg.audio.appLoopBars, fit)
       if (bars < 1) {
         notes.push(`${k.id} is shorter than one bar and was left out`)
         continue
       }
       if (bars < cfg.audio.appLoopBars) notes.push(`${k.id} holds ${bars} whole bars, fewer than audio.appLoopBars`)
-      const from = Math.round(start * rate)
-      loop = makeLoop(slice(a, from), bars * bar, 0.04, false).audio
+      const centred = centre(a)
+      const made = musicLoop(centred.audio, lines, bars)
+      if (!made) {
+        notes.push(`${k.id} has no run of ${bars} bars with room for the crossfade and was left out`)
+        continue
+      }
+      loop = made.audio
+      how = { fromBar: made.fromBar, toBar: made.toBar, leadSeconds: made.leadSeconds, crossSeconds: made.crossSeconds, centredByDb: centred.movedDb, barLines: map ? 'map' : 'grid' }
+    } else {
+      const turned = turnLoop(a)
+      loop = turned.audio
+      how = { turnedSeconds: turned.turnedSeconds }
     }
+    const ends = loopEnds(loop)
+    if (Math.abs(ends.levelStepDb) > LOOP_STEP_DB || Math.abs(ends.secondStepDb) > LOOP_STEP_DB) notes.push(`${k.id} changes level at its seam: ${ends.levelStepDb} dB over 50 ms, ${ends.secondStepDb} dB over a second`)
+    const loopNorm = lin(SPRITE_PEAK_DB) / peak(loop)
+    const loopGain = round((1 / loopNorm) * lin(APP_TRIM_DB[cls] ?? 0), 5)
     const pad = Math.min(Math.round(LOOP_PAD * rate), loop.L.length)
-    const body = scale(loop, norm)
-    loops.push({ id: k.id, audio: concat([slice(body, body.L.length - pad), body, slice(body, 0, pad)], rate), loopStart: round(pad / rate, 5), loopSeconds: round(body.L.length / rate, 5), gain, seam: seam(loop) })
+    const body = scale(loop, loopNorm)
+    loops.push({ id: k.id, audio: concat([slice(body, body.L.length - pad), body, slice(body, 0, pad)], rate), loopStart: round(pad / rate, 5), loopSeconds: round(body.L.length / rate, 5), gain: loopGain, seam: ends, ...how })
   }
   return { sprite: { audio: sprite.parts.length > 1 ? concat(sprite.parts, rate) : null, entries: sprite.entries }, loops, notes }
 }

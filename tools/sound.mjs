@@ -6,7 +6,7 @@ import { engineHash, fileSha } from './lib/hashes.mjs'
 import { freeDiskGb } from './lib/browser.mjs'
 import { limits } from './lib/compose.mjs'
 import { addLook } from './lib/looks.mjs'
-import { cfg, RATE, MEASURES, KEPT, TAKES, PUBLIC_AUDIO, classOf, seasonOf, chainOf, cueSeconds, isLoop, decodeFile, encodeWav, ffmpeg, ffmpegLoudness, keepChain, measure, peak, readKept, readLedger, writeLedger, currentRound, writePack, round, seconds } from './lib/audio.mjs'
+import { cfg, RATE, MEASURES, KEPT, TAKES, PUBLIC_AUDIO, classOf, seasonOf, chainOf, cueSeconds, isLoop, decodeFile, encodeWav, ffmpeg, ffmpegLoudness, keepChain, layTogether, measure, peak, readKept, readLedger, writeLedger, currentRound, writePack, round, seconds } from './lib/audio.mjs'
 
 const args = parseArgs(process.argv.slice(2))
 const text = (k) => (args[k] !== undefined && args[k] !== true ? String(args[k]) : null)
@@ -20,6 +20,7 @@ const usage = () => {
     [
       'npm run sound -- --cue ID --file F [--prompt TEXT] [--settings JSON] [--line TEXT] [--tool TEXT] [--round NAME]   file one take',
       'npm run sound -- --cue ID [--take N] --prompt TEXT | --settings JSON | --line TEXT | --tool TEXT               add to a take that is filed',
+      'npm run sound -- --lay FILE [--round NAME]                                                                    lay sounds together by a recipe (no call, not a take)',
       'npm run sound -- --answers FILE [--cue ID] [--take N]                                                         the listener answers, to the newest take',
       'npm run sound -- --cue ID --keep [--take N] [--why TEXT] [--fade-in MS] [--fade-out MS] [--low-cut HZ] [--trim-db DB] [--cap SECONDS|none]',
       'npm run sound -- --pack | --sheet | --list',
@@ -102,9 +103,9 @@ function fileTake() {
   const roundName = text('round') ?? currentRound()
   const all = takesOf(ledger, cue)
   const sourceSha = fileSha(src)
-  const twin = all.find((t) => t.source.sha256 === sourceSha)
+  const twin = all.find((t) => t.source?.sha256 === sourceSha)
   if (twin) fail(`this file is already filed as take ${twin.take} of ${cue}. Nothing was counted.`)
-  const inRound = all.filter((t) => t.round === roundName).length
+  const inRound = all.filter((t) => t.round === roundName && !t.layer).length
   if (inRound >= cfg.audio.maxTakesPerCue) fail(`refused: ${cue} has used its ${cfg.audio.maxTakesPerCue} takes (audio.maxTakesPerCue) in ${roundName}. The cue becomes an open item and its moment plays without it.`)
   const n = all.reduce((m, t) => Math.max(m, t.take), 0) + 1
   const audio = decodeFile(src, RATE)
@@ -134,6 +135,60 @@ function fileTake() {
   }
   saveTake(ledger, entry)
   console.log(`filed ${show(out)} · take ${inRound + 1} of ${cfg.audio.maxTakesPerCue} for ${cue} in ${roundName}`)
+  for (const l of describe(m)) console.log(l)
+  console.log(entry.fits.note)
+}
+
+// A lay: the parts of one cue laid together by a recipe of fixed numbers (decisions 111 and 134). It costs
+// no credit and is not a take, so no round counts it; it has a number among the cue's takes so that the
+// listening copy, the answers and --keep reach it the same way, and its record names every layer.
+function lay() {
+  const file = path.resolve(text('lay') ?? fail('give --lay FILE'))
+  if (!fs.existsSync(file)) fail(`no such file: ${file}`)
+  const recipe = readJson(file)
+  const cue = recipe.cue ?? text('cue') ?? fail('the recipe names no cue')
+  if (!cfg.audio.sfx.some((x) => x.id === cue)) fail(`no such cue: ${cue}`)
+  checkDisk()
+  let done
+  try {
+    done = layTogether(recipe)
+  } catch (e) {
+    return fail(`not laid: ${e.message}`)
+  }
+  const ledger = readLedger()
+  const all = takesOf(ledger, cue)
+  const twin = all.find((t) => t.layer && t.sha256 === done.sha256)
+  if (twin) fail(`this recipe gives the bytes already filed as number ${twin.take} of ${cue}. Nothing was filed.`)
+  const n = all.reduce((m, t) => Math.max(m, t.take), 0) + 1
+  const out = takeFile(cue, n)
+  fs.mkdirSync(path.dirname(out), { recursive: true })
+  fs.writeFileSync(out, encodeWav(done.audio))
+  const m = measure(done.audio)
+  const lines = fs.existsSync(rel('audio', 'lines.json')) ? readJson(rel('audio', 'lines.json')) : {}
+  const entry = {
+    cue,
+    take: n,
+    round: text('round') ?? currentRound(),
+    layer: true,
+    class: classOf(cue),
+    season: seasonOf(cue),
+    line: recipe.line ?? text('line') ?? lines[cue] ?? null,
+    tool: 'laid together by the harness from the layers named, by fixed numbers (decisions 111 and 134): no call, no credit, not a take',
+    prompt: null,
+    settings: null,
+    recipe: { file: show(file), sha256: fileSha(file), why: recipe.why ?? null },
+    layers: done.layers,
+    source: { name: path.basename(file), sha256: done.sha256 },
+    sha256: fileSha(out),
+    measured: m,
+    ffmpeg: ffmpegLoudness(out),
+    fits: fits(cue, m),
+    answers: null,
+    time: new Date().toISOString(),
+  }
+  saveTake(ledger, entry)
+  console.log(`laid ${show(out)} · number ${n} of ${cue}, a layer of ${done.layers.length}, not counted as a take`)
+  for (const l of done.layers) console.log(`  ${l.source.made ? `made ${l.source.made}` : l.source.kept ? `kept ${l.source.kept}` : `take ${l.source.take} of ${l.source.cue}`}: ${l.underMainDb ? `${l.underMainDb} dB under the main layer` : 'the main layer'}, at ${l.at ?? 0} s, ${l.seconds} s${l.cents ? `, ${l.cents} cents` : ''}`)
   for (const l of describe(m)) console.log(l)
   console.log(entry.fits.note)
 }
@@ -218,9 +273,10 @@ function keep() {
     line: entry.line,
     seconds: m.seconds,
     take: entry.take,
-    takes: takesOf(ledger, cue).length,
+    takes: takesOf(ledger, cue).filter((t) => !t.layer).length,
     round: entry.round,
     why: text('why'),
+    ...(entry.layer ? { layer: true, layers: entry.layers, recipe: entry.recipe } : {}),
     tool: entry.tool,
     prompt: entry.prompt,
     settings: entry.settings,
@@ -239,7 +295,7 @@ function keep() {
   writeJson(`${out}.json`, { record: `${cue}.json`, sha256: record.sha256, engineHash: engineHash(), time: record.time })
   ledger.kept = [...ledger.kept.filter((k) => k.cue !== cue), { cue, take: entry.take, round: entry.round, file: `audio/kept/${cue}.wav`, sha256: record.sha256, seconds: m.seconds, lufs: m.lufs, lufsMeasure: m.lufsMeasure, time: record.time }]
   writeLedger(ledger)
-  console.log(`kept take ${entry.take} of ${cue} as ${show(out)} · ${cls}, ${m.seconds} s, ${m.lufs} LUFS, peak ${m.truePeakDb} dB`)
+  console.log(`kept ${entry.layer ? 'the layer filed as number' : 'take'} ${entry.take} of ${cue} as ${show(out)} · ${cls}, ${m.seconds} s, ${m.lufs} LUFS, peak ${m.truePeakDb} dB`)
   for (const s of done.steps) console.log(`  ${s}`)
   if (done.loop) console.log(`  seam: a step of ${done.loop.seam.ratio} times the usual step between samples, level change ${done.loop.seam.levelStepDb} dB`)
   const missing = [!entry.prompt && 'prompt', !entry.answers && "the listener's answers", !entry.line && 'the line that describes the cue'].filter(Boolean)
@@ -330,13 +386,16 @@ function list() {
     const takes = takesOf(ledger, id)
     const k = kept.get(id)
     const here = k && fs.existsSync(path.join(KEPT, `${id}.wav`))
-    console.log(`${id} · ${classOf(id)} · takes ${takes.length}${takes.length ? ` (${[...new Set(takes.map((t) => t.round))].map((r) => `${takes.filter((t) => t.round === r).length} in ${r}`).join(', ')})` : ''} · ${k ? `kept take ${k.take}, ${k.seconds} s, ${k.lufs} LUFS${here ? '' : ', file not in this workspace'}` : 'nothing kept'}`)
+    const paid = takes.filter((t) => !t.layer)
+    const laid = takes.length - paid.length
+    console.log(`${id} · ${classOf(id)} · takes ${paid.length}${paid.length ? ` (${[...new Set(paid.map((t) => t.round))].map((r) => `${paid.filter((t) => t.round === r).length} in ${r}`).join(', ')})` : ''}${laid ? ` · ${laid} laid` : ''} · ${k ? `kept ${takes.find((t) => t.take === k.take)?.layer ? 'layer' : 'take'} ${k.take}, ${k.seconds} s, ${k.lufs} LUFS${here ? '' : ', file not in this workspace'}` : 'nothing kept'}`)
   }
 }
 
 if (args.pack === true) pack()
 else if (args.sheet === true) await sheet()
 else if (args.list === true) list()
+else if (args.lay !== undefined) lay()
 else if (args.answers !== undefined) answers()
 else if (args.keep === true) keep()
 else if (text('file') !== null) fileTake()
