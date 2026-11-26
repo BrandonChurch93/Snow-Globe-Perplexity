@@ -10,9 +10,14 @@ const safe = (root, p) => {
   return full.startsWith(root) ? full : null
 }
 
-export async function serve({ dist = rel('dist'), simcache = rel('out', 'work', 'simcache'), port = 0 } = {}) {
-  if (!fs.existsSync(path.join(dist, 'index.html'))) throw new Error('dist/ is missing. Run npm run build first.')
-  const mounts = [['/assets-full/', rel('assets-full')]]
+export async function serve({ dist = rel('dist'), simcache = rel('out', 'work', 'simcache'), port = 0, bare = false } = {}) {
+  if (!bare && !fs.existsSync(path.join(dist, 'index.html'))) throw new Error('dist/ is missing. Run npm run build first.')
+  const master = rel('out', 'work', 'opening', 'master')
+  const mounts = [
+    ['/assets-full/', rel('assets-full')],
+    ['/opening/', rel('public', 'opening')],
+    ['/opening-master/', master],
+  ]
   const server = http.createServer((req, res) => {
     let url
     try {
@@ -26,6 +31,7 @@ export async function serve({ dist = rel('dist'), simcache = rel('out', 'work', 
       res.writeHead(code, { 'content-type': type, 'cache-control': 'no-store' })
       res.end(body)
     }
+    if (p === '/__opening') return send(200, JSON.stringify({ master: ['manifest.json', 'opening.bin'].every((f) => fs.existsSync(path.join(master, f))) }), TYPES['.json'])
     if (p.startsWith('/__simcache/')) {
       const parts = p.slice('/__simcache/'.length).split('/')
       const key = (parts[0] ?? '').replace(/[^a-zA-Z0-9_-]/g, '')
