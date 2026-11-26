@@ -37,22 +37,23 @@ export const ROOM_RIG = {
 
 /**
  * The bloom of a change between two seasons, the cover of everything outside the glass that changes (change.ts, `CHANGE_COVER`).
- * The lights of the new season flare inside the glass and the camera answers as it would to a lamp lit in a dark room: its
- * exposure falls to `dim` of what it was. The lights inside rise by as much again, so the glass burns as it did, and everything
- * the room lights, the base, the table and the lamps of the backdrop, sinks into the dark: at `dim` the brightest lamp of a
- * backdrop is under the toe of the film, so nothing outside the glass is seen to change. The swell of every shake is not laid
- * on top of that flare: it gives way as the cover rises, and under the whole cover the lights inside are their resting
- * selves through the fallen exposure. Over that the lens spreads the flare (`glare`, the light it adds at the middle of the
- * flare, in the colour of the light inside, falling off round it as a bell `glareReach` radii of the glass wide; post.ts adds
- * it, the stage says where the glass is). Its middle burns out as a lamp looked into does and by the edge of the glass it is
- * under white, so the light has a source and is not a fog. `glareSeat` is where the flare is centred on the glass's axis, 0
- * the middle of the glass, 1 the plane where it sits in the base.
+ * The lights inside the glass flare and the camera answers as it would to a lamp lit in a dark room: its exposure falls to
+ * `dim` of what it was. Everything inside the glass rises by as much again, the lights of both seasons and what the room
+ * sends in through the glass (`uLightBurn`; the glass's own windows and rim are held in shell.ts), so the glass and the
+ * storm in it are seen as they were, and everything the room lights outside it, the base, the table and the lamps of the
+ * backdrop, sinks into the dark: at `dim` the brightest lamp of a backdrop is under the toe of the film, so nothing outside
+ * the glass is seen to change. The swell of every shake is not laid on top of that flare: it gives way as the cover rises,
+ * and under the whole cover the lights inside are their resting selves through the fallen exposure. Round that the lens lays
+ * a glow (`glare`, the light it adds at its middle, in the colour of the light inside, falling off as a bell `glareReach`
+ * radii of the glass wide; post.ts adds it, the stage says where the glass is). It is under white at its middle, so it never
+ * hides the storm or the line of the glass, and over the dark base it is the light a burning glass throws. `glareSeat` is
+ * where it is centred on the glass's axis, 0 the middle of the glass, 1 the plane where it sits in the base.
  * Nothing in the picture feeds the glare, no lamp of the room and no petal, and between two seasons the swell lays no light
  * on the base or the table, so under it the base is its own dark shape and never a lamp. The sides of the picture keep the
  * dark of the room: the light reads as pouring out of the glass, not as a pale frame. `lens` is the tint of the glow round
  * what burns, risen over `fall` of the swell from `swellFrom` of the window. The live picture has the same cover.
  */
-export const CHANGE_BLOOM = { lens: 0.2, swellFrom: 0.56, fall: 0.6, dim: 0.005, glare: 2, glareReach: 0.7, glareSeat: 0.1 } as const
+export const CHANGE_BLOOM = { lens: 0.2, swellFrom: 0.56, fall: 0.6, dim: 0.005, glare: 0.5, glareReach: 0.8, glareSeat: 0.1 } as const
 
 const SHADOW_OFF = 10
 
@@ -235,8 +236,10 @@ export class Lighting {
     this.shade(f.grids[1], b.rig.key.from)
     u.uGridA.value = f.grids[0]
     u.uGridB.value = f.grids[1]
-    u.uGrid.value.set(inner, gainA, gainB * flare, innerRadiusMm)
-    groupGains(gridInfo(f.grids[0]), a.innerLights, f.time, f.period, u.uGridGainA.value).multiplyScalar(breath * bloomA)
+    u.uGrid.value.set(inner, gainA * flare, gainB * flare, innerRadiusMm)
+    u.uLightBurn.value = flare
+    u.uRigInside.value.x = ROOM_RIG.inside.through * flare
+    groupGains(gridInfo(f.grids[0]), a.innerLights, f.time, f.period, u.uGridGainA.value).multiplyScalar(breath * bloomA * flare)
     groupGains(gridInfo(f.grids[1]), b.innerLights, f.time, f.period, u.uGridGainB.value).multiplyScalar(breath * swellB * flare)
 
     const ga = glowOf(a.innerLights)

@@ -1,38 +1,32 @@
 {
-  "number": 145,
-  "time": "2026-11-26 07:56 UTC",
+  "number": 149,
+  "time": "2026-11-26 09:21 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 145 · 2026-11-26 07:56 UTC · Phase 6",
-    "Rough draft 1 of the film is shared in this thread: 74 seconds, 960 x 540 at 30 frames a second, with the prompt opening and sound. Eight machines drew its 60 seconds of globe in about 10 minutes each.",
-    "What is wrong in it and already being worked on: at each change of season a pale disc hides the globe for about a quarter of a second; the grain and rough edges of the fastest quality setting; a pale haze in summer for about a second after it lands.",
-    "Merged since the last status: particles near the lens are drawn whole under the new renderer (their sides were being cut off), the stricter shader check, and the tool that renders the 4K films. Types are clean and 613 tests pass.",
-    "The 4K films keep 24 samples on every frame. Measured cost: 129 seconds for a frame at rest, more in a change of season, so film B is on the order of 150 machine hours once the build is frozen. Their encode is being rebuilt so the picture cannot pulse twice a second: each film is encoded once, whole, from near lossless pieces.",
-    "Next: the mends of the change of season, the first frame, the framing on phones and the controls are due between 08:15 and 08:45 UTC. Then the app is published again and fresh critics judge the changed parts.",
-    "phase 6: 5.11 h used of its 12.00 h box",
-    "allowance (after the review): 5.11 h used of 12.00 h allowed",
+    "Status 149 · 2026-11-26 09:21 UTC · Phase 6",
+    "Round 20 judges summer on e8b3d2cf: four machines draw its gate, measures, pack and motion sheets. The measures are in: 19 lines, one red, M3 at rest 0.6923 against 0.75",
+    "The season change, third job, is on main: the base passes from the old shape to the new inside the cover (sheet below, frames 660 to 690). Its fourth job, an even fade, is at work",
+    "The opening of film A: every typed word is whole and readable at 1920 x 1080 on the frame it lands (14 words, frames 167 to 506, read by eye from the committed pack)",
+    "Masters: four sandbox machines draw the same bytes (ba63d3b2), the 64 core machine draws another picture (2faffc20, 42.6 dB apart, the table's pattern differs), so one kind of machine draws every master frame. Three tests run to bring them together",
+    "The app's sound pack with the shake levels of decision 146 is written (sprite and index only), not yet committed",
+    "phase 6: 6.53 h used of its 12.00 h box",
+    "allowance (after the review): 6.53 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-145-1.jpg",
-      "caption": "Rough draft 1, the four seasons at rest: winter, spring, summer, fall. Fastest quality setting, 960 x 540.",
+      "file": "out/stills/status/status-149-1.jpg",
+      "caption": "The change of season after its third job: film B frames 660 to 690, every second frame, review tier, drawn by the builder on bbe4db9b. Not judged yet",
       "w": 1200,
-      "h": 675
+      "h": 680
     },
     {
-      "file": "out/stills/status/status-145-2.jpg",
-      "caption": "Rough draft 1, eight seconds in: the prompt being typed.",
-      "w": 960,
-      "h": 540
-    },
-    {
-      "file": "out/stills/status/status-145-3.jpg",
-      "caption": "The fault in this draft, six frames across the first change of season: the pale disc hides the globe for a quarter of a second. Its mend is due at 08:15.",
+      "file": "out/stills/status/status-149-2.jpg",
+      "caption": "The opening of film A at 1920 x 1080: the frames on which the last six words become whole, cut to the input, from the committed pack",
       "w": 1200,
-      "h": 450
+      "h": 455
     }
   ]
 }

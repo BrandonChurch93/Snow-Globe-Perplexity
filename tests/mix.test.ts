@@ -10,15 +10,18 @@ type Measured = { seconds: number; lufs: number; lufsMeasure: string; soundLufs:
 type Level = { measure: string; measuredAs: string; seconds: number; beforeLufs: number; afterLufs: number; targetLufs: number; truePeakDb: number }
 type Kept = { audio: Sound; steps: string[]; gainDb: number; level: Level; loop: { seconds: number; seam: { ratio: number; levelStepDb: number } } | null }
 type Ends = { ratio: number; levelStepDb: number; secondStepDb: number }
-type Loop = { id: string; audio: Sound; loopStart: number; loopSeconds: number; gain: number; seam: Ends; fromBar?: number; toBar?: number; leadSeconds?: number; centredByDb?: number; turnedSeconds?: number }
-type Plan = { sprite: { audio: Sound | null; entries: Record<string, { start: number; seconds: number; gain: number }> }; loops: Loop[]; notes: string[] }
+type Heard = { periodSeconds: number; seamSeconds: number; meanDb: number; seamDb: number; quartersDb: number[]; startAloneDb: number; tailAloneDb: number }
+type Loop = { id: string; audio: Sound; loopStart: number; loopSeconds: number; gain: number; seam: Ends | null; heard: Heard; bars?: number; periodSeconds?: number; tailSeconds?: number; fromBar?: number; toBar?: number; leadSeconds?: number; centredByDb?: number; turnedSeconds?: number }
+type Plan = { sprite: { audio: Sound | null; entries: Record<string, { start: number; seconds: number; gain: number }> }; loops: Loop[]; notes: string[]; laid: { id: string; state: string }[] }
 type Mixed = {
   audio: Sound
   music: Sound
   report: {
     seconds: number
     openingSeconds: number
-    placed: { cue: string; at?: number; cents?: number; moveMs?: number; downDb?: number }[]
+    placed: { cue: string; at?: number; cents?: number; moveMs?: number; downDb?: number; riseMs?: number; press?: number }[]
+    laid: { cue: string; state: string; kept: boolean; times: number; presses?: number; step?: number; varied?: boolean }[]
+    typing: { keys: number; taps: number; withoutKey: number; keysWithoutTap: number; limitMs: number; largestOffsetMs: number; earliestMs: number; latestMs: number }
     skipped: { cue: string; why: string }[]
     music: { source: string; parts: { id: string; fromBar?: number; toBar?: number; centredByDb?: number }[] }
     landings: { at: number[]; beforeDb: number[]; trimsDb: number[]; afterDb: number[]; spreadDb: number }
@@ -29,13 +32,24 @@ type Mixed = {
 type Cut = Record<string, unknown>
 type Lib = {
   RATE: number
+  HAND_LIMIT_MS: number
   PEAK_MARGIN_DB: number
   LOUDNESS_BLOCK: number
   SHORT_CREST_DB: number
   MEASURES: Record<string, string>
   loudnessOf(a: Sound): { lufs: number; measure: string; seconds: number }
   cueSeconds(id: string): number | null
-  planPack(o: { keptDir: string; mapsDir: string }): Plan
+  planPack(o: { keptDir: string; mapsDir: string; laidDir?: string }): Plan
+  APP_SEAM: { music: number; ambience: number }
+  APP_SEAM_SHARE: number
+  LAID_STATE: string
+  SHAKE: { downDb: number; riseMs: number; moreDb: number; more: string[] }
+  laidDirOf(keptDir: string): string
+  readLaid(dir: string): { id: string; file: string | null; record: Record<string, unknown> }[]
+  laidSound(id: string, dir: string): { file: string; audio: Sound; set: { presses: Sound[]; step: number; varied: boolean } | null } | null
+  buildLaid(recipe: Record<string, unknown>, o: { takesDir?: string; keptDir?: string }): { audio: Sound; presses: { at: number; seconds: number; fromDb: number }[] | null; source: Record<string, unknown> }
+  heardSeam(body: Sound, seamSeconds: number): Heard
+  riseIn(a: Sound, seconds: number): Sound
   make(n: number, rate?: number): Sound
   seconds(a: Sound): number
   db(x: number): number
@@ -45,12 +59,13 @@ type Lib = {
   loudness(a: Sound): number
   truePeak(a: Sound): number
   peak(a: Sound): number
+  slice(a: Sound, from: number, to?: number): Sound
   measure(a: Sound): Measured
   classOf(id: string): string
   levelOf(cls: string): number
   keepChain(a: Sound, cls: string, options?: Record<string, unknown>): Kept
   master(a: Sound, target: number, ceilingDb: number): { audio: Sound; lufs: number; truePeakDb: number; passes: number; reductionDb: number }
-  mixFilm(o: { cut: Cut; which?: string; candidate?: string; keptDir?: string; mapsDir?: string; skip?: string[]; gains?: Record<string, number> }): Mixed
+  mixFilm(o: { cut: Cut; which?: string; candidate?: string; keptDir?: string; laidDir?: string; mapsDir?: string; skip?: string[]; gains?: Record<string, number> }): Mixed
   sha256(b: Buffer): string
   KEPT: string
   levelDb(a: Sound, from?: number, to?: number): number
@@ -658,22 +673,93 @@ describe('the film mix, by number', () => {
       const cut = A.readJson('cut/CUTLIST.json') as Cut
       const m = A.mixFilm({ cut, which, candidate: 'four-tracks' })
       expectFilm(filmNumbers(m, cut, which === 'a' ? Number((cut.opening as { seconds: number }).seconds) : 0), m)
+      // Decision 144: one tap for each key of the cut list and none without a key, each beginning within 20 ms of the
+      // time of its own key, and nothing sounds before the first cue of the opening.
+      const cues = which === 'a' ? (cut.opening as { cues: { cue: string; at: number }[] }).cues : []
+      const keys = cues.filter((c) => c.cue === 'key-tap')
+      const t = m.report.typing
+      expect(t.keys).toBe(keys.length)
+      expect(t.withoutKey).toBe(0)
+      expect(t.limitMs).toBe(20)
+      expect(t.largestOffsetMs).toBeLessThanOrEqual(20)
+      if (keys.length && !m.report.skipped.some((s) => s.cue === 'key-tap')) {
+        expect(t.taps).toBe(keys.length)
+        expect(t.keysWithoutTap).toBe(0)
+        const first = Math.min(...cues.map((c) => Number(c.at)))
+        if (first === Number(keys[0]!.at)) expect(A.peak(A.slice(m.audio, 0, Math.round(first * rate)))).toBe(0)
+      }
     }, SLOW)
   }
 })
 
 describe("the app's loops, by number", () => {
+  // The seam of src/audio/index.ts: one bar for music, 1.5 s for ambience, never more than a quarter of the loop.
+  const seamOf = (l: Loop): number => Math.min(A.classOf(l.id) === 'music' ? bar : 1.5, l.loopSeconds * 0.25)
+  // What the app sounds from a loop of the pack: each pass starts one seam before the pass in front of it ends, rises
+  // over that seam as a sine while the other falls as a cosine, and the first pass starts at full level.
+  const played = (l: Loop, passes: number): { audio: Sound; period: number; seam: number } => {
+    const from = Math.round(l.loopStart * rate)
+    const n = Math.round(l.loopSeconds * rate)
+    const seam = Math.round(seamOf(l) * rate)
+    const period = n - seam
+    const out = A.make(period * passes + seam, rate)
+    for (let p = 0; p < passes; p++) {
+      for (let i = 0; i < n; i++) {
+        let g = 1
+        if (p > 0 && i < seam) g = Math.sin(((i + 0.5) / seam) * (Math.PI / 2))
+        if (i >= period) g = Math.cos(((i - period + 0.5) / seam) * (Math.PI / 2))
+        out.L[p * period + i] += l.audio.L[from + i]! * g
+        out.R[p * period + i] += l.audio.R[from + i]! * g
+      }
+    }
+    return { audio: out, period, seam }
+  }
   const expectEnds = (l: Loop): void => {
     const from = Math.round(l.loopStart * rate)
     const body: Sound = { rate, L: l.audio.L.slice(from, from + Math.round(l.loopSeconds * rate)), R: l.audio.R.slice(from, from + Math.round(l.loopSeconds * rate)) }
-    const ends = A.loopEnds(body)
-    expect(Math.abs(ends.secondStepDb), `${l.id}: the last second against the first`).toBeLessThanOrEqual(3)
-    expect(Math.abs(ends.levelStepDb), `${l.id}: the last 50 ms against the first`).toBeLessThanOrEqual(3)
-    expect(ends.ratio, `${l.id}: the step across the seam against a usual step`).toBeLessThan(4)
     expect(A.seconds(l.audio)).toBeCloseTo(l.loopSeconds + 2 * l.loopStart, 3)
+    // By the tool's own number and by the app's passes played here: the level through the cross against the loop's mean.
+    const heard = A.heardSeam(body, seamOf(l))
+    expect(heard.periodSeconds, `${l.id}: the heard period`).toBeCloseTo(l.loopSeconds - seamOf(l), 3)
+    expect(Math.abs(heard.seamDb), `${l.id}: the level through the app's cross against the loop's mean`).toBeLessThanOrEqual(3)
+    expect(l.heard.seamDb).toBeCloseTo(heard.seamDb, 1)
+    const p = played(l, 3)
+    expect(p.period / rate).toBeCloseTo(heard.periodSeconds, 3)
+    let apart = 0
+    for (let i = 0; i < p.period; i++) apart = Math.max(apart, Math.abs(p.audio.L[p.period + i]! - p.audio.L[2 * p.period + i]!))
+    expect(apart, `${l.id}: the second pass and the third sound alike, sample for sample`).toBeLessThan(1e-9)
+    const mean = A.levelDb(p.audio, p.period, 2 * p.period)
+    expect(Math.abs(A.levelDb(p.audio, p.period, p.period + p.seam) - mean), `${l.id}: the crossed part as played`).toBeLessThanOrEqual(3)
+    if (A.classOf(l.id) === 'music') {
+      // A music loop is the track itself: its bars and then the track's own next bar for the cross. Nothing is wrapped.
+      expect(l.seam).toBeNull()
+      expect(l.bars).toBe(l.toBar! - l.fromBar! + 1)
+      expect(l.tailSeconds!).toBeCloseTo(bar, 2)
+      expect(l.periodSeconds!, `${l.id}: heard every ${l.bars} bars`).toBeCloseTo(l.bars! * bar, 2)
+      expect(heard.periodSeconds).toBeCloseTo(l.periodSeconds!, 3)
+      // No bar of the played loop falls out of the level of the others.
+      for (let b = 0; b < l.bars!; b++) {
+        const at = p.period + Math.round((b * p.period) / l.bars!)
+        expect(Math.abs(A.levelDb(p.audio, at, at + Math.round(p.period / l.bars!)) - mean), `${l.id}: bar ${b} of the played loop`).toBeLessThanOrEqual(9)
+      }
+    } else {
+      const ends = A.loopEnds(body)
+      expect(Math.abs(ends.secondStepDb), `${l.id}: the last second against the first`).toBeLessThanOrEqual(3)
+      expect(Math.abs(ends.levelStepDb), `${l.id}: the last 50 ms against the first`).toBeLessThanOrEqual(3)
+      expect(ends.ratio, `${l.id}: the step across the seam against a usual step`).toBeLessThan(4)
+    }
   }
 
-  it('hands the last bar of every loop back to its first at the same level', () => {
+  it('crosses a loop as the app does', () => {
+    const src = fs.readFileSync(path.join(path.dirname(A.KEPT), '..', 'src', 'audio', 'index.ts'), 'utf8')
+    expect(Number(/const AMB_SEAM = ([\d.]+)/.exec(src)?.[1])).toBe(A.APP_SEAM.ambience)
+    expect(Number(/const SEAM_SHARE = ([\d.]+)/.exec(src)?.[1])).toBe(A.APP_SEAM_SHARE)
+    expect(src).toContain("Math.min(kind === 'music' ? barSeconds : AMB_SEAM, loopSeconds * SEAM_SHARE)")
+    expect(src).toContain('voice.next = t + length - seam')
+    expect(A.APP_SEAM.music).toBeCloseTo(bar, 9)
+  })
+
+  it('gives every music loop its bars and the bar after them, heard as that many bars at one level', () => {
     const pack = path.join(dir, 'film')
     const crickets = A.make(Math.round(18.5 * rate), rate)
     for (let i = 0; i < crickets.L.length; i++) {
@@ -688,10 +774,14 @@ describe("the app's loops, by number", () => {
     expect(plan.notes).toEqual([])
     expect(plan.loops.map((l) => l.id).sort()).toEqual(['amb-summer', 'amb-winter', 'music-fall', 'music-spring', 'music-summer', 'music-winter'])
     for (const l of plan.loops) expectEnds(l)
+    // The winter track counts in over bar 0 and only rings out from bar 10: the loop is eight bars of the music itself
+    // and the bar the app crosses over its start is music too, so neither the count nor the ring is ever heard.
     const winter = plan.loops.find((l) => l.id === 'music-winter')!
-    expect(winter.fromBar).toBeGreaterThanOrEqual(2)
-    expect(winter.toBar).toBeLessThan(BARS - 2)
-    expect(winter.loopSeconds).toBeCloseTo(8 * bar, 2)
+    expect(winter.bars).toBe(8)
+    expect(winter.fromBar).toBeGreaterThanOrEqual(1)
+    expect(winter.toBar! + 1).toBeLessThan(BARS - 2)
+    expect(winter.loopSeconds).toBeCloseTo(9 * bar, 2)
+    expect(winter.loopSeconds - seamOf(winter)).toBeCloseTo(8 * bar, 2)
     const spring = plan.loops.find((l) => l.id === 'music-spring')!
     const from = Math.round(spring.loopStart * rate)
     expect(Math.abs(A.channelsDb(spring.audio, from, from + Math.round(spring.loopSeconds * rate)))).toBeLessThanOrEqual(0.5)
@@ -817,5 +907,193 @@ describe('laying sounds together', () => {
     expect(() => A.layTogether(recipe(11.9), { takesDir: takes, keptDir: kept })).toThrow(/quiet support/)
     expect(() => A.layTogether({ cue: 'amb-fall', layers: [{ made: 'tone', hz: 110, seconds: 2 }] }, { takesDir: takes, keptDir: kept })).toThrow(/main/)
     expect(() => A.layTogether({ cue: 'shake-summer', layers: [{ kept: 'shake-spring' }, { take: 9, underDb: 6 }] }, { takesDir: takes, keptDir: kept })).toThrow(/not in this workspace/)
+  })
+})
+
+// Decision 141 of kit/PROGRESS.md. Where every allowed take of a cue is used and none is kept, the nearest right sound
+// may be laid in its place. It is not a kept take: its record lies in laid/ beside the kept folder and never in it, its
+// cue stays open, and every report names it as laid and not kept.
+describe('sounds laid by decision 141', () => {
+  const HZ = [500, 700, 900, 1100]
+  let ownKept = ''
+  let ownLaid = ''
+  let takes = ''
+  const water = (): string => `${A.LAID_STATE}, the water of shake-spring`
+  const setOf = (varied: boolean): Record<string, unknown> => ({
+    set: { cue: 'key-tap', take: 7, windows: HZ.map((_, k) => [0.09 + 0.2 * k, 0.19 + 0.2 * k]), highCutHz: 2500, highCutEndHz: 3500, fadeInMs: 2, fadeOutMs: 30, pressDb: -30 },
+    step: 3,
+    varied,
+  })
+  const lay = (id: string, recipe: Record<string, unknown>, state = A.LAID_STATE): void => {
+    const built = A.buildLaid(recipe, { takesDir: takes, keptDir: ownKept })
+    fs.writeFileSync(path.join(ownLaid, `${id}.wav`), A.encodeWav(built.audio))
+    fs.writeFileSync(path.join(ownLaid, `${id}.json`), JSON.stringify({ id, state, kept: false, recipe, ...(built.presses ? { presses: built.presses } : {}) }))
+  }
+  const typed = (): Cut => ({
+    ...cutOf(),
+    opening: { frameCount: 90, seconds: 1.5, cues: Array.from({ length: 6 }, (_, k) => ({ cue: 'key-tap', frame: 6 + 12 * k, at: 0.1 + 0.2 * k })) },
+    cues: [...(cutOf().cues as Record<string, unknown>[]), { cue: 'shake-summer', frame: 0, at: 3 * bar }],
+  })
+  // Which of the four tones a stretch of sound holds: that is the press that lies there.
+  const toneOf = (a: Sound, from: number, n: number): number => {
+    const power = HZ.map((hz) => {
+      let re = 0
+      let im = 0
+      for (let i = 0; i < n; i++) {
+        re += a.L[from + i]! * Math.cos((2 * Math.PI * hz * i) / rate)
+        im += a.L[from + i]! * Math.sin((2 * Math.PI * hz * i) / rate)
+      }
+      return re * re + im * im
+    })
+    return power.indexOf(Math.max(...power))
+  }
+
+  beforeAll(() => {
+    const own = path.join(dir, 'own')
+    ownKept = path.join(own, 'kept')
+    ownLaid = path.join(own, 'laid')
+    takes = path.join(own, 'takes')
+    fs.mkdirSync(ownKept, { recursive: true })
+    fs.mkdirSync(ownLaid, { recursive: true })
+    fs.mkdirSync(path.join(takes, 'key-tap'), { recursive: true })
+    for (const n of fs.readdirSync(kept)) if (!n.startsWith('key-tap')) fs.copyFileSync(path.join(kept, n), path.join(ownKept, n))
+    // One take that holds four presses, each a different tone at a different level.
+    const take = A.make(Math.round(0.9 * rate), rate)
+    HZ.forEach((hz, k) => {
+      const from = Math.round((0.1 + 0.2 * k) * rate)
+      for (let i = 0; i < Math.round(0.08 * rate); i++) {
+        const v = 0.1 * (k + 1) * Math.sin((2 * Math.PI * hz * i) / rate) * Math.exp(-i / (0.03 * rate))
+        take.L[from + i] = v
+        take.R[from + i] = v
+      }
+    })
+    fs.writeFileSync(path.join(takes, 'key-tap', 'take-7.wav'), A.encodeWav(take))
+    lay('key-tap', setOf(false))
+    lay('shake-summer', { borrow: { kept: 'shake-spring', cents: -110 } }, water())
+  })
+
+  it('builds a set of presses levelled alike and a borrow at its pitch, the same bytes twice', () => {
+    expect(A.laidDirOf(ownKept)).toBe(ownLaid)
+    const one = A.buildLaid(setOf(false), { takesDir: takes, keptDir: ownKept })
+    const two = A.buildLaid(setOf(false), { takesDir: takes, keptDir: ownKept })
+    expect(A.encodeWav(one.audio).equals(A.encodeWav(two.audio))).toBe(true)
+    expect(one.presses!.length).toBe(4)
+    expect(one.source).toMatchObject({ cue: 'key-tap', take: 7 })
+    // In the take the first press and the last lie 12 dB apart; in the set every press is at the level of the recipe.
+    expect(one.presses![3]!.fromDb - one.presses![0]!.fromDb).toBeGreaterThan(11)
+    const l = A.laidSound('key-tap', ownLaid)!
+    expect(l.set!.step).toBe(3)
+    expect(l.set!.varied).toBe(false)
+    expect(l.set!.presses.length).toBe(4)
+    for (const [k, p] of l.set!.presses.entries()) {
+      expect(A.levelDb(p)).toBeCloseTo(-30, 1)
+      expect(toneOf(p, 0, p.L.length)).toBe(k)
+    }
+    const spring = A.parseWav(fs.readFileSync(path.join(ownKept, 'shake-spring.wav')))
+    const low = A.buildLaid({ borrow: { kept: 'shake-spring', cents: -110 } }, { keptDir: ownKept })
+    const high = A.buildLaid({ borrow: { kept: 'shake-spring', cents: 40 } }, { keptDir: ownKept })
+    expect(A.seconds(low.audio) / A.seconds(spring)).toBeCloseTo(2 ** (110 / 1200), 3)
+    expect(A.seconds(high.audio) / A.seconds(spring)).toBeCloseTo(2 ** (-40 / 1200), 3)
+    expect(low.source).toMatchObject({ kept: 'shake-spring' })
+    expect(() => A.buildLaid({ borrow: { kept: 'shake-nowhere', cents: 0 } }, { keptDir: ownKept })).toThrow(/not in this workspace/)
+    expect(() => A.buildLaid({}, { keptDir: ownKept })).toThrow(/recipe.borrow or recipe.set/)
+  })
+
+  it('lays the presses of a set in turn at their own level and names the cue as laid, not kept', () => {
+    const one = A.mixFilm({ cut: typed(), which: 'a', candidate: 'blockout', keptDir: ownKept, mapsDir: maps })
+    const two = A.mixFilm({ cut: typed(), which: 'a', candidate: 'blockout', keptDir: ownKept, mapsDir: maps })
+    expect(A.encodeWav(one.audio).equals(A.encodeWav(two.audio))).toBe(true)
+    expect(JSON.stringify(one.report)).toBe(JSON.stringify(two.report))
+    const taps = one.report.placed.filter((p) => p.cue === 'key-tap')
+    expect(taps.map((p) => p.press)).toEqual([0, 3, 2, 1, 0, 3])
+    expect(taps.map((p) => p.cents)).toEqual([0, 0, 0, 0, 0, 0])
+    expect(taps.map((p) => p.moveMs)).toEqual([0, 14, -9, 18, -16, 6])
+    // The level of a set is in its record, so the 9 dB one kept press is turned down by are not taken off again.
+    expect(taps.map((p) => p.downDb)).toEqual([0, -2.5, -1, -4, -0.5, -3])
+    expect(one.report.skipped.map((s) => s.cue)).not.toContain('key-tap')
+    expect(one.report.laid.find((l) => l.cue === 'key-tap')).toEqual({ cue: 'key-tap', state: A.LAID_STATE, kept: false, times: 6, presses: 4, step: 3, varied: false })
+    // Decision 144: the taps against the keys. One for each key, none without one, none further than 20 ms from its own.
+    expect(A.HAND_LIMIT_MS).toBe(20)
+    expect(one.report.typing).toEqual({ keys: 6, taps: 6, withoutKey: 0, keysWithoutTap: 0, limitMs: 20, largestOffsetMs: 18, earliestMs: -16, latestMs: 18 })
+    expect(A.mixFilm({ cut: typed(), which: 'b', candidate: 'blockout', keptDir: ownKept, mapsDir: maps }).report.typing).toMatchObject({ keys: 0, taps: 0, withoutKey: 0, largestOffsetMs: 0 })
+    expect(A.mixFilm({ cut: typed(), which: 'a', candidate: 'blockout', keptDir: ownKept, mapsDir: maps, skip: ['key-tap'] }).report.typing).toMatchObject({ keys: 6, taps: 0, withoutKey: 0, keysWithoutTap: 6 })
+    // In the sound itself: each tap holds the tone of its press and lies under the first by what the hand takes off.
+    const n = Math.round(0.1 * rate)
+    const at = taps.map((p) => Math.round((p.at! + p.moveMs! / 1000) * rate))
+    const first = A.levelDb(one.audio, at[0]!, at[0]! + n)
+    for (const [k, p] of taps.entries()) {
+      expect(toneOf(one.audio, at[k]!, n)).toBe(p.press)
+      expect(A.levelDb(one.audio, at[k]!, at[k]! + n) - first).toBeCloseTo(p.downDb!, 1)
+    }
+  })
+
+  it('uses the pitch offsets on a set only when its record says so', () => {
+    lay('key-tap', setOf(true))
+    const m = A.mixFilm({ cut: typed(), which: 'a', candidate: 'blockout', keptDir: ownKept, mapsDir: maps })
+    lay('key-tap', setOf(false))
+    const taps = m.report.placed.filter((p) => p.cue === 'key-tap')
+    expect(taps.map((p) => p.cents)).toEqual([0, -45, 30, -20, 55, -65])
+    expect(taps.map((p) => p.press)).toEqual([0, 3, 2, 1, 0, 3])
+    expect(m.report.laid.find((l) => l.cue === 'key-tap')!.varied).toBe(true)
+  })
+
+  it('lets a kept take win over a laid sound and never counts a laid sound as kept', () => {
+    // The folder kept/ of this file holds a kept key press: beside the same laid folder nothing of the set is used.
+    const m = A.mixFilm({ cut: typed(), which: 'a', candidate: 'blockout', keptDir: kept, laidDir: ownLaid, mapsDir: maps })
+    const taps = m.report.placed.filter((p) => p.cue === 'key-tap')
+    expect(taps.length).toBe(6)
+    expect(taps.every((p) => p.press === undefined)).toBe(true)
+    expect(taps.slice(0, 2).map((p) => p.downDb)).toEqual([-9, -11.5])
+    expect(m.report.laid.map((l) => l.cue)).toEqual(['shake-summer'])
+    expect(m.report.laid.every((l) => l.kept === false && l.state.startsWith(A.LAID_STATE))).toBe(true)
+    // With no laid folder the cue is silent and named, as it was before the decision.
+    const none = A.mixFilm({ cut: typed(), which: 'a', candidate: 'blockout', keptDir: ownKept, laidDir: path.join(dir, 'nothing-laid'), mapsDir: maps })
+    expect(none.report.skipped.map((s) => s.cue)).toEqual(expect.arrayContaining(['key-tap', 'shake-summer']))
+    expect(none.report.laid).toEqual([])
+    // A record whose state does not begin with the words of the decision is not a laid sound.
+    const odd = path.join(dir, 'odd-laid')
+    fs.mkdirSync(odd, { recursive: true })
+    fs.copyFileSync(path.join(ownLaid, 'shake-summer.wav'), path.join(odd, 'shake-summer.wav'))
+    fs.writeFileSync(path.join(odd, 'shake-summer.json'), JSON.stringify({ id: 'shake-summer', state: 'kept', recipe: { borrow: { kept: 'shake-spring', cents: -110 } } }))
+    expect(A.laidSound('shake-summer', odd)).toBeNull()
+    expect(A.readLaid(odd)).toEqual([])
+  })
+
+  it('places a borrowed shake in the film and in the pack as laid, and leaves a set of presses to the film', () => {
+    const m = A.mixFilm({ cut: typed(), which: 'b', candidate: 'blockout', keptDir: ownKept, mapsDir: maps })
+    expect(m.report.placed.map((p) => p.cue)).toContain('shake-summer')
+    expect(m.report.skipped.map((s) => s.cue)).not.toContain('shake-summer')
+    expect(m.report.laid).toEqual([{ cue: 'shake-summer', state: water(), kept: false, times: 1 }])
+    const without = A.mixFilm({ cut: typed(), which: 'b', candidate: 'blockout', keptDir: ownKept, laidDir: path.join(dir, 'nothing-laid'), mapsDir: maps })
+    expect(A.encodeWav(m.audio).equals(A.encodeWav(without.audio))).toBe(false)
+    const plan = A.planPack({ keptDir: ownKept, mapsDir: maps })
+    expect(plan.laid).toEqual([{ id: 'shake-summer', state: water() }])
+    const laid = A.parseWav(fs.readFileSync(path.join(ownLaid, 'shake-summer.wav')))
+    expect(plan.sprite.entries['shake-summer']!.seconds).toBeCloseTo(A.seconds(laid), 3)
+    expect(plan.sprite.entries['key-tap']).toBeUndefined()
+    expect(Object.keys(A.planPack({ keptDir: ownKept, laidDir: path.join(dir, 'nothing-laid'), mapsDir: maps }).sprite.entries)).not.toContain('shake-summer')
+  })
+
+  // Decision 142: in its own bar the shake was called too loud or abrupt against the music, so the film brings every
+  // shake down and lets it rise from nothing, kept or laid alike.
+  it('brings every shake of the film down and lets it rise over its first moment', () => {
+    expect(A.SHAKE.downDb).toBe(3)
+    expect(A.SHAKE.riseMs).toBe(30)
+    const m = A.mixFilm({ cut: typed(), which: 'b', candidate: 'blockout', keptDir: ownKept, mapsDir: maps })
+    const shakes = m.report.placed.filter((p) => p.cue.startsWith('shake-'))
+    expect(shakes.map((p) => p.cue)).toEqual(['shake-spring', 'shake-summer'])
+    for (const p of shakes) {
+      expect(p.downDb).toBe(-(A.SHAKE.downDb + (A.SHAKE.more.includes(p.cue) ? A.SHAKE.moreDb : 0)))
+      expect(p.riseMs).toBe(A.SHAKE.riseMs)
+    }
+    expect(m.report.placed.find((p) => p.cue === 'lift')!.downDb).toBeUndefined()
+    const a = noise(1, 0.3, 11)
+    const before = Float64Array.from(a.L)
+    const r = A.riseIn(a, 0.03)
+    const n = Math.round(0.03 * rate)
+    expect(a.L).toEqual(before)
+    expect(A.levelDb(r, 0, n >> 2)).toBeLessThan(A.levelDb(a, 0, n >> 2) - 12)
+    expect(A.levelDb(r, n >> 1, n)).toBeGreaterThan(A.levelDb(a, n >> 1, n) - 3)
+    for (let i = n; i < a.L.length; i += 997) expect(r.L[i]).toBe(a.L[i])
   })
 })

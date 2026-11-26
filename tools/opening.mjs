@@ -6,9 +6,9 @@ import { pathToFileURL } from 'node:url'
 import sharp from 'sharp'
 import { Session, cfg } from './lib/page.mjs'
 import { serve } from './lib/server.mjs'
-import { watchPage } from './lib/browser.mjs'
+import { pinnedBrowser, rendererName, softwareRenderer, watchPage } from './lib/browser.mjs'
 import { rel, parseArgs, writeJson } from './lib/paths.mjs'
-import { buildPack, openPack, packServed, PACK_DIRS, PACK_FILES } from './lib/openingpack.mjs'
+import { buildPack, openPack, packRenderer, packServed, rendererLine, rendererProblem, PACK_DIRS, PACK_FILES } from './lib/openingpack.mjs'
 
 const HELP = `npm run opening -- [options]
 
@@ -25,6 +25,10 @@ for the product's interface, and writes the pack the page shows: public/opening/
   --page          draw nothing: ask the built page for frames of the opening, out of order and in a run,
                   and compare what it shows with the pack, pixel for pixel (hd, and the master's size
                   when a master pack exists). Writes out/work/opening/page.json
+
+Whatever it draws (the pack, the master pack, stills) it draws with SwiftShader, the renderer of the committed
+pack, whatever the machine's default or SHOWCASE_RENDERER says, and it says so in one line. If the browser
+answers with another renderer the tool stops before it draws. --page draws nothing and keeps the machine's renderer.
 `
 
 class Stop extends Error {}
@@ -304,6 +308,21 @@ function skillChecks(plan, raw, fonts, screens, twice) {
   }
 }
 
+// The browser's own word for what draws its pictures: WebGL's unmasked renderer, read on an empty page.
+async function seenRenderer(browser) {
+  const page = await browser.newPage()
+  try {
+    return await page.evaluate(() => {
+      const gl = document.createElement('canvas').getContext('webgl2')
+      if (!gl) return ''
+      const dbg = gl.getExtension('WEBGL_debug_renderer_info')
+      return String(gl.getParameter(dbg ? dbg.UNMASKED_RENDERER_WEBGL : gl.RENDERER))
+    })
+  } finally {
+    await page.close()
+  }
+}
+
 async function checkPage() {
   const session = await Session.open()
   const results = []
@@ -344,7 +363,7 @@ async function checkPage() {
     await session.close()
   }
   const pass = results.every((r) => !r.differing || (r.differing.length === 0 && r.said.length === 1 && r.said[0] === r.pack && r.errors.length === 0 && r.refusesAFrameItDoesNotHold !== '' && !r.flaggedAsStandIn))
-  writeJson(path.join(WORK, 'page.json'), { pass, results })
+  writeJson(path.join(WORK, 'page.json'), { pass, renderer: rendererName(false), results })
   for (const r of results) console.log(r.differing ? `opening: the page at ${r.format} shows the ${r.pack} pack: ${r.compared} frames asked out of order and in a run, ${r.differing.length} differ from the pack` : `opening: the page at ${r.format}: ${r.note}`)
   if (results.some((r) => r.registerSaysStandIn)) console.log('opening: parts/PARTS.json still lists the opening as a stand-in, so info().standIns names it until the register is changed')
   if (!pass) throw new Stop('the page does not show the pack as it is. See out/work/opening/page.json')
@@ -364,9 +383,16 @@ async function main() {
   prepare(skill, effort)
   const effortModel = await import(pathToFileURL(path.join(COPY, 'scripts', 'effort-model.mjs')).href)
 
+  // One renderer draws the opening (PACK_RENDERER in lib/openingpack.mjs), so the tools are told its name here,
+  // before the browser starts, and the browser is asked what it is before a frame is drawn.
+  console.log(`opening: ${rendererLine(process.env.SHOWCASE_RENDERER, pinnedBrowser().renderer)}`)
+  process.env.SHOWCASE_RENDERER = packRenderer(args)
   const session = await Session.open()
   let screens = null
   try {
+    const graphics = await seenRenderer(session.browser)
+    const problem = rendererProblem(softwareRenderer().name, graphics)
+    if (problem) throw new Stop(problem)
     const page = await session.page({ simcache: false })
     const plan = await page.evaluate(() => window.showcase.dev.openingPlan())
     await page.close()
@@ -423,6 +449,8 @@ async function main() {
       pass: failed.length === 0,
       failed,
       pack: master ? 'master' : 'hd',
+      renderer: softwareRenderer().name,
+      graphics,
       width,
       height,
       fps: plan.fps,

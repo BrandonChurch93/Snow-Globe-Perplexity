@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { DEPTH_RANGE_MM, partBytes, viewCode } from '../diagnostics/views'
 import { LENS_GLSL, innerRadiusMm, lensIor, lensRadiusMm } from '../globe/lens'
-import { DRESSING_CHANGE, changeRamp } from '../shake/change'
+import { BASE_PASS, CHANGE_COVER, DRESSING_CHANGE, changeRamp } from '../shake/change'
 import { LIGHT_FRAG, LIGHT_FRAG_PARS, lightUniforms } from './chunks/light'
 import { VEIL_FRAG, VEIL_FRAG_PARS, veilUniforms } from './chunks/veil'
 import { flagStandIn } from './standins'
@@ -26,13 +26,14 @@ export const DRESSING_FRONT = { gain: 2, fromMm: 58, toMm: 230 } as const
 
 /**
  * How the parts outside the glass give way, all of them inside the one span of change.ts and under its cover.
- * The base is crossed, never morphed: both bases are drawn whole and every pixel of every sample keeps one of them, more of
- * the new one as the span runs.
+ * The base is never morphed: every pixel of a sample holds one base or the other, and the share that holds the new one grows
+ * over `BASE_PASS`, longer than the span. Both are black under the cover, so no mix of two bases is in sight; what is in sight
+ * is their line against the lit glass, which passes from one shape to the other and never steps.
  * The table's dressing never holds two seasons: the old season's is gone in the first half of the span and the new season's
  * comes in the second (`DRESSING_CHANGE`). Each goes and comes from the foot outward; the edge of that front is broken into
  * patches (`cellMm`, `fineMm`) drawn out along the way a gust runs (`streak` times as long as wide, `rayMm` to a radian across)
  * and feathered across the samples of a frame (`feather`), so a field of frost or of sand thins in fingers and never along a line.
- * Nothing here lays light on a part: the cover is the light in the lens and the fall of the exposure (lighting.ts, `CHANGE_BLOOM`).
+ * Nothing here lays light on a part: the cover is the fall of the exposure, which leaves the glass alone in sight (lighting.ts, `CHANGE_BLOOM`).
  * The code of a part's kind rides in `uState.z`: 0 and above is the lag of a part inside the glass, under 0 the table's gain,
  * under `-BASE_CODE` the base's.
  */
@@ -40,6 +41,12 @@ export const OUTSIDE_FRONT = { rayMm: 110, streak: 3.4, cellMm: 6.5, fineMm: 2.3
 const BASE_CODE = 10
 
 const OUTSIDE_RAMP = changeRamp('base')
+/**
+ * The dressing on the glass is on the one thing the cover leaves in sight, so it is not there while the base changes: the old
+ * season's goes as the cover rises, burnt off by the light, and the new season's comes as the cover falls.
+ */
+export const GLASS_LEAVE = { start: CHANGE_COVER.riseFrom, length: CHANGE_COVER.fullFrom - CHANGE_COVER.riseFrom } as const
+export const GLASS_COME = { start: CHANGE_COVER.fullTo, length: CHANGE_COVER.goneAt - CHANGE_COVER.fullTo } as const
 /** A place in the window as a share of the outside span, read past both of its ends: what `(uChange - uState.x) / uState.y` gives. */
 const share = (at: number): number => (at - OUTSIDE_RAMP.start) / OUTSIDE_RAMP.length
 const TABLE = {
@@ -50,6 +57,7 @@ const TABLE = {
   comeLong: share(DRESSING_CHANGE.comeTo) - share(DRESSING_CHANGE.comeFrom),
   closes: share(1),
 } as const
+const BASE = { from: share(BASE_PASS.from), long: share(BASE_PASS.to) - share(BASE_PASS.from) } as const
 
 /**
  * The scatter on the table is carried by the strokes, not swapped. What lies there lifts `leadOut` shares of the outside span
@@ -91,6 +99,7 @@ vec3 stageGust(vec2 rest, float a, float b) {
 
 export interface StageHandle {
   part: string
+  onGlass: boolean
   uPart: { value: THREE.Vector4 }
   uState: { value: THREE.Vector4 }
   uFlags: { value: THREE.Vector4 }
@@ -113,6 +122,7 @@ export function makeHandle(spec: PartSpec): StageHandle {
   const ramp = spec.change === 'surface-dressing' ? OUTSIDE_RAMP : changeRamp(spec.change ?? 'none')
   return {
     part: spec.part,
+    onGlass: spec.change === 'glass-dressing',
     uPart: { value: new THREE.Vector4(c[0] / 255, c[1] / 255, c[2] / 255, standIn ? 1 : 0) },
     uState: { value: new THREE.Vector4(ramp.start, ramp.length, spec.change === 'surface-dressing' ? -DRESSING_FRONT.gain : spec.change === 'base' ? -BASE_CODE - 1 : ramp.lag, MODE.always) },
     uFlags: { value: new THREE.Vector4(spec.miniature ? 1 : 0, spec.textured ? (spec.texels ?? 0) : 0, spec.inside ? 1 : 0, 1) },
@@ -124,6 +134,11 @@ export const handleOf = (m: THREE.Material): StageHandle => m.userData.stage as 
 export function setPresence(m: THREE.Material, mode: number, presence = 1): void {
   const h = handleOf(m)
   h.uState.value.w = mode
+  if (h.onGlass && mode !== MODE.always) {
+    const r = mode === MODE.outgoing ? GLASS_LEAVE : GLASS_COME
+    h.uState.value.x = r.start
+    h.uState.value.y = r.length
+  }
   h.uFlags.value.w = presence
 }
 
@@ -225,7 +240,7 @@ float stageChange() {
   if (uState.w < 0.5) return 0.0;
   if (uState.z < 0.0) {
     float s = (uChange - uState.x) / uState.y;
-    if (uState.z < -${(BASE_CODE - 1).toFixed(1)}) return clamp(s, 0.0, 1.0);
+    if (uState.z < -${(BASE_CODE - 1).toFixed(1)}) return clamp((s + ${(-BASE.from).toFixed(4)}) / ${BASE.long.toFixed(4)}, 0.0, 1.0);
     float far = clamp((length(vStageWorld.xz) - ${DRESSING_FRONT.fromMm.toFixed(1)}) / ${(DRESSING_FRONT.toMm - DRESSING_FRONT.fromMm).toFixed(1)}, 0.0, 1.0);
     float run = uState.w > 1.5 ? (s - ${TABLE.leaveFrom.toFixed(4)}) / ${TABLE.leaveLong.toFixed(4)} : (s - ${TABLE.comeFrom.toFixed(4)}) / ${TABLE.comeLong.toFixed(4)};
     float reach = clamp(run, 0.0, 1.0) * (1.0 - uState.z) + uState.z * (uState.w > 1.5 ? far : 1.0 - far);

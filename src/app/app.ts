@@ -48,6 +48,7 @@ const STEP_SHARE = 0.4
 const SKIP_BUDGET_MS = 14
 const FILMS: Playing[] = ['film-a', 'film-b']
 const MEASURE_EVERY = 20
+const SHAKE_CONTROL = '[data-control="shake"]'
 /** How long the page may take to bring the canvas in over the still before the still is dropped anyway. */
 const REVEAL_MS = 1500
 const CONTROL = 'button, a[href], input, select, textarea, summary, [role="button"], [contenteditable=""], [contenteditable="true"]'
@@ -113,7 +114,10 @@ export function startApp(d: AppDeps): AppBridge {
   let told = params.season
   let stepMs = 0
   let budget = STEP_BUDGET_MS
+  let controls: Awaited<ReturnType<typeof loadInterface>> = null
+  let mounted = false
   let bar: number | null = null
+  let barFor = ''
   let room = -1
   let roomFor = ''
 
@@ -173,12 +177,39 @@ export function startApp(d: AppDeps): AppBridge {
     if (painter.size(cw * ratio, ch * ratio)) governor.rest()
   }
 
+  // The controls where they will stand, whether or not they are there yet: the camera keeps room for them from its first
+  // picture, so the globe does not move when they come. They are measured on a copy that is taken away again before anything
+  // is painted: a copy is not hidden, and it does not rise into place as the controls do when they arrive. Before the
+  // interface is mounted it is mounted for the copy alone.
+  const controlsAtRest = (): number | null => {
+    if (!ui) return null
+    const trial = mounted ? null : (controls?.mountInterface(ui, bridge) ?? null)
+    const copies = [...ui.children].filter((el) => el.querySelector(SHAKE_CONTROL)).map((el) => el.cloneNode(true) as HTMLElement)
+    for (const copy of copies) {
+      for (const el of copy.querySelectorAll<HTMLElement>('[hidden]')) if (el.querySelector(SHAKE_CONTROL)) el.hidden = false
+      ui.append(copy)
+    }
+    const px = controlsPx(ui, app)
+    for (const copy of copies) copy.remove()
+    trial?.dispose()
+    return px
+  }
+
+  const arriving = (): boolean => !!ui?.getAnimations?.({ subtree: true }).some((a) => a.playState === 'running' && !(a instanceof CSSAnimation) && !(a instanceof CSSTransition))
+
+  const measure = (size: string): void => {
+    bar = (ui?.dataset.interface === 'shown' && !arriving() ? controlsPx(ui, app) : controlsAtRest()) ?? bar
+    barFor = size
+    doc.dataset.controls = bar === null ? '' : String(bar)
+  }
+
   const under = (dt: number): number => {
     if (playing !== 'live') return 0
+    const w = app.clientWidth || window.innerWidth
     const h = app.clientHeight || window.innerHeight
-    if (count % MEASURE_EVERY === 0 && ui?.dataset.interface === 'shown' && !session.busy) bar = controlsPx(ui, app) ?? bar
-    const want = roomUnder(h, bar, app.clientWidth || window.innerWidth)
-    const size = `${app.clientWidth}:${h}`
+    const size = `${w}:${h}`
+    if (size !== barFor || (count % MEASURE_EVERY === 0 && ui?.dataset.interface === 'shown' && !session.busy)) measure(size)
+    const want = roomUnder(h, bar, w)
     if (room < 0 || size !== roomFor) room = want
     else if (!session.busy) room += (want - room) * (1 - Math.exp(-dt * FRAME.easeRate))
     roomFor = size
@@ -186,15 +217,18 @@ export function startApp(d: AppDeps): AppBridge {
   }
 
   // The still under the canvas sits where the first picture will draw the globe: the same camera, fitted to the same screen with
-  // the same room under it, so the live picture comes in over a picture of itself.
+  // the same room under it, so the live picture comes in over a picture of itself. The room is the measured one, with or
+  // without a still: the first picture is drawn with it.
   const placeStill = (): void => {
-    const first = window.firstStill
-    if (!first || playing !== 'live') return
+    if (playing !== 'live') return
     const w = app.clientWidth || window.innerWidth
     const h = app.clientHeight || window.innerHeight
+    measure(`${w}:${h}`)
+    const first = window.firstStill
+    if (!first) return
     const ratio = Math.min(window.devicePixelRatio || 1, governor.level.pixelRatioCap)
     const aspect = Math.max(2, Math.round(w * ratio)) / Math.max(2, Math.round(h * ratio))
-    first.place(framingOfRig(liveRig(aspect, 0, 0, roomUnder(h, null, w)), w, h).globe)
+    first.place(framingOfRig(liveRig(aspect, 0, 0, roomUnder(h, bar, w)), w, h).globe)
   }
 
   // The canvas is out of sight until its first whole picture (index.html). Over the still it comes in softly, a picture over a
@@ -498,12 +532,17 @@ export function startApp(d: AppDeps): AppBridge {
   if (params.diag) bridge.setDiagnostic(params.diag)
   if (playing !== 'live') start(playing)
   applyLevel()
+  // The interface is fetched beside the first files, not after the first picture: its controls are measured before a frame is
+  // drawn. The page has laid the still by its own reckoning of them, and the app places it only once it has measured.
+  const interfaceLoaded = probing ? Promise.resolve() : loadInterface().then((m) => void (controls = m))
   if (playing === 'live') {
-    window.addEventListener('resize', placeStill)
-    placeStill()
+    void interfaceLoaded.then(() => {
+      window.addEventListener('resize', placeStill)
+      placeStill()
+    })
   } else window.firstStill?.end()
 
-  void Promise.all([d.ready, (FILMS.includes(playing) ? loader.all : loader.first).catch(() => undefined), playing === 'film-a' ? loadOpening() : null]).then(() => requestAnimationFrame(frame))
+  void Promise.all([d.ready, (FILMS.includes(playing) ? loader.all : loader.first).catch(() => undefined), interfaceLoaded, playing === 'film-a' ? loadOpening() : null]).then(() => requestAnimationFrame(frame))
 
   void afterFirstPicture.then(async () => {
     if (probing) {
@@ -525,9 +564,9 @@ export function startApp(d: AppDeps): AppBridge {
           }),
         )
       }
-    } else {
-      const m = await loadInterface()
-      if (m && ui) m.mountInterface(ui, bridge)
+    } else if (controls && ui) {
+      controls.mountInterface(ui, bridge)
+      mounted = true
     }
     if (!audioShips || probing) return
     const audio = await loadAudio()
