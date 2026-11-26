@@ -178,6 +178,7 @@ function lay() {
     settings: null,
     recipe: { file: show(file), sha256: fileSha(file), why: recipe.why ?? null },
     layers: done.layers,
+    roomDb: done.roomDb,
     source: { name: path.basename(file), sha256: done.sha256 },
     sha256: fileSha(out),
     measured: m,
@@ -189,6 +190,7 @@ function lay() {
   saveTake(ledger, entry)
   console.log(`laid ${show(out)} · number ${n} of ${cue}, a layer of ${done.layers.length}, not counted as a take`)
   for (const l of done.layers) console.log(`  ${l.source.made ? `made ${l.source.made}` : l.source.kept ? `kept ${l.source.kept}` : `take ${l.source.take} of ${l.source.cue}`}: ${l.underMainDb ? `${l.underMainDb} dB under the main layer` : 'the main layer'}, at ${l.at ?? 0} s, ${l.seconds} s${l.cents ? `, ${l.cents} cents` : ''}`)
+  if (done.roomDb < 0) console.log(`  the whole lay turned down ${-done.roomDb} dB so its top stays 1 dB under full scale`)
   for (const l of describe(m)) console.log(l)
   console.log(entry.fits.note)
 }
@@ -298,7 +300,9 @@ function keep() {
   console.log(`kept ${entry.layer ? 'the layer filed as number' : 'take'} ${entry.take} of ${cue} as ${show(out)} · ${cls}, ${m.seconds} s, ${m.lufs} LUFS, peak ${m.truePeakDb} dB`)
   for (const s of done.steps) console.log(`  ${s}`)
   if (done.loop) console.log(`  seam: a step of ${done.loop.seam.ratio} times the usual step between samples, level change ${done.loop.seam.levelStepDb} dB`)
-  const missing = [!entry.prompt && 'prompt', !entry.answers && "the listener's answers", !entry.line && 'the line that describes the cue'].filter(Boolean)
+  // A laid sound has no prompt: its layers and its recipe stand in that place.
+  const laid = entry.layer === true && Array.isArray(entry.layers) && entry.layers.length > 0 && Boolean(entry.recipe)
+  const missing = [!entry.prompt && !laid && 'prompt', !entry.answers && "the listener's answers", !entry.line && 'the line that describes the cue'].filter(Boolean)
   if (missing.length) console.log(`  still missing on this take: ${missing.join(', ')}`)
   console.log(`row for ASSETS.md: | \`${cue}\` | \`audio/kept/${cue}.wav\` | ${entry.tool ?? 'tool and model not recorded'} | ${record.takes} | ${record.time.slice(0, 10)} |`)
 }
