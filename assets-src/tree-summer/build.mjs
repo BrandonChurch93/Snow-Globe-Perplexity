@@ -12,9 +12,9 @@ const LEAF_CELL = 0.85
 const LEVEL_SPRIGS = { medium: 0.45, low: 0.3 }
 const LEAF_TILE_MM = 11
 const SPRIGS = { share: 0.8, size: [1.8, 3.1], rise: 0.35, out: 0.34 }
-const TONE = { deep: [0.22, 0.5, 0.34], mid: [0.4, 0.76, 0.46], tip: [1.7, 1.0, 0.3] }
+const TONE = { deep: [0.22, 0.5, 0.34], mid: [0.4, 0.76, 0.46], tip: [1.6, 1.15, 0.4] }
 // Only the top of a pad, with open air over it, takes the light. Its sides and its underside are in deep shade.
-const SHADE = { body: 0.1, clearMm: 2.0, upFrom: 0.0, upTo: 0.7, tight: 1.3 }
+const SHADE = { body: 0.04, clearMm: 2.4, upFrom: 0.2, upTo: 0.85, tight: 1.25 }
 const PAPER = { orange: [1, 0.3, 0.045], peach: [1, 0.38, 0.06], cream: [1, 0.62, 0.12] }
 const CAP = [0.035, 0.028, 0.022]
 const WIRE = [0.05, 0.04, 0.03]
@@ -230,7 +230,7 @@ function leaves() {
         const m = n.clone().addScaledVector(lean, 0.4 + dv).normalize()
         nor.push(m.x, m.y, m.z)
         uv.push(u0 + (du + 0.5) * 0.5, v0 + (dv + 0.5) * 0.5)
-        const lift = 0.8 + 0.45 * (dv + 0.5)
+        const lift = 0.4 + 1.1 * (dv + 0.5)
         col.push(c[0] * lift, c[1] * lift, c[2] * lift)
         flag.push(1, id)
       }
