@@ -526,7 +526,7 @@ export class GlobeStage implements Stage {
     const g = moment.globe
     f.globe = g
     this.globe.position.set(g.x, g.y, g.z)
-    this.globe.rotation.set(g.tiltX, 0, g.tiltZ)
+    this.globe.rotation.set(g.tiltX, g.twist ?? 0, g.tiltZ, 'XZY')
     f.globeUp.copy(this.up.set(0, 1, 0).applyQuaternion(this.turn.copy(this.globe.quaternion).invert()))
 
     u.uChange.value = change

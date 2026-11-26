@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 179 · 2026-11-26 22:09 UTC
+Status 180 · 2026-11-26 22:41 UTC
 
-- `out/stills/status/status-179-1.jpg`: Summer at rest on main 15d7017d, hd, review tier. The base after its third list is a round mound with slanting swirls; its fine even lines read as turned wood and the gate's detail line is red by it. Still below the bar.
-- `out/stills/status/status-179-2.jpg`: Rough draft 4, 24 frames from 1280 to 2014: spring into summer, then summer. No blue is left in the change.
-- `out/stills/status/status-179-3.jpg`: Fall's storm: the approved picture left, the build at frames 2130 and 2150. Green is the approved look. The flat even ball at the cover's peak is what falls short.
-- `out/stills/status/status-179-4.jpg`: Spring at 3840 final with the camera travelling, four neighbouring frames at 8 times: a bead on the glass as a patch of one pixel dots that differ in every frame (above), the dew on the dark moss as rings of dots (below). A mender has both.
+- `out/stills/status/status-180-1.jpg`: Summer at rest on main cd64e5b8, hd, review tier, with the tree's fifth pass so far: the crown in separate rounded masses. Still below the bar: a pale film over the upper middle and right of the glass, a dark crown without lit rims, seed heads too large and too white, the base.
+- `out/stills/status/status-180-2.jpg`: Fall's miniature at two times, the approved picture left and the build right. Below the bar: large light stones, a flat roof, a tree behind several hundred golden dots.
+- `out/stills/status/status-180-3.jpg`: Spring's base at two times, the approved picture left and the build right. Below the bar: smooth velvet moss, large smooth stones, a broad white band of water, few thick roots.
+- `out/stills/status/status-180-4.jpg`: Winter at 3840 final in motion: the lamp's reflection on the pond ice in three neighbouring frames at 5 times. The dots are other dots in every frame. A mender has it.
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-26 22:09 UTC
-clock: phase 6, tick of 28.4 minutes
-phase 6: 19.33 h used of its 12.00 h box
-allowance (after the review): 19.33 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 19.33 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-26 22:41 UTC
+clock: phase 6, tick of 32.0 minutes
+phase 6: 19.86 h used of its 12.00 h box
+allowance (after the review): 19.86 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 19.86 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
