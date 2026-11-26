@@ -206,3 +206,50 @@ walk-f/shake-control-asked-picture.jpg
   the browser draw at once, before the control's layer is painted again. Not seen on a real card. Tier: the live app
   on the software renderer, the page stepping the particles. Neither before nor after: main 38eff8da as it is. Run
   land-f (alone on the machine), pictures 5-landed-spring-a-GONE and 1-landed-spring-a.
+
+After the walk, read again on main 304bf55c (the newest when the walk closed): two looks for their owners, the live
+app at one sample a frame. Neither is before or after a mend: no source file was changed.
+
+walk-f/summer-grains-fringe.jpg
+  Shows: tablet 1024 x 1366 at 2, summer at rest from its link, the right flank of the base as the tablet's own
+  pixels hold it (the picture taken at 2048 x 2732, every cut at its own size), four cuts. Top left: main 304bf55c at
+  quality high (the canvas holds 2048 x 2732), 598 x 500 from 1450, 1560: the sand's fall sparkles pink. Top right:
+  main 38eff8da, the build walked, at high, the same cut: the grains were larger then and keep their sand colour,
+  with a red and a blue edge. Bottom left: 74 x 37 pixels of the top left's fall (from 1820, 1700) eight times over:
+  each grain has a red edge on its inner side and a blue edge on its outer side. Bottom right: main 304bf55c at
+  quality low (the canvas holds 1024 x 1366 and the browser stretches it), 598 x 300 from 1450, 1600: softer, the
+  fall reads pinkish. State of each: summer lit, the controls shown, not busy, the whole pictures loaded. Pixels of a
+  colour no sand has (strong, bright red, magenta or blue) in the right 800 x 1000 of the tablet's pixels (from
+  1248, 1520): 14791 on 304bf55c at high, 1914 at low, 4957 on 38eff8da at high. Cause, read and counted: the lens
+  fringe in src/post/post.ts 156 to 157 takes red from further out and blue from further in, and on 304bf55c the
+  grains are single hard pixels at one sample a frame. Counted in the same box on 304bf55c at high, with green (the
+  one colour the fringe does not move) telling where the grain is: a blue pixel has a brighter grain one pixel
+  further in 2194 times and one further out 12 times; a red or magenta pixel has it further out 6811 times and
+  further in 2166. The left 800 x 1000 reads the same way from the middle (blue 261 against 1, red 758 against 67),
+  so the edges change sides with the flank, as a fringe from the picture's middle does. These are the tablet's
+  pixels one to one: on a real tablet each is far smaller than on a desk screen, and what the eye makes of them
+  there I could not see. Tier: the live app on the software renderer. Runs dev-main3-summer-high,
+  dev-main3-summer-low and dev-f-summer-high (each alone on the machine).
+
+walk-f/mid-shake-stipple.jpg
+  Shows: tablet 1024 x 1366 at 2, quality low, a shake from winter to spring pressed on the control, one cut of the
+  canvas's own store (299 x 299 of its 1024 x 1366 pixels, from 308, 340), four ways. Top left: main 304bf55c at rest
+  in winter, the last frame before the control went busy. Top right: 304bf55c at the frame with the most of it. Bottom
+  left: main 38eff8da, the build walked, at its frame with the most of it. In these three each pixel of the store is
+  doubled with no smoothing. Bottom right: the top right's frame stretched by two with smoothing, which is what the
+  browser does with the store at low on this tablet (checked by eye, at rest, against a picture of the device's own
+  pixels, run dev-main3-shake-low). State at the press: lit winter, target spring, busy; both runs landed in spring.
+  While the season is exchanged inside the milky glass the scene comes and goes pixel by pixel, in both builds alike.
+  Of the pixels of the kept cut (400 x 400), those that stand outside all four beside them by six levels are 2.1 in a
+  hundred at rest, and at the most 12.6 on 304bf55c (frame 102) and 13.4 on 38eff8da (frame 112). The pattern is drawn
+  anew every frame: of 19776 such pixels in frame 101 on 304bf55c, 3294 stand apart in frame 102 as well, where chance
+  alone would give 2487 (at rest 3029 of 3361 do). It is there in 41 of the shake's 136 frames on 304bf55c (frames 78
+  to 118, the control busy from 25 to 160) and in 37 of 137 on 38eff8da (90 to 126, busy from 31 to 167); the config
+  gives the exchange 0.6 s of the shake's 2.4 s (config/showcase.json 161, beats 2 to 3 of 4 at 100 a minute). These
+  two runs play slowly, which is the tool's doing and not the page's: the store is read in the frame's own task, that
+  holds the page's thread, and the particle worker then gets one turn a frame (told 138 times over the 137 busy frames
+  on 38eff8da); with nothing read a shake took 11 frames on 304bf55c (run dev-main3-shake-low-b). Cause, read:
+  `stageGone` in src/core/materials.ts 324 to 336 sets a pixel's hash, seeded anew each frame (src/app/app.ts 427,
+  src/scene/stage.ts 286), against the change's progress, and the live app draws one sample a frame where the film
+  averages many. Not seen moving: at speed the eye may take it for grain, and a still cannot tell. Not looked at on
+  high. Tier: the live app on the software renderer. Runs grab-main3-low and grab-f-low-w (each alone on the machine).
