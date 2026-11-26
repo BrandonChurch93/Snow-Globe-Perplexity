@@ -43,3 +43,11 @@ Before. Film frame 675, same commit of main. Format hd, tier review.
 
 11-cover-678-before.jpg
 Before. Film frame 678, same commit of main. Format hd, tier review.
+
+Third job (the foot of the glass at the swap, fall's lanterns), drawn under Mesa lavapipe.
+
+15-foot-672-679-draft-after.jpg
+After. The foot of the glass in film frames 672 to 679 of film B, one frame a row from the top, cut from each frame at its own pixels (the cut follows the glass, so the rows do not line up). Format hd, tier draft (2 samples a frame), commit f3e3a0dd on agent/p6-change. The base passes from winter's shape to spring's over six frames: where spring's base stands higher than winter's the lit foot is covered grain by grain, a little more each frame, and no frame steps from one line to the other. Row 8 (679) is spring's base whole.
+
+16-lanterns-2831-2836.jpg
+Fall's lantern faces under the cover of the fourth change, film frames 2831 to 2836 from left to right, the part of the frame under the glass at its own pixels. Format preview, tier draft. Row 1: main at 89e35077, before my first job. Row 2: agent/p6-change at 978ef9f1 (my second job). Rows 3 and 4: the same two rows with their levels multiplied by 5. In both the faces are plain in 2831, faint in 2832 and nearly gone from 2833; they were not lit through the cover before either.
