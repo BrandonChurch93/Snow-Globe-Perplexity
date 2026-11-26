@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { Euler, Vector3 } from 'three'
 import { config } from '../src/config'
 import { barSeconds, globePoseAt, stillTimeline } from '../src/film/timeline'
 import { AMBIENT_MAX, Liquid, LIQUID_LENGTH, LIQUID_R, LIQUID_SLOSH, LIQUID_TURBULENCE, LIQUID_TURN, TURBULENCE_MAX } from '../src/globe/liquid'
@@ -40,6 +41,32 @@ function points(count: number, onWall: boolean): number[][] {
 }
 
 describe('the liquid model', () => {
+  it('opposes the glass velocity in the frame of the rendered globe, including a twist before tilt', () => {
+    const tiltX = 0.21
+    const tiltZ = -0.13
+    const travel = new Vector3(105, 28, -47)
+    for (const twist of [0, 0.24]) {
+      const rotation = new Euler(tiltX, twist, tiltZ, 'XZY')
+      const liquid = new Liquid()
+      const pose = { ...REST_POSE, tiltX, tiltZ, twist }
+      const a = { ...pose, x: -travel.x * DT, y: -travel.y * DT, z: -travel.z * DT, twist: twist - 0.7 * DT }
+      const b = { ...pose, x: travel.x * DT, y: travel.y * DT, z: travel.z * DT, twist: twist + 0.7 * DT }
+      liquid.step(a, pose, b, 0, config.shake.liftBeats)
+      const slip = new Vector3(liquid.slip[0], liquid.slip[1], liquid.slip[2]).applyEuler(rotation)
+      expect(slip.clone().normalize().dot(travel.clone().normalize())).toBeCloseTo(-1, 10)
+      expect(slip.length() / travel.length()).toBeGreaterThan(0.9)
+      expect(slip.length() / travel.length()).toBeLessThan(1.1)
+      expect(Math.abs(liquid.slip[3]!)).toBe(0)
+      expect(liquid.slip[4]).toBeLessThan(-0.5)
+      expect(Math.abs(liquid.slip[5]!)).toBe(0)
+      const g = new Vector3(liquid.motion.gx, liquid.motion.gy, liquid.motion.gz).applyEuler(rotation)
+      expect(g.distanceTo(new Vector3(0, -1, 0))).toBeLessThan(1e-10)
+      liquid.step(pose, pose, pose, DT, config.shake.swapWindow.toBeat)
+      expect(Array.from(liquid.slip)).toEqual([0, 0, 0, 0, 0, 0])
+      expect(liquid.release).toBe(1)
+    }
+  })
+
   it('stays at rest when the globe is at rest', () => {
     const liquid = new Liquid()
     const u = [0, 0, 0]

@@ -65,6 +65,10 @@ const ROLL_WOKEN = 0.9
 export const CARRY = 2
 export const LOAD_MAX_MM = 30
 const LOAD_SECONDS = 0.5
+const FLUID_SLIP = 1.02
+const LOAD_SLIP = 0.28
+const TWIST_SLIP = 0.85
+const PRE_SWAP_TURBULENCE = 0.67
 // A stir is a push the liquid still has to take up: it comes into the turn over a few tenths of a second, never in one step.
 export const STIR_SECONDS = 0.3
 const STIR_EPS = 1e-3
@@ -219,6 +223,10 @@ export interface LiquidMotion {
   gz: number
 }
 
+type WetPose = GlobePose & { twist?: number }
+const yawOf = (p: WetPose): number => p.twist ?? 0
+const smooth = (t: number): number => t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t)
+
 function centreOf(p: GlobePose, out: Float64Array, o: number): void {
   const sb = Math.sin(p.tiltZ)
   const cb = Math.cos(p.tiltZ)
@@ -259,12 +267,14 @@ export class Liquid {
   readonly state = new Float64Array(LIQUID_LENGTH)
   readonly coef = new Float64Array(8)
   readonly carry = new Float64Array(3)
+  readonly slip = new Float64Array(6)
   readonly grid = new Float32Array(NOISE_LEN)
   readonly pot = new Float32Array(NOISE_LEN)
   readonly motion: LiquidMotion = { ax: 0, ay: 0, az: 0, gx: 0, gy: -1, gz: 0 }
   noise = false
   maxSpeed = 0
   clearing = 0
+  release = 1
   private readonly mixed = new Float64Array(3)
   private readonly work = new Float64Array(6)
   private readonly scratch = new Float64Array(9)
@@ -282,6 +292,8 @@ export class Liquid {
 
   reset(): void {
     this.state.fill(0)
+    this.slip.fill(0)
+    this.release = 1
     this.motion.ax = 0
     this.motion.ay = 0
     this.motion.az = 0
@@ -303,7 +315,7 @@ export class Liquid {
     return L[0] === 0 && L[1] === 0 && L[2] === 0 && L[3] === 0 && L[4] === 0 && L[5] === 0 && L[6] === 0 && L[15] === 0 && L[19] === 0 && L[20] === 0 && L[21] === 0 && L[22] === 0 && L[23] === 0 && L[24] === 0
   }
 
-  step(p0: GlobePose, p1: GlobePose, p2: GlobePose, time: number): void {
+  step(p0: GlobePose, p1: GlobePose, p2: GlobePose, time: number, shakeBeat: number | null = null): void {
     const L = this.state
     const c = this.scratch
     centreOf(p0, c, 0)
@@ -317,20 +329,53 @@ export class Liquid {
     const ca = Math.cos(p1.tiltX)
     const sb = Math.sin(p1.tiltZ)
     const cb = Math.cos(p1.tiltZ)
+    const yaw = yawOf(p1)
+    const sc = Math.sin(yaw)
+    const cc = Math.cos(yaw)
     const ry = wyA * ca + wzA * sa
     const rz = -wyA * sa + wzA * ca
-    const ax = wxA * cb + ry * sb
+    const rx = wxA * cb + ry * sb
+    const ax = yaw === 0 ? rx : rx * cc - rz * sc
     const ay = -wxA * sb + ry * cb
-    const az = rz
+    const az = yaw === 0 ? rz : rx * sc + rz * cc
     const m = this.motion
     m.ax = ax
     m.ay = ay
     m.az = az
-    m.gx = -ca * sb
+    const gx = -ca * sb
+    m.gx = yaw === 0 ? gx : gx * cc - sa * sc
     m.gy = -ca * cb
-    m.gz = sa
+    m.gz = yaw === 0 ? sa : gx * sc + sa * cc
     const dda = (p2.tiltX - 2 * p1.tiltX + p0.tiltX) * inv
     const ddb = (p2.tiltZ - 2 * p1.tiltZ + p0.tiltZ) * inv
+    const yaw0 = yawOf(p0)
+    const yaw2 = yawOf(p2)
+    const ddc = (yaw2 - 2 * yaw + yaw0) * inv
+    const lift = config.shake.liftBeats
+    const swap = config.shake.swapWindow
+    const weight = shakeBeat === null ? 0 : 1 - smooth((shakeBeat - lift - 0.15) / (swap.fromBeat - lift - 0.15))
+    const flow = this.slip
+    this.release = shakeBeat === null ? 1 : smooth((shakeBeat / lift - 0.45) / 0.7)
+    if (weight > 0) {
+      // In the bulk, subtract the glass's local rigid velocity. At the boundary the wall brings the water along.
+      const vx = (c[6]! - c[0]!) * (HZ * 0.5)
+      const vy = (c[7]! - c[1]!) * (HZ * 0.5)
+      const vz = (c[8]! - c[2]!) * (HZ * 0.5)
+      const ly = vy * ca + vz * sa
+      const lz = -vy * sa + vz * ca
+      const lx = vx * cb + ly * sb
+      const gain = -weight * FLUID_SLIP
+      flow[0] = (lx * cc - lz * sc) * gain
+      flow[1] = (-vx * sb + ly * cb) * gain
+      flow[2] = (lx * sc + lz * cc) * gain
+      const turnGain = -weight * TWIST_SLIP * HZ * 0.5
+      const da = (p2.tiltX - p0.tiltX) * turnGain
+      const db = (p2.tiltZ - p0.tiltZ) * turnGain
+      const dc = (yaw2 - yaw0) * turnGain
+      flow[3] = da * cb * cc - db * sc
+      flow[4] = -da * sb + dc
+      flow[5] = da * cb * sc + db * cc
+    } else if (flow[0] !== 0 || flow[1] !== 0 || flow[2] !== 0 || flow[3] !== 0 || flow[4] !== 0 || flow[5] !== 0) flow.fill(0)
     let px = L[LIQUID_STIR]!
     let py = L[LIQUID_STIR + 1]!
     let pz = L[LIQUID_STIR + 2]!
@@ -340,6 +385,11 @@ export class Liquid {
     let wx = L[0]! - LAG * dda * cb * DT + px * taken
     let wy = L[1]! + LAG_UPRIGHT * dda * sb * DT + py * taken
     let wz = L[2]! - LAG * ddb * DT + pz * taken
+    if (yaw !== 0 || ddc !== 0) {
+      wx += (LAG * dda * cb * (1 - cc) + LAG * ddb * sc) * DT
+      wy -= LAG_UPRIGHT * ddc * DT
+      wz += (LAG * ddb * (1 - cc) - LAG * dda * cb * sc) * DT
+    }
     px -= px * taken
     py -= py * taken
     pz -= pz * taken
@@ -380,7 +430,9 @@ export class Liquid {
 
     const fed = TURB_FROM_SLOSH * s0 * (1 - keep) + TURB_FROM_REVERSAL * SLOSH_GAIN * Math.max(0, against) * DT + TURB_FROM_TURN * shed
     let turb = L[6]! * Math.exp(-DT / TURB_SECONDS) + fed
-    if (turb > TURBULENCE_MAX) turb = TURBULENCE_MAX
+    const cover = shakeBeat === null ? 1 : smooth((shakeBeat - swap.fromBeat) / ((swap.toBeat - swap.fromBeat) * 0.42))
+    const turbLimit = TURBULENCE_MAX * (PRE_SWAP_TURBULENCE + (1 - PRE_SWAP_TURBULENCE) * cover)
+    if (turb > turbLimit) turb = turbLimit
     let roll = L[15]! * Math.exp(-DT / ROLL_SECONDS) + ROLL_FROM_STORM * fed - ROLL_DRAIN * DT
     if (roll > ROLL_MAX) roll = ROLL_MAX
     if (roll > L[15]!) {
@@ -419,6 +471,12 @@ export class Liquid {
     let lx = (L[19]! + CARRY * sx * DT) * settle
     let ly = (L[20]! + CARRY * sy * DT) * settle
     let lz = (L[21]! + CARRY * sz * DT) * settle
+    if (weight > 0) {
+      const drag = LOAD_SLIP * DT * settle
+      lx += flow[0]! * drag
+      ly += flow[1]! * drag
+      lz += flow[2]! * drag
+    }
     const thrown = lx * lx + ly * ly + lz * lz
     if (thrown > LOAD_MAX_MM * LOAD_MAX_MM) {
       const back = LOAD_MAX_MM / Math.sqrt(thrown)
@@ -427,7 +485,7 @@ export class Liquid {
       lz *= back
     }
 
-    const still = ax === 0 && ay === 0 && az === 0 && dda === 0 && ddb === 0 && !stirred
+    const still = ax === 0 && ay === 0 && az === 0 && dda === 0 && ddb === 0 && ddc === 0 && !stirred
     if (still) {
       if (lx * lx + ly * ly + lz * lz < 1e-8) lx = ly = lz = 0
       if (wx * wx + wy * wy + wz * wz < 1e-10) wx = wy = wz = 0

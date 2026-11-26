@@ -1,7 +1,7 @@
 import { config } from '../../config'
 import { hash2, unit } from '../../core/rng'
 import type { SdfGrid } from '../../core/stage'
-import { globePoseAt, seasonAt, type Timeline } from '../../film/timeline'
+import { eventAt, globePoseAt, seasonAt, type Timeline } from '../../film/timeline'
 import { Liquid, LIQUID_CURL, LIQUID_LENGTH, LIQUID_R, LIQUID_SWIRL, NOISE_N, ROLL_AXIS, ROLL_CENTRE, ROLL_EDGE, ROLL_FLOOR_MM, ROLL_FLOOR_SLOPE, ROLL_FREE, ROLL_RISE_MM, ROLL_SLAB_MM, SOLID_REACH_MM, TURBULENCE_MAX } from '../../globe/liquid'
 import { BEHAVIOUR, KINDS, KIND_IN, NONE, POOL, SEASONS, type Behaviour } from './kinds'
 import { emptySdf, GROUND_Y, sdfSample, sdfSlope, type Emitter } from './sdf'
@@ -1182,7 +1182,10 @@ export class ParticleEngine {
     const n = this.step
     const t = n * DT
     this.follow(tl, (n + 1) * DT, n)
-    this.model.step(globePoseAt(tl, t - DT), globePoseAt(tl, t), globePoseAt(tl, t + DT), t)
+    const shake = eventAt(tl, t)
+    // Neutral reference shakes build the approved rest fixtures. The hand wakes the new flow during a season change.
+    const beat = shake && shake.event.from !== shake.event.to ? shake.beat : null
+    this.model.step(globePoseAt(tl, t - DT), globePoseAt(tl, t), globePoseAt(tl, t + DT), t, beat)
     this.sweep(n)
     if (this.window !== 0) this.blend()
     this.step = n + 1
@@ -1313,6 +1316,13 @@ export class ParticleEngine {
     const ky = L.carry[1]!
     const kz = L.carry[2]!
     const thrown = kx !== 0 || ky !== 0 || kz !== 0
+    const slipX = L.slip[0]!
+    const slipY = L.slip[1]!
+    const slipZ = L.slip[2]!
+    const turnX = L.slip[3]!
+    const turnY = L.slip[4]!
+    const turnZ = L.slip[5]!
+    const slipping = slipX !== 0 || slipY !== 0 || slipZ !== 0 || turnX !== 0 || turnY !== 0 || turnZ !== 0
     const out = L.clearing
     const m = L.motion
     const gux = m.gx
@@ -1328,7 +1338,8 @@ export class ParticleEngine {
       gey *= s
       gez *= s
     }
-    const bound = L.maxSpeed
+    const bound = L.maxSpeed * L.release
+    const release2 = L.release * L.release
     const lively = bound > (this.window === 1 ? Math.min(MIN_LIFT_IN[this.nowIx]!, MIN_LIFT_IN[this.swapTo]!) : MIN_LIFT_IN[this.nowIx]!)
     const mask = m.ax !== 0 || m.ay !== 0 || m.az !== 0 ? 3 : lively ? 15 : 63
     const eA = this.nowIx
@@ -1374,7 +1385,7 @@ export class ParticleEngine {
           const o = i * 3
           L.velocityAt(xyz[o]!, xyz[o + 1]!, xyz[o + 2]!, u)
           const sp2 = u[0]! * u[0]! + u[1]! * u[1]! + u[2]! * u[2]!
-          if (sp2 > lf * lf) {
+          if (sp2 * release2 > lf * lf) {
             this.toss(i, Math.sqrt(sp2), n)
             continue
           }
@@ -1536,6 +1547,14 @@ export class ParticleEngine {
         fx += kx * hw
         fy += ky * hw
         fz += kz * hw
+      }
+      if (slipping && q < 1) {
+        // The suspended load can bank; the wall and the solid contacts still limit each actual displacement.
+        const q2 = q * q
+        const bulk = 1 - q2 * q2
+        fx += (slipX + turnY * z - turnZ * y) * bulk
+        fy += (slipY + turnZ * x - turnX * z) * bulk
+        fz += (slipZ + turnX * y - turnY * x) * bulk
       }
       const us2 = (ux + rx) * (ux + rx) + (uy + ry) * (uy + ry) + (uz + rz) * (uz + rz)
       if (walled) {
