@@ -1,13 +1,4 @@
-Summer tree, second half of summer's pass (decision 161), branch agent/p6-summer-tree at 8ae9354c, 20:00 UTC. Approved on the left in every pair.
-
-1-whole-400px-approved-left.jpg
-The whole at 400 pixels beside the approved, summer at rest, hero camera, review tier, hd.
-
-2-tree-pair-rest-approved-left.jpg
-The tree at one scale, at rest. The crown stands as four cushions (the top band with the dome on it, the middle left, the lower left, the lower right) with the light of the bank between them and the limbs crossing it. A narrow line of gold leaf lies on the upper right edge of each. The trunk and the limbs are a lit warm brown.
-
-3-tree-pair-landed-approved-left.jpg
-The tree at one scale, half a second after the landing. The same cushions and the same gaps, seen through the storm: nothing torn, no leaf let go.
-
-4-crawl-1990-1991.jpg
-Film B, draft tier, hd, no look. Left: frame 1990 over the crown, three times its size. Right: its difference from frame 1991, four times brighter. Inside the pads it is still. What differs is the seed heads and the fireflies, and a line of single pixels along the outlines of the pads.
+1-whole-400px-approved-left.jpg: The whole at 400 px, the approved on the left, head e20f2575 on the right. Hero camera, review tier, hd.
+2-tree-pair-rest-approved-left.jpg: The tree at one scale at rest, the approved on the left. One broad crown with holes in it; limbs show in the middle holes. Ours is rounder and fuller than the approved's.
+3-tree-pair-landed-approved-left.jpg: The landing at one scale, the approved on the left. The crown is whole behind the storm, with the same holes as at rest.
+4-macro-pair-approved-left.jpg: The macro camera on the right, beside the approved's hero picture enlarged to about the same trunk width. The macro frame holds the underside of the crown only: warm leaf with gold flecks over the lanterns, and wood that is redder and brighter than the approved's.
