@@ -1,6 +1,7 @@
 # Summer, the second half of the pass after Round 21
 
-From /root, 19:41 UTC Nov 26 (decision 161). The seven branches of `summer-fix-7.md` are in main
+From /root, about 19:34 UTC Nov 26 (decision 161; the words sent to the owners say 19:41, a stamp written
+without reading the clock, wrong by about seven minutes; the hour of the reports stands). The seven branches of `summer-fix-7.md` are in main
 (`393ea243`, with the remade assets and the spark's gain put back to 2.1). I looked at the merged head at
 rest and landed (hero, review tier, hd) beside the approved pictures. Six owners get one more list; the
 room's share holds. Reports by 20:30 UTC.
