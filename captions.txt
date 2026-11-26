@@ -1,0 +1,29 @@
+Looks of `controls_finisher`, branch `agent/p6-controls`. Four pictures. None is a render of a tier: the controls are the
+page's own, and the pictures with the globe are the live app at `?quality=low` on the software renderer.
+
+1-shake-control.jpg
+  Shows: the Shake control, which went missing (fault 1, item 214).
+  Top row, BEFORE: the review's picture (out/stills/phase-5/final-pass/phone_shake_control_missing.jpg), phone 390 x 844:
+  focus on Winter with its ring; focus on Shake, control not drawn; after a landing that followed a mark press, not drawn.
+  Rows two and three, AFTER (b72367f0 and on): the same bar, the real interface code over a mock app at 390 x 844, drawn at
+  three device pixels and scaled down. Row two: keyboard focus on Shake; 0.1 s after a hint ends; 0.4 s after. Row three:
+  1.0 s after; just after a landing by a press on Shake (the focus is still on it); just after a landing by a press on the
+  fall mark. Tier: none.
+
+2-reduced-phone.jpg
+  Shows: the change of season with reduced motion on the phone layout, 390 x 844 (fault 2, item 218). AFTER (51f0f46d).
+  The live app at quality low, `tools/visit.mjs` step 9, winter to spring by a press on Shake. Left: the start of the
+  dissolve, the last frame of winter kept over spring (the fade held by the tool at its start). Middle: the half (the fade
+  held at half), two whole pictures crossed, the globe in one place. Right: the end, the fade let go and run out, spring
+  whole, the controls on again, the spring mark lit. The bar is dimmed in all three and not held: more than eight seconds
+  without input pass before each still on this renderer. Tier: none.
+
+3-reduced-hd.jpg
+  Shows: the same on the wide layout, 1920 x 1080. AFTER (51f0f46d). The live app at quality low, step 9, winter to
+  spring. Top left: the start. Top right: the half. Bottom left: the end. Bottom right: the half pixel for pixel, the
+  middle of the picture, to show that it is an even mix of two whole pictures and not a grain. Tier: none.
+
+4-dim-floor.jpg
+  Shows: the dimmed bar at 400 px wide over winter, spring, summer and fall, top to bottom (fault 3, item 221 b). Phone
+  layout, the live app at quality low. Left column, BEFORE: the floor at 36 percent. Right column, AFTER (0913be14): the
+  floor at 60 percent. Tier: none.
