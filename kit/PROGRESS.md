@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 169 · 2026-11-26 17:59 UTC
+Status 170 · 2026-11-26 18:35 UTC
 
-- `out/stills/status/status-169-1.jpg`: The change from spring to summer, three frames at its peak. Top row: main, where the table and the base go black. Bottom row: the builder's new head, which keeps tone and lights the new base but floods as a column and a flat oval.
-- `out/stills/status/status-169-2.jpg`: The seeds at rest, the approved on the left and ours mid-pass on the right: the heads are round wheels of down now; the stalks still read as sticks and the lights are a half stop short.
-- `out/stills/status/status-169-3.jpg`: The landing mid-pass: one whirl of long thin arcs, nothing green flying, the tree dark and clean; the lanterns do not bloom through it yet.
-- `out/stills/status/status-169-4.jpg`: Four frames of the same change at final tier on the builder's head: no black anywhere, and summer arriving sky blue in the last frame, where the approved storm is cream gold.
+- `out/stills/status/status-170-1.jpg`: The whole picture at rest mid-pass, the approved on the left and ours on the right: the new soft pool of light on the table left of the base, and the warmer air in the glass.
+- `out/stills/status/status-170-2.jpg`: The cottage, the approved on the left and ours on the right: the ivy, the roses and the pond read; the lanterns' light on the wall, the light from behind and the bed of sand do not yet.
+- `out/stills/status/status-170-3.jpg`: The tree, the approved on the left and ours on the right: the pads are lit one by one and the lanterns hang in a row; the light points are too many and too pale, so the crown reads as in blossom.
+- `out/stills/status/status-170-4.jpg`: The landing, the approved above and ours below: one whirl of long arcs now; the tree is still a dark cut-out where the approved's is washed by the storm, and the lanterns do not bloom through it.
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-26 17:59 UTC
-clock: phase 6, tick of 23.1 minutes
-phase 6: 15.16 h used of its 12.00 h box
-allowance (after the review): 15.16 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 15.16 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-26 18:35 UTC
+clock: phase 6, tick of 36.3 minutes
+phase 6: 15.77 h used of its 12.00 h box
+allowance (after the review): 15.77 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 15.77 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
