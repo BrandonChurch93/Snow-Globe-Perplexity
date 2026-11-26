@@ -5,7 +5,7 @@ import type { Assets } from '../core/assets'
 import { updateCover } from '../core/chunks/cover'
 import { updateVeil } from '../core/chunks/veil'
 import type { Gfx } from '../core/gl'
-import { MODE, setPresence, stageShader, stageUniforms, type Rgb } from '../core/materials'
+import { MODE, passStep, setPresence, stageShader, stageUniforms, type Rgb } from '../core/materials'
 import type { Sample } from '../core/sampler'
 import type { Emitter, Moment, ParticleSource, SdfGrid, Stage, StageQuality } from '../core/stage'
 import { preparedBytes, prepareGroup, setAnisotropy } from '../core/textures'
@@ -281,6 +281,8 @@ export class GlobeStage implements Stage {
     u.uChange.value = change
     u.uDiag.value = beauty || sliceOnly ? 0 : viewCode(view)
     u.uSeed.value = moment.seed + (sample ? sample.index * 7.31 : 0)
+    const of = sample?.of ?? 1
+    u.uPass.value.set(moment.seed, sample ? passStep(sample.t, of) : 0, single ? 0 : (sample?.hold ?? change), of)
     u.uLens.value.z = 1
     u.uCoc.value.set(2 * pose.apertureMm * f.focalPx, 1 / pose.focusMm, 0)
 

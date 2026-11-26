@@ -9,6 +9,8 @@ export interface Sample {
   t: number
   /** How many samples the set has. */
   of?: number
+  /** The change number at the first sample of the frame. The base's share is read from it at every sample, so that all of a frame's samples hold one share. */
+  hold?: number
 }
 
 const PHI5 = 1.1673039782614187
