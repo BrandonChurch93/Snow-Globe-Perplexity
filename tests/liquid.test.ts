@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { Euler, Vector3 } from 'three'
 import { config } from '../src/config'
-import { barSeconds, globePoseAt, stillTimeline } from '../src/film/timeline'
+import { barSeconds, eventAt, globePoseAt, stillTimeline } from '../src/film/timeline'
 import { AMBIENT_MAX, Liquid, LIQUID_LENGTH, LIQUID_R, LIQUID_SLOSH, LIQUID_TURBULENCE, LIQUID_TURN, TURBULENCE_MAX } from '../src/globe/liquid'
 import { REST_POSE } from '../src/shake/table'
 import { stream } from '../src/core/rng'
@@ -13,7 +13,7 @@ const tl = stillTimeline(config.defaultSeason)
 function run(liquid: Liquid, fromStep: number, toStep: number, each?: (step: number) => void): void {
   for (let n = fromStep; n < toStep; n++) {
     const t = n * DT
-    liquid.step(globePoseAt(tl, t - DT), globePoseAt(tl, t), globePoseAt(tl, t + DT), t)
+    liquid.step(globePoseAt(tl, t - DT), globePoseAt(tl, t), globePoseAt(tl, t + DT), t, eventAt(tl, t)?.beat ?? null)
     if (each) each(n + 1)
   }
 }
