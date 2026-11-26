@@ -32,6 +32,7 @@ export const MIX_STEPS = 4
 const GRAVITY_MM = 9810
 const LAG = 0.35
 const LAG_UPRIGHT = 0.9
+const WRIST_INERTIA = 0.27
 const TURN_LEVEL_SECONDS = config.shake.spinDownSeconds / 7
 const TURN_UPRIGHT_SECONDS = config.shake.spinDownSeconds / 2.6
 const TURN_QUADRATIC = 0.1
@@ -387,8 +388,8 @@ export class Liquid {
     let wz = L[2]! - LAG * ddb * DT + pz * taken
     if (yaw !== 0 || ddc !== 0) {
       wx += (LAG * dda * cb * (1 - cc) + LAG * ddb * sc) * DT
-      // Direct twist carries the same inertia as either transverse turn. Only the tilt's upright bias uses the stronger gain.
-      wy -= LAG * ddc * DT
+      // The wet bulk takes less of a turn about the upright axis than of a tip that also moves the centre of the glass.
+      wy -= WRIST_INERTIA * ddc * DT
       wz += (LAG * ddb * (1 - cc) - LAG * dda * cb * sc) * DT
     }
     px -= px * taken

@@ -67,6 +67,20 @@ describe('the liquid model', () => {
     }
   })
 
+  it('takes up an upright wrist acceleration without carrying the whole turn', () => {
+    const acceleration = 34
+    for (const sign of [-1, 1]) {
+      const liquid = new Liquid()
+      const shoulder = { ...REST_POSE, twist: 0.5 * sign * acceleration * DT * DT }
+      liquid.step(shoulder, REST_POSE, shoulder, 0, config.shake.liftBeats)
+      const turn = liquid.state[LIQUID_TURN + 1] ?? 0
+      const share = (-sign * turn) / (acceleration * DT)
+      expect(share).toBeGreaterThan(0.2)
+      expect(share).toBeLessThan(1 / 3)
+      expect(liquid.slip[4]).toBe(0)
+    }
+  })
+
   it('stays at rest when the globe is at rest', () => {
     const liquid = new Liquid()
     const u = [0, 0, 0]
