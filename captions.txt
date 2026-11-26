@@ -1,0 +1,18 @@
+agent/p6-first-looks: captions
+
+All pictures are of the built page at commit abe4c1b8 of agent/p6-first (the stills fresh: poster --check passed there),
+default season (winter), web assets, the app's own automatic quality, software GL. "After" pictures; the "before" at each of
+the first two moments was an empty dark page (#07080a) with a black 300 x 150 canvas box.
+
+phone-looks.jpg   phone 390 x 844 at ratio 2, four moments left to right: first paint (the soft inline picture, the still's
+                  file held back); half way through the load (the still, 12 of the app's files in); the takeover (the canvas
+                  alone, the still removed, a few frames after the app's first whole picture, controls in); 12 frames later. Globe in the same place and size in
+                  the last three: shift 0 px in five windows. The live picture is softer than the still here because the app
+                  had dropped to its lowest quality level within a few frames on this machine (canvas 390 x 844).
+hd-looks.jpg      hd 1920 x 1080 at ratio 1, the same four moments, two by two (first paint, half way; takeover, 10 frames
+                  later). Shift 0 px; still against live mean 2.2 of 255.
+phone-crop.jpg    phone, the glass at native pixels: the still (left) beside the live picture at the takeover (right).
+hd-crop.jpg       hd, the same pair at native pixels.
+
+Not in these pictures: the tablet, summer on three screens (not run, see HANDOVER.md), and the move of the globe that
+follows when the controls are measured at frame 20 (HANDOVER.md, fault 1).
