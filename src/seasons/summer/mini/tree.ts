@@ -141,7 +141,7 @@ function leafHook(shader: Shader): void {
   float treeTurn = smoothstep(${PAD.rimFrom.toFixed(2)}, ${PAD.rimTo.toFixed(2)}, treeToSun);
   float treeOpen = smoothstep(${PAD.openFrom.toFixed(2)}, ${PAD.openTo.toFixed(2)}, vCard.y);
   float treeHem = pow(clamp(1.0 - dot(normalize(treePad + ${PAD.hem.toFixed(2)} * normalize(vNormal)), treeV), 0.0, 1.0), ${PAD.rimTight.toFixed(1)});
-  float treeLeaf = treeCard ? smoothstep(${PAD.leafFrom.toFixed(2)}, ${PAD.leafTo.toFixed(2)}, treeLum) : 0.0;
+  float treeLeaf = treeCard ? smoothstep(${PAD.leafFrom.toFixed(2)}, ${PAD.leafTo.toFixed(2)}, treeLum) * smoothstep(${PAD.inFrom.toFixed(2)}, ${PAD.inTo.toFixed(2)}, treeIn) : 0.0;
   float treeDot = treeCard ? smoothstep(${PAD.speckFrom.toFixed(2)}, ${PAD.speckTo.toFixed(2)}, treeLum) * smoothstep(${PAD.inFrom.toFixed(2)}, ${PAD.inTo.toFixed(2)}, treeIn) : 0.0;
   reflectedLight.directDiffuse += stageKeyC * ${glsl3(PAD.gold)} * min(${PAD.cap.toFixed(2)}, treeHem * treeTurn * treeOpen * (${PAD.fringe.toFixed(2)} * treeLeaf + ${PAD.rim.toFixed(2)} * treeDot));
 }`,
