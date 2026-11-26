@@ -34,3 +34,12 @@ After. Film frame 675, the last frame before the base swaps, same commit. Format
 
 12-cover-678-after.jpg
 After. Film frame 678, same commit. Format hd, tier review.
+
+7-cover-672-before.jpg
+Before. Film frame 672 of film B from main at 12465d0e (particles drawn as quads, as in the after pictures). Format hd (1920 by 1080, set down to 1200 by 675), tier review.
+
+9-cover-675-before.jpg
+Before. Film frame 675, same commit of main. Format hd, tier review.
+
+11-cover-678-before.jpg
+Before. Film frame 678, same commit of main. Format hd, tier review.
