@@ -1,5 +1,47 @@
 # Snow Globe inertia verification
 
+## Pushed motion with the final hand, base and standstill
+
+`agent/p6-inertia` was verified on the remote at `47891785295ebf2309f672ed29afb01df1d115ba` at 23:26 UTC on Nov 26. It includes main `58687dc1`, the latest fetched main before that push. Its delta is `src/globe/liquid.ts`, `src/particles/engine/engine.ts`, the beat input and import in `src/particles/engine/loop.ts`, and their two tests. The hand, art, capture, change light, and one-sample part giveway code are untouched by that delta. The moving particles can change what is visible in front of a part, not the 128 by 128 tile, `stageStill` or the part's transition.
+
+The fresh build produced engine `1330a4aaef250f20`. `npx tsc --noEmit` exited 0. The whole Vitest run read `59 passed | 1 skipped (60)` files and `810 passed | 8 skipped (818)` tests. No gate limit or settling setting changed in this integration. Both forced measure documents carry the built engine hash; they are intentionally scoped to the lines requested below.
+
+`npm run measure -- --unit change --only M4,M5 --force --tier draft`:
+
+```text
+pass M4 shake-1: 0.9694 (threshold 0.85, shake.minCoverAtSwap) 144094 of 148646 miniature pixels are hidden to at least shake.coverOpacity in the middle of the swap window
+pass M5 shake-1: 0.993 (threshold 0.6, shake.minVisibleAfterSettle) 153516 of 154602 miniature pixels are hidden by less than shake.coverOpacity, shake.settleCheckSeconds after the landing
+pass M4 shake-2: 0.9025 (threshold 0.85, shake.minCoverAtSwap) 131393 of 145595 miniature pixels are hidden to at least shake.coverOpacity in the middle of the swap window
+pass M5 shake-2: 1 (threshold 0.6, shake.minVisibleAfterSettle) 173804 of 173804 miniature pixels are hidden by less than shake.coverOpacity, shake.settleCheckSeconds after the landing
+pass M4 shake-3: 0.9543 (threshold 0.85, shake.minCoverAtSwap) 140179 of 146886 miniature pixels are hidden to at least shake.coverOpacity in the middle of the swap window
+pass M5 shake-3: 0.9715 (threshold 0.6, shake.minVisibleAfterSettle) 140184 of 144301 miniature pixels are hidden by less than shake.coverOpacity, shake.settleCheckSeconds after the landing
+pass M4 shake-4: 0.9595 (threshold 0.85, shake.minCoverAtSwap) 143426 of 149485 miniature pixels are hidden to at least shake.coverOpacity in the middle of the swap window
+pass M5 shake-4: 0.9998 (threshold 0.6, shake.minVisibleAfterSettle) 155938 of 155972 miniature pixels are hidden by less than shake.coverOpacity, shake.settleCheckSeconds after the landing
+```
+
+`npm run measure -- --unit summer --only M3 --force --tier review`:
+
+```text
+pass M3 summer-rest: 0.8007 (threshold 0.75, detail.minSharpnessRatio) high frequency energy of the still over the approved image at the same size: base 1.041 over 166536 pixels of the part in the ids view; miniature 0.801 over 131304 pixels of the part in the ids view
+```
+
+The unfloored miniature ratio is `0.8006892232885603`, over the decision 169 floor of 0.77. The same final review image was opened beside the approved summer rest: gold seed heads, green lights and fine motes are still present around the cottage and tree. The pass is a measure of sharpness, not approval of the likeness.
+
+### All four card seams on the pushed head
+
+Each season's HD review PNGs at frames 0 and 480 are byte-identical. The `4789-loop-*` sheets show 479, 0 and 1 left to right. At 400 px per picture and in the native 400 by 400 px crops inspected here, the globe, miniature and distribution of floating detail hold across the join. These are adjacent frames, not playback.
+
+| Season | Whole-picture RGB RMS, 479 to 0 | Whole-picture RGB RMS, 0 to 1 |
+| --- | ---: | ---: |
+| Winter | 2.399 | 2.382 |
+| Spring | 4.680 | 4.576 |
+| Summer | 3.122 | 3.133 |
+| Fall | 4.688 | 4.718 |
+
+Winter frame 0 in `47891785` is byte-identical to the one in `2585e411`, so the earlier comparison against the pinned `1deae971` frame 0 still applies. The composition holds, but those two historical frames are not pixel-identical: full-frame RMS 23.958.
+
+The consecutive storm strips below are the staged-hand comparison, not the last hand's drawn frames. The all-season landed/rest triptychs are the earlier painted-hand comparison. Strict and stand-ins below also predate the final merge, as do the isolated live step costs. No full-speed film or live application playback was seen.
+
 ## After the summer base and veil merge
 
 `68d5b464` merges main `15d7017d` with the summer base third list and the repaired veil. The hand is still the staged retime, not yet the final main hand. The eight forced draft change checks are all green: M4/M5 0.9696/0.993, 0.9046/1, 0.9548/0.9718 and 0.9594/0.9997 in shake order. The repair lifts shake 2 cover by 0.0361 and shake 3 by 0.1757 over `7aa7b19a`. The literal rows are in `air-main-change.log`.
