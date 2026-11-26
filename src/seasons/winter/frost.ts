@@ -555,7 +555,7 @@ float frostToGo = (1.0 - frostGo) * (1.0 - frostGo) * frostLoose;
 float frostSunk = uGrow.w >= 1.0 ? 1.0 : smoothstep(0.0, 0.3, 0.6 * uv.x + 0.3 - (1.0 - uGrow.w) * 1.2);
 float frostOn = mix(smoothstep(0.0, 0.14, frostLvl), smoothstep(0.0, 0.06, frostGo), frostLoose) * (0.35 + 0.65 * frostSunk);
 vec3 frostAt = vec3(position.x, position.y * frostOn + 3.2 * frostToGo * frostGo, position.z);
-frostAt.xz -= normalize(position.xz) * ((uv1.y - 2.0) * 64.0 * frostToGo);
+frostAt.xz -= (dot(position.xz, position.xz) > 0.0 ? normalize(position.xz) : vec2(1.0, 0.0)) * ((uv1.y - 2.0) * 64.0 * frostToGo);
 vec4 frostW = modelMatrix * vec4(frostAt, 1.0);
 vec4 frostV = viewMatrix * frostW;
 gl_Position = projectionMatrix * frostV;
