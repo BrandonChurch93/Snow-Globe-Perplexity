@@ -69,6 +69,11 @@ export const CARD_VERT = `
       float calmC = whole * afloat * (1.0 - gustC);
       // a head's tuft is wider than the glass's own fade at its edge: one that floats at the limb would stand half outside the ball
       if (on > 0.5) keepC *= 1.0 - calmC * smoothstep(${n(CARD.hair.rimFrom[0])}, ${n(CARD.hair.rimFrom[1])}, length(rimAxis) / max(R, 1e-4));
+      // the open air of the upper left is seen through the ball's whole depth and holds twice the heads of any other part, and the slow turn of the liquid gathers them most at one place in it: a share of them is not drawn there, so that the crowd is even on the picture
+      vec2 atC = (view.xy * (centreV.z / view.z) - centreV.xy) / max(uLens.x, 1e-4);
+      vec2 offC = (atC - vec2(${n(CARD.hair.evenAt[0])}, ${n(CARD.hair.evenAt[1])})) / vec2(${n(CARD.hair.evenWide[0])}, ${n(CARD.hair.evenWide[1])});
+      float denseC = max(${n(CARD.hair.even)} * (1.0 - smoothstep(${n(CARD.hair.evenX[0])}, ${n(CARD.hair.evenX[1])}, atC.x)) * smoothstep(${n(CARD.hair.evenY[0])}, ${n(CARD.hair.evenY[1])}, atC.y), ${n(CARD.hair.evenMost)} * exp(-dot(offC, offC)));
+      keepC *= mix(1.0, smoothstep(denseC - 0.1, denseC, fract(own * 211.0)), calmC);
       seedNear = calmC * step(fract(h.y * 29.0), ${n(CARD.hair.nearShare)}) * smoothstep(${n(CARD.hair.nearFrom[0])}, ${n(CARD.hair.nearFrom[1])}, depth);
       rC *= mix(${n(CARD.hair.restSize)}, mix(1.0, ${n(CARD.hair.stormSize)}, whole), max(gustC, 1.0 - whole));
       rC *= mix(1.0, mix(${n(CARD.hair.farSize)}, 1.0, smoothstep(${n(CARD.hair.farFrom[0])}, ${n(CARD.hair.farFrom[1])}, depth)), calmC) * (1.0 + ${n(CARD.hair.nearSize - 1)} * seedNear);
@@ -590,24 +595,18 @@ void cardSeed(vec2 p, int kind, vec4 k, vec4 look) {
   // a head that moves through the shutter is drawn out along its path, hair by hair, and stays a head
   if (storm) pp -= vStreak.xy * (dot(pp - mid, vStreak.xy) * (1.0 - 1.0 / (1.0 + ${n(CARD.run.seedDrawn)} * smear)));
   float gauze = 0.0;
-  // each head has its own count of hairs and opens its own way, from a shallow cone to a ball, so that no two are one stamp
-  float mine = mix(${n(CARD.hair.least)}, 1.0, fract(vL3.x * 23.0)) * ${n(CARD.hair.count)};
-  float openTo = cos(mix(${n(CARD.hair.open[1])}, ${n(CARD.hair.openWide)}, fract(vL3.y * 31.0)));
+  // a head is a burst of fine straight hairs: each head has its own count, spread evenly round its hub on the picture and unequal in length, so that it never bunches into wedges and no two are one stamp
+  float mine = floor(mix(${n(CARD.hair.least)}, 1.0, fract(vL3.x * 23.0)) * ${n(CARD.hair.count)});
   for (int i = 0; i < ${CARD.hair.count}; i++) {
     float fi = float(i);
-    if (fi > mine) break;
+    if (fi >= mine) break;
     float j1 = fract(sin(fi * 12.9898 + vL3.x * 78.233) * 43758.5453);
     float j2 = fract(j1 * 57.31 + 0.37);
-    float open = acos(clamp(mix(${n(Math.cos(CARD.hair.open[0]))}, openTo, fract(fi * 0.7548777 + vL3.x)), -1.0, 1.0));
-    float turn = 6.2831853 * (fi * 0.6180339887 + vL3.w) + 0.9 * (j1 - 0.5);
+    float turn = 6.2831853 * ((fi + ${n(CARD.hair.jitter)} * (j1 - 0.5)) / max(mine, 1.0) + vL3.w);
     float len = mix(${n(CARD.hair.long[0])}, ${n(CARD.hair.long[1])}, j2) * (1.0 - thinBy * pow(max(cos(turn - thinAt), 0.0), 2.0));
-    vec2 way = cos(open) * a + sin(open) * (cos(turn) * b + sin(turn) * c);
-    // a hair that points at the eye is still seen long: the tuft is a disc of spokes from every side, never a few crossed strokes
-    float shown = length(way) / rC;
-    way *= mix(${n(CARD.hair.flat)}, 1.0, min(shown, 1.0)) / max(shown, 0.05);
-    vec2 tip = hub + len * way + len * lean - ${n(CARD.hair.droop)} * len * sin(open) * (0.4 + j1) * a;
+    vec2 tip = hub + len * rC * vec2(cos(turn), sin(turn)) + len * lean;
     float line = cardLine(pp, hub, tip, ${n(CARD.hair.wide)} * rC * (0.8 + 0.4 * j2), s2, along);
-    gauze += ${n(CARD.hair.hairSeen)} * line * (1.0 - ${n(CARD.hair.tipFade)} * along) * (0.55 + 0.45 * j1);
+    gauze += ${n(CARD.hair.hairSeen)} * mix(${n(CARD.hair.faint)}, 1.0, fract(vL3.y * 53.0)) * line * (1.0 - ${n(CARD.hair.tipFade)} * along) * (0.6 + 0.4 * j1);
   }
   float ballV = s2 + ${n(CARD.hair.ballWide * CARD.hair.ballWide)} * rC * rC;
   float ball = mix(${n(CARD.hair.ball[0])}, ${n(CARD.hair.ball[1])}, smoothstep(${n(CARD.hair.ballFrom[0])}, ${n(CARD.hair.ballFrom[1])}, sqrt(s2) / rC)) * rC * rC / ballV * ${n(CARD.hair.ballWide * CARD.hair.ballWide)} * exp(-0.5 * dot(pp - mid, pp - mid) / ballV);
@@ -624,7 +623,8 @@ void cardSeed(vec2 p, int kind, vec4 k, vec4 look) {
   vec2 foot = -${n(CARD.hair.foot)} * mix(${n(CARD.hair.footSpan[0])}, ${n(CARD.hair.footSpan[1])}, vL3.w) * a - 0.25 * lean;
   // the stalk is a pale hair; the grain at its foot is the one dark thing of the seed
   float grain = cardLine(pp, foot, foot + ${n(CARD.hair.grain)} * a, ${n(CARD.hair.body)} * rC, s2, along);
-  stems = ${n(CARD.hair.stemSeen)} * max(cardLine(pp, foot, hub, ${n(CARD.hair.stem)} * rC, s2, along), grain) * mix(1.0, ${n(CARD.hair.runHead)}, run) * (1.0 - smear);
+  // about one head in three hangs its stalk with the seed at its end
+  stems = step(fract(vL3.x * 47.0), ${n(CARD.hair.stalks)}) * ${n(CARD.hair.stemSeen)} * max(cardLine(pp, foot, hub, ${n(CARD.hair.stem)} * rC, s2, along), grain) * mix(1.0, ${n(CARD.hair.runHead)}, run) * (1.0 - smear);
   float trail = cardLine(p, -vStreak.xy * vStreak.z, vStreak.xy * vStreak.z, ${n(CARD.hair.runWide)} * rC, s2, along);
   if (!storm) hairs = max(hairs, run * ${n(CARD.hair.runTrail)} * trail * (0.25 + 0.75 * along));
   float cover = min(max(hairs, stems) * vCore.w * look.z, 1.0);
@@ -677,7 +677,7 @@ void cardGlow(vec2 p, int kind, vec4 k, vec4 look) {
   }
   float halo = (spark ? ${n(CARD.spark.haloShare)} : ${n(CARD.glow.haloShare)}) * rh * rh / vh / (1.0 + 0.8 * vStreak.z / sqrt(vh)) * exp(-0.5 * d2 / vh);
   float wide = spark ? 0.0 : ${n(CARD.glow.wideShare)} * rw * rw / vw * exp(-0.5 * d2 / vw);
-  float lum = vCore.w * (core + halo + wide) * (spark ? ${n(CARD.spark.gain)} : 1.0);
+  float lum = vCore.w * (core + halo + wide) * (spark ? ${n(CARD.spark.gain)} : ${n(CARD.glow.gain)});
   float cover = min(vCore.w * core * ${n(CARD.glow.hide)} * (1.0 - disc), 1.0);
   if (uDiag == ${viewCode('cover')}) {
     gl_FragColor = vec4(cover, 0.0, cover, cover);
