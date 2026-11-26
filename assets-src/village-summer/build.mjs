@@ -28,7 +28,7 @@ const WATER_CLEAR_MM = 2.2
 // Of the bank only its upper three tenths stand over the collar: there the rows lie close (`rowsPow`).
 const BANK = { turfTo: 0.115, turfVary: 0.1, sandTo: 0.3, rowsPow: 1.8, hang: 1500, hangTuft: [0.7, 1.7], hangWide: 1.5, hangDown: 0.25, lawn: 900, rootMm: 0.62, tipMm: 0.42 }
 const turfTo = (th) => clamp(BANK.turfTo + BANK.turfVary * fbm(Math.cos(th) * 9 + 2.3, Math.sin(th) * 9 + 9.1, 4.7, 3) + 0.02 * fbm(Math.cos(th) * 41 + 5.1, Math.sin(th) * 41 + 1.3, 7.9, 2), 0.07, 0.2)
-const STONE = { buried: 0.25, sink: 0.45, lumps: 0.36, chips: 0.11, wet: 0.6, moss: 0.8, rim: 18, rimTufts: 420, tones: ['#8f887a', '#a39a88', '#7b7568', '#b0a692', '#9a8c74', '#6f6a62'] }
+const STONE = { lift: 1.7, buried: 0.25, sink: 0.45, lumps: 0.36, chips: 0.11, wet: 0.6, moss: 0.8, rim: 18, rimTufts: 420, tones: ['#8f887a', '#a39a88', '#7b7568', '#b0a692', '#9a8c74', '#6f6a62'] }
 const TONES = {
   grass: ['#1c3413', '#274616', '#30531a', '#213c15'].map(lin),
   tip: ['#566f27', '#6b8230', '#465f20'].map(lin),
@@ -68,6 +68,35 @@ const topAt = (x, z) => L.groundAt(x, z) + TF.riseAt(x, z) + turfAt(x, z) * smoo
 const keepHard = (role) => role === 'cottage' || role === 'chimney' || role === 'path' || role === 'post' || role === 'fence'
 const hardGap = (x, z) => L.solidDistance(x, L.groundAt(x, z) + 0.6, z, keepHard)
 const trunkGap = (x, z) => Math.hypot(x - L.tree.x, z - L.tree.z) - 5.2
+// Triangles are counted, so no tuft is planted where neither the hero lens nor the macro lens sees it: behind the cottage,
+// behind the trunk, on ground that falls away from both. Behind the house the rest of the lawn is thinned, where tufts hide tufts.
+const SHOW = JSON.parse(fs.readFileSync(new URL('../../config/showcase.json', import.meta.url), 'utf8'))
+const lensAt = (c) => {
+  const yaw = c.yawDeg * Math.PI / 180
+  const pitch = c.pitchDeg * Math.PI / 180
+  const centre = SHOW.globe.baseHeightMm - SHOW.globe.collarDepthMm + SHOW.globe.sphereDiameterMm / 2
+  return [c.distanceMm * Math.sin(yaw) * Math.cos(pitch), c.aimHeightMm - centre + c.distanceMm * Math.sin(pitch), c.distanceMm * Math.cos(yaw) * Math.cos(pitch)]
+}
+const LENSES = [lensAt(SHOW.cameras.hero), lensAt(SHOW.cameras.macro)]
+if (!LENSES.every((p) => p.every(Number.isFinite))) throw new Error('village-summer: the lenses are not read')
+const HIDE = { stepMm: 0.8, wallIn: 0.8, trunkMm: 2.2, trunkTall: 14, groundMm: 0.25, farFrom: 8, farTo: 24, farKeep: 0.82 }
+const houseO = L.cottagePoint(0, 0, 0)
+const houseU = [L.cottagePoint(0, 0, 1)[0] - houseO[0], L.cottagePoint(0, 0, 1)[2] - houseO[2]]
+const houseV = [L.cottagePoint(1, 0, 0)[0] - houseO[0], L.cottagePoint(1, 0, 0)[2] - houseO[2]]
+const seenAt = (x, y, z) => LENSES.some((lens) => {
+  const d = norm3([lens[0] - x, lens[1] - y, lens[2] - z])
+  for (let s = HIDE.stepMm; s < 2 * L.innerRadiusMm; s += HIDE.stepMm) {
+    const qx = x + d[0] * s
+    const qy = y + d[1] * s
+    const qz = z + d[2] * s
+    if (Math.hypot(qx, qy, qz) > L.innerRadiusMm) return true
+    if (qy < houseO[1] + C.wall && Math.abs((qx - houseO[0]) * houseU[0] + (qz - houseO[2]) * houseU[1]) < C.halfLength - HIDE.wallIn && Math.abs((qx - houseO[0]) * houseV[0] + (qz - houseO[2]) * houseV[1]) < C.halfWidth - HIDE.wallIn) return false
+    if (qy < houseO[1] + HIDE.trunkTall && Math.hypot(qx - L.tree.x, qz - L.tree.z) < HIDE.trunkMm) return false
+    if (qy < topAt(qx, qz) - HIDE.groundMm) return false
+  }
+  return true
+})
+let unseen = 0
 
 // The bank's turf is the lawn's green: it knows nothing of the pond's mud above it.
 const slopeTone = (x, z) => mul3(mix3(TONES.tip[2], TONES.tip[1], clamp(0.5 + 0.9 * fbm(x * 0.16 + 7, z * 0.16 + 2, 1.1, 3))), 1.1)
@@ -297,7 +326,7 @@ function stone(x, z, rx, rz, rise, rnd, detail) {
   // Wet and dark where the stone stands in the pond, dry and pale above.
   const wetAt = (p) => (1 - smooth(1.0, 1.1, L.pondField(p[0], p[2]))) * (1 - smooth(0.1, 0.9, p[1] - (L.moundAt(p[2]) - L.pond.level)))
   const mossAt = (p) => STONE.moss * smooth(0.5, 0.85, (p[1] - (y - h)) / (2 * h)) * smooth(0.3, 0.6, noise(p[0] * 1.6 + seed, p[1] * 1.6, p[2] * 1.6))
-  decor.add(g, { color: (p) => mix3(mul3(tone, (0.4 + 1.2 * clamp((p[1] - (y - h)) / (2 * h)) ** 2 + 0.5 * (noise(p[0] * 2.1 + seed, p[1] * 2.1, p[2] * 2.1) - 0.5) + 0.25 * (noise(p[0] * 7 + seed, p[1] * 7, p[2] * 7) - 0.5)) * (1 - STONE.wet * wetAt(p))), TONES.moss, mossAt(p)), surf: [surf(KIND.stone, 0.85), 0], renormal: true })
+  decor.add(g, { color: (p) => mix3(mul3(tone, STONE.lift * (0.4 + 1.2 * clamp((p[1] - (y - h)) / (2 * h)) ** 2 + 0.5 * (noise(p[0] * 2.1 + seed, p[1] * 2.1, p[2] * 2.1) - 0.5) + 0.25 * (noise(p[0] * 7 + seed, p[1] * 7, p[2] * 7) - 0.5)) * (1 - STONE.wet * wetAt(p))), TONES.moss, mossAt(p)), surf: [surf(KIND.stone, 0.85), 0], renormal: true })
   return yaw
 }
 
@@ -372,7 +401,9 @@ let planted = 0
     const base = mul3(mix3(pick(TONES.grass), pick(TONES.straw), sand * 0.25), patch * deep)
     const top = mul3(mix3(pick(TONES.tip), pick(TONES.straw), clamp(sand * 0.3 + 0.08 * R())), patch * deep)
     const cell = { key: morton(x, z), pos: [], nor: [], col: [], tip: [], sun: [] }
-    if (K() < GRASS.keep) {
+    const seen = seenAt(x, y0 + 1.1 * tall, z)
+    if (!seen) unseen++
+    if (K() < (seen ? GRASS.keep * (1 - (1 - HIDE.farKeep) * smooth(HIDE.farFrom, HIDE.farTo, -z)) : 0)) {
       list.push(cell)
       planted++
     }
@@ -441,8 +472,10 @@ let planted = 0
         cell.sun.push(lit)
       }
     }
-    list.push(cell)
-    planted++
+    if (seenAt(x, y0 + GRASS.edgeTuft[1], z)) {
+      list.push(cell)
+      planted++
+    } else unseen++
     over++
   }
   // The turf comes down over the bank: tufts laid on its upper half, hanging toward the sand, and tufts on the lawn's edge
@@ -533,8 +566,10 @@ let planted = 0
         if (far > L.innerRadiusMm - BANK.tipMm) T = sc(T, (L.innerRadiusMm - BANK.tipMm) / far)
         push(cell, [ox - side[0] * w, y0, oz - side[2] * w], [ox + side[0] * w, y0, oz + side[2] * w], T, base, top, up, lit)
       }
-      list.push(cell)
-      planted++
+      if (seenAt(x, y0 + GRASS.edgeTuft[1] * 0.8, z)) {
+        list.push(cell)
+        planted++
+      } else unseen++
       lawn++
     }
   }
@@ -978,4 +1013,5 @@ const grassLow = []
   }
 }
 addLists(rel('assets-full', 'summer', 'village-summer.glb'), { grass: { medium: grassMedium, low: grassLow } })
+console.log(`village-summer: ${unseen} tufts stand where neither lens sees them and are left out`)
 console.log(`village-summer: ground ${ground.triangles}, water ${water.triangles}, grass ${grass.triangles} (${planted} tufts, ${grassMedium.length / 3} at medium, ${grassLow.length / 3} at low), decor ${decor.triangles} (${counts.roses} roses, ${counts.leaves} leaves, ${counts.sunflowers} sunflowers, ${counts.blooms} blooms)`)
