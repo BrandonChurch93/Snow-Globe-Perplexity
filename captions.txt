@@ -34,3 +34,31 @@ FIRST PUSH
   Frames: 30 (the press), 50 (the top of the lift), 73 and 134 (far ends of strokes), 152 (the set-down), 174 (the landing).
   Tool: the sheet tool with --format hd, picked frames. Tier: draft, level high.
   The lifted glass is 10 to 14 px under the top edge in frames 50, 73, 134 and 152 (measured in the frames at full size).
+
+SECOND PUSH
+
+5-phone-shake-whole.jpg
+  Shows: a phone through the whole shake and home again, twelve frames on one sheet, scaled to 1200 px wide. AFTER.
+  Frames: 0, 32, 64, 96, 128, 160 (the bar), 193, 225, 257, 289, 321, 353 (after the landing, the camera comes home).
+  Tool: npm run sheet -- --app shake --level high --format phone, part whole. Tier: draft, level high.
+  What is still wrong shows here: through the bar the globe is 72 percent of its size at rest and sits low.
+
+6-phone-shake-bar-3.jpg
+  Shows: a phone through the last strokes of the bar and the set-down, twelve frames on one sheet, scaled to 1200 px
+  wide. AFTER.
+  Frames: 126 to 170 in fours. 126 and 134 are the far ends of the widest stroke; the globe is set down about 152.
+  Tool: the same, part bar, the third of three sheets (30 to 74, 78 to 122, 126 to 170). Tier: draft, level high.
+  Whole globe and base inside the frame in every frame of all three bar sheets.
+
+7-phone-app-with-controls.jpg
+  Shows: the app itself on a phone with its real controls, five pictures of node tools/visit.mjs --layout phone, each
+  390 x 844 scaled to 236 x 511. AFTER. Left to right: 01 first paint (the controls not yet measured: glass top about
+  197 px), 03 the view returned after a look (settled: about 165 px), 04 the limit of the turn, 05 the top tilt,
+  06 the lowest tilt (the globe drops about 50 px).
+  State: winter at rest. The app's own quality on this machine. Taken at 05:44 UTC on the branch as it stood then.
+
+8-rest-m1-phone-spring-tablet-summer.jpg
+  Shows: the two upright stills that M1 measured, at rest. AFTER. Left: screen-phone, spring, 390 x 844 at full size
+  (base from 45 px to 345 px). Right: screen-tablet, summer, 1024 x 1366 scaled to 633 x 844.
+  Tool: npm run measure -- --unit globe --only M1 --tier draft, on 43b8108d. Tier: draft.
+  What is still wrong shows here: on the tablet one bright light is cut in half by the right edge near the top.
