@@ -174,3 +174,15 @@ describe('the hand: the arc', () => {
     }
   })
 })
+
+describe('the hand: the heavy start', () => {
+  it('takes the first two strokes slower than the last three, in time and in speed, in every held shake', () => {
+    for (const name of HELD) {
+      const t = shakeMotion(name).plan.strokes
+      const gap = (k: number): number => t[k]!.beat - t[k - 1]!.beat
+      const speed = (k: number): number => Math.abs(t[k]!.mm - t[k - 1]!.mm) / gap(k)
+      expect(Math.min(gap(1), gap(2)), `${name} time`).toBeGreaterThan(Math.max(gap(3), gap(4), gap(5)))
+      expect((speed(1) + speed(2)) / 2, `${name} speed`).toBeLessThan(0.75 * ((speed(3) + speed(4) + speed(5)) / 3))
+    }
+  })
+})
