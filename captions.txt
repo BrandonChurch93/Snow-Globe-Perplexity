@@ -2,3 +2,7 @@ lift-1296-1298-400.jpg: Shake 2, consecutive film frames 1296 to 1298. Review ti
 lag-1318-1320-400.jpg: Shake 2, consecutive film frames 1318 to 1320. Review tier, 400 px per frame. Hand-only 4c1ebe13 above, inertia c11e34ce below. The glass and tree travel right faster than the loose petals.
 fold-1338-1340-400.jpg: Shake 2, consecutive film frames 1338 to 1340. Review tier, 400 px per frame. Hand-only 4c1ebe13 above, inertia c11e34ce below. A denser right bank leads the reversal, then the front still goes pale.
 fall-fold-2777-2779-400.jpg: Shake 4, consecutive film frames 2777 to 2779. Review tier, 400 px per frame. Hand-only 4c1ebe13 above, inertia c11e34ce below. Orange clusters move over the miniature through the green veil.
+c11-winter-landed-400.jpg: Winter hero, landed 0.5 s after the test shake. HD review at 400 px per picture. Left hand-only 4c1ebe13, centre inertia c11e34ce, right approved.
+c11-spring-landed-400.jpg: Spring hero, landed 0.5 s after the test shake. HD review at 400 px per picture. Left hand-only 4c1ebe13, centre inertia c11e34ce, right approved.
+c11-summer-landed-400.jpg: Summer hero, landed 0.5 s after the test shake. HD review at 400 px per picture. Left hand-only 4c1ebe13, centre inertia c11e34ce, right approved.
+c11-fall-landed-400.jpg: Fall hero, landed 0.5 s after the test shake. HD review at 400 px per picture. Left hand-only 4c1ebe13, centre inertia c11e34ce, right approved.

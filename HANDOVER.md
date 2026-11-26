@@ -35,6 +35,8 @@ The test shake for each season supplies both landed at 0.5 s and rest at 12 s af
 | Summer | 4,253 to 4,241 | 1886/4388/450/1723 | 1955/4419/381/1704 | 477 to 469 |
 | Fall | 26,770 to 26,742 | 642/5901/159/2532 | 641/5819/171/2631 | 23 to 35 |
 
+All four landed hero comparisons were drawn at HD review. The hand-only and inertia pictures keep the same broad swirl and readable miniature when compared with each approved shake at 400 px and in native crown and ground crops. Winter and spring remain dense and pale on the front, as before. Summer keeps the deep gold streaks, seeds and green points; fall keeps the orange streaks over its green veil. This is a visual judgment, not a measured image-distance score.
+
 ## Draft change gates
 
 `node tools/measure.mjs --unit change --tier draft` on `c11e34ce` completed 24 of 24 rows, with M4 shake 3 the only red. The hand-only command requested M4 and M5, so it measured all eight rows in scope and intentionally left the other 16 unmeasured on that tree.
