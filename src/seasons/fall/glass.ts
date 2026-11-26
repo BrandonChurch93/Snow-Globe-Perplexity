@@ -388,7 +388,8 @@ void main() {
     vec3 d = p / max(r, 1.0);
     float lat = dot(d, ${vec(ROLL_AXIS)});
     vec3 e = d - lat * ${vec(ROLL_AXIS)};
-    float turn = atan(dot(e, ${vec([0, ROLL_AXIS[2], -ROLL_AXIS[1]])}), e.x) / 6.2831853 - uFogTurn.x * mix(1.04, 0.96, r / ${f(RI)}) / 6.2831853 + ${f(F.lean)} * lat;
+    vec2 about = vec2(dot(e, ${vec([0, ROLL_AXIS[2], -ROLL_AXIS[1]])}), e.x);
+    float turn = (dot(about, about) > 0.0 ? atan(about.x, about.y) : 0.0) / 6.2831853 - uFogTurn.x * mix(1.04, 0.96, r / ${f(RI)}) / 6.2831853 + ${f(F.lean)} * lat;
     float s1 = texture(uFogNoise, vec3(turn, 2.3 * lat + 0.17, r / 110.0 + 0.4)).r;
     float s2 = texture(uFogNoise, vec3(2.0 * turn + 0.31, 5.1 * lat + 0.5, r / 70.0 + 0.63)).r;
     // A finer run of wisps lies over the broad ones, and each depth of the wall has its own.
@@ -580,7 +581,8 @@ void main() {
   vec3 light = uSky * ${f(C.sky)} + uKeyCol * (0.2 + ${f(C.key)} * pow(max(dot(r, uKeyDir), 0.0), 6.0)) + uRimCol * (0.15 + ${f(C.rim)} * pow(max(dot(r, uRimDir), 0.0), 4.0)) + stageRoomLights(r, 0.08) * ${f(C.room)};
   float flash = 0.22 + 3.2 * g * g * g + 1.5 * (1.0 - smoothstep(0.0, 0.05, run)) * step(uCrack.x, 0.999);
   // It catches the light in stretches and is a faint hair between them, fainter still toward its tips.
-  float stretch = crackGlint(tau * ${f(CRACK_LENGTH_MM * C.catchPerMm)} + 9.0 * floor(4.0 * atan(d.y - CRACK_A[0].y, d.x - CRACK_A[0].x) / 6.2831853 + 0.5) + 40.0);
+  vec2 fromStart = d.xy - CRACK_A[0].xy;
+  float stretch = crackGlint(tau * ${f(CRACK_LENGTH_MM * C.catchPerMm)} + 9.0 * floor(4.0 * (dot(fromStart, fromStart) > 0.0 ? atan(fromStart.y, fromStart.x) : 0.0) / 6.2831853 + 0.5) + 40.0);
   float caught = mix(${f(C.faint)}, 1.0, smoothstep(0.38, 0.72, stretch)) * mix(1.0, 0.35, smoothstep(0.6, 1.0, tau));
   vec3 col = light * ${vec(C.warm)} * (${f(C.bright)} * flash) * edge * caught + uSky * (0.3 * ${f(C.shade)} * core);
   float alpha = max(${f(C.shade)} * core, 0.85 * edge * caught);
