@@ -1427,3 +1427,20 @@ fs.writeFileSync(`${out}/page-end.png`, await page.screenshot({ type: 'png' }))
 log(`done, page errors ${JSON.stringify(errors)}`)
 await browser.close()
 ```
+
+# Third job, after the push: main took it (11:02 UTC)
+
+- `/root` merged `f9870c3d` into main as `4c2213c6` (parents 210a125a and f9870c3d). Main's head was then 38eff8da,
+  which changes `public/first/stills.json` only. The mend's two files are in main as they were pushed
+  (`git diff f9870c3d 38eff8da` over them is empty).
+- The tree of `4c2213c6` is the tree I had tested here as a merge that was never committed (the same tree object,
+  `b1176530`): `npx tsc --noEmit` exit 0; `npx vitest run` 54 files passed and 1 skipped, 703 tests passed and 9
+  skipped.
+- Built from that tree, the 14 scripts and stylesheets of `dist` are byte for byte those of the build that was
+  proven live and through determinism. Only `index.html` differs, by main's own first picture. I did not run that
+  build in a browser.
+- `dist` built again from `f9870c3d` is byte for byte the build of 53a21590 that the proofs ran on (15 files:
+  scripts, stylesheets and `index.html`), so what is called the build of the pushed head above is that head's build
+  to the byte.
+- The eighth push of the looks (`2bcf3c8a`) holds picture 23 and this file; its captions also correct how often a
+  frame came in the runs of pictures 19 to 22.
