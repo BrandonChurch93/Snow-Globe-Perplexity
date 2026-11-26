@@ -3,6 +3,7 @@ import { MOVES, poseOfRig, rigOf, smoother, type Rig } from '../film/moves'
 import { beatSeconds } from '../film/timeline'
 import type { Pose } from '../scene/cameras'
 import { globeTopMm, sphereCentreHeightMm, sphereRadiusMm, type Framing } from '../scene/framing'
+import { SLAB_SHAPE } from '../scene/surface'
 import { REST_POSE, makeShake, type GlobePose, type ShakePath } from '../shake/table'
 
 export const FRAME = {
@@ -18,6 +19,7 @@ export const FRAME = {
   baseReachMm: 74,
   overUnder: 1.6,
   narrowAspect: 0.6,
+  tableKeepMm: 20,
   mostUnder: 0.35,
   easeRate: 4,
   shakePaths: 8,
@@ -71,6 +73,21 @@ const aimForFoot = (rig: Rig, foot: number): number => {
   const p = rig.pitchDeg * RAD
   const y = foot * Math.tan((rig.fovDeg * RAD) / 2)
   return -(y * (rig.distanceMm - FOOT_R * Math.cos(p)) + FOOT_R * Math.sin(p)) / (Math.cos(p) + y * Math.sin(p))
+}
+
+/** The lowest the camera may aim before the lowest corners of the frame look past the near edge of the table:
+ * they meet the table `tableKeepMm` inside that edge, measured from the globe's axis, so it holds however the camera is turned. */
+const aimForTable = (rig: Rig, aspect: number): number => {
+  const p = rig.pitchDeg * RAD
+  const t = Math.tan((rig.fovDeg * RAD) / 2)
+  const z = rig.distanceMm * Math.cos(p)
+  const r = SLAB_SHAPE.nearMm - FRAME.tableKeepMm
+  if (z <= r) return -Infinity
+  const fall = Math.cos(p) - t * Math.sin(p)
+  const wide = aspect * t
+  const q = wide * wide + fall * fall
+  const k = (z * fall - Math.sqrt(Math.max(0, z * z * fall * fall - q * (z * z - r * r)))) / q
+  return k * (Math.sin(p) + t * Math.cos(p)) - rig.distanceMm * Math.sin(p)
 }
 
 /** The share of the height the foot keeps free under it: the controls, measured, or a bar of the usual height until they are
@@ -186,7 +203,9 @@ export const shakeReach = (rig: Rig): { top: number; side: number } => ({ top: t
 /** The furthest the whole globe reaches to a side through a shake, the glass or the widest base, from a rig that looks from the front. */
 export const shakeSide = (rig: Rig): number => Math.max(sideOf(rig), sideOfEnds(rig, shakenCentres().ends))
 
-let fitted: { aspect: number; under: number; rig: Rig; farMm: number } | null = null
+const lowOf = (under: number): number => -1 + 2 * Math.min(Math.max(under, 0), FRAME.mostUnder)
+
+let fitted: { aspect: number; under: number; rig: Rig; far: Rig } | null = null
 
 /** The camera of the app: the wide camera moved back along its own axis and aimed so that the lifted glass stays under
  * the top edge, the foot stays over the controls, a wide screen holds the strokes between its sides and an upright screen
@@ -195,13 +214,13 @@ let fitted: { aspect: number; under: number; rig: Rig; farMm: number } | null = 
  * between the foot and the highest control.
  * `farMm` is how far the same camera stands for the bar of a shake: the nearest that holds every stroke, glass and widest
  * base, between the sides. On a wide screen that is where it stands at rest; on an upright one it is further. */
-function fit(aspect: number, under: number): { rig: Rig; farMm: number } {
+function fit(aspect: number, under: number): { rig: Rig; far: Rig } {
   if (fitted && fitted.aspect === aspect && fitted.under === under) return fitted
   const wide = rigOf(MOVES.wide)
   const rig = { ...wide, yawDeg: 0 }
   const k = 2 * Math.tan((rig.fovDeg * RAD) / 2)
   const a = Math.max(aspect, FRAME.leastAspect)
-  const low = -1 + 2 * Math.min(Math.max(under, 0), FRAME.mostUnder)
+  const low = lowOf(under)
   const high = 1 - 2 * FRAME.edgeShare
   const across = a * (1 - 2 * FRAME.edgeShare)
   for (let i = 0; i < FRAME.fitPasses; i++) {
@@ -224,6 +243,7 @@ function fit(aspect: number, under: number): { rig: Rig; farMm: number } {
       const p = rig.pitchDeg * RAD
       rig.aimHeightMm = Math.min(floor, rig.aimHeightMm + (over * (k / 2) * (rig.distanceMm - (sphereCentreHeightMm - rig.aimHeightMm) * Math.sin(p))) / Math.cos(p))
     }
+    rig.aimHeightMm = Math.min(floor, Math.max(rig.aimHeightMm, aimForTable(rig, a)))
     const broad = (a >= 1 ? sideOf(rig) : Math.max(glass(rig, REST).side, baseSide(rig))) / across
     const next = Math.max(wide.distanceMm, rig.distanceMm * Math.max(tall, broad))
     if (Math.abs(next - rig.distanceMm) < 1e-7) break
@@ -231,11 +251,12 @@ function fit(aspect: number, under: number): { rig: Rig; farMm: number } {
   }
   const far = { ...rig }
   for (let i = 0; i < FRAME.fitPasses; i++) {
+    far.aimHeightMm = Math.min(aimForFoot(far, low), Math.max(rig.aimHeightMm, aimForTable(far, a)))
     const next = Math.max(rig.distanceMm, (far.distanceMm * shakeSide(far)) / across)
     if (Math.abs(next - far.distanceMm) < 1e-7) break
     far.distanceMm = next
   }
-  fitted = { aspect, under, rig, farMm: far.distanceMm }
+  fitted = { aspect, under, rig, far }
   return fitted
 }
 
@@ -264,9 +285,15 @@ export function liveRig(aspect: number, yawDeg = 0, pitchDeg = 0, under = 0, at:
   const base = rigOf(MOVES.wide)
   const held = fit(aspect, under)
   const rig = { ...held.rig }
-  rig.distanceMm *= Math.pow(held.farMm / rig.distanceMm, standBack(at))
+  const span = held.far.distanceMm - rig.distanceMm
+  const back = standBack(at)
+  if (span > 0 && back > 0) {
+    rig.distanceMm *= Math.pow(held.far.distanceMm / rig.distanceMm, back)
+    rig.aimHeightMm += ((held.far.aimHeightMm - rig.aimHeightMm) * (rig.distanceMm - held.rig.distanceMm)) / span
+  }
   rig.yawDeg = Math.max(-L.orbitYawDeg, Math.min(L.orbitYawDeg, base.yawDeg + yawDeg))
   rig.pitchDeg = Math.max(L.orbitPitchMinDeg, Math.min(L.orbitPitchMaxDeg, rig.pitchDeg + pitchDeg))
+  rig.aimHeightMm = Math.max(rig.aimHeightMm, Math.min(aimForFoot(rig, lowOf(under)), aimForTable(rig, Math.max(aspect, FRAME.leastAspect))))
   return rig
 }
 

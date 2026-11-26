@@ -8,6 +8,7 @@ import { lensPlace } from '../src/globe/lens'
 import { poseById, sphereCentreMm } from '../src/scene/cameras'
 import { framingOf, globeTopMm, sphereRadiusMm } from '../src/scene/framing'
 import { anchors, centreHeightMm, shapePoints, shapes, type Role } from '../src/scene/layout'
+import { SLAB_SHAPE } from '../src/scene/surface'
 import { REST_POSE, type GlobePose } from '../src/shake/table'
 
 const hd = config.formats.hd
@@ -214,6 +215,27 @@ describe('the framing of the app through a shake', () => {
     return out
   }
 
+  /** Where the lowest edge of the frame meets the table, at its two corners and its middle: `out` is the furthest of the three
+   * from the globe's axis, `inside` the least any of them lies inside the near edge of the table, which is turned on the globe. */
+  const onTable = (rig: Rig, a: number): { out: number; inside: number } => {
+    const p = rig.pitchDeg * RAD
+    const yaw = rig.yawDeg * RAD
+    const turn = SLAB_SHAPE.turnDeg * RAD
+    const k = Math.tan((rig.fovDeg * RAD) / 2)
+    const along = (rig.aimHeightMm + rig.distanceMm * Math.sin(p)) / (Math.sin(p) + k * Math.cos(p))
+    const ahead = rig.distanceMm * Math.cos(p) - along * (Math.cos(p) - k * Math.sin(p))
+    let out = 0
+    let inside = Infinity
+    for (const side of [-1, 0, 1]) {
+      const across = side * a * k * along
+      const x = across * Math.cos(yaw) + ahead * Math.sin(yaw)
+      const z = ahead * Math.cos(yaw) - across * Math.sin(yaw)
+      out = Math.max(out, Math.hypot(x, z))
+      inside = Math.min(inside, SLAB_SHAPE.nearMm - (x * Math.sin(turn) + z * Math.cos(turn)))
+    }
+    return { out, inside }
+  }
+
   it('keeps the glass, the widest base and the heap at its foot inside the frame by the margin, at every moment of every shake, on every shape of screen', () => {
     const all = moments(FRAME.pathStepBeats)
     for (const [name, w, h] of screens) {
@@ -283,6 +305,65 @@ describe('the framing of the app through a shake', () => {
     expect(back).toBeGreaterThan(1.3)
     expect(back).toBeLessThan(1.45)
     expect(liveRig(16 / 9, 0, 0, 0.14, through)).toEqual(liveRig(16 / 9, 0, 0, 0.14))
+  })
+
+  it('never looks past the near edge of the table: the lowest edge of the frame meets it FRAME.tableKeepMm inside, at rest and through a shake, and still inside it wherever the view is turned', () => {
+    const keep = FRAME.tableKeepMm
+    const yaws = [-config.live.orbitYawDeg, -SLAB_SHAPE.turnDeg, 0, SLAB_SHAPE.turnDeg, config.live.orbitYawDeg]
+    const pitches = [-90, -1, 0, 6, 90]
+    let least = Infinity
+    for (const [name, w, h] of screens) {
+      const a = w / h
+      for (const controls of [null, Math.round(0.152 * h)]) {
+        const under = roomUnder(h, controls, w)
+        const low = -1 + 2 * under
+        for (let v = 0; v <= 1; v += 0.05) {
+          const at: Shaking = { beat: v * liftBeats, sinceLanding: long }
+          for (const yaw of yaws) {
+            expect(onTable(liveRig(a, yaw, 0, under, at), a).inside, `${name} ${controls} ${v} ${yaw}`).toBeGreaterThanOrEqual(keep - slack)
+            for (const pitch of pitches) {
+              const rig = liveRig(a, yaw, pitch, under, at)
+              const inside = onTable(rig, a).inside
+              least = Math.min(least, inside)
+              if (inside < keep - slack) expect(-cover(rig, REST_POSE).heap, `${name} ${controls} ${v} ${yaw} ${pitch}`).toBeCloseTo(low, 6)
+            }
+          }
+        }
+        for (let t = 0; t <= homeSeconds; t += homeSeconds / 20) expect(onTable(liveRig(a, 0, 0, under, { beat: null, sinceLanding: t }), a).inside, `${name} ${controls} home ${t}`).toBeGreaterThanOrEqual(keep - slack)
+      }
+    }
+    expect(least).toBeGreaterThan(0)
+  })
+
+  it('rises as it stands back on a narrow screen, on a straight line, and only as far as keeps that edge out: the foot stays near where it stood', () => {
+    const through: Shaking = { beat: liftBeats, sinceLanding: long }
+    const reach = SLAB_SHAPE.nearMm - FRAME.tableKeepMm
+    let rose = 0
+    for (const [name, w, h] of screens) {
+      const a = w / h
+      const under = roomUnder(h, null, w)
+      const rest = liveRig(a, 0, 0, under)
+      const far = liveRig(a, 0, 0, under, through)
+      if (far.aimHeightMm === rest.aimHeightMm) continue
+      rose++
+      expect(a, name).toBeLessThan(FRAME.narrowAspect)
+      expect(onTable(far, a).out, name).toBeCloseTo(reach, 4)
+      expect(onTable(rest, a).out, name).toBeLessThanOrEqual(reach + slack)
+      const slope = (far.aimHeightMm - rest.aimHeightMm) / (far.distanceMm - rest.distanceMm)
+      let was = rest
+      for (let v = 0.02; v <= 1; v += 0.02) {
+        const rig = liveRig(a, 0, 0, under, { beat: v * liftBeats, sinceLanding: long })
+        expect(rig.aimHeightMm - rest.aimHeightMm, `${name} ${v}`).toBeCloseTo(slope * (rig.distanceMm - rest.distanceMm), 6)
+        expect(rig.aimHeightMm, `${name} ${v}`).toBeGreaterThanOrEqual(was.aimHeightMm)
+        was = rig
+      }
+      const foot = (rig: Rig): number => (1 + cover(rig, REST_POSE).foot) / 2
+      expect(Math.abs(foot(far) - foot(rest)), name).toBeLessThan(0.1)
+    }
+    expect(rose).toBeGreaterThan(0)
+    const p = config.formats.phone
+    const phone = roomUnder(p.height, null, p.width)
+    expect(liveRig(p.width / p.height, 0, 0, phone, through).aimHeightMm).toBeGreaterThan(liveRig(p.width / p.height, 0, 0, phone).aimHeightMm + 20)
   })
 
   it('goes back with the lift, stays for the strokes and the set-down, and comes home over a bar after the landing, never with a step', () => {
