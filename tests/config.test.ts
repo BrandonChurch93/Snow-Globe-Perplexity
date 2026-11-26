@@ -100,6 +100,18 @@ describe('config validation', () => {
     expectProblem((c) => (c.shake.spinDownSeconds = 5), /which is not less than deliver\.cardLoop\.seconds/)
   })
 
+  it('fails when the master is asked for something that cannot be rendered', () => {
+    expectProblem((c) => delete c.deliver.master, /deliver\.master is missing/)
+    expectProblem((c) => (c.deliver.master.format = 'imax'), /deliver\.master names a format that does not exist/)
+    expectProblem((c) => (c.deliver.master.chunkFrames = 0), /deliver\.master\.chunkFrames/)
+    expectProblem((c) => (c.deliver.master.chunkFrames = 12.5), /deliver\.master\.chunkFrames/)
+    expectProblem((c) => (c.deliver.master.samples.loop = 0), /deliver\.master\.samples\.loop/)
+    expectProblem((c) => delete c.deliver.master.samples['film-b'], /deliver\.master\.samples\.film-b is missing/)
+    expectProblem((c) => (c.deliver.master.video.bufsizeMbps = 10), /deliver\.master\.video\.bufsizeMbps/)
+    expectProblem((c) => (c.deliver.master.names.still = c.deliver.master.names.loop), /two results the same file name/)
+    expectProblem((c) => delete c.deliver.master.names['film-a'], /deliver\.master\.names\.film-a is missing/)
+  })
+
   it('fails when an approved image is missing', () => {
     expectProblem(() => undefined, /the approved image of winter-rest is missing/, present.slice(1))
     expectProblem(() => undefined, /the approved image of fall-shake is missing/, present.slice(0, -1))
