@@ -391,7 +391,7 @@ float cardLeafForm(vec2 own) {
 vec2 cardMaple(vec2 q) {
   vec2 c = q - vec2(${n(CARD.maple.mid)}, 0.0);
   float r = length(c) + 1e-4;
-  float a = abs(atan(c.y, c.x));
+  float a = abs(dot(c, c) > 0.0 ? atan(c.y, c.x) : 0.0);
   float rim = ${n(CARD.maple.floor)};
   rim = max(rim, ${n(CARD.maple.long[0])} * pow(max(1.0 - a / ${n(CARD.maple.wide[0])}, 0.0), ${n(CARD.maple.point)}));
   rim = max(rim, ${n(CARD.maple.long[1])} * pow(max(1.0 - abs(a - ${n(CARD.maple.at[0])}) / ${n(CARD.maple.wide[1])}, 0.0), ${n(CARD.maple.point)}));
@@ -591,7 +591,7 @@ vec4 cardTint(float shape, vec2 q, vec2 own) {
   if (cardLeafForm(own) > 0.5) {
     vec2 m = cardMaple(q);
     vec2 c = q - vec2(${n(CARD.maple.mid)}, 0.0);
-    float a = abs(atan(c.y, c.x));
+    float a = abs(dot(c, c) > 0.0 ? atan(c.y, c.x) : 0.0);
     out1 = m.y / max(m.x, 1e-3);
     float da = min(a, min(abs(a - ${n(CARD.maple.at[0])}), abs(a - ${n(CARD.maple.at[1])})));
     rib = exp(-da * da * m.y * m.y * 900.0);
