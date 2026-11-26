@@ -383,8 +383,8 @@ export function startApp(d: AppDeps): AppBridge {
         governor.rest()
         if (told !== session.season) engine?.setSeason((told = session.season))
       }
-      pose = livePose(painter.width / Math.max(1, painter.height), look.yaw, look.pitch, under(dt))
       moment = session.moment(mix, seed)
+      pose = livePose(painter.width / Math.max(1, painter.height), look.yaw, look.pitch, under(dt), moment)
     }
     painter.paint(pose, moment)
     drawn++
