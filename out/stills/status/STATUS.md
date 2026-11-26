@@ -1,16 +1,15 @@
-# Status 147
+# Status 148
 
-2026-11-26 08:50 UTC
+2026-11-26 08:57 UTC
 
-- Rough draft 2 of the film is in the thread: 74 s with the prompt opening, drawn small and at low quality on this morning's build (eight machines, about 20 minutes). It shows the mended change of season, the mended phone framing and the newer mix. Its faults: at each change the room dips to black for about a quarter second while the glass glows, and nobody has judged it yet.
-- All 28 first pictures (seven screen shapes for each season) are redrawn on today's build and merged; the check prints poster: pass on the builder's machine and here. The app is being published from that build now.
-- The visitor's walk on phone, tablet and hd: the glide of the globe at the takeover is gone (0 px on all three, about 30, 20 and 10 px before). Items 1 to 7 pass on the phone; part of the tablet and hd lines is not seen yet.
-- GitHub sign in stopped working at 08:37 on this machine and on the agents' machines. Work goes on; commits wait as bundles and go up when it returns. A reconnect prompt for GitHub is shown in the thread.
-- Next: publish, then one critic round each on summer, the change and the whole globe, while the 4K master tool is finished.
-- phase 6: 6.02 h used of its 12.00 h box
-- allowance (after the review): 6.02 h used of 12.00 h allowed
+- The app is published again from this morning's build (08:55 UTC). New in it: the first picture no longer glides after loading, all 28 first pictures are redrawn, the phone framing and the change of season are mended, and the sound pack is the newer one. Visibility is Organization. The live address answers only to signed-in visitors, so I cannot open it from here; two of the uploaded files were read back and equal the local ones.
+- The opening of the 4K film is checked: all 867 frames at 3840 x 2160 were decoded, none is empty, and a redraw gave the same bytes. The opening is now always drawn by the one renderer that gives the committed pictures, and its tool refuses any other.
+- First 4K frames for the masters are measured on one machine: about 130 s a frame while the globe rests and about 227 s during a change of season. Film B is 3,600 frames and the loop 480, so the masters are drawn by the whole fleet at once, after the picture is frozen.
+- Still at work: the last mend of the change of season, the arc of the first picture, the app's sound pack and the master tool. After that come the critic rounds on summer, the change of season and the globe, then the film itself.
+- phase 6: 6.14 h used of its 12.00 h box
+- allowance (after the review): 6.14 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-147-1.jpg`: Rough draft 2, spring after its shake (960 x 540, draft quality)
-- `out/stills/status/status-147-2.jpg`: Rough draft 2, fall at rest (960 x 540, draft quality)
+- `out/stills/status/status-148-1.jpg`: The opening at 4K: nine frames at the places where another renderer left frames empty this morning. All nine are painted.
+- `out/stills/status/status-148-2.jpg`: Frame 90 of the opening: the 4K pack above, the hd pack scaled two times below. Same shapes, cleaner edges at 4K.
