@@ -1,18 +1,16 @@
-# Status 131
+# Status 132
 
-2026-11-26 00:05 UTC
+2026-11-26 00:16 UTC
 
-- The phase gate is in: all 17 machine checks green on a clean clone of the frozen build, G1 to G16 and D4, run once in 96 minutes; G13 covers 52 of 54 parts, every part outside the film unit
-- That is the machine checks only: no unit passed its look, motion or sound bar, and the fresh review stands at 6 of 10 with nine must-fixes
-- Reduced motion was checked to its end on the frozen build at phone size and on the wide layout: a press changes winter to spring with no lift and no shake (open item 218)
-- Sound: 6,765 of the 10,000 credits used in 40 paid calls, 3,235 left, none planned
-- Next: the review page rebuilt and published, the last tick, then the REVIEW block
-- phase 5: 9.91 h used of its 12.00 h box
-- allowance (before the review, continuation 1): 9.91 h used of 12.00 h allowed
+- The review stop. Phase 5 is closed at the limits of its rounds, not by a pass: its gate is green on all 17 machine checks, no unit passed its bar, and the fresh review gave 6 of 10
+- The app and its review page were published again at the gate; the review cut plays there with its one soundtrack, beside every kept sound
+- Nothing more is built until Brandon answers: review notes for changes, or the approval that names the soundtrack
+- phase 5: 10.09 h used of its 12.00 h box
+- allowance (before the review, continuation 1): 10.09 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-131-1.jpg`: The kept sounds as waveforms
-- `out/stills/status/status-131-2.jpg`: The four seasons at rest, from the frozen build at 1920 x 1080
-- `out/stills/status/status-131-3.jpg`: The first shake of the review cut as twelve frames, winter into spring (960 x 540, draft tier)
-- `out/stills/status/status-131-4.jpg`: Comparison crops 2: fall-shake, approved image left, build right
+- `out/stills/status/status-132-1.jpg`: The kept sounds as waveforms
+- `out/stills/status/status-132-2.jpg`: The four seasons at rest, from the frozen build at 1920 x 1080
+- `out/stills/status/status-132-3.jpg`: One shake of the review cut as twelve frames, winter into spring (960 x 540, draft tier)
+- `out/stills/status/status-132-4.jpg`: Comparison crops 1: fall-shake, approved image left, build right
