@@ -1,8 +1,153 @@
 # Handover: `change_finisher`, unit `change`, branch `agent/p6-change`
 
-## Read this first: the state after the seventh job
+## Newest: thing 6 is mended and pushed (a6ce69a8); things 1 to 5 are designed and not built
 
-Written 2026-11-26 about 19:23 UTC. Seven jobs were done on this branch. The newest state is here; the sixth job's state follows, then the fifth, the fourth, the second and third, then the first job's text as it was written.
+Written 2026-11-26 about 21:35 UTC. This part is newer than everything below it. Where the two differ, this part holds.
+
+Head of the code branch `agent/p6-change`: a6ce69a8 (engine d02c4c4f0d27779b). It is 557a79f2 (the branch with `main` 84f037e2 merged) and one commit on top, the mend of thing 6. `main` is ae5b48b4 as this is written. The head does not hold what `main` took after 84f037e2: 49dae6ef, the sand's third pass (8f6770e2), 1621ff09 (`src/capture/showcase.ts`: one sample set for every picture, which changes the bytes of every film frame and leaves the stills' bytes), the air's stop at zero (a54d91a5) and the cottage's third pass (18a19dd5). `/root` at 20:27 UTC: "do not chase main any further. Report on your merged head 557a79f2 (which holds 84f037e2) when its proofs are drawn." So this push was made without the newest `main` merged, by `/root`'s word, against the standing rule.
+
+### What is not done and not seen, worst first
+
+- **Things 1 to 5 of `/root`'s look at d3f0f958 are not built.** The glow is still a column, the pool still lies over the base, the globe still goes flat at the peak, the lamps are still gone in the two middle frames and the fall is still a blink. Every frame of a change on this head is the cover of ca73e182. A design stands below; one file of it is edited in a scratch tree and nothing of it is built or drawn.
+- **M4 is red for the third shake on this head (0.77 against 0.85) and reads 0.8664 for the second, under the 0.88 `/root` asked for at 20:53 UTC.** It is not mended here. `/root` walked the red back to the merge of the air's seventh list (5f9a5fd2) and gave it to the air's builder at 21:09 UTC. What this unit read and tried is below.
+- **One draw did not repeat.** The first draw of film frame 2836 on the tree before the mend gave sha256 b0b87f4ee3be99d4; a second draw of the same build and both draws with the mend gave b3bfcffc1f888f6c. The difference is 54 single pixels by at most 2 levels. The same was seen once on de25a24b. The cause is not found. It is not from the mend (the odd draw is the tree without it).
+- **A merge of `main` into this head conflicts in one place:** `src/seasons/summer/veil.ts`, lines 15 and 16. Line 15 is this branch's (`bankWhite: 0.3` in `veil`), line 16 is `main`'s (new colours for the seed and the mote). They are neighbours, so git cannot join them. Both lines are to be kept. `src/seasons/summer/arrival.ts` joins by itself.
+- **The eight keys were compared with `main`'s own, not with the tree before the mend.** Drawn on `main` 84f037e2 (engine 1bfc88dcec694187) and on the mend (engine d02c4c4f0d27779b), tier draft, format preview: all eight the same by sha256. The keys of 557a79f2 without the mend were not drawn.
+- **Nothing here is tier final or review, and nothing was played.** Every picture is tier draft (2 samples), `hd`, lavapipe, looked at as sheets, at its own pixels and whole at 400 px wide.
+- **The proof frames were drawn on trees that hold 84f037e2.** After `main` is merged, a frame may be compared only between two trees that both hold 1621ff09.
+
+### The mend of thing 6 (a6ce69a8)
+
+The cause is in part 0, thing 6, below: the shared veil whitens the bank of the flood by `VEIL_LOOK.bankWhite`, 2.2, a number made for snow. Past 1 it turns the bank to the opposite of its tint, which for summer's gold is a sky blue.
+
+Four files, one commit:
+
+- `src/seasons/kit.ts` line 48: `readonly veil: { tint: Rgb; density: number; rest: number; bankWhite?: number }`, and a comment on line 47. This file is not this unit's; the line is there by `/root`'s word of 18:55 UTC.
+- `src/core/chunks/veil.ts`: line 285, the uniform `uVeilWhite`, which starts at `VEIL_LOOK.bankWhite`; line 310, its declaration in the shader; line 436, `veilLit` reads `uVeilWhite` where the number was baked in; lines 598 to 601, `updateVeil` sets it to `lerp(a.bankWhite ?? L.bankWhite, b.bankWhite ?? L.bankWhite, t)`, so it crosses with the tint through a change. Also by `/root`'s word.
+- `src/seasons/summer/veil.ts` line 15: `bankWhite: 0.3` added to `veil`. The one line under `src/seasons/summer/` in this commit.
+- `tests/light-flood.test.ts`: `describe("the white of the flood's bank")`, four tests: a season that gives none has the shared share; summer's own is short of white; it crosses with the tint; it reaches the shader as one uniform, read where the flood rolls the bank and nowhere else.
+
+A season that gives no number has 2.2 as before, so winter, spring and fall are drawn as they were.
+
+**The value, chosen by the picture.** Film frames 1400, 1402, 1410 and 1420, the body of the ball between the grains, before, at 1, at 0.6 and at 0.3:
+
+| Frame | Before (2.2) | 1 | 0.6 | 0.3, the mend |
+| --- | --- | --- | --- | --- |
+| 1400 | (170, 172, 164) | (206, 180, 147) | (210, 181, 143) | (213, 182, 141) |
+| 1402 | (172, 170, 156) | (207, 178, 141) | (211, 179, 137) | (213, 180, 135) |
+| 1410 | (126, 109, 81) | (138, 114, 79) | (140, 116, 79) | (142, 117, 78) |
+| 1420 | (140, 115, 78) | (142, 116, 78) | (142, 116, 78) | (142, 116, 78) |
+
+Seen: before, the left two thirds of the ball are sky blue on 1400, 1402, 2080 and 2086, and the left limb is blue on 1410. At 1 the bank is grey. At 0.6 it is cream with a trace of grey olive. At 0.3 it is a warm cream gold, the nearest of the three to the approved landed storm seen brighter (that storm is about (186, 156, 117) in the body). 1420 is the same in all four, because the flood's bank is gone by then. Pictures 67, 68 and 70. Engines: before 8dc1d811c2feaaa6, value 1 8ffa1930eff93451, value 0.6 84b88cc9b7dfb682, the mend d02c4c4f0d27779b.
+
+**The proof that nothing else moved** (sha256, first 16 places; draft, `hd`; before and with the mend, each drawn twice):
+
+| Frame | What it is | sha256 |
+| --- | --- | --- |
+| 640 | winter in the hand | a0168a986add2636 |
+| 676 | winter into spring, under the cover | da9b68f243aa7c6c |
+| 690 | spring arrived | 44d097c2ec54b6a6 |
+| 1340 | spring in the hand | f37845794d65d8d1 |
+| 1360 | spring in the hand | 1bb1535728b95359 |
+| 2780 | fall in the hand | 362666767a9a3ada |
+| 2800 | fall in the hand | e8148611b3ae1956 |
+| 2836 | fall into winter, under the cover | b3bfcffc1f888f6c (three draws of four; see the draw that did not repeat) |
+| 2850 | winter arrived | 139551ecf9bfbfcf |
+
+The eight keys with the mend, the same as `main`'s own: winter-rest 80a73da1376f4695, winter-shake d325dec9b95633ef, spring-rest 6c299aa4f979d7bf, spring-shake 0b2ec379c643ca2b, summer-rest 631d967a1cb0ce1b, summer-shake 64461c0a89ccb9d3, fall-rest d0f7a36f28e5f3d4, fall-shake 4fe85c7ee261752a. (The `-shake` keys are the landed pictures.)
+
+Summer's flood moved, as meant (before, then with the mend): 1400 80573e7f41476a99, 194c6cc72baf64cb; 1402 36520202c07ccdb0, cb2e0db4680738c2; 1404 65410f8f1c995930, a6e6ee4652857340; 1408 a64a54addb8f4e2b, d0e2970052f949bb; 1410 aa86f6c57d06bd38, 26719d471e4e6d29; 1420 c4b025e92c8847ee, 502351f56e929632; 2080 163aa8473943c73f, ecc146ffef312562; 2086 ad1f18754250d10a, e6dc3bbee3fb46ae; 2100 e154d77beb1d4fed, b5d6858bfd46eea5; 2108 99061c3cecdfef79, fd53cf115980f97b; 2110 c10b424a8cea604f, 3863316d314e442e; 2120 33712a2534cc3c73, 766ec1be27c74cca.
+
+`npx tsc --noEmit` exit 0 and `npx vitest run` exit 0 on a6ce69a8 (58 files passed and 1 skipped, 787 tests passed and 8 skipped).
+
+**Fall is left alone.** A trial with fall's bank capped at 1 (engine 5537324ef13ebf79, not kept), against the mend with fall at the shared 2.2, picture 69. No lilac shows with the cap or without it at the size anyone sees it. 2108: largest step 9 levels, the ball's mean (166.85, 169.35, 123.01) against (168.67, 170.14, 121.40) capped. 2110: largest step 11. 2120: largest step 26 (33041 pixels move by more than 16 levels), the moved area (160.3, 155.6, 113.3) against (158.0, 157.4, 101.1) capped; the line on the lower left limb of 2120 reads (128.6, 104.8, 68.5) against (127.8, 105.3, 64.6), a warm brown that does not move with the cap, so it is not fall's bank. 2780: 0.07 in 100 of the ball moves by 1 level. 2800: largest step 20, the moved area a mint (121.1, 147.2, 100.4) against a deeper green (115.6, 146.7, 94.0).
+
+**Two things said earlier, now settled.** The lilac on 2108 and 2110 that this unit named as fall's bank at 18:51 UTC is summer's bank leaving; it goes with the mend (picture 69, upper row against the middle row). And the pale green over the cream on 2100 to 2110 with the mend is fall's own fog coming in: 2086, two frames before the window, is cream with no green in it.
+
+**The colour of the pour for summer is not moved by the glass builder's rim (1.3 to 0.3).** `pourColour` in `src/scene/lighting.ts` reads the rim's colour times the key's colour and no intensity. Read out by `/tmp/j7/probe/pour.ts`: summer's pour is in the shares 1.000, 0.689, 0.384, the strongest channel 1.4833.
+
+### M4 and M5 on this head, and what M4 hangs on
+
+`npm run measure -- --unit change --only M4,M5 --force --tier draft` on 557a79f2 with the mend (engine d02c4c4f0d27779b, 20:54 UTC):
+
+| Measure | Shake | Result | Number | Counted |
+| --- | --- | --- | --- | --- |
+| M4 | shake-1 | pass | 0.9872 | 144978 of 146862 |
+| M5 | shake-1 | pass | 0.9804 | 151567 of 154602 |
+| M4 | shake-2 | pass | 0.8664 | 125188 of 144492 |
+| M5 | shake-2 | pass | 1 | 169477 of 169484 |
+| M4 | shake-3 | fail | 0.77 | 109116 of 141701 |
+| M5 | shake-3 | pass | 0.9828 | 141823 of 144301 |
+| M4 | shake-4 | pass | 0.9626 | 142190 of 147708 |
+| M5 | shake-4 | pass | 0.9997 | 156060 of 156103 |
+
+How M4 is drawn. It is taken at beat 2.5 of the shake, the middle of the swap window (film frames 666, 1386, 2106, 2826). That is before this unit's cover, which starts to rise at 0.513 of the window, is whole from 0.7075 to 0.8325 and is gone at 0.985 (film frames 666.47, 673.47 to 677.97 and 683.47 in the first change): at the middle the cover is 0. The cover view counts what stands between the eye and the miniature: the shared veil's fog, the particles, spring's mists and fall's fog (`src/seasons/fall/glass.ts`, which comes in evenly with the change). So M4 at the middle hangs on the air, not on the glow. `f.mix.veil` in `src/scene/stage.ts` crosses late (`VEIL_LATE`, 0.177 at the middle) where the leaving season has the thicker veil, and evenly where it has not.
+
+What is open on this head. Third shake (summer into fall): the tree's crown, rows 250 to 399 of the cover view, median fog 0.79 to 0.83 against the 0.9 that counts. Second shake (spring into summer): the ground's front rim in streaks, rows 600 to 649 open in 32 of 100 pixels and rows 650 to 699 in 72 of 100.
+
+The cause, by reading and by two trials. `stormHeld` in `src/seasons/summer/veil.ts` (the air's file) weights summer's held storm by `(f.to.veil === veil ? t : 0) + (f.from.veil === veil ? 1 - t : 0)` and lets it come in over the whole swap window. The held storm is thinner than the shared veil's flood (it takes off `calms` of the drift bank and sets its own bank and white), so while it holds the cover thins. In the third shake summer is the leaving season: its hold comes in at the weight 1 less t and opens the crown at the middle of the swap. In the second shake summer arrives: its hold is already half in at the middle and opens the front rim.
+
+| Trial (on 557a79f2 with the mend; not kept; this unit does not touch that file) | Engine | M4 shake-1 | shake-2 | shake-3 | shake-4 |
+| --- | --- | --- | --- | --- | --- |
+| The head | d02c4c4f0d27779b | 0.9872 | 0.8664 | 0.77 | 0.9626 |
+| S: the leaving term off (`mine = f.to.veil === veil ? (f.from.veil === veil ? 1 : t) : 0`) | 7ef035207ebac0fd | 0.9872 | 0.8664 | 0.9652 | 0.9626 |
+| S2: S, and the hold coming in from the middle of the window (`ramp(beat, (w.fromBeat + w.toBeat) / 2, w.toBeat)`) | d3ff65b0a60daa0f | 0.9872 | 0.9043 | 0.9652 | 0.9626 |
+
+M5 is the same four numbers in all three. In S the cover view of the second shake is byte equal to the head's; in S2 the third's is byte equal to S's. S2 seen on eight frames (1386, 1400, 1410, 2100, 2106, 2108, 2110, 2120) beside the head: 1386 the same to the eye, 1400 a more even cream with less of the tree through it, 2106 to 2120 a fuller mint with the gold patch in the middle gone, 1410 byte equal. `/root` has the result of S (sent 21:10 UTC) and has S2 in the report that follows this push. `main` has since changed summer's storm again (`STORM.share` 0.24, `bank.density` 0.006, the stop at zero), so these numbers are this head's and not `main`'s.
+
+The uniform values read out of the page at the middle of each swap (turbulence 1, flood 1), by `out/work/veilprobe.mjs` with a hook that is not kept: shake-1 white 0.0317, bank level 0.14, bank density 1.057, drift 0.110; shake-2 white 0.00838, level 0.0625, density 0.2792, even 0.925, drift 0.0298; shake-3 white 0.01065, level 0.0124, density 0.3549, even 0.8765, drift 0.039; shake-4 white 0.01932, level 0.14, density 0.644, drift 0.0672.
+
+### The design for things 1 to 5 (not built)
+
+Read from the code on this head; the numbers are where the first trial starts, not results.
+
+- **The fall as a tail (thing 5).** In `src/shake/change.ts`: the cover keeps its peak and gains a tail of 15 frames past the window that eases out (`COVER_TAIL = frames(15)`, `tailTo` 1.249 of the window, film frame 692.97 in the first change, 15 frames after the whole cover ends at 677.97; `risePower` 2 and `tailPower` 2; `goneAt` kept, because `GLASS_COME` in `src/core/materials.ts` reads it). `changeBloom` is then defined past 1. After the window the stage no longer knows that a season left: `from`, `to` and `season` are all the new one, and so they are in a shake that changes nothing (the stills' test shake and the film's preroll). So the tail needs one field on `Moment`; the lines are in the report to `/root` and under "Lines needed outside this unit's files" below.
+- **The glow round, centred, closed (thing 1).** The lens's wide glow in `src/post/post.ts` (hole, halo, halo core and wide veil, lines 184 to 192) and its placing in `src/scene/stage.ts` (lines 600 to 609) go. In their place the lens's own bloom of what is bright (threshold 0.9, knee 0.5, strength 0.11, gain 1 and 6 times the tint) and at most a small glow with a closed reach about the ball's centre as it is in that frame (the mean over the frame's samples). 1.14 radii is 51 px past the limb at `hd`; the ball's top is 64 px under the top edge, so a reach under 1.17 radii dies before the edge.
+- **The source stays the brightest thing (thing 3).** No flash term and no pour of the flash in `src/scene/lighting.ts` (`update`, lines 269 to 353; line 266 is the hand's builder's). The inner lights gain by a heart share to the power of the cover (4 and 8 to try). The glass (`src/globe/shell.ts`, not this unit's) already adds `uBloom` times (0.1 and 0.9 of the facing cubed) and a white core by the facing to the eighth, from `f.bloomTint` times 0.6: a white heart with colour round it, ready to be driven. `lensState.bloomTint` is copied in `src/scene/backdrop.ts` (line 481), so the glass's tint and the lens's can be split by a new field in `src/scene/frame.ts`.
+- **The base lit, the pool on the table (thing 2).** The flood on the base gets its own branch under the cover (the old expressions kept exactly when the cover is 0, so rest and landed keep their bytes). Its shares now, of `uLightFlood` times `uLightFloodFloor.w` over pi: top face about 0.88, shoulder 0.54, flank 0.07 to 0.03; lift it until top and shoulder go near white in the pour's colour and the flank stays dark. The pool in `src/scene/surface.ts`: line 318, `glowRise = smoothstep(uFoot.z - 4, uFoot.z + 46 + lift, d)`, makes the pour darkest at the foot; the pour gets its own short rise (8 to 10 mm) times the foot's occlusion, so it is brightest at the foot and falls off outward with the base's soft shadow in it (line 492). Reach: under two thirds of the globe (the ball's radius is 60 mm, the base's 58, the base is 33 high; about 6.1 px a mm at `hd`).
+- **The lamps veiled, not gone (thing 4).** The room's tone is the room times (1 less the dim). The lamps are held by `(lamps / dim)` to the power of the cover (about 0.15 to 0.25 to try) through a new `uBackHold` in `src/scene/backdrop.ts` (`vColor`, about line 246). The lamps inside the glass: `src/scene/stage.ts` lines 558 to 562 (`emissiveIntensity = flickerOf(...)`), this unit's to multiply; the villages' `uGlowGain` is not.
+- **Summer's base.** `src/seasons/summer/base.ts` line 611 (`f.from === f.to ? 1 : Math.pow(SAND_DARK, f.mix.bloom)`) likely loses its condition for the tail. It is a summer line and is to be named in the report.
+- **Tests to restate, each in its own commit that says the old rule, the new rule and why:** `tests/lens-glare.test.ts` (glare, halo, veil, the flash's pour, the hole, the flat halo, the seats, the halo's white) and `tests/shake-change.test.ts` (lines 132, 152, 203 to 205, 275).
+- **The kit:** `kit/04-LOOK.md` section 6 (the bloom may flood the frame for a few frames in the swap window) and `kit/03-METHOD.md` line 197.
+- **Where it starts from.** Film frame 676 on this head: a flat pink ball, a flat oval, the lamps gone, the glow a wide column; frame max 246, median luma 103, the top edge above the ball 120. `CHANGE_BLOOM` on this head: `{ lens: 0.2, swellFrom: 0.56, fall: 0.6, dim: 0.005, sharp: 4, pour: 30, pourOn: 5, flashPour: 0.005, image: 5, flood: 0.5, glare: 0.3, flashGlare: 0.7, glareReach: 1.1, glareSeat: 0.1, glareHole: 0.9, glareHoleReach: 1.3, halo: 0.8, haloReach: 1.4, haloUp: 0.4, haloDown: 0.33, haloSeat: 1.52, haloCore: 3, haloWhite: 0.5, tint: 1, veil: 0.03, flashVeil: 0.03, veilReach: 1.5, room: 0.75 }`.
+- **The order of work:** merge `main` (the one conflict above), then the first change on frames 668 to 694 until it is the picture, then the other three, then the checks of the job file on the merged head (the strict run on the eight keys, the measure, G11 and G12, determinism, the count of true black on the 60 middle frames, the eight keys against `main`'s, the app's own path at high and low).
+
+### Lines needed outside this unit's files (asked of `/root` in the report that follows this push)
+
+For the tail. `src/core/stage.ts`, in `Moment`, after `period`:
+
+```ts
+  /** The season that left in the shake under way, from the end of its swap window to its landing; null or absent at every other moment. */
+  left?: string | null
+```
+
+`src/film/moments.ts`, `timelineMoment` (the film and the app both build their moments there):
+
+```ts
+import { config } from '../config'
+
+export function timelineMoment(tl: Timeline, t: number, mix: number, seed: number): Moment {
+  const hit = eventAt(tl, t)
+  const left = hit === null || hit.event.from === hit.event.to || hit.beat < config.shake.swapWindow.toBeat - 1e-7 ? null : hit.event.from
+  return { ...seasonAt(tl, t), sinceLanding: t - lastLandingBefore(tl, t), globe: globePoseAt(tl, t), mix, seed, time: t, beat: hit ? hit.beat : null, period: null, left }
+}
+```
+
+Not yet tried in a build.
+
+### Others at work in this unit's files
+
+- **The hand's builder (`/root/hand_closer`, `agent/p6-hand`)** draws the globe's twist through four single lines, two of them in this unit's files: `src/scene/stage.ts` (`this.globe.rotation.set`) and `src/scene/lighting.ts` (`this.turn.makeRotationFromEuler`), the other two in `src/globe/shell.ts` (`uTurn`) and `src/core/chunks/veil.ts` (`turn.setFromEuler`). `/root` at 20:22 UTC: "Keep off those four lines". Its retime of the first strokes of the held shakes and its deeper dip move the pose in this unit's windows (in the second shake's window most in its first half, up to 9.2 mm in x at 1368, and within 0.4 mm and 0.3 degrees from 1385 on), so every frame of a change moves when it is in `main`.
+- **`agent/p6-standstill` (26e6ac52)** touches `src/core/materials.ts` and `src/scene/stage.ts`. `/root` holds it until this report is in.
+- **The air's builder** has `src/seasons/summer/veil.ts` and the red M4. This unit's one line there is line 15.
+
+### How this part's pictures and numbers were made
+
+In the VM that drew them, which is not kept: the code tree `/home/user/workspace/sg`; frames by `node out/work/filmlist.mjs --tier draft --format hd --calls <frames> --stop <epoch seconds>` into `out/work/seq/film-hd-draft/`; the proofs under `/tmp/j7/m10/` (`before`, `beforeb`, `w03`, `w03b`, `w1`, `w06`, `fallcap`, `keys-main`, `keys-mend`, `measure-head`, `cover-head`); the trials under `/tmp/j7/m4/` (`S`, `S2`, `S2frames`, `headframes`); the maps of the cover view by `/tmp/j7/tools/covermap.py` and its rows by `/tmp/j7/tools/coverstat.py`; the sheets by `/tmp/j7/sheet.py`, which writes each label in a margin under its cell and nothing over a picture. A frame at `hd` draft takes about 10 s, a build about 20 s, the eight lines of the measure about 70 s, the tests about 150 s.
+
+## The state after the seventh job, as it was at ca73e182
+
+Written 2026-11-26 about 19:23 UTC, and older than the part above it. Seven jobs were done on this branch. The state of ca73e182 is here; the sixth job's state follows, then the fifth, the fourth, the second and third, then the first job's text as it was written.
 
 Head of the code branch `agent/p6-change`: ca73e182 (engine 7bc857d50887da42), which holds `main` 5b23a870. `main` holds the first six jobs (the sixth as e58aa9d4) and nothing of the seventh; `/root` looks at the branch on its own sheets and merges it itself. As this is written `main` is 5f9a5fd2. Since 5b23a870 it has taken all seven summer branches of the seventh fix list (the room, the glass with the rim down to 0.3, the cottage, the stone, the sand, the tree and the air) and it holds nothing of the seventh job. The branch's working tree holds that `main` merged (a16acab9, not pushed) with the mend of thing 6 of part 0 on top, not committed. `main` holds the seventh list's scripts under `assets-src/` but the made assets are still those of 0e1100bb (16:40 UTC), so in any frame drawn on it summer's base, tree and cottage are the sixth list's meshes under the seventh list's shaders.
 
@@ -14,7 +159,7 @@ In short: the black frame is gone (0.00 in 100 of the pixels under 4 on all 60 m
 
 ### 0. What is not done, what is not seen and what still shows, worst first
 
-#### The six things `/root` named for the next turn (17:46 and 17:55 UTC): the first five not begun, the sixth found and its mend under way
+#### The six things `/root` named for the next turn (17:46 and 17:55 UTC): the first five not begun, the sixth found (it is mended since: see the newest part, at the top)
 
 `/root` looked at d3f0f958 on its farm sheets (tier review, `hd`, every fourth frame, then every second frame of the second and the fourth shake). Its verdict: better than `main` and nearer the kit (no black frame, the room keeps tone in the dip, the new base is lit in the last frame), and six things, the same on all four swaps. It asked that none be begun before the report. What follows is each thing, where it sits in the code and what I read there. The readings are mine, on my own draft frames; where they differ from `/root`'s numbers it says so.
 
