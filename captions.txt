@@ -17,3 +17,7 @@ winter-hd-review-seam-400.jpg: Inertia 2585e411 winter card, frames 479, 0, 1 le
 winter-hd-review-seam-native.jpg: The same three winter card frames in native 400 by 400 px miniature crops.
 winter-f0-pinned-400.jpg: Winter card's HD review first frame, pinned 1deae971 left and candidate 2585e411 right, at 400 px each. A whole-build comparison, not a matched control.
 winter-f0-pinned-native.jpg: The same pinned and candidate frame zero pair in native 400 by 400 px miniature crops.
+2585-shake2-lift-400.jpg: Shake 2 frames 1296 to 1298, left to right at 400 px per frame, HD review. Matched hand-only edc8bfa2 above and inertia 2585e411 below. The settled load does not jump into the petal pattern at lift.
+2585-shake2-lag-400.jpg: Shake 2 frames 1318 to 1320, left to right at 400 px per frame, HD review. Matched hand-only edc8bfa2 above and inertia 2585e411 below. The loose petals move less than the glass and its miniature.
+2585-shake2-fold-400.jpg: Shake 2 frames 1338 to 1340, left to right at 400 px per frame, HD review. Matched hand-only edc8bfa2 above and inertia 2585e411 below. The early bank leaves a clearer side before the pink cover.
+2585-shake4-fold-400.jpg: Shake 4 frames 2777 to 2779, left to right at 400 px per frame, HD review. Matched hand-only edc8bfa2 above and inertia 2585e411 below. Orange clusters move through the green veil.

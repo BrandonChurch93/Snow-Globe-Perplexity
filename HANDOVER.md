@@ -55,6 +55,17 @@ The forced official HD review summer M3 line on `2585e411` was:
 
 The miniature meets decision 169's 0.77 floor; the complete M3 result is still a fail by the base. The number is not read from a diagnostic without particles.
 
+### Staged retimed hand, HD review film
+
+The `2585-shake*` strips compare the same staged hand and full asset bytes. Hand-only `edc8bfa2` (engine `e960585d78c791bf`) is above; inertia `2585e411` (engine `ca1985fc2fd38c9c`) is below. Each strip runs left to right in consecutive 60 fps frames. I inspected the 400 px versions and 1:1 crops of all four ranges.
+
+- Shake 2, f1296 to f1298: the suspended petal pattern holds through lift with inertia. The f1298 control adds many small particles; both versions still have motion blur.
+- Shake 2, f1318 to f1320: the left-side floating petal cluster moves less against the picture than the chimney and the moving tree. The 15-frame displacement numbers below are from the solver and projection, not from image tracking.
+- Shake 2, f1338 to f1340: the right bank leaves a clearer left side and puts horizontal streaks across the picture. It does not prevent the pink cover from washing over the front.
+- Shake 4, f2777 to f2779: the after row keeps more distinct dark branches next to red-orange clusters as the green veil builds.
+
+These are stills from the matched staged trees before the fifth summer crown and the final hand merge. No full-speed live or film playback is claimed.
+
 ## Retimed comparison
 
 `7aa7b19a` brings in main `a6b42369`, which contains the summer sand guard, and the held hand at `6165039b`. The control `f82ea164` is tree-identical to `agent/p6-hand` at `90f78390`. The two comparison trees differ only in `src/globe/liquid.ts`, `src/particles/engine/engine.ts`, `src/particles/engine/loop.ts`, `tests/engine-storm.test.ts` and `tests/liquid.test.ts`.
