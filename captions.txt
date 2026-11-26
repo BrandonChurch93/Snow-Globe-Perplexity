@@ -188,3 +188,64 @@ A note on pictures 16, 17 and 18
   first frames (spring's globe keeps winter's snow as white specks, winter's globe keeps fall's leaves, embers and
   bats). That is open item 231: the live runner's view was never told that the page stepped the simulation itself.
   It is mended in the commit after these pictures and shown before and after in pictures 19 to 22.
+
+19-phone-fall-to-winter-medium-particles-before-after.jpg
+  Shows: the particles through one live shake on a phone, 390 x 844, fall to winter, quality medium, once the app
+  has given up its worker and steps the simulation on the page (open item 231). BEFORE (top row) is f8237c1b, which
+  is agent/p6-framing with main d2ae1cc2 merged in, as it was. AFTER (bottom row) is 5876639e, the same with the
+  mend: the runner tells its view after every step the page takes itself. Cut out of the frames at full size, y 110
+  to 510.
+  Frames: before f026 (first stroke, step 216), f040 (winter, the camera's way home, step 936), f051 (winter, rest
+  again, step 1536); after f024 (step 214), f038 (step 934), f049 (step 1534). The worker was given up at f025, step
+  156, before and at f023, step 154, after.
+  What the picture read (window.liveSim under ?diag=none): before, one copy in every frame after the fall back (leaf
+  6000, mote 12000, ember 3600, bat 2; the sum of its positions 336129.29 from step 156 to step 1536, 23 frames in
+  which the step moved and the copy did not), so winter's globe keeps fall's leaves, embers and bats, standing still.
+  After, no frame in which the step moved and the copy did not; the leaves lift (at rest 3466, 4718, 507, 49), the
+  kinds turn in place (step 754: flake 11457, mote 9484, leaf 4717, glitter 1485, ember 2849, bat 2; step 814: flake
+  54000, glitter 7200), and at rest again 7963 flakes and 568 glitter have settled.
+  Tool: the scratch page script (every frame the app draws, read off the canvas; never committed),
+  ?quality=medium&season=fall&diag=none, touch, pixel ratio 1, one press of Shake. Tier: the app's level medium.
+  Drawn by lavapipe.
+
+20-phone-winter-to-spring-medium-particles-before-after.jpg
+  Shows: the same proof for winter to spring, 390 x 844, quality medium, after the fall back. BEFORE top row
+  (f8237c1b as it was), AFTER bottom row (the mend). Cut out at full size, y 110 to 510.
+  Frames: before f023 (first stroke, step 355), f040 (spring, way home, step 1195), f049 (spring, rest again, step
+  1675); after f023 (step 386), f040 (step 1226), f048 (step 1646). The worker was given up at f022 in both (step
+  295 before, step 326 after).
+  What the picture read: before, one copy from step 295 to step 1675 (flake 54000, glitter 7200, sum -1624844.86;
+  spring from step 1015), so spring's globe keeps winter's snow as white specks standing still and has no petals in
+  the air. After, no frame in which the step moved and the copy did not; step 926 part way (petal 3042, flake 42543,
+  glitter 5715, mote 2533), step 986 petal 14401, mote 12000; petals at rest 1, 7, 28, 63, 258, 865, 1514, 2045 by
+  step 1646.
+  Tool and tier as picture 19, with ?season=winter.
+
+21-phone-sim-main-fall-to-winter-medium-particles-before-after.jpg
+  Shows: the same shake with ?sim=main, where the app never starts a worker. Fall to winter, 390 x 844, quality
+  medium. BEFORE top row (f8237c1b as it was), AFTER bottom row (the mend). Cut out at full size, y 110 to 510.
+  Frames: before f023 (first strokes, step 1325), f038 (winter, way home, step 2105), f048 (winter, rest again, step
+  2645); after f023 (step 1329), f038 (step 2109), f048 (step 2589).
+  What the picture read: before, the copy made at the load in all 49 frames, steps 125 to 2645 (sum 243722.98, 5868
+  leaves at rest; winter from step 1985). After, 50 frames and none in which the step moved and the copy did not;
+  leaves at rest 5843, 3474, 4700, 502, 48, 8, 1, 0; step 1809 part way (flake 11457, mote 9484, leaf 4717, glitter
+  1485, ember 2849, bat 2), step 1869 flake 54000, glitter 7200; winter from step 1929; at step 2589 7951 flakes and
+  566 glitter at rest.
+  Tool and tier as picture 19, with ?sim=main.
+
+22-autopilot-winter-to-spring-medium-particles-before-after.jpg
+  Shows: ?mode=autopilot, the film played by the app (its canvas is 390 x 219 in the 390 x 844 page), winter to
+  spring, quality medium. Whole frames at full size. Rows from the top: BEFORE 1 to 3, AFTER 1 to 3 (winter, in the
+  shake, which starts at step 2304), BEFORE 4 to 6, AFTER 4 to 6 (spring). BEFORE is f8237c1b as it was, AFTER the
+  mend.
+  Frames: f038, f040, f042, f044, f047, f050 of both runs; steps 2417, 2537, 2657, 2777, 2957, 3137 before and one
+  less after.
+  What the picture read: before, the copy made at the load in all 51 frames, steps 137 to 3137 (flake 54000, glitter
+  7200, 51692 and 7061 at rest, sum -2153421.75; spring from step 2777): the snow lies still through the shake and
+  spring has winter's snow and no petals. After, the copy differs in every one of the 51 frames; flakes at rest
+  51505 (step 2296), 22750, 29245, 5655, 156, 11, 1; step 2716 petal 14401, mote 12000; spring from step 2776;
+  petals at rest 1, 9, 16, 36, 25.
+  Tool: the same scratch page script with no press, ?mode=autopilot&quality=medium&diag=none. Tier: the app's level
+  medium. Drawn by lavapipe.
+  Not seen in any of pictures 19 to 22: anything moving (a frame every 1.5 to 3.5 s under lavapipe), and the fall
+  back on a real graphics card.
