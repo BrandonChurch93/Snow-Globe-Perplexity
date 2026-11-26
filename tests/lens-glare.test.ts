@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest'
 import { config } from '../src/config'
 import type { Moment } from '../src/core/stage'
 import { lensState } from '../src/post/grade'
+import { lensFall } from '../src/post/post'
 import { newFrame } from '../src/scene/frame'
+import { lightUniforms } from '../src/core/chunks/light'
 import { CHANGE_BLOOM, Lighting } from '../src/scene/lighting'
 import { kitOf } from '../src/seasons'
-import { CHANGE_CUT, changeBloom, partChange } from '../src/shake/change'
+import { CHANGE_COVER, changeBloom, changeSpan, partChange } from '../src/shake/change'
 import { REST_POSE } from '../src/shake/table'
 
 const winter = kitOf('winter')
@@ -14,54 +16,106 @@ const WINDOW = config.shake.swapWindow.toBeat - config.shake.swapWindow.fromBeat
 const FRAME = 1 / config.film.fps / (60 / config.film.defaultBpm) / WINDOW
 const quality = { particleFraction: 1, shadowMapPx: 256, surfaceReflection: 'none' }
 
-function glare(change: number, to = spring, live = false): number {
+interface Cover {
+  glare: number
+  dim: number
+  inside: number
+}
+
+function cover(change: number, to = spring, live = false): Cover {
   const light = new Lighting(quality.shadowMapPx)
   const f = newFrame(winter, quality)
   f.to = to
   const two = to !== winter
   f.moment = { season: 'winter', from: 'winter', to: two ? 'spring' : 'winter', change, sinceLanding: 0, globe: REST_POSE, mix: 0, seed: 1, time: 0, beat: null, period: null } as Moment
   f.mix.light = two ? partChange('light', change) : 0
+  f.mix.base = two ? partChange('base', change) : 0
   f.mix.bloom = changeBloom(change)
   f.live = live
   light.update(f)
-  return Math.max(lensState.glare.r, lensState.glare.g, lensState.glare.b)
+  return { glare: Math.max(lensState.glare.r, lensState.glare.g, lensState.glare.b), dim: lensFall.dim, inside: lightUniforms.uGrid.value.z }
 }
 
-describe('the glare of a change in the lens', () => {
-  it('is black through a shake of one season', () => {
-    for (let c = 0; c <= 1; c += FRAME / 2) expect(glare(c, winter)).toBe(0)
+describe('the cover of a change in the lens', () => {
+  const span = changeSpan('base')
+
+  it('is nothing through a shake of one season', () => {
+    for (let c = 0; c <= 1; c += FRAME / 2) expect(cover(c, winter)).toMatchObject({ glare: 0, dim: 1 })
   })
 
-  it('is black away from the cut between two seasons', () => {
-    for (const c of [0, 1, CHANGE_CUT.at - 7 * FRAME, CHANGE_CUT.at + 7 * FRAME]) expect(glare(c)).toBe(0)
+  it('is nothing away from the change between two seasons', () => {
+    for (const c of [0, 1, CHANGE_COVER.riseFrom, CHANGE_COVER.riseFrom - FRAME, CHANGE_COVER.goneAt, CHANGE_COVER.goneAt + FRAME / 2]) expect(cover(c)).toMatchObject({ glare: 0, dim: 1 })
   })
 
-  it('rises to the cut and falls from it, one top and no second', () => {
-    const series: number[] = []
-    for (let k = -7; k <= 7; k++) series.push(glare(CHANGE_CUT.at + k * FRAME))
-    expect(series[7]).toBeCloseTo(CHANGE_BLOOM.glare, 9)
-    for (let k = 1; k <= 7; k++) expect(series[k]!).toBeGreaterThanOrEqual(series[k - 1]!)
-    for (let k = 8; k <= 14; k++) expect(series[k]!).toBeLessThanOrEqual(series[k - 1]!)
-    expect(series[4]!).toBeGreaterThan(0)
-    expect(series[10]!).toBeGreaterThan(0)
+  it('rises, stands whole on every instant of the span and falls, one top and no second', () => {
+    const series: Cover[] = []
+    for (let c = CHANGE_COVER.riseFrom; c <= CHANGE_COVER.goneAt; c += FRAME / 4) series.push({ ...cover(c), inside: c })
+    let top = 0
+    for (let i = 1; i < series.length; i++) {
+      const at = series[i]!
+      const before = series[i - 1]!
+      if (at.inside <= CHANGE_COVER.fullFrom) {
+        expect(at.glare).toBeGreaterThanOrEqual(before.glare)
+        expect(at.dim).toBeLessThanOrEqual(before.dim)
+      } else if (at.inside > CHANGE_COVER.fullTo + FRAME / 4) {
+        expect(at.glare).toBeLessThanOrEqual(before.glare)
+        expect(at.dim).toBeGreaterThanOrEqual(before.dim)
+      }
+      if (at.inside >= span.from && at.inside <= span.to) {
+        expect(at.glare).toBeCloseTo(CHANGE_BLOOM.glare, 9)
+        expect(at.dim).toBeCloseTo(CHANGE_BLOOM.dim, 9)
+        top++
+      }
+      // No frame of it is a step: the exposure moves by under a stop and a half from one frame to the next.
+      expect(Math.abs(Math.log2(at.dim / before.dim)) * 4, `stops a frame at ${at.inside}`).toBeLessThan(1.5)
+    }
+    expect(top).toBeGreaterThanOrEqual(8)
   })
 
-  it('is stronger in the live picture, which has no shutter to draw the bases out, by one factor on every frame', () => {
-    expect(CHANGE_BLOOM.glareLive).toBeGreaterThan(1)
-    expect(CHANGE_BLOOM.glareLive).toBeLessThanOrEqual(3)
-    for (let k = -7; k <= 7; k++) expect(glare(CHANGE_CUT.at + k * FRAME, spring, true)).toBeCloseTo(CHANGE_BLOOM.glareLive * glare(CHANGE_CUT.at + k * FRAME), 9)
-    for (let c = 0; c <= 1; c += FRAME / 2) expect(glare(c, winter, true)).toBe(0)
+  it('lets the room fall to a near silhouette while the lights inside rise by as much, so the glass burns as it did', () => {
+    expect(CHANGE_BLOOM.dim).toBeGreaterThan(0.02)
+    expect(CHANGE_BLOOM.dim).toBeLessThanOrEqual(0.1)
+    const mid = (span.from + span.to) / 2
+    const light = new Lighting(quality.shadowMapPx)
+    const f = newFrame(winter, quality)
+    f.to = spring
+    f.moment = { season: 'winter', from: 'winter', to: 'spring', change: mid, sinceLanding: 0, globe: REST_POSE, mix: 0, seed: 1, time: 0, beat: null, period: null } as Moment
+    f.mix.light = partChange('light', mid)
+    f.mix.bloom = 0
+    light.update(f)
+    const plain = lightUniforms.uGrid.value.z
+    const pool = f.pool.r
+    f.mix.bloom = changeBloom(mid)
+    light.update(f)
+    expect(lightUniforms.uGrid.value.z * lensFall.dim).toBeCloseTo(plain, 6)
+    // What the lights inside lay on the table does not rise with them: the table falls with the room.
+    expect(f.pool.r * lensFall.dim).toBeLessThan(pool)
   })
 
-  it('lies over the seat of the glass and leaves the room behind the glass dark', () => {
-    expect(CHANGE_BLOOM.glareSeat).toBeGreaterThan(0.5)
+  it('is the same in the live picture as in the film', () => {
+    for (let c = CHANGE_COVER.riseFrom; c <= CHANGE_COVER.goneAt; c += FRAME / 2) {
+      const film = cover(c)
+      const live = cover(c, spring, true)
+      expect(live.glare).toBe(film.glare)
+      expect(live.dim).toBe(film.dim)
+    }
+    for (let c = 0; c <= 1; c += FRAME / 2) expect(cover(c, winter, true)).toMatchObject({ glare: 0, dim: 1 })
+  })
+
+  it('is centred in the glass, lies over the base and leaves the sides of the picture dark', () => {
+    expect(CHANGE_BLOOM.glareSeat).toBeGreaterThanOrEqual(0)
     expect(CHANGE_BLOOM.glareSeat).toBeLessThanOrEqual(1)
-    // post.ts: the glare falls off as (1 + d * d) to the power of -2.5, d the distance from the seat in reaches.
-    const share = (radii: number): number => Math.pow(1 + (radii / CHANGE_BLOOM.glareReach) ** 2, -2.5)
+    // post.ts: the glare falls off as a bell, exp(-d * d), d the distance from its middle in reaches.
+    const share = (radii: number): number => Math.exp(-((radii / CHANGE_BLOOM.glareReach) ** 2))
     const r = config.globe.sphereDiameterMm / 2
     const seat = (CHANGE_BLOOM.glareSeat * (r - config.globe.collarDepthMm)) / r
-    expect(share(config.globe.baseHeightMm / r), 'the foot of the base is still under it').toBeGreaterThan(0.4)
-    expect(share(seat + 1), 'the top of the glass has almost none').toBeLessThan(0.06)
-    expect(share(2), 'nor the room two radii to the side').toBeLessThan(0.03)
+    const foot = (r - config.globe.collarDepthMm + config.globe.baseHeightMm) / r - seat
+    expect(seat, 'its middle is inside the glass, above the base').toBeLessThan(0.6)
+    // What the room keeps of its own light under the fallen exposure is `dim` of it: over the base the lens lays several times that.
+    expect(share(foot) * CHANGE_BLOOM.glare, 'the light the lens lays on the foot of the base').toBeGreaterThan(4 * CHANGE_BLOOM.dim)
+    expect(share(Math.hypot(foot, config.globe.baseDiameterMm / (2 * r))) * CHANGE_BLOOM.glare, 'and on the corners of the foot').toBeGreaterThan(2 * CHANGE_BLOOM.dim)
+    // The film's picture of a shake is about five and a half radii wide: its sides keep the dark of the room.
+    expect(share(2.5) * CHANGE_BLOOM.glare, 'the room two and a half radii to the side has almost none').toBeLessThan(0.02)
+    expect(CHANGE_BLOOM.glare, 'the glass is seen through it, it is not a white disc').toBeLessThanOrEqual(1.5)
   })
 })

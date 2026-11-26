@@ -94,6 +94,15 @@ function run({ name, which, candidate, musicFile, out, stem }) {
   else {
     console.log(`  level: ${m.gainDb} dB of gain, the limiter took off at most ${m.limiterReductionDb} dB, ${m.passes} passes`)
     console.log(`  measured by ffmpeg: ${measured.lufs} LUFS (wanted ${cfg.audio.filmLoudnessLufs}), true peak ${measured.truePeakDb} dB (limit ${cfg.audio.truePeakDb}), range ${measured.lra} LU`)
+    if (m.encoded) {
+      const gave = m.encoded.gaveWay ?? []
+      console.log(`  as ${m.encoded.codec} at ${m.encoded.kbps} kbit/s: true peak ${m.encoded.truePeakDb} dB; ${gave.length ? `the wav gives way in ${gave.length} place${gave.length === 1 ? '' : 's'} of 5 ms where the encoder overshoots (${gave.slice(0, 6).map((g) => `${g.db} dB at ${g.at} s`).join(', ')}${gave.length > 6 ? ', ...' : ''})` : 'the encoder overshoots nowhere'}${m.encoded.roomDb ? `, and the whole film stays ${m.encoded.roomDb} dB lower under the limit` : ''}`)
+    }
+    const parts = r.report.music.parts.filter((p) => p.fromBar !== undefined)
+    if (parts.length) console.log(`  music: ${parts.map((p) => `${p.id} bars ${p.fromBar} to ${p.toBar}${p.centredByDb ? `, centred by ${p.centredByDb} dB` : ''}`).join(' · ')}`)
+    const l = r.report.landings
+    if (l.at.length > 1) console.log(`  landings, first ${l.firstMomentSeconds * 1000} ms: ${l.afterDb.join(', ')} dB (${l.spreadDb} dB apart; ${l.beforeDb.join(', ')} before trims of ${l.trimsDb.join(', ')} dB)`)
+    console.log(`  left over right: ${r.report.channels.leftOverRightDb} dB`)
   }
   if (stemSha) console.log(`  music alone: ${show(stem)}`)
   console.log(`  sha256 ${hash}`)

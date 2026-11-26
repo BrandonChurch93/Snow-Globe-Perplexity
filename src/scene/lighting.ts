@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { lightUniforms } from '../core/chunks/light'
 import type { Rgb } from '../core/materials'
 import { lensState } from '../post/grade'
+import { lensFall } from '../post/post'
 import type { StageFrame } from './frame'
 import type { SeasonKit } from '../seasons/kit'
 import { centreHeightMm, groundY, innerRadiusMm, outerRadiusMm } from './layout'
@@ -35,17 +36,18 @@ export const ROOM_RIG = {
 } as const
 
 /**
- * The bloom of a change between two seasons. `glare` is the cover of the cut: the light inside the glass, as the lens of the camera
- * spreads it, soft over the seat of the glass, the collar and the base under it. It is the light the lens adds over the seat of the
- * glass (`glareSeat`: 0 the middle of the glass, 1 the plane where the glass sits in the base), in the colour of the light inside,
- * and falls off round it with the distance over `glareReach` radii of the glass (post.ts adds it, the stage says where the seat
- * is), so nothing else in the picture, no lamp of the room and no petal, feeds it, and the room behind the glass keeps its dark.
- * It follows `changeBloom`: up over six frames, highest on the cut, down over six. Nothing is laid on the base itself beyond
- * `outside`, so the base keeps its own colours and its own shadow side under the glare.
- * The live picture has no shutter, so nothing draws the two bases out along the stroke there; its glare is `glareLive` times the
- * film's, which is what is left to cover the step.
+ * The bloom of a change between two seasons, the cover of everything outside the glass that changes (change.ts, `CHANGE_COVER`).
+ * The lights of the new season flare inside the glass and the camera answers as it would to a lamp lit in a dark room: its
+ * exposure falls to `dim` of what it was. The lights inside rise by as much again, so the glass burns as it did, and everything
+ * the room lights, the base, the table and the lamps of the backdrop, sinks to a near silhouette. Over that the lens spreads the
+ * flare (`glare`, the light it adds at the middle of the flare, in the colour of the light inside, falling off round it as a
+ * bell `glareReach` radii of the glass wide; post.ts adds it, the stage says where the glass is). `glareSeat` is where the flare
+ * is centred on the glass's axis, 0 the middle of the glass, 1 the plane where it sits in the base.
+ * Nothing in the picture feeds the glare, no lamp of the room and no petal, and nothing is laid on the base itself beyond
+ * `outside`, so under it the base is its own dark shape and never a lamp. The corners of the picture keep the dark of the room:
+ * the light reads as pouring out of the glass, not as a pale frame. The live picture has the same cover.
  */
-export const CHANGE_BLOOM = { outside: 3, flood: 0, lens: 0.2, pool: 2, swellFrom: 0.56, fall: 0.6, glare: 0.16, glareReach: 1.1, glareSeat: 1, glareLive: 2 } as const
+export const CHANGE_BLOOM = { outside: 3, flood: 0, lens: 0.2, pool: 2, swellFrom: 0.56, fall: 0.6, dim: 0.06, glare: 1.2, glareReach: 1.15, glareSeat: 0.5 } as const
 
 const SHADOW_OFF = 10
 
@@ -61,7 +63,7 @@ const smooth = (v: number) => (v <= 0 ? 0 : v >= 1 ? 1 : v * v * (3 - 2 * v))
 export function changeSwell(change: number, from: number = ROOM_RIG.flood.swellFrom): { whole: number; glow: number } {
   if (!(change > 0) || change >= 1) return { whole: 0, glow: 0 }
   const f = ROOM_RIG.flood
-  const span = changeSpan('base')
+  const span = changeSpan('shed')
   const rise = (change - from) / (span.from - from)
   const lift = smooth((f.swellTo - change) / (f.swellTo - span.from))
   return {
@@ -167,7 +169,8 @@ export class Lighting {
   update(f: StageFrame): void {
     const a = f.from
     const b = f.to
-    const t = f.mix.light
+    const t = f.mix.base
+    const inner = f.mix.light
     const u = lightUniforms
     const keyCol = mixRgb(a.rig.key.color, b.rig.key.color, t)
     const keyPower = lerp(a.rig.key.intensity, b.rig.key.intensity, t)
@@ -216,22 +219,25 @@ export class Lighting {
     const bloom = Math.pow(1 + ROOM_RIG.bloomGain, swell.glow)
     const lift = (bloom - 1) / ROOM_RIG.bloomGain
     const bloomA = a === b ? bloom : 1
+    const cover = a === b ? 0 : f.mix.bloom
+    lensFall.dim = Math.pow(CHANGE_BLOOM.dim, cover)
+    const flare = 1 / lensFall.dim
     const gainA = gainOf(a.innerLights, f.time, f.period) * breath * bloomA
     const gainB = gainOf(b.innerLights, f.time, f.period) * breath * bloom
     this.shade(f.grids[0], a.rig.key.from)
     this.shade(f.grids[1], b.rig.key.from)
     u.uGridA.value = f.grids[0]
     u.uGridB.value = f.grids[1]
-    u.uGrid.value.set(t, gainA, gainB, innerRadiusMm)
+    u.uGrid.value.set(inner, gainA, gainB * flare, innerRadiusMm)
     groupGains(gridInfo(f.grids[0]), a.innerLights, f.time, f.period, u.uGridGainA.value).multiplyScalar(breath * bloomA)
-    groupGains(gridInfo(f.grids[1]), b.innerLights, f.time, f.period, u.uGridGainB.value).multiplyScalar(breath * bloom)
+    groupGains(gridInfo(f.grids[1]), b.innerLights, f.time, f.period, u.uGridGainB.value).multiplyScalar(breath * bloom * flare)
 
     const ga = glowOf(a.innerLights)
     const gb = glowOf(b.innerLights)
-    const pool = mixRgb([ga[0] * gainA, ga[1] * gainA, ga[2] * gainA], [gb[0] * gainB, gb[1] * gainB, gb[2] * gainB], t)
+    const pool = mixRgb([ga[0] * gainA, ga[1] * gainA, ga[2] * gainA], [gb[0] * gainB, gb[1] * gainB, gb[2] * gainB], inner)
     const pa = glowAt(a.innerLights)
     const pb = glowAt(b.innerLights)
-    this.at.set(lerp(pa[0], pb[0], t), lerp(pa[1], pb[1], t), lerp(pa[2], pb[2], t))
+    this.at.set(lerp(pa[0], pb[0], inner), lerp(pa[1], pb[1], inner), lerp(pa[2], pb[2], inner))
     const out = ROOM_RIG.glow.outside * GRID.glowReachMm * GRID.glowReachMm * (1 + (ROOM_RIG.flood.spill * lift) / bloom)
     u.uLightGlow.value.set(pool[0] * out, pool[1] * out, pool[2] * out, groundY)
     u.uLightGlowAt.value.set(this.at.x, this.at.y, this.at.z, ROOM_RIG.glow.islandMm)
@@ -244,12 +250,12 @@ export class Lighting {
     f.pool.setRGB(pool[0] * spill + gb[0] * wash, pool[1] * spill + gb[1] * wash, pool[2] * spill + gb[2] * wash)
     const lens = ROOM_RIG.flood.lens * lift + (CHANGE_BLOOM.lens * cross) / peak
     f.bloomTint.setRGB(gb[0] * lens, gb[1] * lens, gb[2] * lens)
-    const glare = a === b ? 0 : (CHANGE_BLOOM.glare * (f.live ? CHANGE_BLOOM.glareLive : 1) * f.mix.bloom) / peak
+    const glare = (CHANGE_BLOOM.glare * cover) / peak
     lensState.glare.setRGB(gb[0] * glare, gb[1] * glare, gb[2] * glare)
     const flood = swell.whole * breath
     u.uLightFlood.value.setRGB(gb[0] * flood, gb[1] * flood, gb[2] * flood)
-    // Between two seasons the base is cut between two frames of the film, so the swell lays a sixth of a shake's light on it and on the
-    // table: on both sides of the cut the base looks like itself, not like a lamp.
+    // Between two seasons the swell lays a sixth of a shake's light on the base and on the table: on both sides of its change the
+    // base looks like itself, not like a lamp.
     const outside = a === b ? ROOM_RIG.flood.outside : CHANGE_BLOOM.outside
     u.uLightFloodFloor.value.w = swell.whole > 0 ? (outside * lift + (CHANGE_BLOOM.flood * cross) / peak) / swell.whole : 0
     u.uLightFloodAt.value.z = swell.whole > 0 ? (ROOM_RIG.flood.inside * lift) / swell.whole : 0

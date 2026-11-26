@@ -500,7 +500,7 @@ export function update(moment: KitMoment): void {
   } else if (shaking) {
     const through = (moment.beat! - swap.fromBeat) / (swap.toBeat - swap.fromBeat)
     if (through >= 1) front = 0
-    else strength = 1 - Math.min(1, partChange('base', through) / FLOW.leaveLead)
+    else strength = 1 - Math.min(1, partChange('shed', through) / FLOW.leaveLead)
   }
   u.uWater.value.x = front
   u.uWater.value.y = moment.time
