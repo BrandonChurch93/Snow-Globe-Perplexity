@@ -25,7 +25,7 @@ import { centreHeightMm, collarY, emitters as layoutEmitters, innerRadiusMm, out
 import { bakeGrid, flickerOf, gridBytes } from './lightgrid'
 import { CHANGE_BLOOM, Lighting } from './lighting'
 import { drawPasses, type PassContext } from './passes'
-import { stepsOf } from './steps'
+import { runFor, spendOf, stepsOf, type Step } from './steps'
 import { makeSlab, ReflectMix, updateSurface } from './surface'
 
 interface SeasonSet {
@@ -49,7 +49,7 @@ interface Linked {
 
 /** A season's set while it is built: what is still to do, in the order it is done. The last step puts the set in the scene. */
 interface Making {
-  steps: (() => void)[]
+  steps: Step[]
 }
 
 /** How long a step waits for a frame before it goes without one, on a page that draws slowly or not at all. */
@@ -137,7 +137,6 @@ export class GlobeStage implements Stage {
   private readonly pass: PassContext
   private readonly up = new THREE.Vector3()
   private readonly turn = new THREE.Quaternion()
-  private drawn = false
   private inAir = false
   private into: string | null = null
   private intoAt = 0
@@ -211,24 +210,37 @@ export class GlobeStage implements Stage {
   }
 
   /**
-   * Builds a season's set. Before the first picture, and on a page that only captures, in one piece. Once the page draws, one
-   * step a frame: built in one piece each season held the page's thread for 0.4 to 2 s, and the picture stood still for as long.
+   * Builds a season's set. Before the first picture, and on a page that only captures, in one piece. Once the page draws, a
+   * few steps a frame: built in one piece each season held the page's thread for 0.4 to 2 s, and the picture stood still for
+   * as long.
    */
   private async make(season: string): Promise<void> {
     const m = this.making(season)
     while (m.steps.length) {
-      if (this.drawn) await this.turnFor(season)
-      m.steps.shift()?.()
+      if (!this.live) {
+        m.steps.shift()?.()
+        continue
+      }
+      // Past `SOON_MS` the wait was for the thread, not for a frame, and is no pace to take a share of.
+      const waited = Math.min(await this.turnFor(season), SOON_MS)
+      runFor(m.steps, spendOf(waited, this.into === season), () => performance.now())
     }
     // Not waited for: the season can be shown from here on, and a frame that shows it before this is done makes the rest
     // itself, as it always did.
     if (this.live) this.handing = this.handing.then(() => this.hand(season))
   }
 
-  /** The next frame in which something may be done for `season`: none while a shake is in the air that does not go into it. */
-  private async turnFor(season: string): Promise<void> {
-    do await frameOrSoon()
-    while (this.held(season))
+  /**
+   * The next frame in which something may be done for `season`: none while a shake is in the air that does not go into it.
+   * Gives how long that frame took to come.
+   */
+  private async turnFor(season: string): Promise<number> {
+    let from: number
+    do {
+      from = performance.now()
+      await frameOrSoon()
+    } while (this.held(season))
+    return performance.now() - from
   }
 
   /** Resolves when every season asked for so far is built and, on a page that paints, in the GPU's hands. */
@@ -377,10 +389,11 @@ export class GlobeStage implements Stage {
       return out
     }
     const pieces = stepsOf(kit.miniature)
-    const piece = (): void => {
+    const piece = (): boolean => {
       const p = pieces.next()
       if (p.done) miniature = p.value
       else m.steps.unshift(piece)
+      return !p.done
     }
     const m: Making = {
       steps: [
@@ -473,7 +486,6 @@ export class GlobeStage implements Stage {
     const beauty = view === '' || view === 'refraction'
     const sliceOnly = view === 'flow' || view === 'lightgrid'
     const single = moment.from === moment.to || !(moment.change > 0) || moment.change >= 1
-    this.drawn = true
     this.live = sample === null ? target : null
     // A mesh handed to the GPU since the last frame left the shadow map with nothing else in it.
     const cast = shadows || this.stale
