@@ -20,7 +20,7 @@ The final still (hero, hd, final tier, 24 samples, commit 47cb80e4 with `summer_
 - The heap has a pale lit top and far slope and a grey slope toward the camera, with grain. Its right edge thins into single soft grains on the dark table.
 - At the left of the foot lies a faint dusting of single grains with a slightly thicker core and no outline.
 
-Seen at draft only: the `landed` still at the hero camera, the base camera (before the last tune). The arrival sheet (`npm run sheet -- --motion arrival --shot shake-2 --tier draft`) stopped at the chunk budget: 77 of 90 frames, 1440 to 1582. I looked at sheets 1, 5 and 6 and at crops of frames 1444, 1448, 1454, 1466, 1500 and 1580: grains are thrown from the lip on the landing, the fall thickens, thins to the standing fall, and the thrown grains come to rest.
+Seen at draft only: the `landed` still at the hero camera (on the same summer code as the commit, season hash 364b4daf), the base camera (before the last tune). The arrival sheet (`npm run sheet -- --motion arrival --shot shake-2 --tier draft`) stopped at the chunk budget: 77 of 90 frames, 1440 to 1582. I looked at sheets 1, 5 and 6 and at crops of frames 1444, 1448, 1454, 1466, 1500 and 1580: grains are thrown from the lip on the landing, the fall thickens, thins to the standing fall, and the thrown grains come to rest.
 
 Not seen: frames 1584 to 1620 of the arrival, sheets 2 to 4, the surface camera after my changes, the picture of `summer-shake` (only the strict run drew it), the app in a browser, and any still with the rig that is on `main`.
 
@@ -39,7 +39,7 @@ Not seen: frames 1584 to 1620 of the arrival, sheets 2 to 4, the surface camera 
 The strict run, the determinism run, the measure run and every still had `summer_glass`'s rig pasted into the working tree. The tests ran with `rig.ts` as committed.
 
 - `npx tsc --noEmit`: clean.
-- `npx vitest run` (with `rig.ts` as committed): "Test Files 54 passed | 1 skipped (55)", "Tests 701 passed | 9 skipped (710)". `tests/summer-fall.test.ts`: 5 passed, file untouched.
+- `npx vitest run` (with `rig.ts` as committed), run again at 11:24 UTC on the pushed commit: "Test Files 54 passed | 1 skipped (55)", "Tests 702 passed | 8 skipped (710)", exit 0. My notes of the run before the push say 701 passed and 9 skipped; I do not know which test ran the second time. `tests/summer-fall.test.ts`: 5 passed, file untouched.
 - `npm run determinism`: "determinism: pass · 3 pictures, 4 page loads, preview, draft, 194 s". It draws the default season, which is winter. I did not run it with `--season summer`.
 - `npm run strict -- --keys summer-rest,summer-shake`, last line: "strict: pass, 2 keys under pow, all+smooth, all+smooth+noguard, each row read against the plain picture, and against its own --same picture where that one differs (engine 43eed711e80c51a0, drawn by lavapipe): no pixel moves by more than 1 level, at most 0.01% of pixels move"
 - `npm run measure -- --unit summer --tier draft`: "measure summer: complete · 19 of 19 lines, 0 red · draft · 85 s". All 19 lines pass: M1, M2, M6 for summer-rest, summer-shake, summer-interior, summer-base, summer-surface, summer-settled, and M3 summer-rest 1.6726 against a threshold of 0.75. M6 summer-shake is 0.000088 (9 of 102000 particles inside a solid) against 0.002. Every other M1, M2 and M6 is 0.
