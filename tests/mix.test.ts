@@ -1299,5 +1299,14 @@ describe("the app's pack keeps the film's balance of a shake", () => {
       }
     }
     expect(pairs).toBe(config.seasons.length * (config.seasons.length - 1))
+    // On top of a shake a visitor can press once more and stir. The engine keeps a gap between interface cues and
+    // the tick is over inside that gap, so two presses never sound together and a second press adds one tick at
+    // most. With that the tight sum of the last job of decision 146 stays under -1 dBFS (audio/RECIPE.md). That sum
+    // takes minutes and is not run here.
+    const engine = fs.readFileSync(path.join(path.dirname(A.KEPT), '..', 'src', 'audio', 'index.ts'), 'utf8')
+    const gap = Number(/^const INTERFACE_GAP = ([\d.]+)$/m.exec(engine)?.[1])
+    expect(gap).toBe(0.1)
+    expect(pack.sprite.entries['ui-tick']!.seconds).toBeLessThan(gap)
+    expect(engine).toMatch(/if \(now - lastInterface < INTERFACE_GAP\) return false/)
   })
 })
