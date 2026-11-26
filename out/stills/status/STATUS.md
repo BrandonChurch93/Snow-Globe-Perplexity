@@ -1,16 +1,18 @@
-# Status 154
+# Status 155
 
-2026-11-26 11:31 UTC
+2026-11-26 11:59 UTC
 
-- Summer's fix pass after Round 20 is in main: the light and glass, the air, the miniature, the sand and the stone base, five merges. By each builder's own eye its part is bettered and none is mended, and I see the same: the storm, the miniature and the room are nearer the approved picture; the stone still reads warm grey where the approved is sunlit cream, and the seeds at rest read as white stars, too near snow. So before the next round the builders get a second list from one picture with everything together, about 40 minutes.
-- The change of season, job 5, is in main: the dark speck of film frame 2115 is mended (one sample of 24 held no number at one pixel), and the table under the globe no longer changes in one frame when the app steps down a level of quality (open item 232). A sixth job mends winter's frost, which leaves the glass as dots for three frames in the app.
-- Sound: the job of 10:26 is committed (interface cues spaced 0.1 s, the sound comes on over 0.35 s, the old music through a shake thins as in the film); soundcheck 8 pass, 0 open. One last trial runs on how the new music enters after a landing. Nothing bought; nobody has heard anything.
-- phase 6: 8.70 h used of its 12.00 h box
-- allowance (after the review): 8.70 h used of 12.00 h allowed
+- Summer: the first picture with all five mended parts together is drawn (final tier, main at 0e9dbcca) and laid beside the approved image. Bettered, not mended. At the size of a feed our seeds read as white stars on a dark ball, the base as even grey, the heap of sand as a dark wedge, the net of light on the table as a white bolt, and the storm as an even cream fog.
+- A new ruler reads the same fifteen regions from the approved image and from ours. It corrected my eye three times: the approved base is not paler than ours but darker in the middle and sunlit at its edges; the approved ball is not clearer but brighter and warm; the approved storm is not whiter but has dark between fine streaks.
+- The five summer builders started on a second list at 11:57 with those numbers and pictures, limit 12:37. Then one merged picture again, then Round 21, where the critics see summer; it has two of its three rounds left.
+- In main since the last status: the app's sound half a decibel lower, with the new music entering on a bar line after a landing; the live particles keep their worker through a page that stands still (open item 234); the masters' tool reads every frame for values that are no number and refuses a chunk that has one. Whole test run on a clean tree before these three: 721 passed, none failed.
+- Open: the sound check's test of the Sound control came back open twice and passed twice on one source (open item 236); its cause is being measured, so the sound check is not a pass now. The published app is still the build of 11:02.
+- phase 6: 9.16 h used of its 12.00 h box
+- allowance (after the review): 9.16 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-154-1.jpg`: Summer at rest after the pass on the light and the glass alone (final tier): the white curtain on the ball is gone, the glow sits low behind the miniature. The stone, the air and the miniature in this picture are still the old ones
-- `out/stills/status/status-154-2.jpg`: Summer's storm, half a second after the landing: approved (left), before (middle, draft tier), after the pass on the air (right, review tier). Cream curved strokes with green leaf bits in place of straight amber hairlines; still less white and less fine than approved
-- `out/stills/status/status-154-3.jpg`: Summer's stone base: approved (top), before (middle), after its pass (bottom), draft tier. Layered ridges, ribbed shells, glossy sea glass; still grey, tan at the left, without the sunlit cream of the approved
-- `out/stills/status/status-154-4.jpg`: Summer's miniature at rest: approved (left), after its pass (right), review tier. Slate roof in rows, ribbed lanterns on a cord, open rail fence, dark pond. It stands smaller in the globe than approved
+- `out/stills/status/status-155-1.jpg`: Summer at rest: the approved image (left) and ours at the final tier (right), main at 0e9dbcca with all five mended parts. Ours: white star shapes on a darker ball, a grey base, a dark heap of sand at the right, a white zigzag of light on the table.
+- `out/stills/status/status-155-2.jpg`: Summer half a second after a landing: approved (left), ours at the final tier (right). Ours is an even cream fog of short thick strokes over the whole ball; the approved has finer streaks with dark between them, and a bright haze low down.
+- `out/stills/status/status-155-3.jpg`: The inside at rest, large: approved (left), ours at the review tier (right). Our seeds are white asterisks, all alike; the approved seeds are soft tufts on thin stalks in a glowing ball. Our band of sand at the bottom of the glass is flat and tall.
+- `out/stills/status/status-155-4.jpg`: The base and the table: approved (left), ours at the review tier (right). The approved stone is cream with sunlit patches and deep shade, level strata, pale frosted sea glass; ours is even grey with broad folds and saturated gems, and its net of light is a white bolt where the approved is fine gold thread.
