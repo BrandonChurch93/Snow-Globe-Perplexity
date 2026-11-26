@@ -193,7 +193,7 @@ if (lies > 0.5) {
 if (puff >= 0.0) {
   float s = tau - (aFlight.y + fallSlide());
   float turn = 6.2832 * fract(aSeed.x * 71.3 + aSeed.z * 3.7);
-  vec2 out2 = normalize(position.xz) * 0.6 + vec2(sin(turn), cos(turn));
+  vec2 out2 = (dot(position.xz, position.xz) > 0.0 ? normalize(position.xz) : vec2(1.0, 0.0)) * 0.6 + vec2(sin(turn), cos(turn));
   float outS = mix(${LOOK.fall.puff.outMmS[0].toFixed(1)}, ${LOOK.fall.puff.outMmS[1].toFixed(1)}, fract(aSeed.x * 13.9 + 0.21));
   float upS = mix(${LOOK.fall.puff.upMmS[0].toFixed(1)}, ${LOOK.fall.puff.upMmS[1].toFixed(1)}, fract(aSeed.z * 37.1 + aSeed.x * 5.3));
   nowAt = position + vec3(out2.x * outS * s, max(upS * s - 0.5 * ${LOOK.fall.gravity.toFixed(1)} * s * s, 0.0), out2.y * outS * s);
