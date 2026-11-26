@@ -118,6 +118,11 @@ export const look = {
     hazeSky: 0.037,
     hazeSkySun: 0.3,
     hazeSkyColor: [1, 0.6, 0.33] as const,
+    // the sun stands behind the glass at the flare: the liquid is brightest there, in a soft lobe that is down to a third
+    // `sunLobeWide` globe radii from it and gone on the far side
+    sunLobe: 0.138,
+    sunLobeWide: 0.85,
+    sunLobeColor: [1, 0.74, 0.5] as const,
     hazeBanks: 0.35,
     hazeBankSize: 0.42,
     // the storm: the seeds and the dust aloft take the sun and the whole dome glows white-gold; it goes with the liquid's
@@ -148,17 +153,36 @@ export const look = {
     // two between `forkMm` from it and each of those in two again, by up to `fork` radians a time. `kinkMm` is how far a
     // line sways aside, `kinkEveryMm` over what length, `thinMm` its half width, `lines` its brightness, `linesMm` how far it
     // reaches on the left, where the sun throws it, and `rightReach` of that on the right, where only a star of it shows
-    trunks: 20,
+    trunks: 15,
     forkMm: [5, 26] as const,
     fork: [0.12, 0.3] as const,
     kinkMm: 1.5,
     kinkEveryMm: [24, 46] as const,
     thinMm: 0.12,
-    lines: 3.2,
+    lines: 3.5,
     // the soft light each line lies in, as a share of the line
-    lineGlow: 0.02,
-    linesMm: 40,
-    rightReach: 0.45,
+    lineGlow: 0.004,
+    // how far the lines' bearings are drawn together toward the side the sun throws them to (0 even, 1 all of them)
+    gather: 0.4,
+    // the brightest lines are `stout` times thicker again at the knot and back to their own width `stoutMm` out; every
+    // line is `hair` of its width at its tip. Along it the light gathers in knots, `knots` times brighter and `swell`
+    // times thicker again, and fails between them: below the first of `breaks` in the line's own noise it is gone, whole
+    // above the second
+    stout: 0.7,
+    stoutMm: 26,
+    hair: 0.6,
+    knots: 2.2,
+    swell: 0.4,
+    knotPerMm: 0.42,
+    breaks: [0.26, 0.36] as const,
+    // grains of sand on the table take the light where a line passes within `grainsNearMm`: one to a cell `grainCellMm`
+    // wide, `grainMm` in radius, one in seven of them lit
+    grains: 12,
+    grainMm: 0.07,
+    grainCellMm: 1.3,
+    grainsNearMm: 1.2,
+    linesMm: 54,
+    rightReach: 0.33,
     // the soft pool under the lines: the width of the water's cells that shade it, and how much of it they shade
     cellMm: 38,
     mottle: 0.4,
@@ -302,6 +326,7 @@ void main() {
   float bank = 1.0 - ${n(W.hazeBanks)} + ${n(2 * W.hazeBanks)} * stageNoise(vec3(vWl / ${n(W.hazeBankSize)}, 3.7));
   air += ${vec(W.hazeColor)} * (${n(W.haze)} * still * body * bank * (${n(W.hazeRim)} + ${n(1 - W.hazeRim)} * plume) * exp(-rise * rise * rise));
   air += ${vec(W.hazeSkyColor)} * (${n(W.hazeSky)} * (1.0 + ${n(W.hazeSkySun)} * (1.0 - 2.0 * toward)) * still * body);
+  air += ${vec(W.sunLobeColor)} * (${n(W.sunLobe)} * exp(-dot(vWl + 0.93 * vWlDir, vWl + 0.93 * vWlDir) / ${n(W.sunLobeWide * W.sunLobeWide)}) * smoothstep(0.15, 0.6, 1.0 - toward) * still * body);
   // the storm's light: slow broad arms about the middle, turning with the time
   float turn = atan(vWl.y, vWl.x);
   float arms = 1.0 - ${n(W.stormArms)} + ${n(W.stormArms)} * sin(2.0 * turn + 5.0 * r - 1.7 * uSummer.x) * smoothstep(0.05, 0.4, r);
@@ -357,10 +382,12 @@ void main() {
   // parts in two and in two again; a line thinner than a pixel is drawn a pixel wide and as much dimmer, so it never steps
   float lines = 0.0;
   float tips = 0.0;
+  float sown = 0.0;
   float near = max(len, 5.0);
   if (len < ${n(P.linesMm * 3.4)}) for (int j = 0; j < ${P.trunks}; j++) {
     float fj = float(j);
-    float bearing = ${n(TAU / P.trunks)} * (fj + 0.7 * poolRnd(fj, 1.0)) + 0.4;
+    float spread = ${n(TAU / P.trunks)} * (fj + 0.7 * poolRnd(fj, 1.0)) + 0.4;
+    float bearing = spread - ${n(P.gather)} * sin(spread - 3.385);
     float every = ${n(P.kinkEveryMm[0])} + ${n(P.kinkEveryMm[1] - P.kinkEveryMm[0])} * poolRnd(fj, 4.0);
     float kink = ${n(P.kinkMm)} * (poolKink(len / every + poolRnd(fj, 5.0) + 0.02 * z) + 0.25 * poolKink(len / (0.37 * every) + poolRnd(fj, 2.0))) / near;
     float forkAt = ${n(P.forkMm[0])} + ${n(P.forkMm[1] - P.forkMm[0])} * poolRnd(fj, 3.0);
@@ -375,13 +402,18 @@ void main() {
       vec2 e = vec2(cos(phi), sin(phi));
       float across = h.x * e.y - h.y * e.x;
       float foot = abs(e.y * hx.x - e.x * hx.y) + abs(e.y * hy.x - e.x * hy.y);
-      float thin = ${n(P.thinMm)} * (0.7 + 0.6 * poolRnd(fk, 8.0)) * (1.0 + 0.6 * exp(-len / 6.0));
-      float drawn = max(thin, 0.8 * foot);
-      float reach = ${n(P.linesMm)} * (0.25 + 1.2 * poolRnd(fk, 9.0) * poolRnd(fk, 9.0)) * (${n(P.rightReach)} + ${n(1 - P.rightReach)} * smoothstep(-0.3, 0.8, dot(e, vec2(-0.91, -0.41))));
+      float reach = ${n(P.linesMm)} * (0.25 + 1.2 * poolRnd(fk, 9.0) * poolRnd(fk, 9.0)) * (${n(P.rightReach)} + ${n(1 - P.rightReach)} * smoothstep(-0.3, 0.8, dot(e, vec2(-0.97, -0.24))));
       float far = len / reach;
+      float grainy = stageNoise(vec3(len * ${n(P.knotPerMm)}, fk * 3.1, 2.0));
+      float knot = smoothstep(0.6, 0.78, grainy);
+      float whole = mix(1.0, smoothstep(${n(P.breaks[0])}, ${n(P.breaks[1])}, grainy), smoothstep(6.0, 16.0, len));
+      float byKnot = exp(-len * len / ${n(P.stoutMm * P.stoutMm)});
+      float thin = ${n(P.thinMm)} * (0.7 + 0.6 * poolRnd(fk, 8.0)) * (1.0 + ${n(P.stout)} * byKnot * poolRnd(fj, 14.0) * poolRnd(fj, 14.0)) * mix(1.0, ${n(P.hair)}, smoothstep(0.5, 1.1, far)) * (1.0 + ${n(P.swell)} * knot);
+      float drawn = max(thin, 0.8 * foot);
       float off = across * across / (drawn * drawn);
-      float bead = 0.3 + 1.4 * smoothstep(0.35, 0.75, stageNoise(vec3(len * 0.5, fk * 3.1, 2.0)));
-      float lit = (thin / drawn) * (exp(-off) + ${n(P.lineGlow)} * exp(-off / 16.0)) * exp(-far * far) * (1.0 - smoothstep(1.0, 1.6, far)) * bead * (1.0 + 2.5 * exp(-len / 10.0)) * (0.12 + 0.88 * poolRnd(fk, 10.0) * poolRnd(fj, 14.0)) * (dot(h, e) > 0.0 ? 1.0 : 0.0);
+      float weight = exp(-far * far) * (1.0 - smoothstep(1.0, 1.6, far)) * mix(smoothstep(0.12, 0.5, poolRnd(fk, 10.0) * poolRnd(fj, 14.0)), 0.15 + 0.85 * poolRnd(fj, 14.0) * poolRnd(fj, 14.0), byKnot) * (dot(h, e) > 0.0 ? 1.0 : 0.0);
+      float lit = (thin / drawn) * (exp(-off) + ${n(P.lineGlow)} * exp(-off / 16.0)) * weight * whole * (0.6 + ${n(P.knots)} * knot) * (1.0 + 1.6 * byKnot);
+      sown += weight * exp(-across * across / ${n(P.grainsNearMm * P.grainsNearMm)});
       lines += lit;
       tips += lit * smoothstep(0.35, 1.1, far);
     }
@@ -390,7 +422,12 @@ void main() {
   lines = min(lines, 3.0);
   float pool = ${n(P.gain)} * soft * (${n(1 - P.mottle)} + ${n(P.mottle)} * sheet);
   float net = ${n(P.lines)} * lines * smoothstep(0.0, 3.0, len);
-  vec3 col = ${vec(P.gold)} * pool + mix(${vec(P.gold)}, ${vec(P.amber)}, tip) * net + ${vec(P.pale)} * (${n(P.core)} * core + ${n(P.glow)} * glow);
+  vec2 cell = floor(h / ${n(P.grainCellMm)});
+  vec2 grainAt = (cell + 0.25 + 0.5 * vec2(stageHash(vec3(cell + 4096.0, 0.31)), stageHash(vec3(cell + 4096.0, 0.57)))) * ${n(P.grainCellMm)};
+  float grainWide = max(${n(P.grainMm)}, 0.6 * max(length(hx), length(hy)));
+  float chance = stageHash(vec3(cell + 4096.0, 0.83));
+  float sparks = ${n(P.grains)} * exp(-dot(h - grainAt, h - grainAt) / (grainWide * grainWide)) * (${n(P.grainMm)} / grainWide) * smoothstep(0.86, 1.0, chance) * min(2.5 * sown, 1.0) * smoothstep(2.0, 12.0, len);
+  vec3 col = ${vec(P.gold)} * pool + mix(${vec(P.gold)}, ${vec(P.amber)}, tip) * net + ${vec(P.pale)} * (${n(P.core)} * core + ${n(P.glow)} * glow + sparks);
   // the sun on the table: a strip of it gets past the globe on the far side of its shadow, which runs down the light's way
   // and softens as it goes; the strip is brightest by the foot and gone a hand's width out
   vec2 f = vStageWorld.xz - uPoolFoot.xy;

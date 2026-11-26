@@ -3,6 +3,9 @@ import http from 'node:http'
 import path from 'node:path'
 import { rel } from './paths.mjs'
 
+// two tools on one machine may write the same checkpoint at once: each write gets a temporary name of its own
+let writes = 0
+
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.mp4': 'video/mp4', '.mp3': 'audio/mpeg', '.wav': 'audio/wav', '.ogg': 'audio/ogg', '.woff2': 'font/woff2', '.glb': 'model/gltf-binary', '.bin': 'application/octet-stream', '.ktx2': 'image/ktx2', '.wasm': 'application/wasm' }
 
 const safe = (root, p) => {
@@ -47,8 +50,9 @@ export async function serve({ dist = rel('dist'), simcache = rel('out', 'work', 
         req.on('data', (c) => chunks.push(c))
         req.on('end', () => {
           fs.mkdirSync(dir, { recursive: true })
-          fs.writeFileSync(`${file}.tmp`, Buffer.concat(chunks))
-          fs.renameSync(`${file}.tmp`, file)
+          const tmp = `${file}.${process.pid}-${(writes += 1)}.tmp`
+          fs.writeFileSync(tmp, Buffer.concat(chunks))
+          fs.renameSync(tmp, file)
           send(200, 'ok')
         })
         return

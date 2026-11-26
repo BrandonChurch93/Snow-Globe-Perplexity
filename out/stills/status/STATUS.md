@@ -1,18 +1,18 @@
-# Status 158
+# Status 160
 
-2026-11-26 13:20 UTC
+2026-11-26 14:05 UTC
 
-- The farm's rehearsal chunk drew the first 4K frames of film B (about 80 s a frame) and found a fault before the masters start: frames 4, 6 and 8 each hold 3 values that are not finite before the lens and the grade (open item 237).
-- No blotch shows in those three pictures, and the masters' tool refuses their chunk all the same. A farm machine hunts the cause from 13:10; no master frame is drawn until a scan of the film is clean.
-- Summer's third fix list is with five builders until about 13:37. Round 21 is called only when my own look at the merged picture finds nothing I can name.
-- The frost and the crack on the glass are mended on the change's branch (they thin evenly where they left as dots at one sample); merge and checks are next.
-- The motion sheets of the present main are in: the shake from spring to summer and the summer shot, both before the third list.
-- phase 6: 10.51 h used of its 12.00 h box
-- allowance (after the review): 10.51 h used of 12.00 h allowed
+- Summer's third list is in the build. My own look at it: the tones now agree with the approved picture and the forms do not, so a fourth list about form went to the five builders at 13:57 UTC, due about 14:50.
+- The speck in 4K frames has its cause and its mend in main: a tree's shader took the direction of a vector of no length. The proof on the thirteen known frames and a scan of every seventh frame on the mended build are running; no line since the change-over so far.
+- The lamps' beaded blur in 4K shake frames, measured on a farm machine: a shake frame costs 113 s at 24 samples, 169 s at 48 and 330 s at 96, and at 96 the beads close into streaks. The rule that gives moving frames more samples is being built.
+- The cover of each change is being rebuilt as light that pours out of the globe onto the table, in place of the dark room. The masters' tool now counts a range once and checks the committer before the first frame.
+- Not done: summer has had no round on the new picture; the change and the globe wait for their rounds; no master frame is drawn before the freeze.
+- phase 6: 11.27 h used of its 12.00 h box
+- allowance (after the review): 11.27 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-158-1.jpg`: Film B frame 5 as the farm drew it at 3840 x 2160 with 24 samples, shown at 1600 px wide: winter in the first shot's close view.
-- `out/stills/status/status-158-2.jpg`: The same frame at full size, a window of 1400 x 788 px: the lights along the eave, a lit bough, falling snow.
-- `out/stills/status/status-158-3.jpg`: Twelve frames across the shake from spring to summer at review quality: petals rise, the glass fills, the outside changes in the dark frame 1400, summer shows through from 1426.
-- `out/stills/status/status-158-4.jpg`: Twelve frames of the summer shot, 1440 to 2014: the storm thins, the camera goes in and comes back. This is summer before the third list.
+- `out/stills/status/status-160-1.jpg`: The crown, approved left and ours right: one round mid green mass where the approved has dark pads with gaps and lit rims.
+- `out/stills/status/status-160-2.jpg`: The middle of the base at its own pixels, approved left: carved ridges and a ribbed shell against smooth bands and matt grey stones.
+- `out/stills/status/status-160-3.jpg`: The ball's upper left, approved left: hair thin rayed seed heads and sparks against thick soft wedges in clumps and green discs.
+- `out/stills/status/status-160-4.jpg`: The cottage, approved left: a house in shade on a mound with a sand bank against a brighter house on flat ground with a white fringe.

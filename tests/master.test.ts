@@ -7,8 +7,9 @@ import { tierSamples } from '../src/config'
 import { finalVideoArgs, masterVideoArgs } from '../tools/lib/encode.mjs'
 import { loadConfig, readJson, rel, writeJson } from '../tools/lib/paths.mjs'
 import { branchFolder, branchMatches, chunkLines, chunkStem, coverReport, framesOf, heartbeat, joinPlan, lumaPsnrOf, nearestRanges, openingPack as readOpening, pad6, psnrOf, rangeChunks as chunksOfRange, ranges, readChunks, recordMatchesRun, resultName, split, stillName, stillToDo as leftToDo, table, tierOf, totalsFromCut } from '../tools/lib/master.mjs'
-import { REMOTE_WAITS, Shipper, collectBranches, gitEnv, withWaits } from '../tools/lib/mastergit.mjs'
+import { REMOTE_WAITS, Shipper, collectBranches, gitEnv, identityProblem, mainAuthor, withWaits } from '../tools/lib/mastergit.mjs'
 import { levelProblems, pictureLevels, procsProblem } from '../tools/lib/master.mjs'
+import { heldLine, heldRanges, parseTake } from '../tools/lib/master.mjs'
 import { NOT_A_NUMBER, notNumberLine, notNumberLoud, notNumberOf, notNumberRecord, notNumberUnknown, shipTitle, shippedLine } from '../tools/lib/master.mjs'
 import { limitsLine, limitsRecord, localProblem, machineLimits, procsGainLine, procsMemoryHolds, readLimits, sameCommand, stoppedAt, stoppedLine } from '../tools/lib/master.mjs'
 import { bestRun, bigSha, butCrf, crfLadder, crfOf, encodeProofRows, finalKbps, hashFolder, intermediateVideo, masterConfigProblems, partName, partPlan, psnrFacts, sendGroups, splitFile, takeFiles, unsplitFile } from '../tools/lib/master.mjs'
@@ -163,19 +164,24 @@ describe('the join', () => {
   it('refuses when two chunks cover a frame and their frame hashes differ', () => {
     const other = rec('film-b', 30, 59, { machine: 'vm-b', sha256: 'sha-other' })
     ;(other.frameHashes as string[])[4] = 'px-different'
-    const p = refused('film-b', [...filmB(), chunk(other, 'there')], /both cover frames 30 to 59 and their frame hashes differ in 1 of them \(the first is frame 34\)/)
+    const p = refused('film-b', [...filmB(), chunk(other, 'there')], /film-b 30 to 59 is held 2 times and the records do not agree: .*the pixels of their frames differ in 1 of 30 \(the first is frame 34\)\. Neither is taken/)
     expect(p.conflicts.length).toBe(1)
     expect(p.conflicts[0].frames).toEqual([34])
+    expect(p.problems.length).toBe(1)
   })
 
-  it('counts equal hashes from two machines as proof and joins', () => {
-    const p = plan('film-b', [...filmB(), chunk(rec('film-b', 30, 59, { machine: 'vm-b', sha256: 'sha-other' }), 'there')])
+  it('counts one record held by two machines as proof and joins, and takes an intermediate that differs only when it is named', () => {
+    const p = plan('film-b', [...filmB(), chunk(rec('film-b', 30, 59, { machine: 'vm-b' }), 'there')])
     expect(p.ok).toBe(true)
     expect(p.parts.length).toBe(3)
     expect(p.twiceByTwoMachines).toBe(30)
-    const same = plan('film-b', [...filmB(), chunk(rec('film-b', 30, 59, { sha256: 'sha-other' }), 'there')])
-    expect(same.twice).toBe(30)
-    expect(same.twiceByTwoMachines).toBe(0)
+    const other = [...filmB(), chunk(rec('film-b', 30, 59, { sha256: 'sha-other' }), 'there')]
+    refused('film-b', other, /film-b 30 to 59 is held 2 times and the records do not agree: .*\. The sha256 of the intermediate is sha-film-b-30 in here\/film-b-000030, sha-other in there\/film-b-000030; the pixels of their frames are the same in all 30\. Neither is taken\. Name the one to take: --take film-b:30-59=here\/film-b-000030 or --take film-b:30-59=there\/film-b-000030$/)
+    const named = plan('film-b', other, { take: parseTake('film-b:30-59=there/film-b-000030') })
+    expect(named.ok).toBe(true)
+    expect(named.parts[1].record.sha256).toBe('sha-other')
+    expect(named.twice).toBe(30)
+    expect(named.twiceByTwoMachines).toBe(0)
   })
 
   it('refuses when the build, the samples, the format or the encoder differ between chunks', () => {
@@ -402,7 +408,6 @@ describe('files on disk', () => {
     expect(collectBranches({ dir: into, say, facts, pattern: 'agent/p6-chunks-*' }).length).toBe(1)
     expect(said.join('\n')).toMatch(/unchanged at/)
     expect(() => new Shipper({ branch: cfg.repo.branch, say, root: dir, facts })).toThrow(/never the code branch/)
-    expect(() => new Shipper({ branch, say, root: dir, facts: { ...facts, name: '' } })).toThrow(/user\.name and user\.email are not set/)
   })
 
   it("commits with the clone's name when the four identity variables are set and empty, and leaves one that holds a value", () => {
@@ -447,6 +452,69 @@ describe('files on disk', () => {
       expect(s.add([{ src: src('two.json'), to: 'film-b/two.json' }], 'Chunk two')).toBe(true)
       expect(s.push()).toBe(true)
       expect(who()).toBe('Named By The Shell <shell@example.com> | Test Person <test@example.com>')
+    } finally {
+      keys.forEach((k, i) => {
+        if (kept[i] === undefined) delete process.env[k]
+        else process.env[k] = kept[i]
+      })
+    }
+  })
+
+  it('stops a --ship run before the first frame when its commit would not carry the name of the head of origin/main', () => {
+    const keys = ['GIT_AUTHOR_NAME', 'GIT_AUTHOR_EMAIL', 'GIT_COMMITTER_NAME', 'GIT_COMMITTER_EMAIL']
+    const owner = { name: 'The Owner', email: 'owner@example.com' }
+    const bot = { name: 'A Bot', email: 'bot@example.com' }
+    expect(identityProblem({ ...owner, of: 'the head of origin/main' }, { author: owner, committer: owner }, {})).toBeNull()
+    expect(identityProblem({ ...owner, of: 'the head of origin/main' }, { author: bot, committer: bot }, {})).toBe(
+      '--ship would commit as A Bot <bot@example.com> (author) and A Bot <bot@example.com> (committer), and the head of origin/main is by The Owner <owner@example.com>. Nothing is drawn. Run these two in this clone and start again: git config user.name "The Owner" && git config user.email "owner@example.com"',
+    )
+    expect(identityProblem(owner, { author: owner, committer: bot }, { GIT_COMMITTER_NAME: 'A Bot', GIT_AUTHOR_NAME: '' })).toMatch(/\(committer\), and the head of the code branch is by The Owner <owner@example\.com>\. Nothing is drawn\. The shell sets GIT_COMMITTER_NAME, which wins over the clone's config: unset it first\. Run these two/)
+    expect(identityProblem(owner, { author: null, committer: null, why: 'fatal: empty ident name' }, {})).toMatch(/^--ship would commit as nobody git can name \(author\) and nobody git can name \(committer\) \(fatal: empty ident name\)/)
+    expect(identityProblem(null, { author: owner, committer: owner }, {})).toMatch(/cannot tell whose name/)
+
+    const clone = path.join(dir, 'who-clone')
+    fs.mkdirSync(clone)
+    const as = (p: { name: string; email: string }) => ({ ...process.env, GIT_AUTHOR_NAME: p.name, GIT_AUTHOR_EMAIL: p.email, GIT_COMMITTER_NAME: 'Someone Else', GIT_COMMITTER_EMAIL: 'else@example.com' })
+    const commit = (text: string, p: { name: string; email: string }) => {
+      fs.writeFileSync(path.join(clone, 'a.txt'), text)
+      spawnSync('git', ['add', 'a.txt'], { cwd: clone })
+      expect(spawnSync('git', ['commit', '-q', '-m', text], { cwd: clone, env: as(p) }).status).toBe(0)
+    }
+    git(clone, 'init', '-q')
+    commit('one', bot)
+    expect(mainAuthor(clone)).toEqual({ ...bot, of: `HEAD (this clone holds no origin/${cfg.repo.branch})` })
+    commit('two', owner)
+    git(clone, 'update-ref', `refs/remotes/origin/${cfg.repo.branch}`, 'HEAD')
+    commit('three', bot)
+    expect(mainAuthor(clone)).toEqual({ ...owner, of: `the head of origin/${cfg.repo.branch}` })
+
+    const remote = path.join(dir, 'remote-who.git')
+    const kept = keys.map((k) => process.env[k])
+    try {
+      for (const k of keys) process.env[k] = ''
+      const wrong = new Shipper({ branch: 'agent/p6-chunks-who', say: () => {}, root: path.join(dir, 'ship-who-bot'), facts: { url: remote, commit: 'none', ...bot } })
+      expect(wrong.identity()).toEqual({ author: bot, committer: bot })
+      expect(identityProblem(mainAuthor(clone), wrong.identity())).toMatch(/^--ship would commit as A Bot <bot@example\.com> \(author\) and A Bot <bot@example\.com> \(committer\), and the head of origin\/\w+ is by The Owner <owner@example\.com>\. Nothing is drawn\. Run these two in this clone and start again: git config user\.name "The Owner" && git config user\.email "owner@example\.com"$/)
+      expect(fs.existsSync(remote)).toBe(false)
+      const right = new Shipper({ branch: 'agent/p6-chunks-who', say: () => {}, root: path.join(dir, 'ship-who-owner'), facts: { url: remote, commit: 'none', ...owner } })
+      expect(identityProblem(mainAuthor(clone), right.identity())).toBeNull()
+      const unset = new Shipper({ branch: 'agent/p6-chunks-who', say: () => {}, root: path.join(dir, 'ship-who-owner'), facts: { url: remote, commit: 'none', name: '', email: '' } })
+      const none: Record<string, string | undefined> = { GIT_CONFIG_GLOBAL: process.env.GIT_CONFIG_GLOBAL, GIT_CONFIG_SYSTEM: process.env.GIT_CONFIG_SYSTEM, HOME: process.env.HOME }
+      try {
+        process.env.GIT_CONFIG_GLOBAL = path.join(dir, 'no-global-config')
+        process.env.GIT_CONFIG_SYSTEM = path.join(dir, 'no-system-config')
+        process.env.HOME = dir
+        fs.writeFileSync(process.env.GIT_CONFIG_GLOBAL, '[user]\n\tname = A Bot\n\temail = bot@example.com\n')
+        expect(unset.identity()).toEqual({ author: bot, committer: bot })
+        expect(identityProblem(mainAuthor(clone), unset.identity())).toMatch(/^--ship would commit as A Bot <bot@example\.com> \(author\).*git config user\.name "The Owner" && git config user\.email "owner@example\.com"$/)
+      } finally {
+        for (const k of ['GIT_CONFIG_GLOBAL', 'GIT_CONFIG_SYSTEM', 'HOME']) {
+          if (none[k] === undefined) delete process.env[k]
+          else process.env[k] = none[k]
+        }
+      }
+      process.env.GIT_COMMITTER_NAME = 'A Bot'
+      expect(identityProblem(mainAuthor(clone), right.identity())).toMatch(/and A Bot <owner@example\.com> \(committer\).*The shell sets GIT_COMMITTER_NAME, which wins over the clone's config: unset it first\./)
     } finally {
       keys.forEach((k, i) => {
         if (kept[i] === undefined) delete process.env[k]
@@ -988,6 +1056,107 @@ describe('what the machine may really use', () => {
     expect(stoppedAt(`master: ${stoppedLine({ first: 0, last: 29 }, 4, 'Target closed\nCall log:\n  - waiting')} 4 frames stay.\nCall log:`)).toEqual({ first: 0, last: 29, frame: 4, why: 'Target closed 4 frames stay.' })
     expect(sameCommand(['--what', 'film-b', '--first', '900', '--last', '1259', '--procs', '5', '--worker', '3'])).toBe('npm run master -- --what film-b --first 900 --last 1259 --procs 5')
     expect(sameCommand(['--encode', 'film-b', '--x264', 'a b'])).toBe("npm run master -- --encode film-b --x264 'a b'")
+  })
+})
+
+describe('a range held more than once', () => {
+  type Held = { what: string; first: number; last: number; holders: Chunk[]; agree: boolean; taken: Chunk | null; named: string | null; wrong: string | null; pixels: number[] }
+  const at = (holder: string, record: Rec, there = false) => ({ ...chunk(record, holder), holder, file: `/x/${holder}/${record.what}-${pad6(record.first)}.mp4`, there })
+  const exists = (file: string) => file.startsWith('/x/agent/p6-chunks-b/')
+  const groups = (chunks: Chunk[], take = '') => heldRanges(chunks, { take: take ? parseTake(take) : [], exists }) as Held[]
+  const three = () => [at('agent/p6-chunks-a', rec('film-b', 0, 29)), at('agent/p6-chunks-b', rec('film-b', 0, 29)), at('out/master', rec('film-b', 0, 29)), at('agent/p6-chunks-a', rec('film-b', 30, 59))]
+
+  it('reads --take', () => {
+    expect(parseTake(undefined)).toEqual([])
+    expect(parseTake('agent/p6-chunks-a')).toEqual([{ what: null, first: null, last: null, holder: 'agent/p6-chunks-a' }])
+    expect(parseTake('film-b:0-29=agent/p6-chunks-a, loop:30-59=files/again-2')).toEqual([{ what: 'film-b', first: 0, last: 29, holder: 'agent/p6-chunks-a' }, { what: 'loop', first: 30, last: 59, holder: 'files/again-2' }])
+    expect(() => parseTake(true)).toThrow(/--take takes BRANCH, or WHAT:FIRST-LAST=BRANCH/)
+    expect(() => parseTake('film-c:0-29=x')).toThrow(/Not understood: film-c:0-29=x/)
+    expect(() => parseTake('0-29=x')).toThrow(/Not understood/)
+  })
+
+  it('counts a range once, names its holders in one line, and takes the one whose picture is there', () => {
+    const g = groups(three())
+    expect(g.length).toBe(2)
+    expect(g[0].holders.length).toBe(3)
+    expect(g[0].agree).toBe(true)
+    expect(g[0].taken!.file).toBe('/x/agent/p6-chunks-b/film-b-000000.mp4')
+    expect(heldLine(g[0])).toBe('film-b 0 to 29 is held 3 times with one and the same record (build, calibration, intermediate): agent/p6-chunks-a (vm-a); agent/p6-chunks-b (vm-a); out/master (vm-a). It counts once and one is taken: agent/p6-chunks-b')
+    const cover = coverReport(g.map((x) => x.taken!), totals, SIZE).find((x) => x.what === 'film-b')!
+    expect(cover.chunks).toBe(2)
+    expect(coverReport(three(), totals, SIZE).find((x) => x.what === 'film-b')!.chunks).toBe(2)
+    const p = plan('film-b', [...three(), at('agent/p6-chunks-a', rec('film-b', 60, 89))], { exists })
+    expect(p.ok).toBe(true)
+    expect(p.parts.map((c: Chunk) => c.file)).toEqual(['/x/agent/p6-chunks-b/film-b-000000.mp4', '/x/agent/p6-chunks-a/film-b-000030.mp4', '/x/agent/p6-chunks-a/film-b-000060.mp4'])
+  })
+
+  it('takes neither of two holders that do not agree, says how they differ, and takes the one that is named', () => {
+    const two = () => [at('agent/p6-chunks-a', rec('film-b', 0, 29)), at('agent/p6-chunks-b', rec('film-b', 0, 29, { engineHash: 'build-2', sha256: 'sha-new', machine: 'vm-b', calibration: 'd'.repeat(64) })), at('agent/p6-chunks-a', rec('film-b', 30, 59)), at('agent/p6-chunks-a', rec('film-b', 60, 89))]
+    const g = groups(two())
+    expect(g[0].agree).toBe(false)
+    expect(g[0].taken).toBeNull()
+    expect(heldLine(g[0])).toBe(
+      'film-b 0 to 29 is held 2 times and the records do not agree: agent/p6-chunks-a (vm-a); agent/p6-chunks-b (vm-b). The build hash is build-1 in agent/p6-chunks-a, build-2 in agent/p6-chunks-b; the calibration picture is cccccccccccc in agent/p6-chunks-a, dddddddddddd in agent/p6-chunks-b; the sha256 of the intermediate is sha-film-b-0 in agent/p6-chunks-a, sha-new in agent/p6-chunks-b; the pixels of their frames are the same in all 30. Neither is taken. Name the one to take: --take film-b:0-29=agent/p6-chunks-a or --take film-b:0-29=agent/p6-chunks-b',
+    )
+    const open = g.filter((x) => !x.taken)
+    const cover = coverReport(g.filter((x) => x.taken).map((x) => x.taken!), totals, SIZE, open).find((x) => x.what === 'film-b')!
+    expect([cover.chunks, cover.missing, cover.notAgreed]).toEqual([2, [], [{ first: 0, last: 29 }]])
+
+    const p = refused('film-b', two(), /^film-b 0 to 29 is held 2 times and the records do not agree/)
+    expect(p.problems.length).toBe(1)
+    expect(plan('film-b', two(), { take: parseTake('film-b:0-29=agent/p6-chunks-a') }).ok).toBe(true)
+    const b = groups(two(), 'agent/p6-chunks-b')
+    expect(b[0].taken!.record.sha256).toBe('sha-new')
+    expect(heldLine(b[0])).toMatch(/\. Taken as named: agent\/p6-chunks-b$/)
+    refused('film-b', two(), /the build hash of film-b differs between chunks/, { take: parseTake('agent/p6-chunks-b') })
+    const wrong = groups(two(), 'film-b:0-29=agent/p6-chunks-z')
+    expect(wrong[0].taken).toBeNull()
+    expect(heldLine(wrong[0])).toMatch(/Neither is taken \(--take names agent\/p6-chunks-z, which does not hold it\)\. Name the one to take:/)
+    const both = groups([at('files', rec('film-b', 0, 29)), at('files/again-2', rec('film-b', 0, 29, { sha256: 'sha-new' }))], 'files,files/again-2')
+    expect(both[0].taken).toBeNull()
+    expect(both[0].wrong).toMatch(/names 2 of its holders/)
+  })
+
+  it('says a marked range once, however many hold it', () => {
+    const mark = { mark: NOT_A_NUMBER, notNumber: notNumberRecord([{ index: 12, notNumber: 5, sanityMs: 40 }]) }
+    const held = [at('agent/p6-chunks-a', rec('film-b', 0, 29, mark)), at('agent/p6-chunks-b', rec('film-b', 0, 29, mark)), at('agent/p6-chunks-c', rec('film-b', 0, 29, mark)), at('out/master', rec('film-b', 0, 29, mark)), at('out/master', rec('film-b', 30, 59)), at('out/master', rec('film-b', 60, 89))]
+    const g = groups(held)
+    expect(g.length).toBe(3)
+    expect(g.filter((x) => x.taken && notNumberOf(x.taken.record)).length).toBe(1)
+    const p = refused('film-b', held, /is marked NOT A NUMBER: 5 values in frame 12 \(5\)/)
+    expect(p.problems.length).toBe(1)
+  })
+
+  it('names the holder of a chunk on disk, and lays one picture for one record held by three branches', () => {
+    const box = fs.mkdtempSync(path.join(os.tmpdir(), 'master-held-'))
+    try {
+      const into = path.join(box, 'collected')
+      const flat = path.join(box, 'inbox')
+      fs.mkdirSync(flat, { recursive: true })
+      const picture = Buffer.from(Array.from({ length: 4000 }, (_, i) => (i * 13) & 255))
+      fs.writeFileSync(path.join(flat, 'attachment (1)'), picture)
+      const r = rec('film-b', 0, 29, { sha256: bigSha(path.join(flat, 'attachment (1)')), bytes: picture.length, boot: 'b1' })
+      const branches = ['agent/p6-chunks-a', 'agent/p6-chunks-b', 'agent/p6-chunks-c']
+      for (const b of branches) writeJson(path.join(into, branchFolder(b), 'film-b', 'film-b-000000-000029.json'), r)
+      writeJson(path.join(into, 'collected.json'), { branches: Object.fromEntries(branches.map((b) => [b, 'sha'])) })
+      writeJson(path.join(flat, 'film-b-000000-000029.json'), r)
+      const got = takeFiles(flat, into, { keep: false })
+      expect([got.records, got.whole, got.problems]).toEqual([0, 1, []])
+      const chunks = readChunks([into])
+      expect(chunks.map((c: { holder: string }) => c.holder)).toEqual(branches)
+      expect(chunks.filter((c: Chunk) => fs.existsSync(c.file)).length).toBe(1)
+      const g = heldRanges(chunks, { exists: fs.existsSync }) as Held[]
+      expect(g.length).toBe(1)
+      expect(fs.existsSync(g[0].taken!.file)).toBe(true)
+      expect(takeFiles(flat, into, { keep: false }).problems).toEqual([])
+      expect(readChunks([into]).filter((c: Chunk) => fs.existsSync(c.file)).length).toBe(1)
+      writeJson(path.join(flat, 'again.json'), { ...r, machine: 'vm-b' })
+      expect(takeFiles(flat, into, { keep: false }).records).toBe(1)
+      expect(readChunks([into]).map((c: { holder: string }) => c.holder)).toEqual([...branches, 'files'])
+      expect(readChunks([into]).filter((c: Chunk) => fs.existsSync(c.file)).length).toBe(1)
+    } finally {
+      fs.rmSync(box, { recursive: true, force: true })
+    }
   })
 })
 

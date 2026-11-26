@@ -27,7 +27,7 @@ const LOOK = {
   gravity: 3400,
   ledge: { r: [46.5, 52.0], h: 40.3 },
   jump: { count: 14000, reachMm: 26, ringShare: 0, ringMm: 5, edgeDeg: [62, 76], liftMm: [1.2, 8], hopMm: [0.6, 5], quick: 0.11, tail: 0.5, tailShare: [0.6, 0.12], skidMm: [0.4, 3.2], radiusMm: [0.07, 0.15] },
-  fall: { count: 24000, gravity: 7000, az: 85, spread: 5, most: 2.2, r: [53.0, 53.4], h: [41.3, 42.4], outMmS: [6, 145], lean: 1.0, fanDeg: 2, downMmS: [10, 110], rate: [5.0, 6.7], radiusMm: [0.022, 0.065], fadeFrom: 0.9, core: [0.6, 5, 90], exposure: 0.3, longMm: 12, thinPx: 0.7, cover: 0.38, low: [0.6, 0.48, 0.36], lowMm: [12, 40], least: [0.2, 0.7], bright: [0.1, 3.4], even: 0.15, lit: 1.4, shaded: 0.08, puff: { seconds: 0.07, outMmS: [20, 130], upMmS: [40, 170], cover: 0.3, wide: 2.4 } },
+  fall: { count: 24000, gravity: 7000, az: 85, spread: 5, most: 2.2, r: [53.0, 53.4], h: [41.3, 42.4], outMmS: [6, 145], lean: 1.0, fanDeg: 2, downMmS: [10, 110], rate: [5.0, 6.7], radiusMm: [0.022, 0.065], fadeFrom: 0.9, core: [0.6, 5, 90], exposure: 0.3, longMm: 0.2, thinPx: 0.7, cover: 0.27, low: [0.6, 0.48, 0.36], lowMm: [12, 40], least: [0.2, 0.7], bright: [0.1, 3.4], even: 0.15, lit: 1.4, shaded: 0.08, puff: { seconds: 0.07, outMmS: [20, 130], upMmS: [40, 170], cover: 0.3, wide: 2.4 } },
   loose: { count: 14000, radiusMm: [0.05, 0.19], x: [-140, 136], z: [-70, 150], thinPx: 0.8, vary: [0.3, 2.0] },
   slope: { clearMm: 0.25, keeps: 0.75, crestMm: [60.5, 62.1], offMm: [0.12, 0.55], belly: [[60.3, 8], [60.3, 11.2], [59.7, 14.6], [58.6, 18], [57.3, 21.2], [55.8, 24.4], [54.3, 27.4], [53, 30.5], [52.8, 34], [52.7, 37.5], [52.6, 40]] },
   flow: { stand: 0.65, seconds: 1.6, gapMm: [0.3, 2.5] },
