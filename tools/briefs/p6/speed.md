@@ -1,0 +1,26 @@
+# Job: a faster software renderer for the masters (`render_speed_prober`)
+
+You are a measuring agent. You work alone in your own VM, you start no agents, and you answer to `/root`. You push nothing to the repo except pictures to the orphan branch `agent/p6-speed-looks` (at most 4 a push, JPEG or PNG crops, with a `captions.txt`). You change no file of the repo on any branch; every patch you try stays in your VM and goes into your report as a diff.
+
+## Why
+The build is a photoreal snow globe drawn in the browser (three.js, WebGL2), rendered frame by frame into films by `tools/` with headless Chromium (playwright-core 1.59.0, chromium-1217). No machine in reach has a graphics card, so Chromium draws with its software renderer (ANGLE on SwiftShader). One sample of one frame at 3840 x 2160 costs about 20 s on a 4 core sandbox VM, and the final films need about 4,000 frames of 8 to 24 samples each: hundreds of machine hours. A second machine with 48 threads rendered no faster than this one with 4, and eight renders at once on it went eight times slower each. Find out why a render uses so little of a machine, and whether the same picture can be drawn faster.
+
+## Set up
+`git clone --depth 50 https://github.com/BrandonChurch93/Snow-Globe-Perplexity`, `npm ci`, `npm run build`. Read `tools/README.md` and `tools/lib/browser.mjs` (how the browser is started and with which flags). The timing line is the still tool's own: `npm run still -- --season winter --state landed --camera hero --tier draft --format uhd --force --out out/work/speed/NAME.png` prints "rendered ... in X s (simulation Y s, 2 samples in Z s, float32)". `--format hd` is 1920 x 1080. Tiers: `draft` 2 samples, `review` 8, `final` 24. Only `sheet`, `seq`, `status` and `sound` know `--help`; every other tool takes it as a plain run. `npm run caps` rewrites a config file and with it the build hash: if you run it, `git checkout config/` and build again.
+
+## Measure, in this order
+1. The baseline in your VM: seconds a sample at `uhd` and at `hd`, winter `landed` and winter `rest`, the renderer string the page reports, how many cores the VM has, and how busy each Chromium process is while a sample is drawn (`top -H`): which process and which threads do the work, and how many of the cores stand idle.
+2. Two and three renders at once in separate clones: seconds each. What does the VM get through in an hour with 1, 2 and 3?
+3. Where a sample's time goes. Use what costs least: Chromium's tracing, a patch that times each pass or each draw call with `gl.finish()` between them, or leaving passes out one at a time. Give the five most expensive things as seconds a sample at `uhd`, and say which of them grow with the number of pixels and which do not.
+4. Other ways to draw the same picture without a graphics card. Try each, and for each that starts say: the renderer string, seconds a sample at `uhd` and `hd`, whether float32 accumulation still works (the still tool prints `float32`), and how the picture compares with the baseline's at `review` (PSNR of the whole frame, and a crop at its own size of the largest difference):
+   - Mesa's llvmpipe through ANGLE's OpenGL or EGL back end (`--use-angle=gl`, `--use-angle=gl-egl`, `--use-gl=egl`, with Mesa installed by `apt-get` if the VM allows it, `LIBGL_ALWAYS_SOFTWARE=1`, `GALLIUM_DRIVER=llvmpipe`, `LP_NUM_THREADS`).
+   - Mesa's lavapipe through ANGLE's Vulkan back end (`--use-angle=vulkan`, `VK_ICD_FILENAMES` pointing at lavapipe's file).
+   - SwiftShader as it is, with other flags: `--use-angle=swiftshader` against `--use-angle=swiftshader-webgl`, `--in-process-gpu`, `--disable-gpu-sandbox`, `--enable-unsafe-swiftshader`, `--disable-gpu-vsync`, `--disable-frame-rate-limit`, the new headless mode against the old one, headful under `xvfb-run`, and any setting of SwiftShader's thread count you can find (its `SwiftShader.ini`, `ThreadCount`).
+   - Anything else you find that is sound. No hosted service, no paid service, nothing that sends the picture anywhere.
+5. For the fastest candidate that draws a picture within 45 dB PSNR of the baseline: `npm run determinism` (it must pass), the same still rendered twice (the same bytes?), all four seasons at `rest` and `landed` at `hd` `review` against the baseline's (a table of PSNR), `npm run strict -- --keys winter-rest` (its last line word for word), and the seconds a sample with 1 and with 2 renders at once. Give the exact way to switch it on: packages to install, environment, the flags, and the smallest diff to `tools/lib/browser.mjs` that reads them from an environment variable and changes nothing when the variable is not set.
+
+## Rules
+- Never report a number you did not measure; say which lines the tool printed. Label each claim MEASURED, STATED (read somewhere, give the address) or UNKNOWN.
+- A candidate that is faster but draws a different picture is reported as that, with its pictures. You judge no look.
+- Time: 150 minutes from your start. One line to `/root` as soon as step 2 is measured, and one as soon as any candidate of step 4 beats the baseline by more than a third.
+- Final report to `/root`, ONE message of at most 35 lines: the tables, the fastest sound way with its switch-on steps and diff, what failed and how, what you did not try.
