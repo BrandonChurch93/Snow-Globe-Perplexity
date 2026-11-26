@@ -336,7 +336,7 @@ vec3 cardEdge(float shape, vec2 q, vec2 own) {
   }
   if (shape < ${n(SHAPE.fleck + 0.5)}) {
     float r = length(q) + 1e-4;
-    float ang = atan(q.y, abs(q.x) + abs(q.y) > 0.0 ? q.x : 1.0);
+    float ang = dot(q, q) > 0.0 ? atan(q.y, q.x) : 0.0;
     float lobes = 2.0 + floor(fract(own.x * 7.0) * 4.0);
     float rim = (0.6 + 0.2 * mix(0.3, 1.0, own.y) * sin(lobes * ang + 6.2831853 * own.x) + 0.1 * sin((lobes + 3.0) * ang + 6.2831853 * own.y)) * mix(1.0, 0.45, fract(own.y * 13.0) * abs(sin(ang + 6.2831853 * own.x)));
     return vec3(r - rim, q.x / r, q.y / r);
