@@ -4,11 +4,12 @@ import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { tierSamples } from '../src/config'
-import { masterVideoArgs } from '../tools/lib/encode.mjs'
+import { finalVideoArgs, masterVideoArgs } from '../tools/lib/encode.mjs'
 import { loadConfig, readJson, rel, writeJson } from '../tools/lib/paths.mjs'
 import { branchFolder, branchMatches, chunkLines, chunkStem, coverReport, framesOf, heartbeat, joinPlan, lumaPsnrOf, nearestRanges, openingPack as readOpening, pad6, psnrOf, rangeChunks as chunksOfRange, ranges, readChunks, recordMatchesRun, resultName, split, stillName, stillToDo as leftToDo, table, tierOf, totalsFromCut } from '../tools/lib/master.mjs'
 import { Shipper, collectBranches } from '../tools/lib/mastergit.mjs'
 import { levelProblems, pictureLevels, procsProblem } from '../tools/lib/master.mjs'
+import { bestRun, bigSha, butCrf, crfLadder, crfOf, encodeProofRows, finalKbps, hashFolder, intermediateVideo, masterConfigProblems, partName, partPlan, psnrFacts, sendGroups, splitFile, takeFiles, unsplitFile } from '../tools/lib/master.mjs'
 import { flatValue, refuseFlat } from '../tools/lib/page.mjs'
 import { frameLevels } from '../tools/lib/encode.mjs'
 import sharp from 'sharp'
@@ -124,6 +125,7 @@ describe('what a second run still has to render', () => {
     expect(recordMatchesRun(rec('film-b', 0, 29, { format: 'hd' }), want)).toBe(false)
     expect(recordMatchesRun(rec('film-b', 0, 29, { encoderArgs: [...ARGS, '-g', '60'] }), want)).toBe(false)
     expect(recordMatchesRun(rec('film-b', 0, 29, { test: true }), want)).toBe(false)
+    expect(recordMatchesRun(rec('film-b', 0, 29, { encoderArgs: ['-c:v', 'libx264', '-crf', '2'] }), want)).toBe(true)
     expect(recordMatchesRun(rec('film-b', 0, 29, { verify: { ok: false } }), want)).toBe(false)
     expect(recordMatchesRun(rec('film-b', 0, 29, { frameHashes: ['one'] }), want)).toBe(false)
   })
@@ -179,7 +181,8 @@ describe('the join', () => {
     refused('film-b', one({ engineHash: 'build-2' }), /the build hash of film-b differs between chunks/)
     refused('film-b', one({ samples: 8 }), /the samples of film-b differs between chunks/)
     refused('film-b', one({ format: 'hd' }), /the format differs between chunks/)
-    refused('film-b', one({ encoderArgs: [...ARGS, '-g', '60'] }), /the list of encoder arguments differs between chunks/)
+    refused('film-b', one({ encoderArgs: [...ARGS, '-g', '60'] }), /the list of encoder arguments \(but for the quality\) differs between chunks/)
+    expect(plan('film-b', one({ encoderArgs: ['-c:v', 'libx264', '-crf', '4'] })).problems).toEqual([])
     refused('film-b', one({ fps: 30 }), /the frame rate differs between chunks/)
     refused('film-b', one({ renderer: 'swiftshader' }), /the renderer of film-b differs between chunks/)
     refused('film-b', one({ calibration: 'd'.repeat(64) }), /the calibration picture of film-b differs between chunks/)
@@ -209,7 +212,7 @@ describe('the join', () => {
     refused('film-b', filmB({ total: 120 }), /rendered for a plan of 120 frames, and the plan \(cut\/CUTLIST\.json\) holds 90/)
     refused('film-b', filmB({ verify: { ok: false } }), /was never verified/)
     refused('film-b', filmB({ frameHashes: [] }), /holds 0 frame hashes for 30 frames/)
-    expect(() => plan('film-c', filmB())).toThrow(/--join takes film-b, film-a, loop/)
+    expect(() => plan('film-c', filmB())).toThrow(/--encode takes film-b, film-a, loop/)
   })
 
   it("joins film A from the opening's chunks and then film B's", () => {
@@ -256,15 +259,18 @@ describe('names', () => {
     expect(cut.fps).toBe(cfg.film.fps)
   })
 
-  it('pins a closed GOP of one chunk with no scene cuts', () => {
-    const a = masterVideoArgs(M.video, M.chunkFrames).join(' ')
+  it('pins a closed GOP of one chunk, no scene cuts and no rate cap for the intermediate', () => {
+    const v = intermediateVideo()
+    const a = masterVideoArgs(v, M.chunkFrames).join(' ')
     expect(a).toContain(`-g ${M.chunkFrames} -keyint_min ${M.chunkFrames} -sc_threshold 0`)
     expect(a).toContain('+cgop+bitexact')
     expect(a).toContain('open-gop=0')
-    expect(a).toContain(`-crf ${M.video.crf} -maxrate ${M.video.maxrateMbps * 1000}k -bufsize ${M.video.bufsizeMbps * 1000}k`)
+    expect(a).toContain(`-preset ${M.intermediate.preset} `)
+    expect(a).toContain(`-crf ${M.intermediate.crf} `)
+    expect(a).not.toMatch(/maxrate|bufsize/)
     expect(a).toContain('-pix_fmt yuv420p')
     expect(a).toContain('-colorspace bt709 -color_primaries bt709 -color_trc bt709 -color_range tv')
-    expect(() => masterVideoArgs({ ...M.video, codec: 'vp9' }, 30)).toThrow(/no master encoder/)
+    expect(() => masterVideoArgs({ ...v, codec: 'vp9' }, 30)).toThrow(/no master encoder/)
   })
 })
 
@@ -437,5 +443,296 @@ describe('a flat frame', () => {
     expect(procsProblem(1, 'uhd', 7.8 * 2 ** 30)).toBeNull()
     expect(procsProblem(2, 'uhd', 15.6 * 2 ** 30)).toBeNull()
     expect(procsProblem(2, 'preview', 7.8 * 2 ** 30)).toBeNull()
+  })
+})
+
+describe('the one encode of a master', () => {
+  it('holds a config that level 5.2 can play, and names what is wrong when it does not', () => {
+    expect(masterConfigProblems()).toEqual([])
+    const bad = (change: (m: typeof M) => void, rx: RegExp) => {
+      const m = JSON.parse(JSON.stringify(M))
+      change(m)
+      expect(masterConfigProblems(m).join('\n')).toMatch(rx)
+    }
+    bad((m) => delete m.intermediate, /intermediate is missing/)
+    bad((m) => (m.intermediate.partMb = 60), /partMb \(60\) is not above 0 and at most 50/)
+    bad((m) => (m.intermediate.crf = 40), /intermediate\.crf \(40\)/)
+    bad((m) => (m.final.passes = 1), /passes \(1\) is not 2/)
+    bad((m) => (m.final.targetMb['film-b'] = cfg.platform.maxFileMb + 1), /targetMb\.film-b .* at most platform\.maxFileMb/)
+    bad((m) => (m.final.refs = 6), /refs \(6\) is not 1 to 5/)
+    bad((m) => (m.final.keyint = 30), /keyint \(30\) is under/)
+    bad((m) => (m.video.maxrateMbps = 400), /wider than level 5\.2/)
+    bad((m) => delete m.final.loop.seamDb, /seamDb is missing/)
+  })
+
+  it('asks for a long GOP, two passes to a rate, and nothing wider than the level', () => {
+    const a = finalVideoArgs(M.video, M.final, { kbps: 60000, threads: 4 }).join(' ')
+    expect(a).toContain(`-preset ${M.final.preset} -profile:v high -level:v 5.2 -pix_fmt yuv420p -b:v 60000k`)
+    expect(a).toContain(`-maxrate ${M.video.maxrateMbps * 1000}k -bufsize ${M.video.bufsizeMbps * 1000}k`)
+    expect(a).toContain(`-g ${M.final.keyint} -keyint_min ${M.final.minKeyint} -bf ${M.final.bframes} -refs ${M.final.refs}`)
+    expect(a).toContain(`aq-mode=${M.final.aqMode}`)
+    expect(a).toContain('open-gop=0')
+    expect(a).not.toContain('sc_threshold')
+    expect(a).toContain('-colorspace bt709 -color_primaries bt709 -color_trc bt709 -color_range tv')
+    const loop = finalVideoArgs(M.video, M.final, { crf: 10, params: M.final.loop.params }).join(' ')
+    expect(loop).toContain('-crf 10')
+    expect(loop).not.toContain('-b:v')
+    if (M.final.loop.params) expect(loop).toContain(M.final.loop.params)
+    expect(() => finalVideoArgs(M.video, M.final, {})).toThrow(/a rate or to a quality/)
+    expect(() => finalVideoArgs(M.video, M.final, { kbps: 1, crf: 1 })).toThrow(/a rate or to a quality/)
+    expect(() => finalVideoArgs({ ...M.video, codec: 'vp9' }, M.final, { crf: 1 })).toThrow(/no master encoder/)
+  })
+
+  it('tries a chunk that missed its floor at lower crf, and takes it as the same chunk', () => {
+    expect(crfLadder(6)).toEqual([6, 4, 2, 0])
+    expect(crfLadder(5)).toEqual([5, 3, 1, 0])
+    expect(crfLadder(0)).toEqual([0])
+    expect(butCrf(['-c:v', 'libx264', '-crf', '6', '-g', '30'])).toEqual(['-c:v', 'libx264', '-g', '30'])
+    expect(butCrf(['-g', '30'])).toEqual(['-g', '30'])
+    expect(crfOf({ encoderArgs: masterVideoArgs({ ...intermediateVideo(), crf: 4 }, 30) })).toBe(4)
+    expect(crfOf({})).toBe(null)
+  })
+
+  it('works out the rate that fills the target with the sound in it', () => {
+    const kbps = finalKbps({ targetMb: 500, seconds: 60, audioKbps: 320 })
+    expect(kbps).toBeGreaterThan(64000)
+    expect(kbps).toBeLessThan(66667 - 320)
+    expect(((kbps + 320) * 60) / 8000).toBeLessThan(500)
+    expect(finalKbps({ targetMb: 500, seconds: 74.45, audioKbps: 320 })).toBeLessThan(kbps)
+    expect(() => finalKbps({ targetMb: 0.001, seconds: 60, audioKbps: 320 })).toThrow(/leaves no bits/)
+    expect(() => finalKbps({ targetMb: 500, seconds: 0 })).toThrow(/above zero/)
+  })
+
+  it('gives the least and mean of a list, and its best second', () => {
+    expect(psnrFacts([44, 41.234, 43], 60)).toEqual({ least: 41.23, leastFrame: 61, mean: 42.74 })
+    expect(bestRun([1, 5, 6, 2, 9], 2)).toEqual({ first: 1, last: 2, mean: 5.5 })
+    expect(bestRun([1, 2], 60)).toEqual({ first: 0, last: 1, mean: 1.5 })
+    expect(bestRun([], 60)).toBe(null)
+    expect(sendGroups(Array.from({ length: 23 }, (_, i) => i)).map((g: number[]) => g.length)).toEqual([10, 10, 3])
+  })
+
+  const facts = (over: Record<string, unknown> = {}) => ({
+    wantFrames: 3600,
+    frames: 3600,
+    decodeErrors: [] as string[],
+    format: { width: 3840, height: 2160 },
+    width: 3840,
+    height: 2160,
+    steps: { off: 0, count: 3599, start: 0, firstOff: 0 },
+    rFrameRate: '60/1',
+    avgFrameRate: '60/1',
+    pixFmt: 'yuv420p',
+    tags: 'bt709 / bt709 / bt709 / tv',
+    codec: 'h264',
+    profile: 'High',
+    level: 52,
+    refs: 5,
+    keys: Array.from({ length: 12 }, (_, i) => i * 300),
+    sound: { wanted: true, codec: 'aac', sampleRate: cfg.audio.sampleRate, channels: 2, kbps: 317, seconds: 60, pictureSeconds: 60 },
+    flat: 0,
+    flatAllowed: 0,
+    fast: true,
+    bytes: 498e6,
+    targetMb: 500,
+    minPsnr: M.final.minPsnr,
+    psnr: { least: M.final.minPsnr + 3, leastFrame: 700, mean: M.final.minPsnr + 6 },
+    bestHold: { first: 60, last: 119, mean: 44.5 },
+    ...over,
+  })
+  type Row = { check: string; pass: boolean | null; found: string; wanted: string }
+  const failing = (over: Record<string, unknown>) => (encodeProofRows(facts(over)) as Row[]).filter((r) => r.pass === false).map((r) => r.check)
+
+  it('proves a finished film row by row', () => {
+    const rows = encodeProofRows(facts()) as Row[]
+    expect(rows.filter((r) => r.pass === false)).toEqual([])
+    expect(rows.map((r) => r.check)).toEqual(['frames', 'every frame decodes', 'size of the picture', 'pts steps', 'frame rate', 'pixel format', 'colour tags', 'codec', 'reference frames', 'key frames', 'sound', 'sound bit rate', 'sound length', 'flat frames', 'starts fast', 'file size', 'luma PSNR against the chunks', 'the best hold'])
+    expect(rows.find((r) => r.check === 'the best hold')?.pass).toBe(null)
+    expect(table(rows)).toMatch(/luma PSNR against the chunks .* least .* dB at frame 700, mean .* dB +pass/)
+  })
+
+  it('fails the row that is wrong and no other', () => {
+    expect(failing({ frames: 3599 })).toEqual(['frames'])
+    expect(failing({ decodeErrors: ['broken'] })).toEqual(['every frame decodes'])
+    expect(failing({ steps: { off: 1, count: 3599, start: 0, firstOff: 0.03 } })).toEqual(['pts steps'])
+    expect(failing({ avgFrameRate: '359900/5999' })).toEqual(['frame rate'])
+    expect(failing({ pixFmt: 'yuv444p' })).toEqual(['pixel format'])
+    expect(failing({ tags: 'unknown / bt709 / bt709 / tv' })).toEqual(['colour tags'])
+    expect(failing({ level: 60 })).toEqual(['codec'])
+    expect(failing({ profile: 'High 4:4:4 Predictive' })).toEqual(['codec'])
+    expect(failing({ refs: 8 })).toEqual(['reference frames'])
+    expect(failing({ keys: [0, 301, 600, 900, 1200, 1500, 1800, 2100, 2400, 2700, 3000, 3300] })).toEqual(['key frames'])
+    expect(failing({ keys: [0, 300] })).toEqual(['key frames'])
+    expect(failing({ keys: Array.from({ length: 12 }, (_, i) => i * 300 + 2) })).toEqual(['key frames'])
+    expect(failing({ sound: { wanted: true, codec: null } })).toEqual(['sound', 'sound bit rate', 'sound length'])
+    expect(failing({ sound: { wanted: true, codec: 'aac', sampleRate: cfg.audio.sampleRate, channels: 2, kbps: 317, seconds: 59.5, pictureSeconds: 60 } })).toEqual(['sound length'])
+    expect(failing({ sound: { wanted: false, codec: 'aac' } })).toEqual(['sound'])
+    expect(failing({ sound: { wanted: false, codec: null } })).toEqual([])
+    expect(failing({ flat: 1 })).toEqual(['flat frames'])
+    expect(failing({ flat: 3, flatAllowed: 3 })).toEqual([])
+    expect(failing({ fast: false })).toEqual(['starts fast'])
+    expect(failing({ bytes: 500.2e6 })).toEqual(['file size'])
+    expect(failing({ bytes: 600e6, targetMb: null })).toEqual(['file size'])
+    expect(failing({ psnr: { least: M.final.minPsnr - 0.01, leastFrame: 12, mean: 50 } })).toEqual(['luma PSNR against the chunks'])
+    expect(failing({ opening: { wanted: 867, found: 866 } })).toEqual(["the opening's frames"])
+  })
+
+  it('holds the loop to the best second of film B and to an even wrap', () => {
+    const loop = (l: Record<string, unknown>, more: Record<string, unknown> = {}) => failing({ wantFrames: 480, frames: 480, keys: [0, 300], sound: { wanted: false, codec: null }, targetMb: null, bestHold: null, psnr: { least: 45, leastFrame: 200, mean: 46 }, loop: { wanted: 44.5, first: 45.4, last: 45.1, seamDb: 1, ...l }, ...more })
+    expect(loop({})).toEqual([])
+    expect(loop({ wanted: 45.2 })).toEqual(["the loop against film B's best hold"])
+    expect(loop({ last: 43.9 })).toEqual(['the wrap'])
+    expect(loop({ wanted: null })).toEqual(["the loop against film B's best hold"])
+    expect(loop({ wanted: null }, { test: true })).toEqual([])
+  })
+})
+
+describe('files that travel by attachment', () => {
+  let box: string
+  beforeAll(() => {
+    box = fs.mkdtempSync(path.join(os.tmpdir(), 'snow-globe-parts-'))
+  })
+  afterAll(() => fs.rmSync(box, { recursive: true, force: true }))
+  const bytesOf = (n: number, seed: number) => Buffer.from(Array.from({ length: n }, (_, i) => (i * 31 + seed * 7 + (i >> 5)) & 255))
+  const mb = (bytes: number) => bytes / 1e6
+
+  it('cuts a file into as few even parts as the limit allows', () => {
+    expect(partPlan(100, 45)).toEqual([{ k: 1, n: 1, start: 0, bytes: 100 }])
+    const p = partPlan(100e6, 45)
+    expect(p.length).toBe(3)
+    expect(p.reduce((n: number, x: { bytes: number }) => n + x.bytes, 0)).toBe(100e6)
+    for (const x of p) expect(x.bytes).toBeLessThanOrEqual(45e6)
+    expect(p.map((x: { start: number }) => x.start)).toEqual([0, 33333334, 66666668])
+    expect(partPlan(45e6, 45).length).toBe(1)
+    expect(partPlan(45e6 + 1, 45).length).toBe(2)
+    expect(partPlan(500e6, 45).length).toBe(12)
+    expect(partName('film.mp4', 3, 12)).toBe('film.mp4.part-03-of-12')
+    expect(() => partPlan(10, 0)).toThrow(/some size/)
+  })
+
+  it('splits a file and puts it together again from parts under any names, in any order', () => {
+    const file = path.join(box, 'film.mp4')
+    fs.writeFileSync(file, bytesOf(10007, 1))
+    const made = splitFile(file, path.join(box, 'parts'), mb(3000))
+    expect(made.parts.length).toBe(4)
+    expect(made.bytes).toBe(10007)
+    expect(made.sha256).toBe(bigSha(file))
+    expect(made.parts.map((p: { file: string }) => p.file)).toEqual([1, 2, 3, 4].map((k) => `film.mp4.part-0${k}-of-04`))
+    const flat = path.join(box, 'came')
+    fs.mkdirSync(flat)
+    made.parts.forEach((p: { file: string }, k: number) => fs.copyFileSync(path.join(box, 'parts', p.file), path.join(flat, `attachment (${4 - k}).bin`)))
+    const out = path.join(box, 'again', 'film.mp4')
+    const got = unsplitFile(made, hashFolder(flat), out)
+    expect(got.ok).toBe(true)
+    expect(fs.readFileSync(out).equals(fs.readFileSync(file))).toBe(true)
+    expect(fs.readdirSync(flat).length).toBe(4)
+  })
+
+  it('names the parts that are missing and writes nothing', () => {
+    const file = path.join(box, 'b.mp4')
+    fs.writeFileSync(file, bytesOf(9000, 2))
+    const made = splitFile(file, path.join(box, 'parts-b'), mb(4000))
+    fs.rmSync(path.join(box, 'parts-b', made.parts[1].file))
+    const out = path.join(box, 'again-b', 'b.mp4')
+    const got = unsplitFile(made, hashFolder(path.join(box, 'parts-b')), out)
+    expect(got.ok).toBe(false)
+    expect(got.missing).toEqual(['part 2 of 3 (b.mp4.part-02-of-03)'])
+    expect(got.why).toMatch(/1 of its 3 parts is not here/)
+    expect(fs.existsSync(out)).toBe(false)
+  })
+
+  it('refuses parts that do not make the file the manifest names', () => {
+    const file = path.join(box, 'c.mp4')
+    fs.writeFileSync(file, bytesOf(9000, 3))
+    const made = splitFile(file, path.join(box, 'parts-c'), mb(4000))
+    const out = path.join(box, 'again-c', 'c.mp4')
+    const lie = { ...made, sha256: 'f'.repeat(64) }
+    const got = unsplitFile(lie, hashFolder(path.join(box, 'parts-c')), out)
+    expect(got.ok).toBe(false)
+    expect(got.why).toMatch(/its 3 parts are all here and together they are .* not the ffffffffffff its record names/)
+    expect(fs.existsSync(out)).toBe(false)
+    expect(fs.existsSync(`${out}.joining`)).toBe(false)
+    const changed = path.join(box, 'parts-c', made.parts[0].file)
+    fs.writeFileSync(changed, Buffer.concat([fs.readFileSync(changed).subarray(1), Buffer.from([0])]))
+    expect(unsplitFile(made, hashFolder(path.join(box, 'parts-c')), out).missing).toEqual(['part 1 of 3 (c.mp4.part-01-of-03)'])
+  })
+
+  it('collects records, whole chunks, parts and the screenshot from one flat folder', () => {
+    const made = path.join(box, 'made')
+    const flat = path.join(box, 'flat')
+    const into = path.join(box, 'collected')
+    fs.mkdirSync(made)
+    fs.mkdirSync(flat)
+    const one = bytesOf(5000, 4)
+    const two = bytesOf(12000, 5)
+    const still = bytesOf(700, 6)
+    const sha = (b: Buffer) => {
+      const f = path.join(made, 'x')
+      fs.writeFileSync(f, b)
+      return bigSha(f)
+    }
+    fs.writeFileSync(path.join(made, 'loop-000030-000059.mp4'), two)
+    const cut = splitFile(path.join(made, 'loop-000030-000059.mp4'), path.join(made, 'parts'), mb(5000))
+    expect(cut.parts.length).toBe(3)
+    const r1 = rec('loop', 0, 29, { sha256: sha(one), bytes: one.length, boot: 'b1', still: { file: 'frame-000000.png', bytes: still.length, sha256: sha(still) } })
+    const r2 = rec('loop', 30, 59, { sha256: cut.sha256, bytes: two.length, boot: 'b1', parts: cut.parts })
+    writeJson(path.join(flat, 'download-7.json'), r2)
+    writeJson(path.join(flat, 'loop-000000-000029.json'), r1)
+    fs.writeFileSync(path.join(flat, 'notes.json'), '{"hello": 1}')
+    fs.writeFileSync(path.join(flat, 'zz (1)'), one)
+    fs.writeFileSync(path.join(flat, 'shot.png'), still)
+    fs.copyFileSync(path.join(made, 'parts', cut.parts[2].file), path.join(flat, 'a'))
+    fs.copyFileSync(path.join(made, 'parts', cut.parts[0].file), path.join(flat, 'b'))
+    fs.writeFileSync(path.join(flat, 'stranger.bin'), bytesOf(10, 9))
+
+    const first = takeFiles(flat, into, { keep: false })
+    expect(first.records).toBe(2)
+    expect(first.whole).toBe(1)
+    expect(first.stills).toBe(1)
+    expect(first.fromParts).toBe(0)
+    expect(first.problems.length).toBe(1)
+    expect(first.problems[0]).toMatch(/loop 30 to 59, drawn on vm-a: 1 of its 3 parts is not here \(part 2 of 3/)
+    expect(first.strangers.map((f: string) => path.basename(f)).sort()).toEqual(['notes.json', 'stranger.bin'])
+
+    fs.copyFileSync(path.join(made, 'parts', cut.parts[1].file), path.join(flat, 'late'))
+    const second = takeFiles(flat, into, { keep: false })
+    expect(second.records).toBe(0)
+    expect(second.fromParts).toBe(1)
+    expect(second.problems).toEqual([])
+    expect(fs.readdirSync(flat).sort()).toEqual(['notes.json', 'stranger.bin'])
+
+    const chunks = readChunks([into])
+    expect(chunks.map((c: Chunk) => c.record.first)).toEqual([0, 30])
+    expect(fs.readFileSync(chunks[0].file).equals(one)).toBe(true)
+    expect(fs.readFileSync(chunks[1].file).equals(two)).toBe(true)
+    expect(fs.readFileSync(path.join(path.dirname(chunks[0].file), 'frame-000000.png')).equals(still)).toBe(true)
+    const p = plan('loop', chunks, { sha: bigSha })
+    expect(p.problems).toEqual([])
+    expect(() => takeFiles(path.join(into, 'files'), into)).toThrow(/not inside the folder that is collected into/)
+    expect(() => takeFiles(path.join(box, 'nowhere'), into)).toThrow(/does not exist/)
+  })
+
+  it('leaves a chunk out when the file that came is not the one its record names', () => {
+    const flat = path.join(box, 'flat-2')
+    const into = path.join(box, 'collected-bad')
+    fs.mkdirSync(flat)
+    writeJson(path.join(flat, 'r.json'), rec('film-b', 0, 29, { sha256: 'e'.repeat(64), bytes: 5000, boot: 'b1' }))
+    fs.writeFileSync(path.join(flat, 'film-b-000000-000029.mp4'), bytesOf(5000, 8))
+    const got = takeFiles(flat, into, { keep: true })
+    expect(got.records).toBe(1)
+    expect(got.whole).toBe(0)
+    expect(got.problems.join(' ')).toMatch(/film-b 0 to 29, drawn on vm-a: no file with its sha256 is here/)
+    expect(fs.existsSync(path.join(flat, 'r.json'))).toBe(true)
+    const p = plan('film-b', readChunks([into]), { sha: (f: string) => (fs.existsSync(f) ? bigSha(f) : null) })
+    expect(p.problems.join(' ')).toMatch(/the mp4 is missing/)
+  })
+
+  it('lets a test encode skip what was never rendered, and a real one never', () => {
+    const t = (a: number, b: number) => chunk(rec('film-b', a, b, { test: true }))
+    const p = plan('film-b', [t(660, 669), t(60, 69)], { test: true, gaps: true })
+    expect(p.problems).toEqual([])
+    expect(p.frames).toBe(20)
+    expect(p.parts.map((c: { at: number }) => c.at)).toEqual([0, 10])
+    refused('film-b', [t(60, 69), t(660, 669)], /frames 70 to 659 are covered by no chunk/, { test: true })
+    refused('film-b', [filmB()[0], filmB()[2]], /frames 30 to 59 are covered by no chunk/, { gaps: true })
   })
 })

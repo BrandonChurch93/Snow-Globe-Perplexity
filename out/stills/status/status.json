@@ -1,39 +1,31 @@
 {
-  "number": 146,
-  "time": "2026-11-26 08:17 UTC",
+  "number": 148,
+  "time": "2026-11-26 08:57 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 146 · 2026-11-26 08:17 UTC · Phase 6",
-    "Sound: both films' final mixes are in the repo's records (film with the prompt 74.45 s, film 60 s; each -14.0 LUFS, true peak -1.3 dB, measured here). 84 typing taps for 84 keys, none more than 20 ms from its key. All four shakes now carry water. Sound check 8 of 8. No ElevenLabs credits spent today: 7,200 of your 10,000 used, 2,800 left.",
-    "For you to look at: the ElevenLabs account's own counter shows 644 credits used since 05:48 UTC that this build did not spend (its guard recorded no call since then). Something else is using the same account.",
-    "The change of season: the blurred ball on black is gone. The glass stays a lit globe with a halo through the quarter second of the change (first picture; builder's frames, not yet judged by critics). Left: the base's outline under the glass changes shape in one frame, in work for the next 45 minutes.",
-    "First seconds of a visit: the globe no longer glides after the controls arrive (phone: about 30 px before, 0 px now, measured by its builder under a software renderer; a second, independent check is running). Second picture: the still, the moment the live picture takes over, and later.",
-    "Phone, in the shake: the globe sits about 80 px higher (its middle at 43 percent of the height, 52 before). Bettered, not mended: it is still 72 percent of its rest size there. Third picture.",
-    "Next: all 28 first pictures are being redrawn on the merged build, then the app is published again and rough draft 2 of the film is drawn with the new change and the final sound.",
-    "phase 6: 5.47 h used of its 12.00 h box",
-    "allowance (after the review): 5.47 h used of 12.00 h allowed",
+    "Status 148 · 2026-11-26 08:57 UTC · Phase 6",
+    "The app is published again from this morning's build (08:55 UTC). New in it: the first picture no longer glides after loading, all 28 first pictures are redrawn, the phone framing and the change of season are mended, and the sound pack is the newer one. Visibility is Organization. The live address answers only to signed-in visitors, so I cannot open it from here; two of the uploaded files were read back and equal the local ones.",
+    "The opening of the 4K film is checked: all 867 frames at 3840 x 2160 were decoded, none is empty, and a redraw gave the same bytes. The opening is now always drawn by the one renderer that gives the committed pictures, and its tool refuses any other.",
+    "First 4K frames for the masters are measured on one machine: about 130 s a frame while the globe rests and about 227 s during a change of season. Film B is 3,600 frames and the loop 480, so the masters are drawn by the whole fleet at once, after the picture is frozen.",
+    "Still at work: the last mend of the change of season, the arc of the first picture, the app's sound pack and the master tool. After that come the critic rounds on summer, the change of season and the globe, then the film itself.",
+    "phase 6: 6.14 h used of its 12.00 h box",
+    "allowance (after the review): 6.14 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-146-1.jpg",
-      "caption": "The change of season, winter into spring, frames 668 to 682: before (top two rows) and after the mend (bottom two rows).",
+      "file": "out/stills/status/status-148-1.jpg",
+      "caption": "The opening at 4K: nine frames at the places where another renderer left frames empty this morning. All nine are painted.",
       "w": 1200,
-      "h": 748
+      "h": 677
     },
     {
-      "file": "out/stills/status/status-146-2.jpg",
-      "caption": "Phone, first visit: the still shown at once (left), the first live picture (middle), about 50 frames later (right). The globe stays where it is.",
+      "file": "out/stills/status/status-148-2.jpg",
+      "caption": "Frame 90 of the opening: the 4K pack above, the hd pack scaled two times below. Same shapes, cleaner edges at 4K.",
       "w": 1200,
-      "h": 866
-    },
-    {
-      "file": "out/stills/status/status-146-3.jpg",
-      "caption": "Phone, one shake, frames 1 to 5: before (top) and after (bottom). The globe sits higher; the last frame of the bottom row is the change itself, drawn before the mend of the first picture.",
-      "w": 1194,
-      "h": 1138
+      "h": 1110
     }
   ]
 }
