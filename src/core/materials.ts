@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { DEPTH_RANGE_MM, partBytes, viewCode } from '../diagnostics/views'
 import { LENS_GLSL, innerRadiusMm, lensIor, lensRadiusMm } from '../globe/lens'
-import { CHANGE_CUT, DRESSING_CHANGE, changeRamp } from '../shake/change'
+import { DRESSING_CHANGE, changeRamp } from '../shake/change'
 import { LIGHT_FRAG, LIGHT_FRAG_PARS, lightUniforms } from './chunks/light'
 import { VEIL_FRAG, VEIL_FRAG_PARS, veilUniforms } from './chunks/veil'
 import { flagStandIn } from './standins'
@@ -25,15 +25,14 @@ export const MODE = { always: 0, incoming: 1, outgoing: 2 } as const
 export const DRESSING_FRONT = { gain: 2, fromMm: 58, toMm: 230 } as const
 
 /**
- * How the parts outside the glass give way.
- * The base is cut, not crossed: it is the old season's up to `CHANGE_CUT.at` of the window and the new season's from there, with
- * no state between. The cut lies where the film's shutter is closed, between the two fastest frames of the last stroke, so
- * no frame holds both bases: the last frame of the old one and the first of the new are each drawn out by the stroke.
- * The table's dressing never holds two seasons: the old season's is gone before the cut and the new season's comes after it
- * (`DRESSING_CHANGE`). Each goes and comes from the foot outward; the edge of that front is broken into patches (`cellMm`,
- * `fineMm`) drawn out along the way a gust runs (`streak` times as long as wide, `rayMm` to a radian across) and feathered
- * across the samples of a frame (`feather`), so a field of frost or of sand thins in fingers and never along a line.
- * Nothing here lays light on a part: the cover of the cut is the glare in the lens (lighting.ts, `CHANGE_BLOOM`).
+ * How the parts outside the glass give way, all of them inside the one span of change.ts and under its cover.
+ * The base is crossed, never morphed: both bases are drawn whole and every pixel of every sample keeps one of them, more of
+ * the new one as the span runs.
+ * The table's dressing never holds two seasons: the old season's is gone in the first half of the span and the new season's
+ * comes in the second (`DRESSING_CHANGE`). Each goes and comes from the foot outward; the edge of that front is broken into
+ * patches (`cellMm`, `fineMm`) drawn out along the way a gust runs (`streak` times as long as wide, `rayMm` to a radian across)
+ * and feathered across the samples of a frame (`feather`), so a field of frost or of sand thins in fingers and never along a line.
+ * Nothing here lays light on a part: the cover is the light in the lens and the fall of the exposure (lighting.ts, `CHANGE_BLOOM`).
  * The code of a part's kind rides in `uState.z`: 0 and above is the lag of a part inside the glass, under 0 the table's gain,
  * under `-BASE_CODE` the base's.
  */
@@ -56,14 +55,16 @@ const TABLE = {
  * The scatter on the table is carried by the strokes, not swapped. What lies there lifts `leadOut` shares of the outside span
  * before its place is cleared (never before `DRESSING_CHANGE.liftFrom`), is blown out from the foot, faster and faster, and is
  * gone in the air; what the new season lays starts `leadIn` shares before its place fills, from further out, flies in and
- * comes down on its place, the far places first and the foot last, when the light of the change has fallen, and every new piece
- * is down before the window closes (`GUST_LAST_DOWN` stays under `TABLE.closes`).
+ * comes down on its place, the far places first and the foot last, and every new piece is down while the cover of the change
+ * is still whole (`GUST_LAST_DOWN_AT` stays under `CHANGE_COVER.fullTo`), so no piece is seen in the air.
  * Lengths in millimetres. With one season on the stage the mode is 0 and nothing here is read.
  */
 export const GUST = { leadOut: 1, longOut: 1.25, reachOutMm: 170, leadIn: 0.45, longIn: 0.65, reachInMm: 70, heightMm: 14 } as const
 /** The share of the outside span at which the last new piece on the table is down. */
 export const GUST_LAST_DOWN = TABLE.comeFrom + (TABLE.comeLong * (0.5 + DRESSING_FRONT.gain)) / (1 + DRESSING_FRONT.gain) - GUST.leadIn + 1.2 * GUST.longIn
 export const GUST_CLOSES = TABLE.closes
+/** The same instant as a place in the swap window. */
+export const GUST_LAST_DOWN_AT = OUTSIDE_RAMP.start + GUST_LAST_DOWN * OUTSIDE_RAMP.length
 
 /** For a vertex shader of a part of the table's dressing: x the way a piece is moved along the line out from the stage's axis, y its height as a share, z how far it is from lying (1 to 0). */
 export const STAGE_GUST_GLSL = `
@@ -223,10 +224,8 @@ float stagePatch(vec3 p) {
 float stageChange() {
   if (uState.w < 0.5) return 0.0;
   if (uState.z < 0.0) {
-    // The base: one base before the cut, the other after it, nothing between.
-    if (uState.z < -${(BASE_CODE - 1).toFixed(1)}) return uChange < ${CHANGE_CUT.at.toFixed(6)} ? 0.0 : 1.0;
-    // The table: what leaves is gone before the cut, from the foot outward; what comes comes after it, the foot last.
     float s = (uChange - uState.x) / uState.y;
+    if (uState.z < -${(BASE_CODE - 1).toFixed(1)}) return clamp(s, 0.0, 1.0);
     float far = clamp((length(vStageWorld.xz) - ${DRESSING_FRONT.fromMm.toFixed(1)}) / ${(DRESSING_FRONT.toMm - DRESSING_FRONT.fromMm).toFixed(1)}, 0.0, 1.0);
     float run = uState.w > 1.5 ? (s - ${TABLE.leaveFrom.toFixed(4)}) / ${TABLE.leaveLong.toFixed(4)} : (s - ${TABLE.comeFrom.toFixed(4)}) / ${TABLE.comeLong.toFixed(4)};
     float reach = clamp(run, 0.0, 1.0) * (1.0 - uState.z) + uState.z * (uState.w > 1.5 ? far : 1.0 - far);
