@@ -116,15 +116,14 @@ export const look = {
     // the air: the low sun in the liquid, warm on the side the light falls toward and nothing on the side it comes from
     air: 0.012,
     airColor: [1, 0.66, 0.36] as const,
-    // the haze: the liquid behind the miniature holds the last sun. It is gold and fullest low, just over the ground
+    // the haze: the liquid behind the miniature holds the last sun. It is cream gold and fullest low, just over the ground
     // (`hazeLow`, in globe radii up the picture), and stands highest in a plume between the cottage and the tree (`hazeAt`,
-    // `hazeWide`), `hazeTall` radii tall there and `hazeSideTall` of that at the sides, where it is `hazeRim` as strong. Over
-    // it the liquid is clear and the dark of the room shows through the top of the glass: what light is there lies on a
-    // slope and never on a level, `hazeHigh` at the ground, down to a third `hazeHighTall` radii up, and `hazeHighLeft` of
-    // that at the far left. `hazeBanks` is how unevenly it lies, in soft banks `hazeBankSize` globe radii across, so it reads as lit liquid
-    // and never as a flat card
+    // `hazeWide`), `hazeTall` radii tall there and `hazeSideTall` of that at the sides, where it is `hazeRim` as strong. With
+    // it goes a thinner light that lies on a slope and never on a level, `hazeHigh` at the ground, down to a third
+    // `hazeHighTall` radii up, and `hazeHighLeft` of that at the far left. `hazeBanks` is how unevenly all of it lies, in
+    // soft banks `hazeBankSize` globe radii across, so it reads as lit liquid and never as a flat card
     haze: 0.32,
-    hazeColor: [1, 0.64, 0.35] as const,
+    hazeColor: [1, 0.74, 0.47] as const,
     hazeRim: 0.07,
     hazeAt: -0.12,
     hazeWide: 0.45,
@@ -134,14 +133,27 @@ export const look = {
     hazeHigh: 0.04,
     hazeHighTall: 0.4,
     hazeHighLeft: 0.35,
-    // a faint red brown body of light over the middle, behind the cottage and left of the crown (`domeAt`, globe radii
+    // the haze over the dome: above the roof line the liquid holds the sun too, a cream veil across the upper half that the
+    // seed heads and the fireflies float in, `fill` of it everywhere. It thins to nothing toward the top of the glass
+    // (`fillTop`, globe radii up: all of it below the first, none above the second) and toward the upper left limb, where
+    // the glass has its own pale band (`fillLeft`, radii from the middle: all of it inside the first, none beyond the
+    // second). It gathers in soft bodies (`fillBody`, each: where, across and up, how wide and how tall in globe radii,
+    // how much): behind the crown, at the right shoulder toward the sun, and low at the left over the bank. The room's
+    // dark patches cut it down to `fillDark` of itself, so they show through it faintly
+    fill: 0.06,
+    fillColor: [1, 0.8, 0.56] as const,
+    fillTop: [0.6, 0.95] as const,
+    fillLeft: [0.5, 0.85] as const,
+    fillDark: 0.6,
+    fillBody: [[0.1, 0.4, 0.24, 0.2, 0.075], [0.64, 0.46, 0.24, 0.28, 0.11], [-0.5, -0.04, 0.34, 0.14, 0.09]] as const,
+    // a faint warm body of light over the middle, behind the cottage and left of the crown (`domeAt`, globe radii
     // across and up; `domeSize`, how far it reaches to the left, to the right and up or down). It lies in broad soft folds
     // that follow the glass, `folds` of them to a globe radius, `foldDeep` of it is gone in the gaps between them, and the
     // room's dark patches cut it
-    dome: 0.08,
+    dome: 0.05,
     domeAt: [-0.12, 0.24] as const,
     domeSize: [0.5, 0.45, 0.4] as const,
-    domeColor: [1, 0.42, 0.2] as const,
+    domeColor: [1, 0.62, 0.36] as const,
     folds: 7,
     foldLong: 1.3,
     foldDeep: 0.6,
@@ -423,7 +435,12 @@ void main() {
   float bank = 1.0 - ${n(W.hazeBanks)} + ${n(2 * W.hazeBanks)} * stageNoise(vec3(vWl / ${n(W.hazeBankSize)}, 3.7));
   vec2 ring = e * min(r * 2.5, 1.0) + 1.5;
   float room = smoothstep(0.4, 0.62, 0.62 * stageNoise(vec3(r * ${n(W.room)} + 7.0, ring * ${n(W.roomLong)})) + 0.38 * stageNoise(vec3(vWl * ${n(W.roomFine)}, 9.1)));
-  float shown = mix(1.0, mix(${n(W.roomDark)}, ${n(W.roomLit)}, room), smoothstep(${n(W.roomFrom[0])}, ${n(W.roomFrom[1])}, vWl.y));
+  float above = smoothstep(${n(W.roomFrom[0])}, ${n(W.roomFrom[1])}, vWl.y);
+  float shown = mix(1.0, mix(${n(W.roomDark)}, ${n(W.roomLit)}, room), above);
+  // the cream veil over the dome and its bodies
+  float veil = ${n(W.fill)} * above * (1.0 - smoothstep(${n(W.fillTop[0])}, ${n(W.fillTop[1])}, vWl.y)) * (1.0 - (1.0 - smoothstep(-0.65, -0.3, vWl.x)) * smoothstep(${n(W.fillLeft[0])}, ${n(W.fillLeft[1])}, r));
+${W.fillBody.map((b) => `  veil += ${n(b[4])} * exp(-dot((vWl - vec2(${n(b[0])}, ${n(b[1])})) / vec2(${n(b[2])}, ${n(b[3])}), (vWl - vec2(${n(b[0])}, ${n(b[1])})) / vec2(${n(b[2])}, ${n(b[3])})));`).join('\n')}
+  air += ${vec(W.fillColor)} * (veil * bank * mix(1.0, mix(${n(W.fillDark)}, 1.0, room), above) * still * body);
   air += ${vec(W.hazeColor)} * (${n(W.haze)} * still * body * bank * shown * (${n(W.hazeRim)} + ${n(1 - W.hazeRim)} * plume) * exp(-rise * rise * rise));
   air += ${vec(W.hazeColor)} * (${n(W.hazeHigh)} * bank * shown * exp(-max(vWl.y - ${n(W.hazeLow)}, 0.0) / ${n(W.hazeHighTall)}) * mix(${n(W.hazeHighLeft)}, 1.0, smoothstep(-0.8, 0.5, vWl.x)) * still * body);
   vec2 fromDome = vWl - vec2(${n(W.domeAt[0])}, ${n(W.domeAt[1])});
