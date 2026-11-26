@@ -9,7 +9,7 @@ import type { SeasonKit } from '../kit'
 // and next to nothing round the globe, where a half-lit soft disc reads as a brown stain.
 const tone = (lift: number, r: number, g: number, b: number): [number, number, number] => [r * lift, g * lift, b * lift]
 const cream = (lift: number) => tone(lift, 1, 0.72, 0.47)
-const honey = (lift: number) => tone(lift, 1, 0.61, 0.34)
+const honey = (lift: number) => tone(lift, 1, 0.65, 0.39)
 const gold = (lift: number) => tone(lift, 1, 0.57, 0.3)
 
 // Where a light stands in the approved picture (pixels of its 2816 x 1584 frame), from the view the shared layout was placed in
