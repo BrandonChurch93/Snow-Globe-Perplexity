@@ -17,7 +17,7 @@ const HEAP = {
   bank: { mm: 3.2, r: 57.5, w: 8, az: [2, 100], ease: 16 },
   skirt: { x: 76, z: 26, sx: 13, sz: 18, mm: 2.6 },
   shoulder: { x: 52, z: 55, sx: 15, sz: 11, mm: 2.0 },
-  fan: { x: 56, z: 88, sx: 22, sz: 34, mm: 1.3 },
+  fan: { x: 56, z: 88, sx: 22, sz: 34, mm: 0.0 },
   sprinkle: { at: [-63.8, -47.6], lit: [-0.918, -0.396], run: [-12, -2, 22, 78], rise: [0, 0.6], core: [0.95, 1.1], veil: [0.5, 6.5] },
   edge: { mm: [0.2, 0.45], sharp: 1.0, looseMm: 0.25, onHeap: 0.1, thickMm: 1.6, cover: [0.03, 1.2], far: [62, 88, 4.5], flat: [0.5, 4.5] },
   loose: { on: 0.05, fromMm: 0.03, edgeMm: 0.4, thinMm: 2.0, reach: 1.3, flung: 0.2, x: 84, z: 20, sx: 12, sz: 17, drift: { mm: [10, 22, 3.5, 9], edge: [0.5, 0.62], bare: 0.0, full: 3.6, rim: 0.45 } },
@@ -25,7 +25,7 @@ const HEAP = {
 // The light on the sand of the table. The stage's lit material is made for the stone of the base; this takes its paint
 // (every grain's own colour and tilt) and the stage's key, shadow, sky and card, and lights the sand as dry sand is lit
 // by a low sun from behind: bright where a grain faces it, dark and cool in the shade, with no part burnt to white.
-export const SAND_LIT = { tilt: 0.25, sun: 5.6, crest: [2.5, 7.5, 3.0, 2.2, 0.2, 0.55], face: [-0.05, 0.55], turn: [0.15, 0.6, 1.07, 0.05, 0.55], side: [0.5, 0.45], back: 1.0, sky: 3.4, card: 0.22, glint: 0.9, shade: 0.5, knee: 0.5, top: 1.0, high: 1.18, warm: [1.0, 0.74, 0.57], cool: [1.9, 1.75, 1.6], pale: 0.12, tint: [1.0, 0.9, 0.78], speck: 2.2, rows: 1080, grit: [0.42, 0.45, 0.7, 0.73, 0.65, 0.9], mote: [1.0, 4.5, 0.6], grain: [0.25, 0.75], spark: [12, 1.0], fray: [0.5, 1.3], thru: 1.2, cut: [-63.8, -47.6, -0.918, -0.396, -3.6, 0.6, -48, -30], deep: [0.5, 40], front: [0.12, 0.4, 12, 36], line: [61.5, 6, -0.866, 0.5], soft: [0, 10], end: [30, 46], wander: 1.2, from: [-25, 5], lift: [2, 16] }
+export const SAND_LIT = { tilt: 0.25, sun: 5.6, crest: [2.5, 7.5, 3.0, 2.2, 0.2, 0.55], face: [-0.05, 0.55], turn: [0.15, 0.6, 1.07, 0.05, 0.55], side: [0.5, 0.45], back: 1.0, sky: 3.4, card: 0.22, glint: 0.9, shade: 0.5, knee: 0.45, top: 1.0, high: 0.9, warm: [1.0, 0.74, 0.57], cool: [1.0, 1.5, 2.5], pale: 0.12, tint: [1.0, 0.9, 0.78], speck: 3.0, rows: 1080, grit: [0.42, 0.45, 0.7, 0.73, 0.35, 1.0], mote: [1.0, 4.5, 0.6], grain: [0.35, 0.9], spark: [6, 3.0], fray: [0.5, 1.3], thru: 1.2, cut: [-63.8, -47.6, -0.918, -0.396, -3.6, 0.6, -48, -30], deep: [0.35, 40], front: [0.05, 0.07, 30, 70], line: [61.5, 6, -0.866, 0.5], soft: [-20, 16], end: [70, 120], wander: 0.3, from: [-25, 5], lift: [1, 13] }
 export const SPRINKLE = { softMm: 5.0 } as const
 export const SLAB = { liftMm: 0.5, footMm: 52.4, repose: 0.62, stepMm: 1.0, x: [-150, 142], z: [-232, 216] } as const
 
@@ -347,7 +347,7 @@ float slabAlpha = 1.0;
   slabC *= (min(slabL, ${f(SAND_LIT.knee)}) + slabSpan * (1.0 - exp(-slabOver / slabSpan))) / max(slabL, 1e-4);
   slabC = mix(slabC, vec3(dot(slabC, vec3(0.2126, 0.7152, 0.0722))), ${f(SAND_LIT.pale)} * smoothstep(${f(SAND_LIT.knee * 0.5)}, ${f(SAND_LIT.high)}, slabL));
   slabC *= mix(vec3(1.0), vec3(slabGr.x, slabGg.x, slabGb.x), mix(${f(SAND_LIT.grit[4]!)}, ${f(SAND_LIT.grit[5]!)}, clamp(slabSun, 0.0, 1.0)));
-  slabC += stageKeyC * (slabSun * slabSun * (0.35 + 0.65 * slabFace) * ${f(SAND_LIT.spark[1]!)}) * vec3(slabGr.y, slabGg.y, slabGb.y);
+  slabC += stageKeyC * (slabSun * slabSun * slabSun * slabSun * (0.35 + 0.65 * slabFace) * ${f(SAND_LIT.spark[1]!)}) * vec3(slabGr.y, slabGg.y, slabGb.y);
   outgoingLight = slabC;
   // The heap's rim is not cut: it lies over the table by its cover, thinner in drifts a few grains wide, and the single
   // grains of arrival.ts lie on it and beyond it.
@@ -360,10 +360,17 @@ diffuseColor.a = slabAlpha;
 `
 
 // While the heap grows (arrival.ts) it is as high as it has grown, and covers the table only where that height covers it.
+// Where the heap leant on the foot it stands, as the foot leaves, as the cast of the foot's edge. It does not stand long:
+// within the second the sand slides down into the print at its angle of repose, and the print is closed.
+const SLUMP = { from: 0.33, seconds: 1.0, steep: 5.0 } as const
 const SLAB_RISE = `
-float slabRise = (position.y - ${f(SLAB.liftMm)}) * uSandGrow;
+float slabStood = uSandLift < 0.0 ? 0.0 : 1.0 - smoothstep(${f(SLUMP.from)}, ${f(SLUMP.from + SLUMP.seconds)}, uSandLift);
+float slabCut = ${f(SLUMP.steep)} * slabStood * slabStood * slabStood * max(${f(SLAB.footMm)} - length(position.xz), 0.0);
+float slabTall = max(position.y - ${f(SLAB.liftMm)} - slabCut, 0.0);
+transformed.y = ${f(SLAB.liftMm)} + slabTall;
+float slabRise = slabTall * uSandGrow;
 float slabGrown = clamp((slabRise - ${f(HEAP.edge.cover[0]!)}) / (${f(HEAP.edge.cover[1]!)} + ${f(HEAP.edge.far[2]!)} * clamp((position.x - ${f(HEAP.edge.far[0]!)}) / ${f(HEAP.edge.far[1]! - HEAP.edge.far[0]!)}, 0.0, 1.0) - ${f(HEAP.edge.cover[0]!)}), 0.0, 1.0);
-vSlab = vec2(mix(slabGrown * slabGrown * (3.0 - 2.0 * slabGrown), aSlab.x, step(1.0, uSandGrow)), aSlab.y);
+vSlab = vec2(mix(slabGrown * slabGrown * (3.0 - 2.0 * slabGrown), aSlab.x, step(1.0, uSandGrow) * step(slabCut, 0.0)), aSlab.y);
 `
 
 // The heap is the stage's sand (base.ts) with the light and the edge of this file put in place of its own.
@@ -376,8 +383,9 @@ function slabSand(): THREE.Material {
     shader.uniforms.uSlabLens = arrivalPart.grainLens
     shader.uniforms.uSandDown = arrivalPart.sandDown
     shader.uniforms.uSandGrow = arrivalPart.sandGrow
+    shader.uniforms.uSandLift = arrivalPart.sandLift
     shader.uniforms.uSandFoot = arrivalPart.sandFoot
-    shader.vertexShader = shader.vertexShader.replace('#include <common>', '#include <common>\nattribute vec2 aSlab;\nvarying vec2 vSlab;\nuniform float uSandGrow;').replace('#include <begin_vertex>', `#include <begin_vertex>\n${SLAB_RISE}`)
+    shader.vertexShader = shader.vertexShader.replace('#include <common>', '#include <common>\nattribute vec2 aSlab;\nvarying vec2 vSlab;\nuniform float uSandGrow;\nuniform float uSandLift;').replace('#include <begin_vertex>', `#include <begin_vertex>\n${SLAB_RISE}`)
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', `#include <common>\n${SLAB_PARS}`)
       .replace('#include <opaque_fragment>', `${SLAB_LIGHT}\n#include <opaque_fragment>`)

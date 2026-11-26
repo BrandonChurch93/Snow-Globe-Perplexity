@@ -228,7 +228,11 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
   async function picture(at: At, timeSec: number, shutterSec: number, pose: (t: number) => Pose, samples: number, salt: number): Promise<void> {
     plain()
     const flat = diag !== ''
-    const set: (Sample | null)[] = flat ? [null] : sampleSet(samples, salt, 'picture').sort((a, b) => a.t - b.t)
+    // One set for every picture, not one a frame: 24 places in a pixel and on the lens cannot
+    // settle detail finer than a pixel (dew, tufts, twig edges), so a set chosen anew by `salt`
+    // drew the same still ground differently each frame and it crawled. The grain and the
+    // shader's seed below still go by the frame.
+    const set: (Sample | null)[] = flat ? [null] : sampleSet(samples, 0, 'picture').sort((a, b) => a.t - b.t)
     gfx.renderer.info.reset()
     acc.begin()
     let done = 0
