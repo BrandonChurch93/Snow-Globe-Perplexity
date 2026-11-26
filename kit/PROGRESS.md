@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 162 · 2026-11-26 15:07 UTC
+Status 163 · 2026-11-26 15:33 UTC
 
-- `out/stills/status/status-162-1.jpg`: Summer at rest, the merged fourth list on 066f167a at the review tier: the approved picture above, ours below.
-- `out/stills/status/status-162-2.jpg`: The ball's upper left at one scale: the approved on the left, ours on the right. Clear glass and fine seed heads against a khaki haze and white asterisks.
-- `out/stills/status/status-162-3.jpg`: The base's right half at one scale: the approved on the left (cream sand, pale shells, frosted glass), ours on the right (slate grey, comb lines, dark glass).
-- `out/stills/status/status-162-4.jpg`: Half a second after the landing: the approved above (a warm glowing mist), ours below (cold white patches).
+- `out/stills/status/status-163-1.jpg`: Summer at rest with the miniature's fifth list (review tier): the approved above, ours below. The air and the glass in it are still the fourth list's.
+- `out/stills/status/status-163-2.jpg`: Summer's base, right half, at one scale: the approved on the left, ours on the right after the fifth list.
+- `out/stills/status/status-163-3.jpg`: Cottage, lawn and bank at one scale: the approved on the left, ours on the right after the miniature's fifth list.
+- `out/stills/status/status-163-4.jpg`: Film B frame 621 at 3840 x 2160, a crop at 6 times: 24 samples above (each lamp a dotted line), the blur rule's 50 samples below (each lamp one bar).
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-26 15:07 UTC
-clock: phase 6, tick of 28.7 minutes
-phase 6: 12.29 h used of its 12.00 h box
-allowance (after the review): 12.29 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 12.29 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-26 15:33 UTC
+clock: phase 6, tick of 25.9 minutes
+phase 6: 12.73 h used of its 12.00 h box
+allowance (after the review): 12.73 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 12.73 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
