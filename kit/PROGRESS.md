@@ -25,28 +25,28 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 138 · 2026-11-26 05:52 UTC
+Status 139 · 2026-11-26 06:16 UTC
 
-- `out/stills/status/status-138-1.jpg`: The four seasons at rest from main as it stands, 1080p at 8 samples, drawn by the faster renderer as a look, not as judged pictures. Summer is the new one.
-- `out/stills/status/status-138-2.jpg`: Summer at 400 px wide, the size at which the review said it read as snow.
-- `out/stills/status/status-138-3.jpg`: Still: summer rest hero, hd, review
-- `out/stills/status/status-138-4.jpg`: Still: fall rest hero, hd, review
+- `out/stills/status/status-139-1.jpg`: A phone, 390 x 844, drawn by the builder through the app's own path: at rest, the glass lifted in the shake, and landed in spring.
+- `out/stills/status/status-139-2.jpg`: Summer in a shake at feed size: the approved image, before, and now.
+- `out/stills/status/status-139-3.jpg`: The 16 kept sounds as waveforms, each with its name, length and loudness
+- `out/stills/status/status-139-4.jpg`: Still: winter landed hero, hd, review
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-26 06:08 UTC
-clock: phase 6, tick of 8.4 minutes
-phase 6: 3.32 h used of its 12.00 h box
-allowance (after the review): 3.32 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 3.32 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-26 06:16 UTC
+clock: phase 6, tick of 7.8 minutes
+phase 6: 3.45 h used of its 12.00 h box
+allowance (after the review): 3.45 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 3.45 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: yes
 half point: not reached
 box end: not reached
 budget report: not due
-minutes since the last status: 16
+minutes since the last status: 0
 ```
 
 ## Phases
