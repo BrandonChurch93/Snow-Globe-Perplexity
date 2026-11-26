@@ -1,0 +1,15 @@
+1-summer-lantern-caps-preview.jpg
+  What: the lanterns of the summer tree, crop x 400..620, y 230..290 of the 960x540 picture, enlarged. Left: the plain shaders (before). Right: the same frame with every open case answering not-a-number, mode all+smooth (after). Upper pair: summer-rest, the caps of two lanterns (near 432,254 and 585,256) turn dark, step up to 99. Lower pair: summer-shake, the caps and feet of six lanterns turn dark or green, step up to 194. This is atan(0, 0) in src/seasons/summer/mini/tree.ts line 165.
+  State: summer-rest and summer-shake, the judged stills. Tier: preview, draft samples, tools/strict.mjs.
+
+2-summer-lantern-caps-live-high.jpg
+  What: the same lanterns through the app's own path, crop x 440..570, y 205..265 of the 960x540 picture, six times enlarged. Left half: plain (before). Right half: all+smooth (after). The caps of two lanterns (491,235 and 533,233) turn dark or green, steps up to 174 levels.
+  State: summer-rest at rest. Tier: high, live path (tools/strict.mjs --live high).
+
+3-summer-open-cases-heat.jpg
+  What: where the not-a-number picture differs from the picture with the same wrappers answering the plain function (--same), drawn over the dimmed plain picture. Red: one level. Yellow: 2 to 8 levels. White: more than 8 levels. The white marks are the two lantern caps and the single dark pixels at the centres of the flecks (src/particles/draw/cards.ts line 332).
+  State: summer-rest. Tier: preview, draft samples. After (strict) against after (same wrappers, plain answers).
+
+4-summer-wrappers-heat.jpg
+  What: where the all+smooth picture differs from the plain picture. Same colours as picture 3. The wide field of red and yellow in the crown and on the sand is the normalize wrapper's compiled form alone (the --same run gives the same field), not an open case.
+  State: summer-rest. Tier: preview, draft samples. Before (plain) against after (all+smooth).
