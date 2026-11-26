@@ -16,8 +16,8 @@ const pick = (list) => list[Math.floor(R() * list.length) % list.length]
 const range = (a, b) => a + (b - a) * R()
 
 const IVY = { leaves: 520, roses: 14, low: 4.5, size: 0.85 }
-const TURF = { lumpMm: 0.6, fineMm: 0.12, sandMm: 2.2, sandReach: 6.5, sandSides: 0.35 }
-const GRASS = { tufts: 21000, blades: 3, tall: [0.4, 1.15], clump: 1.5, wide: [0.11, 0.2], rimTall: 1.5, sandFrom: 0.3, sandTo: 1.0 }
+const TURF = { lumpMm: 0.6, fineMm: 0.12, sandMm: 1.3, sandReach: 5.0, sandSides: 0.35 }
+const GRASS = { tufts: 21000, blades: 3, tall: [0.4, 1.15], clump: 1.5, wide: [0.11, 0.2], rimTall: 1.5, sandFrom: 0.55, sandTo: 1.0, edgeTall: 1.0 }
 const LEVEL = { seed: 4107, medium: { back: 0.4, front: 0.72 }, low: { back: 0.25, front: 0.5 }, zFrom: -12, zTo: 6 }
 const STONE = { buried: 0.25, sink: 0.45, lumps: 0.36, chips: 0.11, wet: 0.6, tones: ['#8f887a', '#a39a88', '#7b7568', '#b0a692', '#9a8c74', '#6f6a62'] }
 const TONES = {
@@ -341,7 +341,7 @@ let tufts = 0
     const y0 = topAt(x, z) - 0.05
     // Most of the lawn is short as moss; here and there a clump of tufts stands over it.
     const clump = smooth(0.56, 0.8, clamp(0.5 + 1.5 * fbm(x * 0.5 + 31, z * 0.5 + 17, 4.4, 2)))
-    const tall = range(GRASS.tall[0], GRASS.tall[1]) * (1 + GRASS.clump * clump) * (0.6 + 0.6 * lush) * (1 - 0.45 * worn) * (1 + (GRASS.rimTall - 1) * smooth(1.035, 1.09, f) * (1 - smooth(1.09, 1.25, f)))
+    const tall = range(GRASS.tall[0], GRASS.tall[1]) * (1 + GRASS.clump * clump) * (0.6 + 0.6 * lush) * (1 - 0.45 * worn) * (1 + (GRASS.rimTall - 1) * smooth(1.035, 1.09, f) * (1 - smooth(1.09, 1.25, f))) * (1 + GRASS.edgeTall * smooth(0.06, 0.4, sand))
     const patch = 0.45 + 0.75 * clamp(0.5 + 1.4 * fbm(x * 0.09 + 3, z * 0.09 + 11, 2.3, 2))
     const base = mul3(mix3(pick(TONES.grass), pick(TONES.straw), sand * 0.8), patch * deep)
     const top = mul3(mix3(pick(TONES.tip), pick(TONES.straw), clamp(sand * 0.9 + 0.08 * R())), patch * deep)
