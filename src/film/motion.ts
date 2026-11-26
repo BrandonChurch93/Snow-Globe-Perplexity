@@ -13,7 +13,7 @@ const point = new THREE.Vector3()
 function screenOf(local: readonly [number, number, number], g: GlobePose, pose: Pose, width: number, height: number): [number, number] {
   applyPose(camera, pose, width, height, null)
   camera.updateMatrixWorld(true)
-  point.set(local[0], local[1], local[2]).applyEuler(euler.set(g.tiltX, 0, g.tiltZ)).add(new THREE.Vector3(g.x, g.y, g.z)).project(camera)
+  point.set(local[0], local[1], local[2]).applyEuler(euler.set(g.tiltX, g.twist ?? 0, g.tiltZ, 'XZY')).add(new THREE.Vector3(g.x, g.y, g.z)).project(camera)
   return [(point.x * 0.5 + 0.5) * width, (0.5 - point.y * 0.5) * height]
 }
 
