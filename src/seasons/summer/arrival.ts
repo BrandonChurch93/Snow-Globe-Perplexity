@@ -21,15 +21,15 @@ const RAD = Math.PI / 180
 // function of the time since the landing and of the clock, nothing is kept from frame to frame. The mirror of the slab
 // gets none of the grains; medium and low draw a share.
 //
-// A grain is drawn where it is when the shutter opens, with its own short blur along its path, and does not move through
-// the samples of one picture: across a whole shutter a falling grain is a line dozens of pixels long, and a line drawn
-// from a few samples is a row of dashes.
+// A falling grain is drawn as a camera sees it: as the line it travels while the shutter is open, with its light spread
+// along that line, so the fall is a veil of fine streaks and not grains that stand at a new place in every frame. The
+// line is the same in every sample of one picture: drawn from a few samples it would be a row of dashes.
 const LOOK = {
   gravity: 3400,
   lift: { stop: 0.25, share: 0.6, nearMm: [61.5, 69.0], late: 0.4, upMmS: [70, 170], inMm: 1.1 },
   ledge: { r: [46.5, 52.0], h: 42.6 },
   jump: { count: 14000, reachMm: 26, ringShare: 0, ringMm: 5, edgeDeg: [62, 76], liftMm: [1.2, 8], hopMm: [0.6, 5], quick: 0.11, tail: 0.5, tailShare: [0.6, 0.12], skidMm: [0.4, 3.2], radiusMm: [0.07, 0.15] },
-  fall: { count: 32000, gravity: 7000, az: 74, spread: 2.5, most: 2.0, off: [0.35, 1.6], h: [29.0, 30.5], outMmS: [58, 130], lean: 2.2, fliers: { share: 0, far: [1.2, 1.6] }, fanDeg: 1.5, downMmS: [10, 40], rate: [5.0, 6.7], radiusMm: [0.03, 0.07], fine: 2.5, fadeFrom: 0.9, core: [0.3, 70, 160], edge: [95, 130, 0.85], exposure: 0.3, longMm: 1.0, thinPx: 0.6, grains: 1.9, mass: 2.4, sizes: [0.7, 0.9], soft: { share: 0.5, wide: 2.2, cover: 0.25 }, cover: 0.2, rise: 0.012, low: [0.66, 0.6, 0.56], shine: [0.4, 1.0], pale: 0.4, least: [0.03, 0.12], bright: [0.75, 1.9], even: 0.15, lit: 1.8, shaded: 0.08, puff: { seconds: 0.07, outMmS: [60, 330], upMmS: [90, 230], cover: 0.07, wide: 5.0, turn: 0.45 } },
+  fall: { count: 32000, gravity: 7000, az: 80, spread: 2.5, most: 2.0, off: [0.35, 1.6], h: [29.0, 30.5], outMmS: [60, 150], lean: 1.7, fliers: { share: 0, far: [1.2, 1.6] }, fanDeg: 1.5, downMmS: [10, 40], rate: [5.0, 6.7], radiusMm: [0.03, 0.07], fine: 2.5, core: [0.3, 70, 160], edge: [95, 130, 0.85], thinPx: 0.6, sizes: [0.7, 0.9], soft: { share: 0.5, wide: 2.2 }, cover: 2.0, rise: 0.012, low: [0.66, 0.6, 0.56], shine: [0.4, 1.0], pale: 0.4, least: [0.03, 0.12], bright: [0.75, 1.0], lit: 1.8, shaded: 0.08, mist: { seconds: 0.07, outMmS: [5, 40], upMmS: [5, 45], cover: 0.012, mm: [0.25, 0.5], turn: 0.45 } },
   loose: { x: [16, 136], z: [-70, 112], thinPx: 1.0, round: [-0.3, 0.6, 1.4], glint: { one: 40, lit: 2.2 }, squash: [1.0, 2.4], bend: 0.7, proud: { count: 9000, radiusMm: [0.05, 0.12, 0.3], small: 0.8, lean: 2.0, sunk: 0.3, vary: [0.6, 1.2] }, dust: { count: 14000, radiusMm: [0.03, 0.07], reach: 0.16, cover: 0.6 }, grain: { count: 2600, radiusMm: [0.07, 0.22], lean: 2.5, reach: 0.3 }, crumb: { count: 60, radiusMm: [0.3, 0.8], lean: 1.6, reach: 0.5 }, vary: [0.12, 0.5], warm: [1.0, 0.8, 0.56] },
   sprinkle: { count: 0, thinPx: 0.85, vary: [0.4, 1.15], warm: [1.0, 0.84, 0.64], s: [-12, 78], d: [-0.4, 16], mm: [0.07, 0.18], core: { share: 0.7, mm: 3.0, wide: 2.4, lit: 0.85, size: [0.08, 0.2] }, glints: { count: 46, d: [13, 46], mm: [0.16, 0.34], lit: 2.6 } },
   lens: { rows: 1080, most: 4, flyPx: 1.0, round: [1.6, 4.0], clear: 6 },
@@ -135,6 +135,7 @@ float alive = 1.0;
 float airborne = 0.0;
 float puff = -1.0;
 float grown = 1.0;
+float fallLife = 0.0;
 if (aSeed.y < -0.5) {
   tau = max(grainT - aFlight.x, 0.0);
 } else if (aSeed.y < 0.5) {
@@ -143,7 +144,8 @@ if (aSeed.y < -0.5) {
 } else if (aSeed.y < 1.5) {
   float cycles = max(1.0, floor(uGrainLoop.y * aFlight.x + 0.5));
   float life = aFlight.y + fallSlide();
-  float spare = max(min(${LOOK.fall.puff.seconds.toFixed(3)}, uGrainLoop.y / cycles - life), 0.0);
+  fallLife = life;
+  float spare = max(min(${LOOK.fall.mist.seconds.toFixed(3)}, uGrainLoop.y / cycles - life), 0.0);
   tau = fract(uGrainLoop.x * cycles + aSeed.z) * (uGrainLoop.y / cycles);
   if (grainT < 0.0 || tau > grainT || tau >= life + spare || fract(aSeed.z * 61.3 + aSeed.x * 17.7) > uGrain.z || fract(aSeed.z * 23.9 + 0.37) > uGrainLevel) alive = 0.0;
   if (tau > life) puff = (tau - life) / max(spare, 1e-4);
@@ -158,10 +160,15 @@ if (aSeed.y < 0.5 || aSeed.y > 1.5) {
   if (grown <= 0.0) alive = 0.0;
 }
 tau = max(tau, 0.0);
-vec3 nowAt = grainPath(tau);
 float falls = aSeed.y > 0.5 && aSeed.y < 1.5 ? 1.0 : 0.0;
 float lies = aSeed.y > 1.5 ? 1.0 : 0.0;
-vec3 thenAt = grainPath(max(tau - uGrain.w * mix(1.0, ${(LOOK.fall.exposure / LOOK.exposure).toFixed(3)}, falls), 0.0));
+// A falling grain is in the picture from the place it has when the shutter opens to the place it has when it shuts, or to
+// where it lands if that is sooner.
+float shut = uGrain.w * ${(1 / LOOK.exposure).toFixed(4)};
+float until = falls > 0.5 ? min(tau + shut, max(fallLife, tau)) : tau;
+float seen = falls > 0.5 ? clamp((until - tau) / max(shut, 1e-5), 0.0, 1.0) : 1.0;
+vec3 nowAt = grainPath(until);
+vec3 thenAt = grainPath(falls > 0.5 ? tau : max(tau - uGrain.w, 0.0));
 if (lies > 0.5) {
   nowAt.y = mix(${SLAB.liftMm.toFixed(2)} + (nowAt.y - ${SLAB.liftMm.toFixed(2)}) * uSandGrow, nowAt.y, step(1.0, uSandGrow));
   // A few of the grains that lay against the foot are taken up a little way as it leaves, and fall back.
@@ -180,14 +187,14 @@ if (lies > 0.5) {
   thenAt.y -= low;
 }
 // Where a falling grain lands it knocks a little dust off the mound: for a moment after its fall the grain is that dust,
-// thrown a millimetre up and out, and fading.
+// a wide faint mote that drifts up and out slowly enough to be followed, and the many of them are a still mist.
 if (puff >= 0.0) {
-  float s = tau - (aFlight.y + fallSlide());
+  float s = tau - fallLife;
   float turn = 6.2832 * fract(aSeed.x * 71.3 + aSeed.z * 3.7);
-  vec2 out2 = (dot(position.xz, position.xz) > 0.0 ? normalize(position.xz) : vec2(1.0, 0.0)) + vec2(sin(turn), cos(turn)) * ${LOOK.fall.puff.turn.toFixed(2)};
-  float outS = mix(${LOOK.fall.puff.outMmS[0].toFixed(1)}, ${LOOK.fall.puff.outMmS[1].toFixed(1)}, fract(aSeed.x * 13.9 + 0.21));
-  float upS = mix(${LOOK.fall.puff.upMmS[0].toFixed(1)}, ${LOOK.fall.puff.upMmS[1].toFixed(1)}, fract(aSeed.z * 37.1 + aSeed.x * 5.3));
-  nowAt = position + vec3(out2.x * outS * s, max(upS * s - 0.5 * ${LOOK.fall.gravity.toFixed(1)} * s * s, 0.0), out2.y * outS * s);
+  vec2 out2 = (dot(position.xz, position.xz) > 0.0 ? normalize(position.xz) : vec2(1.0, 0.0)) + vec2(sin(turn), cos(turn)) * ${LOOK.fall.mist.turn.toFixed(2)};
+  float outS = mix(${LOOK.fall.mist.outMmS[0].toFixed(1)}, ${LOOK.fall.mist.outMmS[1].toFixed(1)}, fract(aSeed.x * 13.9 + 0.21));
+  float upS = mix(${LOOK.fall.mist.upMmS[0].toFixed(1)}, ${LOOK.fall.mist.upMmS[1].toFixed(1)}, fract(aSeed.z * 37.1 + aSeed.x * 5.3));
+  nowAt = position + vec3(out2.x * outS * s, upS * s, out2.y * outS * s);
   thenAt = nowAt;
 }
 airborne = (tau < aFlight.y && lies < 0.5) || falls > 0.5 ? 1.0 : 0.0;
@@ -201,23 +208,23 @@ vec2 across = vec2(-axis.y, axis.x);
 float blur = min(len, ${LOOK.blurRadii.toFixed(2)} * aFlight.w);
 float wide = 1.0 + 0.6 * airborne;
 float thinner = 1.0;
-// A falling grain is far finer than a pixel and crosses many of them while the shutter is open. It is drawn as the line it
-// leaves, never thinner than a pixel can show, and as much fainter as the line is longer and wider than the grain.
+// A falling grain is far finer than a pixel and crosses many of them while the shutter is open. It is drawn as the whole
+// line it leaves, never thinner than a pixel can show, and as much fainter as the line is longer and wider than the
+// grain: the light of the grain is all there, spread over the line. Half of them are drawn wider and softer still.
 if (falls > 0.5) {
   float least = ${LOOK.fall.thinPx.toFixed(2)} * max(-nowV.z, 1.0) / uGrainPx;
-  // The fall is grains, some larger, some out of focus, and none is drawn as a line longer than three of itself: what the
-  // shorter line loses in length it gains in light.
   float softly = step(${(1 - LOOK.fall.soft.share).toFixed(2)}, fract(aSeed.x * 37.3 + aSeed.z * 11.9));
   float larger = fract(aSeed.x * 7.7 + aSeed.z * 29.3);
   float grow = mix(mix(${LOOK.fall.sizes[0]!.toFixed(2)}, ${LOOK.fall.sizes[1]!.toFixed(2)}, larger * larger * larger), ${LOOK.fall.soft.wide.toFixed(2)}, softly);
-  float line = min(len, ${LOOK.fall.longMm.toFixed(1)});
   wide = 1.0;
   size = max(aFlight.w, least) * grow * alive;
-  blur = min(line, ${(2 * LOOK.fall.grains).toFixed(1)} * size);
-  float finer = aFlight.w / max(aFlight.w, least);
-  thinner = finer * finer * pow(max(2.0 * aFlight.w / max(line + 2.0 * aFlight.w, 1e-5), 0.0), ${LOOK.fall.even.toFixed(2)});
-  thinner *= min((line + 2.0 * size) / max(blur + 2.0 * size, 1e-5), ${LOOK.fall.mass.toFixed(2)}) * mix(1.0, ${LOOK.fall.soft.cover.toFixed(2)}, softly);
-  if (puff >= 0.0) size *= ${LOOK.fall.puff.wide.toFixed(2)};
+  blur = len;
+  float fine = aFlight.w / max(size, 1e-5);
+  thinner = seen * fine * fine / (1.0 + 0.637 * len / max(size, 1e-5));
+  if (puff >= 0.0) {
+    size = mix(${LOOK.fall.mist.mm[0].toFixed(2)}, ${LOOK.fall.mist.mm[1].toFixed(2)}, fract(aSeed.x * 3.3 + aSeed.z * 19.1)) * alive;
+    blur = 0.0;
+  }
 }
 if (falls < 0.5) {
   // The grains strewn to the right of the base are finer than the sprinkle to its left, which keeps its own size.
@@ -255,12 +262,11 @@ if (falls > 0.5) {
   float glint = fract(aSeed.x * 53.7 + aSeed.z * 7.1);
   glint *= glint * glint;
   float bright = mix(${LOOK.fall.bright[0].toFixed(2)}, 1.0, glint * glint);
-  vGrainCover = min(1.0, ${LOOK.fall.cover.toFixed(2)} * ${LOOK.fall.bright[1].toFixed(2)} * bright * thinner);
-  vGrainCover *= 1.0 - smoothstep(${LOOK.fall.fadeFrom.toFixed(2)}, 1.0, tau / max(aFlight.y + fallSlide(), 1e-4));
+  vGrainCover = min(1.0, ${LOOK.fall.cover.toFixed(2)} * bright * thinner);
   vGrainCover *= smoothstep(0.0, ${LOOK.fall.rise.toFixed(3)}, tau);
   // The quickest grains fly farthest out and are few: they are the fainter the farther, so the fall ends in a veil and not in single grains.
   vGrainCover *= 1.0 - ${LOOK.fall.edge[2]!.toFixed(2)} * smoothstep(${LOOK.fall.edge[0]!.toFixed(1)}, ${LOOK.fall.edge[1]!.toFixed(1)}, (length(position.xz - aFrom.xz) - aSeed.w) / max(aFlight.y, 1e-3));
-  if (puff >= 0.0) vGrainCover = ${LOOK.fall.puff.cover.toFixed(2)} * mix(0.4, 1.0, bright) * (1.0 - puff) * (1.0 - puff);
+  if (puff >= 0.0) vGrainCover = ${LOOK.fall.mist.cover.toFixed(3)} * 4.0 * puff * (1.0 - puff);
 }
 if (lies > 0.5) vGrainCover = min(1.0, thinner) * mix(1.0, ${LOOK.loose.dust.cover.toFixed(2)}, step(0.15, aSeed.w) * step(aSeed.w, 0.25));
 vGrainCover *= grown;
