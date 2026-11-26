@@ -1,0 +1,9 @@
+The exchange of winter for spring in the app, at low, on the tablet layout (1024 x 1366 at 2; at low the canvas holds 1024 x 1366 pixels). One shake pressed on the control. The page's frames were given a clock of their own, a sixtieth of a second a frame through the exchange, because the software renderer here draws a tablet frame in seconds; the pixels are the canvas's own, cut and not scaled. Times are the page's own time in the shake.
+
+exchange-before.jpg: six frames the page drew in a row, the same 200 x 200 pixels of the canvas in each (inside the glass, where the miniature gives way), side by side at their own size. At 1487.5, 1495.8, 1508.3, 1512.5, 1520.8 and 1525.0 ms of the shake (this build took uneven steps on that clock). Tier: low, the app's own path. BEFORE: main a6b7310d, a white hash drawn afresh every frame; the dots are in clumps and no dot stays where it was.
+
+exchange-after-lattice.jpg: the same cut, six frames in a row at 1466.7, 1483.3, 1500.0, 1516.7, 1533.3 and 1550.0 ms. Tier: low. AFTER the first mend (19786cd4, in main as 9068414e): the pattern holds still from frame to frame and is interleaved gradient noise, whose rows read as a diagonal weave.
+
+exchange-after-tile.jpg: the same cut at the same six times. Tier: low. AFTER, the head of agent/p6-standstill (8b12158e on): the pattern holds still and is a tile of 128 x 128 levels in the order of the void and the cluster; an even grain, in no rows.
+
+exchange-three-times.jpg: one frame of each at 1500 ms of the shake (the build before: 1495.8), 130 x 130 pixels of the canvas enlarged three times with no smoothing. From left to right: BEFORE (white hash), AFTER the first mend (lattice), AFTER at the head (tile). Tier: low.
