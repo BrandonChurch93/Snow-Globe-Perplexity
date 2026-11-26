@@ -9,6 +9,7 @@ import { loadConfig, readJson, rel, writeJson } from '../tools/lib/paths.mjs'
 import { branchFolder, branchMatches, chunkLines, chunkStem, coverReport, framesOf, heartbeat, joinPlan, lumaPsnrOf, nearestRanges, openingPack as readOpening, pad6, psnrOf, rangeChunks as chunksOfRange, ranges, readChunks, recordMatchesRun, resultName, split, stillName, stillToDo as leftToDo, table, tierOf, totalsFromCut } from '../tools/lib/master.mjs'
 import { Shipper, collectBranches } from '../tools/lib/mastergit.mjs'
 import { levelProblems, pictureLevels, procsProblem } from '../tools/lib/master.mjs'
+import { limitsLine, limitsRecord, localProblem, machineLimits, procsGainLine, procsMemoryHolds, readLimits, sameCommand, stoppedAt, stoppedLine } from '../tools/lib/master.mjs'
 import { bestRun, bigSha, butCrf, crfLadder, crfOf, encodeProofRows, finalKbps, hashFolder, intermediateVideo, masterConfigProblems, partName, partPlan, psnrFacts, sendGroups, splitFile, takeFiles, unsplitFile } from '../tools/lib/master.mjs'
 import { flatValue, refuseFlat } from '../tools/lib/page.mjs'
 import { frameLevels } from '../tools/lib/encode.mjs'
@@ -437,13 +438,6 @@ describe('a flat frame', () => {
     expect(levels.map((f) => f.flat)).toEqual([false, false, false, true, true, true])
     fs.rmSync(dir, { recursive: true, force: true })
   })
-
-  it('keeps a machine under 12 GB to one uhd render at a time', () => {
-    expect(procsProblem(2, 'uhd', 7.8 * 2 ** 30)).toMatch(/--procs 2 is refused: this machine has 7 GB/)
-    expect(procsProblem(1, 'uhd', 7.8 * 2 ** 30)).toBeNull()
-    expect(procsProblem(2, 'uhd', 15.6 * 2 ** 30)).toBeNull()
-    expect(procsProblem(2, 'preview', 7.8 * 2 ** 30)).toBeNull()
-  })
 })
 
 describe('the one encode of a master', () => {
@@ -675,7 +669,7 @@ describe('files that travel by attachment', () => {
     expect(cut.parts.length).toBe(3)
     const r1 = rec('loop', 0, 29, { sha256: sha(one), bytes: one.length, boot: 'b1', still: { file: 'frame-000000.png', bytes: still.length, sha256: sha(still) } })
     const r2 = rec('loop', 30, 59, { sha256: cut.sha256, bytes: two.length, boot: 'b1', parts: cut.parts })
-    writeJson(path.join(flat, 'download-7.json'), r2)
+    writeJson(path.join(flat, 'download-7'), r2)
     writeJson(path.join(flat, 'loop-000000-000029.json'), r1)
     fs.writeFileSync(path.join(flat, 'notes.json'), '{"hello": 1}')
     fs.writeFileSync(path.join(flat, 'zz (1)'), one)
@@ -726,6 +720,24 @@ describe('files that travel by attachment', () => {
     expect(p.problems.join(' ')).toMatch(/the mp4 is missing/)
   })
 
+  it('takes two chunks that hold the same bytes, as two still stretches of the opening do', () => {
+    const flat = path.join(box, 'flat-3')
+    const into = path.join(box, 'collected-same')
+    fs.mkdirSync(flat)
+    const same = bytesOf(4000, 11)
+    fs.writeFileSync(path.join(flat, 'only-one-file'), same)
+    const sha = bigSha(path.join(flat, 'only-one-file'))
+    writeJson(path.join(flat, 'a.json'), rec('opening', 0, 29, { sha256: sha, bytes: same.length, boot: 'b1' }))
+    writeJson(path.join(flat, 'b.json'), rec('opening', 30, 59, { sha256: sha, bytes: same.length, boot: 'b1' }))
+    const got = takeFiles(flat, into, { keep: false })
+    expect(got.records).toBe(2)
+    expect(got.problems).toEqual([])
+    const chunks = readChunks([into])
+    expect(chunks.map((c: Chunk) => c.record.first)).toEqual([0, 30])
+    expect(chunks.every((c: Chunk) => fs.readFileSync(c.file).equals(same))).toBe(true)
+    expect(fs.readdirSync(flat)).toEqual([])
+  })
+
   it('lets a test encode skip what was never rendered, and a real one never', () => {
     const t = (a: number, b: number) => chunk(rec('film-b', a, b, { test: true }))
     const p = plan('film-b', [t(660, 669), t(60, 69)], { test: true, gaps: true })
@@ -735,4 +747,188 @@ describe('files that travel by attachment', () => {
     refused('film-b', [t(60, 69), t(660, 669)], /frames 70 to 659 are covered by no chunk/, { test: true })
     refused('film-b', [filmB()[0], filmB()[2]], /frames 30 to 59 are covered by no chunk/, { gaps: true })
   })
+})
+
+describe('what the machine may really use', () => {
+  const GIB = 2 ** 30
+  const node = { totalmem: 253 * GIB, cpus: 64 }
+  const files = (map: Record<string, string>) => (f: string) => map[f] ?? null
+
+  it('reads memory.max and cpu.max of the cgroup the process is in', () => {
+    const l = readLimits({ cgroup: '0::/kubepods/pod1/c1\n', read: files({ '/sys/fs/cgroup/kubepods/pod1/c1/memory.max': '25769803776\n', '/sys/fs/cgroup/kubepods/pod1/c1/cpu.max': '800000 100000\n' }), ...node })
+    expect(l).toEqual({ memoryBytes: 24 * GIB, cpus: 8, memoryFrom: 'cgroup', cpusFrom: 'cgroup', machineMemoryBytes: 253 * GIB, machineCpus: 64 })
+    expect(limitsLine(l)).toBe("limits: 24 GiB of memory (the cgroup's memory.max; the machine shows 253 GiB), 8 CPUs (the cgroup's cpu.max; the machine shows 64)")
+    expect(limitsRecord(l)).toEqual({ memoryGiB: 24, cpus: 8, memoryFrom: 'cgroup', cpusFrom: 'cgroup', machineMemoryGiB: 253, machineCpus: 64 })
+  })
+
+  it('takes max as no limit, and the least of the folders above', () => {
+    const l = readLimits({ cgroup: '0::/a/b/c', read: files({ '/sys/fs/cgroup/a/b/c/memory.max': 'max\n', '/sys/fs/cgroup/a/b/c/cpu.max': 'max 100000\n', '/sys/fs/cgroup/a/b/memory.max': '8209612800\n', '/sys/fs/cgroup/a/memory.max': '17179869184\n', '/sys/fs/cgroup/a/cpu.max': '250000 100000' }), ...node })
+    expect(l.memoryBytes).toBe(8209612800)
+    expect(l.cpus).toBe(2.5)
+    const none = readLimits({ cgroup: '0::/', read: files({ '/sys/fs/cgroup/memory.max': 'max', '/sys/fs/cgroup/cpu.max': 'max 100000' }), ...node })
+    expect(none).toMatchObject({ memoryBytes: 253 * GIB, cpus: 64, memoryFrom: 'machine', cpusFrom: 'machine' })
+    expect(limitsLine(none)).toBe('limits: 253 GiB of memory, 64 CPUs')
+  })
+
+  it('falls back to the machine when the files are missing, the text is empty or the limit is over the machine', () => {
+    expect(readLimits({ cgroup: '0::/gone', ...node })).toMatchObject({ memoryBytes: 253 * GIB, cpus: 64, memoryFrom: 'machine', cpusFrom: 'machine' })
+    expect(readLimits({ cgroup: '', read: files({ '/sys/fs/cgroup/memory.max': '1024' }), ...node })).toMatchObject({ memoryFrom: 'machine' })
+    expect(readLimits({ ...node })).toMatchObject({ memoryBytes: 253 * GIB, cpus: 64 })
+    expect(readLimits({ cgroup: '0::/x', read: files({ '/sys/fs/cgroup/x/memory.max': String(999 * GIB), '/sys/fs/cgroup/x/cpu.max': '9900000 100000', '/sys/fs/cgroup/x/garbage': 'x' }), ...node })).toMatchObject({ memoryFrom: 'machine', cpusFrom: 'machine' })
+    expect(readLimits({ cgroup: '0::/x', read: files({ '/sys/fs/cgroup/x/memory.max': 'lots', '/sys/fs/cgroup/x/cpu.max': '100000' }), ...node })).toMatchObject({ memoryFrom: 'machine', cpusFrom: 'machine' })
+  })
+
+  it('reads the old names where a machine still has cgroup v1', () => {
+    const l = readLimits({
+      cgroup: '11:memory:/docker/abc\n4:cpu,cpuacct:/docker/abc\n1:name=systemd:/docker/abc\n',
+      read: files({ '/sys/fs/cgroup/memory/memory.limit_in_bytes': String(16 * GIB), '/sys/fs/cgroup/cpu,cpuacct/docker/abc/cpu.cfs_quota_us': '400000', '/sys/fs/cgroup/cpu,cpuacct/docker/abc/cpu.cfs_period_us': '100000' }),
+      ...node,
+    })
+    expect(l).toMatchObject({ memoryBytes: 16 * GIB, cpus: 4, memoryFrom: 'cgroup', cpusFrom: 'cgroup' })
+    const open = readLimits({ cgroup: '11:memory:/\n4:cpu,cpuacct:/\n', read: files({ '/sys/fs/cgroup/memory/memory.limit_in_bytes': '9223372036854771712', '/sys/fs/cgroup/cpu,cpuacct/cpu.cfs_quota_us': '-1', '/sys/fs/cgroup/cpu,cpuacct/cpu.cfs_period_us': '100000' }), ...node })
+    expect(open).toMatchObject({ memoryFrom: 'machine', cpusFrom: 'machine' })
+  })
+
+  it('reads this machine without an error', () => {
+    const l = machineLimits()
+    expect(l.memoryBytes).toBeGreaterThan(0)
+    expect(l.memoryBytes).toBeLessThanOrEqual(os.totalmem())
+    expect(l.cpus).toBeGreaterThan(0)
+  })
+
+  it('refuses the processes the memory cannot hold, by the limit and not by the node', () => {
+    const pod = readLimits({ cgroup: '0::/p', read: files({ '/sys/fs/cgroup/p/memory.max': String(24 * GIB), '/sys/fs/cgroup/p/cpu.max': '800000 100000' }), ...node })
+    expect(procsMemoryHolds(24 * GIB)).toBe(5)
+    expect(procsProblem(12, 'uhd', pod)).toMatch(/^--procs 12 is refused: this process may use 24 GiB \(its cgroup's memory.max\) and one uhd render holds about 4.1 GB.*The most here is --procs 5\.$/)
+    expect(procsProblem(6, 'uhd', pod)).not.toBeNull()
+    expect(procsProblem(5, 'uhd', pod)).toBeNull()
+    expect(procsProblem(12, 'uhd', readLimits({ ...node }))).toBeNull()
+    const small = readLimits({ totalmem: 7.8 * GIB, cpus: 4 })
+    expect(procsProblem(2, 'uhd', small)).toMatch(/the machine's memory.*The most here is --procs 1\.$/)
+    expect(procsProblem(1, 'uhd', small)).toBeNull()
+    expect(procsProblem(2, 'hd', small)).toBeNull()
+    expect(procsProblem(3, 'uhd', readLimits({ totalmem: 15.6 * GIB, cpus: 4 }))).toBeNull()
+    expect(procsProblem(4, 'uhd', readLimits({ totalmem: 15.6 * GIB, cpus: 4 }))).not.toBeNull()
+  })
+
+  it('says in a plain line when the CPUs gain nothing from more processes', () => {
+    const on = (cpus: number) => readLimits({ totalmem: 64 * GIB, cpus })
+    expect(procsGainLine(1, on(4))).toBeNull()
+    expect(procsGainLine(2, on(8))).toBeNull()
+    expect(procsGainLine(3, on(8))).toBe('--procs 3 on 8 CPUs: one software render already uses every core. Measured on 8 CPUs, a second process added about 10 percent and a third nothing. It runs, but expect no gain over --procs 2.')
+    expect(procsGainLine(2, on(4))).toMatch(/expect no gain over --procs 1\.$/)
+    expect(procsGainLine(4, on(16))).toBeNull()
+  })
+
+  it('refuses --local where no display is', () => {
+    expect(localProblem(true, 'linux', {})).toMatch(/^--local is refused: it starts the installed Chrome in a window, with the graphics card of this machine, and no display is here/)
+    expect(localProblem(true, 'linux', { DISPLAY: ':0' })).toBeNull()
+    expect(localProblem(true, 'linux', { WAYLAND_DISPLAY: 'wayland-0' })).toBeNull()
+    expect(localProblem(true, 'darwin', {})).toBeNull()
+    expect(localProblem(false, 'linux', {})).toBeNull()
+  })
+
+  it('names the chunk and the frame of a stop and reads them back, and gives the command as it was typed', () => {
+    const line = stoppedLine({ first: 930, last: 959 }, 937, 'the WebGL context was lost before the picture was read back. No picture was written.')
+    expect(line).toBe('stopped at chunk 000930-000959, frame 937: the WebGL context was lost before the picture was read back. No picture was written.')
+    expect(stoppedAt(`master: ${line}`)).toEqual({ first: 930, last: 959, frame: 937, why: 'the WebGL context was lost before the picture was read back. No picture was written.' })
+    expect(stoppedAt('master: something else')).toBeNull()
+    expect(stoppedAt(`master: ${stoppedLine({ first: 0, last: 29 }, 4, 'Target closed\nCall log:\n  - waiting')} 4 frames stay.\nCall log:`)).toEqual({ first: 0, last: 29, frame: 4, why: 'Target closed 4 frames stay.' })
+    expect(sameCommand(['--what', 'film-b', '--first', '900', '--last', '1259', '--procs', '5', '--worker', '3'])).toBe('npm run master -- --what film-b --first 900 --last 1259 --procs 5')
+    expect(sameCommand(['--encode', 'film-b', '--x264', 'a b'])).toBe("npm run master -- --encode film-b --x264 'a b'")
+  })
+})
+
+describe('render processes side by side, with a stand-in for the renderer', () => {
+  const tool = rel('tools', 'master.mjs')
+  const haveFfmpeg = !spawnSync('ffmpeg', ['-version']).error
+  const run = (dir: string, ...more: string[]) => {
+    const r = spawnSync(process.execPath, [tool, '--what', 'film-b', '--chunk', '2', '--format', 'preview', '--samples', '1', '--stand-in', dir, ...more], { encoding: 'utf8', env: { ...process.env, DISPLAY: '' } })
+    return { code: r.status, lines: (r.stdout + r.stderr).split('\n').filter(Boolean) }
+  }
+  const frames = (dir: string, first: number) => path.join(dir, 'work', 'film-b', `frames-${pad6(first)}-${pad6(first + 1)}`)
+  const chunks = (dir: string) => (fs.existsSync(path.join(dir, 'out', 'film-b')) ? fs.readdirSync(path.join(dir, 'out', 'film-b')).filter((f) => f.endsWith('.mp4')).sort() : [])
+  let dir = ''
+  beforeAll(() => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), 'master-procs-'))
+  })
+  afterAll(() => {
+    fs.rmSync(dir, { recursive: true, force: true })
+  })
+
+  it.runIf(haveFfmpeg)('starts 12 workers over 12 fresh chunks and none dies', () => {
+    const d = path.join(dir, 'twelve')
+    fs.mkdirSync(frames(d, 10), { recursive: true })
+    fs.writeFileSync(path.join(frames(d, 10), 'frames.json'), '{"what": "film-')
+    fs.writeFileSync(path.join(frames(d, 10), '000010.png'), 'left by a run that was killed')
+    const r = run(d, '--first', '0', '--last', '23', '--procs', '12')
+    expect(r.lines.filter((l) => /master:|ENOTEMPTY|JSON|stopped/.test(l))).toEqual([])
+    expect(r.code).toBe(0)
+    expect(r.lines[0]).toMatch(/^limits: [\d.]+ GiB of memory.*, [\d.]+ CPUs?/)
+    expect(r.lines.filter((l) => /^\[\d+\] finished film-b-/.test(l)).length).toBe(12)
+    expect(new Set(r.lines.map((l) => /^\[(\d+)\] finished/.exec(l)?.[1]).filter(Boolean)).size).toBe(12)
+    expect(chunks(d).length).toBe(12)
+    expect(fs.readdirSync(path.join(d, 'work', 'film-b'))).toEqual([])
+    const record = readJson(path.join(d, 'out', 'film-b', 'film-b-000000-000001.json'))
+    expect(record.limits).toEqual(limitsRecord(machineLimits()))
+    expect(record).toMatchObject({ renderer: 'stand-in', test: true })
+    const again = run(d, '--first', '0', '--last', '23', '--procs', '12')
+    expect(again.code).toBe(0)
+    expect(again.lines.some((l) => /^12 chunks are finished, 0 to do/.test(l))).toBe(true)
+  }, 180000)
+
+  it.runIf(haveFfmpeg)('a worker reads and drops the folders of its own chunks only', () => {
+    const d = path.join(dir, 'lanes')
+    fs.mkdirSync(frames(d, 0), { recursive: true })
+    fs.mkdirSync(frames(d, 2), { recursive: true })
+    fs.writeFileSync(path.join(frames(d, 2), 'frames.json'), '{"what": "film-')
+    fs.writeFileSync(path.join(frames(d, 2), '000002.png'), 'being written by its owner')
+    const r = run(d, '--first', '0', '--last', '7', '--procs', '4', '--worker', '3')
+    expect(r.lines.filter((l) => /^master:/.test(l))).toEqual([])
+    expect(r.code).toBe(0)
+    expect(chunks(d)).toEqual(['film-b-000006-000007.mp4'])
+    expect(fs.readdirSync(frames(d, 0))).toEqual([])
+    expect(fs.readdirSync(frames(d, 2)).sort()).toEqual(['000002.png', 'frames.json'])
+    expect(fs.readFileSync(path.join(frames(d, 2), 'frames.json'), 'utf8')).toBe('{"what": "film-')
+  }, 120000)
+
+  it.runIf(haveFfmpeg)('a lost context in one worker: the parent names the chunk and the frame, the PNGs stay, and the last line is the command that goes on', () => {
+    const d = path.join(dir, 'lost')
+    const typed = ['--first', '0', '--last', '11', '--procs', '3', '--stand-in-fail', '9']
+    const r = run(d, ...typed)
+    expect(r.code).toBe(1)
+    expect(r.lines.some((l) => /^\[1\] master: stopped at chunk 000008-000009, frame 9: the WebGL context was lost/.test(l))).toBe(true)
+    const end = r.lines.slice(r.lines.findIndex((l) => l.startsWith('master: ')))
+    expect(end[0]).toMatch(/^master: render process 1 stopped at chunk 000008-000009, frame 9: the WebGL context was lost before the picture was read back.*1 of this chunk's 2 frames are PNGs in .*frames-000008-000009 and stay there\.$/)
+    expect(end[1]).toMatch(/^Nothing drawn is lost: every finished frame is a PNG under .*A lost context is most often a browser killed for memory \(dmesg says so\): if it was, go on with a smaller --procs than 3\.$/)
+    expect(end[2]).toBe(`To go on from there: npm run master -- --what film-b --chunk 2 --format preview --samples 1 --stand-in ${d} ${typed.join(' ')}`)
+    expect(end.length).toBe(3)
+    expect(fs.readdirSync(frames(d, 8)).sort()).toEqual(['000008.json', '000008.png', 'frames.json', 'source.json'])
+    expect(chunks(d)).toEqual(['film-b-000000-000001.mp4', 'film-b-000002-000003.mp4', 'film-b-000004-000005.mp4', 'film-b-000006-000007.mp4', 'film-b-000010-000011.mp4'])
+    const on = run(d, '--first', '0', '--last', '11', '--procs', '3')
+    expect(on.code).toBe(0)
+    expect(on.lines.some((l) => /^5 chunks are finished, 1 to do, 1 frames to render \(1 more are on disk as PNGs\)/.test(l))).toBe(true)
+    expect(on.lines.some((l) => /chunk 000008-000009: 1 of its 2 frames were on disk and were not rendered again/.test(l))).toBe(true)
+    expect(chunks(d).length).toBe(6)
+    const one = run(path.join(dir, 'lost-one'), '--first', '0', '--last', '3', '--stand-in-fail', '2')
+    expect(one.code).toBe(1)
+    expect(one.lines.at(-1)).toMatch(/^To go on from there: npm run master -- --what film-b .* --first 0 --last 3 --stand-in-fail 2$/)
+    expect(one.lines.at(-3)).toMatch(/^master: stopped at chunk 000002-000003, frame 2: the WebGL context was lost/)
+  }, 180000)
+
+  it('refuses --local on a machine without a display before anything is started', () => {
+    const r = spawnSync(process.execPath, [tool, '--what', 'film-b', '--first', '0', '--last', '29', '--local'], { encoding: 'utf8', env: { ...process.env, DISPLAY: '', WAYLAND_DISPLAY: '' } })
+    const lines = (r.stdout + r.stderr).split('\n').filter(Boolean)
+    if (process.platform === 'linux') {
+      expect(r.status).toBe(1)
+      expect(lines.at(-1)).toMatch(/^master: --local is refused: it starts the installed Chrome in a window/)
+    }
+  }, 60000)
+
+  it('keeps the stand-in out of anything a master is made from', () => {
+    const r = spawnSync(process.execPath, [tool, '--what', 'film-b', '--first', '0', '--last', '29', '--stand-in', path.join(dir, 'no')], { encoding: 'utf8' })
+    expect(r.status).toBe(1)
+    expect(r.stdout).toMatch(/--stand-in DIR is for the tool's own tests/)
+    expect(fs.existsSync(path.join(dir, 'no'))).toBe(false)
+  }, 60000)
 })

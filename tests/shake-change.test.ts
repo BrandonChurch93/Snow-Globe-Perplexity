@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { config, shots } from '../src/config'
+import { config, shots, tiers } from '../src/config'
 import { FRAME } from '../src/app/framing'
 import * as THREE from 'three'
-import { GLASS_COME, GLASS_LEAVE, GUST_CLOSES, GUST_LAST_DOWN, GUST_LAST_DOWN_AT, MODE, makeHandle, setPresence, STAGE_FRAG_PARS } from '../src/core/materials'
+import { GLASS_COME, GLASS_LEAVE, GUST_CLOSES, GUST_LAST_DOWN, GUST_LAST_DOWN_AT, MODE, makeHandle, passLevel, passSpread, passStep, passStride, setPresence, STAGE_FRAG_PARS } from '../src/core/materials'
 import { BASE_PASS, CHANGE_COVER, DRESSING_CHANGE, changeBloom, changeRamp, changeSpan, partChange, SEASONAL_PARTS } from '../src/shake/change'
 import { shakeMotion } from '../src/shake/table'
 import { CHANGE_BLOOM } from '../src/scene/lighting'
@@ -301,7 +301,7 @@ describe('the dressing on the glass under a change', () => {
     const ramp = changeRamp('base')
     const from = (BASE_PASS.from - ramp.start) / ramp.length
     const long = (BASE_PASS.to - BASE_PASS.from) / ramp.length
-    expect(/if \(uState\.z < -9\.0\) return ([^;]+);/.exec(STAGE_FRAG_PARS)?.[1]).toBe(`clamp((s + ${(-from).toFixed(4)}) / ${long.toFixed(4)}, 0.0, 1.0)`)
+    expect(/if \(uState\.z < -9\.0\) return ([^;]+);/.exec(STAGE_FRAG_PARS)?.[1]).toBe(`clamp(((uPass.z - uState.x) / uState.y + ${(-from).toFixed(4)}) / ${long.toFixed(4)}, 0.0, 1.0)`)
     // The pass is longer than the whole cover. Outside the whole cover the room stands under a fiftieth of its light, and no more than an eighth of the base is the other season's.
     const passed = (c: number): number => Math.min(1, Math.max(0, (c - BASE_PASS.from) / (BASE_PASS.to - BASE_PASS.from)))
     for (let i = 0; i <= 240; i++) {
@@ -310,5 +310,50 @@ describe('the dressing on the glass under a change', () => {
       expect(Math.pow(CHANGE_BLOOM.dim, cover), `the room at ${i} of 240 of the pass`).toBeLessThan(0.02)
       if (cover < 1) expect(Math.min(passed(c), 1 - passed(c)), `the other base at ${i} of 240 of the pass`).toBeLessThanOrEqual(0.125 + 1e-9)
     }
+  })
+
+  it("holds the new base at every pixel in the same number of a frame's samples, the share that has passed to the nearest of them, and one base or the other in each", () => {
+    const body = /if \(uState\.z < -9\.0\) \{([^}]+)\}/.exec(STAGE_FRAG_PARS)?.[1]?.replace(/\s+/g, ' ').trim()
+    expect(body).toBe('h = stageHash(vec3(gl_FragCoord.xy, uPass.x)); if (uPass.w > 1.5) h = (floor(h * uPass.w) + 0.5) / uPass.w; h = fract(h + uPass.y);')
+    expect(STAGE_FRAG_PARS).toContain('if (uState.w > 1.5 ? h < c : h >= c) return true;')
+    const counts = Object.values(tiers).map((t) => t.samplesPerFrame)
+    expect(counts.some((n) => n >= 24)).toBe(true)
+    for (const n of counts) {
+      expect(n).toBeGreaterThan(1)
+      // 487 is prime, so no share of this row stands on a level, where the last bit of a sum would say which side it falls.
+      for (let k = 0; k <= 487; k++) {
+        const c = k / 487
+        let least = n
+        let most = 0
+        for (let j = 0; j < 997; j++) {
+          let m = 0
+          for (let i = 0; i < n; i++) if (passLevel(j / 997, passStep((i + 0.5) / n, n), n) < c) m++
+          least = Math.min(least, m)
+          most = Math.max(most, m)
+        }
+        expect([least, most], `the samples of ${n} that hold the new base at the share ${k} of 487, the least and the most over 997 hashes`).toEqual([most, most])
+        expect(Math.abs(most / n - c), `the share held of ${n} at ${k} of 487`).toBeLessThanOrEqual(0.5 / n + 1e-9)
+      }
+      // Which samples they are is the pixel's own: every sample is the first of some pixel's.
+      const starts = new Set<number>()
+      for (let j = 0; j < 997; j++) for (let i = 0; i < n; i++) if (passLevel(j / 997, passStep((i + 0.5) / n, n), n) < 1 / n) starts.add(i)
+      expect(starts.size).toBe(n)
+      // The globe travels while the shutter is open, so a pixel on a base's drawn out line is under it for a part of the shutter.
+      // Over the first parts of the shutter, at any pixel, the samples that hold the new base stand about half a sample from their even share,
+      // and no other stride that visits every level does better. Taken in the plain order they stood up to a quarter of the frame's samples off.
+      const steps = Array.from({ length: n }, (_, i) => Math.round(passStep((i + 0.5) / n, n) * n))
+      expect([...steps].sort((a, b) => a - b), `the levels the ${n} samples step to`).toEqual(Array.from({ length: n }, (_, i) => i))
+      expect(steps[1], `the stride of ${n}`).toBe(passStride(n) % n)
+      expect(passSpread(n, passStride(n)), `the spread of ${n}`).toBeLessThanOrEqual(0.6)
+      if (n >= 8) expect(passSpread(n, 1), `the spread of ${n} in the plain order`).toBeGreaterThan(1.5 * passSpread(n, passStride(n)))
+      for (let g = 1; g < n; g++) {
+        let visits = true
+        for (let d = 2; d <= g; d++) if (g % d === 0 && n % d === 0) visits = false
+        if (visits) expect(passSpread(n, g), `the stride ${g} of ${n}`).toBeGreaterThanOrEqual(passSpread(n, passStride(n)) - 1e-9)
+      }
+    }
+    // One sample, the app's own path: the plain hash.
+    expect(passStep(0.5, 1)).toBe(0)
+    for (let j = 0; j < 997; j++) expect(passLevel(j / 997, 0, 1)).toBe(j / 997)
   })
 })

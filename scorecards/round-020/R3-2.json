@@ -1,0 +1,63 @@
+{
+  "critic": "R3",
+  "score": 4,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "severe",
+      "file": "set-D-01.jpg",
+      "where": "the right silhouette of the base and the slope of the right sand mound (crops 4 and 8 in set-D-02.jpg and set-D-03.jpg; also set-E-01.jpg and set-F-01.jpg)",
+      "what": "hundreds of oversized, uniform round sand spheres hang frozen in empty air off the right wall of the base with no support or motion blur, a second detached layer of grains levitates above the smooth diagonal ridge of the right sand drift (set-F-03.jpg crop 12, set-E-02.jpg crop 4), and the scattered perimeter pellets are roughly ten times larger than the texture grain of the sand pile",
+      "fix": "delete mid-air grain instances outside the base silhouette and above the dune mesh, rest settled grains directly on stone ledges and the tabletop with contact shadows, and match scattered grain size to the fine sand texture"
+    },
+    {
+      "severity": "severe",
+      "file": "set-D-01.jpg",
+      "where": "the sea-glass, pebble, and shell inlays across the base (crops 5 and 6 in set-D-02.jpg, crops 7 and 8 in set-D-03.jpg; also set-E-01.jpg and set-F-01.jpg)",
+      "what": "the green, teal, and blue sea-glass inlays look like smooth, opaque matte plastic blobs with zero frosted glass translucency or sheen and visible mesh-pole pinch shading in their centers; the large scallop shell has smooth procedural cone ribs that clip straight into the stone without a socket; and the white shell on the far-left profile (set-F-03.jpg crops 8 and 11) juts out into empty air with a gap behind its edges",
+      "fix": "give the sea glass real frosted refractive glass shading with subsurface scattering, surface micro-pitting, and clean quad topology, sculpt natural shell hinges and growth lines, and seat every shell and pebble into recessed mortar or stone sockets with contact occlusion"
+    },
+    {
+      "severity": "major",
+      "file": "set-F-01.jpg",
+      "where": "the glass sphere from shoulder to rim and across its interior (crops 1, 2, 3, and 4 in set-F-02.jpg, crop 7 in set-F-03.jpg)",
+      "what": "the globe reads as a thin hollow dry shell rather than a liquid-filled sphere: the cottage, fence, and foliage near the edge are neither bent nor magnified by liquid, none of the bright background bokeh lights refract through the globe, and the bright specular rim arc shows stair-step pixel aliasing",
+      "fix": "model a thick glass wall enclosing a solid liquid volume (water IOR ~1.33 inside glass IOR ~1.5) so both the miniature and background bokeh lights refract and magnify naturally toward the rim, and supersample the rim highlights to remove aliasing"
+    },
+    {
+      "severity": "major",
+      "file": "set-F-01.jpg",
+      "where": "the floating particles and miniature surfaces inside the globe (crops 1 through 6 in set-F-02.jpg, crop 7 in set-F-03.jpg)",
+      "what": "the glowing particles are repetitive radial dots mixed with flat, hard-edged solid yellow discs, the tan seed particles are identical stamped 8-spoke starburst sprites, nothing has settled on the cottage roof, chimney, fence, or branches, and particles clip into the brick chimney and foliage",
+      "fix": "replace flat discs and identical starburst sprites with varied 3D suspended particles rendered with true depth-of-field blur, add settled accumulation on the roof, chimney, branches, and ground, and add collision and exclusion so particles never intersect geometry"
+    },
+    {
+      "severity": "major",
+      "file": "set-D-01.jpg",
+      "where": "the collar where the glass meets the stone base (crops 1 through 4 in set-D-02.jpg; also set-E-02.jpg crop 3 and set-F-02.jpg crops 3 and 5)",
+      "what": "the glass wall terminates on a hard line atop a flat-shaded cylindrical band bordered by crunchy, vertically stretched displacement noise, with streaky vertical mesh-drip artifacts on the chalky right collar rim and bright red, blue, and white firefly pixels leaking through a gap at the left end of the seam",
+      "fix": "recess the sphere into a beveled physical seat in the stone base with a continuous dark contact shadow, fix the UV stretching on the collar and inner ground rim, and seal the geometry gap on the left"
+    },
+    {
+      "severity": "major",
+      "file": "set-E-01.jpg",
+      "where": "the foreground sand apron, mirror reflection, and right sand mound on the surface (crops 4 and 6 in set-E-02.jpg, crops 7 and 8 in set-E-03.jpg)",
+      "what": "the glossy mirror reflection of the base and green sea glass shines straight through the foreground sand apron as if the sand were a semi-transparent tint on the mirror shader rather than opaque grains resting on top, while the right sand mound is a smooth low-detail mesh with a clipped pure-white highlight",
+      "fix": "make the sand layer physically opaque so it blocks underlying mirror reflections wherever grains cover the surface, add crisp micro-grain relief across the mounds, and roll off the clipped highlight on the right drift"
+    },
+    {
+      "severity": "major",
+      "file": "set-F-01.jpg",
+      "where": "the cottage yard, sunflowers, hanging lanterns, tree crown, and pond inside the globe (crops 2, 3, 4, 5, and 6 in set-F-02.jpg, crop 9 in set-F-03.jpg)",
+      "what": "the sunflowers sit on dead-straight stick stems with flat angular polygon leaves, the fence planks lack bevels or grain, the tree crown is noisy high-contrast green speckles on black clumps, the orange lanterns lack glow or warm light spill (with one small lantern under the right branch missing its string), and the uniform smooth pond stones stay completely dry at the waterline around a stark white area-light reflection",
+      "fix": "add organic stem curves, detailed leaves, wood grain, and finer foliage cards, give all lanterns emissive bloom, local warm bounce light, and intact cords, darken and wet the pond stones at the waterline, and hide the raw white light card from the water reflection"
+    },
+    {
+      "severity": "major",
+      "file": "set-D-01.jpg",
+      "where": "the sandstone body and the contact line where the base meets the surface (crops 1 through 3 in set-D-02.jpg, crops 10 and 11 in set-D-03.jpg)",
+      "what": "under the center-left foot the contact shadow forms a harsh, stepped black cutout patch with noisy speckles and tiny bright pinprick leaks along the crease, while the sandstone base and foreground sand bed look like soft, blurry procedural noise at native crop resolution with faint vertical polygon faceting on the upper-left shoulder",
+      "fix": "ground the base cleanly into the surface and sand with smooth continuous contact ambient occlusion, subdivide the base mesh to remove shoulder faceting, and replace the blurry procedural bump with high-resolution mineral sand grain detail"
+    }
+  ]
+}
