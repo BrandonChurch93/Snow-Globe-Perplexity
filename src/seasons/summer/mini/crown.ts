@@ -1,7 +1,7 @@
 import { stream } from '../../../core/rng'
 import { crownField, localPads, padAxes } from '../../../miniature/trunk'
 
-export const FULL = { swell: -1.0, perMm2: 0.5, radius: [0.9, 2.2] as const, dome: 0.85, reach: 1.04, blend: 0.16, knob: 0.3, knobMm: 1.15, wave: 0.45, waveMm: 4.3 }
+export const FULL = { swell: -1.5, perMm2: 0.55, radius: [0.8, 1.75] as const, dome: 0.5, reach: 1.04, blend: 0.16, knob: 0.3, knobMm: 1.15, wave: 0.45, waveMm: 4.3 }
 
 // The shared pads stand in tiers with room between them. Two more flat pads hang in that room, one over the fork and one at the right, each clear of its neighbours.
 const BETWEEN: readonly { at: readonly [number, number, number]; size: readonly [number, number, number] }[] = [
