@@ -52,7 +52,11 @@ export const config: Config = raw
 export const shots = raw.film.shots as Shot[]
 export const cameras = raw.cameras as Record<string, CameraSpec>
 export const formats: FormatSpec[] = Object.values(raw.formats)
-export const tiers = raw.tiers as Record<string, { samplesPerFrame: number }>
+export interface TierMotion {
+  spacingPx: number
+  maxSamplesPerFrame: number
+}
+export const tiers = raw.tiers as Record<string, { samplesPerFrame: number; motion?: TierMotion }>
 export const pictures: PictureSpec[] = [...raw.keys, ...raw.stills]
 
 export function formatById(id: string): FormatSpec {
@@ -76,6 +80,9 @@ export function tierSamples(id: string): number {
   if (!counted) throw new Error(`no such tier: ${id}`)
   return Number(counted[1])
 }
+
+/** The tier's own motion rule, or none for a tier of a fixed count and for a counted tier, whose count is asked for. */
+export const tierMotion = (id: string): TierMotion | undefined => tiers[id]?.motion
 
 export function particleKinds(season: string): ParticleKind[] {
   const list = (raw.particles as unknown as Record<string, ParticleKind[]>)[season]
