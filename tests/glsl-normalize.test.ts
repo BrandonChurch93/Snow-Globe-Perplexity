@@ -10,6 +10,13 @@ import { describe, expect, it } from 'vitest'
 
 const ASKS = join('core', 'maths.ts')
 
+// Two of three components: the vector has no length on a whole line through the scene (the axis, straight up), which
+// a camera, a ray or a vertex can meet. A vector of uniforms and numbers alone is the config's matter, not a sample's.
+const FLAT = [/^[\w.[\]]+\.(xz|xy|yz)$/, /^cross\(vec3\([-\d., ]+\), [\w.]+\)$/, /^vec3\(-?[\w.]+, 0\.0, -?[\w.]+\)$/]
+const FIXED = /^(?:(?:vec3|cross)\b|u[A-Z]\w*(?:\.[xyz]+)?|-?\d[\d.]*|[\s(),-])+$/
+const TESTED = /dot\(([\w.[\]]+), \1\) > 0\.0 \? $/
+const WITH_ITS_BUILDER = join('seasons', 'summer', 'arrival.ts')
+
 function sources(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
     const path = join(dir, name)
@@ -44,6 +51,23 @@ describe('shader arithmetic: normalize', () => {
       }
     }
     expect(calls).toBeGreaterThan(300)
+    expect(open).toEqual([])
+  })
+
+  it('tests a vector laid flat in a plane before it normalizes it', () => {
+    const open: string[] = []
+    let flat = 0
+    for (const file of sources('src')) {
+      if (file.endsWith(ASKS) || file.endsWith(WITH_ITS_BUILDER)) continue
+      const text = readFileSync(file, 'utf8')
+      for (const m of text.matchAll(/(?<![\w.])normalize\(/g)) {
+        const arg = argument(text, m.index + m[0].length).trim()
+        if (!FLAT.some((form) => form.test(arg)) || FIXED.test(arg)) continue
+        flat++
+        if (!TESTED.test(text.slice(Math.max(0, m.index - 80), m.index))) open.push(`${file}:${text.slice(0, m.index).split('\n').length}: normalize(${arg.slice(0, 70)})`)
+      }
+    }
+    expect(flat).toBeGreaterThan(8)
     expect(open).toEqual([])
   })
 })
