@@ -29,16 +29,17 @@ const OUTSIDE: ChangeSpan = { from: OUTSIDE_MID - frames(1.5), to: OUTSIDE_MID +
  * The cover of that span, as places in the swap window: the new season's light pours out of the glass and the room falls
  * away from it, as a camera's exposure does when a lamp flares in the dark (lighting.ts, `CHANGE_BLOOM`). It is whole from
  * `fullFrom` to `fullTo`: on every exposure of the film that opens or closes inside the span, and a quarter of a frame past
- * each, so that a live picture taken on any instant of the span is under it as well. It rises from `riseFrom` and is gone at
- * `goneAt`, each way over more than five frames, so that no frame of it is a step.
+ * each, so that a live picture taken on any instant of the span is under it as well. It rises from `riseFrom` over seven
+ * frames and is gone at `goneAt`, five and a half after `fullTo` and inside the window, so that no frame of it is a step.
  */
 const COVER_ROOM = frames(SHUTTER + 0.25)
-const COVER_RAMP = frames(5.5)
+const COVER_RISE = frames(7)
+const COVER_FALL = frames(5.5)
 export const CHANGE_COVER = {
-  riseFrom: OUTSIDE.from - COVER_ROOM - COVER_RAMP,
+  riseFrom: OUTSIDE.from - COVER_ROOM - COVER_RISE,
   fullFrom: OUTSIDE.from - COVER_ROOM,
   fullTo: OUTSIDE.to + COVER_ROOM,
-  goneAt: OUTSIDE.to + COVER_ROOM + COVER_RAMP,
+  goneAt: OUTSIDE.to + COVER_ROOM + COVER_FALL,
 } as const
 
 /**
@@ -86,13 +87,15 @@ export function partChange(part: string, change: number, side = 0.5): number {
   return v <= 0 ? 0 : v >= 1 ? 1 : v
 }
 
-const smooth = (v: number): number => (v <= 0 ? 0 : v >= 1 ? 1 : v * v * (3 - 2 * v))
+// The exposure falls by the cover as an exponent (lighting.ts), so a straight ramp is the room falling by the same share of a
+// stop on every frame, the slowest it can fall and rise in the frames it has.
+const ramp = (v: number): number => (v <= 0 ? 0 : v >= 1 ? 1 : v)
 
 /** How much of the cover stands at a place in the window: 0 before `riseFrom` and after `goneAt`, 1 from `fullFrom` to `fullTo`. */
 export function changeBloom(change: number): number {
   if (!(change > 0) || change >= 1) return 0
   const c = CHANGE_COVER
-  if (change < c.fullFrom) return smooth((change - c.riseFrom) / (c.fullFrom - c.riseFrom))
-  if (change > c.fullTo) return smooth((c.goneAt - change) / (c.goneAt - c.fullTo))
+  if (change < c.fullFrom) return ramp((change - c.riseFrom) / (c.fullFrom - c.riseFrom))
+  if (change > c.fullTo) return ramp((c.goneAt - change) / (c.goneAt - c.fullTo))
   return 1
 }
