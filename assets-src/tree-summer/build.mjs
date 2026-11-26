@@ -8,12 +8,13 @@ import { rel } from '../../tools/lib/paths.mjs'
 import { blurWrap, loadSource, luma, readPicture, seamless, toBytes, writePng } from '../trunk/source.mjs'
 
 const TAU = Math.PI * 2
-const LEAF_CELL = 0.65
+const LEAF_CELL = 0.85
 const LEVEL_SPRIGS = { medium: 0.45, low: 0.3 }
 const LEAF_TILE_MM = 11
-const SPRIGS = { share: 0.8, size: [1.5, 2.6], rise: 0.35, out: 0.34 }
-const TONE = { deep: [0.22, 0.5, 0.34], mid: [0.4, 0.76, 0.46], tip: [0.62, 1.0, 0.52] }
-const SUN = [0.5, 0.32, -0.8]
+const SPRIGS = { share: 0.8, size: [1.8, 3.1], rise: 0.35, out: 0.34 }
+const TONE = { deep: [0.22, 0.5, 0.34], mid: [0.4, 0.76, 0.46], tip: [0.9, 1.45, 0.5] }
+// Only the top of a pad, with open air over it, takes the light. Its sides and its underside are in deep shade.
+const SHADE = { body: 0.04, clearMm: 2.4, upFrom: 0.2, upTo: 0.85, tight: 1.25 }
 const PAPER = { orange: [1, 0.3, 0.045], peach: [1, 0.38, 0.06], cream: [1, 0.62, 0.12] }
 const CAP = [0.035, 0.028, 0.022]
 const WIRE = [0.05, 0.04, 0.03]
@@ -183,11 +184,10 @@ function leaves() {
     const z = s.pos[v * 3 + 2]
     const n = [s.nor[v * 3], s.nor[v * 3 + 1], s.nor[v * 3 + 2]]
     const open = 0.45 * openness(C.leafBody, x, h, z, n, 0.7) + 0.55 * openness(C.leafBody, x, h, z, n, 2.4)
-    const sky = 0.5 + 0.5 * n[1]
-    const shade = (0.1 + 0.9 * Math.pow(open, 1.7)) * (0.3 + 0.7 * Math.pow(sky, 1.5))
+    const top = smooth(SHADE.upFrom, SHADE.upTo, n[1]) * Math.pow(openness(C.leafBody, x, h, z, [0, 1, 0], SHADE.clearMm), SHADE.tight)
+    const shade = (0.1 + 0.9 * Math.pow(open, 1.7)) * (SHADE.body + (1 - SHADE.body) * top)
     const hue = 0.5 + 0.5 * Math.sin(0.7 * x + 1.3 * h + 0.9 * z) * Math.sin(1.1 * x - 0.6 * z + 2)
-    const sun = 0.5 + 0.5 * (n[0] * SUN[0] + n[1] * SUN[1] + n[2] * SUN[2])
-    const tip = smooth(0.5, 1, open) * smooth(0.35, 0.85, Math.max(sky, sun)) * (0.6 + 0.4 * hue)
+    const tip = top * (0.6 + 0.4 * hue)
     const base = [lerp(TONE.deep[0], TONE.mid[0], hue), lerp(TONE.deep[1], TONE.mid[1], hue), lerp(TONE.deep[2], TONE.mid[2], hue)]
     return [shade * lerp(base[0], TONE.tip[0], tip), shade * lerp(base[1], TONE.tip[1], tip), shade * lerp(base[2], TONE.tip[2], tip)]
   }
@@ -230,7 +230,7 @@ function leaves() {
         const m = n.clone().addScaledVector(lean, 0.4 + dv).normalize()
         nor.push(m.x, m.y, m.z)
         uv.push(u0 + (du + 0.5) * 0.5, v0 + (dv + 0.5) * 0.5)
-        const lift = 0.8 + 0.45 * (dv + 0.5)
+        const lift = 0.4 + 1.1 * (dv + 0.5)
         col.push(c[0] * lift, c[1] * lift, c[2] * lift)
         flag.push(1, id)
       }

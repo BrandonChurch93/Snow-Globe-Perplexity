@@ -98,7 +98,8 @@ vec3 treeBump(vec3 sx, vec3 sy, vec2 dh, vec3 n, float face) {
   vec3 r1 = cross(sy, n);
   vec3 r2 = cross(n, sx);
   float det = dot(sx, r1) * face;
-  return normalize(abs(det) * n - sign(det) * (d.x * r1 + d.y * r2));
+  vec3 v = abs(det) * n - sign(det) * (d.x * r1 + d.y * r2);
+  return dot(v, v) > 0.0 ? normalize(v) : n;
 }
 `
 

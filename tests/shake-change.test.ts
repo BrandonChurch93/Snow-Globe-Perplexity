@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { config, shots, tiers } from '../src/config'
 import { FRAME } from '../src/app/framing'
@@ -356,6 +357,76 @@ describe('the dressing on the glass under a change', () => {
     // One sample, the app's own path: the plain hash.
     expect(passStep(0.5, 1)).toBe(0)
     for (let j = 0; j < 997; j++) expect(passLevel(j / 997, 0, 1)).toBe(j / 997)
+  })
+
+  /** One shader of a season's file by the name of its constant: the text between its two backticks. */
+  const shaderOf = (file: string, name: string): string => {
+    const text = readFileSync(file, 'utf8')
+    const open = `\nconst ${name} = \`\n`
+    const at = text.indexOf(open)
+    expect(at, `${name} in ${file}`).toBeGreaterThanOrEqual(0)
+    return text.slice(at + open.length, text.indexOf('`\n', at + open.length))
+  }
+  /** The share of a dressing that a pixel holds, as its shader works it out. */
+  const SHARE = 'float seen = (uState.w > 1.5 ? 1.0 - c : uState.w > 0.5 ? c : 1.0) * uFlags.w;'
+  const share = (mode: number, c: number, presence: number): number => (mode > 1.5 ? 1 - c : mode > 0.5 ? c : 1) * presence
+  /** Whether one sample holds it at a pixel by the stipple's rule (`stageGone`), from the pixel's two hashes. */
+  const kept = (mode: number, c: number, presence: number, h: number, h2: number): boolean => !(mode > 0.5 && (mode > 1.5 ? h < c : h >= c)) && !(presence < 1 && h2 >= presence)
+  /** The share is the part of all hashes that the stipple keeps, and a picture thinned by it is the mean of the samples that keep it and that drop it. */
+  const thinsAsTheStippleDoesInTheMean = (): void => {
+    expect(STAGE_FRAG_PARS).toContain('if (uState.w > 1.5 ? h < c : h >= c) return true;')
+    expect(STAGE_FRAG_PARS).toContain('if (uFlags.w < 1.0 && stageHash(vec3(gl_FragCoord.xy + 29.0, uSeed + 0.61)) >= uFlags.w) return true;')
+    const n = 240
+    for (const mode of [MODE.always, MODE.incoming, MODE.outgoing])
+      for (const c of [0, 0.125, 0.37, 0.5, 0.815, 1])
+        for (const presence of [1, 0.6, 0.25]) {
+          let held = 0
+          for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) if (kept(mode, c, presence, (i + 0.5) / n, (j + 0.5) / n)) held++
+          const s = share(mode, c, presence)
+          expect(Math.abs(held / (n * n) - s), `the part of the hashes that keep it, mode ${mode}, change ${c}, presence ${presence}`).toBeLessThanOrEqual(1.5 / n)
+          // A colour P that holds its cover A already, over a ground B.
+          for (const [P, A, B] of [[0.31, 0.72, 0.9], [1.4, 1, 0.02], [0.05, 0.1, 0.5]] as const) expect(s * (P + (1 - A) * B) + (1 - s) * B).toBeCloseTo(s * P + (1 - s * A) * B, 12)
+        }
+    expect([share(MODE.outgoing, 0, 1), share(MODE.outgoing, 1, 1), share(MODE.incoming, 0, 1), share(MODE.incoming, 1, 1), share(MODE.always, 0.5, 1)]).toEqual([1, 0, 0, 1, 1])
+  }
+
+  it("thins winter's frost by the share that stays and drops none of it pixel by pixel, so one sample of the app holds no dots", () => {
+    const file = 'src/seasons/winter/frost.ts'
+    const frost = shaderOf(file, 'GLASS')
+    expect(frost).toContain(SHARE)
+    expect(frost).toContain('if (seen <= 0.0) discard;')
+    expect(frost).not.toContain('stageGone(')
+    // Both ways it sets its colour hold the cover in the colour, and the share thins colour and cover once, after both.
+    const sets = [...frost.matchAll(/gl_FragColor = vec4\(col \* alpha \+ spark/g)].map((m) => m.index)
+    expect(sets.length).toBe(2)
+    expect(frost.split('gl_FragColor *= seen;').length).toBe(2)
+    expect(frost.indexOf('gl_FragColor *= seen;')).toBeGreaterThan(Math.max(...sets))
+    // The views that say which part a pixel is read the cover it has left.
+    expect(frost).toContain('if (alpha * seen < 0.3) discard;')
+    // It is laid over what is behind it as one plus what its cover leaves.
+    const text = readFileSync(file, 'utf8')
+    expect(/fragment: GLASS,\s+params: \{ \.\.\.veil \},/.test(text)).toBe(true)
+    expect(/const veil = \{[^}]*blendSrc: THREE\.OneFactor,\s+blendDst: THREE\.OneMinusSrcAlphaFactor,/.test(text)).toBe(true)
+    thinsAsTheStippleDoesInTheMean()
+  })
+
+  it("thins fall's crack by the share that stays and drops none of it pixel by pixel, so a hair of one pixel's width is not a row of dots in the app", () => {
+    const file = 'src/seasons/fall/glass.ts'
+    const crack = shaderOf(file, 'CRACK')
+    expect(crack).toContain(SHARE)
+    expect(crack).toContain('if (seen <= 0.0) discard;')
+    expect(crack).not.toContain('stageGone(')
+    // Its colour holds its cover: both terms of it are times how much of the pixel the hair or its edge fills.
+    expect(crack).toContain('* edge * caught + uSky * (0.3 * ')
+    expect(crack.split('gl_FragColor = vec4(col, alpha) * seen;').length).toBe(2)
+    expect(crack).not.toContain('gl_FragColor = vec4(col, alpha);')
+    expect(crack).toContain('if (alpha * seen < 0.3) discard;')
+    const text = readFileSync(file, 'utf8')
+    expect(/fragment: CRACK,\s+params: \{ \.\.\.blend, /.test(text)).toBe(true)
+    expect(/const blend = \{[^}]*blendSrc: THREE\.OneFactor,\s+blendDst: THREE\.OneMinusSrcAlphaFactor,/.test(text)).toBe(true)
+    // The fog of the same season crosses the same way already.
+    expect(shaderOf(file, 'FOG')).toContain(SHARE)
+    thinsAsTheStippleDoesInTheMean()
   })
 })
 

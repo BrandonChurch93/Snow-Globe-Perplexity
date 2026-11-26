@@ -20,25 +20,27 @@ const SPRIGS = 'summer/tree-sprigs.srgb.w512.png'
 const CYCLES = 3
 const FLICKER = 0.06
 const PAPER = { power: 0.26, reachMm: 2.5 }
-const GLOW = { leaves: { power: 3.6, reachMm: 7.5 }, wood: { power: 1.5, reachMm: 7 } }
+const GLOW = { leaves: { power: 5.5, reachMm: 9 }, wood: { power: 0.6, reachMm: 7 } }
 const LAMP_ON_WOOD = { power: 0.5, reachMm: 14, wrap: -0.2 }
 const LAMP_ON_LEAVES = { power: 3, reachMm: 12, wrap: 0.1 }
 const LAMP_SHIFT: Vec3 = [-3, 0, -5]
 const FILL_ON_WOOD = { power: 0.25, reachMm: 1000, wrap: 0.4 }
 const FILL_ON_LEAVES = { power: 0.5, reachMm: 1000, wrap: 0.3 }
 const FILL_FROM: Vec3 = [30, 60, 60]
-const BARK: Rgb3 = [0.31, 0.2, 0.14]
+const BARK: Rgb3 = [0.115, 0.092, 0.074]
+// The wood stands half again as thick as the shared trunk: each vertex moves out along its normal, less up in the crown and least on the twigs far from the stem.
+const THICK = { footMm: 1.1, crownMm: 0.7, fromMm: 6, toMm: 22, twig: 0.25, nearMm: 5, farMm: 15 }
 const BARK_BUMP = 3.4
 // The bark: long flutes down the wood (the bark map drawn out along the grain), dark in their grooves, with the low sun
 // on the edge of the wood that faces it and moss on what faces up near the ground.
-const WOOD = { relief: 0.95, ridges: 5, warp: 2.6, fine: 0.4, low: 0.42, high: 1.45, from: 0.15, to: 0.85, depthMm: 1.5, rim: 3.0, rimTight: 3.4, side: 0.4, wrap: 0.95, mossTo: 5.5, moss: 0.45 }
+const WOOD = { relief: 0.95, ridges: 5, warp: 2.6, fine: 0.4, low: 0.42, high: 1.45, from: 0.15, to: 0.85, depthMm: 1.5, rim: 9.0, rimTight: 4.5, gold: [0.6, 0.42, 0.18] as Rgb3, goldShare: 0.8, side: 0.4, wrap: 0.95, mossTo: 5.5, moss: 0.45 }
 const MOSS: Rgb3 = [0.3, 0.52, 0.12]
 const ROOT_MM = 4.5
 const LEAF_TINT: Rgb3 = [0.1, 0.145, 0.165]
 const LEAF_LIT = 'vec3(1.7, 0.85, 0.42)'
 const glsl3 = (c: Rgb3): string => `vec3(${c.map((v) => v.toFixed(3)).join(', ')})`
 const LEAF_VARY = { big: 0.36, mid: 1.15, scaleLow: 0.56, scale: 0.4, cool: [0.5, 0.74, 0.95] as Rgb3, warm: [1.15, 1.16, 0.86] as Rgb3 }
-const LEAF = { rim: 6, rimTight: 3.2, through: 0.7, tight: 3.0, fill: 1.0, wrap: 0.8, bump: 1.0, clumpDark: 0.8, clumpBright: 0.95, top: 2.0, card: 1.3, topEdge: 12.0, sky: 1.2, sunFrom: -0.7, sunTo: 0.3, goldMax: 1.7, topFrom: 0.06, topTo: 0.2, under: 0.36, side: 0.35, speck: 0.0 }
+const LEAF = { rim: 3.5, rimTight: 3.2, through: 0.08, tight: 3.0, fill: 0.06, wrap: 0.8, bump: 1.0, clumpDark: 0.8, clumpBright: 0.95, sky: 7.5, edgeTight: 3.0, speckFrom: 0.08, speckTo: 0.6, skyTint: [1.0, 0.7, 0.26] as Rgb3, skyAway: 0.28, topFrom: 0.42, topTo: 1.05, body: 0.0, under: 0.36, side: 0.35 }
 const LANTERN = { rib: 0.3, gores: 12, ring: 0.16, ribs: 26, gain: 0.95, body: 0.5, core: 5.0, tight: 2.2, paper: 0.06, dim: 0.4, stepS: 0.23, rampS: 0.42, swayRad: 0.045, sway2: 0.6, kickRad: 0.16, kickFade: 1.2, kickHz: 1.3, cycles: 2 }
 const HALO = { radius: 2.9, strength: 0.17, hot: 0.0 }
 const HALO_EDGE: Rgb3 = [0.9, 0.36, 0.08]
@@ -75,12 +77,13 @@ vec3 treeBump(vec3 sx, vec3 sy, vec2 dh, vec3 n, float face) {
   vec3 r1 = cross(sy, n);
   vec3 r2 = cross(n, sx);
   float det = dot(sx, r1) * face;
-  return normalize(abs(det) * n - sign(det) * (d.x * r1 + d.y * r2));
+  vec3 v = abs(det) * n - sign(det) * (d.x * r1 + d.y * r2);
+  return dot(v, v) > 0.0 ? normalize(v) : n;
 }
 `
 
 // The crown reads as a handful of clumps: each has a side toward the low sun, a side away from it and dark between it and the next.
-const CLUMP = { cellMm: 7.5, form: 0.5, lit: 2.3, from: -0.25, to: 0.85, gapTo: 0.3, gap: 0.55, away: 0.85, gold: 11.0, goldTight: 5.0, goldMax: 1.7, side: [0.619, 0.744, 0.251] as Rgb3, tone: [0.3, 0.44, 0.1] as Rgb3, edge: [0.95, 0.72, 0.34] as Rgb3 }
+const CLUMP = { cellMm: 7.5, form: 0.5, lit: 0.12, from: -0.25, to: 0.85, gapTo: 0.3, gap: 0.55, away: 0.85, side: [0.619, 0.744, 0.251] as Rgb3, haze: [0.004, 0.007, 0.003] as Rgb3 }
 const CLUMP_GLSL = `{
   vec3 clumpP = vTreeP / ${CLUMP.cellMm.toFixed(1)};
   vec3 clumpI = floor(clumpP);
@@ -112,9 +115,10 @@ const CLUMP_GLSL = `{
   float clumpLit = smoothstep(${CLUMP.from.toFixed(2)}, ${CLUMP.to.toFixed(2)}, dot(clumpN, ${glsl3(CLUMP.side)}));
   float clumpGap = smoothstep(0.0, ${CLUMP.gapTo.toFixed(2)}, sqrt(max(clumpD2, 1e-6)) - clumpNear);
   reflectedLight.directDiffuse *= mix(${CLUMP.gap.toFixed(2)}, 1.0, clumpGap) * mix(${CLUMP.away.toFixed(2)}, 1.0, clumpLit);
-  reflectedLight.directDiffuse += stageKeyC * ${glsl3(CLUMP.tone)} * (${CLUMP.lit.toFixed(2)} * clumpLit * clumpLit * clumpGap * mix(0.15, 1.0, smoothstep(0.1, 0.45, treeLum)));
-  // Against the glow the sun side of each clump carries a fringe of gold.
-  reflectedLight.directDiffuse += stageKeyC * ${glsl3(CLUMP.edge)} * min(${CLUMP.gold.toFixed(2)} * pow(abs(1.0 - abs(dot(normalize(vNormal), normalize(vViewPosition)))), ${CLUMP.goldTight.toFixed(1)}) * clumpLit * smoothstep(0.06, 0.2, treeLum), ${CLUMP.goldMax.toFixed(2)});
+  // The side light on a clump goes through the leaf's own tone, so that it shows on the lit tops of the pads and not in their dark bodies.
+  reflectedLight.directDiffuse += stageKeyC * material.diffuseContribution * (${CLUMP.lit.toFixed(2)} * clumpLit * clumpLit * clumpGap);
+  // The gold air stands in front of the crown too: its deepest shade is not black.
+  reflectedLight.directDiffuse += stageKeyC * ${glsl3(CLUMP.haze)};
 }`
 
 function leafHook(shader: Shader): void {
@@ -146,7 +150,7 @@ function leafHook(shader: Shader): void {
     // A card is cut last. A pixel that is cut stops being worked out, and the lighting after it reads its neighbours' numbers
     // (the slope of the normal, of the shadow's place): cut early, the edge of every sprig was lit from numbers nobody set.
     .replace(/\}\s*$/, 'if (treeCard && treeC.a < 0.5) discard;\n}')
-  afterLight(shader, `reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${LEAF.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), ${LEAF.wrap.toFixed(2)}) + ${LEAF.through.toFixed(2)} * pow(clamp(dot(normalize(vViewPosition), -stageKeyL), 0.0, 1.0), ${LEAF.tight.toFixed(1)}) + ${LEAF.rim.toFixed(2)} * pow(abs(1.0 - abs(dot(normal, normalize(vViewPosition)))), ${LEAF.rimTight.toFixed(1)}) * smoothstep(-0.3, 0.7, dot(normal, stageKeyL)))) * material.diffuseContribution;\n{\n  vec3 treeUpN = normalize(vTreeN);\n  // Each pad of leaves is lit from above and dark underneath, so the crown reads as layers and not as one mass.\n  reflectedLight.directDiffuse *= mix(${LEAF.under.toFixed(2)}, 1.0, smoothstep(-0.55, 0.5, treeUpN.y));\n  float goldSpeck = mix(${LEAF.speck.toFixed(2)}, 1.0, smoothstep(${LEAF.topFrom.toFixed(2)}, ${LEAF.topTo.toFixed(2)}, treeLum));\n  vec3 treeVN = normalize(vNormal);\n  // The gold air fills the crown from above, so its body reads as leaves and not as a silhouette.\n  reflectedLight.directDiffuse += material.diffuseContribution * vec3(1.05, 1.0, 0.78) * (${LEAF.sky.toFixed(2)} * (0.15 + 0.85 * smoothstep(-0.2, 0.9, treeUpN.y)));\n  float goldUp = smoothstep(${LEAF.sunFrom.toFixed(2)}, ${LEAF.sunTo.toFixed(2)}, dot(treeVN, stageKeyL));\n  // The low sun stands behind the crown: it only catches the leaves that face it on the rims of the pads, as seen from the lens.\n  float goldEdge = (treeCard ? ${LEAF.card.toFixed(2)} : ${LEAF.top.toFixed(2)}) * pow(abs(1.0 - abs(dot(treeVN, normalize(vViewPosition)))), ${LEAF.topEdge.toFixed(1)});\n  // Held under the clip of the grade: past it the gold would wash out to pink.\n  reflectedLight.directDiffuse += stageKeyC * vec3(0.9, 0.68, 0.3) * min(goldEdge * goldUp * goldSpeck, ${LEAF.goldMax.toFixed(2)});\n}\n${CLUMP_GLSL}`)
+  afterLight(shader, `reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${LEAF.fill.toFixed(2)} * stageWrap(dot(geometryNormal, stageKeyL), ${LEAF.wrap.toFixed(2)}) + ${LEAF.through.toFixed(2)} * pow(clamp(dot(normalize(vViewPosition), -stageKeyL), 0.0, 1.0), ${LEAF.tight.toFixed(1)}) + ${LEAF.rim.toFixed(2)} * pow(abs(1.0 - abs(dot(normal, normalize(vViewPosition)))), ${LEAF.rimTight.toFixed(1)}) * smoothstep(-0.3, 0.7, dot(normal, stageKeyL)))) * material.diffuseContribution;\n{\n  vec3 treeUpN = normalize(vTreeN);\n  // Each pad of leaves is lit from above and dark underneath, so the crown reads as layers and not as one mass.\n  reflectedLight.directDiffuse *= mix(${LEAF.under.toFixed(2)}, 1.0, smoothstep(-0.55, 0.5, treeUpN.y));\n  // The gold air comes from above. The tone baked into each leaf lets it light the tops of the pads and leaves their bodies dark.\n  // A leaf whose baked tone is dark stands in a pad's body: the gold air reaches only the bright ones, the rims that have open air over them.\n  float treeTop = smoothstep(${LEAF.topFrom.toFixed(2)}, ${LEAF.topTo.toFixed(2)}, dot(vColor.rgb, vec3(0.3, 0.6, 0.1)));\n  // The light is a line of small points on the edge of a pad, where its top turns away from the lens: a lit top seen whole reads as a blossom.\n  float treeEdge = pow(abs(1.0 - abs(dot(normalize(vNormal), normalize(vViewPosition)))), ${LEAF.edgeTight.toFixed(1)});\n  float treeSpeck = smoothstep(${LEAF.speckFrom.toFixed(2)}, ${LEAF.speckTo.toFixed(2)}, sin(vTreeP.x * 7.3 + 2.0 * sin(vTreeP.z * 3.1)) * sin(vTreeP.y * 8.9 + 1.3) * sin(vTreeP.z * 6.7 + 1.7 * sin(vTreeP.x * 2.3)));\n  reflectedLight.directDiffuse += ${glsl3(LEAF.skyTint)} * (${LEAF.sky.toFixed(2)} * treeEdge * treeSpeck * mix(${LEAF.body.toFixed(2)}, 1.0, treeTop) * mix(${LEAF.skyAway.toFixed(2)}, 1.0, smoothstep(-0.5, 0.6, dot(geometryNormal, stageKeyL))) * (0.15 + 0.85 * smoothstep(-0.2, 0.9, treeUpN.y)));\n}\n${CLUMP_GLSL}`)
 }
 
 function woodHook(shader: Shader, groundY: number): void {
@@ -171,7 +175,7 @@ function woodHook(shader: Shader, groundY: number): void {
 }`,
     )
     .replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\nnormal = treeBump(dFdx(-vViewPosition), dFdy(-vViewPosition), vec2(dFdx(woodH), dFdy(woodH)), normal, faceDirection);')
-  afterLight(shader, `reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${WOOD.side.toFixed(2)} * stageWrap(dot(normal, stageKeyL), ${WOOD.wrap.toFixed(2)}) + ${WOOD.rim.toFixed(2)} * pow(abs(1.0 - abs(dot(normal, normalize(vViewPosition)))), ${WOOD.rimTight.toFixed(1)}) * smoothstep(-0.35, 0.5, dot(normal, stageKeyL)))) * material.diffuseContribution;`)
+  afterLight(shader, `reflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * (${WOOD.side.toFixed(2)} * stageWrap(dot(normal, stageKeyL), ${WOOD.wrap.toFixed(2)}))) * material.diffuseContribution;\n// The gold runs down the edge of the limb as one soft line: taken from the bark's ridges it breaks into dashes.\nvec3 woodRound = normalize(mix(normal, normalize(vNormal) * faceDirection, 0.85));\nreflectedLight.directDiffuse += stageKeyC * (RECIPROCAL_PI * ${WOOD.rim.toFixed(2)} * pow(abs(1.0 - abs(dot(woodRound, normalize(vViewPosition)))), ${WOOD.rimTight.toFixed(1)}) * smoothstep(0.0, 0.5, dot(woodRound, stageKeyL))) * mix(material.diffuseContribution, ${glsl3(WOOD.gold)}, ${WOOD.goldShare.toFixed(2)});`)
 }
 
 function lanternHook(shader: Shader): void {
@@ -270,7 +274,26 @@ export function build(): THREE.Object3D {
   crown.receiveShadow = true
   const trunk = buildTrunk(part, [...paperOn(GLOW.wood), lampOn(LAMP_ON_WOOD), { at: fill, color: tones.sun, ...FILL_ON_WOOD, phase: 0.6 }], BARK)
   const shared = trunk.material as THREE.MeshStandardMaterial
-  const box = new THREE.Box3().setFromBufferAttribute(trunk.geometry.getAttribute('position') as THREE.BufferAttribute)
+  const wood = trunk.geometry.getAttribute('position') as THREE.BufferAttribute
+  const out = trunk.geometry.getAttribute('normal') as THREE.BufferAttribute
+  const box = new THREE.Box3().setFromBufferAttribute(wood)
+  const stem = { x: 0, z: 0, n: 0 }
+  for (let i = 0; i < wood.count; i++) {
+    if (wood.getY(i) - box.min.y > THICK.fromMm) continue
+    stem.x += wood.getX(i)
+    stem.z += wood.getZ(i)
+    stem.n++
+  }
+  const ease = (a: number, b: number, v: number): number => {
+    const t = Math.min(1, Math.max(0, (v - a) / (b - a)))
+    return t * t * (3 - 2 * t)
+  }
+  for (let i = 0; i < wood.count; i++) {
+    const far = ease(THICK.nearMm, THICK.farMm, Math.hypot(wood.getX(i) - stem.x / stem.n, wood.getZ(i) - stem.z / stem.n))
+    const d = (THICK.footMm + (THICK.crownMm - THICK.footMm) * ease(THICK.fromMm, THICK.toMm, wood.getY(i) - box.min.y)) * (1 + (THICK.twig - 1) * far)
+    wood.setXYZ(i, wood.getX(i) + out.getX(i) * d, wood.getY(i) + out.getY(i) * d, wood.getZ(i) + out.getZ(i) * d)
+  }
+  wood.needsUpdate = true
   trunk.material = stageMaterial({ part, standIn: false, inside: true, miniature: true, change: 'miniature', map: shared.map ?? undefined, color: new THREE.Color(BARK[0], BARK[1], BARK[2]), vertexColors: true, roughness: 0.86, extra: { normalMap: shared.normalMap, normalScale: new THREE.Vector2(BARK_BUMP, BARK_BUMP) }, hook: (shader) => woodHook(shader, box.min.y + ROOT_MM), key: 'tree-wood-summer' })
   return new THREE.Group().add(trunk, crown)
 }
