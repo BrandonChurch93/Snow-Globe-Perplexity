@@ -224,7 +224,7 @@ export interface LiquidMotion {
 }
 
 type WetPose = GlobePose & { twist?: number }
-const yawOf = (p: WetPose): number => p.twist ?? 0
+const twistOf = (p: WetPose): number => p.twist ?? 0
 const smooth = (t: number): number => t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t)
 
 function centreOf(p: GlobePose, out: Float64Array, o: number): void {
@@ -315,7 +315,7 @@ export class Liquid {
     return L[0] === 0 && L[1] === 0 && L[2] === 0 && L[3] === 0 && L[4] === 0 && L[5] === 0 && L[6] === 0 && L[15] === 0 && L[19] === 0 && L[20] === 0 && L[21] === 0 && L[22] === 0 && L[23] === 0 && L[24] === 0
   }
 
-  step(p0: GlobePose, p1: GlobePose, p2: GlobePose, time: number, shakeBeat: number | null = null): void {
+  step(p0: WetPose, p1: WetPose, p2: WetPose, time: number, shakeBeat: number | null = null): void {
     const L = this.state
     const c = this.scratch
     centreOf(p0, c, 0)
@@ -329,7 +329,7 @@ export class Liquid {
     const ca = Math.cos(p1.tiltX)
     const sb = Math.sin(p1.tiltZ)
     const cb = Math.cos(p1.tiltZ)
-    const yaw = yawOf(p1)
+    const yaw = twistOf(p1)
     const sc = Math.sin(yaw)
     const cc = Math.cos(yaw)
     const ry = wyA * ca + wzA * sa
@@ -348,8 +348,8 @@ export class Liquid {
     m.gz = yaw === 0 ? sa : gx * sc + sa * cc
     const dda = (p2.tiltX - 2 * p1.tiltX + p0.tiltX) * inv
     const ddb = (p2.tiltZ - 2 * p1.tiltZ + p0.tiltZ) * inv
-    const yaw0 = yawOf(p0)
-    const yaw2 = yawOf(p2)
+    const yaw0 = twistOf(p0)
+    const yaw2 = twistOf(p2)
     const ddc = (yaw2 - 2 * yaw + yaw0) * inv
     const lift = config.shake.liftBeats
     const swap = config.shake.swapWindow

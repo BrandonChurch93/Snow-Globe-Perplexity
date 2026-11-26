@@ -4,7 +4,7 @@ import { config } from '../src/config'
 import { stream } from '../src/core/rng'
 import { filmCut } from '../src/film/cut'
 import { barSeconds, filmTimeline, globePoseAt, prerollSeconds, stateSeconds, stillTimeline } from '../src/film/timeline'
-import { LIQUID_PIVOT_MM, LIQUID_ROLL, LIQUID_TURBULENCE, ROLL_AXIS, ROLL_CENTRE, ROLL_MAX, ROLL_SLAB_MM, TURBULENCE_MAX } from '../src/globe/liquid'
+import { LIQUID_PIVOT_MM, LIQUID_R, LIQUID_ROLL, LIQUID_TURBULENCE, ROLL_AXIS, ROLL_CENTRE, ROLL_MAX, ROLL_SLAB_MM, TURBULENCE_MAX } from '../src/globe/liquid'
 import { ParticleEngine, STATE_HIDDEN, STATE_LIQUID, WALL } from '../src/particles/engine/engine'
 import { KINDS } from '../src/particles/engine/kinds'
 import { sdfSample } from '../src/particles/engine/sdf'
@@ -133,6 +133,44 @@ describe('the hand moves first', () => {
       const o = i * 3
       expect(Math.hypot(e.pos[o]!, e.pos[o + 1]!, e.pos[o + 2]!)).toBeLessThanOrEqual(WALL + 1e-4)
     }
+  }, 120000)
+
+  it('has a sparse crown at the end of the hold while summer keeps all three kinds in the air', () => {
+    const grid = filmCut()
+    const film = filmTimeline(grid)
+    const e = new ParticleEngine({ season: film.startSeason, fraction: 0.075, collider })
+    const samples = (f: number, name: string) => {
+      e.advanceTo(steps(prerollSeconds + f / grid.fps), film)
+      const k = KINDS.indexOf(name)
+      let afloat = 0
+      let crown = 0
+      let alpha = 0
+      const pos = e.pos
+      for (let i = 0; i < e.count; i++) {
+        if (e.kindOf[i] !== k || e.state[i] !== STATE_LIQUID) continue
+        afloat++
+        alpha += e.opacity[i]!
+        if (pos[i * 3 + 1]! > LIQUID_R * 0.5) crown++
+      }
+      return { afloat, alpha, crown }
+    }
+    const spring = grid.spans.find((s) => s.shot.kind === 'hold' && s.shot.season === 'spring')!
+    const first = samples(spring.first, 'mote')
+    const late = samples(spring.last, 'mote')
+    expect(late.afloat).toBe(first.afloat)
+    expect(late.alpha / first.alpha).toBeGreaterThan(0.25)
+    expect(late.alpha / first.alpha).toBeLessThan(0.5)
+    expect(late.crown).toBeLessThan(first.crown * 0.45)
+    const summer = grid.spans.find((s) => s.shot.kind === 'hold' && s.shot.season === 'summer')!
+    const after = ['mote', 'firefly', 'seed'].map((k) => samples(summer.first, k))
+    const still = ['mote', 'firefly', 'seed'].map((k) => samples(summer.last, k))
+    expect(still[0]!.afloat).toBe(after[0]!.afloat)
+    expect(still[0]!.alpha).toBe(still[0]!.afloat)
+    expect(still[0]!.crown).toBeGreaterThan(0)
+    expect(still[0]!.crown).toBeLessThan(after[0]!.crown * 0.65)
+    expect(still[1]!.afloat).toBe(after[1]!.afloat)
+    expect(still[2]!.afloat).toBeGreaterThan(0)
+    expect(still[2]!.afloat).toBeLessThan(after[2]!.afloat * 0.22)
   }, 120000)
 })
 
