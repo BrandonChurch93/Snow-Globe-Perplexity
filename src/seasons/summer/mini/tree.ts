@@ -164,7 +164,7 @@ vLamp = uv;
   float lampCore = pow(abs(lampFace), ${LANTERN.tight.toFixed(1)});
   float lampBeat = 1.0 + ${FLICKER.toFixed(3)} * sin(6.2831853 * (uTwinkle.x + vLamp.x * 0.381966));
   vec3 lampOut = (vec4(normalize(normal), 0.0) * viewMatrix).xyz;
-  float lampRib = (1.0 - ${LANTERN.rib.toFixed(2)} * pow(abs(0.5 + 0.5 * cos(atan(lampOut.x, abs(lampOut.x) + abs(lampOut.z) > 0.0 ? lampOut.z : 1.0) * ${LANTERN.gores.toFixed(1)})), 5.0)) * (1.0 - ${LANTERN.ring.toFixed(2)} * pow(abs(0.5 + 0.5 * cos(asin(clamp(lampOut.y, -1.0, 1.0)) * ${LANTERN.ribs.toFixed(1)})), 3.0));
+  float lampRib = (1.0 - ${LANTERN.rib.toFixed(2)} * pow(abs(0.5 + 0.5 * cos((abs(lampOut.x) + abs(lampOut.z) > 0.0 ? atan(lampOut.x, lampOut.z) : 0.0) * ${LANTERN.gores.toFixed(1)})), 5.0)) * (1.0 - ${LANTERN.ring.toFixed(2)} * pow(abs(0.5 + 0.5 * cos(asin(clamp(lampOut.y, -1.0, 1.0)) * ${LANTERN.ribs.toFixed(1)})), 3.0));
   vec3 lampHot = mix(lampTint * vec3(1.15, 0.5 + 0.5 * lampTint.g, 0.45), vec3(1.0, 0.42 + 0.62 * lampTint.g, 0.06 + 0.34 * lampTint.g) * max(lampTint.r, lampTint.g), lampCore * lampCore);
   totalEmissiveRadiance = lampHot * lampLit * (${LANTERN.gain.toFixed(2)} * (${LANTERN.body.toFixed(2)} + ${LANTERN.core.toFixed(2)} * lampCore)) * lanternLevel(vLamp.x) * lampBeat * lampRib;
 }`,
