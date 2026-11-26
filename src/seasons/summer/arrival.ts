@@ -6,7 +6,7 @@ import { stream } from '../../core/rng'
 import { rimGapMm } from '../../shake/table'
 import type { KitMoment } from '../kit'
 import { SAND_COLOUR, sinceLoose } from './base'
-import { SAND_LIT, SLAB, sandHeight, sandLoose, sandOpen, sandShade, sandSpread } from './slab'
+import { SAND_LIT, SLAB, sandHeight, sandLoose, sandOpen, sandShade, sandSpread, sandSprinkle, sandSprinkleAt } from './slab'
 
 const PART = 'arrival-summer'
 const RAD = Math.PI / 180
@@ -27,10 +27,11 @@ const LOOK = {
   gravity: 3400,
   ledge: { r: [46.5, 52.0], h: 40.3 },
   jump: { count: 14000, reachMm: 26, ringShare: 0, ringMm: 5, edgeDeg: [62, 76], liftMm: [1.2, 8], hopMm: [0.6, 5], quick: 0.11, tail: 0.5, tailShare: [0.6, 0.12], skidMm: [0.4, 3.2], radiusMm: [0.07, 0.15] },
-  fall: { count: 24000, gravity: 7000, az: 85, spread: 5, most: 2.2, r: [53.0, 53.4], h: [41.3, 42.4], outMmS: [6, 145], lean: 1.0, fanDeg: 2, downMmS: [10, 110], rate: [5.0, 6.7], radiusMm: [0.022, 0.065], fadeFrom: 0.9, core: [0.6, 5, 90], exposure: 0.3, longMm: 0.2, thinPx: 0.7, cover: 0.27, low: [0.6, 0.48, 0.36], lowMm: [12, 40], least: [0.2, 0.7], bright: [0.1, 3.4], even: 0.15, lit: 1.4, shaded: 0.08, puff: { seconds: 0.07, outMmS: [20, 130], upMmS: [40, 170], cover: 0.3, wide: 2.4 } },
-  loose: { count: 14000, radiusMm: [0.05, 0.19], x: [-140, 136], z: [-70, 150], thinPx: 0.8, vary: [0.3, 2.0] },
-  slope: { clearMm: 0.25, keeps: 0.75, crestMm: [60.5, 62.1], offMm: [0.12, 0.55], belly: [[60.3, 8], [60.3, 11.2], [59.7, 14.6], [58.6, 18], [57.3, 21.2], [55.8, 24.4], [54.3, 27.4], [53, 30.5], [52.8, 34], [52.7, 37.5], [52.6, 40]] },
-  flow: { stand: 0.65, seconds: 1.6, gapMm: [0.3, 2.5] },
+  fall: { count: 22000, gravity: 7000, az: 85, spread: 5, most: 2.2, r: [53.0, 54.4], h: [41.3, 42.4], outMmS: [6, 145], lean: 1.6, fanDeg: 2, downMmS: [10, 110], rate: [5.0, 6.7], radiusMm: [0.022, 0.065], fadeFrom: 0.9, core: [0.85, 5, 90], exposure: 0.3, longMm: 0.2, thinPx: 0.5, cover: 0.5, rise: 0.012, low: [0.6, 0.48, 0.36], lowMm: [12, 40], least: [0.2, 0.7], bright: [0.3, 3.4], even: 0.15, lit: 1.4, shaded: 0.08, puff: { seconds: 0.07, outMmS: [20, 130], upMmS: [40, 170], cover: 0.3, wide: 2.4 } },
+  loose: { count: 11600, radiusMm: [0.05, 0.19], x: [-140, 136], z: [-70, 150], thinPx: 0.8, vary: [0.3, 2.0], big: { share: 0.012, mm: [0.3, 0.62], cover: [0.25, 0.5, 0.4] } },
+  sprinkle: { count: 4400, s: [-12, 78], d: [-0.4, 16], mm: [0.09, 0.24] },
+  slope: { clearMm: 0.25, keeps: 0.75, crestMm: [60.6, 67.5], crestLean: 1.6, offMm: [0.12, 0.55], belly: [[60.3, 8], [60.3, 11.2], [59.7, 14.6], [58.6, 18], [57.3, 21.2], [55.8, 24.4], [54.3, 27.4], [53, 30.5], [52.8, 34], [52.7, 37.5], [52.6, 40]] },
+  flow: { stand: 0.8, seconds: 1.6, gapMm: [0.3, 2.5] },
   exposure: 0.15,
   gold: [1, 0.97, 0.92],
   backlit: 2.6,
@@ -203,9 +204,10 @@ if (falls > 0.5) {
   float bright = mix(${LOOK.fall.bright[0].toFixed(2)}, 1.0, glint * glint);
   vGrainCover = min(1.0, ${LOOK.fall.cover.toFixed(2)} * ${LOOK.fall.bright[1].toFixed(2)} * bright * thinner);
   vGrainCover *= 1.0 - smoothstep(${LOOK.fall.fadeFrom.toFixed(2)}, 1.0, tau / max(aFlight.y + fallSlide(), 1e-4));
+  vGrainCover *= smoothstep(0.0, ${LOOK.fall.rise.toFixed(3)}, tau);
   if (puff >= 0.0) vGrainCover = ${LOOK.fall.puff.cover.toFixed(2)} * mix(0.4, 1.0, bright) * (1.0 - puff) * (1.0 - puff);
 }
-if (lies > 0.5) vGrainCover = min(1.0, thinner);
+if (lies > 0.5) vGrainCover = min(1.0, thinner) * mix(1.0, ${LOOK.loose.big.cover[2]!.toFixed(2)}, smoothstep(${LOOK.loose.big.cover[0]!.toFixed(2)}, ${LOOK.loose.big.cover[1]!.toFixed(2)}, aFlight.w));
 vGrainLit = falls > 0.5 ? mix(${LOOK.fall.core[0].toFixed(2)}, 1.0, smoothstep(${LOOK.fall.core[1].toFixed(1)}, ${LOOK.fall.core[2].toFixed(1)}, (length(position.xz - aFrom.xz) - aSeed.w) / max(aFlight.y, 1e-3))) : 1.0;
 float sunlit = grainShade(grainW.xyz, uGrainKey);
 // A falling grain in the shade of the stone is as dark as the stone behind it and is all but lost against it.
@@ -324,7 +326,7 @@ export function fallPaths(): FallPath[] {
     const rate = rf.range(F.rate[0], F.rate[1])
     const id = rf.next()
     const phase = rf.next()
-    const crest = rf.range(S.crestMm[0], S.crestMm[1])
+    const crest = S.crestMm[0]! + (S.crestMm[1]! - S.crestMm[0]!) * rf.next() ** S.crestLean
     const from: [number, number, number] = [r0 * Math.sin(az0), h0, r0 * Math.cos(az0)]
     const at = (s: number): [number, number, number] => [from[0] + speed * s * Math.sin(az1), h0 + vy * s - 0.5 * F.gravity * s * s, from[2] + speed * s * Math.cos(az1)]
     const ground = (x: number, z: number): number => SLAB.liftMm + sandHeight(x, z) + radius * 0.5
@@ -355,7 +357,7 @@ export function fallPaths(): FallPath[] {
 }
 
 function grainGeometry(): THREE.BufferGeometry {
-  const total = LOOK.jump.count + LOOK.fall.count + LOOK.loose.count
+  const total = LOOK.jump.count + LOOK.fall.count + LOOK.loose.count + LOOK.sprinkle.count
   const to = new Float32Array(total * 12)
   const from = new Float32Array(total * 12)
   const flight = new Float32Array(total * 16)
@@ -432,11 +434,30 @@ function grainGeometry(): THREE.BufferGeometry {
     const x = rl.range(O.x[0]!, O.x[1]!)
     const z = rl.range(O.z[0]!, O.z[1]!)
     const keep = rl.next()
-    const radius = O.radiusMm[0]! + (O.radiusMm[1]! - O.radiusMm[0]!) * rl.next() ** 2
+    const fine = O.radiusMm[0]! + (O.radiusMm[1]! - O.radiusMm[0]!) * rl.next() ** 2
     const id = rl.next()
     const phase = rl.next()
     if (Math.hypot(x, z) < 61.5 || keep > sandLoose(x, z)) continue
+    // A few grains on the bare table are coarse, and lie out of focus.
+    const coarse = phase < O.big.share && sandHeight(x, z) < 0.05
+    const radius = coarse ? O.big.mm[0]! + (O.big.mm[1]! - O.big.mm[0]!) * id : fine
     const at = [x, SLAB.liftMm + sandHeight(x, z) + radius * 0.7, z]
+    put(at, at, [0, 0, 0, radius], [id, 2, phase, 0])
+    laid++
+  }
+  // The sprinkle beside the foot on the left (slab.ts): single grains, laid where they are for good.
+  const rs = stream(`${PART}/sprinkle`)
+  const ra = stream(`${PART}/sprinkle-along`)
+  const rd = stream(`${PART}/sprinkle-across`)
+  const K = LOOK.sprinkle
+  for (let k = 0, laid = 0; laid < K.count && k < K.count * 400; k++) {
+    const [x, z] = sandSprinkleAt(ra.range(K.s[0]!, K.s[1]!), rd.range(K.d[0]!, K.d[1]!))
+    const keep = rs.next()
+    const radius = K.mm[0]! + (K.mm[1]! - K.mm[0]!) * rs.next() ** 2
+    const id = rs.next()
+    const phase = rs.next()
+    if (Math.hypot(x, z) < 61.5 || keep > sandSprinkle(x, z)) continue
+    const at = [x, SLAB.liftMm + radius * 0.7, z]
     put(at, at, [0, 0, 0, radius], [id, 2, phase, 0])
     laid++
   }
