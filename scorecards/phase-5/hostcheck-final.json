@@ -1,0 +1,278 @@
+{
+  "engineHash": "a103ddd4fdecc107",
+  "shippedHash": "d6878081f046f089",
+  "commit": "0f167f9",
+  "time": "2026-11-25T22:11:17.818Z",
+  "machine": "space-sandbox · 4 x Intel(R) Xeon(R) Processor @ 2.90GHz · 7957 MB",
+  "browser": "Google Chrome for Testing 147.0.7727.15",
+  "limits": {
+    "name": "Vercel",
+    "maxShippedMb": 95,
+    "maxFileMb": 20,
+    "firstLoadMaxMb": 16,
+    "maxBuildMinutes": 20
+  },
+  "copied": 1502,
+  "build": {
+    "ok": true,
+    "installSeconds": 3.092,
+    "buildSeconds": 4.109,
+    "minutes": 0.12001666666666667,
+    "error": ""
+  },
+  "dist": {
+    "mb": 60.77985858917236,
+    "files": 100,
+    "largest": {
+      "file": "assets/spring/village-spring.glb",
+      "mb": 4.422725677490234
+    },
+    "never": []
+  },
+  "firstLoad": {
+    "bytes": 14502030,
+    "mb": 13.83021354675293,
+    "requests": 32,
+    "files": [
+      {
+        "url": "assets/winter/village-winter.glb?v=853e1261bb13949d",
+        "bytes": 2137408
+      },
+      {
+        "url": "assets/main-DOPx_QGE.js",
+        "bytes": 1567021
+      },
+      {
+        "url": "assets/winter/tree-crown.glb?v=aa037cf4b30bd356",
+        "bytes": 1558580
+      },
+      {
+        "url": "assets/winter/base-winter.glb?v=b95ad85ac7d2a4cd",
+        "bytes": 1549040
+      },
+      {
+        "url": "assets/shared/village-model.glb?v=189060505f06558f",
+        "bytes": 1448484
+      },
+      {
+        "url": "assets/shared/trunk-wood.glb?v=7952d2ff0703abe5",
+        "bytes": 762908
+      },
+      {
+        "url": "assets/shared/scene-slab-detail.lin.tile.first.webp?v=7fd6c27f8cd394b8",
+        "bytes": 520960
+      },
+      {
+        "url": "assets/winter/frost-glass.lin.w2048.first.webp?v=cdddfab94b3c6799",
+        "bytes": 506862
+      },
+      {
+        "url": "assets/winter/tree-sprigs.srgb.w512.webp?v=0bee5ba1f93b8737",
+        "bytes": 496320
+      },
+      {
+        "url": "assets/winter/frost-slab.lin.w2048.first.webp?v=ba19b33ef2d52c34",
+        "bytes": 434434
+      },
+      {
+        "url": "assets/winter/frost-shapes.glb?v=0f8a8d80be4542c0",
+        "bytes": 429572
+      },
+      {
+        "url": "assets/winter/frost-grain.lin.tile.webp?v=db5068e88d6a29c0",
+        "bytes": 426106
+      },
+      {
+        "url": "assets/winter/base-wood-detail.lin.tile.w1024.first.webp?v=61dec3b7d4655b27",
+        "bytes": 344864
+      },
+      {
+        "url": "assets/winter/tree-needles.srgb.tile.w1024.first.webp?v=1e8aca3cd7b780f3",
+        "bytes": 336650
+      },
+      {
+        "url": "assets/winter/base-carve.lin.w2048.first.webp?v=a584d47eb5656653",
+        "bytes": 254834
+      },
+      {
+        "url": "assets/shared/trunk-bark-n.lin.tile.w1024.first.webp?v=ad6e2fe7e6a421ea",
+        "bytes": 224038
+      },
+      {
+        "url": "assets/winter/tree-snow.srgb.tile.w1024.first.webp?v=f024f1e3dcecbba1",
+        "bytes": 193770
+      },
+      {
+        "url": "assets/winter/base-brass-detail.lin.tile.w512.webp?v=d5248afb4f6b57b8",
+        "bytes": 169396
+      },
+      {
+        "url": "assets/winter/village-snow.lin.tile.first.webp?v=8efec57784fa44ca",
+        "bytes": 167766
+      },
+      {
+        "url": "assets/winter/base-wood.srgb.tile.w1024.first.webp?v=5855925632a011c2",
+        "bytes": 148084
+      },
+      {
+        "url": "assets/shared/trunk-bark.srgb.tile.w1024.first.webp?v=4e18f53652776431",
+        "bytes": 147472
+      },
+      {
+        "url": "assets/shared/village-grain.lin.tile.first.webp?v=b51bfe56031bd9d5",
+        "bytes": 140026
+      },
+      {
+        "url": "assets/shared/scene-slab-stone.lin.tile.first.webp?v=f30c537f19681ec9",
+        "bytes": 131656
+      },
+      {
+        "url": "assets/winter/base-brass.srgb.tile.w512.webp?v=f65aaab46029e819",
+        "bytes": 122154
+      },
+      {
+        "url": "assets/winter/village-ice.lin.tile.first.webp?v=0bc2aadaef81cbc7",
+        "bytes": 118654
+      },
+      {
+        "url": "assets/winter/base-snow.lin.tile.w256.webp?v=03845f27a7ff713e",
+        "bytes": 101998
+      },
+      {
+        "url": "assets/winter/base-snow.srgb.tile.w256.webp?v=81e333391388bcc2",
+        "bytes": 31444
+      },
+      {
+        "url": "assets/index.json",
+        "bytes": 20845
+      },
+      {
+        "url": "assets/winter/village-plume.lin.webp?v=17a351731be6c690",
+        "bytes": 8276
+      },
+      {
+        "url": "assets/shared/flake-lobes.lin.png?v=01900b894edc46a5",
+        "bytes": 1581
+      },
+      {
+        "url": "index.html",
+        "bytes": 827
+      },
+      {
+        "url": "assets/worker-BLbsJcDW.js",
+        "bytes": 0
+      }
+    ],
+    "sizes": "bytes of each response body as this server sent it, with no compression"
+  },
+  "live": {
+    "opened": true,
+    "firstPicture": true,
+    "seconds": 16.846,
+    "waitSeconds": 120,
+    "mode": "live",
+    "picture": {
+      "file": "out/work/hostcheck/live.png",
+      "width": 1920,
+      "height": 1080,
+      "colours": 213351
+    },
+    "errors": [],
+    "error": ""
+  },
+  "links": {
+    "asked": 10,
+    "opened": 10,
+    "size": "960 by 540",
+    "failed": [],
+    "each": [
+      {
+        "link": "?season=winter",
+        "firstPicture": true,
+        "seconds": 14.423,
+        "colours": 85178,
+        "lit": "winter",
+        "error": ""
+      },
+      {
+        "link": "?season=winter&quality=low",
+        "firstPicture": true,
+        "seconds": 14.446,
+        "colours": 77588,
+        "lit": "winter",
+        "error": ""
+      },
+      {
+        "link": "?season=spring",
+        "firstPicture": true,
+        "seconds": 13.123,
+        "colours": 106565,
+        "lit": "spring",
+        "error": ""
+      },
+      {
+        "link": "?season=spring&quality=low",
+        "firstPicture": true,
+        "seconds": 12.925,
+        "colours": 100065,
+        "lit": "spring",
+        "error": ""
+      },
+      {
+        "link": "?season=summer",
+        "firstPicture": true,
+        "seconds": 14.105,
+        "colours": 94073,
+        "lit": "summer",
+        "error": ""
+      },
+      {
+        "link": "?season=summer&quality=low",
+        "firstPicture": true,
+        "seconds": 13.394,
+        "colours": 85367,
+        "lit": "summer",
+        "error": ""
+      },
+      {
+        "link": "?season=fall",
+        "firstPicture": true,
+        "seconds": 12.605,
+        "colours": 89381,
+        "lit": "fall",
+        "error": ""
+      },
+      {
+        "link": "?season=fall&quality=low",
+        "firstPicture": true,
+        "seconds": 12.507,
+        "colours": 73655,
+        "lit": "fall",
+        "error": ""
+      },
+      {
+        "link": "?mode=autopilot&season=spring",
+        "firstPicture": true,
+        "seconds": 22.849,
+        "colours": 157239,
+        "lit": "spring",
+        "error": ""
+      },
+      {
+        "link": "?mode=loop&season=summer",
+        "firstPicture": true,
+        "seconds": 15.631,
+        "colours": 101770,
+        "lit": "summer",
+        "error": ""
+      }
+    ]
+  },
+  "inside": {
+    "maxShippedMb": true,
+    "maxFileMb": true,
+    "firstLoadMaxMb": true,
+    "maxBuildMinutes": true
+  },
+  "pass": true
+}

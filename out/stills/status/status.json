@@ -1,44 +1,44 @@
 {
-  "number": 130,
-  "time": "2026-11-25 23:36 UTC",
+  "number": 131,
+  "time": "2026-11-26 00:05 UTC",
   "phase": "5",
   "unit": "",
   "lines": [
-    "Status 130 · 2026-11-25 23:36 UTC · Phase 5",
-    "The final gate is still running in its own sandbox: at 23:21 it had G1 to G12 passed and G13 running; its limit is 00:25",
-    "Open item 218 followed up, as a check and not a change: with reduced motion set, a press on the frozen build does finish at phone size, winter to spring, no lift and no shake, the controls back on; it took 226 seconds on this machine's software drawing, and the same check at 1280 x 720 is running",
-    "The fresh review stands at 6 of 10 with nine must-fixes (decision 127); nothing is mended before the stop",
-    "Sound, read 23:36: 6,765 of the 10,000 credits used in 40 paid calls, 3,235 left, none planned",
-    "Next: the gate's result word for word, the last tick, the review page rebuilt and published, then the REVIEW block",
-    "phase 5: 9.43 h used of its 12.00 h box",
-    "allowance (before the review, continuation 1): 9.43 h used of 12.00 h allowed",
+    "Status 131 · 2026-11-26 00:05 UTC · Phase 5",
+    "The phase gate is in: all 17 machine checks green on a clean clone of the frozen build, G1 to G16 and D4, run once in 96 minutes; G13 covers 52 of 54 parts, every part outside the film unit",
+    "That is the machine checks only: no unit passed its look, motion or sound bar, and the fresh review stands at 6 of 10 with nine must-fixes",
+    "Reduced motion was checked to its end on the frozen build at phone size and on the wide layout: a press changes winter to spring with no lift and no shake (open item 218)",
+    "Sound: 6,765 of the 10,000 credits used in 40 paid calls, 3,235 left, none planned",
+    "Next: the review page rebuilt and published, the last tick, then the REVIEW block",
+    "phase 5: 9.91 h used of its 12.00 h box",
+    "allowance (before the review, continuation 1): 9.91 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-130-1.jpg",
-      "caption": "Reduced motion on a phone screen, checked here on the frozen build: before the press, 20 seconds after it, and at the end with spring at rest",
+      "file": "out/stills/status/status-131-1.jpg",
+      "caption": "The kept sounds as waveforms",
       "w": 1200,
-      "h": 837
+      "h": 810
     },
     {
-      "file": "out/stills/status/status-130-2.jpg",
-      "caption": "From the fresh reviewer: summer at rest, the approved picture beside the review cut and the live app",
+      "file": "out/stills/status/status-131-2.jpg",
+      "caption": "The four seasons at rest, from the frozen build at 1920 x 1080",
       "w": 1200,
-      "h": 238
+      "h": 733
     },
     {
-      "file": "out/stills/status/status-130-3.jpg",
-      "caption": "From the fresh reviewer: spectrograms of the review cut's sound around the four landings, the first five seconds and the last five",
-      "w": 1200,
-      "h": 684
+      "file": "out/stills/status/status-131-3.jpg",
+      "caption": "The first shake of the review cut as twelve frames, winter into spring (960 x 540, draft tier)",
+      "w": 1149,
+      "h": 986
     },
     {
-      "file": "out/stills/status/status-130-4.jpg",
-      "caption": "Comparison crops 3: fall-shake, approved image left, build right",
+      "file": "out/stills/status/status-131-4.jpg",
+      "caption": "Comparison crops 2: fall-shake, approved image left, build right",
       "w": 1200,
-      "h": 336
+      "h": 679
     }
   ]
 }
