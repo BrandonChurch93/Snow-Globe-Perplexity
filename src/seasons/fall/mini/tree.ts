@@ -136,11 +136,13 @@ export async function prepare(): Promise<void> {
   await Promise.all([prepareTrunk(), prepareModel(MODEL)])
 }
 
-export function build(): THREE.Object3D {
+export function* making(): Generator<void, THREE.Object3D> {
   const part = `miniature-${season}`
   const lit = onWood()
   const g = placeGeometry(geometry(MODEL, 'twigs'))
+  yield
   bakeGlow(g, lit)
+  yield
   const bark = stageMaterial({
     part,
     standIn: false,
@@ -158,6 +160,7 @@ export function build(): THREE.Object3D {
   const twigs = new THREE.Mesh(g, bark)
   twigs.castShadow = true
   twigs.receiveShadow = true
+  yield
   return new THREE.Group().add(buildTrunk(part, lit, BARK_TINT), twigs)
 }
 

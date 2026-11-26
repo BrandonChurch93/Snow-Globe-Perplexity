@@ -323,17 +323,22 @@ export async function prepare(): Promise<void> {
   await Promise.all([prepareTrunk(), prepareModel(MODEL)])
 }
 
-export function build(): THREE.Object3D {
+export function* making(): Generator<void, THREE.Object3D> {
   const part = `miniature-${season}`
   const fill = placePoint(FILL_FROM)
   const leaves = stageMaterial({ part, standIn: false, inside: true, miniature: true, change: 'miniature', map: texture(LEAVES), color: new THREE.Color(LEAF_TINT[0], LEAF_TINT[1], LEAF_TINT[2]), vertexColors: true, roughness: 0.82, side: THREE.DoubleSide, hook: leafHook, key: 'tree-leaves-summer' })
   const g = placeGeometry(geometry(MODEL, 'leaves'))
+  yield
   bakePads(g)
+  yield
   bakeGlow(g, [...paperOn(GLOW.leaves), lampOn(LAMP_ON_LEAVES), { at: fill, color: tones.sun, ...FILL_ON_LEAVES, phase: 0.6 }])
+  yield
   const crown = new THREE.Mesh(g, leaves)
   crown.castShadow = true
   crown.receiveShadow = false
+  yield
   const trunk = buildTrunk(part, [...paperOn(GLOW.wood), lampOn(LAMP_ON_WOOD), { at: fill, color: tones.sun, ...FILL_ON_WOOD, phase: 0.6 }], BARK)
+  yield
   const shared = trunk.material as THREE.MeshStandardMaterial
   const wood = trunk.geometry.getAttribute('position') as THREE.BufferAttribute
   const out = trunk.geometry.getAttribute('normal') as THREE.BufferAttribute
@@ -359,6 +364,7 @@ export function build(): THREE.Object3D {
   }
   wood.needsUpdate = true
   trunk.geometry.setAttribute('aStem', new THREE.BufferAttribute(stemmed, 1))
+  yield
   trunk.material = stageMaterial({ part, standIn: false, inside: true, miniature: true, change: 'miniature', map: shared.map ?? undefined, color: new THREE.Color(BARK[0], BARK[1], BARK[2]), vertexColors: true, roughness: 0.86, extra: { normalMap: shared.normalMap, normalScale: new THREE.Vector2(BARK_BUMP, BARK_BUMP) }, hook: (shader) => woodHook(shader, box.min.y + ROOT_MM), key: 'tree-wood-summer' })
   return new THREE.Group().add(trunk, crown)
 }

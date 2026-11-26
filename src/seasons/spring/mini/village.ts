@@ -503,10 +503,17 @@ const shadowed = <T extends THREE.Mesh>(m: T, cast = true): T => {
   return m
 }
 
-export function build(): THREE.Object3D {
-  const walls = shadowed(new THREE.Mesh(withSurface(dressed(villageGeometry('solid').clone()), nearWall), surfaceMaterial({ part: PART, map: villageGrain(), gain, cover: mossy, key: 'village-solid-spring', fill: WALL_FILL })))
+export function* making(): Generator<void, THREE.Object3D> {
+  const stone = dressed(villageGeometry('solid').clone())
+  yield
+  const solids = withSurface(stone, nearWall)
+  yield
+  const walls = shadowed(new THREE.Mesh(solids, surfaceMaterial({ part: PART, map: villageGrain(), gain, cover: mossy, key: 'village-solid-spring', fill: WALL_FILL })))
+  yield
   const turf = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'turf'), near), turfMaterial()), false)
+  yield
   const growth = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'growth'), nearGrowth), growthMaterial()), false)
+  yield
   const water = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'water'), near), waterMaterial()), false)
   growth.onBeforeRender = (_r, _s, _c, g) => g.setDrawRange(0, growth.matrixWorld.determinant() < 0 ? 0 : Infinity)
   growth.onAfterRender = (_r, _s, _c, g) => g.setDrawRange(0, Infinity)

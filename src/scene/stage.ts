@@ -24,6 +24,7 @@ import { centreHeightMm, collarY, emitters as layoutEmitters, innerRadiusMm, out
 import { bakeGrid, flickerOf, gridBytes } from './lightgrid'
 import { CHANGE_BLOOM, Lighting } from './lighting'
 import { drawPasses, type PassContext } from './passes'
+import { stepsOf } from './steps'
 import { makeSlab, ReflectMix, updateSurface } from './surface'
 
 interface SeasonSet {
@@ -374,10 +375,16 @@ export class GlobeStage implements Stage {
       })
       return out
     }
+    const pieces = stepsOf(kit.miniature)
+    const piece = (): void => {
+      const p = pieces.next()
+      if (p.done) miniature = p.value
+      else m.steps.unshift(piece)
+    }
     const m: Making = {
       steps: [
         () => void (base = kit.base()),
-        () => void (miniature = kit.miniature()),
+        piece,
         () => void (arrival = kit.arrival()),
         () => void (lights = kit.lights()),
         () => void (own = kit.dressing()),

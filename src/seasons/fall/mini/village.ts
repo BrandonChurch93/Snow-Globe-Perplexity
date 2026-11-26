@@ -397,11 +397,16 @@ const shadowed = <T extends THREE.Mesh>(m: T, cast = true): T => {
   return m
 }
 
-export function build(): THREE.Object3D {
+export function* making(): Generator<void, THREE.Object3D> {
   const stone = surfaceMaterial({ part: PART, map: villageGrain(), gain, key: 'village-solid-fall', fill: WALL_FILL })
-  const walls = shadowed(new THREE.Mesh(withSurface(autumn(villageGeometry('solid')), sources(NEAR_WALL, tones.lampLight)), stone))
+  const turned = autumn(villageGeometry('solid'))
+  yield
+  const walls = shadowed(new THREE.Mesh(withSurface(turned, sources(NEAR_WALL, tones.lampLight)), stone))
+  yield
   const decor = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'decor').clone(), sources(NEAR_WALL, tones.lampLight)), stone))
+  yield
   const earth = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'ground').clone(), sources(NEAR, tones.lampLight)), groundMaterial()), false)
+  yield
   const water = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'water').clone(), sources(NEAR, tones.lampLight)), waterMaterial()), false)
   return new THREE.Group().add(walls, decor, earth, water)
 }

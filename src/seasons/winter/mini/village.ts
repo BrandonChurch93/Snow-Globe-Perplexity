@@ -309,11 +309,15 @@ const WISP_LOOK: WispLook = { thin: 0.04, dense: 0.88, curve: 1.6, crown: 0.55, 
 const plume = wispGeometry(WISP)
 const storm = { value: 0 }
 
-export function build(): THREE.Object3D {
+export function* making(): Generator<void, THREE.Object3D> {
   const solids = withSurface(mergeGeometries([villageGeometry('solid'), geometry(MODEL, 'decor')]), nearWall)
+  yield
   const walls = shadowed(new THREE.Mesh(solids, surfaceMaterial({ part: PART, map: villageGrain(), gain, cover: dusting, key: 'village-solid-winter', fill: WALL_FILL })))
+  yield
   const snow = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'snow'), near), snowMaterial(PART, 'miniature', 'village-snow', '')))
+  yield
   const ice = shadowed(new THREE.Mesh(withSurface(geometry(MODEL, 'ice'), near), iceMaterial()), false)
+  yield
   const smoke = new THREE.Mesh(plume, wispMaterial(PART, tones.smoke, WISP_LOOK, texture(PLUME), clock, storm))
   smoke.renderOrder = 3
   smoke.frustumCulled = false

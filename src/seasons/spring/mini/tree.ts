@@ -165,9 +165,10 @@ export async function prepare(): Promise<void> {
   await Promise.all([prepareTrunk(), prepareModel(MODEL)])
 }
 
-export function build(): THREE.Object3D {
+export function* making(): Generator<void, THREE.Object3D> {
   const trunk = buildTrunk(PART, lampOn(LAMP_ON_WOOD), tones.bark)
   trunk.material = barkMaterial(trunk.material as THREE.MeshStandardMaterial)
+  yield
   const blossom = new THREE.Mesh(placed('blossom', lampOn(LAMP_ON_BLOSSOM)), blossomMaterial())
   blossom.castShadow = true
   blossom.receiveShadow = true
@@ -177,6 +178,7 @@ export function build(): THREE.Object3D {
   const lighter = (): boolean => meshLevel() !== TOP
   blossom.onBeforeRender = (_r, _s, _c, g) => g.setDrawRange(0, lighter() && blossom.matrixWorld.determinant() < 0 ? (inShadow[meshLevel()] ?? Infinity) : Infinity)
   blossom.onAfterRender = (_r, _s, _c, g) => g.setDrawRange(0, Infinity)
+  yield
   const twigs = new THREE.Mesh(placed('twigs', lampOn(LAMP_ON_WOOD)), twigMaterial())
   twigs.castShadow = true
   twigs.receiveShadow = true

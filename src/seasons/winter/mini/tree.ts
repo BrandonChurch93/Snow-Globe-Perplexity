@@ -264,12 +264,17 @@ export async function prepare(): Promise<void> {
   await Promise.all([prepareTrunk(), prepareModel(MODEL)])
 }
 
-export function build(): THREE.Object3D {
+export function* making(): Generator<void, THREE.Object3D> {
   const part = `miniature-${season}`
   const needles = stageMaterial({ part, standIn: false, inside: true, miniature: true, change: 'miniature', map: texture(NEEDLES), color: new THREE.Color(NEEDLE_TINT[0], NEEDLE_TINT[1], NEEDLE_TINT[2]), vertexColors: true, roughness: 0.88, side: THREE.DoubleSide, hook: needleHook, key: 'tree-needles' })
   const snow = stageMaterial({ part, standIn: false, inside: true, miniature: true, change: 'miniature', map: texture(SNOW), color: new THREE.Color(SNOW_TINT[0], SNOW_TINT[1], SNOW_TINT[2]), vertexColors: true, roughness: 0.8, hook: snowHook, key: 'tree-snow' })
   const fill: GlowLight = { at: placePoint(FILL_FROM), color: tones.sheen, ...FILL_ON_WOOD, phase: 0.6 }
-  return new THREE.Group().add(buildTrunk(part, [...bulbs(GLOW.wood), lampOn(LAMP_ON_WOOD), fill], BARK), solidMesh(placed('needles', [...bulbs(GLOW.needles), lampOn(LAMP_ON_NEEDLES), { ...fill, ...FILL_ON_NEEDLES, at: placePoint(FILL_ON_NEEDLES_FROM) }]), needles), solidMesh(placed('snow', onSnow()), snow))
+  const all = new THREE.Group()
+  const trunk = buildTrunk(part, [...bulbs(GLOW.wood), lampOn(LAMP_ON_WOOD), fill], BARK)
+  yield
+  const crown = solidMesh(placed('needles', [...bulbs(GLOW.needles), lampOn(LAMP_ON_NEEDLES), { ...fill, ...FILL_ON_NEEDLES, at: placePoint(FILL_ON_NEEDLES_FROM) }]), needles)
+  yield
+  return all.add(trunk, crown, solidMesh(placed('snow', onSnow()), snow))
 }
 
 export function lights(): THREE.Object3D {
