@@ -108,3 +108,34 @@ About 4350 pixels (step up to 9) in the summer crown and on the sand, about 847 
 ## Helper scripts (not committed, in `out/work/sc/` of my clone)
 
 `cmp.mjs a.png b.png [heat.png]` (count, largest step, histogram, heat picture), `top.mjs a b minStep` (the worst pixels with both colours), `crop.mjs` (side by side crops), `queue.sh` (one strict run after another).
+
+## Second job (05:41 to 06:41 UTC): the reading of the gate
+
+The report sent to the lead, as sent:
+
+> strict_checker, second report. Tool pushed: `agent/p6-strict` at `2f0ead55` (change `e61b2b0c`, then merge of main `bad03291`); tsc clean, vitest 562 passed, 7 skipped. Only `tools/strict.mjs` changed. A later local merge of main `197e2476` is not pushed (no tool change in it).
+>
+> 1. The reading. By default every wrapped row is read against its own `--same` picture, preview and `--live` alike. `--against plain` gives the old reading. `--same` runs are always read against plain. Limits and exit codes unchanged. The last line names the reading: `..., each row read against its own --same picture (engine ...)` or `..., each row read against the plain picture (engine ...)`. Under the new reading no plain picture is rendered; each row costs two renders (six a key by default, where the old cost four). Pictures made for an engine are kept and shared between runs.
+>
+> The pow rows: I chose the same reading for them, not plain. Reason: through the live path the pow row of winter-rest fails against plain by the wrapper alone (5 pixels, step 3; `pow same` gives the same pixels), so against plain "every row passes" could not hold. Not proven on today's engine, see "not run".
+>
+> The noguard rows: in their `--same` picture isnan and isinf answer false as in the mode itself. So the row says whether an open case reaches the picture with the guards gone; it no longer says whether a guard holds back a number from a source the wrappers do not watch (a division by zero). `--against plain` still does. Your call whether that is the reading you want.
+>
+> 2. Before the mends, main `d35fd0cf`, preview, `--keys summer-rest,spring-rest,fall-rest,winter-rest,winter-shake --modes all+smooth`: `strict: 3 FAILED, each row read against its own --same picture (engine f4d953e4984e5ec6)`. Rows: summer-rest 212 pixels, step 99, FAIL; spring-rest 19, step 13, FAIL; fall-rest 20, step 20, FAIL; winter-rest 5, step 1, pass; winter-shake 9, step 1, pass.
+>
+> After the mends: main took summer_finisher's mends (`18d14700`, the same two lines as I proposed) while my scratch copy was on its first key, so I dropped the scratch copy and ran on main itself, `197e2476`, engine `d3c64f0b7e6b5c04`.
+>
+> Preview, all eight keys, `--modes all+smooth`: `strict: 1 FAILED, each row read against its own --same picture (engine d3c64f0b7e6b5c04)`. Rows: summer-rest 0 pass; summer-shake 0 pass; spring-rest 0 pass; fall-rest 1 pixel, step 1, pass; winter-rest 7 pixels, step 2, FAIL; winter-shake 6, step 1, pass; spring-shake 1, step 1, pass; fall-shake 0 pass.
+>
+> Live, all eight keys, `--live high --modes all+smooth`: `strict: 1 FAILED through the app's own path at high, each row read against its own --same picture (engine d3c64f0b7e6b5c04)`. Rows: winter-rest 21 pixels, step 2, FAIL; winter-shake 20, step 1, pass; spring-rest 0; spring-shake 1, step 1; summer-rest 0; summer-shake 0; fall-rest 0; fall-shake 0, all pass.
+>
+> So cases A and B are gone from the picture on main, in both paths.
+>
+> 3. The row that still fails: winter-rest. Preview: one pixel of 2 levels (533,148: 23,30,26 against 25,31,27) and six of 1 level. Live: two pixels of 2 levels (489,223 and 465,236) and nineteen of 1, scattered over the tree. It is not an open case. I rendered the same two programs again, nothing changed: the second not-a-number picture differs from the first in 7 pixels, 533,148 by 3 levels (25,31,27 then 22,30,26); the second `--same` picture differs from the first in 5 pixels of 1 level; and the row then passes: `strict: pass, 1 keys under all+smooth, each row read against its own --same picture (engine d3c64f0b7e6b5c04): no pixel moves by more than 1 level, at most 0.01% of pixels move` (4 pixels, step 1). With the open case answering 1e30 the row passes too (7 pixels, step 1; 533,148 stays 22,30,26), which no met open case would allow. So a wrapped winter still wobbles from render to render by a handful of pixels, one of them by up to 3 levels, and the gate at 1 level fails or passes on winter-rest by chance (it failed in the main runs, preview and live, and passed on the rerender). There is no line under `src/` to give you for this. A hint only: the plain winter picture has always come out the same to the pixel (every `dry` row was 0 on the engine of my first report), so the wobble shows only when the shaders are slower to compile, which points at something in the winter draw that depends on time or on when a program is ready, near the top of the tree (533,148; live 489,223 and 465,236). Not narrowed further.
+>
+> What would make the gate exact, if you want it: one compiled program for both pictures, the wrapper answering not-a-number or the plain answer by a uniform, so that only a met open case can differ. Not built; it does not cure the wobble, which is in the picture itself.
+>
+> Not run (the limit; a render takes 62 to 75 s on today's engine, the default run is now 48 renders, about 55 minutes, and live 48 more, about 40 minutes): every pow row and every noguard row under the new reading, in either path; so there is no last line of a plain `npm run strict` to give you, and I have not seen it pass. The narrowing of winter-rest. Item 4: `mesa-vulkan-drivers` installed (Mesa 26.0.8) but no run was made under lavapipe; note that the tool's kept pictures are keyed by engine and not by renderer, so a lavapipe run needs `--fresh` or its own folder.
+>
+
+Logs of the runs are in `out/work/p2/` of my clone (before.log, main1.log, mainlive1.log, mainw.log, mainw2.log, mainw3.log), not committed. The scratch copy with the two mends (`sg-mend`, engine `02f8b037dbd40cf5`) was stopped on its first key and gives no row.
