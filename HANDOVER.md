@@ -461,3 +461,402 @@ log(`done, page errors ${JSON.stringify(errors)}`)
 await browser.close()
 ```
 
+
+# Second job: on a phone the shake sits higher, over a longer table
+
+Mail from `/root` 07:19 UTC, box to 08:15. Verdict reported at 08:13: BETTERED.
+
+## Commits
+
+- `64353fa2` Phone shake: the far camera aims lower over a longer table (`src/app/framing.ts`, `src/scene/surface.ts`,
+  `tests/framing.test.ts`).
+- Merges of main around it: `a9ffd0c5` (main bcad846f), `f53ce4f1` (main bef56f56), `508f1dac` (main 16dcd6ae),
+  `d9c7e03c` (main 12465d0e). `d9c7e03c` is the head that was pushed, at 08:08.
+
+## The fault and what was done
+
+On 390 x 844 the globe sat low through a shake: glass top about 330 to 345 px of 844, the top 40 percent of the screen
+dark. The aim could not drop because the table's near edge would have come into the picture.
+
+- `SLAB_SHAPE.nearMm` 620 to 880 in `src/scene/surface.ts`: one geometry for every screen and for the film.
+- `FRAME.tableRestMm: 600`: at rest the camera looks no further down the table than it did, so a longer table moves
+  no globe at rest. `tableReach(back)` is 600 at rest and `nearMm - tableKeepMm` = 860 fully stood back.
+- `FRAME.shakeMid: 0.43`: on a screen narrower than `narrowAspect` (0.6), where the camera stands back, the far rig
+  starts from the aim it rests with and raises it until the middle of the glass, at the highest moment of a shake,
+  sits 43 percent down the height; bounded by the foot's line and by `aimForTable(..., tableReach(1))`.
+- `liveRig` blends the aim by how far the camera has stood back and clamps it with `tableReach(stood)`.
+- 880 and not 900: at 900 the tilt test of the first job read 1.5139 against its limit of 1.5. The limit was kept.
+- The pitch limit in `tests/app.test.ts` did not stop anything: pitch is untouched, only the height of the aim drops.
+
+On 390 x 844 the far rig went from 1612.93 mm, aim 97.73 mm, to 1616.25 mm, aim 55.41 mm.
+
+## The numbers
+
+Live app, 390 x 844, touch, pixel ratio 1, `?quality=low`, one press of Shake, winter to spring, every frame read off
+the canvas. The middle of the glass as a share of the height, by a circle fitted to the silhouette (fit 0.25 px).
+
+| frame | BEFORE, main 27e83641 | AFTER |
+| --- | --- | --- |
+| 1 | lift 47.6 (top 279 px) | lift 41.0 (top 224 px) |
+| 2 | stroke 52.1 (329) | stroke 43.2 (254) |
+| 3 | stroke 52.3 (331) | stroke 43.0 (253) |
+| 4 | stroke 52.2 (331) | stroke 43.2 (254) |
+| 5 | stroke 52.3 (331) | the change: the glow hides the glass |
+| 6 | stroke 52.4 (332) | stroke 43.0 (253) |
+| 7 | the change: the glow hides the glass | set down 44.7 (266) |
+| 8 | stroke 52.3 (331) | landed 44.4 (261) |
+| 9 | set down 52.9 (336) | way back 42.6 (236) |
+| 10 | landed 53.6 (341) | way back, last drawn, 39.7 (192) |
+
+- AFTER frames are f024, f034, f041, f072, f098, f120, f146, f152, f175, f197 of 198 drawn (`/tmp/live-after3`).
+- Computed at 60 a second: 43.0 to 43.7 through the strokes, 44.4 to 44.8 at the set down. Rest 37.8 with the
+  controls measured (glass top 164 px, radius 155.1), 41.3 before the app has measured them.
+- Small phones, computed, not drawn: 375 x 667, 320 x 568 and 360 x 640 hold 43.0 to 45.2 while stood back; their
+  aim went from 56.5 to 61.2 mm, about 8 px lower on the screen than before.
+- Side room, the same before and after to the digit: least beside the glass 23.2 px (computed, shake 5, beat 2.91; by
+  shake 25.0, 25.4, 23.3, 23.4, 23.2, 27.0, 23.5, 24.2); least beside an end of the base 3.7 px. Least drawn after:
+  26.8 px. The 38 px of the first report was the nearest of ten drawn frames, not the least.
+- The table to the bottom edge: in all 198 frames the row means of the lowest 160 rows never step by more than 0.95
+  levels of 255 from one row to the next; the lowest 300 rows of four frames were looked at with the brightness
+  raised 8 times, both corners.
+
+## Proofs
+
+Film B, hd, draft, lavapipe, sha256 before and after the change, both on main bcad846f, identical:
+
+- frame 0 (macro): `2cde11777c275cc8338de729213b971940cb1889174e1f0f3b2475f34c6482c5`
+- frame 1022 (base): `7539c717242347a07a353eb2a075c92ef4b008e80e82e76c7aed1c3e2fa0a72c`
+- frame 1742 (interior): `ad021262919d4ab740c7baf34c4f84b1944fd7f3671376c95e6b92828a0075cd`
+- frame 2462 (low, along the table): `24c62e94ceb68df359565abaddf3b4d851ea35c725651f2d9c223ba6769c5ce2`
+
+Main changed those frames itself after bcad846f: `58455e4c` draws the particles as quads where the machine's largest
+point is too small, which lavapipe's is (against the hashes above frame 0 differs in 42078 pixels by at most 5 levels,
+1022 in 769, 1742 in 1541, 2462 in 944). So the proof was made again on the head that was pushed. Before: `d9c7e03c`
+with `src/app/framing.ts`, `src/scene/surface.ts` and `tests/framing.test.ts` as they are in main 12465d0e (table
+620 mm; the test file only so that the build's type check passes), built and drawn. After: `d9c7e03c`. Identical:
+
+- frame 0: `b59f1d429fbff8e29a8a36cd94612ab3f77a636a50ffbe7cf1a283c57cf55033`
+- frame 1022: `4e54e043ddeb63b747bad69d4678fe2b7d5358c955e490e1edf1ceeea896d902`
+- frame 1742: `89b1423bc7a0dd0527dc45d1cee077577fe8148b11c0a2c0f2bc04b796b8fb47`
+- frame 2462: `7d8edcc308372ba6a9aa18d3f4830bd0edfa9d083e4663adcfb24836a6dd89c1`
+
+Each frame by `npm run seq -- --first N --last N --tier draft --format hd --look no --force`, then `sha256sum` of
+`out/work/seq/film-hd-draft/film-00NNNN.png`. The tools read `dist`, so `npm run build` comes after every change of
+source and never while a render runs.
+
+Rest: 4600 rest rigs over 23 screens (yaw, pitch, controls measured and not) are the same numbers to full precision
+before and after. The far rig differs only on the 8 screens narrower than 0.6.
+
+## Checks on d9c7e03c
+
+- `npx tsc --noEmit`: exit 0. `npx vitest run`: 53 files passed, 1 skipped; 638 tests passed, 7 skipped.
+- `npm run strict` on all eight keys (the slab's shape is a shader string): "strict: pass", engine bc83c318e4fb9252,
+  drawn by lavapipe. Seven keys: 0 pixels differ in every row. winter-shake: 2 pixels differ by 1 level under
+  all+smooth and all+smooth+noguard, 0 under pow and guards; the limits are 1 level and 0.01 percent of pixels.
+- `npm run determinism`: pass (3 pictures, 4 page loads, preview, draft).
+- `--diag standins` on winter-rest, hero, phone, draft (390 x 844): every pixel 0.
+- `tests/framing.test.ts`, 25 tests: the band on five tall phones (360 x 800, 390 x 844, 393 x 852, 412 x 915,
+  430 x 932) over all eight shake paths with the controls measured and not; "never looks past an edge of the table" on
+  nine screens, yaws to 35 degrees and every tilt through the lift.
+
+## Why not MENDED
+
+1. The band of 42 to 58 percent cannot hold at the two ends of a shake: rest is 37.8 (41.3 until the controls are
+   measured) and may not change, so the first frames of the lift and the last part of the way back lie above 42. The
+   test holds the band at every moment the camera has fully stood back, and between rest and the band elsewhere.
+2. Side room is what main had, not 38 px at every moment. Holding 38 px always needs the globe at about 66 percent of
+   rest instead of 72. It was not shrunk.
+
+## Still wrong
+
+- The dressing was not extended. Spring's petals lie within 240 mm of the axis by their own numbers (`PETALS.farMm`)
+  and fall's leaves thin out likewise in the pictures, so the stretch of table nearest the camera is bare in the
+  shake, as the table beyond the dressing already was. No line shows where they stop.
+- A tilt at rest still uses the 600 mm reach, so the first job's fault (d) stays.
+- The globe is still 72 percent of rest in the shake.
+- Summer's sand has a jagged edge at the foot at low and medium (not from this job, not on the new part).
+
+## What I did not see
+
+- Nothing moving: the software renderer draws a frame every 1.2 to 1.8 s.
+- The BEFORE frames are from main 27e83641 on the old software renderer and stop at the landing.
+- The last 28 percent of the camera's way back (computed only).
+- The glass and the table in the frames of the change: the glow and the cover hide them.
+- In fall at both levels and in winter and spring at medium the ten frames of the seasons run end before the camera is
+  fully back (glass 222 to 228 px across against 220).
+- The seasons' rest frames are before the app has measured its controls.
+- Level high, tablet and hd were not drawn live again. Tablet and hd: the far rig is the same numbers.
+- The film frames were not redrawn on main 80391266, which merged this branch as `5fbcd0d3` and then took the change
+  of season's light and the first picture.
+
+## How the measures were made
+
+All four tools are scratch and are not in the repository. The two page scripts must sit in `tools/` while they run,
+because they use `tools/lib/browser.mjs`; move them out again before any commit. They need `npx vite preview` on
+127.0.0.1:4173 over a `dist` built from the source, and they are render processes: one at a time, never beside a build.
+
+- `zz-live2.mjs SECONDS MOST OUTDIR QUERY HOMEFRAMES`: one shake on a 390 x 844 touch screen; keeps every frame the
+  app draws as `fNNN.jpg`, read off the canvas in the same task as the app's own frame. `HOMEFRAMES` ends the run that
+  many frames after the control is enabled again. Under lavapipe the app's clock moves about 0.055 s a drawn frame, so
+  one whole shake is about 175 frames and five minutes.
+- `zz-live3.mjs OUTDIR QUALITIES SEASONS FARFRAMES`: each season at each quality, one rest frame and the first
+  `FARFRAMES` frames after the press, as PNG.
+- `measure.py DIR [names]`: the glass's circle by a circle fitted to the upper rim of the silhouette; prints the top,
+  the centre as a share of the height, the radius and the room at each side.
+- `measure_edge.py FILES`: the same circle where a glow or a glint breaks the silhouette, by the strongest step in
+  brightness along the upper arc.
+
+### `zz-live2.mjs`
+
+```js
+// Scratch, never committed: one shake in the live app on a phone-sized touch screen; every frame the app draws is kept,
+// read off the canvas in the same task as the app's own frame.
+import fs from 'node:fs'
+import { launch, watchPage } from './lib/browser.mjs'
+const out = process.argv[4] ?? '/tmp/live4'
+const seconds = Number(process.argv[2] ?? 240)
+const most = Number(process.argv[3] ?? 26)
+fs.rmSync(out, { recursive: true, force: true })
+fs.mkdirSync(out, { recursive: true })
+const t0 = Date.now()
+const log = (s) => fs.appendFileSync(out + '/log.txt', `${((Date.now() - t0) / 1000).toFixed(1)} ${s}\n`)
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+const browser = await launch()
+const context = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, hasTouch: true, isMobile: true })
+const page = await context.newPage()
+const errors = watchPage(page)
+await page.addInitScript(() => {
+  const raf = window.requestAnimationFrame.bind(window)
+  window.__shots = []
+  window.__grab = false
+  window.__pressed = null
+  window.requestAnimationFrame = (cb) =>
+    raf((t) => {
+      cb(t)
+      if (!window.__grab) return
+      try {
+        const c = document.querySelector('canvas')
+        const b = document.querySelector('#ui [data-control="shake"]')
+        if (c) window.__shots.push({ at: performance.now(), pressed: window.__pressed, disabled: b?.getAttribute('aria-disabled') ?? null, w: c.width, h: c.height, url: c.toDataURL('image/jpeg', 0.92) })
+      } catch (e) {
+        window.__shots.push({ at: performance.now(), error: String(e) })
+      }
+    })
+})
+await page.goto(`http://127.0.0.1:4173/${process.argv[5] ?? '?quality=low'}`, { waitUntil: 'domcontentloaded' })
+await page.waitForFunction(() => document.querySelector('[data-interface="shown"]') !== null, null, { timeout: 300000 })
+log('controls shown')
+await page.evaluate(() => {
+  window.__grab = true
+})
+await sleep(1500)
+fs.writeFileSync(`${out}/page-rest.png`, await page.screenshot({ type: 'png' }))
+const before = await page.evaluate(() => window.__shots.length)
+log(`rest pictures ${before}`)
+await page.evaluate(() => {
+  window.__pressed = performance.now()
+})
+await page.locator('#ui [data-control="shake"]').tap({ timeout: 120000 }).catch(async () => page.locator('#ui [data-control="shake"]').click({ timeout: 120000 }))
+log('pressed shake')
+const until = Date.now() + seconds * 1000
+let saved = 0
+const dump = async () => {
+  const shots = await page.evaluate((from) => window.__shots.slice(from).map((s) => s), saved)
+  for (const s of shots) {
+    const name = `f${String(saved).padStart(3, '0')}`
+    if (s.url) fs.writeFileSync(`${out}/${name}.jpg`, Buffer.from(s.url.split(',')[1], 'base64'))
+    log(`${name} at ${(s.at / 1000).toFixed(2)} s of the page, ${s.pressed === null ? 'before the press' : `${((s.at - s.pressed) / 1000).toFixed(2)} s after the press`}, control disabled ${s.disabled}, canvas ${s.w} x ${s.h}${s.error ? ` ERROR ${s.error}` : ''}`)
+    saved++
+  }
+}
+const homeFrames = Number(process.argv[6] ?? 0)
+const home = async () => (homeFrames > 0 ? page.evaluate((n) => { const i = window.__shots.findIndex((s) => s.disabled === 'true'); if (i < 0) return false; let k = 0; for (let j = window.__shots.length - 1; j > i && window.__shots[j].disabled !== 'true'; j--) k++; return k >= n }, homeFrames) : false)
+while (Date.now() < until && saved < before + most && !(await home())) {
+  await sleep(1500)
+  await dump()
+}
+await dump()
+fs.writeFileSync(`${out}/page-end.png`, await page.screenshot({ type: 'png' }))
+log(`done, page errors ${JSON.stringify(errors)}`)
+await browser.close()
+```
+
+### `zz-live3.mjs`
+
+```js
+// Scratch, never committed: every season at rest and stood back in a shake, in the live app on a phone-sized touch screen,
+// at the qualities asked. One page a season; frames are read off the canvas in the same task as the app's own frame.
+import fs from 'node:fs'
+import { launch, watchPage } from './lib/browser.mjs'
+const out = process.argv[2] ?? '/tmp/live-seasons'
+const qualities = (process.argv[3] ?? 'low,medium').split(',')
+const seasons = (process.argv[4] ?? 'winter,spring,summer,fall').split(',')
+const farFrames = Number(process.argv[5] ?? 9)
+fs.mkdirSync(out, { recursive: true })
+const t0 = Date.now()
+const log = (s) => fs.appendFileSync(out + '/log.txt', `${((Date.now() - t0) / 1000).toFixed(1)} ${s}\n`)
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+const browser = await launch()
+for (const quality of qualities)
+  for (const season of seasons) {
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, hasTouch: true, isMobile: true })
+    const page = await context.newPage()
+    const errors = watchPage(page)
+    await page.addInitScript(() => {
+      const raf = window.requestAnimationFrame.bind(window)
+      window.__shots = []
+      window.__grab = false
+      window.requestAnimationFrame = (cb) =>
+        raf((t) => {
+          cb(t)
+          if (!window.__grab) return
+          try {
+            const c = document.querySelector('canvas')
+            const b = document.querySelector('#ui [data-control="shake"]')
+            if (c) window.__shots.push({ at: performance.now(), disabled: b?.getAttribute('aria-disabled') ?? null, url: c.toDataURL('image/png') })
+          } catch (e) {
+            window.__shots.push({ at: performance.now(), error: String(e) })
+          }
+        })
+    })
+    await page.goto(`http://127.0.0.1:4173/?quality=${quality}&season=${season}`, { waitUntil: 'domcontentloaded' })
+    await page.waitForFunction(() => document.querySelector('[data-interface="shown"]') !== null, null, { timeout: 300000 })
+    log(`${season} ${quality}: controls shown`)
+    await page.evaluate(() => {
+      window.__grab = true
+    })
+    await page.waitForFunction(() => window.__shots.length >= 2, null, { timeout: 300000, polling: 200 })
+    const rest = await page.evaluate(() => window.__shots.length)
+    await page.evaluate(() => document.querySelector('#ui [data-control="shake"]').click())
+    log(`${season} ${quality}: ${rest} rest pictures, pressed`)
+    await page.waitForFunction((n) => window.__shots.filter((s) => s.disabled === 'true').length >= n, farFrames, { timeout: 300000, polling: 200 })
+    const shots = await page.evaluate(() => window.__shots)
+    const far = shots.filter((s) => s.disabled === 'true')
+    const save = (name, s) => fs.writeFileSync(`${out}/${season}-${quality}-${name}.png`, Buffer.from(s.url.split(',')[1], 'base64'))
+    save('rest', shots[rest - 1])
+    far.forEach((s, i) => save(`far${String(i + 1).padStart(2, '0')}`, s))
+    log(`${season} ${quality}: ${shots.length} pictures, ${far.length} with the control disabled, page errors ${JSON.stringify(errors)}`)
+    await context.close()
+  }
+log('done')
+await browser.close()
+```
+
+### `measure.py`
+
+```python
+# Scratch: the glass's circle in a live phone frame, by a circle fitted to the upper rim of the globe's silhouette.
+import sys, glob, re
+import numpy as np
+from PIL import Image
+from scipy import ndimage
+
+def measure1(path, thr=60):
+    im = np.asarray(Image.open(path).convert('RGB')).astype(np.float32)
+    h, w = im.shape[:2]
+    lum = 0.2126 * im[..., 0] + 0.7152 * im[..., 1] + 0.0722 * im[..., 2]
+    mask = lum > thr
+    mask = ndimage.binary_closing(mask, iterations=2)
+    lab, n = ndimage.label(mask)
+    if n == 0:
+        return None
+    sizes = ndimage.sum(mask, lab, range(1, n + 1))
+    k = int(np.argmax(sizes)) + 1
+    comp = lab == k
+    rows = np.where(comp.any(axis=1))[0]
+    top = int(rows[0])
+    # boundary points of the upper cap
+    pts = []
+    widths = []
+    for y in range(top, min(h, top + 400)):
+        xs = np.where(comp[y])[0]
+        if len(xs) == 0:
+            break
+        widths.append((y, xs[0], xs[-1]))
+    # the cap: rows from the top until the width stops growing (the equator), keep the upper 70 percent of that
+    ws = np.array([b - a for _, a, b in widths], dtype=np.float32)
+    sm = ndimage.uniform_filter1d(ws, 9)
+    eq = None
+    for i in range(10, len(sm) - 10):
+        if sm[i] >= sm[i - 8] and sm[i] > sm[min(len(sm) - 1, i + 8)] + 0.5:
+            eq = i
+            break
+    if eq is None:
+        eq = int(np.argmax(sm))
+    use = widths[3:max(12, int(eq * 0.75))]
+    for y, a, b in use:
+        pts.append((a, y)); pts.append((b, y))
+    P = np.array(pts, dtype=np.float64)
+    A = np.c_[2 * P[:, 0], 2 * P[:, 1], np.ones(len(P))]
+    bvec = (P ** 2).sum(axis=1)
+    sol, *_ = np.linalg.lstsq(A, bvec, rcond=None)
+    cx, cy = sol[0], sol[1]
+    r = float(np.sqrt(sol[2] + cx * cx + cy * cy))
+    res = float(np.sqrt(np.mean((np.hypot(P[:, 0] - cx, P[:, 1] - cy) - r) ** 2)))
+    # the lowest lit row of the globe and its base: the foot, below the circle, where the silhouette within the circle's columns ends
+    col = comp[:, int(max(0, cx - r * 0.5)):int(min(w, cx + r * 0.5))].any(axis=1)
+    foot = top
+    for y in range(top, h):
+        if col[y]:
+            foot = y
+        elif y - foot > 6:
+            break
+    return dict(h=h, w=w, top=top, cx=cx, cy=cy, r=r, res=res, left=cx - r, right=w - (cx + r), foot=foot)
+
+def measure(path):
+    best = None
+    for thr in (60, 85, 110, 135, 160):
+        try:
+            m = measure1(path, thr)
+        except Exception:
+            m = None
+        if m is None or not (95 < m['r'] < 175) or m['res'] > 1.5:
+            continue
+        m['thr'] = thr
+        if best is None or m['res'] < best['res'] - 0.05:
+            best = m
+    return best
+
+if __name__ == '__main__':
+    d = sys.argv[1]
+    names = sys.argv[2].split(',') if len(sys.argv) > 2 else sorted(p.split('/')[-1][:-4] for p in glob.glob(d + '/f*.jpg'))
+    for n in names:
+        m = measure(f'{d}/{n}.jpg')
+        if m is None:
+            print(n, 'nothing'); continue
+        print(f"{n} top {m['top']:4d} px  centre x {m['cx']:6.1f} y {m['cy']:6.1f} ({100*m['cy']/m['h']:5.1f} percent)  radius {m['r']:6.1f}  glass {m['cy']-m['r']:6.1f} to {m['cy']+m['r']:6.1f}  side room {min(m['left'],m['right']):5.1f}  foot {m['foot']}  fit {m['res']:.2f} px thr {m['thr']}")
+```
+
+### `measure_edge.py`
+
+```python
+# Scratch: the glass's circle where a glow hides the silhouette: the circle whose upper arc lies on the strongest step in brightness.
+import sys
+import numpy as np
+from PIL import Image
+from scipy import ndimage
+def edge(path, r0=110.2, box=(120, 300, 330, 520)):
+    im = np.asarray(Image.open(path).convert('RGB')).astype(np.float32)
+    lum = ndimage.gaussian_filter(0.2126 * im[..., 0] + 0.7152 * im[..., 1] + 0.0722 * im[..., 2], 1.0)
+    gy, gx = np.gradient(lum)
+    th = np.radians(np.arange(15, 166, 2.0))
+    best = None
+    for r in np.arange(r0 - 3, r0 + 3.01, 0.5):
+        for cx in np.arange(box[0], box[1], 1.0):
+            xs = cx + r * np.cos(th)
+            ok = (xs >= 1) & (xs < lum.shape[1] - 2)
+            for cy in np.arange(box[2], box[3], 1.0):
+                ys = cy - r * np.sin(th)
+                xi = np.clip(np.round(xs).astype(int), 0, lum.shape[1] - 1)
+                yi = np.clip(np.round(ys).astype(int), 0, lum.shape[0] - 1)
+                # brightness rises going inward: the gradient along the inward normal (-cos, +sin in image rows)
+                g = -(gx[yi, xi] * np.cos(th)) + gy[yi, xi] * np.sin(th)
+                s = float(np.sum(g[ok]) / max(1, ok.sum()))
+                if best is None or s > best[0]:
+                    best = (s, cx, cy, r)
+    return best
+if __name__ == '__main__':
+    for p in sys.argv[1:]:
+        s, cx, cy, r = edge(p)
+        print(p.split('/')[-1], f'centre x {cx:.0f} y {cy:.0f} ({100*cy/844:.1f} percent) radius {r:.1f} glass {cy-r:.0f} to {cy+r:.0f} side room {min(cx-r, 390-cx-r):.1f} score {s:.2f}')
+```
