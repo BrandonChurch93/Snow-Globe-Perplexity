@@ -18,10 +18,19 @@ Second job (the glass through the cover), drawn under Mesa lavapipe.
 Before. Film frames 660 to 690 of film B, every second frame, in reading order, four to a row: the cover of the first change (winter to spring) on main at 6133867c. Format hd (1920 by 1080), tier draft. Frames 670 to 680 are a soft disc with no glass in it.
 
 6-cover-sheet-660-690-after.jpg
-After. The same sixteen frames from agent/p6-change. Format hd, tier draft. Through 670 to 680 the glass keeps its line, the storm inside is lit and the halo lies round it; base and table are black. Frames 672 to 678 are of the code as pushed but for the merge of main at bef56f56; the others were drawn one edit earlier (before the base swapped whole), and that edit moves no pixel outside 674 to 677. Frames 660 to 666 and 684 are the same as main pixel for pixel.
+After. The same sixteen frames from agent/p6-change. Format hd, tier draft. Through 670 to 680 the glass keeps its line, the storm inside is lit and the halo lies round it; base and table are black. Frames 672 to 678 are of my commit 6f0266bd; the others were drawn one edit earlier (before the base swapped whole), and that edit moves no pixel outside 674 to 677. Both sheets were drawn before main's mend of the points was merged: under lavapipe they draw the particles as point sprites cut at 256 px, where the pushed state draws quads. The pushed state is seen at review tier in pictures 8, 10 and 12. Frames 660 to 666 and 684 are the same as main pixel for pixel.
 
 13-foot-675-676-after.jpg
 After. The foot of the glass in film frames 675 (left) and 676 (right), cut from the frame at its own resolution, format hd, tier draft: the two frames about the instant the base swaps. Left, winter's base cuts the lit glass; right, spring's. No frame holds a mix of the two; the line changes in one step between them.
 
 14-three-changes-after.jpg
 After. The other three changes about the instant the base swaps, one row each. Format preview (960 by 540), tier draft. Row 1, spring to summer: 1394, 1395, 1396, 1398. Row 2, summer to fall: 2114, 2115, 2116, 2118. Row 3, fall to winter: 2834, 2835, 2836, 2838. With summer's base a thin lit arc of its collar shows under the glass (row 1 from 1396, row 2 up to 2115).
+
+8-cover-672-after.jpg
+After. Film frame 672 of film B from agent/p6-change at 8b8a738e (my commit with main at 12465d0e merged in, so the particles are drawn as quads). Format hd (1920 by 1080, set down to 1200 by 675), tier review. The glass has its line, the storm inside is lit and blurred by its own motion, the halo lies round it. The base under it is still faintly there in this frame; the base swaps three frames later.
+
+10-cover-675-after.jpg
+After. Film frame 675, the last frame before the base swaps, same commit. Format hd, tier review. Below the glass there is the halo and black.
+
+12-cover-678-after.jpg
+After. Film frame 678, same commit. Format hd, tier review.
