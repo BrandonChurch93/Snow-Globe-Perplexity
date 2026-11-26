@@ -38,7 +38,9 @@ const ramp = (v: number, from: number, to: number): number => {
 export function stormHeld(moment: KitMoment): number {
   const f = moment.frame
   const t = f.mix.veil
-  const mine = (f.to.veil === veil ? t : 0) + (f.from.veil === veil ? 1 - t : 0)
+  // The held storm is summer's landing. Summer coming holds its share of the change; a shake of summer alone holds all of it;
+  // summer leaving holds nothing, so the storm that hides the swap out of summer is the shared one, whole.
+  const mine = f.to.veil === veil ? (f.from.veil === veil ? 1 : t) : 0
   const beat = moment.beat
   const since = moment.sinceLanding
   const w = config.shake.swapWindow
@@ -46,9 +48,24 @@ export function stormHeld(moment: KitMoment): number {
   return Math.min(1, mine) * held
 }
 
+/**
+ * How much of the shared veil the held storm has taken over, 0 to 1. Where summer comes out of another season, nothing through
+ * the first half of the swap window: the storm that hides the change is the shared one, whole, and the held storm is far
+ * thinner. It takes over through the second half and has all of it at the window's end, where it always had it, so every frame
+ * from there to the landing and after is as it was. A shake of summer alone has nothing to hide, and the held storm comes in
+ * over the whole window as it always did.
+ */
+function taken(moment: KitMoment): number {
+  const f = moment.frame
+  if (moment.beat === null || f.from.veil === f.to.veil) return 1
+  const w = config.shake.swapWindow
+  return ramp(moment.beat, (w.fromBeat + w.toBeat) / 2, w.toBeat)
+}
+
 /** Turns the shared veil to summer's held storm. Runs after the shared veil has set its own values for the frame. */
 export function holdStorm(moment: KitMoment): number {
-  const held = stormHeld(moment)
+  const kept = stormHeld(moment)
+  const held = kept * taken(moment)
   const u = veilUniforms
   const storm = veil.density * VEIL_LOOK.haze * STORM.share * held
   const density = veil.rest + veil.density * VEIL_LOOK.haze * STORM.share
@@ -68,5 +85,5 @@ export function holdStorm(moment: KitMoment): number {
   // carries the bank's whitening far past white: pure yellow where the sum is below zero and blue where it is just above.
   // The sum stops at zero.
   if (u.uVeil.value.w < 0) u.uVeil.value.w = 0
-  return held
+  return kept
 }
