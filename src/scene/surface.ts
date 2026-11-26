@@ -142,6 +142,51 @@ export const SLAB = {
   shadeOpen: 1,
 }
 
+/**
+ * The table shows the globe as a mirror at the levels of quality that draw one and as a baked glow at the level that
+ * does not. When the page steps between two such levels the two cross over, never cut: in `seconds` where the frames
+ * are quick, in `fewestFrames` frames where they are slow, so a machine that had to give the mirror up draws it for
+ * those few frames more and no longer. `mostFrames` is for a clock that stands still.
+ */
+export const REFLECT_MIX = { seconds: 0.5, fewestFrames: 8, mostFrames: 60 }
+
+/** The mirror's share one frame on: `share` moved towards `to` by what `seconds` of the page's clock allow. */
+export function reflectStep(share: number, to: number, seconds: number): number {
+  const most = 1 / REFLECT_MIX.fewestFrames
+  const least = 1 / REFLECT_MIX.mostFrames
+  const step = seconds > 0 ? Math.min(most, Math.max(least, seconds / REFLECT_MIX.seconds)) : least
+  const gap = to - share
+  return Math.abs(gap) <= step + 1e-9 ? to : share + Math.sign(gap) * step
+}
+
+/**
+ * Which pictures cross over and which are whole at once. A level that is set after the live picture has drawn a frame
+ * at the level before it is a step of the page, and the frames that follow cross over from where the table stands.
+ * The capture sets the level before each of its pictures and takes it back after, with no frame between, and a picture
+ * of samples or a view is no frame of the page: all of those are whole at once, whatever was drawn before them.
+ */
+export class ReflectMix {
+  share = 1
+  private stepped = false
+  private painted = false
+  private at = 0
+
+  level(): void {
+    this.stepped = this.painted
+    this.painted = false
+  }
+
+  frame(live: boolean, mirror: boolean, time: number): number {
+    const to = mirror ? 1 : 0
+    this.share = live && this.stepped ? reflectStep(this.share, to, time - this.at) : to
+    if (live) {
+      this.painted = true
+      this.at = time
+    }
+    return this.share
+  }
+}
+
 export const LUMPS: readonly (readonly [number, number, number, number, number])[] = [
   [-161.5, -108.3, 1.7, 3.1, 0.75],
   [-145.1, -108.3, 6.5, 2.8, 0.7],
@@ -480,7 +525,7 @@ void main() {
   vec3 seen = vec3(0.0);
   vec3 image = vec3(0.0);
   float held = 0.0;
-  if (uReflect.x > 0.5) {
+  if (uReflect.x > 0.0) {
     vec2 st = gl_FragCoord.xy * uMirrorSize.xy;
     vec2 lean = vec2(dot(slope, vec2(-ground.y, ground.x)) * grazing, dot(slope, ground)) * 2.0 * uFocal;
     seen = slabMirror(st, lean, reachFar, 1.0, ${f(SLAB.sideShare)}).rgb;
@@ -489,9 +534,10 @@ void main() {
       image = hit.rgb * (sil * seat * mix(${f(SLAB.unlitShare)}, 1.0, smoothstep(${f(SLAB.litFrom)}, ${f(SLAB.litTo)}, dot(hit.rgb, vec3(0.2126, 0.7152, 0.0722)))));
       held = hit.a * sil;
     }
-  } else if (uReflect.y > 0.5) {
+  }
+  if (uReflect.y > 0.0) {
     float soft = 0.004 + 0.02 * reachFar;
-    seen = stageRoomLights(normalize(r + vec3(0.0, 0.5 * ${f(SLAB.roughSpread)} * reachFar, 0.0)), soft) * 0.6;
+    vec3 far = stageRoomLights(normalize(r + vec3(0.0, 0.5 * ${f(SLAB.roughSpread)} * reachFar, 0.0)), soft) * 0.6;
     float bodyTop = lift + ${f(G.baseHeightMm)};
     float blurMm = max(${f(SLAB.roughSpread)} * tGlobe * 2.0, 1.0);
     float body = sil * (1.0 - smoothstep(bodyTop - blurMm, bodyTop + blurMm, height)) * smoothstep(lift - blurMm, lift + blurMm, height);
@@ -502,9 +548,11 @@ void main() {
     vec2 heart = vec2(side, height - lift - ${f(centreHeight)}) / ${f(globeRadius * SLAB.bakedGlowReach)};
     float glow = exp(-dot(heart, heart));
     float shell = smoothstep(${f(SLAB.bakedShellFrom)}, 1.0, side / girth);
-    image = lit * body + (uPool * (${f(SLAB.bakedGlow)} * glow) + uSky * (${f(SLAB.bakedShell)} * shell)) * glass;
-    held = clamp(body + glass, 0.0, 1.0);
-    seen *= 1.0 - body - ${f(1 - SLAB.bakedThrough)} * glass;
+    vec3 near = lit * body + (uPool * (${f(SLAB.bakedGlow)} * glow) + uSky * (${f(SLAB.bakedShell)} * shell)) * glass;
+    far *= 1.0 - body - ${f(1 - SLAB.bakedThrough)} * glass;
+    seen = far * uReflect.y + seen * uReflect.x;
+    image = near * uReflect.y + image * uReflect.x;
+    held = clamp(body + glass, 0.0, 1.0) * uReflect.y + held * uReflect.x;
   }
   image = mix(image, underSeen, underHit);
   held = max(held, underHit);
@@ -570,8 +618,8 @@ export function updateSurface(f: StageFrame): void {
   su.uPool.value.copy(f.pool)
   const lumpsA = SLAB.lumpSeasons[f.from.season] ?? 0
   su.uLumps.value = lumpsA * (1 - partChange('surface-leave', f.change)) + (SLAB.lumpSeasons[f.to.season] ?? 0) * partChange('surface-come', f.change)
-  const mirror = f.view === '' && f.planar
-  su.uReflect.value.set(mirror ? 1 : 0, mirror ? 0 : 1, 0, 0)
+  const mirror = f.view === '' && f.planar ? f.reflect : 0
+  su.uReflect.value.set(mirror, 1 - mirror, 0, 0)
   const a = f.from.main
   const b = f.to.main
   su.uBaked.value.setRGB(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t)

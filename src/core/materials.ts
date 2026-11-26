@@ -51,10 +51,6 @@ const BASE_CODE = 10
 
 const OUTSIDE_RAMP = changeRamp('base')
 /**
- * The dressing on the glass is on the one thing the cover leaves in sight, so it is not there while the base changes: the old
- * season's goes as the cover rises, burnt off by the light, and the new season's comes as the cover falls.
- */
-/**
  * How far from its even share the number of samples in a band of levels and a first part of the shutter stands, in samples:
  * the root of the mean square over every band and every part.
  */
@@ -111,6 +107,10 @@ export function passLevel(hash: number, step: number, count: number): number {
   return v - Math.floor(v)
 }
 
+/**
+ * The dressing on the glass is on the one thing the cover leaves in sight, so it is not there while the base changes: the old
+ * season's goes as the cover rises, burnt off by the light, and the new season's comes as the cover falls.
+ */
 export const GLASS_LEAVE = { start: CHANGE_COVER.riseFrom, length: CHANGE_COVER.fullFrom - CHANGE_COVER.riseFrom } as const
 export const GLASS_COME = { start: CHANGE_COVER.fullTo, length: CHANGE_COVER.goneAt - CHANGE_COVER.fullTo } as const
 /** A place in the window as a share of the outside span, read past both of its ends: what `(uChange - uState.x) / uState.y` gives. */
@@ -269,10 +269,14 @@ varying vec3 vStageLocal;
 varying vec3 vStageAux;
 varying vec3 vStagePlaced;
 varying float vStageSeen;
+// A triangle whose corners are all unseen is a sliver on the outline (src/globe/lens.ts), and a fragment of such a sliver can
+// come with varyings that are no number. A comparison with no number is false whichever way it is asked, so both tests here
+// are asked the way that is true for it, and the fragment is dropped. Asked the other way (seen <= 0, dot > r * r) it was kept
+// and painted no number into one sample of a frame, and the mean of the samples keeps that: one dark pixel in a final frame.
 bool stageOutside() {
-  if (vStageSeen <= 0.0) return true;
+  if (!(vStageSeen > 0.0)) return true;
   vec3 c = cross(normalize(vStagePlaced - cameraPosition), uLensCentre - cameraPosition);
-  return dot(c, c) > uLens.x * uLens.x;
+  return !(dot(c, c) <= uLens.x * uLens.x);
 }
 float stageHash(vec3 p) {
   uvec3 v = uvec3(uint(p.x), uint(p.y), uint(p.z * 4096.0));

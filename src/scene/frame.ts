@@ -40,6 +40,8 @@ export interface StageFrame {
   globeUp: THREE.Vector3
   quality: StageQuality
   planar: boolean
+  /** How much of the table's picture of the globe is the mirror: 1 the mirror alone, 0 the baked glow alone. */
+  reflect: number
   focalPx: number
   blurMm: number
   kinds: Record<string, { color: Rgb; glow: number }>
@@ -80,6 +82,7 @@ export function newFrame(kit: SeasonKit, quality: StageQuality): StageFrame {
     globeUp: new THREE.Vector3(0, 1, 0),
     quality,
     planar: true,
+    reflect: 1,
     focalPx: 1,
     blurMm: 0,
     kinds: {},
