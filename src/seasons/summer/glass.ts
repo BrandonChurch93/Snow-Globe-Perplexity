@@ -153,8 +153,8 @@ export const look = {
     // is). It gathers in soft bodies (`fillBody`, each: where, across and up, how wide and how tall in globe radii, how
     // much, and 1 if it goes with the veil and reaches the limb, 0 if it is a glow that falls off to the limb): low over
     // the roof, at the middle, a broad one behind and above the crown on the flare's side, which is the light the crown
-    // and the heads stand against, one under the top of the glass and a faint one at the upper left, which keeps the
-    // clear air there warm. The room's dark patches cut the veil down to `fillDark` of itself and a glow to `bodyDark`,
+    // and the heads stand against, one under the top of the glass and one at the upper left, which brings the clear air
+    // between the heads there up to a warm brown. The room's dark patches cut the veil down to `fillDark` of itself and a glow to `bodyDark`,
     // so they show through faintly
     fill: 0.045,
     fillColor: [1, 0.72, 0.47] as const,
@@ -166,7 +166,7 @@ export const look = {
       [0, 0.26, 0.26, 0.26, 0.08, 0],
       [0.55, 0.5, 0.42, 0.36, 0.36, 1],
       [0.2, 0.8, 0.42, 0.16, 0.14, 1],
-      [-0.4, 0.35, 0.42, 0.45, 0.055, 1],
+      [-0.4, 0.35, 0.42, 0.45, 0.14, 1],
     ] as const,
     bodyColor: [1, 0.58, 0.34] as const,
     bodyDark: 0.6,
@@ -225,15 +225,15 @@ export const look = {
     glintWarm: [1, 0.8, 0.58] as const,
     glintCool: [0.74, 0.86, 1] as const,
     // the glass's own reflections across the top and down the right shoulder: a few curved bands that follow the dome
-    // inside the outline, cream at the upper left, blue white down the right shoulder, where the room's cool light lies in
+    // inside the outline, cream at the upper left, blue white down the right shoulder and faintly under the top, where the room's cool light lies in
     // them, and a deep warm brown across the top and in the gap by the right limb, where the lamps do (each: bearing and
     // half length in degrees, where in the radius, half its thickness, how strong, and its colour: 0 cream, 1 cool, 2 deep
     // warm). A band is not smooth: `reflexLined` of it lies in fine lines that run along the arc (`reflexLines` sets how
     // fine they are across the band, `reflexLong` how short along it), so it reads as a reflection in glass and not as mist
     reflex: [
       [116, 32, 0.89, 0.045, 0.27, 0],
-      [84, 22, 0.9, 0.02, 0.06, 1],
-      [88, 30, 0.82, 0.045, 0.4, 2],
+      [80, 26, 0.945, 0.022, 0.03, 1],
+      [84, 26, 0.9, 0.025, 0.1, 2],
       [24, 30, 0.875, 0.03, 0.47, 1],
       [30, 26, 0.955, 0.022, 0.24, 2],
     ] as const,
@@ -243,13 +243,51 @@ export const look = {
     reflexLined: 0.8,
     reflexLines: 55,
     reflexLong: 2.2,
+    // right of the top, under the blue white band at the outline, the glass is clear and the dark room shows: the air's
+    // light is cut there (bearing and half length in degrees, where in the radius, half its thickness, how much of the
+    // air's light goes at its middle)
+    topShade: [62, 34, 0.87, 0.07, 0.7] as const,
+    // the glass has thickness: just inside the outline lies a band of fine lines of light that run along the arc, and
+    // against the outline one bright line. It is drawn last, over the shell, whose own band there bends the inside and
+    // would bend these lines away with it. `rim` is the whole of its strength, `rimAt` where in the radius the band
+    // begins, is whole, begins to end and has ended, `rimFoot` where it ends above the base (the height of the bearing:
+    // none below the first, all above the second), `rimLines` how fine the lines are across it, `rimLong` how short
+    // along it and `rimBare` how much of it stays between the lines. Its colour goes by the bearing: amber down the
+    // left limb (`rimLeft`), warm white down the right (`rimRight`), blue white over the top (`rimTop`, about the
+    // bearing in `rimTopAt`, degrees, with the cosines between which it comes in) and white at the right shoulder,
+    // where the flare sits (`rimShoulder`, `rimShoulderAt`). `rimBandBy` is the band's share at the left, the right,
+    // the top and the shoulder, `rimLineBy` the bright line's; `rimLine` is where the line runs, its half width and
+    // its strength, and over the top it lies further in and wider (`rimTopLine`), a soft blue white band under the
+    // outline. On the left a broken cream line marks the band's inner edge (`rimInner`: where, half width, strength).
+    // In the storm all of it is `rimStorm` times as bright, so the ball keeps a bright rim over the storm, and
+    // `reflexStorm` of the reflections comes back of what the storm takes from the still air's light
+    rim: 1,
+    rimAt: [0.925, 0.97, 0.992, 1] as const,
+    rimFoot: [-0.55, -0.3] as const,
+    rimLines: 120,
+    rimLong: 2.5,
+    rimBare: 0.08,
+    rimLeft: [0.16, 0.06, 0.01] as const,
+    rimTop: [0.16, 0.2, 0.24] as const,
+    rimTopAt: [74, 0.6, 0.93] as const,
+    rimRight: [0.17, 0.11, 0.065] as const,
+    rimShoulder: [0.17, 0.22, 0.3] as const,
+    rimShoulderAt: [42, 0.82, 0.978] as const,
+    rimBandBy: [0.65, 0.5, 0.15, 1.2] as const,
+    rimLine: [0.991, 0.006, 1.8] as const,
+    rimLineBy: [0.25, 1, 0.2, 1] as const,
+    rimTopLine: [0.975, 0.012] as const,
+    rimInner: [0.94, 0.008, 0.09] as const,
+    rimInnerColor: [1, 0.8, 0.62] as const,
+    rimStorm: 1.5,
+    reflexStorm: 0.6,
     hazeBanks: 0.35,
     hazeBankSize: 0.42,
     // the storm: the seeds and the dust aloft take the sun and the whole dome glows white-gold; it goes with the liquid's
     // turbulence, in slow arms that turn with the time, and is thinner over the miniature so the lanterns stay
     storm: 0.03,
     // and the still air's haze behind the miniature gives way to it by this much: the storm is in front, in the veil
-    stormClears: 0.45,
+    stormClears: 0.75,
     stormFrom: 0.12,
     stormTo: 0.75,
     stormColor: [1, 0.68, 0.34] as const,
@@ -403,9 +441,10 @@ ${FLARE_RAYS.map((ray, i) => `    star += flRay(p, vec2(${n(Math.cos(ray.a))}, $
 }`
 
 const W = look.wall
-// The wall's light is drawn twice: behind the miniature all of it but the glare, and in front of everything, on the glass,
-// the glare alone (`front`), so the burn low on the far side lies over the turf and the fence as light on glass does
-const wallText = (front: boolean): string => `
+// The wall's light is drawn three times: behind the miniature all of it but the glare, in front of the miniature the
+// glare alone (`front`), so the burn low on the far side lies over the turf and the fence as light on glass does, and
+// last, over the shell, the band of fine lines inside the outline alone (`rim`)
+const wallText = (front: boolean, rim = false): string => `
 uniform vec4 uFlareSun;
 uniform vec4 uSummer;
 varying vec2 vWl;
@@ -441,7 +480,27 @@ void main() {
   float r = length(vWl);
   if (r > 1.24) discard;
   vec2 e = vWl / max(r, 1e-4);
-  // where up the limb: the angle from the wall's middle. At the very middle of the globe there is none to take
+${rim ? `  // the glass's thickness, drawn over the glass and nothing else of the wall with it
+  if (r > 1.0 || r < ${n(W.rimAt[0])}) discard;
+  float rimFoot = smoothstep(${n(W.rimFoot[0])}, ${n(W.rimFoot[1])}, e.y);
+  if (rimFoot <= 0.0) discard;
+  float rimBand = smoothstep(${n(W.rimAt[0])}, ${n(W.rimAt[1])}, r) * (1.0 - smoothstep(${n(W.rimAt[2])}, ${n(W.rimAt[3])}, r));
+  float fine = smoothstep(0.44, 0.7, stageNoise(vec3(r * ${n(W.rimLines)} + 11.0, e * ${n(W.rimLong)})));
+  float rimLeft = 1.0 - smoothstep(-0.6, 0.1, e.x);
+  float rimRight = smoothstep(0.1, 0.6, e.x);
+  float rimUp = smoothstep(${n(W.rimTopAt[1])}, ${n(W.rimTopAt[2])}, dot(e, vec2(${n(Math.cos(W.rimTopAt[0] * RAD))}, ${n(Math.sin(W.rimTopAt[0] * RAD))})));
+  float rimSh = smoothstep(${n(W.rimShoulderAt[1])}, ${n(W.rimShoulderAt[2])}, dot(e, vec2(${n(Math.cos(W.rimShoulderAt[0] * RAD))}, ${n(Math.sin(W.rimShoulderAt[0] * RAD))})));
+  vec3 rimHue = mix(mix(${vec(W.rimLeft)} * rimLeft + ${vec(W.rimRight)} * rimRight, ${vec(W.rimTop)}, rimUp), ${vec(W.rimShoulder)}, rimSh);
+  float rimOver = rimUp * (1.0 - rimSh);
+  float rimOff = (r - mix(${n(W.rimLine[0])}, ${n(W.rimTopLine[0])}, rimOver)) / mix(${n(W.rimLine[1])}, ${n(W.rimTopLine[1])}, rimOver);
+  float rimIn = (r - ${n(W.rimInner[0])}) / ${n(W.rimInner[1])};
+  float rimWide = mix(mix(${n(W.rimBandBy[0])} * rimLeft + ${n(W.rimBandBy[1])} * rimRight, ${n(W.rimBandBy[2])}, rimUp), ${n(W.rimBandBy[3])}, rimSh);
+  float rimThin = mix(mix(${n(W.rimLineBy[0])} * rimLeft + ${n(W.rimLineBy[1])} * rimRight, ${n(W.rimLineBy[2])}, rimUp), ${n(W.rimLineBy[3])}, rimSh);
+  float rimLight = rimBand * (${n(W.rimBare)} + ${n(1 - W.rimBare)} * fine) * rimWide + ${n(W.rimLine[2])} * exp(-rimOff * rimOff) * rimThin;
+  vec3 rimGlow = rimHue * rimLight + ${vec(W.rimInnerColor)} * (${n(W.rimInner[2])} * exp(-rimIn * rimIn) * rimLeft * (0.15 + 0.85 * fine));
+  gl_FragColor = vec4(rimGlow * (${n(W.rim)} * rimFoot * lit * (1.0 + ${n(W.rimStorm - 1)} * storm)), 0.0);
+  return;
+` : ''}  // where up the limb: the angle from the wall's middle. At the very middle of the globe there is none to take
   vec2 swung = vec2(e.x * vWlDir.y - e.y * vWlDir.x, dot(e, vWlDir));
   float a = dot(swung, swung) > 0.0 ? atan(swung.x, swung.y) : 0.0;
   float inside = 1.0 - smoothstep(0.965, 0.993, r);
@@ -499,11 +558,12 @@ ${W.fillBody.map((b) => `  ${b[5] ? 'veil' : 'glowing'} += ${n(b[4])} * exp(-dot
   air += ${vec(W.domeColor)} * (${n(W.dome)} * exp(-dot(fromDome, fromDome)) * folds * shown * still * body);
   vec2 fromCore = (vWl - vec2(${n(W.coreAt[0])}, ${n(W.coreAt[1])})) / vec2(${n(W.coreSize[0])}, ${n(W.coreSize[1])});
   air += ${vec(W.coreColor)} * (${n(W.core)} * exp(-dot(fromCore, fromCore)) * still * body);
+  air *= 1.0 - ${n(W.topShade[4])} * wlArc(e, r, vec2(${n(Math.cos(W.topShade[0] * RAD))}, ${n(Math.sin(W.topShade[0] * RAD))}), ${n(1 - Math.cos(W.topShade[1] * RAD))}, vec2(${n(W.topShade[2])}, ${n(W.topShade[3])}));
   // the glass's own reflections: broad curved bands across the top and down the right shoulder
   vec3 reflex = vec3(0.0);
 ${W.reflex.map((b) => `  reflex += ${vec(b[5] === 2 ? W.reflexDeep : b[5] ? W.reflexCool : W.reflexWarm)} * (${n(b[4])} * wlArc(e, r, vec2(${n(Math.cos(b[0] * RAD))}, ${n(Math.sin(b[0] * RAD))}), ${n(1 - Math.cos(b[1] * RAD))}, vec2(${n(b[2])}, ${n(b[3])})));`).join('\n')}
   if (reflex.r > 0.0) reflex *= ${n(1 - W.reflexLined)} + ${n(2 * W.reflexLined)} * smoothstep(0.25, 0.75, stageNoise(vec3(r * ${n(W.reflexLines)}, e * ${n(W.reflexLong)})));
-  air += reflex * (still * inside);
+  air += reflex * (inside * (still + ${n(W.reflexStorm)} * storm));
   // the light on the glass: a few thin streaks along the arc
   vec3 glints = vec3(0.0);
 ${W.glint.map((b, i) => `  glints += ${vec(b[6] ? W.glintCool : W.glintWarm)} * (${n(b[5])} * wlStreak(e, r, vec2(${n(Math.cos(b[0] * RAD))}, ${n(Math.sin(b[0] * RAD))}), ${n(1 - Math.cos(b[1] * RAD))}, vec4(${n(b[2])}, ${n(b[3])}, ${n(b[4])}, ${n(3.7 * i + 1.3)})));`).join('\n')}
@@ -517,6 +577,7 @@ ${W.glint.map((b, i) => `  glints += ${vec(b[6] ? W.glintCool : W.glintWarm)} * 
 }`
 const WALL = wallText(false)
 const WALL_FRONT = wallText(true)
+const WALL_RIM = wallText(true, true)
 
 const P = look.pool
 const POOL = `
@@ -646,7 +707,7 @@ vStageAux = vec3(0.0, -flAt.z, length(flAt.xyz));`,
   return mesh
 }
 
-function makeWall(front: boolean): THREE.Mesh {
+function makeWall(front: boolean, rim = false): THREE.Mesh {
   const m = stageShader({
     part: PART,
     standIn: false,
@@ -668,8 +729,8 @@ vStageWorld = uLensCentre;
 vStageLocal = (uGlobeInv * vec4(uLensCentre, 1.0)).xyz;
 vStagePlaced = uLensCentre;
 vStageAux = vec3(0.0, -wlAt.z, length(wlAt.xyz));`,
-    fragment: front ? WALL_FRONT : WALL,
-    params: { ...added, transparent: false, depthTest: false },
+    fragment: rim ? WALL_RIM : front ? WALL_FRONT : WALL,
+    params: rim ? { ...added, depthTest: false } : { ...added, transparent: false, depthTest: false },
   })
   const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), m)
   mesh.renderOrder = front ? 13 : -0.25
@@ -730,7 +791,7 @@ function makeSeat(): THREE.Mesh {
 export function dressing(): THREE.Object3D {
   if (!flare) {
     flare = new THREE.Group()
-    flare.add(makeWall(false), makeSeat(), makeWall(true), makeFlare())
+    flare.add(makeWall(false), makeSeat(), makeWall(true), makeWall(true, true), makeFlare())
   }
   return flare
 }
