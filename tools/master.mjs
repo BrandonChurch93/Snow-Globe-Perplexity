@@ -10,7 +10,7 @@ import { freeDiskGb, launch, machineId, pinnedBrowser, rendererName } from './li
 import { serve } from './lib/server.mjs'
 import { Run, argFrame, argText, pngOk, short } from './lib/frames.mjs'
 import { decodedHashes, encodeFinal, encodeMasterChunk, finalVideoArgs, frameLevels, framePsnr, haveFfmpeg, headerRefFrames, keyFrames, masterVideoArgs, probe, probeLine, probeStreams, scaleEvery, soundSeconds, startsFast, stillJpeg, toolVersions, videoSettings } from './lib/encode.mjs'
-import { COLOUR_TAGS, FPS, JOINS, LOOK_WIDTH, M, SOUND, STILL_MAX_MB, WHATS, bestRun, bigSha, chunkDir, chunkStem, coverReport, dB, encodeProofRows, finalKbps, framesOf, heartbeat, hours, intermediateVideo, joinPlan, levelProblems, masterConfigProblems, openingPack, pad6, pictureLevels, procsProblem, psnrFacts, rangeChunks, readChunks, recordMatchesRun, crfLadder, crfOf, resultName, sendGroups, split, splitFile, stillName, stillToDo, table, takeFiles, tierOf, totalsFromCut, unsplitFile, hashFolder, chunkName } from './lib/master.mjs'
+import { COLOUR_TAGS, FPS, JOINS, LOOK_WIDTH, M, SOUND, STILL_MAX_MB, WHATS, bestRun, bigSha, chunkDir, chunkStem, coverReport, dB, encodeProofRows, finalKbps, framesOf, heartbeat, hours, intermediateVideo, joinPlan, levelProblems, masterConfigProblems, openingPack, pad6, pictureLevels, procsProblem, procsGainLine, limitsLine, limitsRecord, localProblem, machineLimits, sameCommand, standInPicture, stoppedAt, stoppedLine, writeJsonAtomic, psnrFacts, rangeChunks, readChunks, recordMatchesRun, crfLadder, crfOf, resultName, sendGroups, split, splitFile, stillName, stillToDo, table, takeFiles, tierOf, totalsFromCut, unsplitFile, hashFolder, chunkName } from './lib/master.mjs'
 import { Shipper, collectBranches, repoFacts } from './lib/mastergit.mjs'
 
 const args = parseArgs(process.argv.slice(2))
@@ -25,6 +25,7 @@ const USAGE = [
   'npm run master -- --split FILE [--part-mb N]',
   'npm run master -- --unsplit DIR [--out FILE]',
   'For tests only: --samples S, --format F, --chunk N, --min-psnr N, and --encode ... --test [--gaps] [--sound FILE]',
+  "For the tool's own tests: --stand-in DIR [--stand-in-fail N] draws ramps instead of the film, without a browser, into DIR",
 ].join('\n')
 const LOCK = rel('out', 'work', 'render.lock')
 const CALIBRATION = rel('out', 'work', 'master', 'calibration.json')
@@ -66,6 +67,8 @@ const FINAL = {
 }
 const INTER = { ...M.intermediate, crf: number('crf', M.intermediate.crf, { least: 0, most: 30 }), partMb: number('part-mb', M.intermediate.partMb, { least: 0.000001, most: 50 }) }
 const TEST_RUN = args.samples !== undefined || args.format !== undefined || args.chunk !== undefined
+const LIMITS = machineLimits()
+const COMMAND = sameCommand(process.argv.slice(2))
 
 function psnrFloor(test) {
   if (args['min-psnr'] === undefined) return M.intermediate.minPsnr
@@ -88,12 +91,16 @@ function setup() {
   const total = totalsFromCut()[what]
   if (!(total > 0)) throw new Error(`cut/CUTLIST.json holds no frame count for ${what}`)
   const chunks = rangeChunks(total, argFrame(args, 'first'), argFrame(args, 'last'), SIZE)
-  const work = test ? rel('out', 'work', 'master', 'test', what) : rel('out', 'work', 'master', what)
+  const work = args['stand-in'] !== undefined && args['stand-in'] !== true ? path.join(path.resolve(String(args['stand-in'])), 'work', what) : test ? rel('out', 'work', 'master', 'test', what) : rel('out', 'work', 'master', what)
   const hash = engineHash()
-  const renderer = engine ? rendererName(args.local === true) : 'pack'
-  const calibration = engine ? calibrationOf(hash, renderer) : null
+  const standIn = args['stand-in'] === undefined ? null : path.resolve(argText(args, 'stand-in', ''))
+  if (standIn && (!engine || !test || args['stand-in'] === true)) throw new Error("--stand-in DIR is for the tool's own tests: it takes a folder, film-b or loop, and one of --samples, --format, --chunk")
+  const noScreen = localProblem(args.local === true)
+  if (noScreen && !standIn) throw new Error(noScreen)
+  const renderer = standIn ? 'stand-in' : engine ? rendererName(args.local === true) : 'pack'
+  const calibration = engine && !standIn ? calibrationOf(hash, renderer) : null
   const want = (c) => ({ what, first: c.first, last: c.last, engineHash: hash, samples, format: format.id, fps: FPS, test, renderer, calibration, encoderArgs: masterVideoArgs({ ...intermediateVideo(), crf: INTER.crf }, SIZE) })
-  return { what, engine, test, format, samples, procs, total, chunks, work, want, hash, renderer, calibration, floor: psnrFloor(test), out: chunkDir(what, test), local: args.local === true, overrides: overridden(['crf', 'part-mb']) }
+  return { what, engine, test, format, samples, procs, total, chunks, work, want, hash, renderer, calibration, floor: psnrFloor(test), out: standIn ? path.join(standIn, 'out', what) : chunkDir(what, test), local: args.local === true, standIn, failAt: standIn && args['stand-in-fail'] !== undefined ? Number(args['stand-in-fail']) : null, overrides: overridden(['crf', 'part-mb']) }
 }
 
 const filesOf = (ctx, c) => {
@@ -139,6 +146,8 @@ function calibrationOf(hash, renderer) {
 }
 
 async function calibrate() {
+  const noScreen = localProblem(args.local === true)
+  if (noScreen) throw new Error(noScreen)
   const hash = requireBuild()
   const renderer = rendererName(args.local === true)
   const session = await openSession(true, args.local === true)
@@ -164,7 +173,11 @@ function dropStaleFrames(ctx, c) {
   const dir = filesOf(ctx, c).frames
   const keyFile = path.join(dir, 'frames.json')
   const key = framesKey(ctx)
-  if (fs.existsSync(dir) && !(fs.existsSync(keyFile) && JSON.stringify(readJson(keyFile)) === JSON.stringify(key))) fs.rmSync(dir, { recursive: true, force: true })
+  let same = false
+  try {
+    same = JSON.stringify(readJson(keyFile)) === JSON.stringify(key)
+  } catch {}
+  if (!same && fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true })
   return { dir, keyFile, key }
 }
 
@@ -188,6 +201,19 @@ async function openSession(lock, local) {
 }
 
 async function source(ctx, lock) {
+  if (ctx.standIn) {
+    const { width, height } = ctx.format
+    return {
+      graphics: 'none, a stand-in for tests',
+      browser: 'none',
+      picture: async (index) => {
+        if (index === ctx.failAt) throw new Error('the WebGL context was lost before the picture was read back (a stand-in said so, for a test). No picture was written.')
+        const rgb = standInPicture(width, height, index)
+        return { png: await sharp(rgb, { raw: { width, height, channels: 3 } }).png({ compressionLevel: 3 }).toBuffer(), rgb }
+      },
+      close: async () => {},
+    }
+  }
   if (!ctx.engine) {
     const pack = await openingPack(args.pack && args.pack !== true ? path.resolve(String(args.pack)) : undefined)
     if (pack.fps !== FPS) throw new Error(`the opening pack is at ${pack.fps} frames a second, the master is at ${FPS}`)
@@ -280,9 +306,9 @@ async function verifyChunk(file, frames, floor) {
 async function doChunk(ctx, src, c, progress) {
   const f = filesOf(ctx, c)
   const { dir, keyFile, key } = dropStaleFrames(ctx, c)
-  if (freeDiskGb() < cfg.sandbox.minFreeDiskGb) throw new Error(`only ${freeDiskGb().toFixed(1)} GB of disk is free, under sandbox.minFreeDiskGb ${cfg.sandbox.minFreeDiskGb}. Nothing was dropped: make room and run the same command again.`)
+  if (!ctx.standIn && freeDiskGb() < cfg.sandbox.minFreeDiskGb) throw new Error(`only ${freeDiskGb().toFixed(1)} GB of disk is free, under sandbox.minFreeDiskGb ${cfg.sandbox.minFreeDiskGb}. Nothing was dropped: make room and run the same command again.`)
   fs.mkdirSync(dir, { recursive: true })
-  writeJson(keyFile, key)
+  if (!fs.existsSync(keyFile)) writeJsonAtomic(keyFile, key)
   const factsFile = path.join(dir, 'source.json')
   const frames = []
   let kept = 0
@@ -295,11 +321,19 @@ async function doChunk(ctx, src, c, progress) {
     }
     const file = path.join(dir, `${pad6(index)}.png`)
     const t0 = Date.now()
-    const { png, rgb } = await src.picture(index)
+    const stays = `${frames.length} of this chunk's ${c.last - c.first + 1} frames are PNGs in ${short(dir)} and stay there.`
+    let png
+    let rgb
+    try {
+      ;({ png, rgb } = await src.picture(index))
+    } catch (e) {
+      const more = String(e.message).split('\n').slice(1).join('\n')
+      throw new Error(`${stoppedLine(c, index, e.message)} ${stays}${more ? `\n${more}` : ''}`)
+    }
     const seconds = (Date.now() - t0) / 1000
     if (!fs.existsSync(factsFile)) writeJson(factsFile, src.facts())
     const seen = pictureLevels(rgb)
-    if (seen.flat && ctx.engine) throw new Error(`frame ${index} came back as one flat value over the whole picture. Nothing was written for it. Look at dmesg for a killed chrome process, then run the same command again.`)
+    if (seen.flat && ctx.engine) throw new Error(`${stoppedLine(c, index, 'the frame came back as one flat value over the whole picture. Nothing was written for it. Look at dmesg for a killed chrome process.')} ${stays}`)
     const side = { index, seconds: Math.round(seconds * 1000) / 1000, sha256: sha256(rgb), mean: Math.round(seen.mean * 1000) / 1000, flat: seen.flat }
     writeJson(file.replace(/\.png$/, '.json'), side)
     fs.writeFileSync(`${file}.tmp`, png)
@@ -381,6 +415,7 @@ async function doChunk(ctx, src, c, progress) {
     frameSeconds: frames.map((x) => x.seconds),
     encodeSeconds: Math.round(encodeSeconds * 10) / 10,
     machine: machineId(),
+    limits: limitsRecord(LIMITS),
     boot: bootId(),
     verify,
     look: path.basename(f.look),
@@ -392,7 +427,7 @@ async function doChunk(ctx, src, c, progress) {
   fs.renameSync(tmp, f.mp4)
   for (const old of fs.readdirSync(ctx.out)) if (old.startsWith(`${path.basename(f.mp4)}.part-`)) fs.rmSync(path.join(ctx.out, old), { force: true })
   if (record.bytes > INTER.partMb * 1e6) record.parts = splitFile(f.mp4, ctx.out, INTER.partMb).parts
-  writeJson(f.json, record)
+  writeJsonAtomic(f.json, record)
   fs.rmSync(dir, { recursive: true, force: true })
   const mean = record.frameSeconds.reduce((a, b) => a + b, 0) / frames.length
   say(`finished ${chunkStem(ctx.what, c.first, c.last)}: ${frames.length} frames, ${mean.toFixed(1)} s a frame, crf ${crfOf(record)}, ${mb(record.bytes)} MB${record.parts ? ` in ${record.parts.length} parts` : ''}, luma PSNR against the PNGs least ${verify.psnr.least} dB (frame ${verify.psnr.leastFrame}), mean ${verify.psnr.mean} dB. Its PNGs are deleted${still ? `, but for ${short(f.still)}` : ''}`)
@@ -432,13 +467,16 @@ function fillSimcache(what) {
   throw new Error('the checkpoints were not complete after 40 runs of npm run simcache')
 }
 
-async function withWorkers(ctx, todo, shipper) {
-  requireBuild()
-  say(`making the checkpoints first, so that ${ctx.procs} processes never write the same one`)
-  fillSimcache(ctx.what)
-  holdLock(`master ${process.argv.slice(2).join(' ')}`)
+async function withWorkers(ctx, shipper) {
+  if (!ctx.standIn) {
+    requireBuild()
+    say(`making the checkpoints first, so that ${ctx.procs} processes never write the same one`)
+    fillSimcache(ctx.what)
+    holdLock(`master ${process.argv.slice(2).join(' ')}`)
+  }
   const passed = process.argv.slice(2).filter((a, i, all) => a !== '--ship' && all[i - 1] !== '--ship')
   const failed = []
+  const stops = new Map()
   await Promise.all(
     Array.from({ length: ctx.procs }, (_, w) => {
       return new Promise((done) => {
@@ -447,6 +485,8 @@ async function withWorkers(ctx, todo, shipper) {
         const line = (l) => {
           if (!l) return
           say(`[${w}] ${l}`)
+          const stop = l.startsWith('master: ') ? stoppedAt(l) : null
+          if (stop) stops.set(w, stop)
           const m = /^finished \S+-(\d{6})-(\d{6}):/.exec(l)
           if (m) ship(shipper, ctx, { first: Number(m[1]), last: Number(m[2]) })
         }
@@ -465,24 +505,37 @@ async function withWorkers(ctx, todo, shipper) {
       })
     }),
   )
-  if (failed.length) throw new Error(`render process ${failed.join(', ')} stopped with an error. Run the same command again: it renders only what is missing.`)
+  if (!failed.length) return
+  failed.sort((a, b) => a - b)
+  const lines = failed.map((w) => {
+    const s = stops.get(w)
+    return s ? `render process ${w} ${stoppedLine(s, s.frame, s.why)}` : `render process ${w} stopped with an error: its last lines are above, marked [${w}]`
+  })
+  throw new Error(`${lines.join('\n')}\n${goOn(ctx, [...stops.values()])}`)
+}
+
+function goOn(ctx, stops) {
+  const lost = stops.some((s) => /context was lost|flat value/.test(s.why))
+  return `Nothing drawn is lost: every finished frame is a PNG under ${short(ctx.work)}, every finished chunk is in ${short(ctx.out)}, and neither is drawn again.${lost ? ` A lost context is most often a browser killed for memory (dmesg says so): if it was, go on with a smaller --procs${ctx.procs > 1 ? ` than ${ctx.procs}` : ''}.` : ''}\nTo go on from there: ${COMMAND}`
 }
 
 async function render() {
   const ctx = setup()
   const worker = args.worker === undefined ? null : Number(args.worker)
   if (!haveFfmpeg()) throw new Error('ffmpeg and ffprobe are needed and were not found')
-  const tooMany = ctx.engine ? procsProblem(ctx.procs, ctx.format.id, os.totalmem()) : null
+  const tooMany = ctx.engine && !ctx.standIn ? procsProblem(ctx.procs, ctx.format.id, LIMITS) : null
   if (tooMany) throw new Error(tooMany)
-  if (ctx.engine && !ctx.calibration) throw new Error(`this machine has no calibration for this build and ${ctx.renderer}. Run npm run master -- --calibrate first (one picture, a few minutes), and check that its first line is the one every other machine printed.`)
-  const todo = stillToDo(ctx.chunks, { done: (c) => !!finished(ctx, c), has: (c, i) => (dropStaleFrames(ctx, c), !!frameOnDisk(ctx, c, i)) })
-  const lane = worker === null ? null : split(ctx.chunks, ctx.procs, worker)
-  const mine = lane ? todo.filter((t) => lane.some((c) => c.first === t.first)) : todo
+  if (ctx.engine && !ctx.standIn && !ctx.calibration) throw new Error(`this machine has no calibration for this build and ${ctx.renderer}. Run npm run master -- --calibrate first (one picture, a few minutes), and check that its first line is the one every other machine printed.`)
+  const own = worker === null ? ctx.chunks : split(ctx.chunks, ctx.procs, worker)
+  const todo = stillToDo(own, { done: (c) => !!finished(ctx, c), sweep: (c) => dropStaleFrames(ctx, c), has: (c, i) => !!frameOnDisk(ctx, c, i) })
+  const mine = todo
   const progress = { left: mine.reduce((n, c) => n + c.missing.length, 0), rendered: 0, seconds: 0 }
   let shipper = null
   if (worker === null) {
     const all = ctx.chunks.length
     say(`${ctx.what}: frames ${ctx.chunks[0].first} to ${ctx.chunks[all - 1].last} of ${ctx.total}, ${all} ${all === 1 ? 'chunk' : 'chunks'} of ${SIZE}, ${ctx.format.width} x ${ctx.format.height}, ${ctx.engine ? `${ctx.samples} ${ctx.samples === 1 ? 'sample' : 'samples'} a frame` : 'from the opening pack'}${ctx.test ? ', a TEST that no master is made from' : ''}`)
+    const slow = ctx.engine && !ctx.standIn ? procsGainLine(ctx.procs, LIMITS) : null
+    if (slow) say(slow)
     say(`${all - todo.length} ${all - todo.length === 1 ? 'chunk is' : 'chunks are'} finished, ${todo.length} to do, ${progress.left} frames to render (${todo.reduce((n, c) => n + c.last - c.first + 1 - c.missing.length, 0)} more are on disk as PNGs)`)
     if (args.ship !== undefined) {
       shipper = new Shipper({ branch: argText(args, 'ship', ''), say })
@@ -491,14 +544,17 @@ async function render() {
     }
   }
   if (mine.length) {
-    if (worker === null && ctx.procs > 1 && ctx.engine) await withWorkers(ctx, todo, shipper)
+    if (worker === null && ctx.procs > 1 && ctx.engine) await withWorkers(ctx, shipper)
     else {
-      const src = lazySource(ctx, worker === null)
+      const src = lazySource(ctx, worker === null && !ctx.standIn)
       try {
         for (const c of mine) {
           await doChunk(ctx, src, c, progress)
           ship(shipper, ctx, c)
         }
+      } catch (e) {
+        const stop = worker === null ? stoppedAt(e.message) : null
+        throw stop ? new Error(`${e.message}\n${goOn(ctx, [stop])}`) : e
       } finally {
         await src.close()
       }
@@ -673,7 +729,7 @@ async function encodeMaster() {
   const room = ((targetMb ?? (M.video.maxrateMbps * seconds) / 8) * 1e6) * 2.2 + 256e6
   if (freeDiskGb() * 1024 ** 3 < room) throw new Error(`the encode needs ${mb(room)} MB of free disk and ${(freeDiskGb() * 1024).toFixed(0)} MB is free`)
   const out = deliverPath(which, test)
-  const threads = os.cpus().length
+  const threads = Math.max(1, Math.min(os.cpus().length, Math.ceil(LIMITS.cpus)))
   const parts = plan.parts.map((p) => ({ file: p.file, frames: p.record.frames }))
   say(`encoding ${which} once, whole: ${plan.parts.length} chunks, ${plan.frames} frames, ${seconds.toFixed(3)} s, ${mb(size)} MB of intermediate picture${sound ? `, sound ${short(sound.file)}` : ', no sound'}`)
   const tries = []
@@ -895,6 +951,7 @@ async function hdFromMaster() {
 }
 
 try {
+  if (args.worker === undefined) say(limitsLine(LIMITS))
   const wrong = masterConfigProblems()
   if (wrong.length) throw new Error(`config/showcase.json: ${wrong.join('; ')}`)
   if (args.calibrate !== undefined) await calibrate()
