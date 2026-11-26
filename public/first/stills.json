@@ -11,7 +11,7 @@
         35803,
         31294
       ],
-      "from": "6fcde7d677fc8405",
+      "from": "5d8ab00262831645",
       "coder": 3,
       "avif": {
         "bytes": 59108,
@@ -26,6 +26,58 @@
         "sha": "33a425be61b4110c7fed7c72a4a6e3e325c961e90759d71b30397b08de626f2f"
       }
     },
+    "fall-low": {
+      "season": "fall",
+      "shape": "low",
+      "width": 719,
+      "height": 481,
+      "ratio": 2,
+      "bar": 154,
+      "globe": [
+        28119,
+        24321
+      ],
+      "from": "5d8ab00262831645",
+      "coder": 3,
+      "avif": {
+        "bytes": 59464,
+        "quality": 62,
+        "scale": 1,
+        "sha": "9c82ab6a5513a6554c709f6bd177301b1125b8f3207927002ff554a8942112dd"
+      },
+      "webp": {
+        "bytes": 89284,
+        "quality": 82,
+        "scale": 1,
+        "sha": "e4366690274aa7315a53966e9513be3a7dc84589eb4f81a90d3b3504e5e26790"
+      }
+    },
+    "fall-mid": {
+      "season": "fall",
+      "shape": "mid",
+      "width": 719,
+      "height": 600,
+      "ratio": 2,
+      "bar": 154,
+      "globe": [
+        28994,
+        25114
+      ],
+      "from": "5d8ab00262831645",
+      "coder": 3,
+      "avif": {
+        "bytes": 58651,
+        "quality": 54,
+        "scale": 1,
+        "sha": "332ddca87bacfed7131a189e289a18b62cc2d44b4e3ec2b03f27b1bb2f605cba"
+      },
+      "webp": {
+        "bytes": 88268,
+        "quality": 75,
+        "scale": 1,
+        "sha": "a22522b2f172846fd27b4cf8fa58e9ef1134c7299aa0b46b5944b45cb37feade"
+      }
+    },
     "fall-phone": {
       "season": "fall",
       "shape": "phone",
@@ -37,7 +89,7 @@
         37903,
         18430
       ],
-      "from": "6fcde7d677fc8405",
+      "from": "5d8ab00262831645",
       "coder": 3,
       "avif": {
         "bytes": 58785,
@@ -63,7 +115,7 @@
         28831,
         24966
       ],
-      "from": "6fcde7d677fc8405",
+      "from": "5d8ab00262831645",
       "coder": 3,
       "avif": {
         "bytes": 57503,
@@ -89,7 +141,7 @@
         33987,
         23348
       ],
-      "from": "6fcde7d677fc8405",
+      "from": "5d8ab00262831645",
       "coder": 3,
       "avif": {
         "bytes": 59303,
@@ -115,7 +167,7 @@
         36056,
         20751
       ],
-      "from": "6fcde7d677fc8405",
+      "from": "5d8ab00262831645",
       "coder": 3,
       "avif": {
         "bytes": 59104,
@@ -130,6 +182,32 @@
         "sha": "db4dc749af4a7e1c80903be1f538658d9c57a25441016b861321ee20aa6237b9"
       }
     },
+    "fall-square": {
+      "season": "fall",
+      "shape": "square",
+      "width": 719,
+      "height": 720,
+      "ratio": 2,
+      "bar": 154,
+      "globe": [
+        30581,
+        26552
+      ],
+      "from": "5d8ab00262831645",
+      "coder": 3,
+      "avif": {
+        "bytes": 58833,
+        "quality": 46,
+        "scale": 1,
+        "sha": "514efa6523809b44f5131706b16e9af68a030833a7796929528cd3ba247cb090"
+      },
+      "webp": {
+        "bytes": 88562,
+        "quality": 53,
+        "scale": 1,
+        "sha": "3ad5ef931009d710e0ace0956ec78c1a218de1dc4cde84521c8f662e346c6cb1"
+      }
+    },
     "fall-tablet": {
       "season": "fall",
       "shape": "tablet",
@@ -141,7 +219,7 @@
         38325,
         30024
       ],
-      "from": "6fcde7d677fc8405",
+      "from": "5d8ab00262831645",
       "coder": 3,
       "avif": {
         "bytes": 58553,
@@ -167,7 +245,7 @@
         35803,
         31294
       ],
-      "from": "6fcde7d677fc8405",
+      "from": "5d8ab00262831645",
       "coder": 3,
       "avif": {
         "bytes": 59661,
@@ -193,7 +271,7 @@
         35803,
         31294
       ],
-      "from": "66d104e27b796ba1",
+      "from": "a0d2c2f405e05d3f",
       "coder": 3,
       "avif": {
         "bytes": 55817,
@@ -208,6 +286,58 @@
         "sha": "c1f2555f9acce2231736b50bfa149945352edfc867652773ef990a0ffbc92af8"
       }
     },
+    "spring-low": {
+      "season": "spring",
+      "shape": "low",
+      "width": 719,
+      "height": 481,
+      "ratio": 2,
+      "bar": 154,
+      "globe": [
+        28119,
+        24321
+      ],
+      "from": "a0d2c2f405e05d3f",
+      "coder": 3,
+      "avif": {
+        "bytes": 59013,
+        "quality": 59,
+        "scale": 1,
+        "sha": "22e8c7ca618c56565925b10a71c81e421a49a216ebf64949a01cb6fa152b2c71"
+      },
+      "webp": {
+        "bytes": 88612,
+        "quality": 81,
+        "scale": 1,
+        "sha": "f2847e73e3e5b92758018e55288a518059eb035b30dda6c77104fbdcde2712f9"
+      }
+    },
+    "spring-mid": {
+      "season": "spring",
+      "shape": "mid",
+      "width": 719,
+      "height": 600,
+      "ratio": 2,
+      "bar": 154,
+      "globe": [
+        28994,
+        25114
+      ],
+      "from": "a0d2c2f405e05d3f",
+      "coder": 3,
+      "avif": {
+        "bytes": 59562,
+        "quality": 53,
+        "scale": 1,
+        "sha": "ed1d20e6f749262cbf58c80e6105e10c71f16b4700ca445e42e83a531e64abbe"
+      },
+      "webp": {
+        "bytes": 89712,
+        "quality": 74,
+        "scale": 1,
+        "sha": "abbadd364c73706eab729101ee1807d6a2cec4290f62a8002bd9e370fd590901"
+      }
+    },
     "spring-phone": {
       "season": "spring",
       "shape": "phone",
@@ -219,7 +349,7 @@
         37903,
         18430
       ],
-      "from": "66d104e27b796ba1",
+      "from": "a0d2c2f405e05d3f",
       "coder": 3,
       "avif": {
         "bytes": 59055,
@@ -245,7 +375,7 @@
         28831,
         24966
       ],
-      "from": "66d104e27b796ba1",
+      "from": "a0d2c2f405e05d3f",
       "coder": 3,
       "avif": {
         "bytes": 59654,
@@ -271,7 +401,7 @@
         33987,
         23348
       ],
-      "from": "66d104e27b796ba1",
+      "from": "a0d2c2f405e05d3f",
       "coder": 3,
       "avif": {
         "bytes": 58803,
@@ -297,7 +427,7 @@
         36056,
         20751
       ],
-      "from": "66d104e27b796ba1",
+      "from": "a0d2c2f405e05d3f",
       "coder": 3,
       "avif": {
         "bytes": 59126,
@@ -312,6 +442,32 @@
         "sha": "d996c1f9b0d8b44a500fe8070434bf6d1a3ae18959c642a56bfc41e38dd4eca8"
       }
     },
+    "spring-square": {
+      "season": "spring",
+      "shape": "square",
+      "width": 719,
+      "height": 720,
+      "ratio": 2,
+      "bar": 154,
+      "globe": [
+        30581,
+        26552
+      ],
+      "from": "a0d2c2f405e05d3f",
+      "coder": 3,
+      "avif": {
+        "bytes": 58162,
+        "quality": 44,
+        "scale": 1,
+        "sha": "306e6090aa8aa0dd2fb2984cb052060898fca352ab81c7bb3b75ff76916bf78b"
+      },
+      "webp": {
+        "bytes": 89498,
+        "quality": 51,
+        "scale": 1,
+        "sha": "25f16d9bdc8d5de9abdda5f5b3faedb7bcae4a88c92c4d783e9221ebc8879325"
+      }
+    },
     "spring-tablet": {
       "season": "spring",
       "shape": "tablet",
@@ -323,7 +479,7 @@
         38325,
         30024
       ],
-      "from": "66d104e27b796ba1",
+      "from": "a0d2c2f405e05d3f",
       "coder": 3,
       "avif": {
         "bytes": 58350,
@@ -349,7 +505,7 @@
         35803,
         31294
       ],
-      "from": "66d104e27b796ba1",
+      "from": "a0d2c2f405e05d3f",
       "coder": 3,
       "avif": {
         "bytes": 57301,
@@ -375,7 +531,7 @@
         35803,
         31294
       ],
-      "from": "9d2af89a88ecec3c",
+      "from": "367e84862d7cbfc9",
       "coder": 3,
       "avif": {
         "bytes": 56438,
@@ -390,6 +546,58 @@
         "sha": "b71584af0245bee3d114bc74a8b152c244549920c5103b5f00890032d70ad61b"
       }
     },
+    "summer-low": {
+      "season": "summer",
+      "shape": "low",
+      "width": 719,
+      "height": 481,
+      "ratio": 2,
+      "bar": 154,
+      "globe": [
+        28119,
+        24321
+      ],
+      "from": "367e84862d7cbfc9",
+      "coder": 3,
+      "avif": {
+        "bytes": 57570,
+        "quality": 58,
+        "scale": 1,
+        "sha": "4b2c9796988c67cb5ca291d1e58c6d21f8681ea762cbaf342bc92d42093f46df"
+      },
+      "webp": {
+        "bytes": 88974,
+        "quality": 78,
+        "scale": 1,
+        "sha": "b86335e7199fa5d7157dc05116eafe870c213f56b83571888ef149330665b41b"
+      }
+    },
+    "summer-mid": {
+      "season": "summer",
+      "shape": "mid",
+      "width": 719,
+      "height": 600,
+      "ratio": 2,
+      "bar": 154,
+      "globe": [
+        28994,
+        25114
+      ],
+      "from": "367e84862d7cbfc9",
+      "coder": 3,
+      "avif": {
+        "bytes": 56072,
+        "quality": 49,
+        "scale": 1,
+        "sha": "47c58a6dfb305888a83e4cc77a275276f6db0334811a26f5fd386fe02f1dfbab"
+      },
+      "webp": {
+        "bytes": 89860,
+        "quality": 58,
+        "scale": 1,
+        "sha": "5570a2bef2018e7933b816db43ef8870020e70917fc760ada6100ef6474006c6"
+      }
+    },
     "summer-phone": {
       "season": "summer",
       "shape": "phone",
@@ -401,7 +609,7 @@
         37903,
         18430
       ],
-      "from": "9d2af89a88ecec3c",
+      "from": "367e84862d7cbfc9",
       "coder": 3,
       "avif": {
         "bytes": 57562,
@@ -427,7 +635,7 @@
         28831,
         24966
       ],
-      "from": "9d2af89a88ecec3c",
+      "from": "367e84862d7cbfc9",
       "coder": 3,
       "avif": {
         "bytes": 57862,
@@ -453,7 +661,7 @@
         33987,
         23348
       ],
-      "from": "9d2af89a88ecec3c",
+      "from": "367e84862d7cbfc9",
       "coder": 3,
       "avif": {
         "bytes": 58681,
@@ -479,7 +687,7 @@
         36056,
         20751
       ],
-      "from": "9d2af89a88ecec3c",
+      "from": "367e84862d7cbfc9",
       "coder": 3,
       "avif": {
         "bytes": 57755,
@@ -494,6 +702,32 @@
         "sha": "a871867301a2927f6d6bc795cad1552472f25960db0dcd0393b67169896791aa"
       }
     },
+    "summer-square": {
+      "season": "summer",
+      "shape": "square",
+      "width": 719,
+      "height": 720,
+      "ratio": 2,
+      "bar": 154,
+      "globe": [
+        30581,
+        26552
+      ],
+      "from": "367e84862d7cbfc9",
+      "coder": 3,
+      "avif": {
+        "bytes": 57575,
+        "quality": 43,
+        "scale": 1,
+        "sha": "3cbdde696814fb0670e6124eeab90a001c0980d487a702c378dacda39e2d145d"
+      },
+      "webp": {
+        "bytes": 89986,
+        "quality": 65,
+        "scale": 0.8,
+        "sha": "dcdcd0cf5c1c2634271ed81678e2c937be2b27d7cd664b59242ab21aec98287d"
+      }
+    },
     "summer-tablet": {
       "season": "summer",
       "shape": "tablet",
@@ -505,7 +739,7 @@
         38325,
         30024
       ],
-      "from": "9d2af89a88ecec3c",
+      "from": "367e84862d7cbfc9",
       "coder": 3,
       "avif": {
         "bytes": 56034,
@@ -531,7 +765,7 @@
         35803,
         31294
       ],
-      "from": "9d2af89a88ecec3c",
+      "from": "367e84862d7cbfc9",
       "coder": 3,
       "avif": {
         "bytes": 57601,
@@ -557,7 +791,7 @@
         35803,
         31294
       ],
-      "from": "d7e427c34f3d5103",
+      "from": "7d35eaa9e961d141",
       "coder": 3,
       "avif": {
         "bytes": 59214,
@@ -572,6 +806,58 @@
         "sha": "ea32cbb0118413fb2d5661766ee8c5012653dc88e986689bf0e8bfbe3952d033"
       }
     },
+    "winter-low": {
+      "season": "winter",
+      "shape": "low",
+      "width": 719,
+      "height": 481,
+      "ratio": 2,
+      "bar": 154,
+      "globe": [
+        28119,
+        24321
+      ],
+      "from": "7d35eaa9e961d141",
+      "coder": 3,
+      "avif": {
+        "bytes": 59115,
+        "quality": 63,
+        "scale": 1,
+        "sha": "42a8ca11cceb6fe500191d7db8e9238272ed7ec09a6052bffac735c78934ef3f"
+      },
+      "webp": {
+        "bytes": 87256,
+        "quality": 82,
+        "scale": 1,
+        "sha": "e37ff43c2ecaee03fc9000ead8c15990e7bb5237c8bb10fa9ff341a926cfba36"
+      }
+    },
+    "winter-mid": {
+      "season": "winter",
+      "shape": "mid",
+      "width": 719,
+      "height": 600,
+      "ratio": 2,
+      "bar": 154,
+      "globe": [
+        28994,
+        25114
+      ],
+      "from": "7d35eaa9e961d141",
+      "coder": 3,
+      "avif": {
+        "bytes": 58397,
+        "quality": 54,
+        "scale": 1,
+        "sha": "1b0979d744491efb0374e2ec6c6467cefda29ed70c67f49e853e0c12fe5b7ab1"
+      },
+      "webp": {
+        "bytes": 89974,
+        "quality": 75,
+        "scale": 1,
+        "sha": "49c579d251a9a99319bc6df66054ba3a50c96292f59243a18143deb436af9127"
+      }
+    },
     "winter-phone": {
       "season": "winter",
       "shape": "phone",
@@ -583,7 +869,7 @@
         37903,
         18430
       ],
-      "from": "d7e427c34f3d5103",
+      "from": "7d35eaa9e961d141",
       "coder": 3,
       "avif": {
         "bytes": 57472,
@@ -609,7 +895,7 @@
         28831,
         24966
       ],
-      "from": "d7e427c34f3d5103",
+      "from": "7d35eaa9e961d141",
       "coder": 3,
       "avif": {
         "bytes": 57816,
@@ -635,7 +921,7 @@
         33987,
         23348
       ],
-      "from": "d7e427c34f3d5103",
+      "from": "7d35eaa9e961d141",
       "coder": 3,
       "avif": {
         "bytes": 57633,
@@ -661,7 +947,7 @@
         36056,
         20751
       ],
-      "from": "d7e427c34f3d5103",
+      "from": "7d35eaa9e961d141",
       "coder": 3,
       "avif": {
         "bytes": 59738,
@@ -676,6 +962,32 @@
         "sha": "83a09b27b645c81e7053df8c40dbc706376e5890a59b353901d081fb1abe6d03"
       }
     },
+    "winter-square": {
+      "season": "winter",
+      "shape": "square",
+      "width": 719,
+      "height": 720,
+      "ratio": 2,
+      "bar": 154,
+      "globe": [
+        30581,
+        26552
+      ],
+      "from": "7d35eaa9e961d141",
+      "coder": 3,
+      "avif": {
+        "bytes": 54857,
+        "quality": 44,
+        "scale": 1,
+        "sha": "aa39a972bd12002f4168079018d3121840286137a786e17a0776e3fb9ea185bc"
+      },
+      "webp": {
+        "bytes": 89304,
+        "quality": 49,
+        "scale": 1,
+        "sha": "50f834c4e7839f2a110702b7a350912494c573fa01e5d93e4fc41549f16f5c96"
+      }
+    },
     "winter-tablet": {
       "season": "winter",
       "shape": "tablet",
@@ -687,7 +999,7 @@
         38325,
         30024
       ],
-      "from": "d7e427c34f3d5103",
+      "from": "7d35eaa9e961d141",
       "coder": 3,
       "avif": {
         "bytes": 59342,
@@ -713,7 +1025,7 @@
         35803,
         31294
       ],
-      "from": "d7e427c34f3d5103",
+      "from": "7d35eaa9e961d141",
       "coder": 3,
       "avif": {
         "bytes": 57821,
@@ -788,8 +1100,11 @@
       "phone": 154,
       "phone750": 154,
       "phone667": 154,
-      "phone590": 154
+      "phone590": 154,
+      "square": 154,
+      "low": 154,
+      "mid": 154
     },
-    "from": "0acfa6541e1b242c"
+    "from": "652230a2dfb97a64"
   }
 }

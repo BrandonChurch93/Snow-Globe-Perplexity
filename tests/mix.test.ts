@@ -12,7 +12,8 @@ type Kept = { audio: Sound; steps: string[]; gainDb: number; level: Level; loop:
 type Ends = { ratio: number; levelStepDb: number; secondStepDb: number }
 type Heard = { periodSeconds: number; seamSeconds: number; meanDb: number; seamDb: number; quartersDb: number[]; startAloneDb: number; tailAloneDb: number }
 type Loop = { id: string; audio: Sound; loopStart: number; loopSeconds: number; gain: number; seam: Ends | null; heard: Heard; bars?: number; periodSeconds?: number; tailSeconds?: number; fromBar?: number; toBar?: number; leadSeconds?: number; centredByDb?: number; turnedSeconds?: number }
-type Plan = { sprite: { audio: Sound | null; entries: Record<string, { start: number; seconds: number; gain: number }> }; loops: Loop[]; notes: string[]; laid: { id: string; state: string }[] }
+type ShakeOfPack = { id: string; class: string; trimDb: number; stepDb: number; appDb: number; riseMs: number; gain: number }
+type Plan = { sprite: { audio: Sound | null; entries: Record<string, { start: number; seconds: number; gain: number }> }; loops: Loop[]; notes: string[]; laid: { id: string; state: string }[]; shakes: ShakeOfPack[]; trimsDb: Record<string, number> }
 type Mixed = {
   audio: Sound
   music: Sound
@@ -44,6 +45,10 @@ type Lib = {
   APP_SEAM_SHARE: number
   LAID_STATE: string
   SHAKE: { downDb: number; riseMs: number; moreDb: number; more: string[] }
+  APP_TRIM_DB: Record<string, number>
+  isShake(id: string): boolean
+  shakeStepDb(id: string): number
+  spriteSound(id: string, cls: string, a: Sound): { audio: Sound; gain: number; shake: Omit<ShakeOfPack, 'id'> | null } | null
   laidDirOf(keptDir: string): string
   readLaid(dir: string): { id: string; file: string | null; record: Record<string, unknown> }[]
   laidSound(id: string, dir: string): { file: string; audio: Sound; set: { presses: Sound[]; step: number; varied: boolean } | null } | null
@@ -1071,6 +1076,9 @@ describe('sounds laid by decision 141', () => {
     const laid = A.parseWav(fs.readFileSync(path.join(ownLaid, 'shake-summer.wav')))
     expect(plan.sprite.entries['shake-summer']!.seconds).toBeCloseTo(A.seconds(laid), 3)
     expect(plan.sprite.entries['key-tap']).toBeUndefined()
+    // A laid shake takes the film's step and its rise in the pack as a kept one does (decision 146).
+    expect(plan.shakes.map((s) => s.id)).toEqual(['shake-summer'])
+    expect(plan.shakes[0]).toMatchObject({ stepDb: A.shakeStepDb('shake-summer'), appDb: A.APP_TRIM_DB.impact! + A.shakeStepDb('shake-summer'), riseMs: A.SHAKE.riseMs, gain: plan.sprite.entries['shake-summer']!.gain })
     expect(Object.keys(A.planPack({ keptDir: ownKept, laidDir: path.join(dir, 'nothing-laid'), mapsDir: maps }).sprite.entries)).not.toContain('shake-summer')
   })
 
@@ -1095,5 +1103,201 @@ describe('sounds laid by decision 141', () => {
     expect(A.levelDb(r, 0, n >> 2)).toBeLessThan(A.levelDb(a, 0, n >> 2) - 12)
     expect(A.levelDb(r, n >> 1, n)).toBeGreaterThan(A.levelDb(a, n >> 1, n) - 3)
     for (let i = n; i < a.L.length; i += 997) expect(r.L[i]).toBe(a.L[i])
+  })
+})
+
+// Decision 146 of kit/PROGRESS.md: the app keeps the film's distances between every sound that plays in a shake, at
+// its own lower level. Touch and impact take the music's trim, as the ambience did; a shake takes the film's own step
+// on top, from the one constant SHAKE, and rises over its first moment in the sprite's own audio.
+describe("the app's pack keeps the film's balance of a shake", () => {
+  // Decided by listening (audio/RECIPE.md, decision 146): the press's tick and the chime stay at their kept level.
+  const INTERFACE_DB = 0
+  let own = ''
+  let plan: Plan
+  const keptOf = (id: string): Sound => A.parseWav(fs.readFileSync(path.join(own, `${id}.wav`)))
+  // What the app sounds of one entry: its stretch of the sprite at the entry's gain.
+  const cutOut = (p: Plan, id: string): Sound => {
+    const e = p.sprite.entries[id]!
+    const from = Math.round(e.start * rate)
+    const n = Math.round(e.seconds * rate)
+    const o = A.make(n, rate)
+    for (let i = 0; i < n; i++) {
+      o.L[i] = p.sprite.audio!.L[from + i]! * e.gain
+      o.R[i] = p.sprite.audio!.R[from + i]! * e.gain
+    }
+    return o
+  }
+  const played = (id: string): Sound => cutOut(plan, id)
+  const riseSamples = (): number => Math.round((A.SHAKE.riseMs / 1000) * rate)
+
+  beforeAll(() => {
+    own = path.join(dir, 'balance')
+    fs.mkdirSync(own, { recursive: true })
+    for (const n of fs.readdirSync(kept)) fs.copyFileSync(path.join(kept, n), path.join(own, n))
+    const put = (id: string, source: Sound, options?: Record<string, unknown>): void => fs.writeFileSync(path.join(own, `${id}.wav`), A.encodeWav(A.keepChain(source, A.classOf(id), options).audio))
+    put('shake-fall', noise(2.2, 0.4, 5))
+    // A track long enough for the app's loop of music, and steady, so any stretch of it has the level of the whole.
+    put('music-winter', tone(220, 12 * bar, 0.4))
+    put('ui-tick', burst(0.48, 0.15, 0.06, -8, 37), { capSeconds: A.cueSeconds('ui-tick') })
+    // The pack holds what has a record, so each sound of this folder gets one.
+    for (const n of fs.readdirSync(own)) {
+      const id = path.basename(n, '.wav')
+      if (n.endsWith('.wav')) fs.writeFileSync(path.join(own, `${id}.json`), JSON.stringify({ id, class: A.classOf(id) }))
+    }
+    plan = A.planPack({ keptDir: own, mapsDir: maps, laidDir: path.join(dir, 'nothing-laid') })
+  })
+
+  it('trims touch and impact as the music and the ambience, and takes the step of a shake from the one rule of the film', () => {
+    expect(A.APP_TRIM_DB.music).toBe(-8)
+    for (const cls of ['ambience', 'touch', 'impact']) expect(A.APP_TRIM_DB[cls], cls).toBe(A.APP_TRIM_DB.music)
+    expect(A.APP_TRIM_DB.interface).toBe(INTERFACE_DB)
+    for (const season of config.seasons) {
+      const id = `shake-${season}`
+      expect(A.isShake(id), id).toBe(true)
+      expect(A.shakeStepDb(id), id).toBe(-(A.SHAKE.downDb + (A.SHAKE.more.includes(id) ? A.SHAKE.moreDb : 0)))
+    }
+    expect(A.shakeStepDb('shake-spring')).toBe(-3)
+    expect(A.shakeStepDb('shake-fall')).toBe(-6)
+    for (const id of ['lift', 'glass-clink', 'land-spring', 'ui-tick', 'music-box', 'amb-winter', 'music-winter']) {
+      expect(A.isShake(id), id).toBe(false)
+      expect(A.shakeStepDb(id), id).toBe(0)
+    }
+    // The film asks the same rule: what its report says it took off each shake is that step.
+    const cut = { ...cutOf(), cues: [...(cutOf().cues as Record<string, unknown>[]), { cue: 'shake-fall', frame: 0, at: 3 * bar }] }
+    const m = A.mixFilm({ cut, which: 'b', candidate: 'blockout', keptDir: own, mapsDir: maps, laidDir: path.join(dir, 'nothing-laid') })
+    const shakes = m.report.placed.filter((p) => A.isShake(p.cue))
+    expect(shakes.map((p) => p.cue).sort()).toEqual(['shake-fall', 'shake-spring'])
+    for (const p of shakes) expect(p.downDb, p.cue).toBe(A.shakeStepDb(p.cue))
+  })
+
+  it('sounds the lift, the clink and the landing 8 dB under their kept level, a shake 11 and the shake of fall 14', () => {
+    const under = (id: string, from = 0): number => A.levelDb(played(id), from) - A.levelDb(keptOf(id), from)
+    expect(under('lift')).toBeCloseTo(-8, 1)
+    expect(under('glass-clink')).toBeCloseTo(-8, 1)
+    expect(under('land-spring')).toBeCloseTo(-8, 1)
+    expect(under('shake-spring', riseSamples())).toBeCloseTo(-11, 1)
+    expect(under('shake-fall', riseSamples())).toBeCloseTo(-14, 1)
+    expect(under('ui-tick')).toBeCloseTo(INTERFACE_DB, 1)
+    // So the distances inside a shake are the film's: there the lift lies at its kept level and a shake 3 dB (fall 6)
+    // under its own, and here the lift sounds 3 dB (fall 6) over the shake by the same measure.
+    expect(under('lift') - under('shake-spring', riseSamples())).toBeCloseTo(-A.shakeStepDb('shake-spring'), 1)
+    expect(under('lift') - under('shake-fall', riseSamples())).toBeCloseTo(-A.shakeStepDb('shake-fall'), 1)
+    expect(under('glass-clink') - under('lift')).toBeCloseTo(0, 1)
+    // The loops sound at the music's trim under their kept level, as before the decision: these two are steady, so
+    // any stretch of them has the level of the whole.
+    for (const l of plan.loops) {
+      const from = Math.round(l.loopStart * rate)
+      const sounded = A.levelDb(l.audio, from, from + Math.round(l.loopSeconds * rate)) + A.db(l.gain)
+      expect(sounded - A.levelDb(keptOf(l.id)), l.id).toBeGreaterThan(A.APP_TRIM_DB.music! - 0.5)
+      expect(sounded - A.levelDb(keptOf(l.id)), l.id).toBeLessThan(A.APP_TRIM_DB.music! + 0.5)
+    }
+  })
+
+  it('lets a shake rise from nothing in the sprite itself and leaves every other sound as it was kept', () => {
+    const k = keptOf('shake-spring')
+    const n = riseSamples()
+    const p = played('shake-spring')
+    const down = A.lin(A.APP_TRIM_DB.impact! + A.shakeStepDb('shake-spring'))
+    // The film's own rise, sample for sample, and after it the kept sound at the app's level.
+    const risen = A.riseIn(k, A.SHAKE.riseMs / 1000)
+    for (let i = 0; i < k.L.length; i += 53) expect(p.L[i]!).toBeCloseTo(risen.L[i]! * down, 4)
+    for (let i = n; i < k.L.length; i += 997) expect(p.L[i]!).toBeCloseTo(k.L[i]! * down, 4)
+    expect(A.levelDb(p, 0, n >> 2)).toBeLessThan(A.levelDb(k, 0, n >> 2) + A.db(down) - 12)
+    const one = A.spriteSound('shake-spring', 'impact', k)!
+    expect(one.shake).toEqual({ class: 'impact', trimDb: A.APP_TRIM_DB.impact, stepDb: -3, appDb: -11, riseMs: A.SHAKE.riseMs, gain: one.gain })
+    expect(one.gain).toBe(plan.sprite.entries['shake-spring']!.gain)
+    const lift = keptOf('lift')
+    // Every copy in the sprite has its peak at one height, a shake's after its rise, so each gain puts back what sounds.
+    expect(A.db(A.peak(one.audio))).toBeCloseTo(A.db(A.peak(A.spriteSound('lift', 'touch', lift)!.audio)), 6)
+    const sounded = played('lift')
+    for (let i = 0; i < lift.L.length; i += 97) expect(sounded.L[i]!).toBeCloseTo(lift.L[i]! * A.lin(A.APP_TRIM_DB.touch!), 4)
+    expect(A.spriteSound('lift', 'touch', lift)!.shake).toBeNull()
+    expect(A.spriteSound('lift', 'touch', A.make(64, rate))).toBeNull()
+  })
+
+  it('says in the plan what the gain of each shake is made of', () => {
+    expect(plan.trimsDb).toEqual({ ...A.APP_TRIM_DB })
+    expect(plan.shakes.map((s) => s.id).sort()).toEqual(['shake-fall', 'shake-spring'])
+    for (const s of plan.shakes) {
+      expect(s).toMatchObject({ class: 'impact', trimDb: A.APP_TRIM_DB.impact, stepDb: A.shakeStepDb(s.id), appDb: A.APP_TRIM_DB.impact! + A.shakeStepDb(s.id), riseMs: A.SHAKE.riseMs })
+      expect(s.gain).toBe(plan.sprite.entries[s.id]!.gain)
+    }
+    expect(plan.shakes.find((s) => s.id === 'shake-fall')!.appDb).toBe(-14)
+    expect(plan.shakes.find((s) => s.id === 'shake-spring')!.appDb).toBe(-11)
+  })
+
+  it('rests on the app playing an entry at its gain and making the stir from the entry of the shake', () => {
+    const src = fs.readFileSync(path.join(path.dirname(A.KEPT), '..', 'src', 'audio', 'index.ts'), 'utf8')
+    // An entry sounds at its gain times what the call asks, so the step in the gain is the step that sounds.
+    expect(src).toContain('const level = entry.gain * (o.gain ?? 1)')
+    // The stir is the shake's own entry, slowed and low-passed, at a share of its gain: it follows the entry.
+    expect(src).toMatch(/play\(CUE\.shake\(season\), \{ gain: /)
+  })
+
+  const real = config.seasons.every((s) => fs.existsSync(path.join(A.KEPT, `music-${s}.wav`)))
+  it.skipIf(!real)("holds in the app's own pack, with room over the highest sum a shake can reach, since the app has no limiter", () => {
+    const pack = (A.planPack as unknown as () => Plan)()
+    expect(pack.trimsDb).toEqual({ ...A.APP_TRIM_DB })
+    expect(pack.shakes.map((s) => s.id).sort()).toEqual(config.seasons.map((s) => `shake-${s}`).sort())
+    for (const s of pack.shakes) {
+      expect(s.appDb, s.id).toBe(A.APP_TRIM_DB.impact! + A.shakeStepDb(s.id))
+      expect(s.gain, s.id).toBe(pack.sprite.entries[s.id]!.gain)
+      // A shake is over before the bar it is played in: the landing's sounds never meet it.
+      expect(pack.sprite.entries[s.id]!.seconds, s.id).toBeLessThan(bar)
+    }
+    // The highest a loop sounds in the app: its passes crossed as the app crosses them, at its gain.
+    const seamOf = (l: Loop): number => Math.min(A.classOf(l.id) === 'music' ? bar : A.APP_SEAM.ambience, l.loopSeconds * A.APP_SEAM_SHARE)
+    const top = (id: string): number => {
+      const l = pack.loops.find((x) => x.id === id)!
+      const from = Math.round(l.loopStart * rate)
+      const n = Math.round(l.loopSeconds * rate)
+      const seam = Math.round(seamOf(l) * rate)
+      const period = n - seam
+      const out = A.make(period * 2 + seam, rate)
+      for (let p = 0; p < 2; p++) {
+        for (let i = 0; i < n; i++) {
+          let g = l.gain
+          if (p > 0 && i < seam) g *= Math.sin(((i + 0.5) / seam) * (Math.PI / 2))
+          if (i >= period) g *= Math.cos(((i - period + 0.5) / seam) * (Math.PI / 2))
+          out.L[p * period + i] += l.audio.L[from + i]! * g
+          out.R[p * period + i] += l.audio.R[from + i]! * g
+        }
+      }
+      return A.truePeak(out)
+    }
+    const tops = Object.fromEntries(pack.loops.map((l) => [l.id, top(l.id)]))
+    const together = (...ids: string[]): number => {
+      const parts = ids.map((id) => cutOut(pack, id))
+      const o = A.make(Math.max(...parts.map((x) => x.L.length)), rate)
+      for (const x of parts) {
+        for (let i = 0; i < x.L.length; i++) {
+          o.L[i] += x.L[i]!
+          o.R[i] += x.R[i]!
+        }
+      }
+      return A.truePeak(o)
+    }
+    // The button and the device's motion go to the next season; a season's chip goes from any season to any other
+    // (bridge.goTo in src/ui/index.ts). So every pair is asked, twelve of them.
+    let pairs = 0
+    for (const before of config.seasons) {
+      for (const to of config.seasons) {
+        if (to === before) continue
+        pairs++
+        // Through the bar of the shake: the old music and the old ambience (let go, at most their own highest), the
+        // new ambience coming in (at most its own highest), and what begins with the shake summed as it falls: the
+        // lift, the shake and the press's tick. A loose bound, since the three loops are taken at their highest at
+        // once: -1.7 dB at the worst (summer into spring) and -2.35 dB at the worst to the next season (spring into
+        // summer) when it was written. The tight one of decision 146, with the old music at every place of its round
+        // as the app lets it go, lies 0.3 to 2.3 dB lower (-2.94 dB at the worst). What a visitor lays on top of a
+        // shake (one more press, a stir) is not in this sum: see audio/RECIPE.md, decision 146.
+        const inBar = tops[`music-${before}`]! + tops[`amb-${before}`]! + tops[`amb-${to}`]! + together('lift', `shake-${to}`, 'ui-tick')
+        expect(A.db(inBar), `the shake from ${before} into ${to}`).toBeLessThan(-1)
+        // From the landing: the new music from its start, the new ambience and the clink.
+        const landing = tops[`music-${to}`]! + tops[`amb-${to}`]! + together('glass-clink')
+        expect(A.db(landing), `the landing into ${to}`).toBeLessThan(-1)
+      }
+    }
+    expect(pairs).toBe(config.seasons.length * (config.seasons.length - 1))
   })
 })

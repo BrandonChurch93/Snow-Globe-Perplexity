@@ -57,8 +57,17 @@ export function machineId() {
   return `${os.hostname()} · ${cpu.length} x ${cpu[0]?.model ?? 'cpu'} · ${Math.round(os.totalmem() / 1048576)} MB`
 }
 
+// The browser's own notice that a synchronous read of the frame waited for the graphics pipeline. Every exact
+// capture reads its frame back (src/capture, the accumulator, the probe's maths card), so the notice names the
+// tool's reading and no fault of the page; the live app reads no pixels while it plays. ANGLE prints it on a
+// Vulkan driver such as lavapipe and not on SwiftShader. Only this one line is passed over, by its whole wording.
+const READBACK_NOTICE = /GL Driver Message \(OpenGL, Performance, GL_CLOSE_PATH_NV, High\): GPU stall due to ReadPixels$/
+
+export const isReadbackNotice = (type, text) => type === 'warning' && READBACK_NOTICE.test(text)
+
 export function watchPage(page, sink = []) {
   page.on('console', (m) => {
+    if (isReadbackNotice(m.type(), m.text())) return
     if (m.type() === 'error' || m.type() === 'warning') sink.push(`${m.type()}: ${m.text()}`)
   })
   page.on('pageerror', (e) => sink.push(`pageerror: ${e.message}`))

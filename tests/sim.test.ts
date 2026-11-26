@@ -797,4 +797,124 @@ describe('the live runner', () => {
       expect(runner.floating()).toBeLessThan(n)
     }
   }, 120000)
+
+  // The picture draws `runner.source`, a copy of the simulation's arrays that is made again only when it is told they moved.
+  // These two read it after every frame, as the stage does: a copy made once and kept shows a storm that stands still and
+  // keeps the old season's kinds through a change, which a single read at the end cannot see.
+  /** Where the picture's copy first differs from the simulation itself, or '' when it shows it exactly. */
+  function differs(runner: LiveRunner, direct: ParticleEngine): string {
+    const s = runner.source
+    if (runner.step !== direct.step) return `step ${runner.step} against ${direct.step}`
+    const pairs: [string, ArrayLike<number>, ArrayLike<number>, number][] = [
+      ['pos', s.pos, direct.pos, n * 3],
+      ['prev', s.prev, direct.prev, n * 3],
+      ['sizes', s.sizes, direct.sizes, n],
+      ['state', s.state, direct.state, n],
+      ['kindOf', s.kindOf, direct.kindOf, n],
+      ['opacity', s.opacity, direct.opacity, n],
+    ]
+    for (const [name, a, b, m] of pairs) for (let i = 0; i < m; i++) if (a[i] !== b[i]) return `${name}[${i}] is ${a[i]} against ${b[i]} at step ${direct.step}`
+    return ''
+  }
+
+  /** Counts the frames in which the picture's copy is not the one of the frame before. */
+  function mover(runner: LiveRunner): { frames: number; moved: number; look(): void } {
+    const last = new Float32Array(n * 3)
+    const m = {
+      frames: 0,
+      moved: 0,
+      look(): void {
+        const pos = runner.source.pos
+        let any = false
+        for (let i = 0; i < n * 3 && !any; i++) any = pos[i] !== last[i]
+        last.set(pos.subarray(0, n * 3))
+        m.frames++
+        if (any) m.moved++
+      },
+    }
+    return m
+  }
+
+  /** The picture's copy holds winter's kinds, each as many as winter has, and none of fall's. */
+  function winters(runner: LiveRunner): void {
+    const s = runner.source
+    const shown: Record<string, number> = {}
+    for (let i = 0; i < n; i++) {
+      if (s.state[i] === STATE_HIDDEN) continue
+      const kind = KINDS[s.kindOf[i]!]!
+      shown[kind] = (shown[kind] ?? 0) + 1
+    }
+    expect(shown).toEqual(countsIn('winter', n))
+  }
+
+  it('shows every frame of a simulation the page steps itself, with no worker, through a change of season', () => {
+    const runner = new LiveRunner({ season: 'fall', fraction, spawn: null })
+    runner.reset('fall')
+    const tl = swapTimeline('fall', 'winter')
+    const direct = new ParticleEngine({ season: 'fall', fraction })
+    direct.reset()
+    const storm = mover(runner)
+    for (let target = 4; target <= steps(4); target += 4) {
+      runner.advanceTo(target, tl)
+      direct.advanceTo(target, tl)
+      expect(differs(runner, direct)).toBe('')
+      storm.look()
+    }
+    expect(storm.frames).toBe(steps(4) / 4)
+    expect(storm.moved).toBe(storm.frames)
+    expect(runner.remote).toBe(false)
+    expect(runner.fallbacks).toBe(0)
+    expect(runner.season).toBe('winter')
+    agrees(runner, direct)
+    winters(runner)
+  }, 120000)
+
+  it('shows every frame after a fall back to the main thread, through a change of season', async () => {
+    for (const how of ['silence', 'throw'] as const) {
+      let clock = 0
+      let broken = false
+      const worker = fakeWorker()
+      const post = worker.postMessage.bind(worker)
+      worker.postMessage = (message, transfer) => {
+        if (broken) throw new Error('gone')
+        post(message, transfer)
+      }
+      const runner = new LiveRunner({ season: 'fall', fraction, spawn: () => worker, now: () => clock, frameMs: 500 })
+      runner.reset('fall')
+      const tl = swapTimeline('fall', 'winter')
+      const twin = new LiveEngine({ season: 'fall', fraction })
+      const storm = mover(runner)
+      let at = { season: 'fall', step: 0 }
+      let target = 0
+      while (target < steps(4)) {
+        target += 4
+        clock += 16
+        if (runner.remote) at = { season: runner.season, step: runner.step }
+        runner.advanceTo(target, tl)
+        if (runner.fallbacks > 0) {
+          if (storm.frames === 0) {
+            expect(at.season).toBe('fall')
+            twin.restAt(at.season, at.step)
+          }
+          twin.advanceTo(target, tl)
+          expect(differs(runner, twin.inner)).toBe('')
+          storm.look()
+        } else expect(Number.isFinite(runner.source.pos[0])).toBe(true)
+        await settle()
+        if (target === 80) {
+          expect(runner.remote).toBe(true)
+          expect(runner.frames).toBeGreaterThan(0)
+          if (how === 'silence') worker.closed = true
+          else broken = true
+        }
+      }
+      expect(runner.remote).toBe(false)
+      expect(runner.fallbacks).toBe(1)
+      expect(storm.frames).toBeGreaterThan(steps(3) / 4)
+      expect(storm.moved).toBe(storm.frames)
+      expect(runner.season).toBe('winter')
+      agrees(runner, twin.inner)
+      winters(runner)
+    }
+  }, 120000)
 })
