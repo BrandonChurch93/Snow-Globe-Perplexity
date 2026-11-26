@@ -311,13 +311,13 @@
       "summer": [
         {
           "path": "summer/base-carve.lin.w2048.first.webp",
-          "bytes": 87240,
-          "sha": "25bf9e46e23ff159"
+          "bytes": 79082,
+          "sha": "aecbd0471e2f7815"
         },
         {
           "path": "summer/base-carve.lin.w2048.webp",
-          "bytes": 296554,
-          "sha": "f4ade993bfdd3109"
+          "bytes": 258684,
+          "sha": "329d08375db744fe"
         },
         {
           "path": "summer/base-grain.lin.tile.w512.webp",
@@ -331,18 +331,18 @@
         },
         {
           "path": "summer/base-stone.srgb.w2048.first.webp",
-          "bytes": 108438,
-          "sha": "069b64423d6d53e8"
+          "bytes": 108662,
+          "sha": "94a61c461b21db1a"
         },
         {
           "path": "summer/base-stone.srgb.w2048.webp",
-          "bytes": 386314,
-          "sha": "af3861fe89112db8"
+          "bytes": 386810,
+          "sha": "80c95a2ade90e855"
         },
         {
           "path": "summer/base-summer.glb",
-          "bytes": 3164864,
-          "sha": "f404387715fd0db5"
+          "bytes": 3051032,
+          "sha": "2b29fdb6cc526dc9"
         },
         {
           "path": "summer/tree-leaves.srgb.tile.w1024.first.webp",
@@ -658,8 +658,8 @@
       "summer": [
         {
           "path": "summer/base-carve.lin.w2048.png",
-          "bytes": 1212115,
-          "sha": "5f217148a030f6fe"
+          "bytes": 1254877,
+          "sha": "a1a21ce45fb7ece5"
         },
         {
           "path": "summer/base-grain.lin.tile.w512.png",
@@ -673,13 +673,13 @@
         },
         {
           "path": "summer/base-stone.srgb.w2048.png",
-          "bytes": 4381245,
-          "sha": "e878a6e3066406e8"
+          "bytes": 4380912,
+          "sha": "60c07a5d608cfab4"
         },
         {
           "path": "summer/base-summer.glb",
-          "bytes": 8048820,
-          "sha": "2994c288508c1a8d"
+          "bytes": 7890412,
+          "sha": "a97dad34cbc487c7"
         },
         {
           "path": "summer/tree-leaves.srgb.tile.w1024.png",
@@ -759,7 +759,7 @@
   "seasonHashes": {
     "winter": "5c39d16f98d3d0be",
     "spring": "e579a2c24f41ece7",
-    "summer": "f4be107673ee89dc",
+    "summer": "31bd038570b28b44",
     "fall": "767926ecb026caa1"
   }
 }
