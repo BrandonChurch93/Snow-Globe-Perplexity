@@ -13,7 +13,7 @@ import type { KitMoment, SeasonKit } from '../kit'
 // as well as what lies behind it, and it cost the miniature a quarter of its fine detail at rest; the warm air behind the
 // miniature is the wall layer's haze in `glass.ts`, which is drawn behind the cottage and the tree.
 export const veil: SeasonKit['veil'] = { tint: [1.26, 1.06, 0.86], density: 0.09, rest: -0.0007 }
-export const particles: SeasonKit['particles'] = { firefly: { color: [0.86, 1, 0.24], glow: 11 }, seed: { color: [1.32, 1.24, 1.1], glow: 0 }, mote: { color: [1, 0.74, 0.34], glow: 0.3 } }
+export const particles: SeasonKit['particles'] = { firefly: { color: [0.9, 1, 0.2], glow: 11 }, seed: { color: [1.32, 1.24, 1.1], glow: 0 }, mote: { color: [1, 0.74, 0.34], glow: 0.3 } }
 
 // The storm outlasts the shake. The shared veil thins with the liquid's turbulence, which is spent by the time the globe is set
 // down, so the air was clear on the landing frame. Summer holds its own storm from the swap through the set down and the
@@ -23,7 +23,7 @@ export const particles: SeasonKit['particles'] = { firefly: { color: [0.86, 1, 0
 // over the ground and a white crescent inside the left limb, where the approved image has seeds over a ghosted miniature.
 // A share of that bank is kept: it is the bright haze low down that whitens the ground and the foot of the tree.
 // All of it is weighted by summer's share of the change, so the other seasons see nothing of it.
-export const STORM = { share: 0.5, holdSeconds: 0.3, fallSeconds: 3, uneven: 0.8, calms: 0.93 }
+export const STORM = { share: 0.56, holdSeconds: 0.3, fallSeconds: 3, uneven: 0.8, calms: 0.93 }
 
 const ramp = (v: number, from: number, to: number): number => {
   const t = Math.min(1, Math.max(0, (v - from) / (to - from)))
