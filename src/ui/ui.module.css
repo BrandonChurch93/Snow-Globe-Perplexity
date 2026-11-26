@@ -53,6 +53,17 @@
   border: 0;
 }
 
+/* The picture as it was before a change with reduced motion, laid exactly over the picture and faded out by the script. */
+.veil {
+  position: absolute;
+  display: block;
+  pointer-events: none;
+}
+
+.veil[hidden] {
+  display: none;
+}
+
 .bar {
   position: absolute;
   left: 0;
