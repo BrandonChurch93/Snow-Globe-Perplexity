@@ -3,8 +3,9 @@ import { config, shots } from '../src/config'
 import { FRAME } from '../src/app/framing'
 import * as THREE from 'three'
 import { GLASS_COME, GLASS_LEAVE, GUST_CLOSES, GUST_LAST_DOWN, GUST_LAST_DOWN_AT, MODE, makeHandle, setPresence, STAGE_FRAG_PARS } from '../src/core/materials'
-import { CHANGE_COVER, DRESSING_CHANGE, changeBloom, changeRamp, changeSpan, partChange, SEASONAL_PARTS } from '../src/shake/change'
+import { BASE_PASS, CHANGE_COVER, DRESSING_CHANGE, changeBloom, changeRamp, changeSpan, partChange, SEASONAL_PARTS } from '../src/shake/change'
 import { shakeMotion } from '../src/shake/table'
+import { CHANGE_BLOOM } from '../src/scene/lighting'
 
 const s = config.shake
 const BEAT_S = 60 / config.film.defaultBpm
@@ -291,8 +292,23 @@ describe('the dressing on the glass under a change', () => {
     }
   })
 
-  it('swaps the base whole at the middle of its span, under the whole cover, so its line against the lit glass is never a mix of two', () => {
-    expect(/if \(uState\.z < -9\.0\) return ([^;]+);/.exec(STAGE_FRAG_PARS)?.[1]).toBe('step(0.5, s)')
-    expect(changeBloom((span.from + span.to) / 2)).toBe(1)
+  it('passes the base from the old shape to the new over six frames or more about the middle of its span, so its line against the lit glass never steps', () => {
+    const frame = FRAME_BEATS / WINDOW
+    const mid = (span.from + span.to) / 2
+    expect((BASE_PASS.to - BASE_PASS.from) / frame, 'frames of the pass').toBeGreaterThanOrEqual(6 - 1e-9)
+    expect((BASE_PASS.from + BASE_PASS.to) / 2).toBeCloseTo(mid, 12)
+    expect(changeBloom(mid)).toBe(1)
+    const ramp = changeRamp('base')
+    const from = (BASE_PASS.from - ramp.start) / ramp.length
+    const long = (BASE_PASS.to - BASE_PASS.from) / ramp.length
+    expect(/if \(uState\.z < -9\.0\) return ([^;]+);/.exec(STAGE_FRAG_PARS)?.[1]).toBe(`clamp((s + ${(-from).toFixed(4)}) / ${long.toFixed(4)}, 0.0, 1.0)`)
+    // The pass is longer than the whole cover. Outside the whole cover the room stands under a fiftieth of its light, and no more than an eighth of the base is the other season's.
+    const passed = (c: number): number => Math.min(1, Math.max(0, (c - BASE_PASS.from) / (BASE_PASS.to - BASE_PASS.from)))
+    for (let i = 0; i <= 240; i++) {
+      const c = BASE_PASS.from + ((BASE_PASS.to - BASE_PASS.from) * i) / 240
+      const cover = changeBloom(c)
+      expect(Math.pow(CHANGE_BLOOM.dim, cover), `the room at ${i} of 240 of the pass`).toBeLessThan(0.02)
+      if (cover < 1) expect(Math.min(passed(c), 1 - passed(c)), `the other base at ${i} of 240 of the pass`).toBeLessThanOrEqual(0.125 + 1e-9)
+    }
   })
 })
