@@ -1,18 +1,19 @@
-# Status 160
+# Status 161
 
-2026-11-26 14:05 UTC
+2026-11-26 14:38 UTC
 
-- Summer's third list is in the build. My own look at it: the tones now agree with the approved picture and the forms do not, so a fourth list about form went to the five builders at 13:57 UTC, due about 14:50.
-- The speck in 4K frames has its cause and its mend in main: a tree's shader took the direction of a vector of no length. The proof on the thirteen known frames and a scan of every seventh frame on the mended build are running; no line since the change-over so far.
-- The lamps' beaded blur in 4K shake frames, measured on a farm machine: a shake frame costs 113 s at 24 samples, 169 s at 48 and 330 s at 96, and at 96 the beads close into streaks. The rule that gives moving frames more samples is being built.
-- The cover of each change is being rebuilt as light that pours out of the globe onto the table, in place of the dark room. The masters' tool now counts a range once and checks the committer before the first frame.
-- Not done: summer has had no round on the new picture; the change and the globe wait for their rounds; no master frame is drawn before the freeze.
-- phase 6: 11.27 h used of its 12.00 h box
-- allowance (after the review): 11.27 h used of 12.00 h allowed
+- The change's new cover has a first state: the globe flares and its light pours onto the table, where the room used to go black. Four notes on form went back (the halo is a column, the ball washes out at the peak, clipped grains, a brown wash in the corners); the other three changes follow.
+- The lamps' blur is mended in the build: a moving frame of the final tier gets as many samples as keep its copies under 0.75 px apart, up to 96; still frames keep 24 and stay the same bit for bit. Film B at 4K: 324 of 3600 frames get more, 8 percent more samples in all. The masters' tool is being taught the same count.
+- The speck: the proof is in. The twelve frames that held a dead pixel hold none on the mended build, and the stills did not move. Two scan ranges have ended clean (29 frames each), seven more run. The audit of every normalize in the shaders named sixteen more places that could fail the same way, far more rarely; they are being guarded now, before the freeze.
+- The farm, measured: one render process draws a 4K hold frame in 51 s, two side by side in 85 s each, so two a machine give 84 frames an hour.
+- The film's rehearsal: measures 36 of 36 green and the stress run green on the build of 13:28; the motion pack is too slow for one small machine and will be split by shot.
+- Summer's fourth list is due about 14:50. This machine's GitHub sign-in dropped at 14:34, so the last commits reach the repo by a relay.
+- phase 6: 11.82 h used of its 12.00 h box
+- allowance (after the review): 11.82 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-160-1.jpg`: The crown, approved left and ours right: one round mid green mass where the approved has dark pads with gaps and lit rims.
-- `out/stills/status/status-160-2.jpg`: The middle of the base at its own pixels, approved left: carved ridges and a ribbed shell against smooth bands and matt grey stones.
-- `out/stills/status/status-160-3.jpg`: The ball's upper left, approved left: hair thin rayed seed heads and sparks against thick soft wedges in clumps and green discs.
-- `out/stills/status/status-160-4.jpg`: The cottage, approved left: a house in shade on a mound with a sand bank against a brighter house on flat ground with a white fringe.
+- `out/stills/status/status-161-1.jpg`: The change from winter to spring, film frames 668 to 674 at the draft tier. Left, before: the room goes black round the globe. Right, the first state of the new cover: the globe's light pours onto the table and the base stays in sight.
+- `out/stills/status/status-161-2.jpg`: The lamps in film frame 621 at 4K, six times enlarged: 24 samples (rows of copies), the new rule (50 samples here) and 96 samples.
+- `out/stills/status/status-161-3.jpg`: Film frame 4 at 4K, enlarged: the dead pixel in the tree's needles before the mend, and the same place after it.
+- `out/stills/status/status-161-4.jpg`: Film B from end to end, twelve frames at the draft tier, on the build of 13:28 UTC, before the new cover and summer's fourth list.

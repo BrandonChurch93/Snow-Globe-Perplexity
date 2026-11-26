@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 160 · 2026-11-26 14:05 UTC
+Status 161 · 2026-11-26 14:38 UTC
 
-- `out/stills/status/status-160-1.jpg`: The crown, approved left and ours right: one round mid green mass where the approved has dark pads with gaps and lit rims.
-- `out/stills/status/status-160-2.jpg`: The middle of the base at its own pixels, approved left: carved ridges and a ribbed shell against smooth bands and matt grey stones.
-- `out/stills/status/status-160-3.jpg`: The ball's upper left, approved left: hair thin rayed seed heads and sparks against thick soft wedges in clumps and green discs.
-- `out/stills/status/status-160-4.jpg`: The cottage, approved left: a house in shade on a mound with a sand bank against a brighter house on flat ground with a white fringe.
+- `out/stills/status/status-161-1.jpg`: The change from winter to spring, film frames 668 to 674 at the draft tier. Left, before: the room goes black round the globe. Right, the first state of the new cover: the globe's light pours onto the table and the base stays in sight.
+- `out/stills/status/status-161-2.jpg`: The lamps in film frame 621 at 4K, six times enlarged: 24 samples (rows of copies), the new rule (50 samples here) and 96 samples.
+- `out/stills/status/status-161-3.jpg`: Film frame 4 at 4K, enlarged: the dead pixel in the tree's needles before the mend, and the same place after it.
+- `out/stills/status/status-161-4.jpg`: Film B from end to end, twelve frames at the draft tier, on the build of 13:28 UTC, before the new cover and summer's fourth list.
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-26 14:05 UTC
-clock: phase 6, tick of 22.2 minutes
-phase 6: 11.27 h used of its 12.00 h box
-allowance (after the review): 11.27 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 11.27 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-26 14:38 UTC
+clock: phase 6, tick of 32.9 minutes
+phase 6: 11.82 h used of its 12.00 h box
+allowance (after the review): 11.82 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 11.82 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: not reached
