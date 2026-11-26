@@ -364,8 +364,10 @@ if (want(11)) {
     }
     return op()
   }
-  const low = await settle((v) => v < 0.6)
-  await note(11, 'dimmed', { dimmed: dimmed.ok, afterSeconds: dimmed.seconds, opacity: low }, dimmed.ok && Number(low) < 0.6)
+  // The floor is the page's own (`--dim-to`). Dimmed is at that floor, and the floor is plainly there and still quieter than awake.
+  const floor = await page.evaluate(() => Number(getComputedStyle(document.querySelector('#ui > div')).getPropertyValue('--dim-to')))
+  const low = await settle((v) => Math.abs(v - floor) <= 0.02)
+  await note(11, 'dimmed', { dimmed: dimmed.ok, afterSeconds: dimmed.seconds, opacity: low, floor }, dimmed.ok && Math.abs(Number(low) - floor) <= 0.02 && floor >= 0.5 && floor <= 0.8)
   if (!touch) await page.mouse.move(fmt.width * 0.4, fmt.height * 0.4)
   else await press(fmt.width * 0.5, fmt.height * 0.06)
   const back = await until('the controls to return', (x) => !x.dim, 20000)
