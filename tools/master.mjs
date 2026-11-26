@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import { spawn, spawnSync } from 'node:child_process'
 import sharp from 'sharp'
@@ -8,8 +9,8 @@ import { engineHash, fileSha, sha256 } from './lib/hashes.mjs'
 import { freeDiskGb, launch, machineId, pinnedBrowser, rendererName } from './lib/browser.mjs'
 import { serve } from './lib/server.mjs'
 import { Run, argFrame, argText, pngOk, short } from './lib/frames.mjs'
-import { decodedHashes, decodedPictures, encodeMasterChunk, haveFfmpeg, join, masterVideoArgs, probe, probeLine, probeStreams, scaleEvery, soundSeconds, startsFast, stillJpeg, toolVersions, videoSettings } from './lib/encode.mjs'
-import { FPS, JOINS, LOOK_WIDTH, M, SOUND, STILL_MAX_MB, WHATS, chunkDir, chunkStem, coverReport, dB, framesOf, heartbeat, hours, joinPlan, lumaPsnrOf, openingPack, pad6, psnrOf, rangeChunks, ranges, readChunks, recordMatchesRun, resultName, split, stillName, stillToDo, table, tierOf, totalsFromCut } from './lib/master.mjs'
+import { decodedHashes, decodedPictures, encodeMasterChunk, frameLevels, haveFfmpeg, join, masterVideoArgs, probe, probeLine, probeStreams, scaleEvery, soundSeconds, startsFast, stillJpeg, toolVersions, videoSettings } from './lib/encode.mjs'
+import { FPS, JOINS, LOOK_WIDTH, M, SOUND, STILL_MAX_MB, WHATS, levelProblems, pictureLevels, procsProblem, chunkDir, chunkStem, coverReport, dB, framesOf, heartbeat, hours, joinPlan, lumaPsnrOf, openingPack, pad6, psnrOf, rangeChunks, ranges, readChunks, recordMatchesRun, resultName, split, stillName, stillToDo, table, tierOf, totalsFromCut } from './lib/master.mjs'
 import { Shipper, collectBranches, repoFacts } from './lib/mastergit.mjs'
 
 const args = parseArgs(process.argv.slice(2))
@@ -222,6 +223,10 @@ async function verifyChunk(file, frames, format, floor) {
     }
   }
   const problems = []
+  const sources = []
+  for (const f of frames) sources.push(typeof f.mean === 'number' ? { index: f.index, mean: f.mean, flat: f.flat === true } : { index: f.index, ...pictureLevels(await rgbOf(f.file)) })
+  const levels = frameLevels(file)
+  problems.push(...levelProblems(levels, sources))
   if (!seen.ok) problems.push(`the decoder wrote: ${seen.errors.join(' / ') || 'an error'}`)
   if (seen.frames.length !== n) problems.push(`it decodes to ${seen.frames.length} frames, not ${n}`)
   if (!even) problems.push(`its frames are not ${FPS} a second apart`)
@@ -229,7 +234,7 @@ async function verifyChunk(file, frames, format, floor) {
   const tags = `${v.color_space} / ${v.color_primaries} / ${v.color_transfer} / ${v.color_range}`
   if (tags !== COLOUR_TAGS) problems.push(`its colour tags are ${tags}, not ${COLOUR_TAGS}`)
   if (seen.frames.length === n && low < floor) problems.push(`a decoded frame is ${dB(low)} dB from its PNG in luma, under ${floor === M.minChunkPsnr ? 'deliver.master.minChunkPsnr' : '--min-psnr'} ${floor}`)
-  return { verify: { ok: problems.length === 0, frames: seen.frames.length, decodeErrors: seen.errors, evenSteps: even, psnr, psnrRgb, measure: 'luma, BT.709', minPsnr: floor, problems }, decoded: seen.frames.map((f) => f.hash) }
+  return { verify: { ok: problems.length === 0, frames: seen.frames.length, decodeErrors: seen.errors, evenSteps: even, psnr, psnrRgb, measure: 'luma, BT.709', minPsnr: floor, flatFrames: levels.filter((f) => f.flat).length, worstMeanStep: Math.round(Math.max(0, ...levels.map((f, k) => Math.abs(f.mean - sources[k]?.mean))) * 1000) / 1000, problems }, decoded: seen.frames.map((f) => f.hash) }
 }
 
 async function doChunk(ctx, src, c, progress) {
@@ -251,7 +256,9 @@ async function doChunk(ctx, src, c, progress) {
     const t0 = Date.now()
     const { png, rgb } = await src.picture(index)
     const seconds = (Date.now() - t0) / 1000
-    const side = { index, seconds: Math.round(seconds * 1000) / 1000, sha256: sha256(rgb) }
+    const seen = pictureLevels(rgb)
+    if (seen.flat && ctx.engine) throw new Error(`frame ${index} came back as one flat value over the whole picture. Nothing was written for it. Look at dmesg for a killed chrome process, then run the same command again.`)
+    const side = { index, seconds: Math.round(seconds * 1000) / 1000, sha256: sha256(rgb), mean: Math.round(seen.mean * 1000) / 1000, flat: seen.flat }
     writeJson(file.replace(/\.png$/, '.json'), side)
     fs.writeFileSync(`${file}.tmp`, png)
     fs.renameSync(`${file}.tmp`, file)
@@ -298,6 +305,7 @@ async function doChunk(ctx, src, c, progress) {
     height: ctx.format.height,
     fps: FPS,
     renderer: ctx.renderer,
+    flatFrames: frames.filter((x) => x.flat === true).map((x) => x.index),
     ...(ctx.engine ? { seasonHashes: currentSeasonHashes() } : {}),
     graphics: src.graphics,
     ...(ctx.calibration ? { calibration: ctx.calibration } : {}),
@@ -400,6 +408,8 @@ async function render() {
   const ctx = setup()
   const worker = args.worker === undefined ? null : Number(args.worker)
   if (!haveFfmpeg()) throw new Error('ffmpeg and ffprobe are needed and were not found')
+  const tooMany = ctx.engine ? procsProblem(ctx.procs, ctx.format.id, os.totalmem()) : null
+  if (tooMany) throw new Error(tooMany)
   if (ctx.engine && !ctx.calibration) throw new Error(`this machine has no calibration for this build and ${ctx.renderer}. Run npm run master -- --calibrate first (one picture, a few minutes), and check that its first line is the one every other machine printed.`)
   const todo = stillToDo(ctx.chunks, { done: (c) => !!finished(ctx, c), has: (c, i) => (dropStaleFrames(ctx, c), !!frameOnDisk(ctx, c, i)) })
   const lane = worker === null ? null : split(ctx.chunks, ctx.procs, worker)
@@ -449,8 +459,26 @@ function collect() {
   if (dir === rel() || dir.startsWith(rel('.git'))) throw new Error('--collect takes a folder of its own, never the repo itself')
   const found = collectBranches({ dir, say })
   say(`${found.length} ${found.length === 1 ? 'branch matches' : 'branches match'} ${M.chunkBranches}, laid out under ${short(dir)}`)
-  printCover(readChunks([dir]))
+  const taken = readChunks([dir])
+  const bad = flatChunks(taken)
+  for (const b of bad) say(`FLAT: ${flatLine(b)}. Do not join it: render that range again.`)
+  if (!bad.length) say(`no flat frame in ${taken.length} ${taken.length === 1 ? 'chunk' : 'chunks'}`)
+  printCover(taken)
+  if (bad.length) process.exit(1)
 }
+
+function flatChunks(chunks) {
+  const bad = []
+  for (const c of chunks) {
+    if (!fs.existsSync(c.file)) continue
+    const ok = new Set(c.record.flatFrames ?? [])
+    const flat = frameLevels(c.file).map((f, k) => (f.flat ? c.record.first + k : -1)).filter((i) => i >= 0 && !ok.has(i))
+    if (flat.length) bad.push({ chunk: c, flat })
+  }
+  return bad
+}
+
+const flatLine = (b) => `${b.chunk.from} (${b.chunk.record.what} ${b.chunk.record.first} to ${b.chunk.record.last}, drawn on ${b.chunk.record.machine}) holds ${b.flat.length} flat ${b.flat.length === 1 ? 'frame' : 'frames'}: ${b.flat.slice(0, 12).join(', ')}`
 
 const row = (check, wanted, found, pass) => ({ check, wanted, found, pass })
 
@@ -496,6 +524,9 @@ async function prove({ file, which, plan, format, sound, test, totals }) {
     }
   }
   rows.push(row('chunk seams', `bit for bit the chunk's own decoded frames`, seamsOff || unequal ? `${seamsOff} of ${seams} seam frames and ${unequal} of ${plan.frames} frames differ` : `${seams} seam frames of ${plan.parts.length} chunks equal, and all ${plan.frames} frames`, unequal === 0))
+  const allowed = new Set(plan.parts.flatMap((p) => (p.record.flatFrames ?? []).map((i) => `${p.record.what} ${i}`)))
+  const flat = frameLevels(file).filter((f) => f.flat).length
+  rows.push(row('flat frames', allowed.size ? `none but the ${allowed.size} the opening pack holds` : '0', String(flat), flat <= allowed.size))
   rows.push(row('starts fast', 'the index before the pictures', startsFast(file) ? 'yes' : 'no', startsFast(file)))
   const bytes = fs.statSync(file).size
   rows.push(row('file size', `under ${cfg.platform.maxFileMb} MB`, `${(bytes / 1048576).toFixed(1)} MB`, bytes / 1048576 < cfg.platform.maxFileMb))
@@ -545,6 +576,12 @@ async function joinMaster() {
       const b = decodedPictures(c.b.file, places, c.b.record.width, c.b.record.height)
       say(`  ${c.a.from} against ${c.b.from}: ${at.map((i, k) => `frame ${i} ${dB(psnrOf(a[k], b[k]).psnr)} dB`).join(', ')}`)
     }
+    process.exit(1)
+  }
+  const bad = flatChunks(plan.parts)
+  if (bad.length) {
+    say(`${which} cannot be joined:`)
+    for (const b of bad) say(`- ${flatLine(b)}`)
     process.exit(1)
   }
   const r0 = plan.parts[0].record

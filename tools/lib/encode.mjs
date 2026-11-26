@@ -261,6 +261,21 @@ export function decodedHashes(file) {
   return { ok: r.status === 0 && r.stderr.trim() === '', errors: r.stderr.trim().split('\n').filter(Boolean).slice(0, 5), timeBase, frames }
 }
 
+const FLAT_SPREAD = 4
+
+export function frameLevels(file) {
+  const r = spawnSync('ffmpeg', ['-v', 'error', '-nostdin', '-i', file, '-map', '0:v:0', '-vf', 'signalstats,metadata=mode=print:file=-', '-f', 'null', '-'], { encoding: 'utf8', maxBuffer: 1 << 28 })
+  if (r.error) throw new Error(r.error.code === 'ENOENT' ? 'ffmpeg was not found on this machine' : r.error.message)
+  if (r.status !== 0) throw new Error(`ffmpeg could not decode ${file}: ${String(r.stderr).trim()}`)
+  const frames = []
+  for (const line of r.stdout.split('\n')) {
+    if (line.startsWith('frame:')) frames.push({})
+    const m = /^lavfi\.signalstats\.([A-Z]+)=([0-9.]+)/.exec(line)
+    if (m && frames.length) frames[frames.length - 1][m[1]] = Number(m[2])
+  }
+  return frames.map((f) => ({ flat: f.YMAX - f.YMIN <= FLAT_SPREAD && f.UMAX - f.UMIN <= FLAT_SPREAD && f.VMAX - f.VMIN <= FLAT_SPREAD, mean: f.YAVG, min: f.YMIN, max: f.YMAX }))
+}
+
 /** Decoded pictures by their place in the file, as rgb24 the size of the picture. */
 export function decodedPictures(file, places, width, height) {
   const pick = places.map((n) => `eq(n\\,${n})`).join('+')

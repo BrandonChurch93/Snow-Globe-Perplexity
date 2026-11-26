@@ -8,6 +8,10 @@ import { masterVideoArgs } from '../tools/lib/encode.mjs'
 import { loadConfig, readJson, rel, writeJson } from '../tools/lib/paths.mjs'
 import { branchFolder, branchMatches, chunkLines, chunkStem, coverReport, framesOf, heartbeat, joinPlan, lumaPsnrOf, nearestRanges, openingPack as readOpening, pad6, psnrOf, rangeChunks as chunksOfRange, ranges, readChunks, recordMatchesRun, resultName, split, stillName, stillToDo as leftToDo, table, tierOf, totalsFromCut } from '../tools/lib/master.mjs'
 import { Shipper, collectBranches } from '../tools/lib/mastergit.mjs'
+import { levelProblems, pictureLevels, procsProblem } from '../tools/lib/master.mjs'
+import { flatValue, refuseFlat } from '../tools/lib/page.mjs'
+import { frameLevels } from '../tools/lib/encode.mjs'
+import sharp from 'sharp'
 
 type Rec = Record<string, unknown> & { what: string; first: number; last: number }
 type Chunk = { record: Rec; file: string; from: string }
@@ -383,5 +387,55 @@ describe('files on disk', () => {
     expect(said.join('\n')).toMatch(/unchanged at/)
     expect(() => new Shipper({ branch: cfg.repo.branch, say, root: dir, facts })).toThrow(/never the code branch/)
     expect(() => new Shipper({ branch, say, root: dir, facts: { ...facts, name: '' } })).toThrow(/user\.name and user\.email are not set/)
+  })
+})
+
+describe('a flat frame', () => {
+  const flatPng = (v: number) => sharp({ create: { width: 64, height: 36, channels: 3, background: { r: v, g: v, b: v } } }).png().toBuffer()
+  const realPng = async () => {
+    const raw = Buffer.alloc(64 * 36 * 3)
+    for (let i = 0; i < raw.length; i++) raw[i] = (i * 7) % 251
+    return sharp(raw, { raw: { width: 64, height: 36, channels: 3 } }).png().toBuffer()
+  }
+
+  it('is refused when a picture comes back as one value, black or any other', async () => {
+    expect(await flatValue(await flatPng(0))).toEqual([0, 0, 0])
+    expect(await flatValue(await flatPng(37))).toEqual([37, 37, 37])
+    expect(await flatValue(await realPng())).toBeNull()
+    await expect(refuseFlat(await flatPng(0), 'film-b frame 12')).rejects.toThrow(/film-b frame 12 came back as one flat value \(0, 0, 0\)/)
+    await expect(refuseFlat(await realPng(), 'film-b frame 12')).resolves.toBeUndefined()
+  })
+
+  it('is seen in the raw picture, with the mean a decoded frame must keep', () => {
+    expect(pictureLevels(Buffer.alloc(300, 0))).toEqual({ flat: true, mean: 16 })
+    expect(pictureLevels(Buffer.alloc(300, 255)).mean).toBeCloseTo(235, 6)
+    const mixed = Buffer.alloc(300, 0)
+    mixed[299] = 9
+    expect(pictureLevels(mixed).flat).toBe(false)
+  })
+
+  it('fails a chunk whose decoded frame is flat or has drifted from its picture', () => {
+    const src = [{ index: 30, mean: 60, flat: false }, { index: 31, mean: 61, flat: false }]
+    expect(levelProblems([{ flat: false, mean: 60.2, min: 16, max: 200 }, { flat: false, mean: 60.9, min: 16, max: 200 }], src)).toEqual([])
+    expect(levelProblems([{ flat: true, mean: 16, min: 16, max: 16 }, { flat: false, mean: 61, min: 16, max: 200 }], src).join(' ')).toMatch(/frame 30 decodes to one flat value \(16\)/)
+    expect(levelProblems([{ flat: false, mean: 60, min: 16, max: 200 }, { flat: false, mean: 63.5, min: 16, max: 200 }], src).join(' ')).toMatch(/frame 31 decodes to a mean of 63.50 and its picture's is 61.00/)
+    expect(levelProblems([{ flat: true, mean: 16, min: 16, max: 16 }], [{ index: 0, mean: 16, flat: true }])).toEqual([])
+  })
+
+  it('is found in an encoded file', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'flat-'))
+    const file = path.join(dir, 'flat.mp4')
+    const made = spawnSync('ffmpeg', ['-v', 'error', '-y', '-f', 'lavfi', '-i', 'testsrc2=size=64x36:rate=60:duration=0.05', '-f', 'lavfi', '-i', 'color=black:size=64x36:rate=60:duration=0.05', '-filter_complex', '[0:v][1:v]concat=n=2:v=1', '-pix_fmt', 'yuv420p', '-c:v', 'libx264', file])
+    if (made.error || made.status !== 0) return
+    const levels = frameLevels(file) as { flat: boolean }[]
+    expect(levels.map((f) => f.flat)).toEqual([false, false, false, true, true, true])
+    fs.rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('keeps a machine under 12 GB to one uhd render at a time', () => {
+    expect(procsProblem(2, 'uhd', 7.8 * 2 ** 30)).toMatch(/--procs 2 is refused: this machine has 7 GB/)
+    expect(procsProblem(1, 'uhd', 7.8 * 2 ** 30)).toBeNull()
+    expect(procsProblem(2, 'uhd', 15.6 * 2 ** 30)).toBeNull()
+    expect(procsProblem(2, 'preview', 7.8 * 2 ** 30)).toBeNull()
   })
 })

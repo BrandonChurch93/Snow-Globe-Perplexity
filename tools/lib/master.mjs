@@ -11,6 +11,44 @@ export const WHATS = [...RENDERED, 'opening']
 export const JOINS = { 'film-b': ['film-b'], 'film-a': ['opening', 'film-b'], loop: ['loop'] }
 export const SOUND = { 'film-b': 'film-b', 'film-a': 'film-a', loop: null }
 export const STILL_MAX_MB = 20
+export const MEAN_SLACK = 1
+export const UHD_RAM_GB = 12
+
+export function pictureLevels(rgb) {
+  let lo = [255, 255, 255]
+  let hi = [0, 0, 0]
+  let sum = 0
+  for (let i = 0; i < rgb.length; i += 3) {
+    const r = rgb[i]
+    const g = rgb[i + 1]
+    const b = rgb[i + 2]
+    if (r < lo[0]) lo[0] = r
+    if (g < lo[1]) lo[1] = g
+    if (b < lo[2]) lo[2] = b
+    if (r > hi[0]) hi[0] = r
+    if (g > hi[1]) hi[1] = g
+    if (b > hi[2]) hi[2] = b
+    sum += 0.2126 * r + 0.7152 * g + 0.0722 * b
+  }
+  const n = rgb.length / 3
+  return { flat: n > 0 && lo[0] === hi[0] && lo[1] === hi[1] && lo[2] === hi[2], mean: n ? 16 + (219 * sum) / n / 255 : 0 }
+}
+
+export function levelProblems(levels, sources) {
+  const problems = []
+  levels.forEach((f, k) => {
+    const src = sources?.[k]
+    if (f.flat && !src?.flat) problems.push(`frame ${src?.index ?? k} decodes to one flat value (${f.min})`)
+    else if (src && typeof src.mean === 'number' && Math.abs(f.mean - src.mean) > MEAN_SLACK) problems.push(`frame ${src.index ?? k} decodes to a mean of ${f.mean.toFixed(2)} and its picture's is ${src.mean.toFixed(2)}`)
+  })
+  return problems
+}
+
+export function procsProblem(procs, format, totalBytes) {
+  const gb = Math.floor(totalBytes / 2 ** 30)
+  if (procs > 1 && format === M.format && gb < UHD_RAM_GB) return `--procs ${procs} is refused: this machine has ${gb} GB (free -g) and one ${format} render holds about 3 GB, so two at once can run it out of memory, and a killed graphics process draws black frames. Under ${UHD_RAM_GB} GB it is one ${format} render at a time.`
+  return null
+}
 export const LOOK_WIDTH = 1200
 
 export const pad6 = (i) => String(i).padStart(6, '0')
