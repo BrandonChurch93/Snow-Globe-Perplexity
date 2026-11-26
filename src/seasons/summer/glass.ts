@@ -26,31 +26,31 @@ const PART = 'glass-dressing-summer'
 const RS = config.globe.sphereDiameterMm / 2
 const TAU = Math.PI * 2
 
-setGlass('summer', { windowTint: [0.9, 0.86, 0.78], windowGain: [0.14, 0.1, 0.14, 0.1], windowSoftDeg: 5, windowGrain: 0.5, rimTint: [0.8, 1, 1.25], wallTint: [0.9, 0.75, 0.45], ringCover: 0.35, strip: 0, bend: 0, ringThin: 1, rimClear: 0.3, topLine: 0, ringMottle: 0.3, ceiling: 0.35, roomHue: [0.85, 0.98, 1.15], roomHueOn: 1, windowShade: 0, rimGlow: 0, arcs: 0.4, arcTint: [1, 0.9, 0.74], arcCool: 1.6 })
+setGlass('summer', { windowTint: [0.9, 0.86, 0.78], windowGain: [0, 0, 0, 0], windowSoftDeg: 5, windowGrain: 0.5, rimTint: [0.8, 1, 1.25], wallTint: [0.9, 0.75, 0.45], ringCover: 0.35, strip: 0, bend: 0, ringThin: 1, rimClear: 0.3, topLine: 0, ringMottle: 0.3, ceiling: 0.35, roomHue: [0.85, 0.98, 1.15], roomHueOn: 1, windowShade: 0, rimGlow: 0, arcs: 0.4, arcTint: [1, 0.9, 0.74], arcCool: 1.6 })
 
 export const look = {
   // leaving: the light goes out between these two counts of beats before the swap window opens
   leaveBeats: [1.1, 0.2] as const,
   flare: {
     halfMm: 30,
-    core: 16,
-    coreAcross: 0.03,
-    coreAlong: 0.05,
+    core: 26,
+    coreAcross: 0.032,
+    coreAlong: 0.055,
     // the bloom of the lens round the core: a soft ball a few millimetres wide
-    bloom: 2.6,
-    bloomWide: 0.07,
+    bloom: 4.5,
+    bloomWide: 0.085,
     // the broad soft glow under the rays, a quarter of a globe radius wide
-    halo: 0.8,
-    haloWide: 0.17,
+    halo: 1.4,
+    haloWide: 0.21,
     veil: 0.03,
     // the star: a few short soft rays, each with its own length, widest at the core, fanning away from the globe
-    rays: 1.5,
-    spikes: 7,
-    reach: [0.14, 0.11] as const,
-    rayWide: [0.022, 0.04] as const,
+    rays: 2.4,
+    spikes: 9,
+    reach: [0.16, 0.3] as const,
+    rayWide: [0.008, 0.026] as const,
     arc: 1.6,
-    hot: [1, 0.86, 0.66] as const,
-    warm: [1, 0.66, 0.34] as const,
+    hot: [1, 0.92, 0.78] as const,
+    warm: [1, 0.72, 0.42] as const,
     amber: [1, 0.52, 0.2] as const,
     // the landing: the flare is out while the globe is in the hand after the change, catches on the landing frame, overshoots and settles
     kindleSeconds: 0.22,
@@ -111,45 +111,55 @@ export const look = {
     haze: 0.32,
     hazeColor: [1, 0.64, 0.35] as const,
     hazeRim: 0.07,
-    hazeAt: -0.08,
-    hazeWide: 0.5,
+    hazeAt: -0.12,
+    hazeWide: 0.45,
     hazeLow: -0.46,
-    hazeTall: 0.66,
+    hazeTall: 0.6,
     hazeSideTall: 0.55,
-    hazeSky: 0.045,
+    hazeSky: 0,
+    hazeHigh: 0.07,
+    hazeHighTall: 0.5,
+    hazeHighLeft: 0.45,
     hazeSkySun: 0.3,
     // and how much of it is gone at the far upper left, where the dark of the room shows through
     hazeSkyFalls: 0.9,
     hazeSkyColor: [1, 0.6, 0.33] as const,
     // the sun stands behind the glass at the flare: the liquid is a little brighter there, in a soft lobe that is down to a
     // third `sunLobeWide` globe radii from it and gone on the far side
-    sunLobe: 0.03,
+    sunLobe: 0,
     sunLobeWide: 0.55,
     sunLobeColor: [1, 0.74, 0.5] as const,
     // the light over the miniature has a slope, not a level. A soft body of it stands high in the dome, over the middle,
     // (`domeAt`, globe radii across and up; `domeSize`, how far it reaches to the left, to the right and up or down), and is
     // gone at the far upper left and at the right wall, where the dark of the room shows through. It lies in broad soft folds
     // that follow the glass, `folds` of them to a globe radius, and `foldDeep` of it is gone in the gaps between them
-    dome: 0.088,
-    domeAt: [0.05, 0.6] as const,
-    domeSize: [0.3, 0.4, 0.45] as const,
-    domeColor: [1, 0.72, 0.48] as const,
+    dome: 0.075,
+    domeAt: [-0.15, 0.12] as const,
+    domeSize: [0.45, 0.45, 0.4] as const,
+    domeColor: [1, 0.56, 0.28] as const,
     folds: 7,
     foldLong: 1.3,
-    foldDeep: 0.7,
+    foldDeep: 0.6,
     // behind the tree and the lanterns the liquid is brightest and warmest: a core between the trunk and the right wall
-    core: 0.17,
+    core: 0.11,
     coreAt: [0.4, -0.12] as const,
     coreSize: [0.38, 0.26] as const,
     coreColor: [1, 0.56, 0.26] as const,
     // thick glass: the wall mirrors the room's warm light in soft bands that run along the upper left arc just inside the
     // outline (each: where in the radius, how thick, how strong), and the sky's in layered pale streaks inside the right arc
     // beside the flare
-    rimBands: 0.16,
-    rimBand: [[0.958, 0.012, 0.8], [0.92, 0.018, 1], [0.888, 0.015, 0.6]] as const,
-    rimBandColor: [1, 0.8, 0.58] as const,
-    streaks: 0.14,
-    streak: [[0.8, 0.02, 0.5], [0.852, 0.012, 0.9], [0.895, 0.018, 0.8], [0.935, 0.01, 1], [0.962, 0.007, 0.8]] as const,
+    rimBands: 0.45,
+    rimBand: [[0.955, 0.012, 1], [0.895, 0.019, 0.9]] as const,
+    rimTop: [0.75, 0.065, 0.7] as const,
+    rimTopToward: [0.26, 0.966] as const,
+    rimBandColor: [1, 0.7, 0.44] as const,
+    rimBandIn: [1, 0.56, 0.3] as const,
+    rimSway: 0.02,
+    rimBroken: 0.65,
+    rimToward: [-0.38, 0.925] as const,
+    rimSpan: [0.09, 0.57] as const,
+    streaks: 0.42,
+    streak: [[0.838, 0.03, 0.6], [0.905, 0.016, 1], [0.947, 0.008, 1.1]] as const,
     streakColor: [0.78, 0.88, 1] as const,
     hazeBanks: 0.35,
     hazeBankSize: 0.42,
@@ -183,11 +193,11 @@ export const look = {
     // reaches on the left, where the sun throws it, and `rightReach` of that on the right, where only a star of it shows
     trunks: 15,
     forkMm: [5, 26] as const,
-    fork: [0.12, 0.3] as const,
-    kinkMm: 1.5,
-    kinkEveryMm: [24, 46] as const,
-    thinMm: 0.12,
-    lines: 1.75,
+    fork: [0.16, 0.42] as const,
+    kinkMm: 1.9,
+    kinkEveryMm: [18, 38] as const,
+    thinMm: 0.17,
+    lines: 1.9,
     // the soft light each line lies in, as a share of the line
     lineGlow: 0.004,
     // how far the lines' bearings are drawn together toward the side the sun throws them to (0 even, 1 all of them)
@@ -200,21 +210,21 @@ export const look = {
     stoutMm: 26,
     hair: 0.6,
     knots: 1.8,
-    swell: 0.8,
+    swell: 0.35,
     knotPerMm: 0.42,
     breaks: [0.26, 0.36] as const,
     // a vein, not a thread: along its length a line is between the two of `girth` times its width, over `girthMm` at a
     // time, and at each knot it carries a bead of light `beadMm` in radius
-    girth: [0.55, 1.9] as const,
+    girth: [0.6, 1.6] as const,
     girthMm: 8,
     // how much brighter the lines are where they leave the knot
-    nearKnot: 1,
-    beads: 2.2,
-    beadMm: 0.42,
-    bead: [1, 0.88, 0.68] as const,
+    nearKnot: 0.7,
+    beads: 0,
+    beadMm: 0.3,
+    bead: [1, 0.78, 0.46] as const,
     // grains of sand on the table take the light where a line passes within `grainsNearMm`: one to a cell `grainCellMm`
     // wide, `grainMm` in radius, one in seven of them lit
-    grains: 12,
+    grains: 7,
     grainMm: 0.07,
     grainCellMm: 1.3,
     grainsNearMm: 1.2,
@@ -239,13 +249,13 @@ export const look = {
     settleSeconds: 1.1,
     early: 0.75,
     kindleSeconds: 0.18,
-    gold: [1, 0.62, 0.24] as const,
-    amber: [1, 0.42, 0.1] as const,
+    gold: [1, 0.56, 0.17] as const,
+    amber: [1, 0.4, 0.09] as const,
     pale: [1, 0.8, 0.5] as const,
     // the low sun on the table itself: a strip of dusty warm light past the far side of the globe's long shadow, which lies
     // down the light's way (the pool lies inside that shadow); its strength, how far it reaches along and across, the shadow's
     // half width and softness
-    sun: 0.18,
+    sun: 0,
     sunMm: 130,
     stripMm: 45,
     shadeMm: 52,
@@ -303,10 +313,10 @@ void main() {
     float along = dot(p, d);
     float across = p.x * d.y - p.y * d.x;
     float side = along > 0.0 ? flRnd(fi, 2.0) : flRnd(fi, 3.0);
-    float reach = (${n(F.reach[0])} + ${n(F.reach[1])} * side * side) * (0.7 + 0.6 * max(dot(d * sign(along), vFlOut), 0.0)) * (1.0 + ${n(F.breath)} * sin(uSummer.x * (0.9 + 1.3 * flRnd(fi, 4.0)) + 6.28 * flRnd(fi, 5.0)));
+    float reach = (${n(F.reach[0])} + ${n(F.reach[1])} * side) * (0.75 + 0.5 * max(dot(d * sign(along), vFlOut), 0.0)) * (1.0 + ${n(F.breath)} * sin(uSummer.x * (0.9 + 1.3 * flRnd(fi, 4.0)) + 6.28 * flRnd(fi, 5.0)));
     float t = abs(along) / reach;
     float wide = ${n(F.rayWide[0])} + ${n(F.rayWide[1])} * (1.0 - min(t, 1.0)) * (1.0 - min(t, 1.0));
-    star += exp(-across * across / (wide * wide)) * exp(-2.6 * t) * (1.0 - smoothstep(0.6, 1.2, t)) * (0.4 + 0.6 * side) * (0.3 + 0.7 * max(dot(d * sign(along), vFlOut), 0.0));
+    star += exp(-across * across / (wide * wide)) * exp(-2.6 * t) * (1.0 - smoothstep(0.6, 1.2, t)) * (0.4 + 0.6 * side) * (0.5 + 0.5 * max(dot(d * sign(along), vFlOut), 0.0));
   }
   vec3 col = ${vec(F.hot)} * (${n(F.core)} * core + ${n(F.bloom)} * bloom) + ${vec(F.warm)} * (${n(F.rays)} * star + ${n(F.arc)} * arc) + ${vec(F.amber)} * (${n(F.halo)} * halo);
   gl_FragColor = vec4(col * (lit * edge), 0.0);
@@ -318,6 +328,9 @@ uniform vec4 uFlareSun;
 uniform vec4 uSummer;
 varying vec2 vWl;
 varying vec2 vWlDir;
+float wlBand(float off, float wide) {
+  return exp(-off * off / (wide * wide));
+}
 void main() {
   float c = stageChange();
   if (stageGone(c)) discard;
@@ -362,6 +375,7 @@ void main() {
   float rise = max(vWl.y - ${n(W.hazeLow)}, 0.0) / (${n(W.hazeTall * W.hazeSideTall)} + ${n(W.hazeTall * (1 - W.hazeSideTall))} * plume);
   float bank = 1.0 - ${n(W.hazeBanks)} + ${n(2 * W.hazeBanks)} * stageNoise(vec3(vWl / ${n(W.hazeBankSize)}, 3.7));
   air += ${vec(W.hazeColor)} * (${n(W.haze)} * still * body * bank * (${n(W.hazeRim)} + ${n(1 - W.hazeRim)} * plume) * exp(-rise * rise * rise));
+  air += ${vec(W.hazeColor)} * (${n(W.hazeHigh)} * bank * exp(-max(vWl.y - ${n(W.hazeLow)}, 0.0) / ${n(W.hazeHighTall)}) * mix(${n(W.hazeHighLeft)}, 1.0, smoothstep(-0.8, 0.5, vWl.x)) * still * body);
   air += ${vec(W.hazeSkyColor)} * (${n(W.hazeSky)} * (1.0 + ${n(W.hazeSkySun)} * (1.0 - 2.0 * toward)) * (1.0 - ${n(W.hazeSkyFalls)} * smoothstep(0.2, 1.0, dot(vWl, vec2(-0.8, 0.6)))) * still * body);
   vec2 fromDome = vWl - vec2(${n(W.domeAt[0])}, ${n(W.domeAt[1])});
   fromDome.x /= fromDome.x < 0.0 ? ${n(W.domeSize[0])} : ${n(W.domeSize[1])};
@@ -371,13 +385,15 @@ void main() {
   air += ${vec(W.domeColor)} * (${n(W.dome)} * exp(-dot(fromDome, fromDome)) * folds * still * body);
   vec2 fromCore = (vWl - vec2(${n(W.coreAt[0])}, ${n(W.coreAt[1])})) / vec2(${n(W.coreSize[0])}, ${n(W.coreSize[1])});
   air += ${vec(W.coreColor)} * (${n(W.core)} * exp(-dot(fromCore, fromCore)) * still * body);
-  float sway = 0.008 * (stageNoise(vec3(ring * 3.1, 2.9)) - 0.5);
-  float rimBands = 0.0;
-${W.rimBand.map((b, i) => `  rimBands += ${n(b[2])} * exp(-(r - ${n(b[0])} - ${n(1 + 0.6 * i)} * sway) * (r - ${n(b[0])} - ${n(1 + 0.6 * i)} * sway) / ${(b[1] * b[1]).toFixed(7)}) * smoothstep(0.2, 0.6, stageNoise(vec3(ring * 2.3, ${n(11 + 2 * i)})));`).join('\n')}
-  air += ${vec(W.rimBandColor)} * (${n(W.rimBands)} * rimBands * smoothstep(0.35, 0.85, dot(e, vec2(-0.5, 0.866))) * inside * still);
+  float sway = ${n(W.rimSway)} * (stageNoise(vec3(ring * 3.1, 2.9)) - 0.5);
+  float grain = 0.7 + 0.6 * stageNoise(vec3(r * 90.0, ring * 2.0));
+  vec3 rimBands = vec3(0.0);
+${W.rimBand.map((b, i) => `  rimBands += ${vec(W.rimBandColor.map((v, k) => v + ((W.rimBandIn[k] - v) * i) / (W.rimBand.length - 1)))} * (${n(b[2])} * wlBand(r - ${n(b[0])} - ${n(1 + 0.6 * i)} * sway, ${n(b[1])}) * mix(${n(1 - W.rimBroken)}, 1.0, smoothstep(0.25, 0.6, stageNoise(vec3(ring * 2.3, ${n(11 + 2 * i)})))));`).join('\n')}
+  air += rimBands * (${n(W.rimBands)} * grain * smoothstep(${n(W.rimSpan[0])}, ${n(W.rimSpan[1])}, dot(e, vec2(${n(W.rimToward[0])}, ${n(W.rimToward[1])}))) * inside * still);
+  air += ${vec(W.rimBandIn)} * (${n(W.rimBands * W.rimTop[2])} * wlBand(r - ${n(W.rimTop[0])} - 2.0 * sway, ${n(W.rimTop[1])}) * mix(${n(1 - W.rimBroken)}, 1.0, smoothstep(0.25, 0.6, stageNoise(vec3(ring * 2.3, 17.0)))) * grain * smoothstep(0.5, 0.9, dot(e, vec2(${n(W.rimTopToward[0])}, ${n(W.rimTopToward[1])}))) * still);
   float streaks = 0.0;
-${W.streak.map((b, i) => `  streaks += ${n(b[2])} * exp(-(r - ${n(b[0])} + ${n(1 + 0.5 * i)} * sway) * (r - ${n(b[0])} + ${n(1 + 0.5 * i)} * sway) / ${(b[1] * b[1]).toFixed(7)}) * smoothstep(0.3, 0.6, stageNoise(vec3(ring * 2.9, ${n(21 + 2 * i)})));`).join('\n')}
-  air += ${vec(W.streakColor)} * (${n(W.streaks)} * streaks * smoothstep(0.5, 0.9, dot(e, vec2(0.985, 0.174))) * inside * still);
+${W.streak.map((b, i) => `  streaks += ${n(b[2])} * wlBand(r - ${n(b[0])} + ${n(0.5 + 0.3 * i)} * sway, ${n(b[1])}) * mix(0.3, 1.0, smoothstep(0.3, 0.6, stageNoise(vec3(ring * 2.9, ${n(21 + 2 * i)}))));`).join('\n')}
+  air += ${vec(W.streakColor)} * (${n(W.streaks)} * streaks * grain * smoothstep(0.5, 0.9, dot(e, vec2(0.985, 0.174))) * inside * still);
   air += ${vec(W.sunLobeColor)} * (${n(W.sunLobe)} * exp(-dot(vWl + 0.93 * vWlDir, vWl + 0.93 * vWlDir) / ${n(W.sunLobeWide * W.sunLobeWide)}) * smoothstep(0.15, 0.6, 1.0 - toward) * still * body);
   // the storm's light: slow broad arms about the middle, turning with the time
   float turn = atan(vWl.y, vWl.x);
