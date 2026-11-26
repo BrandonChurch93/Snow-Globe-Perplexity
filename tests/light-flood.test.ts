@@ -141,7 +141,7 @@ describe('the flood of a change', () => {
     expect(top.flood).toBeGreaterThan(0)
   })
 
-  it('lays nothing on the base and the table between two seasons: they keep what the lights at rest lay on them', () => {
+  it('lays nothing of the swell on the base and the table between two seasons: away from the cover they keep what the lights at rest lay on them', () => {
     const other = kitOf('spring')
     const ga = glowOf(winter.innerLights)
     const gb = glowOf(other.innerLights)

@@ -28,8 +28,9 @@ export const DRESSING_FRONT = { gain: 2, fromMm: 58, toMm: 230 } as const
 /**
  * How the parts outside the glass give way, all of them inside the one span of change.ts and under its cover.
  * The base is never morphed: every pixel of a sample holds one base or the other, and the share that holds the new one grows
- * over `BASE_PASS`, longer than the span. Both are black under the cover, so no mix of two bases is in sight; what is in sight
- * is their line against the lit glass, which passes from one shape to the other and never steps.
+ * over `BASE_PASS`, longer than the span. Both are near black under the cover and under the halo of its flash (lighting.ts,
+ * `CHANGE_BLOOM`), so no mix of two bases is in sight; what is in sight is their line against the lit glass, which passes
+ * from one shape to the other and never steps.
  * Which base a pixel holds is a hash against that share. Drawn afresh at each sample of a frame, the hash left the strip between
  * the two lines as grain a critic reads at native pixels: a pixel held the new base in a number of samples that fell by chance.
  * So a frame has one hash to a pixel and one share (`uPass`, set in stage.ts): of N samples the hash is set at the middle of one
@@ -42,7 +43,8 @@ export const DRESSING_FRONT = { gain: 2, fromMm: 58, toMm: 230 } as const
  * comes in the second (`DRESSING_CHANGE`). Each goes and comes from the foot outward; the edge of that front is broken into
  * patches (`cellMm`, `fineMm`) drawn out along the way a gust runs (`streak` times as long as wide, `rayMm` to a radian across)
  * and feathered across the samples of a frame (`feather`), so a field of frost or of sand thins in fingers and never along a line.
- * Nothing here lays light on a part: the cover is the fall of the exposure, which leaves the glass alone in sight (lighting.ts, `CHANGE_BLOOM`).
+ * Nothing here lays light on a part: the cover is the fall of the exposure with the light of the glass poured over it and
+ * drawn in under the flash, and all of that is set in lighting.ts (`CHANGE_BLOOM`).
  * The code of a part's kind rides in `uState.z`: 0 and above is the lag of a part inside the glass, under 0 the table's gain,
  * under `-BASE_CODE` the base's.
  */
