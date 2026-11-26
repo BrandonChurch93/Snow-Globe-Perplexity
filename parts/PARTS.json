@@ -645,12 +645,13 @@
     {
       "name": "opening",
       "unit": "film",
-      "state": "stand-in",
+      "state": "built",
       "files": [
         "src/film"
       ],
       "standInHash": "6978dfc4962cbaf4",
-      "commit": "2530677"
+      "commit": "4f8b7c9e",
+      "note": "the real opening, drawn by the team's skill and shown from the pack in public/opening/"
     },
     {
       "name": "loop",

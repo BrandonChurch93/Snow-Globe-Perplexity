@@ -1,44 +1,44 @@
 {
-  "number": 141,
-  "time": "2026-11-26 06:55 UTC",
+  "number": 144,
+  "time": "2026-11-26 07:34 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 141 · 2026-11-26 06:55 UTC · Phase 6",
-    "Merged into main since 06:30, each as its builder pushed it and none judged by a critic yet: the first frame (the page paints a still of the opening season where the globe will stand), the Shake control that went missing and the reduced motion change, summer's seeds, fireflies and pool of light, the change of season, the phone framing in a shake. Checks on main: types pass, 585 tests passed before these merges and run again now.",
-    "Every film frame from here is drawn by the faster renderer on sandbox machines (decision 139), and a study of three 4K frames set the masters at 24 samples a frame (decision 140).",
-    "Found in the speed study and not yet mended: that renderer cuts any particle wider than 256 px to its square, which no 1920 x 1080 picture shows and a 4K frame of the macro camera may. It is being measured and mended before a master frame is drawn.",
-    "Sound: the typing of film A was tried as a set of soft presses in three settings and failed its listening each time. 7,200 of the 10,000 credits are spent, 2,800 are left, nothing more is bought.",
-    "Next: the opening and the master tool land, the first frame's stills are drawn again on the final build, the app is published again, then critic rounds on summer, the change and the globe.",
-    "phase 6: 4.10 h used of its 12.00 h box",
-    "allowance (after the review): 4.10 h used of 12.00 h allowed",
+    "Status 144 · 2026-11-26 07:34 UTC · Phase 6",
+    "The real opening is in. Film A now begins with the prompt screen drawn by the team's skill: 867 frames, 14.45 s, merged, built and pushed as 9691393f.",
+    "Rough draft 1 of the film (960 x 540, 30 frames a second) is being drawn on eight machines, and the opening's part is already drawn here. It is due in the thread at about 08:30 UTC and will carry the faults of this hour: the soft disc of light at each change of season, summer's cream whirl, and a typing sound that may not be laid yet.",
+    "Summer under the new renderer, looked at for the first time. At rest it holds: fireflies, lanterns, the pool. Just after a landing the whirl of seeds and dust is pale cream and lacks the glow of the approved picture (open item 224). It goes to the critics as it is.",
+    "Sixteen agents are at work, which is the limit: the first picture, the cover of the change, the phone's framing, the visitor walk, the point mend at 4K, the master tool, the strict run, the sound, and eight renderers.",
+    "Tests on 9691393f: types clean, 599 tests pass and 2 fail, both in the sound mix's own test file, which is being changed right now.",
+    "phase 6: 4.75 h used of its 12.00 h box",
+    "allowance (after the review): 4.75 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-141-1.jpg",
-      "caption": "The live app on a phone through one press of Shake, on main: the camera stands back and the whole globe stays on the screen (drawn by its builder at low quality).",
-      "w": 1200,
-      "h": 444
+      "file": "out/stills/status/status-144-1.jpg",
+      "caption": "A frame of rough draft 1: the opening at 6 s, at draft size",
+      "w": 960,
+      "h": 540
     },
     {
-      "file": "out/stills/status/status-141-2.jpg",
-      "caption": "Summer at rest at feed size: the approved image, before the mend, after it. The white stars are gone and the fireflies lead.",
+      "file": "out/stills/status/status-144-2.jpg",
+      "caption": "Summer at rest, drawn by the new renderer",
       "w": 1200,
-      "h": 225
+      "h": 676
     },
     {
-      "file": "out/stills/status/status-141-3.jpg",
-      "caption": "Still: winter rest hero, hd, review",
+      "file": "out/stills/status/status-144-3.jpg",
+      "caption": "Summer just after a landing: the cream whirl of open item 224",
       "w": 1200,
-      "h": 675
+      "h": 676
     },
     {
-      "file": "out/stills/status/status-141-4.jpg",
-      "caption": "Still: summer rest hero, hd, review",
-      "w": 1200,
-      "h": 675
+      "file": "out/stills/status/status-144-4.jpg",
+      "caption": "Film frames 1400 to 1620: the cover of the change, the landing and the settling of summer",
+      "w": 1149,
+      "h": 986
     }
   ]
 }
