@@ -321,12 +321,18 @@ export const SAND = { tileMm: 6.6, cover: 0.62, glint: 5.0, slope: 0.6, wrap: 40
 const SHADE = { r: 56, soft: 3.5, top: 40, globeH: 79, globeR: 60, globe: 0.5, front: 0.1, frontMm: [-6, 44], frontX: [58, 98] }
 export const sandUniforms = {
   uSandSpill: { value: 1 },
+  uSandRoom: { value: 1 },
 }
+// The crest of a heap is lit some forty times over the key (`SAND.wrap`), so at the two hundredth the cover of a change leaves
+// of the room it still stood out of the dark, a streak that came or went on one frame. Under the cover its light falls this
+// much further. With one season on the stage it is 1.
+const SAND_DARK = 0.03
 
 const SAND_PARS = `
 uniform sampler2D uSandTile;
 uniform mat4 modelMatrix;
 uniform float uSandSpill;
+uniform float uSandRoom;
 float sandShadow(vec3 p, vec3 L) {
   float lit = 1.0;
   float a = dot(L.xz, L.xz);
@@ -412,6 +418,10 @@ const SAND_AFTER = `
   float sandShine = step(0.72, fract(sandGrain * 17.9)) * step(0.02, sandGrain) * (0.25 + 0.75 * sandDeep);
   reflectedLight.directSpecular += baseKeyC * (pow(max(dot(sandFacet, normalize(baseKey + geometryViewDir)), 0.0), 90.0) * sandShine * ${SAND.glint.toFixed(1)} * sandDim * sandDim * smoothstep(0.0, 0.2, dot(nonPerturbedNormal, baseKey))) * sandLit;
   reflectedLight.directSpecular += uRigCardCol * (pow(max(dot(sandFacet, normalize(baseCard + geometryViewDir)), 0.0), 70.0) * sandShine * sandDim * sandDim * ${(SAND.glint * 0.5).toFixed(1)});
+  reflectedLight.directDiffuse *= uSandRoom;
+  reflectedLight.indirectDiffuse *= uSandRoom;
+  reflectedLight.directSpecular *= uSandRoom;
+  reflectedLight.indirectSpecular *= uSandRoom;
 }
 `
 
@@ -422,7 +432,7 @@ export function sandMaterial(part: string, change: string, key: string): THREE.M
     change,
     key,
     side: THREE.DoubleSide,
-    hook: hookOf({ uSandTile: { value: map('sand.lin.tile.w512') }, uSandSpill: sandUniforms.uSandSpill }, { pars: SAND_PARS, paint: SAND_PAINT, rough: SAND_ROUGH, tilt: SAND_TILT, after: SAND_AFTER }),
+    hook: hookOf({ uSandTile: { value: map('sand.lin.tile.w512') }, uSandSpill: sandUniforms.uSandSpill, uSandRoom: sandUniforms.uSandRoom }, { pars: SAND_PARS, paint: SAND_PAINT, rough: SAND_ROUGH, tilt: SAND_TILT, after: SAND_AFTER }),
   })
 }
 
@@ -476,5 +486,7 @@ export function spillAt(moment: KitMoment): number {
 }
 
 export function update(moment: KitMoment): void {
+  const f = moment.frame
   sandUniforms.uSandSpill.value = spillAt(moment)
+  sandUniforms.uSandRoom.value = f.from === f.to ? 1 : Math.pow(SAND_DARK, f.mix.bloom)
 }
