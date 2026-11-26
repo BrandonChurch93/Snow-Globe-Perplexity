@@ -1,5 +1,122 @@
 # Handover: `change_finisher`, unit `change`, branch `agent/p6-change`
 
+## Read this first: the state after the fourth job
+
+Written 2026-11-26 about 10:03 UTC. Four jobs were done on this branch. The newest state is here; the third job's state follows, then the first job's text as it was written.
+
+Head of the branch: 632d9514. `main` holds the first three jobs (the third as 561cc4d6).
+
+### The fourth job: the base passes in an even share of a frame's samples
+
+Commit 2e19534b, "The base passes in an even share of a frame's samples at every pixel, in place of grain".
+
+What was wrong: which base a pixel holds under the cover was a hash drawn afresh at each sample of a frame. Of N samples a pixel held the new base in a number that fell by chance, so the strip between the two bases' lines stood as grain at native pixels.
+
+What it is now, and the means:
+
+- One hash to a pixel for the whole frame (`uPass.x`, the frame's seed) and one share for the whole frame (`uPass.z`, the change number at the frame's first sample, carried on `Sample.hold` from the capture's `picture` loop in `src/capture/showcase.ts`).
+- Of N samples the hash is set at the middle of one of N even levels (`uPass.w` is N), and each sample steps it on by whole levels and round again (`uPass.y`). So every pixel holds the new base in the same number of the frame's samples: the share to the nearest of N.
+- The step goes by the sample's place in the shutter, not by its index: `passStride` levels a place (1 of 2, 3 of 8, 7 of 24), a rank 1 lattice. The globe travels while the shutter is open (about 50 px a frame at `hd` at the first change), so a base's line that stands across the travel is drawn out and a pixel there is under that base for a part of the shutter only. With this stride the samples that hold the new base fall evenly over any part of the shutter. The first try stepped one level an index: the flat middle of the strip was even but both sloped ends kept their grain.
+- Every sample of every pixel still holds one base or the other: the line `if (uState.w > 1.5 ? h < c : h >= c) return true;` is as it was.
+- One sample (the app's own path, `sample` null) keeps the plain hash, no step and the sample's own share: the same picture as before by the code.
+- Code: `stageUniforms.uPass`, the base's branches of `stageChange()` and `stageGone()`, `passSpread`, `passStride`, `passStep`, `passLevel` in `src/core/materials.ts`; one line in `src/scene/stage.ts`; `Sample.hold` in `src/core/sampler.ts`; three lines in `src/capture/showcase.ts`. Test: "holds the new base at every pixel in the same number of a frame's samples..." in `tests/shake-change.test.ts`.
+
+### What was seen in the fourth job, and at which tier
+
+All drawn with lavapipe, on 632d9514 unless said.
+
+The head 632d9514 is 2e19534b with `main` merged in three times (82d5c566, 65d17346, 632d9514). The merges brought no file under `src/` or `config/`, so the engine is one and the same from 2e19534b on: b2552a068a75a0bc. Every picture of this job was drawn from that engine.
+
+- `hd`, `review` (8 samples), film frames 673 to 678, bbe4db9b beside 82d5c566: picture 26. Before: the strip between the two bases' lines is grain in 674 to 678. After: the strip is one even tone that darkens frame by frame; 673 holds the old base alone. Left over: a rim of fine dots a few px deep on the strip's two lines, plainest at the two sloped ends in 676 to 678.
+- `hd`, `final` (24 samples), the middle frame of each change (675, 1395, 2115, 2835): picture 27 (the foot at its own pixels) and picture 28 (whole frames). In all four the strip is a smooth band and no grain is seen in it at its own pixels. Enlarged six times, 675 shows a trace of fine texture in the drawn out ends. In all four the glass is a lit globe with its halo.
+- `hd`, `final`, 2115 once more, drawn from the head's source with the fourth job's five files set back to bbe4db9b (engine 4708b960e00eb5d2), the same seeds: picture 31, before over after. Before: the strip is a fine grain at its own pixels. After: smooth bands. The two pictures differ by more than 2 levels in 14,995 pixels, all inside x 642 to 1269, y 601 to 689: the strip and nothing else.
+- One speck in 2115 at `final`: about 3 by 3 px at x 625, y 600, on the left rim of the lit glass about 140 rows above the base's line, one dark pixel with its colours parted by the lens. It is in the before picture too, pixel for pixel the same, so it is older than this job. Its cause is not found. See "What still shows".
+- The app's own path (the shake from winter to spring, 60 frames a second, one sample a frame, `preview`), app frames 124 to 136 at level high and at level low: pictures 29 and 30. The glass is a lit globe in all of them. The base's pass is a fringe of dots a few px deep along the foot's lower line in 126 to 131, the line is clean from 132, and spring's base is in sight from 134. High and low read alike.
+
+### The number
+
+The measure, said plainly. Before and after are drawn from the same seeds and differ only where the base's pass differs, so the strip is found without looking at grain: it is the pixels of the lower half of the frame where the two pictures differ by more than half a level of luma, closed over 5 by 5 px. The inner strip leaves out all that lies within 3 px of the strip's rim. The number is the spread (standard deviation, in 8 bit levels of luma) of each pixel of the inner strip about the mean of its own 3 by 3. The floor is the same number on plain lit glass 40 rows above the strip: what the picture's own texture gives where no base passes. The script is `/tmp/looks4/grain3.py` in the builder's VM (not in the repo); its text is short and is set out in this paragraph.
+
+`hd`, `review` (8 samples), bbe4db9b against 82d5c566, inner strip:
+
+| frame | before | after | floor |
+| --- | --- | --- | --- |
+| 673 | 3.51 | 1.47 | 1.33 |
+| 674 | 5.86 | 2.05 | 1.11 |
+| 675 | 7.60 | 2.51 | 1.15 |
+| 676 | 9.16 | 3.13 | 1.19 |
+| 677 | 10.21 | 3.18 | 1.18 |
+| 678 | 9.66 | 4.37 | 0.99 |
+
+Mean of 674 to 678: 8.50 before, 3.05 after, floor 1.12. Over the middle 300 columns of the strip (the lines lie along the globe's travel there): 7.33 before, 2.07 after. Over what lies more than 200 columns from the middle (the sloped ends, drawn out by the travel): 10.28 before, 4.49 after. On the 3 px of rim that the inner strip leaves out (it holds the two lines themselves, so an edge is in the number both times): 4.04 to 5.44 before, 2.88 to 4.60 after.
+
+`hd`, `final` (24 samples), 675, after only, on the same strip: 1.48, against a floor of 0.76 (middle 300 columns 1.09, sloped ends 1.76, the 3 px of rim 2.12). No before was drawn of 675 at `hd` `final`.
+
+`hd`, `final`, 2115, before against after, the one pair drawn at that tier (the strip found from the pair itself): 4.59 before, 1.59 after, floor 0.56 (middle 300 columns 4.58 to 1.58, sloped ends 4.63 to 1.66, the 3 px of rim 2.50 to 1.93). So at 24 samples the strip still stands about 1 level over the floor. I could not see that at the frame's own pixels; enlarged three times it is a faint fine texture. Its likely cause, not proven: each pixel takes its share from its own set of samples, and the lit glass behind the strip is not the same picture in every sample.
+
+### What still shows, worst first
+
+1. One speck in film frame 2115 at `hd` `final` (x 625, y 600), found by eye and then by a search for lone dark pixels: it is the only one in the four `final` frames. It is not on the base, and it is not of this job: the same frame drawn without the fourth job's change holds it, pixel for pixel. The six `review` frames of that change hold nothing at that place, so it belongs to the 24 samples of `final`. Its cause is not found and nobody has been told of it but `/root`. It should be looked into before the masters.
+2. At `review` (8 samples) the rim of dots on the strip's lines, as in picture 26. The cause: the globe travels while the shutter is open, so near a line a pixel is under one base for a part of the shutter only, and the count of samples there is off by about half a sample from pixel to pixel. At 24 samples half a sample is a third as much light, and I did not see the rim at the frame's own pixels.
+3. The app's own path keeps its dots (pictures 29 and 30). One sample holds one base or the other at every pixel, so there is nothing to spread. The brief allowed it to stay.
+4. From the third job, unchanged: fall's lantern faces go out under the cover, and summer's collar shows as a thin arc under the glass (clean in picture 27).
+
+An option that was weighed and not taken: drop the pixel's own hash where a frame has more than one sample, so that each sample holds one base whole. No dots would be left anywhere, the rim included. The price: where the globe's travel draws a line out, the base that holds the fewer samples would be drawn by as few as 1 of 24 copies of its line. It also departs from the brief's letter (a pixel's own hash stays fixed within the frame).
+
+### Not seen
+
+- No frame at 4K, the masters' format. Nothing here was drawn above `hd` (1920 by 1080).
+- The film in motion. No clip was made or watched in this job; all of the above is from stills.
+- A before at `hd` `final` for 675, 1395 and 2835: the job's brief said to draw those frames once, on the new head. One before was drawn at that tier after all, of 2115, to find out whether the speck was new.
+- The three later changes (1393 to 1398, 2113 to 2118, 2833 to 2838) at `review` on the new head. Of each only the middle frame was drawn, at `final`.
+- The app's path on bbe4db9b was not drawn, so no app frame of before was laid beside one of after. That one sample holds the same picture as before stands on the code: the hash, the seed and the share are the ones the old line read.
+- Other formats (vertical, square) and the `draft` tier (2 samples) on the new head.
+
+### Checks on 632d9514
+
+- `npx tsc --noEmit` on 632d9514: exit 0. It prints nothing.
+- `npx vitest run` on 632d9514. Its last line: `Duration  157.86s (transform 5.20s, setup 0ms, import 47.37s, tests 399.87s, environment 5ms)`. Above it: `Test Files  53 passed | 1 skipped (54)` and `Tests  676 passed | 7 skipped (683)`.
+- `npm run strict` with no arguments, run on 82d5c566, whose engine is the head's (b2552a068a75a0bc). Its last line, word for word: `strict: pass, 8 keys under pow, all+smooth, all+smooth+noguard, each row read against the plain picture, and against its own --same picture where that one differs (engine b2552a068a75a0bc, drawn by lavapipe): no pixel moves by more than 1 level, at most 0.01% of pixels move`. Of the 32 rows, 30 hold 0 pixels that differ and the two smooth rows of `winter-shake` hold 2 pixels that differ by 1 level, as in the third job.
+- `npm run determinism` on 632d9514. Its last line: `determinism: pass · 3 pictures, 4 page loads, preview, draft, 191 s`.
+- `npm run gate -- --phase 4 --only G11,G12` on 632d9514. Its last line: `gate, phase 4: all 2 green`. G11 and G12 both read `pass`.
+
+## The state after the second and third jobs
+
+Written about 09:10 UTC. Head then: bbe4db9b, the merge of `origin/main` at 9eeacff5 over f3e3a0dd.
+
+- Second job, commit 6f0266bd, "The cover of a change: the glass stays a globe that burns from inside". Under the cover the light inside the glass is held up (`uLightBurn` in `src/core/chunks/light.ts` and the particle shaders), so the glass keeps its line, the storm inside is lit and the halo lies round it. `CHANGE_BLOOM` now has `glare` 0.5 and `glareReach` 0.8. Pictures 5 to 14.
+- Third job, commit f3e3a0dd, "The base passes from the old shape to the new over six frames, so its line against the lit glass never steps". `BASE_PASS` in `src/shake/change.ts` is the middle of the outside span, three frames either side. In `stageChange()` (`src/core/materials.ts`) each pixel of each sample holds one base or the other, and the share that holds the new one grows straight over the pass. Under the cover what is in sight of the bases is their line against the lit foot of the glass. Room, table and backdrop keep the three frame span. Pictures 15 to 25.
+
+### What was seen in the third job, and at which tier
+
+All drawn with lavapipe.
+
+- `hd`, `draft` (2 samples a frame), film frames 672 to 679, on f3e3a0dd: picture 15.
+- `hd`, `review` (8 samples), the six frames round each of the four changes (673 to 678, 1393 to 1398, 2113 to 2118, 2833 to 2838), on bbe4db9b: pictures 17 to 24. In all 24 the glass is a lit globe with its halo. In each change the two frames either side of the middle hold the same outline at the foot.
+- `preview`, `final` (24 samples), film frame 675 alone, on bbe4db9b: picture 25.
+
+### What showed then, worst first
+
+1. The base's pass was grain (mended in the fourth job, see above). The strip is about 20 to 30 px high at `hd` in the first change, 10 to 15 in the second, 30 to 40 in the third and a few px in the fourth. It lasts six frames.
+2. Fall's lantern faces go out under the cover (plain in 2831, faint in 2832, nearly gone from 2833). They did so before the first job too (picture 16), so they were left.
+3. Summer's collar catches the light from inside as a thin arc under the glass. It was left on purpose. It comes in and goes out over the pass and not in one frame (pictures 20 and 22).
+
+### Checks on bbe4db9b
+
+- `npx tsc --noEmit`: exit 0.
+- `npx vitest run`: 53 files passed, 1 skipped; 654 tests passed, 7 skipped.
+- `npm run strict` with no arguments. Its last line, word for word: `strict: pass, 8 keys under pow, all+smooth, all+smooth+noguard, each row read against the plain picture, and against its own --same picture where that one differs (engine 61469070ca770782, drawn by lavapipe): no pixel moves by more than 1 level, at most 0.01% of pixels move`. Of the 32 rows, 30 hold 0 pixels that differ and the two smooth rows of `winter-shake` hold 2 pixels that differ by 1 level.
+- `npm run determinism`. Its last line, word for word: `determinism: pass · 3 pictures, 4 page loads, preview, draft, 190 s`.
+- `npm run measure -- --unit change --only M4,M5` on 03cefa58 (tier final): 8 lines, 0 red. M4 0.9874, 0.8894, 0.9635, 0.9625. M5 0.9804, 1, 0.9739, 0.9998. `main` at 12465d0e reads the same values. Not run again on bbe4db9b or after.
+
+### A change of design in the third job
+
+The test of the second job that asked for the base to swap whole now asks for the pass: six frames or more centred on the span's middle, the shader's line, the room under 2 percent of its light through the whole pass, and no more than an eighth of the base being the other season's wherever the cover is not whole.
+
+## As of the first job (06:45 UTC)
+
+The text below was written at 06:45 UTC and is kept as it was. Three things in it are no longer so: the cover is no longer a ball of light on black, the base no longer dissolves over three frames, and frames have now been seen at `hd`, at `review` and at `final`.
+
 Start 2026-11-26T04:04:50Z. Last commit on the branch: 6f502ae1, the merge of `origin/main` at f00a7aab. Under it 2961ed31, the merge of `origin/main` at ce9548e2 over the sand commit b26df9a2.
 
 ## What the change is now
