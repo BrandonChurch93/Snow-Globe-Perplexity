@@ -4,7 +4,8 @@ import { describe, expect, it } from 'vitest'
 import { config } from '../src/config'
 import { openingPlan, PAUSES } from '../src/film/opening'
 import { chainTo, fitBox, imagePixels, imagesOf, PACK_VERSION, readManifest, windowOf, type PackManifest } from '../src/film/openingPack'
-import { openPack, readPack } from '../tools/lib/openingpack.mjs'
+import { SOFTWARE_FLAGS, softwareRenderer } from '../tools/lib/browser.mjs'
+import { openPack, packRenderer, readPack, rendererLine, rendererProblem, PACK_RENDERER } from '../tools/lib/openingpack.mjs'
 
 interface State {
   screen: string
@@ -221,5 +222,80 @@ describe("the page's reading of a pack", () => {
     const pack = readPack(manifestBytes, bin)
     expect([pack.width, pack.height, pack.fps, pack.frameCount, pack.background]).toEqual([m.width, m.height, m.fps, m.frameCount, m.background])
     expect(fitBox(m.width * 2, m.height * 2, m.width, m.height)).toEqual({ x: 0, y: 0, w: m.width * 2, h: m.height * 2, scale: 2 })
+  })
+})
+
+describe('the renderer that draws the opening', () => {
+  const root = path.resolve(__dirname, '..')
+  const swiftshader: string = JSON.parse(fs.readFileSync(path.join(root, 'config', 'webgl-caps.json'), 'utf8')).webgl.renderer
+  const lavapipe = 'ANGLE (Mesa, Vulkan 1.4.335 (llvmpipe (LLVM 21.1.8 256 bits) (0x00000000)), llvmpipe)'
+  const plain = 'the opening is drawn by SwiftShader, the renderer of the committed pack'
+
+  it('is SwiftShader for every run that draws, and none is named for the run that only asks the page', () => {
+    expect(PACK_RENDERER).toBe('swiftshader')
+    for (const args of [{}, { master: true }, { stills: '0,90' }, { stills: '90', 'only-stills': true }, { skill: 'a', effort: 'b' }]) expect(packRenderer(args)).toBe('swiftshader')
+    expect(packRenderer()).toBe('swiftshader')
+    expect(packRenderer({ page: true })).toBe(null)
+    expect(packRenderer({ help: true })).toBe(null)
+  })
+
+  it("beats SHOWCASE_RENDERER and the machine's default once the tool has named it", () => {
+    const before = process.env.SHOWCASE_RENDERER
+    try {
+      for (const said of [undefined, 'lavapipe', 'swiftshader', 'something else']) {
+        if (said === undefined) delete process.env.SHOWCASE_RENDERER
+        else process.env.SHOWCASE_RENDERER = said
+        process.env.SHOWCASE_RENDERER = String(packRenderer({ master: true }))
+        expect(softwareRenderer().name).toBe('swiftshader')
+        expect(softwareRenderer().flags).toBe(SOFTWARE_FLAGS)
+        expect(softwareRenderer().env).toBe(undefined)
+      }
+    } finally {
+      if (before === undefined) delete process.env.SHOWCASE_RENDERER
+      else process.env.SHOWCASE_RENDERER = before
+    }
+  })
+
+  it('says so in one line and names what it sets aside', () => {
+    expect(rendererLine(undefined, undefined)).toBe(plain)
+    expect(rendererLine(undefined, 'swiftshader')).toBe(plain)
+    expect(rendererLine('swiftshader', 'lavapipe')).toBe(plain)
+    expect(rendererLine('SwiftShader', 'lavapipe')).toBe(plain)
+    expect(rendererLine(undefined, 'lavapipe')).toBe(`${plain}, whatever this machine's default is (lavapipe)`)
+    expect(rendererLine('lavapipe', 'swiftshader')).toBe(`${plain}, whatever SHOWCASE_RENDERER says (lavapipe)`)
+    expect(rendererLine('lavapipe', 'lavapipe')).toBe(`${plain}, whatever SHOWCASE_RENDERER says (lavapipe)`)
+    expect(rendererLine('card', undefined)).toBe(`${plain}, whatever SHOWCASE_RENDERER says (card)`)
+  })
+
+  it('stops in plain words when the browser about to draw is not SwiftShader', () => {
+    expect(swiftshader).toMatch(/SwiftShader/)
+    expect(rendererProblem('swiftshader', swiftshader)).toBe('')
+    const problems: string[] = [rendererProblem('lavapipe', lavapipe), rendererProblem('lavapipe', swiftshader), rendererProblem('swiftshader', lavapipe), rendererProblem('swiftshader', ''), rendererProblem('swiftshader', undefined)]
+    expect(problems[0]).toMatch(/^the renderer is lavapipe\. The opening is drawn by SwiftShader only/)
+    expect(problems[1]).toMatch(/^the renderer is lavapipe\./)
+    expect(problems[2]).toMatch(/^the browser was asked for SwiftShader and answers with "ANGLE \(.*llvmpipe.*"\. The opening is drawn by SwiftShader only/)
+    expect(problems[3]).toMatch(/answers with no renderer at all\./)
+    expect(problems[4]).toBe(problems[3])
+    for (const p of problems) {
+      expect(p).toMatch(/Nothing was drawn, and the pack stays as it is$/)
+      expect(p.includes('\n')).toBe(false)
+    }
+  })
+
+  it('is named by the tool before its browser starts and asked of the browser before a frame is drawn, and --page is left alone', () => {
+    const tool = fs.readFileSync(path.join(root, 'tools', 'opening.mjs'), 'utf8')
+    const main = tool.slice(tool.indexOf('async function main()'))
+    const steps = ['return checkPage()', 'rendererLine(process.env.SHOWCASE_RENDERER, pinnedBrowser().renderer)', 'process.env.SHOWCASE_RENDERER = packRenderer(args)', 'await Session.open()', 'rendererProblem(softwareRenderer().name, graphics)', 'throw new Stop(problem)', 'session.page(', 'openScreens(session']
+    let last = 0
+    for (const step of steps) {
+      const at = main.indexOf(step)
+      expect(at, step).toBeGreaterThan(last)
+      expect(main.indexOf(step, at + 1), `${step}, once`).toBe(-1)
+      last = at
+    }
+    const page = tool.slice(tool.indexOf('async function checkPage()'), tool.indexOf('async function main()'))
+    expect(page.includes('await Session.open()')).toBe(true)
+    expect(page.includes('SHOWCASE_RENDERER')).toBe(false)
+    expect(page.includes('packRenderer')).toBe(false)
   })
 })
