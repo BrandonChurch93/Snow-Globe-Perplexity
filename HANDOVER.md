@@ -128,7 +128,9 @@ this job's files. What changed is what the visitor looks at meanwhile.
   still's file is one of them (under 60 kB); the other three were not traced, and main moved in between.
   The whole pictures took 76.2 s against 52.2 s; the tools drew with the second software renderer in this run (main's
   27e83641) and the cause was not traced. The tool's own line for the still named the soft inline picture (`the still after 0.06 s from 28.2 kB in 1
-  requests`); `tools/firstlook.mjs` was then changed to wait for the still's file, and that line was not seen again.
+  requests`); `tools/firstlook.mjs` was then changed (f16f8b97) to wait for the still's file. The line was not printed again by a run;
+  what it reads was seen on hd with the app's script held back: the soft picture loads after 55 ms, `first/winter-hd.avif`
+  after 105 ms, and the file is fetched under the name the tool matches.
 - Phone profile 390 x 844 at ratio 2, local server, software GL, two loads of the head: the still's file (59,523 bytes, AVIF)
   had arrived after 43 and 38 ms; first paint after 872 ms (first page of a new browser) and 164 ms (second load); the still was
   in place before that paint on the second load, so the first thing painted was the still itself. The live picture took over
@@ -147,6 +149,27 @@ Before it sets up the graphics the app waits for one frame of the page (a frame,
 where the page is visible and is not a capture page). Without it a load from the cache ran the app's set-up before the page
 had painted anything. It moves no pixel: the app's frames use frame times only as differences and a counted seed. That is why
 the stills were stamped with `--keep` after it instead of being drawn again.
+
+## The page that cannot draw
+
+Seen on phone (winter) and hd (`?season=fall`) with WebGL2 taken away (cannot-looks.jpg): the season's still at 32 %, the
+canvas unseen, and the app's words across the middle of the glass. On hd the words are small against the dimmed picture. The
+app throws `This browser has no WebGL2` on that page, as it did before.
+
+## Checks
+
+- Head f46b0ee8: `npx tsc --noEmit` exit 0; `npx vitest run`: 50 files passed, 1 skipped; 582 tests passed, 7 skipped;
+  `npm run build` exit 0 (at cad9f69b; no file of the build changed after it).
+- `node tools/poster.mjs --check`: pass at abe4c1b8, FAIL (28 stale) on the head, as fault 2 says.
+- `npm run firstlook -- --live` at cad9f69b: the lines under "Numbers"; `nothing logged`.
+- `npm run hostcheck` (tracked files of cad9f69b): all eight loads printed `ok` (each season, and each at `quality=low`, first picture after 12.6 to 17.5 s, for example `ok · ?season=fall · first picture after 13.4 s, fall lit, 89726 colours`); its closing line had not printed when my time ran out, so it is not a seen pass.
+- Not run, for want of time (the checks ran one at a time and hostcheck alone took over fifteen minutes): `npm run determinism`, `npm run strict` (no shader was touched, so there is no last line to quote), the `--diag standins` still, and the eight judged keys by hash. The keys are grabbed on a capture page, where `src/app/app.ts` does not run and `src/main.ts` differs only by two style properties on the canvas and skips its wait; that is an argument, not a seen result.
+
+## Things not checked
+
+- The `v` in a still's URL is the same for every season of a shape (`winter-hd.avif?v=71fe24d1`, `fall-hd.avif?v=71fe24d1`).
+  Whether it changes when only one season's files change was not checked; if it does not, a host that caches `first/` for
+  long would keep an old still.
 
 ## Not seen with my own eyes
 

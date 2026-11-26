@@ -14,5 +14,8 @@ hd-looks.jpg      hd 1920 x 1080 at ratio 1, the same four moments, two by two (
 phone-crop.jpg    phone, the glass at native pixels: the still (left) beside the live picture at the takeover (right).
 hd-crop.jpg       hd, the same pair at native pixels.
 
+cannot-looks.jpg  the page with WebGL2 taken away: phone (winter) and hd (?season=fall). The season's still at 32 %, the
+                  app's words over it, the canvas unseen.
+
 Not in these pictures: the tablet, summer on three screens (not run, see HANDOVER.md), and the move of the globe that
 follows when the controls are measured at frame 20 (HANDOVER.md, fault 1).
