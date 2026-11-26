@@ -270,7 +270,7 @@ export const VERT_MAIN = `
   if (glints > 0.5) flash += keyIn * pointGlint(face, uLightFrame * keyTo, toEye) + uRigRimCol * (uRigInside.x * pointGlint(face, uLightFrame * uRigRimDir, toEye));
   flash *= look.w * pow(abs(c2 / (c2 + s2x)), ${n(1 - BLUR_HOLD)});
   float flashMost = max(flash.r, max(flash.g, flash.b));
-  flash = mix(flash, vec3(flashMost), ${n(FLASH_WHITE)}) * min(1.0, ${n(FLASH_MOST)} / max(flashMost, 1e-3));
+  flash = mix(flash, vec3(flashMost), ${n(FLASH_WHITE)}) * min(1.0, ${n(FLASH_MOST)} * uLightBurn / max(flashMost, 1e-3));
   flash *= mix(vec3(1.0), vec3(${STORM_GOLD.map(n).join(', ')}), glints * gusty) * mix(1.0, min(1.0, ${n(STORM_FLASH)} / max(flashMost, 1e-3)), glints * gusty);
 
   float reach = 1.2 * rPx + 2.6 * sqrt(s2x) + 1.0 + 0.67 * abs(bend) * halfLong;
@@ -305,7 +305,7 @@ export const VERT_MAIN = `
     vec3 fromGlow = nowL - uLightGlowAt.xyz;
     lit = mix(lit, dot(lit, vec3(0.2126, 0.7152, 0.0722)) * vec3(${STORM_GLOW.to.map(n).join(', ')}), min(1.0, ${n(STORM_GLOW.most)} / (1.0 + dot(fromGlow, fromGlow) / ${n(STORM_GLOW.reachMm * STORM_GLOW.reachMm)})) * gusty * (1.0 - glints));
   }
-  vGrid = vec4(lit * min(1.0, ${n(LIT_MOST)} / max(max(lit.r, max(lit.g, lit.b)), 1e-3)), flash.g);
+  vGrid = vec4(lit * min(1.0, ${n(LIT_MOST)} * uLightBurn / max(max(lit.r, max(lit.g, lit.b)), 1e-3)), flash.g);
   vDom = vec4(keyIn * uRigPoint.x * warmth, flash.b);
 ${CARD_VERT}  gl_Position = aState > 2.5 || alpha <= 0.0 ? vec4(2.0, 2.0, 2.0, 1.0) : clip;
 `
