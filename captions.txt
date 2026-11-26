@@ -1,0 +1,13 @@
+1-before-after-673-674.jpg
+Film frames 673 and 674, the first change (winter to spring). Format preview (960 by 540), tier draft. Top row: before, main at c86cdf75, winter's base whole at 673 and spring's whole at 674. Bottom row: after, this branch, the same two frames under the cover.
+
+2-shake1-666-684.jpg
+After. Film frames 666 to 684 in reading order, five to a row: every frame of the cover of the first change, from the frame before the room starts to fall to the frame after it is back. Format preview, tier draft.
+
+3-four-changes.jpg
+After. All four changes under the cover, one row each. Format preview, tier draft. Row 1, winter to spring: 674, 676, 678, 680. Row 2, spring to summer: 1396, 1398, 1400, 1402. Row 3, summer to fall: 2114, 2116, 2118, 2120. Row 4, fall to winter: 2834, 2836, 2838, 2840. Frames 1396 to 1402 and 2114 are after the sand commit, 2116 to 2120 before it.
+
+4-app-path.jpg
+After. The app's own path, frames of the app's script (the control is pressed at frame 30, the landing is at 174). Format preview, tier draft. Row 1, shake at level high, winter to spring: 123, 127, 131, 135. Row 2, jump at level high, winter to summer: 123, 127, 131, 135 (before the sand commit). Row 3, shake at level low, winter to spring: 125, 128, 131, 134. Row 4, jump at level low, winter to summer: 127, 130, 133, 136 (after the sand commit and the merge of origin/main at ce9548e2).
+
+But for row 4 of the last picture, every frame here is of the branch before its merges of origin/main at ce9548e2 and f00a7aab.
