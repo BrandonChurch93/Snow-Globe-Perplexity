@@ -917,4 +917,211 @@ describe('the live runner', () => {
       winters(runner)
     }
   }, 120000)
+
+  // The worker is given up only when it failed to answer, never because the page could not read its answer. A browser
+  // keeps the worker's answers in a queue that the page reads between its own tasks, and it may run a tap and then a
+  // frame before it reads them. These stand such a queue between the worker and the runner; `turn` is the runner's way
+  // to the end of it.
+  function queued(o: { silent?: () => boolean } = {}): {
+    port: EngineWorker
+    turn(then: () => void): void
+    work(): Promise<void>
+    idle(): Promise<void>
+    waiting(): number
+  } {
+    const inner = fakeWorker()
+    const queue: (() => void)[] = []
+    const port: EngineWorker = {
+      onmessage: null,
+      onerror: null,
+      onmessageerror: null,
+      terminate: () => inner.terminate(),
+      postMessage: (message, transfer) => inner.postMessage(message, transfer),
+    }
+    inner.onmessage = (event) => {
+      if (!o.silent?.()) queue.push(() => port.onmessage?.(event))
+    }
+    return {
+      port,
+      turn: (then) => void queue.push(then),
+      /** The worker works while the page is busy: what it answers waits. */
+      work: settle,
+      /** The worker works, and then the page's queue turns: all that waits in it is read, the oldest first. */
+      async idle() {
+        await settle()
+        for (const task of queue.splice(0)) task()
+      },
+      waiting: () => queue.length,
+    }
+  }
+
+  /** A runner on a queued worker, sixty frames a second until the worker steps the simulation and nothing waits. */
+  async function handed(o: { silent?: () => boolean } = {}) {
+    const w = queued(o)
+    const page = { clock: 0, target: 0 }
+    const runner = new LiveRunner({ season: 'winter', fraction, spawn: () => w.port, now: () => page.clock, turn: w.turn })
+    runner.reset('winter')
+    const tl = idle('winter')
+    /** One frame of the page, `ms` after the last. The queue turns after it unless the page is `busy`. */
+    const frame = async (ms: number, busy = false): Promise<void> => {
+      page.target += 4
+      page.clock += ms
+      runner.advanceTo(page.target, tl)
+      await (busy ? w.work() : w.idle())
+    }
+    /** Frames at sixty a second until the worker has reached the page's step and nothing waits. */
+    const reached = async (): Promise<void> => {
+      for (let wait = 0; wait < 50 && (runner.step < page.target || w.waiting() > 0); wait++) {
+        page.clock += 16
+        runner.advanceTo(page.target, tl)
+        await w.idle()
+      }
+      expect(runner.step).toBe(page.target)
+      expect(w.waiting()).toBe(0)
+    }
+    /** The worker's state as the picture reads it, against the engine itself at the same step. */
+    const shows = async (): Promise<void> => {
+      await reached()
+      const direct = new ParticleEngine({ season: 'winter', fraction })
+      direct.reset()
+      direct.advanceTo(page.target, tl)
+      agrees(runner, direct)
+    }
+    for (let i = 0; i < 40; i++) await frame(16)
+    expect(runner.remote).toBe(true)
+    expect(runner.frames).toBeGreaterThan(0)
+    await reached()
+    return { w, page, runner, tl, frame, shows }
+  }
+
+  it('keeps the worker when the page stands still for 4 s and for 20 s while its answer waits, and then shows the worker\'s state', async () => {
+    for (const still of [4000, 20000]) {
+      const { w, runner, frame, shows } = await handed()
+      await frame(16, true)
+      expect(w.waiting()).toBeGreaterThan(0)
+      const had = runner.frames
+      await frame(still)
+      expect(runner.remote).toBe(true)
+      expect(runner.fallbacks).toBe(0)
+      expect(runner.frames).toBeGreaterThan(had)
+      await shows()
+      expect(runner.remote).toBe(true)
+      expect(runner.fallbacks).toBe(0)
+    }
+  }, 120000)
+
+  it('keeps the worker through the press as it was seen: the tap and then the frame, in two idles running, 3616 ms on the clock', async () => {
+    const { w, runner, frame, shows } = await handed()
+    // The frame that asks the worker, at 69.208 s of that page. The worker answers some 10 ms later and the answer waits.
+    await frame(16, true)
+    expect(w.waiting()).toBeGreaterThan(0)
+    const had = runner.frames
+    // At 71.057 s the browser had run the tap's events and then this frame; at 72.824 s the click and then this frame.
+    // Neither idle read the queue.
+    await frame(71057 - 69208, true)
+    expect(runner.remote).toBe(true)
+    await frame(72824 - 71057, true)
+    expect(runner.remote).toBe(true)
+    expect(runner.fallbacks).toBe(0)
+    expect(runner.frames).toBe(had)
+    await frame(1700)
+    expect(runner.frames).toBeGreaterThan(had)
+    await shows()
+    expect(runner.remote).toBe(true)
+    expect(runner.fallbacks).toBe(0)
+  }, 120000)
+
+  it('keeps the worker through twenty slow frames in a row that pass its answer over', async () => {
+    const { w, runner, frame, shows } = await handed()
+    await frame(16, true)
+    expect(w.waiting()).toBeGreaterThan(0)
+    const had = runner.frames
+    for (let i = 0; i < 20; i++) {
+      await frame(300, true)
+      expect(runner.remote).toBe(true)
+    }
+    expect(runner.frames).toBe(had)
+    await frame(300)
+    expect(runner.frames).toBeGreaterThan(had)
+    await shows()
+    expect(runner.remote).toBe(true)
+    expect(runner.fallbacks).toBe(0)
+  }, 120000)
+
+  it('hands the simulation to the worker when the page stood still for 20 s while the worker\'s first answer waited', async () => {
+    const w = queued()
+    let clock = 0
+    const runner = new LiveRunner({ season: 'winter', fraction, spawn: () => w.port, now: () => clock, turn: w.turn })
+    runner.reset('winter')
+    const tl = idle('winter')
+    await w.work()
+    expect(w.waiting()).toBeGreaterThan(0)
+    clock += 20000
+    let target = 4
+    runner.advanceTo(target, tl)
+    expect(runner.step).toBe(target)
+    await w.idle()
+    for (let i = 0; i < 40; i++) {
+      target += 4
+      clock += 16
+      runner.advanceTo(target, tl)
+      await w.idle()
+    }
+    expect(runner.remote).toBe(true)
+    expect(runner.frames).toBeGreaterThan(0)
+    expect(runner.fallbacks).toBe(0)
+  }, 120000)
+
+  it('gives a silent worker up within three seconds and two frames, not before the queue has turned, a throwing one at once, and shows every frame after', async () => {
+    for (const pace of [16, 300]) {
+      let silent = false
+      const { w, page, runner, tl, frame } = await handed({ silent: () => silent })
+      silent = true
+      const at = { season: runner.season, step: runner.step }
+      await frame(pace)
+      const began = page.clock
+      // The wait is counted frame by frame, at most 250 ms a frame: 188 frames of 16 ms pass 3000 ms, and so do 13 of 300 ms.
+      const over = pace === 16 ? 188 : 13
+      for (let i = 0; i < over - 1; i++) await frame(pace)
+      expect(runner.fallbacks).toBe(0)
+      // This frame finds the limit passed and does not give up: the queue has not turned since.
+      page.target += 4
+      page.clock += pace
+      runner.advanceTo(page.target, tl)
+      expect(runner.remote).toBe(true)
+      expect(runner.fallbacks).toBe(0)
+      await w.idle()
+      // The queue has turned and held no answer: the next frame gives the worker up and the page steps.
+      const twin = new LiveEngine({ season: 'winter', fraction })
+      twin.restAt(at.season, at.step)
+      const storm = mover(runner)
+      for (let i = 0; i < 30; i++) {
+        page.target += 4
+        page.clock += pace
+        runner.advanceTo(page.target, tl)
+        if (i === 0) {
+          expect(runner.remote).toBe(false)
+          expect(runner.fallbacks).toBe(1)
+          expect(page.clock - began).toBe((over + 1) * pace)
+          if (pace === 16) expect(page.clock - began).toBeLessThanOrEqual(3000 + 2 * 16)
+        }
+        twin.advanceTo(page.target, tl)
+        expect(differs(runner, twin.inner)).toBe('')
+        storm.look()
+        await w.idle()
+      }
+      expect(storm.moved).toBe(storm.frames)
+      expect(runner.fallbacks).toBe(1)
+    }
+    const { w, page, runner, tl } = await handed()
+    w.port.postMessage = () => {
+      throw new Error('gone')
+    }
+    page.target += 4
+    page.clock += 16
+    runner.advanceTo(page.target, tl)
+    expect(runner.remote).toBe(false)
+    expect(runner.fallbacks).toBe(1)
+    expect(runner.step).toBe(page.target)
+  }, 120000)
 })
