@@ -23,7 +23,7 @@ export const SLAB_DETAIL_PX = 2048
 export const SLAB_SHAPE = {
   turnDeg: 18,
   farMm: 1100,
-  nearMm: 620,
+  nearMm: 880,
   halfWidthMm: 900,
   cornerMm: 14,
   farLeftMm: [-226.2, -311.9] as [number, number],
