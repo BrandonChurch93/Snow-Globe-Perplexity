@@ -115,6 +115,7 @@ interface Stages {
   tilt: string
   bent?: string
   after: string
+  cut?: string
 }
 
 function hookOf(uniforms: Record<string, THREE.IUniform>, at: Stages): (shader: Shader) => void {
@@ -127,6 +128,8 @@ function hookOf(uniforms: Record<string, THREE.IUniform>, at: Stages): (shader: 
       .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>\n${at.rough}`)
       .replace('#include <normal_fragment_maps>', `${at.tilt}\n${BEND}\n${at.bent ?? ''}`)
       .replace('#include <aomap_fragment>', `#include <aomap_fragment>\n${at.after}`)
+    // What is cut is cut last: a pixel that is cut stops being worked out, and the lighting after it reads its neighbours' numbers.
+    if (at.cut) shader.fragmentShader = shader.fragmentShader.replace(/\}\s*$/, `${at.cut}\n}`)
   }
 }
 
@@ -375,7 +378,7 @@ float sandFar = smoothstep(${SAND.far[0].toFixed(2)}, ${SAND.far[1].toFixed(2)},
 float sandCell = exp2(ceil(log2(max(sandPx, 0.03) * ${SAND.speck.toFixed(2)})));
 float sandDice = baseHash(floor(vBasePos / sandCell) + 7.0);
 sandNeed = mix(sandNeed, sandDice * ${SAND.cover.toFixed(2)}, sandFar);
-if (sandCover < sandNeed + 0.004) discard;
+bool sandCut = sandCover < sandNeed + 0.004;
 float sandId = fract(sandGrain * 37.31);
 float sandId2 = fract(sandGrain * 91.7);
 vec3 sandC = mix(${vec(SAND_COLOUR.deep)}, ${vec(SAND_COLOUR.pale)}, smoothstep(0.1, 0.75, sandId));
@@ -432,7 +435,7 @@ export function sandMaterial(part: string, change: string, key: string): THREE.M
     change,
     key,
     side: THREE.DoubleSide,
-    hook: hookOf({ uSandTile: { value: map('sand.lin.tile.w512') }, uSandSpill: sandUniforms.uSandSpill, uSandRoom: sandUniforms.uSandRoom }, { pars: SAND_PARS, paint: SAND_PAINT, rough: SAND_ROUGH, tilt: SAND_TILT, after: SAND_AFTER }),
+    hook: hookOf({ uSandTile: { value: map('sand.lin.tile.w512') }, uSandSpill: sandUniforms.uSandSpill, uSandRoom: sandUniforms.uSandRoom }, { pars: SAND_PARS, paint: SAND_PAINT, rough: SAND_ROUGH, tilt: SAND_TILT, after: SAND_AFTER, cut: 'if (sandCut) discard;' }),
   })
 }
 

@@ -13,8 +13,9 @@ import { holdStorm, veil } from './veil'
 //    right shoulder, at the limb. It is a small hot core squeezed along the limb, a warm halo and the star a lens draws round a
 //    point that bright. It kindles on the landing.
 // 2. The pool: the same light focused by the globe onto the slab, in front of the globe and to its left, inside the globe's own
-//    shadow: a bright knot with a web of thin veins of light round it, as the approved image has them, long in the light's
-//    direction because the sun is low. The web moves when the globe moves and swings to rest after the landing.
+//    shadow: a soft pool of warm light, brightest at a knot by the foot, and inside it the net of light that water throws on
+//    the floor of a pool, long in the light's direction because the sun is low. The net slides when the globe moves, swings
+//    to rest after the landing and breathes a little while the water is still.
 // 3. The wall: the sun, bent by the globe, burns a patch on the inside of the glass low on the far side; the same billboard
 //    carries the warm haze of the liquid at rest and the glow of the storm (by the liquid's turbulence). It is drawn with the
 //    interior, straight after the view through the liquid and before the miniature, so all of it lies behind the cottage and
@@ -113,23 +114,21 @@ export const look = {
     // how far the low sun draws the pool out along its way
     stretch: 2.2,
     softMm: 22,
-    gain: 0.07,
+    gain: 0.22,
     core: 3,
     coreMm: 2.4,
     glow: 0.7,
     glowMm: 5,
-    bands: 8,
-    // the web of veins: its cells round the knot and per e-fold of distance, the reach of its light, a vein's width and glow
-    webCells: 19,
-    webRings: 1.25,
-    webMm: 15,
-    webEndMm: [20, 46] as const,
-    veinMm: 0.42,
-    veinGlowMm: 1.5,
-    veinGlow: 0.16,
-    // the short bright rays round the hot knot, as the approved image has them: their strength and their reach
-    rays: 1.5,
-    raysMm: 9,
+    // the water's light: how wide its cells are by the knot and how fast they widen away from it, the strength and reach of its
+    // bright lines, how much of the soft pool it shades, how far a swing of the globe slides it, and its slow breath at rest
+    cellMm: 38,
+    growMm: 30,
+    lines: 1.5,
+    linesMm: 20,
+    mottle: 0.4,
+    drift: 0.35,
+    breath: 0.06,
+    breathCycles: 2,
     liftPerMm: 2.2,
     tiltMm: 160,
     swing: 1,
@@ -167,8 +166,8 @@ const uniforms = {
   uSummer: { value: new THREE.Vector4(0, 0, 1, 0) },
   // xy: the pool's middle on the slab, zw: the light's way on the slab (unit)
   uPoolAt: { value: new THREE.Vector4(0, 0, 0, 1) },
-  // xy: the globe's foot on the slab
-  uPoolFoot: { value: new THREE.Vector2(0, 0) },
+  // xy: the globe's foot on the slab, z: how far the still water has slid
+  uPoolFoot: { value: new THREE.Vector3(0, 0, 0) },
 }
 
 const F = look.flare
@@ -271,37 +270,16 @@ const P = look.pool
 const POOL = `
 uniform vec4 uSummer;
 uniform vec4 uPoolAt;
-uniform vec2 uPoolFoot;
-// The web: what a ball of water does with a low sun. The light leaves the knot in thin veins that part and join again, fine
-// near the knot and wider apart further out; where two veins meet the light gathers. It is one net, drawn in the pool's plane:
-// cells in the angle round the knot and in the logarithm of the distance from it, so that every vein has the same width in
-// millimetres wherever it lies.
-vec2 poolWeb(vec2 h, float s) {
-  float len = max(length(h), 0.6);
-  float turn = atan(h.y, h.x) / 6.2831853 + 0.5;
-  vec2 q = vec2(${n(P.webRings)} * log(len), turn * ${n(P.webCells)});
-  q.x += 0.38 * sin(turn * 6.2831853 * 3.0 + 0.5 * s) + 0.2 * sin(turn * 6.2831853 * 7.0 + 2.0);
-  q.y += 0.6 * sin(q.x * 2.9 + 1.0 + 0.3 * s) + 0.25 * sin(q.x * 6.1 + turn * 31.0);
-  vec2 g = floor(q);
-  vec2 f = q - g;
-  float f1 = 9.0;
-  float f2 = 9.0;
-  for (int j = -1; j <= 1; j++) {
-    for (int i = -1; i <= 1; i++) {
-      vec2 cell = vec2(float(i), float(j));
-      vec2 id = g + cell;
-      id.y = mod(id.y, ${n(P.webCells)});
-      vec2 at = cell + 0.12 + 0.76 * vec2(stageHash(vec3(id, 1.7)), stageHash(vec3(id, 5.3))) - f;
-      float dd = dot(at, at);
-      if (dd < f1) {
-        f2 = f1;
-        f1 = dd;
-      } else if (dd < f2) f2 = dd;
-    }
-  }
-  float gap = sqrt(f2) - sqrt(f1);
-  float per = ${n(P.webRings)} / max(len, 2.0);
-  return vec2(1.0 - smoothstep(0.0, ${n(P.veinMm)} * per, gap), exp(-gap / (${n(P.veinGlowMm)} * per)));
+uniform vec3 uPoolFoot;
+// Light through water: three sheets of cells laid across one another, each finer than the last. The light gathers where the
+// cells of all three end, broad where the sheets run together and bright where they cross, as on the floor of a pool in the
+// sun. z slides the sheets through one another, which is the water moving.
+float poolWater(vec2 p, float z) {
+  mat3 m = mat3(-2.0, -1.0, 2.0, 3.0, -2.0, 1.0, 1.0, 2.0, 2.0);
+  vec3 a = vec3(p, z) * m;
+  vec3 b = a * m * 0.4;
+  vec3 c = b * m * 0.3;
+  return min(min(length(0.5 - fract(a)), length(0.5 - fract(b))), length(0.5 - fract(c)));
 }
 void main() {
   float c = stageChange();
@@ -313,28 +291,27 @@ void main() {
   vec2 d = vStageWorld.xz - uPoolAt.xy;
   // The sun is low and comes from behind the globe: what the globe throws on the slab is drawn out toward the front. h is
   // the pool's own plane, in millimetres across and in stretched millimetres toward the front.
-  vec2 h = vec2(d.x, d.y * ${n(1 / P.stretch)}) + 0.0 * way;
-  float s = uSummer.y;
-  float rr = dot(h, h);
-  float soft = exp(-rr / ${n(P.softMm * P.softMm)});
-  float core = exp(-rr / ${n(P.coreMm * P.coreMm)});
-  float glow = exp(-sqrt(rr) / ${n(P.glowMm)});
-  // the veins: brightest by the knot, reaching further toward the left and the front than under the foot, the light on them
-  // gathered in beads
-  float lenW = sqrt(rr);
-  vec2 web = poolWeb(h, s);
-  float side = 0.3 + 0.7 * smoothstep(-0.5, 0.5, -h.x / max(lenW, 1.0));
-  float bead = 0.55 + 0.45 * sin(h.x * 1.3 + 2.0 * sin(h.y * 0.9)) * sin(h.y * 1.7 + 1.0 + 1.5 * sin(h.x * 0.6));
-  float folds = (web.x * bead + ${n(P.veinGlow)} * web.y) * exp(-lenW / ${n(P.webMm)}) * (1.0 - smoothstep(${n(P.webEndMm[0])}, ${n(P.webEndMm[1])}, lenW)) * side * smoothstep(1.0, 4.0, lenW);
-  // the knot's short rays: two uneven fans of them, turning a little with the swing, gone a few millimetres out
-  float ang = atan(h.y, h.x) + 0.04 * s;
-  float len = sqrt(rr);
-  float fan = pow(abs(sin(ang * 6.5 + 1.3)), 26.0) * (0.55 + 0.45 * sin(ang * 3.0 + 0.7)) + 0.6 * pow(abs(sin(ang * 10.5 + 0.4)), 34.0) * (0.5 + 0.5 * sin(ang * 5.0 + 2.1));
-  float rays = fan * exp(-len / ${n(P.raysMm)}) * smoothstep(0.8, 3.0, len);
-  vec3 col = ${vec(P.gold)} * (${n(P.gain)} * soft + ${n(P.bands)} * folds + ${n(P.rays)} * rays) + ${vec(P.pale)} * (${n(P.core)} * core + ${n(P.glow)} * glow);
+  vec2 h = vec2(d.x, d.y * ${n(1 / P.stretch)});
+  float len = length(h);
+  float soft = exp(-len * len / ${n(P.softMm * P.softMm)});
+  float core = exp(-len * len / ${n(P.coreMm * P.coreMm)});
+  float glow = exp(-len / ${n(P.glowMm)});
+  // the water's cells are small by the knot and widen away from it, so the light runs out from the knot in longer strokes
+  vec2 p = h / (${n(P.cellMm)} * sqrt(1.0 + len / ${n(P.growMm)}));
+  float z = ${n(P.drift)} * uSummer.y + uPoolFoot.z;
+  float fine = poolWater(p, z);
+  float wide = poolWater(p * 0.47 + 3.1, 0.6 * z + 0.37);
+  float f2 = fine * fine;
+  float lines = 25.0 * f2 * f2 * f2 * fine;
+  float sheet = min(2.5 * wide * wide, 1.0);
+  // brightest by the knot and toward the left and the front, where the approved image has it
+  float side = 0.45 + 0.55 * smoothstep(-0.6, 0.6, -h.x / max(len, 1.0));
+  float pool = ${n(P.gain)} * soft * (${n(1 - P.mottle)} + ${n(P.mottle)} * sheet);
+  float net = ${n(P.lines)} * lines * (0.35 + 0.65 * sheet) * exp(-len * len / ${n(P.linesMm * P.linesMm)}) * side;
+  vec3 col = ${vec(P.gold)} * (pool + net) + ${vec(P.pale)} * (${n(P.core)} * core + ${n(P.glow)} * glow);
   // the sun on the table: a strip of it gets past the globe on the far side of its shadow, which runs down the light's way
   // and softens as it goes; the strip is brightest by the foot and gone a hand's width out
-  vec2 f = vStageWorld.xz - uPoolFoot;
+  vec2 f = vStageWorld.xz - uPoolFoot.xy;
   float along = dot(f, way);
   float beside = dot(f, vec2(-way.y, way.x));
   float soften = ${n(P.shadeSoftMm)} + 0.12 * max(along, 0.0);
@@ -500,7 +477,7 @@ export function update(moment: KitMoment): void {
   const leanX = -Math.sin(g.tiltZ) * P.tiltMm
   const leanZ = Math.sin(g.tiltX) * P.tiltMm
   uniforms.uPoolAt.value.set(g.x + wx * reach + wz * P.sideMm + leanX, g.z + wz * reach - wx * P.sideMm + leanZ, wx, wz)
-  uniforms.uPoolFoot.value.set(g.x, g.z)
+  uniforms.uPoolFoot.value.set(g.x, g.z, P.breath * Math.sin(TAU * P.breathCycles * ((((moment.time / moment.period) % 1) + 1) % 1)))
   const held = Math.min(1, Math.max(0, g.y / config.shake.liftMm))
   const there = lit * (1 - 0.65 * smooth(held)) * (shaking || two ? 1 : P.early * smooth(t / P.kindleSeconds) + (1 - P.early) * smooth((t - P.afterSeconds) / P.settleSeconds))
   // the storm's glow goes with the liquid: none in still water, whole when it churns
