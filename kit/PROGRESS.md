@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 159 · 2026-11-26 13:43 UTC
+Status 160 · 2026-11-26 14:05 UTC
 
-- `out/stills/status/status-159-1.jpg`: Summer at rest, the approved picture above and ours below: the third list from all five builders merged, drawn at review quality.
-- `out/stills/status/status-159-2.jpg`: The same pair closer, approved left and ours right. Ours is still short: the ball is pale and even where the approved is dark with a warm glow, the seeds are large white clumps, the base lacks the carved waves.
-- `out/stills/status/status-159-3.jpg`: Film frame 3414 at 4K: left a crop of 400 pixels, right its middle 50 pixels enlarged. The dark pixel in the middle is one of the specks.
-- `out/stills/status/status-159-4.jpg`: A 4K shake frame (621) enlarged six times: each lamp's blur is a row of separate copies, not one smooth streak.
+- `out/stills/status/status-160-1.jpg`: The crown, approved left and ours right: one round mid green mass where the approved has dark pads with gaps and lit rims.
+- `out/stills/status/status-160-2.jpg`: The middle of the base at its own pixels, approved left: carved ridges and a ribbed shell against smooth bands and matt grey stones.
+- `out/stills/status/status-160-3.jpg`: The ball's upper left, approved left: hair thin rayed seed heads and sparks against thick soft wedges in clumps and green discs.
+- `out/stills/status/status-160-4.jpg`: The cottage, approved left: a house in shade on a mound with a sand bank against a brighter house on flat ground with a white fringe.
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-26 13:43 UTC
-clock: phase 6, tick of 23.2 minutes
-phase 6: 10.90 h used of its 12.00 h box
-allowance (after the review): 10.90 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 10.90 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-26 14:05 UTC
+clock: phase 6, tick of 22.2 minutes
+phase 6: 11.27 h used of its 12.00 h box
+allowance (after the review): 11.27 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 11.27 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: not reached

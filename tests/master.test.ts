@@ -10,6 +10,7 @@ import { branchFolder, branchMatches, chunkLines, chunkStem, coverReport, frames
 import { REMOTE_WAITS, Shipper, collectBranches, gitEnv, identityProblem, mainAuthor, withWaits } from '../tools/lib/mastergit.mjs'
 import { levelProblems, pictureLevels, procsProblem } from '../tools/lib/master.mjs'
 import { heldLine, heldRanges, parseTake } from '../tools/lib/master.mjs'
+import { firstPlace, markedHolder, notNumberFrames } from '../tools/lib/master.mjs'
 import { NOT_A_NUMBER, notNumberLine, notNumberLoud, notNumberOf, notNumberRecord, notNumberUnknown, shipTitle, shippedLine } from '../tools/lib/master.mjs'
 import { limitsLine, limitsRecord, localProblem, machineLimits, procsGainLine, procsMemoryHolds, readLimits, sameCommand, stoppedAt, stoppedLine } from '../tools/lib/master.mjs'
 import { bestRun, bigSha, butCrf, crfLadder, crfOf, encodeProofRows, finalKbps, hashFolder, intermediateVideo, masterConfigProblems, partName, partPlan, psnrFacts, sendGroups, splitFile, takeFiles, unsplitFile } from '../tools/lib/master.mjs'
@@ -164,24 +165,33 @@ describe('the join', () => {
   it('refuses when two chunks cover a frame and their frame hashes differ', () => {
     const other = rec('film-b', 30, 59, { machine: 'vm-b', sha256: 'sha-other' })
     ;(other.frameHashes as string[])[4] = 'px-different'
-    const p = refused('film-b', [...filmB(), chunk(other, 'there')], /film-b 30 to 59 is held 2 times and the records do not agree: .*the pixels of their frames differ in 1 of 30 \(the first is frame 34\)\. Neither is taken/)
+    const p = refused('film-b', [...filmB(), chunk(other, 'there')], /film-b 30 to 59 is held 2 times and the records do not agree: .*\. The pixels of their frames differ in 1 of 30 \(the first is frame 34\)\. Neither is taken/)
     expect(p.conflicts.length).toBe(1)
     expect(p.conflicts[0].frames).toEqual([34])
     expect(p.problems.length).toBe(1)
   })
 
-  it('counts one record held by two machines as proof and joins, and takes an intermediate that differs only when it is named', () => {
+  it('counts one record held by two machines as proof and joins, and takes the first by name of two intermediates that hold the same pixels in other bytes', () => {
     const p = plan('film-b', [...filmB(), chunk(rec('film-b', 30, 59, { machine: 'vm-b' }), 'there')])
     expect(p.ok).toBe(true)
     expect(p.parts.length).toBe(3)
     expect(p.twiceByTwoMachines).toBe(30)
-    const other = [...filmB(), chunk(rec('film-b', 30, 59, { sha256: 'sha-other' }), 'there')]
-    refused('film-b', other, /film-b 30 to 59 is held 2 times and the records do not agree: .*\. The sha256 of the intermediate is sha-film-b-30 in here\/film-b-000030, sha-other in there\/film-b-000030; the pixels of their frames are the same in all 30\. Neither is taken\. Name the one to take: --take film-b:30-59=here\/film-b-000030 or --take film-b:30-59=there\/film-b-000030$/)
+    const other = [chunk(rec('film-b', 30, 59, { sha256: 'sha-other' }), 'there'), ...filmB()]
+    const first = plan('film-b', other)
+    expect(first.ok).toBe(true)
+    expect(first.parts[1].record.sha256).toBe('sha-film-b-30')
+    expect(first.twice).toBe(30)
+    expect(first.twiceByTwoMachines).toBe(0)
+    const g = (heldRanges(other) as { first: number }[]).find((x) => x.first === 30)
+    expect(heldLine(g)).toBe('film-b 30 to 59 is held 2 times with the same build, the same calibration and the same pixels in all 30 frames: there/film-b-000030 (vm-a); here/film-b-000030 (vm-a). Their intermediates differ in bytes (sha256 sha-other in there/film-b-000030, sha-film-b-30 in here/film-b-000030). It counts once and the first by name is taken: here/film-b-000030')
     const named = plan('film-b', other, { take: parseTake('film-b:30-59=there/film-b-000030') })
     expect(named.ok).toBe(true)
     expect(named.parts[1].record.sha256).toBe('sha-other')
-    expect(named.twice).toBe(30)
-    expect(named.twiceByTwoMachines).toBe(0)
+    const there = (file: string) => file.includes('there')
+    const passed = (heldRanges(other, { exists: there }) as { first: number }[]).find((x) => x.first === 30)
+    expect(heldLine(passed)).toMatch(/It counts once and there\/film-b-000030 is taken, since the picture of here\/film-b-000030, the first by name, is not here$/)
+    const blind = [chunk(rec('film-b', 30, 59, { sha256: 'sha-other', frameHashes: [] }), 'there'), ...filmB()]
+    refused('film-b', blind, /film-b 30 to 59 is held 2 times and the records do not agree: .*\. The pixels of their frames cannot be compared \(there\/film-b-000030 names no hash for each of the 30 frames\) and the intermediates differ in bytes\. Neither is taken\. Name the one to take: --take film-b:30-59=there\/film-b-000030 or --take film-b:30-59=here\/film-b-000030$/)
   })
 
   it('refuses when the build, the samples, the format or the encoder differ between chunks', () => {
@@ -1031,13 +1041,12 @@ describe('what the machine may really use', () => {
     expect(procsProblem(4, 'uhd', readLimits({ totalmem: 15.6 * GIB, cpus: 4 }))).not.toBeNull()
   })
 
-  it('says in a plain line when the CPUs gain nothing from more processes', () => {
+  it('promises nothing about more processes and says to measure them', () => {
     const on = (cpus: number) => readLimits({ totalmem: 64 * GIB, cpus })
     expect(procsGainLine(1, on(4))).toBeNull()
-    expect(procsGainLine(2, on(8))).toBeNull()
-    expect(procsGainLine(3, on(8))).toBe('--procs 3 on 8 CPUs: one software render already uses every core. Measured on 8 CPUs, a second process added about 10 percent and a third nothing. It runs, but expect no gain over --procs 2.')
-    expect(procsGainLine(2, on(4))).toMatch(/expect no gain over --procs 1\.$/)
-    expect(procsGainLine(4, on(16))).toBeNull()
+    expect(procsGainLine(3, on(8))).toBe('--procs 3 on 8 CPUs: the best count depends on the machine. Measure it with --procs 1, 2 and 3 on three chunks before a long run, and keep the count that gives the most frames an hour.')
+    expect(procsGainLine(2, on(8))).toMatch(/^--procs 2 on 8 CPUs: the best count depends on the machine\./)
+    expect(procsGainLine(4, on(16))).not.toMatch(/percent|nothing|gain/)
   })
 
   it('refuses --local where no display is', () => {
@@ -1096,7 +1105,7 @@ describe('a range held more than once', () => {
     expect(g[0].agree).toBe(false)
     expect(g[0].taken).toBeNull()
     expect(heldLine(g[0])).toBe(
-      'film-b 0 to 29 is held 2 times and the records do not agree: agent/p6-chunks-a (vm-a); agent/p6-chunks-b (vm-b). The build hash is build-1 in agent/p6-chunks-a, build-2 in agent/p6-chunks-b; the calibration picture is cccccccccccc in agent/p6-chunks-a, dddddddddddd in agent/p6-chunks-b; the sha256 of the intermediate is sha-film-b-0 in agent/p6-chunks-a, sha-new in agent/p6-chunks-b; the pixels of their frames are the same in all 30. Neither is taken. Name the one to take: --take film-b:0-29=agent/p6-chunks-a or --take film-b:0-29=agent/p6-chunks-b',
+      'film-b 0 to 29 is held 2 times and the records do not agree: agent/p6-chunks-a (vm-a); agent/p6-chunks-b (vm-b). The build hash is build-1 in agent/p6-chunks-a, build-2 in agent/p6-chunks-b; the calibration picture is cccccccccccc in agent/p6-chunks-a, dddddddddddd in agent/p6-chunks-b; the pixels of their frames are the same in all 30. Neither is taken. Name the one to take: --take film-b:0-29=agent/p6-chunks-a or --take film-b:0-29=agent/p6-chunks-b',
     )
     const open = g.filter((x) => !x.taken)
     const cover = coverReport(g.filter((x) => x.taken).map((x) => x.taken!), totals, SIZE, open).find((x) => x.what === 'film-b')!
@@ -1112,7 +1121,7 @@ describe('a range held more than once', () => {
     const wrong = groups(two(), 'film-b:0-29=agent/p6-chunks-z')
     expect(wrong[0].taken).toBeNull()
     expect(heldLine(wrong[0])).toMatch(/Neither is taken \(--take names agent\/p6-chunks-z, which does not hold it\)\. Name the one to take:/)
-    const both = groups([at('files', rec('film-b', 0, 29)), at('files/again-2', rec('film-b', 0, 29, { sha256: 'sha-new' }))], 'files,files/again-2')
+    const both = groups([at('files', rec('film-b', 0, 29)), at('files/again-2', rec('film-b', 0, 29, { sha256: 'sha-new', engineHash: 'build-2' }))], 'files,files/again-2')
     expect(both[0].taken).toBeNull()
     expect(both[0].wrong).toMatch(/names 2 of its holders/)
   })
@@ -1191,6 +1200,38 @@ describe('values that are no number', () => {
     expect(notNumberLine({ record: marked, file: '/x/film-b-002100-002129.mp4', from: 'agent/p6-chunks-vm07' })).toBe('agent/p6-chunks-vm07 (film-b 2100 to 2129, drawn on vm07) holds 4 values that are no number in 2 frames: 2115 (3), 2120 (1)')
     expect(notNumberLoud('film-b', 2115, 3)).toBe('NOT A NUMBER: film-b frame 2115 holds 3 values that are no number in its mean, before the lens and the grade. Its chunk is marked NOT A NUMBER and no master is encoded from it. Tell /root the frame. Do not draw it again hoping: the same frame draws the same values.')
     expect(notNumberLoud('loop', 7, 1)).toMatch(/holds 1 value that is no number/)
+  })
+
+  it('keeps the first place of a marked frame in the record and says it in every line, and prints a record without it as before', () => {
+    const at = { x: 1204, y: 388, channel: 'red', kind: 'no number' }
+    const frames = [{ ...frame(2115, 3), notNumberFirst: { ...at, more: 1 } }, frame(2116, 0), { ...frame(2120, 1), notNumberFirst: { x: 9, y: 0, channel: 'alpha', kind: 'plus infinite' } }]
+    const n = notNumberRecord(frames)
+    expect(n.frames).toEqual([{ frame: 2115, count: 3, first: at }, { frame: 2120, count: 1, first: { x: 9, y: 0, channel: 'alpha', kind: 'plus infinite' } }])
+    expect(firstPlace(null)).toBeNull()
+    expect(firstPlace({ x: 1, y: 2 })).toBeNull()
+    expect(notNumberRecord([{ ...frame(7, 2), notNumberFirst: { x: 'a' } }]).frames).toEqual([{ frame: 7, count: 2 }])
+    const marked = rec('film-b', 2100, 2129, { mark: NOT_A_NUMBER, notNumber: n, machine: 'vm07' })
+    const line = '2115 (3), the first at 1204, 388 (red, no number); 2120 (1), the first at 9, 0 (alpha, plus infinite)'
+    expect(notNumberFrames(marked)).toBe(line)
+    expect(notNumberLine({ record: marked, file: '/x/film-b-002100-002129.mp4', from: 'agent/p6-chunks-vm07' })).toBe(`agent/p6-chunks-vm07 (film-b 2100 to 2129, drawn on vm07) holds 4 values that are no number in 2 frames: ${line}`)
+    expect(notNumberLoud('film-b', 2115, 3, at)).toMatch(/^NOT A NUMBER: film-b frame 2115 holds 3 values that are no number in its mean, the first at 1204, 388 \(red, no number\), before the lens and the grade\. /)
+    const chunks = [chunk(rec('film-b', 0, 29, { mark: NOT_A_NUMBER, notNumber: notNumberRecord([{ ...frame(12, 5), notNumberFirst: at }]) })), ...filmB().slice(1)]
+    refused('film-b', chunks, /is marked NOT A NUMBER: 5 values in frame 12 \(5\), the first at 1204, 388 \(red, no number\)\. It is never encoded into a master/)
+    expect(shipTitle('film-b', { first: 2100, last: 2129 }, marked)).toBe('Chunk film-b-002100-002129, NOT A NUMBER in frames 2115 (3), 2120 (1): never encoded into a master')
+    const old = rec('film-b', 2100, 2129, { mark: NOT_A_NUMBER, notNumber: notNumberRecord([frame(2115, 3), frame(2120, 1)]) })
+    expect(notNumberFrames(old)).toBe('2115 (3), 2120 (1)')
+  })
+
+  it('counts a range as marked when a holder with the very same pixels is, whichever is taken', () => {
+    const mark = { mark: NOT_A_NUMBER, notNumber: notNumberRecord([frame(12, 5)]) }
+    const held = [{ ...chunk(rec('film-b', 0, 29), 'a'), holder: 'a' }, { ...chunk(rec('film-b', 0, 29, { ...mark, sha256: 'sha-other' }), 'b'), holder: 'b' }, ...filmB().slice(1)]
+    const g = (heldRanges(held) as { first: number; taken: { holder: string } }[]).find((x) => x.first === 0)!
+    expect(g.taken.holder).toBe('a')
+    expect(markedHolder(g).holder).toBe('b')
+    const p = refused('film-b', held, /^b\/film-b-000000 is marked NOT A NUMBER: 5 values in frame 12 \(5\)/)
+    expect(p.problems.length).toBe(1)
+    const other = [...held.slice(0, 1), { ...chunk(rec('film-b', 0, 29, { ...mark, sha256: 'sha-other', frameHashes: rec('film-b', 30, 59).frameHashes }), 'b'), holder: 'b' }, ...filmB().slice(1)]
+    expect(plan('film-b', other, { take: parseTake('film-b:0-29=a') }).ok).toBe(true)
   })
 
   it('says the mark in the commit that ships a chunk and in the line of the run, and nothing more for a good chunk', () => {
@@ -1299,17 +1340,17 @@ describe('render processes side by side, with a stand-in for the renderer', () =
     const d = path.join(dir, 'nan')
     const r = run(d, '--first', '0', '--last', '7', '--procs', '2', '--stand-in-nan', '5')
     expect(r.code).toBe(1)
-    expect(r.lines.some((l) => /^\[0\] NOT A NUMBER: film-b frame 5 holds 3 values that are no number in its mean.*Its PNG is kept as .*not-a-number.000005\.png\.$/.test(l))).toBe(true)
-    expect(r.lines.some((l) => /^\[0\] finished film-b-000004-000005: .*It is marked NOT A NUMBER: frames 5 \(3\)$/.test(l))).toBe(true)
+    expect(r.lines.some((l) => /^\[0\] NOT A NUMBER: film-b frame 5 holds 3 values that are no number in its mean, the first at 7, 5 \(green, no number\), before.*Its PNG is kept as .*not-a-number.000005\.png\.$/.test(l))).toBe(true)
+    expect(r.lines.some((l) => /^\[0\] finished film-b-000004-000005: .*It is marked NOT A NUMBER: frames 5 \(3\), the first at 7, 5 \(green, no number\)$/.test(l))).toBe(true)
     expect(chunks(d).length).toBe(4)
     const out = (first: number) => readJson(path.join(d, 'out', 'film-b', `film-b-${pad6(first)}-${pad6(first + 1)}.json`))
     expect(out(4).mark).toBe('NOT A NUMBER')
-    expect(out(4).notNumber).toMatchObject({ total: 3, frames: [{ frame: 5, count: 3 }], unread: [], msAFrame: 0 })
+    expect(out(4).notNumber).toMatchObject({ total: 3, frames: [{ frame: 5, count: 3, first: { x: 7, y: 5, channel: 'green', kind: 'no number' } }], unread: [], msAFrame: 0 })
     expect(out(0).mark).toBeUndefined()
     expect(out(0).notNumber).toMatchObject({ total: 0, frames: [], unread: [] })
     expect(fs.existsSync(path.join(d, 'work', 'film-b', 'not-a-number', '000005.png'))).toBe(true)
     const end = r.lines.slice(-2)
-    expect(end[0]).toMatch(/^NOT A NUMBER: .*film-b-000004-000005\.json \(film-b 4 to 5, drawn on .*\) holds 3 values that are no number in 1 frame: 5 \(3\)$/)
+    expect(end[0]).toMatch(/^NOT A NUMBER: .*film-b-000004-000005\.json \(film-b 4 to 5, drawn on .*\) holds 3 values that are no number in 1 frame: 5 \(3\), the first at 7, 5 \(green, no number\)$/)
     expect(end[1]).toMatch(/^master: 1 chunk of this range is marked NOT A NUMBER\. Every other chunk is drawn and may be sent\. Tell \/root the frames above\. Do not draw them again hoping/)
     const again = run(d, '--first', '0', '--last', '7', '--procs', '2', '--stand-in-nan', '5')
     expect(again.code).toBe(1)
