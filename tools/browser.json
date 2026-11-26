@@ -6,5 +6,6 @@
   "paths": [
     "~/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome",
     "~/.cache/ms-playwright/chromium_headless_shell-1217/chrome-linux/headless_shell"
-  ]
+  ],
+  "renderer": "lavapipe"
 }
