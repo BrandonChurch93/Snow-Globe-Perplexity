@@ -1,4 +1,5 @@
-import { config, formatById, tierSamples, type FormatSpec } from '../config'
+import { config, formatById, tierMotion, tierSamples, type FormatSpec } from '../config'
+import { framesamples, shutterTravelPx } from '../film/motion'
 import { Accumulator } from '../core/accumulator'
 import type { Assets } from '../core/assets'
 import { finish, type Gfx } from '../core/gl'
@@ -86,6 +87,7 @@ export interface Dev {
   flagged(): string[]
   cut(): { list: Record<string, unknown>; shots: ShotNote[] }
   renderTestShakeFrame(frameIndex: number, tier: string): Promise<void>
+  frameSamples(kind: 'film' | 'loop', frameIndex: number, tier: string): { samples: number; travelPx: number }
   renderShakeMoment(shot: string, at: ShakeMoment, tier: string): Promise<void>
   appScript(name: string, ask?: AppFrameAsk): ScriptPlan
   renderAppFrame(name: string, frameIndex: number, level: string, ask?: AppFrameAsk): Promise<ScriptFrame & { camera: number[]; globe: { heightMm: number; tiltDeg: number[] }; level: string; controlsPx: number | null; under: number; framing: Framing }>
@@ -278,6 +280,8 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
   }
   const filmCamera = (t: number) => filmPose(getGrid(), t - prerollSeconds)
   const hero = () => poseById('hero')
+  const filmSamples = (t: string, i: number, pose: (sec: number) => Pose) =>
+    framesamples(tierSamples(t), tierMotion(t), () => shutterTravelPx(frameTime(i), shutter, (sec) => globePoseAt(getFilm(), sec), pose, format.width, format.height))
   const loopFrames = () => loopPlan().frameCount
   const wrapFrame = (i: number) => ((i % loopFrames()) + loopFrames()) % loopFrames()
 
@@ -344,7 +348,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
         if (!span || span.shot.kind !== 'shake') throw new Error(`no such shake: ${spec.change.shot}`)
         const swap = g.swaps.find((s) => s.shot === span.shot.id)!
         const i = spec.change.at === 'swap' ? Math.round((swap.first + swap.last) / 2) : span.last + 1
-        await picture(along(getFilm()), frameTime(i), shutter, hero, samples, i + 1)
+        await picture(along(getFilm()), frameTime(i), shutter, hero, filmSamples(spec.tier, i, hero), i + 1)
         return
       }
       const onScreen = (spec.interface || !!spec.live) && spec.camera === MOVES.wide
@@ -376,7 +380,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
     async renderFilmFrame(i, t) {
       await ready
       tier = t
-      await picture(along(getFilm()), frameTime(i), shutter, filmCamera, tierSamples(t), i + 1)
+      await picture(along(getFilm()), frameTime(i), shutter, filmCamera, filmSamples(t, i, filmCamera), i + 1)
     },
     opening() {
       return { frameCount: openingPlan().frameCount }
@@ -394,7 +398,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
       await ready
       tier = t
       const w = wrapFrame(i)
-      await picture(around, w / fpsFilm, shutter, loopPose, tierSamples(t), 100000 + w)
+      await picture(around, w / fpsFilm, shutter, loopPose, framesamples(tierSamples(t), tierMotion(t), () => shutterTravelPx(w / fpsFilm, shutter, loopGlobe, loopPose, format.width, format.height)), 100000 + w)
     },
     dev: {
       caps: () => ({ ...gfx.caps, precision: acc.precision }),
@@ -521,6 +525,13 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
         }
         return { checkpoints, simulatedSeconds: totalSeconds, ms: now() - t0, done: true, totalSeconds }
       },
+      frameSamples(kind, i, t) {
+        const travelPx =
+          kind === 'film'
+            ? shutterTravelPx(frameTime(i), shutter, (sec) => globePoseAt(getFilm(), sec), filmCamera, format.width, format.height)
+            : shutterTravelPx(wrapFrame(i) / fpsFilm, shutter, loopGlobe, loopPose, format.width, format.height)
+        return { samples: framesamples(tierSamples(t), tierMotion(t), () => travelPx), travelPx }
+      },
       async renderTestShakeFrame(i, t) {
         await ready
         tier = t
@@ -540,7 +551,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
         const span = getGrid().spans.find((s) => s.shot.id === shot)
         if (!span || span.shot.kind !== 'shake') throw new Error(`no such shake: ${shot}`)
         const i = span.first + Math.round(offset(span.seconds) * fpsFilm)
-        await picture(along(getFilm()), frameTime(i), shutter, hero, tierSamples(t), i + 1)
+        await picture(along(getFilm()), frameTime(i), shutter, hero, filmSamples(t, i, hero), i + 1)
       },
       async simulate(fromSeconds, seconds) {
         replay = null
