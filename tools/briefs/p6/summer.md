@@ -5,7 +5,7 @@ Read first: the summer parts of `kit/02-SUBJECT.md` and `kit/04-LOOK.md`, the ap
 ## The faults (must-fix 6 of the review, open item 220)
 1. Summer reads as snow at the size of a phone feed. "The dandelion seeds are large white six-armed starbursts; small, they are snowflakes over a summer garden, and the app has more of them than the film." Picture: `out/stills/phase-5/final-pass/cmp_summer_rest.jpg` (the approved image, the film, the live app). The approved image has fine green-gold points of light in the air and no white stars.
 2. "The approved summer image has ... a pool of caustic light on the table; the delivered caustic is a thin bright scribble."
-3. The app's own path draws more seeds than the film. The two must be the same garden.
+3. "The app has more of them than the film." Both draw the same count at the `high` level (`live.quality.high.particleFraction` is 1), so find out why the app's picture shows more or larger seeds (the film's shutter and samples thin them; the app draws each whole). The two must be the same garden.
 
 ## What is asked
 - Make the air of summer read as summer at 400 px wide: warm, with fireflies as the points the eye finds first. Seeds, if they stay, are small, few, warm in tone and cannot be read as flakes: a dandelion seed is a hair-thin stalk under a soft tuft, seen backlit, not a six-armed star. Look at the approved images before deciding how many are left at rest and how many fly in the shake. The shake must still fill the globe (the storm hides the change of season: measure M4 must stay green), so the storm of summer has to be made of something that reads as summer too: seeds in great number drawn fine and gold in the light, pollen, the swarm of fireflies.

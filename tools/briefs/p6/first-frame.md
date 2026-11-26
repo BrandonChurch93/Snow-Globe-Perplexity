@@ -1,0 +1,24 @@
+# Job: `first_frame_finisher` · unit `globe`, the app's first frame · branch `agent/p6-first`
+
+Read first: the app parts of `kit/02-SUBJECT.md` (section 7, from line 169) and of `kit/05-ARCHITECTURE.md` (loading, the live path, hosting), `tools/README.md` on `firstlook`, `hostcheck`, `texpack` and "Signals the page gives", and in `kit/PROGRESS.md` the open items 215 and 30 (search for `^215\. ` and `^30\. `).
+
+## The fault (must-fix 3 of the review, open item 215)
+"The app's first visible frame is a blank page." From first paint to the first picture the page is flat `#07080a` with nothing on it, plus a pure black 300 x 150 box at the top left (the canvas before it is sized). About 15 MB in 30 to 40 files arrive before the first picture (measured here: 13.83 MB for winter), "so on a phone connection this is seconds of nothing, and it is the opening of any screen recording". Picture: `out/stills/phase-5/final-pass/app_loading_blank.jpg`. The standard this is judged by: the first visible frame is striking, with no white flash, spinner, blank canvas or empty state.
+
+## What is asked
+1. A visitor sees the globe at once. The first thing the page paints is a still of the season it will open on, at rest, in the app's own framing for that screen, so that it passes for the picture at a glance on a phone, a tablet and a desktop of any shape. It costs almost nothing to arrive: inline in the page or one small file per season, a few tens of kilobytes. A link with `?season=fall` shows fall's still; no season named shows `defaultSeason`'s.
+2. The canvas is out of sight until its first complete frame is drawn (no black box, no half-drawn frame), then the live picture comes in over the still so that nobody can tell where one became the other: same place, same size, same light, no jump, no flash, no flicker of the controls. If the globe in the still and the globe in the live picture cannot be made to sit on each other for every screen shape by layout alone, compute the still's place from the same framing numbers the app uses (`src/app/framing.ts` is `framing_finisher`'s: read it, call it, do not edit it; it is changing the phone's framing while you work, so take nothing from it as a constant).
+3. Nothing but the picture: no spinner, bar, percentage, word or logo.
+4. Less arrives before the first picture. Find what the first picture truly needs and load the rest behind it (the other three seasons' files, the sound, whole-size textures behind their first files, whatever the default season at rest does not draw). Say the number before and after.
+5. The stills are made by a command from the build itself, `node tools/poster.mjs` (yours to write, on the pattern of `tools/still.mjs` and `tools/lib/page.mjs`), so `/root` can make them again whenever a season's look or the framing changes, and it will, at the end. They are not hand made and not generated pictures. Decide what the command draws (the whole frame for a few screen shapes, or the globe alone on a clear ground with the room behind it painted by the page) by what looks best at the moment of the handover.
+6. A machine that cannot run WebGL2 at all already gets the `cannot` page (`src/ui/cannot.ts`): keep that, and let it too show the still.
+
+## Yours
+`index.html`, `src/main.ts`, `src/app/app.ts`, `src/app/mounts.ts`, `src/app/painter.ts`, `src/core/assets.ts`, `src/core/textures.ts`, `src/core/models.ts`, `tools/poster.mjs`, `tools/firstlook.mjs`, `tools/lib/webset.mjs` (only the order and grouping of what loads first), `public/first/**` (what your command writes; this one folder under `public/` is committed), `tests/load.test.ts`, a new `tests/first-frame.test.ts`. `controls_finisher` owns `src/ui/**`, `src/app/session.ts`, `players.ts`, `gestures.ts`, `overlay.ts`, `replay.ts` and may send you exact lines for `src/app/app.ts` (reduced motion is read there): apply them. `/root` adds `"poster": "node tools/poster.mjs"` to `package.json` when you ask.
+
+## Done means
+- Stills of the page, on `phone` (390 x 844), `tablet` (1024 x 1366) and `hd`: at first paint; half way through the load; on the frame the live picture takes over; one second later. The globe is there in all four, in the same place and size, and you have set each pair side by side and flipped between them.
+- The same for `?season=summer` on the phone and for a very wide window (2560 x 1080) and a very tall one (360 x 800).
+- `npm run firstlook -- --live`: what arrived before the first picture, before your work and after.
+- `npm run hostcheck` passes (first load under `host.firstLoadMaxMb`, shipped size under `host.maxShippedMb`), `npm run determinism` passes, no console message and no failed request on any load.
+- `index.html` and `public/` are outside the engine hash, so the judged pictures cannot move by your stills; anything you change under `src/` must leave the eight judged keys the same pictures (by hash at `draft`), or you say what moved.

@@ -9,7 +9,7 @@ A photoreal snow globe rendered in the browser (three.js, WebGL2). Shaking it ch
 The standard, in its own words: a tailored product experience, never a marketing website (no headers, taglines, hints, labels, branding); everything must really work, with no placeholders, broken states or console errors and no rough edges in motion, responsiveness or edge cases; the first visible frame is striking (no blank canvas, no spinner); one focal point; it must read in a screen recording playing small in a phone feed. Never take a shortcut to finish sooner. Good enough is a failure.
 
 ## Repo and git
-- `https://github.com/BrandonChurch93/Snow-Globe-Perplexity`, branch `main`. `git clone --depth 60` and deepen when a merge asks for it (`git fetch --deepen 200`). `npm ci` at the repo root, then `npm run build`.
+- `https://github.com/BrandonChurch93/Snow-Globe-Perplexity`, branch `main`. `git clone --depth 400` and deepen when a merge asks for it (`git fetch --deepen 400`). `npm ci` at the repo root, then `npm run build`.
 - `git config user.name "Brandon Church"`; `git config user.email "200545962+BrandonChurch93@users.noreply.github.com"`. Every commit message, merge commits too, ends with the trailer `Co-authored-by: Perplexity <noreply@perplexity.ai>` exactly once.
 - Your branch is `agent/p6-<name>` (your job file gives the name). Start it from `origin/main`. Never force push, never push to `main`, never delete a remote branch, never rewrite history.
 - Looks branch `agent/p6-<name>-looks` (an orphan branch, only ever fetched): at most 4 pictures a push, JPEG, at most 1200 px on the long edge, with a `captions.txt` that says for each what it shows, the frame or state, the tier, and before or after.
@@ -19,7 +19,7 @@ The standard, in its own words: a tailored product experience, never a marketing
 - No generated or fetched picture, sound or model is added without its row for `ASSETS.md` in your report.
 
 ## Files
-- You edit only the files your job file lists. Three agents work at once (`change_finisher`, `app_finisher`, `summer_finisher`); each file has one owner. A change you need in another agent's file: message that agent (`/root/<name>`) with the exact lines, once, short. A change you need in a file nobody owns: send `/root` the exact lines.
+- You edit only the files your job file lists. Five builders work at once (`change_finisher`, `summer_finisher`, `first_frame_finisher`, `framing_finisher`, `controls_finisher`), and `strict_checker` beside them; each file has one owner. A change you need in another agent's file: message that agent (`/root/<name>`) with the exact lines, once, short. A change you need in a file nobody owns: send `/root` the exact lines.
 - Every number, id and name that `config/showcase.json` holds is read from it, never written into code.
 - `src` is TypeScript, strict, with `noUnusedLocals` and `noUnusedParameters`. Almost no code comments, and those there are say why. No `Math.random`, `Date.now` or `performance.now` in anything that affects a computed pixel.
 - No em dashes and no exclamation points in anything you write. No model names. Nothing is ever written over the picture.
@@ -32,7 +32,8 @@ The glass came out as one flat white sheet on Brandon's tablet. The cause was `p
 
 ## How to work
 - Stills: `npm run build` first (stills refuse a stale `dist`), then `npm run still -- --season S --state rest|landed|settled --camera hero|macro|interior|base|surface|low --tier draft --format hd --force`. Tiers: `draft` 2 samples, `review` 8, `final` 24. Judge a look at `review` or `final`, tune at `draft`.
-- Motion: `npm run sheet` and `npm run seq` (see `tools/README.md`): `npm run sheet -- --shot shake-1 --tier draft`, `--motion lift|strokes|setdown|landing|arrival`, `--first N --last N`. The film is 60 frames a second; a fault in motion is judged frame by frame at 60, never from every second frame.
+- Motion: `npm run sheet` and `npm run seq` (see `tools/README.md`; `node tools/sheet.mjs --help` and `node tools/seq.mjs --help` print their flags). `npm run sheet -- --shot shake-1 --tier draft` is 12 frames across a shot; `--motion lift|strokes|setdown|landing|swap|arrival --shot shake-1` is consecutive frames at 30 a second; `npm run seq -- --first N --last M --tier T` is every film frame of a range, each as its own picture, with one sheet across it. The film is 60 frames a second: a fault in motion is judged from `seq`, frame by frame at 60, never from every second frame.
+- Only `sheet`, `seq`, `status` and `sound` know `--help`. Every other tool takes it as a plain run and starts rendering: read `tools/README.md` or the top of the tool's file for its flags.
 - The app's own path (what a visitor's browser draws, without the film's shutter): `--live high|medium|low` on a still, and `node tools/visit.mjs` for a visitor's pass with real pointer, touch and key events on `hd`, `phone` (390 x 844) and `tablet` (1024 x 1366).
 - One render process at a time in your VM. Never run `npm run build`, `make` or `texpack` while a render runs.
 - Look at what you make, at full size and at 400 px wide (a phone feed). Put the approved image or the before picture beside every look.
