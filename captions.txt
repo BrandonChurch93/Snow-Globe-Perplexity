@@ -51,3 +51,11 @@ After. The foot of the glass in film frames 672 to 679 of film B, one frame a ro
 
 16-lanterns-2831-2836.jpg
 Fall's lantern faces under the cover of the fourth change, film frames 2831 to 2836 from left to right, the part of the frame under the glass at its own pixels. Format preview, tier draft. Row 1: main at 89e35077, before my first job. Row 2: agent/p6-change at 978ef9f1 (my second job). Rows 3 and 4: the same two rows with their levels multiplied by 5. In both the faces are plain in 2831, faint in 2832 and nearly gone from 2833; they were not lit through the cover before either.
+
+Third job, the four changes at review tier (8 samples a frame), format hd (1920 by 1080), film B, agent/p6-change at bbe4db9b (my commit f3e3a0dd with main at 9eeacff5 merged in), drawn under Mesa lavapipe.
+
+17-swap1-673-678-review.jpg
+After. First change, winter to spring: film frames 673 to 678, whole frames set down to 398 by 224, three to a row from the top left. Format hd, tier review, commit bbe4db9b. In all six the glass is a lit globe with its halo and the base under it is black.
+
+18-swap1-foot-673-678-review.jpg
+After. The foot of the glass in the same six frames at their own pixels, two to a row: 673 and 674, 675 and 676, 677 and 678. Each cut is 598 by 200 and hangs from the top and the middle of the lit glass in its own frame, so the shake's travel is taken out and a step in the base's line would show as one. Format hd, tier review, commit bbe4db9b. The strip of lit foot that spring's taller base covers, about 20 to 30 px high, goes out as a fine grain over the six frames. 675 and 676 hold the same outline, the strip a little dimmer in 676. The grain itself is in sight at these pixels.
