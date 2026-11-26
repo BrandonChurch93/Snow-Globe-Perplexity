@@ -67,6 +67,8 @@ export const CARD_VERT = `
     if (${at(SHAPE.seed)}) {
       nearC = 0.0;
       float calmC = whole * afloat * (1.0 - gustC);
+      // a head's tuft is wider than the glass's own fade at its edge: one that floats at the limb would stand half outside the ball
+      if (on > 0.5) keepC *= 1.0 - calmC * smoothstep(${n(CARD.hair.rimFrom[0])}, ${n(CARD.hair.rimFrom[1])}, length(rimAxis) / max(R, 1e-4));
       seedNear = calmC * step(fract(h.y * 29.0), ${n(CARD.hair.nearShare)}) * smoothstep(${n(CARD.hair.nearFrom[0])}, ${n(CARD.hair.nearFrom[1])}, depth);
       rC *= mix(${n(CARD.hair.restSize)}, mix(1.0, ${n(CARD.hair.stormSize)}, whole), max(gustC, 1.0 - whole));
       rC *= mix(1.0, mix(${n(CARD.hair.farSize)}, 1.0, smoothstep(${n(CARD.hair.farFrom[0])}, ${n(CARD.hair.farFrom[1])}, depth)), calmC) * (1.0 + ${n(CARD.hair.nearSize - 1)} * seedNear);
