@@ -263,7 +263,7 @@ export class Lighting {
     u.uRigSky.value.setRGB(sky[0] * fill, sky[1] * fill, sky[2] * fill)
     u.uRigBounce.value.set(f.keyCol.r * ROOM_RIG.inside.bounce, f.keyCol.g * ROOM_RIG.inside.bounce, f.keyCol.b * ROOM_RIG.inside.bounce, ROOM_RIG.inside.sky)
     u.uRigGround.value.setRGB(ground[0] * fill, ground[1] * fill, ground[2] * fill)
-    this.turn.makeRotationFromEuler(this.tilt.set(f.globe.tiltX, 0, f.globe.tiltZ))
+    this.turn.makeRotationFromEuler(this.tilt.set(f.globe.tiltX, f.globe.twist ?? 0, f.globe.tiltZ, 'XZY'))
     u.uLightFrame.value.setFromMatrix4(this.turn).transpose()
 
     const breath = breathOf(f.time, f.period)
