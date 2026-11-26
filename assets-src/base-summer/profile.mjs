@@ -158,8 +158,8 @@ const bedWarp = (w) => w + 1.9 * Math.sin(w / 5.1 + 0.7) + 1.1 * Math.sin(w / 2.
 export function strataCoord(az, h) {
   const A = az / 360
   const a = az - 360 * Math.round(az / 360)
-  const sag = 8.5 * Math.exp(-(((a - 14) / 42) ** 2))
-  return bedWarp(h + sag + 13 * (fbm(A * 4 + 4, h / 34 + 3, 4, 64, 21, 3) - 0.5) + 3.2 * Math.sin((az * 2 + 35) * RAD) + 2.1 * Math.sin((az * 5 - 80) * RAD + h * 0.1))
+  const sag = 2.2 * Math.exp(-(((a - 14) / 42) ** 2))
+  return bedWarp(h + sag + 5.6 * (fbm(A * 4 + 4, h / 34 + 3, 4, 64, 21, 3) - 0.5) + 1.3 * Math.sin((az * 2 + 35) * RAD) + 0.9 * Math.sin((az * 5 - 80) * RAD + h * 0.1))
 }
 const FOOT = { glass: 1.08, scallop: 1.2, cockle: 1.2, snail: 1.25, olive: 1.0, pearl: 0.95 }
 function bare(m, az, s) {
@@ -171,16 +171,20 @@ function bare(m, az, s) {
   const t = w / BED_MM
   const k = Math.floor(t)
   const f = t - k
-  const amp = (hashK(k, 5) < 0.24 ? 0.3 : 0.9 + 1.5 * hashK(k, 6)) * (0.3 + 0.7 * smooth(0.3, 0.62, fbm(A * 6 + k * 3.1, 0.5, 6, 4, 31, 2)))
-  // A bed is a ledge: cut back at its underside, falling away slowly toward the bed above, so each one throws a shade under it.
-  const prof = f < 0.26 ? smooth(0, 0.26, f) : 1 - Math.pow((f - 0.26) / 0.74, 0.8)
-  const swell = 2.3 * (fbm(A * 5 + 1, h / 16, 5, 64, 11, 3) - 0.5) + 2.0 * (fbm(A * 9 + 3, h / 11, 9, 64, 15, 3) - 0.5) + 1.0 * (fbm(A * 19 + 7, h / 5.5, 19, 64, 13, 2) - 0.5)
+  const amp = (hashK(k, 5) < 0.24 ? 0.4 : 0.6 + 0.7 * hashK(k, 6)) * (0.35 + 0.65 * smooth(0.3, 0.62, fbm(A * 6 + k * 3.1, 0.5, 6, 4, 31, 2)))
+  // A bed is a ledge: cut back sharply at its underside, which holds a thin shade, and stepped back at its upper edge, which takes the light.
+  const prof = f < 0.13 ? smooth(0, 0.13, f) : f < 0.62 ? 1 - 0.22 * ((f - 0.13) / 0.49) : 0.78 * (1 - smooth(0.62, 0.76, f))
+  const swell = 1.2 * (fbm(A * 5 + 1, h / 16, 5, 64, 11, 3) - 0.5) + 1.0 * (fbm(A * 9 + 3, h / 11, 9, 64, 15, 3) - 0.5) + 0.7 * (fbm(A * 19 + 7, h / 5.5, 19, 64, 13, 2) - 0.5)
   const lw = w / 2.1 + 0.9 * fbm(A * 24, h / 5, 24, 64, 41, 2)
   const lf = lw - Math.floor(lw)
   const lam = 0.2 * ((lf < 0.25 ? smooth(0, 0.25, lf) : 1 - Math.pow((lf - 0.25) / 0.75, 0.8)) - 0.45) * smooth(0.46, 0.68, fbm(A * 7 + 2, h / 12, 7, 64, 43, 2)) * (0.4 + 1.2 * hashK(Math.floor(lw), 9))
   const gh = 6.2 + 1.1 * Math.sin((az * 2 - 20) * RAD) + 1.8 * (fbm(A * 6, 0.3, 6, 4, 51, 2) - 0.5)
   const groove = -0.55 * Math.exp(-(((q.h - gh) / 1.3) ** 2)) * (1 - onTop) * (1 - 0.8 * smooth(-25, 40, az - 360 * Math.round(az / 360)))
   const lip = 0.12 * smooth(35.8 + RISE, 37.2 + RISE, q.h + 1.6 * (fbm(A * 9, 0.7, 9, 4, 61, 2) - 0.5)) * (1 - onTop)
+  // The top is a slab that stands out over the body with an uneven edge; where the sand falls it keeps close to the turned shape.
+  const a180 = az - 360 * Math.round(az / 360)
+  const slabH = 31.2 + RISE + 4.2 * (fbm(A * 7 + 5, 0.4, 7, 4, 83, 3) - 0.5) + 1.4 * (fbm(A * 23 + 1, 0.8, 23, 4, 87, 2) - 0.5) + 0.8 * Math.sin((az * 3 + 40) * RAD)
+  const slab = (1.5 + 0.7 * (fbm(A * 13 + 2, 0.6, 13, 4, 85, 2) - 0.5)) * smooth(slabH - 0.45, slabH + 0.4, q.h) * (1 - onTop) * (1 - 0.7 * smooth(48, 62, a180) * smooth(128, 114, a180))
   let pit = 0
   const cu = A * 150
   const cv = s / 2.3
@@ -196,7 +200,7 @@ function bare(m, az, s) {
     if (d < rr) pit = Math.min(pit, -0.55 * (1 - (d / rr) ** 2) * rr * 2)
   }
   const fade = smooth(0.0, 1.6, s) * smooth(m.total, m.total - 2.2, s)
-  const d = (swell * (1 - 0.55 * onTop) + amp * (prof - 0.45) * (1 - 0.8 * onTop) + lam * (1 - 0.6 * onTop) + groove + lip) * fade + pit * fade
+  const d = (swell * (1 - 0.55 * onTop) + amp * (prof - 0.45) * (1 - 0.8 * onTop) + lam * (1 - 0.6 * onTop) + groove + lip + slab) * fade + pit * fade
   return { d, w, k, f, q, onTop, gh }
 }
 export function relief(m, az, s) {
