@@ -26,3 +26,14 @@ uhd-3500-plain-before-after.jpg
 
 uhd-1742-plain-before-after.jpg
   Film frame 1742 at uhd (interior camera, summer), crop 560 x 420 at 680,0. Whole frame: PSNR 83.15 dB, largest difference 10 of 255, 0.048 % of pixels differ. No particle is over the limit in this frame.
+
+Third push: a sweep of the film for the cut, and the worst frame of the sweep at uhd.
+
+sweep-hd-probe64.jpg
+  The tool's own contact sheet of film frames 200 to 3400, every 200th, lavapipe, hd, tier draft, drawn by main fad0ca7 with the probe at 64 px (at hd; the same shapes want about twice that at uhd, so over lavapipe's 128 px). Every particle at or under the probe value is hidden; the flat magenta shapes are the ones that would be cut at uhd. Counted with patches of 16 px or more in frames 1000, 1200, 2200, 2400, 2600, 2800 and 3400; none in the other ten.
+
+uhd-2400-plain-before-after.jpg
+  Film frame 2400 at uhd, plain picture, crop 560 x 600 at 1300,150, where the sweep's largest shape lies (214 x 240 px at hd). Left = before (main bcad846, sprites), right = after the mend (quads). Measured in this crop: largest difference 5 of 255, five samples over 2 levels.
+
+uhd-2400-worst-before-after.jpg
+  The same pair, crop 480 x 360 at 2224,848 round the worst 32 px block of the frame. Whole frame: PSNR 86.80 dB, largest difference 19 of 255, 0.026 % of pixels differ, 0.0010 % by more than one level.
