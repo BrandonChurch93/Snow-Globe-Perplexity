@@ -80,14 +80,20 @@ export const CARD_VERT = `
       float cotC = 1.0 - smoothstep(${n(CARD.hair.sceneEdge[0])}, ${n(CARD.hair.sceneEdge[1])}, length((atC - vec2(${n(CARD.hair.cottageAt[0])}, ${n(CARD.hair.cottageAt[1])})) / vec2(${n(CARD.hair.cottageWide[0])}, ${n(CARD.hair.cottageWide[1])})));
       float crownC = 1.0 - smoothstep(${n(CARD.hair.sceneEdge[0])}, ${n(CARD.hair.sceneEdge[1])}, length((atC - vec2(${n(CARD.hair.crownAt[0])}, ${n(CARD.hair.crownAt[1])})) / vec2(${n(CARD.hair.crownWide[0])}, ${n(CARD.hair.crownWide[1])})));
       float sceneC = max(cotC, crownC);
-      // in the storm half as many stand before the cottage and the tree, so that both are seen through it
-      keepC *= 1.0 - ${n(CARD.hair.stormScene)} * sceneC * gustC;
+      // in the storm few stand before the cottage, the lanterns and the tree, so that the miniature is read through it: those behind it stay, and are the bright air seen in its gaps. The storm is thickest at the upper left and along the right limb, and thinner elsewhere
+      vec2 lowC = (atC - vec2(${n(CARD.hair.stormLowAt[0])}, ${n(CARD.hair.stormLowAt[1])})) / vec2(${n(CARD.hair.stormLowWide[0])}, ${n(CARD.hair.stormLowWide[1])});
+      float frontC = smoothstep(${n(CARD.hair.stormFront[0])}, ${n(CARD.hair.stormFront[1])}, depth);
+      keepC *= 1.0 - max(${n(CARD.hair.stormScene)} * max(cotC, 1.0 - smoothstep(${n(CARD.hair.sceneEdge[0])}, ${n(CARD.hair.sceneEdge[1])}, length(lowC))), ${n(CARD.hair.stormCrown)} * crownC) * frontC * gustC;
+      vec2 upC = (atC - vec2(${n(CARD.hair.stormUpAt[0])}, ${n(CARD.hair.stormUpAt[1])})) / vec2(${n(CARD.hair.stormUpWide[0])}, ${n(CARD.hair.stormUpWide[1])});
+      keepC *= 1.0 - ${n(CARD.hair.stormThin)} * (1.0 - max(exp(-0.5 * dot(upC, upC)), smoothstep(${n(CARD.hair.stormLimb[0])}, ${n(CARD.hair.stormLimb[1])}, atC.x))) * gustC;
       denseC = max(denseC, max(${n(CARD.hair.sceneOut[0])} * cotC, ${n(CARD.hair.sceneOut[1])} * crownC));
       keepC *= mix(1.0, smoothstep(denseC - 0.1, denseC, fract(own * 211.0)), calmC);
       // depth and light: about one head in five is near and sharp and lit; the others are dimmer and a little soft; the far ones are small soft puffs
       seedNear = calmC * step(fract(h.y * 29.0), ${n(CARD.hair.nearShare)}) * smoothstep(${n(CARD.hair.nearFrom[0])}, ${n(CARD.hair.nearFrom[1])}, depth) * (1.0 - sceneC) * step(${n(CARD.hair.nearDense)} * denseC, fract(h.z * 157.0)) * smoothstep(${n(CARD.hair.nearLow[0])}, ${n(CARD.hair.nearLow[1])}, atC.y);
       float puffC = 1.0 - smoothstep(${n(CARD.hair.puffFrom[0])}, ${n(CARD.hair.puffFrom[1])}, depth);
       keepC *= mix(1.0, mix(${n(CARD.hair.dim[0])}, ${n(CARD.hair.dim[1])}, fract(h.w * 71.0)) * (1.0 - ${n(CARD.hair.sceneDim)} * sceneC), calmC * (1.0 - seedNear));
+      // the far puffs are faint: a crowd of small bright ones reads as snow
+      keepC *= mix(1.0, ${n(CARD.hair.puffSeen)}, calmC * (1.0 - seedNear) * puffC);
       seedSoft = calmC * (1.0 - seedNear) * mix(mix(${n(CARD.hair.softPx[0])}, ${n(CARD.hair.softPx[1])}, fract(h.y * 173.0)), mix(${n(CARD.hair.puffPx[0])}, ${n(CARD.hair.puffPx[1])}, fract(h.y * 173.0)), puffC);
       if (laidB) {
         seedNear = 1.0;
