@@ -2,3 +2,19 @@
   Winter, rest, hero, hd, draft (2 samples). A 480 x 360 crop at its own size, taken at x 0, y 668 of the frame, around the 32 px block where the two pictures differ most.
   Left: the baseline, SwiftShader (ANGLE, Vulkan 1.3.0, SwiftShader Device (Subzero)). Right: Mesa lavapipe (ANGLE, Vulkan 1.4.335, llvmpipe LLVM 21.1.8, 256 bits).
   Whole frame: PSNR 40.52 dB, largest difference 201 of 255.
+
+02-lavapipe-winter-rest-hd-review-largest-difference.jpg
+  Winter, rest, hero, hd, review (8 samples). A 480 x 360 crop at its own size, taken at x 0, y 668, around the 32 px block where the two pictures differ most.
+  Left: the baseline, SwiftShader. Right: Mesa lavapipe.
+  Whole frame: PSNR 41.37 dB, largest difference 155 of 255.
+
+03-lavapipe-winter-landed-hd-review-largest-difference.jpg
+  Winter, landed, hero, hd, review (8 samples). A 480 x 360 crop at its own size, taken at x 0, y 668, around the 32 px block where the two pictures differ most.
+  Left: the baseline, SwiftShader. Right: Mesa lavapipe.
+  Whole frame: PSNR 41.42 dB, largest difference 155 of 255.
+
+04-integer-hash-test-winter-rest-hd-draft-largest-difference.jpg
+  A test that stays in the probe's VM, not the repo's scene: slabHash in src/scene/surface.ts swapped from fract(sin(dot(...)) * 43758.5453) to an integer hash, the scene rebuilt, then drawn by both renderers.
+  Winter, rest, hero, hd, draft (2 samples). A 480 x 360 crop at its own size, taken at x 1056, y 700, around the 32 px block where the two pictures differ most.
+  Left: SwiftShader. Right: Mesa lavapipe.
+  Whole frame: PSNR 42.39 dB (40.52 dB with the scene as it is), largest difference 201 of 255.
