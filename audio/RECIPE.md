@@ -4,6 +4,8 @@ Written by the sound agent of Phase 5 on 2026-11-25 (UTC), on the branch `agent/
 
 ## Where it stands
 
+**After decision 146 of `/root` (2026-11-26, 08:22 UTC): the app's pack keeps the film's balance of a shake. The lift, the clink, the riser and every shake take the trim of 8 dB that the music and the ambience have, and each shake takes the film's own step on top (3 dB, fall 6) and its rise of 30 ms. The same 16 sounds are kept, the same eight effect cues are open, and the two films are the bytes they were.** Nothing was bought: 7,200 spent, 2,800 left. By measurement the app's shake now stands against the bar of music before it within 0.05 dB of film B's in all four seasons, where it stood 11 dB over the film's balance (fall 14). Against the music under it the app's shake stands 2.2 to 2.8 dB lower than film B's, because the app lets its old music go in another way than the film does; that is `src/` and is not mended. The press's tick and the chime stay at their kept level, by listening. The stir came down with the shake and has no field of its own. By a bound, one shake of the app peaks at -2.94 dBFS at the most; a second press and a stir laid on its worst instant can pass -1 dB. Nobody has heard any of it and nothing was played in a browser. See "Decision 146: the app keeps the film's balance of a shake". The paragraphs that follow are older states, the newer first.
+
 **After decisions 141, 142 and 144 of `/root` (2026-11-26, 06:58 to 07:44 UTC): the same 16 sounds are kept and the same eight effect cues are open, but four of the eight no longer leave a silence. A sound that is not a kept take is laid for `key-tap` (the typing of film A's opening) and for `shake-summer`, `shake-fall` and `shake-winter` (the kept water of `shake-spring`).** Nothing was bought: 7,200 spent, 2,800 left. The season part of the four landings is still silent and the one-piece music is still open. See "Decisions 141, 142 and 144: sounds laid without being kept". The paragraphs that follow are older states, the newer first.
 
 **After the round `after-review` of Phase 6 (2026-11-26): 16 sounds are kept. `amb-fall` and `amb-winter` are kept as laid sounds. Eight effect cues (`shake-winter`, `shake-summer`, `shake-fall`, `land-winter`, `land-spring`, `land-summer`, `land-fall`, `key-tap`) and the one-piece music are open.** The round cost 435 credits in 12 calls; the guard's sum after it is 7,200 spent of Brandon's 10,000 and 2,800 left; no music was bought. What each take and each laid sound gave is under "Phase 6: the round `after-review`". The lines that follow here are the state at the end of Phase 5.
@@ -240,7 +242,7 @@ The rules of decision 142, as `/root` gave them. (a) A borrowed shake is laid wh
 - So the first, third and fourth shakes are one sound, and the second is the same water half a semitone lower.
 - Fall still draws remarks on its level at 6 dB down: "a bit too loud and close-miked compared to the quiet ambient background", "very loud compared to the music that follows". The rule says once, so it stays there. The music is thin in that bar. For a human ear.
 - One listening of winter at 0 cents got no answer (an error of the call) and was asked again (`r42.json`). The count of 3 of 4 is of the four answers that came.
-- The level and the rise are `SHAKE` in `tools/lib/audio.mjs` (`downDb: 3, riseMs: 30, moreDb: 3, more: ['shake-fall']`) and belong to the film's mix only. The app's pack plays the four shakes from its sprite at the gains of `public/audio/index.json` (about 1.24) while its music and ambience are trimmed 8 dB: the question of (c) was not asked of the app.
+- The level and the rise are `SHAKE` in `tools/lib/audio.mjs` (`downDb: 3, riseMs: 30, moreDb: 3, more: ['shake-fall']`). When this was written they belonged to the film's mix only: the app's pack played the four shakes from its sprite at a gain of about 1.24 while its music and its ambience were trimmed 8 dB, and the question of (c) was not asked of the app. Decision 146 changed that: the pack reads the same constant and trims every shake with the music. See "Decision 146: the app keeps the film's balance of a shake".
 - By measurement in film B, each shake's bar of 2.4 s against the bar before it: spring -20.2 dB RMS against -15.6; summer -19.4 against -14.5; fall -20.3 against -17.5; winter -20.4 against -16.5. The peaks in those bars are -3.5, -2.9, -2.4 and -2.2 dBFS.
 
 ### The music loops of the app
@@ -255,6 +257,154 @@ The app plays a loop round by crossing its end over its start: one bar (2.4 s) f
 ### Listening copies for a person
 
 In `out/work/audio/listen/` (not committed), cut from the final files by `out/work/audio/p6/d141/listen-copies.mjs`: `now-filmA-opening-20s.wav`; `now-shake-1-spring-in-place.wav`, `now-shake-2-summer-in-place.wav`, `now-shake-3-fall-in-place.wav` and `now-shake-4-winter-in-place.wav` (4.8 s of film B each, the shake at 1.2 s); `now-loop-music-<season>-seam.wav` and `now-loop-amb-<season>-seam.wav` (16 s, the app's cross begins at 7 s).
+
+## Decision 146: the app keeps the film's balance of a shake
+
+Written by the sound finisher of Phase 6 on 2026-11-26, 08:22 to 10:30 UTC. No call that makes sound was made and no credit was spent: the guard's sum at 10:15 UTC reads 7,200 spent, 2,800 left, 52 calls, none open. Nobody has heard any of this, and nothing was played in a browser. Every judgement below is by measurement or by a listening agent (`evaluate_audio`), whose times are loose and which names one sound differently from call to call. The replies are `r49.json` to `r58.json` in `audio/evidence/after-review/`, each with what was asked, the sha256 of every clip and how it was counted.
+
+### What was wrong
+
+Decision 142 brought every shake of the film down 3 dB (fall 6) and let it rise over 30 ms. The app's pack trimmed its music and its ambience 8 dB and left every sound of the sprite at its kept level, a shake at a gain of about 1.24. By measurement on that pack a shake stood 0.7 to 3.7 dB under the bar of music before it, where film B has it 12.6 to 14.8 dB under: 11 dB over the film's balance, fall 14. The app has no limiter. A shake alone peaked at -1.47 to -1.68 dBFS there, and the four passages as film B has them, summed offline, peaked at -1.03 to -1.34 dBFS (`sums-old/table-old.json`). The same four passages of the new pack peak at -10.56 to -11.80 dBFS.
+
+### What the pack does now
+
+- `APP_TRIM_DB` in `tools/lib/audio.mjs` is `{ ambience: -8, interface: 0, touch: -8, impact: -8, music: -8 }`. `touch` is the lift, the clink and the riser; `impact` is every shake and every landing; `interface` is the tick, the chime, `ui-send`, `music-box` and `key-tap`. The film does not read this table.
+- A shake takes `shakeStepDb(id)` on top: `SHAKE.downDb` down, and `SHAKE.moreDb` further for the cues of `SHAKE.more`. The film's mix asks the same function, so the two cannot drift apart. Together 11 dB down for spring, summer and winter and 14 dB down for fall.
+- The rise of 30 ms (`SHAKE.riseMs`, the film's own `riseIn`) lies in the sprite itself, since the app plays an entry as it lies. `spriteSound` makes each sound's copy for the sprite and its gain: every copy has its peak at one height, a shake's after its rise, so the gain puts back what sounds.
+- The gains in `public/audio/index.json`:
+
+| Entry | Before | After | Change |
+| --- | --- | --- | --- |
+| `lift` | 0.44365 | 0.17662 | -8.00 dB |
+| `glass-clink` | 0.19667 | 0.07829 | -8.00 dB |
+| `riser` | 0.48019 | 0.19117 | -8.00 dB |
+| `shake-spring`, `shake-winter` | 1.23737 | 0.34874 | -11.00 dB |
+| `shake-summer` | 1.23508 | 0.34809 | -11.00 dB |
+| `shake-fall` | 1.23737 | 0.24689 | -14.00 dB |
+| `ui-tick`, `ui-sound-on`, `ui-send`, `music-box` | 0.32137, 0.2485, 0.44389, 0.50463 | the same | none |
+| the eight loops | | the same | none |
+
+- Of the pack's ten files only `sprite.mp3` and `index.json` are other bytes than before; the eight loops are the same files, and every entry of the sprite begins where it began and is as long. The nine mp3 files are 4,378,752 bytes together as before (4.18 MB, under the cap of 8 MB); `index.json` is 3,102 bytes beside them.
+- The stir follows by itself. The app makes it from the clink and from the season's shake entry at half its gain times the strength (`src/audio/index.ts`, lines 669 and 671), so its water is 11 dB lower than it was (fall 14) and its clink 8 dB lower. Nothing under `src/` was changed.
+- The live app plays only `lift`, `glass-clink`, `ui-tick`, `ui-sound-on`, the four shakes and the loops (`CUE` in `src/audio/index.ts`; no landing has a kept sound). `riser`, `ui-send` and `music-box` lie in the sprite and the live app does not play them.
+- To give the app another balance, change `APP_TRIM_DB` alone, then `npm run sound -- --pack`. `SHAKE` is read by the film and by the pack alike.
+
+### The balance by measurement
+
+`out/work/audio/p6/d146/app.mjs` works out offline what `src/audio/index.ts` would play from a pack folder: an entry of the sprite at its gain times the call's, each loop crossed over its seam, the old music let go over the bar as `release` does it (a cosine to nothing, the high-pass swept from 30 to 2400 Hz), the ambience crossed over the bar, the lift and the shake at once, the clink and the new music one bar later. It follows the source by reading; that a browser plays the same was not checked. `measure.mjs` lays each shake over the same bar of the old season's track as film B does (bars 6, 4, 4 and 5 of the tracks of winter, spring, summer and fall) and reads, in dB RMS, the shake alone over its own length and the music alone: over the bar of 2.4 s before the shake, and under the shake.
+
+| Shake into | Against the bar of music before it, film B | The same, app | Against the music under it, film B | The same, app | The same, the trial with the film's thin |
+| --- | --- | --- | --- | --- | --- |
+| spring | -13.61 dB | -13.56 dB | -7.95 dB | -10.76 dB | -7.96 dB |
+| summer | -14.75 dB | -14.73 dB | -8.87 dB | -11.49 dB | -8.65 dB |
+| fall | -14.71 dB | -14.74 dB | -11.49 dB | -13.65 dB | -11.02 dB |
+| winter | -12.64 dB | -12.62 dB | -7.42 dB | -10.21 dB | -7.30 dB |
+
+- Against the bar before it the app's shake stands where the film's does, within 0.05 dB in all four seasons. That is what decision 146 asked for.
+- Under the shake it does not. The film's mix thins the old track over the bar before a landing (`thin` in `tools/lib/audio.mjs`: down to -12 dB in even steps of dB, the high-pass swept from 30 to 900 Hz, the last 0.15 s to nothing). The app lets its old music go by a cosine to nothing with the high-pass swept to 2400 Hz (`release` in `src/audio/index.ts`, lines 307 to 327). By measurement the music under the shake stands 3.2 to 5.9 dB under the bar before it in film B and 1.1 to 3.2 dB under it in the app, so against the music under it the app's shake stands 2.81, 2.62, 2.16 and 2.79 dB lower than the film's.
+- The last column is a trial that is not the app: the model with the film's thin in the place of the app's release. There the shake stands within 0.5 dB of film B (-0.01, +0.22, +0.47 and +0.12 dB). So the release is the cause of the difference.
+- The trial's whole clip beside film B's, in octave bands over each 0.6 s of the shake's bar (`bands.mjs`): every band up to 2 kHz is within 1.4 dB. From 2 kHz up the film is higher in the bar's second half, by up to 5.9 dB in spring (4 to 8 kHz), 3.2 dB in fall and 2.9 dB in winter in the same band; in summer the two are within 1.4 dB in every band. Why was not looked into. One thing is known by reading: the model's old ambience stands at another place of its loop than the film's bed.
+- Not mended. The release is in `src/`, which is not the sound finisher's. To mend it in the pack each shake would have to come up 2.2 to 2.8 dB, a second number beside the film's own step, against the word of decision 146.
+- The app as a whole plays 10.26 to 10.31 dB under film B: its trim of 8 dB, the film's master gain of 2.005 dB, and 0.26 dB by which every mp3 of the pack is lower than the sound it was coded from, music and effects alike (`coded.mjs`; it was so before this decision).
+
+### The balance by a listening agent
+
+Each clip is 4.8 s, from 1.2 s before a shake to 1.2 s after its bar: film B's mix, and the app's passage from the model, brought up 10 dB so that both are heard at one level.
+
+| Question | Film B | App | Trial with the film's thin |
+| --- | --- | --- | --- |
+| The five questions of decision 142, which name the liquid (`r49.json`): liquid named | 14 of 16 | 14 of 16 | not asked |
+| The same: the effect called too loud, overpowering, abrupt or jarring | 6 of 16 | 10 of 16 | not asked |
+| The same: the sound itself called harsh, distorted or unpleasant | 3 of 16 | 3 of 16 | not asked |
+| The open question, what is heard apart from the music (`r56.json` to `r58.json`): liquid or water moving named | 16 of 32 | 3 of 32 | 8 of 32 |
+| The same: something called too loud, harsh, jarring or abrupt | 9 of 32 | 13 of 32 | 13 of 32 |
+
+- Asked whether it hears the liquid, the listener names it in the app as often as in the film. Asked only what it hears, it names liquid in the app's passage far less often: spring 3 of 8 and no other season, where film B has spring 5 of 8, summer 0, fall 5 and winter 6.
+- The trial lies between the two, and its seasons are not the film's (summer 4 of 8, fall 4, spring 0, winter 0). So the release is part of the cause and not the whole of it, and what else sways the naming was not found. Counted widely (a wet impact, a sizzle with a fizzy liquid) the three counts are 19, 3 and 13 of 32.
+- The app's passage is called too loud or abrupt more often than the film's under both questions: 23 of 48 listenings against 15 of 48. The whole difference is spring, 9 of 12 against 1 of 12; in the other three seasons together the app has 14 of 36 and the film 14 of 36 (summer 2 and 4 of 12, fall 7 and 5, winter 5 and 5).
+- What the answers object to, under the first question: 8 of the app's 10 name the shake itself as too loud or too abrupt against the music (spring 4, fall 2, winter 2), one a digital glitch and one a chime at second 3; of film B's 6, 4 name the shake and 2 a glitch or a distortion.
+- By measurement the app's shake into spring stands no higher than the film's against the bar before it and 2.8 dB lower against the music under it, so the shake's own level does not explain spring.
+- The trial with the film's thin does not settle it. Under the open question its spring reads 2 of 8, where the app has 5 of 8 and the film 1 of 8, which points at the app's release; its winter reads 5 of 8, where the app and the film have 3 of 8 each, and over the four seasons it is objected to as often as the app, 13 of 32. The counts are too small to name a cause. For a human ear.
+- The open question was asked because the first one names what it looks for. Its counting rule: liquid is counted when answer 1 or 2 names liquid or water moving as a thing heard. Not counted: a wet impact alone, the sizzle of frying, a popped bubble, gulping named as eating, dry things poured. Every answer was read by hand.
+- So the app's shake is equal to the film's by one measure and not by the other, and not by the open listening. For a human ear.
+
+### Headroom
+
+The app has no limiter: what it plays is the plain sum. `peaks4.mjs` works the sum out at four times the sample rate from `public/audio/` as written: the old music at every place of its round in steps of 50 ms, the crossed bar of its loop included, let go as the app lets it go; the old ambience at its highest times its falling gain; the lift, the shake, the new ambience, the clink and the new music summed as they fall. Every number is a bound: the highest of each part in a window of 50 ms, added as if the peaks fell on one sample (`peaks3-read.mjs` reads the lines of the table from it). The button and the device's motion go to the next season; a season's chip goes from any season to any other (`bridge.goTo` in `src/ui/index.ts`), so twelve pairs are asked. No two shakes sound together (`LiveSession.go` gives nothing while one runs).
+
+| What sounds | Highest true peak by the bound |
+| --- | --- |
+| A season at rest, its music and its ambience at their highest at once | -6.92 dBFS (spring; summer -8.08, fall -10.16, winter -11.37) |
+| One shake by the device's motion, to the next season, no tick | -4.41 dBFS (spring to summer) |
+| One shake by the button or a chip, with the press's tick, twelve pairs | -2.94 dBFS (spring to fall or to winter); to the next season -2.96 |
+| The same and one full stir on its worst instant | -1.94 dBFS |
+| The same and a second press 0.1 s or more after the first | -1.46 dBFS |
+| One shake by motion and one press on its worst instant | -1.69 dBFS |
+| One shake by motion, one press and one full stir on one instant | -0.81 dBFS |
+| One shake by a press, a second press 0.1 s or more later and one full stir on one instant | -0.61 dBFS |
+| Two presses within 50 ms of each other in a shake | -0.60 dBFS |
+| The same and one full stir | +0.18 dBFS |
+
+- A shake alone stays under -1 dB by 1.9 dB at the least. With one more sound laid on its worst instant (a full stir, or a second press 0.1 s or more after the first) it stays under by 0.46 dB at the least.
+- With two more sounds on the same instant, or with a second press inside 50 ms of the first, the bound passes -1 dB, and with such a second press and a full stir on top it passes full scale by 0.18 dB. Each of these needs the old music at the highest place of its round and the peaks of what is laid on top inside the same 50 ms.
+- The worst instant of a pressed shake is its first 50 ms: the old music still whole, the tick and the beginning of the lift. The tick is the largest single part there after the music (its peak is -13.11 dBFS; a shake's is -12.47 to -12.68, fall's -15.55, and comes later).
+- What would bring every line under -1 dB: the interface 4 dB lower in `APP_TRIM_DB` (the worst line then reads -1.20 dBFS; at 3 dB lower it reads -0.87), or a limiter on the app's output, which is `src/`. Neither was done: the listening leaves the interface at 0 (below), and whether the last four lines count is for `/root` to say.
+- A first run (`peaks3.mjs`) asked the crossed bar of the old music's loop only in its first 0.15 s at the moment the shake begins. Asked in full, the lines of summer as the old season rise by up to 0.31 dB (a pressed shake from summer -3.60 dBFS in place of -3.91) and no line of the table moves: its worst cases are spring as the old season at the first instant and summer as the old season one second into the shake, and there the two runs read the same.
+- Not in the bound: several stirs begun one after another (the app lets a new one begin 0.18 s after the last and each sounds for up to 1.4 s), presses faster than one in 0.1 s, and what a browser's own resampling adds.
+- A looser sum, to set the pack before beside the pack now (`peaks.mjs`: the old music's peak, the two ambiences' peaks as a root of squares, the lift's and the shake's peak on one sample): a shake read +3.36 to +4.01 dBFS before and with the tick +4.58 to +5.14; by the same sum the new pack reads -1.81 to -3.30 and with the tick +0.28 to -0.87. That sum cannot happen as such, since the lift, the shake and the tick do not have their highest inside the same 50 ms. The table's bound is the tighter one and the one to hold to.
+- The check that stays: the test "holds in the app's own pack, with room over the highest sum a shake can reach, since the app has no limiter" in `tests/mix.test.ts` asks all twelve pairs by a sum looser than the table's (the three loops at their highest at once; the lift, the shake and the tick as they fall) and reads -1.70 dBFS at the worst (summer to spring). It is skipped on a machine without the kept sounds.
+
+### The press's tick and the chime
+
+The rule of `/root`: the interface comes down 8 dB with the rest if it is still plainly heard there in 3 of 4 listenings or more; it stays at 0 if it is lost 8 dB lower and not called too loud at 0.
+
+- By measurement, over each season's two loops at the pack's gains: the tick is -28.26 dB RMS over its 80 ms and peaks at -13.11 dBFS, between 1.9 dB over and 4.7 dB under the music it plays on (two presses in each season); 8 dB lower it is 6.1 to 12.7 dB under it. The chime is -31.85 dB RMS over 0.4 s and peaks at -15.36 dBFS, 5.5 to 7.7 dB under the music; 8 dB lower 13.5 to 15.7 dB under.
+- By a listening agent, the open question, four listenings in each season (`r54.json`, `r55.json`):
+
+| | At 0 dB | 8 dB lower | None laid |
+| --- | --- | --- | --- |
+| A short sound named at a press | 4 of 16 | 1 of 16 | 2 of 16 |
+| A chime, a bell or ringing named | 2 of 16 | 1 of 16 | 1 of 16 |
+| Called too loud or out of place | the tick 0 of 16, the chime 1 of 16 ("piercing") | | |
+
+- So 8 dB lower both are lost and at 0 dB neither is called too loud: the interface stays at 0. The same numbers say that at 0 dB the tick is named little oftener than where there is none, so this listening does not show that it is heard at 0 dB either. It is a blunt tool for a short quiet sound: the tick's peak stands 10.5 to 17.1 dB over the level of the music it plays on, and the listener still names it in a quarter of the listenings.
+- The count that was planned (any click named) could not be used: the music box's own mechanism is named as clicking in the clips with nothing laid. Each answer was read by hand for a short sound at a stated second from 1 to 3.
+- A first try with a question that described the sound (`r50.json`, winter only) is not counted: all four listenings with nothing laid were answered with a named sound.
+- Found on the way and not mended, since it is `src/`: when the sound is switched on the app's output rises over 0.04 s (`MUTE_FADE`), and that entry of the music was itself named a crash, a sudden loud note, a blast or a burst in 4 of 48 listenings.
+
+### The stir
+
+The word of `/root`: no field of its own for the stir for now; show whether it is lost, at full strength and at half; if water is named in fewer than 2 of 4 at full strength, name the smallest factor that brings it to 3 of 4.
+
+- By measurement, the strength s = 1: the water of the stir is -48.5 dB RMS over its 1.4 s (fall -51.5) and peaks at -25.6 to -25.8 dBFS (fall -28.7). That is 22.2 to 25.5 dB under the music it plays on and 4.1 to 9.3 dB under the season's ambience over the whole clip. At s = 0.5 it is -54.3 dB RMS over 0.95 s (fall -57.4), 27.9 to 32.1 dB under the music. The stir's clink peaks at -29.1 dBFS at s = 1 and at -32.9 at s = 0.5. Before this decision the water was 11 dB higher (fall 14) and the clink 8 dB, by their gains.
+- By a listening agent, liquid or water named, four listenings each, in the order nothing laid, the clink alone, s = 0.5, s = 1:
+
+| Season | The five questions of decision 142 (`r51.json`) | The open question (`r52.json`) |
+| --- | --- | --- |
+| winter | 2, 2, 3, 4 | 0, 0, 0, 0 |
+| spring | 4, 2, 4, 4 | 1, 1, 0, 2 |
+| summer | 0, 0, 2, 3 | 0, 0, 0, 0 |
+| fall | 0, 3, 2, 1 | 0, 0, 0, 0 |
+
+- Under the first question only summer stands clear of its controls. Under the open one the stir's water is named as a thing that happens in 1 of 16 listenings at s = 1 (spring: "liquid pouring"; the other spring answer names a constant bubbling, which is the stream of spring's ambience and is named where nothing is laid too) and in none of 16 at s = 0.5.
+- The stir is not unheard for that. Under the open question an event at a stated second from 1 to 3 (the stir begins at 1.2 s) is named in 1 of 16 listenings with nothing laid, in 1 of 16 with the clink alone, in 4 of 16 at s = 0.5 and in 7 of 16 at s = 1. At s = 1 it is named in spring as a digital stutter, liquid poured, a screech and clucking, in summer as a clink, in fall as the music warping and dropping in pitch and as a pop, and in winter not at all. The answers object to that event as a glitch, unnatural, jarring or out of place in 4 of the 7 at s = 1 and in 2 of the 4 at s = 0.5, and to no event where no swirl is laid.
+- The factor asked for (`r53.json`): the water alone raised 4, 8, 12 and 16 dB at s = 1, the open question, four listenings each. Water named: winter 0, 0, 0, 0; spring 1, 0, 4, 2; summer 2, 1, 1, 1; fall 0, 0, 0, 0, which is 3, 1, 5 and 3 of 16. An event named at second 1 to 3: 7, 8, 15 and 15 of 16. Objections to it: 2, 1, 2 and 4 of 16. No factor up to 6.3 brings water to 3 of 4 in every season (spring alone reaches it, at +12 dB), and neither the naming of water nor the objections rise with the level. Raised, the swirl is named as winding, a creak, a match struck, a spinning coin.
+- How little this listener can settle here: under the same open question it names liquid in the app's whole shake in 3 of 32 listenings and in film B's in 16 of 32. The stir is that shake at 0.62 of its speed under a low-pass of 1600 Hz (1150 Hz at s = 0.5), a duller sound than the shake.
+- So no field was asked for. By these numbers a factor makes the stir more often noticed and not more often named as water. A field of 3.55 (fall 5.0) would put the stir back where it stood before this decision, between the columns of +8 and +12 dB; its swirl would then peak near -14.7 dBFS in place of -25.7 and every line of the headroom table with a stir in it would have to be read again.
+- No other rate or low-pass was tried: both are `src/`. Whether the stir at its new level is too quiet, and whether it reads as water, is for a human ear, in a browser.
+
+### What is not proven
+
+- Nothing was heard by a person and nothing was played in a browser. The numbers of the app are those of the offline model, which follows `src/audio/index.ts` by reading and was not set beside a browser's output; checks A1 to A4, which play the app, are `/root`'s to run after the next build.
+- The listening agent's counts are small and its names for a sound wander; where a count stands beside a control that is as high, it shows nothing, and the text says so.
+- Two replies said that no audio was attached; each clip was asked once more and the second answer stands. Where the tool's limit of 16 calls at a time cut a set short (`r52.json`, `r54.json`, `r55.json`), the calls that gave no answer were asked again, and the files say how many.
+
+### Open after decision 146
+
+- The headroom of pile-ups: a second press and a stir on top of a shake, or two presses within 50 ms of each other, pass -1 dB by the bound (the table's last four lines). The interface 4 dB lower, or a limiter in `src/`, would end it. For `/root`.
+- Under a shake the app's old music stands 2.2 to 2.8 dB higher against the shake than film B's, because the app's `release` is not the film's `thin`. In spring the listening agent calls the app's passage too loud or abrupt in 9 of 12 listenings against film B's 1 of 12; in the other seasons the two are level, and the trial with the film's thin is objected to as often as the app over the four seasons. Whether the release is the cause in spring is not shown. For `/root`, in `src/`, and for a human ear.
+- The stir: noticed and not named as water by the listening agent; no field. For a human ear.
+- The entry of the sound over 0.04 s when it is switched on (`MUTE_FADE`): named a crash or a blast in 4 of 48 listenings. For `/root`, in `src/`.
 
 ## Before the first take
 
@@ -412,6 +562,7 @@ Each kept effect after the second was put in one file with `glass-clink` and `li
 - For film A's prompt opening `ui-send` and `riser` now exist and `key-tap` does not: the typing is silent. Film A was not mixed by this agent.
 - After Phase 6: fall and winter have their ambience in the mix and in the pack (`amb-fall`, `amb-winter`). In the app every ambience now plays 8 dB lower than before against its music (see "What the round taught"). The shakes of summer, fall and winter and every landing's season part are still silent, and film A's typing is still silent.
 - After decisions 141, 142 and 144: film A's typing sounds (84 taps, one for each key of the cut list), and all four shakes slosh in the films and in the app (the three without a kept take play the kept water of `shake-spring`). Still silent: the season part of every landing, which plays `glass-clink` alone, and the two presses of the menu in film A's opening. The app's music loops come round every 8 bars, on the beat. This was read from the mixes and the pack and heard by a listening agent, not in a browser and not by a person.
+- After decision 146: in the app the lift, the landing's clink and the four shakes play lower against the music than before, the lift and the clink by 8 dB and a shake by 11 dB (fall 14), which is the film's balance. The tick and the chime are where they were. The stir, which the app makes from the clink and the season's shake, came down with them. Worked out offline from the pack and heard by a listening agent, not in a browser and not by a person.
 
 ## Commands run in Phase 5 and what they printed
 
@@ -465,9 +616,24 @@ All on 2026-11-26 (UTC), in the one checkout on `main`, after the last change to
 - `node out/work/bin/soundguard.mjs sum`, 07:55: spent 7,200, left 2,800, 52 calls, none open (effects 2,349, music 4,851). The account's own counter read 17,074 used; with this build's last paid call, at 05:48, it came to 16,430 (16,419 before the call and the 11 of its cost header). The sound finisher made no call in between and the guard's ledger holds none, so 644 credits of the account were used outside this build's guard in that time, as happened in Phase 5. By whom is not known here.
 - Not done here: nothing was heard in a browser or by a person; A1 to A4 were not run; the app was not built.
 
+## Commands run for decision 146 and what they printed
+
+All on 2026-11-26 (UTC), in the one checkout on `main`. The scratch named here lies in `out/work/audio/p6/d146/` and is not in the repo.
+
+- `npm run sound -- --pack`, 09:15: "the app's trims by class, dB against the film's level: ambience -8, interface 0, touch -8, impact -8, music -8"; "shake-spring: the impact trim of -8 dB and the film's shake step of -3 dB, -11 dB together, gain 0.34874; it rises over its first 30 ms in the sprite", the same line for `shake-winter` (0.34874) and `shake-summer` (0.34809), and for `shake-fall` "the film's shake step of -6 dB, -14 dB together, gain 0.24689"; a sprite of 11 sounds, of which three are laid by decision 141; the eight loops with the numbers of "The music loops of the app"; "public/audio/index.json · 9 files at 192 kbps, 4.18 MB together, under audio.appMaxMb of 8 MB" (4,378,752 bytes). `sprite.mp3` (407,232 bytes, sha256 `07b01b7740d9...e449`) and `index.json` (3,102 bytes, sha256 `758f8c550ac9...3572`) are other bytes than before; the eight loops are the bytes of 07:50. The record of the pack in `audio/RECORDS.json` now holds `trimsDb` and `shakes`.
+- The same pack written twice more into a scratch folder by `writePack` with another `outDir` (`trial-pack.mjs`): at 08:24, before `public/audio/` was touched, and at 10:17, with the code as it stands at the end of this job. All 10 files are byte for byte the files of `public/audio/` both times.
+- `npx vitest run tests/mix.test.ts tests/audio.test.ts tests/audiomap.test.ts --no-file-parallelism`, 09:52 to 09:55, after the last change to a tool: "Test Files 3 passed (3)", "Tests 92 passed (92)", 160 s. Again 10:11 to 10:14, after one number in a comment of `tests/mix.test.ts` changed: "Test Files 3 passed (3)", "Tests 92 passed (92)" (mix 46, audio 16, audiomap 30), 157 s. The six new tests are in `tests/mix.test.ts` under "the app's pack keeps the film's balance of a shake".
+- `node tools/soundcheck.mjs --only A5,A6,A7,A8`, 09:55 to 09:56: "4 pass, 0 open, 0 not run". A5 pass: "all 16 kept sounds have take, prompt (a laid one its layers and recipe), measurements, answers and a row · 4 more laid by decision 141, not kept and not counted, each cue open: shake-winter, shake-summer, shake-fall, key-tap, each with its state, recipe, file, measurements and answers". A6 pass: "blockout.wav -14.1 LUFS, peak -1.1 dB, four-tracks-film-a.wav -14 LUFS, peak -1.3 dB, four-tracks.wav -14 LUFS, peak -1.3 dB, film-a.wav -14 LUFS, peak -1.3 dB, film-b.wav -14 LUFS, peak -1.3 dB". A7 pass: "5 mixes made twice more, each byte equal to the file (blockout.wav 6217368dcbd1, four-tracks-film-a.wav 883ee8bd67c2, four-tracks.wav 3edd8ff57940, film-a.wav 883ee8bd67c2, film-b.wav 3edd8ff57940)". A8 pass: "69 takes over 25 cues, at most 3 for one cue in one round, limit 3; 71 layers laid from them, not counted; 4 sounds laid by decision 141 (key-tap, shake-fall, shake-summer, shake-winter), no call, not takes and not kept". A1 to A4 were not run by the sound finisher: they start a browser and need `dist/audio/`, and are `/root`'s to run after the next build.
+- The films. The film's mix asks `shakeStepDb` since this decision, so check A7 is the proof that it writes what it wrote: each of the five mixes made twice more by the changed code, each byte equal to the file. `npm run mix` was not run by hand. The sha256 of `audio/final/film-b.wav` (`3edd8ff57940...bf23`), of `audio/final/film-a.wav` (`883ee8bd67c2...5515`) and of `audio/mix/blockout.wav` (`6217368dcbd1...40c8`) read the same before the soundcheck (09:55), after it, and at 10:14 after the last run of the tests, as at 07:49.
+- `node out/work/bin/soundguard.mjs sum`, 09:59 and again 10:15: spent 7,200, left 2,800, 52 calls, none open (effects 2,349, music 4,851). The account's own counter read 17,287 used both times, against 17,074 at 07:55. The sound finisher made no call that makes sound and the guard's ledger holds none after 05:48, so 213 credits of the account were used outside this build's guard between 07:55 and 09:59. By whom is not known here.
+- The scratch that gave the numbers, each run offline and one at a time: `measure.mjs` on the scratch pack of 08:24, which is the pack of `public/audio/` byte for byte (the table of the balance, `sums/table-new.json`), on the pack as it was (`sums-old/table-old.json`) and on the trial with the film's thin (`sums-thin/table-thin.json`); `peaks4.mjs` on `public/audio/`, 10:05 to 10:06, 76 s of one core, read by `peaks3-read.mjs` (the table of the headroom); `loose12.mjs` (the test's looser sum for the twelve pairs); `bands.mjs`; `coded.mjs`; `scenes2.mjs` (the clips of the tick, the chime and the stir); `evidence.mjs` (writes `r49.json` to `r58.json` from the answers).
+- The listening: 436 answers of `evaluate_audio` are filed in `r49.json` to `r58.json`. The call is free and makes no sound.
+- Not done here: nothing was heard in a browser or by a person; A1 to A4 were not run; the app was not built; nothing under `src/` was changed.
+
 ## Where things are
 
 - Committed: `audio/prompts.json` (texts, takes, costs, verdicts, the listener's words, `learned`, `familyChecks`, `layers`), `audio/RECORDS.json`, `audio/plans/one-piece.json`, `audio/kept/<id>.json` and `<id>.wav.json`, `audio/mix/four-tracks.json`, this file.
 - Not committed (the repo is public): the kept sounds `audio/kept/*.wav`, the takes `out/work/audio/takes/`, the listening copies `out/work/audio/listen/`, the layers `out/work/audio/layers-tried/`, the maps `out/work/audio/maps/`, the mix `audio/mix/four-tracks.wav`, the pack `public/audio/`. They are in the sound clone `/home/user/workspace/sg-sound`; the kept sounds and the packs were copied to the main workspace after each batch.
 - Phase 6 had no clone: what it made that is not committed (`audio/kept/amb-fall.wav`, `audio/kept/amb-winter.wav`, the mixes `audio/mix/*.wav`, the pack `public/audio/`, the takes and layers 5 to 24 under `out/work/audio/takes/`, the sheet `out/work/audio/sheet.jpg`, the listener's replies `out/work/audio/p6/ans/`) lies in the main workspace only. The replies are also committed, under `audio/evidence/after-review/`. `out/work/audio/kept-sounds.zip` is the set of Phase 5 and does not hold the two new beds.
 - After decisions 141, 142 and 144. Committed (text): `audio/laid/<cue>.json`, `audio/final/film-a.json` and `film-b.json`, the records of the mixes in `audio/mix/`, the replies `audio/evidence/after-review/r39.json` to `r48.json`. Not committed: `audio/laid/*.wav` (built again by `npm run sound -- --laid`), `audio/final/*.wav` and `audio/mix/*.wav` (built again by `npm run mix`), the pack `public/audio/`, the listening copies `out/work/audio/listen/now-*.wav`, the scratch of this job in `out/work/audio/p6/d141/`.
+- After decision 146. To commit (text): `tools/lib/audio.mjs`, `tools/sound.mjs`, `tests/mix.test.ts`, `audio/RECORDS.json`, `audio/prompts.json`, this file, and the replies `audio/evidence/after-review/r49.json` to `r58.json`. Not committed: the pack `public/audio/` (written again by `npm run sound -- --pack`, the same bytes each time) and the scratch of this job in `out/work/audio/p6/d146/`: the offline model `app.mjs`, the tables under `sums/`, `sums-old/` and `sums-thin/`, the bound `peaks4.mjs` with `peaks4-audio.json`, the clips of the listening under `scenes/`, `scenes2/` and `sums*/`, and the pack as it was before in `public-audio.before146/`.

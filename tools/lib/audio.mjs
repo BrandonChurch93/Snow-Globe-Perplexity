@@ -21,7 +21,21 @@ const CHAIN = {
 // ambience "too loud", "competes" or "overpowers" in 8 of 12 answers (each of the four seasons at least once), in 2 of 7
 // with it 4 dB lower and in 1 of 11 with it 8 dB lower. So the ambience takes the music's trim and the app keeps the
 // film's distance between the two (kit: "The music leads. Ambience sits far under it."). Not heard by a human.
-const APP_TRIM_DB = { ambience: -8, interface: 0, touch: 0, impact: 0, music: -8 }
+// Decision 146 of kit/PROGRESS.md: the same holds for every sound of a shake. Left at their kept level against music
+// 8 dB down, the lift and the landing's clink stood 8 dB further over the app's music than over the film's, and a
+// shake, which the film has 3 dB down (fall 6) since decision 142, 11 dB further (fall 14): by measurement 0.7 to
+// 3.7 dB under the bar of music before it, where film B has it 12.6 to 14.8 dB under. So touch and impact take the
+// music's trim too, and the app keeps the film's distances between the sounds of a shake at its own lower level; a
+// shake then takes the film's own step on top (shakeStepDb).
+// The interface stays at its kept level. The press's tick and the chime of sound on were laid over each season's two
+// loops at these gains, at 0 dB and 8 dB lower, and the listener asked only what it hears, four times each. It named a
+// tick at a press in 4 of 16 listenings at 0 dB and in 1 of 16 at 8 dB lower (2 of 16 where no tick was laid), a chime
+// in 2 of 16 and 1 of 16 (1 of 16 where none was laid), and called the tick too loud at 0 dB in none of 16, the chime
+// in 1 of 16. At 0 dB the tick stands between 1.9 dB over and 4.7 dB under the music it plays on (two presses in each
+// season), 8 dB lower 6.1 to 12.7 dB under it; the chime 5.5 to 7.7 dB under, 8 dB lower 13.5 to 15.7 dB under.
+// So 8 dB lower it is lost, and where it is it is not too loud, though it is named little oftener there than where
+// none was laid (decision 146, point 2). Not heard by a human.
+export const APP_TRIM_DB = { ambience: -8, interface: 0, touch: -8, impact: -8, music: -8 }
 const VARIED = { 'key-tap': [0, -45, 30, -20, 55, -65, 15, 40, -30] }
 // A hand does not type like a wheel. At the film's 14 a second one press repeated in the cut list's even steps was heard as
 // a ratchet, a prize wheel or a card in bicycle spokes (asked 5 times, with three different presses), and as typing on a
@@ -38,10 +52,14 @@ export const HAND_LIMIT_MS = 20
 // Decision 142 of kit/PROGRESS.md. In its own bar of film B the kept shake was called too loud or abrupt against the
 // music in 4 of 4 listenings. So every shake of the film comes down by downDb and rises from nothing over its first
 // riseMs. A shake still called so in 2 or more of 4 listenings at that level comes down by moreDb more, once, and is
-// left there: those cues are named in more. This is the film's mix alone; the app plays its pack at its own gains.
+// left there: those cues are named in more. The film's mix does this to the cue as it lays it; the app's pack does the
+// same to the shake's sound in the sprite (spriteSound), from this one constant (decision 146).
 // At 3 dB down: the kept shake of spring 1 of 4, summer 1 of 4, winter 1 of 4, and fall (the kept water at its own pitch
 // in the third shake's bar, where the music is thin) 2 of 4, so fall alone is named in more.
 export const SHAKE = { downDb: 3, riseMs: 30, moreDb: 3, more: ['shake-fall'] }
+export const isShake = (id) => String(id).startsWith('shake-')
+// What that rule takes off a shake, in dB, and nothing off any other sound: the film's mix and the app's pack both ask here.
+export const shakeStepDb = (id) => (isShake(id) ? -(SHAKE.downDb + (SHAKE.more.includes(id) ? SHAKE.moreDb : 0)) : 0)
 export const PEAK_MARGIN_DB = 0.15
 export const LOUDNESS_BLOCK = 0.4
 export const SHORT_CREST_DB = 16
@@ -1150,8 +1168,8 @@ export function mixFilm({ cut, which = 'b', candidate = 'blockout', keptDir = KE
     // The level of a set is in its record (the level every press is brought to), so the step down of one kept press is not taken twice.
     const downDb = hand ? hand.db[k % hand.db.length] - (set ? 0 : (hand.underDb ?? 0)) : 0
     // A shake comes down and rises over its first moment (decision 142), kept or laid alike.
-    const shake = c.cue.startsWith('shake-') ? SHAKE : null
-    const shakeDb = shake ? -(shake.downDb + (shake.more.includes(c.cue) ? shake.moreDb : 0)) : 0
+    const shake = isShake(c.cue) ? SHAKE : null
+    const shakeDb = shakeStepDb(c.cue)
     if (shake) a = riseIn(a, shake.riseMs / 1000)
     add(bus, a, Math.max(0, Math.round((c.at + moveMs / 1000) * rate)), gainOf(c.cue, c) * lin(downDb + shakeDb))
     placed.push({ cue: c.cue, at: round(c.at, 4), cents, ...(hand ? { moveMs, downDb } : {}), ...(shake ? { downDb: shakeDb, riseMs: shake.riseMs } : {}), ...(set ? { press } : {}) })
@@ -1568,6 +1586,23 @@ export function turnLoop(a) {
   return { audio: o, turnedSeconds: round(best.at / a.rate, 3), seam: loopEnds(o) }
 }
 
+// One sound as the sprite holds it and the gain that puts it back at its level in the app: its kept level and the trim
+// of its class. A shake takes the film's step on top and rises over its first moment as in the film; the rise is in
+// the sprite's own audio and the step in the gain of its entry, so src/audio/index.ts, which plays an entry at its
+// gain, does both without a change. The app's stir is made from the same entry (half its gain times the strength,
+// slowed and low-passed) and follows it.
+export function spriteSound(id, cls, a) {
+  const shake = isShake(id)
+  const body = shake ? riseIn(a, SHAKE.riseMs / 1000) : a
+  const top = peak(body)
+  if (top <= 0) return null
+  const norm = lin(SPRITE_PEAK_DB) / top
+  const trimDb = APP_TRIM_DB[cls] ?? 0
+  const stepDb = shakeStepDb(id)
+  const gain = round((1 / norm) * lin(trimDb + stepDb), 5)
+  return { audio: scale(body, norm), gain, shake: shake ? { class: cls, trimDb, stepDb, appDb: round(trimDb + stepDb), riseMs: SHAKE.riseMs, gain } : null }
+}
+
 export function planPack({ keptDir = KEPT, laidDir = laidDirOf(keptDir), mapsDir = rel('out', 'work', 'audio', 'maps'), rate = RATE } = {}) {
   const kept = readKept(keptDir).filter((k) => k.file)
   const barSeconds = (cfg.film.beatsPerBar * 60) / cfg.film.defaultBpm
@@ -1575,6 +1610,19 @@ export function planPack({ keptDir = KEPT, laidDir = laidDirOf(keptDir), mapsDir
   const sprite = { parts: [lead], entries: {}, at: lead.L.length }
   const loops = []
   const notes = []
+  const shakes = []
+  // One sound into the sprite, kept or laid alike: its audio with the peak at SPRITE_PEAK_DB and the entry that puts it
+  // back at its level in the app.
+  const put = (id, cls, a) => {
+    const s = spriteSound(id, cls, a)
+    if (!s) return false
+    const gap = make(Math.round(SPRITE_GAP * rate), rate)
+    sprite.parts.push(s.audio, gap)
+    sprite.entries[id] = { start: round(sprite.at / rate, 5), seconds: round(seconds(a), 5), gain: s.gain }
+    sprite.at += a.L.length + gap.L.length
+    if (s.shake) shakes.push({ id, ...s.shake })
+    return true
+  }
   for (const k of kept) {
     const cls = k.record.class ?? classOf(k.id)
     const a = decodeFile(k.file, rate)
@@ -1583,14 +1631,9 @@ export function planPack({ keptDir = KEPT, laidDir = laidDirOf(keptDir), mapsDir
       notes.push(`${k.id} is silent and was left out`)
       continue
     }
-    const norm = lin(SPRITE_PEAK_DB) / top
-    const gain = round((1 / norm) * lin(APP_TRIM_DB[cls] ?? 0), 5)
     if (cls === 'music' && !seasonOf(k.id)) continue
     if (!isLoop(k.id)) {
-      const gap = make(Math.round(SPRITE_GAP * rate), rate)
-      sprite.parts.push(scale(a, norm), gap)
-      sprite.entries[k.id] = { start: round(sprite.at / rate, 5), seconds: round(seconds(a), 5), gain }
-      sprite.at += a.L.length + gap.L.length
+      put(k.id, cls, a)
       continue
     }
     let loop = a
@@ -1644,17 +1687,10 @@ export function planPack({ keptDir = KEPT, laidDir = laidDirOf(keptDir), mapsDir
   for (const l of readLaid(laidDir)) {
     if (!l.file || Array.isArray(l.record.presses) || isLoop(l.id) || sprite.entries[l.id]) continue
     const cls = l.record.class ?? classOf(l.id)
-    const a = decodeFile(l.file, rate)
-    const top = peak(a)
-    if (top <= 0) continue
-    const norm = lin(SPRITE_PEAK_DB) / top
-    const gap = make(Math.round(SPRITE_GAP * rate), rate)
-    sprite.parts.push(scale(a, norm), gap)
-    sprite.entries[l.id] = { start: round(sprite.at / rate, 5), seconds: round(seconds(a), 5), gain: round((1 / norm) * lin(APP_TRIM_DB[cls] ?? 0), 5) }
-    sprite.at += a.L.length + gap.L.length
+    if (!put(l.id, cls, decodeFile(l.file, rate))) continue
     laid.push({ id: l.id, state: l.record.state })
   }
-  return { sprite: { audio: sprite.parts.length > 1 ? concat(sprite.parts, rate) : null, entries: sprite.entries }, loops, notes, laid }
+  return { sprite: { audio: sprite.parts.length > 1 ? concat(sprite.parts, rate) : null, entries: sprite.entries }, loops, notes, laid, shakes, trimsDb: { ...APP_TRIM_DB } }
 }
 
 export function writePack({ outDir = PUBLIC_AUDIO, keptDir = KEPT, laidDir = laidDirOf(keptDir), mapsDir, rate = RATE, maxMb = cfg.audio.appMaxMb } = {}) {
@@ -1703,7 +1739,7 @@ export function writePack({ outDir = PUBLIC_AUDIO, keptDir = KEPT, laidDir = lai
     checks.push({ id: l.id, decodedSeconds: round(seconds(back), 4), expectedSeconds: round(seconds(l.audio), 4), seamErrorDb: round(den > 0 && num > 0 ? 10 * Math.log10(num / den) : -120), sourceSeam: l.seam, heard })
   }
   const shas = Object.fromEntries(result.index.files.map((f) => [f.file, fileSha(path.join(outDir, f.file))]))
-  return { ...result, notes: plan.notes, loopChecks: checks, shas, laid: plan.laid }
+  return { ...result, notes: plan.notes, loopChecks: checks, shas, laid: plan.laid, shakes: plan.shakes, trimsDb: plan.trimsDb }
 }
 
 export { sha256, fileSha, readJson, writeJson }
