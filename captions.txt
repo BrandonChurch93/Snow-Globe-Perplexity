@@ -52,3 +52,22 @@ p3-fall-sheet.jpg     fall.
 
 In all 28 the table reaches the bottom edge, and the glass stands where the table of the page says: the rows of the framing
 are the same to the last digit as in 9bcc9fdc.
+
+
+Fourth push (one globe on a screen of any shape). The built page of agent/p6-first at b91bdb3b, as it stands before the app
+has drawn anything (the app's script held back), Chromium 147 with Mesa lavapipe, one pixel a point. Before is the page of
+9d00c74a, the same way. Each sheet shows before and after of one of the four forms the fault had.
+
+p4-square-windows.jpg          windows nearly square, before left, after right. Top: 600 x 600, winter. Bottom: 650 x 561,
+                               fall. Before, a phone's still stood in the middle with a whole second globe at both sides.
+                               After, a still of the window's own shape (`mid` 719 x 600 above, `low` 719 x 481 below).
+p4-low-touch-and-unfolded.jpg  top: 650 x 550 with a finger, spring; before, a bright cap over the glass and a second foot
+                               past the bottom. Bottom: the lower 541 px of 673 x 841 with a finger (an unfolded phone),
+                               winter; before, the dressing of the foot repeated at each side. After (right): one still.
+p4-tablet-top.jpg              the arc of the second job (1b). Top and middle: the upper 330 px of the tablets 820 x 1180
+                               and 912 x 1368, winter, at three times their brightness, before left (the arc over the
+                               glass), after right. Bottom: 820 x 1180 as it is, before and after.
+p4-wide-low-window.jpg         1920 x 600, fall. Top: before (a second wreath under the foot, low in the middle).
+                               Middle: after. Bottom: after, with each of the three copies tinted so they can be told
+                               apart; the still is the untinted part in the middle. The lights out of focus that repeat
+                               far out at the sides are what stays.
