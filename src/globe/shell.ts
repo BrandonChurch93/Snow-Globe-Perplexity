@@ -91,7 +91,8 @@ export const glassLook = {
  * What a season sets on the shared glass, against its own approved image. Winter's are the amounts the shell was built on.
  * `windowTint`: the colour of the window's reflection over the key light's. `windowGain`: the gain of its four orders (outer
  * face, inner face, third, through view). `windowSoftDeg`: how far its edges are feathered. `windowGrain`: the depth of the
- * texture inside it. `rimTint`: the room's light in the rim's band and on the outline. `wallTint`: the same in the wall low on
+ * texture inside it. `rimTint`: the room's light in the rim's band and on the outline. `rimSide`: what that light is
+ * multiplied by down the left side of the glass, each channel (1 leaves it), so the outline there can take another tint. `wallTint`: the same in the wall low on
  * the glass. `ringCover`: how much of the inside the ring at the outline hides, short of its outermost line, which always covers. `strip`: the gain of the tall cool strip at the left.
  * `bend`: how much of the mirrored band inside the outline is drawn over the lens's own picture there. `ringThin`: how far the
  * ring's inner edge is moved out toward the outline, 0 to 1, which thins the band round the glass. `rimClear`: how much of the
@@ -108,6 +109,7 @@ export interface GlassAmounts {
   windowSoftDeg: number
   windowGrain: number
   rimTint: V3
+  rimSide: V3
   wallTint: V3
   ringCover: number
   strip: number
@@ -126,7 +128,7 @@ export interface GlassAmounts {
   arcCool: number
 }
 
-const WINTER_GLASS: GlassAmounts = { windowTint: glassLook.window.tint, windowGain: [1, 1, 1, 1], windowSoftDeg: 0, windowGrain: 0, rimTint: [1, 1, 1], wallTint: [1, 1, 1], ringCover: 1, strip: 1, bend: 1, ringThin: 0, rimClear: 1, topLine: 1, ringMottle: 1, ceiling: 1, roomHue: [1, 1, 1], roomHueOn: 0, windowShade: 1, rimGlow: 1, arcs: 0, arcTint: [1, 1, 1], arcCool: 0 }
+const WINTER_GLASS: GlassAmounts = { windowTint: glassLook.window.tint, windowGain: [1, 1, 1, 1], windowSoftDeg: 0, windowGrain: 0, rimTint: [1, 1, 1], rimSide: [1, 1, 1], wallTint: [1, 1, 1], ringCover: 1, strip: 1, bend: 1, ringThin: 0, rimClear: 1, topLine: 1, ringMottle: 1, ceiling: 1, roomHue: [1, 1, 1], roomHueOn: 0, windowShade: 1, rimGlow: 1, arcs: 0, arcTint: [1, 1, 1], arcCool: 0 }
 const glassAmounts = new Map<string, GlassAmounts>()
 
 export function setGlass(season: string, amounts: Partial<GlassAmounts>): void {
@@ -213,6 +215,7 @@ uniform vec3 uWinTint;
 uniform vec4 uWinGain;
 uniform vec3 uWinSoft;
 uniform vec3 uRimTint;
+uniform vec3 uRimSide;
 uniform vec3 uWallTint;
 uniform vec4 uRingAmt;
 uniform vec4 uRimAmt;
@@ -585,6 +588,8 @@ void main() {
   float thick = glassNoise(n * 3.1 + 7.0);
   float fine = glassNoise(n * 8.3 + 2.0);
   vec3 nWorld = uTurn * n;
+  // the rim's light by the side: uRimSide rests at nothing, which leaves it as it is
+  vec3 rimTint = uRimTint * (1.0 + uRimSide * smoothstep(0.1, 0.7, -nWorld.x));
   float lobe = smoothstep(${num(glassLook.edge.keyLobe[0])}, ${num(glassLook.edge.keyLobe[1])}, dot(nWorld, uKeyDir));
   float back = smoothstep(${num(glassLook.edge.rimLobe[0])}, ${num(glassLook.edge.rimLobe[1])}, dot(nWorld, uRimDir));
   float from = ${num(glassLook.band.from)} + ${num(glassLook.band.wander)} * (thick - 0.5) * 2.0;
@@ -598,7 +603,7 @@ void main() {
   rimAround /= max(length(rimAround), 1e-4);
   float rimStreak = 1.0 + ${num(glassLook.rim.streak)} * rimHigh * (glassNoise(rimAround * 9.0 + rimAxis * (s * 60.0) + 41.0) - 0.5);
   float rimOuter = exp(-pow(abs((s - ${num(glassLook.rim.outer)}) / ${num(glassLook.rim.outerWide)}), 2.0)) * (0.3 + 0.7 * smoothstep(0.35, 0.75, glassNoise(rimAround * 5.0 + 31.0)));
-  if (uOwn > 0.5) col += uSky * uRimTint * mix(${vec(glassLook.rim.tint)}, ${vec(glassLook.rim.highTint)}, rimHigh) * (mix(${num(glassLook.rim.low)}, ${num(glassLook.rim.high)}, rimHigh) * uRimGlow * rimZone * (0.75 + 0.5 * thick) * rimStreak + ${num(glassLook.rim.lineGain)} * rimLine * (0.3 + 0.7 * fine) * (1.0 - 0.7 * rimHigh) + ${num(glassLook.rim.outerGain)} * rimOuter * rimHigh);
+  if (uOwn > 0.5) col += uSky * rimTint * mix(${vec(glassLook.rim.tint)}, ${vec(glassLook.rim.highTint)}, rimHigh) * (mix(${num(glassLook.rim.low)}, ${num(glassLook.rim.high)}, rimHigh) * uRimGlow * rimZone * (0.75 + 0.5 * thick) * rimStreak + ${num(glassLook.rim.lineGain)} * rimLine * (0.3 + 0.7 * fine) * (1.0 - 0.7 * rimHigh) + ${num(glassLook.rim.outerGain)} * rimOuter * rimHigh);
   float wallLeft = smoothstep(0.3, -0.3, nWorld.x);
   float wallLow = smoothstep(${num(glassLook.wall.lowY[0])}, ${num(glassLook.wall.lowY[1])}, nWorld.y + ${num(glassLook.wall.leftDrop)} * wallLeft) * uOwn;
   if (wallLow > 0.0) {
@@ -629,12 +634,12 @@ void main() {
   float wallZone = smoothstep(${num(glassLook.body.from)}, ${num(glassLook.body.to)}, s);
   col += uKeyCol * WIN_TINT * ${vec(W.gap.tint)} * (${num(W.gap.gain)} * uWinGain.x * glassGap(seen) * f1 * marks * (1.0 - ${num(W.dark.depth)} * dark) * mix(1.0, ${num(W.gap.mid[2])}, smoothstep(${num(W.gap.mid[0])}, ${num(W.gap.mid[1])}, nWorld.y)) * (1.0 - smoothstep(${num(W.gap.top[0])}, ${num(W.gap.top[1])}, nWorld.y)) * (0.45 + 0.55 * smoothstep(${num(W.gap.low[0])}, ${num(W.gap.low[1])}, nWorld.y)) * uOwn);
   float deep = dark * smoothstep(${num(W.dark.share[0])}, ${num(W.dark.share[1])}, s);
-  if (uOwn > 0.5) col += uSky * uRimTint * ${vec(glassLook.body.tint)} * ${num(glassLook.body.sky)} * wallZone * (0.6 + 0.4 * thick) * (1.0 - dark);
+  if (uOwn > 0.5) col += uSky * rimTint * ${vec(glassLook.body.tint)} * ${num(glassLook.body.sky)} * wallZone * (0.6 + 0.4 * thick) * (1.0 - dark);
   col += uKeyCol * WIN_TINT * ${vec(W.dark.glow)} * (uWinSoft.z * deep) * (0.7 + 0.6 * thick);
   col += uKeyCol * WIN_TINT * ${vec(glassLook.edge.tipTint)} * (${num(glassLook.edge.tip)} * exp(-0.5 * tipAt * tipAt) * uOwn * smoothstep(${num(glassLook.edge.tipShare[0])}, ${num(glassLook.edge.tipShare[1])}, s) * (0.6 + 0.4 * fine));
 
   vec3 piped = uKeyCol * WIN_TINT * ${vec(glassLook.edge.keyTint)} * ${num(glassLook.edge.key)} * lobe * mix(${num(glassLook.edge.keyLow)}, 1.0, smoothstep(${num(glassLook.edge.keyLowLobe[0])}, ${num(glassLook.edge.keyLowLobe[1])}, dot(nWorld, ${vec(glassLook.edge.keyLowDir)}))) + uRimCol * ${num(glassLook.edge.rim)} * back;
-  if (uOwn > 0.5) piped += uSky * uRimTint * ${num(glassLook.edge.sky)} * (0.4 + 0.6 * smoothstep(-0.7, 0.5, nWorld.y));
+  if (uOwn > 0.5) piped += uSky * rimTint * ${num(glassLook.edge.sky)} * (0.4 + 0.6 * smoothstep(-0.7, 0.5, nWorld.y));
   piped += uPool * ${num(glassLook.edge.pool)} * smoothstep(-0.2, -0.75, n.y);
   float edge = smoothstep(mix(${num(glassLook.edge.from)}, ${num(glassLook.edge.keyFrom)}, smoothstep(0.0, ${num(glassLook.edge.keyOn)}, lobe)), ${num(glassLook.edge.peak)}, s) * (0.35 + 0.65 * thick) * (0.7 + 0.3 * fine);
   col += piped * edge;
@@ -670,11 +675,11 @@ void main() {
   float ringUnder = 1.0 - smoothstep(${num(glassLook.ring.low[0])}, ${num(glassLook.ring.low[1])}, nWorld.y);
   float ringIn = uRingAmt.w * ${num(glassLook.ring.thin)};
   float ring = smoothstep(mix(${num(glassLook.ring.from)} + ringIn - ${num(glassLook.ring.soft)} * ringTop, ${num(glassLook.ring.lowFrom)}, ringUnder), mix(${num(glassLook.ring.to)} + ringIn, ${num(glassLook.ring.lowTo)}, ringUnder), s);
-  vec3 ringCol = col * mix(1.0, ${num(glassLook.ring.keep)}, ringTop) + uSky * uRimTint * ${vec(glassLook.ring.wall)} * (ringWall * (1.0 + uRimAmt.z * (${num(glassLook.ring.grain)} * ringGrain + ${num(glassLook.ring.speck)} * ringSpeck)));
+  vec3 ringCol = col * mix(1.0, ${num(glassLook.ring.keep)}, ringTop) + uSky * rimTint * ${vec(glassLook.ring.wall)} * (ringWall * (1.0 + uRimAmt.z * (${num(glassLook.ring.grain)} * ringGrain + ${num(glassLook.ring.speck)} * ringSpeck)));
   ringCol *= 1.0 + ringWall * uRimAmt.z * (${num(glassLook.ring.streak)} * (glassNoise(rimAround * 14.0 + rimAxis * (s * ${num(glassLook.ring.streakRings)}) + 71.0) - 0.5) + ${num(glassLook.ring.mottle)} * (glassNoise(rimAround * 38.0 + rimAxis * (s * 60.0) + 17.0) - 0.5));
-  ringCol = mix(ringCol, uSky * uRimTint * mix(${vec(glassLook.ring.line)}, ${vec(glassLook.ring.lineTop)}, uRimAmt.y * smoothstep(0.6, 0.95, nWorld.y)), ${num(glassLook.ring.lineMix)} * ringEdge);
+  ringCol = mix(ringCol, uSky * rimTint * mix(${vec(glassLook.ring.line)}, ${vec(glassLook.ring.lineTop)}, uRimAmt.y * smoothstep(0.6, 0.95, nWorld.y)), ${num(glassLook.ring.lineMix)} * ringEdge);
   float ringLow = (1.0 - smoothstep(${num(glassLook.ring.low[0])}, ${num(glassLook.ring.low[1])}, nWorld.y)) * smoothstep(${num(glassLook.ring.lowEnd[0])}, ${num(glassLook.ring.lowEnd[1])}, nWorld.y);
-  ringCol = mix(ringCol, uSky * uRimTint * ${vec(glassLook.ring.lowLine)}, ${num(glassLook.ring.lowMix)} * ringLow * smoothstep(${num(glassLook.ring.lowAt[0])}, ${num(glassLook.ring.lowAt[1])}, s));
+  ringCol = mix(ringCol, uSky * rimTint * ${vec(glassLook.ring.lowLine)}, ${num(glassLook.ring.lowMix)} * ringLow * smoothstep(${num(glassLook.ring.lowAt[0])}, ${num(glassLook.ring.lowAt[1])}, s));
   float ringCover = ring * mix(1.0, mix(${num(glassLook.ring.cover)}, 1.0, ringEdge), ringTop) * (uRingAmt.x + (1.0 - uRingAmt.x) * smoothstep(${num(glassLook.ring.edge[0])}, ${num(glassLook.ring.edge[1])}, s));
   vec3 mirTo = refract(v, n, 1.0 / uLens.y);
   float mirChord = 2.0 * uLens.x * max(dot(-n, mirTo), 0.0);
@@ -824,6 +829,7 @@ export const shellUniforms = {
   uWinGain: { value: new THREE.Vector4(1, 1, 1, 1) },
   uWinSoft: { value: new THREE.Vector3(0, 0, 1) },
   uRimTint: { value: new THREE.Vector3(1, 1, 1) },
+  uRimSide: { value: new THREE.Vector3(0, 0, 0) },
   uWallTint: { value: new THREE.Vector3(1, 1, 1) },
   uRingAmt: { value: new THREE.Vector4(1, 1, 1, 0) },
   uRimAmt: { value: new THREE.Vector4(1, 1, 1, 1) },
@@ -1052,6 +1058,7 @@ export class Shell {
     sh.uRimGlow.value = mixed(ga.rimGlow, gb.rimGlow)
     sh.uArc.value.set(mixed(ga.arcs * ga.arcTint[0], gb.arcs * gb.arcTint[0]), mixed(ga.arcs * ga.arcTint[1], gb.arcs * gb.arcTint[1]), mixed(ga.arcs * ga.arcTint[2], gb.arcs * gb.arcTint[2]), mixed(ga.arcs * ga.arcCool, gb.arcs * gb.arcCool))
     sh.uRimTint.value.set(mixed(ga.rimTint[0], gb.rimTint[0]), mixed(ga.rimTint[1], gb.rimTint[1]), mixed(ga.rimTint[2], gb.rimTint[2]))
+    sh.uRimSide.value.set(mixed(ga.rimSide[0], gb.rimSide[0]) - 1, mixed(ga.rimSide[1], gb.rimSide[1]) - 1, mixed(ga.rimSide[2], gb.rimSide[2]) - 1)
     sh.uWallTint.value.set(mixed(ga.wallTint[0], gb.wallTint[0]), mixed(ga.wallTint[1], gb.wallTint[1]), mixed(ga.wallTint[2], gb.wallTint[2]))
     sh.uRingAmt.value.set(mixed(ga.ringCover, gb.ringCover), mixed(ga.strip, gb.strip), mixed(ga.bend, gb.bend), mixed(ga.ringThin, gb.ringThin))
     sh.uRimAmt.value.set(mixed(ga.rimClear, gb.rimClear), mixed(ga.topLine, gb.topLine), mixed(ga.ringMottle, gb.ringMottle), mixed(ga.ceiling, gb.ceiling))

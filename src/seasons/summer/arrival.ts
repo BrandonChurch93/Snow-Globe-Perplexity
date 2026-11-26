@@ -26,11 +26,12 @@ const RAD = Math.PI / 180
 // from a few samples is a row of dashes.
 const LOOK = {
   gravity: 3400,
+  lift: { stop: 0.25, share: 0.6, nearMm: [61.5, 69.0], late: 0.4, upMmS: [70, 170], inMm: 1.1 },
   ledge: { r: [46.5, 52.0], h: 42.6 },
   jump: { count: 14000, reachMm: 26, ringShare: 0, ringMm: 5, edgeDeg: [62, 76], liftMm: [1.2, 8], hopMm: [0.6, 5], quick: 0.11, tail: 0.5, tailShare: [0.6, 0.12], skidMm: [0.4, 3.2], radiusMm: [0.07, 0.15] },
-  fall: { count: 15000, gravity: 7000, az: 81, spread: 4.5, most: 2.0, off: [0.35, 1.6], h: [29.0, 30.5], outMmS: [70, 185], lean: 2.2, fliers: { share: 0.05, far: [1.2, 1.6] }, fanDeg: 2, downMmS: [10, 40], rate: [5.0, 6.7], radiusMm: [0.035, 0.085], fine: 2.5, fadeFrom: 0.9, core: [0.3, 70, 160], exposure: 0.3, longMm: 1.0, thinPx: 0.5, grains: 1.9, mass: 2.4, sizes: [1.0, 1.15], soft: { share: 0.12, wide: 1.6, cover: 0.3 }, cover: 0.3, rise: 0.012, low: [0.66, 0.6, 0.56], shine: [0.4, 1.0], pale: 0.4, least: [0.03, 0.12], bright: [0.75, 1.9], even: 0.15, lit: 1.8, shaded: 0.08, puff: { seconds: 0.07, outMmS: [20, 130], upMmS: [40, 170], cover: 0.3, wide: 2.4 } },
-  loose: { count: 7500, radiusMm: [0.06, 0.09, 0.26], small: 0.9, lean: 2.0, glint: { one: 22, lit: 4.0, cover: 0.9 }, x: [-140, 136], z: [-70, 150], fromX: 0, thinPx: 0.5, veil: 0.15, vary: [0.12, 2.0], warm: [1.0, 0.96, 1.08], big: { share: 0.03, mm: [0.3, 0.65], underMm: 1.0, cover: [0.25, 0.5, 0.4], squash: [1.4, 2.4], bend: 0.5 } },
-  sprinkle: { count: 11000, thinPx: 0.85, vary: [0.4, 1.15], warm: [1.0, 0.84, 0.64], s: [-12, 78], d: [-0.4, 16], mm: [0.07, 0.18], core: { share: 0.7, mm: 3.0, wide: 2.4, lit: 0.85, size: [0.08, 0.2] }, glints: { count: 46, d: [13, 46], mm: [0.16, 0.34], lit: 2.6 } },
+  fall: { count: 32000, gravity: 7000, az: 81, spread: 4.5, most: 2.0, off: [0.35, 1.6], h: [29.0, 30.5], outMmS: [70, 185], lean: 2.2, fliers: { share: 0.02, far: [1.2, 1.6] }, fanDeg: 2, downMmS: [10, 40], rate: [5.0, 6.7], radiusMm: [0.035, 0.085], fine: 2.5, fadeFrom: 0.9, core: [0.3, 70, 160], exposure: 0.3, longMm: 1.0, thinPx: 0.24, grains: 1.9, mass: 2.4, sizes: [0.7, 0.9], soft: { share: 0.2, wide: 1.4, cover: 0.3 }, cover: 0.26, rise: 0.012, low: [0.66, 0.6, 0.56], shine: [0.4, 1.0], pale: 0.4, least: [0.03, 0.12], bright: [0.75, 1.9], even: 0.15, lit: 1.8, shaded: 0.08, puff: { seconds: 0.07, outMmS: [20, 130], upMmS: [40, 170], cover: 0.3, wide: 2.4 } },
+  loose: { count: 800, radiusMm: [0.03, 0.06, 0.26], small: 0.8, lean: 2.4, glint: { one: 40, lit: 4.0, cover: 0.9 }, x: [-140, 136], z: [-70, 150], fromX: 0, thinPx: 0.5, veil: 0.15, vary: [0.08, 0.75], warm: [1.0, 0.74, 0.48], big: { share: 0.09, mm: [0.3, 0.7], underMm: 1.0, cover: [0.25, 0.5, 0.4], squash: [1.0, 2.4], bend: 0.7 } },
+  sprinkle: { count: 0, thinPx: 0.85, vary: [0.4, 1.15], warm: [1.0, 0.84, 0.64], s: [-12, 78], d: [-0.4, 16], mm: [0.07, 0.18], core: { share: 0.7, mm: 3.0, wide: 2.4, lit: 0.85, size: [0.08, 0.2] }, glints: { count: 46, d: [13, 46], mm: [0.16, 0.34], lit: 2.6 } },
   lens: { rows: 1080, most: 4, flyPx: 1.0, round: [1.6, 4.0], clear: 6 },
   slope: { clearMm: 0.25, keeps: 0.75, roll: 0.5, bulge: 0.0038, crestMm: [60.6, 66], crestLean: 1.6, offMm: [0.12, 0.55], belly: [[60.3, 8], [60.3, 11.2], [59.7, 14.6], [58.6, 18], [57.3, 21.2], [55.8, 24.4], [54.3, 27.4], [53, 30.5], [52.8, 34], [52.7, 37.5], [52.6, 40]] },
   flow: { stand: 0.8, seconds: 1.6, gapMm: [0.3, 2.5], shadeMm: [0.5, 60] },
@@ -60,6 +61,7 @@ const grainUniforms = {
   uGrainGround: { value: new THREE.Color() },
   uSandDown: { value: 1 },
   uSandGrow: { value: 1 },
+  uSandLift: { value: -1 },
   uSandFoot: { value: new THREE.Vector2(0, 0) },
 }
 
@@ -69,6 +71,7 @@ attribute vec4 aFlight;
 attribute vec4 aSeed;
 attribute vec2 aCorner;
 uniform float uSandGrow;
+uniform float uSandLift;
 uniform vec4 uGrain;
 uniform vec2 uGrainLoop;
 uniform float uGrainLevel;
@@ -170,6 +173,15 @@ float lies = aSeed.y > 1.5 ? 1.0 : 0.0;
 vec3 thenAt = grainPath(max(tau - uGrain.w * mix(1.0, ${(LOOK.fall.exposure / LOOK.exposure).toFixed(3)}, falls), 0.0));
 if (lies > 0.5) {
   nowAt.y = mix(${SLAB.liftMm.toFixed(2)} + (nowAt.y - ${SLAB.liftMm.toFixed(2)}) * uSandGrow, nowAt.y, step(1.0, uSandGrow));
+  // A few of the grains that lay against the foot are taken up a little way as it leaves, and fall back.
+  float taken = 1.0 - smoothstep(${LOOK.lift.nearMm[0]!.toFixed(1)}, ${LOOK.lift.nearMm[1]!.toFixed(1)}, length(position.xz));
+  if (uSandLift >= 0.0 && fract(aSeed.x * 57.3 + aSeed.z * 31.7) < ${LOOK.lift.share.toFixed(2)} * taken) {
+    float up = mix(${LOOK.lift.upMmS[0]!.toFixed(1)}, ${LOOK.lift.upMmS[1]!.toFixed(1)}, fract(aSeed.z * 83.7 + aSeed.x * 9.1));
+    float air = 2.0 * up / ${LOOK.gravity.toFixed(1)};
+    float fly = clamp(uSandLift - ${LOOK.lift.late.toFixed(2)} * fract(aSeed.x * 23.1 + aSeed.z * 47.9), 0.0, air);
+    nowAt.y += up * fly - ${(0.5 * LOOK.gravity).toFixed(1)} * fly * fly;
+    nowAt.xz -= normalize(position.xz) * (${LOOK.lift.inMm.toFixed(2)} * sin(3.14159 * fly / air));
+  }
   thenAt = nowAt;
 } else if (falls < 0.5) {
   float low = (1.0 - uSandGrow) * (position.y - ${SLAB.liftMm.toFixed(2)}) * (aSeed.y < -0.5 ? 1.0 : clamp(tau / max(aFlight.y, 1e-4), 0.0, 1.0));
@@ -181,7 +193,7 @@ if (lies > 0.5) {
 if (puff >= 0.0) {
   float s = tau - (aFlight.y + fallSlide());
   float turn = 6.2832 * fract(aSeed.x * 71.3 + aSeed.z * 3.7);
-  vec2 out2 = normalize(position.xz) * 0.6 + vec2(sin(turn), cos(turn));
+  vec2 out2 = (dot(position.xz, position.xz) > 0.0 ? normalize(position.xz) : vec2(1.0, 0.0)) * 0.6 + vec2(sin(turn), cos(turn));
   float outS = mix(${LOOK.fall.puff.outMmS[0].toFixed(1)}, ${LOOK.fall.puff.outMmS[1].toFixed(1)}, fract(aSeed.x * 13.9 + 0.21));
   float upS = mix(${LOOK.fall.puff.upMmS[0].toFixed(1)}, ${LOOK.fall.puff.upMmS[1].toFixed(1)}, fract(aSeed.z * 37.1 + aSeed.x * 5.3));
   nowAt = position + vec3(out2.x * outS * s, max(upS * s - 0.5 * ${LOOK.fall.gravity.toFixed(1)} * s * s, 0.0), out2.y * outS * s);
@@ -282,7 +294,7 @@ uniform vec4 uGrainLens;
 mat2 grainTurn = mat2(1.0, 0.0, 0.0, 1.0);
 vec2 grainCrumb = vec2(1.0, 0.0);
 float grainDisc(vec2 at, float L) {
-  vec2 uv = grainTurn * at;
+  vec2 uv = grainTurn * at * (1.0 + 0.3 * abs(grainCrumb.y));
   uv.y *= grainCrumb.x;
   uv.x += grainCrumb.y * (uv.y * uv.y - 0.3);
   float capY = sign(uv.y) * max(abs(uv.y) * L - (L - 1.0), 0.0);
@@ -294,7 +306,7 @@ void main() {
   if (vGrainLook.w < 0.5) discard;
   float L = vGrainShape.x;
   // A coarse crumb on the table is not a ball: it is longer one way than the other, and bent.
-  if (vGrainShape.z > 1.5 && vGrainLit > 1.05 && vGrainLit < 1.2) {
+  if (vGrainShape.z > 1.5 && vGrainLit < 2.5) {
     float turn = 6.2832 * fract(vGrainLook.x * 57.3);
     grainTurn = mat2(cos(turn), sin(turn), -sin(turn), cos(turn));
     grainCrumb = vec2(mix(${LOOK.loose.big.squash[0]!.toFixed(2)}, ${LOOK.loose.big.squash[1]!.toFixed(2)}, vGrainLook.y), ${LOOK.loose.big.bend.toFixed(2)} * (2.0 * fract(vGrainLook.x * 13.7) - 1.0));
@@ -412,6 +424,7 @@ export interface FallPath {
 export const grainLens = grainUniforms.uGrainLens
 export const sandDown = grainUniforms.uSandDown
 export const sandGrow = grainUniforms.uSandGrow
+export const sandLift = grainUniforms.uSandLift
 export const sandFoot = grainUniforms.uSandFoot
 
 export const FALL = { gravity: LOOK.fall.gravity, count: LOOK.fall.count, stand: LOOK.flow.stand }
@@ -677,7 +690,11 @@ export function update(moment: KitMoment): void {
   const gone = at < 0 || !(at < Infinity) ? 1 : out * out * (3 - 2 * out)
   const lifted = Math.min(1, Math.max(0, (rimGapMm(f.globe) - LOOK.flow.shadeMm[0]) / (LOOK.flow.shadeMm[1] - LOOK.flow.shadeMm[0])))
   u.uSandDown.value = 1 - lifted * lifted * (3 - 2 * lifted)
-  const falling = fallShare(at) * down * grown
+  // The time since the foot left the table is told by the beat of the shake. Sand left on a table stays on it; the
+  // stream from the ledge ends with the lift and does not start again while the globe is in the air.
+  const lifting = moment.beat !== null && moment.arrived >= 0.5 && at >= 0
+  u.uSandLift.value = lifting ? (moment.beat! * 60) / (config.film as unknown as { defaultBpm: number }).defaultBpm : -1
+  const falling = moment.beat !== null && moment.beat > LOOK.lift.stop ? 0 : fallShare(at) * down * grown
   u.uGrain.value.set(at < 0 ? -1 : Math.min(at, 50), gone, falling, shutter * LOOK.exposure)
   u.uGrainLoop.value.set((((open / moment.period) % 1) + 1) % 1, moment.period)
   u.uGrainPx.value = f.focalPx

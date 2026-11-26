@@ -282,6 +282,7 @@ export const veilUniforms = {
   uVeilDrift: { value: new THREE.Vector4() },
   uVeilLean: { value: new THREE.Vector3() },
   uVeilOpen: { value: new THREE.Vector4(0, 1, 0, 0) },
+  uVeilWhite: { value: VEIL_LOOK.bankWhite },
   uVeilNoise: { value: stirNoise() as THREE.Texture },
 }
 
@@ -306,6 +307,7 @@ uniform vec4 uVeilRoll;
 uniform vec4 uVeilDrift;
 uniform vec3 uVeilLean;
 uniform vec4 uVeilOpen;
+uniform float uVeilWhite;
 uniform highp sampler3D uVeilNoise;
 float veilPocket(vec3 p) {
   if (uVeilOpen.x <= 0.0) return 0.0;
@@ -431,7 +433,7 @@ vec3 veilLit(vec3 p, vec4 field) {
   vec3 toward;
   vec3 card = uRigCardCol * (uRigInside.x * uRigCard.w * stageGridOpen(p));
   vec3 lit = stageSoftIn(p) * ${n(L.ambientShare)} + (stageKeyIn(p, toward) + card) * (uRigPoint.x * ${n(L.keyShare)} * packed * (floorKey + (1.0 - floorKey) * dim)) + mix(stageGrid(p) * ${n(L.gridShare)}, (stageGridWarm(p) + stageFlood(p)) * ${n(L.bankGridShare)}, low);
-  return lit * mix(vec3(1.0), vec3(1.0) / max(uVeil.rgb, vec3(0.05)), mix(${n(L.driftWhite)} * mix(${n(L.driftShadeWhite)}, 1.0, dim), ${n(L.bankWhite)}, uVeilRoll.y) * low) * mix(1.0, ${n(L.bankDim)} * mix(${n(L.bankGrainLow)}, ${n(L.bankGrainHigh)}, field.w), low * (1.0 - ${n(L.bankGrainFlood)} * uVeilRoll.y));
+  return lit * mix(vec3(1.0), vec3(1.0) / max(uVeil.rgb, vec3(0.05)), mix(${n(L.driftWhite)} * mix(${n(L.driftShadeWhite)}, 1.0, dim), uVeilWhite, uVeilRoll.y) * low) * mix(1.0, ${n(L.bankDim)} * mix(${n(L.bankGrainLow)}, ${n(L.bankGrainHigh)}, field.w), low * (1.0 - ${n(L.bankGrainFlood)} * uVeilRoll.y));
 }
 vec4 veilPath(vec3 eye, vec3 placed, vec3 world, float path) {
   float thin = (uVeil.a + uVeilRoll.z + uVeilBank.z + uVeilDrift.x) * path;
@@ -593,6 +595,10 @@ export function updateVeil(f: StageFrame): void {
   const pocket = veilPocketAt(beat, since)
   u.uVeilOpen.value.set(pocket.open, pocket.reach, 0, 0)
   u.uVeil.value.set(lerp(a.tint[0], b.tint[0], t), lerp(a.tint[1], b.tint[1], t), lerp(a.tint[2], b.tint[2], t), 0)
+  // How far the flood's bank is whitened is the season's own where it gives one, and crosses with the tint. The shared number
+  // was made for snow: it turns a bank past white to the opposite of its tint, which for winter's blue is a warm white and for
+  // summer's gold was a sky blue.
+  u.uVeilWhite.value = lerp(a.bankWhite ?? L.bankWhite, b.bankWhite ?? L.bankWhite, t)
   const amb = (L.ambientShare * 0.5) / Math.PI
   u.uVeilLight.value.set((f.ambient.r + f.ground.r * f.fill) * amb, (f.ambient.g + f.ground.g * f.fill) * amb, (f.ambient.b + f.ground.b * f.fill) * amb)
   turn.setFromEuler(tilt.set(f.globe.tiltX, f.globe.twist ?? 0, f.globe.tiltZ, 'XZY')).invert()

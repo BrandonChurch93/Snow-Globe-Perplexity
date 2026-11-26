@@ -12,6 +12,7 @@ import { hasTexture, preparedBytes, prepareGroup, setAnisotropy, texture } from 
 import { FLOW_RANGE_MM_S, LIGHT_RANGE, allParts, viewCode } from '../diagnostics/views'
 import { Shell } from '../globe/shell'
 import { lensState } from '../post/grade'
+import { lensFall } from '../post/post'
 import { ParticleDraw } from '../particles/draw/points'
 import { kitOf, kits } from '../seasons'
 import type { SeasonKit } from '../seasons/kit'
@@ -602,6 +603,10 @@ export class GlobeStage implements Stage {
       const reach = (CHANGE_BLOOM.glareReach * f.focalPx * outerRadiusMm) / (this.centre.distanceTo(this.camera.position) * h)
       this.centre.project(this.camera)
       lensState.glareAt.set(0.5 + 0.5 * this.centre.x, 0.5 + 0.5 * this.centre.y, reach)
+      this.inside.localToWorld(this.centre.set(0, CHANGE_BLOOM.haloSeat * collarY, 0))
+      const wide = (CHANGE_BLOOM.haloReach * f.focalPx * outerRadiusMm) / (this.centre.distanceTo(this.camera.position) * h)
+      this.centre.project(this.camera)
+      lensFall.haloAt.set(0.5 + 0.5 * this.centre.x, 0.5 + 0.5 * this.centre.y, wide)
       drawPasses(this.pass, { shadows: cast, mirror: view === '' && f.planar, sliceOnly, emitters: beauty }, f)
       const fill = view === '' && pose.apertureMm > 0 ? lensFillOf(target) : undefined
       if (fill?.wants(sample)) this.drawBlur(fill, target, pose, f, single ? [a] : [a, b])

@@ -248,6 +248,9 @@ uniform vec3 uRimAt;
 uniform vec4 uFoot;
 uniform vec4 uLean;
 uniform vec3 uPool;
+// How much of the pool reaches the place slabLight was last asked about. The slab's own surface reads it for the pour of a
+// change, of which it takes more than what lies on it (lighting.ts, CHANGE_BLOOM, pour and pourOn).
+float slabPoolShare;
 float slabCapsule(vec2 p, vec2 a, vec2 b) {
   vec2 pa = p - a;
   vec2 ba = b - a;
@@ -313,7 +316,8 @@ void slabLight(vec3 P, out vec3 keyDir, out float keyGain, out vec3 rimDir, out 
   float source = ${f(centreHeight)} + lift;
   float glowFall = pow(abs(source * source / (source * source + d * d)), 1.5);
   float glowRise = smoothstep(uFoot.z - 4.0, uFoot.z + ${f(SLAB.poolRiseMm)} + lift, d);
-  warm = uPool * (${f(SLAB.poolGain)} * glowFall * glowRise);
+  slabPoolShare = ${f(SLAB.poolGain)} * glowFall * glowRise;
+  warm = uPool * slabPoolShare;
   occl = slabShade(P.xz);
 }
 `
@@ -334,6 +338,8 @@ export const surfaceUniforms = {
   uFoot: { value: new THREE.Vector4(0, 0, footRadius, 0) },
   uLean: { value: new THREE.Vector4(0, 0, 0, 0) },
   uPool: { value: new THREE.Color() },
+  uPour: { value: new THREE.Color() },
+  uImage: { value: new THREE.Color() },
   uReflect: { value: new THREE.Vector4(1, 0, 0, 0) },
   uBaked: { value: new THREE.Color() },
   uMirror: { value: dark as THREE.Texture },
@@ -362,6 +368,8 @@ uniform vec3 uRimCol;
 uniform vec3 uSky;
 uniform vec4 uReflect;
 uniform vec3 uBaked;
+uniform vec3 uPour;
+uniform vec3 uImage;
 uniform sampler2D uMirror;
 uniform vec4 uMirrorSize;
 uniform sampler2D uDetail;
@@ -479,7 +487,9 @@ void main() {
   float occl;
   slabLight(P, keyDir, keyGain, rimDir, rimGain, occl, warm);
   vec3 direct = uKeyCol * (max(dot(n, keyDir), 0.0) * keyGain) + uRimCol * (max(dot(n, rimDir), 0.0) * rimGain);
-  vec3 col = scatter * (direct + (uSky + warm) * occl) + film * direct * (${f(SLAB.hazeAlbedo)} * haze);
+  // The dust and the lumps lie on the slab: they take the smaller pour with the rest of what lies there, and the slab's own
+  // near black takes the difference, so a white speck in the pool stays under white and takes the pool's colour.
+  vec3 col = scatter * (direct + (uSky + warm) * occl) + albedo * (uPour * (slabPoolShare * occl)) + film * direct * (${f(SLAB.hazeAlbedo)} * haze);
 
   vec3 r0 = vec3(v.x, -v.y, v.z);
   vec2 ground = v.xz / max(length(v.xz), 1e-4);
@@ -548,7 +558,7 @@ void main() {
     vec2 heart = vec2(side, height - lift - ${f(centreHeight)}) / ${f(globeRadius * SLAB.bakedGlowReach)};
     float glow = exp(-dot(heart, heart));
     float shell = smoothstep(${f(SLAB.bakedShellFrom)}, 1.0, side / girth);
-    vec3 near = lit * body + (uPool * (${f(SLAB.bakedGlow)} * glow) + uSky * (${f(SLAB.bakedShell)} * shell)) * glass;
+    vec3 near = lit * body + (uImage * (${f(SLAB.bakedGlow)} * glow) + uSky * (${f(SLAB.bakedShell)} * shell)) * glass;
     far *= 1.0 - body - ${f(1 - SLAB.bakedThrough)} * glass;
     seen = far * uReflect.y + seen * uReflect.x;
     image = near * uReflect.y + image * uReflect.x;
@@ -615,7 +625,9 @@ export function updateSurface(f: StageFrame): void {
   su.uFoot.value.set(g.x, g.z, footRadius, g.y)
   const lean = 0.5 * G.baseHeightMm + g.y
   su.uLean.value.set(-Math.sin(g.tiltZ) * lean, Math.sin(g.tiltX) * lean, -Math.sin(g.tiltZ), Math.sin(g.tiltX) * Math.cos(g.tiltZ))
-  su.uPool.value.copy(f.pool)
+  su.uPool.value.copy(f.poolOn)
+  su.uPour.value.setRGB(f.pool.r - f.poolOn.r, f.pool.g - f.poolOn.g, f.pool.b - f.poolOn.b)
+  su.uImage.value.copy(f.image)
   const lumpsA = SLAB.lumpSeasons[f.from.season] ?? 0
   su.uLumps.value = lumpsA * (1 - partChange('surface-leave', f.change)) + (SLAB.lumpSeasons[f.to.season] ?? 0) * partChange('surface-come', f.change)
   const mirror = f.view === '' && f.planar ? f.reflect : 0
