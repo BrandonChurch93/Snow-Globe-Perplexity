@@ -127,3 +127,28 @@ walk-f/tablet-2-mid-shake.jpg
 walk-f/tablet-3-landed.jpg
   Shows: just landed in spring, the petals of the way home still in the liquid. State: not busy, spring lit, the page
   says "Spring". The bar is at its dimmed floor (60 percent), as on the phone. Run tablet-1, picture 25-row-3-spring.
+
+walk-f/hd-0-first-look.jpg
+  Shows: hd 1920 x 1080, the first look as it came, three pictures one over the other. Top: the first picture the tool
+  could take, 939 ms after the address was asked: the soft picture (the browser's own record puts its first paint and
+  its first paint with a picture in it both at 328 ms). Middle: the still, as the page laid it. Bottom: the live
+  picture with the controls. State: the still lies on the live picture with no shift (0 px by whole pixels and between
+  them, searched 4 px each way; measured with the line held, and again as it came between pictures
+  37-first-look-came-half-in, which is the still alone, and 38-first-look-came-live), and the live picture stays where
+  it came (0 px over its first 70 frames, searched 48 px each way). Run hd-1 (alone on the machine), pictures
+  36-first-look-came-first, 41-first-look-still-by-page and 38-first-look-came-live.
+
+walk-f/hd-1-rest.jpg
+  Shows: at rest in winter with the controls, after the one hint (5.005 s after the controls came, asked 5). State:
+  winter lit, not busy, the bar awake, no sound control (no sound files here), so the marks stand to the left of the
+  centred Shake control with nothing to its right. Run hd-1, picture 04-hint-after.
+
+walk-f/hd-2-mid-shake.jpg
+  Shows: the middle of a shake by the Shake control, winter to spring, the third of four in a row. The controls keep
+  their place, clear of the globe. State: busy, winter still lit, a small dot under the spring mark, the Shake control
+  held. Run hd-1, picture 22-row-3-spring-across-2.
+
+walk-f/hd-3-landed.jpg
+  Shows: just landed in spring, the petals of the way home still in the liquid. State: not busy, spring lit, the page
+  says "Spring". The bar is at its dimmed floor (60 percent), as on the phone and the tablet. Run hd-1, picture
+  24-row-3-spring.
