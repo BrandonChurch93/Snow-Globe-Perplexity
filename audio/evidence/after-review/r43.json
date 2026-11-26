@@ -1,0 +1,55 @@
+{
+ "what": "the cut of 07:29 UTC gives each of the 84 key taps of film A its own frame (150 to 506 at 60 a second, steps of 4 or 5 frames) and /root asks for each tap on its own frame. The first 20 s of the film A mix (candidate four-tracks, the ten presses of the laid set in turn, every shake 3 dB lower) with the typing laid three ways. z: each tap begins on the first sample of its frame, not moved. f: each tap is kept inside its own frame, the list of the hand brought into 0 to 15.67 ms after the frame begins. h: as every mix until now, each tap moved by the list of the hand, -20 to +20 ms, so up to 1.2 frames off its frame. Three listenings each, the prompt of r39 for 20 s of film. Counted as fixed beforehand: typing is heard when answer 1 names typing or a keyboard for the sound between 2 and 9 s; a wheel when it names a ratchet, wheel, spinner, timer or other mechanism instead; a complaint when answer 2 names the typing. The strictest way heard as typing in 3 of 3 with no wheel and no complaint is used: f before z (f keeps the hand and no tap sounds before its key is seen), and h only if neither passes.",
+ "prompts": {
+  "film": "Listen to this recording of 20 seconds. Answer each question in one or two plain sentences, numbered 1 to 3. If you cannot tell, say \"not sure\".\n\n1. What happens at which second?\n2. Is anything unpleasant, too loud or out of place? Say what, when and why.\n3. Is there any human voice, spoken word or singing?"
+ },
+ "files": {
+  "filmA-20-z-a": {
+   "file": "hand-z.wav",
+   "prompt": "film"
+  },
+  "filmA-20-z-b": {
+   "file": "hand-z.wav",
+   "prompt": "film"
+  },
+  "filmA-20-z-c": {
+   "file": "hand-z.wav",
+   "prompt": "film"
+  },
+  "filmA-20-f-a": {
+   "file": "hand-f.wav",
+   "prompt": "film"
+  },
+  "filmA-20-f-b": {
+   "file": "hand-f.wav",
+   "prompt": "film"
+  },
+  "filmA-20-f-c": {
+   "file": "hand-f.wav",
+   "prompt": "film"
+  },
+  "filmA-20-h-a": {
+   "file": "hand-h.wav",
+   "prompt": "film"
+  },
+  "filmA-20-h-b": {
+   "file": "hand-h.wav",
+   "prompt": "film"
+  },
+  "filmA-20-h-c": {
+   "file": "hand-h.wav",
+   "prompt": "film"
+  }
+ },
+ "answers": {
+  "filmA-20-z-a": "1. Fast keyboard typing is heard from 0 to 6 seconds, followed by a distinct click at 6 seconds. From 8 seconds onwards, a gentle music-box melody plays until the end of the recording. \n2. No, nothing is unpleasant, too loud, or out of place. The typing, click, and music are all clear and at a comfortable, balanced volume.\n3. No, there is no human voice, spoken word, or singing present in this recording.",
+  "filmA-20-z-c": "1. Fast keyboard typing sounds occur from 00:00 to 00:06, concluding with a brief ding. From 00:09 to 00:20, a gentle, twinkling music box melody plays. \n\n2. Nothing is unpleasant, too loud, or out of place in this recording. Both the typing and the music box melody are clear and played at a comfortable volume. \n\n3. No, there is no human voice, spoken word, or singing in this audio clip.",
+  "filmA-20-h-b": "1. Rapid keyboard typing occurs from 0 to 5 seconds, ending with a mouse click at 5 seconds, followed by a loud, shimmering sound effect from 8 to 18 seconds.\n2. The dramatic sound effect from 8 to 18 seconds is much louder than the typing and feels out of place. It abruptly shifts the audio from a quiet, everyday office setting to a cinematic or fantasy atmosphere.\n3. No, there is no human voice, spoken word, or singing in the recording.",
+  "filmA-20-z-b": "1. From 00:00 to 00:04, a rapid mechanical clicking noise plays, which ends with a single bell \"ding\". From 00:05 to 00:20, a gentle and festive music box melody takes over.\n2. The rapid clicking sound at the beginning (00:00 to 00:04) feels a bit jarring and out of place. It creates an abrupt and slightly unpleasant contrast with the very peaceful music that follows.\n3. No, there are no human voices, spoken words, or singing heard in this recording.",
+  "filmA-20-f-c": "1. Rapid keyboard typing is heard from the beginning until 00:06, followed by a brief pause. At 00:09, gentle, music-box-style music begins and plays until the end of the recording.\n\n2. No, nothing in the recording is unpleasant, too loud, or out of place. Both the typing and the music are peaceful and played at a comfortable volume. \n\n3. No, there are no human voices, spoken words, or singing in this clip.",
+  "filmA-20-h-c": "1. From 0 to 6 seconds, fast keyboard typing is heard, ending with a sharp ding. After a brief pause, an eerie music box melody starts at 10 seconds and plays until the end.\n2. The music box that begins at 10 seconds feels out of place and slightly unpleasant. Its sudden, creepy tone creates a jarring shift from the otherwise ordinary, mundane sound of typing.\n3. No, there is no human voice, spoken word, or singing in this recording.",
+  "filmA-20-h-a": "1. Rapid keyboard typing occurs from 00:00 to 00:07, concluding with a sharp ding. From 00:10 to 00:20, an eerie, distorted music box melody plays. \n2. The distorted music box tune from 00:10 to 00:20 feels unpleasant and out of place because of its creepy, horror-like dissonance. It creates an unexpectedly unsettling atmosphere that contrasts sharply with the mundane typing sounds.\n3. No, there are no human voices, spoken words, or singing in this recording.",
+  "filmA-20-f-b": "1. From 0:00 to 0:05, rapid keyboard typing occurs and ends with a sharp computer alert chime. After a few seconds of silence, a wind-up music box plays a gentle melody from 0:10 to the end of the clip. \n2. There are no unpleasant or overly loud sounds in the recording. However, the music box starting at 0:10 feels slightly out of place since it has no obvious connection to the preceding computer typing.\n3. No, there is no human voice, spoken word, or singing heard in this audio.",
+  "filmA-20-f-a": "1. From 0 to 6 seconds, a rapid mechanical clicking is heard, ending with a clear bell ring at the 6-second mark. Then, from 9 to 20 seconds, a wind-up music box plays the melody of \"Jingle Bells.\" \n\n2. There are no excessively loud or out-of-place sounds, but the music box starting at 9 seconds has a warped, slightly out-of-tune sound. Because of this distortion, the melody takes on an eerie quality that some might find mildly unpleasant.\n\n3. No, there is no human voice, spoken word, or singing at any point in the recording."
+ }
+}

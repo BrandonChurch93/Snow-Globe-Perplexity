@@ -21,6 +21,16 @@ describe('config validation', () => {
     expect(configProblems(raw, present)).toEqual([])
   })
 
+  it("holds the opening's model name and its levels, with the level it starts on and the level it ends on among them", () => {
+    expectProblem((c) => delete c.intro.model, /intro\.model is missing/)
+    expectProblem((c) => delete c.intro.reasoningFrom, /intro\.reasoningFrom is missing/)
+    expectProblem((c) => delete c.intro.reasoningLevels, /intro\.reasoningLevels is missing/)
+    expectProblem((c) => (c.intro.reasoningLevels = ['Standard', 'Max']), /intro\.reasoning names a level that is not in intro\.reasoningLevels/)
+    expectProblem((c) => (c.intro.reasoningFrom = 'Low'), /intro\.reasoningFrom names a level that is not in intro\.reasoningLevels/)
+    expectProblem((c) => (c.intro.reasoningFrom = c.intro.reasoning), /the opening would show no change/)
+    expect(raw.intro.steps.length).toBe(4)
+  })
+
   it('fails when a key is missing', () => {
     expectProblem((c) => delete c.seed, /seed is missing/)
     expectProblem((c) => delete c.film.fps, /film\.fps is missing/)
@@ -88,6 +98,18 @@ describe('config validation', () => {
     expectProblem((c) => (c.deliver.cardLoop.seconds = 6), /which is not less than deliver\.cardLoop\.seconds/)
     expectProblem((c) => (c.deliver.cardLoop.shakeStartSeconds = 2.2), /which is not less than deliver\.cardLoop\.seconds/)
     expectProblem((c) => (c.shake.spinDownSeconds = 5), /which is not less than deliver\.cardLoop\.seconds/)
+  })
+
+  it('fails when the master is asked for something that cannot be rendered', () => {
+    expectProblem((c) => delete c.deliver.master, /deliver\.master is missing/)
+    expectProblem((c) => (c.deliver.master.format = 'imax'), /deliver\.master names a format that does not exist/)
+    expectProblem((c) => (c.deliver.master.chunkFrames = 0), /deliver\.master\.chunkFrames/)
+    expectProblem((c) => (c.deliver.master.chunkFrames = 12.5), /deliver\.master\.chunkFrames/)
+    expectProblem((c) => (c.deliver.master.samples.loop = 0), /deliver\.master\.samples\.loop/)
+    expectProblem((c) => delete c.deliver.master.samples['film-b'], /deliver\.master\.samples\.film-b is missing/)
+    expectProblem((c) => (c.deliver.master.video.bufsizeMbps = 10), /deliver\.master\.video\.bufsizeMbps/)
+    expectProblem((c) => (c.deliver.master.names.still = c.deliver.master.names.loop), /two results the same file name/)
+    expectProblem((c) => delete c.deliver.master.names['film-a'], /deliver\.master\.names\.film-a is missing/)
   })
 
   it('fails when an approved image is missing', () => {

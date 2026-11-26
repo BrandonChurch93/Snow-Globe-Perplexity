@@ -263,15 +263,15 @@
       "shot": "open",
       "what": "film.hookSeconds: the pull back is plain",
       "camera": [
-        -6.673,
-        109.449,
-        512.469,
+        -6.666,
+        109.407,
+        511.961,
         0,
         67.221,
         0,
         16
       ],
-      "focusMm": 504,
+      "focusMm": 503.5,
       "apertureMm": 2.06
     },
     {
@@ -279,15 +279,15 @@
       "shot": "open",
       "what": "film.revealBySeconds: the edge of the glass is in frame",
       "camera": [
-        -2.597,
-        114.002,
-        595.843,
+        -2.594,
+        113.951,
+        595.181,
         0,
         67.37,
         0,
         16
       ],
-      "focusMm": 586,
+      "focusMm": 585.3,
       "apertureMm": 2.01
     },
     {
@@ -295,15 +295,15 @@
       "shot": "open",
       "what": "the hero camera reached",
       "camera": [
-        -1.728,
-        115.481,
-        614.118,
+        -1.726,
+        115.427,
+        613.42,
         0,
         67.4,
         0,
         16
       ],
-      "focusMm": 604,
+      "focusMm": 603.3,
       "apertureMm": 2
     },
     {
@@ -311,15 +311,15 @@
       "shot": "open",
       "what": "the widest point of the drift",
       "camera": [
-        29.273,
-        111.719,
-        613.364,
+        29.24,
+        112.764,
+        612.667,
         0,
-        62.9,
+        64,
         0,
         16
       ],
-      "focusMm": 604,
+      "focusMm": 603.3,
       "apertureMm": 2
     },
     {
@@ -327,15 +327,15 @@
       "shot": "open",
       "what": "back at hero, 1 beat before the shake",
       "camera": [
-        0.713,
-        115.07,
-        614.152,
+        0.712,
+        115.015,
+        613.454,
         0,
         67.4,
         0,
         16
       ],
-      "focusMm": 604,
+      "focusMm": 603.3,
       "apertureMm": 2
     },
     {
@@ -344,14 +344,14 @@
       "what": "last frame",
       "camera": [
         0,
-        115.731,
-        614.101,
+        115.676,
+        613.403,
         0,
         67.4,
         0,
         16
       ],
-      "focusMm": 604,
+      "focusMm": 603.3,
       "apertureMm": 2
     },
     {
@@ -360,14 +360,14 @@
       "what": "first frame",
       "camera": [
         0,
-        115.731,
-        614.101,
+        115.676,
+        613.403,
         0,
         67.4,
         0,
         16
       ],
-      "focusMm": 604,
+      "focusMm": 603.3,
       "apertureMm": 2
     },
     {
@@ -376,14 +376,14 @@
       "what": "last frame",
       "camera": [
         0,
-        115.731,
-        614.101,
+        115.676,
+        613.403,
         0,
         67.4,
         0,
         16
       ],
-      "focusMm": 604,
+      "focusMm": 603.3,
       "apertureMm": 2
     },
     {
@@ -392,14 +392,14 @@
       "what": "the landing, the first frame of the next shot",
       "camera": [
         0,
-        115.731,
-        614.101,
+        115.676,
+        613.403,
         0,
         67.4,
         0,
         16
       ],
-      "focusMm": 604,
+      "focusMm": 603.3,
       "apertureMm": 2
     },
     {
@@ -407,15 +407,15 @@
       "shot": "spring",
       "what": "the move toward base begins",
       "camera": [
-        1.108,
-        110.952,
-        614.158,
+        1.106,
+        111.884,
+        613.46,
         0,
-        63.366,
+        64.352,
         0,
         16
       ],
-      "focusMm": 604,
+      "focusMm": 603.3,
       "apertureMm": 2
     },
     {
@@ -423,15 +423,15 @@
       "shot": "spring",
       "what": "the nearest point to the base camera",
       "camera": [
-        37.101,
-        64.608,
-        365.626,
+        37.084,
+        65.094,
+        365.46,
         0,
-        33.49,
+        33.99,
         0,
         16
       ],
-      "focusMm": 345.4,
+      "focusMm": 345.3,
       "apertureMm": 1.1
     },
     {
@@ -439,15 +439,15 @@
       "shot": "spring",
       "what": "leaving the nearest point to base",
       "camera": [
-        38.556,
-        64.22,
-        365.508,
+        38.539,
+        64.706,
+        365.342,
         0,
-        33.49,
+        33.99,
         0,
         16
       ],
-      "focusMm": 345.4,
+      "focusMm": 345.3,
       "apertureMm": 1.1
     },
     {
@@ -455,15 +455,15 @@
       "shot": "spring",
       "what": "back at hero, 1 beat before the shake",
       "camera": [
-        0.967,
-        116.412,
-        614.046,
+        0.966,
+        116.357,
+        613.349,
         0,
         67.4,
         0,
         16
       ],
-      "focusMm": 604,
+      "focusMm": 603.3,
       "apertureMm": 2
     },
     {
@@ -472,14 +472,14 @@
       "what": "last frame",
       "camera": [
         0,
-        115.731,
-        614.101,
+        115.676,
+        613.403,
         0,
         67.4,
         0,
         16
       ],
-      "focusMm": 604,
+      "focusMm": 603.3,
       "apertureMm": 2
     },
     {
@@ -488,14 +488,14 @@
       "what": "first frame",
       "camera": [
         0,
-        115.731,
-        614.101,
+        115.676,
+        613.403,
         0,
         67.4,
         0,
         16
       ],
-      "focusMm": 604,
+      "focusMm": 603.3,
       "apertureMm": 2
     },
     {
@@ -504,14 +504,14 @@
       "what": "last frame",
       "camera": [
         0,
-        115.731,
-        614.101,
+        115.676,
+        613.403,
         0,
         67.4,
         0,
         16
       ],
-      "focusMm": 604,
+      "focusMm": 603.3,
       "apertureMm": 2
     },
     {
@@ -520,14 +520,14 @@
       "what": "the landing, the first frame of the next shot",
       "camera": [
         0,
-        115.731,
-        614.101,
+        115.676,
+        613.403,
         0,
         67.4,
         0,
         16
       ],
-      "focusMm": 604,
+      "focusMm": 603.3,
       "apertureMm": 2
     },
     {
@@ -535,15 +535,15 @@
       "shot": "summer",
       "what": "the move toward interior begins",
       "camera": [
-        -1.926,
-        112.219,
-        614.057,
+        -1.924,
+        113.149,
+        613.359,
         0,
-        63.366,
+        64.352,
         0,
         16
       ],
-      "focusMm": 604,
+      "focusMm": 603.3,
       "apertureMm": 2
     },
     {
@@ -583,15 +583,15 @@
       "shot": "summer",
       "what": "back at hero, 1 beat before the shake",
       "camera": [
-        -1.91,
-        115.571,
-        614.111,
+        -1.908,
+        115.516,
+        613.413,
         0,
         67.4,
         0,
         16
       ],
-      "focusMm": 604,
+      "focusMm": 603.3,
       "apertureMm": 2
     },
     {
@@ -600,14 +600,14 @@
       "what": "last frame",
       "camera": [
         0,
-        115.731,
-        614.101,
+        115.676,
+        613.403,
         0,
         67.4,
         0,
         16
       ],
-      "focusMm": 604,
+      "focusMm": 603.3,
       "apertureMm": 2
     },
     {
@@ -616,14 +616,14 @@
       "what": "first frame",
       "camera": [
         0,
-        115.731,
-        614.101,
+        115.676,
+        613.403,
         0,
         67.4,
         0,
         16
       ],
-      "focusMm": 604,
+      "focusMm": 603.3,
       "apertureMm": 2
     },
     {
@@ -632,14 +632,14 @@
       "what": "last frame",
       "camera": [
         0,
-        115.731,
-        614.101,
+        115.676,
+        613.403,
         0,
         67.4,
         0,
         16
       ],
-      "focusMm": 604,
+      "focusMm": 603.3,
       "apertureMm": 2
     },
     {
@@ -648,14 +648,14 @@
       "what": "the landing, the first frame of the next shot",
       "camera": [
         0,
-        115.731,
-        614.101,
+        115.676,
+        613.403,
         0,
         67.4,
         0,
         16
       ],
-      "focusMm": 604,
+      "focusMm": 603.3,
       "apertureMm": 2
     },
     {
@@ -663,15 +663,15 @@
       "shot": "fall",
       "what": "the move toward low begins",
       "camera": [
-        1.276,
-        111.812,
-        614.091,
+        1.275,
+        112.743,
+        613.393,
         0,
-        63.366,
+        64.352,
         0,
         16
       ],
-      "focusMm": 604,
+      "focusMm": 603.3,
       "apertureMm": 2
     },
     {
@@ -711,15 +711,15 @@
       "shot": "fall",
       "what": "back at hero, 1 beat before the shake",
       "camera": [
-        1.396,
-        115.242,
-        614.138,
+        1.394,
+        115.188,
+        613.44,
         0,
         67.4,
         0,
         16
       ],
-      "focusMm": 604,
+      "focusMm": 603.3,
       "apertureMm": 2
     },
     {
@@ -728,14 +728,14 @@
       "what": "last frame",
       "camera": [
         0,
-        115.731,
-        614.101,
+        115.676,
+        613.403,
         0,
         67.4,
         0,
         16
       ],
-      "focusMm": 604,
+      "focusMm": 603.3,
       "apertureMm": 2
     },
     {
@@ -744,14 +744,14 @@
       "what": "first frame",
       "camera": [
         0,
-        115.731,
-        614.101,
+        115.676,
+        613.403,
         0,
         67.4,
         0,
         16
       ],
-      "focusMm": 604,
+      "focusMm": 603.3,
       "apertureMm": 2
     },
     {
@@ -760,14 +760,14 @@
       "what": "last frame",
       "camera": [
         0,
-        115.731,
-        614.101,
+        115.676,
+        613.403,
         0,
         67.4,
         0,
         16
       ],
-      "focusMm": 604,
+      "focusMm": 603.3,
       "apertureMm": 2
     },
     {
@@ -776,14 +776,14 @@
       "what": "the landing, the first frame of the next shot",
       "camera": [
         0,
-        115.731,
-        614.101,
+        115.676,
+        613.403,
         0,
         67.4,
         0,
         16
       ],
-      "focusMm": 604,
+      "focusMm": 603.3,
       "apertureMm": 2
     },
     {
@@ -791,15 +791,15 @@
       "shot": "close",
       "what": "the push toward macro begins",
       "camera": [
-        1.239,
-        110.981,
-        614.119,
+        1.238,
+        112.027,
+        613.422,
         0,
-        62.9,
+        64,
         0,
         16
       ],
-      "focusMm": 604,
+      "focusMm": 603.3,
       "apertureMm": 2
     },
     {
@@ -968,59 +968,30 @@
   ],
   "opening": {
     "fps": 60,
-    "frameCount": 870,
-    "seconds": 14.5,
+    "frameCount": 867,
+    "seconds": 14.45,
     "typing": {
-      "first": 30,
-      "last": 389
+      "first": 150,
+      "last": 509
     },
     "reasoning": {
-      "first": 390,
-      "open": 411,
-      "choose": 465,
-      "last": 482
+      "first": 24,
+      "open": 65,
+      "choose": 112,
+      "last": 134
     },
-    "send": 531,
+    "send": 558,
     "build": {
-      "first": 546,
-      "last": 869
+      "first": 597,
+      "last": 866
     },
     "steps": [
-      582,
-      636,
-      690,
-      744,
-      798
+      633,
+      687,
+      741,
+      795
     ],
     "keyTaps": [
-      30,
-      34,
-      39,
-      43,
-      47,
-      51,
-      56,
-      60,
-      64,
-      69,
-      73,
-      77,
-      81,
-      86,
-      90,
-      94,
-      99,
-      103,
-      107,
-      111,
-      116,
-      120,
-      124,
-      129,
-      133,
-      137,
-      141,
-      146,
       150,
       154,
       159,
@@ -1076,149 +1047,63 @@
       373,
       377,
       381,
-      386
+      386,
+      390,
+      394,
+      399,
+      403,
+      407,
+      411,
+      416,
+      420,
+      424,
+      429,
+      433,
+      437,
+      441,
+      446,
+      450,
+      454,
+      459,
+      463,
+      467,
+      471,
+      476,
+      480,
+      484,
+      489,
+      493,
+      497,
+      501,
+      506
     ],
+    "pointer": {
+      "enter": 24,
+      "atControl": 57,
+      "toLevel": 84,
+      "atLevel": 105,
+      "gone": 135,
+      "toSend": 510,
+      "atSend": 545
+    },
+    "menu": {
+      "full": 77,
+      "fade": 124,
+      "gone": 134
+    },
+    "lastDone": 843,
+    "pacing": {
+      "toControl": 0.55,
+      "rest": 0.12,
+      "menuIn": 0.2,
+      "read": 0.12,
+      "toLevel": 0.35,
+      "settle": 0.2,
+      "menuOut": 0.16,
+      "pointerOut": 0.18,
+      "beat": 0.25
+    },
     "cues": [
-      {
-        "cue": "key-tap",
-        "frame": 30,
-        "at": 0.5
-      },
-      {
-        "cue": "key-tap",
-        "frame": 34,
-        "at": 0.5667
-      },
-      {
-        "cue": "key-tap",
-        "frame": 39,
-        "at": 0.65
-      },
-      {
-        "cue": "key-tap",
-        "frame": 43,
-        "at": 0.7167
-      },
-      {
-        "cue": "key-tap",
-        "frame": 47,
-        "at": 0.7833
-      },
-      {
-        "cue": "key-tap",
-        "frame": 51,
-        "at": 0.85
-      },
-      {
-        "cue": "key-tap",
-        "frame": 56,
-        "at": 0.9333
-      },
-      {
-        "cue": "key-tap",
-        "frame": 60,
-        "at": 1
-      },
-      {
-        "cue": "key-tap",
-        "frame": 64,
-        "at": 1.0667
-      },
-      {
-        "cue": "key-tap",
-        "frame": 69,
-        "at": 1.15
-      },
-      {
-        "cue": "key-tap",
-        "frame": 73,
-        "at": 1.2167
-      },
-      {
-        "cue": "key-tap",
-        "frame": 77,
-        "at": 1.2833
-      },
-      {
-        "cue": "key-tap",
-        "frame": 81,
-        "at": 1.35
-      },
-      {
-        "cue": "key-tap",
-        "frame": 86,
-        "at": 1.4333
-      },
-      {
-        "cue": "key-tap",
-        "frame": 90,
-        "at": 1.5
-      },
-      {
-        "cue": "key-tap",
-        "frame": 94,
-        "at": 1.5667
-      },
-      {
-        "cue": "key-tap",
-        "frame": 99,
-        "at": 1.65
-      },
-      {
-        "cue": "key-tap",
-        "frame": 103,
-        "at": 1.7167
-      },
-      {
-        "cue": "key-tap",
-        "frame": 107,
-        "at": 1.7833
-      },
-      {
-        "cue": "key-tap",
-        "frame": 111,
-        "at": 1.85
-      },
-      {
-        "cue": "key-tap",
-        "frame": 116,
-        "at": 1.9333
-      },
-      {
-        "cue": "key-tap",
-        "frame": 120,
-        "at": 2
-      },
-      {
-        "cue": "key-tap",
-        "frame": 124,
-        "at": 2.0667
-      },
-      {
-        "cue": "key-tap",
-        "frame": 129,
-        "at": 2.15
-      },
-      {
-        "cue": "key-tap",
-        "frame": 133,
-        "at": 2.2167
-      },
-      {
-        "cue": "key-tap",
-        "frame": 137,
-        "at": 2.2833
-      },
-      {
-        "cue": "key-tap",
-        "frame": 141,
-        "at": 2.35
-      },
-      {
-        "cue": "key-tap",
-        "frame": 146,
-        "at": 2.4333
-      },
       {
         "cue": "key-tap",
         "frame": 150,
@@ -1500,14 +1385,154 @@
         "at": 6.4333
       },
       {
+        "cue": "key-tap",
+        "frame": 390,
+        "at": 6.5
+      },
+      {
+        "cue": "key-tap",
+        "frame": 394,
+        "at": 6.5667
+      },
+      {
+        "cue": "key-tap",
+        "frame": 399,
+        "at": 6.65
+      },
+      {
+        "cue": "key-tap",
+        "frame": 403,
+        "at": 6.7167
+      },
+      {
+        "cue": "key-tap",
+        "frame": 407,
+        "at": 6.7833
+      },
+      {
+        "cue": "key-tap",
+        "frame": 411,
+        "at": 6.85
+      },
+      {
+        "cue": "key-tap",
+        "frame": 416,
+        "at": 6.9333
+      },
+      {
+        "cue": "key-tap",
+        "frame": 420,
+        "at": 7
+      },
+      {
+        "cue": "key-tap",
+        "frame": 424,
+        "at": 7.0667
+      },
+      {
+        "cue": "key-tap",
+        "frame": 429,
+        "at": 7.15
+      },
+      {
+        "cue": "key-tap",
+        "frame": 433,
+        "at": 7.2167
+      },
+      {
+        "cue": "key-tap",
+        "frame": 437,
+        "at": 7.2833
+      },
+      {
+        "cue": "key-tap",
+        "frame": 441,
+        "at": 7.35
+      },
+      {
+        "cue": "key-tap",
+        "frame": 446,
+        "at": 7.4333
+      },
+      {
+        "cue": "key-tap",
+        "frame": 450,
+        "at": 7.5
+      },
+      {
+        "cue": "key-tap",
+        "frame": 454,
+        "at": 7.5667
+      },
+      {
+        "cue": "key-tap",
+        "frame": 459,
+        "at": 7.65
+      },
+      {
+        "cue": "key-tap",
+        "frame": 463,
+        "at": 7.7167
+      },
+      {
+        "cue": "key-tap",
+        "frame": 467,
+        "at": 7.7833
+      },
+      {
+        "cue": "key-tap",
+        "frame": 471,
+        "at": 7.85
+      },
+      {
+        "cue": "key-tap",
+        "frame": 476,
+        "at": 7.9333
+      },
+      {
+        "cue": "key-tap",
+        "frame": 480,
+        "at": 8
+      },
+      {
+        "cue": "key-tap",
+        "frame": 484,
+        "at": 8.0667
+      },
+      {
+        "cue": "key-tap",
+        "frame": 489,
+        "at": 8.15
+      },
+      {
+        "cue": "key-tap",
+        "frame": 493,
+        "at": 8.2167
+      },
+      {
+        "cue": "key-tap",
+        "frame": 497,
+        "at": 8.2833
+      },
+      {
+        "cue": "key-tap",
+        "frame": 501,
+        "at": 8.35
+      },
+      {
+        "cue": "key-tap",
+        "frame": 506,
+        "at": 8.4333
+      },
+      {
         "cue": "ui-send",
-        "frame": 531,
-        "at": 8.85
+        "frame": 558,
+        "at": 9.3
       },
       {
         "cue": "riser",
-        "frame": 798,
-        "at": 13.3
+        "frame": 795,
+        "at": 13.25
       }
     ]
   },
@@ -1516,17 +1541,17 @@
     "frameCount": 480,
     "seconds": 8,
     "camera": "hero",
-    "distanceMm": 622.4,
+    "distanceMm": 669.7,
     "cameraNumbers": [
-      7.334,
-      119.303,
-      620.141,
+      7.892,
+      123.251,
+      667.312,
       0,
       67.4,
       0,
       16
     ],
-    "fit": "moved back from 616 mm along its own axis, so the glass and the base stay inside the centred square crop of the card through the shake",
+    "fit": "moved back from 615.3 mm along its own axis, so the glass and the base stay inside the centred square crop of the card through the shake",
     "format": "hd",
     "shake": {
       "first": 48,

@@ -1,11 +1,12 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { cfg, formatById, currentSeasonHashes } from './page.mjs'
+import { cfg, formatById, currentSeasonHashes, refuseFlat } from './page.mjs'
 import { rel, readJson, writeJson } from './paths.mjs'
 import { freeDiskGb, machineId } from './browser.mjs'
 import { engineHash, fileSha } from './hashes.mjs'
 import { addLook } from './looks.mjs'
 import { encodeFrames, join, probe, timing, tmpDir, videoSettings } from './encode.mjs'
+import { packLine, packServed } from './openingpack.mjs'
 
 const CALLS = { film: 'renderFilmFrame', opening: 'renderOpeningFrame', loop: 'renderLoopFrame' }
 const FRAMES_ROOT = rel('out', 'work', 'frames')
@@ -67,12 +68,21 @@ export const chunkFile = (track, c) => path.join(track.dir, `chunk-${c.first}-${
 
 let current = null
 const hashesNow = () => (current ??= { engine: engineHash(), seasons: currentSeasonHashes() })
+const packs = new Map()
+const packNow = (track) => {
+  if (!packs.has(track.format.width)) packs.set(track.format.width, packServed(track.format.width))
+  return packs.get(track.format.width)
+}
 
 function recordOk(r, track) {
   const now = hashesNow()
   if (!r || r.engineHash !== now.engine) return false
   for (const s of cfg.seasons) if (r.seasonHashes?.[s] !== now.seasons[s]) return false
   if (r.format !== track.format.id || r.tier !== track.tier || r.assets !== track.assets || (r.diagnostic ?? '') !== '') return false
+  if (track.kind === 'opening') {
+    const p = packNow(track)
+    if (!p || r.pack !== p.name || r.packSha256 !== p.sha256) return false
+  }
   return r.kind === track.kind && r.fps === track.fps && r.codec === track.settings.codec && r.mbps === track.settings.mbps && !!r.card === !!track.graphics
 }
 
@@ -159,7 +169,7 @@ function makeRoom(mine, wanted) {
   return dropped
 }
 
-function pngOk(file, format) {
+export function pngOk(file, format) {
   let fd
   try {
     const size = fs.statSync(file).size
@@ -183,6 +193,8 @@ function checkPng(buffer, format, what) {
   const h = buffer.readUInt32BE(20)
   if (w !== format.width || h !== format.height) throw new Error(`${what} is ${w} x ${h}, not ${format.width} x ${format.height}`)
 }
+
+export const FLAT_FRAMES = { film: [], loop: [], opening: null }
 
 export class Run {
   constructor(session, { by = 'builder', looks = true, say = console.log } = {}) {
@@ -240,6 +252,8 @@ export class Run {
     await page.evaluate(([c, i, t]) => window.showcase[c](i, t), [call, index, track.tier])
     const png = track.kind === 'opening' ? await this.session.grabStage(page) : await this.session.grab(page)
     checkPng(png, track.format, `${track.name} frame ${index}`)
+    const flatOk = FLAT_FRAMES[track.kind]
+    if (flatOk && !flatOk.includes(index)) await refuseFlat(png, `${track.name} frame ${index}`)
     return png
   }
 
@@ -260,7 +274,9 @@ export class Run {
     const dir = path.join(FRAMES_ROOT, `${track.name}-${track.format.id}-${track.tier}-${c.first}-${c.last}`)
     const page = await this.page(track)
     const info0 = await page.evaluate(() => window.showcase.info())
-    const key = { engineHash: info0.engineHash, seasonHashes: info0.seasonHashes, format: track.format.id, tier: track.tier, assets: info0.assets, kind: track.kind, card: !!track.graphics, browser: this.session.browserVersion }
+    const pack = track.kind === 'opening' ? packNow(track) : null
+    const from = pack ? { pack: pack.name, packSha256: pack.sha256 } : {}
+    const key = { engineHash: info0.engineHash, seasonHashes: info0.seasonHashes, format: track.format.id, tier: track.tier, assets: info0.assets, kind: track.kind, card: !!track.graphics, browser: this.session.browserVersion, ...from }
     const keyFile = path.join(dir, 'frames.json')
     if (fs.existsSync(dir) && !(fs.existsSync(keyFile) && JSON.stringify(readJson(keyFile)) === JSON.stringify(key))) fs.rmSync(dir, { recursive: true, force: true })
     const dropped = makeRoom(dir, c.frames.length)
@@ -303,6 +319,12 @@ export class Run {
       throw new Error(`chunk ${c.first}-${c.last} was encoded with ${seen.frames} frames at ${seen.width} x ${seen.height}, not ${files.length} at ${track.format.width} x ${track.format.height}`)
     }
     const info = await page.evaluate(() => window.showcase.info())
+    if (pack) {
+      const drawn = await page.evaluate(() => document.getElementById('opening')?.dataset.pack ?? '')
+      if (drawn && drawn !== pack.name) throw new Error(`the page drew the opening from the ${drawn} pack, and the tools expected the ${pack.name} pack`)
+      if (this.packSaid !== pack.name) this.say(packLine(pack.name, track.format))
+      this.packSaid = pack.name
+    }
     const errors = page.errors.slice(0, 20)
     for (const e of errors) if (!this.errors.includes(e)) this.errors.push(e)
     const record = this.session.record(info, {
@@ -328,6 +350,7 @@ export class Run {
       standIns: info.standIns.length,
       counts: info.counts,
       errors,
+      ...from,
     })
     record.tier = track.tier
     for (const index of c.frames) {
@@ -405,6 +428,7 @@ export function coverNotes(cover, track, say = console.log) {
   for (const f of cover.stale) say(`left out ${short(f)}: its record does not match the current build`)
   for (const f of cover.unused) say(`left out ${short(f)}: another chunk already covers its frames`)
   for (const g of cover.gaps) say(`${track.name}: no chunk for frames ${g.first} to ${g.last}`)
+  if (track.kind === 'opening') for (const name of new Set(cover.parts.map((p) => p.record.pack))) say(packLine(name, track.format))
   if (cover.parts.length && !cover.complete) {
     if (cover.first > 0) say(`${track.name}: no chunk for frames 0 to ${cover.first - track.step}`)
     if (cover.last < cover.lastWanted) say(`${track.name}: no chunk for frames ${cover.last + track.step} to ${cover.lastWanted}`)

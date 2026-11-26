@@ -20,8 +20,9 @@ interface Table {
   seasons: string[]
   stills: Still[]
   a: number[]
-  h: number[]
-  g: number[]
+  g: number[][]
+  c: { q: string[]; m: Record<string, [number, number]> } | null
+  e: [number, number, number]
   p: [number, number, number, number][]
   b: Record<string, string[]>
 }
@@ -72,6 +73,11 @@ class El {
   setAttribute(k: string, v: string): void {
     this.attrs[k] = v
   }
+  getBoundingClientRect(): { height: number } {
+    return { height: this.style.cssText?.includes('env(safe-area-inset-bottom') ? El.inset : 0 }
+  }
+  /** The safe area under the page, as the browser would lay out an element that is that high. */
+  static inset = 0
   addEventListener(name: string, fn: () => void): void {
     ;(this.listeners[name] ??= []).push(fn)
   }
@@ -88,8 +94,37 @@ interface FirstStill {
   end(): void
 }
 
-function open(width: number, height: number, search = ''): { box: El; win: { firstStill?: FirstStill; resize(w: number, h: number): void; later(): void } } {
+interface Screen {
+  coarse?: boolean
+  inset?: number
+  /** What the browser answers to a media rule, where the test asks for another answer than the screen gives. */
+  media?: (query: string) => boolean
+  table?: Table
+}
+
+/** A browser's answer to the media rules the interface is written with. */
+function holds(query: string, width: number, height: number, coarse: boolean): boolean {
+  return query.split(',').some((part) =>
+    part.split(' and ').every((term) => {
+      const m = /^\s*\(\s*([a-z-]+)\s*:\s*([^)]+?)\s*\)\s*$/.exec(term)
+      if (!m) return false
+      const [, name, value] = m
+      const px = Number.parseFloat(value!)
+      if (name === 'min-width') return width >= px
+      if (name === 'max-width') return width <= px
+      if (name === 'min-height') return height >= px
+      if (name === 'max-height') return height <= px
+      if (name === 'orientation') return (value === 'portrait') === height >= width
+      if (name === 'pointer') return value === (coarse ? 'coarse' : 'fine')
+      if (name === 'hover') return value === (coarse ? 'none' : 'hover')
+      return false
+    }),
+  )
+}
+
+function open(width: number, height: number, search = '', screen: Screen = {}): { box: El; win: { firstStill?: FirstStill; resize(w: number, h: number): void; later(): void } } {
   const box = new El('div', width, height)
+  El.inset = screen.inset ?? 0
   const listeners: Record<string, (() => void)[]> = {}
   const timers: (() => void)[] = []
   const win = {
@@ -99,6 +134,7 @@ function open(width: number, height: number, search = ''): { box: El; win: { fir
     addEventListener: (name: string, fn: () => void) => void (listeners[name] ??= []).push(fn),
     removeEventListener: (name: string, fn: () => void) => void (listeners[name] = (listeners[name] ?? []).filter((x) => x !== fn)),
     setTimeout: (fn: () => void) => timers.push(fn),
+    matchMedia: (query: string) => ({ matches: screen.media ? screen.media(query) : holds(query, win.innerWidth, win.innerHeight, screen.coarse === true) }),
     resize(w: number, h: number) {
       box.clientWidth = win.innerWidth = w
       box.clientHeight = win.innerHeight = h
@@ -109,7 +145,7 @@ function open(width: number, height: number, search = ''): { box: El; win: { fir
     },
   }
   const doc = { getElementById: (id: string) => (id === 'first' ? box : null), createElement: (tag: string) => new El(tag) }
-  new Function('window', 'document', 'location', script)(win, doc, { search })
+  new Function('window', 'document', 'location', screen.table ? script.replace(tableText, JSON.stringify(screen.table)) : script)(win, doc, { search })
   return { box, win }
 }
 
@@ -127,9 +163,16 @@ describe('the stills the page paints first', () => {
     expect(table.season).toBe(config.defaultSeason)
     expect(table.seasons).toEqual(config.seasons)
     expect(table.stills.length).toBeGreaterThan(0)
-    expect(table.g).toHaveLength(table.a.length * table.h.length * 2)
-    for (const axis of [table.a, table.h]) expect([...axis].sort((x, y) => x - y)).toEqual(axis)
-    expect(table.g.every((v) => Number.isInteger(v) && v > 0)).toBe(true)
+    expect(table.g).toHaveLength(table.a.length)
+    expect([...table.a].sort((x, y) => x - y)).toEqual(table.a)
+    expect(new Set(table.a).size).toBe(table.a.length)
+    for (const row of table.g) {
+      expect(row.length % 3).toBe(0)
+      expect(row.length).toBeGreaterThanOrEqual(6)
+      const shares = row.filter((_, i) => i % 3 === 0)
+      expect(shares.every((u, i) => u >= 0 && (i === 0 || u > shares[i - 1]!))).toBe(true)
+      expect(row.every((v, i) => i % 3 === 0 || (Number.isInteger(v) && v > 0))).toBe(true)
+    }
   })
 
   it('has one small file of each kind for every season and every still, the files the tool recorded', () => {
@@ -217,6 +260,66 @@ describe('the page before the app runs', () => {
       expect(u.right, `${w}x${h}`).toBeGreaterThanOrEqual(w - 1e-6)
       expect(u.bottom, `${w}x${h}`).toBeGreaterThanOrEqual(h - 1e-6)
     }
+  })
+})
+
+describe('the still stands where the globe stays once the controls are measured', () => {
+  const glassOf = (width: number, height: number, screen: Screen = {}): { y: number; r: number } => {
+    const { box } = open(width, height, '', screen)
+    const img = stillsIn(box)[stillsIn(box).length - 1]!
+    const s = table.stills.find((x) => img.src.includes(`-${x[0]}.`))!
+    const k = px(img.style.height) / s[2]
+    return { y: px(img.style.top) + (s[3] / 1e5) * s[2] * k, r: (s[4] / 1e5) * s[2] * k }
+  }
+
+  it('holds the height of the controls for every way the media rules of the interface hold together', () => {
+    expect(table.c, 'the table holds no controls: run node tools/poster.mjs').not.toBeNull()
+    expect(table.c!.q.length).toBeGreaterThan(0)
+    expect(Object.keys(table.c!.m).length).toBeGreaterThan(1)
+    for (const [key, [bar, from]] of Object.entries(table.c!.m)) {
+      expect(key).toMatch(new RegExp(`^[01]{${table.c!.q.length}}$`))
+      expect(bar, key).toBeGreaterThan(0)
+      expect(from, key).toBeGreaterThanOrEqual(0)
+    }
+    expect(table.e).toHaveLength(3)
+  })
+
+  it('finds the controls of every judged screen in the table, with a mouse and with a finger', () => {
+    for (const f of judged) {
+      for (const coarse of [false, true]) {
+        const key = table.c!.q.map((q) => (holds(q, f.width, f.height, coarse) ? '1' : '0')).join('')
+        expect(table.c!.m[key], `${f.id} ${coarse ? 'finger' : 'mouse'}`).toBeDefined()
+      }
+    }
+  })
+
+  it('stands the glass higher than the bar the app takes without a measure would, where the controls are higher than that bar', () => {
+    const f = config.formats.phone
+    const key = table.c!.q.map((q) => (holds(q, f.width, f.height, true) ? '1' : '0')).join('')
+    const bar = table.c!.m[key]![0]
+    const taken = Math.min(Math.max(table.e[0] * f.height, table.e[1]), table.e[2] * f.height)
+    const without = glassOf(f.width, f.height, { table: { ...table, c: null } })
+    const measured = glassOf(f.width, f.height, { coarse: true })
+    expect(Number.isFinite(without.y) && Number.isFinite(measured.y)).toBe(true)
+    if (bar > taken) expect(measured.y).toBeLessThan(without.y)
+    else expect(measured.y).toBeGreaterThanOrEqual(without.y)
+  })
+
+  it('raises the glass with the strip of a home indicator from the safe area on that the table names, and not before', () => {
+    const [w, h] = [844, 390]
+    const key = table.c!.q.map((q) => (holds(q, w, h, true) ? '1' : '0')).join('')
+    const from = table.c!.m[key]![1]
+    const none = glassOf(w, h, { coarse: true })
+    expect(glassOf(w, h, { coarse: true, inset: from }).y).toBeCloseTo(none.y, 6)
+    expect(glassOf(w, h, { coarse: true, inset: from + 24 }).y).toBeLessThan(none.y)
+  })
+
+  it('takes the nearest it knows where the rules hold together in a way the table has not met', () => {
+    const f = config.formats.phone
+    const known = glassOf(f.width, f.height, { coarse: true })
+    const odd = glassOf(f.width, f.height, { media: () => true })
+    expect(Number.isFinite(odd.y) && Number.isFinite(odd.r)).toBe(true)
+    expect(Math.abs(odd.y - known.y)).toBeLessThan(f.height * 0.2)
   })
 })
 

@@ -30,6 +30,18 @@ const VARIED = { 'key-tap': [0, -45, 30, -20, 55, -65, 15, 40, -30] }
 // underDb: a run of 14 presses a second, each at the level its class gives one press alone, was heard in film A as loud,
 // sharp typing (fit to "Soft key presses": no, twice); 9 dB lower it was heard as soft typing (yes, twice), 6 dB lower once.
 const HAND = { 'key-tap': { ms: [0, 14, -9, 18, -16, 6, -20, 11, -4, 20, -13, 8, -18], db: [0, -2.5, -1, -4, -0.5, -3, -1.5], underDb: 9 } }
+// Decision 144 of kit/PROGRESS.md: a tap may begin this far from the time of its own key and no further. The cut of the
+// opening gives every key its own frame; laid exactly on it, or kept inside it, the typing was heard once in three as a
+// rapid mechanical clicking, and with the list above as keyboard typing three times of three. So the list stays, the mix
+// refuses a move beyond the limit, and every mix reports its taps against the keys of the cut list.
+export const HAND_LIMIT_MS = 20
+// Decision 142 of kit/PROGRESS.md. In its own bar of film B the kept shake was called too loud or abrupt against the
+// music in 4 of 4 listenings. So every shake of the film comes down by downDb and rises from nothing over its first
+// riseMs. A shake still called so in 2 or more of 4 listenings at that level comes down by moreDb more, once, and is
+// left there: those cues are named in more. This is the film's mix alone; the app plays its pack at its own gains.
+// At 3 dB down: the kept shake of spring 1 of 4, summer 1 of 4, winter 1 of 4, and fall (the kept water at its own pitch
+// in the third shake's bar, where the music is thin) 2 of 4, so fall alone is named in more.
+export const SHAKE = { downDb: 3, riseMs: 30, moreDb: 3, more: ['shake-fall'] }
 export const PEAK_MARGIN_DB = 0.15
 export const LOUDNESS_BLOCK = 0.4
 export const SHORT_CREST_DB = 16
@@ -43,6 +55,13 @@ const LOOP_PAD = 0.2
 const LOOP_LEAD = 0.06
 const LOOP_CROSS = 0.05
 const LOOP_STEP_DB = 3
+// What the app does with a loop (src/audio/index.ts, seamOf): the file is played pass over pass, each pass starting one
+// seam before the last one ends, the two crossed at equal power. What is heard repeats every pass less one seam. The
+// seam is one bar for music, 1.5 s for ambience, and never more than a quarter of the pass.
+export const APP_SEAM = { music: (cfg.film.beatsPerBar * 60) / cfg.film.defaultBpm, ambience: 1.5 }
+export const APP_SEAM_SHARE = 0.25
+export const appSeam = (cls, loopSeconds) => Math.min(cls === 'music' ? APP_SEAM.music : APP_SEAM.ambience, loopSeconds * APP_SEAM_SHARE)
+const SET_GAP = 0.02
 const HOLD_DB = 9
 const OPEN_SECONDS = 0.05
 const CENTRE_WITHIN_DB = 0.1
@@ -945,18 +964,157 @@ export function keptFile(id, dir = KEPT) {
   return fs.existsSync(file) ? file : null
 }
 
-export function mixFilm({ cut, which = 'b', candidate = 'blockout', keptDir = KEPT, mapsDir = rel('out', 'work', 'audio', 'maps'), musicFile = null, skip = [], gains = {}, rate = RATE, target = cfg.audio.filmLoudnessLufs, ceilingDb = cfg.audio.truePeakDb }) {
+// Laid by decision 141 of kit/PROGRESS.md. Where every allowed take of a cue is used and its silence reads as a fault,
+// the nearest right sound plays in its place. It is not a kept take and its cue stays open: its record lies in
+// audio/laid/ and never in audio/kept/, its state begins "laid by decision 141", and no check counts it as kept.
+// Two kinds: a borrow (a kept sound of another cue at a fixed pitch offset) and a set (the presses of one take, each cut
+// out by a fixed window, band limited, levelled alike, which the mix takes in turn).
+export const LAID = rel('audio', 'laid')
+export const LAID_STATE = 'laid by decision 141'
+export const laidDirOf = (keptDir = KEPT) => path.join(path.dirname(keptDir), 'laid')
+
+export function readLaid(dir = LAID) {
+  if (!fs.existsSync(dir)) return []
+  const order = cfg.audio.sfx.map((s) => s.id)
+  const rank = (id) => (order.indexOf(id) < 0 ? order.length : order.indexOf(id))
+  return fs
+    .readdirSync(dir)
+    .filter((n) => n.endsWith('.json') && !n.endsWith('.wav.json'))
+    .map((n) => ({ id: n.slice(0, -5), record: readJson(path.join(dir, n)), file: fs.existsSync(path.join(dir, `${n.slice(0, -5)}.wav`)) ? path.join(dir, `${n.slice(0, -5)}.wav`) : null }))
+    .filter((l) => typeof l.record?.state === 'string' && l.record.state.startsWith(LAID_STATE))
+    .sort((a, b) => rank(a.id) - rank(b.id) || (a.id < b.id ? -1 : 1))
+}
+
+// The first moment of a sound eased in from nothing along a raised cosine. The rest is untouched.
+export function riseIn(a, seconds) {
+  const n = Math.min(a.L.length, Math.round(seconds * a.rate))
+  if (n < 2) return a
+  const o = { rate: a.rate, L: Float64Array.from(a.L), R: Float64Array.from(a.R) }
+  for (let i = 0; i < n; i++) {
+    const g = 0.5 - 0.5 * Math.cos((Math.PI * (i + 0.5)) / n)
+    o.L[i] *= g
+    o.R[i] *= g
+  }
+  return o
+}
+
+// A laid sound as the mix and the pack take it: the file, its record and, for a set, each press as its own sound.
+export function laidSound(id, dir = LAID, rate = RATE) {
+  const file = path.join(dir, `${id}.wav`)
+  const rec = path.join(dir, `${id}.json`)
+  if (!fs.existsSync(file) || !fs.existsSync(rec)) return null
+  const record = readJson(rec)
+  if (typeof record?.state !== 'string' || !record.state.startsWith(LAID_STATE)) return null
+  const audio = decodeFile(file, rate)
+  const presses = Array.isArray(record.presses) && record.presses.length ? record.presses.map((p) => slice(audio, Math.round(Number(p.at) * rate), Math.round((Number(p.at) + Number(p.seconds)) * rate))) : null
+  const step = Math.max(1, Math.round(Number(record.recipe?.step ?? 1)))
+  return { file, record, audio, set: presses ? { presses, step, varied: record.recipe?.varied === true } : null }
+}
+
+// The parts of a short sound under a frequency, with nothing moved in time: the sound is taken as one period, what lies
+// over endHz is dropped and what lies between hz and endHz is eased out along a raised cosine.
+export function lowpassWhole(a, hz, endHz = hz * 1.4) {
+  const n = a.L.length
+  if (!(hz > 0) || n < 2) return a
+  const cos = new Float64Array(n)
+  const sin = new Float64Array(n)
+  for (let j = 0; j < n; j++) {
+    cos[j] = Math.cos((2 * Math.PI * j) / n)
+    sin[j] = Math.sin((2 * Math.PI * j) / n)
+  }
+  const half = Math.floor(n / 2)
+  const run = (x) => {
+    const y = new Float64Array(n)
+    for (let k = 0; k <= half; k++) {
+      const f = (k * a.rate) / n
+      const g = f <= hz ? 1 : f >= endHz ? 0 : 0.5 * (1 + Math.cos((Math.PI * (f - hz)) / (endHz - hz)))
+      if (g === 0) break
+      let re = 0
+      let im = 0
+      for (let i = 0, j = 0; i < n; i++, j = (j + k) % n) {
+        re += x[i] * cos[j]
+        im -= x[i] * sin[j]
+      }
+      const w = ((k === 0 || (n % 2 === 0 && k === half) ? 1 : 2) * g) / n
+      for (let i = 0, j = 0; i < n; i++, j = (j + k) % n) y[i] += w * (re * cos[j] - im * sin[j])
+    }
+    return y
+  }
+  return { rate: a.rate, L: run(a.L), R: run(a.R) }
+}
+
+// Builds the sound of a laid record from its recipe. The same recipe and the same sources give the same bytes.
+export function buildLaid(recipe, { takesDir = TAKES, keptDir = KEPT, rate = RATE } = {}) {
+  if (recipe?.borrow) {
+    const b = recipe.borrow
+    const file = path.join(keptDir, `${b.kept}.wav`)
+    if (!fs.existsSync(file)) throw new Error(`the kept sound to borrow is not in this workspace: ${file}`)
+    const cents = Number(b.cents ?? 0)
+    if (!Number.isFinite(cents)) throw new Error('a borrow needs cents as a number')
+    const a = decodeFile(file, rate)
+    return { audio: cents ? resample(a, Math.pow(2, cents / 1200)) : a, presses: null, source: { kept: b.kept, sha256: fileSha(file) } }
+  }
+  if (recipe?.set) {
+    const s = recipe.set
+    const file = path.join(takesDir, String(s.cue), `take-${s.take}.wav`)
+    if (!fs.existsSync(file)) throw new Error(`the take of the set is not in this workspace: ${file}`)
+    if (!Array.isArray(s.windows) || !s.windows.length) throw new Error('a set needs its windows, each [from, to] in seconds of the take')
+    if (!Number.isFinite(Number(s.pressDb))) throw new Error('a set needs pressDb, the level every press is brought to')
+    const take = decodeFile(file, rate)
+    const gap = Math.round(SET_GAP * rate)
+    const parts = []
+    const presses = []
+    let at = 0
+    for (const [from, to] of s.windows) {
+      let p = slice(take, Math.round(Number(from) * rate), Math.round(Number(to) * rate))
+      if (s.highCutHz) p = lowpassWhole(p, Number(s.highCutHz), Number(s.highCutEndHz ?? Number(s.highCutHz) * 1.4))
+      const n = p.L.length
+      const ni = Math.min(n, Math.floor((Number(s.fadeInMs ?? 0) / 1000) * rate))
+      const no = Math.min(n >> 1, Math.floor((Number(s.fadeOutMs ?? 0) / 1000) * rate))
+      for (let i = 0; i < ni; i++) {
+        const g = ni > 1 ? i / (ni - 1) : 1
+        p.L[i] *= g
+        p.R[i] *= g
+      }
+      for (let i = 0; i < no; i++) {
+        const g = no > 1 ? 1 - i / (no - 1) : 0
+        p.L[n - no + i] *= g
+        p.R[n - no + i] *= g
+      }
+      const level = levelDb(p)
+      if (!Number.isFinite(level)) throw new Error(`the window ${from} to ${to} s of the take holds no sound`)
+      p = scale(p, lin(Number(s.pressDb) - level))
+      presses.push({ at: round(at / rate, 6), seconds: round(n / rate, 6), fromDb: round(level) })
+      parts.push(p, make(gap, rate))
+      at += n + gap
+    }
+    return { audio: concat(parts, rate), presses, source: { cue: String(s.cue), take: Number(s.take), sha256: fileSha(file) } }
+  }
+  throw new Error('a laid record needs recipe.borrow or recipe.set')
+}
+
+export function mixFilm({ cut, which = 'b', candidate = 'blockout', keptDir = KEPT, laidDir = laidDirOf(keptDir), mapsDir = rel('out', 'work', 'audio', 'maps'), musicFile = null, skip = [], gains = {}, rate = RATE, target = cfg.audio.filmLoudnessLufs, ceilingDb = cfg.audio.truePeakDb }) {
   const offset = which === 'a' ? Number(cut.opening?.seconds ?? 0) : 0
   const total = Math.round((offset + cut.seconds) * rate)
   const bus = make(total, rate)
   const music = make(total, rate)
   const cache = new Map()
   const inputs = {}
+  const laid = {}
   const load = (id) => {
     if (cache.has(id)) return cache.get(id)
     const file = keptFile(id, keptDir)
-    const a = file ? decodeFile(file, rate) : null
+    let a = file ? decodeFile(file, rate) : null
     if (file) inputs[id] = fileSha(file)
+    else {
+      // No kept take: a sound laid by decision 141 plays in its place, and the report names it as that.
+      const l = laidSound(id, laidDir, rate)
+      if (l) {
+        a = l.audio
+        inputs[`laid:${id}`] = fileSha(l.file)
+        laid[id] = l
+      }
+    }
     cache.set(id, a)
     return a
   }
@@ -978,13 +1136,25 @@ export function mixFilm({ cut, which = 'b', candidate = 'blockout', keptDir = KE
     }
     const k = counts[c.cue] ?? 0
     counts[c.cue] = k + 1
-    const cents = VARIED[c.cue] ? VARIED[c.cue][k % VARIED[c.cue].length] : 0
+    // A laid set gives its presses in turn (press k times its step), each a different press of the take, so no pitch
+    // offset is needed to keep one press from sounding as a wheel; its own record says whether the offsets are used.
+    const set = laid[c.cue]?.set ?? null
+    const press = set ? (k * set.step) % set.presses.length : null
+    if (set) a = set.presses[press]
+    const offsets = set && !set.varied ? null : VARIED[c.cue]
+    const cents = offsets ? offsets[k % offsets.length] : 0
     if (cents) a = resample(a, Math.pow(2, cents / 1200))
     const hand = HAND[c.cue]
     const moveMs = hand ? hand.ms[k % hand.ms.length] : 0
-    const downDb = hand ? hand.db[k % hand.db.length] - (hand.underDb ?? 0) : 0
-    add(bus, a, Math.max(0, Math.round((c.at + moveMs / 1000) * rate)), gainOf(c.cue, c) * lin(downDb))
-    placed.push({ cue: c.cue, at: round(c.at, 4), cents, ...(hand ? { moveMs, downDb } : {}) })
+    if (Math.abs(moveMs) > HAND_LIMIT_MS) throw new Error(`${c.cue} would begin ${moveMs} ms from its place: the limit is ${HAND_LIMIT_MS} ms (decision 144)`)
+    // The level of a set is in its record (the level every press is brought to), so the step down of one kept press is not taken twice.
+    const downDb = hand ? hand.db[k % hand.db.length] - (set ? 0 : (hand.underDb ?? 0)) : 0
+    // A shake comes down and rises over its first moment (decision 142), kept or laid alike.
+    const shake = c.cue.startsWith('shake-') ? SHAKE : null
+    const shakeDb = shake ? -(shake.downDb + (shake.more.includes(c.cue) ? shake.moreDb : 0)) : 0
+    if (shake) a = riseIn(a, shake.riseMs / 1000)
+    add(bus, a, Math.max(0, Math.round((c.at + moveMs / 1000) * rate)), gainOf(c.cue, c) * lin(downDb + shakeDb))
+    placed.push({ cue: c.cue, at: round(c.at, 4), cents, ...(hand ? { moveMs, downDb } : {}), ...(shake ? { downDb: shakeDb, riseMs: shake.riseMs } : {}), ...(set ? { press } : {}) })
   }
   for (const e of cut.ambience ?? []) {
     if (skip.includes(e.cue)) {
@@ -1112,6 +1282,19 @@ export function mixFilm({ cut, which = 'b', candidate = 'blockout', keptDir = KE
   }
   const encodedDb = done.encodedDb ?? null
   const stem = done.silent ? music : scale(music, lin(done.gainDb))
+  // The taps against the keys of the cut list (decision 144): one tap for each key, none without a key, and how far the
+  // furthest begins from the time of its own key.
+  const keys = which === 'a' ? (cut.opening?.cues ?? []).filter((c) => HAND[c.cue]).map((c) => round(Number(c.at), 4)) : []
+  const taps = placed.filter((p) => HAND[p.cue])
+  const unmet = [...keys]
+  let withoutKey = 0
+  for (const t of taps) {
+    const i = unmet.indexOf(t.at)
+    if (i < 0) withoutKey++
+    else unmet.splice(i, 1)
+  }
+  const moves = taps.map((t) => t.moveMs)
+  const typing = { keys: keys.length, taps: taps.length, withoutKey, keysWithoutTap: unmet.length, limitMs: HAND_LIMIT_MS, largestOffsetMs: moves.length ? Math.max(...moves.map((v) => Math.abs(v))) : 0, earliestMs: moves.length ? Math.min(...moves) : 0, latestMs: moves.length ? Math.max(...moves) : 0 }
   return {
     audio: done.audio,
     music: stem,
@@ -1122,6 +1305,8 @@ export function mixFilm({ cut, which = 'b', candidate = 'blockout', keptDir = KE
       openingSeconds: round(offset, 4),
       placed,
       skipped: [...skipped].map(([cue, why]) => ({ cue, why })),
+      laid: Object.entries(laid).map(([cue, l]) => ({ cue, state: l.record.state, kept: false, times: placed.filter((p) => p.cue === cue).length, ...(l.set ? { presses: l.set.presses.length, step: l.set.step, varied: l.set.varied } : {}) })),
+      typing,
       music: musicNote,
       landings: { at: landingTimes.map((t) => round(t, 4)), firstMomentSeconds: OPEN_SECONDS, beforeDb: before.map((v) => round(v)), trimsDb: trims.map((v) => round(v)), afterDb: heard.map((v) => round(v)), spreadDb: round(spreadOf(heard)), rounds },
       channels: { leftOverRightDb: done.silent ? 0 : round(channelsDb(done.audio)), busMovedDb: centred.movedDb },
@@ -1300,21 +1485,59 @@ export function loopEnds(a) {
   return { ...s, secondStepDb: round(levelDb(a, 0, second) - levelDb(a, n - second, n)) }
 }
 
-export function musicLoop(a, lines, bars) {
+// One period of a loop as the app plays it: the first seam of a pass rises as a sine while the last seam of the pass
+// before it falls as a cosine. body is one pass: the period and, after it, the seam.
+export function heardLoop(body, seamSeconds) {
+  const n = body.L.length
+  const s = Math.max(0, Math.min(Math.round(seamSeconds * body.rate), n >> 1))
+  const p = n - s
+  const o = slice(body, 0, p)
+  for (let i = 0; i < s; i++) {
+    const t = ((i + 0.5) / s) * (Math.PI / 2)
+    const up = Math.sin(t)
+    const down = Math.cos(t)
+    o.L[i] = body.L[i] * up + body.L[p + i] * down
+    o.R[i] = body.R[i] * up + body.R[p + i] * down
+  }
+  return { audio: o, seamSeconds: s / body.rate, periodSeconds: p / body.rate }
+}
+
+// The numbers of that period: its length, and the level through the crossed seam against the mean of the whole period.
+// startAloneDb and tailAloneDb are the two sounds that are crossed, each alone, against the same mean.
+export function heardSeam(body, seamSeconds) {
+  const h = heardLoop(body, seamSeconds)
+  const s = Math.round(h.seamSeconds * body.rate)
+  const mean = levelDb(h.audio)
+  const q = Math.max(1, Math.round(s / 4))
+  const against = (v) => (Number.isFinite(v) && Number.isFinite(mean) ? round(v - mean) : 0)
+  return {
+    periodSeconds: round(h.periodSeconds, 4),
+    seamSeconds: round(h.seamSeconds, 4),
+    meanDb: round(mean),
+    seamDb: s > 0 ? against(levelDb(h.audio, 0, s)) : 0,
+    quartersDb: s > 0 ? [0, 1, 2, 3].map((k) => against(levelDb(h.audio, k * q, Math.min(s, (k + 1) * q)))) : [],
+    startAloneDb: s > 0 ? against(levelDb(body, 0, s)) : 0,
+    tailAloneDb: s > 0 ? against(levelDb(body, body.L.length - s, body.L.length)) : 0,
+  }
+}
+
+// The run of bars the app loops. The app crosses the end of each pass over the start of the next (APP_SEAM), so a pass
+// holds the bars and, after them, the track's own continuation for one seam: bar 1 comes in under what follows the last
+// bar, on the beat, and the bars are heard as that many bars. Nothing is wrapped or crossed in the file itself.
+export function musicLoop(a, lines, bars, seamSeconds = APP_SEAM.music) {
   const rate = a.rate
   const found = musicBars(a, lines)
   const options = []
   for (let k = 0; k < lines.length; k++) {
     const lead = lines[k] >= LOOP_LEAD ? LOOP_LEAD : 0
-    const length = k + bars < lines.length ? lines[k + bars] - lines[k] : bars * found.bar
+    const period = k + bars < lines.length ? lines[k + bars] - lines[k] : bars * found.bar
     const from = Math.round((lines[k] - lead) * rate)
-    const n = Math.round(length * rate)
-    const cross = Math.round(LOOP_CROSS * rate)
-    if (from + n + cross > a.L.length) break
-    const made = makeLoop(slice(a, from, from + n + cross), n / rate, LOOP_CROSS, true).audio
-    const ends = loopEnds(made)
-    const quiet = found.level.slice(k, k + bars).some((v) => !(v >= found.medianDb - HOLD_DB))
-    options.push({ audio: made, fromBar: k, toBar: k + bars - 1, leadSeconds: lead, crossSeconds: LOOP_CROSS, seam: ends, score: Math.max(Math.abs(ends.levelStepDb), Math.abs(ends.secondStepDb)) + (quiet ? 100 : 0) + (lead ? 0 : 50) })
+    const n = Math.round(period * rate)
+    const tail = Math.round(Math.min(seamSeconds, (period * APP_SEAM_SHARE) / (1 - APP_SEAM_SHARE)) * rate)
+    if (from + n + tail > a.L.length) break
+    const heard = heardSeam(slice(a, from, from + n + tail), tail / rate)
+    const quiet = found.level.slice(k, k + bars).some((v) => !(v >= found.medianDb - HOLD_DB)) || !(levelDb(a, from + n, from + n + tail) >= found.medianDb - HOLD_DB)
+    options.push({ from, samples: n + tail, fromBar: k, toBar: k + bars - 1, leadSeconds: lead, periodSeconds: round(n / rate, 5), tailSeconds: round(tail / rate, 5), heard, score: Math.abs(heard.seamDb) + (quiet ? 100 : 0) + (lead ? 0 : 50) })
   }
   if (!options.length) return null
   return options.find((o) => o.score <= LOOP_STEP_DB / 2) ?? options.reduce((p, o) => (o.score < p.score ? o : p))
@@ -1345,7 +1568,7 @@ export function turnLoop(a) {
   return { audio: o, turnedSeconds: round(best.at / a.rate, 3), seam: loopEnds(o) }
 }
 
-export function planPack({ keptDir = KEPT, mapsDir = rel('out', 'work', 'audio', 'maps'), rate = RATE } = {}) {
+export function planPack({ keptDir = KEPT, laidDir = laidDirOf(keptDir), mapsDir = rel('out', 'work', 'audio', 'maps'), rate = RATE } = {}) {
   const kept = readKept(keptDir).filter((k) => k.file)
   const barSeconds = (cfg.film.beatsPerBar * 60) / cfg.film.defaultBpm
   const lead = make(Math.round(SPRITE_LEAD * rate), rate)
@@ -1377,7 +1600,7 @@ export function planPack({ keptDir = KEPT, mapsDir = rel('out', 'work', 'audio',
       const map = fs.existsSync(mapFile) ? readJson(mapFile) : null
       const lines = Array.isArray(map?.barLines) && map.barLines.length > 1 ? map.barLines : Array.from({ length: Math.floor(seconds(a) / barSeconds) + 1 }, (_, i) => i * barSeconds)
       const bar = lines.length > 1 ? (lines[lines.length - 1] - lines[0]) / (lines.length - 1) : barSeconds
-      const fit = Math.floor((seconds(a) - lines[0] - LOOP_CROSS) / bar)
+      const fit = Math.floor((seconds(a) - lines[0] - APP_SEAM.music) / bar)
       const bars = Math.min(cfg.audio.appLoopBars, fit)
       if (bars < 1) {
         notes.push(`${k.id} is shorter than one bar and was left out`)
@@ -1387,11 +1610,22 @@ export function planPack({ keptDir = KEPT, mapsDir = rel('out', 'work', 'audio',
       const centred = centre(a)
       const made = musicLoop(centred.audio, lines, bars)
       if (!made) {
-        notes.push(`${k.id} has no run of ${bars} bars with room for the crossfade and was left out`)
+        notes.push(`${k.id} has no run of ${bars} bars with the track's own bar after them for the app's cross and was left out`)
         continue
       }
-      loop = made.audio
-      how = { fromBar: made.fromBar, toBar: made.toBar, leadSeconds: made.leadSeconds, crossSeconds: made.crossSeconds, centredByDb: centred.movedDb, barLines: map ? 'map' : 'grid' }
+      if (Math.abs(made.heard.seamDb) > LOOP_STEP_DB) notes.push(`${k.id} changes level through its seam: ${made.heard.seamDb} dB against the loop's mean`)
+      // The file is the track itself, from one pad before the pass to one pad after it: nothing is wrapped, nothing crossed.
+      const pad = Math.round(LOOP_PAD * rate)
+      const file = make(made.samples + 2 * pad, rate)
+      for (let i = 0; i < file.L.length; i++) {
+        const j = made.from - pad + i
+        if (j < 0 || j >= centred.audio.L.length) continue
+        file.L[i] = centred.audio.L[j]
+        file.R[i] = centred.audio.R[j]
+      }
+      const fileNorm = lin(SPRITE_PEAK_DB) / peak(file)
+      loops.push({ id: k.id, audio: scale(file, fileNorm), loopStart: round(pad / rate, 5), loopSeconds: round(made.samples / rate, 5), gain: round((1 / fileNorm) * lin(APP_TRIM_DB[cls] ?? 0), 5), seam: null, heard: made.heard, bars, periodSeconds: made.periodSeconds, tailSeconds: made.tailSeconds, fromBar: made.fromBar, toBar: made.toBar, leadSeconds: made.leadSeconds, centredByDb: centred.movedDb, barLines: map ? 'map' : 'grid' })
+      continue
     } else {
       const turned = turnLoop(a)
       loop = turned.audio
@@ -1403,13 +1637,28 @@ export function planPack({ keptDir = KEPT, mapsDir = rel('out', 'work', 'audio',
     const loopGain = round((1 / loopNorm) * lin(APP_TRIM_DB[cls] ?? 0), 5)
     const pad = Math.min(Math.round(LOOP_PAD * rate), loop.L.length)
     const body = scale(loop, loopNorm)
-    loops.push({ id: k.id, audio: concat([slice(body, body.L.length - pad), body, slice(body, 0, pad)], rate), loopStart: round(pad / rate, 5), loopSeconds: round(body.L.length / rate, 5), gain: loopGain, seam: ends, ...how })
+    loops.push({ id: k.id, audio: concat([slice(body, body.L.length - pad), body, slice(body, 0, pad)], rate), loopStart: round(pad / rate, 5), loopSeconds: round(body.L.length / rate, 5), gain: loopGain, seam: ends, heard: heardSeam(loop, appSeam(cls, seconds(loop))), ...how })
   }
-  return { sprite: { audio: sprite.parts.length > 1 ? concat(sprite.parts, rate) : null, entries: sprite.entries }, loops, notes }
+  // The sounds laid by decision 141 play in the app as they do in the film. A set of presses is the film's alone.
+  const laid = []
+  for (const l of readLaid(laidDir)) {
+    if (!l.file || Array.isArray(l.record.presses) || isLoop(l.id) || sprite.entries[l.id]) continue
+    const cls = l.record.class ?? classOf(l.id)
+    const a = decodeFile(l.file, rate)
+    const top = peak(a)
+    if (top <= 0) continue
+    const norm = lin(SPRITE_PEAK_DB) / top
+    const gap = make(Math.round(SPRITE_GAP * rate), rate)
+    sprite.parts.push(scale(a, norm), gap)
+    sprite.entries[l.id] = { start: round(sprite.at / rate, 5), seconds: round(seconds(a), 5), gain: round((1 / norm) * lin(APP_TRIM_DB[cls] ?? 0), 5) }
+    sprite.at += a.L.length + gap.L.length
+    laid.push({ id: l.id, state: l.record.state })
+  }
+  return { sprite: { audio: sprite.parts.length > 1 ? concat(sprite.parts, rate) : null, entries: sprite.entries }, loops, notes, laid }
 }
 
-export function writePack({ outDir = PUBLIC_AUDIO, keptDir = KEPT, mapsDir, rate = RATE, maxMb = cfg.audio.appMaxMb } = {}) {
-  const plan = planPack({ keptDir, mapsDir, rate })
+export function writePack({ outDir = PUBLIC_AUDIO, keptDir = KEPT, laidDir = laidDirOf(keptDir), mapsDir, rate = RATE, maxMb = cfg.audio.appMaxMb } = {}) {
+  const plan = planPack({ keptDir, laidDir, mapsDir, rate })
   const limitBytes = maxMb * 1024 * 1024
   let result = null
   for (const kbps of BITRATES) {
@@ -1438,6 +1687,12 @@ export function writePack({ outDir = PUBLIC_AUDIO, keptDir = KEPT, mapsDir, rate
     const back = decodeFile(path.join(outDir, `${l.id}.mp3`), rate)
     const a = Math.round(l.loopStart * rate)
     const b = a + Math.round(l.loopSeconds * rate)
+    // What the app's cross makes of the packed file: the period that is heard and the level through its seam.
+    const heard = heardSeam(slice(back, a, b), appSeam(l.seam === null ? 'music' : 'ambience', l.loopSeconds))
+    if (l.seam === null) {
+      checks.push({ id: l.id, decodedSeconds: round(seconds(back), 4), expectedSeconds: round(seconds(l.audio), 4), bars: l.bars, fromBar: l.fromBar, toBar: l.toBar, heard, planned: l.heard })
+      continue
+    }
     const w = Math.min(Math.round(0.05 * rate), back.L.length - b)
     let num = 0
     let den = 0
@@ -1445,10 +1700,10 @@ export function writePack({ outDir = PUBLIC_AUDIO, keptDir = KEPT, mapsDir, rate
       num += (back.L[a + i] - back.L[b + i]) ** 2 + (back.R[a + i] - back.R[b + i]) ** 2
       den += back.L[a + i] ** 2 + back.R[a + i] ** 2
     }
-    checks.push({ id: l.id, decodedSeconds: round(seconds(back), 4), expectedSeconds: round(seconds(l.audio), 4), seamErrorDb: round(den > 0 && num > 0 ? 10 * Math.log10(num / den) : -120), sourceSeam: l.seam })
+    checks.push({ id: l.id, decodedSeconds: round(seconds(back), 4), expectedSeconds: round(seconds(l.audio), 4), seamErrorDb: round(den > 0 && num > 0 ? 10 * Math.log10(num / den) : -120), sourceSeam: l.seam, heard })
   }
   const shas = Object.fromEntries(result.index.files.map((f) => [f.file, fileSha(path.join(outDir, f.file))]))
-  return { ...result, notes: plan.notes, loopChecks: checks, shas }
+  return { ...result, notes: plan.notes, loopChecks: checks, shas, laid: plan.laid }
 }
 
 export { sha256, fileSha, readJson, writeJson }

@@ -120,7 +120,18 @@ export async function scaleCopy({ src, settings, out }) {
   })
 }
 
-export async function join({ parts, out, container, fps, sound = null }) {
+export async function scaleEvery({ src, every, settings, out }) {
+  const codec = VIDEO[settings.codec]
+  await encode({
+    input: ['-i', src],
+    filter: `framestep=${every},scale=${settings.width}:${settings.height}:${SCALER},format=${codec.pixFmt}`,
+    settings,
+    out,
+    audio: ['-c:a', 'copy'],
+  })
+}
+
+export async function join({ parts, out, container, fps, sound = null, audioKbps = cfg.export.audioKbps, channels = null }) {
   if (!parts.length) throw new Error('nothing to join')
   const list = path.join(tmpDir(), `join-${process.pid}-${path.basename(out)}.txt`)
   const seconds = parts.reduce((n, p) => n + p.frames, 0) / fps
@@ -134,7 +145,7 @@ export async function join({ parts, out, container, fps, sound = null }) {
     if (!encoder) throw new Error(`no encoder for ${cfg.export.audioCodec}`)
     const d = seconds.toFixed(6)
     if (sound.offsetSeconds > 0) args.push('-ss', sound.offsetSeconds.toFixed(6))
-    args.push('-i', sound.file, '-map', '0:v:0', '-map', '1:a:0', '-c:v', 'copy', '-af', `apad=whole_dur=${d},atrim=duration=${d}`, '-c:a', encoder, '-b:a', `${cfg.export.audioKbps}k`, '-ar', String(cfg.audio.sampleRate))
+    args.push('-i', sound.file, '-map', '0:v:0', '-map', '1:a:0', '-c:v', 'copy', '-af', `apad=whole_dur=${d},atrim=duration=${d}`, '-c:a', encoder, '-b:a', `${audioKbps}k`, '-ar', String(cfg.audio.sampleRate), ...(channels ? ['-ac', String(channels)] : []))
   } else args.push('-map', '0:v:0', '-c:v', 'copy', '-an')
   if (container === 'mp4' || container === 'mov') args.push('-movflags', '+faststart')
   try {
@@ -201,4 +212,107 @@ export function haveFfmpeg() {
     if (r.error || r.status !== 0) return false
   }
   return true
+}
+
+export function masterVideoArgs(video, gop) {
+  if (video.codec !== 'libx264') throw new Error(`no master encoder for ${video.codec}`)
+  const g = String(gop)
+  return [
+    '-c:v', 'libx264', '-preset', video.preset, '-profile:v', video.profile, '-level:v', video.level, '-pix_fmt', video.pixFmt,
+    '-crf', String(video.crf), '-maxrate', `${Math.round(video.maxrateMbps * 1000)}k`, '-bufsize', `${Math.round(video.bufsizeMbps * 1000)}k`,
+    '-g', g, '-keyint_min', g, '-sc_threshold', '0', '-bf', '2', '-x264-params', 'aq-mode=3:open-gop=0:colorprim=bt709:transfer=bt709:colormatrix=bt709',
+    '-threads', String(ENCODER_THREADS), '-flags:v', '+cgop+bitexact', ...TAGS,
+  ]
+}
+
+export async function encodeMasterChunk({ files, video, fps, gop, out }) {
+  const args = masterVideoArgs(video, gop)
+  const tmp = `${out}.part`
+  fs.mkdirSync(path.dirname(out), { recursive: true })
+  await ffmpeg(['-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'png', '-i', 'pipe:0', '-an', '-vf', `${TO_VIDEO},format=${video.pixFmt},setparams=range=tv:color_primaries=bt709:color_trc=bt709:colorspace=bt709`, ...args, ...EXACT, '-video_track_timescale', String(fps * 256), '-f', 'mp4', tmp], feedFiles(files))
+  fs.renameSync(tmp, out)
+  return args
+}
+
+export function toolVersions() {
+  const v = spawnSync('ffmpeg', ['-version'], { encoding: 'utf8' })
+  const ffmpegVersion = v.status === 0 ? (v.stdout.split('\n')[0] ?? '').replace(/^ffmpeg version\s+/, '').replace(/\s+Copyright.*$/, '') : 'unknown'
+  let x264 = 'unknown'
+  const which = spawnSync('which', ['ffmpeg'], { encoding: 'utf8' })
+  const ldd = which.status === 0 ? spawnSync('ldd', [which.stdout.trim()], { encoding: 'utf8' }) : null
+  const lib = ldd && ldd.status === 0 ? /libx264\.so\.(\d+)/.exec(ldd.stdout) : null
+  if (lib) x264 = `core ${lib[1]}`
+  return { ffmpeg: ffmpegVersion, x264 }
+}
+
+/** Decodes every picture of a file. Any line the decoder writes at the error level counts as a decode error. */
+export function decodedHashes(file) {
+  const r = spawnSync('ffmpeg', ['-v', 'error', '-nostdin', '-i', file, '-map', '0:v:0', '-f', 'framehash', '-hash', 'sha256', '-'], { encoding: 'utf8', maxBuffer: 1 << 28 })
+  if (r.error) throw new Error(r.error.code === 'ENOENT' ? 'ffmpeg was not found on this machine' : r.error.message)
+  let timeBase = 0
+  const frames = []
+  for (const line of r.stdout.split('\n')) {
+    const tb = /^#tb 0: (\d+)\/(\d+)/.exec(line)
+    if (tb) timeBase = Number(tb[1]) / Number(tb[2])
+    if (!line || line.startsWith('#')) continue
+    const f = line.split(',').map((x) => x.trim())
+    frames.push({ pts: Number(f[2]), hash: f[5] })
+  }
+  return { ok: r.status === 0 && r.stderr.trim() === '', errors: r.stderr.trim().split('\n').filter(Boolean).slice(0, 5), timeBase, frames }
+}
+
+const FLAT_SPREAD = 4
+
+export function frameLevels(file) {
+  const r = spawnSync('ffmpeg', ['-v', 'error', '-nostdin', '-i', file, '-map', '0:v:0', '-vf', 'signalstats,metadata=mode=print:file=-', '-f', 'null', '-'], { encoding: 'utf8', maxBuffer: 1 << 28 })
+  if (r.error) throw new Error(r.error.code === 'ENOENT' ? 'ffmpeg was not found on this machine' : r.error.message)
+  if (r.status !== 0) throw new Error(`ffmpeg could not decode ${file}: ${String(r.stderr).trim()}`)
+  const frames = []
+  for (const line of r.stdout.split('\n')) {
+    if (line.startsWith('frame:')) frames.push({})
+    const m = /^lavfi\.signalstats\.([A-Z]+)=([0-9.]+)/.exec(line)
+    if (m && frames.length) frames[frames.length - 1][m[1]] = Number(m[2])
+  }
+  return frames.map((f) => ({ flat: f.YMAX - f.YMIN <= FLAT_SPREAD && f.UMAX - f.UMIN <= FLAT_SPREAD && f.VMAX - f.VMIN <= FLAT_SPREAD, mean: f.YAVG, min: f.YMIN, max: f.YMAX }))
+}
+
+/** Decoded pictures by their place in the file, as rgb24 the size of the picture. */
+export function decodedPictures(file, places, width, height) {
+  const pick = places.map((n) => `eq(n\\,${n})`).join('+')
+  const r = spawnSync('ffmpeg', ['-v', 'error', '-nostdin', '-i', file, '-map', '0:v:0', '-vf', `select=${pick},${TO_PICTURE}`, '-fps_mode', 'passthrough', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], { maxBuffer: width * height * 3 * places.length + 1024 })
+  if (r.status !== 0) throw new Error(`ffmpeg could not decode ${file}: ${String(r.stderr).trim()}`)
+  const size = width * height * 3
+  if (r.stdout.length !== size * places.length) throw new Error(`${file} gave ${r.stdout.length / size} pictures, ${places.length} were asked for`)
+  return places.map((_, k) => r.stdout.subarray(k * size, (k + 1) * size))
+}
+
+export function probeStreams(file) {
+  const r = spawnSync('ffprobe', ['-v', 'error', '-show_entries', 'stream=codec_type,codec_name,profile,level,pix_fmt,width,height,r_frame_rate,avg_frame_rate,nb_frames,duration,bit_rate,sample_rate,channels,color_range,color_space,color_primaries,color_transfer:format=duration,size,bit_rate', '-of', 'json', file], { encoding: 'utf8', maxBuffer: 1 << 26 })
+  if (r.error) throw new Error(r.error.code === 'ENOENT' ? 'ffprobe was not found on this machine' : r.error.message)
+  if (r.status !== 0) throw new Error(`ffprobe failed on ${file}: ${r.stderr}`)
+  const j = JSON.parse(r.stdout)
+  return { video: j.streams.filter((s) => s.codec_type === 'video'), audio: j.streams.filter((s) => s.codec_type === 'audio'), format: j.format }
+}
+
+/** True when the index of an mp4 comes before its pictures, so it can start playing before it has all arrived. */
+export function startsFast(file) {
+  const fd = fs.openSync(file, 'r')
+  try {
+    const size = fs.fstatSync(fd).size
+    const head = Buffer.alloc(16)
+    let at = 0
+    while (at + 8 <= size) {
+      fs.readSync(fd, head, 0, 16, at)
+      let len = head.readUInt32BE(0)
+      const kind = head.toString('latin1', 4, 8)
+      if (len === 1) len = Number(head.readBigUInt64BE(8))
+      if (kind === 'moov') return true
+      if (kind === 'mdat') return false
+      if (len < 8) return false
+      at += len
+    }
+    return false
+  } finally {
+    fs.closeSync(fd)
+  }
 }

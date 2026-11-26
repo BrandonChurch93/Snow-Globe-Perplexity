@@ -240,9 +240,11 @@ describe('the cues', () => {
       expect(c.frame).toBeGreaterThanOrEqual(0)
       expect(c.frame).toBeLessThan(plan.frameCount)
     }
-    expect(plan.typing.last).toBeLessThan(plan.reasoning.open)
+    expect(plan.reasoning.first).toBeLessThan(plan.reasoning.open)
     expect(plan.reasoning.open).toBeLessThan(plan.reasoning.choose)
-    expect(plan.reasoning.choose).toBeLessThan(plan.send)
+    expect(plan.reasoning.choose).toBeLessThanOrEqual(plan.reasoning.last)
+    expect(plan.reasoning.last).toBeLessThan(plan.typing.first)
+    expect(plan.typing.last).toBeLessThan(plan.send)
     expect(plan.send).toBeLessThan(plan.build.first)
     expect(plan.steps.length).toBe(config.intro.steps.length)
     expect(plan.steps.at(-1)!).toBeLessThan(plan.frameCount)

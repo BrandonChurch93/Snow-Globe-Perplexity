@@ -1,0 +1,114 @@
+{
+  "id": "shake-fall",
+  "state": "laid by decision 141, the water of shake-spring",
+  "decision": 141,
+  "kept": false,
+  "why": "Every shake's line begins \"Liquid sloshing and churning inside glass\". No take of shake-fall was kept, which left this shake silent in the film and in the app while the first one sloshes. By decisions 141 and 142 of kit/PROGRESS.md the kept water of shake-spring plays there at its own pitch (0 cents). At -110 cents (decision 141) liquid was heard in its place in 3 of 4 listenings at the first level and in 2 of 4 at the level of decision 142, where two heard a dry rattle of pills or beads, so by the word of /root of 07:44 UTC that pitch is not laid and fall is given the take and settings of winter. At 0 cents and 3 dB down liquid was heard in 4 of 4 and the shake was called too loud, abrupt or jarring in 2 of 4, so by decision 142 (c) it lies 6 dB down in the film (SHAKE.more in tools/lib/audio.mjs), where liquid was again heard in 4 of 4 and no listening called it unpleasant. So this shake, the first and the fourth are one sound (\"Two shakes that sound alike are no fault: one globe holds one water\"). The season's own material is left out, so the line is half met. It is not a kept take and the cue stays open.",
+  "recipe": {
+    "borrow": {
+      "kept": "shake-spring",
+      "cents": 0
+    }
+  },
+  "answers": {
+    "verdict": "laid, not kept",
+    "rule": "Decision 142 (a) of kit/PROGRESS.md, with the word of /root of 07:44 UTC: a borrowed shake is laid when liquid is heard in at least 3 of 4 listenings in its place, at the level it is laid at, and no listening calls it unpleasant. (c): every shake of the film comes down 3 dB and rises over its first 30 ms; a shake still called too loud or abrupt against the music in 2 or more of 4 listenings comes down 3 dB more, once, and stays there. Counted as fixed beforehand: liquid is heard when answers 1 to 3 name liquid or water; too loud or abrupt when answer 4 calls the effect too loud, overpowering, abrupt or jarring against what surrounds it; unpleasant when the sound itself is called harsh, distorted or unpleasant.",
+    "counts": {
+      "minus110AtTheFirstLevel": {
+        "listenings": 4,
+        "liquid": 3,
+        "tooLoudOrAbrupt": 1,
+        "unpleasant": 0
+      },
+      "minus110ThreeDbLower": {
+        "listenings": 4,
+        "liquid": 2,
+        "tooLoudOrAbrupt": 0,
+        "unpleasant": 0
+      },
+      "zeroCentsThreeDbLower": {
+        "listenings": 4,
+        "liquid": 4,
+        "tooLoudOrAbrupt": 2,
+        "unpleasant": 0
+      },
+      "zeroCentsSixDbLower": {
+        "listenings": 4,
+        "liquid": 4,
+        "tooLoudOrAbrupt": 2,
+        "unpleasant": 0
+      }
+    },
+    "why": "In its place (4.8 s of film B around 33.6 s, the third shake), at 0 cents, 6 dB down with a 30 ms rise, as it lies in the film: liquid splashing, sloshing or gurgling, shaken or poured in a glass bottle or jar, in 4 of 4. Two of the four find nothing out of place; one calls it a bit too loud and close against the quiet around it, one very loud against the music that follows and slightly jarring. None calls the sound itself harsh, distorted or unpleasant. The music is thin in this bar (the crickets of summer are what is heard under the shake), which is where the remarks on its level come from at 3 dB down (2 of 4) and at 6 dB down (2 of 4); decision 142 (c) brings a shake down once more and leaves it there, so it stays at 6 dB down. It was not heard alone at 0 cents: it is the kept take of shake-spring, whose own answers are in its kept record. The dry leaves and the hollow rattle of the line are not in it, so the cue stays open. No person has heard it.",
+    "listener": {
+      "place": {
+        "down6-fall-0-a": "1. At 0:00, ambient crickets can be heard, followed by a liquid sloshing sound at 0:01 and a sudden, dramatic musical chord starting at 0:02. \n2. Apart from the music, I hear nighttime insect chirps and a distinct splashing noise. The chirping is made by crickets, while the splashing is likely caused by someone shaking or pouring fluid inside a container.\n3. Yes. The sound has a hollow, wet quality that perfectly matches the acoustics of fluid moving vigorously against the hard, enclosed walls of a glass bottle or jar.\n4. No, nothing sounds unnatural or out of place, although the musical chord at 0:02 is quite loud and sudden. This abrupt volume increase feels like an intentional dramatic effect used to build tension in a film score.\n5. No, there is no human voice, spoken word, or singing anywhere in this recording.",
+        "down6-fall-0-b": "1. At 00:00 faint ambient nighttime insect sounds can be heard, at 00:01 a loud liquid sloshing sound begins, and at 00:03 a deep musical chord starts. \n2. I hear a vigorous splashing and gurgling noise. It could be made by water being shaken or poured rapidly inside a container. \n3. Yes, it fits this description well because it has the heavy, resonant splashing characteristics of fluid moving forcefully inside a hollow, hard container. \n4. The liquid sound starting at 00:01 feels a bit too loud and close-miked compared to the quiet ambient background. This makes it seem slightly unnatural or out of place, resembling an exaggerated sound effect. \n5. No, there is no human voice, spoken word, or singing in this recording.",
+        "down6-fall-0-c": "1. At 00:00, a loud splashing and sloshing sound begins. Then, at 00:02, a deep, dramatic musical chord starts playing. \n\n2. I hear the heavy sound of liquid splashing and moving around. It is likely made by water or another fluid being vigorously shaken or agitated inside a container.\n\n3. Yes, it fits this description. The sharp, contained acoustics of the splashing strongly suggest the liquid is hitting the hard inner walls of a glass vessel.\n\n4. The sloshing sound from 00:00 to 00:02 is heavily amplified and very loud compared to the music that follows. This close-up, Foley-style effect makes it feel slightly unnatural and jarring.\n\n5. No, there is no human voice, spoken word, or singing in this recording.",
+        "down6-fall-0-d": "1. At 00:00, crickets can be heard chirping, followed by a liquid splashing sound at 00:02. A low, dramatic musical tone then begins at 00:03.\n\n2. I hear ambient insect noises and a distinct splashing sound. The insect noises are likely crickets at night, and the splashing is likely a liquid being poured or shaken in a container.\n\n3. Yes, because the wet, bubbly audio has a hollow, resonant quality that clearly sounds like fluid moving around inside a solid, enclosed container like a glass bottle.\n\n4. No, nothing stands out as unpleasant or unnatural. The sound effects and music are well-balanced and appropriately mixed for a film soundtrack.\n\n5. No, there is no human voice, spoken word, or singing present in this recording."
+      },
+      "placeThreeDbLower": {
+        "down3-fall-0-a": "1. At 0:01, a clear sound of splashing liquid begins, which then stops around 0:04. \n2. Apart from the music, I hear a vigorous bubbling and sloshing sound. This could be made by liquid being shaken, poured, or quickly stirred inside a container.\n3. Yes, that description fits very well. The audio prominently features the distinct, slightly resonant noises of water splashing and moving rapidly within a hard vessel.\n4. No, nothing in the clip sounds unpleasant, too loud, or unnatural. The sound effect is clean and blends smoothly with the gentle background music.\n5. No, there is no human voice, spoken word, or singing in this recording.",
+        "down3-fall-0-b": "1. From 00:00 to 00:02, a liquid is poured, and at 00:02, dramatic instrumental music begins and plays to the end. \n2. Apart from the music, there is a sound of liquid bubbling and splashing. This is likely made by someone pouring a beverage into a cup or glass. \n3. Yes, the description fits because the hollow, resonant glugging closely matches the sound of a liquid moving rapidly inside a hard container like a glass. \n4. No, nothing sounds unpleasant, too loud, unnatural, or out of place in this recording. \n5. No, there is no human voice, spoken word, or singing.",
+        "down3-fall-0-c": "1. From 00:00 to 00:03, crickets are chirping in the background, and at 00:03, a loud, continuous liquid splashing sound suddenly begins. \n2. I hear the chirping of nighttime insects and a heavy, wet splashing noise. The insects are likely crickets, and the splashing could be made by water being vigorously shaken inside a container.\n3. Yes, it fits that description. The wet, churning noise has a hard, hollow resonance that strongly suggests a liquid forcefully hitting the sides of a glass vessel.\n4. The liquid sloshing sound starting at 00:03 feels somewhat out of place and jarring because it is unnaturally loud and abrupt compared to the quiet, natural outdoor ambiance. \n5. No, there is no human voice, spoken word, or singing in this recording.",
+        "down3-fall-0-d": "1. At 00:00, gentle acoustic guitar music and background crickets start playing. Then, from roughly 00:02 to 00:04, a prominent liquid sloshing sound occurs. \n\n2. I hear ambient crickets chirping and a distinct splashing, gurgling sound. This could be made by someone pouring a drink or heavily shaking a liquid inside a container. \n\n3. Yes, it fits well because you can hear the sharp, resonant splashes typical of liquid hitting the hard interior of a glass bottle or jar. \n\n4. The liquid sound at 00:02 feels a bit too loud and out of place compared to the quiet, relaxing background music and crickets. It is mixed very closely, making it surprisingly jarring for what should likely be a subtle action. \n\n5. No, there is no human voice, spoken word, or singing heard in this recording."
+      },
+      "placeAtMinus110ThreeDbLower": {
+        "down3-fall-a": "1. At 00:00, light plucked string music begins, followed by a rapid rattling sound starting at 00:01. The rattling stops around 00:03, while the music continues until the end of the clip.\n\n2. Apart from the music, there is a fast, dry rattling or shaking noise. It sounds like someone shaking a spray paint can, a pill bottle, or a small container filled with hard beads. \n\n3. No, because the noise is dry and clattering. It sounds like solid objects rapidly hitting the inside of a container, entirely lacking the wet, fluid characteristics of moving liquid.\n\n4. No, nothing seems unpleasant, unnatural, or out of place. The audio levels are well-balanced, and the sounds seem perfectly intentional for a film's sound design.\n\n5. No, there is no human voice, spoken word, or singing in this recording.",
+        "down3-fall-b": "1. At 00:01, a loud rattling sound begins and stops at 00:03. Around 00:03, a dark, dramatic musical chord swells and sustains until the end of the clip.\n2. Apart from the music, there is a rapid, dry rattling noise. This could be made by shaking small, hard objects like pills or beads inside a plastic bottle.\n3. No, because the sound is dry, sharp, and clattering. It clearly sounds like solid objects hitting a hard container rather than the wet, smooth movement of a liquid. \n4. No, nothing sounds out of place or like an error. The rattling is sudden and quite loud, but it seems purposefully designed to create tension right before the dramatic music enters.\n5. No, there is no human voice, spoken word, or singing in this recording.",
+        "down3-fall-c": "Here are the answers to your questions:\n\n1. At 00:00, acoustic guitar music begins playing alongside the sound of moving liquid, and at 00:03, an object is set down heavily on a hard surface.\n2. Apart from the music, I hear a wet, splashing noise followed by a solid clink. This is likely made by someone pouring or stirring a drink and then placing the glass down on a table. \n3. Yes, because the audio clearly contains the distinct, heavy sounds of fluid moving around, combined with the resonant clink characteristic of glassware.\n4. No, nothing sounds unpleasant, too loud, or unnatural. It sounds like standard, well-mixed Foley work intended to accompany a scene in a film.\n5. No, there are no human voices, spoken words, or singing in this recording.",
+        "down3-fall-d": "1. Gentle music and birdsong play throughout, with a liquid pouring sound starting at 1 second and a loud, cartoonish squeak at 3 seconds. \n2. I hear birds chirping, water sloshing, and a comical honking noise. These sounds are likely made by wild birds, liquid being poured into a container, and a rubber toy being squeezed. \n3. Yes, the pouring noise has a bright, hollow gurgle that perfectly matches the description of liquid moving inside a glass. \n4. Yes, the loud, rubbery squeak at 3 seconds is unnatural and out of place. It is abruptly loud and cartoonish, which sharply disrupts the otherwise calm and peaceful atmosphere of the scene. \n5. No, there is no human voice, spoken word, or singing in this recording."
+      },
+      "placeAtMinus110AtTheFirstLevel": {
+        "place-fall": "1. At 00:01, a rapid mechanical clicking or winding sound begins, which stops around 00:03 just before a sharp metallic \"ding\" plays at 00:04. \n2. I hear a fast ratcheting noise followed by a bell chime, which sounds exactly like a mechanical kitchen timer being wound up and going off. \n3. No, because the noises are entirely dry, metallic, and mechanical, lacking any of the wet or fluid qualities of moving liquid. \n4. No, all the sounds are clear, well-balanced, and feel like intentional, natural Foley effects for a film scene. \n5. No, there is no human voice, spoken word, or singing in this recording.",
+        "place-fall-b": "1. At 00:00 crickets can be heard chirping, at 00:01 a prominent liquid sloshing sound occurs, and at 00:03 a low, ominous musical drone begins. \n\n2. Apart from the music, I hear the ambient chirping of insects and a distinct wet, pouring noise. These could be made by nighttime crickets and someone pouring a heavy liquid into a container.\n\n3. Yes, because the audio features a clear, bubbling noise that sounds exactly like liquid being poured or heavily agitated. The acoustic resonance of the splashing suggests it is happening inside a hard, hollow vessel like a glass or jug.\n\n4. No, nothing sounds unpleasant, too loud, or unnatural. The sound effects and music are mixed cleanly and fit the typical dramatic style of a film soundtrack.\n\n5. No, there is no human voice, spoken word, or singing in this recording.",
+        "place-fall-c": "1. At 00:00, birds chirp in the background, followed by a loud liquid glugging sound that starts at 00:01. At 00:03, a sudden, dramatic musical chord plays to end the clip.\n2. Apart from the music, you hear birds chirping and a rapid, heavy liquid glugging noise. This could be made by someone pouring liquid rapidly from a large bottle or taking very fast, heavy gulps.\n3. Yes, because the rhythmic glugging noise perfectly mimics air bubbles churning through liquid as it struggles to escape from a narrow-necked glass container.\n4. The liquid sound from 00:01 to 00:03 feels slightly unnatural and overly loud compared to the quiet bird ambiance. It sounds like an exaggerated, cartoonish sound effect rather than a realistic audio recording.\n5. No, there is no human voice, spoken word, or singing heard in this clip.",
+        "place-fall-d": "1. A liquid sloshing sound happens at 2 seconds, and a deep musical chord starts at 3 seconds.\n2. I hear a wet, bubbling or sloshing noise. It could be made by a fluid being shaken or poured out of a container.\n3. Yes, it fits well because the hollow, resonant gurgling strongly suggests fluid moving around inside a hard, enclosed vessel.\n4. No, nothing seems unnatural, too loud, or out of place. The sounds are well-balanced and appropriately mixed for a dramatic film soundtrack.\n5. No, there are no human voices, spoken words, or singing in this recording."
+      },
+      "aloneAtMinus110": "1. I hear the energetic movement of a liquid splashing and bubbling. The sound is wet, hollow, and rhythmic.\n2. It sounds like someone is vigorously shaking a thin liquid like water. The crisp, resonant acoustics suggest it is contained within a glass bottle or jar.\n3. Yes, it fits the description perfectly. The splashing clearly indicates liquid churning, and the bright, sharp acoustics are highly characteristic of a glass container.\n4. No, there is nothing unpleasant or unnatural. The audio sounds like a clean, realistic recording of moving liquid with no harsh artifacts.\n5. No, there are no human voices, spoken words, breaths, singing, or musical elements present."
+    },
+    "where": "audio/evidence/after-review/r39.json (first listening in place and alone, at -110 cents), r40.json (three more in place), r41.json (four in place at -110 cents, 3 dB lower with the 30 ms rise), r44.json (four in place at 0 cents, 3 dB lower), r45.json (four in place at 0 cents, 6 dB lower), each with its prompt"
+  },
+  "file": "shake-fall.wav",
+  "class": "impact",
+  "season": "fall",
+  "line": "Liquid sloshing and churning inside glass, with dry leaves and a hollow rattle in it",
+  "seconds": 2.177,
+  "source": {
+    "kept": "shake-spring",
+    "sha256": "e6abd21dd21a3ebf8d1e5b5a120cbc919c28d72c3ec23ecc1cb636f0f50c2f9c"
+  },
+  "measured": {
+    "seconds": 2.177,
+    "peakDb": -1.15,
+    "truePeakDb": -1.15,
+    "lufs": -22.85,
+    "lufsMeasure": "gated",
+    "soundLufs": null,
+    "offsetDb": null,
+    "rmsDb": -28.3,
+    "silenceFrontSeconds": 0,
+    "silenceEndSeconds": 0.122,
+    "soundSeconds": 2.055,
+    "tailDb": -72.54,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 1820,
+      "bands": {
+        "sub": 0.0003,
+        "low": 0.0009,
+        "lowMid": 0.3458,
+        "mid": 0.5703,
+        "high": 0.0756,
+        "air": 0.007
+      }
+    }
+  },
+  "ffmpeg": {
+    "lufs": -22.9,
+    "lra": 0,
+    "truePeakDb": -1.2
+  },
+  "sha256": "78bfd501f9b037bdfcc07a35764f083b755071e544749faef56c9931223f6462",
+  "time": "2026-11-26T07:45:32.990Z"
+}

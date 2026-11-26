@@ -66,6 +66,10 @@ The tool is ElevenLabs, on the Creator plan (measured from the account on 2026-1
 | `ui-sound-on` | `audio/kept/ui-sound-on.wav` | ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz | 1 | 2026-11-24 |
 | `ui-tick` | `audio/kept/ui-tick.wav` | ElevenLabs sound effects, POST /v1/sound-generation, the default model (eleven_text_to_sound_v2), PCM at 48 kHz | 2 | 2026-11-24 |
 
+## The opening of film A
+
+Drawn by code, with no generated picture in it (2026-11-26): `public/opening/manifest.json` (117,820 bytes, sha256 15ca80d5b352a8aee8afffe66f7c33a70a3e350ea8223c8b5e911e41545268cc) and `public/opening/opening.bin` (1,744,200 bytes, sha256 27b5ecd27487421f5a951ba973ba439102c843eb8e6f3556854964531339f88a), both by `tools/opening.mjs` through `npm run opening`. They hold the 867 frames of the prompt opening as 493 different pictures in 437 lossless images. The pictures are drawn with the team's skill for the product's interface (`synthetic-ui` 2.1.0 and, for the change of the reasoning level only, `synthetic-query-typing` 2.1.0), read where they are installed. Nothing of either package is in this repo: not its code and not its typeface. The opening is not a recording, no prompt was sent by it, and its timings are the film's own. 1 take, the command gives the same bytes on each run with the renderer it was drawn with; the recipe is `assets-src/opening/RECIPE.md`.
+
 ## Third-party files
 
 | File | What it is | Source URL | License | Date added |

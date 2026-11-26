@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { parseArgs, rel, readJson, writeJson } from './lib/paths.mjs'
 import { engineHash, fileSha, sha256 } from './lib/hashes.mjs'
-import { cfg, AUDIO, encodeWav, ffmpegLoudness, mixFilm, readKept, readLedger } from './lib/audio.mjs'
+import { cfg, AUDIO, LAID_STATE, encodeWav, ffmpegLoudness, mixFilm, readKept, readLaid, readLedger } from './lib/audio.mjs'
 
 const args = parseArgs(process.argv.slice(2))
 const only = args.only && args.only !== true ? String(args.only).toUpperCase().split(',') : null
@@ -245,9 +245,29 @@ async function stillCheck(session, mod) {
   set('A3', bad.length ? 'open' : 'pass', bad.length ? bad.join(', ') : `${pic.id} at draft is byte equal with the audio code loaded and without it (${plain.sha.slice(0, 12)}), and capture loads no audio by itself`, { still: pic.id, without: plain.sha, with: withAudio.sha, engine: withAudio.made })
 }
 
+// A sound laid by decision 141 is not kept and is never counted as kept. What it owes is its own: the state, the recipe
+// it was built by, the file with the bytes its record names, its measurements and the listener's counts as they are.
+function laidCheck(kept) {
+  const laid = readLaid()
+  const bad = []
+  for (const { id, record: l, file } of laid) {
+    const miss = []
+    if (kept.some((k) => k.id === id)) miss.push('its cue has a kept take, so nothing may be laid')
+    if (l.kept !== false) miss.push('kept: false')
+    if (!l.recipe || (!l.recipe.borrow && !l.recipe.set)) miss.push('recipe')
+    if (!file) miss.push('its file')
+    else if (fileSha(file) !== l.sha256) miss.push('the file is not the one its record names')
+    if (!l.measured || !Number.isFinite(l.measured.seconds)) miss.push('measurements')
+    if (!l.answers || (typeof l.answers === 'object' && !Object.keys(l.answers).length)) miss.push("the listener's answers")
+    if (miss.length) bad.push(`${id} (${miss.join(', ')})`)
+  }
+  return { laid, bad }
+}
+
 function keptCheck() {
   const kept = readKept()
   if (!kept.length) return set('A5', 'not run', 'no sound is kept yet')
+  const also = laidCheck(kept)
   const assets = fs.existsSync(rel('ASSETS.md')) ? fs.readFileSync(rel('ASSETS.md'), 'utf8') : ''
   const bad = []
   for (const { id, record: k } of kept) {
@@ -262,7 +282,8 @@ function keptCheck() {
     if (!assets.includes(`audio/kept/${id}.`)) miss.push('ASSETS.md row')
     if (miss.length) bad.push(`${id} (${miss.join(', ')})`)
   }
-  set('A5', bad.length ? 'open' : 'pass', bad.length ? `${bad.length} of ${kept.length} kept sounds lack something: ${list(bad, 8)}` : `all ${kept.length} kept sounds have take, prompt (a laid one its layers and recipe), measurements, answers and a row`, { kept: kept.length, lacking: bad })
+  const laidNote = also.laid.length ? ` · ${also.laid.length} more ${LAID_STATE}, not kept and not counted, each cue open: ${also.bad.length ? `${also.bad.length} lack something: ${list(also.bad, 8)}` : `${list(also.laid.map((l) => l.id), 8)}, each with its state, recipe, file, measurements and answers`}` : ''
+  set('A5', bad.length || also.bad.length ? 'open' : 'pass', (bad.length ? `${bad.length} of ${kept.length} kept sounds lack something: ${list(bad, 8)}` : `all ${kept.length} kept sounds have take, prompt (a laid one its layers and recipe), measurements, answers and a row`) + laidNote, { kept: kept.length, lacking: bad, laid: also.laid.map((l) => ({ id: l.id, state: l.record.state })), laidLacking: also.bad })
 }
 
 function mixFiles() {
@@ -339,7 +360,12 @@ function takesCheck() {
   const over = Object.entries(counts).filter(([, n]) => n > cfg.audio.maxTakesPerCue)
   const cues = new Set(ledger.takes.map((t) => t.cue)).size
   const most = Math.max(...Object.values(counts))
-  set('A8', over.length ? 'open' : 'pass', over.length ? `over audio.maxTakesPerCue of ${cfg.audio.maxTakesPerCue}: ${list(over.map(([k, n]) => `${k} (${n})`))}` : `${ledger.takes.filter((t) => !t.layer).length} takes over ${cues} cues, at most ${most} for one cue in one round, limit ${cfg.audio.maxTakesPerCue}${ledger.takes.some((t) => t.layer) ? `; ${ledger.takes.filter((t) => t.layer).length} layers laid from them, not counted` : ''}`, { counts })
+  // A sound laid by decision 141 is built from what exists: no call, so no take is counted for it, and it is not kept.
+  const laid = Array.isArray(ledger.laid) ? ledger.laid : []
+  const asKept = laid.filter((l) => ledger.kept.some((k) => k.cue === l.cue))
+  const laidNote = laid.length ? `; ${laid.length} sounds ${LAID_STATE} (${list(laid.map((l) => l.cue), 8)}), no call, not takes and not kept` : ''
+  if (asKept.length) return set('A8', 'open', `laid by decision 141 and also filed as kept: ${list(asKept.map((l) => l.cue))}`, { counts, laid: laid.map((l) => l.cue) })
+  set('A8', over.length ? 'open' : 'pass', over.length ? `over audio.maxTakesPerCue of ${cfg.audio.maxTakesPerCue}: ${list(over.map(([k, n]) => `${k} (${n})`))}${laidNote}` : `${ledger.takes.filter((t) => !t.layer).length} takes over ${cues} cues, at most ${most} for one cue in one round, limit ${cfg.audio.maxTakesPerCue}${ledger.takes.some((t) => t.layer) ? `; ${ledger.takes.filter((t) => t.layer).length} layers laid from them, not counted` : ''}${laidNote}`, { counts, laid: laid.map((l) => l.cue) })
 }
 
 async function main() {

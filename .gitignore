@@ -16,3 +16,5 @@ audio/**/*.m4a
 audio/**/*.flac
 audio/**/*.pcm
 public/audio/
+out/master/
+out/deliver/

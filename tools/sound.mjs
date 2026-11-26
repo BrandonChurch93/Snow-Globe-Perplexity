@@ -2,11 +2,11 @@ import fs from 'node:fs'
 import path from 'node:path'
 import sharp from 'sharp'
 import { parseArgs, rel, readJson, writeJson } from './lib/paths.mjs'
-import { engineHash, fileSha } from './lib/hashes.mjs'
+import { engineHash, fileSha, sha256 } from './lib/hashes.mjs'
 import { freeDiskGb } from './lib/browser.mjs'
 import { limits } from './lib/compose.mjs'
 import { addLook } from './lib/looks.mjs'
-import { cfg, RATE, MEASURES, KEPT, TAKES, PUBLIC_AUDIO, classOf, seasonOf, chainOf, cueSeconds, isLoop, decodeFile, encodeWav, ffmpeg, ffmpegLoudness, keepChain, layTogether, measure, peak, readKept, readLedger, writeLedger, currentRound, writePack, round, seconds } from './lib/audio.mjs'
+import { cfg, RATE, MEASURES, KEPT, TAKES, PUBLIC_AUDIO, classOf, seasonOf, chainOf, cueSeconds, isLoop, decodeFile, encodeWav, ffmpeg, ffmpegLoudness, keepChain, layTogether, measure, peak, readKept, readLedger, writeLedger, currentRound, writePack, round, seconds, LAID, LAID_STATE, buildLaid, readLaid } from './lib/audio.mjs'
 
 const args = parseArgs(process.argv.slice(2))
 const text = (k) => (args[k] !== undefined && args[k] !== true ? String(args[k]) : null)
@@ -23,6 +23,7 @@ const usage = () => {
       'npm run sound -- --lay FILE [--round NAME]                                                                    lay sounds together by a recipe (no call, not a take)',
       'npm run sound -- --answers FILE [--cue ID] [--take N]                                                         the listener answers, to the newest take',
       'npm run sound -- --cue ID --keep [--take N] [--why TEXT] [--fade-in MS] [--fade-out MS] [--low-cut HZ] [--trim-db DB] [--cap SECONDS|none]',
+      'npm run sound -- --laid [ID]                                                                                 build the sounds laid by decision 141 from their records in audio/laid/ (no call, not a take, not kept)',
       'npm run sound -- --pack | --sheet | --list',
     ].join('\n'),
   )
@@ -307,16 +308,60 @@ function keep() {
   console.log(`row for ASSETS.md: | \`${cue}\` | \`audio/kept/${cue}.wav\` | ${entry.tool ?? 'tool and model not recorded'} | ${record.takes} | ${record.time.slice(0, 10)} |`)
 }
 
+// Decision 141 of kit/PROGRESS.md: a sound that plays where its cue has no kept take. Built from the recipe in its record
+// (a kept sound of another cue at a fixed pitch offset, or a set of presses cut out of one take). No call, no credit, not
+// a take and not kept: the record stays in audio/laid/, its state begins "laid by decision 141", and its cue stays open.
+function laid() {
+  checkDisk()
+  const only = text('laid')
+  const names = fs.existsSync(LAID) ? fs.readdirSync(LAID).filter((n) => n.endsWith('.json') && !n.endsWith('.wav.json')).map((n) => n.slice(0, -5)) : []
+  const ids = only ? names.filter((n) => n === only) : names
+  if (!ids.length) fail(only ? `audio/laid/ has no record for ${only}` : 'audio/laid/ holds no record')
+  const linesFile = rel('audio', 'lines.json')
+  const lines = fs.existsSync(linesFile) ? readJson(linesFile) : {}
+  const ledger = readLedger()
+  for (const id of ids) {
+    const file = path.join(LAID, `${id}.json`)
+    const record = readJson(file)
+    if (!cfg.audio.sfx.some((x) => x.id === id)) fail(`no such cue: ${id}`)
+    if (typeof record.state !== 'string' || !record.state.startsWith(LAID_STATE)) fail(`${show(file)}: its state has to begin "${LAID_STATE}"`)
+    if (fs.existsSync(path.join(KEPT, `${id}.wav`))) fail(`${id} has a kept take: nothing is laid over a kept sound`)
+    let built
+    try {
+      built = buildLaid(record.recipe)
+    } catch (e) {
+      fail(`${show(file)}: ${String(e.message ?? e)}`)
+    }
+    const bytes = encodeWav(built.audio)
+    const out = path.join(LAID, `${id}.wav`)
+    fs.writeFileSync(out, bytes)
+    const hash = sha256(bytes)
+    const m = measure(built.audio)
+    const { presses: _old, ...rest } = record
+    const next = { ...rest, id, file: `${id}.wav`, kept: false, class: record.class ?? classOf(id), season: seasonOf(id), line: record.line ?? lines[id] ?? null, seconds: m.seconds, source: built.source, ...(built.presses ? { presses: built.presses } : {}), measured: m, ffmpeg: ffmpegLoudness(out), sha256: hash, time: record.sha256 === hash && record.time ? record.time : new Date().toISOString() }
+    writeJson(file, next)
+    ledger.laid = [...(ledger.laid ?? []).filter((l) => l.cue !== id), { cue: id, state: record.state, kept: false, file: `audio/laid/${id}.wav`, sha256: hash, seconds: m.seconds, lufs: m.lufs, time: next.time }]
+    console.log(`${show(out)} · ${record.state} · not kept, the cue stays open · ${m.seconds} s${built.presses ? `, ${built.presses.length} presses` : ''}, peak ${m.truePeakDb} dB · sha256 ${hash.slice(0, 12)}`)
+  }
+  // A record taken out of audio/laid/ is no longer laid: the ledger lists only what the folder holds.
+  ledger.laid = (ledger.laid ?? []).filter((l) => names.includes(l.cue))
+  writeLedger(ledger)
+}
+
 function pack() {
   checkDisk()
   const r = writePack()
   const ledger = readLedger()
   const mb = (b) => (b / 1048576).toFixed(2)
-  ledger.pack = { time: new Date().toISOString(), kbps: r.kbps, bytes: r.index.bytes, fits: r.fits, files: r.index.files.map((f) => ({ ...f, sha256: r.shas[f.file] })), sprites: Object.keys(r.index.sprites), loops: r.loopChecks, notes: r.notes }
+  ledger.pack = { time: new Date().toISOString(), kbps: r.kbps, bytes: r.index.bytes, fits: r.fits, files: r.index.files.map((f) => ({ ...f, sha256: r.shas[f.file] })), sprites: Object.keys(r.index.sprites), laid: r.laid, loops: r.loopChecks, notes: r.notes }
   writeLedger(ledger)
   for (const f of r.index.files) console.log(`${show(path.join(PUBLIC_AUDIO, f.file))} · ${mb(f.bytes)} MB`)
   console.log(`sprite: ${Object.keys(r.index.sprites).length} sounds${Object.keys(r.index.sprites).length ? ` (${Object.keys(r.index.sprites).join(', ')})` : ''}`)
-  for (const c of r.loopChecks) console.log(`loop ${c.id}: ${c.expectedSeconds} s written, ${c.decodedSeconds} s decoded, the two sides of the seam differ by ${c.seamErrorDb} dB of the signal`)
+  if (r.laid.length) console.log(`of these, laid by decision 141 and not kept: ${r.laid.map((l) => l.id).join(', ')}`)
+  for (const c of r.loopChecks) {
+    if (c.seamErrorDb === undefined) console.log(`loop ${c.id}: ${c.expectedSeconds} s written, ${c.decodedSeconds} s decoded · bars ${c.fromBar} to ${c.toBar} and the track's next ${c.heard.seamSeconds} s · under the app's cross it is heard every ${c.heard.periodSeconds} s (${c.bars} bars), the crossed bar ${c.heard.seamDb} dB against the loop's mean`)
+    else console.log(`loop ${c.id}: ${c.expectedSeconds} s written, ${c.decodedSeconds} s decoded, the two sides of the seam differ by ${c.seamErrorDb} dB of the signal · under the app's cross of ${c.heard.seamSeconds} s it is heard every ${c.heard.periodSeconds} s, the crossed part ${c.heard.seamDb} dB against the loop's mean`)
+  }
   for (const n of r.notes) console.log(`note: ${n}`)
   console.log(`${show(path.join(PUBLIC_AUDIO, 'index.json'))} · ${r.index.files.length} files at ${r.kbps} kbps, ${mb(r.index.bytes)} MB together, ${r.fits ? 'under' : 'OVER'} audio.appMaxMb of ${cfg.audio.appMaxMb} MB`)
 }
@@ -397,6 +442,7 @@ function list() {
 }
 
 if (args.pack === true) pack()
+else if (args.laid !== undefined) laid()
 else if (args.sheet === true) await sheet()
 else if (args.list === true) list()
 else if (args.lay !== undefined) lay()

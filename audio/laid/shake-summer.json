@@ -1,0 +1,90 @@
+{
+  "id": "shake-summer",
+  "state": "laid by decision 141, the water of shake-spring",
+  "decision": 141,
+  "kept": false,
+  "why": "Every shake's line begins \"Liquid sloshing and churning inside glass\". No take of shake-summer was kept, which left this shake silent in the film and in the app while the first one sloshes. By decisions 141 and 142 of kit/PROGRESS.md the kept water of shake-spring plays there at -50 cents. The season's own material is left out, so the line is half met. It is not a kept take and the cue stays open.",
+  "recipe": {
+    "borrow": {
+      "kept": "shake-spring",
+      "cents": -50
+    }
+  },
+  "answers": {
+    "verdict": "laid, not kept",
+    "rule": "Decision 142 (a) of kit/PROGRESS.md, with the word of /root of 07:44 UTC: a borrowed shake is laid when liquid is heard in at least 3 of 4 listenings in its place, at the level it is laid at, and no listening calls it unpleasant. (c): every shake of the film comes down 3 dB and rises over its first 30 ms; a shake still called too loud or abrupt against the music in 2 or more of 4 listenings comes down 3 dB more, once, and stays there. Counted as fixed beforehand: liquid is heard when answers 1 to 3 name liquid or water; too loud or abrupt when answer 4 calls the effect too loud, overpowering, abrupt or jarring against what surrounds it; unpleasant when the sound itself is called harsh, distorted or unpleasant.",
+    "counts": {
+      "atTheFirstLevel": {
+        "listenings": 4,
+        "liquid": 3,
+        "tooLoudOrAbrupt": 1,
+        "unpleasant": 0
+      },
+      "3dBLowerWithThe30msRise": {
+        "listenings": 4,
+        "liquid": 4,
+        "tooLoudOrAbrupt": 1,
+        "unpleasant": 0
+      }
+    },
+    "why": "Laid by decision 142 (a) on liquid heard in 3 of 4 listenings in its place (4.8 s of film B around 21.6 s). At the level it has in the film, 3 dB lower with a 30 ms rise, liquid was heard in 4 of 4 (splashing, bubbling, pouring; a drink poured or a fluid shaken in a vessel) and one of the four called it noticeably louder than the music and slightly out of place, so it stays at 3 dB down. Alone it was heard as liquid shaken in a bottle, jar or jug with nothing unpleasant. The warm shimmer and the dry seeds of the line are not in it, so the cue stays open. No person has heard it.",
+    "listener": {
+      "place": {
+        "down3-summer-a": "1. From the beginning, upbeat instrumental music plays, and at 3 seconds, a distinct liquid sound effect begins.\n2. Apart from the music, I hear a bubbling, splashing noise. This could be made by pouring water or a beverage into a container. \n3. Yes, it fits the description well because the audio captures the hollow, bubbly resonance of fluid rapidly moving and agitating within a hard vessel.\n4. The liquid sound starting at 3 seconds feels slightly unnatural and out of place because it is cartoonishly exaggerated and noticeably louder than the background music.\n5. No, there are no human voices, spoken words, or singing in this recording.",
+        "down3-summer-b": "1. Instrumental music plays from the beginning, and a liquid pouring or sloshing sound starts around the one-second mark. \n2. I hear a distinct sound of liquid splashing, bubbling, and pouring. This could be made by someone pouring a beverage into a cup or fluid moving rapidly inside a vessel. \n3. Yes, because the bright, bubbly noises strongly resemble fluid moving rapidly inside a resonant, hard-walled container like a glass.\n4. No, the audio is well-balanced and sounds like a typical film soundtrack with appropriately mixed sound effects. \n5. No, there are no human voices, spoken words, or singing in this recording.",
+        "down3-summer-c": "1. At 00:00, light instrumental music begins playing. At 00:02, a continuous liquid splashing or pouring sound enters and lasts until the end of the clip. \n2. Apart from the music, I hear a watery splashing sound. This could be made by someone pouring a beverage or swirling liquid inside a container.\n3. Yes, it fits well because the acoustics of the splash have a clear, ringing quality that suggests fluid moving against a hard, hollow surface like glass.\n4. No, nothing sounds unpleasant, unnatural, or out of place. The music and sound effects are properly balanced and blend seamlessly together.\n5. No, there are no human voices, spoken words, or singing in this audio clip.",
+        "down3-summer-d": "1. Playful music plays throughout the clip, and a distinct sound of splashing liquid begins at 00:02. \n2. I hear a liquid vigorously splashing, bubbling, and pouring. This could be made by rapidly pouring a drink or mixing fluids in a container.\n3. Yes, the description fits well because you can clearly hear the wet, active movement of a fluid resonating as if it is inside a hard container like a glass.\n4. No, nothing seems out of place or unpleasant. The sound effects and music are clear, well-mixed, and appropriate for a whimsical or animated scene.\n5. No, there is no human voice, spoken word, or singing in this recording."
+      },
+      "placeAtTheFirstLevel": {
+        "place-summer": "Here are the answers to your questions:\n\n1. At 00:01, a distinct sound effect plays over the cheerful, ongoing background music. \n2. Apart from the music, you hear a wet splashing and bubbling sound. It could be made by someone shaking a bottle of liquid or mixing a potion.\n3. Yes, the sound fits that description perfectly. It has a hollow, contained resonance and bubbling quality characteristic of fluid moving vigorously inside a hard vessel.\n4. No, nothing sounds unpleasant, too loud, or unnatural. The sound effect is prominent but fits well as a typical Foley addition for a lighthearted or animated short film.\n5. No, there is no human voice, spoken word, or singing in this recording.",
+        "place-summer-b": "1. At 0:00, upbeat acoustic music plays, and at 0:02, a rapid liquid sloshing sound begins.\n2. I hear a distinct liquid shaking or splashing noise. It is likely being made by someone vigorously shaking a bottle, jar, or similar container filled with fluid.\n3. Yes, because the rapid, wet movement sounds exactly like fluid being violently agitated inside a hard, enclosed container like glass.\n4. The sloshing sound starting at 0:02 feels a bit too loud and unnatural for the mix. It sounds like a raw Foley sound effect placed abruptly over the background music without blending in naturally.\n5. No, there are no human voices, spoken words, or singing in this recording.",
+        "place-summer-c": "1. At 00:00, upbeat instrumental music begins, and at 00:01, a rapid, rhythmic sound starts and continues to the end of the clip. \n2. Apart from the music, there is a fast, repetitive thudding sound that is likely a knife rapidly chopping food on a wooden cutting board. \n3. No, because the sound is sharp, dry, and percussive, lacking the wet, fluid characteristics of sloshing liquid or the resonance of glass. \n4. No, nothing sounds unpleasant, too loud, or out of place, as the sound effects and music are well-balanced and natural for a fast-paced cooking scene. \n5. No, there are no human voices, spoken words, or singing in this recording.",
+        "place-summer-d": "1. Upbeat instrumental music plays from the beginning, and at the 0:02 mark, a distinct liquid sloshing sound begins.\n2. I hear a liquid pouring and bubbling sound. It could be made by someone pouring a drink or vigorously stirring a liquid in a container.\n3. Yes, it fits this description well. The audio has a wet, resonant quality that clearly mimics fluid moving heavily inside a hard, hollow container like a glass.\n4. No, nothing sounds unpleasant, too loud, or unnatural. The sound effect and music are mixed well and fit the whimsical tone of the track.\n5. No, there are no human voices, spoken words, or singing in this recording."
+      },
+      "alone": "1. I hear the active, wet sound of liquid rapidly moving and splashing. The sound has a fluid, dynamic, and somewhat hollow, resonant character.\n\n2. It sounds like water or a similar thin liquid being vigorously shaken or stirred. This is likely happening inside a hard-walled vessel, such as a bottle, jar, or jug.\n\n3. Yes, it fits this description well. The energetic splashing accurately reflects liquid sloshing and churning, and the acoustic resonance strongly suggests it is contained within a hard material like glass.\n\n4. No, there is nothing unpleasant, harsh, or unnatural. It sounds like a clean, standard recording of moving liquid.\n\n5. No, there is no human voice, spoken word, breath, singing, or music present."
+    },
+    "where": "audio/evidence/after-review/r39.json (first listening in place and alone), r40.json (three more in place), r41.json (four in place, 3 dB lower with the 30 ms rise), r42.json (one listening asked again), each with its prompt"
+  },
+  "file": "shake-summer.wav",
+  "class": "impact",
+  "season": "summer",
+  "line": "Liquid sloshing and churning inside glass, with a warm shimmer and dry seeds in it",
+  "seconds": 2.241,
+  "source": {
+    "kept": "shake-spring",
+    "sha256": "e6abd21dd21a3ebf8d1e5b5a120cbc919c28d72c3ec23ecc1cb636f0f50c2f9c"
+  },
+  "measured": {
+    "seconds": 2.241,
+    "peakDb": -1.17,
+    "truePeakDb": -1.17,
+    "lufs": -22.79,
+    "lufsMeasure": "gated",
+    "soundLufs": null,
+    "offsetDb": null,
+    "rmsDb": -28.31,
+    "silenceFrontSeconds": 0,
+    "silenceEndSeconds": 0.111,
+    "soundSeconds": 2.13,
+    "tailDb": -73.28,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 1696,
+      "bands": {
+        "sub": 0.0003,
+        "low": 0.0011,
+        "lowMid": 0.3945,
+        "mid": 0.533,
+        "high": 0.0662,
+        "air": 0.0048
+      }
+    }
+  },
+  "ffmpeg": {
+    "lufs": -22.8,
+    "lra": 0,
+    "truePeakDb": -1.2
+  },
+  "sha256": "db5026b473ef767f0efc64c971685707af42d83a99b1c42be3f3ec29eb48715b",
+  "time": "2026-11-26T07:11:56.681Z"
+}
