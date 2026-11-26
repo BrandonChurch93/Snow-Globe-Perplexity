@@ -18,6 +18,7 @@ npm run master -- --what film-b --first 600 --last 899 --ship agent/p6-chunks-NA
 - `--what` is `film-b`, `loop` or `opening`. `--ship` is optional: it pushes each chunk's record and look (small) to a branch of the machine's own, never the picture.
 - `--procs P` only when the memory holds it: about 4.1 GB a process at 4K with 24 samples, and the tool refuses more. On 8 CPUs a second process adds about 10 percent and a third nothing; the tool says so and runs.
 - Never `--local`: it opens the installed Chrome in a window with a graphics card, which is another renderer.
+- `NOT A NUMBER: film-b frame F holds N values ...` means the picture's mean of that frame held values that are no number, which the lens spreads into a dark speck. The tool has read the count after the frame, kept its PNG under `out/work/master/<what>/not-a-number/`, marked the chunk `NOT A NUMBER` in its record (its intermediate exists for looking and no master is ever encoded from it), and drawn every other chunk; the run ends with an error that lists the frames. Tell `/root` the frame and the count, and send the other chunks. Never draw it again hoping: the same frame on the same build draws the same values, and the mend is a change of the engine, which is `/root`'s to name.
 - To stop and go on: run the same command again. A drawn frame is never drawn twice. When a process stops by itself, the last line of the run is the exact command that goes on.
 
 ## How its chunks travel
@@ -50,9 +51,10 @@ npm run master -- --collect out/work/collected --files out/work/inbox --no-branc
 - `NOT COMPLETE: ...` names a chunk whose file or part has not come yet. Ask its machine for exactly that file.
 - It decodes every chunk it took. `FLAT: ...` names a chunk and its machine with a frame of one flat value: that range is drawn again, never encoded.
 - One line a timeline: how many chunks of how many, the ranges that are there, the ranges that are missing.
-- It ends with an error while anything is `NOT COMPLETE` or `FLAT`.
+- `NOT A NUMBER: ...` names a chunk, its machine and its frames (with each count) whose mean held values that are no number. It is never encoded; `/root` is told the frames.
+- It ends with an error while anything is `NOT COMPLETE`, `FLAT` or `NOT A NUMBER`.
 
-Then one encode a film: `npm run master -- --encode film-b|film-a|loop --from out/work/collected`. It refuses a gap, two builds, two renderers, two calibrations, two sample counts, and a test chunk, each with a plain list.
+Then one encode a film: `npm run master -- --encode film-b|film-a|loop --from out/work/collected`. It refuses a gap, two builds, two renderers, two calibrations, two sample counts, a test chunk, and a chunk marked `NOT A NUMBER`, each with a plain list.
 
 ## One rule for every agent that touches raw video
 

@@ -9,6 +9,7 @@ import { loadConfig, readJson, rel, writeJson } from '../tools/lib/paths.mjs'
 import { branchFolder, branchMatches, chunkLines, chunkStem, coverReport, framesOf, heartbeat, joinPlan, lumaPsnrOf, nearestRanges, openingPack as readOpening, pad6, psnrOf, rangeChunks as chunksOfRange, ranges, readChunks, recordMatchesRun, resultName, split, stillName, stillToDo as leftToDo, table, tierOf, totalsFromCut } from '../tools/lib/master.mjs'
 import { Shipper, collectBranches } from '../tools/lib/mastergit.mjs'
 import { levelProblems, pictureLevels, procsProblem } from '../tools/lib/master.mjs'
+import { NOT_A_NUMBER, notNumberLine, notNumberLoud, notNumberOf, notNumberRecord, notNumberUnknown } from '../tools/lib/master.mjs'
 import { limitsLine, limitsRecord, localProblem, machineLimits, procsGainLine, procsMemoryHolds, readLimits, sameCommand, stoppedAt, stoppedLine } from '../tools/lib/master.mjs'
 import { bestRun, bigSha, butCrf, crfLadder, crfOf, encodeProofRows, finalKbps, hashFolder, intermediateVideo, masterConfigProblems, partName, partPlan, psnrFacts, sendGroups, splitFile, takeFiles, unsplitFile } from '../tools/lib/master.mjs'
 import { flatValue, refuseFlat } from '../tools/lib/page.mjs'
@@ -839,6 +840,50 @@ describe('what the machine may really use', () => {
   })
 })
 
+describe('values that are no number', () => {
+  const frame = (index: number, notNumber?: number, sanityMs = 40) => ({ index, ...(notNumber === undefined ? {} : { notNumber, sanityMs }) })
+
+  it('writes one total a chunk, the frames where the count is not 0, and the frames never read', () => {
+    expect(notNumberRecord([frame(2100, 0), frame(2101, 0, 60)], 'float32')).toEqual({ total: 0, frames: [], unread: [], measure: expect.stringMatching(/^window\.showcase\.dev\.sanity\(\)/), precision: 'float32', blind: false, msAFrame: 50 })
+    const bad = notNumberRecord([frame(2114, 0), frame(2115, 3), frame(2116), frame(2117, 1)])
+    expect(bad).toMatchObject({ total: 4, frames: [{ frame: 2115, count: 3 }, { frame: 2117, count: 1 }], unread: [2116] })
+    expect(notNumberRecord([frame(0, 0)], 'byte')).toMatchObject({ blind: true })
+  })
+
+  it('reads the mark back from a record, and knows a record that says nothing', () => {
+    const clean = rec('film-b', 0, 29, { notNumber: notNumberRecord([frame(0, 0)]) })
+    const marked = rec('film-b', 30, 59, { mark: NOT_A_NUMBER, notNumber: notNumberRecord([frame(30, 0), frame(45, 3)]), machine: 'vm07' })
+    const old = rec('film-b', 60, 89)
+    expect(notNumberOf(clean)).toBeNull()
+    expect(notNumberOf(old)).toBeNull()
+    expect(notNumberOf(marked)).toEqual({ total: 3, frames: [{ frame: 45, count: 3 }] })
+    expect(notNumberOf(rec('film-b', 0, 29, { mark: NOT_A_NUMBER }))).toEqual({ total: 0, frames: [] })
+    expect(notNumberOf(rec('film-b', 0, 29, { notNumber: { total: 2, frames: [] } }))).not.toBeNull()
+    expect(notNumberUnknown(old)).toBe(true)
+    expect(notNumberUnknown(clean)).toBe(false)
+    expect(notNumberUnknown(rec('film-b', 0, 29, { notNumber: notNumberRecord([frame(0, 0), frame(1)]) }))).toBe(true)
+    expect(notNumberUnknown(rec('film-b', 0, 29, { notNumber: notNumberRecord([frame(0, 0)], 'byte') }))).toBe(true)
+    expect(notNumberUnknown(rec('opening', 0, 29))).toBe(false)
+  })
+
+  it('gives the collect its line and the render its loud one', () => {
+    const marked = rec('film-b', 2100, 2129, { mark: NOT_A_NUMBER, notNumber: notNumberRecord([frame(2115, 3), frame(2120, 1)]), machine: 'vm07' })
+    expect(notNumberLine({ record: marked, file: '/x/film-b-002100-002129.mp4', from: 'agent/p6-chunks-vm07' })).toBe('agent/p6-chunks-vm07 (film-b 2100 to 2129, drawn on vm07) holds 4 values that are no number in 2 frames: 2115 (3), 2120 (1)')
+    expect(notNumberLoud('film-b', 2115, 3)).toBe('NOT A NUMBER: film-b frame 2115 holds 3 values that are no number in its mean, before the lens and the grade. Its chunk is marked NOT A NUMBER and no master is encoded from it. Tell /root the frame. Do not draw it again hoping: the same frame draws the same values.')
+    expect(notNumberLoud('loop', 7, 1)).toMatch(/holds 1 value that is no number/)
+  })
+
+  it('refuses to encode a master from a marked chunk, and takes the same chunks without the mark', () => {
+    const three = (over: Record<string, unknown>) => [chunk(rec('film-b', 0, 29)), chunk(rec('film-b', 30, 59, over)), chunk(rec('film-b', 60, 89))]
+    expect(plan('film-b', three({})).ok).toBe(true)
+    expect(plan('film-b', three({ notNumber: notNumberRecord([frame(30, 0), frame(31, 0)]) })).ok).toBe(true)
+    const p = refused('film-b', three({ mark: NOT_A_NUMBER, notNumber: notNumberRecord([frame(45, 3)]) }), /is marked NOT A NUMBER: 3 values in frame 45 \(3\)\. It is never encoded into a master/)
+    expect(p.problems.length).toBe(1)
+    refused('film-b', three({ mark: NOT_A_NUMBER }), /is marked NOT A NUMBER/)
+    refused('film-b', three({ notNumber: { total: 1, frames: [{ frame: 40, count: 1 }], unread: [] } }), /is marked NOT A NUMBER: 1 value in frame 40 \(1\)/)
+  })
+})
+
 describe('render processes side by side, with a stand-in for the renderer', () => {
   const tool = rel('tools', 'master.mjs')
   const haveFfmpeg = !spawnSync('ffmpeg', ['-version']).error
@@ -914,6 +959,27 @@ describe('render processes side by side, with a stand-in for the renderer', () =
     expect(one.code).toBe(1)
     expect(one.lines.at(-1)).toMatch(/^To go on from there: npm run master -- --what film-b .* --first 0 --last 3 --stand-in-fail 2$/)
     expect(one.lines.at(-3)).toMatch(/^master: stopped at chunk 000002-000003, frame 2: the WebGL context was lost/)
+  }, 180000)
+
+  it.runIf(haveFfmpeg)('a frame with values that are no number: a loud line, the chunk marked in its record, the other chunks drawn, and the run ends with an error', () => {
+    const d = path.join(dir, 'nan')
+    const r = run(d, '--first', '0', '--last', '7', '--procs', '2', '--stand-in-nan', '5')
+    expect(r.code).toBe(1)
+    expect(r.lines.some((l) => /^\[0\] NOT A NUMBER: film-b frame 5 holds 3 values that are no number in its mean.*Its PNG is kept as .*not-a-number.000005\.png\.$/.test(l))).toBe(true)
+    expect(r.lines.some((l) => /^\[0\] finished film-b-000004-000005: .*It is marked NOT A NUMBER: frames 5 \(3\)$/.test(l))).toBe(true)
+    expect(chunks(d).length).toBe(4)
+    const out = (first: number) => readJson(path.join(d, 'out', 'film-b', `film-b-${pad6(first)}-${pad6(first + 1)}.json`))
+    expect(out(4).mark).toBe('NOT A NUMBER')
+    expect(out(4).notNumber).toMatchObject({ total: 3, frames: [{ frame: 5, count: 3 }], unread: [], msAFrame: 0 })
+    expect(out(0).mark).toBeUndefined()
+    expect(out(0).notNumber).toMatchObject({ total: 0, frames: [], unread: [] })
+    expect(fs.existsSync(path.join(d, 'work', 'film-b', 'not-a-number', '000005.png'))).toBe(true)
+    const end = r.lines.slice(-2)
+    expect(end[0]).toMatch(/^NOT A NUMBER: .*film-b-000004-000005\.json \(film-b 4 to 5, drawn on .*\) holds 3 values that are no number in 1 frame: 5 \(3\)$/)
+    expect(end[1]).toMatch(/^master: 1 chunk of this range is marked NOT A NUMBER\. Every other chunk is drawn and may be sent\. Tell \/root the frames above\. Do not draw them again hoping/)
+    const again = run(d, '--first', '0', '--last', '7', '--procs', '2', '--stand-in-nan', '5')
+    expect(again.code).toBe(1)
+    expect(again.lines.some((l) => /^4 chunks are finished, 0 to do/.test(l))).toBe(true)
   }, 180000)
 
   it('refuses --local on a machine without a display before anything is started', () => {

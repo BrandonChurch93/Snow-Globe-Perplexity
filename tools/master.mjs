@@ -10,7 +10,7 @@ import { freeDiskGb, launch, machineId, pinnedBrowser, rendererName } from './li
 import { serve } from './lib/server.mjs'
 import { Run, argFrame, argText, pngOk, short } from './lib/frames.mjs'
 import { decodedHashes, encodeFinal, encodeMasterChunk, finalVideoArgs, frameLevels, framePsnr, haveFfmpeg, headerRefFrames, keyFrames, masterVideoArgs, probe, probeLine, probeStreams, scaleEvery, soundSeconds, startsFast, stillJpeg, toolVersions, videoSettings } from './lib/encode.mjs'
-import { COLOUR_TAGS, FPS, JOINS, LOOK_WIDTH, M, SOUND, STILL_MAX_MB, WHATS, bestRun, bigSha, chunkDir, chunkStem, coverReport, dB, encodeProofRows, finalKbps, framesOf, heartbeat, hours, intermediateVideo, joinPlan, levelProblems, masterConfigProblems, openingPack, pad6, pictureLevels, procsProblem, procsGainLine, limitsLine, limitsRecord, localProblem, machineLimits, sameCommand, standInPicture, stoppedAt, stoppedLine, writeJsonAtomic, psnrFacts, rangeChunks, readChunks, recordMatchesRun, crfLadder, crfOf, resultName, sendGroups, split, splitFile, stillName, stillToDo, table, takeFiles, tierOf, totalsFromCut, unsplitFile, hashFolder, chunkName } from './lib/master.mjs'
+import { COLOUR_TAGS, FPS, JOINS, LOOK_WIDTH, M, SOUND, STILL_MAX_MB, WHATS, bestRun, bigSha, chunkDir, chunkStem, coverReport, dB, encodeProofRows, finalKbps, framesOf, heartbeat, hours, intermediateVideo, joinPlan, levelProblems, masterConfigProblems, openingPack, pad6, pictureLevels, procsProblem, NOT_A_NUMBER, notNumberLine, notNumberLoud, notNumberOf, notNumberRecord, notNumberUnknown, procsGainLine, limitsLine, limitsRecord, localProblem, machineLimits, sameCommand, standInPicture, stoppedAt, stoppedLine, writeJsonAtomic, psnrFacts, rangeChunks, readChunks, recordMatchesRun, crfLadder, crfOf, resultName, sendGroups, split, splitFile, stillName, stillToDo, table, takeFiles, tierOf, totalsFromCut, unsplitFile, hashFolder, chunkName } from './lib/master.mjs'
 import { Shipper, collectBranches, repoFacts } from './lib/mastergit.mjs'
 
 const args = parseArgs(process.argv.slice(2))
@@ -25,7 +25,7 @@ const USAGE = [
   'npm run master -- --split FILE [--part-mb N]',
   'npm run master -- --unsplit DIR [--out FILE]',
   'For tests only: --samples S, --format F, --chunk N, --min-psnr N, and --encode ... --test [--gaps] [--sound FILE]',
-  "For the tool's own tests: --stand-in DIR [--stand-in-fail N] draws ramps instead of the film, without a browser, into DIR",
+  "For the tool's own tests: --stand-in DIR [--stand-in-fail N] [--stand-in-nan N] draws ramps instead of the film, without a browser, into DIR",
 ].join('\n')
 const LOCK = rel('out', 'work', 'render.lock')
 const CALIBRATION = rel('out', 'work', 'master', 'calibration.json')
@@ -100,7 +100,7 @@ function setup() {
   const renderer = standIn ? 'stand-in' : engine ? rendererName(args.local === true) : 'pack'
   const calibration = engine && !standIn ? calibrationOf(hash, renderer) : null
   const want = (c) => ({ what, first: c.first, last: c.last, engineHash: hash, samples, format: format.id, fps: FPS, test, renderer, calibration, encoderArgs: masterVideoArgs({ ...intermediateVideo(), crf: INTER.crf }, SIZE) })
-  return { what, engine, test, format, samples, procs, total, chunks, work, want, hash, renderer, calibration, floor: psnrFloor(test), out: standIn ? path.join(standIn, 'out', what) : chunkDir(what, test), local: args.local === true, standIn, failAt: standIn && args['stand-in-fail'] !== undefined ? Number(args['stand-in-fail']) : null, overrides: overridden(['crf', 'part-mb']) }
+  return { what, engine, test, format, samples, procs, total, chunks, work, want, hash, renderer, calibration, floor: psnrFloor(test), out: standIn ? path.join(standIn, 'out', what) : chunkDir(what, test), local: args.local === true, standIn, failAt: standIn && args['stand-in-fail'] !== undefined ? Number(args['stand-in-fail']) : null, nanAt: standIn && args['stand-in-nan'] !== undefined ? Number(args['stand-in-nan']) : null, overrides: overridden(['crf', 'part-mb']) }
 }
 
 const filesOf = (ctx, c) => {
@@ -209,7 +209,7 @@ async function source(ctx, lock) {
       picture: async (index) => {
         if (index === ctx.failAt) throw new Error('the WebGL context was lost before the picture was read back (a stand-in said so, for a test). No picture was written.')
         const rgb = standInPicture(width, height, index)
-        return { png: await sharp(rgb, { raw: { width, height, channels: 3 } }).png({ compressionLevel: 3 }).toBuffer(), rgb }
+        return { png: await sharp(rgb, { raw: { width, height, channels: 3 } }).png({ compressionLevel: 3 }).toBuffer(), rgb, notNumber: index === ctx.nanAt ? 3 : 0, sanityMs: 0 }
       },
       close: async () => {},
     }
@@ -243,12 +243,18 @@ async function source(ctx, lock) {
       const ext = gl?.getExtension('WEBGL_debug_renderer_info')
       return gl ? String(gl.getParameter(ext ? ext.UNMASKED_RENDERER_WEBGL : gl.RENDERER)) : 'no WebGL'
     })
+    const precision = await page.evaluate(() => window.showcase.dev.caps().precision)
     return {
       graphics,
+      precision,
       browser: `${pinnedBrowser().name} ${session.browserVersion}`,
       picture: async (index) => {
         const png = await run.frame(track, page, index)
-        return { png, rgb: await rgbOf(png) }
+        const s0 = Date.now()
+        const sane = await page.evaluate(() => window.showcase.dev.sanity())
+        const sanityMs = Date.now() - s0
+        if (!Number.isInteger(sane?.invalid)) throw new Error(`the page gave no count of values that are no number for frame ${index}`)
+        return { png, rgb: await rgbOf(png), notNumber: sane.invalid, sanityMs }
       },
       close: async () => {
         await run.close()
@@ -264,7 +270,7 @@ async function source(ctx, lock) {
 function lazySource(ctx, lock) {
   let src = null
   return {
-    facts: () => (src ? { graphics: src.graphics, browser: src.browser } : null),
+    facts: () => (src ? { graphics: src.graphics, browser: src.browser, ...(src.precision ? { precision: src.precision } : {}) } : null),
     picture: async (index) => {
       src ??= await source(ctx, lock)
       return src.picture(index)
@@ -324,8 +330,10 @@ async function doChunk(ctx, src, c, progress) {
     const stays = `${frames.length} of this chunk's ${c.last - c.first + 1} frames are PNGs in ${short(dir)} and stay there.`
     let png
     let rgb
+    let notNumber
+    let sanityMs
     try {
-      ;({ png, rgb } = await src.picture(index))
+      ;({ png, rgb, notNumber = null, sanityMs = null } = await src.picture(index))
     } catch (e) {
       const more = String(e.message).split('\n').slice(1).join('\n')
       throw new Error(`${stoppedLine(c, index, e.message)} ${stays}${more ? `\n${more}` : ''}`)
@@ -334,10 +342,16 @@ async function doChunk(ctx, src, c, progress) {
     if (!fs.existsSync(factsFile)) writeJson(factsFile, src.facts())
     const seen = pictureLevels(rgb)
     if (seen.flat && ctx.engine) throw new Error(`${stoppedLine(c, index, 'the frame came back as one flat value over the whole picture. Nothing was written for it. Look at dmesg for a killed chrome process.')} ${stays}`)
-    const side = { index, seconds: Math.round(seconds * 1000) / 1000, sha256: sha256(rgb), mean: Math.round(seen.mean * 1000) / 1000, flat: seen.flat }
+    const side = { index, seconds: Math.round(seconds * 1000) / 1000, sha256: sha256(rgb), mean: Math.round(seen.mean * 1000) / 1000, flat: seen.flat, ...(notNumber === null ? {} : { notNumber, sanityMs }) }
     writeJson(file.replace(/\.png$/, '.json'), side)
     fs.writeFileSync(`${file}.tmp`, png)
     fs.renameSync(`${file}.tmp`, file)
+    if (notNumber > 0) {
+      const kept = path.join(ctx.work, 'not-a-number', `${pad6(index)}.png`)
+      fs.mkdirSync(path.dirname(kept), { recursive: true })
+      fs.copyFileSync(file, kept)
+      say(`${notNumberLoud(ctx.what, index, notNumber)} Its PNG is kept as ${short(kept)}.`)
+    }
     frames.push({ file, ...side })
     progress.left--
     progress.rendered++
@@ -417,6 +431,8 @@ async function doChunk(ctx, src, c, progress) {
     machine: machineId(),
     limits: limitsRecord(LIMITS),
     boot: bootId(),
+    ...(ctx.engine ? { notNumber: notNumberRecord(frames, facts.precision ?? null) } : {}),
+    ...(ctx.engine && frames.some((x) => x.notNumber > 0) ? { mark: NOT_A_NUMBER } : {}),
     verify,
     look: path.basename(f.look),
     ...(still ? { still } : {}),
@@ -430,7 +446,7 @@ async function doChunk(ctx, src, c, progress) {
   writeJsonAtomic(f.json, record)
   fs.rmSync(dir, { recursive: true, force: true })
   const mean = record.frameSeconds.reduce((a, b) => a + b, 0) / frames.length
-  say(`finished ${chunkStem(ctx.what, c.first, c.last)}: ${frames.length} frames, ${mean.toFixed(1)} s a frame, crf ${crfOf(record)}, ${mb(record.bytes)} MB${record.parts ? ` in ${record.parts.length} parts` : ''}, luma PSNR against the PNGs least ${verify.psnr.least} dB (frame ${verify.psnr.leastFrame}), mean ${verify.psnr.mean} dB. Its PNGs are deleted${still ? `, but for ${short(f.still)}` : ''}`)
+  say(`finished ${chunkStem(ctx.what, c.first, c.last)}: ${frames.length} frames, ${mean.toFixed(1)} s a frame, crf ${crfOf(record)}, ${mb(record.bytes)} MB${record.parts ? ` in ${record.parts.length} parts` : ''}, luma PSNR against the PNGs least ${verify.psnr.least} dB (frame ${verify.psnr.leastFrame}), mean ${verify.psnr.mean} dB. Its PNGs are deleted${still ? `, but for ${short(f.still)}` : ''}${record.mark ? `. It is marked ${NOT_A_NUMBER}: frames ${record.notNumber.frames.map((x) => `${x.frame} (${x.count})`).join(', ')}` : ''}`)
   return record
 }
 
@@ -564,6 +580,9 @@ async function render() {
   if (shipper && shipper.unpushed && !shipper.push()) throw new Error(`the chunks are finished and on disk in ${short(ctx.out)}, and the last push to ${shipper.branch} was refused. Run the same command again to push them.`)
   say(`${ctx.what}: frames ${ctx.chunks[0].first} to ${ctx.chunks[ctx.chunks.length - 1].last} are finished in ${short(ctx.out)}${shipper ? `, their records and looks on ${shipper.branch}` : ''}`)
   printOutbox(ctx)
+  const marked = ctx.chunks.map((c) => ({ file: filesOf(ctx, c).json, record: finished(ctx, c) })).filter((c) => c.record && notNumberOf(c.record))
+  for (const c of marked) say(`${NOT_A_NUMBER}: ${notNumberLine({ ...c, from: short(c.file) })}`)
+  if (marked.length) throw new Error(`${marked.length} ${marked.length === 1 ? 'chunk of this range is' : 'chunks of this range are'} marked ${NOT_A_NUMBER}. Every other chunk is drawn and may be sent. Tell /root the frames above. Do not draw them again hoping: the same frame draws the same values, and no master is encoded from a marked chunk.`)
 }
 
 function printOutbox(ctx) {
@@ -611,11 +630,15 @@ function collect() {
   const taken = all.filter((c) => fs.existsSync(c.file))
   const waiting = all.filter((c) => !fs.existsSync(c.file))
   if (waiting.length) say(`${waiting.length} ${waiting.length === 1 ? 'record has' : 'records have'} no picture here yet: ${waiting.slice(0, 12).map(chunkName).join('; ')}${waiting.length > 12 ? '; ...' : ''}`)
+  const nan = all.filter((c) => notNumberOf(c.record))
+  for (const c of nan) say(`${NOT_A_NUMBER}: ${notNumberLine(c)}. Do not encode from it, and do not draw it again hoping: tell /root the frames.`)
+  const unknown = all.filter((c) => c.record.renderer !== 'stand-in' && notNumberUnknown(c.record))
+  if (unknown.length) say(`${unknown.length} ${unknown.length === 1 ? 'chunk carries' : 'chunks carry'} no full count of values that are no number (drawn before the tool read it, or on a page that cannot be read): ${unknown.slice(0, 12).map(chunkName).join('; ')}${unknown.length > 12 ? '; ...' : ''}`)
   const bad = flatChunks(taken)
   for (const b of bad) say(`FLAT: ${flatLine(b)}. Do not encode from it: render that range again.`)
   if (!bad.length) say(`no flat frame in ${taken.length} ${taken.length === 1 ? 'chunk' : 'chunks'}`)
   printCover(taken)
-  if (bad.length || incomplete.length) process.exit(1)
+  if (bad.length || incomplete.length || nan.length) process.exit(1)
 }
 
 function flatChunks(chunks) {
