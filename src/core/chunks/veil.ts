@@ -595,7 +595,7 @@ export function updateVeil(f: StageFrame): void {
   u.uVeil.value.set(lerp(a.tint[0], b.tint[0], t), lerp(a.tint[1], b.tint[1], t), lerp(a.tint[2], b.tint[2], t), 0)
   const amb = (L.ambientShare * 0.5) / Math.PI
   u.uVeilLight.value.set((f.ambient.r + f.ground.r * f.fill) * amb, (f.ambient.g + f.ground.g * f.fill) * amb, (f.ambient.b + f.ground.b * f.fill) * amb)
-  turn.setFromEuler(tilt.set(f.globe.tiltX, 0, f.globe.tiltZ)).invert()
+  turn.setFromEuler(tilt.set(f.globe.tiltX, f.globe.twist ?? 0, f.globe.tiltZ, 'XZY')).invert()
   local.copy(f.keyDir).applyQuaternion(turn)
   u.uVeilKey.value.set(local.x, local.y, local.z, L.keyFloor)
   const key = L.keyShare / Math.PI
