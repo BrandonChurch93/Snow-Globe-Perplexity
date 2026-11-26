@@ -75,7 +75,7 @@ float leafRoll = leafOver * leafLeft * 6.2831853 * (leafHash(leafId * 1.7) < 0.5
 // Inside a change the leaves are carried: blown out ahead of the front of light when fall leaves, flown out behind it when fall comes.
 if (uState.w > 0.5) {
   vec3 leafGust = stageGust(leafRest, leafHash(leafId * 11.3), leafHash(leafId * 12.7));
-  leafAt += normalize(leafRest) * leafGust.x;
+  leafAt += (dot(leafRest, leafRest) > 0.0 ? normalize(leafRest) : vec2(1.0, 0.0)) * leafGust.x;
   leafHop += ${GUST.heightMm.toFixed(1)} * (0.4 + 0.6 * leafHash(leafId * 12.7)) * leafGust.y;
   leafRoll += 3.14159265 * (1.0 + floor(leafHash(leafId * 11.3) * 2.99)) * leafGust.z;
   leafYaw += (leafHash(leafId * 12.7) - 0.5) * 3.0 * leafGust.z;
@@ -129,7 +129,7 @@ vec3 candleOnSlab(vec3 P, vec3 n, float lift) {
 #define MIRROR_DEPTH 0.5
 vec3 candleInSlab(vec3 P, float lift) {
   vec3 look = normalize(P - cameraPosition);
-  vec3 side = normalize(cross(vec3(0.0, 1.0, 0.0), look));
+  vec3 side = dot(look.xz, look.xz) > 0.0 ? normalize(cross(vec3(0.0, 1.0, 0.0), look)) : vec3(1.0, 0.0, 0.0);
   vec3 rise = cross(look, side);
   vec3 sum = vec3(0.0);
   for (int i = 0; i < ${FACE_COUNT}; i++) {
@@ -140,7 +140,7 @@ vec3 candleInSlab(vec3 P, float lift) {
     float size = uFaceOut[i].z / far;
     float across = dot(off, side) / (size * 0.36);
     float along = dot(off, rise) / (size * 1.25);
-    float seen = smoothstep(0.1, 0.6, dot(vec3(uFaceOut[i].x, 0.0, uFaceOut[i].y), normalize(vec3(-to.x, 0.0, -to.z))));
+    float seen = smoothstep(0.1, 0.6, dot(vec3(uFaceOut[i].x, 0.0, uFaceOut[i].y), dot(to.xz, to.xz) > 0.0 ? normalize(vec3(-to.x, 0.0, -to.z)) : vec3(uFaceOut[i].x, 0.0, uFaceOut[i].y)));
     float core = exp(-across * across - along * along);
     sum += uFaceCol * mix(vec3(1.0, 0.42, 0.12), vec3(1.0, 0.8, 0.5), core * core) * (uFaceGlow[i] * seen * core);
   }

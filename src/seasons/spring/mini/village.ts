@@ -362,7 +362,7 @@ float waterHeight(vec2 p) {
 float waterStreak(vec3 n, vec3 sight) {
   vec3 r = reflect(-sight, n);
   vec3 to = normalize(${glsl(flame as Rgb)} - vStageLocal);
-  vec3 across = normalize(cross(vec3(0.0, 1.0, 0.0), to));
+  vec3 across = dot(to.xz, to.xz) > 0.0 ? normalize(cross(vec3(0.0, 1.0, 0.0), to)) : vec3(1.0, 0.0, 0.0);
   vec3 m = r - to;
   float s = dot(m, across);
   float q = max(dot(m, m) - s * s, 0.0);
