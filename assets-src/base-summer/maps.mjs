@@ -70,7 +70,8 @@ export async function toneMap(dir, f) {
       c = c.map((v, q) => mix(v, pale[q], top * (1 - soft)))
       c = c.map((v, q) => mix(v, rust[q], clamp(0.55 * stain + 0.07 * thin * smooth(0.7, 0.9, hashInt(k, 11, 317)))))
       const speck = 0.94 + 0.12 * hashInt(i, j, 311) * hashInt(i >> 1, j >> 1, 313) + 0.05 * (fbm(A * 400, h * 2.2, 400, 512, 315, 2) - 0.5)
-      const dark = 1 - 0.2 * clamp(-(f.d[o] - f.wide[o]) * 0.9)
+      // Round each thing set into the stone the stone is in its shade.
+      const dark = (1 - 0.2 * clamp(-(f.d[o] - f.wide[o]) * 0.9)) * (1 - 0.4 * f.halo[o] * f.halo[o])
       for (let q = 0; q < 3; q++) out[o * 3 + q] = Math.round(clamp(c[q] * speck * dark) * 255)
     }
   }

@@ -9,16 +9,17 @@ export const TOP = G.baseHeightMm
 export const CENTRE_H = G.baseHeightMm - G.collarDepthMm + SPHERE_R
 export const sphereRadiusAt = (h) => Math.sqrt(Math.max(SPHERE_R * SPHERE_R - (CENTRE_H - h) * (CENTRE_H - h), 0))
 
-// The upper stone stands RISE mm higher round the glass than winter's seat, so the sphere sits in the stone and what the glass shows
-// below the ground inside is behind the rim (references/approved/summer-rest.png: the stone meets the glass's outline where the sphere is
-// about 100 mm wide). The crown of the collar keeps winter's gap to the glass, and the cup under the sphere is the same.
-export const RISE = 3.2
+// The stone's rim stands where the approved image has it (references/approved/summer-rest.png: the lip's corner is about 52 mm out and
+// 40 mm up, and the glass goes down into the stone where the sphere is about 91 mm wide), so RISE is nothing; it stays as the one
+// number that lifts the whole seat. The crown of the collar keeps winter's gap to the glass, and the cup under the sphere is the same.
+export const RISE = 0
 const CROWN_H = TOP + 5.6 + RISE
 export const COLLAR = { crown: [sphereRadiusAt(CROWN_H) + 0.57, CROWN_H], bead: 0.8, gap: 0.12 }
 export const CUP = { offset: 0.15 }
-export const LEDGE_H = TOP + 7.0 + RISE
+export const LEDGE_H = TOP + 7.4 + RISE
 
-// Radius and height in mm, foot to collar, read from the silhouette of references/approved/summer-rest.png (measure.mjs).
+// Radius and height in mm, foot to collar, read from the silhouette of references/approved/summer-rest.png (measure.mjs). From the
+// rim inward the stone goes down to the glass in one rounded seat.
 export const BODY = [
   [53.2, 0.0],
   [55.6, 0.9],
@@ -32,16 +33,15 @@ export const BODY = [
   [55.8, 24.4],
   [54.3, 27.4],
   [53.0, 30.5],
-  [52.8, 34.0],
-  [52.7, 37.5],
-  [52.6, 40.0],
-  [52.2, 41.6],
-  [51.5, 42.7],
-  [50.6, LEDGE_H - 0.1],
-  [49.6, LEDGE_H],
-  [48.8, LEDGE_H - 0.15],
-  [48.3, COLLAR.crown[1] + 0.8],
-  [47.9, COLLAR.crown[1] + 0.3],
+  [52.9, 33.6],
+  [52.8, 36.3],
+  [52.3, 38.4],
+  [51.5, LEDGE_H - 0.7],
+  [50.3, LEDGE_H],
+  [48.8, LEDGE_H - 0.1],
+  [47.3, LEDGE_H - 0.4],
+  [46.2, LEDGE_H - 0.85],
+  [45.4, LEDGE_H - 1.4],
   [COLLAR.crown[0] - 0.13, COLLAR.crown[1]],
 ]
 
@@ -138,6 +138,13 @@ export const SET = JSON.parse(fs.readFileSync(new URL('./set.json', import.meta.
     const r = kind === 'scallop' ? 4 + 2 * rnd() : kind === 'glass' ? 1.8 + 2.4 * rnd() : 2.3 + 1.6 * rnd()
     az += r * 0.9 + 1 + 3 * rnd()
     const item = { az: az > 180 ? az - 360 : az, h: 13 + 13 * rnd(), r, kind, turn: kind === 'glass' ? 360 * rnd() : -30 + 60 * rnd(), c: kind === 'glass' ? tints[Math.floor(rnd() * tints.length)] : [0.86, 0.74 + 0.08 * rnd(), 0.6 + 0.14 * rnd()], band: [0.55, 0.3, 0.15], long: 1 + 0.4 * rnd(), tri: 0.2 * rnd() }
+    // Seen from the front the outline of the base is near 96 degrees to either side; a fan shell there shows as a blade, so what the stream puts there lies low.
+    if ((kind === 'scallop' || kind === 'cockle') && Math.abs(Math.abs(item.az) - 96) < 17) {
+      item.kind = 'glass'
+      item.r = Math.min(r, 3.1)
+      item.c = tints[SET.length % tints.length]
+      item.turn = (item.turn + 360) % 360
+    }
     SET.push(item)
     az += r * 0.9
     if (rnd() < 0.6) SET.push({ az: (az > 180 ? az - 360 : az) - 1, h: 12 + 15 * rnd(), r: 0.6 + 0.4 * rnd(), kind: 'pearl', c: [0.84, 0.76, 0.62] })
@@ -154,21 +161,23 @@ export function strataCoord(az, h) {
   const sag = 8.5 * Math.exp(-(((a - 14) / 42) ** 2))
   return bedWarp(h + sag + 13 * (fbm(A * 4 + 4, h / 34 + 3, 4, 64, 21, 3) - 0.5) + 3.2 * Math.sin((az * 2 + 35) * RAD) + 2.1 * Math.sin((az * 5 - 80) * RAD + h * 0.1))
 }
-export function relief(m, az, s) {
+const FOOT = { glass: 1.08, scallop: 1.2, cockle: 1.2, snail: 1.25, olive: 1.0, pearl: 0.95 }
+function bare(m, az, s) {
   const q = atS(m, s)
   const A = (((az % 360) + 360) % 360) / 360
-  const onTop = smooth(38.6 + RISE, 39.6 + RISE, q.h) * smooth(52.4, 51.4, q.r)
+  const onTop = smooth(36.4 + RISE, 38.4 + RISE, q.h) * smooth(52.4, 51.2, q.r)
   const h = q.h + onTop * (52 - q.r) * 0.9
   const w = strataCoord(az, h)
   const t = w / BED_MM
   const k = Math.floor(t)
   const f = t - k
-  const amp = (hashK(k, 5) < 0.3 ? 0.1 : 0.35 + 0.8 * hashK(k, 6)) * smooth(0.36, 0.62, fbm(A * 6 + k * 3.1, 0.5, 6, 4, 31, 2))
-  const prof = f < 0.4 ? smooth(0, 0.4, f) : 1 - mix(Math.pow((f - 0.4) / 0.6, 0.9), smooth(0.4, 1, f), 0.6)
+  const amp = (hashK(k, 5) < 0.24 ? 0.3 : 0.9 + 1.5 * hashK(k, 6)) * (0.3 + 0.7 * smooth(0.3, 0.62, fbm(A * 6 + k * 3.1, 0.5, 6, 4, 31, 2)))
+  // A bed is a ledge: cut back at its underside, falling away slowly toward the bed above, so each one throws a shade under it.
+  const prof = f < 0.26 ? smooth(0, 0.26, f) : 1 - Math.pow((f - 0.26) / 0.74, 0.8)
   const swell = 2.3 * (fbm(A * 5 + 1, h / 16, 5, 64, 11, 3) - 0.5) + 2.0 * (fbm(A * 9 + 3, h / 11, 9, 64, 15, 3) - 0.5) + 1.0 * (fbm(A * 19 + 7, h / 5.5, 19, 64, 13, 2) - 0.5)
-  const lw = w / 2.3 + 0.9 * fbm(A * 24, h / 5, 24, 64, 41, 2)
+  const lw = w / 2.1 + 0.9 * fbm(A * 24, h / 5, 24, 64, 41, 2)
   const lf = lw - Math.floor(lw)
-  const lam = 0.08 * ((lf < 0.42 ? smooth(0, 0.42, lf) : 1 - smooth(0.42, 1, lf)) - 0.5) * smooth(0.36, 0.6, fbm(A * 7 + 2, h / 12, 7, 64, 43, 2))
+  const lam = 0.2 * ((lf < 0.25 ? smooth(0, 0.25, lf) : 1 - Math.pow((lf - 0.25) / 0.75, 0.8)) - 0.45) * smooth(0.46, 0.68, fbm(A * 7 + 2, h / 12, 7, 64, 43, 2)) * (0.4 + 1.2 * hashK(Math.floor(lw), 9))
   const gh = 6.2 + 1.1 * Math.sin((az * 2 - 20) * RAD) + 1.8 * (fbm(A * 6, 0.3, 6, 4, 51, 2) - 0.5)
   const groove = -0.55 * Math.exp(-(((q.h - gh) / 1.3) ** 2)) * (1 - onTop) * (1 - 0.8 * smooth(-25, 40, az - 360 * Math.round(az / 360)))
   const lip = 0.12 * smooth(35.8 + RISE, 37.2 + RISE, q.h + 1.6 * (fbm(A * 9, 0.7, 9, 4, 61, 2) - 0.5)) * (1 - onTop)
@@ -187,22 +196,37 @@ export function relief(m, az, s) {
     if (d < rr) pit = Math.min(pit, -0.55 * (1 - (d / rr) ** 2) * rr * 2)
   }
   const fade = smooth(0.0, 1.6, s) * smooth(m.total, m.total - 2.2, s)
-  let d = (swell + amp * (prof - 0.45) * (1 - 0.6 * onTop) + lam + groove + lip) * fade + pit * fade
+  const d = (swell * (1 - 0.55 * onTop) + amp * (prof - 0.45) * (1 - 0.8 * onTop) + lam * (1 - 0.6 * onTop) + groove + lip) * fade + pit * fade
+  return { d, w, k, f, q, onTop, gh }
+}
+export function relief(m, az, s) {
+  const b = bare(m, az, s)
+  const q = b.q
+  let d = b.d
   let seat = 0
+  let halo = 0
   for (const it of SET) {
     let da = az - it.az
     da -= 360 * Math.round(da / 360)
-    if (Math.abs(da) > 12) continue
+    if (Math.abs(da) > 14) continue
     if (it.s === undefined) it.s = sOfH(m, it.h)
-    const dist = Math.hypot(da * RAD * q.r, s - it.s)
-    const R = it.r * (it.long ?? 1)
-    if (dist > R * 1.7) continue
-    const inside = 1 - smooth(0.7 * R, 1.12 * R, dist)
-    const rim = smooth(0.95 * R, 1.2 * R, dist) * (1 - smooth(1.25 * R, 1.7 * R, dist))
-    const deep = it.kind === 'pearl' ? 0.2 * it.r : it.kind === 'glass' ? 0.42 + 0.08 * it.r : 0.12 + 0.04 * it.r
-    d = d * (1 - 0.75 * inside) - deep * inside + 0.1 * rim
+    const foot = it.r * FOOT[it.kind]
+    const fan = it.kind === 'scallop' || it.kind === 'cockle'
+    const long = it.kind === 'glass' || fan ? (it.long ?? 1) : 1
+    const reach = foot * long + 1.6
+    const u = da * RAD * q.r
+    const v = s - it.s
+    if (Math.abs(u) > reach || Math.abs(v) > reach) continue
+    const t = (it.turn ?? 0) * RAD
+    const dist = Math.hypot((u * Math.cos(t) + v * Math.sin(t)) * (fan ? long : 1), (-u * Math.sin(t) + v * Math.cos(t)) / long)
+    // A thing lies in a dish cut into the stone where the stone is, not where the turned shape was: level with its own middle.
+    if (it.d0 === undefined) it.d0 = bare(m, it.az, it.s).d
+    const inside = 1 - smooth(0.78 * foot, 1.07 * foot, dist)
+    const deep = it.kind === 'pearl' ? 0.2 * it.r : it.kind === 'glass' ? 0.3 + 0.05 * it.r : 0.12 + 0.04 * it.r
+    d = mix(d, it.d0, 0.88 * inside) - deep * inside
     seat = Math.max(seat, inside)
+    halo = Math.max(halo, 1 - smooth(0.88 * foot, foot + 0.7 + 0.14 * foot, dist))
   }
-  return { d, w, k, f, h: q.h, seat, onTop, gh }
+  return { d, w: b.w, k: b.k, f: b.f, h: q.h, seat, halo, onTop: b.onTop, gh: b.gh }
 }
 export const clamp01 = (v) => clamp(v)

@@ -7,26 +7,24 @@ import * as glassPart from './glass'
 const PART = 'surface-dressing-summer'
 
 // Where the sand lies on the slab, in mm from the globe's axis (x to the right of the hero camera, z toward it), measured
-// from the approved image: the dune the spill builds against the foot on the right (a cone under the stream, on a low
-// mound, with loose grains sprayed out to its right), its shoulder round the front of the
-// foot, the fan toward the camera, a thin sheet behind the foot on the left, and a few grains everywhere near the foot.
+// from the approved image: the mound the spill builds against the foot on the right (a cone under the stream on a low
+// dune), its shoulder round the front of the foot, a tongue toward the camera, and a sheet beside the foot on the left that runs out to the front along the edge of the base's shadow.
+// Everywhere else the table is bare.
 const HEAP = {
-  dune: { x: 67, z: 2, sx: 15, sz: 19, mm: 5.5 },
-  cone: { x: 60, z: 0, mm: 9.5, run: 0.44, deep: 1.3 },
-  spray: { x: 80, z: 10, sx: 24, sz: 27 },
-  apron: { wide: 1.1, core: [0.3, 1.0], tail: 0.16, least: 0.02 },
-  streak: { x: -84, z: 0, sx: 18, sz: 30, share: 0.5 },
-  skirt: { x: 71, z: 30, sx: 10, sz: 20, mm: 2.2 },
-  shoulder: { x: 53, z: 56, sx: 18, sz: 14, mm: 2.4 },
-  fan: { x: 58, z: 98, sx: 20, sz: 44, mm: 1.5 },
-  sheet: { x: -96, z: -18, sx: 36, sz: 24, mm: 0.15 },
-  stray: { x: 56, z: 66, sx: 26, sz: 52, mm: 0.2 },
-  ring: { r: 61.5, w: 4.5, mm: 0.34 },
+  dune: { x: 67, z: 4, sx: 11, sz: 16, mm: 5.0 },
+  cone: { x: 60.5, z: 1, mm: 8.6, run: 0.4, deep: 1.3 },
+  skirt: { x: 70, z: 32, sx: 15, sz: 18, mm: 2.2 },
+  shoulder: { x: 52, z: 55, sx: 15, sz: 11, mm: 2.0 },
+  fan: { x: 62, z: 92, sx: 30, sz: 36, mm: 1.5 },
+  sheet: { x: -82, z: 6, sx: 34, sz: 14, mm: 0.34, turn: 112 },
+  edge: { mm: [0.25, 0.7], sharp: 1.0, looseMm: 0.25, cover: [0.04, 0.75] },
+  loose: { on: 0.05, fromMm: 0.03, edgeMm: 0.4, reach: 1.3, flung: 0.3, x: 90, z: 22, sx: 15, sz: 24 },
 }
-// What the sand's shader does with a thin layer (base.ts, SAND): none of it below `none` mm, all of it from `all` mm, a
-// smooth step between, and a grain is drawn where that step is over `cover` times the grain's own number.
-const GRAIN = { none: 0.11, all: 0.35, cover: 0.62 }
-export const SLAB = { liftMm: 0.5, footMm: 52.4, repose: 0.62, stepMm: 1.65, x: [-150, 142], z: [-232, 216] } as const
+// The light on the sand of the table. The stage's lit material is made for the stone of the base; this takes its paint
+// (every grain's own colour and tilt) and the stage's key, shadow, sky and card, and lights the sand as dry sand is lit
+// by a low sun from behind: bright where a grain faces it, dark and cool in the shade, with no part burnt to white.
+export const SAND_LIT = { tilt: 0.75, sun: 1.2, face: [-0.45, 0.45], back: 1.0, sky: 3.4, card: 0.22, glint: 0.9, shade: 0.5, knee: 0.6, top: 1.15, speck: 1.3, grain: [0.5, 1.12], thru: 1.2, left: [0.6, -80, -45], deep: [0.8, 40], front: [0.04, 0.2, 6, 50], line: [61, 6, -0.72, 0.694], soft: [-2.5, 3.5], wander: 2.2, from: [-25, 5] }
+export const SLAB = { liftMm: 0.5, footMm: 52.4, repose: 0.62, stepMm: 1.0, x: [-150, 142], z: [-232, 216] } as const
 
 const hash = (x: number, y: number, s: number): number => {
   let h = (Math.imul(x | 0, 374761393) + Math.imul(y | 0, 668265263) + Math.imul(s | 0, 1274126177)) | 0
@@ -47,35 +45,51 @@ function noise(x: number, y: number, s: number): number {
   const d = hash(xi + 1, yi + 1, s)
   return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v
 }
-const bump = (x: number, z: number, g: { x: number; z: number; sx: number; sz: number; mm: number }): number => g.mm * Math.exp(-(((x - g.x) / g.sx) ** 2 + ((z - g.z) / g.sz) ** 2))
+const bump = (x: number, z: number, g: { x: number; z: number; sx: number; sz: number; mm: number; turn?: number }): number => {
+  const t = ((g.turn ?? 0) * Math.PI) / 180
+  const u = (x - g.x) * Math.cos(t) + (z - g.z) * Math.sin(t)
+  const v = (z - g.z) * Math.cos(t) - (x - g.x) * Math.sin(t)
+  return g.mm * Math.exp(-((u / g.sx) ** 2 + (v / g.sz) ** 2))
+}
 
 // The pile under the stream: a cone at the sand's angle of repose with its top against the foot, where the stream lands.
 const cone = (x: number, z: number): number => Math.max(0, HEAP.cone.mm - HEAP.cone.run * Math.hypot(x - HEAP.cone.x, (z - HEAP.cone.z) / HEAP.cone.deep))
 
-export function sandHeight(x: number, z: number): number {
-  const r = Math.hypot(x, z)
+// What lies at a place before the heap's edge is drawn in: the heaps and the sheet, with their lumps.
+function laid(x: number, z: number): number {
   const broad = noise(x / 23 + 3.1, z / 23 + 7.7, 11)
   const mid = noise(x / 7.3 + 1.7, z / 7.3 + 9.2, 13)
   const fine = noise(x / 2.1 + 5.3, z / 2.1 + 2.9, 17)
-  const heap = (bump(x, z, HEAP.dune) + cone(x, z)) * (0.86 + 0.28 * broad) + bump(x, z, HEAP.skirt) * (0.5 + mid) + bump(x, z, HEAP.shoulder) * (0.6 + 0.8 * broad) + bump(x, z, HEAP.fan) * (0.25 + 1.5 * broad * mid)
-  const sheet = bump(x, z, HEAP.sheet) * (0.55 + 0.75 * broad * mid)
-  const stray = bump(x, z, HEAP.stray) * mid * mid * (0.4 + 1.2 * fine)
-  const az = Math.atan2(x, z) * (180 / Math.PI)
-  const clear = az > -150 && az < -8 ? 0.06 : 1
-  const ring = HEAP.ring.mm * Math.exp(-(((r - HEAP.ring.r) / HEAP.ring.w) ** 2)) * (0.15 + 1.7 * broad * mid) * clear
-  const lumps = (fine - 0.5) * 0.3 * Math.min(1, heap / 0.8) + (mid - 0.5) * 1.1 * Math.min(1, heap / 3)
-  // Round every heap lies an apron thinner than a grain is high. The shader draws such a layer as single grains, as many
-  // as the layer is thick, so the apron's thickness is set from the share of the ground the grains should take: all of it
-  // next to a heap, quickly less, then a few for a long way out. No heap ends in an outline.
-  const near = (g: { x: number; z: number; sx: number; sz: number }): number => Math.exp(-(((x - g.x) / (g.sx * HEAP.apron.wide)) ** 2 + ((z - g.z) / (g.sz * HEAP.apron.wide)) ** 2))
-  const by = Math.min(1, near(HEAP.fan) + near(HEAP.shoulder) + near(HEAP.spray) + HEAP.streak.share * near(HEAP.streak))
-  const share = Math.min(1, Math.min(1, Math.max(0, (by - HEAP.apron.core[0]) / (HEAP.apron.core[1] - HEAP.apron.core[0]))) ** 1.5 + HEAP.apron.tail * by ** 0.4 * (0.5 + mid))
-  const apron = share > HEAP.apron.least ? GRAIN.none + (GRAIN.all - GRAIN.none) * (0.5 - Math.sin(Math.asin(1 - 2 * GRAIN.cover * Math.min(1, share)) / 3)) : 0
-  return Math.max(0, heap + sheet + stray + ring + lumps) + apron
+  const heap = (bump(x, z, HEAP.dune) + cone(x, z)) * (0.86 + 0.28 * broad) + bump(x, z, HEAP.skirt) * (0.5 + mid) + bump(x, z, HEAP.shoulder) * (0.6 + 0.8 * broad) + bump(x, z, HEAP.fan) * (0.55 + 0.9 * broad * mid)
+  const sheet = bump(x, z, HEAP.sheet) * (0.55 + 0.9 * broad * mid)
+  const grit = noise(x / 1.1 + 4.7, z / 1.1 + 1.3, 31)
+  const lumps = (grit - 0.5) * 0.3 * Math.min(1, heap / 0.5) + (fine - 0.5) * 0.5 * Math.min(1, heap / 0.8) + (mid - 0.5) * 1.1 * Math.min(1, heap / 3)
+  return Math.max(0, heap + sheet + lumps)
 }
 
+// A heap of dry sand does not thin out into a film: it ends, on a ragged line, in a few loose grains. Below the edge's
+// height (which wanders along the edge) what is laid falls away fast, so the layer is whole or it is not there, and the
+// table beside it is bare.
+export function sandHeight(x: number, z: number): number {
+  const raw = laid(x, z)
+  const E = HEAP.edge
+  const cut = E.mm[0] + (E.mm[1] - E.mm[0]) * noise(x / 3.3 + 8.1, z / 3.3 + 4.4, 23) * (0.4 + 1.2 * noise(x / 11 + 2.2, z / 11 + 6.6, 29))
+  return raw >= cut ? raw : raw * (raw / cut) ** E.sharp
+}
+
+// How many of the landing's loose grains come to lie at a place: on the thin sand and a little way out from its edge.
 export function sandSpread(x: number, z: number): number {
-  return 0.16 * Math.min(1, 0.5 * (bump(x, z, HEAP.stray) / HEAP.stray.mm) + 0.6 * (bump(x, z, HEAP.fan) / HEAP.fan.mm) + 0.5 * (bump(x, z, HEAP.sheet) / HEAP.sheet.mm))
+  return 0.2 * Math.min(1, laid(x, z) / HEAP.edge.looseMm)
+}
+
+// The share of single grains that lie loose at a place: a few on the heaps, many along their edges, fewer and fewer on
+// the bare table beyond, and a scatter where the stream's grains bounce off the mound to the right.
+export function sandLoose(x: number, z: number): number {
+  const raw = laid(x, z)
+  const whole = sandHeight(x, z) >= HEAP.edge.cover[1]
+  const L = HEAP.loose
+  const flung = L.flung * Math.exp(-(((x - L.x) / L.sx) ** 2 + ((z - L.z) / L.sz) ** 2))
+  return whole ? L.on : Math.min(1, Math.min(1, Math.max(0, raw - L.fromMm) / L.edgeMm) ** L.reach + flung)
 }
 
 function heapGeometry(): THREE.BufferGeometry {
@@ -99,6 +113,7 @@ function heapGeometry(): THREE.BufferGeometry {
   const position: number[] = []
   const normal: number[] = []
   const color: number[] = []
+  const cover: number[] = []
   const index: number[] = []
   const vertex = (i: number, j: number): number => {
     const o = j * nx + i
@@ -111,7 +126,10 @@ function heapGeometry(): THREE.BufferGeometry {
     const r = Math.hypot(x, z)
     position.push(x, SLAB.liftMm + h[o]!, z)
     normal.push(-gx / l, 1 / l, -gz / l)
-    color.push(Math.min(1, h[o]! / 0.5), 0.14 + 0.86 * Math.min(1, Math.max(0, (r - 55.5) / 13)), 0)
+    const shade = 0.14 + 0.86 * Math.min(1, Math.max(0, (r - 55.5) / 13))
+    const t = Math.min(1, Math.max(0, (h[o]! - HEAP.edge.cover[0]) / (HEAP.edge.cover[1] - HEAP.edge.cover[0])))
+    color.push(1, shade, 0)
+    cover.push(t * t * (3 - 2 * t), shade)
     slot[o] = position.length / 3 - 1
     return slot[o]!
   }
@@ -131,11 +149,88 @@ function heapGeometry(): THREE.BufferGeometry {
   g.setAttribute('position', new THREE.Float32BufferAttribute(position, 3))
   g.setAttribute('normal', new THREE.Float32BufferAttribute(normal, 3))
   g.setAttribute('color', new THREE.Float32BufferAttribute(color, 3))
+  g.setAttribute('aSlab', new THREE.Float32BufferAttribute(cover, 2))
   g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(count * 2), 2))
   g.setAttribute('uv1', new THREE.BufferAttribute(new Float32Array(count * 2), 2))
   g.setIndex(index)
   g.computeBoundingSphere()
   return g
+}
+
+const f = (v: number): string => v.toFixed(3)
+
+// The shade the base and the globe lay over the sand in front of the foot, as the approved image has it: everything in
+// front and to the left of a line from the top of the mound to its end at the right front, with a soft, wandering edge.
+// `sandShade` is what is left of the key there: least close under the mound, more toward the front, where the light
+// that comes through the globe falls. `sandOpen` is what is left of the sky in the shade (to the left, where the
+// stage's own shadow of the base falls, that shadow counts).
+const sandLine = (at: string): string => `((${at}.x - ${f(SAND_LIT.line[0]!)}) * ${f(SAND_LIT.line[2]!)} + (${at}.z - ${f(SAND_LIT.line[1]!)}) * ${f(SAND_LIT.line[3]!)})`
+const sandGate = (at: string): string => `smoothstep(${f(SAND_LIT.from[0]!)}, ${f(SAND_LIT.from[1]!)}, ${at}.x)`
+export const sandShade = (at: string): string => {
+  const L = SAND_LIT
+  return `(mix(1.0, mix(${f(L.front[0]!)}, ${f(L.front[1]!)}, smoothstep(${f(L.front[2]!)}, ${f(L.front[3]!)}, ${sandLine(at)})), smoothstep(${f(L.soft[0]!)}, ${f(L.soft[1]!)}, ${sandLine(at)} + ${f(L.wander)} * sin(${at}.x * 0.37 + ${at}.z * 0.23)) * ${sandGate(at)}) * mix(${f(L.left[0]!)}, 1.0, smoothstep(${f(L.left[1]!)}, ${f(L.left[2]!)}, ${at}.x)))`
+}
+export const sandOpen = (at: string, key: string): string => `mix(${f(SAND_LIT.deep[0]!)}, 1.0, mix(${key}, 1.0 - smoothstep(0.0, ${f(SAND_LIT.deep[1]!)}, ${sandLine(at)}), ${sandGate(at)}))`
+
+const SLAB_PARS = `
+varying vec2 vSlab;
+float slabHash(vec2 p) {
+  uvec2 q = uvec2(ivec2(floor(p)) + 32768);
+  q = q * 1664525u + 1013904223u;
+  q.x += q.y * 374761393u;
+  q.x ^= q.x >> 15u;
+  q.x *= 668265263u;
+  q.x ^= q.x >> 13u;
+  return float(q.x >> 8u) / 16777216.0;
+}
+`
+
+const SLAB_LIGHT = `
+bool slabCut = false;
+#ifdef STAGE_LIGHT_DONE
+{
+  vec3 slabN = normalize(mix(nonPerturbedNormal, normal, ${f(SAND_LIT.tilt)}));
+  vec3 slabUp = inverseTransformDirection(nonPerturbedNormal, viewMatrix);
+  float slabNdl = dot(slabN, stageKeyL);
+  float slabFace = smoothstep(${f(SAND_LIT.face[0]!)}, ${f(SAND_LIT.face[1]!)}, slabNdl);
+  float slabBack = clamp(dot(-geometryViewDir, stageKeyL) * 0.5 + 0.5, 0.0, 1.0);
+  float slabSun = stageKeyS * mix(${f(SAND_LIT.shade)}, 1.0, vSlab.y);
+  slabSun *= ${sandShade('vStageWorld')};
+  vec3 slabIn = stageKeyC * (slabSun * slabFace * (${f(SAND_LIT.sun)} + ${f(SAND_LIT.back)} * slabBack * slabBack));
+  slabIn += mix(uRigGround, uRigSky, 0.5 + 0.5 * slabUp.y) * (${f(SAND_LIT.sky)} * mix(0.45, 1.0, vSlab.y) * ${sandOpen('vStageWorld', 'stageKeyS')});
+  slabIn += uRigCardCol * (${f(SAND_LIT.card)} * clamp(dot(slabN, normalize(mat3(viewMatrix) * uRigCardDir)) * 0.5 + 0.5, 0.0, 1.0) * mix(0.3, 1.0, vSlab.y));
+  vec3 slabC = diffuseColor.rgb * RECIPROCAL_PI * slabIn;
+  float slabHalf = max(dot(normal, normalize(stageKeyL + geometryViewDir)), 0.0);
+  float slabSpark = slabHalf * slabHalf;
+  slabSpark *= slabSpark;
+  slabSpark *= slabSpark;
+  slabSpark *= slabSpark;
+  slabC += stageKeyC * (slabSun * ${f(SAND_LIT.glint)} * slabSpark * slabSpark);
+  vec2 slabFoot = max(abs(dFdx(vStageWorld.xz)) + abs(dFdy(vStageWorld.xz)), vec2(0.02));
+  vec2 slabAt = vStageWorld.xz / exp2(ceil(log2(slabFoot * ${f(SAND_LIT.speck)})));
+  slabC *= mix(${f(SAND_LIT.grain[0]!)}, ${f(SAND_LIT.grain[1]!)}, slabHash(slabAt + 41.0));
+  float slabL = dot(slabC, vec3(0.2126, 0.7152, 0.0722));
+  float slabOver = max(slabL - ${f(SAND_LIT.knee)}, 0.0);
+  slabC *= (min(slabL, ${f(SAND_LIT.knee)}) + ${f(SAND_LIT.top - SAND_LIT.knee)} * (1.0 - exp(-slabOver / ${f(SAND_LIT.top - SAND_LIT.knee)}))) / max(slabL, 1e-4);
+  outgoingLight = slabC;
+  slabCut = vSlab.x < 0.995 && vSlab.x < 0.04 + 0.94 * slabHash(slabAt);
+}
+#endif
+`
+
+// The heap is the stage's sand (base.ts) with the light and the edge of this file put in place of its own.
+function slabSand(): THREE.Material {
+  const m = sandMaterial(PART, 'surface-dressing', `${PART}-sand`)
+  const inner = m.onBeforeCompile
+  m.onBeforeCompile = (shader, renderer) => {
+    inner.call(m, shader, renderer)
+    shader.vertexShader = shader.vertexShader.replace('#include <common>', '#include <common>\nattribute vec2 aSlab;\nvarying vec2 vSlab;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvSlab = aSlab;')
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', `#include <common>\n${SLAB_PARS}`)
+      .replace('#include <opaque_fragment>', `${SLAB_LIGHT}\n#include <opaque_fragment>`)
+      .replace(/\}\s*$/, 'if (slabCut) discard;\n}')
+  }
+  return m
 }
 
 export async function prepare(): Promise<void> {}
@@ -144,7 +239,7 @@ export function dressing(): THREE.Object3D {
   const group = new THREE.Group()
   const pool = (glassPart as { surfacePool?: () => THREE.Object3D }).surfacePool?.()
   if (pool) group.add(pool)
-  const sand = new THREE.Mesh(heapGeometry(), sandMaterial(PART, 'surface-dressing', `${PART}-sand`))
+  const sand = new THREE.Mesh(heapGeometry(), slabSand())
   sand.castShadow = true
   sand.receiveShadow = true
   sand.renderOrder = 3
