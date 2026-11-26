@@ -1,0 +1,17 @@
+Looks of summer_finisher, branch agent/p6-summer. Every picture is a still of the film's path unless it says the app's path.
+"Before" is origin/main at c86cdf75 (the start of this job). "After" is agent/p6-summer at 8402dc21.
+
+1-rest-final.jpg
+  summer-rest (season summer, state rest, camera hero), hd, tier final (24 samples). After.
+  The air: fine green-gold fireflies lead, the seeds are faint warm tufts gathered upper left, gold motes. On the table left of the foot: the soft pool of light.
+
+2-rest-feed-approved-before-after.jpg
+  summer-rest at 400 px wide each, as in a phone feed. Left: the approved image. Middle: before, tier draft. Right: after, tier final.
+  Before, the white stars in the upper left of the globe read as snow. After, the air reads as fireflies.
+
+3-shake-final.jpg
+  summer-shake (season summer, state landed, camera hero), hd, tier final (24 samples). After.
+  The storm: fine gold streaks of seed down, pale gold dabs, green-gold flecks of the fireflies, in a warm haze. Tanner and dimmer than the approved image's luminous swirl.
+
+4-shake-feed-approved-before-after.jpg
+  summer-shake at 400 px wide each. Left: the approved image. Middle: before, tier draft. Right: after, tier final.
