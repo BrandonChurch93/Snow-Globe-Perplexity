@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { config } from '../src/config'
 import * as THREE from 'three'
 import { LIGHT_FRAG, LIGHT_FRAG_PARS, floodCore, lightUniforms } from '../src/core/chunks/light'
+import { VEIL_GLSL, VEIL_LOOK, updateVeil, veilUniforms } from '../src/core/chunks/veil'
 import type { Moment } from '../src/core/stage'
 import { newFrame } from '../src/scene/frame'
 import { centreHeightMm, innerRadiusMm } from '../src/scene/layout'
@@ -218,5 +219,57 @@ describe('the shadow map on a face turned from the key', () => {
     expect(LIGHT_FRAG).toContain('cross(dFdx(vStageLocal), dFdy(vStageLocal))')
     expect(LIGHT_FRAG).toMatch(/lgFacing = min\(lgFacing, dot\(lgFace \* uLightFrame, uRigKeyDir\)\)/)
     expect(LIGHT_FRAG).toMatch(/float lgSure = receiveShadow \? smoothstep\(uRigGlow\.z, uRigGlow\.w, lgFacing\) : 0\.0;/)
+  })
+})
+
+describe("the white of the flood's bank", () => {
+  // The bank of a flood is its season's veil tint turned toward white by a share: the tint at 0, white at 1, and past 1 the
+  // opposite of the tint. The shared share was made for snow, whose blue it turns to a warm white.
+  const bank = (tint: readonly number[], share: number) => tint.map((c) => c * (1 - share) + share)
+  const white = (from: string, to: string, veil: number) => {
+    const f = newFrame(kitOf(from), quality)
+    f.to = kitOf(to)
+    f.mix.veil = veil
+    f.moment = { season: from, from, to, change: veil, sinceLanding: 0, globe: REST_POSE, mix: 0, seed: 1, time: 0, beat: null, period: null } as Moment
+    updateVeil(f)
+    return veilUniforms.uVeilWhite.value
+  }
+
+  it('is the shared share for a season that gives none, so winter, spring and fall are drawn as they were', () => {
+    expect(VEIL_LOOK.bankWhite).toBe(2.2)
+    for (const season of ['winter', 'spring', 'fall']) {
+      expect(kitOf(season).veil.bankWhite, season).toBeUndefined()
+      expect(white(season, season, 0), season).toBe(VEIL_LOOK.bankWhite)
+    }
+  })
+
+  it("is summer's own and short of white: its gold turned past white was a sky blue", () => {
+    const summer = kitOf('summer').veil
+    const own = summer.bankWhite as number
+    expect(own).toBeGreaterThanOrEqual(0)
+    expect(own).toBeLessThan(1)
+    expect(white('summer', 'summer', 0)).toBe(own)
+    const [r, g, b] = bank(summer.tint, own) as [number, number, number]
+    expect(r).toBeGreaterThan(g)
+    expect(g).toBeGreaterThan(b)
+    const [pr, pg, pb] = bank(summer.tint, VEIL_LOOK.bankWhite) as [number, number, number]
+    expect(pb, 'the shared share on gold').toBeGreaterThan(pg)
+    expect(pg).toBeGreaterThan(pr)
+  })
+
+  it('crosses with the tint where two seasons meet', () => {
+    const own = kitOf('summer').veil.bankWhite as number
+    const shared = VEIL_LOOK.bankWhite
+    expect(white('spring', 'summer', 0)).toBe(shared)
+    expect(white('spring', 'summer', 1)).toBeCloseTo(own, 12)
+    expect(white('spring', 'summer', 0.25)).toBeCloseTo(shared + (own - shared) * 0.25, 12)
+    expect(white('summer', 'fall', 0.5)).toBeCloseTo((own + shared) / 2, 12)
+    expect(white('summer', 'fall', 1)).toBeCloseTo(shared, 12)
+  })
+
+  it('reaches the shader as one uniform, read where the flood rolls the bank and nowhere else', () => {
+    expect(VEIL_GLSL.match(/uniform float uVeilWhite;/g)).toHaveLength(1)
+    expect(VEIL_GLSL.match(/uVeilWhite/g)).toHaveLength(2)
+    expect(VEIL_GLSL).toContain('uVeilWhite, uVeilRoll.y) * low)')
   })
 })
