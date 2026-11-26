@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { launch, machineId, pinnedBrowser, watchPage, ensureDir, freeDiskGb } from './browser.mjs'
+import { launch, machineId, pinnedBrowser, watchPage, ensureDir, freeDiskGb, rendererName, sameRenderer } from './browser.mjs'
 import { serve } from './server.mjs'
 import { loadConfig, rel, writeJson, readJson } from './paths.mjs'
 import { engineHash, buildAssetIndex } from './hashes.mjs'
@@ -132,6 +132,7 @@ export class Session {
       diagnostic: extra.diag ?? '',
       browser: `${pinnedBrowser().name} ${this.browserVersion}`,
       graphics: this.local ? 'installed browser, graphics card on' : 'software',
+      renderer: rendererName(this.local),
       machine: machineId(),
       time: new Date().toISOString(),
       ...extra,
@@ -155,6 +156,7 @@ export function recordMatches(file, want) {
   const r = readJson(rec)
   const hashes = currentSeasonHashes()
   if (r.engineHash !== engineHash()) return false
+  if (!sameRenderer(r)) return false
   for (const s of want.seasons ?? []) if (r.seasonHashes?.[s] !== hashes[s]) return false
   for (const k of ['format', 'tier', 'assets', 'diagnostic']) if (want[k] !== undefined && r[k] !== want[k]) return false
   if (want.spec && JSON.stringify(r.spec) !== JSON.stringify(want.spec)) return false

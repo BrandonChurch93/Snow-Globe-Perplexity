@@ -11,7 +11,7 @@ try {
   const r = await renderStill(session, spec, { noext, force: args.force === true, file: args.out && args.out !== true ? path.resolve(String(args.out)) : undefined })
   const what = `${spec.id || `${spec.season} ${spec.state} ${spec.camera}`}, ${spec.format}, ${spec.tier}${spec.diag ? `, ${spec.diag} view` : ''}`
   if (!r.reused && args.look !== 'no') addLook(r.file, `Still: ${what}`)
-  console.log(`${r.reused ? 'reused' : 'rendered'} ${path.relative(rel(), r.file)}${r.reused ? '' : ` in ${r.record.seconds.toFixed(1)} s (simulation ${(r.record.timings.simMs / 1000).toFixed(1)} s, ${r.record.timings.samples} samples in ${(r.record.timings.drawMs / 1000).toFixed(1)} s, ${r.record.precision})`}`)
+  console.log(`${r.reused ? 'reused' : 'rendered'} ${path.relative(rel(), r.file)}${r.reused ? '' : ` in ${r.record.seconds.toFixed(1)} s (simulation ${(r.record.timings.simMs / 1000).toFixed(1)} s, ${r.record.timings.samples} samples in ${(r.record.timings.drawMs / 1000).toFixed(1)} s, ${r.record.precision}, ${r.record.renderer ?? 'swiftshader'})`}`)
   if (r.record.errors?.length) console.log(`page messages:\n${r.record.errors.join('\n')}`)
 } finally {
   await session.close()
