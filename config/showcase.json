@@ -187,7 +187,7 @@
       { "kind": "mote", "count": 20000 }
     ],
     "summer": [
-      { "kind": "firefly", "count": 700 },
+      { "kind": "firefly", "count": 1200 },
       { "kind": "seed", "count": 9000 },
       { "kind": "mote", "count": 40000 }
     ],
