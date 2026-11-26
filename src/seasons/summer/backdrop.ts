@@ -1,6 +1,6 @@
 import type { SeasonKit } from '../kit'
 
-// The lights behind the globe: cream, honey, gold and a little amber, none of them a saturated orange. The list runs from the
+// The lights behind the globe: cream, honey and gold, none of them a saturated orange. The list runs from the
 // dimmest level to the brightest (`DISCS.colourByLevel` in `src/scene/backdrop.ts`). Each colour carries its light's strength
 // too: the shared layout places its lights where winter's picture has them and makes a few of them many times brighter than the
 // rest, so here the low levels are lifted and the high ones held down until the lights of one part of the room are near one
@@ -11,7 +11,6 @@ const tone = (lift: number, r: number, g: number, b: number): [number, number, n
 const cream = (lift: number) => tone(lift, 1, 0.72, 0.47)
 const honey = (lift: number) => tone(lift, 1, 0.61, 0.34)
 const gold = (lift: number) => tone(lift, 1, 0.57, 0.3)
-const amber = (lift: number) => tone(lift, 1, 0.5, 0.24)
 
 // Where a light stands in the approved picture (pixels of its 2816 x 1584 frame), from the view the shared layout was placed in
 // (`PLACED.view` in `src/scene/backdrop.ts`).
@@ -26,9 +25,10 @@ const smooth = (a: number, b: number, x: number): number => {
 
 /**
  * Where the lights burn, as one smooth field over the approved frame: `floor` everywhere, `near` of that beside the globe
- * (`nearPx`), `column` more in the column on the left (`columnPx`, fading out at its top over `columnTopPx`), and right of
- * `fromPx` both `lift` more above `topPx` and `spill` more down to `spillPx`. `pools` are the places where one light burns
- * brighter than its neighbours: where, and how much more, each reaching `reachPx`, short of the next light.
+ * (`nearPx`), `column` more in the column on the left (`columnPx`, fading out at its top over `columnTopPx`), and `spill` more
+ * right of `fromPx` down to `spillPx`. Beyond the frame's right edge (`beyondPx`), where the lights stand that the glass
+ * mirrors, `lift` more above `topPx`. In the frame every light that stands out is a pool: where, and how much more (less when
+ * the number is under zero), each reaching `reachPx`, short of the next light.
  */
 export const CLUSTER = {
   floor: 0.07,
@@ -37,27 +37,32 @@ export const CLUSTER = {
   column: 0.5,
   columnPx: [120, 260, 640, 800] as const,
   columnTopPx: [60, 200] as const,
-  lift: 4.7,
-  fromPx: [1930, 2230] as const,
-  topPx: [250, 350] as const,
   spill: 0.8,
+  fromPx: [1930, 2230] as const,
   spillPx: [520, 620] as const,
+  lift: 4.7,
+  beyondPx: [2816, 2900] as const,
+  topPx: [250, 350] as const,
   reachPx: 55,
   pools: [
-    [2098, 180, 26],
-    [2045, 108, 20],
-    [2270, 70, 6],
-    [2275, 212, 9.5],
-    [2238, 275, 2],
-    [2604, 108, 9],
-    [2788, 148, 11],
-    [2000, 30, 0.6],
-    [2020, 365, 1.2],
-    [2330, 455, 4.5],
+    [2098, 180, 28.8],
+    [2045, 108, 21.5],
+    [2000, 30, 5.6],
+    [2270, 70, 2],
+    [2275, 212, 3.3],
+    [2238, 275, 1.3],
+    [2604, 108, 6.9],
+    [2620, 190, 7.6],
+    [2788, 148, 15],
+    [2020, 365, 1.95],
+    [2170, 410, 0.3],
+    [2330, 380, 0.45],
+    [2330, 455, 3.4],
+    [2295, 510, -0.5],
     [2560, 665, 6],
     [285, 605, 7.5],
-    [700, 610, 5.5],
-    [285, 790, 4.5],
+    [700, 610, 4.5],
+    [285, 790, 3.8],
   ] as const,
 }
 
@@ -71,15 +76,15 @@ function gain(at: readonly [number, number, number]): number {
   const C = CLUSTER
   const near = smooth(C.nearPx[0], C.nearPx[1], u) * (1 - smooth(C.nearPx[2], C.nearPx[3], u))
   const column = smooth(C.columnPx[0], C.columnPx[1], u) * (1 - smooth(C.columnPx[2], C.columnPx[3], u)) * smooth(C.columnTopPx[0], C.columnTopPx[1], v)
-  const high = 1 - smooth(C.topPx[0], C.topPx[1], v)
-  const spill = 1 - smooth(C.spillPx[0], C.spillPx[1], v)
-  let sum = C.floor * (1 - (1 - C.near) * near) + C.column * column + smooth(C.fromPx[0], C.fromPx[1], u) * (C.lift * high + C.spill * spill)
+  const spill = smooth(C.fromPx[0], C.fromPx[1], u) * (1 - smooth(C.spillPx[0], C.spillPx[1], v))
+  const beyond = smooth(C.beyondPx[0], C.beyondPx[1], u) * (1 - smooth(C.topPx[0], C.topPx[1], v))
+  let sum = C.floor * (1 - (1 - C.near) * near) + C.column * column + C.spill * spill + C.lift * beyond
   for (const [pu, pv, more] of C.pools) sum += more * (1 - smooth(0, C.reachPx, Math.hypot(u - pu, v - pv)))
-  return sum
+  return Math.max(0, sum)
 }
 
 export const backdrop: SeasonKit['backdrop'] = {
-  colors: [honey(3), gold(2), gold(1.8), gold(1.6), gold(1.3), gold(1.1), cream(0.9), honey(3.5), gold(0.7), amber(0.15)],
+  colors: [honey(3), gold(2), gold(1.8), gold(1.6), gold(1.3), gold(1.1), cream(0.9), honey(3.5), gold(0.7), gold(0.1)],
   room: [0.002, 0.0033, 0.0036],
   floor: [0.0024, 0.0042, 0.0046],
   gain,
