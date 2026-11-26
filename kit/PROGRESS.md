@@ -25,23 +25,23 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 162 · 2026-11-26 15:07 UTC
+Status 163 · 2026-11-26 15:33 UTC
 
-- `out/stills/status/status-162-1.jpg`: Summer at rest, the merged fourth list on 066f167a at the review tier: the approved picture above, ours below.
-- `out/stills/status/status-162-2.jpg`: The ball's upper left at one scale: the approved on the left, ours on the right. Clear glass and fine seed heads against a khaki haze and white asterisks.
-- `out/stills/status/status-162-3.jpg`: The base's right half at one scale: the approved on the left (cream sand, pale shells, frosted glass), ours on the right (slate grey, comb lines, dark glass).
-- `out/stills/status/status-162-4.jpg`: Half a second after the landing: the approved above (a warm glowing mist), ours below (cold white patches).
+- `out/stills/status/status-163-1.jpg`: Summer at rest with the miniature's fifth list (review tier): the approved above, ours below. The air and the glass in it are still the fourth list's.
+- `out/stills/status/status-163-2.jpg`: Summer's base, right half, at one scale: the approved on the left, ours on the right after the fifth list.
+- `out/stills/status/status-163-3.jpg`: Cottage, lawn and bank at one scale: the approved on the left, ours on the right after the miniature's fifth list.
+- `out/stills/status/status-163-4.jpg`: Film B frame 621 at 3840 x 2160, a crop at 6 times: 24 samples above (each lamp a dotted line), the blur rule's 50 samples below (each lamp one bar).
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-26 15:07 UTC
-clock: phase 6, tick of 28.7 minutes
-phase 6: 12.29 h used of its 12.00 h box
-allowance (after the review): 12.29 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 12.29 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-26 15:33 UTC
+clock: phase 6, tick of 25.9 minutes
+phase 6: 12.73 h used of its 12.00 h box
+allowance (after the review): 12.73 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 12.73 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: reached
@@ -1058,6 +1058,8 @@ Numbered. What, why, and the date.
 156. **Every `normalize` that can meet a vector of no length at one sample is guarded before the freeze; the bright values get no bound.** Decided 14:36 UTC on the audit by `farm_machine_3` (`normalize-audit.md`, 371 calls on 336 lines read on `agent/p6-nan` `cee7331f`, six classes). Class A (one number exactly zero, the case that reached the film) is mended in `b51cf181`. Class C (a vertex or an instance exactly on the axis: `src/seasons/winter/frost.ts:558`, `src/seasons/spring/slab.ts:124`, `src/seasons/fall/slab.ts:78`) and class D (two numbers exactly zero at one fragment: `src/globe/shell.ts:427` and `:769`, `src/scene/surface.ts:389`, `src/seasons/fall/slab.ts:132` and `:143`, `src/seasons/spring/mini/village.ts:365`, `src/seasons/winter/base.ts:469` and `:282`, `src/seasons/spring/glass.ts:175`, `:310` and `:355`, `src/particles/draw/shader.ts:261`) get the same guard now, by `farm_machine_3` on `agent/p6-nan2`, with the proof that no still and none of four film frames moves by a bit and a strict run on eight keys; summer's class C line (`src/seasons/summer/arrival.ts:152`) is guarded by `change_finisher` inside job 7, since that file is being worked there. Why now and not after the masters: a master frame with one dead pixel fails kit measure M1 and costs a redraw of its chunk at about a minute a frame, the guard costs nothing where the vector has a length, and the proof is a sha256. Left as it is: class B, `src/core/chunks/light.ts:321`, whose answer is used only under `lgLen > 1e-3` and so never reaches a colour; a change there moves the light of every surface and every picture that has passed a round. Not done, each by choice: a bound on bright values (the largest sample values measured are winter 103.75, spring 316.25, summer 2052 in the rest still and 2578 in frame 1877 on the pond, fall 50.6, none near the half float's 65504, and a bound would move the pictures); a red view of the place in the app; a live read in the page. Classes E and F cannot be met. The scan tool (`tools/sanity-scan.mjs`) stays the proof on the frozen build: no master frame is drawn before a scan of it is clean (decision 152).
 
 157. **Summer's mound is a layer of summer's own turf over the shared ground; `src/scene/layout.ts` does not move.** Decided 14:42 UTC on the fourth list's report by `summer_mini_p6`, which could not build the approved picture's mound (the cottage and the tree on a rise that falls to the pond) because the lawn's height is `moundAt` and `groundAt` of the shared layout, which seat the cottage, the fence, the lamp, the pond and the trunk in every season. `kit/02-SUBJECT.md` line 20: "The layout never changes. A viewer has to see the same place in four seasons, not four places." So the layout is not raised for summer, and it is not raised for all four either, since winter, spring and fall have passed their rounds on it. The form is built the way winter builds its snow (`snowTop`: the ground plus banks, rim, drifts and heap): summer's lawn becomes a layer over the ground with its own thickness, thick against the cottage's foot and the tree's roots, thinning to nothing at the pond's edge and at the path, with the things seated where they are and the turf standing against them. What this gives up: the cottage itself does not sit higher in the ball than in the other seasons, so the rise reads as turf banked round it and not as a hill under it.
+
+158. **Summer's lists end with the sixth: Round 21 is called on what the sixth list gives, and what I can still name then is written into the round's record.** (After the review, 15:49 UTC Nov 26.) Decision 151 (c) lets me call the round only when my own look names nothing. Against a picture made by an image model my look will always name something (the cottage's size and place are the shared layout's, `kit/02-SUBJECT.md` line 20: "The layout never changes"), so as written that rule has no end and the two rounds summer has left are never run. The fifth list, merged with its assets as `39901bc4`, is the first that changed the read at 400 pixels: beside the approved, ours now reads as a clear ball in a dark room with a white flare on its right shoulder, a cream sand base and a gold net on a black table (looked at by me 15:46 to 15:52 UTC; `/tmp/l6`, copies in `out/work/status/s164/`). What I can still name at 400 pixels: a broad pale ring round the glass's outline; too little glitter inside, white stars and flat green dots; a white fuzzy band at the foot of the scene that reads as snow; a white heap at the right; and at the landing a ball of white feathers with a black tree where the approved is a glowing gold mist. Options: (a) call Round 21 now on `39901bc4`; (b) one more list, on those five things and no others, then the round on whatever it gives, held back only by a thing that is plainly broken; (c) lists without a count until I can name nothing. Chosen: (b), brief `tools/briefs/p6/summer-fix-6.md`, fifty minutes. Why: the five things each have an owner who is warm and each is seen at the size of a feed, so an hour buys what the critics would name first; the critics' eyes are fresh and mine are not, so their round is worth more than a seventh list of mine; and a seventh list would be the first without a change of read to stand on. The bar does not move: Round 21's pass bar is the kit's, a limit is never called a pass, what the round names goes to the fix pass before Round 22, which is summer's last under `quality.maxRoundsPerUnit`.
 
 ## Notes from Brandon
 
