@@ -227,7 +227,7 @@ float waterHeight(vec2 uv) {
 float waterPond(vec2 p) {
   vec2 d = p - vec2(${pond.x.toFixed(2)}, ${pond.z.toFixed(2)});
   vec2 l = vec2(${Math.cos(pond.yaw).toFixed(5)} * d.x - ${Math.sin(pond.yaw).toFixed(5)} * d.y, ${Math.sin(pond.yaw).toFixed(5)} * d.x + ${Math.cos(pond.yaw).toFixed(5)} * d.y);
-  float a = atan(l.y, l.x);
+  float a = dot(l, l) > 0.0 ? atan(l.y, l.x) : 0.0;
   float wobble = 1.0 + 0.045 * sin(3.0 * a + 1.3) + 0.03 * sin(5.0 * a + 0.4) + 0.018 * sin(9.0 * a + 2.1);
   vec2 q = abs(l / vec2(${pond.rx.toFixed(2)}, ${pond.rz.toFixed(2)}));
   return pow(abs(q.x * q.x * q.x + q.y * q.y * q.y), 1.0 / 3.0) / wobble;
