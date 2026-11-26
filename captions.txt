@@ -249,3 +249,35 @@ A note on pictures 16, 17 and 18
   medium. Drawn by lavapipe.
   Not seen in any of pictures 19 to 22: anything moving (a frame every 1.5 to 3.5 s under lavapipe), and the fall
   back on a real graphics card.
+
+Eighth push (third job, the pushed head): one picture.
+
+23-phone-fall-to-winter-low-and-medium-particles-pushed-head.jpg
+  Shows: one live shake on a phone, 390 x 844, fall to winter, on the build of the head that was pushed (f9870c3d,
+  which is main e5ba8660 with the mend; the same src as 53a21590, from which it was built), at the app's two lower
+  levels. Top row quality low, where the worker steps the simulation through the whole shake and nothing falls back.
+  Bottom row quality medium, where under the tool the worker is given up at the press and the page steps the
+  simulation itself. Both rows are AFTER. The BEFORE of the bottom row is the top row of picture 19; at low the mend
+  changes nothing that is drawn, and the run before it is the top row of picture 18. Cut out of the frames at full
+  size, y 110 to 510.
+  Frames: low f060 (fall, stood back, step 336), f250 (winter, the way home, step 953), f346 (winter, rest again,
+  step 1278); medium f026 (step 449), f042 (step 1289), f047 (step 1589).
+  What the picture read (window.liveSim under ?diag=none): low, 347 frames, remote true and no fall back in every
+  one, none in which the step moved and the copy did not; the leaves lift (at rest 2937 at the press, 265 at f060, 0
+  from f089); the kinds turn in place over 22 frames, f093 to f114, steps 508 to 559 (f100: flake 9364, mote 3951,
+  leaf 1957, glitter 1262, ember 1187, bat 1; f114: flake 27000, glitter 3600); at f346 3335 flakes and 197 glitter
+  lie at rest. The middle of the glass by the silhouette, every frame read: rest 37.8, lift 41.0 (f024) to 43.0
+  (f040), through the strokes 42.8 to 43.5 (f041 to f139), up to 44.7 in the set down (f156), 44.2 to 44.6 as the
+  globe lands (f157 to f187), the way home 44.4 (f190), 43.2 (f222), 41.7 (f246), 39.7 (f278), 38.4 (f302), 37.9
+  (f318), rest again 37.8 from f326 to the last frame. Least side room drawn 26.6 px (f092, the widest stroke).
+  Medium, 49 frames, the worker given up at f021 (step 209), none in which the step moved and the copy did not; step
+  809 part way, step 869 flake 54000, glitter 7200; at step 1589 7766 flakes and 542 glitter at rest.
+  Tool: the scratch page script (every frame the app draws, read off the canvas; never committed),
+  ?quality=low&season=fall&diag=none and ?quality=medium&season=fall&diag=none, touch, pixel ratio 1, one press of
+  Shake. Tier: the app's levels low and medium. Drawn by lavapipe.
+  Not seen: anything moving (under lavapipe and the tool a frame came about every 1.4 s at low and every 2.3 s at
+  medium, the medians, with gaps of up to 6.3 s at low and one of 32 s at medium; at low the simulation moves 1 to
+  18 steps a frame, about 4 through the shake and about 3 on the way home), and the fall back on a real graphics
+  card. The captions of pictures 19 to 22 say a frame every 1.5 to 3.5 s; by the runs' own clocks the medians were
+  1.7 to 2.3 s, with gaps of 4 to 12 s in every run and one of about 30 s in two of them (the top rows of pictures
+  19 and 20).

@@ -860,3 +860,570 @@ if __name__ == '__main__':
         s, cx, cy, r = edge(p)
         print(p.split('/')[-1], f'centre x {cx:.0f} y {cy:.0f} ({100*cy/844:.1f} percent) radius {r:.1f} glass {cy-r:.0f} to {cy+r:.0f} side room {min(cx-r, 390-cx-r):.1f} score {s:.2f}')
 ```
+
+# Second job, after the report: what was drawn later (08:32 to 09:24 UTC)
+
+Nothing in the framing's code changed after `d9c7e03c`. This section replaces the list "What I did not see" above
+where it says so. Everything here is the live app on 390 x 844, touch, pixel ratio 1, every frame read off the canvas.
+
+## Why a shake at medium is so few frames under the tool
+
+- At low the simulation stays in its worker: in the one whole shake that was read frame by frame (347 frames, drawn
+  to rest at 10:34 to 10:43 for the third job, picture 23) the runner was remote in every frame and nothing fell
+  back. The worker does one slice of 8 ms for each frame the page asks, which under lavapipe was 1 to 18 steps, about
+  4 a frame through the shake and about 3 on the way home, and the session never lets its clock run more than
+  `LIVE.stepCap` ahead of the simulation. So the app's clock moves about 0.015 s a drawn frame: the shake, one bar of
+  576 steps, was 132 frames in that run (111 in the run of the second job) and the way home about 170 more. A whole
+  shake to rest at low is about 300 frames and seven minutes.
+- That corrects the list of tools above, which says the clock moves about 0.055 s a drawn frame and a whole shake is
+  about 175 frames and five minutes. The steps were not read then; they were first read in this run.
+- At medium the same holds until the worker is given up, which under the tool happens at the first press (see the
+  third job below). From then on the page steps the simulation itself, 60 steps a frame, and the clock moves
+  `LIVE.maxFrameSeconds` (0.25 s) a frame: one shake is 9 stood back frames (winter, fall) or 15 (spring, summer) and
+  the way home is 8, so the whole of it is drawn in about two minutes. The 15 against 9 is `session.hold()`: while
+  the next season is not prepared it adds `holdBeats` to the shake, two beats at a time
+  (`2 * (swapWindow.fromBeat - liftBeats)`), for as long as they fit in `loadWaitSeconds` (4 s); past that it sets
+  the event's `to` back to its `from`. At low the next season was prepared in time and nothing was held.
+- `node tools/zz-live2.mjs 150 80 OUTDIR '?quality=medium&season=winter' 0`.
+
+## One shake at medium, drawn whole, to rest, on `d9c7e03c`
+
+The middle of the glass as a share of the height, every frame the app drew from the press to rest:
+
+| season | lift | stood back | set down | the way home, frame by frame | rest |
+| --- | --- | --- | --- | --- | --- |
+| winter to spring | 41.1 | 42.9 to 43.6 | 44.3, 44.5 | 44.1, 43.2, 42.1, 40.7, 39.4, 38.4, 37.9 | 37.7 |
+| spring to summer | 41.0 | 42.9 to 44.1 | 43.9, then 43.8, 44.3 (edge) | 43.7, 43.1, 41.9, 40.5, 39.3, 38.4, 37.9 (edge) | seen |
+| summer to fall | 40.5 (edge) | 42.9 to 43.7 | 43.9, 44.2, 44.5 | 44.0, 43.0, 41.8, 40.4, 39.2, 38.3, 37.9 | 37.8 |
+| fall to winter | 41.0 | 42.9 to 43.6 | 44.3, 44.5 | 44.1, 43.3, 42.1, 40.7, 39.5, 38.5, 37.9 | 37.8 |
+
+- Summer's glass is too dark against the room for the silhouette. In spring to summer the silhouette reads nothing
+  after the first frame of the set down (it is summer by then). In summer to fall it reads nothing at rest, at the
+  lift (f025) and in the first two strokes (f026, f027; by the edge 42.5 and 43.0) and reads every frame from f028
+  on but f031 (by the edge 43.2); the change is f035 and rest is f050. The frames marked "edge" are by
+  `measure_edge.py`, which is coarser: the centre to 1 px, the radius to half a pixel, so its numbers are good to
+  about half a percent of the height (in the two pictures of spring to summer that both read, f036 and f038, the
+  silhouette says 43.1 and 43.9 and the edge 43.2 and 43.6), and at rest it settles on the bright rim 5 px inside
+  the outline and reads 37.1 where the silhouette reads 37.7. `/tmp/med-spring-edge.txt`, `/tmp/med-summer-edge.txt`
+  on the build machine; the numbers are in the table.
+- Least side room drawn beside the glass at medium: winter 38.9, spring 37.6, summer 37.3, fall 39.3 px (the frames of
+  the change left out: the glow hides the glass there).
+- The table to the bottom edge: the row means of the lowest 160 rows step by at most 1.28 (winter), 1.57 (spring),
+  1.32 (summer), 0.99 (fall) levels of 255. The planar reflection runs to the bottom edge in every frame; petals, sand
+  and leaves lie round the base and thin out toward the camera; no edge, seam or end of the table.
+- The way home at medium leaves the band after its third frame of eight: 42.1, then 40.7 and on to rest at 37.8.
+
+## Fall's whole shake at low
+
+`/tmp/live-fall-full`, 247 frames, fall to winter, to 70 percent of the way home: lift 41.0, stood back (119 frames)
+42.5 to 44.7, least side room drawn 28.4 px (f037; the 12 frames of the change left out), last drawn frame 40.2. Row
+means step by at most 1.37 (at rest). The same shake was drawn to rest later, for the third job, on the build of the
+head that was pushed: see "Seen live on the build of the pushed head" below and picture 23.
+
+## The proof made again on main's head 6e63530d (08:58 to 09:13)
+
+Main had merged this job by then. BEFORE is that head with `src/app/framing.ts`, `src/scene/surface.ts` and
+`tests/framing.test.ts` as they were at 12465d0e; AFTER is that head as it is.
+
+- Film B, hd, draft, lavapipe, frames 0, 1022, 1742 and 2462: byte for byte the same before and after, and the same
+  as on `d9c7e03c` (`b59f1d42...`, `4e54e043...`, `89b1423b...`, `7d8edcc3...`, in full under "Proofs" above).
+- One whole shake at medium, winter to spring, 23 frames from the lift to rest in both runs. The middle of the
+  glass: before, lift 47.6, stood back 52.1 to 52.8 (12 frames), set down 53.2, 53.5, 53.5, way home 52.2, 50.1, 47.2,
+  44.1, 41.1, 39.0, 37.9, rest 37.7. After, lift 41.0, stood back 42.9 to 43.6, set down 43.9, 44.2, 44.5, way home
+  44.0, 43.0, 41.8, 40.4, 39.2, 38.3, 37.8, rest 37.7. The top of the glass through the strokes and the landing:
+  before 330 to 341 px, after 252 to 263 px. Rest is the same picture in both. Least side room 37.3 px, the same in
+  both rows within 0.2 px.
+- By the band of 42 to 58 alone the picture before was outside it in 3 of the 23 frames and the picture after is
+  outside it in 6 (the lift's first frame and the last five of the way home): it now stands near the band's upper
+  end, and rest lies above the band and may not change. What the change mends is the dark top.
+- Pictures 16 and 17 (winter to spring, before and after) and 18 (fall at low and at medium, after).
+
+## What I still did not see
+
+- Nothing moving: a frame came about every 1.4 s at low and every 2 s at medium (the medians), with gaps of up to
+  12 s and one of 23 s.
+- At low, the last 30 percent of the way home was not drawn in this run. It was drawn later (third job, picture 23).
+- The glass and the table in the frames of the change: the glow hides them.
+- Summer's glass by the silhouette at rest, at the lift and in its first two strokes (read by the edge instead).
+- Level high, tablet and hd were not drawn live again.
+
+## Found on the way: the particles stand still at medium
+
+In the pictures at medium the particles in the globe do not move after the first frames, and after the change the
+globe keeps the old season's kinds (white specks of snow in spring, leaves, embers and bats in winter). That is not
+the framing. It was reported to `/root`, logged as open item 231 and given to this branch as a third job, below.
+
+# Third job: the live particles move again once the page steps them itself (open item 231)
+
+Mail from `/root` about 09:38 UTC, on my report of the fault. The mend is commit `5876639e` on `agent/p6-framing`.
+Main moved three times while it was proven, so three merges of main lie on top of it; the head pushed at 10:33 UTC
+is `f9870c3d`, which is main `e5ba8660` plus two files (`src/particles/engine/remote.ts`, 3 lines, and
+`tests/sim.test.ts`, 120 lines).
+
+## The fault
+
+`LiveRunner.source` (`src/particles/engine/remote.ts`) is what the picture reads: a `Padded` copy of the simulation's
+arrays that is made again only after `touch()`. With a worker, `client.onFrame` touches it for every frame that
+arrives. When the page steps the simulation itself, `advanceTo` advanced the local `LiveEngine` and returned;
+`LiveEngine.advanceTo` touches its own view, which nothing reads, and the runner's copy stayed as it was. The picture
+then shows the copy made at the last touch (the load, or the fall back) for ever: nothing lifts in a shake, and after
+a change the globe keeps the old season's kinds. Three cases:
+
+- after a fall back from the worker (`fail()`); under the tool at medium that happens at the first press;
+- `?sim=main`, where the page never starts a worker;
+- `?mode=autopilot`, the film played by the app, which never starts one either (`src/main.ts`: a worker only in
+  `mode=live`).
+
+In since the worker came (`a415b4ec`, 24 November). The capture page (stills, film frames, strict, determinism) uses
+`ParticleEngine` and `SimDriver` and never builds a `LiveRunner`, so no captured picture was or is touched. Against
+`kit/02-SUBJECT.md` line 139 ("The particles do not restart. Each particle of the old season becomes a particle of
+the new one where it is") and `kit/03-METHOD.md` line 196 ("Particles change kind in place").
+
+## The mend
+
+`this.source.touch()` after both local advances in `LiveRunner.advanceTo`, and one line of comment.
+
+- The first, in the branch taken when there is no worker (`this.away` false), is the one that mends all three
+  cases. `touch()` only sets a flag; the copy is made once a frame, when the picture reads it. After a fall back the
+  session calls `advanceTo` once a step (`LIVE.sliceSteps` 1), up to 60 times a frame.
+- The second, in the `catch` (a worker that throws when it is asked), changes nothing that can be seen today:
+  `fail()` has already touched before that advance and nothing reads the copy in between. It is there so that every
+  local advance is followed by a touch. No test can tell whether it is there; taking it out leaves the five tests
+  of the live runner green (tried).
+- Not changed: at a fall back `fail()` calls `local.restAt(season, step)`, so the storm starts again from the
+  season's rest state at that step. That is as designed and is why, after a fall back in mid air, the leaves are
+  seen lying and lifting again one frame later.
+
+## The tests
+
+`tests/sim.test.ts`, in `describe('the live runner')`:
+
+- "shows every frame of a simulation the page steps itself, with no worker, through a change of season"
+- "shows every frame after a fall back to the main thread, through a change of season" (run twice: a worker that
+  falls silent and one that throws; after the fall back a twin `LiveEngine` is put at `restAt` the same step)
+
+Both step four steps a frame through a whole shake and a change of season, read the view after every frame and
+compare it with the engine stepped directly (positions, kinds and states, exactly), count the frames in which the
+copy moved and expect that count to equal the number of frames, and at the end compare the shown kinds with the new
+season's own counts. Without the first touch both fail ("pos[6] is 26.64851188659668 against 26.175020217895508 at
+step 8"; "pos[0] is 28.184921264648438 against 29.73212432861328 at step 216"). They take 1.7 s and 3.4 s.
+
+## Seen live, before and after (pictures 19 to 22)
+
+Level medium, 390 x 844, touch, pixel ratio 1, lavapipe; the tool reads `window.liveSim` under `?diag=none` in every
+frame (the sum of the shown positions, the kinds, how many lie at rest). BEFORE is `f8237c1b` (this branch with main
+d2ae1cc2), AFTER the same with the mend.
+
+| run | before | after |
+| --- | --- | --- |
+| fall to winter, fall back at the press | one copy from step 156 to 1536, 23 frames in which the step moved and the copy did not; winter keeps leaf 6000, mote 12000, ember 3600, bat 2 | no such frame; leaves at rest 3466, 4718, 507, 49, 8, 0; step 754 part way; step 814 flake 54000, glitter 7200; 7963 flakes and 568 glitter settled by step 1534 |
+| winter to spring, fall back at the press | one copy from step 295 to 1675; spring keeps flake 54000, glitter 7200 | no such frame; step 926 part way; step 986 petal 14401, mote 12000; petals at rest 1, 7, 28, 63, 258, 865, 1514, 2045 |
+| `?sim=main`, fall to winter | the copy of the load in all 49 frames, steps 125 to 2645 | no such frame in 50; step 1869 flake 54000, glitter 7200; 7951 and 566 settled by step 2589 |
+| `?mode=autopilot`, winter to spring | the copy of the load in all 51 frames, steps 137 to 3137 | the copy differs in every frame; step 2716 petal 14401, mote 12000 |
+
+In the frames: the storm covers the glass through the strokes, snow falls and settles in winter, petals swirl and
+settle in spring, where before the glass showed the first copy standing still.
+
+## Seen live on the build of the pushed head (picture 23)
+
+Main moved while the proof above was made, so two runs were made again on `dist` built from `53a21590`, whose `src`
+is the `src` of the pushed head `f9870c3d` (the two merges after it brought the sound's tools, records and test and
+the log, nothing under `src`).
+
+- Medium, fall to winter (`/tmp/a5-fall-merged`, 49 frames): the worker given up at f021 (step 209); no frame in
+  which the step moved and the copy did not; leaves at rest 3486, 4736, 512, 51, 8, 0; step 809 part way; step 869
+  flake 54000, glitter 7200; 7766 flakes and 542 glitter settled by step 1589.
+- Low, fall to winter, the whole shake to rest (`/tmp/a6-low`, 347 frames, 10:34 to 10:43): remote and no fall back
+  in every frame, and none in which the step moved and the copy did not. The leaves lift (2937 at rest at the press,
+  265 at f060, none from f089); the kinds turn in place over 22 frames, f093 to f114, steps 508 to 559, inside the
+  window of beats 2 to 3; at the last frame 3335 flakes and 197 glitter lie at rest. So at low the mend changes
+  nothing that is drawn: its branch runs only before the hand over to the worker.
+- The framing in that low run, by the silhouette, every one of the 347 frames read: rest 37.8, lift 41.0 (f024) to
+  43.0 (f040), through the strokes 42.8 to 43.5 (f041 to f139), up to 44.7 in the set down (f156), 44.2 to 44.6 as
+  the globe lands (f157 to f187), the way home 44.4 (f190), 43.2 (f222), 41.7 (f246), 39.7 (f278), 38.4 (f302), 37.9
+  (f318), rest again 37.8 from f326 on (the camera is home by f332). Least side room drawn 26.6 px (f092, the widest
+  stroke, the middle of the glass 253.8 px from the left edge; 28.4 px in the run of the second job: a stroke's
+  widest moment is drawn only if a frame falls on it). This is the last 30 percent of the way home at low, which the
+  second job had not drawn.
+
+## Question 1: why the frame of the press takes about 3.6 s at medium
+
+No single frame took 3.6 s and the page did almost nothing in it. Read from the page itself (frame callbacks, every
+WebGL call, every message to and from the worker with the worker's own clock, the long tasks and the taps):
+
+- In the frames round the press the page's own callback takes 7 to 10 ms. The 1.6 to 1.8 s between frames is the
+  tool: after every frame it reads the canvas back (`toDataURL`), which holds the main thread until lavapipe has
+  drawn the frame (1.6 to 1.8 s before the press, 2.0 to 3.0 s with the storm in the glass).
+- The worker answers 9 to 20 ms after it is asked (read from its own clock in each message). Its answer waits in the
+  queue through the tool's read and is normally handled in the short idle before the next frame.
+- At the press that order broke. The page asked the worker at 69.204 s and found it waiting at 69.208 s. In the next
+  two idles (about 25 ms and 35 ms) the browser ran the tap's events first (pointerdown, touchstart, pointerup and
+  touchend at 71.044 to 71.053 s, the click at 72.804 s; the tap itself was 6.8 s old by then) and then the frame
+  callback, and handled no message from the worker in either. At 72.824 s `advanceTo` found 3616 ms waited and gave
+  the worker up. That the answer lay unread in the queue is inferred, not read: the probe sees a message only when
+  the page handles it, and each of the 23 answers before it was sent 9 to 66 ms after the asking (the last 18 of
+  them 9 to 20 ms). With no input waiting, the message was handled before the frame even after the page had stood
+  still for 14.5 s and for 18.5 s.
+- So `FRAME_MS` (3000) does not measure the worker. It measures wall time between two of the page's own calls, and
+  that includes time in which the page itself was blocked and could not have read an answer.
+- For a real visitor the tool's block does not exist. The fall back needs the answer left unhandled for 3 s between
+  two of the page's calls: one frame of 3 s with input waiting when it ends, or slow frames in a row with input
+  waiting at the end of each (the tool's case: two frames). The page's own work held the main thread that long once
+  in that run, after the fall back: the frame that prepares the next season took 28.8 s in one callback under
+  lavapipe (`getShaderInfoLog` 42 calls 16.2 s, `getProgramInfoLog` 21 calls 12.0 s), and two later frames 2.0 s and
+  2.4 s. How long that frame is on a real graphics card was not established here.
+- After the fall back the 60 steps cost 96 to 681 ms of every frame callback in this machine (most of them 125 to
+  400 ms), on the main thread. That was read on the build before the mend; the mend adds a flag set 60 times and one
+  copy of the arrays a frame, the copy the picture already makes for every frame of the worker.
+- The run at low agrees as far as it was read. There the tool holds the page about 1.4 s a frame, so two frames
+  passed over would stay under the limit, and the worker was kept through the press and through six gaps of 2.5 to
+  6.3 s between frames. That run had no probes, so whether an answer was passed over in it was not read.
+
+Proposed, not built (more than one line, and a policy that is not mine): do not give up in the same call in which
+the limit is found passed. Let the message queue turn once (a macrotask) and give up only if the frame is still
+missing; or count the wait in frames with each frame's share capped (for example 250 ms), so that time in which the
+page itself stood still cannot use the limit up.
+
+## Question 2: is the worker ever tried again after a fall back
+
+Never. `fail()` calls `drop()`, which sets `worker` and `client` to null and terminates the worker; the only place a
+worker is started is the constructor (`options.spawn`). After one fall back the page steps the simulation on the main
+thread until it is loaded again. Trying again needs a new worker and client, the collider's grids posted again, a
+hand over of the local state (`handOver` already does that for the first start) and a rule for when and how often:
+not one line. Proposed, not built.
+
+## Checks
+
+- On `f9870c3d`, the head that was pushed: `npx tsc --noEmit` exit 0; `npx vitest run` 54 files passed and 1
+  skipped, 698 tests passed and 8 skipped.
+- `npm run determinism`: pass twice (3 pictures, 4 page loads, preview, draft): 219 s on the build of the mend
+  alone, and 213 s at 10:43 on the build of the pushed head.
+- `--diag standins` on winter-rest, hero, phone, draft: every pixel 0, on both builds.
+- No shader changed and the capture page never builds the live runner, so there is no key for `npm run strict`.
+- `git diff origin/main f9870c3d` is the two files and nothing else.
+
+## What I did not see
+
+- Nothing moving. Under lavapipe and the tool a frame came about every 2 s at medium and every 1.4 s at low (the
+  medians of the runs), with gaps of 4 to 12 s in every run at medium and one of about 30 s in three of them. Motion
+  is read from one frame to the next and from the numbers.
+- The fall back on a real graphics card, and how long the frame that prepares a season is there.
+- The second touch at work (see above).
+- Level high, tablet and hd with the mend. Low and medium on the phone are above.
+- Whether a visitor who drags the view while frames are slow can keep the worker's answer waiting for 3 s. Under the
+  tool the browser twice ran waiting input and then the frame before the worker's message; I did not try a stream of
+  input.
+- A second shake after a fall back (the tests and the runs each make one).
+
+## The tools of the third job
+
+Scratch, not in the repository, as the tools above. `zz-live5.mjs` is `zz-live2.mjs` with two things added. With any
+`diag` in the address the app sets `window.liveSim` (the `LiveRunner`; `src/main.ts`), and `diag=none` draws the
+picture as it is. The script reads the runner after every frame the app draws: `remote`, `fallbacks`, the season,
+the step, the worker's frames, how many of each kind the picture's copy holds, how many of each lie at rest, and the
+sum of the copy's positions (x + 2y + 3z), which cannot change while the copy is not made again. With `PROBE=1` it
+also keeps, for every frame, how long the app's own callback took, the time in every WebGL call, the runner's calls,
+every message to and from the worker with the worker's own clock, the long tasks and the taps (`probe.json`); that
+is what question 1 was answered from. `NOPRESS=1` presses nothing (for `?mode=autopilot`) and `WAIT` is how long it
+then waits before it starts to keep frames. None of it changes what is drawn. The read of the canvas holds the page
+for 1.6 to 3.0 s a frame at medium under lavapipe, as it did in `zz-live2.mjs`, and that is what lets the worker be
+given up there (question 1).
+
+- `liverun.sh OUT QUERY [SECONDS] [MOST] [HOMEFRAMES]` starts `vite preview`, puts the script in `tools/`, runs it
+  and takes it out again. One at a time, never beside a build, and `dist` must be built from the source.
+- The runs: `liverun.sh /tmp/a1-fall '?quality=medium&season=fall&diag=none'`, the same with `season=winter`, with
+  `&sim=main`, with `PROBE=1` in front for the probes (`/tmp/b1-fall`), and
+  `NOPRESS=1 liverun.sh /tmp/a4-auto '?mode=autopilot&quality=medium&diag=none'` for the film in the app; about 50
+  frames each (the seconds and the most frames I gave them were not kept). The low run to rest:
+  `liverun.sh /tmp/a6-low '?quality=low&season=fall&diag=none' 600 345 190`.
+- `simlines.py DIR` prints one line a frame from `DIR/log.txt` and marks every frame in which the step moved and the
+  sum did not; its last line counts them.
+
+### `liverun.sh`
+
+```sh
+#!/bin/bash
+# Scratch: one run of the scratch page script against the built page. Usage: liverun.sh <out> <query> [secs] [most] [home]
+set -u
+cd /home/user/workspace/repo
+out=$1; q=$2; secs=${3:-150}; most=${4:-80}; home=${5:-10}
+pkill -f "vite preview"; sleep 1
+(npx vite preview --host 127.0.0.1 --port 4173 --strictPort > /tmp/preview-live.log 2>&1 &)
+sleep 4
+cp /tmp/scratch/zz-live5.mjs tools/zz-live5.mjs
+date -u +"start %H:%M:%S" > "$out.log"
+node tools/zz-live5.mjs $secs $most "$out" "$q" $home >> "$out.log" 2>&1
+echo "exit $?" >> "$out.log"
+date -u +"end %H:%M:%S" >> "$out.log"
+rm -f tools/zz-live5.mjs
+pkill -f "vite preview"
+```
+
+### `simlines.py`
+
+```python
+import re,json,sys
+rows=[]
+for line in open(sys.argv[1]+'/log.txt'):
+    m=re.search(r'(f\d+) at ([\d.]+) s of the page, ([\-\d.]+) s after the press.*?SIM (\{.*\})',line)
+    if not m:
+        m2=re.search(r'(f\d+) at ([\d.]+) s of the page.*?SIM (\{.*\})',line)
+        if not m2: continue
+        f,t,a,raw=m2.group(1),m2.group(2),'-',m2.group(3)
+    else:
+        f,t,a,raw=m.group(1),m.group(2),m.group(3),m.group(4)
+    try: s=json.loads(raw)
+    except Exception:
+        try: s=json.loads(raw.replace('\\"','"'))
+        except Exception: print('bad',line[:160]); continue
+    rows.append((f,t,a,s))
+prev=None; changed=0; same=0
+for f,t,a,s in rows:
+    mark=''
+    if prev is not None:
+        if s.get('sum')==prev.get('sum') and s.get('step')!=prev.get('step'): mark='  SAME SUM, step moved'; same+=1
+        elif s.get('sum')!=prev.get('sum'): changed+=1
+    print(f,t,a,'remote',s.get('remote'),'fb',s.get('fallbacks'),s.get('season'),'step',s.get('step'),'frames',s.get('frames'),'sum',s.get('sum'),'hist',s.get('hist'),'rest',s.get('rest'),mark)
+    prev=s
+print('frames',len(rows),'sum changed',changed,'same sum with step moved',same)
+```
+
+### `zz-live5.mjs`
+
+```js
+// Scratch, never committed (zz-live5: zz-live4 plus timing probes, asked with PROBE=1): one shake in the live app on a phone-sized
+// touch screen; every frame the app draws is kept, read off the canvas in the same task as the app's own frame. With PROBE=1 the
+// page also keeps, for every frame: how long the app's own callback took, the time in each WebGL call inside and between the
+// callbacks, the particle runner's calls, every message to and from the particle worker with the worker's own clock, the long
+// tasks and the taps. None of it changes what is drawn. With NOPRESS=1 nothing is pressed (the film in the app).
+import fs from 'node:fs'
+import { launch, watchPage } from './lib/browser.mjs'
+const out = process.argv[4] ?? '/tmp/live5'
+const seconds = Number(process.argv[2] ?? 240)
+const most = Number(process.argv[3] ?? 26)
+const probe = process.env.PROBE === '1'
+const nopress = process.env.NOPRESS === '1'
+fs.rmSync(out, { recursive: true, force: true })
+fs.mkdirSync(out, { recursive: true })
+const t0 = Date.now()
+const log = (s) => fs.appendFileSync(out + '/log.txt', `${((Date.now() - t0) / 1000).toFixed(1)} ${s}\n`)
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+const browser = await launch()
+const context = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, hasTouch: true, isMobile: true })
+const page = await context.newPage()
+const errors = watchPage(page)
+await page.addInitScript((probe) => {
+  const raf = window.requestAnimationFrame.bind(window)
+  window.__shots = []
+  window.__grab = false
+  window.__pressed = null
+  const T = (window.__t = { on: probe, frames: [], long: [], loaf: [], posts: [], msgs: [], inputs: [], marks: [], glNow: {}, callsNow: {} })
+  const now = () => performance.now()
+  if (probe) {
+    const wrapGL = (proto) => {
+      for (const name of Object.getOwnPropertyNames(proto)) {
+        const d = Object.getOwnPropertyDescriptor(proto, name)
+        if (!d || typeof d.value !== 'function' || name === 'constructor') continue
+        const f = d.value
+        proto[name] = function (...a) {
+          const t = now()
+          try {
+            return f.apply(this, a)
+          } finally {
+            const e = (T.glNow[name] ??= [0, 0])
+            e[0]++
+            e[1] += now() - t
+          }
+        }
+      }
+    }
+    if (window.WebGL2RenderingContext) wrapGL(WebGL2RenderingContext.prototype)
+    if (window.WebGLRenderingContext) wrapGL(WebGLRenderingContext.prototype)
+    const W = window.Worker
+    window.Worker = class extends W {
+      constructor(url, opts) {
+        let u = url
+        try {
+          const real = new URL(url, location.href).href
+          const patch = 'const p = self.postMessage.bind(self); self.postMessage = (m, t) => { try { m.__at = Date.now() } catch (e) {} return p(m, t) };'
+          const patchUrl = URL.createObjectURL(new Blob([patch], { type: 'text/javascript' }))
+          u = URL.createObjectURL(new Blob([`import ${JSON.stringify(patchUrl)}; import ${JSON.stringify(real)};`], { type: 'text/javascript' }))
+        } catch (e) {
+          T.marks.push({ name: 'worker wrap failed ' + e, at: now() })
+        }
+        super(u, opts)
+        T.marks.push({ name: 'worker spawned', at: now() })
+        this.addEventListener('message', (e) => T.msgs.push({ at: now(), wall: Date.now(), type: e.data?.type, step: e.data?.step, sent: e.data?.__at ?? null }))
+        this.addEventListener('error', (e) => T.marks.push({ name: 'worker error ' + (e.message ?? ''), at: now() }))
+      }
+      postMessage(m, t) {
+        T.posts.push({ at: now(), wall: Date.now(), type: m?.type, step: m?.step ?? null, season: m?.season ?? null })
+        return super.postMessage(m, t)
+      }
+      terminate() {
+        T.marks.push({ name: 'worker terminated', at: now() })
+        return super.terminate()
+      }
+    }
+    for (const type of ['touchstart', 'touchend', 'pointerdown', 'pointerup', 'click'])
+      window.addEventListener(type, (e) => T.inputs.push({ type, at: now(), stamp: e.timeStamp, control: e.target?.closest?.('[data-control]')?.getAttribute('data-control') ?? null }), true)
+    try {
+      new PerformanceObserver((l) => {
+        for (const e of l.getEntries()) T.long.push({ start: e.startTime, ms: e.duration })
+      }).observe({ entryTypes: ['longtask'] })
+    } catch (e) {
+      T.marks.push({ name: 'no longtask', at: now() })
+    }
+    try {
+      new PerformanceObserver((l) => {
+        for (const e of l.getEntries())
+          T.loaf.push({ start: e.startTime, ms: e.duration, renderStart: e.renderStart, layoutStart: e.styleAndLayoutStart, blocking: e.blockingDuration, scripts: (e.scripts ?? []).map((s) => ({ invoker: s.invoker, type: s.invokerType, start: s.startTime, ms: s.duration, fn: s.sourceFunctionName, src: (s.sourceURL ?? '').split('/').pop() })) })
+      }).observe({ entryTypes: ['long-animation-frame'] })
+    } catch (e) {
+      T.marks.push({ name: 'no long-animation-frame', at: now() })
+    }
+    const f0 = window.fetch.bind(window)
+    window.fetch = (...a) => {
+      const name = String(a[0]?.url ?? a[0]).split('/').slice(-2).join('/')
+      const t = now()
+      return f0(...a).finally(() => T.marks.push({ name: 'fetch ' + name, at: t, ms: now() - t }))
+    }
+    if (window.createImageBitmap) {
+      const c0 = window.createImageBitmap.bind(window)
+      window.createImageBitmap = (...a) => {
+        const t = now()
+        return c0(...a).finally(() => T.marks.push({ name: 'createImageBitmap', at: t, ms: now() - t }))
+      }
+    }
+  }
+  const hookSim = () => {
+    const ls = window.liveSim
+    if (!probe || !ls || ls.__h) return
+    ls.__h = true
+    for (const name of ['advanceTo', 'tell', 'grids', 'fail', 'handOver', 'drop', 'reset', 'release', 'setFraction', 'stir']) {
+      const f = ls[name]
+      if (typeof f !== 'function') continue
+      ls[name] = function (...a) {
+        const t = now()
+        if (name === 'fail' || name === 'handOver' || name === 'drop') T.marks.push({ name: 'runner.' + name, at: t, waitedMs: this.waitingSince >= 0 ? t - this.waitingSince : null, busy: this.client?.busy ?? null, step: this.client?.step ?? null, frames: this.client?.frames ?? null })
+        try {
+          return f.apply(this, a)
+        } finally {
+          const e = (T.callsNow[name] ??= [0, 0])
+          e[0]++
+          e[1] += now() - t
+        }
+      }
+    }
+    const c = ls.collider
+    if (typeof c === 'function')
+      ls.collider = (s) => {
+        const t = now()
+        try {
+          return c(s)
+        } finally {
+          T.marks.push({ name: 'collider ' + s, at: t, ms: now() - t })
+        }
+      }
+  }
+  window.requestAnimationFrame = (cb) =>
+    raf((t) => {
+      hookSim()
+      const rec = { tick: t, start: now(), glOut: T.glNow, callsOut: T.callsNow }
+      T.glNow = {}
+      T.callsNow = {}
+      cb(t)
+      rec.cbEnd = now()
+      rec.glIn = T.glNow
+      rec.callsIn = T.callsNow
+      T.glNow = {}
+      T.callsNow = {}
+      const ls = window.liveSim
+      if (ls) rec.run = { away: ls.away, waitedMs: ls.waitingSince >= 0 ? rec.cbEnd - ls.waitingSince : null, busy: ls.client?.busy ?? null, goal: ls.client?.goal ?? null, cstep: ls.client?.step ?? null, cframes: ls.client?.frames ?? null, step: ls.step, season: ls.season, fallbacks: ls.fallbacks }
+      if (window.__grab) {
+        try {
+          const c = document.querySelector('canvas')
+          const b = document.querySelector('#ui [data-control="shake"]')
+          let sim = null
+          if (ls) {
+            const src = ls.source
+            const kinds = src.kinds
+            const kindOf = src.kindOf
+            const state = src.state
+            const pos = src.pos
+            const hist = {}
+            const rest = {}
+            let sum = 0
+            for (let i = 0; i < src.count; i++) {
+              if (state[i] === 3) continue
+              const k = kinds[kindOf[i]] ?? String(kindOf[i])
+              hist[k] = (hist[k] ?? 0) + 1
+              if (state[i] !== 0) rest[k] = (rest[k] ?? 0) + 1
+              sum += pos[i * 3] + 2 * pos[i * 3 + 1] + 3 * pos[i * 3 + 2]
+            }
+            sim = { remote: ls.remote, fallbacks: ls.fallbacks, season: ls.season, step: ls.step, frames: ls.frames, hist, rest, sum: Math.round(sum * 100) / 100 }
+          }
+          if (c) window.__shots.push({ at: now(), pressed: window.__pressed, disabled: b?.getAttribute('aria-disabled') ?? null, w: c.width, h: c.height, sim, url: c.toDataURL('image/jpeg', 0.92) })
+        } catch (e) {
+          window.__shots.push({ at: now(), error: String(e) })
+        }
+      }
+      rec.grabEnd = now()
+      if (probe) T.frames.push(rec)
+    })
+}, probe)
+await page.goto(`http://127.0.0.1:4173/${process.argv[5] ?? '?quality=low'}`, { waitUntil: 'domcontentloaded' })
+if (nopress) {
+  await page.waitForFunction(() => document.querySelector('canvas') !== null, null, { timeout: 300000 })
+  await sleep(Number(process.env.WAIT ?? 20000))
+  log('canvas there, no press')
+} else {
+  await page.waitForFunction(() => document.querySelector('[data-interface="shown"]') !== null, null, { timeout: 300000 })
+  log('controls shown')
+}
+await page.evaluate(() => {
+  window.__grab = true
+})
+await sleep(1500)
+fs.writeFileSync(`${out}/page-rest.png`, await page.screenshot({ type: 'png' }))
+const before = await page.evaluate(() => window.__shots.length)
+log(`rest pictures ${before}`)
+if (!nopress) {
+  await page.evaluate(() => {
+    window.__pressed = performance.now()
+  })
+  await page.locator('#ui [data-control="shake"]').tap({ timeout: 120000 }).catch(async () => page.locator('#ui [data-control="shake"]').click({ timeout: 120000 }))
+  log('pressed shake')
+}
+const until = Date.now() + seconds * 1000
+let saved = 0
+const dump = async () => {
+  const shots = await page.evaluate((from) => window.__shots.slice(from).map((s) => s), saved)
+  for (const s of shots) {
+    const name = `f${String(saved).padStart(3, '0')}`
+    if (s.url) fs.writeFileSync(`${out}/${name}.jpg`, Buffer.from(s.url.split(',')[1], 'base64'))
+    log(`${name} at ${(s.at / 1000).toFixed(2)} s of the page, ${s.pressed === null ? 'before the press' : `${((s.at - s.pressed) / 1000).toFixed(2)} s after the press`}, control disabled ${s.disabled}, canvas ${s.w} x ${s.h}${s.error ? ` ERROR ${s.error}` : ''}${s.sim ? ` SIM ${JSON.stringify(s.sim)}` : ''}`)
+    saved++
+  }
+  await page.evaluate((from) => {
+    for (let i = 0; i < from; i++) if (window.__shots[i]) window.__shots[i].url = null
+  }, saved)
+}
+const homeFrames = Number(process.argv[6] ?? 0)
+const home = async () => (homeFrames > 0 ? page.evaluate((n) => { const i = window.__shots.findIndex((s) => s.disabled === 'true'); if (i < 0) return false; let k = 0; for (let j = window.__shots.length - 1; j > i && window.__shots[j].disabled !== 'true'; j--) k++; return k >= n }, homeFrames) : false)
+while (Date.now() < until && saved < before + most && !(await home())) {
+  await sleep(1500)
+  await dump()
+}
+await dump()
+if (probe) {
+  const t = await page.evaluate(() => {
+    const T = window.__t
+    return JSON.stringify({ frames: T.frames, long: T.long, loaf: T.loaf, posts: T.posts, msgs: T.msgs, inputs: T.inputs, marks: T.marks, pressed: window.__pressed, origin: performance.timeOrigin })
+  })
+  fs.writeFileSync(`${out}/probe.json`, t)
+}
+fs.writeFileSync(`${out}/page-end.png`, await page.screenshot({ type: 'png' }))
+log(`done, page errors ${JSON.stringify(errors)}`)
+await browser.close()
+```
