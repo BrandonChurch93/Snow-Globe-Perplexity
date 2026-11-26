@@ -2,21 +2,21 @@ import { stream } from '../../../core/rng'
 import { crownField, localPads, padAxes, type Pad } from '../../../miniature/trunk'
 
 // Each pad is a cushion with a flat underside: lumps heap up on it and a layer of them hangs under it. The shared body is worn down
-// only a little, so the tiers run into one another and the crown reads as one broad mass with holes in it.
-export const FULL = { swell: -1.5, perMm2: 0.55, radius: [0.8, 1.75] as const, dome: 0.5, plump: 1.3, under: 0.6, underReach: 0.86, hang: 0.38, underSize: 1, reach: 1.04, blend: 0.16, knob: 0.3, knobMm: 1.15, wave: 0.45, waveMm: 4.3 }
+// only a little, so the pads of one tier run into one another; the slits further down cut the tiers apart.
+export const FULL = { swell: -1.5, perMm2: 0.55, radius: [0.8, 1.75] as const, dome: 0.48, plump: 1.3, under: 0.6, underReach: 0.86, hang: 0.3, underSize: 1, reach: 1.04, blend: 0.16, knob: 0.3, knobMm: 1.15, wave: 0.45, waveMm: 4.3 }
 
 // More pads than the shared list has, all of them in front of the limbs, so that from the front the leaves cover the wood. One stands
-// over the fork and one at each side of it, between the tiers: they bridge the cushions. Four more stand at the ends of the two tiers
-// and carry the crown out to the width it has in the approved picture. Between them small holes stay open, and short lengths of limb
-// are seen through those.
+// over the fork in the wide middle tier, one hangs on the left limb under it and one fills the right of the middle tier. Four more
+// stand at the ends of the middle and the lower tier: they carry the crown out to the width it has in the approved picture and join
+// the tiers at their far ends.
 export const more: readonly Pad[] = [
-  { at: [0.6, 29.6, 3.6], size: [6.0, 2.6, 4.0], dir: [0.02, 1.0, 0] },
-  { at: [-7.5, 31.4, 3.4], size: [5.0, 2.4, 3.8], dir: [-0.1, 0.995, 0] },
-  { at: [7.2, 28.6, 3.8], size: [5.4, 2.6, 4.0], dir: [0.158, 0.987, 0] },
-  { at: [-13.6, 31.5, 1.0], size: [4.6, 2.3, 3.8], dir: [-0.287, 0.958, 0] },
-  { at: [-15.8, 23.0, 1.0], size: [4.0, 2.4, 3.6], dir: [-0.33, 0.944, 0] },
-  { at: [13.6, 27.6, 1.4], size: [4.8, 2.6, 3.8], dir: [0.339, 0.941, 0] },
-  { at: [14.0, 23.4, 2.4], size: [3.8, 2.6, 3.6], dir: [0.287, 0.958, 0] },
+  { at: [0.5, 28.6, 3.6], size: [6.0, 2.3, 4.0], dir: [0.02, 1.0, 0] },
+  { at: [-7.0, 21.4, 3.2], size: [4.6, 2.2, 3.6], dir: [-0.1, 0.995, 0] },
+  { at: [7.4, 29.4, 3.8], size: [5.4, 2.8, 4.0], dir: [0.1, 0.995, 0] },
+  { at: [-12.4, 27.8, 2.4], size: [4.2, 2.3, 3.8], dir: [-0.12, 0.993, 0] },
+  { at: [-15.2, 23.0, 1.0], size: [4.0, 2.3, 3.6], dir: [-0.15, 0.989, 0] },
+  { at: [13.1, 27.8, 1.4], size: [4.8, 2.4, 3.8], dir: [0.14, 0.99, 0] },
+  { at: [13.6, 23.4, 2.4], size: [3.8, 2.4, 3.6], dir: [0.12, 0.993, 0] },
 ]
 
 // How each shared pad carries its leaves: moved sideways (dx) and down (drop), narrower (wide, a share of its width) and heaped higher at
@@ -112,20 +112,20 @@ const knobs = (x: number, h: number, z: number): number => {
   return FULL.knob * (Math.sin(k * x + 1.3 * Math.sin(0.9 * h)) * Math.sin(k * h + 1.1 * Math.sin(1.2 * z)) * Math.sin(k * z + 1.7 * Math.sin(0.8 * x)) + 0.5 * Math.sin(1.9 * k * x + 2) * Math.sin(2.1 * k * h + 1) * Math.sin(1.7 * k * z)) + FULL.wave * Math.sin(w * x + 0.7) * Math.sin(w * h + 2.1) * Math.sin(w * z + 4.2)
 }
 
-// Holes through the crown, as the hero camera sees it: each is an ellipse in the plane that faces the camera (its middle, then its
+// Cuts through the crown, as the hero camera sees it: each is an ellipse in the plane that faces the camera (its middle, then its
 // half width and half height, in millimetres) and runs straight through along the line of sight, which climbs by PITCH for every
-// millimetre toward the camera. They stand where the limbs pass, so that a short length of limb is seen in each. The sprigs on their
-// walls close about a millimetre of each side, which leaves none wider than a lantern.
+// millimetre toward the camera. The first four are the long slits of sky between the tiers (upper left, upper right, lower left,
+// lower right), through which the limbs show. The last three take the shoulders down beside the top tuft and at the upper left.
+// The sprigs on their walls close about a millimetre of each side.
 const PITCH = 0.0787
 export const holes: readonly (readonly [number, number, number, number])[] = [
-  [1.4, 29.4, 2.7, 2.3],
-  [-5.4, 32.0, 2.5, 2.1],
-  [-11.6, 28.6, 2.7, 2.0],
-  [9.6, 31.4, 2.5, 1.9],
-  [7.4, 26.0, 2.5, 2.0],
-  [0.0, 35.6, 2.4, 2.0],
-  [-15.6, 24.6, 2.6, 1.9],
-  [6.2, 36.0, 2.4, 1.9],
+  [-8.6, 32.2, 7.2, 2.15],
+  [7.8, 31.8, 4.2, 1.85],
+  [-9.4, 24.0, 6.6, 2.3],
+  [8.8, 25.0, 5.4, 2.1],
+  [-12.6, 40.0, 5.6, 2.9],
+  [12.0, 38.8, 5.6, 3.2],
+  [-19.0, 33.2, 3.8, 3.0],
 ]
 
 function holeField(x: number, h: number, z: number): number {
