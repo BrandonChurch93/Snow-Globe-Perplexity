@@ -139,7 +139,7 @@ export const WALL = {
   column: 2.8,
   columnDeg: 5.5,
   rightLift: 0.5,
-  tints: { winter: { base: [0.9, 1, 1.05], column: [0.67, 0.85, 0.83], haze: [0.22, 0.72, 1] } } as Record<string, { base: [number, number, number]; column: [number, number, number]; haze: [number, number, number] }>,
+  tints: { winter: { base: [0.9, 1, 1.05], column: [0.67, 0.85, 0.83], haze: [0.22, 0.72, 1] }, summer: { base: [1, 1, 1], column: [1, 1, 1], haze: [3, 1.9, 1.2] } } as Record<string, { base: [number, number, number]; column: [number, number, number]; haze: [number, number, number] }>,
 }
 
 const wallUniforms = {
