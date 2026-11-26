@@ -439,7 +439,40 @@ describe('the still stands where the globe stays once the controls are measured'
   })
 })
 
+/**
+ * A browser that knows `rel=expect` paints nothing until the element the link names has been parsed, so its first paint has
+ * the soft picture in it and never the bare ground. The element stands right after the script and outside it: a parser
+ * reaches it whether the script ran or threw, and a browser that does not know the link paints as it always did.
+ */
+const heldUntilLaid = (page: string): void => {
+  const head = page.slice(0, page.indexOf('<body'))
+  const link = /<link\b[^>]*\brel="expect"[^>]*>/.exec(head)?.[0] ?? ''
+  expect(link).toContain('blocking="render"')
+  const id = /\bhref="#([^"]+)"/.exec(link)?.[1] ?? ''
+  expect(id).not.toBe('')
+  const named = [...page.matchAll(new RegExp(`<([a-z]+)\\b[^>]*\\bid="${id}"[^>]*>`, 'g'))]
+  expect(named).toHaveLength(1)
+  const element = named[0]!
+  expect(element[0]).toMatch(/\shidden\b/)
+  const laid = page.indexOf('</script>', page.indexOf('/*first:end*/')) + '</script>'.length
+  expect(page.indexOf('/*first:end*/')).toBeGreaterThan(head.length)
+  expect(element.index!).toBeGreaterThanOrEqual(laid)
+  expect(page.slice(laid, element.index!).trim()).toBe('')
+  expect(page.slice(element.index!).startsWith(`${element[0]}</${element[1]}>`)).toBe(true)
+}
+const builtFile = path.join(root, 'dist', 'index.html')
+const built = fs.existsSync(builtFile) ? fs.readFileSync(builtFile, 'utf8') : null
+const builtOfThisPage = built !== null && tableText !== 'null' && /\/\*first:begin\*\/([\s\S]*?)\/\*first:end\*\//.exec(built)?.[1]?.trim() === tableText
+
 describe('the first paint, before the still has arrived', () => {
+  it('is held until the soft picture is laid: the head expects an element that stands right after the script', () => {
+    heldUntilLaid(html)
+  })
+
+  it.skipIf(!builtOfThisPage)('is held the same way in the built page, where the workspace has one built of this page', () => {
+    heldUntilLaid(built!)
+  })
+
   it('holds a soft picture of every season in the page, a few hundred bytes each', () => {
     expect(table.p.length).toBeGreaterThan(0)
     for (const [still, width, height, rim] of table.p) {

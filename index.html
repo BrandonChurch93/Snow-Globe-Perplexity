@@ -6,6 +6,8 @@
     <meta name="color-scheme" content="dark" />
     <meta name="theme-color" content="#07080a" />
     <link rel="icon" href="data:," />
+    <!-- No paint before the script below has laid the soft picture: the element named here stands right after it. -->
+    <link rel="expect" href="#first-laid" blocking="render" />
     <title>%NAME%</title>
     <style>
       html,
@@ -348,6 +350,7 @@
         place(null, true)
       })()
     </script>
+    <i id="first-laid" hidden></i>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
