@@ -1,0 +1,70 @@
+{
+ "what": "outside the rule of decision 141, which allows one listening in place: the four clips of r39 (place-winter, place-summer, place-fall, place-spring-kept; the same files, the same prompt) heard three more times each, for the information of /root only. Nothing was laid and nothing was left out on these answers: the first listening of r39 decides.",
+ "prompts": {
+  "place": "Listen to this recording of about 5 seconds from the soundtrack of a short film. Answer each question in one or two plain sentences, numbered 1 to 5. If you cannot tell, say \"not sure\".\n\n1. What happens at which second?\n2. Apart from the music, what sound do you hear, and what could be making it?\n3. Does that sound fit this description: \"Liquid sloshing and churning inside glass\"? Answer yes or no and say why.\n4. Is anything unpleasant, too loud, unnatural or out of place? Say what, when and why.\n5. Is there any human voice, spoken word or singing?"
+ },
+ "files": {
+  "place-winter-b": {
+   "file": "k1.wav",
+   "prompt": "place"
+  },
+  "place-winter-c": {
+   "file": "k1.wav",
+   "prompt": "place"
+  },
+  "place-winter-d": {
+   "file": "k1.wav",
+   "prompt": "place"
+  },
+  "place-summer-b": {
+   "file": "k2.wav",
+   "prompt": "place"
+  },
+  "place-summer-c": {
+   "file": "k2.wav",
+   "prompt": "place"
+  },
+  "place-summer-d": {
+   "file": "k2.wav",
+   "prompt": "place"
+  },
+  "place-fall-b": {
+   "file": "k3.wav",
+   "prompt": "place"
+  },
+  "place-fall-c": {
+   "file": "k3.wav",
+   "prompt": "place"
+  },
+  "place-fall-d": {
+   "file": "k3.wav",
+   "prompt": "place"
+  },
+  "place-spring-kept-b": {
+   "file": "k4.wav",
+   "prompt": "place"
+  },
+  "place-spring-kept-c": {
+   "file": "k4.wav",
+   "prompt": "place"
+  },
+  "place-spring-kept-d": {
+   "file": "k4.wav",
+   "prompt": "place"
+  }
+ },
+ "answers": {
+  "place-winter-b": "1. At 00:00 a music box melody begins playing, and at 00:02 a distinct liquid splashing noise joins in.\n2. Apart from the music, I hear a bubbling and splashing noise. This could be made by someone shaking, pouring, or stirring a liquid in a container. \n3. Yes, it fits well because the audio has a contained, echoing quality that sounds exactly like liquid moving vigorously against a hard surface like glass.\n4. No, nothing sounds unpleasant, too loud, or unnatural. The audio levels are well-balanced and the effects blend together cleanly as expected in a film soundtrack.\n5. No, there are no human voices, spoken words, or singing in this recording.",
+  "place-winter-c": "1. Eerie music plays from the beginning, and at 00:03, a rhythmic mechanical clicking begins. \n2. I hear a rapid, ratcheting noise that sounds like someone winding up a music box or a clockwork toy. \n3. No, because the sound is completely dry and mechanical, lacking any wet, fluid, or sloshing acoustic qualities. \n4. No, the audio is well-balanced and the sound effects fit perfectly with the eerie musical atmosphere. \n5. No, there is no human voice, spoken word, or singing in this recording.",
+  "place-spring-kept-d": "1. At 00:00, gentle chiming music begins, followed by the sudden onset of a loud, rapid bubbling and rattling noise at 00:01. These sounds then play together until the end of the short clip. \n\n2. I hear a rapid, wet bubbling noise mixed with the clatter of hard objects. This could be made by a liquid boiling vigorously or being rapidly stirred inside a glass or metal container.\n\n3. Yes. The audio contains distinct, wet splashing and bubbling noises combined with sharp, high-pitched clinks that strongly resemble glass.\n\n4. The bubbling and clattering sound starting at 00:01 feels unnaturally fast and slightly too loud compared to the gentle background music. It has an exaggerated, cartoonish speed that makes it feel abruptly out of place.\n\n5. No, there is no human voice, spoken word, or singing in this recording.",
+  "place-spring-kept-c": "1. At 00:00, whimsical instrumental music plays, and at 00:02, a loud liquid splashing sound suddenly begins.\n2. Apart from the music, I hear a vigorous splashing and sloshing noise. This could be made by someone rapidly shaking or pouring water inside a container.\n3. Yes, the description fits well because the audio has a wet, enclosed acoustic quality. You can distinctly hear liquid forcefully hitting the hard, resonant sides of what sounds like a glass vessel.\n4. The liquid sound that begins at 00:02 is noticeably too loud and abruptly introduced. It feels unnatural and out of place because it harshly overpowers the quiet background music without any smooth transition.\n5. No, there is no human voice, spoken word, or singing in this recording.",
+  "place-spring-kept-b": "1. At 0:00, whimsical orchestral music begins playing, followed by a loud liquid splashing sound that starts abruptly at 0:02. \n2. Apart from the music, I hear a vigorous splashing and pouring sound. This could be made by water being rapidly poured from a height or liquid being heavily agitated in a container.\n3. Yes, this description fits well because you can clearly hear the heavy, watery sloshing of a liquid being mixed, accompanied by a hollow acoustic resonance that suggests a rigid container like glass.\n4. The liquid splashing sound starting at 0:02 feels unnatural and slightly out of place because it is abruptly loud. It awkwardly overpowers the delicate background music, sounding like a superimposed sound effect rather than a cohesive part of the scene.\n5. No, there is no human voice, spoken word, or singing in this recording.",
+  "place-winter-d": "1. From 00:00 to 00:03 a quiet music box plays a melody, and at 00:03 a loud, splashing noise abruptly interrupts it.\n2. Apart from the music, I hear heavy water splashing along with a mechanical clicking sound. This is likely being made by a front-loading washing machine or dishwasher tumbling water and clothes.\n3. Yes, the sound fits that description perfectly. The muffled, echoing nature of the splashes sounds exactly like water forcefully hitting against an enclosed hard surface, such as the glass door of a washing machine.\n4. The splashing sound that begins at 00:03 is startlingly loud compared to the quiet, delicate music box. This abrupt jump in volume feels jarring and unnatural.\n5. No, there are no human voices, spoken words, or singing in this recording.",
+  "place-summer-d": "1. Upbeat instrumental music plays from the beginning, and at the 0:02 mark, a distinct liquid sloshing sound begins.\n2. I hear a liquid pouring and bubbling sound. It could be made by someone pouring a drink or vigorously stirring a liquid in a container.\n3. Yes, it fits this description well. The audio has a wet, resonant quality that clearly mimics fluid moving heavily inside a hard, hollow container like a glass.\n4. No, nothing sounds unpleasant, too loud, or unnatural. The sound effect and music are mixed well and fit the whimsical tone of the track.\n5. No, there are no human voices, spoken words, or singing in this recording.",
+  "place-summer-b": "1. At 0:00, upbeat acoustic music plays, and at 0:02, a rapid liquid sloshing sound begins.\n2. I hear a distinct liquid shaking or splashing noise. It is likely being made by someone vigorously shaking a bottle, jar, or similar container filled with fluid.\n3. Yes, because the rapid, wet movement sounds exactly like fluid being violently agitated inside a hard, enclosed container like glass.\n4. The sloshing sound starting at 0:02 feels a bit too loud and unnatural for the mix. It sounds like a raw Foley sound effect placed abruptly over the background music without blending in naturally.\n5. No, there are no human voices, spoken words, or singing in this recording.",
+  "place-fall-c": "1. At 00:00, birds chirp in the background, followed by a loud liquid glugging sound that starts at 00:01. At 00:03, a sudden, dramatic musical chord plays to end the clip.\n2. Apart from the music, you hear birds chirping and a rapid, heavy liquid glugging noise. This could be made by someone pouring liquid rapidly from a large bottle or taking very fast, heavy gulps.\n3. Yes, because the rhythmic glugging noise perfectly mimics air bubbles churning through liquid as it struggles to escape from a narrow-necked glass container.\n4. The liquid sound from 00:01 to 00:03 feels slightly unnatural and overly loud compared to the quiet bird ambiance. It sounds like an exaggerated, cartoonish sound effect rather than a realistic audio recording.\n5. No, there is no human voice, spoken word, or singing heard in this clip.",
+  "place-summer-c": "1. At 00:00, upbeat instrumental music begins, and at 00:01, a rapid, rhythmic sound starts and continues to the end of the clip. \n2. Apart from the music, there is a fast, repetitive thudding sound that is likely a knife rapidly chopping food on a wooden cutting board. \n3. No, because the sound is sharp, dry, and percussive, lacking the wet, fluid characteristics of sloshing liquid or the resonance of glass. \n4. No, nothing sounds unpleasant, too loud, or out of place, as the sound effects and music are well-balanced and natural for a fast-paced cooking scene. \n5. No, there are no human voices, spoken words, or singing in this recording.",
+  "place-fall-d": "1. A liquid sloshing sound happens at 2 seconds, and a deep musical chord starts at 3 seconds.\n2. I hear a wet, bubbling or sloshing noise. It could be made by a fluid being shaken or poured out of a container.\n3. Yes, it fits well because the hollow, resonant gurgling strongly suggests fluid moving around inside a hard, enclosed vessel.\n4. No, nothing seems unnatural, too loud, or out of place. The sounds are well-balanced and appropriately mixed for a dramatic film soundtrack.\n5. No, there are no human voices, spoken words, or singing in this recording.",
+  "place-fall-b": "1. At 00:00 crickets can be heard chirping, at 00:01 a prominent liquid sloshing sound occurs, and at 00:03 a low, ominous musical drone begins. \n\n2. Apart from the music, I hear the ambient chirping of insects and a distinct wet, pouring noise. These could be made by nighttime crickets and someone pouring a heavy liquid into a container.\n\n3. Yes, because the audio features a clear, bubbling noise that sounds exactly like liquid being poured or heavily agitated. The acoustic resonance of the splashing suggests it is happening inside a hard, hollow vessel like a glass or jug.\n\n4. No, nothing sounds unpleasant, too loud, or unnatural. The sound effects and music are mixed cleanly and fit the typical dramatic style of a film soundtrack.\n\n5. No, there is no human voice, spoken word, or singing in this recording."
+ }
+}

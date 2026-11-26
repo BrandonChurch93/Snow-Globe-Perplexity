@@ -9,7 +9,7 @@
     "music": null
   },
   "cutlist": {
-    "sha256": "7848ed0f5283823ae155435377ed3e294cefed7df448b2126e2cd10b085de36a",
+    "sha256": "41c0d3791baf32994da238361df06b048bba4a86e98886ef264abc84de696b64",
     "source": "default-grid",
     "seconds": 60,
     "frameCount": 3600
@@ -30,7 +30,9 @@
     {
       "cue": "shake-spring",
       "at": 9.6,
-      "cents": 0
+      "cents": 0,
+      "downDb": -3,
+      "riseMs": 30
     },
     {
       "cue": "glass-clink",
@@ -43,6 +45,13 @@
       "cents": 0
     },
     {
+      "cue": "shake-summer",
+      "at": 21.6,
+      "cents": 0,
+      "downDb": -3,
+      "riseMs": 30
+    },
+    {
       "cue": "glass-clink",
       "at": 24,
       "cents": 0
@@ -53,6 +62,13 @@
       "cents": 0
     },
     {
+      "cue": "shake-fall",
+      "at": 33.6,
+      "cents": 0,
+      "downDb": -6,
+      "riseMs": 30
+    },
+    {
       "cue": "glass-clink",
       "at": 36,
       "cents": 0
@@ -61,6 +77,13 @@
       "cue": "lift",
       "at": 45.6,
       "cents": 0
+    },
+    {
+      "cue": "shake-winter",
+      "at": 45.6,
+      "cents": 0,
+      "downDb": -3,
+      "riseMs": 30
     },
     {
       "cue": "glass-clink",
@@ -104,15 +127,7 @@
       "why": "no kept file"
     },
     {
-      "cue": "shake-summer",
-      "why": "no kept file"
-    },
-    {
       "cue": "land-summer",
-      "why": "no kept file"
-    },
-    {
-      "cue": "shake-fall",
       "why": "no kept file"
     },
     {
@@ -120,14 +135,40 @@
       "why": "no kept file"
     },
     {
-      "cue": "shake-winter",
-      "why": "no kept file"
-    },
-    {
       "cue": "land-winter",
       "why": "no kept file"
     }
   ],
+  "laid": [
+    {
+      "cue": "shake-summer",
+      "state": "laid by decision 141, the water of shake-spring",
+      "kept": false,
+      "times": 1
+    },
+    {
+      "cue": "shake-fall",
+      "state": "laid by decision 141, the water of shake-spring",
+      "kept": false,
+      "times": 1
+    },
+    {
+      "cue": "shake-winter",
+      "state": "laid by decision 141, the water of shake-spring",
+      "kept": false,
+      "times": 1
+    }
+  ],
+  "typing": {
+    "keys": 0,
+    "taps": 0,
+    "withoutKey": 0,
+    "keysWithoutTap": 0,
+    "limitMs": 20,
+    "largestOffsetMs": 0,
+    "earliestMs": 0,
+    "latestMs": 0
+  },
   "music": {
     "candidate": "blockout",
     "source": "none",
@@ -142,43 +183,43 @@
     ],
     "firstMomentSeconds": 0.05,
     "beforeDb": [
-      -9.63,
-      -9.01,
-      -9.59,
-      -10.14
+      -9.65,
+      -9.03,
+      -9.62,
+      -10.17
     ],
     "trimsDb": [
       0.05,
-      -1.08,
-      0.02,
-      1.08
+      -1.09,
+      0.03,
+      1.09
     ],
     "afterDb": [
-      -9.58,
-      -9.13,
-      -9.59,
-      -10.05
+      -9.61,
+      -9.15,
+      -9.62,
+      -10.09
     ],
-    "spreadDb": 0.93,
+    "spreadDb": 0.94,
     "rounds": 2
   },
   "channels": {
-    "leftOverRightDb": 0.17,
-    "busMovedDb": -0.16
+    "leftOverRightDb": 0.19,
+    "busMovedDb": -0.24
   },
   "master": {
     "targetLufs": -14,
     "ceilingDb": -1,
-    "gainDb": 15.78,
-    "limiterReductionDb": 17.25,
-    "lufs": -14.03,
+    "gainDb": 15.649,
+    "limiterReductionDb": 14.64,
+    "lufs": -14.05,
     "truePeakDb": -1.15,
     "passes": 4,
     "silent": false,
     "encoded": {
       "codec": "aac",
       "kbps": 256,
-      "truePeakDb": -1.35,
+      "truePeakDb": -1.51,
       "roomDb": 0,
       "gaveWay": []
     }
@@ -188,18 +229,21 @@
     "lift": "3def1da6008ad9f0cb4e3435664c84e5bc123b468ffa00a1872b2ae509ee85c6",
     "shake-spring": "e6abd21dd21a3ebf8d1e5b5a120cbc919c28d72c3ec23ecc1cb636f0f50c2f9c",
     "glass-clink": "a62138e2781a5f480ec29a3cbe16cabf876f0f466600e4e9223fa2e54c2f984e",
+    "laid:shake-summer": "db5026b473ef767f0efc64c971685707af42d83a99b1c42be3f3ec29eb48715b",
+    "laid:shake-fall": "78bfd501f9b037bdfcc07a35764f083b755071e544749faef56c9931223f6462",
+    "laid:shake-winter": "78bfd501f9b037bdfcc07a35764f083b755071e544749faef56c9931223f6462",
     "amb-winter": "ac4bf0c6cea391e2ca91aa5a9988c1003a6a4887abf977033002c90b9032462d",
     "amb-spring": "8201e37f095b1644d48d18c13a2bdc63622f7880ed2a6cc79406ce1b38dbd35c",
     "amb-summer": "692f4040c43aa832b9fdcaa17e2c762312807c1e83894f1c62dc57aaa3167bda",
     "amb-fall": "07ded692ee7571b68493eb6ff1ef5826ab3771d83210b3b7a65311ff3b452db8"
   },
   "measuredByFfmpeg": {
-    "lufs": -14,
-    "lra": 3.3,
+    "lufs": -14.1,
+    "lra": 3.5,
     "truePeakDb": -1.1
   },
-  "sha256": "79609a5eeacfcc1e3c3027cb4ec61476d8934a6c348fcc38dc431a48a04cef0e",
+  "sha256": "6217368dcbd171ca1821aa2cac14da4560fb719389546ca91491d85b635d40c8",
   "musicStem": null,
-  "engineHash": "bba0f03ee97cdcc0",
-  "time": "2026-11-26T06:29:26.385Z"
+  "engineHash": "108b05aa8366ba41",
+  "time": "2026-11-26T07:50:22.374Z"
 }

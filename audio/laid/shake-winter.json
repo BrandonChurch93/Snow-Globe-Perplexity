@@ -1,0 +1,104 @@
+{
+  "id": "shake-winter",
+  "state": "laid by decision 141, the water of shake-spring",
+  "decision": 141,
+  "kept": false,
+  "why": "Every shake's line begins \"Liquid sloshing and churning inside glass\". No take of shake-winter was kept, which left this shake silent in the film and in the app while the first one sloshes. By decisions 141 and 142 of kit/PROGRESS.md the kept water of shake-spring plays there at its own pitch (0 cents). At +40 cents (decision 141) liquid was heard in its place in 2 of 4 listenings, and at +20 cents, 3 dB lower with a 30 ms rise, in 1 of 4, with the sound called very loud or harsh twice, so neither is laid. At the spring water's own pitch liquid was heard in 3 of 4 and no listening called it unpleasant, so by decision 142 (b) that is laid: this shake and the first are one sound (\"Two shakes that sound alike are no fault: one globe holds one water\"). The season's own material is left out, so the line is half met. It is not a kept take and the cue stays open.",
+  "recipe": {
+    "borrow": {
+      "kept": "shake-spring",
+      "cents": 0
+    }
+  },
+  "answers": {
+    "verdict": "laid, not kept",
+    "rule": "Decision 142 (a) of kit/PROGRESS.md, with the word of /root of 07:44 UTC: a borrowed shake is laid when liquid is heard in at least 3 of 4 listenings in its place, at the level it is laid at, and no listening calls it unpleasant. (c): every shake of the film comes down 3 dB and rises over its first 30 ms; a shake still called too loud or abrupt against the music in 2 or more of 4 listenings comes down 3 dB more, once, and stays there. Counted as fixed beforehand: liquid is heard when answers 1 to 3 name liquid or water; too loud or abrupt when answer 4 calls the effect too loud, overpowering, abrupt or jarring against what surrounds it; unpleasant when the sound itself is called harsh, distorted or unpleasant. (b): winter is tried at +20 cents and then at 0 cents, four listenings each in its own bar at the level it will have; the first that meets (a) is laid, and if neither does the shake stays silent.",
+    "counts": {
+      "plus40AtTheFirstLevel": {
+        "listenings": 4,
+        "liquid": 2,
+        "tooLoudOrAbrupt": 2,
+        "unpleasant": 0
+      },
+      "plus20ThreeDbLower": {
+        "listenings": 4,
+        "liquid": 1,
+        "tooLoudOrAbrupt": 2,
+        "unpleasant": 1
+      },
+      "zeroCentsThreeDbLower": {
+        "listenings": 4,
+        "liquid": 3,
+        "tooLoudOrAbrupt": 1,
+        "unpleasant": 0,
+        "noAnswer": 1
+      }
+    },
+    "why": "In its place (4.8 s of film B around 45.6 s), 3 dB lower with a 30 ms rise, at 0 cents: liquid shaken in a bottle, jar or flask (a, which also calls it a bit too loud and isolated, like a raw effect not fully mixed in), a bubbling and sloshing liquid in a glass vessel with nothing out of place (b), a dry rattle of pills in a plastic bottle with nothing out of place (c), liquid sloshing and bubbling in a glass vessel with nothing unpleasant (e). The fourth call (d) returned an error and no answer, so that one listening was asked again with the same file and prompt (e). Liquid in 3 of 4, too loud in 1 of 4, unpleasant in none: laid, and it stays at 3 dB down. It was not heard alone at 0 cents: it is the kept take of shake-spring, whose own answers are in its kept record. The hiss of snow and the tiny bells of the line are not in it, so the cue stays open. No person has heard it.",
+    "listener": {
+      "place": {
+        "down3-winter-0-a": "1. At 0:01, a distinct sound of liquid being shaken begins over the background music. This shaking sound continues rhythmically until the end of the clip.\n\n2. I hear the sound of a fluid being vigorously moved back and forth. This could be made by someone shaking a bottle, jar, or flask containing a liquid. \n\n3. Yes. The audio clearly captures the thick movement of fluid, and the sharp, hollow acoustic resonance matches what you would hear from a hard glass container.\n\n4. The liquid shaking sound from 0:01 onwards feels a bit too loud and isolated compared to the atmospheric music. It feels slightly unnatural and out of place, sounding like a raw Foley sound effect that hasn't been fully mixed into the environment. \n\n5. No, there is no human voice, spoken word, or singing in this recording.",
+        "down3-winter-0-b": "1. At 0 seconds, suspenseful background music begins, and at 2 seconds, a distinct liquid sound starts playing.\n2. Apart from the music, I hear a bubbling and sloshing sound. This could be made by pouring a drink, shaking a liquid inside a vessel, or a potion brewing.\n3. Yes, because the hollow, echoing nature of the liquid movement strongly suggests it is echoing inside a hard, enclosed container like a glass bottle.\n4. No, the audio seems well-balanced and natural for a cinematic soundscape, without any glaringly loud or out-of-place elements.\n5. No, there is no human voice, spoken word, or singing in this recording.",
+        "down3-winter-0-c": "1. From 00:00 to 00:02, a low ambient musical drone plays, and then a rapid rattling sound occurs from 00:02 to 00:04. \n2. Apart from the music, I hear a fast, dry rattling noise. This could be made by someone shaking a plastic prescription bottle full of pills.\n3. No, it does not fit that description because the audio lacks any wet, fluid characteristics. Instead, it sounds like hard, dry objects clattering against the inside of a container.\n4. No, nothing is unpleasant, too loud, unnatural, or out of place. The sound effect and the music are well-balanced and blend together naturally.\n5. No, there is no human voice, spoken word, or singing in this recording.",
+        "down3-winter-0-d": "ERROR Media generation failed: ValueError: No audio evaluation returned",
+        "down3-winter-0-e": "1. Eerie music plays from the beginning, and a distinct liquid sloshing sound starts at about 2 seconds.\n2. I hear a liquid sloshing and bubbling sound. It could be made by a fluid being shaken or agitated inside a container.\n3. Yes, it fits well. The audio has an enclosed, slightly echoing resonance that strongly resembles fluid hitting the hard sides of a glass vessel.\n4. No, nothing is unpleasant, too loud, or unnatural. The sound effects and music are well-balanced and suit the eerie cinematic atmosphere.\n5. No, there is no human voice, spoken word, or singing in this recording."
+      },
+      "placeAtPlus20": {
+        "down3-winter-plus20-a": "1. At 00:00, a gentle music-box melody begins, and at 00:02, a loud, rapid clicking noise suddenly starts. The clicking stops at 00:04 while the music continues to the end of the clip.\n2. Apart from the music, I hear a fast, dry ratcheting or clattering sound. This could be made by a mechanical wind-up toy, slipping gears, or rapidly flipping through a deck of stiff cards.\n3. No, because the sound is entirely dry, percussive, and mechanical. It completely lacks any wet, fluid, or echoing glass characteristics.\n4. The sudden clattering noise from 00:02 to 00:04 is unusually loud and harsh. It feels jarring and out of place because it abruptly interrupts the quiet, eerie music. \n5. No, there is no human voice, spoken word, or singing in this recording.",
+        "down3-winter-plus20-b": "1. A gentle music box melody plays from the beginning, followed by a splashing liquid sound that starts at 00:03. \n2. I hear a wet, gurgling and splashing noise. This could be made by water or another liquid being poured or forcefully moved around in a container.\n3. Yes, the description is accurate because you can hear the heavy, wet movement of fluid along with the slightly resonant, clinking acoustic qualities of a glass vessel.\n4. The liquid sound that begins at 00:03 is very loud and feels slightly out of place. It abruptly overpowers the quiet music, which makes the audio mix feel a bit unnatural.\n5. No, there are no human voices, spoken words, or singing in this clip.",
+        "down3-winter-plus20-c": "1. At 00:00, a music box begins playing a gentle melody, and at 00:03, a rapid shaking noise starts. \n2. Apart from the music, I hear a fast clattering or rattling sound. This could be made by shaking small hard objects, like dice, pills, or beads, inside a rigid container.\n3. No, because the sound is sharp, dry, and clacky rather than wet. It distinctly sounds like solid items hitting against each other, lacking the heavier, fluid qualities of churning liquid.\n4. No, nothing sounds noticeably unpleasant, distorted, or unnatural. The sound effect introduced at 00:03 is prominent but serves as a clear, deliberate Foley addition over the music box.\n5. No, there is no human voice, spoken word, or singing in this recording.",
+        "down3-winter-plus20-d": "1. At 00:00, a delicate, eerie melody begins playing on a music box or glockenspiel. At 00:02, a rapid, rhythmic clicking noise joins in and lasts until about 00:04. \n\n2. Apart from the music, I hear a fast, mechanical fluttering and clicking noise. This could easily be made by an old-fashioned mechanical film projector rolling.\n\n3. No, it does not fit that description. The sound is distinctly dry, mechanical, and rhythmic, lacking any wet, fluid, or splashing qualities. \n\n4. No, nothing sounds unpleasant, too loud, or out of place at any point during the clip. The mechanical noise is well-balanced with the music and intentionally creates a moody cinematic atmosphere.\n\n5. No, there is no human voice, spoken word, or singing heard in this recording."
+      },
+      "placeAtPlus40AtTheFirstLevel": {
+        "place-winter": "1. From 00:00 to 00:03, a gentle music box melody plays before abruptly stopping. At 00:03, a fast, mechanical clicking noise begins and plays until the end of the clip. \n2. I hear a rapid, rhythmic clicking or ratcheting noise. This could be made by quickly winding up a mechanical toy, spinning a heavy dial, or turning a wooden ratchet.\n3. No, because the sound is distinctly dry, rigid, and mechanical. It lacks any of the wet, splashing, or muffled qualities associated with fluid moving inside a glass container.\n4. Nothing seems unintentionally out of place, as it sounds like a deliberately edited sound cue for a film. However, the sudden mechanical noise at 00:03 feels slightly jarring because it loudly and abruptly interrupts the quiet music.\n5. No, there is no human voice, spoken word, or singing heard in this recording.",
+        "place-winter-b": "1. At 00:00 a music box melody begins playing, and at 00:02 a distinct liquid splashing noise joins in.\n2. Apart from the music, I hear a bubbling and splashing noise. This could be made by someone shaking, pouring, or stirring a liquid in a container. \n3. Yes, it fits well because the audio has a contained, echoing quality that sounds exactly like liquid moving vigorously against a hard surface like glass.\n4. No, nothing sounds unpleasant, too loud, or unnatural. The audio levels are well-balanced and the effects blend together cleanly as expected in a film soundtrack.\n5. No, there are no human voices, spoken words, or singing in this recording.",
+        "place-winter-c": "1. Eerie music plays from the beginning, and at 00:03, a rhythmic mechanical clicking begins. \n2. I hear a rapid, ratcheting noise that sounds like someone winding up a music box or a clockwork toy. \n3. No, because the sound is completely dry and mechanical, lacking any wet, fluid, or sloshing acoustic qualities. \n4. No, the audio is well-balanced and the sound effects fit perfectly with the eerie musical atmosphere. \n5. No, there is no human voice, spoken word, or singing in this recording.",
+        "place-winter-d": "1. From 00:00 to 00:03 a quiet music box plays a melody, and at 00:03 a loud, splashing noise abruptly interrupts it.\n2. Apart from the music, I hear heavy water splashing along with a mechanical clicking sound. This is likely being made by a front-loading washing machine or dishwasher tumbling water and clothes.\n3. Yes, the sound fits that description perfectly. The muffled, echoing nature of the splashes sounds exactly like water forcefully hitting against an enclosed hard surface, such as the glass door of a washing machine.\n4. The splashing sound that begins at 00:03 is startlingly loud compared to the quiet, delicate music box. This abrupt jump in volume feels jarring and unnatural.\n5. No, there are no human voices, spoken words, or singing in this recording."
+      },
+      "aloneAtPlus40": "1. I hear a wet, splashing sound characterized by vigorous, rhythmic sloshing. It sounds like a thin liquid being actively agitated or shaken.\n2. It is likely made by water or a similar liquid being vigorously moved around. The acoustics suggest it is contained within a relatively small, enclosed vessel like a bottle, jar, or small tub. \n3. Yes, it fits this description well. The audio clearly features liquid actively moving and churning, and the resonant echo suggests it is inside a hard, enclosed container that could easily be glass.\n4. No, there is nothing unpleasant or unnatural in the audio. It sounds like a clean, clear recording of a normal physical action without any harsh distortion or strange artifacts.\n5. No, there are no human voices, breaths, singing, or music present in the recording."
+    },
+    "where": "audio/evidence/after-review/r39.json (first listening in place and alone), r40.json (three more in place), r41.json (four in place, 3 dB lower with the 30 ms rise), r42.json (one listening asked again), each with its prompt"
+  },
+  "file": "shake-winter.wav",
+  "class": "impact",
+  "season": "winter",
+  "line": "Liquid sloshing and churning inside glass, with a hiss of snow and tiny bells in it",
+  "seconds": 2.177,
+  "source": {
+    "kept": "shake-spring",
+    "sha256": "e6abd21dd21a3ebf8d1e5b5a120cbc919c28d72c3ec23ecc1cb636f0f50c2f9c"
+  },
+  "measured": {
+    "seconds": 2.177,
+    "peakDb": -1.15,
+    "truePeakDb": -1.15,
+    "lufs": -22.85,
+    "lufsMeasure": "gated",
+    "soundLufs": null,
+    "offsetDb": null,
+    "rmsDb": -28.3,
+    "silenceFrontSeconds": 0,
+    "silenceEndSeconds": 0.122,
+    "soundSeconds": 2.055,
+    "tailDb": -72.54,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 1820,
+      "bands": {
+        "sub": 0.0003,
+        "low": 0.0009,
+        "lowMid": 0.3458,
+        "mid": 0.5703,
+        "high": 0.0756,
+        "air": 0.007
+      }
+    }
+  },
+  "ffmpeg": {
+    "lufs": -22.9,
+    "lra": 0,
+    "truePeakDb": -1.2
+  },
+  "sha256": "78bfd501f9b037bdfcc07a35764f083b755071e544749faef56c9931223f6462",
+  "time": "2026-11-26T07:34:58.429Z"
+}

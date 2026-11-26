@@ -1,0 +1,12 @@
+{
+  "what": "decision 141, the music loops of the app's pack: open-seam-summer-a of r47 got no answer from the listener (an error of the call), so that one listening is asked again here as open-seam-summer-c. The same file (16 s of the packed loop of music-summer played round with the app's cross of one bar, the cross from 7.0 to 9.4 s of the clip) and the same prompt, counted by the same rule.",
+  "prompts": {
+    "loop": "Listen to this recording of about 16 seconds of instrumental music. Answer each question in one or two plain sentences, numbered 1 to 3. If you cannot tell, say \"not sure\".\n\n1. What do you hear, and what happens at which second?\n2. Is anything unpleasant, too loud, unnatural or out of place? Say what, when and why.\n3. Is there any human voice, spoken word or singing?"
+  },
+  "files": {
+    "open-seam-summer-c": "out/work/audio/listen/now-loop-music-summer-seam.wav"
+  },
+  "answers": {
+    "open-seam-summer-c": "1. I hear a solo acoustic guitar playing a gentle, fingerpicked melody. The guitar begins at 00:00 and plays continuously throughout the entire clip.\n2. No, there is nothing unpleasant, too loud, unnatural, or out of place. The audio is clear and sounds like a well-recorded, natural acoustic performance.\n3. No, there is no human voice, spoken word, or singing in this recording."
+  }
+}
