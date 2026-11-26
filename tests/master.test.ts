@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { tierSamples } from '../src/config'
 import { finalVideoArgs, masterVideoArgs } from '../tools/lib/encode.mjs'
 import { loadConfig, readJson, rel, writeJson } from '../tools/lib/paths.mjs'
-import { branchFolder, branchMatches, chunkLines, chunkStem, coverReport, framesOf, heartbeat, joinPlan, lumaPsnrOf, nearestRanges, openingPack as readOpening, pad6, psnrOf, rangeChunks as chunksOfRange, ranges, readChunks, recordMatchesRun, resultName, split, stillName, stillToDo as leftToDo, table, tierOf, totalsFromCut } from '../tools/lib/master.mjs'
+import { branchFolder, branchMatches, chunkLines, chunkStem, coverReport, framesOf, heartbeat, joinPlan, sampleRule, ruleCount, countFacts, countsLine, lumaPsnrOf, nearestRanges, openingPack as readOpening, pad6, psnrOf, rangeChunks as chunksOfRange, ranges, readChunks, recordMatchesRun, resultName, split, stillName, stillToDo as leftToDo, table, tierOf, totalsFromCut } from '../tools/lib/master.mjs'
 import { REMOTE_WAITS, Shipper, collectBranches, gitEnv, identityProblem, mainAuthor, withWaits } from '../tools/lib/mastergit.mjs'
 import { levelProblems, pictureLevels, procsProblem } from '../tools/lib/master.mjs'
 import { heldLine, heldRanges, parseTake } from '../tools/lib/master.mjs'
@@ -43,6 +43,7 @@ const rec = (what: keyof typeof totals, first: number, last: number, over: Recor
   renderer: what === 'opening' ? 'pack' : 'lavapipe',
   ...(what === 'opening' ? {} : { calibration: 'c'.repeat(64) }),
   samples: 12,
+  ...(what === 'opening' ? {} : { frameSamples: Array.from({ length: last - first + 1 }, () => 12), motion: null }),
   format: 'uhd',
   fps: 60,
   encoderArgs: ARGS,
@@ -126,6 +127,15 @@ describe('what a second run still has to render', () => {
     expect(recordMatchesRun(null, want)).toBe(false)
     expect(recordMatchesRun(rec('film-b', 0, 29, { engineHash: 'build-2' }), want)).toBe(false)
     expect(recordMatchesRun(rec('film-b', 0, 29, { samples: 8 }), want)).toBe(false)
+    const motion = { spacingPx: 0.75, maxSamplesPerFrame: 96 }
+    const moving = { ...want, motion }
+    const counts = Array.from({ length: 30 }, (_, i) => (i === 3 ? 48 : 12))
+    expect(recordMatchesRun(rec('film-b', 0, 29, { motion, frameSamples: counts }), moving)).toBe(true)
+    expect(recordMatchesRun(rec('film-b', 0, 29), moving)).toBe(false)
+    expect(recordMatchesRun(rec('film-b', 0, 29, { motion, frameSamples: undefined }), moving)).toBe(false)
+    expect(recordMatchesRun(rec('film-b', 0, 29, { motion, frameSamples: counts.slice(1) }), moving)).toBe(false)
+    expect(recordMatchesRun(rec('film-b', 0, 29, { motion, frameSamples: counts.map((n) => (n === 48 ? 11 : n)) }), moving)).toBe(false)
+    expect(recordMatchesRun(rec('film-b', 0, 29, { motion: { ...motion, maxSamplesPerFrame: 64 }, frameSamples: counts }), moving)).toBe(false)
     expect(recordMatchesRun(rec('film-b', 0, 29, { format: 'hd' }), want)).toBe(false)
     expect(recordMatchesRun(rec('film-b', 0, 29, { encoderArgs: [...ARGS, '-g', '60'] }), want)).toBe(false)
     expect(recordMatchesRun(rec('film-b', 0, 29, { test: true }), want)).toBe(false)
@@ -183,7 +193,7 @@ describe('the join', () => {
     expect(first.twice).toBe(30)
     expect(first.twiceByTwoMachines).toBe(0)
     const g = (heldRanges(other) as { first: number }[]).find((x) => x.first === 30)
-    expect(heldLine(g)).toBe('film-b 30 to 59 is held 2 times with the same build, the same calibration and the same pixels in all 30 frames: there/film-b-000030 (vm-a); here/film-b-000030 (vm-a). Their intermediates differ in bytes (sha256 sha-other in there/film-b-000030, sha-film-b-30 in here/film-b-000030). It counts once and the first by name is taken: here/film-b-000030')
+    expect(heldLine(g)).toBe('film-b 30 to 59 is held 2 times with the same build, the same calibration and the same pixels in all 30 frames, each drawn with the same count of samples: there/film-b-000030 (vm-a); here/film-b-000030 (vm-a). Their intermediates differ in bytes (sha256 sha-other in there/film-b-000030, sha-film-b-30 in here/film-b-000030). It counts once and the first by name is taken: here/film-b-000030')
     const named = plan('film-b', other, { take: parseTake('film-b:30-59=there/film-b-000030') })
     expect(named.ok).toBe(true)
     expect(named.parts[1].record.sha256).toBe('sha-other')
@@ -296,6 +306,40 @@ describe('what the tool says', () => {
   it('writes one heartbeat line a frame', () => {
     const line = heartbeat({ chunk: { first: 30, last: 59 }, frame: 41, seconds: 12.34, left: 720, average: 10 })
     expect(line).toBe('chunk 000030-000059 · frame 41 · 12.3 s · 720 frames left in the range · 2.00 h left at 10.0 s a frame')
+  })
+
+  it('writes the samples of a frame in its line and counts the hours left by samples, since frames cost unequally', () => {
+    const line = heartbeat({ chunk: { first: 660, last: 689 }, frame: 678, seconds: 204.2, left: 100, average: 60, samples: 96, samplesLeft: 3600, perSample: 2 })
+    expect(line).toBe('chunk 000660-000689 · frame 678 · 96 samples · 204.2 s · 100 frames left in the range (3600 samples) · 2.00 h left at 2.00 s a sample (60.0 s a frame in the mean so far)')
+  })
+
+  it('takes the count of a master frame from the rule of the final tier, and refuses when the two bases are not one number', () => {
+    const cfg = loadConfig()
+    const final = cfg.tiers.final
+    expect(cfg.deliver.master.samples['film-b']).toBe(final.samplesPerFrame)
+    expect(cfg.deliver.master.samples.loop).toBe(final.samplesPerFrame)
+    expect(sampleRule('film-b')).toEqual({ base: final.samplesPerFrame, motion: { spacingPx: final.motion.spacingPx, maxSamplesPerFrame: final.motion.maxSamplesPerFrame }, tier: 'final' })
+    expect(sampleRule('loop').tier).toBe('final')
+    expect(sampleRule('film-b', 1)).toEqual({ base: 1, motion: null, tier: null })
+    const other = { deliver: { master: { samples: { 'film-b': 32 } } }, tiers: { final: { samplesPerFrame: 24, motion: { spacingPx: 0.75, maxSamplesPerFrame: 96 } } } }
+    expect(() => sampleRule('film-b', undefined, other)).toThrow(/deliver\.master\.samples\.film-b is 32 and tiers\.final\.samplesPerFrame is 24\. .* the two must be one number\. Nothing was drawn\./)
+    expect(sampleRule('film-b', undefined, { deliver: { master: { samples: { 'film-b': 24 } } }, tiers: { final: { samplesPerFrame: 24 } } })).toEqual({ base: 24, motion: null, tier: 'final' })
+    const rule = sampleRule('film-b', undefined, { deliver: { master: { samples: { 'film-b': 24 } } }, tiers: other.tiers })
+    expect(ruleCount(rule, 678, { samples: 96, travelPx: 80 })).toBe(96)
+    expect(ruleCount(rule, 0, { samples: 24, travelPx: 0 })).toBe(24)
+    expect(() => ruleCount(rule, 5, { samples: 23 })).toThrow(/as the samples of frame 5, and the rule gives a whole count from 24 to 96/)
+    expect(() => ruleCount(rule, 5, { samples: 97 })).toThrow(/whole count from 24 to 96/)
+    expect(() => ruleCount(rule, 5, { samples: 24.5 })).toThrow(/whole count/)
+    expect(() => ruleCount(rule, 5, undefined)).toThrow(/the page gave null as the samples of frame 5/)
+  })
+
+  it('says at the start how many frames of the range draw more than the base, and the most', () => {
+    const rule = { base: 24, motion: { spacingPx: 0.75, maxSamplesPerFrame: 96 }, tier: 'final' }
+    const facts = countFacts([24, 24, 48, 96, 24, 31], 24, 675)
+    expect(facts).toEqual({ frames: 6, over: 3, most: 96, mostAt: 678, sum: 247 })
+    expect(countsLine(rule, facts)).toBe('the count of a frame follows its motion (tiers.final.motion: a sample every 0.75 px of travel, at most 96): 3 of these 6 frames draw more than the base of 24 samples, the most is 96 (frame 678); 247 samples in all, 1.72 times the base')
+    expect(countsLine(rule, countFacts([24, 24], 24, 0))).toBe('the count of a frame follows its motion (tiers.final.motion: a sample every 0.75 px of travel, at most 96): every one of these 2 frames draws the base of 24 samples')
+    expect(countsLine({ base: 1, motion: null, tier: null }, countFacts([1, 1, 1], 1, 0))).toBe('the count was given with --samples, so no frame follows its motion: every one of these 3 frames draws the base of 1 sample')
   })
 
   it('writes the proof as one table', () => {
@@ -1084,6 +1128,23 @@ describe('a range held more than once', () => {
     expect(() => parseTake('0-29=x')).toThrow(/Not understood/)
   })
 
+  it('lets holders agree only when the count of samples of every frame agrees too, as it does whenever the build and the pixels do', () => {
+    const counts = Array.from({ length: 30 }, (_, i) => (i === 11 ? 96 : 12))
+    const moving = { motion: { spacingPx: 0.75, maxSamplesPerFrame: 96 }, frameSamples: counts }
+    const same = groups([at('agent/p6-chunks-a', rec('film-b', 30, 59, { ...moving, sha256: 'bytes-a' })), at('agent/p6-chunks-b', rec('film-b', 30, 59, { ...moving, sha256: 'bytes-b' }))])
+    expect(same[0].agree).toBe(true)
+    expect(heldLine(same[0])).toMatch(/the same pixels in all 30 frames, each drawn with the same count of samples: /)
+    const other = groups([at('agent/p6-chunks-a', rec('film-b', 30, 59, moving)), at('agent/p6-chunks-b', rec('film-b', 30, 59, { ...moving, frameSamples: counts.map((n) => (n === 96 ? 48 : n)) }))])
+    expect(other[0].agree).toBe(false)
+    expect(other[0].taken).toBe(null)
+    expect(heldLine(other[0])).toMatch(/is held 2 times and the records do not agree: .*The pixels of their frames are the same in all 30; the count of samples a frame was drawn with differs in 1 of 30 \(the first is frame 41\)\. Neither is taken/)
+    const before = groups([at('agent/p6-chunks-a', rec('film-b', 30, 59, moving)), at('agent/p6-chunks-b', rec('film-b', 30, 59, { ...moving, frameSamples: undefined }))])
+    expect(before[0].agree).toBe(false)
+    expect(heldLine(before[0])).toMatch(/the count of samples a frame was drawn with differs in 30 of 30/)
+    refused('film-b', [chunk(rec('film-b', 0, 29, { frameSamples: undefined })), ...filmB().slice(1)], /names no count of samples for each of its 30 frames/)
+    refused('film-b', [chunk(rec('film-b', 0, 29, { motion: { spacingPx: 0.75, maxSamplesPerFrame: 96 } })), ...filmB().slice(1)], /the rule from motion to samples of film-b differs between chunks/)
+  })
+
   it('counts a range once, names its holders in one line, and takes the one whose picture is there', () => {
     const g = groups(three())
     expect(g.length).toBe(2)
@@ -1355,6 +1416,27 @@ describe('render processes side by side, with a stand-in for the renderer', () =
     const again = run(d, '--first', '0', '--last', '7', '--procs', '2', '--stand-in-nan', '5')
     expect(again.code).toBe(1)
     expect(again.lines.some((l) => /^4 chunks are finished, 0 to do/.test(l))).toBe(true)
+  }, 180000)
+
+  it.runIf(haveFfmpeg)('keeps the count of every frame in its side file and in the record, also over a run that stopped', () => {
+    const d = path.join(dir, 'counts')
+    const r = run(d, '--first', '0', '--last', '5', '--stand-in-more', '2', '--stand-in-fail', '3')
+    expect(r.code).toBe(1)
+    expect(r.lines.some((l) => l === 'the count was given with --samples, so no frame follows its motion: 1 of these 6 frames draws more than the base of 1 sample, the most is 2 (frame 2); 7 samples in all, 1.17 times the base')).toBe(true)
+    expect(r.lines.some((l) => /^chunk 000002-000003 · frame 2 · 2 samples · /.test(l))).toBe(true)
+    expect(readJson(path.join(frames(d, 2), '000002.json')).samples).toBe(2)
+    const again = run(d, '--first', '0', '--last', '5', '--stand-in-more', '2')
+    expect(again.code).toBe(0)
+    expect(again.lines.some((l) => /^chunk 000002-000003: 1 of its 2 frames were on disk and were not rendered again/.test(l))).toBe(true)
+    expect(again.lines.some((l) => /^chunk 000002-000003 · frame 2 · /.test(l))).toBe(false)
+    expect(again.lines.some((l) => /^finished film-b-000002-000003: 2 frames, [\d.]+ s a frame in the mean, [\d.]+ s a sample \(3 samples: 1 of the frames over the base of 1, the most 2 at frame 2\), crf /.test(l))).toBe(true)
+    expect(again.lines.some((l) => /^finished film-b-000004-000005: 2 frames, [\d.]+ s a frame in the mean, [\d.]+ s a sample \(2 samples: every frame at the base of 1\), crf /.test(l))).toBe(true)
+    const record = (first: number) => readJson(path.join(d, 'out', 'film-b', `film-b-${pad6(first)}-${pad6(first + 1)}.json`))
+    expect(record(2)).toMatchObject({ samples: 1, frameSamples: [2, 1], motion: null })
+    expect(record(0).frameSamples).toEqual([1, 1])
+    expect(record(4).frameSamples).toEqual([1, 1])
+    const third = run(d, '--first', '0', '--last', '5', '--stand-in-more', '2')
+    expect(third.lines.some((l) => /^3 chunks are finished, 0 to do/.test(l))).toBe(true)
   }, 180000)
 
   it('refuses --local on a machine without a display before anything is started', () => {
