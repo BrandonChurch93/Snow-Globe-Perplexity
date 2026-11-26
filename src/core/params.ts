@@ -1,4 +1,4 @@
-import { config, formatById } from '../config'
+import { config, formatById, formats } from '../config'
 
 export type Mode = 'live' | 'autopilot' | 'loop' | 'capture' | 'probe'
 const MODES: Mode[] = ['live', 'autopilot', 'loop', 'capture', 'probe']
@@ -28,15 +28,17 @@ export function readParams(search: string): Params {
     const v = Number(q.get(k))
     return q.has(k) && Number.isFinite(v) ? v : d
   }
-  const format = q.get('format') ?? config.formats.hd.id
-  formatById(format)
+  // A format the config does not name stops a capture, where a tool asked for it; a visitor's address falls back to hd.
+  let format = q.get('format') ?? config.formats.hd.id
+  if (mode === 'capture') formatById(format)
+  else if (!formats.some((f) => f.id === format)) format = config.formats.hd.id
   const assets = q.get('assets') ?? (mode === 'capture' ? 'full' : 'web')
   return {
     mode,
     season: config.seasons.includes(season) ? season : config.defaultSeason,
     format,
     tier: q.get('tier') ?? 'draft',
-    assets: assets in config.assetSets ? assets : 'web',
+    assets: Object.hasOwn(config.assetSets, assets) ? assets : 'web',
     quality: q.get('quality') ?? config.live.defaultQuality,
     frame: num('frame', 0),
     first: num('first', 0),
