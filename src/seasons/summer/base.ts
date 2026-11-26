@@ -149,7 +149,7 @@ function shadeIn(deep: number, left: number, from: number, edge: number, tint: b
 `
 }
 
-const STONE = { grain: 1.1, carve: 1.0, dust: 0.75, glint: 3.0, wrap: 0.3, card: 0.02, sun: 0.9, kick: 0.06, flare: 1.45, side: 0.06, bounce: 0.02, sheen: 0.03, top: 0.3, belly: 1.0, table: 0.42, patch: 0.3, direct: 0.12, room: 0.3, rake: 1.0, lit: 3.0, sky: 0.5 }
+const STONE = { grain: 0.8, carve: 1.0, dust: 0.75, glint: 3.0, wrap: 0.3, card: 0.02, sun: 0.9, kick: 0.06, flare: 1.45, side: 0.06, bounce: 0.02, sheen: 0.03, top: 0.3, belly: 1.0, table: 0.42, patch: 0.3, direct: 0.12, room: 0.3, rake: 1.0, lit: 3.0, sky: 0.5 }
 
 const STONE_PAINT = `
 vec4 baseDetail = texture2D(uBaseGrain, vMapUv);
@@ -157,14 +157,20 @@ vec4 baseFine = texture2D(uBaseGrain, vMapUv * 3.7 + 0.37);
 vec4 baseCarve = texture2D(uBaseCarve, vBaseUv1);
 float baseCavity = clamp(1.0 - 2.0 * baseCarve.b, 0.0, 1.0);
 float baseHigh = clamp(2.0 * baseCarve.b - 1.0, 0.0, 1.0);
+float baseRidged = smoothstep(31.0, 27.5, vBasePos.y);
+float baseCrease = smoothstep(0.1, 0.3, baseCavity) * baseRidged;
+float baseCore = smoothstep(0.215, 0.275, baseCavity) * baseRidged;
+float baseCrest = smoothstep(0.05, 0.3, baseHigh) * baseRidged;
 ${SEAT}
-float baseAo = mix(1.0, vBasePaint.x, 0.48) * (1.0 - mix(0.2, 0.42, smoothstep(4.0, -30.0, vBasePos.x)) * baseCavity) * baseSeatAo * baseFootAo;
+float baseAo = mix(1.0, vBasePaint.x, 0.48) * (1.0 - mix(0.2, 0.34, smoothstep(4.0, -30.0, vBasePos.x)) * baseCavity) * (1.0 - 0.26 * baseCore) * (1.0 - 0.08 * baseCrest) * (1.0 - 0.15 * baseRidged * smoothstep(6.0, 30.0, vBasePos.x)) * baseSeatAo * baseFootAo;
 diffuseColor.rgb = diffuse * texture2D(uBaseTone, vBaseUv1).rgb * vec3(1.0, 0.98, 0.93);
 diffuseColor.rgb = mix(vec3(dot(diffuseColor.rgb, vec3(0.3, 0.55, 0.15))) * vec3(1.0, 0.99, 0.96), diffuseColor.rgb, 0.5);
 float baseBlotch = baseNoise(vBasePos * 0.23) * 0.6 + baseNoise(vBasePos * 0.9) * 0.4;
 diffuseColor.rgb *= mix(0.86, 1.1, baseBlotch) * (0.96 + 0.08 * baseDetail.b) * (0.97 + 0.06 * baseFine.b);
-diffuseColor.rgb *= (0.74 + 0.52 * baseHash(floor(vBasePos * 2.7 + 1.3))) * (0.7 + 0.6 * baseHash(floor(vBasePos * 7.0))) * (0.9 + 0.2 * baseNoise(vBasePos * 9.0)) * (0.8 + 0.4 * baseHash(floor(vBasePos * 13.0 + 5.0)));
+diffuseColor.rgb *= (0.9 + 0.2 * baseHash(floor(vBasePos * 2.7 + 1.3))) * (0.86 + 0.28 * baseHash(floor(vBasePos * 7.0))) * (0.94 + 0.12 * baseNoise(vBasePos * 9.0)) * (0.86 + 0.28 * baseHash(floor(vBasePos * 13.0 + 5.0)));
 diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.9, 0.78, 0.66), mix(0.3, 0.65, smoothstep(4.0, -30.0, vBasePos.x)) * baseCavity);
+diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(1.15, 0.8, 0.5), 0.6 * baseCrease);
+diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.8, 0.5, 0.28), 0.85 * baseCore);
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.93, 0.86, 0.72), 0.15 * baseHigh);
 `
 
@@ -292,7 +298,10 @@ const SHELL_AFTER = `
   float shellLustre = smoothstep(0.8, 1.0, baseGloss);
   reflectedLight.directSpecular += (baseKeyC * (0.9 * pow(abs(shellNh), 220.0) + 0.05 * pow(abs(shellNh), 14.0)) * smoothstep(0.0, 0.15, dot(geometryNormal, baseKey)) + (uRigCardCol + vec3(1.0, 0.9, 0.76) * dot(baseSunC, vec3(0.3333)) * 1.4) * (0.7 * pow(abs(shellCh), 120.0) + 0.1 * pow(abs(shellCh), 9.0)) * smoothstep(0.0, 0.2, dot(geometryNormal, baseCard))) * baseGloss * baseAo * mix(vec3(1.0), 0.7 + 0.6 * shellPearl, shellLustre);
   reflectedLight.indirectDiffuse += material.diffuseContribution * RECIPROCAL_PI * (baseKeyC + uRigCardCol) * 0.08 * shellLustre * shellPearl;
-  ${shadeIn(0.19, 0.42, 20, 0.5, 'mix(vec3(1.0, 0.92, 0.82), vec3(0.8, 0.95, 1.16), smoothstep(-32.0, 8.0, vBasePos.x))')}
+  ${shadeIn(0.2, 0.42, 20, 0.36, 'mix(vec3(1.0, 0.93, 0.84), vec3(0.84, 0.96, 1.14), smoothstep(-32.0, 8.0, vBasePos.x))')}
+  // Each shell is glossy: one small hard highlight from the room, whatever shade it lies in.
+  float shellSpark = max(dot(geometryNormal, normalize(normalize(mat3(viewMatrix) * vec3(-0.3, 0.8, 0.52)) + geometryViewDir)), 0.0);
+  reflectedLight.directSpecular += vec3(1.0, 0.96, 0.9) * dot(baseSunC, vec3(0.3333)) * (2.0 * pow(max(shellSpark, 0.0), 1600.0) + 0.04 * pow(max(shellSpark, 0.0), 40.0)) * smoothstep(0.1, 0.4, baseGloss) * baseFootAo;
 }
 `
 
