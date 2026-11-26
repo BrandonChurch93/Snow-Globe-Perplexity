@@ -14,15 +14,17 @@ import { holdStorm, veil } from './veil'
 //    right shoulder, at the limb. It is a small hot core squeezed along the limb, a warm halo and the star a lens draws round a
 //    point that bright. It kindles on the landing.
 // 2. The pool: the same light focused by the globe onto the slab, in front of the globe and to its left, inside the globe's own
-//    shadow: a soft pool of warm light, brightest at a knot by the foot, and inside it the net of light that water throws on
-//    the floor of a pool, long in the light's direction because the sun is low. The net slides when the globe moves, swings
-//    to rest after the landing and breathes a little while the water is still.
+//    shadow: a soft pool of warm light, brightest at a knot by the foot, and inside it a few broad curved bands of the water's
+//    light, soft edged and never a net or a star. There is no pool before the landing; after it the pool swells, its bands
+//    slide into place and come to rest, and they breathe a little while the water is still.
 // 3. The wall: the sun, bent by the globe, burns a patch on the inside of the glass low on the far side; the same billboard
 //    carries the warm haze of the liquid at rest, the room seen through the upper half (dark, with the red brown shapes of
-//    its walls and a few dim discs of its lamps), the few thin streaks of light on the glass and the glow of the storm (by
+//    its walls and a few dim discs of its lamps), the thin streaks and the few curved bands of reflection on the glass and
+//    the glow of the storm (by
 //    the liquid's turbulence). It is drawn with the interior, straight after the view through the liquid and before the
 //    miniature, so all of it lies behind the cottage and the tree: the crown is a dark mass against bright air, as the
-//    approved image has it, and nothing is laid over the miniature's detail. No band of light runs round the outline.
+//    approved image has it, and nothing is laid over the miniature's detail. No band of light runs all the way round the
+//    outline.
 // Nothing here is stepped: both are functions of the moment's pose, of the time and of the time since the landing.
 const PART = 'glass-dressing-summer'
 const RS = config.globe.sphereDiameterMm / 2
@@ -30,8 +32,11 @@ const TAU = Math.PI * 2
 const RAD = Math.PI / 180
 
 // The shell's own light this season: no window, no even glow across the rim, and the wall low on the glass takes about half
-// the room's light, so no pale band stands inside the outline. The light on the glass is the wall's few streaks, below
-setGlass('summer', { windowTint: [0.9, 0.86, 0.78], windowGain: [0, 0, 0, 0], windowSoftDeg: 5, windowGrain: 0.5, rimTint: [0.8, 1, 1.25], wallTint: [0.5, 0.36, 0.2], ringCover: 0.6, strip: 0, bend: 1, ringThin: 0.5, rimClear: 0.6, topLine: 0.6, ringMottle: 0.3, ceiling: 0.7, roomHue: [0.85, 0.98, 1.15], roomHueOn: 1, windowShade: 0, rimGlow: 0, arcs: 0.4, arcTint: [1, 0.9, 0.74], arcCool: 1.6 })
+// the room's light, so no pale band stands inside the outline. The ring at the outline is thin and hides little of the inside
+// (`ringThin`, `ringCover`, `rimClear`), its cool line over the top and the ceiling's reflection are held low (`topLine`,
+// `ceiling`), and the lamps outside the frame show as fine arcs (`arcs`). The rest of the light on the glass is the wall's
+// streaks and bands, below
+setGlass('summer', { windowTint: [0.9, 0.86, 0.78], windowGain: [0, 0, 0, 0], windowSoftDeg: 5, windowGrain: 0.5, rimTint: [0.8, 1, 1.25], wallTint: [0.5, 0.36, 0.2], ringCover: 0.4, strip: 0, bend: 1, ringThin: 0.75, rimClear: 0.4, topLine: 0.3, ringMottle: 0.3, ceiling: 0.5, roomHue: [0.85, 0.98, 1.15], roomHueOn: 1, windowShade: 0, rimGlow: 0, arcs: 0.4, arcTint: [1, 0.9, 0.74], arcCool: 1.6 })
 
 export const look = {
   // leaving: the light goes out between these two counts of beats before the swap window opens
@@ -107,8 +112,8 @@ export const look = {
     // how much of the burn's skirt and of the glow the strokes take away between them
     brushDeep: [0.96, 0.3] as const,
     // the amber glow of the liquid round the patch
-    glow: 1,
-    glowSize: [0.2, 0.2] as const,
+    glow: 0.85,
+    glowSize: [0.17, 0.2] as const,
     // its spill past the limb: the lens blooms round the patch, outside the glass too
     spill: 0.3,
     spillAt: 0.12,
@@ -141,26 +146,29 @@ export const look = {
     hazeHigh: 0.04,
     hazeHighTall: 0.4,
     hazeHighLeft: 0.35,
-    // the haze over the dome: above the roof line the liquid holds the sun too, a cream veil across the upper half that the
-    // seed heads and the fireflies float in, `fill` of it everywhere. It thins to nothing toward the top of the glass
-    // (`fillTop`, globe radii up: all of it below the first, none above the second) and toward the upper left limb, where
-    // the glass has its own pale band (`fillLeft`, radii from the middle: all of it inside the first, none beyond the
-    // second). It gathers in soft bodies (`fillBody`, each: where, across and up, how wide and how tall in globe radii,
-    // how much): behind the crown, at the right shoulder toward the sun, and low at the left over the bank. The room's
-    // dark patches cut it down to `fillDark` of itself, so they show through it faintly
+    // the haze over the dome: above the roof line the liquid holds the sun too, a cream veil that the seed heads and the
+    // fireflies float in, `fill` of it. It thins to nothing toward the top of the glass (`fillTop`, globe radii up: all of
+    // it below the first, none above the second) and toward the left, where the air is clear and dark between the heads
+    // (`fillLeft`, globe radii across: left of the first the share given third is gone, right of the second none of it
+    // is). It gathers in soft bodies (`fillBody`, each: where, across and up, how wide and how tall in globe radii, how
+    // much, and 1 if it goes with the veil and reaches the limb, 0 if it is a glow that falls off to the limb): low over
+    // the roof, at the middle, a broad one behind and above the crown on the flare's side, which is the light the crown
+    // and the heads stand against, one under the top of the glass and a faint one at the upper left, which keeps the
+    // clear air there warm. The room's dark patches cut the veil down to `fillDark` of itself and a glow to `bodyDark`,
+    // so they show through faintly
     fill: 0.045,
-    fillColor: [1, 0.62, 0.36] as const,
+    fillColor: [1, 0.72, 0.47] as const,
     fillTop: [0.66, 1] as const,
-    fillLeft: [0.6, 0.9] as const,
+    fillLeft: [-0.5, 0.1, 0.9] as const,
     fillDark: 0.3,
     fillBody: [
-      [-0.28, 0.14, 0.36, 0.26, 0.17, 0],
-      [-0.04, 0.26, 0.28, 0.26, 0.08, 0],
-      [0.64, 0.46, 0.24, 0.28, 0.11, 1],
-      [-0.5, -0.04, 0.34, 0.14, 0.07, 0],
-      [-0.1, 0.74, 0.45, 0.14, 0.06, 1],
+      [-0.3, 0.1, 0.34, 0.15, 0.17, 0],
+      [0, 0.26, 0.26, 0.26, 0.08, 0],
+      [0.55, 0.5, 0.42, 0.36, 0.36, 1],
+      [0.2, 0.8, 0.42, 0.16, 0.14, 1],
+      [-0.4, 0.35, 0.42, 0.45, 0.055, 1],
     ] as const,
-    bodyColor: [1, 0.52, 0.25] as const,
+    bodyColor: [1, 0.58, 0.34] as const,
     bodyDark: 0.6,
     // and the glow falls off to the limb: all of it inside the first of these radii, none beyond the second
     bodyLimb: [0.5, 0.92] as const,
@@ -169,9 +177,9 @@ export const look = {
     // that follow the glass, `folds` of them to a globe radius, `foldDeep` of it is gone in the gaps between them, and the
     // room's dark patches cut it
     dome: 0.07,
-    domeAt: [-0.12, 0.24] as const,
-    domeSize: [0.5, 0.45, 0.4] as const,
-    domeColor: [1, 0.52, 0.25] as const,
+    domeAt: [-0.05, 0.16] as const,
+    domeSize: [0.35, 0.45, 0.22] as const,
+    domeColor: [1, 0.58, 0.34] as const,
     folds: 7,
     foldLong: 1.3,
     foldDeep: 0.6,
@@ -190,19 +198,24 @@ export const look = {
     coreAt: [0.4, -0.12] as const,
     coreSize: [0.38, 0.26] as const,
     coreColor: [1, 0.56, 0.26] as const,
-    // the light on the glass is a few sharp things and never a band: thin streaks that follow the arc just inside the
-    // outline, warm at the upper left, where the wall mirrors the room's lamps, and pale blue inside the right arc beside
+    // the sharp light on the glass: thin streaks that follow the arc just inside the outline, warm at the upper left and
+    // down the left limb, where the wall mirrors the room's lamps, and pale blue inside the right arc beside
     // the flare, where it mirrors the sky. Each: its bearing (degrees from the right, counter clockwise) and half its length
     // along the arc (degrees), where in the radius it lies, half its width, how far it leans across the arc, how strong, and
     // 1 if it is cool. Between them the outline is bare: they lie along less than half of it. `glintBroken` of a streak is
     // gone in the gaps along it
-    glints: 1.5,
+    glints: 2,
     glint: [
       [127, 17, 0.966, 0.0042, 0.012, 1.8, 0],
       [117, 9, 0.944, 0.0036, -0.01, 1.5, 0],
       [152, 6, 0.9, 0.0045, 0.05, 2.6, 0],
       [168, 10, 0.962, 0.004, 0.01, 1.8, 0],
       [139, 5, 0.925, 0.004, -0.03, 1.3, 0],
+      [160, 14, 0.948, 0.004, 0.006, 1.3, 0],
+      [182, 12, 0.955, 0.0035, 0.006, 1, 0],
+      [148, 18, 0.972, 0.005, 0.002, 2.2, 0],
+      [176, 16, 0.968, 0.0055, 0.004, 2.1, 0],
+      [196, 12, 0.958, 0.005, 0.008, 1.7, 0],
       [16, 13, 0.905, 0.009, 0.03, 0.75, 1],
       [22, 7, 0.862, 0.0055, -0.02, 0.6, 1],
       [3, 12, 0.948, 0.0045, 0.015, 0.9, 1],
@@ -211,18 +224,25 @@ export const look = {
     glintBroken: 0.8,
     glintWarm: [1, 0.8, 0.58] as const,
     glintCool: [0.74, 0.86, 1] as const,
-    // the glass's own reflections across the top and down the right shoulder: a few broad curved bands that follow the
-    // dome inside the outline, blue white where the room's cool light lies in them and warm brown where the lamps do (each:
-    // bearing and half length in degrees, where in the radius, half its thickness, how strong, cool or warm)
+    // the glass's own reflections across the top and down the right shoulder: a few curved bands that follow the dome
+    // inside the outline, cream at the upper left, blue white down the right shoulder, where the room's cool light lies in
+    // them, and a deep warm brown across the top and in the gap by the right limb, where the lamps do (each: bearing and
+    // half length in degrees, where in the radius, half its thickness, how strong, and its colour: 0 cream, 1 cool, 2 deep
+    // warm). A band is not smooth: `reflexLined` of it lies in fine lines that run along the arc (`reflexLines` sets how
+    // fine they are across the band, `reflexLong` how short along it), so it reads as a reflection in glass and not as mist
     reflex: [
-      [118, 26, 0.9, 0.018, 0.3, 1],
-      [85, 22, 0.86, 0.022, 0.22, 1],
-      [100, 24, 0.76, 0.03, 0.12, 0],
-      [48, 20, 0.9, 0.016, 0.25, 1],
-      [35, 16, 0.8, 0.028, 0.1, 0],
+      [116, 32, 0.89, 0.045, 0.27, 0],
+      [84, 22, 0.9, 0.02, 0.06, 1],
+      [88, 30, 0.82, 0.045, 0.4, 2],
+      [24, 30, 0.875, 0.03, 0.47, 1],
+      [30, 26, 0.955, 0.022, 0.24, 2],
     ] as const,
-    reflexCool: [0.8, 0.9, 1] as const,
-    reflexWarm: [1, 0.55, 0.3] as const,
+    reflexCool: [0.9, 0.95, 1] as const,
+    reflexWarm: [1, 0.8, 0.56] as const,
+    reflexDeep: [1, 0.52, 0.25] as const,
+    reflexLined: 0.8,
+    reflexLines: 55,
+    reflexLong: 2.2,
     hazeBanks: 0.35,
     hazeBankSize: 0.42,
     // the storm: the seeds and the dust aloft take the sun and the whole dome glows white-gold; it goes with the liquid's
@@ -249,11 +269,11 @@ export const look = {
     // never one flat tone
     softMm: 26,
     at: [-18, -2] as const,
-    gain: 0.2,
+    gain: 0.175,
     // and a smaller, brighter body of it by the foot (its radius, where, how bright)
     nearMm: 11,
     nearAt: [-5, 0] as const,
-    near: 0.3,
+    near: 0.27,
     cellMm: 38,
     mottle: 0.35,
     // the knot by the foot: a small soft hot spot, and the glow it lies in
@@ -277,9 +297,10 @@ export const look = {
     // the water's cells take this much of a band's light away in places, so it is uneven along its length
     bandMottle: 0.3,
     // grains of sand on the table take the light where a band lies: one to a cell `grainCellMm` wide, `grainMm` in
-    // radius, one in seven of them lit
-    grains: 4,
-    grainMm: 0.07,
+    // radius, one in seven of them lit. Off (0, and then no line of them is in the shader): the lens's fringe gave
+    // each grain a red rim at 3840 x 2160, and a grain wide enough to hide it is no grain
+    grains: 0,
+    grainMm: 0.11,
     grainCellMm: 1.3,
     drift: 0.35,
     breath: 0.06,
@@ -465,7 +486,7 @@ ${front ? `  gl_FragColor = vec4((glare + ${vec(W.edgeColor)} * (${n(W.edge * W.
   float above = smoothstep(${n(W.roomFrom[0])}, ${n(W.roomFrom[1])}, vWl.y);
   float shown = mix(1.0, mix(${n(W.roomDark)}, ${n(W.roomLit)}, room), above);
   // the cream veil over the dome and its bodies
-  float veil = ${n(W.fill)} * above * (1.0 - smoothstep(${n(W.fillTop[0])}, ${n(W.fillTop[1])}, vWl.y)) * (1.0 - (1.0 - smoothstep(-0.65, -0.3, vWl.x)) * smoothstep(${n(W.fillLeft[0])}, ${n(W.fillLeft[1])}, r));
+  float veil = ${n(W.fill)} * above * (1.0 - smoothstep(${n(W.fillTop[0])}, ${n(W.fillTop[1])}, vWl.y)) * (1.0 - ${n(W.fillLeft[2])} * (1.0 - smoothstep(${n(W.fillLeft[0])}, ${n(W.fillLeft[1])}, vWl.x)));
   float glowing = 0.0;
 ${W.fillBody.map((b) => `  ${b[5] ? 'veil' : 'glowing'} += ${n(b[4])} * exp(-dot((vWl - vec2(${n(b[0])}, ${n(b[1])})) / vec2(${n(b[2])}, ${n(b[3])}), (vWl - vec2(${n(b[0])}, ${n(b[1])})) / vec2(${n(b[2])}, ${n(b[3])})));`).join('\n')}
   air += (${vec(W.fillColor)} * (veil * mix(1.0, mix(${n(W.fillDark)}, 1.0, room), above)) + ${vec(W.bodyColor)} * (glowing * (1.0 - smoothstep(${n(W.bodyLimb[0])}, ${n(W.bodyLimb[1])}, r)) * mix(1.0, mix(${n(W.bodyDark)}, 1.0, room), above))) * (bank * still * body);
@@ -480,7 +501,8 @@ ${W.fillBody.map((b) => `  ${b[5] ? 'veil' : 'glowing'} += ${n(b[4])} * exp(-dot
   air += ${vec(W.coreColor)} * (${n(W.core)} * exp(-dot(fromCore, fromCore)) * still * body);
   // the glass's own reflections: broad curved bands across the top and down the right shoulder
   vec3 reflex = vec3(0.0);
-${W.reflex.map((b) => `  reflex += ${vec(b[5] ? W.reflexCool : W.reflexWarm)} * (${n(b[4])} * wlArc(e, r, vec2(${n(Math.cos(b[0] * RAD))}, ${n(Math.sin(b[0] * RAD))}), ${n(1 - Math.cos(b[1] * RAD))}, vec2(${n(b[2])}, ${n(b[3])})));`).join('\n')}
+${W.reflex.map((b) => `  reflex += ${vec(b[5] === 2 ? W.reflexDeep : b[5] ? W.reflexCool : W.reflexWarm)} * (${n(b[4])} * wlArc(e, r, vec2(${n(Math.cos(b[0] * RAD))}, ${n(Math.sin(b[0] * RAD))}), ${n(1 - Math.cos(b[1] * RAD))}, vec2(${n(b[2])}, ${n(b[3])})));`).join('\n')}
+  if (reflex.r > 0.0) reflex *= ${n(1 - W.reflexLined)} + ${n(2 * W.reflexLined)} * smoothstep(0.25, 0.75, stageNoise(vec3(r * ${n(W.reflexLines)}, e * ${n(W.reflexLong)})));
   air += reflex * (still * inside);
   // the light on the glass: a few thin streaks along the arc
   vec3 glints = vec3(0.0);
@@ -559,11 +581,11 @@ ${P.band.map((b, i) => `  bands += ${n(b[6])} * poolBand(h, vec2(${n(b[0])}, ${n
   float pool = (${n(P.gain)} * soft + ${n(P.near)} * near) * (${n(1 - P.mottle)} + ${n(P.mottle)} * sheet);
   // the bands lie in the pool and go out with it at its rim
   float lines = ${n(P.bands)} * bands * (0.2 + 0.8 * min(soft + near, 1.0));
-  vec2 cell = floor(h / ${n(P.grainCellMm)});
+${Number(P.grains) > 0 ? `  vec2 cell = floor(h / ${n(P.grainCellMm)});
   vec2 grainAt = (cell + 0.25 + 0.5 * vec2(stageHash(vec3(cell + 4096.0, 0.31)), stageHash(vec3(cell + 4096.0, 0.57)))) * ${n(P.grainCellMm)};
   float grainWide = max(${n(P.grainMm)}, 0.6 * max(length(hx), length(hy)));
   float chance = stageHash(vec3(cell + 4096.0, 0.83));
-  float sparks = ${n(P.grains)} * exp(-dot(h - grainAt, h - grainAt) / (grainWide * grainWide)) * (${n(P.grainMm)} / grainWide) * smoothstep(0.86, 1.0, chance) * min(2.5 * bands, 1.0) * smoothstep(2.0, 12.0, len);
+  float sparks = ${n(P.grains)} * exp(-dot(h - grainAt, h - grainAt) / (grainWide * grainWide)) * (${n(P.grainMm)} / grainWide) * smoothstep(0.86, 1.0, chance) * min(2.5 * bands, 1.0) * smoothstep(2.0, 12.0, len);` : '  float sparks = 0.0;'}
   vec3 col = ${vec(P.amber)} * pool + mix(${vec(P.pale)}, ${vec(P.gold)}, smoothstep(${n(0.3 * P.softMm)}, ${n(1.4 * P.softMm)}, len)) * lines + ${vec(P.pale)} * (${n(P.core)} * core + ${n(P.glow)} * glow + sparks);
   gl_FragColor = vec4(col * there, 0.0);
 }`
