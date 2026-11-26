@@ -9,23 +9,80 @@
       "loop": false
     },
     "shake-winter": {
-      "text": "Water sloshing and churning hard inside a sealed bottle that is shaken back and forth six times, and a strap of small sleigh bells shaken along with it: wet heavy sloshes and bright tiny jingles together, with a fine hiss",
+      "text": "Fine dry snow blowing across ice: a steady airy hiss of loose snow grains",
       "seconds": 2.6,
       "influence": 0.6,
-      "loop": false
+      "loop": false,
+      "before": {
+        "text": "Water sloshing and churning hard inside a sealed bottle that is shaken back and forth six times, and a strap of small sleigh bells shaken along with it: wet heavy sloshes and bright tiny jingles together, with a fine hiss",
+        "seconds": 2.6,
+        "influence": 0.6
+      },
+      "afterReview": [
+        {
+          "text": "Fine dry snow blowing across ice: a steady airy hiss of loose snow grains",
+          "tail": "close and detailed, no music, no melody, no voice",
+          "seconds": 2.6,
+          "part": "after-review take 1: the snow alone, in place of the made hiss of number 10, which the listener did not hear; laid with the liquid of the kept shake-spring and the bells of the cue's own take 3"
+        }
+      ],
+      "tail": "close and detailed, no music, no melody, no voice",
+      "note": "after-review take 1: the snow alone, in place of the made hiss of number 10, which the listener did not hear; laid with the liquid of the kept shake-spring and the bells of the cue's own take 3"
     },
     "land-winter": {
-      "text": "Two sounds in a row. First one deep heavy thud as a heavy glass object is set down on a stone table. Then at once ice crackling, cracking and creaking as frost spreads quickly outward across the stone, crisp and close",
-      "seconds": 3,
+      "text": "Thick ice on a frozen pond cracking: a few sharp separate cracks, one after another",
+      "seconds": 2,
       "influence": 0.6,
       "loop": false,
-      "note": "asked longer than the cue so the crackle has room; the chain cuts and fades it to the cue's length"
+      "note": "after-review take 3: the ice once more, as single cracks (take 2 of the round was dense and was heard as cellophane, and after the set-down as a fizzing drink); laid after the set-down of takes 3 and 2",
+      "before": {
+        "text": "Two sounds in a row. First one deep heavy thud as a heavy glass object is set down on a stone table. Then at once ice crackling, cracking and creaking as frost spreads quickly outward across the stone, crisp and close",
+        "seconds": 3,
+        "influence": 0.6,
+        "note": "asked longer than the cue so the crackle has room; the chain cuts and fades it to the cue's length"
+      },
+      "afterReview": [
+        {
+          "text": "A heavy stone mortar set down firmly on a marble countertop: one short heavy solid thud of stone meeting stone, the full weight landing at once, with no bounce",
+          "tail": "close and detailed, a dark quiet room, no music, no melody, no voice",
+          "seconds": 1,
+          "part": "after-review take 1: the set-down alone, to lie under all four landings (decision 134), each with its own tail; the heavy thing and the stone are named first and the words glass, deep and low are left out, since they gave a clink or a sub rumble"
+        },
+        {
+          "text": "Ice crackling as frost spreads fast across a frozen window pane: a quick run of crisp fine dry crackles spreading outward, full and loud",
+          "tail": "close and detailed, a dark quiet room, no music, no melody, no voice",
+          "seconds": 2,
+          "part": "after-review take 2: the ice alone, to follow the set-down; take 1 of this round (a stone mortar set down) came back as a quick dry flutter like cards riffled and is not used, so the set-down is laid from the cue's own takes 3 and 2, which were heard together as a glass or mug set down on a hard surface"
+        },
+        {
+          "text": "Thick ice on a frozen pond cracking: a few sharp separate cracks, one after another",
+          "tail": "close and detailed, no music, no melody, no voice",
+          "seconds": 2,
+          "part": "after-review take 3: the ice once more, as single cracks (take 2 of the round was dense and was heard as cellophane, and after the set-down as a fizzing drink); laid after the set-down of takes 3 and 2"
+        }
+      ],
+      "tail": "close and detailed, no music, no melody, no voice"
     },
     "amb-winter": {
-      "text": "Winter wind blowing steadily across open snow: a full airy whoosh, gusts rising and falling, and sleigh bells ringing clearly somewhere in the distance",
+      "text": "Cold wind blowing steadily across an open snowfield: one even airy hiss of wind and blown snow that stays the same from the first moment to the last",
       "seconds": 20,
       "influence": 0.5,
-      "loop": false
+      "loop": false,
+      "before": {
+        "text": "Winter wind blowing steadily across open snow: a full airy whoosh, gusts rising and falling, and sleigh bells ringing clearly somewhere in the distance",
+        "seconds": 20,
+        "influence": 0.5
+      },
+      "afterReview": [
+        {
+          "text": "Cold wind blowing steadily across an open snowfield: one even airy hiss of wind and blown snow that stays the same from the first moment to the last",
+          "tail": "outdoors, wide and open, no music, no melody, no voice",
+          "seconds": 20,
+          "part": "after-review take 1: the wind alone, as the plan says; the bells of the cue's own take 3 are laid far under it afterwards"
+        }
+      ],
+      "tail": "outdoors, wide and open, no music, no melody, no voice",
+      "note": "after-review take 1: the wind alone, as the plan says; the bells of the cue's own take 3 are laid far under it afterwards"
     },
     "glass-clink": {
       "text": "One small clean ring of thick glass touched once: a single bright clear ping with a short natural decay",
@@ -55,31 +112,81 @@
       "takesUsed": 2
     },
     "shake-summer": {
-      "text": "Water sloshing and churning back and forth inside a sealed glass jar that is being shaken, six fast sloshes, with a handful of small dry seeds rattling inside it in the water",
+      "text": "A paper packet of small dry seeds shaken back and forth six times in a steady rhythm from the first moment to the last: six short dry papery rattles of tiny seeds, crisp and full",
       "seconds": 2.6,
       "influence": 0.6,
       "loop": false,
-      "note": "take 3: the water is the subject and the seeds come second, with ... inside it, as in the second winter shake; take 1 gave the water alone and large, take 2 (water and seeds as equals, the seeds clicking against the glass) gave the seeds alone and dry",
-      "state": "open, out of takes",
-      "takesUsed": 3
+      "note": "after-review take 1: the dry seeds alone, to lie over the liquid of the kept shake-spring; no water and no glass in the text or its tail",
+      "before": {
+        "text": "Water sloshing and churning back and forth inside a sealed glass jar that is being shaken, six fast sloshes, with a handful of small dry seeds rattling inside it in the water",
+        "seconds": 2.6,
+        "influence": 0.6,
+        "note": "take 3: the water is the subject and the seeds come second, with ... inside it, as in the second winter shake; take 1 gave the water alone and large, take 2 (water and seeds as equals, the seeds clicking against the glass) gave the seeds alone and dry",
+        "state": "open, out of takes",
+        "takesUsed": 3
+      },
+      "afterReview": [
+        {
+          "text": "A paper packet of small dry seeds shaken back and forth six times in a steady rhythm from the first moment to the last: six short dry papery rattles of tiny seeds, crisp and full",
+          "tail": "close and detailed, a dark quiet room, no music, no melody, no voice",
+          "seconds": 2.6,
+          "part": "after-review take 1: the dry seeds alone, to lie over the liquid of the kept shake-spring; no water and no glass in the text or its tail"
+        }
+      ],
+      "tail": "close and detailed, a dark quiet room, no music, no melody, no voice"
     },
     "shake-fall": {
-      "text": "A handful of dry leaves and dry acorns rattling and rustling inside a small hollow wooden box that is shaken back and forth six times from the first moment to the last: a steady hollow wooden rattle and a dry papery rustle of leaves the whole time",
+      "text": "A big pile of dry autumn leaves rustling as it is swept back and forth six times: soft papery rustling and crunching of many dry leaves from the first moment to the last, full and loud",
       "seconds": 2.6,
       "influence": 0.6,
       "loop": false,
-      "note": "take 3: the dry part alone, the hollow rattle and the leaves, spread over the whole shake: take 2 holds the liquid in a hollow vessel, and one prompt has not given liquid and dry things together in seven shakes; by decision 111 the two may be laid together at no cost if each holds its part",
-      "state": "open, out of takes",
-      "takesUsed": 3
+      "note": "after-review take 2: the dry leaves alone again, with the words that gave leaves in amb-fall take 1 (dry autumn leaves rustling), since take 1 of this round (leaves crumpled in a hand) was heard as dice or plastic pieces shaken",
+      "before": {
+        "text": "A handful of dry leaves and dry acorns rattling and rustling inside a small hollow wooden box that is shaken back and forth six times from the first moment to the last: a steady hollow wooden rattle and a dry papery rustle of leaves the whole time",
+        "seconds": 2.6,
+        "influence": 0.6,
+        "note": "take 3: the dry part alone, the hollow rattle and the leaves, spread over the whole shake: take 2 holds the liquid in a hollow vessel, and one prompt has not given liquid and dry things together in seven shakes; by decision 111 the two may be laid together at no cost if each holds its part",
+        "state": "open, out of takes",
+        "takesUsed": 3
+      },
+      "afterReview": [
+        {
+          "text": "A handful of crisp dry autumn leaves crumpled and rustled in a hand six times in a steady rhythm from the first moment to the last: dry papery crackling rustles, full and loud",
+          "tail": "close and detailed, a dark quiet room, no music, no melody, no voice",
+          "seconds": 2.6,
+          "part": "after-review take 1: the dry leaves alone, to lie over the liquid of the kept shake-spring with the hollow rattle of take 3 behind them; no water and no glass in the text or its tail"
+        },
+        {
+          "text": "A big pile of dry autumn leaves rustling as it is swept back and forth six times: soft papery rustling and crunching of many dry leaves from the first moment to the last, full and loud",
+          "tail": "close and detailed, a dark quiet room, no music, no melody, no voice",
+          "seconds": 2.6,
+          "part": "after-review take 2: the dry leaves alone again, with the words that gave leaves in amb-fall take 1 (dry autumn leaves rustling), since take 1 of this round (leaves crumpled in a hand) was heard as dice or plastic pieces shaken"
+        }
+      ],
+      "tail": "close and detailed, a dark quiet room, no music, no melody, no voice"
     },
     "land-spring": {
-      "text": "A heavy stone crock full of water set down firmly on a stone floor: one deep heavy thump of its weight landing, and the water inside it slapping once against its walls and dripping",
-      "seconds": 3,
+      "text": "One single drop of water falling into a still pool: one clear round plip",
+      "seconds": 1,
       "influence": 0.6,
       "loop": false,
-      "note": "take 3: one vessel of water set down, so the thump and the water are one event and the water stays inside (take 2, a mortar dropped into a puddle, was heard as a brittle crunch and as a wet splat); asked at 3 s; the chain cuts it to 1.5 s",
-      "state": "open, out of takes",
-      "takesUsed": 3
+      "note": "after-review take 1: the one drop alone, to follow the set-down; the family line stays, since the part is water",
+      "before": {
+        "text": "A heavy stone crock full of water set down firmly on a stone floor: one deep heavy thump of its weight landing, and the water inside it slapping once against its walls and dripping",
+        "seconds": 3,
+        "influence": 0.6,
+        "note": "take 3: one vessel of water set down, so the thump and the water are one event and the water stays inside (take 2, a mortar dropped into a puddle, was heard as a brittle crunch and as a wet splat); asked at 3 s; the chain cuts it to 1.5 s",
+        "state": "open, out of takes",
+        "takesUsed": 3
+      },
+      "afterReview": [
+        {
+          "text": "One single drop of water falling into a still pool: one clear round plip",
+          "tail": "close and detailed, glass, water and small natural things, a dark quiet room, no music, no melody, no voice",
+          "seconds": 1,
+          "part": "after-review take 1: the one drop alone, to follow the set-down; the family line stays, since the part is water"
+        }
+      ]
     },
     "land-summer": {
       "text": "A heavy cloth sack full of dry sand dropped onto a stone floor: one deep booming thud of its weight landing, short and sandy",
@@ -136,13 +243,40 @@
       "takesUsed": 1
     },
     "key-tap": {
-      "text": "A fingertip tapping once on a thick soft rubber pad: one soft dull low thump, round and muffled",
-      "seconds": 0.5,
+      "text": "Typing on a thin laptop keyboard: light quiet taps of flat keys, one after another",
+      "seconds": 1,
       "influence": 0.6,
       "loop": false,
-      "note": "take 3: no key, no keyboard and no plastic in the text, since both gave a hard bright click however soft the words around them; a soft thing is named, a rubber pad under a fingertip; asked at the minimum of 0.5 s; the chain cuts it to 0.1 s",
-      "state": "open, out of takes",
-      "takesUsed": 3
+      "note": "after-review take 3: flat laptop keys, light and quiet, since the presses of take 2 of the round were heard as a key but as sharp, not soft; one press is cut out by a recipe",
+      "before": {
+        "text": "A fingertip tapping once on a thick soft rubber pad: one soft dull low thump, round and muffled",
+        "seconds": 0.5,
+        "influence": 0.6,
+        "note": "take 3: no key, no keyboard and no plastic in the text, since both gave a hard bright click however soft the words around them; a soft thing is named, a rubber pad under a fingertip; asked at the minimum of 0.5 s; the chain cuts it to 0.1 s",
+        "state": "open, out of takes",
+        "takesUsed": 3
+      },
+      "afterReview": [
+        {
+          "text": "Soft typing on a laptop keyboard: a few gentle padded key presses, one after another",
+          "tail": "close and detailed, a dark quiet room, no music, no melody, no voice",
+          "seconds": 1,
+          "part": "after-review take 1: typing itself, since a single key asked for alone came back three times as a hard click or a thud; the chain cuts the first key press out of it (0.1 s), and the listener hears both the whole take and the cut press"
+        },
+        {
+          "text": "Typing on a computer keyboard: steady key presses, one after another",
+          "tail": "close and detailed, no music, no melody, no voice",
+          "seconds": 1,
+          "part": "after-review take 2: plain typing, no soft, gentle or padded (take 1 of the round came as thuds, 95 percent between 60 and 250 Hz); one press is cut out by a recipe"
+        },
+        {
+          "text": "Typing on a thin laptop keyboard: light quiet taps of flat keys, one after another",
+          "tail": "close and detailed, no music, no melody, no voice",
+          "seconds": 1,
+          "part": "after-review take 3: flat laptop keys, light and quiet, since the presses of take 2 of the round were heard as a key but as sharp, not soft; one press is cut out by a recipe"
+        }
+      ],
+      "tail": "close and detailed, no music, no melody, no voice"
     },
     "ui-send": {
       "text": "One firm press of a single large rubber button: one short low rounded click with a small thump, dry",
@@ -867,20 +1001,20 @@
     "music-winter": 1,
     "music-fall": 1,
     "music-spring": 2,
-    "music-summer": 2
+    "music-summer": 2,
+    "amb-fall": 6,
+    "amb-winter": 12
   },
   "open": {
-    "amb-winter": "three takes used, none fits: silent in the mixes and in the app until a review round buys new takes. Layer layer-3-2 of its takes, free, was heard as wind, then sleigh bells loud and close: not kept",
-    "land-winter": "three takes used, none fits (almost silent; one light clink; two hollow knocks): the winter landing plays glass-clink alone until a review round buys new takes. Layer layer-3-2 of its takes, free, was heard as a glass or mug set down on a hard surface, short; no ice crackling: not kept",
-    "shake-winter": "three takes used, none fits (a spoon stirring a glass; ice cubes shaken in a container; sleigh bells in open air): the winter shake is silent until a review round buys new takes. Layer layer-2-3 of its takes, free, was heard as liquid and ice in a cocktail shaker; the bells are heard as ice: not kept",
-    "land-spring": "three takes used, none fits (one sharp mechanical click; a brittle crunch or a wet splat; a splash into a bucket of water): the spring landing plays glass-clink alone until a review round buys new takes. Layer layer-2-3 of its takes, free, was heard as a splash into water: not kept",
-    "shake-summer": "three takes used, none fits (open splashes as from a bucket, no seeds; a dry rattle of beads, no liquid; liquid shaken in a container, no seeds): the summer shake is silent until a review round. Layer layer-3-2 of its takes, free, was heard as ice cubes clinking in a glass of liquid (the seeds are heard as ice), or dice with no liquid when the seeds are louder: not kept",
-    "land-summer": "three takes used, none fits (a hiss like a match flaring; a rising hiss like a zipper; a short whoosh in two open calls): the summer landing plays glass-clink alone until a review round buys new takes. Layer layer-3-1 of its takes, free, was heard as one bright chime, synthetic, like a video game coin; the hiss only in the fit call: not kept",
-    "shake-fall": "three takes used, none is the whole line (three knocks on wood; a splash in a hollow vessel, heard once with a clatter; a dry rattle like dice in a cup). Layer layer-2-3 of its takes, free, was heard as one call hears the liquid, the next the rattle, one in three hears both as liquid and ice in a container; dry leaves in none: not kept",
-    "land-fall": "three takes used, none is the whole line (one heavy impact like a hollow wooden object struck; a sub rumble the listener could not settle, twice no file heard; a door creaking and latching, once taken for a cat): take 1 holds the landing and take 3 the creak, the tone is in neither. Layer layer-1-3-2 of its takes, free, was heard as a door creaking and a latch or a knock on wood; never a glass globe on stone, never a tone: not kept",
-    "amb-fall": "three takes used, none is the whole line (someone walking through dry leaves; a steady strong wind roar; four heavy breaths through a regulator): take 2 holds the wind and take 1 the leaves, the tone is in neither. Layer layer-2-1 of its takes, free, was heard as wind and rustling dry leaves; no low eerie tone: not kept",
-    "key-tap": "three takes used, none is the whole line (a hard sharp click like a mouse button, low in the numbers; the same, brighter; a low dull thud like a knock on thick wood): takes 1 and 2 hold the key, take 3 the softness. Layer layer-3-1 of its takes, free, was heard as a sharp hard click, or an electronic boop: not kept",
-    "music-one-piece": "three takes used, none fits (one solo music box in one mood; a music box with strings joining from 16 s to 47 s, one festive mood; sleigh bells, celesta and strings in one festive mood, every 12 s section heard alone called warm and unhurried): the one-piece candidate has no music and cannot be mixed until a review round buys new takes; the four-tracks candidate has all four of its tracks"
+    "land-winter": "three takes used, none fits (almost silent; one light clink; two hollow knocks): the winter landing plays glass-clink alone until a review round buys new takes. Layer layer-3-2 of its takes, free, was heard as a glass or mug set down on a hard surface, short; no ice crackling: not kept. Round after-review (2026-11-26): three more takes (a set-down heard as cards being riffled; ice crackle heard as crumpled cellophane; ice cracks heard as a zip tie). The set-down alone, number 7 laid from the old takes 3 and 2, is heard as a glass or ceramic object striking a hard surface; with the crackle after it the listener heard a match being struck or a fizzy drink poured over ice: not kept, takes left in the round 0",
+    "shake-winter": "three takes used, none fits (a spoon stirring a glass; ice cubes shaken in a container; sleigh bells in open air): the winter shake is silent until a review round buys new takes. Layer layer-2-3 of its takes, free, was heard as liquid and ice in a cocktail shaker; the bells are heard as ice: not kept. Round after-review (2026-11-26): one take, a hiss of blown snow. Number 16 (the liquid of shake-spring at +40 cents, the bells of take 3, the hiss 10 dB under) was heard as a splash of liquid and a bright metallic jingling, no hiss of snow; with the hiss louder, as a fizzy drink over ice, a spray can or a match: not kept, takes left in the round 2",
+    "land-spring": "three takes used, none fits (one sharp mechanical click; a brittle crunch or a wet splat; a splash into a bucket of water): the spring landing plays glass-clink alone until a review round buys new takes. Layer layer-2-3 of its takes, free, was heard as a splash into water: not kept. Round after-review (2026-11-26): one take, one drop of water, heard as liquid poured into a container with the clinking of ice or glass: not used, nothing laid, takes left in the round 2",
+    "shake-summer": "three takes used, none fits (open splashes as from a bucket, no seeds; a dry rattle of beads, no liquid; liquid shaken in a container, no seeds): the summer shake is silent until a review round. Layer layer-3-2 of its takes, free, was heard as ice cubes clinking in a glass of liquid (the seeds are heard as ice), or dice with no liquid when the seeds are louder: not kept. Round after-review (2026-11-26): one take, dry seeds in a paper packet, heard as dice or beads shaken in a container. Laid with the liquid of shake-spring at -50 cents (numbers 5 to 12) the seeds are not heard under the liquid, are heard alone over it, and between the two as ice in a glass or a spray can: not kept, takes left in the round 2",
+    "land-summer": "three takes used, none fits (a hiss like a match flaring; a rising hiss like a zipper; a short whoosh in two open calls): the summer landing plays glass-clink alone until a review round buys new takes. Layer layer-3-1 of its takes, free, was heard as one bright chime, synthetic, like a video game coin; the hiss only in the fit call: not kept. Round after-review (2026-11-26): no take bought. Numbers 5 and 6, the set-down with the lowered ui-sound-on and the hiss of take 1, were heard as a gas lighter or blowtorch being lit and as a wooden tool rubbing on a bowl: not kept, takes left in the round 3",
+    "shake-fall": "three takes used, none is the whole line (three knocks on wood; a splash in a hollow vessel, heard once with a clatter; a dry rattle like dice in a cup). Layer layer-2-3 of its takes, free, was heard as one call hears the liquid, the next the rattle, one in three hears both as liquid and ice in a container; dry leaves in none: not kept. Round after-review (2026-11-26): two takes of dry leaves (the first heard as dice or plastic pieces, the second as dead leaves crumpled). Laid with the liquid of shake-spring at -110 cents (numbers 6, 8 to 11) the leaves are not heard under the liquid, and over it the listener heard stones spilling or a gas stove being lit: not kept, takes left in the round 1",
+    "land-fall": "three takes used, none is the whole line (one heavy impact like a hollow wooden object struck; a sub rumble the listener could not settle, twice no file heard; a door creaking and latching, once taken for a cat): take 1 holds the landing and take 3 the creak, the tone is in neither. Layer layer-1-3-2 of its takes, free, was heard as a door creaking and a latch or a knock on wood; never a glass globe on stone, never a tone: not kept. Round after-review (2026-11-26): no take bought. Number 5 was heard as a mechanical whirr and a clear bell ring, number 6 as a creaking lid or door being latched: not kept, takes left in the round 3",
+    "key-tap": "three takes used, none is the whole line (a hard sharp click like a mouse button, low in the numbers; the same, brighter; a low dull thud like a knock on thick wood): takes 1 and 2 hold the key, take 3 the softness. Layer layer-3-1 of its takes, free, was heard as a sharp hard click, or an electronic boop: not kept. Round after-review (2026-11-26): three takes of typing, of which single presses were cut out. Number 23, one press of take 21 under 2.5 kHz, is the closest: alone a short dry click of plastic (5 of 7 answers) and a fit to the line in 5 of 6; as the 84 taps of film A it is heard as typing where it is loud and as a ratchet or a prize wheel where it is soft: not kept, takes left in the round 0, the typing of film A stays silent. A trial outside the tool then laid ten presses of take 21 in turn on those 84 taps at the same soft level: heard as someone typing on a computer keyboard 6 of 6 (one press at nine pitches beside it: 1 of 3), and in film A's first 20 s as typing and a mouse click with nothing unpleasant (2 of 2); fit to \"Soft key presses\" yes 3 of 6, each no for loud and sharp. Asked again 6 dB lower, under 2.0 kHz and at the take's own levels: typing 7 of 7, soft 1 of 9; the presses of take 9 in turn: typing 1 of 3, soft 0 of 3; of take 10: typing 2 of 2, soft 1 of 3. It is the typing of a hard clicking keyboard played quietly, not the soft key of the line: not kept. The harness cannot keep a set of presses yet (one file a cue, capped at 0.1 s): see audio/RECIPE.md",
+    "music-one-piece": "three takes used, none fits (one solo music box in one mood; a music box with strings joining from 16 s to 47 s, one festive mood; sleigh bells, celesta and strings in one festive mood, every 12 s section heard alone called warm and unhurried): the one-piece candidate has no music and cannot be mixed until a review round buys new takes; the four-tracks candidate has all four of its tracks. Round after-review (2026-11-26): no music was bought"
   },
   "takesLeft": {
     "lift": 0,
@@ -1593,5 +1727,35 @@
         "kept": false
       }
     ]
+  },
+  "afterReview": {
+    "round": "after-review",
+    "date": "2026-11-26",
+    "calls": 12,
+    "credits": 435,
+    "guardAfter": {
+      "spent": 7200,
+      "left": 2800,
+      "limit": 10000
+    },
+    "kept": {
+      "amb-fall": "number 6, laid, no call",
+      "amb-winter": "number 12, laid, no call"
+    },
+    "takesLeftInTheRound": {
+      "shake-winter": 2,
+      "shake-summer": 2,
+      "shake-fall": 1,
+      "land-winter": 0,
+      "land-spring": 2,
+      "land-summer": 3,
+      "land-fall": 3,
+      "key-tap": 0,
+      "amb-winter": 2,
+      "amb-fall": 3
+    },
+    "where": "audio/RECIPE.md, Phase 6: the round after-review; every reply of the listener in audio/evidence/after-review/ (r1 to r37)",
+    "app": "The pack now gives the ambience loops the music's trim of 8 dB (APP_TRIM_DB in tools/lib/audio.mjs): at the pack's earlier gains the listener called the ambience too loud, competing or overpowering in 8 of 12 answers over the four seasons, 8 dB lower in 1 of 11. Under their music the two new beds were not named as wind at that level. Not heard by a human.",
+    "keyTapTrial": "ten presses of take 21 in turn, outside the tool: typing 13 of 13 over four versions, fit to soft 4 of 15; the presses of takes 9 and 10 in turn no better; replies r33 to r37"
   }
 }

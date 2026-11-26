@@ -1,0 +1,33 @@
+{
+  "cue": "amb-fall",
+  "line": "Wind, dry leaves and a low eerie tone, very quiet, an ambience that loops",
+  "why": "the cue's own take 2 is the wind and its take 1 the dry leaves; one made low tone that wavers slowly lies under them, quiet support; the wind is measured after the ambience chain's low cut at 70 Hz, because 62 percent of its energy lies under 60 Hz and would make the tone's 12 dB a smaller step than it reads",
+  "seconds": 20,
+  "layers": [
+    {
+      "take": 2,
+      "lowCutHz": 70
+    },
+    {
+      "take": 1,
+      "lowCutHz": 70,
+      "underDb": 5
+    },
+    {
+      "made": "tone",
+      "hz": 220,
+      "waverHz": 0.11,
+      "waverCents": 50,
+      "partials": [
+        1,
+        0.8,
+        0.5,
+        0.3
+      ],
+      "seconds": 20,
+      "fadeInMs": 400,
+      "fadeOutMs": 400,
+      "underDb": 12
+    }
+  ]
+}

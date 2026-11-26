@@ -1,0 +1,19 @@
+{
+  "cue": "land-winter",
+  "line": "A heavy glass globe set down on stone, heavy and short, then ice crackling outward",
+  "why": "the set-down alone, to hear it before a tail is laid on it: the first knock of the cue's own take 3 with the glass of its take 2 on the same instant",
+  "seconds": 1.5,
+  "layers": [
+    {
+      "take": 3,
+      "cue": "land-winter",
+      "to": 0.7,
+      "fadeOutMs": 100
+    },
+    {
+      "take": 2,
+      "cue": "land-winter",
+      "underDb": 6
+    }
+  ]
+}

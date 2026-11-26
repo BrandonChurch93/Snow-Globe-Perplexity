@@ -1,0 +1,181 @@
+{
+  "id": "amb-fall",
+  "file": "amb-fall.wav",
+  "class": "ambience",
+  "season": "fall",
+  "line": "Wind, dry leaves and a low eerie tone, very quiet, an ambience that loops",
+  "seconds": 18.435,
+  "take": 6,
+  "takes": 3,
+  "round": "after-review",
+  "why": "A layer of three (decisions 111 and 134): the wind of take 2 and the dry leaves of take 1, both of this cue, with one made tone of 220 Hz that wavers slowly, 12 dB under the wind. The open answers heard dry leaves rustling and crackling in the wind with a steady whoosh, twice, with no voice and no music; the fit answer said yes and named a faint, low-pitched drone under them. The loop is 18.4 s and its seam steps 0.11 dB.",
+  "layer": true,
+  "layers": [
+    {
+      "take": 2,
+      "lowCutHz": 70,
+      "source": {
+        "cue": "amb-fall",
+        "take": 2,
+        "sha256": "2678a92adb111618344d288939a38718a362cd4b8fc9d92f7708e00619740c92"
+      },
+      "underMainDb": 0,
+      "gainDb": 0,
+      "levelDb": -53.38,
+      "seconds": 20
+    },
+    {
+      "take": 1,
+      "lowCutHz": 70,
+      "source": {
+        "cue": "amb-fall",
+        "take": 1,
+        "sha256": "b09398c2f575c0249f208c10d4a7702b9ee68f2d01a174a2fec889515cd3dd3a"
+      },
+      "underMainDb": 5,
+      "gainDb": -0.81,
+      "levelDb": -58.38,
+      "seconds": 20
+    },
+    {
+      "made": "tone",
+      "hz": 220,
+      "waverHz": 0.11,
+      "waverCents": 50,
+      "partials": [
+        1,
+        0.8,
+        0.5,
+        0.3
+      ],
+      "seconds": 20,
+      "fadeInMs": 400,
+      "fadeOutMs": 400,
+      "source": {
+        "made": "tone"
+      },
+      "underMainDb": 12,
+      "gainDb": -65.24,
+      "levelDb": -65.38
+    }
+  ],
+  "recipe": {
+    "file": "audio/layers/amb-fall.json",
+    "sha256": "29ec1c74250ab38239b5f04a3fe86265b23669680b5bc52b1d8c584e398af1ff",
+    "why": "the cue's own take 2 is the wind and its take 1 the dry leaves; one made low tone that wavers slowly lies under them, quiet support; the wind is measured after the ambience chain's low cut at 70 Hz, because 62 percent of its energy lies under 60 Hz and would make the tone's 12 dB a smaller step than it reads"
+  },
+  "tool": "laid together by the harness from the layers named, by fixed numbers (decisions 111 and 134): no call, no credit, not a take",
+  "prompt": null,
+  "settings": null,
+  "chain": {
+    "settings": {
+      "trimDb": -60,
+      "padMs": 0,
+      "fadeInMs": 0,
+      "fadeOutMs": 0,
+      "lowCutHz": 70,
+      "loop": true,
+      "crossSeconds": 1.5,
+      "targetLufs": -30,
+      "capSeconds": 20
+    },
+    "steps": [
+      "low cut at 70 Hz, before the trim",
+      "trimmed 0 s in front and 0.065 s at the end",
+      "looped: 18.435 s with 1.5 s of its end crossfaded into its start",
+      "level: 18.29 dB to -30 LUFS, measured as gated loudness over 400 ms blocks"
+    ],
+    "gainDb": 18.29,
+    "level": {
+      "measure": "gated",
+      "measuredAs": "gated loudness over 400 ms blocks",
+      "seconds": 18.435,
+      "beforeLufs": -48.29,
+      "afterLufs": -30,
+      "targetLufs": -30,
+      "truePeakDb": -15.18
+    }
+  },
+  "loop": {
+    "seconds": 18.435,
+    "crossSeconds": 1.5,
+    "seam": {
+      "jump": 0.001656,
+      "typicalStep": 0.001779,
+      "ratio": 0.93,
+      "levelStepDb": -0.15
+    }
+  },
+  "measured": {
+    "seconds": 18.435,
+    "peakDb": -15.53,
+    "truePeakDb": -15.18,
+    "lufs": -30,
+    "lufsMeasure": "gated",
+    "soundLufs": null,
+    "offsetDb": null,
+    "rmsDb": -33.89,
+    "silenceFrontSeconds": 0,
+    "silenceEndSeconds": 0,
+    "soundSeconds": 18.435,
+    "tailDb": -35.19,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 3481,
+      "bands": {
+        "sub": 0.0139,
+        "low": 0.2826,
+        "lowMid": 0.3686,
+        "mid": 0.0658,
+        "high": 0.1189,
+        "air": 0.1502
+      }
+    }
+  },
+  "ffmpeg": {
+    "lufs": -30,
+    "lra": 2.4,
+    "truePeakDb": -15.2
+  },
+  "takeMeasured": {
+    "seconds": 20,
+    "peakDb": -34.2,
+    "truePeakDb": -33.81,
+    "lufs": -48.3,
+    "lufsMeasure": "gated",
+    "soundLufs": null,
+    "offsetDb": null,
+    "rmsDb": -51.96,
+    "silenceFrontSeconds": 0,
+    "silenceEndSeconds": 0.065,
+    "soundSeconds": 19.935,
+    "tailDb": -72.7,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 3090,
+      "bands": {
+        "sub": 0.0728,
+        "low": 0.2967,
+        "lowMid": 0.3352,
+        "mid": 0.0583,
+        "high": 0.1037,
+        "air": 0.1333
+      }
+    }
+  },
+  "answers": {
+    "line": "Wind, dry leaves and a low eerie tone, very quiet, an ambience that loops",
+    "open": "1. I hear the continuous rustling and crackling of dry leaves blowing in the wind. The sound has a crispy, organic character with a steady whooshing background.\n2. There is one continuous ambient sound event throughout the entire recording.\n3. No, there is no human voice, spoken word, breath, or singing.\n4. No, there is no music, melody, or musical instrument present.\n5. The audio starts abruptly with the wind and rustling already in progress. It ends suddenly while the sound is still ongoing, indicating it is a cut from a longer recording.",
+    "fit": "1. Yes, it fits the description because the audio consists of a continuous, quiet ambient recording of wind rustling through dry leaves, accompanied by a faint, low-pitched drone. \n2. There are no discernible sounds in the audio that contradict or do not belong to the provided description. \n3. No, there is no human voice, spoken word, or singing present in the recording.",
+    "openSecond": "1. I hear the sound of wind blowing through dry leaves or vegetation. It has a continuous, natural rustling and crackling character.\n2. It is a single, continuous sound event with fluctuating intensity due to gusts of wind.\n3. There is no human voice, spoken word, breath, or singing present.\n4. There is no music, melody, or musical instrument in the recording.\n5. The audio starts abruptly with the rustling already in progress and ends abruptly when the recording cuts off.",
+    "family": "1. No, these do not belong together in a room because they are outdoor environmental recordings featuring entirely different natural elements: pouring water, chirping insects, and wind blowing through leaves. \n2. The second sound stands apart because it is a sharp, rhythmic, high-pitched trill, whereas the first and third sounds consist of the continuous, irregular broadband rushing noises of moving water and wind.",
+    "note": "a layer: the wind of take 2 and the leaves of take 1 with one made tone 12 dB under; the family file held the kept amb-spring, the kept amb-summer and this sound; the fit answer's words on quietness are about the listening copy, which the chain sets to -30 LUFS"
+  },
+  "source": {
+    "name": "amb-fall.json",
+    "sha256": "0a246dab955d5b10c9257927936ae267a87202441b00579488d17c2ae571bb72"
+  },
+  "takeSha256": "0a246dab955d5b10c9257927936ae267a87202441b00579488d17c2ae571bb72",
+  "sha256": "07ded692ee7571b68493eb6ff1ef5826ab3771d83210b3b7a65311ff3b452db8",
+  "time": "2026-11-26T05:12:31.190Z"
+}
