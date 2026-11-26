@@ -1,43 +1,41 @@
 {
-  "number": 135,
-  "time": "2026-11-26 03:58 UTC",
+  "number": 136,
+  "time": "2026-11-26 04:30 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 135 · 2026-11-26 03:58 UTC · Phase 6",
-    "Review item 1, the white glass: the mend is complete in the code and passes its checks (types clean; 528 tests pass, 4 skipped). As a second net, the glass now turns a pixel that is no number into clear glass, never into a bright sheet. Publishing it is the next step.",
-    "The winter pixels of the last status are traced: 5 to 8 lone pixels move by one level when the test wraps a call whose base cannot be below zero by its own text; with the wrapper answering as the plain function the picture equals the plain one. The same size of step with three different answers (no number, 0, 1e30), so no picture rests on an open case there.",
-    "The strict check is now a command of the repo (npm run strict). It passes when no pixel moves by more than one level and at most 0.01 percent of pixels move.",
-    "Next, at once and in parallel: builders on the faults the fresh review named, shown below as the reviewer found them (the season change seen in one frame, the blank first frame, the phone framing, summer reading as snow), a checker running the strict rule on all eight judged pictures, and the open sounds.",
-    "phase 6: 1.15 h used of its 12.00 h box",
-    "allowance (after the review): 1.15 h used of 12.00 h allowed",
+    "Status 136 · 2026-11-26 04:30 UTC · Phase 6",
+    "The mended glass is published: the four seasons below are the published build drawn through the app's own path at a tablet's size, under the strict rule that answers an open pow with no number, as an Apple graphics card does.",
+    "Eight agents are at work: five builders on the review's faults (the season change, summer at feed size, the first frame, the phone framing, the controls), one on the strict check, one on the sound, one measuring a larger machine for the 4K 60 masters. Next: the prompt opening of film A.",
+    "phase 6: 1.68 h used of its 12.00 h box",
+    "allowance (after the review): 1.68 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-135-1.jpg",
-      "caption": "To mend: the season change outside the glass. The fresh review's frames of the review film: the old base whole in one frame, the new one in the next",
-      "w": 1200,
-      "h": 669
+      "file": "out/stills/status/status-136-1.jpg",
+      "caption": "Winter, the published build in the app's own path, 1180 x 820, strict pow rule: the glass is clear",
+      "w": 1180,
+      "h": 820
     },
     {
-      "file": "out/stills/status/status-135-2.jpg",
-      "caption": "To mend: on a phone the glass leaves the screen in a shake (the fresh review's captures at 390 x 844)",
-      "w": 1186,
-      "h": 870
+      "file": "out/stills/status/status-136-2.jpg",
+      "caption": "Spring, the same path and rule",
+      "w": 1180,
+      "h": 820
     },
     {
-      "file": "out/stills/status/status-135-3.jpg",
-      "caption": "To mend: summer at feed size. The approved picture, the film and the live app, as the fresh review set them side by side",
-      "w": 1200,
-      "h": 238
+      "file": "out/stills/status/status-136-3.jpg",
+      "caption": "Summer, the same path and rule",
+      "w": 1180,
+      "h": 820
     },
     {
-      "file": "out/stills/status/status-135-4.jpg",
-      "caption": "To mend: the page before the first picture, as the fresh review caught it",
-      "w": 1200,
-      "h": 280
+      "file": "out/stills/status/status-136-4.jpg",
+      "caption": "Fall, the same path and rule",
+      "w": 1180,
+      "h": 820
     }
   ]
 }
