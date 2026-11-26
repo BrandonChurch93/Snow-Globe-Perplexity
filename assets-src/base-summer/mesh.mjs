@@ -192,8 +192,8 @@ function scallop(soup, fr, it, rnd, opt) {
       const step = grow - Math.floor(grow)
       const band = 0.5 + 0.5 * Math.sin(v * 31 + 6 * rnd.k + 1.5 * Math.sin(u * 9))
       const k = (0.84 + 0.16 * rib) * (0.9 + 0.1 * band) * (0.86 + 0.14 * step) * (0.8 + 0.2 * smooth(0, 0.35, v))
-      const fold = (0.3 + 0.7 * rib * smooth(0.02, 0.2, v)) * (0.55 + 0.45 * smooth(1.0, 0.86, rho))
-      return { uv: [u * ribs * 0.5, v * 3], uv2: [fold, 0.3], c: [it.c[0] * k, it.c[1] * k * (0.97 + 0.03 * band), it.c[2] * k * (0.92 + 0.08 * band)] }
+      const fold = mix((0.3 + 0.7 * rib * smooth(0.02, 0.2, v)) * (0.55 + 0.45 * smooth(1.0, 0.86, rho)), 0.92, it.plain ?? 0)
+      return { uv: [u * ribs * 0.5, v * 3], uv2: [fold, it.gloss ?? 0.3], c: [it.c[0] * k, it.c[1] * k * (0.97 + 0.03 * band), it.c[2] * k * (0.92 + 0.08 * band)] }
     },
   )
 }
@@ -287,8 +287,8 @@ export function buildSet(f) {
     const fr = frameOf(f, it)
     count[it.kind]++
     if (it.kind === 'glass') seaGlass(glass, fr, it, rnd)
-    else if (it.kind === 'scallop') scallop(shells, fr, it, rnd, { spread: 74, ribs: 9, dome: 0.3, rib: 0.13, ears: true })
-    else if (it.kind === 'cockle') scallop(shells, fr, it, rnd, { spread: 86, ribs: 11, dome: 0.46, rib: 0.1 })
+    else if (it.kind === 'scallop') scallop(shells, fr, it, rnd, { spread: 74, ribs: it.ribs ?? 9, dome: 0.3, rib: it.rib ?? 0.13, ears: true })
+    else if (it.kind === 'cockle') scallop(shells, fr, it, rnd, { spread: it.spread ?? 86, ribs: it.ribs ?? 11, dome: it.dome ?? 0.46, rib: it.rib ?? 0.1 })
     else if (it.kind === 'snail') snail(shells, fr, it, rnd)
     else if (it.kind === 'olive') dome(shells, fr, it, rnd, it.r * 1.12, it.r * 0.76, it.r * 0.56, 0.1 * it.r, 0.85, true)
     else dome(shells, fr, it, rnd, it.r, it.r, it.r, 0.3 * it.r, 1, false)
