@@ -1,16 +1,15 @@
-# Status 168
+# Status 169
 
-2026-11-26 17:36 UTC
+2026-11-26 17:59 UTC
 
-- Round 21 on summer is closed as no pass: R1 3 of 10, R4 (motion) 3 of 10, R3 6 and 7, the jury 3 of 15 against a bar of 9; measures 19 of 19 green. Round 22 is summer's last.
-- Seven builders work one fix pass until 19:20 UTC: air, glass, miniature, tree, sand, stone, room. Two instructions of mine were wrong and are turned round (decision 159): the haze in the globe is raised and made cream, and the light on the table goes back to its settled line, a soft pool with a few broad bands.
-- The shader guards (nan4) are in main: strict on all eight keys moves no pixel by more than 1 level. The app is being built for a publish from the first pictures' commit 464ab64d.
-- phase 6: 14.78 h used of its 12.00 h box
-- allowance (after the review): 14.78 h used of 12.00 h allowed
+- The app is published again, from the build that has the first pictures, after a clean build, the first picture check and a fresh security review that found nothing blocking. Summer's seven owners are an hour and a half into the last fix pass before summer's last round. The change of season has a new head that loses nothing to black, but its glow is a column and summer arrives blue, so it gets one more turn. A correction to Status 168: 3 of 15 viewers took summer for a frame from a top-budget film or game cinematic and none took it for a photograph.
+- Next: the owners' mid-pass pictures at about 18:15, their reports at 19:20, my own look at the merged picture, then Round 22, summer's last.
+- phase 6: 15.16 h used of its 12.00 h box
+- allowance (after the review): 15.16 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-168-1.jpg`: The crown, the approved on the left and ours on the right as Round 21 judged it: the approved's pads stand against lit cream haze, ours is one dark mass against dim air.
-- `out/stills/status/status-168-2.jpg`: The base at one scale: the approved is pale wet sand raked by light from the back right, ours is flat tan.
-- `out/stills/status/status-168-3.jpg`: The light on the table: both draw thin gold veins. The settled line asks ours for a soft pool with a few broad bands, so this goes back.
-- `out/stills/status/status-168-4.jpg`: Still: summer landed hero, hd, review
+- `out/stills/status/status-169-1.jpg`: The change from spring to summer, three frames at its peak. Top row: main, where the table and the base go black. Bottom row: the builder's new head, which keeps tone and lights the new base but floods as a column and a flat oval.
+- `out/stills/status/status-169-2.jpg`: The seeds at rest, the approved on the left and ours mid-pass on the right: the heads are round wheels of down now; the stalks still read as sticks and the lights are a half stop short.
+- `out/stills/status/status-169-3.jpg`: The landing mid-pass: one whirl of long thin arcs, nothing green flying, the tree dark and clean; the lanterns do not bloom through it yet.
+- `out/stills/status/status-169-4.jpg`: Four frames of the same change at final tier on the builder's head: no black anywhere, and summer arriving sky blue in the last frame, where the approved storm is cream gold.
