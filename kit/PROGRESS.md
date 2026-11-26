@@ -25,22 +25,22 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 145 · 2026-11-26 07:56 UTC
+Status 146 · 2026-11-26 08:17 UTC
 
-- `out/stills/status/status-145-1.jpg`: Rough draft 1, the four seasons at rest: winter, spring, summer, fall. Fastest quality setting, 960 x 540.
-- `out/stills/status/status-145-2.jpg`: Rough draft 1, eight seconds in: the prompt being typed.
-- `out/stills/status/status-145-3.jpg`: The fault in this draft, six frames across the first change of season: the pale disc hides the globe for a quarter of a second. Its mend is due at 08:15.
+- `out/stills/status/status-146-1.jpg`: The change of season, winter into spring, frames 668 to 682: before (top two rows) and after the mend (bottom two rows).
+- `out/stills/status/status-146-2.jpg`: Phone, first visit: the still shown at once (left), the first live picture (middle), about 50 frames later (right). The globe stays where it is.
+- `out/stills/status/status-146-3.jpg`: Phone, one shake, frames 1 to 5: before (top) and after (bottom). The globe sits higher; the last frame of the bottom row is the change itself, drawn before the mend of the first picture.
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-26 07:56 UTC
-clock: phase 6, tick of 21.6 minutes
-phase 6: 5.11 h used of its 12.00 h box
-allowance (after the review): 5.11 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 5.11 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-26 08:18 UTC
+clock: phase 6, tick of 21.9 minutes
+phase 6: 5.47 h used of its 12.00 h box
+allowance (after the review): 5.47 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 5.47 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: not reached
 box end: not reached
