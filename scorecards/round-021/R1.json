@@ -1,0 +1,154 @@
+{
+  "critic": "R1",
+  "score": 3,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "severe",
+      "file": "set-A-01-b.jpg",
+      "where": "inside the globe: the upper dome, the space behind the tree and the gaps in its crown",
+      "what": "the bright cream-gold backlit haze that fills -a's globe is gone. -b's interior is dim olive and grey-brown, about half as bright in the upper dome. The crown gaps show murky grey instead of glowing cream, and the crown, roof edge and grass tips have lost their warm rim light",
+      "fix": "bring back a strong warm light from behind and to the right inside the globe: a bright cream-gold haze behind the tree and across the upper dome, light glowing through the crown gaps, and warm rim light on the crown, roof edge, fence and grass tips"
+    },
+    {
+      "severity": "severe",
+      "file": "set-A-01-b.jpg, set-B-01-b.jpg",
+      "where": "the base, from collar to foot (crop 4)",
+      "what": "the base reads grey-tan and matte, like suede. It is lit flat from the front, with a dull grey gradient across the top band. In -a it is pale ivory moulded wet sand with fine grain sparkle and droplets, raked by warm light from the back right on its top and right shoulder, with the front in soft cool shade",
+      "fix": "move the base to a paler, less saturated ivory-cream, add grain sparkle and a slight wet sheen, light it from the back right with warm raking highlights on the top and right shoulder and a soft cool shade on the front, and remove the grey gradient"
+    },
+    {
+      "severity": "severe",
+      "file": "set-B-01-b.jpg",
+      "where": "the storm over the cottage, the lanterns and the tree, and the upper dome",
+      "what": "the storm hides far less. In -a the blizzard ghosts the cottage, lamp and lanterns into a pale haze, lifting even the darkest tones, and the lanterns bloom through it as soft cream lights. In -b the cottage, chimney, roses, orange lanterns and crown stay crisp with deep darks. Meanwhile the upper dome is an even, opaque cream fog with no dark gaps, where -a shows the dark background between streaks",
+      "fix": "concentrate the storm over the scene so the cottage and tree read as ghosted silhouettes and the lanterns bloom through the haze, and thin the even fog in the upper dome so dark gaps show between the streaks"
+    },
+    {
+      "severity": "severe",
+      "file": "set-B-01-b.jpg",
+      "where": "the streaks throughout the liquid, and the left third of the globe",
+      "what": "-a's streaks are long, curved motion-blur arcs that wrap around the sphere in a vortex and carry feathery dandelion seeds. -b's are short, straight dashes like grains of rice, all at one diagonal, plus a broad soft smear down the left that reads as a smudge. The storm reads as drizzle rather than a whirl",
+      "fix": "draw long curved streaks that follow the curve of the sphere in a single swirl, vary their length, width and blur with depth, carry feathery seeds inside the swirl, and replace the left smear with layered curved streaks"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg, set-B-01-b.jpg",
+      "where": "the glass rim, top and shoulders (crop 1)",
+      "what": "the glass reads thin: one cool blue-white outline with no visible thickness and no bending of the inside at the edge. -a's rim has a refraction band about 15 to 25 px wide, a warm amber edge on the left, broad blue and warm-brown reflection bands across the top and down the right shoulder, and a large warm glare low on the left. In -b the left glare is a cooler streak set higher in A and is missing in B. A-b also has a dull brown curved smear and scattered brown blobs in the upper dome where -a has bright blue-white curved reflection bands",
+      "fix": "thicken the rim with a refraction band that bends the inside at the edge, add the curved blue and warm reflections across the top and right shoulder, warm the left edge, put a large warm glare low on the left, and replace the brown smear and blobs with those bright reflections"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg, set-B-01-b.jpg",
+      "where": "the collar where the glass meets the base, and the top of the base (crop 5)",
+      "what": "the glass rests on a flat-topped, plain cylindrical band with no seat and no contact shadow. The top third of the base, about 90 px, has no carving and only a faint grain. In -a the glass sinks into a rounded, lumpy sand roll that wraps its foot with a shadowed crease, and the carving runs right up to it",
+      "fix": "replace the flat band with a rounded, sculpted sand lip that rises around the foot of the glass, add the thin dark crease under the glass, and carry the carving and grain up to the lip"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg, set-B-01-b.jpg",
+      "where": "the sand floor inside the bottom of the globe",
+      "what": "a thick tan band with a jagged, torn top edge shows through the lower glass, like a cutaway. In -a it is a thin, pale, frosted sand layer that sparkles, under a domed grass mound",
+      "fix": "thin the layer, make it pale and sparkly, and round its top edge into the grass mound"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg, set-B-01-b.jpg",
+      "where": "the sand pouring off the right side of the base",
+      "what": "a soft, opaque wedge of sand rises from the heap to above the collar, like a wall. In -a a thin, see-through, backlit stream of separate grains falls in an arc from the right shoulder of the base into the heap",
+      "fix": "replace the wedge with a thin falling stream that leaves the shoulder below the collar, with visible grains lit from behind"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the pond and its edge in front of the tree",
+      "what": "a flat, muddy brown-orange rounded shape with one white blob of reflection and a hard, smooth rim. In -a it is dark, clear water that mirrors the lamp post, the trunk and the bright sky, edged with mossy stepping stones",
+      "fix": "make the water dark and clear with a true mirror of the lamp, the trunk and the glowing sky, and break the rim with mossy stones and grass"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the cottage walls, roof and chimney (crop 2)",
+      "what": "the cottage is lit flat and darker and built of large blocky stones. Its chimney is brick-red where -a's is grey stone, its left wall is bare stone where -a's is covered in ivy and roses, and there is no warm rim light along the roof edge",
+      "fix": "use smaller mortared stones in warm tan, make the chimney grey stone, cover the left wall in ivy and roses, and add the warm back light along the roof edge and walls"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg",
+      "where": "the tree crown, trunk and hanging lanterns (crop 3)",
+      "what": "the crown is a dark, dense single mass without -a's layered foliage pads and warm rim light, and its gaps show grey-brown. Thin bright rope-like lines run along the branches, and the lanterns cast little light onto the trunk and leaves",
+      "fix": "break the crown into layered pads lit from the back right, let bright haze show through the gaps, remove the bright rope lines along the branches, and let the lanterns spill warm light onto the trunk and leaves"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg, set-B-01-b.jpg",
+      "where": "the sea glass set into the base (crop 4)",
+      "what": "the pieces are smooth, rounded, opaque pastel blobs, like jelly beans. In -a they are frosted, translucent, irregular tumbled pieces in deep emerald, teal and cobalt, with grain inside and light passing through",
+      "fix": "give the pieces irregular tumbled shapes, a frosted surface, translucency with light passing through, and deeper colours"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg, set-B-01-b.jpg",
+      "where": "the lights behind the globe, most of all top right",
+      "what": "small, separate, saturated orange discs are spread evenly over a navy-tinted black. In -a large, overlapping, near-white cream discs cluster brightly at the top right on a neutral black, with softer warm discs down the left",
+      "fix": "cluster large, overlapping, brighter cream-white discs at the top right, desaturate the orange, and remove the blue cast from the black"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg, set-B-01-b.jpg",
+      "where": "the surface right of the globe, and the sand heap",
+      "what": "in -a the wet surface right of the globe carries bright, soft reflections of the lights behind, and the crest of the backlit heap glows. In -b that surface is dark and the heap is a flat, evenly lit spread",
+      "fix": "add soft reflections of the lights behind on the surface right of the globe, and backlight the heap so its crest glows"
+    },
+    {
+      "severity": "major",
+      "file": "set-B-01-b.jpg",
+      "where": "across the dome, around the crown",
+      "what": "bright, flat, untextured green leaf sprites fly in the storm, although the Settled line says no leaves fly in -b",
+      "fix": "remove the flying leaves"
+    },
+    {
+      "severity": "major",
+      "file": "set-A-01-b.jpg, set-B-01-b.jpg",
+      "where": "the light on the surface left of the base",
+      "what": "this is still thin gold veins running out from one point, as in -a. It is not the soft pool of refracted light with a few broad curved bands that the Settled line describes for -b. Reported because it contradicts the Settled line; not counted against the score",
+      "fix": "render the soft pool of refracted light with a few broad curved bands"
+    },
+    {
+      "severity": "minor",
+      "file": "set-A-01-b.jpg, set-B-01-b.jpg",
+      "where": "the sun glint on the upper right rim",
+      "what": "a hard core with about eight long, sharp spikes that reach well outside the glass. In -a a soft, broad warm glow with many fine, short rays sits on the rim",
+      "fix": "soften the core, widen the glow, and use many shorter, finer rays"
+    },
+    {
+      "severity": "minor",
+      "file": "set-A-01-b.jpg",
+      "where": "the sunflowers at the right edge of the garden",
+      "what": "a flat, untextured green quad sits beside the right sunflower like a leaf card, and the sunflowers read as flat cut-outs. In -a they are modelled and backlit",
+      "fix": "remove or texture the green quad, and give the sunflowers depth and back light"
+    },
+    {
+      "severity": "minor",
+      "file": "set-A-01-b.jpg",
+      "where": "the dandelion seeds in the liquid",
+      "what": "the seeds are soft, blurred starbursts with fewer, coarser filaments and short stems or none. -a's seeds have crisp, fine, feathery filaments on long stems",
+      "fix": "sharpen the seeds and give them many fine, feathery filaments on longer stems"
+    },
+    {
+      "severity": "minor",
+      "file": "set-B-01-b.jpg",
+      "where": "the gaps in the crown left of the trunk",
+      "what": "flat beige polygons with hard edges show through the crown, like cut-outs",
+      "fix": "soften the edges of the gaps and fill them with the same haze as the rest of the storm"
+    },
+    {
+      "severity": "minor",
+      "file": "set-A-01-b.jpg, set-B-01-b.jpg",
+      "where": "the line where the base meets the surface, and the mirror image (crop 6)",
+      "what": "the surface just below the base is a brighter, brown, glossy mirror. In -a it is a darker, cool slate with a fine dusting of sand and a softer reflection",
+      "fix": "darken and cool the surface under the base, soften the reflection, and dust it with fine sand"
+    }
+  ]
+}

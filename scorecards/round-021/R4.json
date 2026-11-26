@@ -1,0 +1,56 @@
+{
+  "critic": "R4",
+  "score": 3,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "severe",
+      "file": "set-A-01.jpg",
+      "where": "frames 1386-1412 (23.10s-23.53s), full scene lighting, base, table surface, and globe interior",
+      "what": "Between 1386 and 1400 the background bokeh and blue table reflections plunge nearly to pitch black, then pop back on at 1412 in warm gold; across the same cut, the dark mossy spring base and pink table petals visibly pop in plain view into the pale seashell summer base and sand piles, while the pink interior fog jumps abruptly to an electric cyan-and-yellow glow before turning olive-gold at 1426.",
+      "fix": "Keep room lighting, bokeh, and table reflections continuous across the season swap with no dark flash, mask interior color transitions smoothly inside a continuous dense particle storm, and never swap the base or table props where the eye can catch a cut."
+    },
+    {
+      "severity": "severe",
+      "file": "set-A-01.jpg",
+      "where": "frames 1296-1438 (21.60s-23.97s), globe and base shake trajectory",
+      "what": "From 1296 to 1386 (1.5s) the globe barely lifts (~5 px), stays nearly dead-level with no lagging tilt, slides in small even horizontal oscillations, and nearly stops above the table at 1374-1386; at 1400 it suddenly jumps ~28 px right and ~30 px higher into the air before whipping left with a sharp tilt at 1412, reading as two disconnected animations stitched together rather than one heavy object in a hand.",
+      "fix": "Drive the entire shake along one continuous, weighty physical curve: an effortful lift well clear of the table, unequal strokes with sharp reversals and lagging rotational tilt through peak storm, and a continuous descent into a damped landing settle."
+    },
+    {
+      "severity": "severe",
+      "file": "set-A-01.jpg",
+      "where": "frames 1296-1438 (21.60s-23.97s), table petals, sand piles, golden light streaks, and under-base shadow/reflection",
+      "what": "During 1296-1386 every cherry petal on the table remains completely frozen while the globe shakes right over it; during 1400-1412, while the summer base is hovering high and tilted in mid-air, the landed sand piles, dark table contact shadow, and sharp left-side golden light wedges are already pinned in their final landed positions on the surface and do not shift or scatter upon touchdown at 1426-1438.",
+      "fix": "Couple contact shadows, mirror reflections, and caustics to the globe's live 3D height and tilt, disturb nearby loose surface debris on lift and touchdown, and never render landed sand piles or contact shadows pinned under an airborne base."
+    },
+    {
+      "severity": "severe",
+      "file": "set-A-01.jpg",
+      "where": "frames 1296-1386 (21.60s-23.10s), cherry blossom particles and liquid inside the glass",
+      "what": "Petals are already suspended to the top of the dome at 1296 before lift, and when the globe lunges right between 1308 and 1322 (+17 px), the petal constellation translates rigidly with the glass as if glued to it instead of lagging in world space and slamming the inner wall, after which an opaque milky-pink blur simply washes over the sphere (1334-1386).",
+      "fix": "Give the fluid and particles real inertia relative to world space so they lag the accelerating sphere, slam against the trailing glass wall, and fold into a coherent turbulent storm rather than moving with the glass and fading to flat pink fog."
+    },
+    {
+      "severity": "major",
+      "file": "set-B-01.jpg",
+      "where": "frames 1440-1618 across set-B-01.jpg through set-B-08.jpg (and 1426-1438 in set-A-01.jpg), interior diorama vs right base flank and front-left table",
+      "what": "Nothing inside the globe grows in during the arrival window: the summer tree canopy, sunflowers, grass, and string lanterns are already 100% full-sized and static by 1426-1440 and are merely uncovered as haze thins; meanwhile outside the globe at 1444-1480, a vertical crust of sand materializes along the right side of the landed base and rigid bright-yellow stick lines sprout across the front-left table.",
+      "fix": "Animate genuine seasonal arrival inside the globe after the swap (foliage filling out, sunflowers opening, lanterns warming on) rather than merely unveiling a pre-swapped static model, and remove the post-landing sand crust on the base flank and rigid yellow wireframe sticks sprouting on the table."
+    },
+    {
+      "severity": "major",
+      "file": "set-B-03.jpg",
+      "where": "frames 1488-1534 across set-B-03.jpg and set-B-04.jpg (representative of set-B-01.jpg to set-B-06.jpg), tree canopy, cottage roof, and mid-globe glints",
+      "what": "Bright neon-green sparkle pixels strobe on for a single 2-frame step and disappear on the next (~70% of bright green pixels in 1502-1514 have no counterpart within 2 px on adjacent frames), accompanied by high-frequency stipple crawl across fine foliage and stonework.",
+      "fix": "Make specular particle glints temporally coherent along continuous multi-frame trajectories and filter or supersample fine foliage and interior lighting so small highlights never pop or crawl frame-to-frame."
+    },
+    {
+      "severity": "major",
+      "file": "set-C-01.jpg",
+      "where": "frames 1440-2014 (24.00s-33.57s) upper dome particle field and sheet windowing (with set-A-01.jpg ending at 23.97s)",
+      "what": "Nearly 10 seconds after touchdown (1962-2014, 32.70s-33.57s), ~20% of the upper dome right up to the top glass rim remains continuously crowded with suspended particles that never die away or come to rest on interior surfaces; additionally, set-A-01.jpg cuts off at touchdown (23.97s) with none of the clearing that follows, while set-C-01.jpg spends 24.00s-32.70s on clearing and a large camera zoom-in/out (1596-1910), leaving under 1 second of wide-frame rest.",
+      "fix": "Allow the slow post-shake whirl to decay so almost all particles settle onto the tree, roof, and ground with only sparse, gentle multi-depth drift at rest, and window set-A across both the shake and its clearing and set-C across several clean seconds at rest."
+    }
+  ]
+}
