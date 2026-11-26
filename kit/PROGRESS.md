@@ -25,21 +25,21 @@ The Builder's memory. Read it at the start of every task and after every compact
 
 The pictures of the newest status, with their captions and the time. Files are in `out/stills/status/`.
 
-Status 148 · 2026-11-26 08:57 UTC
+Status 149 · 2026-11-26 09:21 UTC
 
-- `out/stills/status/status-148-1.jpg`: The opening at 4K: nine frames at the places where another renderer left frames empty this morning. All nine are painted.
-- `out/stills/status/status-148-2.jpg`: Frame 90 of the opening: the 4K pack above, the hd pack scaled two times below. Same shapes, cleaner edges at 4K.
+- `out/stills/status/status-149-1.jpg`: The change of season after its third job: film B frames 660 to 690, every second frame, review tier, drawn by the builder on bbe4db9b. Not judged yet
+- `out/stills/status/status-149-2.jpg`: The opening of film A at 1920 x 1080: the frames on which the last six words become whole, cut to the input, from the committed pack
 
 ## Clock
 
 Copied from the last tick of `npm run clock`.
 
 ```
-2026-11-26 08:57 UTC
-clock: phase 6, tick of 7.1 minutes
-phase 6: 6.14 h used of its 12.00 h box
-allowance (after the review): 6.14 h used of 12.00 h allowed
-all time before the review: 46.28 h, after it: 6.14 h, in review rounds: 0.00 h, in extensions: 0.00 h
+2026-11-26 09:21 UTC
+clock: phase 6, tick of 23.4 minutes
+phase 6: 6.53 h used of its 12.00 h box
+allowance (after the review): 6.53 h used of 12.00 h allowed
+all time before the review: 46.28 h, after it: 6.53 h, in review rounds: 0.00 h, in extensions: 0.00 h
 extra rounds: no
 half point: reached
 box end: not reached
