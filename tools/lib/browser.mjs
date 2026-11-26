@@ -8,7 +8,10 @@ export const SOFTWARE_FLAGS = ['--use-angle=swiftshader', '--enable-unsafe-swift
 // The second software renderer: Mesa lavapipe behind ANGLE's Vulkan back end. It is asked for by name,
 // SHOWCASE_RENDERER=lavapipe, and needs Mesa 26 or newer (mesa-vulkan-drivers). SHOWCASE_LVP_ICD names
 // the driver's json when it is not in the usual place.
-export const LAVAPIPE_FLAGS = ['--use-angle=vulkan', '--ignore-gpu-blocklist']
+// --disable-gpu-rasterization: under lavapipe Chrome's GPU raster draws the page's own controls (DOM, not the
+// canvas) as grey blocks and stripes in some pictures. With it they are clean, and the canvas is the same bytes
+// at the same speed (six pictures and the determinism run, measured 2026-11-26).
+export const LAVAPIPE_FLAGS = ['--use-angle=vulkan', '--ignore-gpu-blocklist', '--disable-gpu-rasterization']
 export const LAVAPIPE_ICD = '/usr/share/vulkan/icd.d/lvp_icd.json'
 export function softwareRenderer() {
   const want = (process.env.SHOWCASE_RENDERER ?? pinnedBrowser().renderer ?? 'swiftshader').toLowerCase()

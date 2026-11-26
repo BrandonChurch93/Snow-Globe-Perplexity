@@ -1,18 +1,15 @@
-# Status 144
+# Status 148
 
-2026-11-26 07:34 UTC
+2026-11-26 08:57 UTC
 
-- The real opening is in. Film A now begins with the prompt screen drawn by the team's skill: 867 frames, 14.45 s, merged, built and pushed as 9691393f.
-- Rough draft 1 of the film (960 x 540, 30 frames a second) is being drawn on eight machines, and the opening's part is already drawn here. It is due in the thread at about 08:30 UTC and will carry the faults of this hour: the soft disc of light at each change of season, summer's cream whirl, and a typing sound that may not be laid yet.
-- Summer under the new renderer, looked at for the first time. At rest it holds: fireflies, lanterns, the pool. Just after a landing the whirl of seeds and dust is pale cream and lacks the glow of the approved picture (open item 224). It goes to the critics as it is.
-- Sixteen agents are at work, which is the limit: the first picture, the cover of the change, the phone's framing, the visitor walk, the point mend at 4K, the master tool, the strict run, the sound, and eight renderers.
-- Tests on 9691393f: types clean, 599 tests pass and 2 fail, both in the sound mix's own test file, which is being changed right now.
-- phase 6: 4.75 h used of its 12.00 h box
-- allowance (after the review): 4.75 h used of 12.00 h allowed
+- The app is published again from this morning's build (08:55 UTC). New in it: the first picture no longer glides after loading, all 28 first pictures are redrawn, the phone framing and the change of season are mended, and the sound pack is the newer one. Visibility is Organization. The live address answers only to signed-in visitors, so I cannot open it from here; two of the uploaded files were read back and equal the local ones.
+- The opening of the 4K film is checked: all 867 frames at 3840 x 2160 were decoded, none is empty, and a redraw gave the same bytes. The opening is now always drawn by the one renderer that gives the committed pictures, and its tool refuses any other.
+- First 4K frames for the masters are measured on one machine: about 130 s a frame while the globe rests and about 227 s during a change of season. Film B is 3,600 frames and the loop 480, so the masters are drawn by the whole fleet at once, after the picture is frozen.
+- Still at work: the last mend of the change of season, the arc of the first picture, the app's sound pack and the master tool. After that come the critic rounds on summer, the change of season and the globe, then the film itself.
+- phase 6: 6.14 h used of its 12.00 h box
+- allowance (after the review): 6.14 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-144-1.jpg`: A frame of rough draft 1: the opening at 6 s, at draft size
-- `out/stills/status/status-144-2.jpg`: Summer at rest, drawn by the new renderer
-- `out/stills/status/status-144-3.jpg`: Summer just after a landing: the cream whirl of open item 224
-- `out/stills/status/status-144-4.jpg`: Film frames 1400 to 1620: the cover of the change, the landing and the settling of summer
+- `out/stills/status/status-148-1.jpg`: The opening at 4K: nine frames at the places where another renderer left frames empty this morning. All nine are painted.
+- `out/stills/status/status-148-2.jpg`: Frame 90 of the opening: the 4K pack above, the hd pack scaled two times below. Same shapes, cleaner edges at 4K.

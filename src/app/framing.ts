@@ -21,6 +21,8 @@ export const FRAME = {
   narrowAspect: 0.6,
   narrowYawDeg: 1.2,
   tableKeepMm: 20,
+  tableRestMm: 600,
+  shakeMid: 0.43,
   mostUnder: 0.35,
   easeRate: 4,
   shakePaths: 8,
@@ -84,13 +86,18 @@ const sink = (rig: Rig, by: number): number => {
   return (by * Math.tan((rig.fovDeg * RAD) / 2) * (rig.distanceMm - (sphereCentreHeightMm - rig.aimHeightMm) * Math.sin(p))) / Math.cos(p)
 }
 
-/** The lowest the camera may aim before the lowest corners of the frame look past the near edge of the table:
- * they meet the table `tableKeepMm` inside that edge, measured from the globe's axis, so it holds however the camera is turned. */
-const aimForTable = (rig: Rig, aspect: number): number => {
+/** How far from the globe's axis the lowest corners of the frame may meet the table. At rest that is `tableRestMm`, the
+ * part of the table every layout was fitted and judged on, so a longer table moves no globe at rest. As the camera stands
+ * back for a shake (`back` from 0 to 1) it grows to `tableKeepMm` inside the table's near edge. */
+export const tableReach = (back = 0): number => FRAME.tableRestMm + Math.min(1, Math.max(0, back)) * (SLAB_SHAPE.nearMm - FRAME.tableKeepMm - FRAME.tableRestMm)
+
+/** The lowest the camera may aim before the lowest corners of the frame look further down the table than `reachMm`
+ * from the globe's axis. The measure is from the axis, so it holds however the camera is turned. */
+const aimForTable = (rig: Rig, aspect: number, reachMm: number): number => {
   const p = rig.pitchDeg * RAD
   const t = Math.tan((rig.fovDeg * RAD) / 2)
   const z = rig.distanceMm * Math.cos(p)
-  const r = SLAB_SHAPE.nearMm - FRAME.tableKeepMm
+  const r = reachMm
   if (z <= r) return -Infinity
   const fall = Math.cos(p) - t * Math.sin(p)
   const wide = aspect * t
@@ -209,6 +216,22 @@ export function shakenCentres(): Shaken {
 
 const REST_ONLY = [REST]
 const topOf = (rig: Rig): number => reach(rig, shakenCentres().high, false, reach(rig, REST_ONLY, false, -Infinity) * Math.tan((rig.fovDeg * RAD) / 2))
+
+/** The middle of the glass, halfway between its top and its bottom on the screen, in half heights of the frame over the
+ * middle of the screen, at the moment of a shake that carries it highest, seen from a rig that looks from the front. */
+const midOf = (rig: Rig): number => {
+  const p = rig.pitchDeg * RAD
+  let most = -Infinity
+  for (const c of [REST, ...shakenCentres().high]) {
+    const y = c[1] - rig.aimHeightMm
+    const off = y * Math.cos(p) - c[2] * Math.sin(p)
+    const depth = rig.distanceMm - y * Math.sin(p) - c[2] * Math.cos(p)
+    const at = Math.atan2(off, depth)
+    const half = Math.asin(Math.min(1, sphereRadiusMm / Math.hypot(off, depth)))
+    most = Math.max(most, (Math.tan(at + half) + Math.tan(at - half)) / 2)
+  }
+  return most / Math.tan((rig.fovDeg * RAD) / 2)
+}
 const sideOf = (rig: Rig): number => reach(rig, shakenCentres().wide, true, 0)
 
 /** The furthest the glass reaches through a shake from a rig that looks from the front: up, and to a side. */
@@ -227,7 +250,10 @@ let fitted: { aspect: number; under: number; rig: Rig; far: Rig } | null = null
  * Where an upright screen leaves room over and under the globe, the room over the glass is `overUnder` times the room
  * between the foot and the highest control.
  * `farMm` is how far the same camera stands for the bar of a shake: the nearest that holds every stroke, glass and widest
- * base, between the sides. On a wide screen that is where it stands at rest; on an upright one it is further. */
+ * base, between the sides. On a wide screen that is where it stands at rest; on an upright one it is further.
+ * Stood back it keeps the aim it rests with, raised only as far as the foot's line and the reach of the table ask. On a
+ * narrow upright screen, where that aim would carry the smaller globe above the middle of the screen, it is raised until
+ * the middle of the glass, at the highest moment of a shake, sits `shakeMid` down the height. */
 function fit(aspect: number, under: number): { rig: Rig; far: Rig } {
   if (fitted && fitted.aspect === aspect && fitted.under === under) return fitted
   const wide = rigOf(MOVES.wide)
@@ -255,15 +281,24 @@ function fit(aspect: number, under: number): { rig: Rig; far: Rig } {
       if (over <= 0) break
       rig.aimHeightMm = Math.min(floor, rig.aimHeightMm + sink(rig, over))
     }
-    rig.aimHeightMm = Math.min(floor, Math.max(rig.aimHeightMm, aimForTable(rig, a)))
+    rig.aimHeightMm = Math.min(floor, Math.max(rig.aimHeightMm, aimForTable(rig, a, tableReach(0))))
     const broad = (a >= 1 ? sideOf(rig) : Math.max(glass(rig, REST).side, baseSide(rig))) / across
     const next = Math.max(wide.distanceMm, rig.distanceMm * Math.max(tall, broad))
     if (Math.abs(next - rig.distanceMm) < 1e-7) break
     rig.distanceMm = next
   }
   const far = { ...rig }
+  const mid = 1 - 2 * FRAME.shakeMid
   for (let i = 0; i < FRAME.fitPasses; i++) {
-    far.aimHeightMm = Math.min(aimForFoot(far, low), Math.max(rig.aimHeightMm, aimForTable(far, a)))
+    far.aimHeightMm = rig.aimHeightMm
+    if (a < FRAME.narrowAspect && far.distanceMm > rig.distanceMm) {
+      for (let j = 0; j < 6; j++) {
+        const over = midOf(far) - mid
+        if (over <= 0) break
+        far.aimHeightMm += sink(far, over)
+      }
+    }
+    far.aimHeightMm = Math.min(aimForFoot(far, low), Math.max(far.aimHeightMm, aimForTable(far, a, tableReach(far.distanceMm > rig.distanceMm ? 1 : 0))))
     const next = Math.max(rig.distanceMm, (far.distanceMm * shakeSide(far)) / across)
     if (Math.abs(next - far.distanceMm) < 1e-7) break
     far.distanceMm = next
@@ -335,15 +370,17 @@ export function liveRig(aspect: number, yawDeg = 0, pitchDeg = 0, under = 0, at:
   const rig = { ...held.rig }
   const span = held.far.distanceMm - rig.distanceMm
   const back = standBack(at)
+  let stood = 0
   if (span > 0 && back > 0) {
     rig.distanceMm *= Math.pow(held.far.distanceMm / rig.distanceMm, back)
-    rig.aimHeightMm += ((held.far.aimHeightMm - rig.aimHeightMm) * (rig.distanceMm - held.rig.distanceMm)) / span
+    stood = (rig.distanceMm - held.rig.distanceMm) / span
+    rig.aimHeightMm += (held.far.aimHeightMm - rig.aimHeightMm) * stood
   }
   rig.yawDeg = Math.max(-L.orbitYawDeg, Math.min(L.orbitYawDeg, base.yawDeg + (aspect < FRAME.narrowAspect ? FRAME.narrowYawDeg : 0) + yawDeg))
   const low = lowOf(under)
   rig.pitchDeg = Math.max(L.orbitPitchMinDeg, Math.min(L.orbitPitchMaxDeg, rig.pitchDeg + pitchDeg))
   if (rig.pitchDeg !== held.rig.pitchDeg) holdTilted(rig, low)
-  rig.aimHeightMm = Math.max(rig.aimHeightMm, Math.min(aimForFoot(rig, low), aimForTable(rig, Math.max(aspect, FRAME.leastAspect))))
+  rig.aimHeightMm = Math.max(rig.aimHeightMm, Math.min(aimForFoot(rig, low), aimForTable(rig, Math.max(aspect, FRAME.leastAspect), tableReach(stood))))
   return rig
 }
 

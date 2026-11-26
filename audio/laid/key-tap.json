@@ -1,0 +1,187 @@
+{
+  "id": "key-tap",
+  "state": "laid by decision 141",
+  "decision": 141,
+  "kept": false,
+  "why": "Every allowed take of key-tap is used and none is kept, which left the 84 key presses of film A's opening silent (frames 150 to 506 of the cut of 07:29 UTC, 2.5 to 8.43 s). By decision 141 of kit/PROGRESS.md the nearest right sound plays there: the ten presses of after-review take 21 (light taps on the flat keys of a thin laptop keyboard), taken in turn, one for each key tap of the cut list and none anywhere else. It is not a kept take and the cue stays open.",
+  "recipe": {
+    "set": {
+      "cue": "key-tap",
+      "take": 21,
+      "windows": [
+        [
+          0.081979,
+          0.162
+        ],
+        [
+          0.162,
+          0.232
+        ],
+        [
+          0.232,
+          0.302
+        ],
+        [
+          0.302,
+          0.397
+        ],
+        [
+          0.407,
+          0.497
+        ],
+        [
+          0.497,
+          0.581979
+        ],
+        [
+          0.581979,
+          0.642
+        ],
+        [
+          0.642,
+          0.737
+        ],
+        [
+          0.757,
+          0.847
+        ],
+        [
+          0.847,
+          0.942
+        ]
+      ],
+      "windowsAre": "seconds of the take: each press from 8 ms before its onset (0.090, 0.170, 0.240, 0.310, 0.415, 0.505, 0.590, 0.650, 0.765, 0.855 s) to 8 ms before the next, at most 95 ms",
+      "highCutHz": 2500,
+      "highCutEndHz": 3500,
+      "fadeInMs": 2,
+      "fadeOutMs": 30,
+      "pressDb": -38.126
+    },
+    "step": 3,
+    "varied": false,
+    "order": "tap k of the film takes press 3k mod 10",
+    "hand": "each tap is laid at the time of its own frame in the cut list and moved by the time list of HAND in tools/lib/audio.mjs (never more than 20 ms, the first not at all), at the level list of HAND without its underDb: the level is pressDb",
+    "run": {
+      "rmsDb": -37,
+      "from": 2.5,
+      "to": 8.5,
+      "of": "the finished mix of film A, the cut of 07:29 UTC (84 taps, the first at 2.5 s and the last at 8.4333 s)",
+      "how": "pressDb is the level of each press before the master of the mix, which adds about 2.1 dB; found by mixing film A and reading the run (out/work/audio/p6/d141/tune.mjs): -36.9996 dB rms"
+    }
+  },
+  "answers": {
+    "verdict": "laid, not kept: typing 6 of 6, soft 3 of 6",
+    "typing": "6 of 6 open listenings of 0 to 7.5 s of film A heard typing on a keyboard",
+    "soft": "3 of 6 listenings said the presses fit \"Soft key presses\"; the three that said no called them firm, crisp or loud",
+    "first20s": "nothing unpleasant, too loud or out of place is said of the typing in the first 20 s of film A: 2 of 2 in the trial, 1 of 1 as the tool laid it on the cut before, 3 of 3 on the cut of 07:29 UTC (all three of those name the music that follows instead: eerie or distorted twice, much louder than the typing once)",
+    "why": "The keep rule of the cue asks the line \"A soft key press\" of every listening, and half of them say the presses are not soft. So the set is not kept. It is laid by decision 141 because film A opens on 8.85 s of typing with no sound at all otherwise. The trial outside the tool (r33, r34) and the set the tool builds are the same presses: they differ by -111 dB of the press, levels matched.",
+    "varied": "left out. One listening of the first 20 s with the VARIED list of pitches on the presses (r39, filmA-20-varied) heard a rapid mechanical clicking like a timer or spinner, not typing. The same 20 s without it (r39, filmA-20-plain) heard rapid keyboard typing and a mouse click, nothing unpleasant.",
+    "listener": {
+      "film": "1. From 0 to 5 seconds, rapid keyboard typing and a mouse click are heard. At 5 seconds, a music box begins playing the melody of \"Silent Night\" and continues until the end of the clip.\n2. No, nothing is unpleasant, too loud, or out of place in this recording. Both the typing sounds and the music box are clear and play at a comfortable, moderate volume.\n3. No, there is no human voice, spoken word, or singing present. The recording consists entirely of mechanical sound effects and a music box.",
+      "filmVaried": "1. From 0 to 5 seconds, there is a rapid mechanical clicking sound, which is followed by a single bell chime at the 5-second mark. After a brief pause, a gentle music box melody plays from 7 seconds until the end of the recording. \n\n2. No, nothing is unpleasant, too loud, or out of place. The sounds flow logically, resembling a mechanical timer or spinner that dings before transitioning into a soothing music box tune.\n\n3. No, there is no human voice, spoken word, or singing in this recording.",
+      "filmOnTheCutOf0729": {
+        "filmA-20-h-a": "1. Rapid keyboard typing occurs from 00:00 to 00:07, concluding with a sharp ding. From 00:10 to 00:20, an eerie, distorted music box melody plays. \n2. The distorted music box tune from 00:10 to 00:20 feels unpleasant and out of place because of its creepy, horror-like dissonance. It creates an unexpectedly unsettling atmosphere that contrasts sharply with the mundane typing sounds.\n3. No, there are no human voices, spoken words, or singing in this recording.",
+        "filmA-20-h-b": "1. Rapid keyboard typing occurs from 0 to 5 seconds, ending with a mouse click at 5 seconds, followed by a loud, shimmering sound effect from 8 to 18 seconds.\n2. The dramatic sound effect from 8 to 18 seconds is much louder than the typing and feels out of place. It abruptly shifts the audio from a quiet, everyday office setting to a cinematic or fantasy atmosphere.\n3. No, there is no human voice, spoken word, or singing in the recording.",
+        "filmA-20-h-c": "1. From 0 to 6 seconds, fast keyboard typing is heard, ending with a sharp ding. After a brief pause, an eerie music box melody starts at 10 seconds and plays until the end.\n2. The music box that begins at 10 seconds feels out of place and slightly unpleasant. Its sudden, creepy tone creates a jarring shift from the otherwise ordinary, mundane sound of typing.\n3. No, there is no human voice, spoken word, or singing in this recording."
+      }
+    },
+    "where": "audio/evidence/after-review/r33.json and r34.json (s21-open, s21-fit, s21-20), r39.json (filmA-20-plain, filmA-20-varied), r43.json (filmA-20-z, -f and -h, three each)",
+    "onTheFrame": "The cut of 07:29 UTC gives each tap its own frame (steps of 4 or 5 frames at 60 a second). Laid three ways and heard three times each (r43): exactly on the first sample of its frame, typing 2 of 3 and once a rapid mechanical clicking called jarring; kept inside its own frame (the hand's list brought into 0 to 15.67 ms), typing 2 of 3 and once a rapid mechanical clicking; moved by the hand's list as it is (-20 to +20 ms, up to 1.2 frames), fast keyboard typing 3 of 3 with nothing said against it. By the rule fixed before listening the hand's list stays as it is, so a tap begins up to 20 ms before or after the time of its frame. Reported to /root, who kept it at 07:44 UTC: decision 144.",
+    "decision144": "Decision 144 of kit/PROGRESS.md (the word of /root, 07:44 UTC): the hand's list stays, each tap within 20 ms of its own key, heard as typing 3 of 3. The tool holds it: HAND_LIMIT_MS in tools/lib/audio.mjs is 20, mixFilm refuses a tap that would begin further than that from the time of its key, and the record of the mix names what it found. On film A (audio/mix/four-tracks-film-a.json, typing): 84 taps for 84 keys, none without a key and no key without a tap, the largest offset 20 ms, the earliest tap 20 ms before its key and the latest 20 ms after; 38 taps begin before their key, 39 after it and 7 on it. No sound is laid for the two presses of the menu (frames 65 and 112): the kit gives the opening key-tap, ui-send and riser only."
+  },
+  "file": "key-tap.wav",
+  "class": "interface",
+  "season": null,
+  "line": "A soft key press",
+  "seconds": 1.03,
+  "source": {
+    "cue": "key-tap",
+    "take": 21,
+    "sha256": "d6704aaec1b5e6064cb1e47a40233e7dd2250380aad07bfd61ea6db343d86838"
+  },
+  "measured": {
+    "seconds": 1.03,
+    "peakDb": -21.98,
+    "truePeakDb": -21.97,
+    "lufs": -37.28,
+    "lufsMeasure": "gated",
+    "soundLufs": null,
+    "offsetDb": null,
+    "rmsDb": -39.06,
+    "silenceFrontSeconds": 0,
+    "silenceEndSeconds": 0.025,
+    "soundSeconds": 1.005,
+    "tailDb": -39.66,
+    "events": 1,
+    "spectrum": {
+      "centroidHz": 364,
+      "bands": {
+        "sub": 0.0519,
+        "low": 0.6489,
+        "lowMid": 0.1991,
+        "mid": 0.1,
+        "high": 0,
+        "air": 0
+      }
+    }
+  },
+  "ffmpeg": {
+    "lufs": -37.3,
+    "lra": 0,
+    "truePeakDb": -22
+  },
+  "sha256": "d39cd9e6a38b41bfff04ff2263811ec76ca0c40efc15262e60cdf90b86fbb23c",
+  "time": "2026-11-26T07:40:59.599Z",
+  "presses": [
+    {
+      "at": 0,
+      "seconds": 0.080021,
+      "fromDb": -48.27
+    },
+    {
+      "at": 0.100021,
+      "seconds": 0.07,
+      "fromDb": -36.18
+    },
+    {
+      "at": 0.190021,
+      "seconds": 0.07,
+      "fromDb": -46.78
+    },
+    {
+      "at": 0.280021,
+      "seconds": 0.095,
+      "fromDb": -36.45
+    },
+    {
+      "at": 0.395021,
+      "seconds": 0.09,
+      "fromDb": -47.85
+    },
+    {
+      "at": 0.505021,
+      "seconds": 0.084979,
+      "fromDb": -34.11
+    },
+    {
+      "at": 0.61,
+      "seconds": 0.060021,
+      "fromDb": -47.25
+    },
+    {
+      "at": 0.690021,
+      "seconds": 0.095,
+      "fromDb": -30.6
+    },
+    {
+      "at": 0.805021,
+      "seconds": 0.09,
+      "fromDb": -30.5
+    },
+    {
+      "at": 0.915021,
+      "seconds": 0.095,
+      "fromDb": -47.72
+    }
+  ]
+}

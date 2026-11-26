@@ -16,9 +16,9 @@ const SHUTTER = config.film.shutterDegrees / 360
 /**
  * What is outside the glass (the base, what lies on the table, what is on the glass, the lights of the backdrop, the light of
  * the room) changes in one span of the window, three frames long, in the middle of the last and fastest stroke: table.ts puts
- * the middle of that stroke on the middle of this span. Across it the old base gives way to the new. Both are drawn whole and
- * every pixel of every sample holds one or the other, so a frame of the film holds the two laid over each other and never a
- * base that is neither season's. A shake of one season changes nothing outside the glass; what it sheds, and the swell of the
+ * the middle of that stroke on the middle of this span. At that middle the old base gives way to the new, whole: its line
+ * against the lit glass is in sight under the cover, so no sample holds a base that is part one season's and part the
+ * other's (materials.ts). A shake of one season changes nothing outside the glass; what it sheds, and the swell of the
  * light inside in every shake, keep the wider span about the same middle (`shed`).
  */
 const SHED: ChangeSpan = { from: 0.69, to: 0.85, lag: 0 }
@@ -26,8 +26,9 @@ const OUTSIDE_MID = (SHED.from + SHED.to) / 2
 const OUTSIDE: ChangeSpan = { from: OUTSIDE_MID - frames(1.5), to: OUTSIDE_MID + frames(1.5), lag: 0 }
 
 /**
- * The cover of that span, as places in the swap window: the new season's light pours out of the glass and the room falls
- * away from it, as a camera's exposure does when a lamp flares in the dark (lighting.ts, `CHANGE_BLOOM`). It is whole from
+ * The cover of that span, as places in the swap window: the glass burns from inside and the room falls away from it, as a
+ * camera's exposure does when a lamp flares in the dark (lighting.ts, `CHANGE_BLOOM`). The glass stays in sight, so what is
+ * on it goes as the cover rises and comes as it falls (materials.ts, `GLASS_LEAVE`). It is whole from
  * `fullFrom` to `fullTo`: on every exposure of the film that opens or closes inside the span, and a quarter of a frame past
  * each, so that a live picture taken on any instant of the span is under it as well. It rises from `riseFrom` over seven
  * frames and is gone at `goneAt`, five and a half after `fullTo` and inside the window, so that no frame of it is a step.
