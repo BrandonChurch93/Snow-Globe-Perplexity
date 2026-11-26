@@ -215,7 +215,7 @@ export const CARD_VERT = `
     float s2C = sgC * sgC + ${n(PIXEL_SIGMA2)} * uPoint.w * uPoint.w;
     // The film's samples each look through another place of the lens, and so spread a seed or a light over the lens's blur circle
     // at its depth. Drawn once, it is spread by the same circle here, or the app's air holds more of them, and sharper.
-    if (${at(SHAPE.seed)} || ${at(SHAPE.light)}) s2C += uWhole * 0.25 * coc * coc * afloat;
+    if (${at(SHAPE.seed)} || ${at(SHAPE.light)}) s2C += uWhole * 0.25 * coc * coc * afloat * (${at(SHAPE.seed)} ? ${n(CARD.hair.lens)} : 1.0);
     float reachC = ((${at(SHAPE.seed)} ? ${n(CARD.hair.reach)} : ${n(CARD.bound)}) + abs(bends.x) + abs(bends.y)) * rC + 2.2 * sqrt(s2C) + 1.0;
     if (shape > ${n(SHAPE.light - 0.5)} && shape < ${n(SHAPE.spark + 0.5)}) reachC = ${n(CARD.glow.wide)} * 2.2 * rC + 2.6 * sqrt(s2C) + 1.0;
     float headC = 0.0;
@@ -586,7 +586,7 @@ void cardSeed(vec2 p, int kind, vec4 k, vec4 look) {
   // a head that moves through the shutter is drawn out along its path, hair by hair, and stays a head
   if (storm) pp -= vStreak.xy * (dot(pp - mid, vStreak.xy) * (1.0 - 1.0 / (1.0 + ${n(CARD.run.seedDrawn)} * smear)));
   float gauze = 0.0;
-  // each head has its own count of hairs and opens its own way, from a narrow brush to a full clock, so that no two are one stamp
+  // each head has its own count of hairs and opens its own way, from a shallow cone to a ball, so that no two are one stamp
   float mine = mix(${n(CARD.hair.least)}, 1.0, fract(vL3.x * 23.0)) * ${n(CARD.hair.count)};
   float openTo = cos(mix(${n(CARD.hair.open[1])}, ${n(CARD.hair.openWide)}, fract(vL3.y * 31.0)));
   for (int i = 0; i < ${CARD.hair.count}; i++) {
@@ -597,14 +597,18 @@ void cardSeed(vec2 p, int kind, vec4 k, vec4 look) {
     float open = acos(clamp(mix(${n(Math.cos(CARD.hair.open[0]))}, openTo, fract(fi * 0.7548777 + vL3.x)), -1.0, 1.0));
     float turn = 6.2831853 * (fi * 0.6180339887 + vL3.w) + 0.9 * (j1 - 0.5);
     float len = mix(${n(CARD.hair.long[0])}, ${n(CARD.hair.long[1])}, j2) * (1.0 - thinBy * pow(max(cos(turn - thinAt), 0.0), 2.0));
-    vec2 tip = hub + len * (cos(open) * a + sin(open) * (cos(turn) * b + sin(turn) * c)) + len * lean - ${n(CARD.hair.droop)} * len * sin(open) * (0.4 + j1) * a;
+    vec2 way = cos(open) * a + sin(open) * (cos(turn) * b + sin(turn) * c);
+    // a hair that points at the eye is still seen long: the tuft is a disc of spokes from every side, never a few crossed strokes
+    float shown = length(way) / rC;
+    way *= mix(${n(CARD.hair.flat)}, 1.0, min(shown, 1.0)) / max(shown, 0.05);
+    vec2 tip = hub + len * way + len * lean - ${n(CARD.hair.droop)} * len * sin(open) * (0.4 + j1) * a;
     float line = cardLine(pp, hub, tip, ${n(CARD.hair.wide)} * rC * (0.8 + 0.4 * j2), s2, along);
     gauze += ${n(CARD.hair.hairSeen)} * line * (1.0 - ${n(CARD.hair.tipFade)} * along) * (0.55 + 0.45 * j1);
   }
   float ballV = s2 + ${n(CARD.hair.ballWide * CARD.hair.ballWide)} * rC * rC;
   float ball = mix(${n(CARD.hair.ball[0])}, ${n(CARD.hair.ball[1])}, smoothstep(${n(CARD.hair.ballFrom[0])}, ${n(CARD.hair.ballFrom[1])}, sqrt(s2) / rC)) * rC * rC / ballV * ${n(CARD.hair.ballWide * CARD.hair.ballWide)} * exp(-0.5 * dot(pp - mid, pp - mid) / ballV);
   // many hairs, each too faint to stand alone: where they cross they add, so the tuft is a gauze that is densest at its heart
-  hairs = 1.0 - exp(-gauze - ball * mix(${n(CARD.hair.restBall)}, ${n(CARD.hair.stormBall)}, vL2.w));
+  hairs = 1.0 - exp(-gauze * mix(1.0, ${n(CARD.hair.stormSeen)}, vL2.w) - ball * mix(${n(CARD.hair.restBall)}, ${n(CARD.hair.stormBall)}, vL2.w));
   if (storm) {
     float ts = clamp(dot(p - mid, vStreak.xy), -vStreak.z, vStreak.z);
     vec2 ds = p - mid - vStreak.xy * ts - vec2(-vStreak.y, vStreak.x) * (pointBend * (ts * ts / max(vStreak.z, 1e-3) - 0.333 * vStreak.z));
@@ -613,8 +617,10 @@ void cardSeed(vec2 p, int kind, vec4 k, vec4 look) {
     hairs = max(hairs * (1.0 - ${n(1 - CARD.run.seedHairs)} * smear), smear * max(tuft, ${n(CARD.run.seedTrail)} * tail * along * (1.0 - along) * 4.0));
   }
   hairs = max(hairs, ${n(CARD.hair.hubSeen)} * cardLine(pp, hub, hub, 0.07 * rC, s2, along)) * mix(1.0, ${n(CARD.hair.runHead)}, run);
-  vec2 foot = -${n(CARD.hair.foot)} * mix(0.6, 1.15, vL3.w) * a - 0.25 * lean;
-  stems = ${n(CARD.hair.stemSeen)} * max(cardLine(pp, foot, hub, ${n(CARD.hair.stem)} * rC, s2, along), cardLine(pp, foot, foot + 0.2 * a, ${n(CARD.hair.body)} * rC, s2, along)) * mix(1.0, ${n(CARD.hair.runHead)}, run) * (1.0 - smear);
+  vec2 foot = -${n(CARD.hair.foot)} * mix(${n(CARD.hair.footSpan[0])}, ${n(CARD.hair.footSpan[1])}, vL3.w) * a - 0.25 * lean;
+  // the stalk is a pale hair; the grain at its foot is the one dark thing of the seed
+  float grain = cardLine(pp, foot, foot + ${n(CARD.hair.grain)} * a, ${n(CARD.hair.body)} * rC, s2, along);
+  stems = ${n(CARD.hair.stemSeen)} * max(cardLine(pp, foot, hub, ${n(CARD.hair.stem)} * rC, s2, along), grain) * mix(1.0, ${n(CARD.hair.runHead)}, run) * (1.0 - smear);
   float trail = cardLine(p, -vStreak.xy * vStreak.z, vStreak.xy * vStreak.z, ${n(CARD.hair.runWide)} * rC, s2, along);
   if (!storm) hairs = max(hairs, run * ${n(CARD.hair.runTrail)} * trail * (0.25 + 0.75 * along));
   float cover = min(max(hairs, stems) * vCore.w * look.z, 1.0);
@@ -634,7 +640,7 @@ void cardSeed(vec2 p, int kind, vec4 k, vec4 look) {
   vec3 light = vGrid.rgb + vDom.rgb * (${n(LIGHT_LOOK.keyFloor)} + ${n(LIGHT_LOOK.keySide * 0.45)});
   // a hair is fine: in the low sun it is lit and white, never burnt to a solid stroke
   light *= min(1.0, ${n(CARD.hair.litMost)} * uLightBurn / max(max(light.r, max(light.g, light.b)), 1e-3));
-  vec3 col = k.rgb * mix(vec3(1.0), vec3(${CARD.hair.stemTint.map(n).join(', ')}), stems / max(hairs + stems, 1e-4)) * light * ${n(CARD.hair.gain)};
+  vec3 col = k.rgb * mix(vec3(1.0), mix(vec3(${CARD.hair.stemTint.map(n).join(', ')}), vec3(${CARD.hair.grainTint.map(n).join(', ')}), grain), stems / max(hairs + stems, 1e-4)) * light * ${n(CARD.hair.gain)};
   col = mix(col, uVeil.rgb * vFog.rgb, vFog.a * uTone.z);
   gl_FragColor = vec4(col * cover, cover);
 }

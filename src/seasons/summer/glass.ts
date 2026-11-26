@@ -26,7 +26,7 @@ const PART = 'glass-dressing-summer'
 const RS = config.globe.sphereDiameterMm / 2
 const TAU = Math.PI * 2
 
-setGlass('summer', { windowTint: [0.9, 0.86, 0.78], windowGain: [0.14, 0.1, 0.14, 0.1], windowSoftDeg: 5, windowGrain: 0.5, rimTint: [0.8, 1, 1.25], wallTint: [0.9, 0.75, 0.45], ringCover: 0.35, strip: 0, bend: 0, ringThin: 1, rimClear: 0.3, topLine: 0, ringMottle: 0.3, ceiling: 0.35, roomHue: [0.85, 0.98, 1.15], roomHueOn: 1, windowShade: 0, rimGlow: 0, arcs: 2.5, arcTint: [1, 0.9, 0.74], arcCool: 1.6 })
+setGlass('summer', { windowTint: [0.9, 0.86, 0.78], windowGain: [0.14, 0.1, 0.14, 0.1], windowSoftDeg: 5, windowGrain: 0.5, rimTint: [0.8, 1, 1.25], wallTint: [0.9, 0.75, 0.45], ringCover: 0.35, strip: 0, bend: 0, ringThin: 1, rimClear: 0.3, topLine: 0, ringMottle: 0.3, ceiling: 0.35, roomHue: [0.85, 0.98, 1.15], roomHueOn: 1, windowShade: 0, rimGlow: 0, arcs: 0.4, arcTint: [1, 0.9, 0.74], arcCool: 1.6 })
 
 export const look = {
   // leaving: the light goes out between these two counts of beats before the swap window opens
@@ -34,19 +34,19 @@ export const look = {
   flare: {
     halfMm: 30,
     core: 30,
-    coreAcross: 0.03,
-    coreAlong: 0.062,
+    coreAcross: 0.036,
+    coreAlong: 0.07,
     // the bloom of the lens round the core: a soft ball a few millimetres wide
     bloom: 3.2,
     bloomWide: 0.06,
-    halo: 0.7,
-    haloWide: 0.24,
-    veil: 0.22,
+    halo: 1.3,
+    haloWide: 0.12,
+    veil: 0.04,
     // the star: many soft tapered rays, short, each with its own length, widest at the core, fanning away from the globe
-    rays: 0.8,
-    spikes: 18,
-    reach: [0.2, 0.16] as const,
-    rayWide: [0.008, 0.024] as const,
+    rays: 1.4,
+    spikes: 14,
+    reach: [0.31, 0.22] as const,
+    rayWide: [0.008, 0.02] as const,
     arc: 1.6,
     hot: [1, 0.9, 0.72] as const,
     warm: [1, 0.7, 0.38] as const,
@@ -71,18 +71,18 @@ export const look = {
     // the hot patch: the sun, bent by the globe, lands on the inside of the glass low on the far side and burns out there.
     // Where (share of the radius, radians up the limb from the wall's middle), how wide, how far it runs down to the ground
     // and how far up the limb, how strong
-    hot: 10,
-    hotAt: [0.89, -0.06] as const,
-    hotSize: [0.044, 0.1, 0.13] as const,
-    hotColor: [1, 0.93, 0.82] as const,
+    hot: 60,
+    hotAt: [0.875, -0.05] as const,
+    hotSize: [0.046, 0.09, 0.13] as const,
+    hotColor: [1, 0.8, 0.55] as const,
     // above the burn the wall parts the light into slanted strokes that climb the limb: how many lie across one globe
     // radius, how far each leans out toward the limb as it climbs, how far up they reach (radians), how wide the sheaf is
     // and how strong
     brush: 62,
     brushLean: 0.16,
-    brushTall: 0.34,
+    brushTall: 0.22,
     brushWide: 0.055,
-    brushGain: 0.9,
+    brushGain: 0.03,
     // how much of the burn's skirt and of the glow the strokes take away between them
     brushDeep: [0.8, 0.6] as const,
     // the amber glow of the liquid round the patch
@@ -115,8 +115,9 @@ export const look = {
     hazeLow: -0.46,
     hazeTall: 0.66,
     hazeSideTall: 0.55,
-    hazeSky: 0.012,
-    hazeSkyColor: [1, 0.74, 0.5] as const,
+    hazeSky: 0.037,
+    hazeSkySun: 0.3,
+    hazeSkyColor: [1, 0.6, 0.33] as const,
     hazeBanks: 0.35,
     hazeBankSize: 0.42,
     // the storm: the seeds and the dust aloft take the sun and the whole dome glows white-gold; it goes with the liquid's
@@ -138,25 +139,25 @@ export const look = {
     // how far the low sun draws the pool out along its way
     stretch: 2.2,
     softMm: 16,
-    gain: 0.05,
-    core: 3,
-    coreMm: 2.4,
-    glow: 0.7,
-    glowMm: 5,
-    // the water's light: thin lines that run out from the knot, kink and fork. `trunks` lines leave the knot; each parts in
+    gain: 0.006,
+    core: 3.2,
+    coreMm: 1.6,
+    glow: 0.3,
+    glowMm: 3,
+    // the water's light: thin lines that run out from the knot, sway and fork. `trunks` lines leave the knot; each parts in
     // two between `forkMm` from it and each of those in two again, by up to `fork` radians a time. `kinkMm` is how far a
-    // line steps aside, `kinkEveryMm` how often, `thinMm` its half width, `lines` its brightness, `linesMm` how far it
+    // line sways aside, `kinkEveryMm` over what length, `thinMm` its half width, `lines` its brightness, `linesMm` how far it
     // reaches on the left, where the sun throws it, and `rightReach` of that on the right, where only a star of it shows
-    trunks: 12,
+    trunks: 20,
     forkMm: [5, 26] as const,
     fork: [0.12, 0.3] as const,
-    kinkMm: 1.1,
-    kinkEveryMm: [9, 17] as const,
-    thinMm: 0.26,
-    lines: 2.6,
+    kinkMm: 1.5,
+    kinkEveryMm: [24, 46] as const,
+    thinMm: 0.12,
+    lines: 3.2,
     // the soft light each line lies in, as a share of the line
-    lineGlow: 0.14,
-    linesMm: 27,
+    lineGlow: 0.02,
+    linesMm: 40,
     rightReach: 0.45,
     // the soft pool under the lines: the width of the water's cells that shade it, and how much of it they shade
     cellMm: 38,
@@ -177,7 +178,8 @@ export const look = {
     settleSeconds: 1.1,
     early: 0.75,
     kindleSeconds: 0.18,
-    gold: [1, 0.6, 0.24] as const,
+    gold: [1, 0.55, 0.14] as const,
+    amber: [1, 0.36, 0.06] as const,
     pale: [1, 0.8, 0.5] as const,
     // the low sun on the table itself: a strip of dusty warm light past the far side of the globe's long shadow, which lies
     // down the light's way (the pool lies inside that shadow); its strength, how far it reaches along and across, the shadow's
@@ -299,7 +301,7 @@ void main() {
   float rise = max(vWl.y - ${n(W.hazeLow)}, 0.0) / (${n(W.hazeTall * W.hazeSideTall)} + ${n(W.hazeTall * (1 - W.hazeSideTall))} * plume);
   float bank = 1.0 - ${n(W.hazeBanks)} + ${n(2 * W.hazeBanks)} * stageNoise(vec3(vWl / ${n(W.hazeBankSize)}, 3.7));
   air += ${vec(W.hazeColor)} * (${n(W.haze)} * still * body * bank * (${n(W.hazeRim)} + ${n(1 - W.hazeRim)} * plume) * exp(-rise * rise * rise));
-  air += ${vec(W.hazeSkyColor)} * (${n(W.hazeSky)} * still * body);
+  air += ${vec(W.hazeSkyColor)} * (${n(W.hazeSky)} * (1.0 + ${n(W.hazeSkySun)} * (1.0 - 2.0 * toward)) * still * body);
   // the storm's light: slow broad arms about the middle, turning with the time
   float turn = atan(vWl.y, vWl.x);
   float arms = 1.0 - ${n(W.stormArms)} + ${n(W.stormArms)} * sin(2.0 * turn + 5.0 * r - 1.7 * uSummer.x) * smoothstep(0.05, 0.4, r);
@@ -326,9 +328,9 @@ float poolWater(vec2 p, float z) {
 float poolRnd(float i, float k) {
   return stageHash(vec3(i + 11.0, k * 13.0 + 2.0, 0.71));
 }
-// a line's sidestep: runs between turns, neither straight nor round, -1 to 1
+// a line's sway to either side as it runs, -1 to 1
 float poolKink(float t) {
-  return 0.5 * (4.0 * abs(fract(t) - 0.5) - 1.0) + 0.5 * sin(6.2831853 * t + 1.5707963);
+  return sin(6.2831853 * t);
 }
 void main() {
   vec2 way = uPoolAt.zw;
@@ -351,15 +353,16 @@ void main() {
   float z = ${n(P.drift)} * uSummer.y + uPoolFoot.z;
   float wide = poolWater(h / ${n(P.cellMm)} + 3.1, 0.6 * z + 0.37);
   float sheet = min(2.5 * wide * wide, 1.0);
-  // the water's light runs out from the knot in thin lines. Each keeps its bearing, steps aside in kinks as it runs, and
+  // the water's light runs out from the knot in thin lines. Each keeps its bearing, sways as it runs, and
   // parts in two and in two again; a line thinner than a pixel is drawn a pixel wide and as much dimmer, so it never steps
   float lines = 0.0;
+  float tips = 0.0;
   float near = max(len, 5.0);
-  for (int j = 0; j < ${P.trunks}; j++) {
+  if (len < ${n(P.linesMm * 3.4)}) for (int j = 0; j < ${P.trunks}; j++) {
     float fj = float(j);
     float bearing = ${n(TAU / P.trunks)} * (fj + 0.7 * poolRnd(fj, 1.0)) + 0.4;
     float every = ${n(P.kinkEveryMm[0])} + ${n(P.kinkEveryMm[1] - P.kinkEveryMm[0])} * poolRnd(fj, 4.0);
-    float kink = ${n(P.kinkMm)} * (poolKink(len / every + poolRnd(fj, 5.0) + 0.02 * z) + 0.5 * poolKink(len / (0.37 * every) + poolRnd(fj, 2.0))) / near;
+    float kink = ${n(P.kinkMm)} * (poolKink(len / every + poolRnd(fj, 5.0) + 0.02 * z) + 0.25 * poolKink(len / (0.37 * every) + poolRnd(fj, 2.0))) / near;
     float forkAt = ${n(P.forkMm[0])} + ${n(P.forkMm[1] - P.forkMm[0])} * poolRnd(fj, 3.0);
     float first = (${n(P.fork[0])} + ${n(P.fork[1] - P.fork[0])} * poolRnd(fj, 11.0)) * smoothstep(forkAt, 2.2 * forkAt + 4.0, len);
     for (int k = 0; k < 4; k++) {
@@ -372,18 +375,22 @@ void main() {
       vec2 e = vec2(cos(phi), sin(phi));
       float across = h.x * e.y - h.y * e.x;
       float foot = abs(e.y * hx.x - e.x * hx.y) + abs(e.y * hy.x - e.x * hy.y);
-      float thin = ${n(P.thinMm)} * (0.7 + 0.6 * poolRnd(fk, 8.0)) * (1.0 + 1.2 * exp(-len / 9.0));
+      float thin = ${n(P.thinMm)} * (0.7 + 0.6 * poolRnd(fk, 8.0)) * (1.0 + 0.6 * exp(-len / 6.0));
       float drawn = max(thin, 0.8 * foot);
-      float reach = ${n(P.linesMm)} * (0.45 + 0.9 * poolRnd(fk, 9.0)) * (${n(P.rightReach)} + ${n(1 - P.rightReach)} * smoothstep(-0.3, 0.8, -e.x));
+      float reach = ${n(P.linesMm)} * (0.25 + 1.2 * poolRnd(fk, 9.0) * poolRnd(fk, 9.0)) * (${n(P.rightReach)} + ${n(1 - P.rightReach)} * smoothstep(-0.3, 0.8, dot(e, vec2(-0.91, -0.41))));
       float far = len / reach;
       float off = across * across / (drawn * drawn);
-      lines += (thin / drawn) * (exp(-off) + ${n(P.lineGlow)} * exp(-off / 16.0)) * exp(-far * far) * (0.5 + poolRnd(fj, 10.0)) * (dot(h, e) > 0.0 ? 1.0 : 0.0);
+      float bead = 0.3 + 1.4 * smoothstep(0.35, 0.75, stageNoise(vec3(len * 0.5, fk * 3.1, 2.0)));
+      float lit = (thin / drawn) * (exp(-off) + ${n(P.lineGlow)} * exp(-off / 16.0)) * exp(-far * far) * (1.0 - smoothstep(1.0, 1.6, far)) * bead * (1.0 + 2.5 * exp(-len / 10.0)) * (0.12 + 0.88 * poolRnd(fk, 10.0) * poolRnd(fj, 14.0)) * (dot(h, e) > 0.0 ? 1.0 : 0.0);
+      lines += lit;
+      tips += lit * smoothstep(0.35, 1.1, far);
     }
   }
-  lines = min(lines, 4.0);
+  float tip = tips / max(lines, 1e-4);
+  lines = min(lines, 3.0);
   float pool = ${n(P.gain)} * soft * (${n(1 - P.mottle)} + ${n(P.mottle)} * sheet);
   float net = ${n(P.lines)} * lines * smoothstep(0.0, 3.0, len);
-  vec3 col = ${vec(P.gold)} * (pool + net) + ${vec(P.pale)} * (${n(P.core)} * core + ${n(P.glow)} * glow);
+  vec3 col = ${vec(P.gold)} * pool + mix(${vec(P.gold)}, ${vec(P.amber)}, tip) * net + ${vec(P.pale)} * (${n(P.core)} * core + ${n(P.glow)} * glow);
   // the sun on the table: a strip of it gets past the globe on the far side of its shadow, which runs down the light's way
   // and softens as it goes; the strip is brightest by the foot and gone a hand's width out
   vec2 f = vStageWorld.xz - uPoolFoot.xy;
