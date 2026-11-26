@@ -1,6 +1,338 @@
 # Handover: `change_finisher`, unit `change`, branch `agent/p6-change`
 
-## Read this first: the state after the sixth job
+## Read this first: the state after the seventh job
+
+Written 2026-11-26 about 19:23 UTC. Seven jobs were done on this branch. The newest state is here; the sixth job's state follows, then the fifth, the fourth, the second and third, then the first job's text as it was written.
+
+Head of the code branch `agent/p6-change`: ca73e182 (engine 7bc857d50887da42), which holds `main` 5b23a870. `main` holds the first six jobs (the sixth as e58aa9d4) and nothing of the seventh; `/root` looks at the branch on its own sheets and merges it itself. As this is written `main` is 5f9a5fd2. Since 5b23a870 it has taken all seven summer branches of the seventh fix list (the room, the glass with the rim down to 0.3, the cottage, the stone, the sand, the tree and the air) and it holds nothing of the seventh job. The branch's working tree holds that `main` merged (a16acab9, not pushed) with the mend of thing 6 of part 0 on top, not committed. `main` holds the seventh list's scripts under `assets-src/` but the made assets are still those of 0e1100bb (16:40 UTC), so in any frame drawn on it summer's base, tree and cottage are the sixth list's meshes under the seventh list's shaders.
+
+The head differs from `main` in eleven files. Under `src/`: `src/scene/lighting.ts` (the cover, `CHANGE_BLOOM` and `pourColour`), `src/post/post.ts` (the lens: glare, halo, veil, the room's tone), `src/scene/surface.ts` (the slab: `uPour`, `uImage`), `src/scene/frame.ts` (two fields, `poolOn` and `image`), `src/scene/stage.ts` (where the halo sits), `src/core/materials.ts` and `src/shake/change.ts` (comments only), and one guarded line in `src/seasons/summer/arrival.ts` (line 157). Under `tests/`: `tests/lens-glare.test.ts` (15 tests), `tests/light-flood.test.ts` and `tests/glsl-normalize.test.ts` (the exception for summer's arrival taken out, as `/root` asked at 15:27 UTC).
+
+The seventh job (`tools/briefs/p6/change-7.md`) was the cover of the change itself. Until now the cover was a blackout: the exposure fell, everything the room lights fell to black with it, and for about ten frames the glass burned alone in a black frame. The job: the same cover with the room still there, the light of the glass pouring out on the table, the base and the mirror image, lamps that fall but do not go out, no patch of true black in any frame, each change in its own colour of light, and the swap as unseen as it was.
+
+In short: the black frame is gone (0.00 in 100 of the pixels under 4 on all 60 middle frames, where the old cover had up to 2.44), the room keeps a tone, each change pours the arriving season's own colour, the swap is not seen, and the proofs are green. It is not yet the picture `/root` wants: on its own sheets `/root` named six things for the next turn on this branch, and they are the first part below.
+
+### 0. What is not done, what is not seen and what still shows, worst first
+
+#### The six things `/root` named for the next turn (17:46 and 17:55 UTC): the first five not begun, the sixth found and its mend under way
+
+`/root` looked at d3f0f958 on its farm sheets (tier review, `hd`, every fourth frame, then every second frame of the second and the fourth shake). Its verdict: better than `main` and nearer the kit (no black frame, the room keeps tone in the dip, the new base is lit in the last frame), and six things, the same on all four swaps. It asked that none be begun before the report. What follows is each thing, where it sits in the code and what I read there. The readings are mine, on my own draft frames; where they differ from `/root`'s numbers it says so.
+
+1. **The glow is a column, not a halo.** `/root`: straight above the globe at the top edge of the frame it reads 130 to 135, at the same distance to the left and right 23 to 30; make it round, centred on the globe where it is in that frame, and let it die before the frame's edge. Where it sits: `src/post/post.ts` lines 184 to 191. The glare is `uGlare * exp(-far) * (1 - uGlareHole.x * exp(-far * uGlareHole.y))`, where `far` is the squared distance from `uGlareAt` in radii of the glass, corrected by the frame's aspect, so in itself it is round: a bell 1.1 radii wide (`glareReach`), centred 0.1 down the glass's axis (`glareSeat`), with nine tenths of its middle taken out (`glareHole`). Measured on the head, draft, `hd`, with a circle fitted to the ball's outline: on 1396 the ball's middle is (987, 420) and its radius 355 px, so the top edge of the frame is 1.18 radii above the middle, 65 px over the top of the ball. Luma there, straight above: 128. At the same 1.19 radii from the middle to the left, the right, the upper left and the upper right: 133, 135, 128, 130. At 1.5 radii to the left and right 104 and 107, at 1.75 radii 73 and 77, at 2 radii 46 and 48, at 2.5 radii 13 and 14, which is the room. Frame 675 (middle (936, 423), radius 354) and 1392 (middle (812, 418), radius 364) read the same way. So my reading is that the glow is round and centred on the ball where it is in each frame, and far too wide for where the ball stands: the top edge cuts it at its strongest, it runs on to more than 2 radii at the sides, and with the flat pool under it the whole reads as one tall shape. `/root`'s 23 to 30 at the sides is what I read about 2.2 radii from the middle, which is as far beyond the limb as the top edge is from the middle; taken from the middle both ways the two numbers would be alike. What follows for the mend: a round glow that dies before the top edge has 65 px, 0.18 radii, of room beyond the limb.
+2. **The pool is laid over the base.** `/root`: it is as bright as the globe (186 to 188 against 190 to 204) and one flat oval that covers base and table alike, so it reads as a spotlight from above. The kit (`kit/03-METHOD.md` section 11) says the inner light "floods the base and the surface": the base should stand in that light as a thing, bright on its top and shoulder, falling off down its flank, losing its carving in the glare; the pool should be on the table round its foot, brightest at the foot and falling off outward, with the base's own soft shadow in it. "Its shape may go soft and that hides the dissolve; an oval in its place does not." Keep the pool under about two thirds of the globe. Where it sits: the oval is the halo of the flash, `uHalo * exp(-pool) + uHaloCore.rgb * exp(-pool * uHaloCore.w)` in the same lines of `src/post/post.ts`, set by `CHANGE_BLOOM.halo`, `haloReach` (1.4 radii to the sides), `haloUp`, `haloDown`, `haloSeat`, `haloCore`, `haloWhite` in `src/scene/lighting.ts` and placed by `src/scene/stage.ts`. It is a colour and a place in the lens and it was put there to hide the base while it passes (672.72 to 678.72 in the first shake); under it the pour on the table and the base is drawn in to `flashPour` (0.005) of itself. This is the "not had" (a) below, and `/root` has now said how it wants it had: the base lit and soft, not covered.
+3. **The globe goes flat.** `/root`: the frame's brightest value falls from 242 to 254 before the swap to 216 to 228 at the peak; the source must stay the brightest thing in the frame, the limb's highlights and the hot heart of the storm should bloom to white there with colour round them (`kit/04-LOOK.md` section 6). Where it sits: the glare's hole keeps the glow off the ball (`glareHole` 0.9), the flash share of the glare is "still under white on the ball" by design, and the halo is whitened only half of the way (`haloWhite` 0.5). That was done on `/root`'s word about the first state (609d6d44), where the ball was one flat peach white with no stroke of the storm to read. So the next turn wants both: strokes to read and a heart and a limb that clip. It is the "not had" (e) below.
+4. **The lamps of the room are gone in the two middle frames but for one or two dots.** `/root`: veiled by the glow, yes; gone, no. Where it sits: the lamps are the backdrop's discs (`src/scene/backdrop.ts` and each season's `backdrop.ts`); they fall with the exposure, which is `dim` (0.005) of itself at the whole cover, 7.64 stops, and what is laid back over the picture (`room`, 0.75) is the backdrop's dark tone alone, not its lamps. So the lamps need a floor of their own under the cover.
+5. **The glow's course.** `/root`, whole frame median on the second shake: 1386 30, 1388 32, 1390 50, 1392 86, 1394 114, 1396 112, 1398 91, 1400 45, 1402 24; the fourth: 2826 14, 2828 21, 2830 41, 2832 70, 2834 98, 2836 100, 2838 82, 2840 42, 2842 23. The fall is the steeper side (the base box drops 188 to 87 between 1398 and 1400). A burst of light reads the other way: up fast, then a tail that dies away. Keep the peak where it is, let the fall run on as a tail of 12 to 18 frames that eases out and never blinks off; the peak of 112 and 100 against a room of 30 and 14 is too much wash and should come down by itself with things 1 and 2; say what it reads after. Where it sits: part 4 below has the course as it is written. The cover is a straight ramp (`src/shake/change.ts`, `changeBloom`, `CHANGE_COVER`): in the first shake it begins to fall at 677.97 and is gone at 683.47, and `changeBloom` is 0 once the place in the window reaches 1, which is film frame 684. A tail of 12 to 18 frames runs past the window, so it needs a clock that goes on after the window: that clock is not in `changeBloom` today and has to be found or made (the shake's own time in the frame, or a second window).
+6. **Summer arrives blue.** `/root`: on 1400 and 1402 the left two thirds of the globe read sky blue between the grains, (152, 177, 191) and (122, 162, 185), where the approved `summer-shake.png` storm is cream gold, (186, 156, 117) over the middle of the globe. `main` does the same on 1400, so it is not from the glow. Find what is blue there (the veil's colour for summer in the window, a sky fill that the risen inner light multiplies, or the far side's switch) and make summer come in warm; if the cause is in a file of the air's or the glass's builder (`src/particles/`, the veil or the haze in the glass), do not edit it and tell `/root` the file, the line and the value. The cause is found and proven by trial, and it is not the cover. `veilLit` in `src/core/chunks/veil.ts` whitens the bank of the flood (the thick white of a shaken globe, which stands for as long as the globe is in the hand and is taken off between beats 3.05 and 3.55 of the shake, film frames about 1405 to 1423 in the second shake) by `mix(1, 1 / tint, K x low)`, where K is `VEIL_LOOK.bankWhite`, 2.2, at a whole flood. A K of 1 takes the season's tint out of the bank; 2.2 goes past white to the tint's opposite, so the bank's colour is 2.2 less 1.2 times the tint. For winter's blue tint that is a warm white, (1.24, 1.16, 1.00), which is what the number was made for; for spring it is (1.00, 1.12, 1.08), for fall (1.46, 1.06, 1.66), and for summer's gold tint, (1.75, 1.4, 0.86), it is (0.10, 0.52, 1.17), a sky blue. The trial, on ca73e182 with the number made a uniform that a season's veil can set, draft, `hd`, the body of the ball between the grains at 1400, 1402, 1404, 1408, 1410 and 1420. At 2.2 (the head): (148, 172, 187), (116, 159, 183), (94, 142, 164), (103, 141, 160), (138, 157, 167), (179, 146, 94). With summer at 1: (205, 188, 165), (199, 186, 164), (191, 176, 153), (189, 173, 149), (201, 179, 150), (180, 147, 93). At 0.6: (213, 190, 158), (209, 188, 155), (203, 181, 145), (200, 178, 142), (209, 181, 142), (180, 147, 93). At 0.3: (217, 190, 153), (214, 190, 149), (209, 183, 138), (207, 180, 136), (215, 183, 137), (180, 147, 93). 1420 does not move because the flood is nearly off by then. `/root` gave the mend to this unit at 18:55 UTC (the file has no owner at work), as a commit of its own before the other five things: `bankWhite` becomes a number each season's veil can set, 2.2 where it sets none, so that winter and spring do not move by a byte; summer sets its own, chosen by the picture (the approved landed storm is about (186, 156, 117) in the body; the ball in the hand should read as that storm seen brighter, cream to pale gold, never blue and never grey); fall only if its lilac shows at the size anyone sees it. Where it stands as this is written: the mend is in the working tree on `main` 5f9a5fd2 merged (a16acab9, not pushed), in three files, not committed: `src/core/chunks/veil.ts` (the uniform `uVeilWhite`, set in `updateVeil` and crossed with the tint), one line in `src/seasons/kit.ts` (`bankWhite?: number` in the veil's type; that file is not this unit's and the line is to be named to `/root` in the mend's report) and one line in `src/seasons/summer/veil.ts`. The frames before and with the mend are being drawn on the merged tree, and the value is chosen there. Two things read on the way and not settled: the same summer bank stands in the first part of the third change, before fall's cover (2100 to 2110, blue green on the head), and with the mend it read a pale green there and not cream, which is not yet understood; and fall in the hand (2780, 2800) read its own green with no lilac at draft, so fall is left alone unless the merged tree shows otherwise. A claim to take back: at 18:51 UTC I told `/root` that a green ball with lilac patches at 2108 and 2110 was fall's bank. It is summer's bank, still standing in the first third of fall's window. Two notes from others that touch this: the summer room builder put summer's own entry into `WALL.tints` (`src/scene/backdrop.ts`, a file of this unit, with `/root`'s word; it is in `main`), and the glass's builder took summer's rim from 1.3 to 0.3 in `src/seasons/summer/rig.ts`. The colour of the pour reads the rig's rim through its key, so the pour's colour for summer is to be read again on the merged tree.
+
+#### What `/root` accepted as known at 16:04 UTC, for the round's critics
+
+- (a) **The pool on the six frames of the flash is the lens's glow, not the table's lit surface, and the base is not in sight there.** On 673 to 678 of the first shake (1393 to 1398, 2113 to 2118 and 2833 to 2838 in the other three) what lies below the ball is a flat oval of light in the new season's colour, a colour and a place: it has no sheen and nothing on the table catches it. The table's own surface carries the pour on 669 to 672 and on 679 to 681 only. What lies on the table changes between 674.22 and 677.22 (the old leaves in the first half, the new comes in the second), the base between 672.72 and 678.72, and in a trial that held the pour on the table through the flash, frame 676 showed spring's petals arriving on the lit table. So the pour is drawn in to 0.005 of itself under the flash and the glow stands in its place. Thing 2 above is `/root`'s answer to this.
+- (c) **The table's front edge rises at the flash.** The lowest 40 rows (x 300 to 1620): (58, 41, 46) at 672, (78, 53, 56) at 674, (87, 59, 61) at 677, (59, 50, 62) at 680: 20 to 30 levels of red over its neighbours. It is the lower tail of the halo and the veil.
+- (d) **The mirror image of the burning glass.** In the film's frames none is read: from the film's camera no mirror image of the glass is read in any frame of the four windows, at rest or under the cover. In the app on a phone it is there, and the two levels differ: at `high` the slab draws the stage a second time, so the image is the glass as it is drawn and holds at its resting strength through the flash; at `low` the slab bakes it as a glow under the foot, and since the mend 60cd390c that glow swells with the cover (part 3).
+- (e) **The ball does not burn brighter under the flash than before the cover.** Mean luma of a disc of 230 px about (960, 400): 175 at 668, 173 at 670, 184 at 674, 184 at 676, 187 at 678, 165 at 680. The flare is read from the glow round the ball and the pool below it, not from the ball. Thing 3 above.
+
+#### Not drawn and not seen here
+
+- **The final tier and the review sheets.** `/root` took them to its own machines at 14:17 UTC ("You do not draw the review sheets or the 16 final frames"). Every picture named in this text is tier draft (2 samples), `hd`, lavapipe, unless it says otherwise.
+- **The count at final** on the four middle frames of each change: not taken here, for the same reason.
+- **The outer frames of the four windows on the final head, and the pictures "before the job" beyond the first change.** `/root` at 16:51 UTC: "Do not draw the pictures "before the job" or the outer frames on your one machine." On the final head the 15 middle frames of each change were drawn and counted (668 to 682, 1388 to 1402, 2108 to 2122, 2828 to 2842). The count "before" is from the even frames 660 to 690 of the first change only.
+- **Not played.** The frames were looked at in order as sheets and one by one at their own pixels. No moving picture was played, so "it reads at 400 px, played in order" is not seen as such: what is seen is the four changes side by side in cells of 297 px (picture 56).
+- **The app at the level `low` on `hd`, the jump at `low`, the stir and the drag:** seen as sheets of the frames named in part 6, not played.
+- **On a phone the pool is cut by both side edges of the frame** on app frames 125 to 131 (picture 62): the oval is 1.4 radii of the glass to each side and the phone's frame is narrower than that. It belongs to thing 2.
+
+### 1. What the cover is now
+
+All of it is in `src/scene/lighting.ts` (`CHANGE_BLOOM`, `pourColour` and the lines of `Lighting.update` that read them), `src/post/post.ts` (the lens), `src/scene/surface.ts` (the slab), `src/scene/frame.ts` (two fields) and `src/scene/stage.ts` (where the halo sits). The text above `CHANGE_BLOOM` says the same in the code's own words. The values on the head: `{ lens: 0.2, swellFrom: 0.56, fall: 0.6, dim: 0.005, sharp: 4, pour: 30, pourOn: 5, flashPour: 0.005, image: 5, flood: 0.5, glare: 0.3, flashGlare: 0.7, glareReach: 1.1, glareSeat: 0.1, glareHole: 0.9, glareHoleReach: 1.3, halo: 0.8, haloReach: 1.4, haloUp: 0.4, haloDown: 0.33, haloSeat: 1.52, haloCore: 3, haloWhite: 0.5, tint: 1, veil: 0.03, flashVeil: 0.03, veilReach: 1.5, room: 0.75 }`.
+
+- The exposure falls as before, to `dim` (0.005) of itself at the whole cover, and everything inside the glass rises by as much, so the glass and the storm in it are drawn as they were. That part is the sixth job's and is not touched.
+- The room keeps its tone. What the fall takes from the dark of the backdrop is laid back over the whole picture in the backdrop's own colour (`room`, 0.75 of it; each season's `backdrop.ts` names its colour, measured in the corners of the film's frames at rest, and the two are mixed as the base is). So the corners go from the old season's dark to the new season's dark and never to black. The lamps of the backdrop are not laid back: they fall with the exposure and are nearly gone at the whole cover (thing 4 of part 0).
+- The glass pours its light out, in the new season's colour from the first frame of the cover. On the slab's own near black it is `pour` (30) times what the new season's lights lay there at rest; on the base and on everything that lies on the table (winter's frost, the petals, the leaves, the slab's own dust and lumps) it is `pourOn` (5) times, so what is white there stays under white and takes the colour of the light; the flood of the new season's light on the top of the base is held the same way (`flood`). `frame.pool` is what the slab and the glass take, `frame.poolOn` what lies on it takes; the slab's shader gets them as `uPool` (the smaller) and `uPour` (the difference), and only its own `albedo` is lit by `uPour`.
+- The lens lays a glow round the ball (`glare`), a bell 1.1 radii of the glass wide with nine tenths of its middle taken out by a second bell 1.3 radii wide, so it sits round the ball more than on it and the strokes of the storm are read through it. A veil of the same colour lies wider and weaker (`veil`).
+- The flash is the top of the cover, the cover to the fourth power (`sharp`): in the first shake it is whole in film frames 674 to 677, a part of itself in 672, 673 and 678 and next to nothing beyond (the base passes between 672.72 and 678.72; the other three shakes are 720, 1440 and 2160 frames on). In it the glare rises (`flashGlare`), the pour on the table, the base and the dressing is drawn in to `flashPour` (0.005) of itself, and the lens lays the glow of the pool over the foot (`halo`): a flat bell centred between the collar and the foot of the base (`haloSeat`), 1.4 radii to the sides, 0.4 upward and 0.33 downward, whitened half of the way at its heart (`haloWhite`, on a bell `haloCore` times as tight), so it covers the base, leaves the ball alone and has fallen off above the lower edge of the frame.
+- Nothing in the picture feeds the glare, the halo or the veil: no lamp, no petal. They are a colour and a place, set by the frame. That is what keeps the swap unseen under them, and it is also why the pool reads as laid over the picture (thing 2 of part 0).
+- The film and the app set the same uniforms from the same function; `tests/lens-glare.test.ts` reads them for both.
+
+Before the job `CHANGE_BLOOM` was `{ lens, swellFrom, fall, dim: 0.005, glare: 0.5, glareReach: 0.8, glareSeat: 0.1 }`: the fall and one round glare on the ball, and nothing laid back.
+
+### 2. Each change has its own colour of light
+
+The brief: "each change has its own colour of light (the new season's)". The first form took the colour of the arriving season's lamps (the sum of the lamps of its miniature), and winter's lamps and spring's are the same warm colour, so the first change and the fourth could not be told apart. Since 3e8a5a75 the colour is the arriving season's own rig, its rim through its key (`pourColour` in `src/scene/lighting.ts`, read from each season's `rig.ts`: winter's blue, spring's rose, summer's gold, fall's orange), at the strength of the lamps' strongest channel, so the top of the glow stands where it stood. `CHANGE_BLOOM.tint` is the share of the way from the lamps' colour to the rig's; it is 1. The pour, the glare, the veil and the halo all take it. `/root` kept the tint at 16:04 UTC and again at 16:51 UTC ("the tint stays if the proofs hold on the merged head"); they hold (part 11).
+
+The pool at the peak frame of each change, heart (x 900 to 1020) and skirt (x 300 to 420), 40 rows about the brightest row under the ball, means of 8 bit levels:
+
+| peak frame | without the tint, heart | without, skirt | with the tint, heart | with, skirt |
+| --- | --- | --- | --- | --- |
+| 675, into spring | (232, 195, 158) | (158, 123, 89) | (232, 207, 208) | (158, 117, 117) |
+| 1395, into summer | (232, 181, 131) | (158, 109, 65) | (231, 216, 198) | (157, 132, 96) |
+| 2115, into fall | (232, 206, 169) | (156, 133, 95) | (232, 204, 181) | (156, 109, 54) |
+| 2835, into winter | (232, 194, 160) | (157, 121, 88) | (197, 212, 235) | (99, 125, 161) |
+
+"Without" is the head 37926c17 (engine 9bac98146d7f7c70), "with" is af9dca04 (engine 1b120a3ccbf06f35); the same numbers come out of the frames of ca73e182 line for line. Picture 61 has the four peaks in one row without the tint and one row with it. The heart is whitened, so the colour is read in the skirt and in the glow round the ball: rose, gold, orange, blue.
+
+### 3. The mend at the level `low`: the mirror image the slab bakes (60cd390c)
+
+Found after the push of d3f0f958, in the app on a phone at the level `low`. There the slab does not draw the stage a second time; it bakes the mirror image of the glass as a soft glow under the foot (`src/scene/surface.ts`, the line that begins `vec3 near =`). That line read `uPool + uPour`, the pour on the table, which is drawn in to 0.005 of itself under the flash. So the glow under the foot went bright as the cover rose (app frames 121 to 125), out under the flash (126 to 131: (31, 22, 27) at 127 against (65, 48, 37) at rest) and bright again as the cover fell (133 to 136): two swells with a hole in the middle, at the very frames in which the glass burns most.
+
+The mend: the baked image reads a colour of its own, `frame.image` (`uImage` in the slab's shader). Under the cover it is the lights inside at rest, held through the fallen exposure, and on top of that `CHANGE_BLOOM.image` (5) times what the new season's lights at rest lay there, as much of it as the cover is whole, in the colour of the pour; it is not drawn in under the flash. Away from a change it is `pool`, so nothing moves at rest. The glow now swells once with the cover, is at its most under the flash and falls with it. Mean of the glow's box on the phone (rows 70 to 82 in 100, x 31 to 50 in 100): (65, 48, 37) at 118, (107, 78, 67) at 121, (148, 113, 107) at 124, (164, 126, 121) at 127, (140, 103, 100) at 130, (94, 68, 67) at 132, (62, 45, 45) at 134, (40, 31, 26) at 137. Picture 63 has both, before above and now below.
+
+What the mend does not move: the film (it draws the stage a second time and `uReflect.y`, the share of the baked image, is 0 there) and the app at `high`. Proven pixel for pixel on the film's frames 668 to 675 and on 23 frames of the app on a phone at `high` and 15 on `hd` at `high`, each against d3f0f958. At `low` the frames outside the cover (112, 118, 137, 138, 140, 150) are the same pixel for pixel as before the mend; 120 to 136 differ, as they should.
+
+So the two levels differ in the mirror image: at `low` it swells with the flare, at `high` it holds at its resting strength, since there it is the glass as drawn and the glass is held level through the cover (the "not had" (e)). Two tests in `tests/lens-glare.test.ts` hold the mend: the baked image never falls under what it is at rest through the cover and is at its most under the flash, and the slab's shader lights the baked image by `uImage` and holds no `uPool` or `uPour` in that line.
+
+### 4. How the rise and the fall are eased
+
+`/root` asked for this at 17:46 UTC. In short: they are not eased. The cover is a straight ramp with a corner at each of its four ends, and everything else is a function of it.
+
+The cover (`src/shake/change.ts`, `CHANGE_COVER` and `changeBloom`), first shake, in film frames (the other three are 720, 1440 and 2160 frames on): 0 until 666.47, whole at 673.47 (a rise of 7 frames), whole until 677.97 (4.5 frames), 0 at 683.47 (a fall of 5.5 frames). No ease in or out at any of the four corners. The comment in the code gives the reason it had under the blackout: the exposure falls by the cover as an exponent, so a straight ramp is the room falling by the same share of a stop on every frame.
+
+What reads the cover (`src/scene/lighting.ts`):
+
+- The exposure is 0.005 to the power of the cover: 7.64 stops in all, 1.09 stops a frame on the way down and 1.39 stops a frame on the way back.
+- The pour on the table, the base and the dressing, the standing share of the glare (`glare`, 0.3), the veil and the room's tone laid back are straight in the cover.
+- The flash is the cover to the fourth power (`sharp`). The halo, which is the pool one sees at the peak, and the flash's share of the glare (`flashGlare`, 0.7) are straight in the flash. Frame by frame: 668 0.002, 669 0.017, 670 0.065, 671 0.175, 672 0.39, 673 0.757, 674 to 677 1, 678 0.978, 679 0.436, 680 0.158, 681 0.041, 682 0.005.
+- The pour on the table is the cover times 0.005 to the power of the flash, so it has two small tops, 0.36 of itself at 670 and at 681, and is 0.005 of itself on 674 to 677.
+
+So in the picture the pool comes from next to nothing to whole inside four frames (670 to 674) and is gone inside three (678 to 681): the fall is the steeper side, which is what `/root` measured on its sheets (thing 5 of part 0). `changeBloom` is 0 once the place in the window reaches 1 (film frame 684), so a tail that dies over 12 to 18 frames cannot be written as a function of the window alone.
+
+### 5. What is seen, frame by frame
+
+The first shake, winter to spring, film frames 668 to 682, tier draft (2 samples), `hd`, lavapipe, drawn on the head ca73e182 and looked at in two sheets of cells 397 px wide and one by one. The other three changes go the same way in their own colours (pictures 56 and 61; pictures 52 to 55 have each change in a sheet of its own but are from before the tint, so all four are in the lamps' warm colour there).
+
+| frame | what is in the picture |
+| --- | --- |
+| 668 | Winter at rest but for the lamps, which have begun to fall. |
+| 669, 670 | A rose glow rises round the glass. The base is lit by it, on its side and its top; the frost by the foot takes the colour of the light and stays under white; the lamps are lower. |
+| 671 | The glow stands round the ball and the pool lies at the foot, over the lower half of the base; of the lamps two faint discs are left at the right. |
+| 672 | The pool is a wide flat oval at the foot, the base is nearly gone in it. |
+| 673 to 678 | The ball with the strokes of its storm readable, in a glow that the top edge of the frame cuts; the pool a flat oval below it that ends above the lower edge of the frame; the room dark with a tone; of the lamps one or two faint dots; no base in sight. |
+| 679 | The pool has thinned. Spring's petals lie lit on the table; the base is a dark shape in the haze. |
+| 680 | Spring's base stands dark under a rose haze, the lamps come back. |
+| 681, 682 | Spring, landed: the room lit, the lamps bright. |
+
+The swap is not seen: no frame shows two bases or a base half changed, and no frame shows the dressing of the table change (the frost is last read in 672, the petals first in 678 at the far left and plainly in 679). The step of the picture under the foot from one frame to the next, where the base passes (a band 500 px wide and 100 rows deep from 10 rows under the foot's line, the travel of the globe taken out, mean step of a pixel in levels of luma): 675 to 676 1.95, 1395 to 1396 1.10, 2115 to 2116 2.25, 2835 to 2836 0.72, where the ball itself steps by 4.8 to 7.9 on the same frames. The largest in the six frames of each flash is at the last, as the halo goes: 677 to 678 8.48, 1397 to 1398 9.27, 2117 to 2118 9.47, 2837 to 2838 11.42.
+
+Does it read as a globe that flares and lights the table? In the cells of 297 px of picture 56, yes, in all four, each in its colour. With `/root`'s six things in mind it reads as a globe in a column of light over a bright oval, and that is the next turn.
+
+### 6. The app's own path
+
+The brief: "The app's own path draws the same thing at one sample, at the levels high and low, for a shake and for a jump by a season mark." `/root` at 16:51 UTC: "the app's path (shake, stir, drag and jump still reach the same change)".
+
+The door, by the code: every way into a change in the app goes through `shake(to)` in `src/app/app.ts` (line 313): the Shake control, the Space key (line 511), the phone's own motion (line 337) and the four season marks (lines 364 and 365). It calls the session's `shake()` or `goTo`, and both end in `go(to)` in `src/app/session.ts` (about line 117), which starts the same shake the film has, with the same window and so the same cover. A stir and a drag never change the season (`src/app/replay.ts`): they move the liquid and the camera and nothing in this unit reads them, so their proof is that their pictures did not move.
+
+Drawn on ca73e182 (engine 7bc857d50887da42), one sample, by the app's own loop replayed frame by frame (`out/work/appseq2.mjs`, part 12). The control is pressed at app frame 30 and the globe lands at 174; an app frame is the film frame of the first shake less 546, so the cover shows on app frames 120 to 136. No picture held a pixel that is not a number, and the page gave no error in any run.
+
+| Run | Frames | Against | Result |
+| --- | --- | --- | --- |
+| Shake, winter to spring, `hd`, `high` | 122 to 136, 15 frames | d3f0f958 (engine bf7d83a7d0c27deb), the state `/root` looked at | the same, pixel for pixel |
+| Jump by the summer mark from winter, `hd`, `high` | 122 to 136, 15 frames | d3f0f958 | the same, pixel for pixel |
+| Shake, winter to spring, phone, `low` | 112, 118, 120 to 138, 140, 150: 23 frames | the mend 60cd390c before `main` was merged (engine 5bfef7fd57ca3b57) | 21 the same; 122 differs in 3 pixels by at most 2 levels and 126 in 2 pixels by 1 level, inside the glass |
+| Jump by the summer mark from winter, phone, `low` | the same 23 frames | the same | the same, pixel for pixel |
+| Stir, winter, `hd`, `high` (pointer down at 30, let go at 39) | 29, 34, 39, 60, 120 | d3f0f958, and `main` 5b23a870 | the same as both, pixel for pixel |
+| Drag, winter, `hd`, `high` (pointer down at 30, held to 126, let go at 162) | 29, 78, 126, 162, 240 | d3f0f958, and `main` 5b23a870 | the same as both, pixel for pixel |
+
+The five pixels that moved on the phone at `low`: between 60cd390c and ca73e182 the source differs only in files `main` brought (`src/core/chunks/veil.ts`, `src/core/params.ts`, `src/globe/shell.ts`, `src/particles/draw/cards.ts`, `src/seasons/fall/glass.ts`), none of them this unit's.
+
+What the sheets show (not played):
+
+- Shake at `high` on `hd`: the same course as the film's first change, frame for frame (part 5).
+- Jump from winter into summer at `high` on `hd` (picture 66): 122 winter; 124 a gold glow rising with winter's base lit by it; 126 to 131 the ball in a gold glow over a flat oval pool, no base in sight; 133 summer's base under a gold haze; 136 summer, the room back, the ball sky blue. The blue is thing 6 of part 0.
+- Shake on a phone at `high` (picture 62): the mirror image of the glass is the glass as the slab draws it a second time and holds through the flash. The pool is cut by both side edges of the frame on 125 to 131.
+- Shake and jump on a phone at `low` (picture 63 for the shake): the glow under the foot swells once with the cover and goes with it. The count of true black on the head: 0.03 in 100 at 112 and 118, before the cover, and 0.00 on 120 to 150, for the shake and for the jump alike; at `high` on `hd` 0.00 on all 15 frames of each.
+- Stir and drag: winter at rest, the liquid stirred, the camera turned in the drag. Nothing of the cover. Count of true black 0.04 in 100 at most, as on `main`.
+
+Not drawn, read from the code only: with reduced motion asked for, a change is a dissolve and has no cover (`src/app/session.ts` line 120); when the look is turned by a drag the place of the glare follows the glass in the turned view (`src/scene/stage.ts` lines 354 to 361).
+
+### 7. The count of true black
+
+The rule of the brief: on every frame of the four windows fewer than 1 pixel in 100 holds a sum of red, green and blue under 4 (8 bit). `/root` at 14:17 UTC: the count is taken at draft on every frame of the four windows, and at final on the four middle frames of each change only (those are `/root`'s to draw).
+
+- Before the job, the first change, even frames 660 to 690, draft, `hd` (the branch at 3b965fca, engine f800ef889b4d6232): 0.07, 0.06, 0.06, 0.06 at 660 to 666, 0.00 at 668, then 0.26 at 670, 1.73 at 672, 2.44 at 674, 2.36 at 676, 2.29 at 678, 0.47 at 680, and 0.00 from 682 to 690. So four frames of the sixteen were over the line. The share at 6 or less was 19 to 32 in 100 on 670 to 680 and the share at 15 or less 45 to 48 in 100: the frame was black but for the glass.
+- Now, on ca73e182, the 60 middle frames (668 to 682, 1388 to 1402, 2108 to 2122, 2828 to 2842), draft, `hd`: the largest share under 4 is 0.00 in 100. The least sum of any pixel of 2842 is 14.
+- The outer frames of the four windows (the first eight and the last eight of each) were not drawn on the final head: `/root` said not to draw them here. On the first state of this job (609d6d44) the even frames 660 to 690 of the first change were drawn and counted: 0.07, 0.06, 0.06 and 0.06 at 660 to 666, where the cover has not begun and the picture is the one before the job, and 0.00 from 668 to 690. The cover is nothing before 666.47 and after 683.47 (and at the same places in the other three windows), and that has not moved since the first state. So that the outer frames of the other three windows and of the final head are under the line is said from the code and from the first change, not from a drawing of them.
+- In the app on a phone: 0.03 in 100 at app frames 112 and 118, which are before the cover, and 0.00 on 120 to 150, at `high` and at `low` alike.
+
+The second rule this job has held since the fifth: no pixel of the lower 38 in 100 of the frame has every channel at 225 or over. The brightest pixel there by its least channel, over the 15 middle frames of each change: 214, 211, 199, 216.
+
+The counting tool, as it was run (`black.py file...`):
+
+```python
+import sys
+import numpy as np
+from PIL import Image
+worst = 0.0
+for p in sys.argv[1:]:
+    im = np.asarray(Image.open(p).convert('RGB')).astype(np.int32)
+    s = im.sum(axis=2)
+    a = 100.0 * (s < 4).mean(); b = 100.0 * (s <= 6).mean(); c = 100.0 * (s <= 15).mean()
+    worst = max(worst, a)
+    print('%-34s under 4: %6.2f   6 or less: %6.2f   15 or less: %6.2f   least sum %3d' % (p, a, b, c, int(s.min())))
+print('largest share under 4 over %d pictures: %.2f in 100' % (len(sys.argv) - 1, worst))
+```
+
+### 8. The four things `/root` saw in the first state (609d6d44), and what they are on the head
+
+All numbers are means of 8 bit levels (red, green, blue) on draft frames of the first shake, `hd`, on ca73e182.
+
+1. The halo was a column to the lower edge of the frame. It became a flat bell that sits between the collar and the foot of the base, 1.4 radii of the glass to the sides, 0.4 upward and 0.33 downward, so the pool is a wide flat oval and ends above the lower edge. The table's front edge (the lowest 40 rows, x 300 to 1620) at 674: (182, 145, 107) in the first state, (78, 53, 56) now, against (58, 41, 46) at 672 and (59, 50, 62) at 680. What `/root` now names a column (thing 1 of part 0) is the other glow, the one round the ball, which the top edge cuts.
+2. The ball was one flat peach white at 674 and 676. The glare now has nine tenths of its middle taken out, so it sits round the ball. Inside the ball at 674 the luma runs from 170 to 198 (5th to 95th in 100) where the first state had 208 to 218 and the old cover 180 to 203; the mean step of a pixel from the mean of its 33 px square is 5.1 where the first state had 0.8 and the old cover 3.6. At 676: 4.0, 0.8 and 3.0. So the strokes are read through the peak. The mean luma of the ball at 674 is 184 now, 214 in the first state and 191 under the old cover. Picture 59 has the four peaks at the frames' own pixels. `/root`'s thing 3 of part 0 is the other side of this: the ball no longer clips anywhere.
+3. The grains on the table were clipped white dots at 668 to 672. They were three different things and each took the table's whole pour: winter's frost (its own shader), the slab's dust and the slab's lumps of snow (both in the slab's shader). All three now take the smaller pour. The brightest 1 in 100 of the grains by the foot at 670 (x 460 to 580, y 930 to 1000): (224, 210, 183) in the first state, (149, 128, 117) now and (89, 58, 22) under the old cover. Of the lumps out on the table to the right (x 1340 to 1460, y 780 to 860): (209, 215, 206) in the first state, (123, 120, 138) now and (115, 100, 114) at 671; the old cover had (6, 12, 22). Picture 58 has both three times enlarged.
+4. The corners were a warm brown at 674 to 678, cold on the frames to either side. The top corners (240 by 160 px each) now go one way, from winter's cold to spring's mauve: (3, 7, 14) at 668, (6, 7, 13) at 670, (14, 12, 17) at 672, (14, 12, 18) at 674 and 675, (17, 14, 19) at 677, (18, 14, 20) at 678, (12, 11, 17) at 680, (13, 12, 18) at 682; the first state had (44, 29, 18) at 674 and the old cover (0, 1, 3).
+
+### 9. Three guards on `normalize`
+
+`/root` asked at 14:36 UTC for a guard on summer's dust off the mound, in the form of the mend in `main`, and for a look at this unit's other arrivals and the cover's new lines for the same shape.
+
+- `src/seasons/summer/arrival.ts` line 157 on the head: `vec2 out2 = (dot(position.xz, position.xz) > 0.0 ? normalize(position.xz) : vec2(1.0, 0.0)) * 0.6 + vec2(sin(turn), cos(turn));`. It was `vec2 out2 = normalize(position.xz) * 0.6 + vec2(sin(turn), cos(turn));`. This is the only line this branch changes under `src/seasons/summer/` (commit 4f157596); `git diff origin/main -- src/seasons/summer/` shows that one line and nothing else. No line of `src/seasons/summer/rig.ts` is changed: the tint reads the rig, it does not write it.
+- `src/seasons/spring/slab.ts` line 124: `petalAt += (dot(aRest.xy, aRest.xy) > 0.0 ? normalize(aRest.xy) : vec2(1.0, 0.0)) * petalGust.x;` and `src/seasons/fall/slab.ts` line 78: `leafAt += (dot(leafRest, leafRest) > 0.0 ? normalize(leafRest) : vec2(1.0, 0.0)) * leafGust.x;` (commit ca044c4b). `main` guards the same two lines in the same words since 445e12cd, so the merge took them as one and they show in no diff.
+- `tests/glsl-normalize.test.ts` came with `main` and skipped summer's arrival by name (`WITH_ITS_BUILDER`); the exception is out, in the merge commit b876f98d as `/root` asked at 15:27 UTC, and the file's tests pass with summer's arrival read.
+- Looked at and left: winter's, spring's and fall's `arrival.ts` hold no `normalize(`; summer's arrival normalizes elsewhere only vectors that carry an offset, a normal, a view and a half vector; the cover's lines in `src/post/post.ts` hold none.
+
+### 10. The motion critic's four issues on the second change (Round 21, R4, 3 of 10)
+
+R4 judged film B's frames 1296 to 2014 on `main`'s older commit 0e1100bb, which held the old cover (the blackout). `/root` passed on the four issues that touch the change at 17:36 UTC and asked, for each, whether this head mends it, mends it in part or does not touch it, with a frame as proof, and for a reading of the code on the second and the fourth. R4's sheets step by 12 to 14 frames (1374, 1386, 1400, 1412, 1426, 1438); that matters for what it saw. My frames are draft, `hd`, on ca73e182: 1380, 1384, 1386, the fifteen middles 1388 to 1402, 1404 to 1412 in twos, 1420, 1426, 1436, 1446, and 1290, 1338 and 1350 for the third issue. Picture 64 is the course of the cover, picture 65 the foot and the table.
+
+**Issue 1.** "1386 to 1412: room, bokeh and reflections plunge to pitch black, then pop back at 1412 in warm gold; spring's base and petals pop in plain view into summer's; the interior fog jumps to electric cyan and yellow, olive gold at 1426." Mended in part.
+- The black: gone. The share of pixels under 4 is 0.00 in 100 on every frame drawn of the second shake, 1380 to 1446 (27 frames) and 1290, 1338 and 1350. The room keeps its tone through the cover and comes back with it, not in a step: the cover begins to fall at 1397.97 and is gone at 1403.47 (picture 64: 1400 with the cover at 0.63, the room dim under a gold haze; 1404 the room whole).
+- The swap in plain view: not seen on this head. The petals lie in the gold light on the table up to 1392; on 1394 to 1398 base and table are under the flat pool of the lens (the "not had" (a) of part 0, and thing 2); summer's base is first in sight at 1400, soft under the gold haze. No frame shows one base give way to the other. What is seen in its place is the oval.
+- The fog in the glass: not mended on this head. Between the grains the body of the ball reads sky blue from 1400 to 1410, (148, 172, 187) at 1400, (116, 159, 183) at 1402, (94, 142, 164) at 1404, (103, 141, 160) at 1408, (138, 157, 167) at 1410, then cream at 1412, (190, 179, 163), and gold at 1420 and 1426, (179, 146, 94) and (162, 132, 80). That is R4's "electric cyan" and "olive gold". The cause is found and is not the cover: part 0, thing 6. `/root` gave the mend to this unit at 18:55 UTC; it is the next commit on the branch and is not in ca73e182.
+
+**Issue 2.** "1296 to 1438: the globe barely lifts (about 5 px), small even oscillations, nearly stops 1374 to 1386, at 1400 jumps about 28 px right and about 30 px higher, whips left with tilt at 1412: two animations stitched." Not touched: the path of the globe in the hand, the cut and the camera are not this unit's ("Do not touch the simulation, the cut, the cameras or the sound"). My reading of the code:
+
+- Where the path is written: `src/shake/table.ts`. `HAND` (line 67) is the hand of the stills and the preroll, `HELD` (line 162) the hand of the film's shakes and of the app. It is one path for each shake from the lift to the landing, not two pieces joined: lift over 1 beat, six strokes over 2 beats, set down over 1 beat, 36 frames a beat. Its sizes are in `config/showcase.json` lines 157 to 159: `liftMm` 7.25, `strokeMm` 25, `tiltDeg` 6, on a sphere of 120 mm.
+- The camera of a shake is `MOVES.wide`, the hero camera, and it does not follow the globe (`src/film/moves.ts` lines 114 and 501: "it stays where it holds it, on the glass, and does not follow the globe"). The hero frame is 172.9 mm tall, about 6.2 px a mm on `hd`, so the lift of 7.25 mm is about 45 px on `hd` and about 9 px in a cell 400 px wide.
+- The strokes are meant to be that small. `kit/PROGRESS.md` decisions 29, 35 and 45 took the lift from 18 mm to 13.5 and then under the kit's own floor, because the lifted globe came within 2 px of the top edge of the hero frame (open item 29); decisions 64 to 66 set the strokes to 25 mm, "as long as the pins allow" (lines 619 and 682: the liquid engine's pins hold for 22 to 25). The same reading has come from the motion critics before: open items 71, 81 and 127 in `kit/PROGRESS.md` ("The globe barely moves in the hand", "a low lift, even strokes, little tilt").
+- The pose of the second shake, from the path itself (`globePoseAt`): the lift reaches 7.2 mm by frame 1320 and holds 5.4 to 7.2 mm until the set down. The six strokes turn at x -24.4, +20.7, -18.0, +16.5, -19.7 and +25.6 mm, at beats 1.18, 1.49, 1.87, 2.32, 2.65 and 2.89, which are about frames 1338, 1349, 1363, 1379, 1391 and 1400. So the strokes are not even: they shrink to the fourth and grow again, and the last, at 1400, is the largest and goes to the right.
+- "Nearly stops 1374 to 1386": the pose is x 7.2 mm at 1374, 14.3 at 1380 and -6.2 at 1386. There is no stop; R4's two frames fall on either side of the fourth stroke, the smallest, and both lie near the middle.
+- "At 1400 jumps about 28 px right and about 30 px higher": 1400 is the turn of the sixth stroke, +25.6 mm, about 160 px to the right of the middle on `hd`; against 1386 (-6.2 mm) that is a step to the right in R4's sheet, as it saw. The pose holds no rise there: y is 5.7 mm at 1386, 5.4 at 1398 and 7.2 at 1404, at most 1.8 mm, about 11 px on `hd`. The pictures agree: the middle of the ball, found from its cap, is (952, 426) at 1386 and (1154, 421) at 1400 on `hd`, 202 px to the right and 5 px higher. It stands at y 417 to 426 on every frame from 1338 to 1426 where the cap is clear of the glare, against 466 at rest (1290).
+- "Whips left with tilt at 1412": the strokes end and the set down begins at beat 3, frame 1404; the path carries its last swing into the set down (decision 59), a turn of -11.4 mm at beat 3.36, about frame 1417, while the tilt goes from -5.4 to +3.8 degrees between 1404 and 1416. That is written, not a seam. The globe lands at 1440 and rocks (y 2.1 mm at 1446).
+- These files are the same on this head as on the judged commit, so the motion R4 saw is the motion here. What this job changes in R4's picture of it is only what lies over frames 1386 to 1403.
+
+**Issue 3.** "The petals on the table are frozen; at 1400 to 1412 sand piles, contact shadow and light wedges are pinned under an airborne base." `/root`: "Yours: the shadow and the mirror image of the shared stage against the globe's height." Not changed by this job.
+- By the code the slab reads the foot on every frame: `src/scene/surface.ts` line 625 sets `uFoot` to the globe's x and z, the foot's radius and the lift (`su.uFoot.value.set(g.x, g.z, footRadius, g.y)`) and line 627 the lean; `slabShade` (line 278) lets the tight shadow of contact go as the foot lifts (`contactLiftMm` 1.2) and keeps a wide soft one, and the mirror image is the stage drawn a second time from where it stands.
+- Proof (picture 65): 1290 at rest; 1338, lifted 6.9 mm and 24.2 mm to the left; 1350, lifted 6.9 mm and 19.2 mm to the right. The dark under the base goes with the base both ways, and the petals it stood beside lie bare where it left. On 1404, 1408 and 1412 (lifted 7.2 mm; 12.9 mm right, 4.8 mm right, 3.6 mm left) the base passes over summer's sand, the dark under it goes with it, and its mirror image stands under it at the lower edge. In 1338 and 1350 the mirror image is cut by the lower edge of the frame and is not read.
+- What R4 saw and is still there: nothing that lies on the table moves when the globe is lifted. The petals lie still. Summer's sand heaps, which are heaped against the foot at rest (`src/seasons/summer/slab.ts`: "a cone at the sand's angle of repose with its top against the foot"), come up in the window while the globe is 7 mm in the air, so the lifted base hangs over a heap whose hollow is where the base will land. The bright wedge on the left is the long streak of that sand in the key light. The heaps are this unit's files and were not part of this job. Not mended.
+
+**Issue 4.** "1296 to 1386: the petals translate rigidly with the glass, then a milky pink blur washes over." Not touched: the particles and the veil in the glass are not this unit's. My reading of the code:
+
+- The particles are kept and moved in the glass's frame, not in the room's. `src/particles/engine/engine.ts` line 1185 steps the liquid model with the hand's pose before, at and after the instant (`this.model.step(globePoseAt(tl, t - DT), globePoseAt(tl, t), globePoseAt(tl, t + DT), t)`), and the model (`src/globe/liquid.ts`) turns the hand's motion into a flow inside the glass. What the glass's travel does to them is modelled, not integrated: a slosh with a gain of 0.3, a time of 0.22 s and a length of 30 mm (`SLOSH_GAIN`, `SLOSH_SECONDS`, `SLOSH_LENGTH_MM`, lines 38 to 40), and a load that the liquid carries, thrown at most 30 mm (`CARRY` 2, `LOAD_MAX_MM` 30, lines 65 and 66).
+- The sizes: the comment at line 727 of `src/globe/liquid.ts` gives the slosh as 20 to 90 mm/s while the hand strokes. The hand's fastest stroke in the second shake is 261 mm a beat, which is 435 mm/s. So of the glass's travel the particles are given four fifths or more outright and lag by a fifth or less; to the eye they go with the glass. In the room's frame a petal in water would stay nearly where it was for the first instant of a stroke and the wall would come to it.
+- The "milky pink blur" is the veil in the glass rising with the storm; it is the glass's and the air's (`src/core/chunks/veil.ts`, each season's `glass.ts`), not the cover, which begins at 1386.47.
+
+### 11. The checks on ca73e182 (engine 7bc857d50887da42, which holds `main` 5b23a870)
+
+All run in this VM on the merged head, one after another, 18:06 to 18:59 UTC.
+
+- `npx tsc --noEmit`: 0 errors.
+- `npx vitest run`: 57 files passed, 1 skipped; 775 tests passed, 8 skipped.
+- The strict run on all eight keys (`npm run strict`), last line: "strict: pass, 8 keys under pow, all+smooth, all+smooth+noguard, each row read against the plain picture, and against its own --same picture where that one differs (engine 7bc857d50887da42, drawn by lavapipe): no pixel moves by more than 1 level, at most 0.01% of pixels move". 30 of the 32 rows read "0 pixels differ". The two that do not are `winter-shake`'s, "2 pixels differ, largest step 1, box 547,194,572,212", the same two pixels as in every strict run since the third job.
+- `node tools/measure.mjs --unit change --tier draft`: "measure change: complete · 24 of 24 lines, 0 red · draft · 205 s". M4 (the miniature hidden in the middle of the window, threshold 0.85): 0.9874, 0.8968, 0.9601, 0.9631 for the four shakes. M5 (the miniature seen after the landing, threshold 0.6): 0.9804, 1, 0.9712, 0.9998. M6 (particles inside a solid, threshold 0.002): 0.000441 at most.
+- `npm run gate -- --phase 4 --only G11,G12`: "gate, phase 4: all 2 green".
+- `npm run determinism`: "determinism: pass · 3 pictures, 4 page loads, preview, draft, 194 s".
+- The count of true black on the 60 middle frames, draft, `hd`: "largest share under 4 over 60 pictures: 0.00 in 100". On the fifteen further frames of the second shake drawn for part 10 (1290, 1338, 1350, 1380, 1384, 1386, 1404 to 1412 in twos, 1420, 1426, 1436, 1446): 0.00 on every one.
+- The eight keys at rest and landed (`winter-rest`, `winter-shake` and so on, 960 by 540, drawn by `out/work/keys8.mjs`) against the same eight drawn on `main` 5b23a870 in a second tree: all eight the same picture, pixel for pixel. None moved.
+- The 60 middle frames against the same 60 drawn on af9dca04 (the head before `main`'s last merges): the 45 of the first, second and fourth change are the same, pixel for pixel. All 15 of the third change (2108 to 2122) differ, inside the glass only, in few pixels by small steps: at most 0.06 in 100 of the pixels of a frame (2122), the largest step 7 levels (2109 and 2116), and the share that moves by more than 4 levels is 0.00 in 100 on every frame. A correction to what I told `/root` at 18:07 UTC: I gave the cause as the order of drawing. It is not. Between af9dca04 and ca73e182 `main` brought guards into summer's and fall's glass (e235f76b, `src/seasons/summer/glass.ts`, and the `atan` guards of 976e271e), and the third change is the one that holds summer's and fall's glass together.
+- The app's path: part 6.
+
+### 12. For the next builder: how the pictures and the numbers were made
+
+Nothing under `/tmp` and nothing under `out/work/` is kept: the tools of this job are gone with the machine. The three that draw are here in full, the rest are a few lines each and are said in words.
+
+- **One machine, one render at a time.** Everything was drawn by lavapipe in this VM: tier draft (2 samples), `hd`, about 8.5 s a film frame. An app shake of 15 frames on `hd` at `high` takes about 130 to 160 s, 23 frames on a phone about 170 s at `high` and 80 to 95 s at `low`. `npx vitest run` about 140 s, `npm run strict` on eight keys about 17 min, the measure 160 s, the gate 30 s, determinism 217 s. No build while a render runs; the work was chained in one shell script that wrote a line to a log after each step, and the script was never edited while it ran.
+- **Film frames by number** (`out/work/filmlist.mjs`, run in the repo): `node out/work/filmlist.mjs --tier draft --format hd --calls 668,669,670 --stop <epoch seconds>`. The frames land in `out/work/seq/film-hd-draft/film-000668.png`; remove the file first if the frame was drawn on another engine.
+
+```js
+import { parseArgs } from '../../tools/lib/paths.mjs'
+import { Session } from '../../tools/lib/page.mjs'
+import { readPlan, renderFrames, sourceOf } from '../../tools/lib/sheetlayout.mjs'
+const args = parseArgs(process.argv.slice(2))
+const stopAt = Number(args.stop) * 1000
+const o = { tier: String(args.tier), format: String(args.format), assets: 'full', diag: '', force: true, deadline: stopAt }
+const calls = String(args.calls).split('/').map((r) => r.split(',').map(Number))
+const stamp = () => new Date().toISOString().slice(11, 19)
+const session = await Session.open({ what: `filmlist ${process.argv.slice(2).join(' ')}` })
+try {
+  const page = await session.page({ format: o.format, assets: o.assets })
+  const src = sourceOf(await readPlan(page), 'film')
+  for (const call of calls) {
+    if (Date.now() > stopAt) {
+      console.log('out of time before', call.join(','))
+      continue
+    }
+    const r = await renderFrames(session, page, src, call, o, async (i, file) => console.log(stamp(), 'frame', i, file))
+    console.log(stamp(), 'call', call.join(','), 'rendered', r.rendered, 'of', r.total, 'complete', r.complete, 'seconds', r.seconds.toFixed(0))
+  }
+  console.log('errors', page.errors.slice(0, 5).join(' | '))
+} finally {
+  await session.close()
+}
+```
+
+- **The app's own frames** (`out/work/appseq2.mjs`): a scripted walk of the app (`shake`, `jump`, `stir`, `drag`; `src/app/replay.ts`), each frame at the level's one sample. `node out/work/appseq2.mjs --app shake --from winter --format phone --level low --frames 118,122,127 --dir /tmp/dir`; for a jump add `--to summer`. The first line of its output is the plan with its events. In a shake and a jump the control is pressed at app frame 30 and the globe lands at 174; an app frame is the film's frame of the first shake less 546; the cover shows in app frames 120 to 136.
+
+```js
+import fs from 'node:fs'
+import path from 'node:path'
+import { parseArgs } from '../../tools/lib/paths.mjs'
+import { Session, cfg } from '../../tools/lib/page.mjs'
+import { appSource, renderFrames } from '../../tools/lib/sheetlayout.mjs'
+const args = parseArgs(process.argv.slice(2))
+const o = { tier: 'draft', format: args.format ? String(args.format) : cfg.formats.preview.id, assets: 'full', diag: '', force: true, deadline: Date.now() + 3600e3 }
+const dir = String(args.dir)
+fs.mkdirSync(dir, { recursive: true })
+const stamp = () => new Date().toISOString().slice(11, 19)
+const session = await Session.open({ what: `appseq2 ${process.argv.slice(2).join(' ')}` })
+try {
+  const page = await session.page({ format: o.format, assets: o.assets })
+  const ask = { ...(args.from ? { from: String(args.from) } : {}), ...(args.to ? { to: String(args.to) } : {}) }
+  const plan = await page.evaluate(([n, a]) => window.showcase.dev.appScript(n, a), [String(args.app), ask])
+  console.log(JSON.stringify({ frameCount: plan.frameCount, fps: plan.fps, events: plan.events, from: plan.from, to: plan.to }))
+  const src = appSource(plan, String(args.level || 'high'))
+  const list = String(args.frames).split(',').map(Number)
+  const t0 = Date.now()
+  await renderFrames(session, page, src, list, o, async (i, file) => {
+    const s = await page.evaluate(() => { const c = document.querySelector('canvas'); return { ...window.showcase.dev.sanity(), canvas: c ? [c.width, c.height] : null } })
+    fs.copyFileSync(file, path.join(dir, `app-${String(i).padStart(6, '0')}.png`))
+    console.log(stamp(), 'frame', i, 'no number:', s.invalid, 'values of', s.pixels, 'pixels, canvas', JSON.stringify(s.canvas))
+  })
+  console.log('seconds', ((Date.now() - t0) / 1000).toFixed(0), 'engine', JSON.stringify(await page.evaluate(() => window.showcase.info().engineHash ?? null)))
+  console.log('errors', page.errors.slice(0, 5).join(' | '))
+} finally {
+  await session.close()
+}
+```
+
+- **The eight keys as the strict run draws its plain picture** (`out/work/keys8.mjs <dir> <key,key,...>`; preview, draft), to compare two commits pixel for pixel. The strict run leaves the same pictures in `out/work/strict/none/`.
+
+```js
+import path from 'node:path'
+import { Session, stillSpec, renderStill, requireBuild } from '../../tools/lib/page.mjs'
+const dir = path.resolve(process.argv[2])
+const keys = process.argv[3].split(',')
+const engine = requireBuild()
+const session = await Session.open({ what: 'keys8' })
+try {
+  for (const key of keys) {
+    const spec = stillSpec({ key, format: 'preview', tier: 'draft' })
+    const r = await renderStill(session, spec, { file: path.join(dir, `${key}.png`), force: true })
+    console.log(new Date().toISOString().slice(11, 19), key, r.reused ? 'reused' : 'rendered', r.record.engineHash, r.record.seconds)
+  }
+  console.log('engine', JSON.stringify(engine))
+} finally {
+  await session.close()
+}
+```
+
+- **The other side of a compare** was a second worktree at the commit of `main` that the head holds, built there (`npm run build`) and drawn with the same scripts, so both sides hold everything of `main` and what differs is this branch alone. The tools serve the `dist` of the tree they are run in.
+- **Compares** are pixel for pixel on the 8 bit pictures: the count of pixels in which any channel differs, the largest step, and the box they lie in. "The same" in this text always means no pixel differs.
+- **The numbers of the picture**: the pool's heart and skirt are means over x 900 to 1020 and x 300 to 420 of the 40 rows about the brightest row under the ball; the ball's luma is the mean of a disc of 230 px about (960, 400); the corners are 240 by 160 px each; the front edge is the lowest 40 rows, x 300 to 1620; the mirror box on a phone is rows 70 to 82 in 100 and x 31 to 50 in 100 of the frame. Luma is 0.2126, 0.7152, 0.0722 of the 8 bit levels.
+- **Where the ball is in a frame**: the largest bright shape of the upper six tenths of the frame, its holes filled, and a circle fitted by least squares to the upper part of its outline; the misfit of the outline to the circle was 1 to 4 px on the frames of the flash.
+- **The course of the cover and the pose of the globe without a drawing**: `npx vite-node <file>.ts` on a few lines that import `changeBloom` and `CHANGE_COVER` from `src/shake/change`, `CHANGE_BLOOM` from `src/scene/lighting`, and `filmTimeline`, `defaultGrid`, `globePoseAt`, `eventAt`, `prerollSeconds` from `src/film/timeline` (the instant of film frame n is `prerollSeconds + (n + 0.5) / fps`). The first window begins at film frame 648 and is one beat, 36 frames, long.
+- **Sheets**: cells with the label in a margin under each, never over the picture. The looks are JPEG, at most 1200 px on the long edge, at most four a push, with `captions.txt`.
+- **Before a push of code**: fetch, merge `origin/main` (never rebase), `git merge-base --is-ancestor origin/main HEAD`, a clean tree, `npx tsc --noEmit` and `npx vitest run` on the merged head. `main` was merged into the branch fourteen times in this job; the merges were small but each one costs a vitest run.
+- **What moves a film frame that this branch did not touch**: a guard in a shader of `main` can move a few pixels inside the glass by a few levels (part 11 has the case). Compare against the `main` the head holds, not against an older drawing.
+
+## The state after the sixth job
 
 Written 2026-11-26 about 13:40 UTC. Six jobs were done on this branch. The newest state is here; the fifth job's state follows, then the fourth, the second and third, then the first job's text as it was written.
 
