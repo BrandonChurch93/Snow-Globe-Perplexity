@@ -12,7 +12,7 @@ const USAGE = `npm run sheet -- <what> [--tier T] [--format F] [--assets A] [--d
   --mark N=WORD[,N=WORD]    with --shot or --film: film frame N is put on the sheet of its shot and WORD is added to its label
   --film                    one sheet for every shot and one overview
   --loop [--seam]           across the card loop, or its last frames then its first
-  --opening                 across the opening of film A
+  --opening                 across the opening of film A, or with --first N --last M every frame of it from N to M
   --seasons                 the four at-rest keys
   --plain                   with --seasons or --app: no label names a season, for a critic who has to name the seasons from the pictures
   --first N --last M        across a range of the film, or of the test shake with --shot test, or of the loop with --loop
@@ -224,8 +224,17 @@ try {
     } else if (mode === 'opening') {
       src = sourceOf(plan, 'opening')
       if (src.count < 1) throw new Stop('the opening is not built yet: opening().frameCount is 0, so there is nothing to put on a sheet')
-      const frames = across(0, src.count - 1, per, src.step)
-      jobs.push({ file: sheetFile('opening', nameParts(o, false).join('-')), frames, perSheet: per, spec: { kind: 'opening', source: 'opening', frames }, caption: `Sheet: ${frames.length} frames across the opening of film A, ${o.format}` })
+      o.force = true
+      if (ranged) {
+        const first = Number(str('first'))
+        const last = Number(str('last'))
+        if (!Number.isInteger(first) || !Number.isInteger(last) || first < 0 || last < first || last >= src.count) throw new Stop(`give --first and --last as frames of the opening, 0 to ${src.count - 1}`)
+        const sets = pages(run(first, last + 1, 1), per)
+        sets.forEach((frames, n) => jobs.push({ file: sheetFile('opening', first, last, nameParts(o, false).join('-'), String(n + 1)), frames, ordered: true, perSheet: per, step: 1, spec: { kind: 'opening-run', source: 'opening', first, last, sheet: n + 1, sheets: sets.length, frames }, caption: `Sheet ${n + 1} of ${sets.length}: every frame of the opening of film A from ${frames[0]} to ${frames[frames.length - 1]}, ${o.format}` }))
+      } else {
+        const frames = across(0, src.count - 1, per, src.step)
+        jobs.push({ file: sheetFile('opening', nameParts(o, false).join('-')), frames, perSheet: per, spec: { kind: 'opening', source: 'opening', frames }, caption: `Sheet: ${frames.length} frames across the opening of film A, ${o.format}` })
+      }
     } else if (mode === 'range') {
       src = sourceOf(plan, args.loop === true ? 'loop' : shotArg === 'test' ? 'test' : 'film')
       const first = Number(str('first'))

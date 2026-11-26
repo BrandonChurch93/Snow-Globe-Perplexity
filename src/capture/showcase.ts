@@ -14,7 +14,7 @@ import { partChange, SEASONAL_PARTS } from '../shake/change'
 import { sampleSdf } from '../core/sdf'
 import { INNER_R } from '../particles/engine/sdf'
 import { openingPlan } from '../film/opening'
-import { drawOpening } from '../film/openingStandIn'
+import { renderOpening } from '../film/openingPack'
 import { cutList, filmCut, type Cut } from '../film/cut'
 import { cameraKeys, cameraNumbers, filmPose, loopCamera, loopPose, MOVES, shotNotes, type ShotNote } from '../film/moves'
 import { loopGlobe, type LoopParticles, type SourceSwitch } from '../film/loop'
@@ -381,7 +381,7 @@ export function createShowcase(deps: Deps, ready: Promise<void>): Showcase {
     async renderOpeningFrame(i) {
       plain()
       if (!opening) throw new Error('the page has no #opening')
-      drawOpening(opening, i)
+      await renderOpening(opening, i, format.width)
       opening.hidden = false
     },
     loop() {

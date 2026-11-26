@@ -43,7 +43,10 @@
   },
   "intro": {
     "prompt": "Build a hyper-realistic snow globe in three.js. When I shake it, the season changes.",
+    "model": "Claude Fable 5.2",
     "reasoning": "High",
+    "reasoningFrom": "Standard",
+    "reasoningLevels": ["Standard", "High", "Max"],
     "charsPerSecond": 14,
     "pauseBeforeSendSeconds": 0.8,
     "buildTitle": "Building a four season snow globe",
@@ -51,8 +54,7 @@
       "Sculpting the globe and four bases",
       "Simulating snow, petals, fireflies and leaves",
       "Bending light through glass and water",
-      "Choreographing the shake",
-      "Scoring four seasons"
+      "Choreographing the shake and scoring four seasons"
     ],
     "stepSeconds": 0.9,
     "holdSeconds": 1.2,

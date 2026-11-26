@@ -7,7 +7,7 @@ import { MOVES, aimDropAt, cameraKeys, cameraNumbers, detailKeep, detailReach, d
 import { sphereRadiusMm } from '../src/scene/framing'
 import { judgedList, loopPlan } from '../src/film/judged'
 import { openingPlan } from '../src/film/opening'
-import { drawOpening } from '../src/film/openingStandIn'
+import { fitBox } from '../src/film/openingPack'
 import { loopGlobe, loopSeconds, standInLoop, wrapLoop } from '../src/film/loop'
 import { partChange, SEASONAL_PARTS } from '../src/shake/change'
 import type { ParticleSource } from '../src/core/stage'
@@ -566,19 +566,21 @@ describe('the card loop', () => {
     for (let i = 0; i < plan.frameCount; i++) expect(loopRig(i / fps).distanceMm).toBe(stood.distanceMm)
   })
 
-  it('draws the stand-in opening with every style whole, at any size', () => {
-    const root = { style: {} as Record<string, string>, innerHTML: '' }
+  it("fits the opening's picture whole and centred, at any size", () => {
     const o = openingPlan()
-    for (const f of [0, o.typing.last, o.reasoning.open + 2, o.send, o.build.first + 2, o.frameCount - 1]) {
-      drawOpening(root as unknown as HTMLElement, f)
-      const styles = [...root.innerHTML.matchAll(/ style="([^"]*)"/g)].map((m) => m[1]!)
-      expect(styles.length).toBeGreaterThan(3)
-      expect(styles[0]).toContain('display:flex')
-      expect(styles[0]).toContain('justify-content')
-      for (const s of styles) expect(s.trim().endsWith(','), `frame ${f}: ${s.slice(-40)}`).toBe(false)
-      expect(root.innerHTML.split('"').length % 2).toBe(1)
-      expect(styles[0]).toMatch(/font:[^;]*cqw/)
-      expect(root.style.containerType).toBe('size')
+    expect(o.frameCount).toBeGreaterThan(0)
+    const hd = config.formats.hd
+    expect(fitBox(hd.width, hd.height, hd.width, hd.height)).toEqual({ x: 0, y: 0, w: hd.width, h: hd.height, scale: 1 })
+    for (const [w, h] of [[3840, 2160], [1280, 720], [1440, 900], [1080, 1920], [400, 225], [2560, 1080]] as const) {
+      const b = fitBox(w, h, hd.width, hd.height)
+      expect(b.x).toBeGreaterThanOrEqual(0)
+      expect(b.y).toBeGreaterThanOrEqual(0)
+      expect(b.x + b.w).toBeLessThanOrEqual(w)
+      expect(b.y + b.h).toBeLessThanOrEqual(h)
+      expect(b.w === w || b.h === h, `${w} x ${h} is filled on one side`).toBe(true)
+      expect(Math.abs(b.w / b.h - hd.width / hd.height)).toBeLessThan(0.01)
+      expect(Math.abs(w - b.w - 2 * b.x)).toBeLessThanOrEqual(1)
+      expect(Math.abs(h - b.h - 2 * b.y)).toBeLessThanOrEqual(1)
     }
   })
 
