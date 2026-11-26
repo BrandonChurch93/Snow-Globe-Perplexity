@@ -1,0 +1,6 @@
+All four are the hero camera, hd (1920 x 1080), drawn by lavapipe on 26 Nov after 09:55 UTC. "Now" is commit 47cb80e4 of agent/p6-summer-sand at the final tier, with summer_glass's new rig pasted into src/seasons/summer/rig.ts on my machine (not in my commits). "Before" is the branch as I found it, at the draft tier, with the rig that was on the branch then.
+
+1-rest-before-after.jpg: the lower part of the frame (x 330 to 1620, y 640 to 1080). Top: before. Bottom: now.
+2-rest-approved-after.jpg: the same crop. Top: references/approved/summer-rest.png scaled to 1920 wide. Bottom: now.
+3-heap-before-after.jpg: the heap at the right (x 1230 to 1590, y 760 to 1010) at 2.4 times. Top: before. Bottom: now.
+4-heap-approved-after.jpg: the same crop. Top: approved. Bottom: now.
