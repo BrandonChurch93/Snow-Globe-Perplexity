@@ -6,3 +6,7 @@ c11-winter-landed-400.jpg: Winter hero, landed 0.5 s after the test shake. HD re
 c11-spring-landed-400.jpg: Spring hero, landed 0.5 s after the test shake. HD review at 400 px per picture. Left hand-only 4c1ebe13, centre inertia c11e34ce, right approved.
 c11-summer-landed-400.jpg: Summer hero, landed 0.5 s after the test shake. HD review at 400 px per picture. Left hand-only 4c1ebe13, centre inertia c11e34ce, right approved.
 c11-fall-landed-400.jpg: Fall hero, landed 0.5 s after the test shake. HD review at 400 px per picture. Left hand-only 4c1ebe13, centre inertia c11e34ce, right approved.
+c11-winter-rest-400.jpg: Winter hero, rest 12 s after the same test shake. HD review at 400 px per picture. Left hand-only 4c1ebe13, centre inertia c11e34ce, right approved. M3 0.9365 to 0.9262.
+c11-spring-rest-400.jpg: Spring hero, rest 12 s after the same test shake. HD review at 400 px per picture. Left hand-only 4c1ebe13, centre inertia c11e34ce, right approved. M3 0.4308 to 0.4307.
+c11-summer-rest-400.jpg: Summer hero, rest 12 s after the same test shake. HD review at 400 px per picture. Left hand-only 4c1ebe13, centre inertia c11e34ce, right approved. M3 0.7276 to 0.7160.
+c11-fall-rest-400.jpg: Fall hero, rest 12 s after the same test shake. HD review at 400 px per picture. Left hand-only 4c1ebe13, centre inertia c11e34ce, right approved. M3 0.5336 to 0.5393.
