@@ -1,0 +1,49 @@
+{
+  "critic": "R3",
+  "score": 6,
+  "pass": false,
+  "issues": [
+    {
+      "severity": "severe",
+      "file": "set-B-01.jpg",
+      "where": "the lower half of the globe, in front of the cottage and pond",
+      "what": "The swirl collapses into bright, continuous curved bands. At normal size it reads as a milky sheet pasted over the miniature rather than particles moving through liquid.",
+      "fix": "Break up the longest streaks, leave clear gaps between clusters, and use separate near and far particle layers so the pond and cottage intermittently show through."
+    },
+    {
+      "severity": "major",
+      "file": "set-C-03.jpg",
+      "where": "the glass-to-base junction in crops 9 and 12",
+      "what": "The thin blue edge of the sphere cuts straight into a bright, uninterrupted collar. There is no visible recess or narrow contact shadow to show how the glass is seated.",
+      "fix": "Recess the glass into the collar, expose a thin bevel at the seat, and add a tight contact shadow that follows the join."
+    },
+    {
+      "severity": "major",
+      "file": "set-C-02.jpg",
+      "where": "the suspended seeds and pinlights in crop 2",
+      "what": "Many of the larger tufts repeat the same face-on radial silhouette, while the green lights repeat the same round core and halo. Different sizes and blur levels help, but the repetition still reads as layered sprites.",
+      "fix": "Give the tufts different strand counts and side-on profiles, and vary the light cores and halos independently with depth."
+    },
+    {
+      "severity": "major",
+      "file": "set-C-02.jpg",
+      "where": "the ivy around the cottage doorway in crop 6",
+      "what": "The larger leaves and petals are flat, hard-edged polygons with single-tone faces. They look cut from colored card against the more convincing stonework.",
+      "fix": "Give the prominent leaves cupped profiles, irregular edges and subtle veins, and add small shadows where they overlap the masonry."
+    },
+    {
+      "severity": "major",
+      "file": "set-A-02.jpg",
+      "where": "the roof and its eaves in crop 3",
+      "what": "The shingle courses remain bare even with the feathery particles concentrated immediately above them. Nothing recognizable as the same material has caught on the roof.",
+      "fix": "Trap a few identifiable tufts against the eaves, chimney and shingle seams, with small contact shadows to distinguish them from airborne particles."
+    },
+    {
+      "severity": "major",
+      "file": "set-A-03.jpg",
+      "where": "the teal and blue inlays on the base in crops 8 and 10",
+      "what": "The inlays have nearly uniform domed shading and broad milky highlights. Next to the ridged shells and granular base, they read as molded plastic rather than worn glass.",
+      "fix": "Vary their surface roughness and edge thickness, and use subtle transmission and mottled frosting so thinner edges respond differently from their centers."
+    }
+  ]
+}

@@ -376,7 +376,8 @@ vec3 glassArcs(vec3 d) {
   float beta = acos(clamp(along, -1.0, 1.0));
   float least = min(${num(glassLook.arcs.leastPx)} * fwidth(beta), 0.05);
   if (along < 0.45) return vec3(0.0);
-  float phi = atan(dot(d, ${vec(ARC_UP)}), d.x);
+  vec2 about = vec2(dot(d, ${vec(ARC_UP)}), d.x);
+  float phi = dot(about, about) > 0.0 ? atan(about.x, about.y) : 0.0;
   vec4 at[${ARC_N}] = ${ARC_AT};
   vec2 level[${ARC_N}] = ${ARC_LEVEL};
   vec2 sum = vec2(0.0);
@@ -552,7 +553,7 @@ void main() {
   float cw = clamp(dot(nw, -v), 0.0, 1.0);
   vec3 tang = v + nw * cw;
   float st = length(tang);
-  tang = st > 1e-5 ? tang / st : normalize(cross(nw, vec3(0.0, 1.0, 0.0)));
+  tang = st > 1e-5 ? tang / st : (dot(nw.xz, nw.xz) > 0.0 ? normalize(cross(nw, vec3(0.0, 1.0, 0.0))) : vec3(1.0, 0.0, 0.0));
   float theta = atan(st, cw);
   float f1 = glassFresnel(nv, GLASS_IOR);
   float marks = 1.0 - ${num(glassLook.dust.depth)} * glassDust(n) - ${num(glassLook.hair.depth)} * glassHair(n);

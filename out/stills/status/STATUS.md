@@ -1,21 +1,15 @@
-# Status 163
+# Status 169
 
-2026-11-26 15:33 UTC
+2026-11-26 17:59 UTC
 
-- Summer's fifth list: two of five builders are in and merged, the base and the miniature. The glass, the air and the sand heap are due about 15:52. First picture: the approved above, ours below, with the miniature's work (the white asterisks in it are the old air; the air builder's work is not in this picture yet).
-- The base (second picture, the approved left, ours right): it was slate grey at the right with ridges like comb lines. Its builder found the cause in the light, a flat cool shade, and not in the sand. Now it is one cream sand with broad swells and pale shells. What is left, in its builder's words: the approved is still whiter at the right and far more carved, and the blue glass piece is still too solid.
-- The miniature (third picture): the cottage front is lit warm, the lawn has lit tufts, the tree's crown is near black with gold on its upper rims, and a low turf mound sits under cottage and tree. Left: the cottage reads smaller than the approved's and its stones coarser; the layout is shared by all four seasons and does not move.
-- A fault that would have shown in the 4K film is mended and proven (fourth picture): in a shake every lamp was a dotted line of copies. Above, one frame at 4K the old way; below, the same frame with the new blur rule: solid bars. Drawn twice, the frame comes out identical to the last bit.
-- The 4K scan for dead pixels: twelve of eighteen ranges of film B have ended, every one clean.
-- Guards against dead pixels on sixteen more shader lines are merged; fourteen pictures kept every pixel, so nothing changed in what you see.
-- I looked at winter, spring and fall on today's build beside their approved pictures: no harm from today's shared changes.
-- The change's new cover: its builder found two more things on its own frames (the table's front edge too bright at the flash, snow lumps on the table going cream white) and mends them first; its push is now due about 15:50.
-- phase 6: 12.73 h used of its 12.00 h box
-- allowance (after the review): 12.73 h used of 12.00 h allowed
+- The app is published again, from the build that has the first pictures, after a clean build, the first picture check and a fresh security review that found nothing blocking. Summer's seven owners are an hour and a half into the last fix pass before summer's last round. The change of season has a new head that loses nothing to black, but its glow is a column and summer arrives blue, so it gets one more turn. A correction to Status 168: 3 of 15 viewers took summer for a frame from a top-budget film or game cinematic and none took it for a photograph.
+- Next: the owners' mid-pass pictures at about 18:15, their reports at 19:20, my own look at the merged picture, then Round 22, summer's last.
+- phase 6: 15.16 h used of its 12.00 h box
+- allowance (after the review): 15.16 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-163-1.jpg`: Summer at rest with the miniature's fifth list (review tier): the approved above, ours below. The air and the glass in it are still the fourth list's.
-- `out/stills/status/status-163-2.jpg`: Summer's base, right half, at one scale: the approved on the left, ours on the right after the fifth list.
-- `out/stills/status/status-163-3.jpg`: Cottage, lawn and bank at one scale: the approved on the left, ours on the right after the miniature's fifth list.
-- `out/stills/status/status-163-4.jpg`: Film B frame 621 at 3840 x 2160, a crop at 6 times: 24 samples above (each lamp a dotted line), the blur rule's 50 samples below (each lamp one bar).
+- `out/stills/status/status-169-1.jpg`: The change from spring to summer, three frames at its peak. Top row: main, where the table and the base go black. Bottom row: the builder's new head, which keeps tone and lights the new base but floods as a column and a flat oval.
+- `out/stills/status/status-169-2.jpg`: The seeds at rest, the approved on the left and ours mid-pass on the right: the heads are round wheels of down now; the stalks still read as sticks and the lights are a half stop short.
+- `out/stills/status/status-169-3.jpg`: The landing mid-pass: one whirl of long thin arcs, nothing green flying, the tree dark and clean; the lanterns do not bloom through it yet.
+- `out/stills/status/status-169-4.jpg`: Four frames of the same change at final tier on the builder's head: no black anywhere, and summer arriving sky blue in the last frame, where the approved storm is cream gold.
