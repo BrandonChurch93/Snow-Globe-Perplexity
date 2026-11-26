@@ -26,33 +26,35 @@ const SIDE = { power: 0.75, reachMm: 7, flicker: 0.1, cycles: 4, phase: 0.75 }
 const ATTIC_LIGHT = { power: 0.6, reachMm: 6, flicker: 0.1, cycles: 4, phase: 0.2 }
 const PUMPKIN = { power: 1.3, reachMm: 7, flicker: 0.16, cycles: 6 }
 const POND = { power: 0.3, reachMm: 20, flicker: 0.08, cycles: 2, phase: 0.8, liftMm: 2.5 }
-const NEAR = { lamp: { power: 9, reachMm: 10 }, pane: { power: 5, reachMm: 3.2 }, pumpkin: { power: 20, reachMm: 4, ends: 4 } }
-const NEAR_WALL = { lamp: { power: 2.4, reachMm: 9, ends: 3 }, pane: { power: 2.2, reachMm: 4.2, ends: 3 }, pumpkin: { power: 5, reachMm: 3.2, ends: 3 } }
+const NEAR = { lamp: { power: 9, reachMm: 10 }, pane: { power: 5, reachMm: 3.2 }, pumpkin: { power: 20, reachMm: 5.5, ends: 4 } }
+const NEAR_WALL = { lamp: { power: 2.4, reachMm: 9, ends: 3 }, pane: { power: 2.2, reachMm: 4.2, ends: 3 }, pumpkin: { power: 8, reachMm: 4.5, ends: 3 } }
 const HALO = { radiusMm: 0.75, strength: 1, hot: 2, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 1, glare: [1.6, 1.12, 0.66] as Rgb }
-const HALO_KIND = { lamp: { size: 5.6, rest: 0.32, hot: 0, bloom: 0.3 }, pumpkin: { size: 4.2, rest: 0.26, hot: 0, bloom: 0.25 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
+const HALO_KIND = { lamp: { size: 5.6, rest: 0.32, hot: 0, bloom: 0.3 }, pumpkin: { size: 4.2, rest: 0.16, hot: 0, bloom: 0.2 }, pool: { size: 7, rest: 0, hot: 0, bloom: 0.17 } }
 const PANE_HALO = { radiusMm: 0.75, strength: 0.5, hot: 0, pullMm: 1.6, flicker: 0.07, cycles: 2, through: 5, wide: 2.4, bloom: 0.6 }
 const PANE_SIZE = { size: 3.2, rest: 0.3, hot: 0, bloom: 0.3 }
 const THROUGH = 6
 const LAMP_GLASS: Rgb = [3.4, 1.25, 0.24]
-const WALL_FILL = 2.8
-const GROUND_FILL = 5.2
+const WALL_FILL = 3.8
+const GROUND_FILL = 7.5
 const PATH = { tone: [0.96, 0.76, 0.58] as Rgb, nearMm: 2.6, highMm: 1.4 }
 const FENCE = { reachMm: 1.25, sinkMm: 5 }
 const MOSS = { low: [0.7, 0.9, 0.6] as Rgb, high: [0.88, 1.02, 0.86] as Rgb, tallMm: 9, soot: 0.8 }
 // The shared stones run from 0.03 (a joint) over 0.12 (the middle stone) to 0.9 (a few white ones). The approved wall is
 // dark grey green stones between black joints, so the tone is bent: joints stay near black, the middle stone sits at a
 // third of `top`, and only the palest stones reach it, which keeps stone from stone apart without a white one.
-const STONE = { top: 0.105, knee: 0.17, power: 1.7 }
+const STONE = { top: 0.115, knee: 0.17, power: 2.2 }
 // The shared chimney is pale brick. The approved one is the wall's dark stone, a little greyer.
-const CHIMNEY = { tone: [0.9, 0.95, 0.9] as Rgb, top: 0.1, knee: 0.5, power: 1.4, fromMm: 1.5, reachMm: 0.9 }
+const CHIMNEY = { tone: [0.9, 0.95, 0.9] as Rgb, top: 0.2, knee: 0.5, power: 2.2, fromMm: 1.5, reachMm: 0.9 }
 // The shared slates run from 0.02 (a slate's shadowed top edge) to 0.12 (its lit lower edge). The approved roof is big warm
 // slates with bright lower edges over black gaps, so the tone is bent about `mid` and weathered in patches a few slates wide.
 const ROOF = { tone: [1.65, 1.22, 0.95] as Rgb, grey: 0.55, mid: 0.045, bend: 1.6, patch: [0.6, 1.7] as [number, number] }
-const DOOR: Rgb = [0.12, 0.105, 0.08]
+const DOOR: Rgb = [0.075, 0.085, 0.07]
 const TIMBER: Rgb = [0.4, 0.42, 0.34]
 const DRY: readonly Rgb[] = [[0.42, 0.16, 0.05], [0.5, 0.26, 0.07], [0.3, 0.12, 0.05], [0.4, 0.3, 0.1]]
-const GROUND = { soil: 1.7, leaf: 1.6, leafScale: 0.6, soilMm: 0.26, wideMm: 0.5, leafMm: 0.34 }
-const WATER = { rough: 0.07, rippleMm: 0.18, lamp: 10, pane: 1.6, pumpkin: 4.5, tight: 0.0008, wide: 0.006, wideShare: 0.004, lowMm: 3.4, fog: 0.5, trunkMm: 3.4, dim: 0.85, shore: [0.9, 0.99] as [number, number] }
+// The shared shrubs are one soft mass. Dry leaves stand apart: each takes its own tone and its own depth of shade.
+const BUSH = { gain: 5.2, cap: 2, low: 0.35 }
+const GROUND = { soil: 1.7, leaf: 1.9, leafScale: 0.6, soilMm: 0.26, wideMm: 0.5, leafMm: 0.34 }
+const WATER = { rough: 0.07, rippleMm: 0.18, lamp: 10, pane: 1.6, pumpkin: 4.5, tight: 0.0008, wide: 0.006, wideShare: 0.004, lowMm: 3.4, fog: 0.8, trunkMm: 3.4, dim: 0.85, shore: [0.9, 0.99] as [number, number] }
 
 const TALL_LAMP = { reachMm: 2.6, neckMm: 9.5, post: [1.6, 1.2] as [number, number], head: [1.5, 1.5] as [number, number] }
 const foot = lampFoot()
@@ -118,9 +120,10 @@ const sources = (on: typeof NEAR | typeof NEAR_WALL, lampTone: Rgb): GlowSource[
   ...pumpkinPools.map((at): GlowSource => ({ at, color: tones.pumpkinLight, ...on.pumpkin })),
 ]
 
-// Light the glass and the lit fog throw back: on the faces of the fence the viewer sees and on the cottage's side wall,
-// which the key (upper right) and the lamp both miss. The approved shows both faces lit, grey-brown and olive.
-const BOUNCE = { fence: { color: [1, 0.76, 0.52] as Rgb, power: 1.5, reachMm: 9, ends: 2.6, outMm: 5, upMm: 6.5 }, side: { color: [0.86, 0.9, 0.66] as Rgb, power: 1.7, reachMm: 11, ends: 2.4, outMm: 9, upMm: 7, alongMm: 2 } }
+// Light the glass and the lit fog throw back: on the faces of the fence the viewer sees, on the cottage's side wall and
+// on the rocks of the east bank, which the key (upper right) and the lamp all miss. The approved shows them lit,
+// grey-brown, olive and pale green.
+const BOUNCE = { fence: { color: [1, 0.76, 0.52] as Rgb, power: 1.5, reachMm: 9, ends: 2.6, outMm: 5, upMm: 6.5 }, side: { color: [0.86, 0.9, 0.66] as Rgb, power: 6, reachMm: 13, ends: 2.4, outMm: 9, upMm: 7, alongMm: 2 }, bank: { color: [0.8, 0.95, 0.7] as Rgb, power: 7, reachMm: 10, ends: 2.4, outMm: 7, upMm: 5 } }
 
 function bounce(): GlowSource[] {
   const dx = fence.to[0] - fence.from[0]
@@ -133,7 +136,11 @@ function bounce(): GlowSource[] {
   const across = -(cottage.halfWidth + BOUNCE.side.outMm)
   const sx = cottage.x + across * f.v[0] + BOUNCE.side.alongMm * f.u[0]
   const sz = cottage.z + across * f.v[1] + BOUNCE.side.alongMm * f.u[1]
+  const rocks = ROCKS.map(rockCentre)
+  const bx = rocks.reduce((m, c) => m + c[0], 0) / rocks.length
+  const bz = rocks.reduce((m, c) => m + c[2], 0) / rocks.length + BOUNCE.bank.outMm
   return [
+    { at: [bx, groundAt(bx, bz) + BOUNCE.bank.upMm, bz], color: BOUNCE.bank.color, power: BOUNCE.bank.power, reachMm: BOUNCE.bank.reachMm, ends: BOUNCE.bank.ends },
     { at: [fx, groundAt(fx, fz) + BOUNCE.fence.upMm, fz], color: BOUNCE.fence.color, power: BOUNCE.fence.power, reachMm: BOUNCE.fence.reachMm, ends: BOUNCE.fence.ends },
     { at: [sx, f.floor + BOUNCE.side.upMm, sz], color: BOUNCE.side.color, power: BOUNCE.side.power, reachMm: BOUNCE.side.reachMm, ends: BOUNCE.side.ends },
   ]
@@ -205,8 +212,8 @@ function autumn(source: THREE.BufferGeometry): THREE.BufferGeometry {
     } else if (inFence(x, y, z) && kind === 1) {
       P.setXYZ(i, fence.from[0], groundAt(fence.from[0], fence.from[1]) - FENCE.sinkMm, fence.from[1])
     } else if (kind === 3) {
-      const lum = Math.min(1.4, (0.3 * r + 0.6 * gr + 0.1 * b) * 3.2)
-      const tone = DRY[Math.floor(wave(x * 3.1, y * 2.7, z * 3.3) * 3.999)]!
+      const lum = Math.min(BUSH.cap, (0.3 * r + 0.6 * gr + 0.1 * b) * BUSH.gain) * (BUSH.low + (1 - BUSH.low) * wave(x * 5.3, y * 6.1, z * 4.7))
+      const tone = DRY[Math.floor(wave(x * 7.1, y * 6.7, z * 7.3) * 3.999)]!
       r = tone[0] * lum
       gr = tone[1] * lum
       b = tone[2] * lum
@@ -219,17 +226,17 @@ function autumn(source: THREE.BufferGeometry): THREE.BufferGeometry {
         r *= PATH.tone[0] * (0.8 + 0.4 * n)
         gr *= PATH.tone[1] * (0.8 + 0.4 * n)
         b *= PATH.tone[2] * (0.8 + 0.4 * n)
+      } else if (near && up > cottage.wall + CHIMNEY.fromMm && Math.abs(c.across - cottage.chimney.across) < cottage.chimney.half + CHIMNEY.reachMm && Math.abs(c.along - cottage.chimney.along) < cottage.chimney.halfAlong + CHIMNEY.reachMm) {
+        const lum = 0.3 * r + 0.6 * gr + 0.1 * b
+        const v = CHIMNEY.top * (1 - Math.exp(-Math.pow(lum / CHIMNEY.knee, CHIMNEY.power))) * (0.55 + 0.9 * n)
+        r = v * CHIMNEY.tone[0]
+        gr = v * CHIMNEY.tone[1]
+        b = v * CHIMNEY.tone[2]
       } else if (near && up > cottage.wall - 1.2 && Math.abs(c.across) > 0.01 && N.getY(i) > 0.25) {
         const lum = 0.3 * r + 0.6 * gr + 0.1 * b
         r = (lum * ROOF.grey + r * (1 - ROOF.grey)) * ROOF.tone[0]
         gr = (lum * ROOF.grey + gr * (1 - ROOF.grey)) * ROOF.tone[1]
         b = (lum * ROOF.grey + b * (1 - ROOF.grey)) * ROOF.tone[2]
-      } else if (near && up > cottage.wall + CHIMNEY.fromMm && Math.abs(c.across - cottage.chimney.across) < cottage.chimney.half + CHIMNEY.reachMm && Math.abs(c.along - cottage.chimney.along) < cottage.chimney.halfAlong + CHIMNEY.reachMm) {
-        const lum = 0.3 * r + 0.6 * gr + 0.1 * b
-        const v = CHIMNEY.top * (1 - Math.exp(-Math.pow(lum / CHIMNEY.knee, CHIMNEY.power))) * (0.8 + 0.4 * n)
-        r = v * CHIMNEY.tone[0]
-        gr = v * CHIMNEY.tone[1]
-        b = v * CHIMNEY.tone[2]
       } else {
         const m = (1 - smooth(0, MOSS.tallMm, up)) * (0.35 + 0.65 * n) + 0.35 * smooth(0.55, 0.8, n)
         const k = Math.min(1, Math.max(0, m))
@@ -389,9 +396,9 @@ diffuseColor.rgb = mix(${glsl(tones.water)}, ${glsl(tones.moss)} * 0.5, pondShor
   vec3 pondSight = villageSight();
   float pondFresnel = 0.03 + 0.97 * pow(abs(1.0 - clamp(dot(pondN, pondSight), 0.0, 1.0)), 5.0);
   float pondGlint = villageMirror(pondN, pondSight, ${WATER.tight.toFixed(5)}, ${WATER.wide.toFixed(5)}, ${WATER.wideShare.toFixed(3)});
-  float pondLap = 0.5 * (texture2D(map, vMapUv * 0.11 + 0.2).a + texture2D(map, vMapUv * 0.07 + 0.6).a);
+  float pondLap = 0.4 * (texture2D(map, vMapUv * 0.11 + 0.2).a + texture2D(map, vMapUv * 0.07 + 0.6).a) + 0.2 * texture2D(map, vMapUv * vec2(0.9, 0.3) + 0.13).a;
   float pondPosts = max(villagePost(pondN, pondSight, ${vec(trunkFoot)}, ${WATER.trunkMm.toFixed(1)}, 80.0), villagePost(pondN, pondSight, ${vec(foot)}, 0.8, ${(flame[1] - foot[1] + 2).toFixed(1)}));
-  totalEmissiveRadiance += (${glsl(tones.lamp)} * pondGlint * pondFresnel + ${glsl(tones.fogGlint)} * (${WATER.fog.toFixed(2)} * pondFresnel * (0.55 + 0.9 * smoothstep(0.3, 0.75, pondLap)) * (1.0 - ${WATER.dim.toFixed(2)} * pondPosts))) * uGlowGain * (1.0 - pondShore);
+  totalEmissiveRadiance += (${glsl(tones.lamp)} * pondGlint * pondFresnel + ${glsl(tones.fogGlint)} * (${WATER.fog.toFixed(2)} * pondFresnel * (0.3 + 1.4 * smoothstep(0.35, 0.7, pondLap)) * (1.0 - ${WATER.dim.toFixed(2)} * pondPosts))) * uGlowGain * (1.0 - pondShore);
 }
 `,
         )
@@ -426,7 +433,7 @@ function paneLook(room: Rgb, drape: Rgb): GlowLook {
 }
 
 export function lights(): THREE.Object3D {
-  const warm: GlowLook = { bulb: 1.5, bulbCore: 3.2, glass: LAMP_GLASS, flame: scaled(tones.flame, 6), room: tones.lamp, curtain: tones.lamp, frost: [0, 0, 0], frostAmount: 0, flicker: 0.1, cycles: 5, through: THROUGH, paneHot: 0 }
+  const warm: GlowLook = { bulb: 2.2, bulbCore: 4.4, glass: LAMP_GLASS, flame: scaled(tones.flame, 6), room: tones.lamp, curtain: tones.lamp, frost: [0, 0, 0], frostAmount: 0, flicker: 0.1, cycles: 5, through: THROUGH, paneHot: 0 }
   const warmPieces = [
     glowPiece(stretched(villageGeometry('lamp-glass')), (_i, isFlame) => [isFlame > 0.5 ? GLOW.flame : GLOW.glass, LAMP.phase, 0, 0]),
     glowPiece(geometry(MODEL, 'glow'), (_i, _inner, index) => [GLOW.bulb, 0.27 + 0.41 * index, index, 0]),
