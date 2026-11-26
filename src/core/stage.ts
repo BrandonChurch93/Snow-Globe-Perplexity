@@ -15,6 +15,13 @@ export interface Moment {
   time: number
   beat: number | null
   period: number | null
+  /**
+   * The season a change has just left: its name from the end of the swap window to the landing of the shake that made the change, and
+   * null everywhere else (at rest, before the end of the window, through a shake that keeps its season, through the preroll). After
+   * the window `from` and `to` are both the season that has come, so without this a stage could not tell the frames after a change
+   * from a shake that changed nothing; the cover of a change dies away over those frames (src/shake/change.ts, `CHANGE_COVER`).
+   */
+  left?: string | null
 }
 
 export interface Counts {
