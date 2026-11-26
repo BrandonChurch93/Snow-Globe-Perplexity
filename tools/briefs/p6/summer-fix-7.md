@@ -247,7 +247,8 @@ ten minutes. At about 18:15 UTC each owner sends /root two pictures without stop
 pixels beside the approved, and the one pair that shows the most) and one line on the way taken.
 
 Two new owners work beside you for this pass: `/root/summer_tree_builder` has the tree (`mini/crown.ts`,
-`mini/tree.ts`, `mini/lanterns.ts`, `assets-src/tree-summer`), taken from the Miniature's list, and
+`mini/tree.ts`, `assets-src/tree-summer`; it reads `mini/lanterns.ts` and `mini/palette.ts`, which stay the
+Miniature's), taken from the Miniature's list, and
 `/root/summer_room_builder` has the lights behind the globe (`backdrop.ts`), taken from the Glass's list,
 with the table's mirror of them.
 
@@ -286,9 +287,10 @@ curved arcs in one whirl in place of short straight dashes and the smear at the 
 sprites that fly at the landing; minor, the flat beige polygons seen through the crown's gaps at the
 landing, which are the haze behind the crown: with the tree's builder.
 
-### Miniature (the village and the ground: `mini/village.ts`, `mini/turf.ts`, `mini/palette.ts`, `assets-src/village-summer`)
+### Miniature (the village, the ground and the lanterns: `mini/village.ts`, `mini/turf.ts`, `mini/lanterns.ts`, `mini/palette.ts`, `assets-src/village-summer`)
 
-The tree, its crown and the lanterns' own form are the tree builder's for this pass. In the order of weight:
+The tree and its crown are the tree builder's for this pass; if it needs a line in `lanterns.ts` or
+`palette.ts` it asks you. In the order of weight:
 
 1. The light (your item 1, now with R1's severe): the lanterns' pools on the walls, the door and the turf,
    and the warm rim from the back right along the roof's edge, the fence's top and the grass tips. Your
@@ -311,7 +313,7 @@ The tree, its crown and the lanterns' own form are the tree builder's for this p
 5. The ivy's leaves (your item 2) and, minor: "a flat, untextured green quad sits beside the right
    sunflower like a leaf card, and the sunflowers read as flat cut-outs. In -a they are modelled and backlit".
 
-### Tree (`mini/crown.ts`, `mini/tree.ts`, `mini/lanterns.ts`, `assets-src/tree-summer`)
+### Tree (`mini/crown.ts`, `mini/tree.ts`, `assets-src/tree-summer`; reads `mini/lanterns.ts` and `mini/palette.ts`)
 
 1. Major: "the crown is a dark, dense single mass without -a's layered foliage pads and warm rim light, and
    its gaps show grey-brown. Thin bright rope-like lines run along the branches, and the lanterns cast little
