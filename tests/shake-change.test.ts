@@ -6,6 +6,9 @@ import * as THREE from 'three'
 import { GLASS_COME, GLASS_LEAVE, GUST_CLOSES, GUST_LAST_DOWN, GUST_LAST_DOWN_AT, MODE, makeHandle, passCount, passLevel, passSpread, passStep, passStride, setPresence, STAGE_FRAG_PARS, stillLevel } from '../src/core/materials'
 import { BASE_PASS, CHANGE_COVER, DRESSING_CHANGE, changeBloom, changeRamp, changeSpan, partChange, SEASONAL_PARTS } from '../src/shake/change'
 import { shakeMotion } from '../src/shake/table'
+import { loopMoment, timelineMoment } from '../src/film/moments'
+import { loopSeconds } from '../src/film/loop'
+import { eventSeconds, filmTimeline, stillTimeline, type ShakeEvent, type Timeline } from '../src/film/timeline'
 import { CHANGE_BLOOM } from '../src/scene/lighting'
 import { makeSlab, REFLECT_MIX, ReflectMix, reflectStep } from '../src/scene/surface'
 
@@ -618,5 +621,68 @@ describe('a fragment of the inside whose varyings are no number', () => {
     expect(outside(Number.NaN, 0, 50), 'seen is no number').toBe(true)
     expect(outside(1, Number.NaN, 50), 'the place is no number').toBe(true)
     expect(plain(Number.NaN, Number.NaN, 50), 'the plain forms kept it').toBe(false)
+  })
+})
+
+describe('the season a change has left', () => {
+  const beatsOf = (e: ShakeEvent): number => eventSeconds(e) / BEAT_S
+  const at = (tl: Timeline, e: ShakeEvent, beat: number) => timelineMoment(tl, e.startSec + beat * BEAT_S, 1, 1)
+  const closes = s.swapWindow.toBeat
+
+  it('is named from the end of the swap window to the landing of a shake that changes the season, and nowhere else', () => {
+    const tl = filmTimeline()
+    const changes = tl.events.filter((e) => e.from !== e.to)
+    expect(changes.map((e) => e.id)).toEqual(film)
+    for (const e of changes) {
+      expect(e.seconds, 'the film at its own tempo: a beat of a shake is a beat of the film').toBeUndefined()
+      expect(beatsOf(e)).toBeGreaterThan(closes + 0.5)
+      let named = 0
+      for (let beat = 0; beat < beatsOf(e) - 1e-6; beat += FRAME_BEATS / 4) {
+        const m = at(tl, e, beat)
+        if (beat < closes - 1e-6) expect(m.left, `${e.id} at beat ${beat}`).toBeNull()
+        else if (beat > closes + 1e-6) {
+          expect(m.left, `${e.id} at beat ${beat}`).toBe(e.from)
+          // The picture is of the season that came, alone: nothing but this field says a season has just gone.
+          expect([m.season, m.from, m.to, m.change]).toEqual([e.to, e.to, e.to, 0])
+          named++
+        }
+      }
+      expect(named).toBeGreaterThan(100)
+      // The frame on the end of the window is the first the stage draws with one season, and the first that names the other.
+      const first = at(tl, e, closes)
+      expect([first.season, first.from, first.to, first.change, first.left]).toEqual([e.to, e.to, e.to, 0, e.from])
+      const last = at(tl, e, closes - FRAME_BEATS)
+      expect([last.from, last.to, last.left]).toEqual([e.from, e.to, null])
+      expect(last.change).toBeGreaterThan(0.9)
+      // At the landing and at rest after it.
+      for (const after of [0, 1e-6, 0.5, 2]) expect(timelineMoment(tl, e.startSec + eventSeconds(e) + after, 1, 1).left, `${e.id}, ${after} s after the landing`).toBeNull()
+    }
+  })
+
+  it('is null through a shake that does not change the season: the preroll of the film and the test shake of every still', () => {
+    const whole = filmTimeline()
+    const preroll = whole.events[0]!
+    expect([preroll.id, preroll.from === preroll.to]).toEqual(['preroll', true])
+    const kept: [Timeline, ShakeEvent][] = [[whole, preroll]]
+    for (const season of config.seasons) {
+      const tl = stillTimeline(season)
+      expect(tl.events.map((e) => [e.id, e.from, e.to])).toEqual([[`test:${season}`, season, season]])
+      kept.push([tl, tl.events[0]!])
+    }
+    for (const [tl, e] of kept) {
+      let asked = 0
+      // Through the whole shake, past the end of its swap window, and on into the rest after it.
+      for (let beat = 0; beat < beatsOf(e) + 4; beat += FRAME_BEATS / 4) {
+        const m = at(tl, e, beat)
+        expect(m.left, `${e.id} at beat ${beat}`).toBeNull()
+        expect([m.season, m.from, m.to]).toEqual([e.from, e.from, e.from])
+        if (beat > closes && beat < beatsOf(e)) asked++
+      }
+      expect(asked, `${e.id}: beats after the window and before the landing`).toBeGreaterThan(100)
+    }
+  })
+
+  it('is null all the way round the loop, which changes nothing', () => {
+    for (let t = 0; t < loopSeconds; t += loopSeconds / 257) expect(loopMoment(config.defaultSeason, t, 1).left).toBeNull()
   })
 })
