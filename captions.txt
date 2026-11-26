@@ -36,3 +36,19 @@ p2-tablet-arc.jpg    a fault seen and not mended in this push: tablet 820 x 1180
                      fills the screen where the still does not reach shows its own glass through the still's thinned edge.
                      It is so on screens no still is drawn for, and was so before this job.
 
+
+Third push (the 28 first pictures drawn again on one build). The stills as a visitor's browser gets them: the coded AVIF
+files of public/first at commit 9d00c74a of agent/p6-first, drawn on a7fd521a (main 80391266 merged in), Mesa lavapipe.
+`node tools/poster.mjs --check` printed `poster: pass` there. Each sheet is one season on all seven screens. Top row:
+1920 x 1080 and 2560 x 1080. Bottom row: the tablet 1024 x 1366, then the phone 390 wide at 844, 750, 667 and 590 high
+(the phone with its browser bars in). The controls are not in a still; they stand 74 px high on the top row, 86 on the
+tablet and 154 on the phones, and the glass is framed over them.
+
+p3-winter-sheet.jpg   winter. The 1920 x 1080 still is the same file, byte for byte, as in 9bcc9fdc.
+p3-spring-sheet.jpg   spring.
+p3-summer-sheet.jpg   summer. On the tablet and the phones the heap of sand right of the foot runs out of the right edge and
+                      only its near edge is in the picture; the live picture has it the same.
+p3-fall-sheet.jpg     fall.
+
+In all 28 the table reaches the bottom edge, and the glass stands where the table of the page says: the rows of the framing
+are the same to the last digit as in 9bcc9fdc.
