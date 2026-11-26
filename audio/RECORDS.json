@@ -13793,7 +13793,7 @@
     }
   ],
   "pack": {
-    "time": "2026-11-26T11:03:01.971Z",
+    "time": "2026-11-26T11:17:07.297Z",
     "kbps": 192,
     "bytes": 4378752,
     "fits": true,
@@ -13872,48 +13872,48 @@
       }
     ],
     "trimsDb": {
-      "ambience": -8,
-      "interface": 0,
-      "touch": -8,
-      "impact": -8,
-      "music": -8
+      "ambience": -8.5,
+      "interface": -0.5,
+      "touch": -8.5,
+      "impact": -8.5,
+      "music": -8.5
     },
     "shakes": [
       {
         "id": "shake-spring",
         "class": "impact",
-        "trimDb": -8,
+        "trimDb": -8.5,
         "stepDb": -3,
-        "appDb": -11,
+        "appDb": -11.5,
         "riseMs": 30,
-        "gain": 0.34874
+        "gain": 0.32923
       },
       {
         "id": "shake-winter",
         "class": "impact",
-        "trimDb": -8,
+        "trimDb": -8.5,
         "stepDb": -3,
-        "appDb": -11,
+        "appDb": -11.5,
         "riseMs": 30,
-        "gain": 0.34874
+        "gain": 0.32923
       },
       {
         "id": "shake-summer",
         "class": "impact",
-        "trimDb": -8,
+        "trimDb": -8.5,
         "stepDb": -3,
-        "appDb": -11,
+        "appDb": -11.5,
         "riseMs": 30,
-        "gain": 0.34809
+        "gain": 0.32862
       },
       {
         "id": "shake-fall",
         "class": "impact",
-        "trimDb": -8,
+        "trimDb": -8.5,
         "stepDb": -6,
-        "appDb": -14,
+        "appDb": -14.5,
         "riseMs": 30,
-        "gain": 0.24689
+        "gain": 0.23308
       }
     ],
     "loops": [

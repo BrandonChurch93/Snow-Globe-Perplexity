@@ -408,6 +408,46 @@ export function procsGainLine(procs, limits) {
   return `--procs ${procs} on ${limits.cpus} ${limits.cpus === 1 ? 'CPU' : 'CPUs'}: one software render already uses every core. Measured on 8 CPUs, a second process added about 10 percent and a third nothing. It runs, but expect no gain over --procs ${gain}.`
 }
 
+export const NOT_A_NUMBER = 'NOT A NUMBER'
+export const NAN_MEASURE = "window.showcase.dev.sanity(): the values in the picture's mean that are no number, counted before the lens and the grade"
+
+/**
+ * What a chunk's record holds about values that are no number: one total, the frames where the count is not 0, and the frames whose count was never read.
+ * @param {{ index: number, notNumber?: number, sanityMs?: number }[]} frames
+ * @param {string | null} [precision]
+ */
+export function notNumberRecord(frames, precision = null) {
+  const read = frames.filter((f) => typeof f.notNumber === 'number')
+  const ms = read.filter((f) => typeof f.sanityMs === 'number').map((f) => f.sanityMs)
+  return {
+    total: read.reduce((n, f) => n + f.notNumber, 0),
+    frames: read.filter((f) => f.notNumber > 0).map((f) => ({ frame: f.index, count: f.notNumber })),
+    unread: frames.filter((f) => typeof f.notNumber !== 'number').map((f) => f.index),
+    measure: NAN_MEASURE,
+    ...(precision ? { precision, blind: precision === 'byte' } : {}),
+    msAFrame: ms.length ? Math.round(ms.reduce((a, b) => a + b, 0) / ms.length) : null,
+  }
+}
+
+/** The frames of a record that hold values that are no number, or null when it holds none. The mark alone is enough. */
+export function notNumberOf(record) {
+  const frames = Array.isArray(record?.notNumber?.frames) ? record.notNumber.frames.filter((f) => f.count > 0) : []
+  const total = Number(record?.notNumber?.total) || 0
+  if (record?.mark !== NOT_A_NUMBER && total <= 0 && !frames.length) return null
+  return { total, frames }
+}
+
+/** True when nothing says whether a chunk's frames held values that are no number: it was drawn before the tool read the count, or some of its frames were. */
+export const notNumberUnknown = (record) => record?.what !== 'opening' && (!record?.notNumber || (record.notNumber.unread ?? []).length > 0 || record.notNumber.blind === true)
+
+const nanFrames = (n) => (n.frames.length ? n.frames.map((f) => `${f.frame} (${f.count})`).join(', ') : 'not named')
+export function notNumberLine(chunk) {
+  const r = chunk.record
+  const n = notNumberOf(r)
+  return `${chunk.from ?? chunk.file} (${r.what} ${r.first} to ${r.last}, drawn on ${r.machine}) holds ${n.total} ${n.total === 1 ? 'value that is' : 'values that are'} no number in ${n.frames.length} ${n.frames.length === 1 ? 'frame' : 'frames'}: ${nanFrames(n)}`
+}
+export const notNumberLoud = (what, index, count) => `${NOT_A_NUMBER}: ${what} frame ${index} holds ${count} ${count === 1 ? 'value that is' : 'values that are'} no number in its mean, before the lens and the grade. Its chunk is marked ${NOT_A_NUMBER} and no master is encoded from it. Tell /root the frame. Do not draw it again hoping: the same frame draws the same values.`
+
 /** --local starts the installed Chrome in a window, with the machine's graphics card. Without a display it cannot open. */
 export function localProblem(local, platform = process.platform, env = process.env) {
   if (!local || platform !== 'linux' || env.DISPLAY || env.WAYLAND_DISPLAY) return null
@@ -589,6 +629,8 @@ export function joinPlan({ which, chunks, totals, test = false, size = M.chunkFr
     }
     if (!Array.isArray(r.frameHashes) || r.frameHashes.length !== r.last - r.first + 1) problems.push(`${named(c)} holds ${r.frameHashes?.length ?? 0} frame hashes for ${r.last - r.first + 1} frames`)
     if (r.verify?.ok !== true) problems.push(`${named(c)} was never verified against its frames`)
+    const nan = notNumberOf(r)
+    if (nan) problems.push(`${named(c)} is marked ${NOT_A_NUMBER}: ${nan.total} ${nan.total === 1 ? 'value' : 'values'} in ${nan.frames.length === 1 ? 'frame' : 'frames'} ${nanFrames(nan)}. It is never encoded into a master: the frame is mended in the engine and drawn again by a new build`)
   }
 
   const same = (key, label, list, of = (r) => r[key]) => {

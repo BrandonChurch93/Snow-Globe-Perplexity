@@ -4,6 +4,8 @@ Written by the sound agent of Phase 5 on 2026-11-25 (UTC), on the branch `agent/
 
 ## Where it stands
 
+**After the last job of all of `/root` on 2026-11-26 (11:12 UTC): `APP_TRIM_DB` is 0.5 dB lower in every class (the uniform step: the music, the ambience, touch and impact at -8.5, the interface at -0.5), so every line of the headroom table is 0.5 dB lower and no distance between two sounds moved; only the gains of `public/audio/index.json` changed, the nine sound files of the pack are byte for byte those of decision 146. And at a landing the engine `src/audio/index.ts` now enters the new season's music on a bar line of its loop, as the film cuts its music on one: spring on bar 6 of its track, summer on bar 4, fall on bar 1, winter on bar 6 (`LANDING_BAR`, `LOOP_LEAD`). By measurement the app's new music now stands 1.0 to 1.7 dB under film B's over the 0.1 s after the landing (it stood 2.9 to 15.6 dB under), 0.4 to 1.1 dB under over 0 to 0.5 s and 0.3 to 0.7 dB under over the first bar. By a listening agent (r61, 32 listenings, one trial) something is called too loud or abrupt in 17 of 32, 19 with two cases at the rule's edge, where r60 had 19 with its one edge case; liquid is named in 14 of 32 (16 with two edge cases), where r60 had 8. Nothing was bought and no call that makes sound was made. No person has heard any of it. See "The last job of all" below.**
+
 **After the last job of `/root` on 2026-11-26 (10:26 UTC), which followed decision 146: the engine `src/audio/index.ts` spaces its interface cues by 0.1 s, lets the sound in over 0.35 s when it is switched on, and lets the old music go through a shake as the film's mix thins it. The pack, its gains and the two films are the bytes they were.** Nothing was bought: 7,200 spent, 2,800 left. By the bound from the pack nothing the app can do passes -1 dBFS (the nearest line is -1.04), the entry of the sound is named a crash or a blast in 1 of 48 listenings where it was 4, and the app's shake stands against the old music under it within 0.28 dB of film B's in all four seasons. Spring's shake is the kept file as the film lays it; no cause for the listening agent's objection was found in how the app plays it. See "After decision 146: the last job". All of it is worked out offline; nothing was played in a browser or heard by a person.
 
 **After decision 146 of `/root` (2026-11-26, 08:22 UTC): the app's pack keeps the film's balance of a shake. The lift, the clink, the riser and every shake take the trim of 8 dB that the music and the ambience have, and each shake takes the film's own step on top (3 dB, fall 6) and its rise of 30 ms. The same 16 sounds are kept, the same eight effect cues are open, and the two films are the bytes they were.** Nothing was bought: 7,200 spent, 2,800 left. By measurement the app's shake now stands against the bar of music before it within 0.05 dB of film B's in all four seasons, where it stood 11 dB over the film's balance (fall 14). Against the music under it the app's shake stands 2.2 to 2.8 dB lower than film B's, because the app lets its old music go in another way than the film does; that is `src/` and is not mended. The press's tick and the chime stay at their kept level, by listening. The stir came down with the shake and has no field of its own. By a bound, one shake of the app peaks at -2.94 dBFS at the most; a second press and a stir laid on its worst instant can pass -1 dB. Nobody has heard any of it and nothing was played in a browser. See "Decision 146: the app keeps the film's balance of a shake". The paragraphs that follow are older states, the newer first.
@@ -473,6 +475,110 @@ Asked by `/root` on 2026-11-26 at 10:26 UTC, one hour, four points. `src/audio/i
 - Winter's shake, objected to in 8 of 8 after the new release, and the new music after a landing, which begins quieter in the app than in the film. For `/root`.
 - Spring, as above. For a human ear.
 
+## The last job of all: the uniform step and the entry of the new music
+
+The mail of `/root` of 2026-11-26, 11:12 UTC, two points, 45 minutes. Same rules: the one checkout, no purchase, no call that makes sound. The scratch named here lies in `out/work/audio/p6/last2/` and is not in the repo.
+
+### The uniform step
+
+- `APP_TRIM_DB` in `tools/lib/audio.mjs` is now `{ ambience: -8.5, interface: -0.5, touch: -8.5, impact: -8.5, music: -8.5 }`: 0.5 dB off every class, the interface with the rest. Where this file says 8 dB of the app's trim above, read 8.5; where it says the interface stays at 0, read 0.5 under.
+- One pack (`node tools/sound.mjs --pack`). Only `index.json` moved. Each of its 19 gains is 0.4998 to 0.5003 dB lower (five decimals are written) and no other field changed. The sprite and the eight loops are byte for byte the files of decision 146.
+- So every distance is as before. The shake against the bar of music before it and against the music under it, the app less film B, reads as in the last job in all four seasons (0.05, 0.02, -0.03, 0.02 dB and -0.16, 0.12, 0.16, -0.28 dB); the app as a whole now plays 10.76 to 10.81 dB under film B where it played 10.26 to 10.31.
+
+### Headroom again
+
+The bound of decision 146 and of the last job, unchanged (`peaks6.mjs`, which is `peaks5.mjs` with the entry of a landing, and the three readers): each part's highest in a window of 50 ms at four times the sample rate, added as if on one sample, the old music at every place of its round, the twelve pairs of seasons. The app has no limiter. In dBFS:
+
+| What plays | Before the step | After the step | And with the entry |
+|---|---|---|---|
+| A season at rest | -6.92 | -7.42 | -7.42 |
+| At rest, one press and one full stir | -2.40 | -2.90 | -2.90 |
+| One shake by motion | -5.13 | -5.63 | -5.63 |
+| One shake by a press, with its tick | -2.99 | -3.49 | -3.49 |
+| The same and a control press 0.1 s or later | -2.21 | -2.71 | -2.71 |
+| The same and a full stir on top | -1.28 | -1.78 | -1.78 |
+| One shake with its tick and a full stir | -1.99 | -2.49 | -2.49 |
+| The landing's cues with a press and a stir | -4.37 | -4.86 | -4.94 |
+| The landing's cues, nothing on top | -10.56 | -11.06 | -11.22 |
+| Beyond the list: presses every 0.1 s and a full stir | -1.28 | -1.78 | -1.78 |
+| Beyond the list: one press and stirs every 0.18 s | -1.27 | -1.77 | -1.77 |
+| Beyond the list: a second shake as soon as the first has landed, a press and a stir | -1.06 | -1.56 | -1.56 |
+| Beyond the list: the sound switched on, the shake's press 0.2 s later, one more press and a stir | -1.04 | -1.54 | -1.54 |
+
+- Every line is 0.49 or 0.50 dB lower after the step. No line passes -1 dBFS; the nearest stand at -1.54 and -1.56.
+- The entry moves the landing's two lines only, and downwards, by 0.08 and 0.16 dB. Their highest sum used to fall 0.65 s after a landing in summer (winter to summer), inside the first bar of summer's loop; with summer entered at bar 4 it falls on the landing itself (fall to summer) and is lower. So the entry was not taken down.
+- Two more lines of the reader, not in the table: one shake by motion with one press at the worst instant -2.71, and with a full stir beside it -1.78, both as after the step. The line that cannot happen (the chime and then ticks every 0.1 s with the master taken as fully open, and a stir) reads -1.34, where it read -0.84.
+- For the run with the entry the old music's windows were taken from the run after the step, as the entry does not touch the old music.
+
+### The new music after a landing: the cause
+
+Asked: in the 0.1 s after the landing the app's new music was 5.8 dB (spring), 5.0 (summer), 2.9 (fall) and 15.6 dB (winter) quieter than film B's. Measured with `landing.mjs`: the music stem of film B (`audio/mix/four-tracks-music.wav`) against the app's new music from the model, brought up by its trim and the master's gain (10.5 dB).
+
+- The lead. The pack writes a music loop from 0.06 s before the line of its first bar (`LOOP_LEAD` in `tools/lib/audio.mjs`), and the engine began it at its start, so the downbeat came 0.06 s after the landing's clink. Over the 0.1 s after the landing that alone cost 3.6 dB in spring, 3.1 in summer, 2.4 in fall and 2.9 in winter. The film cuts its music on the line.
+- The bar. A loop holds bars 1 to 8 of its track. The film lands on bar 6 of winter's track, on bar 1 of fall's, and on bar 0 of spring's and of summer's, which no loop holds. On its line and with no rise, winter's bar 1 stands 12.7 dB under the film's music over the 0.1 s after the landing, and 2.5 dB under it over the whole bar; spring's bar 1 stands 2.1 dB under over the 0.1 s, summer's 1.8, fall's 0.4.
+- The rise. `CUT_FADE`, 0.03 s on the quarter sine, cost 0.0 to 0.2 dB of that 0.1 s as it stood, because it fell on the quiet lead. So the rise was not the cause.
+
+### The entry
+
+- `LANDING_BAR` in `src/audio/index.ts`: `{ winter: 5, spring: 5, summer: 3, fall: 0 }`, bars into the loop, whose first bar is bar 1 of the track. The entry is `LOOP_LEAD + LANDING_BAR[season] * barSeconds` seconds into the loop: 12.06 s for winter and spring, 7.26 s for summer, 0.06 s for fall. By the maps the lines of the four loops lie within 3 ms of these.
+- Fall and winter enter on the bar the film lands on. For spring and summer, whose film bar no loop holds, the bar was chosen by measure among the bars whose level over the bar is within 3 dB of the film's first bar: the bar that reaches the aim in both of its windows (0 to 0.5 s and the first bar, each within 1.5 dB of the film), and where two do, the one nearer the film over the 0.1 s after the landing. In spring bar 6 alone reaches it (1.14 and 0.69 dB under). Bars 2, 3, 4, 5 and 8 are nearer over the first 0.1 s (0.04 to 1.69 dB under) but stand 1.55 to 3.85 dB over the film across the bar; bar 5 misses the aim by 0.05 dB. In summer bars 1 and 4 reach it; bar 1 on its line would stand 2.31 dB under over the first 0.1 s, bar 4 stands 1.00 under.
+- Only a landing enters there: the one a shake schedules one bar ahead, and the held one that `setSeason` makes when the picture lands late. Switched on with no shake, or changed with no shake, a loop begins at its start as before. The first pass plays from the entry to the loop's end; the next pass begins one seam before that end and is the whole loop, as is every pass after it. A loop too short to hold the entry begins at its start. The audio element's way seeks to the same place.
+- What follows from it: the first cross of the loop (its ninth bar into its first) begins 7.14 s after a landing in winter and in spring, 11.94 s in summer and 19.14 s in fall, where it began 19.2 s after every landing. It is the same cross that is heard every 19.2 s from then on. The clips of the listening end 1.2 s after the landing, so that first cross was not listened to there.
+- The rise stays `CUT_FADE`. On the line it now costs 1.0 dB of the first 0.1 s in spring, 0.6 in summer, 0.7 in fall and 0.6 in winter, and nothing after. Measured and not built: with a rise of 0.01 s the 0.1 s would read 0.9, 0.5, 0.5 and 0.5 dB under the film.
+
+### The level after the landing, before and after
+
+The app's new music less film B's, in dB (a minus sign: the app is quieter), `landing-before.json` and `landing-after.json`:
+
+| Season | | 0 to 0.1 s | 0.1 to 0.5 s | 0.5 to 2 s | The first bar | 0 to 0.5 s |
+|---|---|---|---|---|---|---|
+| Spring | film B, dB | -12.64 | -18.29 | -19.10 | -18.69 | -16.43 |
+| | app before | -5.77 | 0.04 | 2.20 | 1.30 | -1.85 |
+| | app after | -1.74 | -0.66 | -0.52 | -0.69 | -1.14 |
+| Summer | film B, dB | -10.15 | -15.85 | -16.22 | -15.69 | -13.97 |
+| | app before | -4.96 | 1.10 | -0.53 | -0.51 | -0.85 |
+| | app after | -1.00 | -0.90 | -0.42 | -0.49 | -0.94 |
+| Fall | film B, dB | -14.23 | -15.33 | -14.42 | -15.01 | -15.09 |
+| | app before | -2.92 | -0.03 | -0.17 | -0.24 | -0.58 |
+| | app after | -1.03 | -0.25 | -0.21 | -0.26 | -0.42 |
+| Winter | film B, dB | -16.30 | -15.83 | -15.76 | -15.94 | -15.92 |
+| | app before | -15.61 | -4.84 | -2.59 | -2.62 | -5.64 |
+| | app after | -1.01 | -0.23 | -0.25 | -0.28 | -0.36 |
+
+- The aim was 0 to 0.5 s and the first bar within 1.5 dB of film B. All four seasons reach it: 0.36 to 1.14 dB under over 0 to 0.5 s, 0.26 to 0.69 dB under over the first bar.
+- One window of the table is outside 1.5 dB: spring's first 0.1 s, 1.74 dB under, of which the rise is 1.0.
+
+### By a listening agent
+
+One trial, as asked, and no tuning by ear: the four passages built again with the entry (`sums/app-entry-<season>-at-film-level.wav`), eight listenings each under the open question of r56 and r60. The replies are `audio/evidence/after-review/r61.json`. Up to the landing a clip is the clip of r60.
+
+| | Film B (r56, r57) | The app before (r56, r57) | r60 | r61, the entry |
+|---|---|---|---|---|
+| Too loud or abrupt, of 32 | 9 | 13 | 19, one edge case counted | 17, and 2 edge cases beside |
+| Spring, of 8 | 1 | 5 | 7 | 4, and 1 |
+| Summer, of 8 | 2 | 2 | 2 | 3, and 1 |
+| Fall, of 8 | 3 | 3 | 2 | 5 |
+| Winter, of 8 | 3 | 3 | 8 | 5 |
+| Liquid named, of 32 | 16 | 3 | 8, two edge cases counted | 14, and 2 edge cases beside |
+
+- The count for too loud or abrupt did not rise above r60's 19: it is 19 with every edge case counted on both sides, 17 against 18 without. It did not clearly fall either.
+- Of the 17, one names a musical chord as the loud thing (fall a: "The musical chord at 00:02 is startlingly loud compared to the quiet ambient sounds"). It is the one answer that points at the new music's entry in so many words. Summer b names a splash and a chattering after it and summer h a pop and a buzzing electronic sound, which may be the shake, the new season's ambience or its music; winter c names the music dropping in pitch. The other 13 name a noise: sizzling, crackling or pouring (spring a, d, e, h; fall f), a splat (summer e), a clatter, a clicking and a blast (fall b, e, h), a rattle, an interruption, a clack and a scratch (winter d, e, f, g).
+- The seconds the answers give scatter by one or two (fall's new music, which enters at 3.6 s, is put at 2, 3 and 4 s), so they do not settle whether a noise is the shake's or something at the landing.
+- Fall went from 2 to 5 of 8 and winter from 8 to 5 on clips that are the same up to the landing. Whether a move of three in eight is more than the listener's own spread was not measured.
+- The mend is kept because the measure holds, as the mail rules.
+
+### Stated, not tested
+
+- The engine was not run in a browser. The model `app.mjs` plays the first pass from the entry as `WebBackend.swap` schedules it; the tests read what is scheduled from a clock they hold.
+- The entry rests on two things the pack decides: the lead of 0.06 s and that a loop begins at bar 1 of its track. `tests/audio.test.ts` holds the engine's `LOOP_LEAD` to the pack's. If the loops are ever cut from other bars, `LANDING_BAR` must be measured again with `landing.mjs`.
+- The audio element's way seeks to the entry; its loop after that is as it was.
+- What the music's own phrase makes of a loop entered at bar 4 or bar 6 was not judged: the choice is by level alone.
+
+### Open after the last job of all
+
+- Spring's first 0.1 s after the landing, 1.74 dB under the film: a rise of 0.01 s at a landing would bring it to 0.9. Not built. For `/root`.
+- Too loud or abrupt stands at 17 to 19 of 32 where film B has 9. For a human ear.
+
 ## Before the first take
 
 ```
@@ -711,6 +817,22 @@ All on 2026-11-26 (UTC), in the one checkout on `main`. The scratch named here l
 - The listening: 80 answers of `evaluate_audio` are filed in `r59.json` and `r60.json`; one more reply said that no audio was attached and was asked again. The call is free and makes no sound.
 - Not done here: nothing was heard in a browser or by a person; A1 to A4 were not run; the app was not built.
 
+## Commands run for the last job of all and what they printed
+
+All on 2026-11-26 (UTC), in the one checkout on `main`, one heavy thing at a time. The scratch named here lies in `out/work/audio/p6/last2/` and is not in the repo.
+
+- `node tools/sound.mjs --pack`, 11:17, after `APP_TRIM_DB` was lowered: "public/audio/index.json · 9 files at 192 kbps, 4.18 MB together, under audio.appMaxMb of 8 MB". Against the copy of decision 146's pack (`out/work/audio/p6/d146/pack-check/`): `index.json` moved (3,099 bytes, sha256 `e9dc0fdd22e0ddca`, was `758f8c550ac9d95d`); `sprite.mp3` (`07b01b7740d98ce8`) and the eight loops are the same bytes.
+- `node out/work/audio/p6/last2/peaks6.mjs public/audio step`, 11:17 to 11:19, and again at 11:22 with the entry of each season and the old music's windows of the first run; each read by `read5.mjs`, `read5b.mjs` and `read5c.mjs`: the headroom table above (`table-before-step.json`, `table-step.json`, `table-entry.json`).
+- `node out/work/audio/p6/last2/landing.mjs`, 11:20, begun at the loop's start and on each bar line of each loop: the cause and the table of the landing (`landing-before.json`, `landing-after.json`), and at 11:28 with a rise of 0.01 s (`landing-rise10.json`, measured and not built).
+- `node out/work/audio/p6/last2/measure.mjs`, 11:23: the shake against the old music with the new pack (`sums/table-entry.json`, every distance as in `out/work/audio/p6/last/sums/table-new.json`, every level of the app 0.5 dB lower), and the four clips of the listening.
+- `npx vitest run tests/mix.test.ts tests/audio.test.ts tests/audiomap.test.ts --no-file-parallelism`, 11:23 to 11:26: "Tests 1 failed | 108 passed (109)". The one: "crosses a loop as the app does" in `tests/mix.test.ts` reads the engine's text and looked for `voice.next = t + length - seam`, which now reads `voice.next = t + length - from - seam`. The test was brought to the new line and holds `const from = first ? enter : 0` beside it. Again 11:27 to 11:30: "Test Files 3 passed (3)", "Tests 109 passed (109)". Once more on the final tree, after the last comments in `src/audio/index.ts`, `tools/lib/audio.mjs` and `tests/mix.test.ts`, 11:33 to 11:36: "Test Files 3 passed (3)", "Tests 109 passed (109)", exit 0.
+- `node tools/soundcheck.mjs --only A5,A6,A7,A8`, 11:31 to 11:33: "4 pass, 0 open, 0 not run". A7: "5 mixes made twice more, each byte equal to the file (blockout.wav 6217368dcbd1, four-tracks-film-a.wav 883ee8bd67c2, four-tracks.wav 3edd8ff57940, film-a.wav 883ee8bd67c2, film-b.wav 3edd8ff57940)". The films did not move.
+- `npx tsc --noEmit`, 11:21 and 11:33: no output, exit 0.
+- `node -e "import('./tools/lib/hashes.mjs').then(m=>console.log(m.engineHash()))"`: `d8396f2016b27618` at 11:12 by the mail of `/root`; `9168b9c955f382fe` at 11:38, after `src/audio/index.ts` and `tools/lib/audio.mjs` were changed.
+- `node out/work/bin/soundguard.mjs sum`, 11:33: spent 7,200, left 2,800, 52 calls, none open; the account's own counter 17,287 used, as at 09:59 and at 11:05. No call that makes sound was made.
+- The listening: 32 answers of `evaluate_audio` are filed in `r61.json`. The call is free and makes no sound.
+- Not done here: nothing was heard in a browser or by a person; A1 to A4 were not run; the app was not built.
+
 ## Where things are
 
 - Committed: `audio/prompts.json` (texts, takes, costs, verdicts, the listener's words, `learned`, `familyChecks`, `layers`), `audio/RECORDS.json`, `audio/plans/one-piece.json`, `audio/kept/<id>.json` and `<id>.wav.json`, `audio/mix/four-tracks.json`, this file.
@@ -719,3 +841,4 @@ All on 2026-11-26 (UTC), in the one checkout on `main`. The scratch named here l
 - After decisions 141, 142 and 144. Committed (text): `audio/laid/<cue>.json`, `audio/final/film-a.json` and `film-b.json`, the records of the mixes in `audio/mix/`, the replies `audio/evidence/after-review/r39.json` to `r48.json`. Not committed: `audio/laid/*.wav` (built again by `npm run sound -- --laid`), `audio/final/*.wav` and `audio/mix/*.wav` (built again by `npm run mix`), the pack `public/audio/`, the listening copies `out/work/audio/listen/now-*.wav`, the scratch of this job in `out/work/audio/p6/d141/`.
 - After decision 146. To commit (text): `tools/lib/audio.mjs`, `tools/sound.mjs`, `tests/mix.test.ts`, `audio/RECORDS.json`, `audio/prompts.json`, this file, and the replies `audio/evidence/after-review/r49.json` to `r58.json`. Not committed: the pack `public/audio/` (written again by `npm run sound -- --pack`, the same bytes each time) and the scratch of this job in `out/work/audio/p6/d146/`: the offline model `app.mjs`, the tables under `sums/`, `sums-old/` and `sums-thin/`, the bound `peaks4.mjs` with `peaks4-audio.json`, the clips of the listening under `scenes/`, `scenes2/` and `sums*/`, and the pack as it was before in `public-audio.before146/`.
 - After the last job after decision 146. To commit (text): `src/audio/index.ts`, `tests/audio.test.ts`, `tests/mix.test.ts`, `audio/prompts.json`, this file, the replies `audio/evidence/after-review/r59.json` and `r60.json`, and `audio/RECORDS.json` if the pack's new time is wanted. Not committed: the pack `public/audio/` (the same bytes as before) and the scratch of this job in `out/work/audio/p6/last/`.
+- After the last job of all. To commit (text): `tools/lib/audio.mjs`, `src/audio/index.ts`, `tests/audio.test.ts`, `tests/mix.test.ts`, `audio/RECORDS.json` (the pack's block, written by the pack), `audio/prompts.json`, this file, and the replies `audio/evidence/after-review/r61.json`. Not committed: the pack `public/audio/` (written again by `npm run sound -- --pack`; only its `index.json` differs from decision 146's), the scratch and the clips of the listening under `out/work/audio/p6/last2/`.

@@ -793,3 +793,114 @@ describe('the old music through a shake', () => {
     expect(dB(old.voice[1]!.to / old.voice[1]!.from)).toBeCloseTo((film.db * (BAR - film.tail)) / BAR, 3)
   })
 })
+
+// The last job, point B: at a landing the new season's music is entered on a bar line of its loop, as the film cuts its
+// music on one. The measurement against film B stands in src/audio/index.ts at LANDING_BAR.
+describe('the new music at a landing', () => {
+  const PAD = 0.2
+  const LEAD = numberOf(FILM, 'LOOP_LEAD')
+  const BARS = config.audio.appLoopBars
+  /** A music loop as the pack writes it: from LEAD before the line of its first bar, its bars and the bar of the seam. */
+  const LENGTH = (BARS + 1) * BAR
+  const PERIOD = BARS * BAR
+  /** The bar of its track each season is entered on. The loop's first bar is bar 1 of the track. */
+  const TRACK_BAR: Record<string, number> = { winter: 6, spring: 6, summer: 4, fall: 1 }
+  const WHOLE: [number, number] = [PAD, LENGTH]
+  const packed = (): AudioIndex => {
+    const index = indexOf(SHORT, bedsOf(SEASONS))
+    for (const id of SEASONS) index.loops[`music-${id}`] = { ...index.loops[`music-${id}`]!, loopStart: PAD, loopSeconds: LENGTH }
+    return index
+  }
+  const before = (to: string): string => SEASONS[(SEASONS.indexOf(to) + SEASONS.length - 1) % SEASONS.length]!
+  const shape = (v: Started, t0: number): number[][] => v.fades.map((f) => [Math.round(f.from), Math.round(f.to), f.at - t0, f.seconds])
+
+  it('enters the loop on a bar line, each season on the bar measured against the film', async () => {
+    expect(numberOf(SOURCE, 'LOOP_LEAD')).toBe(LEAD)
+    expect(Object.keys(TRACK_BAR).sort()).toEqual([...SEASONS].sort())
+    for (const to of SEASONS) {
+      heard.started = []
+      const engine = await running(packed(), [before(to), to])
+      heard.now = 10
+      engine.shake(to, BAR)
+      const first = find(`music-${to}`)[0]!
+      expect(first.at, to).toBeCloseTo(find('lift')[0]!.at + BAR, 6)
+      // On a line: a whole number of bars after the line of the loop's first bar, and inside the bars that are heard.
+      const into = first.span[0] - PAD - LEAD
+      expect(into / BAR, to).toBeCloseTo(Math.round(into / BAR), 6)
+      expect(Math.round(into / BAR) + 1, to).toBe(TRACK_BAR[to])
+      expect(into, to).toBeGreaterThanOrEqual(0)
+      expect(into, to).toBeLessThan(PERIOD)
+      // What is left of the loop is played and no more, and the rise is the short one it was.
+      expect(first.span[1], to).toBeCloseTo(LENGTH - LEAD - into, 6)
+      expect(first.voice.map((f) => [f.from, f.to, f.seconds]), to).toEqual([[0, 1, numberOf(SOURCE, 'CUT_FADE')]])
+      expect(first.voice[0]!.at, to).toBeCloseTo(first.at, 6)
+      engine.dispose()
+    }
+  })
+
+  it('goes on whole after its first pass: each later pass is the loop from its start, one seam before the last one ends', async () => {
+    const engine = await running(packed(), ['fall', 'winter'])
+    heard.now = 10
+    engine.shake('winter', BAR)
+    const [first, second] = find('music-winter') as [Started, Started]
+    const left = LENGTH - (first.span[0] - PAD)
+    expect(left).toBeCloseTo(LENGTH - LEAD - 5 * BAR, 6)
+    expect(second.span).toEqual(WHOLE)
+    expect(second.at).toBeCloseTo(first.at + left - BAR, 6)
+    // The two cross over the bar of the seam, as two whole passes do.
+    expect(shape(first, first.at)).toEqual([[1, 0, expect.closeTo(left - BAR, 6), expect.closeTo(BAR, 6)]])
+    expect(shape(second, second.at)).toEqual([
+      [0, 1, expect.closeTo(0, 6), expect.closeTo(BAR, 6)],
+      [1, 0, expect.closeTo(PERIOD, 6), expect.closeTo(BAR, 6)],
+    ])
+    // When the first pass has ended the one after the second is asked for: the whole loop again, one period on.
+    heard.now = first.at + left + 0.01
+    first.end()
+    const third = find('music-winter')[2]!
+    expect(third.span).toEqual(WHOLE)
+    expect(third.at).toBeCloseTo(second.at + PERIOD, 6)
+    engine.dispose()
+  })
+
+  it('begins a loop at its start where no shake lands: the sound switched on, a season changed with no shake', async () => {
+    const engine = await running(packed(), SEASONS)
+    const on = find(`music-${SEASONS[0]}`)
+    expect(on.map((v) => v.span)).toEqual([WHOLE, WHOLE])
+    expect(on[1]!.at).toBeCloseTo(on[0]!.at + PERIOD, 6)
+    expect(on[0]!.voice.map((f) => f.seconds)).toEqual([numberOf(SOURCE, 'FIRST_FADE')])
+    heard.now = 10
+    engine.setSeason(SEASONS[1]!)
+    expect(find(`music-${SEASONS[1]}`).map((v) => v.span)).toEqual([WHOLE, WHOLE])
+    heard.now = 20
+    engine.setSeason(SEASONS[2]!, true)
+    expect(find(`music-${SEASONS[2]}`).map((v) => v.span)).toEqual([WHOLE, WHOLE])
+    engine.dispose()
+  })
+
+  it('enters on the same line when the landing was held and the picture lands later', async () => {
+    const engine = await running(packed(), ['fall', 'winter'])
+    heard.now = 10
+    engine.shake('winter', BAR)
+    heard.now = 11.2
+    engine.shake('winter', Number.POSITIVE_INFINITY)
+    expect(sounding('music-winter')).toEqual([])
+    heard.now = 14.8
+    engine.setSeason('winter')
+    const music = sounding('music-winter')
+    expect(music).toHaveLength(2)
+    expect(music[0]!.span[0]).toBeCloseTo(PAD + LEAD + (TRACK_BAR.winter! - 1) * BAR, 6)
+    expect(music[1]!.span).toEqual(WHOLE)
+    engine.dispose()
+  })
+
+  it('begins a loop too short to hold the entry at its start', async () => {
+    const engine = await running(indexOf(Object.keys(SPRITES), LOOPS))
+    heard.now = 10
+    engine.shake('spring', BAR)
+    expect(find('music-spring').map((v) => v.span)).toEqual([
+      [0, LOOP_SECONDS],
+      [0, LOOP_SECONDS],
+    ])
+    engine.dispose()
+  })
+})
