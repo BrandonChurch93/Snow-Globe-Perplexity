@@ -466,7 +466,8 @@ function ship(shipper, ctx, c) {
   }
   const made = shipper.add(shipFiles(ctx, c), shipTitle(ctx.what, c, record, ctx.test))
   const pushed = shipper.push()
-  if (made && pushed) say(shippedLine(ctx.what, c, record, shipper.branch))
+  if (made && pushed) say(shippedLine(ctx.what, c, record, shipper.branch, shipper.tries))
+  else if (pushed && shipper.tries > 1) say(`the push to ${shipper.branch} went through at try ${shipper.tries}`)
 }
 
 function holdLock(what) {
@@ -583,7 +584,10 @@ async function render() {
     }
   }
   if (worker !== null) return
-  if (shipper && shipper.unpushed && !shipper.push()) throw new Error(`the chunks are finished and on disk in ${short(ctx.out)}, and the last push to ${shipper.branch} was refused. Run the same command again to push them.`)
+  if (shipper && shipper.unpushed) {
+    if (!shipper.push()) throw new Error(`the chunks are finished and on disk in ${short(ctx.out)}, and the last push to ${shipper.branch} was refused. Run the same command again to push them.`)
+    if (shipper.tries > 1) say(`the push to ${shipper.branch} went through at try ${shipper.tries}`)
+  }
   say(`${ctx.what}: frames ${ctx.chunks[0].first} to ${ctx.chunks[ctx.chunks.length - 1].last} are finished in ${short(ctx.out)}${shipper ? `, their records and looks on ${shipper.branch}` : ''}`)
   printOutbox(ctx)
   const marked = ctx.chunks.map((c) => ({ file: filesOf(ctx, c).json, record: finished(ctx, c) })).filter((c) => c.record && notNumberOf(c.record))
