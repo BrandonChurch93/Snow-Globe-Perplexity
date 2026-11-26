@@ -1,0 +1,4 @@
+01-lavapipe-winter-rest-hd-draft-largest-difference.jpg
+  Winter, rest, hero, hd, draft (2 samples). A 480 x 360 crop at its own size, taken at x 0, y 668 of the frame, around the 32 px block where the two pictures differ most.
+  Left: the baseline, SwiftShader (ANGLE, Vulkan 1.3.0, SwiftShader Device (Subzero)). Right: Mesa lavapipe (ANGLE, Vulkan 1.4.335, llvmpipe LLVM 21.1.8, 256 bits).
+  Whole frame: PSNR 40.52 dB, largest difference 201 of 255.
