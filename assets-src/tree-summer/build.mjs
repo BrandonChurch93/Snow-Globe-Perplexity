@@ -8,14 +8,14 @@ import { rel } from '../../tools/lib/paths.mjs'
 import { blurWrap, loadSource, luma, readPicture, seamless, toBytes, writePng } from '../trunk/source.mjs'
 
 const TAU = Math.PI * 2
-const LEAF_CELL = 0.87
+const LEAF_CELL = 0.9
 const LEVEL_SPRIGS = { medium: 0.45, low: 0.3 }
 const LEAF_TILE_MM = 11
 const SPRIGS = { share: 1, size: [1.2, 2.2], rise: 0.35, out: 0.34, lift: [0.82, 0.36] }
 // A sprig is a handful of small round tufts of leaves, each of one tone (a few of them bright: these catch the low sun as single points of gold).
 // None is finer than a pixel of the preview, and nothing stands loose around them.
 const SPRIG = { blobs: [8, 10], ring: [0.2, 0.33], radius: [0.092, 0.125], lobe: 0.16, edge: 2.5, rough: 0.3, flat: 0.5, tone: [0.5, 1.05], bright: [1.6, 2.0], fall: 0.5, brightShare: 0.22, mean: 0.1266 }
-const TONE = { deep: [0.6, 0.8, 0.88], mid: [0.9, 1.0, 0.8], tip: [1.0, 1.15, 0.8] }
+const TONE = { deep: [0.5, 0.8, 0.9], mid: [0.74, 1.0, 0.86], tip: [0.86, 1.12, 0.84] }
 // The top of a pad, with open air over it, takes the most light. Its sides and its underside stand in shade, never in black.
 const SHADE = { body: 0.5, clearMm: 2.4, upFrom: 0.2, upTo: 0.85, tight: 1.25, floor: 0.45, curve: 1.3 }
 // The low sun stands at the back right (the rig's key as the glass bends it). A leaf with nothing of the crown between it and that sun is open to it.
