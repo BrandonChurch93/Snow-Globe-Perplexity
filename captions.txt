@@ -11,3 +11,17 @@ After. All four changes under the cover, one row each. Format preview, tier draf
 After. The app's own path, frames of the app's script (the control is pressed at frame 30, the landing is at 174). Format preview, tier draft. Row 1, shake at level high, winter to spring: 123, 127, 131, 135. Row 2, jump at level high, winter to summer: 123, 127, 131, 135 (before the sand commit). Row 3, shake at level low, winter to spring: 125, 128, 131, 134. Row 4, jump at level low, winter to summer: 127, 130, 133, 136 (after the sand commit and the merge of origin/main at ce9548e2).
 
 But for row 4 of the last picture, every frame here is of the branch before its merges of origin/main at ce9548e2 and f00a7aab.
+
+Second job (the glass through the cover), drawn under Mesa lavapipe.
+
+5-cover-sheet-660-690-before.jpg
+Before. Film frames 660 to 690 of film B, every second frame, in reading order, four to a row: the cover of the first change (winter to spring) on main at 6133867c. Format hd (1920 by 1080), tier draft. Frames 670 to 680 are a soft disc with no glass in it.
+
+6-cover-sheet-660-690-after.jpg
+After. The same sixteen frames from agent/p6-change. Format hd, tier draft. Through 670 to 680 the glass keeps its line, the storm inside is lit and the halo lies round it; base and table are black. Frames 672 to 678 are of the code as pushed but for the merge of main at bef56f56; the others were drawn one edit earlier (before the base swapped whole), and that edit moves no pixel outside 674 to 677. Frames 660 to 666 and 684 are the same as main pixel for pixel.
+
+13-foot-675-676-after.jpg
+After. The foot of the glass in film frames 675 (left) and 676 (right), cut from the frame at its own resolution, format hd, tier draft: the two frames about the instant the base swaps. Left, winter's base cuts the lit glass; right, spring's. No frame holds a mix of the two; the line changes in one step between them.
+
+14-three-changes-after.jpg
+After. The other three changes about the instant the base swaps, one row each. Format preview (960 by 540), tier draft. Row 1, spring to summer: 1394, 1395, 1396, 1398. Row 2, summer to fall: 2114, 2115, 2116, 2118. Row 3, fall to winter: 2834, 2835, 2836, 2838. With summer's base a thin lit arc of its collar shows under the glass (row 1 from 1396, row 2 up to 2115).
