@@ -161,7 +161,8 @@ function scallop(soup, fr, it, rnd, opt) {
       )
     }
   }
-  const ribAt = (th) => Math.pow(0.5 + 0.5 * Math.cos(ribs * Math.PI * (th / spread)), 0.55)
+  // Fine ribs, round in the hollow as on the crest: no rib has a groove beside it that could lie in shade.
+  const ribAt = (th) => 0.5 + 0.5 * Math.cos(ribs * Math.PI * (th / spread))
   surf(
     soup,
     fr,
@@ -181,7 +182,7 @@ function scallop(soup, fr, it, rnd, opt) {
       const dome = opt.dome * R * Math.pow(Math.max(4 * rho * (1 - rho * 0.95), 0), 0.62) * (1 - 0.35 * (th / spread) ** 2)
       const grow = rho * 7.5 + 0.5 * rnd.k
       const step = grow - Math.floor(grow)
-      const z = dome + opt.rib * R * Math.pow(rho, 0.6) * (rib - 0.6) * (1 - 0.4 * smooth(0.9, 1, rho)) + 0.02 * R * (step * step - 0.33) * smooth(0.12, 0.4, rho) - 0.12 * R + 0.1 * R * (1 - rho)
+      const z = dome + opt.rib * R * Math.pow(rho, 0.6) * (rib - 0.5) * (1 - 0.4 * smooth(0.9, 1, rho)) + 0.008 * R * (step * step - 0.33) * smooth(0.12, 0.4, rho) - 0.12 * R + 0.1 * R * (1 - rho)
       return [x, y, z]
     },
     (u, v) => {
@@ -191,38 +192,42 @@ function scallop(soup, fr, it, rnd, opt) {
       const grow = rho * 7.5 + 0.5 * rnd.k
       const step = grow - Math.floor(grow)
       const band = 0.5 + 0.5 * Math.sin(v * 31 + 6 * rnd.k + 1.5 * Math.sin(u * 9))
-      const k = (0.84 + 0.16 * rib) * (0.9 + 0.1 * band) * (0.86 + 0.14 * step) * (0.8 + 0.2 * smooth(0, 0.35, v))
-      const fold = mix((0.3 + 0.7 * rib * smooth(0.02, 0.2, v)) * (0.55 + 0.45 * smooth(1.0, 0.86, rho)), 0.92, it.plain ?? 0)
+      const k = (0.95 + 0.05 * rib) * (0.96 + 0.04 * band) * (0.95 + 0.05 * step) * (0.9 + 0.1 * smooth(0, 0.35, v))
+      const fold = mix((0.66 + 0.34 * rib * smooth(0.02, 0.2, v)) * (0.74 + 0.26 * smooth(1.0, 0.86, rho)), 0.94, it.plain ?? 0)
       return { uv: [u * ribs * 0.5, v * 3], uv2: [fold, it.gloss ?? 0.3], c: [it.c[0] * k, it.c[1] * k * (0.97 + 0.03 * band), it.c[2] * k * (0.92 + 0.08 * band)] }
     },
   )
 }
 
+// A whelk: a round shell with body. Each turn of its tube is far wider than the one before, so the last is most of the shell; it lies
+// tilted in the sand, the body turned out to the eye and the spire to one side.
 function snail(soup, fr, it, rnd) {
   const R = it.r * 1.45
-  const turns = 2.7
+  const turns = 2.5
   const band = it.band ?? [0.5, 0.28, 0.14]
+  const tilt = 32 * RAD
   surf(
     soup,
     fr,
     112,
     11,
     (u, v) => {
-      const g = Math.exp(-2.35 * (1 - u))
+      const g = Math.exp(-2.9 * (1 - u))
       const phi = u * turns * 2 * Math.PI
-      const rc = 0.6 * R * g
-      const rt = 0.43 * R * g * (1 - 0.6 * smooth(0.95, 1, u))
-      const psi = (v * 2 - 1) * 105 * RAD
+      const rc = 0.5 * R * g
+      const rt = 0.5 * R * g * (1 - 0.55 * smooth(0.95, 1, u))
+      const psi = (v * 2 - 1) * 118 * RAD
       const rad = rc + rt * Math.sin(psi)
-      const z = 0.62 * R * (1 - g) + rt * Math.cos(psi) * 0.95 - 0.25 * R - 0.5 * R * smooth(0.9, 1, u)
-      return [rad * Math.cos(phi), rad * Math.sin(phi), z]
+      const x = rad * Math.cos(phi)
+      const z = 0.7 * R * (1 - g) + rt * Math.cos(psi)
+      return [x * Math.cos(tilt) + z * Math.sin(tilt) + 0.1 * R, rad * Math.sin(phi) - 0.16 * R, z * Math.cos(tilt) - x * Math.sin(tilt) - 0.16 * R - 0.3 * R * smooth(0.92, 1, u)]
     },
     (u, v) => {
       const psi = v * 2 - 1
-      const stripe = smooth(0.25, 0.6, 0.5 + 0.5 * Math.sin(psi * 7.5 + 1.2 + 0.6 * Math.sin(u * 60 + rnd.k * 9)))
-      const growth = 0.94 + 0.06 * Math.sin(u * 240)
-      const seam = 0.45 + 0.55 * smooth(0.0, 0.3, 1 - Math.abs(psi))
-      const c = [mix(it.c[0], band[0], 0.75 * stripe) * growth, mix(it.c[1], band[1], 0.75 * stripe) * growth, mix(it.c[2], band[2], 0.75 * stripe) * growth]
+      const stripe = smooth(0.3, 0.7, 0.5 + 0.5 * Math.sin(psi * 5.5 + 1.2 + 0.4 * Math.sin(u * 40 + rnd.k * 9)))
+      const growth = 0.97 + 0.03 * Math.sin(u * 240)
+      const seam = 0.5 + 0.5 * smooth(0.0, 0.35, 1 - Math.abs(psi))
+      const c = [0, 1, 2].map((q) => mix(it.c[q], band[q], 0.2 * stripe) * growth)
       return { uv: [u * 30, v * 2], uv2: [seam, 0.7], c }
     },
   )
@@ -299,8 +304,8 @@ export function buildSet(f) {
     const fr = frameOf(f, it)
     count[it.kind]++
     if (it.kind === 'glass') seaGlass(glass, fr, it, rnd)
-    else if (it.kind === 'scallop') scallop(shells, fr, it, rnd, { spread: 74, ribs: it.ribs ?? 9, dome: 0.3, rib: it.rib ?? 0.13, ears: true })
-    else if (it.kind === 'cockle') scallop(shells, fr, it, rnd, { spread: it.spread ?? 86, ribs: it.ribs ?? 11, dome: it.dome ?? 0.46, rib: it.rib ?? 0.1 })
+    else if (it.kind === 'scallop') scallop(shells, fr, it, rnd, { spread: 74, ribs: it.ribs ?? 13, dome: 0.36, rib: it.rib ?? 0.05, ears: true })
+    else if (it.kind === 'cockle') scallop(shells, fr, it, rnd, { spread: it.spread ?? 86, ribs: it.ribs ?? 11, dome: it.dome ?? 0.46, rib: it.rib ?? 0.05 })
     else if (it.kind === 'snail') snail(shells, fr, it, rnd)
     else if (it.kind === 'olive') dome(shells, fr, it, rnd, it.r * 1.12, it.r * 0.76, it.r * 0.56, 0.1 * it.r, 0.85, true)
     else dome(shells, fr, it, rnd, it.r, it.r, it.r, 0.3 * it.r, 1, false)
@@ -340,7 +345,7 @@ export function ledgeSand(f, az, t) {
 
 export function buildSand(f) {
   const soup = new Soup('sand')
-  const cols = 720
+  const cols = 716
   const rows = 22
   const pt = (i, j) => {
     const az = -180 + (360 * i) / cols

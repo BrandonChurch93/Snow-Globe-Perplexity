@@ -180,7 +180,7 @@ if (lies > 0.5) {
     float air = 2.0 * up / ${LOOK.gravity.toFixed(1)};
     float fly = clamp(uSandLift - ${LOOK.lift.late.toFixed(2)} * fract(aSeed.x * 23.1 + aSeed.z * 47.9), 0.0, air);
     nowAt.y += up * fly - ${(0.5 * LOOK.gravity).toFixed(1)} * fly * fly;
-    nowAt.xz -= normalize(position.xz) * (${LOOK.lift.inMm.toFixed(2)} * sin(3.14159 * fly / air));
+    nowAt.xz -= (dot(position.xz, position.xz) > 0.0 ? normalize(position.xz) : vec2(1.0, 0.0)) * (${LOOK.lift.inMm.toFixed(2)} * sin(3.14159 * fly / air));
   }
   thenAt = nowAt;
 } else if (falls < 0.5) {
