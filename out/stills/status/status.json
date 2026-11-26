@@ -1,42 +1,42 @@
 {
-  "number": 171,
-  "time": "2026-11-26 18:50 UTC",
+  "number": 173,
+  "time": "2026-11-26 19:38 UTC",
   "phase": "6",
   "unit": "",
   "lines": [
-    "Status 171 · 2026-11-26 18:50 UTC · Phase 6",
-    "Phase 6, summer's fix pass before its last round (Round 22), and the app's first seconds. A trial merge of the four branches pushed so far (air, glass, tree, room) was drawn to see the sum that no owner sees alone: the crown, the pool and the seeds read; the air inside is still milky, the tree and the cottage darker than the approved's, and at the landing seed heads are drawn outside the glass, a fault found on this picture and sent back at once.",
-    "The app's stops after the controls appear: with the light grid baked at build time what is left is each season's parts built in one piece (summer 2.0 s, spring 0.4 s, fall 0.6 s on the builder's machine); they are now built one a frame, and the sand grains and the miniatures follow in a second stage (decision 160). The change of season waits on six points of mine.",
-    "Next: reports at 19:20, the merge, my look, the guard for the other three seasons, Round 22.",
-    "phase 6: 16.01 h used of its 12.00 h box",
-    "allowance (after the review): 16.01 h used of 12.00 h allowed",
+    "Status 173 · 2026-11-26 19:38 UTC · Phase 6",
+    "Summer's seventh fix list is whole and in main (393ea243): seven branches merged, summer's assets made again. The guard drew winter, spring and fall at rest and landed on a clean tree: all six equal the base stills byte for byte, after one leak into fall's embers (a shared number moved by the air's commit) was found by it and put back.",
+    "My own look at the merged summer beside the approved pictures: nearer than Round 21, still below the bar. The base reads as grey carved rock where the approved's is ivory wet sand, the cottage as orange logs under a near black roof, and at the landing the storm is one flat milky sheet that hides the cottage. The second half of the pass (tools/briefs/p6/summer-fix-8.md) went to six owners at about 19:34 UTC, reports by 20:30 UTC.",
+    "Open beside summer: the change of season's mend (its builder reports about 20:15 UTC), the stops after the controls (stage two), and three of the motion critic's severe issues on the shake itself (the path, the table's answer, the particles carried with the glass), which get their own builder next. Sound: 7,420 of the 10,000 credits used, no call planned.",
+    "phase 6: 16.81 h used of its 12.00 h box",
+    "allowance (after the review): 16.81 h used of 12.00 h allowed",
     "App: https://snow-globe-seasons.pplx.app",
     "Review page: https://snow-globe-seasons.pplx.app/review.html"
   ],
   "pictures": [
     {
-      "file": "out/stills/status/status-171-1.jpg",
-      "caption": "Summer at rest: the approved on the left, a trial merge of four of the seven branches on the right (air, glass, tree, room; the cottage, the sand and the stone of this pass are not in it yet).",
+      "file": "out/stills/status/status-173-1.jpg",
+      "caption": "Summer just after the landing, hero camera, review tier: the approved picture left, the build at 393ea243 right. Below the bar: the storm hides the cottage.",
       "w": 1200,
-      "h": 337
+      "h": 523
     },
     {
-      "file": "out/stills/status/status-171-2.jpg",
-      "caption": "The same, close: the seeds are wheels now and the crown is lit pad by pad; the air is milky where the approved's is clear and dark, and the tree and the cottage are darker.",
+      "file": "out/stills/status/status-173-2.jpg",
+      "caption": "Summer's base, left side, one to one: the approved picture left, the build right. Below the bar: grey ledges, dark sea glass.",
       "w": 1200,
-      "h": 533
+      "h": 394
     },
     {
-      "file": "out/stills/status/status-171-3.jpg",
-      "caption": "The landing, the approved on the left and the trial on the right: one whirl now, no leaves fly; seed heads stray outside the glass at the rim (sent back), and the streaks are tan where the approved's are white.",
+      "file": "out/stills/status/status-173-3.jpg",
+      "caption": "Summer's cottage and ground, one to one: the approved picture left, the build right. Below the bar: orange log walls, a near black roof, a flat yellow lawn.",
       "w": 1200,
-      "h": 337
+      "h": 497
     },
     {
-      "file": "out/stills/status/status-171-4.jpg",
-      "caption": "The four changes of season as the change's branch draws them, not in the app yet: no dark frame any more; the glow is a column, the base goes flat in it and summer arrives blue, three of the six points sent back.",
+      "file": "out/stills/status/status-173-4.jpg",
+      "caption": "Still: summer landed hero, hd, review",
       "w": 1200,
-      "h": 752
+      "h": 675
     }
   ]
 }
