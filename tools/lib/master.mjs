@@ -218,10 +218,20 @@ export function takeFiles(folder, dir, { keep = false } = {}) {
   let whole = 0
   let fromParts = 0
   let stills = 0
-  for (const c of readChunks([dir])) {
+  const filed = readChunks([dir])
+  const isThere = new Map(filed.map((c) => [c.file, fs.existsSync(c.file) && fs.statSync(c.file).size === c.record.bytes && shaOfFile(c.file) === c.record.sha256]))
+  const range = (c) => [c.record.test ? 't' : 'r', c.record.what, c.record.first, c.record.last, c.record.sha256].join('/')
+  const laid = new Set()
+  for (const c of filed) {
+    if (!isThere.get(c.file)) continue
+    placed.set(c.record.sha256, c.file)
+    laid.add(range(c))
+  }
+  for (const c of filed) {
     const r = c.record
-    const there = fs.existsSync(c.file) && fs.statSync(c.file).size === r.bytes && shaOfFile(c.file) === r.sha256
+    const there = isThere.get(c.file)
     if (!there) {
+      if (laid.has(range(c))) continue
       if (placed.has(r.sha256)) fs.copyFileSync(placed.get(r.sha256), c.file)
       else {
         const got = unsplitFile({ bytes: r.bytes, sha256: r.sha256, parts: r.parts }, have, c.file, { move: !keep })
@@ -234,6 +244,7 @@ export function takeFiles(folder, dir, { keep = false } = {}) {
       }
     }
     placed.set(r.sha256, c.file)
+    laid.add(range(c))
     if (r.still) {
       const to = path.join(path.dirname(c.file), r.still.file)
       if (!(fs.existsSync(to) && shaOfFile(to) === r.still.sha256)) {
@@ -618,11 +629,114 @@ export function ranges(list) {
   return out
 }
 
+const TAKE_USAGE = '--take takes BRANCH, or WHAT:FIRST-LAST=BRANCH for one range, several with commas between'
+/** `--take agent/p6-chunks-a` or `--take film-b:0-29=agent/p6-chunks-a,film-b:30-59=files`: whose chunk is taken where the holders of a range do not agree. */
+export function parseTake(text) {
+  if (text === undefined || text === null || text === false) return []
+  if (text === true || !String(text).trim()) throw new Error(TAKE_USAGE)
+  return String(text)
+    .split(',')
+    .map((x) => x.trim())
+    .filter(Boolean)
+    .map((item) => {
+      const m = /^([a-z-]+):(\d+)-(\d+)=(.+)$/.exec(item)
+      if (m && WHATS.includes(m[1])) return { what: m[1], first: Number(m[2]), last: Number(m[3]), holder: m[4] }
+      if (item.includes('=') || item.includes(':')) throw new Error(`${TAKE_USAGE}. Not understood: ${item}`)
+      return { what: null, first: null, last: null, holder: item }
+    })
+}
+
+const AGREE = [
+  ['engineHash', 'the build hash'],
+  ['calibration', 'the calibration picture'],
+  ['sha256', 'the sha256 of the intermediate'],
+]
+const brief = (v) => (typeof v === 'string' && v.length > 16 ? v.slice(0, 12) : v === undefined || v === null ? 'none' : String(v))
+const holderName = (c) => c.holder ?? c.from ?? c.file
+const holderLabel = (c) => `${holderName(c)} (${c.record.machine ?? 'no machine named'})`
+const samePixels = (a, b) => {
+  const x = a.record.frameHashes ?? []
+  const y = b.record.frameHashes ?? []
+  const differing = []
+  for (let i = 0; i < Math.max(x.length, y.length); i++) if (x[i] !== y[i]) differing.push(a.record.first + i)
+  return differing
+}
+
+/**
+ * One entry a range (what, first, last), whoever holds it and however often. Holders whose records agree (the same build hash,
+ * calibration picture and sha256 of the intermediate) count as one and one is taken, a holder whose picture is there first.
+ * Holders that do not agree are taken only as `take` names them.
+ * @param {any[]} chunks
+ * @param {{ take?: { what: string | null, first: number | null, last: number | null, holder: string }[], exists?: ((file: string) => boolean) | null }} [how]
+ */
+export function heldRanges(chunks, { take = [], exists = null } = {}) {
+  const groups = new Map()
+  for (const c of chunks) {
+    const r = c.record
+    const key = `${r.test ? 'test ' : ''}${r.what} ${r.first} ${r.last}`
+    if (!groups.has(key)) groups.set(key, { what: r.what, first: r.first, last: r.last, test: !!r.test, holders: [] })
+    groups.get(key).holders.push(c)
+  }
+  const out = []
+  for (const g of groups.values()) {
+    const hs = g.holders
+    const differ = []
+    for (const [key, label] of AGREE) {
+      const seen = new Map()
+      for (const c of hs) {
+        const v = brief(c.record[key])
+        if (!seen.has(v)) seen.set(v, [])
+        seen.get(v).push(c)
+      }
+      if (seen.size > 1) differ.push({ key, label, values: [...seen].map(([value, cs]) => ({ value, holders: cs.map(holderName) })) })
+    }
+    const pixels = hs.length > 1 ? [...new Set(hs.slice(1).flatMap((c) => samePixels(hs[0], c)))].sort((a, b) => a - b) : []
+    const agree = differ.length === 0
+    let taken = null
+    let named = null
+    let wrong = null
+    if (hs.length === 1) taken = hs[0]
+    else if (agree) taken = (exists && hs.find((c) => exists(c.file))) || hs[0]
+    else {
+      const ranged = take.filter((t) => t.what === g.what && t.first === g.first && t.last === g.last)
+      const general = take.filter((t) => t.what === null && hs.some((c) => holderName(c) === t.holder))
+      const asked = ranged.length ? ranged : general
+      const names = [...new Set(asked.map((t) => t.holder))]
+      if (names.length === 1) {
+        taken = hs.find((c) => holderName(c) === names[0]) ?? null
+        if (taken) named = names[0]
+        else wrong = `--take names ${names[0]}, which does not hold it`
+      } else if (names.length > 1) wrong = `--take names ${names.length} of its holders (${names.join(', ')}); name one for this range`
+    }
+    out.push({ ...g, agree, differ, pixels, taken, named, wrong })
+  }
+  return out
+}
+
+const rangeName = (g) => `${g.what} ${g.first} to ${g.last}${g.test ? ' (a test)' : ''}`
+const howTheyDiffer = (g) => {
+  const parts = g.differ.map((d) => `${d.label} is ${d.values.map((v) => `${v.value} in ${v.holders.join(' and ')}`).join(', ')}`)
+  const n = g.last - g.first + 1
+  if (g.differ.some((d) => d.key === 'sha256')) parts.push(g.pixels.length ? `the pixels of their frames differ in ${g.pixels.length} of ${n} (the first is frame ${g.pixels[0]})` : `the pixels of their frames are the same in all ${n}`)
+  const text = parts.join('; ')
+  return text.slice(0, 1).toUpperCase() + text.slice(1)
+}
+
+/** The one line of a range that more than one holds. */
+export function heldLine(g) {
+  const n = g.holders.length
+  const who = g.holders.map(holderLabel).join('; ')
+  if (g.agree) return `${rangeName(g)} is held ${n} times with one and the same record (build, calibration, intermediate): ${who}. It counts once and one is taken: ${holderName(g.taken)}`
+  const how = `${rangeName(g)} is held ${n} times and the records do not agree: ${who}. ${howTheyDiffer(g)}`
+  if (g.taken) return `${how}. Taken as named: ${g.named}`
+  return `${how}. ${n === 2 ? 'Neither' : 'None'} is taken${g.wrong ? ` (${g.wrong})` : ''}. Name the one to take: ${g.holders.map((c) => `--take ${g.what}:${g.first}-${g.last}=${holderName(c)}`).join(' or ')}`
+}
+
 /**
  * Decides whether a set of chunk records can be joined, with no file read except through `sha`.
  * `chunks` is [{ record, file, from }]. `totals` holds the frame count of each part.
  */
-export function joinPlan({ which, chunks, totals, test = false, size = M.chunkFrames, sha = null, gaps = false }) {
+export function joinPlan({ which, chunks, totals, test = false, size = M.chunkFrames, sha = null, gaps = false, take = [], exists = null }) {
   const whats = JOINS[which]
   if (!whats) throw new Error(`--encode takes ${Object.keys(JOINS).join(', ')}`)
   const problems = []
@@ -630,8 +744,26 @@ export function joinPlan({ which, chunks, totals, test = false, size = M.chunkFr
   const parts = []
   let twice = 0
   let twiceByTwoMachines = 0
-  const mine = chunks.filter((c) => whats.includes(c.record?.what))
   const named = (c) => `${c.from ?? c.file}`
+  const held = heldRanges(chunks.filter((c) => whats.includes(c.record?.what)), { take, exists })
+  const mine = held.filter((g) => g.taken).map((g) => g.taken)
+  for (const g of held) {
+    const others = g.holders.filter((c) => c !== (g.taken ?? g.holders[0]))
+    const a = (g.taken ?? g.holders[0]).record
+    if (!g.taken) {
+      problems.push(heldLine(g))
+      if (g.pixels.length) conflicts.push({ a: g.holders[0], b: g.holders[1], frames: g.pixels })
+      continue
+    }
+    for (const c of others) {
+      const b = c.record
+      if (samePixels(g.taken, c).length) continue
+      if (a.sha256 !== b.sha256 || who(a) !== who(b)) {
+        twice += b.frameHashes?.length ?? 0
+        if (who(a) !== who(b)) twiceByTwoMachines += b.frameHashes?.length ?? 0
+      }
+    }
+  }
 
   for (const c of mine) {
     const r = c.record
@@ -676,6 +808,7 @@ export function joinPlan({ which, chunks, totals, test = false, size = M.chunkFr
     }
     const lines = total ?? told[0] ?? 0
     const cover = new Map()
+    for (const g of held) if (!g.taken && g.what === w) for (let i = g.first; i <= g.last; i++) cover.set(i, [])
     for (const c of list) {
       const r = c.record
       const onLine = r.first % size === 0 && (r.last === Math.min(r.first + size, lines) - 1 || (test && r.last - r.first + 1 <= size))
@@ -704,15 +837,9 @@ export function joinPlan({ which, chunks, totals, test = false, size = M.chunkFr
       }
       const a = first.record
       const b = c.record
-      const differing = []
-      for (let i = 0; i < Math.min(a.frameHashes?.length ?? 0, b.frameHashes?.length ?? 0); i++) if (a.frameHashes[i] !== b.frameHashes[i]) differing.push(a.first + i)
-      if (differing.length || a.last !== b.last) {
-        conflicts.push({ a: first, b: c, frames: differing })
-        problems.push(`${w}: ${named(first)} and ${named(c)} both cover frames ${span(a.first, Math.min(a.last, b.last))} and their frame hashes differ in ${differing.length} of them (the first is frame ${differing[0] ?? a.first})`)
-      } else if (a.sha256 !== b.sha256 || who(a) !== who(b)) {
-        twice += b.frameHashes.length
-        if (who(a) !== who(b)) twiceByTwoMachines += b.frameHashes.length
-      }
+      const differing = samePixels(first, c)
+      conflicts.push({ a: first, b: c, frames: differing })
+      problems.push(`${w}: ${named(first)} and ${named(c)} both cover frames ${span(a.first, Math.min(a.last, b.last))} and are not one range (${span(a.first, a.last)} and ${span(b.first, b.last)})`)
     }
     const ordered = [...chosen.values()].sort((a, b) => a.record.first - b.record.first)
     for (const c of ordered) parts.push({ ...c, offset: frames - firstWanted })
@@ -726,23 +853,43 @@ export function joinPlan({ which, chunks, totals, test = false, size = M.chunkFr
   return { ok: problems.length === 0, problems, conflicts, parts, frames: test && gaps ? at : frames, twice, twiceByTwoMachines }
 }
 
-export function coverReport(chunks, totals, size = M.chunkFrames) {
+/** `chunks` are the ones taken, `open` the ranges held by several whose records do not agree. A range counts once, whoever holds it. */
+export function coverReport(chunks, totals, size = M.chunkFrames, open = []) {
   const out = []
   for (const w of WHATS) {
     const list = chunks.filter((c) => c.record?.what === w && !c.record.test)
     const total = totals[w] ?? 0
     const have = new Set()
     for (const c of list) for (let i = c.record.first; i <= c.record.last; i++) have.add(i)
+    const held = new Set()
+    for (const g of open) if (g.what === w && !g.test) for (let i = g.first; i <= g.last; i++) if (!have.has(i)) held.add(i)
     const missing = []
-    for (let i = 0; i < total; i++) if (!have.has(i)) missing.push(i)
-    out.push({ what: w, total, chunks: list.length, wanted: chunkLines(total, size).length, there: ranges([...have]), missing: ranges(missing) })
+    for (let i = 0; i < total; i++) if (!have.has(i) && !held.has(i)) missing.push(i)
+    out.push({ what: w, total, chunks: new Set(list.map((c) => `${c.record.first} ${c.record.last}`)).size, wanted: chunkLines(total, size).length, there: ranges([...have]), missing: ranges(missing), notAgreed: ranges([...held]) })
   }
   return out
+}
+
+const branchNames = (dir) => {
+  try {
+    return new Map(Object.keys(readJson(path.join(dir, 'collected.json')).branches ?? {}).map((b) => [branchFolder(b), b]))
+  } catch {
+    return new Map()
+  }
+}
+/** Who holds a chunk: the branch it was fetched from, the attachments (`files`), or the folder itself (`out/master`). */
+function holderOf(root, inside, names) {
+  const lead = inside.split('/').slice(0, -2).filter((x) => x !== 'test')
+  if (lead.length === 1 && names.has(lead[0])) return names.get(lead[0])
+  if (lead.length) return lead.join('/')
+  const here = path.relative(rel(), root).split(path.sep).join('/')
+  return here && !here.startsWith('..') ? here : path.basename(root)
 }
 
 export function readChunks(dirs, { recursive = true } = {}) {
   const out = []
   const seen = new Set()
+  const names = new Map()
   const walk = (dir, from) => {
     if (!fs.existsSync(dir)) return
     for (const e of fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => (a.name < b.name ? -1 : 1))) {
@@ -764,10 +911,13 @@ export function readChunks(dirs, { recursive = true } = {}) {
       if (seen.has(real)) continue
       seen.add(real)
       const inside = path.relative(from, file).split(path.sep).join('/')
-      out.push({ record, file, inside, test: inside.split('/').includes('test'), from: `${path.basename(from)}/${inside}` })
+      out.push({ record, file, inside, test: inside.split('/').includes('test'), from: `${path.basename(from)}/${inside}`, holder: holderOf(from, inside, names.get(from)) })
     }
   }
-  for (const d of dirs) walk(d, d)
+  for (const d of dirs) {
+    names.set(d, branchNames(d))
+    walk(d, d)
+  }
   return out
 }
 

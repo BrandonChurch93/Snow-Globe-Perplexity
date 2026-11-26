@@ -1,18 +1,18 @@
-# Status 159
+# Status 160
 
-2026-11-26 13:43 UTC
+2026-11-26 14:05 UTC
 
-- Summer's third list is merged from all five builders. My own look at the merged picture finds it better and still short, so a fourth list goes out before any critic round.
-- The speck in 4K frames has a cause: a needle card of the small tree whose shading direction has no length. A scan of every seventh film frame on nine machines has found four more frames so far, at winter's and summer's miniature.
-- The 4K rehearsal drew, shipped and collected one chunk end to end at a median of 78.3 seconds a frame. The encode refused it because of the specks, as it is built to.
-- New from the 4K frames: in shake frames the lamps blur as 24 separate copies. It goes to a builder now.
-- The phase 6 gate ran whole on a small machine: 13 of 20 green. Five reds are files not made yet. Two are real: one check ran out of memory there, and summer has 17,862 triangles too many at the high level.
-- phase 6: 10.90 h used of its 12.00 h box
-- allowance (after the review): 10.90 h used of 12.00 h allowed
+- Summer's third list is in the build. My own look at it: the tones now agree with the approved picture and the forms do not, so a fourth list about form went to the five builders at 13:57 UTC, due about 14:50.
+- The speck in 4K frames has its cause and its mend in main: a tree's shader took the direction of a vector of no length. The proof on the thirteen known frames and a scan of every seventh frame on the mended build are running; no line since the change-over so far.
+- The lamps' beaded blur in 4K shake frames, measured on a farm machine: a shake frame costs 113 s at 24 samples, 169 s at 48 and 330 s at 96, and at 96 the beads close into streaks. The rule that gives moving frames more samples is being built.
+- The cover of each change is being rebuilt as light that pours out of the globe onto the table, in place of the dark room. The masters' tool now counts a range once and checks the committer before the first frame.
+- Not done: summer has had no round on the new picture; the change and the globe wait for their rounds; no master frame is drawn before the freeze.
+- phase 6: 11.27 h used of its 12.00 h box
+- allowance (after the review): 11.27 h used of 12.00 h allowed
 - App: https://snow-globe-seasons.pplx.app
 - Review page: https://snow-globe-seasons.pplx.app/review.html
 
-- `out/stills/status/status-159-1.jpg`: Summer at rest, the approved picture above and ours below: the third list from all five builders merged, drawn at review quality.
-- `out/stills/status/status-159-2.jpg`: The same pair closer, approved left and ours right. Ours is still short: the ball is pale and even where the approved is dark with a warm glow, the seeds are large white clumps, the base lacks the carved waves.
-- `out/stills/status/status-159-3.jpg`: Film frame 3414 at 4K: left a crop of 400 pixels, right its middle 50 pixels enlarged. The dark pixel in the middle is one of the specks.
-- `out/stills/status/status-159-4.jpg`: A 4K shake frame (621) enlarged six times: each lamp's blur is a row of separate copies, not one smooth streak.
+- `out/stills/status/status-160-1.jpg`: The crown, approved left and ours right: one round mid green mass where the approved has dark pads with gaps and lit rims.
+- `out/stills/status/status-160-2.jpg`: The middle of the base at its own pixels, approved left: carved ridges and a ribbed shell against smooth bands and matt grey stones.
+- `out/stills/status/status-160-3.jpg`: The ball's upper left, approved left: hair thin rayed seed heads and sparks against thick soft wedges in clumps and green discs.
+- `out/stills/status/status-160-4.jpg`: The cottage, approved left: a house in shade on a mound with a sand bank against a brighter house on flat ground with a white fringe.
