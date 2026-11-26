@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { config, shots, tiers } from '../src/config'
 import { FRAME } from '../src/app/framing'
 import * as THREE from 'three'
-import { GLASS_COME, GLASS_LEAVE, GUST_CLOSES, GUST_LAST_DOWN, GUST_LAST_DOWN_AT, MODE, makeHandle, passLevel, passSpread, passStep, passStride, setPresence, STAGE_FRAG_PARS } from '../src/core/materials'
+import { GLASS_COME, GLASS_LEAVE, GUST_CLOSES, GUST_LAST_DOWN, GUST_LAST_DOWN_AT, MODE, makeHandle, passCount, passLevel, passSpread, passStep, passStride, setPresence, STAGE_FRAG_PARS, stillLevel } from '../src/core/materials'
 import { BASE_PASS, CHANGE_COVER, DRESSING_CHANGE, changeBloom, changeRamp, changeSpan, partChange, SEASONAL_PARTS } from '../src/shake/change'
 import { shakeMotion } from '../src/shake/table'
 import { CHANGE_BLOOM } from '../src/scene/lighting'
@@ -354,9 +354,87 @@ describe('the dressing on the glass under a change', () => {
         if (visits) expect(passSpread(n, g), `the stride ${g} of ${n}`).toBeGreaterThanOrEqual(passSpread(n, passStride(n)) - 1e-9)
       }
     }
-    // One sample, the app's own path: the plain hash.
+    // A frame of one sample that is captured: the plain hash.
     expect(passStep(0.5, 1)).toBe(0)
     for (let j = 0; j < 997; j++) expect(passLevel(j / 997, 0, 1)).toBe(j / 997)
+  })
+
+  it('holds the pattern still where the page draws one sample a frame, so a pixel goes once and stays gone, and leaves a captured frame as it was', () => {
+    const body = /\nbool stageGone\(float c\) \{\n([\s\S]*?)\n\}\n/.exec(STAGE_FRAG_PARS)?.[1]
+    expect(body?.split('\n')[0]).toBe('  if (uPass.w < 0.5) return stageGoneStill(c);')
+    // What a captured frame runs is every line after that one, and it is the text it was before the page's own path left it.
+    expect(body?.split('\n').slice(1).join('\n')).toBe(
+      [
+        '  if (uState.w > 0.5) {',
+        '    float h = stageHash(vec3(gl_FragCoord.xy, uSeed));',
+        '    if (uState.z < -9.0) {',
+        '      h = stageHash(vec3(gl_FragCoord.xy, uPass.x));',
+        '      if (uPass.w > 1.5) h = (floor(h * uPass.w) + 0.5) / uPass.w;',
+        '      h = fract(h + uPass.y);',
+        '    } else if (stageEdge > -0.5) h = clamp(stageEdge + (h - 0.5) * 0.14, 0.001, 0.999);',
+        '    if (uState.w > 1.5 ? h < c : h >= c) return true;',
+        '  }',
+        '  if (uFlags.w < 1.0 && stageHash(vec3(gl_FragCoord.xy + 29.0, uSeed + 0.61)) >= uFlags.w) return true;',
+        '  return false;',
+      ].join('\n'),
+    )
+    // A captured frame never takes the page's branch, whatever its tier, and the page always does.
+    expect(passCount(null)).toBe(0)
+    expect(passCount({})).toBe(1)
+    for (const t of Object.values(tiers)) expect(passCount({ of: t.samplesPerFrame })).toBe(t.samplesPerFrame)
+    expect(readFileSync('src/scene/stage.ts', 'utf8')).toContain('const of = passCount(sample)\n    u.uPass.value.set(moment.seed, sample ? passStep(sample.t, of) : 0, single ? 0 : (sample?.hold ?? change), of)')
+
+    const still = /\nbool stageGoneStill\(float c\) \{\n([\s\S]*?)\n\}\n/.exec(STAGE_FRAG_PARS)?.[1] ?? ''
+    // Nothing in it reads the frame: no seed, no share of a pass, and no hash but the pixel's own.
+    expect(still).not.toMatch(/uSeed|uPass|stageHash/)
+    expect(still).toContain('float h = stageStill(gl_FragCoord.xy);')
+    expect(still).toContain('if (uState.w > 1.5 ? h < c : h >= c) return true;')
+    expect(still).toContain('return uFlags.w < 1.0 && stageStill(gl_FragCoord.yx + 29.0) >= uFlags.w;')
+    expect(STAGE_FRAG_PARS).toContain('float stageStill(vec2 at) {\n  return fract(52.9829189 * fract(dot(at, vec2(0.06711056, 0.00583715))));\n}')
+
+    // The level is the pixel's and the rule is one comparison with the share, so as the share rises a pixel of the part that
+    // leaves goes once, a pixel of the part that comes arrives once, and at every share a pixel holds one of the two.
+    const N = 512
+    const first = new Float32Array(N * N)
+    const second = new Float32Array(N * N)
+    for (let y = 0; y < N; y++)
+      for (let x = 0; x < N; x++) {
+        first[y * N + x] = stillLevel(x + 0.5, y + 0.5)
+        second[y * N + x] = stillLevel(y + 29.5, x + 29.5)
+      }
+    expect([first.reduce((a, b) => Math.min(a, b)) >= 0, first.reduce((a, b) => Math.max(a, b)) < 1]).toEqual([true, true])
+    // Even to the eye: every share of the pixels is the share asked for, and so is every patch of four by four, to two pixels
+    // of sixteen. The white hash it replaces left such patches empty at a half and full at an eighth.
+    const bands: [number, number, number][] = [
+      [0.125, 0, 4],
+      [0.25, 2, 6],
+      [0.5, 6, 10],
+      [0.75, 10, 14],
+    ]
+    for (const [name, level] of [
+      ['the exchange', first],
+      ['the presence', second],
+    ] as const)
+      for (const [c, least, most] of bands) {
+        let under = 0
+        for (const h of level) if (h < c) under++
+        expect(Math.abs(under / (N * N) - c), `the share of ${name} at ${c}`).toBeLessThanOrEqual(0.001)
+        const rows = new Uint8Array(N * N)
+        for (let y = 0; y < N; y++) for (let x = 0; x + 4 <= N; x++) rows[y * N + x] = (level[y * N + x]! < c ? 1 : 0) + (level[y * N + x + 1]! < c ? 1 : 0) + (level[y * N + x + 2]! < c ? 1 : 0) + (level[y * N + x + 3]! < c ? 1 : 0)
+        let lo = 16
+        let hi = 0
+        for (let y = 0; y + 4 <= N; y++)
+          for (let x = 0; x + 4 <= N; x++) {
+            const n = rows[y * N + x]! + rows[(y + 1) * N + x]! + rows[(y + 2) * N + x]! + rows[(y + 3) * N + x]!
+            if (n < lo) lo = n
+            if (n > hi) hi = n
+          }
+        expect([lo, hi], `what a patch of four by four holds of ${name} at ${c}, the least and the most`).toEqual([least, most])
+      }
+    // The two levels of a pixel are not one level: a part that thins while it changes is not thinned twice by the same dots.
+    let same = 0
+    for (let i = 0; i < N * N; i++) if (first[i]! < 0.5 === second[i]! < 0.5) same++
+    expect(Math.abs(same / (N * N) - 0.5), 'the pixels on the same side of a half in both').toBeLessThanOrEqual(0.02)
   })
 
   /** One shader of a season's file by the name of its constant: the text between its two backticks. */

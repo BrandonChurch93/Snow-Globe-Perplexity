@@ -3,6 +3,7 @@ import type { Plugin } from 'vite'
 import raw from './config/showcase.json' with { type: 'json' }
 import { existsSync, readFileSync } from 'node:fs'
 import { configProblems } from './src/configCheck.ts'
+import { grids } from './tools/lib/grids.mjs'
 import { approvedPresent, engineHash, packageVersions, writeAssetIndex } from './tools/lib/hashes.mjs'
 
 const present: string[] = approvedPresent()
@@ -34,7 +35,7 @@ const page = (): Plugin => ({
 
 export default defineConfig({
   base: './',
-  plugins: [page()],
+  plugins: [page(), grids()],
   define: {
     __ENGINE_HASH__: JSON.stringify(engineHash()),
     __APPROVED_PRESENT__: JSON.stringify(present),
